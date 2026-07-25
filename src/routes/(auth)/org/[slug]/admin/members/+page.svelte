@@ -34,8 +34,14 @@
 	const organization = $derived($page.data.organization);
 	const accessToken = $derived(authStore.accessToken);
 
+	// `manage_subscriptions` is a standalone role — a staffer holding only it
+	// reaches this page for the Subscriptions tab and must see nothing else
+	// (and fire no roster query, which would 403).
+	const canManageMembers = $derived(!!data.canManageMembers);
+	const canManageSubscriptions = $derived(!!data.canManageSubscriptions);
+
 	// Active tab state
-	let activeTab = $state('members');
+	let activeTab = $state(data.canManageMembers ? 'members' : 'subscriptions');
 
 	// Create token modal state (shared between header button and tokens tab)
 	let isCreateTokenModalOpen = $state(false);
@@ -56,7 +62,7 @@
 
 			return response.data;
 		},
-		enabled: !!accessToken
+		enabled: !!accessToken && canManageMembers
 	}));
 
 	// Fetch staff (for tab badge counts and cross-tab data)
@@ -75,7 +81,7 @@
 
 			return response.data;
 		},
-		enabled: !!accessToken
+		enabled: !!accessToken && canManageMembers
 	}));
 
 	// Fetch membership tiers (shared across tabs)
@@ -93,7 +99,7 @@
 
 			return response.data;
 		},
-		enabled: !!accessToken
+		enabled: !!accessToken && canManageMembers
 	}));
 
 	// Derived data for badge counts and shared state
@@ -127,16 +133,18 @@
 				{m['orgAdmin.members.pageDescription']()}
 			</p>
 		</div>
-		<Button
-			onclick={() => {
-				isCreateTokenModalOpen = true;
-				activeTab = 'tokens';
-			}}
-			class="w-full sm:w-auto"
-		>
-			<Plus class="mr-2 h-4 w-4" aria-hidden="true" />
-			{m['orgAdmin.members.inviteMembers']()}
-		</Button>
+		{#if canManageMembers}
+			<Button
+				onclick={() => {
+					isCreateTokenModalOpen = true;
+					activeTab = 'tokens';
+				}}
+				class="w-full sm:w-auto"
+			>
+				<Plus class="mr-2 h-4 w-4" aria-hidden="true" />
+				{m['orgAdmin.members.inviteMembers']()}
+			</Button>
+		{/if}
 	</div>
 
 	<!-- What membership grants (discreet inline disclosure, collapsed by default) -->
@@ -166,40 +174,42 @@
 	<Tabs bind:value={activeTab} class="w-full">
 		<div class="sticky top-32 z-20 -mb-px bg-background pb-3 pt-1">
 			<TabsList class="h-auto w-full grid-cols-3 gap-0.5 sm:grid-cols-6 sm:gap-1">
-				<TabsTrigger value="members" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
-					<Users class="h-4 w-4 shrink-0" />
-					<span class="hidden sm:inline">{m['orgAdmin.members.tabs.members']()}</span>
-					<span class="sm:hidden">{m['orgAdmin.members.tabs.membersShort']()}</span>
-					{#if members.length > 0}
-						<span class="hidden text-xs text-muted-foreground lg:inline">({members.length})</span>
-					{/if}
-				</TabsTrigger>
+				{#if canManageMembers}
+					<TabsTrigger value="members" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
+						<Users class="h-4 w-4 shrink-0" />
+						<span class="hidden sm:inline">{m['orgAdmin.members.tabs.members']()}</span>
+						<span class="sm:hidden">{m['orgAdmin.members.tabs.membersShort']()}</span>
+						{#if members.length > 0}
+							<span class="hidden text-xs text-muted-foreground lg:inline">({members.length})</span>
+						{/if}
+					</TabsTrigger>
 
-				<TabsTrigger value="staff" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
-					<UserCog class="h-4 w-4 shrink-0" />
-					<span class="hidden sm:inline">{m['orgAdmin.members.tabs.staff']()}</span>
-					<span class="sm:hidden">{m['orgAdmin.members.tabs.staffShort']()}</span>
-					{#if staff.length > 0}
-						<span class="hidden text-xs text-muted-foreground lg:inline">({staff.length})</span>
-					{/if}
-				</TabsTrigger>
+					<TabsTrigger value="staff" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
+						<UserCog class="h-4 w-4 shrink-0" />
+						<span class="hidden sm:inline">{m['orgAdmin.members.tabs.staff']()}</span>
+						<span class="sm:hidden">{m['orgAdmin.members.tabs.staffShort']()}</span>
+						{#if staff.length > 0}
+							<span class="hidden text-xs text-muted-foreground lg:inline">({staff.length})</span>
+						{/if}
+					</TabsTrigger>
 
-				<TabsTrigger value="requests" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
-					<UserPlus class="h-4 w-4 shrink-0" />
-					<span class="hidden sm:inline">{m['orgAdmin.members.tabs.requests']()}</span>
-					<span class="sm:hidden">{m['orgAdmin.members.tabs.requestsShort']()}</span>
-				</TabsTrigger>
+					<TabsTrigger value="requests" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
+						<UserPlus class="h-4 w-4 shrink-0" />
+						<span class="hidden sm:inline">{m['orgAdmin.members.tabs.requests']()}</span>
+						<span class="sm:hidden">{m['orgAdmin.members.tabs.requestsShort']()}</span>
+					</TabsTrigger>
 
-				<TabsTrigger value="tiers" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
-					<Shield class="h-4 w-4 shrink-0" />
-					<span class="hidden sm:inline">{m['orgAdmin.members.tabs.tiers']()}</span>
-					<span class="sm:hidden">{m['orgAdmin.members.tabs.tiersShort']()}</span>
-					{#if tiers.length > 0}
-						<span class="hidden text-xs text-muted-foreground lg:inline">({tiers.length})</span>
-					{/if}
-				</TabsTrigger>
+					<TabsTrigger value="tiers" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
+						<Shield class="h-4 w-4 shrink-0" />
+						<span class="hidden sm:inline">{m['orgAdmin.members.tabs.tiers']()}</span>
+						<span class="sm:hidden">{m['orgAdmin.members.tabs.tiersShort']()}</span>
+						{#if tiers.length > 0}
+							<span class="hidden text-xs text-muted-foreground lg:inline">({tiers.length})</span>
+						{/if}
+					</TabsTrigger>
+				{/if}
 
-				{#if data.canManageSubscriptions}
+				{#if canManageSubscriptions}
 					<TabsTrigger value="subscriptions" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
 						<CreditCard class="h-4 w-4 shrink-0" />
 						<span class="hidden sm:inline">{m['orgAdmin.members.tabs.subscriptions']()}</span>
@@ -207,63 +217,69 @@
 					</TabsTrigger>
 				{/if}
 
-				<TabsTrigger value="tokens" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
-					<Link class="h-4 w-4 shrink-0" />
-					<span class="hidden sm:inline">{m['orgAdmin.members.tabs.tokens']()}</span>
-					<span class="sm:hidden">{m['orgAdmin.members.tabs.tokensShort']()}</span>
-				</TabsTrigger>
+				{#if canManageMembers}
+					<TabsTrigger value="tokens" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
+						<Link class="h-4 w-4 shrink-0" />
+						<span class="hidden sm:inline">{m['orgAdmin.members.tabs.tokens']()}</span>
+						<span class="sm:hidden">{m['orgAdmin.members.tabs.tokensShort']()}</span>
+					</TabsTrigger>
+				{/if}
 			</TabsList>
 		</div>
 
-		<!-- Members Tab -->
-		<TabsContent value="members" class="space-y-4">
-			<MembersTab
-				{organization}
-				isOwner={!!data.isOwner}
-				permissions={data.permissions}
-				{tiers}
-				{staffUserIds}
-			/>
-		</TabsContent>
+		{#if canManageMembers}
+			<!-- Members Tab -->
+			<TabsContent value="members" class="space-y-4">
+				<MembersTab
+					{organization}
+					isOwner={!!data.isOwner}
+					permissions={data.permissions}
+					{tiers}
+					{staffUserIds}
+				/>
+			</TabsContent>
 
-		<!-- Staff Tab -->
-		<TabsContent value="staff" class="space-y-4">
-			<StaffTab {organization} isOwner={!!data.isOwner} />
-		</TabsContent>
+			<!-- Staff Tab -->
+			<TabsContent value="staff" class="space-y-4">
+				<StaffTab {organization} isOwner={!!data.isOwner} />
+			</TabsContent>
 
-		<!-- Requests Tab -->
-		<TabsContent value="requests" class="space-y-4">
-			<MembershipRequestsTab {organization} {tiers} />
-		</TabsContent>
+			<!-- Requests Tab -->
+			<TabsContent value="requests" class="space-y-4">
+				<MembershipRequestsTab {organization} {tiers} />
+			</TabsContent>
 
-		<!-- Tiers Tab -->
-		<TabsContent value="tiers" class="space-y-4">
-			<TiersTab
-				{organization}
-				{tiers}
-				{members}
-				isLoading={tiersQuery.isLoading}
-				isError={tiersQuery.isError}
-				canManageSubscriptions={data.canManageSubscriptions}
-			/>
-		</TabsContent>
+			<!-- Tiers Tab -->
+			<TabsContent value="tiers" class="space-y-4">
+				<TiersTab
+					{organization}
+					{tiers}
+					{members}
+					isLoading={tiersQuery.isLoading}
+					isError={tiersQuery.isError}
+					canManageSubscriptions={data.canManageSubscriptions}
+				/>
+			</TabsContent>
+		{/if}
 
 		<!-- Subscriptions Tab -->
-		{#if data.canManageSubscriptions}
+		{#if canManageSubscriptions}
 			<TabsContent value="subscriptions" class="space-y-4">
 				<SubscriptionsTab {organization} />
 			</TabsContent>
 		{/if}
 
-		<!-- Tokens Tab -->
-		<TabsContent value="tokens" class="space-y-4">
-			<OrganizationTokensTab
-				{organization}
-				isOwner={!!data.isOwner}
-				{tiers}
-				isCreateModalOpen={isCreateTokenModalOpen}
-				onCreateModalOpenChange={(open) => (isCreateTokenModalOpen = open)}
-			/>
-		</TabsContent>
+		{#if canManageMembers}
+			<!-- Tokens Tab -->
+			<TabsContent value="tokens" class="space-y-4">
+				<OrganizationTokensTab
+					{organization}
+					isOwner={!!data.isOwner}
+					{tiers}
+					isCreateModalOpen={isCreateTokenModalOpen}
+					onCreateModalOpenChange={(open) => (isCreateTokenModalOpen = open)}
+				/>
+			</TabsContent>
+		{/if}
 	</Tabs>
 </div>
