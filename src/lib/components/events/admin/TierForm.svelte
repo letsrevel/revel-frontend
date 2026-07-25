@@ -6,7 +6,8 @@
 		eventadminticketsCreateTicketTier,
 		eventadminticketsUpdateTicketTier,
 		eventadminticketsDeleteTicketTier,
-		organizationadminvenuesListVenues
+		organizationadminvenuesListVenues,
+		eventpublicseatingGetChart
 	} from '$lib/api/generated/sdk.gen';
 	import type {
 		TicketTierDetailSchema,
@@ -14,6 +15,7 @@
 		TicketTierUpdateSchema,
 		MembershipTierSchema,
 		VenueDetailSchema,
+		VenueChartSchema,
 		SeatAssignmentMode,
 		RefundPolicy
 	} from '$lib/api/generated/types.gen';
@@ -32,10 +34,16 @@
 	import { tierFieldLabel } from './tier-field-labels';
 	import {
 		CURRENCY_SYMBOLS,
+		isBillingInfoRequiredError,
 		toDatetimeLocal,
 		toTimezoneAwareISO,
 		normalizeDecimalInput
 	} from './tier-form-helpers';
+	import {
+		buildCategoryPricesPayload,
+		buildTierSeatingFields,
+		retainedSectorIdForMode
+	} from './tier-seating-payload';
 	import { Undo2 } from '@lucide/svelte';
 	import { formatDateTimeReadback } from '$lib/utils/date';
 
@@ -150,6 +158,16 @@
 	const canUseSeatAssignment = $derived(hasEventVenue);
 	let sectorId = $state<string | null>(tier?.sector?.id ?? null);
 
+	// Per-category prices — the single pricing mechanism for BOTH seated modes
+	// (pricing convergence). The baseline is what the server stored; the payload
+	// builder sends the map ONLY when it diverges from this (PUT + three-way
+	// write semantics: omit = untouched, {} = clear, non-empty = replace), so an
+	// unrelated edit can't wipe prices.
+	const initialCategoryPrices: Record<string, string> = Object.fromEntries(
+		Object.entries(tier?.category_prices ?? {}).map(([id, value]) => [id, String(value)])
+	);
+	let categoryPrices = $state<Record<string, string>>({ ...initialCategoryPrices });
+
 	// Fetch venues for the organization (fetch when seat assignment is not 'none' OR when we have a venue pre-selected)
 	const venuesQuery = createQuery<VenueDetailSchema[]>(() => ({
 		queryKey: ['organization-venues', organizationSlug],
@@ -170,34 +188,102 @@
 		enabled: !!accessToken && (seatAssignmentMode !== 'none' || !!venueId)
 	}));
 
-	// Sector is required when seat assignment is random or user_choice
-	const sectorRequired = $derived(
-		seatAssignmentMode === 'random' || seatAssignmentMode === 'user_choice'
-	);
+	// Fetch the venue seating chart — price categories only exist on the chart.
+	// Public endpoint; the Bearer header lets admins of draft/private events resolve it.
+	const chartQuery = createQuery<VenueChartSchema>(() => ({
+		queryKey: ['seating-chart', eventId],
+		queryFn: async () => {
+			const response = await eventpublicseatingGetChart({
+				path: { event_id: eventId },
+				headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined
+			});
+
+			if (response.error !== undefined || !response.data) {
+				throw new Error('Failed to load seating chart');
+			}
+
+			return response.data;
+		},
+		enabled: !!venueId
+	}));
+
+	// A seated tier of EITHER mode requires a sector (pricing convergence: the
+	// removed price-category FK used to supply the venue for best_available).
+	const sectorRequired = $derived(seatAssignmentMode !== 'none');
 	// When sector is required, both venue and sector must be selected
 	const sectorValid = $derived(!sectorRequired || (!!venueId && !!sectorId));
 
-	// Get sectors from the selected venue
+	const priceCategories = $derived(chartQuery.data?.price_categories ?? []);
+
+	// Standing sectors can't back a user_choice tier — their "spots" are never
+	// holdable server-side. VenueSectorSchema has no `kind`, so join against the
+	// chart (which does) to know which sectors to hide from the picker.
+	const standingSectorIds = $derived(
+		new Set((chartQuery.data?.sectors ?? []).filter((s) => s.kind === 'standing').map((s) => s.id))
+	);
+
+	// Get sectors from the selected venue (minus standing ones once the chart is loaded)
 	const selectedVenueSectors = $derived.by(() => {
 		if (!venueId || !venuesQuery.data) return [];
 		const venue = venuesQuery.data.find((v) => v.id === venueId);
-		return venue?.sectors || [];
+		const sectors = venue?.sectors || [];
+		if (standingSectorIds.size === 0) return sectors;
+		return sectors.filter((s) => !s.id || !standingSectorIds.has(s.id));
+	});
+
+	// The inverse pool: standing sectors CAN back a GA (none) tier — linking one
+	// turns its capacity into a hard sale-time cap. Empty until the chart loads.
+	const standingVenueSectors = $derived.by(() => {
+		if (!venueId || !venuesQuery.data) return [];
+		const venue = venuesQuery.data.find((v) => v.id === venueId);
+		return (venue?.sectors || []).filter((s) => !!s.id && standingSectorIds.has(s.id));
 	});
 
 	// The venue matching the pre-filled venueId (read-only display in the seating section)
 	const selectedVenue = $derived(venuesQuery.data?.find((v) => v.id === venueId));
 
-	// Clear sector when venue changes
+	// Keep the sector consistent with venue, mode and sector kind: standing
+	// sectors are only valid on GA (none) tiers, seated ones on user_choice.
+	// Only clear once venues AND the chart are loaded — standing-ness comes from
+	// the chart — so the edit-mode prefill (incl. a GA tier's standing sector)
+	// survives the fetches.
 	$effect(() => {
-		if (venueId) {
-			// If sector doesn't belong to current venue, clear it
-			const venueHasSector = selectedVenueSectors.some((s) => s.id === sectorId);
-			if (!venueHasSector && sectorId !== null) {
-				sectorId = null;
-			}
-		} else {
+		if (!venueId) {
+			sectorId = null;
+			return;
+		}
+		if (sectorId === null || !venuesQuery.data || !chartQuery.data) return;
+		const retained = retainedSectorIdForMode(seatAssignmentMode, sectorId, standingSectorIds);
+		if (retained !== sectorId) {
+			sectorId = retained;
+			return;
+		}
+		// Sector must still belong to the current venue.
+		const pool = seatAssignmentMode === 'none' ? standingVenueSectors : selectedVenueSectors;
+		if (!pool.some((s) => s.id === sectorId)) {
 			sectorId = null;
 		}
+	});
+
+	// Categories offered in the pricing editor (both seated modes): those
+	// painted on an active seat of the selected sector, plus any category the
+	// tier already prices (stale extras stay editable/clearable instead of
+	// vanishing). On user_choice a non-empty map must cover every painted
+	// category; on best_available the priced subset DEFINES the sellable zones.
+	const sectorPricingCategories = $derived.by(() => {
+		if (seatAssignmentMode === 'none' || !sectorId || !chartQuery.data) return [];
+		const sector = (chartQuery.data.sectors ?? []).find((s) => s.id === sectorId);
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: built fresh per derivation and consumed synchronously
+		const painted = new Set<string>();
+		for (const seat of sector?.seats ?? []) {
+			if (seat.is_active !== false && seat.price_category_id) {
+				painted.add(seat.price_category_id);
+			}
+		}
+		return priceCategories.filter(
+			(category) =>
+				!!category.id && (painted.has(category.id) || (categoryPrices[category.id] ?? '') !== '')
+		);
 	});
 
 	// Get current currency symbol for display
@@ -290,8 +376,9 @@
 			// Venue and seating configuration
 			seat_assignment_mode: seatAssignmentMode,
 			max_tickets_per_user: maxTicketsPerUser ? parseInt(maxTicketsPerUser) : null,
-			venue_id: seatAssignmentMode !== 'none' ? venueId : null,
-			sector_id: seatAssignmentMode !== 'none' ? sectorId : null,
+			// Per-mode venue/sector nulling mirrors server validation
+			// (see tier-seating-payload.ts).
+			...buildTierSeatingFields(seatAssignmentMode, venueId, sectorId),
 			// Cancellation & refund policy (only meaningful for paid tiers)
 			allow_user_cancellation: paymentMethod === 'free' ? false : allowUserCancellation,
 			cancellation_deadline_hours:
@@ -300,6 +387,17 @@
 					: null,
 			refund_policy: paymentMethod !== 'free' && allowUserCancellation ? refundPolicy : null
 		};
+
+		// Sent ONLY when dirty (omit = leave the stored map untouched, {} =
+		// clear, non-empty = replace) — see buildCategoryPricesPayload.
+		const categoryPricesPayload = buildCategoryPricesPayload(
+			seatAssignmentMode,
+			initialCategoryPrices,
+			categoryPrices
+		);
+		if (categoryPricesPayload !== undefined) {
+			baseData.category_prices = categoryPricesPayload;
+		}
 
 		// Only include pwyc fields if price_type is 'pwyc' and they have values
 		if (priceType === 'pwyc') {
@@ -439,16 +537,14 @@
 				<div>
 					<MarkdownEditor
 						id="payment-instructions"
-						label={m['tierForm.paymentInstructions']?.() ?? 'Payment Instructions'}
+						label={m['tierForm.paymentInstructions']()}
 						bind:value={manualPaymentInstructions}
 						rows={3}
-						placeholder={m['tierForm.paymentInstructionsPlaceholder']?.() ??
-							'e.g., Bank transfer to IBAN XX..., or pay in cash at the door'}
+						placeholder={m['tierForm.paymentInstructionsPlaceholder']()}
 						disabled={isPending}
 					/>
 					<p class="mt-1 text-xs text-muted-foreground">
-						{m['tierForm.paymentInstructionsHelp']?.() ??
-							'Instructions shown to attendees after reserving their ticket'}
+						{m['tierForm.paymentInstructionsHelp']()}
 					</p>
 				</div>
 			{/if}
@@ -521,12 +617,21 @@
 				bind:seatAssignmentMode
 				bind:maxTicketsPerUser
 				bind:sectorId
+				bind:categoryPrices
+				pricingCategories={sectorPricingCategories}
+				pricingGaps={tier?.pricing_gaps ?? []}
+				unsellableZones={tier?.unsellable_zones ?? []}
+				{currencySymbol}
 				{canUseSeatAssignment}
 				{venueId}
 				venuesLoading={venuesQuery.isLoading}
 				{selectedVenue}
 				{selectedVenueSectors}
+				standingSectors={standingVenueSectors}
 				{sectorRequired}
+				chartLoading={chartQuery.isLoading}
+				chartError={chartQuery.isError}
+				onRetryChart={() => chartQuery.refetch()}
 				{isPending}
 			/>
 
@@ -562,7 +667,7 @@
 			{#if error}
 				{@const fieldErrors = extractFieldErrors(error)}
 				{@const errorMsg = extractErrorMessage(error)}
-				{@const isBillingError = errorMsg.toLowerCase().includes('billing information is required')}
+				{@const isBillingError = isBillingInfoRequiredError(errorMsg)}
 				<div class="rounded-lg bg-destructive/10 p-3" role="alert">
 					<p class="font-medium text-destructive">{m['tierForm.error']()}</p>
 

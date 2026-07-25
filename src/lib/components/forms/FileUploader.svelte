@@ -104,7 +104,7 @@
 
 	// Format accepted MIME types for display
 	function formatAcceptedTypes(acceptStr: string): string {
-		if (acceptStr === '*/*') return m['fileUploader.allFiles']?.() || 'All files';
+		if (acceptStr === '*/*') return m['fileUploader.allFiles']();
 		return acceptStr
 			.split(',')
 			.map((type) => {
@@ -132,19 +132,13 @@
 			});
 
 			if (!isValid) {
-				return (
-					m['fileUploader.error_invalidFileType']?.({ accept: formatAcceptedTypes(accept) }) ||
-					`Invalid file type. Allowed: ${formatAcceptedTypes(accept)}`
-				);
+				return m['fileUploader.error_invalidFileType']({ accept: formatAcceptedTypes(accept) });
 			}
 		}
 
 		// Check file size
 		if (maxSize && file.size > maxSize) {
-			return (
-				m['fileUploader.error_fileTooLarge']?.({ maxSize: formatFileSize(maxSize) }) ||
-				`File too large. Max: ${formatFileSize(maxSize)}`
-			);
+			return m['fileUploader.error_fileTooLarge']({ maxSize: formatFileSize(maxSize) });
 		}
 
 		return null;
@@ -160,8 +154,7 @@
 
 		// Check if we can add more files
 		if ((uploadedFiles?.length || 0) + pendingUploads.length >= maxFiles) {
-			const errorMsg =
-				m['fileUploader.error_tooManyFiles']?.({ maxFiles }) || `Maximum ${maxFiles} files allowed`;
+			const errorMsg = m['fileUploader.error_tooManyFiles']({ maxFiles });
 			onUploadError?.(file, errorMsg);
 			return;
 		}
@@ -208,8 +201,7 @@
 		const available = maxFiles - (uploadedFiles?.length || 0) - pendingUploads.length;
 
 		if (fileArray.length > available) {
-			const errorMsg =
-				m['fileUploader.error_tooManyFiles']?.({ maxFiles }) || `Maximum ${maxFiles} files allowed`;
+			const errorMsg = m['fileUploader.error_tooManyFiles']({ maxFiles });
 			// Still upload what we can
 			fileArray.slice(0, available).forEach(uploadFile);
 			if (fileArray.length > available) {
@@ -323,9 +315,7 @@
 		<label for={inputId} class="block text-sm font-medium text-gray-900 dark:text-gray-100">
 			{label}
 			{#if required}
-				<span class="text-destructive" aria-label={m['fileUploader.required']?.() || 'required'}
-					>*</span
-				>
+				<span class="text-destructive" aria-label={m['fileUploader.required']()}>*</span>
 			{/if}
 		</label>
 	{/if}
@@ -359,7 +349,7 @@
 							size="icon"
 							class="h-8 w-8 shrink-0"
 							onclick={() => removeUploadedFile(file.id)}
-							aria-label={m['fileUploader.removeFile']?.() || 'Remove file'}
+							aria-label={m['fileUploader.removeFile']()}
 						>
 							<X class="h-4 w-4" />
 						</Button>
@@ -383,7 +373,7 @@
 							<p class="text-xs text-destructive">{pending.error || 'Upload failed'}</p>
 						{:else}
 							<p class="text-xs text-muted-foreground">
-								{m['fileUploader.uploading']?.() || 'Uploading...'}
+								{m['fileUploader.uploading']()}
 							</p>
 						{/if}
 					</div>
@@ -393,7 +383,7 @@
 							size="icon"
 							class="h-8 w-8 shrink-0"
 							onclick={() => retryUpload(pending.file)}
-							aria-label={m['fileUploader.retryUpload']?.() || 'Retry upload'}
+							aria-label={m['fileUploader.retryUpload']()}
 						>
 							<RefreshCw class="h-4 w-4" />
 						</Button>
@@ -403,7 +393,7 @@
 						size="icon"
 						class="h-8 w-8 shrink-0"
 						onclick={() => removePendingUpload(pending.file)}
-						aria-label={m['fileUploader.removeFile']?.() || 'Remove file'}
+						aria-label={m['fileUploader.removeFile']()}
 					>
 						<X class="h-4 w-4" />
 					</Button>
@@ -423,7 +413,7 @@
 			ondragleave={handleDragLeave}
 			ondragover={handleDragOver}
 			ondrop={handleDrop}
-			aria-label={m['fileUploader.uploadFile']?.() || 'Upload file'}
+			aria-label={m['fileUploader.uploadFile']()}
 			aria-describedby={error ? `${inputId}-error` : `${inputId}-hint`}
 			class={cn(
 				'flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-all',
@@ -441,21 +431,20 @@
 
 			<p class="mb-1 text-sm font-medium text-gray-900 dark:text-gray-100">
 				{#if isDragging}
-					{m['fileUploader.dropFilesHere']?.() || 'Drop files here'}
+					{m['fileUploader.dropFilesHere']()}
 				{:else}
-					{m['fileUploader.clickToUpload']?.() || 'Click to upload or drag and drop'}
+					{m['fileUploader.clickToUpload']()}
 				{/if}
 			</p>
 
 			<p id="{inputId}-hint" class="text-center text-xs text-muted-foreground">
 				{formatAcceptedTypes(accept)}
 				{#if maxSize}
-					- {m['fileUploader.upTo']?.({ maxSize: formatFileSize(maxSize) }) ||
-						`up to ${formatFileSize(maxSize)}`}
+					- {m['fileUploader.upTo']({ maxSize: formatFileSize(maxSize) })}
 				{/if}
 				{#if maxFiles > 1}
 					<br />
-					{m['fileUploader.maxFiles']?.({ count: maxFiles }) || `Maximum ${maxFiles} files`}
+					{m['fileUploader.maxFiles']({ count: maxFiles })}
 				{/if}
 			</p>
 		</div>

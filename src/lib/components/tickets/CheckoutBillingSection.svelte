@@ -1,5 +1,6 @@
 <script lang="ts">
 	// 1. Imports
+	import { untrack } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { Input } from '$lib/components/ui/input';
@@ -27,6 +28,9 @@
 		isPwyc: boolean;
 		pwycAmount?: string;
 		discountCode?: string;
+		/** Buyer's zone on a MAPPED best-available tier — a count-based VAT
+		 * preview item on such a tier has no single price without it. */
+		priceCategoryId?: string | null;
 		isAuthenticated: boolean;
 		authToken?: string | null;
 		disabled?: boolean;
@@ -42,6 +46,7 @@
 		isPwyc,
 		pwycAmount = '',
 		discountCode,
+		priceCategoryId = null,
 		isAuthenticated,
 		authToken = null,
 		disabled = false
@@ -104,6 +109,17 @@
 		}
 	});
 
+	// A zone switch changes the unit price on a mapped best-available tier —
+	// refresh an already-visible preview so it never quotes the old zone. Only
+	// the zone is tracked: the guard reads are untracked so the fetch writing
+	// `vatPreview` can't re-trigger the effect.
+	$effect(() => {
+		void priceCategoryId;
+		untrack(() => {
+			if (isOpen && vatPreview) void fetchVatPreview();
+		});
+	});
+
 	// 6. VAT preview fetch
 	async function fetchVatPreview() {
 		if (!vatId.trim()) {
@@ -128,7 +144,15 @@
 						billing_address: billingAddress.trim() || undefined,
 						billing_email: billingEmail.trim() || undefined
 					},
-					items: [{ tier_id: tierId, count: quantity }],
+					items: [
+						{
+							tier_id: tierId,
+							count: quantity,
+							// Zone on a mapped best-available tier: without it the
+							// count-based item resolves to no single price (400).
+							...(priceCategoryId ? { price_category_id: priceCategoryId } : {})
+						}
+					],
 					discount_code: discountCode || undefined,
 					price_per_ticket: pwycValue
 				},

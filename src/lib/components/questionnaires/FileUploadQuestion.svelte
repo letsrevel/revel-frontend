@@ -421,7 +421,7 @@
 					{disabled}
 				>
 					<Mic class="h-5 w-5" />
-					<span class="text-xs">{m['audioRecorder.record']?.() || 'Record'}</span>
+					<span class="text-xs">{m['audioRecorder.record']()}</span>
 				</Button>
 			{/if}
 

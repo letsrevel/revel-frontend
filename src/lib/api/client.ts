@@ -6,6 +6,7 @@ import { client as generatedClient } from './generated/client.gen';
 import type { ResolvedRequestOptions } from './generated/client';
 import { authStore } from '$lib/stores/auth.svelte';
 import { API_BASE_URL } from '$lib/config/api';
+import { getLocale } from '$lib/paraglide/runtime.js';
 
 // Configure the client base settings
 generatedClient.setConfig({
@@ -59,6 +60,16 @@ generatedClient.interceptors.request.use(async (request, _options) => {
 
 	if (token) {
 		request.headers.set('Authorization', `Bearer ${token}`);
+	}
+
+	// The backend localizes error/validation messages per Accept-Language
+	// (BE #724). Without this the browser's OWN language preference decides,
+	// which can disagree with the UI language the user picked in the app —
+	// send the paraglide locale so backend strings match the interface.
+	try {
+		request.headers.set('Accept-Language', getLocale());
+	} catch {
+		// Locale resolution unavailable (early SSR edge) — browser default applies.
 	}
 
 	return request;

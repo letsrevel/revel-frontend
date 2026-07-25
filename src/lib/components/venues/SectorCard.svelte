@@ -54,7 +54,7 @@
 			<button
 				type="button"
 				onclick={() => onManageSeats(sector)}
-				class="rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+				class="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11"
 				aria-label={m['orgAdmin.sectors.card.manageSeats']()}
 				title={m['orgAdmin.sectors.card.manageSeats']()}
 			>
@@ -63,7 +63,7 @@
 			<button
 				type="button"
 				onclick={() => onEdit(sector)}
-				class="rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+				class="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11"
 				aria-label={m['orgAdmin.sectors.card.edit']()}
 				title={m['orgAdmin.sectors.card.edit']()}
 			>
@@ -72,7 +72,7 @@
 			<button
 				type="button"
 				onclick={() => sector.id && onDelete(sector.id)}
-				class="rounded-md p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+				class="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11"
 				aria-label={m['orgAdmin.sectors.card.delete']()}
 				title={m['orgAdmin.sectors.card.delete']()}
 			>

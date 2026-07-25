@@ -11,9 +11,10 @@
 	} from '$lib/api/generated/sdk.gen';
 	import type { VenueDetailSchema, VenueSectorWithSeatsSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { Plus, ArrowLeft, LayoutGrid } from '@lucide/svelte';
+	import { Plus, ArrowLeft, LayoutGrid, PenTool } from '@lucide/svelte';
 	import SectorCard from '$lib/components/venues/SectorCard.svelte';
 	import SectorModal from '$lib/components/venues/SectorModal.svelte';
+	import PriceCategorySection from '$lib/components/venues/PriceCategorySection.svelte';
 	import { toast } from 'svelte-sonner';
 
 	const organization = $derived(page.data.organization);
@@ -198,14 +199,26 @@
 				<p class="text-muted-foreground">{m['orgAdmin.sectors.pageDescription']()}</p>
 			</div>
 
-			<button
-				type="button"
-				onclick={handleCreate}
-				class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-			>
-				<Plus class="h-5 w-5" aria-hidden="true" />
-				{m['orgAdmin.sectors.createButton']()}
-			</button>
+			<div class="flex flex-wrap items-center gap-3">
+				<a
+					href={resolve('/(auth)/org/[slug]/admin/venues/[venue_id]/designer', {
+						slug: organization.slug,
+						venue_id: venueId
+					})}
+					class="inline-flex items-center gap-2 rounded-md border border-input px-4 py-2 font-semibold transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+				>
+					<PenTool class="h-5 w-5" aria-hidden="true" />
+					{m['seatDesigner.open']()}
+				</a>
+				<button
+					type="button"
+					onclick={handleCreate}
+					class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+				>
+					<Plus class="h-5 w-5" aria-hidden="true" />
+					{m['orgAdmin.sectors.createButton']()}
+				</button>
+			</div>
 		</div>
 
 		<!-- Content -->
@@ -239,6 +252,9 @@
 				{/each}
 			</div>
 		{/if}
+
+		<!-- Price categories (used by Best Available ticket tiers) -->
+		<PriceCategorySection organizationSlug={organization.slug} {venueId} />
 	{/if}
 </div>
 

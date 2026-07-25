@@ -188,6 +188,12 @@
 			return toRelativePath(context.event_url);
 		}
 
+		// refund_unmatched (#671): deep link to the event ticket admin filtered
+		// to the buyer, so staff can cancel the right ticket (BE #744)
+		if (context.resolve_url && typeof context.resolve_url === 'string') {
+			return toRelativePath(context.resolve_url);
+		}
+
 		// Fallback to context patterns for older notifications
 		if (context.event_id) {
 			return `/events/${context.event_id}`;
@@ -270,6 +276,26 @@
 		onNavigate?.();
 		// eslint-disable-next-line svelte/no-navigation-without-resolve -- deep-link path supplied by the notification payload (API-provided), not a static route id
 		goto(data.claimUrl);
+	}
+
+	// ===== Refund unmatched (#671) =====
+	// Staff alert: an inbound Stripe refund was NOT applied to any ticket. The
+	// CTA deep-links to the event ticket admin pre-filtered to the buyer
+	// (context.resolve_url, BE #744) so the operator can cancel the right one.
+	const isRefundUnmatched = $derived(notification.notification_type === 'refund_unmatched');
+	const refundResolveUrl = $derived.by(() => {
+		if (!isRefundUnmatched) return null;
+		const url = readString(notification.context, 'resolve_url');
+		return url ? toRelativePath(url) : null;
+	});
+
+	function handleResolveRefund(event: MouseEvent): void {
+		event.stopPropagation();
+		if (!refundResolveUrl) return;
+		markReadOnOpen();
+		onNavigate?.();
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- deep-link path supplied by the notification payload (API-provided), not a static route id
+		goto(refundResolveUrl);
 	}
 </script>
 
@@ -368,6 +394,17 @@
 						class={cn('text-sm text-muted-foreground', compact && 'line-clamp-4')}
 					/>
 				</div>
+				{#if isRefundUnmatched && refundResolveUrl}
+					<Button
+						size={compact ? 'sm' : 'default'}
+						variant="default"
+						class="mt-3 min-h-11 w-full sm:w-auto"
+						onclick={handleResolveRefund}
+					>
+						<Ticket class="mr-2 h-4 w-4" aria-hidden="true" />
+						{m['notifications.refundUnmatched.cta']()}
+					</Button>
+				{/if}
 			{/if}
 		</div>
 

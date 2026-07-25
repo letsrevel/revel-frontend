@@ -24,6 +24,10 @@ export function toCheckInTicket(ticket: AdminTicketSchema): CheckInDialogTicket 
 			first_name: ticket.user.first_name ?? undefined,
 			last_name: ticket.user.last_name ?? undefined
 		},
-		seat: ticket.seat ?? undefined
+		seat: ticket.seat ?? undefined,
+		// The check-in scan payload (CheckInResponseSchema) carries an explicit
+		// sector_name; AdminTicketSchema only nests it under tier.sector, so map
+		// that through here so the dialog can show it uniformly.
+		sector_name: ticket.tier?.sector?.name ?? undefined
 	};
 }

@@ -1,13 +1,16 @@
 import type { Locator, Page } from '@playwright/test';
 import { test, expect } from '../../support/fixtures';
+import { claimTicketViaApi, createTicketedEvent } from '../../support/factories';
 import { gotoHydrated } from '../../support/navigation';
+import { PERSONAS } from '../../support/personas';
 
 // J3.2 (USER_JOURNEYS.md) — dashboard relationship facets: the "Your Events"
 // preset buttons (All / Organizing / Attending / Invited / Bookmarked) scope
 // the list to the right relationship per persona.
 //
-// Read-only on seeded bootstrap data, with personas chosen so their facet
-// sets stay stable across full-suite runs:
+// Mostly read-only on seeded bootstrap data (charlie's held ticket is the one
+// arranged exception), with personas chosen so their facet sets stay stable
+// across full-suite runs:
 // - hannah/ivan are avoided for Attending — j05 rsvp-flow toggles their
 //   spring-potluck RSVP and deliberately leaves it at "No".
 // - Org Beta anchors Organizing — factories only ever create events on Org
@@ -44,6 +47,23 @@ test.describe('J3 dashboard facets @p1', () => {
 	test('Attending shows RSVPs and held tickets, not mere memberships (charlie)', async ({
 		asMember
 	}) => {
+		// Bootstrap deliberately keeps charlie ticket-free on seeded events (BE
+		// 76b2f317 — so developers logged in as Charlie can test purchasing), so
+		// the held-ticket half of this facet is arranged here: charlie claims a
+		// free ticket on a spec-created event.
+		const ticketedEvent = await createTicketedEvent();
+		if (!ticketedEvent.freeTierId) throw new Error('createTicketedEvent returned no free tier');
+		await claimTicketViaApi(
+			{
+				email: PERSONAS.member.email,
+				password: PERSONAS.member.password,
+				firstName: 'Charlie',
+				lastName: 'Member'
+			},
+			ticketedEvent.id,
+			ticketedEvent.freeTierId
+		);
+
 		await gotoHydrated(asMember, '/dashboard');
 		await asMember.getByRole('button', { name: 'Attending' }).click();
 
@@ -55,8 +75,8 @@ test.describe('J3 dashboard facets @p1', () => {
 		await expect(
 			region.getByRole('heading', { name: 'Contemporary Art Exhibition Opening' })
 		).toBeVisible();
-		// …and his ACTIVE ticket.
-		await expect(region.getByRole('heading', { name: 'Classical Music Evening' })).toBeVisible();
+		// …and his (arranged) ACTIVE ticket.
+		await expect(region.getByRole('heading', { name: ticketedEvent.name })).toBeVisible();
 		// Alpha events he is NOT attending stay out — the preset excludes the
 		// `member` relationship even though he could see this event.
 		await expect(

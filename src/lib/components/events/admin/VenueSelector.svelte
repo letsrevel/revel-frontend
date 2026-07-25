@@ -96,7 +96,7 @@
 	<label class="mb-1.5 block text-sm font-medium">
 		<span class="flex items-center gap-2">
 			<Building2 class="h-4 w-4" aria-hidden="true" />
-			{m['venueSelector.label']?.() ?? 'Venue'}
+			{m['venueSelector.label']()}
 		</span>
 	</label>
 
@@ -124,7 +124,7 @@
 				</span>
 			{:else}
 				<span class="text-muted-foreground">
-					{m['venueSelector.placeholder']?.() ?? 'Select a venue...'}
+					{m['venueSelector.placeholder']()}
 				</span>
 				<ChevronDown class="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
 			{/if}
@@ -135,7 +135,7 @@
 				onclick={handleClear}
 				{disabled}
 				class="ml-2 mr-3 rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground disabled:cursor-not-allowed"
-				aria-label={m['venueSelector.clear']?.() ?? 'Clear venue selection'}
+				aria-label={m['venueSelector.clear']()}
 			>
 				<X class="h-4 w-4" />
 			</button>
@@ -147,14 +147,14 @@
 		<div
 			class="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-lg"
 			role="listbox"
-			aria-label={m['venueSelector.selectVenue']?.() ?? 'Select a venue'}
+			aria-label={m['venueSelector.selectVenue']()}
 		>
 			<!-- Search input -->
 			<div class="border-b p-2">
 				<input
 					type="search"
 					bind:value={searchQuery}
-					placeholder={m['venueSelector.searchPlaceholder']?.() ?? 'Search venues...'}
+					placeholder={m['venueSelector.searchPlaceholder']()}
 					class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
 				/>
 			</div>
@@ -169,13 +169,11 @@
 					</div>
 				{:else if venuesQuery.error}
 					<div class="py-4 text-center text-sm text-destructive">
-						{m['venueSelector.error']?.() ?? 'Failed to load venues'}
+						{m['venueSelector.error']()}
 					</div>
 				{:else if filteredVenues.length === 0}
 					<div class="py-4 text-center text-sm text-muted-foreground">
-						{searchQuery
-							? (m['venueSelector.noResults']?.() ?? 'No venues found')
-							: (m['venueSelector.empty']?.() ?? 'No venues available')}
+						{searchQuery ? m['venueSelector.noResults']() : m['venueSelector.empty']()}
 					</div>
 				{:else}
 					<!-- Option to clear selection -->
@@ -188,7 +186,7 @@
 							aria-selected="false"
 						>
 							<X class="h-4 w-4" aria-hidden="true" />
-							{m['venueSelector.clearSelection']?.() ?? 'Clear selection (manual address)'}
+							{m['venueSelector.clearSelection']()}
 						</button>
 					{/if}
 
@@ -229,7 +227,7 @@
 	{/if}
 
 	<p class="mt-1 text-xs text-muted-foreground">
-		{m['venueSelector.help']?.() ?? 'Select a pre-configured venue or enter address manually below'}
+		{m['venueSelector.help']()}
 	</p>
 </div>
 

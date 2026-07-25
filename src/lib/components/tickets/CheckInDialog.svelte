@@ -5,7 +5,7 @@
 	import { X, AlertCircle, CheckCircle, Clock, XCircle } from '@lucide/svelte';
 	import { fade, scale } from 'svelte/transition';
 	import { getUserDisplayName } from '$lib/utils/user-display';
-	import { formatPrice } from '$lib/utils/format';
+	import { formatMoney, formatPrice } from '$lib/utils/format';
 	import { getGuestNameIfDifferent, getSeatDisplay } from '$lib/utils/ticket-helpers';
 
 	interface TicketUser {
@@ -39,6 +39,11 @@
 		is_obstructed_view?: boolean;
 	}
 
+	interface TicketPayment {
+		amount?: string | null;
+		currency?: string | null;
+	}
+
 	interface Ticket {
 		id: string;
 		status: string;
@@ -46,7 +51,10 @@
 		tier?: TicketTier;
 		guest_name?: string;
 		seat?: TicketSeat;
+		/** Sector name from the scan payload (CheckInResponseSchema.sector_name). */
+		sector_name?: string;
 		price_paid?: string | null;
+		payment?: TicketPayment | null;
 	}
 
 	interface Props {
@@ -56,6 +64,12 @@
 		onConfirm: (pricePaid?: string) => void;
 		onCancel: () => void;
 		isLoading?: boolean;
+		/**
+		 * Check-in failure message shown inline in the dialog. A toast alone is
+		 * too transient at the door — the dialog stays open on failure, so the
+		 * reason must stay visible with it.
+		 */
+		errorMessage?: string | null;
 	}
 
 	const {
@@ -64,7 +78,8 @@
 		needsPaymentConfirmation,
 		onConfirm,
 		onCancel,
-		isLoading = false
+		isLoading = false,
+		errorMessage = null
 	}: Props = $props();
 
 	// PWYC state
@@ -97,8 +112,7 @@
 		const min = ticket.tier.pwyc_min ? parseFloat(ticket.tier.pwyc_min) : null;
 		const max = ticket.tier.pwyc_max ? parseFloat(ticket.tier.pwyc_max) : null;
 		const currency = ticket.tier.currency?.toUpperCase() || 'EUR';
-		const fmt = (v: number) =>
-			new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(v);
+		const fmt = (v: number) => formatMoney(v, currency);
 
 		if (min !== null && max !== null && (num < min || num > max)) {
 			return m['checkInDialog.pwycOutsideRange']({ min: fmt(min), max: fmt(max) });
@@ -117,8 +131,7 @@
 		const min = ticket.tier.pwyc_min ? parseFloat(ticket.tier.pwyc_min) : null;
 		const max = ticket.tier.pwyc_max ? parseFloat(ticket.tier.pwyc_max) : null;
 		const currency = ticket.tier.currency?.toUpperCase() || 'EUR';
-		const fmt = (v: number) =>
-			new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(v);
+		const fmt = (v: number) => formatMoney(v, currency);
 
 		if (min !== null && max !== null)
 			return m['checkInDialog.suggestedRange']({ min: fmt(min), max: fmt(max) });
@@ -127,11 +140,19 @@
 	});
 
 	/**
-	 * Displayed tier price, including the pwyc min–max range when applicable.
+	 * Displayed price. Priority: payment.amount > price_paid > tier price —
+	 * online tickets never carry price_paid (the Payment row is authoritative,
+	 * and can be net of VAT for reverse-charge buyers), while category-priced
+	 * seats, discounts, comps and confirmed PWYC stamp price_paid. Only a plain
+	 * flat-tier sale falls through to tier.price / the pwyc min–max range.
 	 * Built as a single string so the dash/space formatting doesn't depend on
 	 * template whitespace collapsing.
 	 */
-	const tierPriceDisplay = $derived.by(() => {
+	const priceDisplay = $derived.by(() => {
+		const recorded = ticket?.payment?.amount ?? ticket?.price_paid;
+		if (recorded !== undefined && recorded !== null) {
+			return formatPrice(recorded, ticket?.payment?.currency || ticket?.tier?.currency);
+		}
 		if (ticket?.tier?.price_type === 'pwyc' && ticket.tier?.pwyc_min) {
 			const min = formatPrice(ticket.tier.pwyc_min, ticket.tier.currency);
 			if (ticket.tier.pwyc_max) {
@@ -352,7 +373,7 @@
 						<div class="flex items-center justify-between px-4 py-3">
 							<span class="text-sm text-muted-foreground">{m['checkInDialog.price']()}</span>
 							<span class="font-medium">
-								{tierPriceDisplay}
+								{priceDisplay}
 							</span>
 						</div>
 						<div class="flex items-center justify-between px-4 py-3">
@@ -374,6 +395,16 @@
 							<strong>{m['checkInDialog.paymentRequired']()}</strong>
 							{m['checkInDialog.ensurePaymentReceived']()}
 						</p>
+					</div>
+				{/if}
+
+				{#if errorMessage}
+					<div
+						class="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-100"
+						role="alert"
+					>
+						<XCircle class="h-5 w-5 shrink-0" aria-hidden="true" />
+						<p>{errorMessage}</p>
 					</div>
 				{/if}
 

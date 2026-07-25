@@ -27,9 +27,16 @@ FAILED=0
 #   (#544 Task 12/13 analyses, #557). Raised 550→620 for the bootstrap gate +
 #   interrupted-rotation retry (#596) — both must share the store's settle
 #   points (setAccessToken/logout), so they belong to the same class.
+#   designer-controller.svelte.ts → 540: the sector-block arranger unifies every
+#   pointer/keyboard/drag handler with the editable transform/shape/stage/selection
+#   state and the world↔canvas frame they all read and mutate. Splitting the
+#   handlers from that state threads it through closures and breaks single
+#   ownership (same rationale as auth.svelte.ts). Raised to fit the snap-on-drop
+#   drag fix (blocks were trailing the cursor when snap was on).
 max_for() {
     case "$1" in
         src/lib/stores/auth.svelte.ts) echo 620 ;;
+        src/lib/components/venues/designer/designer-controller.svelte.ts) echo 540 ;;
         *) echo "$2" ;;
     esac
 }

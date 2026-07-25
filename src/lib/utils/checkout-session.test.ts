@@ -242,6 +242,33 @@ describe('createReservationRetry', () => {
 		expect(eventpublicticketsCheckoutSession).toHaveBeenCalledTimes(2);
 	});
 
+	it('wouldResume peeks without network and without consuming or dropping the handle', async () => {
+		const retry = createReservationRetry('user');
+		expect(retry.wouldResume(FINGERPRINT)).toBe(false);
+		retry.remember(RESERVATION_ID, FINGERPRINT);
+		expect(retry.wouldResume(FINGERPRINT)).toBe(true);
+		// A mismatch reports false but (unlike resume) keeps the handle.
+		const changed = JSON.stringify({ tierId: 'tier-2', tickets: [{ guest_name: 'A' }] });
+		expect(retry.wouldResume(changed)).toBe(false);
+		expect(retry.wouldResume(FINGERPRINT)).toBe(true);
+		expect(eventpublicticketsCheckoutSession).not.toHaveBeenCalled();
+		// The handle is still resumable afterwards; only resume consumes it.
+		mockResult(eventpublicticketsCheckoutSession, {
+			data: { checkout_url: 'https://stripe.test/s/peeked' },
+			error: undefined,
+			response: { status: 200 }
+		});
+		await expect(retry.resume(FINGERPRINT)).resolves.toBe('https://stripe.test/s/peeked');
+		expect(retry.wouldResume(FINGERPRINT)).toBe(false);
+	});
+
+	it('wouldResume goes false after clear()', () => {
+		const retry = createReservationRetry('user');
+		retry.remember(RESERVATION_ID, FINGERPRINT);
+		retry.clear();
+		expect(retry.wouldResume(FINGERPRINT)).toBe(false);
+	});
+
 	it('clear() drops the handle', async () => {
 		const retry = createReservationRetry('guest');
 		retry.remember(RESERVATION_ID, FINGERPRINT);

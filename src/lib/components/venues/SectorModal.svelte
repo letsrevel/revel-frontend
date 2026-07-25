@@ -1,8 +1,10 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import type {
+		Kind,
 		VenueSectorWithSeatsSchema,
-		VenueSectorCreateSchema
+		VenueSectorCreateSchema,
+		VenueSectorUpdateSchema
 	} from '$lib/api/generated/types.gen';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
@@ -10,7 +12,7 @@
 		organizationadminvenuesUpdateSector
 	} from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { X } from '@lucide/svelte';
+	import * as Dialog from '$lib/components/ui/dialog';
 	import { toast } from 'svelte-sonner';
 
 	interface Props {
@@ -27,11 +29,20 @@
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
 
+	// Once a sector has seats the backend rejects kind changes (only seated
+	// sectors can hold seats, so the current kind is known to be 'seated').
+	const hasSeats = (sector?.seats?.length ?? 0) > 0;
+
 	// Form state
 	let name = $state(sector?.name ?? '');
 	let code = $state(sector?.code ?? '');
 	let capacity = $state<number | undefined>(sector?.capacity ?? undefined);
 	let displayOrder = $state(sector?.display_order ?? 0);
+	// The admin sector read now exposes `kind` (BE #734), so prefill it directly.
+	// A sector with seats is locked to its current kind (backend 422s a change).
+	let kind = $state<Kind>(sector?.kind ?? 'seated');
+
+	const isStanding = $derived(kind === 'standing');
 
 	// Create mutation
 	const createMutationFn = createMutation(() => ({
@@ -62,7 +73,7 @@
 
 	// Update mutation
 	const updateMutationFn = createMutation(() => ({
-		mutationFn: async (data: Omit<VenueSectorCreateSchema, 'seats'>) => {
+		mutationFn: async (data: VenueSectorUpdateSchema) => {
 			if (!sector?.id) throw new Error('No sector ID');
 
 			const response = await organizationadminvenuesUpdateSector({
@@ -94,60 +105,88 @@
 	function handleSubmit(e: Event) {
 		e.preventDefault();
 
-		const data: VenueSectorCreateSchema = {
-			name: name.trim(),
-			code: code.trim() || undefined,
-			capacity: capacity || undefined,
-			display_order: displayOrder,
-			seats: []
-		};
-
 		if (isEditing) {
-			// eslint-disable-next-line @typescript-eslint/no-unused-vars
-			const { seats, ...updateData } = data;
-			updateMutationFn.mutate(updateData);
+			const data: VenueSectorUpdateSchema = {
+				name: name.trim(),
+				code: code.trim() || undefined,
+				capacity: capacity || undefined,
+				display_order: displayOrder
+			};
+			// Locked sectors (with seats) never send kind; seatless sectors may
+			// change it.
+			if (!hasSeats) {
+				data.kind = kind;
+			}
+			updateMutationFn.mutate(data);
 		} else {
+			const data: VenueSectorCreateSchema = {
+				name: name.trim(),
+				code: code.trim() || undefined,
+				capacity: capacity || undefined,
+				display_order: displayOrder,
+				seats: []
+			};
+			data.kind = kind;
 			createMutationFn.mutate(data);
 		}
 	}
 
-	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === 'Escape') {
+	// The parent mounts this component only while the modal should be shown, so
+	// the dialog opens on mount and every close path funnels through onClose().
+	let open = $state(true);
+
+	function handleOpenChange(next: boolean) {
+		if (!next) {
+			// Gate dismissal like the Cancel button: closing mid-flight would drop
+			// the pending mutation's outcome (PriceCategoryModal semantics).
+			if (isPending) {
+				open = true;
+				return;
+			}
 			onClose();
 		}
 	}
 </script>
 
-<svelte:window onkeydown={handleKeydown} />
+{#snippet capacityField(standingPrimary: boolean)}
+	<div>
+		<label for="sector-capacity" class="mb-1.5 block text-sm font-medium">
+			{standingPrimary
+				? m['orgAdmin.sectors.form.standingCapacityLabel']()
+				: m['orgAdmin.sectors.form.capacityLabel']()}
+		</label>
+		<input
+			id="sector-capacity"
+			type="number"
+			min="0"
+			bind:value={capacity}
+			placeholder={m['orgAdmin.sectors.form.capacityPlaceholder']()}
+			class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+		/>
+		<p class="mt-1 text-xs text-muted-foreground">
+			{standingPrimary
+				? m['orgAdmin.sectors.form.standingCapacityHelp']()
+				: m['orgAdmin.sectors.form.capacityHelp']()}
+		</p>
+	</div>
+{/snippet}
 
-<!-- Modal backdrop -->
-<div
-	class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-	role="dialog"
-	aria-modal="true"
-	aria-labelledby="sector-modal-title"
->
-	<!-- Modal content -->
-	<div class="w-full max-w-lg rounded-lg bg-background shadow-xl">
-		<!-- Header -->
-		<div class="flex items-center justify-between border-b px-6 py-4">
-			<h2 id="sector-modal-title" class="text-xl font-semibold">
+<Dialog.Root bind:open onOpenChange={handleOpenChange}>
+	<Dialog.Content
+		class="flex max-h-[90vh] flex-col sm:max-w-lg"
+		escapeKeydownBehavior={isPending ? 'ignore' : 'close'}
+		interactOutsideBehavior={isPending ? 'ignore' : 'close'}
+	>
+		<Dialog.Header>
+			<Dialog.Title>
 				{isEditing
 					? m['orgAdmin.sectors.form.editTitle']()
 					: m['orgAdmin.sectors.form.createTitle']()}
-			</h2>
-			<button
-				type="button"
-				onclick={onClose}
-				class="rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-				aria-label={m['orgAdmin.sectors.form.cancel']()}
-			>
-				<X class="h-5 w-5" />
-			</button>
-		</div>
+			</Dialog.Title>
+		</Dialog.Header>
 
 		<!-- Form -->
-		<form onsubmit={handleSubmit} class="p-6">
+		<form onsubmit={handleSubmit} class="min-h-0 flex-1 overflow-y-auto">
 			<div class="space-y-4">
 				<!-- Name -->
 				<div>
@@ -163,6 +202,38 @@
 						class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					/>
 				</div>
+
+				<!-- Kind (seated / standing) -->
+				<div>
+					<label for="sector-kind" class="mb-1.5 block text-sm font-medium">
+						{m['orgAdmin.sectors.form.kindLabel']()}
+					</label>
+					<select
+						id="sector-kind"
+						bind:value={kind}
+						disabled={hasSeats}
+						class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50"
+					>
+						<option value="seated">
+							{m['orgAdmin.sectors.form.kindSeated']()}
+						</option>
+						<option value="standing">
+							{m['orgAdmin.sectors.form.kindStanding']()}
+						</option>
+					</select>
+					<p class="mt-1 text-xs text-muted-foreground">
+						{#if hasSeats}
+							{m['orgAdmin.sectors.form.kindLockedHint']()}
+						{:else}
+							{m['orgAdmin.sectors.form.kindHelp']()}
+						{/if}
+					</p>
+				</div>
+
+				{#if isStanding}
+					<!-- Standing: capacity is the primary field (the GA ceiling) -->
+					{@render capacityField(true)}
+				{/if}
 
 				<!-- Code -->
 				<div>
@@ -182,23 +253,10 @@
 					</p>
 				</div>
 
-				<!-- Capacity -->
-				<div>
-					<label for="sector-capacity" class="mb-1.5 block text-sm font-medium">
-						{m['orgAdmin.sectors.form.capacityLabel']()}
-					</label>
-					<input
-						id="sector-capacity"
-						type="number"
-						min="0"
-						bind:value={capacity}
-						placeholder={m['orgAdmin.sectors.form.capacityPlaceholder']()}
-						class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-					/>
-					<p class="mt-1 text-xs text-muted-foreground">
-						{m['orgAdmin.sectors.form.capacityHelp']()}
-					</p>
-				</div>
+				{#if !isStanding}
+					<!-- Capacity (secondary for seated sectors) -->
+					{@render capacityField(false)}
+				{/if}
 
 				<!-- Display Order -->
 				<div>
@@ -243,5 +301,5 @@
 				</button>
 			</div>
 		</form>
-	</div>
-</div>
+	</Dialog.Content>
+</Dialog.Root>

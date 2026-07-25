@@ -40,12 +40,10 @@
 			// Invalidate notification queries to refresh the list
 			queryClient.invalidateQueries({ queryKey: ['notifications'] });
 			queryClient.invalidateQueries({ queryKey: ['unreadNotificationCount'] });
-			toast.success(
-				m['notificationList.markAllReadSuccess']?.() || 'All notifications marked as read'
-			);
+			toast.success(m['notificationList.markAllReadSuccess']());
 		},
 		onError: () => {
-			toast.error(m['notificationList.markAllReadError']?.() || 'Failed to mark all as read');
+			toast.error(m['notificationList.markAllReadError']());
 		}
 	}));
 
@@ -67,7 +65,7 @@
 				variant="ghost"
 				size="icon"
 				class="relative h-10 w-10"
-				aria-label={m['notificationDropdown.openNotifications']?.() || 'Open notifications'}
+				aria-label={m['notificationDropdown.openNotifications']()}
 			>
 				<Bell class="h-5 w-5" aria-hidden="true" />
 				<NotificationBadge {authToken} {pollingInterval} />
@@ -83,7 +81,7 @@
 		<!-- Header -->
 		<div class="flex shrink-0 items-center justify-between border-b px-4 py-3">
 			<DropdownMenu.Label class="p-0 text-base font-semibold">
-				{m['notificationDropdown.notifications']?.() || 'Notifications'}
+				{m['notificationDropdown.notifications']()}
 			</DropdownMenu.Label>
 			<Button
 				variant="ghost"
@@ -91,12 +89,10 @@
 				onclick={handleMarkAllRead}
 				disabled={markAllReadMutation.isPending}
 				class="h-8 gap-1.5 px-2 text-xs text-muted-foreground hover:text-foreground"
-				aria-label={m['notificationList.markAllAsRead']?.() || 'Mark all as read'}
+				aria-label={m['notificationList.markAllAsRead']()}
 			>
 				<CheckCheck class="h-3.5 w-3.5" aria-hidden="true" />
-				<span class="hidden sm:inline"
-					>{m['notificationList.markAllAsRead']?.() || 'Mark all as read'}</span
-				>
+				<span class="hidden sm:inline">{m['notificationList.markAllAsRead']()}</span>
 			</Button>
 		</div>
 
@@ -118,7 +114,7 @@
 				onclick={handleViewAll}
 				class="cursor-pointer justify-center rounded-none font-medium text-primary hover:text-primary"
 			>
-				{m['notificationDropdown.viewAll']?.() || 'View all notifications'}
+				{m['notificationDropdown.viewAll']()}
 			</DropdownMenu.Item>
 		</div>
 	</DropdownMenu.Content>

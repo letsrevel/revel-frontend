@@ -206,20 +206,20 @@
 		<div class="mb-4 flex items-center gap-2">
 			<Ticket class="h-5 w-5 text-primary" aria-hidden="true" />
 			<h3 class="font-semibold">
-				{m['ticketingStep.eventTicketSettings']?.() ?? 'Event Ticket Settings'}
+				{m['ticketingStep.eventTicketSettings']()}
 			</h3>
 		</div>
 
 		<div class="space-y-4">
 			<div class="space-y-2">
 				<Label for="max-tickets-per-user">
-					{m['ticketingStep.maxTicketsPerUser']?.() ?? 'Max Tickets Per User'}
+					{m['ticketingStep.maxTicketsPerUser']()}
 				</Label>
 				<Input
 					id="max-tickets-per-user"
 					type="number"
 					min="1"
-					placeholder={m['ticketingStep.maxTicketsPlaceholder']?.() ?? '1'}
+					placeholder={m['ticketingStep.maxTicketsPlaceholder']()}
 					value={maxTicketsInput}
 					oninput={(e) => handleMaxTicketsChange(e.currentTarget.value)}
 					class="max-w-xs"
@@ -227,8 +227,7 @@
 				<div class="mt-2 flex items-start gap-2 text-sm text-muted-foreground">
 					<Info class="mt-0.5 h-4 w-4 shrink-0" />
 					<p>
-						{m['ticketingStep.maxTicketsPerUserHint']?.() ??
-							'Set the maximum number of tickets a single user can purchase for this event. Minimum 1. This can be overridden on individual ticket tiers.'}
+						{m['ticketingStep.maxTicketsPerUserHint']()}
 					</p>
 				</div>
 			</div>

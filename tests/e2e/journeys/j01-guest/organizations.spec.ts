@@ -9,22 +9,27 @@ test.describe('J1 guest browses organizations @p0', () => {
 		await gotoHydrated(page, '/organizations');
 
 		const cards = page.getByRole('list', { name: 'Organization listings' }).getByRole('article');
-		// Seed: Revel Events Collective, Tech Innovators Network, Eligibility Test Org.
-		await expect(cards.filter({ hasText: 'Revel Events Collective' })).toBeVisible();
-		await expect(cards.filter({ hasText: 'Tech Innovators Network' })).toBeVisible();
+		// The platform-wide list is large (`make seed` creates 100+ showcase
+		// orgs) and page 1 ordering is arbitrary, so specific orgs are asserted
+		// through search — never through page-1 presence.
 		expect(await cards.count()).toBeGreaterThanOrEqual(3);
 
-		// Search lives in the desktop sidebar only.
+		// The ?search= param works on every viewport (the searchbox itself lives
+		// in the desktop sidebar only).
+		await gotoHydrated(page, '/organizations?search=Revel Events Collective');
+		await expect(cards.filter({ hasText: 'Revel Events Collective' })).toBeVisible();
+
 		// NOTE: the searchbox on /organizations is (mis)labelled "Search events".
 		if (!isMobile) {
-			await page.getByRole('searchbox').fill('Tech Innovators');
-			await expect(cards).toHaveCount(1);
+			await page.getByRole('searchbox').fill('Tech Innovators Network');
+			// Seeded faker org names could legitimately contain the needle, so
+			// assert the match is present rather than an exact result count.
 			await expect(cards.getByRole('heading', { name: 'Tech Innovators Network' })).toBeVisible();
 		}
 	});
 
 	test('clicks through to a public org profile', async ({ page }) => {
-		await gotoHydrated(page, '/organizations');
+		await gotoHydrated(page, '/organizations?search=Revel Events Collective');
 
 		await page.getByRole('link', { name: /^Revel Events Collective,/ }).click();
 		await page.waitForURL(/\/org\/revel-events-collective/);

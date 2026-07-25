@@ -12,7 +12,8 @@
 	import TierCard from './TierCard.svelte';
 	import DemoCardInfo from '$lib/components/common/DemoCardInfo.svelte';
 	import EligibilityStatusDisplay from '$lib/components/events/EligibilityStatusDisplay.svelte';
-	import { Ticket } from '@lucide/svelte';
+	import { Button } from '$lib/components/ui/button';
+	import { Map as MapIcon, Ticket } from '@lucide/svelte';
 
 	interface Props {
 		tiers: TierSchemaWithId[];
@@ -32,6 +33,8 @@
 		timezone?: string | null;
 		onSelectTier: (tier: TierSchemaWithId) => void;
 		onGuestTierClick?: (tier: TierSchemaWithId) => void;
+		/** Map-first entry point (#679): opens the whole-venue seating overview. */
+		onViewSeatingMap?: () => void;
 	}
 
 	const {
@@ -49,7 +52,8 @@
 		tierRemainingTickets,
 		timezone,
 		onSelectTier,
-		onGuestTierClick
+		onGuestTierClick,
+		onViewSeatingMap
 	}: Props = $props();
 
 	/**
@@ -88,6 +92,15 @@
 			<Ticket class="h-5 w-5 text-primary" aria-hidden="true" />
 			<h2 id="ticket-tiers" class="text-xl font-bold">{m['ticketTierList.ticketOptions']()}</h2>
 		</div>
+
+		<!-- Map-first entry point (#679): start from the seating map instead of
+		     the tier list. Only rendered when the event has a mapped venue. -->
+		{#if onViewSeatingMap}
+			<Button variant="outline" class="mb-4 w-full sm:w-auto" onclick={onViewSeatingMap}>
+				<MapIcon class="mr-2 h-4 w-4" aria-hidden="true" />
+				{m['venueOverview.viewMap']()}
+			</Button>
+		{/if}
 
 		<!-- Eligibility Status Display (if user is not eligible) -->
 		{#if shouldShowEligibility && userStatus && isEligibility(userStatus) && eventId && eventSlug && organizationSlug}

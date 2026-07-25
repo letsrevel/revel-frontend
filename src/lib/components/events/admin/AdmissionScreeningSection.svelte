@@ -72,11 +72,10 @@
 				/>
 				<div class="flex-1">
 					<div class="font-medium">
-						{m['detailsStep.requireFullProfile']?.() ?? 'Require Complete Profile'}
+						{m['detailsStep.requireFullProfile']()}
 					</div>
 					<div class="text-sm text-muted-foreground">
-						{m['detailsStep.requireFullProfileHint']?.() ??
-							'Attendees must have a profile picture, name, and pronouns to RSVP or purchase tickets'}
+						{m['detailsStep.requireFullProfileHint']()}
 					</div>
 				</div>
 			</label>
@@ -119,7 +118,7 @@
 			<!-- Application Deadline (Apply Before) -->
 			<div class="space-y-2">
 				<label for="apply-before" class="block text-sm font-medium">
-					{m['detailsStep.applicationDeadline']?.() ?? 'Application Deadline'}
+					{m['detailsStep.applicationDeadline']()}
 				</label>
 				<input
 					id="apply-before"
@@ -129,10 +128,9 @@
 					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				/>
 				<p class="text-xs text-muted-foreground">
-					{m['detailsStep.applicationDeadlineHint']?.({
+					{m['detailsStep.applicationDeadlineHint']({
 						timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
-					}) ??
-						`Deadline for submitting invitation requests or questionnaires. Timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`}
+					})}
 				</p>
 				{#if applyBeforeReadback}
 					<p class="text-xs text-muted-foreground">

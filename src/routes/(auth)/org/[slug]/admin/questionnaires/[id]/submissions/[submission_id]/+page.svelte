@@ -349,7 +349,7 @@
 			{#if eventMetadata}
 				<Card class="p-6">
 					<h3 class="mb-4 text-lg font-semibold">
-						{m['questionnaireSubmissionDetailPage.eventContextTitle']?.() || 'Event Context'}
+						{m['questionnaireSubmissionDetailPage.eventContextTitle']()}
 					</h3>
 					<div class="space-y-4">
 						<!-- Event Name -->
@@ -361,7 +361,7 @@
 							</div>
 							<div class="flex-1">
 								<p class="text-sm font-medium text-muted-foreground">
-									{m['questionnaireSubmissionDetailPage.eventNameLabel']?.() || 'Event'}
+									{m['questionnaireSubmissionDetailPage.eventNameLabel']()}
 								</p>
 								<p class="text-base font-medium">{eventMetadata.event_name}</p>
 								{#if eventMetadata.event_start}
@@ -378,7 +378,7 @@
 							class="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
 						>
 							<ExternalLink class="h-4 w-4" aria-hidden="true" />
-							{m['questionnaireSubmissionDetailPage.viewEventLink']?.() || 'View event'}
+							{m['questionnaireSubmissionDetailPage.viewEventLink']()}
 						</a>
 					</div>
 				</Card>

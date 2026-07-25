@@ -5,8 +5,9 @@
 	import TicketStatusBadge from './TicketStatusBadge.svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import DownloadPdfButton from './DownloadPdfButton.svelte';
-	import { Ticket, Calendar, MapPin, User, Armchair } from '@lucide/svelte';
+	import { Ticket, Calendar, MapPin, User, Armchair, Banknote } from '@lucide/svelte';
 	import { formatDateTime } from '$lib/utils/date';
+	import { formatMoney } from '$lib/utils/format';
 	import QRCode from 'qrcode';
 	import { onMount } from 'svelte';
 
@@ -92,9 +93,11 @@
 		}
 
 		// Build seat details (from ticket.seat)
+		// Prefer row_label; fall back to the transitional `row` alias while it still exists
+		const seatRow = ticket.seat?.row_label ?? ticket.seat?.row;
 		const seatDetails: string[] = [];
-		if (ticket.seat?.row) {
-			seatDetails.push(m['myTicket.rowLabel']({ row: ticket.seat.row }));
+		if (seatRow) {
+			seatDetails.push(m['myTicket.rowLabel']({ row: seatRow }));
 		}
 		if (ticket.seat?.number !== null && ticket.seat?.number !== undefined) {
 			seatDetails.push(m['myTicket.seatLabel']({ number: ticket.seat.number }));
@@ -111,13 +114,24 @@
 		return parts.length > 0 ? parts.join(' • ') : null;
 	});
 
+	// Per-ticket amount (#668): with per-seat-category pricing two tickets on
+	// the same tier can cost different amounts, and offline/at-the-door tickets
+	// issue with no confirmation screen — this line is where the buyer learns
+	// what THIS seat costs. Hidden at 0 so free tickets stay uncluttered.
+	const pricePaidDisplay = $derived.by(() => {
+		if (ticket.price_paid == null) return null;
+		const parsed = Number.parseFloat(ticket.price_paid);
+		if (!Number.isFinite(parsed) || parsed <= 0) return null;
+		return formatMoney(ticket.price_paid, ticket.tier?.currency);
+	});
+
 	// Check if ticket has any seat info to display
 	const hasSeatInfo = $derived(
 		!!(
 			ticket.tier?.venue?.name ||
 			ticket.tier?.sector?.name ||
 			ticket.seat?.label ||
-			ticket.seat?.row ||
+			(ticket.seat?.row_label ?? ticket.seat?.row) ||
 			(ticket.seat?.number !== null && ticket.seat?.number !== undefined)
 		)
 	);
@@ -142,7 +156,7 @@
 		</div>
 
 		<!-- Ticket Holder & Seat Info -->
-		{#if ticket.guest_name || hasSeatInfo}
+		{#if ticket.guest_name || hasSeatInfo || pricePaidDisplay}
 			<ul class="space-y-2 rounded-lg border border-border bg-muted/30 p-4 text-sm">
 				{#if ticket.guest_name}
 					<li class="flex items-center gap-2">
@@ -156,6 +170,16 @@
 						<span class="sr-only">{m['myTicket.seat']()}</span>
 						<Armchair class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
 						<span>{seatInfo}</span>
+					</li>
+				{/if}
+				{#if pricePaidDisplay}
+					<li class="flex items-center gap-2">
+						<Banknote class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+						<span>
+							{ticket.status === 'pending'
+								? m['myTicket.amountDue']({ amount: pricePaidDisplay })
+								: m['myTicket.pricePaid']({ amount: pricePaidDisplay })}
+						</span>
 					</li>
 				{/if}
 			</ul>

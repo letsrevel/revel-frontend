@@ -57,8 +57,16 @@ describe('RsvpNoteDialog', () => {
 	it('shows a live character counter', async () => {
 		const user = userEvent.setup();
 		renderDialog();
-		await user.type(screen.getByLabelText(/note for the organizers/i), 'abc');
-		expect(screen.getByText('3/500')).toBeInTheDocument();
+		const textarea = screen.getByLabelText(/note for the organizers/i);
+		// bits-ui's focus trap re-steals focus via rAF after the dialog opens,
+		// eating the first keystrokes; click and let the trap settle first.
+		await user.click(textarea);
+		await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+		await user.type(textarea, 'abc');
+		const counter = textarea
+			.closest('[role="dialog"]')
+			?.querySelector('#rsvp-note-counter') as HTMLElement;
+		expect(counter?.textContent).toContain('3/500');
 	});
 
 	it('disables both actions while submitting', () => {

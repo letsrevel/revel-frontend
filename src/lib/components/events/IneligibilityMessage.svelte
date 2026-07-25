@@ -81,24 +81,22 @@
 		const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
 
 		if (diff < 0) {
-			return m['ineligibilityMessage.deadlinePassed']?.() ?? 'Deadline has passed';
+			return m['ineligibilityMessage.deadlinePassed']();
 		}
 
 		if (days === 0 && hours < 24) {
 			if (hours <= 1) {
-				return m['ineligibilityMessage.deadlineLessThanOneHour']?.() ?? 'Less than 1 hour left';
+				return m['ineligibilityMessage.deadlineLessThanOneHour']();
 			}
-			return (
-				m['ineligibilityMessage.deadlineHoursLeft']?.({ hours }) ?? `${hours} hours left to apply`
-			);
+			return m['ineligibilityMessage.deadlineHoursLeft']({ hours });
 		}
 
 		if (days === 1) {
-			return m['ineligibilityMessage.deadlineTomorrow']?.() ?? 'Tomorrow';
+			return m['ineligibilityMessage.deadlineTomorrow']();
 		}
 
 		if (days < 7) {
-			return m['ineligibilityMessage.deadlineDaysLeft']?.({ days }) ?? `${days} days left to apply`;
+			return m['ineligibilityMessage.deadlineDaysLeft']({ days });
 		}
 
 		return formatDateLongMonth(deadline);
@@ -208,16 +206,14 @@
 			if (reason.includes('Questionnaire evaluation was insufficient'))
 				return m['ineligibilityMessage.questionnaireNotPassed']();
 			if (reason.includes('full profile') || reason.includes('Requires full profile'))
-				return m['ineligibilityMessage.completeProfile']?.() ?? 'Complete your profile';
+				return m['ineligibilityMessage.completeProfile']();
 			if (reason.includes('Event is full') || reason === 'Event is full.')
 				return m['ineligibilityMessage.eventFull']();
 			if (reason.includes('Sold out')) return m['ineligibilityMessage.soldOut']();
 			if (reason.includes('not open')) return m['ineligibilityMessage.registrationNotOpen']();
 			if (reason.includes('finished')) return m['ineligibilityMessage.eventEnded']();
 			if (reason.includes('application deadline has passed'))
-				return (
-					m['ineligibilityMessage.applicationDeadlinePassed']?.() ?? 'Application deadline passed'
-				);
+				return m['ineligibilityMessage.applicationDeadlinePassed']();
 			if (reason.includes('RSVP deadline has passed') || reason.includes('deadline has passed'))
 				return m['ineligibilityMessage.rsvpDeadlinePassed']();
 			if (reason.includes('Tickets are not currently on sale'))
@@ -234,7 +230,7 @@
 		if (eligibility.next_step === 'complete_questionnaire')
 			return m['ineligibilityMessage.questionnaireRequired']();
 		if (eligibility.next_step === 'complete_profile')
-			return m['ineligibilityMessage.completeProfile']?.() ?? 'Complete your profile';
+			return m['ineligibilityMessage.completeProfile']();
 		if (eligibility.next_step === 'join_waitlist') return m['ineligibilityMessage.eventFull']();
 		if (eligibility.next_step === 'wait_for_open_spot')
 			return m['ineligibilityMessage.onWaitlist']();
@@ -323,10 +319,7 @@
 			}
 
 			if (eligibility.reason?.includes('application deadline has passed')) {
-				return (
-					m['ineligibilityMessage.applicationDeadlinePassedExplanation']?.() ??
-					'The deadline to apply for this event has passed. Applications are no longer accepted.'
-				);
+				return m['ineligibilityMessage.applicationDeadlinePassedExplanation']();
 			}
 
 			if (eligibility.reason?.includes('deadline has passed')) {
@@ -435,8 +428,7 @@
 			{#if eligibility.missing_profile_fields && eligibility.missing_profile_fields.length > 0}
 				<div class="space-y-1.5">
 					<p class="text-sm font-medium">
-						{m['ineligibilityMessage.missingProfileFields']?.() ??
-							'Please add the following to your profile:'}
+						{m['ineligibilityMessage.missingProfileFields']()}
 					</p>
 					<ul class="space-y-1 text-sm opacity-80">
 						{#each eligibility.missing_profile_fields as field (field)}
@@ -460,10 +452,7 @@
 				>
 					<Calendar class="h-4 w-4 shrink-0" aria-hidden="true" />
 					<span>
-						<strong
-							>{m['ineligibilityMessage.applicationDeadline']?.() ??
-								'Application deadline'}:</strong
-						>
+						<strong>{m['ineligibilityMessage.applicationDeadline']()}:</strong>
 						{formatDeadline(applyBefore)}
 					</span>
 				</div>

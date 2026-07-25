@@ -174,8 +174,7 @@
 		>
 			<p class="text-sm text-blue-800 dark:text-blue-200">
 				<Info class="mr-2 inline-block h-4 w-4" aria-hidden="true" />
-				{m['profile.completeToReturn']?.() ||
-					"Complete your profile to continue. You'll be redirected back after saving."}
+				{m['profile.completeToReturn']()}
 			</p>
 		</div>
 	{/if}
@@ -189,7 +188,7 @@
 				<Check class="h-5 w-5 text-green-600 dark:text-green-400" aria-hidden="true" />
 				<p class="text-sm font-medium text-green-800 dark:text-green-200">
 					{#if redirectUrl}
-						{m['profile.savedRedirecting']?.() || 'Profile updated! Redirecting...'}
+						{m['profile.savedRedirecting']()}
 					{:else}
 						{m['profilePage.updatedSuccess']()}
 					{/if}

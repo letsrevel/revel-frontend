@@ -131,3 +131,24 @@ export function normalizeDecimalInput(value: string): string {
 	}
 	return normalized;
 }
+
+/**
+ * Does a tier-save error say the ORGANIZATION's billing info is missing (the
+ * error that earns the "complete billing settings" shortcut link)?
+ *
+ * The backend localizes organizer-facing validation messages per
+ * Accept-Language (BE #724), so matching the English text alone goes dead for
+ * it/de/fr organizers — match a stable fragment of each catalog translation.
+ * Structured error codes (FE #653) are the eventual replacement for this.
+ */
+const BILLING_REQUIRED_FRAGMENTS = [
+	'billing information is required', // en
+	'informazioni di fatturazione sono necessarie', // it
+	'rechnungsinformationen sind', // de
+	'informations de facturation sont requises' // fr
+];
+
+export function isBillingInfoRequiredError(message: string): boolean {
+	const lower = message.toLowerCase();
+	return BILLING_REQUIRED_FRAGMENTS.some((fragment) => lower.includes(fragment));
+}
