@@ -62,6 +62,7 @@
 	let ticketToConfirm = $state<AdminTicketSchema | null>(null);
 	let showCheckInDialog = $state(false);
 	let ticketToCheckIn = $state<CheckInDialogTicket | null>(null);
+	let checkInDialogError = $state<string | null>(null);
 	let showQRScanner = $state(false);
 	let showReseatDialog = $state(false);
 	let ticketToReseat = $state<AdminTicketSchema | null>(null);
@@ -203,10 +204,15 @@
 		onSuccess: () => {
 			showCheckInDialog = false;
 			ticketToCheckIn = null;
+			checkInDialogError = null;
 			invalidateAll();
 		},
 		onError: (err) => {
-			toast.error(err instanceof Error ? err.message : m['eventTicketsAdmin.checkInError']());
+			const message = err instanceof Error ? err.message : m['eventTicketsAdmin.checkInError']();
+			// The dialog stays open on failure, so it shows the reason inline;
+			// the toast still covers scan-initiated check-ins with no dialog.
+			checkInDialogError = message;
+			toast.error(message);
 		}
 	}));
 
@@ -368,6 +374,7 @@
 	 */
 	function handleCheckIn(ticket: AdminTicketSchema) {
 		ticketToCheckIn = toCheckInTicket(ticket);
+		checkInDialogError = null;
 		showCheckInDialog = true;
 	}
 
@@ -417,6 +424,7 @@
 
 			// Show confirmation dialog with ticket info
 			ticketToCheckIn = toCheckInTicket(response.data);
+			checkInDialogError = null;
 			showCheckInDialog = true;
 			showQRScanner = false;
 		} catch (err) {
@@ -663,8 +671,10 @@
 	onCancel={() => {
 		showCheckInDialog = false;
 		ticketToCheckIn = null;
+		checkInDialogError = null;
 	}}
 	isLoading={checkInTicketMutation.isPending}
+	errorMessage={checkInDialogError}
 />
 
 <!-- QR Scanner Modal -->

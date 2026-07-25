@@ -5,7 +5,7 @@
 	import { X, AlertCircle, CheckCircle, Clock, XCircle } from '@lucide/svelte';
 	import { fade, scale } from 'svelte/transition';
 	import { getUserDisplayName } from '$lib/utils/user-display';
-	import { formatPrice } from '$lib/utils/format';
+	import { formatMoney, formatPrice } from '$lib/utils/format';
 	import { getGuestNameIfDifferent, getSeatDisplay } from '$lib/utils/ticket-helpers';
 
 	interface TicketUser {
@@ -64,6 +64,12 @@
 		onConfirm: (pricePaid?: string) => void;
 		onCancel: () => void;
 		isLoading?: boolean;
+		/**
+		 * Check-in failure message shown inline in the dialog. A toast alone is
+		 * too transient at the door — the dialog stays open on failure, so the
+		 * reason must stay visible with it.
+		 */
+		errorMessage?: string | null;
 	}
 
 	const {
@@ -72,7 +78,8 @@
 		needsPaymentConfirmation,
 		onConfirm,
 		onCancel,
-		isLoading = false
+		isLoading = false,
+		errorMessage = null
 	}: Props = $props();
 
 	// PWYC state
@@ -105,8 +112,7 @@
 		const min = ticket.tier.pwyc_min ? parseFloat(ticket.tier.pwyc_min) : null;
 		const max = ticket.tier.pwyc_max ? parseFloat(ticket.tier.pwyc_max) : null;
 		const currency = ticket.tier.currency?.toUpperCase() || 'EUR';
-		const fmt = (v: number) =>
-			new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(v);
+		const fmt = (v: number) => formatMoney(v, currency);
 
 		if (min !== null && max !== null && (num < min || num > max)) {
 			return m['checkInDialog.pwycOutsideRange']({ min: fmt(min), max: fmt(max) });
@@ -125,8 +131,7 @@
 		const min = ticket.tier.pwyc_min ? parseFloat(ticket.tier.pwyc_min) : null;
 		const max = ticket.tier.pwyc_max ? parseFloat(ticket.tier.pwyc_max) : null;
 		const currency = ticket.tier.currency?.toUpperCase() || 'EUR';
-		const fmt = (v: number) =>
-			new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(v);
+		const fmt = (v: number) => formatMoney(v, currency);
 
 		if (min !== null && max !== null)
 			return m['checkInDialog.suggestedRange']({ min: fmt(min), max: fmt(max) });
@@ -390,6 +395,16 @@
 							<strong>{m['checkInDialog.paymentRequired']()}</strong>
 							{m['checkInDialog.ensurePaymentReceived']()}
 						</p>
+					</div>
+				{/if}
+
+				{#if errorMessage}
+					<div
+						class="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-100"
+						role="alert"
+					>
+						<XCircle class="h-5 w-5 shrink-0" aria-hidden="true" />
+						<p>{errorMessage}</p>
 					</div>
 				{/if}
 
