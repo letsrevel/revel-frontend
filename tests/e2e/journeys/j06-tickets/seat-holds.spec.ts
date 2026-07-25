@@ -6,7 +6,7 @@ import {
 	deleteDefaultTier,
 	getSeatingAvailability,
 	getSeatingChart,
-	getSeededConcertHall,
+	createPlainConcertHall,
 	holdSeatsViaApi,
 	releaseHoldsViaApi,
 	type ThrowawayUser
@@ -70,7 +70,7 @@ test.describe('J19 seat holds @p2', () => {
 	}) => {
 		test.setTimeout(180_000);
 
-		const hall = await getSeededConcertHall();
+		const hall = await createPlainConcertHall();
 		const [event, buyer, rival] = await Promise.all([
 			// The chart endpoint reads event.venue_id — attach the hall to the EVENT
 			// (the tier's venue_id alone 404s "This event has no venue").
@@ -160,7 +160,7 @@ test.describe('J19 seat holds @p2', () => {
 	}) => {
 		test.setTimeout(180_000);
 
-		const hall = await getSeededConcertHall();
+		const hall = await createPlainConcertHall();
 		const [event, account] = await Promise.all([
 			createTicketedEvent({
 				freeTier: false,

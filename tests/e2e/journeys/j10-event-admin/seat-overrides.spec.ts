@@ -6,7 +6,7 @@ import {
 	createTicketTier,
 	createVerifiedUser,
 	deleteDefaultTier,
-	getSeededConcertHall,
+	createPlainConcertHall,
 	listAvailableSeats,
 	type CreatedEvent
 } from '../../support/factories';
@@ -94,7 +94,7 @@ test.describe('J10 box-office seat overrides @p2', () => {
 	}) => {
 		test.setTimeout(180_000);
 
-		const hall = await getSeededConcertHall();
+		const hall = await createPlainConcertHall();
 		const [event, buyer] = await Promise.all([
 			// The chart/availability endpoints resolve the venue from event.venue_id.
 			createTicketedEvent({ freeTier: false, event: { venue_id: hall.venueId } }),
@@ -166,7 +166,7 @@ test.describe('J10 box-office seat overrides @p2', () => {
 	test('kill rejects ticketed seats inline while free seats still apply', async ({ asOwner }) => {
 		test.setTimeout(180_000);
 
-		const hall = await getSeededConcertHall();
+		const hall = await createPlainConcertHall();
 		const [event, ticketHolder] = await Promise.all([
 			createTicketedEvent({ freeTier: false, event: { venue_id: hall.venueId } }),
 			createVerifiedUser('SeatTicketHolder')

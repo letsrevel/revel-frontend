@@ -888,30 +888,39 @@ export async function issueDraftInvoiceFor(
 }
 
 /**
- * Look up the bootstrap-seeded "Revel Concert Hall" (10×10 seat grid, rows
- * A–J) on Org Alpha — specs attach it to their OWN arranged tiers via
- * venue_id/sector_id so seat availability never collides with the seeded
- * classical-music-evening event (availability is per event, not per venue).
+ * API-create an ISOLATED plain concert hall: one "Main Floor" sector holding
+ * a clean 10×10 unpainted seat grid (rows A–J, seats 1–10, all active) —
+ * specs attach it to their OWN arranged tiers via venue_id/sector_id.
+ *
+ * Historically this looked up the bootstrap-seeded "Revel Concert Hall", but
+ * BE a42ecd08 reshaped that venue into the zone-painted Orchestra/Balcony
+ * showcase (painted seats force category pricing on any tier sold there),
+ * so the flat-price seat specs bring their own venue instead — same
+ * isolation rationale as createCategoryPricedVenue.
  */
-export async function getSeededConcertHall(): Promise<{ venueId: string; sectorId: string }> {
+export async function createPlainConcertHall(): Promise<{ venueId: string; sectorId: string }> {
 	const persona = PERSONAS.owner;
 	const api = await ApiClient.login(persona.email, persona.password);
-	const venues = await api.get<{ results: Array<{ id: string; name: string }> }>(
-		`/api/organization-admin/revel-events-collective/venues?page_size=50`
+	const venue = await api.post<{ id: string }>(
+		`/api/organization-admin/revel-events-collective/venues`,
+		{ name: uniqueName('Plain Hall') }
 	);
-	const hall = venues.results.find((v) => v.name === 'Revel Concert Hall');
-	if (!hall) {
-		throw new Error('Seeded "Revel Concert Hall" venue not found — re-run make bootstrap-tests');
-	}
-	// Plain array (not paginated), unlike the venues list.
-	const sectors = await api.get<Array<{ id: string; name: string }>>(
-		`/api/organization-admin/revel-events-collective/venues/${hall.id}/sectors`
+	const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+	const seats = rows.flatMap((row, rowIndex) =>
+		Array.from({ length: 10 }, (_, i) => ({
+			label: `${row}${i + 1}`,
+			row,
+			number: i + 1,
+			row_order: rowIndex,
+			adjacency_index: i + 1,
+			price_category_id: null
+		}))
 	);
-	const floor = sectors.find((s) => s.name === 'Main Floor');
-	if (!floor) {
-		throw new Error('Seeded "Main Floor" sector not found on Revel Concert Hall');
-	}
-	return { venueId: hall.id, sectorId: floor.id };
+	const sector = await api.post<{ id: string }>(
+		`/api/organization-admin/revel-events-collective/venues/${venue.id}/sectors`,
+		{ name: 'Main Floor', seats }
+	);
+	return { venueId: venue.id, sectorId: sector.id };
 }
 
 /**

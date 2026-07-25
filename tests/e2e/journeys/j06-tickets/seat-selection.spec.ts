@@ -8,7 +8,7 @@ import {
 	createVerifiedUser,
 	deleteDefaultTier,
 	getSeatingChart,
-	getSeededConcertHall,
+	createPlainConcertHall,
 	listAvailableSeats,
 	uniqueName
 } from '../../support/factories';
@@ -37,7 +37,7 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 
 test.describe('J6 seat selection @p2', () => {
 	test('seat map at checkout → taken seat blocked → chosen seat on ticket', async ({ browser }) => {
-		const hall = await getSeededConcertHall();
+		const hall = await createPlainConcertHall();
 		const [event, buyer, otherBuyer] = await Promise.all([
 			// The event itself needs the venue: the phase-2 chart/availability
 			// endpoints resolve it from event.venue_id, not from the tier.
@@ -211,7 +211,7 @@ test.describe('J6 seat selection @p2', () => {
 	test('taps grow the counter; reload restores the whole selection as mine', async ({
 		browser
 	}) => {
-		const hall = await getSeededConcertHall();
+		const hall = await createPlainConcertHall();
 		const [event, buyer] = await Promise.all([
 			createTicketedEvent({ freeTier: false, event: { venue_id: hall.venueId } }),
 			createVerifiedUser('TapGrow')

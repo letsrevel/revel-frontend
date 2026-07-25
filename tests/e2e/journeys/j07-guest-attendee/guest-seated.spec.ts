@@ -9,7 +9,7 @@ import {
 	deleteDefaultTier,
 	getSeatingAvailability,
 	getSeatingChart,
-	getSeededConcertHall,
+	createPlainConcertHall,
 	uniqueEmail,
 	uniqueName
 } from '../../support/factories';
@@ -42,7 +42,7 @@ test.describe('J7 guest seated checkout @p2', () => {
 		// Email round-trip + several hold round-trips don't fit the default budget.
 		test.setTimeout(180_000);
 
-		const hall = await getSeededConcertHall();
+		const hall = await createPlainConcertHall();
 		const event = await createTicketedEvent({
 			freeTier: false,
 			// The chart endpoint reads event.venue_id — attach the hall to the EVENT

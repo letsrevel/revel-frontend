@@ -4,7 +4,7 @@ import {
 	createTicketTier,
 	createVerifiedUser,
 	deleteDefaultTier,
-	getSeededConcertHall,
+	createPlainConcertHall,
 	releaseHoldsViaApi,
 	type ThrowawayUser
 } from '../../support/factories';
@@ -45,7 +45,7 @@ test.describe('J6 seat map view @p2', () => {
 	}) => {
 		test.setTimeout(180_000);
 
-		const hall = await getSeededConcertHall();
+		const hall = await createPlainConcertHall();
 		const [event, buyer] = await Promise.all([
 			// The chart/availability endpoints resolve the venue from event.venue_id.
 			createTicketedEvent({ freeTier: false, event: { venue_id: hall.venueId } }),
@@ -126,7 +126,7 @@ test.describe('J6 seat map view @p2', () => {
 	}) => {
 		test.setTimeout(180_000);
 
-		const hall = await getSeededConcertHall();
+		const hall = await createPlainConcertHall();
 		const [event, buyer] = await Promise.all([
 			createTicketedEvent({ freeTier: false, event: { venue_id: hall.venueId } }),
 			createVerifiedUser('ZoomBuyer')

@@ -5,7 +5,7 @@ import {
 	createTicketTier,
 	createVerifiedUser,
 	deleteDefaultTier,
-	getSeededConcertHall,
+	createPlainConcertHall,
 	listAvailableSeats
 } from '../../support/factories';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
@@ -29,7 +29,7 @@ test.describe('J10 box-office reseat @p2', () => {
 	test('move a seated ticket to a free same-category seat', async ({ asOwner }) => {
 		test.setTimeout(180_000);
 
-		const hall = await getSeededConcertHall();
+		const hall = await createPlainConcertHall();
 		const [event, holder] = await Promise.all([
 			// The chart/availability endpoints resolve the venue from event.venue_id.
 			createTicketedEvent({ freeTier: false, event: { venue_id: hall.venueId } }),
