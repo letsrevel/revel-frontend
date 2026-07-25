@@ -39,6 +39,11 @@
 		is_obstructed_view?: boolean;
 	}
 
+	interface TicketPayment {
+		amount?: string | null;
+		currency?: string | null;
+	}
+
 	interface Ticket {
 		id: string;
 		status: string;
@@ -49,6 +54,7 @@
 		/** Sector name from the scan payload (CheckInResponseSchema.sector_name). */
 		sector_name?: string;
 		price_paid?: string | null;
+		payment?: TicketPayment | null;
 	}
 
 	interface Props {
@@ -129,11 +135,19 @@
 	});
 
 	/**
-	 * Displayed tier price, including the pwyc min–max range when applicable.
+	 * Displayed price. Priority: payment.amount > price_paid > tier price —
+	 * online tickets never carry price_paid (the Payment row is authoritative,
+	 * and can be net of VAT for reverse-charge buyers), while category-priced
+	 * seats, discounts, comps and confirmed PWYC stamp price_paid. Only a plain
+	 * flat-tier sale falls through to tier.price / the pwyc min–max range.
 	 * Built as a single string so the dash/space formatting doesn't depend on
 	 * template whitespace collapsing.
 	 */
-	const tierPriceDisplay = $derived.by(() => {
+	const priceDisplay = $derived.by(() => {
+		const recorded = ticket?.payment?.amount ?? ticket?.price_paid;
+		if (recorded !== undefined && recorded !== null) {
+			return formatPrice(recorded, ticket?.payment?.currency || ticket?.tier?.currency);
+		}
 		if (ticket?.tier?.price_type === 'pwyc' && ticket.tier?.pwyc_min) {
 			const min = formatPrice(ticket.tier.pwyc_min, ticket.tier.currency);
 			if (ticket.tier.pwyc_max) {
@@ -354,7 +368,7 @@
 						<div class="flex items-center justify-between px-4 py-3">
 							<span class="text-sm text-muted-foreground">{m['checkInDialog.price']()}</span>
 							<span class="font-medium">
-								{tierPriceDisplay}
+								{priceDisplay}
 							</span>
 						</div>
 						<div class="flex items-center justify-between px-4 py-3">
