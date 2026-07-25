@@ -67,3 +67,13 @@ overrides:
   'ws@>=8.0.0 <8.20.1': '>=8.20.1'
   'uuid@<11.1.1': '>=11.1.1'
   'joi@<17.13.4': '>=17.13.4'
+  # GHSA-r28c-9q8g-f849: PostCSS path traversal via sourceMappingURL auto-loading.
+  # tailwindcss@3.4.x pins a vulnerable postcss@<=8.5.17 in its dep chain; direct
+  # postcss was bumped in package.json, this bumps the transitive tree entry.
+  'postcss@<8.5.18': '>=8.5.18'
+  # Dedupe @tiptap/pm to a single version. @tiptap/starter-kit@3.27.4 floats its
+  # sub-extensions to 3.28.0, which pull @tiptap/pm@3.28.0, while our directly
+  # declared @tiptap/core stays on 3.27.4 with pm@3.27.4 — two @tiptap/core
+  # instances whose ChainedCommands augmentation no longer merges (toggleBold /
+  # setLink etc. vanish from the types). Pinning pm collapses them to one instance.
+  '@tiptap/pm': '3.28.0'
