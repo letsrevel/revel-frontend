@@ -54,11 +54,14 @@
 	}));
 
 	// Group plans by tier (preserves backend order: tier asc, plan asc).
+	// Online plans are excluded: the backend refuses staff-created subscriptions on them,
+	// because only the member themselves can approve the payment.
 	const plansByTier = $derived.by(() => {
 		const all = plansQuery.data ?? [];
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local grouping map built and consumed synchronously within this $derived.by computation, never stored
 		const groups = new Map<string, { tierName: string; plans: PlanSchema[] }>();
 		for (const p of all) {
+			if (p.payment_method === 'online') continue;
 			let g = groups.get(p.tier_id);
 			if (!g) {
 				g = { tierName: p.tier_name, plans: [] };
@@ -154,6 +157,11 @@
 					{/each}
 				</select>
 				{#if errors.plan}<p class="text-sm text-red-600">{errors.plan}</p>{/if}
+				{#if (plansQuery.data ?? []).some((p) => p.payment_method === 'online')}
+					<p class="text-xs text-muted-foreground">
+						{m['orgAdmin.members.subscriptions.create.onlineExcluded']()}
+					</p>
+				{/if}
 			</div>
 
 			<div class="flex items-center gap-2">

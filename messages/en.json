@@ -3386,6 +3386,7 @@
 					"currency": "Currency",
 					"notes": "Notes",
 					"submit": "Create",
+					"onlineExcluded": "Online (Stripe) plans aren't listed — members subscribe to those themselves so they can approve the payment.",
 					"errors": {
 						"userRequired": "Pick a member",
 						"planRequired": "Pick a plan"

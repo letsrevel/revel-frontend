@@ -3357,6 +3357,7 @@
 					"currency": "Devise",
 					"notes": "Notes",
 					"submit": "Créer",
+					"onlineExcluded": "Les forfaits en ligne (Stripe) ne sont pas listés — les membres s'y abonnent eux-mêmes afin de pouvoir autoriser le paiement.",
 					"errors": {
 						"userRequired": "Choisis un membre",
 						"planRequired": "Choisis un forfait"

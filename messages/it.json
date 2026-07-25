@@ -3386,6 +3386,7 @@
 					"currency": "Currency",
 					"notes": "Notes",
 					"submit": "Create",
+					"onlineExcluded": "I piani online (Stripe) non sono elencati — sono i membri stessi a sottoscriverli, così possono autorizzare il pagamento.",
 					"errors": {
 						"userRequired": "Pick a member",
 						"planRequired": "Pick a plan"

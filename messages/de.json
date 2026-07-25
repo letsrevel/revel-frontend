@@ -3386,6 +3386,7 @@
 					"currency": "Currency",
 					"notes": "Notes",
 					"submit": "Create",
+					"onlineExcluded": "Online-Pläne (Stripe) werden hier nicht aufgeführt — Mitglieder*innen abonnieren diese selbst, damit sie die Zahlung freigeben können.",
 					"errors": {
 						"userRequired": "Pick a member",
 						"planRequired": "Pick a plan"
