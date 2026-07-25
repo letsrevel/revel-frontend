@@ -60,6 +60,11 @@
 					description: m['permissionsEditor.perms.manageMembers.description']()
 				},
 				{
+					key: 'manage_subscriptions',
+					label: m['permissionsEditor.perms.manageSubscriptions.label'](),
+					description: m['permissionsEditor.perms.manageSubscriptions.description']()
+				},
+				{
 					key: 'view_organization_details',
 					label: m['permissionsEditor.perms.viewOrganizationDetails.label'](),
 					description: m['permissionsEditor.perms.viewOrganizationDetails.description']()

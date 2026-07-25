@@ -7176,6 +7176,8 @@
 	"permissionsEditor.perms.editOrganization.description": "Mettre à jour les détails et les paramètres de l'organisation",
 	"permissionsEditor.perms.manageMembers.label": "Gérer les membres",
 	"permissionsEditor.perms.manageMembers.description": "Ajouter, retirer et gérer les membres de l'organisation",
+	"permissionsEditor.perms.manageSubscriptions.label": "Gérer les abonnements",
+	"permissionsEditor.perms.manageSubscriptions.description": "Créer et gérer les formules d'adhésion, les abonnements et les paiements",
 	"permissionsEditor.perms.viewOrganizationDetails.label": "Voir les détails de l'organisation",
 	"permissionsEditor.perms.viewOrganizationDetails.description": "Accéder aux informations détaillées de l'organisation",
 	"permissionsEditor.perms.createEvent.label": "Créer des événements",

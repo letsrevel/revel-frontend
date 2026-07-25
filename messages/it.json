@@ -7205,6 +7205,8 @@
 	"permissionsEditor.perms.editOrganization.description": "Aggiorna i dettagli e le impostazioni dell'organizzazione",
 	"permissionsEditor.perms.manageMembers.label": "Gestisci membri",
 	"permissionsEditor.perms.manageMembers.description": "Aggiungi, rimuovi e gestisci i membri dell'organizzazione",
+	"permissionsEditor.perms.manageSubscriptions.label": "Gestione abbonamenti",
+	"permissionsEditor.perms.manageSubscriptions.description": "Creare e gestire piani di abbonamento, abbonamenti e pagamenti",
 	"permissionsEditor.perms.viewOrganizationDetails.label": "Visualizza dettagli organizzazione",
 	"permissionsEditor.perms.viewOrganizationDetails.description": "Accedi alle informazioni dettagliate dell'organizzazione",
 	"permissionsEditor.perms.createEvent.label": "Crea eventi",

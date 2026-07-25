@@ -199,11 +199,13 @@
 					{/if}
 				</TabsTrigger>
 
-				<TabsTrigger value="subscriptions" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
-					<CreditCard class="h-4 w-4 shrink-0" />
-					<span class="hidden sm:inline">{m['orgAdmin.members.tabs.subscriptions']()}</span>
-					<span class="sm:hidden">{m['orgAdmin.members.tabs.subscriptionsShort']()}</span>
-				</TabsTrigger>
+				{#if data.canManageSubscriptions}
+					<TabsTrigger value="subscriptions" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
+						<CreditCard class="h-4 w-4 shrink-0" />
+						<span class="hidden sm:inline">{m['orgAdmin.members.tabs.subscriptions']()}</span>
+						<span class="sm:hidden">{m['orgAdmin.members.tabs.subscriptionsShort']()}</span>
+					</TabsTrigger>
+				{/if}
 
 				<TabsTrigger value="tokens" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
 					<Link class="h-4 w-4 shrink-0" />
@@ -242,13 +244,16 @@
 				{members}
 				isLoading={tiersQuery.isLoading}
 				isError={tiersQuery.isError}
+				canManageSubscriptions={data.canManageSubscriptions}
 			/>
 		</TabsContent>
 
 		<!-- Subscriptions Tab -->
-		<TabsContent value="subscriptions" class="space-y-4">
-			<SubscriptionsTab {organization} />
-		</TabsContent>
+		{#if data.canManageSubscriptions}
+			<TabsContent value="subscriptions" class="space-y-4">
+				<SubscriptionsTab {organization} />
+			</TabsContent>
+		{/if}
 
 		<!-- Tokens Tab -->
 		<TabsContent value="tokens" class="space-y-4">

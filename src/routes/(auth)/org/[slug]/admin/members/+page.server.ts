@@ -14,10 +14,14 @@ export const load: PageServerLoad = async ({ parent }) => {
 		throw error(403, 'You do not have permission to manage members');
 	}
 
+	const canManageSubscriptions =
+		isOwner || canPerformAction(permissions, organization.id, 'manage_subscriptions');
+
 	return {
 		organization,
 		isOwner,
 		isStaff,
-		permissions
+		permissions,
+		canManageSubscriptions
 	};
 };

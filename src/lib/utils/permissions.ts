@@ -142,7 +142,8 @@ export function getAllowedActions(
 			'edit_questionnaire',
 			'delete_questionnaire',
 			'evaluate_questionnaire',
-			'send_announcements'
+			'send_announcements',
+			'manage_subscriptions'
 		];
 	}
 
@@ -199,7 +200,8 @@ export function getPermissionDeniedMessage(
 		evaluate_questionnaire: 'You do not have permission to evaluate questionnaires',
 		manage_tickets: 'You do not have permission to manage tickets',
 		invite_to_event: 'You do not have permission to invite users to events',
-		send_announcements: 'You do not have permission to send announcements'
+		send_announcements: 'You do not have permission to send announcements',
+		manage_subscriptions: 'You do not have permission to manage subscriptions'
 	};
 
 	return actionMessages[action] || `You do not have permission to ${action}`;
