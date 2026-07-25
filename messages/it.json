@@ -3316,12 +3316,12 @@
 				"reorderFailed": "Impossibile riordinare i livelli"
 			},
 			"plans": {
-				"title": "Plans",
-				"empty": "No plans yet.",
-				"add": "Add plan",
-				"archived": "Archived",
-				"edit": "Edit",
-				"archive": "Archive",
+				"title": "Piani",
+				"empty": "Ancora nessun piano.",
+				"add": "Aggiungi piano",
+				"archived": "Archiviato",
+				"edit": "Modifica",
+				"archive": "Archivia",
 				"badge": {
 					"online": "Online · Stripe",
 					"offline": "Offline · manuale",
@@ -3338,29 +3338,29 @@
 					"failed": "Impossibile avviare la migrazione"
 				},
 				"delete": {
-					"title": "Delete plan",
-					"body": "This permanently deletes the plan. If subscribers exist, archive it instead.",
-					"inUse": "This plan has subscribers and can't be deleted — archive it instead.",
-					"archiveInstead": "Archive instead"
+					"title": "Elimina piano",
+					"body": "Questo elimina definitivamente il piano. Se ci sono abbonati, archivialo invece.",
+					"inUse": "Questo piano ha degli abbonati e non può essere eliminato — archivialo invece.",
+					"archiveInstead": "Archivia invece"
 				},
 				"form": {
-					"create": "Create plan",
-					"update": "Edit plan",
-					"name": "Name",
-					"description": "Description",
-					"price": "Price",
-					"currency": "Currency",
-					"periodUnit": "Period",
-					"periodCount": "Every",
-					"isActive": "Active (available for new subscriptions)",
+					"create": "Crea piano",
+					"update": "Modifica piano",
+					"name": "Nome",
+					"description": "Descrizione",
+					"price": "Prezzo",
+					"currency": "Valuta",
+					"periodUnit": "Periodo",
+					"periodCount": "Ogni",
+					"isActive": "Attivo (disponibile per nuovi abbonamenti)",
 					"errors": {
-						"nameRequired": "Name is required",
-						"priceInvalid": "Price must be 0 or more",
-						"periodInvalid": "Period count must be between 1 and 120",
+						"nameRequired": "Il nome è obbligatorio",
+						"priceInvalid": "Il prezzo deve essere 0 o superiore",
+						"periodInvalid": "Il numero di periodi deve essere compreso tra 1 e 120",
 						"maxSubsInvalid": "Il numero massimo di abbonamenti deve essere almeno 1, oppure vuoto per illimitato"
 					},
-					"periodMonth": "month(s)",
-					"periodYear": "year(s)",
+					"periodMonth": "mese/i",
+					"periodYear": "anno/i",
 					"paymentMethod": "Metodo di pagamento",
 					"paymentOffline": "Offline — registri tu i pagamenti",
 					"paymentOnline": "Online — addebito automatico con Stripe",
@@ -3380,39 +3380,39 @@
 				}
 			},
 			"subscriptions": {
-				"title": "Subscriptions",
-				"searchPlaceholder": "Search by name or email…",
+				"title": "Abbonamenti",
+				"searchPlaceholder": "Cerca per nome o email…",
 				"filter": {
-					"all": "All statuses"
+					"all": "Tutti gli stati"
 				},
 				"create": {
-					"title": "Create subscription",
-					"user": "User",
-					"plan": "Plan",
-					"recordInitial": "Record initial payment",
-					"amount": "Amount",
-					"currency": "Currency",
-					"notes": "Notes",
-					"submit": "Create",
+					"title": "Crea abbonamento",
+					"user": "Utente",
+					"plan": "Piano",
+					"recordInitial": "Registra il pagamento iniziale",
+					"amount": "Importo",
+					"currency": "Valuta",
+					"notes": "Note",
+					"submit": "Crea",
 					"onlineExcluded": "I piani online (Stripe) non sono elencati — sono i membri stessi a sottoscriverli, così possono autorizzare il pagamento.",
 					"errors": {
-						"userRequired": "Pick a member",
-						"planRequired": "Pick a plan"
+						"userRequired": "Scegli un membro",
+						"planRequired": "Scegli un piano"
 					}
 				},
-				"empty": "No subscriptions yet.",
+				"empty": "Ancora nessun abbonamento.",
 				"col": {
-					"user": "User",
-					"tier": "Type",
-					"plan": "Plan",
-					"status": "Status",
-					"periodEnd": "Period end"
+					"user": "Utente",
+					"tier": "Tipo",
+					"plan": "Piano",
+					"status": "Stato",
+					"periodEnd": "Fine periodo"
 				},
 				"drawer": {
-					"recordPayment": "Record payment",
-					"pause": "Pause",
-					"resume": "Resume",
-					"cancel": "Cancel",
+					"recordPayment": "Registra pagamento",
+					"pause": "Sospendi",
+					"resume": "Riprendi",
+					"cancel": "Disdici",
 					"onlinePayments": "I pagamenti di questo abbonamento arrivano automaticamente tramite Stripe.",
 					"revive": "Riattiva",
 					"reviveDone": "Abbonamento riattivato",
@@ -3421,50 +3421,50 @@
 					"reviveOnlineTitle": "Riavvia abbonamento",
 					"reviveOnlineBody": "Questo riavvia l'abbonamento su Stripe. Al membro viene chiesto di completare il pagamento — l'iscrizione riprende non appena avrà pagato.",
 					"reviveOnlineDone": "Riattivazione avviata — al membro è stato chiesto di completare il pagamento.",
-					"payments": "Payments",
-					"paymentsEmpty": "No payments yet.",
-					"refund": "Refund",
+					"payments": "Pagamenti",
+					"paymentsEmpty": "Ancora nessun pagamento.",
+					"refund": "Rimborsa",
 					"paymentsCol": {
-						"date": "Date",
-						"amount": "Amount",
-						"status": "Status"
+						"date": "Data",
+						"amount": "Importo",
+						"status": "Stato"
 					}
 				},
 				"cancel": {
-					"title": "Cancel subscription",
-					"atPeriodEnd": "At the end of the current period ({date})",
-					"atPeriodEndDesc": "The member keeps access until then.",
-					"immediate": "Immediately",
-					"immediateDesc": "Access is revoked now. No refund is issued automatically.",
-					"immediateConfirm": "I understand access is revoked immediately.",
-					"keep": "Keep subscription",
-					"confirm": "Confirm cancellation"
+					"title": "Disdici abbonamento",
+					"atPeriodEnd": "Alla fine del periodo in corso ({date})",
+					"atPeriodEndDesc": "Il membro mantiene l'accesso fino ad allora.",
+					"immediate": "Subito",
+					"immediateDesc": "L'accesso viene revocato subito. Nessun rimborso viene emesso automaticamente.",
+					"immediateConfirm": "Ho capito che l'accesso viene revocato subito.",
+					"keep": "Mantieni l'abbonamento",
+					"confirm": "Conferma la disdetta"
 				},
 				"recordPayment": {
-					"title": "Record payment",
-					"amount": "Amount",
-					"currency": "Currency",
-					"status": "Status",
-					"notes": "Notes",
-					"currencyWarning": "This subscription is billed in {planCurrency} — recording in {selected} is unusual.",
-					"submit": "Record payment",
-					"occurredAt": "Payment date",
-					"occurredAtHint": "Leave empty to use the current date. Set this when backfilling past payments.",
+					"title": "Registra pagamento",
+					"amount": "Importo",
+					"currency": "Valuta",
+					"status": "Stato",
+					"notes": "Note",
+					"currencyWarning": "Questo abbonamento è fatturato in {planCurrency} — registrarlo in {selected} è insolito.",
+					"submit": "Registra pagamento",
+					"occurredAt": "Data del pagamento",
+					"occurredAtHint": "Lascia vuoto per usare la data odierna. Impostalo quando inserisci pagamenti passati.",
 					"statusOption": {
-						"succeeded": "Succeeded",
-						"pending": "Pending",
-						"failed": "Failed"
+						"succeeded": "Riuscito",
+						"pending": "In attesa",
+						"failed": "Fallito"
 					}
 				},
 				"refund": {
-					"title": "Mark payment as refunded",
-					"body": "This records the refund for bookkeeping. Issue the actual refund out-of-band (cash, bank transfer, or Stripe dashboard).",
-					"notes": "Notes",
-					"submit": "Mark refunded"
+					"title": "Segna il pagamento come rimborsato",
+					"body": "Questo registra il rimborso a fini contabili. Il rimborso vero e proprio va effettuato fuori dall'app (contanti, bonifico o dalla dashboard Stripe).",
+					"notes": "Note",
+					"submit": "Segna come rimborsato"
 				},
-				"emptyFiltered": "No matching subscriptions on this page.",
+				"emptyFiltered": "Nessun abbonamento corrispondente in questa pagina.",
 				"pageOf": "Pagina {page} di {total}",
-				"openDrawer": "Open subscription details",
+				"openDrawer": "Apri i dettagli dell'abbonamento",
 				"metrics": {
 					"mrr": "Ricavo ricorrente mensile",
 					"active": "Abbonati attivi",
