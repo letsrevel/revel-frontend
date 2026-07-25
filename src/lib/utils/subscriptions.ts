@@ -13,19 +13,25 @@ export interface ActionSet {
 	pause: boolean;
 	resume: boolean;
 	cancel: boolean;
+	revive: boolean;
 }
 
 const ACTION_MATRIX: Record<SubscriptionStatus, ActionSet> = {
-	pending: { recordPayment: true, pause: false, resume: false, cancel: true },
-	active: { recordPayment: true, pause: true, resume: false, cancel: true },
-	past_due: { recordPayment: true, pause: false, resume: false, cancel: true },
-	paused: { recordPayment: false, pause: false, resume: true, cancel: true },
-	cancelled: { recordPayment: false, pause: false, resume: false, cancel: false },
-	expired: { recordPayment: false, pause: false, resume: false, cancel: false }
+	pending: { recordPayment: true, pause: false, resume: false, cancel: true, revive: false },
+	active: { recordPayment: true, pause: true, resume: false, cancel: true, revive: false },
+	past_due: { recordPayment: true, pause: false, resume: false, cancel: true, revive: false },
+	paused: { recordPayment: false, pause: false, resume: true, cancel: true, revive: false },
+	cancelled: { recordPayment: false, pause: false, resume: false, cancel: false, revive: false },
+	expired: { recordPayment: false, pause: false, resume: false, cancel: false, revive: true }
 };
 
 export function getAvailableActions(sub: MySubscriptionSchema | SubscriptionSchema): ActionSet {
-	return ACTION_MATRIX[sub.status];
+	const base = ACTION_MATRIX[sub.status];
+	// ONLINE payments arrive via Stripe webhooks — hand-recording would duplicate.
+	if (sub.plan.payment_method === 'online') {
+		return { ...base, recordPayment: false };
+	}
+	return base;
 }
 
 const PERIOD_UNIT_LABELS: Record<PeriodUnit, { singular: string; plural: string }> = {
