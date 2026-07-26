@@ -8613,5 +8613,23 @@
 	"seatDesigner.addVertex": "Ajouter un point",
 	"seatDesigner.rotateHandle": "Pivoter {name}",
 	"seatDesigner.sectorBlockLabel": "Secteur {name}, pivoté de {rotation}°",
-	"seatDesigner.selectPrompt": "Sélectionnez un secteur ou la scène dans le menu (ou cliquez dessus) pour le déplacer, le pivoter ou le remodeler. Faites glisser l’espace vide pour vous déplacer."
+	"seatDesigner.selectPrompt": "Sélectionnez un secteur ou la scène dans le menu (ou cliquez dessus) pour le déplacer, le pivoter ou le remodeler. Faites glisser l’espace vide pour vous déplacer.",
+	"applications": {
+		"title": "Candidatures",
+		"inProgress": "En cours",
+		"closed": "Clôturées",
+		"empty": "Aucune candidature pour l'instant. Quand tu postules auprès d'une organisation, tu peux la suivre ici.",
+		"appliedOn": "Candidature envoyée le {date}",
+		"tierLine": "Niveau : {tier}",
+		"status": {
+			"pending": "En attente",
+			"approved": "Approuvée",
+			"completed": "Terminée",
+			"rejected": "Refusée",
+			"cancelled": "Annulée"
+		},
+		"continueCta": "Continuer le questionnaire",
+		"becameMember": "Tu es maintenant membre de {org} !",
+		"statusAriaLabel": "Statut de la candidature : {status}"
+	}
 }

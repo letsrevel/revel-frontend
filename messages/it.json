@@ -8613,5 +8613,23 @@
 	"seatDesigner.addVertex": "Aggiungi punto",
 	"seatDesigner.rotateHandle": "Ruota {name}",
 	"seatDesigner.sectorBlockLabel": "Settore {name}, ruotato di {rotation}°",
-	"seatDesigner.selectPrompt": "Seleziona un settore o il palco dal menu (o cliccalo) per spostarlo, ruotarlo o modificarne la forma. Trascina lo spazio vuoto per spostare la vista."
+	"seatDesigner.selectPrompt": "Seleziona un settore o il palco dal menu (o cliccalo) per spostarlo, ruotarlo o modificarne la forma. Trascina lo spazio vuoto per spostare la vista.",
+	"applications": {
+		"title": "Candidature",
+		"inProgress": "In corso",
+		"closed": "Chiuse",
+		"empty": "Nessuna candidatura per ora. Quando ti candidi a un'organizzazione, puoi seguirla qui.",
+		"appliedOn": "Candidatura inviata il {date}",
+		"tierLine": "Livello: {tier}",
+		"status": {
+			"pending": "In attesa",
+			"approved": "Approvata",
+			"completed": "Completata",
+			"rejected": "Respinta",
+			"cancelled": "Annullata"
+		},
+		"continueCta": "Continua il questionario",
+		"becameMember": "Ora sei membro di {org}!",
+		"statusAriaLabel": "Stato della candidatura: {status}"
+	}
 }

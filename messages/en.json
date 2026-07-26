@@ -8613,5 +8613,23 @@
 	"seatDesigner.addVertex": "Add shape point",
 	"seatDesigner.rotateHandle": "Rotate {name}",
 	"seatDesigner.sectorBlockLabel": "Sector {name}, rotated {rotation}°",
-	"seatDesigner.selectPrompt": "Select a sector or the stage from the picker (or click it) to move, rotate, or reshape it. Drag empty space to pan."
+	"seatDesigner.selectPrompt": "Select a sector or the stage from the picker (or click it) to move, rotate, or reshape it. Drag empty space to pan.",
+	"applications": {
+		"title": "Applications",
+		"inProgress": "In progress",
+		"closed": "Closed",
+		"empty": "No applications yet. When you apply to join an organization, you can track it here.",
+		"appliedOn": "Applied on {date}",
+		"tierLine": "Tier: {tier}",
+		"status": {
+			"pending": "Pending",
+			"approved": "Approved",
+			"completed": "Completed",
+			"rejected": "Rejected",
+			"cancelled": "Cancelled"
+		},
+		"continueCta": "Continue questionnaire",
+		"becameMember": "You're now a member of {org}!",
+		"statusAriaLabel": "Application status: {status}"
+	}
 }

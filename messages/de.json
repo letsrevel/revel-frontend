@@ -8613,5 +8613,23 @@
 	"seatDesigner.addVertex": "Punkt hinzufügen",
 	"seatDesigner.rotateHandle": "{name} drehen",
 	"seatDesigner.sectorBlockLabel": "Sektor {name}, um {rotation}° gedreht",
-	"seatDesigner.selectPrompt": "Wähle einen Sektor oder die Bühne aus der Liste (oder klicke darauf), um ihn zu verschieben, zu drehen oder umzuformen. Ziehe den leeren Bereich, um die Ansicht zu verschieben."
+	"seatDesigner.selectPrompt": "Wähle einen Sektor oder die Bühne aus der Liste (oder klicke darauf), um ihn zu verschieben, zu drehen oder umzuformen. Ziehe den leeren Bereich, um die Ansicht zu verschieben.",
+	"applications": {
+		"title": "Bewerbungen",
+		"inProgress": "In Bearbeitung",
+		"closed": "Abgeschlossen",
+		"empty": "Noch keine Bewerbungen. Wenn du dich bei einer Organisation bewirbst, kannst du sie hier verfolgen.",
+		"appliedOn": "Beworben am {date}",
+		"tierLine": "Stufe: {tier}",
+		"status": {
+			"pending": "Ausstehend",
+			"approved": "Angenommen",
+			"completed": "Abgeschlossen",
+			"rejected": "Abgelehnt",
+			"cancelled": "Zurückgezogen"
+		},
+		"continueCta": "Fragebogen fortsetzen",
+		"becameMember": "Du bist jetzt Mitglied bei {org}!",
+		"statusAriaLabel": "Bewerbungsstatus: {status}"
+	}
 }
