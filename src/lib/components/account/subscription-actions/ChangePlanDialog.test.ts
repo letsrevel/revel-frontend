@@ -94,6 +94,32 @@ const PLANS = [
 		payment_method: 'offline',
 		sales_status: 'open',
 		sold_out: false
+	},
+	{
+		id: 'p7',
+		tier_id: 't1',
+		tier_name: 'Gold',
+		name: 'Plus',
+		price: '20.00',
+		currency: 'EUR',
+		period_unit: 'month',
+		period_count: 1,
+		payment_method: 'online',
+		sales_status: 'open',
+		sold_out: false
+	},
+	{
+		id: 'p8',
+		tier_id: 't1',
+		tier_name: 'Gold',
+		name: 'Both blocked',
+		price: '18.00',
+		currency: 'EUR',
+		period_unit: 'month',
+		period_count: 1,
+		payment_method: 'online',
+		sales_status: 'paused',
+		sold_out: true
 	}
 ];
 
@@ -144,12 +170,14 @@ describe('ChangePlanDialog', () => {
 		expect(await screen.findByRole('radio', { name: /Yearly/ })).toBeInTheDocument();
 		expect(screen.getByRole('radio', { name: /Premium/ })).toBeInTheDocument();
 		expect(screen.getByRole('radio', { name: /Paused plan/ })).toBeInTheDocument();
+		expect(screen.getByRole('radio', { name: /Plus/ })).toBeInTheDocument();
+		expect(screen.getByRole('radio', { name: /Both blocked/ })).toBeInTheDocument();
 
 		// p1 is the current plan, p5 is another currency, p6 is offline-managed.
 		expect(screen.queryByRole('radio', { name: /Monthly/ })).not.toBeInTheDocument();
 		expect(screen.queryByRole('radio', { name: /USD plan/ })).not.toBeInTheDocument();
 		expect(screen.queryByRole('radio', { name: /Offline plan/ })).not.toBeInTheDocument();
-		expect(screen.getAllByRole('radio')).toHaveLength(3);
+		expect(screen.getAllByRole('radio')).toHaveLength(5);
 	});
 
 	it('disables sold-out and paused options with their helper text', async () => {
@@ -175,6 +203,63 @@ describe('ChangePlanDialog', () => {
 		const yearly = screen.getByRole('radio', { name: /Yearly/ });
 		expect(yearly).toBeEnabled();
 		expect(yearly).not.toHaveAttribute('aria-describedby');
+	});
+
+	it('prefers the sold-out reason when a plan is both sold out and paused', async () => {
+		renderDialog();
+
+		const both = await screen.findByRole('radio', { name: /Both blocked/ });
+		expect(both).toBeDisabled();
+		const helper = document.getElementById(both.getAttribute('aria-describedby') as string);
+		expect(helper).toHaveTextContent('All spots are taken');
+		expect(helper).not.toHaveTextContent('temporarily closed sign-ups');
+	});
+
+	it('explains an upgrade and reports it as effective immediately', async () => {
+		const user = userEvent.setup();
+		changeMock.mockResolvedValue({ data: { ...(sub as object) }, error: undefined });
+		renderDialog();
+
+		// €20/month against the current €10/month → an upgrade.
+		await user.click(await screen.findByRole('radio', { name: /Plus/ }));
+
+		expect(
+			await screen.findByText(
+				"You'll be charged the difference now (prorated) and switch immediately."
+			)
+		).toBeInTheDocument();
+		expect(screen.queryByText(/next renewal/i)).not.toBeInTheDocument();
+
+		await user.click(screen.getByRole('button', { name: /switch plan/i }));
+		await waitFor(() =>
+			expect(changeMock).toHaveBeenCalledWith(
+				expect.objectContaining({ body: { plan_id: 'p7' }, path: { org_id: 'o1' } })
+			)
+		);
+		await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Plan switched.'));
+	});
+
+	it('announces the direction note from a pre-mounted polite live region', async () => {
+		const user = userEvent.setup();
+		renderDialog();
+
+		const dialog = await screen.findByRole('dialog');
+		await screen.findByRole('radio', { name: /Yearly/ });
+
+		// The region must exist *before* the first status lands, otherwise screen
+		// readers never announce it (WCAG 2.1 AA §4.1.3).
+		const region = dialog.querySelector('[aria-live="polite"]');
+		expect(region).not.toBeNull();
+		expect(region).toBeEmptyDOMElement();
+
+		await user.click(screen.getByRole('radio', { name: /Yearly/ }));
+		await waitFor(() => expect(region).toHaveTextContent('Takes effect at your next renewal'));
+
+		// The same node must survive a change of selection — a remounted region
+		// is a new region, and its content would not be announced.
+		await user.click(screen.getByRole('radio', { name: /Plus/ }));
+		await waitFor(() => expect(region).toHaveTextContent('charged the difference now'));
+		expect(dialog.querySelector('[aria-live="polite"]')).toBe(region);
 	});
 
 	it('explains a cross-cadence downgrade correctly', async () => {

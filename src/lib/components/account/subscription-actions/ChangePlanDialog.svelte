@@ -226,7 +226,16 @@
 					</div>
 				{/each}
 			</fieldset>
+		{/if}
 
+		<!--
+			Pre-mounted polite live region (WCAG 2.1 AA §4.1.3): the direction
+			explainer appears in response to picking a radio, which moves no focus,
+			so it would otherwise never be announced. The wrapper therefore lives
+			outside every `{#if}` — a region injected together with its first
+			message is not observed by assistive tech and stays silent.
+		-->
+		<div aria-live="polite" class="empty:hidden">
 			{#if direction === 'upgrade'}
 				<p class="text-sm text-muted-foreground">{m['changePlan.upgradeNote']()}</p>
 			{:else if direction === 'downgrade'}
@@ -238,7 +247,7 @@
 					{/if}
 				</p>
 			{/if}
-		{/if}
+		</div>
 
 		{#if errorMessage}
 			<p role="alert" class="text-sm font-medium text-destructive">{errorMessage}</p>
