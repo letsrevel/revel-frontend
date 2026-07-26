@@ -6543,7 +6543,14 @@
 			"cancel": "Cancel membership",
 			"portalError": "Could not open the billing portal. Please try again."
 		},
-		"cancelScheduledHint": "Renewal is off. To keep your membership, contact the organization."
+		"cancelScheduledHint": "Renewal is off. To keep your membership, contact the organization.",
+		"rejoin": {
+			"title": "Your membership at {org} has expired",
+			"body": "It expired on {expired}. You can rejoin until {deadline}.",
+			"cta": "Rejoin",
+			"returnHint": "You'll pay securely with Stripe and return to the organization's page.",
+			"error": "Could not start the payment. Please try again."
+		}
 	},
 	"account": {
 		"memberships": {

@@ -6514,7 +6514,14 @@
 			"cancel": "Résilier l'adhésion",
 			"portalError": "Impossible d'ouvrir le portail de facturation. Réessaie."
 		},
-		"cancelScheduledHint": "Le renouvellement est désactivé. Pour conserver ton adhésion, contacte l'organisation."
+		"cancelScheduledHint": "Le renouvellement est désactivé. Pour conserver ton adhésion, contacte l'organisation.",
+		"rejoin": {
+			"title": "Ton adhésion à {org} a expiré",
+			"body": "Elle a expiré le {expired}. Tu peux la reprendre jusqu'au {deadline}.",
+			"cta": "Reprendre l'adhésion",
+			"returnHint": "Tu paieras en toute sécurité via Stripe puis reviendras sur la page de l'organisation.",
+			"error": "Impossible de démarrer le paiement. Réessaie."
+		}
 	},
 	"account": {
 		"memberships": {

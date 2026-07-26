@@ -6543,7 +6543,14 @@
 			"cancel": "Mitgliedschaft kündigen",
 			"portalError": "Das Zahlungsportal konnte nicht geöffnet werden. Bitte versuche es erneut."
 		},
-		"cancelScheduledHint": "Die Verlängerung ist deaktiviert. Um deine Mitgliedschaft zu behalten, wende dich an die Organisation."
+		"cancelScheduledHint": "Die Verlängerung ist deaktiviert. Um deine Mitgliedschaft zu behalten, wende dich an die Organisation.",
+		"rejoin": {
+			"title": "Deine Mitgliedschaft bei {org} ist abgelaufen",
+			"body": "Sie ist am {expired} abgelaufen. Du kannst bis {deadline} wieder beitreten.",
+			"cta": "Wieder beitreten",
+			"returnHint": "Du zahlst sicher über Stripe und kehrst danach zur Seite der Organisation zurück.",
+			"error": "Die Zahlung konnte nicht gestartet werden. Bitte versuche es erneut."
+		}
 	},
 	"account": {
 		"memberships": {

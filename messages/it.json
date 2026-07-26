@@ -6543,7 +6543,14 @@
 			"cancel": "Annulla l'abbonamento",
 			"portalError": "Non è stato possibile aprire il portale di pagamento. Riprova."
 		},
-		"cancelScheduledHint": "Il rinnovo è disattivato. Per mantenere l'abbonamento, contatta l'organizzazione."
+		"cancelScheduledHint": "Il rinnovo è disattivato. Per mantenere l'abbonamento, contatta l'organizzazione.",
+		"rejoin": {
+			"title": "Il tuo abbonamento a {org} è scaduto",
+			"body": "È scaduto il {expired}. Puoi riabbonarti fino al {deadline}.",
+			"cta": "Riabbonati",
+			"returnHint": "Pagherai in modo sicuro con Stripe e tornerai alla pagina dell'organizzazione.",
+			"error": "Non è stato possibile avviare il pagamento. Riprova."
+		}
 	},
 	"account": {
 		"memberships": {
