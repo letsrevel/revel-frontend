@@ -1,5 +1,6 @@
 import type {
 	MembershipEligibilitySchema,
+	MembershipNextStep,
 	MembershipReasonCode
 } from '$lib/api/generated/types.gen';
 import * as m from '$lib/paraglide/messages.js';
@@ -77,10 +78,23 @@ const REASON_MESSAGES: Partial<Record<MembershipReasonCode, () => string>> = {
 };
 
 /**
+ * Copy for in-flight verdicts that carry no reason_code (e.g. a tier-less
+ * PENDING application). Consulted after REASON_MESSAGES, before backend prose.
+ */
+const WAIT_STEP_MESSAGES: Partial<Record<MembershipNextStep, () => string>> = {
+	wait_for_questionnaire_evaluation: () =>
+		m['membershipEligibility.wait.questionnaire_evaluation'](),
+	wait_for_approval: () => m['membershipEligibility.wait.approval'](),
+	wait_for_whitelist_approval: () => m['membershipEligibility.wait.whitelist_approval']()
+};
+
+/**
  * Human-readable, localized explanation of a membership eligibility verdict.
  *
  * Resolution order: the invite-link pair (see below) → mapped `reason_code` →
- * the backend-supplied `reason` prose → a generic localized fallback.
+ * the `wait_*` next-step map → the backend-supplied `reason` prose → a generic
+ * localized fallback. The FE-localized wait copy beats backend prose because the
+ * backend renders it in its own locale.
  *
  * `next_step === 'requires_invitation'` is NOT a blanket override. The backend
  * emits it only alongside `reason_code` `requires_verification` or
@@ -97,6 +111,8 @@ export function getMembershipStatusMessage(e: MembershipEligibilitySchema): stri
 	}
 	const mapped = e.reason_code ? REASON_MESSAGES[e.reason_code] : undefined;
 	if (mapped) return mapped();
+	const waiting = e.next_step ? WAIT_STEP_MESSAGES[e.next_step] : undefined;
+	if (waiting) return waiting();
 	if (e.reason) return e.reason;
 	return m['membershipEligibility.reason.generic']();
 }

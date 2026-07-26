@@ -6560,6 +6560,11 @@
 			"duplicate_active_subscription": "Tu as déjà un abonnement actif avec cette organisation.",
 			"membership_paused": "Ton adhésion est actuellement en pause.",
 			"generic": "Tu ne peux pas rejoindre pour le moment."
+		},
+		"wait": {
+			"questionnaire_evaluation": "Ton questionnaire est en cours d'évaluation — nous te préviendrons dès qu'il sera examiné.",
+			"approval": "Ta candidature est en cours d'examen par l'organisation. Tu auras une réponse dès qu'elle aura décidé.",
+			"whitelist_approval": "Ta demande d'accès attend une validation."
 		}
 	},
 	"membershipApply": {

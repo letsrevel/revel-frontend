@@ -101,3 +101,39 @@ describe('getMembershipStatusMessage', () => {
 		);
 	});
 });
+
+describe('wait_* next-step messages', () => {
+	it('maps wait_for_approval when no reason_code is set', () => {
+		const msg = getMembershipStatusMessage({ ...base, next_step: 'wait_for_approval' });
+		expect(msg).toBe(m['membershipEligibility.wait.approval']());
+	});
+
+	it('maps wait_for_whitelist_approval when no reason_code is set', () => {
+		const msg = getMembershipStatusMessage({ ...base, next_step: 'wait_for_whitelist_approval' });
+		expect(msg).toBe(m['membershipEligibility.wait.whitelist_approval']());
+	});
+
+	it('maps wait_for_questionnaire_evaluation over backend prose', () => {
+		const msg = getMembershipStatusMessage({
+			...base,
+			next_step: 'wait_for_questionnaire_evaluation',
+			reason: 'Some backend-locale sentence'
+		});
+		expect(msg).toBe(m['membershipEligibility.wait.questionnaire_evaluation']());
+	});
+
+	it('a mapped reason_code still wins over the wait-step map', () => {
+		const msg = getMembershipStatusMessage({
+			...base,
+			next_step: 'wait_for_questionnaire_evaluation',
+			reason_code: 'membership_questionnaire_pending'
+		});
+		expect(msg).toBe(m['membershipEligibility.reason.membership_questionnaire_pending']());
+	});
+
+	it('leaves next steps outside the wait map on the backend-prose path', () => {
+		expect(getMembershipStatusMessage({ ...base, next_step: 'reapply', reason: 'BE prose' })).toBe(
+			'BE prose'
+		);
+	});
+});

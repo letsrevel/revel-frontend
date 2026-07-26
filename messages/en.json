@@ -6589,6 +6589,11 @@
 			"duplicate_active_subscription": "You already have an active subscription with this organization.",
 			"membership_paused": "Your membership is currently paused.",
 			"generic": "You can't join right now."
+		},
+		"wait": {
+			"questionnaire_evaluation": "Your questionnaire is being reviewed — we'll let you know once it's evaluated.",
+			"approval": "Your application is with the organization for review. You'll hear back once they decide.",
+			"whitelist_approval": "Your access request is waiting for approval."
 		}
 	},
 	"membershipApply": {

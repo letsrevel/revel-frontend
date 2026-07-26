@@ -6589,6 +6589,11 @@
 			"duplicate_active_subscription": "Hai già un abbonamento attivo con questa organizzazione.",
 			"membership_paused": "La tua iscrizione è attualmente in pausa.",
 			"generic": "Non puoi unirti al momento."
+		},
+		"wait": {
+			"questionnaire_evaluation": "Il tuo questionario è in fase di valutazione — ti avviseremo appena sarà esaminato.",
+			"approval": "La tua candidatura è in fase di revisione da parte dell'organizzazione. Riceverai una risposta appena avranno deciso.",
+			"whitelist_approval": "La tua richiesta di accesso è in attesa di approvazione."
 		}
 	},
 	"membershipApply": {
