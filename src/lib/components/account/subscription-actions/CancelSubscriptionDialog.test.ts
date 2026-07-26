@@ -80,6 +80,25 @@ describe('CancelSubscriptionDialog', () => {
 		expect(screen.getByRole('button', { name: /cancel membership/i })).toBeEnabled();
 	});
 
+	it('submits immediate: true once confirmed and closes itself on success', async () => {
+		const user = userEvent.setup();
+		cancelMock.mockResolvedValue({
+			data: { ...sub, status: 'cancelled', cancel_at_period_end: false },
+			error: undefined
+		});
+		const onOpenChange = vi.fn();
+		renderDialog({ onOpenChange });
+		await user.click(screen.getByRole('radio', { name: /immediately/i }));
+		await user.click(screen.getByRole('checkbox', { name: /ends immediately/i }));
+		await user.click(screen.getByRole('button', { name: /cancel membership/i }));
+		await waitFor(() =>
+			expect(cancelMock).toHaveBeenCalledWith(
+				expect.objectContaining({ body: { immediate: true }, path: { org_id: 'o1' } })
+			)
+		);
+		await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
+	});
+
 	it('renders the refund policy fetched from the public org endpoint', async () => {
 		renderDialog();
 		expect(await screen.findByText(/no refunds after 14 days/i)).toBeInTheDocument();
