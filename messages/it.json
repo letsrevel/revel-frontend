@@ -6554,6 +6554,7 @@
 	},
 	"account": {
 		"memberships": {
+			"sectionMemberships": "Abbonamenti",
 			"title": "My Memberships",
 			"empty": {
 				"title": "You don't have any active memberships.",

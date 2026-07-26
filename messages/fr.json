@@ -6525,6 +6525,7 @@
 	},
 	"account": {
 		"memberships": {
+			"sectionMemberships": "Adhésions",
 			"title": "Mes adhésions",
 			"empty": {
 				"title": "Tu n'as aucune adhésion active.",
