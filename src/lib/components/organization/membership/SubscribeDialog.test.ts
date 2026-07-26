@@ -111,6 +111,22 @@ describe('SubscribeDialog', () => {
 		expect(screen.getByText(/processed securely by stripe/i)).toBeInTheDocument();
 	});
 
+	// The first-charge line quotes the bare amount, not the rate — "€10.00 / month
+	// now" would misstate what the confirm button actually does.
+	it('states the first charge as a bare amount', () => {
+		renderDialog();
+		expect(
+			screen.getByText("You'll be charged €10.00 now, then automatically each renewal.")
+		).toBeInTheDocument();
+	});
+
+	it('quotes the plan price in the first-charge line for a multi-period plan', () => {
+		renderDialog({ plan: makePlan({ price: '250.50', currency: 'EUR', period_count: 3 }) });
+		expect(
+			screen.getByText("You'll be charged €250.50 now, then automatically each renewal.")
+		).toBeInTheDocument();
+	});
+
 	it('pluralises the renewal cadence for multi-period plans', () => {
 		renderDialog({ plan: makePlan({ period_unit: 'month', period_count: 3 }) });
 		expect(

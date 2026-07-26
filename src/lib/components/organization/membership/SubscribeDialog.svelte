@@ -15,6 +15,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import { formatPlanPrice } from '$lib/utils/subscriptions';
+	import { formatMoney } from '$lib/utils/format';
 	import { Loader2 } from '@lucide/svelte';
 
 	interface Props {
@@ -47,6 +48,10 @@
 	let redirecting = $state(false);
 
 	const priceLine = $derived(m['subscribe.priceLine']({ price: formatPlanPrice(plan) }));
+
+	// The bare amount, not the rate: this line is about the charge that happens
+	// on confirm, so "€10.00" — never "€10.00 / month".
+	const firstChargeAmount = $derived(formatMoney(plan.price, plan.currency));
 
 	const cadence = $derived.by(() => {
 		const n = plan.period_count ?? 1;
@@ -113,6 +118,9 @@
 			<div class="rounded-lg border bg-muted/40 p-3">
 				<p class="text-sm text-muted-foreground">{organizationName}</p>
 				<p class="text-lg font-semibold">{priceLine}</p>
+				<p class="mt-1 text-sm text-muted-foreground">
+					{m['subscribe.firstCharge']({ price: firstChargeAmount })}
+				</p>
 			</div>
 
 			<p class="text-sm text-muted-foreground">{m['subscribe.autoRenew']({ cadence })}</p>
