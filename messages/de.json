@@ -6557,6 +6557,34 @@
 			"managedBy": "Managed by {org} staff"
 		}
 	},
+	"membershipEligibility": {
+		"join": "{orgName} beitreten",
+		"reapply": "Mitgliedschaft erneut beantragen",
+		"questionnaireCta": "Fragebogen zur Mitgliedschaft ausfüllen",
+		"waiting": "Antrag in Bearbeitung",
+		"trackApplication": "Deinen Antrag verfolgen",
+		"memberBadge": "Mitglied",
+		"reason": {
+			"blacklisted": "Du kannst dieser Organisation nicht beitreten.",
+			"requires_verification": "Dein Konto muss verifiziert werden, bevor du beitreten kannst.",
+			"whitelist_pending": "Deine Verifizierung wird gerade geprüft.",
+			"whitelist_rejected": "Deine Verifizierungsanfrage wurde nicht genehmigt.",
+			"already_active_member": "Du bist bereits Mitglied.",
+			"not_accepting_requests": "Diese Organisation nimmt derzeit keine neuen Mitglieder auf.",
+			"tier_unavailable": "Diese Mitgliedschaftsstufe ist derzeit nicht verfügbar.",
+			"plan_unavailable": "Dieser Plan ist derzeit nicht verfügbar.",
+			"application_rejected": "Dein vorheriger Antrag wurde nicht genehmigt.",
+			"membership_questionnaire_missing": "Diese Organisation bittet neue Mitglieder, zuerst einen Fragebogen auszufüllen.",
+			"membership_questionnaire_pending": "Dein Fragebogen wird gerade geprüft.",
+			"membership_questionnaire_failed": "Dein Fragebogen wurde nicht genehmigt.",
+			"membership_questionnaire_retake_cooldown": "Du kannst den Fragebogen später erneut ausfüllen.",
+			"requires_approval": "Mitgliedschaftsanträge werden von der Organisation genehmigt.",
+			"requires_invitation": "Der Beitritt erfolgt per Einladung — frag die Organisator*innen nach einem Einladungslink.",
+			"duplicate_active_subscription": "Du hast bereits ein aktives Abo bei dieser Organisation.",
+			"membership_paused": "Deine Mitgliedschaft ist derzeit pausiert.",
+			"generic": "Du kannst derzeit nicht beitreten."
+		}
+	},
 	"waitlistSettings.title": "Advanced waitlist settings",
 	"waitlistSettings.description": "Configure how seats are offered to waitlist members.",
 	"waitlistSettings.timeWindow.label": "Offer time window",

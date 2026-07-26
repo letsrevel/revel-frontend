@@ -6557,6 +6557,34 @@
 			"managedBy": "Managed by {org} staff"
 		}
 	},
+	"membershipEligibility": {
+		"join": "Join {orgName}",
+		"reapply": "Re-apply for membership",
+		"questionnaireCta": "Fill in the membership questionnaire",
+		"waiting": "Application pending",
+		"trackApplication": "Track your application",
+		"memberBadge": "Member",
+		"reason": {
+			"blacklisted": "You can't join this organization.",
+			"requires_verification": "Your account needs to be verified before you can join.",
+			"whitelist_pending": "Your verification is being reviewed.",
+			"whitelist_rejected": "Your verification request was not approved.",
+			"already_active_member": "You're already a member.",
+			"not_accepting_requests": "This organization isn't accepting new members right now.",
+			"tier_unavailable": "This membership tier isn't available right now.",
+			"plan_unavailable": "This plan isn't available right now.",
+			"application_rejected": "Your previous application wasn't approved.",
+			"membership_questionnaire_missing": "This organization asks new members to fill in a questionnaire first.",
+			"membership_questionnaire_pending": "Your questionnaire is being reviewed.",
+			"membership_questionnaire_failed": "Your questionnaire wasn't approved.",
+			"membership_questionnaire_retake_cooldown": "You can retake the questionnaire later.",
+			"requires_approval": "Membership requests are approved by the organization.",
+			"requires_invitation": "Joining is by invitation — ask the organization for an invite link.",
+			"duplicate_active_subscription": "You already have an active subscription with this organization.",
+			"membership_paused": "Your membership is currently paused.",
+			"generic": "You can't join right now."
+		}
+	},
 	"waitlistSettings.title": "Advanced waitlist settings",
 	"waitlistSettings.description": "Configure how seats are offered to waitlist members.",
 	"waitlistSettings.timeWindow.label": "Offer time window",

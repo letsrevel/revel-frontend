@@ -6528,6 +6528,34 @@
 			"managedBy": "Gérée par l'équipe de {org}"
 		}
 	},
+	"membershipEligibility": {
+		"join": "Rejoindre {orgName}",
+		"reapply": "Refaire une demande d'adhésion",
+		"questionnaireCta": "Remplir le questionnaire d'adhésion",
+		"waiting": "Demande en attente",
+		"trackApplication": "Suivre ta demande",
+		"memberBadge": "Membre",
+		"reason": {
+			"blacklisted": "Tu ne peux pas rejoindre cette organisation.",
+			"requires_verification": "Ton compte doit être vérifié avant que tu puisses rejoindre.",
+			"whitelist_pending": "Ta vérification est en cours d'examen.",
+			"whitelist_rejected": "Ta demande de vérification n'a pas été approuvée.",
+			"already_active_member": "Tu es déjà membre.",
+			"not_accepting_requests": "Cette organisation n'accepte pas de nouveaux membres pour le moment.",
+			"tier_unavailable": "Ce niveau d'adhésion n'est pas disponible pour le moment.",
+			"plan_unavailable": "Cette formule n'est pas disponible pour le moment.",
+			"application_rejected": "Ta demande précédente n'a pas été approuvée.",
+			"membership_questionnaire_missing": "Cette organisation demande aux nouveaux membres de remplir d'abord un questionnaire.",
+			"membership_questionnaire_pending": "Ton questionnaire est en cours d'examen.",
+			"membership_questionnaire_failed": "Ton questionnaire n'a pas été approuvé.",
+			"membership_questionnaire_retake_cooldown": "Tu pourras repasser le questionnaire plus tard.",
+			"requires_approval": "Les demandes d'adhésion sont approuvées par l'organisation.",
+			"requires_invitation": "L'adhésion se fait sur invitation — demande un lien d'invitation à l'organisation.",
+			"duplicate_active_subscription": "Tu as déjà un abonnement actif avec cette organisation.",
+			"membership_paused": "Ton adhésion est actuellement en pause.",
+			"generic": "Tu ne peux pas rejoindre pour le moment."
+		}
+	},
 	"waitlistSettings.title": "Paramètres avancés de liste d'attente",
 	"waitlistSettings.description": "Configure la façon dont les places sont proposées aux personnes en liste d'attente.",
 	"waitlistSettings.timeWindow.label": "Fenêtre d'offre",

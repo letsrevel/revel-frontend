@@ -6557,6 +6557,34 @@
 			"managedBy": "Managed by {org} staff"
 		}
 	},
+	"membershipEligibility": {
+		"join": "Unisciti a {orgName}",
+		"reapply": "Richiedi di nuovo l'iscrizione",
+		"questionnaireCta": "Compila il questionario di iscrizione",
+		"waiting": "Richiesta in attesa",
+		"trackApplication": "Segui la tua richiesta",
+		"memberBadge": "Membro",
+		"reason": {
+			"blacklisted": "Non puoi unirti a questa organizzazione.",
+			"requires_verification": "Il tuo account deve essere verificato prima che tu possa unirti.",
+			"whitelist_pending": "La tua verifica è in fase di revisione.",
+			"whitelist_rejected": "La tua richiesta di verifica non è stata approvata.",
+			"already_active_member": "Sei già membro.",
+			"not_accepting_requests": "Questa organizzazione al momento non accetta nuovi membri.",
+			"tier_unavailable": "Questo livello di iscrizione non è disponibile al momento.",
+			"plan_unavailable": "Questo piano non è disponibile al momento.",
+			"application_rejected": "La tua richiesta precedente non è stata approvata.",
+			"membership_questionnaire_missing": "Questa organizzazione chiede a chi si iscrive di compilare prima un questionario.",
+			"membership_questionnaire_pending": "Il tuo questionario è in fase di revisione.",
+			"membership_questionnaire_failed": "Il tuo questionario non è stato approvato.",
+			"membership_questionnaire_retake_cooldown": "Potrai ripetere il questionario più avanti.",
+			"requires_approval": "Le richieste di iscrizione vengono approvate dall'organizzazione.",
+			"requires_invitation": "Si entra su invito — chiedi all'organizzazione un link di invito.",
+			"duplicate_active_subscription": "Hai già un abbonamento attivo con questa organizzazione.",
+			"membership_paused": "La tua iscrizione è attualmente in pausa.",
+			"generic": "Non puoi unirti al momento."
+		}
+	},
 	"waitlistSettings.title": "Advanced waitlist settings",
 	"waitlistSettings.description": "Configure how seats are offered to waitlist members.",
 	"waitlistSettings.timeWindow.label": "Offer time window",
