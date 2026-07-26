@@ -5024,27 +5024,17 @@
 		"requestInvitation": "Einladung anfordern",
 		"requestSubmitted": "Anfrage gesendet"
 	},
-	"requestMembershipButton": {
-		"requestSubmitted": "Anfrage gesendet!",
-		"requestMembership": "Mitgliedschaft anfragen",
-		"owner": "Inhaber*in",
-		"staff": "Mitarbeiter*in",
-		"member": "Mitglied",
-		"messageOptional": "Nachricht (Optional)",
-		"messagePlaceholder": "Erzähle den Organisierenden, warum du beitreten möchtest...",
-		"characters": "Zeichen",
+	"membershipPlans": {
+		"heading": "Mitgliedschaft",
+		"subscribeCta": "Abonnieren",
+		"loginToSubscribe": "Zum Abonnieren anmelden",
+		"soldOut": "Ausverkauft",
+		"soldOutHelper": "Alle Plätze sind vergeben — einer wird eventuell frei, wenn eine Mitgliedschaft endet.",
+		"paused": "Anmeldung pausiert",
+		"pausedHelper": "Die Organisation hat die Anmeldung vorübergehend geschlossen.",
+		"offlineManaged": "Wird von der Organisation verwaltet — melde dich bei ihr, um diesen Plan zu buchen.",
 		"refundPolicy": "Rückerstattungsrichtlinie",
-		"requestSubmittedDesc": "Deine Mitgliedschaftsanfrage wurde an {organizationName} gesendet. Du wirst benachrichtigt, wenn sie geprüft wurde.",
-		"requestDesc": "Stelle eine Anfrage, um Mitglied von {organizationName} zu werden. Eine Mitgliedschaft kann Zugang zu Events und Ticket-Stufen nur für Mitglieder gewähren, das Überspringen von Prüfungs-Fragebögen ermöglichen sowie Mitgliedschaftsvorteile oder Rabatte bieten, die die Organisierenden anbieten.",
-		"cancel": "Abbrechen",
-		"submitting": "Wird gesendet...",
-		"submitRequest": "Anfrage senden",
-		"ownerAriaLabel": "Du bist Inhaber*in dieser Organisation",
-		"staffAriaLabel": "Du bist Mitarbeiter*in dieser Organisation",
-		"memberAriaLabel": "Du bist Mitglied dieser Organisation",
-		"membershipStatusAriaLabel": "Mitgliedschaftsstatus: {status}",
-		"membershipTierAriaLabel": "Mitgliedschaftsstufe: {tier}",
-		"submitError": "Anfrage konnte nicht gesendet werden. Bitte versuche es erneut."
+		"viewMembership": "Mitgliedschaftsoptionen ansehen"
 	},
 	"requestWhitelistButton": {
 		"mustBeLoggedIn": "Du musst eingeloggt sein, um eine Verifizierung anzufordern",

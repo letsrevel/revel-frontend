@@ -5024,27 +5024,17 @@
 		"requestInvitation": "Request Invitation",
 		"requestSubmitted": "Request Submitted"
 	},
-	"requestMembershipButton": {
-		"requestSubmitted": "Request Submitted!",
-		"requestMembership": "Request Membership",
-		"owner": "Owner",
-		"staff": "Staff",
-		"member": "Member",
-		"messageOptional": "Message (Optional)",
-		"messagePlaceholder": "Tell the organizers why you'd like to join...",
-		"characters": "characters",
+	"membershipPlans": {
+		"heading": "Membership",
+		"subscribeCta": "Subscribe",
+		"loginToSubscribe": "Log in to subscribe",
+		"soldOut": "Sold out",
+		"soldOutHelper": "All spots are taken — one may free up if a membership ends.",
+		"paused": "Sales paused",
+		"pausedHelper": "The organization has temporarily closed sign-ups.",
+		"offlineManaged": "Managed by the organization — contact them to join this plan.",
 		"refundPolicy": "Refund policy",
-		"requestSubmittedDesc": "Your membership request has been sent to {organizationName}. You'll be notified when it's reviewed.",
-		"requestDesc": "Submit a request to become a member of {organizationName}. Membership can grant access to members-only events and ticket tiers, the ability to skip screening questionnaires, and any membership perks or discounts the organizers offer.",
-		"cancel": "Cancel",
-		"submitting": "Submitting...",
-		"submitRequest": "Submit Request",
-		"ownerAriaLabel": "You are the owner of this organization",
-		"staffAriaLabel": "You are a staff member of this organization",
-		"memberAriaLabel": "You are a member of this organization",
-		"membershipStatusAriaLabel": "Membership status: {status}",
-		"membershipTierAriaLabel": "Membership tier: {tier}",
-		"submitError": "Failed to submit request. Please try again."
+		"viewMembership": "View membership options"
 	},
 	"requestWhitelistButton": {
 		"mustBeLoggedIn": "You must be logged in to request verification",

@@ -5,7 +5,8 @@ import {
 	organizationGetOrganization,
 	permissionMyPermissions,
 	organizationListResources,
-	organizationGetOrganizationTokenDetails
+	organizationGetOrganizationTokenDetails,
+	organizationListMembershipPlans
 } from '$lib/api';
 import { log } from '$lib/server/logger';
 import type { PageServerLoad } from './$types';
@@ -13,7 +14,8 @@ import type {
 	OrganizationPermissionsSchema,
 	OrganizationTokenSchema,
 	MembershipTierSchema,
-	MembershipStatus
+	MembershipStatus,
+	PublicPlanSchema
 } from '$lib/api/generated/types.gen';
 import { canPerformAction } from '$lib/utils/permissions';
 
@@ -49,12 +51,29 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 
 		const organization = orgResponse.data;
 
-		// Fetch resources for this organization (pass auth to see restricted resources)
-		const resourcesResponse = await organizationListResources({
-			fetch,
-			path: { slug },
-			headers
-		});
+		// Fetch resources and the public membership plans side by side — neither
+		// depends on the other, and the plans are non-fatal: an org page still
+		// renders (without the membership section) if that endpoint is down.
+		const [resourcesResponse, membershipPlans] = await Promise.all([
+			organizationListResources({
+				fetch,
+				path: { slug },
+				headers
+			}),
+			(async (): Promise<PublicPlanSchema[]> => {
+				try {
+					const plansResponse = await organizationListMembershipPlans({
+						fetch,
+						path: { slug },
+						headers
+					});
+					return plansResponse.data ?? [];
+				} catch (err) {
+					log.warning('org_plans_fetch_failed', { error: err, slug });
+					return [];
+				}
+			})()
+		]);
 
 		const resources = resourcesResponse.data?.results || [];
 
@@ -129,6 +148,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 			seo,
 			organization,
 			resources,
+			membershipPlans,
 			canEdit,
 			isMember,
 			membershipTier,

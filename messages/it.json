@@ -5024,27 +5024,17 @@
 		"requestInvitation": "Richiedi Invito",
 		"requestSubmitted": "Richiesta Inviata"
 	},
-	"requestMembershipButton": {
-		"requestSubmitted": "Richiesta Inviata!",
-		"requestMembership": "Richiedi Iscrizione",
-		"owner": "Proprietario",
-		"staff": "Staff",
-		"member": "Membro",
-		"messageOptional": "Messaggio (Opzionale)",
-		"messagePlaceholder": "Racconta agli organizzatori perché vorresti unirti...",
-		"characters": "caratteri",
+	"membershipPlans": {
+		"heading": "Iscrizione",
+		"subscribeCta": "Abbonati",
+		"loginToSubscribe": "Accedi per abbonarti",
+		"soldOut": "Esaurito",
+		"soldOutHelper": "Tutti i posti sono occupati — potrebbe liberarsene uno se un'iscrizione termina.",
+		"paused": "Iscrizioni in pausa",
+		"pausedHelper": "L'organizzazione ha temporaneamente chiuso le iscrizioni.",
+		"offlineManaged": "Gestito dall'organizzazione — contattala per aderire a questo piano.",
 		"refundPolicy": "Politica di rimborso",
-		"requestSubmittedDesc": "La tua richiesta di iscrizione è stata inviata a {organizationName}. Sarai avvisato quando verrà esaminata.",
-		"requestDesc": "Invia una richiesta per diventare membro di {organizationName}. L'iscrizione può dare accesso a eventi e livelli di biglietto riservati ai membri, la possibilità di saltare i questionari di selezione e gli eventuali vantaggi o sconti offerti dagli organizzatori.",
-		"cancel": "Annulla",
-		"submitting": "Invio in corso...",
-		"submitRequest": "Invia richiesta",
-		"ownerAriaLabel": "Sei il proprietario di questa organizzazione",
-		"staffAriaLabel": "Sei un membro dello staff di questa organizzazione",
-		"memberAriaLabel": "Sei un membro di questa organizzazione",
-		"membershipStatusAriaLabel": "Stato dell'iscrizione: {status}",
-		"membershipTierAriaLabel": "Livello di iscrizione: {tier}",
-		"submitError": "Impossibile inviare la richiesta. Per favore riprova."
+		"viewMembership": "Vedi le opzioni di iscrizione"
 	},
 	"requestWhitelistButton": {
 		"mustBeLoggedIn": "Devi essere loggato per richiedere la verifica",
