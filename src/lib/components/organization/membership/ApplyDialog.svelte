@@ -107,10 +107,10 @@
 			: m['membershipApply.title']({ orgName: organizationName });
 	});
 
-	// A reopened dialog must start from a blank form, not from the previous
-	// outcome. `open` is owned by the caller, so the reset hangs off it.
+	// A reopened dialog must start from a blank form — reset on open, so the
+	// outgoing content stays intact during the close animation.
 	$effect(() => {
-		if (open) return;
+		if (!open) return;
 		message = '';
 		errorMessage = null;
 		result = null;

@@ -6518,20 +6518,20 @@
 			"years": "{n} Jahre"
 		},
 		"status": {
-			"active": "Active",
-			"pending": "Pending",
-			"past_due": "Past due",
-			"paused": "Paused",
-			"cancelled": "Cancelled",
-			"expired": "Expired"
+			"active": "Aktiv",
+			"pending": "Ausstehend",
+			"past_due": "Zahlung überfällig",
+			"paused": "Pausiert",
+			"cancelled": "Gekündigt",
+			"expired": "Abgelaufen"
 		},
 		"dateLine": {
-			"renewal": "Next renewal: {date}",
-			"cancels": "Cancels on {date}",
-			"periodEnds": "Period ends {date}",
-			"pausedSince": "Paused since {date}",
-			"ended": "Ended {date}",
-			"pending": "Awaiting first payment"
+			"renewal": "Nächste Verlängerung: {date}",
+			"cancels": "Endet am {date}",
+			"periodEnds": "Zeitraum endet am {date}",
+			"pausedSince": "Pausiert seit {date}",
+			"ended": "Beendet am {date}",
+			"pending": "Warten auf die erste Zahlung"
 		},
 		"pastDue": {
 			"bannerDated": "Zahlung fehlgeschlagen — aktualisiere deine Zahlungsmethode bis {date}, um deine Mitgliedschaft zu behalten.",
@@ -6555,15 +6555,15 @@
 	"account": {
 		"memberships": {
 			"sectionMemberships": "Mitgliedschaften",
-			"title": "My Memberships",
+			"title": "Meine Mitgliedschaften",
 			"empty": {
-				"title": "You don't have any active memberships.",
-				"body": "Memberships are managed by the organizations you belong to.",
-				"cta": "Discover organizations"
+				"title": "Du hast keine aktiven Mitgliedschaften.",
+				"body": "Mitgliedschaften werden von den Organisationen verwaltet, denen du angehörst.",
+				"cta": "Organisationen entdecken"
 			},
-			"viewOrg": "View org",
-			"contactOrg": "Reach out to the organizer to renew.",
-			"memberSince": "Member since {date}",
+			"viewOrg": "Organisation ansehen",
+			"contactOrg": "Wende dich zum Verlängern an die Veranstalter*innen.",
+			"memberSince": "Mitglied seit {date}",
 			"managedBy": "Verwaltet von {org} — wende dich für Änderungen an sie."
 		}
 	},
@@ -6573,7 +6573,7 @@
 			"managedBy": "Verwaltet vom Team von {org}",
 			"pendingSwitch": "Wechsel zu {plan} am {date}",
 			"pendingSwitchFallbackPlan": "einem anderen Plan",
-			"manage": "In deinem Konto verwalten →"
+			"manage": "In deinem Konto verwalten"
 		}
 	},
 	"membershipEligibility": {

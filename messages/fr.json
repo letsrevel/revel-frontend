@@ -6544,7 +6544,7 @@
 			"managedBy": "Gérée par l'équipe de {org}",
 			"pendingSwitch": "Passage à {plan} le {date}",
 			"pendingSwitchFallbackPlan": "un autre forfait",
-			"manage": "Gérer dans ton compte →"
+			"manage": "Gérer dans ton compte"
 		}
 	},
 	"membershipEligibility": {

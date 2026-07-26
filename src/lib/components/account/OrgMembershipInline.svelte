@@ -92,7 +92,7 @@
 				href={resolve('/(auth)/account/memberships', {})}
 				class="mt-3 inline-block text-sm font-medium text-primary underline-offset-4 hover:underline"
 			>
-				{m['orgPublic.yourMembership.manage']()}
+				{m['orgPublic.yourMembership.manage']()}<span aria-hidden="true"> →</span>
 			</a>
 			{#if sub.plan.payment_method === 'offline'}
 				<p class="mt-3 text-xs text-muted-foreground">

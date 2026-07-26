@@ -6573,7 +6573,7 @@
 			"managedBy": "Managed by {org} staff",
 			"pendingSwitch": "Switching to {plan} on {date}",
 			"pendingSwitchFallbackPlan": "another plan",
-			"manage": "Manage in your account →"
+			"manage": "Manage in your account"
 		}
 	},
 	"membershipEligibility": {

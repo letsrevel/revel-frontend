@@ -279,6 +279,52 @@ describe('ApplyDialog', () => {
 		});
 	});
 
+	// The reset hangs off `open` becoming true, not false: resetting on close
+	// blanked the outcome panel mid-way through the dialog's exit animation. That
+	// flash is not observable here (jsdom runs no animations, so bits-ui drops the
+	// content synchronously on close) — this pins the invariant the move must not
+	// break: whichever edge resets, a reopened dialog starts from a blank form.
+	it('starts blank when reopened after an outcome', async () => {
+		const user = userEvent.setup();
+		mockApplySuccess(makeResult({ status: 'pending' }, { next_step: 'wait_for_approval' }));
+		const { rerender } = renderDialog();
+
+		await typeMessage(user, 'let me in');
+		await user.click(screen.getByRole('button', { name: /send application/i }));
+		expect(await screen.findByText('Application received')).toBeInTheDocument();
+
+		// `rerender` strips one top-level `props` key (its legacy call shape), and
+		// this wrapper's own child-props prop happens to be named `props` — so the
+		// payload is nested one level deeper to survive the unwrap. The resulting
+		// deprecation warning is expected, not a signal.
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+		const childProps = {
+			onOpenChange: vi.fn(),
+			organizationSlug: 'acme',
+			organizationName: 'Acme',
+			mode: 'join'
+		};
+		await rerender({
+			props: { client: queryClient, component: ApplyDialog, props: { ...childProps, open: false } }
+		});
+		await waitFor(() => expect(screen.queryByText('Application received')).toBeNull());
+
+		await rerender({
+			props: { client: queryClient, component: ApplyDialog, props: { ...childProps, open: true } }
+		});
+		warn.mockRestore();
+
+		// The remounted content resubscribes to the mutation observer a tick after
+		// it lands, so the submit button reads its stale in-flight label until then.
+		await waitFor(() => {
+			expect(screen.getByRole('button', { name: /send application/i })).toBeEnabled();
+		});
+		const textarea = screen.getByLabelText(/message \(optional\)/i);
+		expect(textarea).toHaveValue('');
+		expect(screen.getByText('0/500')).toBeInTheDocument();
+		expect(screen.queryByText('Application received')).toBeNull();
+	});
+
 	it('asks the caller to close when Cancel is pressed', async () => {
 		const user = userEvent.setup();
 		const { onOpenChange } = renderDialog();
