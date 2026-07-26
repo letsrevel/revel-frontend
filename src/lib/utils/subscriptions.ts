@@ -1,3 +1,5 @@
+import * as m from '$lib/paraglide/messages.js';
+import { getDateLocale } from './date';
 import type {
 	MySubscriptionSchema,
 	SubscriptionSchema,
@@ -34,25 +36,36 @@ export function getAvailableActions(sub: MySubscriptionSchema | SubscriptionSche
 	return base;
 }
 
-const PERIOD_UNIT_LABELS: Record<PeriodUnit, { singular: string; plural: string }> = {
-	month: { singular: 'month', plural: 'months' },
-	year: { singular: 'year', plural: 'years' }
-};
+/** Localized billing-period label, pluralized on `period_count`. */
+function periodLabel(unit: PeriodUnit, count: number): string {
+	if (unit === 'year') {
+		return count === 1
+			? m['subscriptions.period.year']()
+			: m['subscriptions.period.years']({ n: count });
+	}
+	return count === 1
+		? m['subscriptions.period.month']()
+		: m['subscriptions.period.months']({ n: count });
+}
 
+/**
+ * Render a plan as "<amount> / <period>", e.g. "€10.00 / month".
+ *
+ * Both halves follow the active UI language: the amount is pinned to
+ * `getDateLocale()` like every other currency helper (so SSR and CSR agree,
+ * regardless of the server's ICU locale), and the period label comes from the
+ * message catalog rather than a hardcoded English table.
+ */
 export function formatPlanPrice(
-	plan: Pick<PlanSchema, 'price' | 'currency' | 'period_unit' | 'period_count'>,
-	locale = 'en'
+	plan: Pick<PlanSchema, 'price' | 'currency' | 'period_unit' | 'period_count'>
 ): string {
-	const amount = new Intl.NumberFormat(locale, {
+	const amount = new Intl.NumberFormat(getDateLocale(), {
 		style: 'currency',
 		currency: plan.currency,
 		minimumFractionDigits: 2,
 		maximumFractionDigits: 2
 	}).format(Number(plan.price));
-	const label = PERIOD_UNIT_LABELS[plan.period_unit];
-	const count = plan.period_count ?? 1;
-	const unit = count === 1 ? label.singular : `${count} ${label.plural}`;
-	return `${amount} / ${unit}`;
+	return `${amount} / ${periodLabel(plan.period_unit, plan.period_count ?? 1)}`;
 }
 
 export type StatusTone = 'green' | 'blue' | 'amber' | 'gray' | 'red' | 'muted';

@@ -102,18 +102,18 @@ describe('getAvailableActions online/offline', () => {
 
 describe('formatPlanPrice', () => {
 	it('formats monthly', () => {
-		expect(formatPlanPrice(basePlan, 'en')).toBe('€10.00 / month');
+		expect(formatPlanPrice(basePlan)).toBe('€10.00 / month');
 	});
 	it('formats annual', () => {
-		expect(formatPlanPrice({ ...basePlan, period_unit: 'year', period_count: 1 }, 'en')).toBe(
+		expect(formatPlanPrice({ ...basePlan, period_unit: 'year', period_count: 1 })).toBe(
 			'€10.00 / year'
 		);
 	});
 	it('formats N-month', () => {
-		expect(formatPlanPrice({ ...basePlan, period_count: 3 }, 'en')).toBe('€10.00 / 3 months');
+		expect(formatPlanPrice({ ...basePlan, period_count: 3 })).toBe('€10.00 / 3 months');
 	});
 	it('formats N-year', () => {
-		expect(formatPlanPrice({ ...basePlan, period_unit: 'year', period_count: 2 }, 'en')).toBe(
+		expect(formatPlanPrice({ ...basePlan, period_unit: 'year', period_count: 2 })).toBe(
 			'€10.00 / 2 years'
 		);
 	});

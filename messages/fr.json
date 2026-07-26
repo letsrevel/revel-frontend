@@ -4995,27 +4995,17 @@
 		"requestInvitation": "Demander une invitation",
 		"requestSubmitted": "Demande envoyée"
 	},
-	"requestMembershipButton": {
-		"requestSubmitted": "Demande envoyée !",
-		"requestMembership": "Demander l'adhésion",
-		"owner": "Propriétaire",
-		"staff": "Personnel",
-		"member": "Membre",
-		"messageOptional": "Message (facultatif)",
-		"messagePlaceholder": "Explique aux organisateurs pourquoi tu aimerais rejoindre...",
-		"characters": "caractères",
+	"membershipPlans": {
+		"heading": "Adhésion",
+		"subscribeCta": "S'abonner",
+		"loginToSubscribe": "Connecte-toi pour t'abonner",
+		"soldOut": "Complet",
+		"soldOutHelper": "Toutes les places sont prises — une peut se libérer si une adhésion prend fin.",
+		"paused": "Inscriptions en pause",
+		"pausedHelper": "L'organisation a temporairement fermé les inscriptions.",
+		"offlineManaged": "Géré par l'organisation — contacte-la pour rejoindre ce forfait.",
 		"refundPolicy": "Politique de remboursement",
-		"requestSubmittedDesc": "Ta demande d'adhésion a été envoyée à {organizationName}. Tu seras notifié lorsqu'elle sera examinée.",
-		"requestDesc": "Envoie une demande pour devenir membre de {organizationName}. L'adhésion peut donner accès à des événements et des catégories de billets réservés aux membres, la possibilité de sauter les questionnaires de sélection, ainsi qu'aux avantages ou réductions d'adhésion proposés par les organisateurs.",
-		"cancel": "Annuler",
-		"submitting": "Envoi...",
-		"submitRequest": "Envoyer la demande",
-		"ownerAriaLabel": "Tu es le propriétaire de cette organisation",
-		"staffAriaLabel": "Tu es un membre du personnel de cette organisation",
-		"memberAriaLabel": "Tu es membre de cette organisation",
-		"membershipStatusAriaLabel": "Statut d'adhésion : {status}",
-		"membershipTierAriaLabel": "Niveau d'adhésion : {tier}",
-		"submitError": "Échec de l'envoi de la demande. Veuillez réessayer."
+		"viewMembership": "Voir les options d'adhésion"
 	},
 	"requestWhitelistButton": {
 		"mustBeLoggedIn": "Tu dois être connecté pour demander une vérification",
@@ -6492,6 +6482,12 @@
 		}
 	},
 	"subscriptions": {
+		"period": {
+			"month": "mois",
+			"months": "{n} mois",
+			"year": "an",
+			"years": "{n} ans"
+		},
 		"status": {
 			"active": "Actif",
 			"pending": "En attente",
@@ -6525,7 +6521,98 @@
 	"orgPublic": {
 		"yourMembership": {
 			"title": "Ton adhésion",
-			"managedBy": "Gérée par l'équipe de {org}"
+			"managedBy": "Gérée par l'équipe de {org}",
+			"pendingSwitch": "Passage à {plan} le {date}",
+			"pendingSwitchFallbackPlan": "un autre forfait",
+			"manage": "Gérer dans ton compte →"
+		}
+	},
+	"membershipEligibility": {
+		"join": "Rejoindre {orgName}",
+		"reapply": "Refaire une demande d'adhésion",
+		"questionnaireCta": "Remplir le questionnaire d'adhésion",
+		"waiting": "Demande en attente",
+		"trackApplication": "Suivre ta demande",
+		"memberBadge": "Membre",
+		"ownerBadge": "Propriétaire",
+		"ownerBadgeAriaLabel": "Tu es le propriétaire de cette organisation",
+		"staffBadge": "Personnel",
+		"staffBadgeAriaLabel": "Tu es un membre du personnel de cette organisation",
+		"memberBadgeAriaLabel": "Tu es membre de cette organisation",
+		"memberStatusAriaLabel": "Statut d'adhésion : {status}",
+		"memberTierAriaLabel": "Niveau d'adhésion : {tier}",
+		"reason": {
+			"blacklisted": "Tu ne peux pas rejoindre cette organisation.",
+			"requires_verification": "Ton compte doit être vérifié avant que tu puisses rejoindre.",
+			"whitelist_pending": "Ta vérification est en cours d'examen.",
+			"whitelist_rejected": "Ta demande de vérification n'a pas été approuvée.",
+			"already_active_member": "Tu es déjà membre.",
+			"not_accepting_requests": "Cette organisation n'accepte pas de nouveaux membres pour le moment.",
+			"tier_unavailable": "Ce niveau d'adhésion n'est pas disponible pour le moment.",
+			"plan_unavailable": "Cette formule n'est pas disponible pour le moment.",
+			"application_rejected": "Ta demande précédente n'a pas été approuvée.",
+			"membership_questionnaire_missing": "Cette organisation demande aux nouveaux membres de remplir d'abord un questionnaire.",
+			"membership_questionnaire_pending": "Ton questionnaire est en cours d'examen.",
+			"membership_questionnaire_failed": "Ton questionnaire n'a pas été approuvé.",
+			"membership_questionnaire_retake_cooldown": "Tu pourras repasser le questionnaire plus tard.",
+			"requires_approval": "Les demandes d'adhésion sont approuvées par l'organisation.",
+			"requires_invitation": "L'adhésion se fait sur invitation — demande un lien d'invitation à l'organisation.",
+			"duplicate_active_subscription": "Tu as déjà un abonnement actif avec cette organisation.",
+			"membership_paused": "Ton adhésion est actuellement en pause.",
+			"generic": "Tu ne peux pas rejoindre pour le moment."
+		}
+	},
+	"membershipApply": {
+		"title": "Rejoindre {orgName}",
+		"reapplyTitle": "Refaire une demande auprès de {orgName}",
+		"messageOptional": "Message (facultatif)",
+		"messagePlaceholder": "Présente-toi…",
+		"characters": "{count}/500",
+		"submit": "Envoyer la demande",
+		"submitting": "Envoi en cours…",
+		"cancel": "Annuler",
+		"completedTitle": "C'est fait !",
+		"completedBody": "Tu es maintenant membre de {orgName}.",
+		"pendingTitle": "Demande reçue",
+		"pendingBody": "L'organisation a bien reçu ta demande — voici la suite :",
+		"trackLink": "Suivre ta demande",
+		"error": "Impossible d'envoyer ta demande. Réessaie."
+	},
+	"membershipQuestionnairePage": {
+		"title": "Questionnaire d'adhésion",
+		"subtitle": "{orgName} demande aux nouveaux membres de le remplir.",
+		"backToOrg": "Retour à {orgName}",
+		"acceptedTitle": "Questionnaire approuvé",
+		"acceptedBody": "Tu peux maintenant poursuivre ton adhésion à {orgName}.",
+		"pendingToast": "Questionnaire envoyé — l'organisation va l'examiner.",
+		"submitError": "Impossible d'envoyer le questionnaire. Réessaie."
+	},
+	"subscribe": {
+		"title": "S'abonner à {plan}",
+		"priceLine": "{price}",
+		"firstCharge": "{price} te seront facturés maintenant, puis automatiquement à chaque renouvellement.",
+		"autoRenew": "Se renouvelle automatiquement {cadence} jusqu'à ce que tu annules — tu peux annuler à tout moment depuis ton compte.",
+		"cadence": {
+			"month": "tous les mois",
+			"months": "tous les {n} mois",
+			"year": "tous les ans",
+			"years": "tous les {n} ans"
+		},
+		"refundPolicy": "Politique de remboursement",
+		"stripeDisclaimer": "Les paiements sont traités en toute sécurité par Stripe.",
+		"confirmCta": "Continuer vers le paiement",
+		"cancel": "Annuler",
+		"error": "Impossible de démarrer le paiement. Réessaie.",
+		"return": {
+			"confirming": "Confirmation de ton adhésion…",
+			"welcome": "Bienvenue parmi les membres !",
+			"welcomeBody": "Ton adhésion est active.",
+			"slowTitle": "Presque terminé",
+			"slow": "Cela prend plus de temps que d'habitude — compte une minute. Nous t'enverrons un e-mail dans tous les cas. Tu peux aussi vérifier plus tard dans ton compte.",
+			"checkAccount": "Voir tes adhésions",
+			"cancelledTitle": "Paiement non finalisé",
+			"cancelledBody": "Ton paiement n'a pas été finalisé. Tu peux le reprendre quand tu veux.",
+			"resumeCta": "Reprendre le paiement"
 		}
 	},
 	"waitlistSettings.title": "Paramètres avancés de liste d'attente",

@@ -5024,27 +5024,17 @@
 		"requestInvitation": "Einladung anfordern",
 		"requestSubmitted": "Anfrage gesendet"
 	},
-	"requestMembershipButton": {
-		"requestSubmitted": "Anfrage gesendet!",
-		"requestMembership": "Mitgliedschaft anfragen",
-		"owner": "Inhaber*in",
-		"staff": "Mitarbeiter*in",
-		"member": "Mitglied",
-		"messageOptional": "Nachricht (Optional)",
-		"messagePlaceholder": "Erzähle den Organisierenden, warum du beitreten möchtest...",
-		"characters": "Zeichen",
+	"membershipPlans": {
+		"heading": "Mitgliedschaft",
+		"subscribeCta": "Abonnieren",
+		"loginToSubscribe": "Zum Abonnieren anmelden",
+		"soldOut": "Ausverkauft",
+		"soldOutHelper": "Alle Plätze sind vergeben — einer wird eventuell frei, wenn eine Mitgliedschaft endet.",
+		"paused": "Anmeldung pausiert",
+		"pausedHelper": "Die Organisation hat die Anmeldung vorübergehend geschlossen.",
+		"offlineManaged": "Wird von der Organisation verwaltet — melde dich bei ihr, um diesen Plan zu buchen.",
 		"refundPolicy": "Rückerstattungsrichtlinie",
-		"requestSubmittedDesc": "Deine Mitgliedschaftsanfrage wurde an {organizationName} gesendet. Du wirst benachrichtigt, wenn sie geprüft wurde.",
-		"requestDesc": "Stelle eine Anfrage, um Mitglied von {organizationName} zu werden. Eine Mitgliedschaft kann Zugang zu Events und Ticket-Stufen nur für Mitglieder gewähren, das Überspringen von Prüfungs-Fragebögen ermöglichen sowie Mitgliedschaftsvorteile oder Rabatte bieten, die die Organisierenden anbieten.",
-		"cancel": "Abbrechen",
-		"submitting": "Wird gesendet...",
-		"submitRequest": "Anfrage senden",
-		"ownerAriaLabel": "Du bist Inhaber*in dieser Organisation",
-		"staffAriaLabel": "Du bist Mitarbeiter*in dieser Organisation",
-		"memberAriaLabel": "Du bist Mitglied dieser Organisation",
-		"membershipStatusAriaLabel": "Mitgliedschaftsstatus: {status}",
-		"membershipTierAriaLabel": "Mitgliedschaftsstufe: {tier}",
-		"submitError": "Anfrage konnte nicht gesendet werden. Bitte versuche es erneut."
+		"viewMembership": "Mitgliedschaftsoptionen ansehen"
 	},
 	"requestWhitelistButton": {
 		"mustBeLoggedIn": "Du musst eingeloggt sein, um eine Verifizierung anzufordern",
@@ -6521,6 +6511,12 @@
 		}
 	},
 	"subscriptions": {
+		"period": {
+			"month": "Monat",
+			"months": "{n} Monate",
+			"year": "Jahr",
+			"years": "{n} Jahre"
+		},
 		"status": {
 			"active": "Active",
 			"pending": "Pending",
@@ -6553,8 +6549,99 @@
 	},
 	"orgPublic": {
 		"yourMembership": {
-			"title": "Your membership",
-			"managedBy": "Managed by {org} staff"
+			"title": "Deine Mitgliedschaft",
+			"managedBy": "Verwaltet vom Team von {org}",
+			"pendingSwitch": "Wechsel zu {plan} am {date}",
+			"pendingSwitchFallbackPlan": "einem anderen Plan",
+			"manage": "In deinem Konto verwalten →"
+		}
+	},
+	"membershipEligibility": {
+		"join": "{orgName} beitreten",
+		"reapply": "Mitgliedschaft erneut beantragen",
+		"questionnaireCta": "Fragebogen zur Mitgliedschaft ausfüllen",
+		"waiting": "Antrag in Bearbeitung",
+		"trackApplication": "Deinen Antrag verfolgen",
+		"memberBadge": "Mitglied",
+		"ownerBadge": "Inhaber*in",
+		"ownerBadgeAriaLabel": "Du bist Inhaber*in dieser Organisation",
+		"staffBadge": "Mitarbeiter*in",
+		"staffBadgeAriaLabel": "Du bist Mitarbeiter*in dieser Organisation",
+		"memberBadgeAriaLabel": "Du bist Mitglied dieser Organisation",
+		"memberStatusAriaLabel": "Mitgliedschaftsstatus: {status}",
+		"memberTierAriaLabel": "Mitgliedschaftsstufe: {tier}",
+		"reason": {
+			"blacklisted": "Du kannst dieser Organisation nicht beitreten.",
+			"requires_verification": "Dein Konto muss verifiziert werden, bevor du beitreten kannst.",
+			"whitelist_pending": "Deine Verifizierung wird gerade geprüft.",
+			"whitelist_rejected": "Deine Verifizierungsanfrage wurde nicht genehmigt.",
+			"already_active_member": "Du bist bereits Mitglied.",
+			"not_accepting_requests": "Diese Organisation nimmt derzeit keine neuen Mitglieder auf.",
+			"tier_unavailable": "Diese Mitgliedschaftsstufe ist derzeit nicht verfügbar.",
+			"plan_unavailable": "Dieser Plan ist derzeit nicht verfügbar.",
+			"application_rejected": "Dein vorheriger Antrag wurde nicht genehmigt.",
+			"membership_questionnaire_missing": "Diese Organisation bittet neue Mitglieder, zuerst einen Fragebogen auszufüllen.",
+			"membership_questionnaire_pending": "Dein Fragebogen wird gerade geprüft.",
+			"membership_questionnaire_failed": "Dein Fragebogen wurde nicht genehmigt.",
+			"membership_questionnaire_retake_cooldown": "Du kannst den Fragebogen später erneut ausfüllen.",
+			"requires_approval": "Mitgliedschaftsanträge werden von der Organisation genehmigt.",
+			"requires_invitation": "Der Beitritt erfolgt per Einladung — frag die Organisator*innen nach einem Einladungslink.",
+			"duplicate_active_subscription": "Du hast bereits ein aktives Abo bei dieser Organisation.",
+			"membership_paused": "Deine Mitgliedschaft ist derzeit pausiert.",
+			"generic": "Du kannst derzeit nicht beitreten."
+		}
+	},
+	"membershipApply": {
+		"title": "{orgName} beitreten",
+		"reapplyTitle": "Erneut bei {orgName} bewerben",
+		"messageOptional": "Nachricht (optional)",
+		"messagePlaceholder": "Stell dich kurz vor …",
+		"characters": "{count}/500",
+		"submit": "Bewerbung senden",
+		"submitting": "Wird gesendet …",
+		"cancel": "Abbrechen",
+		"completedTitle": "Du bist dabei!",
+		"completedBody": "Du bist jetzt Mitglied bei {orgName}.",
+		"pendingTitle": "Bewerbung eingegangen",
+		"pendingBody": "Die Organisation hat deine Bewerbung — so geht es weiter:",
+		"trackLink": "Deine Bewerbung verfolgen",
+		"error": "Deine Bewerbung konnte nicht gesendet werden. Bitte versuch es noch einmal."
+	},
+	"membershipQuestionnairePage": {
+		"title": "Mitgliedschafts-Fragebogen",
+		"subtitle": "{orgName} bittet neue Mitglieder, diesen Fragebogen auszufüllen.",
+		"backToOrg": "Zurück zu {orgName}",
+		"acceptedTitle": "Fragebogen bestätigt",
+		"acceptedBody": "Du kannst jetzt mit dem Beitritt zu {orgName} fortfahren.",
+		"pendingToast": "Fragebogen abgeschickt — die Organisation prüft ihn.",
+		"submitError": "Der Fragebogen konnte nicht gesendet werden. Bitte versuch es noch einmal."
+	},
+	"subscribe": {
+		"title": "{plan} abonnieren",
+		"priceLine": "{price}",
+		"firstCharge": "Dir werden jetzt {price} berechnet, danach automatisch bei jeder Verlängerung.",
+		"autoRenew": "Verlängert sich automatisch {cadence}, bis du kündigst — kündigen kannst du jederzeit in deinem Konto.",
+		"cadence": {
+			"month": "monatlich",
+			"months": "alle {n} Monate",
+			"year": "jährlich",
+			"years": "alle {n} Jahre"
+		},
+		"refundPolicy": "Rückerstattungsrichtlinie",
+		"stripeDisclaimer": "Zahlungen werden sicher über Stripe abgewickelt.",
+		"confirmCta": "Weiter zur Zahlung",
+		"cancel": "Abbrechen",
+		"error": "Die Bezahlung konnte nicht gestartet werden. Bitte versuche es erneut.",
+		"return": {
+			"confirming": "Dein Abo wird bestätigt…",
+			"welcome": "Willkommen, Mitglied!",
+			"welcomeBody": "Dein Abo ist aktiv.",
+			"slowTitle": "Fast geschafft",
+			"slow": "Das dauert länger als üblich — es kann eine Minute dauern. Wir schicken dir in jedem Fall eine E-Mail. Du kannst auch später in deinem Konto nachsehen.",
+			"checkAccount": "Deine Mitgliedschaften ansehen",
+			"cancelledTitle": "Bezahlung nicht abgeschlossen",
+			"cancelledBody": "Deine Zahlung wurde nicht abgeschlossen. Du kannst sie fortsetzen, wann immer du möchtest.",
+			"resumeCta": "Zahlung fortsetzen"
 		}
 	},
 	"waitlistSettings.title": "Advanced waitlist settings",

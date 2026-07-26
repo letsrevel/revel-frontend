@@ -5024,27 +5024,17 @@
 		"requestInvitation": "Request Invitation",
 		"requestSubmitted": "Request Submitted"
 	},
-	"requestMembershipButton": {
-		"requestSubmitted": "Request Submitted!",
-		"requestMembership": "Request Membership",
-		"owner": "Owner",
-		"staff": "Staff",
-		"member": "Member",
-		"messageOptional": "Message (Optional)",
-		"messagePlaceholder": "Tell the organizers why you'd like to join...",
-		"characters": "characters",
+	"membershipPlans": {
+		"heading": "Membership",
+		"subscribeCta": "Subscribe",
+		"loginToSubscribe": "Log in to subscribe",
+		"soldOut": "Sold out",
+		"soldOutHelper": "All spots are taken — one may free up if a membership ends.",
+		"paused": "Sales paused",
+		"pausedHelper": "The organization has temporarily closed sign-ups.",
+		"offlineManaged": "Managed by the organization — contact them to join this plan.",
 		"refundPolicy": "Refund policy",
-		"requestSubmittedDesc": "Your membership request has been sent to {organizationName}. You'll be notified when it's reviewed.",
-		"requestDesc": "Submit a request to become a member of {organizationName}. Membership can grant access to members-only events and ticket tiers, the ability to skip screening questionnaires, and any membership perks or discounts the organizers offer.",
-		"cancel": "Cancel",
-		"submitting": "Submitting...",
-		"submitRequest": "Submit Request",
-		"ownerAriaLabel": "You are the owner of this organization",
-		"staffAriaLabel": "You are a staff member of this organization",
-		"memberAriaLabel": "You are a member of this organization",
-		"membershipStatusAriaLabel": "Membership status: {status}",
-		"membershipTierAriaLabel": "Membership tier: {tier}",
-		"submitError": "Failed to submit request. Please try again."
+		"viewMembership": "View membership options"
 	},
 	"requestWhitelistButton": {
 		"mustBeLoggedIn": "You must be logged in to request verification",
@@ -6521,6 +6511,12 @@
 		}
 	},
 	"subscriptions": {
+		"period": {
+			"month": "month",
+			"months": "{n} months",
+			"year": "year",
+			"years": "{n} years"
+		},
 		"status": {
 			"active": "Active",
 			"pending": "Pending",
@@ -6554,7 +6550,98 @@
 	"orgPublic": {
 		"yourMembership": {
 			"title": "Your membership",
-			"managedBy": "Managed by {org} staff"
+			"managedBy": "Managed by {org} staff",
+			"pendingSwitch": "Switching to {plan} on {date}",
+			"pendingSwitchFallbackPlan": "another plan",
+			"manage": "Manage in your account →"
+		}
+	},
+	"membershipEligibility": {
+		"join": "Join {orgName}",
+		"reapply": "Re-apply for membership",
+		"questionnaireCta": "Fill in the membership questionnaire",
+		"waiting": "Application pending",
+		"trackApplication": "Track your application",
+		"memberBadge": "Member",
+		"ownerBadge": "Owner",
+		"ownerBadgeAriaLabel": "You are the owner of this organization",
+		"staffBadge": "Staff",
+		"staffBadgeAriaLabel": "You are a staff member of this organization",
+		"memberBadgeAriaLabel": "You are a member of this organization",
+		"memberStatusAriaLabel": "Membership status: {status}",
+		"memberTierAriaLabel": "Membership tier: {tier}",
+		"reason": {
+			"blacklisted": "You can't join this organization.",
+			"requires_verification": "Your account needs to be verified before you can join.",
+			"whitelist_pending": "Your verification is being reviewed.",
+			"whitelist_rejected": "Your verification request was not approved.",
+			"already_active_member": "You're already a member.",
+			"not_accepting_requests": "This organization isn't accepting new members right now.",
+			"tier_unavailable": "This membership tier isn't available right now.",
+			"plan_unavailable": "This plan isn't available right now.",
+			"application_rejected": "Your previous application wasn't approved.",
+			"membership_questionnaire_missing": "This organization asks new members to fill in a questionnaire first.",
+			"membership_questionnaire_pending": "Your questionnaire is being reviewed.",
+			"membership_questionnaire_failed": "Your questionnaire wasn't approved.",
+			"membership_questionnaire_retake_cooldown": "You can retake the questionnaire later.",
+			"requires_approval": "Membership requests are approved by the organization.",
+			"requires_invitation": "Joining is by invitation — ask the organization for an invite link.",
+			"duplicate_active_subscription": "You already have an active subscription with this organization.",
+			"membership_paused": "Your membership is currently paused.",
+			"generic": "You can't join right now."
+		}
+	},
+	"membershipApply": {
+		"title": "Join {orgName}",
+		"reapplyTitle": "Re-apply to {orgName}",
+		"messageOptional": "Message (optional)",
+		"messagePlaceholder": "Introduce yourself…",
+		"characters": "{count}/500",
+		"submit": "Send application",
+		"submitting": "Sending…",
+		"cancel": "Cancel",
+		"completedTitle": "You're in!",
+		"completedBody": "You're now a member of {orgName}.",
+		"pendingTitle": "Application received",
+		"pendingBody": "The organization has your application — here's what happens next:",
+		"trackLink": "Track your application",
+		"error": "Could not send your application. Please try again."
+	},
+	"membershipQuestionnairePage": {
+		"title": "Membership questionnaire",
+		"subtitle": "{orgName} asks new members to fill this in.",
+		"backToOrg": "Back to {orgName}",
+		"acceptedTitle": "Questionnaire approved",
+		"acceptedBody": "You can continue joining {orgName} now.",
+		"pendingToast": "Questionnaire submitted — the organization will review it.",
+		"submitError": "Could not submit the questionnaire. Please try again."
+	},
+	"subscribe": {
+		"title": "Subscribe to {plan}",
+		"priceLine": "{price}",
+		"firstCharge": "You'll be charged {price} now, then automatically each renewal.",
+		"autoRenew": "Renews automatically every {cadence} until you cancel — you can cancel anytime from your account.",
+		"cadence": {
+			"month": "month",
+			"months": "{n} months",
+			"year": "year",
+			"years": "{n} years"
+		},
+		"refundPolicy": "Refund policy",
+		"stripeDisclaimer": "Payments are processed securely by Stripe.",
+		"confirmCta": "Continue to payment",
+		"cancel": "Cancel",
+		"error": "Could not start the checkout. Please try again.",
+		"return": {
+			"confirming": "Confirming your subscription…",
+			"welcome": "Welcome, member!",
+			"welcomeBody": "Your subscription is active.",
+			"slowTitle": "Almost there",
+			"slow": "This is taking longer than usual — it can take a minute. We'll email you either way. You can also check your account later.",
+			"checkAccount": "View your memberships",
+			"cancelledTitle": "Checkout not completed",
+			"cancelledBody": "Your payment wasn't completed. You can resume it whenever you're ready.",
+			"resumeCta": "Resume payment"
 		}
 	},
 	"waitlistSettings.title": "Advanced waitlist settings",
