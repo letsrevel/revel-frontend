@@ -286,11 +286,14 @@
 />
 
 <!--
-	Outside the action row on purpose: a successful re-apply invalidates
-	`['me', 'applications']`, the row re-renders as `pending`, and `canReapply`
-	flips false. Rendered inside that branch the dialog would be destroyed while
-	the member is still reading its outcome — an unannounced context change that
-	drops focus to <body> (WCAG 3.2). Here only its own `open` state gates it.
+	Outside the action row on purpose, defensively: nothing in this row may gate a
+	dialog that can outlive the state it renders. `canReapply` is derived from the
+	very application the dialog acts on, and the dialog stays up after its outcome
+	— so were it mounted inside that branch, any future change that lets the row
+	re-render mid-read (a list refetch resolving differently, an added advance) would
+	destroy it under the member: an unannounced context change that drops focus to
+	<body> (WCAG 3.2). The same lesson as PR②'s `MembershipCta`, where the flip is
+	real. Here only the dialog's own `open` state gates it.
 -->
 <ApplyDialog
 	open={applyOpen}

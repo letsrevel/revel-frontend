@@ -204,14 +204,33 @@ describe('ApplicationRow', () => {
 	describe('actions', () => {
 		// Only an application the backend can still move is cancellable; a settled
 		// one is offered the re-apply route instead (and a completed one neither).
-		it('offers cancel on an open application', async () => {
+		//
+		// The advanced chip is awaited *before* the button assertion: the pending
+		// render already carries the button, so asserting it first would resolve
+		// against the pre-advance markup and let a pending-only gate pass.
+		it('keeps cancel offered when the advance reports an approved application', async () => {
 			mockAdvance({
 				application: makeApplication({ status: 'approved' }),
 				eligibility: makeEligibility()
 			});
 			renderRow(makeApplication({ status: 'pending' }));
 
-			expect(await screen.findByRole('button', { name: 'Cancel application' })).toBeInTheDocument();
+			expect(await screen.findByText('Approved')).toBeInTheDocument();
+			expect(screen.getByRole('button', { name: 'Cancel application' })).toBeInTheDocument();
+			expect(screen.queryByRole('button', { name: 'Re-apply for membership' })).toBeNull();
+		});
+
+		// The same gate from the other direction: a row whose *list* status is
+		// already `approved` never passes through a pending render at all.
+		it('offers cancel on a row that arrives already approved', async () => {
+			mockAdvance({
+				application: makeApplication({ status: 'approved' }),
+				eligibility: makeEligibility()
+			});
+			renderRow(makeApplication({ status: 'approved' }));
+
+			await waitFor(() => expect(getApplicationMock).toHaveBeenCalledTimes(1));
+			expect(screen.getByRole('button', { name: 'Cancel application' })).toBeInTheDocument();
 			expect(screen.queryByRole('button', { name: 'Re-apply for membership' })).toBeNull();
 		});
 
@@ -292,6 +311,15 @@ describe('ApplicationRow', () => {
 			await user.click(screen.getByRole('button', { name: 'Re-apply for membership' }));
 
 			expect(await screen.findByText('Re-apply to Acme')).toBeInTheDocument();
+		});
+
+		// The other arm of the re-apply gate: a member who withdrew must be able
+		// to come back the same way a rejected one can.
+		it('offers re-apply on a cancelled application', async () => {
+			renderRow(makeApplication({ status: 'cancelled' }));
+
+			expect(screen.getByRole('button', { name: 'Re-apply for membership' })).toBeInTheDocument();
+			expect(screen.queryByRole('button', { name: 'Cancel application' })).toBeNull();
 		});
 	});
 });
