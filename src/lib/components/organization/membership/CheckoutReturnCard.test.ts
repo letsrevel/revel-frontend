@@ -9,10 +9,16 @@ import {
 	mesubscriptionsSubscribe
 } from '$lib/api/generated/sdk.gen';
 import type { MySubscriptionSchema } from '$lib/api/generated/types.gen';
+import { invalidateAll } from '$app/navigation';
 
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	mesubscriptionsGetMySubscription: vi.fn(),
 	mesubscriptionsSubscribe: vi.fn()
+}));
+
+// The card re-runs the page's server load once the webhook has landed.
+vi.mock('$app/navigation', () => ({
+	invalidateAll: vi.fn()
 }));
 
 vi.mock('$lib/stores/auth.svelte', () => ({
@@ -98,7 +104,7 @@ describe('CheckoutReturnCard', () => {
 		});
 	}
 
-	it('welcomes the member and invalidates both caches exactly once when the sub is active', async () => {
+	it('welcomes the member and flips every stale view exactly once when the sub is active', async () => {
 		const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
 		mockGetSub(makeSub({ status: 'active' }));
 		renderCard('success');
@@ -114,12 +120,23 @@ describe('CheckoutReturnCard', () => {
 			});
 		});
 		expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['organization', 'test-org'] });
-
-		const relevant = invalidateSpy.mock.calls.filter(([arg]) => {
-			const key = (arg as { queryKey?: unknown[] } | undefined)?.queryKey;
-			return Array.isArray(key) && (key[0] === 'me' || key[0] === 'organization');
+		// Without this the action row keeps offering "Join" next to the welcome.
+		expect(invalidateSpy).toHaveBeenCalledWith({
+			queryKey: ['org', 'test-org', 'join-eligibility']
 		});
-		expect(relevant).toHaveLength(2);
+		// …and the server-rendered `isMember` stays false until a manual reload.
+		expect(vi.mocked(invalidateAll)).toHaveBeenCalledTimes(1);
+
+		function callsFor(head: unknown) {
+			return invalidateSpy.mock.calls.filter(([arg]) => {
+				const key = (arg as { queryKey?: unknown[] } | undefined)?.queryKey;
+				return Array.isArray(key) && key[0] === head;
+			});
+		}
+		// The transition guard holds for all four side effects, not just the first.
+		expect(callsFor('me')).toHaveLength(1);
+		expect(callsFor('organization')).toHaveLength(1);
+		expect(callsFor('org')).toHaveLength(1);
 	});
 
 	it('announces the confirming state in a live region while the sub is still pending', async () => {

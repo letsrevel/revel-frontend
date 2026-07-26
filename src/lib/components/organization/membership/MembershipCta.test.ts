@@ -218,6 +218,45 @@ describe('MembershipCta', () => {
 		expect(vi.mocked(memembershipapplicationsApply)).not.toHaveBeenCalled();
 	});
 
+	// A completed application calls `invalidateAll()`; the reloaded page comes
+	// back with `isMember` true. The dialog is still showing the outcome, so it
+	// must survive the CTA switching to the member badge behind it.
+	it('keeps the open apply dialog mounted when the CTA flips to the member badge', async () => {
+		const user = userEvent.setup();
+		mockEligibility(makeEligibility({ allowed: true }));
+		const { rerender } = renderCta();
+
+		await user.click(await screen.findByRole('button', { name: /join acme/i }));
+		expect(await screen.findByRole('dialog')).toHaveTextContent('Join Acme');
+
+		// `rerender` strips one top-level `props` key (its legacy call shape), and
+		// this wrapper's own child-props prop happens to be named `props` — so the
+		// payload is nested one level deeper to survive the unwrap. The resulting
+		// deprecation warning is expected, not a signal.
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+		await rerender({
+			props: {
+				client: queryClient,
+				component: MembershipCta,
+				props: {
+					organizationSlug: 'acme',
+					organizationName: 'Acme',
+					isAuthenticated: true,
+					isMember: true,
+					membershipStatus: 'active',
+					membershipTier: { id: 'tier-1', name: 'Gold' }
+				}
+			}
+		});
+		warn.mockRestore();
+
+		// The chain behind the dialog really did switch to the member badge — queried
+		// by text, since the open modal aria-hides everything outside itself.
+		expect(screen.getByText('Active')).toBeInTheDocument();
+		expect(screen.getByText('Gold')).toBeInTheDocument();
+		expect(screen.getByRole('dialog')).toHaveTextContent('Join Acme');
+	});
+
 	it('opens the apply dialog in re-apply mode when a past application ended', async () => {
 		const user = userEvent.setup();
 		mockEligibility(makeEligibility({ allowed: false, next_step: 'reapply' }));

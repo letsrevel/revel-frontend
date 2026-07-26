@@ -12,6 +12,7 @@
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { Loader2 } from '@lucide/svelte';
+	import { invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
 
 	interface Props {
@@ -68,13 +69,24 @@
 	});
 
 	// The webhook has landed; the org page and the account view still hold the
-	// pre-checkout answer. Fire once, on the transition into `done`.
+	// pre-checkout answer. Fire once, on the transition into `done` — every
+	// consumer of the stale verdict is refreshed together, or the card would say
+	// "Welcome, member!" next to an action row still offering "Join".
 	let invalidated = $state(false);
 	$effect(() => {
 		if (phase !== 'done' || invalidated) return;
 		invalidated = true;
+		// The inline membership card.
 		queryClient.invalidateQueries({ queryKey: ['me', 'org', organizationId, 'subscription'] });
+		// Admin views of this org; a no-op on the public page, kept for the
+		// authenticated-admin case and future consumers of the prefix.
 		queryClient.invalidateQueries({ queryKey: ['organization', organizationSlug] });
+		// MembershipCta's verdict: fetched on mount of this fresh document, so it
+		// almost always predates the webhook and caches "join" for `staleTime`.
+		queryClient.invalidateQueries({ queryKey: ['org', organizationSlug, 'join-eligibility'] });
+		// `isMember` and the member-only sections come from the server load, which
+		// ran before the subscription existed; only a re-run flips them.
+		invalidateAll();
 	});
 
 	// -------------------------------------------------------------- cancelled

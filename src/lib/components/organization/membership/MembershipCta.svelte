@@ -235,14 +235,21 @@
 			</p>
 		{/if}
 	</div>
-
-	<!-- Mounted outside the branch above: a successful application refetches the
-	     verdict, and re-mounting the dialog would tear down its outcome panel. -->
-	<ApplyDialog
-		open={applyOpen}
-		onOpenChange={(next) => (applyOpen = next)}
-		{organizationSlug}
-		{organizationName}
-		mode={applyMode}
-	/>
 {/if}
+
+<!--
+	Deliberately outside the whole chain above, not just the ctaKind branches: a
+	completed application calls `invalidateAll()`, the reloaded page reports
+	`isMember`, and the chain switches to the member badge. Rendered inside, the
+	dialog would be destroyed mid-read — an unannounced context change that drops
+	focus to <body> (WCAG 3.2). Here the badge simply appears behind it, and the
+	dialog lives until the user closes it. Its own `open` state is the only gate;
+	nothing outside the CTA branches can set it.
+-->
+<ApplyDialog
+	open={applyOpen}
+	onOpenChange={(next) => (applyOpen = next)}
+	{organizationSlug}
+	{organizationName}
+	mode={applyMode}
+/>
