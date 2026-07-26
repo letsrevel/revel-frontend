@@ -6556,7 +6556,7 @@
 			"title": "Deine Mitgliedschaft",
 			"managedBy": "Verwaltet vom Team von {org}",
 			"pendingSwitch": "Wechsel zu {plan} am {date}",
-			"pendingSwitchFallbackPlan": "einen anderen Tarif",
+			"pendingSwitchFallbackPlan": "einem anderen Plan",
 			"manage": "In deinem Konto verwalten →"
 		}
 	},
