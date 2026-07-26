@@ -1,6 +1,8 @@
 import { render, screen, waitFor } from '@testing-library/svelte';
+import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
+import { toast } from 'svelte-sonner';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 import ApplicationRow from './ApplicationRow.svelte';
 import type {
@@ -10,10 +12,18 @@ import type {
 } from '$lib/api/generated/types.gen';
 
 const getApplicationMock = vi.hoisted(() => vi.fn());
+const cancelMock = vi.hoisted(() => vi.fn());
+const applyMock = vi.hoisted(() => vi.fn());
+// The factory replaces the whole module, so it must also carry the operations
+// the row reaches only transitively (ApplyDialog's `apply`).
 vi.mock('$lib/api/generated/sdk.gen', () => ({
-	memembershipapplicationsGetApplication: getApplicationMock
+	memembershipapplicationsGetApplication: getApplicationMock,
+	memembershipapplicationsCancel: cancelMock,
+	memembershipapplicationsApply: applyMock
 }));
 vi.mock('$lib/stores/auth.svelte', () => ({ authStore: { accessToken: 'tok' } }));
+vi.mock('$app/navigation', () => ({ invalidateAll: vi.fn() }));
+vi.mock('svelte-sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 function makeApplication(
 	overrides: Partial<MembershipApplicationSchema> = {}
@@ -70,6 +80,10 @@ describe('ApplicationRow', () => {
 
 	beforeEach(() => {
 		getApplicationMock.mockReset();
+		cancelMock.mockReset();
+		applyMock.mockReset();
+		vi.mocked(toast.success).mockReset();
+		vi.mocked(toast.error).mockReset();
 		queryClient = new QueryClient({
 			defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
 		});
@@ -185,5 +199,99 @@ describe('ApplicationRow', () => {
 		renderRow(makeApplication({ status: 'rejected' }));
 
 		expect(screen.getByLabelText('Application status: Rejected')).toHaveTextContent('Rejected');
+	});
+
+	describe('actions', () => {
+		// Only an application the backend can still move is cancellable; a settled
+		// one is offered the re-apply route instead (and a completed one neither).
+		it('offers cancel on an open application', async () => {
+			mockAdvance({
+				application: makeApplication({ status: 'approved' }),
+				eligibility: makeEligibility()
+			});
+			renderRow(makeApplication({ status: 'pending' }));
+
+			expect(await screen.findByRole('button', { name: 'Cancel application' })).toBeInTheDocument();
+			expect(screen.queryByRole('button', { name: 'Re-apply for membership' })).toBeNull();
+		});
+
+		it('offers neither action on a completed application', async () => {
+			renderRow(makeApplication({ status: 'completed' }));
+
+			expect(screen.getByText('Completed')).toBeInTheDocument();
+			await waitFor(() => expect(getApplicationMock).not.toHaveBeenCalled());
+			expect(screen.queryByRole('button', { name: 'Cancel application' })).toBeNull();
+			expect(screen.queryByRole('button', { name: 'Re-apply for membership' })).toBeNull();
+		});
+
+		it('cancels the application on confirmation and refreshes the list', async () => {
+			const user = userEvent.setup();
+			mockAdvance({
+				application: makeApplication({ status: 'pending' }),
+				eligibility: makeEligibility()
+			});
+			cancelMock.mockResolvedValue({
+				data: makeApplication({ status: 'cancelled' }),
+				error: undefined
+			});
+			const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+			renderRow(makeApplication({ status: 'pending' }));
+
+			await user.click(await screen.findByRole('button', { name: 'Cancel application' }));
+			expect(await screen.findByRole('dialog')).toHaveTextContent('Cancel this application?');
+
+			await user.click(screen.getByRole('button', { name: 'Confirm' }));
+
+			await waitFor(() =>
+				expect(cancelMock).toHaveBeenCalledWith(
+					expect.objectContaining({ path: { application_id: 'app-1' } })
+				)
+			);
+			await waitFor(() =>
+				expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['me', 'applications'] })
+			);
+			expect(toast.success).toHaveBeenCalledWith('Application cancelled.');
+		});
+
+		it('does not cancel when the confirmation is declined', async () => {
+			const user = userEvent.setup();
+			mockAdvance({
+				application: makeApplication({ status: 'pending' }),
+				eligibility: makeEligibility()
+			});
+			renderRow(makeApplication({ status: 'pending' }));
+
+			await user.click(await screen.findByRole('button', { name: 'Cancel application' }));
+			await user.click(await screen.findByRole('button', { name: 'Cancel' }));
+
+			expect(cancelMock).not.toHaveBeenCalled();
+		});
+
+		// hey-api resolves rather than throws, so the backend's own wording has to
+		// be dug out of the resolved error body.
+		it('surfaces the backend reason when the cancellation fails', async () => {
+			const user = userEvent.setup();
+			mockAdvance({
+				application: makeApplication({ status: 'pending' }),
+				eligibility: makeEligibility()
+			});
+			cancelMock.mockResolvedValue({ data: undefined, error: { detail: 'Already settled.' } });
+			renderRow(makeApplication({ status: 'pending' }));
+
+			await user.click(await screen.findByRole('button', { name: 'Cancel application' }));
+			await user.click(await screen.findByRole('button', { name: 'Confirm' }));
+
+			await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Already settled.'));
+		});
+
+		it('opens the apply dialog in re-apply framing from a rejected application', async () => {
+			const user = userEvent.setup();
+			renderRow(makeApplication({ status: 'rejected' }));
+
+			expect(screen.queryByRole('button', { name: 'Cancel application' })).toBeNull();
+			await user.click(screen.getByRole('button', { name: 'Re-apply for membership' }));
+
+			expect(await screen.findByText('Re-apply to Acme')).toBeInTheDocument();
+		});
 	});
 });

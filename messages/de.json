@@ -8630,6 +8630,11 @@
 		},
 		"continueCta": "Fragebogen fortsetzen",
 		"becameMember": "Du bist jetzt Mitglied bei {org}!",
-		"statusAriaLabel": "Bewerbungsstatus: {status}"
+		"statusAriaLabel": "Bewerbungsstatus: {status}",
+		"cancelCta": "Bewerbung zurückziehen",
+		"cancelConfirmTitle": "Diese Bewerbung zurückziehen?",
+		"cancelConfirmBody": "Deine Bewerbung bei {org} wird zurückgezogen. Du kannst dich später erneut bewerben.",
+		"cancelSuccess": "Bewerbung zurückgezogen.",
+		"cancelError": "Die Bewerbung konnte nicht zurückgezogen werden. Bitte versuche es erneut."
 	}
 }

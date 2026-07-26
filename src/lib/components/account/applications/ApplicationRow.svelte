@@ -24,15 +24,22 @@
 
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
-	import { memembershipapplicationsGetApplication } from '$lib/api/generated/sdk.gen';
+	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
+	import {
+		memembershipapplicationsCancel,
+		memembershipapplicationsGetApplication
+	} from '$lib/api/generated/sdk.gen';
 	import type { MembershipApplicationSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { getApplicationPendingMessage } from '$lib/utils/membership-eligibility';
 	import { Button } from '$lib/components/ui/button';
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
+	import ApplyDialog from '$lib/components/organization/membership/ApplyDialog.svelte';
 	import { formatDate } from '$lib/utils/date';
 	import { getImageUrl } from '$lib/utils/url';
 	import { resolve } from '$app/paths';
+	import { Loader2 } from '@lucide/svelte';
+	import { toast } from 'svelte-sonner';
 
 	interface Props {
 		application: MembershipApplicationSchema;
@@ -132,6 +139,64 @@
 		queryClient.invalidateQueries({ queryKey: ['me', 'memberships'] });
 		queryClient.invalidateQueries({ queryKey: ['me', 'subscriptions'] });
 	});
+
+	let confirmOpen = $state(false);
+	let applyOpen = $state(false);
+
+	// Cancellable exactly while the backend can still move the application; a
+	// settled one gets the re-apply route instead, and `completed` neither.
+	const canCancel = $derived(isOpen);
+	const canReapply = $derived(app.status === 'rejected' || app.status === 'cancelled');
+
+	/**
+	 * Local by design: `backendMessage` is duplicated across the membership
+	 * dialogs, and lifting it into `$lib/utils` is a separate, wider change.
+	 * hey-api types this endpoint's error as `unknown`, so the shape is probed:
+	 * Ninja hard-blocks carry `message`, DRF-style payloads carry `detail`.
+	 */
+	function backendMessage(error: unknown): string | null {
+		if (!error || typeof error !== 'object') return null;
+		const body = error as { message?: unknown; detail?: unknown };
+		if (typeof body.message === 'string' && body.message) return body.message;
+		if (typeof body.detail === 'string' && body.detail) return body.detail;
+		return null;
+	}
+
+	const cancelMutation = createMutation(() => ({
+		mutationFn: async () => {
+			const applicationId = app.id;
+			if (!applicationId) throw new Error(m['applications.cancelError']());
+			const res = await memembershipapplicationsCancel({
+				path: { application_id: applicationId },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+			// hey-api resolves rather than throws — a missing payload is a failure
+			// even when no error body came back.
+			if (res.error || !res.data) {
+				throw new Error(backendMessage(res.error) || m['applications.cancelError']());
+			}
+			return res.data;
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['me', 'applications'] });
+			toast.success(m['applications.cancelSuccess']());
+		},
+		onError: (err: Error) => {
+			toast.error(err.message || m['applications.cancelError']());
+		}
+	}));
+
+	const isCancelling = $derived(cancelMutation.isPending);
+
+	/**
+	 * The confirm dialog carries no busy state, so it closes on confirm and the
+	 * row's own button becomes the progress surface — one visible pending state,
+	 * where the action was invoked.
+	 */
+	function confirmCancel(): void {
+		confirmOpen = false;
+		cancelMutation.mutate();
+	}
 </script>
 
 <article class="rounded-lg border p-4" aria-label={app.organization_name}>
@@ -184,9 +249,53 @@
 		<p class="mt-2 text-sm">{nextStepLine}</p>
 	{/if}
 
-	{#if questionnaireHref}
-		<div class="mt-3">
-			<Button href={questionnaireHref} size="sm">{m['applications.continueCta']()}</Button>
+	{#if questionnaireHref || canCancel || canReapply}
+		<div class="mt-3 flex flex-wrap gap-2">
+			{#if questionnaireHref}
+				<Button href={questionnaireHref} size="sm">{m['applications.continueCta']()}</Button>
+			{/if}
+			{#if canCancel}
+				<Button
+					variant="outline"
+					size="sm"
+					onclick={() => (confirmOpen = true)}
+					disabled={isCancelling}
+				>
+					{#if isCancelling}
+						<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
+					{/if}
+					{m['applications.cancelCta']()}
+				</Button>
+			{/if}
+			{#if canReapply}
+				<Button size="sm" onclick={() => (applyOpen = true)}>
+					{m['membershipEligibility.reapply']()}
+				</Button>
+			{/if}
 		</div>
 	{/if}
 </article>
+
+<ConfirmDialog
+	isOpen={confirmOpen}
+	title={m['applications.cancelConfirmTitle']()}
+	message={m['applications.cancelConfirmBody']({ org: app.organization_name })}
+	variant="warning"
+	onConfirm={confirmCancel}
+	onCancel={() => (confirmOpen = false)}
+/>
+
+<!--
+	Outside the action row on purpose: a successful re-apply invalidates
+	`['me', 'applications']`, the row re-renders as `pending`, and `canReapply`
+	flips false. Rendered inside that branch the dialog would be destroyed while
+	the member is still reading its outcome — an unannounced context change that
+	drops focus to <body> (WCAG 3.2). Here only its own `open` state gates it.
+-->
+<ApplyDialog
+	open={applyOpen}
+	onOpenChange={(next) => (applyOpen = next)}
+	organizationSlug={app.organization_slug}
+	organizationName={app.organization_name}
+	mode="reapply"
+/>

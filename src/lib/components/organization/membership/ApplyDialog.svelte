@@ -79,6 +79,9 @@
 			queryClient.invalidateQueries({
 				queryKey: ['org', organizationSlug, 'join-eligibility']
 			});
+			// The member's own application list now has a new (or moved) row —
+			// refreshes the account page behind a re-apply; a no-op on the org page.
+			queryClient.invalidateQueries({ queryKey: ['me', 'applications'] });
 			// Only an instant membership changes what the server rendered for this
 			// page (`isMember`, member-only sections).
 			if (data.application.status === 'completed') {

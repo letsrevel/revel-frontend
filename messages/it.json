@@ -8630,6 +8630,11 @@
 		},
 		"continueCta": "Continua il questionario",
 		"becameMember": "Ora sei membro di {org}!",
-		"statusAriaLabel": "Stato della candidatura: {status}"
+		"statusAriaLabel": "Stato della candidatura: {status}",
+		"cancelCta": "Annulla la candidatura",
+		"cancelConfirmTitle": "Annullare questa candidatura?",
+		"cancelConfirmBody": "La tua candidatura a {org} sarà ritirata. Potrai ricandidarti in seguito.",
+		"cancelSuccess": "Candidatura annullata.",
+		"cancelError": "Non è stato possibile annullare la candidatura. Riprova."
 	}
 }

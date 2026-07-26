@@ -8630,6 +8630,11 @@
 		},
 		"continueCta": "Continue questionnaire",
 		"becameMember": "You're now a member of {org}!",
-		"statusAriaLabel": "Application status: {status}"
+		"statusAriaLabel": "Application status: {status}",
+		"cancelCta": "Cancel application",
+		"cancelConfirmTitle": "Cancel this application?",
+		"cancelConfirmBody": "Your application to {org} will be withdrawn. You can re-apply later.",
+		"cancelSuccess": "Application cancelled.",
+		"cancelError": "Could not cancel the application. Please try again."
 	}
 }
