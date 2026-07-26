@@ -6607,6 +6607,15 @@
 		"trackLink": "Segui la tua richiesta",
 		"error": "Non è stato possibile inviare la tua richiesta. Riprova."
 	},
+	"membershipQuestionnairePage": {
+		"title": "Questionario di adesione",
+		"subtitle": "{orgName} chiede ai nuovi membri di compilarlo.",
+		"backToOrg": "Torna a {orgName}",
+		"acceptedTitle": "Questionario approvato",
+		"acceptedBody": "Ora puoi proseguire con l'adesione a {orgName}.",
+		"pendingToast": "Questionario inviato — l'organizzazione lo esaminerà.",
+		"submitError": "Non è stato possibile inviare il questionario. Riprova."
+	},
 	"subscribe": {
 		"title": "Abbonati a {plan}",
 		"priceLine": "{price}",

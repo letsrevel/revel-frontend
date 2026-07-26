@@ -6607,6 +6607,15 @@
 		"trackLink": "Track your application",
 		"error": "Could not send your application. Please try again."
 	},
+	"membershipQuestionnairePage": {
+		"title": "Membership questionnaire",
+		"subtitle": "{orgName} asks new members to fill this in.",
+		"backToOrg": "Back to {orgName}",
+		"acceptedTitle": "Questionnaire approved",
+		"acceptedBody": "You can continue joining {orgName} now.",
+		"pendingToast": "Questionnaire submitted — the organization will review it.",
+		"submitError": "Could not submit the questionnaire. Please try again."
+	},
 	"subscribe": {
 		"title": "Subscribe to {plan}",
 		"priceLine": "{price}",

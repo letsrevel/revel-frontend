@@ -101,12 +101,10 @@
 
 	const membershipsHref = resolve('/(auth)/account/memberships', {});
 
-	// The membership-questionnaire route is not in the route table yet, so only
-	// the org prefix can be `resolve()`d; the rest is appended.
 	const questionnaireHref = $derived.by(() => {
 		const id = eligibility?.questionnaire_id;
 		if (!id) return null;
-		return `${resolve('/(public)/org/[slug]', { slug: organizationSlug })}/questionnaire/${id}`;
+		return resolve('/(public)/org/[slug]/questionnaire/[id]', { slug: organizationSlug, id });
 	});
 
 	let applyOpen = $state(false);

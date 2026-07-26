@@ -6607,6 +6607,15 @@
 		"trackLink": "Deine Bewerbung verfolgen",
 		"error": "Deine Bewerbung konnte nicht gesendet werden. Bitte versuch es noch einmal."
 	},
+	"membershipQuestionnairePage": {
+		"title": "Mitgliedschafts-Fragebogen",
+		"subtitle": "{orgName} bittet neue Mitglieder, diesen Fragebogen auszufüllen.",
+		"backToOrg": "Zurück zu {orgName}",
+		"acceptedTitle": "Fragebogen bestätigt",
+		"acceptedBody": "Du kannst jetzt mit dem Beitritt zu {orgName} fortfahren.",
+		"pendingToast": "Fragebogen abgeschickt — die Organisation prüft ihn.",
+		"submitError": "Der Fragebogen konnte nicht gesendet werden. Bitte versuch es noch einmal."
+	},
 	"subscribe": {
 		"title": "{plan} abonnieren",
 		"priceLine": "{price}",
