@@ -123,3 +123,67 @@ export function getDateLine(sub: MySubscriptionSchema | SubscriptionSchema): Dat
 	if (sub.cancel_at_period_end) return { kind: 'cancels', date: sub.current_period_end ?? null };
 	return { kind: 'renewal', date: sub.current_period_end ?? null };
 }
+
+/** Actions a member may take on their own subscription from the account hub. */
+export interface MemberActionSet {
+	manageBilling: boolean;
+	changePlan: boolean;
+	cancel: boolean;
+	revive: boolean;
+}
+
+const NO_MEMBER_ACTIONS: MemberActionSet = {
+	manageBilling: false,
+	changePlan: false,
+	cancel: false,
+	revive: false
+};
+
+/** Strictly before the deadline; only an `expired` row can be revived. */
+export function isWithinRevivalWindow(
+	sub: Pick<MySubscriptionSchema, 'status' | 'revival_deadline'>,
+	now: Date = new Date()
+): boolean {
+	if (sub.status !== 'expired' || !sub.revival_deadline) return false;
+	return now.getTime() < new Date(sub.revival_deadline).getTime();
+}
+
+/**
+ * ONLINE/OFFLINE-aware member action matrix. OFFLINE subscriptions are managed
+ * by the organization; the backend rejects change-plan while a change is
+ * pending or renewal is switched off (`_validate_change_plan_state`), so
+ * those combinations never render a button that can only 400.
+ */
+export function getMemberActions(
+	sub: MySubscriptionSchema,
+	now: Date = new Date()
+): MemberActionSet {
+	if (sub.plan.payment_method !== 'online') return NO_MEMBER_ACTIONS;
+	switch (sub.status) {
+		case 'active':
+			if (sub.cancel_at_period_end) return { ...NO_MEMBER_ACTIONS, manageBilling: true };
+			return { manageBilling: true, changePlan: !sub.pending_plan_id, cancel: true, revive: false };
+		case 'past_due':
+			return { ...NO_MEMBER_ACTIONS, manageBilling: true, cancel: true };
+		case 'expired':
+			return { ...NO_MEMBER_ACTIONS, revive: isWithinRevivalWindow(sub, now) };
+		default:
+			return NO_MEMBER_ACTIONS;
+	}
+}
+
+/** Price normalized per month — the backend's `_monthly_equivalent_price`. */
+export function monthlyEquivalent(
+	plan: Pick<PlanSchema, 'price' | 'period_unit' | 'period_count'>
+): number {
+	const months = (plan.period_unit === 'year' ? 12 : 1) * (plan.period_count ?? 1);
+	return Number(plan.price) / months;
+}
+
+/** Upgrade = costs strictly more per month; ties are downgrades (BE semantics). */
+export function classifyPlanChange(
+	current: Pick<PlanSchema, 'price' | 'period_unit' | 'period_count'>,
+	target: Pick<PlanSchema, 'price' | 'period_unit' | 'period_count'>
+): 'upgrade' | 'downgrade' {
+	return monthlyEquivalent(target) > monthlyEquivalent(current) ? 'upgrade' : 'downgrade';
+}
