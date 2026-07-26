@@ -6621,6 +6621,24 @@
 		"pendingToast": "Fragebogen abgeschickt — die Organisation prüft ihn.",
 		"submitError": "Der Fragebogen konnte nicht gesendet werden. Bitte versuch es noch einmal."
 	},
+	"cancelSub": {
+		"title": "Mitgliedschaft kündigen",
+		"description": "{plan} · {org}",
+		"periodEnd": "Zum Ende des laufenden Zeitraums",
+		"periodEndHintDated": "Du behältst den Zugang bis {date}. Keine weiteren Abbuchungen.",
+		"periodEndHint": "Du behältst den Zugang bis zum Ende des bezahlten Zeitraums. Keine weiteren Abbuchungen.",
+		"immediate": "Sofort",
+		"immediateHint": "Deine Mitgliedschaft endet sofort.",
+		"immediateConfirm": "Mir ist klar, dass meine Mitgliedschaft sofort endet.",
+		"refundPolicy": "Rückerstattungsrichtlinie",
+		"keepCta": "Mitgliedschaft behalten",
+		"confirmCta": "Mitgliedschaft kündigen",
+		"cancelling": "Wird gekündigt…",
+		"successPeriodEnd": "Deine Mitgliedschaft endet am {date}.",
+		"successPeriodEndNoDate": "Deine Mitgliedschaft endet zum Ende des laufenden Zeitraums.",
+		"successImmediate": "Deine Mitgliedschaft wurde gekündigt.",
+		"error": "Deine Mitgliedschaft konnte nicht gekündigt werden. Bitte versuche es erneut."
+	},
 	"subscribe": {
 		"title": "{plan} abonnieren",
 		"priceLine": "{price}",

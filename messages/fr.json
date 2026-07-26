@@ -6592,6 +6592,24 @@
 		"pendingToast": "Questionnaire envoyé — l'organisation va l'examiner.",
 		"submitError": "Impossible d'envoyer le questionnaire. Réessaie."
 	},
+	"cancelSub": {
+		"title": "Résilier l'adhésion",
+		"description": "{plan} · {org}",
+		"periodEnd": "À la fin de la période en cours",
+		"periodEndHintDated": "Tu gardes l'accès jusqu'au {date}. Aucun autre prélèvement.",
+		"periodEndHint": "Tu gardes l'accès jusqu'à la fin de la période payée. Aucun autre prélèvement.",
+		"immediate": "Immédiatement",
+		"immediateHint": "Ton adhésion prend fin immédiatement.",
+		"immediateConfirm": "Je comprends que mon adhésion prend fin immédiatement.",
+		"refundPolicy": "Politique de remboursement",
+		"keepCta": "Garder l'adhésion",
+		"confirmCta": "Résilier l'adhésion",
+		"cancelling": "Résiliation…",
+		"successPeriodEnd": "Ton adhésion prendra fin le {date}.",
+		"successPeriodEndNoDate": "Ton adhésion prendra fin à la fin de la période en cours.",
+		"successImmediate": "Ton adhésion a été résiliée.",
+		"error": "Impossible de résilier ton adhésion. Réessaie."
+	},
 	"subscribe": {
 		"title": "S'abonner à {plan}",
 		"priceLine": "{price}",

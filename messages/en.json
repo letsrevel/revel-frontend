@@ -6621,6 +6621,24 @@
 		"pendingToast": "Questionnaire submitted — the organization will review it.",
 		"submitError": "Could not submit the questionnaire. Please try again."
 	},
+	"cancelSub": {
+		"title": "Cancel membership",
+		"description": "{plan} · {org}",
+		"periodEnd": "At the end of the current period",
+		"periodEndHintDated": "You keep access until {date}. No further charges.",
+		"periodEndHint": "You keep access until the end of the paid period. No further charges.",
+		"immediate": "Immediately",
+		"immediateHint": "Your membership ends right away.",
+		"immediateConfirm": "I understand my membership ends immediately.",
+		"refundPolicy": "Refund policy",
+		"keepCta": "Keep membership",
+		"confirmCta": "Cancel membership",
+		"cancelling": "Cancelling…",
+		"successPeriodEnd": "Your membership will end on {date}.",
+		"successPeriodEndNoDate": "Your membership will end at the close of the current period.",
+		"successImmediate": "Your membership has been cancelled.",
+		"error": "Could not cancel your membership. Please try again."
+	},
 	"subscribe": {
 		"title": "Subscribe to {plan}",
 		"priceLine": "{price}",

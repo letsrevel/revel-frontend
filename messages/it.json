@@ -6621,6 +6621,24 @@
 		"pendingToast": "Questionario inviato — l'organizzazione lo esaminerà.",
 		"submitError": "Non è stato possibile inviare il questionario. Riprova."
 	},
+	"cancelSub": {
+		"title": "Annulla l'abbonamento",
+		"description": "{plan} · {org}",
+		"periodEnd": "Alla fine del periodo corrente",
+		"periodEndHintDated": "Mantieni l'accesso fino al {date}. Nessun altro addebito.",
+		"periodEndHint": "Mantieni l'accesso fino alla fine del periodo pagato. Nessun altro addebito.",
+		"immediate": "Immediatamente",
+		"immediateHint": "Il tuo abbonamento termina subito.",
+		"immediateConfirm": "Capisco che il mio abbonamento termina immediatamente.",
+		"refundPolicy": "Politica di rimborso",
+		"keepCta": "Mantieni l'abbonamento",
+		"confirmCta": "Annulla l'abbonamento",
+		"cancelling": "Annullamento…",
+		"successPeriodEnd": "Il tuo abbonamento terminerà il {date}.",
+		"successPeriodEndNoDate": "Il tuo abbonamento terminerà alla fine del periodo corrente.",
+		"successImmediate": "Il tuo abbonamento è stato annullato.",
+		"error": "Non è stato possibile annullare l'abbonamento. Riprova."
+	},
 	"subscribe": {
 		"title": "Abbonati a {plan}",
 		"priceLine": "{price}",
