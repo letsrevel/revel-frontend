@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { getMembershipCtaKind, getMembershipStatusMessage } from './membership-eligibility';
+import {
+	getApplicationPendingMessage,
+	getMembershipCtaKind,
+	getMembershipStatusMessage
+} from './membership-eligibility';
 import type { MembershipEligibilitySchema } from '$lib/api/generated/types.gen';
 import * as m from '$lib/paraglide/messages.js';
 
@@ -135,5 +139,39 @@ describe('wait_* next-step messages', () => {
 		expect(getMembershipStatusMessage({ ...base, next_step: 'reapply', reason: 'BE prose' })).toBe(
 			'BE prose'
 		);
+	});
+});
+
+// A tier-less application passes every gate, so check_eligibility falls through
+// to `allowed=True` with no next_step/reason_code/reason (membership_manager/
+// service.py). The row still stays PENDING because staff assign the tier on
+// approval — so this verdict must not read as a denial.
+describe('getApplicationPendingMessage', () => {
+	it('reads a tier-less allowed-but-silent verdict as an application awaiting approval', () => {
+		const msg = getApplicationPendingMessage({
+			...base,
+			allowed: true,
+			next_step: null,
+			reason_code: null,
+			reason: null
+		});
+		expect(msg).toBe(m['membershipEligibility.wait.approval']());
+		expect(msg).not.toBe(m['membershipEligibility.reason.generic']());
+	});
+
+	it('defers to getMembershipStatusMessage when the verdict explains itself', () => {
+		const verdict: MembershipEligibilitySchema = {
+			...base,
+			reason_code: 'membership_questionnaire_pending'
+		};
+		expect(getApplicationPendingMessage(verdict)).toBe(getMembershipStatusMessage(verdict));
+		expect(getApplicationPendingMessage(verdict)).toBe(
+			m['membershipEligibility.reason.membership_questionnaire_pending']()
+		);
+	});
+
+	it('does not claim approval is pending for a plain denial', () => {
+		const verdict: MembershipEligibilitySchema = { ...base, allowed: false };
+		expect(getApplicationPendingMessage(verdict)).toBe(m['membershipEligibility.reason.generic']());
 	});
 });

@@ -4,7 +4,7 @@
 	import { memembershipapplicationsApply } from '$lib/api/generated/sdk.gen';
 	import type { ApplyResponseSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { getMembershipStatusMessage } from '$lib/utils/membership-eligibility';
+	import { getApplicationPendingMessage } from '$lib/utils/membership-eligibility';
 	import {
 		Dialog,
 		DialogContent,
@@ -149,7 +149,7 @@
 					</p>
 				{:else}
 					<p class="text-sm text-muted-foreground">
-						{getMembershipStatusMessage(result.eligibility)}
+						{getApplicationPendingMessage(result.eligibility)}
 					</p>
 					<a
 						href={membershipsHref}

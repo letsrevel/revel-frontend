@@ -116,3 +116,17 @@ export function getMembershipStatusMessage(e: MembershipEligibilitySchema): stri
 	if (e.reason) return e.reason;
 	return m['membershipEligibility.reason.generic']();
 }
+
+/**
+ * Copy for the "application received" panel and application rows: a verdict
+ * that is allowed but carries no explanation is a PENDING application waiting
+ * for the organization (tier-less applications pass every gate yet stay
+ * PENDING until staff assigns a tier on approval). Everything else defers to
+ * getMembershipStatusMessage.
+ */
+export function getApplicationPendingMessage(e: MembershipEligibilitySchema): string {
+	if (e.allowed && !e.next_step && !e.reason_code) {
+		return m['membershipEligibility.wait.approval']();
+	}
+	return getMembershipStatusMessage(e);
+}

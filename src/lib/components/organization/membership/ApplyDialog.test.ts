@@ -224,6 +224,29 @@ describe('ApplyDialog', () => {
 		expect(vi.mocked(invalidateAll)).not.toHaveBeenCalled();
 	});
 
+	// A tier-less application clears every gate, so the verdict comes back
+	// allowed with no next_step/reason_code/reason while the row stays PENDING
+	// (staff assign the tier on approval). Reading that as a denial told a user
+	// whose application had just been accepted that they "can't join right now".
+	it('reads a tier-less pending verdict as awaiting approval, not as a denial', async () => {
+		const user = userEvent.setup();
+		mockApplySuccess(
+			makeResult(
+				{ status: 'pending' },
+				{ allowed: true, next_step: null, reason_code: null, reason: null }
+			)
+		);
+		renderDialog();
+
+		await user.click(screen.getByRole('button', { name: /send application/i }));
+
+		expect(await screen.findByText('Application received')).toBeInTheDocument();
+		expect(
+			screen.getByText(/your application is with the organization for review/i)
+		).toBeInTheDocument();
+		expect(screen.queryByText(/you can't join right now/i)).not.toBeInTheDocument();
+	});
+
 	it('surfaces a hard block from the backend in an alert and keeps the form usable', async () => {
 		const user = userEvent.setup();
 		mockApplyError({ message: 'You are blacklisted from this organization.' });
