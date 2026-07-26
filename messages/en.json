@@ -6521,6 +6521,12 @@
 		}
 	},
 	"subscriptions": {
+		"period": {
+			"month": "month",
+			"months": "{n} months",
+			"year": "year",
+			"years": "{n} years"
+		},
 		"status": {
 			"active": "Active",
 			"pending": "Pending",

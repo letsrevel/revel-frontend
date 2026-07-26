@@ -108,6 +108,7 @@
 		class="max-h-[90vh] overflow-y-auto sm:max-w-md"
 		escapeKeydownBehavior={isBusy ? 'ignore' : 'close'}
 		interactOutsideBehavior={isBusy ? 'ignore' : 'close'}
+		showCloseButton={!isBusy}
 	>
 		<DialogHeader>
 			<DialogTitle>{m['subscribe.title']({ plan: plan.name })}</DialogTitle>

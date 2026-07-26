@@ -206,4 +206,94 @@ describe('SubscribeDialog', () => {
 		await user.click(screen.getByRole('button', { name: /^cancel$/i }));
 		expect(onOpenChange).toHaveBeenCalledWith(false);
 	});
+
+	it('closes through the ✕ button when idle', async () => {
+		const user = userEvent.setup();
+		const { onOpenChange } = renderDialog();
+		await user.click(screen.getByRole('button', { name: /close/i }));
+		expect(onOpenChange).toHaveBeenCalledWith(false);
+	});
+
+	// Every dismissal route has to funnel through the same guard. The ✕ that
+	// `dialog-content.svelte` renders is the dangerous one: bits-ui tears the
+	// dialog down itself, so an unguarded ✕ would unmount the content while the
+	// parent's `open` stayed true — the dialog could never be reopened, and a
+	// late error alert would render into a detached tree.
+	describe('while a checkout session is being created', () => {
+		/** Leaves the mutation pending forever so the guard stays engaged. */
+		function renderPending() {
+			// Definite assignment: a Promise executor runs synchronously, so
+			// `release` is bound before `renderPending` returns.
+			let release!: (value: unknown) => void;
+			vi.mocked(mesubscriptionsSubscribe).mockReturnValue(
+				new Promise((resolve) => {
+					release = resolve;
+				}) as unknown as ReturnType<typeof mesubscriptionsSubscribe>
+			);
+			const handles = renderDialog();
+			return { ...handles, release };
+		}
+
+		async function startCheckout(user: ReturnType<typeof userEvent.setup>) {
+			await user.click(screen.getByRole('button', { name: /continue to payment/i }));
+			await waitFor(() => {
+				expect(screen.getByRole('button', { name: /continue to payment/i })).toBeDisabled();
+			});
+		}
+
+		it('ignores Escape', async () => {
+			const user = userEvent.setup();
+			const { onOpenChange } = renderPending();
+			await startCheckout(user);
+
+			await user.keyboard('{Escape}');
+
+			expect(onOpenChange).not.toHaveBeenCalled();
+			expect(screen.getByRole('dialog')).toBeInTheDocument();
+		});
+
+		it('withdraws the ✕ button so it cannot bypass the guard', async () => {
+			const user = userEvent.setup();
+			const { onOpenChange } = renderPending();
+			expect(screen.getByRole('button', { name: /close/i })).toBeInTheDocument();
+
+			await startCheckout(user);
+
+			expect(screen.queryByRole('button', { name: /close/i })).toBeNull();
+			expect(onOpenChange).not.toHaveBeenCalled();
+			expect(screen.getByRole('dialog')).toBeInTheDocument();
+		});
+
+		it('ignores Cancel', async () => {
+			const user = userEvent.setup();
+			const { onOpenChange } = renderPending();
+			await startCheckout(user);
+
+			await user.click(screen.getByRole('button', { name: /^cancel$/i }));
+
+			expect(onOpenChange).not.toHaveBeenCalled();
+			expect(screen.getByRole('dialog')).toBeInTheDocument();
+		});
+
+		it('restores every dismissal route once the attempt settles', async () => {
+			const user = userEvent.setup();
+			const { onOpenChange, release } = renderPending();
+			await startCheckout(user);
+
+			release({
+				data: undefined,
+				error: { message: 'Plan is sold out.' },
+				response: { ok: false }
+			});
+			await waitFor(() => {
+				expect(screen.getByRole('alert')).toHaveTextContent('Plan is sold out.');
+			});
+			await waitFor(() => {
+				expect(screen.getByRole('button', { name: /close/i })).toBeInTheDocument();
+			});
+
+			await user.click(screen.getByRole('button', { name: /close/i }));
+			expect(onOpenChange).toHaveBeenCalledWith(false);
+		});
+	});
 });
