@@ -6503,7 +6503,18 @@
 			"pausedSince": "En pause depuis le {date}",
 			"ended": "Terminé le {date}",
 			"pending": "En attente du premier paiement"
-		}
+		},
+		"pastDue": {
+			"bannerDated": "Échec du paiement — mets à jour ton moyen de paiement avant le {date} pour conserver ton adhésion.",
+			"banner": "Échec du paiement — mets à jour ton moyen de paiement pour conserver ton adhésion."
+		},
+		"actions": {
+			"manageBilling": "Gérer la facturation",
+			"changePlan": "Changer de formule",
+			"cancel": "Résilier l'adhésion",
+			"portalError": "Impossible d'ouvrir le portail de facturation. Réessaie."
+		},
+		"cancelScheduledHint": "Le renouvellement est désactivé. Pour conserver ton adhésion, contacte l'organisation."
 	},
 	"account": {
 		"memberships": {
@@ -6515,7 +6526,8 @@
 			},
 			"viewOrg": "Voir l'organisation",
 			"contactOrg": "Contacte l'organisateur pour renouveler.",
-			"memberSince": "Membre depuis le {date}"
+			"memberSince": "Membre depuis le {date}",
+			"managedBy": "Géré par {org} — contacte-les pour toute modification."
 		}
 	},
 	"orgPublic": {

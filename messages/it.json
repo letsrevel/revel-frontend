@@ -6532,7 +6532,18 @@
 			"pausedSince": "Paused since {date}",
 			"ended": "Ended {date}",
 			"pending": "Awaiting first payment"
-		}
+		},
+		"pastDue": {
+			"bannerDated": "Pagamento non riuscito — aggiorna il metodo di pagamento entro il {date} per mantenere il tuo abbonamento.",
+			"banner": "Pagamento non riuscito — aggiorna il metodo di pagamento per mantenere il tuo abbonamento."
+		},
+		"actions": {
+			"manageBilling": "Gestisci i pagamenti",
+			"changePlan": "Cambia piano",
+			"cancel": "Annulla l'abbonamento",
+			"portalError": "Non è stato possibile aprire il portale di pagamento. Riprova."
+		},
+		"cancelScheduledHint": "Il rinnovo è disattivato. Per mantenere l'abbonamento, contatta l'organizzazione."
 	},
 	"account": {
 		"memberships": {
@@ -6544,7 +6555,8 @@
 			},
 			"viewOrg": "View org",
 			"contactOrg": "Reach out to the organizer to renew.",
-			"memberSince": "Member since {date}"
+			"memberSince": "Member since {date}",
+			"managedBy": "Gestito da {org} — contattali per apportare modifiche."
 		}
 	},
 	"orgPublic": {

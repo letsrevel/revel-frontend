@@ -6532,7 +6532,18 @@
 			"pausedSince": "Paused since {date}",
 			"ended": "Ended {date}",
 			"pending": "Awaiting first payment"
-		}
+		},
+		"pastDue": {
+			"bannerDated": "Payment failed — update your payment method by {date} to keep your membership.",
+			"banner": "Payment failed — update your payment method to keep your membership."
+		},
+		"actions": {
+			"manageBilling": "Manage billing",
+			"changePlan": "Change plan",
+			"cancel": "Cancel membership",
+			"portalError": "Could not open the billing portal. Please try again."
+		},
+		"cancelScheduledHint": "Renewal is off. To keep your membership, contact the organization."
 	},
 	"account": {
 		"memberships": {
@@ -6544,7 +6555,8 @@
 			},
 			"viewOrg": "View org",
 			"contactOrg": "Reach out to the organizer to renew.",
-			"memberSince": "Member since {date}"
+			"memberSince": "Member since {date}",
+			"managedBy": "Managed by {org} — contact them to make changes."
 		}
 	},
 	"orgPublic": {
