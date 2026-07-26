@@ -1,7 +1,23 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, waitFor } from '@testing-library/svelte';
 import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import RsvpNoteDialog from './RsvpNoteDialog.svelte';
+
+/**
+ * Wait for bits-ui's dialog auto-focus to land before typing into it.
+ *
+ * The focus scope moves focus into the dialog from a `requestAnimationFrame`
+ * scheduled at mount, and in jsdom nothing is "tabbable" (every element
+ * measures 0×0), so it falls back to focusing the content container — a plain
+ * `div`. That frame is ~16ms out while user-event's keystrokes are ~1ms apart,
+ * so under parallel-suite CPU contention it lands *between* two keystrokes and
+ * the rest of the word is swallowed by the div. Same race class as
+ * `PlanFormModal.test.ts`; the steal happens exactly once per mount, so waiting
+ * for it removes the race rather than papering over it.
+ */
+async function focusSettled(): Promise<void> {
+	await waitFor(() => expect(document.body).not.toHaveFocus());
+}
 
 function renderDialog(props: Partial<Record<string, unknown>> = {}) {
 	const onConfirm = vi.fn();
@@ -29,6 +45,7 @@ describe('RsvpNoteDialog', () => {
 	it('passes the edited note to onConfirm', async () => {
 		const user = userEvent.setup();
 		const { onConfirm } = renderDialog();
+		await focusSettled();
 		await user.type(screen.getByLabelText(/note for the organizers/i), 'two of us');
 		await user.click(screen.getByRole('button', { name: /^RSVP Yes$/i }));
 		expect(onConfirm).toHaveBeenCalledWith('two of us');
@@ -58,10 +75,10 @@ describe('RsvpNoteDialog', () => {
 		const user = userEvent.setup();
 		renderDialog();
 		const textarea = screen.getByLabelText(/note for the organizers/i);
-		// bits-ui's focus trap re-steals focus via rAF after the dialog opens,
-		// eating the first keystrokes; click and let the trap settle first.
+		// Let the focus steal land, *then* take the caret back — an ad-hoc
+		// double-rAF wait used to stand here, which the polled gate supersedes.
+		await focusSettled();
 		await user.click(textarea);
-		await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 		await user.type(textarea, 'abc');
 		const counter = textarea
 			.closest('[role="dialog"]')

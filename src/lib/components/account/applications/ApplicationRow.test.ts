@@ -234,6 +234,42 @@ describe('ApplicationRow', () => {
 			expect(screen.queryByRole('button', { name: 'Re-apply for membership' })).toBeNull();
 		});
 
+		// The advance cache outlives the row's own status. After a successful
+		// cancel the list refetches and hands this row a terminal application, but
+		// the pre-cancel payload is still cached under ['me','application',id] —
+		// and that query is now disabled, so no refetch can ever correct it (nor
+		// should one: the GET advances server state). A terminal prop must
+		// therefore beat the cache, or the Closed row keeps a Pending chip, the
+		// wait copy and a live Cancel button until a full page reload.
+		it('ignores a stale advance payload once the list row is terminal', async () => {
+			mockAdvance({
+				application: makeApplication({ status: 'pending' }),
+				eligibility: makeEligibility({ next_step: 'wait_for_approval' })
+			});
+			const { rerender } = render(QueryClientTestWrapper, {
+				props: {
+					client: queryClient,
+					component: ApplicationRow,
+					componentProps: { application: makeApplication({ status: 'pending' }) }
+				}
+			});
+
+			// The wait copy comes only from the advanced payload — proof the cache
+			// is populated before the row goes terminal.
+			expect(await screen.findByText(/with the organization/i)).toBeInTheDocument();
+
+			await rerender({
+				client: queryClient,
+				component: ApplicationRow,
+				componentProps: { application: makeApplication({ status: 'cancelled' }) }
+			});
+
+			expect(await screen.findByText('Cancelled')).toBeInTheDocument();
+			expect(screen.queryByText(/with the organization/i)).toBeNull();
+			expect(screen.queryByRole('button', { name: 'Cancel application' })).toBeNull();
+			expect(screen.getByRole('button', { name: 'Re-apply for membership' })).toBeInTheDocument();
+		});
+
 		it('offers neither action on a completed application', async () => {
 			renderRow(makeApplication({ status: 'completed' }));
 

@@ -83,8 +83,18 @@
 		retry: false
 	}));
 
-	// Freshest wins: the advanced payload supersedes the list row it came from.
-	const app = $derived(advanceQuery.data?.application ?? application);
+	/**
+	 * Freshest wins — except that a terminal prop is by definition fresher than
+	 * anything cached. After a cancel, the invalidated list hands this row a
+	 * settled application while `['me','application', id]` still holds the
+	 * pre-cancel payload; that query is disabled now, so nothing can correct it —
+	 * and nothing should, since the GET behind it advances server state. Without
+	 * this the Closed row would keep a Pending chip, the wait copy and a live
+	 * Cancel button until a full page reload. Display-side only.
+	 */
+	const app = $derived(
+		TERMINAL.has(application.status) ? application : (advanceQuery.data?.application ?? application)
+	);
 	const eligibility = $derived(advanceQuery.data?.eligibility ?? null);
 
 	const isOpen = $derived(!TERMINAL.has(app.status));
