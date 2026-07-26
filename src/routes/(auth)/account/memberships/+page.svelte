@@ -45,31 +45,62 @@
 		enabled: !!accessToken
 	}));
 
-	// One rejoin offer per org: newest expired ONLINE sub inside its revival
-	// window, and only when the memberships list shows no live membership for
-	// that org (a member who re-subscribed already has a fresh row).
+	/**
+	 * One rejoin offer per org: the newest expired ONLINE subscription still
+	 * inside its revival window, for an org the member has genuinely left.
+	 *
+	 * DO NOT "simplify" the membership clause to `mb.status === 'active'`.
+	 * Expiry does not delete the member row: the backend's subscription signals
+	 * (`signals.py`) map an EXPIRED subscription onto member status CANCELLED,
+	 * so `list_my_memberships` keeps returning the org as a *bare cancelled*
+	 * row — `status === 'cancelled'` with no inlined subscription (only
+	 * non-terminal subs are inlined). That bare row is precisely the state a
+	 * rejoin offer replaces.
+	 *
+	 * Every other shape excludes the org, because the member has moved on and
+	 * the backend would refuse the revival:
+	 *   - `active`/`paused` — already re-subscribed (paused is still a live
+	 *     membership, so an `active`-only test would leak a stale offer);
+	 *   - `banned` — the CTA would only ever 400;
+	 *   - any row carrying an inlined subscription — a non-terminal sub exists.
+	 */
 	const rejoinSubs = $derived.by(() => {
 		const subs = subscriptionsQuery.data ?? [];
-		const liveOrgIds = new Set(
-			memberships.filter((mb) => mb.status === 'active').map((mb) => mb.organization_id)
+		const blockedOrgIds = new Set(
+			memberships
+				.filter((mb) => !(mb.status === 'cancelled' && !mb.subscription))
+				.map((mb) => mb.organization_id)
 		);
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: a per-pass dedupe set, built and consumed synchronously inside this $derived.by and discarded when it returns
 		const seen = new Set<string>();
 		return subs.filter((s) => {
 			if (s.plan.payment_method !== 'online') return false;
 			if (!isWithinRevivalWindow(s)) return false;
-			if (liveOrgIds.has(s.organization_id)) return false;
+			if (blockedOrgIds.has(s.organization_id)) return false;
 			if (seen.has(s.organization_id)) return false; // list is -created_at: first hit is newest
 			seen.add(s.organization_id);
 			return true;
 		});
 	});
 
+	// A rejoin offer supersedes the org's own card: by the predicate above the
+	// only rows that can match here are the bare cancelled ones, and the
+	// RejoinCard says strictly more than they do (deadline, price, the CTA).
+	// Without this the same org renders twice — a dead card up top and its
+	// rejoin offer far below.
+	const rejoinOrgIds = $derived(new Set(rejoinSubs.map((s) => s.organization_id)));
+	const displayedMemberships = $derived(
+		memberships.filter((mb) => !rejoinOrgIds.has(mb.organization_id))
+	);
+
 	// Both queries feed the same section: settling one while the other is still
 	// in flight would flash the empty state at a member who has rejoin offers.
-	const isLoading = $derived.by(() => {
-		const membershipsPending = membershipsQuery.isLoading;
-		const subscriptionsPending = subscriptionsQuery.isLoading;
+	// `isPending`, not `isLoading` — a query disabled while auth bootstraps
+	// reports `isLoading === false`, which would flash the empty state at every
+	// member on first paint.
+	const isSectionPending = $derived.by(() => {
+		const membershipsPending = membershipsQuery.isPending;
+		const subscriptionsPending = subscriptionsQuery.isPending;
 		return membershipsPending || subscriptionsPending;
 	});
 </script>
@@ -81,9 +112,9 @@
 <div class="container mx-auto max-w-3xl space-y-4 px-4 py-6">
 	<h1 class="text-2xl font-bold">{m['account.memberships.title']()}</h1>
 
-	{#if isLoading}
+	{#if isSectionPending}
 		<Loader2 class="h-5 w-5 animate-spin" />
-	{:else if memberships.length === 0 && rejoinSubs.length === 0}
+	{:else if displayedMemberships.length === 0 && rejoinSubs.length === 0}
 		<div class="rounded-lg border p-6 text-center">
 			<h2 class="font-medium">{m['account.memberships.empty.title']()}</h2>
 			<p class="mt-1 text-sm text-muted-foreground">{m['account.memberships.empty.body']()}</p>
@@ -93,7 +124,7 @@
 		</div>
 	{:else}
 		<div class="space-y-3">
-			{#each memberships as mb (mb.organization_id)}
+			{#each displayedMemberships as mb (mb.organization_id)}
 				<MembershipCard membership={mb} />
 			{/each}
 			<!-- Keyed on the org rather than `id` (optional on the schema): the
