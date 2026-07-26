@@ -164,6 +164,8 @@ export function getMemberActions(
 			if (sub.cancel_at_period_end) return { ...NO_MEMBER_ACTIONS, manageBilling: true };
 			return { manageBilling: true, changePlan: !sub.pending_plan_id, cancel: true, revive: false };
 		case 'past_due':
+			// Deliberately stricter than the BE preflight, which would accept a change-plan
+			// here: settle the failed payment in the portal first, then switch plans.
 			return { ...NO_MEMBER_ACTIONS, manageBilling: true, cancel: true };
 		case 'expired':
 			return { ...NO_MEMBER_ACTIONS, revive: isWithinRevivalWindow(sub, now) };

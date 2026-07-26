@@ -270,8 +270,9 @@ describe('getMemberActions', () => {
 	it('online expired past the deadline (or with none) offers nothing', () => {
 		const past = mySub({ status: 'expired', revival_deadline: '2026-07-25T00:00:00Z' });
 		const none = mySub({ status: 'expired', revival_deadline: null });
-		expect(getMemberActions(past, NOW).revive).toBe(false);
-		expect(getMemberActions(none, NOW).revive).toBe(false);
+		const nothing = { manageBilling: false, changePlan: false, cancel: false, revive: false };
+		expect(getMemberActions(past, NOW)).toEqual(nothing);
+		expect(getMemberActions(none, NOW)).toEqual(nothing);
 	});
 
 	it('pending, paused and cancelled offer nothing', () => {
@@ -305,11 +306,27 @@ describe('classifyPlanChange (mirrors BE monthly-equivalent rule)', () => {
 	const monthly10 = { price: '10.00', period_unit: 'month', period_count: 1 } as const;
 	const yearly96 = { price: '96.00', period_unit: 'year', period_count: 1 } as const; // 8/mo
 	const yearly150 = { price: '150.00', period_unit: 'year', period_count: 1 } as const; // 12.5/mo
+	const biennial240 = { price: '240.00', period_unit: 'year', period_count: 2 } as const; // 10/mo
+	const quarterly36 = { price: '36.00', period_unit: 'month', period_count: 3 } as const; // 12/mo
 
 	it('normalizes cadence to per-month before comparing', () => {
 		expect(monthlyEquivalent(yearly96)).toBeCloseTo(8);
 		expect(classifyPlanChange(monthly10, yearly96)).toBe('downgrade'); // cheaper per month despite bigger headline
 		expect(classifyPlanChange(monthly10, yearly150)).toBe('upgrade');
+	});
+
+	// period_count is a real multiplier, not decoration: drop it and a 2-year plan
+	// reads as 20/mo instead of 10/mo, and a 3-month plan as 36/mo instead of 12/mo.
+	it('divides by period_count as well as the unit', () => {
+		expect(monthlyEquivalent(biennial240)).toBeCloseTo(10); // 240 / (12 * 2)
+		expect(monthlyEquivalent(quarterly36)).toBeCloseTo(12); // 36 / (1 * 3)
+		expect(classifyPlanChange(monthly10, biennial240)).toBe('downgrade'); // tie at 10/mo
+		expect(classifyPlanChange(monthly10, quarterly36)).toBe('upgrade');
+		expect(classifyPlanChange(quarterly36, biennial240)).toBe('downgrade');
+	});
+
+	it('defaults a missing period_count to 1', () => {
+		expect(monthlyEquivalent({ price: '10.00', period_unit: 'month' })).toBeCloseTo(10);
 	});
 
 	it('a tie is a downgrade (strictly-greater is BE semantics)', () => {
