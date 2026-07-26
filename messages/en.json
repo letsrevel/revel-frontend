@@ -6588,6 +6588,34 @@
 			"generic": "You can't join right now."
 		}
 	},
+	"subscribe": {
+		"title": "Subscribe to {plan}",
+		"priceLine": "{price}",
+		"firstCharge": "You'll be charged {price} now, then automatically each renewal.",
+		"autoRenew": "Renews automatically every {cadence} until you cancel — you can cancel anytime from your account.",
+		"cadence": {
+			"month": "month",
+			"months": "{n} months",
+			"year": "year",
+			"years": "{n} years"
+		},
+		"refundPolicy": "Refund policy",
+		"stripeDisclaimer": "Payments are processed securely by Stripe.",
+		"confirmCta": "Continue to payment",
+		"cancel": "Cancel",
+		"error": "Could not start the checkout. Please try again.",
+		"return": {
+			"confirming": "Confirming your subscription…",
+			"welcome": "Welcome, member!",
+			"welcomeBody": "Your subscription is active.",
+			"slowTitle": "Almost there",
+			"slow": "This is taking longer than usual — it can take a minute. We'll email you either way. You can also check your account later.",
+			"checkAccount": "View your memberships",
+			"cancelledTitle": "Checkout not completed",
+			"cancelledBody": "Your payment wasn't completed. You can resume it whenever you're ready.",
+			"resumeCta": "Resume payment"
+		}
+	},
 	"waitlistSettings.title": "Advanced waitlist settings",
 	"waitlistSettings.description": "Configure how seats are offered to waitlist members.",
 	"waitlistSettings.timeWindow.label": "Offer time window",

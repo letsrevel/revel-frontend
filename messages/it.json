@@ -6588,6 +6588,34 @@
 			"generic": "Non puoi unirti al momento."
 		}
 	},
+	"subscribe": {
+		"title": "Abbonati a {plan}",
+		"priceLine": "{price}",
+		"firstCharge": "Ti verranno addebitati {price} ora, poi automaticamente a ogni rinnovo.",
+		"autoRenew": "Si rinnova automaticamente {cadence} finché non annulli — puoi annullare in qualsiasi momento dal tuo account.",
+		"cadence": {
+			"month": "ogni mese",
+			"months": "ogni {n} mesi",
+			"year": "ogni anno",
+			"years": "ogni {n} anni"
+		},
+		"refundPolicy": "Politica di rimborso",
+		"stripeDisclaimer": "I pagamenti sono elaborati in modo sicuro da Stripe.",
+		"confirmCta": "Continua al pagamento",
+		"cancel": "Annulla",
+		"error": "Non è stato possibile avviare il pagamento. Riprova.",
+		"return": {
+			"confirming": "Stiamo confermando la tua iscrizione…",
+			"welcome": "Benvenuto tra i membri!",
+			"welcomeBody": "La tua iscrizione è attiva.",
+			"slowTitle": "Ci siamo quasi",
+			"slow": "Sta impiegando più del solito — può volerci un minuto. Ti scriveremo comunque via email. Puoi anche controllare più tardi nel tuo account.",
+			"checkAccount": "Vedi le tue iscrizioni",
+			"cancelledTitle": "Pagamento non completato",
+			"cancelledBody": "Il tuo pagamento non è stato completato. Puoi riprenderlo quando vuoi.",
+			"resumeCta": "Riprendi il pagamento"
+		}
+	},
 	"waitlistSettings.title": "Advanced waitlist settings",
 	"waitlistSettings.description": "Configure how seats are offered to waitlist members.",
 	"waitlistSettings.timeWindow.label": "Offer time window",

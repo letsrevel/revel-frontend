@@ -6559,6 +6559,34 @@
 			"generic": "Tu ne peux pas rejoindre pour le moment."
 		}
 	},
+	"subscribe": {
+		"title": "S'abonner à {plan}",
+		"priceLine": "{price}",
+		"firstCharge": "{price} te seront facturés maintenant, puis automatiquement à chaque renouvellement.",
+		"autoRenew": "Se renouvelle automatiquement {cadence} jusqu'à ce que tu annules — tu peux annuler à tout moment depuis ton compte.",
+		"cadence": {
+			"month": "tous les mois",
+			"months": "tous les {n} mois",
+			"year": "tous les ans",
+			"years": "tous les {n} ans"
+		},
+		"refundPolicy": "Politique de remboursement",
+		"stripeDisclaimer": "Les paiements sont traités en toute sécurité par Stripe.",
+		"confirmCta": "Continuer vers le paiement",
+		"cancel": "Annuler",
+		"error": "Impossible de démarrer le paiement. Réessaie.",
+		"return": {
+			"confirming": "Confirmation de ton adhésion…",
+			"welcome": "Bienvenue parmi les membres !",
+			"welcomeBody": "Ton adhésion est active.",
+			"slowTitle": "Presque terminé",
+			"slow": "Cela prend plus de temps que d'habitude — compte une minute. Nous t'enverrons un e-mail dans tous les cas. Tu peux aussi vérifier plus tard dans ton compte.",
+			"checkAccount": "Voir tes adhésions",
+			"cancelledTitle": "Paiement non finalisé",
+			"cancelledBody": "Ton paiement n'a pas été finalisé. Tu peux le reprendre quand tu veux.",
+			"resumeCta": "Reprendre le paiement"
+		}
+	},
 	"waitlistSettings.title": "Paramètres avancés de liste d'attente",
 	"waitlistSettings.description": "Configure la façon dont les places sont proposées aux personnes en liste d'attente.",
 	"waitlistSettings.timeWindow.label": "Fenêtre d'offre",
