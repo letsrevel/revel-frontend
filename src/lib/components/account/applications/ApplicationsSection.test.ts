@@ -47,7 +47,7 @@ describe('ApplicationsSection', () => {
 
 	function renderSection() {
 		return render(QueryClientTestWrapper, {
-			props: { client: queryClient, component: ApplicationsSection, props: {} }
+			props: { client: queryClient, component: ApplicationsSection, componentProps: {} }
 		});
 	}
 

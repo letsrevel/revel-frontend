@@ -55,7 +55,7 @@ function renderItem(props: Record<string, unknown>) {
 		props: {
 			client: queryClient,
 			component: NotificationItem,
-			props
+			componentProps: props
 		}
 	});
 }

@@ -130,7 +130,7 @@ describe('MembershipCard', () => {
 
 	function renderCard(membership: MyMembershipSchema) {
 		return render(QueryClientTestWrapper, {
-			props: { client: queryClient, component: MembershipCard, props: { membership } }
+			props: { client: queryClient, component: MembershipCard, componentProps: { membership } }
 		});
 	}
 

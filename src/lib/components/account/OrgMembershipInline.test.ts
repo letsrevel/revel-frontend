@@ -93,7 +93,7 @@ describe('OrgMembershipInline', () => {
 			props: {
 				client: queryClient,
 				component: OrgMembershipInline,
-				props: { orgId: 'org-1', orgName: 'Test Org', plans }
+				componentProps: { orgId: 'org-1', orgName: 'Test Org', plans }
 			}
 		});
 	}

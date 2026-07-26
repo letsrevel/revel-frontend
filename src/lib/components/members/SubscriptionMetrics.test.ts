@@ -47,7 +47,7 @@ describe('SubscriptionMetrics', () => {
 			props: {
 				client: queryClient,
 				component: SubscriptionMetrics,
-				props: { organization }
+				componentProps: { organization }
 			}
 		});
 	}

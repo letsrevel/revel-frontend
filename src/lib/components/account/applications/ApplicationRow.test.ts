@@ -74,7 +74,7 @@ describe('ApplicationRow', () => {
 
 	function renderRow(application: MembershipApplicationSchema) {
 		return render(QueryClientTestWrapper, {
-			props: { client: queryClient, component: ApplicationRow, props: { application } }
+			props: { client: queryClient, component: ApplicationRow, componentProps: { application } }
 		});
 	}
 

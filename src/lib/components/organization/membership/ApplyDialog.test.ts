@@ -103,7 +103,7 @@ describe('ApplyDialog', () => {
 			props: {
 				client: queryClient,
 				component: ApplyDialog,
-				props: {
+				componentProps: {
 					open: true,
 					onOpenChange,
 					organizationSlug: 'acme',
@@ -293,10 +293,9 @@ describe('ApplyDialog', () => {
 		await user.click(screen.getByRole('button', { name: /send application/i }));
 		expect(await screen.findByText('Application received')).toBeInTheDocument();
 
-		// `rerender` strips one top-level `props` key (its legacy call shape), and
-		// this wrapper's own child-props prop happens to be named `props` — so the
-		// payload is nested one level deeper to survive the unwrap. The resulting
-		// deprecation warning is expected, not a signal.
+		// `rerender` treats a top-level `props` key as its legacy call shape and
+		// unwraps one level, so the wrapper's own props are nested under it. The
+		// resulting deprecation warning is expected, not a signal.
 		const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 		const childProps = {
 			onOpenChange: vi.fn(),
@@ -305,12 +304,20 @@ describe('ApplyDialog', () => {
 			mode: 'join'
 		};
 		await rerender({
-			props: { client: queryClient, component: ApplyDialog, props: { ...childProps, open: false } }
+			props: {
+				client: queryClient,
+				component: ApplyDialog,
+				componentProps: { ...childProps, open: false }
+			}
 		});
 		await waitFor(() => expect(screen.queryByText('Application received')).toBeNull());
 
 		await rerender({
-			props: { client: queryClient, component: ApplyDialog, props: { ...childProps, open: true } }
+			props: {
+				client: queryClient,
+				component: ApplyDialog,
+				componentProps: { ...childProps, open: true }
+			}
 		});
 		warn.mockRestore();
 

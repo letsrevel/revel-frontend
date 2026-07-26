@@ -60,7 +60,7 @@ describe('RejoinCard', () => {
 
 	function renderCard(sub: MySubscriptionSchema = makeSub()) {
 		return render(QueryClientTestWrapper, {
-			props: { client: queryClient, component: RejoinCard, props: { sub } }
+			props: { client: queryClient, component: RejoinCard, componentProps: { sub } }
 		});
 	}
 

@@ -67,7 +67,7 @@ describe('NotificationDropdown', () => {
 			props: {
 				client: queryClient,
 				component: NotificationDropdown,
-				props: {
+				componentProps: {
 					authToken: 'test-token',
 					...props
 				}

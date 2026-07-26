@@ -45,7 +45,7 @@ describe('NotificationPreferencesForm', () => {
 
 	function renderForm(props: Record<string, unknown>) {
 		return render(QueryClientTestWrapper, {
-			props: { client: queryClient, component: NotificationPreferencesForm, props }
+			props: { client: queryClient, component: NotificationPreferencesForm, componentProps: props }
 		});
 	}
 

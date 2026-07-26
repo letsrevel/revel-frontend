@@ -67,7 +67,7 @@ describe('HeldPassCard', () => {
 			props: {
 				client: queryClient,
 				component: HeldPassCard,
-				props: { heldPass }
+				componentProps: { heldPass }
 			}
 		});
 	}

@@ -48,7 +48,7 @@ describe('DuplicatePollModal', () => {
 			props: {
 				client: queryClient,
 				component: DuplicatePollModal,
-				props: {
+				componentProps: {
 					open: true,
 					pollId: 'p1',
 					pollName: 'Weekly vote',

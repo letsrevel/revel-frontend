@@ -152,7 +152,7 @@ function renderDialog(props: Record<string, unknown> = {}) {
 		props: {
 			client: new QueryClient({ defaultOptions: { queries: { retry: false } } }),
 			component: ChangePlanDialog,
-			props: { open: true, onOpenChange: vi.fn(), sub, ...props }
+			componentProps: { open: true, onOpenChange: vi.fn(), sub, ...props }
 		}
 	});
 }

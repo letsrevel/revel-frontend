@@ -97,7 +97,7 @@ describe('Account memberships page', () => {
 
 	function renderPage() {
 		return render(QueryClientTestWrapper, {
-			props: { client: queryClient, component: Page, props: {} }
+			props: { client: queryClient, component: Page, componentProps: {} }
 		});
 	}
 

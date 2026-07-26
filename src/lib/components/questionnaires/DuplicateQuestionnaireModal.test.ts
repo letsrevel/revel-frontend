@@ -36,7 +36,7 @@ describe('DuplicateQuestionnaireModal', () => {
 			props: {
 				client: queryClient,
 				component: DuplicateQuestionnaireModal,
-				props: {
+				componentProps: {
 					open: true,
 					orgQuestionnaireId: 'q1',
 					questionnaireName: 'Admission',

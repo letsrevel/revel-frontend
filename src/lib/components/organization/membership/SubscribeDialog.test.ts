@@ -83,7 +83,7 @@ describe('SubscribeDialog', () => {
 			props: {
 				client: queryClient,
 				component: SubscribeDialog,
-				props: {
+				componentProps: {
 					open: true,
 					onOpenChange,
 					plan: makePlan(),

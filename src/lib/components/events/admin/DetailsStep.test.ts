@@ -33,7 +33,7 @@ describe('DetailsStep', () => {
 
 	function renderStep(props: typeof mockProps = mockProps) {
 		return render(QueryClientTestWrapper, {
-			props: { client: queryClient, component: DetailsStep, props }
+			props: { client: queryClient, component: DetailsStep, componentProps: props }
 		});
 	}
 

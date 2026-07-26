@@ -69,7 +69,7 @@ describe('MembershipCta', () => {
 			props: {
 				client: queryClient,
 				component: MembershipCta,
-				props: {
+				componentProps: {
 					organizationSlug: 'acme',
 					organizationName: 'Acme',
 					isAuthenticated: true,
@@ -229,16 +229,15 @@ describe('MembershipCta', () => {
 		await user.click(await screen.findByRole('button', { name: /join acme/i }));
 		expect(await screen.findByRole('dialog')).toHaveTextContent('Join Acme');
 
-		// `rerender` strips one top-level `props` key (its legacy call shape), and
-		// this wrapper's own child-props prop happens to be named `props` — so the
-		// payload is nested one level deeper to survive the unwrap. The resulting
-		// deprecation warning is expected, not a signal.
+		// `rerender` treats a top-level `props` key as its legacy call shape and
+		// unwraps one level, so the wrapper's own props are nested under it. The
+		// resulting deprecation warning is expected, not a signal.
 		const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 		await rerender({
 			props: {
 				client: queryClient,
 				component: MembershipCta,
-				props: {
+				componentProps: {
 					organizationSlug: 'acme',
 					organizationName: 'Acme',
 					isAuthenticated: true,
