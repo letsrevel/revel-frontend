@@ -6573,6 +6573,13 @@
 		"waiting": "Application pending",
 		"trackApplication": "Track your application",
 		"memberBadge": "Member",
+		"ownerBadge": "Owner",
+		"ownerBadgeAriaLabel": "You are the owner of this organization",
+		"staffBadge": "Staff",
+		"staffBadgeAriaLabel": "You are a staff member of this organization",
+		"memberBadgeAriaLabel": "You are a member of this organization",
+		"memberStatusAriaLabel": "Membership status: {status}",
+		"memberTierAriaLabel": "Membership tier: {tier}",
 		"reason": {
 			"blacklisted": "You can't join this organization.",
 			"requires_verification": "Your account needs to be verified before you can join.",
@@ -6593,6 +6600,22 @@
 			"membership_paused": "Your membership is currently paused.",
 			"generic": "You can't join right now."
 		}
+	},
+	"membershipApply": {
+		"title": "Join {orgName}",
+		"reapplyTitle": "Re-apply to {orgName}",
+		"messageOptional": "Message (optional)",
+		"messagePlaceholder": "Introduce yourself…",
+		"characters": "{count}/500",
+		"submit": "Send application",
+		"submitting": "Sending…",
+		"cancel": "Cancel",
+		"completedTitle": "You're in!",
+		"completedBody": "You're now a member of {orgName}.",
+		"pendingTitle": "Application received",
+		"pendingBody": "The organization has your application — here's what happens next:",
+		"trackLink": "Track your application",
+		"error": "Could not send your application. Please try again."
 	},
 	"subscribe": {
 		"title": "Subscribe to {plan}",

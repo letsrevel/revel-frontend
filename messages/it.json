@@ -6573,6 +6573,13 @@
 		"waiting": "Richiesta in attesa",
 		"trackApplication": "Segui la tua richiesta",
 		"memberBadge": "Membro",
+		"ownerBadge": "Proprietario",
+		"ownerBadgeAriaLabel": "Sei il proprietario di questa organizzazione",
+		"staffBadge": "Staff",
+		"staffBadgeAriaLabel": "Sei un membro dello staff di questa organizzazione",
+		"memberBadgeAriaLabel": "Sei un membro di questa organizzazione",
+		"memberStatusAriaLabel": "Stato dell'iscrizione: {status}",
+		"memberTierAriaLabel": "Livello di iscrizione: {tier}",
 		"reason": {
 			"blacklisted": "Non puoi unirti a questa organizzazione.",
 			"requires_verification": "Il tuo account deve essere verificato prima che tu possa unirti.",
@@ -6593,6 +6600,22 @@
 			"membership_paused": "La tua iscrizione è attualmente in pausa.",
 			"generic": "Non puoi unirti al momento."
 		}
+	},
+	"membershipApply": {
+		"title": "Unisciti a {orgName}",
+		"reapplyTitle": "Ricandidati a {orgName}",
+		"messageOptional": "Messaggio (facoltativo)",
+		"messagePlaceholder": "Presentati…",
+		"characters": "{count}/500",
+		"submit": "Invia richiesta",
+		"submitting": "Invio in corso…",
+		"cancel": "Annulla",
+		"completedTitle": "Ci sei!",
+		"completedBody": "Ora sei membro di {orgName}.",
+		"pendingTitle": "Richiesta ricevuta",
+		"pendingBody": "L'organizzazione ha ricevuto la tua richiesta — ecco cosa succede adesso:",
+		"trackLink": "Segui la tua richiesta",
+		"error": "Non è stato possibile inviare la tua richiesta. Riprova."
 	},
 	"subscribe": {
 		"title": "Abbonati a {plan}",

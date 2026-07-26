@@ -6573,6 +6573,13 @@
 		"waiting": "Antrag in Bearbeitung",
 		"trackApplication": "Deinen Antrag verfolgen",
 		"memberBadge": "Mitglied",
+		"ownerBadge": "Inhaber*in",
+		"ownerBadgeAriaLabel": "Du bist Inhaber*in dieser Organisation",
+		"staffBadge": "Mitarbeiter*in",
+		"staffBadgeAriaLabel": "Du bist Mitarbeiter*in dieser Organisation",
+		"memberBadgeAriaLabel": "Du bist Mitglied dieser Organisation",
+		"memberStatusAriaLabel": "Mitgliedschaftsstatus: {status}",
+		"memberTierAriaLabel": "Mitgliedschaftsstufe: {tier}",
 		"reason": {
 			"blacklisted": "Du kannst dieser Organisation nicht beitreten.",
 			"requires_verification": "Dein Konto muss verifiziert werden, bevor du beitreten kannst.",
@@ -6593,6 +6600,22 @@
 			"membership_paused": "Deine Mitgliedschaft ist derzeit pausiert.",
 			"generic": "Du kannst derzeit nicht beitreten."
 		}
+	},
+	"membershipApply": {
+		"title": "{orgName} beitreten",
+		"reapplyTitle": "Erneut bei {orgName} bewerben",
+		"messageOptional": "Nachricht (optional)",
+		"messagePlaceholder": "Stell dich kurz vor …",
+		"characters": "{count}/500",
+		"submit": "Bewerbung senden",
+		"submitting": "Wird gesendet …",
+		"cancel": "Abbrechen",
+		"completedTitle": "Du bist dabei!",
+		"completedBody": "Du bist jetzt Mitglied bei {orgName}.",
+		"pendingTitle": "Bewerbung eingegangen",
+		"pendingBody": "Die Organisation hat deine Bewerbung — so geht es weiter:",
+		"trackLink": "Deine Bewerbung verfolgen",
+		"error": "Deine Bewerbung konnte nicht gesendet werden. Bitte versuch es noch einmal."
 	},
 	"subscribe": {
 		"title": "{plan} abonnieren",
