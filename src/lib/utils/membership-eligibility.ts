@@ -79,11 +79,20 @@ const REASON_MESSAGES: Partial<Record<MembershipReasonCode, () => string>> = {
 /**
  * Human-readable, localized explanation of a membership eligibility verdict.
  *
- * Resolution order: `requires_invitation` next step → mapped `reason_code` →
+ * Resolution order: the invite-link pair (see below) → mapped `reason_code` →
  * the backend-supplied `reason` prose → a generic localized fallback.
+ *
+ * `next_step === 'requires_invitation'` is NOT a blanket override. The backend
+ * emits it only alongside `reason_code` `requires_verification` or
+ * `not_accepting_requests` (`membership_manager/gates.py:143,191`), and only the
+ * latter actually means "ask for an invite link" — a user who needs to verify
+ * their account must be told to verify, not to chase an invite.
  */
 export function getMembershipStatusMessage(e: MembershipEligibilitySchema): string {
-	if (e.next_step === 'requires_invitation') {
+	const invitesOnly =
+		e.next_step === 'requires_invitation' &&
+		(!e.reason_code || e.reason_code === 'not_accepting_requests');
+	if (invitesOnly) {
 		return m['membershipEligibility.reason.requires_invitation']();
 	}
 	const mapped = e.reason_code ? REASON_MESSAGES[e.reason_code] : undefined;

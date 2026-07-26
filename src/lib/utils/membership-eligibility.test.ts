@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { getMembershipCtaKind, getMembershipStatusMessage } from './membership-eligibility';
 import type { MembershipEligibilitySchema } from '$lib/api/generated/types.gen';
+import * as m from '$lib/paraglide/messages.js';
 
 const base: MembershipEligibilitySchema = { allowed: false, organization_id: 'org-1' };
 
@@ -66,5 +67,37 @@ describe('getMembershipStatusMessage', () => {
 	});
 	it('falls back to generic when nothing is available', () => {
 		expect(getMembershipStatusMessage(base).length).toBeGreaterThan(0);
+	});
+
+	// The backend only ever emits next_step=requires_invitation paired with
+	// reason_code requires_verification or not_accepting_requests
+	// (membership_manager/gates.py:143,191), so precedence between the two matters.
+	it('prefers the verification message over the invite copy when both are present', () => {
+		expect(
+			getMembershipStatusMessage({
+				...base,
+				reason_code: 'requires_verification',
+				next_step: 'requires_invitation'
+			})
+		).toBe(m['membershipEligibility.reason.requires_verification']());
+	});
+	it('uses the invite-link copy for not_accepting_requests + requires_invitation', () => {
+		expect(
+			getMembershipStatusMessage({
+				...base,
+				reason_code: 'not_accepting_requests',
+				next_step: 'requires_invitation'
+			})
+		).toBe(m['membershipEligibility.reason.requires_invitation']());
+	});
+	it('uses the invite-link copy for requires_invitation with no reason_code', () => {
+		expect(getMembershipStatusMessage({ ...base, next_step: 'requires_invitation' })).toBe(
+			m['membershipEligibility.reason.requires_invitation']()
+		);
+	});
+	it('keeps the verification and invite messages distinct', () => {
+		expect(m['membershipEligibility.reason.requires_verification']()).not.toBe(
+			m['membershipEligibility.reason.requires_invitation']()
+		);
 	});
 });
