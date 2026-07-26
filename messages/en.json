@@ -6554,7 +6554,10 @@
 	"orgPublic": {
 		"yourMembership": {
 			"title": "Your membership",
-			"managedBy": "Managed by {org} staff"
+			"managedBy": "Managed by {org} staff",
+			"pendingSwitch": "Switching to {plan} on {date}",
+			"pendingSwitchFallbackPlan": "another plan",
+			"manage": "Manage in your account →"
 		}
 	},
 	"membershipEligibility": {

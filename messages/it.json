@@ -6553,8 +6553,11 @@
 	},
 	"orgPublic": {
 		"yourMembership": {
-			"title": "Your membership",
-			"managedBy": "Managed by {org} staff"
+			"title": "La tua iscrizione",
+			"managedBy": "Gestita dallo staff di {org}",
+			"pendingSwitch": "Passaggio a {plan} il {date}",
+			"pendingSwitchFallbackPlan": "un altro piano",
+			"manage": "Gestisci nel tuo account →"
 		}
 	},
 	"membershipEligibility": {
