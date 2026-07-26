@@ -6639,6 +6639,23 @@
 		"successImmediate": "Deine Mitgliedschaft wurde gekündigt.",
 		"error": "Deine Mitgliedschaft konnte nicht gekündigt werden. Bitte versuche es erneut."
 	},
+	"changePlan": {
+		"title": "Tarif wechseln",
+		"description": "Deine Mitgliedschaft bei {org}",
+		"currentPlan": "Aktueller Tarif: {plan} ({price})",
+		"upgradeNote": "Du zahlst die Differenz sofort (anteilig verrechnet) und wechselst direkt.",
+		"downgradeNoteDated": "Gilt ab deiner nächsten Verlängerung am {date}.",
+		"downgradeNote": "Gilt ab deiner nächsten Verlängerung.",
+		"noneAvailable": "Es gibt derzeit keine anderen Tarife, zu denen du wechseln kannst.",
+		"confirmCta": "Tarif wechseln",
+		"switching": "Wird gewechselt…",
+		"cancel": "Abbrechen",
+		"successUpgrade": "Tarif gewechselt.",
+		"successDowngradeDated": "Wechsel zu {plan} am {date}.",
+		"successDowngrade": "Dein Tarif wechselt zur nächsten Verlängerung.",
+		"error": "Der Tarif konnte nicht gewechselt werden. Bitte versuche es erneut.",
+		"loadError": "Die verfügbaren Tarife konnten nicht geladen werden."
+	},
 	"subscribe": {
 		"title": "{plan} abonnieren",
 		"priceLine": "{price}",

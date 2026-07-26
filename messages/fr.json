@@ -6610,6 +6610,23 @@
 		"successImmediate": "Ton adhésion a été résiliée.",
 		"error": "Impossible de résilier ton adhésion. Réessaie."
 	},
+	"changePlan": {
+		"title": "Changer de formule",
+		"description": "Ton adhésion à {org}",
+		"currentPlan": "Formule actuelle : {plan} ({price})",
+		"upgradeNote": "Tu paies la différence maintenant (au prorata) et changes immédiatement.",
+		"downgradeNoteDated": "Prend effet à ton prochain renouvellement le {date}.",
+		"downgradeNote": "Prend effet à ton prochain renouvellement.",
+		"noneAvailable": "Il n'y a pas d'autre formule disponible pour le moment.",
+		"confirmCta": "Changer de formule",
+		"switching": "Changement…",
+		"cancel": "Annuler",
+		"successUpgrade": "Formule changée.",
+		"successDowngradeDated": "Passage à {plan} le {date}.",
+		"successDowngrade": "Ta formule changera au prochain renouvellement.",
+		"error": "Impossible de changer de formule. Réessaie.",
+		"loadError": "Impossible de charger les formules disponibles."
+	},
 	"subscribe": {
 		"title": "S'abonner à {plan}",
 		"priceLine": "{price}",

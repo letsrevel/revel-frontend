@@ -6639,6 +6639,23 @@
 		"successImmediate": "Your membership has been cancelled.",
 		"error": "Could not cancel your membership. Please try again."
 	},
+	"changePlan": {
+		"title": "Change plan",
+		"description": "Your {org} membership",
+		"currentPlan": "Current plan: {plan} ({price})",
+		"upgradeNote": "You'll be charged the difference now (prorated) and switch immediately.",
+		"downgradeNoteDated": "Takes effect at your next renewal on {date}.",
+		"downgradeNote": "Takes effect at your next renewal.",
+		"noneAvailable": "There are no other plans you can switch to right now.",
+		"confirmCta": "Switch plan",
+		"switching": "Switching…",
+		"cancel": "Cancel",
+		"successUpgrade": "Plan switched.",
+		"successDowngradeDated": "Switching to {plan} on {date}.",
+		"successDowngrade": "Your plan will switch at the next renewal.",
+		"error": "Could not change your plan. Please try again.",
+		"loadError": "Could not load the available plans."
+	},
 	"subscribe": {
 		"title": "Subscribe to {plan}",
 		"priceLine": "{price}",

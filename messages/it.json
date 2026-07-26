@@ -6639,6 +6639,23 @@
 		"successImmediate": "Il tuo abbonamento è stato annullato.",
 		"error": "Non è stato possibile annullare l'abbonamento. Riprova."
 	},
+	"changePlan": {
+		"title": "Cambia piano",
+		"description": "Il tuo abbonamento a {org}",
+		"currentPlan": "Piano attuale: {plan} ({price})",
+		"upgradeNote": "Pagherai subito la differenza (proporzionale) e passerai immediatamente al nuovo piano.",
+		"downgradeNoteDated": "Avrà effetto al prossimo rinnovo il {date}.",
+		"downgradeNote": "Avrà effetto al prossimo rinnovo.",
+		"noneAvailable": "Al momento non ci sono altri piani a cui puoi passare.",
+		"confirmCta": "Cambia piano",
+		"switching": "Cambio in corso…",
+		"cancel": "Annulla",
+		"successUpgrade": "Piano cambiato.",
+		"successDowngradeDated": "Passaggio a {plan} il {date}.",
+		"successDowngrade": "Il piano cambierà al prossimo rinnovo.",
+		"error": "Non è stato possibile cambiare piano. Riprova.",
+		"loadError": "Non è stato possibile caricare i piani disponibili."
+	},
 	"subscribe": {
 		"title": "Abbonati a {plan}",
 		"priceLine": "{price}",
