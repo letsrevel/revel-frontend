@@ -8,26 +8,31 @@
 		organizationadminmembersReorderMembershipTiers
 	} from '$lib/api/generated/sdk.gen';
 	import type {
-		MembershipTierSchema,
+		MembershipTierAdminSchema,
 		OrganizationAdminDetailSchema,
-		OrganizationMemberSchema
+		OrganizationMemberSchema,
+		OrganizationQuestionnaireInListSchema
 	} from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { reorderByIds, swapAndCollectIds } from '$lib/utils/reorder';
 	import { Button } from '$lib/components/ui/button';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Shield, Plus, Pencil, Trash2, Loader2, ArrowUp, ArrowDown } from '@lucide/svelte';
-	import TierFormModal from '$lib/components/members/TierFormModal.svelte';
+	import TierFormModal, {
+		type TierFormPayload
+	} from '$lib/components/members/TierFormModal.svelte';
 	import PlansList from '$lib/components/members/PlansList.svelte';
 	import { toast } from 'svelte-sonner';
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
-		tiers: MembershipTierSchema[];
+		tiers: MembershipTierAdminSchema[];
 		members: OrganizationMemberSchema[];
 		isLoading: boolean;
 		isError: boolean;
 		canManageSubscriptions?: boolean;
+		membershipQuestionnaires: OrganizationQuestionnaireInListSchema[];
+		orgDefaultRequiresApproval: boolean;
 	}
 
 	const {
@@ -36,24 +41,31 @@
 		members,
 		isLoading,
 		isError,
-		canManageSubscriptions = false
+		canManageSubscriptions = false,
+		membershipQuestionnaires,
+		orgDefaultRequiresApproval
 	}: Props = $props();
 
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
 
 	// Tier management state
-	let tierToEdit = $state<MembershipTierSchema | null>(null);
+	let tierToEdit = $state<MembershipTierAdminSchema | null>(null);
 	let tierFormOpen = $state(false);
-	let tierToDelete = $state<MembershipTierSchema | null>(null);
+	let tierToDelete = $state<MembershipTierAdminSchema | null>(null);
 	let deleteConfirmOpen = $state(false);
 
 	// Create tier mutation
 	const createTierMutation = createMutation(() => ({
-		mutationFn: async ({ name, description }: { name: string; description: string }) => {
+		mutationFn: async (payload: TierFormPayload) => {
 			const response = await organizationadminmembersCreateMembershipTier({
 				path: { slug: organization.slug },
-				body: { name, description },
+				body: {
+					name: payload.name,
+					description: payload.description,
+					membership_questionnaire_id: payload.membership_questionnaire_id,
+					requires_membership_approval: payload.requires_membership_approval
+				},
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
@@ -75,18 +87,15 @@
 
 	// Update tier mutation
 	const updateTierMutation = createMutation(() => ({
-		mutationFn: async ({
-			tierId,
-			name,
-			description
-		}: {
-			tierId: string;
-			name: string;
-			description: string;
-		}) => {
+		mutationFn: async ({ tierId, payload }: { tierId: string; payload: TierFormPayload }) => {
 			const response = await organizationadminmembersUpdateMembershipTier({
 				path: { slug: organization.slug, tier_id: tierId },
-				body: { name, description },
+				body: {
+					name: payload.name,
+					description: payload.description,
+					membership_questionnaire_id: payload.membership_questionnaire_id,
+					requires_membership_approval: payload.requires_membership_approval
+				},
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
@@ -166,7 +175,7 @@
 		// failed request rolls back to the real original, not an already-swapped copy.
 		onMutate: async (tierIds: string[]) => {
 			await queryClient.cancelQueries({ queryKey: tiersQueryKey });
-			const previousData = queryClient.getQueryData<MembershipTierSchema[]>(tiersQueryKey);
+			const previousData = queryClient.getQueryData<MembershipTierAdminSchema[]>(tiersQueryKey);
 			if (previousData) {
 				queryClient.setQueryData(tiersQueryKey, reorderByIds(previousData, tierIds));
 			}
@@ -177,7 +186,7 @@
 		},
 		onError: (_err, _vars, context) => {
 			toast.error(m['orgAdmin.members.tiers.reorderFailed']());
-			const ctx = context as { previousData?: MembershipTierSchema[] } | undefined;
+			const ctx = context as { previousData?: MembershipTierAdminSchema[] } | undefined;
 			if (ctx?.previousData !== undefined) {
 				queryClient.setQueryData(tiersQueryKey, ctx.previousData);
 			}
@@ -202,7 +211,7 @@
 		tierFormOpen = true;
 	}
 
-	function handleEditTier(tier: MembershipTierSchema) {
+	function handleEditTier(tier: MembershipTierAdminSchema) {
 		tierToEdit = tier;
 		tierFormOpen = true;
 	}
@@ -214,10 +223,10 @@
 		}
 	}
 
-	function handleSaveTier(name: string, description: string) {
+	function handleSaveTier(payload: TierFormPayload) {
 		if (tierToEdit && tierToEdit.id) {
 			updateTierMutation.mutate(
-				{ tierId: tierToEdit.id, name, description },
+				{ tierId: tierToEdit.id, payload },
 				{
 					onSuccess: () => {
 						tierFormOpen = false;
@@ -226,18 +235,15 @@
 				}
 			);
 		} else {
-			createTierMutation.mutate(
-				{ name, description },
-				{
-					onSuccess: () => {
-						tierFormOpen = false;
-					}
+			createTierMutation.mutate(payload, {
+				onSuccess: () => {
+					tierFormOpen = false;
 				}
-			);
+			});
 		}
 	}
 
-	function handleDeleteTierClick(tier: MembershipTierSchema) {
+	function handleDeleteTierClick(tier: MembershipTierAdminSchema) {
 		tierToDelete = tier;
 		deleteConfirmOpen = true;
 	}
@@ -371,6 +377,8 @@
 	onClose={handleCloseTierForm}
 	onSave={handleSaveTier}
 	isSaving={createTierMutation.isPending || updateTierMutation.isPending}
+	{membershipQuestionnaires}
+	{orgDefaultRequiresApproval}
 />
 
 <!-- Delete Tier Confirmation Dialog -->
