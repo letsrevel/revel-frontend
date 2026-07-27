@@ -1219,11 +1219,19 @@ export async function getSeededBestAvailableEvent(
  *
  * `nextStep` is the eligibility verdict's `next_step` (null once there is
  * nothing left to do) — the same field MembershipCta switches its CTA on.
+ *
+ * `submissionId` attaches the questionnaire submission that satisfied the
+ * gate — the audit pointer the org-admin request card turns into its
+ * "View questionnaire submission" link. The UI never sends it (ApplyDialog
+ * posts tier + notes only), so specs that need a submission-bearing row
+ * arrange it here. The backend validates it: it must be a READY submission
+ * owned by `user` for the questionnaire that actually gates this (org, tier),
+ * or the call 422s.
  */
 export async function applyViaApi(
 	user: ThrowawayUser,
 	orgSlug: string,
-	opts: { tierId?: string; notes?: string } = {}
+	opts: { tierId?: string; notes?: string; submissionId?: string } = {}
 ): Promise<{ applicationId: string; status: string; nextStep: string | null }> {
 	const api = await ApiClient.login(user.email, user.password);
 	const response = await api.post<{
@@ -1231,7 +1239,8 @@ export async function applyViaApi(
 		eligibility: { next_step?: string | null };
 	}>(`/api/me/organizations/${orgSlug}/apply`, {
 		tier_id: opts.tierId ?? null,
-		notes: opts.notes
+		notes: opts.notes,
+		questionnaire_submission_id: opts.submissionId ?? null
 	});
 	const applicationId = response.application.id;
 	if (!applicationId) {
@@ -1400,7 +1409,7 @@ export async function patchTierPolicy(
 /** The single question createMembershipQuestionnaire asks, per mode — exported
  *  so specs answer it by name instead of guessing at the wording. */
 export const MEMBERSHIP_QUESTION = {
-	/** Auto-graded multiple choice. */
+	/** Auto-graded multiple choice — asked in `'automatic'` AND `'hybrid'` mode. */
 	automatic: {
 		question: 'Do you agree to the code of conduct?',
 		correct: 'Yes, I agree',
@@ -1422,7 +1431,16 @@ export const MEMBERSHIP_QUESTION = {
  *     grading of prose needs an LLM, which no E2E run should depend on).
  *     With `min_score: 0` any answer passes, so the gate clears itself.
  *   * `'manual'` — one free-text question; the submission parks in the org's
- *     review queue until staff grade it.
+ *     review queue until staff grade it. NOTE: manual mode queues NO
+ *     evaluation at all (see `submit_membership_questionnaire`: only
+ *     automatic/hybrid enqueue the task), so the submission's
+ *     `evaluation_status` stays NULL forever — nothing renders a
+ *     "pending review" hint off a manual submission.
+ *   * `'hybrid'` — the same auto-gradable multiple choice as `'automatic'`
+ *     (free text would need LLM guidelines here too), but the grader files the
+ *     evaluation as PENDING REVIEW instead of finalizing it. This is the only
+ *     mode that yields `evaluation_status: 'pending review'` — what the
+ *     org-admin request card's "Review pending" hint keys on.
  *
  * The returned id is the ORGANIZATION-QUESTIONNAIRE WRAPPER's — what
  * `default_membership_questionnaire_id` / `membership_questionnaire_id` want.
@@ -1434,12 +1452,12 @@ export const MEMBERSHIP_QUESTION = {
 export async function createMembershipQuestionnaire(
 	owner: ThrowawayUser,
 	orgSlug: string,
-	opts: { evaluationMode: 'automatic' | 'manual' }
+	opts: { evaluationMode: 'automatic' | 'manual' | 'hybrid' }
 ): Promise<{ id: string }> {
 	const api = await ApiClient.login(owner.email, owner.password);
 	const org = await api.get<{ id: string }>(`/api/organizations/${orgSlug}`);
 	const questions =
-		opts.evaluationMode === 'automatic'
+		opts.evaluationMode !== 'manual'
 			? {
 					multiplechoicequestion_questions: [
 						{
