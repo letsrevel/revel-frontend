@@ -1295,8 +1295,17 @@ export async function rejectApplication(
  *
  * READ-THEN-PUT: the endpoint takes OrganizationEditSchema, whose unsent
  * optional fields fall back to their schema defaults — a naive PUT carrying
- * only the policy would silently flip `accept_membership_requests` back off
- * and the org back to private. Only the keys the caller passed change.
+ * only the policy would silently flip `accept_membership_requests` back off,
+ * the org back to private, and blank every social link and location field.
+ * So the body echoes back EVERY writable field of OrganizationEditSchema as
+ * the admin retrieve currently reports it, with only the caller's keys
+ * overridden — nothing an earlier arrange (or a spec's own settings-UI edit)
+ * put on the org is lost.
+ *
+ * Two fields are deliberately never sent: `contact_email` (excluded from the
+ * edit schema — it has its own verification flow) and `tags` (not writable
+ * here). `city` is the one shape mismatch: the retrieve nests the whole city
+ * object, the edit schema wants its id.
  */
 export async function setOrgMembershipPolicy(
 	owner: ThrowawayUser,
@@ -1312,7 +1321,16 @@ export async function setOrgMembershipPolicy(
 		visibility: string;
 		accept_membership_requests: boolean;
 		contact_method: string;
+		revenue_report_cadence: string;
 		description?: string | null;
+		instagram_url?: string | null;
+		facebook_url?: string | null;
+		bluesky_url?: string | null;
+		telegram_url?: string | null;
+		city?: { id?: number | null } | null;
+		address?: string | null;
+		location_maps_url?: string | null;
+		location_maps_embed?: string | null;
 		membership_grace_period_days: number;
 		membership_subscription_revival_window_days: number;
 		membership_refund_policy: string;
@@ -1320,12 +1338,23 @@ export async function setOrgMembershipPolicy(
 		default_requires_membership_approval: boolean;
 	}>(`/api/organization-admin/${orgSlug}`);
 	await api.put(`/api/organization-admin/${orgSlug}`, {
+		// Echoed back unchanged.
 		visibility: current.visibility,
 		accept_membership_requests: current.accept_membership_requests,
 		contact_method: current.contact_method,
+		revenue_report_cadence: current.revenue_report_cadence,
 		description: current.description ?? '',
+		instagram_url: current.instagram_url ?? null,
+		facebook_url: current.facebook_url ?? null,
+		bluesky_url: current.bluesky_url ?? null,
+		telegram_url: current.telegram_url ?? null,
+		city_id: current.city?.id ?? null,
+		address: current.address ?? null,
+		location_maps_url: current.location_maps_url ?? null,
+		location_maps_embed: current.location_maps_embed ?? null,
 		membership_grace_period_days: current.membership_grace_period_days,
 		membership_refund_policy: current.membership_refund_policy,
+		// Overridable.
 		membership_subscription_revival_window_days:
 			policy.revivalWindowDays ?? current.membership_subscription_revival_window_days,
 		// `undefined` means "leave alone"; an explicit `null` clears it.
@@ -1394,6 +1423,13 @@ export const MEMBERSHIP_QUESTION = {
  *     With `min_score: 0` any answer passes, so the gate clears itself.
  *   * `'manual'` — one free-text question; the submission parks in the org's
  *     review queue until staff grade it.
+ *
+ * The returned id is the ORGANIZATION-QUESTIONNAIRE WRAPPER's — what
+ * `default_membership_questionnaire_id` / `membership_questionnaire_id` want.
+ * It is NOT the id the join-eligibility verdict carries in
+ * `questionnaire_id` (the inner Questionnaire, which is what the
+ * /org/{slug}/questionnaire/{id} route takes), so specs must build that URL
+ * from the eligibility verdict or the CTA link, never from this return value.
  */
 export async function createMembershipQuestionnaire(
 	owner: ThrowawayUser,
@@ -1461,7 +1497,9 @@ export async function subscribeViaApi(
  * Staff-create a subscription on behalf of a member (OFFLINE plans only — the
  * backend refuses ONLINE ones here so the member can confirm their own first
  * payment). Recording an initial payment is what puts the subscription in an
- * ACTIVE, paid-up state; omit it to arrange a still-unpaid row.
+ * ACTIVE, paid-up state; omit it to arrange a still-unpaid row. `currency`
+ * defaults to 'EUR' whenever an `amount` is given (and is left unset without
+ * one, so no currency is recorded for a payment that never happened).
  */
 export async function staffCreateOfflineSubscription(
 	owner: ThrowawayUser | 'owner',
