@@ -43,12 +43,21 @@ export function getMembershipCtaKind(e: MembershipEligibilitySchema): Membership
 		case 'proceed_to_payment':
 			return 'info';
 	}
-	// A pending tier-less application passes every gate: the verdict comes back
-	// allowed with no next_step and no reason_code — but it carries the
-	// application_id of the PENDING row. That is "wait", not "join": rendering a
-	// Join CTA here contradicts the account hub's tracking row for the same
-	// application (live-verified in the PR③ smoke). A silent allowed verdict
-	// WITHOUT an application_id is genuinely free to join.
+	// DORMANT FORWARD CONTRACT — does not fire today.
+	//
+	// A pending tier-less application passes every gate, so its verdict comes
+	// back allowed with no next_step and no reason_code. When such a verdict also
+	// carries the application_id of the PENDING row, that is "wait", not "join".
+	//
+	// Today the standalone GET join-eligibility endpoint does NOT attach
+	// application_id to an allowed verdict — the backend injects it only on the
+	// apply and get-application responses (me_applications.py:124-125,152) — so
+	// this branch is unreachable from the org page, and the live org-CTA/account-hub
+	// contradiction it addresses is still reproducible. That is tracked as BE #788.
+	// When #788 lands (attaching application_id, or an explicit next_step, to the
+	// join-eligibility verdict) this branch activates with no further FE change.
+	//
+	// A silent allowed verdict WITHOUT an application_id is genuinely free to join.
 	if (e.allowed && !e.next_step && !e.reason_code && e.application_id) return 'waiting';
 	return e.allowed ? 'join' : 'info';
 }

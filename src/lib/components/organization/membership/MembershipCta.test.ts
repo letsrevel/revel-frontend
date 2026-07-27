@@ -118,11 +118,11 @@ describe('MembershipCta', () => {
 		);
 	});
 
-	// The standalone eligibility GET reports a pending tier-less application as
-	// allowed with no next_step and no reason_code, carrying only application_id.
-	// Rendering Join here contradicted /account/memberships, which showed the same
-	// application as under review.
-	it('shows the pending state for an allowed verdict that carries a pending application', async () => {
+	// Forward contract, dormant today: the standalone eligibility GET does not yet
+	// attach application_id to an allowed verdict (BE #788), so the org page still
+	// shows Join for a pending tier-less application while /account/memberships
+	// shows it under review. This pins the rendering for when #788 lands.
+	it('shows the pending state once an allowed verdict carries a pending application (#788)', async () => {
 		mockEligibility(makeEligibility({ allowed: true, application_id: 'app-1' }));
 		renderCta();
 

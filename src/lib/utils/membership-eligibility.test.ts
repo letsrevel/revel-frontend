@@ -49,26 +49,27 @@ describe('getMembershipCtaKind', () => {
 		expect(getMembershipCtaKind({ ...base, reason_code: 'membership_paused' })).toBe('info');
 	});
 
-	// The standalone join-eligibility GET returns a pending tier-less application
-	// as allowed with no next_step and no reason_code — application_id is the only
-	// thing distinguishing "already applied, waiting" from "free to join". Getting
-	// this wrong put a Join CTA on the org page while the account hub tracked the
-	// very same application (live-verified in the PR③ smoke).
-	it('maps a silent allowed verdict carrying an application_id to waiting', () => {
+	// Forward contract, dormant today. A pending tier-less application yields an
+	// allowed verdict with no next_step and no reason_code; application_id is the
+	// only thing that could distinguish "already applied, waiting" from "free to
+	// join". The standalone join-eligibility endpoint does not attach it yet
+	// (backend only does so on apply/get-application), so these pin the behaviour
+	// for when BE #788 lands rather than describing what the org page does today.
+	it('treats a silent allowed verdict as waiting once the backend attaches application_id (#788)', () => {
 		expect(getMembershipCtaKind({ ...base, allowed: true, application_id: 'app-1' })).toBe(
 			'waiting'
 		);
 	});
 
-	it('still maps a silent allowed verdict with no application to join', () => {
+	it('still maps a silent allowed verdict with no application to join — the shape the endpoint returns today', () => {
 		expect(getMembershipCtaKind({ ...base, allowed: true, application_id: null })).toBe('join');
 	});
 
-	it('does not treat a denial carrying an application_id as waiting', () => {
+	it('would not treat a denial carrying an application_id as waiting', () => {
 		expect(getMembershipCtaKind({ ...base, allowed: false, application_id: 'app-1' })).toBe('info');
 	});
 
-	it('lets an explicit next_step outrank the application_id heuristic', () => {
+	it('lets an explicit next_step outrank the application_id branch', () => {
 		expect(
 			getMembershipCtaKind({
 				...base,
