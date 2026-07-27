@@ -1,3 +1,20 @@
+<script lang="ts" module>
+	/**
+	 * Carries the HTTP status past the mutation boundary: TanStack only hands
+	 * `onError` the thrown error, and a plain `Error` would lose the 400 that
+	 * distinguishes the force-able refusal from every other approve failure.
+	 */
+	class ApproveRequestError extends Error {
+		status: number | undefined;
+
+		constructor(message: string, status: number | undefined) {
+			super(message);
+			this.name = 'ApproveRequestError';
+			this.status = status;
+		}
+	}
+</script>
+
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
@@ -14,6 +31,14 @@
 	} from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
+	import {
+		Dialog,
+		DialogContent,
+		DialogDescription,
+		DialogFooter,
+		DialogHeader,
+		DialogTitle
+	} from '$lib/components/ui/dialog';
 	import { UserPlus, Loader2 } from '@lucide/svelte';
 	import MembershipRequestCard from '$lib/components/members/MembershipRequestCard.svelte';
 	import ApproveMembershipModal from '$lib/components/members/ApproveMembershipModal.svelte';
@@ -23,6 +48,16 @@
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
 		tiers: MembershipTierSchema[];
+	}
+
+	interface ApproveVariables {
+		request: OrganizationMembershipRequestRetrieve;
+		// `null` when the application already carries its own tier — the backend
+		// then resolves the tier itself and `tier_id` is omitted.
+		tierId: string | null;
+		// Set only by the "approve anyway" retry; the backend treats the body with
+		// exclude_unset semantics, so the flag is omitted rather than sent false.
+		force?: boolean;
 	}
 
 	const { organization, tiers }: Props = $props();
@@ -51,6 +86,14 @@
 	// Approve membership request modal state
 	let requestToApprove = $state<OrganizationMembershipRequestRetrieve | null>(null);
 	let approveMembershipModalOpen = $state(false);
+
+	// Set when the backend refuses a free approval with a 400 (active subscription
+	// or paused membership); holds everything the forced retry needs.
+	let forceConfirm = $state<{
+		request: OrganizationMembershipRequestRetrieve;
+		tierId: string | null;
+		detail: string;
+	} | null>(null);
 
 	// Fetch membership requests
 	const requestsQuery = createQuery(() => ({
@@ -83,28 +126,21 @@
 
 	// Approve request mutation
 	const approveRequestMutation = createMutation(() => ({
-		mutationFn: async ({
-			request,
-			tierId
-		}: {
-			request: OrganizationMembershipRequestRetrieve;
-			// `null` when the application already carries its own tier — the
-			// backend then resolves the tier itself and `tier_id` is omitted.
-			tierId: string | null;
-		}) => {
+		mutationFn: async ({ request, tierId, force }: ApproveVariables) => {
 			if (!request.id) {
-				throw new Error(m['membershipRequestsTab.approveFailedGeneric']());
+				throw new ApproveRequestError(m['membershipRequestsTab.approveFailedGeneric'](), undefined);
 			}
 
 			const response = await organizationadminmembershiprequestsApproveMembershipRequest({
 				path: { slug: organization.slug, request_id: request.id },
-				body: tierId ? { tier_id: tierId } : {},
+				body: { ...(tierId ? { tier_id: tierId } : {}), ...(force ? { force: true } : {}) },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
 			if (response.error) {
-				throw new Error(
-					backendMessage(response.error) || m['membershipRequestsTab.approveFailedGeneric']()
+				throw new ApproveRequestError(
+					backendMessage(response.error) || m['membershipRequestsTab.approveFailedGeneric'](),
+					response.response?.status
 				);
 			}
 
@@ -113,6 +149,7 @@
 		onSuccess: () => {
 			approveMembershipModalOpen = false;
 			requestToApprove = null;
+			forceConfirm = null;
 
 			queryClient.invalidateQueries({
 				queryKey: ['organization', organization.slug, 'membership-requests']
@@ -121,7 +158,25 @@
 				queryKey: ['organization', organization.slug, 'members']
 			});
 		},
-		onError: (error: Error) => {
+		onError: (error: Error, variables: ApproveVariables) => {
+			// A 400 on a first attempt is the guard against overwriting a paid tier —
+			// offer the override instead of dead-ending in a toast. A 400 on the
+			// forced retry is a guard `force` cannot bypass (e.g. the application is
+			// no longer pending), so it falls through to the toast.
+			if (!variables.force && error instanceof ApproveRequestError && error.status === 400) {
+				// Close the tier picker first: the confirm dialog carries the tier
+				// itself, and stacking the two dialogs would trap focus in the wrong one.
+				approveMembershipModalOpen = false;
+				requestToApprove = null;
+				forceConfirm = {
+					request: variables.request,
+					tierId: variables.tierId,
+					detail: error.message
+				};
+				return;
+			}
+
+			forceConfirm = null;
 			toast.error(error.message);
 		}
 	}));
@@ -199,6 +254,31 @@
 	function handleConfirmApproveRequest(tierId: string) {
 		if (requestToApprove) {
 			approveRequestMutation.mutate({ request: requestToApprove, tierId });
+		}
+	}
+
+	// Both operands are read unconditionally — short-circuiting over the query's
+	// tracked `isPending` would leave it untracked once the dialog is closed.
+	const isForcing = $derived.by(() => {
+		const pending = approveRequestMutation.isPending;
+		const open = forceConfirm !== null;
+		return pending && open;
+	});
+
+	function handleForceConfirmOpenChange(next: boolean) {
+		// The forced approval is in flight; closing now would hide its outcome.
+		if (!next && !isForcing) {
+			forceConfirm = null;
+		}
+	}
+
+	function handleForceApprove() {
+		if (forceConfirm) {
+			approveRequestMutation.mutate({
+				request: forceConfirm.request,
+				tierId: forceConfirm.tierId,
+				force: true
+			});
 		}
 	}
 </script>
@@ -294,3 +374,38 @@
 	onConfirm={handleConfirmApproveRequest}
 	isProcessing={approveRequestMutation.isPending}
 />
+
+<!-- Force-approve confirmation (backend refused a free grant over a paid state) -->
+<Dialog open={forceConfirm !== null} onOpenChange={handleForceConfirmOpenChange}>
+	<DialogContent
+		class="max-h-[90vh] overflow-y-auto sm:max-w-md"
+		escapeKeydownBehavior={isForcing ? 'ignore' : 'close'}
+		interactOutsideBehavior={isForcing ? 'ignore' : 'close'}
+		showCloseButton={!isForcing}
+	>
+		<DialogHeader>
+			<DialogTitle>{m['membershipRequestsTab.forceApproveTitle']()}</DialogTitle>
+			<DialogDescription>{forceConfirm?.detail}</DialogDescription>
+		</DialogHeader>
+
+		<p class="text-sm text-muted-foreground">
+			{m['membershipRequestsTab.forceApproveExplainer']()}
+		</p>
+
+		<DialogFooter class="gap-2">
+			<Button
+				variant="outline"
+				onclick={() => handleForceConfirmOpenChange(false)}
+				disabled={isForcing}
+			>
+				{m['membershipRequestsTab.forceApproveCancel']()}
+			</Button>
+			<Button variant="destructive" onclick={handleForceApprove} disabled={isForcing}>
+				{#if isForcing}
+					<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+				{/if}
+				{m['membershipRequestsTab.forceApproveConfirm']()}
+			</Button>
+		</DialogFooter>
+	</DialogContent>
+</Dialog>

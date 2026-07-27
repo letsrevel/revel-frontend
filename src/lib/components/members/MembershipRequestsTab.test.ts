@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/svelte';
+import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
@@ -78,6 +78,13 @@ function renderTab(tierList: MembershipTierSchema[] = tiers) {
 		}
 	});
 }
+
+// bits-ui pins pointer-events on <body> while a dialog is open; jsdom keeps
+// <body> across tests, so reset it or a test that ends with a dialog open
+// poisons every later click.
+beforeEach(() => {
+	document.body.style.pointerEvents = '';
+});
 
 /** Last `query` object handed to the list endpoint. */
 function lastListQuery() {
@@ -281,6 +288,187 @@ describe('MembershipRequestsTab reject errors', () => {
 		await waitFor(() => {
 			expect(toast.error).toHaveBeenCalledWith('Could not reject the application.');
 		});
+	});
+});
+
+describe('MembershipRequestsTab force approve', () => {
+	/** hey-api hands the raw fetch Response through as `response`. */
+	function approveFailure(status: number, detail?: string) {
+		return {
+			data: undefined,
+			error: detail ? { detail } : {},
+			response: { status }
+		} as never;
+	}
+
+	function approveCallBodies() {
+		return vi
+			.mocked(organizationadminmembershiprequestsApproveMembershipRequest)
+			.mock.calls.map((call) => (call[0] as { body: Record<string, unknown> }).body);
+	}
+
+	beforeEach(() => {
+		vi.clearAllMocks();
+		vi.mocked(organizationadminmembershiprequestsListMembershipRequests).mockResolvedValue(
+			listResponse([pendingRequest]) as never
+		);
+	});
+
+	it('opens a confirm dialog instead of a toast when approve is refused with a 400', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest).mockResolvedValue(
+			approveFailure(400, 'Ada Lovelace holds an active subscription.')
+		);
+
+		// Single tier → approve goes straight through without the tier picker.
+		renderTab([tiers[0]]);
+
+		await user.click(await screen.findByRole('button', { name: /approve request from/i }));
+
+		const dialog = await screen.findByRole('dialog');
+		expect(dialog).toHaveTextContent('Ada Lovelace holds an active subscription.');
+		expect(dialog).toHaveTextContent(/Approving anyway will grant this tier/i);
+		expect(toast.error).not.toHaveBeenCalled();
+	});
+
+	it('retries with force: true and closes the dialog on success', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest)
+			.mockResolvedValueOnce(approveFailure(400, 'Already subscribed.'))
+			.mockResolvedValueOnce({ data: {}, error: undefined } as never);
+
+		renderTab([tiers[0]]);
+
+		await user.click(await screen.findByRole('button', { name: /approve request from/i }));
+		await screen.findByRole('dialog');
+
+		await user.click(screen.getByRole('button', { name: /^approve anyway$/i }));
+
+		await waitFor(() => {
+			expect(approveCallBodies()).toHaveLength(2);
+		});
+		// First attempt omits `force` entirely; the retry adds it without ever
+		// nulling `tier_id`.
+		expect(approveCallBodies()[0]).toEqual({ tier_id: 'tier-1' });
+		expect(approveCallBodies()[1]).toEqual({ tier_id: 'tier-1', force: true });
+
+		await waitFor(() => {
+			expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		});
+		expect(toast.error).not.toHaveBeenCalled();
+	});
+
+	it('falls back to a toast when the forced retry is refused too', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest)
+			.mockResolvedValueOnce(approveFailure(400, 'Already subscribed.'))
+			.mockResolvedValueOnce(approveFailure(400, 'Application is no longer pending.'));
+
+		renderTab([tiers[0]]);
+
+		await user.click(await screen.findByRole('button', { name: /approve request from/i }));
+		await screen.findByRole('dialog');
+
+		await user.click(screen.getByRole('button', { name: /^approve anyway$/i }));
+
+		await waitFor(() => {
+			expect(toast.error).toHaveBeenCalledWith('Application is no longer pending.');
+		});
+		await waitFor(() => {
+			expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		});
+	});
+
+	it('closes the tier picker before opening the confirm, and replays the picked tier', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest)
+			.mockResolvedValueOnce(approveFailure(400, 'Already subscribed.'))
+			.mockResolvedValueOnce({ data: {}, error: undefined } as never);
+
+		// Two tiers + a tier-less application → approving goes through the picker.
+		renderTab();
+
+		await user.click(await screen.findByRole('button', { name: /approve request from/i }));
+		await screen.findByRole('dialog');
+
+		// The tier picker is a bits-ui Select, and jsdom fights it three ways.
+		// Fire ArrowDown straight at the trigger: `user.keyboard` targets whatever
+		// has focus, and the dialog's rAF focus-scope can steal it back after
+		// mount; `user.click` is no good either, because the trigger's pointerdown
+		// calls `hasPointerCapture`, which jsdom lacks. Then pick the option by
+		// text rather than by role/name — jsdom never lays out, so floating-ui
+		// leaves the popover `visibility: hidden`, which erases the options from
+		// the accessibility tree that role queries read.
+		const tierTrigger = screen.getByRole('button', { name: /membership tier/i });
+		await fireEvent.keyDown(tierTrigger, { key: 'ArrowDown' });
+		await user.click(await screen.findByText('Silver'));
+		await user.click(screen.getByRole('button', { name: /^approve request$/i }));
+
+		// `findByRole` throws on multiple matches, so this also asserts the picker
+		// is gone: leaving both dialogs mounted would trap focus in the wrong one.
+		const dialog = await screen.findByRole('dialog');
+		await waitFor(() => {
+			expect(dialog).toHaveTextContent('Already subscribed.');
+		});
+		expect(screen.getAllByRole('dialog')).toHaveLength(1);
+		expect(screen.queryByRole('button', { name: /membership tier/i })).not.toBeInTheDocument();
+
+		await user.click(screen.getByRole('button', { name: /^approve anyway$/i }));
+
+		await waitFor(() => {
+			expect(approveCallBodies()).toHaveLength(2);
+		});
+		// The retry replays the tier chosen in the picker, not a fresh resolution.
+		expect(approveCallBodies()[0]).toEqual({ tier_id: 'tier-2' });
+		expect(approveCallBodies()[1]).toEqual({ tier_id: 'tier-2', force: true });
+
+		await waitFor(() => {
+			expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		});
+	});
+
+	it('omits tier_id on the forced retry when the application carries its own tier', async () => {
+		const user = userEvent.setup();
+		const tieredRequest = {
+			...pendingRequest,
+			tier: { id: 't1', name: 'Gold' }
+		} as unknown as OrganizationMembershipRequestRetrieve;
+		vi.mocked(organizationadminmembershiprequestsListMembershipRequests).mockResolvedValue(
+			listResponse([tieredRequest]) as never
+		);
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest)
+			.mockResolvedValueOnce(approveFailure(400, 'Already subscribed.'))
+			.mockResolvedValueOnce({ data: {}, error: undefined } as never);
+
+		renderTab();
+
+		await user.click(await screen.findByRole('button', { name: /approve request from/i }));
+		await screen.findByRole('dialog');
+
+		await user.click(screen.getByRole('button', { name: /^approve anyway$/i }));
+
+		await waitFor(() => {
+			expect(approveCallBodies()).toHaveLength(2);
+		});
+		// `tier_id` stays omitted rather than being sent as null — the backend
+		// resolves the application's own tier.
+		expect(approveCallBodies()[1]).toEqual({ force: true });
+	});
+
+	it('keeps the toast path for non-400 approve failures', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest).mockResolvedValue(
+			approveFailure(500, 'Something exploded.')
+		);
+
+		renderTab([tiers[0]]);
+
+		await user.click(await screen.findByRole('button', { name: /approve request from/i }));
+
+		await waitFor(() => {
+			expect(toast.error).toHaveBeenCalledWith('Something exploded.');
+		});
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 	});
 });
 
