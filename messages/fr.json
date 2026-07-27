@@ -6519,7 +6519,8 @@
 			"viewOrg": "Voir l'organisation",
 			"contactOrg": "Contacte l'organisateur pour renouveler.",
 			"memberSince": "Membre depuis le {date}",
-			"managedBy": "Géré par {org} — contacte-les pour toute modification."
+			"managedBy": "Géré par {org} — contacte-les pour toute modification.",
+			"loadError": "Impossible de charger tes adhésions. Essaie de recharger la page."
 		}
 	},
 	"orgPublic": {
@@ -7307,6 +7308,7 @@
 	"membershipRequestCard.questionnaire": "Questionnaire",
 	"membershipRequestCard.viewSubmission": "Voir le questionnaire rempli",
 	"membershipRequestCard.submissionPendingReview": "Examen en attente",
+	"membershipRequestCard.tierPrefix": "Niveau :",
 	"membershipRequestCard.viewRequestAria": "Voir les détails de la demande de {name}",
 	"membershipRequestCard.approveRequestAria": "Approuver la demande de {name}",
 	"membershipRequestCard.rejectRequestAria": "Refuser la demande de {name}",

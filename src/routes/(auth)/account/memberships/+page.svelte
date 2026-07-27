@@ -114,6 +114,21 @@
 		const subscriptionsPending = subscriptionsQuery.isPending;
 		return membershipsPending || subscriptionsPending;
 	});
+
+	// Either list failing makes the section unable to speak for the member:
+	// memberships carry the live cards, subscriptions carry the rejoin offers,
+	// so a missing half cannot honestly be reported as "you have none".
+	const hasSectionError = $derived.by(() => {
+		const membershipsFailed = membershipsQuery.isError;
+		const subscriptionsFailed = subscriptionsQuery.isError;
+		return membershipsFailed || subscriptionsFailed;
+	});
+
+	// TanStack keeps the last successful payload across a failed refetch, so the
+	// error state is gated on there being nothing left to show — a blipped
+	// background poll must not wipe cards the member is reading (same contract
+	// as ApplicationsSection).
+	const hasNoRows = $derived(displayedMemberships.length === 0 && rejoinSubs.length === 0);
 </script>
 
 <svelte:head>
@@ -129,10 +144,13 @@
 		</h2>
 
 		{#if isSectionPending}
-			<div role="status" aria-label={m['common.loading']()}>
+			<div role="status">
 				<Loader2 class="h-5 w-5 animate-spin" aria-hidden="true" />
+				<span class="sr-only">{m['common.loading']()}</span>
 			</div>
-		{:else if displayedMemberships.length === 0 && rejoinSubs.length === 0}
+		{:else if hasSectionError && hasNoRows}
+			<p class="text-sm text-destructive">{m['account.memberships.loadError']()}</p>
+		{:else if hasNoRows}
 			<div class="rounded-lg border p-6 text-center">
 				<!-- h3, not h2: this sits *inside* the memberships section, so an h2
 				     here would read as a third top-level section. -->

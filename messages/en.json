@@ -6548,7 +6548,8 @@
 			"viewOrg": "View org",
 			"contactOrg": "Reach out to the organizer to renew.",
 			"memberSince": "Member since {date}",
-			"managedBy": "Managed by {org} — contact them to make changes."
+			"managedBy": "Managed by {org} — contact them to make changes.",
+			"loadError": "Could not load your memberships. Try reloading the page."
 		}
 	},
 	"orgPublic": {
@@ -7336,6 +7337,7 @@
 	"membershipRequestCard.questionnaire": "Questionnaire",
 	"membershipRequestCard.viewSubmission": "View questionnaire submission",
 	"membershipRequestCard.submissionPendingReview": "Review pending",
+	"membershipRequestCard.tierPrefix": "Tier:",
 	"membershipRequestCard.viewRequestAria": "View request details from {name}",
 	"membershipRequestCard.approveRequestAria": "Approve request from {name}",
 	"membershipRequestCard.rejectRequestAria": "Reject request from {name}",

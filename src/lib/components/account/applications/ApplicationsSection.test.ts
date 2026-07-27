@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/svelte';
+import { render, screen, waitFor, within } from '@testing-library/svelte';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
@@ -119,6 +119,27 @@ describe('ApplicationsSection', () => {
 
 		expect(await screen.findByText(/could not load your applications/i)).toBeInTheDocument();
 		expect(screen.queryByText(/no applications yet/i)).toBeNull();
+	});
+
+	it('keeps the loaded rows when a background refetch fails', async () => {
+		// A refetch that fails must not throw away rows the member is already
+		// reading: the error state is for "nothing to show", not "the last poll
+		// blipped".
+		listMock.mockResolvedValueOnce({
+			data: { count: 1, next: null, previous: null, results: [makeApplication()] },
+			error: undefined
+		});
+		listMock.mockResolvedValue({ data: undefined, error: { detail: 'boom' } });
+		renderSection();
+
+		await screen.findByRole('list', { name: 'In progress' });
+		await queryClient.refetchQueries({ queryKey: ['me', 'applications'] });
+
+		await waitFor(() => {
+			expect(queryClient.getQueryState(['me', 'applications'])?.status).toBe('error');
+		});
+		expect(screen.getByRole('list', { name: 'In progress' })).toBeInTheDocument();
+		expect(screen.queryByText(/could not load your applications/i)).toBeNull();
 	});
 
 	it('requests a single generous page of applications', async () => {

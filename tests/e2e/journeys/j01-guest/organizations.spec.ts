@@ -42,7 +42,16 @@ test.describe('J1 guest browses organizations @p0', () => {
 		).toBeVisible();
 		// Public org page exposes follow/membership CTAs and its events.
 		await expect(page.getByRole('button', { name: 'Follow' })).toBeVisible();
-		await expect(page.getByRole('button', { name: 'Request Membership' })).toBeVisible();
+		// The guest membership CTA is a real LINK into login carrying a returnUrl
+		// back to this org (MembershipCta's anonymous branch — it replaced the
+		// legacy "Request Membership" button), so it survives no-JS and
+		// middle-click.
+		const joinLink = page.getByRole('link', { name: 'Join Revel Events Collective' });
+		await expect(joinLink).toBeVisible();
+		await expect(joinLink).toHaveAttribute(
+			'href',
+			/\/login\?returnUrl=%2Forg%2Frevel-events-collective$/
+		);
 		await expect(page.getByRole('heading', { name: 'Events', exact: true })).toBeVisible();
 	});
 });

@@ -85,7 +85,12 @@ test.describe('J23 subscription lifecycle @p2', () => {
 		const memberPage = await memberContext.newPage();
 		await gotoHydrated(memberPage, '/account/memberships');
 		await waitForClientAuth(memberPage);
-		const card = memberPage.getByRole('article', { name: org.name });
+		// Scoped to the memberships section: the page's Applications section
+		// renders its own <article aria-label="{org name}"> for the (now
+		// completed) application this test's arrange created, so an unscoped
+		// article lookup is ambiguous.
+		const membershipsSection = memberPage.getByRole('region', { name: 'Memberships' });
+		const card = membershipsSection.getByRole('article', { name: org.name });
 		await expect(card).toBeVisible({ timeout: 15_000 });
 		await expect(card.getByText(plan.name)).toBeVisible();
 		await expect(card.getByText('€15.00 / month')).toBeVisible();
@@ -95,9 +100,8 @@ test.describe('J23 subscription lifecycle @p2', () => {
 		await drawer.getByRole('button', { name: 'Pause', exact: true }).click();
 		await expect(drawer.getByLabel('Paused')).toBeVisible({ timeout: 15_000 });
 		await gotoHydrated(memberPage, '/account/memberships');
-		await expect(
-			memberPage.getByRole('article', { name: org.name }).getByLabel('Paused')
-		).toBeVisible({ timeout: 15_000 });
+		await waitForClientAuth(memberPage);
+		await expect(card.getByLabel('Paused')).toBeVisible({ timeout: 15_000 });
 		await memberContext.close();
 
 		// Resume → ACTIVE again.

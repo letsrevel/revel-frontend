@@ -65,6 +65,12 @@
 	// Dialog state
 	let dialogOpen = $state(false);
 
+	// The card and its dialog each render the submission link + review hint, so
+	// the hint ids have to be distinct as well as unique across mounted cards.
+	const uid = $props.id();
+	const cardHintId = `${uid}-review-hint`;
+	const dialogHintId = `${uid}-dialog-review-hint`;
+
 	// Format created at date
 	const createdAt = $derived(formatRelativeTime(request.created_at));
 
@@ -131,7 +137,10 @@
 								<span
 									class="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground"
 								>
-									{request.tier.name}
+									<!-- The chip reads as a bare word to a screen reader; the prefix
+									     supplies the "what is this" the visual grouping carries. -->
+									<span class="sr-only">{m['membershipRequestCard.tierPrefix']()}</span>
+									<span>{request.tier.name}</span>
 								</span>
 							{/if}
 						</div>
@@ -188,11 +197,14 @@
 								}
 							)}
 							class="font-medium text-primary underline underline-offset-2"
+							aria-describedby={submission.evaluation_status === 'pending review'
+								? cardHintId
+								: undefined}
 						>
 							{m['membershipRequestCard.viewSubmission']()}
 						</a>
 						{#if submission.evaluation_status === 'pending review'}
-							<span class="ml-2 text-xs text-muted-foreground">
+							<span id={cardHintId} class="ml-2 text-xs text-muted-foreground">
 								{m['membershipRequestCard.submissionPendingReview']()}
 							</span>
 						{/if}
@@ -374,11 +386,14 @@
 								}
 							)}
 							class="font-medium text-primary underline underline-offset-2"
+							aria-describedby={submission.evaluation_status === 'pending review'
+								? dialogHintId
+								: undefined}
 						>
 							{m['membershipRequestCard.viewSubmission']()}
 						</a>
 						{#if submission.evaluation_status === 'pending review'}
-							<span class="ml-2 text-xs text-muted-foreground">
+							<span id={dialogHintId} class="ml-2 text-xs text-muted-foreground">
 								{m['membershipRequestCard.submissionPendingReview']()}
 							</span>
 						{/if}

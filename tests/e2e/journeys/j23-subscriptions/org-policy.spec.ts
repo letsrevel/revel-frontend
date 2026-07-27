@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { test, expect } from '../../support/fixtures';
-import { createOrganization } from '../../support/factories';
+import { createMembershipQuestionnaire, createOrganization } from '../../support/factories';
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 
@@ -10,10 +10,11 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 // revenue_report_cadence).
 //
 // Built out once FE #631 / BE #695 landed the editing UI + writable schema.
-// Because OrganizationEditSchema gives BOTH fields defaults (7 / ""), any PUT
-// that omits them silently resets them — the telegram_url data-loss class from
-// #491. The second test is that regression guard: editing an UNRELATED field
-// must not wipe the policy.
+// The regression class guarded here is FE-side (the telegram_url class from
+// #491, which the settings form's `formData.has()` guards defend): a control
+// that repopulates wrong, or posts its schema default instead of the saved
+// value, clobbers the field on an unrelated save. The second test is that
+// guard: editing an UNRELATED field must not wipe the policy.
 //
 // Throwaway org per test so state never collides across parallel projects/re-runs.
 
@@ -115,6 +116,81 @@ test.describe('J23 org subscription policy fields @p2', () => {
 		await expect(page.locator('#address')).toHaveValue(newAddress);
 		await expect(page.locator('#membership_grace_period_days')).toHaveValue('30');
 		await expect(policySection(page).locator('[contenteditable="true"]')).toContainText(refundText);
+
+		await context.close();
+	});
+
+	// The membership-eligibility defaults (BE #777) that landed alongside the
+	// revival window: the tier form's "inherit" options resolve against these, so
+	// they have to survive an ordinary Settings save unchanged. Every one of them
+	// posts on EVERY save (the whole form is one POST), so this pins the
+	// round-trip — form → PUT → retrieve → repopulated control — for the three
+	// controls at once, then re-checks them after a save that touched only an
+	// unrelated field.
+	test('revival window, default questionnaire and approval default round-trip; an unrelated save keeps them', async ({
+		browser
+	}) => {
+		test.setTimeout(150_000);
+		// Arranged BEFORE the first page load: the picker's options come from the
+		// settings load function, so a questionnaire created later would not be
+		// selectable without another reload.
+		const org = await createOrganization();
+		const questionnaire = await createMembershipQuestionnaire(org.owner, org.slug, {
+			evaluationMode: 'automatic'
+		});
+
+		const context = await browser.newContext();
+		await authenticateContext(context, org.owner);
+		const page = await context.newPage();
+
+		await gotoHydrated(page, `/org/${org.slug}/admin/settings`);
+		await waitForClientAuth(page);
+		await expect(page.getByRole('heading', { name: 'Organization Settings' })).toBeVisible();
+
+		const revivalInput = page.getByLabel('Revival window (days)');
+		const questionnairePicker = page.getByLabel('Default membership questionnaire');
+		const approvalToggle = page.getByRole('checkbox', {
+			name: 'Require manual approval for new members'
+		});
+
+		// Fresh-org defaults: 30-day revival, no questionnaire, no approval gate.
+		await expect(revivalInput).toHaveValue('30');
+		await expect(questionnairePicker).toHaveValue('');
+		await expect(approvalToggle).not.toBeChecked();
+
+		await revivalInput.fill('14');
+		await questionnairePicker.selectOption(questionnaire.id);
+		await approvalToggle.check();
+
+		await page.getByRole('button', { name: 'Save Changes' }).click();
+		await expect(page.getByText(SAVED)).toBeVisible({ timeout: 15_000 });
+
+		// Server-side persistence: a fresh load renders all three saved values.
+		await gotoHydrated(page, `/org/${org.slug}/admin/settings`);
+		await waitForClientAuth(page);
+		await expect(page.getByLabel('Revival window (days)')).toHaveValue('14');
+		await expect(page.getByLabel('Default membership questionnaire')).toHaveValue(questionnaire.id);
+		await expect(
+			page.getByRole('checkbox', { name: 'Require manual approval for new members' })
+		).toBeChecked();
+
+		// No-clobber: a save that only touched the address must leave the policy
+		// exactly as it was. The failure this guards is FE-side (the #491 class) —
+		// a control that repopulates wrong and posts the schema default
+		// (30 / none / off) instead of what was saved would land it here.
+		const newAddress = `E2E Address ${org.slug}`;
+		await page.locator('#address').fill(newAddress);
+		await page.getByRole('button', { name: 'Save Changes' }).click();
+		await expect(page.getByText(SAVED)).toBeVisible({ timeout: 15_000 });
+
+		await gotoHydrated(page, `/org/${org.slug}/admin/settings`);
+		await waitForClientAuth(page);
+		await expect(page.locator('#address')).toHaveValue(newAddress);
+		await expect(page.getByLabel('Revival window (days)')).toHaveValue('14');
+		await expect(page.getByLabel('Default membership questionnaire')).toHaveValue(questionnaire.id);
+		await expect(
+			page.getByRole('checkbox', { name: 'Require manual approval for new members' })
+		).toBeChecked();
 
 		await context.close();
 	});
