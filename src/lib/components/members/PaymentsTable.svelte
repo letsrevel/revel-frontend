@@ -28,6 +28,19 @@
 		if (!d) return '—';
 		return formatDate(d);
 	}
+
+	/**
+	 * A *partial* Stripe refund deliberately leaves `status = 'succeeded'` (the
+	 * member keeps the period they partly paid for), so the status column alone
+	 * can't reveal it. A full refund flips the status to `refunded` and needs no
+	 * annotation. Amounts arrive as decimal strings — compare numerically.
+	 */
+	function partialRefund(p: MembershipPaymentSchema): string | null {
+		if (!p.refund_amount) return null;
+		const refunded = Number(p.refund_amount);
+		if (!Number.isFinite(refunded) || refunded <= 0) return null;
+		return refunded < Number(p.amount) ? p.refund_amount : null;
+	}
 </script>
 
 {#if payments.length === 0}
@@ -46,9 +59,21 @@
 		</thead>
 		<tbody>
 			{#each payments as p (p.id)}
+				{@const refunded = partialRefund(p)}
 				<tr class="border-b last:border-0">
 					<td class="py-2">{fmtDate(p.occurred_at ?? p.created_at)}</td>
-					<td class="py-2">{p.amount} {p.currency}</td>
+					<td class="py-2">
+						{p.amount}
+						{p.currency}
+						{#if refunded !== null}
+							<span class="block text-xs text-muted-foreground">
+								{m['orgAdmin.members.subscriptions.drawer.partiallyRefunded']({
+									amount: refunded,
+									currency: p.currency
+								})}
+							</span>
+						{/if}
+					</td>
 					<td class="py-2 capitalize">{p.status}</td>
 					<td class="py-2">
 						<div class="flex flex-wrap items-center justify-end gap-1">
