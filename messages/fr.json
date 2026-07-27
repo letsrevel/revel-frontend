@@ -3417,7 +3417,8 @@
 					"new30d": "Nouveaux (30 jours)",
 					"churn30d": "Résiliations (30 jours)",
 					"mixedCurrency": "Plusieurs devises — MRR indisponible",
-					"error": "Impossible de charger les statistiques d'abonnement."
+					"error": "Impossible de charger les statistiques d'abonnement.",
+					"statusBreakdown": "Par statut"
 				}
 			},
 			"grantsInfo": {

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, within } from '@testing-library/svelte';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
@@ -90,6 +90,79 @@ describe('SubscriptionMetrics', () => {
 		expect(screen.getByText(/monthly recurring revenue/i)).toBeInTheDocument();
 		expect(errorSpy).not.toHaveBeenCalled();
 		errorSpy.mockRestore();
+	});
+
+	// --- status-breakdown strip (#695) -------------------------------------
+	// `status_breakdown` was fetched but never rendered. The strip is the only
+	// place the per-status population is surfaced, so its contents are asserted
+	// verbatim (label + count, in a fixed order) rather than status-by-status.
+	const chipTexts = (strip: HTMLElement) =>
+		Array.from(strip.children).map((chip) => chip.textContent?.replace(/\s+/g, ' ').trim());
+
+	it('renders a chip with label and count for every non-zero status', async () => {
+		renderMetrics();
+		const strip = await screen.findByRole('group', { name: /by status/i });
+		expect(chipTexts(strip)).toEqual([
+			'Active 40',
+			'Pending 1',
+			'Past due 2',
+			'Paused 2',
+			'Cancelled 7',
+			'Expired 4'
+		]);
+	});
+
+	it('omits statuses whose count is zero', async () => {
+		vi.mocked(organizationadminsubscriptionsGetSubscriptionMetrics).mockResolvedValue({
+			data: {
+				...metrics,
+				status_breakdown: {
+					pending: 0,
+					active: 3,
+					paused: 0,
+					past_due: 0,
+					cancelled: 2,
+					expired: 0
+				}
+			},
+			error: undefined
+		} as never);
+		renderMetrics();
+		const strip = await screen.findByRole('group', { name: /by status/i });
+		expect(chipTexts(strip)).toEqual(['Active 3', 'Cancelled 2']);
+		expect(within(strip).queryByText('Paused')).toBeNull();
+		expect(within(strip).queryByText('Expired')).toBeNull();
+	});
+
+	it('renders no strip at all when every status count is zero', async () => {
+		vi.mocked(organizationadminsubscriptionsGetSubscriptionMetrics).mockResolvedValue({
+			data: {
+				...metrics,
+				status_breakdown: {
+					pending: 0,
+					active: 0,
+					paused: 0,
+					past_due: 0,
+					cancelled: 0,
+					expired: 0
+				}
+			},
+			error: undefined
+		} as never);
+		renderMetrics();
+		expect(await screen.findByText(/monthly recurring revenue/i)).toBeInTheDocument();
+		expect(screen.queryByRole('group', { name: /by status/i })).toBeNull();
+	});
+
+	it('renders no strip when the breakdown is missing from the payload', async () => {
+		const { status_breakdown: _omitted, ...withoutBreakdown } = metrics;
+		vi.mocked(organizationadminsubscriptionsGetSubscriptionMetrics).mockResolvedValue({
+			data: withoutBreakdown,
+			error: undefined
+		} as never);
+		renderMetrics();
+		expect(await screen.findByText(/monthly recurring revenue/i)).toBeInTheDocument();
+		expect(screen.queryByRole('group', { name: /by status/i })).toBeNull();
 	});
 
 	it('renders a muted failure line when the metrics request errors', async () => {

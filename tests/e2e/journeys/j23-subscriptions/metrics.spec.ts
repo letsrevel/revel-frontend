@@ -22,7 +22,8 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 // €15.00/month with the initial payment recorded — the recorded payment is what
 // flips the subscription PENDING → ACTIVE, and only ACTIVE subscriptions count
 // toward MRR. That makes every figure on the header exact rather than
-// "greater than zero": MRR €15.00, active 1, new 1.
+// "greater than zero": MRR €15.00, active 1, new 1 — and the status-breakdown
+// strip a single "Active 1" chip.
 //
 // The subscribe target must already be an org member (the same constraint
 // subscription-lifecycle.spec.ts documents), hence the requestMembership +
@@ -82,15 +83,27 @@ test.describe('J23 subscription metrics @p2', () => {
 		await expect(metricValue(page, 'Active subscribers')).toHaveText('1');
 		await expect(metricValue(page, 'New (30 days)')).toHaveText('1');
 
-		// The one row behind those figures. StatusBadge exposes the status as its
-		// accessible name, so this is the ACTIVE state the MRR was computed from.
+		const subsPanel = page.getByRole('tabpanel');
+
+		// The status-breakdown strip that completes the header (#695): the same
+		// population as the four figures above it, sliced per status. Zero-count
+		// statuses are not rendered, so this org's strip is exactly one chip and
+		// its whole text can be pinned — `toHaveText` is a full-string match over
+		// normalized whitespace, so this also asserts no second chip crept in.
+		const statusStrip = subsPanel.getByRole('group', { name: 'By status' });
+		await expect(statusStrip).toHaveText('Active 1');
+
+		// The one subscription row behind those figures — a different claim from
+		// the strip above, and still worth making: it pins the row-level state, not
+		// the aggregate. StatusBadge exposes the status as its accessible NAME,
+		// while the strip's chips are plain <span>s with no aria-label, so
+		// getByLabel('Active') keeps resolving to badges only.
 		//
 		// Scoped twice over. To the open tab panel, because the Members tab stays
 		// mounted behind it and its membership rows carry an "Active" badge of
 		// their own; and to VISIBLE nodes, because each subscription renders both a
 		// desktop table row and a mobile card (one of which is always display:none)
 		// — so an unfiltered count is 2 per subscription and layout-dependent.
-		const subsPanel = page.getByRole('tabpanel');
 		const activeBadges = subsPanel.getByLabel('Active').filter({ visible: true });
 		await expect(activeBadges).toHaveCount(1);
 		await expect(subsPanel.getByText(member.email).filter({ visible: true })).toHaveCount(1);
