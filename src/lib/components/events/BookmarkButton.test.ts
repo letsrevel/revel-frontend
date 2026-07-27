@@ -55,7 +55,7 @@ describe('BookmarkButton', () => {
 		onlyWhenBookmarked?: boolean;
 	}) {
 		return render(QueryClientTestWrapper, {
-			props: { client: queryClient, component: BookmarkButton, props }
+			props: { client: queryClient, component: BookmarkButton, componentProps: props }
 		});
 	}
 

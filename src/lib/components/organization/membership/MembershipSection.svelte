@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { onMount, tick } from 'svelte';
 	import { browser } from '$app/environment';
+	import { resolve } from '$app/paths';
 	import type { OrganizationRetrieveSchema, PublicPlanSchema } from '$lib/api/generated/types.gen';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import PlanCard from './PlanCard.svelte';
@@ -77,7 +78,19 @@
 		returnOutcome = success ? 'success' : 'cancelled';
 		// The flag has been consumed; leaving it in the URL would replay the
 		// card on every reload and on back-navigation.
-		window.history.replaceState({}, '', window.location.pathname);
+		//
+		// Deliberately the raw history API, not $app/navigation's replaceState:
+		// the latter throws "Cannot call replaceState(...) before router is
+		// initialized" when called from onMount during hydration, which aborts
+		// the batch flush so CheckoutReturnCard never renders. The house idiom
+		// for stripping a consumed param in onMount is this raw call (see
+		// StripeConnect.svelte, the event detail page, event-series admin); the
+		// SvelteKit dev warning is the accepted trade-off.
+		window.history.replaceState(
+			{},
+			'',
+			resolve('/(public)/org/[slug]', { slug: organization.slug })
+		);
 
 		// The card mounts on the next flush, so the scroll waits for it —
 		// otherwise the section is measured at its pre-card height.

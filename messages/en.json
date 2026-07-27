@@ -6532,10 +6532,29 @@
 			"pausedSince": "Paused since {date}",
 			"ended": "Ended {date}",
 			"pending": "Awaiting first payment"
+		},
+		"pastDue": {
+			"bannerDated": "Payment failed — update your payment method by {date} to keep your membership.",
+			"banner": "Payment failed — update your payment method to keep your membership."
+		},
+		"actions": {
+			"manageBilling": "Manage billing",
+			"changePlan": "Change plan",
+			"cancel": "Cancel membership",
+			"portalError": "Could not open the billing portal. Please try again."
+		},
+		"cancelScheduledHint": "Renewal is off. To keep your membership, contact the organization.",
+		"rejoin": {
+			"title": "Your membership at {org} has expired",
+			"body": "It expired on {expired}. You can rejoin until {deadline}.",
+			"cta": "Rejoin",
+			"returnHint": "You'll pay securely with Stripe and return to the organization's page.",
+			"error": "Could not start the payment. Please try again."
 		}
 	},
 	"account": {
 		"memberships": {
+			"sectionMemberships": "Memberships",
 			"title": "My Memberships",
 			"empty": {
 				"title": "You don't have any active memberships.",
@@ -6544,7 +6563,8 @@
 			},
 			"viewOrg": "View org",
 			"contactOrg": "Reach out to the organizer to renew.",
-			"memberSince": "Member since {date}"
+			"memberSince": "Member since {date}",
+			"managedBy": "Managed by {org} — contact them to make changes."
 		}
 	},
 	"orgPublic": {
@@ -6553,7 +6573,7 @@
 			"managedBy": "Managed by {org} staff",
 			"pendingSwitch": "Switching to {plan} on {date}",
 			"pendingSwitchFallbackPlan": "another plan",
-			"manage": "Manage in your account →"
+			"manage": "Manage in your account"
 		}
 	},
 	"membershipEligibility": {
@@ -6589,6 +6609,10 @@
 			"duplicate_active_subscription": "You already have an active subscription with this organization.",
 			"membership_paused": "Your membership is currently paused.",
 			"generic": "You can't join right now."
+		},
+		"wait": {
+			"questionnaire_evaluation": "Your questionnaire is being reviewed — we'll let you know once it's evaluated.",
+			"approval": "Your application is with the organization for review. You'll hear back once they decide."
 		}
 	},
 	"membershipApply": {
@@ -6615,6 +6639,41 @@
 		"acceptedBody": "You can continue joining {orgName} now.",
 		"pendingToast": "Questionnaire submitted — the organization will review it.",
 		"submitError": "Could not submit the questionnaire. Please try again."
+	},
+	"cancelSub": {
+		"title": "Cancel membership",
+		"description": "{plan} · {org}",
+		"periodEnd": "At the end of the current period",
+		"periodEndHintDated": "You keep access until {date}. No further charges.",
+		"periodEndHint": "You keep access until the end of the paid period. No further charges.",
+		"immediate": "Immediately",
+		"immediateHint": "Your membership ends right away.",
+		"immediateConfirm": "I understand my membership ends immediately.",
+		"refundPolicy": "Refund policy",
+		"keepCta": "Keep membership",
+		"confirmCta": "Cancel membership",
+		"cancelling": "Cancelling…",
+		"successPeriodEnd": "Your membership will end on {date}.",
+		"successPeriodEndNoDate": "Your membership will end at the close of the current period.",
+		"successImmediate": "Your membership has been cancelled.",
+		"error": "Could not cancel your membership. Please try again."
+	},
+	"changePlan": {
+		"title": "Change plan",
+		"description": "Your {org} membership",
+		"currentPlan": "Current plan: {plan} ({price})",
+		"upgradeNote": "You'll be charged the difference now (prorated) and switch immediately.",
+		"downgradeNoteDated": "Takes effect at your next renewal on {date}.",
+		"downgradeNote": "Takes effect at your next renewal.",
+		"noneAvailable": "There are no other plans you can switch to right now.",
+		"confirmCta": "Switch plan",
+		"switching": "Switching…",
+		"cancel": "Cancel",
+		"successUpgrade": "Plan switched.",
+		"successDowngradeDated": "Switching to {plan} on {date}.",
+		"successDowngrade": "Your plan will switch at the next renewal.",
+		"error": "Could not change your plan. Please try again.",
+		"loadError": "Could not load the available plans."
 	},
 	"subscribe": {
 		"title": "Subscribe to {plan}",
@@ -8554,5 +8613,28 @@
 	"seatDesigner.addVertex": "Add shape point",
 	"seatDesigner.rotateHandle": "Rotate {name}",
 	"seatDesigner.sectorBlockLabel": "Sector {name}, rotated {rotation}°",
-	"seatDesigner.selectPrompt": "Select a sector or the stage from the picker (or click it) to move, rotate, or reshape it. Drag empty space to pan."
+	"seatDesigner.selectPrompt": "Select a sector or the stage from the picker (or click it) to move, rotate, or reshape it. Drag empty space to pan.",
+	"applications": {
+		"title": "Applications",
+		"inProgress": "In progress",
+		"closed": "Closed",
+		"empty": "No applications yet. When you apply to join an organization, you can track it here.",
+		"appliedOn": "Applied on {date}",
+		"tierLine": "Tier: {tier}",
+		"status": {
+			"pending": "Pending",
+			"approved": "Approved",
+			"completed": "Completed",
+			"rejected": "Rejected",
+			"cancelled": "Cancelled"
+		},
+		"continueCta": "Continue questionnaire",
+		"becameMember": "You're now a member of {org}!",
+		"statusAriaLabel": "Application status: {status}",
+		"cancelCta": "Cancel application",
+		"cancelConfirmTitle": "Cancel this application?",
+		"cancelConfirmBody": "Your application to {org} will be withdrawn. You can re-apply later.",
+		"cancelSuccess": "Application cancelled.",
+		"cancelError": "Could not cancel the application. Please try again."
+	}
 }

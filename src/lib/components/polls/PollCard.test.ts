@@ -38,7 +38,7 @@ describe('PollCard', () => {
 			props: {
 				client: queryClient,
 				component: PollCard,
-				props: { poll, organizationSlug: 'acme' }
+				componentProps: { poll, organizationSlug: 'acme' }
 			}
 		});
 	}

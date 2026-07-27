@@ -1,5 +1,6 @@
 import type {
 	MembershipEligibilitySchema,
+	MembershipNextStep,
 	MembershipReasonCode
 } from '$lib/api/generated/types.gen';
 import * as m from '$lib/paraglide/messages.js';
@@ -42,6 +43,12 @@ export function getMembershipCtaKind(e: MembershipEligibilitySchema): Membership
 		case 'proceed_to_payment':
 			return 'info';
 	}
+	// No next_step: `allowed` decides. Since BE #788 a pending tier-less
+	// application arrives with an explicit `wait_for_approval`, so it is caught by
+	// the switch above and never reaches here; an allowed verdict with no
+	// next_step means the user really can apply (e.g. approval-required orgs with
+	// no application on file, which carry reason_code `requires_approval` as
+	// policy context, not as a blocker).
 	return e.allowed ? 'join' : 'info';
 }
 
@@ -77,10 +84,45 @@ const REASON_MESSAGES: Partial<Record<MembershipReasonCode, () => string>> = {
 };
 
 /**
+ * First-person copy for in-flight verdicts, keyed on the `wait_*` next steps.
+ *
+ * Live since BE #787/#788: a pending tier-less application arrives as
+ * `wait_for_approval` + `requires_approval`. Consulted BEFORE REASON_MESSAGES —
+ * see `getMembershipStatusMessage` for why the wait copy outranks the reason
+ * copy whenever both are present.
+ *
+ * Deliberately partial. Two `wait_*` steps are excluded because their paired
+ * reason code says something the wait copy cannot:
+ * - `wait_to_retake_questionnaire` — `membership_questionnaire_retake_cooldown`
+ *   keeps the dated "you can retake it later" copy.
+ * - `wait_for_whitelist_approval` — `whitelist_pending` keeps the "verification"
+ *   vocabulary shared with its neighbours `requires_verification` and
+ *   `whitelist_rejected`, so the whole whitelist flow reads consistently.
+ */
+const WAIT_STEP_MESSAGES: Partial<Record<MembershipNextStep, () => string>> = {
+	wait_for_questionnaire_evaluation: () =>
+		m['membershipEligibility.wait.questionnaire_evaluation'](),
+	wait_for_approval: () => m['membershipEligibility.wait.approval']()
+};
+
+/**
  * Human-readable, localized explanation of a membership eligibility verdict.
  *
- * Resolution order: the invite-link pair (see below) → mapped `reason_code` →
- * the backend-supplied `reason` prose → a generic localized fallback.
+ * Resolution order: the invite-link pair (see below) → the `wait_*` next-step
+ * map → mapped `reason_code` → the backend-supplied `reason` prose → a generic
+ * localized fallback. The FE-localized copy beats backend prose because the
+ * backend renders it in its own locale.
+ *
+ * The wait map outranks the reason map because a `wait_*` step describes THIS
+ * user's in-flight state while the paired reason code states the org's standing
+ * policy — and the policy line reads wrong on a pending row. Since BE #787/#788
+ * a pending tier-less application is `wait_for_approval` + `requires_approval`:
+ * "Your application is with the organization for review" is right,
+ * "Membership requests are approved by the organization" is not. The same holds
+ * for `wait_for_questionnaire_evaluation` vs `membership_questionnaire_pending`,
+ * where the wait copy is likewise first-person. Steps whose paired reason code
+ * carries something the wait copy would lose are kept out of the map entirely —
+ * see WAIT_STEP_MESSAGES for the two exclusions and why.
  *
  * `next_step === 'requires_invitation'` is NOT a blanket override. The backend
  * emits it only alongside `reason_code` `requires_verification` or
@@ -95,8 +137,28 @@ export function getMembershipStatusMessage(e: MembershipEligibilitySchema): stri
 	if (invitesOnly) {
 		return m['membershipEligibility.reason.requires_invitation']();
 	}
+	const waiting = e.next_step ? WAIT_STEP_MESSAGES[e.next_step] : undefined;
+	if (waiting) return waiting();
 	const mapped = e.reason_code ? REASON_MESSAGES[e.reason_code] : undefined;
 	if (mapped) return mapped();
 	if (e.reason) return e.reason;
 	return m['membershipEligibility.reason.generic']();
+}
+
+/**
+ * Copy for the "application received" panel and application rows.
+ *
+ * Since BE #788 a pending application always arrives with an explicit
+ * `wait_for_approval`, which `getMembershipStatusMessage` resolves to the same
+ * wait copy — so the allowed-and-silent special case below is DEFENSIVE ONLY.
+ * It is kept because these two call sites render for a known-pending row, where
+ * a silent verdict can only mean "waiting", and falling through to the generic
+ * "You can't join right now." would be actively wrong. Everything else defers
+ * to getMembershipStatusMessage.
+ */
+export function getApplicationPendingMessage(e: MembershipEligibilitySchema): string {
+	if (e.allowed && !e.next_step && !e.reason_code) {
+		return m['membershipEligibility.wait.approval']();
+	}
+	return getMembershipStatusMessage(e);
 }

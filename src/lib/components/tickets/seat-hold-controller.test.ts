@@ -54,7 +54,7 @@ function setup(
 		props: {
 			client,
 			component: SeatHoldControllerTestHost,
-			props: {
+			componentProps: {
 				options: {
 					eventId: 'event-1',
 					getQuantity: () => quantity,

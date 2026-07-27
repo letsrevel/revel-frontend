@@ -69,7 +69,7 @@ describe('MembershipCta', () => {
 			props: {
 				client: queryClient,
 				component: MembershipCta,
-				props: {
+				componentProps: {
 					organizationSlug: 'acme',
 					organizationName: 'Acme',
 					isAuthenticated: true,
@@ -116,6 +116,39 @@ describe('MembershipCta', () => {
 			'href',
 			'/account/memberships'
 		);
+	});
+
+	// Since BE #786-788 a pending tier-less application comes back allowed with an
+	// explicit wait_for_approval. Keying the CTA off `allowed` alone would put a
+	// Join button here while /account/memberships shows the same application under
+	// review — the contradiction smoke item 12 caught.
+	it('shows the pending state for an allowed verdict that is waiting for approval', async () => {
+		mockEligibility(
+			makeEligibility({
+				allowed: true,
+				next_step: 'wait_for_approval',
+				reason_code: 'requires_approval',
+				application_id: 'app-1',
+				reason: 'Membership requests are approved by the organization.'
+			})
+		);
+		renderCta();
+
+		expect(await screen.findByRole('button', { name: /application pending/i })).toBeDisabled();
+		expect(screen.getByRole('link', { name: /track your application/i })).toHaveAttribute(
+			'href',
+			'/account/memberships'
+		);
+		expect(screen.queryByRole('button', { name: /join acme/i })).not.toBeInTheDocument();
+	});
+
+	// The mirror shape: approval-gated org, no application on file. `requires_approval`
+	// is policy context here, not a blocker — the user must still be able to apply.
+	it('still offers join when approval is required but no application exists yet', async () => {
+		mockEligibility(makeEligibility({ allowed: true, reason_code: 'requires_approval' }));
+		renderCta();
+
+		expect(await screen.findByRole('button', { name: /join acme/i })).toBeInTheDocument();
 	});
 
 	it('counts down to the retake date when the questionnaire is on cooldown', async () => {
@@ -229,16 +262,15 @@ describe('MembershipCta', () => {
 		await user.click(await screen.findByRole('button', { name: /join acme/i }));
 		expect(await screen.findByRole('dialog')).toHaveTextContent('Join Acme');
 
-		// `rerender` strips one top-level `props` key (its legacy call shape), and
-		// this wrapper's own child-props prop happens to be named `props` — so the
-		// payload is nested one level deeper to survive the unwrap. The resulting
-		// deprecation warning is expected, not a signal.
+		// `rerender` treats a top-level `props` key as its legacy call shape and
+		// unwraps one level, so the wrapper's own props are nested under it. The
+		// resulting deprecation warning is expected, not a signal.
 		const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 		await rerender({
 			props: {
 				client: queryClient,
 				component: MembershipCta,
-				props: {
+				componentProps: {
 					organizationSlug: 'acme',
 					organizationName: 'Acme',
 					isAuthenticated: true,

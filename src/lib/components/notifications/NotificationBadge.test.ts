@@ -50,7 +50,7 @@ describe('NotificationBadge', () => {
 			props: {
 				client: queryClient,
 				component: NotificationBadge,
-				props: { authToken: 'test-token', ...props }
+				componentProps: { authToken: 'test-token', ...props }
 			}
 		});
 	}

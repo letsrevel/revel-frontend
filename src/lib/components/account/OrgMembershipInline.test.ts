@@ -93,7 +93,7 @@ describe('OrgMembershipInline', () => {
 			props: {
 				client: queryClient,
 				component: OrgMembershipInline,
-				props: { orgId: 'org-1', orgName: 'Test Org', plans }
+				componentProps: { orgId: 'org-1', orgName: 'Test Org', plans }
 			}
 		});
 	}
@@ -107,7 +107,9 @@ describe('OrgMembershipInline', () => {
 				screen.getByText(`Switching to Yearly on ${formatDate(PERIOD_END)}`)
 			).toBeInTheDocument();
 		});
-		expect(screen.getByRole('link', { name: /manage in your account/i })).toHaveAttribute(
+		// Exact name, not a substring: the trailing arrow is decorative
+		// (aria-hidden) and must stay out of the link's accessible name.
+		expect(screen.getByRole('link', { name: 'Manage in your account' })).toHaveAttribute(
 			'href',
 			'/account/memberships'
 		);

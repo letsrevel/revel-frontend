@@ -99,7 +99,7 @@ describe('CheckoutReturnCard', () => {
 			props: {
 				client: queryClient,
 				component: CheckoutReturnCard,
-				props: { organizationId: 'org-1', organizationSlug: 'test-org', outcome }
+				componentProps: { organizationId: 'org-1', organizationSlug: 'test-org', outcome }
 			}
 		});
 	}

@@ -4,7 +4,7 @@
 	import { memembershipapplicationsApply } from '$lib/api/generated/sdk.gen';
 	import type { ApplyResponseSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { getMembershipStatusMessage } from '$lib/utils/membership-eligibility';
+	import { getApplicationPendingMessage } from '$lib/utils/membership-eligibility';
 	import {
 		Dialog,
 		DialogContent,
@@ -79,6 +79,9 @@
 			queryClient.invalidateQueries({
 				queryKey: ['org', organizationSlug, 'join-eligibility']
 			});
+			// The member's own application list now has a new (or moved) row —
+			// refreshes the account page behind a re-apply; a no-op on the org page.
+			queryClient.invalidateQueries({ queryKey: ['me', 'applications'] });
 			// Only an instant membership changes what the server rendered for this
 			// page (`isMember`, member-only sections).
 			if (data.application.status === 'completed') {
@@ -104,10 +107,10 @@
 			: m['membershipApply.title']({ orgName: organizationName });
 	});
 
-	// A reopened dialog must start from a blank form, not from the previous
-	// outcome. `open` is owned by the caller, so the reset hangs off it.
+	// A reopened dialog must start from a blank form — reset on open, so the
+	// outgoing content stays intact during the close animation.
 	$effect(() => {
-		if (open) return;
+		if (!open) return;
 		message = '';
 		errorMessage = null;
 		result = null;
@@ -149,7 +152,7 @@
 					</p>
 				{:else}
 					<p class="text-sm text-muted-foreground">
-						{getMembershipStatusMessage(result.eligibility)}
+						{getApplicationPendingMessage(result.eligibility)}
 					</p>
 					<a
 						href={membershipsHref}

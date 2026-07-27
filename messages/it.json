@@ -6518,33 +6518,53 @@
 			"years": "{n} anni"
 		},
 		"status": {
-			"active": "Active",
-			"pending": "Pending",
-			"past_due": "Past due",
-			"paused": "Paused",
-			"cancelled": "Cancelled",
-			"expired": "Expired"
+			"active": "Attivo",
+			"pending": "In attesa",
+			"past_due": "Pagamento in ritardo",
+			"paused": "In pausa",
+			"cancelled": "Annullato",
+			"expired": "Scaduto"
 		},
 		"dateLine": {
-			"renewal": "Next renewal: {date}",
-			"cancels": "Cancels on {date}",
-			"periodEnds": "Period ends {date}",
-			"pausedSince": "Paused since {date}",
-			"ended": "Ended {date}",
-			"pending": "Awaiting first payment"
+			"renewal": "Prossimo rinnovo: {date}",
+			"cancels": "Si annulla il {date}",
+			"periodEnds": "Il periodo termina il {date}",
+			"pausedSince": "In pausa dal {date}",
+			"ended": "Terminato il {date}",
+			"pending": "In attesa del primo pagamento"
+		},
+		"pastDue": {
+			"bannerDated": "Pagamento non riuscito — aggiorna il metodo di pagamento entro il {date} per mantenere il tuo abbonamento.",
+			"banner": "Pagamento non riuscito — aggiorna il metodo di pagamento per mantenere il tuo abbonamento."
+		},
+		"actions": {
+			"manageBilling": "Gestisci i pagamenti",
+			"changePlan": "Cambia piano",
+			"cancel": "Annulla l'abbonamento",
+			"portalError": "Non è stato possibile aprire il portale di pagamento. Riprova."
+		},
+		"cancelScheduledHint": "Il rinnovo è disattivato. Per mantenere l'abbonamento, contatta l'organizzazione.",
+		"rejoin": {
+			"title": "Il tuo abbonamento a {org} è scaduto",
+			"body": "È scaduto il {expired}. Puoi riabbonarti fino al {deadline}.",
+			"cta": "Riabbonati",
+			"returnHint": "Pagherai in modo sicuro con Stripe e tornerai alla pagina dell'organizzazione.",
+			"error": "Non è stato possibile avviare il pagamento. Riprova."
 		}
 	},
 	"account": {
 		"memberships": {
-			"title": "My Memberships",
+			"sectionMemberships": "Abbonamenti",
+			"title": "I miei abbonamenti",
 			"empty": {
-				"title": "You don't have any active memberships.",
-				"body": "Memberships are managed by the organizations you belong to.",
-				"cta": "Discover organizations"
+				"title": "Non hai abbonamenti attivi.",
+				"body": "Gli abbonamenti sono gestiti dalle organizzazioni di cui fai parte.",
+				"cta": "Scopri le organizzazioni"
 			},
-			"viewOrg": "View org",
-			"contactOrg": "Reach out to the organizer to renew.",
-			"memberSince": "Member since {date}"
+			"viewOrg": "Vedi l'organizzazione",
+			"contactOrg": "Contatta chi organizza per rinnovare.",
+			"memberSince": "Membro dal {date}",
+			"managedBy": "Gestito da {org} — contattali per apportare modifiche."
 		}
 	},
 	"orgPublic": {
@@ -6553,7 +6573,7 @@
 			"managedBy": "Gestita dallo staff di {org}",
 			"pendingSwitch": "Passaggio a {plan} il {date}",
 			"pendingSwitchFallbackPlan": "un altro piano",
-			"manage": "Gestisci nel tuo account →"
+			"manage": "Gestisci nel tuo account"
 		}
 	},
 	"membershipEligibility": {
@@ -6589,6 +6609,10 @@
 			"duplicate_active_subscription": "Hai già un abbonamento attivo con questa organizzazione.",
 			"membership_paused": "La tua iscrizione è attualmente in pausa.",
 			"generic": "Non puoi unirti al momento."
+		},
+		"wait": {
+			"questionnaire_evaluation": "Il tuo questionario è in fase di valutazione — ti avviseremo appena sarà esaminato.",
+			"approval": "La tua candidatura è in fase di revisione da parte dell'organizzazione. Riceverai una risposta appena avranno deciso."
 		}
 	},
 	"membershipApply": {
@@ -6616,6 +6640,41 @@
 		"pendingToast": "Questionario inviato — l'organizzazione lo esaminerà.",
 		"submitError": "Non è stato possibile inviare il questionario. Riprova."
 	},
+	"cancelSub": {
+		"title": "Annulla l'abbonamento",
+		"description": "{plan} · {org}",
+		"periodEnd": "Alla fine del periodo corrente",
+		"periodEndHintDated": "Mantieni l'accesso fino al {date}. Nessun altro addebito.",
+		"periodEndHint": "Mantieni l'accesso fino alla fine del periodo pagato. Nessun altro addebito.",
+		"immediate": "Immediatamente",
+		"immediateHint": "Il tuo abbonamento termina subito.",
+		"immediateConfirm": "Capisco che il mio abbonamento termina immediatamente.",
+		"refundPolicy": "Politica di rimborso",
+		"keepCta": "Mantieni l'abbonamento",
+		"confirmCta": "Annulla l'abbonamento",
+		"cancelling": "Annullamento…",
+		"successPeriodEnd": "Il tuo abbonamento terminerà il {date}.",
+		"successPeriodEndNoDate": "Il tuo abbonamento terminerà alla fine del periodo corrente.",
+		"successImmediate": "Il tuo abbonamento è stato annullato.",
+		"error": "Non è stato possibile annullare l'abbonamento. Riprova."
+	},
+	"changePlan": {
+		"title": "Cambia piano",
+		"description": "Il tuo abbonamento a {org}",
+		"currentPlan": "Piano attuale: {plan} ({price})",
+		"upgradeNote": "Pagherai subito la differenza (proporzionale) e passerai immediatamente al nuovo piano.",
+		"downgradeNoteDated": "Avrà effetto al prossimo rinnovo il {date}.",
+		"downgradeNote": "Avrà effetto al prossimo rinnovo.",
+		"noneAvailable": "Al momento non ci sono altri piani a cui puoi passare.",
+		"confirmCta": "Cambia piano",
+		"switching": "Cambio in corso…",
+		"cancel": "Annulla",
+		"successUpgrade": "Piano cambiato.",
+		"successDowngradeDated": "Passaggio a {plan} il {date}.",
+		"successDowngrade": "Il piano cambierà al prossimo rinnovo.",
+		"error": "Non è stato possibile cambiare piano. Riprova.",
+		"loadError": "Non è stato possibile caricare i piani disponibili."
+	},
 	"subscribe": {
 		"title": "Abbonati a {plan}",
 		"priceLine": "{price}",
@@ -6634,7 +6693,7 @@
 		"error": "Non è stato possibile avviare il pagamento. Riprova.",
 		"return": {
 			"confirming": "Stiamo confermando la tua iscrizione…",
-			"welcome": "Benvenuto tra i membri!",
+			"welcome": "Ti diamo il benvenuto tra i membri!",
 			"welcomeBody": "La tua iscrizione è attiva.",
 			"slowTitle": "Ci siamo quasi",
 			"slow": "Sta impiegando più del solito — può volerci un minuto. Ti scriveremo comunque via email. Puoi anche controllare più tardi nel tuo account.",
@@ -8554,5 +8613,28 @@
 	"seatDesigner.addVertex": "Aggiungi punto",
 	"seatDesigner.rotateHandle": "Ruota {name}",
 	"seatDesigner.sectorBlockLabel": "Settore {name}, ruotato di {rotation}°",
-	"seatDesigner.selectPrompt": "Seleziona un settore o il palco dal menu (o cliccalo) per spostarlo, ruotarlo o modificarne la forma. Trascina lo spazio vuoto per spostare la vista."
+	"seatDesigner.selectPrompt": "Seleziona un settore o il palco dal menu (o cliccalo) per spostarlo, ruotarlo o modificarne la forma. Trascina lo spazio vuoto per spostare la vista.",
+	"applications": {
+		"title": "Candidature",
+		"inProgress": "In corso",
+		"closed": "Chiuse",
+		"empty": "Nessuna candidatura per ora. Quando ti candidi a un'organizzazione, puoi seguirla qui.",
+		"appliedOn": "Candidatura inviata il {date}",
+		"tierLine": "Livello: {tier}",
+		"status": {
+			"pending": "In attesa",
+			"approved": "Approvata",
+			"completed": "Completata",
+			"rejected": "Respinta",
+			"cancelled": "Annullata"
+		},
+		"continueCta": "Continua il questionario",
+		"becameMember": "Ora sei membro di {org}!",
+		"statusAriaLabel": "Stato della candidatura: {status}",
+		"cancelCta": "Annulla la candidatura",
+		"cancelConfirmTitle": "Annullare questa candidatura?",
+		"cancelConfirmBody": "La tua candidatura a {org} sarà ritirata. Potrai ricandidarti in seguito.",
+		"cancelSuccess": "Candidatura annullata.",
+		"cancelError": "Non è stato possibile annullare la candidatura. Riprova."
+	}
 }

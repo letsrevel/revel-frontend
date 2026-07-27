@@ -1,10 +1,33 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, waitFor } from '@testing-library/svelte';
 import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
+import type { ComponentProps } from 'svelte';
 import PlanFormModal from './PlanFormModal.svelte';
 
 const orgConnected = { id: 'o1', slug: 'o', is_stripe_connected: true } as never;
 const orgNotConnected = { id: 'o1', slug: 'o', is_stripe_connected: false } as never;
+
+/**
+ * Render the modal and wait for bits-ui's dialog auto-focus to land.
+ *
+ * The focus scope moves focus into the dialog from a `requestAnimationFrame`
+ * scheduled at mount, and in jsdom nothing is "tabbable" (every element
+ * measures 0×0), so it falls back to focusing the content container — a plain
+ * `div`. That frame is ~16ms out while user-event's keystrokes are ~1ms apart,
+ * so under parallel-suite CPU contention it lands *between* two keystrokes:
+ * focus jumps off the input, the rest of the word is swallowed by the div, and
+ * the name field stays empty. An empty `required` field then makes jsdom skip
+ * form submission entirely, so `onSave` is never called and no script-side
+ * validation error renders — which is exactly how this file flaked.
+ *
+ * The steal happens exactly once per mount, so waiting for it before touching
+ * the form removes the race rather than papering over it.
+ */
+async function renderModal(props: ComponentProps<typeof PlanFormModal>) {
+	const result = render(PlanFormModal, { props });
+	await waitFor(() => expect(document.body).not.toHaveFocus());
+	return result;
+}
 
 describe('PlanFormModal payment method', () => {
 	it('disables the online option when the org has no Stripe account', () => {
@@ -24,8 +47,12 @@ describe('PlanFormModal payment method', () => {
 	it('submits payment_method, sales pause and cap on create', async () => {
 		const user = userEvent.setup();
 		const onSave = vi.fn();
-		render(PlanFormModal, {
-			props: { plan: null, open: true, onClose: vi.fn(), onSave, organization: orgConnected }
+		await renderModal({
+			plan: null,
+			open: true,
+			onClose: vi.fn(),
+			onSave,
+			organization: orgConnected
 		});
 		await user.type(screen.getByLabelText(/name/i), 'Monthly');
 		await user.click(screen.getByRole('radio', { name: /online/i }));
@@ -46,8 +73,12 @@ describe('PlanFormModal payment method', () => {
 	it('sends max_subscriptions: null when the cap is typed then cleared', async () => {
 		const user = userEvent.setup();
 		const onSave = vi.fn();
-		render(PlanFormModal, {
-			props: { plan: null, open: true, onClose: vi.fn(), onSave, organization: orgConnected }
+		await renderModal({
+			plan: null,
+			open: true,
+			onClose: vi.fn(),
+			onSave,
+			organization: orgConnected
 		});
 		await user.type(screen.getByLabelText(/name/i), 'Monthly');
 		const cap = screen.getByLabelText(/maximum subscriptions/i);
@@ -63,8 +94,12 @@ describe('PlanFormModal payment method', () => {
 	it('rejects a cap of 0 instead of saving a sold-out plan', async () => {
 		const user = userEvent.setup();
 		const onSave = vi.fn();
-		render(PlanFormModal, {
-			props: { plan: null, open: true, onClose: vi.fn(), onSave, organization: orgConnected }
+		await renderModal({
+			plan: null,
+			open: true,
+			onClose: vi.fn(),
+			onSave,
+			organization: orgConnected
 		});
 		await user.type(screen.getByLabelText(/name/i), 'Monthly');
 		const cap = screen.getByLabelText(/maximum subscriptions/i);

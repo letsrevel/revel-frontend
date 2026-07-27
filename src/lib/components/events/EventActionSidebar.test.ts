@@ -47,7 +47,7 @@ function renderSidebar(props: Record<string, unknown>) {
 		defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
 	});
 	return render(QueryClientTestWrapper, {
-		props: { client: queryClient, component: EventActionSidebar, props }
+		props: { client: queryClient, component: EventActionSidebar, componentProps: props }
 	});
 }
 

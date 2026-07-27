@@ -6518,33 +6518,53 @@
 			"years": "{n} Jahre"
 		},
 		"status": {
-			"active": "Active",
-			"pending": "Pending",
-			"past_due": "Past due",
-			"paused": "Paused",
-			"cancelled": "Cancelled",
-			"expired": "Expired"
+			"active": "Aktiv",
+			"pending": "Ausstehend",
+			"past_due": "Zahlung überfällig",
+			"paused": "Pausiert",
+			"cancelled": "Gekündigt",
+			"expired": "Abgelaufen"
 		},
 		"dateLine": {
-			"renewal": "Next renewal: {date}",
-			"cancels": "Cancels on {date}",
-			"periodEnds": "Period ends {date}",
-			"pausedSince": "Paused since {date}",
-			"ended": "Ended {date}",
-			"pending": "Awaiting first payment"
+			"renewal": "Nächste Verlängerung: {date}",
+			"cancels": "Endet am {date}",
+			"periodEnds": "Zeitraum endet am {date}",
+			"pausedSince": "Pausiert seit {date}",
+			"ended": "Beendet am {date}",
+			"pending": "Warten auf die erste Zahlung"
+		},
+		"pastDue": {
+			"bannerDated": "Zahlung fehlgeschlagen — aktualisiere deine Zahlungsmethode bis {date}, um deine Mitgliedschaft zu behalten.",
+			"banner": "Zahlung fehlgeschlagen — aktualisiere deine Zahlungsmethode, um deine Mitgliedschaft zu behalten."
+		},
+		"actions": {
+			"manageBilling": "Zahlungen verwalten",
+			"changePlan": "Tarif wechseln",
+			"cancel": "Mitgliedschaft kündigen",
+			"portalError": "Das Zahlungsportal konnte nicht geöffnet werden. Bitte versuche es erneut."
+		},
+		"cancelScheduledHint": "Die Verlängerung ist deaktiviert. Um deine Mitgliedschaft zu behalten, wende dich an die Organisation.",
+		"rejoin": {
+			"title": "Deine Mitgliedschaft bei {org} ist abgelaufen",
+			"body": "Sie ist am {expired} abgelaufen. Du kannst bis {deadline} wieder beitreten.",
+			"cta": "Wieder beitreten",
+			"returnHint": "Du zahlst sicher über Stripe und kehrst danach zur Seite der Organisation zurück.",
+			"error": "Die Zahlung konnte nicht gestartet werden. Bitte versuche es erneut."
 		}
 	},
 	"account": {
 		"memberships": {
-			"title": "My Memberships",
+			"sectionMemberships": "Mitgliedschaften",
+			"title": "Meine Mitgliedschaften",
 			"empty": {
-				"title": "You don't have any active memberships.",
-				"body": "Memberships are managed by the organizations you belong to.",
-				"cta": "Discover organizations"
+				"title": "Du hast keine aktiven Mitgliedschaften.",
+				"body": "Mitgliedschaften werden von den Organisationen verwaltet, denen du angehörst.",
+				"cta": "Organisationen entdecken"
 			},
-			"viewOrg": "View org",
-			"contactOrg": "Reach out to the organizer to renew.",
-			"memberSince": "Member since {date}"
+			"viewOrg": "Organisation ansehen",
+			"contactOrg": "Wende dich zum Verlängern an die Veranstalter*innen.",
+			"memberSince": "Mitglied seit {date}",
+			"managedBy": "Verwaltet von {org} — wende dich für Änderungen an sie."
 		}
 	},
 	"orgPublic": {
@@ -6553,7 +6573,7 @@
 			"managedBy": "Verwaltet vom Team von {org}",
 			"pendingSwitch": "Wechsel zu {plan} am {date}",
 			"pendingSwitchFallbackPlan": "einem anderen Plan",
-			"manage": "In deinem Konto verwalten →"
+			"manage": "In deinem Konto verwalten"
 		}
 	},
 	"membershipEligibility": {
@@ -6589,6 +6609,10 @@
 			"duplicate_active_subscription": "Du hast bereits ein aktives Abo bei dieser Organisation.",
 			"membership_paused": "Deine Mitgliedschaft ist derzeit pausiert.",
 			"generic": "Du kannst derzeit nicht beitreten."
+		},
+		"wait": {
+			"questionnaire_evaluation": "Dein Fragebogen wird gerade geprüft — wir melden uns, sobald er ausgewertet ist.",
+			"approval": "Deine Bewerbung liegt der Organisation zur Prüfung vor. Du hörst von uns, sobald entschieden ist."
 		}
 	},
 	"membershipApply": {
@@ -6615,6 +6639,41 @@
 		"acceptedBody": "Du kannst jetzt mit dem Beitritt zu {orgName} fortfahren.",
 		"pendingToast": "Fragebogen abgeschickt — die Organisation prüft ihn.",
 		"submitError": "Der Fragebogen konnte nicht gesendet werden. Bitte versuch es noch einmal."
+	},
+	"cancelSub": {
+		"title": "Mitgliedschaft kündigen",
+		"description": "{plan} · {org}",
+		"periodEnd": "Zum Ende des laufenden Zeitraums",
+		"periodEndHintDated": "Du behältst den Zugang bis {date}. Keine weiteren Abbuchungen.",
+		"periodEndHint": "Du behältst den Zugang bis zum Ende des bezahlten Zeitraums. Keine weiteren Abbuchungen.",
+		"immediate": "Sofort",
+		"immediateHint": "Deine Mitgliedschaft endet sofort.",
+		"immediateConfirm": "Mir ist klar, dass meine Mitgliedschaft sofort endet.",
+		"refundPolicy": "Rückerstattungsrichtlinie",
+		"keepCta": "Mitgliedschaft behalten",
+		"confirmCta": "Mitgliedschaft kündigen",
+		"cancelling": "Wird gekündigt…",
+		"successPeriodEnd": "Deine Mitgliedschaft endet am {date}.",
+		"successPeriodEndNoDate": "Deine Mitgliedschaft endet zum Ende des laufenden Zeitraums.",
+		"successImmediate": "Deine Mitgliedschaft wurde gekündigt.",
+		"error": "Deine Mitgliedschaft konnte nicht gekündigt werden. Bitte versuche es erneut."
+	},
+	"changePlan": {
+		"title": "Tarif wechseln",
+		"description": "Deine Mitgliedschaft bei {org}",
+		"currentPlan": "Aktueller Tarif: {plan} ({price})",
+		"upgradeNote": "Du zahlst die Differenz sofort (anteilig verrechnet) und wechselst direkt.",
+		"downgradeNoteDated": "Gilt ab deiner nächsten Verlängerung am {date}.",
+		"downgradeNote": "Gilt ab deiner nächsten Verlängerung.",
+		"noneAvailable": "Es gibt derzeit keine anderen Tarife, zu denen du wechseln kannst.",
+		"confirmCta": "Tarif wechseln",
+		"switching": "Wird gewechselt…",
+		"cancel": "Abbrechen",
+		"successUpgrade": "Tarif gewechselt.",
+		"successDowngradeDated": "Wechsel zu {plan} am {date}.",
+		"successDowngrade": "Dein Tarif wechselt zur nächsten Verlängerung.",
+		"error": "Der Tarif konnte nicht gewechselt werden. Bitte versuche es erneut.",
+		"loadError": "Die verfügbaren Tarife konnten nicht geladen werden."
 	},
 	"subscribe": {
 		"title": "{plan} abonnieren",
@@ -8554,5 +8613,28 @@
 	"seatDesigner.addVertex": "Punkt hinzufügen",
 	"seatDesigner.rotateHandle": "{name} drehen",
 	"seatDesigner.sectorBlockLabel": "Sektor {name}, um {rotation}° gedreht",
-	"seatDesigner.selectPrompt": "Wähle einen Sektor oder die Bühne aus der Liste (oder klicke darauf), um ihn zu verschieben, zu drehen oder umzuformen. Ziehe den leeren Bereich, um die Ansicht zu verschieben."
+	"seatDesigner.selectPrompt": "Wähle einen Sektor oder die Bühne aus der Liste (oder klicke darauf), um ihn zu verschieben, zu drehen oder umzuformen. Ziehe den leeren Bereich, um die Ansicht zu verschieben.",
+	"applications": {
+		"title": "Bewerbungen",
+		"inProgress": "In Bearbeitung",
+		"closed": "Abgeschlossen",
+		"empty": "Noch keine Bewerbungen. Wenn du dich bei einer Organisation bewirbst, kannst du sie hier verfolgen.",
+		"appliedOn": "Beworben am {date}",
+		"tierLine": "Stufe: {tier}",
+		"status": {
+			"pending": "Ausstehend",
+			"approved": "Angenommen",
+			"completed": "Abgeschlossen",
+			"rejected": "Abgelehnt",
+			"cancelled": "Zurückgezogen"
+		},
+		"continueCta": "Fragebogen fortsetzen",
+		"becameMember": "Du bist jetzt Mitglied bei {org}!",
+		"statusAriaLabel": "Bewerbungsstatus: {status}",
+		"cancelCta": "Bewerbung zurückziehen",
+		"cancelConfirmTitle": "Diese Bewerbung zurückziehen?",
+		"cancelConfirmBody": "Deine Bewerbung bei {org} wird zurückgezogen. Du kannst dich später erneut bewerben.",
+		"cancelSuccess": "Bewerbung zurückgezogen.",
+		"cancelError": "Die Bewerbung konnte nicht zurückgezogen werden. Bitte versuche es erneut."
+	}
 }

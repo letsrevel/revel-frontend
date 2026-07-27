@@ -51,7 +51,7 @@ describe('MembershipSection', () => {
 			props: {
 				client: queryClient,
 				component: MembershipSection,
-				props: {
+				componentProps: {
 					organization: makeOrg(),
 					plans: [],
 					isAuthenticated: true,

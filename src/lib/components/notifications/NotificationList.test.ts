@@ -92,7 +92,7 @@ describe('NotificationList', () => {
 			props: {
 				client: queryClient,
 				component: NotificationList,
-				props
+				componentProps: props
 			}
 		});
 	}

@@ -103,7 +103,7 @@ describe('ApplyDialog', () => {
 			props: {
 				client: queryClient,
 				component: ApplyDialog,
-				props: {
+				componentProps: {
 					open: true,
 					onOpenChange,
 					organizationSlug: 'acme',
@@ -210,9 +210,14 @@ describe('ApplyDialog', () => {
 		await user.click(screen.getByRole('button', { name: /send application/i }));
 
 		expect(await screen.findByText('Application received')).toBeInTheDocument();
+		// The wait copy, not the `requires_approval` policy line — this panel is
+		// about THIS application, which has just been received.
 		expect(
-			screen.getByText(/membership requests are approved by the organization/i)
+			screen.getByText(/your application is with the organization for review/i)
 		).toBeInTheDocument();
+		expect(
+			screen.queryByText(/membership requests are approved by the organization/i)
+		).not.toBeInTheDocument();
 		expect(screen.getByRole('link', { name: /track your application/i })).toHaveAttribute(
 			'href',
 			'/account/memberships'
@@ -222,6 +227,29 @@ describe('ApplyDialog', () => {
 			queryKey: ['org', 'acme', 'join-eligibility']
 		});
 		expect(vi.mocked(invalidateAll)).not.toHaveBeenCalled();
+	});
+
+	// A tier-less application clears every gate, so the verdict comes back
+	// allowed with no next_step/reason_code/reason while the row stays PENDING
+	// (staff assign the tier on approval). Reading that as a denial told a user
+	// whose application had just been accepted that they "can't join right now".
+	it('reads a tier-less pending verdict as awaiting approval, not as a denial', async () => {
+		const user = userEvent.setup();
+		mockApplySuccess(
+			makeResult(
+				{ status: 'pending' },
+				{ allowed: true, next_step: null, reason_code: null, reason: null }
+			)
+		);
+		renderDialog();
+
+		await user.click(screen.getByRole('button', { name: /send application/i }));
+
+		expect(await screen.findByText('Application received')).toBeInTheDocument();
+		expect(
+			screen.getByText(/your application is with the organization for review/i)
+		).toBeInTheDocument();
+		expect(screen.queryByText(/you can't join right now/i)).not.toBeInTheDocument();
 	});
 
 	it('surfaces a hard block from the backend in an alert and keeps the form usable', async () => {
@@ -254,6 +282,59 @@ describe('ApplyDialog', () => {
 		await waitFor(() => {
 			expect(screen.getByRole('alert')).toHaveTextContent(/could not send your application/i);
 		});
+	});
+
+	// The reset hangs off `open` becoming true, not false: resetting on close
+	// blanked the outcome panel mid-way through the dialog's exit animation. That
+	// flash is not observable here (jsdom runs no animations, so bits-ui drops the
+	// content synchronously on close) — this pins the invariant the move must not
+	// break: whichever edge resets, a reopened dialog starts from a blank form.
+	it('starts blank when reopened after an outcome', async () => {
+		const user = userEvent.setup();
+		mockApplySuccess(makeResult({ status: 'pending' }, { next_step: 'wait_for_approval' }));
+		const { rerender } = renderDialog();
+
+		await typeMessage(user, 'let me in');
+		await user.click(screen.getByRole('button', { name: /send application/i }));
+		expect(await screen.findByText('Application received')).toBeInTheDocument();
+
+		// `rerender` treats a top-level `props` key as its legacy call shape and
+		// unwraps one level, so the wrapper's own props are nested under it. The
+		// resulting deprecation warning is expected, not a signal.
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+		const childProps = {
+			onOpenChange: vi.fn(),
+			organizationSlug: 'acme',
+			organizationName: 'Acme',
+			mode: 'join'
+		};
+		await rerender({
+			props: {
+				client: queryClient,
+				component: ApplyDialog,
+				componentProps: { ...childProps, open: false }
+			}
+		});
+		await waitFor(() => expect(screen.queryByText('Application received')).toBeNull());
+
+		await rerender({
+			props: {
+				client: queryClient,
+				component: ApplyDialog,
+				componentProps: { ...childProps, open: true }
+			}
+		});
+		warn.mockRestore();
+
+		// The remounted content resubscribes to the mutation observer a tick after
+		// it lands, so the submit button reads its stale in-flight label until then.
+		await waitFor(() => {
+			expect(screen.getByRole('button', { name: /send application/i })).toBeEnabled();
+		});
+		const textarea = screen.getByLabelText(/message \(optional\)/i);
+		expect(textarea).toHaveValue('');
+		expect(screen.getByText('0/500')).toBeInTheDocument();
+		expect(screen.queryByText('Application received')).toBeNull();
 	});
 
 	it('asks the caller to close when Cancel is pressed', async () => {
