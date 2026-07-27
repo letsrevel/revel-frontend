@@ -1,12 +1,12 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import type { PaymentSchema2 } from '$lib/api/generated/types.gen';
+	import type { MembershipPaymentSchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
 	import { ExternalLink } from '@lucide/svelte';
 	import { formatDate } from '$lib/utils/date';
 
 	interface Props {
-		payments: PaymentSchema2[];
+		payments: MembershipPaymentSchema[];
 		/**
 		 * Whether the owning subscription sits on an ONLINE (Stripe) plan. Mirrors
 		 * the backend guard, which refuses `POST .../refund` with a 400 for those
@@ -15,7 +15,7 @@
 		 * the control entirely rather than render one the API will reject.
 		 */
 		isOnlinePlan?: boolean;
-		onRefund: (p: PaymentSchema2) => void;
+		onRefund: (p: MembershipPaymentSchema) => void;
 	}
 
 	const { payments, isOnlinePlan = false, onRefund }: Props = $props();

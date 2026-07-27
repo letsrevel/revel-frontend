@@ -1,9 +1,9 @@
 import { render, screen, within } from '@testing-library/svelte';
 import { describe, it, expect, vi } from 'vitest';
 import PaymentsTable from './PaymentsTable.svelte';
-import type { PaymentSchema2 } from '$lib/api/generated/types.gen';
+import type { MembershipPaymentSchema } from '$lib/api/generated/types.gen';
 
-function makePayment(overrides: Partial<PaymentSchema2> = {}): PaymentSchema2 {
+function makePayment(overrides: Partial<MembershipPaymentSchema> = {}): MembershipPaymentSchema {
 	return {
 		id: 'pay-1',
 		subscription_id: 'sub-1',
@@ -21,10 +21,10 @@ function makePayment(overrides: Partial<PaymentSchema2> = {}): PaymentSchema2 {
 		stripe_invoice_id: null,
 		stripe_payment_intent_id: null,
 		...overrides
-	} as PaymentSchema2;
+	} as MembershipPaymentSchema;
 }
 
-function renderTable(payments: PaymentSchema2[], isOnlinePlan = false) {
+function renderTable(payments: MembershipPaymentSchema[], isOnlinePlan = false) {
 	return render(PaymentsTable, {
 		props: { payments, isOnlinePlan, onRefund: vi.fn() }
 	});

@@ -13,7 +13,7 @@
 	} from '$lib/api/generated/sdk.gen';
 	import type {
 		SubscriptionSchema,
-		PaymentSchema2,
+		MembershipPaymentSchema,
 		OrganizationAdminDetailSchema,
 		PaymentRecordSchema,
 		CancelSubscriptionSchema
@@ -72,7 +72,7 @@
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (res.error) throw new Error('Failed to load payments');
-			return (res.data?.results ?? []) as PaymentSchema2[];
+			return (res.data?.results ?? []) as MembershipPaymentSchema[];
 		},
 		enabled: open && !!accessToken
 	}));
@@ -105,7 +105,7 @@
 	let recordOpen = $state(false);
 	let cancelOpen = $state(false);
 	let reviveOpen = $state(false);
-	let refundTarget = $state<PaymentSchema2 | null>(null);
+	let refundTarget = $state<MembershipPaymentSchema | null>(null);
 
 	function invalidateAll() {
 		queryClient.invalidateQueries({ queryKey: subKey });
@@ -123,7 +123,7 @@
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (res.error) throw new Error('Failed to record payment');
-			return res.data as PaymentSchema2;
+			return res.data as MembershipPaymentSchema;
 		},
 		onSuccess: () => {
 			invalidateAll();

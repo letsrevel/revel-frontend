@@ -9,7 +9,7 @@ import {
 } from '$lib/api/generated/sdk.gen';
 import type {
 	OrganizationAdminDetailSchema,
-	PaymentSchema2,
+	MembershipPaymentSchema,
 	SubscriptionSchema
 } from '$lib/api/generated/types.gen';
 
@@ -72,7 +72,7 @@ function makeSub(overrides: Partial<SubscriptionSchema> = {}): SubscriptionSchem
 	} as SubscriptionSchema;
 }
 
-function makePayment(overrides: Partial<PaymentSchema2> = {}): PaymentSchema2 {
+function makePayment(overrides: Partial<MembershipPaymentSchema> = {}): MembershipPaymentSchema {
 	return {
 		id: 'pay-1',
 		subscription_id: 'sub-1',
@@ -90,10 +90,10 @@ function makePayment(overrides: Partial<PaymentSchema2> = {}): PaymentSchema2 {
 		stripe_invoice_id: null,
 		stripe_payment_intent_id: null,
 		...overrides
-	} as PaymentSchema2;
+	} as MembershipPaymentSchema;
 }
 
-function arrange(sub: SubscriptionSchema, payments: PaymentSchema2[] = []) {
+function arrange(sub: SubscriptionSchema, payments: MembershipPaymentSchema[] = []) {
 	vi.mocked(organizationadminsubscriptionsGetSubscription).mockResolvedValue({
 		data: sub,
 		error: undefined,
