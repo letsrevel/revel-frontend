@@ -1,4 +1,3 @@
-import type { Browser, Locator, Page } from '@playwright/test';
 import { test, expect } from '../../support/fixtures';
 import { ApiClient } from '../../support/api';
 import {
@@ -10,7 +9,8 @@ import {
 	setOrgMembershipPolicy,
 	type ThrowawayUser
 } from '../../support/factories';
-import { authenticateContext } from '../../support/session';
+import { pageAs } from '../../support/session';
+import { applicationRow, membershipCard } from '../../support/membership-locators';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 import { closeDialog } from '../../support/ui';
 
@@ -31,24 +31,6 @@ import { closeDialog } from '../../support/ui';
 // Approval alone does NOT create the membership: the state machine advances
 // when the MEMBER reads the application, which the account hub's Applications
 // section does on every mount.
-
-/** The account hub renders org-named <article>s in three different places
- *  (membership cards, in-progress applications, closed applications), so every
- *  lookup here is scoped to its list/region — an unscoped one trips strict
- *  mode the moment a test has both a membership and an application. */
-function membershipCard(page: Page, orgName: string): Locator {
-	return page.getByRole('region', { name: 'Memberships' }).getByRole('article', { name: orgName });
-}
-
-function applicationRow(page: Page, list: 'In progress' | 'Closed', orgName: string): Locator {
-	return page.getByRole('list', { name: list }).getByRole('article', { name: orgName });
-}
-
-async function pageAs(browser: Browser, user: ThrowawayUser): Promise<Page> {
-	const context = await browser.newContext();
-	await authenticateContext(context, user);
-	return context.newPage();
-}
 
 /** The member's own application id, for admin-side arranges after a UI apply.
  *  The LIST endpoint is a plain read — unlike GET /me/applications/{id}, which

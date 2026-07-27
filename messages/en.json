@@ -6552,7 +6552,8 @@
 			"contactOrg": "Reach out to the organizer to renew.",
 			"memberSince": "Member since {date}",
 			"managedBy": "Managed by {org} — contact them to make changes.",
-			"loadError": "Could not load your memberships. Try reloading the page."
+			"loadError": "Could not load your memberships. Try reloading the page.",
+			"loadErrorRejoin": "Could not check which memberships you can renew. Try reloading the page."
 		}
 	},
 	"orgPublic": {
@@ -6589,7 +6590,6 @@
 			"plan_unavailable": "This plan isn't available right now.",
 			"application_rejected": "Your previous application wasn't approved.",
 			"membership_questionnaire_missing": "This organization asks new members to fill in a questionnaire first.",
-			"membership_questionnaire_pending": "Your questionnaire is being reviewed.",
 			"membership_questionnaire_failed": "Your questionnaire wasn't approved.",
 			"membership_questionnaire_retake_cooldown": "You can retake the questionnaire later.",
 			"requires_approval": "Membership requests are approved by the organization.",
@@ -6625,7 +6625,8 @@
 		"backToOrg": "Back to {orgName}",
 		"acceptedTitle": "Questionnaire approved",
 		"acceptedBody": "You can continue joining {orgName} now.",
-		"pendingToast": "Questionnaire submitted — the organization will review it.",
+		"pendingToast": "Questionnaire submitted — we'll let you know once it's been evaluated.",
+		"acceptedToast": "Questionnaire passed — you can continue joining.",
 		"submitError": "Could not submit the questionnaire. Please try again."
 	},
 	"cancelSub": {

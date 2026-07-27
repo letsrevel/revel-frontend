@@ -198,15 +198,47 @@ describe('Account memberships page', () => {
 			expect(screen.queryByText(/don't have any active memberships/i)).toBeNull();
 		});
 
-		it('says the list failed when the subscriptions query is the one that broke', async () => {
+		it('says the rejoin check failed when the subscriptions query is the one that broke', async () => {
 			// Rejoin offers live in the subscriptions list, so losing it means the
-			// section cannot honestly claim the member has nothing.
+			// section cannot honestly claim the member has nothing — but it must
+			// blame the half that actually broke, not the memberships list.
 			listMembershipsMock.mockResolvedValue(page([]));
 			listSubscriptionsMock.mockResolvedValue(failure);
 			renderPage();
 
-			expect(await screen.findByText(/could not load your memberships/i)).toBeInTheDocument();
+			expect(await screen.findByText(/could not check which memberships/i)).toBeInTheDocument();
+			expect(screen.queryByText(/could not load your memberships/i)).toBeNull();
 			expect(screen.queryByText(/don't have any active memberships/i)).toBeNull();
+		});
+
+		// THE BUG (#697): the gate used to require BOTH queries to be empty, so a
+		// partial failure rendered the surviving half's rows with no error line at
+		// all — the member was silently shown an incomplete list. Per-query gating
+		// has to report the broken half AND keep the working one.
+		it('reports the failed half while still rendering the surviving half’s rows', async () => {
+			listMembershipsMock.mockResolvedValue(failure);
+			listSubscriptionsMock.mockResolvedValue(page([makeSub()]));
+			renderPage();
+
+			// The surviving half: the rejoin offer the subscriptions query returned.
+			expect(
+				await screen.findByRole('heading', { level: 3, name: /membership at acme has expired/i })
+			).toBeInTheDocument();
+			// …and the honest admission that the memberships half is missing.
+			expect(screen.getByText(/could not load your memberships/i)).toBeInTheDocument();
+			// Only the broken half is blamed, and rows mean this is not "empty".
+			expect(screen.queryByText(/could not check which memberships/i)).toBeNull();
+			expect(screen.queryByText(/don't have any active memberships/i)).toBeNull();
+		});
+
+		it('reports the subscriptions half while still rendering the membership cards', async () => {
+			listMembershipsMock.mockResolvedValue(page([makeMembership({ status: 'active' })]));
+			listSubscriptionsMock.mockResolvedValue(failure);
+			renderPage();
+
+			expect(await screen.findByRole('article', { name: 'Acme' })).toBeInTheDocument();
+			expect(screen.getByText(/could not check which memberships/i)).toBeInTheDocument();
+			expect(screen.queryByText(/could not load your memberships/i)).toBeNull();
 		});
 
 		it('keeps the loaded cards when a background refetch fails', async () => {

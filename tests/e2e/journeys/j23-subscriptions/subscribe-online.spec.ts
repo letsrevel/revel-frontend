@@ -7,6 +7,7 @@ import {
 	uniqueName
 } from '../../support/factories';
 import { authenticateContext } from '../../support/session';
+import { planCard } from '../../support/membership-locators';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 import { completeStripeCheckout } from '../../support/stripe';
 
@@ -31,14 +32,6 @@ import { completeStripeCheckout } from '../../support/stripe';
 
 const ORG_SLUG = 'revel-events-collective';
 const ORG_PATH = `/org/${ORG_SLUG}`;
-
-/**
- * A plan's card on the public org page. Cards carry no role, so this matches
- * the shadcn Card surface class and narrows by the (unique) plan name.
- */
-function planCard(page: Page, planName: string) {
-	return page.locator('.bg-card').filter({ hasText: planName });
-}
 
 /** An online €15/month plan on a fresh tier of Org Alpha, plus its subscriber. */
 async function arrangeOnlinePlan(label: string) {

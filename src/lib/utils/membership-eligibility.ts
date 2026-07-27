@@ -58,6 +58,17 @@ export function getMembershipCtaKind(e: MembershipEligibilitySchema): Membership
  * Deliberately partial: `org_not_visible`, `tier_requires_subscription`,
  * `plan_not_online` and `org_not_stripe_connected` are gate codes a plain join
  * CTA never surfaces, so they fall through to the backend `reason` string.
+ *
+ * `membership_questionnaire_pending` is absent for a stronger reason: it is
+ * UNREACHABLE here. The backend raises it from exactly one place
+ * (`membership_manager/gates.py` `_block_pending`), which always pairs it with
+ * `next_step=wait_for_questionnaire_evaluation` — and that step is in
+ * WAIT_STEP_MESSAGES, which is consulted first. So every verdict carrying the
+ * code resolved to `wait.questionnaire_evaluation` even while the entry existed;
+ * removing it changed no (next_step, reason_code) pair the backend can emit.
+ * Should a future gate ever emit the code bare, `_block` still ships its own
+ * prose ("Waiting for questionnaire evaluation."), so the fallback says the same
+ * thing in the backend's locale rather than the generic denial.
  */
 const REASON_MESSAGES: Partial<Record<MembershipReasonCode, () => string>> = {
 	blacklisted: () => m['membershipEligibility.reason.blacklisted'](),
@@ -71,8 +82,6 @@ const REASON_MESSAGES: Partial<Record<MembershipReasonCode, () => string>> = {
 	application_rejected: () => m['membershipEligibility.reason.application_rejected'](),
 	membership_questionnaire_missing: () =>
 		m['membershipEligibility.reason.membership_questionnaire_missing'](),
-	membership_questionnaire_pending: () =>
-		m['membershipEligibility.reason.membership_questionnaire_pending'](),
 	membership_questionnaire_failed: () =>
 		m['membershipEligibility.reason.membership_questionnaire_failed'](),
 	membership_questionnaire_retake_cooldown: () =>

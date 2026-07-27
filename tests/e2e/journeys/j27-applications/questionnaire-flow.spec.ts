@@ -1,4 +1,3 @@
-import type { Browser, Locator, Page } from '@playwright/test';
 import { test, expect } from '../../support/fixtures';
 import {
 	applyViaApi,
@@ -6,10 +5,10 @@ import {
 	createOrganization,
 	createVerifiedUser,
 	setOrgMembershipPolicy,
-	MEMBERSHIP_QUESTION,
-	type ThrowawayUser
+	MEMBERSHIP_QUESTION
 } from '../../support/factories';
-import { authenticateContext } from '../../support/session';
+import { pageAs } from '../../support/session';
+import { membershipCard } from '../../support/membership-locators';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 
 // J27.1–27.3 (USER_JOURNEYS.md) — the membership QUESTIONNAIRE gate: the org
@@ -29,21 +28,14 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 //     apart explicitly.
 //   * submitting a membership questionnaire NEVER renders the page's
 //     "Questionnaire approved" panel, not even when the automatic grader
-//     passes it inline: the 200 says a review is owed, so the page toasts
-//     "Questionnaire submitted …" and returns to the org page either way. The
-//     modes diverge on what the org page says NEXT — join vs. still waiting.
+//     passes it: the grader is queued on commit (`transaction.on_commit`), so
+//     the 200 carries `requires_evaluation: true` and no verdict — the page
+//     toasts "Questionnaire submitted …" and returns to the org page either
+//     way. The panel is reachable only for `requires_evaluation: false`, which
+//     is why its copy is neutral about WHO evaluates (#697). The modes diverge
+//     on what the org page says NEXT — join vs. still waiting.
 //   * clearing the questionnaire gate is not joining. It only turns the CTA
 //     back into a plain "Join" — the application is still owed.
-
-function membershipCard(page: Page, orgName: string): Locator {
-	return page.getByRole('region', { name: 'Memberships' }).getByRole('article', { name: orgName });
-}
-
-async function pageAs(browser: Browser, user: ThrowawayUser): Promise<Page> {
-	const context = await browser.newContext();
-	await authenticateContext(context, user);
-	return context.newPage();
-}
 
 test.describe('j27 membership questionnaire @p2', () => {
 	test('an auto-graded questionnaire clears the join gate and the applicant becomes a member', async ({
@@ -97,10 +89,11 @@ test.describe('j27 membership questionnaire @p2', () => {
 		await expect(submit).toBeEnabled();
 		await submit.click();
 
-		// Even a passing auto-graded submission takes the "under review" exit —
-		// see the file header. The confirmation is the toast plus the return trip.
+		// Even a passing auto-graded submission takes the PENDING exit — the grader
+		// is queued on commit, so the 200 carries no verdict (see the file header).
+		// The confirmation is the toast plus the return trip.
 		await expect(
-			page.getByText('Questionnaire submitted — the organization will review it.')
+			page.getByText("Questionnaire submitted — we'll let you know once it's been evaluated.")
 		).toBeVisible({ timeout: 15_000 });
 		await page.waitForURL(`**/org/${org.slug}`, { timeout: 15_000 });
 		await expect(page.getByText('Questionnaire approved')).toBeHidden();
@@ -168,7 +161,7 @@ test.describe('j27 membership questionnaire @p2', () => {
 		await page.getByRole('button', { name: 'Submit Questionnaire' }).click();
 
 		await expect(
-			page.getByText('Questionnaire submitted — the organization will review it.')
+			page.getByText("Questionnaire submitted — we'll let you know once it's been evaluated.")
 		).toBeVisible({ timeout: 15_000 });
 		await page.waitForURL(`**/org/${org.slug}`, { timeout: 15_000 });
 

@@ -6552,7 +6552,8 @@
 			"contactOrg": "Contatta chi organizza per rinnovare.",
 			"memberSince": "Membro dal {date}",
 			"managedBy": "Gestito da {org} — contattali per apportare modifiche.",
-			"loadError": "Non è stato possibile caricare i tuoi abbonamenti. Prova a ricaricare la pagina."
+			"loadError": "Non è stato possibile caricare i tuoi abbonamenti. Prova a ricaricare la pagina.",
+			"loadErrorRejoin": "Non è stato possibile verificare quali abbonamenti puoi rinnovare. Prova a ricaricare la pagina."
 		}
 	},
 	"orgPublic": {
@@ -6589,7 +6590,6 @@
 			"plan_unavailable": "Questo piano non è disponibile al momento.",
 			"application_rejected": "La tua richiesta precedente non è stata approvata.",
 			"membership_questionnaire_missing": "Questa organizzazione chiede a chi si iscrive di compilare prima un questionario.",
-			"membership_questionnaire_pending": "Il tuo questionario è in fase di revisione.",
 			"membership_questionnaire_failed": "Il tuo questionario non è stato approvato.",
 			"membership_questionnaire_retake_cooldown": "Potrai ripetere il questionario più avanti.",
 			"requires_approval": "Le richieste di iscrizione vengono approvate dall'organizzazione.",
@@ -6625,7 +6625,8 @@
 		"backToOrg": "Torna a {orgName}",
 		"acceptedTitle": "Questionario approvato",
 		"acceptedBody": "Ora puoi proseguire con l'adesione a {orgName}.",
-		"pendingToast": "Questionario inviato — l'organizzazione lo esaminerà.",
+		"pendingToast": "Questionario inviato — ti avviseremo non appena sarà stato valutato.",
+		"acceptedToast": "Questionario superato — puoi proseguire con l'adesione.",
 		"submitError": "Non è stato possibile inviare il questionario. Riprova."
 	},
 	"cancelSub": {

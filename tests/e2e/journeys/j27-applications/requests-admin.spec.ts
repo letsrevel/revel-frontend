@@ -1,4 +1,4 @@
-import type { Browser, Locator, Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { test, expect } from '../../support/fixtures';
 import { ApiClient } from '../../support/api';
 import {
@@ -14,7 +14,8 @@ import {
 	type CreatedOrg,
 	type ThrowawayUser
 } from '../../support/factories';
-import { authenticateContext } from '../../support/session';
+import { pageAs } from '../../support/session';
+import { requestCard, requestStatusRow } from '../../support/membership-locators';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 import { pickSelectOption } from '../../support/ui';
 
@@ -41,18 +42,16 @@ import { pickSelectOption } from '../../support/ui';
 //     (`evaluation_status` stays null); HYBRID is the mode that files one as
 //     "pending review", which is what the card's review hint keys on.
 
-/** The card is a plain <div>, so its heading is the handle — the requester's
- *  display name, which for throwaway users is "E2E <label>". */
+/** The requester's card, by display name ("E2E <label>" for throwaway users).
+ *  Since #696 the card is an <article> carrying that name, so both the card and
+ *  its status row scope per card instead of relying on one card per view. */
 function card(page: Page, name: string): Locator {
-	return page.getByRole('heading', { name, exact: true });
+	return requestCard(page, name);
 }
 
-/** A card's date+status row, anchored on its own "Requested …" line: the
- *  status badge shares its wording with the FILTER BUTTONS ("Completed",
- *  "Rejected", …), so an unscoped text lookup would match both. Every view this
- *  is used in shows exactly one card. */
-function statusRow(page: Page): Locator {
-	return page.locator('p', { hasText: /^Requested/ }).locator('xpath=..');
+/** A named card's date+status row. */
+function statusRow(page: Page, name: string): Locator {
+	return requestStatusRow(requestCard(page, name));
 }
 
 /** The active filter button appends a count badge to its label ("Pending 2"),
@@ -61,12 +60,6 @@ function statusRow(page: Page): Locator {
  *  any future "Approved (paid)" filter tomorrow. */
 function filterButton(page: Page, label: string): Locator {
 	return page.getByRole('button', { name: new RegExp(`^${label}(\\s+\\d+)?$`) });
-}
-
-async function pageAs(browser: Browser, user: ThrowawayUser): Promise<Page> {
-	const context = await browser.newContext();
-	await authenticateContext(context, user);
-	return context.newPage();
 }
 
 /** Open the Members area straight on the Requests tab (the URL PR④'s redirect
@@ -188,19 +181,19 @@ test.describe('j27 requests admin @p2', () => {
 		// filter that merely widened the list would pass a "visible" assert.
 		await selectFilter(page, 'Completed');
 		await expect(card(page, names.completed)).toBeVisible({ timeout: 15_000 });
-		await expect(statusRow(page)).toContainText('Completed');
+		await expect(statusRow(page, names.completed)).toContainText('Completed');
 		await expect(card(page, names.tieredPending)).toBeHidden();
 		await expect(card(page, names.plainPending)).toBeHidden();
 
 		await selectFilter(page, 'Rejected');
 		await expect(card(page, names.rejected)).toBeVisible({ timeout: 15_000 });
-		await expect(statusRow(page)).toContainText('Rejected');
+		await expect(statusRow(page, names.rejected)).toContainText('Rejected');
 		await expect(card(page, names.completed)).toBeHidden();
 		await expect(card(page, names.cancelled)).toBeHidden();
 
 		await selectFilter(page, 'Cancelled');
 		await expect(card(page, names.cancelled)).toBeVisible({ timeout: 15_000 });
-		await expect(statusRow(page)).toContainText('Cancelled');
+		await expect(statusRow(page, names.cancelled)).toContainText('Cancelled');
 		await expect(card(page, names.rejected)).toBeHidden();
 		await expect(card(page, names.plainPending)).toBeHidden();
 
@@ -272,7 +265,7 @@ test.describe('j27 requests admin @p2', () => {
 		// The row moved to COMPLETED — and lost its action buttons with it.
 		await selectFilter(page, 'Completed');
 		await expect(card(page, name)).toBeVisible({ timeout: 15_000 });
-		await expect(statusRow(page)).toContainText('Completed');
+		await expect(statusRow(page, name)).toContainText('Completed');
 		await expect(page.getByRole('button', { name: `Approve request from ${name}` })).toHaveCount(0);
 
 		await page.context().close();
@@ -312,7 +305,7 @@ test.describe('j27 requests admin @p2', () => {
 
 		await selectFilter(page, 'Completed');
 		await expect(card(page, name)).toBeVisible({ timeout: 15_000 });
-		await expect(statusRow(page)).toContainText('Completed');
+		await expect(statusRow(page, name)).toContainText('Completed');
 		await expect(page.getByText('Tier: Premium')).toBeVisible();
 
 		await page.context().close();

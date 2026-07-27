@@ -1,4 +1,3 @@
-import type { Page } from '@playwright/test';
 import { test, expect } from '../../support/fixtures';
 import {
 	createMembershipTier,
@@ -10,6 +9,7 @@ import {
 	uniqueName
 } from '../../support/factories';
 import { authenticateContext } from '../../support/session';
+import { planCard } from '../../support/membership-locators';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 
 // J23 (USER_JOURNEYS.md) — member-facing plan AVAILABILITY states on the public
@@ -22,15 +22,6 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 // so a re-run — or a retry — never inherits a predecessor's occupancy.
 
 const ORG_SLUG = 'revel-events-collective';
-
-/**
- * A plan's card on the public org page. Cards carry no role, so this matches
- * the shadcn Card surface class and narrows by the (unique) plan name — the
- * cards are siblings, never nested, so exactly one element resolves.
- */
-function planCard(page: Page, planName: string) {
-	return page.locator('.bg-card').filter({ hasText: planName });
-}
 
 test.describe('J23 plan availability states @p2', () => {
 	test('sold out / paused / offline plans state their reason and offer no CTA', async ({

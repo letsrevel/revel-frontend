@@ -10,6 +10,7 @@ import {
 	type ThrowawayUser
 } from '../../support/factories';
 import { authenticateContext } from '../../support/session';
+import { membershipCard } from '../../support/membership-locators';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 import { completeStripeCheckout } from '../../support/stripe';
 
@@ -51,9 +52,10 @@ function escapeRe(value: string): string {
 	return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-/** The org's card in the account hub's Memberships section. */
-function membershipCard(page: Page): Locator {
-	return page.getByRole('region', { name: 'Memberships' }).getByRole('article', { name: ORG_NAME });
+/** The org's card in the account hub's Memberships section. Every test in this
+ *  file works against the one seeded org, so the shared helper is bound to it. */
+function orgCard(page: Page): Locator {
+	return membershipCard(page, ORG_NAME);
 }
 
 /**
@@ -83,7 +85,7 @@ async function reloadUntil(
 	await expect(async () => {
 		await gotoHydrated(page, '/account/memberships');
 		await waitForClientAuth(page);
-		await assertions(membershipCard(page));
+		await assertions(orgCard(page));
 	}).toPass({ timeout });
 }
 
@@ -158,7 +160,7 @@ async function switchPlan(
 	target: { name: string },
 	explainer: RegExp
 ): Promise<void> {
-	await membershipCard(page).getByRole('button', { name: 'Change plan' }).click();
+	await orgCard(page).getByRole('button', { name: 'Change plan' }).click();
 	const dialog = page.getByRole('dialog', { name: 'Change plan' });
 	await expect(dialog).toBeVisible({ timeout: 15_000 });
 	await expect(dialog.getByText(`Your ${ORG_NAME} membership`)).toBeVisible();
@@ -191,7 +193,7 @@ test.describe('J23 manage subscription @p2', () => {
 		const page = await context.newPage();
 
 		await subscribeAndPay(page, user, orgId, standard);
-		const card = membershipCard(page);
+		const card = orgCard(page);
 		await expect(card.getByText('€15.00 / month')).toBeVisible();
 		await expect(card.getByText(new RegExp(`^Next renewal: .*(${MONTH})`))).toBeVisible();
 
@@ -259,7 +261,7 @@ test.describe('J23 manage subscription @p2', () => {
 		const page = await context.newPage();
 
 		await subscribeAndPay(page, user, orgId, lite);
-		const card = membershipCard(page);
+		const card = orgCard(page);
 		await expect(card.getByText('€10.00 / month')).toBeVisible();
 
 		// --- Upgrade: prorated and immediate -----------------------------------
@@ -353,7 +355,7 @@ test.describe('J23 manage subscription @p2', () => {
 			await route.fulfill({ response: fetched });
 		});
 
-		await membershipCard(page).getByRole('button', { name: 'Manage billing' }).click();
+		await orgCard(page).getByRole('button', { name: 'Manage billing' }).click();
 
 		// onSuccess assigns window.location.href — a real document navigation.
 		await page.waitForURL(/billing\.stripe\.com/, { timeout: 30_000 });

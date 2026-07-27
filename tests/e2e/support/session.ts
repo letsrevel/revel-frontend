@@ -1,4 +1,4 @@
-import { expect, type BrowserContext, type Page } from '@playwright/test';
+import { expect, type Browser, type BrowserContext, type Page } from '@playwright/test';
 import { obtainTokenPair } from './api';
 import { PERSONAS, type PersonaName } from './personas';
 import { gotoHydrated } from './navigation';
@@ -47,6 +47,25 @@ export async function authenticateContext(
 		// 'true' → hooks.server.ts refreshes with persistent cookie options.
 		authCookie('remember_me', 'true')
 	]);
+}
+
+/**
+ * A fresh browser context already authenticated as `who`, and its first page.
+ *
+ * Hoisted from four j27 specs (#697), which each carried a byte-identical copy
+ * typed on `ThrowawayUser`. It lives HERE rather than in a journey helper for
+ * two reasons: it is `authenticateContext` plus one line, and typing it on
+ * `PersonaName | Credentials` (`ThrowawayUser` is structurally a `Credentials`)
+ * both widens it to seeded personas and keeps `support/` free of a dependency
+ * edge onto `factories.ts`.
+ *
+ * The caller owns the context and must `close()` it — reachable as
+ * `page.context()`.
+ */
+export async function pageAs(browser: Browser, who: PersonaName | Credentials): Promise<Page> {
+	const context = await browser.newContext();
+	await authenticateContext(context, who);
+	return context.newPage();
 }
 
 /**

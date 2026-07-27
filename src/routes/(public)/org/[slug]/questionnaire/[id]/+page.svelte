@@ -29,10 +29,27 @@
 	>;
 
 	/**
-	 * Structural narrow: `submission` exists on exactly one side of the union (the
-	 * evaluation shape), so its presence tells the two apart. An evaluation means the
-	 * questionnaire was scored inline — `approved` admits the user immediately. A bare
-	 * submission answers the same question with `requires_evaluation === false`.
+	 * Whether this submission ALREADY clears the questionnaire gate — i.e. nothing
+	 * is owed and nobody will "review" it.
+	 *
+	 * The load-bearing signal is `requires_evaluation === false`, and it is the
+	 * backend's own contract, not a guess: `resolve_requires_evaluation`
+	 * (`questionnaires/schema.py`) documents `False` as "the submission grants
+	 * access without any evaluation (LLM or human), so consumers must not display
+	 * it as pending". `true` is genuinely undecidable here — the controller queues
+	 * the grader on commit (`transaction.on_commit(evaluate_….delay)`), so at
+	 * response time even an AUTOMATIC questionnaire has no verdict yet, and the
+	 * pending copy is the only honest thing to say.
+	 *
+	 * The `'submission' in result` narrow covers the evaluation side of the
+	 * declared union. It is DEFENSIVE: `submit_membership_questionnaire` returns
+	 * `QuestionnaireSubmissionResponseSchema.from_orm(...)` on every path today, so
+	 * that side is unreachable on this endpoint — but the response model admits it,
+	 * and an inline `approved` score would mean the same "gate cleared" outcome.
+	 *
+	 * Clearing the gate is NOT joining: the org CTA turns back into a plain "Join"
+	 * and the application is still owed. Both the panel and the toast below are
+	 * worded to promise exactly that much.
 	 */
 	function isAutoAccepted(result: SubmitResult): boolean {
 		if ('submission' in result) {
@@ -77,6 +94,11 @@
 			});
 
 			if (isAutoAccepted(result)) {
+				// Distinct copy, not the generic pendingToast: nothing is queued at
+				// all here, so even the neutral "we'll let you know once it's been
+				// evaluated" would be false. Says "passed / continue joining" —
+				// never "you're a member".
+				toast.success(m['membershipQuestionnairePage.acceptedToast']());
 				autoAccepted = true;
 				return;
 			}

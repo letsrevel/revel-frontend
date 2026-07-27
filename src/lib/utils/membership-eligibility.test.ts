@@ -156,17 +156,20 @@ describe('wait_* next-step messages', () => {
 		expect(msg).toBe(m['membershipEligibility.wait.questionnaire_evaluation']());
 	});
 
-	// Reversed deliberately (BE #787/#788): a wait_* step describes this user's
-	// in-flight state, while the paired reason code states the org's standing
-	// policy — and the policy line reads wrong on a pending row.
-	it('lets the wait-step map outrank a mapped reason_code', () => {
+	// The exact pair the backend emits from `_block_pending`, and the reason the
+	// `membership_questionnaire_pending` entry could be dropped from REASON_MESSAGES
+	// (#697): the wait map is consulted first, so the code never got a say. Pinned
+	// with the backend's own prose attached, to prove the removal did not open a
+	// fall-through to it.
+	it('resolves the pending-questionnaire pair to the wait copy, not the backend prose', () => {
 		const msg = getMembershipStatusMessage({
 			...base,
 			next_step: 'wait_for_questionnaire_evaluation',
-			reason_code: 'membership_questionnaire_pending'
+			reason_code: 'membership_questionnaire_pending',
+			reason: 'Waiting for questionnaire evaluation.'
 		});
 		expect(msg).toBe(m['membershipEligibility.wait.questionnaire_evaluation']());
-		expect(msg).not.toBe(m['membershipEligibility.reason.membership_questionnaire_pending']());
+		expect(msg).not.toBe('Waiting for questionnaire evaluation.');
 	});
 
 	// Full shape 1 as the BE sends it, localized `reason` prose included — so this
@@ -225,11 +228,11 @@ describe('getApplicationPendingMessage', () => {
 	it('defers to getMembershipStatusMessage when the verdict explains itself', () => {
 		const verdict: MembershipEligibilitySchema = {
 			...base,
-			reason_code: 'membership_questionnaire_pending'
+			reason_code: 'application_rejected'
 		};
 		expect(getApplicationPendingMessage(verdict)).toBe(getMembershipStatusMessage(verdict));
 		expect(getApplicationPendingMessage(verdict)).toBe(
-			m['membershipEligibility.reason.membership_questionnaire_pending']()
+			m['membershipEligibility.reason.application_rejected']()
 		);
 	});
 

@@ -6552,7 +6552,8 @@
 			"contactOrg": "Wende dich zum Verlängern an die Veranstalter*innen.",
 			"memberSince": "Mitglied seit {date}",
 			"managedBy": "Verwaltet von {org} — wende dich für Änderungen an sie.",
-			"loadError": "Deine Mitgliedschaften konnten nicht geladen werden. Lade die Seite neu."
+			"loadError": "Deine Mitgliedschaften konnten nicht geladen werden. Lade die Seite neu.",
+			"loadErrorRejoin": "Es konnte nicht geprüft werden, welche Mitgliedschaften du erneuern kannst. Lade die Seite neu."
 		}
 	},
 	"orgPublic": {
@@ -6589,7 +6590,6 @@
 			"plan_unavailable": "Dieser Plan ist derzeit nicht verfügbar.",
 			"application_rejected": "Dein vorheriger Antrag wurde nicht genehmigt.",
 			"membership_questionnaire_missing": "Diese Organisation bittet neue Mitglieder, zuerst einen Fragebogen auszufüllen.",
-			"membership_questionnaire_pending": "Dein Fragebogen wird gerade geprüft.",
 			"membership_questionnaire_failed": "Dein Fragebogen wurde nicht genehmigt.",
 			"membership_questionnaire_retake_cooldown": "Du kannst den Fragebogen später erneut ausfüllen.",
 			"requires_approval": "Mitgliedschaftsanträge werden von der Organisation genehmigt.",
@@ -6625,7 +6625,8 @@
 		"backToOrg": "Zurück zu {orgName}",
 		"acceptedTitle": "Fragebogen bestätigt",
 		"acceptedBody": "Du kannst jetzt mit dem Beitritt zu {orgName} fortfahren.",
-		"pendingToast": "Fragebogen abgeschickt — die Organisation prüft ihn.",
+		"pendingToast": "Fragebogen abgeschickt — wir melden uns, sobald er ausgewertet wurde.",
+		"acceptedToast": "Fragebogen bestanden — du kannst mit dem Beitritt fortfahren.",
 		"submitError": "Der Fragebogen konnte nicht gesendet werden. Bitte versuch es noch einmal."
 	},
 	"cancelSub": {

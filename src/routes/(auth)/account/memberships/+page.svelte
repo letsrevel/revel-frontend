@@ -115,20 +115,48 @@
 		return membershipsPending || subscriptionsPending;
 	});
 
-	// Either list failing makes the section unable to speak for the member:
-	// memberships carry the live cards, subscriptions carry the rejoin offers,
-	// so a missing half cannot honestly be reported as "you have none".
-	const hasSectionError = $derived.by(() => {
-		const membershipsFailed = membershipsQuery.isError;
-		const subscriptionsFailed = subscriptionsQuery.isError;
-		return membershipsFailed || subscriptionsFailed;
+	// PER-QUERY error gating (#697). The two queries fill the same section but
+	// answer different questions — memberships carry the live cards,
+	// subscriptions carry the rejoin offers — so a failure in one says nothing
+	// about the other. Gating on BOTH being empty (the old shape) meant a partial
+	// failure rendered the surviving half's rows with no error line at all: the
+	// member read an incomplete list as if it were complete.
+	//
+	// Each half is therefore judged alone, and each carries its own copy — "could
+	// not load your memberships" printed under two freshly rendered membership
+	// cards, because the *subscriptions* call broke, would be a plain lie.
+	//
+	// TanStack keeps the last successful payload across a failed refetch, so each
+	// gate still requires that its query have NOTHING left to show: a blipped
+	// background poll must not wipe cards the member is reading (same contract as
+	// ApplicationsSection). The emptiness test is the query's own payload, not the
+	// rendered rows — `displayedMemberships` also empties when every membership is
+	// superseded by a rejoin offer, and those orgs are still on screen.
+	//
+	// `$derived.by` with both operands read into locals first: `&&`/`||` directly
+	// on tracked props short-circuits and would leave the second query untracked.
+	const membershipsFailed = $derived.by(() => {
+		const failed = membershipsQuery.isError;
+		const empty = memberships.length === 0;
+		return failed && empty;
 	});
 
-	// TanStack keeps the last successful payload across a failed refetch, so the
-	// error state is gated on there being nothing left to show — a blipped
-	// background poll must not wipe cards the member is reading (same contract
-	// as ApplicationsSection).
+	const rejoinFailed = $derived.by(() => {
+		const failed = subscriptionsQuery.isError;
+		const empty = (subscriptionsQuery.data ?? []).length === 0;
+		return failed && empty;
+	});
+
 	const hasNoRows = $derived(displayedMemberships.length === 0 && rejoinSubs.length === 0);
+
+	// The empty state may only speak when BOTH halves are intact — it is the one
+	// claim ("you have none") that a silent failure would turn into a falsehood.
+	const showEmptyState = $derived.by(() => {
+		const noRows = hasNoRows;
+		const mFailed = membershipsFailed;
+		const rFailed = rejoinFailed;
+		return noRows && !mFailed && !rFailed;
+	});
 </script>
 
 <svelte:head>
@@ -148,29 +176,38 @@
 				<Loader2 class="h-5 w-5 animate-spin" aria-hidden="true" />
 				<span class="sr-only">{m['common.loading']()}</span>
 			</div>
-		{:else if hasSectionError && hasNoRows}
-			<p class="text-sm text-destructive">{m['account.memberships.loadError']()}</p>
-		{:else if hasNoRows}
-			<div class="rounded-lg border p-6 text-center">
-				<!-- h3, not h2: this sits *inside* the memberships section, so an h2
-				     here would read as a third top-level section. -->
-				<h3 class="font-medium">{m['account.memberships.empty.title']()}</h3>
-				<p class="mt-1 text-sm text-muted-foreground">{m['account.memberships.empty.body']()}</p>
-				<Button href="/organizations" variant="outline" class="mt-4">
-					{m['account.memberships.empty.cta']()}
-				</Button>
-			</div>
 		{:else}
-			<div class="space-y-3">
-				{#each displayedMemberships as mb (mb.organization_id)}
-					<MembershipCard membership={mb} />
-				{/each}
-				<!-- Keyed on the org rather than `id` (optional on the schema): the
-				     selection above already guarantees one row per organization. -->
-				{#each rejoinSubs as rs (rs.organization_id)}
-					<RejoinCard sub={rs} />
-				{/each}
-			</div>
+			<!-- Not `{:else if}` chained with the rows below: a partial failure has to
+			     render an error line AND the surviving half's cards at the same time. -->
+			{#if membershipsFailed}
+				<p class="text-sm text-destructive">{m['account.memberships.loadError']()}</p>
+			{/if}
+			{#if rejoinFailed}
+				<p class="text-sm text-destructive">{m['account.memberships.loadErrorRejoin']()}</p>
+			{/if}
+
+			{#if showEmptyState}
+				<div class="rounded-lg border p-6 text-center">
+					<!-- h3, not h2: this sits *inside* the memberships section, so an h2
+					     here would read as a third top-level section. -->
+					<h3 class="font-medium">{m['account.memberships.empty.title']()}</h3>
+					<p class="mt-1 text-sm text-muted-foreground">{m['account.memberships.empty.body']()}</p>
+					<Button href="/organizations" variant="outline" class="mt-4">
+						{m['account.memberships.empty.cta']()}
+					</Button>
+				</div>
+			{:else if !hasNoRows}
+				<div class="space-y-3">
+					{#each displayedMemberships as mb (mb.organization_id)}
+						<MembershipCard membership={mb} />
+					{/each}
+					<!-- Keyed on the org rather than `id` (optional on the schema): the
+					     selection above already guarantees one row per organization. -->
+					{#each rejoinSubs as rs (rs.organization_id)}
+						<RejoinCard sub={rs} />
+					{/each}
+				</div>
+			{/if}
 		{/if}
 	</section>
 

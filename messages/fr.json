@@ -6523,7 +6523,8 @@
 			"contactOrg": "Contacte l'organisateur pour renouveler.",
 			"memberSince": "Membre depuis le {date}",
 			"managedBy": "Géré par {org} — contacte-les pour toute modification.",
-			"loadError": "Impossible de charger tes adhésions. Essaie de recharger la page."
+			"loadError": "Impossible de charger tes adhésions. Essaie de recharger la page.",
+			"loadErrorRejoin": "Impossible de vérifier quelles adhésions tu peux renouveler. Essaie de recharger la page."
 		}
 	},
 	"orgPublic": {
@@ -6560,7 +6561,6 @@
 			"plan_unavailable": "Cette formule n'est pas disponible pour le moment.",
 			"application_rejected": "Ta demande précédente n'a pas été approuvée.",
 			"membership_questionnaire_missing": "Cette organisation demande aux nouveaux membres de remplir d'abord un questionnaire.",
-			"membership_questionnaire_pending": "Ton questionnaire est en cours d'examen.",
 			"membership_questionnaire_failed": "Ton questionnaire n'a pas été approuvé.",
 			"membership_questionnaire_retake_cooldown": "Tu pourras repasser le questionnaire plus tard.",
 			"requires_approval": "Les demandes d'adhésion sont approuvées par l'organisation.",
@@ -6596,7 +6596,8 @@
 		"backToOrg": "Retour à {orgName}",
 		"acceptedTitle": "Questionnaire approuvé",
 		"acceptedBody": "Tu peux maintenant poursuivre ton adhésion à {orgName}.",
-		"pendingToast": "Questionnaire envoyé — l'organisation va l'examiner.",
+		"pendingToast": "Questionnaire envoyé — nous te préviendrons dès qu'il aura été évalué.",
+		"acceptedToast": "Questionnaire réussi — tu peux poursuivre ton adhésion.",
 		"submitError": "Impossible d'envoyer le questionnaire. Réessaie."
 	},
 	"cancelSub": {

@@ -1,4 +1,3 @@
-import type { Browser, Locator, Page } from '@playwright/test';
 import { test, expect } from '../../support/fixtures';
 import {
 	applyViaApi,
@@ -6,10 +5,10 @@ import {
 	createOrganization,
 	createVerifiedUser,
 	patchTierPolicy,
-	setOrgMembershipPolicy,
-	type ThrowawayUser
+	setOrgMembershipPolicy
 } from '../../support/factories';
-import { authenticateContext } from '../../support/session';
+import { pageAs } from '../../support/session';
+import { applicationRow, membershipCard } from '../../support/membership-locators';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 
 // J27 eligibility states — the verdicts that are NOT an application in flight:
@@ -25,20 +24,6 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 //   * `requires_membership_approval` is TRI-STATE on a tier: `true`/`false`
 //     override the org default, `null` inherits it. Test 3 pins all three
 //     against both org defaults.
-
-function membershipCard(page: Page, orgName: string): Locator {
-	return page.getByRole('region', { name: 'Memberships' }).getByRole('article', { name: orgName });
-}
-
-function applicationRow(page: Page, list: 'In progress' | 'Closed', orgName: string): Locator {
-	return page.getByRole('list', { name: list }).getByRole('article', { name: orgName });
-}
-
-async function pageAs(browser: Browser, user: ThrowawayUser): Promise<Page> {
-	const context = await browser.newContext();
-	await authenticateContext(context, user);
-	return context.newPage();
-}
 
 test.describe('j27 membership eligibility states @p2', () => {
 	test('an org that is not accepting members offers no way in', async ({ browser }) => {

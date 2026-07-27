@@ -100,9 +100,11 @@ test.describe('J23 org subscription policy fields @p2', () => {
 		await page.getByRole('button', { name: 'Save Changes' }).click();
 		await expect(page.getByText(SAVED)).toBeVisible({ timeout: 15_000 });
 
-		// Now edit ONLY an unrelated field (address) and save again. If the form
-		// dropped the policy fields, the backend defaults (7 / "") would silently
-		// overwrite them on this second PUT.
+		// Now edit ONLY an unrelated field (address) and save again. The failure
+		// this guards is FE-side: the backend applies `exclude_unset`, so an
+		// OMITTED field is left alone — what would clobber the policy is the form
+		// POSTING a value, i.e. a control that repopulates wrong and sends the
+		// schema default (7 / "") instead of what was saved.
 		await gotoHydrated(page, `/org/${org.slug}/admin/settings`);
 		await waitForClientAuth(page);
 		const newAddress = `E2E Address ${org.slug}`;
