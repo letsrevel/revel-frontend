@@ -8439,7 +8439,7 @@
 	"orgSettingsPage.subscriptionPolicy.gracePeriodLabel": "Kulanzzeitraum (Tage)",
 	"orgSettingsPage.subscriptionPolicy.gracePeriodHelp": "Tage, die ein Abonnement mit fehlgeschlagener Zahlung aktiv bleibt, bevor es abläuft.",
 	"orgSettingsPage.subscriptionPolicy.revivalWindowLabel": "Wiederaufnahme-Zeitraum (Tage)",
-	"orgSettingsPage.subscriptionPolicy.revivalWindowHelp": "Wie lange nach Ablauf eines Abonnements ehemalige Mitglieder zum alten Preis wieder beitreten können, ohne sich neu zu bewerben. 0 deaktiviert die Wiederaufnahme.",
+	"orgSettingsPage.subscriptionPolicy.revivalWindowHelp": "Wie lange nach Ablauf eines Abonnements ehemalige Mitglieder wieder beitreten können, ohne sich neu zu bewerben — zum aktuellen Preis des Plans. 0 deaktiviert die Wiederaufnahme.",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyLabel": "Rückerstattungsrichtlinie",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyHelp": "Beschreibe deine Rückerstattungsbedingungen für kostenpflichtige Mitgliedschaften.",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyPlaceholder": "z. B. Volle Rückerstattung innerhalb von 14 Tagen nach der ersten Zahlung.",

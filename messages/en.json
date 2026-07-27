@@ -8439,7 +8439,7 @@
 	"orgSettingsPage.subscriptionPolicy.gracePeriodLabel": "Grace period (days)",
 	"orgSettingsPage.subscriptionPolicy.gracePeriodHelp": "Days a subscription with a failed payment stays active before it expires.",
 	"orgSettingsPage.subscriptionPolicy.revivalWindowLabel": "Revival window (days)",
-	"orgSettingsPage.subscriptionPolicy.revivalWindowHelp": "How long after a subscription expires former members can rejoin at their old price without re-applying. 0 disables revival.",
+	"orgSettingsPage.subscriptionPolicy.revivalWindowHelp": "How long after a subscription expires former members can rejoin without re-applying — at the plan's current price. 0 disables revival.",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyLabel": "Refund policy",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyHelp": "Describe your refund terms for paid memberships.",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyPlaceholder": "e.g. Full refund within 14 days of your first payment.",

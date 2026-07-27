@@ -8439,7 +8439,7 @@
 	"orgSettingsPage.subscriptionPolicy.gracePeriodLabel": "Délai de grâce (jours)",
 	"orgSettingsPage.subscriptionPolicy.gracePeriodHelp": "Nombre de jours pendant lesquels un abonnement avec un paiement échoué reste actif avant d'expirer.",
 	"orgSettingsPage.subscriptionPolicy.revivalWindowLabel": "Fenêtre de réactivation (jours)",
-	"orgSettingsPage.subscriptionPolicy.revivalWindowHelp": "Durée pendant laquelle, après l'expiration d'un abonnement, les anciens membres peuvent revenir à leur ancien tarif sans repostuler. 0 désactive la réactivation.",
+	"orgSettingsPage.subscriptionPolicy.revivalWindowHelp": "Durée pendant laquelle, après l'expiration d'un abonnement, les anciens membres peuvent revenir sans repostuler — au prix actuel du forfait. 0 désactive la réactivation.",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyLabel": "Politique de remboursement",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyHelp": "Décrivez vos conditions de remboursement pour les adhésions payantes.",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyPlaceholder": "ex. Remboursement intégral dans les 14 jours suivant le premier paiement.",
