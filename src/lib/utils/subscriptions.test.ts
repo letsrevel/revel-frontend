@@ -207,14 +207,15 @@ const NOW = new Date('2026-07-26T12:00:00Z');
 
 describe('getMemberActions', () => {
 	it('offline subscriptions get no self-serve actions regardless of status', () => {
-		for (const status of ['active', 'past_due', 'expired'] as const) {
+		for (const status of ['active', 'past_due', 'expired', 'pending'] as const) {
 			const sub = mySub({ status });
 			sub.plan.payment_method = 'offline';
 			expect(getMemberActions(sub, NOW)).toEqual({
 				manageBilling: false,
 				changePlan: false,
 				cancel: false,
-				revive: false
+				revive: false,
+				resumePayment: false
 			});
 		}
 	});
@@ -224,7 +225,8 @@ describe('getMemberActions', () => {
 			manageBilling: true,
 			changePlan: true,
 			cancel: true,
-			revive: false
+			revive: false,
+			resumePayment: false
 		});
 	});
 
@@ -240,7 +242,8 @@ describe('getMemberActions', () => {
 			manageBilling: true,
 			changePlan: false,
 			cancel: false,
-			revive: false
+			revive: false,
+			resumePayment: false
 		});
 	});
 
@@ -249,7 +252,8 @@ describe('getMemberActions', () => {
 			manageBilling: true,
 			changePlan: false,
 			cancel: true,
-			revive: false
+			revive: false,
+			resumePayment: false
 		});
 	});
 
@@ -263,25 +267,57 @@ describe('getMemberActions', () => {
 			manageBilling: false,
 			changePlan: false,
 			cancel: false,
-			revive: true
+			revive: true,
+			resumePayment: false
 		});
 	});
 
 	it('online expired past the deadline (or with none) offers nothing', () => {
 		const past = mySub({ status: 'expired', revival_deadline: '2026-07-25T00:00:00Z' });
 		const none = mySub({ status: 'expired', revival_deadline: null });
-		const nothing = { manageBilling: false, changePlan: false, cancel: false, revive: false };
+		const nothing = {
+			manageBilling: false,
+			changePlan: false,
+			cancel: false,
+			revive: false,
+			resumePayment: false
+		};
 		expect(getMemberActions(past, NOW)).toEqual(nothing);
 		expect(getMemberActions(none, NOW)).toEqual(nothing);
 	});
 
-	it('pending, paused and cancelled offer nothing', () => {
-		for (const status of ['pending', 'paused', 'cancelled'] as const) {
+	/**
+	 * #694: an abandoned Checkout (subscribe- or revival-origin) leaves the row
+	 * PENDING with a still-open session; re-POSTing subscribe with the same plan
+	 * hands that session back (`_maybe_resume_pending_checkout`). Without this
+	 * the card is a dead end.
+	 */
+	it('online pending offers resume payment only', () => {
+		expect(getMemberActions(mySub({ status: 'pending' }), NOW)).toEqual({
+			manageBilling: false,
+			changePlan: false,
+			cancel: false,
+			revive: false,
+			resumePayment: true
+		});
+	});
+
+	// OFFLINE pending is awaiting a staff-recorded payment — there is no Checkout
+	// session for the member to resume.
+	it('offline pending offers nothing', () => {
+		const sub = mySub({ status: 'pending' });
+		sub.plan.payment_method = 'offline';
+		expect(getMemberActions(sub, NOW).resumePayment).toBe(false);
+	});
+
+	it('paused and cancelled offer nothing', () => {
+		for (const status of ['paused', 'cancelled'] as const) {
 			expect(getMemberActions(mySub({ status }), NOW)).toEqual({
 				manageBilling: false,
 				changePlan: false,
 				cancel: false,
-				revive: false
+				revive: false,
+				resumePayment: false
 			});
 		}
 	});

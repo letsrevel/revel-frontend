@@ -6526,7 +6526,9 @@
 			"manageBilling": "Zahlungen verwalten",
 			"changePlan": "Tarif wechseln",
 			"cancel": "Mitgliedschaft kündigen",
-			"portalError": "Das Zahlungsportal konnte nicht geöffnet werden. Bitte versuche es erneut."
+			"resumePayment": "Zahlung fortsetzen",
+			"portalError": "Das Zahlungsportal konnte nicht geöffnet werden. Bitte versuche es erneut.",
+			"resumeError": "Die Zahlung konnte nicht fortgesetzt werden. Bitte versuche es erneut."
 		},
 		"cancelScheduledHint": "Die Verlängerung ist deaktiviert. Um deine Mitgliedschaft zu behalten, wende dich an die Organisation.",
 		"rejoin": {

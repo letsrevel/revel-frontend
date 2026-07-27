@@ -6526,7 +6526,9 @@
 			"manageBilling": "Gestisci i pagamenti",
 			"changePlan": "Cambia piano",
 			"cancel": "Annulla l'abbonamento",
-			"portalError": "Non è stato possibile aprire il portale di pagamento. Riprova."
+			"resumePayment": "Riprendi il pagamento",
+			"portalError": "Non è stato possibile aprire il portale di pagamento. Riprova.",
+			"resumeError": "Non è stato possibile riprendere il pagamento. Riprova."
 		},
 		"cancelScheduledHint": "Il rinnovo è disattivato. Per mantenere l'abbonamento, contatta l'organizzazione.",
 		"rejoin": {
