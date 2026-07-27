@@ -25,6 +25,24 @@ vi.mock('$app/navigation', () => ({
 	invalidateAll: vi.fn()
 }));
 
+function makeEligibility(
+	overrides: Partial<MembershipEligibilitySchema> = {}
+): MembershipEligibilitySchema {
+	return {
+		allowed: false,
+		organization_id: 'org-1',
+		tier_id: null,
+		plan_id: null,
+		reason: null,
+		reason_code: null,
+		next_step: null,
+		questionnaire_id: null,
+		application_id: 'app-1',
+		retry_on: null,
+		...overrides
+	};
+}
+
 function makeResult(
 	application: Partial<MembershipApplicationSchema> = {},
 	eligibility: Partial<MembershipEligibilitySchema> = {}
@@ -43,19 +61,7 @@ function makeResult(
 			updated_at: '2026-08-01T00:00:00Z',
 			...application
 		},
-		eligibility: {
-			allowed: false,
-			organization_id: 'org-1',
-			tier_id: null,
-			plan_id: null,
-			reason: null,
-			reason_code: null,
-			next_step: null,
-			questionnaire_id: null,
-			application_id: 'app-1',
-			retry_on: null,
-			...eligibility
-		}
+		eligibility: makeEligibility(eligibility)
 	};
 }
 
@@ -273,6 +279,38 @@ describe('ApplyDialog', () => {
 		// synchronously written error copy.
 		await waitFor(() => {
 			expect(screen.getByRole('button', { name: /send application/i })).toBeEnabled();
+		});
+	});
+
+	// A gate refusal comes back as a full eligibility verdict, which carries no
+	// `message`/`detail` — reading it with those keys discarded the actual reason.
+	it('explains a gate refusal from the eligibility-shaped 400 and refreshes the CTA verdict', async () => {
+		const user = userEvent.setup();
+		const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+		mockApplyError(makeEligibility({ reason_code: 'not_accepting_requests' }));
+		renderDialog();
+
+		await user.click(screen.getByRole('button', { name: /send application/i }));
+
+		await waitFor(() => {
+			expect(screen.getByRole('alert')).toHaveTextContent(
+				"This organization isn't accepting new members right now."
+			);
+		});
+		expect(invalidateSpy).toHaveBeenCalledWith({
+			queryKey: ['org', 'acme', 'join-eligibility']
+		});
+	});
+
+	it('still shows a flat detail refusal verbatim', async () => {
+		const user = userEvent.setup();
+		mockApplyError({ detail: 'Plan not available' });
+		renderDialog();
+
+		await user.click(screen.getByRole('button', { name: /send application/i }));
+
+		await waitFor(() => {
+			expect(screen.getByRole('alert')).toHaveTextContent('Plan not available');
 		});
 	});
 
