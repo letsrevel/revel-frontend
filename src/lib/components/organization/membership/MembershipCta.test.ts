@@ -128,7 +128,8 @@ describe('MembershipCta', () => {
 				allowed: true,
 				next_step: 'wait_for_approval',
 				reason_code: 'requires_approval',
-				application_id: 'app-1'
+				application_id: 'app-1',
+				reason: 'Membership requests are approved by the organization.'
 			})
 		);
 		renderCta();

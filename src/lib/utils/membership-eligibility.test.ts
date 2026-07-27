@@ -60,7 +60,8 @@ describe('getMembershipCtaKind', () => {
 				allowed: true,
 				next_step: 'wait_for_approval',
 				reason_code: 'requires_approval',
-				application_id: 'app-1'
+				application_id: 'app-1',
+				reason: 'Membership requests are approved by the organization.'
 			})
 		).toBe('waiting');
 	});
@@ -134,9 +135,16 @@ describe('wait_* next-step messages', () => {
 		expect(msg).toBe(m['membershipEligibility.wait.approval']());
 	});
 
-	it('maps wait_for_whitelist_approval when no reason_code is set', () => {
-		const msg = getMembershipStatusMessage({ ...base, next_step: 'wait_for_whitelist_approval' });
-		expect(msg).toBe(m['membershipEligibility.wait.whitelist_approval']());
+	// Excluded from the wait map on purpose: whitelist_pending keeps the
+	// "verification" vocabulary shared with requires_verification and
+	// whitelist_rejected, so the whole whitelist flow reads consistently.
+	it('leaves the whitelist pairing on its verification copy', () => {
+		const msg = getMembershipStatusMessage({
+			...base,
+			next_step: 'wait_for_whitelist_approval',
+			reason_code: 'whitelist_pending'
+		});
+		expect(msg).toBe(m['membershipEligibility.reason.whitelist_pending']());
 	});
 
 	it('maps wait_for_questionnaire_evaluation over backend prose', () => {
@@ -161,16 +169,20 @@ describe('wait_* next-step messages', () => {
 		expect(msg).not.toBe(m['membershipEligibility.reason.membership_questionnaire_pending']());
 	});
 
+	// Full shape 1 as the BE sends it, localized `reason` prose included — so this
+	// also pins that the wait copy beats both the reason map and the BE prose.
 	it('describes the pending tier-less application, not the approval policy', () => {
 		const msg = getMembershipStatusMessage({
 			...base,
 			allowed: true,
 			next_step: 'wait_for_approval',
 			reason_code: 'requires_approval',
-			application_id: 'app-1'
+			application_id: 'app-1',
+			reason: 'Membership requests are approved by the organization.'
 		});
 		expect(msg).toBe(m['membershipEligibility.wait.approval']());
 		expect(msg).not.toBe(m['membershipEligibility.reason.requires_approval']());
+		expect(msg).not.toBe('Membership requests are approved by the organization.');
 	});
 
 	// wait_to_retake_questionnaire is absent from the wait map, so the reorder

@@ -90,12 +90,19 @@ const REASON_MESSAGES: Partial<Record<MembershipReasonCode, () => string>> = {
  * `wait_for_approval` + `requires_approval`. Consulted BEFORE REASON_MESSAGES —
  * see `getMembershipStatusMessage` for why the wait copy outranks the reason
  * copy whenever both are present.
+ *
+ * Deliberately partial. Two `wait_*` steps are excluded because their paired
+ * reason code says something the wait copy cannot:
+ * - `wait_to_retake_questionnaire` — `membership_questionnaire_retake_cooldown`
+ *   keeps the dated "you can retake it later" copy.
+ * - `wait_for_whitelist_approval` — `whitelist_pending` keeps the "verification"
+ *   vocabulary shared with its neighbours `requires_verification` and
+ *   `whitelist_rejected`, so the whole whitelist flow reads consistently.
  */
 const WAIT_STEP_MESSAGES: Partial<Record<MembershipNextStep, () => string>> = {
 	wait_for_questionnaire_evaluation: () =>
 		m['membershipEligibility.wait.questionnaire_evaluation'](),
-	wait_for_approval: () => m['membershipEligibility.wait.approval'](),
-	wait_for_whitelist_approval: () => m['membershipEligibility.wait.whitelist_approval']()
+	wait_for_approval: () => m['membershipEligibility.wait.approval']()
 };
 
 /**
@@ -112,12 +119,10 @@ const WAIT_STEP_MESSAGES: Partial<Record<MembershipNextStep, () => string>> = {
  * a pending tier-less application is `wait_for_approval` + `requires_approval`:
  * "Your application is with the organization for review" is right,
  * "Membership requests are approved by the organization" is not. The same holds
- * for the other two pairings (`wait_for_questionnaire_evaluation` vs
- * `membership_questionnaire_pending`, `wait_for_whitelist_approval` vs
- * `whitelist_pending`), where the wait copy is likewise first-person and more
- * informative. `wait_to_retake_questionnaire` is deliberately absent from the
- * wait map, so it still reaches `membership_questionnaire_retake_cooldown` and
- * keeps its dated copy.
+ * for `wait_for_questionnaire_evaluation` vs `membership_questionnaire_pending`,
+ * where the wait copy is likewise first-person. Steps whose paired reason code
+ * carries something the wait copy would lose are kept out of the map entirely —
+ * see WAIT_STEP_MESSAGES for the two exclusions and why.
  *
  * `next_step === 'requires_invitation'` is NOT a blanket override. The backend
  * emits it only alongside `reason_code` `requires_verification` or

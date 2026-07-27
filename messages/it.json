@@ -6612,8 +6612,7 @@
 		},
 		"wait": {
 			"questionnaire_evaluation": "Il tuo questionario è in fase di valutazione — ti avviseremo appena sarà esaminato.",
-			"approval": "La tua candidatura è in fase di revisione da parte dell'organizzazione. Riceverai una risposta appena avranno deciso.",
-			"whitelist_approval": "La tua richiesta di accesso è in attesa di approvazione."
+			"approval": "La tua candidatura è in fase di revisione da parte dell'organizzazione. Riceverai una risposta appena avranno deciso."
 		}
 	},
 	"membershipApply": {

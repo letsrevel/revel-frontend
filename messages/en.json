@@ -6612,8 +6612,7 @@
 		},
 		"wait": {
 			"questionnaire_evaluation": "Your questionnaire is being reviewed — we'll let you know once it's evaluated.",
-			"approval": "Your application is with the organization for review. You'll hear back once they decide.",
-			"whitelist_approval": "Your access request is waiting for approval."
+			"approval": "Your application is with the organization for review. You'll hear back once they decide."
 		}
 	},
 	"membershipApply": {

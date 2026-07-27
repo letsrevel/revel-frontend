@@ -6583,8 +6583,7 @@
 		},
 		"wait": {
 			"questionnaire_evaluation": "Ton questionnaire est en cours d'évaluation — nous te préviendrons dès qu'il sera examiné.",
-			"approval": "Ta candidature est en cours d'examen par l'organisation. Tu auras une réponse dès qu'elle aura décidé.",
-			"whitelist_approval": "Ta demande d'accès attend une validation."
+			"approval": "Ta candidature est en cours d'examen par l'organisation. Tu auras une réponse dès qu'elle aura décidé."
 		}
 	},
 	"membershipApply": {

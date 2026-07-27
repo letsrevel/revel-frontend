@@ -111,9 +111,11 @@
 	);
 
 	/**
-	 * `getApplicationPendingMessage`, not `getMembershipStatusMessage`: a tier-less
-	 * PENDING application passes every gate, so its verdict comes back `allowed`
-	 * with no signals — which the raw helper renders as "you can't join right now".
+	 * `getApplicationPendingMessage`, not `getMembershipStatusMessage`: since BE
+	 * #788 a tier-less PENDING application carries an explicit `wait_for_approval`,
+	 * which the raw helper already renders correctly — so this wrapper is
+	 * defence-in-depth for a signal-less `allowed` verdict the backend no longer
+	 * emits, which would otherwise fall through to "you can't join right now".
 	 * Only ever consulted for open rows; on a closed one its signal-absence rule
 	 * would mislabel a settled verdict.
 	 */

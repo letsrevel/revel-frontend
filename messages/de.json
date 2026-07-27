@@ -6612,8 +6612,7 @@
 		},
 		"wait": {
 			"questionnaire_evaluation": "Dein Fragebogen wird gerade geprüft — wir melden uns, sobald er ausgewertet ist.",
-			"approval": "Deine Bewerbung liegt der Organisation zur Prüfung vor. Du hörst von uns, sobald entschieden ist.",
-			"whitelist_approval": "Deine Zugangsanfrage wartet auf Freigabe."
+			"approval": "Deine Bewerbung liegt der Organisation zur Prüfung vor. Du hörst von uns, sobald entschieden ist."
 		}
 	},
 	"membershipApply": {
