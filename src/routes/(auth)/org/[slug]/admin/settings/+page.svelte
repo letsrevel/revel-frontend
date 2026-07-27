@@ -10,6 +10,7 @@
 	import OrgTagManager from '$lib/components/organization/OrgTagManager.svelte';
 	import OrgContactEmailModal from '$lib/components/organization/OrgContactEmailModal.svelte';
 	import StripeConnect from '$lib/components/organization/StripeConnect.svelte';
+	import OrgSubscriptionPolicySection from '$lib/components/organization/OrgSubscriptionPolicySection.svelte';
 	import type { CitySchema, RevenueReportCadence } from '$lib/api/generated';
 	import { Building2, AlertCircle, Check, Eye, Mail, Send, AtSign } from '@lucide/svelte';
 	import Instagram from '$lib/components/icons/brand/Instagram.svelte';
@@ -37,11 +38,13 @@
 	let reportCadence = $state<RevenueReportCadence>(
 		data.organization.revenue_report_cadence || 'none'
 	);
-	// Subscription policy (rides the same PUT as revenue_report_cadence). Both fields
-	// have backend defaults (7 / ""), so they MUST always round-trip — an omitted PUT
-	// silently resets them (the telegram_url data-loss class from #491).
-	let gracePeriodDays = $state<number>(data.organization.membership_grace_period_days ?? 7);
-	let refundPolicy = $state(data.organization.membership_refund_policy || '');
+	// Membership policy defaults. Same rule as the subscription-policy section: these
+	// always render and always post, so the action's formData.has() guards can pin
+	// payload inclusion to controls that were really rendered (the #491 class).
+	let defaultQuestionnaireId = $state(data.organization.default_membership_questionnaire_id || '');
+	let defaultRequiresApproval = $state(
+		data.organization.default_requires_membership_approval ?? false
+	);
 	let isSubmitting = $state(false);
 
 	// Scheduled revenue-report delivery requires a billing email to send to.
@@ -69,8 +72,8 @@
 		acceptNewMembers = data.organization.accept_membership_requests || false;
 		contactMethod = data.organization.contact_method || 'none';
 		reportCadence = data.organization.revenue_report_cadence || 'none';
-		gracePeriodDays = data.organization.membership_grace_period_days ?? 7;
-		refundPolicy = data.organization.membership_refund_policy || '';
+		defaultQuestionnaireId = data.organization.default_membership_questionnaire_id || '';
+		defaultRequiresApproval = data.organization.default_requires_membership_approval ?? false;
 		instagramUrl = data.organization.instagram_url || '';
 		facebookUrl = data.organization.facebook_url || '';
 		blueskyUrl = data.organization.bluesky_url || '';
@@ -445,6 +448,61 @@
 				</p>
 			</div>
 
+			<!-- Default membership questionnaire -->
+			<div>
+				<label for="default_membership_questionnaire_id" class="block text-sm font-medium">
+					{m['orgAdmin.settings.membership.defaultQuestionnaireLabel']()}
+				</label>
+				<select
+					id="default_membership_questionnaire_id"
+					name="default_membership_questionnaire_id"
+					bind:value={defaultQuestionnaireId}
+					class="mt-1 flex w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 sm:max-w-xs"
+				>
+					<option value="">{m['orgAdmin.settings.membership.defaultQuestionnaireNone']()}</option>
+					{#each data.membershipQuestionnaires as oq (oq.id)}
+						<option value={oq.id}>{oq.questionnaire.name}</option>
+					{/each}
+				</select>
+				<p class="mt-1 text-xs text-muted-foreground">
+					{m['orgAdmin.settings.membership.defaultQuestionnaireHelp']()}
+				</p>
+				{#if data.membershipQuestionnaires.length === 0}
+					<p class="mt-1 text-xs text-muted-foreground">
+						{m['orgAdmin.settings.membership.noMembershipQuestionnaires']()}
+						<a
+							href={resolve('/(auth)/org/[slug]/admin/questionnaires', {
+								slug: data.organization.slug
+							})}
+							class="font-medium underline underline-offset-2"
+						>
+							{m['orgAdmin.settings.membership.manageQuestionnairesLink']()}
+						</a>
+					</p>
+				{/if}
+			</div>
+
+			<!-- Require manual approval by default -->
+			<div class="space-y-2">
+				<div class="flex items-center gap-2">
+					<input type="hidden" name="default_requires_membership_approval_present" value="1" />
+					<input
+						type="checkbox"
+						id="default_requires_membership_approval"
+						name="default_requires_membership_approval"
+						value="true"
+						bind:checked={defaultRequiresApproval}
+						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+					/>
+					<label for="default_requires_membership_approval" class="text-sm font-medium">
+						{m['orgAdmin.settings.membership.requireApprovalLabel']()}
+					</label>
+				</div>
+				<p class="text-xs text-muted-foreground">
+					{m['orgAdmin.settings.membership.requireApprovalHelp']()}
+				</p>
+			</div>
+
 			<!-- Contact Email (Read-only with Change Button) -->
 			<div>
 				<span class="block text-sm font-medium">
@@ -526,51 +584,10 @@
 			</div>
 		</section>
 
-		<!-- Subscription policy — rules for paid memberships. Both fields always render
-		     and post (via the number input's name and the markdown hidden input) so the
-		     PUT always round-trips them; the server also guards with formData.has(). -->
-		<section class="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
-			<h2 class="text-lg font-semibold">
-				{m['orgSettingsPage.subscriptionPolicy.heading']()}
-			</h2>
-			<p class="text-sm text-muted-foreground">
-				{m['orgSettingsPage.subscriptionPolicy.description']()}
-			</p>
-
-			<!-- Grace period (days) -->
-			<div>
-				<label for="membership_grace_period_days" class="block text-sm font-medium">
-					{m['orgSettingsPage.subscriptionPolicy.gracePeriodLabel']()}
-				</label>
-				<input
-					type="number"
-					id="membership_grace_period_days"
-					name="membership_grace_period_days"
-					min="0"
-					step="1"
-					inputmode="numeric"
-					bind:value={gracePeriodDays}
-					class="mt-1 flex w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 sm:max-w-xs"
-				/>
-				<p class="mt-1 text-xs text-muted-foreground">
-					{m['orgSettingsPage.subscriptionPolicy.gracePeriodHelp']()}
-				</p>
-			</div>
-
-			<!-- Refund policy (markdown) -->
-			<div>
-				<MarkdownEditor
-					bind:value={refundPolicy}
-					label={m['orgSettingsPage.subscriptionPolicy.refundPolicyLabel']()}
-					placeholder={m['orgSettingsPage.subscriptionPolicy.refundPolicyPlaceholder']()}
-					rows={6}
-				/>
-				<input type="hidden" name="membership_refund_policy" value={refundPolicy} />
-				<p class="mt-1 text-xs text-muted-foreground">
-					{m['orgSettingsPage.subscriptionPolicy.refundPolicyHelp']()}
-				</p>
-			</div>
-		</section>
+		<!-- Subscription policy — rules for paid memberships. Its fields always render and
+		     always post; the action includes each one only when it actually arrived (the
+		     component explains why). -->
+		<OrgSubscriptionPolicySection organization={data.organization} />
 
 		<!-- Financial Reports (owner-only — mirrors the owner-only financials/revenue
 		     endpoints; staff with edit_organization must not change report delivery) -->
