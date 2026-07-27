@@ -39,7 +39,7 @@
 </script>
 
 <Dialog bind:open>
-	<DialogContent>
+	<DialogContent class="max-h-[90vh] overflow-y-auto">
 		<DialogHeader>
 			<DialogTitle>{m['pollReopenDialog.title']()}</DialogTitle>
 			<DialogDescription>{m['pollReopenDialog.description']()}</DialogDescription>

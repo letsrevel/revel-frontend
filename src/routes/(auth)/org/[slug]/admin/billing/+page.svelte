@@ -651,7 +651,7 @@
 
 <!-- Remove VAT ID Confirmation Dialog -->
 <Dialog open={showRemoveDialog} onOpenChange={(open) => (showRemoveDialog = open)}>
-	<DialogContent>
+	<DialogContent class="max-h-[90vh] overflow-y-auto">
 		<DialogHeader>
 			<DialogTitle>{m['orgAdmin.billing.vatId.removeConfirmTitle']()}</DialogTitle>
 			<DialogDescription>

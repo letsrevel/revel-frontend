@@ -193,7 +193,7 @@
 </script>
 
 <Dialog {open} onOpenChange={(v: boolean) => (!v ? onClose() : null)}>
-	<DialogContent class="sm:max-w-3xl">
+	<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
 		{#if isLoading}
 			<Loader2 class="h-5 w-5 animate-spin" />
 		{:else}

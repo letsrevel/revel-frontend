@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, within } from '@testing-library/svelte';
 import { describe, it, expect } from 'vitest';
 import MembershipRequestCard from './MembershipRequestCard.svelte';
 import type {
@@ -38,6 +38,41 @@ function renderCard(
 		props: { request, orgSlug: 'test-org', showActions: true, ...props }
 	});
 }
+
+describe('MembershipRequestCard card semantics', () => {
+	// Contract relied on by the E2E helpers: role `article`, accessible name =
+	// the requester's display name. Without it a page-global helper can only work
+	// while exactly one card is on screen.
+	it('exposes the card as an article named after the requester', () => {
+		renderCard(makeRequest({}));
+		expect(screen.getByRole('article', { name: 'Ada Lovelace' })).toBeInTheDocument();
+	});
+
+	it('prefers the preferred name for the accessible name', () => {
+		renderCard(
+			makeRequest({
+				user: { ...baseRequest.user, preferred_name: 'Ada' }
+			} as Partial<OrganizationMembershipRequestRetrieve>)
+		);
+		expect(screen.getByRole('article', { name: 'Ada' })).toBeInTheDocument();
+	});
+
+	it('lets a query scope to one card while several are mounted', () => {
+		renderCard(makeRequest({}));
+		renderCard(
+			makeRequest({
+				id: 'req-2',
+				user: { ...baseRequest.user, id: 'user-2', first_name: 'Grace', last_name: 'Hopper' }
+			} as Partial<OrganizationMembershipRequestRetrieve>)
+		);
+
+		const grace = screen.getByRole('article', { name: 'Grace Hopper' });
+		expect(
+			within(grace).getByRole('button', { name: 'Approve request from Grace Hopper' })
+		).toBeInTheDocument();
+		expect(within(grace).queryByText('Ada Lovelace')).not.toBeInTheDocument();
+	});
+});
 
 describe('MembershipRequestCard tier chip', () => {
 	it('renders the tier name when the application carries a tier', () => {

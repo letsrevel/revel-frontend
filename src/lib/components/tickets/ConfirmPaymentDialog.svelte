@@ -34,7 +34,7 @@
 
 <!-- Confirm Payment Dialog -->
 <Dialog open={isOpen && !!ticket} onOpenChange={(open) => !open && onClose()}>
-	<DialogContent class="max-w-lg">
+	<DialogContent class="max-h-[90vh] max-w-lg overflow-y-auto">
 		{#if ticket}
 			{@const pwyc = isPwycTicket(ticket)}
 			{@const pwycWarning = pwyc ? getPwycWarning(ticket, pwycPricePaid) : null}

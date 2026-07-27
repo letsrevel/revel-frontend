@@ -62,7 +62,7 @@
 </script>
 
 <Dialog {open} onOpenChange={handleCancel}>
-	<DialogContent class="max-w-md">
+	<DialogContent class="max-h-[90vh] max-w-md overflow-y-auto">
 		<DialogHeader>
 			<DialogTitle>{m['orgAdmin.members.plans.migrate.title']()}</DialogTitle>
 			<DialogDescription class="mt-1">
