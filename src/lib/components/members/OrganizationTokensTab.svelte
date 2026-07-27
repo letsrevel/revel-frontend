@@ -260,7 +260,7 @@
 
 <!-- Token Delete Confirmation -->
 <Dialog open={!!tokenToDelete}>
-	<DialogContent>
+	<DialogContent class="max-h-[90vh] overflow-y-auto">
 		<DialogHeader>
 			<DialogTitle>{m['organizationTokensTab.deleteDialogTitle']()}</DialogTitle>
 			<DialogDescription>

@@ -28,7 +28,10 @@
 </script>
 
 <Dialog bind:open onOpenChange={(isOpen) => !isOpen && onClose()}>
-	<DialogContent class="max-w-2xl" data-testid="new-series-picker-dialog">
+	<DialogContent
+		class="max-h-[90vh] max-w-2xl overflow-y-auto"
+		data-testid="new-series-picker-dialog"
+	>
 		<DialogHeader>
 			<DialogTitle>{m['recurringEvents.newSeriesPicker.title']()}</DialogTitle>
 		</DialogHeader>

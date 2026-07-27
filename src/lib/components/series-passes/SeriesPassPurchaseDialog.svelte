@@ -119,7 +119,7 @@
 </script>
 
 <Dialog open onOpenChange={onClose}>
-	<DialogContent class="sm:max-w-[480px]">
+	<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-[480px]">
 		<DialogHeader>
 			<DialogTitle>{m['seriesPass.purchaseTitle']({ name: pass.name })}</DialogTitle>
 			<DialogDescription>

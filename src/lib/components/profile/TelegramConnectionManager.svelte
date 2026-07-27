@@ -213,7 +213,7 @@
 
 <!-- Connect Dialog -->
 <Dialog bind:open={showConnectDialog}>
-	<DialogContent class="sm:max-w-md">
+	<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-md">
 		<DialogHeader>
 			<DialogTitle>{m['telegram.connect_title']()}</DialogTitle>
 			<DialogDescription>
@@ -348,7 +348,7 @@
 
 <!-- Disconnect Confirmation Dialog -->
 <Dialog bind:open={showDisconnectConfirm}>
-	<DialogContent class="sm:max-w-md">
+	<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-md">
 		<DialogHeader>
 			<DialogTitle>{m['telegram.disconnect_title']()}</DialogTitle>
 			<DialogDescription>

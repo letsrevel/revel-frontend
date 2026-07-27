@@ -109,7 +109,11 @@
 	const phoneNumber = $derived((request.user as { phone_number?: string | null }).phone_number);
 </script>
 
-<div
+<!-- `article` + the requester's display name as the accessible name: specs (and
+     assistive tech) can address one card among many instead of relying on a
+     one-card-per-view invariant. -->
+<article
+	aria-label={displayName}
 	class="min-w-0 rounded-lg border border-border bg-card p-4 shadow-sm transition-shadow hover:shadow-md"
 >
 	<div class="space-y-3">
@@ -283,11 +287,11 @@
 			</div>
 		{/if}
 	</div>
-</div>
+</article>
 
 <!-- Request Details Dialog -->
 <Dialog open={dialogOpen} onOpenChange={(open) => (dialogOpen = open)}>
-	<DialogContent class="max-w-lg">
+	<DialogContent class="max-h-[90vh] max-w-lg overflow-y-auto">
 		<DialogHeader>
 			<DialogTitle>{m['membershipRequestCard.membershipRequestFrom']()} {displayName}</DialogTitle>
 			<DialogDescription>

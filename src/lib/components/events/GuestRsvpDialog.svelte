@@ -214,7 +214,7 @@
 </script>
 
 <Dialog bind:open>
-	<DialogContent class="sm:max-w-lg">
+	<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-lg">
 		<DialogHeader>
 			<DialogTitle class="flex items-center gap-2 text-xl">
 				<UserPlus class="h-5 w-5 text-primary" aria-hidden="true" />

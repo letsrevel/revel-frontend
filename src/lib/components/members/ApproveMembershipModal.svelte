@@ -60,7 +60,7 @@
 </script>
 
 <Dialog {open} onOpenChange={handleOpenChange}>
-	<DialogContent class="sm:max-w-[425px]">
+	<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-[425px]">
 		{#if request}
 			<DialogHeader>
 				<DialogTitle>{m['approveMembershipModal.title']()}</DialogTitle>
