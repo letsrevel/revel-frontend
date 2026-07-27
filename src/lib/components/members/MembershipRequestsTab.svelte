@@ -18,6 +18,7 @@
 	import MembershipRequestCard from '$lib/components/members/MembershipRequestCard.svelte';
 	import ApproveMembershipModal from '$lib/components/members/ApproveMembershipModal.svelte';
 	import { toast } from 'svelte-sonner';
+	import { backendMessage } from '$lib/utils/api-error-detail';
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
@@ -25,6 +26,20 @@
 	}
 
 	const { organization, tiers }: Props = $props();
+
+	// Every status the backend can put an application in, plus the "all" escape
+	// hatch. Order is the display order of the filter row.
+	const REQUEST_FILTERS = [
+		{ value: 'pending', label: () => m['membershipRequestsTab.filterPending']() },
+		{ value: 'approved', label: () => m['membershipRequestsTab.filterApproved']() },
+		{ value: 'completed', label: () => m['membershipRequestsTab.filterCompleted']() },
+		{ value: 'rejected', label: () => m['membershipRequestsTab.filterRejected']() },
+		{ value: 'cancelled', label: () => m['membershipRequestsTab.filterCancelled']() },
+		{ value: 'all', label: () => m['membershipRequestsTab.filterAll']() }
+	] as const satisfies ReadonlyArray<{
+		value: MembershipRequestStatus | 'all';
+		label: () => string;
+	}>;
 
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
@@ -86,7 +101,9 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to approve request');
+				throw new Error(
+					backendMessage(response.error) || m['membershipRequestsTab.approveFailedGeneric']()
+				);
 			}
 
 			return response.data;
@@ -103,7 +120,7 @@
 			});
 		},
 		onError: (error: Error) => {
-			alert(m['membershipRequestsTab.approveFailed']({ error: error.message }));
+			toast.error(error.message);
 		}
 	}));
 
@@ -120,7 +137,9 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to reject request');
+				throw new Error(
+					backendMessage(response.error) || m['membershipRequestsTab.rejectFailedGeneric']()
+				);
 			}
 
 			return response.data;
@@ -131,7 +150,7 @@
 			});
 		},
 		onError: (error: Error) => {
-			alert(m['membershipRequestsTab.rejectFailed']({ error: error.message }));
+			toast.error(error.message);
 		}
 	}));
 
@@ -177,66 +196,23 @@
 
 <!-- Filter Buttons -->
 <div class="flex flex-wrap items-center gap-2">
-	<Button
-		variant={requestStatusFilter === 'pending' ? 'default' : 'outline'}
-		size="sm"
-		onclick={() => {
-			requestStatusFilter = 'pending';
-			requestsPage = 1;
-		}}
-	>
-		{m['membershipRequestsTab.filterPending']()}
-		{#if requestStatusFilter === 'pending' && requestsQuery.data?.count}
-			<span class="ml-1.5 rounded-full bg-primary-foreground px-1.5 py-0.5 text-xs text-primary">
-				{requestsQuery.data.count}
-			</span>
-		{/if}
-	</Button>
-	<Button
-		variant={requestStatusFilter === 'approved' ? 'default' : 'outline'}
-		size="sm"
-		onclick={() => {
-			requestStatusFilter = 'approved';
-			requestsPage = 1;
-		}}
-	>
-		{m['membershipRequestsTab.filterApproved']()}
-		{#if requestStatusFilter === 'approved' && requestsQuery.data?.count}
-			<span class="ml-1.5 rounded-full bg-primary-foreground px-1.5 py-0.5 text-xs text-primary">
-				{requestsQuery.data.count}
-			</span>
-		{/if}
-	</Button>
-	<Button
-		variant={requestStatusFilter === 'rejected' ? 'default' : 'outline'}
-		size="sm"
-		onclick={() => {
-			requestStatusFilter = 'rejected';
-			requestsPage = 1;
-		}}
-	>
-		{m['membershipRequestsTab.filterRejected']()}
-		{#if requestStatusFilter === 'rejected' && requestsQuery.data?.count}
-			<span class="ml-1.5 rounded-full bg-primary-foreground px-1.5 py-0.5 text-xs text-primary">
-				{requestsQuery.data.count}
-			</span>
-		{/if}
-	</Button>
-	<Button
-		variant={requestStatusFilter === 'all' ? 'default' : 'outline'}
-		size="sm"
-		onclick={() => {
-			requestStatusFilter = 'all';
-			requestsPage = 1;
-		}}
-	>
-		{m['membershipRequestsTab.filterAll']()}
-		{#if requestStatusFilter === 'all' && requestsQuery.data?.count}
-			<span class="ml-1.5 rounded-full bg-primary-foreground px-1.5 py-0.5 text-xs text-primary">
-				{requestsQuery.data.count}
-			</span>
-		{/if}
-	</Button>
+	{#each REQUEST_FILTERS as filter (filter.value)}
+		<Button
+			variant={requestStatusFilter === filter.value ? 'default' : 'outline'}
+			size="sm"
+			onclick={() => {
+				requestStatusFilter = filter.value;
+				requestsPage = 1;
+			}}
+		>
+			{filter.label()}
+			{#if requestStatusFilter === filter.value && requestsQuery.data?.count}
+				<span class="ml-1.5 rounded-full bg-primary-foreground px-1.5 py-0.5 text-xs text-primary">
+					{requestsQuery.data.count}
+				</span>
+			{/if}
+		</Button>
+	{/each}
 </div>
 
 {#if requestsQuery.isLoading}
