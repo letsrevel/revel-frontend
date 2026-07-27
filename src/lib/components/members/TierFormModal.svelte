@@ -125,7 +125,11 @@
 		if (!isOpen) onClose();
 	}}
 >
-	<DialogContent class="sm:max-w-[425px]">
+	<!-- Scrollable: the form (name, rich-text description, questionnaire and
+	     approval selects) is taller than a phone viewport, and the dialog is
+	     `position: fixed` — without its own scroll container the submit row sits
+	     below the fold with no way to reach it. -->
+	<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-[425px]">
 		<DialogHeader>
 			<DialogTitle>
 				{isEditing ? m['tierForm.editTitle']() : m['tierForm.createTitle']()}

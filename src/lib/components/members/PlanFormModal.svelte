@@ -127,7 +127,11 @@
 		if (!isOpen) onClose();
 	}}
 >
-	<DialogContent class="sm:max-w-md">
+	<!-- Scrollable: this form outgrew a phone viewport (payment method, capacity
+	     cap, sales pause), and the dialog is `position: fixed` — without its own
+	     scroll container the submit row sits below the fold with no way to reach
+	     it. -->
+	<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-md">
 		<DialogHeader>
 			<DialogTitle>
 				{plan
