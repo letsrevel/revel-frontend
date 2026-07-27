@@ -3446,7 +3446,8 @@
 					"new30d": "Nuovi (30 giorni)",
 					"churn30d": "Abbandoni (30 giorni)",
 					"mixedCurrency": "Valute multiple — MRR non disponibile",
-					"error": "Impossibile caricare le metriche degli abbonamenti."
+					"error": "Impossibile caricare le metriche degli abbonamenti.",
+					"statusBreakdown": "Per stato"
 				}
 			},
 			"grantsInfo": {

@@ -3446,7 +3446,8 @@
 					"new30d": "Neu (30 Tage)",
 					"churn30d": "Abgewandert (30 Tage)",
 					"mixedCurrency": "Mehrere Währungen — MRR nicht verfügbar",
-					"error": "Abonnement-Kennzahlen konnten nicht geladen werden."
+					"error": "Abonnement-Kennzahlen konnten nicht geladen werden.",
+					"statusBreakdown": "Nach Status"
 				}
 			},
 			"grantsInfo": {
