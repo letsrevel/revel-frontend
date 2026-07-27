@@ -20,6 +20,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import { formatDate } from '$lib/utils/date';
+	import { backendMessage } from '$lib/utils/api-error-detail';
 	import { Loader2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 
@@ -50,14 +51,6 @@
 		enabled: open
 	}));
 	const refundPolicy = $derived(orgQuery.data?.membership_refund_policy?.trim() || null);
-
-	function backendMessage(error: unknown): string | null {
-		if (!error || typeof error !== 'object') return null;
-		const body = error as { message?: unknown; detail?: unknown };
-		if (typeof body.message === 'string' && body.message) return body.message;
-		if (typeof body.detail === 'string' && body.detail) return body.detail;
-		return null;
-	}
 
 	const cancelMutation = createMutation(() => ({
 		mutationFn: async () => {

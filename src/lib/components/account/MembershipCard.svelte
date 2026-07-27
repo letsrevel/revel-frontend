@@ -15,6 +15,7 @@
 	import ChangePlanDialog from './subscription-actions/ChangePlanDialog.svelte';
 	import { formatPlanPrice, getDateLine, getMemberActions } from '$lib/utils/subscriptions';
 	import { formatDate } from '$lib/utils/date';
+	import { backendMessage } from '$lib/utils/api-error-detail';
 	import { Loader2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 
@@ -79,14 +80,6 @@
 			date: formatDate(periodEnd)
 		});
 	});
-
-	function backendMessage(error: unknown): string | null {
-		if (!error || typeof error !== 'object') return null;
-		const body = error as { message?: unknown; detail?: unknown };
-		if (typeof body.message === 'string' && body.message) return body.message;
-		if (typeof body.detail === 'string' && body.detail) return body.detail;
-		return null;
-	}
 
 	const portalMutation = createMutation(() => ({
 		mutationFn: async () => {

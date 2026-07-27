@@ -23,3 +23,19 @@ export function extractApiErrorDetail(error: unknown): string | null {
 	}
 	return null;
 }
+
+/**
+ * Extract a human-readable error string from a membership/subscription
+ * endpoint's error envelope. hey-api types these endpoints' errors as
+ * `unknown`, so the shape is probed: Ninja hard-blocks carry `message`,
+ * DRF-style payloads carry a string `detail`. Returns null when neither is
+ * present so callers can fall back to localized generic copy (house rule:
+ * fall back with `||`).
+ */
+export function backendMessage(error: unknown): string | null {
+	if (!error || typeof error !== 'object') return null;
+	const body = error as { message?: unknown; detail?: unknown };
+	if (typeof body.message === 'string' && body.message) return body.message;
+	if (typeof body.detail === 'string' && body.detail) return body.detail;
+	return null;
+}

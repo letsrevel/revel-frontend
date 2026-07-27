@@ -37,6 +37,7 @@
 	import ApplyDialog from '$lib/components/organization/membership/ApplyDialog.svelte';
 	import { formatDate } from '$lib/utils/date';
 	import { getImageUrl } from '$lib/utils/url';
+	import { backendMessage } from '$lib/utils/api-error-detail';
 	import { resolve } from '$app/paths';
 	import { Loader2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
@@ -159,20 +160,6 @@
 	// settled one gets the re-apply route instead, and `completed` neither.
 	const canCancel = $derived(isOpen);
 	const canReapply = $derived(app.status === 'rejected' || app.status === 'cancelled');
-
-	/**
-	 * Local by design: `backendMessage` is duplicated across the membership
-	 * dialogs, and lifting it into `$lib/utils` is a separate, wider change.
-	 * hey-api types this endpoint's error as `unknown`, so the shape is probed:
-	 * Ninja hard-blocks carry `message`, DRF-style payloads carry `detail`.
-	 */
-	function backendMessage(error: unknown): string | null {
-		if (!error || typeof error !== 'object') return null;
-		const body = error as { message?: unknown; detail?: unknown };
-		if (typeof body.message === 'string' && body.message) return body.message;
-		if (typeof body.detail === 'string' && body.detail) return body.detail;
-		return null;
-	}
 
 	const cancelMutation = createMutation(() => ({
 		mutationFn: async () => {
