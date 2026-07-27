@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.70.0] - 2026-07-27
+
+### Added
+
+- **Venue seating**: end-to-end reserved seating, from venue design to seated checkout and the box office.
+  - Interactive seat-map picker for buyers: a positional venue map with pan and zoom, per-seat prices, a price-category legend, a live estimated total, and full keyboard accessibility (roving focus grid). Also available to guests buying without an account.
+  - Selecting a seat places a short server-side hold, so two buyers can never claim the same seat; if someone else grabs it first, the conflict and its reason are shown immediately.
+  - Best-available tiers: buyers pick a price category and quantity, and the venue assigns the best remaining seats.
+  - **Venue designer** for organizers: draw sector blocks, place and rotate the stage, lay out rows and seats, and paint seats with price categories — with a coverage warning listing exactly which seats are still unpainted or unpriced. Buyers viewing a single sector see a stage-direction indicator.
+  - Per-seat-category pricing on ticket tiers: a category price editor in the tier form, server-resolved per-seat prices on the buyer map, and tickets recording the actual price paid.
+  - **Box office**: door sales, comps, reseating, and assigning or overriding seats at check-in, with attendee debt rolled up per order.
+- Organizers now get a notification when a refund cannot be matched to a ticket, with a link that opens the right place to resolve it.
+
+### Changed
+
+- Ticket tiers whose seats have different category prices now advertise their real minimum–maximum price range instead of a single misleading price.
+- The buyer seat map detects when the venue layout has changed and refreshes itself automatically.
+
+### Removed
+
+- The legacy `random` seat-assignment mode for seated events — seat selection is now always explicit (buyer-chosen seats with holds) or best-available by price category.
+
 ## [1.69.1] - 2026-07-17
 
 ### Fixed
