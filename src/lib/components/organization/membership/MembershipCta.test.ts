@@ -118,6 +118,22 @@ describe('MembershipCta', () => {
 		);
 	});
 
+	// The standalone eligibility GET reports a pending tier-less application as
+	// allowed with no next_step and no reason_code, carrying only application_id.
+	// Rendering Join here contradicted /account/memberships, which showed the same
+	// application as under review.
+	it('shows the pending state for an allowed verdict that carries a pending application', async () => {
+		mockEligibility(makeEligibility({ allowed: true, application_id: 'app-1' }));
+		renderCta();
+
+		expect(await screen.findByRole('button', { name: /application pending/i })).toBeDisabled();
+		expect(screen.getByRole('link', { name: /track your application/i })).toHaveAttribute(
+			'href',
+			'/account/memberships'
+		);
+		expect(screen.queryByRole('button', { name: /join acme/i })).not.toBeInTheDocument();
+	});
+
 	it('counts down to the retake date when the questionnaire is on cooldown', async () => {
 		mockEligibility(
 			makeEligibility({

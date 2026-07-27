@@ -48,6 +48,36 @@ describe('getMembershipCtaKind', () => {
 		expect(getMembershipCtaKind({ ...base, next_step: 'requires_invitation' })).toBe('info');
 		expect(getMembershipCtaKind({ ...base, reason_code: 'membership_paused' })).toBe('info');
 	});
+
+	// The standalone join-eligibility GET returns a pending tier-less application
+	// as allowed with no next_step and no reason_code — application_id is the only
+	// thing distinguishing "already applied, waiting" from "free to join". Getting
+	// this wrong put a Join CTA on the org page while the account hub tracked the
+	// very same application (live-verified in the PR③ smoke).
+	it('maps a silent allowed verdict carrying an application_id to waiting', () => {
+		expect(getMembershipCtaKind({ ...base, allowed: true, application_id: 'app-1' })).toBe(
+			'waiting'
+		);
+	});
+
+	it('still maps a silent allowed verdict with no application to join', () => {
+		expect(getMembershipCtaKind({ ...base, allowed: true, application_id: null })).toBe('join');
+	});
+
+	it('does not treat a denial carrying an application_id as waiting', () => {
+		expect(getMembershipCtaKind({ ...base, allowed: false, application_id: 'app-1' })).toBe('info');
+	});
+
+	it('lets an explicit next_step outrank the application_id heuristic', () => {
+		expect(
+			getMembershipCtaKind({
+				...base,
+				allowed: true,
+				application_id: 'app-1',
+				next_step: 'already_member'
+			})
+		).toBe('member');
+	});
 });
 
 describe('getMembershipStatusMessage', () => {

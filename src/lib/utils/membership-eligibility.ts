@@ -43,6 +43,13 @@ export function getMembershipCtaKind(e: MembershipEligibilitySchema): Membership
 		case 'proceed_to_payment':
 			return 'info';
 	}
+	// A pending tier-less application passes every gate: the verdict comes back
+	// allowed with no next_step and no reason_code — but it carries the
+	// application_id of the PENDING row. That is "wait", not "join": rendering a
+	// Join CTA here contradicts the account hub's tracking row for the same
+	// application (live-verified in the PR③ smoke). A silent allowed verdict
+	// WITHOUT an application_id is genuinely free to join.
+	if (e.allowed && !e.next_step && !e.reason_code && e.application_id) return 'waiting';
 	return e.allowed ? 'join' : 'info';
 }
 
@@ -123,6 +130,13 @@ export function getMembershipStatusMessage(e: MembershipEligibilitySchema): stri
  * for the organization (tier-less applications pass every gate yet stay
  * PENDING until staff assigns a tier on approval). Everything else defers to
  * getMembershipStatusMessage.
+ *
+ * This is the prose counterpart to the silent-pending branch in
+ * `getMembershipCtaKind`, but it deliberately does NOT also require
+ * `application_id`: callers render it only for a known-pending application, so
+ * the row's existence is already established by context. `getMembershipCtaKind`
+ * has no such context — it reads a standalone verdict — so there
+ * `application_id` is the only thing separating "waiting" from "free to join".
  */
 export function getApplicationPendingMessage(e: MembershipEligibilitySchema): string {
 	if (e.allowed && !e.next_step && !e.reason_code) {
