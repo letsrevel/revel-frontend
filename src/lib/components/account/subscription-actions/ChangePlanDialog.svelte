@@ -18,6 +18,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { classifyPlanChange, formatPlanPrice } from '$lib/utils/subscriptions';
 	import { formatDate } from '$lib/utils/date';
+	import { settleSubscriptionCaches } from '$lib/utils/subscription-cache';
 	import { backendMessage } from '$lib/utils/api-error-detail';
 	import { Loader2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
@@ -107,11 +108,12 @@
 			return { data: res.data, target };
 		},
 		onSuccess: ({ data, target }) => {
-			queryClient.invalidateQueries({ queryKey: ['me', 'memberships'] });
-			queryClient.invalidateQueries({ queryKey: ['me', 'subscriptions'] });
-			queryClient.invalidateQueries({
-				queryKey: ['me', 'org', sub.organization_id, 'subscription']
-			});
+			// Same write-back race as the cancel path: a downgrade is mirrored to a
+			// Stripe Subscription Schedule whose webhooks land after the 200, so the
+			// response body — the only snapshot that certainly carries the new
+			// `pending_plan_id` — is seeded and re-asserted around the refetch. See
+			// subscription-cache.ts (#693). Deliberately not awaited.
+			void settleSubscriptionCaches(queryClient, data);
 			if (classifyPlanChange(sub.plan, target) === 'upgrade') {
 				toast.success(m['changePlan.successUpgrade']());
 			} else if (data.current_period_end) {

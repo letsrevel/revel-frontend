@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
+import type { MyMembershipSchema, MySubscriptionSchema } from '$lib/api/generated/types.gen';
 import CancelSubscriptionDialog from './CancelSubscriptionDialog.svelte';
 
 const cancelMock = vi.hoisted(() => vi.fn());
@@ -37,10 +38,10 @@ const sub = {
 	}
 } as never;
 
-function renderDialog(props: Record<string, unknown> = {}) {
+function renderDialog(props: Record<string, unknown> = {}, client?: QueryClient) {
 	return render(QueryClientTestWrapper, {
 		props: {
-			client: new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+			client: client ?? new QueryClient({ defaultOptions: { queries: { retry: false } } }),
 			component: CancelSubscriptionDialog,
 			componentProps: { open: true, onOpenChange: vi.fn(), sub, ...props }
 		}
@@ -102,6 +103,47 @@ describe('CancelSubscriptionDialog', () => {
 	it('renders the refund policy fetched from the public org endpoint', async () => {
 		renderDialog();
 		expect(await screen.findByText(/no refunds after 14 days/i)).toBeInTheDocument();
+	});
+
+	// #693: the cancel 200 is the only snapshot guaranteed to describe what the
+	// member just asked for — Stripe's webhooks can make the backend contradict it
+	// moments later — so the dialog seeds it into every member-facing cache rather
+	// than trusting the refetch alone.
+	it('seeds the truthful response body into the member-facing caches', async () => {
+		const user = userEvent.setup();
+		const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+		const stale = { ...(sub as object), id: 'sub-1' } as MySubscriptionSchema;
+		const truthful: MySubscriptionSchema = { ...stale, cancel_at_period_end: true };
+		client.setQueryData(['me', 'memberships'], [
+			{
+				organization_id: 'o1',
+				organization_name: 'Org',
+				organization_slug: 'org',
+				member_since: '2026-01-01T00:00:00Z',
+				status: 'active',
+				subscription: stale
+			}
+		] satisfies MyMembershipSchema[]);
+		client.setQueryData(['me', 'subscriptions'], [stale]);
+		client.setQueryData(['me', 'org', 'o1', 'subscription'], stale);
+		cancelMock.mockResolvedValue({ data: truthful, error: undefined });
+
+		renderDialog({}, client);
+		await user.click(screen.getByRole('button', { name: /cancel membership/i }));
+
+		await waitFor(() => {
+			expect(
+				client.getQueryData<MyMembershipSchema[]>(['me', 'memberships'])?.[0].subscription
+					?.cancel_at_period_end
+			).toBe(true);
+		});
+		expect(
+			client.getQueryData<MySubscriptionSchema[]>(['me', 'subscriptions'])?.[0].cancel_at_period_end
+		).toBe(true);
+		expect(
+			client.getQueryData<MySubscriptionSchema>(['me', 'org', 'o1', 'subscription'])
+				?.cancel_at_period_end
+		).toBe(true);
 	});
 
 	it('surfaces a backend 400 detail inline', async () => {
