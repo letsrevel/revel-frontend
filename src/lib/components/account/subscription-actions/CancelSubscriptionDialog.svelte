@@ -20,6 +20,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import { formatDate } from '$lib/utils/date';
+	import { settleSubscriptionCaches } from '$lib/utils/subscription-cache';
 	import { backendMessage } from '$lib/utils/api-error-detail';
 	import { Loader2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
@@ -68,11 +69,13 @@
 			return res.data;
 		},
 		onSuccess: (data) => {
-			queryClient.invalidateQueries({ queryKey: ['me', 'memberships'] });
-			queryClient.invalidateQueries({ queryKey: ['me', 'subscriptions'] });
-			queryClient.invalidateQueries({
-				queryKey: ['me', 'org', sub.organization_id, 'subscription']
-			});
+			// The 200 body is the truthful post-cancel subscription; seeding it into
+			// the member-facing caches (and re-asserting it after the refetch) is what
+			// stops Stripe's schedule-release write-back from racing this mutation and
+			// leaving the card on "Next renewal" — see subscription-cache.ts (#693).
+			// Deliberately not awaited: the dialog has nothing left to say about the
+			// refetch, and holding the mutation open would only prolong the spinner.
+			void settleSubscriptionCaches(queryClient, data);
 			if (mode === 'immediate') {
 				toast.success(m['cancelSub.successImmediate']());
 			} else if (data.current_period_end) {

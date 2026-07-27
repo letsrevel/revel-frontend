@@ -5,6 +5,7 @@ import { QueryClient } from '@tanstack/svelte-query';
 import { toast } from 'svelte-sonner';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 import { formatDate } from '$lib/utils/date';
+import type { MyMembershipSchema, MySubscriptionSchema } from '$lib/api/generated/types.gen';
 import ChangePlanDialog from './ChangePlanDialog.svelte';
 
 const plansMock = vi.hoisted(() => vi.fn());
@@ -147,10 +148,10 @@ const sub = {
 	}
 } as never;
 
-function renderDialog(props: Record<string, unknown> = {}) {
+function renderDialog(props: Record<string, unknown> = {}, client?: QueryClient) {
 	return render(QueryClientTestWrapper, {
 		props: {
-			client: new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+			client: client ?? new QueryClient({ defaultOptions: { queries: { retry: false } } }),
 			component: ChangePlanDialog,
 			componentProps: { open: true, onOpenChange: vi.fn(), sub, ...props }
 		}
@@ -301,6 +302,52 @@ describe('ChangePlanDialog', () => {
 			)
 		);
 		await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
+	});
+
+	// #693, same bug class as the cancel path: a downgrade is mirrored to a Stripe
+	// Subscription Schedule whose webhooks land after the 200, so the response body
+	// — the only snapshot that certainly carries the new `pending_plan_id` — is what
+	// the caches are seeded with.
+	it('seeds the truthful response body into the member-facing caches', async () => {
+		const user = userEvent.setup();
+		const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+		const stale = {
+			...(sub as object),
+			id: 'sub-1',
+			pending_plan_id: null
+		} as MySubscriptionSchema;
+		const truthful: MySubscriptionSchema = { ...stale, pending_plan_id: 'p2' };
+		client.setQueryData(['me', 'memberships'], [
+			{
+				organization_id: 'o1',
+				organization_name: 'Org',
+				organization_slug: 'org',
+				member_since: '2026-01-01T00:00:00Z',
+				status: 'active',
+				subscription: stale
+			}
+		] satisfies MyMembershipSchema[]);
+		client.setQueryData(['me', 'subscriptions'], [stale]);
+		client.setQueryData(['me', 'org', 'o1', 'subscription'], stale);
+		changeMock.mockResolvedValue({ data: truthful, error: undefined });
+
+		renderDialog({}, client);
+		await user.click(await screen.findByRole('radio', { name: /Yearly/ }));
+		await user.click(screen.getByRole('button', { name: /switch plan/i }));
+
+		await waitFor(() => {
+			expect(
+				client.getQueryData<MyMembershipSchema[]>(['me', 'memberships'])?.[0].subscription
+					?.pending_plan_id
+			).toBe('p2');
+		});
+		expect(
+			client.getQueryData<MySubscriptionSchema[]>(['me', 'subscriptions'])?.[0].pending_plan_id
+		).toBe('p2');
+		expect(
+			client.getQueryData<MySubscriptionSchema>(['me', 'org', 'o1', 'subscription'])
+				?.pending_plan_id
+		).toBe('p2');
 	});
 
 	it('shows the empty state when no candidates exist', async () => {

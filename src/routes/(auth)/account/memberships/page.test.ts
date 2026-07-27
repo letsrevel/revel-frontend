@@ -1,7 +1,9 @@
 import { render, screen, waitFor, within } from '@testing-library/svelte';
+import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
+import { formatDate } from '$lib/utils/date';
 import Page from './+page.svelte';
 import type { MyMembershipSchema, MySubscriptionSchema } from '$lib/api/generated/types.gen';
 
@@ -9,6 +11,8 @@ const listMembershipsMock = vi.hoisted(() => vi.fn());
 const listSubscriptionsMock = vi.hoisted(() => vi.fn());
 const listApplicationsMock = vi.hoisted(() => vi.fn());
 const getApplicationMock = vi.hoisted(() => vi.fn());
+const cancelSubscriptionMock = vi.hoisted(() => vi.fn());
+const getOrganizationMock = vi.hoisted(() => vi.fn());
 // The factory replaces the whole module, so every operation the page tree
 // imports — including the ones it only reaches transitively through the cards,
 // their dialogs and the application rows — has to exist here or the import
@@ -19,12 +23,12 @@ vi.mock('$lib/api/generated/sdk.gen', () => ({
 	memembershipapplicationsListApplications: listApplicationsMock,
 	memembershipapplicationsGetApplication: getApplicationMock,
 	mesubscriptionsCreateBillingPortalSession: vi.fn(),
-	mesubscriptionsCancelSubscription: vi.fn(),
+	mesubscriptionsCancelSubscription: cancelSubscriptionMock,
 	mesubscriptionsChangePlan: vi.fn(),
 	mesubscriptionsReviveSubscription: vi.fn(),
 	mesubscriptionsGetMySubscription: vi.fn(),
 	organizationListMembershipPlans: vi.fn(),
-	organizationGetOrganization: vi.fn(),
+	organizationGetOrganization: getOrganizationMock,
 	memembershipapplicationsCancel: vi.fn(),
 	memembershipapplicationsApply: vi.fn()
 }));
@@ -122,6 +126,10 @@ describe('Account memberships page', () => {
 	beforeEach(() => {
 		listMembershipsMock.mockReset();
 		listSubscriptionsMock.mockReset();
+		cancelSubscriptionMock.mockReset();
+		getOrganizationMock
+			.mockReset()
+			.mockResolvedValue({ data: { membership_refund_policy: null }, error: undefined });
 		listApplicationsMock.mockReset().mockResolvedValue(page([]));
 		// Rows advance themselves on read; keep that inert so it never interferes.
 		getApplicationMock.mockReset().mockImplementation(
@@ -314,6 +322,74 @@ describe('Account memberships page', () => {
 
 			await screen.findByRole('article', { name: 'Acme' });
 			expect(rejoinOffers()).toHaveLength(0);
+		});
+	});
+
+	describe('cancel-at-period-end write-back race (#693)', () => {
+		const PERIOD_END = '2026-08-01T00:00:00Z';
+
+		/** A live, renewing membership — and the row the backend keeps serving. */
+		const LIVE = makeSub({
+			id: 'sub-live',
+			status: 'active',
+			cancel_at_period_end: false,
+			current_period_end: PERIOD_END,
+			expired_at: null,
+			revival_deadline: null
+		});
+
+		/** What the cancel endpoint answers with: renewal is off. */
+		const CANCELLED_AT_PERIOD_END: MySubscriptionSchema = {
+			...LIVE,
+			cancel_at_period_end: true,
+			cancelled_at: '2026-07-27T10:00:00Z'
+		};
+
+		function liveRow() {
+			return page([makeMembership({ status: 'active', subscription: LIVE })]);
+		}
+
+		/**
+		 * The regression: the cancel 200 is truthful, but Stripe's schedule-release
+		 * webhook writes `cancel_at_period_end: false` back onto the row ~40ms later,
+		 * so the refetch the mutation triggers can answer with a subscription that
+		 * contradicts what the member was just told. Nothing re-polls, so before the
+		 * fix the card sat on "Next renewal" until a full reload.
+		 *
+		 * `listMembershipsMock` therefore serves the *stale* row for every call,
+		 * including the post-cancel refetch — the worst case, and the one that pins
+		 * the behaviour: the response body has to be the last writer.
+		 */
+		it('leaves the card on "Cancels on …" when the post-cancel refetch is stale', async () => {
+			const user = userEvent.setup();
+			listMembershipsMock.mockResolvedValue(liveRow());
+			listSubscriptionsMock.mockResolvedValue(page([]));
+			cancelSubscriptionMock.mockResolvedValue({
+				data: CANCELLED_AT_PERIOD_END,
+				error: undefined
+			});
+			renderPage();
+
+			const card = await screen.findByRole('article', { name: 'Acme' });
+			expect(within(card).getByText(`Next renewal: ${formatDate(PERIOD_END)}`)).toBeInTheDocument();
+
+			await user.click(within(card).getByRole('button', { name: 'Cancel membership' }));
+			const dialog = await screen.findByRole('dialog');
+			await user.click(within(dialog).getByRole('button', { name: 'Cancel membership' }));
+
+			await waitFor(() => expect(cancelSubscriptionMock).toHaveBeenCalledTimes(1));
+			// Assert only once the stale refetch has actually landed — asserting
+			// earlier would pass on the optimistic seed alone and would not notice
+			// the refetch overwriting it.
+			await waitFor(() => expect(listMembershipsMock).toHaveBeenCalledTimes(2));
+			await waitFor(() =>
+				expect(queryClient.getQueryState(['me', 'memberships'])?.fetchStatus).toBe('idle')
+			);
+
+			expect(screen.getByText(`Cancels on ${formatDate(PERIOD_END)}`)).toBeInTheDocument();
+			expect(screen.queryByText(/next renewal/i)).toBeNull();
+			// The whole point of the line: the member is told renewal is off.
+			expect(screen.getByText(/renewal is off/i)).toBeInTheDocument();
 		});
 	});
 });

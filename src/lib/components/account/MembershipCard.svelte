@@ -226,8 +226,9 @@
 
 <!--
 	Deliberately outside the status chain and the action row above: both dialogs
-	invalidate `['me', 'memberships']` on success, so the card they were launched
-	from re-renders with a subscription that no longer offers that action.
+	rewrite `['me', 'memberships']` on success (`settleSubscriptionCaches`), so the
+	card they were launched from re-renders with a subscription that no longer
+	offers that action.
 	Rendered inside, the open dialog would be destroyed mid-read — an unannounced
 	context change that drops focus to <body> (WCAG 3.2). Each is gated only on
 	its own `open` state, which nothing outside this file can set. The remaining
