@@ -43,22 +43,12 @@ export function getMembershipCtaKind(e: MembershipEligibilitySchema): Membership
 		case 'proceed_to_payment':
 			return 'info';
 	}
-	// DORMANT FORWARD CONTRACT — does not fire today.
-	//
-	// A pending tier-less application passes every gate, so its verdict comes
-	// back allowed with no next_step and no reason_code. When such a verdict also
-	// carries the application_id of the PENDING row, that is "wait", not "join".
-	//
-	// Today the standalone GET join-eligibility endpoint does NOT attach
-	// application_id to an allowed verdict — the backend injects it only on the
-	// apply and get-application responses (me_applications.py:124-125,152) — so
-	// this branch is unreachable from the org page, and the live org-CTA/account-hub
-	// contradiction it addresses is still reproducible. That is tracked as BE #788.
-	// When #788 lands (attaching application_id, or an explicit next_step, to the
-	// join-eligibility verdict) this branch activates with no further FE change.
-	//
-	// A silent allowed verdict WITHOUT an application_id is genuinely free to join.
-	if (e.allowed && !e.next_step && !e.reason_code && e.application_id) return 'waiting';
+	// No next_step: `allowed` decides. Since BE #788 a pending tier-less
+	// application arrives with an explicit `wait_for_approval`, so it is caught by
+	// the switch above and never reaches here; an allowed verdict with no
+	// next_step means the user really can apply (e.g. approval-required orgs with
+	// no application on file, which carry reason_code `requires_approval` as
+	// policy context, not as a blocker).
 	return e.allowed ? 'join' : 'info';
 }
 
@@ -94,8 +84,12 @@ const REASON_MESSAGES: Partial<Record<MembershipReasonCode, () => string>> = {
 };
 
 /**
- * Copy for in-flight verdicts that carry no reason_code (e.g. a tier-less
- * PENDING application). Consulted after REASON_MESSAGES, before backend prose.
+ * First-person copy for in-flight verdicts, keyed on the `wait_*` next steps.
+ *
+ * Live since BE #787/#788: a pending tier-less application arrives as
+ * `wait_for_approval` + `requires_approval`. Consulted BEFORE REASON_MESSAGES —
+ * see `getMembershipStatusMessage` for why the wait copy outranks the reason
+ * copy whenever both are present.
  */
 const WAIT_STEP_MESSAGES: Partial<Record<MembershipNextStep, () => string>> = {
 	wait_for_questionnaire_evaluation: () =>
@@ -107,10 +101,23 @@ const WAIT_STEP_MESSAGES: Partial<Record<MembershipNextStep, () => string>> = {
 /**
  * Human-readable, localized explanation of a membership eligibility verdict.
  *
- * Resolution order: the invite-link pair (see below) → mapped `reason_code` →
- * the `wait_*` next-step map → the backend-supplied `reason` prose → a generic
- * localized fallback. The FE-localized wait copy beats backend prose because the
+ * Resolution order: the invite-link pair (see below) → the `wait_*` next-step
+ * map → mapped `reason_code` → the backend-supplied `reason` prose → a generic
+ * localized fallback. The FE-localized copy beats backend prose because the
  * backend renders it in its own locale.
+ *
+ * The wait map outranks the reason map because a `wait_*` step describes THIS
+ * user's in-flight state while the paired reason code states the org's standing
+ * policy — and the policy line reads wrong on a pending row. Since BE #787/#788
+ * a pending tier-less application is `wait_for_approval` + `requires_approval`:
+ * "Your application is with the organization for review" is right,
+ * "Membership requests are approved by the organization" is not. The same holds
+ * for the other two pairings (`wait_for_questionnaire_evaluation` vs
+ * `membership_questionnaire_pending`, `wait_for_whitelist_approval` vs
+ * `whitelist_pending`), where the wait copy is likewise first-person and more
+ * informative. `wait_to_retake_questionnaire` is deliberately absent from the
+ * wait map, so it still reaches `membership_questionnaire_retake_cooldown` and
+ * keeps its dated copy.
  *
  * `next_step === 'requires_invitation'` is NOT a blanket override. The backend
  * emits it only alongside `reason_code` `requires_verification` or
@@ -125,27 +132,24 @@ export function getMembershipStatusMessage(e: MembershipEligibilitySchema): stri
 	if (invitesOnly) {
 		return m['membershipEligibility.reason.requires_invitation']();
 	}
-	const mapped = e.reason_code ? REASON_MESSAGES[e.reason_code] : undefined;
-	if (mapped) return mapped();
 	const waiting = e.next_step ? WAIT_STEP_MESSAGES[e.next_step] : undefined;
 	if (waiting) return waiting();
+	const mapped = e.reason_code ? REASON_MESSAGES[e.reason_code] : undefined;
+	if (mapped) return mapped();
 	if (e.reason) return e.reason;
 	return m['membershipEligibility.reason.generic']();
 }
 
 /**
- * Copy for the "application received" panel and application rows: a verdict
- * that is allowed but carries no explanation is a PENDING application waiting
- * for the organization (tier-less applications pass every gate yet stay
- * PENDING until staff assigns a tier on approval). Everything else defers to
- * getMembershipStatusMessage.
+ * Copy for the "application received" panel and application rows.
  *
- * This is the prose counterpart to the silent-pending branch in
- * `getMembershipCtaKind`, but it deliberately does NOT also require
- * `application_id`: callers render it only for a known-pending application, so
- * the row's existence is already established by context. `getMembershipCtaKind`
- * has no such context — it reads a standalone verdict — so there
- * `application_id` is the only thing separating "waiting" from "free to join".
+ * Since BE #788 a pending application always arrives with an explicit
+ * `wait_for_approval`, which `getMembershipStatusMessage` resolves to the same
+ * wait copy — so the allowed-and-silent special case below is DEFENSIVE ONLY.
+ * It is kept because these two call sites render for a known-pending row, where
+ * a silent verdict can only mean "waiting", and falling through to the generic
+ * "You can't join right now." would be actively wrong. Everything else defers
+ * to getMembershipStatusMessage.
  */
 export function getApplicationPendingMessage(e: MembershipEligibilitySchema): string {
 	if (e.allowed && !e.next_step && !e.reason_code) {

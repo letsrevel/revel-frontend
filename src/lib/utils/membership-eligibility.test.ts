@@ -49,35 +49,26 @@ describe('getMembershipCtaKind', () => {
 		expect(getMembershipCtaKind({ ...base, reason_code: 'membership_paused' })).toBe('info');
 	});
 
-	// Forward contract, dormant today. A pending tier-less application yields an
-	// allowed verdict with no next_step and no reason_code; application_id is the
-	// only thing that could distinguish "already applied, waiting" from "free to
-	// join". The standalone join-eligibility endpoint does not attach it yet
-	// (backend only does so on apply/get-application), so these pin the behaviour
-	// for when BE #788 lands rather than describing what the org page does today.
-	it('treats a silent allowed verdict as waiting once the backend attaches application_id (#788)', () => {
-		expect(getMembershipCtaKind({ ...base, allowed: true, application_id: 'app-1' })).toBe(
-			'waiting'
-		);
-	});
-
-	it('still maps a silent allowed verdict with no application to join — the shape the endpoint returns today', () => {
-		expect(getMembershipCtaKind({ ...base, allowed: true, application_id: null })).toBe('join');
-	});
-
-	it('would not treat a denial carrying an application_id as waiting', () => {
-		expect(getMembershipCtaKind({ ...base, allowed: false, application_id: 'app-1' })).toBe('info');
-	});
-
-	it('lets an explicit next_step outrank the application_id branch', () => {
+	// The two verdict shapes BE #786-788 emit for approval-gated orgs, pinned
+	// field-for-field as the backend sends them. Both are `allowed: true`, so the
+	// only thing separating "already applied" from "may apply" is next_step —
+	// which is exactly why the FE must not key this off `allowed` alone.
+	it('maps the pending tier-less application shape to waiting', () => {
 		expect(
 			getMembershipCtaKind({
 				...base,
 				allowed: true,
-				application_id: 'app-1',
-				next_step: 'already_member'
+				next_step: 'wait_for_approval',
+				reason_code: 'requires_approval',
+				application_id: 'app-1'
 			})
-		).toBe('member');
+		).toBe('waiting');
+	});
+
+	it('maps the approval-required-but-no-application shape to join', () => {
+		expect(getMembershipCtaKind({ ...base, allowed: true, reason_code: 'requires_approval' })).toBe(
+			'join'
+		);
 	});
 });
 
@@ -157,13 +148,41 @@ describe('wait_* next-step messages', () => {
 		expect(msg).toBe(m['membershipEligibility.wait.questionnaire_evaluation']());
 	});
 
-	it('a mapped reason_code still wins over the wait-step map', () => {
+	// Reversed deliberately (BE #787/#788): a wait_* step describes this user's
+	// in-flight state, while the paired reason code states the org's standing
+	// policy — and the policy line reads wrong on a pending row.
+	it('lets the wait-step map outrank a mapped reason_code', () => {
 		const msg = getMembershipStatusMessage({
 			...base,
 			next_step: 'wait_for_questionnaire_evaluation',
 			reason_code: 'membership_questionnaire_pending'
 		});
-		expect(msg).toBe(m['membershipEligibility.reason.membership_questionnaire_pending']());
+		expect(msg).toBe(m['membershipEligibility.wait.questionnaire_evaluation']());
+		expect(msg).not.toBe(m['membershipEligibility.reason.membership_questionnaire_pending']());
+	});
+
+	it('describes the pending tier-less application, not the approval policy', () => {
+		const msg = getMembershipStatusMessage({
+			...base,
+			allowed: true,
+			next_step: 'wait_for_approval',
+			reason_code: 'requires_approval',
+			application_id: 'app-1'
+		});
+		expect(msg).toBe(m['membershipEligibility.wait.approval']());
+		expect(msg).not.toBe(m['membershipEligibility.reason.requires_approval']());
+	});
+
+	// wait_to_retake_questionnaire is absent from the wait map, so the reorder
+	// must not cost it its dated cooldown copy.
+	it('keeps the dated cooldown copy for the retake step', () => {
+		const msg = getMembershipStatusMessage({
+			...base,
+			next_step: 'wait_to_retake_questionnaire',
+			reason_code: 'membership_questionnaire_retake_cooldown',
+			retry_on: '2026-08-01T00:00:00Z'
+		});
+		expect(msg).toBe(m['membershipEligibility.reason.membership_questionnaire_retake_cooldown']());
 	});
 
 	it('leaves next steps outside the wait map on the backend-prose path', () => {
@@ -173,10 +192,11 @@ describe('wait_* next-step messages', () => {
 	});
 });
 
-// A tier-less application passes every gate, so check_eligibility falls through
-// to `allowed=True` with no next_step/reason_code/reason (membership_manager/
-// service.py). The row still stays PENDING because staff assign the tier on
-// approval — so this verdict must not read as a denial.
+// Since BE #788 a pending application carries an explicit wait_for_approval, so
+// getMembershipStatusMessage already resolves it to the wait copy. The
+// allowed-and-silent case below is defensive only: these call sites render for a
+// known-pending row, where falling through to "You can't join right now." would
+// be actively wrong.
 describe('getApplicationPendingMessage', () => {
 	it('reads a tier-less allowed-but-silent verdict as an application awaiting approval', () => {
 		const msg = getApplicationPendingMessage({

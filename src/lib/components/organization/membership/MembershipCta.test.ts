@@ -118,12 +118,19 @@ describe('MembershipCta', () => {
 		);
 	});
 
-	// Forward contract, dormant today: the standalone eligibility GET does not yet
-	// attach application_id to an allowed verdict (BE #788), so the org page still
-	// shows Join for a pending tier-less application while /account/memberships
-	// shows it under review. This pins the rendering for when #788 lands.
-	it('shows the pending state once an allowed verdict carries a pending application (#788)', async () => {
-		mockEligibility(makeEligibility({ allowed: true, application_id: 'app-1' }));
+	// Since BE #786-788 a pending tier-less application comes back allowed with an
+	// explicit wait_for_approval. Keying the CTA off `allowed` alone would put a
+	// Join button here while /account/memberships shows the same application under
+	// review — the contradiction smoke item 12 caught.
+	it('shows the pending state for an allowed verdict that is waiting for approval', async () => {
+		mockEligibility(
+			makeEligibility({
+				allowed: true,
+				next_step: 'wait_for_approval',
+				reason_code: 'requires_approval',
+				application_id: 'app-1'
+			})
+		);
 		renderCta();
 
 		expect(await screen.findByRole('button', { name: /application pending/i })).toBeDisabled();
@@ -132,6 +139,15 @@ describe('MembershipCta', () => {
 			'/account/memberships'
 		);
 		expect(screen.queryByRole('button', { name: /join acme/i })).not.toBeInTheDocument();
+	});
+
+	// The mirror shape: approval-gated org, no application on file. `requires_approval`
+	// is policy context here, not a blocker — the user must still be able to apply.
+	it('still offers join when approval is required but no application exists yet', async () => {
+		mockEligibility(makeEligibility({ allowed: true, reason_code: 'requires_approval' }));
+		renderCta();
+
+		expect(await screen.findByRole('button', { name: /join acme/i })).toBeInTheDocument();
 	});
 
 	it('counts down to the retake date when the questionnaire is on cooldown', async () => {

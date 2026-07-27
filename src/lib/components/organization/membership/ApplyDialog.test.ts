@@ -210,9 +210,14 @@ describe('ApplyDialog', () => {
 		await user.click(screen.getByRole('button', { name: /send application/i }));
 
 		expect(await screen.findByText('Application received')).toBeInTheDocument();
+		// The wait copy, not the `requires_approval` policy line — this panel is
+		// about THIS application, which has just been received.
 		expect(
-			screen.getByText(/membership requests are approved by the organization/i)
+			screen.getByText(/your application is with the organization for review/i)
 		).toBeInTheDocument();
+		expect(
+			screen.queryByText(/membership requests are approved by the organization/i)
+		).not.toBeInTheDocument();
 		expect(screen.getByRole('link', { name: /track your application/i })).toHaveAttribute(
 			'href',
 			'/account/memberships'
