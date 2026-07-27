@@ -3,6 +3,7 @@
 	import { createMutation, createQuery } from '@tanstack/svelte-query';
 	import {
 		mesubscriptionsCreateBillingPortalSession,
+		mesubscriptionsSubscribe,
 		organizationListMembershipPlans
 	} from '$lib/api/generated/sdk.gen';
 	import type { MyMembershipSchema } from '$lib/api/generated/types.gen';
@@ -36,8 +37,11 @@
 	let cancelOpen = $state(false);
 	let changePlanOpen = $state(false);
 	// Set on success and never cleared: the browser is on its way to Stripe, so
-	// the button must stay in its loading state until the page is replaced.
+	// the button must stay in its loading state until the page is replaced. One
+	// latch per destination — the portal and the resumed Checkout are different
+	// buttons on different statuses.
 	let redirecting = $state(false);
+	let resuming = $state(false);
 
 	function fmtDate(d: string | null | undefined): string {
 		return d ? formatDate(d) : '—';
@@ -115,6 +119,45 @@
 		const pending = portalMutation.isPending;
 		const goingToPortal = redirecting;
 		return pending || goingToPortal;
+	});
+
+	/**
+	 * #694 — walk a PENDING row back to its abandoned hosted Checkout. Subscribing
+	 * again with the row's OWN plan is the resume: the backend's
+	 * `_maybe_resume_pending_checkout` recognises the open session for that plan
+	 * and hands the same URL back instead of opening a second one. Same mechanism
+	 * CheckoutReturnCard uses on the org page.
+	 */
+	const resumeMutation = createMutation(() => ({
+		mutationFn: async () => {
+			const current = sub;
+			if (!current) throw new Error(m['subscriptions.actions.resumeError']());
+			const res = await mesubscriptionsSubscribe({
+				path: { org_id: current.organization_id },
+				body: { plan_id: current.plan_id },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+			if (res.error || !res.data) {
+				throw new Error(backendMessage(res.error) || m['subscriptions.actions.resumeError']());
+			}
+			return res.data;
+		},
+		onSuccess: (data) => {
+			resuming = true;
+			// Hosted Stripe Checkout is another origin: a real document navigation.
+			window.location.href = data.checkout_url;
+		},
+		onError: (err: Error) => {
+			toast.error(err.message || m['subscriptions.actions.resumeError']());
+		}
+	}));
+
+	// Same unconditional read as `portalBusy`, and latched for the same reason:
+	// the document is on its way to Stripe.
+	const resumeBusy = $derived.by(() => {
+		const pending = resumeMutation.isPending;
+		const goingToStripe = resuming;
+		return pending || goingToStripe;
 	});
 </script>
 
@@ -207,6 +250,19 @@
 							<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
 						{/if}
 						{m['subscriptions.actions.manageBilling']()}
+					</Button>
+				{/if}
+				{#if actions?.resumePayment}
+					<Button
+						size="sm"
+						onclick={() => resumeMutation.mutate()}
+						disabled={resumeBusy}
+						aria-busy={resumeBusy}
+					>
+						{#if resumeBusy}
+							<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+						{/if}
+						{m['subscriptions.actions.resumePayment']()}
 					</Button>
 				{/if}
 				{#if actions?.changePlan}

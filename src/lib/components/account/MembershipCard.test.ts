@@ -15,13 +15,18 @@ import { formatDate } from '$lib/utils/date';
 // they import has to exist on the mocked module or the import itself throws.
 const portalMock = vi.hoisted(() => vi.fn());
 const plansMock = vi.hoisted(() => vi.fn());
+const subscribeMock = vi.hoisted(() => vi.fn());
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	mesubscriptionsCreateBillingPortalSession: portalMock,
 	organizationListMembershipPlans: plansMock,
+	mesubscriptionsSubscribe: subscribeMock,
 	mesubscriptionsCancelSubscription: vi.fn(),
 	mesubscriptionsChangePlan: vi.fn(),
 	organizationGetOrganization: vi.fn()
 }));
+
+const toastErrorMock = vi.hoisted(() => vi.fn());
+vi.mock('svelte-sonner', () => ({ toast: { error: toastErrorMock, success: vi.fn() } }));
 
 vi.mock('$lib/stores/auth.svelte', () => ({ authStore: { accessToken: 'test-token' } }));
 
@@ -236,6 +241,62 @@ describe('MembershipCard', () => {
 			expect(screen.getByRole('button', { name: /manage billing/i })).toBeVisible()
 		);
 		expect(plansMock).not.toHaveBeenCalled();
+	});
+
+	// #694 — an abandoned Checkout leaves the row PENDING; without this action the
+	// card is a dead end (no path back to the still-open Stripe session).
+	it('resumes an abandoned checkout from a pending online subscription', async () => {
+		const user = userEvent.setup();
+		subscribeMock.mockResolvedValue({
+			data: {
+				subscription: makeSub({ status: 'pending' }),
+				checkout_url: 'https://stripe.test/cs'
+			},
+			error: undefined
+		});
+		renderCard(makeMembership(makeSub({ status: 'pending' })));
+
+		await user.click(screen.getByRole('button', { name: /resume payment/i }));
+
+		// The row's OWN plan: the backend hands back the still-open session for the
+		// same plan (`_maybe_resume_pending_checkout`).
+		await waitFor(() =>
+			expect(subscribeMock).toHaveBeenCalledWith(
+				expect.objectContaining({ path: { org_id: 'org-1' }, body: { plan_id: 'p1' } })
+			)
+		);
+		await waitFor(() => expect(window.location.href).toBe('https://stripe.test/cs'));
+		// Latched: the document is on its way out, so the CTA must not invite a
+		// second click.
+		await waitFor(() =>
+			expect(screen.getByRole('button', { name: /resume payment/i })).toBeDisabled()
+		);
+	});
+
+	it('toasts the backend detail when the resume fails and stays on the page', async () => {
+		const user = userEvent.setup();
+		subscribeMock.mockResolvedValue({
+			data: undefined,
+			error: { detail: 'That checkout session has expired.' }
+		});
+		renderCard(makeMembership(makeSub({ status: 'pending' })));
+
+		await user.click(screen.getByRole('button', { name: /resume payment/i }));
+
+		await waitFor(() =>
+			expect(toastErrorMock).toHaveBeenCalledWith('That checkout session has expired.')
+		);
+		expect(window.location.href).toBe(PAGE_URL);
+	});
+
+	// Staff record these payments by hand — there is no Checkout session to resume.
+	it('offers no resume on a pending offline subscription', () => {
+		renderCard(makeMembership(makeOfflineSub({ status: 'pending' })));
+
+		expect(screen.queryByRole('button', { name: /resume payment/i })).toBeNull();
+		expect(
+			screen.getByText('Managed by Test Org — contact them to make changes.')
+		).toBeInTheDocument();
 	});
 
 	it('still shows the plain member-since line when there is no subscription', () => {

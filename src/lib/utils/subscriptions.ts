@@ -130,13 +130,15 @@ export interface MemberActionSet {
 	changePlan: boolean;
 	cancel: boolean;
 	revive: boolean;
+	resumePayment: boolean;
 }
 
 const NO_MEMBER_ACTIONS: MemberActionSet = {
 	manageBilling: false,
 	changePlan: false,
 	cancel: false,
-	revive: false
+	revive: false,
+	resumePayment: false
 };
 
 /** Strictly before the deadline; only an `expired` row can be revived. */
@@ -162,13 +164,25 @@ export function getMemberActions(
 	switch (sub.status) {
 		case 'active':
 			if (sub.cancel_at_period_end) return { ...NO_MEMBER_ACTIONS, manageBilling: true };
-			return { manageBilling: true, changePlan: !sub.pending_plan_id, cancel: true, revive: false };
+			return {
+				...NO_MEMBER_ACTIONS,
+				manageBilling: true,
+				changePlan: !sub.pending_plan_id,
+				cancel: true
+			};
 		case 'past_due':
 			// Deliberately stricter than the BE preflight, which would accept a change-plan
 			// here: settle the failed payment in the portal first, then switch plans.
 			return { ...NO_MEMBER_ACTIONS, manageBilling: true, cancel: true };
 		case 'expired':
 			return { ...NO_MEMBER_ACTIONS, revive: isWithinRevivalWindow(sub, now) };
+		case 'pending':
+			// The row an abandoned hosted Checkout left behind — whether it came from
+			// the subscribe path or from a revival (which flips the row PENDING before
+			// payment). Re-POSTing subscribe with this row's own plan hands back the
+			// still-open session (`_maybe_resume_pending_checkout`), so the card is a
+			// way back to Stripe instead of a dead end (#694).
+			return { ...NO_MEMBER_ACTIONS, resumePayment: true };
 		default:
 			return NO_MEMBER_ACTIONS;
 	}

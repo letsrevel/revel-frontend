@@ -6496,7 +6496,9 @@
 			"manageBilling": "Gérer la facturation",
 			"changePlan": "Changer de formule",
 			"cancel": "Résilier l'adhésion",
-			"portalError": "Impossible d'ouvrir le portail de facturation. Réessaie."
+			"resumePayment": "Reprendre le paiement",
+			"portalError": "Impossible d'ouvrir le portail de facturation. Réessaie.",
+			"resumeError": "Impossible de reprendre le paiement. Réessaie."
 		},
 		"cancelScheduledHint": "Le renouvellement est désactivé. Pour conserver ton adhésion, contacte l'organisation.",
 		"rejoin": {

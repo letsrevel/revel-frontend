@@ -6525,7 +6525,9 @@
 			"manageBilling": "Manage billing",
 			"changePlan": "Change plan",
 			"cancel": "Cancel membership",
-			"portalError": "Could not open the billing portal. Please try again."
+			"resumePayment": "Resume payment",
+			"portalError": "Could not open the billing portal. Please try again.",
+			"resumeError": "Could not resume the payment. Please try again."
 		},
 		"cancelScheduledHint": "Renewal is off. To keep your membership, contact the organization.",
 		"rejoin": {
