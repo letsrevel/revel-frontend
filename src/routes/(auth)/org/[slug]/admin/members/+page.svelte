@@ -6,7 +6,8 @@
 	import {
 		organizationadminmembersListMembers,
 		organizationadminmembersListStaff,
-		organizationadminmembersListMembershipTiers
+		organizationadminmembersListMembershipTiers,
+		questionnaireListOrgQuestionnaires
 	} from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Tabs, TabsList, TabsTrigger, TabsContent } from '$lib/components/ui/tabs';
@@ -41,7 +42,24 @@
 	const canManageSubscriptions = $derived(!!data.canManageSubscriptions);
 
 	// Active tab state
-	let activeTab = $state(data.canManageMembers ? 'members' : 'subscriptions');
+	const MEMBER_TABS = ['members', 'staff', 'requests', 'tiers', 'tokens'] as const;
+
+	// Initial-only read (no effect syncing): deep links from the retired
+	// standalone requests page land on ?tab=requests. Permission-validated so a
+	// subscriptions-only staffer can't be dropped on a tab that fires 403 queries.
+	function initialTab(): string {
+		const requested = $page.url.searchParams.get('tab');
+		if (requested === 'subscriptions' && data.canManageSubscriptions) return 'subscriptions';
+		if (
+			requested &&
+			data.canManageMembers &&
+			(MEMBER_TABS as readonly string[]).includes(requested)
+		) {
+			return requested;
+		}
+		return data.canManageMembers ? 'members' : 'subscriptions';
+	}
+	let activeTab = $state(initialTab());
 
 	// Create token modal state (shared between header button and tokens tab)
 	let isCreateTokenModalOpen = $state(false);
@@ -102,10 +120,32 @@
 		enabled: !!accessToken && canManageMembers
 	}));
 
+	// Options for the tier-level questionnaire override (value = OrganizationQuestionnaire id).
+	// The endpoint has no type filter, so narrow to MEMBERSHIP client-side.
+	const questionnairesQuery = createQuery(() => ({
+		queryKey: ['organization', organization.slug, 'membership-questionnaires'],
+		queryFn: async () => {
+			const response = await questionnaireListOrgQuestionnaires({
+				query: { organization_id: organization.id, page_size: 100 },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+
+			if (response.error) {
+				throw new Error('Failed to fetch questionnaires');
+			}
+
+			return response.data;
+		},
+		enabled: !!accessToken && canManageMembers
+	}));
+
 	// Derived data for badge counts and shared state
 	const members = $derived(membersQuery.data?.results || []);
 	const staff = $derived(staffQuery.data?.results || []);
 	const tiers = $derived(tiersQuery.data || []);
+	const membershipQuestionnaires = $derived(
+		(questionnairesQuery.data?.results ?? []).filter((q) => q.questionnaire_type === 'membership')
+	);
 
 	// Create a Set of staff user IDs for quick lookup (used by MembersTab)
 	const staffUserIds = $derived(
@@ -258,6 +298,8 @@
 					isLoading={tiersQuery.isLoading}
 					isError={tiersQuery.isError}
 					canManageSubscriptions={data.canManageSubscriptions}
+					{membershipQuestionnaires}
+					orgDefaultRequiresApproval={!!organization.default_requires_membership_approval}
 				/>
 			</TabsContent>
 		{/if}

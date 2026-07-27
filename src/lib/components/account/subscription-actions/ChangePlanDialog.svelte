@@ -18,6 +18,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { classifyPlanChange, formatPlanPrice } from '$lib/utils/subscriptions';
 	import { formatDate } from '$lib/utils/date';
+	import { backendMessage } from '$lib/utils/api-error-detail';
 	import { Loader2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 
@@ -85,14 +86,6 @@
 
 	const selected = $derived(candidates.find((p) => p.id === selectedId) ?? null);
 	const direction = $derived(selected ? classifyPlanChange(sub.plan, selected) : null);
-
-	function backendMessage(error: unknown): string | null {
-		if (!error || typeof error !== 'object') return null;
-		const body = error as { message?: unknown; detail?: unknown };
-		if (typeof body.message === 'string' && body.message) return body.message;
-		if (typeof body.detail === 'string' && body.detail) return body.detail;
-		return null;
-	}
 
 	const changeMutation = createMutation(() => ({
 		mutationFn: async () => {

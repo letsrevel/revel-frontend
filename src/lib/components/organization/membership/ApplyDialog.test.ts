@@ -4,6 +4,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
 import ApplyDialog from './ApplyDialog.svelte';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
+import { focusSettled } from '$lib/test-utils/focus';
 import { memembershipapplicationsApply } from '$lib/api/generated/sdk.gen';
 import { invalidateAll } from '$app/navigation';
 import type {
@@ -87,9 +88,12 @@ describe('ApplyDialog', () => {
 	/**
 	 * bits-ui moves focus onto the dialog itself a beat after mount; keystrokes
 	 * typed before that steal lands are dropped on the floor. Wait it out, then
-	 * put the caret in the textarea.
+	 * put the caret in the textarea. The second wait is stricter than the shared
+	 * gate on purpose: here the steal's landing spot is known (the dialog
+	 * container), so we pin it rather than settle for "focus left `<body>`".
 	 */
 	async function typeMessage(user: ReturnType<typeof userEvent.setup>, text: string) {
+		await focusSettled();
 		await waitFor(() => expect(screen.getByRole('dialog')).toHaveFocus());
 		const textarea = screen.getByLabelText(/message \(optional\)/i);
 		await user.click(textarea);

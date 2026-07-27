@@ -1,7 +1,14 @@
 import { fail, type Actions, error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { organizationadmincoreUpdateOrganization } from '$lib/api/generated';
-import type { OrganizationEditSchema, Visibility } from '$lib/api/generated/types.gen';
+import {
+	organizationadmincoreUpdateOrganization,
+	questionnaireListOrgQuestionnaires
+} from '$lib/api/generated';
+import type {
+	OrganizationEditSchema,
+	OrganizationQuestionnaireInListSchema,
+	Visibility
+} from '$lib/api/generated/types.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { log } from '$lib/server/logger';
 
@@ -10,15 +17,41 @@ import { log } from '$lib/server/logger';
  * The organization is fetched by the parent layout, so we just
  * pass it through with proper typing
  */
-export const load: PageServerLoad = async ({ parent }) => {
+export const load: PageServerLoad = async ({ parent, cookies, fetch }) => {
 	const { organization } = await parent();
 
 	if (!organization) {
 		throw error(404, 'Organization not found');
 	}
 
+	// Options for the default-membership-questionnaire picker. Value = the
+	// OrganizationQuestionnaire id (the FK target of
+	// default_membership_questionnaire), label = questionnaire name. The list
+	// endpoint has no type filter — filter to MEMBERSHIP client-side.
+	let membershipQuestionnaires: OrganizationQuestionnaireInListSchema[] = [];
+	const accessToken = cookies.get('access_token');
+	if (accessToken) {
+		const res = await questionnaireListOrgQuestionnaires({
+			fetch,
+			query: { organization_id: organization.id, page_size: 100 },
+			headers: { Authorization: `Bearer ${accessToken}` }
+		});
+		if (res.error) {
+			// Non-fatal: the rest of the settings form is still usable, so degrade to an
+			// empty picker rather than failing the page — but don't lose the cause.
+			log.error('org_settings_questionnaires_list_failed', {
+				slug: organization.slug,
+				error: res.error
+			});
+		}
+		membershipQuestionnaires = (res.data?.results ?? []).filter(
+			(q) => q.questionnaire_type === 'membership'
+		);
+	}
+
 	return {
-		organization
+		organization,
+		membershipQuestionnaires
 	};
 };
 
@@ -79,9 +112,15 @@ export const actions: Actions = {
 				cadenceRaw === 'quarterly' || cadenceRaw === 'monthly' ? cadenceRaw : 'none';
 		}
 
-		// Subscription policy fields ride the same PUT. OrganizationEditSchema gives them
-		// defaults (7 / ""), so omitting them silently resets — touch each only when it was
-		// actually submitted, and round-trip it faithfully (the #491 data-loss class).
+		// Subscription policy fields ride the same PUT, under the rule every guarded field
+		// here follows: include a field only when its control actually posted.
+		//
+		// Omitting a field does NOT reset it — the backend applies just what the client
+		// sent (`model_dump(exclude_unset=True)` in organization_service.update_organization,
+		// and again in update_db_instance). The guard defends the other direction: the #491
+		// telegram_url data loss was FE-side, a field written into `updateData`
+		// unconditionally while its control wasn't rendered, clobbering the stored value.
+		// Pinning payload inclusion to what the form actually submitted prevents that.
 		if (formData.has('membership_grace_period_days')) {
 			const graceRaw = formData.get('membership_grace_period_days') as string;
 			const grace = Number.parseInt(graceRaw, 10);
@@ -91,6 +130,27 @@ export const actions: Actions = {
 		if (formData.has('membership_refund_policy')) {
 			updateData.membership_refund_policy =
 				(formData.get('membership_refund_policy') as string) ?? '';
+		}
+
+		// Revival window: same rule as the two fields above.
+		if (formData.has('membership_subscription_revival_window_days')) {
+			const revivalRaw = formData.get('membership_subscription_revival_window_days') as string;
+			const revival = Number.parseInt(revivalRaw, 10);
+			updateData.membership_subscription_revival_window_days =
+				Number.isNaN(revival) || revival < 0 ? 0 : revival;
+		}
+
+		// Membership policy defaults (BE #777). The select always posts (possibly ''), so
+		// has() works directly. The checkbox posts nothing when unchecked, which is
+		// indistinguishable from "the control was never rendered" — so a hidden `_present`
+		// sentinel carries that distinction and the guard reads it instead.
+		if (formData.has('default_membership_questionnaire_id')) {
+			const qid = (formData.get('default_membership_questionnaire_id') as string) || '';
+			updateData.default_membership_questionnaire_id = qid || null;
+		}
+		if (formData.has('default_requires_membership_approval_present')) {
+			updateData.default_requires_membership_approval =
+				formData.get('default_requires_membership_approval') === 'true';
 		}
 
 		// Add optional fields only if they have values

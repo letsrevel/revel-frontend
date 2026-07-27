@@ -1,31 +1,22 @@
-import { render, screen, waitFor } from '@testing-library/svelte';
+import { render, screen } from '@testing-library/svelte';
 import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import type { ComponentProps } from 'svelte';
 import PlanFormModal from './PlanFormModal.svelte';
+import { focusSettled } from '$lib/test-utils/focus';
 
 const orgConnected = { id: 'o1', slug: 'o', is_stripe_connected: true } as never;
 const orgNotConnected = { id: 'o1', slug: 'o', is_stripe_connected: false } as never;
 
 /**
- * Render the modal and wait for bits-ui's dialog auto-focus to land.
- *
- * The focus scope moves focus into the dialog from a `requestAnimationFrame`
- * scheduled at mount, and in jsdom nothing is "tabbable" (every element
- * measures 0×0), so it falls back to focusing the content container — a plain
- * `div`. That frame is ~16ms out while user-event's keystrokes are ~1ms apart,
- * so under parallel-suite CPU contention it lands *between* two keystrokes:
- * focus jumps off the input, the rest of the word is swallowed by the div, and
- * the name field stays empty. An empty `required` field then makes jsdom skip
- * form submission entirely, so `onSave` is never called and no script-side
- * validation error renders — which is exactly how this file flaked.
- *
- * The steal happens exactly once per mount, so waiting for it before touching
- * the form removes the race rather than papering over it.
+ * Render the modal and wait for bits-ui's dialog auto-focus to land (see
+ * `focusSettled`). Losing that race leaves the `required` name field empty,
+ * which makes jsdom skip form submission entirely: `onSave` is never called and
+ * no script-side validation error renders — exactly how this file flaked.
  */
 async function renderModal(props: ComponentProps<typeof PlanFormModal>) {
 	const result = render(PlanFormModal, { props });
-	await waitFor(() => expect(document.body).not.toHaveFocus());
+	await focusSettled();
 	return result;
 }
 

@@ -50,7 +50,11 @@
 	<h2 id="applications-heading" class="text-lg font-semibold">{m['applications.title']()}</h2>
 
 	{#if isSectionPending}
-		<Loader2 class="h-5 w-5 animate-spin" />
+		<div role="status" aria-label={m['common.loading']()}>
+			<Loader2 class="h-5 w-5 animate-spin" aria-hidden="true" />
+		</div>
+	{:else if applicationsQuery.isError}
+		<p class="text-sm text-destructive">{m['applications.loadError']()}</p>
 	{:else if applications.length === 0}
 		<p class="text-sm text-muted-foreground">{m['applications.empty']()}</p>
 	{:else}

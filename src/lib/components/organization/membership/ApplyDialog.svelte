@@ -5,6 +5,7 @@
 	import type { ApplyResponseSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { getApplicationPendingMessage } from '$lib/utils/membership-eligibility';
+	import { backendMessage } from '$lib/utils/api-error-detail';
 	import {
 		Dialog,
 		DialogContent,
@@ -41,19 +42,6 @@
 	const messageId = `${uid}-message`;
 	const counterId = `${uid}-counter`;
 	const membershipsHref = resolve('/(auth)/account/memberships', {});
-
-	/**
-	 * hey-api types this endpoint's error as `unknown`, so the shape is probed
-	 * rather than trusted: Ninja hard-blocks (403) carry `message`, DRF-style
-	 * payloads carry `detail`.
-	 */
-	function backendMessage(error: unknown): string | null {
-		if (!error || typeof error !== 'object') return null;
-		const body = error as { message?: unknown; detail?: unknown };
-		if (typeof body.message === 'string' && body.message) return body.message;
-		if (typeof body.detail === 'string' && body.detail) return body.detail;
-		return null;
-	}
 
 	const applyMutation = createMutation(() => ({
 		mutationFn: async (): Promise<ApplyResponseSchema> => {

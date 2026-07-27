@@ -8,6 +8,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { formatPlanPrice } from '$lib/utils/subscriptions';
 	import { formatDate } from '$lib/utils/date';
+	import { backendMessage } from '$lib/utils/api-error-detail';
 	import { Loader2 } from '@lucide/svelte';
 
 	interface Props {
@@ -29,14 +30,6 @@
 	// expired without one.
 	const expiredAt = $derived(sub.expired_at ?? sub.cancelled_at ?? sub.updated_at);
 	const deadline = $derived(sub.revival_deadline);
-
-	function backendMessage(error: unknown): string | null {
-		if (!error || typeof error !== 'object') return null;
-		const body = error as { message?: unknown; detail?: unknown };
-		if (typeof body.message === 'string' && body.message) return body.message;
-		if (typeof body.detail === 'string' && body.detail) return body.detail;
-		return null;
-	}
 
 	const reviveMutation = createMutation(() => ({
 		mutationFn: async () => {

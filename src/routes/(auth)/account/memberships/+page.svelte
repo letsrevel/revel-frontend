@@ -129,7 +129,9 @@
 		</h2>
 
 		{#if isSectionPending}
-			<Loader2 class="h-5 w-5 animate-spin" />
+			<div role="status" aria-label={m['common.loading']()}>
+				<Loader2 class="h-5 w-5 animate-spin" aria-hidden="true" />
+			</div>
 		{:else if displayedMemberships.length === 0 && rejoinSubs.length === 0}
 			<div class="rounded-lg border p-6 text-center">
 				<!-- h3, not h2: this sits *inside* the memberships section, so an h2
