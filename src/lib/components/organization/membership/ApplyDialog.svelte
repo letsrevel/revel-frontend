@@ -2,9 +2,15 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { memembershipapplicationsApply } from '$lib/api/generated/sdk.gen';
-	import type { ApplyResponseSchema } from '$lib/api/generated/types.gen';
+	import type {
+		ApplyResponseSchema,
+		MembershipEligibilitySchema
+	} from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { getApplicationPendingMessage } from '$lib/utils/membership-eligibility';
+	import {
+		getApplicationPendingMessage,
+		getMembershipStatusMessage
+	} from '$lib/utils/membership-eligibility';
 	import { backendMessage } from '$lib/utils/api-error-detail';
 	import {
 		Dialog,
@@ -43,6 +49,17 @@
 	const counterId = `${uid}-counter`;
 	const membershipsHref = resolve('/(auth)/account/memberships', {});
 
+	// The 400 body is a union: a full eligibility verdict when a gate refused the
+	// application, or a flat `{detail}` for everything else. `allowed` is the only
+	// field the verdict has and the flat shape cannot, so it is the discriminator.
+	function isEligibilityBody(error: unknown): error is MembershipEligibilitySchema {
+		return (
+			!!error &&
+			typeof error === 'object' &&
+			typeof (error as { allowed?: unknown }).allowed === 'boolean'
+		);
+	}
+
 	const applyMutation = createMutation(() => ({
 		mutationFn: async (): Promise<ApplyResponseSchema> => {
 			errorMessage = null;
@@ -57,6 +74,14 @@
 			// hey-api resolves rather than throws — a missing payload is a failure
 			// even when no error body came back.
 			if (res.error || !res.data) {
+				if (isEligibilityBody(res.error)) {
+					// The refusal proves the CTA's cached verdict is stale, so refresh it
+					// for the page behind the dialog.
+					queryClient.invalidateQueries({
+						queryKey: ['org', organizationSlug, 'join-eligibility']
+					});
+					throw new Error(getMembershipStatusMessage(res.error));
+				}
 				throw new Error(backendMessage(res.error) ?? m['membershipApply.error']());
 			}
 			return res.data;
