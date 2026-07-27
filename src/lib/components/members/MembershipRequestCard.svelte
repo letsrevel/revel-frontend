@@ -1,6 +1,10 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import type { OrganizationMembershipRequestRetrieve } from '$lib/api/generated/types.gen';
+	import type {
+		MembershipRequestStatus,
+		OrganizationMembershipRequestRetrieve
+	} from '$lib/api/generated/types.gen';
+	import { resolve } from '$app/paths';
 	import { Button } from '$lib/components/ui/button';
 	import {
 		Dialog,
@@ -11,11 +15,13 @@
 		DialogTitle
 	} from '$lib/components/ui/dialog';
 	import { CheckCircle, XCircle, MessageSquare } from '@lucide/svelte';
-	import { formatDistanceToNow } from 'date-fns';
+	import { formatRelativeTime } from '$lib/utils/date';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 
 	interface Props {
 		request: OrganizationMembershipRequestRetrieve;
+		/** Owning organization — needed to build the questionnaire-submission link. */
+		orgSlug: string;
 		onApprove?: (request: OrganizationMembershipRequestRetrieve) => void;
 		onReject?: (request: OrganizationMembershipRequestRetrieve) => void;
 		isProcessing?: boolean;
@@ -24,19 +30,48 @@
 
 	const {
 		request,
+		orgSlug,
 		onApprove,
 		onReject,
 		isProcessing = false,
 		showActions = true
 	}: Props = $props();
 
+	// Every state the application state machine can be in. The label carries the
+	// meaning; the tint is decoration only (WCAG: never colour alone).
+	const STATUS_BADGES: Record<MembershipRequestStatus, { classes: string; label: () => string }> = {
+		pending: {
+			classes: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100',
+			label: () => m['membershipRequestCard.statusPending']()
+		},
+		approved: {
+			classes: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100',
+			label: () => m['membershipRequestCard.approved']()
+		},
+		completed: {
+			classes: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100',
+			label: () => m['membershipRequestCard.statusCompleted']()
+		},
+		rejected: {
+			classes: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100',
+			label: () => m['membershipRequestCard.rejected']()
+		},
+		cancelled: {
+			classes: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
+			label: () => m['membershipRequestCard.statusCancelled']()
+		}
+	};
+
 	// Dialog state
 	let dialogOpen = $state(false);
 
 	// Format created at date
-	const createdAt = $derived(
-		formatDistanceToNow(new Date(request.created_at), { addSuffix: true })
-	);
+	const createdAt = $derived(formatRelativeTime(request.created_at));
+
+	// The questionnaire submission that unlocked this application, if any. The
+	// `resolve()` call stays inline at each `<a href>` — the lint rule that
+	// guards SvelteKit navigation only recognises it in that position.
+	const submission = $derived(request.questionnaire_submission);
 
 	// Display name
 	const displayName = $derived(
@@ -88,9 +123,18 @@
 			<div class="min-w-0 flex-1">
 				<div class="flex items-start justify-between gap-2">
 					<div class="min-w-0 flex-1">
-						<h3 class="truncate font-semibold text-foreground">
-							{displayName}
-						</h3>
+						<div class="flex flex-wrap items-center gap-2">
+							<h3 class="truncate font-semibold text-foreground">
+								{displayName}
+							</h3>
+							{#if request.tier}
+								<span
+									class="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground"
+								>
+									{request.tier.name}
+								</span>
+							{/if}
+						</div>
 						{#if request.user.pronouns}
 							<p class="text-sm text-muted-foreground">({request.user.pronouns})</p>
 						{/if}
@@ -132,22 +176,40 @@
 					</p>
 				{/if}
 
+				{#if submission}
+					<p class="mt-1 text-sm">
+						<a
+							href={resolve(
+								'/(auth)/org/[slug]/admin/questionnaires/[id]/submissions/[submission_id]',
+								{
+									slug: orgSlug,
+									id: submission.org_questionnaire_id,
+									submission_id: submission.id
+								}
+							)}
+							class="font-medium text-primary underline underline-offset-2"
+						>
+							{m['membershipRequestCard.viewSubmission']()}
+						</a>
+						{#if submission.evaluation_status === 'pending review'}
+							<span class="ml-2 text-xs text-muted-foreground">
+								{m['membershipRequestCard.submissionPendingReview']()}
+							</span>
+						{/if}
+					</p>
+				{/if}
+
 				<!-- Request Date and Status -->
 				<div class="mt-2 flex items-center gap-2">
 					<p class="text-xs text-muted-foreground">
 						{m['membershipRequestCard.requestedAt']({ time: createdAt })}
 					</p>
 					{#if !showActions && request.status}
-						{@const status = request.status}
+						{@const badge = STATUS_BADGES[request.status]}
 						<span
-							class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {status ===
-							'approved'
-								? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'
-								: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'}"
+							class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {badge.classes}"
 						>
-							{status === 'approved'
-								? m['membershipRequestCard.approved']()
-								: m['membershipRequestCard.rejected']()}
+							{badge.label()}
 						</span>
 					{/if}
 				</div>
@@ -290,6 +352,33 @@
 					<h4 class="text-sm font-semibold">{m['membershipRequestCard.message']()}</h4>
 					<p class="text-sm italic text-muted-foreground">
 						{m['membershipRequestCard.noMessage']()}
+					</p>
+				</div>
+			{/if}
+
+			<!-- Questionnaire submission -->
+			{#if submission}
+				<div class="space-y-2">
+					<h4 class="text-sm font-semibold">{m['membershipRequestCard.questionnaire']()}</h4>
+					<p class="text-sm">
+						<a
+							href={resolve(
+								'/(auth)/org/[slug]/admin/questionnaires/[id]/submissions/[submission_id]',
+								{
+									slug: orgSlug,
+									id: submission.org_questionnaire_id,
+									submission_id: submission.id
+								}
+							)}
+							class="font-medium text-primary underline underline-offset-2"
+						>
+							{m['membershipRequestCard.viewSubmission']()}
+						</a>
+						{#if submission.evaluation_status === 'pending review'}
+							<span class="ml-2 text-xs text-muted-foreground">
+								{m['membershipRequestCard.submissionPendingReview']()}
+							</span>
+						{/if}
 					</p>
 				</div>
 			{/if}

@@ -100,6 +100,34 @@ describe('MembershipRequestsTab filters', () => {
 		}
 	});
 
+	it('exposes the active filter via aria-pressed, not colour alone', async () => {
+		const user = userEvent.setup();
+		renderTab();
+		await screen.findByRole('button', { name: /^pending/i });
+
+		expect(screen.getByRole('button', { name: /^pending/i })).toHaveAttribute(
+			'aria-pressed',
+			'true'
+		);
+		expect(screen.getByRole('button', { name: /^rejected/i })).toHaveAttribute(
+			'aria-pressed',
+			'false'
+		);
+
+		await user.click(screen.getByRole('button', { name: /^rejected/i }));
+
+		await waitFor(() => {
+			expect(screen.getByRole('button', { name: /^rejected/i })).toHaveAttribute(
+				'aria-pressed',
+				'true'
+			);
+		});
+		expect(screen.getByRole('button', { name: /^pending/i })).toHaveAttribute(
+			'aria-pressed',
+			'false'
+		);
+	});
+
 	it('refetches with status=completed and resets to page 1 when Completed is clicked', async () => {
 		const user = userEvent.setup();
 		renderTab();
@@ -179,5 +207,55 @@ describe('MembershipRequestsTab approve errors', () => {
 		await waitFor(() => {
 			expect(toast.error).toHaveBeenCalledWith('Could not approve the application.');
 		});
+	});
+});
+
+describe('MembershipRequestsTab approve tier resolution', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest).mockResolvedValue({
+			data: {},
+			error: undefined
+		} as never);
+	});
+
+	it('approves directly with an empty body when the application carries a tier', async () => {
+		const user = userEvent.setup();
+		const tieredRequest = {
+			...pendingRequest,
+			tier: { id: 't1', name: 'Gold' }
+		} as unknown as OrganizationMembershipRequestRetrieve;
+		vi.mocked(organizationadminmembershiprequestsListMembershipRequests).mockResolvedValue(
+			listResponse([tieredRequest]) as never
+		);
+
+		// Two tiers would normally force the picker open — the request's own tier wins.
+		renderTab();
+
+		const approve = await screen.findByRole('button', { name: /approve request from/i });
+		await user.click(approve);
+
+		await waitFor(() => {
+			expect(organizationadminmembershiprequestsApproveMembershipRequest).toHaveBeenCalled();
+		});
+		const call = vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest).mock
+			.calls[0][0] as { body: Record<string, unknown> };
+		expect(call.body).toEqual({});
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+	});
+
+	it('opens the tier picker for a tier-less application when several tiers exist', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembershiprequestsListMembershipRequests).mockResolvedValue(
+			listResponse([pendingRequest]) as never
+		);
+
+		renderTab();
+
+		const approve = await screen.findByRole('button', { name: /approve request from/i });
+		await user.click(approve);
+
+		await screen.findByRole('dialog');
+		expect(organizationadminmembershiprequestsApproveMembershipRequest).not.toHaveBeenCalled();
 	});
 });

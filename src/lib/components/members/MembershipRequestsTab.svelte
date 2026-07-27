@@ -88,15 +88,17 @@
 			tierId
 		}: {
 			request: OrganizationMembershipRequestRetrieve;
-			tierId: string;
+			// `null` when the application already carries its own tier — the
+			// backend then resolves the tier itself and `tier_id` is omitted.
+			tierId: string | null;
 		}) => {
 			if (!request.id) {
-				throw new Error('Request ID not found');
+				throw new Error(m['membershipRequestsTab.approveFailedGeneric']());
 			}
 
 			const response = await organizationadminmembershiprequestsApproveMembershipRequest({
 				path: { slug: organization.slug, request_id: request.id },
-				body: { tier_id: tierId },
+				body: tierId ? { tier_id: tierId } : {},
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
@@ -128,7 +130,7 @@
 	const rejectRequestMutation = createMutation(() => ({
 		mutationFn: async (request: OrganizationMembershipRequestRetrieve) => {
 			if (!request.id) {
-				throw new Error('Request ID not found');
+				throw new Error(m['membershipRequestsTab.rejectFailedGeneric']());
 			}
 
 			const response = await organizationadminmembershiprequestsRejectMembershipRequest({
@@ -167,6 +169,13 @@
 
 	// Handlers
 	function handleApproveRequest(request: OrganizationMembershipRequestRetrieve) {
+		// New-flow applications carry the tier they applied for — approve straight
+		// through and let the backend use it, whatever the org's tier count is.
+		if (request.tier) {
+			approveRequestMutation.mutate({ request, tierId: null });
+			return;
+		}
+
 		if (tiers.length === 0) {
 			toast.error(m['membershipRequestsTab.noTiersAvailable']());
 			return;
@@ -200,6 +209,7 @@
 		<Button
 			variant={requestStatusFilter === filter.value ? 'default' : 'outline'}
 			size="sm"
+			aria-pressed={requestStatusFilter === filter.value}
 			onclick={() => {
 				requestStatusFilter = filter.value;
 				requestsPage = 1;
@@ -236,6 +246,7 @@
 		{#each requests as request (request.id)}
 			<MembershipRequestCard
 				{request}
+				orgSlug={organization.slug}
 				onApprove={handleApproveRequest}
 				onReject={(r) => rejectRequestMutation.mutate(r)}
 				isProcessing={approveRequestMutation.isPending || rejectRequestMutation.isPending}
