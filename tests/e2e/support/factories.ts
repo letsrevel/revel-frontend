@@ -526,34 +526,78 @@ export async function createGuestRsvp(eventId: string, label = 'Guest'): Promise
 	return { email, firstName, lastName };
 }
 
-/** Add a membership tier to a throwaway-owned org. */
+/**
+ * Add a membership tier to an org. `owner` accepts a persona name too, because
+ * ONLINE plans can only exist on the Stripe-connected seeded Org Alpha — every
+ * hosted-checkout spec arranges its tiers there as `'owner'` (alice).
+ */
 export async function createMembershipTier(
-	owner: ThrowawayUser,
+	owner: PersonaName | ThrowawayUser,
 	orgSlug: string,
 	name: string
 ): Promise<{ id: string }> {
-	const api = await ApiClient.login(owner.email, owner.password);
+	const credentials = typeof owner === 'string' ? PERSONAS[owner] : owner;
+	const api = await ApiClient.login(credentials.email, credentials.password);
 	return api.post<{ id: string }>(`/api/organization-admin/${orgSlug}/membership-tiers`, { name });
 }
 
 /**
- * API-create a subscription plan on a membership tier of a throwaway-owned
- * org (defaults: €15.00 monthly). ARRANGE step for the subscription-lifecycle
- * journey — plan AUTHORING through the UI is j23 plans-admin.
+ * API-create a subscription plan on a membership tier (defaults: €15.00
+ * monthly, OFFLINE — the backend's own default payment method). ARRANGE step
+ * for the subscription journeys — plan AUTHORING through the UI is j23
+ * plans-admin. Extra plan fields (`payment_method: 'online'`,
+ * `max_subscriptions`, `sales_status`, `period_unit`, …) are spread onto the
+ * payload as given.
+ *
+ * `owner` accepts a persona name: ONLINE plans require Stripe Connect, which
+ * only the seeded Org Alpha has, so they are created as `'owner'` (alice).
  */
 export async function createSubscriptionPlan(
-	owner: ThrowawayUser,
+	owner: PersonaName | ThrowawayUser,
 	orgSlug: string,
 	tierId: string,
 	plan: Record<string, unknown> = {}
 ): Promise<{ id: string; name: string }> {
-	const api = await ApiClient.login(owner.email, owner.password);
+	const credentials = typeof owner === 'string' ? PERSONAS[owner] : owner;
+	const api = await ApiClient.login(credentials.email, credentials.password);
 	const name = (plan.name as string) ?? uniqueName('Plan');
 	const created = await api.post<{ id: string }>(
 		`/api/organization-admin/${orgSlug}/tiers/${tierId}/plans`,
 		{ name, price: '15.00', currency: 'EUR', ...plan }
 	);
 	return { id: created.id, name };
+}
+
+/**
+ * PATCH a subscription plan (`sales_status`, `max_subscriptions`, price, …).
+ * `payment_method` is deliberately NOT patchable backend-side — archive the
+ * plan and create a new one instead.
+ */
+export async function updateSubscriptionPlan(
+	owner: PersonaName | ThrowawayUser,
+	orgSlug: string,
+	planId: string,
+	patch: Record<string, unknown>
+): Promise<void> {
+	const credentials = typeof owner === 'string' ? PERSONAS[owner] : owner;
+	const api = await ApiClient.login(credentials.email, credentials.password);
+	await api.patch(`/api/organization-admin/${orgSlug}/plans/${planId}`, patch);
+}
+
+/**
+ * The org's UUID, read from the PUBLIC retrieve endpoint (no auth needed).
+ * Member-facing subscription endpoints are keyed by org id, not slug.
+ */
+export async function getOrganizationId(slug: string): Promise<string> {
+	const response = await fetchWithRetry(`${API_URL}/api/organizations/${slug}`);
+	if (!response.ok) {
+		throw new ApiError(response.status, 'GET', `/api/organizations/${slug}`, await response.text());
+	}
+	const org = (await response.json()) as { id?: string };
+	if (!org.id) {
+		throw new Error(`Organization ${slug} has no id`);
+	}
+	return org.id;
 }
 
 /**
