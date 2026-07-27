@@ -6548,7 +6548,8 @@
 			"viewOrg": "Organisation ansehen",
 			"contactOrg": "Wende dich zum Verlängern an die Veranstalter*innen.",
 			"memberSince": "Mitglied seit {date}",
-			"managedBy": "Verwaltet von {org} — wende dich für Änderungen an sie."
+			"managedBy": "Verwaltet von {org} — wende dich für Änderungen an sie.",
+			"loadError": "Deine Mitgliedschaften konnten nicht geladen werden. Lade die Seite neu."
 		}
 	},
 	"orgPublic": {
@@ -7336,12 +7337,13 @@
 	"membershipRequestCard.questionnaire": "Fragebogen",
 	"membershipRequestCard.viewSubmission": "Antwortbogen ansehen",
 	"membershipRequestCard.submissionPendingReview": "Prüfung ausstehend",
+	"membershipRequestCard.tierPrefix": "Stufe:",
 	"membershipRequestCard.viewRequestAria": "Anfragedetails von {name} ansehen",
 	"membershipRequestCard.approveRequestAria": "Anfrage von {name} genehmigen",
 	"membershipRequestCard.rejectRequestAria": "Anfrage von {name} ablehnen",
 	"membershipRequestCard.dialogDescription": "Sieh dir die Anfragedetails an und genehmige oder lehne diesen Mitgliedschaftsantrag ab.",
 	"membershipRequestCard.close": "Schließen",
-	"membershipRequestsTab.approveFailedGeneric": "Der Antrag konnte nicht angenommen werden.",
+	"membershipRequestsTab.approveFailedGeneric": "Der Antrag konnte nicht genehmigt werden.",
 	"membershipRequestsTab.rejectFailedGeneric": "Der Antrag konnte nicht abgelehnt werden.",
 	"membershipRequestsTab.noTiersAvailable": "Anfrage kann nicht genehmigt werden: Keine Mitgliedschaftsstufen verfügbar",
 	"membershipRequestsTab.filterPending": "Ausstehend",
@@ -8613,7 +8615,7 @@
 		"inProgress": "In Bearbeitung",
 		"closed": "Beendet",
 		"empty": "Noch keine Bewerbungen. Wenn du dich bei einer Organisation bewirbst, kannst du sie hier verfolgen.",
-		"loadError": "Deine Anträge konnten nicht geladen werden. Lade die Seite neu.",
+		"loadError": "Deine Bewerbungen konnten nicht geladen werden. Lade die Seite neu.",
 		"appliedOn": "Beworben am {date}",
 		"tierLine": "Stufe: {tier}",
 		"status": {

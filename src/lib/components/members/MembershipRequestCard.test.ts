@@ -45,6 +45,11 @@ describe('MembershipRequestCard tier chip', () => {
 		expect(screen.getByText('Gold')).toBeInTheDocument();
 	});
 
+	it('names the chip for a screen reader instead of reading a bare word', () => {
+		renderCard(makeRequest({ tier: { id: 't1', name: 'Gold' } as never }));
+		expect(screen.getByText('Gold').parentElement).toHaveTextContent('Tier: Gold');
+	});
+
 	it('renders no tier chip when the application has no tier', () => {
 		renderCard(makeRequest({ tier: null }));
 		expect(screen.queryByText('Gold')).not.toBeInTheDocument();
@@ -72,6 +77,25 @@ describe('MembershipRequestCard questionnaire submission', () => {
 		expect(screen.getAllByText('Review pending').length).toBeGreaterThan(0);
 	});
 
+	it('describes the submission link with the review-pending hint', () => {
+		renderCard(
+			makeRequest({
+				questionnaire_submission: {
+					id: 'sub-1',
+					org_questionnaire_id: 'oq-1',
+					evaluation_status: 'pending review'
+				}
+			})
+		);
+
+		// The hint sits beside the link visually; without the association a screen
+		// reader announces the link with no idea the review is still open.
+		const link = screen.getAllByRole('link', { name: 'View questionnaire submission' })[0];
+		const hintId = link.getAttribute('aria-describedby');
+		expect(hintId).toBeTruthy();
+		expect(document.getElementById(hintId as string)).toHaveTextContent('Review pending');
+	});
+
 	it('omits the review-pending hint once the submission is approved', () => {
 		renderCard(
 			makeRequest({
@@ -83,10 +107,11 @@ describe('MembershipRequestCard questionnaire submission', () => {
 			})
 		);
 
-		expect(
-			screen.getAllByRole('link', { name: 'View questionnaire submission' }).length
-		).toBeGreaterThan(0);
+		const links = screen.getAllByRole('link', { name: 'View questionnaire submission' });
+		expect(links.length).toBeGreaterThan(0);
 		expect(screen.queryByText('Review pending')).not.toBeInTheDocument();
+		// No hint to point at, so no dangling description either.
+		expect(links[0]).not.toHaveAttribute('aria-describedby');
 	});
 
 	it('renders no submission link when the application has none', () => {

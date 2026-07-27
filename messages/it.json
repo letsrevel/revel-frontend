@@ -6548,7 +6548,8 @@
 			"viewOrg": "Vedi l'organizzazione",
 			"contactOrg": "Contatta chi organizza per rinnovare.",
 			"memberSince": "Membro dal {date}",
-			"managedBy": "Gestito da {org} — contattali per apportare modifiche."
+			"managedBy": "Gestito da {org} — contattali per apportare modifiche.",
+			"loadError": "Non è stato possibile caricare i tuoi abbonamenti. Prova a ricaricare la pagina."
 		}
 	},
 	"orgPublic": {
@@ -7336,6 +7337,7 @@
 	"membershipRequestCard.questionnaire": "Questionario",
 	"membershipRequestCard.viewSubmission": "Vedi il questionario compilato",
 	"membershipRequestCard.submissionPendingReview": "Revisione in sospeso",
+	"membershipRequestCard.tierPrefix": "Livello:",
 	"membershipRequestCard.viewRequestAria": "Vedi i dettagli della richiesta di {name}",
 	"membershipRequestCard.approveRequestAria": "Approva la richiesta di {name}",
 	"membershipRequestCard.rejectRequestAria": "Rifiuta la richiesta di {name}",

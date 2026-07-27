@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/svelte';
+import { render, screen, waitFor, within } from '@testing-library/svelte';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
@@ -173,6 +173,48 @@ describe('Account memberships page', () => {
 			expect(screen.getByRole('heading', { level: 2, name: 'Applications' })).toBeVisible();
 			// The memberships half is still loading, so it must not have decided it is empty.
 			expect(screen.queryByText(/don't have any active memberships/i)).toBeNull();
+		});
+	});
+
+	describe('load failures', () => {
+		// The queryFns throw on `res.error`, so an errored response and a rejected
+		// call land in the same place — mirror the SDK's own `{ error }` shape.
+		const failure = { data: undefined, error: { detail: 'boom' } };
+
+		it('says the memberships list failed instead of claiming there are none', async () => {
+			listMembershipsMock.mockResolvedValue(failure);
+			listSubscriptionsMock.mockResolvedValue(page([]));
+			renderPage();
+
+			expect(await screen.findByText(/could not load your memberships/i)).toBeInTheDocument();
+			expect(screen.queryByText(/don't have any active memberships/i)).toBeNull();
+		});
+
+		it('says the list failed when the subscriptions query is the one that broke', async () => {
+			// Rejoin offers live in the subscriptions list, so losing it means the
+			// section cannot honestly claim the member has nothing.
+			listMembershipsMock.mockResolvedValue(page([]));
+			listSubscriptionsMock.mockResolvedValue(failure);
+			renderPage();
+
+			expect(await screen.findByText(/could not load your memberships/i)).toBeInTheDocument();
+			expect(screen.queryByText(/don't have any active memberships/i)).toBeNull();
+		});
+
+		it('keeps the loaded cards when a background refetch fails', async () => {
+			listMembershipsMock.mockResolvedValueOnce(page([makeMembership({ status: 'active' })]));
+			listMembershipsMock.mockResolvedValue(failure);
+			listSubscriptionsMock.mockResolvedValue(page([]));
+			renderPage();
+
+			await screen.findByRole('article', { name: 'Acme' });
+			await queryClient.refetchQueries({ queryKey: ['me', 'memberships'] });
+
+			await waitFor(() => {
+				expect(queryClient.getQueryState(['me', 'memberships'])?.status).toBe('error');
+			});
+			expect(screen.getByRole('article', { name: 'Acme' })).toBeInTheDocument();
+			expect(screen.queryByText(/could not load your memberships/i)).toBeNull();
 		});
 	});
 

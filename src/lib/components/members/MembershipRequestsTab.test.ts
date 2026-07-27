@@ -17,7 +17,8 @@ vi.mock('$lib/api/generated/sdk.gen', () => ({
 }));
 import {
 	organizationadminmembershiprequestsListMembershipRequests,
-	organizationadminmembershiprequestsApproveMembershipRequest
+	organizationadminmembershiprequestsApproveMembershipRequest,
+	organizationadminmembershiprequestsRejectMembershipRequest
 } from '$lib/api/generated/sdk.gen';
 
 vi.mock('svelte-sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
@@ -50,9 +51,17 @@ const pendingRequest = {
 	}
 } as unknown as OrganizationMembershipRequestRetrieve;
 
-function listResponse(results: OrganizationMembershipRequestRetrieve[]) {
+/**
+ * One page of the list endpoint. `count` is the *total* across pages, not the
+ * length of `results` — a count above the page size is what makes the tab
+ * render its pager, so the page-reset test can actually reach page 2.
+ */
+function listResponse(
+	results: OrganizationMembershipRequestRetrieve[],
+	{ count = results.length, next = null as string | null } = {}
+) {
 	return {
-		data: { results, count: results.length, next: null, previous: null },
+		data: { results, count, next, previous: null },
 		error: undefined
 	};
 }
@@ -128,10 +137,32 @@ describe('MembershipRequestsTab filters', () => {
 		);
 	});
 
-	it('refetches with status=completed and resets to page 1 when Completed is clicked', async () => {
+	it('refetches with status=completed when Completed is clicked', async () => {
 		const user = userEvent.setup();
 		renderTab();
 		await screen.findByRole('button', { name: /^completed/i });
+
+		await user.click(screen.getByRole('button', { name: /^completed/i }));
+
+		await waitFor(() => {
+			expect(lastListQuery().status).toBe('completed');
+		});
+	});
+
+	it('resets to page 1 when a filter is clicked from a deeper page', async () => {
+		const user = userEvent.setup();
+		// A total above the page size (50) is what makes the pager render at all —
+		// with a single-row count the tab never leaves page 1 and the reset this
+		// test guards is unobservable.
+		vi.mocked(organizationadminmembershiprequestsListMembershipRequests).mockResolvedValue(
+			listResponse([pendingRequest], { count: 60, next: 'http://api/next' }) as never
+		);
+		renderTab();
+
+		await user.click(await screen.findByRole('button', { name: /^next/i }));
+		await waitFor(() => {
+			expect(lastListQuery().page).toBe(2);
+		});
 
 		await user.click(screen.getByRole('button', { name: /^completed/i }));
 
@@ -206,6 +237,49 @@ describe('MembershipRequestsTab approve errors', () => {
 
 		await waitFor(() => {
 			expect(toast.error).toHaveBeenCalledWith('Could not approve the application.');
+		});
+	});
+});
+
+describe('MembershipRequestsTab reject errors', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		vi.mocked(organizationadminmembershiprequestsListMembershipRequests).mockResolvedValue(
+			listResponse([pendingRequest]) as never
+		);
+	});
+
+	it('surfaces the backend message in a toast when reject fails', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembershiprequestsRejectMembershipRequest).mockResolvedValue({
+			data: undefined,
+			error: { message: 'Application already closed.' }
+		} as never);
+
+		renderTab();
+
+		const reject = await screen.findByRole('button', { name: /reject request from/i });
+		await user.click(reject);
+
+		await waitFor(() => {
+			expect(toast.error).toHaveBeenCalledWith('Application already closed.');
+		});
+	});
+
+	it('falls back to localized copy when the reject error has no backend message', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembershiprequestsRejectMembershipRequest).mockResolvedValue({
+			data: undefined,
+			error: {}
+		} as never);
+
+		renderTab();
+
+		const reject = await screen.findByRole('button', { name: /reject request from/i });
+		await user.click(reject);
+
+		await waitFor(() => {
+			expect(toast.error).toHaveBeenCalledWith('Could not reject the application.');
 		});
 	});
 });

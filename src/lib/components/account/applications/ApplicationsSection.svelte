@@ -22,6 +22,10 @@
 		enabled: !!accessToken
 	}));
 
+	// TanStack keeps the last successful payload across a failed refetch, which
+	// is why the error branch below is gated on this being empty: a blipped
+	// background poll must not replace rows the member is reading with an error
+	// line. Only "we have nothing to show *and* the fetch failed" is an error.
 	const applications = $derived(applicationsQuery.data ?? []);
 
 	// PENDING and APPROVED are the two states the member is still waiting on —
@@ -50,10 +54,11 @@
 	<h2 id="applications-heading" class="text-lg font-semibold">{m['applications.title']()}</h2>
 
 	{#if isSectionPending}
-		<div role="status" aria-label={m['common.loading']()}>
+		<div role="status">
 			<Loader2 class="h-5 w-5 animate-spin" aria-hidden="true" />
+			<span class="sr-only">{m['common.loading']()}</span>
 		</div>
-	{:else if applicationsQuery.isError}
+	{:else if applicationsQuery.isError && applications.length === 0}
 		<p class="text-sm text-destructive">{m['applications.loadError']()}</p>
 	{:else if applications.length === 0}
 		<p class="text-sm text-muted-foreground">{m['applications.empty']()}</p>
