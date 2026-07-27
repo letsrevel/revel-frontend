@@ -112,6 +112,14 @@ describe('MembershipRequestCard status badge', () => {
 			expect(screen.getByText(label)).toBeInTheDocument();
 		});
 	}
+
+	it('falls back to the neutral badge for a status this build does not know', () => {
+		// BE-ahead version skew: an unguarded map lookup here would TypeError and
+		// take down every card in the tab, not just this one row.
+		const unknownStatus = 'weird' as unknown as MembershipRequestStatus;
+		renderCard(makeRequest({ status: unknownStatus }), { showActions: false });
+		expect(screen.getByText('Pending')).toBeInTheDocument();
+	});
 });
 
 describe('MembershipRequestCard relative date', () => {

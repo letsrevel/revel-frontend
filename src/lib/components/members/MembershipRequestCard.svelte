@@ -205,7 +205,10 @@
 						{m['membershipRequestCard.requestedAt']({ time: createdAt })}
 					</p>
 					{#if !showActions && request.status}
-						{@const badge = STATUS_BADGES[request.status]}
+						<!-- `??` is not dead code: during a BE-ahead version skew the wire can
+						     carry a status this build has never heard of, and an unguarded
+						     lookup would TypeError every card in the tab. -->
+						{@const badge = STATUS_BADGES[request.status] ?? STATUS_BADGES.pending}
 						<span
 							class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {badge.classes}"
 						>

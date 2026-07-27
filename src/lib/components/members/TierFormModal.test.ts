@@ -122,7 +122,9 @@ describe('TierFormModal eligibility overrides', () => {
 	it('spells out an org default of "approval required" in the inherit option', async () => {
 		await renderModal({ orgDefaultRequiresApproval: true });
 		const approval = screen.getByLabelText(/manual approval/i);
-		expect(within(approval).getByRole('option', { name: /approval required/i })).toHaveValue(
+		// Anchored on the parenthesis: a bare /approval required/i also matches the
+		// "no approval required" label, so it could not fail if the ternary collapsed.
+		expect(within(approval).getByRole('option', { name: /\(approval required\)/i })).toHaveValue(
 			'inherit'
 		);
 	});
