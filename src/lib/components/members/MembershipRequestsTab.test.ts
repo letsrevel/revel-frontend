@@ -79,6 +79,13 @@ function renderTab(tierList: MembershipTierSchema[] = tiers) {
 	});
 }
 
+// bits-ui pins pointer-events on <body> while a dialog is open; jsdom keeps
+// <body> across tests, so reset it or a test that ends with a dialog open
+// poisons every later click.
+beforeEach(() => {
+	document.body.style.pointerEvents = '';
+});
+
 /** Last `query` object handed to the list endpoint. */
 function lastListQuery() {
 	const calls = vi.mocked(organizationadminmembershiprequestsListMembershipRequests).mock.calls;
@@ -281,6 +288,111 @@ describe('MembershipRequestsTab reject errors', () => {
 		await waitFor(() => {
 			expect(toast.error).toHaveBeenCalledWith('Could not reject the application.');
 		});
+	});
+});
+
+describe('MembershipRequestsTab force approve', () => {
+	/** hey-api hands the raw fetch Response through as `response`. */
+	function approveFailure(status: number, detail?: string) {
+		return {
+			data: undefined,
+			error: detail ? { detail } : {},
+			response: { status }
+		} as never;
+	}
+
+	function approveCallBodies() {
+		return vi
+			.mocked(organizationadminmembershiprequestsApproveMembershipRequest)
+			.mock.calls.map((call) => (call[0] as { body: Record<string, unknown> }).body);
+	}
+
+	beforeEach(() => {
+		vi.clearAllMocks();
+		vi.mocked(organizationadminmembershiprequestsListMembershipRequests).mockResolvedValue(
+			listResponse([pendingRequest]) as never
+		);
+	});
+
+	it('opens a confirm dialog instead of a toast when approve is refused with a 400', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest).mockResolvedValue(
+			approveFailure(400, 'Ada Lovelace holds an active subscription.')
+		);
+
+		// Single tier → approve goes straight through without the tier picker.
+		renderTab([tiers[0]]);
+
+		await user.click(await screen.findByRole('button', { name: /approve request from/i }));
+
+		const dialog = await screen.findByRole('dialog');
+		expect(dialog).toHaveTextContent('Ada Lovelace holds an active subscription.');
+		expect(dialog).toHaveTextContent(/Approving anyway will grant this tier/i);
+		expect(toast.error).not.toHaveBeenCalled();
+	});
+
+	it('retries with force: true and closes the dialog on success', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest)
+			.mockResolvedValueOnce(approveFailure(400, 'Already subscribed.'))
+			.mockResolvedValueOnce({ data: {}, error: undefined } as never);
+
+		renderTab([tiers[0]]);
+
+		await user.click(await screen.findByRole('button', { name: /approve request from/i }));
+		await screen.findByRole('dialog');
+
+		await user.click(screen.getByRole('button', { name: /^approve anyway$/i }));
+
+		await waitFor(() => {
+			expect(approveCallBodies()).toHaveLength(2);
+		});
+		// First attempt omits `force` entirely; the retry adds it without ever
+		// nulling `tier_id`.
+		expect(approveCallBodies()[0]).toEqual({ tier_id: 'tier-1' });
+		expect(approveCallBodies()[1]).toEqual({ tier_id: 'tier-1', force: true });
+
+		await waitFor(() => {
+			expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		});
+		expect(toast.error).not.toHaveBeenCalled();
+	});
+
+	it('falls back to a toast when the forced retry is refused too', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest)
+			.mockResolvedValueOnce(approveFailure(400, 'Already subscribed.'))
+			.mockResolvedValueOnce(approveFailure(400, 'Application is no longer pending.'));
+
+		renderTab([tiers[0]]);
+
+		await user.click(await screen.findByRole('button', { name: /approve request from/i }));
+		await screen.findByRole('dialog');
+
+		await user.click(screen.getByRole('button', { name: /^approve anyway$/i }));
+
+		await waitFor(() => {
+			expect(toast.error).toHaveBeenCalledWith('Application is no longer pending.');
+		});
+		await waitFor(() => {
+			expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		});
+	});
+
+	it('keeps the toast path for non-400 approve failures', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest).mockResolvedValue(
+			approveFailure(500, 'Something exploded.')
+		);
+
+		renderTab([tiers[0]]);
+
+		await user.click(await screen.findByRole('button', { name: /approve request from/i }));
+
+		await waitFor(() => {
+			expect(toast.error).toHaveBeenCalledWith('Something exploded.');
+		});
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 	});
 });
 
