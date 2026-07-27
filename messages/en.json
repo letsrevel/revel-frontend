@@ -3402,6 +3402,7 @@
 					"manageOnStripe": "Manage on Stripe",
 					"paymentOnStripe": "View on Stripe",
 					"onlineRefundNote": "Refunds for online payments are issued from the Stripe Dashboard — they are recorded here automatically.",
+					"partiallyRefunded": "({amount} {currency} refunded)",
 					"paymentsCol": {
 						"date": "Date",
 						"amount": "Amount",

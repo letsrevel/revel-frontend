@@ -3402,6 +3402,7 @@
 					"manageOnStripe": "In Stripe verwalten",
 					"paymentOnStripe": "In Stripe ansehen",
 					"onlineRefundNote": "Erstattungen für Online-Zahlungen nimmst du im Stripe-Dashboard vor — sie werden hier automatisch erfasst.",
+					"partiallyRefunded": "({amount} {currency} erstattet)",
 					"paymentsCol": {
 						"date": "Datum",
 						"amount": "Betrag",

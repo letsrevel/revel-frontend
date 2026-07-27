@@ -20,6 +20,9 @@ function makePayment(overrides: Partial<MembershipPaymentSchema> = {}): Membersh
 		stripe_dashboard_url: null,
 		stripe_invoice_id: null,
 		stripe_payment_intent_id: null,
+		refund_amount: null,
+		refunded_at: null,
+		stripe_refund_id: null,
 		...overrides
 	} as MembershipPaymentSchema;
 }
@@ -76,6 +79,34 @@ describe('PaymentsTable Stripe dashboard link', () => {
 		expect(links[0]).toHaveAttribute('href', 'https://dashboard.stripe.com/test/invoices/in_9');
 		// No degraded <button> stub on the URL-less row either.
 		expect(screen.getAllByText('View on Stripe')).toHaveLength(1);
+	});
+});
+
+describe('PaymentsTable partial-refund annotation', () => {
+	// BE #774 note 2: a partial Stripe refund keeps `status = 'succeeded'`, so
+	// without this annotation the refund is invisible to the organizer.
+	it('annotates the amount when only part of the payment was refunded', () => {
+		renderTable([makePayment({ amount: '10.00', refund_amount: '4.00', status: 'succeeded' })]);
+
+		expect(screen.getByText('(4.00 EUR refunded)')).toBeInTheDocument();
+	});
+
+	it('leaves a fully refunded payment to the status column', () => {
+		renderTable([makePayment({ amount: '10.00', refund_amount: '10.00', status: 'refunded' })]);
+
+		expect(screen.queryByText(/refunded\)/)).not.toBeInTheDocument();
+	});
+
+	it('shows no annotation for a payment that was never refunded', () => {
+		renderTable([makePayment({ amount: '10.00', refund_amount: null })]);
+
+		expect(screen.queryByText(/refunded\)/)).not.toBeInTheDocument();
+	});
+
+	it('treats a zero refund amount as never refunded', () => {
+		renderTable([makePayment({ amount: '10.00', refund_amount: '0.00' })]);
+
+		expect(screen.queryByText(/refunded\)/)).not.toBeInTheDocument();
 	});
 });
 
