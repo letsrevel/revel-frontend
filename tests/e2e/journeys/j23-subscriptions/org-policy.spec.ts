@@ -10,10 +10,11 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 // revenue_report_cadence).
 //
 // Built out once FE #631 / BE #695 landed the editing UI + writable schema.
-// Because OrganizationEditSchema gives BOTH fields defaults (7 / ""), any PUT
-// that omits them silently resets them — the telegram_url data-loss class from
-// #491. The second test is that regression guard: editing an UNRELATED field
-// must not wipe the policy.
+// The regression class guarded here is FE-side (the telegram_url class from
+// #491, which the settings form's `formData.has()` guards defend): a control
+// that repopulates wrong, or posts its schema default instead of the saved
+// value, clobbers the field on an unrelated save. The second test is that
+// guard: editing an UNRELATED field must not wipe the policy.
 //
 // Throwaway org per test so state never collides across parallel projects/re-runs.
 
@@ -175,8 +176,8 @@ test.describe('J23 org subscription policy fields @p2', () => {
 
 		// No-clobber: a save that only touched the address must leave the policy
 		// exactly as it was. The failure this guards is FE-side (the #491 class) —
-		// a control whose value is dropped or reset on its way back into the
-		// payload would land the schema defaults (30 / none / off) here instead.
+		// a control that repopulates wrong and posts the schema default
+		// (30 / none / off) instead of what was saved would land it here.
 		const newAddress = `E2E Address ${org.slug}`;
 		await page.locator('#address').fill(newAddress);
 		await page.getByRole('button', { name: 'Save Changes' }).click();

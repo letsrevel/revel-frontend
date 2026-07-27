@@ -100,6 +100,7 @@ test.describe('J23 subscription lifecycle @p2', () => {
 		await drawer.getByRole('button', { name: 'Pause', exact: true }).click();
 		await expect(drawer.getByLabel('Paused')).toBeVisible({ timeout: 15_000 });
 		await gotoHydrated(memberPage, '/account/memberships');
+		await waitForClientAuth(memberPage);
 		await expect(card.getByLabel('Paused')).toBeVisible({ timeout: 15_000 });
 		await memberContext.close();
 

@@ -31,10 +31,12 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 // The Rejoin CTA is deliberately asserted but NOT clicked. PROBED on the live
 // stack (2026-07-27) — clicking it consumes the fixture permanently:
 // `POST …/subscription/revive` does not merely mint a Checkout Session, it
-// flips the SAME row EXPIRED → PENDING and clears `expired_at`'s window
-// (`create_revival_checkout` in subscription_stripe_service.py), so the account
-// hub immediately stops offering the rejoin and shows a "Pending / Awaiting
-// first payment" card instead. Abandoning the checkout does NOT restore it:
+// flips the SAME row EXPIRED → PENDING (`create_revival_checkout` in
+// subscription_stripe_service.py), so `revival_deadline` stops being reported
+// — the deadline resolver gates on EXPIRED status, while `expired_at` itself
+// survives the revive — and the account hub immediately stops offering the
+// rejoin, showing a "Pending / Awaiting first payment" card instead.
+// Abandoning the checkout does NOT restore it:
 // recovery runs in `_maybe_resume_pending_checkout`, which is only reached from
 // the SUBSCRIBE endpoint, and for a fixture row (no `MembershipPayment` ledger)
 // it DELETES the row rather than reverting it to EXPIRED. Repair needs a

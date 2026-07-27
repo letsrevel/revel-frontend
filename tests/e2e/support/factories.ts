@@ -1346,14 +1346,16 @@ export async function rejectApplication(
  * Set an org's membership-eligibility policy (the org-level defaults every
  * tier inherits unless it overrides them).
  *
- * READ-THEN-PUT: the endpoint takes OrganizationEditSchema, whose unsent
- * optional fields fall back to their schema defaults — a naive PUT carrying
- * only the policy would silently flip `accept_membership_requests` back off,
- * the org back to private, and blank every social link and location field.
- * So the body echoes back EVERY writable field of OrganizationEditSchema as
- * the admin retrieve currently reports it, with only the caller's keys
- * overridden — nothing an earlier arrange (or a spec's own settings-UI edit)
- * put on the org is lost.
+ * READ-THEN-PUT, defensively: the endpoint takes OrganizationEditSchema, and
+ * the BE update path currently applies it with `model_dump(exclude_unset=True)`
+ * (organization_service/lifecycle.py), so omitted fields are simply left alone
+ * — a policy-only PUT would NOT lose data today (see `createOrganization`
+ * above, which does a harmless naive 2-field PUT). This factory still echoes
+ * back EVERY writable field of OrganizationEditSchema as the admin retrieve
+ * currently reports it, with only the caller's keys overridden: a full
+ * representation write stays correct even if those update semantics ever
+ * change, and makes each write self-documenting about the org state it leaves
+ * behind.
  *
  * Two fields are deliberately never sent: `contact_email` (excluded from the
  * edit schema — it has its own verification flow) and `tags` (not writable
