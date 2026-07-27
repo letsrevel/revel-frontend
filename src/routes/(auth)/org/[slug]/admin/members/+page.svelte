@@ -41,7 +41,24 @@
 	const canManageSubscriptions = $derived(!!data.canManageSubscriptions);
 
 	// Active tab state
-	let activeTab = $state(data.canManageMembers ? 'members' : 'subscriptions');
+	const MEMBER_TABS = ['members', 'staff', 'requests', 'tiers', 'tokens'] as const;
+
+	// Initial-only read (no effect syncing): deep links from the retired
+	// standalone requests page land on ?tab=requests. Permission-validated so a
+	// subscriptions-only staffer can't be dropped on a tab that fires 403 queries.
+	function initialTab(): string {
+		const requested = $page.url.searchParams.get('tab');
+		if (requested === 'subscriptions' && data.canManageSubscriptions) return 'subscriptions';
+		if (
+			requested &&
+			data.canManageMembers &&
+			(MEMBER_TABS as readonly string[]).includes(requested)
+		) {
+			return requested;
+		}
+		return data.canManageMembers ? 'members' : 'subscriptions';
+	}
+	let activeTab = $state(initialTab());
 
 	// Create token modal state (shared between header button and tokens tab)
 	let isCreateTokenModalOpen = $state(false);
