@@ -1,8 +1,9 @@
-import { render, screen, waitFor, within } from '@testing-library/svelte';
+import { render, screen, within } from '@testing-library/svelte';
 import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import type { ComponentProps } from 'svelte';
 import TierFormModal from './TierFormModal.svelte';
+import { focusSettled } from '$lib/test-utils/focus';
 import type {
 	MembershipTierAdminSchema,
 	OrganizationQuestionnaireInListSchema
@@ -26,16 +27,7 @@ const goldTier: MembershipTierAdminSchema = {
 	requires_membership_approval: false
 };
 
-/**
- * Render the modal and wait for bits-ui's dialog auto-focus to land.
- *
- * The focus scope moves focus into the dialog from a `requestAnimationFrame`
- * scheduled at mount; under parallel-suite CPU contention it can land between
- * two of user-event's ~1ms keystrokes and swallow the rest of the word. The
- * steal happens exactly once per mount, so waiting for it before touching the
- * form removes the race rather than papering over it (same idiom as
- * `PlanFormModal.test.ts`).
- */
+/** Render the modal and wait out bits-ui's mount-time focus steal (`focusSettled`). */
 async function renderModal(props: Partial<ComponentProps<typeof TierFormModal>> = {}) {
 	const result = render(TierFormModal, {
 		props: {
@@ -48,7 +40,7 @@ async function renderModal(props: Partial<ComponentProps<typeof TierFormModal>> 
 			...props
 		}
 	});
-	await waitFor(() => expect(document.body).not.toHaveFocus());
+	await focusSettled();
 	return result;
 }
 

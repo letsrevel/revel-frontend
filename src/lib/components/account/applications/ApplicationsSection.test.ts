@@ -111,6 +111,16 @@ describe('ApplicationsSection', () => {
 		expect(screen.queryByRole('list', { name: 'In progress' })).toBeNull();
 	});
 
+	it('says the list failed instead of claiming there are no applications', async () => {
+		// The queryFn throws on `res.error`, so an errored response and a rejected
+		// call land in the same place — mirror the SDK's own `{ error }` shape.
+		listMock.mockResolvedValue({ data: undefined, error: { detail: 'boom' } });
+		renderSection();
+
+		expect(await screen.findByText(/could not load your applications/i)).toBeInTheDocument();
+		expect(screen.queryByText(/no applications yet/i)).toBeNull();
+	});
+
 	it('requests a single generous page of applications', async () => {
 		mockList([]);
 		renderSection();
