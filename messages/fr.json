@@ -3370,6 +3370,9 @@
 					"payments": "Paiements",
 					"paymentsEmpty": "Aucun paiement pour l'instant.",
 					"refund": "Rembourser",
+					"manageOnStripe": "Gérer sur Stripe",
+					"paymentOnStripe": "Voir sur Stripe",
+					"onlineRefundNote": "Les remboursements des paiements en ligne s'effectuent depuis le tableau de bord Stripe — ils sont enregistrés ici automatiquement.",
 					"paymentsCol": {
 						"date": "Date",
 						"amount": "Montant",

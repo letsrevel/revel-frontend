@@ -79,6 +79,13 @@ test.describe('J23 subscription lifecycle @p2', () => {
 		await expect(drawer.getByText('Payments')).toBeVisible();
 		await expect(drawer.getByText('15.00 EUR').first()).toBeVisible();
 
+		// BE #774 follow-up, OFFLINE side: nothing here is Stripe-backed, so the
+		// "Manage/View on Stripe" affordances must be absent — and the refund flow
+		// must be untouched (the ONLINE-only gating must not bleed into offline).
+		await expect(drawer.getByText('Manage on Stripe')).toBeHidden();
+		await expect(drawer.getByText('View on Stripe')).toBeHidden();
+		await expect(drawer.getByRole('button', { name: 'Refund', exact: true })).toBeVisible();
+
 		// Member: the subscription card renders under /account/memberships.
 		const memberContext = await browser.newContext();
 		await authenticateContext(memberContext, member);

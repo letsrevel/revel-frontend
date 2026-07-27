@@ -3399,6 +3399,9 @@
 					"payments": "Zahlungen",
 					"paymentsEmpty": "Noch keine Zahlungen.",
 					"refund": "Erstatten",
+					"manageOnStripe": "In Stripe verwalten",
+					"paymentOnStripe": "In Stripe ansehen",
+					"onlineRefundNote": "Erstattungen für Online-Zahlungen nimmst du im Stripe-Dashboard vor — sie werden hier automatisch erfasst.",
 					"paymentsCol": {
 						"date": "Datum",
 						"amount": "Betrag",

@@ -21,7 +21,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
-	import { Loader2 } from '@lucide/svelte';
+	import { ExternalLink, Loader2 } from '@lucide/svelte';
 	import StatusBadge from './StatusBadge.svelte';
 	import PaymentsTable from './PaymentsTable.svelte';
 	import RecordPaymentModal from './RecordPaymentModal.svelte';
@@ -81,11 +81,16 @@
 	const payments = $derived(paymentsQuery.data ?? []);
 	const actions = $derived(sub ? getAvailableActions(sub) : null);
 
+	// The plan's payment method is the same source the backend refund guard reads
+	// (`payment.subscription.plan.payment_method`), so gating on it here keeps the
+	// UI and the 400 exactly in step.
+	const isOnlinePlan = $derived(!!sub && sub.plan.payment_method === 'online');
+
 	// Stripe stops billing once a subscription is cancelled or expired, so the
 	// "payments arrive automatically" reassurance would be misleading there.
 	const TERMINAL_STATUSES = ['cancelled', 'expired'];
 	const showOnlinePaymentsNote = $derived(
-		!!sub && sub.plan.payment_method === 'online' && !TERMINAL_STATUSES.includes(sub.status)
+		isOnlinePlan && !!sub && !TERMINAL_STATUSES.includes(sub.status)
 	);
 
 	const isLoading = $derived.by(() => {
@@ -269,6 +274,18 @@
 						{m['orgAdmin.members.subscriptions.drawer.revive']()}
 					</Button>
 				{/if}
+				{#if sub.stripe_dashboard_url}
+					<Button
+						href={sub.stripe_dashboard_url}
+						target="_blank"
+						rel="noopener noreferrer"
+						size="sm"
+						variant="outline"
+					>
+						<ExternalLink class="h-4 w-4" aria-hidden="true" />
+						{m['orgAdmin.members.subscriptions.drawer.manageOnStripe']()}
+					</Button>
+				{/if}
 			</div>
 
 			{#if showOnlinePaymentsNote}
@@ -284,7 +301,7 @@
 				{#if paymentsQuery.isLoading}
 					<Loader2 class="h-4 w-4 animate-spin" />
 				{:else}
-					<PaymentsTable {payments} onRefund={(p) => (refundTarget = p)} />
+					<PaymentsTable {payments} {isOnlinePlan} onRefund={(p) => (refundTarget = p)} />
 				{/if}
 			</div>
 

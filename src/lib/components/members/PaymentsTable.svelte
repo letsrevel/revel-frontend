@@ -2,14 +2,27 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { PaymentSchema2 } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
+	import { ExternalLink } from '@lucide/svelte';
 	import { formatDate } from '$lib/utils/date';
 
 	interface Props {
 		payments: PaymentSchema2[];
+		/**
+		 * Whether the owning subscription sits on an ONLINE (Stripe) plan. Mirrors
+		 * the backend guard, which refuses `POST .../refund` with a 400 for those
+		 * payments: money moved through Stripe has to come back through Stripe,
+		 * and the `charge.refunded` webhook records it here on its own. So we hide
+		 * the control entirely rather than render one the API will reject.
+		 */
+		isOnlinePlan?: boolean;
 		onRefund: (p: PaymentSchema2) => void;
 	}
 
-	const { payments, onRefund }: Props = $props();
+	const { payments, isOnlinePlan = false, onRefund }: Props = $props();
+
+	const showOnlineRefundNote = $derived(
+		isOnlinePlan && payments.some((p) => p.status === 'succeeded')
+	);
 
 	function fmtDate(d: string | null | undefined): string {
 		if (!d) return '—';
@@ -37,15 +50,34 @@
 					<td class="py-2">{fmtDate(p.occurred_at ?? p.created_at)}</td>
 					<td class="py-2">{p.amount} {p.currency}</td>
 					<td class="py-2 capitalize">{p.status}</td>
-					<td class="py-2 text-right">
-						{#if p.status === 'succeeded'}
-							<Button size="sm" variant="ghost" onclick={() => onRefund(p)}>
-								{m['orgAdmin.members.subscriptions.drawer.refund']()}
-							</Button>
-						{/if}
+					<td class="py-2">
+						<div class="flex flex-wrap items-center justify-end gap-1">
+							{#if p.stripe_dashboard_url}
+								<Button
+									href={p.stripe_dashboard_url}
+									target="_blank"
+									rel="noopener noreferrer"
+									size="sm"
+									variant="ghost"
+								>
+									<ExternalLink class="h-4 w-4" aria-hidden="true" />
+									{m['orgAdmin.members.subscriptions.drawer.paymentOnStripe']()}
+								</Button>
+							{/if}
+							{#if p.status === 'succeeded' && !isOnlinePlan}
+								<Button size="sm" variant="ghost" onclick={() => onRefund(p)}>
+									{m['orgAdmin.members.subscriptions.drawer.refund']()}
+								</Button>
+							{/if}
+						</div>
 					</td>
 				</tr>
 			{/each}
 		</tbody>
 	</table>
+	{#if showOnlineRefundNote}
+		<p class="mt-2 text-xs text-muted-foreground">
+			{m['orgAdmin.members.subscriptions.drawer.onlineRefundNote']()}
+		</p>
+	{/if}
 {/if}

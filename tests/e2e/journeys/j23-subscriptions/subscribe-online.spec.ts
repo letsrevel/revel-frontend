@@ -137,6 +137,43 @@ test.describe('J23 hosted-checkout subscribe @p2', () => {
 		await expect(membershipCard.getByText(plan.name)).toBeVisible();
 		await expect(membershipCard.getByLabel('Active')).toBeVisible();
 
+		// BE #774 follow-up, ONLINE side. This is the only place the real Stripe
+		// handles exist, so it is the only place that can prove the admin schema's
+		// `stripe_dashboard_url` is actually populated (the unit tests can only
+		// prove we render one when given it). The refund control must be gone with
+		// it: the backend now 400s refunds for ONLINE payments.
+		const adminContext = await browser.newContext();
+		await authenticateContext(adminContext, 'owner');
+		const admin = await adminContext.newPage();
+		await gotoHydrated(admin, `/org/${ORG_SLUG}/admin/members`);
+		await waitForClientAuth(admin);
+		await admin.getByRole('tab', { name: /Subs/ }).click();
+		// Search by email: the display name ("E2E SubOnline") repeats across runs.
+		await admin.getByPlaceholder('Search by name or email…').fill(user.email);
+		// Filter the row by its email TEXT rather than clicking `.first()`: the
+		// search is debounced, so an immediate first-row click lands on whatever
+		// unfiltered row was already there and opens the wrong drawer. Text-filtering
+		// makes Playwright wait for the list to actually converge. Both layouts
+		// qualify — the desktop <tr role="button"> and the mobile <button> each
+		// render the email — so one locator covers both projects.
+		const row = admin.getByRole('button').filter({ hasText: user.email }).filter({ visible: true });
+		await expect(row.first()).toBeVisible({ timeout: 20_000 });
+		await row.first().click();
+
+		const drawer = admin.getByRole('dialog').filter({ hasText: user.email });
+		await expect(drawer).toBeVisible({ timeout: 15_000 });
+		const manageLink = drawer.getByRole('link', { name: 'Manage on Stripe' });
+		await expect(manageLink).toBeVisible({ timeout: 15_000 });
+		await expect(manageLink).toHaveAttribute('href', /dashboard\.stripe\.com\/.*subscriptions\//);
+		await expect(manageLink).toHaveAttribute('target', '_blank');
+		// The webhook-recorded payment carries its own Stripe link, and no refund.
+		await expect(drawer.getByRole('link', { name: 'View on Stripe' }).first()).toBeVisible({
+			timeout: 15_000
+		});
+		await expect(drawer.getByRole('button', { name: 'Refund', exact: true })).toBeHidden();
+		await expect(drawer.getByText('Stripe Dashboard')).toBeVisible();
+
+		await adminContext.close();
 		await context.close();
 	});
 

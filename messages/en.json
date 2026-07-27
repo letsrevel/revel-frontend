@@ -3399,6 +3399,9 @@
 					"payments": "Payments",
 					"paymentsEmpty": "No payments yet.",
 					"refund": "Refund",
+					"manageOnStripe": "Manage on Stripe",
+					"paymentOnStripe": "View on Stripe",
+					"onlineRefundNote": "Refunds for online payments are issued from the Stripe Dashboard — they are recorded here automatically.",
 					"paymentsCol": {
 						"date": "Date",
 						"amount": "Amount",

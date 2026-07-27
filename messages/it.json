@@ -3399,6 +3399,9 @@
 					"payments": "Pagamenti",
 					"paymentsEmpty": "Ancora nessun pagamento.",
 					"refund": "Rimborsa",
+					"manageOnStripe": "Gestisci su Stripe",
+					"paymentOnStripe": "Vedi su Stripe",
+					"onlineRefundNote": "I rimborsi dei pagamenti online si effettuano dalla dashboard Stripe — vengono registrati qui automaticamente.",
 					"paymentsCol": {
 						"date": "Data",
 						"amount": "Importo",
