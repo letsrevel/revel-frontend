@@ -313,6 +313,37 @@ describe('SubscriptionDrawer uncancel', () => {
 			)
 		);
 	});
+
+	/**
+	 * 403 (`_assert_membership_allows_renewal`). The button cannot be gated here —
+	 * `SubscriptionSchema` carries no membership status — so the refusal has to be
+	 * translated on arrival. The backend's own detail is written for the member
+	 * ("Contact the organizers…"), which is nonsense when the reader IS the
+	 * organizer, so it is replaced rather than passed through.
+	 */
+	it('replaces the member-facing 403 detail with organizer copy', async () => {
+		const user = userEvent.setup();
+		arrange(makeSub({ cancel_at_period_end: true }));
+		vi.mocked(organizationadminsubscriptionsUncancelSubscription).mockResolvedValue({
+			data: undefined,
+			error: {
+				detail: 'This membership is suspended. Contact the organizers to have it restored first.'
+			},
+			response: { ok: false, status: 403 } as unknown as Response
+		} as unknown as Awaited<ReturnType<typeof organizationadminsubscriptionsUncancelSubscription>>);
+		renderDrawer();
+
+		await user.click(await screen.findByRole('button', { name: 'Undo cancellation' }));
+
+		await waitFor(() =>
+			expect(toastErrorMock).toHaveBeenCalledWith(
+				"This membership is suspended, so renewal can't restart. Restore it from the Members tab first, then undo the cancellation."
+			)
+		);
+		expect(toastErrorMock).not.toHaveBeenCalledWith(
+			expect.stringContaining('Contact the organizers')
+		);
+	});
 });
 
 describe('SubscriptionDrawer pause confirmation', () => {

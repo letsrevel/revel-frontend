@@ -17,11 +17,13 @@ const portalMock = vi.hoisted(() => vi.fn());
 const plansMock = vi.hoisted(() => vi.fn());
 const subscribeMock = vi.hoisted(() => vi.fn());
 const uncancelMock = vi.hoisted(() => vi.fn());
+const paymentsMock = vi.hoisted(() => vi.fn());
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	mesubscriptionsCreateBillingPortalSession: portalMock,
 	organizationListMembershipPlans: plansMock,
 	mesubscriptionsSubscribe: subscribeMock,
 	mesubscriptionsUncancelSubscription: uncancelMock,
+	mesubscriptionsListMySubscriptionPayments: paymentsMock,
 	mesubscriptionsCancelSubscription: vi.fn(),
 	mesubscriptionsChangePlan: vi.fn(),
 	organizationGetOrganization: vi.fn()
@@ -81,14 +83,17 @@ function makeOfflineSub(overrides: Partial<MySubscriptionSchema> = {}): MySubscr
 	return { ...sub, plan: { ...sub.plan, payment_method: 'offline' } };
 }
 
-function makeMembership(sub: MySubscriptionSchema | null): MyMembershipSchema {
+function makeMembership(
+	sub: MySubscriptionSchema | null,
+	status: MyMembershipSchema['status'] = 'active'
+): MyMembershipSchema {
 	return {
 		organization_id: 'org-1',
 		organization_name: 'Test Org',
 		organization_slug: 'test-org',
 		organization_logo_url: null,
 		member_since: '2026-08-01T00:00:00Z',
-		status: 'active',
+		status,
 		tier: null,
 		subscription: sub
 	};
@@ -128,6 +133,10 @@ describe('MembershipCard', () => {
 			value: { href: PAGE_URL } as Location
 		});
 		plansMock.mockResolvedValue({ data: [makePlan()], error: undefined });
+		paymentsMock.mockResolvedValue({
+			data: { count: 0, next: null, previous: null, results: [] },
+			error: undefined
+		});
 	});
 
 	afterEach(() => {
@@ -405,6 +414,74 @@ describe('MembershipCard', () => {
 		expect(
 			screen.getByText('Managed by Test Org — contact them to make changes.')
 		).toBeInTheDocument();
+	});
+
+	/**
+	 * The reachable 403 (#808 follow-up): staff PAUSE a member whose subscription
+	 * was already scheduled to cancel, `_mirror_status_to_subscriptions` skips it,
+	 * and the row stays ACTIVE while the member row is PAUSED. Every guard the card
+	 * used to check passes, so the button rendered and the click was a guaranteed
+	 * `_assert_membership_allows_renewal` refusal.
+	 */
+	it('withdraws the resume button and says why when the membership is suspended', () => {
+		renderCard(makeMembership(makeSub({ cancel_at_period_end: true }), 'paused'));
+
+		expect(screen.queryByRole('button', { name: 'Resume renewal' })).toBeNull();
+		expect(
+			screen.getByText(
+				'Your membership is suspended. The organizers have to restore it before your renewal can start again.'
+			)
+		).toBeInTheDocument();
+		// Informational, not an alarm — the member cannot act on it beyond asking.
+		expect(screen.queryByRole('alert')).toBeNull();
+	});
+
+	// The subscription itself carries the pause here, so `pausedHint` already says
+	// it — a second notice saying the same thing is noise.
+	it('does not double up on the notice when the subscription mirrors the pause', () => {
+		renderCard(makeMembership(makeSub({ status: 'paused' }), 'paused'));
+
+		expect(
+			screen.getByText('Paused by the organization — contact them to resume.')
+		).toBeInTheDocument();
+		expect(screen.queryByText(/Your membership is suspended/)).toBeNull();
+	});
+
+	it('shows no suspension notice for an active membership', () => {
+		renderCard(makeMembership(makeSub({ cancel_at_period_end: true })));
+
+		expect(screen.queryByText(/Your membership is suspended/)).toBeNull();
+		expect(screen.getByRole('button', { name: 'Resume renewal' })).toBeInTheDocument();
+	});
+
+	/**
+	 * One card renders per membership on the account hub, so an eager payments
+	 * query here would be an N+1 across the whole list.
+	 */
+	it('offers the payment history collapsed and does not fetch it until opened', async () => {
+		const user = userEvent.setup();
+		renderCard(makeMembership(makeSub()));
+
+		const toggle = screen.getByRole('button', { name: /payment history/i });
+		expect(toggle).toHaveAttribute('aria-expanded', 'false');
+		expect(paymentsMock).not.toHaveBeenCalled();
+
+		await user.click(toggle);
+
+		expect(toggle).toHaveAttribute('aria-expanded', 'true');
+		await waitFor(() =>
+			expect(paymentsMock).toHaveBeenCalledWith(
+				expect.objectContaining({ path: { org_id: 'org-1' } })
+			)
+		);
+	});
+
+	// The endpoint is org-scoped and covers subscriptions that have since ended, so
+	// the history has to outlive the subscription it was paid for.
+	it('still offers the payment history when there is no live subscription', () => {
+		renderCard(makeMembership(null));
+
+		expect(screen.getByRole('button', { name: /payment history/i })).toBeInTheDocument();
 	});
 
 	it('still shows the plain member-since line when there is no subscription', () => {

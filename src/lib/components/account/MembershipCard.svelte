@@ -15,7 +15,13 @@
 	import StatusBadge from '$lib/components/members/StatusBadge.svelte';
 	import CancelSubscriptionDialog from './subscription-actions/CancelSubscriptionDialog.svelte';
 	import ChangePlanDialog from './subscription-actions/ChangePlanDialog.svelte';
-	import { formatPlanPrice, getDateLine, getMemberActions } from '$lib/utils/subscriptions';
+	import MembershipPaymentHistory from './MembershipPaymentHistory.svelte';
+	import {
+		formatPlanPrice,
+		getDateLine,
+		getMemberActions,
+		needsMembershipSuspendedNotice
+	} from '$lib/utils/subscriptions';
 	import { formatDate } from '$lib/utils/date';
 	import { settleSubscriptionCaches } from '$lib/utils/subscription-cache';
 	import { backendMessage } from '$lib/utils/api-error-detail';
@@ -33,8 +39,10 @@
 	const accessToken = $derived(authStore.accessToken);
 
 	// Single source of truth for what a member may do here — never re-derive
-	// status/payment-method logic inline.
-	const actions = $derived(sub ? getMemberActions(sub) : null);
+	// status/payment-method logic inline. The membership's own status is threaded
+	// in because `uncancel` is refused (403) for a suspended member, and only the
+	// membership row carries that fact.
+	const actions = $derived(sub ? getMemberActions(sub, new Date(), membership.status) : null);
 	const isOffline = $derived(sub?.plan.payment_method === 'offline');
 
 	let cancelOpen = $state(false);
@@ -66,6 +74,17 @@
 	 * resume themselves.
 	 */
 	const isPaused = $derived(sub?.status === 'paused');
+
+	/**
+	 * The *membership* is suspended while the subscription itself still looks fine
+	 * — the state a staff PAUSE leaves behind on a row that was already scheduled
+	 * to cancel (`_mirror_status_to_subscriptions` skips those). Nothing else on
+	 * the card would say so: the badge reads "Active", `isPaused` is false, and the
+	 * only visible consequence is that Resume renewal quietly isn't there. Same
+	 * muted, non-alarming treatment as the pause notice — it is information, and
+	 * the member can't act on it beyond contacting the organizers.
+	 */
+	const membershipSuspended = $derived(needsMembershipSuspendedNotice(sub, membership.status));
 
 	/**
 	 * A queued plan change takes effect at the end of the paid period, so the
@@ -258,6 +277,12 @@
 					</p>
 				{/if}
 
+				{#if membershipSuspended}
+					<p class="mt-3 rounded-lg border bg-muted p-3 text-sm text-muted-foreground">
+						{m['subscriptions.membershipSuspendedHint']()}
+					</p>
+				{/if}
+
 				<p class="mt-2 text-sm">
 					{#if line.kind === 'renewal'}
 						{m['subscriptions.dateLine.renewal']({ date: fmtDate(line.date) })}
@@ -368,6 +393,13 @@
 					</Button>
 				{/if}
 			</div>
+
+			<!-- Outside every `{#if sub}` on purpose: the endpoint is org-scoped and
+			     returns the receipts of subscriptions that have since ended, so the
+			     history has to survive a cancel/revive cycle. Deliberately not gated on
+			     payment method either — an OFFLINE member has no Stripe portal, so this
+			     is the only record they have of what they were charged. -->
+			<MembershipPaymentHistory organizationId={membership.organization_id} />
 		</article>
 	</CardContent>
 </Card>

@@ -12,8 +12,12 @@
 	import { formatMoney } from '$lib/utils/format';
 	import { formatDate, formatEventDate } from '$lib/utils/date';
 	import CurrencyFinancialsSummary from '$lib/components/financials/CurrencyFinancialsSummary.svelte';
+	import MembershipFinancialsSummary from '$lib/components/financials/MembershipFinancialsSummary.svelte';
+	import CombinedTotalsSummary from '$lib/components/financials/CombinedTotalsSummary.svelte';
+	import FinancialsNote from '$lib/components/financials/FinancialsNote.svelte';
 	import PeriodFilter from '$lib/components/financials/PeriodFilter.svelte';
 	import type { PeriodValue } from '$lib/components/financials/period';
+	import { entryFor, selectSections } from '$lib/components/financials/entries';
 	import RevenueReportButton from '$lib/components/financials/RevenueReportButton.svelte';
 	import { BarChart3, ChevronDown, Loader2, ArrowUpDown } from '@lucide/svelte';
 	import type { PageData } from './$types';
@@ -97,20 +101,10 @@
 	const financials = $derived(financialsQuery.data);
 	const activeCurrency = $derived(financials?.active_currency ?? params.currency ?? null);
 
-	// Pick the figures for the currently-active currency, falling back to the first
-	// available so a row is never blank when currencies are mixed.
-	function entryFor(
-		entries: CurrencyFinancialsSchema[],
-		currency: string | null
-	): CurrencyFinancialsSchema | undefined {
-		if (entries.length === 0) return undefined;
-		if (!currency) return entries[0];
-		return entries.find((entry) => entry.currency === currency) ?? entries[0];
-	}
-
-	const totalsEntry = $derived(
-		financials ? entryFor(financials.totals, activeCurrency) : undefined
-	);
+	// Ticket totals, membership money and their sum, all narrowed to the active
+	// currency. See `entries.ts` for why `combined` is withheld when only one side
+	// has money, and why "nothing at all" is not the same as "no ticket sales".
+	const sections = $derived(selectSections(financials, activeCurrency));
 
 	const expanded = $state<Record<string, boolean>>({});
 	function toggleExpanded(eventId: string) {
@@ -221,85 +215,118 @@
 			})}
 		</p>
 
-		<!-- Totals -->
-		{#if totalsEntry}
-			<div class="rounded-lg border border-border bg-card p-5">
-				<h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-					{m['financials.totalsHeading']()}
+		{#if sections.nothingAtAll}
+			<div class="rounded-lg border border-border bg-card p-12 text-center">
+				<BarChart3 class="mx-auto h-10 w-10 text-muted-foreground" aria-hidden="true" />
+				<h3 class="mt-4 text-lg font-semibold">{m['financials.empty.title']()}</h3>
+				<p class="mt-2 text-sm text-muted-foreground">{m['financials.empty.description']()}</p>
+			</div>
+		{:else}
+			<!-- Ticket totals -->
+			{#if sections.totals}
+				<div class="space-y-4 rounded-lg border border-border bg-card p-5">
+					<h2 class="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+						{m['financials.totalsHeading']()}
+					</h2>
+					<CurrencyFinancialsSummary data={sections.totals} />
+					<FinancialsNote>{m['financials.netTaxableNote']()}</FinancialsNote>
+				</div>
+			{/if}
+
+			<!-- Membership revenue (org-level, no VAT treatment) -->
+			{#if sections.memberships}
+				<div class="space-y-4 rounded-lg border border-border bg-card p-5">
+					<h2 class="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+						{m['financials.membershipsHeading']()}
+					</h2>
+					<MembershipFinancialsSummary data={sections.memberships} />
+				</div>
+			{/if}
+
+			<!-- Tickets + memberships -->
+			{#if sections.combined}
+				<div class="space-y-4 rounded-lg border border-primary/40 bg-card p-5">
+					<h2 class="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+						{m['financials.combinedHeading']()}
+					</h2>
+					<CombinedTotalsSummary data={sections.combined} />
+				</div>
+			{/if}
+
+			<!-- Per-event breakdown -->
+			<div>
+				<h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+					{m['financials.byEventHeading']()}
 				</h2>
-				<CurrencyFinancialsSummary data={totalsEntry} />
+
+				{#if financials.events.length === 0}
+					<div class="rounded-lg border border-border bg-card p-12 text-center">
+						<BarChart3 class="mx-auto h-10 w-10 text-muted-foreground" aria-hidden="true" />
+						<h3 class="mt-4 text-lg font-semibold">{m['financials.empty.eventsTitle']()}</h3>
+						<p class="mt-2 text-sm text-muted-foreground">
+							{m['financials.empty.eventsDescription']()}
+						</p>
+					</div>
+				{:else}
+					<ul class="space-y-2">
+						{#each financials.events as event (event.event_id)}
+							{@const entry = eventEntry(event)}
+							<li class="overflow-hidden rounded-lg border border-border bg-card">
+								<button
+									type="button"
+									onclick={() => toggleExpanded(event.event_id)}
+									class="flex w-full items-center gap-4 p-4 text-left transition-colors hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+									aria-expanded={expanded[event.event_id] ?? false}
+								>
+									<div class="min-w-0 flex-1">
+										<span class="block truncate font-semibold">{event.event_name}</span>
+										<span class="text-sm text-muted-foreground">
+											{formatEventDate(event.event_start)}
+										</span>
+									</div>
+
+									<div class="hidden shrink-0 text-right sm:block">
+										<span class="block text-xs text-muted-foreground"
+											>{m['financials.gross']()}</span
+										>
+										<span class="tabular-nums">
+											{formatMoney(entry?.gross ?? 0, entry?.currency ?? activeCurrency)}
+										</span>
+									</div>
+
+									<div class="shrink-0 text-right">
+										<span class="block text-xs text-muted-foreground">{m['financials.net']()}</span>
+										<span class="font-semibold tabular-nums">
+											{formatMoney(entry?.net ?? 0, entry?.currency ?? activeCurrency)}
+										</span>
+									</div>
+
+									<ChevronDown
+										class="h-5 w-5 shrink-0 text-muted-foreground transition-transform {expanded[
+											event.event_id
+										]
+											? 'rotate-180'
+											: ''}"
+										aria-hidden="true"
+									/>
+								</button>
+
+								{#if expanded[event.event_id]}
+									<div class="border-t border-border bg-muted/20 p-4">
+										{#if entry}
+											<CurrencyFinancialsSummary data={entry} />
+										{:else}
+											<p class="text-sm text-muted-foreground">
+												{m['financials.noFiguresForCurrency']()}
+											</p>
+										{/if}
+									</div>
+								{/if}
+							</li>
+						{/each}
+					</ul>
+				{/if}
 			</div>
 		{/if}
-
-		<!-- Per-event breakdown -->
-		<div>
-			<h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-				{m['financials.byEventHeading']()}
-			</h2>
-
-			{#if financials.events.length === 0}
-				<div class="rounded-lg border border-border bg-card p-12 text-center">
-					<BarChart3 class="mx-auto h-10 w-10 text-muted-foreground" aria-hidden="true" />
-					<h3 class="mt-4 text-lg font-semibold">{m['financials.empty.title']()}</h3>
-					<p class="mt-2 text-sm text-muted-foreground">{m['financials.empty.description']()}</p>
-				</div>
-			{:else}
-				<ul class="space-y-2">
-					{#each financials.events as event (event.event_id)}
-						{@const entry = eventEntry(event)}
-						<li class="overflow-hidden rounded-lg border border-border bg-card">
-							<button
-								type="button"
-								onclick={() => toggleExpanded(event.event_id)}
-								class="flex w-full items-center gap-4 p-4 text-left transition-colors hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
-								aria-expanded={expanded[event.event_id] ?? false}
-							>
-								<div class="min-w-0 flex-1">
-									<span class="block truncate font-semibold">{event.event_name}</span>
-									<span class="text-sm text-muted-foreground">
-										{formatEventDate(event.event_start)}
-									</span>
-								</div>
-
-								<div class="hidden shrink-0 text-right sm:block">
-									<span class="block text-xs text-muted-foreground">{m['financials.gross']()}</span>
-									<span class="tabular-nums">
-										{formatMoney(entry?.gross ?? 0, entry?.currency ?? activeCurrency)}
-									</span>
-								</div>
-
-								<div class="shrink-0 text-right">
-									<span class="block text-xs text-muted-foreground">{m['financials.net']()}</span>
-									<span class="font-semibold tabular-nums">
-										{formatMoney(entry?.net ?? 0, entry?.currency ?? activeCurrency)}
-									</span>
-								</div>
-
-								<ChevronDown
-									class="h-5 w-5 shrink-0 text-muted-foreground transition-transform {expanded[
-										event.event_id
-									]
-										? 'rotate-180'
-										: ''}"
-									aria-hidden="true"
-								/>
-							</button>
-
-							{#if expanded[event.event_id]}
-								<div class="border-t border-border bg-muted/20 p-4">
-									{#if entry}
-										<CurrencyFinancialsSummary data={entry} />
-									{:else}
-										<p class="text-sm text-muted-foreground">
-											{m['financials.noFiguresForCurrency']()}
-										</p>
-									{/if}
-								</div>
-							{/if}
-						</li>
-					{/each}
-				</ul>
-			{/if}
-		</div>
 	{/if}
 </section>

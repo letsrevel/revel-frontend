@@ -6,8 +6,10 @@ import {
 	getStatusConfig,
 	getDateLine,
 	getMemberActions,
+	isMembershipSuspended,
 	isWithinRevivalWindow,
 	monthlyEquivalent,
+	needsMembershipSuspendedNotice,
 	classifyPlanChange
 } from './subscriptions';
 import type { MySubscriptionSchema, PlanSchema } from '$lib/api/generated/types.gen';
@@ -269,6 +271,32 @@ describe('canUncancel', () => {
 	// Likewise optional: an absent flag is "not scheduled", not "unknown".
 	it('treats an absent cancel_at_period_end as not scheduled', () => {
 		expect(canUncancel({ status: 'active', plan: { is_active: true } })).toBe(false);
+	});
+
+	// Guard 4 (`_assert_membership_allows_renewal`): a suspended member row makes
+	// the call a guaranteed 403, even though guards 1–3 all wave the row through.
+	it('withdraws the undo for a paused or banned membership', () => {
+		expect(canUncancel(live, 'paused')).toBe(false);
+		expect(canUncancel(live, 'banned')).toBe(false);
+	});
+
+	it('leaves the undo alone for an active membership or an unknown one', () => {
+		expect(canUncancel(live, 'active')).toBe(true);
+		// The admin drawer's SubscriptionSchema has no member status at all — an
+		// omitted one must not be read as "suspended".
+		expect(canUncancel(live)).toBe(true);
+		expect(canUncancel(live, null)).toBe(true);
+	});
+});
+
+describe('isMembershipSuspended', () => {
+	it('is true exactly for the two statuses the backend refuses', () => {
+		expect(isMembershipSuspended('paused')).toBe(true);
+		expect(isMembershipSuspended('banned')).toBe(true);
+		expect(isMembershipSuspended('active')).toBe(false);
+		expect(isMembershipSuspended('cancelled')).toBe(false);
+		expect(isMembershipSuspended(null)).toBe(false);
+		expect(isMembershipSuspended(undefined)).toBe(false);
 	});
 });
 
@@ -543,6 +571,68 @@ describe('getMemberActions', () => {
 		expect(
 			getMemberActions(mySub({ status: 'paused', cancel_at_period_end: true }), NOW).uncancel
 		).toBe(false);
+	});
+
+	/**
+	 * The reachable 403: `_mirror_status_to_subscriptions` skips a subscription
+	 * that is already scheduled to cancel, so a staff PAUSE leaves the member row
+	 * PAUSED while the subscription stays ACTIVE/PAST_DUE — guards 1–3 all pass and
+	 * `_assert_membership_allows_renewal` refuses.
+	 */
+	it.each(['active', 'past_due'] as const)(
+		'withdraws the undo on a %s row when the membership is suspended',
+		(status) => {
+			const sub = mySub({ status, cancel_at_period_end: true });
+			expect(getMemberActions(sub, NOW, 'paused').uncancel).toBe(false);
+			expect(getMemberActions(sub, NOW, 'banned').uncancel).toBe(false);
+			// The portal is untouched: it is not what the backend refuses.
+			expect(getMemberActions(sub, NOW, 'paused').manageBilling).toBe(true);
+			// …and an unsuspended membership keeps the way back.
+			expect(getMemberActions(sub, NOW, 'active').uncancel).toBe(true);
+			expect(getMemberActions(sub, NOW).uncancel).toBe(true);
+		}
+	);
+
+	// Suspension only ever narrows `uncancel`; nothing else on the matrix moves.
+	it('leaves an unscheduled active row untouched for a suspended membership', () => {
+		expect(getMemberActions(mySub(), NOW, 'paused')).toEqual({
+			manageBilling: true,
+			changePlan: true,
+			cancel: true,
+			revive: false,
+			resumePayment: false,
+			uncancel: false
+		});
+	});
+});
+
+describe('needsMembershipSuspendedNotice', () => {
+	it('speaks up when the member row is suspended but the subscription is not', () => {
+		expect(needsMembershipSuspendedNotice(mySub({ status: 'active' }), 'paused')).toBe(true);
+		expect(needsMembershipSuspendedNotice(mySub({ status: 'past_due' }), 'banned')).toBe(true);
+		expect(needsMembershipSuspendedNotice(mySub({ status: 'pending' }), 'paused')).toBe(true);
+	});
+
+	it('stays quiet for an unsuspended or unknown membership', () => {
+		expect(needsMembershipSuspendedNotice(mySub({ status: 'active' }), 'active')).toBe(false);
+		expect(needsMembershipSuspendedNotice(mySub({ status: 'active' }))).toBe(false);
+		expect(needsMembershipSuspendedNotice(mySub({ status: 'active' }), null)).toBe(false);
+	});
+
+	// `pausedHint` already says it — two notices saying the same thing is noise.
+	it('defers to the paused-subscription hint when the subscription mirrors the pause', () => {
+		expect(needsMembershipSuspendedNotice(mySub({ status: 'paused' }), 'paused')).toBe(false);
+	});
+
+	// Nothing left to restore, and a ban terminalizes the subscription anyway
+	// (`cancel_subscriptions_for_membership_loss`).
+	it.each(['cancelled', 'expired'] as const)('stays quiet on a %s subscription', (status) => {
+		expect(needsMembershipSuspendedNotice(mySub({ status }), 'banned')).toBe(false);
+	});
+
+	it('stays quiet on a membership with no subscription at all', () => {
+		expect(needsMembershipSuspendedNotice(null, 'paused')).toBe(false);
+		expect(needsMembershipSuspendedNotice(undefined, 'paused')).toBe(false);
 	});
 });
 

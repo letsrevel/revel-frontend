@@ -1,6 +1,7 @@
 import * as m from '$lib/paraglide/messages.js';
 import { getDateLocale } from './date';
 import type {
+	MembershipStatus,
 	MySubscriptionSchema,
 	SubscriptionSchema,
 	PlanSchema,
@@ -85,9 +86,24 @@ const ACTION_MATRIX: Record<SubscriptionStatus, ActionSet> = {
 };
 
 /**
+ * Is this *membership* row suspended by staff?
+ *
+ * Exactly the two `OrganizationMember.MembershipStatus` values
+ * `events.service.subscription_uncancel._assert_membership_allows_renewal`
+ * refuses with a 403 — a suspended member must not be put back on the renewal
+ * clock, because that would bill them for access they do not currently have.
+ * Note this is the *member row's* status, which is a different axis from the
+ * subscription's own `SubscriptionStatus`: the two can disagree (see
+ * `needsMembershipSuspendedNotice`).
+ */
+export function isMembershipSuspended(memberStatus?: MembershipStatus | null): boolean {
+	return memberStatus === 'paused' || memberStatus === 'banned';
+}
+
+/**
  * Would `POST …/uncancel` actually change something on this row?
  *
- * The three guards of `events.service.subscription_uncancel.uncancel_subscription`,
+ * The four guards of `events.service.subscription_uncancel.uncancel_subscription`,
  * in the backend's own order:
  *
  * 1. **terminal row → 400** (`Cannot resume renewal on a cancelled or expired
@@ -99,19 +115,33 @@ const ACTION_MATRIX: Record<SubscriptionStatus, ActionSet> = {
  *    new subscriptions.`) — keeping the renewal alive would go on billing a
  *    retired plan. `is_active` is optional in the generated schema (it carries a
  *    Django default), so only an explicit `false` withdraws the action.
+ * 4. **membership suspended → 403** (`This membership is suspended. Contact the
+ *    organizers to have it restored first.`, `_assert_membership_allows_renewal`).
+ *    Reachable because `_mirror_status_to_subscriptions` deliberately *skips* a
+ *    subscription that is already scheduled to cancel: a staff PAUSE then leaves
+ *    the member row PAUSED while the subscription stays ACTIVE/PAST_DUE with a
+ *    cancellation booked — precisely the state guards 1–3 all wave through.
+ *    Only the caller can supply this: the subscription row carries no member
+ *    status, so `memberStatus` is optional and an omitted one is "not suspended"
+ *    (the admin drawer's `SubscriptionSchema` has no such field at all — it keeps
+ *    the button and translates the 403 instead).
  *
  * Note the backend does *not* gate on payment method: an OFFLINE row takes the
  * purely local path. The ONLINE/OFFLINE split on the member surface is a frontend
  * policy decision (see `getMemberActions`), not a backend constraint.
  */
-export function canUncancel(sub: {
-	status: SubscriptionStatus;
-	cancel_at_period_end?: boolean;
-	plan: { is_active?: boolean };
-}): boolean {
+export function canUncancel(
+	sub: {
+		status: SubscriptionStatus;
+		cancel_at_period_end?: boolean;
+		plan: { is_active?: boolean };
+	},
+	memberStatus?: MembershipStatus | null
+): boolean {
 	if (sub.status === 'cancelled' || sub.status === 'expired') return false;
 	if (!sub.cancel_at_period_end) return false;
-	return sub.plan.is_active !== false;
+	if (sub.plan.is_active === false) return false;
+	return !isMembershipSuspended(memberStatus);
 }
 
 export function getAvailableActions(sub: MySubscriptionSchema | SubscriptionSchema): ActionSet {
@@ -258,10 +288,16 @@ export function isWithinRevivalWindow(
  * accept it on an OFFLINE row: an OFFLINE cancellation can only have been
  * scheduled by staff, and this surface never lets a member overrule a decision
  * the organization made on their behalf. Staff undo it from the drawer instead.
+ *
+ * `memberStatus` is the caller's own `MyMembershipSchema.status` — the member
+ * row that owns this subscription. It only feeds guard 4 of `canUncancel`
+ * (suspended membership → 403); every other action is unaffected, so an omitted
+ * status changes nothing.
  */
 export function getMemberActions(
 	sub: MySubscriptionSchema,
-	now: Date = new Date()
+	now: Date = new Date(),
+	memberStatus?: MembershipStatus | null
 ): MemberActionSet {
 	if (sub.plan.payment_method !== 'online') return NO_MEMBER_ACTIONS;
 	switch (sub.status) {
@@ -270,7 +306,11 @@ export function getMemberActions(
 			// `uncancel`, which is why `cancel` stays withdrawn here — renewal is
 			// already off, so the only meaningful moves are the portal and undoing it.
 			if (sub.cancel_at_period_end) {
-				return { ...NO_MEMBER_ACTIONS, manageBilling: true, uncancel: canUncancel(sub) };
+				return {
+					...NO_MEMBER_ACTIONS,
+					manageBilling: true,
+					uncancel: canUncancel(sub, memberStatus)
+				};
 			}
 			return {
 				...NO_MEMBER_ACTIONS,
@@ -282,7 +322,11 @@ export function getMemberActions(
 			// Same shape as ACTIVE: once renewal is off, cancelling again says nothing
 			// the row does not already say, and undoing it is the action that does.
 			if (sub.cancel_at_period_end) {
-				return { ...NO_MEMBER_ACTIONS, manageBilling: true, uncancel: canUncancel(sub) };
+				return {
+					...NO_MEMBER_ACTIONS,
+					manageBilling: true,
+					uncancel: canUncancel(sub, memberStatus)
+				};
 			}
 			// Deliberately stricter than the BE preflight, which would accept a change-plan
 			// here: settle the failed payment in the portal first, then switch plans.
@@ -299,6 +343,34 @@ export function getMemberActions(
 		default:
 			return NO_MEMBER_ACTIONS;
 	}
+}
+
+/** Subscription statuses where nothing is left to restore. */
+const TERMINAL_SUBSCRIPTION_STATUSES: readonly SubscriptionStatus[] = ['cancelled', 'expired'];
+
+/**
+ * Should the card say, in words, that the *membership* is suspended?
+ *
+ * A withdrawn button teaches nothing, and this is the one case where the member
+ * cannot infer the reason from anything else on the card: because
+ * `_mirror_status_to_subscriptions` skips a subscription that is already
+ * scheduled to cancel, a staff PAUSE can leave the member row PAUSED while the
+ * subscription itself stays ACTIVE/PAST_DUE — so the status badge reads "Active",
+ * `pausedHint` (which keys off the *subscription*) never fires, and yet every
+ * renewal-restoring action is a guaranteed 403.
+ *
+ * Withdrawn where it would be redundant or untrue: a subscription that is itself
+ * PAUSED already says so via `pausedHint`, and a terminal one has no renewal left
+ * to restore (a BANNED member's subscriptions are terminalized by
+ * `cancel_subscriptions_for_membership_loss`, so that is the usual ban shape).
+ */
+export function needsMembershipSuspendedNotice(
+	sub: Pick<MySubscriptionSchema, 'status'> | null | undefined,
+	memberStatus?: MembershipStatus | null
+): boolean {
+	if (!sub || !isMembershipSuspended(memberStatus)) return false;
+	if (sub.status === 'paused') return false;
+	return !TERMINAL_SUBSCRIPTION_STATUSES.includes(sub.status);
 }
 
 /**

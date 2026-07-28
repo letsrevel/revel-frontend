@@ -20,6 +20,7 @@
 		Link,
 		Plus,
 		CreditCard,
+		Receipt,
 		Info,
 		ChevronDown
 	} from '@lucide/svelte';
@@ -29,6 +30,7 @@
 	import TiersTab from '$lib/components/members/TiersTab.svelte';
 	import OrganizationTokensTab from '$lib/components/members/OrganizationTokensTab.svelte';
 	import SubscriptionsTab from '$lib/components/members/SubscriptionsTab.svelte';
+	import SubscriptionPaymentsTab from '$lib/components/members/SubscriptionPaymentsTab.svelte';
 
 	const { data }: { data: PageData } = $props();
 
@@ -43,13 +45,23 @@
 
 	// Active tab state
 	const MEMBER_TABS = ['members', 'staff', 'requests', 'tiers', 'tokens'] as const;
+	// Tabs whose queries are guarded by `manage_subscriptions` on the backend —
+	// including the org-wide payment ledger, whose controller uses that same
+	// permission (NOT the owner-only `manage_organization` behind Financials).
+	const SUBSCRIPTION_TABS = ['subscriptions', 'payments'] as const;
 
 	// Initial-only read (no effect syncing): deep links from the retired
 	// standalone requests page land on ?tab=requests. Permission-validated so a
 	// subscriptions-only staffer can't be dropped on a tab that fires 403 queries.
 	function initialTab(): string {
 		const requested = $page.url.searchParams.get('tab');
-		if (requested === 'subscriptions' && data.canManageSubscriptions) return 'subscriptions';
+		if (
+			requested &&
+			data.canManageSubscriptions &&
+			(SUBSCRIPTION_TABS as readonly string[]).includes(requested)
+		) {
+			return requested;
+		}
 		if (
 			requested &&
 			data.canManageMembers &&
@@ -213,7 +225,7 @@
 	<!-- Tabs -->
 	<Tabs bind:value={activeTab} class="w-full">
 		<div class="sticky top-32 z-20 -mb-px bg-background pb-3 pt-1">
-			<TabsList class="h-auto w-full grid-cols-3 gap-0.5 sm:grid-cols-6 sm:gap-1">
+			<TabsList class="h-auto w-full grid-cols-3 gap-0.5 sm:grid-cols-7 sm:gap-1">
 				{#if canManageMembers}
 					<TabsTrigger value="members" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
 						<Users class="h-4 w-4 shrink-0" />
@@ -254,6 +266,12 @@
 						<CreditCard class="h-4 w-4 shrink-0" />
 						<span class="hidden sm:inline">{m['orgAdmin.members.tabs.subscriptions']()}</span>
 						<span class="sm:hidden">{m['orgAdmin.members.tabs.subscriptionsShort']()}</span>
+					</TabsTrigger>
+
+					<TabsTrigger value="payments" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
+						<Receipt class="h-4 w-4 shrink-0" />
+						<span class="hidden sm:inline">{m['orgAdmin.members.payments.tabLabel']()}</span>
+						<span class="sm:hidden">{m['orgAdmin.members.payments.tabLabelShort']()}</span>
 					</TabsTrigger>
 				{/if}
 
@@ -308,6 +326,11 @@
 		{#if canManageSubscriptions}
 			<TabsContent value="subscriptions" class="space-y-4">
 				<SubscriptionsTab {organization} />
+			</TabsContent>
+
+			<!-- Org-wide membership payment ledger (reconciliation surface) -->
+			<TabsContent value="payments" class="space-y-4">
+				<SubscriptionPaymentsTab {organization} />
 			</TabsContent>
 		{/if}
 

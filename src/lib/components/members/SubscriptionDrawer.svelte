@@ -237,6 +237,11 @@
 	 * #808 — clear a scheduled cancellation, which also unblocks Pause on this row.
 	 * One click, like Resume: it restores the state the row was in before someone
 	 * scheduled the cancellation, and the Cancel dialog next to it is the undo.
+	 *
+	 * The button is never gated on the member's suspension the way the member-facing
+	 * card is: `SubscriptionSchema` carries no membership status at all (only the
+	 * subscription's own), so this surface cannot know in advance — it asks, and
+	 * translates the refusal below.
 	 */
 	const uncancelMut = createMutation(() => ({
 		mutationFn: async () => {
@@ -246,9 +251,16 @@
 			});
 			// A 502 means Stripe refused and the cancellation is still scheduled on
 			// both sides — the translated detail says so, so it is shown verbatim.
+			// The 403 is the one refusal whose backend copy is written for the *member*
+			// ("Contact the organizers to have it restored first"), which is absurd
+			// when the reader IS the organizer — so that status, and only that one,
+			// gets organizer-facing copy naming the tab they fix it from.
 			if (res.error)
 				throw new Error(
-					backendMessage(res.error) || m['orgAdmin.members.subscriptions.drawer.errors.uncancel']()
+					res.response?.status === 403
+						? m['orgAdmin.members.subscriptions.drawer.errors.uncancelSuspended']()
+						: backendMessage(res.error) ||
+								m['orgAdmin.members.subscriptions.drawer.errors.uncancel']()
 				);
 			return res.data;
 		},
