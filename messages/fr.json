@@ -3373,7 +3373,7 @@
 					"manageOnStripe": "Gérer sur Stripe",
 					"paymentOnStripe": "Voir sur Stripe",
 					"onlineRefundNote": "Les remboursements des paiements en ligne s'effectuent depuis le tableau de bord Stripe — ils sont enregistrés ici automatiquement.",
-					"partiallyRefunded": "({amount} {currency} remboursés)",
+					"partiallyRefunded": "(remboursement de {amount} {currency})",
 					"paymentsCol": {
 						"date": "Date",
 						"amount": "Montant",
@@ -7335,7 +7335,7 @@
 	"membershipRequestsTab.next": "Suivant",
 	"membershipRequestsTab.pageInfo": "Page {page} sur {totalPages} ({total} au total)",
 	"membershipRequestsTab.forceApproveTitle": "Approuver quand même ?",
-	"membershipRequestsTab.forceApproveExplainer": "Si tu approuves quand même, tu accordes ce niveau bien que le membre ait un abonnement actif ou en pause.",
+	"membershipRequestsTab.forceApproveExplainer": "Si tu approuves quand même, tu passes outre le refus ci-dessus et tu accordes immédiatement ce niveau au membre.",
 	"membershipRequestsTab.forceApproveConfirm": "Approuver quand même",
 	"membershipRequestsTab.forceApproveCancel": "Annuler",
 	"membersTab.removeMemberFailed": "Échec de la suppression du membre : {error}",

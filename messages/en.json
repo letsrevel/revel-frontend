@@ -7364,7 +7364,7 @@
 	"membershipRequestsTab.next": "Next",
 	"membershipRequestsTab.pageInfo": "Page {page} of {totalPages} ({total} total)",
 	"membershipRequestsTab.forceApproveTitle": "Approve anyway?",
-	"membershipRequestsTab.forceApproveExplainer": "Approving anyway will grant this tier even though the member has an active or paused subscription.",
+	"membershipRequestsTab.forceApproveExplainer": "Approving anyway overrides the refusal above and grants the tier to the member immediately.",
 	"membershipRequestsTab.forceApproveConfirm": "Approve anyway",
 	"membershipRequestsTab.forceApproveCancel": "Cancel",
 	"membersTab.removeMemberFailed": "Failed to remove member: {error}",

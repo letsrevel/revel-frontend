@@ -7364,7 +7364,7 @@
 	"membershipRequestsTab.next": "Weiter",
 	"membershipRequestsTab.pageInfo": "Seite {page} von {totalPages} ({total} insgesamt)",
 	"membershipRequestsTab.forceApproveTitle": "Trotzdem genehmigen?",
-	"membershipRequestsTab.forceApproveExplainer": "Wenn du trotzdem genehmigst, vergibst du diese Stufe, obwohl das Mitglied ein aktives oder pausiertes Abo hat.",
+	"membershipRequestsTab.forceApproveExplainer": "Wenn du trotzdem genehmigst, setzt du die Ablehnung oben außer Kraft und vergibst die Stufe sofort an das Mitglied.",
 	"membershipRequestsTab.forceApproveConfirm": "Trotzdem genehmigen",
 	"membershipRequestsTab.forceApproveCancel": "Abbrechen",
 	"membersTab.removeMemberFailed": "Mitglied konnte nicht entfernt werden: {error}",

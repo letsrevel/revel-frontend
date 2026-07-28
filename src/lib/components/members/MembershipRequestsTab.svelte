@@ -176,6 +176,16 @@
 				return;
 			}
 
+			// The forced retry failed, so the card the admin acted on is provably out
+			// of date (the 400 is a state guard `force` cannot bypass). Refetch the
+			// list, otherwise the stale card keeps offering approve → 400 → force →
+			// 400 forever with the UI never converging.
+			if (variables.force) {
+				queryClient.invalidateQueries({
+					queryKey: ['organization', organization.slug, 'membership-requests']
+				});
+			}
+
 			forceConfirm = null;
 			toast.error(error.message);
 		}
@@ -385,12 +395,13 @@
 	>
 		<DialogHeader>
 			<DialogTitle>{m['membershipRequestsTab.forceApproveTitle']()}</DialogTitle>
-			<DialogDescription>{forceConfirm?.detail}</DialogDescription>
+			<!-- The backend's own refusal first, then the cause-neutral consequence;
+			     both live in the description so they join `aria-describedby`. -->
+			<DialogDescription>
+				{forceConfirm?.detail}
+				<span class="mt-2 block">{m['membershipRequestsTab.forceApproveExplainer']()}</span>
+			</DialogDescription>
 		</DialogHeader>
-
-		<p class="text-sm text-muted-foreground">
-			{m['membershipRequestsTab.forceApproveExplainer']()}
-		</p>
 
 		<DialogFooter class="gap-2">
 			<Button

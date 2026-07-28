@@ -3402,7 +3402,7 @@
 					"manageOnStripe": "Gestisci su Stripe",
 					"paymentOnStripe": "Vedi su Stripe",
 					"onlineRefundNote": "I rimborsi dei pagamenti online si effettuano dalla dashboard Stripe — vengono registrati qui automaticamente.",
-					"partiallyRefunded": "({amount} {currency} rimborsati)",
+					"partiallyRefunded": "(rimborso di {amount} {currency})",
 					"paymentsCol": {
 						"date": "Data",
 						"amount": "Importo",
@@ -7364,7 +7364,7 @@
 	"membershipRequestsTab.next": "Successivo",
 	"membershipRequestsTab.pageInfo": "Pagina {page} di {totalPages} ({total} totali)",
 	"membershipRequestsTab.forceApproveTitle": "Approvare comunque?",
-	"membershipRequestsTab.forceApproveExplainer": "Approvando comunque assegni questo livello anche se la persona ha un abbonamento attivo o in pausa.",
+	"membershipRequestsTab.forceApproveExplainer": "Approvando comunque ignori il rifiuto qui sopra e assegni subito questo livello al membro.",
 	"membershipRequestsTab.forceApproveConfirm": "Approva comunque",
 	"membershipRequestsTab.forceApproveCancel": "Annulla",
 	"membersTab.removeMemberFailed": "Impossibile rimuovere il membro: {error}",

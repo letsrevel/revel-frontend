@@ -70,13 +70,16 @@ function renderTab(tierList: MembershipTierSchema[] = tiers) {
 	const client = new QueryClient({
 		defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
 	});
-	return render(QueryClientTestWrapper, {
+	render(QueryClientTestWrapper, {
 		props: {
 			client,
 			component: MembershipRequestsTab,
 			componentProps: { organization, tiers: tierList }
 		}
 	});
+	// Handed back so cache-invalidation assertions can spy on the very client the
+	// component under test is wired to.
+	return { client };
 }
 
 // bits-ui pins pointer-events on <body> while a dialog is open; jsdom keeps
@@ -327,8 +330,28 @@ describe('MembershipRequestsTab force approve', () => {
 
 		const dialog = await screen.findByRole('dialog');
 		expect(dialog).toHaveTextContent('Ada Lovelace holds an active subscription.');
-		expect(dialog).toHaveTextContent(/Approving anyway will grant this tier/i);
+		// Cause-neutral: the consequence only, never a second guess at the reason —
+		// the backend's own detail above it is the single source of the cause.
+		expect(dialog).toHaveTextContent(/Approving anyway overrides the refusal above/i);
 		expect(toast.error).not.toHaveBeenCalled();
+	});
+
+	it('describes the dialog with both the backend detail and the explainer', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest).mockResolvedValue(
+			approveFailure(400, 'Ada Lovelace holds an active subscription.')
+		);
+
+		renderTab([tiers[0]]);
+
+		await user.click(await screen.findByRole('button', { name: /approve request from/i }));
+
+		const dialog = await screen.findByRole('dialog');
+		const describedBy = dialog.getAttribute('aria-describedby');
+		expect(describedBy).toBeTruthy();
+		const description = document.getElementById(describedBy as string);
+		expect(description).toHaveTextContent('Ada Lovelace holds an active subscription.');
+		expect(description).toHaveTextContent(/Approving anyway overrides the refusal above/i);
 	});
 
 	it('retries with force: true and closes the dialog on success', async () => {
@@ -358,13 +381,14 @@ describe('MembershipRequestsTab force approve', () => {
 		expect(toast.error).not.toHaveBeenCalled();
 	});
 
-	it('falls back to a toast when the forced retry is refused too', async () => {
+	it('falls back to a toast and refetches the list when the forced retry is refused too', async () => {
 		const user = userEvent.setup();
 		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest)
 			.mockResolvedValueOnce(approveFailure(400, 'Already subscribed.'))
 			.mockResolvedValueOnce(approveFailure(400, 'Application is no longer pending.'));
 
-		renderTab([tiers[0]]);
+		const { client } = renderTab([tiers[0]]);
+		const invalidateSpy = vi.spyOn(client, 'invalidateQueries');
 
 		await user.click(await screen.findByRole('button', { name: /approve request from/i }));
 		await screen.findByRole('dialog');
@@ -374,9 +398,29 @@ describe('MembershipRequestsTab force approve', () => {
 		await waitFor(() => {
 			expect(toast.error).toHaveBeenCalledWith('Application is no longer pending.');
 		});
+		// A refused *forced* retry proves the card is stale — without the refetch
+		// the admin can loop approve → 400 → force → 400 forever.
+		expect(invalidateSpy).toHaveBeenCalledWith({
+			queryKey: ['organization', 'test-org', 'membership-requests']
+		});
 		await waitFor(() => {
 			expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 		});
+	});
+
+	it('does not refetch the list when the first (unforced) attempt is refused', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest).mockResolvedValue(
+			approveFailure(400, 'Already subscribed.')
+		);
+
+		const { client } = renderTab([tiers[0]]);
+		const invalidateSpy = vi.spyOn(client, 'invalidateQueries');
+
+		await user.click(await screen.findByRole('button', { name: /approve request from/i }));
+		await screen.findByRole('dialog');
+
+		expect(invalidateSpy).not.toHaveBeenCalled();
 	});
 
 	it('closes the tier picker before opening the confirm, and replays the picked tier', async () => {
