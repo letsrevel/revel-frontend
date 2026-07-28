@@ -3277,7 +3277,9 @@
 				"moveUpAriaLabel": "Déplacer {name} vers le haut",
 				"moveDownAriaLabel": "Déplacer {name} vers le bas",
 				"reorderFailed": "Échec de la réorganisation des niveaux",
-				"deleteFailed": "Impossible de supprimer ce niveau."
+				"deleteFailed": "Impossible de supprimer ce niveau.",
+				"createFailed": "Échec de la création du niveau : {detail}",
+				"updateFailed": "Échec de la mise à jour du niveau : {detail}"
 			},
 			"plans": {
 				"title": "Forfaits",
@@ -3404,7 +3406,6 @@
 						"pause": "Impossible de mettre cet abonnement en pause.",
 						"resume": "Impossible de reprendre cet abonnement.",
 						"uncancel": "Impossible d'annuler la résiliation programmée.",
-						"uncancelSuspended": "Cette adhésion est suspendue, le renouvellement ne peut donc pas reprendre. Rétablis-la d'abord depuis l'onglet Membres, puis annule la résiliation.",
 						"refund": "Impossible de rembourser ce paiement.",
 						"cancelStripeUnreachable": "Impossible de joindre le prestataire de paiement : rien n'a été modifié, cet abonnement est intact. Réessaie dans un instant."
 					},
@@ -3429,8 +3430,10 @@
 					"feeVat": "TVA sur les frais ({rate} %)",
 					"feeReverseCharge": "Autoliquidation",
 					"feeReverseChargeYes": "Oui (B2B UE) — tu autoliquides la TVA",
+					"feeRefunded": "Remboursé au membre",
 					"feeNetToOrg": "Net pour toi",
-					"feeBeforeRefund": "Net affiché avant remboursement — les frais de plateforme de ce paiement ne sont pas réduits par un remboursement.",
+					"feeRefundRule": "Les frais de plateforme ne sont pas réduits par les remboursements — les montants indiqués correspondent au paiement d'origine.",
+					"feeNetNegative": "Négatif : tu as remboursé plus que ta part, les frais de plateforme restent donc à ta charge.",
 					"paymentsCol": {
 						"date": "Date",
 						"amount": "Montant",
@@ -3509,7 +3512,7 @@
 					"amount": "Montant",
 					"status": "Statut",
 					"date": "Date",
-					"reference": "Stripe"
+					"actions": "Actions"
 				},
 				"tableCaption": "Paiements d'adhésion, du plus récent au plus ancien",
 				"periodLabel": "Période de facturation",
@@ -3523,17 +3526,27 @@
 				"feeVat": "TVA sur les frais ({rate} %)",
 				"feeReverseCharge": "Autoliquidation",
 				"feeReverseChargeYes": "Oui (B2B UE) — tu autoliquides la TVA",
+				"feeRefunded": "Remboursé au membre",
 				"feeNetToOrg": "Net pour toi",
-				"feeBeforeRefund": "Net affiché avant remboursement — les frais de plateforme de ce paiement ne sont pas réduits par un remboursement.",
+				"feeRefundRule": "Les frais de plateforme ne sont pas réduits par les remboursements — les montants indiqués correspondent au paiement d'origine.",
+				"feeNetNegative": "Négatif : tu as remboursé plus que ta part, les frais de plateforme restent donc à ta charge.",
 				"viewOnStripe": "Voir sur Stripe",
 				"viewOnStripeFor": "Voir le paiement de {name} sur Stripe",
-				"noStripeRecord": "Aucun enregistrement Stripe",
+				"noActions": "Aucune action disponible",
+				"refund": "Rembourser",
+				"refundFor": "Rembourser le paiement de {name}",
+				"refundDone": "Paiement marqué comme remboursé.",
+				"refundError": "Impossible de rembourser ce paiement.",
+				"onlineRefundNote": "Les remboursements des paiements en ligne s'effectuent depuis le tableau de bord Stripe — ils sont enregistrés ici automatiquement.",
 				"loading": "Chargement des paiements…",
 				"error": "Impossible de charger les paiements d'adhésion.",
 				"retry": "Réessayer",
 				"empty": "Aucun paiement d'adhésion enregistré pour l'instant.",
 				"emptyFiltered": "Aucun paiement ne correspond à ces filtres.",
-				"resultCount": "{count} paiements",
+				"resultCount": {
+					"one": "{count} paiement",
+					"other": "{count} paiements"
+				},
 				"pageOf": "Page {page} sur {total}"
 			},
 			"grantsInfo": {

@@ -3,6 +3,7 @@ import {
 	partialRefundAmount,
 	getPaymentStatusConfig,
 	platformFeeBreakdown,
+	canRefundLedgerPayment,
 	type PlatformFeePayment
 } from './SubscriptionPaymentsShared';
 import type { PaymentStatus } from '$lib/api/generated/types.gen';
@@ -161,25 +162,88 @@ describe('platformFeeBreakdown decomposition', () => {
 });
 
 describe('platformFeeBreakdown refund interaction', () => {
-	// The backend leaves `platform_fee` untouched on refund, so `netToOrganizer`
-	// is pre-refund by construction. The flag exists so the surfaces can say so
-	// instead of contradicting the refund annotation they already render.
-	it('flags a partially refunded payment without netting the refund out', () => {
+	// The backend keeps the platform fee whatever happens afterwards (it never
+	// sets `refund_application_fee`), so a refund is paid entirely out of the
+	// organizer's remainder: net = amount - fee - refund.
+	it('nets a partial refund out of the organizer share, not out of the fee', () => {
 		const fee = platformFeeBreakdown(feePayment({ refund_amount: '4.00' }));
 
 		expect(fee?.hasRefund).toBe(true);
+		expect(fee?.refundAmount).toBe(4);
+		// The fee line is untouched: it still describes the original charge.
+		expect(fee?.feeGross).toBe(1.8);
+		// 10.00 - 1.80 - 4.00. Two subtractions, so the float noise is doubled.
+		expect(fee?.netToOrganizer).toBe(4.2);
+	});
+
+	// The organizer handed back the whole gross but Revel kept its fee, so the
+	// row genuinely cost them the fee. Rendered as such — never clamped to zero.
+	it('goes negative by exactly the fee on a full refund', () => {
+		const fee = platformFeeBreakdown(feePayment({ refund_amount: '10.00' }));
+
+		expect(fee?.hasRefund).toBe(true);
+		expect(fee?.refundAmount).toBe(10);
+		expect(fee?.netToOrganizer).toBe(-1.8);
+	});
+
+	it('leaves an unrefunded payment at gross minus fee, with no refund line', () => {
+		const fee = platformFeeBreakdown(feePayment());
+
+		expect(fee?.hasRefund).toBe(false);
+		expect(fee?.refundAmount).toBeNull();
 		expect(fee?.netToOrganizer).toBe(8.2);
 	});
 
-	it('flags a fully refunded payment too — the status alone would hide it here', () => {
-		expect(platformFeeBreakdown(feePayment({ refund_amount: '10.00' }))?.hasRefund).toBe(true);
+	it('treats absent, zero and unparseable refunds alike — no deduction at all', () => {
+		for (const refund_amount of [null, undefined, '0.00', 'nope']) {
+			const fee = platformFeeBreakdown(feePayment({ refund_amount }));
+			expect(fee?.hasRefund).toBe(false);
+			expect(fee?.refundAmount).toBeNull();
+			expect(fee?.netToOrganizer).toBe(8.2);
+		}
 	});
 
-	it('does not flag a payment that was never refunded', () => {
-		expect(platformFeeBreakdown(feePayment({ refund_amount: null }))?.hasRefund).toBe(false);
-		expect(platformFeeBreakdown(feePayment({ refund_amount: undefined }))?.hasRefund).toBe(false);
-		expect(platformFeeBreakdown(feePayment({ refund_amount: '0.00' }))?.hasRefund).toBe(false);
-		expect(platformFeeBreakdown(feePayment({ refund_amount: 'nope' }))?.hasRefund).toBe(false);
+	// Decimal STRINGS again: a lexicographic or concatenating slip here would put
+	// a wildly wrong figure on a money surface.
+	it('subtracts the refund numerically, without float noise', () => {
+		expect(
+			platformFeeBreakdown(
+				feePayment({ amount: '9.99', platform_fee: '0.15', refund_amount: '3.33' })
+			)?.netToOrganizer
+		).toBe(6.51);
+		expect(
+			platformFeeBreakdown(feePayment({ amount: '1000', platform_fee: '18', refund_amount: '250' }))
+				?.netToOrganizer
+		).toBe(732);
+	});
+
+	// Over-refunding is not something the backend should produce, but if it ever
+	// did the honest answer is a bigger negative, not a clamp.
+	it('does not clamp a refund larger than the charge', () => {
+		expect(
+			platformFeeBreakdown(feePayment({ amount: '10.00', refund_amount: '12.00' }))?.netToOrganizer
+		).toBe(-3.8);
+	});
+});
+
+describe('canRefundLedgerPayment', () => {
+	// The backend 400s a refund on an ONLINE payment, so the ledger must never
+	// render the control there; and only a SUCCEEDED payment has anything to
+	// give back.
+	it('allows a refund on a succeeded OFFLINE payment', () => {
+		expect(canRefundLedgerPayment({ status: 'succeeded', payment_method: 'offline' })).toBe(true);
+	});
+
+	it('refuses a succeeded ONLINE payment — that one must go through Stripe', () => {
+		expect(canRefundLedgerPayment({ status: 'succeeded', payment_method: 'online' })).toBe(false);
+	});
+
+	it('refuses every non-succeeded status, OFFLINE or not', () => {
+		const statuses: PaymentStatus[] = ['pending', 'failed', 'refunded'];
+		for (const status of statuses) {
+			expect(canRefundLedgerPayment({ status, payment_method: 'offline' })).toBe(false);
+			expect(canRefundLedgerPayment({ status, payment_method: 'online' })).toBe(false);
+		}
 	});
 });
 

@@ -6,7 +6,8 @@ import SubscriptionPaymentsTab from './SubscriptionPaymentsTab.svelte';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 import {
 	organizationadminsubscriptionsListOrganizationSubscriptionPayments,
-	organizationadminsubscriptionsListOrganizationPlans
+	organizationadminsubscriptionsListOrganizationPlans,
+	organizationadminsubscriptionsRefundPayment
 } from '$lib/api/generated/sdk.gen';
 import type {
 	OrganizationAdminDetailSchema,
@@ -16,7 +17,14 @@ import type {
 
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	organizationadminsubscriptionsListOrganizationSubscriptionPayments: vi.fn(),
-	organizationadminsubscriptionsListOrganizationPlans: vi.fn()
+	organizationadminsubscriptionsListOrganizationPlans: vi.fn(),
+	organizationadminsubscriptionsRefundPayment: vi.fn()
+}));
+
+const toastErrorMock = vi.hoisted(() => vi.fn());
+const toastSuccessMock = vi.hoisted(() => vi.fn());
+vi.mock('svelte-sonner', () => ({
+	toast: { error: toastErrorMock, success: toastSuccessMock }
 }));
 
 vi.mock('$lib/stores/auth.svelte', () => ({
@@ -56,8 +64,32 @@ function makePayment(
 		user_display_name: 'Ada Lovelace',
 		plan_id: 'plan-1',
 		plan_name: 'Monthly',
+		// The dominant ledger row: staff-recorded, so no Stripe fee was taken and
+		// the whole fee breakdown stays suppressed unless a test opts in.
+		payment_method: 'offline',
+		platform_fee: '0.00',
+		platform_fee_net: null,
+		platform_fee_vat: null,
+		platform_fee_vat_rate: null,
+		platform_fee_reverse_charge: false,
 		...overrides
 	} as OrganizationMembershipPaymentSchema;
+}
+
+/** A Stripe charge that actually paid a fee: 10.00 gross, 1.80 fee (1.50 + 20% VAT). */
+function withFee(
+	overrides: Partial<OrganizationMembershipPaymentSchema> = {}
+): OrganizationMembershipPaymentSchema {
+	return makePayment({
+		payment_method: 'online',
+		amount: '10.00',
+		platform_fee: '1.80',
+		platform_fee_net: '1.50',
+		platform_fee_vat: '0.30',
+		platform_fee_vat_rate: '20.00',
+		platform_fee_reverse_charge: false,
+		...overrides
+	});
 }
 
 const plan = {
@@ -103,7 +135,16 @@ function table(): HTMLElement {
 	return screen.getByRole('table');
 }
 
+/** The mobile card list, which must carry exactly the same information. */
+function cards(): HTMLElement {
+	return screen.getByRole('list', { name: 'Membership payments, newest first' });
+}
+
+// bits-ui pins pointer-events on <body> while the refund dialog is open, and
+// jsdom keeps <body> across tests — reset it or the first user-event click in a
+// later test is swallowed.
 beforeEach(() => {
+	document.body.style.pointerEvents = '';
 	vi.clearAllMocks();
 });
 
@@ -317,5 +358,228 @@ describe('SubscriptionPaymentsTab', () => {
 		expect(
 			screen.getByRole('table', { name: 'Membership payments, newest first' })
 		).toBeInTheDocument();
+	});
+});
+
+describe('SubscriptionPaymentsTab post-refund net', () => {
+	// The backend never reduces the platform fee on a refund, so the refund comes
+	// entirely out of the organizer's remainder: 10.00 - 1.80 - 4.00 = 4.20.
+	it('deducts a partial refund from the net and leaves the fee line alone', async () => {
+		arrange([withFee({ refund_amount: '4.00', status: 'succeeded' })]);
+		renderTab();
+
+		const t = await screen.findByRole('table');
+		expect(within(t).getByText('Ada Lovelace')).toBeInTheDocument();
+
+		const refundLine = within(t).getByText('Refunded to member').closest('div');
+		expect(within(refundLine as HTMLElement).getByText('-€4.00')).toBeInTheDocument();
+		expect(within(t).getByText('-€1.80')).toBeInTheDocument();
+		const net = within(t).getByText('Net to you').closest('div');
+		expect(within(net as HTMLElement).getByText('€4.20')).toBeInTheDocument();
+		// The pre-refund figure must not survive anywhere on the row.
+		expect(within(t).queryByText('€8.20')).not.toBeInTheDocument();
+	});
+
+	// The organizer refunded the whole gross but Revel kept its fee, so the row
+	// really did cost them 1.80. Rendered negative, never clamped.
+	it('renders a negative net on a full refund and explains the minus in words', async () => {
+		arrange([withFee({ refund_amount: '10.00', status: 'refunded' })]);
+		renderTab();
+
+		const t = await screen.findByRole('table');
+		const net = within(t).getByText('Net to you').closest('div');
+		expect(within(net as HTMLElement).getByText('-€1.80')).toBeInTheDocument();
+		expect(within(t).getByText(/platform fee is out of pocket/)).toBeInTheDocument();
+	});
+
+	it('states the fee rule affirmatively, but only where a refund exists', async () => {
+		arrange([withFee({ refund_amount: '4.00' })]);
+		renderTab();
+
+		const t = await screen.findByRole('table');
+		expect(within(t).getByText(/not reduced by refunds/)).toBeInTheDocument();
+	});
+
+	it('keeps the rule, the refund line and the negative note off an unrefunded row', async () => {
+		arrange([withFee()]);
+		renderTab();
+
+		const t = await screen.findByRole('table');
+		const net = within(t).getByText('Net to you').closest('div');
+		expect(within(net as HTMLElement).getByText('€8.20')).toBeInTheDocument();
+		expect(within(t).queryByText(/not reduced by refunds/)).not.toBeInTheDocument();
+		expect(within(t).queryByText('Refunded to member')).not.toBeInTheDocument();
+		expect(within(t).queryByText(/out of pocket/)).not.toBeInTheDocument();
+	});
+
+	// No fee means nothing sits between gross and net: the gross and the refund
+	// annotation already say everything, so no net line is invented.
+	it('shows no net at all when a refunded row took no platform fee', async () => {
+		arrange([makePayment({ refund_amount: '4.00', platform_fee: '0.00' })]);
+		renderTab();
+
+		const t = await screen.findByRole('table');
+		expect(within(t).getByText(/4[.,]00.*refunded/)).toBeInTheDocument();
+		expect(within(t).queryByText('Net to you')).not.toBeInTheDocument();
+		expect(within(t).queryByText('Refunded to member')).not.toBeInTheDocument();
+	});
+
+	// The phone view is not allowed to be a lossy summary of the table.
+	it('carries the same refund deduction and net on the mobile card', async () => {
+		arrange([withFee({ refund_amount: '10.00', status: 'refunded' })]);
+		renderTab();
+
+		await screen.findByRole('table');
+		const list = cards();
+		const refundLine = within(list).getByText('Refunded to member').closest('div');
+		expect(within(refundLine as HTMLElement).getByText('-€10.00')).toBeInTheDocument();
+		const net = within(list).getByText('Net to you').closest('div');
+		expect(within(net as HTMLElement).getByText('-€1.80')).toBeInTheDocument();
+		expect(within(list).getByText(/not reduced by refunds/)).toBeInTheDocument();
+		expect(within(list).getByText(/platform fee is out of pocket/)).toBeInTheDocument();
+	});
+});
+
+describe('SubscriptionPaymentsTab refund gating', () => {
+	// `POST …/payments/{id}/refund` 400s for ONLINE payments (money that moved
+	// through Stripe has to come back through Stripe), so the control must not
+	// exist there — a dead button is worse than none.
+	it('offers a refund on a succeeded OFFLINE row', async () => {
+		arrange([makePayment({ status: 'succeeded', payment_method: 'offline' })]);
+		renderTab();
+
+		const t = await screen.findByRole('table');
+		expect(
+			within(t).getByRole('button', { name: 'Refund payment from Ada Lovelace' })
+		).toBeInTheDocument();
+	});
+
+	it('offers no refund on a succeeded ONLINE row', async () => {
+		arrange([makePayment({ status: 'succeeded', payment_method: 'online' })]);
+		renderTab();
+
+		const t = await screen.findByRole('table');
+		expect(within(t).getByText('Ada Lovelace')).toBeInTheDocument();
+		expect(within(t).queryByRole('button', { name: /Refund/ })).not.toBeInTheDocument();
+	});
+
+	it('offers no refund on an already-refunded OFFLINE row', async () => {
+		arrange([makePayment({ status: 'refunded', payment_method: 'offline' })]);
+		renderTab();
+
+		const t = await screen.findByRole('table');
+		expect(within(t).getByText('Ada Lovelace')).toBeInTheDocument();
+		expect(within(t).queryByRole('button', { name: /Refund/ })).not.toBeInTheDocument();
+	});
+
+	it('scopes the control to the refundable row when the page mixes both', async () => {
+		arrange([
+			makePayment({ id: 'pay-1', payment_method: 'online', user_display_name: 'Grace Hopper' }),
+			makePayment({ id: 'pay-2', payment_method: 'offline' })
+		]);
+		renderTab();
+
+		const t = await screen.findByRole('table');
+		const rows = within(t).getAllByRole('row').slice(1); // drop the header row
+		expect(within(rows[0]).queryByRole('button', { name: /Refund/ })).not.toBeInTheDocument();
+		expect(
+			within(rows[1]).getByRole('button', { name: 'Refund payment from Ada Lovelace' })
+		).toBeInTheDocument();
+	});
+
+	it('points staff at Stripe for the rows that carry no control', async () => {
+		arrange([makePayment({ status: 'succeeded', payment_method: 'online' })]);
+		renderTab();
+
+		await screen.findByRole('table');
+		expect(await screen.findByText(/Stripe Dashboard/i)).toBeInTheDocument();
+	});
+
+	it('keeps that note away from a purely offline page', async () => {
+		arrange([makePayment({ status: 'succeeded', payment_method: 'offline' })]);
+		renderTab();
+
+		await screen.findByRole('table');
+		expect(screen.queryByText(/Stripe Dashboard/i)).not.toBeInTheDocument();
+	});
+
+	it('offers the refund on the mobile card too', async () => {
+		arrange([makePayment({ status: 'succeeded', payment_method: 'offline' })]);
+		renderTab();
+
+		await screen.findByRole('table');
+		expect(
+			within(cards()).getByRole('button', { name: 'Refund payment from Ada Lovelace' })
+		).toBeInTheDocument();
+	});
+});
+
+describe('SubscriptionPaymentsTab refund flow', () => {
+	function arrangeRefund(ok = true) {
+		vi.mocked(organizationadminsubscriptionsRefundPayment).mockResolvedValue({
+			data: ok ? makePayment({ status: 'refunded', refund_amount: '10.00' }) : undefined,
+			error: ok
+				? undefined
+				: { detail: 'ONLINE payments must be refunded from the Stripe Dashboard' },
+			response: { ok, status: ok ? 200 : 400 } as unknown as Response
+		} as unknown as Awaited<ReturnType<typeof organizationadminsubscriptionsRefundPayment>>);
+	}
+
+	async function openDialogAndSubmit() {
+		const user = userEvent.setup();
+		const t = await screen.findByRole('table');
+		await user.click(within(t).getByRole('button', { name: 'Refund payment from Ada Lovelace' }));
+		const dialog = await screen.findByRole('dialog');
+		await user.type(within(dialog).getByLabelText('Notes'), 'cash back');
+		await user.click(within(dialog).getByRole('button', { name: 'Mark refunded' }));
+	}
+
+	it('sends the payment id as a path param and the notes as the body', async () => {
+		arrange([makePayment({ id: 'pay-1', payment_method: 'offline' })]);
+		arrangeRefund();
+		renderTab();
+		await openDialogAndSubmit();
+
+		await waitFor(() =>
+			expect(organizationadminsubscriptionsRefundPayment).toHaveBeenCalledWith(
+				expect.objectContaining({
+					path: { slug: 'test-org', payment_id: 'pay-1' },
+					body: { notes: 'cash back' }
+				})
+			)
+		);
+	});
+
+	// The refetch can drop the row out of a status-filtered page, so a silent
+	// close would read as "nothing happened".
+	it('refetches the ledger and confirms the refund', async () => {
+		arrange([makePayment({ id: 'pay-1', payment_method: 'offline' })]);
+		arrangeRefund();
+		renderTab();
+		await openDialogAndSubmit();
+
+		await waitFor(() => expect(toastSuccessMock).toHaveBeenCalled());
+		// One call for the initial load, one for the post-refund invalidation.
+		await waitFor(() =>
+			expect(
+				vi.mocked(organizationadminsubscriptionsListOrganizationSubscriptionPayments).mock.calls
+					.length
+			).toBeGreaterThan(1)
+		);
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+	});
+
+	it('surfaces the backend refusal instead of closing quietly', async () => {
+		arrange([makePayment({ id: 'pay-1', payment_method: 'offline' })]);
+		arrangeRefund(false);
+		renderTab();
+		await openDialogAndSubmit();
+
+		await waitFor(() =>
+			expect(toastErrorMock).toHaveBeenCalledWith(
+				expect.stringContaining('must be refunded from the Stripe Dashboard')
+			)
+		);
+		expect(toastSuccessMock).not.toHaveBeenCalled();
 	});
 });

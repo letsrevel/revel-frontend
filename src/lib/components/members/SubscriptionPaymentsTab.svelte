@@ -1,9 +1,11 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { createQuery } from '@tanstack/svelte-query';
+	import { toast } from 'svelte-sonner';
+	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		organizationadminsubscriptionsListOrganizationSubscriptionPayments,
-		organizationadminsubscriptionsListOrganizationPlans
+		organizationadminsubscriptionsListOrganizationPlans,
+		organizationadminsubscriptionsRefundPayment
 	} from '$lib/api/generated/sdk.gen';
 	import type {
 		OrganizationAdminDetailSchema,
@@ -12,12 +14,14 @@
 		PlanSchema
 	} from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { backendMessage } from '$lib/utils/api-error-detail';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Loader2 } from '@lucide/svelte';
 	import SubscriptionPaymentsRow from './SubscriptionPaymentsRow.svelte';
 	import SubscriptionPaymentsCard from './SubscriptionPaymentsCard.svelte';
+	import RefundPaymentDialog from './RefundPaymentDialog.svelte';
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
@@ -25,6 +29,7 @@
 
 	const { organization }: Props = $props();
 	const accessToken = $derived(authStore.accessToken);
+	const queryClient = useQueryClient();
 
 	// The backend paginates this endpoint at 20; pass it explicitly so the
 	// client-side page arithmetic can never drift from the server default.
@@ -105,6 +110,55 @@
 	const totalCount = $derived(paymentsQuery.data?.count ?? 0);
 	const totalPages = $derived(Math.max(1, Math.ceil(totalCount / PAGE_SIZE)));
 	const hasFilters = $derived(statusFilter !== 'all' || planFilter !== 'all' || !!debounced);
+
+	// Explains the rows that offer no Refund control. Only worth saying when the
+	// page actually holds one: a purely offline ledger never hits the rule.
+	const showOnlineRefundNote = $derived(
+		payments.some((p) => p.status === 'succeeded' && p.payment_method === 'online')
+	);
+
+	let refundTarget = $state<OrganizationMembershipPaymentSchema | null>(null);
+
+	const refundMut = createMutation(() => ({
+		mutationFn: async ({ paymentId, notes }: { paymentId: string; notes: string }) => {
+			const res = await organizationadminsubscriptionsRefundPayment({
+				path: { slug: organization.slug, payment_id: paymentId },
+				body: { notes },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+			// 400 is the ONLINE guard, which `canRefundLedgerPayment` already keeps us
+			// away from; 404 is a row that moved. Both carry a translated `detail`.
+			if (res.error)
+				throw new Error(backendMessage(res.error) || m['orgAdmin.members.payments.refundError']());
+			return res.data;
+		},
+		onSuccess: () => {
+			// Prefix match: every page/filter combination of the ledger is keyed under
+			// this, and the refunded row has to update in place on the one on screen.
+			queryClient.invalidateQueries({
+				queryKey: ['organization', organization.slug, 'subscription-payments']
+			});
+			// A full refund of the current period terminalizes the subscription
+			// (`subscription_refunds._cancel_refunded_subscription`), which the BE signal
+			// mirrors onto the member row — so the sibling tabs and the drawer's own
+			// caches are stale the moment this returns.
+			queryClient.invalidateQueries({
+				queryKey: ['organization', organization.slug, 'subscriptions']
+			});
+			queryClient.invalidateQueries({
+				queryKey: ['organization', organization.slug, 'subscription']
+			});
+			queryClient.invalidateQueries({
+				queryKey: ['organization', organization.slug, 'members']
+			});
+			refundTarget = null;
+			// The refetch may drop the row out of view entirely (it flips to REFUNDED,
+			// and the ledger is often filtered to Succeeded), so a silent close would
+			// look like the action did nothing.
+			toast.success(m['orgAdmin.members.payments.refundDone']());
+		},
+		onError: (err: Error) => toast.error(err.message)
+	}));
 </script>
 
 <div class="space-y-3">
@@ -179,7 +233,12 @@
 		</p>
 	{:else}
 		<p class="text-sm text-muted-foreground" role="status">
-			{m['orgAdmin.members.payments.resultCount']({ count: totalCount })}
+			<!-- Hand-selected singular/plural, the house pattern (see
+			     `subscribe.billing.expiry.one/other` and `subscriptions.period.*`):
+			     a lone row read "1 payments" before this. -->
+			{totalCount === 1
+				? m['orgAdmin.members.payments.resultCount.one']({ count: totalCount })
+				: m['orgAdmin.members.payments.resultCount.other']({ count: totalCount })}
 		</p>
 
 		<!-- Wide viewports: the full reconciliation table. -->
@@ -204,13 +263,13 @@
 							>{m['orgAdmin.members.payments.col.date']()}</th
 						>
 						<th scope="col" class="px-3 py-2 text-right"
-							>{m['orgAdmin.members.payments.col.reference']()}</th
+							>{m['orgAdmin.members.payments.col.actions']()}</th
 						>
 					</tr>
 				</thead>
 				<tbody>
 					{#each payments as payment (payment.id)}
-						<SubscriptionPaymentsRow {payment} />
+						<SubscriptionPaymentsRow {payment} onRefund={(p) => (refundTarget = p)} />
 					{/each}
 				</tbody>
 			</table>
@@ -221,9 +280,15 @@
 		     visible (`hidden md:block` / `md:hidden`). -->
 		<ul class="grid gap-2 md:hidden" aria-label={m['orgAdmin.members.payments.tableCaption']()}>
 			{#each payments as payment (payment.id)}
-				<SubscriptionPaymentsCard {payment} />
+				<SubscriptionPaymentsCard {payment} onRefund={(p) => (refundTarget = p)} />
 			{/each}
 		</ul>
+
+		{#if showOnlineRefundNote}
+			<p class="text-xs text-muted-foreground">
+				{m['orgAdmin.members.payments.onlineRefundNote']()}
+			</p>
+		{/if}
 
 		{#if totalPages > 1}
 			<nav
@@ -249,4 +314,18 @@
 			</nav>
 		{/if}
 	{/if}
+
+	<!-- Outside the loading/empty branches: a refund started on the last row of a
+	     filtered page must survive the refetch that follows it. -->
+	<RefundPaymentDialog
+		payment={refundTarget}
+		open={!!refundTarget}
+		onClose={() => (refundTarget = null)}
+		onSubmit={(p) => {
+			if (refundTarget?.id) {
+				refundMut.mutate({ paymentId: refundTarget.id, notes: p.notes ?? '' });
+			}
+		}}
+		isSubmitting={refundMut.isPending}
+	/>
 </div>

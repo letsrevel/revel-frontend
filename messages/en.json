@@ -3306,7 +3306,9 @@
 				"moveUpAriaLabel": "Move {name} up",
 				"moveDownAriaLabel": "Move {name} down",
 				"reorderFailed": "Failed to reorder tiers",
-				"deleteFailed": "Could not delete this tier."
+				"deleteFailed": "Could not delete this tier.",
+				"createFailed": "Failed to create tier: {detail}",
+				"updateFailed": "Failed to update tier: {detail}"
 			},
 			"plans": {
 				"title": "Plans",
@@ -3433,7 +3435,6 @@
 						"pause": "Couldn't pause this subscription.",
 						"resume": "Couldn't resume this subscription.",
 						"uncancel": "Couldn't undo the scheduled cancellation.",
-						"uncancelSuspended": "This membership is suspended, so renewal can't restart. Restore it from the Members tab first, then undo the cancellation.",
 						"refund": "Couldn't refund this payment.",
 						"cancelStripeUnreachable": "Couldn't reach the payment provider, so nothing changed — this subscription is exactly as it was. Try again in a moment."
 					},
@@ -3458,8 +3459,10 @@
 					"feeVat": "VAT on fee ({rate}%)",
 					"feeReverseCharge": "Reverse charge",
 					"feeReverseChargeYes": "Yes (EU B2B) — you self-assess the VAT",
+					"feeRefunded": "Refunded to member",
 					"feeNetToOrg": "Net to you",
-					"feeBeforeRefund": "Net shown before the refund — the platform fee on this payment isn't reduced by refunds.",
+					"feeRefundRule": "The platform fee is not reduced by refunds — fee figures reflect the original charge.",
+					"feeNetNegative": "Negative: you refunded more than your share, so the platform fee is out of pocket.",
 					"paymentsCol": {
 						"date": "Date",
 						"amount": "Amount",
@@ -3538,7 +3541,7 @@
 					"amount": "Amount",
 					"status": "Status",
 					"date": "Date",
-					"reference": "Stripe"
+					"actions": "Actions"
 				},
 				"tableCaption": "Membership payments, newest first",
 				"periodLabel": "Billing period",
@@ -3552,17 +3555,27 @@
 				"feeVat": "VAT on fee ({rate}%)",
 				"feeReverseCharge": "Reverse charge",
 				"feeReverseChargeYes": "Yes (EU B2B) — you self-assess the VAT",
+				"feeRefunded": "Refunded to member",
 				"feeNetToOrg": "Net to you",
-				"feeBeforeRefund": "Net shown before the refund — the platform fee on this payment isn't reduced by refunds.",
+				"feeRefundRule": "The platform fee is not reduced by refunds — fee figures reflect the original charge.",
+				"feeNetNegative": "Negative: you refunded more than your share, so the platform fee is out of pocket.",
 				"viewOnStripe": "View on Stripe",
 				"viewOnStripeFor": "View payment on Stripe for {name}",
-				"noStripeRecord": "No Stripe record",
+				"noActions": "No actions available",
+				"refund": "Refund",
+				"refundFor": "Refund payment from {name}",
+				"refundDone": "Payment marked as refunded.",
+				"refundError": "Couldn't refund this payment.",
+				"onlineRefundNote": "Refunds for online payments are issued from the Stripe Dashboard — they are recorded here automatically.",
 				"loading": "Loading payments…",
 				"error": "Couldn't load membership payments.",
 				"retry": "Try again",
 				"empty": "No membership payments recorded yet.",
 				"emptyFiltered": "No payments match these filters.",
-				"resultCount": "{count} payments",
+				"resultCount": {
+					"one": "{count} payment",
+					"other": "{count} payments"
+				},
 				"pageOf": "Page {page} of {total}"
 			},
 			"grantsInfo": {

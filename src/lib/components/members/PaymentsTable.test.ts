@@ -205,33 +205,65 @@ describe('PaymentsTable platform-fee breakdown', () => {
 });
 
 describe('PaymentsTable fee/refund interaction', () => {
-	// The backend leaves `platform_fee` untouched on refund and a correct
-	// post-refund net is not derivable here, so the net is annotated as
-	// pre-refund rather than silently contradicting the refund annotation.
-	it('flags the net as pre-refund on a partially refunded payment', () => {
+	// The backend never reduces the platform fee on a refund (it does not set
+	// `refund_application_fee`), so the refund is paid entirely out of the
+	// organizer's remainder: 10.00 gross - 1.80 fee - 4.00 refund = 4.20.
+	it('deducts a partial refund from the organizer net, leaving the fee line alone', () => {
 		renderTable([withFee({ refund_amount: '4.00', status: 'succeeded' })]);
 
 		expect(screen.getByText('(4.00 EUR refunded)')).toBeInTheDocument();
-		expect(screen.getByText(/Net shown before the refund/)).toBeInTheDocument();
+		const refundLine = screen.getByText('Refunded to member').closest('div');
+		expect(within(refundLine as HTMLElement).getByText('-€4.00')).toBeInTheDocument();
+		// The fee still describes the original charge.
+		expect(screen.getByText('-€1.80')).toBeInTheDocument();
+		const netToYou = screen.getByText('Net to you').closest('div');
+		expect(within(netToYou as HTMLElement).getByText('€4.20')).toBeInTheDocument();
+		// The old pre-refund net must be gone from the surface entirely.
+		expect(screen.queryByText('€8.20')).not.toBeInTheDocument();
 	});
 
-	it('flags the net as pre-refund on a fully refunded payment too', () => {
+	// The organizer handed the whole 10.00 back but Revel kept its 1.80, so the
+	// row cost them 1.80. Rendered honestly, negative, not clamped to zero.
+	it('renders a negative net on a full refund and says why in words', () => {
 		renderTable([withFee({ refund_amount: '10.00', status: 'refunded' })]);
 
-		expect(screen.getByText(/Net shown before the refund/)).toBeInTheDocument();
+		const netToYou = screen.getByText('Net to you').closest('div');
+		expect(within(netToYou as HTMLElement).getByText('-€1.80')).toBeInTheDocument();
+		// The minus sign never stands alone, and never relies on colour.
+		expect(screen.getByText(/platform fee is out of pocket/)).toBeInTheDocument();
 	});
 
-	it('shows no refund caveat when nothing was refunded', () => {
+	// Replaces the old hedge: it explains why the fee line did NOT shrink.
+	it('states the fee rule affirmatively wherever a refund exists', () => {
+		renderTable([withFee({ refund_amount: '4.00', status: 'succeeded' })]);
+
+		expect(
+			screen.getByText(
+				'The platform fee is not reduced by refunds — fee figures reflect the original charge.'
+			)
+		).toBeInTheDocument();
+	});
+
+	it('keeps the fee rule and the refund line off an unrefunded payment', () => {
 		renderTable([withFee()]);
 
-		expect(screen.queryByText(/Net shown before the refund/)).not.toBeInTheDocument();
+		expect(screen.queryByText(/not reduced by refunds/)).not.toBeInTheDocument();
+		expect(screen.queryByText('Refunded to member')).not.toBeInTheDocument();
+		expect(screen.queryByText(/out of pocket/)).not.toBeInTheDocument();
+		const netToYou = screen.getByText('Net to you').closest('div');
+		expect(within(netToYou as HTMLElement).getByText('€8.20')).toBeInTheDocument();
 	});
 
-	it('shows no refund caveat when there is no fee block at all', () => {
+	// No fee taken means nothing sits between gross and net, so there is nothing
+	// to decompose: the gross and the refund annotation already tell the whole
+	// story, and a lone "Net to you" would just restate 10.00 - 4.00.
+	it('shows no fee block, net or rule when a refunded payment took no fee', () => {
 		renderTable([makePayment({ refund_amount: '4.00', platform_fee: '0.00' })]);
 
 		expect(screen.getByText('(4.00 EUR refunded)')).toBeInTheDocument();
-		expect(screen.queryByText(/Net shown before the refund/)).not.toBeInTheDocument();
+		expect(screen.queryByText('Net to you')).not.toBeInTheDocument();
+		expect(screen.queryByText('Refunded to member')).not.toBeInTheDocument();
+		expect(screen.queryByText(/not reduced by refunds/)).not.toBeInTheDocument();
 	});
 });
 

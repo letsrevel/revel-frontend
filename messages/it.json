@@ -3306,7 +3306,9 @@
 				"moveUpAriaLabel": "Sposta {name} su",
 				"moveDownAriaLabel": "Sposta {name} giù",
 				"reorderFailed": "Impossibile riordinare i livelli",
-				"deleteFailed": "Impossibile eliminare questo livello."
+				"deleteFailed": "Impossibile eliminare questo livello.",
+				"createFailed": "Impossibile creare il livello: {detail}",
+				"updateFailed": "Impossibile aggiornare il livello: {detail}"
 			},
 			"plans": {
 				"title": "Piani",
@@ -3433,7 +3435,6 @@
 						"pause": "Impossibile sospendere questo abbonamento.",
 						"resume": "Impossibile riprendere questo abbonamento.",
 						"uncancel": "Impossibile annullare la disdetta programmata.",
-						"uncancelSuspended": "Questa iscrizione è sospesa, quindi il rinnovo non può ripartire. Ripristinala prima dalla scheda Membri, poi annulla la disdetta.",
 						"refund": "Impossibile rimborsare questo pagamento.",
 						"cancelStripeUnreachable": "Non è stato possibile raggiungere il fornitore di pagamenti, quindi non è stato modificato nulla: questo abbonamento è intatto. Riprova tra poco."
 					},
@@ -3458,8 +3459,10 @@
 					"feeVat": "IVA sulla fee ({rate}%)",
 					"feeReverseCharge": "Reverse charge",
 					"feeReverseChargeYes": "Sì (B2B UE) — assolvi tu l'IVA",
+					"feeRefunded": "Rimborsato al membro",
 					"feeNetToOrg": "Netto per te",
-					"feeBeforeRefund": "Netto mostrato prima del rimborso — la fee di piattaforma di questo pagamento non viene ridotta dai rimborsi.",
+					"feeRefundRule": "La fee di piattaforma non viene ridotta dai rimborsi — gli importi indicati si riferiscono al pagamento originale.",
+					"feeNetNegative": "Negativo: hai rimborsato più della tua quota, quindi la fee di piattaforma resta a tuo carico.",
 					"paymentsCol": {
 						"date": "Data",
 						"amount": "Importo",
@@ -3538,7 +3541,7 @@
 					"amount": "Importo",
 					"status": "Stato",
 					"date": "Data",
-					"reference": "Stripe"
+					"actions": "Azioni"
 				},
 				"tableCaption": "Pagamenti di iscrizione, dal più recente",
 				"periodLabel": "Periodo di fatturazione",
@@ -3552,17 +3555,27 @@
 				"feeVat": "IVA sulla fee ({rate}%)",
 				"feeReverseCharge": "Reverse charge",
 				"feeReverseChargeYes": "Sì (B2B UE) — assolvi tu l'IVA",
+				"feeRefunded": "Rimborsato al membro",
 				"feeNetToOrg": "Netto per te",
-				"feeBeforeRefund": "Netto mostrato prima del rimborso — la fee di piattaforma di questo pagamento non viene ridotta dai rimborsi.",
+				"feeRefundRule": "La fee di piattaforma non viene ridotta dai rimborsi — gli importi indicati si riferiscono al pagamento originale.",
+				"feeNetNegative": "Negativo: hai rimborsato più della tua quota, quindi la fee di piattaforma resta a tuo carico.",
 				"viewOnStripe": "Vedi su Stripe",
 				"viewOnStripeFor": "Vedi su Stripe il pagamento di {name}",
-				"noStripeRecord": "Nessun record Stripe",
+				"noActions": "Nessuna azione disponibile",
+				"refund": "Rimborsa",
+				"refundFor": "Rimborsa il pagamento di {name}",
+				"refundDone": "Pagamento contrassegnato come rimborsato.",
+				"refundError": "Impossibile rimborsare questo pagamento.",
+				"onlineRefundNote": "I rimborsi dei pagamenti online si effettuano dalla dashboard Stripe — vengono registrati qui automaticamente.",
 				"loading": "Caricamento dei pagamenti…",
 				"error": "Impossibile caricare i pagamenti di iscrizione.",
 				"retry": "Riprova",
 				"empty": "Nessun pagamento di iscrizione registrato.",
 				"emptyFiltered": "Nessun pagamento corrisponde a questi filtri.",
-				"resultCount": "{count} pagamenti",
+				"resultCount": {
+					"one": "{count} pagamento",
+					"other": "{count} pagamenti"
+				},
 				"pageOf": "Pagina {page} di {total}"
 			},
 			"grantsInfo": {

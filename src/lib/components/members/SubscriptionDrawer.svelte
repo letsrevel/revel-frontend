@@ -93,7 +93,12 @@
 
 	const sub = $derived(subQuery.data as SubscriptionSchema);
 	const payments = $derived(paymentsQuery.data ?? []);
-	const actions = $derived(sub ? getAvailableActions(sub) : null);
+	// `member_status` is a queryset annotation on the admin subscription schemas —
+	// the *member row's* status, not this subscription's — and it is what lets the
+	// undo button be pre-gated on the 403 the uncancel service would answer. `null`
+	// means no member row exists at all, which is not "active": `canUncancel` treats
+	// it, like an absent value, as "cannot pre-gate, let the server decide".
+	const actions = $derived(sub ? getAvailableActions(sub, sub.member_status) : null);
 
 	// The plan's payment method is the same source the backend refund guard reads
 	// (`payment.subscription.plan.payment_method`), so gating on it here keeps the
@@ -205,8 +210,7 @@
 					// 502: Stripe was unreachable and the cancel was aborted, so the row is
 					// exactly as it was. The backend's detail ("Payment processing
 					// failed…") reads like a charge failed, which is not what happened, so
-					// this status — like the uncancel 403 above — gets its own copy that
-					// says nothing changed and to retry.
+					// this status gets its own copy that says nothing changed and to retry.
 					res.response?.status === 502
 						? m['orgAdmin.members.subscriptions.drawer.errors.cancelStripeUnreachable']()
 						: backendMessage(res.error) ||
@@ -268,10 +272,11 @@
 	 * One click, like Resume: it restores the state the row was in before someone
 	 * scheduled the cancellation, and the Cancel dialog next to it is the undo.
 	 *
-	 * The button is never gated on the member's suspension the way the member-facing
-	 * card is: `SubscriptionSchema` carries no membership status at all (only the
-	 * subscription's own), so this surface cannot know in advance — it asks, and
-	 * translates the refusal below.
+	 * The button *is* gated on the member's suspension, same as the member-facing
+	 * card: `SubscriptionSchema.member_status` carries the member row's status
+	 * alongside the subscription's own (see `actions` above). That is a pre-gate,
+	 * not a guarantee — the member row can be suspended between load and click, and
+	 * `member_status` may be absent — so the 403 below is still a live path.
 	 */
 	const uncancelMut = createMutation(() => ({
 		mutationFn: async () => {
@@ -279,18 +284,13 @@
 				path: { slug: organization.slug, sub_id: subId },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
-			// A 502 means Stripe refused and the cancellation is still scheduled on
-			// both sides — the translated detail says so, so it is shown verbatim.
-			// The 403 is the one refusal whose backend copy is written for the *member*
-			// ("Contact the organizers to have it restored first"), which is absurd
-			// when the reader IS the organizer — so that status, and only that one,
-			// gets organizer-facing copy naming the tab they fix it from.
+			// Every refusal is shown verbatim: the 502 says the cancellation is still
+			// scheduled on both sides, and the suspended-membership 403 now answers this
+			// endpoint with organizer-facing copy of its own ("Restore the member before
+			// resuming renewals."), so there is nothing left here to override.
 			if (res.error)
 				throw new Error(
-					res.response?.status === 403
-						? m['orgAdmin.members.subscriptions.drawer.errors.uncancelSuspended']()
-						: backendMessage(res.error) ||
-								m['orgAdmin.members.subscriptions.drawer.errors.uncancel']()
+					backendMessage(res.error) || m['orgAdmin.members.subscriptions.drawer.errors.uncancel']()
 				);
 			return res.data;
 		},

@@ -3306,7 +3306,9 @@
 				"moveUpAriaLabel": "{name} nach oben verschieben",
 				"moveDownAriaLabel": "{name} nach unten verschieben",
 				"reorderFailed": "Stufen konnten nicht neu sortiert werden",
-				"deleteFailed": "Diese Stufe konnte nicht gelöscht werden."
+				"deleteFailed": "Diese Stufe konnte nicht gelöscht werden.",
+				"createFailed": "Stufe konnte nicht erstellt werden: {detail}",
+				"updateFailed": "Stufe konnte nicht aktualisiert werden: {detail}"
 			},
 			"plans": {
 				"title": "Pläne",
@@ -3433,7 +3435,6 @@
 						"pause": "Dieses Abonnement konnte nicht pausiert werden.",
 						"resume": "Dieses Abonnement konnte nicht fortgesetzt werden.",
 						"uncancel": "Die vorgemerkte Kündigung konnte nicht zurückgenommen werden.",
-						"uncancelSuspended": "Diese Mitgliedschaft ist ausgesetzt, deshalb kann die Verlängerung nicht neu starten. Stelle sie zuerst im Tab „Mitglieder“ wieder her und nimm dann die Kündigung zurück.",
 						"refund": "Diese Zahlung konnte nicht erstattet werden.",
 						"cancelStripeUnreachable": "Der Zahlungsanbieter war nicht erreichbar, deshalb wurde nichts geändert – dieses Abonnement ist unverändert. Versuche es gleich noch einmal."
 					},
@@ -3458,8 +3459,10 @@
 					"feeVat": "USt auf die Gebühr ({rate}%)",
 					"feeReverseCharge": "Reverse Charge",
 					"feeReverseChargeYes": "Ja (EU B2B) — du versteuerst die Gebühr selbst",
+					"feeRefunded": "An das Mitglied erstattet",
 					"feeNetToOrg": "Netto für dich",
-					"feeBeforeRefund": "Netto vor Erstattung — die Plattformgebühr dieser Zahlung wird durch Erstattungen nicht verringert.",
+					"feeRefundRule": "Die Plattformgebühr wird durch Erstattungen nicht verringert — die Gebührenangaben beziehen sich auf die ursprüngliche Zahlung.",
+					"feeNetNegative": "Negativ: du hast mehr erstattet als deinen Anteil, die Plattformgebühr geht also zu deinen Lasten.",
 					"paymentsCol": {
 						"date": "Datum",
 						"amount": "Betrag",
@@ -3538,7 +3541,7 @@
 					"amount": "Betrag",
 					"status": "Status",
 					"date": "Datum",
-					"reference": "Stripe"
+					"actions": "Aktionen"
 				},
 				"tableCaption": "Mitgliedschaftszahlungen, neueste zuerst",
 				"periodLabel": "Abrechnungszeitraum",
@@ -3552,17 +3555,27 @@
 				"feeVat": "USt auf die Gebühr ({rate}%)",
 				"feeReverseCharge": "Reverse Charge",
 				"feeReverseChargeYes": "Ja (EU B2B) — du versteuerst die Gebühr selbst",
+				"feeRefunded": "An das Mitglied erstattet",
 				"feeNetToOrg": "Netto für dich",
-				"feeBeforeRefund": "Netto vor Erstattung — die Plattformgebühr dieser Zahlung wird durch Erstattungen nicht verringert.",
+				"feeRefundRule": "Die Plattformgebühr wird durch Erstattungen nicht verringert — die Gebührenangaben beziehen sich auf die ursprüngliche Zahlung.",
+				"feeNetNegative": "Negativ: du hast mehr erstattet als deinen Anteil, die Plattformgebühr geht also zu deinen Lasten.",
 				"viewOnStripe": "In Stripe ansehen",
 				"viewOnStripeFor": "Zahlung von {name} in Stripe ansehen",
-				"noStripeRecord": "Kein Stripe-Eintrag",
+				"noActions": "Keine Aktionen verfügbar",
+				"refund": "Erstatten",
+				"refundFor": "Zahlung von {name} erstatten",
+				"refundDone": "Zahlung als erstattet markiert.",
+				"refundError": "Zahlung konnte nicht erstattet werden.",
+				"onlineRefundNote": "Erstattungen für Online-Zahlungen nimmst du im Stripe-Dashboard vor — sie werden hier automatisch erfasst.",
 				"loading": "Zahlungen werden geladen…",
 				"error": "Mitgliedschaftszahlungen konnten nicht geladen werden.",
 				"retry": "Erneut versuchen",
 				"empty": "Noch keine Mitgliedschaftszahlungen erfasst.",
 				"emptyFiltered": "Keine Zahlungen entsprechen diesen Filtern.",
-				"resultCount": "{count} Zahlungen",
+				"resultCount": {
+					"one": "{count} Zahlung",
+					"other": "{count} Zahlungen"
+				},
 				"pageOf": "Seite {page} von {total}"
 			},
 			"grantsInfo": {

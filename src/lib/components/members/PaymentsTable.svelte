@@ -103,14 +103,33 @@
 											<dd class="tabular-nums">{formatMoney(fee.feeVat, p.currency)}</dd>
 										</div>
 									{/if}
+									{#if fee.refundAmount !== null}
+										<!-- The refund is its own deduction, below the fee: Revel keeps the
+										     fee, so the money handed back comes out of the organizer's share. -->
+										<div class="flex justify-between gap-3">
+											<dt>{m['orgAdmin.members.subscriptions.drawer.feeRefunded']()}</dt>
+											<dd class="tabular-nums">{formatMoney(-fee.refundAmount, p.currency)}</dd>
+										</div>
+									{/if}
 									<div class="flex justify-between gap-3 font-medium text-foreground">
 										<dt>{m['orgAdmin.members.subscriptions.drawer.feeNetToOrg']()}</dt>
-										<dd class="tabular-nums">{formatMoney(fee.netToOrganizer, p.currency)}</dd>
+										<dd class="tabular-nums" class:text-destructive={fee.netToOrganizer < 0}>
+											{formatMoney(fee.netToOrganizer, p.currency)}
+										</dd>
 									</div>
 								</dl>
 								{#if fee.hasRefund}
+									<!-- Only next to a refund: this is what explains why the fee line
+									     above did NOT shrink. On an unrefunded row it would be noise. -->
 									<p class="mt-1 text-xs text-muted-foreground">
-										{m['orgAdmin.members.subscriptions.drawer.feeBeforeRefund']()}
+										{m['orgAdmin.members.subscriptions.drawer.feeRefundRule']()}
+									</p>
+								{/if}
+								{#if fee.netToOrganizer < 0}
+									<!-- Spells the minus sign out in words, so a legitimately negative
+									     net cannot be read as a rendering bug. Never colour alone. -->
+									<p class="mt-1 text-xs text-muted-foreground">
+										{m['orgAdmin.members.subscriptions.drawer.feeNetNegative']()}
 									</p>
 								{/if}
 							{/if}

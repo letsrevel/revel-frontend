@@ -317,19 +317,50 @@ describe('SubscriptionDrawer uncancel', () => {
 	});
 
 	/**
-	 * 403 (`_assert_membership_allows_renewal`). The button cannot be gated here —
-	 * `SubscriptionSchema` carries no membership status — so the refusal has to be
-	 * translated on arrival. The backend's own detail is written for the member
-	 * ("Contact the organizers…"), which is nonsense when the reader IS the
-	 * organizer, so it is replaced rather than passed through.
+	 * Guard 4 (`_assert_membership_allows_renewal`), pre-gated. `member_status` is a
+	 * queryset annotation carrying the *member row's* status, so the drawer can
+	 * withhold a button that could only 403 — the one state guards 1–3 wave through
+	 * (`_mirror_status_to_subscriptions` skips a row already scheduled to cancel, so
+	 * a staff PAUSE leaves the member PAUSED while the subscription stays ACTIVE).
 	 */
-	it('replaces the member-facing 403 detail with organizer copy', async () => {
+	it.each(['paused', 'banned'] as const)(
+		'withholds the undo when the member row is %s',
+		async (memberStatus) => {
+			arrange(makeSub({ cancel_at_period_end: true, member_status: memberStatus }));
+			renderDrawer();
+
+			await screen.findByText(/Cancels on/i);
+			expect(screen.queryByRole('button', { name: 'Undo cancellation' })).not.toBeInTheDocument();
+		}
+	);
+
+	// `null` is the backend's "no member row exists", which is not "active" — it
+	// means the drawer cannot pre-gate, so the server decides. Neither it nor an
+	// absent annotation may hide the button.
+	it.each([
+		['active', 'active' as const],
+		['null', null],
+		['absent', undefined]
+	])('keeps the undo when the member status is %s', async (_label, memberStatus) => {
+		arrange(makeSub({ cancel_at_period_end: true, member_status: memberStatus }));
+		renderDrawer();
+
+		expect(await screen.findByRole('button', { name: 'Undo cancellation' })).toBeInTheDocument();
+	});
+
+	/**
+	 * 403 (`_assert_membership_allows_renewal`). Pre-gating does not make this
+	 * unreachable — the member row can be suspended between load and click, and
+	 * `member_status` may be absent — and the backend's staff copy is now written
+	 * for this reader ("Restore the member…"), so it is passed through verbatim.
+	 */
+	it('surfaces the backend 403 detail verbatim when the pre-gate is outrun', async () => {
 		const user = userEvent.setup();
 		arrange(makeSub({ cancel_at_period_end: true }));
 		vi.mocked(organizationadminsubscriptionsUncancelSubscription).mockResolvedValue({
 			data: undefined,
 			error: {
-				detail: 'This membership is suspended. Contact the organizers to have it restored first.'
+				detail: 'This membership is suspended. Restore the member before resuming renewals.'
 			},
 			response: { ok: false, status: 403 } as unknown as Response
 		} as unknown as Awaited<ReturnType<typeof organizationadminsubscriptionsUncancelSubscription>>);
@@ -339,11 +370,8 @@ describe('SubscriptionDrawer uncancel', () => {
 
 		await waitFor(() =>
 			expect(toastErrorMock).toHaveBeenCalledWith(
-				"This membership is suspended, so renewal can't restart. Restore it from the Members tab first, then undo the cancellation."
+				'This membership is suspended. Restore the member before resuming renewals.'
 			)
-		);
-		expect(toastErrorMock).not.toHaveBeenCalledWith(
-			expect.stringContaining('Contact the organizers')
 		);
 	});
 });

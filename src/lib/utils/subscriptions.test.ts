@@ -249,6 +249,28 @@ describe('getAvailableActions uncancel gating', () => {
 		sub.plan.is_active = false;
 		expect(getAvailableActions(sub).uncancel).toBe(false);
 	});
+
+	// Guard 4 on the staff surface: the drawer passes the annotated
+	// `SubscriptionSchema.member_status`, so a suspended member row withdraws the
+	// undo here exactly as it does on the member card.
+	it('withdraws undo when the member row is paused or banned', () => {
+		const sub = makeSub({ status: 'active', cancel_at_period_end: true });
+		expect(getAvailableActions(sub, 'paused').uncancel).toBe(false);
+		expect(getAvailableActions(sub, 'banned').uncancel).toBe(false);
+		// Only `uncancel` is on this axis — the rest of the matrix is untouched.
+		expect(getAvailableActions(sub, 'paused').cancel).toBe(true);
+	});
+
+	// `null` is the backend's "no member row exists", which is *not* "active" —
+	// both it and an omitted status mean "cannot pre-gate, let the server decide",
+	// so neither may hide the button.
+	it('keeps undo for an active, absent or null member status', () => {
+		const sub = makeSub({ status: 'active', cancel_at_period_end: true });
+		expect(getAvailableActions(sub, 'active').uncancel).toBe(true);
+		expect(getAvailableActions(sub, null).uncancel).toBe(true);
+		expect(getAvailableActions(sub, undefined).uncancel).toBe(true);
+		expect(getAvailableActions(sub).uncancel).toBe(true);
+	});
 });
 
 describe('canUncancel', () => {
@@ -282,8 +304,9 @@ describe('canUncancel', () => {
 
 	it('leaves the undo alone for an active membership or an unknown one', () => {
 		expect(canUncancel(live, 'active')).toBe(true);
-		// The admin drawer's SubscriptionSchema has no member status at all — an
-		// omitted one must not be read as "suspended".
+		// An omitted status, and `null` (the backend's "no member row exists" — not a
+		// synonym for "active"), both mean "cannot pre-gate": let the server decide
+		// rather than read either as "suspended".
 		expect(canUncancel(live)).toBe(true);
 		expect(canUncancel(live, null)).toBe(true);
 	});

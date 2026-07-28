@@ -115,16 +115,21 @@ export function isMembershipSuspended(memberStatus?: MembershipStatus | null): b
  *    new subscriptions.`) — keeping the renewal alive would go on billing a
  *    retired plan. `is_active` is optional in the generated schema (it carries a
  *    Django default), so only an explicit `false` withdraws the action.
- * 4. **membership suspended → 403** (`This membership is suspended. Contact the
- *    organizers to have it restored first.`, `_assert_membership_allows_renewal`).
+ * 4. **membership suspended → 403** (`_assert_membership_allows_renewal`, whose
+ *    copy is caller-aware: the staff endpoint answers `This membership is
+ *    suspended. Restore the member before resuming renewals.`, the member one
+ *    `…Contact the organizers to have it restored first.`).
  *    Reachable because `_mirror_status_to_subscriptions` deliberately *skips* a
  *    subscription that is already scheduled to cancel: a staff PAUSE then leaves
  *    the member row PAUSED while the subscription stays ACTIVE/PAST_DUE with a
  *    cancellation booked — precisely the state guards 1–3 all wave through.
- *    Only the caller can supply this: the subscription row carries no member
- *    status, so `memberStatus` is optional and an omitted one is "not suspended"
- *    (the admin drawer's `SubscriptionSchema` has no such field at all — it keeps
- *    the button and translates the 403 instead).
+ *    Only the caller can supply this, and both surfaces now can: the member card
+ *    passes its own `MyMembershipSchema.status`, the admin drawer the annotated
+ *    `SubscriptionSchema.member_status`. An omitted status — and equally an
+ *    explicit `null`, which means *no member row exists* and is emphatically not
+ *    "active" — is "cannot pre-gate, let the server decide", so it withholds
+ *    nothing; only `paused`/`banned` do. Pre-gating never makes the 403
+ *    unreachable anyway: the member row can be suspended between load and click.
  *
  * Note the backend does *not* gate on payment method *here*: an OFFLINE row takes
  * the purely local path, so withdrawing this action from OFFLINE members is a
@@ -146,7 +151,18 @@ export function canUncancel(
 	return !isMembershipSuspended(memberStatus);
 }
 
-export function getAvailableActions(sub: MySubscriptionSchema | SubscriptionSchema): ActionSet {
+/**
+ * Staff action matrix for one subscription row.
+ *
+ * `memberStatus` is the *member row's* status — the admin drawer passes the
+ * annotated `SubscriptionSchema.member_status`. Like `getMemberActions`, it only
+ * feeds guard 4 of `canUncancel`, so it stays optional and an omitted one
+ * changes nothing.
+ */
+export function getAvailableActions(
+	sub: MySubscriptionSchema | SubscriptionSchema,
+	memberStatus?: MembershipStatus | null
+): ActionSet {
 	// A status the client doesn't know yet (backend enum grew) offers nothing
 	// rather than crashing on a spread of `undefined`.
 	const base = ACTION_MATRIX[sub.status] ?? NO_ACTIONS;
@@ -160,7 +176,7 @@ export function getAvailableActions(sub: MySubscriptionSchema | SubscriptionSche
 		// outright. Renewal has to be switched back on first — which is exactly what
 		// `uncancel` now offers, so the two are never both available.
 		pause: base.pause && !sub.cancel_at_period_end,
-		uncancel: base.uncancel && canUncancel(sub)
+		uncancel: base.uncancel && canUncancel(sub, memberStatus)
 	};
 }
 
