@@ -98,11 +98,16 @@ async function claimTwoBestAvailable(
 	// a retry the dialog releases the stale block first, so no holds leak.
 	const success = page.getByRole('dialog', { name: 'Your Ticket', exact: true });
 	const reserve = confirmDialog.getByRole('button', { name: 'Reserve Ticket', exact: true });
+	// The batch checkout has been measured at ~11s against this 1400-seat venue
+	// under parallel load, and the success modal opens 500ms after it resolves —
+	// so the wait must span the in-flight request, not race it. Once the request
+	// lands the tier dialog closes, taking Reserve with it, so a blind re-click
+	// would hang on a button that no longer exists and burn the whole budget.
 	await expect(async () => {
 		if (await success.isVisible()) return;
-		await reserve.click();
-		await expect(success).toBeVisible({ timeout: 10_000 });
-	}).toPass({ timeout: 40_000 });
+		if (await reserve.isVisible()) await reserve.click({ timeout: 5_000 });
+		await expect(success).toBeVisible({ timeout: 25_000 });
+	}).toPass({ timeout: 60_000 });
 	await page.keyboard.press('Escape');
 	await expect(success).toBeHidden();
 }
@@ -243,11 +248,12 @@ test.describe('J19 best available @p2', () => {
 			await stallsZone.check();
 			await expect(reserve).toBeEnabled();
 			const success = page.getByRole('dialog', { name: 'Your Ticket', exact: true });
+			// Same slow-checkout race as claimTwoBestAvailable — see the note there.
 			await expect(async () => {
 				if (await success.isVisible()) return;
-				await reserve.click();
-				await expect(success).toBeVisible({ timeout: 10_000 });
-			}).toPass({ timeout: 40_000 });
+				if (await reserve.isVisible()) await reserve.click({ timeout: 5_000 });
+				await expect(success).toBeVisible({ timeout: 25_000 });
+			}).toPass({ timeout: 60_000 });
 
 			// The pending offline reservation carries the CHOSEN zone's price —
 			// €45.00, not the premium €80.00 and not a fallback.

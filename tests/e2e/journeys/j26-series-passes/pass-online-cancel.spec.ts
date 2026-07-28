@@ -84,13 +84,20 @@ test.describe('J26 season pass online cancel @p3', () => {
 			// open on failure; a just-mounted button can swallow the first dispatch
 			// under parallel-worker load). The optional reason stays empty. The
 			// backend cancel is idempotent, so a re-dispatch is always safe.
+			//
+			// Budget: the cancel refunds the succeeded Stripe payment server-side, so
+			// the request is a live Stripe round trip — OBSERVED taking >45s under
+			// 4-worker load (the run's only flake: the loop expired while the mutation
+			// was still in flight, and the retry attempt's own snapshot showed the
+			// holder already Cancelled). 90s matches the other Stripe-leg waits in
+			// this suite; the assertion itself is unchanged.
 			const cancelDialog = asOwner.getByRole('dialog', { name: 'Cancel held pass' });
 			await expect(cancelDialog).toBeVisible();
 			await expect(async () => {
 				if (await cancelDialog.isHidden()) return;
 				await cancelDialog.getByRole('button', { name: 'Cancel pass' }).dispatchEvent('click');
-				await expect(cancelDialog).toBeHidden({ timeout: 5_000 });
-			}).toPass({ timeout: 45_000 });
+				await expect(cancelDialog).toBeHidden({ timeout: 10_000 });
+			}).toPass({ timeout: 90_000 });
 			// The holder row re-renders with the Cancelled badge (its Cancel-pass
 			// action disappears with it).
 			await expect(holders.getByText('Cancelled').first()).toBeVisible({ timeout: 15_000 });
