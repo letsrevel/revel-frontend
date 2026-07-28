@@ -75,10 +75,27 @@ export async function pageAs(browser: Browser, who: PersonaName | Credentials): 
  * with no dropdown entry) instead reveal the real email/password form via the
  * "Show login form" toggle and sign in with it. Non-demo backends always use
  * the password form directly.
+ *
+ * `options` exists for the auth-guard round trip: a guest bounced off a
+ * protected route arrives at `/login?returnUrl=…` and must land back on the
+ * page they asked for, not on the dashboard. Both default to the plain
+ * sign-in-from-scratch behaviour every other caller relies on.
  */
-export async function uiLogin(page: Page, who: PersonaName | Credentials): Promise<void> {
+export interface UiLoginOptions {
+	/** Where the login page is entered from. Defaults to a bare `/login`. */
+	startAt?: string;
+	/** URL the successful login must settle on. Defaults to the dashboard. */
+	landsOn?: RegExp;
+}
+
+export async function uiLogin(
+	page: Page,
+	who: PersonaName | Credentials,
+	options: UiLoginOptions = {}
+): Promise<void> {
+	const { startAt = '/login', landsOn = /\/dashboard(\/|$|\?)/ } = options;
 	const persona = typeof who === 'string' ? PERSONAS[who] : who;
-	await gotoHydrated(page, '/login');
+	await gotoHydrated(page, startAt);
 	const demo = await isDemoMode();
 	if (demo && typeof who === 'string') {
 		const select = page.getByLabel('Select Test Account');
@@ -99,5 +116,5 @@ export async function uiLogin(page: Page, who: PersonaName | Credentials): Promi
 		}).toPass({ timeout: 30_000 });
 		await page.getByRole('button', { name: 'Sign in', exact: true }).click();
 	}
-	await page.waitForURL(/\/dashboard(\/|$|\?)/);
+	await page.waitForURL(landsOn);
 }

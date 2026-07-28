@@ -131,4 +131,45 @@ test.describe('J3 login & logout @p0', () => {
 		await page.goto('/');
 		await expectLoggedOutChrome(page, isMobile);
 	});
+
+	// The `(auth)` route-group guard (hooks.server.ts `handleAuthGuard`). This is
+	// the path every subscription notification CTA now takes: the backend points
+	// all seven `subscription_*` mails — dunning included — at
+	// /account/memberships, and an email click routinely lands in a browser with
+	// no session. Before the guard those visitors got an endless spinner, because
+	// that page's queries are `enabled: !!accessToken` and so never resolve.
+	test('bounces a guest off a protected page and returns them to it after login', async ({
+		page
+	}) => {
+		const response = await page.goto('/account/memberships');
+
+		// A real server-side 302, not a client-side bounce after a blank shell —
+		// that page sets `ssr = false`, which is exactly why the guard lives in
+		// `handle` rather than in a (auth)/+layout.server.ts.
+		const redirected = response?.request().redirectedFrom() ?? null;
+		expect(redirected, 'no redirect happened — is the guard wired?').not.toBeNull();
+		expect((await redirected?.response())?.status()).toBe(302);
+
+		// Landed on login, carrying where they were going.
+		const landed = new URL(page.url());
+		expect(landed.pathname).toBe('/login');
+		expect(landed.searchParams.get('returnUrl')).toBe('/account/memberships');
+
+		// …and signing in from there returns them to the page the mail pointed at,
+		// NOT to the dashboard. That round trip is the whole point of the guard:
+		// bouncing to login is only useful if the destination survives it.
+		await uiLogin(page, 'member', {
+			startAt: `/login?returnUrl=${encodeURIComponent('/account/memberships')}`,
+			landsOn: /\/account\/memberships(\/|$|\?)/
+		});
+		await expect(page.getByRole('heading', { name: 'My Memberships', level: 1 })).toBeVisible();
+	});
+
+	test('leaves public pages reachable for guests', async ({ page }) => {
+		// The guard keys on the route GROUP, so a bug in that predicate would
+		// login-wall the public site. Cheap canary against exactly that.
+		const response = await page.goto('/organizations');
+		expect(response?.status()).toBe(200);
+		expect(new URL(page.url()).pathname).toBe('/organizations');
+	});
 });

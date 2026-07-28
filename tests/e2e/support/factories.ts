@@ -1599,3 +1599,25 @@ export async function staffCreateOfflineSubscription(
 		initial_payment_currency: opts.currency ?? (opts.amount ? 'EUR' : undefined)
 	});
 }
+
+/**
+ * Staff-cancel a subscription (POST …/subscriptions/{id}/cancel).
+ *
+ * Defaults to the SCHEDULED mode (`immediate: false`), which is the only one
+ * that leaves the row ACTIVE with `cancel_at_period_end` set — the state the
+ * drawer's "Undo cancellation" button exists for. The backend silently upgrades
+ * a scheduled cancel to an immediate one when the row has no period boundary to
+ * land on (PENDING OFFLINE), so callers must record a payment first.
+ */
+export async function staffCancelSubscription(
+	owner: ThrowawayUser | PersonaName,
+	orgSlug: string,
+	subId: string,
+	opts: { immediate?: boolean } = {}
+): Promise<void> {
+	const credentials = typeof owner === 'string' ? PERSONAS[owner] : owner;
+	const api = await ApiClient.login(credentials.email, credentials.password);
+	await api.post(`/api/organization-admin/${orgSlug}/subscriptions/${subId}/cancel`, {
+		immediate: opts.immediate ?? false
+	});
+}
