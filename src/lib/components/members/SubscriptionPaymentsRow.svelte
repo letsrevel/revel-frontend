@@ -5,7 +5,7 @@
 	import { formatDate } from '$lib/utils/date';
 	import { ExternalLink } from '@lucide/svelte';
 	import SubscriptionPaymentsStatusBadge from './SubscriptionPaymentsStatusBadge.svelte';
-	import { partialRefundAmount } from './SubscriptionPaymentsShared';
+	import { partialRefundAmount, platformFeeBreakdown } from './SubscriptionPaymentsShared';
 
 	interface Props {
 		payment: OrganizationMembershipPaymentSchema;
@@ -18,6 +18,9 @@
 	// only when the row was written. Mirrors PaymentsTable.
 	const when = $derived(formatDate(payment.occurred_at ?? payment.created_at));
 	const refunded = $derived(partialRefundAmount(payment));
+	// `null` whenever no platform fee was actually taken (offline, failed, or a
+	// row predating the fee columns) — the whole breakdown is then suppressed.
+	const fee = $derived(platformFeeBreakdown(payment));
 </script>
 
 <tr class="border-b align-top last:border-0">
@@ -34,6 +37,43 @@
 					amount: formatMoney(refunded, payment.currency)
 				})}
 			</span>
+		{/if}
+		{#if fee}
+			<!-- Gross → fee → net, so a row reconciles against a Stripe payout line.
+			     Kept in parity with SubscriptionPaymentsCard (the mobile variant). -->
+			<p class="sr-only">{m['orgAdmin.members.payments.feeBreakdownLabel']()}</p>
+			<dl class="mt-1 max-w-[18rem] space-y-0.5 text-xs font-normal text-muted-foreground">
+				<div class="flex justify-between gap-3">
+					<dt>{m['orgAdmin.members.payments.feePlatformFee']()}</dt>
+					<dd class="tabular-nums">{formatMoney(-fee.feeGross, payment.currency)}</dd>
+				</div>
+				{#if fee.feeExclVat !== null}
+					<div class="flex justify-between gap-3">
+						<dt>{m['orgAdmin.members.payments.feeExclVat']()}</dt>
+						<dd class="tabular-nums">{formatMoney(fee.feeExclVat, payment.currency)}</dd>
+					</div>
+				{/if}
+				{#if fee.reverseCharge}
+					<div class="flex justify-between gap-3">
+						<dt>{m['orgAdmin.members.payments.feeReverseCharge']()}</dt>
+						<dd>{m['orgAdmin.members.payments.feeReverseChargeYes']()}</dd>
+					</div>
+				{:else if fee.feeVat !== null && fee.feeVatRate !== null}
+					<div class="flex justify-between gap-3">
+						<dt>{m['orgAdmin.members.payments.feeVat']({ rate: fee.feeVatRate })}</dt>
+						<dd class="tabular-nums">{formatMoney(fee.feeVat, payment.currency)}</dd>
+					</div>
+				{/if}
+				<div class="flex justify-between gap-3 font-medium text-foreground">
+					<dt>{m['orgAdmin.members.payments.feeNetToOrg']()}</dt>
+					<dd class="tabular-nums">{formatMoney(fee.netToOrganizer, payment.currency)}</dd>
+				</div>
+			</dl>
+			{#if fee.hasRefund}
+				<p class="mt-1 max-w-[18rem] text-xs font-normal text-muted-foreground">
+					{m['orgAdmin.members.payments.feeBeforeRefund']()}
+				</p>
+			{/if}
 		{/if}
 	</td>
 	<td class="px-3 py-2">

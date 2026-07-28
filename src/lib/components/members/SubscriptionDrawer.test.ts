@@ -5,6 +5,7 @@ import { QueryClient } from '@tanstack/svelte-query';
 import SubscriptionDrawer from './SubscriptionDrawer.svelte';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 import {
+	organizationadminsubscriptionsCancelSubscription,
 	organizationadminsubscriptionsGetSubscription,
 	organizationadminsubscriptionsListSubscriptionPayments,
 	organizationadminsubscriptionsPauseSubscription,
@@ -30,8 +31,9 @@ vi.mock('$lib/api/generated/sdk.gen', () => ({
 
 const toastErrorMock = vi.hoisted(() => vi.fn());
 const toastSuccessMock = vi.hoisted(() => vi.fn());
+const toastInfoMock = vi.hoisted(() => vi.fn());
 vi.mock('svelte-sonner', () => ({
-	toast: { error: toastErrorMock, success: toastSuccessMock }
+	toast: { error: toastErrorMock, success: toastSuccessMock, info: toastInfoMock }
 }));
 
 vi.mock('$lib/stores/auth.svelte', () => ({
@@ -414,6 +416,130 @@ describe('SubscriptionDrawer pause confirmation', () => {
 		// merely because the dialog has not rendered yet.
 		await screen.findByText(/loses members-only access until you resume/i);
 		expect(screen.queryByText(/scheduled plan change is dropped/i)).not.toBeInTheDocument();
+	});
+});
+
+describe('SubscriptionDrawer cancel', () => {
+	/** Open the cancel dialog and confirm an immediate cancellation. */
+	async function cancelImmediately(user: ReturnType<typeof userEvent.setup>) {
+		await user.click(await screen.findByRole('button', { name: 'Cancel' }));
+		await user.click(await screen.findByRole('radio', { name: /Immediately/ }));
+		await user.click(
+			await screen.findByRole('checkbox', { name: /access is revoked immediately/i })
+		);
+		await user.click(await screen.findByRole('button', { name: 'Confirm cancellation' }));
+	}
+
+	function mockCancel(result: Record<string, unknown>) {
+		vi.mocked(organizationadminsubscriptionsCancelSubscription).mockResolvedValue(
+			result as unknown as Awaited<
+				ReturnType<typeof organizationadminsubscriptionsCancelSubscription>
+			>
+		);
+	}
+
+	it('reports a plain cancellation without a toast', async () => {
+		const user = userEvent.setup();
+		arrange(makeSub({ plan: { ...makeSub().plan, payment_method: 'online' } }));
+		mockCancel({
+			data: makeSub({ status: 'cancelled' }),
+			error: undefined,
+			response: { ok: true } as unknown as Response
+		});
+		renderDrawer();
+
+		await cancelImmediately(user);
+
+		await waitFor(() =>
+			expect(organizationadminsubscriptionsCancelSubscription).toHaveBeenCalledWith(
+				expect.objectContaining({ body: { immediate: true } })
+			)
+		);
+		expect(toastErrorMock).not.toHaveBeenCalled();
+		expect(toastInfoMock).not.toHaveBeenCalled();
+	});
+
+	/**
+	 * 409 `subscription_activation_pending`: the member completed the hosted
+	 * Checkout while the backend was expiring it, so the money moved, the
+	 * activation webhooks are in flight and the cancellation was aborted. Staff
+	 * must learn that the row is about to go ACTIVE — not that their cancel broke.
+	 */
+	it('tells staff the member paid and the row will activate, not that it failed', async () => {
+		const user = userEvent.setup();
+		arrange(
+			makeSub({
+				status: 'pending',
+				stripe_checkout_session_id: 'cs_test_1',
+				plan: { ...makeSub().plan, payment_method: 'online' }
+			})
+		);
+		mockCancel({
+			data: undefined,
+			error: {
+				detail: "Your payment went through. We're still confirming your subscription.",
+				code: 'subscription_activation_pending'
+			},
+			response: { ok: false, status: 409 } as unknown as Response
+		});
+		renderDrawer();
+
+		await cancelImmediately(user);
+
+		await waitFor(() =>
+			expect(toastInfoMock).toHaveBeenCalledWith(
+				"This member's payment went through, so the subscription wasn't cancelled — it's being activated right now. Cancel it again once it's active."
+			)
+		);
+		// Not an error, so it must never reach the red channel.
+		expect(toastErrorMock).not.toHaveBeenCalled();
+		expect(toastSuccessMock).not.toHaveBeenCalled();
+	});
+
+	// 502: Stripe unreachable, cancel aborted, row untouched. The backend's own
+	// detail reads like a charge failed, which is the opposite of what happened.
+	it('replaces the 502 detail with a "nothing changed, retry" message', async () => {
+		const user = userEvent.setup();
+		arrange(makeSub({ plan: { ...makeSub().plan, payment_method: 'online' } }));
+		mockCancel({
+			data: undefined,
+			error: { detail: 'Payment processing failed. Please try again later.' },
+			response: { ok: false, status: 502 } as unknown as Response
+		});
+		renderDrawer();
+
+		await cancelImmediately(user);
+
+		await waitFor(() =>
+			expect(toastErrorMock).toHaveBeenCalledWith(
+				"Couldn't reach the payment provider, so nothing changed — this subscription is exactly as it was. Try again in a moment."
+			)
+		);
+		expect(toastErrorMock).not.toHaveBeenCalledWith(
+			expect.stringContaining('Payment processing failed')
+		);
+		expect(toastInfoMock).not.toHaveBeenCalled();
+	});
+
+	// The pre-existing path: any other refusal still shows the backend's detail.
+	it('still passes a 400 detail through verbatim', async () => {
+		const user = userEvent.setup();
+		arrange(makeSub());
+		mockCancel({
+			data: undefined,
+			error: { detail: 'Cannot schedule cancellation for a paused subscription.' },
+			response: { ok: false, status: 400 } as unknown as Response
+		});
+		renderDrawer();
+
+		await cancelImmediately(user);
+
+		await waitFor(() =>
+			expect(toastErrorMock).toHaveBeenCalledWith(
+				'Cannot schedule cancellation for a paused subscription.'
+			)
+		);
+		expect(toastInfoMock).not.toHaveBeenCalled();
 	});
 });
 

@@ -29,7 +29,12 @@
 	import CancelSubscriptionDialog from './CancelSubscriptionDialog.svelte';
 	import RefundPaymentDialog from './RefundPaymentDialog.svelte';
 	import StaffReviveModal from './StaffReviveModal.svelte';
-	import { getAvailableActions, formatPlanPrice, getDateLine } from '$lib/utils/subscriptions';
+	import {
+		getAvailableActions,
+		formatPlanPrice,
+		getDateLine,
+		isSubscriptionActivationPending
+	} from '$lib/utils/subscriptions';
 	import { backendMessage } from '$lib/utils/api-error-detail';
 	import { formatDate } from '$lib/utils/date';
 
@@ -185,15 +190,40 @@
 				body: payload,
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
+			// 409 (`subscription_activation_pending`), only reachable from the
+			// *immediate* path: the backend must expire this row's still-payable hosted
+			// Checkout Session before terminalizing it, and the re-read came back
+			// `complete` — the member finished paying mid-round-trip. The money moved,
+			// the activation webhooks are in flight, and the cancellation was
+			// **aborted**. Not a failure, so it must not reach `toast.error`: staff
+			// reading a red "couldn't cancel" would go looking for a bug instead of
+			// learning that the row is about to go ACTIVE and can be cancelled then.
+			// Keyed on the machine-readable `code`; the sibling `detail` is translated.
+			if (isSubscriptionActivationPending(res.error)) return null;
 			if (res.error)
 				throw new Error(
-					backendMessage(res.error) || m['orgAdmin.members.subscriptions.drawer.errors.cancel']()
+					// 502: Stripe was unreachable and the cancel was aborted, so the row is
+					// exactly as it was. The backend's detail ("Payment processing
+					// failed…") reads like a charge failed, which is not what happened, so
+					// this status — like the uncancel 403 above — gets its own copy that
+					// says nothing changed and to retry.
+					res.response?.status === 502
+						? m['orgAdmin.members.subscriptions.drawer.errors.cancelStripeUnreachable']()
+						: backendMessage(res.error) ||
+								m['orgAdmin.members.subscriptions.drawer.errors.cancel']()
 				);
 			return res.data;
 		},
-		onSuccess: () => {
+		onSuccess: (data) => {
 			invalidateAll();
 			cancelOpen = false;
+			// `null` is the activation-pending answer: the subscription was NOT
+			// cancelled. Closing the dialog is still right — a retry can only hit the
+			// same 409 until the webhooks land — but staff have to be told why, and
+			// told neutrally.
+			if (data === null) {
+				toast.info(m['orgAdmin.members.subscriptions.drawer.cancelActivationPending']());
+			}
 		},
 		onError: (err: Error) => toast.error(err.message)
 	}));

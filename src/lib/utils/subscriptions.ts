@@ -126,9 +126,11 @@ export function isMembershipSuspended(memberStatus?: MembershipStatus | null): b
  *    (the admin drawer's `SubscriptionSchema` has no such field at all — it keeps
  *    the button and translates the 403 instead).
  *
- * Note the backend does *not* gate on payment method: an OFFLINE row takes the
- * purely local path. The ONLINE/OFFLINE split on the member surface is a frontend
- * policy decision (see `getMemberActions`), not a backend constraint.
+ * Note the backend does *not* gate on payment method *here*: an OFFLINE row takes
+ * the purely local path, so withdrawing this action from OFFLINE members is a
+ * frontend policy decision (see `getMemberActions`), not a backend constraint.
+ * That is true of `uncancel` specifically — the sibling change-plan and revive
+ * endpoints each refuse an OFFLINE row outright in their own controller.
  */
 export function canUncancel(
 	sub: {
@@ -279,10 +281,22 @@ export function isWithinRevivalWindow(
 }
 
 /**
- * ONLINE/OFFLINE-aware member action matrix. OFFLINE subscriptions are managed
- * by the organization; the backend rejects change-plan while a change is
- * pending or renewal is switched off (`_validate_change_plan_state`), so
- * those combinations never render a button that can only 400.
+ * ONLINE/OFFLINE-aware member action matrix. Every withdrawal below mirrors a
+ * refusal the backend would actually answer with, so no button here can only 400.
+ *
+ * OFFLINE subscriptions are managed by the organization, and for change-plan that
+ * is now the backend's rule as well: `me_subscriptions.change_plan` refuses an
+ * OFFLINE row with a 400 ("This subscription is managed by the organization…")
+ * because an offline swap is immediate and fee-free, so a self-service
+ * Monthly→Annual switch would turn one staff-recorded monthly payment into twelve
+ * months of membership. That check sits in the *controller*, ahead of the service
+ * — tracing it from `_validate_change_plan_state` will not find it.
+ *
+ * `_validate_change_plan_state` refuses, in its own order: a terminal row (which
+ * the member endpoint's queryset already 404s before the service is reached),
+ * PAUSED, PAST_DUE (see the `past_due` case), a scheduled cancellation, an
+ * already-pending change, and a change to the plan the row is already on. Each
+ * has a counterpart below.
  *
  * `uncancel` keeps the same ONLINE-only fence even though the backend would
  * accept it on an OFFLINE row: an OFFLINE cancellation can only have been
@@ -299,6 +313,10 @@ export function getMemberActions(
 	now: Date = new Date(),
 	memberStatus?: MembershipStatus | null
 ): MemberActionSet {
+	// Withdrawn wholesale. Not merely a house style any more: the change-plan and
+	// revive controllers both 400 an OFFLINE row, and there is no Stripe portal to
+	// send an offline member to. What remains — `uncancel` — is this surface's own
+	// policy (see `canUncancel`).
 	if (sub.plan.payment_method !== 'online') return NO_MEMBER_ACTIONS;
 	switch (sub.status) {
 		case 'active':
@@ -328,8 +346,14 @@ export function getMemberActions(
 					uncancel: canUncancel(sub, memberStatus)
 				};
 			}
-			// Deliberately stricter than the BE preflight, which would accept a change-plan
-			// here: settle the failed payment in the portal first, then switch plans.
+			// No change-plan, and the backend now agrees: `_validate_change_plan_state`
+			// refuses PAST_DUE outright. An upgrade invoices only the proration delta,
+			// and settling *that* invoice revives the row to ACTIVE (PAST_DUE is in
+			// `_apply_invoice_outcome`'s revivable set) while the lapsed renewal invoice
+			// stays unpaid and the period anchor stays in the past — a false ACTIVE that
+			// also hands over the pricier tier and clears the dunning warning. Settling
+			// the outstanding invoice in the portal is the way through, which is why
+			// `manageBilling` is the action that stays.
 			return { ...NO_MEMBER_ACTIONS, manageBilling: true, cancel: true };
 		case 'expired':
 			return { ...NO_MEMBER_ACTIONS, revive: isWithinRevivalWindow(sub, now) };

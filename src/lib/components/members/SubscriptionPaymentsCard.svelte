@@ -5,7 +5,7 @@
 	import { formatDate } from '$lib/utils/date';
 	import { ExternalLink } from '@lucide/svelte';
 	import SubscriptionPaymentsStatusBadge from './SubscriptionPaymentsStatusBadge.svelte';
-	import { partialRefundAmount } from './SubscriptionPaymentsShared';
+	import { partialRefundAmount, platformFeeBreakdown } from './SubscriptionPaymentsShared';
 
 	interface Props {
 		payment: OrganizationMembershipPaymentSchema;
@@ -15,6 +15,9 @@
 
 	const when = $derived(formatDate(payment.occurred_at ?? payment.created_at));
 	const refunded = $derived(partialRefundAmount(payment));
+	// Same suppression rule as the desktop row — the card must carry the same
+	// information, so the two are gated by one shared predicate.
+	const fee = $derived(platformFeeBreakdown(payment));
 </script>
 
 <li class="rounded-lg border p-3">
@@ -39,6 +42,43 @@
 				amount: formatMoney(refunded, payment.currency)
 			})}
 		</p>
+	{/if}
+
+	{#if fee}
+		<!-- Gross → fee → net. Kept in parity with SubscriptionPaymentsRow. -->
+		<p class="sr-only">{m['orgAdmin.members.payments.feeBreakdownLabel']()}</p>
+		<dl class="mt-2 space-y-0.5 border-t pt-2 text-xs text-muted-foreground">
+			<div class="flex justify-between gap-3">
+				<dt>{m['orgAdmin.members.payments.feePlatformFee']()}</dt>
+				<dd class="tabular-nums">{formatMoney(-fee.feeGross, payment.currency)}</dd>
+			</div>
+			{#if fee.feeExclVat !== null}
+				<div class="flex justify-between gap-3">
+					<dt>{m['orgAdmin.members.payments.feeExclVat']()}</dt>
+					<dd class="tabular-nums">{formatMoney(fee.feeExclVat, payment.currency)}</dd>
+				</div>
+			{/if}
+			{#if fee.reverseCharge}
+				<div class="flex justify-between gap-3">
+					<dt>{m['orgAdmin.members.payments.feeReverseCharge']()}</dt>
+					<dd class="text-right">{m['orgAdmin.members.payments.feeReverseChargeYes']()}</dd>
+				</div>
+			{:else if fee.feeVat !== null && fee.feeVatRate !== null}
+				<div class="flex justify-between gap-3">
+					<dt>{m['orgAdmin.members.payments.feeVat']({ rate: fee.feeVatRate })}</dt>
+					<dd class="tabular-nums">{formatMoney(fee.feeVat, payment.currency)}</dd>
+				</div>
+			{/if}
+			<div class="flex justify-between gap-3 font-medium text-foreground">
+				<dt>{m['orgAdmin.members.payments.feeNetToOrg']()}</dt>
+				<dd class="tabular-nums">{formatMoney(fee.netToOrganizer, payment.currency)}</dd>
+			</div>
+		</dl>
+		{#if fee.hasRefund}
+			<p class="mt-1 text-xs text-muted-foreground">
+				{m['orgAdmin.members.payments.feeBeforeRefund']()}
+			</p>
+		{/if}
 	{/if}
 
 	<dl class="mt-2 space-y-0.5 text-xs text-muted-foreground">

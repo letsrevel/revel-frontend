@@ -428,6 +428,42 @@ describe('getMemberActions', () => {
 		});
 	});
 
+	/**
+	 * Regression fence, not a style preference: `me_subscriptions.change_plan`
+	 * 400s an OFFLINE row in the controller ("managed by the organization"),
+	 * because an offline swap is immediate and fee-free and the next
+	 * staff-recorded payment derives its period from the plan the row is on — a
+	 * self-service Monthly→Annual switch would buy twelve months for one monthly
+	 * payment. Never offer the button, on any status.
+	 */
+	it.each(['active', 'past_due', 'paused', 'pending', 'expired', 'cancelled'] as const)(
+		'never offers change-plan on an offline %s row (BE refuses it in the controller)',
+		(status) => {
+			const sub = mySub({ status });
+			sub.plan.payment_method = 'offline';
+			expect(getMemberActions(sub, NOW).changePlan).toBe(false);
+		}
+	);
+
+	/**
+	 * Regression fence: `_validate_change_plan_state` 400s PAST_DUE. An upgrade
+	 * invoices only the proration delta, and settling that invoice revives the row
+	 * to ACTIVE while the lapsed renewal invoice stays unpaid — a false ACTIVE on
+	 * the pricier tier with the dunning warning cleared. The portal is the way out.
+	 */
+	it.each([false, true])(
+		'never offers change-plan on a past_due row (cancel_at_period_end=%s) — false-ACTIVE proration trap',
+		(cancelAtPeriodEnd) => {
+			const actions = getMemberActions(
+				mySub({ status: 'past_due', cancel_at_period_end: cancelAtPeriodEnd }),
+				NOW
+			);
+			expect(actions.changePlan).toBe(false);
+			// The remediation the BE documents stays reachable.
+			expect(actions.manageBilling).toBe(true);
+		}
+	);
+
 	// BE preflight rejects change-plan while a change is already pending.
 	it('online active with a pending plan change hides change plan only', () => {
 		expect(getMemberActions(mySub({ pending_plan_id: 'p2' }), NOW).changePlan).toBe(false);

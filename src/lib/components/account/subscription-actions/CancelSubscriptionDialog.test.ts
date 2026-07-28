@@ -16,6 +16,12 @@ vi.mock('$lib/api/generated/sdk.gen', () => ({
 }));
 vi.mock('$lib/stores/auth.svelte', () => ({ authStore: { accessToken: 'tok' } }));
 
+const toastSuccessMock = vi.hoisted(() => vi.fn());
+const toastErrorMock = vi.hoisted(() => vi.fn());
+vi.mock('svelte-sonner', () => ({
+	toast: { success: toastSuccessMock, error: toastErrorMock }
+}));
+
 const sub = {
 	plan_id: 'p1',
 	organization_id: 'o1',
@@ -50,7 +56,15 @@ function renderDialog(props: Record<string, unknown> = {}, client?: QueryClient)
 	});
 }
 
+/** Tick the immediate radio + its confirmation — the only path that can 409. */
+async function chooseImmediate(user: ReturnType<typeof userEvent.setup>) {
+	await user.click(screen.getByRole('radio', { name: /immediately/i }));
+	await user.click(screen.getByRole('checkbox', { name: /ends immediately/i }));
+}
+
 beforeEach(() => {
+	toastSuccessMock.mockReset();
+	toastErrorMock.mockReset();
 	cancelMock.mockReset();
 	orgMock.mockReset().mockResolvedValue({
 		data: { membership_refund_policy: 'No refunds after 14 days.' },
@@ -218,5 +232,121 @@ describe('CancelSubscriptionDialog', () => {
 		renderDialog();
 		await user.click(screen.getByRole('button', { name: /cancel membership/i }));
 		expect(await screen.findByRole('alert')).toHaveTextContent('Already cancelled at period end.');
+	});
+});
+
+/**
+ * The 409 `subscription_activation_pending`: an immediate cancel found the
+ * member's hosted Checkout Session already `complete`, so the money moved, the
+ * activation webhooks are in flight, and the backend refused to terminalize the
+ * row — the cancellation did NOT happen. Neither a failure nor a success.
+ */
+describe('CancelSubscriptionDialog activation-pending 409', () => {
+	const pending409 = {
+		data: undefined,
+		error: {
+			detail: "Your payment went through. We're still confirming your subscription.",
+			code: 'subscription_activation_pending'
+		},
+		response: { ok: false, status: 409 } as unknown as Response
+	};
+
+	it('explains that the payment landed and the membership was not cancelled', async () => {
+		const user = userEvent.setup();
+		cancelMock.mockResolvedValue(pending409);
+		renderDialog();
+		await chooseImmediate(user);
+		await user.click(screen.getByRole('button', { name: /cancel membership/i }));
+
+		const status = await screen.findByRole('status');
+		expect(status).toHaveTextContent(/your payment went through/i);
+		expect(status).toHaveTextContent(/wasn't cancelled/i);
+		expect(status).toHaveTextContent(/once it's active/i);
+		// The backend's own translated sentence rides along underneath.
+		expect(status).toHaveTextContent(/still confirming your subscription/i);
+	});
+
+	// Rendering this red would tell someone who was just charged that something
+	// broke. It is a status, not an alert, and never the destructive token.
+	it('renders it as a non-destructive status rather than an error', async () => {
+		const user = userEvent.setup();
+		cancelMock.mockResolvedValue(pending409);
+		renderDialog();
+		await chooseImmediate(user);
+		await user.click(screen.getByRole('button', { name: /cancel membership/i }));
+
+		const status = await screen.findByRole('status');
+		expect(screen.queryByRole('alert')).toBeNull();
+		expect(status.querySelector('.text-destructive')).toBeNull();
+		expect(toastErrorMock).not.toHaveBeenCalled();
+	});
+
+	// Telling them they're cancelled while Stripe is about to bill them is the
+	// other half of the failure mode.
+	it('fires no success toast and stays open with nothing to retry', async () => {
+		const user = userEvent.setup();
+		cancelMock.mockResolvedValue(pending409);
+		const onOpenChange = vi.fn();
+		renderDialog({ onOpenChange });
+		await chooseImmediate(user);
+		await user.click(screen.getByRole('button', { name: /cancel membership/i }));
+
+		await screen.findByRole('status');
+		expect(toastSuccessMock).not.toHaveBeenCalled();
+		expect(onOpenChange).not.toHaveBeenCalled();
+		// A second attempt could only hit the same 409 until the webhook lands.
+		expect(screen.queryByRole('button', { name: /cancel membership/i })).toBeNull();
+		expect(screen.getByRole('button', { name: /close/i })).toBeInTheDocument();
+		expect(cancelMock).toHaveBeenCalledTimes(1);
+	});
+
+	// No response body to seed, so the caches are re-read from the server: the row
+	// is being rewritten by the activation webhooks right now.
+	it('invalidates the member-facing subscription caches', async () => {
+		const user = userEvent.setup();
+		const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+		const invalidate = vi.spyOn(client, 'invalidateQueries');
+		cancelMock.mockResolvedValue(pending409);
+		renderDialog({}, client);
+		await chooseImmediate(user);
+		await user.click(screen.getByRole('button', { name: /cancel membership/i }));
+
+		await screen.findByRole('status');
+		await waitFor(() => {
+			const keys = invalidate.mock.calls.map((call) => JSON.stringify(call[0]?.queryKey));
+			expect(keys).toContain(JSON.stringify(['me', 'memberships']));
+			expect(keys).toContain(JSON.stringify(['me', 'subscriptions']));
+			expect(keys).toContain(JSON.stringify(['me', 'org', 'o1', 'subscription']));
+		});
+	});
+});
+
+/**
+ * 502: Stripe was unreachable, the cancel was aborted, nothing changed. The
+ * backend's own detail ("Payment processing failed…") reads like a charge
+ * failed, which is the opposite of what happened.
+ */
+describe('CancelSubscriptionDialog 502', () => {
+	it('promises the membership is untouched and invites a retry', async () => {
+		const user = userEvent.setup();
+		cancelMock.mockResolvedValue({
+			data: undefined,
+			error: { detail: 'Payment processing failed. Please try again later.' },
+			response: { ok: false, status: 502 } as unknown as Response
+		});
+		renderDialog();
+		await user.click(screen.getByRole('button', { name: /cancel membership/i }));
+
+		const alert = await screen.findByRole('alert');
+		expect(alert).toHaveTextContent(/couldn't reach the payment provider/i);
+		expect(alert).toHaveTextContent(/nothing was changed/i);
+		expect(alert).not.toHaveTextContent(/payment processing failed/i);
+		// Distinct from the generic fallback, which promises nothing about state.
+		expect(alert).not.toHaveTextContent(/could not cancel your membership/i);
+		// A real failure, so the retry stays available.
+		await waitFor(() =>
+			expect(screen.getByRole('button', { name: /cancel membership/i })).toBeEnabled()
+		);
+		expect(toastSuccessMock).not.toHaveBeenCalled();
 	});
 });

@@ -3414,6 +3414,7 @@
 					"pause": "Sospendi",
 					"resume": "Riprendi",
 					"cancel": "Disdici",
+					"cancelActivationPending": "Il pagamento di questa persona è andato a buon fine, quindi l'abbonamento non è stato disdetto: è in fase di attivazione. Disdicilo di nuovo quando sarà attivo.",
 					"uncancel": "Annulla disdetta",
 					"uncancelling": "Annullamento…",
 					"uncancelDone": "Rinnovo ripristinato.",
@@ -3433,7 +3434,8 @@
 						"resume": "Impossibile riprendere questo abbonamento.",
 						"uncancel": "Impossibile annullare la disdetta programmata.",
 						"uncancelSuspended": "Questa iscrizione è sospesa, quindi il rinnovo non può ripartire. Ripristinala prima dalla scheda Membri, poi annulla la disdetta.",
-						"refund": "Impossibile rimborsare questo pagamento."
+						"refund": "Impossibile rimborsare questo pagamento.",
+						"cancelStripeUnreachable": "Non è stato possibile raggiungere il fornitore di pagamenti, quindi non è stato modificato nulla: questo abbonamento è intatto. Riprova tra poco."
 					},
 					"revive": "Riattiva",
 					"reviveDone": "Abbonamento riattivato",
@@ -3450,6 +3452,14 @@
 					"paymentOnStripe": "Vedi su Stripe",
 					"onlineRefundNote": "I rimborsi dei pagamenti online si effettuano dalla dashboard Stripe — vengono registrati qui automaticamente.",
 					"partiallyRefunded": "(rimborso di {amount} {currency})",
+					"feeBreakdownLabel": "Dettaglio della fee di piattaforma",
+					"feePlatformFee": "Fee piattaforma",
+					"feeExclVat": "Fee al netto dell'IVA",
+					"feeVat": "IVA sulla fee ({rate}%)",
+					"feeReverseCharge": "Reverse charge",
+					"feeReverseChargeYes": "Sì (B2B UE) — assolvi tu l'IVA",
+					"feeNetToOrg": "Netto per te",
+					"feeBeforeRefund": "Netto mostrato prima del rimborso — la fee di piattaforma di questo pagamento non viene ridotta dai rimborsi.",
 					"paymentsCol": {
 						"date": "Data",
 						"amount": "Importo",
@@ -3536,6 +3546,14 @@
 				"recordedBy": "Registrato da {name}",
 				"recordedByLabel": "Registrato da",
 				"partiallyRefunded": "{amount} rimborsati",
+				"feeBreakdownLabel": "Dettaglio della fee di piattaforma",
+				"feePlatformFee": "Fee piattaforma",
+				"feeExclVat": "Fee al netto dell'IVA",
+				"feeVat": "IVA sulla fee ({rate}%)",
+				"feeReverseCharge": "Reverse charge",
+				"feeReverseChargeYes": "Sì (B2B UE) — assolvi tu l'IVA",
+				"feeNetToOrg": "Netto per te",
+				"feeBeforeRefund": "Netto mostrato prima del rimborso — la fee di piattaforma di questo pagamento non viene ridotta dai rimborsi.",
 				"viewOnStripe": "Vedi su Stripe",
 				"viewOnStripeFor": "Vedi su Stripe il pagamento di {name}",
 				"noStripeRecord": "Nessun record Stripe",
@@ -6787,7 +6805,9 @@
 		"successPeriodEnd": "Il tuo abbonamento terminerà il {date}.",
 		"successPeriodEndNoDate": "Il tuo abbonamento terminerà alla fine del periodo corrente.",
 		"successImmediate": "Il tuo abbonamento è stato annullato.",
-		"error": "Non è stato possibile annullare l'abbonamento. Riprova."
+		"error": "Non è stato possibile annullare l'abbonamento. Riprova.",
+		"activationPending": "Il tuo pagamento è andato a buon fine, quindi l'abbonamento non è stato annullato: è in fase di attivazione. Potrai annullarlo quando sarà attivo.",
+		"stripeUnreachable": "Non è stato possibile raggiungere il fornitore di pagamenti, quindi non è stato modificato nulla: il tuo abbonamento è intatto. Riprova tra poco."
 	},
 	"changePlan": {
 		"title": "Cambia piano",

@@ -3414,6 +3414,7 @@
 					"pause": "Pause",
 					"resume": "Resume",
 					"cancel": "Cancel",
+					"cancelActivationPending": "This member's payment went through, so the subscription wasn't cancelled — it's being activated right now. Cancel it again once it's active.",
 					"uncancel": "Undo cancellation",
 					"uncancelling": "Undoing…",
 					"uncancelDone": "Renewal restored.",
@@ -3433,7 +3434,8 @@
 						"resume": "Couldn't resume this subscription.",
 						"uncancel": "Couldn't undo the scheduled cancellation.",
 						"uncancelSuspended": "This membership is suspended, so renewal can't restart. Restore it from the Members tab first, then undo the cancellation.",
-						"refund": "Couldn't refund this payment."
+						"refund": "Couldn't refund this payment.",
+						"cancelStripeUnreachable": "Couldn't reach the payment provider, so nothing changed — this subscription is exactly as it was. Try again in a moment."
 					},
 					"revive": "Revive",
 					"reviveDone": "Subscription revived",
@@ -3450,6 +3452,14 @@
 					"paymentOnStripe": "View on Stripe",
 					"onlineRefundNote": "Refunds for online payments are issued from the Stripe Dashboard — they are recorded here automatically.",
 					"partiallyRefunded": "({amount} {currency} refunded)",
+					"feeBreakdownLabel": "Platform fee breakdown",
+					"feePlatformFee": "Platform fee",
+					"feeExclVat": "Fee excl. VAT",
+					"feeVat": "VAT on fee ({rate}%)",
+					"feeReverseCharge": "Reverse charge",
+					"feeReverseChargeYes": "Yes (EU B2B) — you self-assess the VAT",
+					"feeNetToOrg": "Net to you",
+					"feeBeforeRefund": "Net shown before the refund — the platform fee on this payment isn't reduced by refunds.",
 					"paymentsCol": {
 						"date": "Date",
 						"amount": "Amount",
@@ -3536,6 +3546,14 @@
 				"recordedBy": "Recorded by {name}",
 				"recordedByLabel": "Recorded by",
 				"partiallyRefunded": "{amount} refunded",
+				"feeBreakdownLabel": "Platform fee breakdown",
+				"feePlatformFee": "Platform fee",
+				"feeExclVat": "Fee excl. VAT",
+				"feeVat": "VAT on fee ({rate}%)",
+				"feeReverseCharge": "Reverse charge",
+				"feeReverseChargeYes": "Yes (EU B2B) — you self-assess the VAT",
+				"feeNetToOrg": "Net to you",
+				"feeBeforeRefund": "Net shown before the refund — the platform fee on this payment isn't reduced by refunds.",
 				"viewOnStripe": "View on Stripe",
 				"viewOnStripeFor": "View payment on Stripe for {name}",
 				"noStripeRecord": "No Stripe record",
@@ -6787,7 +6805,9 @@
 		"successPeriodEnd": "Your membership will end on {date}.",
 		"successPeriodEndNoDate": "Your membership will end at the close of the current period.",
 		"successImmediate": "Your membership has been cancelled.",
-		"error": "Could not cancel your membership. Please try again."
+		"error": "Could not cancel your membership. Please try again.",
+		"activationPending": "Your payment went through, so your membership wasn't cancelled — it's being activated right now. You'll be able to cancel it once it's active.",
+		"stripeUnreachable": "We couldn't reach the payment provider, so nothing was changed — your membership is exactly as it was. Please try again in a moment."
 	},
 	"changePlan": {
 		"title": "Change plan",

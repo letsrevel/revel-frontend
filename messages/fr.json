@@ -3385,6 +3385,7 @@
 					"pause": "Mettre en pause",
 					"resume": "Reprendre",
 					"cancel": "Annuler",
+					"cancelActivationPending": "Le paiement de ce membre a été accepté : l'abonnement n'a donc pas été annulé, il est en cours d'activation. Annule-le à nouveau une fois qu'il sera actif.",
 					"uncancel": "Annuler la résiliation",
 					"uncancelling": "Annulation…",
 					"uncancelDone": "Renouvellement rétabli.",
@@ -3404,7 +3405,8 @@
 						"resume": "Impossible de reprendre cet abonnement.",
 						"uncancel": "Impossible d'annuler la résiliation programmée.",
 						"uncancelSuspended": "Cette adhésion est suspendue, le renouvellement ne peut donc pas reprendre. Rétablis-la d'abord depuis l'onglet Membres, puis annule la résiliation.",
-						"refund": "Impossible de rembourser ce paiement."
+						"refund": "Impossible de rembourser ce paiement.",
+						"cancelStripeUnreachable": "Impossible de joindre le prestataire de paiement : rien n'a été modifié, cet abonnement est intact. Réessaie dans un instant."
 					},
 					"revive": "Réactiver",
 					"reviveDone": "Abonnement réactivé",
@@ -3421,6 +3423,14 @@
 					"paymentOnStripe": "Voir sur Stripe",
 					"onlineRefundNote": "Les remboursements des paiements en ligne s'effectuent depuis le tableau de bord Stripe — ils sont enregistrés ici automatiquement.",
 					"partiallyRefunded": "(remboursement de {amount} {currency})",
+					"feeBreakdownLabel": "Détail des frais de plateforme",
+					"feePlatformFee": "Frais de plateforme",
+					"feeExclVat": "Frais HT",
+					"feeVat": "TVA sur les frais ({rate} %)",
+					"feeReverseCharge": "Autoliquidation",
+					"feeReverseChargeYes": "Oui (B2B UE) — tu autoliquides la TVA",
+					"feeNetToOrg": "Net pour toi",
+					"feeBeforeRefund": "Net affiché avant remboursement — les frais de plateforme de ce paiement ne sont pas réduits par un remboursement.",
 					"paymentsCol": {
 						"date": "Date",
 						"amount": "Montant",
@@ -3507,6 +3517,14 @@
 				"recordedBy": "Enregistré par {name}",
 				"recordedByLabel": "Enregistré par",
 				"partiallyRefunded": "{amount} remboursé",
+				"feeBreakdownLabel": "Détail des frais de plateforme",
+				"feePlatformFee": "Frais de plateforme",
+				"feeExclVat": "Frais HT",
+				"feeVat": "TVA sur les frais ({rate} %)",
+				"feeReverseCharge": "Autoliquidation",
+				"feeReverseChargeYes": "Oui (B2B UE) — tu autoliquides la TVA",
+				"feeNetToOrg": "Net pour toi",
+				"feeBeforeRefund": "Net affiché avant remboursement — les frais de plateforme de ce paiement ne sont pas réduits par un remboursement.",
 				"viewOnStripe": "Voir sur Stripe",
 				"viewOnStripeFor": "Voir le paiement de {name} sur Stripe",
 				"noStripeRecord": "Aucun enregistrement Stripe",
@@ -6758,7 +6776,9 @@
 		"successPeriodEnd": "Ton adhésion prendra fin le {date}.",
 		"successPeriodEndNoDate": "Ton adhésion prendra fin à la fin de la période en cours.",
 		"successImmediate": "Ton adhésion a été résiliée.",
-		"error": "Impossible de résilier ton adhésion. Réessaie."
+		"error": "Impossible de résilier ton adhésion. Réessaie.",
+		"activationPending": "Ton paiement a bien été accepté : ton adhésion n'a donc pas été résiliée, elle est en cours d'activation. Tu pourras la résilier une fois qu'elle sera active.",
+		"stripeUnreachable": "Impossible de joindre le prestataire de paiement : rien n'a été modifié, ton adhésion est intacte. Réessaie dans un instant."
 	},
 	"changePlan": {
 		"title": "Changer de formule",

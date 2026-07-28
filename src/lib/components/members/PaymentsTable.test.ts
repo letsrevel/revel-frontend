@@ -23,8 +23,28 @@ function makePayment(overrides: Partial<MembershipPaymentSchema> = {}): Membersh
 		refund_amount: null,
 		refunded_at: null,
 		stripe_refund_id: null,
+		// Default to the offline/failed shape the backend documents: no fee was
+		// taken, so the breakdown must stay off unless a test opts in.
+		platform_fee: '0.00',
+		platform_fee_net: null,
+		platform_fee_vat: null,
+		platform_fee_vat_rate: null,
+		platform_fee_reverse_charge: false,
 		...overrides
 	} as MembershipPaymentSchema;
+}
+
+/** A Stripe charge that actually paid a fee: 10.00 gross, 1.80 fee (1.50 + 20% VAT). */
+function withFee(overrides: Partial<MembershipPaymentSchema> = {}): MembershipPaymentSchema {
+	return makePayment({
+		amount: '10.00',
+		platform_fee: '1.80',
+		platform_fee_net: '1.50',
+		platform_fee_vat: '0.30',
+		platform_fee_vat_rate: '20.00',
+		platform_fee_reverse_charge: false,
+		...overrides
+	});
 }
 
 function renderTable(payments: MembershipPaymentSchema[], isOnlinePlan = false) {
@@ -107,6 +127,111 @@ describe('PaymentsTable partial-refund annotation', () => {
 		renderTable([makePayment({ amount: '10.00', refund_amount: '0.00' })]);
 
 		expect(screen.queryByText(/refunded\)/)).not.toBeInTheDocument();
+	});
+});
+
+describe('PaymentsTable platform-fee breakdown', () => {
+	// BE a8b6b727 exposes the fee decomposition on the two STAFF schemas so an
+	// organizer can reconcile a Stripe payout line. Every field is optional and
+	// nullable, so the block has to be fully gated.
+	it('suppresses the whole block for an offline payment whose fee is a literal zero', () => {
+		renderTable([makePayment({ platform_fee: '0.00' })]);
+
+		expect(screen.queryByText('Platform fee')).not.toBeInTheDocument();
+		expect(screen.queryByText('Net to you')).not.toBeInTheDocument();
+		expect(screen.queryByText('—')).not.toBeInTheDocument();
+	});
+
+	it('suppresses the block for a row written before the backend added the fields', () => {
+		renderTable([makePayment({ platform_fee: undefined })]);
+
+		expect(screen.queryByText('Platform fee')).not.toBeInTheDocument();
+		expect(screen.queryByText(/NaN|undefined/)).not.toBeInTheDocument();
+	});
+
+	it('shows the fee as a deduction and the organizer net as the bottom line', () => {
+		renderTable([withFee()]);
+
+		expect(screen.getByText('Platform fee')).toBeInTheDocument();
+		expect(screen.getByText('-€1.80')).toBeInTheDocument();
+		expect(screen.getByText('Net to you')).toBeInTheDocument();
+		expect(screen.getByText('€8.20')).toBeInTheDocument();
+	});
+
+	// The trap: `platform_fee_net` (1.50) is the FEE excluding VAT, NOT what the
+	// organizer nets (8.20). Both figures are on the row, under distinct labels.
+	it('keeps "Fee excl. VAT" distinct from "Net to you"', () => {
+		renderTable([withFee()]);
+
+		const feeExclVat = screen.getByText('Fee excl. VAT').closest('div');
+		expect(within(feeExclVat as HTMLElement).getByText('€1.50')).toBeInTheDocument();
+
+		const netToYou = screen.getByText('Net to you').closest('div');
+		expect(within(netToYou as HTMLElement).getByText('€8.20')).toBeInTheDocument();
+	});
+
+	it('labels the fee VAT with its recorded rate', () => {
+		renderTable([withFee()]);
+
+		expect(screen.getByText('VAT on fee (20.00%)')).toBeInTheDocument();
+		expect(screen.getByText('€0.30')).toBeInTheDocument();
+	});
+
+	it('omits the VAT lines entirely when the backend recorded no decomposition', () => {
+		renderTable([
+			withFee({ platform_fee_net: null, platform_fee_vat: null, platform_fee_vat_rate: null })
+		]);
+
+		expect(screen.getByText('Platform fee')).toBeInTheDocument();
+		expect(screen.queryByText('Fee excl. VAT')).not.toBeInTheDocument();
+		expect(screen.queryByText(/VAT on fee/)).not.toBeInTheDocument();
+	});
+
+	it('replaces the VAT line with a reverse-charge note for EU B2B cross-border', () => {
+		renderTable([
+			withFee({
+				platform_fee: '1.50',
+				platform_fee_net: '1.50',
+				platform_fee_vat: '0.00',
+				platform_fee_vat_rate: '0.00',
+				platform_fee_reverse_charge: true
+			})
+		]);
+
+		expect(screen.getByText('Reverse charge')).toBeInTheDocument();
+		expect(screen.getByText('Yes (EU B2B) — you self-assess the VAT')).toBeInTheDocument();
+		expect(screen.queryByText(/VAT on fee/)).not.toBeInTheDocument();
+	});
+});
+
+describe('PaymentsTable fee/refund interaction', () => {
+	// The backend leaves `platform_fee` untouched on refund and a correct
+	// post-refund net is not derivable here, so the net is annotated as
+	// pre-refund rather than silently contradicting the refund annotation.
+	it('flags the net as pre-refund on a partially refunded payment', () => {
+		renderTable([withFee({ refund_amount: '4.00', status: 'succeeded' })]);
+
+		expect(screen.getByText('(4.00 EUR refunded)')).toBeInTheDocument();
+		expect(screen.getByText(/Net shown before the refund/)).toBeInTheDocument();
+	});
+
+	it('flags the net as pre-refund on a fully refunded payment too', () => {
+		renderTable([withFee({ refund_amount: '10.00', status: 'refunded' })]);
+
+		expect(screen.getByText(/Net shown before the refund/)).toBeInTheDocument();
+	});
+
+	it('shows no refund caveat when nothing was refunded', () => {
+		renderTable([withFee()]);
+
+		expect(screen.queryByText(/Net shown before the refund/)).not.toBeInTheDocument();
+	});
+
+	it('shows no refund caveat when there is no fee block at all', () => {
+		renderTable([makePayment({ refund_amount: '4.00', platform_fee: '0.00' })]);
+
+		expect(screen.getByText('(4.00 EUR refunded)')).toBeInTheDocument();
+		expect(screen.queryByText(/Net shown before the refund/)).not.toBeInTheDocument();
 	});
 });
 

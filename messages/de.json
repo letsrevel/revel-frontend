@@ -3414,6 +3414,7 @@
 					"pause": "Pausieren",
 					"resume": "Fortsetzen",
 					"cancel": "Kündigen",
+					"cancelActivationPending": "Die Zahlung dieses Mitglieds ist durchgegangen, deshalb wurde das Abonnement nicht gekündigt – es wird gerade aktiviert. Kündige es erneut, sobald es aktiv ist.",
 					"uncancel": "Kündigung zurücknehmen",
 					"uncancelling": "Wird zurückgenommen…",
 					"uncancelDone": "Verlängerung wiederhergestellt.",
@@ -3433,7 +3434,8 @@
 						"resume": "Dieses Abonnement konnte nicht fortgesetzt werden.",
 						"uncancel": "Die vorgemerkte Kündigung konnte nicht zurückgenommen werden.",
 						"uncancelSuspended": "Diese Mitgliedschaft ist ausgesetzt, deshalb kann die Verlängerung nicht neu starten. Stelle sie zuerst im Tab „Mitglieder“ wieder her und nimm dann die Kündigung zurück.",
-						"refund": "Diese Zahlung konnte nicht erstattet werden."
+						"refund": "Diese Zahlung konnte nicht erstattet werden.",
+						"cancelStripeUnreachable": "Der Zahlungsanbieter war nicht erreichbar, deshalb wurde nichts geändert – dieses Abonnement ist unverändert. Versuche es gleich noch einmal."
 					},
 					"revive": "Reaktivieren",
 					"reviveDone": "Abonnement reaktiviert",
@@ -3450,6 +3452,14 @@
 					"paymentOnStripe": "In Stripe ansehen",
 					"onlineRefundNote": "Erstattungen für Online-Zahlungen nimmst du im Stripe-Dashboard vor — sie werden hier automatisch erfasst.",
 					"partiallyRefunded": "({amount} {currency} erstattet)",
+					"feeBreakdownLabel": "Aufschlüsselung der Plattformgebühr",
+					"feePlatformFee": "Plattformgebühr",
+					"feeExclVat": "Gebühr ohne USt",
+					"feeVat": "USt auf die Gebühr ({rate}%)",
+					"feeReverseCharge": "Reverse Charge",
+					"feeReverseChargeYes": "Ja (EU B2B) — du versteuerst die Gebühr selbst",
+					"feeNetToOrg": "Netto für dich",
+					"feeBeforeRefund": "Netto vor Erstattung — die Plattformgebühr dieser Zahlung wird durch Erstattungen nicht verringert.",
 					"paymentsCol": {
 						"date": "Datum",
 						"amount": "Betrag",
@@ -3536,6 +3546,14 @@
 				"recordedBy": "Erfasst von {name}",
 				"recordedByLabel": "Erfasst von",
 				"partiallyRefunded": "{amount} erstattet",
+				"feeBreakdownLabel": "Aufschlüsselung der Plattformgebühr",
+				"feePlatformFee": "Plattformgebühr",
+				"feeExclVat": "Gebühr ohne USt",
+				"feeVat": "USt auf die Gebühr ({rate}%)",
+				"feeReverseCharge": "Reverse Charge",
+				"feeReverseChargeYes": "Ja (EU B2B) — du versteuerst die Gebühr selbst",
+				"feeNetToOrg": "Netto für dich",
+				"feeBeforeRefund": "Netto vor Erstattung — die Plattformgebühr dieser Zahlung wird durch Erstattungen nicht verringert.",
 				"viewOnStripe": "In Stripe ansehen",
 				"viewOnStripeFor": "Zahlung von {name} in Stripe ansehen",
 				"noStripeRecord": "Kein Stripe-Eintrag",
@@ -6787,7 +6805,9 @@
 		"successPeriodEnd": "Deine Mitgliedschaft endet am {date}.",
 		"successPeriodEndNoDate": "Deine Mitgliedschaft endet zum Ende des laufenden Zeitraums.",
 		"successImmediate": "Deine Mitgliedschaft wurde gekündigt.",
-		"error": "Deine Mitgliedschaft konnte nicht gekündigt werden. Bitte versuche es erneut."
+		"error": "Deine Mitgliedschaft konnte nicht gekündigt werden. Bitte versuche es erneut.",
+		"activationPending": "Deine Zahlung ist durchgegangen – deshalb wurde deine Mitgliedschaft nicht gekündigt, sondern wird gerade aktiviert. Sobald sie aktiv ist, kannst du sie kündigen.",
+		"stripeUnreachable": "Wir konnten den Zahlungsanbieter nicht erreichen, deshalb wurde nichts geändert – deine Mitgliedschaft ist unverändert. Bitte versuche es gleich noch einmal."
 	},
 	"changePlan": {
 		"title": "Tarif wechseln",
