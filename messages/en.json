@@ -3288,7 +3288,8 @@
 				"deleteAriaLabel": "Delete {name}",
 				"moveUpAriaLabel": "Move {name} up",
 				"moveDownAriaLabel": "Move {name} down",
-				"reorderFailed": "Failed to reorder tiers"
+				"reorderFailed": "Failed to reorder tiers",
+				"deleteFailed": "Could not delete this tier."
 			},
 			"plans": {
 				"title": "Plans",

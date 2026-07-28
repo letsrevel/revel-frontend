@@ -14,6 +14,7 @@
 		OrganizationQuestionnaireInListSchema
 	} from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { backendMessage } from '$lib/utils/api-error-detail';
 	import { reorderByIds, swapAndCollectIds } from '$lib/utils/reorder';
 	import { Button } from '$lib/components/ui/button';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
@@ -126,8 +127,12 @@
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
+			// A 409 carries the backend's own already-translated sentence explaining
+			// which application or subscription still references the tier.
 			if (response.error) {
-				throw new Error('Failed to delete tier');
+				throw new Error(
+					backendMessage(response.error) || m['orgAdmin.members.tiers.deleteFailed']()
+				);
 			}
 
 			return response.data;
@@ -141,7 +146,7 @@
 			});
 		},
 		onError: (error: Error) => {
-			alert(`Failed to delete tier: ${error.message}`);
+			toast.error(error.message);
 		}
 	}));
 

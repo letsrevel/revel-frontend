@@ -3288,7 +3288,8 @@
 				"deleteAriaLabel": "{name} löschen",
 				"moveUpAriaLabel": "{name} nach oben verschieben",
 				"moveDownAriaLabel": "{name} nach unten verschieben",
-				"reorderFailed": "Stufen konnten nicht neu sortiert werden"
+				"reorderFailed": "Stufen konnten nicht neu sortiert werden",
+				"deleteFailed": "Diese Stufe konnte nicht gelöscht werden."
 			},
 			"plans": {
 				"title": "Pläne",

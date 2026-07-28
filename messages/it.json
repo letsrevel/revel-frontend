@@ -3288,7 +3288,8 @@
 				"deleteAriaLabel": "Elimina {name}",
 				"moveUpAriaLabel": "Sposta {name} su",
 				"moveDownAriaLabel": "Sposta {name} giù",
-				"reorderFailed": "Impossibile riordinare i livelli"
+				"reorderFailed": "Impossibile riordinare i livelli",
+				"deleteFailed": "Impossibile eliminare questo livello."
 			},
 			"plans": {
 				"title": "Piani",

@@ -3259,7 +3259,8 @@
 				"deleteAriaLabel": "Supprimer {name}",
 				"moveUpAriaLabel": "Déplacer {name} vers le haut",
 				"moveDownAriaLabel": "Déplacer {name} vers le bas",
-				"reorderFailed": "Échec de la réorganisation des niveaux"
+				"reorderFailed": "Échec de la réorganisation des niveaux",
+				"deleteFailed": "Impossible de supprimer ce niveau."
 			},
 			"plans": {
 				"title": "Forfaits",
