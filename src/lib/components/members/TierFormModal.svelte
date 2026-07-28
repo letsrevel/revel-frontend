@@ -59,6 +59,11 @@
 
 	// Sync form with tier prop (for editing)
 	$effect(() => {
+		// Track `open` so reopening the create modal after abandoning a prior
+		// attempt resets the fields. Tracking `tier` alone misses the transition
+		// from closed → open when tier is null both times, which would carry the
+		// abandoned draft's questionnaire and approval overrides into the new tier.
+		void open;
 		if (tier) {
 			tierName = tier.name;
 			tierDescription = tier.description || '';

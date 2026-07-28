@@ -42,10 +42,13 @@ function mockSubscribeSuccess(checkoutUrl = 'https://stripe.test/checkout/x') {
 	} as unknown as Awaited<ReturnType<typeof mesubscriptionsSubscribe>>);
 }
 
-function mockSubscribeError(message: string) {
+// django-ninja renders `HttpError` as `{"detail": ...}` — the generated type's
+// `{ message }` is never what comes over the wire, so the refusal is mocked in
+// the real shape.
+function mockSubscribeError(detail: string) {
 	vi.mocked(mesubscriptionsSubscribe).mockResolvedValue({
 		data: undefined,
-		error: { message },
+		error: { detail },
 		response: { ok: false } as unknown as Response
 	} as unknown as Awaited<ReturnType<typeof mesubscriptionsSubscribe>>);
 }
@@ -146,6 +149,73 @@ describe('SubscribeDialog', () => {
 		});
 	});
 
+	// The one canonical "how membership billing works" disclosure. It quotes the
+	// org's real policy numbers, so each way those numbers can arrive (a real
+	// count, the disabling `0`, or nothing at all) has to render copy that is
+	// true — "a grace period of 0 days" and "within undefined days" are both
+	// worse than no disclosure.
+	describe('the billing disclosure', () => {
+		/** The `<details>` wrapping the disclosure, found via its summary. */
+		function billingDisclosure(): HTMLDetailsElement {
+			const summary = screen.getByText('How billing works');
+			const details = summary.closest('details');
+			expect(details).not.toBeNull();
+			return details as HTMLDetailsElement;
+		}
+
+		it('is present but collapsed by default', () => {
+			renderDialog({ gracePeriodDays: 7, revivalWindowDays: 30 });
+			expect(billingDisclosure().open).toBe(false);
+		});
+
+		it('always states the renewal reminder and the cancellation terms', () => {
+			renderDialog({ gracePeriodDays: 7, revivalWindowDays: 30 });
+			expect(screen.getByText(/renews automatically each period/i)).toBeInTheDocument();
+			expect(screen.getByText(/you can cancel any time/i)).toBeInTheDocument();
+			expect(screen.getByText(/not refunded automatically/i)).toBeInTheDocument();
+		});
+
+		it("quotes the organization's real grace period and revival window", () => {
+			renderDialog({ gracePeriodDays: 7, revivalWindowDays: 30 });
+			expect(
+				screen.getByText(/you keep access for 7 days after the period ends/i)
+			).toBeInTheDocument();
+			expect(screen.getByText(/restart it from your account within 30 days/i)).toBeInTheDocument();
+		});
+
+		it('uses singular day copy for one-day windows', () => {
+			renderDialog({ gracePeriodDays: 1, revivalWindowDays: 1 });
+			expect(
+				screen.getByText(/you keep access for 1 day after the period ends/i)
+			).toBeInTheDocument();
+			expect(screen.getByText(/restart it from your account within 1 day\./i)).toBeInTheDocument();
+		});
+
+		// `0` grace is not "0 days of grace": the sweep expires the membership on
+		// its first pass after the period ends.
+		it('says there is no grace period when the org sets it to zero', () => {
+			renderDialog({ gracePeriodDays: 0, revivalWindowDays: 30 });
+			expect(screen.getByText(/there is no grace period/i)).toBeInTheDocument();
+			expect(screen.queryByText(/keep access for 0 day/i)).toBeNull();
+		});
+
+		// `0` revival means the backend refuses revival outright — offering a
+		// window would be a promise it will not honour.
+		it('says the membership cannot be restarted when revival is disabled', () => {
+			renderDialog({ gracePeriodDays: 7, revivalWindowDays: 0 });
+			expect(screen.getByText(/it can't be restarted/i)).toBeInTheDocument();
+			expect(screen.queryByText(/within 0 day/i)).toBeNull();
+		});
+
+		it('falls back to generic wording when the org payload omits the numbers', () => {
+			renderDialog();
+			expect(screen.getByText(/a short grace period/i)).toBeInTheDocument();
+			expect(screen.getByText(/for a limited time/i)).toBeInTheDocument();
+			expect(screen.queryByText(/undefined/i)).toBeNull();
+			expect(screen.queryByText(/\bnull\b/i)).toBeNull();
+		});
+	});
+
 	it('subscribes and redirects to the returned checkout URL', async () => {
 		const user = userEvent.setup();
 		mockSubscribeSuccess('https://stripe.test/checkout/abc');
@@ -197,6 +267,84 @@ describe('SubscribeDialog', () => {
 
 		await waitFor(() => {
 			expect(screen.getByRole('alert')).toHaveTextContent(/could not start the checkout/i);
+		});
+	});
+
+	// The member already paid on an earlier attempt (double-submit, or a return to
+	// the page while the webhook was still in flight). Showing "could not start
+	// the checkout" here would tell someone who has been charged that nothing
+	// went through.
+	describe('when the subscribe is refused as activation-pending', () => {
+		const ACTIVATION_PENDING_DETAIL =
+			"Your payment went through. We're still confirming your subscription — check back in a moment.";
+
+		function mockActivationPending() {
+			vi.mocked(mesubscriptionsSubscribe).mockResolvedValue({
+				data: undefined,
+				error: { detail: ACTIVATION_PENDING_DETAIL, code: 'subscription_activation_pending' },
+				response: { ok: false, status: 409 } as unknown as Response
+			} as unknown as Awaited<ReturnType<typeof mesubscriptionsSubscribe>>);
+		}
+
+		it('replaces the body with an announced confirming wait, not an error', async () => {
+			const user = userEvent.setup();
+			mockActivationPending();
+			renderDialog();
+
+			await user.click(screen.getByRole('button', { name: /continue to payment/i }));
+
+			await waitFor(() => {
+				expect(screen.getByRole('status')).toHaveTextContent(/confirming your subscription/i);
+			});
+			expect(screen.getByRole('status')).toHaveTextContent(/your payment went through/i);
+			expect(screen.queryByRole('alert')).toBeNull();
+			// The charge quote is withdrawn: nothing further is owed.
+			expect(screen.queryByText(/you'll be charged/i)).toBeNull();
+			expect(window.location.href).toBe('');
+		});
+
+		it('withdraws the retry CTA and leaves only a way out', async () => {
+			const user = userEvent.setup();
+			mockActivationPending();
+			const { onOpenChange } = renderDialog();
+
+			await user.click(screen.getByRole('button', { name: /continue to payment/i }));
+
+			await waitFor(() => {
+				expect(screen.queryByRole('button', { name: /continue to payment/i })).toBeNull();
+			});
+			expect(screen.queryByRole('button', { name: /^cancel$/i })).toBeNull();
+
+			// Two buttons answer to "Close" now: the footer's, and the dialog's own ✕
+			// — which `dialog-content.svelte` renders after the children, so the
+			// footer's is first in DOM order. The ✕ is suppressed while `isBusy`, and
+			// `activationPending` flips *inside* the mutation fn — one tick before the
+			// mutation itself settles — so the ✕ returns a beat after the body swaps.
+			await waitFor(() => {
+				expect(screen.getAllByRole('button', { name: /^close$/i })).toHaveLength(2);
+			});
+			const closers = screen.getAllByRole('button', { name: /^close$/i });
+			await user.click(closers[0]);
+			expect(onOpenChange).toHaveBeenCalledWith(false);
+		});
+
+		// Only the `code` may switch the dialog into the wait.
+		it('keeps rendering a plain 400 refusal as an error', async () => {
+			const user = userEvent.setup();
+			vi.mocked(mesubscriptionsSubscribe).mockResolvedValue({
+				data: undefined,
+				error: { detail: 'This plan is sold out.' },
+				response: { ok: false, status: 400 } as unknown as Response
+			} as unknown as Awaited<ReturnType<typeof mesubscriptionsSubscribe>>);
+			renderDialog();
+
+			await user.click(screen.getByRole('button', { name: /continue to payment/i }));
+
+			await waitFor(() => {
+				expect(screen.getByRole('alert')).toHaveTextContent('This plan is sold out.');
+			});
+			expect(screen.queryByRole('status')).toBeNull();
+			expect(screen.getByRole('button', { name: /continue to payment/i })).toBeInTheDocument();
 		});
 	});
 
@@ -282,7 +430,7 @@ describe('SubscribeDialog', () => {
 
 			release({
 				data: undefined,
-				error: { message: 'Plan is sold out.' },
+				error: { detail: 'Plan is sold out.' },
 				response: { ok: false }
 			});
 			await waitFor(() => {

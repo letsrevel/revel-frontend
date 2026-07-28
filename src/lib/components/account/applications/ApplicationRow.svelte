@@ -31,7 +31,10 @@
 	} from '$lib/api/generated/sdk.gen';
 	import type { MembershipApplicationSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { getApplicationPendingMessage } from '$lib/utils/membership-eligibility';
+	import {
+		getApplicationPendingMessage,
+		getMembershipStatusMessage
+	} from '$lib/utils/membership-eligibility';
 	import { Button } from '$lib/components/ui/button';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import ApplyDialog from '$lib/components/organization/membership/ApplyDialog.svelte';
@@ -153,13 +156,56 @@
 		queryClient.invalidateQueries({ queryKey: ['me', 'subscriptions'] });
 	});
 
+	/**
+	 * The advance just auto-rejected this row, and left nothing to do about it.
+	 *
+	 * Since BE #812 `advance_application` flips a PENDING row to REJECTED whenever
+	 * the verdict carries a code on the backend's TERMINAL_REJECTION_CODES list
+	 * (questionnaire failed, questionnaire attempts exhausted). Those verdicts have
+	 * no `next_step` — which is exactly what separates them from a *staff*
+	 * rejection landing in the same GET, where `ApplicationStatusGate` answers
+	 * `next_step: 'reapply'` and re-applying is the documented recourse.
+	 *
+	 * Both halves of the guard are load-bearing:
+	 * - the status flip (prop not rejected, advanced payload rejected) is the only
+	 *   window in which the FE holds the verdict that caused the rejection. A row
+	 *   that arrives already rejected has its advance query disabled, so
+	 *   `eligibility` is null and the row keeps its ordinary re-apply affordance —
+	 *   the backend would tell it to re-apply anyway.
+	 * - the signal check keeps a *stale* verdict from firing this. After a cancel
+	 *   the prop goes terminal while `['me','application',id]` still holds the
+	 *   pre-cancel payload (see `app` above); that row is `cancelled`, not
+	 *   `rejected`, so it cannot reach here — but the explicit status pair says so
+	 *   rather than relying on it.
+	 *
+	 * Without this the member watches the row flip to Rejected under them, with no
+	 * word of why, above a Re-apply button that opens a new application the very
+	 * next gate pass rejects again — with a second rejection notification.
+	 */
+	const autoRejected = $derived(
+		app.status === 'rejected' &&
+			application.status !== 'rejected' &&
+			!!eligibility &&
+			!eligibility.allowed &&
+			!eligibility.next_step
+	);
+
+	/** The reason for the flip. `getMembershipStatusMessage`, not the pending
+	 * wrapper: this verdict is settled, and the wrapper's signal-absence rule
+	 * would read it as "awaiting approval". */
+	const autoRejectedLine = $derived(
+		autoRejected && eligibility ? getMembershipStatusMessage(eligibility) : null
+	);
+
 	let confirmOpen = $state(false);
 	let applyOpen = $state(false);
 
 	// Cancellable exactly while the backend can still move the application; a
 	// settled one gets the re-apply route instead, and `completed` neither.
 	const canCancel = $derived(isOpen);
-	const canReapply = $derived(app.status === 'rejected' || app.status === 'cancelled');
+	const canReapply = $derived(
+		(app.status === 'rejected' || app.status === 'cancelled') && !autoRejected
+	);
 
 	const cancelMutation = createMutation(() => ({
 		mutationFn: async () => {
@@ -242,6 +288,13 @@
 		<p role="status" class="mt-3 text-sm font-medium">
 			{m['applications.becameMember']({ org: app.organization_name })}
 		</p>
+	{/if}
+
+	{#if autoRejectedLine}
+		<!-- The chip alone would be the whole story of a rejection that happened
+		     during this very read. Same `role="status"` treatment as `becameMember`
+		     above: the row changed under the member without them acting. -->
+		<p role="status" class="mt-3 text-sm">{autoRejectedLine}</p>
 	{/if}
 
 	{#if nextStepLine}

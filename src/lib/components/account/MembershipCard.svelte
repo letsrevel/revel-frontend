@@ -1,9 +1,10 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { createMutation, createQuery } from '@tanstack/svelte-query';
+	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		mesubscriptionsCreateBillingPortalSession,
 		mesubscriptionsSubscribe,
+		mesubscriptionsUncancelSubscription,
 		organizationListMembershipPlans
 	} from '$lib/api/generated/sdk.gen';
 	import type { MyMembershipSchema } from '$lib/api/generated/types.gen';
@@ -16,6 +17,7 @@
 	import ChangePlanDialog from './subscription-actions/ChangePlanDialog.svelte';
 	import { formatPlanPrice, getDateLine, getMemberActions } from '$lib/utils/subscriptions';
 	import { formatDate } from '$lib/utils/date';
+	import { settleSubscriptionCaches } from '$lib/utils/subscription-cache';
 	import { backendMessage } from '$lib/utils/api-error-detail';
 	import { Loader2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
@@ -25,6 +27,7 @@
 	}
 
 	const { membership }: Props = $props();
+	const queryClient = useQueryClient();
 	const sub = $derived(membership.subscription);
 	const line = $derived(sub ? getDateLine(sub) : null);
 	const accessToken = $derived(authStore.accessToken);
@@ -53,6 +56,16 @@
 	const pastDueOnline = $derived(
 		sub?.status === 'past_due' && sub?.plan.payment_method === 'online'
 	);
+
+	/**
+	 * Pause is admin-only on the backend (no member endpoint), and it propagates
+	 * to the OrganizationMember row — so a paused member silently fails the
+	 * members-only event gate and member-only ticket tiers, with no action here
+	 * that could undo it. Informational, not an alarm: muted, no `role="alert"`.
+	 * Independent of payment method — neither an ONLINE nor an OFFLINE member can
+	 * resume themselves.
+	 */
+	const isPaused = $derived(sub?.status === 'paused');
 
 	/**
 	 * A queued plan change takes effect at the end of the paid period, so the
@@ -159,6 +172,49 @@
 		const goingToStripe = resuming;
 		return pending || goingToStripe;
 	});
+
+	/**
+	 * #808 — switch renewal back on. Deliberately *not* behind a confirmation:
+	 * nothing is destroyed, nothing is charged today, and the action is itself
+	 * undone by the Cancel membership dialog (which does confirm). Putting a modal
+	 * in front of the way *back* from an accidental cancellation would be friction
+	 * exactly where the member is trying to recover.
+	 *
+	 * No optimistic latch either — the card stays put, so the mutation's own
+	 * pending state is the whole busy story.
+	 */
+	const uncancelMutation = createMutation(() => ({
+		mutationFn: async () => {
+			const current = sub;
+			if (!current) throw new Error(m['subscriptions.actions.uncancelError']());
+			const res = await mesubscriptionsUncancelSubscription({
+				path: { org_id: current.organization_id },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+			// hey-api resolves rather than throws — a missing payload is a failure
+			// even when no error body came back. A 502 leaves the cancellation
+			// scheduled on both sides, so surfacing it verbatim is also an
+			// invitation to retry.
+			if (res.error || !res.data) {
+				throw new Error(backendMessage(res.error) || m['subscriptions.actions.uncancelError']());
+			}
+			return res.data;
+		},
+		onSuccess: (data) => {
+			// The 200 body is the truthful post-uncancel subscription; seeding it (and
+			// re-asserting it after the refetch) is what stops a Stripe webhook echo
+			// from racing this mutation back to "Cancels on …" — subscription-cache.ts.
+			void settleSubscriptionCaches(queryClient, data);
+			// The button disappears with the state it was gating, so the toast is the
+			// only confirmation the member gets.
+			toast.success(m['subscriptions.actions.uncancelSuccess']());
+		},
+		onError: (err: Error) => {
+			toast.error(err.message || m['subscriptions.actions.uncancelError']());
+		}
+	}));
+
+	const uncancelBusy = $derived(uncancelMutation.isPending);
 </script>
 
 <Card>
@@ -196,6 +252,12 @@
 					</p>
 				{/if}
 
+				{#if isPaused}
+					<p class="mt-3 rounded-lg border bg-muted p-3 text-sm text-muted-foreground">
+						{m['subscriptions.pausedHint']()}
+					</p>
+				{/if}
+
 				<p class="mt-2 text-sm">
 					{#if line.kind === 'renewal'}
 						{m['subscriptions.dateLine.renewal']({ date: fmtDate(line.date) })}
@@ -212,9 +274,17 @@
 					{/if}
 				</p>
 
+				<!-- Two different truths, told apart by whether the way back is actually
+				     on offer: a member who can un-cancel is pointed at the button below,
+				     while one who cannot (staff-run OFFLINE row, or a plan archived since)
+				     still has to ask the organization. -->
 				{#if line.kind === 'cancels'}
 					<p class="mt-1 text-xs text-muted-foreground">
-						{m['subscriptions.cancelScheduledHint']()}
+						{#if actions?.uncancel}
+							{m['subscriptions.cancelScheduledHint']()}
+						{:else}
+							{m['subscriptions.cancelScheduledHintManaged']()}
+						{/if}
 					</p>
 				{/if}
 
@@ -244,8 +314,30 @@
 				<Button href="/org/{membership.organization_slug}" variant="outline" size="sm">
 					{m['account.memberships.viewOrg']()}
 				</Button>
+				{#if actions?.uncancel}
+					<Button
+						size="sm"
+						onclick={() => uncancelMutation.mutate()}
+						disabled={uncancelBusy}
+						aria-busy={uncancelBusy}
+					>
+						{#if uncancelBusy}
+							<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+							<!-- The label changes with the state, so the spinner is never the
+							     only signal that something is in flight. -->
+							{m['subscriptions.actions.uncancelling']()}
+						{:else}
+							{m['subscriptions.actions.uncancel']()}
+						{/if}
+					</Button>
+				{/if}
 				{#if actions?.manageBilling}
-					<Button size="sm" onclick={() => portalMutation.mutate()} disabled={portalBusy}>
+					<Button
+						variant={actions?.uncancel ? 'outline' : 'default'}
+						size="sm"
+						onclick={() => portalMutation.mutate()}
+						disabled={portalBusy}
+					>
 						{#if portalBusy}
 							<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
 						{/if}

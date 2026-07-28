@@ -9,7 +9,8 @@
 		organizationadminsubscriptionsCancelSubscription,
 		organizationadminsubscriptionsPauseSubscription,
 		organizationadminsubscriptionsResumeSubscription,
-		organizationadminsubscriptionsRefundPayment
+		organizationadminsubscriptionsRefundPayment,
+		organizationadminsubscriptionsUncancelSubscription
 	} from '$lib/api/generated/sdk.gen';
 	import type {
 		SubscriptionSchema,
@@ -21,7 +22,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
-	import { ExternalLink, Loader2 } from '@lucide/svelte';
+	import { AlertTriangle, ExternalLink, Loader2 } from '@lucide/svelte';
 	import StatusBadge from './StatusBadge.svelte';
 	import PaymentsTable from './PaymentsTable.svelte';
 	import RecordPaymentModal from './RecordPaymentModal.svelte';
@@ -29,6 +30,7 @@
 	import RefundPaymentDialog from './RefundPaymentDialog.svelte';
 	import StaffReviveModal from './StaffReviveModal.svelte';
 	import { getAvailableActions, formatPlanPrice, getDateLine } from '$lib/utils/subscriptions';
+	import { backendMessage } from '$lib/utils/api-error-detail';
 	import { formatDate } from '$lib/utils/date';
 
 	interface Props {
@@ -58,7 +60,10 @@
 				path: { slug: organization.slug, sub_id: subId },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
-			if (res.error) throw new Error('Failed to load subscription');
+			if (res.error)
+				throw new Error(
+					backendMessage(res.error) || m['orgAdmin.members.subscriptions.drawer.errors.load']()
+				);
 			return res.data as SubscriptionSchema;
 		},
 		enabled: open && !!accessToken
@@ -71,7 +76,11 @@
 				path: { slug: organization.slug, sub_id: subId },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
-			if (res.error) throw new Error('Failed to load payments');
+			if (res.error)
+				throw new Error(
+					backendMessage(res.error) ||
+						m['orgAdmin.members.subscriptions.drawer.errors.loadPayments']()
+				);
 			return (res.data?.results ?? []) as MembershipPaymentSchema[];
 		},
 		enabled: open && !!accessToken
@@ -93,6 +102,15 @@
 		isOnlinePlan && !!sub && !TERMINAL_STATUSES.includes(sub.status)
 	);
 
+	// Pause is the only action `cancel_at_period_end` takes away, and it does so on
+	// a row that otherwise looks pausable — so name the remedy (Undo cancellation,
+	// rendered in the action row above) instead of leaving a silent gap.
+	// Kept on the raw flag rather than on `actions.uncancel`: when the plan has been
+	// archived since, the undo button is gone but the block still needs explaining.
+	const showPauseBlockedNote = $derived(
+		!!sub && sub.status === 'active' && !!sub.cancel_at_period_end
+	);
+
 	const isLoading = $derived.by(() => {
 		const loading = subQuery.isLoading;
 		const data = subQuery.data;
@@ -102,8 +120,26 @@
 		return loading || !data;
 	});
 
+	// `pending_plan` is only ever written by the ONLINE scheduled-downgrade path
+	// (`subscription_stripe_plan_change.schedule_online_downgrade`); the OFFLINE
+	// switch clears it in the same save. So a set `pending_plan_id` is exactly the
+	// case where pause/cancel call `release_online_schedule` and drop the switch —
+	// and the OFFLINE pause, which drops nothing, never shows the warning.
+	const hasPendingSwitch = $derived(!!sub?.pending_plan_id);
+
+	// `stripe_dashboard_url` is built server-side with this precedence
+	// (`MembershipSubscription.stripe_dashboard_url`): the Stripe *Subscription*
+	// once `stripe_subscription_id` is linked, otherwise the hosted *Checkout
+	// Session* that will create it — which is what finally makes a PENDING row
+	// inspectable ("the member says they paid but it still shows PENDING"). It stays
+	// null for OFFLINE/unlinked rows, so the `{#if}` on the URL keeps the button
+	// away rather than rendering a dead anchor. A session page is not a management
+	// surface, so mirror the precedence here and label what the link actually opens.
+	const stripeLinkIsCheckoutSession = $derived(!!sub && !sub.stripe_subscription_id);
+
 	let recordOpen = $state(false);
 	let cancelOpen = $state(false);
+	let pauseConfirmOpen = $state(false);
 	let reviveOpen = $state(false);
 	let refundTarget = $state<MembershipPaymentSchema | null>(null);
 
@@ -112,6 +148,12 @@
 		queryClient.invalidateQueries({ queryKey: paymentsKey });
 		queryClient.invalidateQueries({
 			queryKey: ['organization', organization.slug, 'subscriptions']
+		});
+		// A subscription save syncs the member row too — the BE signal maps PAUSED
+		// onto member paused and CANCELLED/EXPIRED onto member cancelled. Without
+		// this the Members tab on the same page keeps the pre-mutation status.
+		queryClient.invalidateQueries({
+			queryKey: ['organization', organization.slug, 'members']
 		});
 	}
 
@@ -122,7 +164,11 @@
 				body: payload,
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
-			if (res.error) throw new Error('Failed to record payment');
+			if (res.error)
+				throw new Error(
+					backendMessage(res.error) ||
+						m['orgAdmin.members.subscriptions.drawer.errors.recordPayment']()
+				);
 			return res.data as MembershipPaymentSchema;
 		},
 		onSuccess: () => {
@@ -139,7 +185,10 @@
 				body: payload,
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
-			if (res.error) throw new Error('Failed to cancel');
+			if (res.error)
+				throw new Error(
+					backendMessage(res.error) || m['orgAdmin.members.subscriptions.drawer.errors.cancel']()
+				);
 			return res.data;
 		},
 		onSuccess: () => {
@@ -155,10 +204,16 @@
 				path: { slug: organization.slug, sub_id: subId },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
-			if (res.error) throw new Error('Failed to pause');
+			if (res.error)
+				throw new Error(
+					backendMessage(res.error) || m['orgAdmin.members.subscriptions.drawer.errors.pause']()
+				);
 			return res.data;
 		},
-		onSuccess: invalidateAll,
+		onSuccess: () => {
+			invalidateAll();
+			pauseConfirmOpen = false;
+		},
 		onError: (err: Error) => toast.error(err.message)
 	}));
 
@@ -168,10 +223,41 @@
 				path: { slug: organization.slug, sub_id: subId },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
-			if (res.error) throw new Error('Failed to resume');
+			if (res.error)
+				throw new Error(
+					backendMessage(res.error) || m['orgAdmin.members.subscriptions.drawer.errors.resume']()
+				);
 			return res.data;
 		},
 		onSuccess: invalidateAll,
+		onError: (err: Error) => toast.error(err.message)
+	}));
+
+	/**
+	 * #808 — clear a scheduled cancellation, which also unblocks Pause on this row.
+	 * One click, like Resume: it restores the state the row was in before someone
+	 * scheduled the cancellation, and the Cancel dialog next to it is the undo.
+	 */
+	const uncancelMut = createMutation(() => ({
+		mutationFn: async () => {
+			const res = await organizationadminsubscriptionsUncancelSubscription({
+				path: { slug: organization.slug, sub_id: subId },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+			// A 502 means Stripe refused and the cancellation is still scheduled on
+			// both sides — the translated detail says so, so it is shown verbatim.
+			if (res.error)
+				throw new Error(
+					backendMessage(res.error) || m['orgAdmin.members.subscriptions.drawer.errors.uncancel']()
+				);
+			return res.data;
+		},
+		onSuccess: () => {
+			invalidateAll();
+			// The button vanishes with the state it was gating; without this the only
+			// feedback would be a control silently disappearing.
+			toast.success(m['orgAdmin.members.subscriptions.drawer.uncancelDone']());
+		},
 		onError: (err: Error) => toast.error(err.message)
 	}));
 
@@ -182,7 +268,10 @@
 				body: { notes },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
-			if (res.error) throw new Error('Failed to refund');
+			if (res.error)
+				throw new Error(
+					backendMessage(res.error) || m['orgAdmin.members.subscriptions.drawer.errors.refund']()
+				);
 			return res.data;
 		},
 		onSuccess: () => {
@@ -244,11 +333,28 @@
 						{m['orgAdmin.members.subscriptions.drawer.recordPayment']()}
 					</Button>
 				{/if}
+				<!-- Sits where Pause would be: on a row scheduled to cancel these two are
+				     mutually exclusive, and this is the button that brings Pause back. -->
+				{#if actions?.uncancel}
+					<Button
+						size="sm"
+						onclick={() => uncancelMut.mutate()}
+						disabled={uncancelMut.isPending}
+						aria-busy={uncancelMut.isPending}
+					>
+						{#if uncancelMut.isPending}
+							<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+							{m['orgAdmin.members.subscriptions.drawer.uncancelling']()}
+						{:else}
+							{m['orgAdmin.members.subscriptions.drawer.uncancel']()}
+						{/if}
+					</Button>
+				{/if}
 				{#if actions?.pause}
 					<Button
 						size="sm"
 						variant="outline"
-						onclick={() => pauseMut.mutate()}
+						onclick={() => (pauseConfirmOpen = true)}
 						disabled={pauseMut.isPending}
 					>
 						{m['orgAdmin.members.subscriptions.drawer.pause']()}
@@ -283,10 +389,18 @@
 						variant="outline"
 					>
 						<ExternalLink class="h-4 w-4" aria-hidden="true" />
-						{m['orgAdmin.members.subscriptions.drawer.manageOnStripe']()}
+						{stripeLinkIsCheckoutSession
+							? m['orgAdmin.members.subscriptions.drawer.checkoutOnStripe']()
+							: m['orgAdmin.members.subscriptions.drawer.manageOnStripe']()}
 					</Button>
 				{/if}
 			</div>
+
+			{#if showPauseBlockedNote}
+				<p class="text-xs text-muted-foreground">
+					{m['orgAdmin.members.subscriptions.drawer.pauseBlockedByCancel']()}
+				</p>
+			{/if}
 
 			{#if showOnlinePaymentsNote}
 				<p class="text-xs text-muted-foreground">
@@ -320,6 +434,46 @@
 				onClose={() => (reviveOpen = false)}
 				onSuccess={invalidateAll}
 			/>
+			<!-- Pause is destructive in effect, not in name: it stops billing AND drops
+			     the member out of members-only events and tiers until a resume. Resume
+			     stays one-click — it only restores access. -->
+			<Dialog
+				open={pauseConfirmOpen}
+				onOpenChange={(v: boolean) => {
+					if (!v && !pauseMut.isPending) pauseConfirmOpen = false;
+				}}
+			>
+				<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-md">
+					<DialogHeader>
+						<DialogTitle>
+							{m['orgAdmin.members.subscriptions.drawer.pauseConfirmTitle']()}
+						</DialogTitle>
+					</DialogHeader>
+					<div class="flex gap-3 text-sm text-muted-foreground">
+						<AlertTriangle class="mt-0.5 h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
+						<div class="space-y-1">
+							<p>{m['orgAdmin.members.subscriptions.drawer.pauseConfirmBody']()}</p>
+							{#if hasPendingSwitch}
+								<p>{m['orgAdmin.members.subscriptions.drawer.pauseConfirmPendingSwitch']()}</p>
+							{/if}
+						</div>
+					</div>
+					<div class="flex justify-end gap-2">
+						<Button
+							type="button"
+							variant="outline"
+							onclick={() => (pauseConfirmOpen = false)}
+							disabled={pauseMut.isPending}
+						>
+							{m['orgAdmin.members.subscriptions.drawer.pauseConfirmDismiss']()}
+						</Button>
+						<Button type="button" onclick={() => pauseMut.mutate()} disabled={pauseMut.isPending}>
+							{#if pauseMut.isPending}<Loader2 class="mr-2 h-4 w-4 animate-spin" />{/if}
+							{m['orgAdmin.members.subscriptions.drawer.pauseConfirmCta']()}
+						</Button>
+					</div>
+				</DialogContent>
+			</Dialog>
 			<CancelSubscriptionDialog
 				subscription={sub}
 				open={cancelOpen}

@@ -3,7 +3,8 @@
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		mesubscriptionsCancelSubscription,
-		organizationGetOrganization
+		organizationGetOrganization,
+		organizationListMembershipPlans
 	} from '$lib/api/generated/sdk.gen';
 	import type { MySubscriptionSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -52,6 +53,32 @@
 		enabled: open
 	}));
 	const refundPolicy = $derived(orgQuery.data?.membership_refund_policy?.trim() || null);
+
+	// Cancelling releases the Stripe schedule first (BE `release_online_schedule`,
+	// called from both the immediate and the period-end cancel path), which drops
+	// the queued downgrade. Naming the abandoned plan needs the org catalogue —
+	// the same public list, under the same cache key, that MembershipCard and
+	// ChangePlanDialog already read, so this costs nothing beyond a cache hit.
+	const plansQuery = createQuery(() => ({
+		queryKey: ['org', sub.organization_slug, 'membership-plans'],
+		queryFn: async () => {
+			const res = await organizationListMembershipPlans({ path: { slug: sub.organization_slug } });
+			// The endpoint returns a bare array (no pagination envelope).
+			if (res.error || !res.data) throw new Error(m['changePlan.loadError']());
+			return res.data;
+		},
+		enabled: open && !!sub.pending_plan_id
+	}));
+
+	/** Warning about the queued plan change this cancellation will discard. */
+	const pendingSwitchDropped = $derived.by(() => {
+		const pendingPlanId = sub.pending_plan_id;
+		if (!pendingPlanId) return null;
+		const name =
+			(plansQuery.data ?? []).find((p) => p.id === pendingPlanId)?.name ??
+			m['orgPublic.yourMembership.pendingSwitchFallbackPlan']();
+		return m['cancelSub.pendingSwitchDropped']({ plan: name });
+	});
 
 	const cancelMutation = createMutation(() => ({
 		mutationFn: async () => {
@@ -148,6 +175,10 @@
 						{:else}
 							{m['cancelSub.periodEndHint']()}
 						{/if}
+						<!-- A voluntary period-end cancel terminalizes as CANCELLED with
+						     `expired_at` left unset, and revival only accepts EXPIRED rows —
+						     so the rejoin window never opens for this choice. -->
+						{m['cancelSub.rejoinAfterEnd']()}
 					</span>
 				</span>
 			</label>
@@ -156,7 +187,15 @@
 				<input type="radio" name="{uid}-mode" value="immediate" bind:group={mode} class="mt-1" />
 				<span>
 					<span class="block text-sm font-medium">{m['cancelSub.immediate']()}</span>
-					<span class="block text-xs text-muted-foreground">{m['cancelSub.immediateHint']()}</span>
+					<span class="block text-xs text-muted-foreground">
+						{m['cancelSub.immediateHint']()}
+						<!-- Only point at the policy when there is one to read: the org may
+						     not have authored it, and the <details> below renders on the
+						     same condition. -->
+						{#if refundPolicy}
+							{m['cancelSub.refundPolicyPointer']()}
+						{/if}
+					</span>
 				</span>
 			</label>
 
@@ -175,6 +214,12 @@
 				</div>
 			{/if}
 		</fieldset>
+
+		<!-- Outside the fieldset: the queued switch is released by BOTH cancellation
+		     modes, so it is a consequence of cancelling, not of one radio option. -->
+		{#if pendingSwitchDropped}
+			<p class="text-sm text-muted-foreground">{pendingSwitchDropped}</p>
+		{/if}
 
 		{#if refundPolicy}
 			<details class="rounded-lg border p-3">

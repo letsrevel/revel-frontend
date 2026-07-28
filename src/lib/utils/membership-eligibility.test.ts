@@ -49,6 +49,31 @@ describe('getMembershipCtaKind', () => {
 		expect(getMembershipCtaKind({ ...base, reason_code: 'membership_paused' })).toBe('info');
 	});
 
+	// BE #812, pinned field-for-field as `MembershipQuestionnaireGate._handle_rejected`
+	// emits it: refused, no next_step, and a `questionnaire_id` still attached (the
+	// gate passes it for context). `info` is the whole point — the previous verdict
+	// was `submit_questionnaire`, which sent the member through the entire
+	// questionnaire to collect a guaranteed 400 on submit.
+	it('maps the exhausted-attempts verdict to info, not to the questionnaire', () => {
+		expect(
+			getMembershipCtaKind({
+				...base,
+				allowed: false,
+				next_step: null,
+				reason_code: 'membership_questionnaire_attempts_exhausted',
+				questionnaire_id: 'q1',
+				reason: 'You have reached the maximum number of attempts.'
+			})
+		).toBe('info');
+	});
+
+	// Its terminal neighbour, same shape — the two must not diverge.
+	it('maps the failed-questionnaire verdict to info as well', () => {
+		expect(getMembershipCtaKind({ ...base, reason_code: 'membership_questionnaire_failed' })).toBe(
+			'info'
+		);
+	});
+
 	// The two verdict shapes BE #786-788 emit for approval-gated orgs, pinned
 	// field-for-field as the backend sends them. Both are `allowed: true`, so the
 	// only thing separating "already applied" from "may apply" is next_step —
@@ -94,6 +119,32 @@ describe('getMembershipStatusMessage', () => {
 	});
 	it('falls back to generic when nothing is available', () => {
 		expect(getMembershipStatusMessage(base).length).toBeGreaterThan(0);
+	});
+
+	// BE #812. The backend deliberately reuses the submit endpoint's msgid here, so
+	// the fall-through would have "worked" — but in the backend's locale. The
+	// mapped entry is what makes the verdict speak the member's language.
+	it('localizes the exhausted-attempts code instead of echoing the backend prose', () => {
+		const msg = getMembershipStatusMessage({
+			...base,
+			reason_code: 'membership_questionnaire_attempts_exhausted',
+			questionnaire_id: 'q1',
+			reason: 'You have reached the maximum number of attempts.'
+		});
+		expect(msg).toBe(
+			m['membershipEligibility.reason.membership_questionnaire_attempts_exhausted']()
+		);
+		expect(msg).not.toBe('You have reached the maximum number of attempts.');
+		expect(msg).not.toBe(m['membershipEligibility.reason.generic']());
+	});
+
+	// Both are terminal, but they say different things: one is "we read it and said
+	// no", the other is "you have nothing left to send". Collapsing them would tell
+	// a capped member their answers were rejected.
+	it('keeps the exhausted-attempts copy distinct from the failed-questionnaire copy', () => {
+		expect(
+			m['membershipEligibility.reason.membership_questionnaire_attempts_exhausted']()
+		).not.toBe(m['membershipEligibility.reason.membership_questionnaire_failed']());
 	});
 
 	// The backend only ever emits next_step=requires_invitation paired with

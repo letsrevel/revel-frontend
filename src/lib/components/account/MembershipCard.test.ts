@@ -16,17 +16,22 @@ import { formatDate } from '$lib/utils/date';
 const portalMock = vi.hoisted(() => vi.fn());
 const plansMock = vi.hoisted(() => vi.fn());
 const subscribeMock = vi.hoisted(() => vi.fn());
+const uncancelMock = vi.hoisted(() => vi.fn());
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	mesubscriptionsCreateBillingPortalSession: portalMock,
 	organizationListMembershipPlans: plansMock,
 	mesubscriptionsSubscribe: subscribeMock,
+	mesubscriptionsUncancelSubscription: uncancelMock,
 	mesubscriptionsCancelSubscription: vi.fn(),
 	mesubscriptionsChangePlan: vi.fn(),
 	organizationGetOrganization: vi.fn()
 }));
 
 const toastErrorMock = vi.hoisted(() => vi.fn());
-vi.mock('svelte-sonner', () => ({ toast: { error: toastErrorMock, success: vi.fn() } }));
+const toastSuccessMock = vi.hoisted(() => vi.fn());
+vi.mock('svelte-sonner', () => ({
+	toast: { error: toastErrorMock, success: toastSuccessMock }
+}));
 
 vi.mock('$lib/stores/auth.svelte', () => ({ authStore: { accessToken: 'test-token' } }));
 
@@ -185,15 +190,118 @@ describe('MembershipCard', () => {
 		expect(screen.getByText(/reach out to the organizer/i)).toBeInTheDocument();
 	});
 
-	it('leaves only billing management once cancellation is scheduled', () => {
+	// Pause is admin-only on the backend and propagates to the member row, so it
+	// silently costs members-only access with nothing on this card to undo it.
+	it('explains an admin-imposed pause and points at the organization', () => {
+		renderCard(makeMembership(makeSub({ status: 'paused' })));
+
+		expect(
+			screen.getByText('Paused by the organization — contact them to resume.')
+		).toBeInTheDocument();
+		// Informational, not an alarm — and never the only signal (the status badge
+		// carries it too), so nothing here is encoded in colour alone.
+		expect(screen.queryByRole('alert')).toBeNull();
+		expect(screen.queryByRole('button', { name: /manage billing/i })).toBeNull();
+		expect(screen.queryByRole('button', { name: /cancel membership/i })).toBeNull();
+	});
+
+	// Neither payment method lets the member resume themselves.
+	it('explains the pause on an offline subscription too', () => {
+		renderCard(makeMembership(makeOfflineSub({ status: 'paused' })));
+
+		expect(
+			screen.getByText('Paused by the organization — contact them to resume.')
+		).toBeInTheDocument();
+	});
+
+	it('shows no pause hint on an active subscription', () => {
+		renderCard(makeMembership(makeSub()));
+
+		expect(screen.queryByText(/paused by the organization/i)).toBeNull();
+	});
+
+	it('offers billing management and the way back once cancellation is scheduled', () => {
 		renderCard(makeMembership(makeSub({ cancel_at_period_end: true })));
 
 		expect(screen.getByRole('button', { name: /manage billing/i })).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'Resume renewal' })).toBeInTheDocument();
 		expect(screen.queryByRole('button', { name: /change plan/i })).toBeNull();
 		expect(screen.queryByRole('button', { name: /cancel membership/i })).toBeNull();
+		// The hint points at the button next to it — it must never send a member who
+		// can fix this themselves off to email the organization (#808).
+		expect(
+			screen.getByText(
+				'Renewal is off. Resume it any time before this date to keep your membership.'
+			)
+		).toBeInTheDocument();
+		expect(screen.queryByText(/contact the organization/i)).toBeNull();
+	});
+
+	// No self-serve undo exists here, so the old "ask the organization" wording is
+	// still the truthful one.
+	it('keeps the contact-the-organization hint on a staff-run offline subscription', () => {
+		renderCard(makeMembership(makeOfflineSub({ cancel_at_period_end: true })));
+
+		expect(screen.queryByRole('button', { name: 'Resume renewal' })).toBeNull();
 		expect(
 			screen.getByText('Renewal is off. To keep your membership, contact the organization.')
 		).toBeInTheDocument();
+	});
+
+	// `uncancel_subscription` refuses an archived plan with a 400, so the button
+	// would only ever fail.
+	it('withdraws the resume button when the plan has been archived', () => {
+		const sub = makeSub({ cancel_at_period_end: true });
+		sub.plan = { ...sub.plan, is_active: false };
+		renderCard(makeMembership(sub));
+
+		expect(screen.queryByRole('button', { name: 'Resume renewal' })).toBeNull();
+		expect(
+			screen.getByText('Renewal is off. To keep your membership, contact the organization.')
+		).toBeInTheDocument();
+	});
+
+	// One click, no confirmation: restoring a renewal costs nothing today and is
+	// itself undone by the Cancel membership dialog.
+	it('resumes renewal without a confirmation step and settles the caches', async () => {
+		const user = userEvent.setup();
+		const resumed = makeSub({ cancel_at_period_end: false });
+		uncancelMock.mockResolvedValue({ data: resumed, error: undefined });
+		queryClient.setQueryData(['me', 'subscriptions'], [makeSub({ cancel_at_period_end: true })]);
+		renderCard(makeMembership(makeSub({ cancel_at_period_end: true })));
+
+		await user.click(screen.getByRole('button', { name: 'Resume renewal' }));
+
+		await waitFor(() =>
+			expect(uncancelMock).toHaveBeenCalledWith(
+				expect.objectContaining({ path: { org_id: 'org-1' } })
+			)
+		);
+		// The 200 body is written straight into the member-facing caches, so a
+		// webhook echo landing later cannot flip the card back to "Cancels on …".
+		await waitFor(() =>
+			expect(queryClient.getQueryData(['me', 'subscriptions'])).toEqual([resumed])
+		);
+		expect(toastSuccessMock).toHaveBeenCalledWith('Renewal is back on.');
+	});
+
+	// A 502 leaves the cancellation scheduled on both sides — the member has to be
+	// told, not left looking at an unchanged card.
+	it('surfaces the backend detail when resuming renewal fails', async () => {
+		const user = userEvent.setup();
+		uncancelMock.mockResolvedValue({
+			data: undefined,
+			error: { detail: 'Payment processing failed. Please try again later.' }
+		});
+		renderCard(makeMembership(makeSub({ cancel_at_period_end: true })));
+
+		await user.click(screen.getByRole('button', { name: 'Resume renewal' }));
+
+		await waitFor(() =>
+			expect(toastErrorMock).toHaveBeenCalledWith(
+				'Payment processing failed. Please try again later.'
+			)
+		);
 	});
 
 	it('sends the member to the Stripe billing portal and back to this page', async () => {

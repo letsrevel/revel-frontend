@@ -49,6 +49,16 @@ export function getMembershipCtaKind(e: MembershipEligibilitySchema): Membership
 	// next_step means the user really can apply (e.g. approval-required orgs with
 	// no application on file, which carry reason_code `requires_approval` as
 	// policy context, not as a blocker).
+	//
+	// The refused half of this line is also where terminal refusals land, and that
+	// is deliberate on both sides. BE #812 gave the questionnaire attempts cap its
+	// own code (`membership_questionnaire_attempts_exhausted`) precisely so the
+	// gate could stop emitting `submit_questionnaire` to a user who can never
+	// submit again: it blocks with NO next_step, which is the only way this
+	// function can be told "there is no move left". `info` is that state — the
+	// caller renders the explanation and no control — so the new code needs
+	// nothing here beyond its REASON_MESSAGES entry. Same shape as its neighbour
+	// `membership_questionnaire_failed`, which has always arrived this way.
 	return e.allowed ? 'join' : 'info';
 }
 
@@ -86,6 +96,13 @@ const REASON_MESSAGES: Partial<Record<MembershipReasonCode, () => string>> = {
 		m['membershipEligibility.reason.membership_questionnaire_failed'](),
 	membership_questionnaire_retake_cooldown: () =>
 		m['membershipEligibility.reason.membership_questionnaire_retake_cooldown'](),
+	// BE #812. Terminal by construction: the gate blocks with no next_step, so the
+	// verdict resolves to `info` and this string is the entire UI. It must not
+	// point anywhere — there is no per-member attempt reset in the backend, and
+	// once the cap auto-rejects the application even staff cannot approve that row
+	// ("Only pending applications can be approved").
+	membership_questionnaire_attempts_exhausted: () =>
+		m['membershipEligibility.reason.membership_questionnaire_attempts_exhausted'](),
 	requires_approval: () => m['membershipEligibility.reason.requires_approval'](),
 	duplicate_active_subscription: () =>
 		m['membershipEligibility.reason.duplicate_active_subscription'](),

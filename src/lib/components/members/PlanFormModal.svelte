@@ -301,7 +301,12 @@
 					}}
 					disabled={isSaving}
 				/>
-				<Label for="plan-active">{m['orgAdmin.members.plans.form.isActive']()}</Label>
+				<div>
+					<Label for="plan-active">{m['orgAdmin.members.plans.form.isActive']()}</Label>
+					<p class="text-xs text-muted-foreground">
+						{m['orgAdmin.members.plans.form.isActiveHelp']()}
+					</p>
+				</div>
 			</div>
 
 			<div class="flex justify-end gap-2">

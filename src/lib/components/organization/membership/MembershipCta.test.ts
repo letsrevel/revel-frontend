@@ -50,6 +50,16 @@ function mockEligibility(eligibility: MembershipEligibilitySchema) {
 	} as unknown as Awaited<ReturnType<typeof memembershipapplicationsGetJoinEligibility>>);
 }
 
+// hey-api resolves rather than throws, so a failure is an error payload — the
+// same shape the queryFn turns into a rejection.
+function mockEligibilityFailure() {
+	vi.mocked(memembershipapplicationsGetJoinEligibility).mockResolvedValue({
+		data: undefined,
+		error: { detail: 'boom' },
+		response: { ok: false, status: 500 } as unknown as Response
+	} as unknown as Awaited<ReturnType<typeof memembershipapplicationsGetJoinEligibility>>);
+}
+
 describe('MembershipCta', () => {
 	let queryClient: QueryClient;
 
@@ -178,6 +188,49 @@ describe('MembershipCta', () => {
 		expect(screen.queryByRole('button', { name: /join acme/i })).toBeNull();
 	});
 
+	// BE #812, the exact verdict `MembershipQuestionnaireGate._handle_rejected`
+	// emits at the attempts cap: refused, no next_step, `questionnaire_id` still
+	// attached. That last field is the trap — before the dedicated code this same
+	// member got `submit_questionnaire` and a live link into a questionnaire whose
+	// submit endpoint would 400 them. Nothing here may be clickable.
+	it('states the attempts cap and offers no way back into the questionnaire', async () => {
+		mockEligibility(
+			makeEligibility({
+				allowed: false,
+				next_step: null,
+				reason_code: 'membership_questionnaire_attempts_exhausted',
+				questionnaire_id: 'q1',
+				reason: 'You have reached the maximum number of attempts.'
+			})
+		);
+		const { container } = renderCta();
+
+		expect(await screen.findByRole('note')).toHaveTextContent(/all your attempts/i);
+		// Not just "no join button": no actionable control of any kind. The
+		// questionnaire CTA is a link, so a role-scoped assertion would miss it.
+		expect(container.querySelectorAll('button')).toHaveLength(0);
+		expect(container.querySelectorAll('a')).toHaveLength(0);
+		expect(screen.queryByRole('button', { name: /join acme/i })).toBeNull();
+		expect(screen.queryByRole('button', { name: /re-apply/i })).toBeNull();
+	});
+
+	// The terminal note replaces the skeleton in the same slot, and the error
+	// branch sits in a sibling live region — a verdict that resolves must not
+	// leave either of them on screen.
+	it('composes with the loading and error branches', async () => {
+		mockEligibility(
+			makeEligibility({
+				allowed: false,
+				reason_code: 'membership_questionnaire_attempts_exhausted'
+			})
+		);
+		const { container } = renderCta();
+
+		await screen.findByRole('note');
+		expect(container.querySelector('.animate-pulse')).toBeNull();
+		expect(screen.queryByText(/couldn't load your join options/i)).toBeNull();
+	});
+
 	it('sends a guest to the login page with a return URL back to the org', () => {
 		renderCta({ isAuthenticated: false });
 
@@ -227,7 +280,10 @@ describe('MembershipCta', () => {
 		expect(await screen.findByRole('status')).toHaveTextContent(/member/i);
 	});
 
-	it('renders nothing while the verdict is still loading', () => {
+	// The CTA slot must never be an empty hole: `queryEnabled` needs a token, which
+	// is absent through SSR and the client auth bootstrap, so "in flight" is the
+	// state an authenticated first paint actually starts in.
+	it('holds the slot with a decorative placeholder while the verdict is still loading', () => {
 		vi.mocked(memembershipapplicationsGetJoinEligibility).mockReturnValue(
 			new Promise(() => {
 				/* never settles: the verdict stays in flight */
@@ -235,8 +291,54 @@ describe('MembershipCta', () => {
 		);
 		const { container } = renderCta();
 
+		const placeholder = container.querySelector('.animate-pulse');
+		expect(placeholder).not.toBeNull();
+		// Decorative only — it must not be announced as content.
+		expect(placeholder).toHaveAttribute('aria-hidden', 'true');
+		// Still nothing actionable: the verdict has not decided anything yet.
 		expect(container.querySelector('button')).toBeNull();
 		expect(container.querySelector('a')).toBeNull();
+	});
+
+	// `retry: false` means a failed verdict never self-heals; without a visible
+	// error the join CTA would just be gone.
+	it('explains a failed verdict instead of dropping the CTA silently', async () => {
+		mockEligibilityFailure();
+		renderCta();
+
+		expect(await screen.findByText(/couldn't load your join options/i)).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument();
+	});
+
+	// The message has to reach a screen reader: it replaces the placeholder without
+	// moving focus, so it must sit in a live region that already existed while the
+	// verdict was in flight — a region injected together with its first message is
+	// not observed by assistive tech and stays silent.
+	it('announces the failure from a live region that was mounted before it spoke', async () => {
+		mockEligibilityFailure();
+		const { container } = renderCta();
+
+		// Present from first paint, before there is anything to announce.
+		expect(container.querySelector('[aria-live="polite"]')).not.toBeNull();
+
+		const message = await screen.findByText(/couldn't load your join options/i);
+		expect(message.closest('[aria-live="polite"]')).not.toBeNull();
+	});
+
+	it('recovers the join button when the retry succeeds', async () => {
+		const user = userEvent.setup();
+		mockEligibilityFailure();
+		renderCta();
+
+		const retry = await screen.findByRole('button', { name: /try again/i });
+		expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).toHaveBeenCalledTimes(1);
+
+		mockEligibility(makeEligibility({ allowed: true }));
+		await user.click(retry);
+
+		expect(await screen.findByRole('button', { name: /join acme/i })).toBeInTheDocument();
+		expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).toHaveBeenCalledTimes(2);
+		expect(screen.queryByText(/couldn't load your join options/i)).toBeNull();
 	});
 
 	it('opens the apply dialog from the join button', async () => {

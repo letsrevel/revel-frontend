@@ -1362,7 +1362,11 @@
 		"ineligible": "Non sei ancora idoneo",
 		"nextStep": {
 			"request_whitelist": "È necessaria la verifica per accedere a questa organizzazione",
-			"wait_for_whitelist_approval": "La tua richiesta di verifica è in attesa di revisione"
+			"wait_for_whitelist_approval": "La tua richiesta di verifica è in attesa di revisione",
+			"upgrade_membership": "Guarda le opzioni di iscrizione dell'organizzazione per scoprire quali livelli puoi ottenere."
+		},
+		"reason": {
+			"membership_tier_required": "Questo biglietto è riservato a livelli di iscrizione specifici."
 		},
 		"rsvpNextStep": "Conferma la partecipazione all'evento",
 		"purchaseTicketNextStep": "Acquista un biglietto",
@@ -2754,13 +2758,26 @@
 		"removeConfirmMessage": "Questo rimuoverà permanentemente {name} dall'organizzazione. Questa azione non può essere annullata.",
 		"confirmRemove": "Sì, rimuovi",
 		"cancelRemove": "Annulla",
+		"banConfirmTitle": "Bannare {name}?",
+		"banConfirmMessage": "I membri bannati perdono l'accesso a tutti gli eventi di questa organizzazione, anche a quelli pubblici.",
+		"confirmBan": "Sì, banna il membro",
 		"close": "Chiudi",
 		"statusExplanation": {
 			"active": "I membri possono visualizzare e partecipare a tutti gli eventi dell'organizzazione.",
+			"activeBillingNote": "Ripristinare l'iscrizione non riavvia la fatturazione: gli abbonamenti si riprendono separatamente, dalla scheda «Subscriptions».",
 			"paused": "I membri possono visualizzare gli eventi ma non partecipare o confermare.",
+			"pausedBillingNote": "Finché l'iscrizione è in pausa non viene incassato nessun altro pagamento.",
+			"pausedScheduledEndNote": "L'abbonamento è già programmato per terminare, quindi non viene messo in pausa: continua a fatturare fino alla chiusura del periodo in corso.",
 			"cancelled": "L'iscrizione è stata cancellata. Questo equivale a non avere un'iscrizione attiva.",
 			"banned": "I membri non possono visualizzare o partecipare ad alcuna attività dell'organizzazione."
 		}
+	},
+	"membershipLoss": {
+		"subscriptionCancelledPlan": "L'abbonamento di iscrizione «{plan}» ({price}) viene disdetto immediatamente e la fatturazione ricorrente si interrompe. Nessun rimborso viene emesso automaticamente.",
+		"subscriptionStatusNote": "Stato attuale dell'abbonamento: {status}.",
+		"subscriptionPeriodEnds": "Il periodo di fatturazione in corso termina il {date}.",
+		"subscriptionCancelledIfAny": "Se questa persona ha un abbonamento di iscrizione con questa organizzazione, viene disdetto immediatamente e la fatturazione ricorrente si interrompe. Nessun rimborso viene emesso automaticamente.",
+		"subscriptionCancelledOnMatch": "Se questa voce corrisponde a un account con un abbonamento di iscrizione a questa organizzazione — ora oppure quando verrà collegata al suo account in seguito — quell'abbonamento viene disdetto e la fatturazione ricorrente si interrompe. Nessun rimborso viene emesso automaticamente."
 	},
 	"memberBadge": {
 		"member": "Membro",
@@ -3298,6 +3315,11 @@
 				"archived": "Archiviato",
 				"edit": "Modifica",
 				"archive": "Archivia",
+				"archiveConfirm": {
+					"title": "Archiviare {plan}?",
+					"body": "Gli abbonati attuali mantengono piano e prezzo. Nuove iscrizioni, cambi di piano e riattivazioni verso questo piano si fermano.",
+					"cta": "Archivia piano"
+				},
 				"badge": {
 					"online": "Online · Stripe",
 					"offline": "Offline · manuale",
@@ -3317,7 +3339,8 @@
 					"title": "Elimina piano",
 					"body": "Questo elimina definitivamente il piano. Se ci sono abbonati, archivialo invece.",
 					"inUse": "Questo piano ha degli abbonati e non può essere eliminato — archivialo invece.",
-					"archiveInstead": "Archivia invece"
+					"archiveInstead": "Archivia invece",
+					"confirmMessage": "Eliminare \"{name}\"?"
 				},
 				"form": {
 					"create": "Crea piano",
@@ -3329,6 +3352,7 @@
 					"periodUnit": "Periodo",
 					"periodCount": "Ogni",
 					"isActive": "Attivo (disponibile per nuovi abbonamenti)",
+					"isActiveHelp": "Deselezionare archivia il piano: gli abbonati esistenti non sono toccati, ma nessuno può più iscriversi, cambiare piano o riattivare.",
 					"errors": {
 						"nameRequired": "Il nome è obbligatorio",
 						"priceInvalid": "Il prezzo deve essere 0 o superiore",
@@ -3352,7 +3376,8 @@
 				"errors": {
 					"createFailed": "Impossibile creare il piano: {detail}",
 					"updateFailed": "Impossibile aggiornare il piano: {detail}",
-					"archiveFailed": "Impossibile archiviare il piano: {detail}"
+					"archiveFailed": "Impossibile archiviare il piano: {detail}",
+					"deleteFailed": "Non è stato possibile eliminare questo piano."
 				}
 			},
 			"subscriptions": {
@@ -3389,7 +3414,26 @@
 					"pause": "Sospendi",
 					"resume": "Riprendi",
 					"cancel": "Disdici",
+					"uncancel": "Annulla disdetta",
+					"uncancelling": "Annullamento…",
+					"uncancelDone": "Rinnovo ripristinato.",
 					"onlinePayments": "I pagamenti di questo abbonamento arrivano automaticamente tramite Stripe.",
+					"pauseBlockedByCancel": "Non puoi sospendere un abbonamento con disdetta programmata: annulla prima la disdetta.",
+					"pauseConfirmTitle": "Sospendere questo abbonamento?",
+					"pauseConfirmBody": "La fatturazione si interrompe e la persona perde l'accesso riservato ai membri finché non riattivi.",
+					"pauseConfirmPendingSwitch": "Un cambio di piano programmato viene annullato.",
+					"pauseConfirmCta": "Sospendi abbonamento",
+					"pauseConfirmDismiss": "Non sospendere",
+					"errors": {
+						"load": "Impossibile caricare questo abbonamento.",
+						"loadPayments": "Impossibile caricare i pagamenti di questo abbonamento.",
+						"recordPayment": "Impossibile registrare il pagamento.",
+						"cancel": "Impossibile disdire questo abbonamento.",
+						"pause": "Impossibile sospendere questo abbonamento.",
+						"resume": "Impossibile riprendere questo abbonamento.",
+						"uncancel": "Impossibile annullare la disdetta programmata.",
+						"refund": "Impossibile rimborsare questo pagamento."
+					},
 					"revive": "Riattiva",
 					"reviveDone": "Abbonamento riattivato",
 					"reviveOfflineTitle": "Riattiva abbonamento",
@@ -3401,6 +3445,7 @@
 					"paymentsEmpty": "Ancora nessun pagamento.",
 					"refund": "Rimborsa",
 					"manageOnStripe": "Gestisci su Stripe",
+					"checkoutOnStripe": "Vedi il checkout su Stripe",
 					"paymentOnStripe": "Vedi su Stripe",
 					"onlineRefundNote": "I rimborsi dei pagamenti online si effettuano dalla dashboard Stripe — vengono registrati qui automaticamente.",
 					"partiallyRefunded": "(rimborso di {amount} {currency})",
@@ -3417,6 +3462,7 @@
 					"immediate": "Subito",
 					"immediateDesc": "L'accesso viene revocato subito. Nessun rimborso viene emesso automaticamente.",
 					"immediateConfirm": "Ho capito che l'accesso viene revocato subito.",
+					"pendingSwitchDropped": "Il cambio di piano programmato verrà annullato.",
 					"keep": "Mantieni l'abbonamento",
 					"confirm": "Conferma la disdetta"
 				},
@@ -5008,6 +5054,12 @@
 	"membershipPlans": {
 		"heading": "Iscrizione",
 		"subscribeCta": "Abbonati",
+		"yourPlan": "Il tuo piano",
+		"yourPlanHelper": "Hai un abbonamento a questo piano.",
+		"pendingCheckoutHelper": "Il pagamento non è ancora completato — riprendilo dal tuo account.",
+		"alreadySubscribed": "Hai già un abbonamento con questa organizzazione.",
+		"changePlanCta": "Cambia piano",
+		"changePlanCtaAria": "Cambia piano: passa a {plan}",
 		"loginToSubscribe": "Accedi per abbonarti",
 		"soldOut": "Esaurito",
 		"soldOutHelper": "Tutti i posti sono occupati — potrebbe liberarsene uno se un'iscrizione termina.",
@@ -5641,6 +5693,7 @@
 		"title": "Elimina livello di iscrizione",
 		"confirmMessage": "Sei sicuro di voler eliminare \"{name}\"?",
 		"consequence": "Tutti i membri assegnati a questo livello avranno il livello rimosso. Questa azione non può essere annullata.",
+		"plansCascade": "Tutti i piani di abbonamento di questo livello vengono eliminati con esso.",
 		"cancel": "Annulla",
 		"confirm": "Elimina livello"
 	},
@@ -6533,9 +6586,15 @@
 			"cancel": "Annulla l'abbonamento",
 			"resumePayment": "Riprendi il pagamento",
 			"portalError": "Non è stato possibile aprire il portale di pagamento. Riprova.",
-			"resumeError": "Non è stato possibile riprendere il pagamento. Riprova."
+			"resumeError": "Non è stato possibile riprendere il pagamento. Riprova.",
+			"uncancel": "Riattiva il rinnovo",
+			"uncancelling": "Riattivazione…",
+			"uncancelSuccess": "Il rinnovo è di nuovo attivo.",
+			"uncancelError": "Non è stato possibile riattivare il rinnovo. Riprova."
 		},
-		"cancelScheduledHint": "Il rinnovo è disattivato. Per mantenere l'abbonamento, contatta l'organizzazione.",
+		"cancelScheduledHint": "Il rinnovo è disattivato. Puoi riattivarlo in qualsiasi momento prima di questa data.",
+		"cancelScheduledHintManaged": "Il rinnovo è disattivato. Per mantenere l'abbonamento, contatta l'organizzazione.",
+		"pausedHint": "In pausa per decisione dell'organizzazione — contattala per riattivarlo.",
 		"rejoin": {
 			"title": "Il tuo abbonamento a {org} è scaduto",
 			"body": "È scaduto il {expired}. Puoi riabbonarti fino al {deadline}.",
@@ -6584,6 +6643,8 @@
 		"memberBadgeAriaLabel": "Sei un membro di questa organizzazione",
 		"memberStatusAriaLabel": "Stato dell'iscrizione: {status}",
 		"memberTierAriaLabel": "Livello di iscrizione: {tier}",
+		"loadError": "Impossibile caricare le opzioni di iscrizione.",
+		"retryLoad": "Riprova",
 		"reason": {
 			"blacklisted": "Non puoi unirti a questa organizzazione.",
 			"requires_verification": "Il tuo account deve essere verificato prima che tu possa unirti.",
@@ -6597,6 +6658,7 @@
 			"membership_questionnaire_missing": "Questa organizzazione chiede a chi si iscrive di compilare prima un questionario.",
 			"membership_questionnaire_failed": "Il tuo questionario non è stato approvato.",
 			"membership_questionnaire_retake_cooldown": "Potrai ripetere il questionario più avanti.",
+			"membership_questionnaire_attempts_exhausted": "Hai esaurito tutti i tentativi per questo questionario.",
 			"requires_approval": "Le richieste di iscrizione vengono approvate dall'organizzazione.",
 			"requires_invitation": "Si entra su invito — chiedi all'organizzazione un link di invito.",
 			"duplicate_active_subscription": "Hai già un abbonamento attivo con questa organizzazione.",
@@ -6619,6 +6681,8 @@
 		"cancel": "Annulla",
 		"completedTitle": "Ci sei!",
 		"completedBody": "Ora sei membro di {orgName}.",
+		"alreadyMemberTitle": "Sei già membro",
+		"alreadyMemberBody": "La tua iscrizione a {orgName} è già attiva.",
 		"pendingTitle": "Richiesta ricevuta",
 		"pendingBody": "L'organizzazione ha ricevuto la tua richiesta — ecco cosa succede adesso:",
 		"trackLink": "Segui la tua richiesta",
@@ -6640,10 +6704,13 @@
 		"periodEnd": "Alla fine del periodo corrente",
 		"periodEndHintDated": "Mantieni l'accesso fino al {date}. Nessun altro addebito.",
 		"periodEndHint": "Mantieni l'accesso fino alla fine del periodo pagato. Nessun altro addebito.",
+		"rejoinAfterEnd": "Iscriversi di nuovo in seguito significa iniziare un nuovo abbonamento.",
 		"immediate": "Immediatamente",
-		"immediateHint": "Il tuo abbonamento termina subito.",
+		"immediateHint": "Il tuo abbonamento termina subito. Nessun rimborso viene emesso automaticamente per il tempo già pagato.",
 		"immediateConfirm": "Capisco che il mio abbonamento termina immediatamente.",
 		"refundPolicy": "Politica di rimborso",
+		"refundPolicyPointer": "Consulta la politica di rimborso qui sotto.",
+		"pendingSwitchDropped": "Il passaggio programmato a {plan} verrà annullato.",
 		"keepCta": "Mantieni l'abbonamento",
 		"confirmCta": "Annulla l'abbonamento",
 		"cancelling": "Annullamento…",
@@ -6679,6 +6746,23 @@
 			"months": "ogni {n} mesi",
 			"year": "ogni anno",
 			"years": "ogni {n} anni"
+		},
+		"billing": {
+			"title": "Come funziona la fatturazione",
+			"renewal": "La tua iscrizione si rinnova automaticamente a ogni periodo finché non la annulli, e ti mandiamo un promemoria via email qualche giorno prima di ogni rinnovo.",
+			"failedPayment": {
+				"one": "Se un pagamento di rinnovo non va a buon fine, mantieni l'accesso per {days} giorno dopo la fine del periodo mentre il pagamento viene ritentato, poi l'iscrizione scade.",
+				"other": "Se un pagamento di rinnovo non va a buon fine, mantieni l'accesso per {days} giorni dopo la fine del periodo mentre il pagamento viene ritentato, poi l'iscrizione scade.",
+				"none": "Se un pagamento di rinnovo non va a buon fine, l'iscrizione scade non appena finisce il periodo: non c'è alcun periodo di tolleranza.",
+				"unknown": "Se un pagamento di rinnovo non va a buon fine, mantieni l'accesso per un breve periodo di tolleranza mentre il pagamento viene ritentato, poi l'iscrizione scade."
+			},
+			"cancelling": "Puoi annullare in qualsiasi momento: l'accesso resta valido fino alla fine del periodo già pagato e un annullamento immediato non viene rimborsato automaticamente.",
+			"expiry": {
+				"one": "Se scade dopo un pagamento non riuscito, puoi riattivarla dal tuo account entro {days} giorno.",
+				"other": "Se scade dopo un pagamento non riuscito, puoi riattivarla dal tuo account entro {days} giorni.",
+				"none": "Se scade, non può essere riattivata: dovresti sottoscrivere una nuova iscrizione.",
+				"unknown": "Se scade dopo un pagamento non riuscito, potresti riattivarla dal tuo account per un periodo limitato."
+			}
 		},
 		"refundPolicy": "Politica di rimborso",
 		"stripeDisclaimer": "I pagamenti sono elaborati in modo sicuro da Stripe.",
@@ -8443,7 +8527,7 @@
 	"orgSettingsPage.subscriptionPolicy.heading": "Politica di abbonamento",
 	"orgSettingsPage.subscriptionPolicy.description": "Regole per le iscrizioni a pagamento: per quanto tempo un abbonamento scaduto resta attivo e le tue condizioni di rimborso.",
 	"orgSettingsPage.subscriptionPolicy.gracePeriodLabel": "Periodo di tolleranza (giorni)",
-	"orgSettingsPage.subscriptionPolicy.gracePeriodHelp": "Giorni in cui un abbonamento con pagamento non riuscito resta attivo prima di scadere.",
+	"orgSettingsPage.subscriptionPolicy.gracePeriodHelp": "I membri mantengono l'accesso completo mentre il pagamento viene ritentato. 0 fa scadere l'iscrizione subito dopo un rinnovo non riuscito.",
 	"orgSettingsPage.subscriptionPolicy.revivalWindowLabel": "Finestra di riattivazione (giorni)",
 	"orgSettingsPage.subscriptionPolicy.revivalWindowHelp": "Per quanto tempo dopo la scadenza di un abbonamento gli ex membri possono rientrare senza ricandidarsi — al prezzo attuale del piano. 0 disattiva la riattivazione.",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyLabel": "Politica di rimborso",

@@ -1,10 +1,10 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import type { PublicPlanSchema } from '$lib/api/generated/types.gen';
+	import type { MySubscriptionSchema, PublicPlanSchema } from '$lib/api/generated/types.gen';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
-	import { formatPlanPrice } from '$lib/utils/subscriptions';
+	import { canSwitchToPlan, formatPlanPrice } from '$lib/utils/subscriptions';
 	import { resolve } from '$app/paths';
 
 	interface Props {
@@ -14,18 +14,42 @@
 		onSubscribe: (plan: PublicPlanSchema & { id: string }) => void;
 		/** Where the login round trip should come back to. */
 		organizationSlug: string;
+		/**
+		 * The viewer's live subscription in this organization, or `null` when they
+		 * have none. The backend only ever hands back a *non-terminal* row here,
+		 * so a non-null value is precisely the case where `POST …/subscribe`
+		 * answers 400 — a cancelled or expired member arrives as `null` and can
+		 * subscribe again, with no status list duplicated on this side.
+		 */
+		subscription?: MySubscriptionSchema | null;
+		/** The subscription lookup is still in flight — the answer is not known yet. */
+		subscriptionLoading?: boolean;
 	}
 
-	const { plan, isAuthenticated, onSubscribe, organizationSlug }: Props = $props();
+	const {
+		plan,
+		isAuthenticated,
+		onSubscribe,
+		organizationSlug,
+		subscription = null,
+		subscriptionLoading = false
+	}: Props = $props();
 
 	/**
-	 * What the card offers, in the spec's precedence order:
-	 * offline → sold out → paused → subscribe/login → nothing.
+	 * What the card offers, in precedence order:
+	 * already subscribed → offline → sold out → paused → subscribe/login → nothing.
+	 *
+	 * The membership check comes first because it is a fact about the *viewer*,
+	 * and it outranks every fact about the plan: an existing member cannot buy
+	 * this plan whether it is offline, sold out or wide open.
 	 *
 	 * `none` covers a plan the backend exposes without an id: it cannot be
 	 * subscribed to, and a CTA would only produce a failed checkout.
 	 */
 	const action = $derived.by(() => {
+		if (subscription) {
+			return plan.id && plan.id === subscription.plan_id ? 'current' : 'member';
+		}
 		if (plan.payment_method === 'offline') return 'offline';
 		if (plan.sold_out) return 'none';
 		if (plan.sales_status === 'paused') return 'none';
@@ -35,19 +59,35 @@
 
 	/**
 	 * The badge is independent of the CTA: an offline plan that is sold out
-	 * still says so. Sold out outranks paused — it is the harder stop.
+	 * still says so. "Your plan" outranks both — for the member already on it,
+	 * the plan's sales state is somebody else's problem. Sold out then outranks
+	 * paused: it is the harder stop.
 	 */
 	const state = $derived.by(() => {
+		if (action === 'current') return 'current';
 		if (plan.sold_out) return 'sold_out';
 		if (plan.sales_status === 'paused') return 'paused';
 		return null;
 	});
+
+	/**
+	 * A PENDING row means a hosted Checkout was started and never finished (or
+	 * its webhook has not landed). Saying "you're subscribed" would be a lie, and
+	 * pushing a second checkout is exactly what the backend refuses — so the card
+	 * points at the account hub, where the resume-payment action lives.
+	 */
+	const isPendingCheckout = $derived(subscription?.status === 'pending');
+
+	/** Only linked when the change-plan flow would really offer this plan. */
+	const canSwitch = $derived(subscription ? canSwitchToPlan(subscription, plan) : false);
 
 	const loginHref = $derived(
 		`${resolve('/(public)/login', {})}?returnUrl=${encodeURIComponent(
 			resolve('/(public)/org/[slug]', { slug: organizationSlug })
 		)}`
 	);
+
+	const membershipsHref = resolve('/(auth)/account/memberships', {});
 
 	function handleSubscribe(): void {
 		// Re-narrowed at the call site: `action === 'subscribe'` already implies
@@ -61,7 +101,9 @@
 	<CardContent class="flex flex-1 flex-col gap-3 p-4">
 		<div class="flex flex-wrap items-start justify-between gap-2">
 			<h4 class="font-semibold">{plan.name}</h4>
-			{#if state === 'sold_out'}
+			{#if state === 'current'}
+				<Badge variant="secondary">{m['membershipPlans.yourPlan']()}</Badge>
+			{:else if state === 'sold_out'}
 				<Badge variant="secondary">{m['membershipPlans.soldOut']()}</Badge>
 			{:else if state === 'paused'}
 				<Badge variant="secondary">{m['membershipPlans.paused']()}</Badge>
@@ -81,10 +123,37 @@
 		{/if}
 
 		<div class="mt-auto pt-1">
-			{#if action === 'offline'}
+			{#if action === 'current'}
+				<!-- A marker, not a control: there is nothing to press here, so
+				     nothing takes focus. The reason is plain text, never colour. -->
+				<p class="text-sm text-muted-foreground">
+					{isPendingCheckout
+						? m['membershipPlans.pendingCheckoutHelper']()
+						: m['membershipPlans.yourPlanHelper']()}
+				</p>
+			{:else if action === 'member'}
+				<p class="text-sm text-muted-foreground">{m['membershipPlans.alreadySubscribed']()}</p>
+				{#if canSwitch}
+					<!-- The switch itself lives in the account hub's ChangePlanDialog;
+					     this only navigates, so it can never 400. Labelled with the
+					     plan name for screen-reader users, who hear these links out
+					     of context and would otherwise get N identical "Change plan". -->
+					<a
+						href={membershipsHref}
+						aria-label={m['membershipPlans.changePlanCtaAria']({ plan: plan.name })}
+						class="mt-2 inline-block text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					>
+						{m['membershipPlans.changePlanCta']()}<span aria-hidden="true"> →</span>
+					</a>
+				{/if}
+			{:else if action === 'offline'}
 				<p class="text-sm text-muted-foreground">{m['membershipPlans.offlineManaged']()}</p>
 			{:else if action === 'subscribe'}
-				<Button class="w-full sm:w-auto" onclick={handleSubscribe}>
+				<!-- Disabled only while the membership lookup is in flight: until it
+				     answers we do not know whether this button would 400. It is a
+				     transient state on a control that keeps its label and its box, so
+				     nothing shifts and nothing is conveyed by colour alone. -->
+				<Button class="w-full sm:w-auto" onclick={handleSubscribe} disabled={subscriptionLoading}>
 					{m['membershipPlans.subscribeCta']()}
 				</Button>
 			{:else if action === 'login'}

@@ -6,7 +6,7 @@
 	import { RadioGroup, RadioGroupItem } from '$lib/components/ui/radio-group';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Label } from '$lib/components/ui/label';
-	import { Loader2 } from '@lucide/svelte';
+	import { AlertTriangle, Loader2 } from '@lucide/svelte';
 	import { formatDate } from '$lib/utils/date';
 
 	interface Props {
@@ -34,6 +34,12 @@
 	}
 
 	const canSubmit = $derived(mode === 'period_end' || immediateAck);
+
+	// `cancel_online_subscription` releases the Stripe schedule before either
+	// cancel branch, which clears `pending_plan` — so the warning applies to both
+	// modes. Only the ONLINE scheduled-downgrade path ever sets `pending_plan_id`,
+	// so this stays hidden for every offline subscription.
+	const hasPendingSwitch = $derived(!!subscription.pending_plan_id);
 
 	function handleSubmit(e: Event) {
 		e.preventDefault();
@@ -73,6 +79,13 @@
 					</div>
 				</div>
 			</RadioGroup>
+
+			{#if hasPendingSwitch}
+				<p class="flex gap-2 text-xs text-muted-foreground">
+					<AlertTriangle class="mt-0.5 h-3.5 w-3.5 shrink-0 text-destructive" aria-hidden="true" />
+					{m['orgAdmin.members.subscriptions.cancel.pendingSwitchDropped']()}
+				</p>
+			{/if}
 
 			{#if mode === 'immediate'}
 				<div class="flex items-center gap-2">

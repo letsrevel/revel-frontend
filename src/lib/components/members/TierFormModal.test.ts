@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/svelte';
+import { render, screen, waitFor, within } from '@testing-library/svelte';
 import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import type { ComponentProps } from 'svelte';
@@ -135,5 +135,42 @@ describe('TierFormModal eligibility overrides', () => {
 		expect(within(approval).getByRole('option', { name: /no approval required/i })).toHaveValue(
 			'inherit'
 		);
+	});
+
+	// The parent (TiersTab) keeps `tier` at `null` for every create attempt and
+	// leaves the modal mounted, so `open` is the only prop that changes between
+	// an abandoned draft and the next one. An effect that tracked `tier` alone
+	// never re-ran, and the second tier was silently POSTed with the first
+	// draft's questionnaire and approval overrides — the two fields that decide
+	// who can join it.
+	it('resets the overrides when create mode is reopened after an abandoned draft', async () => {
+		const user = userEvent.setup();
+		const onSave = vi.fn();
+		const { rerender } = await renderModal({ onSave, membershipQuestionnaires: [vibeCheck] });
+
+		// First attempt: fill the overrides in, then abandon it.
+		await user.type(screen.getByLabelText(/tier name/i), 'Gold');
+		await user.selectOptions(screen.getByLabelText(/membership questionnaire/i), 'oq-1');
+		await user.selectOptions(screen.getByLabelText(/manual approval/i), 'require');
+
+		await rerender({ open: false });
+		await waitFor(() => expect(screen.queryByLabelText(/tier name/i)).toBeNull());
+		await rerender({ open: true });
+		await focusSettled();
+
+		expect(screen.getByLabelText(/tier name/i)).toHaveValue('');
+		expect(screen.getByLabelText(/membership questionnaire/i)).toHaveValue('');
+		expect(screen.getByLabelText(/manual approval/i)).toHaveValue('inherit');
+
+		// And the payload the second tier is actually created with.
+		await user.type(screen.getByLabelText(/tier name/i), 'Bronze');
+		await user.click(screen.getByRole('button', { name: /create tier/i }));
+
+		expect(onSave).toHaveBeenCalledWith({
+			name: 'Bronze',
+			description: '',
+			membership_questionnaire_id: null,
+			requires_membership_approval: null
+		});
 	});
 });

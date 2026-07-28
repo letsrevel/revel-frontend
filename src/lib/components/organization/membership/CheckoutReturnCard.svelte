@@ -9,6 +9,8 @@
 	import type { MySubscriptionSchema } from '$lib/api/generated/types.gen';
 	import { PollUntil } from '$lib/queries/poll-until';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { backendMessage } from '$lib/utils/api-error-detail';
+	import { isSubscriptionActivationPending } from '$lib/utils/subscriptions';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { Loader2 } from '@lucide/svelte';
@@ -48,6 +50,16 @@
 	// `q.data` alone would never re-trigger the derived below.
 	let timedOut = $state(false);
 
+	// Set when a resume attempt comes back with the activation-pending 409: the
+	// member has already been charged, so from here the cancelled outcome behaves
+	// exactly like the success one — poll until the webhook lands.
+	let activationPending = $state(false);
+	/** The backend's translated explanation for that 409, when it sent one. */
+	let activationDetail = $state<string | null>(null);
+
+	/** Render the polling/welcome card rather than the "not completed" one. */
+	const isConfirming = $derived(outcome === 'success' || activationPending);
+
 	// Constructed once, at setup: the deadline is measured from construction, so
 	// rebuilding this inside a `$derived` would restart the clock on every pass.
 	const poll = new PollUntil<MySubscriptionSchema | null>({
@@ -57,7 +69,9 @@
 		queryKey: untrack(() => ['me', 'org', organizationId, 'subscription', 'checkout-return']),
 		queryFn: fetchSubscription,
 		isDone: (sub) => sub?.status === 'active',
-		enabled: () => outcome === 'success' && !!accessToken,
+		// `options()` is re-read on every reactive pass, so flipping
+		// `activationPending` starts this poll on the cancelled outcome too.
+		enabled: () => isConfirming && !!accessToken,
 		onTimeout: () => (timedOut = true)
 	});
 
@@ -111,6 +125,28 @@
 	let resumeError = $state<string | null>(null);
 	let redirecting = $state(false);
 
+	/**
+	 * Switch the card over to the confirming state.
+	 *
+	 * `poll.reset()` is load-bearing: the deadline runs from construction, and a
+	 * member can sit on the cancelled card for minutes before pressing Resume, so
+	 * an unreset poll would render "this is taking longer than usual" the instant
+	 * it started — or never tick at all.
+	 */
+	function enterActivationPending(detail: string | null): void {
+		if (activationPending) return;
+		poll.reset();
+		timedOut = false;
+		resumeError = null;
+		// The backend's own sentence ("Your payment went through. We're still
+		// confirming your subscription…"), already translated server-side. Shown
+		// alongside the generic confirming line because this member just pressed
+		// "Resume payment" and would otherwise have no way to tell that they are
+		// not expected to pay again.
+		activationDetail = detail;
+		activationPending = true;
+	}
+
 	const resumeMutation = createMutation(() => ({
 		mutationFn: async () => {
 			resumeError = null;
@@ -121,12 +157,29 @@
 				body: { plan_id: planId },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
+			// The money-critical branch: the abandoned session turned out to be paid
+			// and the activation webhooks are still in flight. The member has been
+			// charged, so this is not a failure — it is the same "confirming your
+			// subscription" wait the success return shows, and the poll picks up the
+			// activation as soon as the webhook lands. Keyed on the backend's
+			// machine-readable `code`; its `detail` is translated and unmatchable.
+			if (isSubscriptionActivationPending(res.error)) {
+				enterActivationPending(backendMessage(res.error));
+				return null;
+			}
+			// Otherwise the same dual-shape probe as SubscribeDialog: django-ninja
+			// sends `{ detail }`, not the `{ message }` the generated type promises,
+			// and reading only one of them would bury every real reason (plan
+			// archived, sold out, org not Stripe-connected) behind generic copy.
 			if (res.error || !res.data) {
-				throw new Error(res.error?.message ?? m['subscribe.error']());
+				throw new Error(backendMessage(res.error) || m['subscribe.error']());
 			}
 			return res.data;
 		},
 		onSuccess: (data) => {
+			// `null` is the activation-pending answer — nowhere to redirect to; the
+			// card is already showing the confirming state.
+			if (!data) return;
 			redirecting = true;
 			window.location.href = data.checkout_url;
 		},
@@ -146,7 +199,7 @@
 	const membershipsHref = resolve('/(auth)/account/memberships', {});
 </script>
 
-{#if outcome === 'success'}
+{#if isConfirming}
 	<Card
 		class={phase === 'done'
 			? 'border-green-300 bg-green-50 dark:border-green-800 dark:bg-green-950/40'
@@ -161,6 +214,9 @@
 						<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
 						{m['subscribe.return.confirming']()}
 					</p>
+					{#if activationDetail}
+						<p class="mt-1 text-sm">{activationDetail}</p>
+					{/if}
 				{:else if phase === 'done'}
 					<h2 class="text-lg font-semibold">{m['subscribe.return.welcome']()}</h2>
 					<p class="mt-1 text-sm">{m['subscribe.return.welcomeBody']()}</p>

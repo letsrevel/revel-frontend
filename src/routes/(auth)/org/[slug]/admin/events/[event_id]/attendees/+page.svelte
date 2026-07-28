@@ -3,7 +3,7 @@
 	import { page } from '$app/stores';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { createMutation } from '@tanstack/svelte-query';
+	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { toast } from 'svelte-sonner';
 	import {
 		eventadminrsvpsUpdateRsvp,
@@ -34,6 +34,7 @@
 
 	const organization = $derived($page.data.organization);
 	const accessToken = $derived(authStore.accessToken);
+	const queryClient = useQueryClient();
 
 	// Filter state
 	let searchQuery = $state(data.filters.search || '');
@@ -192,6 +193,13 @@
 			rsvpToBlacklist = null;
 			toast.success(m['attendeesAdmin.blacklistSuccess']({ name: userName }));
 			invalidateAll();
+			// Blacklisting revokes org membership, which cancels the user's subscription
+			// and stops Stripe billing server-side. `invalidateAll()` only reruns load
+			// functions, so the org admin's cached subscription list + revenue metrics
+			// would otherwise still show them as an active payer.
+			queryClient.invalidateQueries({
+				queryKey: ['organization', organization.slug, 'subscriptions']
+			});
 		},
 		onError: () => {
 			toast.error(m['attendeesAdmin.blacklistError']());
@@ -639,9 +647,9 @@
 	isOpen={showBlacklistDialog}
 	title={m['attendeesAdmin.blacklistDialogTitle']()}
 	message={rsvpToBlacklist
-		? m['attendeesAdmin.blacklistDialogMessage']({
+		? `${m['attendeesAdmin.blacklistDialogMessage']({
 				name: getUserDisplayName(rsvpToBlacklist.user)
-			})
+			})} ${m['membershipLoss.subscriptionCancelledIfAny']()}`
 		: ''}
 	confirmText={m['attendeesAdmin.blacklistDialogConfirm']()}
 	cancelText={m['attendeesAdmin.blacklistDialogCancel']()}

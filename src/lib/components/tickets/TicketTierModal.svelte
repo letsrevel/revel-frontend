@@ -21,6 +21,11 @@
 		tiers: TierSchemaWithId[];
 		/** Event ID for fetching seat availability */
 		eventId: string;
+		/**
+		 * Organizing org's slug, forwarded to the confirmation dialog so a purchase
+		 * refused by the tier's membership-tier gate can link at its plans.
+		 */
+		organizationSlug?: string | null;
 		isAuthenticated: boolean;
 		membershipTier?: MembershipTierSchema | null;
 		canAttendWithoutLogin?: boolean;
@@ -84,6 +89,7 @@
 		open = $bindable(),
 		tiers,
 		eventId,
+		organizationSlug = null,
 		isAuthenticated,
 		membershipTier = null,
 		canAttendWithoutLogin = false,
@@ -414,6 +420,7 @@
 			bind:open={showConfirmation}
 			tier={selectedTier}
 			{eventId}
+			{organizationSlug}
 			onClose={closeConfirmation}
 			onConfirm={handleConfirm}
 			hasResumableCheckout={checkResumableCheckout}

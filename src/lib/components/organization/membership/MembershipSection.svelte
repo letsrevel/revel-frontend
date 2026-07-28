@@ -3,7 +3,10 @@
 	import { onMount, tick } from 'svelte';
 	import { browser } from '$app/environment';
 	import { resolve } from '$app/paths';
+	import { createQuery } from '@tanstack/svelte-query';
 	import type { OrganizationRetrieveSchema, PublicPlanSchema } from '$lib/api/generated/types.gen';
+	import { authStore } from '$lib/stores/auth.svelte';
+	import { myOrgSubscriptionQueryOptions } from '$lib/queries/my-org-subscription';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import PlanCard from './PlanCard.svelte';
 	import SubscribeDialog from './SubscribeDialog.svelte';
@@ -16,6 +19,25 @@
 	}
 
 	const { organization, plans, isAuthenticated }: Props = $props();
+
+	const accessToken = $derived(authStore.accessToken);
+
+	/**
+	 * The viewer's own subscription in this org — the same query key
+	 * `OrgMembershipInline` (rendered higher up the same page) and
+	 * `CheckoutReturnCard` already use, so TanStack serves both observers from
+	 * one request and one invalidation refreshes both.
+	 *
+	 * Without it the grid offered "Subscribe" to people who already pay: the
+	 * backend refuses a second non-terminal subscription with a 400, so that
+	 * button could only ever fail after quoting a concrete charge.
+	 */
+	const subQuery = createQuery(() => myOrgSubscriptionQueryOptions(organization.id, accessToken));
+
+	const subscription = $derived(subQuery.data ?? null);
+	// `isLoading`, not `isPending`: a disabled query (logged-out visitor) stays
+	// pending forever and would leave every CTA disabled.
+	const subscriptionLoading = $derived(subQuery.isLoading);
 
 	/** Which Stripe return URL the visitor landed on, if any. */
 	let returnOutcome = $state<'success' | 'cancelled' | null>(null);
@@ -127,6 +149,8 @@
 						<PlanCard
 							{plan}
 							{isAuthenticated}
+							{subscription}
+							{subscriptionLoading}
 							organizationSlug={organization.slug}
 							onSubscribe={handleSubscribe}
 						/>
@@ -164,6 +188,8 @@
 			organizationId={organization.id}
 			organizationName={organization.name}
 			{refundPolicy}
+			gracePeriodDays={organization.membership_grace_period_days}
+			revivalWindowDays={organization.membership_subscription_revival_window_days}
 		/>
 	{/key}
 {/if}

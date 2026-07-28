@@ -1362,7 +1362,11 @@
 		"ineligible": "You're not eligible yet",
 		"nextStep": {
 			"request_whitelist": "Verification is required to access this organization",
-			"wait_for_whitelist_approval": "Your verification request is pending review"
+			"wait_for_whitelist_approval": "Your verification request is pending review",
+			"upgrade_membership": "Check the organization's membership options to see which tiers you can get."
+		},
+		"reason": {
+			"membership_tier_required": "This ticket is reserved for specific membership tiers."
 		},
 		"rsvpNextStep": "RSVP to the event",
 		"purchaseTicketNextStep": "Purchase a ticket",
@@ -2754,13 +2758,26 @@
 		"removeConfirmMessage": "This will permanently remove {name} from the organization. This action cannot be undone.",
 		"confirmRemove": "Yes, Remove",
 		"cancelRemove": "Cancel",
+		"banConfirmTitle": "Ban {name}?",
+		"banConfirmMessage": "Banned members lose access to every event in this organization, including public ones.",
+		"confirmBan": "Yes, Ban Member",
 		"close": "Close",
 		"statusExplanation": {
 			"active": "Members can view and participate in all organization events.",
+			"activeBillingNote": "Restoring membership does not restart billing — subscriptions are resumed separately, from the Subscriptions tab.",
 			"paused": "Members can view events but cannot participate or RSVP.",
+			"pausedBillingNote": "No further payments are collected while their membership is paused.",
+			"pausedScheduledEndNote": "Their subscription is already scheduled to end, so it is not paused — it keeps billing until the current period closes.",
 			"cancelled": "Membership has been cancelled. This is equivalent to not having an active membership.",
 			"banned": "Members cannot view or participate in any organization activities."
 		}
+	},
+	"membershipLoss": {
+		"subscriptionCancelledPlan": "Their {plan} subscription ({price}) is cancelled immediately and recurring billing stops. No refund is issued automatically.",
+		"subscriptionStatusNote": "Current subscription status: {status}.",
+		"subscriptionPeriodEnds": "The current billing period runs to {date}.",
+		"subscriptionCancelledIfAny": "If they have a membership subscription with this organization, it is cancelled immediately and recurring billing stops. No refund is issued automatically.",
+		"subscriptionCancelledOnMatch": "If this entry matches an account with a membership subscription to this organization — now, or when it links to their account later — that subscription is cancelled and recurring billing stops. No refund is issued automatically."
 	},
 	"memberBadge": {
 		"member": "Member",
@@ -3298,6 +3315,11 @@
 				"archived": "Archived",
 				"edit": "Edit",
 				"archive": "Archive",
+				"archiveConfirm": {
+					"title": "Archive {plan}?",
+					"body": "Current subscribers keep their plan and price. New sign-ups, plan switches and revivals into this plan stop.",
+					"cta": "Archive plan"
+				},
 				"badge": {
 					"online": "Online · Stripe",
 					"offline": "Offline · manual",
@@ -3317,7 +3339,8 @@
 					"title": "Delete plan",
 					"body": "This permanently deletes the plan. If subscribers exist, archive it instead.",
 					"inUse": "This plan has subscribers and can't be deleted — archive it instead.",
-					"archiveInstead": "Archive instead"
+					"archiveInstead": "Archive instead",
+					"confirmMessage": "Delete \"{name}\"?"
 				},
 				"form": {
 					"create": "Create plan",
@@ -3329,6 +3352,7 @@
 					"periodUnit": "Period",
 					"periodCount": "Every",
 					"isActive": "Active (available for new subscriptions)",
+					"isActiveHelp": "Unchecking archives the plan: existing subscribers are unaffected, but no one new can join, switch or revive into it.",
 					"errors": {
 						"nameRequired": "Name is required",
 						"priceInvalid": "Price must be 0 or more",
@@ -3352,7 +3376,8 @@
 				"errors": {
 					"createFailed": "Failed to create plan: {detail}",
 					"updateFailed": "Failed to update plan: {detail}",
-					"archiveFailed": "Failed to archive plan: {detail}"
+					"archiveFailed": "Failed to archive plan: {detail}",
+					"deleteFailed": "Couldn't delete this plan."
 				}
 			},
 			"subscriptions": {
@@ -3389,7 +3414,26 @@
 					"pause": "Pause",
 					"resume": "Resume",
 					"cancel": "Cancel",
+					"uncancel": "Undo cancellation",
+					"uncancelling": "Undoing…",
+					"uncancelDone": "Renewal restored.",
 					"onlinePayments": "Payments for this subscription arrive automatically via Stripe.",
+					"pauseBlockedByCancel": "Pause isn't available while a cancellation is scheduled — Undo cancellation first.",
+					"pauseConfirmTitle": "Pause this subscription?",
+					"pauseConfirmBody": "Billing stops and the member loses members-only access until you resume.",
+					"pauseConfirmPendingSwitch": "Any scheduled plan change is dropped.",
+					"pauseConfirmCta": "Pause subscription",
+					"pauseConfirmDismiss": "Don't pause",
+					"errors": {
+						"load": "Couldn't load this subscription.",
+						"loadPayments": "Couldn't load the payments for this subscription.",
+						"recordPayment": "Couldn't record the payment.",
+						"cancel": "Couldn't cancel this subscription.",
+						"pause": "Couldn't pause this subscription.",
+						"resume": "Couldn't resume this subscription.",
+						"uncancel": "Couldn't undo the scheduled cancellation.",
+						"refund": "Couldn't refund this payment."
+					},
 					"revive": "Revive",
 					"reviveDone": "Subscription revived",
 					"reviveOfflineTitle": "Revive subscription",
@@ -3401,6 +3445,7 @@
 					"paymentsEmpty": "No payments yet.",
 					"refund": "Refund",
 					"manageOnStripe": "Manage on Stripe",
+					"checkoutOnStripe": "View checkout on Stripe",
 					"paymentOnStripe": "View on Stripe",
 					"onlineRefundNote": "Refunds for online payments are issued from the Stripe Dashboard — they are recorded here automatically.",
 					"partiallyRefunded": "({amount} {currency} refunded)",
@@ -3417,6 +3462,7 @@
 					"immediate": "Immediately",
 					"immediateDesc": "Access is revoked now. No refund is issued automatically.",
 					"immediateConfirm": "I understand access is revoked immediately.",
+					"pendingSwitchDropped": "Their scheduled plan change will be dropped.",
 					"keep": "Keep subscription",
 					"confirm": "Confirm cancellation"
 				},
@@ -5008,6 +5054,12 @@
 	"membershipPlans": {
 		"heading": "Membership",
 		"subscribeCta": "Subscribe",
+		"yourPlan": "Your plan",
+		"yourPlanHelper": "You're subscribed to this plan.",
+		"pendingCheckoutHelper": "Your payment isn't finished yet — resume it from your account.",
+		"alreadySubscribed": "You already have a subscription with this organization.",
+		"changePlanCta": "Change plan",
+		"changePlanCtaAria": "Change plan: switch to {plan}",
 		"loginToSubscribe": "Log in to subscribe",
 		"soldOut": "Sold out",
 		"soldOutHelper": "All spots are taken — one may free up if a membership ends.",
@@ -5641,6 +5693,7 @@
 		"title": "Delete Membership Tier",
 		"confirmMessage": "Are you sure you want to delete \"{name}\"?",
 		"consequence": "All members assigned to this tier will have their tier removed. This action cannot be undone.",
+		"plansCascade": "Any subscription plans under this tier are deleted with it.",
 		"cancel": "Cancel",
 		"confirm": "Delete Tier"
 	},
@@ -6533,9 +6586,15 @@
 			"cancel": "Cancel membership",
 			"resumePayment": "Resume payment",
 			"portalError": "Could not open the billing portal. Please try again.",
-			"resumeError": "Could not resume the payment. Please try again."
+			"resumeError": "Could not resume the payment. Please try again.",
+			"uncancel": "Resume renewal",
+			"uncancelling": "Resuming renewal…",
+			"uncancelSuccess": "Renewal is back on.",
+			"uncancelError": "Could not resume the renewal. Please try again."
 		},
-		"cancelScheduledHint": "Renewal is off. To keep your membership, contact the organization.",
+		"cancelScheduledHint": "Renewal is off. Resume it any time before this date to keep your membership.",
+		"cancelScheduledHintManaged": "Renewal is off. To keep your membership, contact the organization.",
+		"pausedHint": "Paused by the organization — contact them to resume.",
 		"rejoin": {
 			"title": "Your membership at {org} has expired",
 			"body": "It expired on {expired}. You can rejoin until {deadline}.",
@@ -6584,6 +6643,8 @@
 		"memberBadgeAriaLabel": "You are a member of this organization",
 		"memberStatusAriaLabel": "Membership status: {status}",
 		"memberTierAriaLabel": "Membership tier: {tier}",
+		"loadError": "Couldn't load your join options.",
+		"retryLoad": "Try again",
 		"reason": {
 			"blacklisted": "You can't join this organization.",
 			"requires_verification": "Your account needs to be verified before you can join.",
@@ -6597,6 +6658,7 @@
 			"membership_questionnaire_missing": "This organization asks new members to fill in a questionnaire first.",
 			"membership_questionnaire_failed": "Your questionnaire wasn't approved.",
 			"membership_questionnaire_retake_cooldown": "You can retake the questionnaire later.",
+			"membership_questionnaire_attempts_exhausted": "You've used all your attempts for this questionnaire.",
 			"requires_approval": "Membership requests are approved by the organization.",
 			"requires_invitation": "Joining is by invitation — ask the organization for an invite link.",
 			"duplicate_active_subscription": "You already have an active subscription with this organization.",
@@ -6619,6 +6681,8 @@
 		"cancel": "Cancel",
 		"completedTitle": "You're in!",
 		"completedBody": "You're now a member of {orgName}.",
+		"alreadyMemberTitle": "You're already a member",
+		"alreadyMemberBody": "Your membership at {orgName} is already active.",
 		"pendingTitle": "Application received",
 		"pendingBody": "The organization has your application — here's what happens next:",
 		"trackLink": "Track your application",
@@ -6640,10 +6704,13 @@
 		"periodEnd": "At the end of the current period",
 		"periodEndHintDated": "You keep access until {date}. No further charges.",
 		"periodEndHint": "You keep access until the end of the paid period. No further charges.",
+		"rejoinAfterEnd": "Rejoining later means starting a new subscription.",
 		"immediate": "Immediately",
-		"immediateHint": "Your membership ends right away.",
+		"immediateHint": "Your membership ends right away. Remaining paid time is not refunded automatically.",
 		"immediateConfirm": "I understand my membership ends immediately.",
 		"refundPolicy": "Refund policy",
+		"refundPolicyPointer": "See the refund policy below.",
+		"pendingSwitchDropped": "Your scheduled switch to {plan} will be dropped.",
 		"keepCta": "Keep membership",
 		"confirmCta": "Cancel membership",
 		"cancelling": "Cancelling…",
@@ -6679,6 +6746,23 @@
 			"months": "{n} months",
 			"year": "year",
 			"years": "{n} years"
+		},
+		"billing": {
+			"title": "How billing works",
+			"renewal": "Your membership renews automatically each period until you cancel, and we email a reminder a few days before each renewal.",
+			"failedPayment": {
+				"one": "If a renewal payment fails, you keep access for {days} day after the period ends while the payment is retried, then the membership expires.",
+				"other": "If a renewal payment fails, you keep access for {days} days after the period ends while the payment is retried, then the membership expires.",
+				"none": "If a renewal payment fails, the membership expires as soon as the period ends — there is no grace period.",
+				"unknown": "If a renewal payment fails, you keep access for a short grace period while the payment is retried, then the membership expires."
+			},
+			"cancelling": "You can cancel any time: access runs to the end of the period you've already paid for, and an immediate cancellation is not refunded automatically.",
+			"expiry": {
+				"one": "If it expires after a failed payment, you can restart it from your account within {days} day.",
+				"other": "If it expires after a failed payment, you can restart it from your account within {days} days.",
+				"none": "If it expires, it can't be restarted — you'd need to start a new subscription.",
+				"unknown": "If it expires after a failed payment, you may be able to restart it from your account for a limited time."
+			}
 		},
 		"refundPolicy": "Refund policy",
 		"stripeDisclaimer": "Payments are processed securely by Stripe.",
@@ -8443,7 +8527,7 @@
 	"orgSettingsPage.subscriptionPolicy.heading": "Subscription policy",
 	"orgSettingsPage.subscriptionPolicy.description": "Rules for paid memberships: how long a lapsed subscription stays active, and your refund terms.",
 	"orgSettingsPage.subscriptionPolicy.gracePeriodLabel": "Grace period (days)",
-	"orgSettingsPage.subscriptionPolicy.gracePeriodHelp": "Days a subscription with a failed payment stays active before it expires.",
+	"orgSettingsPage.subscriptionPolicy.gracePeriodHelp": "Members keep full access while payment is retried. 0 expires the membership immediately after a failed renewal.",
 	"orgSettingsPage.subscriptionPolicy.revivalWindowLabel": "Revival window (days)",
 	"orgSettingsPage.subscriptionPolicy.revivalWindowHelp": "How long after a subscription expires former members can rejoin without re-applying — at the plan's current price. 0 disables revival.",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyLabel": "Refund policy",

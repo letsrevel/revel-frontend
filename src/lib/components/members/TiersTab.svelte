@@ -1,17 +1,19 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
+	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		organizationadminmembersCreateMembershipTier,
 		organizationadminmembersUpdateMembershipTier,
 		organizationadminmembersDeleteMembershipTier,
-		organizationadminmembersReorderMembershipTiers
+		organizationadminmembersReorderMembershipTiers,
+		organizationadminsubscriptionsListPlans
 	} from '$lib/api/generated/sdk.gen';
 	import type {
 		MembershipTierAdminSchema,
 		OrganizationAdminDetailSchema,
 		OrganizationMemberSchema,
-		OrganizationQuestionnaireInListSchema
+		OrganizationQuestionnaireInListSchema,
+		PlanSchema
 	} from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { backendMessage } from '$lib/utils/api-error-detail';
@@ -118,6 +120,26 @@
 			alert(`Failed to update tier: ${error.message}`);
 		}
 	}));
+
+	// `MembershipSubscriptionPlan.tier` is `on_delete=CASCADE`, and the tier-delete
+	// 409 only fires for PROTECTed applications/subscriptions — so a tier whose plans
+	// have no subscribers takes those plans down with it, silently. Shares the query
+	// key `PlansList` already populates for every tier card on this page, so the
+	// confirm dialog reads the same (usually cached) list rather than guessing.
+	const deletingTierPlansQuery = createQuery(() => ({
+		queryKey: ['organization', organization.slug, 'tier', tierToDelete?.id ?? '', 'plans'],
+		queryFn: async () => {
+			const response = await organizationadminsubscriptionsListPlans({
+				path: { slug: organization.slug, tier_id: tierToDelete?.id ?? '' },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+			if (response.error) throw new Error(m['orgAdmin.members.errors.loadTiers']());
+			return response.data as PlanSchema[];
+		},
+		enabled: deleteConfirmOpen && canManageSubscriptions && !!tierToDelete?.id && !!accessToken
+	}));
+
+	const deletingTierHasPlans = $derived((deletingTierPlansQuery.data ?? []).length > 0);
 
 	// Delete tier mutation
 	const deleteTierMutation = createMutation(() => ({
@@ -423,6 +445,11 @@
 						<p class="text-sm text-muted-foreground">
 							{m['tierDelete.consequence']()}
 						</p>
+						{#if deletingTierHasPlans}
+							<p class="text-sm text-muted-foreground">
+								{m['tierDelete.plansCascade']()}
+							</p>
+						{/if}
 					</div>
 				</div>
 				<div class="flex justify-end gap-2">

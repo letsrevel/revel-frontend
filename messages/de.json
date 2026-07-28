@@ -1362,7 +1362,11 @@
 		"ineligible": "Du bist noch nicht berechtigt",
 		"nextStep": {
 			"request_whitelist": "Eine Verifizierung ist erforderlich, um auf diese Organisation zuzugreifen",
-			"wait_for_whitelist_approval": "Deine Verifizierungsanfrage wird geprüft"
+			"wait_for_whitelist_approval": "Deine Verifizierungsanfrage wird geprüft",
+			"upgrade_membership": "Sieh dir die Mitgliedschaftsoptionen der Organisation an, um zu erfahren, welche Stufen du erhalten kannst."
+		},
+		"reason": {
+			"membership_tier_required": "Dieses Ticket ist bestimmten Mitgliedschaftsstufen vorbehalten."
 		},
 		"rsvpNextStep": "Zur Veranstaltung zusagen",
 		"purchaseTicketNextStep": "Ticket kaufen",
@@ -2754,13 +2758,26 @@
 		"removeConfirmMessage": "Dies wird {name} dauerhaft aus der Organisation entfernen. Diese Aktion kann nicht rückgängig gemacht werden.",
 		"confirmRemove": "Ja, entfernen",
 		"cancelRemove": "Abbrechen",
+		"banConfirmTitle": "{name} sperren?",
+		"banConfirmMessage": "Gesperrte Mitglieder verlieren den Zugang zu allen Veranstaltungen dieser Organisation, auch zu öffentlichen.",
+		"confirmBan": "Ja, Mitglied sperren",
 		"close": "Schließen",
 		"statusExplanation": {
 			"active": "Mitglieder können alle Organisationsveranstaltungen ansehen und daran teilnehmen.",
+			"activeBillingNote": "Das Wiederherstellen der Mitgliedschaft startet die Abrechnung nicht neu – Abonnements werden separat im Tab „Subscriptions“ fortgesetzt.",
 			"paused": "Mitglieder können Veranstaltungen ansehen, aber nicht teilnehmen oder zusagen.",
+			"pausedBillingNote": "Solange die Mitgliedschaft pausiert ist, werden keine weiteren Zahlungen eingezogen.",
+			"pausedScheduledEndNote": "Das Abonnement ist bereits zur Kündigung vorgemerkt und wird deshalb nicht pausiert – es wird bis zum Ende des laufenden Zeitraums weiter abgerechnet.",
 			"cancelled": "Die Mitgliedschaft wurde gekündigt. Dies entspricht keiner aktiven Mitgliedschaft.",
 			"banned": "Mitglieder können keine Organisationsaktivitäten ansehen oder daran teilnehmen."
 		}
+	},
+	"membershipLoss": {
+		"subscriptionCancelledPlan": "Das Mitgliedschafts-Abonnement „{plan}“ ({price}) wird sofort gekündigt und die wiederkehrende Abrechnung endet. Es wird keine Erstattung automatisch ausgelöst.",
+		"subscriptionStatusNote": "Aktueller Abonnementstatus: {status}.",
+		"subscriptionPeriodEnds": "Der laufende Abrechnungszeitraum läuft bis {date}.",
+		"subscriptionCancelledIfAny": "Falls diese Person ein Mitgliedschafts-Abonnement bei dieser Organisation hat, wird es sofort gekündigt und die wiederkehrende Abrechnung endet. Es wird keine Erstattung automatisch ausgelöst.",
+		"subscriptionCancelledOnMatch": "Falls dieser Eintrag zu einem Konto mit einem Mitgliedschafts-Abonnement bei dieser Organisation passt – jetzt oder wenn er später mit dem Konto verknüpft wird –, wird dieses Abonnement gekündigt und die wiederkehrende Abrechnung endet. Es wird keine Erstattung automatisch ausgelöst."
 	},
 	"memberBadge": {
 		"member": "Mitglied",
@@ -3298,6 +3315,11 @@
 				"archived": "Archiviert",
 				"edit": "Bearbeiten",
 				"archive": "Archivieren",
+				"archiveConfirm": {
+					"title": "{plan} archivieren?",
+					"body": "Bestehende Abonnent*innen behalten Plan und Preis. Neue Anmeldungen, Planwechsel und Reaktivierungen in diesen Plan sind nicht mehr möglich.",
+					"cta": "Plan archivieren"
+				},
 				"badge": {
 					"online": "Online · Stripe",
 					"offline": "Offline · manuell",
@@ -3317,7 +3339,8 @@
 					"title": "Plan löschen",
 					"body": "Damit wird der Plan endgültig gelöscht. Wenn es Abonnent*innen gibt, archiviere ihn stattdessen.",
 					"inUse": "Dieser Plan hat Abonnent*innen und kann nicht gelöscht werden — archiviere ihn stattdessen.",
-					"archiveInstead": "Stattdessen archivieren"
+					"archiveInstead": "Stattdessen archivieren",
+					"confirmMessage": "\"{name}\" löschen?"
 				},
 				"form": {
 					"create": "Plan erstellen",
@@ -3329,6 +3352,7 @@
 					"periodUnit": "Zeitraum",
 					"periodCount": "Alle",
 					"isActive": "Aktiv (für neue Abonnements verfügbar)",
+					"isActiveHelp": "Abwählen archiviert den Plan: Bestehende Abonnent*innen bleiben unberührt, aber niemand kann neu beitreten, wechseln oder reaktivieren.",
 					"errors": {
 						"nameRequired": "Name ist erforderlich",
 						"priceInvalid": "Der Preis muss 0 oder höher sein",
@@ -3352,7 +3376,8 @@
 				"errors": {
 					"createFailed": "Plan konnte nicht erstellt werden: {detail}",
 					"updateFailed": "Plan konnte nicht aktualisiert werden: {detail}",
-					"archiveFailed": "Plan konnte nicht archiviert werden: {detail}"
+					"archiveFailed": "Plan konnte nicht archiviert werden: {detail}",
+					"deleteFailed": "Dieser Plan konnte nicht gelöscht werden."
 				}
 			},
 			"subscriptions": {
@@ -3389,7 +3414,26 @@
 					"pause": "Pausieren",
 					"resume": "Fortsetzen",
 					"cancel": "Kündigen",
+					"uncancel": "Kündigung zurücknehmen",
+					"uncancelling": "Wird zurückgenommen…",
+					"uncancelDone": "Verlängerung wiederhergestellt.",
 					"onlinePayments": "Zahlungen für dieses Abonnement gehen automatisch über Stripe ein.",
+					"pauseBlockedByCancel": "Pausieren ist nicht möglich, solange eine Kündigung vorgemerkt ist – nimm die Kündigung zuerst zurück.",
+					"pauseConfirmTitle": "Dieses Abonnement pausieren?",
+					"pauseConfirmBody": "Die Abrechnung stoppt und das Mitglied verliert den Zugang zu Mitglieder-Inhalten, bis du fortsetzt.",
+					"pauseConfirmPendingSwitch": "Ein vorgemerkter Planwechsel wird verworfen.",
+					"pauseConfirmCta": "Abonnement pausieren",
+					"pauseConfirmDismiss": "Nicht pausieren",
+					"errors": {
+						"load": "Dieses Abonnement konnte nicht geladen werden.",
+						"loadPayments": "Die Zahlungen zu diesem Abonnement konnten nicht geladen werden.",
+						"recordPayment": "Die Zahlung konnte nicht erfasst werden.",
+						"cancel": "Dieses Abonnement konnte nicht gekündigt werden.",
+						"pause": "Dieses Abonnement konnte nicht pausiert werden.",
+						"resume": "Dieses Abonnement konnte nicht fortgesetzt werden.",
+						"uncancel": "Die vorgemerkte Kündigung konnte nicht zurückgenommen werden.",
+						"refund": "Diese Zahlung konnte nicht erstattet werden."
+					},
 					"revive": "Reaktivieren",
 					"reviveDone": "Abonnement reaktiviert",
 					"reviveOfflineTitle": "Abonnement reaktivieren",
@@ -3401,6 +3445,7 @@
 					"paymentsEmpty": "Noch keine Zahlungen.",
 					"refund": "Erstatten",
 					"manageOnStripe": "In Stripe verwalten",
+					"checkoutOnStripe": "Checkout in Stripe ansehen",
 					"paymentOnStripe": "In Stripe ansehen",
 					"onlineRefundNote": "Erstattungen für Online-Zahlungen nimmst du im Stripe-Dashboard vor — sie werden hier automatisch erfasst.",
 					"partiallyRefunded": "({amount} {currency} erstattet)",
@@ -3417,6 +3462,7 @@
 					"immediate": "Sofort",
 					"immediateDesc": "Der Zugang wird sofort entzogen. Es wird keine Erstattung automatisch ausgelöst.",
 					"immediateConfirm": "Mir ist klar, dass der Zugang sofort entzogen wird.",
+					"pendingSwitchDropped": "Der vorgemerkte Planwechsel wird verworfen.",
 					"keep": "Abonnement behalten",
 					"confirm": "Kündigung bestätigen"
 				},
@@ -5008,6 +5054,12 @@
 	"membershipPlans": {
 		"heading": "Mitgliedschaft",
 		"subscribeCta": "Abonnieren",
+		"yourPlan": "Dein Plan",
+		"yourPlanHelper": "Du hast diesen Plan abonniert.",
+		"pendingCheckoutHelper": "Deine Zahlung ist noch nicht abgeschlossen — setze sie in deinem Konto fort.",
+		"alreadySubscribed": "Du hast bereits ein Abo bei dieser Organisation.",
+		"changePlanCta": "Plan wechseln",
+		"changePlanCtaAria": "Plan wechseln: zu {plan} wechseln",
 		"loginToSubscribe": "Zum Abonnieren anmelden",
 		"soldOut": "Ausverkauft",
 		"soldOutHelper": "Alle Plätze sind vergeben — einer wird eventuell frei, wenn eine Mitgliedschaft endet.",
@@ -5641,6 +5693,7 @@
 		"title": "Mitgliedschaftsstufe löschen",
 		"confirmMessage": "Möchtest du wirklich \"{name}\" löschen?",
 		"consequence": "Allen Mitgliedern, die dieser Stufe zugewiesen sind, wird die Stufe entfernt. Diese Aktion kann nicht rückgängig gemacht werden.",
+		"plansCascade": "Alle Abo-Pläne unter dieser Stufe werden mit gelöscht.",
 		"cancel": "Abbrechen",
 		"confirm": "Stufe löschen"
 	},
@@ -6533,9 +6586,15 @@
 			"cancel": "Mitgliedschaft kündigen",
 			"resumePayment": "Zahlung fortsetzen",
 			"portalError": "Das Zahlungsportal konnte nicht geöffnet werden. Bitte versuche es erneut.",
-			"resumeError": "Die Zahlung konnte nicht fortgesetzt werden. Bitte versuche es erneut."
+			"resumeError": "Die Zahlung konnte nicht fortgesetzt werden. Bitte versuche es erneut.",
+			"uncancel": "Verlängerung fortsetzen",
+			"uncancelling": "Wird fortgesetzt…",
+			"uncancelSuccess": "Die Verlängerung ist wieder aktiv.",
+			"uncancelError": "Die Verlängerung konnte nicht fortgesetzt werden. Bitte versuche es erneut."
 		},
-		"cancelScheduledHint": "Die Verlängerung ist deaktiviert. Um deine Mitgliedschaft zu behalten, wende dich an die Organisation.",
+		"cancelScheduledHint": "Die Verlängerung ist deaktiviert. Du kannst sie bis zu diesem Datum jederzeit wieder aktivieren.",
+		"cancelScheduledHintManaged": "Die Verlängerung ist deaktiviert. Um deine Mitgliedschaft zu behalten, wende dich an die Organisation.",
+		"pausedHint": "Von der Organisation pausiert — wende dich an sie, um die Mitgliedschaft fortzusetzen.",
 		"rejoin": {
 			"title": "Deine Mitgliedschaft bei {org} ist abgelaufen",
 			"body": "Sie ist am {expired} abgelaufen. Du kannst bis {deadline} wieder beitreten.",
@@ -6584,6 +6643,8 @@
 		"memberBadgeAriaLabel": "Du bist Mitglied dieser Organisation",
 		"memberStatusAriaLabel": "Mitgliedschaftsstatus: {status}",
 		"memberTierAriaLabel": "Mitgliedschaftsstufe: {tier}",
+		"loadError": "Beitrittsoptionen konnten nicht geladen werden.",
+		"retryLoad": "Erneut versuchen",
 		"reason": {
 			"blacklisted": "Du kannst dieser Organisation nicht beitreten.",
 			"requires_verification": "Dein Konto muss verifiziert werden, bevor du beitreten kannst.",
@@ -6597,6 +6658,7 @@
 			"membership_questionnaire_missing": "Diese Organisation bittet neue Mitglieder, zuerst einen Fragebogen auszufüllen.",
 			"membership_questionnaire_failed": "Dein Fragebogen wurde nicht genehmigt.",
 			"membership_questionnaire_retake_cooldown": "Du kannst den Fragebogen später erneut ausfüllen.",
+			"membership_questionnaire_attempts_exhausted": "Du hast alle Versuche für diesen Fragebogen aufgebraucht.",
 			"requires_approval": "Mitgliedschaftsanträge werden von der Organisation genehmigt.",
 			"requires_invitation": "Der Beitritt erfolgt per Einladung — frag die Organisator*innen nach einem Einladungslink.",
 			"duplicate_active_subscription": "Du hast bereits ein aktives Abo bei dieser Organisation.",
@@ -6619,6 +6681,8 @@
 		"cancel": "Abbrechen",
 		"completedTitle": "Du bist dabei!",
 		"completedBody": "Du bist jetzt Mitglied bei {orgName}.",
+		"alreadyMemberTitle": "Du bist bereits Mitglied",
+		"alreadyMemberBody": "Deine Mitgliedschaft bei {orgName} ist bereits aktiv.",
 		"pendingTitle": "Bewerbung eingegangen",
 		"pendingBody": "Die Organisation hat deine Bewerbung — so geht es weiter:",
 		"trackLink": "Deine Bewerbung verfolgen",
@@ -6640,10 +6704,13 @@
 		"periodEnd": "Zum Ende des laufenden Zeitraums",
 		"periodEndHintDated": "Du behältst den Zugang bis {date}. Keine weiteren Abbuchungen.",
 		"periodEndHint": "Du behältst den Zugang bis zum Ende des bezahlten Zeitraums. Keine weiteren Abbuchungen.",
+		"rejoinAfterEnd": "Ein späterer Wiedereintritt bedeutet ein neues Abonnement.",
 		"immediate": "Sofort",
-		"immediateHint": "Deine Mitgliedschaft endet sofort.",
+		"immediateHint": "Deine Mitgliedschaft endet sofort. Für die verbleibende bezahlte Zeit wird keine Erstattung automatisch ausgelöst.",
 		"immediateConfirm": "Mir ist klar, dass meine Mitgliedschaft sofort endet.",
 		"refundPolicy": "Rückerstattungsrichtlinie",
+		"refundPolicyPointer": "Siehe die Rückerstattungsrichtlinie unten.",
+		"pendingSwitchDropped": "Dein geplanter Wechsel zu {plan} wird verworfen.",
 		"keepCta": "Mitgliedschaft behalten",
 		"confirmCta": "Mitgliedschaft kündigen",
 		"cancelling": "Wird gekündigt…",
@@ -6679,6 +6746,23 @@
 			"months": "alle {n} Monate",
 			"year": "jährlich",
 			"years": "alle {n} Jahre"
+		},
+		"billing": {
+			"title": "So funktioniert die Abrechnung",
+			"renewal": "Deine Mitgliedschaft verlängert sich in jedem Zeitraum automatisch, bis du kündigst — ein paar Tage vor jeder Verlängerung erinnern wir dich per E-Mail.",
+			"failedPayment": {
+				"one": "Schlägt eine Verlängerungszahlung fehl, behältst du nach Ende des Zeitraums noch {days} Tag Zugang, während die Zahlung erneut versucht wird; danach läuft die Mitgliedschaft ab.",
+				"other": "Schlägt eine Verlängerungszahlung fehl, behältst du nach Ende des Zeitraums noch {days} Tage Zugang, während die Zahlung erneut versucht wird; danach läuft die Mitgliedschaft ab.",
+				"none": "Schlägt eine Verlängerungszahlung fehl, läuft die Mitgliedschaft sofort mit dem Ende des Zeitraums ab — es gibt keine Nachfrist.",
+				"unknown": "Schlägt eine Verlängerungszahlung fehl, behältst du für eine kurze Nachfrist Zugang, während die Zahlung erneut versucht wird; danach läuft die Mitgliedschaft ab."
+			},
+			"cancelling": "Du kannst jederzeit kündigen: Der Zugang läuft bis zum Ende des bereits bezahlten Zeitraums, und eine sofortige Kündigung wird nicht automatisch erstattet.",
+			"expiry": {
+				"one": "Läuft sie nach einer fehlgeschlagenen Zahlung ab, kannst du sie innerhalb von {days} Tag in deinem Konto neu starten.",
+				"other": "Läuft sie nach einer fehlgeschlagenen Zahlung ab, kannst du sie innerhalb von {days} Tagen in deinem Konto neu starten.",
+				"none": "Läuft sie ab, lässt sie sich nicht neu starten — du müsstest ein neues Abo abschließen.",
+				"unknown": "Läuft sie nach einer fehlgeschlagenen Zahlung ab, kannst du sie unter Umständen für begrenzte Zeit in deinem Konto neu starten."
+			}
 		},
 		"refundPolicy": "Rückerstattungsrichtlinie",
 		"stripeDisclaimer": "Zahlungen werden sicher über Stripe abgewickelt.",
@@ -8443,7 +8527,7 @@
 	"orgSettingsPage.subscriptionPolicy.heading": "Abonnement-Richtlinie",
 	"orgSettingsPage.subscriptionPolicy.description": "Regeln für kostenpflichtige Mitgliedschaften: wie lange ein überfälliges Abonnement aktiv bleibt und deine Rückerstattungsbedingungen.",
 	"orgSettingsPage.subscriptionPolicy.gracePeriodLabel": "Kulanzzeitraum (Tage)",
-	"orgSettingsPage.subscriptionPolicy.gracePeriodHelp": "Tage, die ein Abonnement mit fehlgeschlagener Zahlung aktiv bleibt, bevor es abläuft.",
+	"orgSettingsPage.subscriptionPolicy.gracePeriodHelp": "Mitglieder behalten vollen Zugang, während die Zahlung erneut versucht wird. 0 lässt die Mitgliedschaft direkt nach einer fehlgeschlagenen Verlängerung ablaufen.",
 	"orgSettingsPage.subscriptionPolicy.revivalWindowLabel": "Wiederaufnahme-Zeitraum (Tage)",
 	"orgSettingsPage.subscriptionPolicy.revivalWindowHelp": "Wie lange nach Ablauf eines Abonnements ehemalige Mitglieder wieder beitreten können, ohne sich neu zu bewerben — zum aktuellen Preis des Plans. 0 deaktiviert die Wiederaufnahme.",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyLabel": "Rückerstattungsrichtlinie",

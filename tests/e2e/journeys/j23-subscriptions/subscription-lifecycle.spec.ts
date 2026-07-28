@@ -103,8 +103,17 @@ test.describe('J23 subscription lifecycle @p2', () => {
 		await expect(card.getByText('€15.00 / month')).toBeVisible();
 		await expect(card.getByLabel('Active')).toBeVisible();
 
-		// Admin pauses → the member-facing badge follows.
+		// Admin pauses → the member-facing badge follows. Pause is confirmation-gated
+		// (it also cuts members-only access, not just billing), so the drawer button
+		// only opens the dialog.
 		await drawer.getByRole('button', { name: 'Pause', exact: true }).click();
+		const pauseDialog = admin.getByRole('dialog', { name: 'Pause this subscription?' });
+		await expect(pauseDialog).toBeVisible({ timeout: 10_000 });
+		await expect(
+			pauseDialog.getByText(/loses members-only access until you resume/i)
+		).toBeVisible();
+		await pauseDialog.getByRole('button', { name: 'Pause subscription' }).click();
+		await expect(pauseDialog).toBeHidden({ timeout: 15_000 });
 		await expect(drawer.getByLabel('Paused')).toBeVisible({ timeout: 15_000 });
 		await gotoHydrated(memberPage, '/account/memberships');
 		await waitForClientAuth(memberPage);

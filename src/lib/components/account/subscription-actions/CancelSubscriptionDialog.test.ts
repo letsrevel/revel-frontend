@@ -8,9 +8,11 @@ import CancelSubscriptionDialog from './CancelSubscriptionDialog.svelte';
 
 const cancelMock = vi.hoisted(() => vi.fn());
 const orgMock = vi.hoisted(() => vi.fn());
+const plansMock = vi.hoisted(() => vi.fn());
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	mesubscriptionsCancelSubscription: cancelMock,
-	organizationGetOrganization: orgMock
+	organizationGetOrganization: orgMock,
+	organizationListMembershipPlans: plansMock
 }));
 vi.mock('$lib/stores/auth.svelte', () => ({ authStore: { accessToken: 'tok' } }));
 
@@ -54,6 +56,9 @@ beforeEach(() => {
 		data: { membership_refund_policy: 'No refunds after 14 days.' },
 		error: undefined
 	});
+	plansMock
+		.mockReset()
+		.mockResolvedValue({ data: [{ id: 'p2', name: 'Yearly' }], error: undefined });
 });
 
 describe('CancelSubscriptionDialog', () => {
@@ -103,6 +108,64 @@ describe('CancelSubscriptionDialog', () => {
 	it('renders the refund policy fetched from the public org endpoint', async () => {
 		renderDialog();
 		expect(await screen.findByText(/no refunds after 14 days/i)).toBeInTheDocument();
+	});
+
+	// The backend never refunds on cancel (refunds are staff-initiated only), so
+	// "ends right away" on its own reads as if the unused time comes back.
+	it('warns that the remaining paid time is not refunded automatically', () => {
+		renderDialog();
+		expect(
+			screen.getByText(/remaining paid time is not refunded automatically/i)
+		).toBeInTheDocument();
+	});
+
+	it('points at the refund policy only once one has actually loaded', async () => {
+		renderDialog();
+		expect(await screen.findByText(/see the refund policy below/i)).toBeInTheDocument();
+	});
+
+	// Pointing at a <details> the org never authored would send the member looking
+	// for something that is not on screen.
+	it('omits the refund-policy pointer when the organization has no policy', async () => {
+		orgMock.mockResolvedValue({ data: { membership_refund_policy: null }, error: undefined });
+		renderDialog();
+		await waitFor(() => expect(orgMock).toHaveBeenCalled());
+		expect(screen.queryByText(/see the refund policy below/i)).toBeNull();
+		expect(screen.queryByText(/refund policy/i)).toBeNull();
+	});
+
+	// A period-end cancel terminalizes as CANCELLED with `expired_at` unset, and
+	// the backend only revives EXPIRED rows — so there is no rejoin window.
+	it('says a period-end cancellation cannot be revived later', () => {
+		renderDialog();
+		expect(
+			screen.getByText(/rejoining later means starting a new subscription/i)
+		).toBeInTheDocument();
+	});
+
+	it('names the queued plan change that cancelling will drop', async () => {
+		renderDialog({ sub: { ...(sub as object), pending_plan_id: 'p2' } });
+		expect(
+			await screen.findByText('Your scheduled switch to Yearly will be dropped.')
+		).toBeInTheDocument();
+		await waitFor(() =>
+			expect(plansMock).toHaveBeenCalledWith(expect.objectContaining({ path: { slug: 'org' } }))
+		);
+	});
+
+	it('still warns about the dropped switch when the plan catalogue fails to load', async () => {
+		plansMock.mockResolvedValue({ data: undefined, error: { detail: 'boom' } });
+		renderDialog({ sub: { ...(sub as object), pending_plan_id: 'p2' } });
+		expect(
+			await screen.findByText('Your scheduled switch to another plan will be dropped.')
+		).toBeInTheDocument();
+	});
+
+	it('says nothing about a dropped switch when none is queued', async () => {
+		renderDialog();
+		await waitFor(() => expect(orgMock).toHaveBeenCalled());
+		expect(screen.queryByText(/will be dropped/i)).toBeNull();
+		expect(plansMock).not.toHaveBeenCalled();
 	});
 
 	// #693: the cancel 200 is the only snapshot guaranteed to describe what the

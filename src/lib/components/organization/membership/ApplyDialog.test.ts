@@ -73,11 +73,11 @@ function mockApplySuccess(result: ApplyResponseSchema) {
 	} as unknown as Awaited<ReturnType<typeof memembershipapplicationsApply>>);
 }
 
-function mockApplyError(error: unknown) {
+function mockApplyError(error: unknown, status = 400) {
 	vi.mocked(memembershipapplicationsApply).mockResolvedValue({
 		data: undefined,
 		error,
-		response: { ok: false } as unknown as Response
+		response: { ok: false, status } as unknown as Response
 	} as unknown as Awaited<ReturnType<typeof memembershipapplicationsApply>>);
 }
 
@@ -299,6 +299,46 @@ describe('ApplyDialog', () => {
 		});
 		expect(invalidateSpy).toHaveBeenCalledWith({
 			queryKey: ['org', 'acme', 'join-eligibility']
+		});
+	});
+
+	// The apply endpoint answers 409 (`already_active_member`) for a caller who is
+	// already ACTIVE at the target tier, instead of minting a junk application row.
+	// The eligibility verdict covers that case and hides the Join CTA, so a 409 only
+	// reaches us on a stale verdict — a race backstop, not a retryable failure.
+	describe('when the backend refuses with 409 because the caller is already a member', () => {
+		it('shows a terminal already-member panel instead of a retryable form error', async () => {
+			const user = userEvent.setup();
+			mockApplyError({ detail: 'You are already a member at this tier.' }, 409);
+			renderDialog();
+
+			await user.click(screen.getByRole('button', { name: /send application/i }));
+
+			expect(await screen.findByRole('heading', { name: "You're already a member" })).toBeVisible();
+			expect(screen.getByText('Your membership at Acme is already active.')).toBeInTheDocument();
+			// Retrying would only 409 again, so the form — and the alert that would
+			// invite a retry — must be gone.
+			expect(screen.queryByLabelText(/message \(optional\)/i)).toBeNull();
+			expect(screen.queryByRole('alert')).toBeNull();
+			expect(screen.queryByRole('button', { name: /send application/i })).toBeNull();
+		});
+
+		it('refreshes the stale verdict and the page that rendered the Join CTA', async () => {
+			const user = userEvent.setup();
+			const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+			mockApplyError({ detail: 'You are already a member at this tier.' }, 409);
+			renderDialog();
+
+			await user.click(screen.getByRole('button', { name: /send application/i }));
+
+			await waitFor(() => {
+				expect(invalidateSpy).toHaveBeenCalledWith({
+					queryKey: ['org', 'acme', 'join-eligibility']
+				});
+			});
+			// The server-rendered page behind the dialog still thinks the user is not a
+			// member — same refresh an instant join performs.
+			expect(vi.mocked(invalidateAll)).toHaveBeenCalled();
 		});
 	});
 

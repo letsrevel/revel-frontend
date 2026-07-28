@@ -11,6 +11,8 @@
 	import { Select, SelectContent, SelectItem, SelectTrigger } from '$lib/components/ui/select';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Loader2, UserCog, UserX, AlertTriangle, Ban } from '@lucide/svelte';
+	import { formatPlanPrice } from '$lib/utils/subscriptions';
+	import { formatDate } from '$lib/utils/date';
 
 	interface Props {
 		member: OrganizationMemberSchema | null;
@@ -51,6 +53,7 @@
 	let selectedTierId = $state<string | null>(null);
 	let showRemoveConfirm = $state(false);
 	let showBlacklistConfirm = $state(false);
+	let showBanConfirm = $state(false);
 	let blacklistReason = $state('');
 
 	// Sync form state with member prop
@@ -60,6 +63,7 @@
 			selectedTierId = member.tier?.id || null;
 			showRemoveConfirm = false;
 			showBlacklistConfirm = false;
+			showBanConfirm = false;
 			blacklistReason = '';
 		}
 	});
@@ -82,8 +86,60 @@
 	// Statuses
 	const statuses: MembershipStatus[] = ['active', 'paused', 'cancelled', 'banned'];
 
+	// Ban / blacklist / remove cancel the member's subscription and stop billing
+	// server-side — and since BE `d3773257` (`_mirror_status_to_subscriptions`) so
+	// does setting the status to *cancelled*, while *paused* pauses collection. The
+	// backend inlines that subscription on the member row, already scoped to this
+	// organization and filtered to non-terminal statuses (BE `e37fe2a5`), so a
+	// non-null value means "there is live billing to lose" — and a null one means the
+	// member pays nothing, so no billing sentence is shown at all.
+	const subscription = $derived(member?.subscription ?? null);
+
+	// The period end is only meaningful while the subscription is still being billed
+	// on a schedule; on a paused or never-paid (pending) row the stored value is
+	// stale or absent, so it would mislead rather than inform.
+	const billingPeriodEnd = $derived(
+		subscription && (subscription.status === 'active' || subscription.status === 'past_due')
+			? (subscription.current_period_end ?? null)
+			: null
+	);
+
+	// Banning also cancels the member's subscription and stops billing on the
+	// backend, so the transition *to* banned needs an explicit confirmation.
+	// Tier edits and the other statuses stay one-click.
+	const isBanTransition = $derived(
+		!!member && selectedStatus === 'banned' && member.status !== 'banned'
+	);
+
+	// The billing side-effects below belong to the *transition*, not to the status
+	// the member already sits in: re-opening the modal on an already-paused member
+	// must not warn about a pause that happened long ago.
+	const isRestoreTransition = $derived(
+		!!member && selectedStatus === 'active' && member.status !== 'active'
+	);
+	const isPauseTransition = $derived(
+		!!member && selectedStatus === 'paused' && member.status !== 'paused'
+	);
+	// Cancelling is the same money-moving act as a ban (BE treats CANCELLED as
+	// "not a member" and terminalizes the subscription), so it gets the same
+	// disclosure — the shared snippet, not a second sentence saying the same thing.
+	const isCancelTransition = $derived(
+		!!member && selectedStatus === 'cancelled' && member.status !== 'cancelled'
+	);
+
 	function handleSaveChanges() {
 		if (!member) return;
+
+		if (isBanTransition && !showBanConfirm) {
+			showBanConfirm = true;
+			return;
+		}
+
+		commitChanges();
+	}
+
+	function commitChanges() {
+		showBanConfirm = false;
 
 		if (hasStatusChanged) {
 			onUpdateStatus(selectedStatus);
@@ -93,6 +149,20 @@
 			onUpdateTier(selectedTierId);
 		}
 	}
+
+	function handleCancelBan() {
+		showBanConfirm = false;
+	}
+
+	// The confirm panel replaces the "Save Changes" button, so the element that
+	// was focused disappears. Move focus onto the confirm button, otherwise a
+	// keyboard user is dropped back to the top of the dialog.
+	let banConfirmButton = $state<HTMLElement | null>(null);
+	$effect(() => {
+		if (showBanConfirm) {
+			banConfirmButton?.focus();
+		}
+	});
 
 	function handleRemoveClick() {
 		showRemoveConfirm = true;
@@ -137,6 +207,34 @@
 	}
 </script>
 
+<!--
+	The billing consequence of losing membership, stated only when there is billing
+	to lose. Rendered as plain sentences (never colour alone) so the warning survives
+	a screen reader or a monochrome display.
+-->
+{#snippet billingNotice(textClass: string)}
+	{#if subscription}
+		<p class={textClass}>
+			{m['membershipLoss.subscriptionCancelledPlan']({
+				plan: subscription.plan.name,
+				price: formatPlanPrice(subscription.plan)
+			})}
+		</p>
+		{#if subscription.status !== 'active'}
+			<p class={textClass}>
+				{m['membershipLoss.subscriptionStatusNote']({
+					status: m[`subscriptions.status.${subscription.status}`]()
+				})}
+			</p>
+		{/if}
+		{#if billingPeriodEnd}
+			<p class={textClass}>
+				{m['membershipLoss.subscriptionPeriodEnds']({ date: formatDate(billingPeriodEnd) })}
+			</p>
+		{/if}
+	{/if}
+{/snippet}
+
 <Dialog {open} onOpenChange={handleOpenChange}>
 	<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-[500px]">
 		{#if member}
@@ -153,6 +251,8 @@
 						value={selectedStatus}
 						onValueChange={(value) => {
 							selectedStatus = value as MembershipStatus;
+							// Re-picking a status invalidates a pending ban confirmation.
+							showBanConfirm = false;
 						}}
 						disabled={isProcessing}
 					>
@@ -179,12 +279,39 @@
 							{m['manageMemberModal.statusExplanation.banned']()}
 						{/if}
 					</p>
+					<!--
+						What the staged transition does to the member's money. Banned is
+						absent on purpose: it has its own warning box below, and repeating
+						the billing line here would state it twice on one screen.
+					-->
+					{#if isRestoreTransition}
+						<p class="text-sm text-muted-foreground">
+							{m['manageMemberModal.statusExplanation.activeBillingNote']()}
+						</p>
+					{:else if isPauseTransition && subscription}
+						<p class="text-sm text-muted-foreground">
+							{#if subscription.cancel_at_period_end}
+								<!-- The backend skips the pause for a subscription already
+								     scheduled to cancel, so this one keeps billing. -->
+								{m['manageMemberModal.statusExplanation.pausedScheduledEndNote']()}
+							{:else}
+								{m['manageMemberModal.statusExplanation.pausedBillingNote']()}
+							{/if}
+						</p>
+					{:else if isCancelTransition}
+						{@render billingNotice('text-sm text-muted-foreground')}
+					{/if}
 					{#if selectedStatus === 'banned'}
 						<div class="flex gap-2 rounded-md bg-red-50 p-3 text-sm dark:bg-red-950">
 							<AlertTriangle class="h-4 w-4 shrink-0 text-red-600 dark:text-red-400" />
-							<p class="text-red-800 dark:text-red-200">
-								{m['manageMemberModal.bannedWarning']()}
-							</p>
+							<div class="space-y-2 text-red-800 dark:text-red-200">
+								<p>{m['manageMemberModal.bannedWarning']()}</p>
+								<!-- The confirm panel below restates this line, so show it here only
+								     while that panel is closed — never the same sentence twice. -->
+								{#if isBanTransition && !showBanConfirm}
+									{@render billingNotice('')}
+								{/if}
+							</div>
 						</div>
 					{/if}
 				</div>
@@ -217,14 +344,53 @@
 					</Select>
 				</div>
 
-				<!-- Save Changes Button -->
+				<!-- Save Changes Button / Ban Confirmation -->
 				{#if hasChanges}
-					<Button onclick={handleSaveChanges} disabled={isProcessing} class="w-full">
-						{#if isUpdating}
-							<Loader2 class="mr-2 h-4 w-4 animate-spin" />
-						{/if}
-						{m['manageMemberModal.saveChanges']()}
-					</Button>
+					{#if showBanConfirm && isBanTransition}
+						<div class="space-y-2 rounded-lg border border-destructive bg-destructive/10 p-4">
+							<div class="flex gap-2">
+								<AlertTriangle class="h-5 w-5 shrink-0 text-destructive" />
+								<div class="flex-1 space-y-2">
+									<p role="heading" aria-level="4" class="text-sm font-medium text-destructive">
+										{m['manageMemberModal.banConfirmTitle']({ name: displayName })}
+									</p>
+									<p class="text-sm text-destructive/90">
+										{m['manageMemberModal.banConfirmMessage']()}
+									</p>
+									{@render billingNotice('text-sm text-destructive/90')}
+									<div class="flex gap-2">
+										<Button
+											bind:ref={banConfirmButton}
+											variant="destructive"
+											size="sm"
+											onclick={commitChanges}
+											disabled={isProcessing}
+										>
+											{#if isUpdating}
+												<Loader2 class="mr-2 h-4 w-4 animate-spin" />
+											{/if}
+											{m['manageMemberModal.confirmBan']()}
+										</Button>
+										<Button
+											variant="outline"
+											size="sm"
+											onclick={handleCancelBan}
+											disabled={isProcessing}
+										>
+											{m['manageMemberModal.cancel']()}
+										</Button>
+									</div>
+								</div>
+							</div>
+						</div>
+					{:else}
+						<Button onclick={handleSaveChanges} disabled={isProcessing} class="w-full">
+							{#if isUpdating}
+								<Loader2 class="mr-2 h-4 w-4 animate-spin" />
+							{/if}
+							{m['manageMemberModal.saveChanges']()}
+						</Button>
+					{/if}
 				{/if}
 
 				<!-- Divider -->
@@ -275,6 +441,7 @@
 									<p class="text-sm text-destructive/90">
 										{m['manageMemberModal.removeConfirmMessage']({ name: displayName })}
 									</p>
+									{@render billingNotice('text-sm text-destructive/90')}
 									<div class="flex gap-2">
 										<Button
 											variant="destructive"
@@ -331,6 +498,7 @@
 											<p class="text-sm text-red-800 dark:text-red-200">
 												{m['manageMemberModal.blacklistConfirmMessage']()}
 											</p>
+											{@render billingNotice('mt-1 text-sm text-red-800 dark:text-red-200')}
 										</div>
 										<div class="space-y-2">
 											<Label for="blacklist-reason" class="text-sm text-red-900 dark:text-red-100">

@@ -110,6 +110,9 @@
 							{m['blacklistModal.identifierMatchInfo']()}
 						</p>
 						<p class="mt-2 text-amber-800 dark:text-amber-200">
+							{m['membershipLoss.subscriptionCancelledOnMatch']()}
+						</p>
+						<p class="mt-2 text-amber-800 dark:text-amber-200">
 							{m['blacklistModal.gdprPersistInfo']()}
 						</p>
 					</div>

@@ -180,11 +180,12 @@ async function switchPlan(
 }
 
 test.describe('J23 manage subscription @p2', () => {
-	test('downgrade queues at renewal, then cancel-at-period-end dates the card', async ({
+	test('downgrade queues at renewal, cancel-at-period-end dates the card, resume undoes it', async ({
 		browser
 	}) => {
-		// One hosted checkout plus two Stripe round trips on top.
-		test.setTimeout(300_000);
+		// One hosted checkout plus three Stripe round trips on top (downgrade,
+		// cancel-at-period-end, and the uncancel that undoes it).
+		test.setTimeout(360_000);
 
 		const { user, orgId, standard, lite } = await arrangeTwoPlans('SubDowngrade');
 
@@ -238,13 +239,35 @@ test.describe('J23 manage subscription @p2', () => {
 				timeout: 10_000
 			});
 		});
+		// #808: the scheduled cancellation is no longer a dead end — the hint points
+		// at the button beside it instead of telling the member to email the org.
 		await expect(
-			card.getByText('Renewal is off. To keep your membership, contact the organization.')
+			card.getByText('Renewal is off. Resume it any time before this date to keep your membership.')
 		).toBeVisible();
 		await expect(card.getByLabel('Active')).toBeVisible();
 		await expect(card.getByRole('button', { name: 'Cancel membership' })).toBeHidden();
 		await expect(card.getByRole('button', { name: 'Change plan' })).toBeHidden();
 		await expect(card.getByRole('button', { name: 'Manage billing' })).toBeVisible();
+
+		// --- Resume renewal: the way back --------------------------------------
+		// One click, no confirmation dialog: this is the recovery path from an
+		// accidental cancel, so it must not be gated behind another modal.
+		await card.getByRole('button', { name: 'Resume renewal' }).click();
+
+		// Clearing `cancel_at_period_end` goes through Stripe, so the same
+		// webhook-echo race applies as above: converge by reload, not on the
+		// optimistic first paint.
+		await reloadUntil(page, async (settled) => {
+			await expect(settled.getByText(new RegExp(`^Next renewal: .*(${MONTH})`))).toBeVisible({
+				timeout: 10_000
+			});
+		});
+		await expect(card.getByText(/^Cancels on /)).toBeHidden();
+		await expect(card.getByText('Renewal is off.', { exact: false })).toBeHidden();
+		await expect(card.getByRole('button', { name: 'Resume renewal' })).toBeHidden();
+		// The row is fully back: the actions renewal had taken away are offered again.
+		await expect(card.getByRole('button', { name: 'Cancel membership' })).toBeVisible();
+		await expect(card.getByRole('button', { name: 'Change plan' })).toBeVisible();
 
 		await context.close();
 	});
@@ -286,7 +309,13 @@ test.describe('J23 manage subscription @p2', () => {
 		const cancelDialog = page.getByRole('dialog', { name: 'Cancel membership' });
 		await expect(cancelDialog).toBeVisible({ timeout: 15_000 });
 		await cancelDialog.getByRole('radio', { name: 'Immediately' }).check();
-		await expect(cancelDialog.getByText('Your membership ends right away.')).toBeVisible();
+		// The hint must own up to the forfeited paid time: the backend never
+		// refunds on cancel (refunds are staff-initiated only).
+		await expect(
+			cancelDialog.getByText(
+				'Your membership ends right away. Remaining paid time is not refunded automatically.'
+			)
+		).toBeVisible();
 
 		// The acknowledgement gates the destructive button — it is the only
 		// thing standing between a click and irreversible loss of access.

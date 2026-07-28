@@ -15,9 +15,21 @@ vi.mock('$lib/api/generated/sdk.gen', () => ({
 	organizationadminmembersCreateMembershipTier: vi.fn(),
 	organizationadminmembersUpdateMembershipTier: vi.fn(),
 	organizationadminmembersDeleteMembershipTier: vi.fn(),
-	organizationadminmembersReorderMembershipTiers: vi.fn()
+	organizationadminmembersReorderMembershipTiers: vi.fn(),
+	// Pulled in by the cascade check here and by the embedded PlansList once
+	// `canManageSubscriptions` is on; the factory replaces the whole module, so
+	// every transitively imported operation has to be listed.
+	organizationadminsubscriptionsListPlans: vi.fn(),
+	organizationadminsubscriptionsCreatePlan: vi.fn(),
+	organizationadminsubscriptionsUpdatePlan: vi.fn(),
+	organizationadminsubscriptionsDeletePlan: vi.fn(),
+	organizationadminsubscriptionsArchivePlan: vi.fn(),
+	organizationadminsubscriptionsMigratePlanSubscribers: vi.fn()
 }));
-import { organizationadminmembersDeleteMembershipTier } from '$lib/api/generated/sdk.gen';
+import {
+	organizationadminmembersDeleteMembershipTier,
+	organizationadminsubscriptionsListPlans
+} from '$lib/api/generated/sdk.gen';
 
 vi.mock('svelte-sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 import { toast } from 'svelte-sonner';
@@ -30,7 +42,7 @@ const tiers = [
 	{ id: 'tier-1', name: 'Gold', description: null }
 ] as unknown as MembershipTierAdminSchema[];
 
-function renderTab() {
+function renderTab(canManageSubscriptions = false) {
 	const client = new QueryClient({
 		defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
 	});
@@ -44,6 +56,7 @@ function renderTab() {
 				members: [] as OrganizationMemberSchema[],
 				isLoading: false,
 				isError: false,
+				canManageSubscriptions,
 				membershipQuestionnaires: [] as OrganizationQuestionnaireInListSchema[],
 				orgDefaultRequiresApproval: false
 			}
@@ -66,6 +79,67 @@ async function confirmDelete(user: ReturnType<typeof userEvent.setup>) {
 beforeEach(() => {
 	document.body.style.pointerEvents = '';
 	vi.clearAllMocks();
+});
+
+function arrangePlans(plans: unknown[]) {
+	vi.mocked(organizationadminsubscriptionsListPlans).mockResolvedValue({
+		data: plans,
+		error: undefined,
+		response: { ok: true }
+	} as never);
+}
+
+describe('TiersTab delete cascade warning', () => {
+	it('warns that the tier takes its subscription plans down with it', async () => {
+		const user = userEvent.setup();
+		// A whole plan, not a stub: `canManageSubscriptions` mounts PlansList against
+		// this same query, and its price line calls `Intl.NumberFormat` with
+		// `style: 'currency'` — a fixture missing `currency`/`price` throws out of
+		// the render rather than failing an assertion.
+		arrangePlans([
+			{
+				id: 'plan-1',
+				tier_id: 'tier-1',
+				tier_name: 'Gold',
+				name: 'Monthly',
+				description: null,
+				price: '10.00',
+				currency: 'EUR',
+				period_unit: 'month',
+				period_count: 1,
+				payment_method: 'offline',
+				sales_status: 'open',
+				is_active: true,
+				max_subscriptions: null,
+				active_subscription_count: 0
+			}
+		]);
+		renderTab(true);
+
+		await user.click(await screen.findByRole('button', { name: 'Delete Gold' }));
+
+		expect(
+			await screen.findByText('Any subscription plans under this tier are deleted with it.')
+		).toBeInTheDocument();
+	});
+
+	it('omits the cascade warning for a tier with no plans', async () => {
+		const user = userEvent.setup();
+		arrangePlans([]);
+		renderTab(true);
+
+		await user.click(await screen.findByRole('button', { name: 'Delete Gold' }));
+
+		// Anchor on the always-present consequence line so the negative below cannot
+		// pass merely because the dialog has not rendered yet.
+		await screen.findByText(/will have their tier removed/i);
+		await waitFor(() => {
+			expect(organizationadminsubscriptionsListPlans).toHaveBeenCalled();
+		});
+		expect(
+			screen.queryByText('Any subscription plans under this tier are deleted with it.')
+		).not.toBeInTheDocument();
+	});
 });
 
 describe('TiersTab delete', () => {

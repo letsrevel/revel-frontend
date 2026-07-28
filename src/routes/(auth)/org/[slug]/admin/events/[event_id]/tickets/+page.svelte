@@ -715,9 +715,9 @@
 	isOpen={memberAdmin.showBlacklistDialog}
 	title={m['eventTicketsAdmin.blacklistDialogTitle']()}
 	message={memberAdmin.ticketToBlacklist
-		? m['eventTicketsAdmin.blacklistDialogMessage']({
+		? `${m['eventTicketsAdmin.blacklistDialogMessage']({
 				name: getUserDisplayName(memberAdmin.ticketToBlacklist.user)
-			})
+			})} ${m['membershipLoss.subscriptionCancelledIfAny']()}`
 		: ''}
 	confirmText={m['eventTicketsAdmin.blacklistDialogConfirm']()}
 	cancelText={m['eventTicketsAdmin.blacklistDialogCancel']()}

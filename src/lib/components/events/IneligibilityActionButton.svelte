@@ -113,6 +113,7 @@
 			step === 'complete_questionnaire' ||
 			step === 'request_invitation' ||
 			step === 'become_member' ||
+			step === 'upgrade_membership' ||
 			step === 'join_waitlist' ||
 			step === 'request_whitelist' ||
 			step === 'complete_profile'
@@ -144,6 +145,16 @@
 		// Navigation actions
 		if (nextStep === 'become_member') {
 			window.location.href = `/org/${organizationSlug}`;
+			return;
+		}
+
+		// The membership-tier gate (BE #807). It refuses non-members and members on
+		// the wrong tier alike, and the payload names neither the tiers required nor
+		// which of the two the buyer is — so the only honest move is the org's
+		// membership plans, where every tier it offers is listed. Until now this
+		// step fell through every branch and the button did nothing.
+		if (nextStep === 'upgrade_membership') {
+			window.location.href = `/org/${organizationSlug}#membership`;
 			return;
 		}
 

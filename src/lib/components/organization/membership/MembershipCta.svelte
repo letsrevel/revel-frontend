@@ -15,7 +15,16 @@
 	import RetryCountdown from '$lib/components/events/RetryCountdown.svelte';
 	import ApplyDialog from './ApplyDialog.svelte';
 	import { Button } from '$lib/components/ui/button';
-	import { Award, Check, ClipboardList, Clock, Crown, Shield, UserPlus } from '@lucide/svelte';
+	import {
+		Award,
+		Check,
+		ClipboardList,
+		Clock,
+		Crown,
+		RefreshCw,
+		Shield,
+		UserPlus
+	} from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import { resolve } from '$app/paths';
 
@@ -92,6 +101,33 @@
 
 	const eligibility = $derived(eligibilityQuery.data ?? null);
 	const ctaKind = $derived(eligibility ? getMembershipCtaKind(eligibility) : null);
+
+	// `isPending`, not `isLoading` — same distinction as
+	// `routes/(auth)/account/memberships/+page.svelte`: a query that is still
+	// *disabled* reports `isLoading === false`, and `queryEnabled` stays false for
+	// the whole SSR + client-auth-bootstrap window (`accessToken` is null there).
+	// Gating the placeholder on `isLoading` would therefore leave the CTA slot
+	// empty in the server HTML and through hydration — exactly the hole this
+	// branch exists to fill — and only start it once the request was already in
+	// flight. `isPending` covers disabled-and-never-fetched too, so the skeleton
+	// is on screen from first paint until the verdict lands.
+	//
+	// The trade-off is the mirror of that file's: a user the server says is
+	// authenticated whose token never arrives keeps the skeleton forever. Here
+	// `isAuthenticated` comes from the server-rendered page data (guests are
+	// caught by the branch above and never reach this one), so the only way to
+	// sit here is a bootstrap that genuinely has not finished yet.
+	const isVerdictPending = $derived(eligibilityQuery.isPending);
+
+	// A cached failure must not outlive the question. If the props flip to
+	// member/staff/owner (an accepted application calls `invalidateAll()`), the
+	// chain switches to a badge and the stale error line would contradict it.
+	const showLoadError = $derived.by(() => {
+		const failed = eligibilityQuery.isError;
+		const authed = isAuthenticated;
+		const settled = hasServerVerdict;
+		return failed && authed && !settled;
+	});
 
 	const loginHref = $derived(
 		`${resolve('/(public)/login', {})}?returnUrl=${encodeURIComponent(
@@ -235,7 +271,51 @@
 			</p>
 		{/if}
 	</div>
+{:else if isVerdictPending}
+	<!-- Purely decorative: sized like the default Button (h-10) so the verdict
+	     lands without shifting the header, and `aria-hidden` so screen readers are
+	     not told about a box with no content. The failure and success states both
+	     announce themselves, so nothing is lost by staying silent here. -->
+	<div
+		class={cn('h-10 w-40 max-w-full animate-pulse rounded-md bg-muted', className)}
+		aria-hidden="true"
+	></div>
 {/if}
+
+<!--
+	Pre-mounted polite live region (WCAG 2.1 AA §4.1.3), same house pattern as
+	ChangePlanDialog: the failure replaces the placeholder without moving focus,
+	so it would otherwise never be announced — and a live region injected together
+	with its first message is not observed by assistive tech and stays silent. The
+	wrapper therefore lives outside the chain and is `empty:hidden` until it has
+	something to say.
+
+	`retry: false` on the query is deliberate (a rejected verdict is a decision,
+	not a blip, and silent retries would hammer the endpoint on every org page),
+	so this button is the whole recovery path — without it the join CTA never
+	comes back short of a full page reload.
+-->
+<div aria-live="polite" class="empty:hidden">
+	{#if showLoadError}
+		<div class={cn('flex flex-col items-start gap-2', className)}>
+			<p class="text-sm font-medium text-destructive">
+				{m['membershipEligibility.loadError']()}
+			</p>
+			<!-- Not disabled while the retry is in flight: unlike ChangePlanDialog's
+			     footer this button is not inside a focus trap, so disabling the very
+			     control the user just activated would drop focus to <body> (WCAG 2.4.3).
+			     The spinning icon carries the busy state instead, and TanStack collapses
+			     an impatient double-click into one in-flight request. -->
+			<Button variant="outline" size="sm" onclick={() => void eligibilityQuery.refetch()}>
+				<RefreshCw
+					class={cn('h-4 w-4', eligibilityQuery.isFetching && 'animate-spin')}
+					aria-hidden="true"
+				/>
+				{m['membershipEligibility.retryLoad']()}
+			</Button>
+		</div>
+	{/if}
+</div>
 
 <!--
 	Deliberately outside the whole chain above, not just the ctaKind branches: a

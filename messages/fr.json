@@ -1249,7 +1249,11 @@
 		"ineligible": "Tu n'es pas encore éligible",
 		"nextStep": {
 			"request_whitelist": "Une vérification est requise pour accéder à cette organisation",
-			"wait_for_whitelist_approval": "Ta demande de vérification est en cours d'examen"
+			"wait_for_whitelist_approval": "Ta demande de vérification est en cours d'examen",
+			"upgrade_membership": "Consulte les options d'adhésion de l'organisation pour voir quels niveaux tu peux obtenir."
+		},
+		"reason": {
+			"membership_tier_required": "Ce billet est réservé à certains niveaux d'adhésion."
 		},
 		"rsvpNextStep": "Confirme ta participation à l'événement",
 		"purchaseTicketNextStep": "Achète un billet",
@@ -2641,13 +2645,26 @@
 		"removeConfirmMessage": "Cela retirera définitivement {name} de l'organisation. Cette action est irréversible.",
 		"confirmRemove": "Oui, retirer",
 		"cancelRemove": "Annuler",
+		"banConfirmTitle": "Bannir {name} ?",
+		"banConfirmMessage": "Les membres bannis perdent l'accès à tous les événements de cette organisation, y compris publics.",
+		"confirmBan": "Oui, bannir le membre",
 		"close": "Fermer",
 		"statusExplanation": {
 			"active": "Les membres peuvent voir et participer à tous les événements de l'organisation.",
+			"activeBillingNote": "Rétablir l'adhésion ne relance pas la facturation : les abonnements se reprennent séparément, depuis l'onglet « Abonnements ».",
 			"paused": "Les membres peuvent voir les événements mais ne peuvent pas participer ni confirmer leur présence.",
+			"pausedBillingNote": "Aucun autre paiement n'est prélevé tant que l'adhésion est en pause.",
+			"pausedScheduledEndNote": "Son abonnement est déjà programmé pour prendre fin : il n'est donc pas mis en pause et continue d'être facturé jusqu'à la clôture de la période en cours.",
 			"cancelled": "L'adhésion a été annulée. Cela équivaut à ne pas avoir d'adhésion active.",
 			"banned": "Les membres ne peuvent ni voir ni participer à aucune activité de l'organisation."
 		}
+	},
+	"membershipLoss": {
+		"subscriptionCancelledPlan": "Son abonnement d'adhésion « {plan} » ({price}) est annulé immédiatement et la facturation récurrente s'arrête. Aucun remboursement n'est effectué automatiquement.",
+		"subscriptionStatusNote": "Statut actuel de l'abonnement : {status}.",
+		"subscriptionPeriodEnds": "La période de facturation en cours se termine le {date}.",
+		"subscriptionCancelledIfAny": "Si cette personne a un abonnement d'adhésion auprès de cette organisation, il est annulé immédiatement et la facturation récurrente s'arrête. Aucun remboursement n'est effectué automatiquement.",
+		"subscriptionCancelledOnMatch": "Si cette entrée correspond à un compte ayant un abonnement d'adhésion auprès de cette organisation — maintenant ou lors de la liaison ultérieure avec son compte —, cet abonnement est annulé et la facturation récurrente s'arrête. Aucun remboursement n'est effectué automatiquement."
 	},
 	"memberBadge": {
 		"member": "Membre",
@@ -3269,6 +3286,11 @@
 				"archived": "Archivé",
 				"edit": "Modifier",
 				"archive": "Archiver",
+				"archiveConfirm": {
+					"title": "Archiver {plan} ?",
+					"body": "Les abonnés actuels conservent leur forfait et leur prix. Les nouvelles inscriptions, les changements de forfait et les réactivations vers ce forfait s'arrêtent.",
+					"cta": "Archiver le forfait"
+				},
 				"badge": {
 					"online": "En ligne · Stripe",
 					"offline": "Hors ligne · manuel",
@@ -3288,7 +3310,8 @@
 					"title": "Supprimer le forfait",
 					"body": "Cela supprime définitivement le forfait. S'il y a des abonnés, archive-le plutôt.",
 					"inUse": "Ce forfait a des abonnés et ne peut pas être supprimé — archive-le plutôt.",
-					"archiveInstead": "Archiver plutôt"
+					"archiveInstead": "Archiver plutôt",
+					"confirmMessage": "Supprimer « {name} » ?"
 				},
 				"form": {
 					"create": "Créer un forfait",
@@ -3300,6 +3323,7 @@
 					"periodUnit": "Période",
 					"periodCount": "Tous les",
 					"isActive": "Actif (disponible pour les nouveaux abonnements)",
+					"isActiveHelp": "Décocher archive le forfait : les abonnés existants ne sont pas affectés, mais personne ne peut plus le rejoindre, y basculer ni le réactiver.",
 					"errors": {
 						"nameRequired": "Le nom est obligatoire",
 						"priceInvalid": "Le prix doit être de 0 ou plus",
@@ -3323,7 +3347,8 @@
 				"errors": {
 					"createFailed": "Échec de la création du forfait : {detail}",
 					"updateFailed": "Échec de la modification du forfait : {detail}",
-					"archiveFailed": "Échec de l'archivage du forfait : {detail}"
+					"archiveFailed": "Échec de l'archivage du forfait : {detail}",
+					"deleteFailed": "Impossible de supprimer ce forfait."
 				}
 			},
 			"subscriptions": {
@@ -3360,7 +3385,26 @@
 					"pause": "Mettre en pause",
 					"resume": "Reprendre",
 					"cancel": "Annuler",
+					"uncancel": "Annuler la résiliation",
+					"uncancelling": "Annulation…",
+					"uncancelDone": "Renouvellement rétabli.",
 					"onlinePayments": "Les paiements de cet abonnement arrivent automatiquement via Stripe.",
+					"pauseBlockedByCancel": "La mise en pause est impossible tant qu'une résiliation est programmée : annule d'abord la résiliation.",
+					"pauseConfirmTitle": "Mettre cet abonnement en pause ?",
+					"pauseConfirmBody": "La facturation s'arrête et le membre perd l'accès réservé aux membres jusqu'à la reprise.",
+					"pauseConfirmPendingSwitch": "Tout changement de forfait programmé est annulé.",
+					"pauseConfirmCta": "Mettre l'abonnement en pause",
+					"pauseConfirmDismiss": "Ne pas mettre en pause",
+					"errors": {
+						"load": "Impossible de charger cet abonnement.",
+						"loadPayments": "Impossible de charger les paiements de cet abonnement.",
+						"recordPayment": "Impossible d'enregistrer le paiement.",
+						"cancel": "Impossible d'annuler cet abonnement.",
+						"pause": "Impossible de mettre cet abonnement en pause.",
+						"resume": "Impossible de reprendre cet abonnement.",
+						"uncancel": "Impossible d'annuler la résiliation programmée.",
+						"refund": "Impossible de rembourser ce paiement."
+					},
 					"revive": "Réactiver",
 					"reviveDone": "Abonnement réactivé",
 					"reviveOfflineTitle": "Réactiver l'abonnement",
@@ -3372,6 +3416,7 @@
 					"paymentsEmpty": "Aucun paiement pour l'instant.",
 					"refund": "Rembourser",
 					"manageOnStripe": "Gérer sur Stripe",
+					"checkoutOnStripe": "Voir la session de paiement sur Stripe",
 					"paymentOnStripe": "Voir sur Stripe",
 					"onlineRefundNote": "Les remboursements des paiements en ligne s'effectuent depuis le tableau de bord Stripe — ils sont enregistrés ici automatiquement.",
 					"partiallyRefunded": "(remboursement de {amount} {currency})",
@@ -3388,6 +3433,7 @@
 					"immediate": "Immédiatement",
 					"immediateDesc": "L'accès est révoqué maintenant. Aucun remboursement n'est effectué automatiquement.",
 					"immediateConfirm": "Je comprends que l'accès est révoqué immédiatement.",
+					"pendingSwitchDropped": "Le changement de forfait programmé sera annulé.",
 					"keep": "Conserver l'abonnement",
 					"confirm": "Confirmer l'annulation"
 				},
@@ -4979,6 +5025,12 @@
 	"membershipPlans": {
 		"heading": "Adhésion",
 		"subscribeCta": "S'abonner",
+		"yourPlan": "Ton forfait",
+		"yourPlanHelper": "Tu es abonné·e à ce forfait.",
+		"pendingCheckoutHelper": "Ton paiement n'est pas encore terminé — reprends-le depuis ton compte.",
+		"alreadySubscribed": "Tu as déjà un abonnement auprès de cette organisation.",
+		"changePlanCta": "Changer de forfait",
+		"changePlanCtaAria": "Changer de forfait : passer à {plan}",
 		"loginToSubscribe": "Connecte-toi pour t'abonner",
 		"soldOut": "Complet",
 		"soldOutHelper": "Toutes les places sont prises — une peut se libérer si une adhésion prend fin.",
@@ -5612,6 +5664,7 @@
 		"title": "Supprimer le niveau d'adhésion",
 		"confirmMessage": "Es-tu sûr de vouloir supprimer « {name} » ?",
 		"consequence": "Tous les membres assignés à ce niveau verront leur niveau retiré. Cette action est irréversible.",
+		"plansCascade": "Tous les forfaits d'abonnement de ce niveau sont supprimés avec lui.",
 		"cancel": "Annuler",
 		"confirm": "Supprimer le niveau"
 	},
@@ -6504,9 +6557,15 @@
 			"cancel": "Résilier l'adhésion",
 			"resumePayment": "Reprendre le paiement",
 			"portalError": "Impossible d'ouvrir le portail de facturation. Réessaie.",
-			"resumeError": "Impossible de reprendre le paiement. Réessaie."
+			"resumeError": "Impossible de reprendre le paiement. Réessaie.",
+			"uncancel": "Réactiver le renouvellement",
+			"uncancelling": "Réactivation…",
+			"uncancelSuccess": "Le renouvellement est réactivé.",
+			"uncancelError": "Impossible de réactiver le renouvellement. Réessaie."
 		},
-		"cancelScheduledHint": "Le renouvellement est désactivé. Pour conserver ton adhésion, contacte l'organisation.",
+		"cancelScheduledHint": "Le renouvellement est désactivé. Tu peux le réactiver à tout moment avant cette date.",
+		"cancelScheduledHintManaged": "Le renouvellement est désactivé. Pour conserver ton adhésion, contacte l'organisation.",
+		"pausedHint": "Suspendue par l'organisation — contacte-la pour la reprendre.",
 		"rejoin": {
 			"title": "Ton adhésion à {org} a expiré",
 			"body": "Elle a expiré le {expired}. Tu peux la reprendre jusqu'au {deadline}.",
@@ -6555,6 +6614,8 @@
 		"memberBadgeAriaLabel": "Tu es membre de cette organisation",
 		"memberStatusAriaLabel": "Statut d'adhésion : {status}",
 		"memberTierAriaLabel": "Niveau d'adhésion : {tier}",
+		"loadError": "Impossible de charger les options d'adhésion.",
+		"retryLoad": "Réessayer",
 		"reason": {
 			"blacklisted": "Tu ne peux pas rejoindre cette organisation.",
 			"requires_verification": "Ton compte doit être vérifié avant que tu puisses rejoindre.",
@@ -6568,6 +6629,7 @@
 			"membership_questionnaire_missing": "Cette organisation demande aux nouveaux membres de remplir d'abord un questionnaire.",
 			"membership_questionnaire_failed": "Ton questionnaire n'a pas été approuvé.",
 			"membership_questionnaire_retake_cooldown": "Tu pourras repasser le questionnaire plus tard.",
+			"membership_questionnaire_attempts_exhausted": "Tu as utilisé toutes tes tentatives pour ce questionnaire.",
 			"requires_approval": "Les demandes d'adhésion sont approuvées par l'organisation.",
 			"requires_invitation": "L'adhésion se fait sur invitation — demande un lien d'invitation à l'organisation.",
 			"duplicate_active_subscription": "Tu as déjà un abonnement actif avec cette organisation.",
@@ -6590,6 +6652,8 @@
 		"cancel": "Annuler",
 		"completedTitle": "C'est fait !",
 		"completedBody": "Tu es maintenant membre de {orgName}.",
+		"alreadyMemberTitle": "Tu es déjà membre",
+		"alreadyMemberBody": "Ton adhésion à {orgName} est déjà active.",
 		"pendingTitle": "Demande reçue",
 		"pendingBody": "L'organisation a bien reçu ta demande — voici la suite :",
 		"trackLink": "Suivre ta demande",
@@ -6611,10 +6675,13 @@
 		"periodEnd": "À la fin de la période en cours",
 		"periodEndHintDated": "Tu gardes l'accès jusqu'au {date}. Aucun autre prélèvement.",
 		"periodEndHint": "Tu gardes l'accès jusqu'à la fin de la période payée. Aucun autre prélèvement.",
+		"rejoinAfterEnd": "Revenir plus tard signifie souscrire un nouvel abonnement.",
 		"immediate": "Immédiatement",
-		"immediateHint": "Ton adhésion prend fin immédiatement.",
+		"immediateHint": "Ton adhésion prend fin immédiatement. Aucun remboursement n'est effectué automatiquement pour le temps déjà payé.",
 		"immediateConfirm": "Je comprends que mon adhésion prend fin immédiatement.",
 		"refundPolicy": "Politique de remboursement",
+		"refundPolicyPointer": "Consulte la politique de remboursement ci-dessous.",
+		"pendingSwitchDropped": "Ton passage programmé à {plan} sera annulé.",
 		"keepCta": "Garder l'adhésion",
 		"confirmCta": "Résilier l'adhésion",
 		"cancelling": "Résiliation…",
@@ -6650,6 +6717,23 @@
 			"months": "tous les {n} mois",
 			"year": "tous les ans",
 			"years": "tous les {n} ans"
+		},
+		"billing": {
+			"title": "Comment fonctionne la facturation",
+			"renewal": "Ton adhésion se renouvelle automatiquement à chaque période jusqu'à ce que tu annules, et nous t'envoyons un rappel par e-mail quelques jours avant chaque renouvellement.",
+			"failedPayment": {
+				"one": "Si un paiement de renouvellement échoue, tu gardes l'accès pendant {days} jour après la fin de la période, le temps que le paiement soit relancé, puis l'adhésion expire.",
+				"other": "Si un paiement de renouvellement échoue, tu gardes l'accès pendant {days} jours après la fin de la période, le temps que le paiement soit relancé, puis l'adhésion expire.",
+				"none": "Si un paiement de renouvellement échoue, l'adhésion expire dès la fin de la période : il n'y a aucun délai de grâce.",
+				"unknown": "Si un paiement de renouvellement échoue, tu gardes l'accès pendant un court délai de grâce, le temps que le paiement soit relancé, puis l'adhésion expire."
+			},
+			"cancelling": "Tu peux annuler à tout moment : l'accès reste valable jusqu'à la fin de la période déjà payée, et une annulation immédiate n'est pas remboursée automatiquement.",
+			"expiry": {
+				"one": "Si elle expire après un paiement échoué, tu peux la relancer depuis ton compte sous {days} jour.",
+				"other": "Si elle expire après un paiement échoué, tu peux la relancer depuis ton compte sous {days} jours.",
+				"none": "Si elle expire, elle ne peut pas être relancée : il te faudrait souscrire une nouvelle adhésion.",
+				"unknown": "Si elle expire après un paiement échoué, tu pourras peut-être la relancer depuis ton compte pendant une durée limitée."
+			}
 		},
 		"refundPolicy": "Politique de remboursement",
 		"stripeDisclaimer": "Les paiements sont traités en toute sécurité par Stripe.",
@@ -8443,7 +8527,7 @@
 	"orgSettingsPage.subscriptionPolicy.heading": "Politique d'abonnement",
 	"orgSettingsPage.subscriptionPolicy.description": "Règles pour les adhésions payantes : combien de temps un abonnement échu reste actif et vos conditions de remboursement.",
 	"orgSettingsPage.subscriptionPolicy.gracePeriodLabel": "Délai de grâce (jours)",
-	"orgSettingsPage.subscriptionPolicy.gracePeriodHelp": "Nombre de jours pendant lesquels un abonnement avec un paiement échoué reste actif avant d'expirer.",
+	"orgSettingsPage.subscriptionPolicy.gracePeriodHelp": "Les membres conservent un accès complet pendant les nouvelles tentatives de paiement. 0 fait expirer l'adhésion dès qu'un renouvellement échoue.",
 	"orgSettingsPage.subscriptionPolicy.revivalWindowLabel": "Fenêtre de réactivation (jours)",
 	"orgSettingsPage.subscriptionPolicy.revivalWindowHelp": "Durée pendant laquelle, après l'expiration d'un abonnement, les anciens membres peuvent revenir sans repostuler — au prix actuel du forfait. 0 désactive la réactivation.",
 	"orgSettingsPage.subscriptionPolicy.refundPolicyLabel": "Politique de remboursement",

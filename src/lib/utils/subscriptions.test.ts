@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
 	getAvailableActions,
+	canUncancel,
 	formatPlanPrice,
 	getStatusConfig,
 	getDateLine,
@@ -54,16 +55,75 @@ function makeSub({
 }
 
 describe('getAvailableActions', () => {
+	// `uncancel` is false throughout: none of these rows carries a scheduled
+	// cancellation, and the backend answers such a call with an unchanged 200.
 	it.each([
-		['pending', { recordPayment: true, pause: false, resume: false, cancel: true, revive: false }],
-		['active', { recordPayment: true, pause: true, resume: false, cancel: true, revive: false }],
-		['past_due', { recordPayment: true, pause: false, resume: false, cancel: true, revive: false }],
-		['paused', { recordPayment: false, pause: false, resume: true, cancel: true, revive: false }],
+		[
+			'pending',
+			{
+				recordPayment: true,
+				pause: false,
+				resume: false,
+				cancel: true,
+				revive: false,
+				uncancel: false
+			}
+		],
+		[
+			'active',
+			{
+				recordPayment: true,
+				pause: true,
+				resume: false,
+				cancel: true,
+				revive: false,
+				uncancel: false
+			}
+		],
+		[
+			'past_due',
+			{
+				recordPayment: true,
+				pause: false,
+				resume: false,
+				cancel: true,
+				revive: false,
+				uncancel: false
+			}
+		],
+		[
+			'paused',
+			{
+				recordPayment: false,
+				pause: false,
+				resume: true,
+				cancel: true,
+				revive: false,
+				uncancel: false
+			}
+		],
 		[
 			'cancelled',
-			{ recordPayment: false, pause: false, resume: false, cancel: false, revive: false }
+			{
+				recordPayment: false,
+				pause: false,
+				resume: false,
+				cancel: false,
+				revive: false,
+				uncancel: false
+			}
 		],
-		['expired', { recordPayment: false, pause: false, resume: false, cancel: false, revive: true }]
+		[
+			'expired',
+			{
+				recordPayment: false,
+				pause: false,
+				resume: false,
+				cancel: false,
+				revive: true,
+				uncancel: false
+			}
+		]
 	])('returns the right action set for %s', (status, expected) => {
 		expect(getAvailableActions(makeSub({ status: status as never }))).toEqual(expected);
 	});
@@ -101,6 +161,114 @@ describe('getAvailableActions online/offline', () => {
 			const paused = getAvailableActions(makeSub({ status: 'paused', payment_method: pm }));
 			expect(paused).toMatchObject({ pause: false, resume: true, cancel: true });
 		}
+	});
+});
+
+describe('getAvailableActions with a scheduled cancellation', () => {
+	// `pause_subscription` refuses a row carrying `cancel_at_period_end`, so the
+	// staff matrix must not offer a button that can only 400.
+	it('withdraws pause on an active sub scheduled to cancel', () => {
+		for (const pm of ['online', 'offline'] as const) {
+			const actions = getAvailableActions(
+				makeSub({ status: 'active', payment_method: pm, cancel_at_period_end: true })
+			);
+			expect(actions.pause).toBe(false);
+		}
+	});
+
+	it('leaves the other actions on that row untouched, and offers the way back', () => {
+		expect(
+			getAvailableActions(
+				makeSub({ status: 'active', payment_method: 'offline', cancel_at_period_end: true })
+			)
+		).toEqual({
+			recordPayment: true,
+			pause: false,
+			resume: false,
+			cancel: true,
+			revive: false,
+			uncancel: true
+		});
+	});
+
+	it('still offers pause when renewal is on', () => {
+		expect(
+			getAvailableActions(makeSub({ status: 'active', cancel_at_period_end: false })).pause
+		).toBe(true);
+	});
+
+	it('is a no-op on statuses that never offered pause', () => {
+		const paused = getAvailableActions(makeSub({ status: 'paused', cancel_at_period_end: true }));
+		expect(paused).toMatchObject({ pause: false, resume: true, cancel: true });
+	});
+});
+
+/**
+ * The staff `uncancel` gate, straight off `subscription_uncancel.uncancel_subscription`
+ * (BE #813 / our #808): non-terminal row + `cancel_at_period_end` + a plan that is
+ * still active. Payment method is deliberately absent — the service takes a purely
+ * local path for OFFLINE rows and never inspects it.
+ */
+describe('getAvailableActions uncancel gating', () => {
+	it('offers undo on every non-terminal status carrying a scheduled cancellation', () => {
+		for (const status of ['pending', 'active', 'past_due', 'paused'] as const) {
+			for (const pm of ['online', 'offline'] as const) {
+				const actions = getAvailableActions(
+					makeSub({ status, payment_method: pm, cancel_at_period_end: true })
+				);
+				expect(actions.uncancel).toBe(true);
+			}
+		}
+	});
+
+	// The endpoint answers 200-unchanged here, so a button would provably do nothing.
+	it('withdraws undo when there is no scheduled cancellation', () => {
+		for (const status of ['pending', 'active', 'past_due', 'paused'] as const) {
+			expect(getAvailableActions(makeSub({ status, cancel_at_period_end: false })).uncancel).toBe(
+				false
+			);
+		}
+	});
+
+	// Terminal rows: 400 from the service ("Cannot resume renewal on a cancelled or
+	// expired subscription") — the cancellation already happened.
+	it('withdraws undo on terminal rows even with the flag still set', () => {
+		for (const status of ['cancelled', 'expired'] as const) {
+			expect(getAvailableActions(makeSub({ status, cancel_at_period_end: true })).uncancel).toBe(
+				false
+			);
+		}
+	});
+
+	// Archived plan: 400 ("This plan is archived…") — keeping the renewal alive
+	// would go on billing a retired plan.
+	it('withdraws undo once the plan has been archived', () => {
+		const sub = makeSub({ status: 'active', cancel_at_period_end: true });
+		sub.plan.is_active = false;
+		expect(getAvailableActions(sub).uncancel).toBe(false);
+	});
+});
+
+describe('canUncancel', () => {
+	const live = { status: 'active', cancel_at_period_end: true, plan: { is_active: true } } as const;
+
+	it('is true only for a non-terminal, scheduled-to-cancel row on a live plan', () => {
+		expect(canUncancel(live)).toBe(true);
+		expect(canUncancel({ ...live, cancel_at_period_end: false })).toBe(false);
+		expect(canUncancel({ ...live, status: 'cancelled' })).toBe(false);
+		expect(canUncancel({ ...live, status: 'expired' })).toBe(false);
+		expect(canUncancel({ ...live, plan: { is_active: false } })).toBe(false);
+	});
+
+	// `is_active` is optional in the generated schema (Django default true), so an
+	// absent flag must not be read as "archived".
+	it('treats an absent is_active as still active', () => {
+		expect(canUncancel({ status: 'active', cancel_at_period_end: true, plan: {} })).toBe(true);
+	});
+
+	// Likewise optional: an absent flag is "not scheduled", not "unknown".
+	it('treats an absent cancel_at_period_end as not scheduled', () => {
+		expect(canUncancel({ status: 'active', plan: { is_active: true } })).toBe(false);
 	});
 });
 
@@ -215,7 +383,8 @@ describe('getMemberActions', () => {
 				changePlan: false,
 				cancel: false,
 				revive: false,
-				resumePayment: false
+				resumePayment: false,
+				uncancel: false
 			});
 		}
 	});
@@ -226,7 +395,8 @@ describe('getMemberActions', () => {
 			changePlan: true,
 			cancel: true,
 			revive: false,
-			resumePayment: false
+			resumePayment: false,
+			uncancel: false
 		});
 	});
 
@@ -236,14 +406,39 @@ describe('getMemberActions', () => {
 		expect(getMemberActions(mySub({ pending_plan_id: 'p2' }), NOW).cancel).toBe(true);
 	});
 
-	// BE preflight rejects change-plan AND cancel is redundant once renewal is off.
-	it('online active scheduled to cancel keeps only manage billing', () => {
+	// BE preflight rejects change-plan AND cancel is redundant once renewal is off —
+	// but the row is no longer a dead end: #808 added the way back.
+	it('online active scheduled to cancel offers manage billing and the undo', () => {
 		expect(getMemberActions(mySub({ cancel_at_period_end: true }), NOW)).toEqual({
 			manageBilling: true,
 			changePlan: false,
 			cancel: false,
 			revive: false,
-			resumePayment: false
+			resumePayment: false,
+			uncancel: true
+		});
+	});
+
+	// The member endpoint would accept it (the service never looks at the payment
+	// method), but an OFFLINE cancellation was scheduled by staff — undoing it is
+	// theirs to do, from the admin drawer.
+	it('offline active scheduled to cancel still offers nothing self-serve', () => {
+		const sub = mySub({ cancel_at_period_end: true });
+		sub.plan.payment_method = 'offline';
+		expect(getMemberActions(sub, NOW).uncancel).toBe(false);
+	});
+
+	// Archived plan → the BE refuses with 400, so no button.
+	it('online active scheduled to cancel on an archived plan offers no undo', () => {
+		const sub = mySub({ cancel_at_period_end: true });
+		sub.plan.is_active = false;
+		expect(getMemberActions(sub, NOW)).toEqual({
+			manageBilling: true,
+			changePlan: false,
+			cancel: false,
+			revive: false,
+			resumePayment: false,
+			uncancel: false
 		});
 	});
 
@@ -253,7 +448,23 @@ describe('getMemberActions', () => {
 			changePlan: false,
 			cancel: true,
 			revive: false,
-			resumePayment: false
+			resumePayment: false,
+			uncancel: false
+		});
+	});
+
+	// Same shape as ACTIVE: renewal is already off, so cancelling again says nothing
+	// new and undoing it is the action that does.
+	it('online past_due scheduled to cancel swaps cancel for the undo', () => {
+		expect(
+			getMemberActions(mySub({ status: 'past_due', cancel_at_period_end: true }), NOW)
+		).toEqual({
+			manageBilling: true,
+			changePlan: false,
+			cancel: false,
+			revive: false,
+			resumePayment: false,
+			uncancel: true
 		});
 	});
 
@@ -268,7 +479,8 @@ describe('getMemberActions', () => {
 			changePlan: false,
 			cancel: false,
 			revive: true,
-			resumePayment: false
+			resumePayment: false,
+			uncancel: false
 		});
 	});
 
@@ -280,7 +492,8 @@ describe('getMemberActions', () => {
 			changePlan: false,
 			cancel: false,
 			revive: false,
-			resumePayment: false
+			resumePayment: false,
+			uncancel: false
 		};
 		expect(getMemberActions(past, NOW)).toEqual(nothing);
 		expect(getMemberActions(none, NOW)).toEqual(nothing);
@@ -298,7 +511,8 @@ describe('getMemberActions', () => {
 			changePlan: false,
 			cancel: false,
 			revive: false,
-			resumePayment: true
+			resumePayment: true,
+			uncancel: false
 		});
 	});
 
@@ -317,9 +531,18 @@ describe('getMemberActions', () => {
 				changePlan: false,
 				cancel: false,
 				revive: false,
-				resumePayment: false
+				resumePayment: false,
+				uncancel: false
 			});
 		}
+	});
+
+	// Pause is admin-only, so a PAUSED row's scheduled cancellation is staff's to
+	// undo too — the member surface stays silent on it.
+	it('paused with a scheduled cancellation still offers no member undo', () => {
+		expect(
+			getMemberActions(mySub({ status: 'paused', cancel_at_period_end: true }), NOW).uncancel
+		).toBe(false);
 	});
 });
 

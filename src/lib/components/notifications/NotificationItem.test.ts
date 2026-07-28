@@ -172,6 +172,7 @@ describe('NotificationItem', () => {
 	it('extracts URL from different context patterns', () => {
 		const contexts = [
 			{ event_id: 'event-123', expectedUrl: '/events/event-123' },
+			{ organization_slug: 'my-org', expectedUrl: '/org/my-org' },
 			{ org_slug: 'my-org', expectedUrl: '/org/my-org' },
 			{ invitation_id: 'inv-123', expectedUrl: '/invitations/inv-123' },
 			{ url: '/custom/path', expectedUrl: '/custom/path' }
@@ -187,6 +188,119 @@ describe('NotificationItem', () => {
 			expect(card).toBeInTheDocument();
 
 			unmount();
+		});
+	});
+
+	// The backend's org-scoped notification contexts carry `organization_slug`
+	// (see revel-backend/src/notifications/context_schemas.py); `org_slug` was
+	// never emitted. Both must resolve to the org page.
+	it.each([['organization_slug'], ['org_slug']])(
+		'navigates to the org page for a non-subscription notification with %s',
+		async (key) => {
+			const notification = createMockNotification({
+				notification_type: 'membership_request_approved',
+				context: { [key]: 'tech-community' }
+			});
+			const { goto } = await import('$app/navigation');
+
+			renderItem({ notification, authToken: mockAuthToken });
+
+			await user.click(screen.getByRole('button', { name: /New Event Invitation/i }));
+
+			expect(goto).toHaveBeenCalledWith('/org/tech-community');
+		}
+	);
+
+	it('falls back to the notifications page when the context has neither slug key', async () => {
+		const notification = createMockNotification({
+			notification_type: 'membership_request_approved',
+			// Real MembershipRequestApprovedContext shape minus frontend_url:
+			// organization identity only, no slug and no URL of any kind.
+			context: { organization_id: 'org-123', organization_name: 'Tech Community' }
+		});
+		const { goto } = await import('$app/navigation');
+
+		renderItem({ notification, authToken: mockAuthToken });
+
+		await user.click(screen.getByRole('button', { name: /New Event Invitation/i }));
+
+		expect(goto).toHaveBeenCalledWith(expect.stringContaining('/account/notifications'));
+	});
+
+	describe('subscription notifications', () => {
+		// Every subscription_* context carries `organization_slug` plus URLs that
+		// point either at org routes this app does not have
+		// (`/org/{slug}/subscription`) or at Stripe. The member's own
+		// subscription surface is /account/memberships, so the card body must
+		// land there rather than falling through to the notifications list.
+		const subscriptionTypes = [
+			'subscription_renewal_succeeded',
+			'subscription_payment_failed',
+			'subscription_expired',
+			'subscription_cancellation_confirmed',
+			'subscription_renewal_reminder',
+			'subscription_price_migration_notice',
+			'subscription_revival_checkout'
+		] as const;
+
+		it.each(subscriptionTypes)('navigates %s to the memberships page', async (type) => {
+			const notification = createMockNotification({
+				notification_type: type,
+				title: 'Subscription update',
+				context: {
+					organization_name: 'Tech Community',
+					organization_slug: 'tech-community',
+					plan_name: 'Gold',
+					manage_subscription_url: 'https://revel.test/org/tech-community/subscription'
+				}
+			});
+			const { goto } = await import('$app/navigation');
+
+			renderItem({ notification, authToken: mockAuthToken });
+
+			await user.click(screen.getByRole('button', { name: /Subscription update/i }));
+
+			expect(goto).toHaveBeenCalledTimes(1);
+			expect(goto).toHaveBeenCalledWith(expect.stringContaining('/account/memberships'));
+		});
+
+		it('never hands goto the absolute Stripe checkout URL', async () => {
+			const checkoutUrl = 'https://checkout.stripe.com/c/pay/cs_test_123';
+			const notification = createMockNotification({
+				notification_type: 'subscription_revival_checkout',
+				title: 'Subscription update',
+				context: {
+					organization_slug: 'tech-community',
+					plan_name: 'Gold',
+					amount: '10.00 EUR',
+					checkout_url: checkoutUrl
+				}
+			});
+			const { goto } = await import('$app/navigation');
+
+			renderItem({ notification, authToken: mockAuthToken });
+
+			await user.click(screen.getByRole('button', { name: /Subscription update/i }));
+
+			expect(goto).toHaveBeenCalledWith(expect.stringContaining('/account/memberships'));
+			expect(goto).not.toHaveBeenCalledWith(expect.stringContaining('checkout.stripe.com'));
+		});
+
+		it('still prefers frontend_url over the memberships page for non-subscription types', async () => {
+			const notification = createMockNotification({
+				notification_type: 'membership_request_approved',
+				context: {
+					organization_slug: 'tech-community',
+					frontend_url: 'https://revel.test/org/tech-community'
+				}
+			});
+			const { goto } = await import('$app/navigation');
+
+			renderItem({ notification, authToken: mockAuthToken });
+
+			await user.click(screen.getByRole('button', { name: /New Event Invitation/i }));
+
+			expect(goto).toHaveBeenCalledWith('/org/tech-community');
 		});
 	});
 

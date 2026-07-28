@@ -1,9 +1,9 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
-	import { mesubscriptionsGetMySubscription } from '$lib/api/generated/sdk.gen';
-	import type { MySubscriptionSchema, PublicPlanSchema } from '$lib/api/generated/types.gen';
+	import type { PublicPlanSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { myOrgSubscriptionQueryOptions } from '$lib/queries/my-org-subscription';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import StatusBadge from '$lib/components/members/StatusBadge.svelte';
 	import { formatPlanPrice, getDateLine } from '$lib/utils/subscriptions';
@@ -20,19 +20,9 @@
 	const { orgId, orgName, plans = [] }: Props = $props();
 	const accessToken = $derived(authStore.accessToken);
 
-	const subQuery = createQuery(() => ({
-		queryKey: ['me', 'org', orgId, 'subscription'],
-		queryFn: async () => {
-			const res = await mesubscriptionsGetMySubscription({
-				path: { org_id: orgId },
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
-			if (res.error) return null;
-			return res.data as MySubscriptionSchema;
-		},
-		enabled: !!accessToken,
-		retry: false
-	}));
+	// Shared options: the plan grid further down the page observes the very same
+	// key and fetcher, so the two surfaces cost one request and never disagree.
+	const subQuery = createQuery(() => myOrgSubscriptionQueryOptions(orgId, accessToken));
 
 	const sub = $derived(subQuery.data);
 

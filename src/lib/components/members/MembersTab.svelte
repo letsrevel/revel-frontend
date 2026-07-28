@@ -24,6 +24,7 @@
 	import ManageMemberModal from '$lib/components/members/ManageMemberModal.svelte';
 	import PromoteToStaffDialog from '$lib/components/members/PromoteToStaffDialog.svelte';
 	import { canPerformAction } from '$lib/utils/permissions';
+	import { backendMessage } from '$lib/utils/api-error-detail';
 	import { toast } from 'svelte-sonner';
 
 	interface Props {
@@ -97,7 +98,7 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to remove member');
+				throw new Error(backendMessage(response.error) || 'Failed to remove member');
 			}
 
 			return response.data;
@@ -106,9 +107,15 @@
 			queryClient.invalidateQueries({
 				queryKey: ['organization', organization.slug, 'members']
 			});
+			// Losing membership cancels the member's non-terminal subscription and stops
+			// Stripe billing server-side, so the Subscriptions tab and its revenue metrics
+			// (nested under this prefix) are stale the moment this resolves.
+			queryClient.invalidateQueries({
+				queryKey: ['organization', organization.slug, 'subscriptions']
+			});
 		},
 		onError: (error: Error) => {
-			alert(m['membersTab.removeMemberFailed']({ error: error.message }));
+			toast.error(m['membersTab.removeMemberFailed']({ error: error.message }));
 		}
 	}));
 
@@ -138,7 +145,7 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to update member');
+				throw new Error(backendMessage(response.error) || 'Failed to update member');
 			}
 
 			return response.data;
@@ -147,10 +154,16 @@
 			queryClient.invalidateQueries({
 				queryKey: ['organization', organization.slug, 'members']
 			});
+			// A status change to `banned` cancels the member's subscription and stops
+			// Stripe billing server-side; a tier change moves the row's plan. Either way
+			// the Subscriptions tab and its metrics must be refetched.
+			queryClient.invalidateQueries({
+				queryKey: ['organization', organization.slug, 'subscriptions']
+			});
 			manageMemberModalOpen = false;
 		},
 		onError: (error: Error) => {
-			alert(m['membersTab.updateMemberFailed']({ error: error.message }));
+			toast.error(m['membersTab.updateMemberFailed']({ error: error.message }));
 		}
 	}));
 
@@ -169,7 +182,7 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to promote member to staff');
+				throw new Error(backendMessage(response.error) || 'Failed to promote member to staff');
 			}
 
 			return response.data;
@@ -184,7 +197,7 @@
 			manageMemberModalOpen = false;
 		},
 		onError: (error: Error) => {
-			alert(m['membersTab.promoteStaffFailed']({ error: error.message }));
+			toast.error(m['membersTab.promoteStaffFailed']({ error: error.message }));
 		}
 	}));
 
@@ -209,6 +222,11 @@
 			});
 			queryClient.invalidateQueries({
 				queryKey: ['organization', organization.slug, 'blacklist']
+			});
+			// Blacklisting revokes membership, which cancels the member's subscription
+			// and stops Stripe billing server-side.
+			queryClient.invalidateQueries({
+				queryKey: ['organization', organization.slug, 'subscriptions']
 			});
 			manageMemberModalOpen = false;
 			memberToManage = null;

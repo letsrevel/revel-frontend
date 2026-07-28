@@ -42,6 +42,14 @@
 	let message = $state('');
 	let errorMessage = $state<string | null>(null);
 	let result = $state<ApplyResponseSchema | null>(null);
+	/**
+	 * The backend answers 409 (`Reasons.ALREADY_ACTIVE_MEMBER`) when the caller is
+	 * already an ACTIVE member at the target tier — it refuses rather than minting a
+	 * junk application row. The eligibility verdict reports that case too and hides
+	 * the Join CTA, so a 409 only ever lands on a stale verdict: this is a race
+	 * backstop, not something a retry can fix.
+	 */
+	let alreadyMember = $state(false);
 
 	// Unique per instance: the dialog can sit next to other labelled controls.
 	const uid = $props.id();
@@ -74,6 +82,21 @@
 			// hey-api resolves rather than throws — a missing payload is a failure
 			// even when no error body came back.
 			if (res.error || !res.data) {
+				if (res.response?.status === 409) {
+					// Terminal, and positive: there is nothing to apply for. Show the
+					// outcome panel instead of a form-level error, so the user is not
+					// invited to press a button that will keep 409ing.
+					alreadyMember = true;
+					// Everything that let the Join CTA appear is provably stale: the
+					// cached verdict…
+					queryClient.invalidateQueries({
+						queryKey: ['org', organizationSlug, 'join-eligibility']
+					});
+					// …and the server-rendered page behind the dialog (`isMember`,
+					// member-only sections), same as an instant join.
+					invalidateAll();
+					throw new Error(backendMessage(res.error) ?? m['membershipApply.alreadyMemberTitle']());
+				}
 				if (isEligibilityBody(res.error)) {
 					// The refusal proves the CTA's cached verdict is stale, so refresh it
 					// for the page behind the dialog.
@@ -102,14 +125,23 @@
 			}
 		},
 		onError: (err: Error) => {
+			// The already-member outcome replaces the form with its own panel, so a
+			// form-level alert would never be reachable.
+			if (alreadyMember) return;
 			errorMessage = err.message || m['membershipApply.error']();
 		}
 	}));
 
 	const isBusy = $derived(applyMutation.isPending);
 	const completed = $derived(result?.application.status === 'completed');
+	/** Both terminal states replace the form with a read-only panel. */
+	const showOutcome = $derived(!!result || alreadyMember);
+	const showMemberBadge = $derived(alreadyMember || completed);
 
 	const heading = $derived.by(() => {
+		if (alreadyMember) {
+			return m['membershipApply.alreadyMemberTitle']();
+		}
 		if (result) {
 			return completed
 				? m['membershipApply.completedTitle']()
@@ -127,6 +159,7 @@
 		message = '';
 		errorMessage = null;
 		result = null;
+		alreadyMember = false;
 	});
 
 	function handleOpenChange(next: boolean): void {
@@ -146,7 +179,9 @@
 		<DialogHeader>
 			<DialogTitle>{heading}</DialogTitle>
 			<DialogDescription>
-				{#if result}
+				{#if alreadyMember}
+					{m['membershipApply.alreadyMemberBody']({ orgName: organizationName })}
+				{:else if result}
 					{completed
 						? m['membershipApply.completedBody']({ orgName: organizationName })
 						: m['membershipApply.pendingBody']()}
@@ -156,14 +191,14 @@
 			</DialogDescription>
 		</DialogHeader>
 
-		{#if result}
+		{#if showOutcome}
 			<div class="space-y-3">
-				{#if completed}
+				{#if showMemberBadge}
 					<p class="flex items-center gap-2 text-sm font-medium text-green-700 dark:text-green-300">
 						<CheckCircle2 class="h-5 w-5" aria-hidden="true" />
 						{m['membershipEligibility.memberBadge']()}
 					</p>
-				{:else}
+				{:else if result}
 					<p class="text-sm text-muted-foreground">
 						{getApplicationPendingMessage(result.eligibility)}
 					</p>

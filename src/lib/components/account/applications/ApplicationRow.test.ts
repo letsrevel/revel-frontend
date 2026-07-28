@@ -357,5 +357,73 @@ describe('ApplicationRow', () => {
 			expect(screen.getByRole('button', { name: 'Re-apply for membership' })).toBeInTheDocument();
 			expect(screen.queryByRole('button', { name: 'Cancel application' })).toBeNull();
 		});
+
+		// Since BE #812 `advance_application` auto-rejects a PENDING row whose
+		// verdict carries a terminal code — and the attempts cap is one. Re-applying
+		// creates a fresh PENDING row that the same gate rejects on the same read,
+		// with a second rejection notification: a loop that can only fail.
+		it('withholds re-apply when the read itself auto-rejected the row', async () => {
+			mockAdvance({
+				application: makeApplication({ status: 'rejected' }),
+				eligibility: makeEligibility({
+					allowed: false,
+					next_step: null,
+					reason_code: 'membership_questionnaire_attempts_exhausted',
+					questionnaire_id: 'q1'
+				})
+			});
+			renderRow(makeApplication({ status: 'pending' }));
+
+			expect(await screen.findByText('Rejected')).toBeInTheDocument();
+			expect(screen.queryByRole('button', { name: 'Re-apply for membership' })).toBeNull();
+			expect(screen.queryByRole('button', { name: 'Cancel application' })).toBeNull();
+		});
+
+		// Withholding the button is only half of it — the row flipped under the
+		// member, so it has to say why rather than leave a bare Rejected chip.
+		it('explains the auto-rejection in place of the withheld action', async () => {
+			mockAdvance({
+				application: makeApplication({ status: 'rejected' }),
+				eligibility: makeEligibility({
+					allowed: false,
+					next_step: null,
+					reason_code: 'membership_questionnaire_attempts_exhausted',
+					questionnaire_id: 'q1'
+				})
+			});
+			renderRow(makeApplication({ status: 'pending' }));
+
+			expect(await screen.findByRole('status')).toHaveTextContent(/all your attempts/i);
+			// The verdict names a questionnaire, but there is nothing left to do in it.
+			expect(screen.queryByRole('link', { name: /continue questionnaire/i })).toBeNull();
+		});
+
+		// The discriminator: a staff rejection landing in the same read comes back
+		// with `next_step: 'reapply'` from ApplicationStatusGate, and re-applying is
+		// then the documented recourse. The gate must not swallow it.
+		it('still offers re-apply when the rejection verdict points at re-applying', async () => {
+			mockAdvance({
+				application: makeApplication({ status: 'rejected' }),
+				eligibility: makeEligibility({
+					allowed: false,
+					next_step: 'reapply',
+					reason_code: 'application_rejected'
+				})
+			});
+			renderRow(makeApplication({ status: 'pending' }));
+
+			expect(await screen.findByText('Rejected')).toBeInTheDocument();
+			expect(screen.getByRole('button', { name: 'Re-apply for membership' })).toBeInTheDocument();
+		});
+
+		// A row that arrives already rejected never runs the advance, so the FE holds
+		// no verdict at all — and the backend's own answer for it is `reapply`.
+		// Unchanged behaviour, pinned so the guard above cannot creep onto it.
+		it('leaves a row that arrived rejected on its ordinary re-apply path', async () => {
+			renderRow(makeApplication({ status: 'rejected' }));
+
+			await waitFor(() => expect(getApplicationMock).not.toHaveBeenCalled());
+			expect(screen.getByRole('button', { name: 'Re-apply for membership' })).toBeInTheDocument();
+		});
 	});
 });
