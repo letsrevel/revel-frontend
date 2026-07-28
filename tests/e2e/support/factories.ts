@@ -585,6 +585,26 @@ export async function updateSubscriptionPlan(
 }
 
 /**
+ * Archive a subscription plan (POST …/plans/{id}/archive → `is_active=False`).
+ *
+ * The CLEANUP counterpart to `createSubscriptionPlan`: an archived plan stops
+ * being offered on the public org page and is refused by `subscribe`, while the
+ * subscriptions that reference it survive (unlike DELETE, which the backend
+ * blocks once any subscription points at the plan). Specs that mint a throwaway
+ * plan on a SHARED org — Org Alpha is the only Stripe-connected one — archive it
+ * afterwards so the org's public page does not accumulate test plans.
+ */
+export async function archiveSubscriptionPlan(
+	owner: PersonaName | ThrowawayUser,
+	orgSlug: string,
+	planId: string
+): Promise<void> {
+	const credentials = typeof owner === 'string' ? PERSONAS[owner] : owner;
+	const api = await ApiClient.login(credentials.email, credentials.password);
+	await api.post(`/api/organization-admin/${orgSlug}/plans/${planId}/archive`);
+}
+
+/**
  * The org's UUID, read from the PUBLIC retrieve endpoint (no auth needed).
  * Member-facing subscription endpoints are keyed by org id, not slug.
  */
