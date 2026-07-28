@@ -76,7 +76,12 @@
 				body: payload,
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
-			if (res.error) throw new Error('Failed to create plan');
+			// The refusal reason has to reach the organizer: creating a plan on a tier
+			// carrying `requires_membership_approval` / `membership_questionnaire` is
+			// now a 400 with a translated `detail` explaining exactly that (those knobs
+			// were previously inert, so the tier looks fine until you try this). A
+			// hardcoded string here would render it as an unexplained failure.
+			if (res.error) throw new Error(backendMessage(res.error) || m['common.errors_tryAgain']());
 			return res.data;
 		},
 		onSuccess: () => {
@@ -94,7 +99,7 @@
 				body: payload,
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
-			if (res.error) throw new Error('Failed to update plan');
+			if (res.error) throw new Error(backendMessage(res.error) || m['common.errors_tryAgain']());
 			return res.data;
 		},
 		onSuccess: () => {
@@ -112,7 +117,7 @@
 				path: { slug: organization.slug, plan_id: id },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
-			if (res.error) throw new Error('Failed to archive plan');
+			if (res.error) throw new Error(backendMessage(res.error) || m['common.errors_tryAgain']());
 			return res.data;
 		},
 		onSuccess: () => {

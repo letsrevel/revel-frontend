@@ -72,8 +72,12 @@
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
+			// Surface the backend's own reason: setting `requires_membership_approval` /
+			// `membership_questionnaire` on a tier that already has live plans is now a
+			// 400 with a translated `detail` naming that conflict. A hardcoded string
+			// would leave the organizer with a refusal and no way to act on it.
 			if (response.error) {
-				throw new Error('Failed to create tier');
+				throw new Error(backendMessage(response.error) || m['common.errors_tryAgain']());
 			}
 
 			return response.data;
@@ -84,7 +88,7 @@
 			});
 		},
 		onError: (error: Error) => {
-			alert(`Failed to create tier: ${error.message}`);
+			toast.error(m['orgAdmin.members.tiers.createFailed']({ detail: error.message }));
 		}
 	}));
 
@@ -103,7 +107,7 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to update tier');
+				throw new Error(backendMessage(response.error) || m['common.errors_tryAgain']());
 			}
 
 			return response.data;
@@ -117,7 +121,7 @@
 			});
 		},
 		onError: (error: Error) => {
-			alert(`Failed to update tier: ${error.message}`);
+			toast.error(m['orgAdmin.members.tiers.updateFailed']({ detail: error.message }));
 		}
 	}));
 
