@@ -23,7 +23,8 @@
 	} from '$lib/api/generated/types.gen';
 	import { untrack } from 'svelte';
 	import type { SeatHoldController } from './seat-hold-controller.svelte';
-	import { bestAvailableFailureMessage, extractPurchaseErrorMessage } from './purchase-error';
+	import { bestAvailableFailureMessage } from './purchase-error';
+	import PurchaseErrorAlert from './PurchaseErrorAlert.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import DiscountCodeInput from './DiscountCodeInput.svelte';
@@ -43,6 +44,11 @@
 		tier: TierSchemaWithId;
 		/** Event ID for fetching seat availability */
 		eventId: string;
+		/**
+		 * Organizing org's slug. Only used to link at its membership plans when a
+		 * purchase is refused by the tier's membership-tier gate (BE #807).
+		 */
+		organizationSlug?: string | null;
 		onClose: () => void;
 		onConfirm: (payload: ConfirmPayload) => void | Promise<void>;
 		/** Peek: would onConfirm resume a held reservation? (skips the re-hold) */
@@ -69,6 +75,7 @@
 		open = $bindable(),
 		tier,
 		eventId,
+		organizationSlug = null,
 		onClose,
 		onConfirm,
 		hasResumableCheckout = () => false,
@@ -99,8 +106,9 @@
 	// Guest name validation error
 	let guestNameError = $state('');
 
-	// API error from backend
-	let apiError = $state('');
+	// Raw error from the purchase path — PurchaseErrorAlert owns the reading of it
+	// (a refused purchase is an eligibility payload, not a `{ detail }` body).
+	let purchaseError = $state<unknown>(null);
 
 	// Billing section ref
 	let billingSection: CheckoutBillingSection | undefined = $state();
@@ -251,7 +259,7 @@
 			pwycError = '';
 			seatSelectionError = '';
 			guestNameError = '';
-			apiError = '';
+			purchaseError = null;
 			quantity = 1;
 			guestNames = [userName || ''];
 			accessibleRequired = false;
@@ -346,7 +354,7 @@
 
 	async function handleConfirm() {
 		if (isHoldingSeats) return;
-		apiError = '';
+		purchaseError = null;
 		bestAvailableError = '';
 		if (!setGuestNameErrorMessage()) return;
 		if (!setPwycErrorMessage()) return;
@@ -419,7 +427,7 @@
 			purchaseHandedOff = true;
 		} catch (err: unknown) {
 			console.error('Ticket purchase error:', err);
-			apiError = extractPurchaseErrorMessage(err, m['ticketConfirmationDialog.errorGeneric']());
+			purchaseError = err;
 		}
 	}
 
@@ -649,15 +657,7 @@
 			{/if}
 
 			<!-- API Error Display -->
-			{#if apiError}
-				<Alert variant="destructive">
-					<AlertCircle class="h-4 w-4" />
-					<AlertDescription>
-						<p class="font-medium">{m['ticketConfirmationDialog.unableToComplete']()}</p>
-						<p class="mt-1 text-sm">{apiError}</p>
-					</AlertDescription>
-				</Alert>
-			{/if}
+			<PurchaseErrorAlert error={purchaseError} {tier} {organizationSlug} />
 		</div>
 
 		<DialogFooter class="flex-col gap-2">

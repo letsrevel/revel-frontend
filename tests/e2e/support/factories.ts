@@ -526,34 +526,98 @@ export async function createGuestRsvp(eventId: string, label = 'Guest'): Promise
 	return { email, firstName, lastName };
 }
 
-/** Add a membership tier to a throwaway-owned org. */
+/**
+ * Add a membership tier to an org. `owner` accepts a persona name too, because
+ * ONLINE plans can only exist on the Stripe-connected seeded Org Alpha — every
+ * hosted-checkout spec arranges its tiers there as `'owner'` (alice).
+ */
 export async function createMembershipTier(
-	owner: ThrowawayUser,
+	owner: PersonaName | ThrowawayUser,
 	orgSlug: string,
 	name: string
 ): Promise<{ id: string }> {
-	const api = await ApiClient.login(owner.email, owner.password);
+	const credentials = typeof owner === 'string' ? PERSONAS[owner] : owner;
+	const api = await ApiClient.login(credentials.email, credentials.password);
 	return api.post<{ id: string }>(`/api/organization-admin/${orgSlug}/membership-tiers`, { name });
 }
 
 /**
- * API-create a subscription plan on a membership tier of a throwaway-owned
- * org (defaults: €15.00 monthly). ARRANGE step for the subscription-lifecycle
- * journey — plan AUTHORING through the UI is j23 plans-admin.
+ * API-create a subscription plan on a membership tier (defaults: €15.00
+ * monthly, OFFLINE — the backend's own default payment method). ARRANGE step
+ * for the subscription journeys — plan AUTHORING through the UI is j23
+ * plans-admin. Extra plan fields (`payment_method: 'online'`,
+ * `max_subscriptions`, `sales_status`, `period_unit`, …) are spread onto the
+ * payload as given.
+ *
+ * `owner` accepts a persona name: ONLINE plans require Stripe Connect, which
+ * only the seeded Org Alpha has, so they are created as `'owner'` (alice).
  */
 export async function createSubscriptionPlan(
-	owner: ThrowawayUser,
+	owner: PersonaName | ThrowawayUser,
 	orgSlug: string,
 	tierId: string,
 	plan: Record<string, unknown> = {}
 ): Promise<{ id: string; name: string }> {
-	const api = await ApiClient.login(owner.email, owner.password);
+	const credentials = typeof owner === 'string' ? PERSONAS[owner] : owner;
+	const api = await ApiClient.login(credentials.email, credentials.password);
 	const name = (plan.name as string) ?? uniqueName('Plan');
 	const created = await api.post<{ id: string }>(
 		`/api/organization-admin/${orgSlug}/tiers/${tierId}/plans`,
 		{ name, price: '15.00', currency: 'EUR', ...plan }
 	);
 	return { id: created.id, name };
+}
+
+/**
+ * PATCH a subscription plan (`sales_status`, `max_subscriptions`, price, …).
+ * `payment_method` is deliberately NOT patchable backend-side — archive the
+ * plan and create a new one instead.
+ */
+export async function updateSubscriptionPlan(
+	owner: PersonaName | ThrowawayUser,
+	orgSlug: string,
+	planId: string,
+	patch: Record<string, unknown>
+): Promise<void> {
+	const credentials = typeof owner === 'string' ? PERSONAS[owner] : owner;
+	const api = await ApiClient.login(credentials.email, credentials.password);
+	await api.patch(`/api/organization-admin/${orgSlug}/plans/${planId}`, patch);
+}
+
+/**
+ * Archive a subscription plan (POST …/plans/{id}/archive → `is_active=False`).
+ *
+ * The CLEANUP counterpart to `createSubscriptionPlan`: an archived plan stops
+ * being offered on the public org page and is refused by `subscribe`, while the
+ * subscriptions that reference it survive (unlike DELETE, which the backend
+ * blocks once any subscription points at the plan). Specs that mint a throwaway
+ * plan on a SHARED org — Org Alpha is the only Stripe-connected one — archive it
+ * afterwards so the org's public page does not accumulate test plans.
+ */
+export async function archiveSubscriptionPlan(
+	owner: PersonaName | ThrowawayUser,
+	orgSlug: string,
+	planId: string
+): Promise<void> {
+	const credentials = typeof owner === 'string' ? PERSONAS[owner] : owner;
+	const api = await ApiClient.login(credentials.email, credentials.password);
+	await api.post(`/api/organization-admin/${orgSlug}/plans/${planId}/archive`);
+}
+
+/**
+ * The org's UUID, read from the PUBLIC retrieve endpoint (no auth needed).
+ * Member-facing subscription endpoints are keyed by org id, not slug.
+ */
+export async function getOrganizationId(slug: string): Promise<string> {
+	const response = await fetchWithRetry(`${API_URL}/api/organizations/${slug}`);
+	if (!response.ok) {
+		throw new ApiError(response.status, 'GET', `/api/organizations/${slug}`, await response.text());
+	}
+	const org = (await response.json()) as { id?: string };
+	if (!org.id) {
+		throw new Error(`Organization ${slug} has no id`);
+	}
+	return org.id;
 }
 
 /**
@@ -1202,4 +1266,358 @@ export async function getSeededBestAvailableEvent(
 		eventName,
 		tier: { id: tier.id, name: tier.name }
 	};
+}
+
+// ---- Membership applications & subscriptions (j23 / j27) ----
+
+/**
+ * Apply for membership straight through the member API
+ * (POST /me/organizations/{slug}/apply).
+ *
+ * The outcome depends entirely on the org/tier policy, so specs read the
+ * returned `status`: a TIER-BEARING apply against an org with no gate (no
+ * approval requirement, no questionnaire) comes back `completed` — the
+ * membership exists already. A TIER-LESS apply (what the UI's ApplyDialog
+ * sends) stays `pending` for staff, because the backend never resolves a
+ * default tier on the member's behalf.
+ *
+ * `nextStep` is the eligibility verdict's `next_step` (null once there is
+ * nothing left to do) — the same field MembershipCta switches its CTA on.
+ *
+ * `submissionId` attaches the questionnaire submission that satisfied the
+ * gate — the audit pointer the org-admin request card turns into its
+ * "View questionnaire submission" link. The UI never sends it (ApplyDialog
+ * posts tier + notes only), so specs that need a submission-bearing row
+ * arrange it here. The backend validates it: it must be a READY submission
+ * owned by `user` for the questionnaire that actually gates this (org, tier),
+ * or the call 422s.
+ */
+export async function applyViaApi(
+	user: ThrowawayUser,
+	orgSlug: string,
+	opts: { tierId?: string; notes?: string; submissionId?: string } = {}
+): Promise<{ applicationId: string; status: string; nextStep: string | null }> {
+	const api = await ApiClient.login(user.email, user.password);
+	const response = await api.post<{
+		application: { id?: string | null; status: string };
+		eligibility: { next_step?: string | null };
+	}>(`/api/me/organizations/${orgSlug}/apply`, {
+		tier_id: opts.tierId ?? null,
+		notes: opts.notes,
+		questionnaire_submission_id: opts.submissionId ?? null
+	});
+	const applicationId = response.application.id;
+	if (!applicationId) {
+		throw new Error(`Apply to ${orgSlug} returned an application without an id`);
+	}
+	return {
+		applicationId,
+		status: response.application.status,
+		nextStep: response.eligibility.next_step ?? null
+	};
+}
+
+/** Withdraw one of the caller's own applications (idempotent server-side). */
+export async function cancelApplicationViaApi(
+	user: ThrowawayUser,
+	applicationId: string
+): Promise<void> {
+	const api = await ApiClient.login(user.email, user.password);
+	await api.post(`/api/me/applications/${applicationId}/cancel`);
+}
+
+/**
+ * Approve a membership application from the org-admin side. An application and
+ * the legacy membership request are the same row, so this is the same endpoint
+ * as approveMembershipRequest — but with `tier_id` OPTIONAL: an application
+ * that already carries a tier resolves its own, and only a tier-less
+ * (UI-created) one needs staff to pick.
+ *
+ * Approving does NOT create the membership — the state machine advances on the
+ * member's next read of the application (GET /me/applications/{id}), which the
+ * account hub's Applications section fires on every mount.
+ */
+export async function approveApplication(
+	owner: ThrowawayUser | 'owner',
+	orgSlug: string,
+	requestId: string,
+	tierId?: string
+): Promise<void> {
+	const credentials = typeof owner === 'string' ? PERSONAS[owner] : owner;
+	const api = await ApiClient.login(credentials.email, credentials.password);
+	await api.post(
+		`/api/organization-admin/${orgSlug}/membership-requests/${requestId}/approve`,
+		tierId ? { tier_id: tierId } : {}
+	);
+}
+
+/** Reject a membership application from the org-admin side. */
+export async function rejectApplication(
+	owner: ThrowawayUser | 'owner',
+	orgSlug: string,
+	requestId: string
+): Promise<void> {
+	const credentials = typeof owner === 'string' ? PERSONAS[owner] : owner;
+	const api = await ApiClient.login(credentials.email, credentials.password);
+	await api.post(`/api/organization-admin/${orgSlug}/membership-requests/${requestId}/reject`);
+}
+
+/**
+ * Set an org's membership-eligibility policy (the org-level defaults every
+ * tier inherits unless it overrides them).
+ *
+ * READ-THEN-PUT, defensively: the endpoint takes OrganizationEditSchema, and
+ * the BE update path currently applies it with `model_dump(exclude_unset=True)`
+ * (organization_service/lifecycle.py), so omitted fields are simply left alone
+ * — a policy-only PUT would NOT lose data today (see `createOrganization`
+ * above, which does a harmless naive 2-field PUT). This factory still echoes
+ * back EVERY writable field of OrganizationEditSchema as the admin retrieve
+ * currently reports it, with only the caller's keys overridden: a full
+ * representation write stays correct even if those update semantics ever
+ * change, and makes each write self-documenting about the org state it leaves
+ * behind.
+ *
+ * Two fields are deliberately never sent: `contact_email` (excluded from the
+ * edit schema — it has its own verification flow) and `tags` (not writable
+ * here). `city` is the one shape mismatch: the retrieve nests the whole city
+ * object, the edit schema wants its id.
+ */
+export async function setOrgMembershipPolicy(
+	owner: ThrowawayUser,
+	orgSlug: string,
+	policy: {
+		requiresApproval?: boolean;
+		defaultQuestionnaireId?: string | null;
+		revivalWindowDays?: number;
+	}
+): Promise<void> {
+	const api = await ApiClient.login(owner.email, owner.password);
+	const current = await api.get<{
+		visibility: string;
+		accept_membership_requests: boolean;
+		contact_method: string;
+		revenue_report_cadence: string;
+		description?: string | null;
+		instagram_url?: string | null;
+		facebook_url?: string | null;
+		bluesky_url?: string | null;
+		telegram_url?: string | null;
+		city?: { id?: number | null } | null;
+		address?: string | null;
+		location_maps_url?: string | null;
+		location_maps_embed?: string | null;
+		membership_grace_period_days: number;
+		membership_subscription_revival_window_days: number;
+		membership_refund_policy: string;
+		default_membership_questionnaire_id?: string | null;
+		default_requires_membership_approval: boolean;
+	}>(`/api/organization-admin/${orgSlug}`);
+	await api.put(`/api/organization-admin/${orgSlug}`, {
+		// Echoed back unchanged.
+		visibility: current.visibility,
+		accept_membership_requests: current.accept_membership_requests,
+		contact_method: current.contact_method,
+		revenue_report_cadence: current.revenue_report_cadence,
+		description: current.description ?? '',
+		instagram_url: current.instagram_url ?? null,
+		facebook_url: current.facebook_url ?? null,
+		bluesky_url: current.bluesky_url ?? null,
+		telegram_url: current.telegram_url ?? null,
+		city_id: current.city?.id ?? null,
+		address: current.address ?? null,
+		location_maps_url: current.location_maps_url ?? null,
+		location_maps_embed: current.location_maps_embed ?? null,
+		membership_grace_period_days: current.membership_grace_period_days,
+		membership_refund_policy: current.membership_refund_policy,
+		// Overridable.
+		membership_subscription_revival_window_days:
+			policy.revivalWindowDays ?? current.membership_subscription_revival_window_days,
+		// `undefined` means "leave alone"; an explicit `null` clears it.
+		default_membership_questionnaire_id:
+			policy.defaultQuestionnaireId !== undefined
+				? policy.defaultQuestionnaireId
+				: (current.default_membership_questionnaire_id ?? null),
+		default_requires_membership_approval:
+			policy.requiresApproval ?? current.default_requires_membership_approval
+	});
+}
+
+/**
+ * Override a single TIER's eligibility policy (PUT membership-tiers/{id};
+ * MembershipTierUpdateSchema is fully partial, so unsent fields keep their
+ * value). `requires_membership_approval` is tri-state — `null` means "inherit
+ * the org default".
+ *
+ * The generated field is `membership_questionnaire_id`; the shorter
+ * `membership_questionnaire` key here is the spec-facing name, mapped on the
+ * way out.
+ */
+export async function patchTierPolicy(
+	owner: ThrowawayUser,
+	orgSlug: string,
+	tierId: string,
+	patch: {
+		membership_questionnaire?: string | null;
+		requires_membership_approval?: boolean | null;
+	}
+): Promise<void> {
+	const api = await ApiClient.login(owner.email, owner.password);
+	await api.put(`/api/organization-admin/${orgSlug}/membership-tiers/${tierId}`, {
+		...('membership_questionnaire' in patch
+			? { membership_questionnaire_id: patch.membership_questionnaire }
+			: {}),
+		...('requires_membership_approval' in patch
+			? { requires_membership_approval: patch.requires_membership_approval }
+			: {})
+	});
+}
+
+/** The single question createMembershipQuestionnaire asks, per mode — exported
+ *  so specs answer it by name instead of guessing at the wording. */
+export const MEMBERSHIP_QUESTION = {
+	/** Auto-graded multiple choice — asked in `'automatic'` AND `'hybrid'` mode. */
+	automatic: {
+		question: 'Do you agree to the code of conduct?',
+		correct: 'Yes, I agree',
+		wrong: 'No, rules are not for me'
+	},
+	/** Free text, for a human to read. */
+	manual: { question: 'Why do you want to join?' }
+} as const;
+
+/**
+ * Create a PUBLISHED MEMBERSHIP questionnaire on a throwaway-owned org — the
+ * org-level or tier-level JOIN gate, never attached to an event (that is
+ * attachAdmissionQuestionnaire's job). Exactly one mandatory question, whose
+ * TYPE follows the evaluation mode (see MEMBERSHIP_QUESTION):
+ *
+ *   * `'automatic'` — one multiple-choice question with a correct option, the
+ *     house pattern for deterministic inline grading. A free-text question
+ *     here is rejected outright (422 `missing_llm_guidelines`: automatic
+ *     grading of prose needs an LLM, which no E2E run should depend on).
+ *     With `min_score: 0` any answer passes, so the gate clears itself.
+ *   * `'manual'` — one free-text question; the submission parks in the org's
+ *     review queue until staff grade it. NOTE: manual mode queues NO
+ *     evaluation at all (see `submit_membership_questionnaire`: only
+ *     automatic/hybrid enqueue the task), so the submission's
+ *     `evaluation_status` stays NULL forever — nothing renders a
+ *     "pending review" hint off a manual submission.
+ *   * `'hybrid'` — the same auto-gradable multiple choice as `'automatic'`
+ *     (free text would need LLM guidelines here too), but the grader files the
+ *     evaluation as PENDING REVIEW instead of finalizing it. This is the only
+ *     mode that yields `evaluation_status: 'pending review'` — what the
+ *     org-admin request card's "Review pending" hint keys on.
+ *
+ * The returned id is the ORGANIZATION-QUESTIONNAIRE WRAPPER's — what
+ * `default_membership_questionnaire_id` / `membership_questionnaire_id` want.
+ * It is NOT the id the join-eligibility verdict carries in
+ * `questionnaire_id` (the inner Questionnaire, which is what the
+ * /org/{slug}/questionnaire/{id} route takes), so specs must build that URL
+ * from the eligibility verdict or the CTA link, never from this return value.
+ */
+export async function createMembershipQuestionnaire(
+	owner: ThrowawayUser,
+	orgSlug: string,
+	opts: { evaluationMode: 'automatic' | 'manual' | 'hybrid' }
+): Promise<{ id: string }> {
+	const api = await ApiClient.login(owner.email, owner.password);
+	const org = await api.get<{ id: string }>(`/api/organizations/${orgSlug}`);
+	const questions =
+		opts.evaluationMode !== 'manual'
+			? {
+					multiplechoicequestion_questions: [
+						{
+							question: MEMBERSHIP_QUESTION.automatic.question,
+							is_mandatory: true,
+							is_fatal: true,
+							shuffle_options: false,
+							options: [
+								{ option: MEMBERSHIP_QUESTION.automatic.correct, is_correct: true, order: 0 },
+								{ option: MEMBERSHIP_QUESTION.automatic.wrong, order: 1 }
+							]
+						}
+					]
+				}
+			: {
+					freetextquestion_questions: [
+						{ question: MEMBERSHIP_QUESTION.manual.question, is_mandatory: true }
+					]
+				};
+	return api.post<{ id: string }>(`/api/questionnaires/${org.id}/create-questionnaire`, {
+		name: uniqueName('Membership Questionnaire'),
+		min_score: 0,
+		evaluation_mode: opts.evaluationMode,
+		status: 'published',
+		questionnaire_type: 'membership',
+		...questions
+	});
+}
+
+/**
+ * Member-initiated subscribe on an ONLINE plan (POST
+ * /me/organizations/{org_id}/subscribe) — returns the local subscription plus
+ * the hosted Stripe Checkout URL the spec then drives with
+ * completeStripeCheckout(). OFFLINE plans are refused here by design; use
+ * staffCreateOfflineSubscription for those.
+ */
+export async function subscribeViaApi(
+	user: ThrowawayUser,
+	orgId: string,
+	planId: string
+): Promise<{ subscriptionId: string; checkoutUrl: string | null }> {
+	const api = await ApiClient.login(user.email, user.password);
+	const response = await api.post<{
+		subscription: { id?: string | null };
+		checkout_url?: string | null;
+	}>(`/api/me/organizations/${orgId}/subscribe`, { plan_id: planId });
+	const subscriptionId = response.subscription.id;
+	if (!subscriptionId) {
+		throw new Error(`Subscribe to plan ${planId} returned a subscription without an id`);
+	}
+	return { subscriptionId, checkoutUrl: response.checkout_url ?? null };
+}
+
+/**
+ * Staff-create a subscription on behalf of a member (OFFLINE plans only — the
+ * backend refuses ONLINE ones here so the member can confirm their own first
+ * payment). Recording an initial payment is what puts the subscription in an
+ * ACTIVE, paid-up state; omit it to arrange a still-unpaid row. `currency`
+ * defaults to 'EUR' whenever an `amount` is given (and is left unset without
+ * one, so no currency is recorded for a payment that never happened).
+ */
+export async function staffCreateOfflineSubscription(
+	owner: ThrowawayUser | 'owner',
+	orgSlug: string,
+	opts: { planId: string; userId: string; amount?: string; currency?: string }
+): Promise<{ id: string }> {
+	const credentials = typeof owner === 'string' ? PERSONAS[owner] : owner;
+	const api = await ApiClient.login(credentials.email, credentials.password);
+	return api.post<{ id: string }>(`/api/organization-admin/${orgSlug}/subscriptions`, {
+		plan_id: opts.planId,
+		user_id: opts.userId,
+		initial_payment_amount: opts.amount,
+		initial_payment_currency: opts.currency ?? (opts.amount ? 'EUR' : undefined)
+	});
+}
+
+/**
+ * Staff-cancel a subscription (POST …/subscriptions/{id}/cancel).
+ *
+ * Defaults to the SCHEDULED mode (`immediate: false`), which is the only one
+ * that leaves the row ACTIVE with `cancel_at_period_end` set — the state the
+ * drawer's "Undo cancellation" button exists for. The backend silently upgrades
+ * a scheduled cancel to an immediate one when the row has no period boundary to
+ * land on (PENDING OFFLINE), so callers must record a payment first.
+ */
+export async function staffCancelSubscription(
+	owner: ThrowawayUser | PersonaName,
+	orgSlug: string,
+	subId: string,
+	opts: { immediate?: boolean } = {}
+): Promise<void> {
+	const credentials = typeof owner === 'string' ? PERSONAS[owner] : owner;
+	const api = await ApiClient.login(credentials.email, credentials.password);
+	await api.post(`/api/organization-admin/${orgSlug}/subscriptions/${subId}/cancel`, {
+		immediate: opts.immediate ?? false
+	});
 }

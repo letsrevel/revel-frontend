@@ -38,7 +38,7 @@
 </script>
 
 <Dialog open={entry !== null} onOpenChange={(open) => !open && onCancel()}>
-	<DialogContent class="sm:max-w-md">
+	<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-md">
 		{#if entry}
 			<DialogHeader>
 				<DialogTitle>{m['sectorSwitch.title']({ sector: entry.sectorName })}</DialogTitle>

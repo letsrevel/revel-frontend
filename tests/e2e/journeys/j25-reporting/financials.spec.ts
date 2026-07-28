@@ -102,8 +102,13 @@ test.describe('J25 financials @p2', () => {
 		// before both the seed's back-dated month and any e2e-run purchases).
 		await asOwner.getByLabel('Year').selectOption(String(new Date().getFullYear() - 2));
 		await expect(asOwner.getByText('No revenue in this period')).toBeVisible({ timeout: 15_000 });
+		// The "nothing at all" state must account for BOTH money sources. This copy
+		// used to read "no ticket sales", which told a membership-funded org it had
+		// none while its membership revenue sat in the same period — the bug the
+		// membership-financials work fixed. The ticket-only wording still exists,
+		// but only on the per-event section, which this branch never renders.
 		await expect(
-			asOwner.getByText('There are no ticket sales for the selected period.')
+			asOwner.getByText('There are no ticket sales or membership payments for the selected period.')
 		).toBeVisible();
 	});
 });

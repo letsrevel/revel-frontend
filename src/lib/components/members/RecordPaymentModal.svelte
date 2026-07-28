@@ -54,7 +54,7 @@
 </script>
 
 <Dialog {open} onOpenChange={(v: boolean) => (!v ? onClose() : null)}>
-	<DialogContent class="sm:max-w-md">
+	<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-md">
 		<DialogHeader>
 			<DialogTitle>{m['orgAdmin.members.subscriptions.recordPayment.title']()}</DialogTitle>
 		</DialogHeader>

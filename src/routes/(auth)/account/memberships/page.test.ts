@@ -1,0 +1,427 @@
+import { render, screen, waitFor, within } from '@testing-library/svelte';
+import { userEvent } from '@testing-library/user-event';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { QueryClient } from '@tanstack/svelte-query';
+import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
+import { formatDate } from '$lib/utils/date';
+import Page from './+page.svelte';
+import type { MyMembershipSchema, MySubscriptionSchema } from '$lib/api/generated/types.gen';
+
+const listMembershipsMock = vi.hoisted(() => vi.fn());
+const listSubscriptionsMock = vi.hoisted(() => vi.fn());
+const listApplicationsMock = vi.hoisted(() => vi.fn());
+const getApplicationMock = vi.hoisted(() => vi.fn());
+const cancelSubscriptionMock = vi.hoisted(() => vi.fn());
+const getOrganizationMock = vi.hoisted(() => vi.fn());
+// The factory replaces the whole module, so every operation the page tree
+// imports — including the ones it only reaches transitively through the cards,
+// their dialogs and the application rows — has to exist here or the import
+// itself throws.
+vi.mock('$lib/api/generated/sdk.gen', () => ({
+	mesubscriptionsListMyMemberships: listMembershipsMock,
+	mesubscriptionsListMySubscriptions: listSubscriptionsMock,
+	memembershipapplicationsListApplications: listApplicationsMock,
+	memembershipapplicationsGetApplication: getApplicationMock,
+	mesubscriptionsCreateBillingPortalSession: vi.fn(),
+	mesubscriptionsCancelSubscription: cancelSubscriptionMock,
+	mesubscriptionsChangePlan: vi.fn(),
+	mesubscriptionsReviveSubscription: vi.fn(),
+	mesubscriptionsGetMySubscription: vi.fn(),
+	organizationListMembershipPlans: vi.fn(),
+	organizationGetOrganization: getOrganizationMock,
+	memembershipapplicationsCancel: vi.fn(),
+	memembershipapplicationsApply: vi.fn()
+}));
+vi.mock('$lib/stores/auth.svelte', () => ({ authStore: { accessToken: 'tok' } }));
+vi.mock('$app/navigation', () => ({ invalidateAll: vi.fn() }));
+
+// The revival window is evaluated against the wall clock, so the fixtures are
+// anchored to "now" rather than to a frozen literal date.
+const DAY = 24 * 60 * 60 * 1000;
+const IN_WINDOW = new Date(Date.now() + 30 * DAY).toISOString();
+const LAPSED = new Date(Date.now() - DAY).toISOString();
+
+function makeSub(overrides: Partial<MySubscriptionSchema> = {}): MySubscriptionSchema {
+	return {
+		id: 'sub-1',
+		plan_id: 'plan-1',
+		organization_id: 'org-1',
+		organization_name: 'Acme',
+		organization_slug: 'acme',
+		organization_logo_url: null,
+		status: 'expired',
+		current_period_start: '2026-06-01T00:00:00Z',
+		current_period_end: '2026-07-01T00:00:00Z',
+		cancelled_at: null,
+		pending_plan_id: null,
+		expired_at: '2026-07-01T00:00:00Z',
+		revival_deadline: IN_WINDOW,
+		grace_deadline: null,
+		cancel_at_period_end: false,
+		created_at: '2026-06-01T00:00:00Z',
+		updated_at: '2026-07-01T00:00:00Z',
+		plan: {
+			id: 'plan-1',
+			tier_id: 'tier-1',
+			tier_name: 'Gold',
+			name: 'Monthly',
+			description: null,
+			price: '10.00',
+			currency: 'EUR',
+			period_unit: 'month',
+			period_count: 1,
+			payment_method: 'online',
+			sales_status: 'open',
+			is_active: true
+		},
+		...overrides
+	};
+}
+
+function makeMembership(overrides: Partial<MyMembershipSchema> = {}): MyMembershipSchema {
+	return {
+		organization_id: 'org-1',
+		organization_name: 'Acme',
+		organization_slug: 'acme',
+		organization_logo_url: null,
+		member_since: '2026-06-01T00:00:00Z',
+		status: 'cancelled',
+		tier: null,
+		subscription: null,
+		...overrides
+	};
+}
+
+function page<T>(results: T[]) {
+	return { data: { count: results.length, next: null, previous: null, results }, error: undefined };
+}
+
+describe('Account memberships page', () => {
+	let queryClient: QueryClient;
+
+	function renderPage() {
+		return render(QueryClientTestWrapper, {
+			props: { client: queryClient, component: Page, componentProps: {} }
+		});
+	}
+
+	/** Both list queries answered; applications empty unless a test says otherwise. */
+	function mockLists(memberships: MyMembershipSchema[], subscriptions: MySubscriptionSchema[]) {
+		listMembershipsMock.mockResolvedValue(page(memberships));
+		listSubscriptionsMock.mockResolvedValue(page(subscriptions));
+	}
+
+	/** The h1/h2 outline, ignoring the h3s the cards and groups emit. */
+	function outline(): string[] {
+		return screen
+			.getAllByRole('heading')
+			.filter((h) => h.tagName === 'H1' || h.tagName === 'H2')
+			.map((h) => `${h.tagName}:${h.textContent?.trim()}`);
+	}
+
+	function rejoinOffers() {
+		return screen.queryAllByRole('heading', { level: 3, name: /has expired/i });
+	}
+
+	beforeEach(() => {
+		listMembershipsMock.mockReset();
+		listSubscriptionsMock.mockReset();
+		cancelSubscriptionMock.mockReset();
+		getOrganizationMock
+			.mockReset()
+			.mockResolvedValue({ data: { membership_refund_policy: null }, error: undefined });
+		listApplicationsMock.mockReset().mockResolvedValue(page([]));
+		// Rows advance themselves on read; keep that inert so it never interferes.
+		getApplicationMock.mockReset().mockImplementation(
+			() =>
+				new Promise(() => {
+					/* never settles */
+				})
+		);
+		queryClient = new QueryClient({
+			defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
+		});
+	});
+
+	describe('page shell', () => {
+		it('nests both sections under the page heading, in order', async () => {
+			mockLists([], []);
+			renderPage();
+
+			await screen.findByText(/don't have any active memberships/i);
+			expect(outline()).toEqual(['H1:My Memberships', 'H2:Memberships', 'H2:Applications']);
+		});
+
+		it('renders both sections when every query comes back empty', async () => {
+			mockLists([], []);
+			renderPage();
+
+			expect(await screen.findByText(/don't have any active memberships/i)).toBeInTheDocument();
+			expect(await screen.findByText(/no applications yet/i)).toBeInTheDocument();
+		});
+
+		it('keeps the applications section mounted while the memberships lists are in flight', async () => {
+			// Applications carry state-advancing reads, so the section must never be
+			// gated behind the memberships queries — it has to mount on first paint.
+			listMembershipsMock.mockImplementation(
+				() =>
+					new Promise(() => {
+						/* never settles */
+					})
+			);
+			listSubscriptionsMock.mockImplementation(
+				() =>
+					new Promise(() => {
+						/* never settles */
+					})
+			);
+			renderPage();
+
+			expect(await screen.findByText(/no applications yet/i)).toBeInTheDocument();
+			expect(screen.getByRole('heading', { level: 2, name: 'Applications' })).toBeVisible();
+			// The memberships half is still loading, so it must not have decided it is empty.
+			expect(screen.queryByText(/don't have any active memberships/i)).toBeNull();
+		});
+	});
+
+	describe('load failures', () => {
+		// The queryFns throw on `res.error`, so an errored response and a rejected
+		// call land in the same place — mirror the SDK's own `{ error }` shape.
+		const failure = { data: undefined, error: { detail: 'boom' } };
+
+		it('says the memberships list failed instead of claiming there are none', async () => {
+			listMembershipsMock.mockResolvedValue(failure);
+			listSubscriptionsMock.mockResolvedValue(page([]));
+			renderPage();
+
+			expect(await screen.findByText(/could not load your memberships/i)).toBeInTheDocument();
+			expect(screen.queryByText(/don't have any active memberships/i)).toBeNull();
+		});
+
+		it('says the rejoin check failed when the subscriptions query is the one that broke', async () => {
+			// Rejoin offers live in the subscriptions list, so losing it means the
+			// section cannot honestly claim the member has nothing — but it must
+			// blame the half that actually broke, not the memberships list.
+			listMembershipsMock.mockResolvedValue(page([]));
+			listSubscriptionsMock.mockResolvedValue(failure);
+			renderPage();
+
+			expect(await screen.findByText(/could not check which memberships/i)).toBeInTheDocument();
+			expect(screen.queryByText(/could not load your memberships/i)).toBeNull();
+			expect(screen.queryByText(/don't have any active memberships/i)).toBeNull();
+		});
+
+		// THE BUG (#697): the gate used to require BOTH queries to be empty, so a
+		// partial failure rendered the surviving half's rows with no error line at
+		// all — the member was silently shown an incomplete list. Per-query gating
+		// has to report the broken half AND keep the working one.
+		it('reports the failed half while still rendering the surviving half’s rows', async () => {
+			listMembershipsMock.mockResolvedValue(failure);
+			listSubscriptionsMock.mockResolvedValue(page([makeSub()]));
+			renderPage();
+
+			// The surviving half: the rejoin offer the subscriptions query returned.
+			expect(
+				await screen.findByRole('heading', { level: 3, name: /membership at acme has expired/i })
+			).toBeInTheDocument();
+			// …and the honest admission that the memberships half is missing.
+			expect(screen.getByText(/could not load your memberships/i)).toBeInTheDocument();
+			// Only the broken half is blamed, and rows mean this is not "empty".
+			expect(screen.queryByText(/could not check which memberships/i)).toBeNull();
+			expect(screen.queryByText(/don't have any active memberships/i)).toBeNull();
+		});
+
+		it('reports the subscriptions half while still rendering the membership cards', async () => {
+			listMembershipsMock.mockResolvedValue(page([makeMembership({ status: 'active' })]));
+			listSubscriptionsMock.mockResolvedValue(failure);
+			renderPage();
+
+			expect(await screen.findByRole('article', { name: 'Acme' })).toBeInTheDocument();
+			expect(screen.getByText(/could not check which memberships/i)).toBeInTheDocument();
+			expect(screen.queryByText(/could not load your memberships/i)).toBeNull();
+		});
+
+		it('keeps the loaded cards when a background refetch fails', async () => {
+			listMembershipsMock.mockResolvedValueOnce(page([makeMembership({ status: 'active' })]));
+			listMembershipsMock.mockResolvedValue(failure);
+			listSubscriptionsMock.mockResolvedValue(page([]));
+			renderPage();
+
+			await screen.findByRole('article', { name: 'Acme' });
+			await queryClient.refetchQueries({ queryKey: ['me', 'memberships'] });
+
+			await waitFor(() => {
+				expect(queryClient.getQueryState(['me', 'memberships'])?.status).toBe('error');
+			});
+			expect(screen.getByRole('article', { name: 'Acme' })).toBeInTheDocument();
+			expect(screen.queryByText(/could not load your memberships/i)).toBeNull();
+		});
+	});
+
+	describe('rejoin selection', () => {
+		it('offers a rejoin for an expired online subscription still inside its window', async () => {
+			mockLists([], [makeSub()]);
+			renderPage();
+
+			expect(
+				await screen.findByRole('heading', { level: 3, name: /membership at acme has expired/i })
+			).toBeInTheDocument();
+			// A rejoin offer is content: the empty state must stand down for it.
+			expect(screen.queryByText(/don't have any active memberships/i)).toBeNull();
+		});
+
+		it('drops a subscription whose revival deadline has passed', async () => {
+			mockLists([], [makeSub({ revival_deadline: LAPSED })]);
+			renderPage();
+
+			expect(await screen.findByText(/don't have any active memberships/i)).toBeInTheDocument();
+			expect(rejoinOffers()).toHaveLength(0);
+		});
+
+		it('drops an offline subscription — reviving it is the organization’s job', async () => {
+			const sub = makeSub();
+			mockLists([], [{ ...sub, plan: { ...sub.plan, payment_method: 'offline' } }]);
+			renderPage();
+
+			expect(await screen.findByText(/don't have any active memberships/i)).toBeInTheDocument();
+			expect(rejoinOffers()).toHaveLength(0);
+		});
+
+		it('drops an org the member has already rejoined', async () => {
+			const live = makeSub({ id: 'sub-live', status: 'active', revival_deadline: null });
+			mockLists([makeMembership({ status: 'active', subscription: live })], [makeSub()]);
+			renderPage();
+
+			const card = await screen.findByRole('article', { name: 'Acme' });
+			expect(within(card).getByRole('heading', { level: 3, name: 'Acme' })).toBeInTheDocument();
+			expect(rejoinOffers()).toHaveLength(0);
+		});
+
+		it('offers one card for the newest of several expired subscriptions in one org', async () => {
+			// The list arrives `-created_at`, so the first row for an org is its newest.
+			mockLists(
+				[],
+				[
+					makeSub({
+						id: 'sub-new',
+						created_at: '2026-06-01T00:00:00Z',
+						plan: { ...makeSub().plan, id: 'plan-2', name: 'Yearly' }
+					}),
+					makeSub({ id: 'sub-old', created_at: '2025-06-01T00:00:00Z' })
+				]
+			);
+			renderPage();
+
+			await screen.findByRole('heading', { level: 3, name: /membership at acme has expired/i });
+			expect(rejoinOffers()).toHaveLength(1);
+			expect(screen.getByText(/Yearly ·/)).toBeInTheDocument();
+			expect(screen.queryByText(/Monthly ·/)).toBeNull();
+		});
+
+		it('replaces the surviving cancelled card with the rejoin offer', async () => {
+			// Expiry does not delete the member row: the backend maps EXPIRED onto a
+			// bare `cancelled` membership. Rendering both would show the same org twice.
+			mockLists([makeMembership({ status: 'cancelled', subscription: null })], [makeSub()]);
+			renderPage();
+
+			await screen.findByRole('heading', { level: 3, name: /membership at acme has expired/i });
+			expect(screen.getAllByRole('article', { name: 'Acme' })).toHaveLength(1);
+			expect(screen.queryByText(/member since/i)).toBeNull();
+		});
+
+		it('withholds the offer from a paused member', async () => {
+			mockLists([makeMembership({ status: 'paused' })], [makeSub()]);
+			renderPage();
+
+			await screen.findByRole('article', { name: 'Acme' });
+			expect(rejoinOffers()).toHaveLength(0);
+		});
+
+		it('withholds the offer from a banned member', async () => {
+			mockLists([makeMembership({ status: 'banned' })], [makeSub()]);
+			renderPage();
+
+			await screen.findByRole('article', { name: 'Acme' });
+			expect(rejoinOffers()).toHaveLength(0);
+		});
+
+		it('withholds the offer when the cancelled row still carries a subscription', async () => {
+			// Only non-terminal subscriptions are inlined, so an inlined one means the
+			// member already has a live subscription with this org.
+			const inlined = makeSub({ id: 'sub-live', status: 'active', revival_deadline: null });
+			mockLists([makeMembership({ status: 'cancelled', subscription: inlined })], [makeSub()]);
+			renderPage();
+
+			await screen.findByRole('article', { name: 'Acme' });
+			expect(rejoinOffers()).toHaveLength(0);
+		});
+	});
+
+	describe('cancel-at-period-end write-back race (#693)', () => {
+		const PERIOD_END = '2026-08-01T00:00:00Z';
+
+		/** A live, renewing membership — and the row the backend keeps serving. */
+		const LIVE = makeSub({
+			id: 'sub-live',
+			status: 'active',
+			cancel_at_period_end: false,
+			current_period_end: PERIOD_END,
+			expired_at: null,
+			revival_deadline: null
+		});
+
+		/** What the cancel endpoint answers with: renewal is off. */
+		const CANCELLED_AT_PERIOD_END: MySubscriptionSchema = {
+			...LIVE,
+			cancel_at_period_end: true,
+			cancelled_at: '2026-07-27T10:00:00Z'
+		};
+
+		function liveRow() {
+			return page([makeMembership({ status: 'active', subscription: LIVE })]);
+		}
+
+		/**
+		 * The regression: the cancel 200 is truthful, but Stripe's schedule-release
+		 * webhook writes `cancel_at_period_end: false` back onto the row ~40ms later,
+		 * so the refetch the mutation triggers can answer with a subscription that
+		 * contradicts what the member was just told. Nothing re-polls, so before the
+		 * fix the card sat on "Next renewal" until a full reload.
+		 *
+		 * `listMembershipsMock` therefore serves the *stale* row for every call,
+		 * including the post-cancel refetch — the worst case, and the one that pins
+		 * the behaviour: the response body has to be the last writer.
+		 */
+		it('leaves the card on "Cancels on …" when the post-cancel refetch is stale', async () => {
+			const user = userEvent.setup();
+			listMembershipsMock.mockResolvedValue(liveRow());
+			listSubscriptionsMock.mockResolvedValue(page([]));
+			cancelSubscriptionMock.mockResolvedValue({
+				data: CANCELLED_AT_PERIOD_END,
+				error: undefined
+			});
+			renderPage();
+
+			const card = await screen.findByRole('article', { name: 'Acme' });
+			expect(within(card).getByText(`Next renewal: ${formatDate(PERIOD_END)}`)).toBeInTheDocument();
+
+			await user.click(within(card).getByRole('button', { name: 'Cancel membership' }));
+			const dialog = await screen.findByRole('dialog');
+			await user.click(within(dialog).getByRole('button', { name: 'Cancel membership' }));
+
+			await waitFor(() => expect(cancelSubscriptionMock).toHaveBeenCalledTimes(1));
+			// Assert only once the stale refetch has actually landed — asserting
+			// earlier would pass on the optimistic seed alone and would not notice
+			// the refetch overwriting it.
+			await waitFor(() => expect(listMembershipsMock).toHaveBeenCalledTimes(2));
+			await waitFor(() =>
+				expect(queryClient.getQueryState(['me', 'memberships'])?.fetchStatus).toBe('idle')
+			);
+
+			expect(screen.getByText(`Cancels on ${formatDate(PERIOD_END)}`)).toBeInTheDocument();
+			expect(screen.queryByText(/next renewal/i)).toBeNull();
+			// The whole point of the line: the member is told renewal is off.
+			expect(screen.getByText(/renewal is off/i)).toBeInTheDocument();
+		});
+	});
+});

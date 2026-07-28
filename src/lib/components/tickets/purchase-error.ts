@@ -1,5 +1,6 @@
 import * as m from '$lib/paraglide/messages.js';
 import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
+import { getEligibilityRefusalMessage } from '$lib/utils/eligibility';
 import type { BestAvailableHoldResult, HoldConflictReason } from './seat-hold-controller.svelte';
 
 /**
@@ -37,11 +38,22 @@ export function bestAvailableFailureMessage(result: BestAvailableHoldResult): st
  * Handles the shapes thrown along the ticket purchase path: SDK errors with a
  * `response.data.detail` (string or DRF-style list), plain `{ detail }` bodies,
  * and generic `Error` objects. Falls back to the provided localized message.
+ *
+ * A refused purchase is checked first and separately: the tier gates answer 400
+ * with a whole `EventUserEligibility` body, which carries no `detail` and would
+ * otherwise reach the generic fallback. The checkout controller normally
+ * pre-renders that body into the Error's message, so this branch is the safety
+ * net for any path that throws the raw envelope instead.
  */
 export function extractPurchaseErrorMessage(err: unknown, fallback: string): string {
 	if (!err || typeof err !== 'object') return fallback;
 	const obj = err as Record<string, unknown>;
 	const resp = obj.response as Record<string, unknown> | undefined;
+	const refusal =
+		getEligibilityRefusalMessage(resp?.data) ??
+		getEligibilityRefusalMessage(obj) ??
+		getEligibilityRefusalMessage(obj.cause);
+	if (refusal) return refusal;
 	const detail = extractApiErrorDetail(resp?.data) ?? extractApiErrorDetail(obj);
 	if (detail) return detail;
 	if (typeof obj.message === 'string') return obj.message;

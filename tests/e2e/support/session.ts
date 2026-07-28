@@ -1,4 +1,4 @@
-import { expect, type BrowserContext, type Page } from '@playwright/test';
+import { expect, type Browser, type BrowserContext, type Page } from '@playwright/test';
 import { obtainTokenPair } from './api';
 import { PERSONAS, type PersonaName } from './personas';
 import { gotoHydrated } from './navigation';
@@ -50,16 +50,52 @@ export async function authenticateContext(
 }
 
 /**
+ * A fresh browser context already authenticated as `who`, and its first page.
+ *
+ * Hoisted from four j27 specs (#697), which each carried a byte-identical copy
+ * typed on `ThrowawayUser`. It lives HERE rather than in a journey helper for
+ * two reasons: it is `authenticateContext` plus one line, and typing it on
+ * `PersonaName | Credentials` (`ThrowawayUser` is structurally a `Credentials`)
+ * both widens it to seeded personas and keeps `support/` free of a dependency
+ * edge onto `factories.ts`.
+ *
+ * The caller owns the context and must `close()` it — reachable as
+ * `page.context()`.
+ */
+export async function pageAs(browser: Browser, who: PersonaName | Credentials): Promise<Page> {
+	const context = await browser.newContext();
+	await authenticateContext(context, who);
+	return context.newPage();
+}
+
+/**
  * Log in through the UI. On DEMO backends the login page defaults to the
  * test-account dropdown (SSR-decided, #600). Persona NAMES map to seeded
  * accounts, so they take the dropdown path. Raw CREDENTIALS (a throwaway user
  * with no dropdown entry) instead reveal the real email/password form via the
  * "Show login form" toggle and sign in with it. Non-demo backends always use
  * the password form directly.
+ *
+ * `options` exists for the auth-guard round trip: a guest bounced off a
+ * protected route arrives at `/login?returnUrl=…` and must land back on the
+ * page they asked for, not on the dashboard. Both default to the plain
+ * sign-in-from-scratch behaviour every other caller relies on.
  */
-export async function uiLogin(page: Page, who: PersonaName | Credentials): Promise<void> {
+export interface UiLoginOptions {
+	/** Where the login page is entered from. Defaults to a bare `/login`. */
+	startAt?: string;
+	/** URL the successful login must settle on. Defaults to the dashboard. */
+	landsOn?: RegExp;
+}
+
+export async function uiLogin(
+	page: Page,
+	who: PersonaName | Credentials,
+	options: UiLoginOptions = {}
+): Promise<void> {
+	const { startAt = '/login', landsOn = /\/dashboard(\/|$|\?)/ } = options;
 	const persona = typeof who === 'string' ? PERSONAS[who] : who;
-	await gotoHydrated(page, '/login');
+	await gotoHydrated(page, startAt);
 	const demo = await isDemoMode();
 	if (demo && typeof who === 'string') {
 		const select = page.getByLabel('Select Test Account');
@@ -80,5 +116,5 @@ export async function uiLogin(page: Page, who: PersonaName | Credentials): Promi
 		}).toPass({ timeout: 30_000 });
 		await page.getByRole('button', { name: 'Sign in', exact: true }).click();
 	}
-	await page.waitForURL(/\/dashboard(\/|$|\?)/);
+	await page.waitForURL(landsOn);
 }

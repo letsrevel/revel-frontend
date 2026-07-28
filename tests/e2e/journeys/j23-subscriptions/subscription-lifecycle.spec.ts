@@ -77,7 +77,16 @@ test.describe('J23 subscription lifecycle @p2', () => {
 		// Succeeded initial payment → ACTIVE, and the payment row is recorded.
 		await expect(drawer.getByLabel('Active')).toBeVisible({ timeout: 15_000 });
 		await expect(drawer.getByText('Payments')).toBeVisible();
-		await expect(drawer.getByText('15.00 EUR').first()).toBeVisible();
+		// Currency-formatted since b163f3eb ("€15.00", not the raw "15.00 EUR" the
+		// cell rendered before the platform-fee work reused `formatMoney` here).
+		await expect(drawer.getByText('€15.00').first()).toBeVisible();
+
+		// BE #774 follow-up, OFFLINE side: nothing here is Stripe-backed, so the
+		// "Manage/View on Stripe" affordances must be absent — and the refund flow
+		// must be untouched (the ONLINE-only gating must not bleed into offline).
+		await expect(drawer.getByText('Manage on Stripe')).toBeHidden();
+		await expect(drawer.getByText('View on Stripe')).toBeHidden();
+		await expect(drawer.getByRole('button', { name: 'Refund', exact: true })).toBeVisible();
 
 		// Member: the subscription card renders under /account/memberships.
 		const memberContext = await browser.newContext();
@@ -85,19 +94,46 @@ test.describe('J23 subscription lifecycle @p2', () => {
 		const memberPage = await memberContext.newPage();
 		await gotoHydrated(memberPage, '/account/memberships');
 		await waitForClientAuth(memberPage);
-		const card = memberPage.getByRole('article', { name: org.name });
+		// Scoped to the memberships section: the page's Applications section
+		// renders its own <article aria-label="{org name}"> for the (now
+		// completed) application this test's arrange created, so an unscoped
+		// article lookup is ambiguous.
+		const membershipsSection = memberPage.getByRole('region', { name: 'Memberships' });
+		const card = membershipsSection.getByRole('article', { name: org.name });
 		await expect(card).toBeVisible({ timeout: 15_000 });
 		await expect(card.getByText(plan.name)).toBeVisible();
 		await expect(card.getByText('€15.00 / month')).toBeVisible();
 		await expect(card.getByLabel('Active')).toBeVisible();
 
-		// Admin pauses → the member-facing badge follows.
+		// An OFFLINE row is organization-managed, and the backend now says so
+		// itself: `me_subscriptions.change_plan` refuses one with a 400 (an offline
+		// swap is immediate and fee-free, so a self-service Monthly→Annual switch
+		// would turn one staff-recorded monthly payment into a year of membership),
+		// and there is no Stripe portal to send an offline member to. So the card
+		// explains who to talk to INSTEAD of offering buttons that could only fail.
+		// The three assertions above are the positive anchors — an unloaded card
+		// would have failed on them, not here.
+		await expect(card.getByText(`Managed by ${org.name} — contact them to make changes.`)) //
+			.toBeVisible();
+		await expect(card.getByRole('button', { name: 'Change plan' })).toHaveCount(0);
+		await expect(card.getByRole('button', { name: 'Manage billing' })).toHaveCount(0);
+		await expect(card.getByRole('button', { name: 'Cancel membership' })).toHaveCount(0);
+
+		// Admin pauses → the member-facing badge follows. Pause is confirmation-gated
+		// (it also cuts members-only access, not just billing), so the drawer button
+		// only opens the dialog.
 		await drawer.getByRole('button', { name: 'Pause', exact: true }).click();
+		const pauseDialog = admin.getByRole('dialog', { name: 'Pause this subscription?' });
+		await expect(pauseDialog).toBeVisible({ timeout: 10_000 });
+		await expect(
+			pauseDialog.getByText(/loses members-only access until you resume/i)
+		).toBeVisible();
+		await pauseDialog.getByRole('button', { name: 'Pause subscription' }).click();
+		await expect(pauseDialog).toBeHidden({ timeout: 15_000 });
 		await expect(drawer.getByLabel('Paused')).toBeVisible({ timeout: 15_000 });
 		await gotoHydrated(memberPage, '/account/memberships');
-		await expect(
-			memberPage.getByRole('article', { name: org.name }).getByLabel('Paused')
-		).toBeVisible({ timeout: 15_000 });
+		await waitForClientAuth(memberPage);
+		await expect(card.getByLabel('Paused')).toBeVisible({ timeout: 15_000 });
 		await memberContext.close();
 
 		// Resume → ACTIVE again.

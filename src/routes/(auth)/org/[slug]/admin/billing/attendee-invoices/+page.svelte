@@ -699,7 +699,7 @@
 	variant: 'default' | 'destructive'
 )}
 	<Dialog {open} {onOpenChange}>
-		<DialogContent>
+		<DialogContent class="max-h-[90vh] overflow-y-auto">
 			<DialogHeader>
 				<DialogTitle>{title}</DialogTitle>
 				<DialogDescription>{description}</DialogDescription>

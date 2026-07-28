@@ -64,7 +64,7 @@ function renderSection(props: { organizationSlug?: string; venueId?: string } = 
 		props: {
 			client,
 			component: PriceCategorySection,
-			props: {
+			componentProps: {
 				organizationSlug: 'test-org',
 				venueId: 'venue-1',
 				...props

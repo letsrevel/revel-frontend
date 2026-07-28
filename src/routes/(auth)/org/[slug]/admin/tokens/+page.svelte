@@ -279,7 +279,7 @@
 
 <!-- Delete Confirmation -->
 <Dialog open={!!tokenToDelete}>
-	<DialogContent>
+	<DialogContent class="max-h-[90vh] overflow-y-auto">
 		<DialogHeader>
 			<DialogTitle>{m['orgAdminTokensPage.delete_title']()}</DialogTitle>
 			<DialogDescription>

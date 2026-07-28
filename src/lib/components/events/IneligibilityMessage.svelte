@@ -14,7 +14,7 @@
 		Calendar,
 		UserCircle
 	} from '@lucide/svelte';
-	import { getMissingProfileFieldLabel } from '$lib/utils/eligibility';
+	import { getMissingProfileFieldLabel, getReasonCodeMessage } from '$lib/utils/eligibility';
 	import { formatDateTime, formatDateLongMonth } from '$lib/utils/date';
 	import IneligibilityActionButton from './IneligibilityActionButton.svelte';
 	import RetryCountdown from './RetryCountdown.svelte';
@@ -191,6 +191,13 @@
 		// Advanced waitlist reasons (prefer machine-readable code)
 		if (isSpotsReserved) return m['ineligibilityMessage.spotsReserved.header']();
 		if (isWaitingForBatch) return m['ineligibilityMessage.waitingForBatch.header']();
+
+		// Codes with FE copy win over the prose-matching below: the backend renders
+		// `reason` in its own locale, and the substring matches only recognise
+		// English. Defensive here — the only emitter of a mapped code so far is the
+		// purchase path, which never reaches this component.
+		const byCode = getReasonCodeMessage(eligibility.reason_code);
+		if (byCode) return byCode;
 
 		if (eligibility.reason) {
 			// Extract the first sentence or key phrase

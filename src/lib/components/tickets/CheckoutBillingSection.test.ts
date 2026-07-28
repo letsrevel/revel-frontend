@@ -88,7 +88,7 @@ function renderWithQueryClient(props: Record<string, unknown> = {}) {
 		props: {
 			client: queryClient,
 			component: CheckoutBillingSection,
-			props: { ...defaultProps, ...props }
+			componentProps: { ...defaultProps, ...props }
 		}
 	});
 }

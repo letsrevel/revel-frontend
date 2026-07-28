@@ -5,7 +5,8 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 
 // J23 (USER_JOURNEYS.md) — subscription plans admin: plans are created PER
 // MEMBERSHIP TIER from the Tiers tab (each tier card embeds its own plans
-// list), archived in place, and deleted when unused (native confirm()).
+// list), archived in place, and deleted when unused — both behind an in-app
+// confirmation dialog.
 //
 // The design doc's "org policy fields" (membership_grace_period_days /
 // membership_refund_policy) are edited on the org admin Settings page, not here
@@ -83,15 +84,27 @@ test.describe('J23 subscription plans admin @p2', () => {
 		await expect(secondCard.getByText('€100.00 / year')).toBeVisible();
 		await expect(generalCard.getByText(yearlyPlan)).toBeHidden();
 
-		// Archive the monthly plan in place (no confirm dialog).
-		await planRow(page, generalCard, monthlyPlan).getByRole('button', { name: 'Archive' }).click();
+		// Archive the monthly plan — confirmation-gated, because archiving also
+		// blocks plan switches and revivals into it, not just new sign-ups.
+		await planRow(page, generalCard, monthlyPlan)
+			.getByRole('button', { name: 'Archive', exact: true })
+			.click();
+		const archiveDialog = page.getByRole('dialog', { name: `Archive ${monthlyPlan}?` });
+		await expect(archiveDialog).toBeVisible({ timeout: 10_000 });
+		await expect(archiveDialog.getByText(/revivals into this plan stop/i)).toBeVisible();
+		await archiveDialog.getByRole('button', { name: 'Archive plan' }).click();
+		await expect(archiveDialog).toBeHidden({ timeout: 15_000 });
 		await expect(generalCard.getByText('Archived')).toBeVisible({ timeout: 15_000 });
 
-		// Delete the unused yearly plan (native confirm()).
-		page.once('dialog', (d) => void d.accept());
+		// Delete the unused yearly plan (in-app confirm dialog, not native confirm()).
 		await planRow(page, secondCard, yearlyPlan)
 			.getByRole('button', { name: 'Delete plan' })
 			.click();
+		const deleteDialog = page.getByRole('dialog', { name: 'Delete plan' });
+		await expect(deleteDialog).toBeVisible({ timeout: 10_000 });
+		await expect(deleteDialog.getByText(`Delete "${yearlyPlan}"?`)).toBeVisible();
+		await deleteDialog.getByRole('button', { name: 'Delete plan' }).click();
+		await expect(deleteDialog).toBeHidden({ timeout: 15_000 });
 		await expect(secondCard.getByText(yearlyPlan)).toBeHidden({ timeout: 15_000 });
 		await expect(secondCard.getByText('No plans yet.')).toBeVisible();
 

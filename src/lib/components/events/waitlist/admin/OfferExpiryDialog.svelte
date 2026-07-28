@@ -66,7 +66,7 @@
 </script>
 
 <Dialog bind:open onOpenChange={(v) => onOpenChange(v)}>
-	<DialogContent class="max-w-md">
+	<DialogContent class="max-h-[90vh] max-w-md overflow-y-auto">
 		<DialogHeader>
 			<DialogTitle>
 				{m[titleKey]({ userName })}

@@ -233,6 +233,42 @@ export class SeatHoldController {
 	};
 
 	/**
+	 * Adopt server-side holds revealed by a LATER availability payload.
+	 *
+	 * The snapshot a consumer seeds from can predate one of the caller's own
+	 * holds: the overview map places holds tap by tap and hands off to the
+	 * purchase dialog as soon as the hold POST resolves, which is routinely
+	 * BEFORE the matching availability refetch lands. Seeding once from that
+	 * payload left the seat the buyer demonstrably holds rendering as a foreign
+	 * "held by someone else" seat — disabled, and unrecoverable because the seed
+	 * runs once. The server's `my_holds` is the authority on what the caller
+	 * holds, so a hold it reports must never present as someone else's.
+	 *
+	 * Additive only: it never drops a local selection, and it skips seats with an
+	 * in-flight toggle so a release that is still landing is not undone by an
+	 * older payload.
+	 */
+	adoptServerHolds = (): void => {
+		const availability = this.availabilityQuery.data;
+		if (!availability || !this.#validSeatIds) return;
+		const missing = (availability.my_holds ?? []).filter(
+			(id) =>
+				this.#validSeatIds?.has(id) &&
+				!this.myHolds.includes(id) &&
+				!this.pendingSeatIds.includes(id)
+		);
+		if (missing.length === 0) return;
+		const max = Math.max(1, this.#opts.getMaxQuantity());
+		const next = [...this.myHolds, ...missing].slice(0, max);
+		if (next.length === this.myHolds.length) return;
+		this.myHolds = next;
+		this.holdExpiresAt = availability.my_holds_expire_at ?? null;
+		if (this.myHolds.length > this.#opts.getQuantity()) {
+			this.#opts.onAutoGrowQuantity(this.myHolds.length);
+		}
+	};
+
+	/**
 	 * Hold-on-tap toggle. Selecting POSTs a hold (all-or-nothing; a 409 calls
 	 * onConflict with the conflicting seat ids); deselecting releases the hold.
 	 * Serialized per seat: taps on a pending seat are ignored. Selecting past

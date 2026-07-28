@@ -44,17 +44,7 @@
 		},
 		{
 			href: resolve('/(auth)/org/[slug]/admin/members', { slug: data.organization.slug }),
-			label: m['orgAdmin.nav.members'](),
-			subItems: data.organization.accept_membership_requests
-				? [
-						{
-							href: resolve('/(auth)/org/[slug]/admin/members/requests', {
-								slug: data.organization.slug
-							}),
-							label: m['orgAdmin.nav.memberRequests']()
-						}
-					]
-				: undefined
+			label: m['orgAdmin.nav.members']()
 		},
 		{
 			href: resolve('/(auth)/org/[slug]/admin/polls', { slug: data.organization.slug }),

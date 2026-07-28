@@ -1,5 +1,5 @@
 import * as m from '$lib/paraglide/messages.js';
-import { createMutation } from '@tanstack/svelte-query';
+import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 import { invalidateAll } from '$app/navigation';
 import { toast } from 'svelte-sonner';
 import { getUserDisplayName } from '$lib/utils/user-display';
@@ -32,6 +32,9 @@ interface Options {
  * ConfirmDialog stay in the page template, bound to this state.
  */
 export function createTicketMemberAdmin(opts: Options) {
+	// Reads the QueryClient from context — this factory runs at component init.
+	const queryClient = useQueryClient();
+
 	// Make member modal state
 	let showMakeMemberModal = $state(false);
 	let userToMakeMember = $state<MakeMemberUser | null>(null);
@@ -94,6 +97,13 @@ export function createTicketMemberAdmin(opts: Options) {
 			ticketToBlacklist = null;
 			toast.success(m['eventTicketsAdmin.blacklistSuccess']({ name: userName }));
 			invalidateAll();
+			// Blacklisting revokes org membership, which cancels the user's subscription
+			// and stops Stripe billing server-side. `invalidateAll()` only reruns load
+			// functions, so the org admin's cached subscription list + revenue metrics
+			// would otherwise still show them as an active payer.
+			queryClient.invalidateQueries({
+				queryKey: ['organization', opts.getSlug(), 'subscriptions']
+			});
 		},
 		onError: () => {
 			toast.error(m['eventTicketsAdmin.blacklistError']());

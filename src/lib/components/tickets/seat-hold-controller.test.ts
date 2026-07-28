@@ -54,7 +54,7 @@ function setup(
 		props: {
 			client,
 			component: SeatHoldControllerTestHost,
-			props: {
+			componentProps: {
 				options: {
 					eventId: 'event-1',
 					getQuantity: () => quantity,
@@ -638,6 +638,106 @@ describe('SeatHoldController', () => {
 
 			expect(controller.myHolds).toEqual(['s1', 's2']);
 			expect(quantity).toBe(2);
+		});
+	});
+
+	describe('adoptServerHolds', () => {
+		it('adopts a hold the seed snapshot predated instead of leaving it foreign', async () => {
+			// The seed ran against a payload listing only s1: the s2 hold POST had
+			// resolved (so the handing-off surface showed 2 seats) but its
+			// availability refetch had not landed yet.
+			mockResult(eventpublicseatingGetAvailability, {
+				data: {
+					seats: { s1: 'held' },
+					standing: {},
+					my_holds: ['s1'],
+					my_holds_expire_at: EXPIRES_AT
+				}
+			});
+			let quantity = 1;
+			const controller = setup({
+				getQuantity: () => quantity,
+				getMaxQuantity: () => 4,
+				onAutoGrowQuantity: (next) => {
+					quantity = next;
+				}
+			});
+			await waitFor(() => {
+				expect(controller.availabilityQuery.data).toBeDefined();
+			});
+			controller.seedFromAvailability(new Set(['s1', 's2', 's3']));
+			expect(controller.myHolds).toEqual(['s1']);
+
+			// The later payload reveals s2 as the caller's own hold.
+			mockResult(eventpublicseatingGetAvailability, {
+				data: {
+					seats: { s1: 'held', s2: 'held' },
+					standing: {},
+					my_holds: ['s1', 's2'],
+					my_holds_expire_at: EXPIRES_AT
+				}
+			});
+			await controller.availabilityQuery.refetch();
+			controller.adoptServerHolds();
+
+			expect(controller.myHolds).toEqual(['s1', 's2']);
+			expect(quantity).toBe(2);
+		});
+
+		it('is additive only — never drops a local selection', async () => {
+			mockResult(eventpublicseatingGetAvailability, {
+				data: {
+					seats: { s1: 'held', s2: 'held' },
+					standing: {},
+					my_holds: ['s1', 's2'],
+					my_holds_expire_at: EXPIRES_AT
+				}
+			});
+			const controller = setup({ getQuantity: () => 2, getMaxQuantity: () => 4 });
+			await waitFor(() => {
+				expect(controller.availabilityQuery.data).toBeDefined();
+			});
+			controller.seedFromAvailability(new Set(['s1', 's2']));
+
+			controller.adoptServerHolds();
+
+			expect(controller.myHolds).toEqual(['s1', 's2']);
+		});
+
+		it('respects the MAX purchasable quantity', async () => {
+			mockResult(eventpublicseatingGetAvailability, {
+				data: {
+					seats: { s1: 'held' },
+					standing: {},
+					my_holds: ['s1'],
+					my_holds_expire_at: EXPIRES_AT
+				}
+			});
+			let quantity = 1;
+			const controller = setup({
+				getQuantity: () => quantity,
+				getMaxQuantity: () => 2,
+				onAutoGrowQuantity: (next) => {
+					quantity = next;
+				}
+			});
+			await waitFor(() => {
+				expect(controller.availabilityQuery.data).toBeDefined();
+			});
+			controller.seedFromAvailability(new Set(['s1', 's2', 's3']));
+
+			mockResult(eventpublicseatingGetAvailability, {
+				data: {
+					seats: { s1: 'held', s2: 'held', s3: 'held' },
+					standing: {},
+					my_holds: ['s1', 's2', 's3'],
+					my_holds_expire_at: EXPIRES_AT
+				}
+			});
+			await controller.availabilityQuery.refetch();
+			controller.adoptServerHolds();
+
+			expect(controller.myHolds).toEqual(['s1', 's2']);
 		});
 	});
 });

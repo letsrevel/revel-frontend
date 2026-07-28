@@ -63,7 +63,7 @@ describe('SeriesPassCard', () => {
 			props: {
 				client: queryClient,
 				component: SeriesPassCard,
-				props: { pass, seriesId: 'series-1', isAuthenticated }
+				componentProps: { pass, seriesId: 'series-1', isAuthenticated }
 			}
 		});
 	}

@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/svelte';
 import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import RsvpNoteDialog from './RsvpNoteDialog.svelte';
+import { focusSettled } from '$lib/test-utils/focus';
 
 function renderDialog(props: Partial<Record<string, unknown>> = {}) {
 	const onConfirm = vi.fn();
@@ -29,6 +30,7 @@ describe('RsvpNoteDialog', () => {
 	it('passes the edited note to onConfirm', async () => {
 		const user = userEvent.setup();
 		const { onConfirm } = renderDialog();
+		await focusSettled();
 		await user.type(screen.getByLabelText(/note for the organizers/i), 'two of us');
 		await user.click(screen.getByRole('button', { name: /^RSVP Yes$/i }));
 		expect(onConfirm).toHaveBeenCalledWith('two of us');
@@ -58,10 +60,10 @@ describe('RsvpNoteDialog', () => {
 		const user = userEvent.setup();
 		renderDialog();
 		const textarea = screen.getByLabelText(/note for the organizers/i);
-		// bits-ui's focus trap re-steals focus via rAF after the dialog opens,
-		// eating the first keystrokes; click and let the trap settle first.
+		// Let the focus steal land, *then* take the caret back — an ad-hoc
+		// double-rAF wait used to stand here, which the polled gate supersedes.
+		await focusSettled();
 		await user.click(textarea);
-		await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 		await user.type(textarea, 'abc');
 		const counter = textarea
 			.closest('[role="dialog"]')

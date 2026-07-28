@@ -599,6 +599,7 @@
 	bind:open={showTicketTierModal}
 	tiers={ticketTiers}
 	eventId={event.id}
+	organizationSlug={event.organization.slug}
 	isAuthenticated={data.isAuthenticated}
 	membershipTier={data.membershipTier}
 	canAttendWithoutLogin={event.can_attend_without_login}

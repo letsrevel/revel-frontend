@@ -44,7 +44,7 @@
 </script>
 
 <Dialog {open} onOpenChange={onClose}>
-	<DialogContent class="max-w-md">
+	<DialogContent class="max-h-[90vh] max-w-md overflow-y-auto">
 		<DialogHeader>
 			<div class="flex items-center gap-3">
 				<div class="rounded-full bg-primary/10 p-3">

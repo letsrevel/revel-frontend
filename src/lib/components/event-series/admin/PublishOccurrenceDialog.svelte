@@ -96,7 +96,10 @@
 </script>
 
 <Dialog bind:open onOpenChange={(isOpen) => !isOpen && handleClose()}>
-	<DialogContent class="max-w-md" data-testid="publish-occurrence-dialog">
+	<DialogContent
+		class="max-h-[90vh] max-w-md overflow-y-auto"
+		data-testid="publish-occurrence-dialog"
+	>
 		<DialogHeader>
 			<DialogTitle class="flex items-center gap-2">
 				<Megaphone class="h-5 w-5" aria-hidden="true" />

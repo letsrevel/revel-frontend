@@ -10,16 +10,16 @@
 	const {
 		client,
 		component,
-		props = {}
+		componentProps = {}
 	}: {
 		client: QueryClient;
 		component: Component;
-		props?: Record<string, unknown>;
+		componentProps?: Record<string, unknown>;
 	} = $props();
 
 	const Child = $derived(component);
 </script>
 
 <QueryClientProvider {client}>
-	<Child {...props} />
+	<Child {...componentProps} />
 </QueryClientProvider>

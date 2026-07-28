@@ -171,9 +171,16 @@
 	// are loaded (intersected with this sector's seats, capped to quantity).
 	let seeded = false;
 	$effect(() => {
-		if (seeded || !controller || !isUserChoiceSeat || !chart || !availability) return;
-		seeded = true;
-		controller.seedFromAvailability(collectValidSeatIds(chart));
+		if (!controller || !isUserChoiceSeat || !chart || !availability) return;
+		if (!seeded) {
+			seeded = true;
+			controller.seedFromAvailability(collectValidSeatIds(chart));
+			return;
+		}
+		// The seed snapshot can predate a hold the caller already placed (handed
+		// off from the overview map mid-refetch). Adopt what later payloads
+		// reveal, or the buyer's own seat stays "held by someone else" forever.
+		controller.adoptServerHolds();
 	});
 
 	// ALLOW-list of categories this tier sells (null = flat tier): painted

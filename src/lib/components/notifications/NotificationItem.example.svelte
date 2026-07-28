@@ -49,7 +49,7 @@
 		notification_type: 'membership_request_approved',
 		title: 'Membership Approved',
 		body: 'Your membership to **Tech Community** has been approved!',
-		context: { org_slug: 'tech-community' },
+		context: { organization_slug: 'tech-community' },
 		read_at: null,
 		created_at: new Date(Date.now() - 1000 * 60 * 5).toISOString() // 5 minutes ago
 	};

@@ -62,7 +62,7 @@ function setup() {
 		props: {
 			client,
 			component: SeatOverridesPanel,
-			props: { eventId: 'event-1', accessToken: 'token-1' }
+			componentProps: { eventId: 'event-1', accessToken: 'token-1' }
 		}
 	});
 }

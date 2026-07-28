@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { toast } from 'svelte-sonner';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		organizationadminsubscriptionsGetSubscription,
@@ -8,11 +9,12 @@
 		organizationadminsubscriptionsCancelSubscription,
 		organizationadminsubscriptionsPauseSubscription,
 		organizationadminsubscriptionsResumeSubscription,
-		organizationadminsubscriptionsRefundPayment
+		organizationadminsubscriptionsRefundPayment,
+		organizationadminsubscriptionsUncancelSubscription
 	} from '$lib/api/generated/sdk.gen';
 	import type {
 		SubscriptionSchema,
-		PaymentSchema2,
+		MembershipPaymentSchema,
 		OrganizationAdminDetailSchema,
 		PaymentRecordSchema,
 		CancelSubscriptionSchema
@@ -20,13 +22,20 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
-	import { Loader2 } from '@lucide/svelte';
+	import { AlertTriangle, ExternalLink, Loader2 } from '@lucide/svelte';
 	import StatusBadge from './StatusBadge.svelte';
 	import PaymentsTable from './PaymentsTable.svelte';
 	import RecordPaymentModal from './RecordPaymentModal.svelte';
 	import CancelSubscriptionDialog from './CancelSubscriptionDialog.svelte';
 	import RefundPaymentDialog from './RefundPaymentDialog.svelte';
-	import { getAvailableActions, formatPlanPrice, getDateLine } from '$lib/utils/subscriptions';
+	import StaffReviveModal from './StaffReviveModal.svelte';
+	import {
+		getAvailableActions,
+		formatPlanPrice,
+		getDateLine,
+		isSubscriptionActivationPending
+	} from '$lib/utils/subscriptions';
+	import { backendMessage } from '$lib/utils/api-error-detail';
 	import { formatDate } from '$lib/utils/date';
 
 	interface Props {
@@ -56,7 +65,10 @@
 				path: { slug: organization.slug, sub_id: subId },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
-			if (res.error) throw new Error('Failed to load subscription');
+			if (res.error)
+				throw new Error(
+					backendMessage(res.error) || m['orgAdmin.members.subscriptions.drawer.errors.load']()
+				);
 			return res.data as SubscriptionSchema;
 		},
 		enabled: open && !!accessToken
@@ -69,15 +81,45 @@
 				path: { slug: organization.slug, sub_id: subId },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
-			if (res.error) throw new Error('Failed to load payments');
-			return (res.data?.results ?? []) as PaymentSchema2[];
+			if (res.error)
+				throw new Error(
+					backendMessage(res.error) ||
+						m['orgAdmin.members.subscriptions.drawer.errors.loadPayments']()
+				);
+			return (res.data?.results ?? []) as MembershipPaymentSchema[];
 		},
 		enabled: open && !!accessToken
 	}));
 
 	const sub = $derived(subQuery.data as SubscriptionSchema);
 	const payments = $derived(paymentsQuery.data ?? []);
-	const actions = $derived(sub ? getAvailableActions(sub) : null);
+	// `member_status` is a queryset annotation on the admin subscription schemas —
+	// the *member row's* status, not this subscription's — and it is what lets the
+	// undo button be pre-gated on the 403 the uncancel service would answer. `null`
+	// means no member row exists at all, which is not "active": `canUncancel` treats
+	// it, like an absent value, as "cannot pre-gate, let the server decide".
+	const actions = $derived(sub ? getAvailableActions(sub, sub.member_status) : null);
+
+	// The plan's payment method is the same source the backend refund guard reads
+	// (`payment.subscription.plan.payment_method`), so gating on it here keeps the
+	// UI and the 400 exactly in step.
+	const isOnlinePlan = $derived(!!sub && sub.plan.payment_method === 'online');
+
+	// Stripe stops billing once a subscription is cancelled or expired, so the
+	// "payments arrive automatically" reassurance would be misleading there.
+	const TERMINAL_STATUSES = ['cancelled', 'expired'];
+	const showOnlinePaymentsNote = $derived(
+		isOnlinePlan && !!sub && !TERMINAL_STATUSES.includes(sub.status)
+	);
+
+	// Pause is the only action `cancel_at_period_end` takes away, and it does so on
+	// a row that otherwise looks pausable — so name the remedy (Undo cancellation,
+	// rendered in the action row above) instead of leaving a silent gap.
+	// Kept on the raw flag rather than on `actions.uncancel`: when the plan has been
+	// archived since, the undo button is gone but the block still needs explaining.
+	const showPauseBlockedNote = $derived(
+		!!sub && sub.status === 'active' && !!sub.cancel_at_period_end
+	);
 
 	const isLoading = $derived.by(() => {
 		const loading = subQuery.isLoading;
@@ -88,15 +130,40 @@
 		return loading || !data;
 	});
 
+	// `pending_plan` is only ever written by the ONLINE scheduled-downgrade path
+	// (`subscription_stripe_plan_change.schedule_online_downgrade`); the OFFLINE
+	// switch clears it in the same save. So a set `pending_plan_id` is exactly the
+	// case where pause/cancel call `release_online_schedule` and drop the switch —
+	// and the OFFLINE pause, which drops nothing, never shows the warning.
+	const hasPendingSwitch = $derived(!!sub?.pending_plan_id);
+
+	// `stripe_dashboard_url` is built server-side with this precedence
+	// (`MembershipSubscription.stripe_dashboard_url`): the Stripe *Subscription*
+	// once `stripe_subscription_id` is linked, otherwise the hosted *Checkout
+	// Session* that will create it — which is what finally makes a PENDING row
+	// inspectable ("the member says they paid but it still shows PENDING"). It stays
+	// null for OFFLINE/unlinked rows, so the `{#if}` on the URL keeps the button
+	// away rather than rendering a dead anchor. A session page is not a management
+	// surface, so mirror the precedence here and label what the link actually opens.
+	const stripeLinkIsCheckoutSession = $derived(!!sub && !sub.stripe_subscription_id);
+
 	let recordOpen = $state(false);
 	let cancelOpen = $state(false);
-	let refundTarget = $state<PaymentSchema2 | null>(null);
+	let pauseConfirmOpen = $state(false);
+	let reviveOpen = $state(false);
+	let refundTarget = $state<MembershipPaymentSchema | null>(null);
 
 	function invalidateAll() {
 		queryClient.invalidateQueries({ queryKey: subKey });
 		queryClient.invalidateQueries({ queryKey: paymentsKey });
 		queryClient.invalidateQueries({
 			queryKey: ['organization', organization.slug, 'subscriptions']
+		});
+		// A subscription save syncs the member row too — the BE signal maps PAUSED
+		// onto member paused and CANCELLED/EXPIRED onto member cancelled. Without
+		// this the Members tab on the same page keeps the pre-mutation status.
+		queryClient.invalidateQueries({
+			queryKey: ['organization', organization.slug, 'members']
 		});
 	}
 
@@ -107,14 +174,18 @@
 				body: payload,
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
-			if (res.error) throw new Error('Failed to record payment');
-			return res.data as PaymentSchema2;
+			if (res.error)
+				throw new Error(
+					backendMessage(res.error) ||
+						m['orgAdmin.members.subscriptions.drawer.errors.recordPayment']()
+				);
+			return res.data as MembershipPaymentSchema;
 		},
 		onSuccess: () => {
 			invalidateAll();
 			recordOpen = false;
 		},
-		onError: (err: Error) => alert(`Failed to record payment: ${err.message}`)
+		onError: (err: Error) => toast.error(err.message)
 	}));
 
 	const cancelMut = createMutation(() => ({
@@ -124,14 +195,41 @@
 				body: payload,
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
-			if (res.error) throw new Error('Failed to cancel');
+			// 409 (`subscription_activation_pending`), only reachable from the
+			// *immediate* path: the backend must expire this row's still-payable hosted
+			// Checkout Session before terminalizing it, and the re-read came back
+			// `complete` — the member finished paying mid-round-trip. The money moved,
+			// the activation webhooks are in flight, and the cancellation was
+			// **aborted**. Not a failure, so it must not reach `toast.error`: staff
+			// reading a red "couldn't cancel" would go looking for a bug instead of
+			// learning that the row is about to go ACTIVE and can be cancelled then.
+			// Keyed on the machine-readable `code`; the sibling `detail` is translated.
+			if (isSubscriptionActivationPending(res.error)) return null;
+			if (res.error)
+				throw new Error(
+					// 502: Stripe was unreachable and the cancel was aborted, so the row is
+					// exactly as it was. The backend's detail ("Payment processing
+					// failed…") reads like a charge failed, which is not what happened, so
+					// this status gets its own copy that says nothing changed and to retry.
+					res.response?.status === 502
+						? m['orgAdmin.members.subscriptions.drawer.errors.cancelStripeUnreachable']()
+						: backendMessage(res.error) ||
+								m['orgAdmin.members.subscriptions.drawer.errors.cancel']()
+				);
 			return res.data;
 		},
-		onSuccess: () => {
+		onSuccess: (data) => {
 			invalidateAll();
 			cancelOpen = false;
+			// `null` is the activation-pending answer: the subscription was NOT
+			// cancelled. Closing the dialog is still right — a retry can only hit the
+			// same 409 until the webhooks land — but staff have to be told why, and
+			// told neutrally.
+			if (data === null) {
+				toast.info(m['orgAdmin.members.subscriptions.drawer.cancelActivationPending']());
+			}
 		},
-		onError: (err: Error) => alert(`Failed to cancel: ${err.message}`)
+		onError: (err: Error) => toast.error(err.message)
 	}));
 
 	const pauseMut = createMutation(() => ({
@@ -140,11 +238,17 @@
 				path: { slug: organization.slug, sub_id: subId },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
-			if (res.error) throw new Error('Failed to pause');
+			if (res.error)
+				throw new Error(
+					backendMessage(res.error) || m['orgAdmin.members.subscriptions.drawer.errors.pause']()
+				);
 			return res.data;
 		},
-		onSuccess: invalidateAll,
-		onError: (err: Error) => alert(`Failed to pause: ${err.message}`)
+		onSuccess: () => {
+			invalidateAll();
+			pauseConfirmOpen = false;
+		},
+		onError: (err: Error) => toast.error(err.message)
 	}));
 
 	const resumeMut = createMutation(() => ({
@@ -153,11 +257,50 @@
 				path: { slug: organization.slug, sub_id: subId },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
-			if (res.error) throw new Error('Failed to resume');
+			if (res.error)
+				throw new Error(
+					backendMessage(res.error) || m['orgAdmin.members.subscriptions.drawer.errors.resume']()
+				);
 			return res.data;
 		},
 		onSuccess: invalidateAll,
-		onError: (err: Error) => alert(`Failed to resume: ${err.message}`)
+		onError: (err: Error) => toast.error(err.message)
+	}));
+
+	/**
+	 * #808 — clear a scheduled cancellation, which also unblocks Pause on this row.
+	 * One click, like Resume: it restores the state the row was in before someone
+	 * scheduled the cancellation, and the Cancel dialog next to it is the undo.
+	 *
+	 * The button *is* gated on the member's suspension, same as the member-facing
+	 * card: `SubscriptionSchema.member_status` carries the member row's status
+	 * alongside the subscription's own (see `actions` above). That is a pre-gate,
+	 * not a guarantee — the member row can be suspended between load and click, and
+	 * `member_status` may be absent — so the 403 below is still a live path.
+	 */
+	const uncancelMut = createMutation(() => ({
+		mutationFn: async () => {
+			const res = await organizationadminsubscriptionsUncancelSubscription({
+				path: { slug: organization.slug, sub_id: subId },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+			// Every refusal is shown verbatim: the 502 says the cancellation is still
+			// scheduled on both sides, and the suspended-membership 403 now answers this
+			// endpoint with organizer-facing copy of its own ("Restore the member before
+			// resuming renewals."), so there is nothing left here to override.
+			if (res.error)
+				throw new Error(
+					backendMessage(res.error) || m['orgAdmin.members.subscriptions.drawer.errors.uncancel']()
+				);
+			return res.data;
+		},
+		onSuccess: () => {
+			invalidateAll();
+			// The button vanishes with the state it was gating; without this the only
+			// feedback would be a control silently disappearing.
+			toast.success(m['orgAdmin.members.subscriptions.drawer.uncancelDone']());
+		},
+		onError: (err: Error) => toast.error(err.message)
 	}));
 
 	const refundMut = createMutation(() => ({
@@ -167,14 +310,17 @@
 				body: { notes },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
-			if (res.error) throw new Error('Failed to refund');
+			if (res.error)
+				throw new Error(
+					backendMessage(res.error) || m['orgAdmin.members.subscriptions.drawer.errors.refund']()
+				);
 			return res.data;
 		},
 		onSuccess: () => {
 			invalidateAll();
 			refundTarget = null;
 		},
-		onError: (err: Error) => alert(`Failed to refund: ${err.message}`)
+		onError: (err: Error) => toast.error(err.message)
 	}));
 
 	function fmtDate(d: string | null | undefined): string {
@@ -183,7 +329,7 @@
 </script>
 
 <Dialog {open} onOpenChange={(v: boolean) => (!v ? onClose() : null)}>
-	<DialogContent class="sm:max-w-3xl">
+	<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
 		{#if isLoading}
 			<Loader2 class="h-5 w-5 animate-spin" />
 		{:else}
@@ -229,11 +375,28 @@
 						{m['orgAdmin.members.subscriptions.drawer.recordPayment']()}
 					</Button>
 				{/if}
+				<!-- Sits where Pause would be: on a row scheduled to cancel these two are
+				     mutually exclusive, and this is the button that brings Pause back. -->
+				{#if actions?.uncancel}
+					<Button
+						size="sm"
+						onclick={() => uncancelMut.mutate()}
+						disabled={uncancelMut.isPending}
+						aria-busy={uncancelMut.isPending}
+					>
+						{#if uncancelMut.isPending}
+							<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+							{m['orgAdmin.members.subscriptions.drawer.uncancelling']()}
+						{:else}
+							{m['orgAdmin.members.subscriptions.drawer.uncancel']()}
+						{/if}
+					</Button>
+				{/if}
 				{#if actions?.pause}
 					<Button
 						size="sm"
 						variant="outline"
-						onclick={() => pauseMut.mutate()}
+						onclick={() => (pauseConfirmOpen = true)}
 						disabled={pauseMut.isPending}
 					>
 						{m['orgAdmin.members.subscriptions.drawer.pause']()}
@@ -254,7 +417,38 @@
 						{m['orgAdmin.members.subscriptions.drawer.cancel']()}
 					</Button>
 				{/if}
+				{#if actions?.revive}
+					<Button size="sm" variant="outline" onclick={() => (reviveOpen = true)}>
+						{m['orgAdmin.members.subscriptions.drawer.revive']()}
+					</Button>
+				{/if}
+				{#if sub.stripe_dashboard_url}
+					<Button
+						href={sub.stripe_dashboard_url}
+						target="_blank"
+						rel="noopener noreferrer"
+						size="sm"
+						variant="outline"
+					>
+						<ExternalLink class="h-4 w-4" aria-hidden="true" />
+						{stripeLinkIsCheckoutSession
+							? m['orgAdmin.members.subscriptions.drawer.checkoutOnStripe']()
+							: m['orgAdmin.members.subscriptions.drawer.manageOnStripe']()}
+					</Button>
+				{/if}
 			</div>
+
+			{#if showPauseBlockedNote}
+				<p class="text-xs text-muted-foreground">
+					{m['orgAdmin.members.subscriptions.drawer.pauseBlockedByCancel']()}
+				</p>
+			{/if}
+
+			{#if showOnlinePaymentsNote}
+				<p class="text-xs text-muted-foreground">
+					{m['orgAdmin.members.subscriptions.drawer.onlinePayments']()}
+				</p>
+			{/if}
 
 			<div class="pt-2">
 				<h4 class="mb-2 text-sm font-semibold">
@@ -263,7 +457,7 @@
 				{#if paymentsQuery.isLoading}
 					<Loader2 class="h-4 w-4 animate-spin" />
 				{:else}
-					<PaymentsTable {payments} onRefund={(p) => (refundTarget = p)} />
+					<PaymentsTable {payments} {isOnlinePlan} onRefund={(p) => (refundTarget = p)} />
 				{/if}
 			</div>
 
@@ -274,6 +468,54 @@
 				onSubmit={(p) => recordMut.mutate(p)}
 				isSubmitting={recordMut.isPending}
 			/>
+			<StaffReviveModal
+				{sub}
+				{subId}
+				{organization}
+				open={reviveOpen}
+				onClose={() => (reviveOpen = false)}
+				onSuccess={invalidateAll}
+			/>
+			<!-- Pause is destructive in effect, not in name: it stops billing AND drops
+			     the member out of members-only events and tiers until a resume. Resume
+			     stays one-click — it only restores access. -->
+			<Dialog
+				open={pauseConfirmOpen}
+				onOpenChange={(v: boolean) => {
+					if (!v && !pauseMut.isPending) pauseConfirmOpen = false;
+				}}
+			>
+				<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-md">
+					<DialogHeader>
+						<DialogTitle>
+							{m['orgAdmin.members.subscriptions.drawer.pauseConfirmTitle']()}
+						</DialogTitle>
+					</DialogHeader>
+					<div class="flex gap-3 text-sm text-muted-foreground">
+						<AlertTriangle class="mt-0.5 h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
+						<div class="space-y-1">
+							<p>{m['orgAdmin.members.subscriptions.drawer.pauseConfirmBody']()}</p>
+							{#if hasPendingSwitch}
+								<p>{m['orgAdmin.members.subscriptions.drawer.pauseConfirmPendingSwitch']()}</p>
+							{/if}
+						</div>
+					</div>
+					<div class="flex justify-end gap-2">
+						<Button
+							type="button"
+							variant="outline"
+							onclick={() => (pauseConfirmOpen = false)}
+							disabled={pauseMut.isPending}
+						>
+							{m['orgAdmin.members.subscriptions.drawer.pauseConfirmDismiss']()}
+						</Button>
+						<Button type="button" onclick={() => pauseMut.mutate()} disabled={pauseMut.isPending}>
+							{#if pauseMut.isPending}<Loader2 class="mr-2 h-4 w-4 animate-spin" />{/if}
+							{m['orgAdmin.members.subscriptions.drawer.pauseConfirmCta']()}
+						</Button>
+					</div>
+				</DialogContent>
+			</Dialog>
 			<CancelSubscriptionDialog
 				subscription={sub}
 				open={cancelOpen}

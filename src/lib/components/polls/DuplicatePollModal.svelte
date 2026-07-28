@@ -131,7 +131,7 @@
 </script>
 
 <Dialog bind:open onOpenChange={(isOpen) => !isOpen && handleClose()}>
-	<DialogContent class="max-w-md">
+	<DialogContent class="max-h-[90vh] max-w-md overflow-y-auto">
 		<DialogHeader>
 			<DialogTitle class="flex items-center gap-2">
 				<Copy class="h-5 w-5" aria-hidden="true" />

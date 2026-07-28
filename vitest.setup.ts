@@ -30,6 +30,40 @@ if (typeof globalThis.ResizeObserver === 'undefined') {
 	globalThis.ResizeObserver = ResizeObserverStub as unknown as typeof ResizeObserver;
 }
 
+// jsdom implements no Web Animations API, but Svelte 5 drives `transition:`
+// through `Element.animate` — so rendering any component with a transition
+// (e.g. ConfirmDialog's fade/scale) throws "element.animate is not a function".
+// The stub reports an already-finished animation: transitions become instant,
+// which is what a test wants anyway. Installed only when absent, so a real
+// implementation (should jsdom ever ship one) always wins.
+if (typeof Element !== 'undefined' && typeof Element.prototype.animate !== 'function') {
+	const noop = (): void => {
+		// no-op: the stub animation is already finished, so nothing to control
+	};
+	Element.prototype.animate = function stubAnimate(): Animation {
+		const animation = {
+			currentTime: 0,
+			startTime: 0,
+			playbackRate: 1,
+			playState: 'finished',
+			finished: Promise.resolve(),
+			effect: { getComputedTiming: () => ({ delay: 0, duration: 0 }) },
+			onfinish: null as null | (() => void),
+			oncancel: null as null | (() => void),
+			cancel: noop,
+			pause: noop,
+			play: noop,
+			finish: noop,
+			reverse: noop,
+			addEventListener: noop,
+			removeEventListener: noop
+		};
+		// Let the caller assign `onfinish` before it fires.
+		queueMicrotask(() => animation.onfinish?.());
+		return animation as unknown as Animation;
+	};
+}
+
 // bits-ui 2's body scroll-lock schedules a ~24ms setTimeout on dialog unmount
 // to restore document.body styles (dist/internal/body-scroll-lock.svelte.js).
 // If a file's last test unmounted a dialog, that timer can fire after vitest

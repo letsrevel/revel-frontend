@@ -8,7 +8,8 @@
 	} from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
 	import { getBackendUrl } from '$lib/config/api';
-	import RequestMembershipButton from '$lib/components/organization/RequestMembershipButton.svelte';
+	import MembershipCta from '$lib/components/organization/membership/MembershipCta.svelte';
+	import { Button } from '$lib/components/ui/button';
 	import OrgContactButton from '$lib/components/organization/OrgContactButton.svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import FollowButton from '$lib/components/common/FollowButton.svelte';
@@ -43,6 +44,12 @@
 
 	// Compute full logo URL - prefer thumbnail for small display sizes
 	const logoUrl = $derived(getImageUrl(organization.logo_thumbnail_url || organization.logo));
+
+	// The plans live in the org page's `#membership` section; the fragment
+	// cannot be expressed through resolve(), so it is appended to it.
+	const membershipHref = $derived(
+		`${resolve('/(public)/org/[slug]', { slug: organization.slug })}#membership`
+	);
 </script>
 
 <section aria-labelledby="organizer-heading" class={cn('space-y-4', className)}>
@@ -87,9 +94,12 @@
 				{m['organizationInfo.viewProfile']()}
 			</a>
 
-			<!-- Request Membership Button (if org accepts members and user is not a member) -->
-			{#if organization.accept_membership_requests}
-				<RequestMembershipButton
+			<!-- Standing with the org, or a pointer at where to join it. The badge
+			     branches come from MembershipCta (which owns the ported badges);
+			     joining itself lives on the org page, so this side only links to
+			     it — no eligibility round trip per event page. -->
+			{#if isOwner || isStaff || isMember}
+				<MembershipCta
 					organizationSlug={organization.slug}
 					organizationName={organization.name}
 					{isAuthenticated}
@@ -100,6 +110,10 @@
 					{isStaff}
 					class="inline-flex"
 				/>
+			{:else if organization.accept_membership_requests}
+				<Button href={membershipHref} variant="outline">
+					{m['membershipPlans.viewMembership']()}
+				</Button>
 			{/if}
 
 			<!-- Follow Button -->

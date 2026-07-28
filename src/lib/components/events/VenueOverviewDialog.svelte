@@ -176,7 +176,7 @@
 			if (!isOpen) closeChooser();
 		}}
 	>
-		<DialogContent class="max-w-md">
+		<DialogContent class="max-h-[90vh] max-w-md overflow-y-auto">
 			<DialogHeader>
 				<DialogTitle>
 					{m['venueOverview.chooserTitle']({ sector: chooserEntry.sectorName })}

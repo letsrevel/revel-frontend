@@ -424,7 +424,7 @@
 			if (!open) handleCancelDelete();
 		}}
 	>
-		<DialogContent class="sm:max-w-[425px]">
+		<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-[425px]">
 			<DialogHeader>
 				<DialogTitle>{m['announcements.confirm.delete']()}</DialogTitle>
 				<DialogDescription>
@@ -470,7 +470,7 @@
 			if (!open) handleCancelSend();
 		}}
 	>
-		<DialogContent class="sm:max-w-[425px]">
+		<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-[425px]">
 			<DialogHeader>
 				<DialogTitle>{m['announcements.confirm.send']()}</DialogTitle>
 				<DialogDescription>

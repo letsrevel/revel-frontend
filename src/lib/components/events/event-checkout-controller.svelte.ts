@@ -14,6 +14,7 @@ import type {
 	BuyerBillingInfoSchema
 } from '$lib/api/generated/types.gen';
 import { seatingBodyFields, type SeatingCheckoutFields } from '$lib/types/tickets';
+import { getEligibilityRefusalMessage } from '$lib/utils/eligibility';
 import type { EventTicketSchemaActual, UserEventStatus } from '$lib/utils/eligibility';
 import {
 	createReservationRetry,
@@ -24,15 +25,22 @@ import * as m from '$lib/paraglide/messages.js';
 import { toast } from 'svelte-sonner';
 
 /**
- * Read the (undeclared) runtime `detail` field some backend error payloads carry.
- * Returns the detail when it is a non-empty string, otherwise the fallback.
+ * Turn a backend error envelope into a throwable Error.
+ *
+ * Two shapes arrive here: the (undeclared) runtime `detail` field most payloads
+ * carry, and — since BE #807 — a refused purchase, which answers 400 with the
+ * whole `EventUserEligibility` payload and has no `detail` at all, so it would
+ * otherwise land on the generic fallback. The refusal is read first and kept as
+ * `cause`, so the confirmation dialog can recognise it and offer its own CTA.
  */
-function errorDetailOr(error: unknown, fallback: string): string {
+function checkoutError(error: unknown, fallback: string): Error {
+	const refusal = getEligibilityRefusalMessage(error);
+	if (refusal) return new Error(refusal, { cause: error });
 	if (typeof error === 'object' && error !== null && 'detail' in error) {
 		const { detail } = error;
-		if (typeof detail === 'string' && detail) return detail;
+		if (typeof detail === 'string' && detail) return new Error(detail);
 	}
-	return fallback;
+	return new Error(fallback);
 }
 
 // Type for checkout parameters
@@ -235,7 +243,7 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 				body
 			});
 			if (response.error) {
-				throw new Error(errorDetailOr(response.error, 'Failed to claim ticket'));
+				throw checkoutError(response.error, 'Failed to claim ticket');
 			}
 			return withCheckoutSessionUrl(response.data, fingerprint);
 		},
@@ -260,7 +268,7 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 				body
 			});
 			if (response.error) {
-				throw new Error(errorDetailOr(response.error, 'Failed to checkout'));
+				throw checkoutError(response.error, 'Failed to checkout');
 			}
 			return withCheckoutSessionUrl(response.data, fingerprint);
 		},
@@ -285,7 +293,7 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 				body
 			});
 			if (response.error) {
-				throw new Error(errorDetailOr(response.error, 'Failed to checkout'));
+				throw checkoutError(response.error, 'Failed to checkout');
 			}
 			return withCheckoutSessionUrl(response.data, fingerprint);
 		},
@@ -401,7 +409,7 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 			});
 
 			if (response.error) {
-				throw new Error(errorDetailOr(response.error, 'Failed to resume checkout'));
+				throw checkoutError(response.error, 'Failed to resume checkout');
 			}
 			return response.data;
 		},
@@ -429,7 +437,7 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 			});
 
 			if (response.error) {
-				throw new Error(errorDetailOr(response.error, 'Failed to cancel reservation'));
+				throw checkoutError(response.error, 'Failed to cancel reservation');
 			}
 			return response.data;
 		},

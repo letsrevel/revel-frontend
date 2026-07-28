@@ -25,7 +25,8 @@
 		eventpublicdiscoveryListEvents,
 		eventseriesListEventSeries
 	} from '$lib/api/generated/sdk.gen';
-	import RequestMembershipButton from '$lib/components/organization/RequestMembershipButton.svelte';
+	import MembershipCta from '$lib/components/organization/membership/MembershipCta.svelte';
+	import MembershipSection from '$lib/components/organization/membership/MembershipSection.svelte';
 	import OrgContactButton from '$lib/components/organization/OrgContactButton.svelte';
 	import ClaimMembershipButton from '$lib/components/organizations/ClaimMembershipButton.svelte';
 	import OrgMembershipInline from '$lib/components/account/OrgMembershipInline.svelte';
@@ -315,9 +316,9 @@
 						tokenDetails={data.organizationTokenDetails}
 						class="inline-flex items-center gap-2"
 					/>
-					<!-- Request Membership Button (if org accepts members and user is not a member) -->
+					<!-- Membership CTA (if org accepts members and user is not a member) -->
 				{:else if organization.accept_membership_requests}
-					<RequestMembershipButton
+					<MembershipCta
 						organizationSlug={organization.slug}
 						organizationName={organization.name}
 						isAuthenticated={data.isAuthenticated}
@@ -326,7 +327,6 @@
 						membershipStatus={data.membershipStatus}
 						isOwner={data.isOwner}
 						isStaff={data.isStaff}
-						membershipRefundPolicy={organization.membership_refund_policy}
 					/>
 				{/if}
 
@@ -355,7 +355,11 @@
 
 		{#if data.isAuthenticated && organization.id}
 			<div class="mb-6">
-				<OrgMembershipInline orgId={organization.id} orgName={organization.name} />
+				<OrgMembershipInline
+					orgId={organization.id}
+					orgName={organization.name}
+					plans={data.membershipPlans}
+				/>
 			</div>
 		{/if}
 
@@ -366,6 +370,13 @@
 				organizationName={organization.name}
 			/>
 		</div>
+
+		<!-- Membership Section (plans, checkout return, refund policy) -->
+		<MembershipSection
+			{organization}
+			plans={data.membershipPlans}
+			isAuthenticated={data.isAuthenticated}
+		/>
 
 		<!-- Resources Section -->
 		{#if displayedResources.length > 0}

@@ -2,11 +2,13 @@ import type {
 	EventUserEligibility,
 	EventUserStatusResponse,
 	NextStep,
+	ReasonCode,
 	EventRsvpSchema,
 	UserTicketSchema,
 	RsvpStatus as ApiRsvpStatus,
 	TicketStatus as ApiTicketStatus
 } from '$lib/api/generated/types.gen';
+import * as m from '$lib/paraglide/messages.js';
 import { formatDateTime } from './date';
 
 /**
@@ -24,12 +26,6 @@ export type TicketStatus = ApiTicketStatus; // 'pending' | 'active' | 'checked_i
  * The generated types show this as just 'string', but backend actually uses a TextChoices enum
  */
 export type InvitationRequestStatus = 'pending' | 'approved' | 'rejected';
-
-/**
- * Membership Request Status - From OrganizationMembershipRequest.Status backend enum
- * The generated types show this as just 'string', but backend actually uses a TextChoices enum
- */
-export type MembershipRequestStatus = 'pending' | 'approved' | 'rejected';
 
 /**
  * Legacy alias for backward compatibility
@@ -130,7 +126,40 @@ export function isAttending(status: UserEventStatusResponse): boolean {
 }
 
 /**
+ * Localized prose per event reason code.
+ *
+ * Deliberately near-empty, mirroring `membership-eligibility.ts`: every other
+ * code still resolves through the backend-supplied `reason` string, which is
+ * adequate prose (in the backend's locale) for codes the UI has no special
+ * handling for. Entries are added only when the FE has something better to say.
+ *
+ * `membership_tier_required` (BE #807) is here because it has exactly one
+ * emission site — `batch_ticket_service/eligibility.py:90`, the purchase path —
+ * and the payload carries NOTHING to qualify it: no required-tier list, and no
+ * way to tell a non-member from a member on the wrong tier (the backend emits
+ * the same body for both, deliberately). So the copy has to be one sentence
+ * that is true of both, and the FE-localized version beats the backend's.
+ */
+const REASON_CODE_MESSAGES: Partial<Record<ReasonCode, () => string>> = {
+	membership_tier_required: () => m['eligibility.reason.membership_tier_required']()
+};
+
+/**
+ * Localized prose for a reason code, or `null` when the code has no FE copy and
+ * the caller should fall back to the backend `reason`.
+ */
+export function getReasonCodeMessage(reasonCode: ReasonCode | null | undefined): string | null {
+	if (!reasonCode) return null;
+	const mapped = REASON_CODE_MESSAGES[reasonCode];
+	return mapped ? mapped() : null;
+}
+
+/**
  * Get user-friendly message for next step
+ *
+ * Most entries are still untranslated literals (pre-existing debt). The
+ * `upgrade_membership` entry is localized because BE #807 made it reachable for
+ * the first time — it is emitted by, and only by, the membership-tier gate.
  */
 export function getNextStepMessage(nextStep: NextStep): string {
 	const messages: Record<NextStep, string> = {
@@ -145,7 +174,7 @@ export function getNextStepMessage(nextStep: NextStep): string {
 		join_waitlist: 'This event is full, but you can join the waitlist',
 		wait_for_open_spot: "You're on the waitlist for this event",
 		wait_for_event_to_open: 'Check back when registration opens',
-		upgrade_membership: 'Upgrade your membership tier to attend this event',
+		upgrade_membership: m['eligibility.nextStep.upgrade_membership'](),
 		request_whitelist: 'Additional verification is required to access this organization',
 		wait_for_whitelist_approval: 'Your verification request is pending approval',
 		complete_profile: 'Complete your profile to attend this event'
@@ -156,6 +185,12 @@ export function getNextStepMessage(nextStep: NextStep): string {
 
 /**
  * Get action button text for next step
+ *
+ * `upgrade_membership` reuses the org page's own CTA label rather than saying
+ * "Upgrade Membership": the gate refuses non-members too (they have nothing to
+ * upgrade), and the destination — the org's membership plans — is the same
+ * place `membershipPlans.viewMembership` points at everywhere else, so the two
+ * entry points must read identically.
  */
 export function getActionButtonText(nextStep: NextStep): string {
 	const buttonTexts: Record<NextStep, string> = {
@@ -170,7 +205,7 @@ export function getActionButtonText(nextStep: NextStep): string {
 		join_waitlist: 'Join Waitlist',
 		wait_for_open_spot: "You're on the Waitlist",
 		wait_for_event_to_open: 'Notify Me',
-		upgrade_membership: 'Upgrade Membership',
+		upgrade_membership: m['membershipPlans.viewMembership'](),
 		request_whitelist: 'Request Verification',
 		wait_for_whitelist_approval: 'Verification Pending',
 		complete_profile: 'Complete Profile'
@@ -246,6 +281,11 @@ export function getEligibilityExplanation(eligibility: EventUserEligibility): st
 		return getNextStepMessage(eligibility.next_step);
 	}
 
+	// A mapped reason code outranks the backend prose: it says the same thing in
+	// the *user's* locale (the backend renders `reason` in its own).
+	const mapped = getReasonCodeMessage(eligibility.reason_code);
+	if (mapped) return mapped;
+
 	// Not allowed - show reason
 	if (eligibility.reason) {
 		return eligibility.reason;
@@ -257,6 +297,53 @@ export function getEligibilityExplanation(eligibility: EventUserEligibility): st
 	}
 
 	return 'You are not currently eligible to attend this event';
+}
+
+/**
+ * Runtime guard for a raw `EventUserEligibility` refusal body.
+ *
+ * Unlike `isEligibility`, which narrows an already-typed union, this probes an
+ * `unknown` value: the purchase endpoints answer a refused checkout with 400 +
+ * the eligibility payload (`exception_handlers.py:76`), and hey-api types that
+ * error channel loosely. Requires `allowed === false` so a success body can
+ * never be mistaken for a refusal.
+ */
+export function isEligibilityRefusal(value: unknown): value is EventUserEligibility {
+	if (!value || typeof value !== 'object') return false;
+	const body = value as { allowed?: unknown; event_id?: unknown };
+	return body.allowed === false && typeof body.event_id === 'string';
+}
+
+/**
+ * Localized message for an eligibility payload returned as a purchase error,
+ * or `null` when the value is not one.
+ *
+ * Resolution mirrors `getEligibilityExplanation`: mapped reason code → backend
+ * prose → next-step hint. Callers fall back to their own generic copy on null.
+ */
+export function getEligibilityRefusalMessage(value: unknown): string | null {
+	if (!isEligibilityRefusal(value)) return null;
+	return (
+		getReasonCodeMessage(value.reason_code) ??
+		value.reason ??
+		(value.next_step ? getNextStepMessage(value.next_step) : null)
+	);
+}
+
+/**
+ * Is this thrown purchase error the membership-tier refusal (BE #807)?
+ *
+ * Checks the value itself and its `Error.cause`, because the checkout
+ * controller re-throws the refusal body as the cause of a message-carrying
+ * `Error` — the message is what the dialog prints, the cause is what lets it
+ * decide whether to offer the membership-plans link alongside it.
+ */
+export function isMembershipTierRefusal(error: unknown): boolean {
+	const cause = error && typeof error === 'object' ? (error as { cause?: unknown }).cause : null;
+	return [error, cause].some(
+		(candidate) =>
+			isEligibilityRefusal(candidate) && candidate.reason_code === 'membership_tier_required'
+	);
 }
 
 /**

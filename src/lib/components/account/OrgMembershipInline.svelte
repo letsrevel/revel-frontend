@@ -1,41 +1,51 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
-	import { mesubscriptionsGetMySubscription } from '$lib/api/generated/sdk.gen';
-	import type { MySubscriptionSchema } from '$lib/api/generated/types.gen';
+	import type { PublicPlanSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { myOrgSubscriptionQueryOptions } from '$lib/queries/my-org-subscription';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import StatusBadge from '$lib/components/members/StatusBadge.svelte';
 	import { formatPlanPrice, getDateLine } from '$lib/utils/subscriptions';
 	import { formatDate } from '$lib/utils/date';
+	import { resolve } from '$app/paths';
 
 	interface Props {
 		orgId: string;
 		orgName: string;
+		/** Public plans of the org — used only to name a pending plan switch. */
+		plans?: PublicPlanSchema[];
 	}
 
-	const { orgId, orgName }: Props = $props();
+	const { orgId, orgName, plans = [] }: Props = $props();
 	const accessToken = $derived(authStore.accessToken);
 
-	const subQuery = createQuery(() => ({
-		queryKey: ['me', 'org', orgId, 'subscription'],
-		queryFn: async () => {
-			const res = await mesubscriptionsGetMySubscription({
-				path: { org_id: orgId },
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
-			if (res.error) return null;
-			return res.data as MySubscriptionSchema;
-		},
-		enabled: !!accessToken,
-		retry: false
-	}));
+	// Shared options: the plan grid further down the page observes the very same
+	// key and fetcher, so the two surfaces cost one request and never disagree.
+	const subQuery = createQuery(() => myOrgSubscriptionQueryOptions(orgId, accessToken));
 
 	const sub = $derived(subQuery.data);
 
 	function fmtDate(d: string | null | undefined): string {
 		return d ? formatDate(d) : '—';
 	}
+
+	/**
+	 * A queued plan change takes effect at the end of the paid period, so the
+	 * line only makes sense once we know that date — otherwise it is omitted.
+	 */
+	const pendingSwitch = $derived.by(() => {
+		const pendingPlanId = sub?.pending_plan_id;
+		const periodEnd = sub?.current_period_end;
+		if (!pendingPlanId || !periodEnd) return null;
+		const name =
+			plans.find((p) => p.id === pendingPlanId)?.name ??
+			m['orgPublic.yourMembership.pendingSwitchFallbackPlan']();
+		return m['orgPublic.yourMembership.pendingSwitch']({
+			plan: name,
+			date: formatDate(periodEnd)
+		});
+	});
 </script>
 
 {#if sub}
@@ -65,9 +75,20 @@
 					{/if}
 				</span>
 			</div>
-			<p class="mt-3 text-xs text-muted-foreground">
-				{m['orgPublic.yourMembership.managedBy']({ org: orgName })}
-			</p>
+			{#if pendingSwitch}
+				<p class="mt-2 text-sm text-muted-foreground">{pendingSwitch}</p>
+			{/if}
+			<a
+				href={resolve('/(auth)/account/memberships', {})}
+				class="mt-3 inline-block text-sm font-medium text-primary underline-offset-4 hover:underline"
+			>
+				{m['orgPublic.yourMembership.manage']()}<span aria-hidden="true"> →</span>
+			</a>
+			{#if sub.plan.payment_method === 'offline'}
+				<p class="mt-3 text-xs text-muted-foreground">
+					{m['orgPublic.yourMembership.managedBy']({ org: orgName })}
+				</p>
+			{/if}
 		</CardContent>
 	</Card>
 {/if}

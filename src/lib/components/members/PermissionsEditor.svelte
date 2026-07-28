@@ -29,6 +29,11 @@
 
 	// Reset permissions when staff changes
 	$effect(() => {
+		// Track `open` so reopening the editor for the same staff member discards
+		// abandoned toggles. Tracking `staff` alone misses the closed → open
+		// transition when it is the same member both times, which would carry
+		// unsaved grants — including `manage_subscriptions` — into the next edit.
+		void open;
 		if (staff?.permissions?.default) {
 			permissions = { ...staff.permissions.default };
 		}
@@ -58,6 +63,11 @@
 					key: 'manage_members',
 					label: m['permissionsEditor.perms.manageMembers.label'](),
 					description: m['permissionsEditor.perms.manageMembers.description']()
+				},
+				{
+					key: 'manage_subscriptions',
+					label: m['permissionsEditor.perms.manageSubscriptions.label'](),
+					description: m['permissionsEditor.perms.manageSubscriptions.description']()
 				},
 				{
 					key: 'view_organization_details',

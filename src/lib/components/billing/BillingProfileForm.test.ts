@@ -55,7 +55,7 @@ function renderWithQueryClient(props: Record<string, unknown>) {
 		defaultOptions: { queries: { retry: false } }
 	});
 	return render(QueryClientTestWrapper, {
-		props: { client: queryClient, component: BillingProfileForm, props }
+		props: { client: queryClient, component: BillingProfileForm, componentProps: props }
 	});
 }
 

@@ -277,7 +277,7 @@
 <!-- Cancel held pass (with optional reason) -->
 {#if holderToCancel}
 	<Dialog open onOpenChange={() => (holderToCancel = null)}>
-		<DialogContent class="sm:max-w-[440px]">
+		<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-[440px]">
 			<DialogHeader>
 				<DialogTitle>{m['seriesPassAdmin.cancelHolderTitle']()}</DialogTitle>
 				<DialogDescription>

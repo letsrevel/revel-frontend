@@ -20,6 +20,7 @@
 		eventpublicguestGuestTicketPwycCheckout
 	} from '$lib/api';
 	import { handleGuestAttendanceError } from '$lib/utils/guestAttendance';
+	import { getEligibilityRefusalMessage } from '$lib/utils/eligibility';
 	import { releaseAnonymousHolds } from '$lib/utils/seat-holds';
 	import type { SeatHoldController } from '$lib/components/tickets/seat-hold-controller.svelte';
 	import {
@@ -530,17 +531,18 @@
 					typeof err === 'object' && err !== null && 'next_step' in err ? err.next_step : undefined;
 				const detail =
 					typeof err === 'object' && err !== null && 'detail' in err ? err.detail : undefined;
-				const reason =
-					typeof err === 'object' && err !== null && 'reason' in err ? err.reason : undefined;
 
 				// Check for eligibility response with next_step
 				if (typeof nextStep === 'string' && !GUEST_COMPATIBLE_STEPS.has(nextStep)) {
 					requiresAccount = true;
 				}
 
+				// getEligibilityRefusalMessage reads the whole refusal payload (the old
+				// bare `reason` probe was only ever true for one) and prefers FE copy,
+				// which the backend's own `reason` can't be — it is in its locale.
 				const errorDetail =
+					getEligibilityRefusalMessage(err) ||
 					(typeof detail === 'string' && detail) ||
-					(typeof reason === 'string' && reason) ||
 					m['guestTicketDialog.failedToCheckout']();
 				throw new Error(
 					typeof errorDetail === 'string' ? errorDetail : m['guestTicketDialog.failedToCheckout']()

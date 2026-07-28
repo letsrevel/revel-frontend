@@ -1,6 +1,25 @@
+<script lang="ts" module>
+	/**
+	 * What the tier form hands back to its parent.
+	 *
+	 * `null` on either override means "inherit the organization default" — the
+	 * backend distinguishes that from an explicit `false`, so the tri-state has
+	 * to survive the round trip rather than collapse to a boolean.
+	 */
+	export interface TierFormPayload {
+		name: string;
+		description: string;
+		membership_questionnaire_id: string | null;
+		requires_membership_approval: boolean | null;
+	}
+</script>
+
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import type { MembershipTierSchema } from '$lib/api/generated/types.gen';
+	import type {
+		MembershipTierAdminSchema,
+		OrganizationQuestionnaireInListSchema
+	} from '$lib/api/generated/types.gen';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
@@ -9,22 +28,42 @@
 	import { Loader2 } from '@lucide/svelte';
 
 	interface Props {
-		tier: MembershipTierSchema | null;
+		tier: MembershipTierAdminSchema | null;
 		open: boolean;
 		onClose: () => void;
-		onSave: (name: string, description: string) => void;
+		onSave: (payload: TierFormPayload) => void;
 		isSaving?: boolean;
+		membershipQuestionnaires: OrganizationQuestionnaireInListSchema[];
+		orgDefaultRequiresApproval: boolean;
 	}
 
-	const { tier, open, onClose, onSave, isSaving = false }: Props = $props();
+	const {
+		tier,
+		open,
+		onClose,
+		onSave,
+		isSaving = false,
+		membershipQuestionnaires,
+		orgDefaultRequiresApproval
+	}: Props = $props();
 
 	// Form state
 	let tierName = $state('');
 	let tierDescription = $state('');
+	// Both overrides carry a "no override" sentinel a `<select>` can hold: the empty
+	// string for the questionnaire, `inherit` for the approval tri-state. They map
+	// back to `null` on submit.
+	let questionnaireId = $state('');
+	let approvalMode = $state<'inherit' | 'require' | 'norequire'>('inherit');
 	let errors = $state<{ name?: string }>({});
 
 	// Sync form with tier prop (for editing)
 	$effect(() => {
+		// Track `open` so reopening the create modal after abandoning a prior
+		// attempt resets the fields. Tracking `tier` alone misses the transition
+		// from closed → open when tier is null both times, which would carry the
+		// abandoned draft's questionnaire and approval overrides into the new tier.
+		void open;
 		if (tier) {
 			tierName = tier.name;
 			tierDescription = tier.description || '';
@@ -32,6 +71,13 @@
 			tierName = '';
 			tierDescription = '';
 		}
+		questionnaireId = tier?.membership_questionnaire_id ?? '';
+		approvalMode =
+			tier?.requires_membership_approval === true
+				? 'require'
+				: tier?.requires_membership_approval === false
+					? 'norequire'
+					: 'inherit';
 		errors = {};
 	});
 
@@ -59,7 +105,12 @@
 
 	function handleSubmit() {
 		if (!validate()) return;
-		onSave(tierName.trim(), tierDescription.trim());
+		onSave({
+			name: tierName.trim(),
+			description: tierDescription.trim(),
+			membership_questionnaire_id: questionnaireId || null,
+			requires_membership_approval: approvalMode === 'inherit' ? null : approvalMode === 'require'
+		});
 	}
 
 	function handleKeydown(event: KeyboardEvent) {
@@ -79,7 +130,11 @@
 		if (!isOpen) onClose();
 	}}
 >
-	<DialogContent class="sm:max-w-[425px]">
+	<!-- Scrollable: the form (name, rich-text description, questionnaire and
+	     approval selects) is taller than a phone viewport, and the dialog is
+	     `position: fixed` — without its own scroll container the submit row sits
+	     below the fold with no way to reach it. -->
+	<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-[425px]">
 		<DialogHeader>
 			<DialogTitle>
 				{isEditing ? m['tierForm.editTitle']() : m['tierForm.createTitle']()}
@@ -132,6 +187,43 @@
 				<p class="text-xs text-muted-foreground">
 					{m['tierForm.descriptionHint']()}
 				</p>
+			</div>
+
+			<!-- Membership questionnaire override ('' = inherit the org default) -->
+			<div class="space-y-2">
+				<Label for="tier-questionnaire">{m['tierForm.questionnaireLabel']()}</Label>
+				<select
+					id="tier-questionnaire"
+					bind:value={questionnaireId}
+					disabled={isSaving}
+					class="flex w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+				>
+					<option value="">{m['tierForm.questionnaireInherit']()}</option>
+					{#each membershipQuestionnaires as oq (oq.id)}
+						<option value={oq.id}>{oq.questionnaire.name}</option>
+					{/each}
+				</select>
+				<p class="text-xs text-muted-foreground">{m['tierForm.questionnaireHint']()}</p>
+			</div>
+
+			<!-- Manual-approval override (tri-state: inherit / require / don't require) -->
+			<div class="space-y-2">
+				<Label for="tier-approval">{m['tierForm.approvalLabel']()}</Label>
+				<select
+					id="tier-approval"
+					bind:value={approvalMode}
+					disabled={isSaving}
+					class="flex w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+				>
+					<option value="inherit">
+						{orgDefaultRequiresApproval
+							? m['tierForm.approvalInheritRequired']()
+							: m['tierForm.approvalInheritNotRequired']()}
+					</option>
+					<option value="require">{m['tierForm.approvalRequire']()}</option>
+					<option value="norequire">{m['tierForm.approvalNoRequire']()}</option>
+				</select>
+				<p class="text-xs text-muted-foreground">{m['tierForm.approvalHint']()}</p>
 			</div>
 
 			<!-- Actions -->

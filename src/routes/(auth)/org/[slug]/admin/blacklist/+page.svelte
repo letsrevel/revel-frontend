@@ -164,6 +164,12 @@
 			queryClient.invalidateQueries({
 				queryKey: ['organization', organization.slug, 'blacklist']
 			});
+			// Blacklisting revokes org membership, which cancels the user's subscription
+			// and stops Stripe billing server-side — the subscription list and its revenue
+			// metrics (nested under this prefix) are stale as soon as this resolves.
+			queryClient.invalidateQueries({
+				queryKey: ['organization', organization.slug, 'subscriptions']
+			});
 			createModalOpen = false;
 			toast.success(m['blacklistAdminPage.toastAdded']());
 		},

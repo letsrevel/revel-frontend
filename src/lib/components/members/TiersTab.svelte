@@ -1,56 +1,83 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
+	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		organizationadminmembersCreateMembershipTier,
 		organizationadminmembersUpdateMembershipTier,
 		organizationadminmembersDeleteMembershipTier,
-		organizationadminmembersReorderMembershipTiers
+		organizationadminmembersReorderMembershipTiers,
+		organizationadminsubscriptionsListPlans
 	} from '$lib/api/generated/sdk.gen';
 	import type {
-		MembershipTierSchema,
+		MembershipTierAdminSchema,
 		OrganizationAdminDetailSchema,
-		OrganizationMemberSchema
+		OrganizationMemberSchema,
+		OrganizationQuestionnaireInListSchema,
+		PlanSchema
 	} from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { backendMessage } from '$lib/utils/api-error-detail';
 	import { reorderByIds, swapAndCollectIds } from '$lib/utils/reorder';
 	import { Button } from '$lib/components/ui/button';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Shield, Plus, Pencil, Trash2, Loader2, ArrowUp, ArrowDown } from '@lucide/svelte';
-	import TierFormModal from '$lib/components/members/TierFormModal.svelte';
+	import TierFormModal, {
+		type TierFormPayload
+	} from '$lib/components/members/TierFormModal.svelte';
 	import PlansList from '$lib/components/members/PlansList.svelte';
 	import { toast } from 'svelte-sonner';
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
-		tiers: MembershipTierSchema[];
+		tiers: MembershipTierAdminSchema[];
 		members: OrganizationMemberSchema[];
 		isLoading: boolean;
 		isError: boolean;
+		canManageSubscriptions?: boolean;
+		membershipQuestionnaires: OrganizationQuestionnaireInListSchema[];
+		orgDefaultRequiresApproval: boolean;
 	}
 
-	const { organization, tiers, members, isLoading, isError }: Props = $props();
+	const {
+		organization,
+		tiers,
+		members,
+		isLoading,
+		isError,
+		canManageSubscriptions = false,
+		membershipQuestionnaires,
+		orgDefaultRequiresApproval
+	}: Props = $props();
 
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
 
 	// Tier management state
-	let tierToEdit = $state<MembershipTierSchema | null>(null);
+	let tierToEdit = $state<MembershipTierAdminSchema | null>(null);
 	let tierFormOpen = $state(false);
-	let tierToDelete = $state<MembershipTierSchema | null>(null);
+	let tierToDelete = $state<MembershipTierAdminSchema | null>(null);
 	let deleteConfirmOpen = $state(false);
 
 	// Create tier mutation
 	const createTierMutation = createMutation(() => ({
-		mutationFn: async ({ name, description }: { name: string; description: string }) => {
+		mutationFn: async (payload: TierFormPayload) => {
 			const response = await organizationadminmembersCreateMembershipTier({
 				path: { slug: organization.slug },
-				body: { name, description },
+				body: {
+					name: payload.name,
+					description: payload.description,
+					membership_questionnaire_id: payload.membership_questionnaire_id,
+					requires_membership_approval: payload.requires_membership_approval
+				},
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
+			// Surface the backend's own reason: setting `requires_membership_approval` /
+			// `membership_questionnaire` on a tier that already has live plans is now a
+			// 400 with a translated `detail` naming that conflict. A hardcoded string
+			// would leave the organizer with a refusal and no way to act on it.
 			if (response.error) {
-				throw new Error('Failed to create tier');
+				throw new Error(backendMessage(response.error) || m['common.errors_tryAgain']());
 			}
 
 			return response.data;
@@ -61,29 +88,26 @@
 			});
 		},
 		onError: (error: Error) => {
-			alert(`Failed to create tier: ${error.message}`);
+			toast.error(m['orgAdmin.members.tiers.createFailed']({ detail: error.message }));
 		}
 	}));
 
 	// Update tier mutation
 	const updateTierMutation = createMutation(() => ({
-		mutationFn: async ({
-			tierId,
-			name,
-			description
-		}: {
-			tierId: string;
-			name: string;
-			description: string;
-		}) => {
+		mutationFn: async ({ tierId, payload }: { tierId: string; payload: TierFormPayload }) => {
 			const response = await organizationadminmembersUpdateMembershipTier({
 				path: { slug: organization.slug, tier_id: tierId },
-				body: { name, description },
+				body: {
+					name: payload.name,
+					description: payload.description,
+					membership_questionnaire_id: payload.membership_questionnaire_id,
+					requires_membership_approval: payload.requires_membership_approval
+				},
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
 			if (response.error) {
-				throw new Error('Failed to update tier');
+				throw new Error(backendMessage(response.error) || m['common.errors_tryAgain']());
 			}
 
 			return response.data;
@@ -97,9 +121,29 @@
 			});
 		},
 		onError: (error: Error) => {
-			alert(`Failed to update tier: ${error.message}`);
+			toast.error(m['orgAdmin.members.tiers.updateFailed']({ detail: error.message }));
 		}
 	}));
+
+	// `MembershipSubscriptionPlan.tier` is `on_delete=CASCADE`, and the tier-delete
+	// 409 only fires for PROTECTed applications/subscriptions — so a tier whose plans
+	// have no subscribers takes those plans down with it, silently. Shares the query
+	// key `PlansList` already populates for every tier card on this page, so the
+	// confirm dialog reads the same (usually cached) list rather than guessing.
+	const deletingTierPlansQuery = createQuery(() => ({
+		queryKey: ['organization', organization.slug, 'tier', tierToDelete?.id ?? '', 'plans'],
+		queryFn: async () => {
+			const response = await organizationadminsubscriptionsListPlans({
+				path: { slug: organization.slug, tier_id: tierToDelete?.id ?? '' },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+			if (response.error) throw new Error(m['orgAdmin.members.errors.loadTiers']());
+			return response.data as PlanSchema[];
+		},
+		enabled: deleteConfirmOpen && canManageSubscriptions && !!tierToDelete?.id && !!accessToken
+	}));
+
+	const deletingTierHasPlans = $derived((deletingTierPlansQuery.data ?? []).length > 0);
 
 	// Delete tier mutation
 	const deleteTierMutation = createMutation(() => ({
@@ -109,8 +153,12 @@
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
+			// A 409 carries the backend's own already-translated sentence explaining
+			// which application or subscription still references the tier.
 			if (response.error) {
-				throw new Error('Failed to delete tier');
+				throw new Error(
+					backendMessage(response.error) || m['orgAdmin.members.tiers.deleteFailed']()
+				);
 			}
 
 			return response.data;
@@ -124,7 +172,7 @@
 			});
 		},
 		onError: (error: Error) => {
-			alert(`Failed to delete tier: ${error.message}`);
+			toast.error(error.message);
 		}
 	}));
 
@@ -158,7 +206,7 @@
 		// failed request rolls back to the real original, not an already-swapped copy.
 		onMutate: async (tierIds: string[]) => {
 			await queryClient.cancelQueries({ queryKey: tiersQueryKey });
-			const previousData = queryClient.getQueryData<MembershipTierSchema[]>(tiersQueryKey);
+			const previousData = queryClient.getQueryData<MembershipTierAdminSchema[]>(tiersQueryKey);
 			if (previousData) {
 				queryClient.setQueryData(tiersQueryKey, reorderByIds(previousData, tierIds));
 			}
@@ -169,7 +217,7 @@
 		},
 		onError: (_err, _vars, context) => {
 			toast.error(m['orgAdmin.members.tiers.reorderFailed']());
-			const ctx = context as { previousData?: MembershipTierSchema[] } | undefined;
+			const ctx = context as { previousData?: MembershipTierAdminSchema[] } | undefined;
 			if (ctx?.previousData !== undefined) {
 				queryClient.setQueryData(tiersQueryKey, ctx.previousData);
 			}
@@ -194,7 +242,7 @@
 		tierFormOpen = true;
 	}
 
-	function handleEditTier(tier: MembershipTierSchema) {
+	function handleEditTier(tier: MembershipTierAdminSchema) {
 		tierToEdit = tier;
 		tierFormOpen = true;
 	}
@@ -206,10 +254,10 @@
 		}
 	}
 
-	function handleSaveTier(name: string, description: string) {
+	function handleSaveTier(payload: TierFormPayload) {
 		if (tierToEdit && tierToEdit.id) {
 			updateTierMutation.mutate(
-				{ tierId: tierToEdit.id, name, description },
+				{ tierId: tierToEdit.id, payload },
 				{
 					onSuccess: () => {
 						tierFormOpen = false;
@@ -218,18 +266,15 @@
 				}
 			);
 		} else {
-			createTierMutation.mutate(
-				{ name, description },
-				{
-					onSuccess: () => {
-						tierFormOpen = false;
-					}
+			createTierMutation.mutate(payload, {
+				onSuccess: () => {
+					tierFormOpen = false;
 				}
-			);
+			});
 		}
 	}
 
-	function handleDeleteTierClick(tier: MembershipTierSchema) {
+	function handleDeleteTierClick(tier: MembershipTierAdminSchema) {
 		tierToDelete = tier;
 		deleteConfirmOpen = true;
 	}
@@ -346,9 +391,11 @@
 						</Button>
 					</div>
 				</div>
-				<div class="mt-3 border-t pt-3">
-					<PlansList {organization} {tier} />
-				</div>
+				{#if canManageSubscriptions}
+					<div class="mt-3 border-t pt-3">
+						<PlansList {organization} {tier} />
+					</div>
+				{/if}
 			</div>
 		{/each}
 	</div>
@@ -361,6 +408,8 @@
 	onClose={handleCloseTierForm}
 	onSave={handleSaveTier}
 	isSaving={createTierMutation.isPending || updateTierMutation.isPending}
+	{membershipQuestionnaires}
+	{orgDefaultRequiresApproval}
 />
 
 <!-- Delete Tier Confirmation Dialog -->
@@ -371,7 +420,7 @@
 			if (!open) handleCancelDelete();
 		}}
 	>
-		<DialogContent class="sm:max-w-[425px]">
+		<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-[425px]">
 			<DialogHeader>
 				<DialogTitle>{m['tierDelete.title']()}</DialogTitle>
 			</DialogHeader>
@@ -400,6 +449,11 @@
 						<p class="text-sm text-muted-foreground">
 							{m['tierDelete.consequence']()}
 						</p>
+						{#if deletingTierHasPlans}
+							<p class="text-sm text-muted-foreground">
+								{m['tierDelete.plansCascade']()}
+							</p>
+						{/if}
 					</div>
 				</div>
 				<div class="flex justify-end gap-2">

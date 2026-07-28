@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import type { NotificationSchema } from '$lib/api/generated/types.gen';
+	import type { NotificationSchema, NotificationType } from '$lib/api/generated/types.gen';
 	import { notificationMarkRead, notificationMarkUnread } from '$lib/api/generated';
 	import { Card } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
@@ -140,7 +140,7 @@
 		markReadOnOpen();
 
 		// Extract URL from context if available
-		const url = extractUrlFromContext(notification.context);
+		const url = extractUrlFromContext(notification.context, notification.notification_type);
 		if (url) {
 			// Close the dropdown before navigating
 			onNavigate?.();
@@ -171,8 +171,34 @@
 		}
 	}
 
-	// Extract URL from notification context
-	function extractUrlFromContext(context: Record<string, unknown>): string | null {
+	// Extract URL from notification context.
+	//
+	// `notificationType` is consulted first, because one family has a correct
+	// destination that no context key can express (see subscriptions below).
+	function extractUrlFromContext(
+		context: Record<string, unknown>,
+		notificationType: NotificationType
+	): string | null {
+		// Subscription notifications (renewal succeeded / payment failed /
+		// expired / cancellation confirmed / renewal reminder / price migration
+		// notice / revival checkout) are all sent to the *member*, and none of
+		// their contexts carry a key this function can use:
+		//   - the backend emits `organization_slug`, never `org_slug`;
+		//   - `manage_subscription_url` and `revival_url` point at
+		//     `/org/{slug}/subscription[/revive]`, routes this app does not have;
+		//   - `checkout_url` is an absolute Stripe URL that `goto` must never get.
+		// `/account/memberships` is the member's actual subscription surface —
+		// it lists every live membership with its manage/cancel actions and
+		// every expired-but-revivable subscription's rejoin CTA — so it is the
+		// right landing spot for all seven types. Checked ahead of the generic
+		// URL keys so a future backend-supplied `frontend_url` pointing at a
+		// non-existent org subscription route can't reintroduce a dead click.
+		// The in-body markdown link still wins over this (see handleClick), so
+		// the revival checkout link remains directly reachable.
+		if (notificationType.startsWith('subscription_')) {
+			return resolve('/(auth)/account/memberships', {});
+		}
+
 		// Backend provides frontend_url with correct routing
 		if (context.frontend_url && typeof context.frontend_url === 'string') {
 			return toRelativePath(context.frontend_url);
@@ -198,8 +224,12 @@
 		if (context.event_id) {
 			return `/events/${context.event_id}`;
 		}
-		if (context.org_slug) {
-			return `/org/${context.org_slug}`;
+		// Org-scoped contexts. The backend's context key is `organization_slug`;
+		// `org_slug` has never been emitted by any notification context, but is
+		// kept as a tolerated alias so no historical payload regresses.
+		const orgSlug = readString(context, 'organization_slug') ?? readString(context, 'org_slug');
+		if (orgSlug) {
+			return `/org/${orgSlug}`;
 		}
 		if (context.invitation_id) {
 			return `/invitations/${context.invitation_id}`;
@@ -241,7 +271,8 @@
 		const expiresAt = readString(ctx, 'expires_at');
 		const expiresAtFormatted = readString(ctx, 'expires_at_formatted');
 		const eventName = readString(ctx, 'event_name') ?? '';
-		const claimUrl = extractUrlFromContext(ctx) ?? '/account/notifications';
+		const claimUrl =
+			extractUrlFromContext(ctx, notification.notification_type) ?? '/account/notifications';
 
 		const expiresMs = expiresAt ? Date.parse(expiresAt) : NaN;
 		const hasOffer = Number.isFinite(expiresMs);
