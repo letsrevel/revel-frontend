@@ -197,7 +197,12 @@
 	// are loaded (intersected with this sector's seats, capped to quantity).
 	let seeded = false;
 	$effect(() => {
-		if (seeded || !controller || !isUserChoiceSeat || !chart || !availability) return;
+		if (!controller || !isUserChoiceSeat || !chart || !availability) return;
+		if (seeded) {
+			// Later payloads can reveal holds the seed snapshot predated.
+			controller.adoptServerHolds();
+			return;
+		}
 		seeded = true;
 		controller.seedFromAvailability(collectValidSeatIds(chart));
 	});

@@ -205,7 +205,12 @@
 	// the active sector derives from the first adopted hold.
 	let seeded = false;
 	$effect(() => {
-		if (seeded || !chart || !availability || selectableSectors.size === 0) return;
+		if (!chart || !availability || selectableSectors.size === 0) return;
+		if (seeded) {
+			// Later payloads can reveal holds the seed snapshot predated.
+			controller.adoptServerHolds();
+			return;
+		}
 		seeded = true;
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- local lookup set built and consumed synchronously within this effect
 		const validIds = new Set<string>();
