@@ -100,15 +100,17 @@
 	// reports `isLoading === false`, which would flash the empty state at every
 	// member on first paint.
 	//
-	// A guest who reaches this route therefore sits on the spinner forever: with
-	// no token the queries never enable, so they never leave `pending`. That is
-	// deliberate here. `!!accessToken` cannot tell a guest from a member whose
-	// token is still bootstrapping (the root layout arms `markBootstrapPending()`
-	// precisely because `accessToken` is null for both), so gating on it would
-	// bring back the empty-state flash this line exists to fix. The real fix is a
-	// route guard on `(auth)` — which every page in the group needs, including
-	// `ApplicationsSection` and `account/privacy`, both of which gate identically.
-	// Out of scope here; tracked in the task report.
+	// This gate never resolves without a token, because the queries never enable.
+	// That used to strand a logged-out visitor on the spinner forever; the fix is
+	// the `(auth)` route guard in `hooks.server.ts` (`handleAuthGuard`), which
+	// redirects them to `/login?returnUrl=…` before this component ever mounts.
+	// So the only case reaching this line with no token is a member whose refresh
+	// is still bootstrapping — for whom a spinner is the correct answer.
+	//
+	// Do NOT "fix" this by gating on `!!accessToken` instead: it cannot tell a
+	// guest from a member mid-bootstrap (the root layout arms
+	// `markBootstrapPending()` precisely because `accessToken` is null for both),
+	// so it would bring back the empty-state flash this line exists to prevent.
 	const isSectionPending = $derived.by(() => {
 		const membershipsPending = membershipsQuery.isPending;
 		const subscriptionsPending = subscriptionsQuery.isPending;

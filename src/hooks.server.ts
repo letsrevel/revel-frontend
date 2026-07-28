@@ -1,4 +1,5 @@
 import type { Handle, HandleFetch } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 import { z } from 'zod';
 import { sequence } from '@sveltejs/kit/hooks';
 import { env } from '$env/dynamic/private';
@@ -6,6 +7,7 @@ import { i18nHandle } from '$lib/i18n';
 import { tokenRefresh } from '$lib/api/generated';
 import { API_BASE_URL } from '$lib/config/api';
 import { appendCspApiOrigin } from '$lib/server/csp';
+import { requiresAuth, loginRedirectPath } from '$lib/server/auth-guard';
 import {
 	getAccessTokenCookieOptions,
 	getRefreshTokenCookieOptions,
@@ -338,6 +340,43 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 };
 
 /**
+ * Send unauthenticated visitors to the login page, preserving where they were
+ * going.
+ *
+ * Without this, a guest who lands on an authenticated route gets whatever that
+ * page does with a null token — and several do something worse than erroring.
+ * `/account/memberships` renders an endless spinner: its queries are
+ * `enabled: !!accessToken`, so with no token they never enable, never leave
+ * `isPending`, and the section's loading gate never resolves. That page is now
+ * the landing target for all seven `subscription_*` notification CTAs (backend
+ * 9ad12921, closing #815), dunning included, and email clicks routinely arrive
+ * in a browser with no live session.
+ *
+ * Implemented in `handle`, not in a `(auth)/+layout.server.ts`, because five
+ * pages in the group set `export const ssr = false` — a layout server load
+ * would not produce a real 302 for their initial document request, leaving the
+ * redirect to happen client-side after a blank shell had already painted.
+ *
+ * Runs immediately after `handleAuth`, which is what populates `locals.user`
+ * (including the cold-start refresh-token exchange) — so a returning user with
+ * only a refresh cookie is recognised here rather than bounced to login.
+ *
+ * NOT a security boundary, and must never be treated as one. `locals.user` is
+ * derived from an UNVERIFIED JWT decode (see `handleAuth`'s note above): the
+ * backend is the sole authority and 401s a forged token. This hook only decides
+ * where to point the browser. It is also why the guard is safe despite the
+ * SvelteKit docs' warning against using `event.route` for authorization — that
+ * warning concerns gating *data*, which this does not do.
+ */
+const handleAuthGuard: Handle = async ({ event, resolve }) => {
+	if (requiresAuth(event.route.id) && !event.locals.user) {
+		log.debug('auth_guard_redirect', { route_id: event.route.id });
+		redirect(302, loginRedirectPath(event.url));
+	}
+	return resolve(event);
+};
+
+/**
  * Combine request logging, token capture, authentication, i18n, and preload
  * optimization hooks. handleRequestLogging is FIRST so it wraps and times the
  * whole chain.
@@ -347,6 +386,7 @@ export const handle = sequence(
 	handleTokenCapture,
 	i18nHandle(),
 	handleAuth,
+	handleAuthGuard,
 	handlePreloadOptimization,
 	handleCsp
 );
