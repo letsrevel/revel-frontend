@@ -61,6 +61,11 @@ a non-`json` `format` is a 501. Event, organization and series pages advertise i
 - **Visibility**: every embed load is anonymous. List and series embeds therefore show only
   discoverable events (UNLISTED hidden); a direct single-event embed can show an UNLISTED
   event, consistent with "has the link".
+- **Unknown slugs**: the list embed filters via `organization_slug` (backend #822), which
+  applies on top of the gated queryset. An unknown or mismatched slug is an empty `200`, so
+  the embed renders its empty state rather than an error. Event and series embeds address a
+  specific resource, so an unknown slug there is a real 404, rendered by the compact
+  `/embed` error page.
 - **Theme without JavaScript**: an explicit `?theme` is stamped onto `<html>` server-side along
   with `data-theme-locked`, which tells the anti-FOUC script in `src/app.html` to stand down.
   `localStorage` is partitioned per host page inside a third-party iframe and is never consulted.

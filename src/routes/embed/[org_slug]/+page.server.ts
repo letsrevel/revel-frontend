@@ -1,6 +1,5 @@
-import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { organizationGetOrganization, eventpublicdiscoveryListEvents } from '$lib/api';
+import { eventpublicdiscoveryListEvents } from '$lib/api';
 import { parseEmbedListFilters } from '$lib/embed/params';
 import { loadEmbedPrices } from '$lib/server/embed-data';
 import { log } from '$lib/server/logger';
@@ -8,39 +7,30 @@ import { log } from '$lib/server/logger';
 /**
  * Filtered event list for one organization.
  *
- * The organization record is fetched for its own sake — the embed renders the
- * org's name, logo and outbound link from it, and an unknown slug has to become
- * a 404 rather than silently render someone else's events. Because we hold that
- * record anyway, the event query filters on `organization` (the id we already
- * have) rather than on a slug: it costs no additional request, and it cannot
- * degrade into an unfiltered, cross-organization list if the filter name is
- * ever unrecognised by the backend (Django Ninja drops unknown query params
- * silently, which on an embed would mean leaking every org's events onto a
- * customer's website).
+ * A single request: the public event list is filtered by `organization_slug`
+ * (backend #822). The discovery filters AND together rather than OR, so the
+ * slug narrows the result set — we deliberately never send `organization` (the
+ * UUID) alongside it.
+ *
+ * An unknown or mismatched slug is NOT an error: the filter applies on top of
+ * the already-gated `discoverable_for_user()` queryset, so it yields an empty
+ * `200`, and the page renders its empty state. That is the right behaviour for
+ * a surface living on someone else's website — a mistyped slug should read as
+ * "nothing on right now", not as a stack trace in their layout.
+ *
+ * The organization's display identity comes from the events themselves
+ * (`EventInListSchema.organization`); with no events there is nothing to head
+ * the list with, so the header is omitted and only the empty state and the
+ * footer link render.
  */
 export const load: PageServerLoad = async ({ params, url, fetch }) => {
 	const { org_slug } = params;
 	const filters = parseEmbedListFilters(url.searchParams);
 
-	const orgResponse = await organizationGetOrganization({ fetch, path: { slug: org_slug } });
-	const organization = orgResponse.data;
-	if (!organization) {
-		// A transient backend failure and a genuinely unknown slug both end up as
-		// the same 404 for the visitor; log the difference so we can tell them
-		// apart when an organizer reports a blank embed.
-		if (orgResponse.error) {
-			log.warning('embed_organization_fetch_failed', {
-				error: orgResponse.error,
-				orgSlug: org_slug
-			});
-		}
-		error(404, 'Organization not found');
-	}
-
 	const eventsResponse = await eventpublicdiscoveryListEvents({
 		fetch,
 		query: {
-			organization: organization.id,
+			organization_slug: org_slug,
 			tags: filters.tags,
 			city_id: filters.cityId,
 			event_type: filters.eventType,
@@ -61,7 +51,8 @@ export const load: PageServerLoad = async ({ params, url, fetch }) => {
 	const events = eventsResponse.data?.results ?? [];
 
 	return {
-		organization,
+		orgSlug: org_slug,
+		organization: events[0]?.organization ?? null,
 		events,
 		prices: await loadEmbedPrices(fetch, events)
 	};

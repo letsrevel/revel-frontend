@@ -21,32 +21,39 @@
 	const links = $derived<EmbedLinkContext>({
 		origin: page.url.origin,
 		medium: data.viaOembed ? 'oembed' : 'list',
-		campaign: data.organization.slug,
+		// The slug from the route, not from a fetched record: attribution must
+		// work even when the list comes back empty.
+		campaign: data.orgSlug,
 		content: data.utmContent
 	});
 
-	const orgHref = $derived(
-		buildEmbedLink(links.origin, organizationPath(data.organization.slug), links)
-	);
+	const orgHref = $derived(buildEmbedLink(links.origin, organizationPath(data.orgSlug), links));
+
+	// The organization's display identity rides along on the events. With none,
+	// there is no name or logo to show, so the header is skipped rather than
+	// rendered from a raw slug.
+	const heading = $derived(data.organization?.name ?? data.orgSlug);
 </script>
 
 <svelte:head>
-	<title>{m['embed.eventsBy']({ organization: data.organization.name })}</title>
+	<title>{m['embed.eventsBy']({ organization: heading })}</title>
 </svelte:head>
 
-<section aria-labelledby="embed-list-heading">
-	<EmbedHeader
-		headingId="embed-list-heading"
-		title={data.organization.name}
-		logo={data.organization.logo_thumbnail_url ?? data.organization.logo}
-		href={orgHref}
-	/>
+<section aria-labelledby={data.organization ? 'embed-list-heading' : undefined}>
+	{#if data.organization}
+		<EmbedHeader
+			headingId="embed-list-heading"
+			title={data.organization.name}
+			logo={data.organization.logo_thumbnail_url ?? data.organization.logo}
+			href={orgHref}
+		/>
+	{/if}
 
 	<EmbedEventGrid
 		events={data.events}
 		prices={data.prices}
 		{links}
-		labelledBy="embed-list-heading"
+		labelledBy={data.organization ? 'embed-list-heading' : undefined}
 	/>
 
 	<EmbedFooter poweredByHref={poweredByLink(links.origin, links)} moreHref={orgHref} />
