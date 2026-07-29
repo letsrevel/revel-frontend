@@ -48,6 +48,14 @@ describe('resolveOembedTarget', () => {
 		expect(resolve(`http://letsrevel.io/org/acme`)).toBeNull();
 	});
 
+	it('returns null for malformed percent-encoding instead of throwing', () => {
+		// `new URL()` accepts these; decodeURIComponent throws URIError on them.
+		// The route must answer 404, not 500.
+		expect(() => resolve(`${ORIGIN}/%`)).not.toThrow();
+		expect(resolve(`${ORIGIN}/%`)).toBeNull();
+		expect(resolve(`${ORIGIN}/events/acme/%E0%A4%A`)).toBeNull();
+	});
+
 	it('refuses paths that are not embeddable surfaces', () => {
 		expect(resolve(`${ORIGIN}/`)).toBeNull();
 		expect(resolve(`${ORIGIN}/events`)).toBeNull();
@@ -105,6 +113,16 @@ describe('clampOembedSize', () => {
 
 	it('never grows beyond the default for a generous maxwidth', () => {
 		expect(clampOembedSize('event', 5000, null).width).toBe(600);
+	});
+
+	it('scales the width too when maxheight is the binding constraint', () => {
+		// 400/820 -> both axes shrink together; clamping height alone would give
+		// 600x400, a squashed box whose content the scroll-less iframe crops.
+		expect(clampOembedSize('list', null, 400)).toEqual({ width: 293, height: 400 });
+	});
+
+	it('honours whichever of the two limits binds harder', () => {
+		expect(clampOembedSize('list', 300, 800)).toEqual({ width: 300, height: 410 });
 	});
 });
 

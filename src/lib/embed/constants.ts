@@ -49,6 +49,17 @@ export const EMBED_DEFAULT_PAGE_SIZE = 6;
  */
 export const EMBED_MAX_PAGE_SIZE = 24;
 
+/**
+ * Per-request budget for the optional "from €X" tier lookups.
+ *
+ * These calls are decorative: their result only adds a price line to a card.
+ * `Promise.allSettled` keeps a failure from rejecting the batch, but it still
+ * WAITS for every request to settle — so without a deadline one hanging upstream
+ * call would stall the whole embed's SSR response. Time-boxing them means a slow
+ * backend costs the price hint, not the page.
+ */
+export const EMBED_PRICE_TIMEOUT_MS = 2000;
+
 /** Default iframe dimensions advertised through oEmbed, per surface. */
 export const EMBED_DEFAULT_DIMENSIONS: Record<Exclude<EmbedMedium, 'oembed'>, [number, number]> = {
 	event: [600, 460],

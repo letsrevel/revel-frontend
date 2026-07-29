@@ -47,7 +47,16 @@ export interface OembedTarget {
 export function resolveOembedTarget(target: URL, siteOrigin: string): OembedTarget | null {
 	if (target.origin !== siteOrigin) return null;
 
-	const segments = target.pathname.split('/').filter(Boolean).map(decodeURIComponent);
+	// `new URL()` happily accepts malformed percent-encoding ("/%", "/%E0%A4%A")
+	// but `decodeURIComponent` throws URIError on it. Such a URL is simply not an
+	// embeddable target, so treat it as unsupported (404) rather than letting the
+	// throw escape as a 500.
+	let segments: string[];
+	try {
+		segments = target.pathname.split('/').filter(Boolean).map(decodeURIComponent);
+	} catch {
+		return null;
+	}
 
 	// /org/{org_slug} → organization event list
 	if (segments.length === 2 && segments[0] === 'org') {
@@ -95,8 +104,11 @@ export function resolveOembedTarget(target: URL, siteOrigin: string): OembedTarg
 /**
  * Clamp the advertised iframe box to the consumer's `maxwidth`/`maxheight`.
  *
- * The height is scaled with the width so the card keeps its aspect ratio
- * instead of being cropped, then clamped again by `maxheight`.
+ * Both limits feed a SINGLE scale factor, so the card keeps its aspect ratio
+ * whichever constraint binds. Clamping the axes independently would let a small
+ * `maxheight` produce a squashed box (600×100 for a card designed at 600×820)
+ * whose content is then cropped, because the iframe we hand out disables
+ * scrolling. Never scales up: the defaults are the intended size.
  */
 export function clampOembedSize(
 	kind: OembedKind,
@@ -105,11 +117,15 @@ export function clampOembedSize(
 ): { width: number; height: number } {
 	const [defaultWidth, defaultHeight] = EMBED_DEFAULT_DIMENSIONS[kind];
 
-	const width = maxWidth !== null && maxWidth > 0 ? Math.min(defaultWidth, maxWidth) : defaultWidth;
-	const scaled = Math.round(defaultHeight * (width / defaultWidth));
-	const height = maxHeight !== null && maxHeight > 0 ? Math.min(scaled, maxHeight) : scaled;
+	const widthScale = maxWidth !== null && maxWidth > 0 ? Math.min(1, maxWidth / defaultWidth) : 1;
+	const heightScale =
+		maxHeight !== null && maxHeight > 0 ? Math.min(1, maxHeight / defaultHeight) : 1;
+	const scale = Math.min(widthScale, heightScale);
 
-	return { width, height: Math.max(height, 1) };
+	return {
+		width: Math.max(Math.round(defaultWidth * scale), 1),
+		height: Math.max(Math.round(defaultHeight * scale), 1)
+	};
 }
 
 /** Positive-integer query parameter, or `null` when absent/absurd. */

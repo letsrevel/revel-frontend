@@ -24,6 +24,16 @@
 		content: data.utmContent
 	});
 
+	// Same fallback ladder the event embed uses: series thumbnail, series logo,
+	// then the organization's. Without the last two rungs a series with no
+	// thumbnail rendered no logo at all, even when one was available.
+	const seriesLogo = $derived(
+		data.series.logo_thumbnail_url ??
+			data.series.logo ??
+			data.series.organization.logo_thumbnail_url ??
+			data.series.organization.logo
+	);
+
 	const seriesHref = $derived(
 		buildEmbedLink(links.origin, seriesPath(data.series.organization.slug, data.series.slug), links)
 	);
@@ -38,7 +48,7 @@
 		headingId="embed-series-heading"
 		title={data.series.name}
 		subtitle={data.series.organization.name}
-		logo={data.series.logo_thumbnail_url ?? data.series.organization.logo_thumbnail_url}
+		logo={seriesLogo}
 		href={seriesHref}
 	/>
 

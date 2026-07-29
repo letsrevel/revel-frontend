@@ -25,6 +25,15 @@ export const load: PageServerLoad = async ({ params, url, fetch }) => {
 	const orgResponse = await organizationGetOrganization({ fetch, path: { slug: org_slug } });
 	const organization = orgResponse.data;
 	if (!organization) {
+		// A transient backend failure and a genuinely unknown slug both end up as
+		// the same 404 for the visitor; log the difference so we can tell them
+		// apart when an organizer reports a blank embed.
+		if (orgResponse.error) {
+			log.warning('embed_organization_fetch_failed', {
+				error: orgResponse.error,
+				orgSlug: org_slug
+			});
+		}
 		error(404, 'Organization not found');
 	}
 

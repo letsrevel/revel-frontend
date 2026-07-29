@@ -11,6 +11,7 @@
 
 import { eventpublicticketsListTiers } from '$lib/api';
 import { minimumTierPrice, type EmbedPrice } from '$lib/embed/pricing';
+import { EMBED_PRICE_TIMEOUT_MS } from '$lib/embed/constants';
 import { log } from '$lib/server/logger';
 import type { EventInListSchema } from '$lib/api/generated/types.gen';
 
@@ -21,8 +22,10 @@ type PriceableEvent = Pick<EventInListSchema, 'id' | 'requires_ticket'>;
  * Cheapest entry price per event, for the "from €X" hint on embed cards.
  *
  * One request per ticketed event, all in flight together and all optional: a
- * failing (or slow-failing) tiers call drops that card's price rather than the
- * whole embed. Events that do not require a ticket are skipped outright, so a
+ * failing tiers call drops that card's price rather than the whole embed. Each
+ * carries its own `EMBED_PRICE_TIMEOUT_MS` deadline, because `allSettled` still
+ * waits for every promise — a hanging upstream would otherwise hold the SSR
+ * response open. Events that do not require a ticket are skipped outright, so a
  * page of RSVP-only events costs nothing extra.
  *
  * The caller bounds the fan-out by clamping `page_size`
@@ -40,7 +43,8 @@ export async function loadEmbedPrices(
 		ticketed.map(async (event) => {
 			const { data } = await eventpublicticketsListTiers({
 				fetch,
-				path: { event_id: event.id }
+				path: { event_id: event.id },
+				signal: AbortSignal.timeout(EMBED_PRICE_TIMEOUT_MS)
 			});
 			return { id: event.id, price: minimumTierPrice(data ?? []) };
 		})
