@@ -49,6 +49,15 @@ describe('isRequestValidationError', () => {
 		expect(isRequestValidationError({ detail: ['just-a-string'] })).toBe(false);
 		expect(isRequestValidationError(null)).toBe(false);
 	});
+
+	it('rejects a MIXED list — the predicate promises every entry is readable', () => {
+		expect(isRequestValidationError({ detail: [{ msg: 'Field required' }, 'not-an-object'] })).toBe(
+			false
+		);
+		expect(isRequestValidationError({ detail: [{ msg: 'Field required' }, { type: 'x' }] })).toBe(
+			false
+		);
+	});
 });
 
 describe('isValidationErrorResponse', () => {

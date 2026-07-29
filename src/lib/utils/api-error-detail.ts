@@ -66,8 +66,12 @@ export function isRequestValidationError(
 	value: unknown
 ): value is { detail: RequestValidationItem[] } {
 	const body = asRecord(value);
-	if (!body || !Array.isArray(body.detail)) return false;
-	return body.detail.some((item) => {
+	if (!body || !Array.isArray(body.detail) || body.detail.length === 0) return false;
+	// EVERY entry must be a readable item, not merely one of them: the predicate
+	// promises callers a `RequestValidationItem[]` they can iterate, so a mixed
+	// array would make the narrowing a lie — the exact failure mode this module
+	// exists to prevent.
+	return body.detail.every((item) => {
 		const entry = asRecord(item);
 		return entry !== null && nonEmptyString(entry.msg);
 	});
@@ -110,15 +114,7 @@ export function extractValidationErrors(error: unknown): string | null {
  */
 export function extractApiErrorDetail(error: unknown): string | null {
 	if (isErrorDetail(error)) return error.detail;
-	if (isRequestValidationError(error)) {
-		const messages = error.detail
-			.map((item) => {
-				const entry = asRecord(item);
-				return entry && nonEmptyString(entry.msg) ? entry.msg : null;
-			})
-			.filter((msg): msg is string => msg !== null);
-		if (messages.length > 0) return messages.join(', ');
-	}
+	if (isRequestValidationError(error)) return error.detail.map((item) => item.msg).join(', ');
 	return null;
 }
 

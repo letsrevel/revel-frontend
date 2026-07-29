@@ -111,11 +111,15 @@ export const actions: Actions = {
 				});
 			}
 
+			// Anything else 4xx is still the CLIENT's problem — this endpoint declares
+			// no error responses at all, so a runtime 422 (request validation, which
+			// is systemically under-declared per backend #826) is entirely plausible
+			// and must not be reported to the user as a server failure.
 			const errorMessage = extractErrorMessage(
 				error,
 				'Failed to create organization. Please try again.'
 			);
-			return fail(500, {
+			return fail(status && status >= 400 && status < 500 ? status : 500, {
 				errors: { form: errorMessage },
 				...data
 			});
