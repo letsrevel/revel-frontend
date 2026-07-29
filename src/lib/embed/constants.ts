@@ -60,6 +60,15 @@ export const EMBED_MAX_PAGE_SIZE = 24;
  */
 export const EMBED_PRICE_TIMEOUT_MS = 2000;
 
+/**
+ * Per-request budget for the organization lookup that backs an empty list
+ * embed's header.
+ *
+ * Same reasoning as the price lookups: the header is worth one bounded request,
+ * never a stalled SSR response inside a third party's page.
+ */
+export const EMBED_ORG_TIMEOUT_MS = 2000;
+
 /** Default iframe dimensions advertised through oEmbed, per surface. */
 export const EMBED_DEFAULT_DIMENSIONS: Record<Exclude<EmbedMedium, 'oembed'>, [number, number]> = {
 	event: [600, 460],

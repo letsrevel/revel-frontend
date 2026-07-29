@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { eventpublicdiscoveryListEvents } from '$lib/api';
 import { parseEmbedListFilters } from '$lib/embed/params';
-import { loadEmbedPrices } from '$lib/server/embed-data';
+import { loadEmbedOrganization, loadEmbedPrices } from '$lib/server/embed-data';
 import { log } from '$lib/server/logger';
 
 /**
@@ -18,10 +18,12 @@ import { log } from '$lib/server/logger';
  * a surface living on someone else's website — a mistyped slug should read as
  * "nothing on right now", not as a stack trace in their layout.
  *
- * The organization's display identity comes from the events themselves
- * (`EventInListSchema.organization`); with no events there is nothing to head
- * the list with, so the header is omitted and only the empty state and the
- * footer link render.
+ * The organization's display identity normally rides along on the events
+ * (`EventInListSchema.organization`), which costs no extra request. An org with
+ * no upcoming events would otherwise render an unbranded "nothing on right now"
+ * on the customer's own website, so in exactly that case — and only then — we
+ * fall back to fetching the organization directly. The common path stays a
+ * single request.
  */
 export const load: PageServerLoad = async ({ params, url, fetch }) => {
 	const { org_slug } = params;
@@ -49,10 +51,11 @@ export const load: PageServerLoad = async ({ params, url, fetch }) => {
 	}
 
 	const events = eventsResponse.data?.results ?? [];
+	const organization = events[0]?.organization ?? (await loadEmbedOrganization(fetch, org_slug));
 
 	return {
 		orgSlug: org_slug,
-		organization: events[0]?.organization ?? null,
+		organization,
 		events,
 		prices: await loadEmbedPrices(fetch, events)
 	};
