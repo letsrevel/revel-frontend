@@ -7534,6 +7534,7 @@
 	"membershipRequestCard.statusCancelled": "Cancelled",
 	"membershipRequestCard.questionnaire": "Questionnaire",
 	"membershipRequestCard.viewSubmission": "View questionnaire submission",
+	"membershipRequestCard.viewSubmissionPendingAria": "View questionnaire submission (review pending)",
 	"membershipRequestCard.submissionPendingReview": "Review pending",
 	"membershipRequestCard.tierPrefix": "Tier:",
 	"membershipRequestCard.viewRequestAria": "View request details from {name}",

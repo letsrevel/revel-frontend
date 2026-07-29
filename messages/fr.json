@@ -7505,6 +7505,7 @@
 	"membershipRequestCard.statusCancelled": "Annulée",
 	"membershipRequestCard.questionnaire": "Questionnaire",
 	"membershipRequestCard.viewSubmission": "Voir le questionnaire rempli",
+	"membershipRequestCard.viewSubmissionPendingAria": "Voir le questionnaire rempli (examen en attente)",
 	"membershipRequestCard.submissionPendingReview": "Examen en attente",
 	"membershipRequestCard.tierPrefix": "Niveau :",
 	"membershipRequestCard.viewRequestAria": "Voir les détails de la demande de {name}",
