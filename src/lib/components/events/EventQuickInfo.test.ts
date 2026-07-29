@@ -203,3 +203,26 @@ describe('EventQuickInfo', () => {
 		expect(icons.length).toBeGreaterThan(0);
 	});
 });
+
+// #690: capacity/count may be withheld (#825), but `is_full` is always public.
+describe('EventQuickInfo — capacity disclosure', () => {
+	it('shows "Event full" when the numbers are withheld but is_full is set', () => {
+		const event = { ...mockEvent, max_attendees: null, attendee_count: null, is_full: true };
+		render(EventQuickInfo, { props: { event } });
+		expect(screen.getByText(/Event full/i)).toBeInTheDocument();
+	});
+
+	it('omits the capacity row when the numbers are withheld and it is not full', () => {
+		const event = { ...mockEvent, max_attendees: null, attendee_count: null, is_full: false };
+		render(EventQuickInfo, { props: { event } });
+		expect(screen.queryByText(/Event full/i)).not.toBeInTheDocument();
+		expect(screen.queryByText(/spots taken/i)).not.toBeInTheDocument();
+		expect(screen.queryByText(/attending/i)).not.toBeInTheDocument();
+	});
+
+	it('prefers the real tally over the is_full fallback when both are known', () => {
+		const event = { ...mockEvent, max_attendees: 50, attendee_count: 50, is_full: true };
+		render(EventQuickInfo, { props: { event } });
+		expect(screen.getByText(/50 \/ 50 spots taken/i)).toBeInTheDocument();
+	});
+});

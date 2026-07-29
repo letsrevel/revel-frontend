@@ -423,6 +423,7 @@
 						canAttendWithoutLogin={event.can_attend_without_login}
 						{tierRemainingTickets}
 						timezone={event.timezone}
+						capacityDisclosed={event.visibility_settings?.show_capacity !== false}
 						onSelectTier={handleSelectTier}
 						onGuestTierClick={openGuestTicketDialog}
 						onViewSeatingMap={hasSeatingMap
@@ -491,6 +492,7 @@
 						eventId={event.id}
 						totalAttendees={event.attendee_count}
 						isAuthenticated={data.isAuthenticated}
+						listDisclosed={event.visibility_settings?.show_attendee_list !== false}
 						userVisibility={data.userVisibility}
 						showPronounDistribution={event.public_pronoun_distribution ||
 							data.isOwner ||
@@ -560,6 +562,7 @@
 						eventId={event.id}
 						totalAttendees={event.attendee_count}
 						isAuthenticated={data.isAuthenticated}
+						listDisclosed={event.visibility_settings?.show_attendee_list !== false}
 						userVisibility={data.userVisibility}
 						showPronounDistribution={event.public_pronoun_distribution ||
 							data.isOwner ||
@@ -605,6 +608,7 @@
 	canAttendWithoutLogin={event.can_attend_without_login}
 	{tierRemainingTickets}
 	timezone={event.timezone}
+	capacityDisclosed={event.visibility_settings?.show_capacity !== false}
 	eventMaxTicketsPerUser={event.max_tickets_per_user}
 	userName={userDisplayName}
 	{preSelectedTier}

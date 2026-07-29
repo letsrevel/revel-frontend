@@ -128,7 +128,10 @@
 	});
 
 	// Capacity and attendee count are each withheld (`null`) when the event hides
-	// them (#825). Each line is only rendered when the numbers it needs are known.
+	// them (#825). Each line is only rendered when the numbers it needs are known;
+	// with none of them known the always-public `is_full` can still state the one
+	// fact the organizer cannot hide. "Not full" says nothing (an uncapped event
+	// is never full either), so that case omits the row entirely.
 	const capacityDisplay = $derived.by(() => {
 		const max = event.max_attendees;
 		const count = event.attendee_count;
@@ -140,6 +143,7 @@
 		if (count != null && count > 0) {
 			return m['eventQuickInfo.attendeeCount']({ count });
 		}
+		if (event.is_full === true) return m['eventQuickInfo.eventFull']();
 		return null;
 	});
 

@@ -68,13 +68,15 @@ describe('EventStatusBadge', () => {
 		});
 	});
 
+	// #690: the badge reads the backend's always-public `is_full` (#825) rather
+	// than deriving fullness from `max_attendees`/`attendee_count`, which the
+	// organizer can withhold — a discreet sold-out event used to read "not full".
 	describe('Full Status', () => {
-		it('shows "Full" when event is at capacity', () => {
+		it('shows "Full" when the backend flags the event as full', () => {
 			vi.setSystemTime(new Date('2025-12-01T10:00:00Z'));
 
 			const event = createMockEvent({
-				max_attendees: 50,
-				attendee_count: 50,
+				is_full: true,
 				start: '2025-12-01T18:00:00Z',
 				end: '2025-12-01T22:00:00Z'
 			});
@@ -85,12 +87,13 @@ describe('EventStatusBadge', () => {
 			expect(screen.getByRole('status')).toHaveClass('bg-destructive');
 		});
 
-		it('shows "Full" when attendee count exceeds capacity', () => {
+		it('shows "Full" even when capacity and count are withheld', () => {
 			vi.setSystemTime(new Date('2025-12-01T10:00:00Z'));
 
 			const event = createMockEvent({
-				max_attendees: 50,
-				attendee_count: 55,
+				is_full: true,
+				max_attendees: null,
+				attendee_count: null,
 				start: '2025-12-01T18:00:00Z',
 				end: '2025-12-01T22:00:00Z'
 			});
@@ -100,38 +103,13 @@ describe('EventStatusBadge', () => {
 			expect(screen.getByRole('status')).toHaveTextContent('Full');
 		});
 
-		it('does not show "Full" when max_attendees is 0 (unlimited)', () => {
+		it('does not show "Full" when the flag is false, whatever the numbers say', () => {
+			vi.setSystemTime(new Date('2025-12-01T10:00:00Z'));
+
 			const event = createMockEvent({
-				max_attendees: 0,
-				attendee_count: 100,
-				start: '2025-12-01T18:00:00Z',
-				end: '2025-12-01T22:00:00Z'
-			});
-
-			render(EventStatusBadge, { props: { event } });
-
-			expect(screen.getByRole('status')).not.toHaveTextContent('Full');
-		});
-
-		it('does not show "Full" when max_attendees is null', () => {
-			const event = createMockEvent({
-				max_attendees: undefined,
-				attendee_count: 100,
-				start: '2025-12-01T18:00:00Z',
-				end: '2025-12-01T22:00:00Z'
-			});
-
-			render(EventStatusBadge, { props: { event } });
-
-			expect(screen.getByRole('status')).not.toHaveTextContent('Full');
-		});
-
-		// #825: capacity and count are withheld (null) when the organizer hides
-		// them. Fullness is not assertable then, so the badge must not claim it.
-		it('does not show "Full" when attendee_count is withheld', () => {
-			const event = createMockEvent({
+				is_full: false,
 				max_attendees: 50,
-				attendee_count: null,
+				attendee_count: 50,
 				start: '2025-12-01T18:00:00Z',
 				end: '2025-12-01T22:00:00Z'
 			});
@@ -141,10 +119,11 @@ describe('EventStatusBadge', () => {
 			expect(screen.getByRole('status')).not.toHaveTextContent('Full');
 		});
 
-		it('does not show "Full" when max_attendees is withheld', () => {
+		it('does not show "Full" when the flag is absent', () => {
+			vi.setSystemTime(new Date('2025-12-01T10:00:00Z'));
+
 			const event = createMockEvent({
-				max_attendees: null,
-				attendee_count: 100,
+				is_full: undefined,
 				start: '2025-12-01T18:00:00Z',
 				end: '2025-12-01T22:00:00Z'
 			});
@@ -263,8 +242,7 @@ describe('EventStatusBadge', () => {
 		it('prioritizes "Cancelled" over "Full"', () => {
 			const event = createMockEvent({
 				status: 'cancelled',
-				max_attendees: 50,
-				attendee_count: 50,
+				is_full: true,
 				start: '2025-12-01T18:00:00Z',
 				end: '2025-12-01T22:00:00Z'
 			});
@@ -278,8 +256,7 @@ describe('EventStatusBadge', () => {
 			vi.setSystemTime(new Date('2025-12-01T12:00:00Z'));
 
 			const event = createMockEvent({
-				max_attendees: 50,
-				attendee_count: 50,
+				is_full: true,
 				start: '2025-12-01T18:00:00Z',
 				end: '2025-12-01T22:00:00Z'
 			});
@@ -293,8 +270,7 @@ describe('EventStatusBadge', () => {
 			vi.setSystemTime(new Date('2025-12-02T10:00:00Z'));
 
 			const event = createMockEvent({
-				max_attendees: 50,
-				attendee_count: 50,
+				is_full: true,
 				start: '2025-12-01T18:00:00Z',
 				end: '2025-12-01T22:00:00Z'
 			});

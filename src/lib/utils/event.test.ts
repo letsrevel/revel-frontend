@@ -10,29 +10,34 @@ function makeEvent(overrides: Partial<EventInListSchema> = {}): EventInListSchem
 	} as EventInListSchema;
 }
 
+// #690: fullness comes from the backend's always-public `is_full` (#825), not
+// from `max_attendees`/`attendee_count` — those two are withheld (null) when the
+// organizer hides capacity or the count, and deriving from them made a discreet
+// sold-out event read as "not full".
 describe('isEventFull', () => {
-	it('is true when the count has reached the capacity', () => {
-		expect(isEventFull(makeEvent({ max_attendees: 50, attendee_count: 50 }))).toBe(true);
-		expect(isEventFull(makeEvent({ max_attendees: 50, attendee_count: 55 }))).toBe(true);
+	it('is true when the backend says the event is full', () => {
+		expect(isEventFull(makeEvent({ is_full: true }))).toBe(true);
 	});
 
-	it('is false below capacity', () => {
-		expect(isEventFull(makeEvent({ max_attendees: 50, attendee_count: 49 }))).toBe(false);
+	it('is false when the backend says it is not full', () => {
+		expect(isEventFull(makeEvent({ is_full: false }))).toBe(false);
 	});
 
-	it('is false when there is no capacity limit', () => {
-		expect(isEventFull(makeEvent({ max_attendees: 0, attendee_count: 999 }))).toBe(false);
+	it('is true even when capacity and count are withheld', () => {
+		expect(
+			isEventFull(makeEvent({ is_full: true, max_attendees: null, attendee_count: null }))
+		).toBe(true);
 	});
 
-	// #825: capacity and count are withheld (null) when the organizer hides them.
-	// Fullness is not assertable then — answering false keeps "Full" off the UI
-	// rather than fabricating a verdict from a missing number.
-	it('is false when capacity is withheld', () => {
-		expect(isEventFull(makeEvent({ max_attendees: null, attendee_count: 999 }))).toBe(false);
+	it('ignores the raw numbers entirely', () => {
+		// Numbers that would have read as "full" under the old derivation.
+		expect(isEventFull(makeEvent({ is_full: false, max_attendees: 50, attendee_count: 50 }))).toBe(
+			false
+		);
 	});
 
-	it('is false when the attendee count is withheld', () => {
-		expect(isEventFull(makeEvent({ max_attendees: 50, attendee_count: null }))).toBe(false);
+	it('is false when the flag is absent', () => {
+		expect(isEventFull(makeEvent({ is_full: undefined }))).toBe(false);
 	});
 });
 

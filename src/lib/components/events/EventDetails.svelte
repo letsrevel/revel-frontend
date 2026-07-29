@@ -26,13 +26,22 @@
 	});
 
 	// Compute capacity info.
+	//
 	// Both numbers may be withheld (`null`) since #825 — an `=== undefined` guard
 	// would let a withheld capacity through and render "Full" (null - count < 0),
-	// so both are checked with `== null`. Without both, say nothing at all.
+	// so both are checked with `== null`.
+	//
+	// When the numbers are withheld the always-public `is_full` still lets us say
+	// "Event is full" — the one fact that matters most and that the organizer
+	// cannot hide. We deliberately do NOT show a "limited spots" hedge in the
+	// not-full case: `is_full === false` is equally true of an uncapped event, so
+	// it would invent scarcity. No numbers and not full ⇒ omit the row.
 	const capacityText = $derived.by(() => {
 		const max = event.max_attendees;
 		const count = event.attendee_count;
-		if (max == null || max === 0 || count == null) return null;
+		if (max == null || max === 0 || count == null) {
+			return event.is_full === true ? m['eventDetails.attendance_full']() : null;
+		}
 		const remaining = max - count;
 		if (remaining <= 0) return m['eventDetails.attendance_full']();
 		if (remaining <= 10) return m['eventDetails.attendance_spotsLeft']({ count: remaining });

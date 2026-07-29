@@ -27,6 +27,8 @@
 	import AdmissionScreeningSection from './AdmissionScreeningSection.svelte';
 	import DetailsStepTagsInput from './DetailsStepTagsInput.svelte';
 	import DetailsStepMediaSection from './DetailsStepMediaSection.svelte';
+	import EventVisibilitySection from './EventVisibilitySection.svelte';
+	import { isNonDefaultVisibility } from '$lib/utils/event-visibility';
 	import type { OrganizationQuestionnaireInListSchema } from '$lib/api/generated';
 	import { SvelteSet } from 'svelte/reactivity';
 
@@ -156,7 +158,9 @@
 		[
 			'basic',
 			formData.tags && formData.tags.length > 0 ? 'advanced' : null,
-			hasScreeningSettings ? 'screening' : null
+			hasScreeningSettings ? 'screening' : null,
+			// Never leave a non-default disclosure choice collapsed out of sight.
+			isNonDefaultVisibility(formData.visibility_settings) ? 'visibility' : null
 		].filter((s): s is string => s !== null)
 	);
 
@@ -442,6 +446,14 @@
 			</div>
 		{/if}
 	</div>
+
+	<!-- Attendance Visibility Section -->
+	<EventVisibilitySection
+		settings={formData.visibility_settings}
+		isOpen={isSectionOpen('visibility')}
+		onToggle={() => toggleSection('visibility')}
+		onChange={(next) => onUpdate({ visibility_settings: next })}
+	/>
 
 	<!-- Admission & Screening Section -->
 	<AdmissionScreeningSection

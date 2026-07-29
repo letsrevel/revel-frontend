@@ -24,6 +24,13 @@
 		tierRemainingInfo?: TierRemainingTicketsSchema;
 		/** The event's IANA timezone, so sales windows render event-local (#474). */
 		timezone?: string | null;
+		/**
+		 * The event's `visibility_settings.show_capacity` (#825). Disambiguates a
+		 * `null` `total_available`: unlimited when capacity is disclosed, withheld
+		 * when it is not. Defaults to `true` so a caller that cannot know behaves
+		 * like the pre-#825 world.
+		 */
+		capacityDisclosed?: boolean;
 		onSelectTier: (tier: TierSchemaWithId) => void;
 		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 	}
@@ -37,6 +44,7 @@
 		canAttendWithoutLogin = false,
 		tierRemainingInfo,
 		timezone,
+		capacityDisclosed = true,
 		onSelectTier,
 		onGuestTierClick
 	}: Props = $props();
@@ -138,19 +146,23 @@
 	/**
 	 * Check availability.
 	 *
-	 * `total_available === null` is ambiguous since backend #825: it used to mean
-	 * only "unlimited", but the field is now also nulled when the event withholds
-	 * capacity (`visibility_settings.show_capacity === false`). The two are
-	 * indistinguishable from the tier alone, so the card states nothing about
-	 * inventory for a null — calling withheld inventory "unlimited" would be a
-	 * lie, and the sold-out signal for such tiers comes from
-	 * `tierRemainingInfo.sold_out`, which is not gated.
+	 * `total_available === null` is ambiguous from the tier alone since backend
+	 * #825: it means "unlimited" when the event discloses capacity, and "withheld"
+	 * when it does not. `capacityDisclosed` is the event-level fact that resolves
+	 * it — with capacity disclosed a null genuinely means an uncapped tier and we
+	 * say so; with capacity hidden the card states nothing about inventory, since
+	 * calling withheld inventory "unlimited" would be a lie. Either way the
+	 * sold-out signal still arrives via `tierRemainingInfo.sold_out`, which is not
+	 * gated.
 	 *
 	 * `message === null` is what suppresses the inventory row in the template.
 	 */
 	const availabilityStatus = $derived.by(() => {
 		if (tier.total_available === null) {
-			return { available: true, message: null };
+			return {
+				available: true,
+				message: capacityDisclosed ? m['tierCard.unlimited']() : null
+			};
 		}
 
 		if (tier.total_available === 0) {

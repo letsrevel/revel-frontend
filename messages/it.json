@@ -1758,7 +1758,8 @@
 		"rsvpBy": "RSVP entro {deadline}",
 		"openInMaps": "Apri in Mappe",
 		"mapOf": "Mappa di",
-		"visibilityNote": "Visibilità: {visibility}"
+		"visibilityNote": "Visibilità: {visibility}",
+		"eventFull": "Evento al completo"
 	},
 	"eventRSVP": {
 		"goingTo": "You're going to {eventName}!",
@@ -8861,5 +8862,23 @@
 		"unavailableTitle": "Contenuto non disponibile",
 		"unavailableBody": "Non è stato possibile caricare questo embed di Revel.",
 		"unavailableNotFound": "Non abbiamo trovato questo contenuto. L'embed potrebbe puntare a qualcosa che è stato rinominato o rimosso."
+	},
+	"eventVisibility": {
+		"title": "Visibilità delle presenze",
+		"hint": "Decidi cosa possono vedere gli ospiti su chi partecipa. Organizzatori e staff vedono sempre i numeri reali.",
+		"presetsLabel": "Preimpostazioni rapide",
+		"presetOpen": "Aperto",
+		"presetOpenHint": "Mostra tutto",
+		"presetDiscreet": "Discreto",
+		"presetDiscreetHint": "Nascondi conteggi e lista ospiti",
+		"presetCustom": "Personalizzato",
+		"currentSelection": "Impostazione attuale: {preset}",
+		"showAttendeeCount": "Mostra il numero di partecipanti",
+		"showAttendeeCountHint": "Gli ospiti possono vedere quante persone parteciperanno.",
+		"showCapacity": "Mostra la capienza",
+		"showCapacityHint": "Gli ospiti possono vedere il limite di partecipanti, i posti rimasti e la disponibilità dei biglietti.",
+		"showAttendeeList": "Mostra la lista degli ospiti",
+		"showAttendeeListHint": "Gli ospiti possono vedere chi altro partecipa. Chi ha scelto di non comparire resta comunque nascosto.",
+		"staffNote": "Queste impostazioni non si applicano a te: organizzatori e staff vedono sempre tutto."
 	}
 }

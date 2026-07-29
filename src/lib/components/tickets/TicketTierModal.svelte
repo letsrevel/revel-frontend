@@ -33,6 +33,8 @@
 		tierRemainingTickets?: TierRemainingTicketsSchema[];
 		/** The event's IANA timezone, so tier sales windows render event-local (#474). */
 		timezone?: string | null;
+		/** The event's `visibility_settings.show_capacity` (#825) — see TierCard. */
+		capacityDisclosed?: boolean;
 		/** Event-level max tickets per user (fallback when tier-specific limit is null) */
 		eventMaxTicketsPerUser?: number | null;
 		/** User's display name for auto-fill */
@@ -95,6 +97,7 @@
 		canAttendWithoutLogin = false,
 		tierRemainingTickets,
 		timezone,
+		capacityDisclosed = true,
 		eventMaxTicketsPerUser = null,
 		userName = '',
 		preSelectedTier = null,
@@ -395,6 +398,7 @@
 						{canAttendWithoutLogin}
 						tierRemainingInfo={getTierRemainingInfo(tier.id)}
 						{timezone}
+						{capacityDisclosed}
 						onSelectTier={handleTierClick}
 						{onGuestTierClick}
 					/>

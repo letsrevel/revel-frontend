@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { buildRecurringTemplateCreateData, type EventFormPayloadData } from './event-payload';
+import {
+	buildEditorUpdateData,
+	buildRecurringTemplateCreateData,
+	buildWizardStep1UpdateData,
+	buildWizardStep2UpdateData,
+	type EventFormPayloadData
+} from './event-payload';
 
 const NAME = 'Weekly Game Night';
 const START_ISO = '2026-08-01T18:00:00+02:00';
@@ -71,4 +77,58 @@ describe('buildRecurringTemplateCreateData', () => {
 			location_maps_embed: null
 		});
 	});
+});
+
+// #690 / backend #825. Three contract rules are load-bearing here:
+//   - `visibility_settings` MERGES sub-key-wise, so a whole-object round-trip is
+//     safe and an omitted field means "no change".
+//   - `EventEditSchema` declares the field non-nullable → an explicit `null` is a
+//     422. `TemplateEditSchema` accepts `null` as "no change". We never emit one.
+//   - `extra="forbid"` → only the three known toggles may be sent; preset names
+//     are frontend-only.
+describe('visibility_settings write semantics', () => {
+	const builders = {
+		'wizard step 1': (f: EventFormPayloadData) => buildWizardStep1UpdateData(f),
+		'wizard step 2': (f: EventFormPayloadData) => buildWizardStep2UpdateData(f),
+		editor: (f: EventFormPayloadData) => buildEditorUpdateData(f, START_ISO),
+		'recurring template': (f: EventFormPayloadData) =>
+			buildRecurringTemplateCreateData(f, NAME, START_ISO, CITY_ID)
+	};
+
+	for (const [label, build] of Object.entries(builders)) {
+		it(`${label}: omits the field entirely when the form never carried one`, () => {
+			const payload = build({});
+
+			expect(payload.visibility_settings).toBeUndefined();
+			// `undefined` — never `null`, which EventEditSchema rejects with a 422.
+			expect(payload.visibility_settings).not.toBeNull();
+			expect(JSON.parse(JSON.stringify(payload))).not.toHaveProperty('visibility_settings');
+		});
+
+		it(`${label}: round-trips the full resolved triple when the form carries one`, () => {
+			const payload = build({ visibility_settings: { show_capacity: false } });
+
+			expect(payload.visibility_settings).toEqual({
+				show_attendee_count: true,
+				show_capacity: false,
+				show_attendee_list: true
+			});
+		});
+
+		it(`${label}: sends nothing but the three known toggles`, () => {
+			const payload = build({
+				visibility_settings: {
+					show_attendee_count: false,
+					show_capacity: false,
+					show_attendee_list: false
+				}
+			});
+
+			expect(Object.keys(payload.visibility_settings ?? {}).sort()).toEqual([
+				'show_attendee_count',
+				'show_attendee_list',
+				'show_capacity'
+			]);
+		});
+	}
 });

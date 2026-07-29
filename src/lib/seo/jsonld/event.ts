@@ -78,16 +78,10 @@ export function generateEventJsonLd(event: EventDetailSchema, eventUrl: string):
 	if (images.length > 0) ld.image = images;
 
 	if (!event.requires_ticket) {
-		// Capacity and attendee count may both be withheld (`null`) since #825.
-		// Without both we cannot claim SoldOut, so the offer stays InStock rather
-		// than publishing a guess into structured data.
-		const maxAttendees = event.max_attendees;
-		const attendeeCount = event.attendee_count;
-		const isFull =
-			maxAttendees != null &&
-			maxAttendees > 0 &&
-			attendeeCount != null &&
-			attendeeCount >= maxAttendees;
+		// `is_full` (#825) is always public, unlike `max_attendees`/`attendee_count`
+		// which the organizer may withhold. Deriving occupancy from those two would
+		// publish "InStock" for a discreet event that is actually sold out.
+		const isFull = event.is_full === true;
 		ld.offers = {
 			'@type': 'Offer',
 			url: eventUrl,

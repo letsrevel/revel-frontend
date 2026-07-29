@@ -88,4 +88,20 @@ describe('EventDetails — capacity disclosure', () => {
 		expect(screen.queryByText(/Event is full/i)).not.toBeInTheDocument();
 		expect(screen.queryByText(/spots left/i)).not.toBeInTheDocument();
 	});
+
+	// #690: `is_full` is always public, so the one fact the organizer cannot hide
+	// still gets said even when both numbers are withheld.
+	it('still says the event is full when the numbers are withheld but is_full is set', () => {
+		const event = createMockEvent({ max_attendees: null, attendee_count: null, is_full: true });
+		render(EventDetails, { props: { event } });
+		expect(screen.getByText(/Event is full/i)).toBeInTheDocument();
+	});
+
+	// Deliberately no "limited spots" hedge: `is_full === false` is equally true
+	// of an uncapped event, so a scarcity cue there would be invented.
+	it('omits the attendance row entirely when the numbers are withheld and it is not full', () => {
+		const event = createMockEvent({ max_attendees: null, attendee_count: null, is_full: false });
+		render(EventDetails, { props: { event } });
+		expect(screen.queryByText(/Attendance/i)).not.toBeInTheDocument();
+	});
 });

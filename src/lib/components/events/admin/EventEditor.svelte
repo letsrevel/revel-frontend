@@ -126,6 +126,11 @@
 		potluck_open: existingEvent?.potluck_open || false,
 		accept_invitation_requests: existingEvent?.accept_invitation_requests || false,
 		accept_rsvp_notes: existingEvent?.accept_rsvp_notes || false,
+		// Seeded from the server so an edit round-trips the organizer's real
+		// disclosure choices. Left `undefined` on create, which omits the field
+		// (see visibilitySettingsForWrite in event-payload.ts) — an unseeded
+		// all-`true` default would silently re-disclose a hidden count.
+		visibility_settings: existingEvent?.visibility_settings,
 		public_pronoun_distribution: existingEvent?.public_pronoun_distribution || false,
 		apply_before: toDateTimeLocal(existingEvent?.apply_before) || null,
 		can_attend_without_login: existingEvent?.can_attend_without_login || false,
