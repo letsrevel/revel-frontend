@@ -32,7 +32,10 @@ describe('buildRecurringTemplateCreateData', () => {
 			event_type: 'members-only',
 			description: '  Bring your own board games.  ',
 			address: '  Somewhere 1  ',
-			address_visibility: 'members-only',
+			visibility_settings: {
+				address_visibility: 'members-only',
+				show_pronoun_distribution: true
+			},
 			max_attendees: 30,
 			max_tickets_per_user: 2,
 			waitlist_open: true,
@@ -58,7 +61,6 @@ describe('buildRecurringTemplateCreateData', () => {
 			end: null,
 			description: 'Bring your own board games.',
 			address: 'Somewhere 1',
-			address_visibility: 'members-only',
 			rsvp_before: null,
 			max_attendees: 30,
 			max_tickets_per_user: 2,
@@ -74,18 +76,29 @@ describe('buildRecurringTemplateCreateData', () => {
 			requires_full_profile: true,
 			venue_id: 'venue-1',
 			location_maps_url: 'https://maps.example/x',
-			location_maps_embed: null
+			location_maps_embed: null,
+			visibility_settings: {
+				show_attendee_count: true,
+				show_capacity: true,
+				show_attendee_list: true,
+				show_pronoun_distribution: true,
+				address_visibility: 'members-only'
+			}
 		});
+
+		expect(payload).not.toHaveProperty('address_visibility');
+		expect(payload).not.toHaveProperty('public_pronoun_distribution');
 	});
 });
 
-// #690 / backend #825. Three contract rules are load-bearing here:
+// #690 / backend #825 / #793. Three contract rules are load-bearing here:
 //   - `visibility_settings` MERGES sub-key-wise, so a whole-object round-trip is
 //     safe and an omitted field means "no change".
 //   - `EventEditSchema` declares the field non-nullable → an explicit `null` is a
 //     422. `TemplateEditSchema` accepts `null` as "no change". We never emit one.
-//   - `extra="forbid"` → only the three known toggles may be sent; preset names
-//     are frontend-only.
+//   - `extra="forbid"` → only the five known keys may be sent; preset names are
+//     frontend-only, and the old flat `address_visibility` /
+//     `public_pronoun_distribution` fields must never appear at the top level.
 describe('visibility_settings write semantics', () => {
 	const builders = {
 		'wizard step 1': (f: EventFormPayloadData) => buildWizardStep1UpdateData(f),
@@ -105,29 +118,44 @@ describe('visibility_settings write semantics', () => {
 			expect(JSON.parse(JSON.stringify(payload))).not.toHaveProperty('visibility_settings');
 		});
 
-		it(`${label}: round-trips the full resolved triple when the form carries one`, () => {
+		it(`${label}: never sends address_visibility or public_pronoun_distribution at the top level`, () => {
+			const payload = build({
+				visibility_settings: { address_visibility: 'members-only', show_pronoun_distribution: true }
+			});
+
+			expect(payload).not.toHaveProperty('address_visibility');
+			expect(payload).not.toHaveProperty('public_pronoun_distribution');
+		});
+
+		it(`${label}: round-trips all five resolved keys when the form carries one`, () => {
 			const payload = build({ visibility_settings: { show_capacity: false } });
 
 			expect(payload.visibility_settings).toEqual({
 				show_attendee_count: true,
 				show_capacity: false,
-				show_attendee_list: true
+				show_attendee_list: true,
+				show_pronoun_distribution: false,
+				address_visibility: 'public'
 			});
 		});
 
-		it(`${label}: sends nothing but the three known toggles`, () => {
+		it(`${label}: sends nothing but the five known keys`, () => {
 			const payload = build({
 				visibility_settings: {
 					show_attendee_count: false,
 					show_capacity: false,
-					show_attendee_list: false
+					show_attendee_list: false,
+					show_pronoun_distribution: true,
+					address_visibility: 'members-only'
 				}
 			});
 
 			expect(Object.keys(payload.visibility_settings ?? {}).sort()).toEqual([
+				'address_visibility',
 				'show_attendee_count',
 				'show_attendee_list',
-				'show_capacity'
+				'show_capacity',
+				'show_pronoun_distribution'
 			]);
 		});
 	}
