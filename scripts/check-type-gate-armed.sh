@@ -33,6 +33,25 @@ set -uo pipefail
 
 TS_CANARY="src/lib/__type_gate_canary__.ts"
 SVELTE_CANARY="src/routes/__TypeGateCanary__.svelte"
+PARAGLIDE_OUTPUT="src/lib/paraglide/messages/_index.js"
+
+# The generated Paraglide bundles are 16.6 of the project's 20.17 MB of non-TS
+# files. Without them the project sits at ~4.5 MB — comfortably under the 20 MB
+# limit — so reduced mode never triggers and this canary passes even with
+# `disableSizeLimit` removed. That is a false ARMED: the check would be green
+# while proving nothing. Refuse to run rather than report a result we can't
+# stand behind.
+if [ ! -f "$PARAGLIDE_OUTPUT" ]; then
+	echo "❌ Cannot verify the type gate: generated i18n output is missing."
+	echo
+	echo "   Run 'pnpm paraglide:compile' first."
+	echo
+	echo "   $PARAGLIDE_OUTPUT and its siblings are most of the project's"
+	echo "   non-TS bytes. Without them the project is too small to reach the"
+	echo "   20 MB limit that disarmed the gate in #704, so this check would"
+	echo "   pass regardless of whether the gate actually works."
+	exit 1
+fi
 
 cleanup() {
 	rm -f "$TS_CANARY" "$SVELTE_CANARY"
@@ -60,7 +79,15 @@ cat >"$SVELTE_CANARY" <<'EOF'
 <p>{typeGateCanary}</p>
 EOF
 
-pnpm svelte-kit sync >/dev/null 2>&1
+# `set -e` is deliberately off below (svelte-check exits non-zero by design here,
+# since the canaries are errors), so sync failures have to be checked by hand —
+# otherwise a broken sync would look like a disarmed gate.
+if ! sync_output=$(pnpm svelte-kit sync 2>&1); then
+	echo "❌ Cannot verify the type gate: 'svelte-kit sync' failed."
+	echo "$sync_output"
+	exit 1
+fi
+
 output=$(pnpm svelte-check --tsconfig ./tsconfig.json --output machine 2>&1)
 
 FAILED=0

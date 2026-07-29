@@ -88,7 +88,10 @@ audit-deps: audit licensecheck
 # ─────────────────────────────────────────────
 
 # Equivalent to backend's `make check`: format, lint, types, i18n, file-length
-check: format-check lint types types-canary i18n-check i18n-hardcoded file-length no-ssr-token audit-images
+# i18n-check runs before the type checks: it compiles the Paraglide messages that
+# svelte-check resolves `$$lib/paraglide/*` against, and the canary refuses to run
+# without them (see scripts/check-type-gate-armed.sh).
+check: format-check lint i18n-check types types-canary i18n-hardcoded file-length no-ssr-token audit-images
 
 # Auto-fix everything that can be auto-fixed
 fix: format lint-fix
