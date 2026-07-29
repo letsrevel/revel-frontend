@@ -362,6 +362,7 @@
 						size="sm"
 						onclick={() => portalMutation.mutate()}
 						disabled={portalBusy}
+						aria-busy={portalBusy}
 					>
 						{#if portalBusy}
 							<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
@@ -406,7 +407,7 @@
 
 <!--
 	Deliberately outside the status chain and the action row above: both dialogs
-	rewrite `['me', 'memberships']` on success (`settleSubscriptionCaches`), so the
+	rewrite `MY_MEMBERSHIPS_KEY` on success (`settleSubscriptionCaches`), so the
 	card they were launched from re-renders with a subscription that no longer
 	offers that action.
 	Rendered inside, the open dialog would be destroyed mid-read — an unannounced

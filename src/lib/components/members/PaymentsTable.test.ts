@@ -297,6 +297,34 @@ describe('PaymentsTable refund gating', () => {
 		expect(screen.getByRole('link', { name: 'View on Stripe' })).toBeInTheDocument();
 	});
 
+	// #702: the note names the Stripe Dashboard as the way to refund. With no
+	// `stripe_dashboard_url` on any succeeded row there is no way to GET there
+	// from this drawer, so the note is a dead end that only tells the organizer
+	// what they cannot do here.
+	it('withholds the online-refund note when no succeeded payment links to Stripe', () => {
+		renderTable([makePayment({ status: 'succeeded', stripe_dashboard_url: null })], true);
+
+		expect(screen.queryByText(/Stripe Dashboard/i)).not.toBeInTheDocument();
+	});
+
+	// The link must come from a SUCCEEDED row: a failed payment's Stripe page is
+	// not where a refund is issued.
+	it('withholds the online-refund note when only a non-succeeded payment links to Stripe', () => {
+		renderTable(
+			[
+				makePayment({ id: 'pay-1', status: 'succeeded', stripe_dashboard_url: null }),
+				makePayment({
+					id: 'pay-2',
+					status: 'failed',
+					stripe_dashboard_url: 'https://dashboard.stripe.com/test/payments/pi_999'
+				})
+			],
+			true
+		);
+
+		expect(screen.queryByText(/Stripe Dashboard/i)).not.toBeInTheDocument();
+	});
+
 	it('keeps the online-refund note out of the way for OFFLINE plans', () => {
 		renderTable([makePayment({ status: 'succeeded' })], false);
 

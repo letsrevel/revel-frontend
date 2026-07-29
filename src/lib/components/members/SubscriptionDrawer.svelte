@@ -335,12 +335,18 @@
 		{:else}
 			<DialogHeader>
 				<DialogTitle>
+					<!-- `min-w-0` + `break-all` on the identity column: a flex item's
+					     automatic minimum size is its CONTENT size, so without them a long
+					     unbroken email (no spaces to wrap at) refuses to shrink, pushes the
+					     status badge out of the dialog and makes the whole drawer scroll
+					     sideways on a phone. `shrink-0` keeps the badge legible instead of
+					     being squeezed to a sliver once the email does yield. -->
 					<div class="flex items-start justify-between gap-4">
-						<div>
+						<div class="min-w-0">
 							<div class="text-base font-semibold">{sub.user_display_name}</div>
-							<div class="text-xs text-muted-foreground">{sub.user_email}</div>
+							<div class="break-all text-xs text-muted-foreground">{sub.user_email}</div>
 						</div>
-						<StatusBadge status={sub.status} />
+						<StatusBadge status={sub.status} class="shrink-0" />
 					</div>
 				</DialogTitle>
 			</DialogHeader>

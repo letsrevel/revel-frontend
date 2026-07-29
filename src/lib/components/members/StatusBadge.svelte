@@ -1,6 +1,9 @@
 <script lang="ts">
-	import * as m from '$lib/paraglide/messages.js';
-	import { getStatusConfig, type SubscriptionStatus } from '$lib/utils/subscriptions';
+	import {
+		getStatusConfig,
+		getStatusLabel,
+		type SubscriptionStatus
+	} from '$lib/utils/subscriptions';
 
 	interface Props {
 		status: SubscriptionStatus;
@@ -10,16 +13,7 @@
 	const { status, class: extraClass = '' }: Props = $props();
 
 	const config = $derived(getStatusConfig(status));
-	const label = $derived(
-		{
-			active: m['subscriptions.status.active'](),
-			pending: m['subscriptions.status.pending'](),
-			past_due: m['subscriptions.status.past_due'](),
-			paused: m['subscriptions.status.paused'](),
-			cancelled: m['subscriptions.status.cancelled'](),
-			expired: m['subscriptions.status.expired']()
-		}[status]
-	);
+	const label = $derived(getStatusLabel(status));
 </script>
 
 <span

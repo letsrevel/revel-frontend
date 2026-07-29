@@ -8,6 +8,7 @@ import {
 	uniqueName
 } from '../../support/factories';
 import { authenticateContext } from '../../support/session';
+import { membershipCard } from '../../support/membership-locators';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 
 // J23 (USER_JOURNEYS.md) — subscription lifecycle: staff creates a
@@ -94,12 +95,11 @@ test.describe('J23 subscription lifecycle @p2', () => {
 		const memberPage = await memberContext.newPage();
 		await gotoHydrated(memberPage, '/account/memberships');
 		await waitForClientAuth(memberPage);
-		// Scoped to the memberships section: the page's Applications section
-		// renders its own <article aria-label="{org name}"> for the (now
-		// completed) application this test's arrange created, so an unscoped
-		// article lookup is ambiguous.
-		const membershipsSection = memberPage.getByRole('region', { name: 'Memberships' });
-		const card = membershipsSection.getByRole('article', { name: org.name });
+		// The shared helper scopes to the Memberships region: the page's
+		// Applications section renders its own <article aria-label="{org name}">
+		// for the (now completed) application this test's arrange created, so an
+		// unscoped article lookup is ambiguous.
+		const card = membershipCard(memberPage, org.name);
 		await expect(card).toBeVisible({ timeout: 15_000 });
 		await expect(card.getByText(plan.name)).toBeVisible();
 		await expect(card.getByText('€15.00 / month')).toBeVisible();

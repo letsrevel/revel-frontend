@@ -7,7 +7,7 @@ import {
 	uniqueName
 } from '../../support/factories';
 import { authenticateContext } from '../../support/session';
-import { planCard } from '../../support/membership-locators';
+import { membershipCard, planCard } from '../../support/membership-locators';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 import { completeStripeCheckout } from '../../support/stripe';
 
@@ -130,12 +130,10 @@ test.describe('J23 hosted-checkout subscribe @p2', () => {
 		// The account hub tells the same story.
 		await gotoHydrated(page, '/account/memberships');
 		await waitForClientAuth(page);
-		const membershipCard = page
-			.getByRole('region', { name: 'Memberships' })
-			.getByRole('article', { name: 'Revel Events Collective' });
-		await expect(membershipCard).toBeVisible({ timeout: 20_000 });
-		await expect(membershipCard.getByText(plan.name)).toBeVisible();
-		await expect(membershipCard.getByLabel('Active')).toBeVisible();
+		const card = membershipCard(page, 'Revel Events Collective');
+		await expect(card).toBeVisible({ timeout: 20_000 });
+		await expect(card.getByText(plan.name)).toBeVisible();
+		await expect(card.getByLabel('Active')).toBeVisible();
 
 		// BE #774 follow-up, ONLINE side. This is the only place the real Stripe
 		// handles exist, so it is the only place that can prove the admin schema's
