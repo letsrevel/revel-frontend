@@ -7534,6 +7534,7 @@
 	"membershipRequestCard.statusCancelled": "Annullata",
 	"membershipRequestCard.questionnaire": "Questionario",
 	"membershipRequestCard.viewSubmission": "Vedi il questionario compilato",
+	"membershipRequestCard.viewSubmissionPendingAria": "Vedi il questionario compilato (revisione in sospeso)",
 	"membershipRequestCard.submissionPendingReview": "Revisione in sospeso",
 	"membershipRequestCard.tierPrefix": "Livello:",
 	"membershipRequestCard.viewRequestAria": "Vedi i dettagli della richiesta di {name}",

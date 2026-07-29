@@ -316,12 +316,21 @@
 </div>
 
 {#if requestsQuery.isLoading}
-	<div class="flex items-center justify-center py-12">
-		<Loader2 class="h-8 w-8 animate-spin text-muted-foreground" />
+	<!-- House spinner idiom (cf. SeriesPassesTab): the icon is decoration, the
+	     `sr-only` text is the whole announcement. A bare spinning glyph says
+	     nothing at all to a screen reader — WCAG 4.1.3. -->
+	<div class="flex items-center justify-center py-12" role="status">
+		<Loader2 class="h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
+		<span class="sr-only">{m['common.loading']()}</span>
 	</div>
 {:else if requestsQuery.isError}
 	<div class="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-center">
-		<p class="text-sm text-destructive">{m['orgAdmin.members.errors.loadRequests']()}</p>
+		<!-- `role="alert"`: the failure arrives *after* first paint, replacing the
+		     spinner, so without a live region it lands silently for anyone who has
+		     already moved focus on. -->
+		<p role="alert" class="text-sm text-destructive">
+			{m['orgAdmin.members.errors.loadRequests']()}
+		</p>
 	</div>
 {:else if requests.length === 0}
 	<div class="rounded-lg border border-dashed p-12 text-center">

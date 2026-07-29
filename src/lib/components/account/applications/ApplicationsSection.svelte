@@ -59,7 +59,9 @@
 			<span class="sr-only">{m['common.loading']()}</span>
 		</div>
 	{:else if applicationsQuery.isError && applications.length === 0}
-		<p class="text-sm text-destructive">{m['applications.loadError']()}</p>
+		<!-- `role="alert"`: this replaces the spinner after first paint, so without a
+		     live region the failure is silent to anyone who has moved focus on. -->
+		<p role="alert" class="text-sm text-destructive">{m['applications.loadError']()}</p>
 	{:else if applications.length === 0}
 		<p class="text-sm text-muted-foreground">{m['applications.empty']()}</p>
 	{:else}

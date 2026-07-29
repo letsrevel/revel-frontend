@@ -186,11 +186,20 @@
 		{:else}
 			<!-- Not `{:else if}` chained with the rows below: a partial failure has to
 			     render an error line AND the surviving half's cards at the same time. -->
+			<!-- `role="alert"` on each: both lines replace the spinner after first
+			     paint, and a partial failure can even arrive while the surviving
+			     half's cards are already rendered and read. Two separate alerts
+			     rather than one wrapper, so a partial failure announces only the
+			     half that actually broke. -->
 			{#if membershipsFailed}
-				<p class="text-sm text-destructive">{m['account.memberships.loadError']()}</p>
+				<p role="alert" class="text-sm text-destructive">
+					{m['account.memberships.loadError']()}
+				</p>
 			{/if}
 			{#if rejoinFailed}
-				<p class="text-sm text-destructive">{m['account.memberships.loadErrorRejoin']()}</p>
+				<p role="alert" class="text-sm text-destructive">
+					{m['account.memberships.loadErrorRejoin']()}
+				</p>
 			{/if}
 
 			{#if showEmptyState}

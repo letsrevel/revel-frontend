@@ -65,12 +65,6 @@
 	// Dialog state
 	let dialogOpen = $state(false);
 
-	// The card and its dialog each render the submission link + review hint, so
-	// the hint ids have to be distinct as well as unique across mounted cards.
-	const uid = $props.id();
-	const cardHintId = `${uid}-review-hint`;
-	const dialogHintId = `${uid}-dialog-review-hint`;
-
 	// Format created at date
 	const createdAt = $derived(formatRelativeTime(request.created_at));
 
@@ -78,6 +72,23 @@
 	// `resolve()` call stays inline at each `<a href>` — the lint rule that
 	// guards SvelteKit navigation only recognises it in that position.
 	const submission = $derived(request.questionnaire_submission);
+
+	// The "review pending" caveat rides in the link's accessible NAME rather than
+	// in an `aria-describedby` hint. The rotor ("Links") in VoiceOver, NVDA's
+	// Elements List and the JAWS links list — the way a blind admin actually jumps
+	// to a link — surface the accessible name and nothing else, so a described-by
+	// hint drops the one fact that makes the outcome provisional exactly in the
+	// navigation mode this hint exists for.
+	//
+	// The localized label repeats the visible link text verbatim before adding the
+	// caveat, so folding it in still satisfies WCAG 2.5.3 Label in Name; the
+	// visible hint span stays put for sighted users. Do NOT also point
+	// `aria-describedby` at that span — the name would then be read, then the
+	// description, then the span's own static text: the same three words, thrice.
+	const submissionPendingReview = $derived(submission?.evaluation_status === 'pending review');
+	const submissionLinkLabel = $derived(
+		submissionPendingReview ? m['membershipRequestCard.viewSubmissionPendingAria']() : undefined
+	);
 
 	// Display name
 	const displayName = $derived(
@@ -201,14 +212,17 @@
 								}
 							)}
 							class="font-medium text-primary underline underline-offset-2"
-							aria-describedby={submission.evaluation_status === 'pending review'
-								? cardHintId
-								: undefined}
+							aria-label={submissionLinkLabel}
 						>
 							{m['membershipRequestCard.viewSubmission']()}
 						</a>
-						{#if submission.evaluation_status === 'pending review'}
-							<span id={cardHintId} class="ml-2 text-xs text-muted-foreground">
+						{#if submissionPendingReview}
+							<!-- Visual reinforcement only: the same words are already in the
+							     link's accessible name above, and in browse mode a screen
+							     reader would read the link (name and all) and then this span
+							     — the caveat twice in one line. Hiding it is safe *because*
+							     the name carries it; the two move together. -->
+							<span class="ml-2 text-xs text-muted-foreground" aria-hidden="true">
 								{m['membershipRequestCard.submissionPendingReview']()}
 							</span>
 						{/if}
@@ -396,14 +410,17 @@
 								}
 							)}
 							class="font-medium text-primary underline underline-offset-2"
-							aria-describedby={submission.evaluation_status === 'pending review'
-								? dialogHintId
-								: undefined}
+							aria-label={submissionLinkLabel}
 						>
 							{m['membershipRequestCard.viewSubmission']()}
 						</a>
-						{#if submission.evaluation_status === 'pending review'}
-							<span id={dialogHintId} class="ml-2 text-xs text-muted-foreground">
+						{#if submissionPendingReview}
+							<!-- Visual reinforcement only: the same words are already in the
+							     link's accessible name above, and in browse mode a screen
+							     reader would read the link (name and all) and then this span
+							     — the caveat twice in one line. Hiding it is safe *because*
+							     the name carries it; the two move together. -->
+							<span class="ml-2 text-xs text-muted-foreground" aria-hidden="true">
 								{m['membershipRequestCard.submissionPendingReview']()}
 							</span>
 						{/if}

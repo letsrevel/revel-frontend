@@ -121,6 +121,16 @@ describe('ApplicationsSection', () => {
 		expect(screen.queryByText(/no applications yet/i)).toBeNull();
 	});
 
+	it('announces the load failure instead of swapping it in silently', async () => {
+		// The error replaces the spinner *after* first paint, so a member who has
+		// already tabbed on never hears it without a live region.
+		listMock.mockResolvedValue({ data: undefined, error: { detail: 'boom' } });
+		renderSection();
+
+		const alert = await screen.findByRole('alert');
+		expect(alert).toHaveTextContent(/could not load your applications/i);
+	});
+
 	it('keeps the loaded rows when a background refetch fails', async () => {
 		// A refetch that fails must not throw away rows the member is already
 		// reading: the error state is for "nothing to show", not "the last poll

@@ -103,7 +103,9 @@ describe('MembershipRequestCard questionnaire submission', () => {
 			})
 		);
 
-		const links = screen.getAllByRole('link', { name: 'View questionnaire submission' });
+		const links = screen.getAllByRole('link', {
+			name: 'View questionnaire submission (review pending)'
+		});
 		expect(links.length).toBeGreaterThan(0);
 		expect(links[0]).toHaveAttribute(
 			'href',
@@ -112,7 +114,7 @@ describe('MembershipRequestCard questionnaire submission', () => {
 		expect(screen.getAllByText('Review pending').length).toBeGreaterThan(0);
 	});
 
-	it('describes the submission link with the review-pending hint', () => {
+	it('carries the review-pending state in the link’s accessible name', () => {
 		renderCard(
 			makeRequest({
 				questionnaire_submission: {
@@ -123,12 +125,32 @@ describe('MembershipRequestCard questionnaire submission', () => {
 			})
 		);
 
-		// The hint sits beside the link visually; without the association a screen
-		// reader announces the link with no idea the review is still open.
-		const link = screen.getAllByRole('link', { name: 'View questionnaire submission' })[0];
-		const hintId = link.getAttribute('aria-describedby');
-		expect(hintId).toBeTruthy();
-		expect(document.getElementById(hintId as string)).toHaveTextContent('Review pending');
+		// The state has to be in the NAME, not in an `aria-describedby` hint: the
+		// rotor / Elements-List link pickers a blind admin uses to jump straight to
+		// a link expose the accessible name and nothing else, so a described-by
+		// hint drops the caveat exactly where it is needed most.
+		const links = screen.getAllByRole('link', {
+			name: 'View questionnaire submission (review pending)'
+		});
+		expect(links.length).toBeGreaterThan(0);
+
+		// The visible label survives inside the accessible name — WCAG 2.5.3 Label
+		// in Name, so "click View questionnaire submission" still works by voice.
+		for (const link of links) {
+			expect(link.getAttribute('aria-label')).toContain(link.textContent?.trim());
+			// No described-by on top of the name, or the same three words get
+			// announced twice over (name, then description).
+			expect(link).not.toHaveAttribute('aria-describedby');
+		}
+
+		// …and for the same reason the visible hint beside the link is hidden from
+		// AT: it is now pure decoration, and browse mode would otherwise read the
+		// link's name and then the span — the caveat twice in one line. This is
+		// only safe while the name carries the state, which the assertion above
+		// pins, so the two must never drift apart.
+		for (const hint of screen.getAllByText('Review pending')) {
+			expect(hint).toHaveAttribute('aria-hidden', 'true');
+		}
 	});
 
 	it('omits the review-pending hint once the submission is approved', () => {
@@ -145,8 +167,10 @@ describe('MembershipRequestCard questionnaire submission', () => {
 		const links = screen.getAllByRole('link', { name: 'View questionnaire submission' });
 		expect(links.length).toBeGreaterThan(0);
 		expect(screen.queryByText('Review pending')).not.toBeInTheDocument();
-		// No hint to point at, so no dangling description either.
+		// A settled submission carries no caveat: the name is the plain visible
+		// label, with no override and no dangling description.
 		expect(links[0]).not.toHaveAttribute('aria-describedby');
+		expect(links[0]).not.toHaveAttribute('aria-label');
 	});
 
 	it('renders no submission link when the application has none', () => {

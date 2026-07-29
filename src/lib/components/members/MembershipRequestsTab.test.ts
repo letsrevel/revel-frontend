@@ -207,6 +207,45 @@ describe('MembershipRequestsTab filters', () => {
 	});
 });
 
+describe('MembershipRequestsTab load states', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
+	it('announces that the list is loading rather than spinning silently', async () => {
+		// Held open so the component stays on the loading branch for the assertion.
+		let release!: (value: unknown) => void;
+		vi.mocked(organizationadminmembershiprequestsListMembershipRequests).mockReturnValue(
+			new Promise((resolve) => {
+				release = resolve;
+			}) as never
+		);
+
+		renderTab();
+
+		// A bare spinning glyph is invisible to a screen reader — the status role
+		// plus its text is the entire announcement (WCAG 4.1.3).
+		const status = await screen.findByRole('status');
+		expect(status).toHaveTextContent(/loading/i);
+
+		release(listResponse([pendingRequest]));
+	});
+
+	it('announces a failed list load', async () => {
+		vi.mocked(organizationadminmembershiprequestsListMembershipRequests).mockResolvedValue({
+			data: undefined,
+			error: { detail: 'boom' }
+		} as never);
+
+		renderTab();
+
+		// The error replaces the spinner after first paint, so it needs a live
+		// region or it lands silently.
+		const alert = await screen.findByRole('alert');
+		expect(alert).toHaveTextContent(/failed to load membership requests|could not load/i);
+	});
+});
+
 describe('MembershipRequestsTab approve errors', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();

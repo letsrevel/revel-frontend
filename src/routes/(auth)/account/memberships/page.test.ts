@@ -198,6 +198,29 @@ describe('Account memberships page', () => {
 			expect(screen.queryByText(/don't have any active memberships/i)).toBeNull();
 		});
 
+		it('announces the failure instead of swapping it in silently', async () => {
+			// The error line replaces the spinner after first paint; without a live
+			// region a member who has moved focus on is simply never told.
+			listMembershipsMock.mockResolvedValue(failure);
+			listSubscriptionsMock.mockResolvedValue(page([]));
+			renderPage();
+
+			const alert = await screen.findByRole('alert');
+			expect(alert).toHaveTextContent(/could not load your memberships/i);
+		});
+
+		it('announces only the half that broke', async () => {
+			// Two separate alerts, not one wrapper: a partial failure must not
+			// announce a failure for the half that is fine.
+			listMembershipsMock.mockResolvedValue(page([makeMembership({ status: 'active' })]));
+			listSubscriptionsMock.mockResolvedValue(failure);
+			renderPage();
+
+			const alert = await screen.findByRole('alert');
+			expect(alert).toHaveTextContent(/could not check which memberships/i);
+			expect(screen.getAllByRole('alert')).toHaveLength(1);
+		});
+
 		it('says the rejoin check failed when the subscriptions query is the one that broke', async () => {
 			// Rejoin offers live in the subscriptions list, so losing it means the
 			// section cannot honestly claim the member has nothing — but it must
