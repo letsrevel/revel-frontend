@@ -81,18 +81,27 @@
 	iframe.style.maxWidth = '100%';
 	iframe.style.border = '0';
 	iframe.style.display = 'block';
-	iframe.style.height = (parseInt(data.revelHeight, 10) > 0 ? data.revelHeight : '420') + 'px';
+	// Parse to a number before appending the unit: a host writing
+	// data-revel-height="420px" (or "100%") would otherwise produce "420pxpx".
+	var configuredHeight = parseInt(data.revelHeight, 10);
+	iframe.style.height = (configuredHeight > 0 ? configuredHeight : 420) + 'px';
+
+	var autoResize = data.revelResize !== 'false';
 
 	var target = data.revelTarget ? document.querySelector(data.revelTarget) : null;
 	if (target) {
 		target.appendChild(iframe);
 	} else if (script.parentNode) {
 		script.parentNode.insertBefore(iframe, script);
+		// Replace the tag, as documented: leaving a spent loader in the DOM is
+		// confusing for anyone inspecting the page. Removing a script while it is
+		// executing is safe — this function keeps running to completion.
+		script.remove();
 	} else {
 		return;
 	}
 
-	if (data.revelResize === 'false') return;
+	if (!autoResize) return;
 
 	// Auto-resize. The embed posts its content height; we only trust messages
 	// that come from the embed origin AND from this iframe's own window, so a

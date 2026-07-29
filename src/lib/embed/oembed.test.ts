@@ -57,6 +57,17 @@ describe('resolveOembedTarget', () => {
 		expect(resolve(`${ORIGIN}/org/acme/resources`)).toBeNull();
 	});
 
+	it('embeds an event whose slug is literally "series"', () => {
+		// /events/{org}/series routes to the event page (the series route needs a
+		// fourth segment), so oEmbed must not reject it.
+		expect(resolve(`${ORIGIN}/events/acme/series`)).toEqual({
+			kind: 'event',
+			orgSlug: 'acme',
+			resourceSlug: 'series',
+			embedPath: '/embed/acme/event/series'
+		});
+	});
+
 	it('percent-encodes slugs back into the embed path', () => {
 		expect(resolve(`${ORIGIN}/org/a%20b`)?.embedPath).toBe('/embed/a%20b');
 	});

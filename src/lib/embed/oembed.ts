@@ -74,7 +74,12 @@ export function resolveOembedTarget(target: URL, siteOrigin: string): OembedTarg
 	}
 
 	// /events/{org_slug}/{event_slug}
-	if (segments.length === 3 && segments[2] !== 'series') {
+	//
+	// No need to exclude `series` here: a series URL always has four segments and
+	// was already matched above, so a three-segment path is unambiguously an
+	// event — including an event whose slug happens to be "series", which
+	// `/events/{org}/series` really does route to.
+	if (segments.length === 3) {
 		const [, orgSlug, eventSlug] = segments;
 		return {
 			kind: 'event',
