@@ -72,10 +72,14 @@
 								class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground"
 							>
 								<span>{formatEventDate(event.start, event.timezone)}</span>
-								<span class="inline-flex items-center gap-1">
-									<Users class="h-3.5 w-3.5" aria-hidden="true" />
-									{m['orgAdmin.tickets.attendees']({ count: event.attendee_count })}
-								</span>
+								<!-- Staff see the real numbers, but the field is nullable since
+								     #825 — omit the tally rather than render a fabricated zero. -->
+								{#if event.attendee_count != null}
+									<span class="inline-flex items-center gap-1">
+										<Users class="h-3.5 w-3.5" aria-hidden="true" />
+										{m['orgAdmin.tickets.attendees']({ count: event.attendee_count })}
+									</span>
+								{/if}
 							</div>
 						</div>
 

@@ -57,3 +57,35 @@ describe('EventDetails — open-ended end display', () => {
 		expect(screen.getByText(/Open-ended/i)).toBeInTheDocument();
 	});
 });
+
+describe('EventDetails — capacity disclosure', () => {
+	it('reports remaining spots when both numbers are disclosed', () => {
+		const event = createMockEvent({ max_attendees: 50, attendee_count: 45 });
+		render(EventDetails, { props: { event } });
+		expect(screen.getByText(/Only 5 spots left/i)).toBeInTheDocument();
+	});
+
+	it('says the event is full when the capacity is reached', () => {
+		const event = createMockEvent({ max_attendees: 50, attendee_count: 50 });
+		render(EventDetails, { props: { event } });
+		expect(screen.getByText(/Event is full/i)).toBeInTheDocument();
+	});
+
+	// #825 regression guard: a withheld `max_attendees` is null, and the previous
+	// `=== undefined` guard let it through — `null - count` is negative, so the
+	// card claimed "Event is full" for every discreet event.
+	it('says nothing about capacity when max_attendees is withheld', () => {
+		const event = createMockEvent({ max_attendees: null, attendee_count: 12 });
+		render(EventDetails, { props: { event } });
+		expect(screen.queryByText(/Event is full/i)).not.toBeInTheDocument();
+		expect(screen.queryByText(/spots left/i)).not.toBeInTheDocument();
+		expect(screen.queryByText(/attending/i)).not.toBeInTheDocument();
+	});
+
+	it('says nothing about capacity when attendee_count is withheld', () => {
+		const event = createMockEvent({ max_attendees: 50, attendee_count: null });
+		render(EventDetails, { props: { event } });
+		expect(screen.queryByText(/Event is full/i)).not.toBeInTheDocument();
+		expect(screen.queryByText(/spots left/i)).not.toBeInTheDocument();
+	});
+});

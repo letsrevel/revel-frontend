@@ -1,13 +1,63 @@
 import { writeFileSync, readFileSync, existsSync } from 'fs';
-import { dirname, resolve } from 'path';
+import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { createClient } from '@hey-api/openapi-ts';
 
-// Try local backend artifact first, fall back to live server
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const LOCAL_SPEC = resolve(__dirname, '../../revel-backend/.artifacts/openapi.json');
+
+/**
+ * Locate `revel-backend/.artifacts/openapi.json`.
+ *
+ * This used to be a single fixed `../../revel-backend/...` hop, which only
+ * resolves from the primary checkout. From a git worktree (this repo keeps
+ * several under `.claude/worktrees/`) the hop lands somewhere else, the file is
+ * absent, and the run silently falls back to `BACKEND_URL` — quietly generating
+ * a client from whichever backend happens to answer on localhost. Walk up
+ * instead, so the real artifact is found from any checkout depth.
+ *
+ * `BACKEND_SPEC` overrides the search outright. Naming a spec that does not
+ * exist is a hard error: falling back to a live server there would generate a
+ * client from a backend the caller explicitly did not ask for.
+ */
+function findLocalSpec() {
+	const override = process.env.BACKEND_SPEC;
+	if (override) {
+		const overridePath = resolve(override);
+		if (!existsSync(overridePath)) {
+			console.error(
+				`\n❌ BACKEND_SPEC is set to "${override}" (${overridePath}) but no such file exists.`
+			);
+			console.error(
+				'❌ Refusing to fall back to a live server — fix the path or unset BACKEND_SPEC.\n'
+			);
+			process.exit(1);
+		}
+		return overridePath;
+	}
+
+	let dir = __dirname;
+	for (;;) {
+		const candidate = join(dir, 'revel-backend', '.artifacts', 'openapi.json');
+		if (existsSync(candidate)) return candidate;
+		const parent = dirname(dir);
+		if (parent === dir) return null;
+		dir = parent;
+	}
+}
+
+const LOCAL_SPEC = findLocalSpec();
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000';
-const OPENAPI_PATH = existsSync(LOCAL_SPEC) ? LOCAL_SPEC : `${BACKEND_URL}/api/openapi.json`;
+const OPENAPI_PATH = LOCAL_SPEC ?? `${BACKEND_URL}/api/openapi.json`;
+
+if (!LOCAL_SPEC) {
+	console.warn(
+		'\n⚠️  WARNING: no local backend spec found ' +
+			'(revel-backend/.artifacts/openapi.json, searched upward from this script).\n' +
+			`⚠️  Falling back to the live server at ${BACKEND_URL} — the generated client will\n` +
+			'⚠️  reflect whatever that server is running, which may NOT be your backend checkout.\n' +
+			'⚠️  Run `make dump-openapi` in revel-backend, or set BACKEND_SPEC=/path/to/openapi.json.\n'
+	);
+}
 
 console.log(`Generating API client from ${OPENAPI_PATH}...`);
 

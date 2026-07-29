@@ -135,10 +135,22 @@
 		return { active: true, message: null };
 	});
 
-	// Check availability
+	/**
+	 * Check availability.
+	 *
+	 * `total_available === null` is ambiguous since backend #825: it used to mean
+	 * only "unlimited", but the field is now also nulled when the event withholds
+	 * capacity (`visibility_settings.show_capacity === false`). The two are
+	 * indistinguishable from the tier alone, so the card states nothing about
+	 * inventory for a null — calling withheld inventory "unlimited" would be a
+	 * lie, and the sold-out signal for such tiers comes from
+	 * `tierRemainingInfo.sold_out`, which is not gated.
+	 *
+	 * `message === null` is what suppresses the inventory row in the template.
+	 */
 	const availabilityStatus = $derived.by(() => {
 		if (tier.total_available === null) {
-			return { available: true, message: m['tierCard.unlimited']() };
+			return { available: true, message: null };
 		}
 
 		if (tier.total_available === 0) {
@@ -248,7 +260,7 @@
 					</div>
 				{/if}
 
-				{#if tier.total_available !== null && effectiveEligible}
+				{#if availabilityStatus.message !== null && effectiveEligible}
 					<div
 						class="flex items-center gap-1.5"
 						class:text-destructive={!availabilityStatus.available}

@@ -127,24 +127,27 @@
 		return formatVisibilityLabel(visibility);
 	});
 
+	// Capacity and attendee count are each withheld (`null`) when the event hides
+	// them (#825). Each line is only rendered when the numbers it needs are known.
 	const capacityDisplay = $derived.by(() => {
-		// Show "X / Y spots taken" when there's a max limit
-		if (event.max_attendees && event.max_attendees > 0) {
-			return m['eventQuickInfo.spotsTaken']({
-				current: event.attendee_count,
-				max: event.max_attendees
-			});
+		const max = event.max_attendees;
+		const count = event.attendee_count;
+		// Show "X / Y spots taken" when both the limit and the count are disclosed
+		if (max != null && max > 0 && count != null) {
+			return m['eventQuickInfo.spotsTaken']({ current: count, max });
 		}
-		// Show "X attending" when there's no limit but there are attendees
-		if (event.attendee_count > 0) {
-			return m['eventQuickInfo.attendeeCount']({ count: event.attendee_count });
+		// Show "X attending" when there's no disclosed limit but a disclosed count
+		if (count != null && count > 0) {
+			return m['eventQuickInfo.attendeeCount']({ count });
 		}
 		return null;
 	});
 
 	const isNearCapacity = $derived.by(() => {
-		if (!event.max_attendees || event.max_attendees === 0) return false;
-		const remaining = event.max_attendees - event.attendee_count;
+		const max = event.max_attendees;
+		const count = event.attendee_count;
+		if (max == null || max === 0 || count == null) return false;
+		const remaining = max - count;
 		return remaining <= 10 && remaining > 0;
 	});
 

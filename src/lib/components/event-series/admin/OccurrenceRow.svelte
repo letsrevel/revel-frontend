@@ -55,6 +55,10 @@
 	}: Props = $props();
 
 	const variant = $derived<CardVariant>(statusToVariant(event.status));
+	// `attendee_count` is withheld (`null`) when the occurrence hides it (#825).
+	// Suppress the tally entirely in that case rather than rendering a zero.
+	const attendeeCount = $derived(event.attendee_count);
+	const hasAttendees = $derived(attendeeCount != null && attendeeCount > 0);
 	const isModified = $derived(event.is_modified === true);
 	const isDrifted = $derived(driftedIds?.has(event.id) ?? false);
 	const isCancellable = $derived(variant === 'draft' || variant === 'open');
@@ -165,7 +169,7 @@
 				{statusLabel}
 			</span>
 		</div>
-		{#if isDrifted || showModifiedBadge || event.attendee_count > 0}
+		{#if isDrifted || showModifiedBadge || hasAttendees}
 			<div class="flex flex-wrap items-center gap-2 text-xs">
 				{#if isDrifted}
 					<span
@@ -180,9 +184,9 @@
 						{m['recurringEvents.row.modifiedBadge']()}
 					</span>
 				{/if}
-				{#if event.attendee_count > 0}
+				{#if hasAttendees}
 					<span class="text-muted-foreground">
-						{event.attendee_count}
+						{attendeeCount}
 						{event.requires_ticket
 							? m['orgAdmin.events.attendeeCount.attendees']()
 							: m['orgAdmin.events.attendeeCount.rsvps']()}

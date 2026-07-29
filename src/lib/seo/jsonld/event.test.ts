@@ -45,4 +45,24 @@ describe('generateEventJsonLd', () => {
 		expect(ld.offers?.price).toBe('0');
 		expect(ld.offers?.availability).toBe('https://schema.org/InStock');
 	});
+
+	it('marks the Offer SoldOut when capacity is reached', () => {
+		const e = { ...baseEvent, max_attendees: 10, attendee_count: 10 } as EventDetailSchema;
+		const ld = generateEventJsonLd(e, 'https://letsrevel.io/x');
+		expect(ld.offers?.availability).toBe('https://schema.org/SoldOut');
+	});
+
+	// #825: either number may be withheld (null). Structured data must not
+	// publish a guess — an unknown occupancy stays InStock.
+	it('stays InStock when the attendee count is withheld', () => {
+		const e = { ...baseEvent, max_attendees: 10, attendee_count: null } as EventDetailSchema;
+		const ld = generateEventJsonLd(e, 'https://letsrevel.io/x');
+		expect(ld.offers?.availability).toBe('https://schema.org/InStock');
+	});
+
+	it('stays InStock when capacity is withheld', () => {
+		const e = { ...baseEvent, max_attendees: null, attendee_count: 999 } as EventDetailSchema;
+		const ld = generateEventJsonLd(e, 'https://letsrevel.io/x');
+		expect(ld.offers?.availability).toBe('https://schema.org/InStock');
+	});
 });

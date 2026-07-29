@@ -130,6 +130,9 @@
 		}
 
 		if (!tierInfo) {
+			// A null `total_available` is not evidence of sold-out: since #825 it
+			// means either "unlimited" or "capacity withheld". Let the attempt
+			// through and let the backend refuse it if the tier really is exhausted.
 			const available = tier.total_available === null || tier.total_available > 0;
 			return {
 				canPurchase: available,

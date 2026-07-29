@@ -125,6 +125,34 @@ describe('EventStatusBadge', () => {
 
 			expect(screen.getByRole('status')).not.toHaveTextContent('Full');
 		});
+
+		// #825: capacity and count are withheld (null) when the organizer hides
+		// them. Fullness is not assertable then, so the badge must not claim it.
+		it('does not show "Full" when attendee_count is withheld', () => {
+			const event = createMockEvent({
+				max_attendees: 50,
+				attendee_count: null,
+				start: '2025-12-01T18:00:00Z',
+				end: '2025-12-01T22:00:00Z'
+			});
+
+			render(EventStatusBadge, { props: { event } });
+
+			expect(screen.getByRole('status')).not.toHaveTextContent('Full');
+		});
+
+		it('does not show "Full" when max_attendees is withheld', () => {
+			const event = createMockEvent({
+				max_attendees: null,
+				attendee_count: 100,
+				start: '2025-12-01T18:00:00Z',
+				end: '2025-12-01T22:00:00Z'
+			});
+
+			render(EventStatusBadge, { props: { event } });
+
+			expect(screen.getByRole('status')).not.toHaveTextContent('Full');
+		});
 	});
 
 	describe('Past Status', () => {
