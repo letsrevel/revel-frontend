@@ -46,22 +46,39 @@ describe('generateEventJsonLd', () => {
 		expect(ld.offers?.availability).toBe('https://schema.org/InStock');
 	});
 
-	it('marks the Offer SoldOut when capacity is reached', () => {
-		const e = { ...baseEvent, max_attendees: 10, attendee_count: 10 } as EventDetailSchema;
+	// #690: availability comes from the always-public `is_full` (#825). Deriving
+	// it from `max_attendees`/`attendee_count` published "InStock" for a discreet
+	// event that was actually sold out.
+	it('marks the Offer SoldOut when the backend flags the event as full', () => {
+		const e = { ...baseEvent, is_full: true } as EventDetailSchema;
 		const ld = generateEventJsonLd(e, 'https://letsrevel.io/x');
 		expect(ld.offers?.availability).toBe('https://schema.org/SoldOut');
 	});
 
-	// #825: either number may be withheld (null). Structured data must not
-	// publish a guess — an unknown occupancy stays InStock.
-	it('stays InStock when the attendee count is withheld', () => {
-		const e = { ...baseEvent, max_attendees: 10, attendee_count: null } as EventDetailSchema;
+	it('marks the Offer SoldOut even when capacity and count are withheld', () => {
+		const e = {
+			...baseEvent,
+			is_full: true,
+			max_attendees: null,
+			attendee_count: null
+		} as EventDetailSchema;
+		const ld = generateEventJsonLd(e, 'https://letsrevel.io/x');
+		expect(ld.offers?.availability).toBe('https://schema.org/SoldOut');
+	});
+
+	it('stays InStock when the flag is false, whatever the numbers say', () => {
+		const e = {
+			...baseEvent,
+			is_full: false,
+			max_attendees: 10,
+			attendee_count: 10
+		} as EventDetailSchema;
 		const ld = generateEventJsonLd(e, 'https://letsrevel.io/x');
 		expect(ld.offers?.availability).toBe('https://schema.org/InStock');
 	});
 
-	it('stays InStock when capacity is withheld', () => {
-		const e = { ...baseEvent, max_attendees: null, attendee_count: 999 } as EventDetailSchema;
+	it('stays InStock when the flag is absent', () => {
+		const e = { ...baseEvent, is_full: undefined } as EventDetailSchema;
 		const ld = generateEventJsonLd(e, 'https://letsrevel.io/x');
 		expect(ld.offers?.availability).toBe('https://schema.org/InStock');
 	});

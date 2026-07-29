@@ -1,9 +1,11 @@
 import type {
 	EventCreateSchema,
 	EventEditSchema,
+	EventVisibilitySettings,
 	ResourceVisibility
 } from '$lib/api/generated/types.gen';
 import { toISOString } from '$lib/utils/datetime';
+import { resolveVisibilitySettings } from '$lib/utils/event-visibility';
 
 /**
  * Shape of the wizard/editor `formData` reactive object, as far as the payload
@@ -19,6 +21,35 @@ export type EventFormPayloadData = Partial<EventCreateSchema> & {
 	location_maps_embed?: string | null;
 	public_pronoun_distribution?: boolean;
 };
+
+/**
+ * The `visibility_settings` value to write, or `undefined` to omit the field.
+ *
+ * Three rules from backend #825, all satisfied by this one helper:
+ *
+ * 1. The backend **merges** this object at sub-key granularity — omitting a
+ *    toggle means "no change", so both a whole-object round-trip and a partial
+ *    write are correct. We round-trip the resolved triple, which keeps the
+ *    payload honest even when the user edited only one toggle.
+ * 2. Explicit `null` is a 422 against `EventEditSchema` (it is declared
+ *    non-nullable there, unlike `TemplateEditSchema`). We never emit `null`:
+ *    the field is either a concrete object or absent, which is valid against
+ *    both schemas.
+ * 3. `extra="forbid"` — only the three known toggles are ever sent; preset
+ *    names live entirely in the UI.
+ *
+ * Returning `undefined` (rather than the all-`true` default) matters: a create
+ * flow that never opened the visibility section must not assert a disclosure
+ * choice, and an edit whose `formData` was never seeded must not silently
+ * re-disclose a count the organizer had hidden.
+ */
+function visibilitySettingsForWrite(
+	formData: EventFormPayloadData
+): EventVisibilitySettings | undefined {
+	return formData.visibility_settings
+		? resolveVisibilitySettings(formData.visibility_settings)
+		: undefined;
+}
 
 /**
  * Build the create-event payload (essential fields only). Identical between
@@ -83,7 +114,8 @@ export function buildRecurringTemplateCreateData(
 		requires_full_profile: formData.requires_full_profile ?? false,
 		venue_id: formData.venue_id ?? null,
 		location_maps_url: formData.location_maps_url ?? null,
-		location_maps_embed: formData.location_maps_embed ?? null
+		location_maps_embed: formData.location_maps_embed ?? null,
+		visibility_settings: visibilitySettingsForWrite(formData)
 	};
 }
 
@@ -123,7 +155,8 @@ export function buildWizardStep1UpdateData(
 		event_series_id: formData.event_series_id || null,
 		venue_id: formData.venue_id || null,
 		location_maps_url: formData.location_maps_url || null,
-		location_maps_embed: formData.location_maps_embed || null
+		location_maps_embed: formData.location_maps_embed || null,
+		visibility_settings: visibilitySettingsForWrite(formData)
 	};
 }
 
@@ -157,7 +190,8 @@ export function buildWizardStep2UpdateData(
 		event_series_id: formData.event_series_id || null,
 		venue_id: formData.venue_id || null,
 		location_maps_url: formData.location_maps_url || null,
-		location_maps_embed: formData.location_maps_embed || null
+		location_maps_embed: formData.location_maps_embed || null,
+		visibility_settings: visibilitySettingsForWrite(formData)
 	};
 }
 
@@ -199,6 +233,7 @@ export function buildEditorUpdateData(
 		event_series_id: formData.event_series_id || null,
 		venue_id: formData.venue_id || null,
 		location_maps_url: formData.location_maps_url || null,
-		location_maps_embed: formData.location_maps_embed || null
+		location_maps_embed: formData.location_maps_embed || null,
+		visibility_settings: visibilitySettingsForWrite(formData)
 	};
 }

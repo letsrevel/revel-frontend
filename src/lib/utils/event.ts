@@ -39,20 +39,17 @@ export function getEventAccessDisplay(
 /**
  * Check if event is at capacity
  *
- * Since backend #825 both `max_attendees` and `attendee_count` may be withheld
- * (`null`) when the organizer hides capacity or the attendee count. Fullness is
- * only assertable with both numbers in hand — with either missing we answer
- * `false` rather than guess, so a withheld count never renders as "Full".
+ * Reads the backend's `is_full` flag (#825), which is always public: deriving
+ * fullness from `max_attendees`/`attendee_count` stopped working when those two
+ * became withholdable, and a hidden capacity would then have read as "not full".
+ * `is_full` is computed server-side from the real numbers regardless of what the
+ * event discloses, so sold-out signalling survives a discreet event.
  *
  * @param event Event data
- * @returns true if event is known to be at capacity
+ * @returns true if the event is at capacity
  */
 export function isEventFull(event: EventInListSchema): boolean {
-	const maxAttendees = event.max_attendees;
-	const attendeeCount = event.attendee_count;
-	if (maxAttendees == null || maxAttendees === 0) return false; // No limit, or withheld
-	if (attendeeCount == null) return false; // Count withheld — not assertable
-	return attendeeCount >= maxAttendees;
+	return event.is_full === true;
 }
 
 /**

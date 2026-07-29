@@ -1758,7 +1758,8 @@
 		"rsvpBy": "RSVP by {deadline}",
 		"openInMaps": "Open in Maps",
 		"mapOf": "Map of",
-		"visibilityNote": "Visibility: {visibility}"
+		"visibilityNote": "Visibility: {visibility}",
+		"eventFull": "Event full"
 	},
 	"eventRSVP": {
 		"goingTo": "You're going to {eventName}!",
@@ -8861,5 +8862,23 @@
 		"unavailableTitle": "Content unavailable",
 		"unavailableBody": "This Revel embed could not be loaded right now.",
 		"unavailableNotFound": "We could not find this content. The embed may point at something that was renamed or removed."
+	},
+	"eventVisibility": {
+		"title": "Attendance visibility",
+		"hint": "Control what guests can see about who is coming. Organizers and staff always see the real numbers.",
+		"presetsLabel": "Quick presets",
+		"presetOpen": "Open",
+		"presetOpenHint": "Show everything",
+		"presetDiscreet": "Discreet",
+		"presetDiscreetHint": "Hide counts and guest list",
+		"presetCustom": "Custom",
+		"currentSelection": "Current setting: {preset}",
+		"showAttendeeCount": "Show attendee count",
+		"showAttendeeCountHint": "Guests can see how many people are coming.",
+		"showCapacity": "Show capacity",
+		"showCapacityHint": "Guests can see the attendee limit, the spots left, and per-ticket availability.",
+		"showAttendeeList": "Show guest list",
+		"showAttendeeListHint": "Guests can see who else is coming. People who opted out of guest lists stay hidden either way.",
+		"staffNote": "These settings never apply to you: organizers and staff always see the full picture."
 	}
 }

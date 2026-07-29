@@ -18,10 +18,9 @@
 	 * Only the fields the badge actually reads. Both EventDetailSchema and
 	 * EventInListSchema satisfy this, so the badge works in list contexts too.
 	 */
-	type EventStatusBadgeEvent = Pick<
-		EventDetailSchema,
-		'status' | 'start' | 'end' | 'max_attendees' | 'attendee_count'
-	> & { status: EventStatus };
+	type EventStatusBadgeEvent = Pick<EventDetailSchema, 'status' | 'start' | 'end' | 'is_full'> & {
+		status: EventStatus;
+	};
 
 	interface Props {
 		event: EventStatusBadgeEvent;
@@ -91,18 +90,10 @@
 			};
 		}
 
-		// 2. Check if full (has capacity and reached it).
-		// Either number may be withheld (`null`) since #825 — with capacity or the
-		// attendee count hidden we cannot assert fullness, so fall through to the
-		// temporal states rather than guess.
-		const maxAttendees = event.max_attendees;
-		const attendeeCount = event.attendee_count;
-		if (
-			maxAttendees != null &&
-			maxAttendees > 0 &&
-			attendeeCount != null &&
-			attendeeCount >= maxAttendees
-		) {
+		// 2. Check if full. `is_full` (#825) is always public, so this badge stays
+		// truthful even when the event withholds `max_attendees`/`attendee_count`;
+		// deriving fullness from those would silently read as "not full".
+		if (event.is_full === true) {
 			return {
 				label: m['eventStatus.full'](),
 				variant: 'destructive',

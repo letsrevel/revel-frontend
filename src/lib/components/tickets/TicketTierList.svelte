@@ -31,6 +31,8 @@
 		tierRemainingTickets?: TierRemainingTicketsSchema[];
 		/** The event's IANA timezone, so tier sales windows & deadlines render event-local (#474). */
 		timezone?: string | null;
+		/** The event's `visibility_settings.show_capacity` (#825) — see TierCard. */
+		capacityDisclosed?: boolean;
 		onSelectTier: (tier: TierSchemaWithId) => void;
 		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 		/** Map-first entry point (#679): opens the whole-venue seating overview. */
@@ -51,6 +53,7 @@
 		canAttendWithoutLogin = false,
 		tierRemainingTickets,
 		timezone,
+		capacityDisclosed = true,
 		onSelectTier,
 		onGuestTierClick,
 		onViewSeatingMap
@@ -128,6 +131,7 @@
 					{canAttendWithoutLogin}
 					tierRemainingInfo={getTierRemainingInfo(tier.id)}
 					{timezone}
+					{capacityDisclosed}
 					{onSelectTier}
 					{onGuestTierClick}
 				/>

@@ -77,6 +77,10 @@
 
 	const quantityDisplay = $derived(() => {
 		if (tier.total_quantity === null) return 'Unlimited';
+		// `?? 0` is safe here and only here: this is a staff-only admin surface, and
+		// organization owners/staff bypass `visibility_settings` entirely (#825), so
+		// `total_available` is never withheld from this reader. On any guest-facing
+		// surface the same expression would render a hidden count as zero.
 		const available = tier.total_available ?? 0;
 		return `${available} of ${tier.total_quantity} remaining`;
 	});

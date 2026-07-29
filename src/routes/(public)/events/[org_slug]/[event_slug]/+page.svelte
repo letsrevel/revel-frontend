@@ -3,6 +3,7 @@
 	import type { PageData } from './$types';
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
+	import { resolveViewerVisibility } from '$lib/utils/event-visibility';
 	import EventHeader from '$lib/components/events/EventHeader.svelte';
 	import EventDetails from '$lib/components/events/EventDetails.svelte';
 	import EventActionSidebar from '$lib/components/events/EventActionSidebar.svelte';
@@ -53,6 +54,17 @@
 
 	// Create mutable copies for client-side updates
 	const event = $state(data.event);
+
+	// What THIS viewer may see. Owners and staff bypass `visibility_settings`
+	// server-side (#825) — the API serves them the real guest list and the real
+	// capacity — so gating their UI on the public toggles would hide an
+	// organizer's own event data from them.
+	const viewerVisibility = $derived(
+		resolveViewerVisibility(event.visibility_settings, {
+			isOwner: data.isOwner,
+			isStaff: data.isStaff
+		})
+	);
 	let userStatus = $state(data.userStatus);
 	const ticketTiers = $state<TierSchemaWithId[]>(data.ticketTiers as TierSchemaWithId[]);
 
@@ -423,6 +435,7 @@
 						canAttendWithoutLogin={event.can_attend_without_login}
 						{tierRemainingTickets}
 						timezone={event.timezone}
+						capacityDisclosed={viewerVisibility.show_capacity}
 						onSelectTier={handleSelectTier}
 						onGuestTierClick={openGuestTicketDialog}
 						onViewSeatingMap={hasSeatingMap
@@ -491,6 +504,7 @@
 						eventId={event.id}
 						totalAttendees={event.attendee_count}
 						isAuthenticated={data.isAuthenticated}
+						listDisclosed={viewerVisibility.show_attendee_list}
 						userVisibility={data.userVisibility}
 						showPronounDistribution={event.public_pronoun_distribution ||
 							data.isOwner ||
@@ -560,6 +574,7 @@
 						eventId={event.id}
 						totalAttendees={event.attendee_count}
 						isAuthenticated={data.isAuthenticated}
+						listDisclosed={viewerVisibility.show_attendee_list}
 						userVisibility={data.userVisibility}
 						showPronounDistribution={event.public_pronoun_distribution ||
 							data.isOwner ||
@@ -605,6 +620,7 @@
 	canAttendWithoutLogin={event.can_attend_without_login}
 	{tierRemainingTickets}
 	timezone={event.timezone}
+	capacityDisclosed={viewerVisibility.show_capacity}
 	eventMaxTicketsPerUser={event.max_tickets_per_user}
 	userName={userDisplayName}
 	{preSelectedTier}

@@ -24,6 +24,21 @@
 	import { invalidateSeries } from '$lib/queries/event-series';
 	import { formatEventDate } from '$lib/utils/date';
 	import TemplateLockedFields from './TemplateLockedFields.svelte';
+	import EventVisibilityFields from '$lib/components/events/admin/EventVisibilityFields.svelte';
+	import {
+		diffVisibilitySettings,
+		resolveVisibilitySettings,
+		VISIBILITY_DEFAULTS,
+		type ResolvedVisibilitySettings
+	} from '$lib/utils/event-visibility';
+	import {
+		buildAttendanceToggles,
+		buildCapacityToggles,
+		buildPropagateOptions,
+		type PropagateOption,
+		type TemplateFlagKey,
+		type TemplateToggleConfig
+	} from './template-edit-fields';
 
 	interface Props {
 		open: boolean;
@@ -58,7 +73,7 @@
 	// Grouped boolean flags. A single reactive object lets us drive the toggle
 	// rows off a small config array below rather than duplicating identical
 	// markup per field.
-	const flags = $state({
+	const flags = $state<Record<TemplateFlagKey, boolean>>({
 		requires_ticket: false,
 		waitlist_open: false,
 		requires_full_profile: false,
@@ -69,7 +84,11 @@
 		can_attend_without_login: false,
 		is_open_ended: false
 	});
-	type FlagKey = keyof typeof flags;
+
+	// Attendance-visibility toggles. Kept outside `flags` because they are a
+	// nested object on the wire (and merged sub-key-wise by the backend), not
+	// three sibling booleans.
+	let visibilitySettings = $state<ResolvedVisibilitySettings>({ ...VISIBILITY_DEFAULTS });
 
 	// Original snapshot for dirty-tracking. The backend rejects unknown fields
 	// (`additionalProperties=false`) — sending only changed fields is the
@@ -127,6 +146,7 @@
 		flags.public_pronoun_distribution = !!t.public_pronoun_distribution;
 		flags.can_attend_without_login = !!t.can_attend_without_login;
 		flags.is_open_ended = !!t.is_open_ended;
+		visibilitySettings = resolveVisibilitySettings(t.visibility_settings);
 		original = t;
 	});
 
@@ -184,96 +204,29 @@
 			d.can_attend_without_login = flags.can_attend_without_login;
 		if (flags.is_open_ended !== !!original.is_open_ended) d.is_open_ended = flags.is_open_ended;
 
+		// Sub-key patch only. The backend merges `visibility_settings` toggle by
+		// toggle, so an unchanged toggle is best left out entirely; an empty patch
+		// omits the field rather than sending `{}` or `null`. (`TemplateEditSchema`
+		// would accept `null` as "no change", but `EventEditSchema` 422s on it —
+		// never emitting one keeps both paths honest.)
+		const visibilityPatch = diffVisibilitySettings(
+			original.visibility_settings,
+			visibilitySettings
+		);
+		if (Object.keys(visibilityPatch).length > 0) d.visibility_settings = visibilityPatch;
+
 		return d;
 	});
 
 	// Config-driven toggle rows — replaces the near-identical markup blocks
 	// that otherwise ran up against the file-length gate. Each entry pairs a
 	// form field with the i18n key of its label and its Playwright testid.
-	const capacityToggles: { key: FlagKey; label: string; testid: string }[] = [
-		{
-			key: 'requires_ticket',
-			label: m['recurringEvents.templateDialog.toggles.requiresTicket'](),
-			testid: 'template-edit-requires-ticket'
-		},
-		{
-			key: 'waitlist_open',
-			label: m['recurringEvents.templateDialog.toggles.waitlistOpen'](),
-			testid: 'template-edit-waitlist-open'
-		}
-	];
-	type PropagateOption = {
-		scope: PropagateScope;
-		title: string;
-		body: string;
-		testid: string;
-		destructive: boolean;
-		recommended: boolean;
-	};
-	const propagateOptions: PropagateOption[] = [
-		{
-			scope: 'none',
-			title: m['recurringEvents.templateDialog.propagate.none.title'](),
-			body: m['recurringEvents.templateDialog.propagate.none.body'](),
-			testid: 'template-edit-propagate-none',
-			destructive: false,
-			recommended: false
-		},
-		{
-			scope: 'future_unmodified',
-			title: m['recurringEvents.templateDialog.propagate.futureUnmodified.title'](),
-			body: m['recurringEvents.templateDialog.propagate.futureUnmodified.body'](),
-			testid: 'template-edit-propagate-future-unmodified',
-			destructive: false,
-			recommended: true
-		},
-		{
-			scope: 'all_future',
-			title: m['recurringEvents.templateDialog.propagate.allFuture.title'](),
-			body: m['recurringEvents.templateDialog.propagate.allFuture.body'](),
-			testid: 'template-edit-propagate-all-future',
-			destructive: true,
-			recommended: false
-		}
-	];
-
-	const attendanceToggles: { key: FlagKey; label: string; testid: string }[] = [
-		{
-			key: 'requires_full_profile',
-			label: m['recurringEvents.templateDialog.toggles.requiresFullProfile'](),
-			testid: 'template-edit-requires-full-profile'
-		},
-		{
-			key: 'potluck_open',
-			label: m['recurringEvents.templateDialog.toggles.potluckOpen'](),
-			testid: 'template-edit-potluck-open'
-		},
-		{
-			key: 'accept_invitation_requests',
-			label: m['recurringEvents.templateDialog.toggles.acceptInvitationRequests'](),
-			testid: 'template-edit-accept-invitation-requests'
-		},
-		{
-			key: 'accept_rsvp_notes',
-			label: m['recurringEvents.templateDialog.toggles.acceptRsvpNotes'](),
-			testid: 'template-edit-accept-rsvp-notes'
-		},
-		{
-			key: 'public_pronoun_distribution',
-			label: m['recurringEvents.templateDialog.toggles.publicPronounDistribution'](),
-			testid: 'template-edit-public-pronoun-distribution'
-		},
-		{
-			key: 'can_attend_without_login',
-			label: m['recurringEvents.templateDialog.toggles.canAttendWithoutLogin'](),
-			testid: 'template-edit-can-attend-without-login'
-		},
-		{
-			key: 'is_open_ended',
-			label: m['recurringEvents.templateDialog.toggles.openEnded'](),
-			testid: 'template-edit-open-ended'
-		}
-	];
+	// The configs live in ./template-edit-fields.ts for the same reason.
+	// `$derived` so the labels track the active locale rather than the locale at
+	// component init.
+	const capacityToggles: TemplateToggleConfig[] = $derived(buildCapacityToggles());
+	const attendanceToggles: TemplateToggleConfig[] = $derived(buildAttendanceToggles());
+	const propagateOptions: PropagateOption[] = $derived(buildPropagateOptions());
 
 	const hasChanges = $derived(Object.keys(diff).length > 0);
 
@@ -364,7 +317,7 @@
 	);
 </script>
 
-{#snippet toggleRow(t: { key: FlagKey; label: string; testid: string })}
+{#snippet toggleRow(t: TemplateToggleConfig)}
 	<label
 		class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
 	>
@@ -664,6 +617,17 @@
 						{#each attendanceToggles as t (t.key)}
 							{@render toggleRow(t)}
 						{/each}
+					</section>
+
+					<!-- Attendance visibility -->
+					<section class="space-y-4 border-t border-border pt-6">
+						<h3 class="text-sm font-semibold">{m['eventVisibility.title']()}</h3>
+						<EventVisibilityFields
+							settings={visibilitySettings}
+							disabled={updateMutation.isPending}
+							idPrefix="template-visibility"
+							onChange={(next) => (visibilitySettings = next)}
+						/>
 					</section>
 
 					<TemplateLockedFields

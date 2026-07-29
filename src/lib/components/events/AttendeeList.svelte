@@ -22,6 +22,13 @@
 		 */
 		totalAttendees: number | null | undefined;
 		isAuthenticated: boolean;
+		/**
+		 * `visibility_settings.show_attendee_list` (#825). When the organizer hides
+		 * the guest list the backend serves an empty page, so this only saves a
+		 * pointless request and lets the "hidden" copy appear without a spinner —
+		 * the gate itself is enforced server-side.
+		 */
+		listDisclosed?: boolean;
 		userVisibility?: VisibilityPreference | null;
 		showPronounDistribution?: boolean;
 	}
@@ -30,6 +37,7 @@
 		eventId,
 		totalAttendees,
 		isAuthenticated,
+		listDisclosed = true,
 		userVisibility = null,
 		showPronounDistribution: canShowPronounDistribution = false
 	}: Props = $props();
@@ -81,7 +89,7 @@
 
 			return response.data;
 		},
-		enabled: isAuthenticated
+		enabled: isAuthenticated && listDisclosed
 	}));
 
 	// Query for pronoun distribution (only fetched when expanded)
@@ -151,7 +159,13 @@
 			{/if}
 		</div>
 
-		{#if attendeesQuery.isLoading}
+		{#if !listDisclosed}
+			<!-- Guest list withheld by the event (#825). Same copy as an empty list:
+			     the two are indistinguishable to a guest by design. -->
+			<p class="text-sm text-muted-foreground">
+				{m['attendeeList.listHidden']()}
+			</p>
+		{:else if attendeesQuery.isLoading}
 			<div class="flex items-center justify-center py-8">
 				<Loader2 class="h-6 w-6 animate-spin text-muted-foreground" aria-hidden="true" />
 				<span class="sr-only">{m['attendeeList.loadingAttendees']()}</span>
