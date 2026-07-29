@@ -3,16 +3,18 @@ import type { EventInListSchema } from '$lib/api/generated/types.gen';
 
 vi.mock('$lib/api', () => ({
 	eventpublicdiscoveryListEvents: vi.fn(),
-	eventpublicticketsListTiers: vi.fn()
+	eventpublicticketsListTiers: vi.fn(),
+	organizationGetOrganization: vi.fn()
 }));
 vi.mock('$lib/server/logger', () => ({
 	log: { warning: vi.fn(), error: vi.fn(), debug: vi.fn(), info: vi.fn() }
 }));
 
-import { eventpublicdiscoveryListEvents } from '$lib/api';
+import { eventpublicdiscoveryListEvents, organizationGetOrganization } from '$lib/api';
 import { load } from './+page.server';
 
 const listEvents = vi.mocked(eventpublicdiscoveryListEvents);
+const getOrganization = vi.mocked(organizationGetOrganization);
 
 const ORG = {
 	id: 'org-uuid',
@@ -49,6 +51,11 @@ function respond(results: EventInListSchema[]) {
 describe('embed list loader', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		// Default: the slug resolves to nothing. Tests that care override this.
+		getOrganization.mockResolvedValue({
+			data: undefined,
+			error: { detail: 'Not found' }
+		} as unknown as ReturnType<typeof organizationGetOrganization>);
 	});
 
 	it('filters by organization_slug and never sends the organization UUID too', async () => {
@@ -106,5 +113,54 @@ describe('embed list loader', () => {
 
 		expect(result.events).toEqual([]);
 		expect(result.organization).toBeNull();
+	});
+
+	describe('organization header fallback', () => {
+		it('does NOT spend a request when the events carry the organization', async () => {
+			respond([EVENT]);
+
+			const result = await load(loadEvent());
+
+			// The whole point of `organization_slug` was collapsing this to one
+			// request; the fallback must not quietly reintroduce the second.
+			expect(getOrganization).not.toHaveBeenCalled();
+			expect(result.organization).toEqual(ORG);
+		});
+
+		it('fetches the organization when the list is empty, so the header still renders', async () => {
+			respond([]);
+			getOrganization.mockResolvedValue({
+				data: { ...ORG, description: 'We throw parties.' },
+				error: undefined
+			} as unknown as ReturnType<typeof organizationGetOrganization>);
+
+			const result = await load(loadEvent());
+
+			expect(getOrganization).toHaveBeenCalledTimes(1);
+			expect(getOrganization.mock.calls[0][0]?.path).toEqual({ slug: 'acme' });
+			expect(result.events).toEqual([]);
+			expect(result.organization).toMatchObject({ name: 'Acme Collective', slug: 'acme' });
+		});
+
+		it('stays anonymous and unbranded for a slug that does not resolve', async () => {
+			respond([]);
+
+			const result = await load(loadEvent());
+
+			// A mistyped slug on someone else's website must read as "nothing on
+			// right now", never as an error panel or a header invented from the slug.
+			expect(result.organization).toBeNull();
+			expect(result.events).toEqual([]);
+		});
+
+		it('survives the organization request throwing (timeout)', async () => {
+			respond([]);
+			getOrganization.mockRejectedValue(new DOMException('TimeoutError'));
+
+			const result = await load(loadEvent());
+
+			expect(result.organization).toBeNull();
+			expect(result.events).toEqual([]);
+		});
 	});
 });

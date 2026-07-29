@@ -9,11 +9,11 @@
  * (consistent with "has the link", the decision recorded in #689).
  */
 
-import { eventpublicticketsListTiers } from '$lib/api';
+import { eventpublicticketsListTiers, organizationGetOrganization } from '$lib/api';
 import { minimumTierPrice, type EmbedPrice } from '$lib/embed/pricing';
-import { EMBED_PRICE_TIMEOUT_MS } from '$lib/embed/constants';
+import { EMBED_ORG_TIMEOUT_MS, EMBED_PRICE_TIMEOUT_MS } from '$lib/embed/constants';
 import { log } from '$lib/server/logger';
-import type { EventInListSchema } from '$lib/api/generated/types.gen';
+import type { EventInListSchema, MinimalOrganizationSchema } from '$lib/api/generated/types.gen';
 
 /** The subset of an event this module needs — keeps callers free to pass either schema. */
 type PriceableEvent = Pick<EventInListSchema, 'id' | 'requires_ticket'>;
@@ -59,4 +59,36 @@ export async function loadEmbedPrices(
 		if (result.value.price) prices[result.value.id] = result.value.price;
 	}
 	return prices;
+}
+
+/**
+ * The organization behind a list embed, for its header.
+ *
+ * Call this ONLY when the event list came back empty. In the normal case the
+ * organization rides along on `EventInListSchema.organization` at no extra cost,
+ * so the common path stays a single request. The empty case is the one that
+ * needs help: an organization with nothing coming up would otherwise render an
+ * unbranded "nothing on right now" inside someone else's website.
+ *
+ * Returns `null` on any failure, including the 404 that a mistyped slug
+ * produces — that is the expected shape here, not an incident, and the page then
+ * renders exactly the anonymous empty state it rendered before. `data ?? null`
+ * covers the HTTP-error path (the client resolves rather than throws) while the
+ * `catch` covers the timeout, which does throw.
+ */
+export async function loadEmbedOrganization(
+	fetch: typeof globalThis.fetch,
+	slug: string
+): Promise<MinimalOrganizationSchema | null> {
+	try {
+		const { data } = await organizationGetOrganization({
+			fetch,
+			path: { slug },
+			signal: AbortSignal.timeout(EMBED_ORG_TIMEOUT_MS)
+		});
+		return data ?? null;
+	} catch (error) {
+		log.warning('embed_org_fetch_failed', { error, orgSlug: slug });
+		return null;
+	}
 }
