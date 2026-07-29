@@ -3,7 +3,14 @@
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { eventpublicattendanceRsvpEvent } from '$lib/api/generated/sdk.gen';
 	import type { UserEventStatus } from '$lib/utils/eligibility';
-	import { isRSVP, isEligibility, isUserStatusResponse } from '$lib/utils/eligibility';
+	import {
+		isRSVP,
+		isEligibility,
+		isUserStatusResponse,
+		isEligibilityRefusal,
+		getEligibilityRefusalMessage
+	} from '$lib/utils/eligibility';
+	import { extractApiErrorDetail, isErrorDetail } from '$lib/utils/api-error-detail';
 	import { cn } from '$lib/utils/cn';
 	import RSVPButtons from './RSVPButtons.svelte';
 	import RsvpNoteDialog from './RsvpNoteDialog.svelte';
@@ -90,26 +97,15 @@
 	});
 
 	/**
-	 * The RSVP endpoint has two 400 shapes: the EventUserEligibility object
-	 * (carries `allowed`) and a plain `{detail}` when a note is sent while the
-	 * event no longer accepts notes. Detect the latter by shape, not wording.
+	 * The RSVP endpoint declares `EventUserEligibility | ErrorDetail` at 400
+	 * (backend #824). The eligibility branch carries `allowed`/`reason_code`; the
+	 * `{detail}` branch is what a note sent to an event that no longer accepts
+	 * notes produces (alongside capacity and RSVP-note rejections). Detect the
+	 * latter by shape, not wording — and never mistake an eligibility refusal for
+	 * it, which would silently re-submit the RSVP the backend just refused.
 	 */
 	function isNoteRejection(error: unknown): boolean {
-		return (
-			typeof error === 'object' &&
-			error !== null &&
-			'detail' in error &&
-			typeof (error as { detail: unknown }).detail === 'string' &&
-			!('allowed' in error)
-		);
-	}
-
-	function extractErrorDetail(error: unknown): string | null {
-		if (typeof error === 'object' && error !== null && 'detail' in error) {
-			const detail = (error as { detail: unknown }).detail;
-			if (typeof detail === 'string') return detail;
-		}
-		return null;
+		return isErrorDetail(error) && !isEligibilityRefusal(error);
 	}
 
 	// Mutation: RSVP to event
@@ -131,7 +127,15 @@
 			}
 
 			if (response.error || !response.data) {
-				throw new Error(extractErrorDetail(response.error) ?? 'No data returned from RSVP');
+				// Narrow the 400 union before reading it. An eligibility refusal is
+				// kept as `cause` so onError can re-seat it into `userStatus` and let
+				// the ineligibility CTA re-render with the backend's next_step.
+				if (isEligibilityRefusal(response.error)) {
+					const reason =
+						getEligibilityRefusalMessage(response.error) ?? m['eventRSVP.submitFailed']();
+					throw new Error(reason, { cause: response.error });
+				}
+				throw new Error(extractApiErrorDetail(response.error) ?? m['eventRSVP.submitFailed']());
 			}
 
 			return response.data;
@@ -215,6 +219,15 @@
 			// Rollback optimistic update
 			if (context?.previousStatus !== undefined) {
 				userStatus = context.previousStatus;
+			}
+
+			// The backend refused on eligibility grounds and told us why: adopt the
+			// fresh eligibility payload so the ineligibility message and its CTA
+			// re-render against the *current* next_step instead of the stale one the
+			// page was loaded with.
+			const refusal: unknown = error.cause;
+			if (isEligibilityRefusal(refusal)) {
+				userStatus = refusal;
 			}
 
 			// Show error message

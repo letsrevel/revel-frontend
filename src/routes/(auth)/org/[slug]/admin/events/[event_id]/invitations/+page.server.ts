@@ -19,6 +19,7 @@ import type {
 	TicketTierDetailSchema
 } from '$lib/api/generated/types.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
+import { backendMessage } from '$lib/utils/api-error-detail';
 import { log } from '$lib/server/logger';
 import { computePagination, defaultPagination } from './pagination';
 import { parseInvitationOptions } from './invitation-form';
@@ -307,8 +308,18 @@ export const actions: Actions = {
 			});
 
 			if (response.error) {
-				const errorMessage = extractErrorMessage(response.error, 'Failed to create invitations');
-				return fail(500, { errors: { form: errorMessage } });
+				// An unknown `tier_ids` entry used to be an unhandled 500; since
+				// backend #824 it is a 400 whose `detail` NAMES the offending ids, so
+				// report the real status and let the organizer see which tier is
+				// stale. `backendMessage` probes detail (string or the 422 list) →
+				// errors → message, so no union branch is read unnarrowed.
+				const errorMessage =
+					backendMessage(response.error) ??
+					extractErrorMessage(response.error, 'Failed to create invitations');
+				const status = response.response?.status;
+				return fail(status && status >= 400 && status < 500 ? status : 500, {
+					errors: { form: errorMessage }
+				});
 			}
 
 			return { success: true, action: 'created', data: response.data };

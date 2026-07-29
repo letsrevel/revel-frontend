@@ -10,6 +10,7 @@
 		organizationadmincoreDeleteLogo,
 		organizationadmincoreDeleteCoverArt
 	} from '$lib/api/generated/sdk.gen';
+	import { backendMessage } from '$lib/utils/api-error-detail';
 
 	interface Props {
 		slug: string;
@@ -59,10 +60,7 @@
 			});
 
 			if (response.error) {
-				const errorMsg =
-					typeof response.error === 'object' && response.error && 'detail' in response.error
-						? String(response.error.detail)
-						: JSON.stringify(response.error);
+				const errorMsg = backendMessage(response.error) ?? JSON.stringify(response.error);
 				throw new Error(`Upload failed: ${errorMsg}`);
 			}
 
@@ -93,10 +91,7 @@
 			});
 
 			if (response.error) {
-				const errorMsg =
-					typeof response.error === 'object' && response.error && 'detail' in response.error
-						? String(response.error.detail)
-						: JSON.stringify(response.error);
+				const errorMsg = backendMessage(response.error) ?? JSON.stringify(response.error);
 				throw new Error(`Upload failed: ${errorMsg}`);
 			}
 

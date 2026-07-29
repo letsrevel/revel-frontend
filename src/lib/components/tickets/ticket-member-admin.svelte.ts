@@ -9,6 +9,7 @@ import {
 	organizationadminblacklistCreateBlacklistEntry
 } from '$lib/api';
 import type { AdminTicketSchema, MembershipTierSchema } from '$lib/api/generated/types.gen';
+import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 
 interface MakeMemberUser {
 	id: string;
@@ -54,12 +55,7 @@ export function createTicketMemberAdmin(opts: Options) {
 			});
 
 			if (response.error) {
-				const errorDetail =
-					typeof response.error === 'object' &&
-					response.error !== null &&
-					'detail' in response.error
-						? String(response.error.detail)
-						: m['makeMemberAction.error']();
+				const errorDetail = extractApiErrorDetail(response.error) ?? m['makeMemberAction.error']();
 				throw new Error(errorDetail);
 			}
 

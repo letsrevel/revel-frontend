@@ -9,6 +9,7 @@
 	import { resolve } from '$app/paths';
 	import { Copy, Loader2 } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
+	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 
 	interface Props {
 		open: boolean;
@@ -52,11 +53,8 @@
 
 			if (response.error) {
 				const errorDetail =
-					typeof response.error === 'object' &&
-					response.error !== null &&
-					'detail' in response.error
-						? (response.error.detail as string)
-						: m['duplicateQuestionnaireModal.error_failedToDuplicate']();
+					extractApiErrorDetail(response.error) ??
+					m['duplicateQuestionnaireModal.error_failedToDuplicate']();
 				throw new Error(errorDetail);
 			}
 			if (!response.data) {

@@ -22,7 +22,7 @@
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Loader2 } from '@lucide/svelte';
 	import { CURRENCY_OPTIONS } from '$lib/utils/currencies';
-	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
+	import { backendMessage } from '$lib/utils/api-error-detail';
 
 	interface Props {
 		sub: SubscriptionSchema;
@@ -64,12 +64,13 @@
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (res.error) {
-				// The backend's 400s (revival window closed, plan sold out, member
-				// banned) are the source of truth — surface them verbatim.
-				const fallback = (res.error as { message?: string }).message;
-				throw new Error(
-					extractApiErrorDetail(res.error) ?? (fallback || 'Failed to revive subscription')
-				);
+				// The backend's refusals (revival window closed, plan sold out, member
+				// banned) are the source of truth — surface them verbatim. The 400 is
+				// `ValidationErrorResponse | ErrorDetail` and a negative `amount` is a
+				// request-validation 422 whose `detail` is a LIST, so probe rather than
+				// read: the old `(res.error as {message?})` cast named a field that was
+				// already undefined at runtime (backend #824).
+				throw new Error(backendMessage(res.error) ?? 'Failed to revive subscription');
 			}
 			return res.data;
 		},

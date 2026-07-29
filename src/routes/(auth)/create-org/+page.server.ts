@@ -86,36 +86,40 @@ export const actions: Actions = {
 				throw redirect(303, `/org/${orgData.slug}/admin/settings`);
 			}
 
-			// Handle errors
-			// Handle specific error cases
-			if (error && typeof error === 'object') {
-				const errorObj = error as { detail?: string; status?: number };
+			// Handle errors. The status lives on the Response, never on the parsed
+			// error BODY — the old `(error as { status?: number }).status` was always
+			// `undefined`, so both branches below were dead and every refusal was
+			// reported as a 500.
+			const status = response?.status;
 
-				if (errorObj.status === 400) {
-					const errorMessage = extractErrorMessage(error, 'You already own an organization');
-					return fail(400, {
-						errors: { form: errorMessage },
-						...data
-					});
-				}
-
-				if (errorObj.status === 403) {
-					const errorMessage = extractErrorMessage(
-						error,
-						'Please verify your email before creating an organization'
-					);
-					return fail(403, {
-						errors: { form: errorMessage },
-						...data
-					});
-				}
+			if (status === 400) {
+				const errorMessage = extractErrorMessage(error, 'You already own an organization');
+				return fail(400, {
+					errors: { form: errorMessage },
+					...data
+				});
 			}
 
+			if (status === 403) {
+				const errorMessage = extractErrorMessage(
+					error,
+					'Please verify your email before creating an organization'
+				);
+				return fail(403, {
+					errors: { form: errorMessage },
+					...data
+				});
+			}
+
+			// Anything else 4xx is still the CLIENT's problem — this endpoint declares
+			// no error responses at all, so a runtime 422 (request validation, which
+			// is systemically under-declared per backend #826) is entirely plausible
+			// and must not be reported to the user as a server failure.
 			const errorMessage = extractErrorMessage(
 				error,
 				'Failed to create organization. Please try again.'
 			);
-			return fail(500, {
+			return fail(status && status >= 400 && status < 500 ? status : 500, {
 				errors: { form: errorMessage },
 				...data
 			});

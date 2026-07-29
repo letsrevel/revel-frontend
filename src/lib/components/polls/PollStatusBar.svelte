@@ -14,6 +14,7 @@
 	} from '$lib/api/generated/sdk.gen';
 	import type { PollDetailSchema } from '$lib/api/generated/types.gen';
 	import { formatDateTime } from '$lib/utils/date';
+	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 
 	interface Props {
 		poll: PollDetailSchema;
@@ -70,9 +71,7 @@
 				// be in the future.") instead of a generic lifecycle toast — the
 				// reopen endpoint has user-actionable validation that the operator
 				// needs to see.
-				const detail =
-					(r.error as { detail?: string } | undefined)?.detail ?? JSON.stringify(r.error);
-				throw new Error(detail);
+				throw new Error(extractApiErrorDetail(r.error) ?? m['pollStatusBar.lifecycleError']());
 			}
 			reopenOpen = false;
 			await invalidateAll();

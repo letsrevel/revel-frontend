@@ -7,6 +7,7 @@
 		organizationadmincoreGetOrganization
 	} from '$lib/api/generated/sdk.gen';
 	import type { ContactMethod } from '$lib/api/generated/types.gen';
+	import { backendMessage } from '$lib/utils/api-error-detail';
 
 	interface Props {
 		slug: string;
@@ -67,10 +68,7 @@
 			});
 
 			if (error || !orgData) {
-				emailUpdateError =
-					typeof error === 'object' && error && 'detail' in error
-						? (error as { detail?: string }).detail || m['orgContactEmailModal.failedToUpdate']()
-						: m['orgContactEmailModal.failedToUpdate']();
+				emailUpdateError = backendMessage(error) ?? m['orgContactEmailModal.failedToUpdate']();
 				return;
 			}
 

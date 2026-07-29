@@ -18,6 +18,7 @@
 	import { toast } from 'svelte-sonner';
 	import { getExpirationDisplay, formatTokenUsage } from '$lib/utils/tokens';
 	import { formatEventDate } from '$lib/utils/date';
+	import { backendMessage } from '$lib/utils/api-error-detail';
 
 	const { data }: { data: PageData } = $props();
 
@@ -38,7 +39,11 @@
 			});
 
 			if (response.error) {
-				throw new Error(m['joinEventPage.error_claimFailed']());
+				// 400 here is genuinely `ResponseMessage` ({message}) and 404 is
+				// {detail} — one of only two endpoints where `.message` is real
+				// (backend #824). Surface the backend's own sentence: "already
+				// claimed" and "expired" need different remedies from the reader.
+				throw new Error(backendMessage(response.error) ?? m['joinEventPage.error_claimFailed']());
 			}
 
 			return response.data;
@@ -53,8 +58,8 @@
 				})
 			);
 		},
-		onError: () => {
-			toast.error(m['joinEventPage.toast_claimError']());
+		onError: (error: Error) => {
+			toast.error(error.message || m['joinEventPage.toast_claimError']());
 		}
 	}));
 

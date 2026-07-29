@@ -7,6 +7,7 @@ import {
 	questionnaireListSubmissions
 } from '$lib/api/client';
 import { log } from '$lib/server/logger';
+import { backendMessage } from '$lib/utils/api-error-detail';
 
 // How many siblings to load for Next/Previous navigation. Covers the vast
 // majority of questionnaires; submissions beyond this window simply don't get
@@ -162,7 +163,11 @@ export const actions: Actions = {
 		}
 
 		// Submit evaluation
-		const { data: result, error: evaluationError } = await questionnaireEvaluateSubmission({
+		const {
+			data: result,
+			error: evaluationError,
+			response: evaluationResponse
+		} = await questionnaireEvaluateSubmission({
 			fetch,
 			path: {
 				org_questionnaire_id: id,
@@ -174,7 +179,14 @@ export const actions: Actions = {
 
 		if (evaluationError || !result) {
 			log.error('submission_evaluation_failed', { id, submission_id, error: evaluationError });
-			return fail(500, { error: 'Failed to submit evaluation. Please try again.' });
+			// The 400 is `ValidationErrorResponse | ErrorDetail` and an unknown
+			// submission_id is now a declared 404 `{detail}` rather than an unhandled
+			// 500 (backend #824) — both carry a usable sentence that the old blanket
+			// "please try again" threw away. Probe the union, never read it raw.
+			const status = evaluationResponse?.status;
+			return fail(status && status >= 400 && status < 500 ? status : 500, {
+				error: backendMessage(evaluationError) ?? 'Failed to submit evaluation. Please try again.'
+			});
 		}
 
 		// Stay on this submission (preserving the list's filter/sort context) so the

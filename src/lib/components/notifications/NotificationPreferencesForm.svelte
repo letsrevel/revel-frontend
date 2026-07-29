@@ -22,14 +22,13 @@
 		NotificationTypeSettings,
 		UpdateNotificationPreferenceSchema
 	} from '$lib/api/generated/types.gen.js';
+	import { backendMessage } from '$lib/utils/api-error-detail';
 
-	// Extract a human-readable message from an unknown API error shape
+	// Extract a human-readable message from an unknown API error shape.
+	// `backendMessage` probes detail (string OR the 422 list) → errors → message;
+	// `String(error.detail)` used to render `[object Object]` on a 422.
 	function extractErrorMessage(error: unknown): string {
-		if (error && typeof error === 'object') {
-			if ('detail' in error && error.detail) return String(error.detail);
-			if ('message' in error && error.message) return String(error.message);
-		}
-		return 'Failed to update preferences';
+		return backendMessage(error) ?? 'Failed to update preferences';
 	}
 
 	interface Props {

@@ -11,6 +11,7 @@
 	import { getApiUrl } from '$lib/config/api';
 	import { X } from '@lucide/svelte';
 	import ResourceForm from './ResourceForm.svelte';
+	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 
 	interface Props {
 		resource?: AdditionalResourceSchema | null;
@@ -181,11 +182,7 @@
 
 			if (response.error) {
 				const errorDetail =
-					typeof response.error === 'object' &&
-					response.error !== null &&
-					'detail' in response.error
-						? (response.error.detail as string)
-						: m['resourceModal.error_failedToUpdate']();
+					extractApiErrorDetail(response.error) ?? m['resourceModal.error_failedToUpdate']();
 				throw new Error(errorDetail);
 			}
 

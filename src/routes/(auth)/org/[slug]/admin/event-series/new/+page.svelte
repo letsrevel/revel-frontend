@@ -10,6 +10,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { organizationadmincoreCreateEventSeries } from '$lib/api/generated';
+	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 
 	const organization = $derived($page.data.organization);
 	const accessToken = $derived(authStore.accessToken);
@@ -58,11 +59,7 @@
 
 			if (response.error) {
 				const errorDetail =
-					typeof response.error === 'object' &&
-					response.error !== null &&
-					'detail' in response.error
-						? (response.error.detail as string)
-						: m['eventSeriesNewPage.error_createFailed']();
+					extractApiErrorDetail(response.error) ?? m['eventSeriesNewPage.error_createFailed']();
 				throw new Error(errorDetail);
 			}
 

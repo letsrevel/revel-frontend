@@ -297,4 +297,127 @@ describe('EventRSVP', () => {
 		const buttons = screen.getAllByRole('button');
 		expect(buttons.length).toBeGreaterThan(0);
 	});
+	// --- 400 union narrowing (issue #653) -----------------------------------
+	// The RSVP endpoint declares `EventUserEligibility | ErrorDetail` at 400
+	// (backend #824). Each branch has to be probed before it is read, and the
+	// eligibility branch is the one that must re-render the CTA.
+
+	it('adopts an EventUserEligibility 400 so the ineligibility CTA re-renders', async () => {
+		const user = userEvent.setup();
+		vi.mocked(eventpublicattendanceRsvpEvent).mockResolvedValue({
+			error: {
+				allowed: false,
+				event_id: 'event-123',
+				reason: 'This event now requires an invitation',
+				next_step: 'request_invitation'
+			}
+		});
+
+		renderRSVP({
+			eventId: 'event-123',
+			eventName: 'Test Event',
+			userStatus: { allowed: true, next_step: 'rsvp' } satisfies EventUserEligibility,
+			isAuthenticated: true,
+			requiresTicket: false,
+			event: mockEvent
+		});
+
+		await user.click(screen.getByRole('button', { name: /yes/i }));
+
+		await waitFor(() => {
+			// The refusal's own prose, not a generic "no data returned" string.
+			expect(screen.getByText(/This event now requires an invitation/i)).toBeInTheDocument();
+		});
+		// And the RSVP buttons are gone: the fresh eligibility payload replaced the
+		// stale allowed=true one the page was loaded with.
+		expect(screen.queryByRole('button', { name: /^yes$/i })).not.toBeInTheDocument();
+	});
+
+	it('surfaces an ErrorDetail 400 verbatim without faking an eligibility state', async () => {
+		const user = userEvent.setup();
+		vi.mocked(eventpublicattendanceRsvpEvent).mockResolvedValue({
+			error: { detail: 'This event is at capacity.' }
+		});
+
+		renderRSVP({
+			eventId: 'event-123',
+			eventName: 'Test Event',
+			userStatus: { allowed: true, next_step: 'rsvp' } satisfies EventUserEligibility,
+			isAuthenticated: true,
+			requiresTicket: false,
+			event: mockEvent
+		});
+
+		await user.click(screen.getByRole('button', { name: /yes/i }));
+
+		await waitFor(() => {
+			expect(screen.getByText(/This event is at capacity\./i)).toBeInTheDocument();
+		});
+		// No `allowed: false` payload arrived, so the RSVP controls stay put and the
+		// user can retry.
+		expect(screen.getByRole('button', { name: /yes/i })).toBeInTheDocument();
+	});
+
+	it('reads a request-validation 422 detail LIST instead of stringifying it', async () => {
+		const user = userEvent.setup();
+		vi.mocked(eventpublicattendanceRsvpEvent).mockResolvedValue({
+			error: {
+				detail: [
+					{ type: 'string_too_long', loc: ['body', 'payload', 'note'], msg: 'Note is too long' }
+				]
+			}
+		});
+
+		renderRSVP({
+			eventId: 'event-123',
+			eventName: 'Test Event',
+			userStatus: { allowed: true, next_step: 'rsvp' } satisfies EventUserEligibility,
+			isAuthenticated: true,
+			requiresTicket: false,
+			event: mockEvent
+		});
+
+		await user.click(screen.getByRole('button', { name: /yes/i }));
+
+		await waitFor(() => {
+			expect(screen.getByText(/Note is too long/i)).toBeInTheDocument();
+		});
+		expect(screen.queryByText(/\[object Object\]/)).not.toBeInTheDocument();
+	});
+
+	it('does not mistake an eligibility refusal for a note rejection and re-submit', async () => {
+		const user = userEvent.setup();
+		vi.mocked(eventpublicattendanceRsvpEvent).mockResolvedValue({
+			error: {
+				allowed: false,
+				event_id: 'event-123',
+				reason: 'RSVPs have closed for this event',
+				next_step: 'wait_for_event_to_open'
+			}
+		});
+
+		renderRSVP({
+			eventId: 'event-123',
+			eventName: 'Test Event',
+			userStatus: { allowed: true, next_step: 'rsvp' } satisfies EventUserEligibility,
+			isAuthenticated: true,
+			requiresTicket: false,
+			event: { ...mockEvent, accept_rsvp_notes: true } as unknown as EventDetailSchema
+		});
+
+		await user.click(screen.getByRole('button', { name: /yes/i }));
+		// The note dialog opens first; confirm it with an empty note.
+		const confirmNote = await screen.findByRole('button', { name: /^RSVP Yes$/i });
+		await user.click(confirmNote);
+
+		// The refusal's next_step drives the CTA (this one renders its own copy
+		// rather than the backend `reason`, which is the point: it is the
+		// eligibility branch that was adopted, not the `{detail}` one).
+		await waitFor(() => {
+			expect(screen.getByRole('button', { name: /notify me/i })).toBeInTheDocument();
+		});
+		// Exactly one call: the refusal must not trigger the note-dropped retry,
+		// which would silently re-submit an RSVP the backend just refused.
+		expect(vi.mocked(eventpublicattendanceRsvpEvent)).toHaveBeenCalledTimes(1);
+	});
 });

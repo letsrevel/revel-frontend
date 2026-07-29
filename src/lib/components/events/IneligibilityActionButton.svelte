@@ -1,7 +1,12 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import type { NextStep, EventTokenSchema } from '$lib/api/generated/types.gen';
-	import { getActionButtonText, isActionDisabled } from '$lib/utils/eligibility';
+	import {
+		getActionButtonText,
+		isActionDisabled,
+		getEligibilityRefusalMessage
+	} from '$lib/utils/eligibility';
+	import { backendMessage, extractApiErrorDetail } from '$lib/utils/api-error-detail';
 	import { cn } from '$lib/utils/cn';
 	import { Button } from '$lib/components/ui/button';
 	import RequestInvitationButton from './RequestInvitationButton.svelte';
@@ -69,6 +74,9 @@
 	let showSuccess = $state(false);
 	let showError = $state(false);
 	let errorMessage = $state('');
+	// Backend's own success sentence when it carries one (join-waitlist is
+	// idempotent and says so); falls back to the generic localized copy.
+	let successMessage = $state('');
 
 	/**
 	 * Get the Lucide icon component for the current next_step
@@ -141,6 +149,7 @@
 		// Clear previous errors
 		showError = false;
 		errorMessage = '';
+		successMessage = '';
 
 		// Navigation actions
 		if (nextStep === 'become_member') {
@@ -235,17 +244,25 @@
 							}
 						});
 					} else {
+						// 400 is declared `EventUserEligibility | ErrorDetail` (backend
+						// #824): probe before reading. The eligibility branch carries the
+						// refusal reason, the ErrorDetail branch a plain sentence, and a
+						// request-validation 422 a list — none of which is a bare string.
 						showError = true;
-						const errorDetail =
-							typeof response.error === 'object' &&
-							response.error !== null &&
-							'detail' in response.error
-								? (response.error.detail as string)
-								: m['ineligibilityActionButton.waitlist_error']();
-						errorMessage = errorDetail;
+						errorMessage =
+							getEligibilityRefusalMessage(response.error) ??
+							extractApiErrorDetail(response.error) ??
+							m['ineligibilityActionButton.waitlist_error']();
 					}
 				} else {
+					// Idempotent since backend #824: a double-submit / lost race now
+					// answers 200 with "You are already on the waitlist for this event."
+					// rather than a 400, so prefer the backend's own sentence — it is the
+					// only thing that distinguishes "you just joined" from "you already
+					// had" — and fall back to the generic success copy.
 					showSuccess = true;
+					successMessage =
+						backendMessage(response.data) ?? m['ineligibilityActionButton.success']();
 					// Optionally refresh the page or update UI to reflect waitlist status
 					setTimeout(() => {
 						window.location.reload();
@@ -284,13 +301,9 @@
 
 			if (response.error) {
 				showError = true;
-				const errorDetail =
-					typeof response.error === 'object' &&
-					response.error !== null &&
-					'detail' in response.error
-						? (response.error.detail as string)
-						: m['ineligibilityActionButton.leaveWaitlist_error']();
-				errorMessage = errorDetail;
+				errorMessage =
+					extractApiErrorDetail(response.error) ??
+					m['ineligibilityActionButton.leaveWaitlist_error']();
 			} else {
 				// Success - reload the page to update the status
 				window.location.reload();
@@ -420,7 +433,7 @@
 				role="status"
 				aria-live="polite"
 			>
-				{m['ineligibilityActionButton.success']()}
+				{successMessage || m['ineligibilityActionButton.success']()}
 			</div>
 		{/if}
 

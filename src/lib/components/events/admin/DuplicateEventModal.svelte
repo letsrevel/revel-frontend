@@ -10,6 +10,7 @@
 	import { Copy, Loader2 } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
+	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 
 	interface Props {
 		open: boolean;
@@ -102,11 +103,8 @@
 
 			if (response.error) {
 				const errorDetail =
-					typeof response.error === 'object' &&
-					response.error !== null &&
-					'detail' in response.error
-						? (response.error.detail as string)
-						: m['duplicateEventModal.error_failedToDuplicate']();
+					extractApiErrorDetail(response.error) ??
+					m['duplicateEventModal.error_failedToDuplicate']();
 				throw new Error(errorDetail);
 			}
 

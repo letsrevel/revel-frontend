@@ -40,6 +40,27 @@
 
 	let { open = $bindable(), ticketId, onCancelled }: Props = $props();
 
+	const BLOCK_REASONS: readonly CancellationBlockReason[] = [
+		'already_cancelled',
+		'checked_in',
+		'event_started',
+		'not_permitted',
+		'past_deadline',
+		'not_owner',
+		'part_of_series_pass'
+	];
+
+	/**
+	 * Read the 409's stable `code` off an unknown error body. Validated against
+	 * the enum rather than cast, so an unrecognised code falls through to the
+	 * generic path instead of reaching `reasonLabel` as a bogus key.
+	 */
+	function readBlockReason(error: unknown): CancellationBlockReason | null {
+		if (!error || typeof error !== 'object' || !('code' in error)) return null;
+		const code = (error as { code: unknown }).code;
+		return BLOCK_REASONS.find((reason) => reason === code) ?? null;
+	}
+
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
 
@@ -79,10 +100,14 @@
 				body: trimmed ? { reason: trimmed } : null
 			});
 			if (response.error) {
-				const errorAny = response.error as { code?: CancellationBlockReason; detail?: string };
+				// This endpoint's 403/502 are among the TWELVE `ResponseMessage`
+				// declarations backend #824 did not audit (tracked in backend #826),
+				// so its declared type is not trustworthy — probe the body rather than
+				// casting it into a shape the spec merely claims.
+				const blockCode = readBlockReason(response.error);
 				// 409: stable block reason → re-render the dialog with the localized copy.
-				if (errorAny?.code) {
-					throw new Error(`code:${errorAny.code}`);
+				if (blockCode) {
+					throw new Error(`code:${blockCode}`);
 				}
 				// 502: Stripe refund couldn't be issued. Detect by HTTP status, not prose,
 				// so the toast is right even if the backend message changes/localizes.
@@ -142,7 +167,9 @@
 		if (preview && !preview.can_cancel && preview.reason) return preview.reason;
 		const err = cancelMutation.error;
 		if (err && err.message.startsWith('code:')) {
-			return err.message.slice(5) as CancellationBlockReason;
+			// Re-validate rather than cast: the `code:` prefix is our own encoding,
+			// but the suffix originates in an untyped error body.
+			return BLOCK_REASONS.find((reason) => reason === err.message.slice(5)) ?? null;
 		}
 		return null;
 	});

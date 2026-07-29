@@ -30,6 +30,7 @@
 		Copy,
 		Edit
 	} from '@lucide/svelte';
+	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 
 	const { data }: { data: PageData } = $props();
 
@@ -54,12 +55,7 @@
 			});
 
 			if (response.error) {
-				const errorDetail =
-					typeof response.error === 'object' &&
-					response.error !== null &&
-					'detail' in response.error
-						? (response.error.detail as string)
-						: 'Failed to update status';
+				const errorDetail = extractApiErrorDetail(response.error) ?? 'Failed to update status';
 				throw new Error(errorDetail);
 			}
 
@@ -90,12 +86,7 @@
 			});
 
 			if (response.error) {
-				const errorDetail =
-					typeof response.error === 'object' &&
-					response.error !== null &&
-					'detail' in response.error
-						? (response.error.detail as string)
-						: 'Failed to delete event';
+				const errorDetail = extractApiErrorDetail(response.error) ?? 'Failed to delete event';
 				throw new Error(errorDetail);
 			}
 		},

@@ -5,6 +5,7 @@
 	import { createMutation } from '@tanstack/svelte-query';
 	import { eventadmincoreEditSlug } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 
 	interface Props {
 		eventId?: string;
@@ -61,11 +62,7 @@
 
 			if (response.error) {
 				const errorDetail =
-					typeof response.error === 'object' &&
-					response.error !== null &&
-					'detail' in response.error
-						? (response.error.detail as string)
-						: m['essentialsStep.error_slugUpdateFailed']();
+					extractApiErrorDetail(response.error) ?? m['essentialsStep.error_slugUpdateFailed']();
 				throw new Error(errorDetail);
 			}
 

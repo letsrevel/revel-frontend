@@ -22,6 +22,7 @@
 	import EventTokenModal from '$lib/components/tokens/EventTokenModal.svelte';
 	import TokenShareDialog from '$lib/components/tokens/TokenShareDialog.svelte';
 	import { getEventTokenUrl } from '$lib/utils/tokens';
+	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 
 	interface Props {
 		eventId: string;
@@ -91,7 +92,13 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to create token');
+				// Newly declared 404 (backend #824): a `ticket_tier_ids` entry that
+				// does not belong to this event. The body NAMES the offending ids, so
+				// show it — a generic "failed" leaves the organizer with no way to
+				// find the stale tier in their selection.
+				throw new Error(
+					extractApiErrorDetail(response.error) ?? m['invitationLinksTab.createFailed']()
+				);
 			}
 
 			return response.data;
@@ -103,8 +110,8 @@
 			isCreateTokenModalOpen = false;
 			toast.success(m['invitationLinksTab.linkCreated']());
 		},
-		onError: () => {
-			toast.error(m['invitationLinksTab.createFailed']());
+		onError: (error: Error) => {
+			toast.error(error.message || m['invitationLinksTab.createFailed']());
 		}
 	}));
 
@@ -124,7 +131,11 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to update token');
+				// Same newly declared 404 as create: the body names the offending
+				// ticket-tier ids.
+				throw new Error(
+					extractApiErrorDetail(response.error) ?? m['invitationLinksTab.updateFailed']()
+				);
 			}
 
 			return response.data;
@@ -136,8 +147,8 @@
 			tokenToEdit = null;
 			toast.success(m['invitationLinksTab.linkUpdated']());
 		},
-		onError: () => {
-			toast.error(m['invitationLinksTab.updateFailed']());
+		onError: (error: Error) => {
+			toast.error(error.message || m['invitationLinksTab.updateFailed']());
 		}
 	}));
 
