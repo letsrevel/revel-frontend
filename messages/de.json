@@ -6905,7 +6905,7 @@
 	"waitlistSettings.error.missingEventId": "Missing event id.",
 	"waitlistSettings.error.updateFailed": "Failed to update waitlist settings.",
 	"ineligibilityMessage.spotsReserved.header": "Plätze sind für Personen auf der Warteliste reserviert",
-	"ineligibilityMessage.spotsReserved.body": "{count} Plätze sind bis {time} reserviert. Setz dich auf die Warteliste — du bist in der nächsten Runde dran.",
+	"ineligibilityMessage.spotsReserved.body": "Reservierte Plätze bis {time}: {count}. Setz dich auf die Warteliste — du bist in der nächsten Runde dran.",
 	"ineligibilityMessage.waitingForBatch.header": "Du stehst auf der Warteliste",
 	"ineligibilityMessage.waitingForBatch.body": "Position Nr. {position}. Die nächste Runde startet, sobald die aktuellen Angebote ({count}) geklärt sind, spätestens {time}.",
 	"ineligibilityMessage.waitingForBatch.bodyNoCount": "Position Nr. {position}. Wir benachrichtigen dich, sobald ein Platz frei wird.",
