@@ -22,6 +22,7 @@
 	import SubscriptionMetrics from './SubscriptionMetrics.svelte';
 	import { onDestroy } from 'svelte';
 	import { backendMessage } from '$lib/utils/api-error-detail';
+	import { getStatusLabel, STATUS_ORDER } from '$lib/utils/subscriptions';
 
 	// Buffer matching the bits-ui Dialog close animation. Chaining a Dialog
 	// open inside another Dialog's close handler in the same tick leaves
@@ -140,12 +141,12 @@
 				aria-label={m['orgAdmin.members.subscriptions.filter.all']()}
 			>
 				<option value="all">{m['orgAdmin.members.subscriptions.filter.all']()}</option>
-				<option value="active">{m['subscriptions.status.active']()}</option>
-				<option value="pending">{m['subscriptions.status.pending']()}</option>
-				<option value="past_due">{m['subscriptions.status.past_due']()}</option>
-				<option value="paused">{m['subscriptions.status.paused']()}</option>
-				<option value="cancelled">{m['subscriptions.status.cancelled']()}</option>
-				<option value="expired">{m['subscriptions.status.expired']()}</option>
+				<!-- Driven off the shared, exhaustive-by-construction order rather than
+				     six hand-written options: a new backend status now reaches the
+				     dropdown, the metrics strip and the badge together. -->
+				{#each STATUS_ORDER as status (status)}
+					<option value={status}>{getStatusLabel(status)}</option>
+				{/each}
 			</select>
 		</div>
 		<Button onclick={() => (createOpen = true)}>

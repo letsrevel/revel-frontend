@@ -15,15 +15,26 @@
 		 * payments: money moved through Stripe has to come back through Stripe,
 		 * and the `charge.refunded` webhook records it here on its own. So we hide
 		 * the control entirely rather than render one the API will reject.
+		 *
+		 * REQUIRED, deliberately: an optional `= false` default fails OPEN. A
+		 * future consumer that simply forgets the prop would silently get the
+		 * offline branch back and render a refund button that can only ever 400.
+		 * Required makes that a compile error at the call site instead.
 		 */
-		isOnlinePlan?: boolean;
+		isOnlinePlan: boolean;
 		onRefund: (p: MembershipPaymentSchema) => void;
 	}
 
-	const { payments, isOnlinePlan = false, onRefund }: Props = $props();
+	const { payments, isOnlinePlan, onRefund }: Props = $props();
 
+	/**
+	 * The note tells staff to refund from the Stripe dashboard — so it only earns
+	 * its place when there is at least one succeeded payment that actually links
+	 * there. Without a link it is a URL-less dead end: it names a destination the
+	 * reader has no way to reach from this drawer.
+	 */
 	const showOnlineRefundNote = $derived(
-		isOnlinePlan && payments.some((p) => p.status === 'succeeded')
+		isOnlinePlan && payments.some((p) => p.status === 'succeeded' && !!p.stripe_dashboard_url)
 	);
 
 	function fmtDate(d: string | null | undefined): string {

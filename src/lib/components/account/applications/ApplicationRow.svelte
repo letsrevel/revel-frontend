@@ -41,6 +41,7 @@
 	import { formatDate } from '$lib/utils/date';
 	import { getImageUrl } from '$lib/utils/url';
 	import { backendMessage } from '$lib/utils/api-error-detail';
+	import { MY_MEMBERSHIPS_KEY, MY_SUBSCRIPTIONS_KEY } from '$lib/utils/subscription-cache';
 	import { resolve } from '$app/paths';
 	import { Loader2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
@@ -152,8 +153,8 @@
 	$effect(() => {
 		if (!becameMember || invalidated) return;
 		invalidated = true;
-		queryClient.invalidateQueries({ queryKey: ['me', 'memberships'] });
-		queryClient.invalidateQueries({ queryKey: ['me', 'subscriptions'] });
+		queryClient.invalidateQueries({ queryKey: MY_MEMBERSHIPS_KEY });
+		queryClient.invalidateQueries({ queryKey: MY_SUBSCRIPTIONS_KEY });
 	});
 
 	/**

@@ -11,13 +11,18 @@
 	import RejoinCard from '$lib/components/account/RejoinCard.svelte';
 	import ApplicationsSection from '$lib/components/account/applications/ApplicationsSection.svelte';
 	import { isWithinRevivalWindow } from '$lib/utils/subscriptions';
+	import { MY_MEMBERSHIPS_KEY, MY_SUBSCRIPTIONS_KEY } from '$lib/utils/subscription-cache';
 	import { Button } from '$lib/components/ui/button';
 	import { Loader2 } from '@lucide/svelte';
 
 	const accessToken = $derived(authStore.accessToken);
 
 	const membershipsQuery = createQuery(() => ({
-		queryKey: ['me', 'memberships'],
+		// The exported constant, not a literal: `settleSubscriptionCaches` seeds
+		// this exact key after every member-facing mutation, and a rename that only
+		// landed on one side would silently no-op the seeding (#693) instead of
+		// failing loudly.
+		queryKey: MY_MEMBERSHIPS_KEY,
 		queryFn: async () => {
 			const res = await mesubscriptionsListMyMemberships({
 				query: { page_size: 50 },
@@ -34,7 +39,7 @@
 	// The memberships list only carries live rows; expired subscriptions — the
 	// ones a member can still revive — are only visible here.
 	const subscriptionsQuery = createQuery(() => ({
-		queryKey: ['me', 'subscriptions'],
+		queryKey: MY_SUBSCRIPTIONS_KEY,
 		queryFn: async () => {
 			const res = await mesubscriptionsListMySubscriptions({
 				query: { page_size: 50 },

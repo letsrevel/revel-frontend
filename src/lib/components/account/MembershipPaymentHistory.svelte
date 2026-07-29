@@ -6,6 +6,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { backendMessage } from '$lib/utils/api-error-detail';
+	import { MY_MEMBERSHIPS_KEY } from '$lib/utils/subscription-cache';
 	import { formatDate } from '$lib/utils/date';
 	import { formatMoney } from '$lib/utils/format';
 	import { ChevronDown, Loader2 } from '@lucide/svelte';
@@ -38,7 +39,10 @@
 	 * the member to actually open the history.
 	 */
 	const historyQuery = createQuery(() => ({
-		queryKey: ['me', 'memberships', organizationId, 'payments', page],
+		// Nested UNDER the memberships key on purpose: every mutation that already
+		// invalidates that prefix refreshes the receipts too. Spread from the
+		// exported constant so the prefix relationship cannot drift.
+		queryKey: [...MY_MEMBERSHIPS_KEY, organizationId, 'payments', page],
 		queryFn: async () => {
 			const res = await mesubscriptionsListMySubscriptionPayments({
 				path: { org_id: organizationId },

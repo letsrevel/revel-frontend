@@ -212,40 +212,18 @@ export function formatPlanPrice(
 	return `${amount} / ${periodLabel(plan.period_unit, plan.period_count ?? 1)}`;
 }
 
-export type StatusTone = 'green' | 'blue' | 'amber' | 'gray' | 'red' | 'muted';
-
-export interface StatusConfig {
-	tone: StatusTone;
-	className: string;
-}
-
-const STATUS_CONFIG: Record<SubscriptionStatus, StatusConfig> = {
-	active: {
-		tone: 'green',
-		className: 'bg-green-100 text-green-900 dark:bg-green-900/30 dark:text-green-100'
-	},
-	pending: {
-		tone: 'blue',
-		className: 'bg-blue-100 text-blue-900 dark:bg-blue-900/30 dark:text-blue-100'
-	},
-	past_due: {
-		tone: 'amber',
-		className: 'bg-amber-100 text-amber-900 dark:bg-amber-900/30 dark:text-amber-100'
-	},
-	paused: {
-		tone: 'gray',
-		className: 'bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-gray-100'
-	},
-	cancelled: { tone: 'muted', className: 'bg-muted text-muted-foreground' },
-	expired: {
-		tone: 'red',
-		className: 'bg-red-100 text-red-900 dark:bg-red-900/30 dark:text-red-100'
-	}
-};
-
-export function getStatusConfig(status: SubscriptionStatus): StatusConfig {
-	return STATUS_CONFIG[status];
-}
+/**
+ * Status presentation lives in its own module (this file is at its 500-line
+ * cap), but `$lib/utils/subscriptions` stays the single documented import site
+ * for everything subscription-shaped, so it is re-exported here.
+ */
+export {
+	getStatusConfig,
+	getStatusLabel,
+	STATUS_ORDER,
+	type StatusConfig,
+	type StatusTone
+} from './subscription-status';
 
 export type DateLineKind =
 	'renewal' | 'cancels' | 'period_ends' | 'paused_since' | 'ended' | 'pending';

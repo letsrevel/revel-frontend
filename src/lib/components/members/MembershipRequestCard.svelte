@@ -338,10 +338,16 @@
 					{/if}
 					{#if request.user.email}
 						<div class="flex gap-2">
-							<dt class="font-medium text-muted-foreground">
+							<dt class="shrink-0 font-medium text-muted-foreground">
 								{m['membershipRequestCard.email']()}
 							</dt>
-							<dd class="truncate text-foreground">{request.user.email}</dd>
+							<!-- Wrapped, NOT truncated: this dialog exists to show the
+							     applicant's details, and at a phone's dialog width `truncate`
+							     hides the second half of most addresses — the half that says
+							     which domain they are from. `break-all` is needed because an
+							     email has no spaces to wrap at; `min-w-0` is what lets the
+							     flex item shrink far enough to use it. -->
+							<dd class="min-w-0 break-all text-foreground">{request.user.email}</dd>
 						</div>
 					{/if}
 					{#if phoneNumber}

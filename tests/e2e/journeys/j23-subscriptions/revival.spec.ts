@@ -235,9 +235,7 @@ test.describe('J23 revival window + past due @p2', () => {
 		// The page filters that row out in favour of the offer, which says
 		// strictly more; without the filter the org would render twice, a dead
 		// card up top and its rejoin offer far below.
-		await expect(
-			page.getByRole('region', { name: 'Memberships' }).getByRole('article', { name: ORG_NAME })
-		).toHaveCount(1);
+		await expect(membershipCard(page, ORG_NAME)).toHaveCount(1);
 		await expect(page.getByText(new RegExp(`^Member since ${DATE}$`))).toBeHidden();
 
 		await context.close();

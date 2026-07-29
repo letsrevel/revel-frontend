@@ -5,6 +5,7 @@ import { QueryClient } from '@tanstack/svelte-query';
 import MembershipCard from './MembershipCard.svelte';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 import type {
+	MesubscriptionsSubscribe57C85BbbErrors,
 	MyMembershipSchema,
 	MySubscriptionSchema,
 	PublicPlanSchema
@@ -334,6 +335,14 @@ describe('MembershipCard', () => {
 		await waitFor(() =>
 			expect(window.location.href).toBe('https://billing.stripe.test/session/abc')
 		);
+		// Latched and ANNOUNCED, in parity with the resume/uncancel buttons (#702):
+		// `disabled` alone stops a second click but tells an assistive-technology
+		// user nothing about why the control went dead mid-navigation.
+		await waitFor(() => {
+			const btn = screen.getByRole('button', { name: /manage billing/i });
+			expect(btn).toBeDisabled();
+			expect(btn).toHaveAttribute('aria-busy', 'true');
+		});
 	});
 
 	it('names the queued plan from the org plan catalogue when a switch is pending', async () => {
@@ -390,12 +399,25 @@ describe('MembershipCard', () => {
 		);
 	});
 
+	/**
+	 * The error body is pinned to the endpoint's OWN generated error type rather
+	 * than written as a free-form object.
+	 *
+	 * #702 asked for `ResponseMessage {message}` here, but that would be a
+	 * fiction: since backend PR #824 the OpenAPI error declarations are honest,
+	 * and `MesubscriptionsSubscribe57C85BbbErrors` declares `ErrorDetail`
+	 * (`{ detail }`) for 400/404/502 — `{ message }` survives on exactly two
+	 * claim-invitation endpoints, of which this is neither. Mocking a shape the
+	 * backend cannot send would make the test prove something untrue. The typed
+	 * binding below is what keeps it honest from here on: if the declaration ever
+	 * does change, this stops compiling instead of quietly asserting a dead path.
+	 */
 	it('toasts the backend detail when the resume fails and stays on the page', async () => {
 		const user = userEvent.setup();
-		subscribeMock.mockResolvedValue({
-			data: undefined,
-			error: { detail: 'That checkout session has expired.' }
-		});
+		const expiredSession: MesubscriptionsSubscribe57C85BbbErrors[400] = {
+			detail: 'That checkout session has expired.'
+		};
+		subscribeMock.mockResolvedValue({ data: undefined, error: expiredSession });
 		renderCard(makeMembership(makeSub({ status: 'pending' })));
 
 		await user.click(screen.getByRole('button', { name: /resume payment/i }));

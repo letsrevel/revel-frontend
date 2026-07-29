@@ -10,7 +10,12 @@
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { TriangleAlert } from '@lucide/svelte';
 	import { formatMoney, formatPercent } from '$lib/utils/format';
-	import { getStatusConfig, type SubscriptionStatus } from '$lib/utils/subscriptions';
+	import {
+		getStatusConfig,
+		getStatusLabel,
+		STATUS_ORDER,
+		type SubscriptionStatus
+	} from '$lib/utils/subscriptions';
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
@@ -48,26 +53,6 @@
 
 	const churnDisplay = $derived(metrics ? formatPercent(metrics.churn_rate_30d) : null);
 
-	// Same order as the status filter in SubscriptionsTab, so the strip reads in
-	// the order an admin will look for a status in the dropdown.
-	const STATUS_ORDER: readonly SubscriptionStatus[] = [
-		'active',
-		'pending',
-		'past_due',
-		'paused',
-		'cancelled',
-		'expired'
-	];
-
-	const statusLabels = $derived<Record<SubscriptionStatus, string>>({
-		active: m['subscriptions.status.active'](),
-		pending: m['subscriptions.status.pending'](),
-		past_due: m['subscriptions.status.past_due'](),
-		paused: m['subscriptions.status.paused'](),
-		cancelled: m['subscriptions.status.cancelled'](),
-		expired: m['subscriptions.status.expired']()
-	});
-
 	interface StatusChip {
 		status: SubscriptionStatus;
 		label: string;
@@ -82,7 +67,7 @@
 		if (!breakdown) return [];
 		return STATUS_ORDER.filter((status) => (breakdown[status] ?? 0) > 0).map((status) => ({
 			status,
-			label: statusLabels[status],
+			label: getStatusLabel(status),
 			count: breakdown[status],
 			className: getStatusConfig(status).className
 		}));
@@ -119,6 +104,15 @@
 						{m['orgAdmin.members.subscriptions.metrics.active']()}
 					</p>
 					<p class="text-lg font-semibold">{metrics.active_count}</p>
+					<!-- The backend's `active_count` is `active + past_due`
+					     (`subscription_reporting._compute`), and the status strip right
+					     below spells both out separately — so without this line the tile
+					     reads as a third number that contradicts the two under it.
+					     Unconditional: it defines the metric, so it must not appear only
+					     when there happens to be a past-due row. -->
+					<p class="text-xs text-muted-foreground">
+						{m['orgAdmin.members.subscriptions.metrics.activeIncludesPastDue']()}
+					</p>
 				</CardContent>
 			</Card>
 			<Card>
