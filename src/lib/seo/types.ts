@@ -32,4 +32,11 @@ export interface SeoConfig {
 	};
 	hreflang: Array<{ lang: Lang | typeof import('./constants').X_DEFAULT; href: string }>;
 	jsonLd: object[];
+	/**
+	 * oEmbed discovery endpoint for this page (#689). Present only on pages that
+	 * have a matching `/embed/*` surface — events, organizations and series.
+	 * Consumers (WordPress, Notion, Slack, …) read it off the
+	 * `<link rel="alternate" type="application/json+oembed">` tag.
+	 */
+	oembed?: string;
 }

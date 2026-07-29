@@ -3,6 +3,8 @@ import type { LayoutServerLoad } from './$types';
 import { env as publicEnv } from '$env/dynamic/public';
 import { getImpersonationInfo } from '$lib/utils/impersonation';
 import { getFeatures } from '$lib/server/features';
+import { DEFAULT_FEATURES } from '$lib/utils/features';
+import { isEmbedPath } from '$lib/embed/constants';
 
 /**
  * Root layout server load function
@@ -31,7 +33,27 @@ import { getFeatures } from '$lib/server/features';
  * `/api/auth/session-token` instead of `/api/auth/refresh` (impersonation
  * sessions have no refresh cookie).
  */
-export const load: LayoutServerLoad = async ({ cookies, locals, fetch }) => {
+export const load: LayoutServerLoad = async ({ cookies, locals, fetch, url }) => {
+	// Embed documents (#689) are anonymous, framed, read-only renderings. They
+	// take none of the app shell — no auth bootstrap, no feature flags, no
+	// site-verification tags — so short-circuit before any of that work,
+	// including the `/version` round trip, which would otherwise sit on the
+	// critical path of every third-party iframe. The shape is kept identical so
+	// the root layout keeps a single `LayoutData` type.
+	if (isEmbedPath(url.pathname)) {
+		return {
+			embed: true,
+			auth: {
+				hasAccessToken: false,
+				hasRefreshToken: false,
+				fingerprint: null as string | null,
+				impersonated: false
+			},
+			features: DEFAULT_FEATURES,
+			siteVerification: { google: '', bing: '' }
+		};
+	}
+
 	const features = await getFeatures(fetch);
 	const accessToken = cookies.get('access_token');
 	const hasAccessToken = !!accessToken;
@@ -54,6 +76,7 @@ export const load: LayoutServerLoad = async ({ cookies, locals, fetch }) => {
 	}
 
 	return {
+		embed: false,
 		auth: {
 			hasAccessToken,
 			hasRefreshToken,

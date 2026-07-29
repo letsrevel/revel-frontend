@@ -13,6 +13,7 @@ import {
 	type Locale
 } from '$lib/paraglide/runtime.js';
 import type { Handle } from '@sveltejs/kit';
+import { isEmbedPath } from '$lib/embed/constants';
 
 /**
  * Supported languages
@@ -87,14 +88,21 @@ export function i18nHandle(): Handle {
 			httpOnly: false // Allow client-side access
 		} as const;
 
-		// Write Paraglide's canonical locale cookie so the client-side runtime
-		// resolves the SAME locale during hydration. Without this the client falls
-		// back to baseLocale and the whole UI flashes to English on first visit
-		// (the server's own setLocale() does not write this cookie). See #505.
-		event.cookies.set(cookieName, lang, cookieOptions);
+		// Embed documents (#689) deliberately write no cookies. They render
+		// inside third-party iframes where a SameSite=Lax cookie is neither
+		// stored nor sent, so the write would be pure noise — and a Set-Cookie
+		// on a `public`-cacheable response is a shared-cache hazard. `?lang=`
+		// is resolved from the URL above, which needs no storage at all.
+		if (!isEmbedPath(event.url.pathname)) {
+			// Write Paraglide's canonical locale cookie so the client-side runtime
+			// resolves the SAME locale during hydration. Without this the client falls
+			// back to baseLocale and the whole UI flashes to English on first visit
+			// (the server's own setLocale() does not write this cookie). See #505.
+			event.cookies.set(cookieName, lang, cookieOptions);
 
-		// Keep the legacy cookie for backwards compatibility / explicit reads.
-		event.cookies.set('user_language', lang, cookieOptions);
+			// Keep the legacy cookie for backwards compatibility / explicit reads.
+			event.cookies.set('user_language', lang, cookieOptions);
+		}
 
 		// Resolve with lang attribute replacement
 		return resolve(event, {

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="%paraglide.lang%" dir="%paraglide.textDirection%">
+<html lang="%paraglide.lang%" dir="%paraglide.textDirection%" %revel.rootAttributes%>
 	<head>
 		<meta charset="utf-8" />
 		<link rel="icon" type="image/svg+xml" href="%sveltekit.assets%/logo.svg" />
@@ -32,9 +32,18 @@
 			by our production CSP (script-src 'self'); this script is nonced via
 			%sveltekit.nonce% so it runs. Must stay synchronous (no defer/async) and
 			mirror mode-watcher's storage key ('mode-watcher-mode') and dark class.
+
+			Embed documents (/embed/*) with an explicit ?theme=light|dark carry
+			data-theme-locked and are skipped: their theme is already applied to
+			<html> server-side (src/lib/server/embed.ts), and localStorage inside a
+			third-party iframe is partitioned per host page — empty and meaningless
+			— so letting it win here would override the organizer's choice.
+			?theme=auto locks nothing, because this script's own 'system' default
+			IS prefers-color-scheme, which is what auto means.
 		-->
 		<script nonce="%sveltekit.nonce%">
 			(() => {
+				if (document.documentElement.dataset.themeLocked) return;
 				try {
 					const mode = localStorage.getItem('mode-watcher-mode') || 'system';
 					const dark =

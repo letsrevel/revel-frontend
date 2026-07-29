@@ -55,6 +55,15 @@
 		{/if}
 	{/if}
 
+	{#if config.oembed}
+		<link
+			rel="alternate"
+			type="application/json+oembed"
+			href={config.oembed}
+			title={config.title}
+		/>
+	{/if}
+
 	{#each config.hreflang as alt (alt.lang)}
 		<link rel="alternate" hreflang={alt.lang} href={alt.href} />
 	{/each}

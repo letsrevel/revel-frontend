@@ -8846,5 +8846,20 @@
 		"cancelConfirmBody": "Deine Bewerbung bei {org} wird zurückgezogen. Du kannst dich später erneut bewerben.",
 		"cancelSuccess": "Bewerbung zurückgezogen.",
 		"cancelError": "Die Bewerbung konnte nicht zurückgezogen werden. Bitte versuche es erneut."
+	},
+	"embed": {
+		"poweredBy": "Powered by Revel",
+		"seeAllEvents": "Alle Veranstaltungen ansehen",
+		"viewEvent": "Veranstaltung ansehen",
+		"getTickets": "Tickets sichern",
+		"priceFrom": "ab {price}",
+		"free": "Kostenlos",
+		"noEvents": "Keine anstehenden Veranstaltungen",
+		"noEventsHint": "Schau bald wieder vorbei für neue Termine.",
+		"eventsBy": "Veranstaltungen von {organization}",
+		"openInNewTab": "wird in einem neuen Tab geöffnet",
+		"unavailableTitle": "Inhalt nicht verfügbar",
+		"unavailableBody": "Dieses Revel-Embed konnte gerade nicht geladen werden.",
+		"unavailableNotFound": "Wir konnten diesen Inhalt nicht finden. Das Embed verweist möglicherweise auf etwas, das umbenannt oder entfernt wurde."
 	}
 }

@@ -8846,5 +8846,20 @@
 		"cancelConfirmBody": "Your application to {org} will be withdrawn. You can re-apply later.",
 		"cancelSuccess": "Application cancelled.",
 		"cancelError": "Could not cancel the application. Please try again."
+	},
+	"embed": {
+		"poweredBy": "Powered by Revel",
+		"seeAllEvents": "See all events",
+		"viewEvent": "View event",
+		"getTickets": "Get tickets",
+		"priceFrom": "from {price}",
+		"free": "Free",
+		"noEvents": "No upcoming events",
+		"noEventsHint": "Check back soon for new dates.",
+		"eventsBy": "Events by {organization}",
+		"openInNewTab": "opens in a new tab",
+		"unavailableTitle": "Content unavailable",
+		"unavailableBody": "This Revel embed could not be loaded right now.",
+		"unavailableNotFound": "We could not find this content. The embed may point at something that was renamed or removed."
 	}
 }

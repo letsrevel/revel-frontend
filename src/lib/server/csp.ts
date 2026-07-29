@@ -36,3 +36,35 @@ export function appendCspApiOrigin(csp: string, origin: string): string {
 		.filter(Boolean)
 		.join('; ');
 }
+
+/**
+ * Replace `frame-ancestors` with `*` so a document may be framed by anyone.
+ *
+ * The app-wide policy is `frame-ancestors 'none'` (clickjacking defence) and it
+ * is baked in at build time, so the embed carve-out has to happen per response
+ * — see `handleCsp` in `src/hooks.server.ts`. This is deliberately unrestricted
+ * rather than a per-organization domain allowlist: embed pages are public,
+ * read-only and anonymous, they carry no credentials and expose nothing a
+ * scraper could not already fetch, so an allowlist would add operational cost
+ * without adding a security property.
+ *
+ * If the policy carries no `frame-ancestors` directive the value is returned
+ * unchanged — never synthesised — so this can only ever loosen a directive that
+ * was already there.
+ */
+export function relaxCspFrameAncestors(csp: string): string {
+	let found = false;
+	const relaxed = csp
+		.split(';')
+		.map((directive) => {
+			const trimmed = directive.trim();
+			if (!trimmed) return '';
+			if (trimmed.split(/\s+/)[0] !== 'frame-ancestors') return trimmed;
+			found = true;
+			return 'frame-ancestors *';
+		})
+		.filter(Boolean)
+		.join('; ');
+
+	return found ? relaxed : csp;
+}

@@ -15,6 +15,7 @@ import {
 	type Lang
 } from './constants';
 import type { SeoConfig } from './types';
+import { oembedDiscoveryUrl } from '$lib/embed/oembed';
 import { truncate, stripMarkup } from './text';
 import { sameUrlHreflang, landingPageHreflang } from './hreflang';
 import {
@@ -269,6 +270,7 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 				description,
 				canonical,
 				robots: input.indexable ? undefined : 'noindex,follow',
+				oembed: oembedDiscoveryUrl(input.url),
 				og: {
 					type: 'event',
 					title: event.name,
@@ -312,6 +314,7 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 				title,
 				description,
 				canonical,
+				oembed: oembedDiscoveryUrl(input.url),
 				og: {
 					type: 'profile',
 					title: org.name,
@@ -355,6 +358,7 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 				title,
 				description,
 				canonical,
+				oembed: oembedDiscoveryUrl(input.url),
 				og: {
 					type: 'website',
 					title: `${series.name} | ${series.organization.name}`,
