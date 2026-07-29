@@ -15,11 +15,25 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
  * a client from whichever backend happens to answer on localhost. Walk up
  * instead, so the real artifact is found from any checkout depth.
  *
- * `BACKEND_SPEC` overrides the search outright.
+ * `BACKEND_SPEC` overrides the search outright. Naming a spec that does not
+ * exist is a hard error: falling back to a live server there would generate a
+ * client from a backend the caller explicitly did not ask for.
  */
 function findLocalSpec() {
 	const override = process.env.BACKEND_SPEC;
-	if (override) return existsSync(override) ? resolve(override) : null;
+	if (override) {
+		const overridePath = resolve(override);
+		if (!existsSync(overridePath)) {
+			console.error(
+				`\n❌ BACKEND_SPEC is set to "${override}" (${overridePath}) but no such file exists.`
+			);
+			console.error(
+				'❌ Refusing to fall back to a live server — fix the path or unset BACKEND_SPEC.\n'
+			);
+			process.exit(1);
+		}
+		return overridePath;
+	}
 
 	let dir = __dirname;
 	for (;;) {
