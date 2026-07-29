@@ -72,6 +72,14 @@ describe('isValidationErrorResponse', () => {
 		expect(isValidationErrorResponse({ detail: 'boom' })).toBe(false);
 		expect(isValidationErrorResponse(undefined)).toBe(false);
 	});
+
+	it('rejects a map with any value outside the declared `string | string[]`', () => {
+		expect(isValidationErrorResponse({ errors: { name: ['Too long.'], price: 42 } })).toBe(false);
+		expect(isValidationErrorResponse({ errors: { name: ['Too long.'], price: [42] } })).toBe(false);
+		expect(isValidationErrorResponse({ errors: { name: ['Too long.'], meta: { a: 1 } } })).toBe(
+			false
+		);
+	});
 });
 
 describe('isResponseMessage', () => {

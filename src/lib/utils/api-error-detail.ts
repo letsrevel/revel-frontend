@@ -77,13 +77,26 @@ export function isRequestValidationError(
 	});
 }
 
-/** Is this the `{ errors: { field: [msg, …] } }` model-validation body? */
+/**
+ * Is this the `{ errors: { field: [msg, …] } }` model-validation body?
+ *
+ * EVERY value must match the declared `string | string[]`, not merely one of
+ * them — the predicate promises callers a `ValidationErrorResponse` they can
+ * iterate. At least one value must also be readable, so an all-blank map falls
+ * through to the caller's own copy instead of rendering as an empty string.
+ */
 export function isValidationErrorResponse(value: unknown): value is ValidationErrorResponse {
 	const body = asRecord(value);
 	const errors = body ? asRecord(body.errors) : null;
 	if (!errors) return false;
-	return Object.values(errors).some(
-		(v) => nonEmptyString(v) || (Array.isArray(v) && v.some(nonEmptyString))
+	const values = Object.values(errors);
+	if (values.length === 0) return false;
+	const wellFormed = values.every(
+		(v) => typeof v === 'string' || (Array.isArray(v) && v.every((e) => typeof e === 'string'))
+	);
+	return (
+		wellFormed &&
+		values.some((v) => nonEmptyString(v) || (Array.isArray(v) && v.some(nonEmptyString)))
 	);
 }
 
