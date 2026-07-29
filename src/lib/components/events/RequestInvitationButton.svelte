@@ -7,6 +7,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { escapeHtml } from '$lib/utils/sanitize';
+	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 
 	interface Props {
 		eventId: string;
@@ -53,9 +54,7 @@
 
 			if (response.error) {
 				throw new Error(
-					typeof response.error === 'object' && response.error && 'detail' in response.error
-						? String(response.error.detail)
-						: m['requestInvitationButton.failedToSubmit']()
+					extractApiErrorDetail(response.error) ?? m['requestInvitationButton.failedToSubmit']()
 				);
 			}
 

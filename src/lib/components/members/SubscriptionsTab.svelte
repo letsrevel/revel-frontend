@@ -21,6 +21,7 @@
 	import SubscriptionDrawer from './SubscriptionDrawer.svelte';
 	import SubscriptionMetrics from './SubscriptionMetrics.svelte';
 	import { onDestroy } from 'svelte';
+	import { backendMessage } from '$lib/utils/api-error-detail';
 
 	// Buffer matching the bits-ui Dialog close animation. Chaining a Dialog
 	// open inside another Dialog's close handler in the same tick leaves
@@ -99,8 +100,10 @@
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (res.error) {
-				const detail = (res.error as { detail?: string }).detail ?? 'Failed to create subscription';
-				throw new Error(detail);
+				// 400 is `ValidationErrorResponse | ErrorDetail` (backend #824): the old
+				// `{detail?: string}` cast silently dropped the `{errors}` branch and
+				// stringified a request-validation 422's `detail` LIST.
+				throw new Error(backendMessage(res.error) ?? 'Failed to create subscription');
 			}
 			return res.data as SubscriptionSchema;
 		},

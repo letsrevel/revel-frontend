@@ -15,6 +15,7 @@ import type {
 } from '$lib/api/generated/types.gen';
 import { seatingBodyFields, type SeatingCheckoutFields } from '$lib/types/tickets';
 import { getEligibilityRefusalMessage } from '$lib/utils/eligibility';
+import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 import type { EventTicketSchemaActual, UserEventStatus } from '$lib/utils/eligibility';
 import {
 	createReservationRetry,
@@ -27,20 +28,19 @@ import { toast } from 'svelte-sonner';
 /**
  * Turn a backend error envelope into a throwable Error.
  *
- * Two shapes arrive here: the (undeclared) runtime `detail` field most payloads
- * carry, and — since BE #807 — a refused purchase, which answers 400 with the
- * whole `EventUserEligibility` payload and has no `detail` at all, so it would
- * otherwise land on the generic fallback. The refusal is read first and kept as
- * `cause`, so the confirmation dialog can recognise it and offer its own CTA.
+ * The checkout endpoints declare `EventUserEligibility | ErrorDetail` at 400
+ * (backend #824), so the union must be probed before it is read. A refused
+ * purchase (BE #807) answers with the whole eligibility payload and has no
+ * `detail` at all; capacity, seat-resolution, discount-code, PWYC-bound and
+ * Stripe-config rejections answer with `{detail}`. The refusal is read first and
+ * kept as `cause`, so the confirmation dialog can recognise it and offer its own
+ * CTA. `extractApiErrorDetail` also covers the request-validation 422, whose
+ * `detail` is a list of objects rather than a string.
  */
 function checkoutError(error: unknown, fallback: string): Error {
 	const refusal = getEligibilityRefusalMessage(error);
 	if (refusal) return new Error(refusal, { cause: error });
-	if (typeof error === 'object' && error !== null && 'detail' in error) {
-		const { detail } = error;
-		if (typeof detail === 'string' && detail) return new Error(detail);
-	}
-	return new Error(fallback);
+	return new Error(extractApiErrorDetail(error) ?? fallback, { cause: error });
 }
 
 // Type for checkout parameters

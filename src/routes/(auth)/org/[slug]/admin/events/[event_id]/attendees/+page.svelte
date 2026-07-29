@@ -29,6 +29,7 @@
 	import CreateRsvpDialog from '$lib/components/attendees/CreateRsvpDialog.svelte';
 	import type { RsvpDetailSchema, MembershipTierSchema } from '$lib/api/generated/types.gen';
 	import * as m from '$lib/paraglide/messages.js';
+	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 
 	const { data }: { data: PageData } = $props();
 
@@ -149,12 +150,7 @@
 			});
 
 			if (response.error) {
-				const errorDetail =
-					typeof response.error === 'object' &&
-					response.error !== null &&
-					'detail' in response.error
-						? String(response.error.detail)
-						: m['makeMemberAction.error']();
+				const errorDetail = extractApiErrorDetail(response.error) ?? m['makeMemberAction.error']();
 				throw new Error(errorDetail);
 			}
 
@@ -225,11 +221,7 @@
 
 			if (response.error) {
 				const errorDetail =
-					typeof response.error === 'object' &&
-					response.error !== null &&
-					'detail' in response.error
-						? String(response.error.detail)
-						: m['attendeesAdmin.createError']();
+					extractApiErrorDetail(response.error) ?? m['attendeesAdmin.createError']();
 				throw new Error(errorDetail);
 			}
 

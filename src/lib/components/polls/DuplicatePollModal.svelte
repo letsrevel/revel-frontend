@@ -11,6 +11,7 @@
 	import { cn } from '$lib/utils/cn';
 	import { resultVisibilityRequiresPublicAnonymous } from '$lib/utils/polls';
 	import type { ResourceVisibility } from '$lib/api/generated/types.gen';
+	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 
 	interface Props {
 		open: boolean;
@@ -94,11 +95,8 @@
 
 			if (response.error) {
 				const errorDetail =
-					typeof response.error === 'object' &&
-					response.error !== null &&
-					'detail' in response.error
-						? (response.error.detail as string)
-						: m['duplicatePollModal.error_failedToDuplicate']();
+					extractApiErrorDetail(response.error) ??
+					m['duplicatePollModal.error_failedToDuplicate']();
 				throw new Error(errorDetail);
 			}
 			if (!response.data) {

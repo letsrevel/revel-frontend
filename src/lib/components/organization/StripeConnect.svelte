@@ -19,6 +19,7 @@
 		organizationadmincoreStripeAccountVerify
 	} from '$lib/api/generated/sdk.gen';
 	import StripeConnectModal from './StripeConnectModal.svelte';
+	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 
 	interface Props {
 		organizationSlug: string;
@@ -101,9 +102,7 @@
 
 					if (response.error) {
 						const errorMsg =
-							typeof response.error === 'object' && response.error && 'detail' in response.error
-								? String(response.error.detail)
-								: m['stripeConnect.failedToCreateLink']();
+							extractApiErrorDetail(response.error) ?? m['stripeConnect.failedToCreateLink']();
 						throw new Error(errorMsg);
 					}
 

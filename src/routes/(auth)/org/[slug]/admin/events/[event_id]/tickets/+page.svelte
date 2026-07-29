@@ -41,6 +41,7 @@
 	import MakeMemberModal from '$lib/components/members/MakeMemberModal.svelte';
 	import ExportButton from '$lib/components/common/ExportButton.svelte';
 	import { isSeriesPassCode } from '$lib/utils/series-pass-qr';
+	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 
 	const { data }: { data: PageData } = $props();
 
@@ -188,11 +189,7 @@
 
 			if (response.error) {
 				const errorDetail =
-					typeof response.error === 'object' &&
-					response.error !== null &&
-					'detail' in response.error
-						? String(response.error.detail)
-						: m['eventTicketsAdmin.checkInError']();
+					extractApiErrorDetail(response.error) ?? m['eventTicketsAdmin.checkInError']();
 				// silent: the onError below shows the specific message; without the
 				// flag the global mutations.onError in +layout.svelte adds a second
 				// generic "Action failed" toast for the same failure.

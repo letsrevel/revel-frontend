@@ -8,6 +8,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import type { EventTokenSchema } from '$lib/api/generated/types.gen';
+	import { backendMessage } from '$lib/utils/api-error-detail';
 
 	interface Props {
 		tokenId: string;
@@ -42,11 +43,13 @@
 			});
 
 			if (response.error) {
-				const err: unknown = response.error;
-				const errorDetail =
-					typeof err === 'object' && err !== null && 'detail' in err ? err.detail : undefined;
+				// One of only two endpoints in the codebase that genuinely answer 400
+				// with `ResponseMessage` (`{message}`) — everywhere else that
+				// declaration was a lie and `.message` was undefined at runtime
+				// (backend #824). Its 404 is `{detail}`, so `backendMessage` probes
+				// both rather than picking one and dropping the other.
 				throw new Error(
-					typeof errorDetail === 'string' ? errorDetail : m['claimInvitationButton.failedToClaim']()
+					backendMessage(response.error) ?? m['claimInvitationButton.failedToClaim']()
 				);
 			}
 

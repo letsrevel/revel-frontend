@@ -16,6 +16,7 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Tooltip from '$lib/components/ui/tooltip';
 	import { CheckCircle, XCircle, FileEdit, Trash2, Ban, MoreVertical, Copy } from '@lucide/svelte';
+	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 
 	const { data }: { data: PageData } = $props();
 
@@ -41,11 +42,7 @@
 
 			if (response.error) {
 				const errorDetail =
-					typeof response.error === 'object' &&
-					response.error !== null &&
-					'detail' in response.error
-						? (response.error.detail as string)
-						: m['eventEditPage.error_updateStatusFailed']();
+					extractApiErrorDetail(response.error) ?? m['eventEditPage.error_updateStatusFailed']();
 				throw new Error(errorDetail);
 			}
 
@@ -79,11 +76,7 @@
 
 			if (response.error) {
 				const errorDetail =
-					typeof response.error === 'object' &&
-					response.error !== null &&
-					'detail' in response.error
-						? (response.error.detail as string)
-						: m['eventEditPage.error_deleteFailed']();
+					extractApiErrorDetail(response.error) ?? m['eventEditPage.error_deleteFailed']();
 				throw new Error(errorDetail);
 			}
 		},
