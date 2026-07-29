@@ -477,6 +477,14 @@ Individual checks (also available separately):
 - `make format-check` - Verify Prettier formatting
 - `make lint` - ESLint with `--max-warnings 0` (warnings are errors)
 - `make types` - SvelteKit type checking (`svelte-check`)
+- `make types-canary` - Asserts `make types` can actually fail, by injecting a known
+  type error into a `.ts` and a `.svelte` file and requiring both to be reported.
+  It exists because the type gate silently disarmed itself once (#704): TypeScript
+  caps a project at 20 MB of non-TS files, `.svelte` plus the generated Paraglide
+  `.js` bundles crossed it, and the language service dropped into reduced mode —
+  reporting "0 errors" over an empty program. `tsconfig.json` now sets
+  `disableSizeLimit: true`. **Never treat a green run or the scanned-file count as
+  evidence the gate works; only an injected error is decisive.**
 - `make i18n-check` - Translation file validation
 - `make file-length` - Source file line count enforcement (Svelte: 750, TS/JS: 500)
 
