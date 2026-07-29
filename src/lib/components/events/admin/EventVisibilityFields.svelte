@@ -6,7 +6,7 @@
 		VISIBILITY_PRESET_IDS,
 		matchVisibilityPreset,
 		resolveVisibilitySettings,
-		type ResolvedVisibilitySettings,
+		type ResolvedVisibilityToggles,
 		type VisibilityPresetId,
 		type VisibilityToggleKey
 	} from '$lib/utils/event-visibility';
@@ -18,7 +18,7 @@
 		/** Prefix for the generated input ids, so two instances never collide. */
 		idPrefix?: string;
 		/** Emits the complete resolved triple — never a partial. */
-		onChange: (next: ResolvedVisibilitySettings) => void;
+		onChange: (next: ResolvedVisibilityToggles) => void;
 	}
 
 	const {
@@ -80,7 +80,13 @@
 	}
 
 	function setToggle(key: VisibilityToggleKey, value: boolean): void {
-		onChange({ ...resolved, [key]: value });
+		const nextToggles: ResolvedVisibilityToggles = {
+			show_attendee_count: resolved.show_attendee_count,
+			show_capacity: resolved.show_capacity,
+			show_attendee_list: resolved.show_attendee_list,
+			[key]: value
+		};
+		onChange(nextToggles);
 	}
 </script>
 

@@ -1,14 +1,25 @@
 /**
- * Granular event visibility settings (backend #825).
+ * Granular event visibility settings (backend #825, #793).
  *
- * `visibility_settings` carries three independent disclosure switches. Every
- * one defaults to `true`, and the backend serialises all three on every read,
- * so a resolved value is always fully known once an event has been fetched.
+ * `visibility_settings` carries five disclosure switches:
+ *
+ * - `show_attendee_count`, `show_capacity`, `show_attendee_list` — three
+ *   boolean toggles, all defaulting to `true`, editable together via the
+ *   preset UI (`VISIBILITY_PRESETS`) or individually.
+ * - `show_pronoun_distribution` — a boolean defaulting to `false` (opt-in,
+ *   unlike the other three). Edited elsewhere in the event form, not via the
+ *   preset UI.
+ * - `address_visibility` — a `ResourceVisibility` enum (not boolean),
+ *   defaulting to `'public'`, selecting *who* may see the address rather than
+ *   whether it is shown at all. Also edited outside the preset UI.
+ *
+ * The backend serialises all five on every read, so a resolved value is
+ * always fully known once an event has been fetched.
  *
  * ## Write semantics (the part that bites)
  *
  * The backend **merges** this object at sub-key granularity: sending
- * `{"show_capacity": false}` leaves `show_attendee_count` at its stored value
+ * `{"show_capacity": false}` leaves every other key at its stored value
  * rather than resetting it to the schema default. Partial writes and whole-
  * object round-trips are therefore both safe. (The first backend implementation
  * replaced the whole blob, which silently re-disclosed a count the organizer
@@ -26,9 +37,9 @@
  *   valid against both schemas.
  */
 
-import type { EventVisibilitySettings } from '$lib/api/generated/types.gen';
+import type { EventVisibilitySettings, ResourceVisibility } from '$lib/api/generated/types.gen';
 
-/** The three granular toggles, in the order they are presented to organizers. */
+/** The three preset-editable toggles, in the order they are presented to organizers. */
 export const VISIBILITY_TOGGLE_KEYS = [
 	'show_attendee_count',
 	'show_capacity',
@@ -37,20 +48,32 @@ export const VISIBILITY_TOGGLE_KEYS = [
 
 export type VisibilityToggleKey = (typeof VISIBILITY_TOGGLE_KEYS)[number];
 
-/** `EventVisibilitySettings` with every toggle known — no optional members. */
-export type ResolvedVisibilitySettings = Record<VisibilityToggleKey, boolean>;
+/** The three preset-editable toggles, with every one known — no optional members. */
+export type ResolvedVisibilityToggles = Record<VisibilityToggleKey, boolean>;
 
-/** Backend defaults: everything disclosed, reproducing pre-#825 behaviour. */
+/**
+ * `EventVisibilitySettings` with all five keys known — no optional members.
+ * The two keys beyond `ResolvedVisibilityToggles` (`show_pronoun_distribution`,
+ * `address_visibility`) are edited outside the preset UI (see module docstring).
+ */
+export type ResolvedVisibilitySettings = ResolvedVisibilityToggles & {
+	show_pronoun_distribution: boolean;
+	address_visibility: ResourceVisibility;
+};
+
+/** Backend defaults: reproducing pre-#825/#793 behaviour for every key. */
 export const VISIBILITY_DEFAULTS: ResolvedVisibilitySettings = {
 	show_attendee_count: true,
 	show_capacity: true,
-	show_attendee_list: true
+	show_attendee_list: true,
+	show_pronoun_distribution: false,
+	address_visibility: 'public'
 };
 
 /** Frontend-only preset shortcuts. Each is just a set of the three toggles. */
 export type VisibilityPresetId = 'open' | 'discreet';
 
-export const VISIBILITY_PRESETS: Record<VisibilityPresetId, ResolvedVisibilitySettings> = {
+export const VISIBILITY_PRESETS: Record<VisibilityPresetId, ResolvedVisibilityToggles> = {
 	open: { show_attendee_count: true, show_capacity: true, show_attendee_list: true },
 	discreet: { show_attendee_count: false, show_capacity: false, show_attendee_list: false }
 };
@@ -59,9 +82,28 @@ export const VISIBILITY_PRESETS: Record<VisibilityPresetId, ResolvedVisibilitySe
 export const VISIBILITY_PRESET_IDS: readonly VisibilityPresetId[] = ['open', 'discreet'];
 
 /**
- * Fill in any absent toggle with its backend default.
+ * What an organization owner or staff member sees, as opposed to what the
+ * event discloses publicly.
  *
- * Reads always carry all three, so this only matters for form state that has
+ * This is deliberately *not* `VISIBILITY_DEFAULTS`: `show_pronoun_distribution`
+ * defaults to `false` (opt-in, per event), but a privileged viewer sees the
+ * distribution unconditionally — the backend serves it to owners/staff
+ * regardless of the toggle. Reusing `VISIBILITY_DEFAULTS` here would hide the
+ * distribution from an organizer whenever the organizer themselves left it
+ * off, which contradicts what the API actually returns them.
+ */
+export const VISIBILITY_PRIVILEGED: ResolvedVisibilitySettings = {
+	show_attendee_count: true,
+	show_capacity: true,
+	show_attendee_list: true,
+	show_pronoun_distribution: true,
+	address_visibility: 'public'
+};
+
+/**
+ * Fill in any absent key with its backend default.
+ *
+ * Reads always carry all five, so this only matters for form state that has
  * not been seeded yet (create flows) — never for a fetched event.
  */
 export function resolveVisibilitySettings(
@@ -70,7 +112,10 @@ export function resolveVisibilitySettings(
 	return {
 		show_attendee_count: settings?.show_attendee_count ?? VISIBILITY_DEFAULTS.show_attendee_count,
 		show_capacity: settings?.show_capacity ?? VISIBILITY_DEFAULTS.show_capacity,
-		show_attendee_list: settings?.show_attendee_list ?? VISIBILITY_DEFAULTS.show_attendee_list
+		show_attendee_list: settings?.show_attendee_list ?? VISIBILITY_DEFAULTS.show_attendee_list,
+		show_pronoun_distribution:
+			settings?.show_pronoun_distribution ?? VISIBILITY_DEFAULTS.show_pronoun_distribution,
+		address_visibility: settings?.address_visibility ?? VISIBILITY_DEFAULTS.address_visibility
 	};
 }
 
@@ -79,6 +124,11 @@ export function resolveVisibilitySettings(
  *
  * `null` means "custom" — a combination no preset expresses. Presets are a
  * shortcut, not a mode: nothing downstream branches on the answer.
+ *
+ * Deliberately iterates `VISIBILITY_TOGGLE_KEYS` only — presets are a
+ * frontend affordance over the three preset-editable toggles, and ignore
+ * `show_pronoun_distribution` / `address_visibility` entirely, however those
+ * two are set.
  */
 export function matchVisibilityPreset(
 	settings: EventVisibilitySettings | null | undefined
@@ -91,7 +141,13 @@ export function matchVisibilityPreset(
 	return null;
 }
 
-/** True when the toggles differ from the backend defaults in any way. */
+/**
+ * True when the toggles differ from the backend defaults in any way.
+ *
+ * Deliberately iterates `VISIBILITY_TOGGLE_KEYS` only, for the same reason as
+ * `matchVisibilityPreset` — this drives the "non-default" badge on the preset
+ * UI, not the other two keys.
+ */
 export function isNonDefaultVisibility(
 	settings: EventVisibilitySettings | null | undefined
 ): boolean {
@@ -103,17 +159,18 @@ export function isNonDefaultVisibility(
  * What *this viewer* may see, as opposed to what the event discloses publicly.
  *
  * Organization owners and staff bypass `visibility_settings` entirely on the
- * backend: the API serves them the real counts, the real capacity and the real
- * guest list no matter what the toggles say. Gating their UI on the public
- * toggles would hide an organizer's own event data from them — the numeric
- * surfaces get this for free (the numbers simply arrive non-null), but anything
- * that branches on the toggles themselves has to ask this instead.
+ * backend: the API serves them the real counts, the real capacity, the real
+ * guest list, the real pronoun distribution, and the real address no matter
+ * what the settings say. Gating their UI on the public settings would hide an
+ * organizer's own event data from them — the numeric surfaces get this for
+ * free (the numbers simply arrive non-null), but anything that branches on
+ * the settings themselves has to ask this instead.
  */
 export function resolveViewerVisibility(
 	settings: EventVisibilitySettings | null | undefined,
 	viewer: { isOwner?: boolean | null; isStaff?: boolean | null }
 ): ResolvedVisibilitySettings {
-	if (viewer.isOwner || viewer.isStaff) return { ...VISIBILITY_DEFAULTS };
+	if (viewer.isOwner || viewer.isStaff) return { ...VISIBILITY_PRIVILEGED };
 	return resolveVisibilitySettings(settings);
 }
 
@@ -121,8 +178,14 @@ export function resolveViewerVisibility(
  * The minimal patch that moves `original` to `next`.
  *
  * Returns only the sub-keys that actually changed, which is exactly what the
- * backend's merge semantics reward: an omitted toggle means "no change". An
+ * backend's merge semantics reward: an omitted key means "no change". An
  * empty object means nothing changed and the caller should omit the field.
+ *
+ * Diffs all five keys — unlike `matchVisibilityPreset` /
+ * `isNonDefaultVisibility`, this has to capture edits to
+ * `show_pronoun_distribution` and `address_visibility` too, since those are
+ * real settings a caller may have changed even though no preset represents
+ * them.
  */
 export function diffVisibilitySettings(
 	original: EventVisibilitySettings | null | undefined,
@@ -131,8 +194,20 @@ export function diffVisibilitySettings(
 	const before = resolveVisibilitySettings(original);
 	const after = resolveVisibilitySettings(next);
 	const patch: EventVisibilitySettings = {};
-	for (const key of VISIBILITY_TOGGLE_KEYS) {
-		if (before[key] !== after[key]) patch[key] = after[key];
+	if (before.show_attendee_count !== after.show_attendee_count) {
+		patch.show_attendee_count = after.show_attendee_count;
+	}
+	if (before.show_capacity !== after.show_capacity) {
+		patch.show_capacity = after.show_capacity;
+	}
+	if (before.show_attendee_list !== after.show_attendee_list) {
+		patch.show_attendee_list = after.show_attendee_list;
+	}
+	if (before.show_pronoun_distribution !== after.show_pronoun_distribution) {
+		patch.show_pronoun_distribution = after.show_pronoun_distribution;
+	}
+	if (before.address_visibility !== after.address_visibility) {
+		patch.address_visibility = after.address_visibility;
 	}
 	return patch;
 }
