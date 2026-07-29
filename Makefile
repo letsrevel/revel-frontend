@@ -1,4 +1,4 @@
-.PHONY: dev build preview format format-check lint lint-fix types i18n-check i18n-hardcoded i18n-hardcoded-update file-length no-ssr-token audit-images audit-soft-404 audit licensecheck audit-deps check fix test test-coverage test-e2e generate-api bump-version bump-minor release
+.PHONY: dev build preview format format-check lint lint-fix types types-canary i18n-check i18n-hardcoded i18n-hardcoded-update file-length no-ssr-token audit-images audit-soft-404 audit licensecheck audit-deps check fix test test-coverage test-e2e generate-api bump-version bump-minor release
 
 # ─────────────────────────────────────────────
 # Development
@@ -31,6 +31,13 @@ lint-fix:
 
 types:
 	pnpm svelte-kit sync && pnpm svelte-check --tsconfig ./tsconfig.json
+
+# Prove the gate above can actually fail. `make types` passed vacuously for an
+# unknown number of merges (#704) — svelte-check reported "0 errors" over a
+# program containing no project files. Only a deliberately injected error
+# detects that; the scanned-file count does not.
+types-canary:
+	@./scripts/check-type-gate-armed.sh
 
 i18n-check:
 	pnpm i18n:compile
@@ -81,7 +88,10 @@ audit-deps: audit licensecheck
 # ─────────────────────────────────────────────
 
 # Equivalent to backend's `make check`: format, lint, types, i18n, file-length
-check: format-check lint types i18n-check i18n-hardcoded file-length no-ssr-token audit-images
+# i18n-check runs before the type checks: it compiles the Paraglide messages that
+# svelte-check resolves `$$lib/paraglide/*` against, and the canary refuses to run
+# without them (see scripts/check-type-gate-armed.sh).
+check: format-check lint i18n-check types types-canary i18n-hardcoded file-length no-ssr-token audit-images
 
 # Auto-fix everything that can be auto-fixed
 fix: format lint-fix

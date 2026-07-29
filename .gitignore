@@ -107,3 +107,7 @@ revel-backend
 .playwright-mcp/
 screenshots/
 
+# Temporary fixtures written by scripts/check-type-gate-armed.sh. The script
+# removes them on exit; these entries only matter if a run is hard-killed.
+src/lib/__type_gate_canary__.ts
+src/routes/__TypeGateCanary__.svelte

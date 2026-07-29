@@ -7,6 +7,13 @@
 		"forceConsistentCasingInFileNames": true,
 		"resolveJsonModule": true,
 		"skipLibCheck": true,
+		// Load the whole project regardless of size. TypeScript otherwise caps a
+		// project at 20 MB of non-TS files, and `.svelte` plus the generated
+		// Paraglide `.js` message bundles push us past it. Over the limit, the
+		// Svelte language service silently drops into reduced mode and
+		// svelte-check reports "0 errors" over an empty program — see #704.
+		// `scripts/check-type-gate-armed.sh` guards against this regressing.
+		"disableSizeLimit": true,
 		"sourceMap": true,
 		"strict": true,
 		"noImplicitAny": true,

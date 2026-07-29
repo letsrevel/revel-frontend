@@ -45,6 +45,14 @@ jobs:
       - name: Run SvelteKit type check
         run: pnpm check
 
+      # The step above passed vacuously for an unknown number of merges (#704):
+      # svelte-check reported "0 errors" over a program that contained no
+      # project files. Only injecting a known type error and asserting it is
+      # reported can detect that — a green run and the scanned-file count both
+      # look identical either way.
+      - name: Assert the type gate is armed
+        run: ./scripts/check-type-gate-armed.sh
+
       # The three make-check gates below previously ran only locally — anything
       # committed without `make check` (web edits, external PRs) escaped them.
       - name: Check file lengths
