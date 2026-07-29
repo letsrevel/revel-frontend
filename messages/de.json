@@ -3513,7 +3513,8 @@
 					"churn30d": "Abgewandert (30 Tage)",
 					"mixedCurrency": "Mehrere Währungen — MRR nicht verfügbar",
 					"error": "Abonnement-Kennzahlen konnten nicht geladen werden.",
-					"statusBreakdown": "Nach Status"
+					"statusBreakdown": "Nach Status",
+					"activeIncludesPastDue": "Aktiv + überfällig"
 				}
 			},
 			"payments": {

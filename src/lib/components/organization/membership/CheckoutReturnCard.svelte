@@ -11,6 +11,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { backendMessage } from '$lib/utils/api-error-detail';
 	import { isSubscriptionActivationPending } from '$lib/utils/subscriptions';
+	import { myOrgSubscriptionKey } from '$lib/utils/subscription-cache';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { Loader2 } from '@lucide/svelte';
@@ -66,7 +67,11 @@
 		// `untrack` states the intent the compiler would otherwise warn about:
 		// the key is frozen at mount, because this card is rendered once per
 		// checkout-return page load and never re-targeted at another org.
-		queryKey: untrack(() => ['me', 'org', organizationId, 'subscription', 'checkout-return']),
+		// Built from the exported key so this poll cache stays a genuine CHILD of
+		// the per-org subscription key — that prefix relationship is what lets the
+		// invalidation below clear it, and a hand-written literal would break it
+		// silently on a rename.
+		queryKey: untrack(() => [...myOrgSubscriptionKey(organizationId), 'checkout-return']),
 		queryFn: fetchSubscription,
 		isDone: (sub) => sub?.status === 'active',
 		// `options()` is re-read on every reactive pass, so flipping
@@ -91,7 +96,7 @@
 		if (phase !== 'done' || invalidated) return;
 		invalidated = true;
 		// The inline membership card.
-		queryClient.invalidateQueries({ queryKey: ['me', 'org', organizationId, 'subscription'] });
+		queryClient.invalidateQueries({ queryKey: myOrgSubscriptionKey(organizationId) });
 		// Admin views of this org; a no-op on the public page, kept for the
 		// authenticated-admin case and future consumers of the prefix.
 		queryClient.invalidateQueries({ queryKey: ['organization', organizationSlug] });
@@ -108,7 +113,7 @@
 	// A single look, not a poll: nothing is going to change server-side until the
 	// member acts.
 	const cancelledQuery = createQuery(() => ({
-		queryKey: ['me', 'org', organizationId, 'subscription', 'checkout-cancelled'],
+		queryKey: [...myOrgSubscriptionKey(organizationId), 'checkout-cancelled'],
 		queryFn: fetchSubscription,
 		enabled: outcome === 'cancelled' && !!accessToken,
 		retry: false,

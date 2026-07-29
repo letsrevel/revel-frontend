@@ -3513,7 +3513,8 @@
 					"churn30d": "Churned (30 days)",
 					"mixedCurrency": "Multiple currencies — MRR unavailable",
 					"error": "Couldn't load subscription metrics.",
-					"statusBreakdown": "By status"
+					"statusBreakdown": "By status",
+					"activeIncludesPastDue": "Active + past due"
 				}
 			},
 			"payments": {

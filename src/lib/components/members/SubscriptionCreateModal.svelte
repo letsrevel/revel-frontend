@@ -206,7 +206,7 @@
 				</div>
 			{/if}
 
-			<div class="flex justify-end gap-2">
+			<div class="flex flex-wrap justify-end gap-2">
 				<Button type="button" variant="outline" onclick={onClose} disabled={isSubmitting}>
 					{m['tierForm.cancel']()}
 				</Button>

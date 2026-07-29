@@ -52,6 +52,33 @@
 
 	const results = $derived(membersQuery.data?.results ?? []);
 
+	let listEl = $state<HTMLUListElement | null>(null);
+
+	/**
+	 * Keep the open listbox inside the visible part of whatever is scrolling
+	 * around us (#702 mobile pass).
+	 *
+	 * This listbox is deliberately NOT portalled — it has to stay inside the
+	 * hosting dialog's focus trap — so it is an absolutely positioned descendant
+	 * of that dialog's `overflow-y-auto` content box. Such a box is CLIPPED to
+	 * the scrollport and merely contributes to scrollable overflow: on a phone,
+	 * where this combobox is the first field of a `max-h-[90vh]` dialog, the
+	 * options below the fold are only reachable by scrolling the dialog — and
+	 * scrolling it means touching outside the input, which blurs it and closes
+	 * the list. A catch-22 the desktop viewport never shows.
+	 *
+	 * `block: 'nearest'` performs the MINIMUM scroll that makes the list visible
+	 * and does nothing when it already is, so it never yanks the view around.
+	 * Programmatic scrolling does not move focus, so the input stays focused and
+	 * the list stays open.
+	 */
+	$effect(() => {
+		if (!open || results.length === 0) return;
+		// Optional call: `scrollIntoView` is not implemented in jsdom, and this is
+		// a pure viewport nicety with nothing to assert in a unit test.
+		listEl?.scrollIntoView?.({ block: 'nearest' });
+	});
+
 	function pick(member: OrganizationMemberSchema) {
 		onSelect(member);
 		query = member.user.display_name;
@@ -72,10 +99,14 @@
 		aria-controls={listboxId}
 	/>
 	{#if open && results.length > 0}
+		<!-- Height: 15rem where there is room, but never more than 40% of a short
+		     viewport — on a phone with the software keyboard up, a fixed 15rem list
+		     is taller than the space left below the input. -->
 		<ul
+			bind:this={listEl}
 			id={listboxId}
 			role="listbox"
-			class="absolute z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-md border bg-popover shadow-lg"
+			class="absolute z-50 mt-1 max-h-[min(15rem,40vh)] w-full overflow-y-auto rounded-md border bg-popover shadow-lg"
 		>
 			{#each results as r (r.user.id ?? r.user.email ?? r.user.display_name)}
 				<li
