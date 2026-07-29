@@ -5,7 +5,8 @@ import {
 	diffVisibilitySettings,
 	isNonDefaultVisibility,
 	matchVisibilityPreset,
-	resolveVisibilitySettings
+	resolveVisibilitySettings,
+	resolveViewerVisibility
 } from './event-visibility';
 
 describe('resolveVisibilitySettings', () => {
@@ -42,6 +43,34 @@ describe('matchVisibilityPreset', () => {
 				show_attendee_list: true
 			})
 		).toBeNull();
+	});
+});
+
+// Owners and staff bypass visibility_settings server-side (#825): the API hands
+// them the real numbers and the real guest list. Any UI that branches on the
+// toggles must not re-impose the public gate on them.
+describe('resolveViewerVisibility', () => {
+	const discreet = { show_attendee_count: false, show_capacity: false, show_attendee_list: false };
+
+	it('discloses everything to an owner regardless of the settings', () => {
+		expect(resolveViewerVisibility(discreet, { isOwner: true, isStaff: false })).toEqual(
+			VISIBILITY_DEFAULTS
+		);
+	});
+
+	it('discloses everything to staff regardless of the settings', () => {
+		expect(resolveViewerVisibility(discreet, { isOwner: false, isStaff: true })).toEqual(
+			VISIBILITY_DEFAULTS
+		);
+	});
+
+	it('applies the public settings to everyone else', () => {
+		expect(resolveViewerVisibility(discreet, { isOwner: false, isStaff: false })).toEqual(discreet);
+	});
+
+	it('treats absent viewer flags as a plain guest', () => {
+		expect(resolveViewerVisibility(discreet, {})).toEqual(discreet);
+		expect(resolveViewerVisibility(discreet, { isOwner: null, isStaff: null })).toEqual(discreet);
 	});
 });
 

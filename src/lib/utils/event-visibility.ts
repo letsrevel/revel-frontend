@@ -100,6 +100,24 @@ export function isNonDefaultVisibility(
 }
 
 /**
+ * What *this viewer* may see, as opposed to what the event discloses publicly.
+ *
+ * Organization owners and staff bypass `visibility_settings` entirely on the
+ * backend: the API serves them the real counts, the real capacity and the real
+ * guest list no matter what the toggles say. Gating their UI on the public
+ * toggles would hide an organizer's own event data from them — the numeric
+ * surfaces get this for free (the numbers simply arrive non-null), but anything
+ * that branches on the toggles themselves has to ask this instead.
+ */
+export function resolveViewerVisibility(
+	settings: EventVisibilitySettings | null | undefined,
+	viewer: { isOwner?: boolean | null; isStaff?: boolean | null }
+): ResolvedVisibilitySettings {
+	if (viewer.isOwner || viewer.isStaff) return { ...VISIBILITY_DEFAULTS };
+	return resolveVisibilitySettings(settings);
+}
+
+/**
  * The minimal patch that moves `original` to `next`.
  *
  * Returns only the sub-keys that actually changed, which is exactly what the
