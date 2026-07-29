@@ -72,6 +72,15 @@ export default [
 		rules: { 'no-restricted-syntax': 'off' }
 	},
 	{
+		// The `/embed` surface (#689) renders inside third-party iframes. EVERY
+		// link it emits is an absolute, UTM-tagged URL back into the app built by
+		// `$lib/embed/links.ts` — `resolve()` produces app-relative paths, which
+		// would resolve against the host page and are exactly the wrong thing
+		// here. The rule has nothing to protect in these files.
+		files: ['src/routes/embed/**', 'src/lib/components/embed/**'],
+		rules: { 'svelte/no-navigation-without-resolve': 'off' }
+	},
+	{
 		ignores: [
 			'build/',
 			'.svelte-kit/',

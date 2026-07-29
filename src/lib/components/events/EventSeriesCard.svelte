@@ -10,9 +10,30 @@
 		series: EventSeriesRetrieveSchema;
 		variant?: 'compact' | 'standard';
 		class?: string;
+		/** Lean mode for the `/embed` surface (#689): no in-app preloading. */
+		lean?: boolean;
+		/** Override the destination with an absolute, UTM-tagged URL. */
+		href?: string;
+		/** Link target. Embeds use `_blank` so the host page is never replaced. */
+		target?: '_blank' | null;
 	}
 
-	const { series, variant = 'standard', class: className }: Props = $props();
+	const {
+		series,
+		variant = 'standard',
+		class: className,
+		lean = false,
+		href,
+		target = null
+	}: Props = $props();
+
+	const cardHref = $derived(
+		href ??
+			resolve('/(public)/events/[org_slug]/series/[series_slug]', {
+				org_slug: series.organization.slug,
+				series_slug: series.slug
+			})
+	);
 
 	// Image state
 	let imageError = $state(false);
@@ -86,17 +107,23 @@
 
 <article class={containerClasses}>
 	<!-- Clickable overlay link for accessibility -->
+	<!--
+		`cardHref` is resolve()d by default; the optional `href` prop replaces it
+		with an absolute, UTM-tagged URL for embeds, which resolve() cannot
+		express. Scoped to this element so the rule still guards the rest of the file.
+	-->
+	<!-- eslint-disable svelte/no-navigation-without-resolve -->
 	<a
-		href={resolve('/(public)/events/[org_slug]/series/[series_slug]', {
-			org_slug: series.organization.slug,
-			series_slug: series.slug
-		})}
-		data-sveltekit-preload-data="hover"
+		href={cardHref}
+		target={target ?? undefined}
+		rel={target === '_blank' ? 'noopener' : undefined}
+		data-sveltekit-preload-data={lean ? undefined : 'hover'}
 		class="absolute inset-0 z-10"
 		aria-label={accessibleLabel}
 	>
 		<span class="sr-only">{m['eventSeriesCard.viewDetails']()}</span>
 	</a>
+	<!-- eslint-enable svelte/no-navigation-without-resolve -->
 
 	<!-- Cover Image -->
 	<div class={imageContainerClasses}>

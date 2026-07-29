@@ -32,6 +32,7 @@
 	// loads). The API client awaits authStore.waitForAuthReady() per request.
 	if (
 		browser &&
+		!data.embed &&
 		(data.auth.hasAccessToken || data.auth.hasRefreshToken) &&
 		!authStore.accessToken
 	) {
@@ -163,6 +164,11 @@
 	}
 
 	$effect(() => {
+		// Embed documents render anonymously and (via `csr = false`) ship no
+		// client bundle at all; this is belt-and-braces so the auth machinery
+		// stays inert even if that page option is ever relaxed.
+		if (data.embed) return;
+
 		const hasServerAccessToken = data.auth.hasAccessToken;
 		const hasRefreshToken = data.auth.hasRefreshToken;
 		const fingerprint = data.auth.fingerprint;
@@ -224,6 +230,8 @@
 	// Handle flash messages after navigation (including client-side navigation from login)
 	// Using afterNavigate instead of onMount because login uses use:enhance for client-side navigation
 	afterNavigate(() => {
+		if (data.embed) return;
+
 		// Check for claim flash cookie (from login/signup with pending tokens)
 		const claimFlashCookie = document.cookie
 			.split('; ')
@@ -262,6 +270,8 @@
 
 	// Fetch backend version on initial mount
 	onMount(async () => {
+		if (data.embed) return;
+
 		// Hydration marker: interactions dispatched before hydration are silently
 		// lost, so the E2E goto() helper waits for this attribute (tests/e2e).
 		document.body.dataset.hydrated = 'true';
@@ -278,11 +288,22 @@
 	{/if}
 </svelte:head>
 
-<ModeWatcher />
-<QueryClientProvider client={queryClient}>
-	<Toaster richColors position="top-right" />
-	<ImpersonationBanner />
-	<DemoBanner />
-	<MaintenanceBanner />
+{#if data.embed}
+	<!--
+		Embed documents (#689) get no app shell: no ModeWatcher (localStorage is
+		partitioned inside a third-party iframe — the theme is applied to <html>
+		server-side instead), no TanStack Query provider, no toaster, no banners.
+		They are also `csr = false`, so none of the above ships to the browser
+		either. See src/routes/embed/.
+	-->
 	{@render children()}
-</QueryClientProvider>
+{:else}
+	<ModeWatcher />
+	<QueryClientProvider client={queryClient}>
+		<Toaster richColors position="top-right" />
+		<ImpersonationBanner />
+		<DemoBanner />
+		<MaintenanceBanner />
+		{@render children()}
+	</QueryClientProvider>
+{/if}

@@ -5,6 +5,7 @@
 	import { cn } from '$lib/utils/cn';
 	import { formatEventDate, formatEventDateForScreenReader, isEventPast } from '$lib/utils/date';
 	import { getEventAccessDisplay } from '$lib/utils/event';
+	import { formatPrice } from '$lib/utils/format';
 	import { Calendar, MapPin, Ticket, Tag } from '@lucide/svelte';
 	import BookmarkButton from './BookmarkButton.svelte';
 	import EventCoverImage from './EventCoverImage.svelte';
@@ -16,9 +17,34 @@
 		variant?: 'compact' | 'standard';
 		userStatus?: UserEventStatus | null;
 		class?: string;
+		/**
+		 * Lean mode (used by the `/embed` surface, #689): drops the bookmark
+		 * button and the in-app navigation overlay. Both assume an authenticated,
+		 * client-side-routed app, neither of which exists inside a third-party
+		 * iframe that renders with `csr = false`.
+		 */
+		lean?: boolean;
+		/**
+		 * Override the card's destination. Embeds link out with an absolute,
+		 * UTM-tagged URL instead of an in-app route.
+		 */
+		href?: string;
+		/** Link target. Embeds use `_blank` so the host page is never replaced. */
+		target?: '_blank' | null;
+		/** Optional entry-price hint, rendered as "from €X". */
+		priceFrom?: { amount: number; currency: string } | null;
 	}
 
-	const { event, variant = 'standard', userStatus = null, class: className }: Props = $props();
+	const {
+		event,
+		variant = 'standard',
+		userStatus = null,
+		class: className,
+		lean = false,
+		href,
+		target = null,
+		priceFrom = null
+	}: Props = $props();
 
 	// Computed values
 	const formattedDate = $derived(formatEventDate(event.start, event.timezone));
@@ -55,9 +81,31 @@
 		return parts.join(', ');
 	});
 
-	// Check if we're currently navigating to this card's event
+	// Check if we're currently navigating to this card's event. Lean cards never
+	// navigate in-app (they open an absolute URL in a new tab), so the overlay —
+	// and the store it depends on — is skipped entirely.
 	const eventUrl = $derived(`/events/${event.organization.slug}/${event.slug}`);
-	const isNavigating = $derived($navigating !== null && $navigating.to?.url.pathname === eventUrl);
+	const isNavigating = $derived(
+		!lean && $navigating !== null && $navigating.to?.url.pathname === eventUrl
+	);
+
+	const cardHref = $derived(
+		href ??
+			resolve('/(public)/events/[org_slug]/[event_slug]', {
+				org_slug: event.organization.slug,
+				event_slug: event.slug
+			})
+	);
+
+	// "from €12" / "Free". Formatting stays in the component so it follows the
+	// active UI language (see CLAUDE.md "Date & Time Formatting").
+	const priceLabel = $derived.by(() => {
+		if (!priceFrom) return null;
+		if (priceFrom.amount === 0) return m['embed.free']();
+		return m['embed.priceFrom']({
+			price: formatPrice(priceFrom.amount, priceFrom.currency, m['embed.free']())
+		});
+	});
 
 	// Container classes based on variant
 	const containerClasses = $derived(
@@ -83,27 +131,35 @@
 
 <article class={containerClasses}>
 	<!-- Clickable overlay link for accessibility -->
+	<!--
+		`cardHref` is resolve()d by default; the optional `href` prop replaces it
+		with an absolute, UTM-tagged URL for embeds, which resolve() cannot
+		express. Scoped to this element so the rule still guards the rest of the file.
+	-->
+	<!-- eslint-disable svelte/no-navigation-without-resolve -->
 	<a
-		href={resolve('/(public)/events/[org_slug]/[event_slug]', {
-			org_slug: event.organization.slug,
-			event_slug: event.slug
-		})}
-		data-sveltekit-preload-data="hover"
+		href={cardHref}
+		target={target ?? undefined}
+		rel={target === '_blank' ? 'noopener' : undefined}
+		data-sveltekit-preload-data={lean ? undefined : 'hover'}
 		class="absolute inset-0 z-10"
 		aria-label={accessibleLabel}
 	>
 		<span class="sr-only">{m['eventCard.viewDetails']()}</span>
 	</a>
+	<!-- eslint-enable svelte/no-navigation-without-resolve -->
 
-	<!-- Bookmarked indicator: shows top-left only when bookmarked (badges live top-right);
-	     authenticated-only and clickable to remove the bookmark. -->
-	<BookmarkButton
-		eventId={event.id}
-		isBookmarked={event.is_bookmarked ?? false}
-		variant="float"
-		onlyWhenBookmarked
-		class="absolute left-2 top-2 z-20"
-	/>
+	{#if !lean}
+		<!-- Bookmarked indicator: shows top-left only when bookmarked (badges live top-right);
+		     authenticated-only and clickable to remove the bookmark. -->
+		<BookmarkButton
+			eventId={event.id}
+			isBookmarked={event.is_bookmarked ?? false}
+			variant="float"
+			onlyWhenBookmarked
+			class="absolute left-2 top-2 z-20"
+		/>
+	{/if}
 
 	<!-- Skeleton loader overlay when navigating -->
 	{#if isNavigating}
@@ -171,12 +227,22 @@
 				<span class="truncate">{locationDisplay}</span>
 			</div>
 
-			{#if variant === 'standard'}
-				<!-- Access Type (only in standard variant) -->
+			<!-- Entry price ("from €X"), when the caller supplied one -->
+			{#if priceLabel}
 				<div class="flex items-center gap-2 text-sm">
 					<Ticket class="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-					<span class="truncate">{accessDisplay}</span>
+					<span class="truncate font-medium">{priceLabel}</span>
 				</div>
+			{/if}
+
+			{#if variant === 'standard'}
+				<!-- Access Type (only in standard variant; superseded by the price row) -->
+				{#if !priceLabel}
+					<div class="flex items-center gap-2 text-sm">
+						<Ticket class="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+						<span class="truncate">{accessDisplay}</span>
+					</div>
+				{/if}
 
 				<!-- Tags (if available) -->
 				{#if event.tags && event.tags.length > 0}

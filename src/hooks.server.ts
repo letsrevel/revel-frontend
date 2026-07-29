@@ -6,7 +6,9 @@ import { env } from '$env/dynamic/private';
 import { i18nHandle } from '$lib/i18n';
 import { tokenRefresh } from '$lib/api/generated';
 import { API_BASE_URL } from '$lib/config/api';
-import { appendCspApiOrigin } from '$lib/server/csp';
+import { appendCspApiOrigin, relaxCspFrameAncestors } from '$lib/server/csp';
+import { ROOT_ATTRIBUTES_PLACEHOLDER, rootAttributesFor } from '$lib/server/embed';
+import { isEmbedPath } from '$lib/embed/constants';
 import { requiresAuth, loginRedirectPath } from '$lib/server/auth-guard';
 import {
 	getAccessTokenCookieOptions,
@@ -186,6 +188,35 @@ const handleTokenCapture: Handle = async ({ event, resolve }) => {
 };
 
 /**
+ * Embed document shell hook (#689)
+ *
+ * Fills the `%revel.rootAttributes%` placeholder in `src/app.html`. For
+ * `/embed/*` requests with an explicit `?theme=light|dark` this stamps the
+ * theme straight onto `<html>` (plus `data-theme-locked`, which tells the
+ * anti-FOUC script in app.html to stand down); for every other request it
+ * expands to the empty string.
+ *
+ * Doing it here rather than in the embed layout is what makes the theme work
+ * with zero client-side JavaScript and with no flash: the class is present in
+ * the very first byte of the document, and never depends on `localStorage`,
+ * which is partitioned per host page inside a third-party iframe.
+ */
+const handleEmbedShell: Handle = async ({ event, resolve }) => {
+	const rootAttributes = rootAttributesFor(event.url);
+	// The placeholder only ever occurs in the first streamed chunk; latch so a
+	// later chunk that happens to contain the same literal is left alone.
+	let replaced = false;
+
+	return resolve(event, {
+		transformPageChunk: ({ html }) => {
+			if (replaced || !html.includes(ROOT_ATTRIBUTES_PLACEHOLDER)) return html;
+			replaced = true;
+			return html.replace(ROOT_ATTRIBUTES_PLACEHOLDER, rootAttributes);
+		}
+	});
+};
+
+/**
  * Preload optimization hook
  * Limits modulepreload Link headers to prevent Chromium/Safari from hanging
  * on pages with many JS chunks (200+ modulepreloads causes browser issues)
@@ -263,7 +294,13 @@ const handleCsp: Handle = async ({ event, resolve }) => {
 	const csp = response.headers.get('content-security-policy');
 	if (!csp) return response;
 
-	const patched = appendCspApiOrigin(csp, API_BASE_URL);
+	// `/embed/*` exists to be framed by third-party sites, so the app-wide
+	// `frame-ancestors 'none'` is loosened for those responses only (#689).
+	// Everything else keeps the clickjacking defence.
+	const withApiOrigin = appendCspApiOrigin(csp, API_BASE_URL);
+	const patched = isEmbedPath(event.url.pathname)
+		? relaxCspFrameAncestors(withApiOrigin)
+		: withApiOrigin;
 	if (patched === csp) return response;
 
 	// SvelteKit's response headers are immutable; rebuild the response (same
@@ -384,6 +421,7 @@ const handleAuthGuard: Handle = async ({ event, resolve }) => {
 export const handle = sequence(
 	handleRequestLogging,
 	handleTokenCapture,
+	handleEmbedShell,
 	i18nHandle(),
 	handleAuth,
 	handleAuthGuard,

@@ -8846,5 +8846,20 @@
 		"cancelConfirmBody": "La tua candidatura a {org} sarà ritirata. Potrai ricandidarti in seguito.",
 		"cancelSuccess": "Candidatura annullata.",
 		"cancelError": "Non è stato possibile annullare la candidatura. Riprova."
+	},
+	"embed": {
+		"poweredBy": "Powered by Revel",
+		"seeAllEvents": "Vedi tutti gli eventi",
+		"viewEvent": "Vedi l'evento",
+		"getTickets": "Acquista i biglietti",
+		"priceFrom": "da {price}",
+		"free": "Gratis",
+		"noEvents": "Nessun evento in programma",
+		"noEventsHint": "Torna presto per le nuove date.",
+		"eventsBy": "Eventi di {organization}",
+		"openInNewTab": "si apre in una nuova scheda",
+		"unavailableTitle": "Contenuto non disponibile",
+		"unavailableBody": "Non è stato possibile caricare questo embed di Revel.",
+		"unavailableNotFound": "Non abbiamo trovato questo contenuto. L'embed potrebbe puntare a qualcosa che è stato rinominato o rimosso."
 	}
 }
