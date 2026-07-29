@@ -55,10 +55,8 @@ export const VISIBILITY_PRESETS: Record<VisibilityPresetId, ResolvedVisibilitySe
 	discreet: { show_attendee_count: false, show_capacity: false, show_attendee_list: false }
 };
 
-export const VISIBILITY_PRESET_IDS = ['open', 'discreet'] as const satisfies readonly [
-	VisibilityPresetId,
-	VisibilityPresetId
-];
+/** Presentation order of the preset buttons. */
+export const VISIBILITY_PRESET_IDS: readonly VisibilityPresetId[] = ['open', 'discreet'];
 
 /**
  * Fill in any absent toggle with its backend default.

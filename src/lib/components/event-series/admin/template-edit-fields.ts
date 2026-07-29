@@ -3,9 +3,14 @@
  *
  * These lists drive near-identical markup blocks from data instead of
  * duplicating them, and live here rather than in the component so the dialog
- * stays under the file-length cap. Each factory is a *function*, not a
- * module-level constant: the labels are Paraglide message calls and must be
- * evaluated per component instance so a language switch re-renders them.
+ * stays under the file-length cap.
+ *
+ * Each is a *factory*, not a module-level constant: the labels are Paraglide
+ * message calls, and evaluating them once at module-eval time would freeze the
+ * copy at whichever locale happened to import the module first. Callers invoke
+ * them inside `$derived` so the labels track the active locale. (Today that is
+ * belt-and-braces — `setLocale()` reloads the page — but neither the freeze nor
+ * the reload is a contract worth depending on.)
  */
 
 import * as m from '$lib/paraglide/messages.js';

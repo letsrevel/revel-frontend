@@ -222,9 +222,11 @@
 	// that otherwise ran up against the file-length gate. Each entry pairs a
 	// form field with the i18n key of its label and its Playwright testid.
 	// The configs live in ./template-edit-fields.ts for the same reason.
-	const capacityToggles: TemplateToggleConfig[] = buildCapacityToggles();
-	const attendanceToggles: TemplateToggleConfig[] = buildAttendanceToggles();
-	const propagateOptions: PropagateOption[] = buildPropagateOptions();
+	// `$derived` so the labels track the active locale rather than the locale at
+	// component init.
+	const capacityToggles: TemplateToggleConfig[] = $derived(buildCapacityToggles());
+	const attendanceToggles: TemplateToggleConfig[] = $derived(buildAttendanceToggles());
+	const propagateOptions: PropagateOption[] = $derived(buildPropagateOptions());
 
 	const hasChanges = $derived(Object.keys(diff).length > 0);
 
