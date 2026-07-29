@@ -3,7 +3,6 @@
 	import type {
 		EventCreateSchema,
 		EventSeriesRetrieveSchema,
-		ResourceVisibility,
 		CitySchema,
 		VenueDetailSchema
 	} from '$lib/api/generated/types.gen';
@@ -42,7 +41,6 @@
 			organization_cover_art?: string;
 			requires_ticket?: boolean;
 			requires_full_profile?: boolean;
-			address_visibility?: ResourceVisibility;
 			venue_id?: string | null;
 			city_id?: number | null;
 			location_maps_url?: string | null;
@@ -70,7 +68,6 @@
 			data: Partial<EventCreateSchema> & {
 				tags?: string[];
 				requires_full_profile?: boolean;
-				address_visibility?: ResourceVisibility;
 				venue_id?: string | null;
 				city_id?: number | null;
 				location_maps_url?: string | null;
@@ -452,7 +449,8 @@
 		settings={formData.visibility_settings}
 		isOpen={isSectionOpen('visibility')}
 		onToggle={() => toggleSection('visibility')}
-		onChange={(next) => onUpdate({ visibility_settings: next })}
+		onChange={(next) =>
+			onUpdate({ visibility_settings: { ...formData.visibility_settings, ...next } })}
 	/>
 
 	<!-- Admission & Screening Section -->
@@ -563,8 +561,14 @@
 				>
 					<input
 						type="checkbox"
-						checked={formData.public_pronoun_distribution || false}
-						onchange={(e) => onUpdate({ public_pronoun_distribution: e.currentTarget.checked })}
+						checked={formData.visibility_settings?.show_pronoun_distribution || false}
+						onchange={(e) =>
+							onUpdate({
+								visibility_settings: {
+									...formData.visibility_settings,
+									show_pronoun_distribution: e.currentTarget.checked
+								}
+							})}
 						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 					/>
 					<div class="flex-1">

@@ -20,7 +20,6 @@
 		VenueDetailSchema,
 		OrganizationRetrieveSchema,
 		OrganizationQuestionnaireInListSchema,
-		ResourceVisibility,
 		EventSeriesRetrieveSchema
 	} from '$lib/api/generated/types.gen';
 	import { goto } from '$app/navigation';
@@ -92,7 +91,6 @@
 			organization_logo?: string;
 			organization_cover_art?: string;
 			requires_ticket?: boolean;
-			address_visibility?: ResourceVisibility;
 			venue_id?: string | null;
 			location_maps_url?: string | null;
 			location_maps_embed?: string | null;
@@ -115,7 +113,6 @@
 		requires_ticket: existingEvent?.requires_ticket || false,
 		description: existingEvent?.description || '',
 		address: existingEvent?.address || '',
-		address_visibility: existingEvent?.address_visibility || 'public',
 		rsvp_before: toDateTimeLocal(existingEvent?.rsvp_before) || null,
 		max_attendees: existingEvent?.max_attendees || undefined,
 		max_tickets_per_user: existingEvent?.max_tickets_per_user ?? 1,
@@ -131,7 +128,6 @@
 		// (see visibilitySettingsForWrite in event-payload.ts) — an unseeded
 		// all-`true` default would silently re-disclose a hidden count.
 		visibility_settings: existingEvent?.visibility_settings,
-		public_pronoun_distribution: existingEvent?.public_pronoun_distribution || false,
 		apply_before: toDateTimeLocal(existingEvent?.apply_before) || null,
 		can_attend_without_login: existingEvent?.can_attend_without_login || false,
 		requires_full_profile: existingEvent?.requires_full_profile || false,
@@ -481,7 +477,6 @@
 			cover_art?: string;
 			organization_logo?: string;
 			organization_cover_art?: string;
-			address_visibility?: ResourceVisibility;
 			venue_id?: string | null;
 			location_maps_url?: string | null;
 			location_maps_embed?: string | null;
