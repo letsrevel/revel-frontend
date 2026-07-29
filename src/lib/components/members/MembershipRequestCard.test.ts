@@ -142,6 +142,15 @@ describe('MembershipRequestCard questionnaire submission', () => {
 			// announced twice over (name, then description).
 			expect(link).not.toHaveAttribute('aria-describedby');
 		}
+
+		// …and for the same reason the visible hint beside the link is hidden from
+		// AT: it is now pure decoration, and browse mode would otherwise read the
+		// link's name and then the span — the caveat twice in one line. This is
+		// only safe while the name carries the state, which the assertion above
+		// pins, so the two must never drift apart.
+		for (const hint of screen.getAllByText('Review pending')) {
+			expect(hint).toHaveAttribute('aria-hidden', 'true');
+		}
 	});
 
 	it('omits the review-pending hint once the submission is approved', () => {

@@ -217,7 +217,12 @@
 							{m['membershipRequestCard.viewSubmission']()}
 						</a>
 						{#if submissionPendingReview}
-							<span class="ml-2 text-xs text-muted-foreground">
+							<!-- Visual reinforcement only: the same words are already in the
+							     link's accessible name above, and in browse mode a screen
+							     reader would read the link (name and all) and then this span
+							     — the caveat twice in one line. Hiding it is safe *because*
+							     the name carries it; the two move together. -->
+							<span class="ml-2 text-xs text-muted-foreground" aria-hidden="true">
 								{m['membershipRequestCard.submissionPendingReview']()}
 							</span>
 						{/if}
@@ -410,7 +415,12 @@
 							{m['membershipRequestCard.viewSubmission']()}
 						</a>
 						{#if submissionPendingReview}
-							<span class="ml-2 text-xs text-muted-foreground">
+							<!-- Visual reinforcement only: the same words are already in the
+							     link's accessible name above, and in browse mode a screen
+							     reader would read the link (name and all) and then this span
+							     — the caveat twice in one line. Hiding it is safe *because*
+							     the name carries it; the two move together. -->
+							<span class="ml-2 text-xs text-muted-foreground" aria-hidden="true">
 								{m['membershipRequestCard.submissionPendingReview']()}
 							</span>
 						{/if}
