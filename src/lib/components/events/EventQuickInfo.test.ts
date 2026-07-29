@@ -84,6 +84,24 @@ describe('EventQuickInfo', () => {
 		expect(screen.queryByText(/spots taken/i)).not.toBeInTheDocument();
 	});
 
+	// #825: `max_attendees` / `attendee_count` are withheld (null) when the
+	// organizer hides capacity or the attendee count.
+	it('does not display capacity when max_attendees is withheld', () => {
+		const eventWithheldCapacity = { ...mockEvent, max_attendees: null };
+		render(EventQuickInfo, { props: { event: eventWithheldCapacity } });
+		expect(screen.queryByText(/spots taken/i)).not.toBeInTheDocument();
+		// Falls back to the raw count, which is still disclosed here
+		expect(screen.getByText('45 attending')).toBeInTheDocument();
+	});
+
+	it('does not display capacity when attendee_count is withheld', () => {
+		const eventWithheldCount = { ...mockEvent, attendee_count: null };
+		render(EventQuickInfo, { props: { event: eventWithheldCount } });
+		expect(screen.queryByText(/spots taken/i)).not.toBeInTheDocument();
+		expect(screen.queryByText(/attending/i)).not.toBeInTheDocument();
+		expect(screen.queryByText('Limited spots remaining')).not.toBeInTheDocument();
+	});
+
 	it('displays warning when capacity is near limit', () => {
 		const nearCapacityEvent = { ...mockEvent, max_attendees: 100, attendee_count: 95 };
 		render(EventQuickInfo, { props: { event: nearCapacityEvent } });

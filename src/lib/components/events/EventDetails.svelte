@@ -25,18 +25,25 @@
 		return isRSVPClosingSoon(event.rsvp_before);
 	});
 
-	// Compute capacity info
+	// Compute capacity info.
+	// Both numbers may be withheld (`null`) since #825 — an `=== undefined` guard
+	// would let a withheld capacity through and render "Full" (null - count < 0),
+	// so both are checked with `== null`. Without both, say nothing at all.
 	const capacityText = $derived.by(() => {
-		if (event.max_attendees === undefined || event.max_attendees === 0) return null;
-		const remaining = event.max_attendees - event.attendee_count;
+		const max = event.max_attendees;
+		const count = event.attendee_count;
+		if (max == null || max === 0 || count == null) return null;
+		const remaining = max - count;
 		if (remaining <= 0) return m['eventDetails.attendance_full']();
 		if (remaining <= 10) return m['eventDetails.attendance_spotsLeft']({ count: remaining });
-		return m['eventDetails.attendance_attending']({ count: event.attendee_count });
+		return m['eventDetails.attendance_attending']({ count });
 	});
 
 	const isNearCapacity = $derived.by(() => {
-		if (event.max_attendees === undefined || event.max_attendees === 0) return false;
-		const remaining = event.max_attendees - event.attendee_count;
+		const max = event.max_attendees;
+		const count = event.attendee_count;
+		if (max == null || max === 0 || count == null) return false;
+		const remaining = max - count;
 		return remaining <= 10 && remaining > 0;
 	});
 

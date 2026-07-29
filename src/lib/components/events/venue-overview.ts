@@ -196,6 +196,10 @@ export function seatSellingTier(entry: SectorOverviewEntry): TierSchemaWithId | 
  * tier inventory, tier-level max per user (falling back to the event-level
  * one), and — when the my-status endpoint supplied it — the buyer's personal
  * remaining quota. Never below 1 (the overview only offers purchasable tiers).
+ *
+ * A null `total_available` contributes no ceiling. Since #825 that covers both
+ * "unlimited" and "capacity withheld" — neither yields a number the client may
+ * cap on, and the backend enforces the real ceiling at checkout either way.
  */
 export function tierMaxSelectable(
 	tier: TierSchemaWithId,

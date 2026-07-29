@@ -119,14 +119,17 @@
 		}
 	}
 
-	// Group restrictions by food item and severity
+	// Group restrictions by food item and severity.
+	// `attendee_count` is withheld (`null`) when the event hides attendee counts
+	// (#825); the entries and their notes still arrive, so the list keeps
+	// rendering and only the tally is suppressed.
 	function getRestrictionSummary() {
 		if (!dietarySummary?.restrictions) return [];
 
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local grouping map built and consumed synchronously within this pure helper, never stored
 		const grouped = new Map<
 			string,
-			{ severities: Map<RestrictionType, number>; notes: string[] }
+			{ severities: Map<RestrictionType, number | null>; notes: string[] }
 		>();
 
 		for (const restriction of dietarySummary.restrictions) {
@@ -209,9 +212,11 @@
 									<li class="rounded-md border bg-background p-3">
 										<div class="flex items-baseline justify-between">
 											<span class="font-medium">{preference.name}</span>
-											<span class="text-sm text-muted-foreground">
-												{getAttendeeCountText(preference.attendee_count)}
-											</span>
+											{#if preference.attendee_count != null}
+												<span class="text-sm text-muted-foreground">
+													{getAttendeeCountText(preference.attendee_count)}
+												</span>
+											{/if}
 										</div>
 										{#if preference.comments && preference.comments.length > 0}
 											<div class="mt-2 space-y-1">
@@ -248,7 +253,7 @@
 														class="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium {info.color}"
 													>
 														<SeverityIcon class="h-3 w-3" aria-hidden="true" />
-														<span>{count} {info.label}</span>
+														<span>{count == null ? info.label : `${count} ${info.label}`}</span>
 													</span>
 												{/each}
 											</div>

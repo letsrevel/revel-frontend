@@ -32,6 +32,30 @@
 	const events = $derived(questionnaire?.events ?? []);
 	const eventSeries = $derived(questionnaire?.event_series ?? []);
 
+	/**
+	 * Pronoun distribution, only when it carries real numbers.
+	 *
+	 * Since #825 the totals are withheld (`null`) whenever the event hides
+	 * attendee counts, and the per-pronoun buckets are served empty alongside
+	 * them. A withheld distribution therefore renders the existing "no data"
+	 * state (the card is not shown) rather than a chart zeroed out of thin air.
+	 */
+	const pronounStats = $derived.by(() => {
+		const pd = summary?.pronoun_distribution;
+		if (!pd) return null;
+		const { total_attendees, total_with_pronouns, total_without_pronouns } = pd;
+		if (total_attendees == null || total_with_pronouns == null || total_without_pronouns == null) {
+			return null;
+		}
+		if (total_attendees <= 0) return null;
+		return {
+			distribution: pd.distribution ?? [],
+			totalAttendees: total_attendees,
+			totalWithPronouns: total_with_pronouns,
+			totalWithoutPronouns: total_without_pronouns
+		};
+	});
+
 	// Derived stats
 	const totalEvaluated = $derived(
 		(summary?.by_status_per_user.approved ?? 0) + (summary?.by_status_per_user.rejected ?? 0)
@@ -293,17 +317,17 @@
 		</div>
 
 		<!-- Pronoun Distribution -->
-		{#if summary.pronoun_distribution && summary.pronoun_distribution.total_attendees > 0}
+		{#if pronounStats}
 			<Card class="mb-8">
 				<CardHeader>
 					<CardTitle class="text-base">{m['pronounDistribution.title']()}</CardTitle>
 				</CardHeader>
 				<CardContent>
 					<PronounDistributionChart
-						distribution={summary.pronoun_distribution.distribution ?? []}
-						totalAttendees={summary.pronoun_distribution.total_attendees}
-						totalWithPronouns={summary.pronoun_distribution.total_with_pronouns}
-						totalWithoutPronouns={summary.pronoun_distribution.total_without_pronouns}
+						distribution={pronounStats.distribution}
+						totalAttendees={pronounStats.totalAttendees}
+						totalWithPronouns={pronounStats.totalWithPronouns}
+						totalWithoutPronouns={pronounStats.totalWithoutPronouns}
 					/>
 				</CardContent>
 			</Card>

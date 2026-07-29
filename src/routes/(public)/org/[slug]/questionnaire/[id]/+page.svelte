@@ -78,12 +78,23 @@
 			// hey-api resolves rather than throws — a missing payload is a failure
 			// even when no error body came back.
 			//
-			// The 400 channel is `ResponseMessage`, and the retake policy answers with
-			// actionable, backend-localized copy ("already submitted", "max attempts
-			// reached", "cannot be retaken", "retry after …"). Prefer it: the generic
-			// fallback would tell the user to try again when they simply cannot.
+			// The 400 channel is `ErrorDetail` since backend #824 (it was declared
+			// `ResponseMessage`, but `{message}` was never what the endpoint actually
+			// emitted — `.message` read `undefined` at runtime). The retake policy
+			// answers on `detail` with actionable, backend-localized copy ("already
+			// submitted", "max attempts reached", "cannot be retaken", "retry after
+			// …"). Prefer it: the generic fallback would tell the user to try again
+			// when they simply cannot.
 			if (res.error || !res.data) {
-				throw new Error(res.error?.message || m['membershipQuestionnairePage.submitError']());
+				const detail =
+					res.error && typeof res.error === 'object' && 'detail' in res.error
+						? res.error.detail
+						: null;
+				throw new Error(
+					typeof detail === 'string' && detail
+						? detail
+						: m['membershipQuestionnairePage.submitError']()
+				);
 			}
 			return res.data;
 		},

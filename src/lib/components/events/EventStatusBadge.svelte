@@ -91,9 +91,18 @@
 			};
 		}
 
-		// 2. Check if full (has capacity and reached it)
-		const maxAttendees = event.max_attendees ?? 0;
-		if (maxAttendees > 0 && event.attendee_count >= maxAttendees) {
+		// 2. Check if full (has capacity and reached it).
+		// Either number may be withheld (`null`) since #825 — with capacity or the
+		// attendee count hidden we cannot assert fullness, so fall through to the
+		// temporal states rather than guess.
+		const maxAttendees = event.max_attendees;
+		const attendeeCount = event.attendee_count;
+		if (
+			maxAttendees != null &&
+			maxAttendees > 0 &&
+			attendeeCount != null &&
+			attendeeCount >= maxAttendees
+		) {
 			return {
 				label: m['eventStatus.full'](),
 				variant: 'destructive',

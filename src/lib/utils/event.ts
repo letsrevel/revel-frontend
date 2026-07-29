@@ -38,24 +38,38 @@ export function getEventAccessDisplay(
 
 /**
  * Check if event is at capacity
+ *
+ * Since backend #825 both `max_attendees` and `attendee_count` may be withheld
+ * (`null`) when the organizer hides capacity or the attendee count. Fullness is
+ * only assertable with both numbers in hand — with either missing we answer
+ * `false` rather than guess, so a withheld count never renders as "Full".
+ *
  * @param event Event data
- * @returns true if event is full
+ * @returns true if event is known to be at capacity
  */
 export function isEventFull(event: EventInListSchema): boolean {
-	const maxAttendees = event.max_attendees ?? 0;
-	if (maxAttendees === 0) return false; // No limit
-	return event.attendee_count >= maxAttendees;
+	const maxAttendees = event.max_attendees;
+	const attendeeCount = event.attendee_count;
+	if (maxAttendees == null || maxAttendees === 0) return false; // No limit, or withheld
+	if (attendeeCount == null) return false; // Count withheld — not assertable
+	return attendeeCount >= maxAttendees;
 }
 
 /**
- * Get spots remaining (or null if no limit)
+ * Get spots remaining (or null if unknown)
+ *
+ * `null` means "do not state a number": no capacity limit, or capacity/count
+ * withheld by the event's visibility settings (#825).
+ *
  * @param event Event data
- * @returns Number of spots remaining, or null if unlimited
+ * @returns Number of spots remaining, or null when not disclosable
  */
 export function getSpotsRemaining(event: EventInListSchema): number | null {
-	const maxAttendees = event.max_attendees ?? 0;
-	if (maxAttendees === 0) return null; // Unlimited
-	return Math.max(0, maxAttendees - event.attendee_count);
+	const maxAttendees = event.max_attendees;
+	const attendeeCount = event.attendee_count;
+	if (maxAttendees == null || maxAttendees === 0) return null; // Unlimited, or withheld
+	if (attendeeCount == null) return null; // Count withheld
+	return Math.max(0, maxAttendees - attendeeCount);
 }
 
 /**

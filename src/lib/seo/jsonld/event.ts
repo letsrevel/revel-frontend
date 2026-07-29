@@ -78,10 +78,16 @@ export function generateEventJsonLd(event: EventDetailSchema, eventUrl: string):
 	if (images.length > 0) ld.image = images;
 
 	if (!event.requires_ticket) {
+		// Capacity and attendee count may both be withheld (`null`) since #825.
+		// Without both we cannot claim SoldOut, so the offer stays InStock rather
+		// than publishing a guess into structured data.
+		const maxAttendees = event.max_attendees;
+		const attendeeCount = event.attendee_count;
 		const isFull =
-			event.max_attendees !== undefined &&
-			event.max_attendees > 0 &&
-			event.attendee_count >= event.max_attendees;
+			maxAttendees != null &&
+			maxAttendees > 0 &&
+			attendeeCount != null &&
+			attendeeCount >= maxAttendees;
 		ld.offers = {
 			'@type': 'Offer',
 			url: eventUrl,

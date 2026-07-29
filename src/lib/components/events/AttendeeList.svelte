@@ -15,7 +15,12 @@
 
 	interface Props {
 		eventId: string;
-		totalAttendees: number;
+		/**
+		 * Total attendees, or nullish when the event withholds the count (#825).
+		 * Withheld means "do not state a number" — the list itself is gated
+		 * separately by `show_attendee_list`, so it may still have entries.
+		 */
+		totalAttendees: number | null | undefined;
 		isAuthenticated: boolean;
 		userVisibility?: VisibilityPreference | null;
 		showPronounDistribution?: boolean;
@@ -100,13 +105,33 @@
 	const attendees = $derived(attendeesQuery.data?.results ?? []);
 	const visibleCount = $derived(attendees.length);
 	const hasMore = $derived(!!attendeesQuery.data?.next);
-	const hiddenCount = $derived(totalAttendees - visibleCount);
+	// With the total withheld we cannot say how many are not shown; 0 suppresses
+	// every "+N more" affordance rather than inventing a difference.
+	const hiddenCount = $derived(totalAttendees == null ? 0 : totalAttendees - visibleCount);
 
-	// Derived state for pronouns
-	const distribution = $derived(pronounQuery.data?.distribution ?? []);
-	const pronounTotalAttendees = $derived(pronounQuery.data?.total_attendees ?? 0);
-	const totalWithPronouns = $derived(pronounQuery.data?.total_with_pronouns ?? 0);
-	const totalWithoutPronouns = $derived(pronounQuery.data?.total_without_pronouns ?? 0);
+	/**
+	 * Derived state for pronouns — only when real numbers came back.
+	 *
+	 * Since #825 the totals are withheld (`null`) when the event hides attendee
+	 * counts, and the distribution is served empty alongside them. `null` here
+	 * renders the existing "no data" state instead of a chart zeroed out of
+	 * thin air.
+	 */
+	const pronounStats = $derived.by(() => {
+		const data = pronounQuery.data;
+		if (!data) return null;
+		const { total_attendees, total_with_pronouns, total_without_pronouns } = data;
+		if (total_attendees == null || total_with_pronouns == null || total_without_pronouns == null) {
+			return null;
+		}
+		if (total_attendees <= 0) return null;
+		return {
+			distribution: data.distribution ?? [],
+			totalAttendees: total_attendees,
+			totalWithPronouns: total_with_pronouns,
+			totalWithoutPronouns: total_without_pronouns
+		};
+	});
 
 	// Load next page
 	function loadMore() {
@@ -116,12 +141,14 @@
 	}
 </script>
 
-{#if isAuthenticated && totalAttendees > 0}
+{#if isAuthenticated && (totalAttendees == null || totalAttendees > 0)}
 	<section class="rounded-lg border bg-card p-6 text-card-foreground shadow-sm">
 		<div class="mb-4 flex items-center gap-2">
 			<Users class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
 			<h2 class="text-lg font-semibold">{m['attendeeList.whosComing']()}</h2>
-			<span class="text-sm text-muted-foreground">({totalAttendees})</span>
+			{#if totalAttendees != null}
+				<span class="text-sm text-muted-foreground">({totalAttendees})</span>
+			{/if}
 		</div>
 
 		{#if attendeesQuery.isLoading}
@@ -265,14 +292,14 @@
 							</div>
 						{:else if pronounQuery.isError}
 							<p class="text-sm text-destructive">{m['pronounDistribution.error']()}</p>
-						{:else if pronounTotalAttendees === 0}
+						{:else if !pronounStats}
 							<p class="text-sm text-muted-foreground">{m['pronounDistribution.noAttendees']()}</p>
 						{:else}
 							<PronounDistributionChart
-								{distribution}
-								totalAttendees={pronounTotalAttendees}
-								{totalWithPronouns}
-								{totalWithoutPronouns}
+								distribution={pronounStats.distribution}
+								totalAttendees={pronounStats.totalAttendees}
+								totalWithPronouns={pronounStats.totalWithPronouns}
+								totalWithoutPronouns={pronounStats.totalWithoutPronouns}
 							/>
 						{/if}
 					</div>

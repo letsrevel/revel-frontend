@@ -169,14 +169,18 @@
 			userAnswer = data.status;
 			successType = data.status;
 
-			// Update event attendee count if event object is provided
-			if (event) {
+			// Update event attendee count if event object is provided.
+			// The count is withheld (`null`) when the event hides it (#825); there
+			// is no baseline to adjust in that case, and arithmetic on it would
+			// produce NaN, so leave it withheld.
+			const currentCount = event?.attendee_count;
+			if (event && currentCount != null) {
 				if (!wasAttending && isNowAttending) {
 					// User was not attending, now is attending: +1
-					event.attendee_count += 1;
+					event.attendee_count = currentCount + 1;
 				} else if (wasAttending && !isNowAttending) {
 					// User was attending, now is not: -1
-					event.attendee_count = Math.max(0, event.attendee_count - 1);
+					event.attendee_count = Math.max(0, currentCount - 1);
 				}
 			}
 
