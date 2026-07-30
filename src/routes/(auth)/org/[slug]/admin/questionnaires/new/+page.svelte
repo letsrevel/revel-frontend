@@ -16,6 +16,8 @@
 	import QuestionnaireCreateBasicInfo from '$lib/components/questionnaires/QuestionnaireCreateBasicInfo.svelte';
 	import QuestionnaireCreateAdvancedSettings from '$lib/components/questionnaires/QuestionnaireCreateAdvancedSettings.svelte';
 	import { questionnaireCreateOrgQuestionnaire } from '$lib/api/generated/sdk.gen';
+	import { useQueryClient } from '@tanstack/svelte-query';
+	import { invalidateOrgQuestionnaires } from '$lib/queries/org-questionnaires';
 	import type {
 		SectionCreateSchema,
 		MultipleChoiceQuestionCreateSchema,
@@ -37,6 +39,8 @@
 	}
 
 	const { data }: Props = $props();
+
+	const queryClient = useQueryClient();
 
 	// Form state
 	let name = $state('');
@@ -181,6 +185,12 @@
 				}
 				return;
 			}
+
+			// The members admin caches this org's questionnaire list for 60s; a
+			// membership questionnaire created here has to reach its tier picker
+			// without a reload (#722). Awaited *before* `goto` so the marking cannot
+			// be lost to this component unmounting mid-navigation.
+			await invalidateOrgQuestionnaires(queryClient, data.organization.slug);
 
 			// Redirect to the edit page of the newly created questionnaire
 			await goto(

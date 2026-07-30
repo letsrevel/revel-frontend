@@ -11,6 +11,8 @@
 	import QuestionnaireEditAssignments from '$lib/components/questionnaires/QuestionnaireEditAssignments.svelte';
 	import QuestionnaireEditQuestionsCard from '$lib/components/questionnaires/QuestionnaireEditQuestionsCard.svelte';
 	import { questionnaireUpdateQuestionnaireStatus } from '$lib/api/generated/sdk.gen';
+	import { useQueryClient } from '@tanstack/svelte-query';
+	import { invalidateOrgQuestionnaires } from '$lib/queries/org-questionnaires';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import type { PageData } from './$types';
 	import type {
@@ -28,6 +30,8 @@
 	}
 
 	const { data }: Props = $props();
+
+	const queryClient = useQueryClient();
 
 	// ===== Load and Convert Data =====
 
@@ -181,7 +185,12 @@
 				throw new Error(m['questionnaireEditPage.error_statusChangeFailed']());
 			}
 
-			await invalidateAll();
+			// This page is server-loaded, the members admin's picker is TanStack-cached
+			// and neither refreshes the other — refresh both (#722).
+			await Promise.all([
+				invalidateAll(),
+				invalidateOrgQuestionnaires(queryClient, data.organizationSlug)
+			]);
 		} catch (err) {
 			console.error('Failed to change status:', err);
 			alert(m['questionnaireEditPage.error_statusChangeFailedMessage']());
@@ -231,8 +240,13 @@
 				sections: builder.sections
 			});
 
-			// Refresh data, re-initialize state from API, and exit edit mode (stay on same page)
-			await invalidateAll();
+			// Refresh data, re-initialize state from API, and exit edit mode (stay on same page).
+			// `questionnaire_type` is editable here, so a save can move this row into or
+			// out of the members admin's membership picker — invalidate that cache too (#722).
+			await Promise.all([
+				invalidateAll(),
+				invalidateOrgQuestionnaires(queryClient, data.organizationSlug)
+			]);
 			initializeFromApi(); // Explicitly re-init with fresh data (avoids race with $effect)
 			isEditMode = false;
 
