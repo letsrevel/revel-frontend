@@ -96,9 +96,14 @@
 	/** Only linked when the change-plan flow would really offer this plan. */
 	const canSwitch = $derived(subscription ? canSwitchToPlan(subscription, plan) : false);
 
+	// Back to the tier grid, which is where plan cards live since #720 — not the
+	// org landing page they used to sit on. Returning a visitor to a page that no
+	// longer shows the plan they were about to take is the whole point of a
+	// returnUrl going wrong. TierCard's own CTA already resolves to this route, so
+	// the two agree.
 	const loginHref = $derived(
 		`${resolve('/(public)/login', {})}?returnUrl=${encodeURIComponent(
-			resolve('/(public)/org/[slug]', { slug: organizationSlug })
+			resolve('/(public)/org/[slug]/membership', { slug: organizationSlug })
 		)}`
 	);
 

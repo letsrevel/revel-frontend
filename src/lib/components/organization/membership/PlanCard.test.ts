@@ -126,12 +126,12 @@ describe('PlanCard', () => {
 	});
 
 	// A real anchor, not a scripted redirect: it survives no-JS and middle-click.
-	it('sends a guest to the login page with a return URL back to the org', async () => {
+	it('sends a guest to the login page with a return URL back to the tier grid', async () => {
 		const user = userEvent.setup();
 		const { onSubscribe } = renderCard({ isAuthenticated: false });
 
 		const link = screen.getByRole('link', { name: /log in to subscribe/i });
-		expect(link).toHaveAttribute('href', '/login?returnUrl=%2Forg%2Facme');
+		expect(link).toHaveAttribute('href', '/login?returnUrl=%2Forg%2Facme%2Fmembership');
 		expect(screen.queryByRole('button')).toBeNull();
 
 		await user.click(link);
@@ -272,7 +272,7 @@ describe('PlanCard', () => {
 			renderCard({ plan: freePlan(), isAuthenticated: false });
 
 			const link = screen.getByRole('link', { name: /log in to join/i });
-			expect(link).toHaveAttribute('href', '/login?returnUrl=%2Forg%2Facme');
+			expect(link).toHaveAttribute('href', '/login?returnUrl=%2Forg%2Facme%2Fmembership');
 		});
 
 		// Plan-level stops still apply: a capped free plan can fill up.
