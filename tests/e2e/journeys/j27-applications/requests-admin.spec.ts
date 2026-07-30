@@ -360,9 +360,13 @@ test.describe('j27 requests admin @p2', () => {
 			'href',
 			`/org/${org.slug}/admin/questionnaires/${wrapper.id}/submissions/${submissionId}`
 		);
-		// …and it carries the reason it is worth clicking, as its accessible
-		// description (the hint is a sibling <span>, tied on by aria-describedby).
-		await expect(link).toHaveAccessibleDescription(/review pending/i);
+		// …and it carries the reason it is worth clicking, folded into its accessible
+		// NAME (#716). It is deliberately not a description: the visible hint stays a
+		// sibling <span> for sighted users, and pointing aria-describedby at that span
+		// too would announce the same three words three times over — see the comment
+		// on `submissionLinkLabel` in MembershipRequestCard.svelte. The name is a
+		// substring match above, so both assertions can coexist on one link.
+		await expect(link).toHaveAccessibleName(/review pending/i);
 
 		await page.context().close();
 	});
