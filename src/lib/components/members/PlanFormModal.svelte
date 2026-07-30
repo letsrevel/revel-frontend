@@ -4,6 +4,7 @@
 		PlanSchema,
 		PlanCreateSchema,
 		OrganizationAdminDetailSchema,
+		PeriodUnit,
 		SubscriptionPaymentMethod
 	} from '$lib/api/generated/types.gen';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
@@ -32,7 +33,11 @@
 	let description = $state('');
 	let price = $state('0.00');
 	let currency = $state<string>('EUR');
-	let periodUnit = $state<'month' | 'year'>('month');
+	// Widened to the generated enum when the backend added `lifetime` (non-renewing
+	// plans). The picker below still offers only month/year: authoring a lifetime or
+	// free plan is its own piece of work, and until it lands this state can only
+	// hold `lifetime` when editing a plan created outside this form.
+	let periodUnit = $state<PeriodUnit>('month');
 	let periodCount = $state(1);
 	let isActive = $state(true);
 	let paymentMethod = $state<SubscriptionPaymentMethod>('offline');

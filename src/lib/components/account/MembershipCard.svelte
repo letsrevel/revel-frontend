@@ -172,7 +172,12 @@
 			if (res.error || !res.data) {
 				throw new Error(backendMessage(res.error) || m['subscriptions.actions.resumeError']());
 			}
-			return res.data;
+			// See SubscribeDialog: `checkout_url` is nullable since FREE plans landed.
+			// Resuming a PENDING row has nowhere to go without a session URL.
+			if (!res.data.checkout_url) {
+				throw new Error(m['subscriptions.actions.resumeError']());
+			}
+			return { ...res.data, checkout_url: res.data.checkout_url };
 		},
 		onSuccess: (data) => {
 			resuming = true;

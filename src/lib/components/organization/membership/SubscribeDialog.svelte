@@ -147,7 +147,15 @@
 			if (res.error || !res.data) {
 				throw new Error(backendMessage(res.error) || m['subscribe.error']());
 			}
-			return res.data;
+			// `checkout_url` became nullable when the backend added FREE plans, which
+			// activate on the spot with no Stripe session. This dialog only knows how
+			// to hand off to Checkout, and nothing in this UI can create a free plan
+			// yet, so the case is unreachable today — surface it rather than
+			// silently doing nothing if that ever stops being true.
+			if (!res.data.checkout_url) {
+				throw new Error(m['subscribe.error']());
+			}
+			return { ...res.data, checkout_url: res.data.checkout_url };
 		},
 		onSuccess: (data) => {
 			// `null` is the activation-pending answer: no Checkout session to go to.

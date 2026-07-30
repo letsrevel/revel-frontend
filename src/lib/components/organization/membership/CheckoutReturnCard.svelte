@@ -179,7 +179,13 @@
 			if (res.error || !res.data) {
 				throw new Error(backendMessage(res.error) || m['subscribe.error']());
 			}
-			return res.data;
+			// See SubscribeDialog: `checkout_url` is nullable since FREE plans landed,
+			// and resuming an abandoned Checkout has nowhere to go without one.
+			// Unreachable until free plans are authorable here; loud rather than mute.
+			if (!res.data.checkout_url) {
+				throw new Error(m['subscribe.error']());
+			}
+			return { ...res.data, checkout_url: res.data.checkout_url };
 		},
 		onSuccess: (data) => {
 			// `null` is the activation-pending answer — nowhere to redirect to; the
