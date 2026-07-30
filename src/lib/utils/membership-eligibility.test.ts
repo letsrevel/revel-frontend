@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import {
 	getApplicationPendingMessage,
 	getMembershipCtaKind,
-	getMembershipStatusMessage
+	getMembershipStatusMessage,
+	isBlockedByMembershipGate
 } from './membership-eligibility';
 import type { MembershipEligibilitySchema } from '$lib/api/generated/types.gen';
 import * as m from '$lib/paraglide/messages.js';
@@ -308,5 +309,80 @@ describe('getApplicationPendingMessage', () => {
 	it('does not claim approval is pending for a plain denial', () => {
 		const verdict: MembershipEligibilitySchema = { ...base, allowed: false };
 		expect(getApplicationPendingMessage(verdict)).toBe(m['membershipEligibility.reason.generic']());
+	});
+});
+
+// #733. The predicate a plan card's Subscribe button is withdrawn on, so the two
+// directions are not symmetric: a false positive hides a plan from somebody who
+// could have taken it, while a false negative only reproduces today's behaviour
+// (the backend runs the same gates on POST /subscribe and refuses).
+describe('isBlockedByMembershipGate', () => {
+	it('never blocks an allowed verdict, whatever policy context it carries', () => {
+		expect(isBlockedByMembershipGate({ ...base, allowed: true })).toBe(false);
+		// The tier states "approval required" as POLICY while still allowing this
+		// viewer — `check_eligibility`'s annotation. Reading the code alone here
+		// would withdraw the CTA from every eligible member of an approval tier.
+		expect(
+			isBlockedByMembershipGate({ ...base, allowed: true, reason_code: 'requires_approval' })
+		).toBe(false);
+		// The positive end of a gated + priced tier's chain: gates cleared, charge left.
+		expect(
+			isBlockedByMembershipGate({ ...base, allowed: true, next_step: 'proceed_to_payment' })
+		).toBe(false);
+	});
+
+	it('blocks the questionnaire gate in every state it can be in', () => {
+		for (const code of [
+			'membership_questionnaire_missing',
+			'membership_questionnaire_pending',
+			'membership_questionnaire_failed',
+			'membership_questionnaire_retake_cooldown',
+			'membership_questionnaire_attempts_exhausted'
+		] as const) {
+			expect(isBlockedByMembershipGate({ ...base, reason_code: code })).toBe(true);
+		}
+	});
+
+	// `PaymentReadyGate`'s SUBMIT_APPLICATION: approval is required and nothing is
+	// on file yet, so the member must apply before there is anything to pay for.
+	it('blocks manual approval, applied-for or not', () => {
+		expect(
+			isBlockedByMembershipGate({
+				...base,
+				reason_code: 'requires_approval',
+				next_step: 'submit_application'
+			})
+		).toBe(true);
+		expect(
+			isBlockedByMembershipGate({
+				...base,
+				reason_code: 'requires_approval',
+				next_step: 'wait_for_approval',
+				application_id: 'app-1'
+			})
+		).toBe(true);
+	});
+
+	// Payment-readiness refusals are NOT gates: the plan card already models them
+	// from the plan's own fields and the viewer's live subscription, and
+	// `duplicate_active_subscription` is one the backend deliberately lets fall
+	// through to /subscribe so a half-finished checkout can resume.
+	it('leaves payment-readiness refusals to the plan card', () => {
+		for (const code of [
+			'tier_requires_subscription',
+			'plan_not_online',
+			'org_not_stripe_connected',
+			'plan_unavailable',
+			'tier_unavailable',
+			'duplicate_active_subscription'
+		] as const) {
+			expect(isBlockedByMembershipGate({ ...base, reason_code: code })).toBe(false);
+		}
+	});
+
+	// A refusal the frontend cannot classify is not treated as a gate: the CTA
+	// stays, and the backend refuses it if it really is unreachable.
+	it('does not block a refusal with no reason code', () => {
+		expect(isBlockedByMembershipGate({ ...base, allowed: false, reason_code: null })).toBe(false);
 	});
 });

@@ -164,4 +164,131 @@ describe('TierCard', () => {
 		});
 		expect(screen.queryByRole('button', { name: /^join /i })).toBeNull();
 	});
+
+	// #733. The tier's own fields say the tier IS GATED; only a verdict says this
+	// VIEWER is behind the gate — and for a monetized tier that verdict has to
+	// name a plan, because the backend's TierAvailabilityGate short-circuits a
+	// plan-less check on any tier that sells something, long before the
+	// questionnaire and approval gates run.
+	describe('a gated, priced tier', () => {
+		const gatedPaidTier = () =>
+			makeTier({
+				is_free: false,
+				questionnaire_id: 'q-42',
+				plans: [makePlan({ id: 'p-1', name: 'Monthly', price: '10.00' })]
+			});
+
+		it('asks about a plan, not just the tier', async () => {
+			mockEligibility({ allowed: false, reason_code: 'membership_questionnaire_missing' });
+			renderCard({ tier: gatedPaidTier() });
+
+			await waitFor(() => {
+				expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).toHaveBeenCalledWith(
+					expect.objectContaining({ query: { tier_id: 't-gold', plan_id: 'p-1' } })
+				);
+			});
+		});
+
+		it('withdraws Subscribe and leaves the questionnaire as the only thing to press', async () => {
+			mockEligibility({
+				allowed: false,
+				reason_code: 'membership_questionnaire_missing',
+				next_step: 'submit_questionnaire',
+				questionnaire_id: 'q-42'
+			});
+			renderCard({ tier: gatedPaidTier() });
+
+			await waitFor(() => {
+				expect(screen.queryByRole('button', { name: /subscribe/i })).toBeNull();
+			});
+			// The plan card says, in its own words, why its CTA is gone…
+			const note = screen.getByText(m['membershipPlans.gatedSubscribeHelper'](), { exact: false });
+			expect(note).toHaveTextContent(
+				m['membershipEligibility.reason.membership_questionnaire_missing']()
+			);
+			// The price the member is working toward is still on the card…
+			expect(screen.getByText('€10.00 / month')).toBeInTheDocument();
+			// …and the way forward is the gate's own link.
+			expect(
+				screen.getByRole('link', {
+					name: m['membershipTiers.questionnaireLinkAria']({ tier: 'Gold' })
+				})
+			).toHaveAttribute('href', '/org/acme/questionnaire/q-42');
+		});
+
+		// The crux, in the direction that matters most: a member who has already
+		// passed the questionnaire must still be able to pay.
+		it('keeps Subscribe for a viewer who has cleared the gate', async () => {
+			mockEligibility({ allowed: true, next_step: 'proceed_to_payment', plan_id: 'p-1' });
+			renderCard({ tier: gatedPaidTier() });
+
+			expect(await screen.findByRole('button', { name: /subscribe/i })).toBeEnabled();
+		});
+
+		// Manual approval is the same shape, and it arrives from PaymentReadyGate
+		// as `submit_application`: apply and be approved before there is anything
+		// to pay for.
+		it('withdraws Subscribe when the tier is approval-gated and nothing is on file', async () => {
+			mockEligibility({
+				allowed: false,
+				reason_code: 'requires_approval',
+				next_step: 'submit_application'
+			});
+			renderCard({
+				tier: makeTier({
+					is_free: false,
+					requires_approval: true,
+					plans: [makePlan({ id: 'p-1' })]
+				})
+			});
+
+			await waitFor(() => {
+				expect(screen.queryByRole('button', { name: /subscribe/i })).toBeNull();
+			});
+			expect(
+				screen.getByText(m['membershipPlans.gatedSubscribeHelper'](), { exact: false })
+			).toHaveTextContent(m['membershipEligibility.reason.requires_approval']());
+		});
+
+		// A refusal about the PLAN rather than about the viewer: the plan card
+		// already models sold-out, paused and offline itself, and a Stripe-less org
+		// is not something the member can fill in a form to fix.
+		it('does not read a payment-readiness refusal as a gate', async () => {
+			mockEligibility({ allowed: false, reason_code: 'org_not_stripe_connected' });
+			renderCard({ tier: gatedPaidTier() });
+
+			expect(await screen.findByRole('button', { name: /subscribe/i })).toBeEnabled();
+		});
+	});
+
+	// An ungated tier is exactly as it was: no verdict is asked for on its plans'
+	// behalf, and nothing about the CTA changes.
+	it('asks no plan-level question about an ungated tier', async () => {
+		renderCard({
+			tier: makeTier({ is_free: false, plans: [makePlan({ id: 'p-1' })] })
+		});
+
+		expect(await screen.findByRole('button', { name: /subscribe/i })).toBeEnabled();
+		expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).not.toHaveBeenCalledWith(
+			expect.objectContaining({ query: expect.objectContaining({ plan_id: 'p-1' }) })
+		);
+	});
+
+	// Every plan on the tier is a dead end already, so there is no CTA for a
+	// verdict to withdraw — and no reason to spend a round trip finding out.
+	it('asks nothing when the tier sells only offline plans', async () => {
+		renderCard({
+			tier: makeTier({
+				is_free: false,
+				questionnaire_id: 'q-42',
+				plans: [makePlan({ id: 'p-1', payment_method: 'offline' })]
+			})
+		});
+
+		await waitFor(() => {
+			expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).not.toHaveBeenCalledWith(
+				expect.objectContaining({ query: expect.objectContaining({ plan_id: 'p-1' }) })
+			);
+		});
+	});
 });

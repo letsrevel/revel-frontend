@@ -5170,7 +5170,9 @@
 		"viewMembership": "View membership options",
 		"joinFreeCta": "Join for free",
 		"loginToJoin": "Log in to join",
-		"freeHelper": "No payment needed — you can join right away."
+		"freeHelper": "No payment needed — you can join right away.",
+		"gatedSubscribeHelper": "You can subscribe once this tier's requirements are met.",
+		"gatedJoinHelper": "You can join once this tier's requirements are met."
 	},
 	"requestWhitelistButton": {
 		"mustBeLoggedIn": "You must be logged in to request verification",

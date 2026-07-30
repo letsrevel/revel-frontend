@@ -1,13 +1,9 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
-	import { memembershipapplicationsGetJoinEligibility } from '$lib/api/generated/sdk.gen';
-	import type {
-		MembershipEligibilitySchema,
-		MembershipStatus,
-		MembershipTierSchema
-	} from '$lib/api/generated/types.gen';
+	import type { MembershipStatus, MembershipTierSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { joinEligibilityQueryOptions } from '$lib/queries/join-eligibility';
 	import {
 		getMembershipCtaKind,
 		getMembershipStatusMessage
@@ -107,29 +103,19 @@
 		return authed && !settled && token;
 	});
 
-	const eligibilityQuery = createQuery(() => ({
-		// The tier is part of the key, not just the request: verdicts are per tier
-		// (one may be joinable while its neighbour wants a questionnaire) and a
-		// shared key would serve whichever card asked first to all of them. The
-		// existing `['org', slug, 'join-eligibility']` invalidations still reach
-		// every entry — TanStack matches keys by prefix.
-		queryKey: ['org', organizationSlug, 'join-eligibility', tierId ?? null],
-		queryFn: async (): Promise<MembershipEligibilitySchema> => {
-			const res = await memembershipapplicationsGetJoinEligibility({
-				path: { slug: organizationSlug },
-				query: tierId ? { tier_id: tierId } : undefined,
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
-			// hey-api resolves rather than throws — a missing payload is a failure
-			// even when no error body came back.
-			if (res.error || !res.data) {
-				throw new Error('Failed to load membership eligibility');
-			}
-			return res.data;
-		},
-		enabled: queryEnabled,
-		retry: false
-	}));
+	// The tier is part of the key, not just the request: verdicts are per tier
+	// (one may be joinable while its neighbour wants a questionnaire) and a
+	// shared key would serve whichever card asked first to all of them. The
+	// existing `['org', slug, 'join-eligibility']` invalidations still reach
+	// every entry — TanStack matches keys by prefix.
+	const eligibilityQuery = createQuery(() =>
+		joinEligibilityQueryOptions({
+			organizationSlug,
+			tierId,
+			accessToken,
+			enabled: queryEnabled
+		})
+	);
 
 	const eligibility = $derived(eligibilityQuery.data ?? null);
 	const ctaKind = $derived(eligibility ? getMembershipCtaKind(eligibility) : null);
