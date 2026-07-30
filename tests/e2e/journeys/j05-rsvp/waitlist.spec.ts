@@ -40,7 +40,17 @@ test.describe('J5 waitlist @p2', () => {
 		// Join: inline success state, then the page reloads itself into the
 		// on-waitlist gate (disabled status button + Leave).
 		await page.getByRole('button', { name: 'Join Waitlist' }).click();
-		await expect(page.getByText('Success!')).toBeVisible({ timeout: 15_000 });
+		// The banner carries the BACKEND's own sentence, not the generic "Success!"
+		// copy: since backend #824 join-waitlist is idempotent and answers 200 with
+		// either "Successfully joined the waitlist." or "You are already on the
+		// waitlist for this event.", and IneligibilityActionButton prefers that
+		// message because it is the only thing distinguishing the two. Accept both.
+		// Matching the sentences rather than role=status is deliberate — this page
+		// carries two other live regions (the full-event panel and a badge), so a
+		// bare getByRole('status') trips strict mode.
+		await expect(
+			page.getByText(/Successfully joined the waitlist\.|You are already on the waitlist/i)
+		).toBeVisible({ timeout: 15_000 });
 		const onWaitlistButton = page.getByRole('button', { name: "You're on the Waitlist" });
 		await expect(onWaitlistButton).toBeVisible({ timeout: 30_000 });
 		await expect(onWaitlistButton).toBeDisabled();
