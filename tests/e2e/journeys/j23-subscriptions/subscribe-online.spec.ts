@@ -7,19 +7,23 @@ import {
 	uniqueName
 } from '../../support/factories';
 import { authenticateContext } from '../../support/session';
-import { membershipCard, planCard } from '../../support/membership-locators';
+import { membershipCard, membershipPath, planCard } from '../../support/membership-locators';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 import { completeStripeCheckout } from '../../support/stripe';
 
 // J23.3 / J23.4 (USER_JOURNEYS.md) — the member-initiated hosted-checkout
 // journey: Subscribe → SubscribeDialog → checkout.stripe.com → pay → back on
-// the org page, where CheckoutReturnCard polls until the `stripe listen`
+// the membership page, where CheckoutReturnCard polls until the `stripe listen`
 // webhook flips the subscription ACTIVE.
 //
-// MUST-COVER here and nowhere else: the `?membership_success=true` flag is
-// consumed in onMount with the RAW history API (see MembershipSection —
-// $app/navigation's replaceState throws during hydration). jsdom cannot
-// exercise that, so this spec is the only proof it happens.
+// MUST-COVER here and nowhere else, TWO server-side hops jsdom cannot exercise:
+//   * Stripe's return URLs are built by the BACKEND and still point at the org
+//     LANDING page (`/org/{slug}?membership_success=true`), which 303-redirects
+//     the flag on to `/org/{slug}/membership` (#720/#726). This spec drives the
+//     real backend-built URL, so it is the only proof that hop happens.
+//   * the flag is then consumed in onMount with the RAW history API (see
+//     MembershipSection — $app/navigation's replaceState throws during
+//     hydration).
 //
 // Requires the full Stripe test-mode setup from tests/e2e/README.md (backend
 // bootstrapped with CONNECTED_TEST_STRIPE_ID + the `stripe listen` forwarder).
@@ -31,7 +35,10 @@ import { completeStripeCheckout } from '../../support/stripe';
 // backend refuses a second non-terminal subscription per user per org).
 
 const ORG_SLUG = 'revel-events-collective';
+/** Where Stripe is sent back to — backend-owned, and still the LANDING page. */
 const ORG_PATH = `/org/${ORG_SLUG}`;
+/** Where the plans live, and where the checkout return actually lands. */
+const MEMBERSHIP_PATH = membershipPath(ORG_SLUG);
 
 /** An online €15/month plan on a fresh tier of Org Alpha, plus its subscriber. */
 async function arrangeOnlinePlan(label: string) {
@@ -91,13 +98,13 @@ test.describe('J23 hosted-checkout subscribe @p2', () => {
 		const context = await browser.newContext();
 		await authenticateContext(context, user);
 		const page = await context.newPage();
-		await gotoHydrated(page, ORG_PATH);
+		await gotoHydrated(page, MEMBERSHIP_PATH);
 		await waitForClientAuth(page);
 
 		await subscribeThroughDialog(page, plan.name);
 		await completeStripeCheckout(page);
 
-		// Back on the org page at the backend-built success URL. NOTE: no
+		// Back on the membership page at the backend-built success URL. NOTE: no
 		// waitForClientAuth here — its stall fallback reloads, and a reload would
 		// drop the (already consumed) flag and unmount the card under us.
 		const confirming = page
@@ -113,19 +120,30 @@ test.describe('J23 hosted-checkout subscribe @p2', () => {
 		await expect(welcome).toBeVisible({ timeout: 120_000 });
 		await expect(page.getByText('Your subscription is active.')).toBeVisible();
 
-		// MUST-COVER: the flag was consumed in onMount via the raw history API,
-		// so a reload or a back-navigation cannot replay the card.
-		await expect(page).toHaveURL(new RegExp(`${ORG_PATH}(?:$|[?#])`));
+		// MUST-COVER, both hops at once: Stripe returned to the LANDING path, the
+		// server load forwarded it to the membership page (#726), and the flag was
+		// then consumed in onMount via the raw history API — so a reload or a
+		// back-navigation cannot replay the card.
+		await expect(page).toHaveURL(new RegExp(`${MEMBERSHIP_PATH}(?:$|[?#])`));
 		expect(page.url()).not.toContain('membership_success');
 
-		// The card invalidates the stale verdicts it invalidates precisely so the
-		// rest of the page agrees with it — no reload needed.
+		// The card invalidates the stale verdicts precisely so the rest of the page
+		// agrees with it — no reload needed. The plan's own card in the tier grid
+		// is the nearest consumer of that invalidation.
+		const boughtPlan = planCard(page, plan.name);
+		await expect(boughtPlan.getByText('Your plan')).toBeVisible({ timeout: 30_000 });
+		await expect(boughtPlan.getByText("You're subscribed to this plan.")).toBeVisible();
+		// …and the grid's join CTAs are replaced by the member status pill (this
+		// one rides on invalidateAll() re-running the server load).
+		await expect(page.getByLabel('Membership status: Active')).toBeVisible({ timeout: 30_000 });
+
+		// The org landing page — which keeps the inline membership card — tells the
+		// same story on a fresh server load.
+		await gotoHydrated(page, ORG_PATH);
+		await waitForClientAuth(page);
 		const inlineCard = page.locator('.bg-card').filter({ hasText: 'Your membership' });
 		await expect(inlineCard.getByText(plan.name)).toBeVisible({ timeout: 30_000 });
 		await expect(inlineCard.getByLabel('Active')).toBeVisible();
-		// …and the join CTA is replaced by the member status pill (this one rides
-		// on invalidateAll() re-running the server load).
-		await expect(page.getByLabel('Membership status: Active')).toBeVisible({ timeout: 30_000 });
 
 		// The account hub tells the same story.
 		await gotoHydrated(page, '/account/memberships');
@@ -183,24 +201,15 @@ test.describe('J23 hosted-checkout subscribe @p2', () => {
 		const context = await browser.newContext();
 		await authenticateContext(context, user);
 		const page = await context.newPage();
-		await gotoHydrated(page, ORG_PATH);
+		await gotoHydrated(page, MEMBERSHIP_PATH);
 		await waitForClientAuth(page);
 
 		await subscribeThroughDialog(page, plan.name);
 
-		// Abandon: walk away from the hosted page onto the backend-built cancel
-		// URL instead of paying. The PENDING subscription (and its open Checkout
-		// session) survives.
-		await gotoHydrated(page, `${ORG_PATH}?membership_cancelled=true`);
-		await expect(page.getByRole('heading', { name: 'Checkout not completed' })).toBeVisible({
-			timeout: 20_000
-		});
-		await expect(
-			page.getByText("Your payment wasn't completed. You can resume it whenever you're ready.")
-		).toBeVisible();
-
-		// Pre-payment state elsewhere on the page: the member's own subscription
-		// card says the first payment is still outstanding.
+		// Pre-payment state, on the org LANDING page: the inline membership card
+		// lives there and nowhere else, so this leg is a detour by construction.
+		// The member's own subscription card says the first payment is still
+		// outstanding.
 		//
 		// Deliberately asserted HERE and not on /account/memberships: that page
 		// lists OrganizationMember rows, and an ONLINE plan creates none until the
@@ -208,9 +217,24 @@ test.describe('J23 hosted-checkout subscribe @p2', () => {
 		// syncs the member row for OFFLINE plans). Probed: `/api/me/memberships`
 		// answers `count: 0` at this point, while `/api/me/…/subscription` — what
 		// this card reads — already returns the PENDING row.
+		await gotoHydrated(page, ORG_PATH);
+		await waitForClientAuth(page);
 		const inlineCard = page.locator('.bg-card').filter({ hasText: 'Your membership' });
 		await expect(inlineCard.getByLabel('Pending')).toBeVisible({ timeout: 20_000 });
 		await expect(inlineCard.getByText('Awaiting first payment')).toBeVisible();
+
+		// Abandon: walk away from the hosted page onto the backend-built cancel
+		// URL instead of paying. The PENDING subscription (and its open Checkout
+		// session) survives. That URL is the LANDING page, which forwards the flag
+		// to the membership page where the card that reads it now lives (#726).
+		await gotoHydrated(page, `${ORG_PATH}?membership_cancelled=true`);
+		await expect(page).toHaveURL(new RegExp(`${MEMBERSHIP_PATH}(?:$|[?#])`));
+		await expect(page.getByRole('heading', { name: 'Checkout not completed' })).toBeVisible({
+			timeout: 20_000
+		});
+		await expect(
+			page.getByText("Your payment wasn't completed. You can resume it whenever you're ready.")
+		).toBeVisible();
 
 		// Resume: the backend hands back a payable session for the same pending
 		// subscription, and the browser leaves for Stripe again.

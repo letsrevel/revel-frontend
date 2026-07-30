@@ -44,21 +44,56 @@ export function applicationRow(
 }
 
 /**
- * A subscription plan's card on the public org page.
+ * The public membership grid: the only surface on which a TIER can be chosen.
  *
- * Plan cards carry no ARIA role, so this matches the shadcn Card surface class
- * and narrows by the (unique, `uniqueName`-generated) plan name. The cards are
- * grid SIBLINGS, never nested inside one another, so exactly one resolves.
+ * Since #720 the org landing page (`/org/[slug]`) keeps a compact pointer and
+ * nothing else — the plan/tier cards live here. A function rather than a
+ * template literal at each call site so the move is expressed in one place.
+ */
+export function membershipPath(slug: string): string {
+	return `/org/${slug}/membership`;
+}
+
+/**
+ * One membership TIER's card on the public membership page.
  *
- * Deliberately NO `.first()` — neither source copy had one, and strictness is
- * the feature here: `.first()` would downgrade a would-be strict-mode error
- * (loud, immediate) into a silent first-match, and this helper's consumers
- * include `toHaveCount(0)` assertions, precisely the class that false-PASSES
- * against a wrongly-picked element. If the markup ever does nest these cards,
- * the loud failure is what we want.
+ * `TierCard` renders an `<article aria-labelledby>` pointing at its own `<h3>`,
+ * so the accessible name is exactly the tier name. `exact: true` is required,
+ * not cosmetic: Playwright matches accessible names as SUBSTRINGS, and
+ * "General membership" would otherwise also select a spec-created
+ * "General membership (gated)".
+ *
+ * SCOPING CAVEAT, same shape as `requestCard`: the lookup is page-global, which
+ * is safe only because `TierCard` is the only `<article>` in the membership
+ * page's component tree. Should another article-bearing card land there, scope
+ * this to the grid rather than reaching for `.first()`.
+ */
+export function tierCard(page: Page, tierName: string): Locator {
+	return page.getByRole('article', { name: tierName, exact: true });
+}
+
+/**
+ * A subscription plan's card, inside its tier's card on the membership page.
+ *
+ * Anchored on the plan's own `<h4>` and walked up to the NEAREST `.bg-card`
+ * ancestor, which is the plan's shadcn Card. The older `.bg-card` +
+ * `hasText(planName)` form died with #720: plan cards used to be grid siblings,
+ * and are now NESTED inside their `TierCard`'s Card — which carries `.bg-card`
+ * and contains the plan name too, so the filter matched two elements.
+ *
+ * Deliberately NO `.first()` — strictness is the feature here: `.first()` would
+ * downgrade a would-be strict-mode error (loud, immediate) into a silent
+ * first-match, and this helper's consumers include `toHaveCount(0)` assertions,
+ * precisely the class that false-PASSES against a wrongly-picked element.
+ * `exact: true` on the heading is what keeps it single-valued; plan names come
+ * from `uniqueName()`, so nothing but the intended card can answer.
  */
 export function planCard(page: Page, planName: string): Locator {
-	return page.locator('.bg-card').filter({ hasText: planName });
+	return page
+		.getByRole('heading', { level: 4, name: planName, exact: true })
+		.locator(
+			'xpath=ancestor::div[contains(concat(" ", normalize-space(@class), " "), " bg-card ")][1]'
+		);
 }
 
 /**
