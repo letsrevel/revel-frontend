@@ -1,6 +1,11 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import type { CitySchema, VenueDetailSchema, ResourceVisibility } from '$lib/api/generated';
+	import type {
+		CitySchema,
+		VenueDetailSchema,
+		EventVisibilitySettings,
+		ResourceVisibility
+	} from '$lib/api/generated';
 	import CityAutocomplete from '$lib/components/forms/CityAutocomplete.svelte';
 	import VenueSelector from './VenueSelector.svelte';
 	import {
@@ -21,7 +26,7 @@
 		formData: {
 			venue_id?: string | null;
 			address?: string | null;
-			address_visibility?: ResourceVisibility;
+			visibility_settings?: EventVisibilitySettings;
 			location_maps_url?: string | null;
 			location_maps_embed?: string | null;
 		};
@@ -85,7 +90,7 @@
 			onUpdate({
 				city_id: null,
 				address: null,
-				address_visibility: 'public',
+				visibility_settings: { ...formData.visibility_settings, address_visibility: 'public' },
 				location_maps_url: null,
 				location_maps_embed: null
 			});
@@ -104,7 +109,7 @@
 			venue_id: null,
 			city_id: null,
 			address: null,
-			address_visibility: 'public',
+			visibility_settings: { ...formData.visibility_settings, address_visibility: 'public' },
 			location_maps_url: null,
 			location_maps_embed: null
 		});
@@ -265,9 +270,14 @@
 				</label>
 				<select
 					id="location-address-visibility"
-					value={formData.address_visibility || 'public'}
+					value={formData.visibility_settings?.address_visibility || 'public'}
 					onchange={(e) =>
-						onUpdate({ address_visibility: e.currentTarget.value as ResourceVisibility })}
+						onUpdate({
+							visibility_settings: {
+								...formData.visibility_settings,
+								address_visibility: e.currentTarget.value as ResourceVisibility
+							}
+						})}
 					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
 					<option value="public">{m['detailsStep.addressVisibilityPublic']()}</option>

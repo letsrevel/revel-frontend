@@ -17,7 +17,6 @@
 		EventSeriesRecurrenceDetailSchema,
 		EventType,
 		PropagateScope,
-		ResourceVisibility,
 		TemplateEditSchema,
 		Visibility
 	} from '$lib/api/generated/types.gen';
@@ -32,7 +31,8 @@
 		type ResolvedVisibilitySettings
 	} from '$lib/utils/event-visibility';
 	import {
-		buildAttendanceToggles,
+		buildAttendanceTogglesAfterPronoun,
+		buildAttendanceTogglesBeforePronoun,
 		buildCapacityToggles,
 		buildPropagateOptions,
 		type PropagateOption,
@@ -67,7 +67,6 @@
 	let eventType = $state<EventType>('public');
 	let visibility = $state<Visibility>('public');
 	let address = $state<string>('');
-	let addressVisibility = $state<ResourceVisibility>('public');
 	let maxAttendees = $state<string>('');
 	let maxTicketsPerUser = $state<string>('');
 	// Grouped boolean flags. A single reactive object lets us drive the toggle
@@ -80,7 +79,6 @@
 		potluck_open: false,
 		accept_invitation_requests: false,
 		accept_rsvp_notes: false,
-		public_pronoun_distribution: false,
 		can_attend_without_login: false,
 		is_open_ended: false
 	});
@@ -133,7 +131,6 @@
 		eventType = t.event_type;
 		visibility = t.visibility;
 		address = t.address ?? '';
-		addressVisibility = t.address_visibility ?? 'public';
 		maxAttendees = typeof t.max_attendees === 'number' ? String(t.max_attendees) : '';
 		maxTicketsPerUser =
 			typeof t.max_tickets_per_user === 'number' ? String(t.max_tickets_per_user) : '';
@@ -143,7 +140,6 @@
 		flags.potluck_open = !!t.potluck_open;
 		flags.accept_invitation_requests = !!t.accept_invitation_requests;
 		flags.accept_rsvp_notes = !!t.accept_rsvp_notes;
-		flags.public_pronoun_distribution = !!t.public_pronoun_distribution;
 		flags.can_attend_without_login = !!t.can_attend_without_login;
 		flags.is_open_ended = !!t.is_open_ended;
 		visibilitySettings = resolveVisibilitySettings(t.visibility_settings);
@@ -179,8 +175,6 @@
 		if (eventType !== original.event_type) d.event_type = eventType;
 		if (visibility !== original.visibility) d.visibility = visibility;
 		if (addressVal !== (original.address ?? null)) d.address = addressVal;
-		if (addressVisibility !== (original.address_visibility ?? 'public'))
-			d.address_visibility = addressVisibility;
 
 		const origMax = typeof original.max_attendees === 'number' ? original.max_attendees : null;
 		if (maxAttendeesNum !== origMax) d.max_attendees = maxAttendeesNum;
@@ -198,8 +192,6 @@
 			d.accept_invitation_requests = flags.accept_invitation_requests;
 		if (flags.accept_rsvp_notes !== !!original.accept_rsvp_notes)
 			d.accept_rsvp_notes = flags.accept_rsvp_notes;
-		if (flags.public_pronoun_distribution !== !!original.public_pronoun_distribution)
-			d.public_pronoun_distribution = flags.public_pronoun_distribution;
 		if (flags.can_attend_without_login !== !!original.can_attend_without_login)
 			d.can_attend_without_login = flags.can_attend_without_login;
 		if (flags.is_open_ended !== !!original.is_open_ended) d.is_open_ended = flags.is_open_ended;
@@ -225,7 +217,17 @@
 	// `$derived` so the labels track the active locale rather than the locale at
 	// component init.
 	const capacityToggles: TemplateToggleConfig[] = $derived(buildCapacityToggles());
-	const attendanceToggles: TemplateToggleConfig[] = $derived(buildAttendanceToggles());
+	// Split around the pronoun-distribution checkbox, which now lives in
+	// `visibility_settings` rather than the flat `flags` record and is hand-
+	// rendered below rather than driven by the generic config array — see
+	// template-edit-fields.ts for why. The split preserves its original
+	// position in the Attendance section.
+	const attendanceTogglesBeforePronoun: TemplateToggleConfig[] = $derived(
+		buildAttendanceTogglesBeforePronoun()
+	);
+	const attendanceTogglesAfterPronoun: TemplateToggleConfig[] = $derived(
+		buildAttendanceTogglesAfterPronoun()
+	);
 	const propagateOptions: PropagateOption[] = $derived(buildPropagateOptions());
 
 	const hasChanges = $derived(Object.keys(diff).length > 0);
@@ -548,7 +550,7 @@
 							</Label>
 							<select
 								id="template-address-visibility"
-								bind:value={addressVisibility}
+								bind:value={visibilitySettings.address_visibility}
 								disabled={updateMutation.isPending}
 								class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 								data-testid="template-edit-address-visibility"
@@ -614,7 +616,24 @@
 						<h3 class="text-sm font-semibold">
 							{m['recurringEvents.templateDialog.sections.attendance']()}
 						</h3>
-						{#each attendanceToggles as t (t.key)}
+						{#each attendanceTogglesBeforePronoun as t (t.key)}
+							{@render toggleRow(t)}
+						{/each}
+						<label
+							class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
+						>
+							<input
+								type="checkbox"
+								bind:checked={visibilitySettings.show_pronoun_distribution}
+								disabled={updateMutation.isPending}
+								class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
+								data-testid="template-edit-public-pronoun-distribution"
+							/>
+							<div class="flex-1 text-sm font-medium">
+								{m['recurringEvents.templateDialog.toggles.publicPronounDistribution']()}
+							</div>
+						</label>
+						{#each attendanceTogglesAfterPronoun as t (t.key)}
 							{@render toggleRow(t)}
 						{/each}
 					</section>
@@ -626,7 +645,7 @@
 							settings={visibilitySettings}
 							disabled={updateMutation.isPending}
 							idPrefix="template-visibility"
-							onChange={(next) => (visibilitySettings = next)}
+							onChange={(next) => (visibilitySettings = { ...visibilitySettings, ...next })}
 						/>
 					</section>
 

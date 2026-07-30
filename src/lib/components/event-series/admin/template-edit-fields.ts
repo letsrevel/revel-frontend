@@ -16,7 +16,18 @@
 import * as m from '$lib/paraglide/messages.js';
 import type { PropagateScope } from '$lib/api/generated/types.gen';
 
-/** The boolean template fields the dialog edits as simple checkboxes. */
+/**
+ * The boolean template fields the dialog edits as simple checkboxes.
+ *
+ * `public_pronoun_distribution` is deliberately absent: backend #793 moved it
+ * into the nested `visibility_settings.show_pronoun_distribution` (renamed),
+ * so it's no longer a flat field and doesn't fit this record-of-booleans
+ * shape. It's edited directly against the dialog's `visibilitySettings`
+ * state, hand-rendered rather than driven by a config entry here — see
+ * `buildAttendanceTogglesBeforePronoun`/`buildAttendanceTogglesAfterPronoun`
+ * below, which flank the hand-written checkbox to keep it in its original
+ * position in the Attendance section.
+ */
 export type TemplateFlagKey =
 	| 'requires_ticket'
 	| 'waitlist_open'
@@ -24,7 +35,6 @@ export type TemplateFlagKey =
 	| 'potluck_open'
 	| 'accept_invitation_requests'
 	| 'accept_rsvp_notes'
-	| 'public_pronoun_distribution'
 	| 'can_attend_without_login'
 	| 'is_open_ended';
 
@@ -58,7 +68,14 @@ export function buildCapacityToggles(): TemplateToggleConfig[] {
 	];
 }
 
-export function buildAttendanceToggles(): TemplateToggleConfig[] {
+/**
+ * Attendance toggles that render before the hand-written pronoun-distribution
+ * checkbox (see `TemplateFlagKey` docstring). Split from
+ * `buildAttendanceTogglesAfterPronoun` purely to preserve that checkbox's
+ * original position in the Attendance section without index-slicing a single
+ * array in the template.
+ */
+export function buildAttendanceTogglesBeforePronoun(): TemplateToggleConfig[] {
 	return [
 		{
 			key: 'requires_full_profile',
@@ -79,12 +96,13 @@ export function buildAttendanceToggles(): TemplateToggleConfig[] {
 			key: 'accept_rsvp_notes',
 			label: m['recurringEvents.templateDialog.toggles.acceptRsvpNotes'](),
 			testid: 'template-edit-accept-rsvp-notes'
-		},
-		{
-			key: 'public_pronoun_distribution',
-			label: m['recurringEvents.templateDialog.toggles.publicPronounDistribution'](),
-			testid: 'template-edit-public-pronoun-distribution'
-		},
+		}
+	];
+}
+
+/** Attendance toggles that render after the pronoun-distribution checkbox. */
+export function buildAttendanceTogglesAfterPronoun(): TemplateToggleConfig[] {
+	return [
 		{
 			key: 'can_attend_without_login',
 			label: m['recurringEvents.templateDialog.toggles.canAttendWithoutLogin'](),

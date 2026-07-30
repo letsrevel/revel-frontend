@@ -1,8 +1,7 @@
 import type {
 	EventCreateSchema,
 	EventEditSchema,
-	EventVisibilitySettings,
-	ResourceVisibility
+	EventVisibilitySettings
 } from '$lib/api/generated/types.gen';
 import { toISOString } from '$lib/utils/datetime';
 import { resolveVisibilitySettings } from '$lib/utils/event-visibility';
@@ -15,27 +14,25 @@ import { resolveVisibilitySettings } from '$lib/utils/event-visibility';
 export type EventFormPayloadData = Partial<EventCreateSchema> & {
 	tags?: string[];
 	requires_ticket?: boolean;
-	address_visibility?: ResourceVisibility;
 	venue_id?: string | null;
 	location_maps_url?: string | null;
 	location_maps_embed?: string | null;
-	public_pronoun_distribution?: boolean;
 };
 
 /**
  * The `visibility_settings` value to write, or `undefined` to omit the field.
  *
- * Three rules from backend #825, all satisfied by this one helper:
+ * Three rules from backend #825/#793, all satisfied by this one helper:
  *
  * 1. The backend **merges** this object at sub-key granularity — omitting a
- *    toggle means "no change", so both a whole-object round-trip and a partial
- *    write are correct. We round-trip the resolved triple, which keeps the
- *    payload honest even when the user edited only one toggle.
+ *    key means "no change", so both a whole-object round-trip and a partial
+ *    write are correct. We round-trip all five resolved keys, which keeps the
+ *    payload honest even when the user edited only one of them.
  * 2. Explicit `null` is a 422 against `EventEditSchema` (it is declared
  *    non-nullable there, unlike `TemplateEditSchema`). We never emit `null`:
  *    the field is either a concrete object or absent, which is valid against
  *    both schemas.
- * 3. `extra="forbid"` — only the three known toggles are ever sent; preset
+ * 3. `extra="forbid"` — only the five known keys are ever sent; preset
  *    names live entirely in the UI.
  *
  * Returning `undefined` (rather than the all-`true` default) matters: a create
@@ -82,6 +79,12 @@ export function buildEventCreateData(
  * be echoed here — an omitted optional boolean silently falls back to the
  * backend default. `name`/`startIso`/`cityId` are passed explicitly because the
  * caller validates them (non-null) before invoking.
+ *
+ * `address_visibility` used to be sent here explicitly as `?? 'public'`. It now
+ * rides inside `visibility_settings` (via `visibilitySettingsForWrite`) and is
+ * omitted entirely when `formData.visibility_settings` is unset — the backend
+ * applies the same `'public'` default in that case, so the omission is not a
+ * behavior change.
  */
 export function buildRecurringTemplateCreateData(
 	formData: EventFormPayloadData,
@@ -98,7 +101,6 @@ export function buildRecurringTemplateCreateData(
 		end: toISOString(formData.end),
 		description: formData.description?.trim() || null,
 		address: formData.address?.trim() || null,
-		address_visibility: formData.address_visibility ?? 'public',
 		rsvp_before: toISOString(formData.rsvp_before),
 		max_attendees: formData.max_attendees || undefined,
 		max_tickets_per_user: formData.max_tickets_per_user ?? 1,
@@ -138,7 +140,6 @@ export function buildWizardStep1UpdateData(
 		end: formData.is_open_ended ? null : toISOString(formData.end),
 		is_open_ended: formData.is_open_ended ?? false,
 		address: formData.address || null,
-		address_visibility: formData.address_visibility || 'public',
 		rsvp_before: toISOString(formData.rsvp_before),
 		max_attendees: formData.max_attendees || undefined,
 		max_tickets_per_user: formData.max_tickets_per_user ?? 1,
@@ -173,7 +174,6 @@ export function buildWizardStep2UpdateData(
 		end: formData.is_open_ended ? null : toISOString(formData.end),
 		is_open_ended: formData.is_open_ended ?? false,
 		address: formData.address || null,
-		address_visibility: formData.address_visibility || 'public',
 		rsvp_before: toISOString(formData.rsvp_before),
 		max_attendees: formData.max_attendees || undefined,
 		max_tickets_per_user: formData.max_tickets_per_user ?? 1,
@@ -196,10 +196,9 @@ export function buildWizardStep2UpdateData(
 }
 
 /**
- * Build the unified update payload for EventEditor's `handleSave`. Like the
- * wizard Step 1 payload but additionally carries `public_pronoun_distribution`
- * (an EventEditor-only field). `startIso` is passed explicitly because the
- * caller validates it (non-null) beforehand.
+ * Build the unified update payload for EventEditor's `handleSave`. Identical
+ * in shape to the wizard Step 1 payload. `startIso` is passed explicitly
+ * because the caller validates it (non-null) beforehand.
  */
 export function buildEditorUpdateData(
 	formData: EventFormPayloadData,
@@ -215,7 +214,6 @@ export function buildEditorUpdateData(
 		end: formData.is_open_ended ? null : toISOString(formData.end),
 		is_open_ended: formData.is_open_ended ?? false,
 		address: formData.address || null,
-		address_visibility: formData.address_visibility || 'public',
 		rsvp_before: toISOString(formData.rsvp_before),
 		max_attendees: formData.max_attendees || undefined,
 		max_tickets_per_user: formData.max_tickets_per_user ?? 1,
@@ -226,7 +224,6 @@ export function buildEditorUpdateData(
 		potluck_open: formData.potluck_open || false,
 		accept_invitation_requests: formData.accept_invitation_requests || false,
 		accept_rsvp_notes: formData.accept_rsvp_notes || false,
-		public_pronoun_distribution: formData.public_pronoun_distribution || false,
 		apply_before: toISOString(formData.apply_before),
 		can_attend_without_login: formData.can_attend_without_login || false,
 		requires_full_profile: formData.requires_full_profile || false,

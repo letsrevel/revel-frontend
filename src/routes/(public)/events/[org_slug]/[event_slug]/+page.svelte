@@ -506,9 +506,7 @@
 						isAuthenticated={data.isAuthenticated}
 						listDisclosed={viewerVisibility.show_attendee_list}
 						userVisibility={data.userVisibility}
-						showPronounDistribution={event.public_pronoun_distribution ||
-							data.isOwner ||
-							data.isStaff}
+						showPronounDistribution={viewerVisibility.show_pronoun_distribution}
 					/>
 				</div>
 			</div>
@@ -576,9 +574,7 @@
 						isAuthenticated={data.isAuthenticated}
 						listDisclosed={viewerVisibility.show_attendee_list}
 						userVisibility={data.userVisibility}
-						showPronounDistribution={event.public_pronoun_distribution ||
-							data.isOwner ||
-							data.isStaff}
+						showPronounDistribution={viewerVisibility.show_pronoun_distribution}
 					/>
 				</div>
 			</aside>

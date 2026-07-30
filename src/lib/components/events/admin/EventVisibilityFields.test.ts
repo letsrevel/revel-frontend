@@ -2,10 +2,10 @@ import { render, screen } from '@testing-library/svelte';
 import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import EventVisibilityFields from './EventVisibilityFields.svelte';
-import type { ResolvedVisibilitySettings } from '$lib/utils/event-visibility';
+import type { ResolvedVisibilityToggles } from '$lib/utils/event-visibility';
 
-function setup(settings?: Partial<ResolvedVisibilitySettings>) {
-	const onChange = vi.fn<(next: ResolvedVisibilitySettings) => void>();
+function setup(settings?: Partial<ResolvedVisibilityToggles>) {
+	const onChange = vi.fn<(next: ResolvedVisibilityToggles) => void>();
 	render(EventVisibilityFields, { props: { settings, onChange } });
 	return { onChange, user: userEvent.setup() };
 }

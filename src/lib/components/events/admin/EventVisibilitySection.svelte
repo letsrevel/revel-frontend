@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import type { EventVisibilitySettings } from '$lib/api/generated/types.gen';
-	import type { ResolvedVisibilitySettings } from '$lib/utils/event-visibility';
+	import type { ResolvedVisibilityToggles } from '$lib/utils/event-visibility';
 	import { ChevronDown, ChevronRight, Eye } from '@lucide/svelte';
 	import EventVisibilityFields from './EventVisibilityFields.svelte';
 
@@ -9,7 +9,7 @@
 		settings?: EventVisibilitySettings | null;
 		isOpen: boolean;
 		onToggle: () => void;
-		onChange: (next: ResolvedVisibilitySettings) => void;
+		onChange: (next: ResolvedVisibilityToggles) => void;
 	}
 
 	const { settings = null, isOpen, onToggle, onChange }: Props = $props();

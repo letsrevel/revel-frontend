@@ -27,7 +27,6 @@
 		VenueDetailSchema,
 		OrganizationRetrieveSchema,
 		OrganizationQuestionnaireInListSchema,
-		ResourceVisibility,
 		RecurringEventCreateSchema
 	} from '$lib/api/generated/types.gen';
 	import type { RecurrenceRuleCreate } from '$lib/types/recurrence';
@@ -48,7 +47,6 @@
 		tags?: string[];
 		requires_ticket?: boolean;
 		requires_full_profile?: boolean;
-		address_visibility?: ResourceVisibility;
 		venue_id?: string | null;
 		city_id?: number | null;
 		location_maps_url?: string | null;
@@ -72,7 +70,6 @@
 		requires_ticket: false,
 		description: '',
 		address: '',
-		address_visibility: 'public',
 		rsvp_before: null,
 		max_attendees: undefined,
 		max_tickets_per_user: 1,
