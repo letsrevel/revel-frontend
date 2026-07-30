@@ -183,7 +183,8 @@ describe('diffVisibilitySettings', () => {
 	it('never emits null for any key', () => {
 		const patch = diffVisibilitySettings(VISIBILITY_PRESETS.open, VISIBILITY_PRESETS.discreet);
 		for (const value of Object.values(patch)) {
-			expect(value === null).toBe(false);
+			expect(value).not.toBeNull();
+			expect(value).not.toBeUndefined();
 		}
 	});
 

@@ -97,6 +97,11 @@ export const VISIBILITY_PRIVILEGED: ResolvedVisibilitySettings = {
 	show_capacity: true,
 	show_attendee_list: true,
 	show_pronoun_distribution: true,
+	// Not a live gate: no code reads `viewerVisibility.address_visibility` today —
+	// the backend redacts/reveals the address server-side regardless of this
+	// value. Kept `'public'` for type completeness and to document the intended
+	// semantics (privileged viewers see the real address) should a UI ever need
+	// to branch on it.
 	address_visibility: 'public'
 };
 
@@ -194,20 +199,16 @@ export function diffVisibilitySettings(
 	const before = resolveVisibilitySettings(original);
 	const after = resolveVisibilitySettings(next);
 	const patch: EventVisibilitySettings = {};
-	if (before.show_attendee_count !== after.show_attendee_count) {
-		patch.show_attendee_count = after.show_attendee_count;
-	}
-	if (before.show_capacity !== after.show_capacity) {
-		patch.show_capacity = after.show_capacity;
-	}
-	if (before.show_attendee_list !== after.show_attendee_list) {
-		patch.show_attendee_list = after.show_attendee_list;
-	}
-	if (before.show_pronoun_distribution !== after.show_pronoun_distribution) {
-		patch.show_pronoun_distribution = after.show_pronoun_distribution;
-	}
-	if (before.address_visibility !== after.address_visibility) {
-		patch.address_visibility = after.address_visibility;
+	// Keyed loop rather than an unrolled `if` chain so this stays exhaustive by
+	// construction: `Object.keys(VISIBILITY_DEFAULTS)` tracks the annotated
+	// `ResolvedVisibilitySettings` type, so adding a sixth key there is covered
+	// here automatically instead of silently falling out of the diff. The four
+	// booleans + one enum value type defeats `patch[key] = after[key]` typing,
+	// so the write goes through one narrow, localized cast instead.
+	for (const key of Object.keys(VISIBILITY_DEFAULTS) as (keyof ResolvedVisibilitySettings)[]) {
+		if (before[key] !== after[key]) {
+			(patch as Record<string, unknown>)[key] = after[key];
+		}
 	}
 	return patch;
 }
