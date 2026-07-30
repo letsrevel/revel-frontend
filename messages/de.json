@@ -3327,7 +3327,9 @@
 					"online": "Online · Stripe",
 					"offline": "Offline · manuell",
 					"soldOut": "Ausverkauft",
-					"paused": "Verkauf pausiert"
+					"paused": "Verkauf pausiert",
+					"free": "Kostenlos · Selbstbedienung",
+					"lifetime": "Läuft nie ab"
 				},
 				"occupancy": "{active} aktiv",
 				"occupancyCapped": "{active} / {cap} aktiv",
@@ -3360,7 +3362,11 @@
 						"nameRequired": "Name ist erforderlich",
 						"priceInvalid": "Der Preis muss 0 oder höher sein",
 						"periodInvalid": "Die Anzahl der Zeiträume muss zwischen 1 und 120 liegen",
-						"maxSubsInvalid": "Die maximale Anzahl an Abonnements muss mindestens 1 sein — oder leer für unbegrenzt"
+						"maxSubsInvalid": "Die maximale Anzahl an Abonnements muss mindestens 1 sein — oder leer für unbegrenzt",
+						"freePriceNotZero": "Kostenlose Pläne müssen den Preis 0 haben.",
+						"freeNeedsLifetime": "Kostenlose Pläne müssen den Zeitraum „lebenslang“ verwenden.",
+						"onlinePriceZero": "Online-Pläne müssen mehr als 0 kosten. Nutze für eine kostenlose Mitgliedschaft einen kostenlosen Plan.",
+						"onlineNoLifetime": "Online-Pläne können nicht lebenslang sein — Stripe rechnet monatlich oder jährlich ab. Nutze für eine einmalig bezahlte Mitgliedschaft einen Offline-Plan."
 					},
 					"periodMonth": "Monat(e)",
 					"periodYear": "Jahr(e)",
@@ -3374,7 +3380,12 @@
 					"maxSubscriptionsUnlimited": "Unbegrenzt",
 					"maxSubscriptionsHelp": "Obergrenze für gleichzeitige Abonnent*innen. Plätze werden frei, sobald ein Abonnement endet.",
 					"pauseSales": "Verkauf pausieren",
-					"pauseSalesHelp": "Mitglieder*innen können diesen Plan nicht abonnieren oder zu ihm wechseln, solange er pausiert ist. Bestehende Abonnent*innen sind nicht betroffen; du kannst weiterhin Personen manuell eintragen."
+					"pauseSalesHelp": "Mitglieder*innen können diesen Plan nicht abonnieren oder zu ihm wechseln, solange er pausiert ist. Bestehende Abonnent*innen sind nicht betroffen; du kannst weiterhin Personen manuell eintragen.",
+					"paymentFree": "Kostenlos — Mitglieder treten gratis bei",
+					"paymentFreeHelp": "Kostenlose Pläne haben keinen Preis und laufen nie ab. Mitglieder treten selbst bei, ohne Zahlungsschritt.",
+					"periodLifetime": "lebenslang (keine Verlängerung)",
+					"freeShapeLocked": "Kostenlose Pläne haben immer den Preis 0 und laufen lebenslang — das lässt sich nicht ändern.",
+					"lifetimeNoCount": "Ein lebenslanger Plan wird nie verlängert, daher gibt es keinen Abrechnungsrhythmus."
 				},
 				"errors": {
 					"createFailed": "Plan konnte nicht erstellt werden: {detail}",
@@ -5146,7 +5157,10 @@
 		"pausedHelper": "Die Organisation hat die Anmeldung vorübergehend geschlossen.",
 		"offlineManaged": "Wird von der Organisation verwaltet — melde dich bei ihr, um diesen Plan zu buchen.",
 		"refundPolicy": "Rückerstattungsrichtlinie",
-		"viewMembership": "Mitgliedschaftsoptionen ansehen"
+		"viewMembership": "Mitgliedschaftsoptionen ansehen",
+		"joinFreeCta": "Kostenlos beitreten",
+		"loginToJoin": "Zum Beitreten anmelden",
+		"freeHelper": "Keine Zahlung nötig — du kannst sofort beitreten."
 	},
 	"requestWhitelistButton": {
 		"mustBeLoggedIn": "Du musst eingeloggt sein, um eine Verifizierung anzufordern",
@@ -6637,7 +6651,8 @@
 			"month": "Monat",
 			"months": "{n} Monate",
 			"year": "Jahr",
-			"years": "{n} Jahre"
+			"years": "{n} Jahre",
+			"lifetime": "lebenslang"
 		},
 		"status": {
 			"active": "Aktiv",
@@ -6669,7 +6684,8 @@
 			"uncancel": "Verlängerung fortsetzen",
 			"uncancelling": "Wird fortgesetzt…",
 			"uncancelSuccess": "Die Verlängerung ist wieder aktiv.",
-			"uncancelError": "Die Verlängerung konnte nicht fortgesetzt werden. Bitte versuche es erneut."
+			"uncancelError": "Die Verlängerung konnte nicht fortgesetzt werden. Bitte versuche es erneut.",
+			"alreadyActive": "Diese Mitgliedschaft ist bereits aktiv."
 		},
 		"cancelScheduledHint": "Die Verlängerung ist deaktiviert. Du kannst sie bis zu diesem Datum jederzeit wieder aktivieren.",
 		"cancelScheduledHintManaged": "Die Verlängerung ist deaktiviert. Um deine Mitgliedschaft zu behalten, wende dich an die Organisation.",
@@ -6704,7 +6720,12 @@
 			"cta": "Wieder beitreten",
 			"returnHint": "Du zahlst sicher über Stripe und kehrst danach zur Seite der Organisation zurück.",
 			"error": "Die Zahlung konnte nicht gestartet werden. Bitte versuche es erneut."
-		}
+		},
+		"price": {
+			"free": "Kostenlos",
+			"oneTime": "{price} · einmalig"
+		},
+		"neverExpires": "Läuft nie ab"
 	},
 	"account": {
 		"memberships": {
@@ -6884,7 +6905,11 @@
 			"cancelledTitle": "Bezahlung nicht abgeschlossen",
 			"cancelledBody": "Deine Zahlung wurde nicht abgeschlossen. Du kannst sie fortsetzen, wann immer du möchtest.",
 			"resumeCta": "Zahlung fortsetzen"
-		}
+		},
+		"titleFree": "{plan} beitreten",
+		"freeNoCharge": "Es fällt nichts an. Deine Mitgliedschaft startet, sobald du bestätigst.",
+		"neverRenews": "Diese Mitgliedschaft läuft nie ab und wird nie verlängert oder erneut berechnet.",
+		"confirmFreeCta": "Jetzt beitreten"
 	},
 	"waitlistSettings.title": "Advanced waitlist settings",
 	"waitlistSettings.description": "Configure how seats are offered to waitlist members.",

@@ -6,6 +6,8 @@ import {
 	getStatusConfig,
 	getDateLine,
 	getMemberActions,
+	isFreePlan,
+	isLifetimePlan,
 	isMembershipSuspended,
 	isWithinRevivalWindow,
 	monthlyEquivalent,
@@ -339,6 +341,48 @@ describe('formatPlanPrice', () => {
 		expect(formatPlanPrice({ ...basePlan, period_unit: 'year', period_count: 2 })).toBe(
 			'€10.00 / 2 years'
 		);
+	});
+
+	// "€0.00 / month" is wrong twice over on a free plan: it quotes a charge that
+	// never happens, on a cadence that never comes round.
+	it('says "Free" for a free plan instead of quoting a zero amount', () => {
+		expect(
+			formatPlanPrice({
+				...basePlan,
+				payment_method: 'free',
+				price: '0.00',
+				period_unit: 'lifetime'
+			})
+		).toBe('Free');
+	});
+
+	// A LIFETIME term never renews, so there is no "/ month" to append — an
+	// offline one-off membership still has a real price to state.
+	it('quotes a lifetime plan as a one-time amount, with no cadence', () => {
+		expect(
+			formatPlanPrice({ ...basePlan, price: '50.00', period_unit: 'lifetime', period_count: 1 })
+		).toBe('€50.00 · one-time');
+	});
+
+	// The FREE branch is decided by the payment method, not by the amount: a
+	// zero-priced OFFLINE plan is a staff-assigned comp, not a self-serve one.
+	it('does not call a zero-priced offline plan free', () => {
+		expect(formatPlanPrice({ ...basePlan, price: '0.00' })).toBe('€0.00 / month');
+	});
+});
+
+describe('isFreePlan / isLifetimePlan', () => {
+	it('recognises only the free payment method', () => {
+		expect(isFreePlan({ payment_method: 'free' })).toBe(true);
+		expect(isFreePlan({ payment_method: 'offline' })).toBe(false);
+		expect(isFreePlan({ payment_method: 'online' })).toBe(false);
+		expect(isFreePlan({})).toBe(false);
+	});
+
+	it('recognises only the lifetime period unit', () => {
+		expect(isLifetimePlan({ period_unit: 'lifetime' })).toBe(true);
+		expect(isLifetimePlan({ period_unit: 'month' })).toBe(false);
+		expect(isLifetimePlan({ period_unit: 'year' })).toBe(false);
 	});
 });
 

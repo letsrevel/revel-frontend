@@ -179,11 +179,16 @@
 			if (res.error || !res.data) {
 				throw new Error(backendMessage(res.error) || m['subscribe.error']());
 			}
-			// See SubscribeDialog: `checkout_url` is nullable since FREE plans landed,
-			// and resuming an abandoned Checkout has nowhere to go without one.
-			// Unreachable until free plans are authorable here; loud rather than mute.
+			// `checkout_url` is nullable since FREE plans landed (#832). A null one is
+			// not a failure and has nothing to resume: the row it comes back with is
+			// already ACTIVE. (Practically unreachable — only a `pending` row reaches
+			// this button, and a FREE subscription is created ACTIVE — but reporting
+			// "could not start the checkout" for a live membership would be a lie.)
+			// The confirming state is the honest landing: its poll sees `active` on
+			// its first tick and runs the same invalidations the Stripe path does.
 			if (!res.data.checkout_url) {
-				throw new Error(m['subscribe.error']());
+				enterActivationPending(null);
+				return null;
 			}
 			return { ...res.data, checkout_url: res.data.checkout_url };
 		},

@@ -14,6 +14,7 @@
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Loader2 } from '@lucide/svelte';
+	import { untrack } from 'svelte';
 	import { CURRENCY_OPTIONS } from '$lib/utils/currencies';
 
 	export type PlanFormPayload = PlanCreateSchema;
@@ -33,10 +34,6 @@
 	let description = $state('');
 	let price = $state('0.00');
 	let currency = $state<string>('EUR');
-	// Widened to the generated enum when the backend added `lifetime` (non-renewing
-	// plans). The picker below still offers only month/year: authoring a lifetime or
-	// free plan is its own piece of work, and until it lands this state can only
-	// hold `lifetime` when editing a plan created outside this form.
 	let periodUnit = $state<PeriodUnit>('month');
 	let periodCount = $state(1);
 	let isActive = $state(true);
@@ -79,6 +76,43 @@
 		errors = {};
 	});
 
+	/**
+	 * The payment method the shape rules are judged against.
+	 *
+	 * It is immutable once a plan exists (`PlanUpdateSchema` has no
+	 * `payment_method`), so an edit is validated against the *plan's* method —
+	 * the radio group isn't even rendered then, and its state is only a leftover
+	 * from whatever was last created.
+	 */
+	const effectiveMethod = $derived<SubscriptionPaymentMethod>(
+		plan ? plan.payment_method : paymentMethod
+	);
+	const isFree = $derived(effectiveMethod === 'free');
+	const isOnline = $derived(effectiveMethod === 'online');
+	const isLifetime = $derived(periodUnit === 'lifetime');
+
+	/**
+	 * Keep the (method, price, cadence) triple coherent as the organizer types.
+	 *
+	 * `events.utils.subscription_plan_rules.validate_plan_shape` refuses a FREE
+	 * plan that isn't priced 0 *and* lifetime, and an ONLINE plan that is
+	 * lifetime — so those combinations are made unreachable here rather than
+	 * offered and then rejected. `validate()` still asserts them: this effect
+	 * cannot fire for a value the user never touched (e.g. a price typed before
+	 * switching to Free would be cleared here, but a stale one must not slip
+	 * through if the ordering ever changes).
+	 */
+	$effect(() => {
+		if (paymentMethod === 'free') {
+			price = '0.00';
+			periodUnit = 'lifetime';
+		} else if (paymentMethod === 'online' && untrack(() => periodUnit) === 'lifetime') {
+			// Only reachable by picking lifetime under Offline and then switching to
+			// Online — the option is withdrawn for Online, so it cannot be re-chosen.
+			periodUnit = 'month';
+		}
+	});
+
 	/** `null` = unlimited (field left empty or cleared). */
 	function normalizedCap(): number | null {
 		if (maxSubscriptions == null || maxSubscriptions === '') return null;
@@ -96,7 +130,28 @@
 			errors.price = m['orgAdmin.members.plans.form.errors.priceInvalid']();
 			return false;
 		}
-		if (!Number.isInteger(periodCount) || periodCount < 1 || periodCount > 120) {
+		// The three shape rules `validate_plan_shape` enforces server-side. The
+		// controls above already make each violation hard to reach, but a form that
+		// can submit something the backend can only refuse is a form that lies.
+		if (isFree && numeric !== 0) {
+			errors.price = m['orgAdmin.members.plans.form.errors.freePriceNotZero']();
+			return false;
+		}
+		if (isOnline && numeric <= 0) {
+			errors.price = m['orgAdmin.members.plans.form.errors.onlinePriceZero']();
+			return false;
+		}
+		if (isFree && !isLifetime) {
+			errors.period = m['orgAdmin.members.plans.form.errors.freeNeedsLifetime']();
+			return false;
+		}
+		if (isOnline && isLifetime) {
+			errors.period = m['orgAdmin.members.plans.form.errors.onlineNoLifetime']();
+			return false;
+		}
+		// A lifetime term never renews, so `period_count` describes nothing — the
+		// field is withdrawn from the form and its value is not asserted.
+		if (!isLifetime && (!Number.isInteger(periodCount) || periodCount < 1 || periodCount > 120)) {
 			errors.period = m['orgAdmin.members.plans.form.errors.periodInvalid']();
 			return false;
 		}
@@ -117,7 +172,9 @@
 			price,
 			currency: currency as PlanCreateSchema['currency'],
 			period_unit: periodUnit,
-			period_count: periodCount,
+			// A lifetime plan is never renewed, so the backend ignores this; pin it to
+			// 1 rather than shipping whatever the (hidden) field last held.
+			period_count: isLifetime ? 1 : periodCount,
 			is_active: isActive,
 			sales_status: salesPaused ? 'paused' : 'open',
 			max_subscriptions: normalizedCap(),
@@ -156,9 +213,13 @@
 				<div class="space-y-1 text-sm">
 					<span class="font-medium">{m['orgAdmin.members.plans.form.paymentMethod']()}</span>
 					<span class="text-muted-foreground">
-						{plan.payment_method === 'online'
-							? m['orgAdmin.members.plans.form.paymentOnline']()
-							: m['orgAdmin.members.plans.form.paymentOffline']()}
+						{#if plan.payment_method === 'online'}
+							{m['orgAdmin.members.plans.form.paymentOnline']()}
+						{:else if plan.payment_method === 'free'}
+							{m['orgAdmin.members.plans.form.paymentFree']()}
+						{:else}
+							{m['orgAdmin.members.plans.form.paymentOffline']()}
+						{/if}
 					</span>
 					<p class="text-xs text-muted-foreground">
 						{m['orgAdmin.members.plans.form.paymentMethodImmutable']()}
@@ -169,7 +230,8 @@
 					<legend class="text-sm font-medium">
 						{m['orgAdmin.members.plans.form.paymentMethod']()}
 					</legend>
-					<div class="flex gap-4">
+					<!-- Wraps on a phone: three options no longer fit one row. -->
+					<div class="flex flex-wrap gap-x-4 gap-y-2">
 						<label class="flex items-center gap-2 text-sm">
 							<input
 								type="radio"
@@ -193,12 +255,29 @@
 							/>
 							{m['orgAdmin.members.plans.form.paymentOnline']()}
 						</label>
+						<!-- No Stripe gate: a FREE plan has no Stripe object at all, so it is
+						     offered even to an organization that never connected an account. -->
+						<label class="flex items-center gap-2 text-sm">
+							<input
+								type="radio"
+								name="payment-method"
+								value="free"
+								bind:group={paymentMethod}
+								disabled={isSaving}
+							/>
+							{m['orgAdmin.members.plans.form.paymentFree']()}
+						</label>
 					</div>
 					<p class="text-xs text-muted-foreground">
 						{organization.is_stripe_connected
 							? m['orgAdmin.members.plans.form.paymentMethodHelp']()
 							: m['orgAdmin.members.plans.form.paymentOnlineNeedsStripe']()}
 					</p>
+					{#if isFree}
+						<p class="text-xs text-muted-foreground">
+							{m['orgAdmin.members.plans.form.paymentFreeHelp']()}
+						</p>
+					{/if}
 				</fieldset>
 			{/if}
 
@@ -210,6 +289,10 @@
 			<div class="grid grid-cols-2 gap-3">
 				<div class="space-y-1">
 					<Label for="plan-price">{m['orgAdmin.members.plans.form.price']()}</Label>
+					<!-- A FREE plan is priced 0 by definition (the backend refuses anything
+					     else), so the field is locked rather than left to be rejected. The
+					     reason is announced with it via `aria-describedby`, not left to the
+					     greyed-out styling. -->
 					<Input
 						id="plan-price"
 						type="number"
@@ -217,7 +300,8 @@
 						step="0.01"
 						bind:value={price}
 						required
-						disabled={isSaving}
+						disabled={isSaving || isFree}
+						aria-describedby={isFree ? 'plan-shape-locked' : undefined}
 					/>
 				</div>
 				<div class="space-y-1">
@@ -237,31 +321,50 @@
 			{#if errors.price}<p class="text-sm text-destructive">{errors.price}</p>{/if}
 
 			<div class="grid grid-cols-2 gap-3">
-				<div class="space-y-1">
-					<Label for="plan-period-count">{m['orgAdmin.members.plans.form.periodCount']()}</Label>
-					<Input
-						id="plan-period-count"
-						type="number"
-						min="1"
-						max="120"
-						bind:value={periodCount}
-						required
-						disabled={isSaving}
-					/>
-				</div>
+				{#if !isLifetime}
+					<div class="space-y-1">
+						<Label for="plan-period-count">{m['orgAdmin.members.plans.form.periodCount']()}</Label>
+						<Input
+							id="plan-period-count"
+							type="number"
+							min="1"
+							max="120"
+							bind:value={periodCount}
+							required
+							disabled={isSaving}
+						/>
+					</div>
+				{/if}
 				<div class="space-y-1">
 					<Label for="plan-period-unit">{m['orgAdmin.members.plans.form.periodUnit']()}</Label>
 					<select
 						id="plan-period-unit"
 						bind:value={periodUnit}
-						disabled={isSaving}
+						disabled={isSaving || isFree}
+						aria-describedby={isFree ? 'plan-shape-locked' : undefined}
 						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					>
 						<option value="month">{m['orgAdmin.members.plans.form.periodMonth']()}</option>
 						<option value="year">{m['orgAdmin.members.plans.form.periodYear']()}</option>
+						<!-- Withdrawn for ONLINE: Stripe bills monthly or yearly, so the
+						     backend refuses a lifetime Stripe plan outright. -->
+						{#if !isOnline}
+							<option value="lifetime">
+								{m['orgAdmin.members.plans.form.periodLifetime']()}
+							</option>
+						{/if}
 					</select>
 				</div>
 			</div>
+			{#if isFree}
+				<p id="plan-shape-locked" class="text-xs text-muted-foreground">
+					{m['orgAdmin.members.plans.form.freeShapeLocked']()}
+				</p>
+			{:else if isLifetime}
+				<p class="text-xs text-muted-foreground">
+					{m['orgAdmin.members.plans.form.lifetimeNoCount']()}
+				</p>
+			{/if}
 			{#if errors.period}<p class="text-sm text-destructive">{errors.period}</p>{/if}
 
 			<div class="space-y-1">

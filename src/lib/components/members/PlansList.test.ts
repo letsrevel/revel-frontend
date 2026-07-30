@@ -172,3 +172,41 @@ describe('PlansList delete confirmation', () => {
 		expect(screen.queryByText(/has subscribers/i)).not.toBeInTheDocument();
 	});
 });
+
+// A lifetime free plan rendered as "€0.00 / month" is wrong twice over: it
+// quotes a charge that never happens, on a cadence that never comes round.
+describe('PlansList row labelling', () => {
+	it('labels a free lifetime plan as free and non-expiring', async () => {
+		arrangePlans([
+			makePlan({
+				name: 'Supporter',
+				payment_method: 'free',
+				price: '0.00',
+				period_unit: 'lifetime'
+			})
+		]);
+		renderList();
+
+		expect(await screen.findByText('Free')).toBeInTheDocument();
+		expect(screen.getByText('Free · self-serve')).toBeInTheDocument();
+		expect(screen.getByText('Never expires')).toBeInTheDocument();
+		expect(screen.queryByText(/€0\.00/)).not.toBeInTheDocument();
+	});
+
+	it('quotes a paid lifetime plan as a one-time amount', async () => {
+		arrangePlans([makePlan({ price: '50.00', period_unit: 'lifetime' })]);
+		renderList();
+
+		expect(await screen.findByText('€50.00 · one-time')).toBeInTheDocument();
+		expect(screen.getByText('Offline · manual')).toBeInTheDocument();
+		expect(screen.getByText('Never expires')).toBeInTheDocument();
+	});
+
+	it('leaves a recurring plan reading as a rate', async () => {
+		arrangePlans([makePlan()]);
+		renderList();
+
+		expect(await screen.findByText('€10.00 / month')).toBeInTheDocument();
+		expect(screen.queryByText('Never expires')).not.toBeInTheDocument();
+	});
+});

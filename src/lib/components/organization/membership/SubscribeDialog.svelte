@@ -1,10 +1,12 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { createMutation } from '@tanstack/svelte-query';
+	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
+	import { invalidateAll } from '$app/navigation';
 	import { mesubscriptionsSubscribe } from '$lib/api/generated/sdk.gen';
 	import type { PublicPlanSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { backendMessage } from '$lib/utils/api-error-detail';
+	import { settleSubscriptionCaches } from '$lib/utils/subscription-cache';
 	import {
 		Dialog,
 		DialogContent,
@@ -15,7 +17,12 @@
 	} from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
-	import { formatPlanPrice, isSubscriptionActivationPending } from '$lib/utils/subscriptions';
+	import {
+		formatPlanPrice,
+		isFreePlan,
+		isLifetimePlan,
+		isSubscriptionActivationPending
+	} from '$lib/utils/subscriptions';
 	import { formatMoney } from '$lib/utils/format';
 	import { Loader2 } from '@lucide/svelte';
 
@@ -58,6 +65,17 @@
 	}: Props = $props();
 
 	const accessToken = $derived(authStore.accessToken);
+	const queryClient = useQueryClient();
+
+	/**
+	 * A FREE plan: nothing is charged, no Stripe session is created, and the
+	 * subscription comes back already ACTIVE. Every line of copy below that
+	 * quotes a charge, a renewal or Stripe is withdrawn for it — none of them
+	 * would be true.
+	 */
+	const isFree = $derived(isFreePlan(plan));
+	/** LIFETIME: never renews, so there is no cadence to promise. */
+	const neverExpires = $derived(isLifetimePlan(plan));
 
 	let errorMessage = $state<string | null>(null);
 	// Set on success and never cleared: the browser is on its way to Stripe, so
@@ -76,6 +94,11 @@
 	let activationPending = $state(false);
 	/** The backend's translated explanation for that 409, when it sent one. */
 	let activationDetail = $state<string | null>(null);
+
+	// The FREE outcome: `checkout_url` was null, so the subscription is already
+	// ACTIVE and the membership granted. There is nowhere to redirect to, so the
+	// dialog itself has to report the result.
+	let joined = $state(false);
 
 	const priceLine = $derived(m['subscribe.priceLine']({ price: formatPlanPrice(plan) }));
 
@@ -147,18 +170,30 @@
 			if (res.error || !res.data) {
 				throw new Error(backendMessage(res.error) || m['subscribe.error']());
 			}
-			// `checkout_url` became nullable when the backend added FREE plans, which
-			// activate on the spot with no Stripe session. This dialog only knows how
-			// to hand off to Checkout, and nothing in this UI can create a free plan
-			// yet, so the case is unreachable today — surface it rather than
-			// silently doing nothing if that ever stops being true.
+			// A null `checkout_url` is the FREE answer, not a failure: there is no
+			// Stripe object to pay at, `subscription.status` is already `active` and
+			// the membership has been granted. Settle the member-facing caches from
+			// the response body itself — every surface that cached "not a member"
+			// (this org page's inline card, the account hub, the join-eligibility
+			// verdict, and the server-rendered `isMember`) is refreshed here, because
+			// unlike the Stripe path no return-page mount will do it later.
 			if (!res.data.checkout_url) {
-				throw new Error(m['subscribe.error']());
+				await settleSubscriptionCaches(queryClient, res.data.subscription);
+				// Prefix invalidations: this dialog is handed an org *id*, and the
+				// eligibility/admin caches are keyed by slug — so the whole prefix goes,
+				// rather than guessing a key. It costs a refetch of a couple of active
+				// queries, once, at the moment the member joins.
+				queryClient.invalidateQueries({ queryKey: ['org'] });
+				queryClient.invalidateQueries({ queryKey: ['organization'] });
+				await invalidateAll();
+				joined = true;
+				return null;
 			}
 			return { ...res.data, checkout_url: res.data.checkout_url };
 		},
 		onSuccess: (data) => {
-			// `null` is the activation-pending answer: no Checkout session to go to.
+			// `null` is the activation-pending or the free-join answer: either way
+			// there is no Checkout session to go to, and the body already says so.
 			if (!data) return;
 			redirecting = true;
 			// Hosted Stripe Checkout lives on another origin, so this is a real
@@ -194,7 +229,11 @@
 		showCloseButton={!isBusy}
 	>
 		<DialogHeader>
-			<DialogTitle>{m['subscribe.title']({ plan: plan.name })}</DialogTitle>
+			<DialogTitle>
+				{isFree
+					? m['subscribe.titleFree']({ plan: plan.name })
+					: m['subscribe.title']({ plan: plan.name })}
+			</DialogTitle>
 			<DialogDescription>{tierName}</DialogDescription>
 		</DialogHeader>
 
@@ -208,35 +247,56 @@
 					<p class="text-sm text-muted-foreground">{activationDetail}</p>
 				{/if}
 			</div>
+		{:else if joined}
+			<!-- The free join is already done server-side; this is the only place it
+			     can be reported, since there is no Stripe return page to land on. -->
+			<div class="space-y-1" role="status" aria-live="polite">
+				<h3 class="text-lg font-semibold">{m['subscribe.return.welcome']()}</h3>
+				<p class="text-sm text-muted-foreground">{m['subscribe.return.welcomeBody']()}</p>
+			</div>
 		{:else}
 			<div class="space-y-4">
 				<div class="rounded-lg border bg-muted/40 p-3">
 					<p class="text-sm text-muted-foreground">{organizationName}</p>
 					<p class="text-lg font-semibold">{priceLine}</p>
 					<p class="mt-1 text-sm text-muted-foreground">
-						{m['subscribe.firstCharge']({ price: firstChargeAmount })}
+						{isFree
+							? m['subscribe.freeNoCharge']()
+							: m['subscribe.firstCharge']({ price: firstChargeAmount })}
 					</p>
 				</div>
 
-				<p class="text-sm text-muted-foreground">{m['subscribe.autoRenew']({ cadence })}</p>
+				<p class="text-sm text-muted-foreground">
+					{#if neverExpires}
+						{m['subscribe.neverRenews']()}
+					{:else}
+						{m['subscribe.autoRenew']({ cadence })}
+					{/if}
+				</p>
 
 				<!-- The one canonical billing disclosure. Collapsed by default, and
-				     deliberately not repeated on any other membership surface. -->
-				<details class="rounded-lg border p-3">
-					<summary
-						class="cursor-pointer text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-					>
-						{m['subscribe.billing.title']()}
-					</summary>
-					<ul class="ml-4 mt-2 list-disc space-y-1 text-sm text-muted-foreground">
-						<li>{m['subscribe.billing.renewal']()}</li>
-						<li>{gracePeriodLine}</li>
-						<li>{m['subscribe.billing.cancelling']()}</li>
-						<li>{revivalLine}</li>
-					</ul>
-				</details>
+				     deliberately not repeated on any other membership surface.
+				     Withdrawn for a FREE plan: all four bullets describe renewals,
+				     failed payments and revival windows that can never happen when
+				     nothing is ever charged. -->
+				{#if !isFree}
+					<details class="rounded-lg border p-3">
+						<summary
+							class="cursor-pointer text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						>
+							{m['subscribe.billing.title']()}
+						</summary>
+						<ul class="ml-4 mt-2 list-disc space-y-1 text-sm text-muted-foreground">
+							<li>{m['subscribe.billing.renewal']()}</li>
+							<li>{gracePeriodLine}</li>
+							<li>{m['subscribe.billing.cancelling']()}</li>
+							<li>{revivalLine}</li>
+						</ul>
+					</details>
+				{/if}
 
-				{#if refundPolicy}
+				<!-- Nothing was paid, so a refund policy has nothing to speak about. -->
+				{#if refundPolicy && !isFree}
 					<details class="rounded-lg border p-3">
 						<summary
 							class="cursor-pointer text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -247,7 +307,11 @@
 					</details>
 				{/if}
 
-				<p class="text-xs text-muted-foreground">{m['subscribe.stripeDisclaimer']()}</p>
+				<!-- No Stripe object is involved in a free plan; saying otherwise would
+				     imply a payment step that never comes. -->
+				{#if !isFree}
+					<p class="text-xs text-muted-foreground">{m['subscribe.stripeDisclaimer']()}</p>
+				{/if}
 
 				{#if errorMessage}
 					<p role="alert" class="text-sm font-medium text-destructive">{errorMessage}</p>
@@ -256,9 +320,10 @@
 		{/if}
 
 		<DialogFooter class="gap-2">
-			{#if activationPending}
-				<!-- No retry: a second attempt can only hit the same 409 until the
-				     webhook lands. Dismissing is the only useful action left. -->
+			{#if activationPending || joined}
+				<!-- Nothing left to press: a second attempt can only hit the same 409
+				     until the webhook lands, and a completed free join would only be
+				     refused as a duplicate subscription. -->
 				<Button variant="outline" onclick={() => handleOpenChange(false)}>
 					{m['common.close']()}
 				</Button>
@@ -270,7 +335,7 @@
 					{#if isBusy}
 						<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
 					{/if}
-					{m['subscribe.confirmCta']()}
+					{isFree ? m['subscribe.confirmFreeCta']() : m['subscribe.confirmCta']()}
 				</Button>
 			{/if}
 		</DialogFooter>

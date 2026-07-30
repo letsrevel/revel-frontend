@@ -236,4 +236,61 @@ describe('PlanCard', () => {
 
 		expect(screen.getByRole('button', { name: /subscribe/i })).toBeDisabled();
 	});
+
+	// A FREE plan is un-billed like an OFFLINE one but, unlike it, members take it
+	// themselves: `POST …/subscribe` accepts it and activates on the spot. Routing
+	// it into the "managed by the organization" dead end would hide a plan the
+	// backend is willing to grant.
+	describe('a free plan', () => {
+		const freePlan = () =>
+			makePlan({
+				name: 'Supporter',
+				payment_method: 'free',
+				price: '0.00',
+				period_unit: 'lifetime'
+			});
+
+		it('states the price as Free and says the membership never expires', () => {
+			renderCard({ plan: freePlan() });
+
+			expect(screen.getByText('Free')).toBeInTheDocument();
+			expect(screen.getByText('Never expires')).toBeInTheDocument();
+			expect(screen.queryByText(/€0\.00/)).toBeNull();
+			expect(screen.queryByText(/managed by the organization/i)).toBeNull();
+		});
+
+		it('offers a join CTA that hands the plan to the caller', async () => {
+			const user = userEvent.setup();
+			const { onSubscribe } = renderCard({ plan: freePlan() });
+
+			await user.click(screen.getByRole('button', { name: /join for free/i }));
+
+			expect(onSubscribe).toHaveBeenCalledWith(expect.objectContaining({ id: 'plan-1' }));
+		});
+
+		it('sends a guest to log in with join wording, not subscribe wording', () => {
+			renderCard({ plan: freePlan(), isAuthenticated: false });
+
+			const link = screen.getByRole('link', { name: /log in to join/i });
+			expect(link).toHaveAttribute('href', '/login?returnUrl=%2Forg%2Facme');
+		});
+
+		// Plan-level stops still apply: a capped free plan can fill up.
+		it('still withdraws the CTA when it is sold out', () => {
+			renderCard({ plan: makePlan({ payment_method: 'free', price: '0.00', sold_out: true }) });
+
+			expect(screen.getByText('Sold out')).toBeInTheDocument();
+			expect(screen.queryByRole('button')).toBeNull();
+		});
+	});
+
+	// An OFFLINE plan may also be lifetime — it just has a real price to state.
+	it('quotes a paid lifetime plan as a one-time amount', () => {
+		renderCard({
+			plan: makePlan({ payment_method: 'offline', price: '50.00', period_unit: 'lifetime' })
+		});
+
+		expect(screen.getByText('€50.00 · one-time')).toBeInTheDocument();
+		expect(screen.getByText('Never expires')).toBeInTheDocument();
+	});
 });
