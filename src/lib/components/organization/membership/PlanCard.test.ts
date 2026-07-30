@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import PlanCard from './PlanCard.svelte';
 import type { MySubscriptionSchema, PublicPlanSchema } from '$lib/api/generated/types.gen';
+import * as m from '$lib/paraglide/messages.js';
 
 function makePlan(overrides: Partial<PublicPlanSchema> = {}): PublicPlanSchema {
 	return {
@@ -235,6 +236,99 @@ describe('PlanCard', () => {
 		renderCard({ subscriptionLoading: true });
 
 		expect(screen.getByRole('button', { name: /subscribe/i })).toBeDisabled();
+	});
+
+	// #733: since BE #831 a tier can be gated AND priced. `POST …/subscribe` runs
+	// the whole eligibility gate stack, so a Subscribe button offered beside "a
+	// membership questionnaire is required" can only ever collect a 400 — after
+	// quoting the member a concrete charge.
+	describe("when the tier's gates are unsatisfied for this viewer", () => {
+		it('withdraws Subscribe and explains why, with the price still on the card', () => {
+			const { onSubscribe } = renderCard({
+				gateBlocked: true,
+				gateReason: 'This organization asks new members to fill in a questionnaire first.'
+			});
+
+			expect(screen.queryByRole('button', { name: /subscribe/i })).toBeNull();
+			expect(
+				screen.getByText(m['membershipPlans.gatedSubscribeHelper'](), { exact: false })
+			).toBeInTheDocument();
+			expect(
+				screen.getByText('This organization asks new members to fill in a questionnaire first.')
+			).toBeInTheDocument();
+			// What they are working toward stays visible.
+			expect(screen.getByText('€10.00 / month')).toBeInTheDocument();
+			expect(onSubscribe).not.toHaveBeenCalled();
+		});
+
+		// Not merely adjacent to the reason: the note that replaces the CTA carries
+		// it, and points at the tier's full requirement list (WCAG 1.3.1).
+		it('associates the withheld CTA with the tier requirements programmatically', () => {
+			renderCard({
+				gateBlocked: true,
+				gateReason: 'Membership requests are approved by the organization.',
+				gateRequirementsId: 'tier-1-requirements'
+			});
+
+			const note = screen.getByRole('note');
+			expect(note).toHaveAttribute('aria-describedby', 'tier-1-requirements');
+			expect(note).toHaveTextContent('Membership requests are approved by the organization.');
+		});
+
+		// Manual approval has the same shape as the questionnaire: apply, be
+		// approved, then pay. Nothing to press until the first two happen.
+		it('withdraws the free-join CTA too, in join wording', () => {
+			renderCard({
+				plan: makePlan({ payment_method: 'free', price: '0.00', period_unit: 'lifetime' }),
+				gateBlocked: true,
+				gateReason: 'Membership requests are approved by the organization.'
+			});
+
+			expect(screen.queryByRole('button', { name: /join for free/i })).toBeNull();
+			expect(
+				screen.getByText(m['membershipPlans.gatedJoinHelper'](), { exact: false })
+			).toBeInTheDocument();
+			expect(screen.queryByText(m['membershipPlans.gatedSubscribeHelper']())).toBeNull();
+		});
+
+		// The crux: "the tier is gated" is not "this viewer is blocked". A member
+		// who has already passed the questionnaire comes back allowed, and hiding
+		// the plan from them would be a worse bug than the one being fixed.
+		it('offers Subscribe untouched once the gates are satisfied', async () => {
+			const user = userEvent.setup();
+			const { onSubscribe } = renderCard({ gateBlocked: false });
+
+			await user.click(screen.getByRole('button', { name: /subscribe/i }));
+			expect(onSubscribe).toHaveBeenCalledTimes(1);
+			expect(screen.queryByRole('note')).toBeNull();
+		});
+
+		// Until the verdict lands we do not know which of the two it is, so the
+		// button keeps its label and its box but cannot be pressed — the same
+		// treatment the membership lookup already gets.
+		it('holds the Subscribe button while the verdict is in flight', () => {
+			renderCard({ gatePending: true });
+
+			expect(screen.getByRole('button', { name: /subscribe/i })).toBeDisabled();
+		});
+
+		// Nobody asked the backend about a guest, and "Log in to subscribe" is true
+		// whatever their eligibility turns out to be.
+		it('leaves a guest with the login CTA', () => {
+			renderCard({ isAuthenticated: false, gateBlocked: true });
+
+			expect(screen.getByRole('link', { name: /log in to subscribe/i })).toBeInTheDocument();
+			expect(screen.queryByRole('note')).toBeNull();
+		});
+
+		// Plan-level stops still outrank the gate: a sold-out plan says so, rather
+		// than blaming the questionnaire for a card nobody could take anyway.
+		it('keeps plan-level stops ahead of the gate', () => {
+			renderCard({ plan: makePlan({ sold_out: true }), gateBlocked: true });
+
+			expect(screen.getByText('Sold out')).toBeInTheDocument();
+			expect(screen.queryByRole('note')).toBeNull();
+		});
 	});
 
 	// A FREE plan is un-billed like an OFFLINE one but, unlike it, members take it

@@ -5141,7 +5141,9 @@
 		"viewMembership": "Voir les options d'adhésion",
 		"joinFreeCta": "Rejoindre gratuitement",
 		"loginToJoin": "Se connecter pour rejoindre",
-		"freeHelper": "Aucun paiement requis — vous pouvez rejoindre immédiatement."
+		"freeHelper": "Aucun paiement requis — vous pouvez rejoindre immédiatement.",
+		"gatedSubscribeHelper": "Vous pourrez vous abonner une fois les conditions de ce niveau remplies.",
+		"gatedJoinHelper": "Vous pourrez rejoindre une fois les conditions de ce niveau remplies."
 	},
 	"requestWhitelistButton": {
 		"mustBeLoggedIn": "Tu dois être connecté pour demander une vérification",

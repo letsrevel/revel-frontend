@@ -29,6 +29,29 @@
 		subscription?: MySubscriptionSchema | null;
 		/** The subscription lookup is still in flight — the answer is not known yet. */
 		subscriptionLoading?: boolean;
+		/**
+		 * The tier's membership gates are known to be UNSATISFIED for this viewer
+		 * (#733). Resolved by `TierCard` from a plan-bearing eligibility verdict —
+		 * never from the tier's static `questionnaire_id` / `requires_approval`,
+		 * which say the tier is gated, not that this viewer is behind the gate.
+		 *
+		 * Defaults to false, and stays false whenever the verdict is unknown
+		 * (guest, ungated tier, request in flight or failed). Withdrawing the CTA
+		 * from somebody who is in fact eligible is a worse failure than the dead
+		 * button this flag exists to remove, and `POST …/subscribe` runs the whole
+		 * gate stack itself (BE #831) — so an unknown answer costs a 400 at worst,
+		 * never an unreachable plan.
+		 */
+		gateBlocked?: boolean;
+		/** Localized explanation of that block, rendered where the CTA was. */
+		gateReason?: string | null;
+		/** The verdict is still in flight: hold the CTA rather than offer it. */
+		gatePending?: boolean;
+		/**
+		 * Id of the tier's requirement list, so the withheld-CTA note points at the
+		 * full requirements rather than relying on them merely being nearby.
+		 */
+		gateRequirementsId?: string | null;
 	}
 
 	const {
@@ -37,12 +60,16 @@
 		onSubscribe,
 		organizationSlug,
 		subscription = null,
-		subscriptionLoading = false
+		subscriptionLoading = false,
+		gateBlocked = false,
+		gateReason = null,
+		gatePending = false,
+		gateRequirementsId = null
 	}: Props = $props();
 
 	/**
 	 * What the card offers, in precedence order:
-	 * already subscribed → offline → sold out → paused → subscribe/login → nothing.
+	 * already subscribed → offline → sold out → paused → gated → subscribe/login.
 	 *
 	 * The membership check comes first because it is a fact about the *viewer*,
 	 * and it outranks every fact about the plan: an existing member cannot buy
@@ -55,6 +82,18 @@
 	 * *member* self-serve — `POST …/subscribe` accepts it and activates the
 	 * subscription on the spot — so it takes the ordinary join path, with the
 	 * label and dialog copy adjusted for the absent charge.
+	 *
+	 * `gated` sits second-to-last, below every plan-level stop and above the
+	 * viewer's own CTA (#733). Since BE #831 a tier can be gated AND priced, and
+	 * a questionnaire the viewer has not passed makes Subscribe an action that
+	 * cannot succeed: `/subscribe` runs the same gate stack and refuses with a
+	 * 400 — after the member has committed to a concrete charge. The CTA is
+	 * *removed* rather than disabled, so the tier's questionnaire/approval
+	 * affordance is the only thing left to press; the price stays on the card
+	 * above, so what they are working toward is still visible.
+	 *
+	 * A guest is untouched: nobody has asked the backend about them, and "Log in
+	 * to subscribe" is true whatever their eligibility turns out to be.
 	 */
 	const action = $derived.by(() => {
 		if (subscription) {
@@ -64,7 +103,20 @@
 		if (plan.sold_out) return 'none';
 		if (plan.sales_status === 'paused') return 'none';
 		if (!plan.id) return 'none';
-		return isAuthenticated ? 'subscribe' : 'login';
+		if (!isAuthenticated) return 'login';
+		return gateBlocked ? 'gated' : 'subscribe';
+	});
+
+	/**
+	 * Held while either lookup is unsettled: until the subscription AND the gate
+	 * verdict answer, we do not know whether this button would 400. Transient,
+	 * on a control that keeps its label and its box, so nothing shifts and
+	 * nothing is conveyed by colour alone.
+	 */
+	const ctaHeld = $derived.by(() => {
+		const subLoading = subscriptionLoading;
+		const gateLoading = gatePending;
+		return subLoading || gateLoading;
 	});
 
 	/**
@@ -172,12 +224,26 @@
 				{/if}
 			{:else if action === 'offline'}
 				<p class="text-sm text-muted-foreground">{m['membershipPlans.offlineManaged']()}</p>
+			{:else if action === 'gated'}
+				<!-- What replaces the CTA carries the reason itself, rather than
+				     leaving a bare gap next to a requirement stated elsewhere on the
+				     card: the note IS the explanation, and `aria-describedby` ties it
+				     to the tier's full requirement list so the association is
+				     programmatic and not merely visual (WCAG 1.3.1). -->
+				<p
+					role="note"
+					class="text-sm text-muted-foreground"
+					aria-describedby={gateRequirementsId ?? undefined}
+				>
+					{isFree
+						? m['membershipPlans.gatedJoinHelper']()
+						: m['membershipPlans.gatedSubscribeHelper']()}
+					{#if gateReason}
+						<span class="block">{gateReason}</span>
+					{/if}
+				</p>
 			{:else if action === 'subscribe'}
-				<!-- Disabled only while the membership lookup is in flight: until it
-				     answers we do not know whether this button would 400. It is a
-				     transient state on a control that keeps its label and its box, so
-				     nothing shifts and nothing is conveyed by colour alone. -->
-				<Button class="w-full sm:w-auto" onclick={handleSubscribe} disabled={subscriptionLoading}>
+				<Button class="w-full sm:w-auto" onclick={handleSubscribe} disabled={ctaHeld}>
 					{isFree ? m['membershipPlans.joinFreeCta']() : m['membershipPlans.subscribeCta']()}
 				</Button>
 				{#if isFree}

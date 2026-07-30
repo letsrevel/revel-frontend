@@ -1,11 +1,18 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { resolve } from '$app/paths';
+	import { createQuery } from '@tanstack/svelte-query';
 	import type {
 		MySubscriptionSchema,
 		PublicMembershipTierSchema,
 		PublicPlanSchema
 	} from '$lib/api/generated/types.gen';
+	import { authStore } from '$lib/stores/auth.svelte';
+	import { joinEligibilityQueryOptions } from '$lib/queries/join-eligibility';
+	import {
+		getMembershipStatusMessage,
+		isBlockedByMembershipGate
+	} from '$lib/utils/membership-eligibility';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { ClipboardList, Gift, ShieldCheck } from '@lucide/svelte';
@@ -50,6 +57,8 @@
 	// its own accessible name.
 	const uid = $props.id();
 	const headingId = `${uid}-tier-name`;
+	/** Referenced by a plan card whose CTA the gates withheld. */
+	const requirementsId = `${uid}-tier-requirements`;
 
 	/**
 	 * `id` is optional in the generated schema (it is a model field with a
@@ -79,6 +88,82 @@
 	 * by colour (WCAG 1.4.1).
 	 */
 	const isFree = $derived(tier.is_free);
+
+	const accessToken = $derived(authStore.accessToken);
+
+	/**
+	 * Does this tier carry a gate AT ALL? A static fact about the tier, straight
+	 * off the public listing — it decides whether to ASK the backend, never
+	 * whether to withhold anything. Only a verdict can say that this viewer is
+	 * behind the gate; an ungated tier asks nothing and its plan cards behave
+	 * exactly as they did before #733.
+	 */
+	const isGated = $derived.by(() => {
+		// Read unconditionally: `||` inside a `$derived` would leave the skipped
+		// operand untracked by the query options below.
+		const questionnaire = !!tier.questionnaire_id;
+		const approval = !!tier.requires_approval;
+		return questionnaire || approval;
+	});
+
+	/**
+	 * The plan the gate verdict is asked about, and why one plan can answer for
+	 * all of them.
+	 *
+	 * A plan is REQUIRED: with no `plan_id` the backend's gate #6 short-circuits
+	 * any monetized tier with `tier_requires_subscription` and never reaches the
+	 * questionnaire and approval gates at all — which is exactly why the CTA's
+	 * own tier-only verdict cannot answer this question. Given a plan, the gates
+	 * that do run above the payment one are facts about the (viewer, tier) pair,
+	 * identical for every plan on the card; `isBlockedByMembershipGate` keeps only
+	 * those, so the choice of plan below cannot leak into the answer.
+	 *
+	 * Cheapest first (the list is already sorted) among the plans that could
+	 * offer a CTA at all: an offline, sold-out or paused plan card shows no
+	 * Subscribe for the gate to withdraw, so a tier with nothing else on it asks
+	 * nothing.
+	 */
+	const gatePlanId = $derived(
+		plans.find(
+			(p) => !!p.id && p.payment_method !== 'offline' && !p.sold_out && p.sales_status !== 'paused'
+		)?.id ?? null
+	);
+
+	const gateQueryEnabled = $derived.by(() => {
+		// Every operand read unconditionally, for the reason given above.
+		const authed = isAuthenticated;
+		const gated = isGated;
+		const hasTier = !!tierId;
+		const hasPlan = !!gatePlanId;
+		const token = !!accessToken;
+		// Owners and staff pass the gate stack by definition (gate #1), and the
+		// grid already suppresses their per-tier CTA; asking would be N round
+		// trips for a question they never posed.
+		const asks = showJoinCta;
+		// A viewer with a live subscription gets the member branch on every card,
+		// so no verdict could change what they see.
+		const subscribed = !!subscription;
+		return authed && gated && hasTier && hasPlan && token && asks && !subscribed;
+	});
+
+	const gateQuery = createQuery(() =>
+		joinEligibilityQueryOptions({
+			organizationSlug,
+			tierId,
+			planId: gatePlanId,
+			accessToken,
+			enabled: gateQueryEnabled
+		})
+	);
+
+	const gateVerdict = $derived(gateQuery.data ?? null);
+	const gateBlocked = $derived(gateVerdict ? isBlockedByMembershipGate(gateVerdict) : false);
+	const gateReason = $derived(
+		gateBlocked && gateVerdict ? getMembershipStatusMessage(gateVerdict) : null
+	);
+	// `isLoading`, not `isPending`: a disabled query stays pending forever, and
+	// that would hold the Subscribe button of every ungated tier hostage.
+	const gatePending = $derived(gateQuery.isLoading);
 </script>
 
 <!-- `<article>` + `aria-labelledby`, not a labelled `region`: the cards are peers
@@ -108,7 +193,7 @@
 			<!-- What it takes to get in. Rendered for everyone, member or not: it is a
 		     description of the tier, not of the viewer's progress through it. -->
 			{#if tier.requires_approval || tier.questionnaire_id}
-				<ul class="space-y-1.5 text-sm">
+				<ul id={requirementsId} class="space-y-1.5 text-sm">
 					{#if tier.requires_approval}
 						<li class="flex items-start gap-2">
 							<ShieldCheck
@@ -156,6 +241,10 @@
 							{subscriptionLoading}
 							{organizationSlug}
 							{onSubscribe}
+							{gateBlocked}
+							{gateReason}
+							{gatePending}
+							gateRequirementsId={requirementsId}
 						/>
 					{/each}
 				</div>

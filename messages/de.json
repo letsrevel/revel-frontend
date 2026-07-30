@@ -5170,7 +5170,9 @@
 		"viewMembership": "Mitgliedschaftsoptionen ansehen",
 		"joinFreeCta": "Kostenlos beitreten",
 		"loginToJoin": "Zum Beitreten anmelden",
-		"freeHelper": "Keine Zahlung nötig — du kannst sofort beitreten."
+		"freeHelper": "Keine Zahlung nötig — du kannst sofort beitreten.",
+		"gatedSubscribeHelper": "Du kannst abonnieren, sobald die Voraussetzungen dieser Stufe erfüllt sind.",
+		"gatedJoinHelper": "Du kannst beitreten, sobald die Voraussetzungen dieser Stufe erfüllt sind."
 	},
 	"requestWhitelistButton": {
 		"mustBeLoggedIn": "Du musst eingeloggt sein, um eine Verifizierung anzufordern",

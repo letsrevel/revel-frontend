@@ -5170,7 +5170,9 @@
 		"viewMembership": "Vedi le opzioni di iscrizione",
 		"joinFreeCta": "Iscriviti gratis",
 		"loginToJoin": "Accedi per iscriverti",
-		"freeHelper": "Nessun pagamento richiesto: puoi iscriverti subito."
+		"freeHelper": "Nessun pagamento richiesto: puoi iscriverti subito.",
+		"gatedSubscribeHelper": "Potrai abbonarti quando avrai soddisfatto i requisiti di questo livello.",
+		"gatedJoinHelper": "Potrai iscriverti quando avrai soddisfatto i requisiti di questo livello."
 	},
 	"requestWhitelistButton": {
 		"mustBeLoggedIn": "Devi essere loggato per richiedere la verifica",

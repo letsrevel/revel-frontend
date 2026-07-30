@@ -70,6 +70,62 @@ export function getMembershipCtaKind(e: MembershipEligibilitySchema): Membership
 }
 
 /**
+ * The refusals that mean "a membership GATE is unsatisfied for this viewer".
+ *
+ * Deliberately an allow-list rather than "anything not allowed", because the
+ * caller (`PlanCard`, via `TierCard`) uses it to WITHDRAW a Subscribe button:
+ * a false positive hides a plan from somebody who could have taken it, which is
+ * worse than the dead Subscribe button #733 is about. Every code here is
+ * decided by gates #3–#9 of the backend stack
+ * (`events/service/membership_manager/gates.py`) — blacklist, whitelist,
+ * accept-requests, application status, questionnaire, manual approval — all of
+ * which are facts about the (viewer, tier) pair and are therefore identical for
+ * every plan on the tier.
+ *
+ * Excluded on purpose, all of them PAYMENT-READINESS refusals from gate #6 /
+ * #10 rather than gates the member can clear by filling something in:
+ * `tier_requires_subscription`, `plan_not_online`, `org_not_stripe_connected`,
+ * `plan_unavailable`, `tier_unavailable`, `duplicate_active_subscription`,
+ * `org_not_visible`. They are per-PLAN (or already modelled by the plan's own
+ * `payment_method` / `sold_out` / `sales_status` fields, and by the viewer's
+ * live subscription), so the plan card keeps deciding those for itself.
+ * `duplicate_active_subscription` in particular is one the backend deliberately
+ * lets fall THROUGH to `/subscribe` (`subscription_eligibility.
+ * _ensure_plan_eligibility`), where a pending checkout resumes instead of
+ * dead-ending.
+ */
+const GATE_BLOCKING_REASON_CODES: readonly MembershipReasonCode[] = [
+	'blacklisted',
+	'requires_verification',
+	'whitelist_pending',
+	'whitelist_rejected',
+	'not_accepting_requests',
+	'application_rejected',
+	'membership_questionnaire_missing',
+	'membership_questionnaire_pending',
+	'membership_questionnaire_failed',
+	'membership_questionnaire_retake_cooldown',
+	'membership_questionnaire_attempts_exhausted',
+	'requires_approval',
+	'membership_paused'
+];
+
+/**
+ * Is this viewer blocked by one of the tier's membership gates?
+ *
+ * The distinction that matters: a tier's `questionnaire_id` / `requires_approval`
+ * say the tier IS GATED; only a verdict says whether THIS viewer is still behind
+ * the gate. A member who has already passed the questionnaire comes back
+ * `allowed` (with `proceed_to_payment` for a plan-bearing check) and must keep
+ * every CTA a member of an ungated tier would get — hence the first line.
+ */
+export function isBlockedByMembershipGate(e: MembershipEligibilitySchema): boolean {
+	if (e.allowed) return false;
+	if (!e.reason_code) return false;
+	return GATE_BLOCKING_REASON_CODES.includes(e.reason_code);
+}
+
+/**
  * Localized prose per reason code.
  *
  * Deliberately partial: `org_not_visible`, `tier_requires_subscription`,
