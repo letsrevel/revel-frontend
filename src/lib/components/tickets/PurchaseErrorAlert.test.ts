@@ -78,10 +78,12 @@ describe('PurchaseErrorAlert', () => {
 		);
 	});
 
-	it("links at the organization's membership plans", () => {
+	// The dedicated tier page since #720: the old `/org/acme#membership` fragment
+	// pointed at a plan grid that no longer lives on the landing page.
+	it("links at the organization's membership page", () => {
 		renderAlert({ error: refusalError });
 		const link = screen.getByRole('link', { name: m['membershipPlans.viewMembership']() });
-		expect(link).toHaveAttribute('href', '/org/acme#membership');
+		expect(link).toHaveAttribute('href', '/org/acme/membership');
 	});
 
 	it('omits the link when the organization slug is unknown', () => {
