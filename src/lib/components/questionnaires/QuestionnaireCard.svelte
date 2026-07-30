@@ -9,7 +9,18 @@
 	} from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
-	import { Edit, Eye, FileText, Trash2, CalendarCheck, AlertCircle, Copy } from '@lucide/svelte';
+	import {
+		Edit,
+		Eye,
+		FileText,
+		Trash2,
+		CalendarCheck,
+		AlertCircle,
+		Copy,
+		Layers,
+		Settings
+	} from '@lucide/svelte';
+	import { resolve } from '$app/paths';
 	import type {
 		OrganizationQuestionnaireInListSchema,
 		OrganizationQuestionnaireSchema
@@ -117,7 +128,7 @@
 	);
 
 	// Create tooltip text for assigned events
-	const assignmentTooltip = $derived(() => {
+	const assignmentTooltip = $derived.by(() => {
 		const events = questionnaire.events || [];
 		const series = questionnaire.event_series || [];
 		const allAssignments = [
@@ -133,6 +144,42 @@
 		const remaining = allAssignments.length - 2;
 		return m['questionnaireCard.assignedToAndMore']({ first, remaining: remaining.toString() });
 	});
+
+	// Membership questionnaires are never linked to events or series: they are
+	// referenced from the other side, by MembershipTier.membership_questionnaire
+	// and Organization.default_membership_questionnaire. So the event-assignment
+	// count and the "Assign to Events" action are meaningless for them (#721).
+	const isMembership = $derived(questionnaire.questionnaire_type === 'membership');
+	const tiers = $derived(questionnaire.tiers ?? []);
+	const isOrganizationDefault = $derived(questionnaire.is_organization_default === true);
+
+	// Short, visible summary of tier usage (the names live in the tooltip)
+	const tierUsageLabel = $derived(
+		tiers.length === 0
+			? m['questionnaireCard.notUsedByAnyTier']()
+			: tiers.length === 1
+				? m['questionnaireCard.usedByOneTier']()
+				: m['questionnaireCard.usedByTierCount']({ count: tiers.length.toString() })
+	);
+
+	const tierUsageTooltip = $derived.by(() => {
+		const names = tiers.map((tier) => tier.name);
+
+		if (names.length === 0) return m['questionnaireCard.notUsedByAnyTierTooltip']();
+		if (names.length <= 3) return m['questionnaireCard.usedByTiers']({ tiers: names.join(', ') });
+
+		const first = names.slice(0, 2).join(', ');
+		const remaining = names.length - 2;
+		return m['questionnaireCard.usedByTiersAndMore']({ first, remaining: remaining.toString() });
+	});
+
+	// Where membership assignment actually happens
+	const tiersTabHref = $derived(
+		`${resolve('/(auth)/org/[slug]/admin/members', { slug: organizationSlug })}?tab=tiers`
+	);
+	const settingsHref = $derived(
+		resolve('/(auth)/org/[slug]/admin/settings', { slug: organizationSlug })
+	);
 
 	// Handle delete
 	async function handleDelete() {
@@ -207,25 +254,52 @@
 			{/if}
 
 			<!-- Stats with Tooltip -->
-			<div class="flex gap-4 text-sm text-muted-foreground">
+			<div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
 				<TooltipProvider>
-					<Tooltip>
-						<TooltipTrigger class="cursor-help underline decoration-dotted underline-offset-4">
-							{#if assignmentCount > 0}
-								<span>
-									<span class="font-medium text-foreground">{assignmentCount}</span>
-									{assignmentCount === 1
-										? m['questionnaireCard.assignment']()
-										: m['questionnaireCard.assignments']()}
-								</span>
-							{:else}
-								<span>{m['questionnaireCard.notAssigned']()}</span>
-							{/if}
-						</TooltipTrigger>
-						<TooltipContent>
-							<p class="max-w-xs text-sm">{assignmentTooltip()}</p>
-						</TooltipContent>
-					</Tooltip>
+					{#if isMembership}
+						<!-- Membership: usage is tier / organization-default, never events -->
+						<Tooltip>
+							<TooltipTrigger class="cursor-help underline decoration-dotted underline-offset-4">
+								<span>{tierUsageLabel}</span>
+							</TooltipTrigger>
+							<TooltipContent>
+								<p class="max-w-xs text-sm">{tierUsageTooltip}</p>
+							</TooltipContent>
+						</Tooltip>
+						{#if isOrganizationDefault}
+							<Tooltip>
+								<TooltipTrigger class="cursor-help underline decoration-dotted underline-offset-4">
+									<span class="inline-flex items-center gap-1">
+										<Settings class="h-3.5 w-3.5" aria-hidden="true" />
+										{m['questionnaireCard.organizationDefault']()}
+									</span>
+								</TooltipTrigger>
+								<TooltipContent>
+									<p class="max-w-xs text-sm">
+										{m['questionnaireCard.organizationDefaultTooltip']()}
+									</p>
+								</TooltipContent>
+							</Tooltip>
+						{/if}
+					{:else}
+						<Tooltip>
+							<TooltipTrigger class="cursor-help underline decoration-dotted underline-offset-4">
+								{#if assignmentCount > 0}
+									<span>
+										<span class="font-medium text-foreground">{assignmentCount}</span>
+										{assignmentCount === 1
+											? m['questionnaireCard.assignment']()
+											: m['questionnaireCard.assignments']()}
+									</span>
+								{:else}
+									<span>{m['questionnaireCard.notAssigned']()}</span>
+								{/if}
+							</TooltipTrigger>
+							<TooltipContent>
+								<p class="max-w-xs text-sm">{assignmentTooltip}</p>
+							</TooltipContent>
+						</Tooltip>
+					{/if}
 				</TooltipProvider>
 			</div>
 
@@ -259,17 +333,28 @@
 				</Button>
 			</div>
 
-			<!-- Assign to Events Button -->
-			<Button
-				variant="outline"
-				size="sm"
-				onclick={openAssignmentModal}
-				disabled={isLoadingFullQuestionnaire}
-				class="w-full gap-2"
-			>
-				<CalendarCheck class="h-4 w-4" />
-				{m['questionnaireCard.assignToEvents']()}
-			</Button>
+			<!-- Assignment: events for every other type, tiers/settings for membership -->
+			{#if isMembership}
+				<Button href={tiersTabHref} variant="outline" size="sm" class="w-full gap-2">
+					<Layers class="h-4 w-4" aria-hidden="true" />
+					{m['questionnaireCard.assignToTiers']()}
+				</Button>
+				<Button href={settingsHref} variant="outline" size="sm" class="w-full gap-2">
+					<Settings class="h-4 w-4" aria-hidden="true" />
+					{m['questionnaireCard.organizationMembershipSettings']()}
+				</Button>
+			{:else}
+				<Button
+					variant="outline"
+					size="sm"
+					onclick={openAssignmentModal}
+					disabled={isLoadingFullQuestionnaire}
+					class="w-full gap-2"
+				>
+					<CalendarCheck class="h-4 w-4" />
+					{m['questionnaireCard.assignToEvents']()}
+				</Button>
+			{/if}
 
 			<!-- Duplicate Button -->
 			<Button
