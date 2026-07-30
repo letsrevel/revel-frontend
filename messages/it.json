@@ -3327,7 +3327,9 @@
 					"online": "Online · Stripe",
 					"offline": "Offline · manuale",
 					"soldOut": "Esaurito",
-					"paused": "Vendite sospese"
+					"paused": "Vendite sospese",
+					"free": "Gratuito · self-service",
+					"lifetime": "Non scade mai"
 				},
 				"occupancy": "{active} attivi",
 				"occupancyCapped": "{active} / {cap} attivi",
@@ -3360,7 +3362,11 @@
 						"nameRequired": "Il nome è obbligatorio",
 						"priceInvalid": "Il prezzo deve essere 0 o superiore",
 						"periodInvalid": "Il numero di periodi deve essere compreso tra 1 e 120",
-						"maxSubsInvalid": "Il numero massimo di abbonamenti deve essere almeno 1, oppure vuoto per illimitato"
+						"maxSubsInvalid": "Il numero massimo di abbonamenti deve essere almeno 1, oppure vuoto per illimitato",
+						"freePriceNotZero": "I piani gratuiti devono avere prezzo 0.",
+						"freeNeedsLifetime": "I piani gratuiti devono usare il periodo a vita.",
+						"onlinePriceZero": "I piani online devono costare più di 0. Per un'iscrizione senza costi usa un piano gratuito.",
+						"onlineNoLifetime": "I piani online non possono essere a vita: Stripe fattura mensilmente o annualmente. Per un'iscrizione pagata una tantum usa un piano offline."
 					},
 					"periodMonth": "mese/i",
 					"periodYear": "anno/i",
@@ -3374,7 +3380,12 @@
 					"maxSubscriptionsUnlimited": "Illimitato",
 					"maxSubscriptionsHelp": "Limite di iscritti simultanei. I posti si liberano quando un abbonamento termina.",
 					"pauseSales": "Sospendi le vendite",
-					"pauseSalesHelp": "I membri non possono iscriversi o passare a questo piano mentre è sospeso. Gli abbonati attuali non sono interessati; puoi comunque iscrivere persone manualmente."
+					"pauseSalesHelp": "I membri non possono iscriversi o passare a questo piano mentre è sospeso. Gli abbonati attuali non sono interessati; puoi comunque iscrivere persone manualmente.",
+					"paymentFree": "Gratuito — i membri si iscrivono senza costi",
+					"paymentFreeHelp": "I piani gratuiti non hanno prezzo e non scadono mai. I membri si iscrivono da soli, senza passaggio di pagamento.",
+					"periodLifetime": "a vita (nessun rinnovo)",
+					"freeShapeLocked": "I piani gratuiti hanno sempre prezzo 0 e durata a vita: questi campi non sono modificabili.",
+					"lifetimeNoCount": "Un piano a vita non si rinnova mai, quindi non c'è una frequenza di fatturazione da impostare."
 				},
 				"errors": {
 					"createFailed": "Impossibile creare il piano: {detail}",
@@ -5156,7 +5167,10 @@
 		"pausedHelper": "L'organizzazione ha temporaneamente chiuso le iscrizioni.",
 		"offlineManaged": "Gestito dall'organizzazione — contattala per aderire a questo piano.",
 		"refundPolicy": "Politica di rimborso",
-		"viewMembership": "Vedi le opzioni di iscrizione"
+		"viewMembership": "Vedi le opzioni di iscrizione",
+		"joinFreeCta": "Iscriviti gratis",
+		"loginToJoin": "Accedi per iscriverti",
+		"freeHelper": "Nessun pagamento richiesto: puoi iscriverti subito."
 	},
 	"requestWhitelistButton": {
 		"mustBeLoggedIn": "Devi essere loggato per richiedere la verifica",
@@ -6647,7 +6661,8 @@
 			"month": "mese",
 			"months": "{n} mesi",
 			"year": "anno",
-			"years": "{n} anni"
+			"years": "{n} anni",
+			"lifetime": "a vita"
 		},
 		"status": {
 			"active": "Attivo",
@@ -6679,7 +6694,8 @@
 			"uncancel": "Riattiva il rinnovo",
 			"uncancelling": "Riattivazione…",
 			"uncancelSuccess": "Il rinnovo è di nuovo attivo.",
-			"uncancelError": "Non è stato possibile riattivare il rinnovo. Riprova."
+			"uncancelError": "Non è stato possibile riattivare il rinnovo. Riprova.",
+			"alreadyActive": "Questa iscrizione è già attiva."
 		},
 		"cancelScheduledHint": "Il rinnovo è disattivato. Puoi riattivarlo in qualsiasi momento prima di questa data.",
 		"cancelScheduledHintManaged": "Il rinnovo è disattivato. Per mantenere l'abbonamento, contatta l'organizzazione.",
@@ -6714,7 +6730,12 @@
 			"cta": "Riabbonati",
 			"returnHint": "Pagherai in modo sicuro con Stripe e tornerai alla pagina dell'organizzazione.",
 			"error": "Non è stato possibile avviare il pagamento. Riprova."
-		}
+		},
+		"price": {
+			"free": "Gratuito",
+			"oneTime": "{price} · una tantum"
+		},
+		"neverExpires": "Non scade mai"
 	},
 	"account": {
 		"memberships": {
@@ -6894,7 +6915,11 @@
 			"cancelledTitle": "Pagamento non completato",
 			"cancelledBody": "Il tuo pagamento non è stato completato. Puoi riprenderlo quando vuoi.",
 			"resumeCta": "Riprendi il pagamento"
-		}
+		},
+		"titleFree": "Iscriviti a {plan}",
+		"freeNoCharge": "Non c'è nulla da pagare. L'iscrizione parte appena confermi.",
+		"neverRenews": "Questa iscrizione non scade mai e non viene mai rinnovata né riaddebitata.",
+		"confirmFreeCta": "Iscriviti ora"
 	},
 	"waitlistSettings.title": "Advanced waitlist settings",
 	"waitlistSettings.description": "Configure how seats are offered to waitlist members.",

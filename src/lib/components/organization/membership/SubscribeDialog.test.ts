@@ -5,6 +5,7 @@ import { QueryClient } from '@tanstack/svelte-query';
 import SubscribeDialog from './SubscribeDialog.svelte';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 import { mesubscriptionsSubscribe } from '$lib/api/generated/sdk.gen';
+import { invalidateAll } from '$app/navigation';
 import type { PublicPlanSchema } from '$lib/api/generated/types.gen';
 
 vi.mock('$lib/api/generated/sdk.gen', () => ({
@@ -13,6 +14,12 @@ vi.mock('$lib/api/generated/sdk.gen', () => ({
 
 vi.mock('$lib/stores/auth.svelte', () => ({
 	authStore: { accessToken: 'test-token' }
+}));
+
+// A free join grants the membership server-side, so the page's server load —
+// which decided `isMember` before it existed — has to be re-run.
+vi.mock('$app/navigation', () => ({
+	invalidateAll: vi.fn()
 }));
 
 type Plan = PublicPlanSchema & { id: string };
@@ -345,6 +352,125 @@ describe('SubscribeDialog', () => {
 			});
 			expect(screen.queryByRole('status')).toBeNull();
 			expect(screen.getByRole('button', { name: /continue to payment/i })).toBeInTheDocument();
+		});
+	});
+
+	// A FREE plan has no Stripe object: `checkout_url` comes back null and the
+	// subscription is already ACTIVE. Every line that quotes a charge, a renewal
+	// or Stripe would be false, and there is no return page to report the result,
+	// so the dialog has to do it itself.
+	describe('a free plan', () => {
+		const freePlan = () =>
+			makePlan({
+				name: 'Supporter',
+				payment_method: 'free',
+				price: '0.00',
+				period_unit: 'lifetime'
+			});
+
+		/** The FREE answer: no session, and the row already active. */
+		function mockFreeSubscribe() {
+			vi.mocked(mesubscriptionsSubscribe).mockResolvedValue({
+				data: {
+					subscription: {
+						id: 's1',
+						organization_id: 'org-1',
+						plan_id: 'plan-1',
+						status: 'active',
+						current_period_end: null
+					},
+					checkout_url: null
+				},
+				error: undefined,
+				response: { ok: true } as unknown as Response
+			} as unknown as Awaited<ReturnType<typeof mesubscriptionsSubscribe>>);
+		}
+
+		it('withdraws every charge, renewal and Stripe claim', () => {
+			renderDialog({ plan: freePlan(), refundPolicy: 'No refunds after 14 days.' });
+
+			expect(screen.getByRole('heading', { name: /join supporter/i })).toBeInTheDocument();
+			expect(screen.getByText('Free')).toBeInTheDocument();
+			expect(screen.getByText(/there's nothing to pay/i)).toBeInTheDocument();
+			expect(screen.getByText(/never expires and is never renewed/i)).toBeInTheDocument();
+			expect(screen.queryByText(/you'll be charged/i)).toBeNull();
+			expect(screen.queryByText(/renews automatically/i)).toBeNull();
+			expect(screen.queryByText(/how billing works/i)).toBeNull();
+			expect(screen.queryByText(/refund policy/i)).toBeNull();
+			expect(screen.queryByText(/processed securely by stripe/i)).toBeNull();
+			expect(screen.getByRole('button', { name: /join now/i })).toBeInTheDocument();
+		});
+
+		it('reports the membership as live instead of navigating anywhere', async () => {
+			const user = userEvent.setup();
+			mockFreeSubscribe();
+			renderDialog({ plan: freePlan() });
+
+			await user.click(screen.getByRole('button', { name: /join now/i }));
+
+			await waitFor(() => {
+				expect(screen.getByRole('status')).toHaveTextContent(/welcome, member/i);
+			});
+			expect(screen.queryByRole('alert')).toBeNull();
+			// No Checkout session exists, so nothing may replace the document.
+			expect(window.location.href).toBe('');
+		});
+
+		// The org page cached "not a member" before the join; nothing else will
+		// refresh it, because there is no Stripe return page to mount.
+		it('refreshes the caches that still say the viewer is not a member', async () => {
+			const user = userEvent.setup();
+			const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+			mockFreeSubscribe();
+			renderDialog({ plan: freePlan() });
+
+			await user.click(screen.getByRole('button', { name: /join now/i }));
+
+			await waitFor(() => {
+				expect(vi.mocked(invalidateAll)).toHaveBeenCalledTimes(1);
+			});
+			const keys = invalidateSpy.mock.calls.map(
+				([arg]) => (arg as { queryKey?: unknown[] } | undefined)?.queryKey?.[0]
+			);
+			// The per-org subscription cache the inline membership card reads…
+			expect(keys).toContain('me');
+			// …the join-eligibility verdict, and the admin views of this org.
+			expect(keys).toContain('org');
+			expect(keys).toContain('organization');
+		});
+
+		it('withdraws the confirm CTA once the join has landed', async () => {
+			const user = userEvent.setup();
+			mockFreeSubscribe();
+			const { onOpenChange } = renderDialog({ plan: freePlan() });
+
+			await user.click(screen.getByRole('button', { name: /join now/i }));
+
+			await waitFor(() => {
+				expect(screen.queryByRole('button', { name: /join now/i })).toBeNull();
+			});
+			expect(screen.queryByRole('button', { name: /^cancel$/i })).toBeNull();
+
+			// Two answer to "Close" now: the footer's and the dialog's own ✕.
+			await waitFor(() => {
+				expect(screen.getAllByRole('button', { name: /^close$/i })).toHaveLength(2);
+			});
+			await user.click(screen.getAllByRole('button', { name: /^close$/i })[0]);
+			expect(onOpenChange).toHaveBeenCalledWith(false);
+		});
+
+		// A refusal is still a refusal: the free path must not swallow one.
+		it('renders a refusal as an error, not as a successful join', async () => {
+			const user = userEvent.setup();
+			mockSubscribeError('This plan is sold out.');
+			renderDialog({ plan: freePlan() });
+
+			await user.click(screen.getByRole('button', { name: /join now/i }));
+
+			await waitFor(() => {
+				expect(screen.getByRole('alert')).toHaveTextContent('This plan is sold out.');
+			});
+			expect(screen.queryByRole('status')).toBeNull();
 		});
 	});
 

@@ -172,14 +172,22 @@
 			if (res.error || !res.data) {
 				throw new Error(backendMessage(res.error) || m['subscriptions.actions.resumeError']());
 			}
-			// See SubscribeDialog: `checkout_url` is nullable since FREE plans landed.
-			// Resuming a PENDING row has nowhere to go without a session URL.
-			if (!res.data.checkout_url) {
-				throw new Error(m['subscriptions.actions.resumeError']());
-			}
-			return { ...res.data, checkout_url: res.data.checkout_url };
+			return res.data;
 		},
 		onSuccess: (data) => {
+			// `checkout_url` is nullable since FREE plans landed (#832), and a null one
+			// means the subscribe answered without creating a Stripe session — the row
+			// it returns is already ACTIVE. This button should never be offered for
+			// such a plan (`getMemberActions` withdraws everything for a non-ONLINE
+			// row, and a FREE subscription is never PENDING because it is activated in
+			// the same transaction that creates it), but if the state ever arrives
+			// anyway, "could not resume the payment" would be a lie about a membership
+			// that is live. Settle the caches so the card re-renders the truth.
+			if (!data.checkout_url) {
+				void settleSubscriptionCaches(queryClient, data.subscription);
+				toast.success(m['subscriptions.actions.alreadyActive']());
+				return;
+			}
 			resuming = true;
 			// Hosted Stripe Checkout is another origin: a real document navigation.
 			window.location.href = data.checkout_url;

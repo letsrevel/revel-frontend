@@ -3298,7 +3298,9 @@
 					"online": "En ligne · Stripe",
 					"offline": "Hors ligne · manuel",
 					"soldOut": "Complet",
-					"paused": "Ventes suspendues"
+					"paused": "Ventes suspendues",
+					"free": "Gratuit · libre-service",
+					"lifetime": "N'expire jamais"
 				},
 				"occupancy": "{active} actif(s)",
 				"occupancyCapped": "{active} / {cap} actif(s)",
@@ -3331,7 +3333,11 @@
 						"nameRequired": "Le nom est obligatoire",
 						"priceInvalid": "Le prix doit être de 0 ou plus",
 						"periodInvalid": "Le nombre de périodes doit être compris entre 1 et 120",
-						"maxSubsInvalid": "Le nombre maximum d'abonnements doit être de 1 ou plus, ou vide pour illimité"
+						"maxSubsInvalid": "Le nombre maximum d'abonnements doit être de 1 ou plus, ou vide pour illimité",
+						"freePriceNotZero": "Les formules gratuites doivent être au prix de 0.",
+						"freeNeedsLifetime": "Les formules gratuites doivent utiliser la période à vie.",
+						"onlinePriceZero": "Les formules en ligne doivent coûter plus de 0. Utilisez une formule gratuite pour une adhésion sans frais.",
+						"onlineNoLifetime": "Les formules en ligne ne peuvent pas être à vie — Stripe facture au mois ou à l'année. Utilisez une formule hors ligne pour une adhésion payée une seule fois."
 					},
 					"periodMonth": "mois",
 					"periodYear": "an(s)",
@@ -3345,7 +3351,12 @@
 					"maxSubscriptionsUnlimited": "Illimité",
 					"maxSubscriptionsHelp": "Plafond d'abonnés simultanés. Des places se libèrent lorsqu'un abonnement se termine.",
 					"pauseSales": "Suspendre les ventes",
-					"pauseSalesHelp": "Les membres ne peuvent pas s'abonner ou passer à ce forfait tant qu'il est suspendu. Les abonnés actuels ne sont pas concernés ; vous pouvez toujours inscrire des personnes manuellement."
+					"pauseSalesHelp": "Les membres ne peuvent pas s'abonner ou passer à ce forfait tant qu'il est suspendu. Les abonnés actuels ne sont pas concernés ; vous pouvez toujours inscrire des personnes manuellement.",
+					"paymentFree": "Gratuit — les membres rejoignent sans frais",
+					"paymentFreeHelp": "Les formules gratuites n'ont pas de prix et n'expirent jamais. Les membres s'inscrivent eux-mêmes, sans étape de paiement.",
+					"periodLifetime": "à vie (sans renouvellement)",
+					"freeShapeLocked": "Les formules gratuites sont toujours au prix de 0 et à vie : ces champs ne sont pas modifiables.",
+					"lifetimeNoCount": "Une formule à vie ne se renouvelle jamais : il n'y a pas de fréquence de facturation à définir."
 				},
 				"errors": {
 					"createFailed": "Échec de la création du forfait : {detail}",
@@ -5127,7 +5138,10 @@
 		"pausedHelper": "L'organisation a temporairement fermé les inscriptions.",
 		"offlineManaged": "Géré par l'organisation — contacte-la pour rejoindre ce forfait.",
 		"refundPolicy": "Politique de remboursement",
-		"viewMembership": "Voir les options d'adhésion"
+		"viewMembership": "Voir les options d'adhésion",
+		"joinFreeCta": "Rejoindre gratuitement",
+		"loginToJoin": "Se connecter pour rejoindre",
+		"freeHelper": "Aucun paiement requis — vous pouvez rejoindre immédiatement."
 	},
 	"requestWhitelistButton": {
 		"mustBeLoggedIn": "Tu dois être connecté pour demander une vérification",
@@ -6618,7 +6632,8 @@
 			"month": "mois",
 			"months": "{n} mois",
 			"year": "an",
-			"years": "{n} ans"
+			"years": "{n} ans",
+			"lifetime": "à vie"
 		},
 		"status": {
 			"active": "Actif",
@@ -6650,7 +6665,8 @@
 			"uncancel": "Réactiver le renouvellement",
 			"uncancelling": "Réactivation…",
 			"uncancelSuccess": "Le renouvellement est réactivé.",
-			"uncancelError": "Impossible de réactiver le renouvellement. Réessaie."
+			"uncancelError": "Impossible de réactiver le renouvellement. Réessaie.",
+			"alreadyActive": "Cette adhésion est déjà active."
 		},
 		"cancelScheduledHint": "Le renouvellement est désactivé. Tu peux le réactiver à tout moment avant cette date.",
 		"cancelScheduledHintManaged": "Le renouvellement est désactivé. Pour conserver ton adhésion, contacte l'organisation.",
@@ -6685,7 +6701,12 @@
 			"cta": "Reprendre l'adhésion",
 			"returnHint": "Tu paieras en toute sécurité via Stripe puis reviendras sur la page de l'organisation.",
 			"error": "Impossible de démarrer le paiement. Réessaie."
-		}
+		},
+		"price": {
+			"free": "Gratuit",
+			"oneTime": "{price} · paiement unique"
+		},
+		"neverExpires": "N'expire jamais"
 	},
 	"account": {
 		"memberships": {
@@ -6865,7 +6886,11 @@
 			"cancelledTitle": "Paiement non finalisé",
 			"cancelledBody": "Ton paiement n'a pas été finalisé. Tu peux le reprendre quand tu veux.",
 			"resumeCta": "Reprendre le paiement"
-		}
+		},
+		"titleFree": "Rejoindre {plan}",
+		"freeNoCharge": "Il n'y a rien à payer. Votre adhésion démarre dès la confirmation.",
+		"neverRenews": "Cette adhésion n'expire jamais et n'est jamais renouvelée ni refacturée.",
+		"confirmFreeCta": "Rejoindre"
 	},
 	"waitlistSettings.title": "Paramètres avancés de liste d'attente",
 	"waitlistSettings.description": "Configure la façon dont les places sont proposées aux personnes en liste d'attente.",

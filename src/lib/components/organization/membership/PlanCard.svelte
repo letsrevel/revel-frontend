@@ -4,7 +4,12 @@
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
-	import { canSwitchToPlan, formatPlanPrice } from '$lib/utils/subscriptions';
+	import {
+		canSwitchToPlan,
+		formatPlanPrice,
+		isFreePlan,
+		isLifetimePlan
+	} from '$lib/utils/subscriptions';
 	import { resolve } from '$app/paths';
 
 	interface Props {
@@ -45,6 +50,11 @@
 	 *
 	 * `none` covers a plan the backend exposes without an id: it cannot be
 	 * subscribed to, and a CTA would only produce a failed checkout.
+	 *
+	 * Only OFFLINE is a dead end. A FREE plan is un-billed too, but it is
+	 * *member* self-serve — `POST …/subscribe` accepts it and activates the
+	 * subscription on the spot — so it takes the ordinary join path, with the
+	 * label and dialog copy adjusted for the absent charge.
 	 */
 	const action = $derived.by(() => {
 		if (subscription) {
@@ -77,6 +87,11 @@
 	 * points at the account hub, where the resume-payment action lives.
 	 */
 	const isPendingCheckout = $derived(subscription?.status === 'pending');
+
+	const isFree = $derived(isFreePlan(plan));
+	/** A non-renewing term — said in words, because the price line no longer
+	    carries a cadence to imply it. */
+	const neverExpires = $derived(isLifetimePlan(plan));
 
 	/** Only linked when the change-plan flow would really offer this plan. */
 	const canSwitch = $derived(subscription ? canSwitchToPlan(subscription, plan) : false);
@@ -111,6 +126,10 @@
 		</div>
 
 		<p class="text-xl font-semibold">{formatPlanPrice(plan)}</p>
+
+		{#if neverExpires}
+			<p class="-mt-2 text-sm text-muted-foreground">{m['subscriptions.neverExpires']()}</p>
+		{/if}
 
 		{#if plan.description}
 			<p class="whitespace-pre-line text-sm text-muted-foreground">{plan.description}</p>
@@ -154,13 +173,16 @@
 				     transient state on a control that keeps its label and its box, so
 				     nothing shifts and nothing is conveyed by colour alone. -->
 				<Button class="w-full sm:w-auto" onclick={handleSubscribe} disabled={subscriptionLoading}>
-					{m['membershipPlans.subscribeCta']()}
+					{isFree ? m['membershipPlans.joinFreeCta']() : m['membershipPlans.subscribeCta']()}
 				</Button>
+				{#if isFree}
+					<p class="mt-2 text-sm text-muted-foreground">{m['membershipPlans.freeHelper']()}</p>
+				{/if}
 			{:else if action === 'login'}
 				<!-- A real link, not a scripted redirect: it survives no-JS,
 				     middle-click and "open in new tab". -->
 				<Button href={loginHref} class="w-full sm:w-auto">
-					{m['membershipPlans.loginToSubscribe']()}
+					{isFree ? m['membershipPlans.loginToJoin']() : m['membershipPlans.loginToSubscribe']()}
 				</Button>
 			{/if}
 		</div>
