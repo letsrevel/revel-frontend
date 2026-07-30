@@ -189,16 +189,9 @@
 					<SelectItem
 						value="membership"
 						label={m['questionnaireEditPage.types.membership_label']()}
-						disabled
 					>
 						<div class="flex flex-col gap-0.5">
-							<div class="flex items-center gap-2 font-medium">
-								{m['questionnaireEditPage.types.membership_label']()}
-								<span
-									class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground"
-									>{m['questionnaireFormFields.comingSoon']()}</span
-								>
-							</div>
+							<div class="font-medium">{m['questionnaireEditPage.types.membership_label']()}</div>
 							<div class="text-xs text-muted-foreground">
 								{m['questionnaireEditPage.types.membership_description']()}
 							</div>

@@ -1519,7 +1519,25 @@ export async function createMembershipQuestionnaire(
 	owner: ThrowawayUser,
 	orgSlug: string,
 	opts: { evaluationMode: 'automatic' | 'manual' | 'hybrid' }
-): Promise<{ id: string }> {
+): Promise<{ id: string; name: string }> {
+	return createOrgQuestionnaire(owner, orgSlug, { ...opts, questionnaireType: 'membership' });
+}
+
+/**
+ * createMembershipQuestionnaire with the wrapper TYPE left to the caller — for
+ * specs that need a NON-membership questionnaire (e.g. an admission one to
+ * retype through the admin edit form). Everything else is identical; see
+ * createMembershipQuestionnaire for why the question shape follows the
+ * evaluation mode, and for what the returned id is (and is not).
+ */
+export async function createOrgQuestionnaire(
+	owner: ThrowawayUser,
+	orgSlug: string,
+	opts: {
+		evaluationMode: 'automatic' | 'manual' | 'hybrid';
+		questionnaireType: 'admission' | 'membership' | 'feedback' | 'generic';
+	}
+): Promise<{ id: string; name: string }> {
 	const api = await ApiClient.login(owner.email, owner.password);
 	const org = await api.get<{ id: string }>(`/api/organizations/${orgSlug}`);
 	const questions =
@@ -1543,14 +1561,20 @@ export async function createMembershipQuestionnaire(
 						{ question: MEMBERSHIP_QUESTION.manual.question, is_mandatory: true }
 					]
 				};
-	return api.post<{ id: string }>(`/api/questionnaires/${org.id}/create-questionnaire`, {
-		name: uniqueName('Membership Questionnaire'),
-		min_score: 0,
-		evaluation_mode: opts.evaluationMode,
-		status: 'published',
-		questionnaire_type: 'membership',
-		...questions
-	});
+	const typeLabel = opts.questionnaireType[0].toUpperCase() + opts.questionnaireType.slice(1);
+	const name = uniqueName(`${typeLabel} Questionnaire`);
+	const created = await api.post<{ id: string }>(
+		`/api/questionnaires/${org.id}/create-questionnaire`,
+		{
+			name,
+			min_score: 0,
+			evaluation_mode: opts.evaluationMode,
+			status: 'published',
+			questionnaire_type: opts.questionnaireType,
+			...questions
+		}
+	);
+	return { id: created.id, name };
 }
 
 /**

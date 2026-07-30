@@ -130,8 +130,10 @@
 				type="single"
 				value={questionnaireType}
 				onValueChange={(v) => {
-					// Allow admission and feedback types
-					if (v === 'admission' || v === 'feedback') {
+					// `generic` is the only type still gated: the backend has the enum value
+					// but nothing reads it, so picking it would produce a questionnaire that
+					// never fires. Its SelectItem is disabled to match.
+					if (v === 'admission' || v === 'feedback' || v === 'membership') {
 						questionnaireType = v;
 					}
 				}}
@@ -156,19 +158,9 @@
 							</div>
 						</div>
 					</SelectItem>
-					<SelectItem
-						value="membership"
-						label={m['questionnaireNewPage.typeMembershipLabel']()}
-						disabled
-					>
+					<SelectItem value="membership" label={m['questionnaireNewPage.typeMembershipLabel']()}>
 						<div class="flex flex-col gap-0.5">
-							<div class="flex items-center gap-2 font-medium">
-								{m['questionnaireNewPage.typeMembershipLabel']()}
-								<span
-									class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground"
-									>{m['questionnaireNewPage.comingSoon']()}</span
-								>
-							</div>
+							<div class="font-medium">{m['questionnaireNewPage.typeMembershipLabel']()}</div>
 							<div class="text-xs text-muted-foreground">
 								{m['questionnaireNewPage.typeMembershipDescription']()}
 							</div>
