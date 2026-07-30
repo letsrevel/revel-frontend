@@ -6,9 +6,9 @@
 	import {
 		organizationadminmembersListMembers,
 		organizationadminmembersListStaff,
-		organizationadminmembersListMembershipTiers,
-		questionnaireListOrgQuestionnaires
+		organizationadminmembersListMembershipTiers
 	} from '$lib/api/generated/sdk.gen';
+	import { orgQuestionnairesQueryOptions } from '$lib/queries/org-questionnaires';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Tabs, TabsList, TabsTrigger, TabsContent } from '$lib/components/ui/tabs';
 	import { Button } from '$lib/components/ui/button';
@@ -134,22 +134,16 @@
 
 	// Options for the tier-level questionnaire override (value = OrganizationQuestionnaire id).
 	// The endpoint has no type filter, so narrow to MEMBERSHIP client-side.
-	const questionnairesQuery = createQuery(() => ({
-		queryKey: ['organization', organization.slug, 'membership-questionnaires'],
-		queryFn: async () => {
-			const response = await questionnaireListOrgQuestionnaires({
-				query: { organization_id: organization.id, page_size: 100 },
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
-
-			if (response.error) {
-				throw new Error('Failed to fetch questionnaires');
-			}
-
-			return response.data;
-		},
-		enabled: !!accessToken && canManageMembers
-	}));
+	// Key + fetcher come from the shared factory so the questionnaire admin's
+	// mutations invalidate exactly what this reads (#722).
+	const questionnairesQuery = createQuery(() =>
+		orgQuestionnairesQueryOptions({
+			organizationId: organization.id,
+			organizationSlug: organization.slug,
+			accessToken,
+			enabled: canManageMembers
+		})
+	);
 
 	// Derived data for badge counts and shared state
 	const members = $derived(membersQuery.data?.results || []);

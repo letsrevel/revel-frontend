@@ -4,9 +4,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
 import DuplicateQuestionnaireModal from './DuplicateQuestionnaireModal.svelte';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
+import { orgQuestionnairesKey } from '$lib/queries/org-questionnaires';
 
 vi.mock('$lib/api/generated/sdk.gen', () => ({
-	questionnaireDuplicateOrgQuestionnaire: vi.fn().mockResolvedValue({ data: { id: 'new-q-id' } })
+	questionnaireDuplicateOrgQuestionnaire: vi.fn().mockResolvedValue({ data: { id: 'new-q-id' } }),
+	// Pulled in by `$lib/queries/org-questionnaires` (the invalidation helper); never
+	// called here, but the mocked module must still declare it.
+	questionnaireListOrgQuestionnaires: vi.fn()
 }));
 vi.mock('$lib/stores/auth.svelte', () => ({
 	authStore: { accessToken: 'test-token' as string | null }
@@ -71,6 +75,24 @@ describe('DuplicateQuestionnaireModal', () => {
 			expect(goto).toHaveBeenCalledWith('/org/acme/admin/questionnaires/new-q-id')
 		);
 		await waitFor(() => expect(onClose).toHaveBeenCalledOnce());
+	});
+
+	it('drops the org questionnaire cache before navigating away (#722)', async () => {
+		// The copy inherits `questionnaire_type`, so duplicating a membership
+		// questionnaire adds a row the members admin's tier picker has to show —
+		// and this component navigates away, so the invalidation cannot wait for it.
+		const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+		const user = userEvent.setup();
+		renderModal();
+		await user.click(screen.getByRole('button', { name: /^duplicate$/i }));
+
+		await waitFor(() => expect(goto).toHaveBeenCalled());
+		expect(invalidate).toHaveBeenCalledWith({ queryKey: orgQuestionnairesKey('acme') });
+		// Ordering matters: this component navigates away, so an invalidation fired
+		// after `goto` could be lost with the unmounting component.
+		expect(invalidate.mock.invocationCallOrder[0]).toBeLessThan(
+			vi.mocked(goto).mock.invocationCallOrder[0]
+		);
 	});
 
 	it('blocks submit and shows an error when the name is empty', async () => {

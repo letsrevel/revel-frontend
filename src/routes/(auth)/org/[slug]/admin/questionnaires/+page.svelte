@@ -5,6 +5,8 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import QuestionnaireCard from '$lib/components/questionnaires/QuestionnaireCard.svelte';
+	import { useQueryClient } from '@tanstack/svelte-query';
+	import { invalidateOrgQuestionnaires } from '$lib/queries/org-questionnaires';
 	import type { PageData } from './$types';
 
 	interface Props {
@@ -12,6 +14,23 @@
 	}
 
 	const { data }: Props = $props();
+
+	const queryClient = useQueryClient();
+
+	// Deleting a questionnaire happens inside `QuestionnaireCard`, which answers with
+	// `invalidateAll()` — that re-runs *this* route's server load and nothing else.
+	// The members admin's tier picker reads the same data from a TanStack cache with
+	// a 60s staleTime, so a deleted (or renamed, or retyped) questionnaire would keep
+	// showing up there (#722).
+	//
+	// This list is the authoritative server copy, so every (re)load of it is exactly
+	// the moment the client copy stops being trustworthy — drop it. Cheap: with the
+	// members admin unmounted this only marks the entry stale, so it refetches the
+	// next time the picker opens.
+	$effect(() => {
+		void data.questionnaires; // tracked: a fresh array on load and on invalidateAll
+		void invalidateOrgQuestionnaires(queryClient, data.organization.slug);
+	});
 
 	// Search state
 	let searchQuery = $state('');
