@@ -33,6 +33,12 @@
 		plan: PublicPlanSchema & { id: string };
 		tierName: string;
 		organizationId: string;
+		/**
+		 * Needed alongside the id because the two caches settled on the free-join
+		 * path are slug-keyed, not id-keyed. Without it this dialog could only
+		 * invalidate the whole `org`/`organization` prefixes.
+		 */
+		organizationSlug: string;
 		organizationName: string;
 		/** Org-level refund policy markdown, shown collapsed when present. */
 		refundPolicy?: string | null;
@@ -58,6 +64,7 @@
 		plan,
 		tierName,
 		organizationId,
+		organizationSlug,
 		organizationName,
 		refundPolicy = null,
 		gracePeriodDays = null,
@@ -179,12 +186,15 @@
 			// unlike the Stripe path no return-page mount will do it later.
 			if (!res.data.checkout_url) {
 				await settleSubscriptionCaches(queryClient, res.data.subscription);
-				// Prefix invalidations: this dialog is handed an org *id*, and the
-				// eligibility/admin caches are keyed by slug — so the whole prefix goes,
-				// rather than guessing a key. It costs a refetch of a couple of active
-				// queries, once, at the moment the member joins.
-				queryClient.invalidateQueries({ queryKey: ['org'] });
-				queryClient.invalidateQueries({ queryKey: ['organization'] });
+				// The same two slug-keyed caches `CheckoutReturnCard` settles when the
+				// Stripe webhook lands — this is the free path's equivalent moment.
+				// Admin views of this org.
+				queryClient.invalidateQueries({ queryKey: ['organization', organizationSlug] });
+				// Every tier's join-eligibility verdict: the key carries the tier as a
+				// fourth element, so this three-element prefix reaches all of them.
+				queryClient.invalidateQueries({
+					queryKey: ['org', organizationSlug, 'join-eligibility']
+				});
 				await invalidateAll();
 				joined = true;
 				return null;

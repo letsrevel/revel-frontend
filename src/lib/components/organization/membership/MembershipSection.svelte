@@ -229,6 +229,7 @@
 			plan={selectedPlan}
 			tierName={selectedPlan.tier_name}
 			organizationId={organization.id}
+			organizationSlug={organization.slug}
 			organizationName={organization.name}
 			{refundPolicy}
 			gracePeriodDays={organization.membership_grace_period_days}

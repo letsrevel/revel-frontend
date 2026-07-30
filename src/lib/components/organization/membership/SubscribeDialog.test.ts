@@ -99,6 +99,7 @@ describe('SubscribeDialog', () => {
 					plan: makePlan(),
 					tierName: 'Gold',
 					organizationId: 'org-1',
+					organizationSlug: 'test-org',
 					organizationName: 'Test Org',
 					refundPolicy: null,
 					...props
@@ -430,13 +431,16 @@ describe('SubscribeDialog', () => {
 				expect(vi.mocked(invalidateAll)).toHaveBeenCalledTimes(1);
 			});
 			const keys = invalidateSpy.mock.calls.map(
-				([arg]) => (arg as { queryKey?: unknown[] } | undefined)?.queryKey?.[0]
+				([arg]) => (arg as { queryKey?: unknown[] } | undefined)?.queryKey
 			);
 			// The per-org subscription cache the inline membership card reads…
-			expect(keys).toContain('me');
-			// …the join-eligibility verdict, and the admin views of this org.
-			expect(keys).toContain('org');
-			expect(keys).toContain('organization');
+			expect(keys.map((k) => k?.[0])).toContain('me');
+			// …the admin views of this org, and every tier's join-eligibility verdict.
+			// Asserted as WHOLE keys, scoped to this slug: a first-element-only check
+			// passes just as happily on the `['org']` / `['organization']` blanket
+			// invalidations this replaced, and on a key built from an undefined slug.
+			expect(keys).toContainEqual(['organization', 'test-org']);
+			expect(keys).toContainEqual(['org', 'test-org', 'join-eligibility']);
 		});
 
 		it('withdraws the confirm CTA once the join has landed', async () => {
