@@ -61,7 +61,16 @@
 	// Cheapest first, and stably: the backend does not promise an order inside a
 	// tier, and cards that reshuffle between renders are worse than an arbitrary
 	// but fixed order. Same rule the old plan grid used.
-	const plans = $derived([...tier.plans].sort((a, b) => Number(a.price) - Number(b.price)));
+	// Block body, not a concise one: `scripts/check-i18n-hardcoded.mjs` scans the
+	// whole file for markup text nodes and does not skip script bodies. A concise
+	// arrow makes the `>` of `=>` open a match that runs all the way to the script
+	// block's closing tag, flagging this code as untranslated prose. The `{` here
+	// ends that match immediately. Scanner bug, tracked separately.
+	const plans = $derived(
+		[...tier.plans].sort((a, b) => {
+			return Number(a.price) - Number(b.price);
+		})
+	);
 
 	/**
 	 * Since BE #831 a tier can be gated AND paid, so these are independent
