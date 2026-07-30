@@ -1277,9 +1277,12 @@ export async function getSeededBestAvailableEvent(
  * The outcome depends entirely on the org/tier policy, so specs read the
  * returned `status`: a TIER-BEARING apply against an org with no gate (no
  * approval requirement, no questionnaire) comes back `completed` — the
- * membership exists already. A TIER-LESS apply (what the UI's ApplyDialog
- * sends) stays `pending` for staff, because the backend never resolves a
- * default tier on the member's behalf.
+ * membership exists already. A TIER-LESS apply stays `pending` for staff,
+ * because the backend never resolves a default tier on the member's behalf.
+ *
+ * NOTE (#720/#727): the UI's ApplyDialog now posts `tier_id` too, so the
+ * tier-BEARING branch is the one a member actually walks. Tier-less applies
+ * survive here as the ARRANGE shape for legacy/staff-decided rows.
  *
  * `nextStep` is the eligibility verdict's `next_step` (null once there is
  * nothing left to do) — the same field MembershipCta switches its CTA on.
@@ -1315,6 +1318,36 @@ export async function applyViaApi(
 		status: response.application.status,
 		nextStep: response.eligibility.next_step ?? null
 	};
+}
+
+/** One row of the caller's own applications list, as far as specs read it. */
+export interface MyApplication {
+	id?: string | null;
+	organization_slug: string;
+	status: string;
+	tier_id?: string | null;
+	tier_name?: string | null;
+}
+
+/**
+ * The caller's OWN application row for an org, or null if they have none.
+ *
+ * Deliberately the LIST endpoint and never GET /me/applications/{id}: the
+ * detail read ADVANCES the application state machine (an approved row completes
+ * on it), which is the very behaviour several specs assert on. The list is a
+ * plain read and changes nothing.
+ *
+ * This is an ASSERTION helper, not an arrange one — it exists so a spec can ask
+ * what the member's own account says about an application it created through
+ * the UI, rather than trusting the apply response the UI itself consumed.
+ */
+export async function myApplicationFor(
+	user: ThrowawayUser,
+	orgSlug: string
+): Promise<MyApplication | null> {
+	const api = await ApiClient.login(user.email, user.password);
+	const page = await api.get<{ results: MyApplication[] }>('/api/me/applications');
+	return page.results.find((a) => a.organization_slug === orgSlug) ?? null;
 }
 
 /** Withdraw one of the caller's own applications (idempotent server-side). */

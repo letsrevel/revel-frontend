@@ -8,7 +8,7 @@ import {
 	setOrgMembershipPolicy
 } from '../../support/factories';
 import { pageAs } from '../../support/session';
-import { applicationRow, membershipCard } from '../../support/membership-locators';
+import { applicationRow, membershipCard, membershipPath } from '../../support/membership-locators';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 
 // J27 eligibility states — the verdicts that are NOT an application in flight:
@@ -16,11 +16,13 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 // policy that outranks the org default.
 //
 // Live-verified behaviours these specs are built on:
-//   * `accept_membership_requests: false` renders NO membership CTA at all —
-//     the org page gates the whole <MembershipCta> block on that flag
-//     (src/routes/(public)/org/[slug]/+page.svelte), so the eligibility
+//   * `accept_membership_requests: false` renders NO membership CTA at all on
+//     the org LANDING page — it gates the whole <MembershipCta> block on that
+//     flag (src/routes/(public)/org/[slug]/+page.svelte), so the eligibility
 //     verdict's own copy ("not accepting new members" / "by invitation") never
-//     reaches the DOM. Test 1 asserts the absence, not the copy.
+//     reaches the DOM there. Test 1 asserts the absence, not the copy. The tier
+//     grid at /org/[slug]/membership (#720) does NOT read the flag — it asks
+//     the backend per tier — so test 1 checks that surface separately.
 //   * `requires_membership_approval` is TRI-STATE on a tier: `true`/`false`
 //     override the org default, `null` inherits it. Test 3 pins all three
 //     against both org defaults.
@@ -55,6 +57,29 @@ test.describe('j27 membership eligibility states @p2', () => {
 		await expect(
 			page.getByText('Joining is by invitation — ask the organization for an invite link.')
 		).toBeHidden();
+
+		// The tier grid is a SECOND public way in since #720, and it is not gated
+		// on `accept_membership_requests` the way the landing hero is — it asks the
+		// backend per tier instead. So the closed door has to hold there too.
+		await gotoHydrated(page, membershipPath(org.slug));
+		await waitForClientAuth(page);
+		await expect(page.getByRole('heading', { name: 'Membership', level: 1 })).toBeVisible({
+			timeout: 15_000
+		});
+
+		// Each tier's CTA is a client query, so a bare absence check would pass
+		// while the verdicts were still in flight (the slot is an empty skeleton
+		// until they land). The settled refusal is a `role="note"` explanation —
+		// MembershipCta's `info` branch — so waiting for one is the settle signal.
+		// The `.or()` covers the org publishing no tiers at all, where there is no
+		// verdict to wait for and nothing to press either way.
+		await expect(
+			page
+				.getByRole('note')
+				.first()
+				.or(page.getByText(`${org.name} hasn't published any membership tiers yet.`))
+		).toBeVisible({ timeout: 20_000 });
+		await expect(page.getByRole('button', { name: /^Join / })).toHaveCount(0);
 
 		await page.context().close();
 	});

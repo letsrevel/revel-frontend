@@ -9,12 +9,16 @@ import {
 	uniqueName
 } from '../../support/factories';
 import { authenticateContext } from '../../support/session';
-import { planCard } from '../../support/membership-locators';
+import { membershipPath, planCard } from '../../support/membership-locators';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 
 // J23 (USER_JOURNEYS.md) — member-facing plan AVAILABILITY states on the public
-// org page: sold out (cap occupied), sales paused, offline (staff-managed) and
-// the guest CTA. No payment happens anywhere in this file.
+// membership page: sold out (cap occupied), sales paused, offline
+// (staff-managed) and the guest CTA. No payment happens anywhere in this file.
+//
+// The plan grid moved off the org landing page onto /org/[slug]/membership
+// (#720) — the landing page keeps only a pointer at it — so every navigation
+// here goes to `membershipPath()`.
 //
 // Everything is arranged on Org Alpha (`revel-events-collective`): it is the
 // only Stripe-connected seeded org, and ONLINE plans cannot exist anywhere
@@ -71,7 +75,7 @@ test.describe('J23 plan availability states @p2', () => {
 		const context = await browser.newContext();
 		await authenticateContext(context, viewer);
 		const page = await context.newPage();
-		await gotoHydrated(page, `/org/${ORG_SLUG}`);
+		await gotoHydrated(page, membershipPath(ORG_SLUG));
 		await waitForClientAuth(page);
 
 		// Control: an open ONLINE plan offers the CTA to this very user.
@@ -119,12 +123,16 @@ test.describe('J23 plan availability states @p2', () => {
 		// an explicit unauthenticated context says so.
 		const context = await browser.newContext();
 		const page = await context.newPage();
-		await gotoHydrated(page, `/org/${ORG_SLUG}`);
+		await gotoHydrated(page, membershipPath(ORG_SLUG));
 
 		const card = planCard(page, plan.name);
 		// A real link, not a scripted redirect — it carries the return trip.
 		const loginCta = card.getByRole('link', { name: 'Log in to subscribe' });
 		await expect(loginCta).toBeVisible({ timeout: 15_000 });
+		// PlanCard's return trip still points at the org LANDING page, not at the
+		// page the button was pressed on — deliberate on its side (`loginHref` in
+		// PlanCard.svelte), and asserted here so a change to it is a decision
+		// somebody makes rather than a silent drift.
 		await expect(loginCta).toHaveAttribute(
 			'href',
 			`/login?returnUrl=${encodeURIComponent(`/org/${ORG_SLUG}`)}`

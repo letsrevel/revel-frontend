@@ -1,6 +1,11 @@
 import { test, expect } from '../../support/fixtures';
-import { createOrganization, createVerifiedUser } from '../../support/factories';
+import {
+	createOrganization,
+	createVerifiedUser,
+	setOrgMembershipPolicy
+} from '../../support/factories';
 import { authenticateContext } from '../../support/session';
+import { membershipPath, tierCard } from '../../support/membership-locators';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 import { closeDialog } from '../../support/ui';
 
@@ -9,9 +14,13 @@ import { closeDialog } from '../../support/ui';
 // land in the org admin's queue; unfollow at the end.
 //
 // The join flow is the eligibility CTA + ApplyDialog (PR② of the membership
-// subscriptions work); the legacy "Request Membership" button is gone. A UI
-// apply carries no tier, so the backend leaves the application PENDING for
-// staff — hence the "Application received" outcome and the approve leg below.
+// subscriptions work); the legacy "Request Membership" button is gone. Since
+// #720 the CTA that opens that dialog lives on /org/[slug]/membership, next to
+// the tier being joined — the landing page keeps only a pointer at the grid —
+// and the apply carries that tier. The org therefore has to REQUIRE APPROVAL
+// for the application to stay pending; a tier-bearing apply on an ungated org
+// completes on the spot, and there would be no request for the admin queue leg
+// below to show.
 //
 // Isolation: throwaway-owned org (accepting requests) + throwaway follower —
 // seeded follow relationships (hannah→Alpha, ivan→Beta) stay untouched, and
@@ -27,6 +36,7 @@ test.describe('J3 follow org & request membership @p1', () => {
 			createVerifiedUser('Follower')
 		]);
 		const followerName = `${follower.firstName} ${follower.lastName}`;
+		await setOrgMembershipPolicy(org.owner, org.slug, { requiresApproval: true });
 
 		const context = await browser.newContext();
 		await authenticateContext(context, follower);
@@ -46,26 +56,31 @@ test.describe('J3 follow org & request membership @p1', () => {
 		await page.getByRole('menuitemcheckbox', { name: 'Notify me about new events' }).click();
 		await expect(page.getByText('Preferences updated')).toBeVisible({ timeout: 15_000 });
 
-		// Apply for membership with a message.
-		await page.getByRole('button', { name: `Join ${org.name}` }).click();
-		const applyDialog = page.getByRole('dialog', { name: `Join ${org.name}` });
+		// Apply for membership with a message — on the tier grid, the only surface
+		// that can name the tier the application will carry.
+		await gotoHydrated(page, membershipPath(org.slug));
+		await waitForClientAuth(page);
+		const generalTier = tierCard(page, 'General membership');
+		await expect(generalTier).toBeVisible({ timeout: 15_000 });
+		await generalTier.getByRole('button', { name: 'Join General membership' }).click();
+		const applyDialog = page.getByRole('dialog', { name: 'Join General membership' });
 		await expect(applyDialog).toBeVisible();
 		await applyDialog.getByLabel('Message (optional)').fill('E2E: please let me in');
 		await applyDialog.getByRole('button', { name: 'Send application' }).click();
 
 		// The outcome replaces the form in place, so the dialog is RE-TITLED —
-		// a tier-less apply stays PENDING, hence "Application received" (an
-		// auto-granted membership would title it "You're in!").
+		// approval is still owed, hence "Application received" (an auto-granted
+		// membership would title it "You're in!").
 		const outcomeDialog = page.getByRole('dialog', { name: 'Application received' });
 		await expect(outcomeDialog).toBeVisible({ timeout: 15_000 });
 		await expect(outcomeDialog.getByRole('link', { name: 'Track your application' })).toBeVisible();
 		await closeDialog(page, outcomeDialog);
 
 		// The CTA follows the refreshed eligibility verdict.
-		await expect(page.getByRole('button', { name: 'Application pending' })).toBeDisabled();
+		await expect(generalTier.getByRole('button', { name: 'Application pending' })).toBeDisabled();
 
-		// Both are server-side: a fresh load still shows Following + the pending
-		// application…
+		// Both are server-side: a fresh load of the LANDING page still shows
+		// Following, and its summary CTA reports the pending application…
 		await gotoHydrated(page, `/org/${org.slug}`);
 		await waitForClientAuth(page);
 		await expect(page.getByRole('button', { name: 'Following' })).toBeVisible();
