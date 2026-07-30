@@ -26,7 +26,7 @@
 		formData: {
 			venue_id?: string | null;
 			address?: string | null;
-			visibility_settings?: EventVisibilitySettings | null;
+			visibility_settings?: EventVisibilitySettings;
 			location_maps_url?: string | null;
 			location_maps_embed?: string | null;
 		};
