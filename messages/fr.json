@@ -6742,7 +6742,9 @@
 		"wait": {
 			"questionnaire_evaluation": "Ton questionnaire est en cours d'évaluation — nous te préviendrons dès qu'il sera examiné.",
 			"approval": "Ta candidature est en cours d'examen par l'organisation. Tu auras une réponse dès qu'elle aura décidé."
-		}
+		},
+		"joinTier": "Rejoindre {tier}",
+		"choosePlan": "Vous êtes éligible : choisissez une formule ci-dessous pour adhérer."
 	},
 	"membershipApply": {
 		"title": "Rejoindre {orgName}",
@@ -6760,7 +6762,22 @@
 		"pendingTitle": "Demande reçue",
 		"pendingBody": "L'organisation a bien reçu ta demande — voici la suite :",
 		"trackLink": "Suivre ta demande",
-		"error": "Impossible d'envoyer ta demande. Réessaie."
+		"error": "Impossible d'envoyer ta demande. Réessaie.",
+		"titleTier": "Rejoindre {tier}",
+		"reapplyTitleTier": "Postuler à nouveau pour {tier}"
+	},
+	"membershipTiers": {
+		"heading": "Adhésion",
+		"subtitle": "Choisissez comment vous souhaitez faire partie de {organizationName}.",
+		"tiersHeading": "Niveaux d'adhésion",
+		"empty": "{organizationName} n'a pas encore publié de niveaux d'adhésion.",
+		"backToOrg": "Retour à {organizationName}",
+		"freeBadge": "Gratuit",
+		"requiresApproval": "L'organisation examine et approuve chaque demande.",
+		"questionnaireRequired": "Un questionnaire d'adhésion est requis.",
+		"questionnaireLink": "Ouvrir le questionnaire",
+		"questionnaireLinkAria": "Ouvrir le questionnaire d'adhésion pour {tier}",
+		"landingBlurb": "Découvrez les niveaux d'adhésion proposés par {organizationName} et comment adhérer."
 	},
 	"membershipQuestionnairePage": {
 		"title": "Questionnaire d'adhésion",

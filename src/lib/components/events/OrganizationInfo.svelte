@@ -45,10 +45,10 @@
 	// Compute full logo URL - prefer thumbnail for small display sizes
 	const logoUrl = $derived(getImageUrl(organization.logo_thumbnail_url || organization.logo));
 
-	// The plans live in the org page's `#membership` section; the fragment
-	// cannot be expressed through resolve(), so it is appended to it.
+	// The tiers have their own page since #720 — a real route, so no fragment to
+	// append and nothing for resolve() to be worked around.
 	const membershipHref = $derived(
-		`${resolve('/(public)/org/[slug]', { slug: organization.slug })}#membership`
+		resolve('/(public)/org/[slug]/membership', { slug: organization.slug })
 	);
 </script>
 

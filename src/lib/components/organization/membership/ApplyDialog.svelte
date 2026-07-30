@@ -32,9 +32,26 @@
 		organizationName: string;
 		/** `reapply` only changes the framing — the request is identical. */
 		mode: 'join' | 'reapply';
+		/**
+		 * The tier being applied to. Sent to the backend, which resolves that
+		 * tier's questionnaire/approval overrides instead of only the org-wide
+		 * defaults — without it the application is tier-less and staff have to
+		 * guess the tier at approval time (#720).
+		 */
+		tierId?: string | null;
+		/** Names the tier in the dialog heading. */
+		tierName?: string | null;
 	}
 
-	const { open, onOpenChange, organizationSlug, organizationName, mode }: Props = $props();
+	const {
+		open,
+		onOpenChange,
+		organizationSlug,
+		organizationName,
+		mode,
+		tierId = null,
+		tierName = null
+	}: Props = $props();
 
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
@@ -75,8 +92,10 @@
 			const res = await memembershipapplicationsApply({
 				path: { slug: organizationSlug },
 				// An empty note is no note: sending `''` would store a blank message
-				// on the application.
-				body: { notes: notes || undefined },
+				// on the application. `tier_id` is likewise omitted rather than sent
+				// as null when the caller has no tier, so the backend keeps its
+				// org-default resolution for the legacy tier-less path.
+				body: { tier_id: tierId ?? undefined, notes: notes || undefined },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			// hey-api resolves rather than throws — a missing payload is a failure
@@ -146,6 +165,13 @@
 			return completed
 				? m['membershipApply.completedTitle']()
 				: m['membershipApply.pendingTitle']();
+		}
+		if (tierName) {
+			// The tier is the thing being joined, so it — not the org — names the
+			// dialog. The org still appears in the description line below.
+			return mode === 'reapply'
+				? m['membershipApply.reapplyTitleTier']({ tier: tierName })
+				: m['membershipApply.titleTier']({ tier: tierName });
 		}
 		return mode === 'reapply'
 			? m['membershipApply.reapplyTitle']({ orgName: organizationName })

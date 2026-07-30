@@ -163,7 +163,7 @@
 		// membership plans, where every tier it offers is listed. Until now this
 		// step fell through every branch and the button did nothing.
 		if (nextStep === 'upgrade_membership') {
-			window.location.href = `/org/${organizationSlug}#membership`;
+			window.location.href = `/org/${organizationSlug}/membership`;
 			return;
 		}
 

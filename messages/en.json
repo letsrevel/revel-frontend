@@ -6771,7 +6771,9 @@
 		"wait": {
 			"questionnaire_evaluation": "Your questionnaire is being reviewed — we'll let you know once it's evaluated.",
 			"approval": "Your application is with the organization for review. You'll hear back once they decide."
-		}
+		},
+		"joinTier": "Join {tier}",
+		"choosePlan": "You're eligible — choose a plan below to join."
 	},
 	"membershipApply": {
 		"title": "Join {orgName}",
@@ -6789,7 +6791,22 @@
 		"pendingTitle": "Application received",
 		"pendingBody": "The organization has your application — here's what happens next:",
 		"trackLink": "Track your application",
-		"error": "Could not send your application. Please try again."
+		"error": "Could not send your application. Please try again.",
+		"titleTier": "Join {tier}",
+		"reapplyTitleTier": "Re-apply to {tier}"
+	},
+	"membershipTiers": {
+		"heading": "Membership",
+		"subtitle": "Choose how you want to be part of {organizationName}.",
+		"tiersHeading": "Membership tiers",
+		"empty": "{organizationName} hasn't published any membership tiers yet.",
+		"backToOrg": "Back to {organizationName}",
+		"freeBadge": "Free",
+		"requiresApproval": "The organization reviews and approves each application.",
+		"questionnaireRequired": "A membership questionnaire is required.",
+		"questionnaireLink": "Open the questionnaire",
+		"questionnaireLinkAria": "Open the membership questionnaire for {tier}",
+		"landingBlurb": "See the membership tiers {organizationName} offers and how to join."
 	},
 	"membershipQuestionnairePage": {
 		"title": "Membership questionnaire",

@@ -26,7 +26,6 @@
 		eventseriesListEventSeries
 	} from '$lib/api/generated/sdk.gen';
 	import MembershipCta from '$lib/components/organization/membership/MembershipCta.svelte';
-	import MembershipSection from '$lib/components/organization/membership/MembershipSection.svelte';
 	import OrgContactButton from '$lib/components/organization/OrgContactButton.svelte';
 	import ClaimMembershipButton from '$lib/components/organizations/ClaimMembershipButton.svelte';
 	import OrgMembershipInline from '$lib/components/account/OrgMembershipInline.svelte';
@@ -371,12 +370,30 @@
 			/>
 		</div>
 
-		<!-- Membership Section (plans, checkout return, refund policy) -->
-		<MembershipSection
-			{organization}
-			plans={data.membershipPlans}
-			isAuthenticated={data.isAuthenticated}
-		/>
+		<!-- Membership entry point.
+
+		     The plan grid used to live here, above the resources, series and
+		     events this page exists to show. It moved to /org/[slug]/membership
+		     (#720) — a tier can only be *chosen* there — and what is left is the
+		     pointer at it. The `id="membership"` stays so the deep links that
+		     predate the move still land on something that explains itself. -->
+		{#if organization.accept_membership_requests || data.membershipPlans.length > 0}
+			<section id="membership" aria-labelledby="membership-heading" class="mb-12">
+				<h2 id="membership-heading" class="text-2xl font-bold">
+					{m['membershipPlans.heading']()}
+				</h2>
+				<p class="mt-1 text-sm text-muted-foreground">
+					{m['membershipTiers.landingBlurb']({ organizationName: organization.name })}
+				</p>
+				<a
+					href={resolve('/(public)/org/[slug]/membership', { slug: organization.slug })}
+					class="mt-3 inline-flex items-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+				>
+					{m['membershipPlans.viewMembership']()}
+					<ArrowRight class="h-4 w-4" aria-hidden="true" />
+				</a>
+			</section>
+		{/if}
 
 		<!-- Resources Section -->
 		{#if displayedResources.length > 0}

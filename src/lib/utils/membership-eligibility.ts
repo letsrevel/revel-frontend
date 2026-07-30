@@ -9,15 +9,16 @@ import * as m from '$lib/paraglide/messages.js';
  * The shape of call-to-action a membership eligibility verdict implies.
  *
  * - `join` — allowed, free path → open the apply dialog
+ * - `payment` — every gate is cleared; what is left is paying for a plan
  * - `questionnaire` — the user must submit the membership questionnaire first
  * - `waiting` — something is pending review (questionnaire, approval, whitelist)
  * - `retry_later` — the questionnaire can be retaken after `retry_on`
  * - `reapply` — a previous application ended; the user may apply again
  * - `member` — the user is already a member
- * - `info` — nothing actionable: invitation-only, payment-gated, or a plain denial
+ * - `info` — nothing actionable: invitation-only or a plain denial
  */
 export type MembershipCtaKind =
-	'join' | 'questionnaire' | 'waiting' | 'retry_later' | 'reapply' | 'member' | 'info';
+	'join' | 'payment' | 'questionnaire' | 'waiting' | 'retry_later' | 'reapply' | 'member' | 'info';
 
 /**
  * Map a membership eligibility verdict to the CTA the UI should render.
@@ -40,8 +41,14 @@ export function getMembershipCtaKind(e: MembershipEligibilitySchema): Membership
 		case 'reapply':
 			return 'reapply';
 		case 'requires_invitation':
-		case 'proceed_to_payment':
 			return 'info';
+		case 'proceed_to_payment':
+			// BE #831: gated and monetized are no longer mutually exclusive, so this
+			// step is the *positive* end of a tier's gate chain — approval and
+			// questionnaire (if any) are satisfied and only the charge is left. It
+			// used to fold into `info`, which rendered the org's policy prose next to
+			// nothing to press; the caller now sends the user at the plans instead.
+			return 'payment';
 	}
 	// No next_step: `allowed` decides. Since BE #788 a pending tier-less
 	// application arrives with an explicit `wait_for_approval`, so it is caught by

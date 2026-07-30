@@ -6771,7 +6771,9 @@
 		"wait": {
 			"questionnaire_evaluation": "Dein Fragebogen wird gerade geprüft — wir melden uns, sobald er ausgewertet ist.",
 			"approval": "Deine Bewerbung liegt der Organisation zur Prüfung vor. Du hörst von uns, sobald entschieden ist."
-		}
+		},
+		"joinTier": "{tier} beitreten",
+		"choosePlan": "Du erfüllst die Voraussetzungen – wähle unten einen Tarif, um beizutreten."
 	},
 	"membershipApply": {
 		"title": "{orgName} beitreten",
@@ -6789,7 +6791,22 @@
 		"pendingTitle": "Bewerbung eingegangen",
 		"pendingBody": "Die Organisation hat deine Bewerbung — so geht es weiter:",
 		"trackLink": "Deine Bewerbung verfolgen",
-		"error": "Deine Bewerbung konnte nicht gesendet werden. Bitte versuch es noch einmal."
+		"error": "Deine Bewerbung konnte nicht gesendet werden. Bitte versuch es noch einmal.",
+		"titleTier": "{tier} beitreten",
+		"reapplyTitleTier": "Erneut für {tier} bewerben"
+	},
+	"membershipTiers": {
+		"heading": "Mitgliedschaft",
+		"subtitle": "Wähle, wie du Teil von {organizationName} sein möchtest.",
+		"tiersHeading": "Mitgliedschaftsstufen",
+		"empty": "{organizationName} hat noch keine Mitgliedschaftsstufen veröffentlicht.",
+		"backToOrg": "Zurück zu {organizationName}",
+		"freeBadge": "Kostenlos",
+		"requiresApproval": "Die Organisation prüft und genehmigt jede Anfrage.",
+		"questionnaireRequired": "Ein Mitgliedschaftsfragebogen ist erforderlich.",
+		"questionnaireLink": "Fragebogen öffnen",
+		"questionnaireLinkAria": "Mitgliedschaftsfragebogen für {tier} öffnen",
+		"landingBlurb": "Sieh dir die Mitgliedschaftsstufen von {organizationName} an und wie du beitreten kannst."
 	},
 	"membershipQuestionnairePage": {
 		"title": "Mitgliedschafts-Fragebogen",

@@ -49,6 +49,24 @@ describe('getMembershipCtaKind', () => {
 		expect(getMembershipCtaKind({ ...base, reason_code: 'membership_paused' })).toBe('info');
 	});
 
+	// BE #831 made gated and monetized tiers coexist, so this step is the positive
+	// end of a tier's gate chain: everything else is satisfied and only the charge
+	// is left. Folded into `info` before #720, where it rendered policy prose and
+	// no control — the exact dead end this issue is about.
+	it('maps proceed_to_payment to payment, not to info', () => {
+		expect(getMembershipCtaKind({ ...base, next_step: 'proceed_to_payment' })).toBe('payment');
+		// Also when the verdict is refused-but-payable: the block IS the payment.
+		expect(
+			getMembershipCtaKind({
+				...base,
+				allowed: false,
+				next_step: 'proceed_to_payment',
+				reason_code: 'tier_requires_subscription',
+				plan_id: 'plan-1'
+			})
+		).toBe('payment');
+	});
+
 	// BE #812, pinned field-for-field as `MembershipQuestionnaireGate._handle_rejected`
 	// emits it: refused, no next_step, and a `questionnaire_id` still attached (the
 	// gate passes it for context). `info` is the whole point — the previous verdict

@@ -37,15 +37,10 @@
 		(tier.restricted_to_membership_tiers ?? []).map((t) => t.name).filter(Boolean)
 	);
 
-	// The org's membership plans: the only surface where a qualifying tier can be
-	// obtained. Deliberately not "Join organization" — a plain membership request
-	// grants no tier and would dead-end, which is why the backend refuses to send
-	// this case down the become_member path at all.
-	const membershipPlansHref = $derived(
-		organizationSlug
-			? `${resolve('/(public)/org/[slug]', { slug: organizationSlug })}#membership`
-			: null
-	);
+	// The link below points at the org's membership page — the only surface where
+	// a qualifying tier can be obtained. Deliberately not "Join organization": a
+	// plain membership request grants no tier and would dead-end, which is why the
+	// backend refuses to send this case down the become_member path at all.
 </script>
 
 {#if message}
@@ -59,15 +54,13 @@
 					{m['tierCardAdmin.requiresMembership']({ tiers: requiredTierNames.join(', ') })}
 				</p>
 			{/if}
-			{#if membershipGateRefused && membershipPlansHref}
-				<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the route id; the appended #membership fragment cannot be expressed through resolve() -->
+			{#if membershipGateRefused && organizationSlug}
 				<a
-					href={membershipPlansHref}
+					href={resolve('/(public)/org/[slug]/membership', { slug: organizationSlug })}
 					class="mt-2 inline-block text-sm font-medium underline underline-offset-4"
 				>
 					{m['membershipPlans.viewMembership']()}
 				</a>
-				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 			{/if}
 		</AlertDescription>
 	</Alert>

@@ -20,6 +20,7 @@
 		Check,
 		ClipboardList,
 		Clock,
+		CreditCard,
 		Crown,
 		RefreshCw,
 		Shield,
@@ -39,6 +40,26 @@
 		isOwner?: boolean;
 		isStaff?: boolean;
 		class?: string;
+		/**
+		 * The tier this CTA asks about.
+		 *
+		 * Present → *tier mode*: the verdict is resolved against that tier (its own
+		 * questionnaire/approval overrides, not just the org defaults) and joining
+		 * posts the tier, so the application is no longer tier-less.
+		 *
+		 * Absent → *summary mode*, for surfaces that stand outside the tier grid
+		 * (the org landing hero). There every actionable verdict becomes a link to
+		 * `/org/[slug]/membership`, because there is no honest way to apply without
+		 * first choosing a tier — that is exactly the hole #720 exists to close.
+		 */
+		tierId?: string | null;
+		/** Names the tier in the CTA, so N cards do not all read "Join". */
+		tierName?: string | null;
+		/**
+		 * Tier mode only: this tier's plans are on screen next to the CTA, so a
+		 * `proceed_to_payment` verdict points at them instead of linking away.
+		 */
+		plansInline?: boolean;
 	}
 
 	const {
@@ -50,8 +71,13 @@
 		membershipStatus = null,
 		isOwner = false,
 		isStaff = false,
-		class: className
+		class: className,
+		tierId = null,
+		tierName = null,
+		plansInline = false
 	}: Props = $props();
+
+	const isTierMode = $derived(!!tierId);
 
 	// Status badge styling, kept in step with MemberCard.svelte.
 	const statusStyles: Record<MembershipStatus, string> = {
@@ -82,10 +108,16 @@
 	});
 
 	const eligibilityQuery = createQuery(() => ({
-		queryKey: ['org', organizationSlug, 'join-eligibility'],
+		// The tier is part of the key, not just the request: verdicts are per tier
+		// (one may be joinable while its neighbour wants a questionnaire) and a
+		// shared key would serve whichever card asked first to all of them. The
+		// existing `['org', slug, 'join-eligibility']` invalidations still reach
+		// every entry — TanStack matches keys by prefix.
+		queryKey: ['org', organizationSlug, 'join-eligibility', tierId ?? null],
 		queryFn: async (): Promise<MembershipEligibilitySchema> => {
 			const res = await memembershipapplicationsGetJoinEligibility({
 				path: { slug: organizationSlug },
+				query: tierId ? { tier_id: tierId } : undefined,
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			// hey-api resolves rather than throws — a missing payload is a failure
@@ -129,10 +161,23 @@
 		return failed && authed && !settled;
 	});
 
+	/** The tier grid: where a membership is actually chosen. */
+	const membershipHref = $derived(
+		resolve('/(public)/org/[slug]/membership', { slug: organizationSlug })
+	);
+
+	// Tier mode only, and it comes back to the grid rather than the org landing
+	// page: the login round trip exists so the visitor can press Join on a tier,
+	// so it must return them to where that button is.
 	const loginHref = $derived(
-		`${resolve('/(public)/login', {})}?returnUrl=${encodeURIComponent(
-			resolve('/(public)/org/[slug]', { slug: organizationSlug })
-		)}`
+		`${resolve('/(public)/login', {})}?returnUrl=${encodeURIComponent(membershipHref)}`
+	);
+
+	/** The label a join button carries: the tier when there is one, else the org. */
+	const joinLabel = $derived(
+		tierName
+			? m['membershipEligibility.joinTier']({ tier: tierName })
+			: m['membershipEligibility.join']({ orgName: organizationName })
 	);
 
 	const membershipsHref = resolve('/(auth)/account/memberships', {});
@@ -219,23 +264,56 @@
 	{@render memberBadge()}
 {:else if !isAuthenticated}
 	<!-- A real link, not a scripted redirect: it survives no-JS, middle-click and
-	     the browser's own "open in new tab". SvelteKit routes it client-side. -->
-	<Button href={loginHref} class={className}>
+	     the browser's own "open in new tab". SvelteKit routes it client-side.
+	     Summary mode sends the visitor to the tier grid rather than straight to
+	     login: the grid is public, so they get to see what they would be joining
+	     before being asked for an account. -->
+	<Button href={isTierMode ? loginHref : membershipHref} class={className}>
 		<UserPlus class="h-4 w-4" aria-hidden="true" />
-		{m['membershipEligibility.join']({ orgName: organizationName })}
+		{joinLabel}
 	</Button>
 {:else if eligibility && ctaKind}
 	<div class={cn('flex flex-col items-start gap-2', className)}>
 		{#if ctaKind === 'join'}
-			<Button onclick={() => openApply('join')}>
-				<UserPlus class="h-4 w-4" aria-hidden="true" />
-				{m['membershipEligibility.join']({ orgName: organizationName })}
-			</Button>
+			{#if isTierMode}
+				<Button onclick={() => openApply('join')}>
+					<UserPlus class="h-4 w-4" aria-hidden="true" />
+					{joinLabel}
+				</Button>
+			{:else}
+				<!-- Summary mode: applying from here would create the tier-less
+				     application #720 is about, so it offers the grid instead. -->
+				<Button href={membershipHref}>
+					<UserPlus class="h-4 w-4" aria-hidden="true" />
+					{m['membershipPlans.viewMembership']()}
+				</Button>
+			{/if}
 		{:else if ctaKind === 'reapply'}
-			<Button onclick={() => openApply('reapply')}>
-				<UserPlus class="h-4 w-4" aria-hidden="true" />
-				{m['membershipEligibility.reapply']()}
-			</Button>
+			{#if isTierMode}
+				<Button onclick={() => openApply('reapply')}>
+					<UserPlus class="h-4 w-4" aria-hidden="true" />
+					{m['membershipEligibility.reapply']()}
+				</Button>
+			{:else}
+				<Button href={membershipHref}>
+					<UserPlus class="h-4 w-4" aria-hidden="true" />
+					{m['membershipEligibility.reapply']()}
+				</Button>
+			{/if}
+		{:else if ctaKind === 'payment'}
+			<!-- Every gate is cleared and only the charge is left. With the tier's
+			     plans on screen the CTA is one of those cards, so this says so in
+			     words; anywhere else it links to where they live. -->
+			{#if plansInline}
+				<p role="note" class="text-sm text-muted-foreground">
+					{m['membershipEligibility.choosePlan']()}
+				</p>
+			{:else}
+				<Button href={membershipHref}>
+					<CreditCard class="h-4 w-4" aria-hidden="true" />
+					{m['membershipPlans.viewMembership']()}
+				</Button>
+			{/if}
 		{:else if ctaKind === 'questionnaire' && questionnaireHref}
 			<!-- Button-styled, but left as a link: `role="button"` would demand a
 			     Space-key handler the anchor does not have. -->
@@ -325,11 +403,18 @@
 	focus to <body> (WCAG 3.2). Here the badge simply appears behind it, and the
 	dialog lives until the user closes it. Its own `open` state is the only gate;
 	nothing outside the CTA branches can set it.
+
+	Summary mode never opens it — there is no tier to apply to from there — so it
+	is not mounted at all, rather than mounted and unreachable.
 -->
-<ApplyDialog
-	open={applyOpen}
-	onOpenChange={(next) => (applyOpen = next)}
-	{organizationSlug}
-	{organizationName}
-	mode={applyMode}
-/>
+{#if isTierMode}
+	<ApplyDialog
+		open={applyOpen}
+		onOpenChange={(next) => (applyOpen = next)}
+		{organizationSlug}
+		{organizationName}
+		{tierId}
+		{tierName}
+		mode={applyMode}
+	/>
+{/if}

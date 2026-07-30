@@ -166,7 +166,7 @@ describe('ApplyDialog', () => {
 			expect(vi.mocked(memembershipapplicationsApply)).toHaveBeenCalledWith(
 				expect.objectContaining({
 					path: { slug: 'acme' },
-					body: { notes: 'hello' }
+					body: { tier_id: undefined, notes: 'hello' }
 				})
 			);
 		});
@@ -181,9 +181,40 @@ describe('ApplyDialog', () => {
 
 		await waitFor(() => {
 			expect(vi.mocked(memembershipapplicationsApply)).toHaveBeenCalledWith(
-				expect.objectContaining({ body: { notes: undefined } })
+				expect.objectContaining({ body: { tier_id: undefined, notes: undefined } })
 			);
 		});
+	});
+
+	// The whole point of #720: without `tier_id` the application is tier-less and
+	// the backend resolves only the org-wide questionnaire/approval policy, leaving
+	// every tier-level override dead configuration.
+	it('posts the tier it was opened for', async () => {
+		const user = userEvent.setup();
+		mockApplySuccess(makeResult());
+		renderDialog({ tierId: 'tier-gold', tierName: 'Gold' });
+
+		await user.click(screen.getByRole('button', { name: /send application/i }));
+
+		await waitFor(() => {
+			expect(vi.mocked(memembershipapplicationsApply)).toHaveBeenCalledWith(
+				expect.objectContaining({
+					path: { slug: 'acme' },
+					body: { tier_id: 'tier-gold', notes: undefined }
+				})
+			);
+		});
+	});
+
+	// The tier is what is being joined, so it names the dialog; the org still
+	// appears in the description line underneath.
+	it('titles itself after the tier when it has one', () => {
+		const { unmount } = renderDialog({ tierId: 'tier-gold', tierName: 'Gold' });
+		expect(screen.getByRole('heading', { name: 'Join Gold' })).toBeInTheDocument();
+		unmount();
+
+		renderDialog({ tierId: 'tier-gold', tierName: 'Gold', mode: 'reapply' });
+		expect(screen.getByRole('heading', { name: 'Re-apply to Gold' })).toBeInTheDocument();
 	});
 
 	it('celebrates an instantly completed application and refreshes the page data', async () => {

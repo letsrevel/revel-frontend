@@ -9,6 +9,7 @@ import {
 	memembershipapplicationsGetJoinEligibility
 } from '$lib/api/generated/sdk.gen';
 import type { MembershipEligibilitySchema } from '$lib/api/generated/types.gen';
+import * as m from '$lib/paraglide/messages.js';
 
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	memembershipapplicationsGetJoinEligibility: vi.fn(),
@@ -89,11 +90,68 @@ describe('MembershipCta', () => {
 		});
 	}
 
-	it('offers a join button when the verdict allows joining', async () => {
+	/**
+	 * The tier-grid usage (#720): the CTA asks about ONE tier and can act on it.
+	 * Summary mode — `renderCta` above, no `tierId` — deliberately cannot: applying
+	 * without a tier is the tier-less application this issue exists to remove, so
+	 * there every actionable verdict becomes a link to the tier page instead.
+	 */
+	function renderTierCta(props: Record<string, unknown> = {}) {
+		return renderCta({ tierId: 'tier-gold', tierName: 'Gold', ...props });
+	}
+
+	it('offers a tier-named join button when the verdict allows joining', async () => {
+		mockEligibility(makeEligibility({ allowed: true }));
+		renderTierCta();
+
+		// Named with the tier, not a bare "Join": a screen-reader user hears these
+		// out of context, and N identical buttons would be indistinguishable.
+		expect(await screen.findByRole('button', { name: 'Join Gold' })).toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: /join acme/i })).toBeNull();
+	});
+
+	it('asks the backend about that specific tier', async () => {
+		mockEligibility(makeEligibility({ allowed: true }));
+		renderTierCta();
+
+		await screen.findByRole('button', { name: 'Join Gold' });
+		expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).toHaveBeenCalledWith(
+			expect.objectContaining({ query: { tier_id: 'tier-gold' } })
+		);
+	});
+
+	// Summary mode has no tier to apply to, so an allowed verdict is not a Join
+	// button — it is the pointer at the page where a tier can be chosen.
+	it('links to the tier page instead of applying when it has no tier', async () => {
 		mockEligibility(makeEligibility({ allowed: true }));
 		renderCta();
 
-		expect(await screen.findByRole('button', { name: /join acme/i })).toBeInTheDocument();
+		const link = await screen.findByRole('link', {
+			name: m['membershipPlans.viewMembership']()
+		});
+		expect(link).toHaveAttribute('href', '/org/acme/membership');
+		expect(screen.queryByRole('button', { name: /join/i })).toBeNull();
+	});
+
+	// BE #831: a tier can be gated AND paid, and this step is the positive end of
+	// that chain — the gates are satisfied and only the charge is left.
+	it('points at the plans on screen for a proceed_to_payment verdict', async () => {
+		mockEligibility(makeEligibility({ allowed: false, next_step: 'proceed_to_payment' }));
+		renderTierCta({ plansInline: true });
+
+		expect(await screen.findByRole('note')).toHaveTextContent(
+			m['membershipEligibility.choosePlan']()
+		);
+		expect(screen.queryByRole('button', { name: /join/i })).toBeNull();
+	});
+
+	it('links to the tier page for proceed_to_payment when the plans are elsewhere', async () => {
+		mockEligibility(makeEligibility({ allowed: false, next_step: 'proceed_to_payment' }));
+		renderCta();
+
+		expect(
+			await screen.findByRole('link', { name: m['membershipPlans.viewMembership']() })
+		).toHaveAttribute('href', '/org/acme/membership');
 	});
 
 	it('links to the membership questionnaire when one must be submitted first', async () => {
@@ -156,9 +214,9 @@ describe('MembershipCta', () => {
 	// is policy context here, not a blocker — the user must still be able to apply.
 	it('still offers join when approval is required but no application exists yet', async () => {
 		mockEligibility(makeEligibility({ allowed: true, reason_code: 'requires_approval' }));
-		renderCta();
+		renderTierCta();
 
-		expect(await screen.findByRole('button', { name: /join acme/i })).toBeInTheDocument();
+		expect(await screen.findByRole('button', { name: 'Join Gold' })).toBeInTheDocument();
 	});
 
 	it('counts down to the retake date when the questionnaire is on cooldown', async () => {
@@ -231,11 +289,24 @@ describe('MembershipCta', () => {
 		expect(screen.queryByText(/couldn't load your join options/i)).toBeNull();
 	});
 
-	it('sends a guest to the login page with a return URL back to the org', () => {
+	// The return URL is the tier grid, not the org landing page: the round trip
+	// exists so the visitor can press Join on a tier, so it has to come back to
+	// where that button is.
+	it('sends a guest on a tier card to login and back to the tier grid', () => {
+		renderTierCta({ isAuthenticated: false });
+
+		const link = screen.getByRole('link', { name: 'Join Gold' });
+		expect(link).toHaveAttribute('href', '/login?returnUrl=%2Forg%2Facme%2Fmembership');
+		expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).not.toHaveBeenCalled();
+	});
+
+	// The grid is public, so a guest gets to see what they would be joining before
+	// being asked for an account.
+	it('sends a guest on the org page to the tier grid rather than to login', () => {
 		renderCta({ isAuthenticated: false });
 
 		const link = screen.getByRole('link', { name: /join acme/i });
-		expect(link).toHaveAttribute('href', '/login?returnUrl=%2Forg%2Facme');
+		expect(link).toHaveAttribute('href', '/org/acme/membership');
 		expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).not.toHaveBeenCalled();
 	});
 
@@ -328,7 +399,7 @@ describe('MembershipCta', () => {
 	it('recovers the join button when the retry succeeds', async () => {
 		const user = userEvent.setup();
 		mockEligibilityFailure();
-		renderCta();
+		renderTierCta();
 
 		const retry = await screen.findByRole('button', { name: /try again/i });
 		expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).toHaveBeenCalledTimes(1);
@@ -336,7 +407,7 @@ describe('MembershipCta', () => {
 		mockEligibility(makeEligibility({ allowed: true }));
 		await user.click(retry);
 
-		expect(await screen.findByRole('button', { name: /join acme/i })).toBeInTheDocument();
+		expect(await screen.findByRole('button', { name: 'Join Gold' })).toBeInTheDocument();
 		expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).toHaveBeenCalledTimes(2);
 		expect(screen.queryByText(/couldn't load your join options/i)).toBeNull();
 	});
@@ -344,12 +415,12 @@ describe('MembershipCta', () => {
 	it('opens the apply dialog from the join button', async () => {
 		const user = userEvent.setup();
 		mockEligibility(makeEligibility({ allowed: true }));
-		renderCta();
+		renderTierCta();
 
-		await user.click(await screen.findByRole('button', { name: /join acme/i }));
+		await user.click(await screen.findByRole('button', { name: 'Join Gold' }));
 
 		const dialog = await screen.findByRole('dialog');
-		expect(dialog).toHaveTextContent('Join Acme');
+		expect(dialog).toHaveTextContent('Join Gold');
 		expect(vi.mocked(memembershipapplicationsApply)).not.toHaveBeenCalled();
 	});
 
@@ -359,10 +430,10 @@ describe('MembershipCta', () => {
 	it('keeps the open apply dialog mounted when the CTA flips to the member badge', async () => {
 		const user = userEvent.setup();
 		mockEligibility(makeEligibility({ allowed: true }));
-		const { rerender } = renderCta();
+		const { rerender } = renderTierCta();
 
-		await user.click(await screen.findByRole('button', { name: /join acme/i }));
-		expect(await screen.findByRole('dialog')).toHaveTextContent('Join Acme');
+		await user.click(await screen.findByRole('button', { name: 'Join Gold' }));
+		expect(await screen.findByRole('dialog')).toHaveTextContent('Join Gold');
 
 		// `rerender` treats a top-level `props` key as its legacy call shape and
 		// unwraps one level, so the wrapper's own props are nested under it. The
@@ -376,6 +447,8 @@ describe('MembershipCta', () => {
 					organizationSlug: 'acme',
 					organizationName: 'Acme',
 					isAuthenticated: true,
+					tierId: 'tier-gold',
+					tierName: 'Gold',
 					isMember: true,
 					membershipStatus: 'active',
 					membershipTier: { id: 'tier-1', name: 'Gold' }
@@ -387,17 +460,45 @@ describe('MembershipCta', () => {
 		// The chain behind the dialog really did switch to the member badge — queried
 		// by text, since the open modal aria-hides everything outside itself.
 		expect(screen.getByText('Active')).toBeInTheDocument();
-		expect(screen.getByText('Gold')).toBeInTheDocument();
-		expect(screen.getByRole('dialog')).toHaveTextContent('Join Acme');
+		expect(screen.getAllByText('Gold').length).toBeGreaterThan(0);
+		expect(screen.getByRole('dialog')).toHaveTextContent('Join Gold');
 	});
 
 	it('opens the apply dialog in re-apply mode when a past application ended', async () => {
 		const user = userEvent.setup();
 		mockEligibility(makeEligibility({ allowed: false, next_step: 'reapply' }));
-		renderCta();
+		renderTierCta();
 
 		await user.click(await screen.findByRole('button', { name: /re-apply/i }));
 
-		expect(await screen.findByRole('dialog')).toHaveTextContent('Re-apply to Acme');
+		expect(await screen.findByRole('dialog')).toHaveTextContent('Re-apply to Gold');
+	});
+
+	// The cache key carries the tier (#720). Without it the first card's verdict
+	// would be served to every other tier on the page — one tier's "you can join"
+	// answering for a tier that wants a questionnaire.
+	it('keeps per-tier verdicts apart in the cache', async () => {
+		vi.mocked(memembershipapplicationsGetJoinEligibility).mockImplementation((async (options: {
+			query?: { tier_id?: string };
+		}) => ({
+			data:
+				options.query?.tier_id === 'tier-gold'
+					? makeEligibility({ allowed: true })
+					: makeEligibility({
+							allowed: false,
+							next_step: 'submit_questionnaire',
+							questionnaire_id: 'q1'
+						}),
+			error: undefined,
+			response: { ok: true } as unknown as Response
+		})) as unknown as typeof memembershipapplicationsGetJoinEligibility);
+
+		renderTierCta();
+		renderCta({ tierId: 'tier-silver', tierName: 'Silver' });
+
+		expect(await screen.findByRole('button', { name: 'Join Gold' })).toBeInTheDocument();
+		expect(
+			await screen.findByRole('link', { name: m['membershipEligibility.questionnaireCta']() })
+		).toHaveAttribute('href', '/org/acme/questionnaire/q1');
 	});
 });
