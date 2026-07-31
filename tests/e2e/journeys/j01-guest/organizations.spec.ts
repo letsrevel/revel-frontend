@@ -42,16 +42,16 @@ test.describe('J1 guest browses organizations @p0', () => {
 		).toBeVisible();
 		// Public org page exposes follow/membership CTAs and its events.
 		await expect(page.getByRole('button', { name: 'Follow' })).toBeVisible();
-		// The guest membership CTA is a real LINK into login carrying a returnUrl
-		// back to this org (MembershipCta's anonymous branch — it replaced the
-		// legacy "Request Membership" button), so it survives no-JS and
-		// middle-click.
+		// The guest membership CTA is a real LINK (MembershipCta's anonymous
+		// branch — it replaced the legacy "Request Membership" button), so it
+		// survives no-JS and middle-click. Since #720 the landing page carries the
+		// SUMMARY CTA — no tier to apply to from here — so it points at the public
+		// tier grid rather than straight at login: a guest gets to see what they
+		// would be joining before being asked for an account. The login round trip
+		// (with its returnUrl) is the tier cards' job, and is asserted there.
 		const joinLink = page.getByRole('link', { name: 'Join Revel Events Collective' });
 		await expect(joinLink).toBeVisible();
-		await expect(joinLink).toHaveAttribute(
-			'href',
-			/\/login\?returnUrl=%2Forg%2Frevel-events-collective$/
-		);
+		await expect(joinLink).toHaveAttribute('href', '/org/revel-events-collective/membership');
 		await expect(page.getByRole('heading', { name: 'Events', exact: true })).toBeVisible();
 	});
 });

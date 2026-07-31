@@ -129,13 +129,16 @@ test.describe('J23 plan availability states @p2', () => {
 		// A real link, not a scripted redirect — it carries the return trip.
 		const loginCta = card.getByRole('link', { name: 'Log in to subscribe' });
 		await expect(loginCta).toBeVisible({ timeout: 15_000 });
-		// PlanCard's return trip still points at the org LANDING page, not at the
-		// page the button was pressed on — deliberate on its side (`loginHref` in
-		// PlanCard.svelte), and asserted here so a change to it is a decision
-		// somebody makes rather than a silent drift.
+		// The return trip comes back to THIS page — the tier grid — not to the org
+		// landing page it used to name (`loginHref` in PlanCard.svelte, corrected
+		// alongside #720: plan cards moved here, so returning a visitor to a page
+		// that no longer shows the plan they were about to take is exactly what a
+		// returnUrl is for). Asserted here so a change to it is a decision somebody
+		// makes rather than a silent drift, and so it stays in step with
+		// TierCard's own CTA, which resolves to the same route.
 		await expect(loginCta).toHaveAttribute(
 			'href',
-			`/login?returnUrl=${encodeURIComponent(`/org/${ORG_SLUG}`)}`
+			`/login?returnUrl=${encodeURIComponent(membershipPath(ORG_SLUG))}`
 		);
 		await expect(card.getByRole('button', { name: 'Subscribe' })).toHaveCount(0);
 
