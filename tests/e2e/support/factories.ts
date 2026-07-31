@@ -1284,13 +1284,19 @@ export async function getSeededBestAvailableEvent(
  * tier-BEARING branch is the one a member actually walks. Tier-less applies
  * survive here as the ARRANGE shape for legacy/staff-decided rows.
  *
+ * NOTE (#735): the UI also posts `plan_id` when the member applies from a plan
+ * card, which is the only application a MONETIZED tier accepts. This factory
+ * deliberately stays free-only — the paid path is walked through the UI in
+ * j27/gated-paid-tier, where sending it from here would arrange away the very
+ * behaviour under test.
+ *
  * `nextStep` is the eligibility verdict's `next_step` (null once there is
  * nothing left to do) — the same field MembershipCta switches its CTA on.
  *
  * `submissionId` attaches the questionnaire submission that satisfied the
  * gate — the audit pointer the org-admin request card turns into its
  * "View questionnaire submission" link. The UI never sends it (ApplyDialog
- * posts tier + notes only), so specs that need a submission-bearing row
+ * posts tier + plan + notes), so specs that need a submission-bearing row
  * arrange it here. The backend validates it: it must be a READY submission
  * owned by `user` for the questionnaire that actually gates this (org, tier),
  * or the call 422s.
@@ -1327,6 +1333,13 @@ export interface MyApplication {
 	status: string;
 	tier_id?: string | null;
 	tier_name?: string | null;
+	/**
+	 * The plan a PAID application carries (BE #831: *"a `plan_id` makes this a
+	 * paid application"*). Read by j27's approval journey to prove the row the UI
+	 * created is the paid kind — a free application on a monetized tier is exactly
+	 * what gate #6 refuses, and what #735 was.
+	 */
+	plan_id?: string | null;
 }
 
 /**

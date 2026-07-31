@@ -474,6 +474,133 @@ describe('MembershipCta', () => {
 		expect(await screen.findByRole('dialog')).toHaveTextContent('Re-apply to Gold');
 	});
 
+	// #735, the tier-level half. On a monetized tier a tier-only question is a dead
+	// end — gate #6 answers `tier_requires_subscription` with no next_step, and the
+	// approval gate below it never runs — so `TierCard` now hands this CTA the
+	// representative plan its own plan cards are gated on. What the verdict then
+	// names is per-PLAN, and the plan cards (which know the id and the name) carry
+	// it; this CTA points at them rather than offering a second, plan-less copy.
+	describe('when the tier carries a plan', () => {
+		function renderPaidTierCta(props: Record<string, unknown> = {}) {
+			return renderTierCta({ planId: 'plan-1', plansInline: true, ...props });
+		}
+
+		// The same cache key `TierCard` and its plan cards already observe, so this
+		// is one shared request, not a second round trip per tier.
+		it('asks the backend about the tier AND the plan', async () => {
+			mockEligibility(
+				makeEligibility({
+					allowed: false,
+					next_step: 'submit_application',
+					reason_code: 'requires_approval'
+				})
+			);
+			renderPaidTierCta();
+
+			await screen.findByRole('note');
+			expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).toHaveBeenCalledWith(
+				expect.objectContaining({ query: { tier_id: 'tier-gold', plan_id: 'plan-1' } })
+			);
+		});
+
+		// The verdict this whole issue is about. Before #735 it fell through to
+		// `info` and rendered the org's approval POLICY next to nothing to press.
+		it('points at the plan cards when an application is what is missing', async () => {
+			mockEligibility(
+				makeEligibility({
+					allowed: false,
+					next_step: 'submit_application',
+					reason_code: 'requires_approval'
+				})
+			);
+			renderPaidTierCta();
+
+			expect(await screen.findByRole('note')).toHaveTextContent(
+				m['membershipEligibility.applyChoosePlan']()
+			);
+			// Not a second Join button: it would have no plan to apply with, and the
+			// backend refuses a plan-less application on a monetized tier.
+			expect(screen.queryByRole('button', { name: /join/i })).toBeNull();
+			expect(screen.queryByText(m['membershipEligibility.reason.requires_approval']())).toBeNull();
+		});
+
+		it('points at the plan cards for a re-apply too', async () => {
+			mockEligibility(
+				makeEligibility({
+					allowed: false,
+					next_step: 'reapply',
+					reason_code: 'application_rejected'
+				})
+			);
+			renderPaidTierCta();
+
+			expect(await screen.findByRole('note')).toHaveTextContent(
+				m['membershipEligibility.applyChoosePlan']()
+			);
+			expect(screen.queryByRole('button', { name: /re-apply/i })).toBeNull();
+		});
+
+		// Once staff decide, the approval gate falls through and the payment gate
+		// allows: the plan cards get their Subscribe back and this says so.
+		it('hands the tier back to the plans once the gates clear', async () => {
+			mockEligibility(makeEligibility({ allowed: true, next_step: 'proceed_to_payment' }));
+			renderPaidTierCta();
+
+			expect(await screen.findByRole('note')).toHaveTextContent(
+				m['membershipEligibility.choosePlan']()
+			);
+		});
+
+		// The waiting half. Nothing to press on any plan card, so the tier CTA is
+		// the one place the state and the way to follow it are stated — announced in
+		// words, not by a greyed-out control alone.
+		it('keeps the pending state and the tracking link while staff decide', async () => {
+			mockEligibility(
+				makeEligibility({
+					allowed: false,
+					next_step: 'wait_for_approval',
+					reason_code: 'requires_approval',
+					application_id: 'app-1'
+				})
+			);
+			renderPaidTierCta();
+
+			expect(await screen.findByRole('button', { name: /application pending/i })).toBeDisabled();
+			expect(screen.getByRole('link', { name: /track your application/i })).toHaveAttribute(
+				'href',
+				'/account/memberships'
+			);
+		});
+
+		// A questionnaire is not per-plan: `TierCard` renders its link straight off
+		// the tier, and the CTA keeps its own. Unchanged by this issue.
+		it('still links the questionnaire itself', async () => {
+			mockEligibility(
+				makeEligibility({
+					allowed: false,
+					next_step: 'submit_questionnaire',
+					reason_code: 'membership_questionnaire_missing',
+					questionnaire_id: 'q1'
+				})
+			);
+			renderPaidTierCta();
+
+			expect(
+				await screen.findByRole('link', { name: m['membershipEligibility.questionnaireCta']() })
+			).toHaveAttribute('href', '/org/acme/questionnaire/q1');
+		});
+
+		// The deferral is gated on the PLAN, not on the plans merely being on
+		// screen: a tier whose plans are all offline renders cards but gets no
+		// plan-bearing verdict, and its CTA must keep behaving exactly as before.
+		it('keeps its own join button when no plan was named', async () => {
+			mockEligibility(makeEligibility({ allowed: true }));
+			renderTierCta({ plansInline: true });
+
+			expect(await screen.findByRole('button', { name: 'Join Gold' })).toBeInTheDocument();
+		});
+	});
+
 	// The cache key carries the tier (#720). Without it the first card's verdict
 	// would be served to every other tier on the page — one tier's "you can join"
 	// answering for a tier that wants a questionnaire.

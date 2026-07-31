@@ -52,6 +52,24 @@
 		/** Names the tier in the CTA, so N cards do not all read "Join". */
 		tierName?: string | null;
 		/**
+		 * A representative plan of this tier, which changes what the backend is
+		 * ASKED — and on a monetized tier it is the only way to get an answer worth
+		 * rendering (#735).
+		 *
+		 * Without it, gate #6 (`TierAvailabilityGate`) short-circuits any tier
+		 * carrying an active plan with `tier_requires_subscription` and no
+		 * `next_step`, so the CTA rendered the org's policy prose and offered
+		 * nothing — the approval gate below it never even ran. With it the verdict
+		 * names a move (`submit_application`, `submit_questionnaire`,
+		 * `wait_for_approval`, `proceed_to_payment`, …).
+		 *
+		 * `TierCard` supplies it, and only for a GATED tier, so an ungated paid
+		 * tier's CTA is untouched. It is the same plan the tier's plan cards are
+		 * gated on, and the query options are shared — so this is the SAME cache
+		 * key and one request, not a second round trip per tier.
+		 */
+		planId?: string | null;
+		/**
 		 * Tier mode only: this tier's plans are on screen next to the CTA, so a
 		 * `proceed_to_payment` verdict points at them instead of linking away.
 		 */
@@ -70,10 +88,29 @@
 		class: className,
 		tierId = null,
 		tierName = null,
+		planId = null,
 		plansInline = false
 	}: Props = $props();
 
 	const isTierMode = $derived(!!tierId);
+
+	/**
+	 * The verdict was asked WITH a plan and that tier's plan cards are on screen,
+	 * so every step it names that is per-plan — apply, re-apply, pay — belongs to
+	 * those cards, which carry the plan's id and its name. This CTA points at them
+	 * instead of offering a second, plan-less copy of the same button (#735).
+	 *
+	 * Gated on `planId` rather than on `plansInline` alone: a tier whose plans are
+	 * all offline still renders plan cards but gets no plan-bearing verdict, and
+	 * its CTA must keep behaving exactly as it did.
+	 */
+	const deferToPlans = $derived.by(() => {
+		// Both operands read unconditionally: `&&` inside a `$derived` would leave
+		// the skipped one untracked.
+		const plan = !!planId;
+		const inline = plansInline;
+		return plan && inline;
+	});
 
 	// Status badge styling, kept in step with MemberCard.svelte.
 	const statusStyles: Record<MembershipStatus, string> = {
@@ -112,6 +149,7 @@
 		joinEligibilityQueryOptions({
 			organizationSlug,
 			tierId,
+			planId,
 			accessToken,
 			enabled: queryEnabled
 		})
@@ -260,7 +298,27 @@
 	</Button>
 {:else if eligibility && ctaKind}
 	<div class={cn('flex flex-col items-start gap-2', className)}>
-		{#if ctaKind === 'join'}
+		{#if ctaKind === 'apply' || (deferToPlans && (ctaKind === 'join' || ctaKind === 'reapply'))}
+			<!-- #735. The gates are waiting on an application, and on a monetized
+			     tier an application has to name a plan or the backend refuses it —
+			     so the affordance lives on the plan cards, one per plan, and this
+			     says where to look and what happens next. `role="note"`, the same
+			     shape the `payment` branch already uses for the same reason. -->
+			{#if deferToPlans}
+				<p role="note" class="text-sm text-muted-foreground">
+					{m['membershipEligibility.applyChoosePlan']()}
+				</p>
+			{:else}
+				<!-- No plan on this CTA, so it cannot mint the paid application the
+				     verdict is asking for: send them to the grid, where the plan cards
+				     can. Unreachable in practice — `submit_application` is emitted by
+				     the payment gate, which only runs for a plan-bearing question. -->
+				<Button href={membershipHref}>
+					<UserPlus class="h-4 w-4" aria-hidden="true" />
+					{m['membershipPlans.viewMembership']()}
+				</Button>
+			{/if}
+		{:else if ctaKind === 'join'}
 			{#if isTierMode}
 				<Button onclick={() => openApply('join')}>
 					<UserPlus class="h-4 w-4" aria-hidden="true" />
@@ -401,6 +459,7 @@
 		{organizationName}
 		{tierId}
 		{tierName}
+		{planId}
 		mode={applyMode}
 	/>
 {/if}

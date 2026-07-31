@@ -5172,7 +5172,13 @@
 		"loginToJoin": "Log in to join",
 		"freeHelper": "No payment needed — you can join right away.",
 		"gatedSubscribeHelper": "You can subscribe once this tier's requirements are met.",
-		"gatedJoinHelper": "You can join once this tier's requirements are met."
+		"gatedJoinHelper": "You can join once this tier's requirements are met.",
+		"applyCta": "Apply to join",
+		"applyCtaAria": "Apply to join with {plan}",
+		"reapplyCta": "Apply again",
+		"reapplyCtaAria": "Apply again with {plan}",
+		"applySubscribeHelper": "The organization reviews applications — you'll pay once you're approved.",
+		"applyJoinHelper": "The organization reviews applications — you'll join once you're approved."
 	},
 	"requestWhitelistButton": {
 		"mustBeLoggedIn": "You must be logged in to request verification",
@@ -6806,7 +6812,8 @@
 			"approval": "Your application is with the organization for review. You'll hear back once they decide."
 		},
 		"joinTier": "Join {tier}",
-		"choosePlan": "You're eligible — choose a plan below to join."
+		"choosePlan": "You're eligible — choose a plan below to join.",
+		"applyChoosePlan": "Choose a plan to apply — the organization reviews applications before payment."
 	},
 	"membershipApply": {
 		"title": "Join {orgName}",
@@ -6826,7 +6833,8 @@
 		"trackLink": "Track your application",
 		"error": "Could not send your application. Please try again.",
 		"titleTier": "Join {tier}",
-		"reapplyTitleTier": "Re-apply to {tier}"
+		"reapplyTitleTier": "Re-apply to {tier}",
+		"forPlan": "{orgName} — applying with the {plan} plan."
 	},
 	"membershipTiers": {
 		"heading": "Membership",

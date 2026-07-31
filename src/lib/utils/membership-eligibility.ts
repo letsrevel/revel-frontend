@@ -9,6 +9,8 @@ import * as m from '$lib/paraglide/messages.js';
  * The shape of call-to-action a membership eligibility verdict implies.
  *
  * - `join` — allowed, free path → open the apply dialog
+ * - `apply` — refused *pending an application*: staff approval is outstanding and
+ *   nothing is on file yet, so submitting one is the move (BE gate #10)
  * - `payment` — every gate is cleared; what is left is paying for a plan
  * - `questionnaire` — the user must submit the membership questionnaire first
  * - `waiting` — something is pending review (questionnaire, approval, whitelist)
@@ -18,7 +20,15 @@ import * as m from '$lib/paraglide/messages.js';
  * - `info` — nothing actionable: invitation-only or a plain denial
  */
 export type MembershipCtaKind =
-	'join' | 'payment' | 'questionnaire' | 'waiting' | 'retry_later' | 'reapply' | 'member' | 'info';
+	| 'join'
+	| 'apply'
+	| 'payment'
+	| 'questionnaire'
+	| 'waiting'
+	| 'retry_later'
+	| 'reapply'
+	| 'member'
+	| 'info';
 
 /**
  * Map a membership eligibility verdict to the CTA the UI should render.
@@ -42,6 +52,17 @@ export function getMembershipCtaKind(e: MembershipEligibilitySchema): Membership
 			return 'reapply';
 		case 'requires_invitation':
 			return 'info';
+		case 'submit_application':
+			// BE #831 / #735. Emitted by `PaymentReadyGate` (#10) alone, and only for
+			// a PLAN-BEARING verdict: manual approval is required and the caller has
+			// no application on file, so `ManualApprovalGate` (#9) deliberately fell
+			// through to let the free path apply and the payment gate refuses instead.
+			// The refusal is therefore not a dead end — it names its own remedy, and
+			// the whole point of #735 is that the UI now offers it. It used to fold
+			// into `info` (the switch had no arm and `allowed` is false), which is why
+			// an approval gate was unreachable on a monetized tier: the CTA rendered
+			// the org's approval POLICY prose next to nothing to press.
+			return 'apply';
 		case 'proceed_to_payment':
 			// BE #831: gated and monetized are no longer mutually exclusive, so this
 			// step is the *positive* end of a tier's gate chain — approval and
@@ -123,6 +144,47 @@ export function isBlockedByMembershipGate(e: MembershipEligibilitySchema): boole
 	if (e.allowed) return false;
 	if (!e.reason_code) return false;
 	return GATE_BLOCKING_REASON_CODES.includes(e.reason_code);
+}
+
+/**
+ * What a PLAN card should put where its Subscribe button was, given the tier's
+ * plan-bearing verdict.
+ *
+ * `null` means "nothing to do": the gates are satisfied (or say nothing about
+ * this viewer) and Subscribe stands, exactly as before #733.
+ *
+ * - `apply` — the gate is waiting on an application that does not exist yet, and
+ *   creating it is a member-side action. This is the hole #735 closes: withdrawing
+ *   the CTA and stopping there left an approval-gated priced tier with no
+ *   affordance at all, because — unlike a questionnaire, whose link `TierCard`
+ *   renders from the tier's own `questionnaire_id` — nothing else on the page can
+ *   offer to apply.
+ * - `reapply` — same shape, one step later: the previous application was rejected
+ *   and the backend says a fresh one supersedes it (`ApplicationStatusGate` #7).
+ * - `blocked` — the remaining gate refusals, including every `wait_*` step. The
+ *   card keeps #733's behaviour: no control, and the reason in its place. A wait
+ *   IS the correct rendering there — there is nothing for the member to press
+ *   while staff (or the grader) decide, and the tier CTA below carries the
+ *   "Application pending" state and the link to track it.
+ *
+ * Keyed off `isBlockedByMembershipGate` first, so the same allow-list that keeps
+ * the CTA from being withdrawn on a payment-readiness refusal also keeps an Apply
+ * button from appearing on one.
+ */
+export type MembershipGateAction = 'apply' | 'reapply' | 'blocked';
+
+export function getMembershipGateAction(
+	e: MembershipEligibilitySchema
+): MembershipGateAction | null {
+	if (!isBlockedByMembershipGate(e)) return null;
+	switch (e.next_step) {
+		case 'submit_application':
+			return 'apply';
+		case 'reapply':
+			return 'reapply';
+		default:
+			return 'blocked';
+	}
 }
 
 /**
