@@ -187,12 +187,138 @@ export function getMembershipGateAction(
 	}
 }
 
+/** One of the two requirements a tier states about itself on its card. */
+export type MembershipRequirementTopic = 'questionnaire' | 'approval';
+
+/**
+ * What a tier's requirement line should say — about the TIER, or about the
+ * VIEWER standing in front of it.
+ *
+ * - `policy` — no news about this viewer: state the tier's standing rule, which
+ *   is what the line has always said, and (for a questionnaire) offer the link.
+ *   Also the answer whenever there is no verdict at all — a guest, an
+ *   owner/staff viewer, a request in flight or failed — so the line degrades to
+ *   exactly its pre-#740 wording rather than to silence.
+ * - `status` — the verdict has something to say about THIS requirement:
+ *   `getMembershipStatusMessage` is the copy, and there is nothing to press
+ *   (a submission under review, a cooldown, a refusal).
+ * - `satisfied` — this viewer is past that gate.
+ */
+export type MembershipRequirementState = 'policy' | 'status' | 'satisfied';
+
+/**
+ * Every reason code the questionnaire gate (#8) can raise, and no others: this
+ * is what decides that a verdict is talking about the QUESTIONNAIRE line rather
+ * than the approval one. Listed rather than prefix-matched so a new code has to
+ * be classified deliberately.
+ */
+const QUESTIONNAIRE_REASON_CODES: readonly MembershipReasonCode[] = [
+	'membership_questionnaire_missing',
+	'membership_questionnaire_pending',
+	'membership_questionnaire_failed',
+	'membership_questionnaire_retake_cooldown',
+	'membership_questionnaire_attempts_exhausted'
+];
+
+const QUESTIONNAIRE_STEPS: readonly MembershipNextStep[] = [
+	'submit_questionnaire',
+	'wait_for_questionnaire_evaluation',
+	'wait_to_retake_questionnaire'
+];
+
+/**
+ * The application/approval half: gates #7 (`ApplicationStatusGate`) and #9
+ * (`ManualApprovalGate`), plus #10's `submit_application`.
+ */
+const APPROVAL_REASON_CODES: readonly MembershipReasonCode[] = [
+	'requires_approval',
+	'application_rejected'
+];
+
+const APPROVAL_STEPS: readonly MembershipNextStep[] = [
+	'submit_application',
+	'wait_for_approval',
+	'reapply'
+];
+
+/**
+ * Where this viewer stands against one of the tier's stated requirements.
+ *
+ * The tier's own `questionnaire_id` / `requires_approval` say the tier IS
+ * GATED; only a verdict says whether this viewer has done anything about it.
+ * Reading the tier alone is why a member whose submission was under review was
+ * still told "A membership questionnaire is required" with a link to fill in a
+ * questionnaire they had already filled in.
+ *
+ * Prose is deliberately NOT returned: the caller renders
+ * `getMembershipStatusMessage` for `status`, so this stays one mapping of
+ * verdicts to copy rather than two that can drift.
+ *
+ * `satisfied` is read off the gate ORDER, which is the only evidence available
+ * — a verdict names one step, not a checklist. The stack is fixed
+ * (`membership_manager/gates.py`): #8 questionnaire, #9 manual approval, #10
+ * payment readiness. So a verdict shaped by #9 or #10 (`wait_for_approval`,
+ * `submit_application`) has necessarily been past #8, and an `allowed` verdict
+ * has been past everything. The one loose end is `already_member` (gate #4,
+ * which short-circuits ABOVE the questionnaire): it reports `satisfied` without
+ * having evaluated the questionnaire, which is the right thing to tell a member
+ * — the gate is moot for them, and the card renders their member badge anyway.
+ *
+ * The approval half has an extra trap. An `allowed` verdict carrying
+ * `requires_approval` is gate #9's ANNOTATION for "nothing on file yet, you may
+ * apply" — not "you were approved" — so it stays `policy`.
+ */
+export function getMembershipRequirementState(
+	topic: MembershipRequirementTopic,
+	e: MembershipEligibilitySchema | null | undefined
+): MembershipRequirementState {
+	if (!e) return 'policy';
+	if (topic === 'approval') {
+		if (e.allowed) return e.reason_code === 'requires_approval' ? 'policy' : 'satisfied';
+		// The move itself lives on the plan cards (#735), which offer the button;
+		// this line keeps stating the rule rather than duplicating the prompt.
+		if (e.next_step === 'submit_application') return 'policy';
+		return speaksAbout(e, APPROVAL_STEPS, APPROVAL_REASON_CODES) ? 'status' : 'policy';
+	}
+	if (e.allowed) return 'satisfied';
+	if (e.next_step === 'submit_application' || e.next_step === 'wait_for_approval') {
+		return 'satisfied';
+	}
+	// `submit_questionnaire` is the never-started state: the standing rule plus
+	// the link to go and satisfy it is exactly the right copy, and it is the copy
+	// this line has always carried.
+	if (e.next_step === 'submit_questionnaire') return 'policy';
+	return speaksAbout(e, QUESTIONNAIRE_STEPS, QUESTIONNAIRE_REASON_CODES) ? 'status' : 'policy';
+}
+
+/**
+ * Is this verdict about the given requirement at all? A refusal from somewhere
+ * else entirely (blacklist, invite-only, a payment-readiness stop) says nothing
+ * about it, so the line keeps stating the rule and the CTA carries the refusal.
+ */
+function speaksAbout(
+	e: MembershipEligibilitySchema,
+	steps: readonly MembershipNextStep[],
+	codes: readonly MembershipReasonCode[]
+): boolean {
+	const byStep = e.next_step ? steps.includes(e.next_step) : false;
+	const byCode = e.reason_code ? codes.includes(e.reason_code) : false;
+	return byStep || byCode;
+}
+
 /**
  * Localized prose per reason code.
  *
- * Deliberately partial: `org_not_visible`, `tier_requires_subscription`,
- * `plan_not_online` and `org_not_stripe_connected` are gate codes a plain join
- * CTA never surfaces, so they fall through to the backend `reason` string.
+ * Deliberately partial: `org_not_visible`, `tier_requires_subscription` and
+ * `org_not_stripe_connected` are gate codes a plain join CTA never surfaces, so
+ * they fall through to the backend `reason` string.
+ *
+ * `plan_not_online` is the exception that joined the list with #740. It became
+ * reachable when `TierCard` started asking about a tier's OFFLINE plan (the only
+ * way to get a verdict at all for a tier that sells nothing else), and gate #10
+ * answers a cleared offline plan with exactly that code — so the CTA renders
+ * this string, and it must say the same thing the plan card already says rather
+ * than the backend's "not configured for online checkout".
  *
  * `membership_questionnaire_pending` is absent for a stronger reason: it is
  * UNREACHABLE here. The backend raises it from exactly one place
@@ -214,6 +340,7 @@ const REASON_MESSAGES: Partial<Record<MembershipReasonCode, () => string>> = {
 	not_accepting_requests: () => m['membershipEligibility.reason.not_accepting_requests'](),
 	tier_unavailable: () => m['membershipEligibility.reason.tier_unavailable'](),
 	plan_unavailable: () => m['membershipEligibility.reason.plan_unavailable'](),
+	plan_not_online: () => m['membershipEligibility.reason.plan_not_online'](),
 	application_rejected: () => m['membershipEligibility.reason.application_rejected'](),
 	membership_questionnaire_missing: () =>
 		m['membershipEligibility.reason.membership_questionnaire_missing'](),

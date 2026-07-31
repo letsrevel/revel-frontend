@@ -6767,6 +6767,7 @@
 			"not_accepting_requests": "Cette organisation n'accepte pas de nouveaux membres pour le moment.",
 			"tier_unavailable": "Ce niveau d'adhésion n'est pas disponible pour le moment.",
 			"plan_unavailable": "Ce forfait n'est pas disponible pour le moment.",
+			"plan_not_online": "Ce forfait est géré par l'organisation — contacte-la pour adhérer.",
 			"application_rejected": "Ta demande précédente n'a pas été approuvée.",
 			"membership_questionnaire_missing": "Cette organisation demande aux nouveaux membres de remplir d'abord un questionnaire.",
 			"membership_questionnaire_failed": "Ton questionnaire n'a pas été approuvé.",
@@ -6815,7 +6816,9 @@
 		"backToOrg": "Retour à {organizationName}",
 		"freeBadge": "Gratuit",
 		"requiresApproval": "L'organisation examine et approuve chaque demande.",
+		"approvalCleared": "L'organisation a approuvé ta demande.",
 		"questionnaireRequired": "Un questionnaire d'adhésion est requis.",
+		"questionnaireCleared": "Tu as rempli le questionnaire d'adhésion.",
 		"questionnaireLink": "Ouvrir le questionnaire",
 		"questionnaireLinkAria": "Ouvrir le questionnaire d'adhésion pour {tier}",
 		"landingBlurb": "Découvrez les niveaux d'adhésion proposés par {organizationName} et comment adhérer."

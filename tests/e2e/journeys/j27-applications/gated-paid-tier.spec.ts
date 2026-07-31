@@ -93,6 +93,13 @@ const JOIN_FREE = 'Join for free';
 const GATED_NOTE = "You can join once this tier's requirements are met.";
 /** The free-plan helper that rides along with the CTA, and only with it. */
 const FREE_HELPER = 'No payment needed — you can join right away.';
+/** `TierCard`'s requirement line while the viewer has submitted nothing. */
+const QUESTIONNAIRE_POLICY = 'A membership questionnaire is required.';
+/** …and what it says once their submission is with the organization. */
+const QUESTIONNAIRE_PENDING =
+	"Your questionnaire is being reviewed — we'll let you know once it's evaluated.";
+/** `PlanCard`'s offline branch — correct in every state, and left alone. */
+const OFFLINE_MANAGED = 'Managed by the organization — contact them to join this plan.';
 
 test.describe('j27 gated + paid tier @p2', () => {
 	test('a gated priced tier withholds its plan CTA, and hands it back once the gate clears', async ({
@@ -390,6 +397,109 @@ test.describe('j27 gated + paid tier @p2', () => {
 		await gotoHydrated(page, `/org/${org.slug}`);
 		await waitForClientAuth(page);
 		await expect(page.getByLabel(`Membership tier: ${tierName}`)).toBeVisible({ timeout: 20_000 });
+
+		await page.context().close();
+	});
+
+	// The state the two tests above never reach, and the one a real user reported:
+	// a gated tier whose ONLY plan is OFFLINE. Both halves of the bug live here.
+	//
+	// 1. No verdict was fetched at all. `TierCard` picked the plan to ask about
+	//    from the SUBSCRIBABLE ones — right for its original job (#733/#734 only
+	//    needed to withdraw a Subscribe button, which an offline plan never shows)
+	//    but it also suppressed the verdict used to REPORT state. With no plan,
+	//    gate #6 answers `tier_requires_subscription` for any monetized tier —
+	//    identical before and after the submission, which is precisely why the
+	//    member's own state was invisible.
+	// 2. The requirement line read the TIER (`questionnaire_id`), never the
+	//    viewer, so it said "required" whether they had never started, were
+	//    awaiting review, or had passed.
+	//
+	// An OFFLINE plan, not a free or online one, because that is the shape that
+	// fetched nothing — and the shape whose plan card can carry no state of its
+	// own either ("Managed by the organization" is all it ever says), leaving the
+	// tier's requirement line as the ONLY place the member's standing can appear.
+	//
+	// A MANUAL questionnaire because it parks: manual mode enqueues no evaluation
+	// at all, so the submission sits READY with no evaluation row forever — the
+	// backend's `membership_questionnaire_pending` /
+	// `wait_for_questionnaire_evaluation` verdict, with no grader race to poll.
+	test('a gated tier selling only an offline plan reports the viewer’s questionnaire state', async ({
+		browser
+	}) => {
+		test.setTimeout(240_000);
+		const [org, applicant] = await Promise.all([
+			createOrganization({ acceptMembershipRequests: true }),
+			createVerifiedUser('OfflineGated')
+		]);
+
+		const tierName = uniqueName('Offline Gated Tier');
+		const [tier, questionnaire] = await Promise.all([
+			createMembershipTier(org.owner, org.slug, tierName),
+			createMembershipQuestionnaire(org.owner, org.slug, { evaluationMode: 'manual' })
+		]);
+		// A TIER override, so the org's default tier stays ungated on the same page.
+		await patchTierPolicy(org.owner, org.slug, tier.id, {
+			membership_questionnaire: questionnaire.id
+		});
+		const plan = await createSubscriptionPlan(org.owner, org.slug, tier.id, {
+			name: uniqueName('Offline Plan'),
+			payment_method: 'offline',
+			price: '10.00',
+			currency: 'EUR',
+			period_unit: 'month'
+		});
+
+		const page = await pageAs(browser, applicant);
+		await gotoHydrated(page, membershipPath(org.slug));
+		await waitForClientAuth(page);
+
+		const card = tierCard(page, tierName);
+		await expect(card).toBeVisible({ timeout: 15_000 });
+		const offlinePlanCard = planCard(page, plan.name);
+		await expect(offlinePlanCard.getByText(OFFLINE_MANAGED)).toBeVisible();
+
+		// ── Nothing submitted: the tier's standing rule, and the way in ────────
+		await expect(card.getByText(QUESTIONNAIRE_POLICY)).toBeVisible();
+		const questionnaireLink = card.getByRole('link', {
+			name: `Open the membership questionnaire for ${tierName}`
+		});
+		await expect(questionnaireLink).toBeVisible();
+		// The verdict now names the move instead of dead-ending on gate #6's
+		// "This tier requires a paid subscription. Subscribe to a plan to join." —
+		// which was doubly wrong here: the only plan cannot be subscribed to.
+		await expect(
+			card.getByRole('link', { name: 'Fill in the membership questionnaire' })
+		).toBeVisible({ timeout: 15_000 });
+		await expect(card.getByText('This tier requires a paid subscription')).toHaveCount(0);
+
+		// ── Submit, and leave it with the organization ─────────────────────────
+		await questionnaireLink.click();
+		await page.waitForURL('**/questionnaire/**');
+		await expect(page.getByRole('heading', { name: 'Membership questionnaire' })).toBeVisible();
+		await page.getByLabel(MEMBERSHIP_QUESTION.manual.question).fill('E2E: I like this org.');
+		await page.getByRole('button', { name: 'Submit Questionnaire' }).click();
+		await expect(
+			page.getByText("Questionnaire submitted — we'll let you know once it's been evaluated.")
+		).toBeVisible({ timeout: 15_000 });
+		await page.waitForURL(`**/org/${org.slug}`, { timeout: 15_000 });
+
+		// ── …and the card says so, in the place that used to deny it ───────────
+		await gotoHydrated(page, membershipPath(org.slug));
+		await waitForClientAuth(page);
+		const pendingCard = tierCard(page, tierName);
+		await expect(pendingCard.getByText(QUESTIONNAIRE_PENDING)).toBeVisible({ timeout: 15_000 });
+		// The bug, asserted as an absence: the "you have not started" copy and its
+		// link are what the reporter saw on top of a submission under review.
+		await expect(pendingCard.getByText(QUESTIONNAIRE_POLICY)).toHaveCount(0);
+		await expect(
+			pendingCard.getByRole('link', {
+				name: `Open the membership questionnaire for ${tierName}`
+			})
+		).toHaveCount(0);
+		await expect(pendingCard.getByRole('button', { name: 'Application pending' })).toBeDisabled();
+		// The offline plan's own copy is correct in every state and stays put.
+		await expect(planCard(page, plan.name).getByText(OFFLINE_MANAGED)).toBeVisible();
 
 		await page.context().close();
 	});

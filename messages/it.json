@@ -6796,6 +6796,7 @@
 			"not_accepting_requests": "Questa organizzazione al momento non accetta nuovi membri.",
 			"tier_unavailable": "Questo livello di iscrizione non è disponibile al momento.",
 			"plan_unavailable": "Questo piano non è disponibile al momento.",
+			"plan_not_online": "Questo piano è gestito dall'organizzazione — contattala per aderire.",
 			"application_rejected": "La tua richiesta precedente non è stata approvata.",
 			"membership_questionnaire_missing": "Questa organizzazione chiede a chi si iscrive di compilare prima un questionario.",
 			"membership_questionnaire_failed": "Il tuo questionario non è stato approvato.",
@@ -6844,7 +6845,9 @@
 		"backToOrg": "Torna a {organizationName}",
 		"freeBadge": "Gratuito",
 		"requiresApproval": "L'organizzazione esamina e approva ogni richiesta.",
+		"approvalCleared": "L'organizzazione ha approvato la tua richiesta.",
 		"questionnaireRequired": "È richiesto un questionario di iscrizione.",
+		"questionnaireCleared": "Hai completato il questionario di iscrizione.",
 		"questionnaireLink": "Apri il questionario",
 		"questionnaireLinkAria": "Apri il questionario di iscrizione per {tier}",
 		"landingBlurb": "Scopri i livelli di iscrizione offerti da {organizationName} e come iscriverti."
