@@ -1,10 +1,15 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import type { MySubscriptionSchema, PublicPlanSchema } from '$lib/api/generated/types.gen';
+	import type {
+		ContactMethod,
+		MySubscriptionSchema,
+		PublicPlanSchema
+	} from '$lib/api/generated/types.gen';
 	import type { MembershipGateAction } from '$lib/utils/membership-eligibility';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
+	import OrgContactButton from '$lib/components/organization/OrgContactButton.svelte';
 	import {
 		canSwitchToPlan,
 		formatPlanPrice,
@@ -20,6 +25,17 @@
 		onSubscribe: (plan: PublicPlanSchema & { id: string }) => void;
 		/** Where the login round trip should come back to. */
 		organizationSlug: string;
+		/** Names the org in the offline plan's contact CTA. */
+		organizationName: string;
+		/**
+		 * How this organization accepts messages, straight off the org record. An
+		 * OFFLINE plan is settled with them directly, so this is the only place the
+		 * card can point a would-be member at — and `none`, or `email` with
+		 * no address on file, means there is nowhere to point, which the copy then
+		 * has to stop promising.
+		 */
+		contactMethod?: ContactMethod;
+		contactEmail?: string | null;
 		/**
 		 * The viewer's live subscription in this organization, or `null` when they
 		 * have none. The backend only ever hands back a *non-terminal* row here,
@@ -68,6 +84,9 @@
 		isAuthenticated,
 		onSubscribe,
 		organizationSlug,
+		organizationName,
+		contactMethod = 'none',
+		contactEmail = null,
 		subscription = null,
 		subscriptionLoading = false,
 		gateAction = null,
@@ -165,6 +184,24 @@
 	 */
 	const isPendingCheckout = $derived(subscription?.status === 'pending');
 
+	/**
+	 * Whether `OrgContactButton` would really render something for this org.
+	 *
+	 * Deliberately stricter than the `method !== 'none'` test used elsewhere: the
+	 * button's own `email` branch also requires an address, so a method of
+	 * `email` with none on file renders NOTHING. Gating the copy on the looser
+	 * test would leave the offline card promising a button that never arrives —
+	 * the same dead end this replaces, one step further along.
+	 */
+	const canContactOrganization = $derived.by(() => {
+		// Both operands read unconditionally: `&&`/`||` inside a `$derived` would
+		// leave the skipped one untracked.
+		const method = contactMethod;
+		const hasEmail = !!contactEmail;
+		if (method === 'email') return hasEmail;
+		return method === 'form';
+	});
+
 	const isFree = $derived(isFreePlan(plan));
 	/** A non-renewing term — said in words, because the price line no longer
 	    carries a cadence to imply it. */
@@ -260,7 +297,34 @@
 					</a>
 				{/if}
 			{:else if action === 'offline'}
+				<!-- The one branch with no self-serve path at all: the plan is settled
+				     with the organizers, so the sentence states that constraint and
+				     the CTA beneath it is how you reach them. The sentence stands
+				     alone when there is nobody to reach — it says what is true of the
+				     plan and stops, rather than telling the viewer to make contact
+				     they have no means of making.
+
+				     A whole button rather than a link spliced into the sentence: the
+				     org's two contact channels (mailto and a dialog) already live in
+				     OrgContactButton, and splicing would mean cutting a translated
+				     string around an anchor. -->
 				<p class="text-sm text-muted-foreground">{m['membershipPlans.offlineManaged']()}</p>
+				{#if canContactOrganization}
+					<!-- Named for the org, not just "Contact organizer": these buttons
+					     repeat down a page of plans and a screen-reader user hears them
+					     out of context. Full width on mobile like every other CTA here,
+					     so it cannot overflow a narrow card. -->
+					<OrgContactButton
+						{organizationSlug}
+						{organizationName}
+						{contactMethod}
+						{contactEmail}
+						{isAuthenticated}
+						variant="outline"
+						ariaLabel={m['orgContactButton.contactAriaLabel']({ organizationName })}
+						class="mt-2 w-full justify-center sm:w-auto"
+					/>
+				{/if}
 			{:else if isApplyAction}
 				<!-- #735. The one branch where a blocked gate still leaves the member
 				     something to press: the backend is waiting for an application that

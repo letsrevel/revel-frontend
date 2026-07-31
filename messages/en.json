@@ -4304,6 +4304,7 @@
 	"orgContactButton": {
 		"contactOrganizer": "Contact organizer",
 		"emailAriaLabel": "Email {organizationName}",
+		"contactAriaLabel": "Contact {organizationName}",
 		"dialogTitle": "Contact {organizationName}",
 		"dialogDesc": "Send a message to {organizationName}. Your account email will be shared with the organizer so they can reply.",
 		"subjectLabel": "Subject",
@@ -5165,7 +5166,7 @@
 		"soldOutHelper": "All spots are taken — one may free up if a membership ends.",
 		"paused": "Sales paused",
 		"pausedHelper": "The organization has temporarily closed sign-ups.",
-		"offlineManaged": "Managed by the organization — contact them to join this plan.",
+		"offlineManaged": "Managed manually by the organization.",
 		"refundPolicy": "Refund policy",
 		"viewMembership": "View membership options",
 		"joinFreeCta": "Join for free",

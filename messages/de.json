@@ -4304,6 +4304,7 @@
 	"orgContactButton": {
 		"contactOrganizer": "Organisator*innen kontaktieren",
 		"emailAriaLabel": "E-Mail an {organizationName}",
+		"contactAriaLabel": "{organizationName} kontaktieren",
 		"dialogTitle": "{organizationName} kontaktieren",
 		"dialogDesc": "Sende eine Nachricht an {organizationName}. Die E-Mail-Adresse deines Kontos wird mit den Organisator*innen geteilt, damit sie antworten können.",
 		"subjectLabel": "Betreff",
@@ -5165,7 +5166,7 @@
 		"soldOutHelper": "Alle Plätze sind vergeben — einer wird eventuell frei, wenn eine Mitgliedschaft endet.",
 		"paused": "Anmeldung pausiert",
 		"pausedHelper": "Die Organisation hat die Anmeldung vorübergehend geschlossen.",
-		"offlineManaged": "Wird von der Organisation verwaltet — melde dich bei ihr, um diesen Plan zu buchen.",
+		"offlineManaged": "Wird von der Organisation manuell verwaltet.",
 		"refundPolicy": "Rückerstattungsrichtlinie",
 		"viewMembership": "Mitgliedschaftsoptionen ansehen",
 		"joinFreeCta": "Kostenlos beitreten",
