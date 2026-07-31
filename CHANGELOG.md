@@ -7,30 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-
-- **Spanish and European Portuguese**: the whole interface is now available in `es` and `pt`,
-  matching the locales the backend already sends email in. Both are selectable from the language
-  switcher and from your account language setting, and both carry all 7,876 interface strings.
-  The six SEO landing pages have Spanish and Portuguese editions too.
-
-### Fixed
-
-- Italian and German interfaces no longer fall back to English on roughly 480 strings each —
-  including account deletion, privacy and security settings, invitations, and recurring events,
-  which had been rendering in English to people who had chosen Italian or German.
-- Counted phrases now use each language's real plural forms. They were previously built by
-  tacking an English "s" onto a noun, which produced wrong text in every other language
-  ("3 persona", "3 Platz") and left verbs and adjectives unagreed. Now "3 persone si sono già
-  unite", "3 Plätze", "3 invitaciones".
-- The preferred-language menu on your profile only ever offered English, German and Italian —
-  French was missing since the day it shipped. It now lists every available language.
-- The "Free · Open · Secure" tagline on the home page no longer clips the bottom of letters
-  that dip below the baseline (visible in Spanish and Portuguese as a cut-off "Seguro").
-- The home page welcome now animates its gendered ending in Spanish and Portuguese too, the
-  way it already did in Italian.
-
-## [1.70.0] - 2026-07-27
+## [2.0.0] - 2026-07-31
 
 ### Added
 
@@ -41,12 +18,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Venue designer** for organizers: draw sector blocks, place and rotate the stage, lay out rows and seats, and paint seats with price categories — with a coverage warning listing exactly which seats are still unpainted or unpriced. Buyers viewing a single sector see a stage-direction indicator.
   - Per-seat-category pricing on ticket tiers: a category price editor in the tier form, server-resolved per-seat prices on the buyer map, and tickets recording the actual price paid.
   - **Box office**: door sales, comps, reseating, and assigning or overriding seats at check-in, with attendee debt rolled up per order.
-- Organizers now get a notification when a refund cannot be matched to a ticket, with a link that opens the right place to resolve it.
+  - Organizers get a notification when a refund cannot be matched to a ticket, with a link that opens the right place to resolve it.
+- **Membership subscriptions**: organizations can sell recurring memberships, and people can hold, pay for, and manage them.
+  - **Tiers and plans** under org admin → **Members**: create and edit membership tiers — each with an optional gating questionnaire and an optional approval requirement — and attach subscription plans to them (monthly, yearly, one-off lifetime, or free).
+  - **Subscribing**: members pick a tier and a plan and pay through Stripe's hosted checkout; free and lifetime plans activate without a payment step. The membership appears as soon as the payment confirms, without needing a refresh.
+  - **My memberships** (`/account/memberships`): every membership you hold, with its plan, status and payment history, plus change-plan, cancel, and rejoin actions.
+  - **Applications**: apply to a tier that requires approval, answering its questionnaire where one is attached; organizers review applications in a **Requests** tab and approve, reject, or force-approve them.
+  - **Organizer visibility**: a subscription metrics strip and a **Subscription payments** tab on the Members admin, membership revenue folded into org financials, staff-side revival of a lapsed membership, and migration of existing subscribers onto a tier.
+- **Public membership page**: memberships have their own `/org/[slug]/membership` page listing every published tier and its plans, instead of sitting on the organization landing page where they pushed events and resources below the fold.
+- **Embeddable events**: organizers can embed Revel on their own website — a filtered event list for an organization, a single event, or an event series — via a one-line loader script or a plain iframe. Embeds honour `?theme=light|dark|auto`, resize themselves to their content, and are also discoverable over oEmbed, so pasting a Revel link into a supporting editor produces a live card. They are server-rendered and ship no application JavaScript to the host page.
+- **Attendance visibility**: a new **Attendance visibility** section in the event wizard, the event editor and recurring-event templates lets organizers decide separately whether guests see the attendee count, the capacity, and the guest list, with one-click **Open** and **Discreet** presets. Anything withheld is now genuinely absent rather than displayed as a zero, and a full event still reads as full.
+- **Membership questionnaires** can finally be authored: the questionnaire type was disabled behind a "Coming soon" badge even though the rest of the flow — the organization default, the per-tier override, and the member-facing fill page — was already in place, so nobody could reach it.
+- **Spanish and European Portuguese**: the whole interface is now available in `es` and `pt`,
+  matching the locales the backend already sends email in. Both are selectable from the language
+  switcher and from your account language setting, and both carry all 7,876 interface strings.
+  The six SEO landing pages have Spanish and Portuguese editions too.
 
 ### Changed
 
 - Ticket tiers whose seats have different category prices now advertise their real minimum–maximum price range instead of a single misleading price.
 - The buyer seat map detects when the venue layout has changed and refreshes itself automatically.
+- Ticket tiers with no quantity limit now say "Unlimited" on events that disclose their capacity, instead of showing nothing at all.
+
+### Fixed
+
+- A refused RSVP now explains why it was refused and re-renders the buttons for the step you can actually take, instead of showing an untranslated "No data returned from RSVP".
+- An RSVP the server had just refused could be silently re-submitted as if it had merely been a rejected note. It no longer is.
+- Field-validation errors coming back from the server no longer render as `[object Object]`.
+- Sending event invitations now reports which ticket tiers were rejected, instead of failing with a generic server error.
+- The "show pronoun distribution" opt-in is now saved when creating an event or a recurring-event template — previously it was only honoured when editing an existing event, so switching it on during creation quietly did nothing.
+- Screen readers now announce membership and application load failures instead of leaving a silent spinner, and the "review pending" caveat is part of the questionnaire-submission link's own name, so it survives link-list navigation.
+- Italian and German interfaces no longer fall back to English on roughly 480 strings each —
+  including account deletion, privacy and security settings, invitations, and recurring events,
+  which had been rendering in English to people who had chosen Italian or German. The
+  ineligibility, waitlist and "a spot opened up" messages are covered too.
+- Counted phrases now use each language's real plural forms. They were previously built by
+  tacking an English "s" onto a noun, which produced wrong text in every other language
+  ("3 persona", "3 Platz") and left verbs and adjectives unagreed. Now "3 persone si sono già
+  unite", "3 Plätze", "3 invitaciones".
+- The preferred-language menu on your profile only ever offered English, German and Italian —
+  French was missing since the day it shipped. It now lists every available language.
+- The "Free · Open · Secure" tagline on the home page no longer clips the bottom of letters
+  that dip below the baseline (visible in Spanish and Portuguese as a cut-off "Seguro").
+- The home page welcome now animates its gendered ending in Spanish and Portuguese too, the
+  way it already did in Italian.
 
 ### Removed
 
