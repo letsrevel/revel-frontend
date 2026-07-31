@@ -3,6 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { createQuery } from '@tanstack/svelte-query';
 	import type {
+		ContactMethod,
 		MySubscriptionSchema,
 		PublicMembershipTierSchema,
 		PublicPlanSchema
@@ -27,6 +28,13 @@
 		organizationName: string;
 		isAuthenticated: boolean;
 		/**
+		 * The org's contact channel, forwarded to the plan cards — only an OFFLINE
+		 * plan has anything to do with it. Carried as two fields rather than the
+		 * whole org record: these cards are handed exactly what they render.
+		 */
+		contactMethod?: ContactMethod;
+		contactEmail?: string | null;
+		/**
 		 * The viewer's live subscription in this org, forwarded untouched to every
 		 * PlanCard — see that component for why a non-null value withdraws the
 		 * subscribe CTA everywhere.
@@ -49,6 +57,8 @@
 		organizationSlug,
 		organizationName,
 		isAuthenticated,
+		contactMethod = 'none',
+		contactEmail = null,
 		subscription = null,
 		subscriptionLoading = false,
 		onSubscribe,
@@ -334,6 +344,9 @@
 							{subscription}
 							{subscriptionLoading}
 							{organizationSlug}
+							{organizationName}
+							{contactMethod}
+							{contactEmail}
 							{onSubscribe}
 							{gateAction}
 							{gateReason}

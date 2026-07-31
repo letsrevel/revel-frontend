@@ -4275,6 +4275,7 @@
 	"orgContactButton": {
 		"contactOrganizer": "Contacter l'organisateur·rice",
 		"emailAriaLabel": "Envoyer un e-mail à {organizationName}",
+		"contactAriaLabel": "Contacter {organizationName}",
 		"dialogTitle": "Contacter {organizationName}",
 		"dialogDesc": "Envoie un message à {organizationName}. L'adresse e-mail de ton compte sera partagée avec l'organisateur·rice afin qu'il/elle puisse te répondre.",
 		"subjectLabel": "Objet",
@@ -5136,7 +5137,7 @@
 		"soldOutHelper": "Toutes les places sont prises — une peut se libérer si une adhésion prend fin.",
 		"paused": "Inscriptions en pause",
 		"pausedHelper": "L'organisation a temporairement fermé les inscriptions.",
-		"offlineManaged": "Géré par l'organisation — contacte-la pour rejoindre ce forfait.",
+		"offlineManaged": "Géré manuellement par l'organisation.",
 		"refundPolicy": "Politique de remboursement",
 		"viewMembership": "Voir les options d'adhésion",
 		"joinFreeCta": "Rejoindre gratuitement",

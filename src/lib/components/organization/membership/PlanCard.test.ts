@@ -1,9 +1,17 @@
 import { render, screen } from '@testing-library/svelte';
 import { userEvent } from '@testing-library/user-event';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { QueryClient } from '@tanstack/svelte-query';
 import PlanCard from './PlanCard.svelte';
+import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 import type { MySubscriptionSchema, PublicPlanSchema } from '$lib/api/generated/types.gen';
 import * as m from '$lib/paraglide/messages.js';
+
+// The offline branch mounts OrgContactButton, which reads the token for its
+// contact-form mutation.
+vi.mock('$lib/stores/auth.svelte', () => ({
+	authStore: { accessToken: 'test-token' }
+}));
 
 function makePlan(overrides: Partial<PublicPlanSchema> = {}): PublicPlanSchema {
 	return {
@@ -64,23 +72,42 @@ function makeSub(overrides: Partial<MySubscriptionSchema> = {}): MySubscriptionS
 	};
 }
 
+let queryClient: QueryClient;
+
+/**
+ * Wrapped in a real QueryClientProvider: the offline branch mounts
+ * `OrgContactButton`, whose contact-form mutation resolves its client from
+ * Svelte context.
+ */
 function renderCard(props: Record<string, unknown> = {}) {
 	const onSubscribe = vi.fn();
 	const onApply = vi.fn();
-	const result = render(PlanCard, {
+	const result = render(QueryClientTestWrapper, {
 		props: {
-			plan: makePlan(),
-			isAuthenticated: true,
-			onSubscribe,
-			onApply,
-			organizationSlug: 'acme',
-			...props
+			client: queryClient,
+			component: PlanCard,
+			componentProps: {
+				plan: makePlan(),
+				isAuthenticated: true,
+				onSubscribe,
+				onApply,
+				organizationSlug: 'acme',
+				organizationName: 'Acme',
+				...props
+			}
 		}
 	});
 	return { ...result, onSubscribe, onApply };
 }
 
 describe('PlanCard', () => {
+	beforeEach(() => {
+		queryClient = new QueryClient({
+			defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
+		});
+		vi.clearAllMocks();
+	});
+
 	it('shows the plan name, price and description', () => {
 		renderCard({ plan: makePlan({ description: 'Two lines\nof perks' }) });
 
@@ -90,14 +117,75 @@ describe('PlanCard', () => {
 	});
 
 	// Offline plans are settled with the organizers directly — there is no
-	// checkout to send the member to.
-	it('explains an offline plan instead of offering a CTA', () => {
-		const { onSubscribe } = renderCard({ plan: makePlan({ payment_method: 'offline' }) });
+	// checkout to send the member to, so the card states the constraint and, when
+	// the org has somewhere to be reached, offers a way to reach them.
+	describe('an offline plan', () => {
+		const offlinePlan = () => makePlan({ payment_method: 'offline' });
 
-		expect(screen.getByText(/managed by the organization/i)).toBeInTheDocument();
-		expect(screen.queryByRole('button')).toBeNull();
-		expect(screen.queryByRole('link')).toBeNull();
-		expect(onSubscribe).not.toHaveBeenCalled();
+		it('offers the contact form when the org takes messages that way', () => {
+			const { onSubscribe } = renderCard({
+				plan: offlinePlan(),
+				contactMethod: 'form'
+			});
+
+			expect(screen.getByText(m['membershipPlans.offlineManaged']())).toBeInTheDocument();
+			// Named for the org: "Contact organizer" alone does not say who, and
+			// these repeat down a page of plans.
+			expect(
+				screen.getByRole('button', {
+					name: m['orgContactButton.contactAriaLabel']({ organizationName: 'Acme' })
+				})
+			).toBeInTheDocument();
+			// Still no checkout — the CTA contacts, it does not subscribe.
+			expect(screen.queryByRole('button', { name: /subscribe/i })).toBeNull();
+			expect(onSubscribe).not.toHaveBeenCalled();
+		});
+
+		it('offers a mailto link when the org publishes an address', () => {
+			renderCard({
+				plan: offlinePlan(),
+				contactMethod: 'email',
+				contactEmail: 'hello@acme.test'
+			});
+
+			expect(screen.getByText(m['membershipPlans.offlineManaged']())).toBeInTheDocument();
+			const link = screen.getByRole('link', {
+				name: m['orgContactButton.contactAriaLabel']({ organizationName: 'Acme' })
+			});
+			expect(link).toHaveAttribute('href', 'mailto:hello@acme.test');
+		});
+
+		// The trap this guards: `contact_method === 'email'` with no address on
+		// file renders nothing at all, so gating the copy on the method alone
+		// would promise a button that never arrives.
+		it('says only what is true when the email method has no address on file', () => {
+			renderCard({
+				plan: offlinePlan(),
+				contactMethod: 'email',
+				contactEmail: null
+			});
+
+			expect(screen.getByText(m['membershipPlans.offlineManaged']())).toBeInTheDocument();
+			expect(screen.queryByRole('button')).toBeNull();
+			expect(screen.queryByRole('link')).toBeNull();
+		});
+
+		it('states the constraint alone when the org accepts no contact', () => {
+			const { onSubscribe } = renderCard({ plan: offlinePlan(), contactMethod: 'none' });
+
+			expect(screen.getByText(m['membershipPlans.offlineManaged']())).toBeInTheDocument();
+			expect(screen.queryByRole('button')).toBeNull();
+			expect(screen.queryByRole('link')).toBeNull();
+			expect(onSubscribe).not.toHaveBeenCalled();
+		});
+
+		// The copy must not tell anybody to make contact it cannot offer — the
+		// dead end the CTA replaced.
+		it('never instructs the viewer to make contact in the sentence itself', () => {
+			renderCard({ plan: offlinePlan(), contactMethod: 'none' });
+
+			expect(screen.queryByText(/contact them/i)).toBeNull();
+		});
 	});
 
 	it('labels a sold-out plan in text and withdraws the CTA', () => {
@@ -443,7 +531,7 @@ describe('PlanCard', () => {
 			expect(screen.getByText('Free')).toBeInTheDocument();
 			expect(screen.getByText('Never expires')).toBeInTheDocument();
 			expect(screen.queryByText(/€0\.00/)).toBeNull();
-			expect(screen.queryByText(/managed by the organization/i)).toBeNull();
+			expect(screen.queryByText(m['membershipPlans.offlineManaged']())).toBeNull();
 		});
 
 		it('offers a join CTA that hands the plan to the caller', async () => {

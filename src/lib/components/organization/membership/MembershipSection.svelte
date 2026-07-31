@@ -193,6 +193,8 @@
 						organizationSlug={organization.slug}
 						organizationName={organization.name}
 						{isAuthenticated}
+						contactMethod={organization.contact_method}
+						contactEmail={organization.contact_email}
 						{subscription}
 						{subscriptionLoading}
 						onSubscribe={handleSubscribe}
