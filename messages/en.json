@@ -3327,7 +3327,9 @@
 					"online": "Online · Stripe",
 					"offline": "Offline · manual",
 					"soldOut": "Sold out",
-					"paused": "Sales paused"
+					"paused": "Sales paused",
+					"free": "Free · self-serve",
+					"lifetime": "Never expires"
 				},
 				"occupancy": "{active} active",
 				"occupancyCapped": "{active} / {cap} active",
@@ -3360,7 +3362,11 @@
 						"nameRequired": "Name is required",
 						"priceInvalid": "Price must be 0 or more",
 						"periodInvalid": "Period count must be between 1 and 120",
-						"maxSubsInvalid": "Maximum subscriptions must be 1 or more, or empty for unlimited"
+						"maxSubsInvalid": "Maximum subscriptions must be 1 or more, or empty for unlimited",
+						"freePriceNotZero": "Free plans must be priced 0.",
+						"freeNeedsLifetime": "Free plans must use the lifetime period.",
+						"onlinePriceZero": "Online plans must be priced above 0. Use a free plan for a no-cost membership.",
+						"onlineNoLifetime": "Online plans can't be lifetime — Stripe bills monthly or yearly. Use an offline plan for a one-off paid membership."
 					},
 					"periodMonth": "month(s)",
 					"periodYear": "year(s)",
@@ -3374,7 +3380,12 @@
 					"maxSubscriptionsUnlimited": "Unlimited",
 					"maxSubscriptionsHelp": "Cap on concurrent subscribers. Spots free up when a subscription ends.",
 					"pauseSales": "Pause sales",
-					"pauseSalesHelp": "Members can't subscribe or switch into this plan while paused. Current subscribers are unaffected; you can still enroll people manually."
+					"pauseSalesHelp": "Members can't subscribe or switch into this plan while paused. Current subscribers are unaffected; you can still enroll people manually.",
+					"paymentFree": "Free — members join at no cost",
+					"paymentFreeHelp": "Free plans have no price and never expire. Members join themselves, with no payment step.",
+					"periodLifetime": "lifetime (never renews)",
+					"freeShapeLocked": "Free plans are always priced 0 and always last a lifetime, so these can't be changed.",
+					"lifetimeNoCount": "A lifetime plan never renews, so there's no billing frequency to set."
 				},
 				"errors": {
 					"createFailed": "Failed to create plan: {detail}",
@@ -4293,6 +4304,7 @@
 	"orgContactButton": {
 		"contactOrganizer": "Contact organizer",
 		"emailAriaLabel": "Email {organizationName}",
+		"contactAriaLabel": "Contact {organizationName}",
 		"dialogTitle": "Contact {organizationName}",
 		"dialogDesc": "Send a message to {organizationName}. Your account email will be shared with the organizer so they can reply.",
 		"subjectLabel": "Subject",
@@ -4778,6 +4790,16 @@
 		"edit": "Edit",
 		"submissions": "Submissions",
 		"assignToEvents": "Assign to Events",
+		"assignToTiers": "Assign to membership tiers",
+		"organizationMembershipSettings": "Organization membership settings",
+		"usedByOneTier": "Used by 1 tier",
+		"usedByTierCount": "Used by {count} tiers",
+		"notUsedByAnyTier": "Not used by any tier",
+		"usedByTiers": "Used by {tiers}",
+		"usedByTiersAndMore": "Used by {first} and {remaining} more",
+		"notUsedByAnyTierTooltip": "Not required by any membership tier",
+		"organizationDefault": "Organization default",
+		"organizationDefaultTooltip": "Used for membership requests when a tier has no questionnaire of its own",
 		"delete": "Delete",
 		"deleting": "Deleting...",
 		"duplicate": "Duplicate"
@@ -5144,9 +5166,20 @@
 		"soldOutHelper": "All spots are taken — one may free up if a membership ends.",
 		"paused": "Sales paused",
 		"pausedHelper": "The organization has temporarily closed sign-ups.",
-		"offlineManaged": "Managed by the organization — contact them to join this plan.",
+		"offlineManaged": "Managed manually by the organization.",
 		"refundPolicy": "Refund policy",
-		"viewMembership": "View membership options"
+		"viewMembership": "View membership options",
+		"joinFreeCta": "Join for free",
+		"loginToJoin": "Log in to join",
+		"freeHelper": "No payment needed — you can join right away.",
+		"gatedSubscribeHelper": "You can subscribe once this tier's requirements are met.",
+		"gatedJoinHelper": "You can join once this tier's requirements are met.",
+		"applyCta": "Apply to join",
+		"applyCtaAria": "Apply to join with {plan}",
+		"reapplyCta": "Apply again",
+		"reapplyCtaAria": "Apply again with {plan}",
+		"applySubscribeHelper": "The organization reviews applications — you'll pay once you're approved.",
+		"applyJoinHelper": "The organization reviews applications — you'll join once you're approved."
 	},
 	"requestWhitelistButton": {
 		"mustBeLoggedIn": "You must be logged in to request verification",
@@ -6637,7 +6670,8 @@
 			"month": "month",
 			"months": "{n} months",
 			"year": "year",
-			"years": "{n} years"
+			"years": "{n} years",
+			"lifetime": "lifetime"
 		},
 		"status": {
 			"active": "Active",
@@ -6669,7 +6703,8 @@
 			"uncancel": "Resume renewal",
 			"uncancelling": "Resuming renewal…",
 			"uncancelSuccess": "Renewal is back on.",
-			"uncancelError": "Could not resume the renewal. Please try again."
+			"uncancelError": "Could not resume the renewal. Please try again.",
+			"alreadyActive": "This membership is already active."
 		},
 		"cancelScheduledHint": "Renewal is off. Resume it any time before this date to keep your membership.",
 		"cancelScheduledHintManaged": "Renewal is off. To keep your membership, contact the organization.",
@@ -6704,7 +6739,12 @@
 			"cta": "Rejoin",
 			"returnHint": "You'll pay securely with Stripe and return to the organization's page.",
 			"error": "Could not start the payment. Please try again."
-		}
+		},
+		"price": {
+			"free": "Free",
+			"oneTime": "{price} · one-time"
+		},
+		"neverExpires": "Never expires"
 	},
 	"account": {
 		"memberships": {
@@ -6757,6 +6797,7 @@
 			"not_accepting_requests": "This organization isn't accepting new members right now.",
 			"tier_unavailable": "This membership tier isn't available right now.",
 			"plan_unavailable": "This plan isn't available right now.",
+			"plan_not_online": "This plan is managed by the organization — contact them to join.",
 			"application_rejected": "Your previous application wasn't approved.",
 			"membership_questionnaire_missing": "This organization asks new members to fill in a questionnaire first.",
 			"membership_questionnaire_failed": "Your questionnaire wasn't approved.",
@@ -6771,7 +6812,10 @@
 		"wait": {
 			"questionnaire_evaluation": "Your questionnaire is being reviewed — we'll let you know once it's evaluated.",
 			"approval": "Your application is with the organization for review. You'll hear back once they decide."
-		}
+		},
+		"joinTier": "Join {tier}",
+		"choosePlan": "You're eligible — choose a plan below to join.",
+		"applyChoosePlan": "Choose a plan to apply — the organization reviews applications before payment."
 	},
 	"membershipApply": {
 		"title": "Join {orgName}",
@@ -6789,7 +6833,25 @@
 		"pendingTitle": "Application received",
 		"pendingBody": "The organization has your application — here's what happens next:",
 		"trackLink": "Track your application",
-		"error": "Could not send your application. Please try again."
+		"error": "Could not send your application. Please try again.",
+		"titleTier": "Join {tier}",
+		"reapplyTitleTier": "Re-apply to {tier}",
+		"forPlan": "{orgName} — applying with the {plan} plan."
+	},
+	"membershipTiers": {
+		"heading": "Membership",
+		"subtitle": "Choose how you want to be part of {organizationName}.",
+		"tiersHeading": "Membership tiers",
+		"empty": "{organizationName} hasn't published any membership tiers yet.",
+		"backToOrg": "Back to {organizationName}",
+		"freeBadge": "Free",
+		"requiresApproval": "The organization reviews and approves each application.",
+		"approvalCleared": "The organization has approved your application.",
+		"questionnaireRequired": "A membership questionnaire is required.",
+		"questionnaireCleared": "You've completed the membership questionnaire.",
+		"questionnaireLink": "Open the questionnaire",
+		"questionnaireLinkAria": "Open the membership questionnaire for {tier}",
+		"landingBlurb": "See the membership tiers {organizationName} offers and how to join."
 	},
 	"membershipQuestionnairePage": {
 		"title": "Membership questionnaire",
@@ -6884,7 +6946,11 @@
 			"cancelledTitle": "Checkout not completed",
 			"cancelledBody": "Your payment wasn't completed. You can resume it whenever you're ready.",
 			"resumeCta": "Resume payment"
-		}
+		},
+		"titleFree": "Join {plan}",
+		"freeNoCharge": "There's nothing to pay. Your membership starts as soon as you confirm.",
+		"neverRenews": "This membership never expires and is never renewed or charged again.",
+		"confirmFreeCta": "Join now"
 	},
 	"waitlistSettings.title": "Advanced waitlist settings",
 	"waitlistSettings.description": "Configure how seats are offered to waitlist members.",

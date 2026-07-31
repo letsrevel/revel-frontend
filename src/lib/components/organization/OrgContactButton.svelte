@@ -18,6 +18,16 @@
 		isAuthenticated: boolean;
 		variant?: 'primary' | 'outline';
 		class?: string;
+		/**
+		 * Overrides the control's accessible name, for callers that place this
+		 * button where "Contact organizer" alone does not say *who* (the offline
+		 * plan card, where the button sits among several plan-level CTAs).
+		 *
+		 * Opt-in rather than a new default: the `form` branch's name is its own
+		 * visible text everywhere else, and silently renaming it would rename it
+		 * for the org and event pages too.
+		 */
+		ariaLabel?: string | null;
 	}
 
 	const {
@@ -27,7 +37,8 @@
 		contactEmail = null,
 		isAuthenticated,
 		variant = 'outline',
-		class: className = ''
+		class: className = '',
+		ariaLabel = null
 	}: Props = $props();
 
 	const accessToken = $derived(authStore.accessToken);
@@ -98,14 +109,16 @@
 	<a
 		href="mailto:{contactEmail}"
 		class={buttonClasses}
-		aria-label={m['orgContactButton.emailAriaLabel']({ organizationName })}
+		aria-label={ariaLabel ?? m['orgContactButton.emailAriaLabel']({ organizationName })}
 	>
 		<Mail class="h-4 w-4" aria-hidden="true" />
 		{m['orgContactButton.contactOrganizer']()}
 	</a>
 {:else if contactMethod === 'form'}
 	<Dialog.Root open={showDialog} onOpenChange={handleOpenChange}>
-		<Dialog.Trigger class={buttonClasses}>
+		<!-- No aria-label by default: the visible text IS the name. Supplied only
+		     where the caller needs it to say who is being contacted. -->
+		<Dialog.Trigger class={buttonClasses} aria-label={ariaLabel ?? undefined}>
 			<Mail class="h-4 w-4" aria-hidden="true" />
 			{m['orgContactButton.contactOrganizer']()}
 		</Dialog.Trigger>

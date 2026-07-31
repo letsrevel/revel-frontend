@@ -1,5 +1,5 @@
 import * as m from '$lib/paraglide/messages.js';
-import { getDateLocale } from './date';
+import { formatMoney } from './format';
 import type {
 	MembershipStatus,
 	MySubscriptionSchema,
@@ -8,6 +8,7 @@ import type {
 	PublicPlanSchema,
 	SubscriptionStatus,
 	SubscriptionActivationPendingSchema,
+	SubscriptionPaymentMethod,
 	PeriodUnit
 } from '$lib/api/generated/types.gen';
 
@@ -182,6 +183,10 @@ export function getAvailableActions(
 
 /** Localized billing-period label, pluralized on `period_count`. */
 function periodLabel(unit: PeriodUnit, count: number): string {
+	// `lifetime` never renews, so it has no count to pluralize. It is handled
+	// ahead of every call site below; the branch is kept so the function stays
+	// total over the enum rather than silently rendering "lifetime" as "month".
+	if (unit === 'lifetime') return m['subscriptions.period.lifetime']();
 	if (unit === 'year') {
 		return count === 1
 			? m['subscriptions.period.year']()
@@ -193,22 +198,49 @@ function periodLabel(unit: PeriodUnit, count: number): string {
 }
 
 /**
- * Render a plan as "<amount> / <period>", e.g. "€10.00 / month".
+ * The plan the member takes at no cost and grants themselves (#832).
  *
- * Both halves follow the active UI language: the amount is pinned to
- * `getDateLocale()` like every other currency helper (so SSR and CSR agree,
- * regardless of the server's ICU locale), and the period label comes from the
- * message catalog rather than a hardcoded English table.
+ * Distinct from OFFLINE, which is also un-billed here but is *staff-assigned*:
+ * a FREE plan has no Stripe object, is priced 0 by construction, and members
+ * self-subscribe — so it earns a real CTA where OFFLINE earns an explanation.
+ *
+ * `payment_method` is optional in the parameter type only so partial plan
+ * literals (tests, narrow picks) keep type-checking; every wire schema carries it.
  */
-export function formatPlanPrice(
-	plan: Pick<PlanSchema, 'price' | 'currency' | 'period_unit' | 'period_count'>
-): string {
-	const amount = new Intl.NumberFormat(getDateLocale(), {
-		style: 'currency',
-		currency: plan.currency,
-		minimumFractionDigits: 2,
-		maximumFractionDigits: 2
-	}).format(Number(plan.price));
+export function isFreePlan(plan: { payment_method?: SubscriptionPaymentMethod }): boolean {
+	return plan.payment_method === 'free';
+}
+
+/**
+ * A non-renewing term: `current_period_end` stays NULL forever, so no
+ * renewal/lapse/expiry beat ever selects the subscription. Callers use it to
+ * say "never expires" where they would otherwise quote a renewal cadence.
+ */
+export function isLifetimePlan(plan: Pick<PlanSchema, 'period_unit'>): boolean {
+	return plan.period_unit === 'lifetime';
+}
+
+/** What `formatPlanPrice` needs; `payment_method` optional — see `isFreePlan`. */
+type PricedPlan = Pick<PlanSchema, 'price' | 'currency' | 'period_unit' | 'period_count'> &
+	Partial<Pick<PlanSchema, 'payment_method'>>;
+
+/**
+ * Render a plan's headline price.
+ *
+ * Three shapes, so no call site has to branch on the cadence itself:
+ * - FREE → "Free". Never "€0.00 / month", which reads as a charge *and* as a
+ *   renewal, and is wrong twice over.
+ * - LIFETIME → "€50.00 · one-time". There is no renewal to quote.
+ * - otherwise → "€10.00 / month".
+ *
+ * Both halves follow the active UI language: the amount goes through
+ * `formatMoney` (pinned to the UI locale, so SSR and CSR agree regardless of the
+ * server's ICU locale) and the period label comes from the message catalog.
+ */
+export function formatPlanPrice(plan: PricedPlan): string {
+	if (isFreePlan(plan)) return m['subscriptions.price.free']();
+	const amount = formatMoney(plan.price, plan.currency);
+	if (isLifetimePlan(plan)) return m['subscriptions.price.oneTime']({ price: amount });
 	return `${amount} / ${periodLabel(plan.period_unit, plan.period_count ?? 1)}`;
 }
 

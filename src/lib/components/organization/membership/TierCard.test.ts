@@ -1,0 +1,583 @@
+import { render, screen, waitFor } from '@testing-library/svelte';
+import { userEvent } from '@testing-library/user-event';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { QueryClient } from '@tanstack/svelte-query';
+import TierCard from './TierCard.svelte';
+import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
+import { memembershipapplicationsGetJoinEligibility } from '$lib/api/generated/sdk.gen';
+import type {
+	MembershipEligibilitySchema,
+	PublicMembershipTierSchema,
+	PublicPlanSchema
+} from '$lib/api/generated/types.gen';
+import * as m from '$lib/paraglide/messages.js';
+
+vi.mock('$lib/stores/auth.svelte', () => ({
+	authStore: { accessToken: 'test-token' }
+}));
+
+vi.mock('$app/navigation', () => ({
+	invalidateAll: vi.fn()
+}));
+
+vi.mock('$lib/api/generated/sdk.gen', async (importOriginal) => ({
+	...(await importOriginal<typeof import('$lib/api/generated/sdk.gen')>()),
+	memembershipapplicationsGetJoinEligibility: vi.fn()
+}));
+
+function mockEligibility(overrides: Partial<MembershipEligibilitySchema> = {}) {
+	vi.mocked(memembershipapplicationsGetJoinEligibility).mockResolvedValue({
+		data: { allowed: true, organization_id: 'org-1', ...overrides },
+		error: undefined,
+		response: { ok: true } as unknown as Response
+	} as unknown as Awaited<ReturnType<typeof memembershipapplicationsGetJoinEligibility>>);
+}
+
+function makePlan(overrides: Partial<PublicPlanSchema> = {}): PublicPlanSchema {
+	return {
+		id: 'plan-1',
+		tier_id: 't-gold',
+		tier_name: 'Gold',
+		name: 'Monthly',
+		description: null,
+		price: '10.00',
+		currency: 'EUR',
+		period_unit: 'month',
+		period_count: 1,
+		payment_method: 'online',
+		sales_status: 'open',
+		sold_out: false,
+		...overrides
+	};
+}
+
+function makeTier(overrides: Partial<PublicMembershipTierSchema> = {}): PublicMembershipTierSchema {
+	return {
+		id: 't-gold',
+		name: 'Gold',
+		description: null,
+		display_order: 0,
+		requires_approval: false,
+		questionnaire_id: null,
+		plans: [],
+		is_free: true,
+		...overrides
+	};
+}
+
+describe('TierCard', () => {
+	let queryClient: QueryClient;
+
+	beforeEach(() => {
+		queryClient = new QueryClient({
+			defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
+		});
+		vi.clearAllMocks();
+		mockEligibility();
+	});
+
+	function renderCard(props: Record<string, unknown> = {}) {
+		return render(QueryClientTestWrapper, {
+			props: {
+				client: queryClient,
+				component: TierCard,
+				componentProps: {
+					tier: makeTier(),
+					organizationSlug: 'acme',
+					organizationName: 'Acme',
+					isAuthenticated: true,
+					onSubscribe: vi.fn(),
+					...props
+				}
+			}
+		});
+	}
+
+	// The cards are peers in a grid, so each has to announce which tier it is
+	// before anything inside it makes sense (WCAG 1.3.1).
+	it('names itself after its tier', () => {
+		renderCard({ tier: makeTier({ name: 'Supporter' }) });
+
+		expect(screen.getByRole('article', { name: 'Supporter' })).toBeInTheDocument();
+	});
+
+	it('renders the tier description as markdown', () => {
+		renderCard({ tier: makeTier({ description: 'Access to **everything**.' }) });
+
+		expect(screen.getByText('everything').tagName).toBe('STRONG');
+	});
+
+	// Not colour: an icon plus its own words, so the state survives greyscale and
+	// every form of colour blindness.
+	it('states the approval gate in words', () => {
+		renderCard({ tier: makeTier({ requires_approval: true }) });
+
+		expect(screen.getByText(m['membershipTiers.requiresApproval']())).toBeInTheDocument();
+	});
+
+	it('links the questionnaire gate at the questionnaire itself', () => {
+		renderCard({ tier: makeTier({ name: 'Gold', questionnaire_id: 'q-42' }) });
+
+		expect(
+			screen.getByRole('link', {
+				name: m['membershipTiers.questionnaireLinkAria']({ tier: 'Gold' })
+			})
+		).toHaveAttribute('href', '/org/acme/questionnaire/q-42');
+	});
+
+	it('marks a plan-less tier as free and still offers a join CTA', async () => {
+		renderCard({ tier: makeTier({ name: 'Supporter', is_free: true, plans: [] }) });
+
+		expect(screen.getByText(m['membershipTiers.freeBadge']())).toBeInTheDocument();
+		expect(await screen.findByRole('button', { name: 'Join Supporter' })).toBeInTheDocument();
+	});
+
+	it('renders the plans of a paid tier and drops the free badge', () => {
+		renderCard({
+			tier: makeTier({
+				is_free: false,
+				plans: [makePlan({ id: 'p-1', name: 'Monthly' })]
+			})
+		});
+
+		expect(screen.getByRole('heading', { level: 4, name: 'Monthly' })).toBeInTheDocument();
+		expect(screen.queryByText(m['membershipTiers.freeBadge']())).toBeNull();
+	});
+
+	// Owner/staff: the page is configuration to them. Suppressed here rather than
+	// in the CTA so no eligibility request is made at all.
+	it('asks nothing and offers nothing when the join CTA is suppressed', async () => {
+		renderCard({ showJoinCta: false });
+
+		await waitFor(() => {
+			expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).not.toHaveBeenCalled();
+		});
+		expect(screen.queryByRole('button', { name: /^join /i })).toBeNull();
+	});
+
+	// A tier the backend serialized without an id cannot be applied to (there is no
+	// `tier_id` to post), so it must not grow a button that could only fail.
+	it('omits the CTA for a tier with no id', async () => {
+		renderCard({ tier: makeTier({ id: null }) });
+
+		await waitFor(() => {
+			expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).not.toHaveBeenCalled();
+		});
+		expect(screen.queryByRole('button', { name: /^join /i })).toBeNull();
+	});
+
+	// #733. The tier's own fields say the tier IS GATED; only a verdict says this
+	// VIEWER is behind the gate — and for a monetized tier that verdict has to
+	// name a plan, because the backend's TierAvailabilityGate short-circuits a
+	// plan-less check on any tier that sells something, long before the
+	// questionnaire and approval gates run.
+	describe('a gated, priced tier', () => {
+		const gatedPaidTier = () =>
+			makeTier({
+				is_free: false,
+				questionnaire_id: 'q-42',
+				plans: [makePlan({ id: 'p-1', name: 'Monthly', price: '10.00' })]
+			});
+
+		it('asks about a plan, not just the tier', async () => {
+			mockEligibility({ allowed: false, reason_code: 'membership_questionnaire_missing' });
+			renderCard({ tier: gatedPaidTier() });
+
+			await waitFor(() => {
+				expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).toHaveBeenCalledWith(
+					expect.objectContaining({ query: { tier_id: 't-gold', plan_id: 'p-1' } })
+				);
+			});
+		});
+
+		it('withdraws Subscribe and leaves the questionnaire as the only thing to press', async () => {
+			mockEligibility({
+				allowed: false,
+				reason_code: 'membership_questionnaire_missing',
+				next_step: 'submit_questionnaire',
+				questionnaire_id: 'q-42'
+			});
+			renderCard({ tier: gatedPaidTier() });
+
+			await waitFor(() => {
+				expect(screen.queryByRole('button', { name: /subscribe/i })).toBeNull();
+			});
+			// The plan card says, in its own words, why its CTA is gone…
+			const note = screen.getByText(m['membershipPlans.gatedSubscribeHelper'](), { exact: false });
+			expect(note).toHaveTextContent(
+				m['membershipEligibility.reason.membership_questionnaire_missing']()
+			);
+			// The price the member is working toward is still on the card…
+			expect(screen.getByText('€10.00 / month')).toBeInTheDocument();
+			// …and the way forward is the gate's own link.
+			expect(
+				screen.getByRole('link', {
+					name: m['membershipTiers.questionnaireLinkAria']({ tier: 'Gold' })
+				})
+			).toHaveAttribute('href', '/org/acme/questionnaire/q-42');
+		});
+
+		// The crux, in the direction that matters most: a member who has already
+		// passed the questionnaire must still be able to pay.
+		it('keeps Subscribe for a viewer who has cleared the gate', async () => {
+			mockEligibility({ allowed: true, next_step: 'proceed_to_payment', plan_id: 'p-1' });
+			renderCard({ tier: gatedPaidTier() });
+
+			expect(await screen.findByRole('button', { name: /subscribe/i })).toBeEnabled();
+		});
+
+		// #735. Manual approval arrives from PaymentReadyGate as
+		// `submit_application` — apply, be approved, then pay. Unlike the
+		// questionnaire above there is no link anywhere on the tier to press, so
+		// withdrawing Subscribe and stopping there (all #733 did) left the tier
+		// with no affordance at all. The plan card now offers the application.
+		const approvalTier = () =>
+			makeTier({
+				is_free: false,
+				requires_approval: true,
+				plans: [makePlan({ id: 'p-1', name: 'Monthly' })]
+			});
+
+		it('offers to apply — with the plan — when approval is outstanding', async () => {
+			mockEligibility({
+				allowed: false,
+				reason_code: 'requires_approval',
+				next_step: 'submit_application'
+			});
+			renderCard({ tier: approvalTier() });
+
+			expect(
+				await screen.findByRole('button', {
+					name: m['membershipPlans.applyCtaAria']({ plan: 'Monthly' })
+				})
+			).toBeEnabled();
+			// The dead Subscribe stays gone: `/subscribe` runs the same gates.
+			expect(screen.queryByRole('button', { name: /subscribe/i })).toBeNull();
+			// And the tier CTA below points at the plans rather than offering a
+			// second, plan-less application the backend would refuse.
+			expect(screen.getByRole('note')).toHaveTextContent(
+				m['membershipEligibility.applyChoosePlan']()
+			);
+		});
+
+		// The round trip that made #735 a bug rather than a cosmetic gap: the
+		// dialog the plan card opens has to carry the plan, or the backend refuses
+		// the application on a monetized tier.
+		it('opens the application dialog for the plan that was pressed', async () => {
+			const user = userEvent.setup();
+			mockEligibility({
+				allowed: false,
+				reason_code: 'requires_approval',
+				next_step: 'submit_application'
+			});
+			renderCard({ tier: approvalTier() });
+
+			await user.click(
+				await screen.findByRole('button', {
+					name: m['membershipPlans.applyCtaAria']({ plan: 'Monthly' })
+				})
+			);
+
+			const dialog = await screen.findByRole('dialog');
+			expect(dialog).toHaveTextContent(m['membershipApply.titleTier']({ tier: 'Gold' }));
+			expect(dialog).toHaveTextContent(
+				m['membershipApply.forPlan']({ orgName: 'Acme', plan: 'Monthly' })
+			);
+		});
+
+		// Once staff approve, `ManualApprovalGate` falls through and the payment
+		// gate allows: Subscribe returns with no code of its own. This is the
+		// post-approval half of the journey, asserted rather than assumed.
+		it('hands Subscribe back once the application is approved', async () => {
+			mockEligibility({ allowed: true, next_step: 'proceed_to_payment', plan_id: 'p-1' });
+			renderCard({ tier: approvalTier() });
+
+			expect(await screen.findByRole('button', { name: /subscribe/i })).toBeEnabled();
+			expect(
+				screen.queryByRole('button', {
+					name: m['membershipPlans.applyCtaAria']({ plan: 'Monthly' })
+				})
+			).toBeNull();
+		});
+
+		// While staff decide there is nothing to press: an Apply button here would
+		// mint a duplicate row against a pending application.
+		it('shows a wait state, not a second application, while approval is pending', async () => {
+			mockEligibility({
+				allowed: false,
+				reason_code: 'requires_approval',
+				next_step: 'wait_for_approval',
+				application_id: 'app-1'
+			});
+			renderCard({ tier: approvalTier() });
+
+			await waitFor(() => {
+				expect(
+					screen.getByText(m['membershipPlans.gatedSubscribeHelper'](), { exact: false })
+				).toHaveTextContent(m['membershipEligibility.wait.approval']());
+			});
+			expect(
+				screen.queryByRole('button', {
+					name: m['membershipPlans.applyCtaAria']({ plan: 'Monthly' })
+				})
+			).toBeNull();
+			expect(screen.getByRole('button', { name: /application pending/i })).toBeDisabled();
+		});
+
+		// A refusal about the PLAN rather than about the viewer: the plan card
+		// already models sold-out, paused and offline itself, and a Stripe-less org
+		// is not something the member can fill in a form to fix.
+		it('does not read a payment-readiness refusal as a gate', async () => {
+			mockEligibility({ allowed: false, reason_code: 'org_not_stripe_connected' });
+			renderCard({ tier: gatedPaidTier() });
+
+			expect(await screen.findByRole('button', { name: /subscribe/i })).toBeEnabled();
+		});
+	});
+
+	// An ungated tier is exactly as it was: no verdict is asked for on its plans'
+	// behalf, and nothing about the CTA changes.
+	it('asks no plan-level question about an ungated tier', async () => {
+		renderCard({
+			tier: makeTier({ is_free: false, plans: [makePlan({ id: 'p-1' })] })
+		});
+
+		expect(await screen.findByRole('button', { name: /subscribe/i })).toBeEnabled();
+		expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).not.toHaveBeenCalledWith(
+			expect.objectContaining({ query: expect.objectContaining({ plan_id: 'p-1' }) })
+		);
+	});
+
+	// #740. Which plan to ASK about and which plan's CTA to WITHDRAW are two
+	// different questions, and conflating them is what made the reported bug
+	// possible: a tier selling only an offline plan has no Subscribe to withdraw,
+	// so it asked nothing — and then had no verdict with which to report the
+	// viewer's own state either.
+	describe('the plan the verdict is asked about', () => {
+		const offlineOnlyTier = () =>
+			makeTier({
+				is_free: false,
+				questionnaire_id: 'q-42',
+				plans: [makePlan({ id: 'p-off', payment_method: 'offline' })]
+			});
+
+		it('asks about an offline plan when the tier sells nothing else', async () => {
+			mockEligibility({
+				allowed: false,
+				reason_code: 'membership_questionnaire_pending',
+				next_step: 'wait_for_questionnaire_evaluation'
+			});
+			renderCard({ tier: offlineOnlyTier() });
+
+			await waitFor(() => {
+				expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).toHaveBeenCalledWith(
+					expect.objectContaining({ query: { tier_id: 't-gold', plan_id: 'p-off' } })
+				);
+			});
+		});
+
+		// The withdrawal half is unchanged, and cheaply so: whenever a subscribable
+		// plan exists it is still the one asked about, so no existing tier's
+		// question — or cache key — moves.
+		it('prefers a subscribable plan over an offline one', async () => {
+			renderCard({
+				tier: makeTier({
+					is_free: false,
+					questionnaire_id: 'q-42',
+					plans: [
+						makePlan({ id: 'p-off', name: 'Offline', price: '5.00', payment_method: 'offline' }),
+						makePlan({ id: 'p-on', name: 'Monthly', price: '10.00' })
+					]
+				})
+			});
+
+			await waitFor(() => {
+				expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).toHaveBeenCalledWith(
+					expect.objectContaining({ query: { tier_id: 't-gold', plan_id: 'p-on' } })
+				);
+			});
+			expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).not.toHaveBeenCalledWith(
+				expect.objectContaining({ query: expect.objectContaining({ plan_id: 'p-off' }) })
+			);
+		});
+
+		// Gate #6 only short-circuits a tier that HAS an active plan, so a tier
+		// with none is answerable tier-only — and asking is the only way its
+		// requirement lines can report anything.
+		it('asks a tier-only question when the tier sells nothing at all', async () => {
+			renderCard({ tier: makeTier({ questionnaire_id: 'q-42', plans: [] }) });
+
+			await waitFor(() => {
+				expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).toHaveBeenCalledWith(
+					expect.objectContaining({ query: { tier_id: 't-gold' } })
+				);
+			});
+		});
+
+		// The offline plan's own copy is right in every state; the fix must not
+		// disturb it, and the verdict must not withdraw a CTA that was never there.
+		it('leaves the offline plan card exactly as it was', async () => {
+			mockEligibility({
+				allowed: false,
+				reason_code: 'membership_questionnaire_pending',
+				next_step: 'wait_for_questionnaire_evaluation'
+			});
+			renderCard({ tier: offlineOnlyTier() });
+
+			expect(await screen.findByText(m['membershipPlans.offlineManaged']())).toBeInTheDocument();
+			expect(
+				screen.queryByText(m['membershipPlans.gatedSubscribeHelper'](), { exact: false })
+			).toBeNull();
+		});
+	});
+
+	// #740, the half the reporter actually saw: the requirement list stated a fact
+	// about the TIER, so it read "required" whether the viewer had never started,
+	// was awaiting review, or had passed.
+	describe('the requirement lines', () => {
+		const questionnaireTier = () =>
+			makeTier({
+				is_free: false,
+				questionnaire_id: 'q-42',
+				plans: [makePlan({ id: 'p-off', payment_method: 'offline' })]
+			});
+
+		const questionnaireLink = () =>
+			screen.queryByRole('link', {
+				name: m['membershipTiers.questionnaireLinkAria']({ tier: 'Gold' })
+			});
+
+		it('states the rule, with the link, for a viewer who has not started', async () => {
+			mockEligibility({
+				allowed: false,
+				reason_code: 'membership_questionnaire_missing',
+				next_step: 'submit_questionnaire',
+				questionnaire_id: 'q-42'
+			});
+			renderCard({ tier: questionnaireTier() });
+
+			await waitFor(() => {
+				expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).toHaveBeenCalled();
+			});
+			expect(screen.getByText(m['membershipTiers.questionnaireRequired']())).toBeInTheDocument();
+			expect(questionnaireLink()).toBeInTheDocument();
+		});
+
+		// The bug itself. Nothing to open, so the link goes with the copy that
+		// offered it.
+		it('reports a submission under review instead of asking for one', async () => {
+			mockEligibility({
+				allowed: false,
+				reason_code: 'membership_questionnaire_pending',
+				next_step: 'wait_for_questionnaire_evaluation'
+			});
+			renderCard({ tier: questionnaireTier() });
+
+			expect(
+				await screen.findByText(m['membershipEligibility.wait.questionnaire_evaluation']())
+			).toBeInTheDocument();
+			expect(screen.queryByText(m['membershipTiers.questionnaireRequired']())).toBeNull();
+			expect(questionnaireLink()).toBeNull();
+		});
+
+		it('reports a retake cooldown', async () => {
+			mockEligibility({
+				allowed: false,
+				reason_code: 'membership_questionnaire_retake_cooldown',
+				next_step: 'wait_to_retake_questionnaire',
+				retry_on: '2026-08-01T00:00:00Z'
+			});
+			renderCard({ tier: questionnaireTier() });
+
+			expect(
+				await screen.findByText(
+					m['membershipEligibility.reason.membership_questionnaire_retake_cooldown']()
+				)
+			).toBeInTheDocument();
+			expect(screen.queryByText(m['membershipTiers.questionnaireRequired']())).toBeNull();
+		});
+
+		it('says so once the viewer has cleared the questionnaire', async () => {
+			mockEligibility({ allowed: true, next_step: 'proceed_to_payment' });
+			renderCard({ tier: questionnaireTier() });
+
+			expect(
+				await screen.findByText(m['membershipTiers.questionnaireCleared']())
+			).toBeInTheDocument();
+			expect(questionnaireLink()).toBeNull();
+		});
+
+		const approvalTier = () =>
+			makeTier({
+				is_free: false,
+				requires_approval: true,
+				plans: [makePlan({ id: 'p-off', payment_method: 'offline' })]
+			});
+
+		it('reports an application with the organization, and its approval', async () => {
+			mockEligibility({
+				allowed: false,
+				reason_code: 'requires_approval',
+				next_step: 'wait_for_approval',
+				application_id: 'app-1'
+			});
+			const { unmount } = renderCard({ tier: approvalTier() });
+
+			expect(
+				await screen.findByText(m['membershipEligibility.wait.approval']())
+			).toBeInTheDocument();
+			expect(screen.queryByText(m['membershipTiers.requiresApproval']())).toBeNull();
+			unmount();
+
+			queryClient.clear();
+			mockEligibility({ allowed: true, next_step: 'proceed_to_payment' });
+			renderCard({ tier: approvalTier() });
+
+			expect(await screen.findByText(m['membershipTiers.approvalCleared']())).toBeInTheDocument();
+		});
+
+		// The fallback that keeps the lines honest for everybody who never asks —
+		// guests, owners, staff, and every viewer before the verdict lands.
+		it('keeps the tier’s own wording when there is no verdict', async () => {
+			renderCard({
+				tier: makeTier({ questionnaire_id: 'q-42', requires_approval: true }),
+				isAuthenticated: false
+			});
+
+			expect(screen.getByText(m['membershipTiers.questionnaireRequired']())).toBeInTheDocument();
+			expect(screen.getByText(m['membershipTiers.requiresApproval']())).toBeInTheDocument();
+			expect(questionnaireLink()).toBeInTheDocument();
+			await waitFor(() => {
+				expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).not.toHaveBeenCalled();
+			});
+		});
+
+		// A refusal about something else entirely: the CTA carries that reason, and
+		// the requirement lines must not claim the gate was cleared.
+		it('states the rules for a refusal that is about neither of them', async () => {
+			mockEligibility({ allowed: false, reason_code: 'blacklisted' });
+			renderCard({
+				tier: makeTier({
+					questionnaire_id: 'q-42',
+					requires_approval: true,
+					plans: [makePlan({ id: 'p-off', payment_method: 'offline' })]
+				})
+			});
+
+			await waitFor(() => {
+				expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).toHaveBeenCalled();
+			});
+			expect(screen.getByText(m['membershipTiers.questionnaireRequired']())).toBeInTheDocument();
+			expect(screen.getByText(m['membershipTiers.requiresApproval']())).toBeInTheDocument();
+		});
+
+		// The state has to reach a screen-reader user who is not looking at the
+		// card when it changes: the list is server-rendered and the verdict lands
+		// over it later, with no focus move to announce it (WCAG 4.1.3).
+		it('announces the change politely', () => {
+			renderCard({ tier: questionnaireTier() });
+
+			expect(screen.getByRole('list')).toHaveAttribute('aria-live', 'polite');
+		});
+	});
+});

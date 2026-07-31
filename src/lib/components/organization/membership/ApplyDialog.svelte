@@ -32,9 +32,46 @@
 		organizationName: string;
 		/** `reapply` only changes the framing — the request is identical. */
 		mode: 'join' | 'reapply';
+		/**
+		 * The tier being applied to. Sent to the backend, which resolves that
+		 * tier's questionnaire/approval overrides instead of only the org-wide
+		 * defaults — without it the application is tier-less and staff have to
+		 * guess the tier at approval time (#720).
+		 */
+		tierId?: string | null;
+		/** Names the tier in the dialog heading. */
+		tierName?: string | null;
+		/**
+		 * The plan this application is for, which is what makes it a PAID
+		 * application (BE #831: *"A `plan_id` makes this a paid application"*).
+		 *
+		 * Not an optimization — on a tier that carries an active plan it is the
+		 * only application the backend will accept. `TierAvailabilityGate` (#6)
+		 * refuses a plan-less `/apply` there with `tier_requires_subscription` and
+		 * never reaches the approval gate below it, so without this the dialog can
+		 * only ever mint FREE applications and manual-approval gating on a
+		 * monetized tier is unreachable through the UI (#735).
+		 *
+		 * The row carries the plan through to settlement: it advances to APPROVED
+		 * when staff decide, and COMPLETED once the subscription bought with this
+		 * plan activates.
+		 */
+		planId?: string | null;
+		/** Names the plan in the dialog, so the applicant sees which one they chose. */
+		planName?: string | null;
 	}
 
-	const { open, onOpenChange, organizationSlug, organizationName, mode }: Props = $props();
+	const {
+		open,
+		onOpenChange,
+		organizationSlug,
+		organizationName,
+		mode,
+		tierId = null,
+		tierName = null,
+		planId = null,
+		planName = null
+	}: Props = $props();
 
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
@@ -75,8 +112,14 @@
 			const res = await memembershipapplicationsApply({
 				path: { slug: organizationSlug },
 				// An empty note is no note: sending `''` would store a blank message
-				// on the application.
-				body: { notes: notes || undefined },
+				// on the application. `tier_id` and `plan_id` are likewise omitted
+				// rather than sent as null when the caller has neither, so the backend
+				// keeps its org-default resolution for the legacy tier-less path.
+				body: {
+					tier_id: tierId ?? undefined,
+					plan_id: planId ?? undefined,
+					notes: notes || undefined
+				},
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			// hey-api resolves rather than throws — a missing payload is a failure
@@ -147,6 +190,13 @@
 				? m['membershipApply.completedTitle']()
 				: m['membershipApply.pendingTitle']();
 		}
+		if (tierName) {
+			// The tier is the thing being joined, so it — not the org — names the
+			// dialog. The org still appears in the description line below.
+			return mode === 'reapply'
+				? m['membershipApply.reapplyTitleTier']({ tier: tierName })
+				: m['membershipApply.titleTier']({ tier: tierName });
+		}
 		return mode === 'reapply'
 			? m['membershipApply.reapplyTitle']({ orgName: organizationName })
 			: m['membershipApply.title']({ orgName: organizationName });
@@ -185,6 +235,12 @@
 					{completed
 						? m['membershipApply.completedBody']({ orgName: organizationName })
 						: m['membershipApply.pendingBody']()}
+				{:else if planName}
+					<!-- Which plan the application will carry. The applicant pressed Apply
+					     on one specific card and the row's `plan` FK is set from it, so the
+					     dialog says so rather than leaving them to infer it from whichever
+					     button they happened to press. -->
+					{m['membershipApply.forPlan']({ orgName: organizationName, plan: planName })}
 				{:else}
 					{organizationName}
 				{/if}

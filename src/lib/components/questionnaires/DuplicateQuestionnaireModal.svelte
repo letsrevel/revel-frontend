@@ -2,8 +2,9 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
-	import { createMutation } from '@tanstack/svelte-query';
+	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { questionnaireDuplicateOrgQuestionnaire } from '$lib/api/generated/sdk.gen';
+	import { invalidateOrgQuestionnaires } from '$lib/queries/org-questionnaires';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -28,6 +29,7 @@
 	}: Props = $props();
 
 	const accessToken = $derived(authStore.accessToken);
+	const queryClient = useQueryClient();
 
 	let newName = $state('');
 	let copyAssociations = $state(false);
@@ -62,7 +64,11 @@
 			}
 			return response.data;
 		},
-		onSuccess: (data) => {
+		onSuccess: async (data) => {
+			// The copy carries the original's `questionnaire_type`, so duplicating a
+			// membership questionnaire adds a row the members admin's cached picker
+			// must show. Awaited before navigating away (#722).
+			await invalidateOrgQuestionnaires(queryClient, organizationSlug);
 			goto(
 				resolve('/(auth)/org/[slug]/admin/questionnaires/[id]', {
 					slug: organizationSlug,

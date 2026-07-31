@@ -21,7 +21,7 @@
 	import { AlertTriangle, Pencil, Archive, Trash2, Plus, Loader2, RefreshCw } from '@lucide/svelte';
 	import PlanFormModal, { type PlanFormPayload } from './PlanFormModal.svelte';
 	import MigrateSubscribersDialog from './MigrateSubscribersDialog.svelte';
-	import { formatPlanPrice } from '$lib/utils/subscriptions';
+	import { formatPlanPrice, isLifetimePlan } from '$lib/utils/subscriptions';
 	import { backendMessage } from '$lib/utils/api-error-detail';
 
 	interface Props {
@@ -231,10 +231,22 @@
 								<p class="text-sm text-muted-foreground">{formatPlanPrice(p)}</p>
 								<div class="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
 									<span class="rounded-full bg-muted px-2 py-0.5 text-muted-foreground">
-										{p.payment_method === 'online'
-											? m['orgAdmin.members.plans.badge.online']()
-											: m['orgAdmin.members.plans.badge.offline']()}
+										{#if p.payment_method === 'online'}
+											{m['orgAdmin.members.plans.badge.online']()}
+										{:else if p.payment_method === 'free'}
+											{m['orgAdmin.members.plans.badge.free']()}
+										{:else}
+											{m['orgAdmin.members.plans.badge.offline']()}
+										{/if}
 									</span>
+									<!-- A lifetime term has no renewal to quote, and the price line
+									     above says so too ("Free" / "€50.00 · one-time") — this names
+									     the fact rather than leaving it implied by an absence. -->
+									{#if isLifetimePlan(p)}
+										<span class="rounded-full bg-muted px-2 py-0.5 text-muted-foreground">
+											{m['orgAdmin.members.plans.badge.lifetime']()}
+										</span>
+									{/if}
 									<span class="text-muted-foreground">
 										{p.max_subscriptions != null
 											? m['orgAdmin.members.plans.occupancyCapped']({

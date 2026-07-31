@@ -1277,9 +1277,18 @@ export async function getSeededBestAvailableEvent(
  * The outcome depends entirely on the org/tier policy, so specs read the
  * returned `status`: a TIER-BEARING apply against an org with no gate (no
  * approval requirement, no questionnaire) comes back `completed` — the
- * membership exists already. A TIER-LESS apply (what the UI's ApplyDialog
- * sends) stays `pending` for staff, because the backend never resolves a
- * default tier on the member's behalf.
+ * membership exists already. A TIER-LESS apply stays `pending` for staff,
+ * because the backend never resolves a default tier on the member's behalf.
+ *
+ * NOTE (#720/#727): the UI's ApplyDialog now posts `tier_id` too, so the
+ * tier-BEARING branch is the one a member actually walks. Tier-less applies
+ * survive here as the ARRANGE shape for legacy/staff-decided rows.
+ *
+ * NOTE (#735): the UI also posts `plan_id` when the member applies from a plan
+ * card, which is the only application a MONETIZED tier accepts. This factory
+ * deliberately stays free-only — the paid path is walked through the UI in
+ * j27/gated-paid-tier, where sending it from here would arrange away the very
+ * behaviour under test.
  *
  * `nextStep` is the eligibility verdict's `next_step` (null once there is
  * nothing left to do) — the same field MembershipCta switches its CTA on.
@@ -1287,7 +1296,7 @@ export async function getSeededBestAvailableEvent(
  * `submissionId` attaches the questionnaire submission that satisfied the
  * gate — the audit pointer the org-admin request card turns into its
  * "View questionnaire submission" link. The UI never sends it (ApplyDialog
- * posts tier + notes only), so specs that need a submission-bearing row
+ * posts tier + plan + notes), so specs that need a submission-bearing row
  * arrange it here. The backend validates it: it must be a READY submission
  * owned by `user` for the questionnaire that actually gates this (org, tier),
  * or the call 422s.
@@ -1315,6 +1324,43 @@ export async function applyViaApi(
 		status: response.application.status,
 		nextStep: response.eligibility.next_step ?? null
 	};
+}
+
+/** One row of the caller's own applications list, as far as specs read it. */
+export interface MyApplication {
+	id?: string | null;
+	organization_slug: string;
+	status: string;
+	tier_id?: string | null;
+	tier_name?: string | null;
+	/**
+	 * The plan a PAID application carries (BE #831: *"a `plan_id` makes this a
+	 * paid application"*). Read by j27's approval journey to prove the row the UI
+	 * created is the paid kind — a free application on a monetized tier is exactly
+	 * what gate #6 refuses, and what #735 was.
+	 */
+	plan_id?: string | null;
+}
+
+/**
+ * The caller's OWN application row for an org, or null if they have none.
+ *
+ * Deliberately the LIST endpoint and never GET /me/applications/{id}: the
+ * detail read ADVANCES the application state machine (an approved row completes
+ * on it), which is the very behaviour several specs assert on. The list is a
+ * plain read and changes nothing.
+ *
+ * This is an ASSERTION helper, not an arrange one — it exists so a spec can ask
+ * what the member's own account says about an application it created through
+ * the UI, rather than trusting the apply response the UI itself consumed.
+ */
+export async function myApplicationFor(
+	user: ThrowawayUser,
+	orgSlug: string
+): Promise<MyApplication | null> {
+	const api = await ApiClient.login(user.email, user.password);
+	const page = await api.get<{ results: MyApplication[] }>('/api/me/applications');
+	return page.results.find((a) => a.organization_slug === orgSlug) ?? null;
 }
 
 /** Withdraw one of the caller's own applications (idempotent server-side). */

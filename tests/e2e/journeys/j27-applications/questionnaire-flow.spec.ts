@@ -8,13 +8,22 @@ import {
 	MEMBERSHIP_QUESTION
 } from '../../support/factories';
 import { pageAs } from '../../support/session';
-import { membershipCard } from '../../support/membership-locators';
+import { membershipCard, membershipPath, tierCard } from '../../support/membership-locators';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 
-// J27.1–27.3 (USER_JOURNEYS.md) — the membership QUESTIONNAIRE gate: the org
-// page's `submit_questionnaire` CTA, the org-scoped fill route it points at,
+// J27.1–27.3 (USER_JOURNEYS.md) — the ORG-DEFAULT membership QUESTIONNAIRE
+// gate: the `submit_questionnaire` CTA, the org-scoped fill route it points at,
 // and the two evaluation modes' outcomes (auto-graded → gate clears; manual →
 // the member waits).
+//
+// Scope note: everything here rides on the ORG default
+// (`default_membership_questionnaire_id`), so it passes whether or not
+// per-TIER overrides work. That gap is tier-selection.spec.ts's subject.
+//
+// The two tests deliberately enter from different surfaces: test 1 from the
+// membership grid (where the gate replaces a tier's Join button) and test 2
+// from the org landing page (whose summary CTA must still route to the
+// questionnaire). Both are member-facing entry points and both have to work.
 //
 // Isolation: each test arranges its own org (throwaway owner), its own
 // questionnaire and its own applicant, so parallel projects/workers and a
@@ -37,6 +46,9 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 //   * clearing the questionnaire gate is not joining. It only turns the CTA
 //     back into a plain "Join" — the application is still owed.
 
+/** The tier a post-save signal gives every new org — the one the UI applies to. */
+const DEFAULT_TIER = 'General membership';
+
 test.describe('j27 membership questionnaire @p2', () => {
 	test('an auto-graded questionnaire clears the join gate and the applicant becomes a member', async ({
 		browser
@@ -54,16 +66,19 @@ test.describe('j27 membership questionnaire @p2', () => {
 		await setOrgMembershipPolicy(org.owner, org.slug, { defaultQuestionnaireId: wrapper.id });
 
 		const page = await pageAs(browser, applicant);
-		await gotoHydrated(page, `/org/${org.slug}`);
+		await gotoHydrated(page, membershipPath(org.slug));
 		await waitForClientAuth(page);
 
-		// The gate replaces the join CTA outright: there is nothing to apply for
-		// until the questionnaire is on file.
-		const questionnaireCta = page.getByRole('link', {
+		// The gate replaces the tier's join CTA outright: there is nothing to apply
+		// for until the questionnaire is on file. Asserted on the tier card, where
+		// the two are alternatives in one slot — so the absence below is the gate
+		// talking and not an unsettled verdict.
+		const generalTier = tierCard(page, DEFAULT_TIER);
+		const questionnaireCta = generalTier.getByRole('link', {
 			name: 'Fill in the membership questionnaire'
 		});
 		await expect(questionnaireCta).toBeVisible({ timeout: 15_000 });
-		await expect(page.getByRole('button', { name: `Join ${org.name}` })).toBeHidden();
+		await expect(generalTier.getByRole('button', { name: `Join ${DEFAULT_TIER}` })).toHaveCount(0);
 
 		await questionnaireCta.click();
 		await page.waitForURL('**/questionnaire/**');
@@ -102,26 +117,25 @@ test.describe('j27 membership questionnaire @p2', () => {
 		// by re-reading the page, not by waiting in place. "Join" reappearing IS
 		// the pass verdict — a failed one would leave a waiting/retry CTA.
 		await expect(async () => {
-			await gotoHydrated(page, `/org/${org.slug}`);
+			await gotoHydrated(page, membershipPath(org.slug));
 			await waitForClientAuth(page);
-			await expect(page.getByRole('button', { name: `Join ${org.name}` })).toBeVisible({
-				timeout: 10_000
-			});
+			await expect(
+				tierCard(page, DEFAULT_TIER).getByRole('button', { name: `Join ${DEFAULT_TIER}` })
+			).toBeVisible({ timeout: 10_000 });
 		}).toPass({ timeout: 45_000 });
 
-		// Clearing the gate is not membership — the application is still owed, and
-		// the ApplyDialog sends no tier, so a UI apply can only ever park as
-		// pending (apply-flows.spec.ts owns that path). Here the apply is the
-		// arrange for the last leg: with the questionnaire passed and no approval
-		// requirement left, a tier-bearing apply completes on the spot.
+		// Clearing the gate is not membership — the application is still owed.
+		// The apply itself is arranged here rather than clicked: driving
+		// ApplyDialog is tier-selection.spec.ts's subject, and this test is about
+		// the questionnaire. With the gate passed and no approval requirement
+		// left, a tier-bearing apply completes on the spot.
 		const outcome = await applyViaApi(applicant, org.slug, { tierId: org.defaultTierId });
 		expect(outcome.status).toBe('completed');
 
 		await gotoHydrated(page, `/org/${org.slug}`);
 		await waitForClientAuth(page);
 		await expect(page.getByLabel('Membership status: Active')).toBeVisible({ timeout: 15_000 });
-		await expect(page.getByLabel('Membership tier: General membership')).toBeVisible();
-		await expect(page.getByRole('button', { name: `Join ${org.name}` })).toBeHidden();
+		await expect(page.getByLabel(`Membership tier: ${DEFAULT_TIER}`)).toBeVisible();
 
 		await gotoHydrated(page, '/account/memberships');
 		await waitForClientAuth(page);
@@ -149,6 +163,9 @@ test.describe('j27 membership questionnaire @p2', () => {
 		await setOrgMembershipPolicy(org.owner, org.slug, { defaultQuestionnaireId: wrapper.id });
 
 		const page = await pageAs(browser, applicant);
+		// From the org LANDING page this time: its summary CTA carries no tier, but
+		// a questionnaire verdict is still actionable from there and must route to
+		// the fill page rather than punting to the grid.
 		await gotoHydrated(page, `/org/${org.slug}`);
 		await waitForClientAuth(page);
 
@@ -176,7 +193,9 @@ test.describe('j27 membership questionnaire @p2', () => {
 		await expect(
 			page.getByRole('link', { name: 'Fill in the membership questionnaire' })
 		).toBeHidden();
-		await expect(page.getByRole('button', { name: `Join ${org.name}` })).toBeHidden();
+		// No `Join …` counter-assertion here on purpose: since #720 the landing
+		// hero never renders one for anybody, so its absence would prove nothing.
+		// The tier grid's version of this check is in test 1.
 
 		// …and yet there is nothing to track YET: a questionnaire submission is not
 		// an application, so the hub stays empty on both halves. (The waiting CTA

@@ -3327,7 +3327,9 @@
 					"online": "Online · Stripe",
 					"offline": "Offline · manuell",
 					"soldOut": "Ausverkauft",
-					"paused": "Verkauf pausiert"
+					"paused": "Verkauf pausiert",
+					"free": "Kostenlos · Selbstbedienung",
+					"lifetime": "Läuft nie ab"
 				},
 				"occupancy": "{active} aktiv",
 				"occupancyCapped": "{active} / {cap} aktiv",
@@ -3360,7 +3362,11 @@
 						"nameRequired": "Name ist erforderlich",
 						"priceInvalid": "Der Preis muss 0 oder höher sein",
 						"periodInvalid": "Die Anzahl der Zeiträume muss zwischen 1 und 120 liegen",
-						"maxSubsInvalid": "Die maximale Anzahl an Abonnements muss mindestens 1 sein — oder leer für unbegrenzt"
+						"maxSubsInvalid": "Die maximale Anzahl an Abonnements muss mindestens 1 sein — oder leer für unbegrenzt",
+						"freePriceNotZero": "Kostenlose Pläne müssen den Preis 0 haben.",
+						"freeNeedsLifetime": "Kostenlose Pläne müssen den Zeitraum „lebenslang“ verwenden.",
+						"onlinePriceZero": "Online-Pläne müssen mehr als 0 kosten. Nutze für eine kostenlose Mitgliedschaft einen kostenlosen Plan.",
+						"onlineNoLifetime": "Online-Pläne können nicht lebenslang sein — Stripe rechnet monatlich oder jährlich ab. Nutze für eine einmalig bezahlte Mitgliedschaft einen Offline-Plan."
 					},
 					"periodMonth": "Monat(e)",
 					"periodYear": "Jahr(e)",
@@ -3374,7 +3380,12 @@
 					"maxSubscriptionsUnlimited": "Unbegrenzt",
 					"maxSubscriptionsHelp": "Obergrenze für gleichzeitige Abonnent*innen. Plätze werden frei, sobald ein Abonnement endet.",
 					"pauseSales": "Verkauf pausieren",
-					"pauseSalesHelp": "Mitglieder*innen können diesen Plan nicht abonnieren oder zu ihm wechseln, solange er pausiert ist. Bestehende Abonnent*innen sind nicht betroffen; du kannst weiterhin Personen manuell eintragen."
+					"pauseSalesHelp": "Mitglieder*innen können diesen Plan nicht abonnieren oder zu ihm wechseln, solange er pausiert ist. Bestehende Abonnent*innen sind nicht betroffen; du kannst weiterhin Personen manuell eintragen.",
+					"paymentFree": "Kostenlos — Mitglieder treten gratis bei",
+					"paymentFreeHelp": "Kostenlose Pläne haben keinen Preis und laufen nie ab. Mitglieder treten selbst bei, ohne Zahlungsschritt.",
+					"periodLifetime": "lebenslang (keine Verlängerung)",
+					"freeShapeLocked": "Kostenlose Pläne haben immer den Preis 0 und laufen lebenslang — das lässt sich nicht ändern.",
+					"lifetimeNoCount": "Ein lebenslanger Plan wird nie verlängert, daher gibt es keinen Abrechnungsrhythmus."
 				},
 				"errors": {
 					"createFailed": "Plan konnte nicht erstellt werden: {detail}",
@@ -4293,6 +4304,7 @@
 	"orgContactButton": {
 		"contactOrganizer": "Organisator*innen kontaktieren",
 		"emailAriaLabel": "E-Mail an {organizationName}",
+		"contactAriaLabel": "{organizationName} kontaktieren",
 		"dialogTitle": "{organizationName} kontaktieren",
 		"dialogDesc": "Sende eine Nachricht an {organizationName}. Die E-Mail-Adresse deines Kontos wird mit den Organisator*innen geteilt, damit sie antworten können.",
 		"subjectLabel": "Betreff",
@@ -4778,6 +4790,16 @@
 		"edit": "Edit",
 		"submissions": "Submissions",
 		"assignToEvents": "Assign to Events",
+		"assignToTiers": "Mitgliedschaftsstufen zuweisen",
+		"organizationMembershipSettings": "Mitgliedschaftseinstellungen der Organisation",
+		"usedByOneTier": "Von 1 Stufe verwendet",
+		"usedByTierCount": "Von {count} Stufen verwendet",
+		"notUsedByAnyTier": "Von keiner Stufe verwendet",
+		"usedByTiers": "Verwendet von {tiers}",
+		"usedByTiersAndMore": "Verwendet von {first} und {remaining} weiteren",
+		"notUsedByAnyTierTooltip": "Von keiner Mitgliedschaftsstufe verlangt",
+		"organizationDefault": "Standard der Organisation",
+		"organizationDefaultTooltip": "Wird für Mitgliedsanfragen verwendet, wenn eine Stufe keinen eigenen Fragebogen hat",
 		"delete": "Delete",
 		"deleting": "Deleting...",
 		"duplicate": "Duplizieren"
@@ -5144,9 +5166,20 @@
 		"soldOutHelper": "Alle Plätze sind vergeben — einer wird eventuell frei, wenn eine Mitgliedschaft endet.",
 		"paused": "Anmeldung pausiert",
 		"pausedHelper": "Die Organisation hat die Anmeldung vorübergehend geschlossen.",
-		"offlineManaged": "Wird von der Organisation verwaltet — melde dich bei ihr, um diesen Plan zu buchen.",
+		"offlineManaged": "Wird von der Organisation manuell verwaltet.",
 		"refundPolicy": "Rückerstattungsrichtlinie",
-		"viewMembership": "Mitgliedschaftsoptionen ansehen"
+		"viewMembership": "Mitgliedschaftsoptionen ansehen",
+		"joinFreeCta": "Kostenlos beitreten",
+		"loginToJoin": "Zum Beitreten anmelden",
+		"freeHelper": "Keine Zahlung nötig — du kannst sofort beitreten.",
+		"gatedSubscribeHelper": "Du kannst abonnieren, sobald die Voraussetzungen dieser Stufe erfüllt sind.",
+		"gatedJoinHelper": "Du kannst beitreten, sobald die Voraussetzungen dieser Stufe erfüllt sind.",
+		"applyCta": "Beitritt beantragen",
+		"applyCtaAria": "Beitritt mit {plan} beantragen",
+		"reapplyCta": "Erneut beantragen",
+		"reapplyCtaAria": "Erneut mit {plan} beantragen",
+		"applySubscribeHelper": "Die Organisation prüft Anträge — du zahlst erst nach der Zusage.",
+		"applyJoinHelper": "Die Organisation prüft Anträge — du trittst erst nach der Zusage bei."
 	},
 	"requestWhitelistButton": {
 		"mustBeLoggedIn": "Du musst eingeloggt sein, um eine Verifizierung anzufordern",
@@ -6637,7 +6670,8 @@
 			"month": "Monat",
 			"months": "{n} Monate",
 			"year": "Jahr",
-			"years": "{n} Jahre"
+			"years": "{n} Jahre",
+			"lifetime": "lebenslang"
 		},
 		"status": {
 			"active": "Aktiv",
@@ -6669,7 +6703,8 @@
 			"uncancel": "Verlängerung fortsetzen",
 			"uncancelling": "Wird fortgesetzt…",
 			"uncancelSuccess": "Die Verlängerung ist wieder aktiv.",
-			"uncancelError": "Die Verlängerung konnte nicht fortgesetzt werden. Bitte versuche es erneut."
+			"uncancelError": "Die Verlängerung konnte nicht fortgesetzt werden. Bitte versuche es erneut.",
+			"alreadyActive": "Diese Mitgliedschaft ist bereits aktiv."
 		},
 		"cancelScheduledHint": "Die Verlängerung ist deaktiviert. Du kannst sie bis zu diesem Datum jederzeit wieder aktivieren.",
 		"cancelScheduledHintManaged": "Die Verlängerung ist deaktiviert. Um deine Mitgliedschaft zu behalten, wende dich an die Organisation.",
@@ -6704,7 +6739,12 @@
 			"cta": "Wieder beitreten",
 			"returnHint": "Du zahlst sicher über Stripe und kehrst danach zur Seite der Organisation zurück.",
 			"error": "Die Zahlung konnte nicht gestartet werden. Bitte versuche es erneut."
-		}
+		},
+		"price": {
+			"free": "Kostenlos",
+			"oneTime": "{price} · einmalig"
+		},
+		"neverExpires": "Läuft nie ab"
 	},
 	"account": {
 		"memberships": {
@@ -6757,6 +6797,7 @@
 			"not_accepting_requests": "Diese Organisation nimmt derzeit keine neuen Mitglieder auf.",
 			"tier_unavailable": "Diese Mitgliedschaftsstufe ist derzeit nicht verfügbar.",
 			"plan_unavailable": "Dieser Plan ist derzeit nicht verfügbar.",
+			"plan_not_online": "Dieser Plan wird von der Organisation verwaltet — melde dich bei ihr, um beizutreten.",
 			"application_rejected": "Dein vorheriger Antrag wurde nicht genehmigt.",
 			"membership_questionnaire_missing": "Diese Organisation bittet neue Mitglieder, zuerst einen Fragebogen auszufüllen.",
 			"membership_questionnaire_failed": "Dein Fragebogen wurde nicht genehmigt.",
@@ -6771,7 +6812,10 @@
 		"wait": {
 			"questionnaire_evaluation": "Dein Fragebogen wird gerade geprüft — wir melden uns, sobald er ausgewertet ist.",
 			"approval": "Deine Bewerbung liegt der Organisation zur Prüfung vor. Du hörst von uns, sobald entschieden ist."
-		}
+		},
+		"joinTier": "{tier} beitreten",
+		"choosePlan": "Du erfüllst die Voraussetzungen – wähle unten einen Tarif, um beizutreten.",
+		"applyChoosePlan": "Wähle einen Tarif, um einen Antrag zu stellen — die Organisation prüft Anträge vor der Zahlung."
 	},
 	"membershipApply": {
 		"title": "{orgName} beitreten",
@@ -6789,7 +6833,25 @@
 		"pendingTitle": "Bewerbung eingegangen",
 		"pendingBody": "Die Organisation hat deine Bewerbung — so geht es weiter:",
 		"trackLink": "Deine Bewerbung verfolgen",
-		"error": "Deine Bewerbung konnte nicht gesendet werden. Bitte versuch es noch einmal."
+		"error": "Deine Bewerbung konnte nicht gesendet werden. Bitte versuch es noch einmal.",
+		"titleTier": "{tier} beitreten",
+		"reapplyTitleTier": "Erneut für {tier} bewerben",
+		"forPlan": "{orgName} — Antrag mit dem Tarif {plan}."
+	},
+	"membershipTiers": {
+		"heading": "Mitgliedschaft",
+		"subtitle": "Wähle, wie du Teil von {organizationName} sein möchtest.",
+		"tiersHeading": "Mitgliedschaftsstufen",
+		"empty": "{organizationName} hat noch keine Mitgliedschaftsstufen veröffentlicht.",
+		"backToOrg": "Zurück zu {organizationName}",
+		"freeBadge": "Kostenlos",
+		"requiresApproval": "Die Organisation prüft und genehmigt jede Anfrage.",
+		"approvalCleared": "Die Organisation hat deine Anfrage genehmigt.",
+		"questionnaireRequired": "Ein Mitgliedschaftsfragebogen ist erforderlich.",
+		"questionnaireCleared": "Du hast den Mitgliedschaftsfragebogen ausgefüllt.",
+		"questionnaireLink": "Fragebogen öffnen",
+		"questionnaireLinkAria": "Mitgliedschaftsfragebogen für {tier} öffnen",
+		"landingBlurb": "Sieh dir die Mitgliedschaftsstufen von {organizationName} an und wie du beitreten kannst."
 	},
 	"membershipQuestionnairePage": {
 		"title": "Mitgliedschafts-Fragebogen",
@@ -6884,7 +6946,11 @@
 			"cancelledTitle": "Bezahlung nicht abgeschlossen",
 			"cancelledBody": "Deine Zahlung wurde nicht abgeschlossen. Du kannst sie fortsetzen, wann immer du möchtest.",
 			"resumeCta": "Zahlung fortsetzen"
-		}
+		},
+		"titleFree": "{plan} beitreten",
+		"freeNoCharge": "Es fällt nichts an. Deine Mitgliedschaft startet, sobald du bestätigst.",
+		"neverRenews": "Diese Mitgliedschaft läuft nie ab und wird nie verlängert oder erneut berechnet.",
+		"confirmFreeCta": "Jetzt beitreten"
 	},
 	"waitlistSettings.title": "Advanced waitlist settings",
 	"waitlistSettings.description": "Configure how seats are offered to waitlist members.",

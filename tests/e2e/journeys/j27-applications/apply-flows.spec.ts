@@ -1,16 +1,21 @@
 import { test, expect } from '../../support/fixtures';
-import { ApiClient } from '../../support/api';
 import {
 	applyViaApi,
 	approveApplication,
 	createOrganization,
 	createVerifiedUser,
+	myApplicationFor,
 	rejectApplication,
 	setOrgMembershipPolicy,
 	type ThrowawayUser
 } from '../../support/factories';
 import { pageAs } from '../../support/session';
-import { applicationRow, membershipCard } from '../../support/membership-locators';
+import {
+	applicationRow,
+	membershipCard,
+	membershipPath,
+	tierCard
+} from '../../support/membership-locators';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 import { closeDialog } from '../../support/ui';
 
@@ -22,30 +27,46 @@ import { closeDialog } from '../../support/ui';
 // auto-created "General membership" tier) and its own applicant, so parallel
 // projects/workers and a `retries: 1` re-run never share an application.
 //
-// Two backend behaviours the specs are built on, verified live against this
+// Three backend behaviours the specs are built on, verified live against this
 // branch:
 //   * a TIER-BEARING apply on an ungated org completes on the spot — the
 //     membership exists before any UI is opened;
-//   * a TIER-LESS apply (all the UI ever sends, since ApplyDialog posts no
-//     tier) stays PENDING for staff, whatever the org's approval policy.
+//   * a TIER-LESS apply stays PENDING for staff, whatever the org's approval
+//     policy, because the backend never resolves a default tier on the
+//     member's behalf;
+//   * eligibility is TIER-SCOPED: `MembershipEligibilityService` buckets a
+//     user's applications by `tier_id` (tier-less rows live in their own
+//     `None` bucket), so an application only ever colours the verdict for the
+//     tier it names. An arrange whose row must be visible on a tier CARD has
+//     to name that tier — see the re-apply test.
+//
+// The second bullet used to read "all the UI ever sends, since ApplyDialog
+// posts no tier". That is no longer true and was the blind spot #723 was filed
+// about: since #720/#727 a member picks a tier on /org/[slug]/membership and
+// ApplyDialog posts its `tier_id`, so the UI path is the TIER-BEARING one.
+// Tier-less applies survive only as ARRANGE steps for the account-hub surfaces
+// (which list applications whatever their tier) and as the legacy rows staff
+// still have to name a tier for. The member-facing tier selection itself is
+// covered by tier-selection.spec.ts.
+//
 // Approval alone does NOT create the membership: the state machine advances
 // when the MEMBER reads the application, which the account hub's Applications
 // section does on every mount.
 
 /** The member's own application id, for admin-side arranges after a UI apply.
- *  The LIST endpoint is a plain read — unlike GET /me/applications/{id}, which
- *  advances the state machine and would do the very work under test. */
+ *  `myApplicationFor` reads the LIST endpoint, which is a plain read — unlike
+ *  GET /me/applications/{id}, which advances the state machine and would do the
+ *  very work under test. */
 async function findApplicationId(user: ThrowawayUser, orgSlug: string): Promise<string> {
-	const api = await ApiClient.login(user.email, user.password);
-	const page = await api.get<{ results: Array<{ id?: string | null; organization_slug: string }> }>(
-		'/api/me/applications'
-	);
-	const application = page.results.find((a) => a.organization_slug === orgSlug);
+	const application = await myApplicationFor(user, orgSlug);
 	if (!application?.id) {
 		throw new Error(`No application for ${user.email} at ${orgSlug}`);
 	}
 	return application.id;
 }
+
+/** The tier a post-save signal gives every new org — the one the UI applies to. */
+const DEFAULT_TIER = 'General membership';
 
 test.describe('j27 application flows @p2', () => {
 	test('tier-bearing apply completes instantly and shows up as a membership', async ({
@@ -69,8 +90,18 @@ test.describe('j27 application flows @p2', () => {
 		await gotoHydrated(page, `/org/${org.slug}`);
 		await waitForClientAuth(page);
 		await expect(page.getByLabel('Membership status: Active')).toBeVisible({ timeout: 15_000 });
-		await expect(page.getByLabel('Membership tier: General membership')).toBeVisible();
-		await expect(page.getByRole('button', { name: `Join ${org.name}` })).toBeHidden();
+		await expect(page.getByLabel(`Membership tier: ${DEFAULT_TIER}`)).toBeVisible();
+
+		// The membership grid withdraws the offer tier by tier. The per-tier member
+		// badge is the settle signal: those CTAs resolve asynchronously, so
+		// asserting the absence of a Join button without it would pass while the
+		// verdicts were still in flight.
+		await gotoHydrated(page, membershipPath(org.slug));
+		await waitForClientAuth(page);
+		await expect(
+			tierCard(page, DEFAULT_TIER).getByLabel('You are a member of this organization')
+		).toBeVisible({ timeout: 15_000 });
+		await expect(page.getByRole('button', { name: /^Join / })).toHaveCount(0);
 
 		// …and the account hub lists both halves: the membership card, and the
 		// application itself already settled under "Closed".
@@ -100,11 +131,16 @@ test.describe('j27 application flows @p2', () => {
 		await setOrgMembershipPolicy(org.owner, org.slug, { requiresApproval: true });
 
 		const page = await pageAs(browser, applicant);
-		await gotoHydrated(page, `/org/${org.slug}`);
+		// The membership grid is where a tier — and therefore a join — is chosen;
+		// the org landing page only points at it (#720).
+		await gotoHydrated(page, membershipPath(org.slug));
 		await waitForClientAuth(page);
 
-		await page.getByRole('button', { name: `Join ${org.name}` }).click();
-		const applyDialog = page.getByRole('dialog', { name: `Join ${org.name}` });
+		const generalTier = tierCard(page, DEFAULT_TIER);
+		await expect(generalTier).toBeVisible({ timeout: 15_000 });
+		await generalTier.getByRole('button', { name: `Join ${DEFAULT_TIER}` }).click();
+		// The tier, not the org, names the dialog once there is one.
+		const applyDialog = page.getByRole('dialog', { name: `Join ${DEFAULT_TIER}` });
 		await expect(applyDialog).toBeVisible();
 		await applyDialog.getByLabel('Message (optional)').fill('E2E: approval pipeline');
 		await applyDialog.getByRole('button', { name: 'Send application' }).click();
@@ -119,7 +155,7 @@ test.describe('j27 application flows @p2', () => {
 			)
 		).toBeVisible();
 		await closeDialog(page, outcomeDialog);
-		await expect(page.getByRole('button', { name: 'Application pending' })).toBeDisabled();
+		await expect(generalTier.getByRole('button', { name: 'Application pending' })).toBeDisabled();
 
 		// The account hub tracks it as in-progress.
 		await gotoHydrated(page, '/account/memberships');
@@ -129,9 +165,13 @@ test.describe('j27 application flows @p2', () => {
 		).toBeVisible({ timeout: 15_000 });
 		await expect(membershipCard(page, org.name)).toBeHidden();
 
-		// Staff approve. A UI apply carries no tier, so the approval must name one.
+		// Staff approve, WITHOUT naming a tier — and that is the assertion. Since
+		// #727 the UI's apply carries `tier_id`, so the application resolves its
+		// own; the backend only makes staff pick for a tier-less (legacy) row.
+		// Were ApplyDialog to stop sending the tier, this approve would have
+		// nothing to resolve and the completion below would never arrive.
 		const applicationId = await findApplicationId(applicant, org.slug);
-		await approveApplication(org.owner, org.slug, applicationId, org.defaultTierId);
+		await approveApplication(org.owner, org.slug, applicationId);
 
 		// Approval is not the membership: the row only completes when the member
 		// reads it, and each remount of the Applications section re-fires that
@@ -148,29 +188,49 @@ test.describe('j27 application flows @p2', () => {
 		await page.context().close();
 	});
 
-	test('a rejected application can be re-applied for from the org page', async ({ browser }) => {
+	test('a rejected application can be re-applied for from the membership page', async ({
+		browser
+	}) => {
 		test.setTimeout(180_000);
 		const [org, applicant] = await Promise.all([
 			createOrganization({ acceptMembershipRequests: true }),
 			createVerifiedUser('Applicant')
 		]);
 
-		// Tier-less (what the UI sends) so the application is staff's to decide.
-		const first = await applyViaApi(applicant, org.slug, { notes: 'E2E: first try' });
+		// Approval required, so the RE-apply — which now carries a tier, since the
+		// UI sends one (#727) — parks as pending instead of completing outright.
+		// Without it the second application would settle instantly and both rows
+		// would land in "Closed", where they are indistinguishable.
+		await setOrgMembershipPolicy(org.owner, org.slug, { requiresApproval: true });
+
+		// API ARRANGE, so the rejection under test is not itself produced by the
+		// UI — but it names the TIER, and that is load-bearing. Applications are
+		// tier-scoped on the backend (`MembershipEligibilityService` keys them by
+		// `tier_id`, with `None` its own bucket), so a tier-less rejection is
+		// invisible to every tier card's verdict and the grid would keep offering
+		// a plain Join. This arrange used to be tier-less and passed only while
+		// the CTA lived on the org landing page, where the verdict was tier-less
+		// too; #720 moved it onto the tier.
+		const first = await applyViaApi(applicant, org.slug, {
+			tierId: org.defaultTierId,
+			notes: 'E2E: first try'
+		});
 		expect(first.status).toBe('pending');
 		await rejectApplication(org.owner, org.slug, first.applicationId);
 
 		const page = await pageAs(browser, applicant);
-		await gotoHydrated(page, `/org/${org.slug}`);
+		await gotoHydrated(page, membershipPath(org.slug));
 		await waitForClientAuth(page);
 
 		// The verdict turns the join CTA into a re-apply one — a rejection is not
-		// a dead end.
-		const reapplyButton = page.getByRole('button', { name: 'Re-apply for membership' });
+		// a dead end. Scoped to the tier because the verdict is: only the card for
+		// the tier that was rejected carries the offer.
+		const generalTier = tierCard(page, DEFAULT_TIER);
+		const reapplyButton = generalTier.getByRole('button', { name: 'Re-apply for membership' });
 		await expect(reapplyButton).toBeVisible({ timeout: 15_000 });
 		await reapplyButton.click();
 
-		const reapplyDialog = page.getByRole('dialog', { name: `Re-apply to ${org.name}` });
+		const reapplyDialog = page.getByRole('dialog', { name: `Re-apply to ${DEFAULT_TIER}` });
 		await expect(reapplyDialog).toBeVisible();
 		await reapplyDialog.getByLabel('Message (optional)').fill('E2E: second try');
 		await reapplyDialog.getByRole('button', { name: 'Send application' }).click();
