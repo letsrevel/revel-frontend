@@ -6796,6 +6796,7 @@
 			"not_accepting_requests": "Diese Organisation nimmt derzeit keine neuen Mitglieder auf.",
 			"tier_unavailable": "Diese Mitgliedschaftsstufe ist derzeit nicht verfügbar.",
 			"plan_unavailable": "Dieser Plan ist derzeit nicht verfügbar.",
+			"plan_not_online": "Dieser Plan wird von der Organisation verwaltet — melde dich bei ihr, um beizutreten.",
 			"application_rejected": "Dein vorheriger Antrag wurde nicht genehmigt.",
 			"membership_questionnaire_missing": "Diese Organisation bittet neue Mitglieder, zuerst einen Fragebogen auszufüllen.",
 			"membership_questionnaire_failed": "Dein Fragebogen wurde nicht genehmigt.",
@@ -6844,7 +6845,9 @@
 		"backToOrg": "Zurück zu {organizationName}",
 		"freeBadge": "Kostenlos",
 		"requiresApproval": "Die Organisation prüft und genehmigt jede Anfrage.",
+		"approvalCleared": "Die Organisation hat deine Anfrage genehmigt.",
 		"questionnaireRequired": "Ein Mitgliedschaftsfragebogen ist erforderlich.",
+		"questionnaireCleared": "Du hast den Mitgliedschaftsfragebogen ausgefüllt.",
 		"questionnaireLink": "Fragebogen öffnen",
 		"questionnaireLinkAria": "Mitgliedschaftsfragebogen für {tier} öffnen",
 		"landingBlurb": "Sieh dir die Mitgliedschaftsstufen von {organizationName} an und wie du beitreten kannst."

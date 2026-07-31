@@ -348,21 +348,236 @@ describe('TierCard', () => {
 		);
 	});
 
-	// Every plan on the tier is a dead end already, so there is no CTA for a
-	// verdict to withdraw — and no reason to spend a round trip finding out.
-	it('asks nothing when the tier sells only offline plans', async () => {
-		renderCard({
-			tier: makeTier({
+	// #740. Which plan to ASK about and which plan's CTA to WITHDRAW are two
+	// different questions, and conflating them is what made the reported bug
+	// possible: a tier selling only an offline plan has no Subscribe to withdraw,
+	// so it asked nothing — and then had no verdict with which to report the
+	// viewer's own state either.
+	describe('the plan the verdict is asked about', () => {
+		const offlineOnlyTier = () =>
+			makeTier({
 				is_free: false,
 				questionnaire_id: 'q-42',
-				plans: [makePlan({ id: 'p-1', payment_method: 'offline' })]
-			})
+				plans: [makePlan({ id: 'p-off', payment_method: 'offline' })]
+			});
+
+		it('asks about an offline plan when the tier sells nothing else', async () => {
+			mockEligibility({
+				allowed: false,
+				reason_code: 'membership_questionnaire_pending',
+				next_step: 'wait_for_questionnaire_evaluation'
+			});
+			renderCard({ tier: offlineOnlyTier() });
+
+			await waitFor(() => {
+				expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).toHaveBeenCalledWith(
+					expect.objectContaining({ query: { tier_id: 't-gold', plan_id: 'p-off' } })
+				);
+			});
 		});
 
-		await waitFor(() => {
+		// The withdrawal half is unchanged, and cheaply so: whenever a subscribable
+		// plan exists it is still the one asked about, so no existing tier's
+		// question — or cache key — moves.
+		it('prefers a subscribable plan over an offline one', async () => {
+			renderCard({
+				tier: makeTier({
+					is_free: false,
+					questionnaire_id: 'q-42',
+					plans: [
+						makePlan({ id: 'p-off', name: 'Offline', price: '5.00', payment_method: 'offline' }),
+						makePlan({ id: 'p-on', name: 'Monthly', price: '10.00' })
+					]
+				})
+			});
+
+			await waitFor(() => {
+				expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).toHaveBeenCalledWith(
+					expect.objectContaining({ query: { tier_id: 't-gold', plan_id: 'p-on' } })
+				);
+			});
 			expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).not.toHaveBeenCalledWith(
-				expect.objectContaining({ query: expect.objectContaining({ plan_id: 'p-1' }) })
+				expect.objectContaining({ query: expect.objectContaining({ plan_id: 'p-off' }) })
 			);
+		});
+
+		// Gate #6 only short-circuits a tier that HAS an active plan, so a tier
+		// with none is answerable tier-only — and asking is the only way its
+		// requirement lines can report anything.
+		it('asks a tier-only question when the tier sells nothing at all', async () => {
+			renderCard({ tier: makeTier({ questionnaire_id: 'q-42', plans: [] }) });
+
+			await waitFor(() => {
+				expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).toHaveBeenCalledWith(
+					expect.objectContaining({ query: { tier_id: 't-gold' } })
+				);
+			});
+		});
+
+		// The offline plan's own copy is right in every state; the fix must not
+		// disturb it, and the verdict must not withdraw a CTA that was never there.
+		it('leaves the offline plan card exactly as it was', async () => {
+			mockEligibility({
+				allowed: false,
+				reason_code: 'membership_questionnaire_pending',
+				next_step: 'wait_for_questionnaire_evaluation'
+			});
+			renderCard({ tier: offlineOnlyTier() });
+
+			expect(await screen.findByText(m['membershipPlans.offlineManaged']())).toBeInTheDocument();
+			expect(
+				screen.queryByText(m['membershipPlans.gatedSubscribeHelper'](), { exact: false })
+			).toBeNull();
+		});
+	});
+
+	// #740, the half the reporter actually saw: the requirement list stated a fact
+	// about the TIER, so it read "required" whether the viewer had never started,
+	// was awaiting review, or had passed.
+	describe('the requirement lines', () => {
+		const questionnaireTier = () =>
+			makeTier({
+				is_free: false,
+				questionnaire_id: 'q-42',
+				plans: [makePlan({ id: 'p-off', payment_method: 'offline' })]
+			});
+
+		const questionnaireLink = () =>
+			screen.queryByRole('link', {
+				name: m['membershipTiers.questionnaireLinkAria']({ tier: 'Gold' })
+			});
+
+		it('states the rule, with the link, for a viewer who has not started', async () => {
+			mockEligibility({
+				allowed: false,
+				reason_code: 'membership_questionnaire_missing',
+				next_step: 'submit_questionnaire',
+				questionnaire_id: 'q-42'
+			});
+			renderCard({ tier: questionnaireTier() });
+
+			await waitFor(() => {
+				expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).toHaveBeenCalled();
+			});
+			expect(screen.getByText(m['membershipTiers.questionnaireRequired']())).toBeInTheDocument();
+			expect(questionnaireLink()).toBeInTheDocument();
+		});
+
+		// The bug itself. Nothing to open, so the link goes with the copy that
+		// offered it.
+		it('reports a submission under review instead of asking for one', async () => {
+			mockEligibility({
+				allowed: false,
+				reason_code: 'membership_questionnaire_pending',
+				next_step: 'wait_for_questionnaire_evaluation'
+			});
+			renderCard({ tier: questionnaireTier() });
+
+			expect(
+				await screen.findByText(m['membershipEligibility.wait.questionnaire_evaluation']())
+			).toBeInTheDocument();
+			expect(screen.queryByText(m['membershipTiers.questionnaireRequired']())).toBeNull();
+			expect(questionnaireLink()).toBeNull();
+		});
+
+		it('reports a retake cooldown', async () => {
+			mockEligibility({
+				allowed: false,
+				reason_code: 'membership_questionnaire_retake_cooldown',
+				next_step: 'wait_to_retake_questionnaire',
+				retry_on: '2026-08-01T00:00:00Z'
+			});
+			renderCard({ tier: questionnaireTier() });
+
+			expect(
+				await screen.findByText(
+					m['membershipEligibility.reason.membership_questionnaire_retake_cooldown']()
+				)
+			).toBeInTheDocument();
+			expect(screen.queryByText(m['membershipTiers.questionnaireRequired']())).toBeNull();
+		});
+
+		it('says so once the viewer has cleared the questionnaire', async () => {
+			mockEligibility({ allowed: true, next_step: 'proceed_to_payment' });
+			renderCard({ tier: questionnaireTier() });
+
+			expect(
+				await screen.findByText(m['membershipTiers.questionnaireCleared']())
+			).toBeInTheDocument();
+			expect(questionnaireLink()).toBeNull();
+		});
+
+		const approvalTier = () =>
+			makeTier({
+				is_free: false,
+				requires_approval: true,
+				plans: [makePlan({ id: 'p-off', payment_method: 'offline' })]
+			});
+
+		it('reports an application with the organization, and its approval', async () => {
+			mockEligibility({
+				allowed: false,
+				reason_code: 'requires_approval',
+				next_step: 'wait_for_approval',
+				application_id: 'app-1'
+			});
+			const { unmount } = renderCard({ tier: approvalTier() });
+
+			expect(
+				await screen.findByText(m['membershipEligibility.wait.approval']())
+			).toBeInTheDocument();
+			expect(screen.queryByText(m['membershipTiers.requiresApproval']())).toBeNull();
+			unmount();
+
+			queryClient.clear();
+			mockEligibility({ allowed: true, next_step: 'proceed_to_payment' });
+			renderCard({ tier: approvalTier() });
+
+			expect(await screen.findByText(m['membershipTiers.approvalCleared']())).toBeInTheDocument();
+		});
+
+		// The fallback that keeps the lines honest for everybody who never asks —
+		// guests, owners, staff, and every viewer before the verdict lands.
+		it('keeps the tier’s own wording when there is no verdict', async () => {
+			renderCard({
+				tier: makeTier({ questionnaire_id: 'q-42', requires_approval: true }),
+				isAuthenticated: false
+			});
+
+			expect(screen.getByText(m['membershipTiers.questionnaireRequired']())).toBeInTheDocument();
+			expect(screen.getByText(m['membershipTiers.requiresApproval']())).toBeInTheDocument();
+			expect(questionnaireLink()).toBeInTheDocument();
+			await waitFor(() => {
+				expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).not.toHaveBeenCalled();
+			});
+		});
+
+		// A refusal about something else entirely: the CTA carries that reason, and
+		// the requirement lines must not claim the gate was cleared.
+		it('states the rules for a refusal that is about neither of them', async () => {
+			mockEligibility({ allowed: false, reason_code: 'blacklisted' });
+			renderCard({
+				tier: makeTier({
+					questionnaire_id: 'q-42',
+					requires_approval: true,
+					plans: [makePlan({ id: 'p-off', payment_method: 'offline' })]
+				})
+			});
+
+			await waitFor(() => {
+				expect(vi.mocked(memembershipapplicationsGetJoinEligibility)).toHaveBeenCalled();
+			});
+			expect(screen.getByText(m['membershipTiers.questionnaireRequired']())).toBeInTheDocument();
+			expect(screen.getByText(m['membershipTiers.requiresApproval']())).toBeInTheDocument();
+		});
+
+		// The state has to reach a screen-reader user who is not looking at the
+		// card when it changes: the list is server-rendered and the verdict lands
+		// over it later, with no focus move to announce it (WCAG 4.1.3).
+		it('announces the change politely', () => {
+			renderCard({ tier: questionnaireTier() });
+
+			expect(screen.getByRole('list')).toHaveAttribute('aria-live', 'polite');
 		});
 	});
 });

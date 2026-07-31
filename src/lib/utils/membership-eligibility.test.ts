@@ -3,6 +3,7 @@ import {
 	getApplicationPendingMessage,
 	getMembershipCtaKind,
 	getMembershipGateAction,
+	getMembershipRequirementState,
 	getMembershipStatusMessage,
 	isBlockedByMembershipGate
 } from './membership-eligibility';
@@ -473,5 +474,160 @@ describe('getMembershipGateAction', () => {
 				next_step: 'reapply'
 			})
 		).toBeNull();
+	});
+
+	// #740 asks about a tier's OFFLINE plan when it has nothing else, so gate #10
+	// now answers a cleared viewer with `plan_not_online`. It is a fact about the
+	// PLAN, not a gate the member can fill something in to clear, so it must not
+	// withdraw anything — the plan card already says "managed by the organization"
+	// on its own, and a false positive here would hide a plan from an eligible
+	// member (the failure `isBlockedByMembershipGate`'s allow-list exists to
+	// prevent).
+	it('offers nothing for an offline plan refusal', () => {
+		expect(getMembershipGateAction({ ...base, reason_code: 'plan_not_online' })).toBeNull();
+		expect(isBlockedByMembershipGate({ ...base, reason_code: 'plan_not_online' })).toBe(false);
+	});
+});
+
+// #740. The tier's requirement lines used to be pure tier metadata, so a member
+// whose submission was under review was still told "A membership questionnaire
+// is required" next to a link to fill it in again. These map a verdict to what
+// each line should say about THIS viewer.
+describe('getMembershipRequirementState', () => {
+	// No verdict is the common case, not an edge one: guests, owners and staff
+	// never ask, and every viewer sees the server-rendered card before the
+	// verdict lands. The line has to degrade to the tier's standing rule.
+	it('states the rule when nothing is known about the viewer', () => {
+		expect(getMembershipRequirementState('questionnaire', null)).toBe('policy');
+		expect(getMembershipRequirementState('approval', undefined)).toBe('policy');
+	});
+
+	// The never-started state keeps the copy it always had — the rule plus the
+	// link to go and satisfy it is exactly right there.
+	it('states the rule for a viewer who has not submitted yet', () => {
+		expect(
+			getMembershipRequirementState('questionnaire', {
+				...base,
+				reason_code: 'membership_questionnaire_missing',
+				next_step: 'submit_questionnaire',
+				questionnaire_id: 'q1'
+			})
+		).toBe('policy');
+	});
+
+	// The reported bug, at its source: this verdict must not resolve to the
+	// "required" copy.
+	it('reports the viewer state while a submission is under review', () => {
+		expect(
+			getMembershipRequirementState('questionnaire', {
+				...base,
+				reason_code: 'membership_questionnaire_pending',
+				next_step: 'wait_for_questionnaire_evaluation'
+			})
+		).toBe('status');
+	});
+
+	it('reports the viewer state on a retake cooldown and on a refusal', () => {
+		expect(
+			getMembershipRequirementState('questionnaire', {
+				...base,
+				reason_code: 'membership_questionnaire_retake_cooldown',
+				next_step: 'wait_to_retake_questionnaire',
+				retry_on: '2026-08-01T00:00:00Z'
+			})
+		).toBe('status');
+		// Terminal codes arrive with no next_step at all (#812), including via
+		// `ApplicationStatusGate`, which re-raises them on a rejected row.
+		for (const reason_code of [
+			'membership_questionnaire_failed',
+			'membership_questionnaire_attempts_exhausted'
+		] as const) {
+			expect(getMembershipRequirementState('questionnaire', { ...base, reason_code })).toBe(
+				'status'
+			);
+		}
+	});
+
+	// Read off the gate ORDER: #9 and #10 run strictly below the questionnaire
+	// gate, so a verdict shaped by either has already been past it.
+	it('marks the questionnaire cleared once a later gate is doing the talking', () => {
+		expect(getMembershipRequirementState('questionnaire', { ...base, allowed: true })).toBe(
+			'satisfied'
+		);
+		for (const next_step of ['submit_application', 'wait_for_approval'] as const) {
+			expect(
+				getMembershipRequirementState('questionnaire', {
+					...base,
+					reason_code: 'requires_approval',
+					next_step
+				})
+			).toBe('satisfied');
+		}
+	});
+
+	// A refusal from somewhere else entirely says nothing about either
+	// requirement — the CTA carries that reason, and the lines keep stating the
+	// rules. Claiming "cleared" off a blacklist verdict would be a lie.
+	it('says nothing about a requirement the verdict is not about', () => {
+		for (const topic of ['questionnaire', 'approval'] as const) {
+			expect(getMembershipRequirementState(topic, { ...base, reason_code: 'blacklisted' })).toBe(
+				'policy'
+			);
+			expect(
+				getMembershipRequirementState(topic, {
+					...base,
+					reason_code: 'not_accepting_requests',
+					next_step: 'requires_invitation'
+				})
+			).toBe('policy');
+		}
+	});
+
+	it('reports the approval state while staff are deciding, and after they decide', () => {
+		expect(
+			getMembershipRequirementState('approval', {
+				...base,
+				reason_code: 'requires_approval',
+				next_step: 'wait_for_approval',
+				application_id: 'app-1'
+			})
+		).toBe('status');
+		expect(
+			getMembershipRequirementState('approval', {
+				...base,
+				reason_code: 'application_rejected',
+				next_step: 'reapply',
+				application_id: 'app-1'
+			})
+		).toBe('status');
+		expect(
+			getMembershipRequirementState('approval', {
+				...base,
+				allowed: true,
+				next_step: 'proceed_to_payment'
+			})
+		).toBe('satisfied');
+	});
+
+	// The trap in the approval half. `requires_approval` on an ALLOWED verdict is
+	// gate #9's annotation for "nothing on file yet, you may apply" — telling that
+	// viewer their application was approved would invent one.
+	it('does not read the approval annotation as an approval', () => {
+		expect(
+			getMembershipRequirementState('approval', {
+				...base,
+				allowed: true,
+				reason_code: 'requires_approval'
+			})
+		).toBe('policy');
+		// Same for the paid path's prompt to apply: the plan cards offer the
+		// button, so the line keeps stating the rule rather than repeating it.
+		expect(
+			getMembershipRequirementState('approval', {
+				...base,
+				reason_code: 'requires_approval',
+				next_step: 'submit_application'
+			})
+		).toBe('policy');
 	});
 });

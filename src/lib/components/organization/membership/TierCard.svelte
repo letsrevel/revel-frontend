@@ -11,6 +11,7 @@
 	import { joinEligibilityQueryOptions } from '$lib/queries/join-eligibility';
 	import {
 		getMembershipGateAction,
+		getMembershipRequirementState,
 		getMembershipStatusMessage
 	} from '$lib/utils/membership-eligibility';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
@@ -108,34 +109,54 @@
 	});
 
 	/**
-	 * The plan the gate verdict is asked about, and why one plan can answer for
-	 * all of them.
+	 * The cheapest plan whose card could offer a CTA at all — the one a blocked
+	 * gate has something to WITHDRAW (#733/#734). Offline, sold-out and paused
+	 * cards never render a Subscribe button in the first place (`PlanCard` stops
+	 * at each of those above its gate branches), so they are not candidates.
 	 *
-	 * A plan is REQUIRED: with no `plan_id` the backend's gate #6 short-circuits
-	 * any monetized tier with `tier_requires_subscription` and never reaches the
-	 * questionnaire and approval gates at all — which is exactly why the CTA's
-	 * own tier-only verdict cannot answer this question. Given a plan, the gates
-	 * that do run above the payment one are facts about the (viewer, tier) pair,
-	 * identical for every plan on the card; `isBlockedByMembershipGate` keeps only
-	 * those, so the choice of plan below cannot leak into the answer.
-	 *
-	 * Cheapest first (the list is already sorted) among the plans that could
-	 * offer a CTA at all: an offline, sold-out or paused plan card shows no
-	 * Subscribe for the gate to withdraw, so a tier with nothing else on it asks
-	 * nothing.
+	 * Kept as the FIRST choice of plan to ask about, not merely as a filter: for
+	 * every tier that has one, the question below is byte-identical to the one
+	 * asked before #740, so no existing card's verdict — or cache key — moves.
 	 */
-	const gatePlanId = $derived(
+	const subscribablePlanId = $derived(
 		plans.find(
 			(p) => !!p.id && p.payment_method !== 'offline' && !p.sold_out && p.sales_status !== 'paused'
 		)?.id ?? null
 	);
+
+	/**
+	 * The plan the gate verdict is asked ABOUT, and why one plan can answer for
+	 * all of them.
+	 *
+	 * A plan is REQUIRED whenever the tier sells one: with no `plan_id` the
+	 * backend's gate #6 short-circuits any monetized tier with
+	 * `tier_requires_subscription` and never reaches the questionnaire and
+	 * approval gates at all — the same verdict whether the viewer has never
+	 * started, is awaiting review, or has passed. Given a plan, the gates that do
+	 * run above the payment one are facts about the (viewer, tier) pair,
+	 * identical for every plan on the card; `isBlockedByMembershipGate` keeps only
+	 * those, so the choice of plan cannot leak into what is withdrawn.
+	 *
+	 * Which is why ASKING and WITHDRAWING are no longer the same list. #740: a
+	 * tier whose only plan is OFFLINE has no Subscribe to withdraw, so it asked
+	 * nothing — and then had no verdict with which to report the viewer's own
+	 * state either, which is the whole bug. Any plan on the card will do for the
+	 * question: they are all `is_active` (the public listing only serializes
+	 * those), so gate #6 lets them through, and every plan-specific stop —
+	 * offline, paused, at cap — lives in gate #10, BELOW the gates being read
+	 * here. A plan-less tier keeps asking a tier-only question, which is correct
+	 * there: gate #6 only short-circuits a tier that HAS an active plan.
+	 */
+	const askPlanId = $derived(subscribablePlanId ?? plans.find((p) => !!p.id)?.id ?? null);
 
 	const gateQueryEnabled = $derived.by(() => {
 		// Every operand read unconditionally, for the reason given above.
 		const authed = isAuthenticated;
 		const gated = isGated;
 		const hasTier = !!tierId;
-		const hasPlan = !!gatePlanId;
+		// A plan to name, or no plans at all — see `askPlanId`. A tier whose plans
+		// all lack ids is neither, and cannot be asked about.
+		const hasPlan = !!askPlanId || plans.length === 0;
 		const token = !!accessToken;
 		// Owners and staff pass the gate stack by definition (gate #1), and the
 		// grid already suppresses their per-tier CTA; asking would be N round
@@ -151,7 +172,7 @@
 		joinEligibilityQueryOptions({
 			organizationSlug,
 			tierId,
-			planId: gatePlanId,
+			planId: askPlanId,
 			accessToken,
 			enabled: gateQueryEnabled
 		})
@@ -167,8 +188,22 @@
 	const gatePending = $derived(gateQuery.isLoading);
 
 	/**
+	 * Where this viewer stands against each requirement the tier states (#740).
+	 *
+	 * The list below used to read the TIER — `questionnaire_id` is set, therefore
+	 * "a membership questionnaire is required" — which is a true statement about
+	 * the tier and a false one about anybody who has already filled it in. These
+	 * two say which of the tier's rules the verdict is currently talking about;
+	 * `verdictMessage` is the prose, resolved by the same helper the plan cards
+	 * and the CTA use, so all three cannot drift apart.
+	 */
+	const questionnaireState = $derived(getMembershipRequirementState('questionnaire', gateVerdict));
+	const approvalState = $derived(getMembershipRequirementState('approval', gateVerdict));
+	const verdictMessage = $derived(gateVerdict ? getMembershipStatusMessage(gateVerdict) : null);
+
+	/**
 	 * The plan the tier CTA asks about, and the reason it is not simply
-	 * `gatePlanId`.
+	 * `askPlanId`.
 	 *
 	 * On a GATED tier the CTA has to name a plan or its verdict is a dead end:
 	 * gate #6 answers a plan-less question about a monetized tier with
@@ -181,7 +216,7 @@
 	 * already correct for what that CTA says, and changing the question would
 	 * change every paid tier's CTA for no gain (#735 keeps that blast radius out).
 	 */
-	const ctaPlanId = $derived(isGated ? gatePlanId : null);
+	const ctaPlanId = $derived(isGated ? askPlanId : null);
 
 	/**
 	 * The plan a pressed Apply button belongs to. One dialog per TIER rather than
@@ -225,17 +260,33 @@
 				{/if}
 			</div>
 
-			<!-- What it takes to get in. Rendered for everyone, member or not: it is a
-		     description of the tier, not of the viewer's progress through it. -->
+			<!-- What it takes to get in — and, once a verdict lands, where THIS viewer
+		     stands against it (#740). The tier's own fields decide which lines
+		     exist at all (they are facts about the tier, server-rendered and true
+		     for everyone); the verdict decides what each one says.
+
+		     A polite live region, and pre-mounted rather than injected with its
+		     first message: the lines are server-rendered with the tier's standing
+		     rules, the verdict arrives later over the same DOM, and a text swap
+		     that moves no focus is otherwise silent for a screen-reader user
+		     (WCAG 4.1.3). Every state is words — no colour, no icon-only cue. -->
 			{#if tier.requires_approval || tier.questionnaire_id}
-				<ul id={requirementsId} class="space-y-1.5 text-sm">
+				<ul id={requirementsId} class="space-y-1.5 text-sm" aria-live="polite">
 					{#if tier.requires_approval}
 						<li class="flex items-start gap-2">
 							<ShieldCheck
 								class="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"
 								aria-hidden="true"
 							/>
-							<span>{m['membershipTiers.requiresApproval']()}</span>
+							<span>
+								{#if approvalState === 'status' && verdictMessage}
+									{verdictMessage}
+								{:else if approvalState === 'satisfied'}
+									{m['membershipTiers.approvalCleared']()}
+								{:else}
+									{m['membershipTiers.requiresApproval']()}
+								{/if}
+							</span>
 						</li>
 					{/if}
 					{#if tier.questionnaire_id}
@@ -245,20 +296,28 @@
 								aria-hidden="true"
 							/>
 							<span>
-								{m['membershipTiers.questionnaireRequired']()}
-								{#if tier.questionnaire_id}
-									<!-- Named with the tier: a screen-reader user tabbing the page
-								     would otherwise hear the same link text on every card. -->
-									<a
-										href={resolve('/(public)/org/[slug]/questionnaire/[id]', {
-											slug: organizationSlug,
-											id: tier.questionnaire_id
-										})}
-										aria-label={m['membershipTiers.questionnaireLinkAria']({ tier: tier.name })}
-										class="font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-									>
-										{m['membershipTiers.questionnaireLink']()}
-									</a>
+								{#if questionnaireState === 'status' && verdictMessage}
+									<!-- Under review, on cooldown, or refused: there is nothing to
+								     open, so the link goes with the copy that offered it. -->
+									{verdictMessage}
+								{:else if questionnaireState === 'satisfied'}
+									{m['membershipTiers.questionnaireCleared']()}
+								{:else}
+									{m['membershipTiers.questionnaireRequired']()}
+									{#if tier.questionnaire_id}
+										<!-- Named with the tier: a screen-reader user tabbing the page
+									     would otherwise hear the same link text on every card. -->
+										<a
+											href={resolve('/(public)/org/[slug]/questionnaire/[id]', {
+												slug: organizationSlug,
+												id: tier.questionnaire_id
+											})}
+											aria-label={m['membershipTiers.questionnaireLinkAria']({ tier: tier.name })}
+											class="font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+										>
+											{m['membershipTiers.questionnaireLink']()}
+										</a>
+									{/if}
 								{/if}
 							</span>
 						</li>
