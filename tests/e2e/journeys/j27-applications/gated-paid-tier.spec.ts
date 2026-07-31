@@ -98,8 +98,11 @@ const QUESTIONNAIRE_POLICY = 'A membership questionnaire is required.';
 /** …and what it says once their submission is with the organization. */
 const QUESTIONNAIRE_PENDING =
 	"Your questionnaire is being reviewed — we'll let you know once it's evaluated.";
-/** `PlanCard`'s offline branch — correct in every state, and left alone. */
-const OFFLINE_MANAGED = 'Managed by the organization — contact them to join this plan.';
+/** `PlanCard`'s offline branch — correct in every state, and left alone.
+ *  Reworded in #743: the sentence no longer tells the viewer to make contact,
+ *  because whether there is any way to do so depends on the org's contact
+ *  method, and the CTA beneath now carries that. */
+const OFFLINE_MANAGED = 'Managed manually by the organization.';
 
 test.describe('j27 gated + paid tier @p2', () => {
 	test('a gated priced tier withholds its plan CTA, and hands it back once the gate clears', async ({
@@ -417,7 +420,8 @@ test.describe('j27 gated + paid tier @p2', () => {
 	//
 	// An OFFLINE plan, not a free or online one, because that is the shape that
 	// fetched nothing — and the shape whose plan card can carry no state of its
-	// own either ("Managed by the organization" is all it ever says), leaving the
+	// own either ("Managed manually by the organization." is all it ever says,
+	// plus a contact CTA that says nothing about eligibility), leaving the
 	// tier's requirement line as the ONLY place the member's standing can appear.
 	//
 	// A MANUAL questionnaire because it parks: manual mode enqueues no evaluation

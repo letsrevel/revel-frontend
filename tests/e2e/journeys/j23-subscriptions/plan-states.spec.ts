@@ -103,9 +103,9 @@ test.describe('J23 plan availability states @p2', () => {
 
 		// OFFLINE — displayed for information; joining is arranged with staff.
 		const offline = planCard(page, offlinePlan.name);
-		await expect(
-			offline.getByText('Managed by the organization — contact them to join this plan.')
-		).toBeVisible();
+		// Reworded in #743 — the instruction to "contact them" moved into a CTA
+		// that only renders when the org actually has a contact method.
+		await expect(offline.getByText('Managed manually by the organization.')).toBeVisible();
 		await expect(offline.getByRole('button', { name: 'Subscribe' })).toHaveCount(0);
 		await expect(offline.getByText('Sold out')).toHaveCount(0);
 
