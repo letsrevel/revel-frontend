@@ -79,14 +79,42 @@ test.describe('J3 follow org & request membership @p1', () => {
 		// The CTA follows the refreshed eligibility verdict.
 		await expect(generalTier.getByRole('button', { name: 'Application pending' })).toBeDisabled();
 
-		// Both are server-side: a fresh load of the LANDING page still shows
-		// Following, and its summary CTA reports the pending application…
+		// Both survive a round trip to the server: a fresh load of the LANDING page
+		// still shows Following, and it still points at the grid.
+		//
+		// The landing CTA is MembershipCta's SUMMARY mode (no tier), and it does
+		// NOT report the pending application — deliberately, and asserted here so
+		// the difference is a decision rather than a hole. Eligibility is
+		// tier-scoped on the backend, and this application names a tier; a
+		// tier-less verdict cannot see it, and with N tiers there is no single
+		// state for a summary to honestly report anyway. So the landing page keeps
+		// the pointer at the grid…
 		await gotoHydrated(page, `/org/${org.slug}`);
 		await waitForClientAuth(page);
 		await expect(page.getByRole('button', { name: 'Following' })).toBeVisible();
-		await expect(page.getByRole('button', { name: 'Application pending' })).toBeVisible({
-			timeout: 15_000
-		});
+		// Scoped to the Membership landmark: the hero CTA and this section link
+		// carry the SAME words, and `.first()` would quietly pick whichever came
+		// out on top.
+		await expect(
+			page.getByRole('region', { name: 'Membership' }).getByRole('link', {
+				name: 'View membership options'
+			})
+		).toHaveAttribute('href', membershipPath(org.slug));
+		// The absence is the point, so it is asserted on TEXT rather than on a
+		// role: #720 turned several membership CTAs from buttons into links, and a
+		// `getByRole('button', …).toHaveCount(0)` would pass for the wrong reason
+		// against any of them.
+		await expect(page.getByText('Application pending')).toHaveCount(0);
+		// …and the pending state is asserted where it lives: a fresh, cold load of
+		// the GRID, which is what proves the application was persisted rather than
+		// just optimistically rendered by the dialog that created it. Named on the
+		// tier card, not page-globally: `toBeDisabled()` on a wrong element would
+		// pass for the wrong reason.
+		await gotoHydrated(page, membershipPath(org.slug));
+		await waitForClientAuth(page);
+		await expect(
+			tierCard(page, 'General membership').getByRole('button', { name: 'Application pending' })
+		).toBeDisabled({ timeout: 15_000 });
 
 		// …and the org admin's request queue lists the applicant + message.
 		const ownerContext = await browser.newContext();

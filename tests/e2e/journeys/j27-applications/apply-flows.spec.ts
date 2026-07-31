@@ -27,21 +27,27 @@ import { closeDialog } from '../../support/ui';
 // auto-created "General membership" tier) and its own applicant, so parallel
 // projects/workers and a `retries: 1` re-run never share an application.
 //
-// Two backend behaviours the specs are built on, verified live against this
+// Three backend behaviours the specs are built on, verified live against this
 // branch:
 //   * a TIER-BEARING apply on an ungated org completes on the spot — the
 //     membership exists before any UI is opened;
 //   * a TIER-LESS apply stays PENDING for staff, whatever the org's approval
 //     policy, because the backend never resolves a default tier on the
-//     member's behalf.
+//     member's behalf;
+//   * eligibility is TIER-SCOPED: `MembershipEligibilityService` buckets a
+//     user's applications by `tier_id` (tier-less rows live in their own
+//     `None` bucket), so an application only ever colours the verdict for the
+//     tier it names. An arrange whose row must be visible on a tier CARD has
+//     to name that tier — see the re-apply test.
 //
 // The second bullet used to read "all the UI ever sends, since ApplyDialog
 // posts no tier". That is no longer true and was the blind spot #723 was filed
 // about: since #720/#727 a member picks a tier on /org/[slug]/membership and
 // ApplyDialog posts its `tier_id`, so the UI path is the TIER-BEARING one.
-// Tier-less applies survive only as ARRANGE steps (`applyViaApi` with no
-// tier) and as the legacy rows staff still have to name a tier for. The
-// member-facing tier selection itself is covered by tier-selection.spec.ts.
+// Tier-less applies survive only as ARRANGE steps for the account-hub surfaces
+// (which list applications whatever their tier) and as the legacy rows staff
+// still have to name a tier for. The member-facing tier selection itself is
+// covered by tier-selection.spec.ts.
 //
 // Approval alone does NOT create the membership: the state machine advances
 // when the MEMBER reads the application, which the account hub's Applications
@@ -197,9 +203,18 @@ test.describe('j27 application flows @p2', () => {
 		// would land in "Closed", where they are indistinguishable.
 		await setOrgMembershipPolicy(org.owner, org.slug, { requiresApproval: true });
 
-		// Tier-less ARRANGE — the legacy shape a staff-decided application has —
-		// so the rejection under test is not itself produced by the UI.
-		const first = await applyViaApi(applicant, org.slug, { notes: 'E2E: first try' });
+		// API ARRANGE, so the rejection under test is not itself produced by the
+		// UI — but it names the TIER, and that is load-bearing. Applications are
+		// tier-scoped on the backend (`MembershipEligibilityService` keys them by
+		// `tier_id`, with `None` its own bucket), so a tier-less rejection is
+		// invisible to every tier card's verdict and the grid would keep offering
+		// a plain Join. This arrange used to be tier-less and passed only while
+		// the CTA lived on the org landing page, where the verdict was tier-less
+		// too; #720 moved it onto the tier.
+		const first = await applyViaApi(applicant, org.slug, {
+			tierId: org.defaultTierId,
+			notes: 'E2E: first try'
+		});
 		expect(first.status).toBe('pending');
 		await rejectApplication(org.owner, org.slug, first.applicationId);
 
@@ -208,8 +223,8 @@ test.describe('j27 application flows @p2', () => {
 		await waitForClientAuth(page);
 
 		// The verdict turns the join CTA into a re-apply one — a rejection is not
-		// a dead end. Scoped to the tier: the rejection is org-wide, so every tier
-		// card carries the same offer and a page-global lookup is ambiguous.
+		// a dead end. Scoped to the tier because the verdict is: only the card for
+		// the tier that was rejected carries the offer.
 		const generalTier = tierCard(page, DEFAULT_TIER);
 		const reapplyButton = generalTier.getByRole('button', { name: 'Re-apply for membership' });
 		await expect(reapplyButton).toBeVisible({ timeout: 15_000 });
