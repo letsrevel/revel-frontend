@@ -298,26 +298,29 @@
 	</Button>
 {:else if eligibility && ctaKind}
 	<div class={cn('flex flex-col items-start gap-2', className)}>
-		{#if ctaKind === 'apply' || (deferToPlans && (ctaKind === 'join' || ctaKind === 'reapply'))}
-			<!-- #735. The gates are waiting on an application, and on a monetized
-			     tier an application has to name a plan or the backend refuses it —
-			     so the affordance lives on the plan cards, one per plan, and this
+		{#if deferToPlans && (ctaKind === 'join' || ctaKind === 'apply' || ctaKind === 'reapply')}
+			<!-- #735. Every step here is per-PLAN — an application on a monetized
+			     tier has to name one or the backend refuses it — so the affordance
+			     lives on the plan cards, which know the id and the name, and this
 			     says where to look and what happens next. `role="note"`, the same
-			     shape the `payment` branch already uses for the same reason. -->
-			{#if deferToPlans}
-				<p role="note" class="text-sm text-muted-foreground">
-					{m['membershipEligibility.applyChoosePlan']()}
-				</p>
-			{:else}
-				<!-- No plan on this CTA, so it cannot mint the paid application the
-				     verdict is asking for: send them to the grid, where the plan cards
-				     can. Unreachable in practice — `submit_application` is emitted by
-				     the payment gate, which only runs for a plan-bearing question. -->
-				<Button href={membershipHref}>
-					<UserPlus class="h-4 w-4" aria-hidden="true" />
-					{m['membershipPlans.viewMembership']()}
-				</Button>
-			{/if}
+			     shape the `payment` branch already uses for the same reason.
+			     `join` is the allowed-but-plan-less shape, which the payment gate
+			     makes unreachable for a plan-bearing question; it keeps the eligible
+			     wording rather than the under-review one. -->
+			<p role="note" class="text-sm text-muted-foreground">
+				{ctaKind === 'join'
+					? m['membershipEligibility.choosePlan']()
+					: m['membershipEligibility.applyChoosePlan']()}
+			</p>
+		{:else if ctaKind === 'apply'}
+			<!-- No plan on this CTA, so it cannot mint the paid application the
+			     verdict is asking for: send them to the grid, where the plan cards
+			     can. Unreachable in practice — `submit_application` is emitted by
+			     the payment gate, which only runs for a plan-bearing question. -->
+			<Button href={membershipHref}>
+				<UserPlus class="h-4 w-4" aria-hidden="true" />
+				{m['membershipPlans.viewMembership']()}
+			</Button>
 		{:else if ctaKind === 'join'}
 			{#if isTierMode}
 				<Button onclick={() => openApply('join')}>
