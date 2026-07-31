@@ -6,7 +6,8 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import type { PageData, ActionData } from './$types';
-	import { COMMON_PRONOUNS } from '$lib/schemas/profile';
+	import { COMMON_PRONOUNS, SUPPORTED_LANGUAGES } from '$lib/schemas/profile';
+	import type { SupportedLanguage } from '$lib/schemas/profile';
 	import type { VisibilityValue } from '$lib/schemas/preferences';
 	import { Loader2, Check, Info, ShieldCheck, ShieldAlert, Mail, Eye } from '@lucide/svelte';
 	import DietaryPreferencesManager from '$lib/components/profile/DietaryPreferencesManager.svelte';
@@ -46,8 +47,19 @@
 	let lastName = $state(data.user?.last_name || '');
 	let preferredName = $state(data.user?.preferred_name || '');
 	let pronouns = $state(data.user?.pronouns || '');
-	let language = $state<'en' | 'de' | 'it'>((data.user?.language as 'en' | 'de' | 'it') || 'en');
+	let language = $state<SupportedLanguage>((data.user?.language as SupportedLanguage) || 'en');
 	let bio = $state(data.user?.bio || '');
+
+	// Paraglide compiles one function per key, so the options cannot be built from
+	// a computed key string — map each supported code to its message explicitly.
+	const LANGUAGE_LABELS: Record<SupportedLanguage, () => string> = {
+		en: m['profile.language_en'],
+		de: m['profile.language_de'],
+		it: m['profile.language_it'],
+		fr: m['profile.language_fr'],
+		es: m['profile.language_es'],
+		pt: m['profile.language_pt']
+	};
 	let profilePictureUrl = $state<string | null>(data.user?.profile_picture_url ?? null);
 
 	// Check if current pronouns is custom (not in common list)
@@ -272,7 +284,7 @@
 					lastName = user?.last_name || '';
 					preferredName = user?.preferred_name || '';
 					pronouns = user?.pronouns || '';
-					language = (user?.language || 'en') as 'en' | 'de' | 'it';
+					language = (user?.language || 'en') as SupportedLanguage;
 					bio = user?.bio || '';
 					profilePictureUrl = user?.profile_picture_url ?? null;
 					// Propagate updated user to global auth store so navbar updates immediately
@@ -281,7 +293,7 @@
 					}
 					// Update locale immediately on successful save
 					if (user?.language) {
-						setLocale(user.language as 'en' | 'de' | 'it');
+						setLocale(user.language as SupportedLanguage);
 					}
 					// Show success message by triggering a manual update with the result
 					// This will set the form prop without reloading
@@ -563,9 +575,9 @@
 				disabled={isSubmitting}
 				class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 			>
-				<option value="en">{m['profile.language_en']()}</option>
-				<option value="de">{m['profile.language_de']()}</option>
-				<option value="it">{m['profile.language_it']()}</option>
+				{#each SUPPORTED_LANGUAGES as code (code)}
+					<option value={code}>{LANGUAGE_LABELS[code]()}</option>
+				{/each}
 			</select>
 			<p class="text-xs text-muted-foreground">{m['profile.language_hint']()}</p>
 			{#if errors.language}

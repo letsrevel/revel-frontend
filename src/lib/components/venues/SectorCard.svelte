@@ -33,9 +33,7 @@
 				<span class="inline-flex items-center gap-1">
 					<Grid3X3 class="h-4 w-4" aria-hidden="true" />
 					{#if seatCount > 0}
-						{m['orgAdmin.sectors.card.seats']({ count: seatCount })}{seatCount !== 1
-							? m['orgAdmin.sectors.card.seats_plural']()
-							: ''}
+						{m['orgAdmin.sectors.card.seats']({ count: seatCount })}
 					{:else}
 						{m['orgAdmin.sectors.card.noSeats']()}
 					{/if}

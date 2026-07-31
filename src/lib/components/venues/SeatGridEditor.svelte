@@ -447,10 +447,7 @@
 	{#if selectedCount > 0}
 		<div class="flex flex-wrap items-center gap-3 rounded-lg border bg-card p-3">
 			<span class="text-sm font-medium">
-				{m['seatGridEditor.seatsSelected']({
-					count: selectedCount,
-					plural: selectedCount !== 1 ? 's' : ''
-				})}
+				{m['seatGridEditor.seatsSelected']({ count: selectedCount })}
 			</span>
 			<div class="flex flex-wrap gap-2">
 				<button
@@ -557,7 +554,7 @@
 		<div class="text-sm text-muted-foreground">
 			{m['seatGridEditor.totalLabel']()}
 			<strong>{totalSeats}</strong>
-			{m['seatGridEditor.totalSeatsSuffix']({ plural: totalSeats !== 1 ? 's' : '' })}
+			{m['seatGridEditor.totalSeatsSuffix']({ count: totalSeats })}
 		</div>
 	</div>
 

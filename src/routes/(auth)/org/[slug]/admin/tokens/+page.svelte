@@ -295,13 +295,7 @@
 				</p>
 				<p>
 					<strong>{m['orgAdminTokensPage.delete_usesLabel']()}</strong>
-					{m['orgAdminTokensPage.delete_usesDescription']({
-						count: tokenToDelete.uses ?? 0,
-						plural:
-							(tokenToDelete.uses ?? 0) === 1
-								? ''
-								: m['orgAdminTokensPage.delete_usesDescription_plural']()
-					})}
+					{m['orgAdminTokensPage.delete_usesDescription']({ count: tokenToDelete.uses ?? 0 })}
 				</p>
 				<p class="text-muted-foreground">
 					{m['orgAdminTokensPage.delete_keepAccessNote']()}

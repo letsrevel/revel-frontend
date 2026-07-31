@@ -19,6 +19,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Italian and German interfaces no longer fall back to English on roughly 480 strings each —
   including account deletion, privacy and security settings, invitations, and recurring events,
   which had been rendering in English to people who had chosen Italian or German.
+- Counted phrases now use each language's real plural forms. They were previously built by
+  tacking an English "s" onto a noun, which produced wrong text in every other language
+  ("3 persona", "3 Platz") and left verbs and adjectives unagreed. Now "3 persone si sono già
+  unite", "3 Plätze", "3 invitaciones".
+- The preferred-language menu on your profile only ever offered English, German and Italian —
+  French was missing since the day it shipped. It now lists every available language.
+- The "Free · Open · Secure" tagline on the home page no longer clips the bottom of letters
+  that dip below the baseline (visible in Spanish and Portuguese as a cut-off "Seguro").
+- The home page welcome now animates its gendered ending in Spanish and Portuguese too, the
+  way it already did in Italian.
 
 ## [1.70.0] - 2026-07-27
 

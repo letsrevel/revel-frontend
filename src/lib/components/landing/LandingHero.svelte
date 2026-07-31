@@ -10,33 +10,52 @@
 	}
 	const { isAuthenticated }: Props = $props();
 
-	// Animated letter for Italian welcome (client-side only)
-	const letters = ['a', 'o', 'ə'] as const;
+	/**
+	 * Languages that inflect the welcome adjective for gender get an animated
+	 * ending instead of one chosen form: the greeting flips through feminine,
+	 * masculine, and the marker that language's inclusive writing actually uses
+	 * (Italian schwa, Spanish/Portuguese -e).
+	 *
+	 * `fallback` is what SSR and no-JS render — a plural greeting sharing the same
+	 * stem, so hydration only ever swaps the final letter rather than reflowing
+	 * the headline. It lives here rather than in the catalogs because it must stay
+	 * in lockstep with `stem`.
+	 */
+	const INCLUSIVE_WELCOME: Record<
+		string,
+		{ stem: string; endings: readonly string[]; connector: string }
+	> = {
+		it: { stem: 'Benvenut', endings: ['a', 'o', 'ə'], connector: 'su' },
+		es: { stem: 'Bienvenid', endings: ['a', 'o', 'e'], connector: 'a' },
+		pt: { stem: 'Bem-vind', endings: ['a', 'o', 'e'], connector: 'ao' }
+	};
+
+	// Client-side only: SSR renders the plain i18n headline, so the markup does not
+	// depend on a locale the server resolved differently (#505).
+	const inclusive = $derived(browser ? INCLUSIVE_WELCOME[getLocale()] : undefined);
 	let currentLetterIndex = $state(0);
-	const currentLetter = $derived(letters[currentLetterIndex]);
+	const currentLetter = $derived(inclusive?.endings[currentLetterIndex] ?? '');
 	let rotation = $state(0);
-	const isItalian = $derived(browser && getLocale() === 'it');
 
 	onMount(() => {
-		if (getLocale() === 'it') {
-			let swapTimeout: ReturnType<typeof setTimeout> | undefined;
-			const interval = setInterval(() => {
-				// Always rotate forward by 180° (never backwards)
-				rotation += 180;
+		const config = INCLUSIVE_WELCOME[getLocale()];
+		if (!config) return undefined;
 
-				// At 90° (halfway point = 300ms), swap to the next letter
-				swapTimeout = setTimeout(() => {
-					currentLetterIndex = (currentLetterIndex + 1) % letters.length;
-				}, 300);
-			}, 2000);
+		let swapTimeout: ReturnType<typeof setTimeout> | undefined;
+		const interval = setInterval(() => {
+			// Always rotate forward by 180° (never backwards)
+			rotation += 180;
 
-			return () => {
-				clearInterval(interval);
-				clearTimeout(swapTimeout);
-			};
-		}
-		// No cleanup needed for non-Italian locale
-		return undefined;
+			// At 90° (halfway point = 300ms), swap to the next letter
+			swapTimeout = setTimeout(() => {
+				currentLetterIndex = (currentLetterIndex + 1) % config.endings.length;
+			}, 300);
+		}, 2000);
+
+		return () => {
+			clearInterval(interval);
+			clearTimeout(swapTimeout);
+		};
 	});
 </script>
 
@@ -44,14 +63,14 @@
 	<div class="container mx-auto px-4 py-16">
 		<div class="flex flex-col items-center justify-center text-center">
 			<h1 class="text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
-				{#if isItalian}
-					<!-- Italian with animated letter flip -->
-					Benvenut<span class="flip-container">
+				{#if inclusive}
+					<!-- Gendered welcome adjective, rendered with an animated inclusive ending -->
+					{inclusive.stem}<span class="flip-container">
 						<span class="flip-letter" style="transform: rotateY({rotation}deg)">
 							{currentLetter}
 						</span>
 					</span>
-					su <span class="revel-shine">Revel</span>
+					{inclusive.connector} <span class="revel-shine">Revel</span>
 				{:else}
 					<!-- Other languages using i18n.
 					     Rendered as real markup (not {@html}) so it re-renders on
@@ -153,6 +172,16 @@
 
 	.warm-keyword {
 		color: hsl(30 80% 65%);
+		/*
+		 * These sit in a flex row, so each is a blockified flex item whose box is
+		 * exactly one line-height tall. Tailwind's display sizes are tighter than
+		 * the font's ascent+descent (text-4xl is 2.25rem text in a 2.5rem line), and
+		 * `background-clip: text` paints only inside that box — so a descender falls
+		 * outside it, gets no paint, and disappears under the transparent text fill.
+		 * Latent until `es`/`pt` shipped the first keyword with one ("Seguro").
+		 * Symmetric so the row stays vertically centred against the separators.
+		 */
+		line-height: 1.4;
 	}
 
 	@supports ((-webkit-background-clip: text) or (background-clip: text)) {

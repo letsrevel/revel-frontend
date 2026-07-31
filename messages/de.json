@@ -105,7 +105,16 @@
 		"loadingFiles": "Lade deine Dateien...",
 		"filesLoadError": "Fehler beim Laden deiner Dateien. Bitte versuche es später erneut.",
 		"deleteFile": "Datei löschen",
-		"filesCount": "{count} Datei{plural} hochgeladen",
+		"filesCount": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} Datei hochgeladen",
+					"countPlural=*": "{count} Dateien hochgeladen"
+				}
+			}
+		],
 		"noFilesTitle": "Keine Dateien hochgeladen",
 		"noFilesDescription": "Dateien, die du für Fragebogen-Antworten hochlädst, erscheinen hier.",
 		"fileDeleteModal_title": "Datei löschen?",
@@ -1277,8 +1286,16 @@
 		"eventSummary_description": "Aggregierte Ernährungsinformationen von Teilnehmer*innen zur Unterstützung der Menüplanung",
 		"eventSummary_preferencesHeading": "Ernährungspräferenzen",
 		"eventSummary_restrictionsHeading": "Ernährungseinschränkungen",
-		"eventSummary_attendeeCount": "{count} Teilnehmer*in{plural}",
-		"eventSummary_attendeeCount_plural": "nen",
+		"eventSummary_attendeeCount": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} Teilnehmer*in",
+					"countPlural=*": "{count} Teilnehmer*innen"
+				}
+			}
+		],
 		"eventSummary_comments": "Kommentare:",
 		"eventSummary_notes": "Hinweise:",
 		"eventSummary_emptyState": "Noch keine Ernährungsinformationen verfügbar",
@@ -1672,8 +1689,26 @@
 		"editDialogDescriptionEmail": "Einladung für {email} bearbeiten",
 		"updateInvitation": "Update Invitation",
 		"bulkEditDialogTitle": "Einladungen in Masse bearbeiten",
-		"bulkEditDialogDescription": "Aktualisiere {count} ausgewählte Einladung{plural}. Alle ausgewählten Einladungen werden mit denselben Eigenschaften aktualisiert.",
-		"updateInvitations": "Update {count} Invitation{plural}",
+		"bulkEditDialogDescription": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "Aktualisiere {count} ausgewählte Einladung. Alle ausgewählten Einladungen werden mit denselben Eigenschaften aktualisiert.",
+					"countPlural=*": "Aktualisiere {count} ausgewählte Einladungen. Alle ausgewählten Einladungen werden mit denselben Eigenschaften aktualisiert."
+				}
+			}
+		],
+		"updateInvitations": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} Einladung aktualisieren",
+					"countPlural=*": "{count} Einladungen aktualisieren"
+				}
+			}
+		],
 		"deleteTokenTitle": "Einladungslink löschen?",
 		"deleteTokenDescription": "Dadurch wird der Einladungslink dauerhaft deaktiviert. Niemand kann ihn mehr zur Registrierung nutzen.",
 		"deleteTokenLink": "Link:",
@@ -1799,7 +1834,16 @@
 		"admin_editButton": "Reihe bearbeiten",
 		"description_heading": "Über {seriesName}",
 		"events_heading": "Veranstaltungen in dieser Reihe",
-		"events_count": "{count} Veranstaltung{plural} insgesamt",
+		"events_count": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} Veranstaltung insgesamt",
+					"countPlural=*": "{count} Veranstaltungen insgesamt"
+				}
+			}
+		],
 		"sort_newestFirst": "Neueste zuerst",
 		"sort_oldestFirst": "Älteste zuerst",
 		"sort_ariaLabel_newest": "Neueste zuerst anzeigen",
@@ -1812,8 +1856,7 @@
 		"pagination_next": "Weiter",
 		"pagination_previousUnavailable": "Vorherige Seite (nicht verfügbar)",
 		"pagination_nextUnavailable": "Nächste Seite (nicht verfügbar)",
-		"coverImageAlt": "{seriesName} Titelbild",
-		"events_count_plural": "en"
+		"coverImageAlt": "{seriesName} Titelbild"
 	},
 	"eventSeriesEditPage": {
 		"pageTitle": "{seriesName} bearbeiten",
@@ -2465,7 +2508,16 @@
 		"createLinkButton": "Create Link",
 		"sendInvitations": "Send Invitations",
 		"updateInvitation": "Update Invitation",
-		"updateInvitations": "Update {count} Invitation{plural}",
+		"updateInvitations": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} Einladung aktualisieren",
+					"countPlural=*": "{count} Einladungen aktualisieren"
+				}
+			}
+		],
 		"cancel": "Cancel",
 		"unknownUser": "Unknown User",
 		"noTier": "No tier",
@@ -2501,7 +2553,16 @@
 		"remainValidDescription": "Diese Anmeldungen bleiben gültig. Nur neue Versuche schlagen fehl.",
 		"editDialogDescriptionRegistered": "Einladung für {name} bearbeiten",
 		"editDialogDescriptionPending": "Einladung für {email} bearbeiten",
-		"bulkEditDescription": "{count} ausgewählte Einladung{plural} aktualisieren. Alle ausgewählten Einladungen werden mit denselben Eigenschaften aktualisiert."
+		"bulkEditDescription": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} ausgewählte Einladung aktualisieren. Alle ausgewählten Einladungen werden mit denselben Eigenschaften aktualisiert.",
+					"countPlural=*": "{count} ausgewählte Einladungen aktualisieren. Alle ausgewählten Einladungen werden mit denselben Eigenschaften aktualisiert."
+				}
+			}
+		]
 	},
 	"invitationsPage": {
 		"title": "Meine Einladungen - Revel",
@@ -2618,7 +2679,7 @@
 		"notificationsTitle": "Multi-Kanal-Benachrichtigungen",
 		"notificationsDescription": "Bleib informiert mit In-App-, E-Mail- und Telegram-Benachrichtigungen. Mit detaillierten Einstellungen kannst du anpassen, was du erhältst.",
 		"multiLanguageTitle": "Mehrsprachige Unterstützung",
-		"multiLanguageDescription": "Verfügbar auf Englisch, Deutsch, Italienisch und Französisch, weitere Sprachen folgen bald.",
+		"multiLanguageDescription": "Verfügbar auf Englisch, Deutsch, Italienisch, Französisch, Spanisch und Portugiesisch, weitere Sprachen folgen bald.",
 		"venueManagementTitle": "Veranstaltungsort-Verwaltung",
 		"venueManagementDescription": "Definiere Veranstaltungsorte mit Sektoren, Reihen und einzelnen Sitzplätzen. Weise Sitzplätze Ticketstufen für reservierte Plätze zu.",
 		"openSourceTitle": "Open Source & Community-getrieben",
@@ -3300,8 +3361,16 @@
 			"tiers": {
 				"description": "Erstelle und verwalte Mitgliedschaftsstufen zur Organisation deiner Mitglieder",
 				"create": "Stufe erstellen",
-				"memberCount": "{count} Mitglied{plural}",
-				"_plural": "er",
+				"memberCount": [
+					{
+						"declarations": ["input count", "local countPlural = count: plural"],
+						"selectors": ["countPlural"],
+						"match": {
+							"countPlural=one": "{count} Mitglied",
+							"countPlural=*": "{count} Mitglieder"
+						}
+					}
+				],
 				"editAriaLabel": "{name} bearbeiten",
 				"deleteAriaLabel": "{name} löschen",
 				"moveUpAriaLabel": "{name} nach oben verschieben",
@@ -3767,16 +3836,56 @@
 	"orgAdmin.events.metaDescription": "Events verwalten für {orgName}",
 	"orgAdmin.events.pageDescription": "Erstelle und verwalte Events für deine Organisation",
 	"orgAdmin.events.pageTitle": "Events verwalten",
-	"orgAdmin.events.sections.cancelled": "{count} Abgesagte{plural} Event{plural}",
-	"orgAdmin.events.sections.cancelled_plural": "s",
-	"orgAdmin.events.sections.closed": "{count} Geschlossene{plural} Event{plural}",
-	"orgAdmin.events.sections.closed_plural": "s",
-	"orgAdmin.events.sections.drafts": "{count} Entwurf{plural}",
-	"orgAdmin.events.sections.drafts_plural": "entwürfe",
-	"orgAdmin.events.sections.open": "{count} Offene{plural} Event{plural}",
-	"orgAdmin.events.sections.open_plural": "s",
-	"orgAdmin.events.sections.past": "{count} Vergangene{plural} Event{plural}",
-	"orgAdmin.events.sections.past_plural": "s",
+	"orgAdmin.events.sections.cancelled": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "{count} Abgesagtes Event",
+				"countPlural=*": "{count} Abgesagte Events"
+			}
+		}
+	],
+	"orgAdmin.events.sections.closed": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "{count} Geschlossenes Event",
+				"countPlural=*": "{count} Geschlossene Events"
+			}
+		}
+	],
+	"orgAdmin.events.sections.drafts": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "{count} Entwurf",
+				"countPlural=*": "{count} Entwürfe"
+			}
+		}
+	],
+	"orgAdmin.events.sections.open": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "{count} Offenes Event",
+				"countPlural=*": "{count} Offene Events"
+			}
+		}
+	],
+	"orgAdmin.events.sections.past": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "{count} Vergangenes Event",
+				"countPlural=*": "{count} Vergangene Events"
+			}
+		}
+	],
 	"orgAdmin.events.status.cancelled": "Abgesagt",
 	"orgAdmin.events.status.closed": "Geschlossen",
 	"orgAdmin.events.status.draft": "Entwurf",
@@ -4094,8 +4203,16 @@
 	"orgAdmin.sectors.card.edit": "Sektor bearbeiten",
 	"orgAdmin.sectors.card.manageSeats": "Plätze verwalten",
 	"orgAdmin.sectors.card.noSeats": "Keine Plätze konfiguriert",
-	"orgAdmin.sectors.card.seats": "{count} Platz",
-	"orgAdmin.sectors.card.seats_plural": "̈e",
+	"orgAdmin.sectors.card.seats": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "{count} Platz",
+				"countPlural=*": "{count} Plätze"
+			}
+		}
+	],
 	"orgAdmin.sectors.createButton": "Sektor hinzufügen",
 	"orgAdmin.sectors.delete.confirm": "Bist du sicher, dass du diesen Sektor löschen möchtest? Alle Plätze werden ebenfalls gelöscht.",
 	"orgAdmin.sectors.delete.error": "Fehler beim Löschen des Sektors",
@@ -4140,8 +4257,16 @@
 	"orgAdmin.venues.card.edit": "Veranstaltungsort bearbeiten",
 	"orgAdmin.venues.card.manageSectors": "Sektoren verwalten",
 	"orgAdmin.venues.card.noCapacity": "Keine Kapazität festgelegt",
-	"orgAdmin.venues.card.sectors": "{count} Sektor",
-	"orgAdmin.venues.card.sectors_plural": "en",
+	"orgAdmin.venues.card.sectors": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "{count} Sektor",
+				"countPlural=*": "{count} Sektoren"
+			}
+		}
+	],
 	"orgAdmin.venues.createButton": "Veranstaltungsort erstellen",
 	"orgAdmin.venues.delete.confirm": "Bist du sicher, dass du diesen Veranstaltungsort löschen möchtest? Alle Sektoren und Plätze werden ebenfalls gelöscht.",
 	"orgAdmin.venues.delete.error": "Fehler beim Löschen des Veranstaltungsortes",
@@ -4194,8 +4319,16 @@
 	"orgAdmin.waitlist.table.email": "E-Mail",
 	"orgAdmin.waitlist.table.joinedAt": "Beigetreten am",
 	"orgAdmin.waitlist.table.user": "Nutzer*in",
-	"orgAdmin.waitlist.totalCount": "{count} Person{plural} warten",
-	"orgAdmin.waitlist.totalCount_plural": "en",
+	"orgAdmin.waitlist.totalCount": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "{count} Person wartet",
+				"countPlural=*": "{count} Personen warten"
+			}
+		}
+	],
 	"orgAdminTokensPage": {
 		"pageTitle": "Einladungslinks - {organizationName}",
 		"title": "Einladungslinks",
@@ -4211,7 +4344,16 @@
 		"delete_linkLabel": "Link:",
 		"delete_unnamedLink": "Unbenannter Link",
 		"delete_usesLabel": "Verwendungen:",
-		"delete_usesDescription": "{count} Person{plural} über diesen Link beigetreten",
+		"delete_usesDescription": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} Person ist bereits über diesen Link beigetreten",
+					"countPlural=*": "{count} Personen sind bereits über diesen Link beigetreten"
+				}
+			}
+		],
 		"delete_keepAccessNote": "Diese Mitglieder/Mitarbeiter*innen behalten ihren Zugang. Nur neue Versuche werden fehlschlagen.",
 		"delete_cancelButton": "Abbrechen",
 		"delete_confirmButton": "Link löschen",
@@ -4224,8 +4366,7 @@
 		"error_fetchFailed": "Token konnten nicht abgerufen werden",
 		"error_createFailed": "Token konnte nicht erstellt werden",
 		"error_updateFailed": "Token konnte nicht aktualisiert werden",
-		"error_deleteFailed": "Link konnte nicht gelöscht werden",
-		"delete_usesDescription_plural": "en sind bereits"
+		"error_deleteFailed": "Link konnte nicht gelöscht werden"
 	},
 	"orgCreate.alreadyOwner": "Du besitzt bereits eine Organisation",
 	"orgCreate.alreadyOwnerDescription": "Jede*r Benutzer*in kann nur eine Organisation besitzen. Du kannst deine bestehende Organisation über das Dashboard verwalten.",
@@ -4610,6 +4751,9 @@
 		"language_en": "Englisch (English)",
 		"language_de": "Deutsch",
 		"language_it": "Italienisch (Italiano)",
+		"language_fr": "Französisch (Français)",
+		"language_es": "Spanisch (Español)",
+		"language_pt": "Portugiesisch (Português)",
 		"buttons_submitText": "Änderungen speichern",
 		"buttons_submittingText": "Speichern...",
 		"settingsLink_text": "Benachrichtigungen und Standort konfigurieren",
@@ -4896,9 +5040,17 @@
 			"noAssignmentsDescription": "Klicke auf \"Zuweisungen verwalten\", um diesen Fragebogen Veranstaltungen zuzuweisen",
 			"individualEventsTitle": "Einzelveranstaltungen",
 			"eventSeriesTitle": "Veranstaltungsreihen",
-			"eventCount": "{count} Veranstaltung{plural}",
-			"seriesBadge": "Reihe",
-			"eventCount_plural": "en"
+			"eventCount": [
+				{
+					"declarations": ["input count", "local countPlural = count: plural"],
+					"selectors": ["countPlural"],
+					"match": {
+						"countPlural=one": "{count} Veranstaltung",
+						"countPlural=*": "{count} Veranstaltungen"
+					}
+				}
+			],
+			"seriesBadge": "Reihe"
 		},
 		"questions": {
 			"title": "Fragen",
@@ -5235,8 +5387,16 @@
 		"controlsVisibility": "Kontrolliert, wer diese Ressource sehen kann"
 	},
 	"resourceList": {
-		"showingCount": "{count} Ressource{plural} anzeigen",
-		"showingCount_plural": "n"
+		"showingCount": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} Ressource anzeigen",
+					"countPlural=*": "{count} Ressourcen anzeigen"
+				}
+			}
+		]
 	},
 	"resourceModal": {
 		"error_linkRequired": "Link-URL ist für Link-Ressourcen erforderlich",
@@ -8212,7 +8372,16 @@
 	"seatGridEditor.emptyGrid": "Leeres Raster",
 	"seatGridEditor.fillAll": "Alle füllen",
 	"seatGridEditor.instructions": "Klicke auf Zellen, um Sitze umzuschalten. Ziehe von leer zu leer, um einen Bereich mit Sitzen zu füllen. Bewege den Mauszeiger zwischen die Beschriftungen, um Gänge hinzuzufügen.",
-	"seatGridEditor.seatsSelected": "{count} Sitz{plural} ausgewählt",
+	"seatGridEditor.seatsSelected": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "{count} Sitz ausgewählt",
+				"countPlural=*": "{count} Sitze ausgewählt"
+			}
+		}
+	],
 	"seatGridEditor.toggleAccessible": "Barrierefrei umschalten",
 	"seatGridEditor.toggleObstructed": "Eingeschränkte Sicht umschalten",
 	"seatGridEditor.deleteSelected": "Ausgewählte löschen",
@@ -8232,7 +8401,16 @@
 	"seatGridEditor.legendAccessible": "Barrierefrei",
 	"seatGridEditor.legendObstructed": "Eingeschränkte Sicht",
 	"seatGridEditor.totalLabel": "Gesamt:",
-	"seatGridEditor.totalSeatsSuffix": "Sitz{plural}",
+	"seatGridEditor.totalSeatsSuffix": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "Sitz",
+				"countPlural=*": "Sitze"
+			}
+		}
+	],
 	"seatMap.label": "Sitzplan",
 	"seatMap.zoomIn": "Vergrößern",
 	"seatMap.zoomOut": "Verkleinern",

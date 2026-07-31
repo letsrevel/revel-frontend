@@ -343,8 +343,7 @@
 						</div>
 						<p class="mt-4 text-xs text-muted-foreground">
 							{m['accountPrivacyPage.filesCount']({
-								count: filesQuery.data.length,
-								plural: filesQuery.data.length === 1 ? '' : 's'
+								count: filesQuery.data.length
 							})}
 						</p>
 					{:else}

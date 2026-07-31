@@ -47,8 +47,7 @@
 	<!-- Count -->
 	<p class="text-sm text-muted-foreground">
 		{m['resourceList.showingCount']({
-			count: resources.length,
-			plural: resources.length === 1 ? '' : m['resourceList.showingCount_plural']()
+			count: resources.length
 		})}
 	</p>
 </div>

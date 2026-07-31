@@ -343,8 +343,7 @@
 						{/if}
 						<p class="mt-2 text-xs text-muted-foreground">
 							{m['orgAdmin.members.tiers.memberCount']({
-								count: memberCount,
-								plural: memberCount === 1 ? '' : m['orgAdmin.members.tiers._plural']()
+								count: memberCount
 							})}
 						</p>
 					</div>

@@ -65,13 +65,8 @@
 				(dietarySummary.restrictions?.length ?? 0) > 0)
 	);
 
-	// Helper to get plural form
 	function getAttendeeCountText(count: number): string {
-		const pluralSuffix = count === 1 ? '' : m['dietary.eventSummary_attendeeCount_plural']();
-		return m['dietary.eventSummary_attendeeCount']({
-			count: count.toString(),
-			plural: pluralSuffix
-		});
+		return m['dietary.eventSummary_attendeeCount']({ count });
 	}
 
 	// Get severity display info

@@ -45,9 +45,7 @@
 
 				<span class="inline-flex items-center gap-1">
 					<LayoutGrid class="h-4 w-4" aria-hidden="true" />
-					{m['orgAdmin.venues.card.sectors']({ count: sectorCount })}{sectorCount !== 1
-						? m['orgAdmin.venues.card.sectors_plural']()
-						: ''}
+					{m['orgAdmin.venues.card.sectors']({ count: sectorCount })}
 				</span>
 
 				<span class="inline-flex items-center gap-1">
