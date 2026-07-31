@@ -200,7 +200,13 @@
 	}
 </script>
 
-<Card class="flex h-full flex-col">
+<!-- No `h-full`. It equalised heights back when plan cards were siblings in a
+     `grid gap-4 sm:grid-cols-2` ROW; since #720 they are stacked vertically in
+     TierCard's `space-y-3` block, where `height: 100%` makes EVERY card claim
+     the container's full height. Two cards then need 200% of a box sized for
+     100%, and the surplus escaped the card (`overflow: visible`) and painted
+     over the page footer. -->
+<Card class="flex flex-col">
 	<CardContent class="flex flex-1 flex-col gap-3 p-4">
 		<div class="flex flex-wrap items-start justify-between gap-2">
 			<h4 class="font-semibold">{plan.name}</h4>
