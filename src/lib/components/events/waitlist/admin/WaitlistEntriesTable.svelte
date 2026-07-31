@@ -111,8 +111,7 @@
 			<Users class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
 			<p class="text-sm font-medium">
 				{m['orgAdmin.waitlist.totalCount']({
-					count: data.count,
-					plural: data.count === 1 ? '' : m['orgAdmin.waitlist.totalCount_plural']()
+					count: data.count
 				})}
 			</p>
 		</div>

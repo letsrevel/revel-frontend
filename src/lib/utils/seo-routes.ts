@@ -13,6 +13,8 @@
  * - German: /de/{slug}
  * - Italian: /it/{slug}
  * - French: /fr/{slug}
+ * - Spanish: /es/{slug}
+ * - Portuguese: /pt/{slug}
  */
 export const SEO_PAGE_SLUGS = [
 	'eventbrite-alternative',
@@ -33,7 +35,9 @@ const LANGUAGE_PREFIXES: Record<string, string> = {
 	en: '',
 	de: '/de',
 	it: '/it',
-	fr: '/fr'
+	fr: '/fr',
+	es: '/es',
+	pt: '/pt'
 };
 
 /**

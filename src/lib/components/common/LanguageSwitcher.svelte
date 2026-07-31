@@ -5,20 +5,21 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { accountUpdateLanguage } from '$lib/api/client';
 	import { getLanguageSwitchUrl } from '$lib/utils/seo-routes';
+	import type { SupportedLanguage } from '$lib/schemas/profile';
 
 	// Current locale
 	const currentLocale = $derived(getLocale());
 
-	// Language options. We surface the ISO code (en/de/it) rather than a flag —
+	// Language options. We surface the ISO code (en/de/it/…) rather than a flag —
 	// flags map to countries, not languages, and read poorly at small sizes.
 	const languages = [
 		{ code: 'en', name: 'English' },
 		{ code: 'de', name: 'Deutsch' },
 		{ code: 'it', name: 'Italiano' },
-		{ code: 'fr', name: 'Français' }
+		{ code: 'fr', name: 'Français' },
+		{ code: 'es', name: 'Español' },
+		{ code: 'pt', name: 'Português' }
 	] as const;
-
-	type SupportedLanguage = 'en' | 'de' | 'it' | 'fr';
 
 	// Dropdown open state
 	let isOpen = $state(false);

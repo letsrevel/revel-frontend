@@ -428,3 +428,225 @@ export const queerEventManagementFR: LandingPageContent = {
 	],
 	relatedPages: ['kink-event-ticketing', 'privacy-focused-events']
 };
+
+export const queerEventManagementES: LandingPageContent = {
+	slug: 'queer-event-management',
+	locale: 'es',
+	meta: {
+		title: 'Gestión de Eventos para Comunidades LGBTQ+ | Revel',
+		description:
+			'Plataforma de eventos de código abierto creada por y para comunidades queer. Controles de privacidad, selección de asistentes, sin riesgo de censura. Alojada en Europa.',
+		keywords:
+			'plataforma eventos lgtbi, entradas eventos gay, organizar eventos queer, eventos del orgullo, comunidad lgtbi'
+	},
+	hero: {
+		headline: 'El Software de Eventos Que Entiende a las Comunidades Queer',
+		subheadline:
+			'Creado por personas organizadoras LGBTQ+ para eventos que las plataformas convencionales nunca supieron apoyar.'
+	},
+	intro: {
+		paragraphs: [
+			'Las plataformas de eventos convencionales no se pensaron para las comunidades queer. Políticas de contenido ambiguas que marcan tus eventos. Algoritmos que reducen tu visibilidad. Ninguna comprensión de los espacios seguros ni de las necesidades propias de cada comunidad.',
+			'Revel es diferente. Creada por personas que organizan eventos queer en Europa, es una plataforma de código abierto pensada para comunidades que necesitan algo más que venta de entradas: necesitan confianza, privacidad y la libertad de organizar eventos sin miedo a ser expulsadas de otras plataformas.',
+			'Ya organices fiestas del Orgullo, quedadas queer, espectáculos de drag o encuentros comunitarios, Revel te da las herramientas para construir y proteger tu comunidad. Gestión de personas socias, selección de asistentes, controles de visibilidad y propiedad total de tus datos, todo en una sola plataforma.'
+		]
+	},
+	features: [
+		{
+			icon: 'heart',
+			title: 'Pensado para la Comunidad',
+			description:
+				'Organizaciones, membresías y herramientas para construir comunidad. Crea espacios donde tu comunidad pueda crecer más allá de eventos puntuales.'
+		},
+		{
+			icon: 'shield',
+			title: 'Sin Riesgo de Censura',
+			description:
+				'Aloja tu propia instancia o usa nuestros servidores europeos. Ninguna política corporativa decide qué eventos puedes organizar.'
+		},
+		{
+			icon: 'clipboard',
+			title: 'Selección de Asistentes',
+			description:
+				'Cuestionarios personalizados para asegurarte de que quienes asisten comparten los valores de tu comunidad. Revisión manual, aprobación automática o flujos híbridos.'
+		},
+		{
+			icon: 'eye',
+			title: 'Controles de Privacidad',
+			description:
+				'Eventos públicos, solo para personas socias o solo con invitación. Decide quién ve qué y mantén privada la lista de asistentes.'
+		},
+		{
+			icon: 'lock',
+			title: 'Soberanía de tus Datos',
+			description:
+				'Los datos de tu comunidad siguen siendo tuyos. Sin rastreadores de terceros, sin venta de datos, cumplimiento total del RGPD.'
+		},
+		{
+			icon: 'globe',
+			title: 'Alojamiento Europeo',
+			description:
+				'Alojado en infraestructura europea con una fuerte protección de datos. O aloja tu propia instancia donde prefieras.'
+		}
+	],
+	benefits: {
+		title: 'Por Qué Quienes Organizan Eventos LGBTQ+ Confían en Revel',
+		items: [
+			'Sin riesgo de que tus eventos sean marcados o eliminados por políticas de la plataforma',
+			'Selecciona a las personas asistentes para mantener espacios más seguros',
+			'Construye una membresía comunitaria duradera, no solo listas evento por evento',
+			'Control total sobre los datos de tu comunidad',
+			'Creada por personas que entienden la organización de eventos queer',
+			'Código abierto y transparente: mira exactamente cómo funciona'
+		]
+	},
+	cta: {
+		title: 'Tu Comunidad Merece Mejores Herramientas',
+		description: 'Descubre cómo funciona Revel o empieza hoy mismo a construir tu comunidad.',
+		buttons: [
+			{ text: 'Probar la Demo en Vivo', href: 'https://demo.letsrevel.io', variant: 'primary' },
+			{
+				text: 'Alojar tu Propia Instancia (GitHub)',
+				href: 'https://github.com/letsrevel',
+				variant: 'secondary'
+			},
+			{ text: 'Contáctanos', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
+		]
+	},
+	faq: [
+		{
+			question: '¿Qué hace diferente a Revel de Eventbrite o Meetup?',
+			answer:
+				'Revel se creó específicamente para comunidades que necesitan privacidad, selección de asistentes y libertad frente a la censura de las plataformas. No tenemos políticas de contenido que restrinjan eventos para adultos o queer, y te damos control total sobre tus datos.'
+		},
+		{
+			question: '¿Puedo controlar quién asiste a mis eventos?',
+			answer:
+				'Sí. Revel incluye un potente sistema de cuestionarios que te permite exigir a las personas asistentes que respondan preguntas antes de comprar entradas o confirmar asistencia. Puedes revisar las respuestas manualmente, configurar reglas de aprobación automática o usar un enfoque híbrido.'
+		},
+		{
+			question: '¿Están seguros los datos de mi comunidad?',
+			answer:
+				'Totalmente. No vendemos datos ni usamos rastreadores de terceros. Nuestra versión alojada funciona en servidores europeos con cumplimiento del RGPD. Si alojas tu propia instancia, tienes control completo sobre dónde viven tus datos.'
+		},
+		{
+			question: '¿Puedo organizar eventos solo para personas socias?',
+			answer:
+				'Sí. Puedes crear organizaciones con niveles de membresía y restringir eventos solo a personas socias, a niveles concretos de membresía, o hacerlos públicos. Controlas la visibilidad en cada nivel.'
+		}
+	],
+	relatedPages: ['kink-event-ticketing', 'privacy-focused-events']
+};
+
+export const queerEventManagementPT: LandingPageContent = {
+	slug: 'queer-event-management',
+	locale: 'pt',
+	meta: {
+		title: 'Gestão de Eventos para Comunidades LGBTQ+ | Revel',
+		description:
+			'Plataforma de eventos open source criada por e para comunidades queer. Controlos de privacidade, seleção de participantes, sem risco de censura. Alojada na Europa.',
+		keywords:
+			'plataforma eventos lgbt, bilhetes eventos gay, organizar eventos queer, eventos orgulho gay, comunidade lgbt portugal'
+	},
+	hero: {
+		headline: 'Software de Eventos Que Entende as Comunidades Queer',
+		subheadline:
+			'Criado por quem organiza eventos LGBTQ+ para eventos que as plataformas convencionais nunca souberam apoiar.'
+	},
+	intro: {
+		paragraphs: [
+			'As plataformas de eventos convencionais não foram pensadas para as comunidades queer. Políticas de conteúdo vagas que assinalam os teus eventos. Algoritmos que reduzem a tua visibilidade. Nenhuma compreensão sobre espaços seguros ou sobre as necessidades próprias de cada comunidade.',
+			'A Revel é diferente. Criada por pessoas que organizam eventos queer na Europa, é uma plataforma open source pensada para comunidades que precisam de mais do que simples bilhética: precisam de confiança, privacidade e liberdade para organizar eventos sem medo de serem expulsas de outras plataformas.',
+			'Quer estejas a organizar festas de Orgulho, encontros queer, espetáculos de drag ou reuniões da comunidade, a Revel dá-te as ferramentas para construir e proteger a tua comunidade. Gestão de membros, seleção de participantes, controlos de visibilidade e propriedade total dos teus dados, tudo numa só plataforma.'
+		]
+	},
+	features: [
+		{
+			icon: 'heart',
+			title: 'Pensado para a Comunidade',
+			description:
+				'Organizações, adesões e ferramentas de construção de comunidade. Cria espaços onde a tua comunidade pode prosperar para além de eventos isolados.'
+		},
+		{
+			icon: 'shield',
+			title: 'Sem Risco de Censura',
+			description:
+				'Aloja a tua própria instância ou usa os nossos servidores europeus. Nenhuma política de conteúdo empresarial decide que eventos podes organizar.'
+		},
+		{
+			icon: 'clipboard',
+			title: 'Seleção de Participantes',
+			description:
+				'Questionários personalizados para garantir que a participação está alinhada com os valores da tua comunidade. Revisão manual, aprovação automática ou fluxos híbridos.'
+		},
+		{
+			icon: 'eye',
+			title: 'Controlos de Privacidade',
+			description:
+				'Eventos públicos, só para membros ou só com convite. Decide quem vê o quê e mantém privada a lista de participantes.'
+		},
+		{
+			icon: 'lock',
+			title: 'Soberania dos Dados',
+			description:
+				'Os dados da tua comunidade continuam a ser teus. Sem rastreadores de terceiros, sem venda de dados, conformidade total com o RGPD.'
+		},
+		{
+			icon: 'globe',
+			title: 'Alojamento Europeu',
+			description:
+				'Alojado em infraestrutura europeia com forte proteção de dados. Ou aloja a tua própria instância onde preferires.'
+		}
+	],
+	benefits: {
+		title: 'Porque É Que Quem Organiza Eventos LGBTQ+ Confia na Revel',
+		items: [
+			'Sem risco de os teus eventos serem assinalados ou removidos por políticas da plataforma',
+			'Seleciona quem participa para manter espaços mais seguros',
+			'Constrói uma comunidade de membros duradoura, não apenas listas evento a evento',
+			'Controlo total sobre os dados da tua comunidade',
+			'Criada por pessoas que entendem a organização de eventos queer',
+			'Open source e transparente: vê exatamente como funciona'
+		]
+	},
+	cta: {
+		title: 'A Tua Comunidade Merece Ferramentas Melhores',
+		description: 'Descobre como funciona a Revel ou começa hoje a construir a tua comunidade.',
+		buttons: [
+			{
+				text: 'Experimentar a Demo ao Vivo',
+				href: 'https://demo.letsrevel.io',
+				variant: 'primary'
+			},
+			{
+				text: 'Alojamento Próprio (GitHub)',
+				href: 'https://github.com/letsrevel',
+				variant: 'secondary'
+			},
+			{ text: 'Contacta-nos', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
+		]
+	},
+	faq: [
+		{
+			question: 'O que torna a Revel diferente do Eventbrite ou do Meetup?',
+			answer:
+				'A Revel foi criada especificamente para comunidades que precisam de privacidade, seleção de participantes e liberdade face à censura das plataformas. Não temos políticas de conteúdo que restrinjam eventos para adultos ou queer, e damos-te controlo total sobre os teus dados.'
+		},
+		{
+			question: 'Posso controlar quem participa nos meus eventos?',
+			answer:
+				'Sim. A Revel inclui um sistema de questionários poderoso que te permite exigir que quem participa responda a perguntas antes de comprar bilhetes ou confirmar presença. Podes rever as respostas manualmente, configurar regras de aprovação automática ou usar uma abordagem híbrida.'
+		},
+		{
+			question: 'Os dados da minha comunidade estão seguros?',
+			answer:
+				'Sem dúvida. Não vendemos dados nem usamos rastreadores de terceiros. A nossa versão alojada funciona em servidores europeus com conformidade RGPD. Se optares por self-hosting, tens controlo total sobre onde ficam os teus dados.'
+		},
+		{
+			question: 'Posso organizar eventos só para membros?',
+			answer:
+				'Sim. Podes criar organizações com níveis de adesão e restringir eventos apenas a membros, a níveis de adesão específicos, ou torná-los públicos. Controlas a visibilidade a cada nível.'
+		}
+	],
+	relatedPages: ['kink-event-ticketing', 'privacy-focused-events']
+};

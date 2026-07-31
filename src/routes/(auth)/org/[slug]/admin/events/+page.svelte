@@ -258,8 +258,7 @@
 			<div class="space-y-4">
 				<h2 class="text-lg font-semibold">
 					{m['orgAdmin.events.sections.drafts']({
-						count: draftEvents.length,
-						plural: draftEvents.length === 1 ? '' : m['orgAdmin.events.sections.drafts_plural']()
+						count: draftEvents.length
 					})}
 				</h2>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -283,8 +282,7 @@
 			<div class="space-y-4">
 				<h2 class="text-lg font-semibold">
 					{m['orgAdmin.events.sections.open']({
-						count: openEvents.length,
-						plural: openEvents.length === 1 ? '' : m['orgAdmin.events.sections.open_plural']()
+						count: openEvents.length
 					})}
 				</h2>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -308,8 +306,7 @@
 			<div class="space-y-4">
 				<h2 class="text-lg font-semibold">
 					{m['orgAdmin.events.sections.closed']({
-						count: closedEvents.length,
-						plural: closedEvents.length === 1 ? '' : m['orgAdmin.events.sections.closed_plural']()
+						count: closedEvents.length
 					})}
 				</h2>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -333,9 +330,7 @@
 			<div class="space-y-4">
 				<h2 class="text-lg font-semibold">
 					{m['orgAdmin.events.sections.cancelled']({
-						count: cancelledEvents.length,
-						plural:
-							cancelledEvents.length === 1 ? '' : m['orgAdmin.events.sections.cancelled_plural']()
+						count: cancelledEvents.length
 					})}
 				</h2>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -360,8 +355,7 @@
 			<div class="space-y-4 grayscale">
 				<h2 class="text-lg font-semibold">
 					{m['orgAdmin.events.sections.past']({
-						count: pastEvents.length,
-						plural: pastEvents.length === 1 ? '' : m['orgAdmin.events.sections.past_plural']()
+						count: pastEvents.length
 					})}
 				</h2>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

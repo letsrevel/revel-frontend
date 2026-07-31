@@ -6,6 +6,7 @@ import {
 	permissionMyPermissions
 } from '$lib/api/client';
 import { setLocale } from '$lib/paraglide/runtime.js';
+import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '$lib/schemas/profile';
 import { getImpersonationInfo, type ImpersonationInfo } from '$lib/utils/impersonation';
 import { decodeToken } from './jwt';
 
@@ -391,8 +392,8 @@ class AuthStore {
 			this._user = data;
 
 			// Set user's preferred language if available
-			if (data.language && ['en', 'de', 'it', 'fr'].includes(data.language)) {
-				setLocale(data.language as 'en' | 'de' | 'it' | 'fr');
+			if (data.language && (SUPPORTED_LANGUAGES as readonly string[]).includes(data.language)) {
+				setLocale(data.language as SupportedLanguage);
 			}
 		} catch (err) {
 			// Check if this is a network error (likely ad blocker)

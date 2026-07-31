@@ -235,8 +235,7 @@
 							{#if totalCount > 0}
 								<p class="mt-1 text-sm text-muted-foreground">
 									{m['eventSeriesDetailPage.events_count']({
-										count: totalCount,
-										plural: totalCount === 1 ? '' : m['eventSeriesDetailPage.events_count_plural']()
+										count: totalCount
 									})}
 								</p>
 							{/if}

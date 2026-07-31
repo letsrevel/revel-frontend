@@ -427,3 +427,217 @@ export const kinkEventTicketingFR: LandingPageContent = {
 	],
 	relatedPages: ['queer-event-management', 'privacy-focused-events', 'self-hosted-event-platform']
 };
+
+export const kinkEventTicketingES: LandingPageContent = {
+	slug: 'kink-event-ticketing',
+	locale: 'es',
+	meta: {
+		title: 'Venta de entradas para eventos kink y BDSM – Privado y seguro | Revel',
+		description:
+			'Gestión de eventos para comunidades kink, BDSM y sex-positive. Selección de participantes, controles de privacidad, discreción. Código abierto, autoalojable.',
+		keywords:
+			'entradas eventos bdsm, software gestión eventos kink, eventos sex positive españa, entradas fiestas fetichistas, plataforma eventos para adultos'
+	},
+	hero: {
+		headline: 'Gestión discreta de eventos para comunidades kink',
+		subheadline:
+			'Selección de participantes, controles de privacidad y control total de tus datos. Creado para eventos que requieren discreción.'
+	},
+	intro: {
+		paragraphs: [
+			'Organizar eventos kink y BDSM implica equilibrar privacidad, consentimiento y confianza, a la vez que se gestionan entradas, confirmaciones de asistencia y participantes. La mayoría de las plataformas no están pensadas para esto. Revel sí.',
+			'Creado por personas organizadoras de comunidades que entienden las necesidades particulares de los espacios sex-positive, Revel es un software de eventos de código abierto diseñado para la discreción. Filtra a quienes participan con cuestionarios personalizados. Controla exactamente quién ve tus eventos. Mantén los datos de los participantes completamente privados.',
+			'Ya organices play parties, munches, talleres o grandes eventos fetichistas, Revel te da las herramientas para mantener la confianza y la seguridad que tu comunidad espera, sin renunciar a funciones ni preocuparte por la censura de la plataforma.'
+		]
+	},
+	features: [
+		{
+			icon: 'clipboard',
+			title: 'Selección de participantes',
+			description:
+				'Exige cuestionarios antes de la compra de la entrada. Revisa las solicitudes manualmente, aprueba automáticamente según criterios, o combina ambos flujos.'
+		},
+		{
+			icon: 'eye',
+			title: 'Controles de visibilidad',
+			description:
+				'Listados públicos, solo para miembros, o eventos completamente privados solo por invitación. Tú decides quién sabe de tus eventos.'
+		},
+		{
+			icon: 'lock',
+			title: 'Discreción total',
+			description:
+				'Ninguna plataforma puede filtrar tu lista de participantes. Autoalójate para máxima privacidad, o usa nuestros servidores europeos seguros.'
+		},
+		{
+			icon: 'shield',
+			title: 'Sin riesgo de deplatforming',
+			description:
+				'Código abierto y autoalojable. Sin políticas de contenido corporativas. Tus eventos, tus reglas.'
+		},
+		{
+			icon: 'users',
+			title: 'Membresía de comunidad',
+			description:
+				'Construye listas de miembros de confianza con el tiempo. Restringe eventos a miembros verificados de la comunidad.'
+		},
+		{
+			icon: 'ticket',
+			title: 'Funciones completas de eventos',
+			description:
+				'Múltiples niveles de entrada, check-in con QR, pases de Apple Wallet, compras por lotes: todo lo necesario para organizar eventos profesionales.'
+		}
+	],
+	benefits: {
+		title: 'Por qué quienes organizan eventos kink eligen Revel',
+		items: [
+			'Filtra a quienes participan para mantener los estándares de la comunidad y la cultura del consentimiento',
+			'Mantén privadas las identidades de los participantes y los detalles del evento',
+			'Sin riesgo de que tus eventos se eliminen por políticas de contenido de la plataforma',
+			'Construye y mantén comunidades de miembros de confianza',
+			'Autoalójate para tener control total sobre datos sensibles',
+			'Creado por personas que entienden la organización de eventos kink'
+		]
+	},
+	cta: {
+		title: 'Eventos que respetan la privacidad y el consentimiento',
+		description: 'Descubre cómo Revel protege a tu comunidad o despliégalo por tu cuenta.',
+		buttons: [
+			{ text: 'Probar la demo en vivo', href: 'https://demo.letsrevel.io', variant: 'primary' },
+			{ text: 'Autoalojar (GitHub)', href: 'https://github.com/letsrevel', variant: 'secondary' },
+			{ text: 'Contacto', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
+		]
+	},
+	faq: [
+		{
+			question: '¿Cómo funciona la selección de participantes?',
+			answer:
+				'Creas cuestionarios con las preguntas que necesites: nivel de experiencia, referencias de la comunidad, confirmaciones de consentimiento, etc. Quienes participan deben completar el cuestionario antes de poder comprar entradas. Puedes revisar las solicitudes manualmente, establecer reglas de aprobación automática, o combinar ambos enfoques.'
+		},
+		{
+			question: '¿Puedo mantener mis eventos completamente privados?',
+			answer:
+				'Sí. Los eventos se pueden configurar como solo por invitación, visibles solo para miembros, o completamente sin listar. También puedes enviar invitaciones directas que omitan los requisitos habituales para personas invitadas de confianza.'
+		},
+		{
+			question: '¿Y si necesito privacidad máxima?',
+			answer:
+				'Autoaloja Revel en tu propia infraestructura. Tus datos nunca tocan nuestros servidores. El software tiene licencia MIT y es gratuito: solo pagas tu propio alojamiento y el procesamiento de pagos con Stripe.'
+		},
+		{
+			question: '¿Hay riesgo de que censuren mis eventos?',
+			answer:
+				'Con Revel, no. Somos de código abierto y no tenemos políticas de contenido que restrinjan eventos para adultos. Si te autoalojas, tienes autonomía completa. Nuestra versión alojada funciona en infraestructura europea y apoyamos explícitamente a las comunidades sex-positive.'
+		}
+	],
+	relatedPages: ['queer-event-management', 'privacy-focused-events', 'self-hosted-event-platform']
+};
+
+export const kinkEventTicketingPT: LandingPageContent = {
+	slug: 'kink-event-ticketing',
+	locale: 'pt',
+	meta: {
+		title: 'Bilhética para eventos kink e BDSM – Privado e seguro | Revel',
+		description:
+			'Gestão de eventos para comunidades kink, BDSM e sex-positive. Seleção de participantes, controlos de privacidade, discrição. Código aberto, autoalojável.',
+		keywords:
+			'bilhética eventos bdsm, gestão eventos kink, eventos sex positive, bilhetes festas fetichistas, plataforma eventos para adultos'
+	},
+	hero: {
+		headline: 'Gestão discreta de eventos para comunidades kink',
+		subheadline:
+			'Seleção de participantes, controlos de privacidade e controlo total dos teus dados. Criado para eventos que exigem discrição.'
+	},
+	intro: {
+		paragraphs: [
+			'Organizar eventos kink e BDSM implica equilibrar privacidade, consentimento e confiança, ao mesmo tempo que se gere a bilhética, as confirmações de presença e os participantes. A maioria das plataformas não foi pensada para isto. A Revel foi.',
+			'Criada por pessoas organizadoras de comunidades que compreendem as necessidades específicas dos espaços sex-positive, a Revel é um software de eventos de código aberto pensado para a discrição. Seleciona participantes com questionários personalizados. Controla exatamente quem vê os teus eventos. Mantém os dados dos participantes completamente privados.',
+			'Quer organizes play parties, munches, workshops ou grandes eventos fetichistas, a Revel dá-te as ferramentas para manter a confiança e a segurança que a tua comunidade espera, sem abdicar de funcionalidades nem te preocupares com censura na plataforma.'
+		]
+	},
+	features: [
+		{
+			icon: 'clipboard',
+			title: 'Seleção de participantes',
+			description:
+				'Exige questionários antes da compra do bilhete. Revê as candidaturas manualmente, aprova automaticamente segundo critérios, ou combina ambos os fluxos.'
+		},
+		{
+			icon: 'eye',
+			title: 'Controlos de visibilidade',
+			description:
+				'Listagens públicas, apenas para membros, ou eventos totalmente privados só por convite. Tu decides quem sabe dos teus eventos.'
+		},
+		{
+			icon: 'lock',
+			title: 'Discrição total',
+			description:
+				'Nenhuma plataforma pode divulgar a tua lista de participantes. Autoaloja-te para privacidade máxima, ou usa os nossos servidores europeus seguros.'
+		},
+		{
+			icon: 'shield',
+			title: 'Sem risco de deplatforming',
+			description:
+				'Código aberto e autoalojável. Sem políticas de conteúdo corporativas. Os teus eventos, as tuas regras.'
+		},
+		{
+			icon: 'users',
+			title: 'Adesão à comunidade',
+			description:
+				'Constrói listas de membros de confiança ao longo do tempo. Restringe eventos a membros verificados da comunidade.'
+		},
+		{
+			icon: 'ticket',
+			title: 'Funcionalidades completas de eventos',
+			description:
+				'Vários níveis de bilhete, check-in por QR, passes Apple Wallet, compras em lote: tudo o que precisas para organizar eventos profissionais.'
+		}
+	],
+	benefits: {
+		title: 'Porque é que quem organiza eventos kink escolhe a Revel',
+		items: [
+			'Seleciona participantes para manter os padrões da comunidade e a cultura do consentimento',
+			'Mantém privadas as identidades dos participantes e os detalhes do evento',
+			'Sem risco de os teus eventos serem removidos por políticas de conteúdo da plataforma',
+			'Constrói e mantém comunidades de membros de confiança',
+			'Autoaloja-te para teres controlo total sobre dados sensíveis',
+			'Criada por pessoas que compreendem a organização de eventos kink'
+		]
+	},
+	cta: {
+		title: 'Eventos que respeitam a privacidade e o consentimento',
+		description: 'Descobre como a Revel protege a tua comunidade ou aloja a tua própria instância.',
+		buttons: [
+			{
+				text: 'Experimentar a demo ao vivo',
+				href: 'https://demo.letsrevel.io',
+				variant: 'primary'
+			},
+			{ text: 'Autoalojar (GitHub)', href: 'https://github.com/letsrevel', variant: 'secondary' },
+			{ text: 'Contacto', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
+		]
+	},
+	faq: [
+		{
+			question: 'Como funciona a seleção de participantes?',
+			answer:
+				'Crias questionários com as perguntas de que precisas: nível de experiência, referências da comunidade, confirmações de consentimento, etc. Quem participa tem de preencher o questionário antes de poder comprar bilhetes. Podes rever as candidaturas manualmente, definir regras de aprovação automática, ou combinar as duas abordagens.'
+		},
+		{
+			question: 'Posso manter os meus eventos totalmente privados?',
+			answer:
+				'Sim. Os eventos podem ser configurados como só por convite, visíveis apenas para membros, ou totalmente não listados. Também podes enviar convites diretos que dispensam os requisitos habituais para pessoas convidadas de confiança.'
+		},
+		{
+			question: 'E se precisar de privacidade máxima?',
+			answer:
+				'Autoaloja a Revel na tua própria infraestrutura. Os teus dados nunca tocam nos nossos servidores. O software tem licença MIT e é gratuito: só pagas o teu próprio alojamento e o processamento de pagamentos com Stripe.'
+		},
+		{
+			question: 'Há algum risco de os meus eventos serem censurados?',
+			answer:
+				'Com a Revel, não. Somos de código aberto e não temos políticas de conteúdo que restrinjam eventos para adultos. Se te autoalojares, tens autonomia completa. A nossa versão alojada corre em infraestrutura europeia e apoiamos explicitamente as comunidades sex-positive.'
+		}
+	],
+	relatedPages: ['queer-event-management', 'privacy-focused-events', 'self-hosted-event-platform']
+};

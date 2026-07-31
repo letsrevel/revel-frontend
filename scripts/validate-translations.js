@@ -123,6 +123,16 @@ function validatePlaceholders(en, lang, langCode) {
 	return issues;
 }
 
+/** Source language, then every target catalog that must stay aligned with it. */
+const SOURCE = { code: 'en', file: 'en.json', name: 'English' };
+const TARGETS = [
+	{ code: 'de', file: 'de.json', name: 'German' },
+	{ code: 'it', file: 'it.json', name: 'Italian' },
+	{ code: 'fr', file: 'fr.json', name: 'French' },
+	{ code: 'es', file: 'es.json', name: 'Spanish' },
+	{ code: 'pt', file: 'pt.json', name: 'Portuguese' }
+];
+
 function main() {
 	log('\n=== Translation Validation ===\n', 'bold');
 
@@ -131,163 +141,86 @@ function main() {
 
 	// Load translation files
 	log('Loading translation files...', 'blue');
-	const en = loadJSON('en.json');
-	const de = loadJSON('de.json');
-	const it = loadJSON('it.json');
-	const fr = loadJSON('fr.json');
+	const en = loadJSON(SOURCE.file);
+	const enKeys = getAllKeys(en);
+	const enEmpty = findEmptyStrings(en);
+	const langs = TARGETS.map((t) => {
+		const data = loadJSON(t.file);
+		return {
+			...t,
+			data,
+			keys: getAllKeys(data),
+			empty: findEmptyStrings(data),
+			placeholders: validatePlaceholders(en, data, t.code.toUpperCase())
+		};
+	});
 	log('✓ All files loaded\n', 'green');
 
-	// Get all keys
-	const enKeys = getAllKeys(en);
-	const deKeys = getAllKeys(de);
-	const itKeys = getAllKeys(it);
-	const frKeys = getAllKeys(fr);
-
-	// Check key count
+	// Key count
 	log('=== Key Count ===', 'bold');
-	log(`English: ${enKeys.size} keys`);
-	log(`German:  ${deKeys.size} keys`);
-	log(`Italian: ${itKeys.size} keys`);
-	log(`French:  ${frKeys.size} keys`);
-
-	if (enKeys.size === deKeys.size && deKeys.size === itKeys.size && itKeys.size === frKeys.size) {
+	log(`${SOURCE.name.padEnd(11)} ${enKeys.size} keys`);
+	for (const l of langs) log(`${l.name.padEnd(11)} ${l.keys.size} keys`);
+	if (langs.every((l) => l.keys.size === enKeys.size)) {
 		log('✓ All languages have the same number of keys\n', 'green');
 	} else {
 		log('✗ Key count mismatch!\n', 'red');
 		hasErrors = true;
 	}
 
-	// Check key structure alignment
+	// Key structure alignment
 	log('=== Key Structure Alignment ===', 'bold');
-	const missingInDe = Array.from(enKeys).filter((k) => !deKeys.has(k));
-	const missingInIt = Array.from(enKeys).filter((k) => !itKeys.has(k));
-	const missingInFr = Array.from(enKeys).filter((k) => !frKeys.has(k));
-	const extraInDe = Array.from(deKeys).filter((k) => !enKeys.has(k));
-	const extraInIt = Array.from(itKeys).filter((k) => !enKeys.has(k));
-	const extraInFr = Array.from(frKeys).filter((k) => !enKeys.has(k));
-
-	if (
-		missingInDe.length === 0 &&
-		missingInIt.length === 0 &&
-		missingInFr.length === 0 &&
-		extraInDe.length === 0 &&
-		extraInIt.length === 0 &&
-		extraInFr.length === 0
-	) {
-		log('✓ All keys are aligned across languages\n', 'green');
-	} else {
+	let misaligned = false;
+	for (const l of langs) {
+		const missing = Array.from(enKeys).filter((k) => !l.keys.has(k));
+		const extra = Array.from(l.keys).filter((k) => !enKeys.has(k));
+		if (missing.length === 0 && extra.length === 0) continue;
+		misaligned = true;
 		hasErrors = true;
-		if (missingInDe.length > 0) {
-			log(`✗ German missing ${missingInDe.length} keys:`, 'red');
-			missingInDe.slice(0, 5).forEach((k) => log(`  - ${k}`, 'red'));
-			if (missingInDe.length > 5) log(`  ... and ${missingInDe.length - 5} more`, 'red');
+		if (missing.length > 0) {
+			log(`✗ ${l.name} missing ${missing.length} keys:`, 'red');
+			missing.slice(0, 5).forEach((k) => log(`  - ${k}`, 'red'));
+			if (missing.length > 5) log(`  ... and ${missing.length - 5} more`, 'red');
 		}
-		if (missingInIt.length > 0) {
-			log(`✗ Italian missing ${missingInIt.length} keys:`, 'red');
-			missingInIt.slice(0, 5).forEach((k) => log(`  - ${k}`, 'red'));
-			if (missingInIt.length > 5) log(`  ... and ${missingInIt.length - 5} more`, 'red');
+		if (extra.length > 0) {
+			log(`✗ ${l.name} has ${extra.length} extra keys:`, 'red');
+			extra.slice(0, 5).forEach((k) => log(`  - ${k}`, 'red'));
 		}
-		if (missingInFr.length > 0) {
-			log(`✗ French missing ${missingInFr.length} keys:`, 'red');
-			missingInFr.slice(0, 5).forEach((k) => log(`  - ${k}`, 'red'));
-			if (missingInFr.length > 5) log(`  ... and ${missingInFr.length - 5} more`, 'red');
-		}
-		if (extraInDe.length > 0) {
-			log(`✗ German has ${extraInDe.length} extra keys:`, 'red');
-			extraInDe.slice(0, 5).forEach((k) => log(`  - ${k}`, 'red'));
-		}
-		if (extraInIt.length > 0) {
-			log(`✗ Italian has ${extraInIt.length} extra keys:`, 'red');
-			extraInIt.slice(0, 5).forEach((k) => log(`  - ${k}`, 'red'));
-		}
-		if (extraInFr.length > 0) {
-			log(`✗ French has ${extraInFr.length} extra keys:`, 'red');
-			extraInFr.slice(0, 5).forEach((k) => log(`  - ${k}`, 'red'));
-		}
-		log('');
 	}
+	if (!misaligned) log('✓ All keys are aligned across languages\n', 'green');
+	else log('');
 
-	// Check for empty strings
+	// Empty strings
 	log('=== Empty Strings ===', 'bold');
-	const enEmpty = findEmptyStrings(en);
-	const deEmpty = findEmptyStrings(de);
-	const itEmpty = findEmptyStrings(it);
-	const frEmpty = findEmptyStrings(fr);
-
 	if (enEmpty.length > 0) {
-		log(`✗ English has ${enEmpty.length} empty strings!`, 'red');
+		log(`✗ ${SOURCE.name} has ${enEmpty.length} empty strings!`, 'red');
 		enEmpty.slice(0, 5).forEach((k) => log(`  - ${k}`, 'red'));
 		hasErrors = true;
 	}
-
-	if (deEmpty.length > 0) {
-		log(`✗ German has ${deEmpty.length} empty strings!`, 'red');
-		deEmpty.slice(0, 5).forEach((k) => log(`  - ${k}`, 'red'));
-		if (deEmpty.length > 5) log(`  ... and ${deEmpty.length - 5} more`, 'red');
+	for (const l of langs) {
+		if (l.empty.length === 0) {
+			log(`✓ ${l.name} has no empty strings`, 'green');
+			continue;
+		}
+		log(`✗ ${l.name} has ${l.empty.length} empty strings!`, 'red');
+		l.empty.slice(0, 5).forEach((k) => log(`  - ${k}`, 'red'));
+		if (l.empty.length > 5) log(`  ... and ${l.empty.length - 5} more`, 'red');
 		hasErrors = true;
-	} else {
-		log('✓ German has no empty strings', 'green');
-	}
-
-	if (itEmpty.length > 0) {
-		log(`✗ Italian has ${itEmpty.length} empty strings!`, 'red');
-		itEmpty.slice(0, 5).forEach((k) => log(`  - ${k}`, 'red'));
-		if (itEmpty.length > 5) log(`  ... and ${itEmpty.length - 5} more`, 'red');
-		hasErrors = true;
-	} else {
-		log('✓ Italian has no empty strings', 'green');
-	}
-
-	if (frEmpty.length > 0) {
-		log(`✗ French has ${frEmpty.length} empty strings!`, 'red');
-		frEmpty.slice(0, 5).forEach((k) => log(`  - ${k}`, 'red'));
-		if (frEmpty.length > 5) log(`  ... and ${frEmpty.length - 5} more`, 'red');
-		hasErrors = true;
-	} else {
-		log('✓ French has no empty strings', 'green');
 	}
 	log('');
 
-	// Check placeholders
+	// Placeholders
 	log('=== Placeholder Validation ===', 'bold');
-	const dePlaceholderIssues = validatePlaceholders(en, de, 'DE');
-	const itPlaceholderIssues = validatePlaceholders(en, it, 'IT');
-	const frPlaceholderIssues = validatePlaceholders(en, fr, 'FR');
-
-	if (
-		dePlaceholderIssues.length === 0 &&
-		itPlaceholderIssues.length === 0 &&
-		frPlaceholderIssues.length === 0
-	) {
+	if (langs.every((l) => l.placeholders.length === 0)) {
 		log('✓ All placeholders are consistent\n', 'green');
 	} else {
 		hasWarnings = true;
-		if (dePlaceholderIssues.length > 0) {
-			log(`⚠ German has ${dePlaceholderIssues.length} placeholder issues:`, 'yellow');
-			dePlaceholderIssues.slice(0, 3).forEach((issue) => {
-				log(`  ${issue.key}: ${issue.issue}`, 'yellow');
-			});
-			if (dePlaceholderIssues.length > 3) {
-				log(`  ... and ${dePlaceholderIssues.length - 3} more`, 'yellow');
-			}
-		}
-		if (itPlaceholderIssues.length > 0) {
-			log(`⚠ Italian has ${itPlaceholderIssues.length} placeholder issues:`, 'yellow');
-			itPlaceholderIssues.slice(0, 3).forEach((issue) => {
-				log(`  ${issue.key}: ${issue.issue}`, 'yellow');
-			});
-			if (itPlaceholderIssues.length > 3) {
-				log(`  ... and ${itPlaceholderIssues.length - 3} more`, 'yellow');
-			}
-		}
-		if (frPlaceholderIssues.length > 0) {
-			log(`⚠ French has ${frPlaceholderIssues.length} placeholder issues:`, 'yellow');
-			frPlaceholderIssues.slice(0, 3).forEach((issue) => {
-				log(`  ${issue.key}: ${issue.issue}`, 'yellow');
-			});
-			if (frPlaceholderIssues.length > 3) {
-				log(`  ... and ${frPlaceholderIssues.length - 3} more`, 'yellow');
-			}
+		for (const l of langs) {
+			if (l.placeholders.length === 0) continue;
+			log(`⚠ ${l.name} has ${l.placeholders.length} placeholder issues:`, 'yellow');
+			l.placeholders
+				.slice(0, 3)
+				.forEach((issue) => log(`  ${issue.key}: ${issue.issue}`, 'yellow'));
+			if (l.placeholders.length > 3) log(`  ... and ${l.placeholders.length - 3} more`, 'yellow');
 		}
 		log('');
 	}
@@ -295,16 +228,11 @@ function main() {
 	// Summary
 	log('=== Summary ===', 'bold');
 	log(`Total keys: ${enKeys.size}`);
-	log(`Languages: 4 (English, German, Italian, French)`);
-
-	const deCompleteness = (((deKeys.size - deEmpty.length) / enKeys.size) * 100).toFixed(1);
-	const itCompleteness = (((itKeys.size - itEmpty.length) / enKeys.size) * 100).toFixed(1);
-	const frCompleteness = (((frKeys.size - frEmpty.length) / enKeys.size) * 100).toFixed(1);
-
-	log(`German completion: ${deCompleteness}%`);
-	log(`Italian completion: ${itCompleteness}%`);
-	log(`French completion: ${frCompleteness}%`);
-
+	log(`Languages: ${langs.length + 1} (${[SOURCE, ...langs].map((l) => l.name).join(', ')})`);
+	for (const l of langs) {
+		const pct = (((l.keys.size - l.empty.length) / enKeys.size) * 100).toFixed(1);
+		log(`${l.name} completion: ${pct}%`);
+	}
 	log('');
 
 	if (hasErrors) {

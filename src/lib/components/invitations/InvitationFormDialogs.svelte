@@ -385,8 +385,7 @@
 			<Dialog.Title>{m['eventInvitationsAdmin.bulkEditDialogTitle']()}</Dialog.Title>
 			<Dialog.Description>
 				{m['eventInvitationsAdmin.bulkEditDialogDescription']({
-					count: totalSelected,
-					plural: totalSelected === 1 ? '' : 's'
+					count: totalSelected
 				})}
 			</Dialog.Description>
 		</Dialog.Header>
@@ -515,8 +514,7 @@
 				<Button type="submit">
 					<Edit class="mr-2 h-4 w-4" aria-hidden="true" />
 					{m['eventInvitationsAdmin.updateInvitations']({
-						count: totalSelected,
-						plural: totalSelected === 1 ? '' : 's'
+						count: totalSelected
 					})}
 				</Button>
 			</Dialog.Footer>

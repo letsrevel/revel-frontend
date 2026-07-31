@@ -15,9 +15,10 @@
  *   3. visible text nodes:  >Some Text<
  *
  * Excluded (never scanned):
- *   - SEO landing pages: src/routes/(public)/{de,it,fr}/**, src/lib/data/landing-pages.ts
+ *   - SEO landing pages: src/routes/(public)/{de,it,fr,es,pt}/**, src/lib/data/landing-pages.ts
  *   - generated / paraglide / data / *.test.* / *.spec.* / *.d.ts / *.example.*
  *   - <style> blocks, <svelte:head> blocks, HTML/JS comments
+ *   - <script> bodies, for rule 3 only (rules 1 and 2 still scan them)
  *
  * Baseline ratchet:
  *   The codebase has legitimately non-translatable literals (brand names, currency
@@ -50,7 +51,7 @@ const EXCLUDE = [
 	/\/paraglide\//,
 	/\/api\/generated\//,
 	/\/lib\/data\/landing-pages\.ts$/,
-	/\/routes\/\(public\)\/(de|it|fr)\//, // localized SEO landing pages
+	/\/routes\/\(public\)\/(de|it|fr|es|pt)\//, // localized SEO landing pages
 	/\.test\./,
 	/\.spec\./,
 	/\.d\.ts$/,
@@ -119,6 +120,22 @@ function strip(content, file) {
 	return c;
 }
 
+/**
+ * Blank `<script>` bodies, leaving the surrounding markup (and line numbers) intact.
+ *
+ * Only for the bare-text-node pass. TEXT_RE looks for `>text<`, which in a script
+ * body matches things that are not markup at all: the `>` of an arrow function opens
+ * a match that runs to the next literal `<` — often the closing `</script>` — so an
+ * entire script tail gets reported as one hardcoded string (#730). A text-node match
+ * inside script is a false positive by construction; string literals in script are
+ * ATTR_RE's and TOAST_RE's job, and those still scan the whole file.
+ */
+function stripScriptBodies(content) {
+	return content.replace(/(<script[^>]*>)([\s\S]*?)(<\/script>)/g, (_, open, body, close) => {
+		return open + blank(body) + close;
+	});
+}
+
 function lineAt(content, idx) {
 	return content.slice(0, idx).split('\n').length;
 }
@@ -174,6 +191,11 @@ function scanFile(file) {
 	} catch {
 		return [];
 	}
+	return scanSource(content, file);
+}
+
+/** The pure half of `scanFile` — exported so the rules can be unit-tested. */
+export function scanSource(content, file) {
 	const c = strip(content, file);
 	const found = new Set();
 	const push = (str, idx) => {
@@ -188,79 +210,92 @@ function scanFile(file) {
 	TOAST_RE.lastIndex = 0;
 	while ((m = TOAST_RE.exec(c))) if (!isNonProse(m[3])) push(`toast: ${m[3].trim()}`, m.index);
 	if (file.endsWith('.svelte')) {
+		const markup = stripScriptBodies(c);
 		TEXT_RE.lastIndex = 0;
-		while ((m = TEXT_RE.exec(c))) if (isProseTextNode(m[1])) push(`text: ${m[1].trim()}`, m.index);
+		while ((m = TEXT_RE.exec(markup)))
+			if (isProseTextNode(m[1])) push(`text: ${m[1].trim()}`, m.index);
 	}
 	return [...found].sort();
 }
 
-// ── gather source files ──────────────────────────────────────────────────────
-const files = execSync('git ls-files src', { cwd: ROOT, encoding: 'utf-8' })
-	.split('\n')
-	.filter(Boolean)
-	.filter((f) => (f.endsWith('.svelte') || f.endsWith('.ts')) && !EXCLUDE.some((re) => re.test(f)));
-
-const current = {};
-for (const f of files) {
-	const hits = scanFile(f);
-	if (hits.length) current[f] = hits;
-}
-
-// ── update mode ──────────────────────────────────────────────────────────────
-if (UPDATE) {
-	writeFileSync(BASELINE, JSON.stringify(current, null, 2) + '\n');
-	const total = Object.values(current).reduce((a, h) => a + h.length, 0);
-	console.log(
-		`✅ Wrote baseline: ${total} accepted literal(s) across ${Object.keys(current).length} file(s).`
-	);
-	console.log(`   ${BASELINE}`);
-	process.exit(0);
-}
-
-// ── check mode ───────────────────────────────────────────────────────────────
-const baseline = existsSync(BASELINE) ? JSON.parse(readFileSync(BASELINE, 'utf-8')) : {};
-
-let newCount = 0;
-const newByFile = {};
-for (const [file, hits] of Object.entries(current)) {
-	const allowed = new Set(baseline[file] ?? []);
-	const fresh = hits.filter((h) => !allowed.has(h));
-	if (fresh.length) {
-		newByFile[file] = fresh;
-		newCount += fresh.length;
-	}
-}
-
-// stale baseline entries (translated/removed since) — reported, not fatal
-let staleCount = 0;
-for (const [file, hits] of Object.entries(baseline)) {
-	const live = new Set(current[file] ?? []);
-	const stale = hits.filter((h) => !live.has(h));
-	staleCount += stale.length;
-}
-
-if (newCount === 0) {
-	console.log('✅ No new hardcoded user-facing strings (i18n).');
-	if (staleCount)
-		console.log(
-			`   (${staleCount} baseline entr${staleCount === 1 ? 'y is' : 'ies are'} now stale — run \`make i18n-hardcoded-update\` to prune.)`
+// ── CLI ──────────────────────────────────────────────────────────────────────
+// Guarded: the unit tests import `scanSource` from this module, and importing it
+// must not shell out to git or call process.exit.
+function main() {
+	// ── gather source files ────────────────────────────────────────────────────
+	const files = execSync('git ls-files src', { cwd: ROOT, encoding: 'utf-8' })
+		.split('\n')
+		.filter(Boolean)
+		.filter(
+			(f) => (f.endsWith('.svelte') || f.endsWith('.ts')) && !EXCLUDE.some((re) => re.test(f))
 		);
-	process.exit(0);
-}
 
-console.error(
-	`❌ ${newCount} new hardcoded user-facing string(s) found (not translated, not in baseline):\n`
-);
-for (const [file, hits] of Object.entries(newByFile)) {
-	console.error(`  ${file}`);
-	for (const h of hits) console.error(`      ${h}`);
-}
-console.error(`
+	const current = {};
+	for (const f of files) {
+		const hits = scanFile(f);
+		if (hits.length) current[f] = hits;
+	}
+
+	// ── update mode ────────────────────────────────────────────────────────────
+	if (UPDATE) {
+		writeFileSync(BASELINE, JSON.stringify(current, null, 2) + '\n');
+		const total = Object.values(current).reduce((a, h) => a + h.length, 0);
+		console.log(
+			`✅ Wrote baseline: ${total} accepted literal(s) across ${Object.keys(current).length} file(s).`
+		);
+		console.log(`   ${BASELINE}`);
+		process.exit(0);
+	}
+
+	// ── check mode ─────────────────────────────────────────────────────────────
+	const baseline = existsSync(BASELINE) ? JSON.parse(readFileSync(BASELINE, 'utf-8')) : {};
+
+	let newCount = 0;
+	const newByFile = {};
+	for (const [file, hits] of Object.entries(current)) {
+		const allowed = new Set(baseline[file] ?? []);
+		const fresh = hits.filter((h) => !allowed.has(h));
+		if (fresh.length) {
+			newByFile[file] = fresh;
+			newCount += fresh.length;
+		}
+	}
+
+	// stale baseline entries (translated/removed since) — reported, not fatal
+	let staleCount = 0;
+	for (const [file, hits] of Object.entries(baseline)) {
+		const live = new Set(current[file] ?? []);
+		const stale = hits.filter((h) => !live.has(h));
+		staleCount += stale.length;
+	}
+
+	if (newCount === 0) {
+		console.log('✅ No new hardcoded user-facing strings (i18n).');
+		if (staleCount)
+			console.log(
+				`   (${staleCount} baseline entr${staleCount === 1 ? 'y is' : 'ies are'} now stale — run \`make i18n-hardcoded-update\` to prune.)`
+			);
+		process.exit(0);
+	}
+
+	console.error(
+		`❌ ${newCount} new hardcoded user-facing string(s) found (not translated, not in baseline):\n`
+	);
+	for (const [file, hits] of Object.entries(newByFile)) {
+		console.error(`  ${file}`);
+		for (const h of hits) console.error(`      ${h}`);
+	}
+	console.error(`
 Fix one of these ways:
   • Wrap the string in a Paraglide message:  m['scope.key']()  (add the key to messages/*.json for all locales)
   • If it is genuinely NOT translatable (brand name, code, format token), add an
     \`i18n-ignore\` comment on that line, OR
   • Accept it into the baseline:  make i18n-hardcoded-update   (only for legitimate non-prose)
 
-SEO landing pages (src/routes/(public)/{de,it,fr}, src/lib/data/landing-pages.ts) are intentionally excluded.`);
-process.exit(1);
+SEO landing pages (src/routes/(public)/{de,it,fr,es,pt}, src/lib/data/landing-pages.ts) are intentionally excluded.`);
+	process.exit(1);
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+	main();
+}

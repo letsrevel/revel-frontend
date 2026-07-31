@@ -319,6 +319,226 @@ export const eventbriteAlternativeIT: LandingPageContent = {
 	relatedPages: ['self-hosted-event-platform', 'privacy-focused-events']
 };
 
+export const eventbriteAlternativeES: LandingPageContent = {
+	slug: 'eventbrite-alternative',
+	locale: 'es',
+	meta: {
+		title: 'Alternativa a Eventbrite – Comisiones bajas, control total | Revel',
+		description:
+			'Ticketing de eventos de código abierto con solo 1,5 % + 0,25 € por entrada. Auto-alójalo gratis. Tus datos son tuyos. Sin dependencia de plataforma. Alojado en Europa.',
+		keywords:
+			'alternativa a eventbrite, venta de entradas online barata, plataforma de eventos, software de ticketing, gestión de eventos'
+	},
+	hero: {
+		headline: 'Deja de perder dinero en comisiones de plataforma',
+		subheadline:
+			'Revel es la alternativa de código abierto a Eventbrite, con precios transparentes y control total de tus datos.'
+	},
+	intro: {
+		paragraphs: [
+			'¿Te cansa que Eventbrite se lleve un 3,7 % más comisiones de cada entrada vendida? No es un caso aislado: en todas partes, quienes organizan eventos buscan alternativas que no reduzcan sus márgenes ni les encierren en una plataforma que no pueden controlar.',
+			'Revel es una plataforma de gestión de eventos de código abierto con precios simples y justos: solo 1,5 % + 0,25 € por entrada de pago en nuestra versión alojada, o completamente gratis si te lo auto-alojas. Los ingresos de tus entradas son para ti, no para una corporación.',
+			'Creada por personas organizadoras de comunidades en Europa, Revel te da todo lo que necesitas: venta de entradas, confirmaciones de asistencia, gestión de participantes, herramientas de acceso y mucho más. Todo ello manteniendo tus datos bajo tu control y tus costes predecibles.'
+		]
+	},
+	features: [
+		{
+			icon: 'euro',
+			title: 'Comisiones bajas y transparentes',
+			description:
+				'Solo 1,5 % + 0,25 € por entrada de pago. Los eventos gratuitos siempre son gratis. Auto-alójalo y no pagues nada en absoluto.'
+		},
+		{
+			icon: 'server',
+			title: 'Opción de auto-alojamiento',
+			description:
+				'Despliega Revel en tu propia infraestructura con Docker. Cero comisiones de plataforma, control total, licencia MIT.'
+		},
+		{
+			icon: 'ticket',
+			title: 'Suite de ticketing completa',
+			description:
+				'Varias categorías de entradas, compras por lotes, acceso con código QR, integración con Apple Wallet y pagos con Stripe.'
+		},
+		{
+			icon: 'shield',
+			title: 'Tus datos, tus reglas',
+			description:
+				'Sin rastreadores de terceros. Sin venta de datos. Cumplimiento total del RGPD. Alojado en infraestructura europea.'
+		},
+		{
+			icon: 'users',
+			title: 'Herramientas para comunidades',
+			description:
+				'Organizaciones, membresías, roles y permisos. Construye comunidades duraderas, no solo eventos puntuales.'
+		},
+		{
+			icon: 'code',
+			title: 'Código abierto (MIT)',
+			description:
+				'Código completamente transparente. Audítalo, modifícalo, contribuye. Sin dependencia de proveedor, nunca.'
+		}
+	],
+	benefits: {
+		title: 'Por qué quienes organizan eligen Revel',
+		items: [
+			'Conserva más ingresos de tus entradas con comisiones hasta un 60 % más bajas que Eventbrite',
+			'Pagos directos vía Stripe, sin esperar a los desembolsos de la plataforma',
+			'Exporta los datos de las personas participantes cuando quieras, en formatos estándar',
+			'Sin riesgo de que un cambio de políticas de la plataforma paralice tus eventos',
+			'Alojamiento europeo con cumplimiento total del RGPD',
+			'Desarrollo activo por parte de una comunidad que escucha'
+		]
+	},
+	cta: {
+		title: '¿Hora de cambiar?',
+		description:
+			'Descubre Revel en acción o despliégalo por tu cuenta. No hace falta tarjeta de crédito.',
+		buttons: [
+			{ text: 'Probar la demo en vivo', href: 'https://demo.letsrevel.io', variant: 'primary' },
+			{ text: 'Auto-alojar (GitHub)', href: 'https://github.com/letsrevel', variant: 'secondary' },
+			{ text: 'Contáctanos', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
+		]
+	},
+	faq: [
+		{
+			question: '¿Cómo se comparan los precios de Revel con los de Eventbrite?',
+			answer:
+				'Eventbrite cobra alrededor de un 3,7 % + comisiones por entrada, más el procesamiento de pagos. Revel cobra solo 1,5 % + 0,25 € por entrada de pago (más el estándar de Stripe de aproximadamente 1,5 % + 0,25 €). Los eventos gratuitos y los despliegues auto-alojados no tienen comisiones de plataforma.'
+		},
+		{
+			question: '¿Puedo migrar mis eventos desde Eventbrite?',
+			answer:
+				'Sí. Revel facilita recrear tus eventos con nuestro intuitivo creador de eventos. Puedes exportar tus listas de participantes de Eventbrite como CSV y usarlas para invitar a tu comunidad existente a tus nuevos eventos en Revel.'
+		},
+		{
+			question: '¿Es Revel realmente gratis para auto-alojar?',
+			answer:
+				'Por supuesto. Revel tiene licencia MIT, lo que significa que puedes ejecutarlo en tus propios servidores sin pagarnos nada. Solo pagas tu propia infraestructura y las comisiones de procesamiento de pagos de Stripe.'
+		},
+		{
+			question: '¿Dónde está alojado Revel?',
+			answer:
+				'Nuestra versión alojada funciona sobre infraestructura europea, lo que garantiza el cumplimiento del RGPD y la soberanía de los datos. Si te auto-alojas, tú decides dónde viven tus datos.'
+		}
+	],
+	relatedPages: ['self-hosted-event-platform', 'privacy-focused-events']
+};
+
+export const eventbriteAlternativePT: LandingPageContent = {
+	slug: 'eventbrite-alternative',
+	locale: 'pt',
+	meta: {
+		title: 'Alternativa ao Eventbrite – Taxas reduzidas, controlo total | Revel',
+		description:
+			'Bilhética de eventos open-source com apenas 1,5 % + 0,25 € por bilhete. Auto-hospeda gratuitamente. Os teus dados são teus. Sem dependência de plataforma. Alojado na Europa.',
+		keywords:
+			'alternativa ao eventbrite, venda de bilhetes online barata, plataforma de eventos, software de bilhética, gestão de eventos'
+	},
+	hero: {
+		headline: 'Para de perder dinheiro em taxas de plataforma',
+		subheadline:
+			'A Revel é a alternativa open-source ao Eventbrite, com preços transparentes e controlo total dos teus dados.'
+	},
+	intro: {
+		paragraphs: [
+			'Custa-te ver o Eventbrite a ficar com 3,7 % mais taxas em cada bilhete vendido? Não é um caso isolado: por todo o lado, quem organiza eventos procura alternativas que não corroam as suas margens nem prendam ninguém a uma plataforma incontrolável.',
+			'A Revel é uma plataforma open-source de gestão de eventos com preços simples e justos: apenas 1,5 % + 0,25 € por bilhete pago na nossa versão alojada – ou totalmente gratuita se optares por auto-hospedar. As receitas dos teus bilhetes são para ti, não para uma corporação.',
+			'Criada por pessoas que organizam comunidades na Europa, a Revel dá-te tudo o que precisas: bilhética, confirmações de presença, gestão de participantes, ferramentas de check-in e muito mais. Tudo isto mantendo os teus dados sob o teu controlo e os custos previsíveis.'
+		]
+	},
+	features: [
+		{
+			icon: 'euro',
+			title: 'Taxas baixas e transparentes',
+			description:
+				'Apenas 1,5 % + 0,25 € por bilhete pago. Os eventos gratuitos são sempre gratuitos. Auto-hospeda e não pagues nada.'
+		},
+		{
+			icon: 'server',
+			title: 'Opção de auto-hospedagem',
+			description:
+				'Instala a Revel na tua própria infraestrutura com Docker. Zero taxas de plataforma, controlo total, licença MIT.'
+		},
+		{
+			icon: 'ticket',
+			title: 'Suite de bilhética completa',
+			description:
+				'Vários tipos de bilhete, compras em lote, check-in por código QR, integração com a Apple Wallet e pagamentos via Stripe.'
+		},
+		{
+			icon: 'shield',
+			title: 'Os teus dados, as tuas regras',
+			description:
+				'Sem rastreadores de terceiros. Sem venda de dados. Total conformidade com o RGPD. Alojado em infraestrutura europeia.'
+		},
+		{
+			icon: 'users',
+			title: 'Ferramentas para comunidades',
+			description:
+				'Organizações, associações, funções e permissões. Constrói comunidades duradouras, não apenas eventos pontuais.'
+		},
+		{
+			icon: 'code',
+			title: 'Código aberto (MIT)',
+			description:
+				'Código totalmente transparente. Audita-o, modifica-o, contribui. Sem dependência de fornecedor, nunca.'
+		}
+	],
+	benefits: {
+		title: 'Porque é que quem organiza escolhe a Revel',
+		items: [
+			'Fica com mais receitas dos teus bilhetes, com taxas até 60 % mais baixas do que o Eventbrite',
+			'Pagamentos diretos via Stripe – sem esperar pelos desembolsos da plataforma',
+			'Exporta os dados dos participantes quando quiseres, em formatos padrão',
+			'Sem risco de mudanças nas políticas da plataforma paralisarem os teus eventos',
+			'Alojamento europeu com total conformidade com o RGPD',
+			'Desenvolvimento ativo por uma comunidade que ouve'
+		]
+	},
+	cta: {
+		title: 'Hora de mudar?',
+		description:
+			'Descobre a Revel em ação ou aloja-a por tua conta. Não é preciso cartão de crédito.',
+		buttons: [
+			{
+				text: 'Experimentar a demo ao vivo',
+				href: 'https://demo.letsrevel.io',
+				variant: 'primary'
+			},
+			{
+				text: 'Auto-hospedar (GitHub)',
+				href: 'https://github.com/letsrevel',
+				variant: 'secondary'
+			},
+			{ text: 'Contacta-nos', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
+		]
+	},
+	faq: [
+		{
+			question: 'Como é que os preços da Revel se comparam aos do Eventbrite?',
+			answer:
+				'O Eventbrite cobra cerca de 3,7 % + taxas por bilhete, mais o processamento de pagamentos. A Revel cobra apenas 1,5 % + 0,25 € por bilhete pago (mais o padrão da Stripe de cerca de 1,5 % + 0,25 €). Eventos gratuitos e implementações auto-hospedadas não têm taxas de plataforma.'
+		},
+		{
+			question: 'Posso migrar os meus eventos do Eventbrite?',
+			answer:
+				'Sim. A Revel facilita a recriação dos teus eventos com o nosso criador de eventos intuitivo. Podes exportar as tuas listas de participantes do Eventbrite em CSV e usá-las para convidar a tua comunidade existente para os teus novos eventos na Revel.'
+		},
+		{
+			question: 'A Revel é mesmo gratuita para auto-hospedar?',
+			answer:
+				'Sem dúvida. A Revel tem licença MIT, o que significa que podes executá-la nos teus próprios servidores sem nos pagar nada. Só pagas a tua própria infraestrutura e as taxas de processamento de pagamentos da Stripe.'
+		},
+		{
+			question: 'Onde é que a Revel está alojada?',
+			answer:
+				'A nossa versão alojada funciona em infraestrutura europeia, garantindo conformidade com o RGPD e soberania de dados. Se optares por auto-hospedar, és tu que decides onde ficam os teus dados.'
+		}
+	],
+	relatedPages: ['self-hosted-event-platform', 'privacy-focused-events']
+};
+
 export const eventbriteAlternativeFR: LandingPageContent = {
 	slug: 'eventbrite-alternative',
 	locale: 'fr',
