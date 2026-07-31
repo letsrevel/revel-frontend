@@ -24,7 +24,8 @@
 		Ban,
 		MoreVertical,
 		Copy,
-		Armchair
+		Armchair,
+		Code
 	} from '@lucide/svelte';
 
 	type CardVariant = 'draft' | 'open' | 'closed' | 'cancelled';
@@ -76,6 +77,13 @@
 		variant === 'draft' || variant === 'open' || variant === 'closed' || variant === 'cancelled'
 	);
 	const showManagement = $derived(variant !== 'draft');
+
+	// An embed is loaded anonymously, so only an event a logged-out visitor could
+	// open is worth offering — a draft or members-only one would render the embed
+	// error page on the organizer's own website.
+	const canEmbed = $derived(
+		variant !== 'draft' && (event.visibility === 'public' || event.visibility === 'unlisted')
+	);
 
 	function viewEvent(): void {
 		goto(
@@ -139,6 +147,14 @@
 			})
 		);
 	}
+
+	// The builder is org-wide, so the event is named by slug in the query string
+	// rather than by a route param — see the embed page's own load.
+	function embedEvent(): void {
+		const builder = resolve('/(auth)/org/[slug]/admin/embed', { slug: organizationSlug });
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() validates the route id; the appended query string cannot be expressed through resolve()
+		goto(`${builder}?event=${encodeURIComponent(event.slug)}`);
+	}
 </script>
 
 <div
@@ -196,6 +212,12 @@
 							<DropdownMenu.Item onclick={manageSeating}>
 								<Armchair class="mr-2 h-4 w-4" />
 								{m['orgAdmin.events.actions.seating']()}
+							</DropdownMenu.Item>
+						{/if}
+						{#if canEmbed}
+							<DropdownMenu.Item onclick={embedEvent}>
+								<Code class="mr-2 h-4 w-4" />
+								{m['orgAdmin.events.actions.embed']()}
 							</DropdownMenu.Item>
 						{/if}
 						<DropdownMenu.Separator />

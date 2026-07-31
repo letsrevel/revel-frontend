@@ -92,6 +92,10 @@
 			label: m['orgAdmin.nav.announcements']()
 		},
 		{
+			href: resolve('/(auth)/org/[slug]/admin/embed', { slug: data.organization.slug }),
+			label: m['orgAdmin.nav.embed']()
+		},
+		{
 			href: resolve('/(auth)/org/[slug]/admin/settings', { slug: data.organization.slug }),
 			label: m['orgAdmin.nav.settings']()
 		}
@@ -210,7 +214,10 @@
 
 			<!-- Desktop Navigation -->
 			<nav class="hidden border-t md:block" aria-label={m['orgAdmin.layout.adminNavigation']()}>
-				<ul class="flex gap-6">
+				<!-- The tab strip outgrew a 1200px viewport (it clipped `Settings`, and
+				     then `Embed`), leaving those pages reachable only by URL. Scroll it
+				     rather than hide it; the links stay tabbable either way. -->
+				<ul class="flex gap-6 overflow-x-auto">
 					{#each navItems as item (item.href)}
 						<li>
 							<!-- eslint-disable svelte/no-navigation-without-resolve -- href is a ResolvedPathname produced by resolve() in the nav item list above -->

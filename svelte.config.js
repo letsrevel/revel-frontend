@@ -56,6 +56,11 @@ const config = {
 							'font-src': ['self', 'data:'],
 							'connect-src': ['self', 'https://api.github.com'],
 							'frame-src': [
+								// Own origin: the org-admin embed builder previews the real
+								// `/embed/*` document in an iframe, so what an organizer sees
+								// is what their visitors will get. Everything below is a map
+								// provider.
+								'self',
 								'https://www.google.com',
 								'https://google.com',
 								'https://maps.google.com',
