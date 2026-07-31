@@ -1,10 +1,12 @@
 import { test, expect } from '../../support/fixtures';
 import {
+	approveApplication,
 	createMembershipQuestionnaire,
 	createMembershipTier,
 	createOrganization,
 	createSubscriptionPlan,
 	createVerifiedUser,
+	myApplicationFor,
 	patchTierPolicy,
 	uniqueName,
 	MEMBERSHIP_QUESTION
@@ -39,8 +41,8 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 // Why a FREE plan rather than an ONLINE one. `PlanCard`'s CTA precedence stops
 // at `payment_method === 'offline'` two lines ABOVE the gate branch, so an
 // offline plan could never exercise this. FREE is the only other non-online
-// kind, and it reaches the exact same `gateBlocked ? 'gated' : 'subscribe'`
-// line an online plan would — the gate blocks long before Stripe is consulted,
+// kind, and it reaches the exact same `gateAction` branch an online plan would
+// — the gate blocks long before Stripe is consulted,
 // so an ONLINE plan adds no code path, while forcing the test onto the one
 // Stripe-connected seeded org (Org Alpha) whose shared state other j23 workers
 // depend on. A free plan keeps the whole test on a throwaway org.
@@ -61,11 +63,25 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 //     in `GATE_BLOCKING_REASON_CODES`, so `PlanCard` renders the gated note.
 //   * the same pair after a passing auto-graded submission → `allowed: true`,
 //     `proceed_to_payment` → the CTA returns.
-//   * tier_id ALONE (which is what `MembershipCta` asks) → blocked at gate #6
-//     with `tier_requires_subscription`, whatever the questionnaire says. So on
-//     a gated+paid tier the tier CTA is never the questionnaire affordance —
-//     the requirements list's own "Open the questionnaire" link is, and that is
-//     what this test clicks.
+//   * tier_id ALONE → blocked at gate #6 with `tier_requires_subscription`,
+//     whatever the questionnaire says. This is why `TierCard` names a plan in
+//     the question it asks on behalf of BOTH the plan cards and the tier CTA
+//     (#735); before that the CTA asked tier-only and rendered a dead end.
+//
+// The SECOND test is the approval half, and #735 is what made it possible to
+// write. A manual-approval gate needs an application for staff to approve, and
+// on a monetized tier the backend only accepts an application that names a plan
+// ("a `plan_id` makes this a paid application", BE #831) — which the UI never
+// sent, so the whole gate was unreachable through the UI and this file's first
+// test had to clear its gate with a questionnaire instead. Live-verified
+// verdicts it is built on:
+//   * approval-gated tier + free plan, nothing on file, tier_id ONLY →
+//     `tier_requires_subscription`, next_step `null`. A dead end.
+//   * the same pair asked WITH the plan → `requires_approval`,
+//     next_step `submit_application`. Actionable — and the plan card offers it.
+//   * after staff approve → `ManualApprovalGate` falls through and
+//     `PaymentReadyGate` allows, so Subscribe returns with no frontend code of
+//     its own. That is asserted here, not assumed.
 //
 // Isolation, the j27 house rule: the test arranges its OWN org, questionnaire,
 // tiers and applicant, so parallel projects/workers and a `retries: 1` re-run
@@ -164,12 +180,12 @@ test.describe('j27 gated + paid tier @p2', () => {
 		await expect(openPlanCard.getByText(GATED_NOTE)).toHaveCount(0);
 
 		// ── Clear the gate ─────────────────────────────────────────────────────
-		// An auto-graded questionnaire rather than a manual-approval gate, because
-		// approval cannot be cleared on a monetized tier from the member side: the
-		// free `/apply` path is refused by gate #6 (`tier_requires_subscription`),
-		// so there would be no application for staff to approve. The questionnaire
-		// gate (#8) needs nothing but the submission, and a passing auto-graded one
-		// takes the viewer straight to `proceed_to_payment`.
+		// An auto-graded questionnaire, which is the gate this test is about; the
+		// manual-approval one has its own test below (it needs the paid-application
+		// path #735 added, and before that could not be cleared from the member
+		// side at all). The questionnaire gate (#8) needs nothing but the
+		// submission, and a passing auto-graded one takes the viewer straight to
+		// `proceed_to_payment`.
 		await questionnaireLink.click();
 		await page.waitForURL('**/questionnaire/**');
 		await expect(page.getByRole('heading', { name: 'Membership questionnaire' })).toBeVisible();
@@ -228,6 +244,152 @@ test.describe('j27 gated + paid tier @p2', () => {
 		await expect(page.getByLabel(`Membership tier: ${gatedTierName}`)).toBeVisible({
 			timeout: 20_000
 		});
+
+		await page.context().close();
+	});
+
+	// #735. The journey the platform always intended for a gated + paid tier and
+	// the UI could not walk: APPLY (with the plan) → staff APPROVE → PAY.
+	//
+	// Every step of it was blocked by one two-line gap. `ApplyDialog` posted
+	// `{tier_id, notes}`, so the only application it could create was a FREE one —
+	// which `TierAvailabilityGate` (#6) refuses on a tier carrying an active plan,
+	// before `ManualApprovalGate` (#9) ever runs. No application, nothing for
+	// staff to approve, and the tier CTA (asking tier-only) rendered the org's
+	// approval POLICY next to nothing to press. Hence the first test above having
+	// to reach for a questionnaire.
+	//
+	// A FREE plan again, for the reason given at the top of this file: it takes
+	// the identical `gateAction` path an ONLINE plan would — every gate here runs
+	// long before Stripe is consulted — while keeping the whole test on a
+	// throwaway org.
+	test('an approval-gated priced tier can be applied for, approved and then paid', async ({
+		browser
+	}) => {
+		test.setTimeout(240_000);
+		const [org, applicant] = await Promise.all([
+			createOrganization({ acceptMembershipRequests: true }),
+			createVerifiedUser('ApprovalPaid')
+		]);
+
+		const tierName = uniqueName('Vetted Paid Tier');
+		const tier = await createMembershipTier(org.owner, org.slug, tierName);
+		// A TIER override, not the org default: the org's own default tier stays
+		// ungated, so anything asserted below is this tier's gate talking.
+		await patchTierPolicy(org.owner, org.slug, tier.id, { requires_membership_approval: true });
+		const plan = await createSubscriptionPlan(org.owner, org.slug, tier.id, {
+			name: uniqueName('Vetted Plan'),
+			payment_method: 'free',
+			period_unit: 'lifetime',
+			price: '0.00'
+		});
+
+		const page = await pageAs(browser, applicant);
+		await gotoHydrated(page, membershipPath(org.slug));
+		await waitForClientAuth(page);
+
+		const card = tierCard(page, tierName);
+		await expect(card).toBeVisible({ timeout: 15_000 });
+		// Server-rendered from the tier listing: the requirement is stated, and —
+		// unlike a questionnaire — it comes with no link, which is exactly why the
+		// plan card has to carry the affordance.
+		await expect(
+			card.getByText('The organization reviews and approves each application.')
+		).toBeVisible();
+
+		// ── Apply, from the plan card ──────────────────────────────────────────
+		const vettedPlanCard = planCard(page, plan.name);
+		// Named with the PLAN: the accessible name is what a screen-reader user
+		// hears out of context, and the plan is what the application will carry.
+		const applyCta = vettedPlanCard.getByRole('button', {
+			name: `Apply to join with ${plan.name}`
+		});
+		await expect(applyCta).toBeVisible({ timeout: 15_000 });
+		// The order is stated, because it is not the obvious one: approval comes
+		// BEFORE the charge (`PaymentReadyGate` is the last gate, not the first).
+		await expect(
+			vettedPlanCard.getByText("The organization reviews applications — you'll join once you're")
+		).toBeVisible();
+		// The dead Subscribe stays gone — `/subscribe` runs the same gate stack.
+		await expect(vettedPlanCard.getByText(JOIN_FREE)).toHaveCount(0);
+		// …and the tier CTA points at the plans rather than offering a second,
+		// plan-less application the backend would refuse with a 403.
+		await expect(
+			card.getByText(
+				'Choose a plan to apply — the organization reviews applications before payment.'
+			)
+		).toBeVisible();
+
+		await applyCta.click();
+		// Located by role alone, not by name: the dialog RENAMES itself to its
+		// outcome ("Application received") once the application lands, so a
+		// name-scoped locator would silently stop matching mid-test.
+		const applyDialog = page.getByRole('dialog');
+		await expect(applyDialog.getByRole('heading', { name: `Join ${tierName}` })).toBeVisible();
+		// The dialog says which plan the application will be for.
+		await expect(
+			applyDialog.getByText(`${org.name} — applying with the ${plan.name} plan.`)
+		).toBeVisible();
+		await applyDialog.getByRole('button', { name: 'Send application' }).click();
+		await expect(applyDialog.getByText('Application received')).toBeVisible({ timeout: 20_000 });
+
+		// The crux, read from the member's OWN account rather than from the
+		// response the UI just consumed: the row the UI created is a PAID
+		// application. A row with `plan_id: null` here is the #735 bug exactly —
+		// it would still be pending, staff could still approve it, and the member
+		// would still be refused at gate #6 afterwards.
+		const application = await myApplicationFor(applicant, org.slug);
+		expect(application?.status).toBe('pending');
+		expect(application?.tier_id).toBe(tier.id);
+		expect(application?.plan_id).toBe(plan.id);
+
+		// While staff decide there is nothing to press, and the state is said in
+		// words rather than left to a greyed-out control.
+		await gotoHydrated(page, membershipPath(org.slug));
+		await waitForClientAuth(page);
+		await expect(
+			planCard(page, plan.name).getByText('Your application is with the organization for review.', {
+				exact: false
+			})
+		).toBeVisible({ timeout: 15_000 });
+		await expect(planCard(page, plan.name).getByText(`Apply to join`)).toHaveCount(0);
+		await expect(card.getByRole('button', { name: 'Application pending' })).toBeDisabled();
+
+		// ── Staff approve ──────────────────────────────────────────────────────
+		// No `tier_id`: the application carries its own, so staff are not asked to
+		// guess one — which is the whole reason ApplyDialog posts the tier.
+		await approveApplication(org.owner, org.slug, application?.id as string);
+
+		// ── …and Subscribe comes back, with no frontend code of its own ─────────
+		// `ManualApprovalGate` falls through on an APPROVED row and
+		// `PaymentReadyGate` allows: the verdict flips to `proceed_to_payment` and
+		// `isBlockedByMembershipGate` stops matching. Polled by re-reading the page
+		// because the verdict is a cached client query.
+		await expect(async () => {
+			await gotoHydrated(page, membershipPath(org.slug));
+			await waitForClientAuth(page);
+			await expect(planCard(page, plan.name).getByText(JOIN_FREE)).toBeVisible({
+				timeout: 10_000
+			});
+		}).toPass({ timeout: 60_000 });
+
+		const payableCard = planCard(page, plan.name);
+		await expect(payableCard.getByText(FREE_HELPER)).toBeVisible();
+		await expect(payableCard.getByText(`Apply to join`)).toHaveCount(0);
+
+		// Live, not merely present: finish the round trip the same way the
+		// questionnaire journey above does.
+		await payableCard.getByRole('button', { name: JOIN_FREE }).click();
+		const subscribeDialog = page.getByRole('dialog', { name: `Join ${plan.name}` });
+		await expect(subscribeDialog).toBeVisible();
+		await subscribeDialog.getByRole('button', { name: 'Join now' }).click();
+		await expect(subscribeDialog.getByText('Welcome, member!')).toBeVisible({ timeout: 20_000 });
+
+		// The membership landed on the approval-gated tier, not on the org's
+		// ungated default one.
+		await gotoHydrated(page, `/org/${org.slug}`);
+		await waitForClientAuth(page);
+		await expect(page.getByLabel(`Membership tier: ${tierName}`)).toBeVisible({ timeout: 20_000 });
 
 		await page.context().close();
 	});

@@ -5172,7 +5172,13 @@
 		"loginToJoin": "Zum Beitreten anmelden",
 		"freeHelper": "Keine Zahlung nötig — du kannst sofort beitreten.",
 		"gatedSubscribeHelper": "Du kannst abonnieren, sobald die Voraussetzungen dieser Stufe erfüllt sind.",
-		"gatedJoinHelper": "Du kannst beitreten, sobald die Voraussetzungen dieser Stufe erfüllt sind."
+		"gatedJoinHelper": "Du kannst beitreten, sobald die Voraussetzungen dieser Stufe erfüllt sind.",
+		"applyCta": "Beitritt beantragen",
+		"applyCtaAria": "Beitritt mit {plan} beantragen",
+		"reapplyCta": "Erneut beantragen",
+		"reapplyCtaAria": "Erneut mit {plan} beantragen",
+		"applySubscribeHelper": "Die Organisation prüft Anträge — du zahlst erst nach der Zusage.",
+		"applyJoinHelper": "Die Organisation prüft Anträge — du trittst erst nach der Zusage bei."
 	},
 	"requestWhitelistButton": {
 		"mustBeLoggedIn": "Du musst eingeloggt sein, um eine Verifizierung anzufordern",
@@ -6806,7 +6812,8 @@
 			"approval": "Deine Bewerbung liegt der Organisation zur Prüfung vor. Du hörst von uns, sobald entschieden ist."
 		},
 		"joinTier": "{tier} beitreten",
-		"choosePlan": "Du erfüllst die Voraussetzungen – wähle unten einen Tarif, um beizutreten."
+		"choosePlan": "Du erfüllst die Voraussetzungen – wähle unten einen Tarif, um beizutreten.",
+		"applyChoosePlan": "Wähle einen Tarif, um einen Antrag zu stellen — die Organisation prüft Anträge vor der Zahlung."
 	},
 	"membershipApply": {
 		"title": "{orgName} beitreten",
@@ -6826,7 +6833,8 @@
 		"trackLink": "Deine Bewerbung verfolgen",
 		"error": "Deine Bewerbung konnte nicht gesendet werden. Bitte versuch es noch einmal.",
 		"titleTier": "{tier} beitreten",
-		"reapplyTitleTier": "Erneut für {tier} bewerben"
+		"reapplyTitleTier": "Erneut für {tier} bewerben",
+		"forPlan": "{orgName} — Antrag mit dem Tarif {plan}."
 	},
 	"membershipTiers": {
 		"heading": "Mitgliedschaft",

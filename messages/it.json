@@ -5172,7 +5172,13 @@
 		"loginToJoin": "Accedi per iscriverti",
 		"freeHelper": "Nessun pagamento richiesto: puoi iscriverti subito.",
 		"gatedSubscribeHelper": "Potrai abbonarti quando avrai soddisfatto i requisiti di questo livello.",
-		"gatedJoinHelper": "Potrai iscriverti quando avrai soddisfatto i requisiti di questo livello."
+		"gatedJoinHelper": "Potrai iscriverti quando avrai soddisfatto i requisiti di questo livello.",
+		"applyCta": "Richiedi di iscriverti",
+		"applyCtaAria": "Richiedi di iscriverti con {plan}",
+		"reapplyCta": "Richiedi di nuovo",
+		"reapplyCtaAria": "Richiedi di nuovo con {plan}",
+		"applySubscribeHelper": "L'organizzazione esamina le richieste: pagherai una volta approvata.",
+		"applyJoinHelper": "L'organizzazione esamina le richieste: entrerai una volta approvata."
 	},
 	"requestWhitelistButton": {
 		"mustBeLoggedIn": "Devi essere loggato per richiedere la verifica",
@@ -6806,7 +6812,8 @@
 			"approval": "La tua candidatura è in fase di revisione da parte dell'organizzazione. Riceverai una risposta appena avranno deciso."
 		},
 		"joinTier": "Iscriviti a {tier}",
-		"choosePlan": "Hai i requisiti: scegli un piano qui sotto per iscriverti."
+		"choosePlan": "Hai i requisiti: scegli un piano qui sotto per iscriverti.",
+		"applyChoosePlan": "Scegli un piano per fare richiesta: l'organizzazione esamina le richieste prima del pagamento."
 	},
 	"membershipApply": {
 		"title": "Unisciti a {orgName}",
@@ -6826,7 +6833,8 @@
 		"trackLink": "Segui la tua richiesta",
 		"error": "Non è stato possibile inviare la tua richiesta. Riprova.",
 		"titleTier": "Iscriviti a {tier}",
-		"reapplyTitleTier": "Invia una nuova richiesta per {tier}"
+		"reapplyTitleTier": "Invia una nuova richiesta per {tier}",
+		"forPlan": "{orgName} — richiesta con il piano {plan}."
 	},
 	"membershipTiers": {
 		"heading": "Iscrizione",

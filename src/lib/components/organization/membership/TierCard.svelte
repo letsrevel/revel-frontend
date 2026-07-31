@@ -10,12 +10,13 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { joinEligibilityQueryOptions } from '$lib/queries/join-eligibility';
 	import {
-		getMembershipStatusMessage,
-		isBlockedByMembershipGate
+		getMembershipGateAction,
+		getMembershipStatusMessage
 	} from '$lib/utils/membership-eligibility';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { ClipboardList, Gift, ShieldCheck } from '@lucide/svelte';
+	import ApplyDialog from './ApplyDialog.svelte';
 	import MembershipCta from './MembershipCta.svelte';
 	import PlanCard from './PlanCard.svelte';
 
@@ -157,13 +158,47 @@
 	);
 
 	const gateVerdict = $derived(gateQuery.data ?? null);
-	const gateBlocked = $derived(gateVerdict ? isBlockedByMembershipGate(gateVerdict) : false);
+	const gateAction = $derived(gateVerdict ? getMembershipGateAction(gateVerdict) : null);
 	const gateReason = $derived(
-		gateBlocked && gateVerdict ? getMembershipStatusMessage(gateVerdict) : null
+		gateAction && gateVerdict ? getMembershipStatusMessage(gateVerdict) : null
 	);
 	// `isLoading`, not `isPending`: a disabled query stays pending forever, and
 	// that would hold the Subscribe button of every ungated tier hostage.
 	const gatePending = $derived(gateQuery.isLoading);
+
+	/**
+	 * The plan the tier CTA asks about, and the reason it is not simply
+	 * `gatePlanId`.
+	 *
+	 * On a GATED tier the CTA has to name a plan or its verdict is a dead end:
+	 * gate #6 answers a plan-less question about a monetized tier with
+	 * `tier_requires_subscription` (no `next_step`), which is why #735's approval
+	 * gate was unreachable from here. Naming this plan reuses the query ABOVE —
+	 * same key, same fetcher, so TanStack serves both observers from one request —
+	 * and the CTA and the plan cards can no longer disagree about the same viewer.
+	 *
+	 * Held back on an UNGATED tier deliberately: there the tier-only verdict is
+	 * already correct for what that CTA says, and changing the question would
+	 * change every paid tier's CTA for no gain (#735 keeps that blast radius out).
+	 */
+	const ctaPlanId = $derived(isGated ? gatePlanId : null);
+
+	/**
+	 * The plan a pressed Apply button belongs to. One dialog per TIER rather than
+	 * one per card: only one can be open at a time, and mounting it here keeps it
+	 * alive while the verdict behind it moves on (the application's own
+	 * invalidation flips every plan card to the waiting note while the applicant
+	 * is still reading the outcome).
+	 */
+	let applyPlan = $state<(PublicPlanSchema & { id: string }) | null>(null);
+	let applyMode = $state<'join' | 'reapply'>('join');
+	let applyOpen = $state(false);
+
+	function handleApply(plan: PublicPlanSchema & { id: string }, mode: 'join' | 'reapply'): void {
+		applyPlan = plan;
+		applyMode = mode;
+		applyOpen = true;
+	}
 </script>
 
 <!-- `<article>` + `aria-labelledby`, not a labelled `region`: the cards are peers
@@ -241,9 +276,10 @@
 							{subscriptionLoading}
 							{organizationSlug}
 							{onSubscribe}
-							{gateBlocked}
+							{gateAction}
 							{gateReason}
 							{gatePending}
+							onApply={handleApply}
 							gateRequirementsId={requirementsId}
 						/>
 					{/each}
@@ -258,6 +294,7 @@
 						{isAuthenticated}
 						{tierId}
 						tierName={tier.name}
+						planId={ctaPlanId}
 						plansInline={plans.length > 0}
 					/>
 				{/if}
@@ -265,3 +302,26 @@
 		</CardContent>
 	</Card>
 </article>
+
+<!--
+	Outside the <article>, and outside every branch that could disappear beneath it:
+	an application that completes calls `invalidateAll()`, and the reloaded page can
+	re-render this card with a different verdict — a dialog destroyed mid-read is an
+	unannounced context change that drops focus to <body> (WCAG 3.2). Re-keyed by
+	plan so switching plans resets the dialog's own form and mutation state.
+-->
+{#if applyPlan}
+	{#key applyPlan.id}
+		<ApplyDialog
+			open={applyOpen}
+			onOpenChange={(next) => (applyOpen = next)}
+			{organizationSlug}
+			{organizationName}
+			mode={applyMode}
+			{tierId}
+			tierName={tier.name}
+			planId={applyPlan.id}
+			planName={applyPlan.name}
+		/>
+	{/key}
+{/if}

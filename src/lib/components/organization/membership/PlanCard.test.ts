@@ -66,16 +66,18 @@ function makeSub(overrides: Partial<MySubscriptionSchema> = {}): MySubscriptionS
 
 function renderCard(props: Record<string, unknown> = {}) {
 	const onSubscribe = vi.fn();
+	const onApply = vi.fn();
 	const result = render(PlanCard, {
 		props: {
 			plan: makePlan(),
 			isAuthenticated: true,
 			onSubscribe,
+			onApply,
 			organizationSlug: 'acme',
 			...props
 		}
 	});
-	return { ...result, onSubscribe };
+	return { ...result, onSubscribe, onApply };
 }
 
 describe('PlanCard', () => {
@@ -245,7 +247,7 @@ describe('PlanCard', () => {
 	describe("when the tier's gates are unsatisfied for this viewer", () => {
 		it('withdraws Subscribe and explains why, with the price still on the card', () => {
 			const { onSubscribe } = renderCard({
-				gateBlocked: true,
+				gateAction: 'blocked',
 				gateReason: 'This organization asks new members to fill in a questionnaire first.'
 			});
 
@@ -265,7 +267,7 @@ describe('PlanCard', () => {
 		// it, and points at the tier's full requirement list (WCAG 1.3.1).
 		it('associates the withheld CTA with the tier requirements programmatically', () => {
 			renderCard({
-				gateBlocked: true,
+				gateAction: 'blocked',
 				gateReason: 'Membership requests are approved by the organization.',
 				gateRequirementsId: 'tier-1-requirements'
 			});
@@ -280,7 +282,7 @@ describe('PlanCard', () => {
 		it('withdraws the free-join CTA too, in join wording', () => {
 			renderCard({
 				plan: makePlan({ payment_method: 'free', price: '0.00', period_unit: 'lifetime' }),
-				gateBlocked: true,
+				gateAction: 'blocked',
 				gateReason: 'Membership requests are approved by the organization.'
 			});
 
@@ -296,7 +298,7 @@ describe('PlanCard', () => {
 		// the plan from them would be a worse bug than the one being fixed.
 		it('offers Subscribe untouched once the gates are satisfied', async () => {
 			const user = userEvent.setup();
-			const { onSubscribe } = renderCard({ gateBlocked: false });
+			const { onSubscribe } = renderCard({ gateAction: null });
 
 			await user.click(screen.getByRole('button', { name: /subscribe/i }));
 			expect(onSubscribe).toHaveBeenCalledTimes(1);
@@ -315,7 +317,7 @@ describe('PlanCard', () => {
 		// Nobody asked the backend about a guest, and "Log in to subscribe" is true
 		// whatever their eligibility turns out to be.
 		it('leaves a guest with the login CTA', () => {
-			renderCard({ isAuthenticated: false, gateBlocked: true });
+			renderCard({ isAuthenticated: false, gateAction: 'blocked' });
 
 			expect(screen.getByRole('link', { name: /log in to subscribe/i })).toBeInTheDocument();
 			expect(screen.queryByRole('note')).toBeNull();
@@ -324,10 +326,101 @@ describe('PlanCard', () => {
 		// Plan-level stops still outrank the gate: a sold-out plan says so, rather
 		// than blaming the questionnaire for a card nobody could take anyway.
 		it('keeps plan-level stops ahead of the gate', () => {
-			renderCard({ plan: makePlan({ sold_out: true }), gateBlocked: true });
+			renderCard({ plan: makePlan({ sold_out: true }), gateAction: 'blocked' });
 
 			expect(screen.getByText('Sold out')).toBeInTheDocument();
 			expect(screen.queryByRole('note')).toBeNull();
+		});
+	});
+
+	// #735, the other half of #733. A blocked gate is not always somebody else's
+	// move: `submit_application` means the backend is waiting for an application
+	// that does not exist yet, and on a monetized tier only this card can create
+	// one — the application has to name a plan or gate #6 refuses it. Withdrawing
+	// the CTA and stopping there made manual-approval gating unreachable.
+	describe('when the gate is waiting on an application', () => {
+		it('offers an apply CTA in place of Subscribe, named for the plan', async () => {
+			const user = userEvent.setup();
+			const { onApply, onSubscribe } = renderCard({
+				gateAction: 'apply',
+				gateReason: m['membershipEligibility.reason.requires_approval']()
+			});
+
+			// The accessible name carries the plan: several of these sit on one tier
+			// and a screen-reader user hears them out of context.
+			const cta = screen.getByRole('button', {
+				name: m['membershipPlans.applyCtaAria']({ plan: 'Monthly' })
+			});
+			expect(cta).toHaveTextContent(m['membershipPlans.applyCta']());
+			expect(screen.queryByRole('button', { name: /subscribe/i })).toBeNull();
+			// Approval comes BEFORE the charge; the helper says so rather than
+			// letting the member expect a checkout.
+			expect(screen.getByText(m['membershipPlans.applySubscribeHelper']())).toBeInTheDocument();
+
+			await user.click(cta);
+			expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ id: 'plan-1' }), 'join');
+			expect(onSubscribe).not.toHaveBeenCalled();
+		});
+
+		it('says the free plan will be joined, not paid for, once approved', () => {
+			renderCard({
+				plan: makePlan({ payment_method: 'free', price: '0.00', period_unit: 'lifetime' }),
+				gateAction: 'apply'
+			});
+
+			expect(screen.getByText(m['membershipPlans.applyJoinHelper']())).toBeInTheDocument();
+			expect(screen.queryByText(m['membershipPlans.applySubscribeHelper']())).toBeNull();
+		});
+
+		// One step later in the same story: the previous application was rejected
+		// and the backend says a fresh one supersedes it.
+		it('offers an apply-again CTA in re-apply mode', async () => {
+			const user = userEvent.setup();
+			const { onApply } = renderCard({ gateAction: 'reapply' });
+
+			const cta = screen.getByRole('button', {
+				name: m['membershipPlans.reapplyCtaAria']({ plan: 'Monthly' })
+			});
+			expect(cta).toHaveTextContent(m['membershipPlans.reapplyCta']());
+
+			await user.click(cta);
+			expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ id: 'plan-1' }), 'reapply');
+		});
+
+		// The waiting half of the same gate: an application IS on file, staff are
+		// deciding, and there is nothing for the member to press. It must not
+		// collapse into the apply branch and invite a duplicate row.
+		it('keeps a wait state as a note, with no control to press', () => {
+			renderCard({
+				gateAction: 'blocked',
+				gateReason: m['membershipEligibility.wait.approval']()
+			});
+
+			expect(screen.getByRole('note')).toHaveTextContent(
+				m['membershipEligibility.wait.approval']()
+			);
+			expect(screen.queryByRole('button')).toBeNull();
+		});
+
+		// Plan-level stops still outrank the gate, apply branch included: an apply
+		// button on a sold-out plan would be an application for a plan nobody can
+		// take.
+		it('does not offer to apply for a sold-out plan', () => {
+			const { onApply } = renderCard({ plan: makePlan({ sold_out: true }), gateAction: 'apply' });
+
+			expect(screen.getByText('Sold out')).toBeInTheDocument();
+			expect(screen.queryByRole('button')).toBeNull();
+			expect(onApply).not.toHaveBeenCalled();
+		});
+
+		// Same reason the Subscribe button is held: until both lookups answer we do
+		// not know which branch this is.
+		it('holds the apply CTA while the verdict is still settling', () => {
+			renderCard({ gateAction: 'apply', subscriptionLoading: true });
+
+			expect(
+				screen.getByRole('button', { name: m['membershipPlans.applyCtaAria']({ plan: 'Monthly' }) })
+			).toBeDisabled();
 		});
 	});
 

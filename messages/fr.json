@@ -5143,7 +5143,13 @@
 		"loginToJoin": "Se connecter pour rejoindre",
 		"freeHelper": "Aucun paiement requis — vous pouvez rejoindre immédiatement.",
 		"gatedSubscribeHelper": "Vous pourrez vous abonner une fois les conditions de ce niveau remplies.",
-		"gatedJoinHelper": "Vous pourrez rejoindre une fois les conditions de ce niveau remplies."
+		"gatedJoinHelper": "Vous pourrez rejoindre une fois les conditions de ce niveau remplies.",
+		"applyCta": "Demander à adhérer",
+		"applyCtaAria": "Demander à adhérer avec {plan}",
+		"reapplyCta": "Refaire une demande",
+		"reapplyCtaAria": "Refaire une demande avec {plan}",
+		"applySubscribeHelper": "L'organisation examine les demandes — vous paierez une fois votre demande acceptée.",
+		"applyJoinHelper": "L'organisation examine les demandes — vous adhérerez une fois votre demande acceptée."
 	},
 	"requestWhitelistButton": {
 		"mustBeLoggedIn": "Tu dois être connecté pour demander une vérification",
@@ -6777,7 +6783,8 @@
 			"approval": "Ta candidature est en cours d'examen par l'organisation. Tu auras une réponse dès qu'elle aura décidé."
 		},
 		"joinTier": "Rejoindre {tier}",
-		"choosePlan": "Vous êtes éligible : choisissez une formule ci-dessous pour adhérer."
+		"choosePlan": "Vous êtes éligible : choisissez une formule ci-dessous pour adhérer.",
+		"applyChoosePlan": "Choisissez une formule pour faire une demande — l'organisation examine les demandes avant le paiement."
 	},
 	"membershipApply": {
 		"title": "Rejoindre {orgName}",
@@ -6797,7 +6804,8 @@
 		"trackLink": "Suivre ta demande",
 		"error": "Impossible d'envoyer ta demande. Réessaie.",
 		"titleTier": "Rejoindre {tier}",
-		"reapplyTitleTier": "Postuler à nouveau pour {tier}"
+		"reapplyTitleTier": "Postuler à nouveau pour {tier}",
+		"forPlan": "{orgName} — demande avec la formule {plan}."
 	},
 	"membershipTiers": {
 		"heading": "Adhésion",

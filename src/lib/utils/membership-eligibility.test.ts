@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
 	getApplicationPendingMessage,
 	getMembershipCtaKind,
+	getMembershipGateAction,
 	getMembershipStatusMessage,
 	isBlockedByMembershipGate
 } from './membership-eligibility';
@@ -48,6 +49,23 @@ describe('getMembershipCtaKind', () => {
 	it('maps requires_invitation and bare denials to info', () => {
 		expect(getMembershipCtaKind({ ...base, next_step: 'requires_invitation' })).toBe('info');
 		expect(getMembershipCtaKind({ ...base, reason_code: 'membership_paused' })).toBe('info');
+	});
+
+	// #735. The exact verdict `PaymentReadyGate` (#10) emits for an approval-gated
+	// tier with an active plan and no application on file: refused, but naming its
+	// own remedy. It used to fall off the end of the switch into `info` — a refusal
+	// with no next_step — which is precisely why the approval gate was unreachable
+	// through the UI on a monetized tier.
+	it('maps submit_application to apply, not to info', () => {
+		expect(
+			getMembershipCtaKind({
+				...base,
+				allowed: false,
+				next_step: 'submit_application',
+				reason_code: 'requires_approval',
+				plan_id: 'plan-1'
+			})
+		).toBe('apply');
 	});
 
 	// BE #831 made gated and monetized tiers coexist, so this step is the positive
@@ -384,5 +402,76 @@ describe('isBlockedByMembershipGate', () => {
 	// stays, and the backend refuses it if it really is unreachable.
 	it('does not block a refusal with no reason code', () => {
 		expect(isBlockedByMembershipGate({ ...base, allowed: false, reason_code: null })).toBe(false);
+	});
+});
+
+// #735. Same predicate, one question further on: not "is the CTA withdrawn" but
+// "whose move is it". The distinction is the whole issue — #733 withdrew the
+// button for every gate alike, which left an approval-gated priced tier with
+// nothing on screen to press.
+describe('getMembershipGateAction', () => {
+	it('leaves an unblocked verdict alone', () => {
+		expect(getMembershipGateAction({ ...base, allowed: true })).toBeNull();
+		expect(
+			getMembershipGateAction({ ...base, allowed: true, next_step: 'proceed_to_payment' })
+		).toBeNull();
+	});
+
+	// The member's move: the backend is waiting for an application nobody else can
+	// create. On a monetized tier this is the ONLY affordance — unlike a
+	// questionnaire, whose link the tier card renders from its own metadata.
+	it('asks for an application when the approval gate has nothing on file', () => {
+		expect(
+			getMembershipGateAction({
+				...base,
+				reason_code: 'requires_approval',
+				next_step: 'submit_application',
+				plan_id: 'plan-1'
+			})
+		).toBe('apply');
+	});
+
+	it('asks again after a rejection', () => {
+		expect(
+			getMembershipGateAction({
+				...base,
+				reason_code: 'application_rejected',
+				next_step: 'reapply',
+				application_id: 'app-1'
+			})
+		).toBe('reapply');
+	});
+
+	// Somebody else's move — staff deciding, the grader running, a cooldown
+	// expiring. Offering to apply here would mint a duplicate row against a
+	// pending application.
+	it('keeps every wait and every fill-something-in step blocked', () => {
+		for (const [reason_code, next_step] of [
+			['requires_approval', 'wait_for_approval'],
+			['membership_questionnaire_pending', 'wait_for_questionnaire_evaluation'],
+			['whitelist_pending', 'wait_for_whitelist_approval'],
+			['membership_questionnaire_missing', 'submit_questionnaire'],
+			['membership_questionnaire_retake_cooldown', 'wait_to_retake_questionnaire']
+		] as const) {
+			expect(getMembershipGateAction({ ...base, reason_code, next_step })).toBe('blocked');
+		}
+		// Terminal refusals arrive with no next_step at all.
+		expect(getMembershipGateAction({ ...base, reason_code: 'blacklisted' })).toBe('blocked');
+	});
+
+	// It inherits `isBlockedByMembershipGate`'s allow-list, so a payment-readiness
+	// refusal can never produce an Apply button either — the plan card keeps
+	// deciding those from the plan's own fields.
+	it('offers nothing for a payment-readiness refusal', () => {
+		expect(
+			getMembershipGateAction({ ...base, reason_code: 'tier_requires_subscription' })
+		).toBeNull();
+		expect(
+			getMembershipGateAction({
+				...base,
+				reason_code: 'duplicate_active_subscription',
+				next_step: 'reapply'
+			})
+		).toBeNull();
 	});
 });

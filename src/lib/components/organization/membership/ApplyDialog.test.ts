@@ -12,6 +12,7 @@ import type {
 	MembershipApplicationSchema,
 	MembershipEligibilitySchema
 } from '$lib/api/generated/types.gen';
+import * as m from '$lib/paraglide/messages.js';
 
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	memembershipapplicationsApply: vi.fn()
@@ -166,7 +167,7 @@ describe('ApplyDialog', () => {
 			expect(vi.mocked(memembershipapplicationsApply)).toHaveBeenCalledWith(
 				expect.objectContaining({
 					path: { slug: 'acme' },
-					body: { tier_id: undefined, notes: 'hello' }
+					body: { tier_id: undefined, plan_id: undefined, notes: 'hello' }
 				})
 			);
 		});
@@ -181,7 +182,9 @@ describe('ApplyDialog', () => {
 
 		await waitFor(() => {
 			expect(vi.mocked(memembershipapplicationsApply)).toHaveBeenCalledWith(
-				expect.objectContaining({ body: { tier_id: undefined, notes: undefined } })
+				expect.objectContaining({
+					body: { tier_id: undefined, plan_id: undefined, notes: undefined }
+				})
 			);
 		});
 	});
@@ -200,9 +203,55 @@ describe('ApplyDialog', () => {
 			expect(vi.mocked(memembershipapplicationsApply)).toHaveBeenCalledWith(
 				expect.objectContaining({
 					path: { slug: 'acme' },
-					body: { tier_id: 'tier-gold', notes: undefined }
+					body: { tier_id: 'tier-gold', plan_id: undefined, notes: undefined }
 				})
 			);
+		});
+	});
+
+	// #735, and the reason the CTA work above it means anything. BE #831: *"a
+	// `plan_id` makes this a paid application"*. Without it, `TierAvailabilityGate`
+	// (#6) refuses the application outright on a tier that carries an active plan
+	// (`tier_requires_subscription`) and never reaches the approval gate — so the
+	// only applications this dialog could create were FREE ones, and manual
+	// approval on a monetized tier had no way in.
+	describe('applying with a plan', () => {
+		it('posts the plan alongside the tier', async () => {
+			const user = userEvent.setup();
+			mockApplySuccess(makeResult());
+			renderDialog({
+				tierId: 'tier-gold',
+				tierName: 'Gold',
+				planId: 'plan-1',
+				planName: 'Monthly'
+			});
+
+			await user.click(screen.getByRole('button', { name: /send application/i }));
+
+			await waitFor(() => {
+				expect(vi.mocked(memembershipapplicationsApply)).toHaveBeenCalledWith(
+					expect.objectContaining({
+						path: { slug: 'acme' },
+						body: { tier_id: 'tier-gold', plan_id: 'plan-1', notes: undefined }
+					})
+				);
+			});
+		});
+
+		// The applicant pressed one plan's button among several; the row's `plan` FK
+		// comes from that press, so the dialog states which one rather than leaving
+		// them to remember.
+		it('names the plan it is applying with', () => {
+			renderDialog({
+				tierId: 'tier-gold',
+				tierName: 'Gold',
+				planId: 'plan-1',
+				planName: 'Monthly'
+			});
+
+			expect(
+				screen.getByText(m['membershipApply.forPlan']({ orgName: 'Acme', plan: 'Monthly' }))
+			).toBeInTheDocument();
 		});
 	});
 

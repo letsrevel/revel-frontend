@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import type { MySubscriptionSchema, PublicPlanSchema } from '$lib/api/generated/types.gen';
+	import type { MembershipGateAction } from '$lib/utils/membership-eligibility';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
@@ -30,21 +31,29 @@
 		/** The subscription lookup is still in flight — the answer is not known yet. */
 		subscriptionLoading?: boolean;
 		/**
-		 * The tier's membership gates are known to be UNSATISFIED for this viewer
-		 * (#733). Resolved by `TierCard` from a plan-bearing eligibility verdict —
-		 * never from the tier's static `questionnaire_id` / `requires_approval`,
-		 * which say the tier is gated, not that this viewer is behind the gate.
+		 * What the tier's membership gates leave this viewer to do with this plan
+		 * (#733, #735). Resolved by `TierCard` from a plan-bearing eligibility
+		 * verdict — never from the tier's static `questionnaire_id` /
+		 * `requires_approval`, which say the tier is gated, not that this viewer is
+		 * behind the gate.
 		 *
-		 * Defaults to false, and stays false whenever the verdict is unknown
-		 * (guest, ungated tier, request in flight or failed). Withdrawing the CTA
-		 * from somebody who is in fact eligible is a worse failure than the dead
-		 * button this flag exists to remove, and `POST …/subscribe` runs the whole
-		 * gate stack itself (BE #831) — so an unknown answer costs a 400 at worst,
-		 * never an unreachable plan.
+		 * `null` means "nothing in the way", and that is also what an UNKNOWN
+		 * verdict resolves to (guest, ungated tier, request in flight or failed).
+		 * Withdrawing the CTA from somebody who is in fact eligible is a worse
+		 * failure than the dead button #733 removed, and `POST …/subscribe` runs
+		 * the whole gate stack itself (BE #831) — so an unknown answer costs a 400
+		 * at worst, never an unreachable plan.
 		 */
-		gateBlocked?: boolean;
-		/** Localized explanation of that block, rendered where the CTA was. */
+		gateAction?: MembershipGateAction | null;
+		/** Localized explanation of that gate, rendered where the CTA was. */
 		gateReason?: string | null;
+		/**
+		 * Open the application dialog for THIS plan. Called only from the `apply` /
+		 * `reapply` branches, so the plan has an id by construction — the
+		 * application's `plan` FK is what makes it a paid application, and it must
+		 * be the plan whose card was pressed.
+		 */
+		onApply?: (plan: PublicPlanSchema & { id: string }, mode: 'join' | 'reapply') => void;
 		/** The verdict is still in flight: hold the CTA rather than offer it. */
 		gatePending?: boolean;
 		/**
@@ -61,8 +70,9 @@
 		organizationSlug,
 		subscription = null,
 		subscriptionLoading = false,
-		gateBlocked = false,
+		gateAction = null,
 		gateReason = null,
+		onApply,
 		gatePending = false,
 		gateRequirementsId = null
 	}: Props = $props();
@@ -83,14 +93,24 @@
 	 * subscription on the spot — so it takes the ordinary join path, with the
 	 * label and dialog copy adjusted for the absent charge.
 	 *
-	 * `gated` sits second-to-last, below every plan-level stop and above the
-	 * viewer's own CTA (#733). Since BE #831 a tier can be gated AND priced, and
-	 * a questionnaire the viewer has not passed makes Subscribe an action that
+	 * The gate branches sit second-to-last, below every plan-level stop and above
+	 * the viewer's own CTA (#733). Since BE #831 a tier can be gated AND priced,
+	 * and a questionnaire the viewer has not passed makes Subscribe an action that
 	 * cannot succeed: `/subscribe` runs the same gate stack and refuses with a
-	 * 400 — after the member has committed to a concrete charge. The CTA is
-	 * *removed* rather than disabled, so the tier's questionnaire/approval
-	 * affordance is the only thing left to press; the price stays on the card
-	 * above, so what they are working toward is still visible.
+	 * 400 — after the member has committed to a concrete charge.
+	 *
+	 * What replaces it depends on WHOSE move it is (#735):
+	 *
+	 * - `apply` / `reapply` — the member's. The gate is waiting on an application
+	 *   that only they can create, so the card offers exactly that, carrying this
+	 *   plan's id. Withdrawing the CTA and stopping (the whole of #733) left an
+	 *   approval-gated priced tier with no affordance anywhere: unlike a
+	 *   questionnaire, whose link `TierCard` renders straight off the tier, an
+	 *   application has no other entry point.
+	 * - `gated` — somebody else's, or nothing at all: staff are deciding, the
+	 *   grader is running, the cooldown has not expired. No control, and the
+	 *   reason in its place. The price stays on the card above either way, so what
+	 *   they are working toward stays visible.
 	 *
 	 * A guest is untouched: nobody has asked the backend about them, and "Log in
 	 * to subscribe" is true whatever their eligibility turns out to be.
@@ -104,8 +124,13 @@
 		if (plan.sales_status === 'paused') return 'none';
 		if (!plan.id) return 'none';
 		if (!isAuthenticated) return 'login';
-		return gateBlocked ? 'gated' : 'subscribe';
+		if (gateAction === 'apply') return 'apply';
+		if (gateAction === 'reapply') return 'reapply';
+		return gateAction ? 'gated' : 'subscribe';
 	});
+
+	/** True for both application branches — they differ only in wording and mode. */
+	const isApplyAction = $derived(action === 'apply' || action === 'reapply');
 
 	/**
 	 * Held while either lookup is unsettled: until the subscription AND the gate
@@ -167,6 +192,12 @@
 		if (!plan.id) return;
 		onSubscribe({ ...plan, id: plan.id });
 	}
+
+	function handleApply(): void {
+		// Same re-narrowing as above; the apply branches are equally id-gated.
+		if (!plan.id) return;
+		onApply?.({ ...plan, id: plan.id }, action === 'reapply' ? 'reapply' : 'join');
+	}
 </script>
 
 <Card class="flex h-full flex-col">
@@ -224,6 +255,35 @@
 				{/if}
 			{:else if action === 'offline'}
 				<p class="text-sm text-muted-foreground">{m['membershipPlans.offlineManaged']()}</p>
+			{:else if isApplyAction}
+				<!-- #735. The one branch where a blocked gate still leaves the member
+				     something to press: the backend is waiting for an application that
+				     does not exist yet (`submit_application`), or for a fresh one after
+				     a rejection (`reapply`).
+				     Named with the PLAN, not left as a bare "Apply": several of these
+				     sit on one tier, a screen-reader user hears them out of context,
+				     and the plan is exactly what distinguishes them — it is the id the
+				     application will carry. -->
+				<Button
+					class="w-full sm:w-auto"
+					onclick={handleApply}
+					disabled={ctaHeld}
+					aria-label={action === 'reapply'
+						? m['membershipPlans.reapplyCtaAria']({ plan: plan.name })
+						: m['membershipPlans.applyCtaAria']({ plan: plan.name })}
+				>
+					{action === 'reapply'
+						? m['membershipPlans.reapplyCta']()
+						: m['membershipPlans.applyCta']()}
+				</Button>
+				<!-- The order matters and is not obvious: approval comes BEFORE the
+				     charge (the backend's PaymentReadyGate is last), so this says so
+				     rather than letting the member expect a checkout. -->
+				<p class="mt-2 text-sm text-muted-foreground">
+					{isFree
+						? m['membershipPlans.applyJoinHelper']()
+						: m['membershipPlans.applySubscribeHelper']()}
+				</p>
 			{:else if action === 'gated'}
 				<!-- What replaces the CTA carries the reason itself, rather than
 				     leaving a bare gap next to a requirement stated elsewhere on the

@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/svelte';
+import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
 import TierCard from './TierCard.svelte';
@@ -225,29 +226,102 @@ describe('TierCard', () => {
 			expect(await screen.findByRole('button', { name: /subscribe/i })).toBeEnabled();
 		});
 
-		// Manual approval is the same shape, and it arrives from PaymentReadyGate
-		// as `submit_application`: apply and be approved before there is anything
-		// to pay for.
-		it('withdraws Subscribe when the tier is approval-gated and nothing is on file', async () => {
+		// #735. Manual approval arrives from PaymentReadyGate as
+		// `submit_application` — apply, be approved, then pay. Unlike the
+		// questionnaire above there is no link anywhere on the tier to press, so
+		// withdrawing Subscribe and stopping there (all #733 did) left the tier
+		// with no affordance at all. The plan card now offers the application.
+		const approvalTier = () =>
+			makeTier({
+				is_free: false,
+				requires_approval: true,
+				plans: [makePlan({ id: 'p-1', name: 'Monthly' })]
+			});
+
+		it('offers to apply — with the plan — when approval is outstanding', async () => {
 			mockEligibility({
 				allowed: false,
 				reason_code: 'requires_approval',
 				next_step: 'submit_application'
 			});
-			renderCard({
-				tier: makeTier({
-					is_free: false,
-					requires_approval: true,
-					plans: [makePlan({ id: 'p-1' })]
+			renderCard({ tier: approvalTier() });
+
+			expect(
+				await screen.findByRole('button', {
+					name: m['membershipPlans.applyCtaAria']({ plan: 'Monthly' })
 				})
+			).toBeEnabled();
+			// The dead Subscribe stays gone: `/subscribe` runs the same gates.
+			expect(screen.queryByRole('button', { name: /subscribe/i })).toBeNull();
+			// And the tier CTA below points at the plans rather than offering a
+			// second, plan-less application the backend would refuse.
+			expect(screen.getByRole('note')).toHaveTextContent(
+				m['membershipEligibility.applyChoosePlan']()
+			);
+		});
+
+		// The round trip that made #735 a bug rather than a cosmetic gap: the
+		// dialog the plan card opens has to carry the plan, or the backend refuses
+		// the application on a monetized tier.
+		it('opens the application dialog for the plan that was pressed', async () => {
+			const user = userEvent.setup();
+			mockEligibility({
+				allowed: false,
+				reason_code: 'requires_approval',
+				next_step: 'submit_application'
 			});
+			renderCard({ tier: approvalTier() });
+
+			await user.click(
+				await screen.findByRole('button', {
+					name: m['membershipPlans.applyCtaAria']({ plan: 'Monthly' })
+				})
+			);
+
+			const dialog = await screen.findByRole('dialog');
+			expect(dialog).toHaveTextContent(m['membershipApply.titleTier']({ tier: 'Gold' }));
+			expect(dialog).toHaveTextContent(
+				m['membershipApply.forPlan']({ orgName: 'Acme', plan: 'Monthly' })
+			);
+		});
+
+		// Once staff approve, `ManualApprovalGate` falls through and the payment
+		// gate allows: Subscribe returns with no code of its own. This is the
+		// post-approval half of the journey, asserted rather than assumed.
+		it('hands Subscribe back once the application is approved', async () => {
+			mockEligibility({ allowed: true, next_step: 'proceed_to_payment', plan_id: 'p-1' });
+			renderCard({ tier: approvalTier() });
+
+			expect(await screen.findByRole('button', { name: /subscribe/i })).toBeEnabled();
+			expect(
+				screen.queryByRole('button', {
+					name: m['membershipPlans.applyCtaAria']({ plan: 'Monthly' })
+				})
+			).toBeNull();
+		});
+
+		// While staff decide there is nothing to press: an Apply button here would
+		// mint a duplicate row against a pending application.
+		it('shows a wait state, not a second application, while approval is pending', async () => {
+			mockEligibility({
+				allowed: false,
+				reason_code: 'requires_approval',
+				next_step: 'wait_for_approval',
+				application_id: 'app-1'
+			});
+			renderCard({ tier: approvalTier() });
 
 			await waitFor(() => {
-				expect(screen.queryByRole('button', { name: /subscribe/i })).toBeNull();
+				expect(
+					screen.getByText(m['membershipPlans.gatedSubscribeHelper'](), { exact: false })
+				).toHaveTextContent(m['membershipEligibility.wait.approval']());
 			});
 			expect(
-				screen.getByText(m['membershipPlans.gatedSubscribeHelper'](), { exact: false })
-			).toHaveTextContent(m['membershipEligibility.reason.requires_approval']());
+				screen.queryByRole('button', {
+					name: m['membershipPlans.applyCtaAria']({ plan: 'Monthly' })
+				})
+			).toBeNull();
+			expect(screen.getByRole('button', { name: /application pending/i })).toBeDisabled();
 		});
 
 		// A refusal about the PLAN rather than about the viewer: the plan card
