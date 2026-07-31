@@ -51,7 +51,9 @@
 	/>
 </svelte:head>
 
-<div class="space-y-6">
+<!-- Same omission as the membership page had: the `(public)` layout does not wrap
+     its children, so a page without a container renders edge to edge. -->
+<div class="container mx-auto space-y-6 px-6 py-8 md:px-8 lg:py-12">
 	<!-- Header -->
 	<div>
 		<h1 class="text-3xl font-bold tracking-tight md:text-4xl">{m['orgResourcesPage.title']()}</h1>

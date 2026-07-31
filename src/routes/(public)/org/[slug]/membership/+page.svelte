@@ -13,7 +13,11 @@
 
 <SeoHead config={data.seo} />
 
-<div class="space-y-6">
+<!-- The `(public)` layout does NOT wrap its children, so every page supplies its
+     own container; without one the content runs edge to edge. Same values as the
+     org landing page this is a sub-page of, so navigating between them does not
+     shift the gutters. -->
+<div class="container mx-auto space-y-6 px-6 py-8 md:px-8 lg:py-12">
 	<a
 		href={resolve('/(public)/org/[slug]', { slug: organization.slug })}
 		class="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
