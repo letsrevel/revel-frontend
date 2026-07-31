@@ -502,6 +502,31 @@ describe('getMembershipRequirementState', () => {
 		expect(getMembershipRequirementState('approval', undefined)).toBe('policy');
 	});
 
+	// #742. `PaymentReadyGate` (#10) is the LAST gate, so a refusal from it is
+	// proof the questionnaire (#8) and approval (#9) gates both let the viewer
+	// through. Reported from a manual smoke: a member whose questionnaire had
+	// just been APPROVED, on a tier selling only an offline plan, was told "A
+	// membership questionnaire is required" all over again — the verdict was
+	// `plan_not_online`, which matched none of the earlier branches and fell
+	// through to `policy`.
+	it.each(['plan_not_online', 'org_not_stripe_connected'] as const)(
+		'treats %s as proof both requirement gates were cleared',
+		(reason_code) => {
+			const verdict = { ...base, allowed: false, reason_code, next_step: null };
+			expect(getMembershipRequirementState('questionnaire', verdict)).toBe('satisfied');
+			expect(getMembershipRequirementState('approval', verdict)).toBe('satisfied');
+		}
+	);
+
+	// The counter-case that keeps the rule honest: `plan_unavailable` is emitted
+	// by gate #6 as well as #10, so it proves nothing about the gates between and
+	// must NOT be read as satisfied.
+	it('does not treat the ambiguous plan_unavailable as proof of anything', () => {
+		const verdict = { ...base, allowed: false, reason_code: 'plan_unavailable' as const };
+		expect(getMembershipRequirementState('questionnaire', verdict)).toBe('policy');
+		expect(getMembershipRequirementState('approval', verdict)).toBe('policy');
+	});
+
 	// The never-started state keeps the copy it always had — the rule plus the
 	// link to go and satisfy it is exactly right there.
 	it('states the rule for a viewer who has not submitted yet', () => {

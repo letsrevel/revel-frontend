@@ -242,6 +242,34 @@ const APPROVAL_STEPS: readonly MembershipNextStep[] = [
 ];
 
 /**
+ * Reason codes ONLY `PaymentReadyGate` (#10) can produce.
+ *
+ * A verdict carrying one of these has necessarily passed #7 application status,
+ * #8 questionnaire and #9 manual approval — the stack short-circuits on the
+ * first verdict, so reaching the last gate is proof the earlier ones let the
+ * viewer through. That makes them evidence of `satisfied` for BOTH requirement
+ * topics, even though the refusal itself is about neither.
+ *
+ * Without this, a viewer whose questionnaire had just been APPROVED on a tier
+ * selling only an offline plan fell through to `policy` and was told "A
+ * membership questionnaire is required" all over again (#742).
+ *
+ * `plan_unavailable` is deliberately absent: `TierAvailabilityGate` (#6) emits
+ * it too, so it proves nothing about the gates in between. Verified against
+ * `membership_manager/gates.py` — these two are emitted at exactly one site
+ * each, inside #10.
+ */
+const PAYMENT_READINESS_REASON_CODES: readonly MembershipReasonCode[] = [
+	'plan_not_online',
+	'org_not_stripe_connected'
+];
+
+/** Did this verdict come from a gate BELOW both requirement gates? */
+function isPastRequirementGates(e: MembershipEligibilitySchema): boolean {
+	return !!e.reason_code && PAYMENT_READINESS_REASON_CODES.includes(e.reason_code);
+}
+
+/**
  * Where this viewer stands against one of the tier's stated requirements.
  *
  * The tier's own `questionnaire_id` / `requires_approval` say the tier IS
@@ -275,12 +303,17 @@ export function getMembershipRequirementState(
 	if (!e) return 'policy';
 	if (topic === 'approval') {
 		if (e.allowed) return e.reason_code === 'requires_approval' ? 'policy' : 'satisfied';
+		// Refused by #10, so #9 already let this viewer through.
+		if (isPastRequirementGates(e)) return 'satisfied';
 		// The move itself lives on the plan cards (#735), which offer the button;
 		// this line keeps stating the rule rather than duplicating the prompt.
 		if (e.next_step === 'submit_application') return 'policy';
 		return speaksAbout(e, APPROVAL_STEPS, APPROVAL_REASON_CODES) ? 'status' : 'policy';
 	}
 	if (e.allowed) return 'satisfied';
+	// Refused by #10, so #8 already let this viewer through — the questionnaire is
+	// done, whatever the payment path says.
+	if (isPastRequirementGates(e)) return 'satisfied';
 	if (e.next_step === 'submit_application' || e.next_step === 'wait_for_approval') {
 		return 'satisfied';
 	}
