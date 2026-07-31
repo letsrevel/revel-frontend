@@ -16,37 +16,49 @@ import {
 	eventbriteAlternativeEN,
 	eventbriteAlternativeDE,
 	eventbriteAlternativeIT,
-	eventbriteAlternativeFR
+	eventbriteAlternativeFR,
+	eventbriteAlternativeES,
+	eventbriteAlternativePT
 } from './eventbrite-alternative';
 import {
 	queerEventManagementEN,
 	queerEventManagementDE,
 	queerEventManagementIT,
-	queerEventManagementFR
+	queerEventManagementFR,
+	queerEventManagementES,
+	queerEventManagementPT
 } from './queer-event-management';
 import {
 	kinkEventTicketingEN,
 	kinkEventTicketingDE,
 	kinkEventTicketingIT,
-	kinkEventTicketingFR
+	kinkEventTicketingFR,
+	kinkEventTicketingES,
+	kinkEventTicketingPT
 } from './kink-event-ticketing';
 import {
 	selfHostedEventPlatformEN,
 	selfHostedEventPlatformDE,
 	selfHostedEventPlatformIT,
-	selfHostedEventPlatformFR
+	selfHostedEventPlatformFR,
+	selfHostedEventPlatformES,
+	selfHostedEventPlatformPT
 } from './self-hosted-event-platform';
 import {
 	privacyFocusedEventsEN,
 	privacyFocusedEventsDE,
 	privacyFocusedEventsIT,
-	privacyFocusedEventsFR
+	privacyFocusedEventsFR,
+	privacyFocusedEventsES,
+	privacyFocusedEventsPT
 } from './privacy-focused-events';
 import {
 	communityFirstEventPlatformEN,
 	communityFirstEventPlatformDE,
 	communityFirstEventPlatformIT,
-	communityFirstEventPlatformFR
+	communityFirstEventPlatformFR,
+	communityFirstEventPlatformES,
+	communityFirstEventPlatformPT
 } from './community-first-event-platform';
 
 export const landingPages: Record<string, Record<string, LandingPageContent>> = {
@@ -81,6 +93,22 @@ export const landingPages: Record<string, Record<string, LandingPageContent>> = 
 		'self-hosted-event-platform': selfHostedEventPlatformFR,
 		'privacy-focused-events': privacyFocusedEventsFR,
 		'community-first-event-platform': communityFirstEventPlatformFR
+	},
+	es: {
+		'eventbrite-alternative': eventbriteAlternativeES,
+		'queer-event-management': queerEventManagementES,
+		'kink-event-ticketing': kinkEventTicketingES,
+		'self-hosted-event-platform': selfHostedEventPlatformES,
+		'privacy-focused-events': privacyFocusedEventsES,
+		'community-first-event-platform': communityFirstEventPlatformES
+	},
+	pt: {
+		'eventbrite-alternative': eventbriteAlternativePT,
+		'queer-event-management': queerEventManagementPT,
+		'kink-event-ticketing': kinkEventTicketingPT,
+		'self-hosted-event-platform': selfHostedEventPlatformPT,
+		'privacy-focused-events': privacyFocusedEventsPT,
+		'community-first-event-platform': communityFirstEventPlatformPT
 	}
 };
 

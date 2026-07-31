@@ -30,9 +30,23 @@ describe('resolveLang', () => {
 		expect(resolveLang(req)).toBe('fr');
 	});
 
+	it('returns es when Accept-Language prefers es', () => {
+		const req = new Request('https://x.test/', {
+			headers: { 'accept-language': 'es-ES,es;q=0.9,en;q=0.5' }
+		});
+		expect(resolveLang(req)).toBe('es');
+	});
+
+	it('returns pt when Accept-Language has pt', () => {
+		const req = new Request('https://x.test/', {
+			headers: { 'accept-language': 'pt-PT,pt;q=0.9,en;q=0.5' }
+		});
+		expect(resolveLang(req)).toBe('pt');
+	});
+
 	it('falls back to en for unknown languages', () => {
 		const req = new Request('https://x.test/', {
-			headers: { 'accept-language': 'es,pt;q=0.9' }
+			headers: { 'accept-language': 'ja,ko;q=0.9' }
 		});
 		expect(resolveLang(req)).toBe('en');
 	});

@@ -29,7 +29,7 @@ export interface LandingPageCTA {
 
 export interface LandingPageContent {
 	slug: string;
-	locale: 'en' | 'de' | 'it' | 'fr';
+	locale: 'en' | 'de' | 'it' | 'fr' | 'es' | 'pt';
 	meta: {
 		title: string;
 		description: string;

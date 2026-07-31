@@ -210,6 +210,216 @@ export const selfHostedEventPlatformDE: LandingPageContent = {
 	relatedPages: ['eventbrite-alternative', 'privacy-focused-events']
 };
 
+export const selfHostedEventPlatformES: LandingPageContent = {
+	slug: 'self-hosted-event-platform',
+	locale: 'es',
+	meta: {
+		title: 'Gestión de Eventos Autoalojada – Código Abierto y Gratis | Revel',
+		description:
+			'Plataforma de eventos con licencia MIT que puedes instalar en tus propios servidores. Cero comisiones, control total, lista para Docker. Entradas, RSVP, gestión de socios.',
+		keywords:
+			'gestión de eventos open source, alternativa a eventbrite, software de entradas gratis, plataforma de eventos autoalojada, docker eventos'
+	},
+	hero: {
+		headline: 'Tus Eventos, Tus Servidores, Cero Comisiones',
+		subheadline:
+			'Gestión de eventos con licencia MIT que puedes instalar donde quieras. Entradas completas, RSVP y herramientas de comunidad, completamente bajo tu control.'
+	},
+	intro: {
+		paragraphs: [
+			'¿Por qué pagar cuotas mensuales de SaaS y confiar los datos de tu comunidad a una corporación? Revel es un software de gestión de eventos de código abierto que puedes instalar en tu propia infraestructura en minutos.',
+			'Construido con tecnologías modernas (Django, PostgreSQL, Redis y Docker), Revel está listo para producción y probado en el mundo real. Entradas completas con integración de Stripe, RSVP, gestión de socios, selección de participantes, check-in por QR y mucho más. Todas las funciones de las plataformas comerciales, sin costes recurrentes ni preocupaciones sobre los datos.',
+			'Licencia MIT significa que puedes usarlo, modificarlo e instalarlo como quieras. Sin dependencia de proveedor. Sin cambios de precio sorpresa. Ninguna plataforma decide qué eventos puedes organizar. Tu infraestructura, tus reglas.'
+		]
+	},
+	features: [
+		{
+			icon: 'server',
+			title: 'Despliegue Listo para Docker',
+			description:
+				'Ponlo en marcha en minutos con Docker Compose. PostgreSQL, Redis, Celery: todo configurado y listo.'
+		},
+		{
+			icon: 'euro',
+			title: 'Cero Comisiones de Plataforma',
+			description:
+				'Sin comisiones por entrada, sin costes mensuales. Solo pagas tu propia infraestructura y el procesamiento de pagos de Stripe.'
+		},
+		{
+			icon: 'code',
+			title: 'Licencia MIT',
+			description:
+				'Úsalo comercialmente, modifícalo, contribuye de vuelta... o no. Sin restricciones, sin obligaciones copyleft.'
+		},
+		{
+			icon: 'lock',
+			title: 'Control Total de los Datos',
+			description:
+				'Tus datos nunca salen de tus servidores. Cumplimiento total del RGPD porque tú lo controlas todo.'
+		},
+		{
+			icon: 'ticket',
+			title: 'Todas las Funciones Incluidas',
+			description:
+				'Entradas, RSVP, organizaciones, membresías, cuestionarios, check-in por QR, coordinación de comidas compartidas y mucho más.'
+		},
+		{
+			icon: 'globe',
+			title: 'API Moderna',
+			description:
+				'API REST con documentación OpenAPI. Crea tus propios frontends, integraciones o apps móviles.'
+		}
+	],
+	benefits: {
+		title: 'Por Qué Autoalojar Revel',
+		items: [
+			'Elimina los costes recurrentes de SaaS: paga solo tu infraestructura',
+			'Soberanía y privacidad total de los datos',
+			'Sin riesgo de cambios de política o subidas de precio de la plataforma',
+			'Personaliza y amplía el código según tus necesidades',
+			'Instala en cualquier región para cumplir con la normativa de datos',
+			'Comunidad y desarrollo activos'
+		]
+	},
+	cta: {
+		title: 'En Marcha en Minutos',
+		description: 'Consulta el código, lee la documentación o prueba primero la demo alojada.',
+		buttons: [
+			{ text: 'Ver en GitHub', href: 'https://github.com/letsrevel', variant: 'primary' },
+			{ text: 'Probar la Demo', href: 'https://demo.letsrevel.io', variant: 'secondary' },
+			{ text: 'Contáctanos', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
+		]
+	},
+	faq: [
+		{
+			question: '¿Cuáles son los requisitos del sistema?',
+			answer:
+				'Revel funciona en cualquier sitio donde funcione Docker. Mínimo recomendado: 2 núcleos de CPU, 4GB de RAM, 20GB de almacenamiento. Para producción con muchos eventos, recomendamos 4+ núcleos y 8GB+ de RAM. También necesitarás PostgreSQL (con PostGIS), Redis y una cuenta de Stripe para los pagos.'
+		},
+		{
+			question: '¿Cuánto tarda el despliegue?',
+			answer:
+				'Con Docker Compose puedes tener una instancia funcionando en menos de 10 minutos. El repositorio incluye configuraciones de despliegue completas y documentación.'
+		},
+		{
+			question: '¿Puedo seguir teniendo soporte si me autoalojo?',
+			answer:
+				'Sí. Ofrecemos soporte comunitario a través de GitHub issues. Para organizaciones que necesiten tiempos de respuesta garantizados o desarrollo a medida, contáctanos para conocer las opciones de soporte profesional.'
+		},
+		{
+			question: '¿Cuál es la diferencia entre autoalojado y vuestra versión alojada?',
+			answer:
+				'Funcionalmente idénticas. Nuestra versión alojada añade comodidad (gestionamos infraestructura, actualizaciones, copias de seguridad) a cambio de una pequeña comisión por entrada. Autoalojado es gratis, pero gestionas todo tú.'
+		}
+	],
+	relatedPages: ['eventbrite-alternative', 'privacy-focused-events']
+};
+
+export const selfHostedEventPlatformPT: LandingPageContent = {
+	slug: 'self-hosted-event-platform',
+	locale: 'pt',
+	meta: {
+		title: 'Gestão de Eventos Autoalojada – Código Aberto e Gratuita | Revel',
+		description:
+			'Plataforma de eventos com licença MIT que podes instalar nos teus próprios servidores. Zero comissões, controlo total, pronta para Docker. Bilhetes, RSVP, gestão de membros.',
+		keywords:
+			'gestão de eventos open source, alternativa ao eventbrite, software de bilhetes gratuito, plataforma de eventos autoalojada, docker eventos'
+	},
+	hero: {
+		headline: 'Os Teus Eventos, os Teus Servidores, Zero Comissões',
+		subheadline:
+			'Gestão de eventos com licença MIT que podes instalar em qualquer lugar. Bilhética completa, RSVP e ferramentas de comunidade — totalmente sob o teu controlo.'
+	},
+	intro: {
+		paragraphs: [
+			'Porquê pagar mensalidades de SaaS e confiar os dados da tua comunidade a uma corporação? O Revel é um software de gestão de eventos de código aberto que podes instalar na tua própria infraestrutura em minutos.',
+			'Construído com tecnologias modernas — Django, PostgreSQL, Redis e Docker — o Revel está pronto para produção e testado em condições reais. Bilhética completa com integração Stripe, RSVP, gestão de membros, seleção de participantes, check-in por QR e muito mais. Todas as funcionalidades das plataformas comerciais, sem custos recorrentes nem preocupações com os dados.',
+			'Licença MIT significa que podes usá-lo, modificá-lo e instalá-lo como quiseres. Sem dependência de fornecedor. Sem alterações de preço surpresa. Nenhuma plataforma decide que eventos podes organizar. A tua infraestrutura, as tuas regras.'
+		]
+	},
+	features: [
+		{
+			icon: 'server',
+			title: 'Implementação Pronta para Docker',
+			description:
+				'Fica operacional em minutos com o Docker Compose. PostgreSQL, Redis, Celery — tudo configurado e pronto a usar.'
+		},
+		{
+			icon: 'euro',
+			title: 'Zero Comissões de Plataforma',
+			description:
+				'Sem comissões por bilhete, sem custos mensais. Só pagas a tua própria infraestrutura e o processamento de pagamentos do Stripe.'
+		},
+		{
+			icon: 'code',
+			title: 'Licença MIT',
+			description:
+				'Usa-o comercialmente, modifica-o, contribui de volta — ou não. Sem restrições, sem obrigações copyleft.'
+		},
+		{
+			icon: 'lock',
+			title: 'Controlo Total dos Dados',
+			description:
+				'Os teus dados nunca saem dos teus servidores. Conformidade total com o RGPD porque controlas tudo.'
+		},
+		{
+			icon: 'ticket',
+			title: 'Conjunto Completo de Funcionalidades',
+			description:
+				'Bilhética, RSVP, organizações, associações, questionários, check-in por QR, coordenação de refeições partilhadas e muito mais.'
+		},
+		{
+			icon: 'globe',
+			title: 'API Moderna',
+			description:
+				'API REST com documentação OpenAPI. Cria os teus próprios frontends, integrações ou aplicações móveis.'
+		}
+	],
+	benefits: {
+		title: 'Porquê Autoalojar o Revel',
+		items: [
+			'Elimina os custos recorrentes de SaaS — paga apenas a tua infraestrutura',
+			'Soberania e privacidade total dos dados',
+			'Sem risco de alterações de política ou aumentos de preço da plataforma',
+			'Personaliza e estende o código conforme as tuas necessidades',
+			'Instala em qualquer região para conformidade de dados',
+			'Comunidade e desenvolvimento ativos'
+		]
+	},
+	cta: {
+		title: 'Operacional em Minutos',
+		description: 'Consulta o código, lê a documentação ou experimenta primeiro a demo alojada.',
+		buttons: [
+			{ text: 'Ver no GitHub', href: 'https://github.com/letsrevel', variant: 'primary' },
+			{ text: 'Experimentar a Demo', href: 'https://demo.letsrevel.io', variant: 'secondary' },
+			{ text: 'Contacta-nos', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
+		]
+	},
+	faq: [
+		{
+			question: 'Quais são os requisitos do sistema?',
+			answer:
+				'O Revel funciona em qualquer lugar onde o Docker funcione. Mínimo recomendado: 2 núcleos de CPU, 4GB de RAM, 20GB de armazenamento. Para produção com muitos eventos, recomendamos 4+ núcleos e 8GB+ de RAM. Também vais precisar de PostgreSQL (com PostGIS), Redis e uma conta Stripe para os pagamentos.'
+		},
+		{
+			question: 'Quanto tempo demora a implementação?',
+			answer:
+				'Com o Docker Compose, podes ter uma instância a funcionar em menos de 10 minutos. O repositório inclui configurações de implementação completas e documentação.'
+		},
+		{
+			question: 'Posso continuar a ter suporte se me autoalojar?',
+			answer:
+				'Sim. Oferecemos suporte da comunidade através de issues no GitHub. Para organizações que precisem de tempos de resposta garantidos ou desenvolvimento personalizado, contacta-nos sobre as opções de suporte profissional.'
+		},
+		{
+			question: 'Qual é a diferença entre autoalojado e a vossa versão alojada?',
+			answer:
+				'Funcionalmente idênticas. A nossa versão alojada acrescenta comodidade (gerimos a infraestrutura, atualizações, cópias de segurança) em troca de uma pequena comissão por bilhete. Autoalojado é gratuito, mas geres tudo tu.'
+		}
+	],
+	relatedPages: ['eventbrite-alternative', 'privacy-focused-events']
+};
+
 export const selfHostedEventPlatformIT: LandingPageContent = {
 	slug: 'self-hosted-event-platform',
 	locale: 'it',

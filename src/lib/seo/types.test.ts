@@ -2,12 +2,19 @@ import { describe, it, expect } from 'vitest';
 import { LANGS, X_DEFAULT, SITE_NAME, TWITTER_SITE, OG_LOCALE } from '$lib/seo/constants';
 
 describe('seo constants', () => {
-	it('exports the four supported languages', () => {
-		expect(LANGS).toEqual(['en', 'de', 'it', 'fr']);
+	it('exports the six supported languages', () => {
+		expect(LANGS).toEqual(['en', 'de', 'it', 'fr', 'es', 'pt']);
 	});
 
 	it('maps each lang to an OG locale', () => {
-		expect(OG_LOCALE).toEqual({ en: 'en_US', de: 'de_DE', it: 'it_IT', fr: 'fr_FR' });
+		expect(OG_LOCALE).toEqual({
+			en: 'en_US',
+			de: 'de_DE',
+			it: 'it_IT',
+			fr: 'fr_FR',
+			es: 'es_ES',
+			pt: 'pt_PT'
+		});
 	});
 
 	it('defines x-default sentinel', () => {

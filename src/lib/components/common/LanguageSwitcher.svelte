@@ -15,10 +15,12 @@
 		{ code: 'en', name: 'English' },
 		{ code: 'de', name: 'Deutsch' },
 		{ code: 'it', name: 'Italiano' },
-		{ code: 'fr', name: 'Français' }
+		{ code: 'fr', name: 'Français' },
+		{ code: 'es', name: 'Español' },
+		{ code: 'pt', name: 'Português' }
 	] as const;
 
-	type SupportedLanguage = 'en' | 'de' | 'it' | 'fr';
+	type SupportedLanguage = 'en' | 'de' | 'it' | 'fr' | 'es' | 'pt';
 
 	// Dropdown open state
 	let isOpen = $state(false);

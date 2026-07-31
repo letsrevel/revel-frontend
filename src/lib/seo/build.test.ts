@@ -30,8 +30,16 @@ describe('buildSeo', () => {
 		const cfg = buildSeo({ kind: 'home', url: url('/'), lang: 'en' });
 		expect(cfg.canonical).toBe('https://letsrevel.io/');
 		expect(cfg.og.locale).toBe('en_US');
-		expect(cfg.og.localeAlternate).toEqual(['de_DE', 'it_IT', 'fr_FR']);
-		expect(cfg.hreflang.map((h) => h.lang)).toEqual(['en', 'de', 'it', 'fr', 'x-default']);
+		expect(cfg.og.localeAlternate).toEqual(['de_DE', 'it_IT', 'fr_FR', 'es_ES', 'pt_PT']);
+		expect(cfg.hreflang.map((h) => h.lang)).toEqual([
+			'en',
+			'de',
+			'it',
+			'fr',
+			'es',
+			'pt',
+			'x-default'
+		]);
 		expect(cfg.hreflang.every((h) => h.href === 'https://letsrevel.io/')).toBe(true);
 		expect(cfg.jsonLd.some((j) => (j as Record<string, unknown>)['@type'] === 'WebSite')).toBe(
 			true

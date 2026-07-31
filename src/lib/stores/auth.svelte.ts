@@ -391,8 +391,8 @@ class AuthStore {
 			this._user = data;
 
 			// Set user's preferred language if available
-			if (data.language && ['en', 'de', 'it', 'fr'].includes(data.language)) {
-				setLocale(data.language as 'en' | 'de' | 'it' | 'fr');
+			if (data.language && ['en', 'de', 'it', 'fr', 'es', 'pt'].includes(data.language)) {
+				setLocale(data.language as 'en' | 'de' | 'it' | 'fr' | 'es' | 'pt');
 			}
 		} catch (err) {
 			// Check if this is a network error (likely ad blocker)

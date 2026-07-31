@@ -334,6 +334,240 @@ export const communityFirstEventPlatformIT: LandingPageContent = {
 	relatedPages: ['eventbrite-alternative', 'self-hosted-event-platform']
 };
 
+export const communityFirstEventPlatformES: LandingPageContent = {
+	slug: 'community-first-event-platform',
+	locale: 'es',
+	meta: {
+		title: 'Plataforma de Eventos Centrada en la Comunidad – Más Allá de las Entradas | Revel',
+		description:
+			'Construye comunidades duraderas, no solo eventos. Organizaciones, niveles de membresía, coordinación de comidas compartidas y más. Aloja tu propia instancia gratis o usa nuestra versión alojada.',
+		keywords:
+			'plataforma de eventos para comunidades, gestión de membresías, eventos para organizaciones, coordinación de comida compartida, crear comunidad, alternativa a meetup'
+	},
+	hero: {
+		headline: 'Construye Comunidades, No Solo Eventos',
+		subheadline:
+			'Organizaciones, membresías y herramientas únicas como la coordinación de comidas compartidas. Revel te ayuda a fomentar conexiones comunitarias duraderas.'
+	},
+	intro: {
+		paragraphs: [
+			'La mayoría de las plataformas de eventos tratan cada encuentro como una transacción puntual. Pero las comunidades reales necesitan más: estructura, continuidad y herramientas que sostengan relaciones duraderas.',
+			'Revel está pensado ante todo para comunidades. Crea organizaciones con niveles de membresía, asigna roles y permisos, y usa funciones como nuestro sistema único de coordinación de comidas compartidas para que los eventos sean más colaborativos y supongan menos trabajo para quien organiza.',
+			'Ya dirijas un club de lectura, un grupo de aficiones, una red profesional o un espacio maker, Revel te da la infraestructura para pasar de quedadas informales a una comunidad próspera, sin suscripciones caras ni dependencia de una sola plataforma.'
+		]
+	},
+	features: [
+		{
+			icon: 'users',
+			title: 'Estructura de Organización',
+			description:
+				'Crea espacios comunitarios con niveles de membresía, no solo listados de eventos. Roles de propietario, equipo y miembro con permisos detallados.'
+		},
+		{
+			icon: 'clipboard',
+			title: 'Coordinación de Comidas Compartidas',
+			description:
+				'Sistema integrado para coordinar quién trae qué. Gestiona restricciones alimentarias, cantidades y artículos, sin más hojas de cálculo caóticas.'
+		},
+		{
+			icon: 'shield',
+			title: 'Eventos Solo Para Miembros',
+			description:
+				'Restringe eventos a miembros, a niveles concretos o mantenlos públicos. Crea espacios exclusivos para tu comunidad.'
+		},
+		{
+			icon: 'ticket',
+			title: 'Venta de Entradas Integrada',
+			description:
+				'Eventos gratuitos, entradas de pago, solo confirmación de asistencia o formato híbrido. Gestiona desde quedadas informales hasta conferencias profesionales.'
+		},
+		{
+			icon: 'eye',
+			title: 'Nunca Publicidad',
+			description:
+				'Tu comunidad merece algo mejor que ver anuncios. Aloja tu propia instancia gratis o usa nuestra versión alojada sin publicidad.'
+		},
+		{
+			icon: 'code',
+			title: 'Código Abierto (MIT)',
+			description:
+				'Libre de usar, modificar y desplegar. Sin dependencia de proveedor. Ejecútalo en tus propios servidores con control total.'
+		}
+	],
+	benefits: {
+		title: 'Por Qué Quienes Organizan Comunidades Eligen Revel',
+		items: [
+			'Construye estructuras de membresía duraderas, no solo listas de eventos sueltos',
+			'Coordina comidas compartidas y responsabilidades conjuntas sin esfuerzo',
+			'Sin suscripciones caras como Meetup (540 €/año)',
+			'Experiencia sin publicidad para tus miembros',
+			'Eventos solo para miembros con los que construir comunidades exclusivas',
+			'Aloja tu propia instancia para control total y cero comisiones de plataforma'
+		]
+	},
+	cta: {
+		title: '¿Lista para Construir tu Comunidad?',
+		description:
+			'Descubre Revel en acción o despliégalo por tu cuenta. No se requiere tarjeta de crédito.',
+		buttons: [
+			{ text: 'Probar la Demo en Vivo', href: 'https://demo.letsrevel.io', variant: 'primary' },
+			{
+				text: 'Alojar tu Instancia (GitHub)',
+				href: 'https://github.com/letsrevel',
+				variant: 'secondary'
+			},
+			{ text: 'Contáctanos', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
+		]
+	},
+	faq: [
+		{
+			question: '¿En qué se diferencia de Meetup?',
+			answer:
+				'Meetup cuesta 540 €/año y muestra publicidad a quienes están en tu comunidad. Revel es gratuito para alojar tu propia instancia y no tiene publicidad en la versión alojada. Además integramos venta de entradas completa y funciones únicas como la coordinación de comidas compartidas que Meetup no ofrece.'
+		},
+		{
+			question: '¿Qué es la coordinación de comidas compartidas?',
+			answer:
+				'Es un sistema integrado que permite a quienes asisten coordinar quién trae qué a los eventos. Gestiona restricciones alimentarias, control de cantidades y asignación de artículos, sin más hojas de cálculo caóticas ni herramientas externas. Es ideal para comidas compartidas, préstamo de material, coordinación de voluntariado y mucho más.'
+		},
+		{
+			question: '¿Puedo crear eventos solo para miembros?',
+			answer:
+				'Sí. Puedes crear organizaciones con niveles de membresía y restringir eventos solo a miembros, a niveles concretos, o mantenerlos públicos. Tienes control total sobre la visibilidad y el acceso.'
+		},
+		{
+			question: '¿Revel es realmente gratis?',
+			answer:
+				'Sí, para alojar tu propia instancia (licencia MIT). Nuestra versión alojada cobra una pequeña comisión solo por la venta de entradas de pago (1,5 % + 0,25 € por entrada). Los eventos gratuitos y los de solo confirmación de asistencia no tienen comisión de plataforma en ninguna de las dos versiones.'
+		},
+		{
+			question: '¿Qué tipo de comunidades usan Revel?',
+			answer:
+				'Clubes de lectura, grupos de running, espacios maker, redes profesionales, comunidades de aficiones, grupos de interés especial y mucho más. Cualquier comunidad que quiera algo más que simples listados de eventos se beneficia de las funciones de organización y membresía de Revel.'
+		}
+	],
+	relatedPages: ['eventbrite-alternative', 'self-hosted-event-platform']
+};
+
+export const communityFirstEventPlatformPT: LandingPageContent = {
+	slug: 'community-first-event-platform',
+	locale: 'pt',
+	meta: {
+		title: 'Plataforma de Eventos Centrada na Comunidade – Para Além da Venda de Bilhetes | Revel',
+		description:
+			'Cria comunidades duradouras, não só eventos. Organizações, níveis de adesão, coordenação de refeições partilhadas e muito mais. Aloja a tua própria instância gratuitamente ou usa a versão alojada.',
+		keywords:
+			'plataforma de eventos para comunidades, gestão de membros, eventos para organizações, coordenação de refeições partilhadas, criar comunidade, alternativa ao meetup'
+	},
+	hero: {
+		headline: 'Cria Comunidades, Não Só Eventos',
+		subheadline:
+			'Organizações, adesões e ferramentas únicas como a coordenação de refeições partilhadas. O Revel ajuda-te a criar ligações comunitárias duradouras.'
+	},
+	intro: {
+		paragraphs: [
+			'A maioria das plataformas de eventos trata cada encontro como uma transação isolada. Mas as comunidades verdadeiras precisam de mais: estrutura, continuidade e ferramentas que sustentem relações duradouras.',
+			'O Revel foi pensado antes de mais para comunidades. Cria organizações com níveis de adesão, atribui funções e permissões, e usa funcionalidades como o nosso sistema único de coordenação de refeições partilhadas para tornar os eventos mais colaborativos e representarem menos trabalho para quem organiza.',
+			'Quer geras um clube de leitura, um grupo de passatempos, uma rede profissional ou um espaço maker, o Revel dá-te a infraestrutura para passares de encontros informais a uma comunidade próspera, sem subscrições caras nem dependência de uma única plataforma.'
+		]
+	},
+	features: [
+		{
+			icon: 'users',
+			title: 'Estrutura de Organização',
+			description:
+				'Cria espaços comunitários com níveis de adesão, não apenas listagens de eventos. Funções de proprietário, equipa e membro com permissões granulares.'
+		},
+		{
+			icon: 'clipboard',
+			title: 'Coordenação de Refeições Partilhadas',
+			description:
+				'Sistema integrado para coordenar quem traz o quê. Gere restrições alimentares, quantidades e itens — chega de folhas de cálculo caóticas.'
+		},
+		{
+			icon: 'shield',
+			title: 'Eventos Só Para Membros',
+			description:
+				'Restringe eventos a membros, a níveis específicos, ou mantém-nos públicos. Cria espaços exclusivos para a tua comunidade.'
+		},
+		{
+			icon: 'ticket',
+			title: 'Bilhética Integrada',
+			description:
+				'Eventos gratuitos, bilhetes pagos, apenas confirmação de presença, ou formato híbrido. Trata de tudo, de encontros informais a conferências profissionais.'
+		},
+		{
+			icon: 'eye',
+			title: 'Nunca Publicidade',
+			description:
+				'A tua comunidade merece melhor do que ver anúncios. Aloja a tua própria instância gratuitamente ou usa a nossa versão alojada sem publicidade.'
+		},
+		{
+			icon: 'code',
+			title: 'Código Aberto (MIT)',
+			description:
+				'Livre para usar, modificar e implementar. Sem dependência de fornecedor. Corre nos teus próprios servidores com controlo total.'
+		}
+	],
+	benefits: {
+		title: 'Porque É Que Quem Organiza Comunidades Escolhe o Revel',
+		items: [
+			'Constrói estruturas de adesão duradouras, não apenas listas de eventos avulsos',
+			'Coordena refeições partilhadas e responsabilidades conjuntas sem esforço',
+			'Sem subscrições caras como o Meetup (540 €/ano)',
+			'Experiência sem publicidade para os teus membros',
+			'Eventos só para membros para construir comunidades exclusivas',
+			'Aloja a tua própria instância para controlo total e zero comissões de plataforma'
+		]
+	},
+	cta: {
+		title: 'Queres Construir a Tua Comunidade?',
+		description:
+			'Vê o Revel em ação ou implementa-o por tua conta. Não é necessário cartão de crédito.',
+		buttons: [
+			{
+				text: 'Experimentar a Demo em Direto',
+				href: 'https://demo.letsrevel.io',
+				variant: 'primary'
+			},
+			{
+				text: 'Alojar a Tua Própria Instância (GitHub)',
+				href: 'https://github.com/letsrevel',
+				variant: 'secondary'
+			},
+			{ text: 'Contacta-nos', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
+		]
+	},
+	faq: [
+		{
+			question: 'Em que é que isto é diferente do Meetup?',
+			answer:
+				'O Meetup custa 540 €/ano e mostra publicidade a quem está na tua comunidade. O Revel é gratuito para alojares a tua própria instância e sem publicidade na versão alojada. Também integramos bilhética completa e funcionalidades únicas como a coordenação de refeições partilhadas, que o Meetup não tem.'
+		},
+		{
+			question: 'O que é a coordenação de refeições partilhadas?',
+			answer:
+				'É um sistema integrado que permite a quem participa coordenar quem traz o quê aos eventos. Gere restrições alimentares, gestão de quantidades e atribuição de itens — chega de folhas de cálculo caóticas ou ferramentas externas. É ótimo para refeições partilhadas, partilha de equipamento, coordenação de voluntariado e muito mais.'
+		},
+		{
+			question: 'Posso criar eventos só para membros?',
+			answer:
+				'Sim. Podes criar organizações com níveis de adesão e restringir eventos apenas a membros, a níveis específicos, ou mantê-los públicos. Tens controlo total sobre a visibilidade e o acesso.'
+		},
+		{
+			question: 'O Revel é mesmo gratuito?',
+			answer:
+				'Sim, para alojares a tua própria instância (licença MIT). A nossa versão alojada cobra uma pequena comissão apenas sobre a venda de bilhetes pagos (1,5 % + 0,25 € por bilhete). Eventos gratuitos e eventos só de confirmação de presença não têm qualquer comissão de plataforma em nenhuma das versões.'
+		},
+		{
+			question: 'Que tipos de comunidades usam o Revel?',
+			answer:
+				'Clubes de leitura, grupos de corrida, espaços maker, redes profissionais, comunidades de passatempos, grupos de interesse especial e muito mais. Qualquer comunidade que queira mais do que simples listagens de eventos beneficia das funcionalidades de organização e adesão do Revel.'
+		}
+	],
+	relatedPages: ['eventbrite-alternative', 'self-hosted-event-platform']
+};
+
 export const communityFirstEventPlatformFR: LandingPageContent = {
 	slug: 'community-first-event-platform',
 	locale: 'fr',

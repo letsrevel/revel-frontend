@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Spanish and European Portuguese**: the whole interface is now available in `es` and `pt`,
+  matching the locales the backend already sends email in. Both are selectable from the language
+  switcher and from your account language setting, and both carry all 7,876 interface strings.
+  The six SEO landing pages have Spanish and Portuguese editions too.
+
+### Fixed
+
+- Italian and German interfaces no longer fall back to English on roughly 480 strings each —
+  including account deletion, privacy and security settings, invitations, and recurring events,
+  which had been rendering in English to people who had chosen Italian or German.
+
 ## [1.70.0] - 2026-07-27
 
 ### Added
