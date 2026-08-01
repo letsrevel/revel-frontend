@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-08-01
+
+### Added
+
+- **Embed builder**: a new **Embed** tab under org admin turns the embeddable-events feature into something you can actually reach. Pick what to embed (the organization's event list, a single event, or a series), set theme, language, frame title and sizing, tune the list filters, and watch a live preview of the real embed as you go. Copy either the loader script or a plain iframe for CMSes that strip `<script>`. Event cards gain an **Embed on your site** action that opens the builder pre-pointed at that event. Only content an anonymous visitor can load is offered, so a copied snippet can't render an error page on your own website.
+
+### Fixed
+
+- The org admin tab strip no longer clips its last tabs on narrower desktop windows — **Settings** was cut off and reachable only by typing its URL. The strip now scrolls.
+
 ## [2.0.0] - 2026-07-31
 
 ### Added
