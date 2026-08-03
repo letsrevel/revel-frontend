@@ -13,8 +13,13 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 // OFF: the confirmation dialog still offers the quantity stepper, but the
 // per-ticket holder-name inputs that batch-purchase.spec.ts asserts on are
 // gone, and a 2-ticket claim goes through without a single name. The buyer
-// then names one of those tickets after the fact from the my-tickets modal
-// ("Add holder name" → rename dialog) — the other half of the flag's promise.
+// then sets a real holder name after the fact from the my-tickets modal
+// ("Rename holder" → rename dialog) — the other half of the flag's promise.
+//
+// "Nameless" is about the CHECKOUT, not the stored ticket: the backend fills
+// an omitted guest_name with the buyer's own profile name, so the tickets
+// arrive named and the modal's button reads "Rename holder" (see the comment
+// at that click).
 //
 // Isolation: an own event (the flag changes checkout's shape) plus a
 // throwaway buyer (tickets consume the per-user tier limit); the auto
@@ -104,25 +109,41 @@ test.describe('J6 nameless checkout @p1', () => {
 			}).toPass({ timeout: 45_000 });
 			await expect(ticketCard).toBeVisible();
 
-			// The ticket is nameless, so the modal offers "Add holder name"
-			// (a named one would read "Rename holder"). `ticketCard` is a coarse
-			// container locator that can resolve to an ancestor holding BOTH
-			// cards, so the button needs its own .first() to stay strict-safe —
-			// unlike the single-ticket model specs.
+			// The modal offers "Rename holder", NOT "Add holder name": the UI sent
+			// no names at all (that is what the assertions above prove), but the
+			// backend fills the blank with the buyer's own profile name
+			// (`guest_name=item.guest_name or (preferred_name or get_full_name())`
+			// in batch_ticket_service/tickets.py), so a logged-in buyer's tickets
+			// are never truly nameless. Only email-only guests — who have no
+			// dashboard — end up with a blank holder and the "Add holder name"
+			// wording.
+			//
+			// `ticketCard` is a coarse container locator that can resolve to an
+			// ancestor holding BOTH cards, so the button needs its own .first()
+			// to stay strict-safe — unlike the single-ticket model specs.
 			await ticketCard.getByRole('button', { name: 'View ticket and QR code' }).first().click();
 			const modal = page.getByRole('dialog', { name: 'Your Ticket', exact: true });
 			await expect(modal).toBeVisible();
 
 			const holderName = uniqueName('Holder');
-			await modal.getByRole('button', { name: 'Add holder name' }).click();
+			await modal.getByRole('button', { name: 'Rename holder' }).click();
 			const renameDialog = page.getByRole('dialog', { name: 'Rename ticket holder' });
 			await renameDialog.getByLabel('Holder name').fill(holderName);
 			await renameDialog.getByRole('button', { name: 'Save' }).click();
 			await expect(page.getByText('Ticket holder updated')).toBeVisible({ timeout: 10_000 });
 
-			// The name is on the ticket: the rename invalidates dashboard-tickets
-			// and the still-open modal re-reads the refreshed card.
-			await expect(modal.getByText(holderName)).toBeVisible({ timeout: 15_000 });
+			// Re-open the ticket from a CLOSED state rather than trusting the
+			// still-open modal to live-update after the query invalidation. The
+			// PATCH targeted the first card's ticket and card order is stable
+			// across the refetch, so the same card carries the new name; the
+			// Escape at the TOP of the loop body lets every retry re-enter from a
+			// closed state instead of clicking into a dialog overlay.
+			await expect(async () => {
+				await page.keyboard.press('Escape');
+				await ticketCard.getByRole('button', { name: 'View ticket and QR code' }).first().click();
+				await expect(modal).toBeVisible({ timeout: 3_000 });
+				await expect(modal.getByText(holderName)).toBeVisible({ timeout: 3_000 });
+			}).toPass({ timeout: 30_000 });
 		} finally {
 			await context.close();
 		}
