@@ -1,7 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { getGuestNameIfDifferent } from './ticket-helpers';
 
-function ticket(guestName: string | null | undefined, user: Record<string, unknown> = {}) {
+interface TicketFixture {
+	guest_name: unknown;
+	user: Record<string, unknown>;
+}
+
+function ticket(guestName: unknown, user: Record<string, unknown> = {}): TicketFixture {
 	return {
 		guest_name: guestName,
 		user: { first_name: 'Ann', last_name: 'Attendee', ...user }
@@ -25,6 +30,11 @@ describe('getGuestNameIfDifferent', () => {
 
 	it('treats a whitespace-only name as nameless', () => {
 		expect(getGuestNameIfDifferent(ticket('   '))).toBeNull();
+	});
+
+	it('treats non-string holder names as nameless', () => {
+		expect(getGuestNameIfDifferent(ticket(42))).toBeNull();
+		expect(getGuestNameIfDifferent(ticket({ name: 'Bob' }))).toBeNull();
 	});
 
 	it('returns the trimmed holder name', () => {
