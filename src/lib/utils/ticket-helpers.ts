@@ -8,10 +8,10 @@ import { getUserDisplayName } from '$lib/utils/user-display';
  * Get guest name if different from user display name
  */
 export function getGuestNameIfDifferent(ticket: any): string | null {
-	const guestName = ticket.guest_name;
+	const guestName = typeof ticket.guest_name === 'string' ? ticket.guest_name.trim() : '';
 	if (!guestName) return null;
 	const userDisplayName = getUserDisplayName(ticket.user, m['eventTicketsAdmin.unknownUser']());
-	if (guestName.toLowerCase().trim() === userDisplayName.toLowerCase().trim()) return null;
+	if (guestName.toLowerCase() === userDisplayName.toLowerCase().trim()) return null;
 	return guestName;
 }
 

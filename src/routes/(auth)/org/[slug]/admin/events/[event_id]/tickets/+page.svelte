@@ -38,6 +38,7 @@
 	import QRScannerModal from '$lib/components/tickets/QRScannerModal.svelte';
 	import CheckInDialog from '$lib/components/tickets/CheckInDialog.svelte';
 	import ReseatDialog from '$lib/components/tickets/ReseatDialog.svelte';
+	import RenameTicketHolderDialog from '$lib/components/tickets/RenameTicketHolderDialog.svelte';
 	import MakeMemberModal from '$lib/components/members/MakeMemberModal.svelte';
 	import ExportButton from '$lib/components/common/ExportButton.svelte';
 	import { isSeriesPassCode } from '$lib/utils/series-pass-qr';
@@ -67,6 +68,8 @@
 	let showQRScanner = $state(false);
 	let showReseatDialog = $state(false);
 	let ticketToReseat = $state<AdminTicketSchema | null>(null);
+	let showRenameDialog = $state(false);
+	let ticketToRename = $state<AdminTicketSchema | null>(null);
 
 	// Membership + blacklist admin actions (state, mutations, handlers).
 	const memberAdmin = createTicketMemberAdmin({
@@ -213,26 +216,20 @@
 		}
 	}));
 
-	/**
-	 * Open unconfirm payment dialog
-	 */
+	// Open unconfirm payment dialog
 	function openUnconfirmPaymentDialog(ticket: AdminTicketSchema) {
 		ticketToUnconfirm = ticket;
 		showUnconfirmPaymentDialog = true;
 	}
 
-	/**
-	 * Confirm unconfirm payment
-	 */
+	// Confirm unconfirm payment
 	function confirmUnconfirmPayment() {
 		if (ticketToUnconfirm?.id) {
 			unconfirmPaymentMutation.mutate(ticketToUnconfirm.id);
 		}
 	}
 
-	/**
-	 * Cancel unconfirm payment
-	 */
+	// Cancel unconfirm payment
 	function cancelUnconfirmPayment() {
 		showUnconfirmPaymentDialog = false;
 		ticketToUnconfirm = null;
@@ -247,9 +244,7 @@
 		applyFilters();
 	}
 
-	/**
-	 * Apply filters to URL
-	 */
+	// Apply filters to URL
 	function applyFilters() {
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local URL builder, mutated synchronously then discarded via goto()
 		const params = new URLSearchParams();
@@ -305,9 +300,7 @@
 		applyFilters();
 	}
 
-	/**
-	 * Navigate to page
-	 */
+	// Navigate to page
 	function goToPage(pageNum: number) {
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local URL builder, mutated synchronously then discarded via goto()
 		const params = new URLSearchParams($page.url.searchParams);
@@ -330,18 +323,14 @@
 		showConfirmPaymentDialog = true;
 	}
 
-	/**
-	 * Close confirm payment dialog
-	 */
+	// Close confirm payment dialog
 	function closeConfirmPaymentDialog() {
 		showConfirmPaymentDialog = false;
 		ticketToConfirm = null;
 		pwycPricePaid = '';
 	}
 
-	/**
-	 * Submit confirm payment
-	 */
+	// Submit confirm payment
 	function submitConfirmPayment() {
 		if (ticketToConfirm?.id) {
 			const pricePaid = isPwycTicket(ticketToConfirm) ? pwycPricePaid : undefined;
@@ -436,6 +425,12 @@
 	function handleReseat(ticket: AdminTicketSchema) {
 		ticketToReseat = ticket;
 		showReseatDialog = true;
+	}
+
+	// Open the rename-holder dialog for a ticket.
+	function handleRenameHolder(ticket: AdminTicketSchema) {
+		ticketToRename = ticket;
+		showRenameDialog = true;
 	}
 
 	async function handleExportAttendees(): Promise<string> {
@@ -580,6 +575,7 @@
 				onBlacklist={memberAdmin.openBlacklistDialog}
 				onUnconfirmPayment={openUnconfirmPaymentDialog}
 				onReseat={handleReseat}
+				onRenameHolder={handleRenameHolder}
 			/>
 
 			<!-- Mobile Cards -->
@@ -598,6 +594,7 @@
 				onBlacklist={memberAdmin.openBlacklistDialog}
 				onUnconfirmPayment={openUnconfirmPaymentDialog}
 				onReseat={handleReseat}
+				onRenameHolder={handleRenameHolder}
 			/>
 		{/if}
 
@@ -693,6 +690,22 @@
 	}}
 	onReseated={() => invalidateAll()}
 />
+
+<!-- Rename holder Dialog -->
+{#if ticketToRename?.id}
+	<RenameTicketHolderDialog
+		open={showRenameDialog}
+		ticketId={ticketToRename.id}
+		eventId={data.event.id}
+		currentName={ticketToRename.guest_name?.trim() ?? ''}
+		accessToken={$page.data.user?.accessToken ?? null}
+		onClose={() => {
+			showRenameDialog = false;
+			ticketToRename = null;
+		}}
+		onRenamed={() => invalidateAll()}
+	/>
+{/if}
 
 <!-- Make Member Modal -->
 <MakeMemberModal

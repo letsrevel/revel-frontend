@@ -1962,7 +1962,7 @@
 		"statsActive": "Active",
 		"statsCheckedIn": "Checked In",
 		"statsCancelled": "Cancelled",
-		"searchPlaceholder": "Search by name, email, or tier...",
+		"searchPlaceholder": "Search by holder, purchaser, email, or tier...",
 		"filterByStatus": "Filter by Status",
 		"filterByPaymentMethod": "Filter by Payment Method",
 		"filterAll": "All",
@@ -9193,5 +9193,7 @@
 	"renameTicketDialog.errorConflict": "This ticket can no longer be renamed (already checked in or cancelled).",
 	"renameTicketDialog.errorGeneric": "Could not update the ticket holder.",
 	"myTicketModal.renameHolder": "Rename holder",
-	"myTicketModal.addHolderName": "Add holder name"
+	"myTicketModal.addHolderName": "Add holder name",
+	"ticketTable.renameHolder": "Rename holder",
+	"ticketCardList.renameHolder": "Rename holder"
 }

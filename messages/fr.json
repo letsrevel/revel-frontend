@@ -1849,7 +1849,7 @@
 		"statsActive": "Actifs",
 		"statsCheckedIn": "Enregistrés",
 		"statsCancelled": "Annulés",
-		"searchPlaceholder": "Rechercher par nom, e-mail ou catégorie...",
+		"searchPlaceholder": "Rechercher par titulaire, acheteur, e-mail ou catégorie...",
 		"filterByStatus": "Filtrer par statut",
 		"filterByPaymentMethod": "Filtrer par moyen de paiement",
 		"filterAll": "Tous",
@@ -9193,5 +9193,7 @@
 	"renameTicketDialog.errorConflict": "Ce billet ne peut plus être renommé (déjà enregistré ou annulé).",
 	"renameTicketDialog.errorGeneric": "Impossible de mettre à jour le titulaire du billet.",
 	"myTicketModal.renameHolder": "Renommer le titulaire",
-	"myTicketModal.addHolderName": "Ajouter un nom"
+	"myTicketModal.addHolderName": "Ajouter un nom",
+	"ticketTable.renameHolder": "Renommer le titulaire",
+	"ticketCardList.renameHolder": "Renommer le titulaire"
 }

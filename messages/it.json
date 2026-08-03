@@ -1962,7 +1962,7 @@
 		"statsActive": "Attivi",
 		"statsCheckedIn": "Check-in effettuato",
 		"statsCancelled": "Annullati",
-		"searchPlaceholder": "Cerca per nome, email o categoria...",
+		"searchPlaceholder": "Cerca per intestatario, acquirente, email o tipo di biglietto...",
 		"filterByStatus": "Filtra per stato",
 		"filterByPaymentMethod": "Filtra per metodo di pagamento",
 		"filterAll": "Tutti",
@@ -9193,5 +9193,7 @@
 	"renameTicketDialog.errorConflict": "Questo biglietto non può più essere rinominato (già registrato o annullato).",
 	"renameTicketDialog.errorGeneric": "Impossibile aggiornare l'intestatario del biglietto.",
 	"myTicketModal.renameHolder": "Rinomina intestatario",
-	"myTicketModal.addHolderName": "Aggiungi nome"
+	"myTicketModal.addHolderName": "Aggiungi nome",
+	"ticketTable.renameHolder": "Rinomina intestatario",
+	"ticketCardList.renameHolder": "Rinomina intestatario"
 }

@@ -1962,7 +1962,7 @@
 		"statsActive": "Ativos",
 		"statsCheckedIn": "Check-in feito",
 		"statsCancelled": "Cancelados",
-		"searchPlaceholder": "Pesquisar por nome, e-mail ou tipo de bilhete...",
+		"searchPlaceholder": "Pesquisar por titular, comprador, email ou tipo de bilhete...",
 		"filterByStatus": "Filtrar por estado",
 		"filterByPaymentMethod": "Filtrar por método de pagamento",
 		"filterAll": "Todos",
@@ -9193,5 +9193,7 @@
 	"renameTicketDialog.errorConflict": "Este bilhete já não pode ser renomeado (já registado ou cancelado).",
 	"renameTicketDialog.errorGeneric": "Não foi possível atualizar o titular do bilhete.",
 	"myTicketModal.renameHolder": "Renomear titular",
-	"myTicketModal.addHolderName": "Adicionar nome"
+	"myTicketModal.addHolderName": "Adicionar nome",
+	"ticketTable.renameHolder": "Renomear titular",
+	"ticketCardList.renameHolder": "Renomear titular"
 }

@@ -1962,7 +1962,7 @@
 		"statsActive": "Activo",
 		"statsCheckedIn": "Con check-in",
 		"statsCancelled": "Cancelado",
-		"searchPlaceholder": "Busca por nombre, correo electrónico o tipo...",
+		"searchPlaceholder": "Buscar por titular, comprador, correo o tipo de entrada...",
 		"filterByStatus": "Filtrar por estado",
 		"filterByPaymentMethod": "Filtrar por método de pago",
 		"filterAll": "Todos",
@@ -9193,5 +9193,7 @@
 	"renameTicketDialog.errorConflict": "Esta entrada ya no se puede renombrar (ya registrada o cancelada).",
 	"renameTicketDialog.errorGeneric": "No se pudo actualizar el titular de la entrada.",
 	"myTicketModal.renameHolder": "Renombrar titular",
-	"myTicketModal.addHolderName": "Añadir nombre"
+	"myTicketModal.addHolderName": "Añadir nombre",
+	"ticketTable.renameHolder": "Renombrar titular",
+	"ticketCardList.renameHolder": "Renombrar titular"
 }

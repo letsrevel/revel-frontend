@@ -1962,7 +1962,7 @@
 		"statsActive": "Aktiv",
 		"statsCheckedIn": "Eingecheckt",
 		"statsCancelled": "Storniert",
-		"searchPlaceholder": "Nach Name, E-Mail oder Kategorie suchen...",
+		"searchPlaceholder": "Suche nach Inhaber*in, Käufer*in, E-Mail oder Kategorie...",
 		"filterByStatus": "Nach Status filtern",
 		"filterByPaymentMethod": "Nach Zahlungsart filtern",
 		"filterAll": "Alle",
@@ -9193,5 +9193,7 @@
 	"renameTicketDialog.errorConflict": "Dieses Ticket kann nicht mehr umbenannt werden (bereits eingecheckt oder storniert).",
 	"renameTicketDialog.errorGeneric": "Ticketinhaber*in konnte nicht aktualisiert werden.",
 	"myTicketModal.renameHolder": "Inhaber*in umbenennen",
-	"myTicketModal.addHolderName": "Namen hinzufügen"
+	"myTicketModal.addHolderName": "Namen hinzufügen",
+	"ticketTable.renameHolder": "Inhaber*in umbenennen",
+	"ticketCardList.renameHolder": "Inhaber*in umbenennen"
 }
