@@ -17,10 +17,16 @@ import { completeStripeCheckout } from '../../support/stripe';
 // webhook flips the subscription ACTIVE.
 //
 // MUST-COVER here and nowhere else, TWO server-side hops jsdom cannot exercise:
-//   * Stripe's return URLs are built by the BACKEND and still point at the org
-//     LANDING page (`/org/{slug}?membership_success=true`), which 303-redirects
-//     the flag on to `/org/{slug}/membership` (#720/#726). This spec drives the
-//     real backend-built URL, so it is the only proof that hop happens.
+//   * Stripe's return URLs are built by the BACKEND. Once backend #849
+//     deploys, they carry the org UUID
+//     (`/org/{org_uuid}/membership?membership_success=true`), and the
+//     `[org_id=uuid]` route resolves it and 303-redirects to
+//     `/org/{slug}/membership` (#756). Pre-#849 sessions — which today means
+//     ALL of them — carry the old slug LANDING-page URL
+//     (`/org/{slug}?membership_success=true`), which the landing page's own
+//     load 303-redirects the flag on from (#720/#726) — both hops land on the
+//     same membership page. This spec drives the real backend-built URL, so
+//     it is the only proof either hop happens.
 //   * the flag is then consumed in onMount with the RAW history API (see
 //     MembershipSection — $app/navigation's replaceState throws during
 //     hydration).
@@ -35,7 +41,7 @@ import { completeStripeCheckout } from '../../support/stripe';
 // backend refuses a second non-terminal subscription per user per org).
 
 const ORG_SLUG = 'revel-events-collective';
-/** Where Stripe is sent back to — backend-owned, and still the LANDING page. */
+/** The org landing page (backend-owned redirect target for pre-#849 sessions). */
 const ORG_PATH = `/org/${ORG_SLUG}`;
 /** Where the plans live, and where the checkout return actually lands. */
 const MEMBERSHIP_PATH = membershipPath(ORG_SLUG);
@@ -120,10 +126,12 @@ test.describe('J23 hosted-checkout subscribe @p2', () => {
 		await expect(welcome).toBeVisible({ timeout: 120_000 });
 		await expect(page.getByText('Your subscription is active.')).toBeVisible();
 
-		// MUST-COVER, both hops at once: Stripe returned to the LANDING path, the
-		// server load forwarded it to the membership page (#726), and the flag was
-		// then consumed in onMount via the raw history API — so a reload or a
-		// back-navigation cannot replay the card.
+		// MUST-COVER, both hops at once: Stripe returned to whichever URL this
+		// session was minted for — post-#849 the org-UUID membership route, or
+		// pre-#849 the slug LANDING page forwarded by its own load (#726/#756) —
+		// the server load resolved it to the canonical membership page, and the
+		// flag was then consumed in onMount via the raw history API — so a
+		// reload or a back-navigation cannot replay the card.
 		await expect(page).toHaveURL(new RegExp(`${MEMBERSHIP_PATH}(?:$|[?#])`));
 		expect(page.url()).not.toContain('membership_success');
 
@@ -223,10 +231,14 @@ test.describe('J23 hosted-checkout subscribe @p2', () => {
 		await expect(inlineCard.getByLabel('Pending')).toBeVisible({ timeout: 20_000 });
 		await expect(inlineCard.getByText('Awaiting first payment')).toBeVisible();
 
-		// Abandon: walk away from the hosted page onto the backend-built cancel
-		// URL instead of paying. The PENDING subscription (and its open Checkout
-		// session) survives. That URL is the LANDING page, which forwards the flag
-		// to the membership page where the card that reads it now lives (#726).
+		// Abandon: walk away from the hosted page instead of paying, simulating
+		// the cancel URL as the slug LANDING page (still what pre-#849 Stripe
+		// sessions carry) rather than actually driving Stripe's cancel action.
+		// The PENDING subscription (and its open Checkout session) survives.
+		// That URL's own load 303-forwards the flag to the membership page where
+		// the card that reads it now lives (#726). Post-#849 sessions instead
+		// carry `/org/{org_uuid}/membership?membership_cancelled=true`, which the
+		// `[org_id=uuid]` route resolves to the same membership page (#756).
 		await gotoHydrated(page, `${ORG_PATH}?membership_cancelled=true`);
 		await expect(page).toHaveURL(new RegExp(`${MEMBERSHIP_PATH}(?:$|[?#])`));
 		await expect(page.getByRole('heading', { name: 'Checkout not completed' })).toBeVisible({

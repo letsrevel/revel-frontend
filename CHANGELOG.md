@@ -11,6 +11,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Landing page redesigned as a full-bleed color-block poster: brand-gradient hero with a rotating headline noun, amber pricing panel with direct fee comparison, dedicated panels for communities and for venues/theaters (premium seating), ticket-stub feature stubs, and an open-source panel. Replaces the card-grid landing page.
 
+## [2.2.0] - 2026-08-03
+
+### Added
+
+- **Optional ticket holder names**: organizers can untick a new "Require ticket holder names" setting on ticketed events (in the event editor, the creation wizard, and recurring-event templates). With names off, logged-in checkout shows no holder-name inputs at all, and guest checkout needs only an email address — no first/last name. Holders can be named or renamed after purchase: ticket owners from their ticket in **My tickets**, admins from the event tickets table (blocked once a ticket is checked in or cancelled), and the admin ticket search now matches holder names too.
+
+### Changed
+
+- Returning from a Stripe checkout (tickets, series passes, membership subscriptions) can now travel through opaque, UUID-based URLs that immediately redirect to the usual event, series, or membership page — the backend starts emitting them in an upcoming release. Organization and event names no longer appear in the URLs shared with Stripe. Slug URLs are untouched, and older in-flight checkout sessions keep working.
+
+### Fixed
+
+- Buyers who never set a name on their profile no longer get their email address stamped onto tickets as the holder name (and from there onto the Stripe payment description and invoice). Such tickets now fall back to the localized "Guest" placeholder, and blank holder names render as the purchaser's identity across my-tickets, the admin table, and check-in.
+
 ## [2.1.0] - 2026-08-01
 
 ### Added
