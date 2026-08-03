@@ -9,6 +9,9 @@ describe('ClosePanel', () => {
 		expect(
 			screen.getByRole('link', { name: m['home.poster.closeCreateOrg']() })
 		).toBeInTheDocument();
+		// The other direction of the gate: without this, an implementation that
+		// rendered BOTH branches unconditionally would still pass every test here.
+		expect(screen.queryByText(m['nav.browseEvents']())).not.toBeInTheDocument();
 	});
 
 	it('falls back to Browse events when org creation is off', () => {
