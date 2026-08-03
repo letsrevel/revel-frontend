@@ -15,13 +15,20 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 
 	let target = '/';
 	try {
-		const { data } = await eventseriesGetEventSeries({
+		const { data, response } = await eventseriesGetEventSeries({
 			fetch,
 			path: { series_id: params.series_id },
 			headers
 		});
 		if (data) {
 			target = `/events/${data.organization.slug}/series/${data.slug}${url.search}`;
+		} else {
+			// The client doesn't throw on HTTP errors — log the 404/410 path too,
+			// or a buyer bounced to `/` after paying leaves no trace.
+			log.warning('uuid_series_resolve_failed', {
+				status: response?.status,
+				seriesId: params.series_id
+			});
 		}
 	} catch (err) {
 		log.warning('uuid_series_resolve_failed', { error: err, seriesId: params.series_id });

@@ -19,13 +19,20 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 
 	let target = '/';
 	try {
-		const { data } = await organizationGetOrganizationById({
+		const { data, response } = await organizationGetOrganizationById({
 			fetch,
 			path: { organization_id: params.org_id },
 			headers
 		});
 		if (data) {
 			target = `/org/${data.slug}/membership${url.search}`;
+		} else {
+			// The client doesn't throw on HTTP errors — log the 404/410 path too,
+			// or a buyer bounced to `/` after paying leaves no trace.
+			log.warning('uuid_org_resolve_failed', {
+				status: response?.status,
+				orgId: params.org_id
+			});
 		}
 	} catch (err) {
 		log.warning('uuid_org_resolve_failed', { error: err, orgId: params.org_id });
