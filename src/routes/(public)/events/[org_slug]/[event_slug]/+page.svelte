@@ -42,6 +42,7 @@
 	import type { TierRemainingTicketsSchema } from '$lib/api/generated/types.gen';
 	import { getPotluckPermissions } from '$lib/utils/permissions';
 	import { formatEventLocation } from '$lib/utils/event';
+	import { getUserRealName } from '$lib/utils/user-display';
 	import { formatDateTime } from '$lib/utils/date';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
@@ -139,8 +140,10 @@
 		return undefined;
 	});
 
-	// Get user's display name for ticket purchase forms
-	const userDisplayName = $derived(authStore.user?.display_name ?? '');
+	// Holder-name default for ticket purchase forms. Name fields only — the
+	// backend's display_name bottoms out at username (= email), which must
+	// never be written into guest_name (BE 8b12be6c).
+	const ticketHolderDefaultName = $derived(authStore.user ? getUserRealName(authStore.user) : '');
 
 	// Active waitlist offer (eligibility-shaped userStatus with allowed=true + expiry)
 	const activeOfferExpiresAt = $derived.by((): string | null => {
@@ -233,7 +236,7 @@
 		eventId: event.id,
 		queryClient,
 		getUserTickets: () => userTickets,
-		getUserDisplayName: () => userDisplayName,
+		getUserDisplayName: () => ticketHolderDefaultName,
 		getRequireTicketNames: () => event.require_ticket_names,
 		setUserStatus: (status) => {
 			userStatus = status;
@@ -619,7 +622,7 @@
 	timezone={event.timezone}
 	capacityDisclosed={viewerVisibility.show_capacity}
 	eventMaxTicketsPerUser={event.max_tickets_per_user}
-	userName={userDisplayName}
+	userName={ticketHolderDefaultName}
 	requireTicketNames={event.require_ticket_names}
 	{preSelectedTier}
 	{initialDiscountCode}

@@ -65,7 +65,9 @@ export interface CheckoutControllerDeps {
 	queryClient: QueryClient;
 	/** Current user's tickets (used to locate a pending payment to resume). */
 	getUserTickets: () => EventTicketSchemaActual[];
-	/** Logged-in user's display name (fallback for guest_name). */
+	// Buyer's name for guest_name defaulting. MUST be name fields only
+	// (getUserRealName), never display_name — that bottoms out at
+	// username = email, which must not be written onto tickets.
 	getUserDisplayName: () => string;
 	/** Whether the event demands a holder name on every ticket. */
 	getRequireTicketNames: () => boolean;

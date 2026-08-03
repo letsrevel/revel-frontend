@@ -28,3 +28,19 @@ export function getUserDisplayName(user: UserDisplayInfo, fallback = 'Unknown Us
 export function getUserEmail(user: UserDisplayInfo): string | undefined {
 	return user.email ?? undefined;
 }
+
+/**
+ * Name-fields-only variant for values that get WRITTEN somewhere (ticket
+ * holder names, payment descriptions): preferred_name > first+last > first,
+ * else ''. Never falls back to email/username — registration sets
+ * username = email for every account, so an email fallback would stamp the
+ * buyer's address onto tickets and invoices (the leak BE 8b12be6c fixed
+ * server-side). Callers needing a non-empty value supply their own
+ * placeholder.
+ */
+export function getUserRealName(user: UserDisplayInfo): string {
+	if (user.preferred_name) return user.preferred_name;
+	if (user.first_name && user.last_name) return `${user.first_name} ${user.last_name}`;
+	if (user.first_name) return user.first_name;
+	return '';
+}
