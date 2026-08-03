@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Returning from a Stripe checkout (tickets, series passes, membership subscriptions) now travels through opaque, UUID-based URLs that immediately redirect to the usual event, series, or membership page. Organization and event names no longer appear in the URLs shared with Stripe. Slug URLs are untouched, and older in-flight checkout sessions keep working. (#756)
+- Returning from a Stripe checkout (tickets, series passes, membership subscriptions) can now travel through opaque, UUID-based URLs that immediately redirect to the usual event, series, or membership page — the backend starts emitting them in an upcoming release. Organization and event names no longer appear in the URLs shared with Stripe. Slug URLs are untouched, and older in-flight checkout sessions keep working. (#756)
 
 ## [2.1.0] - 2026-08-01
 
