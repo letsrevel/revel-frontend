@@ -2750,7 +2750,7 @@
 			"title": "Fee Calculator",
 			"ticketPrice": "Ticket Price",
 			"creditCardFees": "Credit Card Fees",
-			"creditCardFeesDescription": "1.5% + €0.25 per transaction. These go to Stripe - we have no control over them.",
+			"creditCardFeesDescription": "1.5% + €0.25 per transaction (EEA cards) or 2.5% + €0.25 (UK cards). These go to Stripe - we have no control over them.",
 			"viewStripePricing": "View Stripe pricing",
 			"platformFee": "Platform Fee",
 			"platformFeeDescription": "1.5% + €0.25 per transaction. This goes to Revel to keep the lights on.",

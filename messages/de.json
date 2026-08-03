@@ -2750,7 +2750,7 @@
 			"title": "Gebührenrechner",
 			"ticketPrice": "Ticketpreis",
 			"creditCardFees": "Kreditkartengebühren",
-			"creditCardFeesDescription": "1,5% + 0,25€ pro Transaktion. Diese gehen an Stripe - wir haben keinen Einfluss darauf.",
+			"creditCardFeesDescription": "1,5% + 0,25€ pro Transaktion (EWR-Karten) oder 2,5% + 0,25€ (UK-Karten). Diese gehen an Stripe - wir haben keinen Einfluss darauf.",
 			"viewStripePricing": "Stripe-Preise ansehen",
 			"platformFee": "Plattformgebühr",
 			"platformFeeDescription": "1,5% + 0,25€ pro Transaktion. Dies geht an Revel, um den Betrieb aufrechtzuerhalten.",

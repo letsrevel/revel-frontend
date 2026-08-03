@@ -2750,7 +2750,7 @@
 			"title": "Calculadora de comisiones",
 			"ticketPrice": "Precio de la entrada",
 			"creditCardFees": "Comisiones de tarjeta de crédito",
-			"creditCardFeesDescription": "1,5 % + 0,25 € por transacción. Van destinadas a Stripe: no tenemos control sobre ellas.",
+			"creditCardFeesDescription": "1,5 % + 0,25 € por transacción (tarjetas del EEE) o 2,5 % + 0,25 € (tarjetas del Reino Unido). Van destinadas a Stripe: no tenemos control sobre ellas.",
 			"viewStripePricing": "Ver los precios de Stripe",
 			"platformFee": "Comisión de la plataforma",
 			"platformFeeDescription": "1,5 % + 0,25 € por transacción. Esta comisión va a Revel para mantener el servicio en marcha.",

@@ -2637,7 +2637,7 @@
 			"title": "Calculateur de frais",
 			"ticketPrice": "Prix du billet",
 			"creditCardFees": "Frais de carte bancaire",
-			"creditCardFeesDescription": "1,5 % + 0,25 € par transaction. Ils reviennent à Stripe - nous n'avons aucun contrôle dessus.",
+			"creditCardFeesDescription": "1,5 % + 0,25 € par transaction (cartes EEE) ou 2,5 % + 0,25 € (cartes du Royaume-Uni). Ils reviennent à Stripe - nous n'avons aucun contrôle dessus.",
 			"viewStripePricing": "Voir les tarifs Stripe",
 			"platformFee": "Frais de plateforme",
 			"platformFeeDescription": "1,5 % + 0,25 € par transaction. Cela revient à Revel pour assurer le fonctionnement.",

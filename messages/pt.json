@@ -2750,7 +2750,7 @@
 			"title": "Calculadora de taxas",
 			"ticketPrice": "Preço do bilhete",
 			"creditCardFees": "Taxas de cartão de crédito",
-			"creditCardFeesDescription": "1,5% + 0,25 € por transação. Estas taxas vão para o Stripe - não temos qualquer controlo sobre elas.",
+			"creditCardFeesDescription": "1,5% + 0,25 € por transação (cartões do EEE) ou 2,5% + 0,25 € (cartões do Reino Unido). Estas taxas vão para o Stripe - não temos qualquer controlo sobre elas.",
 			"viewStripePricing": "Ver os preços do Stripe",
 			"platformFee": "Taxa da plataforma",
 			"platformFeeDescription": "1,5% + 0,25 € por transação. Esta taxa vai para o Revel, para manter o serviço a funcionar.",
