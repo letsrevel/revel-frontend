@@ -39,8 +39,10 @@ export function getUserEmail(user: UserDisplayInfo): string | undefined {
  * placeholder.
  */
 export function getUserRealName(user: UserDisplayInfo): string {
-	if (user.preferred_name) return user.preferred_name;
-	if (user.first_name && user.last_name) return `${user.first_name} ${user.last_name}`;
-	if (user.first_name) return user.first_name;
-	return '';
+	const preferred = user.preferred_name?.trim();
+	if (preferred) return preferred;
+	const first = user.first_name?.trim();
+	const last = user.last_name?.trim();
+	if (first && last) return `${first} ${last}`;
+	return first || '';
 }

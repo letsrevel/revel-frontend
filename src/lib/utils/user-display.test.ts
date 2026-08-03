@@ -25,6 +25,15 @@ describe('getUserRealName', () => {
 	it('stays empty when only null-ish fields are present', () => {
 		expect(getUserRealName({ preferred_name: null, first_name: null, last_name: null })).toBe('');
 	});
+
+	it('treats whitespace-only fields as empty and trims composites', () => {
+		expect(getUserRealName({ ...base, preferred_name: '   ' })).toBe('');
+		expect(getUserRealName({ ...base, preferred_name: '  Annie  ' })).toBe('Annie');
+		expect(getUserRealName({ ...base, first_name: ' Ann ', last_name: ' Attendee ' })).toBe(
+			'Ann Attendee'
+		);
+		expect(getUserRealName({ ...base, first_name: '   ', last_name: 'Attendee' })).toBe('');
+	});
 });
 
 describe('getUserDisplayName', () => {

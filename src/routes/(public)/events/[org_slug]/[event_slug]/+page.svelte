@@ -236,7 +236,7 @@
 		eventId: event.id,
 		queryClient,
 		getUserTickets: () => userTickets,
-		getUserDisplayName: () => ticketHolderDefaultName,
+		getTicketHolderDefaultName: () => ticketHolderDefaultName,
 		getRequireTicketNames: () => event.require_ticket_names,
 		setUserStatus: (status) => {
 			userStatus = status;
