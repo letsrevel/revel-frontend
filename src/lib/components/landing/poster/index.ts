@@ -7,3 +7,4 @@ export { default as CommunitiesPanel } from './CommunitiesPanel.svelte';
 export { default as QuestionnaireMock } from './QuestionnaireMock.svelte';
 export { default as VenuesPanel } from './VenuesPanel.svelte';
 export { default as SeatMapMock } from './SeatMapMock.svelte';
+export { default as FeaturesPanel } from './FeaturesPanel.svelte';
