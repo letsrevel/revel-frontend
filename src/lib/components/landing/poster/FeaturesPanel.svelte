@@ -62,7 +62,11 @@
 		</p>
 		<h2 class="mt-2 text-3xl font-black sm:text-4xl">{m['home.poster.featuresH1']()}</h2>
 		<div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-			{#each stubs as stub (stub.title)}
+			<!-- Keyed by index, not by the title: the list is static and index-stable,
+				 and keying by a translated string would throw each_key_duplicate on a
+				 locale where two stub titles happen to collide (same reason as
+				 RotatingNoun). -->
+			{#each stubs as stub, i (i)}
 				<!-- `p-[18px]`: Tailwind's default spacing scale has no 4.5 step here. -->
 				<div
 					class="rounded-2xl border-2 border-dashed bg-[hsl(var(--poster-white))] p-[18px] {stub.border} {stub.tilt}"

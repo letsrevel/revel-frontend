@@ -36,3 +36,17 @@
 		</span>
 	{/each}
 </span>
+
+<style>
+	/* This component flips its items on rotateX. The embedding panel sets
+	   `perspective` on an ancestor, but `perspective` only reaches that
+	   element's DIRECT children — and this wrapper sits in between with the
+	   default `transform-style: flat`, which flattens its own children back
+	   out. Without this the flip renders as a plain vertical squash. Scoped
+	   here rather than global in app.css because `.rotating-noun` is a literal
+	   in this file's markup (so Svelte scoping and Tailwind purging both see
+	   it), and every embedding panel gets it by virtue of using the component. */
+	.rotating-noun {
+		transform-style: preserve-3d;
+	}
+</style>
