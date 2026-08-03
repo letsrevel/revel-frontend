@@ -3,3 +3,5 @@ export { default as PosterPanel } from './PosterPanel.svelte';
 export { default as PricingPanel } from './PricingPanel.svelte';
 export { default as PosterSticker } from './PosterSticker.svelte';
 export { default as RotatingNoun } from './RotatingNoun.svelte';
+export { default as CommunitiesPanel } from './CommunitiesPanel.svelte';
+export { default as QuestionnaireMock } from './QuestionnaireMock.svelte';
