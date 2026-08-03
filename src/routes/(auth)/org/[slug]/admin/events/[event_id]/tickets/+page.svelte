@@ -34,6 +34,7 @@
 		type CheckInDialogTicket
 	} from '$lib/components/tickets/checkin-adapter';
 	import { createTicketMemberAdmin } from '$lib/components/tickets/ticket-member-admin.svelte';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import QRScannerModal from '$lib/components/tickets/QRScannerModal.svelte';
 	import CheckInDialog from '$lib/components/tickets/CheckInDialog.svelte';
@@ -74,7 +75,7 @@
 	// Membership + blacklist admin actions (state, mutations, handlers).
 	const memberAdmin = createTicketMemberAdmin({
 		getSlug: () => data.event.organization.slug,
-		getAccessToken: () => $page.data.user?.accessToken
+		getAccessToken: () => authStore.accessToken
 	});
 
 	// Unconfirm payment confirmation state
@@ -110,7 +111,7 @@
 			const response = await eventadminticketsConfirmTicketPayment({
 				path: { event_id: data.event.id, ticket_id: ticketId },
 				body: pricePaid ? { price_paid: pricePaid } : undefined,
-				headers: { Authorization: `Bearer ${$page.data.user?.accessToken}` }
+				headers: { Authorization: `Bearer ${authStore.accessToken}` }
 			});
 
 			if (response.error) {
@@ -134,7 +135,7 @@
 		mutationFn: async (ticketId: string) => {
 			const response = await eventadminticketsUnconfirmTicketPayment({
 				path: { event_id: data.event.id, ticket_id: ticketId },
-				headers: { Authorization: `Bearer ${$page.data.user?.accessToken}` }
+				headers: { Authorization: `Bearer ${authStore.accessToken}` }
 			});
 
 			if (response.error) {
@@ -161,7 +162,7 @@
 		mutationFn: async (ticketId: string) => {
 			const response = await eventadminticketsCancelTicket({
 				path: { event_id: data.event.id, ticket_id: ticketId },
-				headers: { Authorization: `Bearer ${$page.data.user?.accessToken}` }
+				headers: { Authorization: `Bearer ${authStore.accessToken}` }
 			});
 
 			if (response.error) {
@@ -187,7 +188,7 @@
 			const response = await eventadminticketsCheckInTicket({
 				path: { event_id: data.event.id, code },
 				body: pricePaid ? { price_paid: pricePaid } : undefined,
-				headers: { Authorization: `Bearer ${$page.data.user?.accessToken}` }
+				headers: { Authorization: `Bearer ${authStore.accessToken}` }
 			});
 
 			if (response.error) {
@@ -401,7 +402,7 @@
 			// Fetch ticket details
 			const response = await eventadminticketsGetTicket({
 				path: { event_id: data.event.id, ticket_id: code },
-				headers: { Authorization: `Bearer ${$page.data.user?.accessToken}` }
+				headers: { Authorization: `Bearer ${authStore.accessToken}` }
 			});
 
 			if (response.error || !response.data) {
@@ -436,7 +437,7 @@
 	async function handleExportAttendees(): Promise<string> {
 		const response = await eventadminticketsExportAttendees({
 			path: { event_id: data.event.id },
-			headers: { Authorization: `Bearer ${$page.data.user?.accessToken}` }
+			headers: { Authorization: `Bearer ${authStore.accessToken}` }
 		});
 		if (response.error || !response.data?.id) {
 			throw new Error('Export failed');
@@ -502,7 +503,7 @@
 				<ExportButton
 					label={m['exportButton.exportAttendees']()}
 					onExport={handleExportAttendees}
-					accessToken={$page.data.user?.accessToken ?? null}
+					accessToken={authStore.accessToken}
 				/>
 			</div>
 		</div>
@@ -683,7 +684,7 @@
 	open={showReseatDialog}
 	ticket={ticketToReseat}
 	eventId={data.event.id}
-	accessToken={$page.data.user?.accessToken ?? null}
+	accessToken={authStore.accessToken}
 	onClose={() => {
 		showReseatDialog = false;
 		ticketToReseat = null;
@@ -698,7 +699,7 @@
 		ticketId={ticketToRename.id}
 		eventId={data.event.id}
 		currentName={ticketToRename.guest_name?.trim() ?? ''}
-		accessToken={$page.data.user?.accessToken ?? null}
+		accessToken={authStore.accessToken}
 		onClose={() => {
 			showRenameDialog = false;
 			ticketToRename = null;
