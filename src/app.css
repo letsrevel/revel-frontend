@@ -112,6 +112,16 @@
 	--cut-color: hsl(var(--poster-purple));
 }
 
+/* RotatingNoun flips its items on rotateX. A panel sets `perspective` on an
+   ancestor, but `perspective` only reaches that element's DIRECT children —
+   and this wrapper sits in between with the default `transform-style: flat`,
+   which flattens its own children back out. Without this the flip renders as
+   a plain vertical squash. Global (not scoped to one panel) so every panel
+   embedding the device inherits the same 3D behaviour. */
+.rotating-noun {
+	transform-style: preserve-3d;
+}
+
 @layer base {
 	* {
 		@apply border-border;
