@@ -26,6 +26,20 @@ describe('buildRecurringTemplateCreateData', () => {
 		expect(payload.accept_rsvp_notes).toBe(false);
 	});
 
+	it('defaults require_ticket_names to true when unset', () => {
+		const payload = buildRecurringTemplateCreateData({}, NAME, START_ISO, CITY_ID);
+
+		expect(payload.require_ticket_names).toBe(true);
+	});
+
+	it('round-trips require_ticket_names false', () => {
+		const formData: EventFormPayloadData = { require_ticket_names: false };
+
+		const payload = buildRecurringTemplateCreateData(formData, NAME, START_ISO, CITY_ID);
+
+		expect(payload.require_ticket_names).toBe(false);
+	});
+
 	it('maps the template form fields onto the create payload', () => {
 		const formData: EventFormPayloadData = {
 			visibility: 'private',
@@ -44,6 +58,7 @@ describe('buildRecurringTemplateCreateData', () => {
 			accept_invitation_requests: true,
 			accept_rsvp_notes: true,
 			can_attend_without_login: true,
+			require_ticket_names: false,
 			requires_full_profile: true,
 			venue_id: 'venue-1',
 			location_maps_url: 'https://maps.example/x',
@@ -73,6 +88,7 @@ describe('buildRecurringTemplateCreateData', () => {
 			accept_rsvp_notes: true,
 			apply_before: null,
 			can_attend_without_login: true,
+			require_ticket_names: false,
 			requires_full_profile: true,
 			venue_id: 'venue-1',
 			location_maps_url: 'https://maps.example/x',
@@ -157,6 +173,30 @@ describe('visibility_settings write semantics', () => {
 				'show_capacity',
 				'show_pronoun_distribution'
 			]);
+		});
+	}
+});
+
+// #753. The backend default for `require_ticket_names` is `true`, so an unset
+// form field must be written as an explicit `true` — NOT the `|| false` pattern
+// the neighbouring flags use, which would silently opt every event out of
+// collecting ticket-holder names.
+describe('require_ticket_names write semantics', () => {
+	const builders = {
+		'wizard step 1': (f: EventFormPayloadData) => buildWizardStep1UpdateData(f),
+		'wizard step 2': (f: EventFormPayloadData) => buildWizardStep2UpdateData(f),
+		editor: (f: EventFormPayloadData) => buildEditorUpdateData(f, START_ISO),
+		'recurring template': (f: EventFormPayloadData) =>
+			buildRecurringTemplateCreateData(f, NAME, START_ISO, CITY_ID)
+	};
+
+	for (const [label, build] of Object.entries(builders)) {
+		it(`${label}: defaults to true (backend default) when unset`, () => {
+			expect(build({}).require_ticket_names).toBe(true);
+		});
+
+		it(`${label}: preserves an explicit false`, () => {
+			expect(build({ require_ticket_names: false }).require_ticket_names).toBe(false);
 		});
 	}
 });

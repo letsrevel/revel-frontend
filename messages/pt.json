@@ -1202,6 +1202,8 @@
 		"applicationDeadlineHint": "Prazo para enviar pedidos de convite ou questionários. Fuso horário: {timezone}",
 		"canAttendWithoutLogin": "Permitir participação sem conta",
 		"canAttendWithoutLoginHint": "Permite confirmar presença ou comprar bilhetes sem ter conta",
+		"requireTicketNames": "Exigir o nome do titular do bilhete",
+		"requireTicketNamesHint": "Recolhe um nome para cada bilhete no checkout. Desative para um checkout mais rápido — os bilhetes poderão ficar sem nome.",
 		"none": "Nenhum",
 		"addressFromVenue": "Morada do local",
 		"mapsSection": "Integração de mapas",

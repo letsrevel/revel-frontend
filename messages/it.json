@@ -1202,6 +1202,8 @@
 		"applicationDeadlineHint": "Termine per l'invio di richieste di invito o questionari. Fuso orario: {timezone}",
 		"canAttendWithoutLogin": "Consenti partecipazione ospite",
 		"canAttendWithoutLoginHint": "Permetti agli utenti senza account di confermare presenza o acquistare biglietti",
+		"requireTicketNames": "Richiedi il nome dell'intestatario del biglietto",
+		"requireTicketNamesHint": "Raccogli un nome per ogni biglietto al momento dell'acquisto. Disattiva per un acquisto più rapido — i biglietti potrebbero restare senza nome.",
 		"none": "Nessuno",
 		"addressFromVenue": "Indirizzo dalla sede",
 		"mapsSection": "Integrazione Mappe",

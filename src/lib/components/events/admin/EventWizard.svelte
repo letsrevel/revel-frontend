@@ -146,6 +146,8 @@
 		visibility_settings: existingEvent?.visibility_settings,
 		apply_before: toDateTimeLocal(existingEvent?.apply_before) || null,
 		can_attend_without_login: existingEvent?.can_attend_without_login || false,
+		// Backend default is `true`, so seed with `?? true` — not `|| false`.
+		require_ticket_names: existingEvent?.require_ticket_names ?? true,
 		requires_full_profile: existingEvent?.requires_full_profile || false,
 		event_series_id: existingEvent?.event_series?.id || null,
 		venue_id: existingEvent?.venue?.id || null,

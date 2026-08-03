@@ -82,6 +82,8 @@
 		accept_rsvp_notes: false,
 		apply_before: null,
 		can_attend_without_login: false,
+		// Backend default is `true`.
+		require_ticket_names: true,
 		requires_full_profile: false,
 		venue_id: null,
 		tags: [],

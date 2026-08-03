@@ -1202,6 +1202,8 @@
 		"applicationDeadlineHint": "Frist für die Einreichung von Einladungsanfragen oder Fragebögen. Zeitzone: {timezone}",
 		"canAttendWithoutLogin": "Gastteilnahme erlauben",
 		"canAttendWithoutLoginHint": "Ermögliche Benutzer*innen ohne Konto, sich anzumelden oder Tickets zu kaufen",
+		"requireTicketNames": "Namen der Ticketinhaber*innen verlangen",
+		"requireTicketNamesHint": "Beim Checkout wird für jedes Ticket ein Name erfasst. Deaktivieren für einen schnelleren Checkout — Tickets können dann ohne Namen sein.",
 		"none": "Keine",
 		"addressFromVenue": "Adresse vom Veranstaltungsort",
 		"mapsSection": "Kartenintegration",

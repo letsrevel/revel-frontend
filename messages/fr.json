@@ -1089,6 +1089,8 @@
 		"applicationDeadlineHint": "Date limite pour soumettre les demandes d'invitation ou les questionnaires. Fuseau horaire : {timezone}",
 		"canAttendWithoutLogin": "Autoriser la participation des invités",
 		"canAttendWithoutLoginHint": "Permettre aux utilisateurs sans compte de confirmer leur participation ou d'acheter des billets",
+		"requireTicketNames": "Exiger le nom du titulaire du billet",
+		"requireTicketNamesHint": "Recueillir un nom pour chaque billet lors du paiement. Désactivez pour un paiement plus rapide — les billets pourront alors ne pas avoir de nom.",
 		"none": "Aucun",
 		"addressFromVenue": "Adresse du lieu",
 		"mapsSection": "Intégration de cartes",

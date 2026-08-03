@@ -125,6 +125,38 @@ describe('DetailsStep', () => {
 		expect(onUpdate).toHaveBeenCalledWith({ tags: ['social'] });
 	});
 
+	it('renders the require-ticket-names toggle only for ticketed events and reports changes', async () => {
+		const onUpdate = vi.fn();
+		renderStep({
+			...mockProps,
+			formData: { ...mockProps.formData, requires_ticket: true },
+			onUpdate
+		});
+
+		// The toggle lives in the collapsible Advanced section.
+		await fireEvent.click(screen.getByRole('button', { name: /Advanced/i }));
+
+		const checkbox = screen.getByRole('checkbox', { name: /Require ticket holder names/i });
+		// Defaults to checked: the backend default is `true`.
+		expect(checkbox).toBeChecked();
+
+		await fireEvent.click(checkbox);
+		expect(onUpdate).toHaveBeenCalledWith({ require_ticket_names: false });
+	});
+
+	it('hides the require-ticket-names toggle for non-ticketed events', async () => {
+		renderStep({
+			...mockProps,
+			formData: { ...mockProps.formData, requires_ticket: false }
+		});
+
+		await fireEvent.click(screen.getByRole('button', { name: /Advanced/i }));
+
+		expect(
+			screen.queryByRole('checkbox', { name: /Require ticket holder names/i })
+		).not.toBeInTheDocument();
+	});
+
 	it('is keyboard accessible', async () => {
 		renderStep();
 
