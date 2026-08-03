@@ -17,15 +17,16 @@ import { completeStripeCheckout } from '../../support/stripe';
 // webhook flips the subscription ACTIVE.
 //
 // MUST-COVER here and nowhere else, TWO server-side hops jsdom cannot exercise:
-//   * Stripe's return URLs are built by the BACKEND. Since backend #849 they
-//     carry the org UUID (`/org/{org_uuid}/membership?membership_success=true`),
-//     and the `[org_id=uuid]` route resolves it and 303-redirects to
-//     `/org/{slug}/membership` (#756). Pre-#849 in-flight sessions still carry
-//     the old slug LANDING-page URL (`/org/{slug}?membership_success=true`),
-//     which the landing page's own load 303-redirects the flag on from
-//     (#720/#726) — both hops land on the same membership page. This spec
-//     drives the real backend-built URL, so it is the only proof either hop
-//     happens.
+//   * Stripe's return URLs are built by the BACKEND. Once backend #849
+//     deploys, they carry the org UUID
+//     (`/org/{org_uuid}/membership?membership_success=true`), and the
+//     `[org_id=uuid]` route resolves it and 303-redirects to
+//     `/org/{slug}/membership` (#756). Pre-#849 sessions — which today means
+//     ALL of them — carry the old slug LANDING-page URL
+//     (`/org/{slug}?membership_success=true`), which the landing page's own
+//     load 303-redirects the flag on from (#720/#726) — both hops land on the
+//     same membership page. This spec drives the real backend-built URL, so
+//     it is the only proof either hop happens.
 //   * the flag is then consumed in onMount with the RAW history API (see
 //     MembershipSection — $app/navigation's replaceState throws during
 //     hydration).
