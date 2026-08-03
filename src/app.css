@@ -89,6 +89,29 @@
 	}
 }
 
+/* Poster diagonal-cut colors (landing). Each sets the reveal color used by
+   PosterPanel's .diagonal-cut gradient. Deliberately outside @layer base and
+   outside any component: they are applied via a dynamic `cutToClass` prop, so
+   Tailwind's content scan never sees them — plain global CSS survives purging. */
+.cut-amber {
+	--cut-color: hsl(var(--poster-amber));
+}
+.cut-periwinkle {
+	--cut-color: hsl(var(--poster-periwinkle));
+}
+.cut-crimson {
+	--cut-color: hsl(var(--poster-crimson-deep));
+}
+.cut-paper {
+	--cut-color: hsl(var(--poster-paper));
+}
+.cut-ink {
+	--cut-color: hsl(var(--poster-ink));
+}
+.cut-purple {
+	--cut-color: hsl(var(--poster-purple));
+}
+
 @layer base {
 	* {
 		@apply border-border;
