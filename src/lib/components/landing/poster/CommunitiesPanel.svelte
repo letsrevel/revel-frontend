@@ -12,7 +12,7 @@
 	 the solid-ink pill text stays ~8:1. -->
 <PosterPanel bgClass="bg-[hsl(var(--poster-periwinkle))]" cutToClass="cut-crimson">
 	<div class="flex flex-wrap items-center gap-9">
-		<div class="min-w-[300px] flex-1 text-[hsl(var(--poster-ink))]">
+		<div class="min-w-0 flex-1 text-[hsl(var(--poster-ink))] sm:min-w-[300px]">
 			<p class="text-sm font-extrabold uppercase tracking-[0.12em]">
 				{m['home.poster.communitiesLabel']()}
 			</p>

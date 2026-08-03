@@ -9,7 +9,11 @@
 <!-- Ink panel; the next panel (ClosePanel) opens on purple, hence cut-purple. -->
 <PosterPanel bgClass="bg-[hsl(var(--poster-ink))]" cutToClass="cut-purple">
 	<div class="flex flex-wrap items-center gap-8">
-		<div class="min-w-[300px] flex-1 text-[hsl(var(--poster-white))]">
+		<!-- basis-full below sm pushes the R mark onto its own row; min-w-0 keeps the
+		     column from forcing a 300px track inside a 288px container at 320px. -->
+		<div
+			class="min-w-0 flex-1 basis-full text-[hsl(var(--poster-white))] sm:min-w-[300px] sm:basis-0"
+		>
 			<!-- opacity-50 is safe ONLY because the surface is near-black: white at
 			     50% composites to #868E8D over ink, measured 5.19:1 — above the 4.5:1
 			     AA floor for this 14px non-large text. Do not reuse this opacity on a

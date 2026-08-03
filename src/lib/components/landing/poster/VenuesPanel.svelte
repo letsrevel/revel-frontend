@@ -16,7 +16,7 @@
 >
 	<div class="flex flex-wrap-reverse items-center gap-9">
 		<SeatMapMock />
-		<div class="min-w-[300px] flex-1 text-[hsl(var(--poster-white))]">
+		<div class="min-w-0 flex-1 text-[hsl(var(--poster-white))] sm:min-w-[300px]">
 			<!-- Deliberately NOT `opacity-75` (see panel note): 4.58:1 → 3.08:1. -->
 			<p class="text-sm font-extrabold uppercase tracking-[0.12em]">
 				{m['home.poster.venuesLabel']()}
