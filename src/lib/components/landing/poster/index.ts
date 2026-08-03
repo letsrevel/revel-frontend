@@ -8,3 +8,5 @@ export { default as QuestionnaireMock } from './QuestionnaireMock.svelte';
 export { default as VenuesPanel } from './VenuesPanel.svelte';
 export { default as SeatMapMock } from './SeatMapMock.svelte';
 export { default as FeaturesPanel } from './FeaturesPanel.svelte';
+export { default as OpenSourcePanel } from './OpenSourcePanel.svelte';
+export { default as ClosePanel } from './ClosePanel.svelte';
