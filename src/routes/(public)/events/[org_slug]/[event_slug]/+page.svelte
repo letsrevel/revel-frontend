@@ -234,6 +234,7 @@
 		queryClient,
 		getUserTickets: () => userTickets,
 		getUserDisplayName: () => userDisplayName,
+		getRequireTicketNames: () => event.require_ticket_names,
 		setUserStatus: (status) => {
 			userStatus = status;
 		},
@@ -619,6 +620,7 @@
 	capacityDisclosed={viewerVisibility.show_capacity}
 	eventMaxTicketsPerUser={event.max_tickets_per_user}
 	userName={userDisplayName}
+	requireTicketNames={event.require_ticket_names}
 	{preSelectedTier}
 	{initialDiscountCode}
 	onClose={closeTicketTierModal}
@@ -647,6 +649,10 @@
 		isCancellingReservation={cancelReservationMutation.isPending}
 		onTicketCancelled={async () => {
 			showMyTicketModal = false;
+			await refreshUserStatus();
+			queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
+		}}
+		onTicketRenamed={async () => {
 			await refreshUserStatus();
 			queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
 		}}
@@ -688,6 +694,7 @@
 			tier={selectedTierForGuest}
 			allTiers={ticketTiers}
 			eventMaxTicketsPerUser={event.max_tickets_per_user}
+			requireTicketNames={event.require_ticket_names}
 			onClose={closeGuestTicketDialog}
 			onSuccess={handleGuestAttendanceSuccess}
 			focusSeating={guestFocusSeating}

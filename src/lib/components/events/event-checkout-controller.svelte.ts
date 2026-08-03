@@ -22,6 +22,7 @@ import {
 	resolveCheckoutUrl,
 	CheckoutSessionError
 } from '$lib/utils/checkout-session';
+import { defaultPurchaseItems } from '$lib/components/tickets/purchase-items';
 import * as m from '$lib/paraglide/messages.js';
 import { toast } from 'svelte-sonner';
 
@@ -66,6 +67,8 @@ export interface CheckoutControllerDeps {
 	getUserTickets: () => EventTicketSchemaActual[];
 	/** Logged-in user's display name (fallback for guest_name). */
 	getUserDisplayName: () => string;
+	/** Whether the event demands a holder name on every ticket. */
+	getRequireTicketNames: () => boolean;
 	/** Push a refreshed user status into the host component state. */
 	setUserStatus: (status: UserEventStatus) => void;
 	/** Close the ticket-tier selection modal. */
@@ -87,6 +90,7 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 		queryClient,
 		getUserTickets,
 		getUserDisplayName,
+		getRequireTicketNames,
 		setUserStatus,
 		onCloseTicketTierModal,
 		setShowMyTicketModal
@@ -300,13 +304,9 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 		onSuccess: handleCheckoutSuccess
 	}));
 
-	/**
-	 * Get default guest name for single ticket purchase
-	 * Uses logged-in user's display name when available, falling back to a
-	 * localized placeholder so guest_name is never empty (backend min_length 1).
-	 */
-	function getDefaultGuestName(): string {
-		return getUserDisplayName().trim() || m['ticketConfirmationDialog.defaultGuestName']();
+	/** Single-ticket fallback when a caller supplied no items (purchase-items.ts). */
+	function defaultTicketItems(): TicketPurchaseItem[] {
+		return defaultPurchaseItems(getRequireTicketNames(), getUserDisplayName());
 	}
 
 	/**
@@ -322,7 +322,7 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 		billingInfo?: BuyerBillingInfoSchema,
 		seating?: SeatingCheckoutFields
 	) {
-		const ticketItems = tickets || [{ guest_name: getDefaultGuestName() }];
+		const ticketItems = tickets || defaultTicketItems();
 		await claimTicketMutation.mutateAsync({
 			tierId,
 			tickets: ticketItems,
@@ -350,7 +350,7 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 		billingInfo?: BuyerBillingInfoSchema,
 		seating?: SeatingCheckoutFields
 	) {
-		const ticketItems = tickets || [{ guest_name: getDefaultGuestName() }];
+		const ticketItems = tickets || defaultTicketItems();
 
 		if (isPwyc && amount !== undefined) {
 			// PWYC checkout with amount from confirmation dialog
@@ -393,7 +393,7 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 		billingInfo?: BuyerBillingInfoSchema,
 		seating?: SeatingCheckoutFields
 	): boolean {
-		const ticketItems = tickets || [{ guest_name: getDefaultGuestName() }];
+		const ticketItems = tickets || defaultTicketItems();
 		const params =
 			isPwyc && amount !== undefined
 				? { tierId, tickets: ticketItems, pricePerTicket: amount, billingInfo, seating }

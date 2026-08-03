@@ -23,6 +23,12 @@ export const guestUserSchema = z.object({
 });
 
 /**
+ * Email-only variant for events with require_ticket_names disabled — the
+ * anonymous buyer provides nothing but a contact address.
+ */
+export const guestEmailOnlySchema = guestUserSchema.pick({ email: true });
+
+/**
  * Shape of the guest ticket form state, shared by GuestTicketDialog and its
  * extracted field sections. PWYC is the raw input string here; it is parsed
  * to a number against createGuestPwycSchema on submit.
@@ -41,9 +47,13 @@ export const guestRsvpSchema = guestUserSchema.extend({
 /**
  * Factory function to create PWYC (Pay What You Can) schema with dynamic min/max validation
  * @param tier - The tier object containing pwyc_min and pwyc_max
+ * @param options - `emailOnly` drops the name fields (require_ticket_names off)
  * @returns Zod schema with dynamic validation based on tier limits
  */
-export function createGuestPwycSchema(tier: { pwyc_min: number; pwyc_max?: number | null }) {
+export function createGuestPwycSchema(
+	tier: { pwyc_min: number; pwyc_max?: number | null },
+	options: { emailOnly?: boolean } = {}
+) {
 	let pwycSchema = z
 		.number({ error: m['guest_attendance.validation_pwyc_min']({ min: tier.pwyc_min }) })
 		.min(tier.pwyc_min, m['guest_attendance.validation_pwyc_min']({ min: tier.pwyc_min }));
@@ -56,7 +66,7 @@ export function createGuestPwycSchema(tier: { pwyc_min: number; pwyc_max?: numbe
 		);
 	}
 
-	return guestUserSchema.extend({
+	return (options.emailOnly ? guestEmailOnlySchema : guestUserSchema).extend({
 		pwyc: pwycSchema
 	});
 }

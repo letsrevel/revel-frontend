@@ -7,6 +7,7 @@
 	import AddToWalletButton from './AddToWalletButton.svelte';
 	import DownloadPdfButton from './DownloadPdfButton.svelte';
 	import CancelTicketDialog from './CancelTicketDialog.svelte';
+	import RenameTicketHolderDialog from './RenameTicketHolderDialog.svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import {
 		Ticket,
@@ -17,11 +18,13 @@
 		Banknote,
 		ChevronLeft,
 		ChevronRight,
+		Pencil,
 		X
 	} from '@lucide/svelte';
 	import { formatMoney } from '$lib/utils/format';
 	import QRCode from 'qrcode';
 	import { formatDateTime } from '$lib/utils/date';
+	import { authStore } from '$lib/stores/auth.svelte';
 
 	interface Props {
 		open: boolean;
@@ -36,6 +39,8 @@
 		isCancellingReservation?: boolean;
 		/** Called after a ticket is successfully cancelled — parent should refresh data. */
 		onTicketCancelled?: () => void;
+		/** Called after the ticket holder name is changed — parent should refresh data. */
+		onTicketRenamed?: () => void;
 	}
 
 	let {
@@ -48,7 +53,8 @@
 		isResumingPayment = false,
 		onCancelReservation,
 		isCancellingReservation = false,
-		onTicketCancelled
+		onTicketCancelled,
+		onTicketRenamed
 	}: Props = $props();
 
 	let showCancelDialog = $state(false);
@@ -154,6 +160,14 @@
 		}
 		return true;
 	});
+
+	// Rename gate: the backend 409s once checked-in or cancelled.
+	const canRenameHolder = $derived.by(() => {
+		if (!ticket?.id) return false;
+		return ticket.status !== 'checked_in' && ticket.status !== 'cancelled';
+	});
+
+	let showRenameDialog = $state(false);
 
 	function openCancelDialog(): void {
 		if (!ticket?.id) return;
@@ -350,13 +364,33 @@
 				</div>
 
 				<!-- Ticket Holder & Seat Info -->
-				{#if ticket.guest_name || hasSeatInfo || pricePaidDisplay}
+				{#if ticket.guest_name || canRenameHolder || hasSeatInfo || pricePaidDisplay}
 					<dl class="space-y-2 rounded-lg border border-border bg-muted/30 p-4 text-sm">
-						{#if ticket.guest_name}
+						{#if ticket.guest_name || canRenameHolder}
 							<div class="flex items-center gap-2">
 								<dt class="sr-only">{m['myTicketModal.ticketHolder']()}</dt>
 								<User class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-								<dd class="font-medium">{ticket.guest_name}</dd>
+								<!-- A <dd> always follows the <dt>: a nameless-but-renamable
+								     ticket still needs a description for the term. -->
+								<dd class="flex items-center gap-2">
+									{#if ticket.guest_name}
+										<span class="font-medium">{ticket.guest_name}</span>
+									{/if}
+									{#if canRenameHolder}
+										<Button
+											type="button"
+											variant="ghost"
+											size="sm"
+											class="h-7 px-2 text-xs"
+											onclick={() => (showRenameDialog = true)}
+										>
+											<Pencil class="mr-1 h-3 w-3" aria-hidden="true" />
+											{ticket.guest_name
+												? m['myTicketModal.renameHolder']()
+												: m['myTicketModal.addHolderName']()}
+										</Button>
+									{/if}
+								</dd>
 							</div>
 						{/if}
 						{#if seatInfo}
@@ -587,5 +621,16 @@
 		bind:open={showCancelDialog}
 		ticketId={ticketIdToCancel}
 		onCancelled={handleTicketCancelled}
+	/>
+{/if}
+
+{#if ticket?.id}
+	<RenameTicketHolderDialog
+		open={showRenameDialog}
+		ticketId={ticket.id}
+		currentName={ticket.guest_name ?? ''}
+		accessToken={authStore.accessToken}
+		onClose={() => (showRenameDialog = false)}
+		onRenamed={() => onTicketRenamed?.()}
 	/>
 {/if}

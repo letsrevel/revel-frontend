@@ -1,0 +1,151 @@
+import { test, expect } from '../../support/fixtures';
+import {
+	createTicketedEvent,
+	createTicketTier,
+	createVerifiedUser,
+	deleteDefaultTier,
+	uniqueName
+} from '../../support/factories';
+import { authenticateContext } from '../../support/session';
+import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
+
+// J6 (#753) — nameless checkout on an event whose `require_ticket_names` is
+// OFF: the confirmation dialog still offers the quantity stepper, but the
+// per-ticket holder-name inputs that batch-purchase.spec.ts asserts on are
+// gone, and a 2-ticket claim goes through without a single name. The buyer
+// then sets a real holder name after the fact from the my-tickets modal
+// ("Rename holder" → rename dialog) — the other half of the flag's promise.
+//
+// "Nameless" is about the CHECKOUT, not the stored ticket: the backend fills
+// an omitted guest_name with the buyer's own profile name, so the tickets
+// arrive named and the modal's button reads "Rename holder" (see the comment
+// at that click).
+//
+// Isolation: an own event (the flag changes checkout's shape) plus a
+// throwaway buyer (tickets consume the per-user tier limit); the auto
+// "General Admission" tier is dropped so the arranged tier is the only
+// claimable one.
+
+test.describe('J6 nameless checkout @p1', () => {
+	test('claims two tickets with no name inputs, then adds a holder name later', async ({
+		browser
+	}) => {
+		test.setTimeout(180_000);
+
+		const [event, buyer] = await Promise.all([
+			createTicketedEvent({ freeTier: false, event: { require_ticket_names: false } }),
+			createVerifiedUser('Nameless')
+		]);
+		await deleteDefaultTier(event.id);
+		await createTicketTier(event.id, {
+			name: 'Group Entry',
+			payment_method: 'free',
+			price: '0.00',
+			price_type: 'fixed',
+			max_tickets_per_user: 3
+		});
+
+		const context = await browser.newContext();
+		await authenticateContext(context, buyer);
+		const page = await context.newPage();
+		try {
+			await gotoHydrated(page, event.path);
+			await waitForClientAuth(page);
+
+			// Tier dialog → confirmation dialog with the quantity stepper. Run as
+			// an idempotent loop: clicks during dialog re-renders are occasionally
+			// dropped (same shape as batch-purchase.spec.ts).
+			const tierDialog = page.getByRole('dialog', { name: 'Select Your Ticket' });
+			const quantityLabel = page.getByText('Number of Tickets');
+			await expect(async () => {
+				if (await quantityLabel.isVisible()) return;
+				if (await tierDialog.isVisible()) {
+					await tierDialog.getByRole('button', { name: 'Claim Free Ticket' }).click();
+				} else {
+					await page.getByRole('button', { name: 'Get Tickets', exact: true }).click();
+					await tierDialog.getByRole('button', { name: 'Claim Free Ticket' }).click();
+				}
+				await expect(quantityLabel).toBeVisible({ timeout: 8_000 });
+			}).toPass({ timeout: 60_000 });
+
+			// Take 2 of the 3 allowed. The "Decrease quantity" button is disabled
+			// at quantity 1, so its becoming enabled is what proves the stepper
+			// actually moved — without that discriminator a dropped click would
+			// leave quantity at 1, where BOTH negative assertions below pass
+			// vacuously (the name inputs only ever render for quantity > 1).
+			await page.getByRole('button', { name: 'Increase quantity' }).click();
+			await expect(page.getByRole('button', { name: 'Decrease quantity' })).toBeEnabled();
+
+			// With names required this would now reveal the "Ticket Holders" block
+			// and a "Guest 2 name" input — with the flag off neither may appear.
+			await expect(page.getByText('Ticket Holders', { exact: true })).toBeHidden();
+			await expect(page.getByPlaceholder('Guest 2 name')).toBeHidden();
+
+			// `exact` matters: a substring match on "Your Ticket" also hits the
+			// "Select Your Ticket" tier dialog.
+			const success = page.getByRole('dialog', { name: 'Your Ticket', exact: true });
+			const claim = page.getByRole('button', { name: 'Claim Ticket', exact: true });
+			await expect(async () => {
+				if (await success.isVisible()) return;
+				await claim.click();
+				await expect(success).toBeVisible({ timeout: 8_000 });
+			}).toPass({ timeout: 40_000 });
+			await page.keyboard.press('Escape');
+
+			// Dashboard: BOTH tickets land as individual Active cards — the count
+			// is what proves the stepper's 2 made it into the claim (batch-purchase
+			// asserts the same). Reload-retry because a silently unauthorized
+			// my-tickets query renders the empty state instead of an error (issue
+			// #596 item 1) and heals on a fresh load.
+			const ticketCard = page
+				.locator('article, li, div')
+				.filter({ hasText: event.name })
+				.filter({ hasText: /Active/i })
+				.first();
+			await expect(async () => {
+				await gotoHydrated(page, '/dashboard/tickets');
+				await waitForClientAuth(page);
+				await expect(page.getByText('Showing 2 of 2')).toBeVisible({ timeout: 5_000 });
+			}).toPass({ timeout: 45_000 });
+			await expect(ticketCard).toBeVisible();
+
+			// The modal offers "Rename holder", NOT "Add holder name": the UI sent
+			// no names at all (that is what the assertions above prove), but the
+			// backend fills the blank with the buyer's own profile name
+			// (`guest_name=item.guest_name or (preferred_name or get_full_name())`
+			// in batch_ticket_service/tickets.py), so a logged-in buyer's tickets
+			// are never truly nameless. Only email-only guests — who have no
+			// dashboard — end up with a blank holder and the "Add holder name"
+			// wording.
+			//
+			// `ticketCard` is a coarse container locator that can resolve to an
+			// ancestor holding BOTH cards, so the button needs its own .first()
+			// to stay strict-safe — unlike the single-ticket model specs.
+			await ticketCard.getByRole('button', { name: 'View ticket and QR code' }).first().click();
+			const modal = page.getByRole('dialog', { name: 'Your Ticket', exact: true });
+			await expect(modal).toBeVisible();
+
+			const holderName = uniqueName('Holder');
+			await modal.getByRole('button', { name: 'Rename holder' }).click();
+			const renameDialog = page.getByRole('dialog', { name: 'Rename ticket holder' });
+			await renameDialog.getByLabel('Holder name').fill(holderName);
+			await renameDialog.getByRole('button', { name: 'Save' }).click();
+			await expect(page.getByText('Ticket holder updated')).toBeVisible({ timeout: 10_000 });
+
+			// Re-open the ticket from a CLOSED state rather than trusting the
+			// still-open modal to live-update after the query invalidation. The
+			// PATCH targeted the first card's ticket and card order is stable
+			// across the refetch, so the same card carries the new name; the
+			// Escape at the TOP of the loop body lets every retry re-enter from a
+			// closed state instead of clicking into a dialog overlay.
+			await expect(async () => {
+				await page.keyboard.press('Escape');
+				await ticketCard.getByRole('button', { name: 'View ticket and QR code' }).first().click();
+				await expect(modal).toBeVisible({ timeout: 3_000 });
+				await expect(modal.getByText(holderName)).toBeVisible({ timeout: 3_000 });
+			}).toPass({ timeout: 30_000 });
+		} finally {
+			await context.close();
+		}
+	});
+});

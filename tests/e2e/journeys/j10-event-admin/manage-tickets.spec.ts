@@ -49,7 +49,7 @@ test.describe('J10 manage tickets @p1', () => {
 		).toBeVisible();
 
 		// Search narrows the list to one attendee (server-side, URL-driven).
-		const search = page.getByPlaceholder('Search by name, email, or tier...');
+		const search = page.getByPlaceholder('Search by holder, purchaser, email, or tier...');
 		await search.fill(alpha.email);
 		await expect(
 			page.getByText(`${beta.firstName} ${beta.lastName}`).filter({ visible: true })

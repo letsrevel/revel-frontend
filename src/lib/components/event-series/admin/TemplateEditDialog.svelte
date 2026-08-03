@@ -75,6 +75,7 @@
 	const flags = $state<Record<TemplateFlagKey, boolean>>({
 		requires_ticket: false,
 		waitlist_open: false,
+		require_ticket_names: true,
 		requires_full_profile: false,
 		potluck_open: false,
 		accept_invitation_requests: false,
@@ -136,6 +137,7 @@
 			typeof t.max_tickets_per_user === 'number' ? String(t.max_tickets_per_user) : '';
 		flags.requires_ticket = !!t.requires_ticket;
 		flags.waitlist_open = !!t.waitlist_open;
+		flags.require_ticket_names = !!t.require_ticket_names;
 		flags.requires_full_profile = !!t.requires_full_profile;
 		flags.potluck_open = !!t.potluck_open;
 		flags.accept_invitation_requests = !!t.accept_invitation_requests;
@@ -185,6 +187,8 @@
 		if (flags.requires_ticket !== !!original.requires_ticket)
 			d.requires_ticket = flags.requires_ticket;
 		if (flags.waitlist_open !== !!original.waitlist_open) d.waitlist_open = flags.waitlist_open;
+		if (flags.require_ticket_names !== !!original.require_ticket_names)
+			d.require_ticket_names = flags.require_ticket_names;
 		if (flags.requires_full_profile !== !!original.requires_full_profile)
 			d.requires_full_profile = flags.requires_full_profile;
 		if (flags.potluck_open !== !!original.potluck_open) d.potluck_open = flags.potluck_open;

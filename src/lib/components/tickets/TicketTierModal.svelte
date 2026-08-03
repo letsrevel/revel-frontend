@@ -39,6 +39,8 @@
 		eventMaxTicketsPerUser?: number | null;
 		/** User's display name for auto-fill */
 		userName?: string;
+		/** Whether the event demands a holder name on every ticket. */
+		requireTicketNames?: boolean;
 		/** Pre-selected tier from inline TierCard click */
 		preSelectedTier?: TierSchemaWithId | null;
 		/** Pre-filled discount code (e.g. from URL param) */
@@ -100,6 +102,7 @@
 		capacityDisclosed = true,
 		eventMaxTicketsPerUser = null,
 		userName = '',
+		requireTicketNames = true,
 		preSelectedTier = null,
 		initialDiscountCode = '',
 		seriesInfo = null,
@@ -435,6 +438,7 @@
 			maxQuantity={getMaxQuantityForTier(selectedTier.id)}
 			{eventMaxTicketsPerUser}
 			{userName}
+			{requireTicketNames}
 			{initialDiscountCode}
 			allTiers={visibleTiers}
 			{tierRemainingTickets}

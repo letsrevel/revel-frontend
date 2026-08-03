@@ -113,6 +113,7 @@ export function buildRecurringTemplateCreateData(
 		accept_rsvp_notes: formData.accept_rsvp_notes ?? false,
 		apply_before: toISOString(formData.apply_before),
 		can_attend_without_login: formData.can_attend_without_login ?? false,
+		require_ticket_names: formData.require_ticket_names ?? true,
 		requires_full_profile: formData.requires_full_profile ?? false,
 		venue_id: formData.venue_id ?? null,
 		location_maps_url: formData.location_maps_url ?? null,
@@ -152,6 +153,9 @@ export function buildWizardStep1UpdateData(
 		accept_rsvp_notes: formData.accept_rsvp_notes || false,
 		apply_before: toISOString(formData.apply_before),
 		can_attend_without_login: formData.can_attend_without_login || false,
+		// Backend default is `true` — `?? true` (never `|| false`), so an unset
+		// form field does not silently opt the event out of ticket-holder names.
+		require_ticket_names: formData.require_ticket_names ?? true,
 		requires_full_profile: formData.requires_full_profile || false,
 		event_series_id: formData.event_series_id || null,
 		venue_id: formData.venue_id || null,
@@ -186,6 +190,9 @@ export function buildWizardStep2UpdateData(
 		accept_rsvp_notes: formData.accept_rsvp_notes || false,
 		apply_before: toISOString(formData.apply_before),
 		can_attend_without_login: formData.can_attend_without_login || false,
+		// Backend default is `true` — `?? true` (never `|| false`), so an unset
+		// form field does not silently opt the event out of ticket-holder names.
+		require_ticket_names: formData.require_ticket_names ?? true,
 		requires_full_profile: formData.requires_full_profile || false,
 		event_series_id: formData.event_series_id || null,
 		venue_id: formData.venue_id || null,
@@ -226,6 +233,9 @@ export function buildEditorUpdateData(
 		accept_rsvp_notes: formData.accept_rsvp_notes || false,
 		apply_before: toISOString(formData.apply_before),
 		can_attend_without_login: formData.can_attend_without_login || false,
+		// Backend default is `true` — `?? true` (never `|| false`), so an unset
+		// form field does not silently opt the event out of ticket-holder names.
+		require_ticket_names: formData.require_ticket_names ?? true,
 		requires_full_profile: formData.requires_full_profile || false,
 		event_series_id: formData.event_series_id || null,
 		venue_id: formData.venue_id || null,

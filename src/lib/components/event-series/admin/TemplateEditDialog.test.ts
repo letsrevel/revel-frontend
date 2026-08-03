@@ -61,6 +61,7 @@ function makeTemplateEvent(overrides: Partial<EventDetailSchema> = {}): EventDet
 		accept_invitation_requests: false,
 		accept_rsvp_notes: false,
 		can_attend_without_login: false,
+		require_ticket_names: true,
 		visibility_settings: { ...VISIBILITY_DEFAULTS },
 		...overrides
 	};
@@ -260,7 +261,45 @@ describe('TemplateEditDialog', () => {
 		expect(visibilitySettings).not.toHaveProperty('show_pronoun_distribution');
 	});
 
-	// --- 4. No-op suppression --------------------------------------------------
+	// --- 4. require_ticket_names toggle ----------------------------------------
+
+	// The flags record initialises `require_ticket_names` to `true` (the backend
+	// default), so a template that *disables* it is the only seeding direction
+	// that can fail — a missing seeding line leaves the box checked here while a
+	// `true` fixture would pass vacuously.
+	it('seeds the require_ticket_names checkbox unchecked when the template disables it', async () => {
+		renderDialog(makeTemplateEvent({ require_ticket_names: false }));
+		await waitForLoaded();
+
+		const toggle = screen.getByTestId('template-edit-require-ticket-names') as HTMLInputElement;
+		expect(toggle.checked).toBe(false);
+	});
+
+	it('seeds require_ticket_names from the template and sends only that flag when toggled off', async () => {
+		const user = userEvent.setup();
+		renderDialog(makeTemplateEvent({ require_ticket_names: true }));
+		await waitForLoaded();
+
+		const toggle = screen.getByTestId('template-edit-require-ticket-names') as HTMLInputElement;
+		expect(toggle.checked).toBe(true);
+
+		await user.click(toggle);
+		expect(toggle.checked).toBe(false);
+
+		await user.click(screen.getByTestId('template-edit-continue'));
+		await user.click(screen.getByTestId('template-edit-apply'));
+
+		await waitFor(() =>
+			expect(organizationadminrecurringeventsUpdateTemplate).toHaveBeenCalledTimes(1)
+		);
+		const body = latestPatchBody();
+
+		// Only the flag the user actually changed travels — the diff must not
+		// re-send every other unchanged field.
+		expect(body).toEqual({ require_ticket_names: false });
+	});
+
+	// --- 5. No-op suppression --------------------------------------------------
 
 	it('disables Continue and never mutates when the dialog is applied without edits', async () => {
 		renderDialog(makeTemplateEvent());

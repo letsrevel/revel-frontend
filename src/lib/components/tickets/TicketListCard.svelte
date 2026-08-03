@@ -196,5 +196,8 @@
 			showTicketModal = false;
 			queryClient.invalidateQueries({ queryKey: ['dashboard-tickets'] });
 		}}
+		onTicketRenamed={() => {
+			queryClient.invalidateQueries({ queryKey: ['dashboard-tickets'] });
+		}}
 	/>
 {/if}

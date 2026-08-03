@@ -31,6 +31,7 @@ import type { PropagateScope } from '$lib/api/generated/types.gen';
 export type TemplateFlagKey =
 	| 'requires_ticket'
 	| 'waitlist_open'
+	| 'require_ticket_names'
 	| 'requires_full_profile'
 	| 'potluck_open'
 	| 'accept_invitation_requests'
@@ -64,6 +65,11 @@ export function buildCapacityToggles(): TemplateToggleConfig[] {
 			key: 'waitlist_open',
 			label: m['recurringEvents.templateDialog.toggles.waitlistOpen'](),
 			testid: 'template-edit-waitlist-open'
+		},
+		{
+			key: 'require_ticket_names',
+			label: m['recurringEvents.templateDialog.toggles.requireTicketNames'](),
+			testid: 'template-edit-require-ticket-names'
 		}
 	];
 }
