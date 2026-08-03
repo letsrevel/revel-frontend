@@ -30,6 +30,33 @@ if (typeof globalThis.ResizeObserver === 'undefined') {
 	globalThis.ResizeObserver = ResizeObserverStub as unknown as typeof ResizeObserver;
 }
 
+// jsdom implements no `matchMedia`, but components query it for user
+// preferences — e.g. RotatingNoun asks for `prefers-reduced-motion` on mount,
+// so rendering it (or any parent of it) would throw "matchMedia is not a
+// function". Default to "query does not match": the animated, non-reduced
+// path is the one worth exercising by default, and a test that cares about a
+// specific query stubs it explicitly (vi.stubGlobal overrides this, and
+// vi.unstubAllGlobals restores it). Installed only when absent, so a real
+// implementation always wins.
+if (typeof globalThis.matchMedia === 'undefined') {
+	const noop = (): void => {
+		// no-op: the stub's result never changes, so listeners never fire
+	};
+	globalThis.matchMedia = function stubMatchMedia(query: string): MediaQueryList {
+		return {
+			matches: false,
+			media: query,
+			onchange: null,
+			addEventListener: noop,
+			removeEventListener: noop,
+			// Deprecated aliases, still used by some libraries.
+			addListener: noop,
+			removeListener: noop,
+			dispatchEvent: () => false
+		} as unknown as MediaQueryList;
+	};
+}
+
 // jsdom implements no Web Animations API, but Svelte 5 drives `transition:`
 // through `Element.animate` — so rendering any component with a transition
 // (e.g. ConfirmDialog's fade/scale) throws "element.animate is not a function".

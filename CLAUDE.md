@@ -1033,7 +1033,17 @@ The official palette from the ACIDHAIRS brand deck (June 2026, `revel-backend/lo
 **The shipped theme is "Bubble"** (decided 2026-07-08): sticker-round `--radius: 1.25rem`, lavender paper light mode, aubergine club dark mode with palette Lavender as the glow primary; crimson only as the "heart" accent, amber as highlight, maroon destructive. Its tokens live in `src/app.css` (`:root` + `.dark`) — that file is the single place to edit for any future rebrand (token NAMES are the stable contract; every component reads them). Retired candidates (gradient/midnight/mono, the crimson study, the pre-2026 purple/cyan brand, and the live A/B switcher) are preserved in git history at commit `3e6d2bb9`.
 
 - **Logo:** the "let's revel." lockup (`RevelWordmark.svelte` + `RevelMark.svelte`); the mark's gradient is `--logo-from`/`--logo-to` (Hearty Purple → Light Crimson).
-- **Typeface:** Nata Sans app-wide, via `@fontsource-variable/nata-sans` (imported in `app.css`) and `fontFamily.sans` in `tailwind.config.ts`. The chunky wide headline face in the deck is ACIDHAIRS's own deck typography, **not** a licensed brand asset — Nata Sans is the brand font, with no display face (evaluated and decided against; see commit `3e6d2bb9` for the Unbounded/Baloo 2 experiments).
+- **Typeface:** Nata Sans app-wide, via `@fontsource-variable/nata-sans` (imported in `app.css`) and `fontFamily.sans` in `tailwind.config.ts`. The chunky wide headline face in the ACIDHAIRS deck is that agency's own deck typography, **not** a licensed brand asset. The Digital Brand Styleguide (below) later added **BBH Bartle** as a display face — but for **social-media assets only**; the app and web stay Nata Sans (all weights allowed).
+
+### Digital Brand Styleguide (Isabella Radich, 2026)
+
+Source PDF: `Revel_Digital-Styleguide.pdf` at this repo's root (**local-only, gitignored — never commit it**); it layers on top of the ACIDHAIRS deck (`revel-backend/local_stuff/Revel_Presentation_Branding+Social-Media-Design.pdf`). Colors are identical to the palette table above. The rules it adds:
+
+- **Wordmark:** "let's" in Nata Sans **Light**, "revel" in **Semibold**, period after "revel". Tracking **60** (`tracking-[0.06em]`) on the wordmark **only** — everywhere else tracking stays 0. In the color lockup "let's" and the period are Ink, "revel" carries the brand gradient (white-on-dark variants: all white, weights unchanged). Any hand-set "let's revel." (e.g. the landing ClosePanel) must follow these weights.
+- **Logo gradient:** vertical linear, Hearty Purple (top) → Light Crimson (bottom), midpoint at 50%. `RevelMark.svelte` already implements this; don't re-derive it per-surface.
+- **Safe zones:** clear space of ½x around mark and lockup (x = the heart's height). Never set the logo flush against an edge — corner placements keep the ½x margin on both sides.
+- **Fonts:** Nata Sans is the main brand font, universal on web and social; all weights in the family are allowed. **BBH Bartle** (open-source Google Font) is the additional display face **for social-media designs only** — do not ship it in the app. Both upper- and lowercase allowed, tracking 0.
+- **Picture style:** DO — colourful, warm image language; closeness and a sense of community; "real"-looking portraits. DON'T — classic stock imagery, people who read as actors/models, cold or distanced shots, corporate casual. (The landing page deliberately uses no photography; these rules bind social assets, OG images, and any future photo use.)
 
 ### Theme rules
 

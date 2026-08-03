@@ -121,6 +121,15 @@ TEXT_PAIRS = [  # (fg, bg, min_ratio, note)
     ("primary", "card", 3.0, "primary on card"),
     ("ring", "background", 3.0, "focus ring visibility"),
     ("border", "background", 1.3, "border visibility (advisory)"),
+    # Poster panels (landing page). Same in dark mode by design.
+    ("poster-ink", "poster-amber", 4.5, "poster pricing panel body"),
+    ("poster-ink", "poster-periwinkle", 4.5, "poster communities panel body"),
+    ("poster-ink", "poster-paper", 4.5, "poster features panel body"),
+    ("poster-white", "poster-crimson-deep", 4.5, "poster venues panel body"),
+    ("poster-white", "poster-ink", 4.5, "poster open source panel body"),
+    ("poster-white", "poster-purple", 4.5, "poster close panel body"),
+    ("poster-purple", "poster-white", 4.5, "sticker text on white sticker"),
+    ("poster-crimson-deep", "poster-white", 4.5, "sticker text on white sticker"),
 ]
 
 SEMANTIC = ["primary", "secondary", "accent", "destructive", "highlight"]

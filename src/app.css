@@ -49,6 +49,19 @@
 		/* Logo gradient (RevelMark): Hearty Purple → Light Crimson. */
 		--logo-from: hsl(270 70% 55%);
 		--logo-to: hsl(3 79% 53%);
+		/* Poster panels (landing page). Fixed brand colors, identical in dark
+		   mode on purpose: the panels behave like imagery, not like surfaces.
+		   crimson-deep exists because white body text on raw Light Crimson is
+		   ~4.3:1 (fails AA normal text); 3 79% 50% measures >= 4.5:1. */
+		--poster-purple: 270 70% 55%; /* Hearty Purple #8C3CDD */
+		--poster-crimson: 3 79% 53%; /* Light Crimson #E6332A */
+		--poster-crimson-deep: 3 79% 50%; /* panel bg variant, AA vs white */
+		--poster-lavender: 268 55% 68%; /* Lavender #AB82DB */
+		--poster-periwinkle: 226 100% 80%; /* Periwinkle #9AB2FF */
+		--poster-amber: 38 94% 59%; /* Amber #F9B233 */
+		--poster-ink: 173 40% 8%; /* Ink #0D1E1C */
+		--poster-paper: 268 44% 95%; /* lavender paper panel */
+		--poster-white: 0 0% 100%;
 	}
 
 	.dark {
@@ -74,6 +87,29 @@
 		--input: 270 25% 20%;
 		--ring: 268 60% 72%;
 	}
+}
+
+/* Poster diagonal-cut colors (landing). Each sets the reveal color used by
+   PosterPanel's .diagonal-cut gradient. Deliberately outside @layer base and
+   outside any component: they are applied via a dynamic `cutToClass` prop, so
+   Tailwind's content scan never sees them — plain global CSS survives purging. */
+.cut-amber {
+	--cut-color: hsl(var(--poster-amber));
+}
+.cut-periwinkle {
+	--cut-color: hsl(var(--poster-periwinkle));
+}
+.cut-crimson {
+	--cut-color: hsl(var(--poster-crimson-deep));
+}
+.cut-paper {
+	--cut-color: hsl(var(--poster-paper));
+}
+.cut-ink {
+	--cut-color: hsl(var(--poster-ink));
+}
+.cut-purple {
+	--cut-color: hsl(var(--poster-purple));
 }
 
 @layer base {
