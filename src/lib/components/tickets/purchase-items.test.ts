@@ -57,6 +57,31 @@ describe('buildPurchaseTicketItems', () => {
 		const items = buildPurchaseTicketItems({ ...base, guestNames: ['  Alice  ', 'Bob'] });
 		expect(items[0]).toEqual({ guest_name: 'Alice' });
 	});
+
+	// These two assert on JSON.stringify, not toEqual, ON PURPOSE: the checkout
+	// mutations fingerprint their params with JSON.stringify, so KEY ORDER is part
+	// of the contract. Assigning seat_id before guest_name would keep every
+	// toEqual assertion green while changing the fingerprint — silently breaking
+	// reservation resume for every seated checkout. Pin the serialized shape.
+	it('serializes guest_name before seat_id (resume-fingerprint contract)', () => {
+		expect(
+			JSON.stringify(buildPurchaseTicketItems({ ...base, heldSeatIds: ['s1'], useHeldSeats: true }))
+		).toBe('[{"guest_name":"Alice A","seat_id":"s1"},{"guest_name":"Bob B"}]');
+	});
+
+	it('serializes seat-only items stably when names are off (resume-fingerprint contract)', () => {
+		expect(
+			JSON.stringify(
+				buildPurchaseTicketItems({
+					...base,
+					requireTicketNames: false,
+					namesShown: false,
+					heldSeatIds: ['s1', 's2'],
+					useHeldSeats: true
+				})
+			)
+		).toBe('[{"seat_id":"s1"},{"seat_id":"s2"}]');
+	});
 });
 
 describe('defaultPurchaseItems', () => {
