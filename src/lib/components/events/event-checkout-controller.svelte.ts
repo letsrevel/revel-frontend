@@ -65,8 +65,10 @@ export interface CheckoutControllerDeps {
 	queryClient: QueryClient;
 	/** Current user's tickets (used to locate a pending payment to resume). */
 	getUserTickets: () => EventTicketSchemaActual[];
-	/** Logged-in user's display name (fallback for guest_name). */
-	getUserDisplayName: () => string;
+	// Buyer's name for guest_name defaulting. MUST be name fields only
+	// (getUserRealName), never display_name — that bottoms out at
+	// username = email, which must not be written onto tickets.
+	getTicketHolderDefaultName: () => string;
 	/** Whether the event demands a holder name on every ticket. */
 	getRequireTicketNames: () => boolean;
 	/** Push a refreshed user status into the host component state. */
@@ -89,7 +91,7 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 		eventId,
 		queryClient,
 		getUserTickets,
-		getUserDisplayName,
+		getTicketHolderDefaultName,
 		getRequireTicketNames,
 		setUserStatus,
 		onCloseTicketTierModal,
@@ -306,7 +308,7 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 
 	/** Single-ticket fallback when a caller supplied no items (purchase-items.ts). */
 	function defaultTicketItems(): TicketPurchaseItem[] {
-		return defaultPurchaseItems(getRequireTicketNames(), getUserDisplayName());
+		return defaultPurchaseItems(getRequireTicketNames(), getTicketHolderDefaultName());
 	}
 
 	/**
