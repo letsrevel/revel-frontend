@@ -13,9 +13,21 @@
 	const { isAuthenticated }: Props = $props();
 
 	/**
-	 * Inclusive rotating-vowel kicker for gendered-adjective locales,
-	 * migrated verbatim from the retired LandingHero (see #505). The
-	 * inclusive marker is FIRST so SSR/no-JS renders the inclusive form.
+	 * Inclusive rotating-vowel kicker for locales whose welcome adjective
+	 * inflects for gender. Derived from — not a copy of — the retired
+	 * LandingHero's INCLUSIVE_WELCOME; two things changed deliberately:
+	 *
+	 * 1. The `browser` gate is gone. LandingHero rendered nothing on the
+	 *    server to dodge a locale mismatch (#505); here the endings are
+	 *    ordered inclusive-FIRST so SSR and no-JS render the inclusive form
+	 *    rather than a gendered one, which is the whole point of the device.
+	 *    Hydration safety no longer rests on skipping SSR: the server writes
+	 *    Paraglide's canonical locale cookie (see src/lib/i18n.ts, whose
+	 *    comment cites #505), so the client runtime resolves the same locale
+	 *    the server did and the markup matches.
+	 * 2. The `connector` words ('su' / 'a' / 'ao') are dropped. The kicker is
+	 *    a standalone greeting above the headline, not a sentence running
+	 *    into "Revel", so it has nothing to connect to.
 	 */
 	const INCLUSIVE_KICKER: Record<string, { stem: string; endings: readonly string[] }> = {
 		it: { stem: 'Benvenut', endings: ['ə', 'a', 'o'] },
@@ -85,9 +97,14 @@
 				>
 					{m['userMenu.dashboard']()}
 				</a>
+				<!-- Ink-tinted fill, not white: white bold 16px over a white/0.16 wash
+				     measures 4.14:1 on the purple end and 3.86:1 on the crimson end,
+				     below AA. Darkening the fill instead takes it to 7.19/6.32.
+				     audit-brand-themes.py cannot see this — the effective color is
+				     composited at paint time, not a token pair. -->
 				<a
 					href={resolve('/(public)/events', {})}
-					class="rounded-full border-2 border-[hsl(var(--poster-white))] bg-[hsl(var(--poster-white)/0.16)] px-6 py-3 font-bold text-[hsl(var(--poster-white))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+					class="rounded-full border-2 border-[hsl(var(--poster-white))] bg-[hsl(var(--poster-ink)/0.20)] px-6 py-3 font-bold text-[hsl(var(--poster-white))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
 				>
 					{m['nav.browseEvents']()}
 				</a>
@@ -98,11 +115,16 @@
 				>
 					{m['home.poster.heroStartOrganizing']()}
 				</a>
+				<!-- Ink-tinted fill, not white: white bold 16px over a white/0.16 wash
+				     measures 4.14:1 on the purple end and 3.86:1 on the crimson end,
+				     below AA. Darkening the fill instead takes it to 7.19/6.32.
+				     audit-brand-themes.py cannot see this — the effective color is
+				     composited at paint time, not a token pair. -->
 				<a
 					href="https://demo.letsrevel.io/login"
 					target="_blank"
 					rel="noopener noreferrer"
-					class="rounded-full border-2 border-[hsl(var(--poster-white))] bg-[hsl(var(--poster-white)/0.16)] px-6 py-3 font-bold text-[hsl(var(--poster-white))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+					class="rounded-full border-2 border-[hsl(var(--poster-white))] bg-[hsl(var(--poster-ink)/0.20)] px-6 py-3 font-bold text-[hsl(var(--poster-white))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
 				>
 					{m['home.poster.heroPeekDemo']()}
 				</a>
