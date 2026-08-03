@@ -44,8 +44,9 @@ export const GUEST_COMPATIBLE_STEPS: ReadonlySet<string> = new Set([
 
 export interface GuestCheckoutArgs {
 	email: string;
-	firstName: string;
-	lastName: string;
+	/** Omitted (undefined) on events that don't require ticket names. */
+	firstName: string | undefined;
+	lastName: string | undefined;
 	tickets: TicketPurchaseItem[];
 	billingInfo: BuyerBillingInfoSchema | undefined;
 	accessibleRequired: boolean;
@@ -53,6 +54,39 @@ export interface GuestCheckoutArgs {
 	priceCategoryId: string | undefined;
 	/** PWYC price per ticket; undefined for fixed-price tiers. */
 	pricePerTicket: number | undefined;
+}
+
+export interface GuestTicketItemsArgs {
+	/** One entry per ticket; the per-ticket inputs when they are shown. */
+	guestNames: string[];
+	/** Whether the per-ticket name inputs were shown (multi-ticket purchase). */
+	namesShown: boolean;
+	/** Event requires holder names; when false no guest_name is sent at all. */
+	requireTicketNames: boolean;
+	/** Purchaser's own name — the fallback for a hidden single-ticket input. */
+	primaryName: string;
+	heldSeatIds: string[];
+	/** user_choice seating: attach the buyer's held seat ids positionally. */
+	useHeldSeats: boolean;
+}
+
+/**
+ * Per-ticket purchase items for the guest checkout. Key order matters: the
+ * resume fingerprint is `JSON.stringify` of these, so guest_name must stay
+ * before seat_id.
+ */
+export function guestTicketItems(args: GuestTicketItemsArgs): TicketPurchaseItem[] {
+	return args.guestNames.map((name, index) => {
+		const ticket: TicketPurchaseItem = {};
+		if (args.requireTicketNames) {
+			ticket.guest_name = (args.namesShown ? name : args.primaryName).trim();
+		}
+		// Seats only ride along in user_choice mode; every other mode sends an
+		// explicit null — best_available seats are assigned server-side from the
+		// buyer's live holds, never via seat_id.
+		ticket.seat_id = args.useHeldSeats && args.heldSeatIds[index] ? args.heldSeatIds[index] : null;
+		return ticket;
+	});
 }
 
 export function guestCheckoutFingerprint(args: GuestCheckoutArgs): string {
@@ -71,8 +105,8 @@ export function guestCheckoutFingerprint(args: GuestCheckoutArgs): string {
 export function guestCheckoutBody(args: GuestCheckoutArgs): GuestBatchCheckoutPayload {
 	return {
 		email: args.email,
-		first_name: args.firstName,
-		last_name: args.lastName,
+		...(args.firstName ? { first_name: args.firstName } : {}),
+		...(args.lastName ? { last_name: args.lastName } : {}),
 		tickets: args.tickets,
 		billing_info: args.billingInfo,
 		accessible_required: args.accessibleRequired,

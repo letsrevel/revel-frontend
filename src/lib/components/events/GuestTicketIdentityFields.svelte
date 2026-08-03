@@ -8,11 +8,20 @@
 		formData: GuestTicketFormData;
 		fieldErrors: Record<string, string>;
 		isSubmitting: boolean;
+		/** Hide first/last name for email-only checkout (require_ticket_names off). */
+		showNameFields?: boolean;
 		onKeydown: (e: KeyboardEvent) => void;
 		onBlur: (field: string) => void;
 	}
 
-	let { formData = $bindable(), fieldErrors, isSubmitting, onKeydown, onBlur }: Props = $props();
+	let {
+		formData = $bindable(),
+		fieldErrors,
+		isSubmitting,
+		showNameFields = true,
+		onKeydown,
+		onBlur
+	}: Props = $props();
 </script>
 
 <!-- Email Field -->
@@ -44,48 +53,50 @@
 </div>
 
 <!-- First Name and Last Name -->
-<div class="grid gap-4 sm:grid-cols-2">
-	<div class="space-y-2">
-		<Label for="guest-ticket-first-name">{m['guest_attendance.first_name_label']()}</Label>
-		<Input
-			id="guest-ticket-first-name"
-			type="text"
-			bind:value={formData.first_name}
-			onkeydown={onKeydown}
-			onblur={() => onBlur('first_name')}
-			placeholder={m['guest_attendance.first_name_placeholder']()}
-			disabled={isSubmitting}
-			aria-invalid={fieldErrors.first_name ? 'true' : 'false'}
-			aria-describedby={fieldErrors.first_name ? 'ticket-first-name-error' : undefined}
-			autocomplete="given-name"
-			required
-		/>
-		{#if fieldErrors.first_name}
-			<p id="ticket-first-name-error" class="text-sm text-destructive" role="alert">
-				{fieldErrors.first_name}
-			</p>
-		{/if}
-	</div>
+{#if showNameFields}
+	<div class="grid gap-4 sm:grid-cols-2">
+		<div class="space-y-2">
+			<Label for="guest-ticket-first-name">{m['guest_attendance.first_name_label']()}</Label>
+			<Input
+				id="guest-ticket-first-name"
+				type="text"
+				bind:value={formData.first_name}
+				onkeydown={onKeydown}
+				onblur={() => onBlur('first_name')}
+				placeholder={m['guest_attendance.first_name_placeholder']()}
+				disabled={isSubmitting}
+				aria-invalid={fieldErrors.first_name ? 'true' : 'false'}
+				aria-describedby={fieldErrors.first_name ? 'ticket-first-name-error' : undefined}
+				autocomplete="given-name"
+				required
+			/>
+			{#if fieldErrors.first_name}
+				<p id="ticket-first-name-error" class="text-sm text-destructive" role="alert">
+					{fieldErrors.first_name}
+				</p>
+			{/if}
+		</div>
 
-	<div class="space-y-2">
-		<Label for="guest-ticket-last-name">{m['guest_attendance.last_name_label']()}</Label>
-		<Input
-			id="guest-ticket-last-name"
-			type="text"
-			bind:value={formData.last_name}
-			onkeydown={onKeydown}
-			onblur={() => onBlur('last_name')}
-			placeholder={m['guest_attendance.last_name_placeholder']()}
-			disabled={isSubmitting}
-			aria-invalid={fieldErrors.last_name ? 'true' : 'false'}
-			aria-describedby={fieldErrors.last_name ? 'ticket-last-name-error' : undefined}
-			autocomplete="family-name"
-			required
-		/>
-		{#if fieldErrors.last_name}
-			<p id="ticket-last-name-error" class="text-sm text-destructive" role="alert">
-				{fieldErrors.last_name}
-			</p>
-		{/if}
+		<div class="space-y-2">
+			<Label for="guest-ticket-last-name">{m['guest_attendance.last_name_label']()}</Label>
+			<Input
+				id="guest-ticket-last-name"
+				type="text"
+				bind:value={formData.last_name}
+				onkeydown={onKeydown}
+				onblur={() => onBlur('last_name')}
+				placeholder={m['guest_attendance.last_name_placeholder']()}
+				disabled={isSubmitting}
+				aria-invalid={fieldErrors.last_name ? 'true' : 'false'}
+				aria-describedby={fieldErrors.last_name ? 'ticket-last-name-error' : undefined}
+				autocomplete="family-name"
+				required
+			/>
+			{#if fieldErrors.last_name}
+				<p id="ticket-last-name-error" class="text-sm text-destructive" role="alert">
+					{fieldErrors.last_name}
+				</p>
+			{/if}
+		</div>
 	</div>
-</div>
+{/if}

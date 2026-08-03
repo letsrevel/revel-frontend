@@ -690,6 +690,7 @@
 			tier={selectedTierForGuest}
 			allTiers={ticketTiers}
 			eventMaxTicketsPerUser={event.max_tickets_per_user}
+			requireTicketNames={event.require_ticket_names}
 			onClose={closeGuestTicketDialog}
 			onSuccess={handleGuestAttendanceSuccess}
 			focusSeating={guestFocusSeating}

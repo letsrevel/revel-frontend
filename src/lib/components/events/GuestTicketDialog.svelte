@@ -12,6 +12,7 @@
 	import { z } from 'zod';
 	import {
 		guestUserSchema,
+		guestEmailOnlySchema,
 		createGuestPwycSchema,
 		type GuestTicketFormData
 	} from '$lib/schemas/guestAttendance';
@@ -29,7 +30,7 @@
 		CheckoutSessionError
 	} from '$lib/utils/checkout-session';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
-	import type { SeatAssignmentMode, TicketPurchaseItem } from '$lib/api/generated/types.gen';
+	import type { SeatAssignmentMode } from '$lib/api/generated/types.gen';
 	import CheckoutBillingSection from '$lib/components/tickets/CheckoutBillingSection.svelte';
 	import { bestAvailableFailureMessage } from '$lib/components/tickets/purchase-error';
 	import { isMappedBestAvailable } from '$lib/components/tickets/seat-zones';
@@ -41,6 +42,7 @@
 		guestNamesError,
 		guestCheckoutFingerprint,
 		guestPwycCheckoutBody,
+		guestTicketItems,
 		type GuestCheckoutArgs
 	} from './guest-checkout-payload';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -69,6 +71,8 @@
 		maxQuantity?: number | null;
 		/** Event-level max tickets per user (fallback when tier's max is null) */
 		eventMaxTicketsPerUser?: number | null;
+		/** Event demands a holder name per ticket (`require_ticket_names`). */
+		requireTicketNames?: boolean;
 		onClose: () => void;
 		onSuccess?: () => void;
 	}
@@ -82,6 +86,7 @@
 		focusSeating = false,
 		maxQuantity = null,
 		eventMaxTicketsPerUser = null,
+		requireTicketNames = true,
 		onClose,
 		onSuccess
 	}: Props = $props();
@@ -200,7 +205,8 @@
 	const showQuantitySelector = $derived(effectiveMaxQuantity > 1);
 
 	// Show guest name inputs only when user can purchase more than one ticket
-	const showGuestNames = $derived(effectiveMaxQuantity > 1);
+	// and the event actually demands holder names.
+	const showGuestNames = $derived(effectiveMaxQuantity > 1 && requireTicketNames);
 
 	// Check if all guest names are filled
 
@@ -368,24 +374,25 @@
 		errorMessage = null;
 
 		try {
+			// Email-only checkout (require_ticket_names off) validates the address
+			// alone — the name inputs aren't rendered, so they stay empty.
+			const identity = requireTicketNames
+				? {
+						email: formData.email,
+						first_name: formData.first_name,
+						last_name: formData.last_name
+					}
+				: { email: formData.email };
 			if (isPwyc) {
-				const schema = createGuestPwycSchema({
-					pwyc_min: minAmount(),
-					pwyc_max: maxAmount()
-				});
-				const pwycNumber = parseFloat(formData.pwyc || '0');
-				schema.parse({
-					email: formData.email,
-					first_name: formData.first_name,
-					last_name: formData.last_name,
-					pwyc: pwycNumber
-				});
+				const schema = createGuestPwycSchema(
+					{ pwyc_min: minAmount(), pwyc_max: maxAmount() },
+					{ emailOnly: !requireTicketNames }
+				);
+				schema.parse({ ...identity, pwyc: parseFloat(formData.pwyc || '0') });
+			} else if (requireTicketNames) {
+				guestUserSchema.parse(identity);
 			} else {
-				guestUserSchema.parse({
-					email: formData.email,
-					first_name: formData.first_name,
-					last_name: formData.last_name
-				});
+				guestEmailOnlySchema.parse(identity);
 			}
 			return true;
 		} catch (error) {
@@ -439,27 +446,16 @@
 		errorMessage = null;
 
 		try {
-			// Build tickets array - one for each ticket
-			const tickets = guestNames.map((name, index) => {
-				// For single ticket (no guest names shown), use primary guest name
-				const guestName = showGuestNames
-					? name.trim()
-					: `${formData.first_name} ${formData.last_name}`.trim();
-
-				const ticket: TicketPurchaseItem = {
-					guest_name: guestName
-				};
-
-				// Add seat_id for user_choice mode (the buyer's held seats). Other
-				// modes send an explicit null — best_available seats are assigned
-				// server-side from the buyer's live holds, never via seat_id.
-				if (isUserChoiceSeat && heldSeatIds[index]) {
-					ticket.seat_id = heldSeatIds[index];
-				} else {
-					ticket.seat_id = null;
-				}
-
-				return ticket;
+			// Build tickets array - one for each ticket (pure builder, see
+			// guest-checkout-payload.ts: names are omitted entirely when the event
+			// doesn't require them, and the key order feeds the resume fingerprint).
+			const tickets = guestTicketItems({
+				guestNames,
+				namesShown: showGuestNames,
+				requireTicketNames,
+				primaryName: `${formData.first_name} ${formData.last_name}`,
+				heldSeatIds,
+				useHeldSeats: isUserChoiceSeat
 			});
 
 			const billingInfo = billingSection?.getBillingInfo() || undefined;
@@ -469,8 +465,8 @@
 			// set only on a mapped best-available tier (uninvited zones are 400s).
 			const checkoutArgs: GuestCheckoutArgs = {
 				email: formData.email,
-				firstName: formData.first_name,
-				lastName: formData.last_name,
+				firstName: requireTicketNames ? formData.first_name : undefined,
+				lastName: requireTicketNames ? formData.last_name : undefined,
 				tickets,
 				billingInfo,
 				accessibleRequired,
@@ -644,6 +640,7 @@
 						bind:formData
 						{fieldErrors}
 						{isSubmitting}
+						showNameFields={requireTicketNames}
 						onKeydown={handleKeydown}
 						onBlur={handleBlur}
 					/>
