@@ -49,6 +49,19 @@
 		/* Logo gradient (RevelMark): Hearty Purple → Light Crimson. */
 		--logo-from: hsl(270 70% 55%);
 		--logo-to: hsl(3 79% 53%);
+		/* Poster panels (landing page). Fixed brand colors, identical in dark
+		   mode on purpose: the panels behave like imagery, not like surfaces.
+		   crimson-deep exists because white body text on raw Light Crimson is
+		   ~4.3:1 (fails AA normal text); 3 79% 50% measures >= 4.5:1. */
+		--poster-purple: 270 70% 55%; /* Hearty Purple #8C3CDD */
+		--poster-crimson: 3 79% 53%; /* Light Crimson #E6332A */
+		--poster-crimson-deep: 3 79% 50%; /* panel bg variant, AA vs white */
+		--poster-lavender: 268 55% 68%; /* Lavender #AB82DB */
+		--poster-periwinkle: 226 100% 80%; /* Periwinkle #9AB2FF */
+		--poster-amber: 38 94% 59%; /* Amber #F9B233 */
+		--poster-ink: 173 40% 8%; /* Ink #0D1E1C */
+		--poster-paper: 268 44% 95%; /* lavender paper panel */
+		--poster-white: 0 0% 100%;
 	}
 
 	.dark {
