@@ -23,7 +23,10 @@
 <!-- inline-grid stacks all items in one cell: the box is as wide as the
      longest item, so swapping never reflows the headline. -->
 <span class="rotating-noun inline-grid text-center align-baseline" aria-hidden="true">
-	{#each items as item, i (item)}
+	<!-- Keyed by index, not by the string: the list is static and
+	     index-stable, and keying by the item would throw each_key_duplicate
+	     on a locale whose list repeats a word (e.g. endings ['a','a']). -->
+	{#each items as item, i (i)}
 		<span
 			class="col-start-1 row-start-1 transition-[opacity,transform] duration-500 {i === active
 				? 'is-active opacity-100 [transform:rotateX(0)]'
