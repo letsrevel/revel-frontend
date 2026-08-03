@@ -5,3 +5,5 @@ export { default as PosterSticker } from './PosterSticker.svelte';
 export { default as RotatingNoun } from './RotatingNoun.svelte';
 export { default as CommunitiesPanel } from './CommunitiesPanel.svelte';
 export { default as QuestionnaireMock } from './QuestionnaireMock.svelte';
+export { default as VenuesPanel } from './VenuesPanel.svelte';
+export { default as SeatMapMock } from './SeatMapMock.svelte';
