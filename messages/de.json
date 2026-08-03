@@ -9183,5 +9183,15 @@
 	"embedBuilder.copySnippet": "Code kopieren",
 	"embedBuilder.copied": "Kopiert",
 	"embedBuilder.copySuccess": "Code in die Zwischenablage kopiert",
-	"embedBuilder.copyError": "Kopieren nicht möglich. Markiere den Code und kopiere ihn manuell."
+	"embedBuilder.copyError": "Kopieren nicht möglich. Markiere den Code und kopiere ihn manuell.",
+	"renameTicketDialog.title": "Ticketinhaber*in umbenennen",
+	"renameTicketDialog.description": "Lege den Namen fest, der auf diesem Ticket angezeigt wird. PDF und Wallet-Pass werden automatisch neu erstellt.",
+	"renameTicketDialog.nameLabel": "Name der*des Inhaber*in",
+	"renameTicketDialog.clearHint": "Leer lassen, um den Namen zu entfernen (nur möglich, wenn das Event keine Namen verlangt).",
+	"renameTicketDialog.save": "Speichern",
+	"renameTicketDialog.success": "Ticketinhaber*in aktualisiert",
+	"renameTicketDialog.errorConflict": "Dieses Ticket kann nicht mehr umbenannt werden (bereits eingecheckt oder storniert).",
+	"renameTicketDialog.errorGeneric": "Ticketinhaber*in konnte nicht aktualisiert werden.",
+	"myTicketModal.renameHolder": "Inhaber*in umbenennen",
+	"myTicketModal.addHolderName": "Namen hinzufügen"
 }

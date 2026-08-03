@@ -9183,5 +9183,15 @@
 	"embedBuilder.copySnippet": "Copier le code",
 	"embedBuilder.copied": "Copié",
 	"embedBuilder.copySuccess": "Code copié dans le presse-papiers",
-	"embedBuilder.copyError": "Copie impossible. Sélectionne le code et copie-le à la main."
+	"embedBuilder.copyError": "Copie impossible. Sélectionne le code et copie-le à la main.",
+	"renameTicketDialog.title": "Renommer le titulaire du billet",
+	"renameTicketDialog.description": "Définissez le nom affiché sur ce billet. Le PDF et le pass wallet sont régénérés automatiquement.",
+	"renameTicketDialog.nameLabel": "Nom du titulaire",
+	"renameTicketDialog.clearHint": "Laissez vide pour supprimer le nom (possible uniquement si l'événement n'exige pas de nom).",
+	"renameTicketDialog.save": "Enregistrer",
+	"renameTicketDialog.success": "Titulaire du billet mis à jour",
+	"renameTicketDialog.errorConflict": "Ce billet ne peut plus être renommé (déjà enregistré ou annulé).",
+	"renameTicketDialog.errorGeneric": "Impossible de mettre à jour le titulaire du billet.",
+	"myTicketModal.renameHolder": "Renommer le titulaire",
+	"myTicketModal.addHolderName": "Ajouter un nom"
 }

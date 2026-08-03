@@ -652,6 +652,10 @@
 			await refreshUserStatus();
 			queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
 		}}
+		onTicketRenamed={async () => {
+			await refreshUserStatus();
+			queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
+		}}
 	/>
 {/if}
 

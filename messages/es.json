@@ -9183,5 +9183,15 @@
 	"embedBuilder.copySnippet": "Copiar el código",
 	"embedBuilder.copied": "Copiado",
 	"embedBuilder.copySuccess": "Código copiado al portapapeles",
-	"embedBuilder.copyError": "No se ha podido copiar. Selecciona el código y cópialo a mano."
+	"embedBuilder.copyError": "No se ha podido copiar. Selecciona el código y cópialo a mano.",
+	"renameTicketDialog.title": "Renombrar titular de la entrada",
+	"renameTicketDialog.description": "Establece el nombre que se muestra en esta entrada. El PDF y el pase de wallet se regeneran automáticamente.",
+	"renameTicketDialog.nameLabel": "Nombre del titular",
+	"renameTicketDialog.clearHint": "Déjalo vacío para quitar el nombre (solo posible si el evento no requiere nombres).",
+	"renameTicketDialog.save": "Guardar",
+	"renameTicketDialog.success": "Titular de la entrada actualizado",
+	"renameTicketDialog.errorConflict": "Esta entrada ya no se puede renombrar (ya registrada o cancelada).",
+	"renameTicketDialog.errorGeneric": "No se pudo actualizar el titular de la entrada.",
+	"myTicketModal.renameHolder": "Renombrar titular",
+	"myTicketModal.addHolderName": "Añadir nombre"
 }

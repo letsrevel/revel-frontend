@@ -9183,5 +9183,15 @@
 	"embedBuilder.copySnippet": "Copy snippet",
 	"embedBuilder.copied": "Copied",
 	"embedBuilder.copySuccess": "Snippet copied to your clipboard",
-	"embedBuilder.copyError": "Could not copy. Select the snippet and copy it manually."
+	"embedBuilder.copyError": "Could not copy. Select the snippet and copy it manually.",
+	"renameTicketDialog.title": "Rename ticket holder",
+	"renameTicketDialog.description": "Set the name shown on this ticket. The ticket PDF and wallet pass are regenerated automatically.",
+	"renameTicketDialog.nameLabel": "Holder name",
+	"renameTicketDialog.clearHint": "Leave empty to remove the holder name (only possible when the event doesn't require names).",
+	"renameTicketDialog.save": "Save",
+	"renameTicketDialog.success": "Ticket holder updated",
+	"renameTicketDialog.errorConflict": "This ticket can no longer be renamed (already checked in or cancelled).",
+	"renameTicketDialog.errorGeneric": "Could not update the ticket holder.",
+	"myTicketModal.renameHolder": "Rename holder",
+	"myTicketModal.addHolderName": "Add holder name"
 }

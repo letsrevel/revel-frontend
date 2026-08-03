@@ -9183,5 +9183,15 @@
 	"embedBuilder.copySnippet": "Copiar o código",
 	"embedBuilder.copied": "Copiado",
 	"embedBuilder.copySuccess": "Código copiado para a área de transferência",
-	"embedBuilder.copyError": "Não foi possível copiar. Seleciona o código e copia-o manualmente."
+	"embedBuilder.copyError": "Não foi possível copiar. Seleciona o código e copia-o manualmente.",
+	"renameTicketDialog.title": "Renomear titular do bilhete",
+	"renameTicketDialog.description": "Define o nome mostrado neste bilhete. O PDF e o passe de wallet são regenerados automaticamente.",
+	"renameTicketDialog.nameLabel": "Nome do titular",
+	"renameTicketDialog.clearHint": "Deixe vazio para remover o nome (apenas possível se o evento não exigir nomes).",
+	"renameTicketDialog.save": "Guardar",
+	"renameTicketDialog.success": "Titular do bilhete atualizado",
+	"renameTicketDialog.errorConflict": "Este bilhete já não pode ser renomeado (já registado ou cancelado).",
+	"renameTicketDialog.errorGeneric": "Não foi possível atualizar o titular do bilhete.",
+	"myTicketModal.renameHolder": "Renomear titular",
+	"myTicketModal.addHolderName": "Adicionar nome"
 }
