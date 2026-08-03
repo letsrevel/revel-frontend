@@ -4,8 +4,14 @@
 	interface Props {
 		/** Tailwind background classes for the panel, e.g. "bg-[hsl(var(--poster-amber))]". */
 		bgClass: string;
-		/** Background class of the NEXT panel; renders the diagonal cut strip. */
-		cutToClass?: string;
+		/**
+		 * The `.cut-*` helper class naming the NEXT panel's color — e.g. 'cut-amber'
+		 * when the panel below this one is amber. Renders the diagonal cut strip.
+		 * These helpers live in app.css and set `--cut-color`; this is NOT a
+		 * `bg-[...]` class, and passing one would render no strip at all.
+		 */
+		cutToClass?:
+			'cut-amber' | 'cut-periwinkle' | 'cut-crimson' | 'cut-paper' | 'cut-ink' | 'cut-purple';
 		cutDirection?: 'right' | 'left';
 		children: Snippet;
 	}
@@ -27,8 +33,9 @@
 </section>
 
 <style>
-	/* The strip's own bg class provides the NEXT panel color via a CSS var
-	   consumer: the gradient reveals it under a transparent top triangle. */
+	/* The `.cut-*` helper on this strip (see app.css) sets `--cut-color` to the
+	   NEXT panel's color; the gradient reveals it under a transparent top
+	   triangle, so the two panels meet on a diagonal. */
 	.diagonal-cut {
 		background: linear-gradient(var(--cut-angle), transparent 49%, var(--cut-color) 49.5%);
 	}
