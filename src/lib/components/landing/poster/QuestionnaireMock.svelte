@@ -52,7 +52,7 @@
 			<span
 				class="rounded-full bg-[hsl(var(--poster-paper))] px-4 py-1.5 text-[hsl(var(--poster-ink))]"
 			>
-				{m['home.poster.qMockReview']()}
+				{m['home.poster.qMockReject']()}
 			</span>
 		</div>
 	</div>

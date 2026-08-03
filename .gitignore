@@ -111,3 +111,6 @@ screenshots/
 # removes them on exit; these entries only matter if a run is hard-killed.
 src/lib/__type_gate_canary__.ts
 src/routes/__TypeGateCanary__.svelte
+
+# Local brand styleguide PDF (working asset, never committed)
+/Revel_Digital-Styleguide.pdf

@@ -19,6 +19,16 @@ describe('OpenSourcePanel', () => {
 		expect(cta.getAttribute('rel')).toContain('noopener');
 	});
 
+	it('links the self-hosting docs in a new tab', () => {
+		render(OpenSourcePanel);
+		const link = screen.getByRole('link', {
+			name: new RegExp(m['home.poster.osSelfHostLink']())
+		});
+		expect(link).toHaveAttribute('href', 'https://docs.letsrevel.io/self-hosting/');
+		expect(link).toHaveAttribute('target', '_blank');
+		expect(link.getAttribute('rel')).toContain('noopener');
+	});
+
 	it('keeps the star emoji out of the accessible name', () => {
 		render(OpenSourcePanel);
 		// getByRole's `name` is an exact match on the computed accessible name, so

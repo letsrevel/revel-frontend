@@ -33,6 +33,17 @@
 			<p class="mt-3.5 max-w-md leading-relaxed text-[hsl(var(--poster-white)/0.8)]">
 				{m['home.poster.osBody']()}
 			</p>
+			<!-- Self-hosting docs; full-opacity white (17.46:1). -->
+			<p class="mt-1.5">
+				<a
+					href="https://docs.letsrevel.io/self-hosting/"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="font-semibold text-[hsl(var(--poster-white))] underline underline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+				>
+					{m['home.poster.osSelfHostLink']()} →
+				</a>
+			</p>
 			<!-- White pill, ink text: 17.46:1. -->
 			<a
 				href="https://github.com/letsrevel"

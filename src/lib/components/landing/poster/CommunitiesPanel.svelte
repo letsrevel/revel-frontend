@@ -10,7 +10,13 @@
 	 an AA failure at text-sm. Hierarchy comes from weight, size and tracking.
 	 The pills tint only the BACKGROUND (ink@12% over periwinkle, still light), so
 	 the solid-ink pill text stays ~8:1. -->
-<PosterPanel bgClass="bg-[hsl(var(--poster-periwinkle))]" cutToClass="cut-crimson">
+<!-- Panel order: communities follows the crimson venues panel and precedes the
+	 paper features panel, so the bottom cut reveals paper. -->
+<PosterPanel
+	bgClass="bg-[hsl(var(--poster-periwinkle))]"
+	cutToClass="cut-paper"
+	cutDirection="left"
+>
 	<div class="flex flex-wrap items-center gap-9">
 		<!-- basis-full below sm pushes the mock onto its own row; min-w-0 keeps the
 		     column from forcing a 300px track inside a 288px container at 320px.

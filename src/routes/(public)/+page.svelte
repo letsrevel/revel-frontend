@@ -32,8 +32,8 @@
 
 <HeroPanel {isAuthenticated} />
 <PricingPanel onOpenCalculator={() => (showFeeCalculator = true)} />
-<CommunitiesPanel />
 <VenuesPanel />
+<CommunitiesPanel />
 <FeaturesPanel {landingPagePrefix} />
 <OpenSourcePanel />
 <ClosePanel {canCreateOrg} />

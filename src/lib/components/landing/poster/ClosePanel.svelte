@@ -20,17 +20,19 @@
 	bgClass="bg-[linear-gradient(200deg,hsl(var(--poster-purple))_30%,hsl(var(--poster-crimson-deep))_140%)]"
 >
 	<div class="text-center text-[hsl(var(--poster-white))]">
-		<!-- The "let's revel." lockup, set in the brand face (Nata Sans) at poster
-		     scale. Deliberately NOT RevelWordmark: that component is the fixed
-		     text-2xl header lockup (h-7 mark, light/semibold, `text-accent` full),
-		     none of which survives at font-black 48px on a poster panel.
+		<!-- The "let's revel." lockup per the Digital Brand Styleguide wordmark
+		     spec: "let's" Light, "revel" Semibold, tracking 60 (0.06em) — the one
+		     place tracking is raised; everywhere else it stays 0. Deliberately NOT
+		     RevelWordmark: that component is the fixed text-2xl header lockup
+		     (h-7 mark, `text-accent` period), which doesn't survive poster scale.
 		     The amber period measures 2.98:1 on the purple end / 2.90:1 at the far
 		     end — under the 3:1 large-text floor, kept under WCAG 1.4.3's logotype
 		     exception (it is the brand lockup's accent, mirroring RevelWordmark's
 		     accent period) and because the glyph carries no information: the
 		     heading reads identically without it. -->
-		<h2 class="text-4xl font-black sm:text-5xl">
-			let&rsquo;s revel<span class="text-[hsl(var(--poster-amber))]">.</span>
+		<h2 class="text-4xl tracking-[0.06em] sm:text-5xl">
+			<span class="font-light">let&rsquo;s</span>
+			<span class="font-semibold">revel<span class="text-[hsl(var(--poster-amber))]">.</span></span>
 		</h2>
 		<!-- Full-opacity white. At text-lg/medium (18px — non-large, so the full
 		     4.5:1 applies) a 0.9 alpha measures 4.78:1 on the purple end and

@@ -14,11 +14,7 @@
 	 type with `opacity-65`/`opacity-75` drops it under AA at these sizes, and a
 	 composited alpha is invisible to scripts/audit-brand-themes.py — so the
 	 hierarchy is carried by weight, size and tracking, never by transparency. -->
-<PosterPanel
-	bgClass="bg-[hsl(var(--poster-amber))]"
-	cutToClass="cut-periwinkle"
-	cutDirection="left"
->
+<PosterPanel bgClass="bg-[hsl(var(--poster-amber))]" cutToClass="cut-crimson" cutDirection="left">
 	<div class="flex flex-wrap items-end gap-10 text-[hsl(var(--poster-ink))]">
 		<div>
 			<p class="text-sm font-extrabold uppercase tracking-[0.12em]">
@@ -32,8 +28,15 @@
 				<PosterSticker tint="crimson" rotate={-2}>{m['home.poster.pricingSticker']()}</PosterSticker
 				>
 			</p>
-			<p class="leading-relaxed">{m['home.poster.pricingBody']()}</p>
-			<p class="mt-3 text-sm">{m['home.poster.pricingCompare']()}</p>
+			<!-- The fee figure is literal markup (like the giant €0) so it can carry
+			     semibold without splitting every locale mid-sentence; the i18n rest
+			     fragment brings its own leading separator (space or comma), hence
+			     no whitespace between the span and the message call. -->
+			<p class="leading-relaxed">
+				{m['home.poster.pricingBodyQuestion']()}
+				<span class="font-semibold">3% + €0.50</span>{m['home.poster.pricingBodyRest']()}
+			</p>
+			<p class="mt-2 font-semibold leading-relaxed">{m['home.poster.pricingSelfManage']()}</p>
 			<button
 				type="button"
 				onclick={onOpenCalculator}
