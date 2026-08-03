@@ -234,6 +234,7 @@
 		queryClient,
 		getUserTickets: () => userTickets,
 		getUserDisplayName: () => userDisplayName,
+		getRequireTicketNames: () => event.require_ticket_names,
 		setUserStatus: (status) => {
 			userStatus = status;
 		},
@@ -619,6 +620,7 @@
 	capacityDisclosed={viewerVisibility.show_capacity}
 	eventMaxTicketsPerUser={event.max_tickets_per_user}
 	userName={userDisplayName}
+	requireTicketNames={event.require_ticket_names}
 	{preSelectedTier}
 	{initialDiscountCode}
 	onClose={closeTicketTierModal}

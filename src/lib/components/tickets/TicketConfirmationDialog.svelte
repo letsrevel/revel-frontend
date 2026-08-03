@@ -38,6 +38,7 @@
 	import { tierDialogTitle, tierPriceDisplay } from './tier-price-display';
 	import { isMappedBestAvailable } from './seat-zones';
 	import { pwycErrorMessage, pwycSuggestions, validatePwycAmount } from './pwyc-validation';
+	import { buildPurchaseTicketItems, defaultGuestName } from './purchase-items';
 
 	interface Props {
 		open: boolean;
@@ -60,6 +61,8 @@
 		eventMaxTicketsPerUser?: number | null;
 		/** User's display name for auto-fill when purchasing single ticket */
 		userName?: string;
+		/** Whether the event demands a holder name on every ticket. */
+		requireTicketNames?: boolean;
 		/** Pre-filled discount code (e.g. from URL param) */
 		initialDiscountCode?: string;
 		/** All event tiers: enables whole-venue switch targets on the seat map. */
@@ -83,6 +86,7 @@
 		maxQuantity = null,
 		eventMaxTicketsPerUser = null,
 		userName = '',
+		requireTicketNames = true,
 		initialDiscountCode = '',
 		allTiers = null,
 		tierRemainingTickets = undefined,
@@ -228,9 +232,10 @@
 	// Whether to show quantity selector (more than 1 ticket allowed)
 	const showQuantitySelector = $derived(effectiveMaxQuantity > 1);
 
-	// Only ask for guest names when purchasing multiple tickets.
-	// For a single ticket we default to the buyer's profile name (see handleConfirm).
-	const showGuestNames = $derived(quantity > 1);
+	// Only ask for guest names when the event requires them AND we're purchasing
+	// multiple tickets. For a single ticket we default to the buyer's profile name
+	// (see handleConfirm); when the event doesn't require names we send none at all.
+	const showGuestNames = $derived(requireTicketNames && quantity > 1);
 
 	// Check if all guest names are filled (at least the first character)
 	const allGuestNamesFilled = $derived(guestNames.every((name) => name.trim().length > 0));
@@ -327,15 +332,6 @@
 		return false;
 	}
 
-	// Default guest name for a hidden single-ticket input.
-	// Backend requires a non-empty guest_name (min_length 1); the buyer's profile
-	// name is used, mirroring getDefaultGuestName() on the non-dialog purchase path.
-	// Falls back to a localized placeholder so the payload is never empty when the
-	// buyer has no display name.
-	function getDefaultGuestName(): string {
-		return userName.trim() || m['ticketConfirmationDialog.defaultGuestName']();
-	}
-
 	// Set guest name error message based on validation state
 	function setGuestNameErrorMessage(): boolean {
 		guestNameError = '';
@@ -371,14 +367,15 @@
 		seatSelectionError = '';
 
 		// Build tickets array. For a hidden single-ticket name input, fall back to
-		// the buyer's profile name so guest_name is always non-empty.
-		const tickets: TicketPurchaseItem[] = guestNames.map((name, index) => {
-			const trimmed = name.trim() || (!showGuestNames ? getDefaultGuestName() : '');
-			const ticket: TicketPurchaseItem = { guest_name: trimmed };
-			if (isUserChoiceSeat && heldSeatIds[index]) {
-				ticket.seat_id = heldSeatIds[index];
-			}
-			return ticket;
+		// the buyer's profile name so guest_name is always non-empty; when the event
+		// doesn't require names, guest_name is omitted entirely (see purchase-items.ts).
+		const tickets: TicketPurchaseItem[] = buildPurchaseTicketItems({
+			guestNames,
+			requireTicketNames,
+			namesShown: showGuestNames,
+			defaultName: defaultGuestName(userName),
+			heldSeatIds,
+			useHeldSeats: isUserChoiceSeat
 		});
 
 		const payload: ConfirmPayload = { tickets };
