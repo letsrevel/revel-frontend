@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Landing page redesigned as a full-bleed color-block poster: brand-gradient hero with a rotating headline noun, amber pricing panel with direct fee comparison, dedicated panels for communities and for venues/theaters (premium seating), ticket-stub feature stubs, and an open-source panel. Replaces the card-grid landing page.
+
 ## [2.1.0] - 2026-08-01
 
 ### Added
