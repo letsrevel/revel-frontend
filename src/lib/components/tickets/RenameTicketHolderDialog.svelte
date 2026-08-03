@@ -92,7 +92,9 @@
 	}));
 
 	function submit(): void {
-		if (renameMutation.isPending) return;
+		// Guard the un-hydrated auth window like CancelTicketDialog's
+		// `enabled: !!accessToken` — never send a literal "Bearer null".
+		if (renameMutation.isPending || !accessToken) return;
 		errorMessage = null;
 		renameMutation.mutate(name.trim());
 	}
@@ -130,7 +132,7 @@
 			<Button variant="ghost" onclick={onClose} disabled={renameMutation.isPending}>
 				{m['common.cancel']()}
 			</Button>
-			<Button onclick={submit} disabled={renameMutation.isPending}>
+			<Button onclick={submit} disabled={renameMutation.isPending || !accessToken}>
 				{#if renameMutation.isPending}
 					<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
 				{/if}

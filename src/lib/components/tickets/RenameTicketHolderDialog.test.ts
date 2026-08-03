@@ -107,4 +107,14 @@ describe('RenameTicketHolderDialog', () => {
 			await screen.findByText('This event requires a name on every ticket.')
 		).toBeInTheDocument();
 	});
+
+	it('never fires the mutation without an access token', async () => {
+		const user = userEvent.setup();
+		renderDialog({ accessToken: null });
+		const save = screen.getByRole('button', { name: 'Save' });
+		expect(save).toBeDisabled();
+		await user.click(save);
+		expect(dashboardUpdateTicketGuestName).not.toHaveBeenCalled();
+		expect(eventadminticketsUpdateTicketGuestName).not.toHaveBeenCalled();
+	});
 });
