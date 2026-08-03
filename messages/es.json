@@ -6685,6 +6685,7 @@
 			"toggles": {
 				"requiresTicket": "Requiere una entrada para asistir",
 				"waitlistOpen": "Activar lista de espera cuando esté completo",
+				"requireTicketNames": "Requerir el nombre del titular de la entrada",
 				"requiresFullProfile": "Requerir perfil completo para asistir",
 				"potluckOpen": "Activar la coordinación de aportaciones",
 				"acceptInvitationRequests": "Aceptar solicitudes de invitación",

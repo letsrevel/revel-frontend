@@ -6685,6 +6685,7 @@
 			"toggles": {
 				"requiresTicket": "Requires a ticket to attend",
 				"waitlistOpen": "Enable waitlist when full",
+				"requireTicketNames": "Require ticket holder names",
 				"requiresFullProfile": "Require complete attendee profile",
 				"potluckOpen": "Enable potluck coordination",
 				"acceptInvitationRequests": "Accept invitation requests",

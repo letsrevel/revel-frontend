@@ -6685,6 +6685,7 @@
 			"toggles": {
 				"requiresTicket": "Erfordert ein Ticket zur Teilnahme",
 				"waitlistOpen": "Warteliste aktivieren, wenn ausgebucht",
+				"requireTicketNames": "Namen der Ticketinhaber*innen verlangen",
 				"requiresFullProfile": "Vollständiges Teilnehmer*innen-Profil erforderlich",
 				"potluckOpen": "Koordination der Mitbringliste aktivieren",
 				"acceptInvitationRequests": "Einladungsanfragen akzeptieren",

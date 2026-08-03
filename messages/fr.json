@@ -6656,6 +6656,7 @@
 			"toggles": {
 				"requiresTicket": "Nécessite un billet pour participer",
 				"waitlistOpen": "Activer la liste d'attente lorsque complet",
+				"requireTicketNames": "Exiger le nom du titulaire du billet",
 				"requiresFullProfile": "Exiger un profil de participant complet",
 				"potluckOpen": "Activer la coordination du repas partagé",
 				"acceptInvitationRequests": "Accepter les demandes d'invitation",
