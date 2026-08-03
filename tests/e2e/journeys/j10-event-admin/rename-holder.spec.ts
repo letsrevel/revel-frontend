@@ -11,9 +11,14 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 
 // J10 (#753) — admin holder rename + holder-name search. The organizer renames
 // a ticket's holder from the row's kebab menu; the row then shows the holder
-// name with the purchaser underneath (the "(Purchased by …)" line only renders
-// once the holder differs from the buyer), and the backend's guest_name search
-// finds the ticket by its NEW holder name.
+// name with the purchaser underneath, and the backend's guest_name search finds
+// the ticket by its NEW holder name.
+//
+// On the "(Purchased by …)" line: the row renders it whenever guest_name
+// differs from the purchaser's display name (`getGuestNameIfDifferent`).
+// claimTicketViaApi seeds guest_name with the buyer's OWN full name and
+// register leaves `preferred_name` blank, so the two match and the line is
+// absent until this spec renames the holder.
 //
 // Isolation: an own event with an offline tier (its tickets stay PENDING, so
 // they remain renamable — the backend 409s once checked in or cancelled) plus
@@ -72,12 +77,14 @@ test.describe('J10 rename ticket holder @p1', () => {
 			page.getByText(`(Purchased by ${buyerName})`).filter({ visible: true }).first()
 		).toBeVisible();
 
-		// Backend search matches guest_name: the new holder name finds the row,
-		// a garbage query empties the list (server-side, URL-driven).
+		// Backend search matches guest_name (server-side, URL-driven). Garbage
+		// query FIRST: the row is already on screen, so asserting the holder-name
+		// query while it is still visible would pass without the query ever
+		// round-tripping. Emptying the list first makes the match meaningful.
 		const search = page.getByPlaceholder('Search by holder, purchaser, email, or tier...');
-		await search.fill(holderName);
-		await expect(holderCell.first()).toBeVisible({ timeout: 15_000 });
 		await search.fill('zzz-no-such-holder');
 		await expect(holderCell).toHaveCount(0, { timeout: 15_000 });
+		await search.fill(holderName);
+		await expect(holderCell.first()).toBeVisible({ timeout: 15_000 });
 	});
 });

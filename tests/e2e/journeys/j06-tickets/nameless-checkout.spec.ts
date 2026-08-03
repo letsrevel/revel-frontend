@@ -63,10 +63,16 @@ test.describe('J6 nameless checkout @p1', () => {
 				await expect(quantityLabel).toBeVisible({ timeout: 8_000 });
 			}).toPass({ timeout: 60_000 });
 
-			// Take 2 of the 3 allowed. With names required this would reveal the
-			// "Ticket Holders" block and a "Guest 2 name" input — with the flag
-			// off neither may appear.
+			// Take 2 of the 3 allowed. The "Decrease quantity" button is disabled
+			// at quantity 1, so its becoming enabled is what proves the stepper
+			// actually moved — without that discriminator a dropped click would
+			// leave quantity at 1, where BOTH negative assertions below pass
+			// vacuously (the name inputs only ever render for quantity > 1).
 			await page.getByRole('button', { name: 'Increase quantity' }).click();
+			await expect(page.getByRole('button', { name: 'Decrease quantity' })).toBeEnabled();
+
+			// With names required this would now reveal the "Ticket Holders" block
+			// and a "Guest 2 name" input — with the flag off neither may appear.
 			await expect(page.getByText('Ticket Holders', { exact: true })).toBeHidden();
 			await expect(page.getByPlaceholder('Guest 2 name')).toBeHidden();
 
@@ -81,10 +87,11 @@ test.describe('J6 nameless checkout @p1', () => {
 			}).toPass({ timeout: 40_000 });
 			await page.keyboard.press('Escape');
 
-			// Dashboard: both tickets land as individual Active cards. Reload-retry
-			// because a silently unauthorized my-tickets query renders the empty
-			// state instead of an error (issue #596 item 1) and heals on a fresh
-			// load.
+			// Dashboard: BOTH tickets land as individual Active cards — the count
+			// is what proves the stepper's 2 made it into the claim (batch-purchase
+			// asserts the same). Reload-retry because a silently unauthorized
+			// my-tickets query renders the empty state instead of an error (issue
+			// #596 item 1) and heals on a fresh load.
 			const ticketCard = page
 				.locator('article, li, div')
 				.filter({ hasText: event.name })
@@ -93,12 +100,16 @@ test.describe('J6 nameless checkout @p1', () => {
 			await expect(async () => {
 				await gotoHydrated(page, '/dashboard/tickets');
 				await waitForClientAuth(page);
-				await expect(ticketCard).toBeVisible({ timeout: 5_000 });
+				await expect(page.getByText('Showing 2 of 2')).toBeVisible({ timeout: 5_000 });
 			}).toPass({ timeout: 45_000 });
+			await expect(ticketCard).toBeVisible();
 
 			// The ticket is nameless, so the modal offers "Add holder name"
-			// (a named one would read "Rename holder").
-			await ticketCard.getByRole('button', { name: 'View ticket and QR code' }).click();
+			// (a named one would read "Rename holder"). `ticketCard` is a coarse
+			// container locator that can resolve to an ancestor holding BOTH
+			// cards, so the button needs its own .first() to stay strict-safe —
+			// unlike the single-ticket model specs.
+			await ticketCard.getByRole('button', { name: 'View ticket and QR code' }).first().click();
 			const modal = page.getByRole('dialog', { name: 'Your Ticket', exact: true });
 			await expect(modal).toBeVisible();
 
