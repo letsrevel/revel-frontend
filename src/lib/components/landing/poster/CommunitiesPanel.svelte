@@ -12,7 +12,13 @@
 	 the solid-ink pill text stays ~8:1. -->
 <PosterPanel bgClass="bg-[hsl(var(--poster-periwinkle))]" cutToClass="cut-crimson">
 	<div class="flex flex-wrap items-center gap-9">
-		<div class="min-w-0 flex-1 text-[hsl(var(--poster-ink))] sm:min-w-[300px]">
+		<!-- basis-full below sm pushes the mock onto its own row; min-w-0 keeps the
+		     column from forcing a 300px track inside a 288px container at 320px.
+		     Both are needed: min-w-0 alone lets the w-80 mock share the row in the
+		     390-639px band and squeezes the text column to a couple of pixels. -->
+		<div
+			class="min-w-0 flex-1 basis-full text-[hsl(var(--poster-ink))] sm:min-w-[300px] sm:basis-0"
+		>
 			<p class="text-sm font-extrabold uppercase tracking-[0.12em]">
 				{m['home.poster.communitiesLabel']()}
 			</p>

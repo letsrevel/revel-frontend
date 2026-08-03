@@ -16,7 +16,13 @@
 >
 	<div class="flex flex-wrap-reverse items-center gap-9">
 		<SeatMapMock />
-		<div class="min-w-0 flex-1 text-[hsl(var(--poster-white))] sm:min-w-[300px]">
+		<!-- basis-full below sm pushes the seat map onto its own row; min-w-0 keeps the
+		     column from forcing a 300px track inside a 288px container at 320px.
+		     Both are needed: min-w-0 alone lets the w-[360px] mock share the row in the
+		     390-639px band and squeezes the text column to a couple of pixels. -->
+		<div
+			class="min-w-0 flex-1 basis-full text-[hsl(var(--poster-white))] sm:min-w-[300px] sm:basis-0"
+		>
 			<!-- Deliberately NOT `opacity-75` (see panel note): 4.58:1 → 3.08:1. -->
 			<p class="text-sm font-extrabold uppercase tracking-[0.12em]">
 				{m['home.poster.venuesLabel']()}
