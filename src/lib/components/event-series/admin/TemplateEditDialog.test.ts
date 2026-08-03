@@ -263,6 +263,18 @@ describe('TemplateEditDialog', () => {
 
 	// --- 4. require_ticket_names toggle ----------------------------------------
 
+	// The flags record initialises `require_ticket_names` to `true` (the backend
+	// default), so a template that *disables* it is the only seeding direction
+	// that can fail — a missing seeding line leaves the box checked here while a
+	// `true` fixture would pass vacuously.
+	it('seeds the require_ticket_names checkbox unchecked when the template disables it', async () => {
+		renderDialog(makeTemplateEvent({ require_ticket_names: false }));
+		await waitForLoaded();
+
+		const toggle = screen.getByTestId('template-edit-require-ticket-names') as HTMLInputElement;
+		expect(toggle.checked).toBe(false);
+	});
+
 	it('seeds require_ticket_names from the template and sends only that flag when toggled off', async () => {
 		const user = userEvent.setup();
 		renderDialog(makeTemplateEvent({ require_ticket_names: true }));
