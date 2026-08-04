@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { ArrowRight } from '@lucide/svelte';
 	import PosterPanel from './PosterPanel.svelte';
 
 	interface Props {
@@ -89,9 +90,18 @@
 					<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
 					<a
 						href="{landingPagePrefix}{uc.path}"
-						class="inline-block rounded-full border-2 border-[hsl(var(--poster-ink)/0.25)] px-3.5 py-1.5 text-sm font-bold hover:border-[hsl(var(--poster-purple))] hover:text-[hsl(var(--poster-purple))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--poster-purple))]"
+						class="group inline-flex items-center gap-1.5 rounded-full border-2 border-[hsl(var(--poster-ink)/0.25)] px-3.5 py-1.5 text-sm font-bold hover:border-[hsl(var(--poster-purple))] hover:text-[hsl(var(--poster-purple))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--poster-purple))]"
 					>
 						{uc.label}
+						<!-- Clickability affordance: these read as plain chips otherwise.
+							 Decorative only — aria-hidden, and NOT added to the message
+							 string, so the link's accessible name is still the label. The
+							 nudge is scoped to the arrow: `transition-all` on the <a> itself
+							 would fade the focus-visible outline in. -->
+						<ArrowRight
+							class="h-3.5 w-3.5 shrink-0 transition-transform group-hover:translate-x-0.5 group-focus-visible:translate-x-0.5"
+							aria-hidden="true"
+						/>
 					</a>
 					<!-- eslint-enable svelte/no-navigation-without-resolve -->
 				</li>
