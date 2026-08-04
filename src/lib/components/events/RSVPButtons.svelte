@@ -55,7 +55,7 @@
 
 		return cn(
 			// Base styles
-			'flex h-12 w-full min-w-0 items-center justify-center gap-2 rounded-md px-4 py-3 text-sm font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+			'flex h-12 w-full min-w-0 items-center justify-center gap-2 rounded-md px-4 py-3 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
 			// Mobile, Tablet, Desktop: Full width, 48px height for touch
 			'xl:h-auto xl:min-w-[120px]',
 			// The yes/maybe/no triad IS the semantic triad, so it now rides the
@@ -177,11 +177,3 @@
 		<span>{m['rsvp.no_button']()}</span>
 	</button>
 </div>
-
-<style>
-	/* Ensure focus indicators are always visible */
-	button:focus-visible {
-		outline: 2px solid hsl(var(--ring));
-		outline-offset: 2px;
-	}
-</style>

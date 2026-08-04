@@ -150,7 +150,7 @@
 					size="sm"
 					onclick={handleFilterToggle}
 					aria-pressed={unreadOnly}
-					class="text-xs transition-all {unreadOnly
+					class="text-xs transition-colors {unreadOnly
 						? 'bg-primary text-primary-foreground hover:bg-primary/90'
 						: 'hover:bg-accent hover:text-accent-foreground'}"
 				>

@@ -236,7 +236,7 @@
 		const inRect = isInSelectionRect(row, col);
 
 		const base =
-			'w-10 h-10 rounded transition-all duration-75 flex items-center justify-center text-xs font-medium select-none';
+			'w-10 h-10 rounded transition-colors duration-75 flex items-center justify-center text-xs font-medium select-none';
 
 		if (isSelected) {
 			return `${base} bg-primary text-primary-foreground ring-2 ring-primary ring-offset-1`;

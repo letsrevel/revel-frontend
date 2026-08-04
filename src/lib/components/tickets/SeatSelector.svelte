@@ -110,7 +110,7 @@
 	 */
 	const seatButtonClass =
 		'relative flex h-9 w-9 flex-col items-center justify-center rounded-full text-[11px] font-extrabold ' +
-		'transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ' +
+		'transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ' +
 		'focus-visible:outline-poster-amber [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11';
 
 	/**

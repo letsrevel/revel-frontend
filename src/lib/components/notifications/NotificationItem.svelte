@@ -334,7 +334,11 @@
 	class={cn(
 		// The item is a Card, so it already carries the 2px edge + `shadow-poster`
 		// (uplift); hover grows that float rather than swapping in shadow-md.
-		'group cursor-pointer overflow-hidden transition-all hover:shadow-poster-lg',
+		// The card is `role="button" tabindex="0"` with no focus utilities of its
+		// own, so its focus indicator is the global outline floor in app.css.
+		// `transition-shadow` (was `transition-all`) keeps the float animating
+		// while leaving that outline instant — `all` would have faded it in.
+		'group cursor-pointer overflow-hidden transition-shadow hover:shadow-poster-lg',
 		!isRead && 'border-l-4 border-l-primary bg-primary/5',
 		// bg-highlight/20 mirrors ToneTile's audited warning tokens (hand-verified
 		// 12.6:1 light / 6.7:1 dark — see ToneTile.svelte).

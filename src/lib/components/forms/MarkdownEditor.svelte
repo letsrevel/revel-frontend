@@ -234,7 +234,7 @@
 		{#if sourceMode && editor}
 			<button
 				type="button"
-				class="text-sm text-muted-foreground underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+				class="text-sm text-muted-foreground underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
 				onclick={exitSource}
 			>
 				{m['markdownEditor.exitSource']()}

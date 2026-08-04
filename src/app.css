@@ -183,6 +183,65 @@
 		@apply bg-background text-foreground;
 	}
 
+	/*
+	 * GLOBAL KEYBOARD-FOCUS FLOOR (#780).
+	 *
+	 * Before this rule the app had no base focus style at all, so anything that
+	 * declared no focus styling of its own depended on the browser's default
+	 * ring — and any element carrying an unconditional outline utility silently
+	 * swallowed it (that is the seat-picker regression the issue describes).
+	 * This gives every focusable element a token-driven ring as a FLOOR.
+	 *
+	 * Two mechanisms keep it a floor rather than a second ring stacked on top
+	 * of the ~318 call sites that already style their own focus:
+	 *
+	 *   1. `:where()` collapses the selector to specificity 0,0,0. Every
+	 *      Tailwind utility (0,1,0) and every scoped component rule therefore
+	 *      overrides it — including the outline-suppressing utility that each
+	 *      shadcn-svelte primitive here pairs with its own 2px ring. Those keep
+	 *      exactly the indicator they had; nothing double-rings. (Author-origin
+	 *      specificity 0 still beats the user-agent default ring, which is the
+	 *      whole point.)
+	 *      (The suppressing utility compiles to a TRANSPARENT 2px outline, not
+	 *      `outline: none` — so it is a genuine override at 0,2,0, not a no-op.)
+	 *   2. It is outline-based, not box-shadow/ring-based. An outline is not part
+	 *      of layout or scroll geometry, so it can never shift a sibling or grow
+	 *      a scroll container, and it occupies a different property from the
+	 *      `shadow-poster` float and from any ring used for selection state — so
+	 *      the floor and those two can coexist on one element without either
+	 *      overwriting the other. It is NOT immune to clipping: an
+	 *      `overflow: hidden` ancestor clips a descendant's outline exactly as it
+	 *      clips a ring (verified by pixel test). Elements whose indicator would
+	 *      be clipped away — e.g. EventCard's `absolute inset-0` overlay link
+	 *      inside an `overflow-hidden` article — are why those containers carry
+	 *      `focus-within:ring-*` on the clipping ancestor itself.
+	 *
+	 * CONTRAST — `--ring` is `--primary`, one of the pairs the accessibility
+	 * contract above pins and `scripts/audit-brand-themes.py` enforces
+	 * (primary vs background >= 3:1). Measured (not estimated) against the
+	 * surfaces the 2px offset gap can expose, worst case per mode:
+	 *   light  6.17:1 on --background, 6.99:1 on --card, 4.12:1 on --secondary
+	 *   dark   6.87:1 on --background, 6.27:1 on --card, 4.60:1 on --secondary
+	 * WCAG 2.1 AA wants 3:1 for non-text UI, so every theme surface clears it.
+	 *
+	 * The fixed poster panels are the one place `--ring` does NOT clear it: a
+	 * purple ring on a purple panel is 1.27:1 light / 2.07:1 dark. Most
+	 * focusables that sit on a poster panel therefore declare their own explicit
+	 * focus outline (amber on ink, ink on amber, ...) and override this rule via
+	 * mechanism 1 — but NOT all of them. `LandingPageTemplate.svelte` (the SEO
+	 * landing pages) renders plain shadcn Buttons on poster panels, which keep
+	 * the Button base's `--ring` ring. Those are not invisible, because the same
+	 * base adds a `ring-offset-background` band between button and ring, and
+	 * that band measures 4.88:1 light / 3.33:1 dark against poster-purple — so
+	 * the COMPOSITE indicator clears 3:1 in both modes today. It is off-brand
+	 * rather than non-compliant; issue #796 tracks a proper poster-panel focus
+	 * treatment. Do not read this rule as a guarantee for poster surfaces.
+	 */
+	:where(:focus-visible) {
+		outline: 2px solid hsl(var(--ring));
+		outline-offset: 2px;
+	}
+
 	/* Safe area insets for notched devices (iPhone X+, etc.) */
 	header.sticky,
 	.sticky-header {

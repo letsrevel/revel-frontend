@@ -164,7 +164,7 @@
 					onclick={() => resource.id && toggleResource(resource.id)}
 					{disabled}
 					class={cn(
-						'flex w-full items-center gap-3 rounded-md border p-3 text-left transition-all hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
+						'flex w-full items-center gap-3 rounded-md border p-3 text-left transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
 						isSelected(resource.id || '') && 'border-primary bg-primary/5'
 					)}
 				>

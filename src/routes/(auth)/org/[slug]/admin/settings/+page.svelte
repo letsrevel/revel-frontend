@@ -701,12 +701,3 @@
 	bind:open={showEmailModal}
 	onClose={() => (showEmailModal = false)}
 />
-
-<style>
-	/* Ensure consistent focus states for accessibility */
-	:global(button:focus-visible),
-	:global(a:focus-visible) {
-		outline: 2px solid hsl(var(--ring));
-		outline-offset: 2px;
-	}
-</style>

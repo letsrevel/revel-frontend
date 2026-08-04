@@ -16,8 +16,12 @@
 	// rest of the app's surfaces gained: 2px edge, `shadow-poster` at rest,
 	// `shadow-poster-lg` on hover (the float grows instead of a generic
 	// shadow-lg). Colours are unchanged — `bg-card` + ToneTile's audited tints.
+	//
+	// The transition is scoped to colours (was `transition-all`): the focus ring
+	// is a box-shadow, so transitioning box-shadow would fade it in instead of
+	// showing it at once. The border colour still animates; the float snaps.
 	const activityCard =
-		'group rounded-lg border-2 bg-card p-6 shadow-poster transition-all hover:border-primary hover:shadow-poster-lg focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2';
+		'group rounded-lg border-2 bg-card p-6 shadow-poster transition-colors hover:border-primary hover:shadow-poster-lg focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2';
 </script>
 
 <!-- Activity Summary Cards -->
