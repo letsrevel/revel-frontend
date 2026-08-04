@@ -1,6 +1,13 @@
+<script module lang="ts">
+	/** Every status this mapper understands, in the order the regression test walks them. */
+	export const REFUND_STATUS_ORDER = ['succeeded', 'pending', 'failed'] as const;
+	export type KnownRefundStatus = (typeof REFUND_STATUS_ORDER)[number];
+</script>
+
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { cn } from '$lib/utils/cn';
+	import CommonStatusBadge from '$lib/components/common/StatusBadge.svelte';
+	import type { Tone } from '$lib/components/common/tones';
 
 	interface Props {
 		/** Refund status from the backend payment record. May be null/unknown. */
@@ -15,32 +22,37 @@
 	// Whitelist the statuses we know how to render. An unknown value (future
 	// status, empty string, null) renders nothing instead of being silently
 	// mislabeled as "failed".
-	const known = $derived.by((): 'succeeded' | 'pending' | 'failed' | null => {
+	const known = $derived.by((): KnownRefundStatus | null => {
 		if (status === 'succeeded' || status === 'pending' || status === 'failed') return status;
 		return null;
 	});
 
+	// `pending` takes `warning` rather than `info`: a refund sitting in "pending"
+	// is money not yet back in the attendee's hands, which is closer to "needs
+	// attention" than to a neutral in-progress state.
+	const TONE_MAP: Record<KnownRefundStatus, Tone> = {
+		succeeded: 'success',
+		pending: 'warning',
+		failed: 'danger'
+	};
+
+	const LABEL_MAP: Record<KnownRefundStatus, () => string> = {
+		succeeded: () => m['adminTicketTable.refundStatus.succeeded'](),
+		pending: () => m['adminTicketTable.refundStatus.pending'](),
+		failed: () => m['adminTicketTable.refundStatus.failed']()
+	};
+
+	const tone = $derived(known ? TONE_MAP[known] : 'neutral');
+	const label = $derived(known ? LABEL_MAP[known]() : '');
 	const tooltip = $derived(amount && currency ? `${amount} ${currency}` : undefined);
 </script>
 
+<!--
+	`aria-label` is deliberate, not redundant: this pill's accessible name is how
+	the ticket table/card list surfaces are addressed by tests, and the
+	`common/StatusBadge` primitive only names itself from visible text content.
+	`title` carries the optional amount+currency tooltip via restProps.
+-->
 {#if known}
-	<span
-		class={cn(
-			'inline-flex w-fit items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium',
-			known === 'succeeded' &&
-				'border-green-300 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-950 dark:text-green-300',
-			known === 'pending' &&
-				'border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-300',
-			known === 'failed' && 'border-destructive/50 bg-destructive/10 text-destructive'
-		)}
-		title={tooltip}
-	>
-		{#if known === 'succeeded'}
-			{m['adminTicketTable.refundStatus.succeeded']()}
-		{:else if known === 'pending'}
-			{m['adminTicketTable.refundStatus.pending']()}
-		{:else}
-			{m['adminTicketTable.refundStatus.failed']()}
-		{/if}
-	</span>
+	<CommonStatusBadge {tone} {label} size="sm" title={tooltip} aria-label={label} />
 {/if}
