@@ -12,6 +12,7 @@
 	import { toast } from 'svelte-sonner';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import MarkChip from '$lib/components/brand/MarkChip.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import QuestionnaireFillForm from '$lib/components/questionnaires/QuestionnaireFillForm.svelte';
 
@@ -139,53 +140,61 @@
 	<title>{m['membershipQuestionnairePage.title']()} — {data.organization.name}</title>
 </svelte:head>
 
-<div class="container mx-auto max-w-3xl px-4 py-8">
-	<div class="mb-8">
-		<a
-			href={resolve('/(public)/org/[slug]', { slug: data.organization.slug })}
-			class="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-		>
-			<ArrowLeft class="h-4 w-4" aria-hidden="true" />
-			{m['membershipQuestionnairePage.backToOrg']({ orgName: data.organization.name })}
-		</a>
-		<PageHeader
-			volume="celebration"
-			kicker={data.organization.name}
-			title={m['membershipQuestionnairePage.title']()}
-			subtitle={m['membershipQuestionnairePage.subtitle']({ orgName: data.organization.name })}
-		/>
-		{#if data.questionnaire.description}
-			<div class="mt-4 rounded-lg border bg-muted/50 p-4">
-				<MarkdownContent content={data.questionnaire.description} />
+<!-- Color-block header band — see the event-admission twin of this route for
+	 why `bg-secondary` at full strength is the theme-aware poster panel. -->
+<div class="bg-background">
+	<section class="bg-secondary text-secondary-foreground">
+		<div class="container relative mx-auto max-w-3xl px-4 pb-20 pt-8">
+			<MarkChip class="absolute right-4 top-6 hidden md:block" />
+			<a
+				href={resolve('/(public)/org/[slug]', { slug: data.organization.slug })}
+				class="mb-5 inline-flex items-center gap-2 text-sm font-bold underline-offset-4 hover:underline"
+			>
+				<ArrowLeft class="h-4 w-4" aria-hidden="true" />
+				{m['membershipQuestionnairePage.backToOrg']({ orgName: data.organization.name })}
+			</a>
+			<PageHeader
+				volume="poster"
+				kicker={data.organization.name}
+				title={m['membershipQuestionnairePage.title']()}
+				subtitle={m['membershipQuestionnairePage.subtitle']({ orgName: data.organization.name })}
+				class="[&_h1]:text-secondary-foreground [&_p]:text-secondary-foreground"
+			/>
+			{#if data.questionnaire.description}
+				<div class="mt-6 rounded-[1.25rem] border-2 border-border bg-card p-5 shadow-poster">
+					<MarkdownContent content={data.questionnaire.description} />
+				</div>
+			{/if}
+		</div>
+	</section>
+
+	<div class="container mx-auto -mt-12 max-w-3xl px-4 pb-16">
+		{#if autoAccepted}
+			<!-- Nothing left to review: the org page's eligibility CTA now advances to apply/join. -->
+			<div role="status">
+				<EmptyState
+					level={2}
+					tone="success"
+					icon={Check}
+					title={m['membershipQuestionnairePage.acceptedTitle']()}
+					body={m['membershipQuestionnairePage.acceptedBody']({ orgName: data.organization.name })}
+				>
+					{#snippet action()}
+						<Button href={resolve('/(public)/org/[slug]', { slug: data.organization.slug })}>
+							{m['membershipQuestionnairePage.backToOrg']({ orgName: data.organization.name })}
+						</Button>
+					{/snippet}
+				</EmptyState>
 			</div>
+		{:else}
+			<QuestionnaireFillForm
+				questionnaire={data.questionnaire}
+				submitting={submitMutation.isPending}
+				submitted={submitMutation.isSuccess}
+				{submitError}
+				onSubmit={(payload) => submitMutation.mutate(payload)}
+				onCancel={goBackToOrg}
+			/>
 		{/if}
 	</div>
-
-	{#if autoAccepted}
-		<!-- Nothing left to review: the org page's eligibility CTA now advances to apply/join. -->
-		<div role="status">
-			<EmptyState
-				level={2}
-				tone="success"
-				icon={Check}
-				title={m['membershipQuestionnairePage.acceptedTitle']()}
-				body={m['membershipQuestionnairePage.acceptedBody']({ orgName: data.organization.name })}
-			>
-				{#snippet action()}
-					<Button href={resolve('/(public)/org/[slug]', { slug: data.organization.slug })}>
-						{m['membershipQuestionnairePage.backToOrg']({ orgName: data.organization.name })}
-					</Button>
-				{/snippet}
-			</EmptyState>
-		</div>
-	{:else}
-		<QuestionnaireFillForm
-			questionnaire={data.questionnaire}
-			submitting={submitMutation.isPending}
-			submitted={submitMutation.isSuccess}
-			{submitError}
-			onSubmit={(payload) => submitMutation.mutate(payload)}
-			onCancel={goBackToOrg}
-		/>
-	{/if}
 </div>

@@ -8,8 +8,14 @@
 		title: string;
 		kicker?: string;
 		subtitle?: string;
-		/** 'celebration' = display scale (public/user surfaces); 'studio' = admin/dense. */
-		volume?: 'celebration' | 'studio';
+		/**
+		 * 'celebration' = display scale (public/user surfaces); 'studio' =
+		 * admin/dense; 'poster' = celebration one notch louder, for the handful
+		 * of hero screens that carry a color-block band (uplift prototype).
+		 * 'poster' is celebration in every other respect — same kicker, same
+		 * decoration slot — so it inherits the decorative-only rule below.
+		 */
+		volume?: 'celebration' | 'studio' | 'poster';
 		/** Right-aligned on sm+, wraps under the title on mobile. */
 		actions?: Snippet;
 		/** Celebration-only decorative slot (e.g. a brand Sticker). Ignored in studio. */
@@ -40,14 +46,14 @@
 			<h1
 				class={cn(
 					'mt-1',
-					volume === 'celebration'
-						? 'text-3xl font-black leading-[1.12] sm:text-4xl'
-						: 'text-2xl font-extrabold tracking-tight sm:text-3xl'
+					volume === 'poster' && 'text-4xl font-black leading-[1.08] sm:text-5xl',
+					volume === 'celebration' && 'text-3xl font-black leading-[1.12] sm:text-4xl',
+					volume === 'studio' && 'text-2xl font-extrabold tracking-tight sm:text-3xl'
 				)}
 			>
 				{title}
 			</h1>
-			{#if decoration && volume === 'celebration'}
+			{#if decoration && volume !== 'studio'}
 				<span aria-hidden="true">{@render decoration()}</span>
 			{/if}
 		</div>
