@@ -107,7 +107,7 @@
 							value={section.name}
 							oninput={(e) => onUpdate({ name: e.currentTarget.value })}
 							placeholder={m['sectionEditor.sectionNamePlaceholder']()}
-							class="text-lg font-semibold"
+							class="text-lg font-bold"
 						/>
 					</div>
 

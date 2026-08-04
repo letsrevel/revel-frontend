@@ -44,6 +44,7 @@
 	import ApproveMembershipModal from '$lib/components/members/ApproveMembershipModal.svelte';
 	import { toast } from 'svelte-sonner';
 	import { backendMessage } from '$lib/utils/api-error-detail';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
@@ -333,13 +334,11 @@
 		</p>
 	</div>
 {:else if requests.length === 0}
-	<div class="rounded-lg border border-dashed p-12 text-center">
-		<UserPlus class="mx-auto h-12 w-12 text-muted-foreground" />
-		<h3 class="mt-4 font-semibold">{m['orgAdmin.members.empty.requests.title']()}</h3>
-		<p class="mt-2 text-sm text-muted-foreground">
-			{m['orgAdmin.members.empty.requests.description']()}
-		</p>
-	</div>
+	<EmptyState
+		icon={UserPlus}
+		title={m['orgAdmin.members.empty.requests.title']()}
+		body={m['orgAdmin.members.empty.requests.description']()}
+	/>
 {:else}
 	<div class="grid gap-4 md:grid-cols-2">
 		{#each requests as request (request.id)}

@@ -50,7 +50,7 @@
 	<input type="hidden" name="return_query" value={returnQuery} />
 
 	<Card class="p-6">
-		<h3 class="mb-4 text-lg font-semibold">{m['evaluationForm.yourEvaluation']()}</h3>
+		<h3 class="mb-4 text-lg font-bold">{m['evaluationForm.yourEvaluation']()}</h3>
 
 		<!-- Quick Actions -->
 		<div class="mb-6 grid gap-4 md:grid-cols-3">

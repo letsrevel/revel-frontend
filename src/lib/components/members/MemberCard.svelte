@@ -5,6 +5,7 @@
 	import { Settings } from '@lucide/svelte';
 	import { formatDistanceToNow } from 'date-fns';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
+	import MemberStatusBadge from './MemberStatusBadge.svelte';
 
 	interface Props {
 		member: OrganizationMemberSchema;
@@ -27,14 +28,6 @@
 				? `${member.user.first_name} ${member.user.last_name}`
 				: member.user.first_name || member.user.email || 'Unknown User')
 	);
-
-	// Status badge styling
-	const statusStyles = {
-		active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100',
-		paused: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100',
-		cancelled: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100',
-		banned: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
-	};
 
 	function handleManage() {
 		onManage(member);
@@ -59,7 +52,7 @@
 		<!-- Member Info -->
 		<div class="min-w-0 flex-1">
 			<div class="flex items-center gap-2">
-				<h3 class="truncate font-semibold text-foreground">
+				<h3 class="truncate font-bold text-foreground">
 					{displayName}
 				</h3>
 				{#if isStaff}
@@ -78,18 +71,12 @@
 			<!-- Badges Row -->
 			<div class="mt-2 flex flex-wrap gap-2">
 				<!-- Status Badge -->
-				<span
-					class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {statusStyles[
-						member.status
-					]}"
-				>
-					{m[`memberStatus.${member.status}`]()}
-				</span>
+				<MemberStatusBadge status={member.status} />
 
 				<!-- Tier Badge -->
 				{#if member.tier}
 					<span
-						class="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-100"
+						class="inline-flex items-center rounded-full bg-info/10 px-2 py-0.5 text-xs font-medium text-info"
 					>
 						{member.tier.name}
 					</span>

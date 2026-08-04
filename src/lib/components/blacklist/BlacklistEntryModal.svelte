@@ -138,14 +138,14 @@
 				<div class="flex items-center gap-2">
 					{#if isLinkedUser}
 						<span
-							class="inline-flex items-center rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-800 dark:bg-purple-900 dark:text-purple-100"
+							class="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
 						>
-							<User class="mr-1 h-3 w-3" />
+							<User class="mr-1 h-3 w-3" aria-hidden="true" />
 							{m['blacklistEntry.registeredUserBadge']()}
 						</span>
 					{:else}
 						<span
-							class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800 dark:bg-gray-800 dark:text-gray-100"
+							class="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground"
 						>
 							{m['blacklistEntry.manualEntryBadge']()}
 						</span>
@@ -247,7 +247,7 @@
 				<!-- Delete Confirmation -->
 				{#if showDeleteConfirm}
 					<div class="rounded-md border border-destructive/50 bg-destructive/10 p-3">
-						<p role="heading" aria-level="4" class="text-sm font-medium text-destructive">
+						<p role="heading" aria-level="4" class="text-sm font-medium text-foreground">
 							{m['blacklistEntry.deleteConfirmTitle']()}
 						</p>
 						<p class="mt-1 text-xs text-muted-foreground">

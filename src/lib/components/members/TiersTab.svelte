@@ -26,6 +26,7 @@
 	} from '$lib/components/members/TierFormModal.svelte';
 	import PlansList from '$lib/components/members/PlansList.svelte';
 	import { toast } from 'svelte-sonner';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
@@ -319,13 +320,11 @@
 		<p class="text-sm text-destructive">{m['orgAdmin.members.errors.loadTiers']()}</p>
 	</div>
 {:else if tiers.length === 0}
-	<div class="rounded-lg border border-dashed p-12 text-center">
-		<Shield class="mx-auto h-12 w-12 text-muted-foreground" />
-		<h3 class="mt-4 font-semibold">{m['orgAdmin.members.empty.tiers.title']()}</h3>
-		<p class="mt-2 text-sm text-muted-foreground">
-			{m['orgAdmin.members.empty.tiers.description']()}
-		</p>
-	</div>
+	<EmptyState
+		icon={Shield}
+		title={m['orgAdmin.members.empty.tiers.title']()}
+		body={m['orgAdmin.members.empty.tiers.description']()}
+	/>
 {:else}
 	<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 		{#each tiers as tier, index (tier.id)}
@@ -333,7 +332,7 @@
 			<div class="rounded-lg border border-border bg-card p-4 shadow-sm">
 				<div class="flex items-start justify-between gap-2">
 					<div class="min-w-0 flex-1">
-						<h3 class="truncate font-semibold text-foreground">
+						<h3 class="truncate font-bold text-foreground">
 							{tier.name}
 						</h3>
 						{#if tier.description}
@@ -442,7 +441,7 @@
 						</svg>
 					</div>
 					<div class="flex-1 space-y-2">
-						<p class="text-sm font-medium text-destructive">
+						<p class="text-sm font-medium text-foreground">
 							{m['tierDelete.confirmMessage']({ name: tierToDelete.name })}
 						</p>
 						<p class="text-sm text-muted-foreground">

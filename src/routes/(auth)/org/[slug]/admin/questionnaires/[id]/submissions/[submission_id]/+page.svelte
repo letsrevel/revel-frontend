@@ -8,6 +8,7 @@
 	import AutoEvalRecommendation from '$lib/components/questionnaires/AutoEvalRecommendation.svelte';
 	import EvaluationForm from '$lib/components/questionnaires/EvaluationForm.svelte';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import {
 		ArrowLeft,
 		ChevronLeft,
@@ -179,21 +180,21 @@
 
 			{@render submissionNav()}
 		</div>
-		<div class="flex items-start justify-between gap-4">
-			<div class="flex-1">
-				<h1 class="text-3xl font-bold">{m['questionnaireSubmissionDetailPage.title']()}</h1>
-				<p class="mt-2 text-muted-foreground">
-					{m['questionnaireSubmissionDetailPage.subtitle']()}
-				</p>
-			</div>
-			<SubmissionStatusBadge
-				status={resolveSubmissionBadgeStatus(
-					data.requiresEvaluation,
-					data.submission.evaluation?.status
-				)}
-				class="shrink-0"
-			/>
-		</div>
+		<PageHeader
+			title={m['questionnaireSubmissionDetailPage.title']()}
+			subtitle={m['questionnaireSubmissionDetailPage.subtitle']()}
+			kicker={data.organizationSlug}
+		>
+			{#snippet actions()}
+				<SubmissionStatusBadge
+					status={resolveSubmissionBadgeStatus(
+						data.requiresEvaluation,
+						data.submission.evaluation?.status
+					)}
+					class="shrink-0"
+				/>
+			{/snippet}
+		</PageHeader>
 	</div>
 
 	<div class="grid gap-8 lg:grid-cols-3">
@@ -201,11 +202,9 @@
 		<div class="space-y-8 lg:col-span-2">
 			{#if !data.requiresEvaluation}
 				<!-- No evaluation required banner -->
-				<div
-					class="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950"
-				>
-					<Info class="mt-0.5 h-5 w-5 shrink-0 text-blue-600 dark:text-blue-400" />
-					<p class="text-sm text-blue-800 dark:text-blue-200">
+				<div class="flex items-start gap-3 rounded-lg border border-info/50 bg-info/10 p-4">
+					<Info class="mt-0.5 h-5 w-5 shrink-0 text-info" />
+					<p class="text-sm text-info">
 						{m['questionnaireSubmissionDetailPage.noEvaluationRequired']()}
 					</p>
 				</div>
@@ -218,7 +217,7 @@
 
 			<!-- Questionnaire Answers -->
 			<div>
-				<h2 class="mb-4 text-2xl font-semibold">
+				<h2 class="mb-4 text-2xl font-bold">
 					{m['questionnaireSubmissionDetailPage.responsesTitle']()}
 				</h2>
 				<QuestionAnswerDisplay answers={data.submission.answers} />
@@ -227,7 +226,7 @@
 			{#if data.requiresEvaluation}
 				<!-- Evaluation Form -->
 				<div>
-					<h2 class="mb-4 text-2xl font-semibold">
+					<h2 class="mb-4 text-2xl font-bold">
 						{isEvaluated
 							? m['questionnaireSubmissionDetailPage.changeEvaluationTitle']()
 							: m['questionnaireSubmissionDetailPage.evaluateTitle']()}
@@ -255,7 +254,7 @@
 		<div class="space-y-6 lg:col-span-1">
 			<!-- Submitter Information -->
 			<Card class="p-6">
-				<h3 class="mb-4 text-lg font-semibold">
+				<h3 class="mb-4 text-lg font-bold">
 					{m['questionnaireSubmissionDetailPage.submitterInfoTitle']()}
 				</h3>
 
@@ -348,7 +347,7 @@
 			<!-- Event Context (if submission was for a specific event) -->
 			{#if eventMetadata}
 				<Card class="p-6">
-					<h3 class="mb-4 text-lg font-semibold">
+					<h3 class="mb-4 text-lg font-bold">
 						{m['questionnaireSubmissionDetailPage.eventContextTitle']()}
 					</h3>
 					<div class="space-y-4">
@@ -386,7 +385,7 @@
 
 			<!-- Questionnaire Information -->
 			<Card class="p-6">
-				<h3 class="mb-4 text-lg font-semibold">
+				<h3 class="mb-4 text-lg font-bold">
 					{m['questionnaireSubmissionDetailPage.questionnaireTitle']()}
 				</h3>
 				<div class="space-y-2">

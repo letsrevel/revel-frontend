@@ -194,7 +194,7 @@
 					id="requires-evaluation"
 					type="checkbox"
 					bind:checked={requiresEvaluation}
-					class="h-4 w-4 rounded border-gray-300"
+					class="h-4 w-4 rounded border-input"
 					disabled={questionnaireType === 'feedback'}
 				/>
 				<Label for="requires-evaluation" class="font-normal"

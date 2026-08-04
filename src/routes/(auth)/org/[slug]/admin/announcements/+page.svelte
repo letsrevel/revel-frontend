@@ -33,6 +33,8 @@
 	import AnnouncementCard from '$lib/components/announcements/AnnouncementCard.svelte';
 	import AnnouncementModal from '$lib/components/announcements/AnnouncementModal.svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 
 	interface Props {
 		data: PageData;
@@ -274,17 +276,18 @@
 </script>
 
 <div class="space-y-6">
-	<!-- Header -->
-	<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-		<div>
-			<h1 class="text-2xl font-bold">{m['announcements.title']()}</h1>
-			<p class="text-muted-foreground">{m['announcements.pageDescription']()}</p>
-		</div>
+	{#snippet announcementsHeaderActions()}
 		<Button onclick={openCreateModal}>
 			<Plus class="mr-2 h-4 w-4" aria-hidden="true" />
 			{m['announcements.new']()}
 		</Button>
-	</div>
+	{/snippet}
+
+	<PageHeader
+		title={m['announcements.title']()}
+		subtitle={m['announcements.pageDescription']()}
+		actions={announcementsHeaderActions}
+	/>
 
 	<!-- Tabs -->
 	<Tabs.Root bind:value={activeTab}>
@@ -314,19 +317,12 @@
 					<Loader2 class="h-8 w-8 animate-spin text-muted-foreground" />
 				</div>
 			{:else if announcements.length === 0}
-				<div
-					class="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center"
-				>
-					<Megaphone class="mb-4 h-12 w-12 text-muted-foreground/50" />
-					<h3 class="font-medium">{m['announcements.empty.drafts']()}</h3>
-					<p class="text-sm text-muted-foreground">
-						{m['announcements.empty.draftsDescription']()}
-					</p>
-					<Button onclick={openCreateModal} class="mt-4">
-						<Plus class="mr-2 h-4 w-4" />
-						{m['announcements.new']()}
-					</Button>
-				</div>
+				<EmptyState
+					icon={Megaphone}
+					title={m['announcements.empty.drafts']()}
+					body={m['announcements.empty.draftsDescription']()}
+					action={announcementsHeaderActions}
+				/>
 			{:else}
 				<div class="space-y-3">
 					{#each announcements as announcement (announcement.id)}
@@ -349,15 +345,11 @@
 					<Loader2 class="h-8 w-8 animate-spin text-muted-foreground" />
 				</div>
 			{:else if announcements.length === 0}
-				<div
-					class="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center"
-				>
-					<Megaphone class="mb-4 h-12 w-12 text-muted-foreground/50" />
-					<h3 class="font-medium">{m['announcements.empty.scheduled']()}</h3>
-					<p class="text-sm text-muted-foreground">
-						{m['announcements.empty.scheduledDescription']()}
-					</p>
-				</div>
+				<EmptyState
+					icon={Megaphone}
+					title={m['announcements.empty.scheduled']()}
+					body={m['announcements.empty.scheduledDescription']()}
+				/>
 			{:else}
 				<div class="space-y-3">
 					{#each announcements as announcement (announcement.id)}
@@ -379,13 +371,11 @@
 					<Loader2 class="h-8 w-8 animate-spin text-muted-foreground" />
 				</div>
 			{:else if announcements.length === 0}
-				<div
-					class="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center"
-				>
-					<Megaphone class="mb-4 h-12 w-12 text-muted-foreground/50" />
-					<h3 class="font-medium">{m['announcements.empty.sent']()}</h3>
-					<p class="text-sm text-muted-foreground">{m['announcements.empty.sentDescription']()}</p>
-				</div>
+				<EmptyState
+					icon={Megaphone}
+					title={m['announcements.empty.sent']()}
+					body={m['announcements.empty.sentDescription']()}
+				/>
 			{:else}
 				<div class="space-y-3">
 					{#each announcements as announcement (announcement.id)}
@@ -437,7 +427,7 @@
 						<AlertTriangle class="h-5 w-5 text-destructive" aria-hidden="true" />
 					</div>
 					<div class="flex-1 space-y-2">
-						<p class="text-sm font-medium text-destructive">
+						<p class="text-sm font-medium text-foreground">
 							{announcementToDelete.title}
 						</p>
 					</div>

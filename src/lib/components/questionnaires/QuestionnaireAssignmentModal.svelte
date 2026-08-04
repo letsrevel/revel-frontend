@@ -362,9 +362,9 @@
 			<!-- Series Tab -->
 			<TabsContent value="series">
 				<!-- Info banner -->
-				<div class="mx-6 mt-4 flex gap-2 rounded-md bg-blue-50 p-3 text-sm dark:bg-blue-950">
-					<Info class="h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" aria-hidden="true" />
-					<p class="text-blue-900 dark:text-blue-100">
+				<div class="mx-6 mt-4 flex gap-2 rounded-md border border-info/30 bg-info/10 p-3 text-sm">
+					<Info class="h-4 w-4 shrink-0 text-info" aria-hidden="true" />
+					<p class="text-info">
 						{m['questionnaireAssignmentModal.assigningToSeries']()}
 						<strong>{m['questionnaireAssignmentModal.allEvents']()}</strong> in that series.
 					</p>

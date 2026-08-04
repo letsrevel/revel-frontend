@@ -15,6 +15,7 @@
 		CardTitle
 	} from '$lib/components/ui/card';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import QuestionEditor from '$lib/components/questionnaires/QuestionEditor.svelte';
 	import SectionEditor from '$lib/components/questionnaires/SectionEditor.svelte';
 	import PollAudienceCard from '$lib/components/polls/PollAudienceCard.svelte';
@@ -249,7 +250,7 @@
 		<ArrowLeft class="h-4 w-4" />
 		{m['pollNewPage.backToList']()}
 	</Button>
-	<h1 class="text-3xl font-bold tracking-tight">{m['pollNewPage.pageTitle']()}</h1>
+	<PageHeader title={m['pollNewPage.pageTitle']()} kicker={data.organization.name} />
 </div>
 
 <div class="mx-auto max-w-4xl space-y-6">

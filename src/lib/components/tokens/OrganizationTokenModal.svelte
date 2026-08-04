@@ -269,21 +269,27 @@
 				{/if}
 
 				{#if showStaffWarning}
-					<div class="rounded-md bg-yellow-50 p-3 text-sm text-yellow-800">
+					<div
+						class="rounded-md border border-highlight bg-highlight/10 p-3 text-sm text-foreground"
+					>
 						<strong>{m['organizationTokenModal.securityWarning']()}</strong>
 						{m['organizationTokenModal.staffWarningBody']()}
 					</div>
 				{/if}
 
 				{#if showBothUncheckedWarning}
-					<div class="rounded-md bg-red-50 p-3 text-sm text-red-800">
+					<div
+						class="rounded-md border border-destructive bg-destructive/10 p-3 text-sm text-foreground"
+					>
 						<strong>{m['organizationTokenModal.error']()}</strong>
 						{m['organizationTokenModal.bothUncheckedBody']()}
 					</div>
 				{/if}
 
 				{#if showTierRequiredWarning}
-					<div class="rounded-md bg-red-50 p-3 text-sm text-red-800">
+					<div
+						class="rounded-md border border-destructive bg-destructive/10 p-3 text-sm text-foreground"
+					>
 						<strong>{m['organizationTokenModal.error']()}</strong>
 						{m['organizationTokenModal.tierRequiredBody']()}
 					</div>

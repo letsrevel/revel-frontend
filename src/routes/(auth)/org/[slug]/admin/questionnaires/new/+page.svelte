@@ -15,6 +15,7 @@
 	import SectionEditor from '$lib/components/questionnaires/SectionEditor.svelte';
 	import QuestionnaireCreateBasicInfo from '$lib/components/questionnaires/QuestionnaireCreateBasicInfo.svelte';
 	import QuestionnaireCreateAdvancedSettings from '$lib/components/questionnaires/QuestionnaireCreateAdvancedSettings.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import { questionnaireCreateOrgQuestionnaire } from '$lib/api/generated/sdk.gen';
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import { invalidateOrgQuestionnaires } from '$lib/queries/org-questionnaires';
@@ -225,10 +226,11 @@
 		{m['questionnaireNewPage.backToQuestionnaires']()}
 	</Button>
 
-	<h1 class="text-3xl font-bold tracking-tight">{m['questionnaireNewPage.title']()}</h1>
-	<p class="mt-2 text-sm text-muted-foreground">
-		{m['questionnaireNewPage.subtitle']()}
-	</p>
+	<PageHeader
+		title={m['questionnaireNewPage.title']()}
+		subtitle={m['questionnaireNewPage.subtitle']()}
+		kicker={data.organization.name}
+	/>
 </div>
 
 <!-- Form -->

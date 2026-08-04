@@ -196,7 +196,7 @@
 					id="tier-questionnaire"
 					bind:value={questionnaireId}
 					disabled={isSaving}
-					class="flex w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+					class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 				>
 					<option value="">{m['tierForm.questionnaireInherit']()}</option>
 					{#each membershipQuestionnaires as oq (oq.id)}
@@ -213,7 +213,7 @@
 					id="tier-approval"
 					bind:value={approvalMode}
 					disabled={isSaving}
-					class="flex w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+					class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 				>
 					<option value="inherit">
 						{orgDefaultRequiresApproval

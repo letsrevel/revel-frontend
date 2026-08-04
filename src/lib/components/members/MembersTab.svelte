@@ -26,6 +26,7 @@
 	import { canPerformAction } from '$lib/utils/permissions';
 	import { backendMessage } from '$lib/utils/api-error-detail';
 	import { toast } from 'svelte-sonner';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
@@ -386,15 +387,13 @@
 		<p class="text-sm text-destructive">{m['orgAdmin.members.errors.loadMembers']()}</p>
 	</div>
 {:else if members.length === 0}
-	<div class="rounded-lg border border-dashed p-12 text-center">
-		<Users class="mx-auto h-12 w-12 text-muted-foreground" />
-		<h3 class="mt-4 font-semibold">{m['orgAdmin.members.empty.members.title']()}</h3>
-		<p class="mt-2 text-sm text-muted-foreground">
-			{memberSearch
-				? m['orgAdmin.members.empty.members.withSearch']()
-				: m['orgAdmin.members.empty.members.noSearch']()}
-		</p>
-	</div>
+	<EmptyState
+		icon={Users}
+		title={m['orgAdmin.members.empty.members.title']()}
+		body={memberSearch
+			? m['orgAdmin.members.empty.members.withSearch']()
+			: m['orgAdmin.members.empty.members.noSearch']()}
+	/>
 {:else}
 	<div class="grid gap-4 md:grid-cols-2">
 		{#each members as member (member.user.email)}

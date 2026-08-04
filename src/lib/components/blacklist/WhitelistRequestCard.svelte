@@ -2,8 +2,10 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { WhitelistRequestSchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
-	import { Check, X, Clock, AlertCircle, Calendar, Mail } from '@lucide/svelte';
+	import { Check, X, AlertCircle, Calendar, Mail } from '@lucide/svelte';
 	import { formatDistanceToNow } from 'date-fns';
+	import WhitelistRequestStatusBadge from './WhitelistRequestStatusBadge.svelte';
+	import CommonStatusBadge from '$lib/components/common/StatusBadge.svelte';
 
 	interface Props {
 		request: WhitelistRequestSchema;
@@ -35,27 +37,6 @@
 			: null
 	);
 
-	// Status badge styling
-	const statusStyles = {
-		pending: {
-			class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100',
-			icon: Clock
-		},
-		approved: {
-			class: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100',
-			icon: Check
-		},
-		rejected: {
-			class: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100',
-			icon: X
-		}
-	};
-
-	const statusStyle = $derived(
-		statusStyles[request.status as keyof typeof statusStyles] || statusStyles.pending
-	);
-	const StatusIcon = $derived(statusStyle.icon);
-
 	function handleApprove() {
 		onApprove(request);
 	}
@@ -72,15 +53,10 @@
 		<!-- Request Info -->
 		<div class="min-w-0 flex-1">
 			<div class="flex items-center gap-2">
-				<h3 class="truncate font-semibold text-foreground">
+				<h3 class="truncate font-bold text-foreground">
 					{request.user_display_name}
 				</h3>
-				<span
-					class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium {statusStyle.class}"
-				>
-					<StatusIcon class="h-3 w-3" />
-					{request.status}
-				</span>
+				<WhitelistRequestStatusBadge status={request.status ?? 'pending'} />
 			</div>
 
 			<!-- Email -->
@@ -91,18 +67,18 @@
 
 			<!-- Matched blacklist entries count -->
 			<div class="mt-2">
-				<span
-					class="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-950 dark:text-red-200"
-				>
-					<AlertCircle class="h-3 w-3" />
-					{request.matched_entries_count === 1
+				<CommonStatusBadge
+					tone="danger"
+					icon={AlertCircle}
+					size="sm"
+					label={request.matched_entries_count === 1
 						? m['whitelistRequestCard.matchesSingular']({
 								count: String(request.matched_entries_count)
 							})
 						: m['whitelistRequestCard.matchesPlural']({
 								count: String(request.matched_entries_count)
 							})}
-				</span>
+				/>
 			</div>
 
 			<!-- Message from user -->

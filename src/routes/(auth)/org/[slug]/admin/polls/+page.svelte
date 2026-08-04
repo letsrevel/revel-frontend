@@ -1,10 +1,12 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { Plus, Search } from '@lucide/svelte';
+	import { Plus, Search, Vote } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import PollCard from '$lib/components/polls/PollCard.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import type { PageData } from './$types';
 
 	interface Props {
@@ -24,17 +26,19 @@
 	<title>{m['orgAdmin.polls.pageTitle']()} - {data.organization.name} Admin</title>
 </svelte:head>
 
-<!-- Page Header -->
-<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-	<div>
-		<h1 class="text-3xl font-bold tracking-tight">{m['orgAdmin.polls.pageTitle']()}</h1>
-		<p class="mt-2 text-sm text-muted-foreground">{m['orgAdmin.polls.pageDescription']()}</p>
-	</div>
-	<Button href="polls/new" class="gap-2">
-		<Plus class="h-4 w-4" />
-		{m['orgAdmin.polls.createPollButton']()}
-	</Button>
-</div>
+<PageHeader
+	title={m['orgAdmin.polls.pageTitle']()}
+	subtitle={m['orgAdmin.polls.pageDescription']()}
+	kicker={data.organization.name}
+	class="mb-6"
+>
+	{#snippet actions()}
+		<Button href="polls/new" class="gap-2">
+			<Plus class="h-4 w-4" />
+			{m['orgAdmin.polls.createPollButton']()}
+		</Button>
+	{/snippet}
+</PageHeader>
 
 <!-- Search Bar -->
 <div class="mb-6">
@@ -53,30 +57,32 @@
 {#if filtered.length === 0}
 	{#if searchQuery}
 		<!-- No search results -->
-		<div class="flex flex-col items-center justify-center rounded-lg border border-dashed p-12">
-			<div class="mb-4 rounded-full bg-muted p-3">
-				<Search class="h-6 w-6 text-muted-foreground" />
-			</div>
-			<h3 class="mb-2 text-lg font-semibold">{m['orgAdmin.polls.noResults.title']()}</h3>
-			<p class="mb-4 text-center text-sm text-muted-foreground">
-				{m['orgAdmin.polls.noResults.description']({ query: searchQuery })}
-			</p>
-			<Button variant="outline" onclick={() => (searchQuery = '')}>
-				{m['orgAdmin.polls.noResults.clearButton']()}
-			</Button>
-		</div>
+		<EmptyState
+			icon={Search}
+			tone="neutral"
+			title={m['orgAdmin.polls.noResults.title']()}
+			body={m['orgAdmin.polls.noResults.description']({ query: searchQuery })}
+		>
+			{#snippet action()}
+				<Button variant="outline" onclick={() => (searchQuery = '')}>
+					{m['orgAdmin.polls.noResults.clearButton']()}
+				</Button>
+			{/snippet}
+		</EmptyState>
 	{:else}
 		<!-- Empty state -->
-		<div class="flex flex-col items-center justify-center rounded-lg border border-dashed p-12">
-			<h3 class="mb-2 text-lg font-semibold">{m['orgAdmin.polls.empty.title']()}</h3>
-			<p class="mb-4 text-center text-sm text-muted-foreground">
-				{m['orgAdmin.polls.empty.description']()}
-			</p>
-			<Button href="polls/new" class="gap-2">
-				<Plus class="h-4 w-4" />
-				{m['orgAdmin.polls.createPollButton']()}
-			</Button>
-		</div>
+		<EmptyState
+			icon={Vote}
+			title={m['orgAdmin.polls.empty.title']()}
+			body={m['orgAdmin.polls.empty.description']()}
+		>
+			{#snippet action()}
+				<Button href="polls/new" class="gap-2">
+					<Plus class="h-4 w-4" />
+					{m['orgAdmin.polls.createPollButton']()}
+				</Button>
+			{/snippet}
+		</EmptyState>
 	{/if}
 {:else}
 	<!-- Polls Grid -->

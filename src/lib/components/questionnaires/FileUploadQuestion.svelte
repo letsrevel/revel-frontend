@@ -387,18 +387,18 @@
 				aria-label={m['fileUploadQuestion.uploadFile']()}
 				class={cn(
 					'flex flex-1 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-4 transition-all',
-					'hover:border-primary hover:bg-gray-50 dark:hover:bg-gray-800/50',
+					'hover:border-primary hover:bg-muted/50',
 					'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
 					isDragging && 'border-primary bg-primary/5',
-					error ? 'border-destructive' : 'border-gray-300 dark:border-gray-600',
-					disabled && 'cursor-not-allowed opacity-50 hover:border-gray-300 hover:bg-transparent'
+					error ? 'border-destructive' : 'border-input',
+					disabled && 'cursor-not-allowed opacity-50 hover:border-input hover:bg-transparent'
 				)}
 			>
 				<Upload
 					class={cn('mb-1 h-6 w-6', isDragging ? 'text-primary' : 'text-muted-foreground')}
 					aria-hidden="true"
 				/>
-				<p class="text-sm font-medium text-gray-900 dark:text-gray-100">
+				<p class="text-sm font-medium text-foreground">
 					{#if isDragging}
 						{m['fileUploadQuestion.dropFilesHere']()}
 					{:else}

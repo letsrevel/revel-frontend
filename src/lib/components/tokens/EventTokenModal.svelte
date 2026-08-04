@@ -212,7 +212,7 @@
 					type="checkbox"
 					id="grants-invitation"
 					bind:checked={grantsInvitation}
-					class="h-4 w-4 rounded border-gray-300"
+					class="h-4 w-4 rounded border-input"
 				/>
 				<Label for="grants-invitation" class="font-normal">
 					{m['eventTokenModal.grantInvitation']()}
@@ -269,7 +269,7 @@
 									type="checkbox"
 									id="waives-questionnaire"
 									bind:checked={waivesQuestionnaire}
-									class="mt-0.5 h-4 w-4 rounded border-gray-300"
+									class="mt-0.5 h-4 w-4 rounded border-input"
 								/>
 								<div class="flex-1">
 									<Label for="waives-questionnaire" class="font-normal">
@@ -287,7 +287,7 @@
 									type="checkbox"
 									id="waives-purchase"
 									bind:checked={waivesPurchase}
-									class="mt-0.5 h-4 w-4 rounded border-gray-300"
+									class="mt-0.5 h-4 w-4 rounded border-input"
 								/>
 								<div class="flex-1">
 									<Label for="waives-purchase" class="font-normal">
@@ -305,7 +305,7 @@
 									type="checkbox"
 									id="overrides-max-attendees"
 									bind:checked={overridesMaxAttendees}
-									class="mt-0.5 h-4 w-4 rounded border-gray-300"
+									class="mt-0.5 h-4 w-4 rounded border-input"
 								/>
 								<div class="flex-1">
 									<Label for="overrides-max-attendees" class="font-normal">
@@ -323,7 +323,7 @@
 									type="checkbox"
 									id="waives-membership"
 									bind:checked={waivesMembershipRequired}
-									class="mt-0.5 h-4 w-4 rounded border-gray-300"
+									class="mt-0.5 h-4 w-4 rounded border-input"
 								/>
 								<div class="flex-1">
 									<Label for="waives-membership" class="font-normal">
@@ -341,7 +341,7 @@
 									type="checkbox"
 									id="waives-deadline"
 									bind:checked={waivesRsvpDeadline}
-									class="mt-0.5 h-4 w-4 rounded border-gray-300"
+									class="mt-0.5 h-4 w-4 rounded border-input"
 								/>
 								<div class="flex-1">
 									<Label for="waives-deadline" class="font-normal"
@@ -359,7 +359,7 @@
 									type="checkbox"
 									id="waives-apply-deadline"
 									bind:checked={waivesApplyDeadline}
-									class="mt-0.5 h-4 w-4 rounded border-gray-300"
+									class="mt-0.5 h-4 w-4 rounded border-input"
 								/>
 								<div class="flex-1">
 									<Label for="waives-apply-deadline" class="font-normal"
@@ -377,7 +377,7 @@
 				<!-- Ticket tier selection -->
 				{#if ticketTiers.length > 0}
 					<div class="space-y-3 rounded-lg border border-border p-4">
-						<h4 class="text-sm font-semibold">{m['eventTokenModal.assignTiers']()}</h4>
+						<h4 class="text-sm font-bold">{m['eventTokenModal.assignTiers']()}</h4>
 						<p class="text-xs text-muted-foreground">
 							{m['eventTokenModal.assignTiersHint']()}
 						</p>
@@ -395,7 +395,7 @@
 												selectedTierIds = selectedTierIds.filter((id) => id !== tier.id);
 											}
 										}}
-										class="mt-0.5 h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary"
+										class="mt-0.5 h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-primary"
 									/>
 									<div class="flex-1">
 										<span class="text-sm font-medium">{tier.name}</span>
