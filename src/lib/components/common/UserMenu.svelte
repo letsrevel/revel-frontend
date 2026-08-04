@@ -337,7 +337,9 @@
 				{#if isReferrer}
 					<div class="border-t">
 						<div class="p-1">
-							<div class="px-3 py-2 text-xs font-extrabold uppercase tracking-[0.12em] text-primary">
+							<div
+								class="px-3 py-2 text-xs font-extrabold uppercase tracking-[0.12em] text-primary"
+							>
 								{m['referral.referralProgram']()}
 							</div>
 							<a
@@ -367,7 +369,9 @@
 					<div class="border-t">
 						<div class="p-1">
 							{#if userOrganizations.length > 0}
-								<div class="px-3 py-2 text-xs font-extrabold uppercase tracking-[0.12em] text-primary">
+								<div
+									class="px-3 py-2 text-xs font-extrabold uppercase tracking-[0.12em] text-primary"
+								>
 									{m['userMenu.myOrganizations']()}
 								</div>
 								{#each userOrganizations as org (org.id)}
