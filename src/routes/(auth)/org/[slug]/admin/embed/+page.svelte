@@ -3,6 +3,7 @@
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
 	import { AlertCircle } from '@lucide/svelte';
 	import EmbedBuilder from '$lib/components/embed/EmbedBuilder.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import type { PageData } from './$types';
 
 	interface Props {
@@ -17,10 +18,7 @@
 </svelte:head>
 
 <div class="space-y-6">
-	<div class="space-y-1">
-		<h1 class="text-3xl font-bold">{m['orgAdminEmbedPage.title']()}</h1>
-		<p class="text-muted-foreground">{m['orgAdminEmbedPage.subtitle']()}</p>
-	</div>
+	<PageHeader title={m['orgAdminEmbedPage.title']()} subtitle={m['orgAdminEmbedPage.subtitle']()} />
 
 	{#if data.pickersFailed}
 		<Alert variant="destructive">

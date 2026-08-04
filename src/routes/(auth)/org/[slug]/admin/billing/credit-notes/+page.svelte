@@ -17,6 +17,8 @@
 	import { extractErrorMessage } from '$lib/utils/errors';
 	import { organizationadminvatListCreditNotes } from '$lib/api/generated/sdk.gen';
 	import type { LayoutData } from '../../$types';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 
 	interface Props {
 		data: LayoutData;
@@ -71,14 +73,12 @@
 		>
 			<ArrowLeft class="h-5 w-5" />
 		</a>
-		<div>
-			<h1 class="text-2xl font-bold tracking-tight">
-				{m['orgAdmin.billing.creditNotes.title']()}
-			</h1>
-			<p class="text-sm text-muted-foreground">
-				{m['orgAdmin.billing.creditNotes.description']()}
-			</p>
-		</div>
+		<!-- No kicker: the back-to-billing link above already says it. -->
+		<PageHeader
+			title={m['orgAdmin.billing.creditNotes.title']()}
+			subtitle={m['orgAdmin.billing.creditNotes.description']()}
+			class="flex-1"
+		/>
 	</div>
 
 	{#if creditNotesQuery?.isLoading}
@@ -97,29 +97,24 @@
 			<p class="text-sm">{extractErrorMessage(creditNotesQuery.error)}</p>
 		</div>
 	{:else if !creditNotesQuery?.data?.results?.length}
-		<!-- Empty State -->
-		<div
-			class="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center"
-		>
-			<FileText class="mb-3 h-10 w-10 text-muted-foreground/50" aria-hidden="true" />
-			<h3 class="font-medium">{m['orgAdmin.billing.creditNotes.empty']()}</h3>
-			<p class="mt-1 text-sm text-muted-foreground">
-				{m['orgAdmin.billing.creditNotes.emptyDescription']()}
-			</p>
-		</div>
+		<EmptyState
+			icon={FileText}
+			title={m['orgAdmin.billing.creditNotes.empty']()}
+			body={m['orgAdmin.billing.creditNotes.emptyDescription']()}
+		/>
 	{:else}
 		<!-- Credit Notes Table -->
 		<div class="overflow-x-auto rounded-lg border">
 			<table class="w-full text-sm">
 				<thead class="bg-muted/50">
-					<tr>
-						<th class="px-4 py-3 text-left font-medium">
+					<tr class="text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
+						<th class="px-4 py-3 text-left">
 							{m['orgAdmin.billing.creditNotes.columns.creditNoteNumber']()}
 						</th>
-						<th class="px-4 py-3 text-left font-medium">
+						<th class="px-4 py-3 text-left">
 							{m['orgAdmin.billing.creditNotes.columns.linkedInvoice']()}
 						</th>
-						<th class="px-4 py-3 text-right font-medium">
+						<th class="px-4 py-3 text-right">
 							{m['orgAdmin.billing.creditNotes.columns.grossAmount']()}
 						</th>
 					</tr>

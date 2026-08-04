@@ -11,6 +11,7 @@
 		organizationadmincoreDeleteCoverArt
 	} from '$lib/api/generated/sdk.gen';
 	import { backendMessage } from '$lib/utils/api-error-detail';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 
 	interface Props {
 		slug: string;
@@ -188,14 +189,17 @@
 </script>
 
 <section class="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
-	<h2 class="text-lg font-semibold">{m['orgAdmin.settings.branding.heading']()}</h2>
+	<SectionHeader title={m['orgAdmin.settings.branding.heading']()} />
 
 	{#if uploadError}
+		<!-- Icon carries the tone, not the body text: dark --destructive as TEXT on
+		     this composite measures ~2.7-2.95:1 (fails both the 3:1 non-text and
+		     4.5:1 text floors). -->
 		<div
-			class="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-100"
+			class="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-foreground"
 			role="alert"
 		>
-			<AlertCircle class="h-5 w-5 shrink-0" aria-hidden="true" />
+			<AlertCircle class="h-5 w-5 shrink-0 text-destructive" aria-hidden="true" />
 			<p class="text-sm font-medium">{uploadError}</p>
 		</div>
 	{/if}

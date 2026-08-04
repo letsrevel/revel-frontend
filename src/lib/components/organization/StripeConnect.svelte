@@ -20,6 +20,8 @@
 	} from '$lib/api/generated/sdk.gen';
 	import StripeConnectModal from './StripeConnectModal.svelte';
 	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
+	import type { Tone } from '$lib/components/common/tones';
 
 	interface Props {
 		organizationSlug: string;
@@ -142,15 +144,17 @@
 		verifyQuery?.refetch();
 	}
 
+	type StripeStatusType =
+		'not-connected' | 'loading' | 'fully-connected' | 'incomplete' | 'restricted' | 'unknown';
+
 	// Determine overall status
 	// Use query data if available (manual refresh), otherwise use props
-	const status = $derived.by(() => {
+	const status = $derived.by((): { type: StripeStatusType; title: string; message: string } => {
 		if (!isConnected) {
 			return {
 				type: 'not-connected',
 				title: m['stripeConnect.statusNotConnectedTitle'](),
-				message: m['stripeConnect.statusNotConnectedMessage'](),
-				color: 'gray'
+				message: m['stripeConnect.statusNotConnectedMessage']()
 			};
 		}
 
@@ -163,8 +167,7 @@
 			return {
 				type: 'loading',
 				title: m['stripeConnect.statusVerifyingTitle'](),
-				message: m['stripeConnect.statusVerifyingMessage'](),
-				color: 'blue'
+				message: m['stripeConnect.statusVerifyingMessage']()
 			};
 		}
 
@@ -175,8 +178,7 @@
 			return {
 				type: 'fully-connected',
 				title: m['stripeConnect.statusConnectedTitle'](),
-				message: `${m['stripeConnect.statusConnectedMessage']()}${emailMsg}`,
-				color: 'green'
+				message: `${m['stripeConnect.statusConnectedMessage']()}${emailMsg}`
 			};
 		}
 
@@ -184,8 +186,7 @@
 			return {
 				type: 'incomplete',
 				title: m['stripeConnect.statusIncompleteTitle'](),
-				message: m['stripeConnect.statusIncompleteMessage'](),
-				color: 'yellow'
+				message: m['stripeConnect.statusIncompleteMessage']()
 			};
 		}
 
@@ -193,101 +194,101 @@
 			return {
 				type: 'restricted',
 				title: m['stripeConnect.statusRestrictedTitle'](),
-				message: m['stripeConnect.statusRestrictedMessage'](),
-				color: 'red'
+				message: m['stripeConnect.statusRestrictedMessage']()
 			};
 		}
 
 		return {
 			type: 'unknown',
 			title: m['stripeConnect.statusUnknownTitle'](),
-			message: m['stripeConnect.statusUnknownMessage'](),
-			color: 'gray'
+			message: m['stripeConnect.statusUnknownMessage']()
 		};
 	});
+
+	// `unknown` collapses onto `neutral`, same as `not-connected`: neither is an
+	// error the organizer caused, so neither should read as alarming.
+	const STATUS_TONE: Record<StripeStatusType, Tone> = {
+		'not-connected': 'neutral',
+		loading: 'info',
+		'fully-connected': 'success',
+		incomplete: 'warning',
+		restricted: 'danger',
+		unknown: 'neutral'
+	};
+	const statusTone = $derived(STATUS_TONE[status.type]);
+
+	// Soft tint on the status Card — background/border only, never text (see the
+	// heading/message markup below: tone lives in the icon chip + this tint, not
+	// in colored body text, which is how dark --destructive as TEXT fails AA).
+	const CARD_TONE_CLASSES: Record<Tone, string> = {
+		brand: 'border-primary/40 bg-primary/10',
+		info: 'border-info/40 bg-info/10',
+		success: 'border-success/40 bg-success/10',
+		warning: 'border-highlight/40 bg-highlight/20',
+		danger: 'border-destructive/40 bg-destructive/10',
+		neutral: 'border-border bg-muted'
+	};
+
+	// Solid icon-chip fill — every pair is an audited *-foreground/* token pair.
+	const ICON_CHIP_CLASSES: Record<Tone, string> = {
+		brand: 'bg-primary text-primary-foreground',
+		info: 'bg-info text-info-foreground',
+		success: 'bg-success text-success-foreground',
+		warning: 'bg-highlight text-highlight-foreground',
+		danger: 'bg-destructive text-destructive-foreground',
+		neutral: 'bg-muted text-muted-foreground'
+	};
 </script>
 
 <section class="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
 	<div class="mb-4 flex items-center gap-2">
-		<CreditCard class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-		<h2 class="text-lg font-semibold">{m['stripeConnect.paymentProcessing']()}</h2>
+		<CreditCard class="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+		<SectionHeader title={m['stripeConnect.paymentProcessing']()} class="flex-1" />
 	</div>
 
 	<!-- Success Message (when returning from Stripe) -->
 	{#if justConnected}
 		<div
-			class="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-4 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-100"
+			class="flex items-center gap-2 rounded-lg border border-success/40 bg-success/10 p-4 text-foreground"
 			role="alert"
 		>
-			<Check class="h-5 w-5 shrink-0" aria-hidden="true" />
+			<Check class="h-5 w-5 shrink-0 text-success" aria-hidden="true" />
 			<div>
 				<p class="font-medium">{m['stripeConnect.welcomeBack']()}</p>
-				<p class="text-sm">{m['stripeConnect.verifyingAccount']()}</p>
+				<p class="text-sm text-muted-foreground">{m['stripeConnect.verifyingAccount']()}</p>
 			</div>
 		</div>
 	{/if}
 
 	<!-- Connection Status Card -->
-	<Card
-		class="border-2 p-4 {status.color === 'green'
-			? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/30'
-			: status.color === 'yellow'
-				? 'border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950/30'
-				: status.color === 'red'
-					? 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30'
-					: 'border-border bg-muted'}"
-	>
+	<Card class="border-2 p-4 {CARD_TONE_CLASSES[statusTone]}">
 		<div class="flex items-start gap-3">
-			<!-- Icon -->
-			<div class="shrink-0">
+			<!-- Icon: this is where the status tone lives (WCAG-safe — the audited
+			     *-foreground/* pair — rather than on the heading/message text below). -->
+			<div class="shrink-0 rounded-full p-2 {ICON_CHIP_CLASSES[statusTone]}">
 				{#if status.type === 'fully-connected'}
-					<div class="rounded-full bg-green-600 p-2">
-						<Check class="h-5 w-5 text-white" aria-hidden="true" />
-					</div>
+					<Check class="h-5 w-5" aria-hidden="true" />
 				{:else if status.type === 'incomplete'}
-					<div class="rounded-full bg-yellow-600 p-2">
-						<AlertTriangle class="h-5 w-5 text-white" aria-hidden="true" />
-					</div>
+					<AlertTriangle class="h-5 w-5" aria-hidden="true" />
 				{:else if status.type === 'restricted'}
-					<div class="rounded-full bg-red-600 p-2">
-						<AlertCircle class="h-5 w-5 text-white" aria-hidden="true" />
-					</div>
+					<AlertCircle class="h-5 w-5" aria-hidden="true" />
 				{:else if status.type === 'loading'}
-					<div class="rounded-full bg-blue-600 p-2">
-						<div
-							class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
-							aria-hidden="true"
-						></div>
-					</div>
+					<div
+						class="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent"
+						aria-hidden="true"
+					></div>
 				{:else}
-					<div class="rounded-full bg-gray-400 p-2">
-						<CreditCard class="h-5 w-5 text-white" aria-hidden="true" />
-					</div>
+					<CreditCard class="h-5 w-5" aria-hidden="true" />
 				{/if}
 			</div>
 
-			<!-- Content -->
+			<!-- Content: heading/message stay on theme foreground tokens regardless of
+			     tone — see the icon chip above for why. -->
 			<div class="flex-1">
-				<h3
-					class="font-semibold {status.color === 'green'
-						? 'text-green-900 dark:text-green-100'
-						: status.color === 'yellow'
-							? 'text-yellow-900 dark:text-yellow-100'
-							: status.color === 'red'
-								? 'text-red-900 dark:text-red-100'
-								: 'text-foreground'}"
-				>
+				<h3 class="font-bold text-foreground">
 					{status.title}
 				</h3>
-				<p
-					class="mt-1 text-sm {status.color === 'green'
-						? 'text-green-800 dark:text-green-200'
-						: status.color === 'yellow'
-							? 'text-yellow-800 dark:text-yellow-200'
-							: status.color === 'red'
-								? 'text-red-800 dark:text-red-200'
-								: 'text-muted-foreground'}"
-				>
+				<p class="mt-1 text-sm text-muted-foreground">
 					{status.message}
 				</p>
 
@@ -302,12 +303,14 @@
 							</dt>
 							<dd class="mt-0.5 flex items-center gap-1">
 								{#if detailsSubmitted}
-									<Check class="h-3 w-3 text-green-600" aria-hidden="true" />
-									<span class="text-green-700 dark:text-green-300">{m['stripeConnect.yes']()}</span>
+									<Check class="h-3 w-3 text-success" aria-hidden="true" />
+									<span class="text-foreground">{m['stripeConnect.yes']()}</span>
 								{:else}
-									<AlertCircle class="h-3 w-3 text-yellow-600" aria-hidden="true" />
-									<span class="text-yellow-700 dark:text-yellow-300">{m['stripeConnect.no']()}</span
-									>
+									<AlertCircle
+										class="h-3 w-3 text-highlight-foreground dark:text-highlight"
+										aria-hidden="true"
+									/>
+									<span class="text-foreground">{m['stripeConnect.no']()}</span>
 								{/if}
 							</dd>
 						</div>
@@ -317,11 +320,20 @@
 							</dt>
 							<dd class="mt-0.5 flex items-center gap-1">
 								{#if chargesEnabled}
-									<Check class="h-3 w-3 text-green-600" aria-hidden="true" />
-									<span class="text-green-700 dark:text-green-300">{m['stripeConnect.yes']()}</span>
+									<Check class="h-3 w-3 text-success" aria-hidden="true" />
+									<span class="text-foreground">{m['stripeConnect.yes']()}</span>
 								{:else}
-									<AlertCircle class="h-3 w-3 text-red-600" aria-hidden="true" />
-									<span class="text-red-700 dark:text-red-300">{m['stripeConnect.no']()}</span>
+									<!-- This dl can render inside ANY status card (e.g. the
+									     warning-tone "incomplete" card, bg-highlight/20), not
+									     just the danger-tone one — plain text-destructive there
+									     measured 1.85:1 in dark (destructive's dark hue sits too
+									     close to the amber tint's lightness). destructive-foreground
+									     (white) on that same composite measures 10.88:1. -->
+									<AlertCircle
+										class="h-3 w-3 text-destructive dark:text-destructive-foreground"
+										aria-hidden="true"
+									/>
+									<span class="text-foreground">{m['stripeConnect.no']()}</span>
 								{/if}
 							</dd>
 						</div>
@@ -334,20 +346,24 @@
 	<!-- Error Display -->
 	{#if connectMutation?.error}
 		<div
-			class="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-100"
+			class="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-foreground"
 			role="alert"
 		>
-			<AlertCircle class="h-4 w-4 shrink-0" aria-hidden="true" />
+			<!-- Icon carries the tone, not the body text: dark --destructive as TEXT
+			     on this composite measures ~2.7-2.95:1 (fails both the 3:1 non-text
+			     and 4.5:1 text floors) — see StripeConnect's status-card comment for
+			     the same trap. -->
+			<AlertCircle class="h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
 			<p class="text-sm">{connectMutation.error.message}</p>
 		</div>
 	{/if}
 
 	{#if verifyQuery?.error}
 		<div
-			class="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-100"
+			class="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-foreground"
 			role="alert"
 		>
-			<AlertCircle class="h-4 w-4 shrink-0" aria-hidden="true" />
+			<AlertCircle class="h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
 			<p class="text-sm">{m['stripeConnect.failedToVerify']()}</p>
 		</div>
 	{/if}
@@ -445,24 +461,28 @@
 
 	<!-- Billing Info Nudge -->
 	{#if billingInfoMissing && status.type === 'fully-connected'}
+		<!-- No --warning token exists; highlight/amber IS the warning tone.
+		     border-highlight/40 bg-highlight/20 + text-highlight-foreground
+		     (light) / text-highlight dark: matches the hand-verified pattern in
+		     tickets/MyTicket.svelte. -->
 		<div
-			class="flex items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-700 dark:bg-amber-950/30"
+			class="flex items-start gap-3 rounded-lg border border-highlight/40 bg-highlight/20 p-4"
 			role="alert"
 		>
 			<AlertCircle
-				class="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400"
+				class="mt-0.5 h-5 w-5 shrink-0 text-highlight-foreground dark:text-highlight"
 				aria-hidden="true"
 			/>
 			<div class="flex-1">
-				<p class="font-medium text-amber-900 dark:text-amber-100">
+				<p class="font-bold text-highlight-foreground dark:text-highlight">
 					{m['orgAdmin.billing.nudge.title']()}
 				</p>
-				<p class="mt-1 text-sm text-amber-800 dark:text-amber-200">
+				<p class="mt-1 text-sm text-highlight-foreground dark:text-highlight">
 					{m['orgAdmin.billing.nudge.message']()}
 				</p>
 				<a
 					href={resolve('/(auth)/org/[slug]/admin/billing', { slug: organizationSlug })}
-					class="mt-2 inline-flex items-center gap-1.5 rounded-md bg-amber-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-amber-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+					class="mt-2 inline-flex items-center gap-1.5 rounded-md bg-highlight px-3 py-1.5 text-sm font-medium text-highlight-foreground transition-colors hover:bg-highlight/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 				>
 					{m['orgAdmin.billing.nudge.action']()}
 				</a>

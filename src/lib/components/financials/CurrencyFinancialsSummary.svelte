@@ -31,7 +31,8 @@
 		{#each figures as figure (figure.label)}
 			<div>
 				<dt class="text-xs text-muted-foreground">{figure.label}</dt>
-				<dd class="mt-0.5 tabular-nums {figure.strong ? 'text-lg font-semibold' : 'font-medium'}">
+				<!-- Headline revenue figure: studio's one permitted font-black flourish. -->
+				<dd class="mt-0.5 tabular-nums {figure.strong ? 'text-xl font-black' : 'font-medium'}">
 					{figure.value}
 				</dd>
 			</div>

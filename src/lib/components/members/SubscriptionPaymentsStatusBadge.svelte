@@ -1,7 +1,8 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import type { PaymentStatus } from '$lib/api/generated/types.gen';
-	import { getPaymentStatusConfig } from './SubscriptionPaymentsShared';
+	import CommonStatusBadge from '$lib/components/common/StatusBadge.svelte';
+	import type { Tone } from '$lib/components/common/tones';
 	import { CircleCheck, CircleX, Clock, Undo2 } from '@lucide/svelte';
 
 	interface Props {
@@ -10,27 +11,38 @@
 
 	const { status }: Props = $props();
 
-	const config = $derived(getPaymentStatusConfig(status));
+	/**
+	 * Thin mapper over the shared `StatusBadge` primitive. `refunded` collapses
+	 * onto `neutral` rather than `danger`/`warning`: unlike a failed charge, a
+	 * refund is a completed, intentional action — the icon (Undo2) and the
+	 * label carry that it happened, the tone doesn't need to alarm.
+	 */
+	const TONE_MAP: Record<PaymentStatus, Tone> = {
+		pending: 'info',
+		succeeded: 'success',
+		failed: 'danger',
+		refunded: 'neutral'
+	};
 
-	const label = $derived(
-		{
-			pending: m['orgAdmin.members.payments.status.pending'](),
-			succeeded: m['orgAdmin.members.payments.status.succeeded'](),
-			failed: m['orgAdmin.members.payments.status.failed'](),
-			refunded: m['orgAdmin.members.payments.status.refunded']()
-		}[status]
-	);
+	const LABEL_MAP: Record<PaymentStatus, () => string> = {
+		pending: () => m['orgAdmin.members.payments.status.pending'](),
+		succeeded: () => m['orgAdmin.members.payments.status.succeeded'](),
+		failed: () => m['orgAdmin.members.payments.status.failed'](),
+		refunded: () => m['orgAdmin.members.payments.status.refunded']()
+	};
 
-	// Meaning is carried by the icon + the visible label; the tint is layered on
+	// Meaning is carried by the icon + the visible label; the tone is layered on
 	// top and is never the only signal (WCAG 1.4.1).
-	const Icon = $derived(
-		{ pending: Clock, succeeded: CircleCheck, failed: CircleX, refunded: Undo2 }[status]
-	);
+	const ICON_MAP = { pending: Clock, succeeded: CircleCheck, failed: CircleX, refunded: Undo2 };
+
+	const tone = $derived(TONE_MAP[status]);
+	const label = $derived(LABEL_MAP[status]());
+	const Icon = $derived(ICON_MAP[status]);
 </script>
 
-<span
-	class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium {config.className}"
->
-	<Icon class="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-	<span>{label}</span>
-</span>
+<!--
+	`aria-label` is deliberate, not redundant: this pill is how the org-wide
+	payments ledger row/card is addressed by tests, and `common/StatusBadge`
+	only names itself from visible text content.
+-->
+<CommonStatusBadge {tone} {label} icon={Icon} size="sm" aria-label={label} />

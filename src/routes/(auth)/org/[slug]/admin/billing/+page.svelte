@@ -42,6 +42,10 @@
 		DialogDescription,
 		DialogFooter
 	} from '$lib/components/ui/dialog';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
+	import type { Tone } from '$lib/components/common/tones';
 
 	interface Props {
 		data: LayoutData;
@@ -286,18 +290,25 @@
 		: null;
 
 	// ─── VAT Validation Status ──────────────────────────────────────
-	const vatStatus = $derived.by(() => {
+	type VatStatusType = 'not-set' | 'validated' | 'pending';
+
+	const vatStatus = $derived.by((): { type: VatStatusType; label: string } => {
 		if (!billingQuery?.data?.vat_id) {
-			return { type: 'not-set' as const, label: m['orgAdmin.billing.vatId.statusNotSet']() };
+			return { type: 'not-set', label: m['orgAdmin.billing.vatId.statusNotSet']() };
 		}
 		if (billingQuery.data.vat_id_validated) {
-			return {
-				type: 'validated' as const,
-				label: m['orgAdmin.billing.vatId.statusValidated']()
-			};
+			return { type: 'validated', label: m['orgAdmin.billing.vatId.statusValidated']() };
 		}
-		return { type: 'pending' as const, label: m['orgAdmin.billing.vatId.statusPending']() };
+		return { type: 'pending', label: m['orgAdmin.billing.vatId.statusPending']() };
 	});
+
+	// `pending` (awaiting the VIES check) is `info`, not `warning`: it is an
+	// ordinary in-progress state, not something the organizer needs to act on.
+	const VAT_STATUS_TONE: Record<VatStatusType, Tone> = {
+		validated: 'success',
+		pending: 'info',
+		'not-set': 'neutral'
+	};
 </script>
 
 <svelte:head>
@@ -305,13 +316,10 @@
 </svelte:head>
 
 <div class="space-y-8 px-4">
-	<!-- Page Header -->
-	<div>
-		<h1 class="text-2xl font-bold tracking-tight">{m['orgAdmin.billing.pageTitle']()}</h1>
-		<p class="mt-1 text-sm text-muted-foreground">
-			{m['orgAdmin.billing.pageDescription']()}
-		</p>
-	</div>
+	<PageHeader
+		title={m['orgAdmin.billing.pageTitle']()}
+		subtitle={m['orgAdmin.billing.pageDescription']()}
+	/>
 
 	<!-- Quick Links -->
 	<div class="flex flex-wrap gap-3">
@@ -366,16 +374,12 @@
 		     ──────────────────────────────────────────────────────────── -->
 		<section class="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
 			<div class="flex items-center gap-2">
-				<Users class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-				<div>
-					<h2 class="text-lg font-semibold">
-						{m['orgAdmin.billing.invoicingMode.title']()}
-					</h2>
-					<p class="text-sm text-muted-foreground">
-						{m['orgAdmin.billing.invoicingMode.description']()}
-					</p>
-				</div>
+				<Users class="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+				<SectionHeader title={m['orgAdmin.billing.invoicingMode.title']()} class="flex-1" />
 			</div>
+			<p class="text-sm text-muted-foreground">
+				{m['orgAdmin.billing.invoicingMode.description']()}
+			</p>
 
 			<RadioGroup.Root
 				value={invoicingMode}
@@ -440,14 +444,12 @@
 		     ──────────────────────────────────────────────────────────── -->
 		<section class="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
 			<div class="flex items-center gap-2">
-				<Receipt class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-				<div>
-					<h2 class="text-lg font-semibold">{m['orgAdmin.billing.billingInfo.title']()}</h2>
-					<p class="text-sm text-muted-foreground">
-						{m['orgAdmin.billing.billingInfo.description']()}
-					</p>
-				</div>
+				<Receipt class="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+				<SectionHeader title={m['orgAdmin.billing.billingInfo.title']()} class="flex-1" />
 			</div>
+			<p class="text-sm text-muted-foreground">
+				{m['orgAdmin.billing.billingInfo.description']()}
+			</p>
 
 			<form onsubmit={handleSaveBillingInfo} class="space-y-4">
 				<!-- Country -->
@@ -568,43 +570,30 @@
 		     ──────────────────────────────────────────────────────────── -->
 		<section class="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
 			<div class="flex items-center gap-2">
-				<Shield class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-				<div>
-					<h2 class="text-lg font-semibold">{m['orgAdmin.billing.vatId.title']()}</h2>
-					<p class="text-sm text-muted-foreground">
-						{m['orgAdmin.billing.vatId.description']()}
-					</p>
-				</div>
+				<Shield class="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+				<SectionHeader title={m['orgAdmin.billing.vatId.title']()} class="flex-1" />
 			</div>
+			<p class="text-sm text-muted-foreground">
+				{m['orgAdmin.billing.vatId.description']()}
+			</p>
 
 			<!-- VAT Status Badge -->
 			<div class="flex items-center gap-2">
-				{#if vatStatus.type === 'validated'}
-					<span
-						class="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300"
-					>
-						<Check class="h-3.5 w-3.5" aria-hidden="true" />
-						{vatStatus.label}
-					</span>
-					{#if billingQuery?.data?.vat_id_validated_at}
-						<span class="text-xs text-muted-foreground">
-							{m['orgAdmin.billing.vatId.validatedAt']({
-								date: formatDate(billingQuery.data.vat_id_validated_at)
-							})}
-						</span>
-					{/if}
-				{:else if vatStatus.type === 'pending'}
-					<span
-						class="inline-flex items-center gap-1.5 rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
-					>
-						<CircleDot class="h-3.5 w-3.5" aria-hidden="true" />
-						{vatStatus.label}
-					</span>
-				{:else}
-					<span
-						class="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground"
-					>
-						{vatStatus.label}
+				<StatusBadge
+					tone={VAT_STATUS_TONE[vatStatus.type]}
+					label={vatStatus.label}
+					aria-label={vatStatus.label}
+					icon={vatStatus.type === 'validated'
+						? Check
+						: vatStatus.type === 'pending'
+							? CircleDot
+							: undefined}
+				/>
+				{#if vatStatus.type === 'validated' && billingQuery?.data?.vat_id_validated_at}
+					<span class="text-xs text-muted-foreground">
+						{m['orgAdmin.billing.vatId.validatedAt']({
+							date: formatDate(billingQuery.data.vat_id_validated_at)
+						})}
 					</span>
 				{/if}
 			</div>

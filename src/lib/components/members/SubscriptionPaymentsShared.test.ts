@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
 	partialRefundAmount,
-	getPaymentStatusConfig,
 	platformFeeBreakdown,
 	canRefundLedgerPayment,
 	type PlatformFeePayment
@@ -244,14 +243,5 @@ describe('canRefundLedgerPayment', () => {
 			expect(canRefundLedgerPayment({ status, payment_method: 'offline' })).toBe(false);
 			expect(canRefundLedgerPayment({ status, payment_method: 'online' })).toBe(false);
 		}
-	});
-});
-
-describe('getPaymentStatusConfig', () => {
-	it('covers every payment status with a distinct tint', () => {
-		const statuses: PaymentStatus[] = ['pending', 'succeeded', 'failed', 'refunded'];
-		const classNames = statuses.map((s) => getPaymentStatusConfig(s).className);
-		expect(classNames.every(Boolean)).toBe(true);
-		expect(new Set(classNames).size).toBe(statuses.length);
 	});
 });

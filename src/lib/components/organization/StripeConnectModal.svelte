@@ -77,7 +77,7 @@
 					<div class="rounded-full bg-primary/10 p-2">
 						<Mail class="h-5 w-5 text-primary" aria-hidden="true" />
 					</div>
-					<h3 id="stripe-connect-modal-title" class="text-lg font-semibold">
+					<h3 id="stripe-connect-modal-title" class="text-lg font-bold">
 						{m['stripeConnectModal.title']()}
 					</h3>
 				</div>
