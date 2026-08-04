@@ -91,6 +91,9 @@
 	// Administrative status only (not the temporal open/upcoming/past logic
 	// EventStatusBadge shows) — this row's "open" means "published", so it
 	// keeps its own label set and just borrows the shared StatusBadge shell.
+	// Tones align with EventStatusBadge's documented mapping: closed -> danger
+	// (no longer joinable), cancelled -> warning (the organizer called it off,
+	// but the label carries the distinction on its own either way).
 	const statusTone = $derived.by((): Tone => {
 		switch (variant) {
 			case 'draft':
@@ -98,9 +101,9 @@
 			case 'open':
 				return 'success';
 			case 'closed':
-				return 'warning';
-			case 'cancelled':
 				return 'danger';
+			case 'cancelled':
+				return 'warning';
 		}
 	});
 

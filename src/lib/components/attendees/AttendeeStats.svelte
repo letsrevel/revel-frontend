@@ -38,21 +38,29 @@
 		</div>
 	{/if}
 
-	<!-- Stats grid. Tint recipes mirror common/ToneTile's audited pairs:
-	     success is dark-enough-as-text in both modes (bg-success/10 text-success);
-	     highlight needs the foreground/dark split (amber itself is ~1.9:1 on a
-	     light tint); destructive needs the light/dark split the other way
-	     (dark destructive is too bright a red as text on its own dark tint). -->
+	<!-- Stats grid. Tint recipes mirror common/ToneTile's audited pairs, hand-
+	     verified (composited alpha is invisible to audit-brand-themes.py).
+	     Ratios below are text-vs-composited-tint, light / dark:
+	       success  4.39 (FAILS 4.5, bare bg-success/10 over --background) /
+	                8.73 — light needs an opaque bg-card layer under the tint
+	                to reach 4.94; dark already clears the bar unaided.
+	       highlight (text-highlight-foreground light / text-highlight dark)
+	                13.28 / 8.41 — clears both, no split needed beyond the
+	                existing foreground/dark swap.
+	       destructive (text-destructive light / text-destructive-foreground
+	                dark on the dark-only bg-destructive/25) 7.19 / 15.26 —
+	                clears both. -->
 	<div class="grid gap-4 sm:grid-cols-4">
 		<div class="rounded-lg border border-border bg-card p-4">
 			<p class="text-sm font-medium text-muted-foreground">{m['attendeesAdmin.statsTotal']()}</p>
 			<p class="mt-1 text-2xl font-bold">{stats.total}</p>
 		</div>
-		<div class="rounded-lg border border-success/30 bg-success/10 p-4">
-			<p class="text-sm font-medium text-success">
+		<div class="relative overflow-hidden rounded-lg border border-success/30 bg-card p-4">
+			<div class="absolute inset-0 bg-success/10" aria-hidden="true"></div>
+			<p class="relative text-sm font-medium text-success">
 				{m['attendeesAdmin.statsYes']()}
 			</p>
-			<p class="mt-1 text-2xl font-bold text-success">{stats.yesCount}</p>
+			<p class="relative mt-1 text-2xl font-bold text-success">{stats.yesCount}</p>
 		</div>
 		<div class="rounded-lg border border-highlight/50 bg-highlight/10 p-4">
 			<p class="text-sm font-medium text-highlight-foreground dark:text-highlight">

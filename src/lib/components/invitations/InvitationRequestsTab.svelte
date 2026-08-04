@@ -144,6 +144,7 @@
 			body={activeStatusFilter || searchQuery
 				? m['eventInvitationsAdmin.noRequestsFiltered']()
 				: m['eventInvitationsAdmin.noRequestsEmpty']()}
+			level={2}
 		/>
 	{:else}
 		<!-- Requests Table -->
@@ -153,27 +154,27 @@
 					<thead class="border-b bg-muted/50">
 						<tr>
 							<th
-								class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
+								class="px-6 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 							>
 								{m['eventInvitationsAdmin.headerUser']()}
 							</th>
 							<th
-								class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
+								class="px-6 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 							>
 								{m['eventInvitationsAdmin.headerMessage']()}
 							</th>
 							<th
-								class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
+								class="px-6 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 							>
 								{m['eventInvitationsAdmin.headerStatus']()}
 							</th>
 							<th
-								class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
+								class="px-6 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 							>
 								{m['eventInvitationsAdmin.headerRequested']()}
 							</th>
 							<th
-								class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground"
+								class="px-6 py-3 text-right text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 							>
 								{m['eventInvitationsAdmin.headerActions']()}
 							</th>

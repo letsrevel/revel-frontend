@@ -9,6 +9,7 @@
 		"title": "Programa",
 		"description": "Adiciona uma linha temporal de sessões para este evento. Os horários são relativos ao início do evento, para que o programa se mantenha correto se duplicares o evento.",
 		"empty": "Ainda não há sessões. Adiciona a primeira para criares a linha temporal do teu evento.",
+		"emptyTitle": "Ainda não há sessões",
 		"sessionNumber": "Sessão {number}",
 		"removeSession": "Remover sessão",
 		"sessionTitle": "Título da sessão",

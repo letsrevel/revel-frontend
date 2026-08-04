@@ -9,6 +9,7 @@
 		"title": "Programma",
 		"description": "Aggiungi una scaletta di sessioni per questo evento. Gli orari sono relativi all'inizio dell'evento, così il programma resta corretto se duplichi l'evento.",
 		"empty": "Ancora nessuna sessione. Aggiungi la prima per creare la scaletta dell'evento.",
+		"emptyTitle": "Ancora nessuna sessione",
 		"sessionNumber": "Sessione {number}",
 		"removeSession": "Rimuovi sessione",
 		"sessionTitle": "Titolo della sessione",

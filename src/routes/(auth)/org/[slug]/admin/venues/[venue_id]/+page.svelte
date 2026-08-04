@@ -226,6 +226,7 @@
 				icon={LayoutGrid}
 				title={m['orgAdmin.sectors.empty.title']()}
 				body={m['orgAdmin.sectors.empty.description']()}
+				level={2}
 			>
 				{#snippet action()}
 					<button

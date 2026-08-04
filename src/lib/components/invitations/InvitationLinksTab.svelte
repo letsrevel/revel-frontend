@@ -239,6 +239,7 @@
 				body={tokenSearchQuery
 					? m['eventInvitationsAdmin.noLinksSearch']()
 					: m['eventInvitationsAdmin.noLinksEmpty']()}
+				level={2}
 			/>
 		{:else}
 			{#each tokens as token (token.id)}

@@ -95,40 +95,48 @@
 		<PageHeader title={m['eventInvitationsAdmin.pageTitle']()} subtitle={data.event.name} />
 	</div>
 
-	<!-- Success/Error Messages -->
+	<!-- Success/Error Messages. Both tints composite against whatever sits
+	     behind them, so each gets an opaque `bg-card` layer underneath:
+	     `text-success` on a bare `bg-success/10` measures 4.39:1 over the page
+	     background (below 4.5 for this normal-size text) — the card backing
+	     brings it to 4.94:1 (hand-verified). The error banner's heading/body
+	     stay on `text-foreground` (always-audited body-text pair) with the
+	     icon alone carrying the destructive tone — `text-destructive` on
+	     `bg-destructive/10` measures ~2.95:1 in dark mode, well under AA, and
+	     neither half of that pair is covered by audit-brand-themes.py. -->
 	{#if form?.success}
-		<div
-			class="flex items-center gap-2 rounded-lg border border-success/40 bg-success/10 p-4 text-success"
-			role="alert"
-		>
-			<Check class="h-5 w-5 shrink-0" aria-hidden="true" />
-			<p class="text-sm font-medium">
-				{#if form.action === 'approved'}
-					{m['eventInvitationsAdmin.requestApproved']()}
-				{:else if form.action === 'rejected'}
-					{m['eventInvitationsAdmin.requestRejected']()}
-				{:else if form.action === 'created'}
-					{m['eventInvitationsAdmin.invitationsCreated']({
-						created: form.data?.created_invitations || 0,
-						pending: form.data?.pending_invitations || 0
-					})}
-				{:else if form.action === 'deleted'}
-					{m['eventInvitationsAdmin.invitationDeleted']()}
-				{:else if form.action === 'updated'}
-					{m['eventInvitationsAdmin.invitationUpdated']()}
-				{:else if form.action === 'bulk_updated'}
-					{m['eventInvitationsAdmin.bulkUpdated']({ count: form.count || 0 })}
-				{/if}
-			</p>
+		<div class="relative overflow-hidden rounded-lg border border-success/40 bg-card" role="alert">
+			<div class="absolute inset-0 bg-success/10" aria-hidden="true"></div>
+			<div class="relative flex items-center gap-2 p-4">
+				<Check class="h-5 w-5 shrink-0 text-success" aria-hidden="true" />
+				<p class="text-sm font-medium text-success">
+					{#if form.action === 'approved'}
+						{m['eventInvitationsAdmin.requestApproved']()}
+					{:else if form.action === 'rejected'}
+						{m['eventInvitationsAdmin.requestRejected']()}
+					{:else if form.action === 'created'}
+						{m['eventInvitationsAdmin.invitationsCreated']({
+							created: form.data?.created_invitations || 0,
+							pending: form.data?.pending_invitations || 0
+						})}
+					{:else if form.action === 'deleted'}
+						{m['eventInvitationsAdmin.invitationDeleted']()}
+					{:else if form.action === 'updated'}
+						{m['eventInvitationsAdmin.invitationUpdated']()}
+					{:else if form.action === 'bulk_updated'}
+						{m['eventInvitationsAdmin.bulkUpdated']({ count: form.count || 0 })}
+					{/if}
+				</p>
+			</div>
 		</div>
 	{/if}
 
 	{#if form?.errors?.form}
 		<div
-			class="flex items-center gap-2 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-destructive"
+			class="flex items-center gap-2 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-foreground"
 			role="alert"
 		>
-			<AlertCircle class="h-5 w-5 shrink-0" aria-hidden="true" />
+			<AlertCircle class="h-5 w-5 shrink-0 text-destructive" aria-hidden="true" />
 			<p class="text-sm font-medium">{form.errors.form}</p>
 		</div>
 	{/if}

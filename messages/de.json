@@ -9,6 +9,7 @@
 		"title": "Programm",
 		"description": "Füge eine Zeitleiste mit Programmpunkten für diese Veranstaltung hinzu. Die Zeiten sind relativ zum Veranstaltungsbeginn, sodass das Programm auch beim Duplizieren der Veranstaltung korrekt bleibt.",
 		"empty": "Noch keine Programmpunkte. Füge den ersten hinzu, um deine Zeitleiste zu erstellen.",
+		"emptyTitle": "Noch keine Programmpunkte",
 		"sessionNumber": "Programmpunkt {number}",
 		"removeSession": "Programmpunkt entfernen",
 		"sessionTitle": "Titel des Programmpunkts",

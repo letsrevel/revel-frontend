@@ -226,7 +226,16 @@
 		/>
 
 		{#if model.blocks.length === 0}
-			<EmptyState icon={LayoutGrid} title={m['seatDesigner.empty']()} />
+			<!-- `orgAdmin.sectors.empty.title` is reused deliberately — this venue's
+			     "no sectors yet" is exactly what leaves the designer with nothing to
+			     lay out, so the existing short title fits verbatim. Full explanation
+			     stays in `body`. -->
+			<EmptyState
+				icon={LayoutGrid}
+				title={m['orgAdmin.sectors.empty.title']()}
+				body={m['seatDesigner.empty']()}
+				level={2}
+			/>
 		{:else}
 			<SeatMapDesigner
 				{model}

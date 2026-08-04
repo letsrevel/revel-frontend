@@ -103,6 +103,7 @@
 		icon={Users}
 		title={m['orgAdmin.waitlist.empty.title']()}
 		body={m['orgAdmin.waitlist.empty.description']()}
+		level={2}
 	/>
 {:else if data}
 	<div class="rounded-lg border bg-card p-4">

@@ -136,8 +136,9 @@
 			{m['orgAdmin.venues.createButton']()}
 		</button>
 	{/snippet}
+	<!-- No kicker: orgAdmin.nav.venues and orgAdmin.venues.pageTitle are both
+	     literally "Venues" — a kicker repeating the title verbatim is noise. -->
 	<PageHeader
-		kicker={m['orgAdmin.nav.venues']()}
 		title={m['orgAdmin.venues.pageTitle']()}
 		subtitle={m['orgAdmin.venues.pageDescription']()}
 		actions={headerActions}
@@ -178,6 +179,7 @@
 			body={searchQuery
 				? m['orgAdmin.venues.empty.withSearch']()
 				: m['orgAdmin.venues.empty.description']()}
+			level={2}
 		>
 			{#snippet action()}
 				{#if !searchQuery}

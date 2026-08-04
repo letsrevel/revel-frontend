@@ -538,6 +538,7 @@
 				icon={Users}
 				title={m['orgAdmin.seats.standing.title']()}
 				body={m['orgAdmin.seats.standing.description']()}
+				level={2}
 			>
 				{#snippet action()}
 					{#if sector.capacity != null}

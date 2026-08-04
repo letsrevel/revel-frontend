@@ -84,8 +84,10 @@
 			{m['recurringEvents.seriesList.primaryCta']()}
 		</button>
 	{/snippet}
+	<!-- No kicker: orgAdmin.nav.eventSeries and orgAdmin.eventSeries.pageTitle
+	     are both literally "Event Series" — a kicker repeating the title
+	     verbatim is noise. -->
 	<PageHeader
-		kicker={m['orgAdmin.nav.eventSeries']()}
 		title={m['orgAdmin.eventSeries.pageTitle']()}
 		subtitle={m['orgAdmin.eventSeries.pageDescription']()}
 		actions={headerActions}
@@ -97,6 +99,7 @@
 			icon={Repeat}
 			title={m['orgAdmin.eventSeries.empty.title']()}
 			body={m['orgAdmin.eventSeries.empty.description']()}
+			level={2}
 		>
 			{#snippet action()}
 				<button

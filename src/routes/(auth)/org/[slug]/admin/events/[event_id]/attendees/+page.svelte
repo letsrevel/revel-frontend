@@ -521,6 +521,7 @@
 			body={activeStatusFilters.length || searchQuery
 				? m['attendeesAdmin.noRsvpsFiltered']()
 				: m['attendeesAdmin.noRsvpsEmpty']()}
+			level={2}
 		/>
 	{:else}
 		<AttendeeTable

@@ -1,3 +1,8 @@
+<script module lang="ts">
+	/** Every status this mapper understands, in the order the regression test walks them. */
+	export const WAITLIST_OFFER_STATUS_ORDER = ['pending', 'claimed', 'expired', 'revoked'] as const;
+</script>
+
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import type { WaitlistOfferStatus } from '$lib/api/generated/types.gen';
@@ -12,20 +17,32 @@
 
 	const { status, class: className }: Props = $props();
 
+	const TONE_MAP: Record<WaitlistOfferStatus, Tone> = {
+		pending: 'warning',
+		claimed: 'success',
+		expired: 'neutral',
+		revoked: 'danger'
+	};
+
+	const ICON_MAP: Record<WaitlistOfferStatus, typeof Clock> = {
+		pending: Clock,
+		claimed: Check,
+		expired: X,
+		revoked: Ban
+	};
+
+	const LABEL_MAP: Record<WaitlistOfferStatus, () => string> = {
+		pending: () => m['offerStatus.pending'](),
+		claimed: () => m['offerStatus.claimed'](),
+		expired: () => m['offerStatus.expired'](),
+		revoked: () => m['offerStatus.revoked']()
+	};
+
 	// Thin mapper over the shared StatusBadge primitive (rebrand PR 8):
 	// dense waitlist admin tables, so size stays 'sm'.
-	const config = $derived.by((): { label: string; icon: typeof Clock; tone: Tone } => {
-		switch (status) {
-			case 'pending':
-				return { label: m['offerStatus.pending'](), icon: Clock, tone: 'warning' };
-			case 'claimed':
-				return { label: m['offerStatus.claimed'](), icon: Check, tone: 'success' };
-			case 'expired':
-				return { label: m['offerStatus.expired'](), icon: X, tone: 'neutral' };
-			case 'revoked':
-				return { label: m['offerStatus.revoked'](), icon: Ban, tone: 'danger' };
-		}
-	});
+	const tone = $derived(TONE_MAP[status]);
+	const icon = $derived(ICON_MAP[status]);
+	const label = $derived(LABEL_MAP[status]());
 </script>
 
 <!--
@@ -34,11 +51,4 @@
 	every domain mapper attaches its own aria-label explicitly — the primitive
 	does not default it.
 -->
-<StatusBadge
-	tone={config.tone}
-	label={config.label}
-	icon={config.icon}
-	size="sm"
-	class={className}
-	aria-label={config.label}
-/>
+<StatusBadge {tone} {label} {icon} size="sm" class={className} aria-label={label} />

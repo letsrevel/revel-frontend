@@ -243,6 +243,7 @@
 			icon={Calendar}
 			title={m['orgAdmin.events.empty.title']()}
 			body={m['orgAdmin.events.empty.description']()}
+			level={2}
 		>
 			{#snippet action()}
 				{#if data.canCreateEvent}

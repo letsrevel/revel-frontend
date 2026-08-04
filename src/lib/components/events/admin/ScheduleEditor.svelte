@@ -44,7 +44,11 @@
 	</div>
 
 	{#if rows.length === 0}
-		<EmptyState icon={CalendarClock} title={m['eventScheduleAdmin.empty']()} />
+		<EmptyState
+			icon={CalendarClock}
+			title={m['eventScheduleAdmin.emptyTitle']()}
+			body={m['eventScheduleAdmin.empty']()}
+		/>
 	{:else}
 		<ul class="space-y-4">
 			{#each rows as row, index (row.id)}

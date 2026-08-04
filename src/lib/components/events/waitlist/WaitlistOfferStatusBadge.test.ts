@@ -2,9 +2,9 @@ import { render, screen } from '@testing-library/svelte';
 import { describe, it, expect } from 'vitest';
 import * as m from '$lib/paraglide/messages.js';
 import type { WaitlistOfferStatus } from '$lib/api/generated/types.gen';
-import WaitlistOfferStatusBadge from './WaitlistOfferStatusBadge.svelte';
-
-const STATUS_ORDER: WaitlistOfferStatus[] = ['pending', 'claimed', 'expired', 'revoked'];
+import WaitlistOfferStatusBadge, {
+	WAITLIST_OFFER_STATUS_ORDER
+} from './WaitlistOfferStatusBadge.svelte';
 
 const LABELS: Record<WaitlistOfferStatus, string> = {
 	pending: m['offerStatus.pending'](),
@@ -21,7 +21,7 @@ const LABELS: Record<WaitlistOfferStatus, string> = {
  * stop resolving. Pin every enum value, not a sample.
  */
 describe('events/waitlist/WaitlistOfferStatusBadge', () => {
-	it.each(STATUS_ORDER)('exposes the %s label as the pill accessible name', (status) => {
+	it.each(WAITLIST_OFFER_STATUS_ORDER)('exposes the %s label as the pill accessible name', (status) => {
 		render(WaitlistOfferStatusBadge, { props: { status } });
 		const label = LABELS[status];
 		expect(screen.getByLabelText(label)).toBeInTheDocument();

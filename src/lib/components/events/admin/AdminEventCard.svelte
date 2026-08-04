@@ -225,9 +225,15 @@
 							</DropdownMenu.Item>
 						{/if}
 						{#if variant !== 'cancelled' && onCancel}
+							<!-- text-highlight-foreground alone passes AA (it's a dark ink,
+							     not amber) but reads as plain text next to the destructive
+							     red items below — no warning signal in light mode. The
+							     persistent bg-highlight/10 wash restores it; data-[highlighted]
+							     is a higher-specificity compound selector so the shared
+							     hover/focus bg-accent treatment still wins on interaction. -->
 							<DropdownMenu.Item
 								onclick={() => onCancel(event.id)}
-								class="text-highlight-foreground focus:text-highlight-foreground dark:text-highlight dark:focus:text-highlight"
+								class="bg-highlight/10 text-highlight-foreground focus:text-highlight-foreground dark:text-highlight dark:focus:text-highlight"
 							>
 								<Ban class="mr-2 h-4 w-4" />
 								{m['orgAdmin.events.actions.cancel']()}
