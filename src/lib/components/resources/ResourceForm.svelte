@@ -156,7 +156,7 @@
 					type="button"
 					onclick={() => handleTypeChange('file')}
 					class={cn(
-						'flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+						'flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
 						resourceType === 'file'
 							? 'border-primary bg-primary/5 text-primary'
 							: 'border-border hover:border-primary/50'
@@ -171,7 +171,7 @@
 					type="button"
 					onclick={() => handleTypeChange('link')}
 					class={cn(
-						'flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+						'flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
 						resourceType === 'link'
 							? 'border-primary bg-primary/5 text-primary'
 							: 'border-border hover:border-primary/50'
@@ -186,7 +186,7 @@
 					type="button"
 					onclick={() => handleTypeChange('text')}
 					class={cn(
-						'flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+						'flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
 						resourceType === 'text'
 							? 'border-primary bg-primary/5 text-primary'
 							: 'border-border hover:border-primary/50'

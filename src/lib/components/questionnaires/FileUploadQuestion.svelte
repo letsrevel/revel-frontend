@@ -386,7 +386,7 @@
 				ondrop={handleDrop}
 				aria-label={m['fileUploadQuestion.uploadFile']()}
 				class={cn(
-					'flex flex-1 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-4 transition-all',
+					'flex flex-1 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-4 transition-colors',
 					'hover:border-primary hover:bg-muted/50',
 					'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
 					isDragging && 'border-primary bg-primary/5',

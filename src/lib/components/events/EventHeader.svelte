@@ -129,7 +129,7 @@
 					<button
 						type="button"
 						onclick={handleDownloadCalendar}
-						class="group flex items-center gap-2 transition-all hover:text-poster-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-ink/50"
+						class="group flex items-center gap-2 transition-colors hover:text-poster-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-ink/50"
 						title={m['eventHeader.downloadCalendarEventTitle']()}
 						aria-label={m['eventHeader.downloadCalendarEventFor']({ name: event.name })}
 					>
@@ -147,7 +147,7 @@
 							href={mapsUrl}
 							target="_blank"
 							rel="noopener noreferrer"
-							class="group flex items-center gap-2 transition-all hover:text-poster-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-ink/50"
+							class="group flex items-center gap-2 transition-colors hover:text-poster-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-ink/50"
 							aria-label="{locationDisplay} - {m['eventQuickInfo.openInMaps']()}"
 						>
 							<MapPin class="h-5 w-5 shrink-0" aria-hidden="true" />
@@ -168,7 +168,7 @@
 			<button
 				type="button"
 				onclick={handleShare}
-				class="absolute right-6 top-6 hidden rounded-full bg-poster-white/20 p-3 backdrop-blur-sm transition-all hover:bg-poster-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-ink/50 md:block"
+				class="absolute right-6 top-6 hidden rounded-full bg-poster-white/20 p-3 backdrop-blur-sm transition-colors hover:bg-poster-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-ink/50 md:block"
 				aria-label={m['eventHeader.shareEvent']()}
 			>
 				<Share2 class="h-5 w-5 text-poster-white" aria-hidden="true" />

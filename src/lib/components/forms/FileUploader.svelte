@@ -416,7 +416,7 @@
 			aria-label={m['fileUploader.uploadFile']()}
 			aria-describedby={error ? `${inputId}-error` : `${inputId}-hint`}
 			class={cn(
-				'flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-all',
+				'flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors',
 				'hover:border-primary hover:bg-gray-50 dark:hover:bg-gray-800/50',
 				'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
 				isDragging && 'border-primary bg-primary/5',
