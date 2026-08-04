@@ -65,7 +65,7 @@
 			<div class="min-w-0 flex-1">
 				<div class="mb-2 flex items-start justify-between gap-2">
 					<div class="min-w-0 flex-1">
-						<h3 class="text-lg font-semibold">{heldPass.series_pass.name}</h3>
+						<h3 class="text-lg font-bold">{heldPass.series_pass.name}</h3>
 						{#if seriesOrgSlug}
 							<a
 								href={resolve('/(public)/events/[org_slug]/series/[series_slug]', {

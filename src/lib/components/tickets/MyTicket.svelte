@@ -5,7 +5,7 @@
 	import TicketStatusBadge from './TicketStatusBadge.svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import DownloadPdfButton from './DownloadPdfButton.svelte';
-	import { Ticket, Calendar, MapPin, User, Armchair, Banknote } from '@lucide/svelte';
+	import { Ticket, Calendar, MapPin, User, Armchair, Banknote, AlertCircle } from '@lucide/svelte';
 	import { formatDateTime } from '$lib/utils/date';
 	import { formatMoney } from '$lib/utils/format';
 	import QRCode from 'qrcode';
@@ -137,21 +137,32 @@
 	);
 </script>
 
-<Card class="p-6">
+<Card class="overflow-hidden p-6">
 	<div class="space-y-6">
-		<!-- Header -->
-		<div class="flex items-start justify-between">
-			<div class="flex items-center gap-3">
-				<div class="rounded-full bg-primary/10 p-3">
-					<Ticket class="h-6 w-6 text-primary" aria-hidden="true" />
-				</div>
-				<div>
-					<h2 class="text-xl font-bold">{eventName}</h2>
-					<p class="text-sm text-muted-foreground">
-						{ticket.tier?.name || m['myTicket.generalAdmission']()}
-					</p>
-				</div>
-			</div>
+		<!-- Header band — the brand moment (what people screenshot at the door).
+		     Bleeds to the card edges on the logo gradient (--logo-from -> --logo-to,
+		     the same pair RevelMark uses). NOTE: --logo-from/--logo-to are already
+		     COMPLETE hsl(...) values (see app.css) — do not wrap them in another
+		     hsl() (see RevelMark.svelte:36 for the correct var()-only usage); doing
+		     so produces hsl(hsl(...)), an invalid value that drops the whole
+		     declaration and leaves the band transparent. Only large/bold text and
+		     icons sit on the gradient: white on the purple end measures ~5.5:1,
+		     white on the crimson end ~4.3:1 — that clears the WCAG AA *large-text*
+		     floor (3:1) at both ends but NOT the 4.5:1 normal-text floor. Do not
+		     shrink this text below the large-text threshold (effectively
+		     `font-black`/`sm:text-3xl` here). Smaller metadata (tier name, status)
+		     stays off the gradient, on the card surface below. -->
+		<div
+			class="-mx-6 -mt-6 flex items-center gap-3 rounded-t-lg px-6 py-5"
+			style="background: linear-gradient(135deg, var(--logo-from), var(--logo-to));"
+		>
+			<Ticket class="h-7 w-7 shrink-0 text-poster-white" aria-hidden="true" />
+			<h2 class="text-2xl font-black leading-[1.12] text-poster-white sm:text-3xl">{eventName}</h2>
+		</div>
+		<div class="flex items-start justify-between gap-2">
+			<p class="text-sm font-extrabold uppercase tracking-[0.1em] text-muted-foreground">
+				{ticket.tier?.name || m['myTicket.generalAdmission']()}
+			</p>
 			<TicketStatusBadge status={ticket.status} />
 		</div>
 
@@ -185,30 +196,25 @@
 			</ul>
 		{/if}
 
-		<!-- Pending Payment Banner -->
+		<!-- Pending Payment Banner. Tint/text pair mirrors ToneTile's audited
+		     warning tokens (bg-highlight/20, text-highlight-foreground light /
+		     text-highlight dark). Hand-verified on THIS surface (bg-highlight/20
+		     composited over --card, the Card this banner sits in): 13.93:1 light,
+		     5.96:1 dark. Recompute if this banner is ever moved onto a different
+		     surface (ToneTile.svelte's own comment is for its icon tile on
+		     page/card, not this banner). -->
 		{#if ticket.status === 'pending'}
-			<div
-				class="rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-950"
-				role="alert"
-			>
+			<div class="rounded-lg border border-highlight/40 bg-highlight/20 p-4" role="alert">
 				<div class="flex items-start gap-3">
-					<svg
-						class="h-5 w-5 shrink-0 text-orange-600 dark:text-orange-400"
-						fill="currentColor"
-						viewBox="0 0 20 20"
+					<AlertCircle
+						class="h-5 w-5 shrink-0 text-highlight-foreground dark:text-highlight"
 						aria-hidden="true"
-					>
-						<path
-							fill-rule="evenodd"
-							d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z"
-							clip-rule="evenodd"
-						/>
-					</svg>
+					/>
 					<div class="flex-1">
-						<p class="font-medium text-orange-900 dark:text-orange-100">
+						<p class="font-bold text-highlight-foreground dark:text-highlight">
 							{m['myTicket.pendingPayment']()}
 						</p>
-						<p class="mt-1 text-sm text-orange-800 dark:text-orange-200">
+						<p class="mt-1 text-sm text-highlight-foreground dark:text-highlight">
 							{#if ticket.tier?.payment_method === 'online'}
 								{m['myTicket.pendingOnline']()}
 							{:else if ticket.tier?.payment_method === 'offline'}
@@ -220,15 +226,13 @@
 
 						<!-- Manual Payment Instructions -->
 						{#if ticket.tier?.payment_method !== 'online' && ticket.tier?.manual_payment_instructions}
-							<div
-								class="mt-3 rounded-md border border-orange-300 bg-orange-100 p-3 dark:border-orange-700 dark:bg-orange-900"
-							>
-								<p class="text-sm font-medium text-orange-900 dark:text-orange-100">
+							<div class="mt-3 rounded-md border border-highlight/40 bg-card p-3">
+								<p class="text-sm font-bold text-foreground">
 									{m['myTicket.paymentInstructions']()}
 								</p>
 								<MarkdownContent
 									content={ticket.tier.manual_payment_instructions}
-									class="mt-1 text-sm text-orange-800 dark:text-orange-200"
+									class="mt-1 text-sm text-muted-foreground"
 								/>
 							</div>
 						{/if}
@@ -237,11 +241,11 @@
 							<button
 								onclick={onResumePayment}
 								disabled={isResumingPayment}
-								class="mt-3 inline-flex items-center gap-2 rounded-md bg-orange-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-orange-500 dark:hover:bg-orange-600"
+								class="mt-3 inline-flex items-center gap-2 rounded-md bg-highlight px-4 py-2 text-sm font-medium text-highlight-foreground shadow-sm hover:bg-highlight/90 focus:outline-none focus:ring-2 focus:ring-highlight focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 							>
 								{#if isResumingPayment}
 									<div
-										class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+										class="h-4 w-4 animate-spin rounded-full border-2 border-highlight-foreground border-t-transparent"
 										aria-hidden="true"
 									></div>
 									{m['myTicket.processing']()}
@@ -302,10 +306,12 @@
 			</div>
 		{/if}
 
-		<!-- Checked In Info -->
+		<!-- Checked In Info. bg-info/10 + text-info mirrors ToneTile's audited
+		     info tokens. Hand-verified on THIS surface (bg-info/10 composited over
+		     --card, the Card this banner sits in): 9.31:1 light, 7.15:1 dark. -->
 		{#if ticket.status === 'checked_in' && checkedInDate}
-			<div class="rounded-lg bg-blue-50 p-4 text-sm">
-				<p class="font-medium text-blue-900">{m['myTicket.checkedInAt']()} {checkedInDate}</p>
+			<div class="rounded-lg bg-info/10 p-4 text-sm">
+				<p class="font-bold text-info">{m['myTicket.checkedInAt']()} {checkedInDate}</p>
 			</div>
 		{/if}
 

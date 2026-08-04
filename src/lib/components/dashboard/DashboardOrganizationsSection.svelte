@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import OrganizationCardSkeleton from '$lib/components/common/OrganizationCardSkeleton.svelte';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import { getImageUrl } from '$lib/utils/url';
 	import { stripMarkdown } from '$lib/seo';
 	import { Building2, Sparkles, Shield, Check, Award, Crown } from '@lucide/svelte';
@@ -15,7 +18,7 @@
 		getMembershipTier,
 		isOwner,
 		isStaff,
-		statusStyles
+		statusTones
 	} from './dashboard-permissions';
 
 	interface Props {
@@ -32,13 +35,24 @@
 	);
 </script>
 
+{#snippet discoverEventsAction()}
+	<a
+		href={resolve('/(public)/events', {})}
+		class="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+	>
+		<Sparkles class="h-4 w-4" aria-hidden="true" />
+		<span>{m['dashboard.sections.discoverEvents']()}</span>
+	</a>
+{/snippet}
+
 <!-- My Organizations Section -->
 <section id="organizations-section" aria-labelledby="organizations-heading">
-	<div class="mb-4 flex items-center justify-between">
-		<h2 id="organizations-heading" class="flex items-center gap-2 text-xl font-semibold">
-			<Building2 class="h-5 w-5 text-primary" aria-hidden="true" />
-			<span>{m['dashboard.sections.myOrganizations']()}</span>
-		</h2>
+	<div class="mb-4">
+		<SectionHeader
+			title={m['dashboard.sections.myOrganizations']()}
+			volume="celebration"
+			id="organizations-heading"
+		/>
 	</div>
 
 	{#if isLoading}
@@ -49,22 +63,12 @@
 		</div>
 	{:else if organizations.length === 0}
 		<!-- Empty State -->
-		<div class="rounded-lg border bg-card p-8 text-center">
-			<Building2 class="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
-			<h3 class="mb-2 text-lg font-semibold">{m['dashboard.emptyStates.noOrganizations']()}</h3>
-			<p class="mb-4 text-sm text-muted-foreground">
-				{m['dashboard.emptyStates.noOrganizationsHint']()}
-			</p>
-			<div class="flex flex-wrap justify-center gap-3">
-				<a
-					href={resolve('/(public)/events', {})}
-					class="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-				>
-					<Sparkles class="h-4 w-4" aria-hidden="true" />
-					<span>{m['dashboard.sections.discoverEvents']()}</span>
-				</a>
-			</div>
-		</div>
+		<EmptyState
+			icon={Building2}
+			title={m['dashboard.emptyStates.noOrganizations']()}
+			body={m['dashboard.emptyStates.noOrganizationsHint']()}
+			action={discoverEventsAction}
+		/>
 	{:else}
 		<!-- Organization Cards -->
 		<div id="dashboard-organizations-list" class="space-y-3">
@@ -90,25 +94,25 @@
 
 						<div class="min-w-0 flex-1">
 							<div class="flex items-center gap-2">
-								<h3 class="font-semibold">{org.name}</h3>
+								<h3 class="font-bold">{org.name}</h3>
 								<!-- Owner Badge -->
 								{#if isOwner(permissions, org.id)}
-									<span
-										class="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
+									<StatusBadge
+										tone="brand"
+										label={m['dashboardPage.ownerBadge']()}
+										icon={Crown}
+										size="sm"
 										aria-label={m['dashboardPage.ownerBadgeLabel']()}
-									>
-										<Crown class="h-3 w-3" aria-hidden="true" />
-										{m['dashboardPage.ownerBadge']()}
-									</span>
+									/>
 								{:else if isStaff(permissions, org.id)}
 									<!-- Staff Badge -->
-									<span
-										class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-100"
+									<StatusBadge
+										tone="info"
+										label={m['dashboardPage.staffBadge']()}
+										icon={Shield}
+										size="sm"
 										aria-label={m['dashboardPage.staffBadgeLabel']()}
-									>
-										<Shield class="h-3 w-3" aria-hidden="true" />
-										{m['dashboardPage.staffBadge']()}
-									</span>
+									/>
 								{/if}
 							</div>
 
@@ -125,30 +129,28 @@
 								<div class="mt-2 flex flex-wrap items-center gap-2">
 									<!-- Status Badge -->
 									{#if membershipStatus}
-										<span
-											class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium {statusStyles[
-												membershipStatus
-											]}"
+										<StatusBadge
+											tone={statusTones[membershipStatus]}
+											label={m[`memberStatus.${membershipStatus}`]()}
+											icon={Check}
+											size="sm"
 											aria-label={m['dashboardPage.membershipStatusLabel']({
 												status: membershipStatus
 											})}
-										>
-											<Check class="h-3 w-3" aria-hidden="true" />
-											{m[`memberStatus.${membershipStatus}`]()}
-										</span>
+										/>
 									{/if}
 
 									<!-- Tier Badge -->
 									{#if membershipTier}
-										<span
-											class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-100"
+										<StatusBadge
+											tone="info"
+											label={membershipTier.name}
+											icon={Award}
+											size="sm"
 											aria-label={m['dashboardPage.membershipTierLabel']({
 												tier: membershipTier.name
 											})}
-										>
-											<Award class="h-3 w-3" aria-hidden="true" />
-											{membershipTier.name}
-										</span>
+										/>
 									{/if}
 								</div>
 							{/if}

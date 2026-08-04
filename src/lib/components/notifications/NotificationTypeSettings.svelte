@@ -124,7 +124,7 @@
 		<div class="flex items-center justify-between">
 			<div class="flex items-center gap-2">
 				<Settings class="h-5 w-5" aria-hidden="true" />
-				<h3 class="text-lg font-semibold">{m['notificationPreferences.advancedSettings']()}</h3>
+				<h3 class="text-lg font-bold">{m['notificationPreferences.advancedSettings']()}</h3>
 			</div>
 			<ChevronDown
 				class="h-5 w-5 transition-transform duration-200 {advancedOpen ? 'rotate-180' : ''}"

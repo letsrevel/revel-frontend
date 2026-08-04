@@ -11,6 +11,7 @@
 	import { cn } from '$lib/utils/cn';
 	import { toast } from 'svelte-sonner';
 	import NotificationItem from './NotificationItem.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 
 	interface Props {
 		authToken: string;
@@ -255,46 +256,37 @@
 			</div>
 		{:else if isError}
 			<!-- Error state -->
-			<Card class="p-8 text-center">
-				<div class="flex flex-col items-center gap-3">
-					<BellOff class="h-12 w-12 text-muted-foreground" aria-hidden="true" />
-					<div>
-						<h3 class="text-lg font-semibold">{m['notificationList.errorTitle']()}</h3>
-						<p class="mt-1 text-sm text-muted-foreground">
-							{m['notificationList.errorBody']()}
-						</p>
-					</div>
-					<Button
-						variant="outline"
-						size="sm"
-						onclick={() => queryClient.invalidateQueries({ queryKey: ['notifications'] })}
-					>
-						{m['notificationList.tryAgain']()}
-					</Button>
-				</div>
-			</Card>
+			{#snippet retryAction()}
+				<Button
+					variant="outline"
+					size="sm"
+					onclick={() => queryClient.invalidateQueries({ queryKey: ['notifications'] })}
+				>
+					{m['notificationList.tryAgain']()}
+				</Button>
+			{/snippet}
+			<EmptyState
+				icon={BellOff}
+				title={m['notificationList.errorTitle']()}
+				body={m['notificationList.errorBody']()}
+				tone="neutral"
+				action={retryAction}
+			/>
 		{:else if notifications.length === 0}
 			<!-- Empty state -->
-			<Card class="p-8 text-center">
-				<div class="flex flex-col items-center gap-3">
-					<BellOff class="h-12 w-12 text-muted-foreground" aria-hidden="true" />
-					<div>
-						<h3 class="text-lg font-semibold">{emptyMessage}</h3>
-						<p class="mt-1 text-sm text-muted-foreground">
-							{#if unreadOnly}
-								{m['notificationList.emptyUnreadBody']()}
-							{:else}
-								{m['notificationList.emptyAllBody']()}
-							{/if}
-						</p>
-					</div>
-					{#if unreadOnly}
-						<Button variant="outline" size="sm" onclick={handleFilterToggle}>
-							{m['notificationList.showAllNotifications']()}
-						</Button>
-					{/if}
-				</div>
-			</Card>
+			{#snippet showAllAction()}
+				<Button variant="outline" size="sm" onclick={handleFilterToggle}>
+					{m['notificationList.showAllNotifications']()}
+				</Button>
+			{/snippet}
+			<EmptyState
+				icon={BellOff}
+				title={emptyMessage}
+				body={unreadOnly
+					? m['notificationList.emptyUnreadBody']()
+					: m['notificationList.emptyAllBody']()}
+				action={unreadOnly ? showAllAction : undefined}
+			/>
 		{:else}
 			<!-- Notifications -->
 			<div

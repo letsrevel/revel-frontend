@@ -2,6 +2,7 @@
 	import { resolve } from '$app/paths';
 	import { ChevronRight, Ticket, Mail, CheckCircle2 } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
+	import ToneTile from '$lib/components/common/ToneTile.svelte';
 
 	interface Props {
 		activeTicketsCount: number;
@@ -22,9 +23,7 @@
 			>
 				<div class="flex items-start justify-between">
 					<div class="flex items-center gap-3">
-						<div class="rounded-full bg-blue-100 p-3 dark:bg-blue-950">
-							<Ticket class="h-6 w-6 text-blue-600 dark:text-blue-400" aria-hidden="true" />
-						</div>
+						<ToneTile tone="info" icon={Ticket} size="lg" />
 						<div>
 							<p class="text-sm font-medium text-muted-foreground">
 								{m['dashboard.activityCards.activeTickets']()}
@@ -56,9 +55,7 @@
 			>
 				<div class="flex items-start justify-between">
 					<div class="flex items-center gap-3">
-						<div class="rounded-full bg-green-100 p-3 dark:bg-green-950">
-							<CheckCircle2 class="h-6 w-6 text-green-600 dark:text-green-400" aria-hidden="true" />
-						</div>
+						<ToneTile tone="success" icon={CheckCircle2} size="lg" />
 						<div>
 							<p class="text-sm font-medium text-muted-foreground">
 								{m['dashboard.activityCards.upcomingRsvps']()}
@@ -90,9 +87,7 @@
 			>
 				<div class="flex items-start justify-between">
 					<div class="flex items-center gap-3">
-						<div class="rounded-full bg-purple-100 p-3 dark:bg-purple-950">
-							<Mail class="h-6 w-6 text-purple-600 dark:text-purple-400" aria-hidden="true" />
-						</div>
+						<ToneTile tone="brand" icon={Mail} size="lg" />
 						<div>
 							<p class="text-sm font-medium text-muted-foreground">
 								{m['dashboard.activityCards.pendingInvitations']()}

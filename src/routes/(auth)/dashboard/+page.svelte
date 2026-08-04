@@ -17,6 +17,8 @@
 		DashboardUpcomingEvents,
 		DashboardOrganizationsSection
 	} from '$lib/components/dashboard';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import {
 		filterPresets,
 		isFilterActive as isFilterActiveFor,
@@ -304,13 +306,7 @@
 
 <div class="container mx-auto px-4 py-6 md:py-8">
 	<!-- Welcome Header -->
-	<div class="mb-8">
-		<h1 class="mb-2 text-2xl font-bold md:text-3xl">{m['dashboard.pageTitle']({ firstName })}</h1>
-		<p class="text-muted-foreground">{m['dashboard.pageSubtitle']()}</p>
-	</div>
-
-	<!-- Quick Action Bar -->
-	<div class="mb-8 flex flex-wrap gap-3">
+	{#snippet quickActions()}
 		<a
 			href={resolve('/(public)/events', {})}
 			class="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
@@ -394,7 +390,15 @@
 				<span>{m['dashboard.createOrganizationButton']()}</span>
 			</a>
 		{/if}
-	</div>
+	{/snippet}
+	<PageHeader
+		title={m['dashboard.pageTitle']({ firstName })}
+		subtitle={m['dashboard.pageSubtitle']()}
+		kicker={m['userMenu.dashboard']()}
+		volume="celebration"
+		actions={quickActions}
+		class="mb-8"
+	/>
 
 	<!-- Activity Summary Cards -->
 	<DashboardActivityCards {activeTicketsCount} {pendingInvitationsCount} {upcomingRsvpsCount} />
@@ -406,7 +410,7 @@
 			<section aria-labelledby="your-events-heading">
 				<div class="mb-4">
 					<div class="mb-3 flex items-center justify-between">
-						<h2 id="your-events-heading" class="flex items-center gap-2 text-xl font-semibold">
+						<h2 id="your-events-heading" class="flex items-center gap-2 text-xl font-extrabold">
 							<Calendar class="h-5 w-5 text-primary" aria-hidden="true" />
 							<span>{m['dashboard.sections.yourEvents']()}</span>
 							{#if viewMode === 'list' && yourEvents.length > 0}
@@ -494,13 +498,12 @@
 						</div>
 					{:else}
 						<!-- Empty state when filter returns no results -->
-						<div class="rounded-lg border bg-card p-8 text-center">
-							<Calendar class="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
-							<h3 class="mb-2 text-lg font-semibold">{m['dashboard.emptyStates.noEvents']()}</h3>
-							<p class="mb-4 text-sm text-muted-foreground">
-								{m['dashboard.emptyStates.noEventsFiltered']()}
-							</p>
-						</div>
+						<EmptyState
+							icon={Calendar}
+							title={m['dashboard.emptyStates.noEvents']()}
+							body={m['dashboard.emptyStates.noEventsFiltered']()}
+							tone="neutral"
+						/>
 					{/if}
 				{:else}
 					<!-- Calendar View -->

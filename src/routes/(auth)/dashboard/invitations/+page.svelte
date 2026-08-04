@@ -8,6 +8,8 @@
 	} from '$lib/api/generated/sdk.gen';
 	import InvitationCard from '$lib/components/invitations/InvitationCard.svelte';
 	import InvitationRequestCard from '$lib/components/invitations/InvitationRequestCard.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { Mail, Send, Loader2, Filter } from '@lucide/svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
@@ -141,17 +143,13 @@
 
 <div class="container mx-auto px-4 py-6 md:py-8">
 	<!-- Page Header -->
-	<div class="mb-8">
-		<div class="mb-2 flex items-center gap-3">
-			<div class="rounded-lg bg-primary/10 p-2">
-				<Mail class="h-6 w-6 text-primary" aria-hidden="true" />
-			</div>
-			<div>
-				<h1 class="text-2xl font-bold md:text-3xl">{m['dashboard.invitations.title']()}</h1>
-				<p class="text-muted-foreground">{m['dashboard.invitations.description']()}</p>
-			</div>
-		</div>
-	</div>
+	<PageHeader
+		title={m['dashboard.invitations.title']()}
+		subtitle={m['dashboard.invitations.description']()}
+		kicker={m['userMenu.dashboard']()}
+		volume="celebration"
+		class="mb-8"
+	/>
 
 	<!-- Tabs -->
 	<div class="mb-6">
@@ -160,10 +158,10 @@
 				<button
 					type="button"
 					onclick={() => switchTab('invitations')}
-					class="inline-flex items-center gap-2 border-b-2 px-1 py-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 {activeTab ===
+					class="inline-flex items-center gap-2 border-b-2 px-1 py-4 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 {activeTab ===
 					'invitations'
-						? 'border-primary text-primary'
-						: 'border-transparent text-muted-foreground hover:border-muted-foreground/50 hover:text-foreground'}"
+						? 'border-primary font-bold text-primary'
+						: 'border-transparent font-semibold text-muted-foreground hover:border-muted-foreground/50 hover:text-foreground'}"
 					aria-current={activeTab === 'invitations' ? 'page' : undefined}
 				>
 					<Mail class="h-4 w-4" aria-hidden="true" />
@@ -180,10 +178,10 @@
 				<button
 					type="button"
 					onclick={() => switchTab('requests')}
-					class="inline-flex items-center gap-2 border-b-2 px-1 py-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 {activeTab ===
+					class="inline-flex items-center gap-2 border-b-2 px-1 py-4 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 {activeTab ===
 					'requests'
-						? 'border-primary text-primary'
-						: 'border-transparent text-muted-foreground hover:border-muted-foreground/50 hover:text-foreground'}"
+						? 'border-primary font-bold text-primary'
+						: 'border-transparent font-semibold text-muted-foreground hover:border-muted-foreground/50 hover:text-foreground'}"
 					aria-current={activeTab === 'requests' ? 'page' : undefined}
 				>
 					<Send class="h-4 w-4" aria-hidden="true" />
@@ -251,33 +249,27 @@
 					<span class="sr-only">{m['dashboard.invitations.loadingInvitations']()}</span>
 				</div>
 			{:else if invitations.length === 0}
-				<div class="rounded-lg border bg-card p-12 text-center">
-					<div
-						class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10"
+				{#snippet clearInvitationsSearchAction()}
+					<button
+						type="button"
+						onclick={() => {
+							invitationsSearch = '';
+							navigateToPage(1);
+						}}
+						class="rounded-lg border bg-background px-6 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					>
-						<Mail class="h-8 w-8 text-primary" aria-hidden="true" />
-					</div>
-					<h2 class="mb-2 text-xl font-semibold">{m['dashboard.invitations.noInvitations']()}</h2>
-					{#if invitationsDebounced}
-						<p class="mb-4 text-muted-foreground">
-							{m['dashboard.invitations.tryAdjustingSearch']()}
-						</p>
-						<button
-							type="button"
-							onclick={() => {
-								invitationsSearch = '';
-								navigateToPage(1);
-							}}
-							class="rounded-lg border bg-background px-6 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-						>
-							{m['dashboard.invitations.clearSearch']()}
-						</button>
-					{:else}
-						<p class="text-muted-foreground">
-							{m['dashboard.invitations.noReceivedInvitations']()}
-						</p>
-					{/if}
-				</div>
+						{m['dashboard.invitations.clearSearch']()}
+					</button>
+				{/snippet}
+				<EmptyState
+					icon={Mail}
+					title={m['dashboard.invitations.noInvitations']()}
+					body={invitationsDebounced
+						? m['dashboard.invitations.tryAdjustingSearch']()
+						: m['dashboard.invitations.noReceivedInvitations']()}
+					action={invitationsDebounced ? clearInvitationsSearchAction : undefined}
+					level={2}
+				/>
 			{:else}
 				<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 					{#each invitations as invitation (invitation.id)}
@@ -372,34 +364,28 @@
 					<span class="sr-only">{m['dashboard.invitations.loadingRequests']()}</span>
 				</div>
 			{:else if requests.length === 0}
-				<div class="rounded-lg border bg-card p-12 text-center">
-					<div
-						class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10"
+				{#snippet clearRequestsFiltersAction()}
+					<button
+						type="button"
+						onclick={() => {
+							requestsSearch = '';
+							requestsStatus = 'pending';
+							navigateToPage(1);
+						}}
+						class="rounded-lg border bg-background px-6 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					>
-						<Send class="h-8 w-8 text-primary" aria-hidden="true" />
-					</div>
-					<h2 class="mb-2 text-xl font-semibold">{m['dashboard.invitations.noRequests']()}</h2>
-					{#if requestsDebounced || requestsStatus}
-						<p class="mb-4 text-muted-foreground">
-							{m['dashboard.invitations.tryAdjustingFilters']()}
-						</p>
-						<button
-							type="button"
-							onclick={() => {
-								requestsSearch = '';
-								requestsStatus = 'pending';
-								navigateToPage(1);
-							}}
-							class="rounded-lg border bg-background px-6 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-						>
-							{m['dashboard.invitations.clearFilters']()}
-						</button>
-					{:else}
-						<p class="text-muted-foreground">
-							{m['dashboard.invitations.noSentInvitations']()}
-						</p>
-					{/if}
-				</div>
+						{m['dashboard.invitations.clearFilters']()}
+					</button>
+				{/snippet}
+				<EmptyState
+					icon={Send}
+					title={m['dashboard.invitations.noRequests']()}
+					body={requestsDebounced || requestsStatus
+						? m['dashboard.invitations.tryAdjustingFilters']()
+						: m['dashboard.invitations.noSentInvitations']()}
+					action={requestsDebounced || requestsStatus ? clearRequestsFiltersAction : undefined}
+					level={2}
+				/>
 			{:else}
 				<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 					{#each requests as request (request.id)}

@@ -98,7 +98,7 @@
 			<div class="min-w-0 flex-1">
 				<div class="mb-2 flex items-start justify-between gap-2">
 					<div class="min-w-0 flex-1">
-						<h3 class="text-lg font-semibold">
+						<h3 class="text-lg font-bold">
 							<a
 								href={resolve('/(public)/events/[id]', { id: ticket.event.id })}
 								class="hover:underline focus:underline focus:outline-none"
