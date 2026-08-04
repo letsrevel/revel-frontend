@@ -9,6 +9,23 @@
 		kicker?: string;
 		subtitle?: string;
 		/**
+		 * Extra attributes for the SUBTITLE node — the documented way to make it a
+		 * live region (`{ 'aria-live': 'polite' }`), which `restProps` cannot do
+		 * because those land on `<header>` and would announce the whole header.
+		 * `class` is excluded on purpose: the subtitle's colour is the `onBand`
+		 * contract above, and a caller-supplied `class` would silently win over it.
+		 *
+		 * Passing this also makes the subtitle node render UNCONDITIONALLY. An
+		 * `aria-live` region only announces changes that happen while it is already
+		 * in the DOM — a region that appears together with its first text is a
+		 * plain insertion and is silent in every screen reader. Callers whose
+		 * subtitle can be empty (a result count with no results) therefore need the
+		 * empty node to exist, and asking each of them to remember that is how the
+		 * announcement got lost the first time. Callers that pass no attrs keep the
+		 * old `{#if subtitle}` behaviour exactly.
+		 */
+		subtitleAttrs?: Omit<HTMLAttributes<HTMLParagraphElement>, 'children' | 'class'>;
+		/**
 		 * 'celebration' = display scale (public/user surfaces); 'studio' =
 		 * admin/dense; 'poster' = celebration one notch louder, for the handful
 		 * of hero screens that carry a color-block band (uplift prototype).
@@ -44,6 +61,7 @@
 		title,
 		kicker,
 		subtitle,
+		subtitleAttrs,
 		volume = 'studio',
 		onBand = false,
 		actions,
@@ -83,8 +101,15 @@
 				<span aria-hidden="true">{@render decoration()}</span>
 			{/if}
 		</div>
-		{#if subtitle}
-			<p class={cn('mt-2 max-w-prose', onBand ? 'text-current' : 'text-muted-foreground')}>
+		{#if subtitle || subtitleAttrs}
+			<!-- Spread BEFORE class: the type excludes `class`, but only for literal
+			     objects — an aliased object could smuggle one past tsc, and a spread
+			     placed after `class` would replace the whole attribute (and with it
+			     the onBand color contract). Source order makes that impossible. -->
+			<p
+				{...subtitleAttrs}
+				class={cn('mt-2 max-w-prose', onBand ? 'text-current' : 'text-muted-foreground')}
+			>
 				{subtitle}
 			</p>
 		{/if}

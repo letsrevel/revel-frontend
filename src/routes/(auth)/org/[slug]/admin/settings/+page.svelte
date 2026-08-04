@@ -355,8 +355,10 @@
 
 		<!-- Social Media Links -->
 		<section class="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
-			<SectionHeader title={m['orgAdmin.settings.social.heading']()} />
-			<p class="text-sm text-muted-foreground">{m['orgAdmin.settings.social.description']()}</p>
+			<SectionHeader
+				title={m['orgAdmin.settings.social.heading']()}
+				subtitle={m['orgAdmin.settings.social.description']()}
+			/>
 
 			<div class="grid gap-4 md:grid-cols-2">
 				<!-- Instagram -->
@@ -602,8 +604,10 @@
 		     endpoints; staff with edit_organization must not change report delivery) -->
 		{#if data.isOwner}
 			<section class="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
-				<SectionHeader title={m['orgSettingsPage.reports.heading']()} />
-				<p class="text-sm text-muted-foreground">{m['orgSettingsPage.reports.description']()}</p>
+				<SectionHeader
+					title={m['orgSettingsPage.reports.heading']()}
+					subtitle={m['orgSettingsPage.reports.description']()}
+				/>
 
 				<div>
 					<label for="revenue_report_cadence" class="block text-sm font-medium">

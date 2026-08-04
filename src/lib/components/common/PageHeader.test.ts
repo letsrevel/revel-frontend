@@ -127,6 +127,42 @@ describe('PageHeader', () => {
 		expect(h1.className).toContain('text-4xl');
 	});
 
+	it('subtitleAttrs land on the subtitle node, not the header', () => {
+		// The whole point of the prop: restProps can only reach <header>, and an
+		// aria-live there would announce the entire header, kicker and title
+		// included, every time a result count ticks.
+		const { container } = render(PageHeader, {
+			props: {
+				title: 'Events',
+				subtitle: '12 events',
+				subtitleAttrs: { 'aria-live': 'polite', id: 'events-count' }
+			}
+		});
+		const subtitle = screen.getByText('12 events');
+		expect(subtitle.getAttribute('aria-live')).toBe('polite');
+		expect(subtitle.id).toBe('events-count');
+		expect(container.querySelector('header')?.hasAttribute('aria-live')).toBe(false);
+		// The attrs must not cost the subtitle its own styling.
+		expect(subtitle.className).toContain('text-muted-foreground');
+	});
+
+	it('subtitleAttrs pin the subtitle node in the DOM even with no subtitle', () => {
+		// A live region only announces changes made while it is already mounted —
+		// a region that appears together with its first text is a plain insertion
+		// and is silent. Callers whose count can be empty need the empty node.
+		const { container } = render(PageHeader, {
+			props: { title: 'Events', subtitleAttrs: { 'aria-live': 'polite' } }
+		});
+		const subtitle = container.querySelector('p[aria-live="polite"]') as HTMLElement;
+		expect(subtitle).not.toBeNull();
+		expect(subtitle.textContent).toBe('');
+	});
+
+	it('without subtitleAttrs an absent subtitle still renders no node at all', () => {
+		const { container } = render(PageHeader, { props: { title: 'Events' } });
+		expect(container.querySelectorAll('p')).toHaveLength(0);
+	});
+
 	it('decoration also renders in poster volume', () => {
 		render(PageHeader, { props: { title: 'Hey', volume: 'poster', decoration: snip('New!') } });
 		expect(screen.getByText('New!').closest('[aria-hidden="true"]')).not.toBeNull();

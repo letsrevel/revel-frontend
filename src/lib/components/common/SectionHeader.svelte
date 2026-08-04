@@ -6,6 +6,15 @@
 		/** Already-translated strings — i18n stays at the call site. */
 		title: string;
 		kicker?: string;
+		/**
+		 * One-line explainer under the title, mirroring `PageHeader`'s subtitle.
+		 * Sections used to hand-place the same paragraph as a SIBLING of the
+		 * header, which put it on the parent's `space-y-*` rhythm instead of the
+		 * heading's — reliably a step too far from the title it explains. It is
+		 * deliberately NOT a snippet: it is one line of already-translated copy,
+		 * same contract as `title`/`kicker`.
+		 */
+		subtitle?: string;
 		level?: 2 | 3;
 		/**
 		 * 'celebration' = public/user surfaces; 'studio' = admin/dense;
@@ -24,6 +33,7 @@
 	const {
 		title,
 		kicker,
+		subtitle,
 		level = 2,
 		volume = 'studio',
 		id,
@@ -52,6 +62,9 @@
 			<h2 class={headingClass} {id}>{title}</h2>
 		{:else}
 			<h3 class={headingClass} {id}>{title}</h3>
+		{/if}
+		{#if subtitle}
+			<p class="mt-1 max-w-prose text-sm text-muted-foreground">{subtitle}</p>
 		{/if}
 	</div>
 	{#if actions}

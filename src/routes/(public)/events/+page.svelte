@@ -206,13 +206,21 @@
 
 			<!-- Page Header. The result count rides `subtitle`, exactly as /organizations
 			     does, rather than a paragraph pulled back under the header with a
-			     negative margin that breaks the moment the header wraps. -->
+			     negative margin that breaks the moment the header wraps.
+
+			     `subtitleAttrs` makes that subtitle a polite live region so the tally
+			     is announced when filters change or the view flips between list and
+			     calendar — the announcement this page had before it adopted
+			     PageHeader. Passing the attrs also pins the node in the DOM even when
+			     `countLabel` is undefined (zero results / error), which is what makes
+			     the NEXT count an announced change rather than a silent insertion. -->
 			<PageHeader
 				volume="poster"
 				onBand
 				kicker={m['browse.events_kicker']()}
 				title={m['browse.events_title']()}
 				subtitle={countLabel}
+				subtitleAttrs={{ 'aria-live': 'polite' }}
 			>
 				{#snippet actions()}
 					<!-- View Toggle. Left on the stock `outline` chrome on purpose: its

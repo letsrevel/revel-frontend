@@ -34,10 +34,10 @@
 </script>
 
 <section class="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
-	<SectionHeader title={m['orgSettingsPage.subscriptionPolicy.heading']()} />
-	<p class="text-sm text-muted-foreground">
-		{m['orgSettingsPage.subscriptionPolicy.description']()}
-	</p>
+	<SectionHeader
+		title={m['orgSettingsPage.subscriptionPolicy.heading']()}
+		subtitle={m['orgSettingsPage.subscriptionPolicy.description']()}
+	/>
 
 	<!-- Grace period (days) -->
 	<div>
