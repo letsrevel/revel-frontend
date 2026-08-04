@@ -712,13 +712,18 @@
 						title={m['eventDetails.tags_heading']()}
 						class="mb-4"
 					/>
-					<!-- Tag chips: primary on a 10% primary tint. The tint composites to
-				     ~the page colour, so primary-vs-background governs — 5.3:1 light /
-				     5.9:1 dark (hand-recomputed; a composited alpha is invisible to
-				     scripts/audit-brand-themes.py). -->
+					<!-- Tag chips: primary on the card surface with a 2px primary edge —
+				     poster stickers, not washes (mirrors the event detail page's tags
+				     section). This comment used to claim 5.3:1 for `bg-primary/10` on
+				     the `bg-secondary/55` wash; the honest composite is 4.29:1, under
+				     the 4.5:1 floor for 14px bold text. The card fill is opaque, so the
+				     audited primary-vs-card pair governs instead: 6.99:1 light /
+				     6.27:1 dark (the same pair the questionnaire option rows rest on). -->
 					<div class="flex flex-wrap gap-2">
 						{#each organization.tags as tag (tag)}
-							<span class="rounded-full bg-primary/10 px-3 py-1 text-sm font-bold text-primary">
+							<span
+								class="rounded-full border-2 border-primary/40 bg-card px-3 py-1 text-sm font-bold text-primary shadow-poster"
+							>
 								{tag}
 							</span>
 						{/each}

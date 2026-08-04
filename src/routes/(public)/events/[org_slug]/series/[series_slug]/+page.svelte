@@ -214,9 +214,9 @@
 						<div class="flex flex-1 gap-4">
 							<!-- Series/Organization Logo -->
 							<div class="flex-shrink-0">
-								{#if logoUrl || orgLogoUrl}
+								{#if logoUrl}
 									<img
-										src={logoUrl || orgLogoUrl}
+										src={logoUrl}
 										alt={m['eventSeriesDetailPage.coverImageAlt']({ seriesName: series.name })}
 										class="h-16 w-16 rounded-lg object-cover shadow-poster md:h-20 md:w-20"
 									/>
@@ -246,12 +246,18 @@
 								     separate visual context. The affordance is preserved, not
 								     removed. -->
 
-								<!-- Tags -->
+								<!-- Tags: primary on the card surface with a 2px primary edge —
+								     poster stickers, not washes (mirrors the event detail page's
+								     tags section). `bg-primary/10` on the `bg-secondary/55` wash
+								     below only reaches 4.29:1, under the 4.5:1 floor for 14px bold
+								     text. The card fill is opaque, so the audited primary-vs-card
+								     pair governs instead: 6.99:1 light / 6.27:1 dark (the same
+								     pair the questionnaire option rows rest on). -->
 								{#if series.tags && series.tags.length > 0}
 									<div class="mt-3 flex flex-wrap gap-2">
 										{#each series.tags as tag (tag)}
 											<span
-												class="inline-block rounded-full bg-primary/10 px-3 py-1 text-sm font-bold text-primary"
+												class="inline-block rounded-full border-2 border-primary/40 bg-card px-3 py-1 text-sm font-bold text-primary shadow-poster"
 											>
 												{tag}
 											</span>
