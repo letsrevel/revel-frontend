@@ -25,8 +25,10 @@
 			{m['home.poster.qMockQuestion']()}
 		</p>
 		<div class="mt-2.5 flex flex-col gap-1.5 text-sm">
-			<!-- ink@72% composited on the WHITE card is ~9.7:1 — hand-verified, since a
-				 composited alpha is invisible to scripts/audit-brand-themes.py. -->
+			<!-- ink@72% composited on the WHITE card is 6.92:1 — audited as a
+				 COMPOSITED_PAIRS row in scripts/audit-brand-themes.py (issue #783).
+				 The comment here previously claimed ~9.7:1, which the script does not
+				 reproduce; FeaturesPanel measured the identical recipe at "6.8". -->
 			<div
 				class="rounded-[10px] border-2 border-[hsl(var(--poster-paper))] px-3 py-2 text-[hsl(var(--poster-ink)/0.72)]"
 			>

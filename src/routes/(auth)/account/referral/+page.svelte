@@ -341,9 +341,10 @@
 									<dt class="font-medium text-muted-foreground">
 										{m['referral.chargesEnabled']()}
 									</dt>
-									<!-- Bare on card: text-destructive measures 2.85:1 in dark
-									     (below 4.5). Only the icon carries the tone; the label
-									     reads on --foreground. -->
+									<!-- Only the icon carries the tone; the label reads on
+									     --foreground (danger-framing rule). Bare
+									     `text-destructive` on this card is 6.42:1 in dark since
+									     the token split (#781), against 2.85:1 before it. -->
 									<dd class="mt-0.5 flex items-center gap-1">
 										{#if stripeChargesEnabled}
 											<Check class="h-3 w-3 text-success" aria-hidden="true" />
@@ -361,9 +362,10 @@
 			</div>
 
 			{#if stripeConnectMutation.error}
-				<!-- text-destructive as lead text measures 2.85:1 in dark on this card
-				     tint (below 4.5); the border/tint + icon carry the tone, text reads
-				     on --foreground. -->
+				<!-- Border/tint + icon carry the tone, the message reads on
+				     --foreground (danger-framing rule). `text-destructive` would clear
+				     AA on this tint too — 6.05:1 in dark since #781, against 2.85:1
+				     before it — but error copy stays on the body-text pair. -->
 				<div
 					class="mt-3 flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-foreground"
 					role="alert"

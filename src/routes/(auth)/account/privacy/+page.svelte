@@ -364,9 +364,11 @@
 				<AlertTriangle class="h-6 w-6 text-destructive" aria-hidden="true" />
 			</div>
 			<div class="flex-1">
-				<!-- text-destructive as a heading would measure 2.85:1 in dark on this
-				     tint (below 4.5) — the same trap as the create-org/referral
-				     headings; the icon + border/tint already carry "danger zone". -->
+				<!-- The icon + border/tint already carry "danger zone", so the heading
+				     stays on the body-text pair (danger-framing rule). Since #781 a
+				     destructive heading would also pass here (6.05:1 dark, against
+				     2.85:1 before the token split) — the rule is editorial, not a
+				     contrast workaround. -->
 				<SectionHeader title={m['accountPrivacyPage.dangerZone']()} class="flex-1" />
 				<p class="mt-2 text-sm text-muted-foreground">
 					{m['accountPrivacyPage.dangerZoneDescription']()}

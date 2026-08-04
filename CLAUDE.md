@@ -1117,6 +1117,28 @@ introduce new raw palette hues.
 - **Use tokens, never raw hexes** in components (`bg-primary`, `text-muted-foreground`, …). Palette hexes appear only in `app.css`.
 - **The theme must respect the light/dark axis.** The app styles content with `dark:` utilities (e.g. `prose dark:prose-invert`), which assume the `.dark` class controls surface darkness. A theme that keeps dark surfaces in light mode breaks readability everywhere.
 - **WCAG AA contract:** every `*-foreground` on its surface ≥ 4.5:1; `--primary` vs `--background` ≥ 3:1 (links, focus rings).
+- **Destructive is TWO tokens.** `--destructive` is the FILL (buttons, badges,
+  `StatusBadge danger`) and pairs with `--destructive-foreground`; it only owes
+  1.4.11's 3:1. `--destructive-text` is destructive-as-TEXT/ICON and owes 4.5:1.
+  `tailwind.config.ts` overrides `theme.extend.textColor.destructive`, so
+  `text-destructive` — and every variant of it (`hover:`, `focus:`,
+  `group-hover:`, `data-[…]:`, `text-destructive/90`) — resolves to
+  `--destructive-text`, while `bg-/border-/ring-/divide-/fill-destructive` keep
+  the fill. Light mode defines the two identically; only dark mode splits them.
+  Three consequences: (a) the restated `foreground` key next to the override is
+  defensive redundancy — Tailwind deep-merges `extend.textColor`, so omitting it
+  would still compile (proven by compiling both variants); keep it anyway for
+  explicitness; (b) **raw CSS is NOT covered** — inside a `<style>` block write
+  `hsl(var(--destructive-text))` for text/icons, never `hsl(var(--destructive))`;
+  (c) `decoration-/placeholder-/caret-/accent-destructive` still resolve to the
+  fill, so don't reach for them to colour text.
+- **Every translucent recipe belongs in `COMPOSITED_PAIRS`** in
+  `scripts/audit-brand-themes.py` — a `dark:` variant that swaps the tint or the
+  foreground is a *different* recipe, not the same one measured twice. Let the
+  script print the ratio and paste **that** into the code comment, never the
+  reverse: hand-written ratios were wrong repeatedly during the 2026-08 rebrand
+  (#783), and the script now FAILS on unknown token names instead of skipping
+  them, so a token rename can't silently disarm rows.
 - **Color-blind safety:** separate semantic colors (primary/accent/destructive/highlight) by _lightness_, not hue alone — protanopia/deuteranopia collapse red/purple/amber hue differences. Never encode meaning by color alone; pair with icon or text.
 - **Validate after any theme edit:** `python3 scripts/audit-brand-themes.py` checks the WCAG pairs and simulated color-blind separation. Keep it at 0 failures.
 

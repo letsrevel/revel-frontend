@@ -324,15 +324,15 @@
 									<span class="text-foreground">{m['stripeConnect.yes']()}</span>
 								{:else}
 									<!-- This dl can render inside ANY status card (e.g. the
-									     warning-tone "incomplete" card, bg-highlight/20), not
-									     just the danger-tone one — plain text-destructive there
-									     measured 1.85:1 in dark (destructive's dark hue sits too
-									     close to the amber tint's lightness). destructive-foreground
-									     (white) on that same composite measures 10.88:1. -->
-									<AlertCircle
-										class="h-3 w-3 text-destructive dark:text-destructive-foreground"
-										aria-hidden="true"
-									/>
+									     warning-tone "incomplete" card, bg-highlight/20), not just
+									     the danger-tone one — which is the tightest surface this
+									     icon lands on. With the split destructive token (#781)
+									     `text-destructive` measures 4.16:1 there in dark and
+									     8.54:1 in light; the icon is decorative (aria-hidden, the
+									     "no" label carries the meaning) so the 3:1 non-text floor
+									     applies and both clear it. The FILL value this utility
+									     used to resolve to measured 1.85:1 on the same composite. -->
+									<AlertCircle class="h-3 w-3 text-destructive" aria-hidden="true" />
 									<span class="text-foreground">{m['stripeConnect.no']()}</span>
 								{/if}
 							</dd>
@@ -349,10 +349,13 @@
 			class="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-foreground"
 			role="alert"
 		>
-			<!-- Icon carries the tone, not the body text: dark --destructive as TEXT
-			     on this composite measures ~2.7-2.95:1 (fails both the 3:1 non-text
-			     and 4.5:1 text floors) — see StripeConnect's status-card comment for
-			     the same trap. -->
+			<!-- Icon carries the tone; the body copy stays on --foreground for the
+			     same reason it always has (meaning is never color-only). The icon's
+			     `text-destructive` is --destructive-text since #781: at worst 7.20:1
+			     light / 6.05:1 dark on this bg-destructive/10 composite (--card and
+			     --background containers are both audited rows in
+			     scripts/audit-brand-themes.py). The FILL value it used to resolve to
+			     was ~2.7-2.95:1 here, failing even the 3:1 non-text floor. -->
 			<AlertCircle class="h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
 			<p class="text-sm">{connectMutation.error.message}</p>
 		</div>

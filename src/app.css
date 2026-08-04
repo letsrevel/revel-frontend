@@ -42,6 +42,16 @@
 		--highlight-foreground: 30 55% 12%;
 		--destructive: 350 78% 30%; /* maroon, never brand crimson */
 		--destructive-foreground: 0 0% 100%;
+		/* Destructive as TEXT/ICON on a surface, as opposed to --destructive the
+		   FILL (buttons, badges, which pair with --destructive-foreground).
+		   A fill only owes WCAG 1.4.11's 3:1; text owes 4.5:1, and the dark fill
+		   value cannot serve both — see the .dark definition. Light mode has no
+		   such tension, so this is deliberately IDENTICAL to --destructive here
+		   and light-mode rendering is unchanged to the byte.
+		   Wired to `text-destructive` in tailwind.config.ts (textColor override),
+		   so every existing `text-destructive` call site resolves here while
+		   `bg-/border-/ring-destructive` keep the fill value. */
+		--destructive-text: 350 78% 30%; /* == --destructive; 8.63:1 on --background, 9.75:1 on --card */
 		/* Rebrand additions (2026-08 platform rebrand): success/info join the
 		   semantic set — values tuned so audit-brand-themes.py passes both the
 		   AA pairs and the color-blind (lightness) separation. */
@@ -111,8 +121,23 @@
 		--accent-foreground: 173 40% 8%;
 		--highlight: 38 94% 60%;
 		--highlight-foreground: 30 60% 10%;
-		--destructive: 0 70% 45%;
+		--destructive: 0 70% 45%; /* FILL only: white label = 5.88:1; as TEXT it is 3.11:1 on --background / 2.85:1 on --card (issue #781) */
 		--destructive-foreground: 0 0% 100%;
+		/* The text-safe half of the destructive pair (issue #781). The fill above
+		   must stay dark enough for a white label, which leaves it far under
+		   4.5:1 when borrowed as text — so dark mode splits the token. Rose
+		   rather than the fill's pure red: it keeps the light-mode maroon's hue
+		   family and stays clear of --accent (3 85% 62%, the crimson "heart"),
+		   which a plain lightened red would collide with under protanopia.
+		   All figures below are PRINTED BY scripts/audit-brand-themes.py, not
+		   hand-computed — paste from the script, never the reverse (#783):
+		     7.02:1 on --background · 6.42:1 on --card/--popover · 5.74:1 on
+		     --muted · 4.74:1 on --secondary · 6.05:1 on bg-destructive/10 over
+		     card · 5.37:1 on bg-destructive/25 over card.
+		   Color-blind separation vs the other semantics (worst simulated
+		   redmean dE): accent 107.9, success 67.5, highlight 108.4,
+		   primary 148.9, info 185.6. */
+		--destructive-text: 352 85% 72%;
 		--success: 145 55% 65%; /* glow green, ink label — mirrors the dark primary pattern */
 		--success-foreground: 173 40% 8%;
 		--info: 226 100% 82%; /* periwinkle glow, ink label */

@@ -38,18 +38,19 @@
 		</div>
 	{/if}
 
-	<!-- Stats grid. Tint recipes mirror common/ToneTile's audited pairs, hand-
-	     verified (composited alpha is invisible to audit-brand-themes.py).
-	     Ratios below are text-vs-composited-tint, light / dark:
+	<!-- Stats grid. Tint recipes mirror common/ToneTile's audited pairs; all
+	     three are COMPOSITED_PAIRS entries in scripts/audit-brand-themes.py
+	     (issue #783), so the ratios below are printed, not asserted by hand.
+	     Text-vs-composited-tint, light / dark:
 	       success  4.39 (FAILS 4.5, bare bg-success/10 over --background) /
-	                8.73 — light needs an opaque bg-card layer under the tint
-	                to reach 4.94; dark already clears the bar unaided.
+	                8.71 — light needs an opaque bg-card layer under the tint
+	                to reach 4.93; dark already clears the bar unaided.
 	       highlight (text-highlight-foreground light / text-highlight dark)
-	                13.28 / 8.41 — clears both, no split needed beyond the
+	                13.27 / 8.40 — clears both, no split needed beyond the
 	                existing foreground/dark swap.
-	       destructive (text-destructive light / text-destructive-foreground
-	                dark on the dark-only bg-destructive/25) 7.19 / 15.26 —
-	                clears both. -->
+	       destructive 7.20 / 5.84 — `text-destructive` in both modes now that
+	                the token is split (issue #781); the dark row keeps the /25
+	                tint but no longer whites out the copy. -->
 	<div class="grid gap-4 sm:grid-cols-4">
 		<div class="rounded-lg border border-border bg-card p-4">
 			<p class="text-sm font-medium text-muted-foreground">{m['attendeesAdmin.statsTotal']()}</p>
@@ -73,10 +74,10 @@
 		<div
 			class="rounded-lg border border-destructive/30 bg-destructive/10 p-4 dark:bg-destructive/25"
 		>
-			<p class="text-sm font-medium text-destructive dark:text-destructive-foreground">
+			<p class="text-sm font-medium text-destructive">
 				{m['attendeesAdmin.statsNo']()}
 			</p>
-			<p class="mt-1 text-2xl font-bold text-destructive dark:text-destructive-foreground">
+			<p class="mt-1 text-2xl font-bold text-destructive">
 				{stats.noCount}
 			</p>
 		</div>

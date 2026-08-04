@@ -74,9 +74,8 @@
 		},
 		error: {
 			icon: AlertCircle,
-			classes:
-				'border-destructive/30 bg-destructive/10 text-destructive dark:bg-destructive/25 dark:text-destructive-foreground',
-			iconClasses: 'text-destructive dark:text-destructive-foreground'
+			classes: 'border-destructive/30 bg-destructive/10 text-destructive dark:bg-destructive/25',
+			iconClasses: 'text-destructive'
 		},
 		critical: {
 			icon: AlertOctagon,
@@ -101,7 +100,7 @@
 				<div class="flex-1 text-sm">
 					<p class="font-semibold">{banner.message}</p>
 					{#if banner.scheduled_at || banner.ends_at}
-						<p class="mt-1 text-xs opacity-80">
+						<p class="mt-1 text-xs opacity-90">
 							{#if banner.scheduled_at}
 								<span
 									>{m['maintenanceBanner.scheduled']({

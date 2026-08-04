@@ -393,9 +393,10 @@
 				{/if}
 
 				{#if verificationError}
-					<!-- text-destructive as lead text measures 2.68:1 in dark on this tint
-					     (below 4.5); the border/tint carry the tone, text reads on
-					     --foreground. -->
+					<!-- Border/tint carry the tone, the message reads on --foreground
+					     (danger-framing rule). `text-destructive` would clear AA on this
+					     tint too — 6.05:1 in dark since #781, against 2.68:1 before the
+					     token split — but error copy stays on the body-text pair. -->
 					<div role="alert" class="rounded-md border border-destructive bg-destructive/10 p-3">
 						<p class="text-sm font-medium text-foreground">
 							{verificationError}

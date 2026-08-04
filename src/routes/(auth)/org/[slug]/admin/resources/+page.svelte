@@ -182,18 +182,17 @@
 
 	<!-- Content -->
 	{#if error}
-		<!-- dark:bg-destructive/25 dark:text-destructive-foreground (AutoEvalRecommendation's
-		     pattern): plain text-destructive on this /10 tint measured 2.69-2.95:1 in dark
-		     mode, under the 3:1 non-text floor; the /25 tint + destructive-foreground (white)
-		     icon pairing measures ~14-15:1 instead. -->
+		<!-- dark:bg-destructive/25 (AutoEvalRecommendation's pattern): a /10 red wash is
+		     nearly invisible on the dark surface, so dark strengthens the tint. The icon
+		     stays `text-destructive`, which is --destructive-text since #781 — at worst
+		     7.20:1 light on /10 and 5.37:1 dark on /25, over either container; all four
+		     figures are audited rows in scripts/audit-brand-themes.py. The old FILL value
+		     measured 2.69-2.95:1 here, under the 3:1 non-text floor. -->
 		<div
 			class="flex gap-3 rounded-md border border-destructive/50 bg-destructive/10 p-4 dark:bg-destructive/25"
 			role="alert"
 		>
-			<AlertTriangle
-				class="h-5 w-5 shrink-0 text-destructive dark:text-destructive-foreground"
-				aria-hidden="true"
-			/>
+			<AlertTriangle class="h-5 w-5 shrink-0 text-destructive" aria-hidden="true" />
 			<div>
 				<p class="font-semibold text-foreground">{m['orgAdmin.resources.error.title']()}</p>
 				<p class="mt-1 text-sm text-foreground">{m['orgAdmin.resources.error.description']()}</p>

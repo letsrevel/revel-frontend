@@ -150,9 +150,11 @@
 			</div>
 		{:else if !user?.email_verified}
 			<!-- Email not verified warning -->
-			<!-- text-destructive as a heading measures 2.68:1 in dark on this tint
-		     (below 4.5); the border/tint + icon carry the tone, text reads on
-		     --foreground. -->
+			<!-- Border/tint + icon carry the tone and the heading reads on
+		     --foreground (danger-framing rule: meaning is never color-only).
+		     `text-destructive` would now be safe here too — 6.05:1 in dark since
+		     the token split (#781), against 2.68:1 before it — but the framing
+		     rule stands on its own. -->
 			<div class="rounded-lg border-2 border-destructive/40 bg-destructive/10 p-6 shadow-poster">
 				<div class="flex gap-3">
 					<AlertCircle class="h-5 w-5 flex-shrink-0 text-destructive" aria-hidden="true" />
@@ -392,6 +394,13 @@
 <style>
 	:global(.required::after) {
 		content: ' *';
-		color: hsl(var(--destructive));
+		/* --destructive-text, NOT --destructive. The `text-destructive` utility is
+		   remapped to the text half of the split token in tailwind.config.ts, but
+		   that remap is a Tailwind theme key — it cannot reach raw CSS. Written as
+		   the fill value this asterisk measured 2.85:1 on the bg-card panel it sits
+		   in (dark), failing even the 3:1 non-text floor; the text token is 6.42:1
+		   there and 9.75:1 in light. Any `<style>` block colouring text or icons
+		   destructive must reach for this token by name. */
+		color: hsl(var(--destructive-text));
 	}
 </style>

@@ -86,6 +86,11 @@
 		<span class="sr-only">{m['orgAdmin.waitlist.loading']()}</span>
 	</div>
 {:else if isError}
+	<!-- Dimmed destructive copy stops at /90. On this bg-destructive/10 panel the
+	     text token measures 5.61:1 (dark) / 6.11:1 (light) at /90, but only
+	     4.71:1 at /80 — and 4.40:1 at /80 if the panel is ever moved onto a
+	     `bg-card` surface, which fails. Both /90 surfaces are COMPOSITED_PAIRS
+	     rows in scripts/audit-brand-themes.py, so the panel can move freely. -->
 	<div
 		class="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center"
 		role="alert"
@@ -94,7 +99,7 @@
 		<h3 class="mt-4 text-lg font-semibold text-destructive">
 			{m['orgAdmin.waitlist.error.title']()}
 		</h3>
-		<p class="mt-2 text-sm text-destructive/80">
+		<p class="mt-2 text-sm text-destructive/90">
 			{m['orgAdmin.waitlist.error.description']()}
 		</p>
 	</div>

@@ -28,10 +28,12 @@
 	// `iconBgClass`/`iconClass` pair copied verbatim from `ToneTile`'s audited
 	// tone table (`common/ToneTile.svelte`): `warning` has no `--warning` token,
 	// so it reuses `bg-highlight/20` + `text-highlight-foreground
-	// dark:text-highlight`; `danger`'s dark mode flips to a stronger /25 tint
-	// with `text-destructive-foreground` because plain `text-destructive` on a
-	// /10 tint measures 2.95:1 in dark mode (under the AA floor — see
-	// ToneTile's own ratio comment). `success` passes AA as direct icon color.
+	// dark:text-highlight`; `danger` keeps a stronger /25 tint in dark (a /10 red
+	// wash is nearly invisible on aubergine) with `text-destructive` in both
+	// modes — at worst 7.20:1 light / 5.37:1 dark since the destructive token was
+	// split into fill and text halves (#781); this chip renders on both --card and
+	// --background surfaces and every combination is audited in
+	// scripts/audit-brand-themes.py. `success` passes AA as direct icon color.
 	const statusConfig = $derived.by(() => {
 		if (!evaluation || (evaluation.status as QuestionnaireEvaluationStatus) === 'pending review') {
 			return {
@@ -64,7 +66,7 @@
 			bgClass: 'bg-destructive/10',
 			borderClass: 'border-destructive/50',
 			iconBgClass: 'bg-destructive/10 dark:bg-destructive/25',
-			iconClass: 'text-destructive dark:text-destructive-foreground'
+			iconClass: 'text-destructive'
 		};
 	});
 
