@@ -38,6 +38,7 @@
 {/snippet}
 
 <AuthBandLayout
+	width="lg"
 	chip={statusChip}
 	title={data.success ? m['verifyPage.emailVerified']() : m['verifyPage.verificationFailed']()}
 	subtitle={data.success

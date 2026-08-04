@@ -78,6 +78,7 @@
 
 {#if success}
 	<AuthBandLayout
+		width="lg"
 		status
 		chip={successChip}
 		title={m['confirmEmailChange.success_heading']()}
@@ -96,6 +97,7 @@
 	</AuthBandLayout>
 {:else if !token}
 	<AuthBandLayout
+		width="lg"
 		chip={invalidChip}
 		title={m['confirmEmailChange.invalidLink_heading']()}
 		subtitle={m['confirmEmailChange.invalidLink_body']()}
@@ -111,6 +113,7 @@
 	</AuthBandLayout>
 {:else}
 	<AuthBandLayout
+		width="lg"
 		chip={confirmChip}
 		title={m['confirmEmailChange.confirm_heading']()}
 		subtitle={m['confirmEmailChange.confirm_intro']()}
