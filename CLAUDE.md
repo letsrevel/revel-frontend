@@ -1081,7 +1081,7 @@ composing manually):
 utilities (`bg-blue-50`, `text-emerald-600`, `dark:bg-indigo-950`, ...) with
 semantic tokens / `StatusBadge` / `ToneTile`. Exemptions: JS color objects for
 QR/canvas libraries, user-configurable data colors (e.g. seat categories), and
-`--brand-telegram`. New tokens `--success`/`--info` and the first-class
+the `--brand-telegram`/`--brand-telegram-text` pair. New tokens `--success`/`--info` and the first-class
 `poster.*` Tailwind colors (`bg-poster-amber`, ...) exist for this. Never
 introduce new raw palette hues.
 

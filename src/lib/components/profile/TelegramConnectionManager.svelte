@@ -146,7 +146,7 @@
 <div class="space-y-4">
 	<div class="flex items-center justify-between">
 		<div class="flex items-center gap-3">
-			<MessageCircle class="h-6 w-6 text-[hsl(var(--brand-telegram))]" aria-hidden="true" />
+			<MessageCircle class="h-6 w-6 text-[hsl(var(--brand-telegram-text))]" aria-hidden="true" />
 			<div>
 				<h3 class="text-lg font-semibold">{m['telegram.heading']()}</h3>
 				<p class="text-sm text-muted-foreground">
@@ -249,7 +249,7 @@
 							href={botLink}
 							target="_blank"
 							rel="noopener noreferrer"
-							class="inline-flex items-center gap-2 text-sm text-[hsl(var(--brand-telegram))] underline-offset-4 hover:underline"
+							class="inline-flex items-center gap-2 text-sm text-[hsl(var(--brand-telegram-text))] underline-offset-4 hover:underline"
 						>
 							<MessageCircle class="h-4 w-4" aria-hidden="true" />
 							<span>@{botName}</span>
