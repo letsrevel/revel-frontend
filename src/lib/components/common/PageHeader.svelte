@@ -16,6 +16,24 @@
 		 * decoration slot — so it inherits the decorative-only rule below.
 		 */
 		volume?: 'celebration' | 'studio' | 'poster';
+		/**
+		 * The header sits on a SATURATED color-block band whose own
+		 * `*-foreground` pair is already audit-enforced (e.g. `bg-secondary
+		 * text-secondary-foreground`). Kicker and subtitle then inherit that
+		 * foreground instead of carrying their own accent/muted colours.
+		 *
+		 * This exists because the default kicker's `text-primary` does NOT
+		 * survive a saturated band: on the light periwinkle `--secondary` it
+		 * measures **4.12:1**, below AA for the kicker's 14px extrabold text
+		 * (4.60:1 in dark, which passes — the prop covers both so the two modes
+		 * don't drift). Inheriting takes it to the band's own pair: 9.01:1
+		 * light / 8.17:1 dark. The subtitle's `text-muted-foreground` does clear
+		 * AA on that band (5.35 / 5.46) but goes full-strength too, so the whole
+		 * header reads as one block of band copy.
+		 *
+		 * The h1 never carried a colour class, so it already inherits.
+		 */
+		onBand?: boolean;
 		/** Right-aligned on sm+, wraps under the title on mobile. */
 		actions?: Snippet;
 		/** Celebration-only decorative slot (e.g. a brand Sticker). Ignored in studio. */
@@ -27,6 +45,7 @@
 		kicker,
 		subtitle,
 		volume = 'studio',
+		onBand = false,
 		actions,
 		decoration,
 		class: className = '',
@@ -40,7 +59,14 @@
 >
 	<div class="min-w-0">
 		{#if kicker}
-			<p class="text-sm font-extrabold uppercase tracking-[0.12em] text-primary">{kicker}</p>
+			<p
+				class={cn(
+					'text-sm font-extrabold uppercase tracking-[0.12em]',
+					onBand ? 'text-current' : 'text-primary'
+				)}
+			>
+				{kicker}
+			</p>
 		{/if}
 		<div class="flex flex-wrap items-center gap-x-3 gap-y-1">
 			<h1
@@ -58,7 +84,9 @@
 			{/if}
 		</div>
 		{#if subtitle}
-			<p class="mt-2 max-w-prose text-muted-foreground">{subtitle}</p>
+			<p class={cn('mt-2 max-w-prose', onBand ? 'text-current' : 'text-muted-foreground')}>
+				{subtitle}
+			</p>
 		{/if}
 	</div>
 	{#if actions}

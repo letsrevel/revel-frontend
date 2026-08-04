@@ -160,10 +160,10 @@
 			</a>
 			<PageHeader
 				volume="poster"
+				onBand
 				kicker={data.organization.name}
 				title={m['membershipQuestionnairePage.title']()}
 				subtitle={m['membershipQuestionnairePage.subtitle']({ orgName: data.organization.name })}
-				class="[&_h1]:text-secondary-foreground [&_p]:text-secondary-foreground"
 			/>
 			{#if data.questionnaire.description}
 				<div class="mt-6 rounded-[1.25rem] border-2 border-border bg-card p-5 shadow-poster">
