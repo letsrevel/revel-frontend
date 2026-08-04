@@ -10,7 +10,7 @@
 	import { toast } from 'svelte-sonner';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
-	import MarkChip from '$lib/components/brand/MarkChip.svelte';
+	import LogoChip from '$lib/components/brand/LogoChip.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import QuestionnaireFillForm from '$lib/components/questionnaires/QuestionnaireFillForm.svelte';
 	import type { QuestionnaireSubmissionSchema } from '$lib/api/generated';
@@ -112,7 +112,12 @@
 <div class="bg-background">
 	<section class="bg-secondary text-secondary-foreground">
 		<div class="container relative mx-auto max-w-3xl px-4 pb-20 pt-8">
-			<MarkChip class="absolute right-4 top-6 hidden md:block" />
+			<!-- Sticker-chip rule: the org's own logo, or nothing at all. -->
+			<LogoChip
+				class="absolute right-4 top-6 hidden md:block"
+				logo={data.event.organization.logo}
+				logoThumbnail={data.event.organization.logo_thumbnail_url}
+			/>
 			<a
 				href={resolve('/(public)/events/[org_slug]/[event_slug]', {
 					org_slug: data.event.organization.slug,
