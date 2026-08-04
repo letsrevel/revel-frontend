@@ -24,6 +24,24 @@ describe('PageHeader', () => {
 		expect(h1.className).toContain('font-black');
 	});
 
+	it('celebration volume applies the full typography contract', () => {
+		render(PageHeader, { props: { title: 'Party time', volume: 'celebration' } });
+		const h1 = screen.getByRole('heading', { level: 1 });
+		expect(h1.className).toContain('text-3xl');
+		expect(h1.className).toContain('font-black');
+		expect(h1.className).toContain('leading-[1.12]');
+		expect(h1.className).toContain('sm:text-4xl');
+	});
+
+	it('studio volume applies the full typography contract', () => {
+		render(PageHeader, { props: { title: 'Settings', volume: 'studio' } });
+		const h1 = screen.getByRole('heading', { level: 1 });
+		expect(h1.className).toContain('text-2xl');
+		expect(h1.className).toContain('font-extrabold');
+		expect(h1.className).toContain('tracking-tight');
+		expect(h1.className).toContain('sm:text-3xl');
+	});
+
 	it('renders kicker, subtitle, and actions', () => {
 		render(PageHeader, {
 			props: {

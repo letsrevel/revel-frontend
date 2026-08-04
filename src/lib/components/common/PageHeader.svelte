@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { cn } from '$lib/utils';
 
 	interface Props {
 		/** Already-translated strings — i18n stays at the call site. */
@@ -25,16 +26,19 @@
 	}: Props = $props();
 </script>
 
-<header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between {className}">
+<header class={cn('flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between', className)}>
 	<div class="min-w-0">
 		{#if kicker}
 			<p class="text-sm font-extrabold uppercase tracking-[0.12em] text-primary">{kicker}</p>
 		{/if}
 		<div class="flex flex-wrap items-center gap-x-3 gap-y-1">
 			<h1
-				class="mt-1 {volume === 'celebration'
-					? 'text-3xl font-black leading-[1.12] sm:text-4xl'
-					: 'text-2xl font-extrabold tracking-tight sm:text-3xl'}"
+				class={cn(
+					'mt-1',
+					volume === 'celebration'
+						? 'text-3xl font-black leading-[1.12] sm:text-4xl'
+						: 'text-2xl font-extrabold tracking-tight sm:text-3xl'
+				)}
 			>
 				{title}
 			</h1>

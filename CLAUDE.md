@@ -1064,7 +1064,12 @@ The poster language extends app-wide at three volumes (master spec:
 `common/StatusBadge` (solid, tone-mapped — wrap domain enums in thin mappers),
 `common/ToneTile` (soft icon tile), `brand/Sticker` (celebration only, rotation
 clamped [-3, 3]). Tone vocabulary: `common/tones.ts` (`brand | info | success |
-warning | danger | neutral`).
+warning | danger | neutral`). `StatusBadge` is solid-fill only by design (audit-
+enforced pairs; no soft variant) — sizes `sm | md | lg`. `ToneTile`'s `tone` axis
+is semantic only; the admin quick-actions identity-color grid gets an additive
+poster-tint axis when PR 7 lands — don't overload `tone` for identity.
+`PageHeader`'s `decoration` slot is aria-hidden ornament only — status text
+goes through `actions` or `StatusBadge`, never `decoration`.
 
 **Typography scale** (encoded in the primitives; use the same classes when
 composing manually):

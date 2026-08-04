@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { cn } from '$lib/utils';
 
 	/**
 	 * App-facing twin of landing/poster/PosterSticker.svelte (kept separate on
@@ -21,11 +22,13 @@
 </script>
 
 <span
-	class="inline-block rounded-[0.55em] px-[0.55em] py-[0.18em] font-extrabold shadow-[0_4px_12px_hsl(var(--poster-ink)/0.25)]
-		{tint === 'ink' ? 'bg-poster-ink text-poster-white' : 'bg-poster-white'}
-		{tint === 'purple' ? 'text-poster-purple' : ''}
-		{tint === 'crimson' ? 'text-poster-crimson-deep' : ''}
-		{className}"
+	class={cn(
+		'inline-block rounded-[0.55em] px-[0.55em] py-[0.18em] font-extrabold shadow-[0_4px_12px_hsl(var(--poster-ink)/0.25)]',
+		tint === 'ink' ? 'bg-poster-ink text-poster-white' : 'bg-poster-white',
+		tint === 'purple' && 'text-poster-purple',
+		tint === 'crimson' && 'text-poster-crimson-deep',
+		className
+	)}
 	style="transform: rotate({clamped}deg)"
 >
 	{@render children()}

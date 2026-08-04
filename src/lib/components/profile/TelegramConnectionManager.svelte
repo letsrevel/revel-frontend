@@ -205,7 +205,7 @@
 			</p>
 			<Button
 				onclick={handleOpenConnectDialog}
-				class="bg-[hsl(var(--brand-telegram))] hover:bg-[hsl(var(--brand-telegram)/0.9)]"
+				class="bg-[hsl(var(--brand-telegram))] text-white hover:bg-[hsl(var(--brand-telegram)/0.9)]"
 			>
 				<MessageCircle class="mr-2 h-4 w-4" aria-hidden="true" />
 				{m['telegram.buttons_connect']()}
@@ -336,7 +336,7 @@
 				type="button"
 				onclick={handleConnectSubmit}
 				disabled={connectMutation.isPending || !otpValue.trim()}
-				class="w-full bg-[hsl(var(--brand-telegram))] hover:bg-[hsl(var(--brand-telegram)/0.9)] sm:w-auto"
+				class="w-full bg-[hsl(var(--brand-telegram))] text-white hover:bg-[hsl(var(--brand-telegram)/0.9)] sm:w-auto"
 			>
 				{#if connectMutation.isPending}
 					<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />

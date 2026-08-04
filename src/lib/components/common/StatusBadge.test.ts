@@ -24,4 +24,21 @@ describe('StatusBadge', () => {
 		expect(svg).not.toBeNull();
 		expect(svg?.getAttribute('aria-hidden')).toBe('true');
 	});
+
+	it('passes through title and role via restProps', () => {
+		const { container } = render(StatusBadge, {
+			props: { tone: 'success', label: 'Confirmed', title: 'RSVP confirmed', role: 'status' }
+		});
+		const el = container.querySelector('span') as HTMLElement;
+		expect(el.getAttribute('title')).toBe('RSVP confirmed');
+		expect(el.getAttribute('role')).toBe('status');
+	});
+
+	it('lg size applies the larger padding classes', () => {
+		const { container } = render(StatusBadge, {
+			props: { tone: 'brand', label: 'Big', size: 'lg' }
+		});
+		const el = container.querySelector('span') as HTMLElement;
+		expect(el.className).toContain('px-3');
+	});
 });

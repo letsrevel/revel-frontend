@@ -17,6 +17,12 @@ describe('Sticker', () => {
 		expect(el.style.transform).toBe('rotate(3deg)');
 	});
 
+	it('clamps rotation at the lower bound', () => {
+		const { container } = render(Sticker, { props: { rotate: -45, children: text('x') } });
+		const el = container.querySelector('span') as HTMLElement;
+		expect(el.style.transform).toBe('rotate(-3deg)');
+	});
+
 	it('ink tint inverts to ink background with white text', () => {
 		const { container } = render(Sticker, { props: { tint: 'ink', children: text('Live') } });
 		const el = container.querySelector('span') as HTMLElement;

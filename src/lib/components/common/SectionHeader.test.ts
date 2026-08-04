@@ -25,4 +25,29 @@ describe('SectionHeader', () => {
 		render(SectionHeader, { props: { title: 'Polls', actions: snip('See all') } });
 		expect(screen.getByText('See all')).toBeInTheDocument();
 	});
+
+	it('celebration volume uses the display heading scale', () => {
+		render(SectionHeader, { props: { title: 'Highlights', volume: 'celebration' } });
+		const heading = screen.getByRole('heading', { level: 2 });
+		expect(heading.className).toContain('text-xl');
+		expect(heading.className).toContain('font-extrabold');
+	});
+
+	it('kicker is text-xs in studio and text-sm in celebration', () => {
+		const { unmount } = render(SectionHeader, {
+			props: { title: 'Details', kicker: 'Studio', volume: 'studio' }
+		});
+		expect(screen.getByText('Studio').className).toContain('text-xs');
+		unmount();
+
+		render(SectionHeader, {
+			props: { title: 'Details', kicker: 'Celebration', volume: 'celebration' }
+		});
+		expect(screen.getByText('Celebration').className).toContain('text-sm');
+	});
+
+	it('passes id through to the heading element', () => {
+		render(SectionHeader, { props: { title: 'Tickets', id: 'tickets-heading' } });
+		expect(screen.getByRole('heading', { level: 2 }).id).toBe('tickets-heading');
+	});
 });

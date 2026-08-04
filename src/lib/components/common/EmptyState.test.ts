@@ -35,4 +35,11 @@ describe('EmptyState', () => {
 		});
 		expect(screen.getByText('Create event')).toBeInTheDocument();
 	});
+
+	it('renders an h2 when level=2', () => {
+		render(EmptyState, {
+			props: { icon: CalendarX, title: 'No events yet', level: 2 }
+		});
+		expect(screen.getByRole('heading', { level: 2, name: 'No events yet' })).toBeInTheDocument();
+	});
 });

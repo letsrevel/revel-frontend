@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Component, Snippet } from 'svelte';
+	import { cn } from '$lib/utils';
 	import type { Tone } from './tones';
 
 	interface Props {
@@ -8,6 +9,8 @@
 		title: string;
 		body?: string;
 		tone?: Exclude<Tone, 'danger'>;
+		/** Heading level for the title; use 2 on pages whose only heading is this one. */
+		level?: 2 | 3;
 		action?: Snippet;
 		class?: string;
 	}
@@ -16,6 +19,7 @@
 		title,
 		body,
 		tone = 'brand',
+		level = 3,
 		action,
 		class: className = ''
 	}: Props = $props();
@@ -32,20 +36,30 @@
 		neutral: 'bg-poster-paper text-poster-ink',
 		success: 'bg-success text-success-foreground'
 	};
+
+	const headingClass = 'mt-4 text-lg font-extrabold';
 </script>
 
 <div
-	class="flex flex-col items-center rounded-lg border bg-card px-6 py-10 text-center {className}"
+	class={cn(
+		'flex flex-col items-center rounded-lg border bg-card px-6 py-10 text-center',
+		className
+	)}
 >
 	<span
 		aria-hidden="true"
-		class="flex h-14 w-14 -rotate-2 items-center justify-center rounded-2xl shadow-sm {chipClasses[
-			tone
-		]}"
+		class={cn(
+			'flex h-14 w-14 -rotate-2 items-center justify-center rounded-2xl shadow-sm',
+			chipClasses[tone]
+		)}
 	>
 		<Icon class="h-7 w-7" />
 	</span>
-	<h3 class="mt-4 text-lg font-extrabold">{title}</h3>
+	{#if level === 2}
+		<h2 class={headingClass}>{title}</h2>
+	{:else}
+		<h3 class={headingClass}>{title}</h3>
+	{/if}
 	{#if body}
 		<p class="mt-1.5 max-w-sm text-sm text-muted-foreground">{body}</p>
 	{/if}
