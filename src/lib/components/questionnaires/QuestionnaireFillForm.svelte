@@ -280,6 +280,36 @@
 	function isOptionSelected(questionId: string, optionId: string): boolean {
 		return multipleChoiceAnswers.get(questionId)?.includes(optionId) || false;
 	}
+
+	/**
+	 * The landing's QuestionnaireMock look, on theme tokens: rounded option rows
+	 * with a purple selected state. Mirrors `polls/PollVoteForm`'s
+	 * `optionRowClass` exactly — this is the mock-alignment ledger handoff from
+	 * the public-discovery PR, which built the poll side of this pattern and
+	 * left the questionnaire side (this component, shared by both PUBLIC
+	 * questionnaire routes) for the owning cluster.
+	 *
+	 * The row IS the `<label>`, so the whole padded box is the hit target the
+	 * hover state promises — a padded row that highlights on hover but only
+	 * activates on its 16px control is a lie, and a 44px-tall row is the mobile
+	 * target we want anyway. Purely markup: the native label/control
+	 * association (unchanged `for`/`id`) still drives selection, so keyboard,
+	 * screen-reader, and `getByRole('radio'|'checkbox', { name })` behaviour
+	 * are untouched.
+	 *
+	 * The selected fill is `bg-primary/10`, which composites to ~the card
+	 * colour, so the label keeps `text-foreground` and the token contract's AA
+	 * guarantee; the 2px `border-primary` is >= 3:1 non-text against the card
+	 * in both modes (5.9 light / 5.3 dark, the same measurement as ToneTile's
+	 * brand row). Selection is never carried by the fill alone — the
+	 * radio/checkbox state is.
+	 */
+	function optionRowClass(selected: boolean): string {
+		return cn(
+			'flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border-2 px-3 py-2 transition-colors',
+			selected ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/40'
+		);
+	}
 </script>
 
 <!-- Form -->
@@ -289,7 +319,7 @@
 		.filter((s) => !s.depends_on_option_id)
 		.sort((a, b) => a.order - b.order) as section (section.id)}
 		<div class="rounded-lg border bg-card p-6">
-			<h2 class="mb-2 text-xl font-semibold">{section.name}</h2>
+			<h2 class="mb-2 text-xl font-extrabold">{section.name}</h2>
 			{#if section.description}
 				<div class="mb-6">
 					<MarkdownContent content={section.description} class="text-muted-foreground" />
@@ -404,23 +434,29 @@
 
 		{#if useCheckboxes}
 			<!-- Checkboxes: for multiple answers OR single option (single option = yes/no choice) -->
-			<div class="space-y-2">
+			<div
+				class="space-y-2"
+				role="group"
+				aria-describedby={validationErrors.has(question.id) ? `${question.id}-error` : undefined}
+			>
 				{#each question.options || [] as option (option.id)}
 					<div class="space-y-2">
-						<div class="flex items-center space-x-2">
+						<label
+							for="{question.id}-{option.id}"
+							class={optionRowClass(isOptionSelected(question.id, option.id))}
+						>
 							<Checkbox
 								id="{question.id}-{option.id}"
 								checked={isOptionSelected(question.id, option.id)}
 								onCheckedChange={(checked) =>
 									handleMultipleChoiceChange(question.id, option.id, !!checked, true)}
 							/>
-							<label
-								for="{question.id}-{option.id}"
-								class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+							<span
+								class="flex-1 text-sm font-bold leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 							>
 								{option.option}
-							</label>
-						</div>
+							</span>
+						</label>
 						<!-- Conditional questions/sections for this option -->
 						{@render conditionalContent(option.id, question.id)}
 					</div>
@@ -432,13 +468,18 @@
 				value={multipleChoiceAnswers.get(question.id)?.[0] || ''}
 				onValueChange={(value: string) =>
 					handleMultipleChoiceChange(question.id, value, true, false)}
+				aria-invalid={validationErrors.has(question.id) ? true : undefined}
+				aria-describedby={validationErrors.has(question.id) ? `${question.id}-error` : undefined}
 			>
 				{#each question.options || [] as option (option.id)}
 					<div class="space-y-2">
-						<div class="flex items-center space-x-2">
+						<Label
+							for="{question.id}-{option.id}"
+							class={optionRowClass(isOptionSelected(question.id, option.id))}
+						>
 							<RadioGroupItem value={option.id} id="{question.id}-{option.id}" />
-							<Label for="{question.id}-{option.id}">{option.option}</Label>
-						</div>
+							<span class="flex-1">{option.option}</span>
+						</Label>
 						<!-- Conditional questions/sections for this option -->
 						{@render conditionalContent(option.id, question.id)}
 					</div>
@@ -447,7 +488,9 @@
 		{/if}
 
 		{#if validationErrors.has(question.id)}
-			<p class="text-sm text-destructive">{validationErrors.get(question.id)}</p>
+			<p id="{question.id}-error" class="text-sm text-destructive">
+				{validationErrors.get(question.id)}
+			</p>
 		{/if}
 	</div>
 {/snippet}
@@ -507,21 +550,32 @@
 			</div>
 		</div>
 
-		<!-- AI Evaluation Warning -->
+		<!-- AI Evaluation Warning. Both branches share the same `warning` tone
+		     (there is no `--warning` token — `border-highlight bg-highlight/10`
+		     is the audited pair); the copy, not the tint, distinguishes automatic
+		     from hybrid. Heading/lead text stays `text-foreground` per the dark
+		     `--destructive`-style trap for `--highlight` too — only the icon
+		     carries the tone. -->
 		{#if questionnaire.evaluation_mode === 'automatic'}
 			<div
-				class="flex items-start gap-2 rounded-md border border-orange-500/50 bg-orange-50 p-3 text-sm text-orange-900 dark:border-orange-500/30 dark:bg-orange-950/20 dark:text-orange-200"
+				class="flex items-start gap-2 rounded-md border border-highlight bg-highlight/10 p-3 text-sm text-foreground"
 				role="status"
 			>
-				<AlertCircle class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+				<AlertCircle
+					class="mt-0.5 h-4 w-4 shrink-0 text-highlight-foreground dark:text-highlight"
+					aria-hidden="true"
+				/>
 				<p>{m['questionnaireSubmissionPage.aiWarning_automatic']()}</p>
 			</div>
 		{:else if questionnaire.evaluation_mode === 'hybrid'}
 			<div
-				class="flex items-start gap-2 rounded-md border border-yellow-500/50 bg-yellow-50 p-3 text-sm text-yellow-900 dark:border-yellow-500/30 dark:bg-yellow-950/20 dark:text-yellow-200"
+				class="flex items-start gap-2 rounded-md border border-highlight bg-highlight/10 p-3 text-sm text-foreground"
 				role="status"
 			>
-				<AlertCircle class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+				<AlertCircle
+					class="mt-0.5 h-4 w-4 shrink-0 text-highlight-foreground dark:text-highlight"
+					aria-hidden="true"
+				/>
 				<p>{m['questionnaireSubmissionPage.aiWarning_hybrid']()}</p>
 			</div>
 		{/if}
@@ -564,7 +618,7 @@
 			<!-- Conditional sections for this option -->
 			{#each getSectionsForOption(flattened, optionId).sort((a, b) => a.order - b.order) as conditionalSection (conditionalSection.id)}
 				<div class="ml-4 rounded-lg border border-primary/20 bg-primary/5 p-4">
-					<h3 class="mb-2 text-lg font-semibold">{conditionalSection.name}</h3>
+					<h3 class="mb-2 text-lg font-extrabold">{conditionalSection.name}</h3>
 					{#if conditionalSection.description}
 						<div class="mb-4">
 							<MarkdownContent
