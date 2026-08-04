@@ -364,7 +364,7 @@
 								{m['eventWizard.effectiveCapacity.label']()}: {effectiveCapacity}
 							</div>
 							{#if maxAttendees && maxAttendees > venueCapacity}
-								<p class="mt-1.5 text-amber-600 dark:text-amber-400">
+								<p class="mt-1.5 text-highlight-foreground dark:text-highlight">
 									⚠️ {m['eventWizard.effectiveCapacity.warning']({
 										maxAttendees: maxAttendees.toString(),
 										venueCapacity: venueCapacity.toString(),

@@ -129,7 +129,7 @@
 							{:else if startBefore}
 								<p
 									id="schedule-start-warning-{row.id}"
-									class="mt-1 flex items-start gap-1 text-xs text-amber-600 dark:text-amber-500"
+									class="mt-1 flex items-start gap-1 text-xs text-highlight-foreground dark:text-highlight"
 								>
 									<AlertTriangle class="mt-0.5 h-3 w-3 shrink-0" aria-hidden="true" />
 									{m['eventScheduleAdmin.beforeStartWarning']()}

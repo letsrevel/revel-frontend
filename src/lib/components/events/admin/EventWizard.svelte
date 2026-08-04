@@ -502,7 +502,7 @@
 				'flex h-10 w-10 items-center justify-center rounded-full border-2 font-semibold transition-colors',
 				currentStep === 1
 					? 'border-primary bg-primary text-primary-foreground'
-					: 'border-green-600 bg-green-600 text-white'
+					: 'border-success bg-success text-success-foreground'
 			)}
 			aria-current={currentStep === 1 ? 'step' : undefined}
 		>
@@ -515,7 +515,7 @@
 				currentStep === 2
 					? 'border-primary bg-primary text-primary-foreground'
 					: currentStep > 2
-						? 'border-green-600 bg-green-600 text-white'
+						? 'border-success bg-success text-success-foreground'
 						: 'border-border bg-background text-muted-foreground'
 			)}
 			aria-current={currentStep === 2 ? 'step' : undefined}
@@ -542,7 +542,7 @@
 	<!-- Success message -->
 	{#if successMessage}
 		<div
-			class="rounded-md bg-green-50 p-4 text-green-900 dark:bg-green-950/50 dark:text-green-100"
+			class="rounded-md border border-success/40 bg-success/10 p-4 text-success"
 			role="status"
 			aria-live="polite"
 		>

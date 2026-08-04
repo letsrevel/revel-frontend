@@ -224,7 +224,7 @@
 						{#if variant === 'open' && onClose}
 							<DropdownMenu.Item
 								onclick={() => onClose(event.id)}
-								class="text-red-600 focus:text-red-600"
+								class="text-destructive focus:text-destructive"
 							>
 								<XCircle class="mr-2 h-4 w-4" />
 								{m['orgAdmin.events.actions.close']()}
@@ -233,7 +233,7 @@
 						{#if variant !== 'cancelled' && onCancel}
 							<DropdownMenu.Item
 								onclick={() => onCancel(event.id)}
-								class="text-orange-600 focus:text-orange-600"
+								class="text-highlight-foreground focus:text-highlight-foreground dark:text-highlight dark:focus:text-highlight"
 							>
 								<Ban class="mr-2 h-4 w-4" />
 								{m['orgAdmin.events.actions.cancel']()}
@@ -302,7 +302,7 @@
 				<button
 					type="button"
 					onclick={() => onPublish(event.id)}
-					class="inline-flex items-center gap-1 rounded-md bg-green-700 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-green-800"
+					class="inline-flex items-center gap-1 rounded-md bg-success px-3 py-1 text-sm font-medium text-success-foreground transition-colors hover:bg-success/90"
 				>
 					<CheckCircle class="h-4 w-4" aria-hidden="true" />
 					{m['orgAdmin.events.actions.publish']()}
@@ -313,7 +313,7 @@
 					<button
 						type="button"
 						onclick={manageTickets}
-						class="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+						class="inline-flex items-center gap-1 rounded-md bg-poster-periwinkle px-3 py-1 text-sm font-medium text-poster-ink ring-1 ring-inset ring-border transition-colors hover:bg-poster-periwinkle/90"
 					>
 						<UserCheck class="h-4 w-4" aria-hidden="true" />
 						{m['orgAdmin.events.actions.tickets']()}
@@ -322,7 +322,7 @@
 					<button
 						type="button"
 						onclick={manageAttendees}
-						class="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+						class="inline-flex items-center gap-1 rounded-md bg-poster-periwinkle px-3 py-1 text-sm font-medium text-poster-ink ring-1 ring-inset ring-border transition-colors hover:bg-poster-periwinkle/90"
 					>
 						<UserCheck class="h-4 w-4" aria-hidden="true" />
 						{m['orgAdmin.events.actions.attendees']()}
@@ -331,7 +331,7 @@
 				<button
 					type="button"
 					onclick={manageInvitations}
-					class="inline-flex items-center gap-1 rounded-md bg-purple-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-purple-700"
+					class="inline-flex items-center gap-1 rounded-md bg-poster-purple px-3 py-1 text-sm font-medium text-poster-white ring-1 ring-inset ring-border transition-colors hover:bg-poster-purple/90"
 				>
 					<Mail class="h-4 w-4" aria-hidden="true" />
 					{m['orgAdmin.events.actions.invitations']()}
@@ -339,7 +339,7 @@
 				<button
 					type="button"
 					onclick={manageWaitlist}
-					class="inline-flex items-center gap-1 rounded-md bg-amber-700 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-amber-800"
+					class="inline-flex items-center gap-1 rounded-md bg-poster-amber px-3 py-1 text-sm font-medium text-poster-ink ring-1 ring-inset ring-border transition-colors hover:bg-poster-amber/90"
 				>
 					<ListPlus class="h-4 w-4" aria-hidden="true" />
 					{m['orgAdmin.events.actions.waitlist']()}
@@ -349,7 +349,7 @@
 				<button
 					type="button"
 					onclick={() => onReopen(event.id)}
-					class="inline-flex items-center gap-1 rounded-md bg-green-700 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-green-800"
+					class="inline-flex items-center gap-1 rounded-md bg-success px-3 py-1 text-sm font-medium text-success-foreground transition-colors hover:bg-success/90"
 				>
 					<CheckCircle class="h-4 w-4" aria-hidden="true" />
 					{m['orgAdmin.events.actions.reopen']()}
