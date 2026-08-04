@@ -102,9 +102,13 @@
 			{/if}
 		</div>
 		{#if subtitle || subtitleAttrs}
+			<!-- Spread BEFORE class: the type excludes `class`, but only for literal
+			     objects — an aliased object could smuggle one past tsc, and a spread
+			     placed after `class` would replace the whole attribute (and with it
+			     the onBand color contract). Source order makes that impossible. -->
 			<p
-				class={cn('mt-2 max-w-prose', onBand ? 'text-current' : 'text-muted-foreground')}
 				{...subtitleAttrs}
+				class={cn('mt-2 max-w-prose', onBand ? 'text-current' : 'text-muted-foreground')}
 			>
 				{subtitle}
 			</p>
