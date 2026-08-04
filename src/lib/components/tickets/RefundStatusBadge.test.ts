@@ -1,7 +1,10 @@
 import { render, screen } from '@testing-library/svelte';
 import { describe, it, expect } from 'vitest';
 import * as m from '$lib/paraglide/messages.js';
-import RefundStatusBadge, { REFUND_STATUS_ORDER, type KnownRefundStatus } from './RefundStatusBadge.svelte';
+import RefundStatusBadge, {
+	REFUND_STATUS_ORDER,
+	type KnownRefundStatus
+} from './RefundStatusBadge.svelte';
 
 /**
  * REGRESSION GUARD. `common/StatusBadge` names itself from its text content,

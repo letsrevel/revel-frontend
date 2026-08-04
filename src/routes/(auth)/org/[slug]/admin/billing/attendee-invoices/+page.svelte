@@ -347,7 +347,10 @@
 								<div class="text-xs text-muted-foreground">{invoice.buyer_email}</div>
 							</td>
 							<td class="px-4 py-3">
-								<StatusBadge tone={statusTone(invoice.status)} label={statusLabel(invoice.status)} />
+								<StatusBadge
+									tone={statusTone(invoice.status)}
+									label={statusLabel(invoice.status)}
+								/>
 							</td>
 							<td class="px-4 py-3 text-right font-mono"
 								>{formatCurrency(invoice.total_gross, invoice.currency)}</td

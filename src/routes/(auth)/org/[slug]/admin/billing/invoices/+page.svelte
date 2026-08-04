@@ -236,7 +236,10 @@
 								{formatPeriod(invoice.period_start, invoice.period_end)}
 							</td>
 							<td class="px-4 py-3">
-								<StatusBadge tone={statusTone(invoice.status)} label={statusLabel(invoice.status)} />
+								<StatusBadge
+									tone={statusTone(invoice.status)}
+									label={statusLabel(invoice.status)}
+								/>
 							</td>
 							<td class="px-4 py-3 text-right font-mono">
 								{formatCurrency(invoice.fee_gross, invoice.currency)}

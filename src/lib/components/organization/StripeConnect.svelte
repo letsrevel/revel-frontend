@@ -145,12 +145,7 @@
 	}
 
 	type StripeStatusType =
-		| 'not-connected'
-		| 'loading'
-		| 'fully-connected'
-		| 'incomplete'
-		| 'restricted'
-		| 'unknown';
+		'not-connected' | 'loading' | 'fully-connected' | 'incomplete' | 'restricted' | 'unknown';
 
 	// Determine overall status
 	// Use query data if available (manual refresh), otherwise use props
@@ -457,7 +452,10 @@
 		     border-highlight/40 bg-highlight/20 + text-highlight-foreground
 		     (light) / text-highlight dark: matches the hand-verified pattern in
 		     tickets/MyTicket.svelte. -->
-		<div class="flex items-start gap-3 rounded-lg border border-highlight/40 bg-highlight/20 p-4" role="alert">
+		<div
+			class="flex items-start gap-3 rounded-lg border border-highlight/40 bg-highlight/20 p-4"
+			role="alert"
+		>
 			<AlertCircle
 				class="mt-0.5 h-5 w-5 shrink-0 text-highlight-foreground dark:text-highlight"
 				aria-hidden="true"
