@@ -5,6 +5,7 @@
 	import type { ActionData } from './$types';
 	import { AlertTriangle, Loader2, CheckCircle } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
+	import ToneTile from '$lib/components/common/ToneTile.svelte';
 
 	interface Props {
 		form: ActionData;
@@ -33,26 +34,29 @@
 <div class="container mx-auto flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8">
 	<div class="w-full max-w-md space-y-8">
 		{#if success}
-			<!-- Success State -->
+			<!-- Success State: calm, not celebratory — no poster tint/Sticker even
+			     though this is otherwise a Vol. 2 flow (danger-framing exception,
+			     see confirm branch below). ToneTile is theme-token driven, not
+			     poster imagery, so it stays in bounds here. -->
 			<div class="text-center">
-				<div
-					class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-950"
-				>
-					<CheckCircle class="h-8 w-8 text-green-600 dark:text-green-400" aria-hidden="true" />
-				</div>
-				<h1 class="text-3xl font-bold tracking-tight">{m['accountDeletion.successHeading']()}</h1>
+				<ToneTile icon={CheckCircle} tone="success" size="lg" class="mx-auto mb-4" />
+				<h1 class="text-3xl font-black leading-[1.12] sm:text-4xl">
+					{m['accountDeletion.successHeading']()}
+				</h1>
 				<p class="mt-2 text-muted-foreground">{m['accountDeletion.successSubheading']()}</p>
 			</div>
 
+			<!-- success/10 + border are decorative; title/body stay on foreground/
+			     muted-foreground, both already-audited pairs. -->
 			<div
 				role="status"
-				class="rounded-md border border-green-500 bg-green-50 p-6 dark:bg-green-950"
+				class="rounded-md border border-success/40 bg-success/10 p-6 dark:border-success/50 dark:bg-success/15"
 			>
 				<div class="space-y-2 text-sm">
-					<p class="font-medium text-green-800 dark:text-green-200">
+					<p class="font-medium text-foreground">
 						{m['accountDeletion.successMessage']()}
 					</p>
-					<p class="text-green-700 dark:text-green-300">
+					<p class="text-muted-foreground">
 						{m['accountDeletion.successThankYou']()}
 					</p>
 				</div>
@@ -68,14 +72,10 @@
 				</a>
 			</div>
 		{:else if !token}
-			<!-- Missing Token Error -->
+			<!-- Missing Token Error: danger framing, no poster playfulness. -->
 			<div class="text-center">
-				<div
-					class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10"
-				>
-					<AlertTriangle class="h-8 w-8 text-destructive" aria-hidden="true" />
-				</div>
-				<h1 class="text-3xl font-bold tracking-tight">
+				<ToneTile icon={AlertTriangle} tone="danger" size="lg" class="mx-auto mb-4" />
+				<h1 class="text-3xl font-black leading-[1.12] sm:text-4xl">
 					{m['accountDeletion.invalidLinkHeading']()}
 				</h1>
 				<p class="mt-2 text-muted-foreground">
@@ -101,14 +101,14 @@
 				</a>
 			</div>
 		{:else}
-			<!-- Confirmation Form -->
+			<!-- Confirmation Form: danger framing — destructive-token accents, no
+			     poster playfulness, no Sticker. This is a serious, irreversible
+			     moment, not a celebration one. -->
 			<div class="text-center">
-				<div
-					class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10"
-				>
-					<AlertTriangle class="h-8 w-8 text-destructive" aria-hidden="true" />
-				</div>
-				<h1 class="text-3xl font-bold tracking-tight">{m['accountDeletion.confirmHeading']()}</h1>
+				<ToneTile icon={AlertTriangle} tone="danger" size="lg" class="mx-auto mb-4" />
+				<h1 class="text-3xl font-black leading-[1.12] sm:text-4xl">
+					{m['accountDeletion.confirmHeading']()}
+				</h1>
 				<p class="mt-2 text-muted-foreground">
 					{m['accountDeletion.warningYouWillLose']()}
 				</p>

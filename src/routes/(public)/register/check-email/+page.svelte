@@ -4,6 +4,7 @@
 	import { page } from '$app/stores';
 	import { Mail, Loader2 } from '@lucide/svelte';
 	import { accountResendVerificationEmail } from '$lib/api/generated/sdk.gen';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 
 	const email = $derived($page.url.searchParams.get('email') || '');
 	let isResending = $state(false);
@@ -59,19 +60,17 @@
 
 <div class="container mx-auto flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8">
 	<div class="w-full max-w-md space-y-8 text-center">
-		<!-- Icon -->
-		<div class="flex justify-center">
-			<div class="rounded-full bg-primary/10 p-6">
-				<Mail class="h-12 w-12 text-primary" aria-hidden="true" />
-			</div>
-		</div>
-
-		<!-- Header -->
-		<div class="space-y-2">
-			<h1 class="text-3xl font-bold tracking-tight">{m['checkEmailPage.checkYourEmail']()}</h1>
-			<p class="text-muted-foreground">{m['checkEmailPage.verificationLink']()}</p>
+		<div>
+			<!-- level=2: this EmptyState is the page's only heading. -->
+			<EmptyState
+				icon={Mail}
+				title={m['checkEmailPage.checkYourEmail']()}
+				body={m['checkEmailPage.verificationLink']()}
+				level={2}
+				class="border-none bg-transparent p-0 shadow-none"
+			/>
 			{#if email}
-				<p class="font-medium">{email}</p>
+				<p class="mt-1.5 font-medium">{email}</p>
 			{/if}
 		</div>
 
@@ -80,11 +79,12 @@
 			<p>{m['checkEmailPage.clickLink']()}</p>
 		</div>
 
-		<!-- Spam Warning -->
+		<!-- Spam Warning: highlight/10 + border are decorative; body text stays on
+		     the default foreground token (already-audited pair). -->
 		<div
-			class="rounded-md border border-amber-500/50 bg-amber-50 p-4 text-left dark:bg-amber-950/30"
+			class="rounded-md border border-highlight/30 bg-highlight/10 p-4 text-left dark:border-highlight/40 dark:bg-highlight/15"
 		>
-			<p class="text-sm font-medium text-amber-800 dark:text-amber-200">
+			<p class="text-sm font-medium text-foreground">
 				{m['checkEmailPage.checkSpam']()}
 			</p>
 		</div>
@@ -96,10 +96,10 @@
 			{#if resendSuccess}
 				<div
 					role="status"
-					class="space-y-2 rounded-md border border-green-500 bg-green-500/10 p-3 text-sm text-green-700 dark:text-green-400"
+					class="space-y-2 rounded-md border border-success/40 bg-success/10 p-3 text-sm text-foreground dark:border-success/50 dark:bg-success/15"
 				>
 					<p>{m['checkEmailPage.resendSuccess']()}</p>
-					<p class="text-green-600 dark:text-green-500">{m['checkEmailPage.checkSpam']()}</p>
+					<p class="text-muted-foreground">{m['checkEmailPage.checkSpam']()}</p>
 				</div>
 			{/if}
 
