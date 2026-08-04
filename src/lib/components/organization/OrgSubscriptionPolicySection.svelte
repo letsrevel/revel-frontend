@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import type { OrganizationAdminDetailSchema } from '$lib/api/generated';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
@@ -33,9 +34,7 @@
 </script>
 
 <section class="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
-	<h2 class="text-lg font-semibold">
-		{m['orgSettingsPage.subscriptionPolicy.heading']()}
-	</h2>
+	<SectionHeader title={m['orgSettingsPage.subscriptionPolicy.heading']()} />
 	<p class="text-sm text-muted-foreground">
 		{m['orgSettingsPage.subscriptionPolicy.description']()}
 	</p>
@@ -53,7 +52,7 @@
 			step="1"
 			inputmode="numeric"
 			bind:value={gracePeriodDays}
-			class="mt-1 flex w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 sm:max-w-xs"
+			class="mt-1 flex w-full rounded-md border-2 border-input bg-background px-3 py-2 text-sm text-foreground transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 sm:max-w-xs"
 		/>
 		<p class="mt-1 text-xs text-muted-foreground">
 			{m['orgSettingsPage.subscriptionPolicy.gracePeriodHelp']()}
@@ -73,7 +72,7 @@
 			step="1"
 			inputmode="numeric"
 			bind:value={revivalWindowDays}
-			class="mt-1 flex w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 sm:max-w-xs"
+			class="mt-1 flex w-full rounded-md border-2 border-input bg-background px-3 py-2 text-sm text-foreground transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 sm:max-w-xs"
 		/>
 		<p class="mt-1 text-xs text-muted-foreground">
 			{m['orgSettingsPage.subscriptionPolicy.revivalWindowHelp']()}
