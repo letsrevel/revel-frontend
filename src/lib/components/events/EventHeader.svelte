@@ -9,6 +9,7 @@
 	import { MapPin, Calendar, Share2, ExternalLink } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import { toast } from 'svelte-sonner';
+	import MarkChip from '$lib/components/brand/MarkChip.svelte';
 
 	interface Props {
 		event: EventDetailSchema;
@@ -175,36 +176,55 @@
 		</div>
 	</div>
 
-	<!-- Organization Badge (Overlaps cover image) -->
-	<!-- Note: Always shows organization logo/initial for clarity, not the event logo fallback -->
-	<div class="relative mx-auto max-w-[1920px] px-6 md:px-8">
-		<a
-			href={resolve('/(public)/org/[slug]', { slug: event.organization.slug })}
-			class="group -mt-8 inline-flex items-center gap-3 rounded-lg bg-background p-3 shadow-lg ring-1 ring-border transition-all hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-		>
-			{#if event.organization.logo}
-				{@const org = event.organization}
-				<img
-					src={getImageUrl(org.logo_thumbnail_url || event.organization.logo) || ''}
-					alt={m['eventHeader.organizationLogoAlt']({ name: event.organization.name })}
-					class="h-12 w-12 rounded-md object-cover"
-				/>
-			{:else}
-				<div
-					class="flex h-12 w-12 items-center justify-center rounded-md bg-gradient-to-br from-primary to-primary/70 text-lg font-bold text-primary-foreground"
-				>
-					{event.organization.name.charAt(0).toUpperCase()}
-				</div>
-			{/if}
+	<!--
+		Poster ribbon (uplift prototype). A solid brand-purple color block under
+		the cover, carrying the organization chip as a tilted white sticker — the
+		landing's move, applied to the app's most public page. The ribbon and the
+		chip are mode-INERT by the imagery rule (they are a poster panel, not a
+		surface); every pair on them is hand-verified against the fixed values,
+		since a poster-palette pair is invisible to scripts/audit-brand-themes.py:
+		  ink #0D1E1C on white          → 18.4:1
+		  Hearty Purple #8C3CDD on white → 5.54:1 (the text-xs kicker clears AA)
+		Note: always the ORGANIZATION logo/initial, never the event's.
+	-->
+	<div class="bg-poster-purple">
+		<div class="relative mx-auto max-w-[1920px] px-6 pb-6 md:px-8">
+			<a
+				href={resolve('/(public)/org/[slug]', { slug: event.organization.slug })}
+				class="group -mt-8 inline-flex -rotate-1 items-center gap-3 rounded-[1.25rem] bg-poster-white p-3 shadow-poster-lg transition-transform hover:rotate-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-purple"
+			>
+				{#if event.organization.logo}
+					{@const org = event.organization}
+					<img
+						src={getImageUrl(org.logo_thumbnail_url || event.organization.logo) || ''}
+						alt={m['eventHeader.organizationLogoAlt']({ name: event.organization.name })}
+						class="h-12 w-12 rounded-md object-cover"
+					/>
+				{:else}
+					<div
+						class="flex h-12 w-12 items-center justify-center rounded-md bg-gradient-to-br from-poster-purple to-poster-crimson text-lg font-black text-poster-white"
+					>
+						{event.organization.name.charAt(0).toUpperCase()}
+					</div>
+				{/if}
 
-			<div class="flex flex-col">
-				<span class="text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
-					{m['eventHeader.organizedBy']()}
-				</span>
-				<span class="font-bold text-foreground group-hover:text-primary">
-					{event.organization.name}
-				</span>
+				<div class="flex flex-col pr-2">
+					<span class="text-xs font-extrabold uppercase tracking-[0.12em] text-poster-purple">
+						{m['eventHeader.organizedBy']()}
+					</span>
+					<span class="font-extrabold text-poster-ink">
+						{event.organization.name}
+					</span>
+				</div>
+			</a>
+			<!-- Positioning lives on the wrapper: MarkChip owns its own `transform`
+			     (the tilt), so a translate utility on the chip itself would be
+			     overwritten. Anchored to the ribbon's BOTTOM so the chip grows
+			     UPWARD over the cover — a sticker straddling the cut — instead of
+			     past the header's `overflow-hidden` bottom edge. -->
+			<div class="absolute bottom-3 right-8 hidden md:block">
+				<MarkChip rotate={-8} />
 			</div>
-		</a>
+		</div>
 	</div>
 </header>

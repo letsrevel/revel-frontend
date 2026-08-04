@@ -24,8 +24,12 @@
 		class: className = ''
 	}: Props = $props();
 
+	// Uplift prototype: the celebration section heading goes up a step
+	// (text-xl → text-2xl). Celebration is exactly the public/user surfaces the
+	// uplift targets, and a section heading a hair larger than body copy was
+	// part of why those screens read flat. Studio is deliberately untouched.
 	const headingClass = $derived(
-		volume === 'celebration' ? 'text-xl font-extrabold' : 'text-lg font-bold'
+		volume === 'celebration' ? 'text-2xl font-extrabold' : 'text-lg font-bold'
 	);
 	const kickerClass = $derived(
 		cn(
