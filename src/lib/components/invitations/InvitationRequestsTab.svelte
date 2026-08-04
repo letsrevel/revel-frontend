@@ -7,6 +7,9 @@
 	import { cn } from '$lib/utils/cn';
 	import { getUserDisplayName } from '$lib/utils/user-display';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
+	import type { Tone } from '$lib/components/common/tones';
 
 	interface Pagination {
 		page: number;
@@ -48,16 +51,16 @@
 		}
 	}
 
-	function getStatusBadge(status: string) {
+	function getStatusTone(status: string): Tone {
 		switch (status) {
 			case 'pending':
-				return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+				return 'warning';
 			case 'approved':
-				return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+				return 'success';
 			case 'rejected':
-				return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+				return 'danger';
 			default:
-				return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+				return 'neutral';
 		}
 	}
 </script>
@@ -98,10 +101,10 @@
 				type="button"
 				onclick={() => onFilterByStatus('pending')}
 				class={cn(
-					'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+					'rounded-md border px-3 py-1.5 text-sm font-medium transition-colors',
 					activeStatusFilter === 'pending'
-						? 'bg-yellow-600 text-white'
-						: 'border border-yellow-600 text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-950'
+						? 'border-highlight bg-highlight text-highlight-foreground'
+						: 'border-highlight/50 bg-card text-foreground hover:bg-highlight/10'
 				)}
 			>
 				{m['eventInvitationsAdmin.filterPending']()}
@@ -110,10 +113,10 @@
 				type="button"
 				onclick={() => onFilterByStatus('approved')}
 				class={cn(
-					'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+					'rounded-md border px-3 py-1.5 text-sm font-medium transition-colors',
 					activeStatusFilter === 'approved'
-						? 'bg-green-600 text-white'
-						: 'border border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-950'
+						? 'border-success bg-success text-success-foreground'
+						: 'border-success/50 bg-card text-foreground hover:bg-success/10'
 				)}
 			>
 				{m['eventInvitationsAdmin.filterApproved']()}
@@ -122,10 +125,10 @@
 				type="button"
 				onclick={() => onFilterByStatus('rejected')}
 				class={cn(
-					'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+					'rounded-md border px-3 py-1.5 text-sm font-medium transition-colors',
 					activeStatusFilter === 'rejected'
-						? 'bg-red-600 text-white'
-						: 'border border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-950'
+						? 'border-destructive bg-destructive text-destructive-foreground'
+						: 'border-destructive/50 bg-card text-foreground hover:bg-destructive/10'
 				)}
 			>
 				{m['eventInvitationsAdmin.filterRejected']()}
@@ -135,17 +138,13 @@
 
 	<!-- Requests List -->
 	{#if invitationRequests.length === 0}
-		<div class="rounded-lg border bg-card p-12 text-center">
-			<Users class="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
-			<h3 class="mb-2 text-lg font-semibold">{m['eventInvitationsAdmin.noRequests']()}</h3>
-			<p class="text-sm text-muted-foreground">
-				{#if activeStatusFilter || searchQuery}
-					{m['eventInvitationsAdmin.noRequestsFiltered']()}
-				{:else}
-					{m['eventInvitationsAdmin.noRequestsEmpty']()}
-				{/if}
-			</p>
-		</div>
+		<EmptyState
+			icon={Users}
+			title={m['eventInvitationsAdmin.noRequests']()}
+			body={activeStatusFilter || searchQuery
+				? m['eventInvitationsAdmin.noRequestsFiltered']()
+				: m['eventInvitationsAdmin.noRequestsEmpty']()}
+		/>
 	{:else}
 		<!-- Requests Table -->
 		<div class="overflow-hidden rounded-lg border bg-card">
@@ -223,14 +222,11 @@
 
 								<!-- Status -->
 								<td class="px-6 py-4">
-									<span
-										class="inline-flex rounded-full px-2 py-1 text-xs font-semibold {getStatusBadge(
-											request.status ?? ''
-										)}"
-									>
-										{(request.status ?? '').charAt(0).toUpperCase() +
+									<StatusBadge
+										tone={getStatusTone(request.status ?? '')}
+										label={(request.status ?? '').charAt(0).toUpperCase() +
 											(request.status ?? '').slice(1)}
-									</span>
+									/>
 								</td>
 
 								<!-- Requested -->
@@ -260,7 +256,7 @@
 												<button
 													type="submit"
 													disabled={processingId === request.id}
-													class="inline-flex items-center gap-1 rounded-md bg-green-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-green-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+													class="inline-flex items-center gap-1 rounded-md bg-success px-3 py-1.5 text-xs font-medium text-success-foreground transition-colors hover:bg-success/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 												>
 													<Check class="h-3.5 w-3.5" aria-hidden="true" />
 													{m['eventInvitationsAdmin.approve']()}
@@ -282,7 +278,7 @@
 												<button
 													type="submit"
 													disabled={processingId === request.id}
-													class="inline-flex items-center gap-1 rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+													class="inline-flex items-center gap-1 rounded-md bg-destructive px-3 py-1.5 text-xs font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 												>
 													<X class="h-3.5 w-3.5" aria-hidden="true" />
 													{m['eventInvitationsAdmin.reject']()}

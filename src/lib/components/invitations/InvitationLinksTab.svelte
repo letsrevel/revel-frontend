@@ -8,6 +8,7 @@
 	import { Search, Plus, Link, Loader2 } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		eventadmintokensListEventTokens,
@@ -232,17 +233,13 @@
 				<Loader2 class="h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
 			</div>
 		{:else if tokens.length === 0}
-			<div class="rounded-lg border border-dashed p-12 text-center">
-				<Link class="mx-auto h-12 w-12 text-muted-foreground" aria-hidden="true" />
-				<h3 class="mt-4 text-lg font-semibold">{m['eventInvitationsAdmin.noLinksFound']()}</h3>
-				<p class="mt-2 text-sm text-muted-foreground">
-					{#if tokenSearchQuery}
-						{m['eventInvitationsAdmin.noLinksSearch']()}
-					{:else}
-						{m['eventInvitationsAdmin.noLinksEmpty']()}
-					{/if}
-				</p>
-			</div>
+			<EmptyState
+				icon={Link}
+				title={m['eventInvitationsAdmin.noLinksFound']()}
+				body={tokenSearchQuery
+					? m['eventInvitationsAdmin.noLinksSearch']()
+					: m['eventInvitationsAdmin.noLinksEmpty']()}
+			/>
 		{:else}
 			{#each tokens as token (token.id)}
 				<EventTokenCard

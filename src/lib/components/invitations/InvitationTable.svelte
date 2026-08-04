@@ -11,6 +11,7 @@
 	import { formatDistanceToNow } from 'date-fns';
 	import { Button } from '$lib/components/ui/button';
 	import { getUserDisplayName } from '$lib/utils/user-display';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 
 	interface Props {
 		title: string;
@@ -114,17 +115,17 @@
 							</th>
 							{@render identityHeaders()}
 							<th
-								class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
+								class="px-4 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 							>
 								{m['eventInvitationsAdmin.headerProperties']()}
 							</th>
 							<th
-								class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
+								class="px-4 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 							>
 								{m['eventInvitationsAdmin.headerCreated']()}
 							</th>
 							<th
-								class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground"
+								class="px-4 py-3 text-right text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 							>
 								{m['eventInvitationsAdmin.headerActions']()}
 							</th>
@@ -213,62 +214,62 @@
 {#snippet invitationProperties(invitation: T)}
 	<div class="flex flex-wrap gap-1">
 		{#if invitation.waives_questionnaire}
-			<span
-				class="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+			<StatusBadge
+				tone="info"
+				label={m['eventInvitationsAdmin.noQuestionnaire']()}
+				size="sm"
 				title={m['invitationListTab.waivesQuestionnaireTitle']()}
-			>
-				{m['eventInvitationsAdmin.noQuestionnaire']()}
-			</span>
+			/>
 		{/if}
 		{#if invitation.waives_purchase}
-			<span
-				class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-200"
+			<StatusBadge
+				tone="success"
+				label={m['eventInvitationsAdmin.free']()}
+				size="sm"
 				title={m['invitationListTab.waivesPurchaseTitle']()}
-			>
-				{m['eventInvitationsAdmin.free']()}
-			</span>
+			/>
 		{/if}
 		{#if invitation.waives_membership_required}
-			<span
-				class="inline-flex items-center rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-800 dark:bg-purple-900 dark:text-purple-200"
+			<StatusBadge
+				tone="brand"
+				label={m['eventInvitationsAdmin.noMembership']()}
+				size="sm"
 				title={m['invitationListTab.waivesMembershipTitle']()}
-			>
-				{m['eventInvitationsAdmin.noMembership']()}
-			</span>
+			/>
 		{/if}
 		{#if invitation.waives_rsvp_deadline}
-			<span
-				class="inline-flex items-center rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-800 dark:bg-orange-900 dark:text-orange-200"
+			<StatusBadge
+				tone="warning"
+				label={m['eventInvitationsAdmin.noDeadline']()}
+				size="sm"
 				title={m['invitationListTab.waivesRsvpDeadlineTitle']()}
-			>
-				{m['eventInvitationsAdmin.noDeadline']()}
-			</span>
+			/>
 		{/if}
 		{#if invitation.overrides_max_attendees}
-			<span
-				class="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900 dark:text-red-200"
+			<StatusBadge
+				tone="danger"
+				label={m['eventInvitationsAdmin.overrideCap']()}
+				size="sm"
 				title={m['invitationListTab.overridesMaxAttendeesTitle']()}
-			>
-				{m['eventInvitationsAdmin.overrideCap']()}
-			</span>
+			/>
 		{/if}
 		{#if invitation.tiers?.length}
 			{#each invitation.tiers as tier (tier.id)}
-				<span
-					class="inline-flex items-center rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200"
+				<StatusBadge
+					tone="neutral"
+					label={tier.name}
+					size="sm"
 					title={m['invitationListTab.assignedTierTitle']({ name: tier.name })}
-				>
-					{tier.name}
-				</span>
+				/>
 			{/each}
 		{/if}
 		{#if invitation.custom_message}
-			<span
-				class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800 dark:bg-gray-900 dark:text-gray-200"
+			<StatusBadge
+				tone="neutral"
+				label={`Has ${m['eventInvitationsAdmin.headerMessage']()}`}
+				size="sm"
 				title={invitation.custom_message}
-			>
-				Has {m['eventInvitationsAdmin.headerMessage']()}
-			</span>
+			/>
 		{/if}
 	</div>
 {/snippet}
