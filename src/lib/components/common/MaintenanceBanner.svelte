@@ -45,36 +45,38 @@
 		return format(new Date(iso), 'MMM d, yyyy HH:mm');
 	}
 
+	// Severity → tone: debug/neutral, info/info, warning/highlight, error/danger
+	// (soft), critical/danger (solid) — critical stays visually distinct from
+	// error via weight of fill, not hue alone (guardrail: never encode meaning
+	// by color alone). Soft pairs reuse ToneTile's audited token combos
+	// (src/lib/components/common/ToneTile.svelte); the solid critical pair is
+	// the StatusBadge-style audited destructive-foreground/destructive pair.
 	const severityConfig = {
 		debug: {
 			icon: Bug,
-			classes:
-				'border-gray-200 bg-gray-50 text-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100',
-			iconClasses: 'text-gray-500 dark:text-gray-400'
+			classes: 'border-border bg-muted text-muted-foreground',
+			iconClasses: 'text-muted-foreground'
 		},
 		info: {
 			icon: Info,
-			classes:
-				'border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-100',
-			iconClasses: 'text-blue-500 dark:text-blue-400'
+			classes: 'border-info/30 bg-info/10 text-info',
+			iconClasses: 'text-info'
 		},
 		warning: {
 			icon: AlertTriangle,
-			classes:
-				'border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100',
-			iconClasses: 'text-amber-500 dark:text-amber-400'
+			classes: 'border-highlight/40 bg-highlight/20 text-highlight-foreground dark:text-highlight',
+			iconClasses: 'text-highlight-foreground dark:text-highlight'
 		},
 		error: {
 			icon: AlertCircle,
 			classes:
-				'border-red-200 bg-red-50 text-red-900 dark:border-red-800 dark:bg-red-950 dark:text-red-100',
-			iconClasses: 'text-red-500 dark:text-red-400'
+				'border-destructive/30 bg-destructive/10 text-destructive dark:bg-destructive/25 dark:text-destructive-foreground',
+			iconClasses: 'text-destructive dark:text-destructive-foreground'
 		},
 		critical: {
 			icon: AlertOctagon,
-			classes:
-				'border-red-300 bg-red-100 text-red-900 dark:border-red-700 dark:bg-red-900 dark:text-red-100',
-			iconClasses: 'animate-pulse text-red-600 dark:text-red-400'
+			classes: 'border-destructive bg-destructive text-destructive-foreground',
+			iconClasses: 'animate-pulse text-destructive-foreground'
 		}
 	} as const;
 
