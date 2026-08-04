@@ -400,11 +400,11 @@
 			</div>
 		{:else}
 			<div
-				class="border-warning/50 bg-warning/10 mt-4 flex items-start gap-3 rounded-md border p-4 text-sm"
+				class="mt-4 flex items-start gap-3 rounded-md border border-highlight bg-highlight/10 p-4 text-sm"
 				data-testid="recurrence-edit-confirm-banner"
 			>
 				<AlertTriangle
-					class="text-warning-foreground mt-0.5 h-5 w-5 flex-shrink-0"
+					class="mt-0.5 h-5 w-5 flex-shrink-0 text-highlight-foreground dark:text-highlight"
 					aria-hidden="true"
 				/>
 				<p class="flex-1">

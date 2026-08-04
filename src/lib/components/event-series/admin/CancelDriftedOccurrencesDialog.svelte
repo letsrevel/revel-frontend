@@ -198,7 +198,7 @@
 
 		{#if exceedsSafetyThreshold}
 			<p
-				class="border-warning/50 bg-warning/10 mt-3 rounded-md border p-3 text-xs text-muted-foreground"
+				class="mt-3 rounded-md border border-highlight bg-highlight/10 p-3 text-xs text-muted-foreground"
 				data-testid="drift-bulk-threshold"
 			>
 				{m['recurringEvents.drift.bulkDialog.thresholdWarning']({ n: total })}
