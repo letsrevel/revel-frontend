@@ -105,7 +105,10 @@
 						{rsvp.user.email || 'N/A'}
 					</td>
 					<td class="whitespace-nowrap px-6 py-4 text-sm">
-						<StatusBadge tone={getRsvpStatusTone(rsvp.status)} label={getRsvpStatusLabel(rsvp.status)} />
+						<StatusBadge
+							tone={getRsvpStatusTone(rsvp.status)}
+							label={getRsvpStatusLabel(rsvp.status)}
+						/>
 					</td>
 					<td class="max-w-xs px-6 py-4 text-sm">
 						{#if rsvp.note}

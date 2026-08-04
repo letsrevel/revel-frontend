@@ -230,9 +230,7 @@
 			{#if blockedSeats.length > 0}
 				<ul class="mt-3 flex flex-wrap gap-1.5" role="list">
 					{#each blockedSeats as seat (seat.id)}
-						<li
-							class="rounded-md border border-highlight/60 bg-highlight/10 px-2 py-0.5 text-xs"
-						>
+						<li class="rounded-md border border-highlight/60 bg-highlight/10 px-2 py-0.5 text-xs">
 							{seat.label}
 						</li>
 					{/each}

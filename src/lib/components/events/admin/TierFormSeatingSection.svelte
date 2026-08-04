@@ -175,9 +175,7 @@
 			{#if sectorId}
 				{@const selectedStandingSector = standingSectors.find((s) => s.id === sectorId)}
 				{#if selectedStandingSector?.capacity}
-					<div
-						class="mt-3 rounded-md border border-highlight bg-highlight/10 p-3 text-sm"
-					>
+					<div class="mt-3 rounded-md border border-highlight bg-highlight/10 p-3 text-sm">
 						<p class="font-medium text-highlight-foreground dark:text-highlight">
 							{m['tierForm.sectorHardLimit.title']()}
 						</p>
@@ -291,9 +289,7 @@
 						{#if sectorId}
 							{@const selectedSector = selectedVenueSectors.find((s) => s.id === sectorId)}
 							{#if selectedSector?.capacity}
-								<div
-									class="mt-3 rounded-md border border-highlight bg-highlight/10 p-3 text-sm"
-								>
+								<div class="mt-3 rounded-md border border-highlight bg-highlight/10 p-3 text-sm">
 									<p class="font-medium text-highlight-foreground dark:text-highlight">
 										{m['tierForm.sectorHardLimit.title']()}
 									</p>
@@ -369,7 +365,9 @@
 								class="rounded-md border border-highlight bg-highlight/10 p-3 text-sm"
 								role="alert"
 							>
-								<p class="flex items-center gap-1.5 font-medium text-highlight-foreground dark:text-highlight">
+								<p
+									class="flex items-center gap-1.5 font-medium text-highlight-foreground dark:text-highlight"
+								>
 									<TriangleAlert class="h-4 w-4 shrink-0" aria-hidden="true" />
 									{m['tierForm.categoryPrices.unsellableTitle']()}
 								</p>
@@ -384,7 +382,9 @@
 								class="rounded-md border border-highlight bg-highlight/10 p-3 text-sm"
 								role="alert"
 							>
-								<p class="flex items-center gap-1.5 font-medium text-highlight-foreground dark:text-highlight">
+								<p
+									class="flex items-center gap-1.5 font-medium text-highlight-foreground dark:text-highlight"
+								>
 									<TriangleAlert class="h-4 w-4 shrink-0" aria-hidden="true" />
 									{m['tierForm.categoryPrices.gapsTitle']()}
 								</p>

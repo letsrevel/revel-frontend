@@ -51,7 +51,10 @@
 				<div class="rounded-lg bg-muted p-3">
 					<p class="text-sm font-medium">{m['attendeesAdmin.editModalCurrentStatus']()}</p>
 					<p class="mt-1">
-						<StatusBadge tone={getRsvpStatusTone(rsvp.status)} label={getRsvpStatusLabel(rsvp.status)} />
+						<StatusBadge
+							tone={getRsvpStatusTone(rsvp.status)}
+							label={getRsvpStatusLabel(rsvp.status)}
+						/>
 					</p>
 				</div>
 

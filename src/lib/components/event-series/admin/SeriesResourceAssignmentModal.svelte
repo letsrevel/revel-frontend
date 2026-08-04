@@ -232,7 +232,9 @@
 		</DialogHeader>
 
 		<!-- Warning Banner -->
-		<div class="mx-6 mt-4 flex gap-2 rounded-md border border-highlight bg-highlight/10 p-3 text-sm">
+		<div
+			class="mx-6 mt-4 flex gap-2 rounded-md border border-highlight bg-highlight/10 p-3 text-sm"
+		>
 			<AlertCircle
 				class="h-4 w-4 shrink-0 text-highlight-foreground dark:text-highlight"
 				aria-hidden="true"

@@ -438,11 +438,7 @@
 		</div>
 
 		<!-- Dynamic explanation based on selected combination -->
-		<div
-			class="rounded-md border border-info/40 bg-info/10 p-4"
-			role="status"
-			aria-live="polite"
-		>
+		<div class="rounded-md border border-info/40 bg-info/10 p-4" role="status" aria-live="polite">
 			<div class="flex items-start gap-3">
 				<div class="flex-shrink-0">
 					<svg
@@ -506,8 +502,7 @@
 					role="alert"
 				>
 					<div class="flex items-start gap-2">
-						<span class="text-highlight-foreground dark:text-highlight" aria-hidden="true">⚠️</span
-						>
+						<span class="text-highlight-foreground dark:text-highlight" aria-hidden="true">⚠️</span>
 						<div class="flex-1 text-foreground">
 							<p class="font-medium">{m['essentialsStep.ticketingImmutableWarning']()}</p>
 							<p class="mt-1 text-xs text-muted-foreground">

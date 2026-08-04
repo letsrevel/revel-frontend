@@ -175,11 +175,7 @@
 				{#if isDrifted}
 					<StatusBadge tone="danger" label={m['recurringEvents.row.driftedBadge']()} size="sm" />
 				{:else if showModifiedBadge}
-					<StatusBadge
-						tone="warning"
-						label={m['recurringEvents.row.modifiedBadge']()}
-						size="sm"
-					/>
+					<StatusBadge tone="warning" label={m['recurringEvents.row.modifiedBadge']()} size="sm" />
 				{/if}
 				{#if hasAttendees}
 					<span class="text-muted-foreground">
