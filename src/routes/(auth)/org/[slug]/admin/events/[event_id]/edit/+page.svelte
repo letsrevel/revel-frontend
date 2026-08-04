@@ -17,6 +17,8 @@
 	import * as Tooltip from '$lib/components/ui/tooltip';
 	import { CheckCircle, XCircle, FileEdit, Trash2, Ban, MoreVertical, Copy } from '@lucide/svelte';
 	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
+	import type { Tone } from '$lib/components/common/tones';
 
 	const { data }: { data: PageData } = $props();
 
@@ -27,6 +29,17 @@
 
 	// Current status
 	const currentStatus = $derived(event.status as string);
+	const statusTone = $derived.by((): Tone => {
+		switch (currentStatus) {
+			case 'open':
+				return 'success';
+			case 'closed':
+				return 'danger';
+			case 'draft':
+			default:
+				return 'neutral';
+		}
+	});
 
 	// Update event status mutation
 	const updateStatusMutation = createMutation(() => ({
@@ -190,27 +203,19 @@
 		<div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 			<div>
 				<div class="flex items-center gap-3">
-					<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
+					<h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">
 						{m['eventEditPage.heading']()}
 					</h1>
-					<!-- Status Badge -->
-					<span
-						class="rounded-full px-3 py-1 text-xs font-medium {currentStatus === 'draft'
-							? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100'
-							: currentStatus === 'open'
-								? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'
-								: currentStatus === 'closed'
-									? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
-									: 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'}"
-					>
-						{currentStatus === 'draft'
+					<StatusBadge
+						tone={statusTone}
+						label={currentStatus === 'draft'
 							? m['eventEditPage.statusDraft']()
 							: currentStatus === 'open'
 								? m['eventEditPage.statusPublished']()
 								: currentStatus === 'closed'
 									? m['eventEditPage.statusClosed']()
 									: currentStatus}
-					</span>
+					/>
 				</div>
 				<p class="mt-1 text-sm text-muted-foreground">
 					{m['eventEditPage.updateDetailsFor']()}
@@ -231,7 +236,7 @@
 										type="button"
 										onclick={publishEvent}
 										disabled={updateStatusMutation.isPending}
-										class="inline-flex items-center gap-2 rounded-md bg-green-700 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-50"
+										class="inline-flex items-center gap-2 rounded-md bg-success px-3 py-2 text-sm font-medium text-success-foreground transition-colors hover:bg-success/90 disabled:cursor-not-allowed disabled:opacity-50"
 									>
 										<CheckCircle class="h-4 w-4" aria-hidden="true" />
 										{m['eventEditPage.publishButton']()}
@@ -250,7 +255,7 @@
 										type="button"
 										onclick={closeEvent}
 										disabled={updateStatusMutation.isPending}
-										class="inline-flex items-center gap-2 rounded-md bg-orange-700 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-800 disabled:cursor-not-allowed disabled:opacity-50"
+										class="inline-flex items-center gap-2 rounded-md bg-highlight px-3 py-2 text-sm font-medium text-highlight-foreground transition-colors hover:bg-highlight/90 disabled:cursor-not-allowed disabled:opacity-50"
 									>
 										<XCircle class="h-4 w-4" aria-hidden="true" />
 										{m['eventEditPage.closeButton']()}
@@ -287,7 +292,7 @@
 										type="button"
 										onclick={reopenEvent}
 										disabled={updateStatusMutation.isPending}
-										class="inline-flex items-center gap-2 rounded-md bg-green-700 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-50"
+										class="inline-flex items-center gap-2 rounded-md bg-success px-3 py-2 text-sm font-medium text-success-foreground transition-colors hover:bg-success/90 disabled:cursor-not-allowed disabled:opacity-50"
 									>
 										<CheckCircle class="h-4 w-4" aria-hidden="true" />
 										{m['eventEditPage.reopenButton']()}

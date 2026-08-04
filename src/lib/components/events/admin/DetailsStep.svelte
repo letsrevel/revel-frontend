@@ -299,7 +299,7 @@
 								type="checkbox"
 								checked={formData.accept_rsvp_notes || false}
 								onchange={(e) => onUpdate({ accept_rsvp_notes: e.currentTarget.checked })}
-								class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
+								class="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-ring"
 							/>
 							<div class="flex-1">
 								<div class="font-medium">{m['detailsStep.acceptRsvpNotes']()}</div>
@@ -391,7 +391,7 @@
 							type="checkbox"
 							checked={formData.waitlist_open || false}
 							onchange={handleWaitlistOpenChange}
-							class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
+							class="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-ring"
 						/>
 						<div class="flex-1">
 							<div class="font-medium">{m['detailsStep.waitlistOpen']()}</div>
@@ -545,7 +545,7 @@
 						type="checkbox"
 						checked={formData.potluck_open || false}
 						onchange={(e) => onUpdate({ potluck_open: e.currentTarget.checked })}
-						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
+						class="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-ring"
 					/>
 					<div class="flex-1">
 						<div class="font-medium">{m['detailsStep.enablePotluck']()}</div>
@@ -569,7 +569,7 @@
 									show_pronoun_distribution: e.currentTarget.checked
 								}
 							})}
-						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
+						class="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-ring"
 					/>
 					<div class="flex-1">
 						<div class="font-medium">
@@ -589,7 +589,7 @@
 						type="checkbox"
 						checked={formData.can_attend_without_login || false}
 						onchange={(e) => onUpdate({ can_attend_without_login: e.currentTarget.checked })}
-						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
+						class="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-ring"
 					/>
 					<div class="flex-1">
 						<div class="font-medium">{m['detailsStep.canAttendWithoutLogin']()}</div>
@@ -624,7 +624,7 @@
 							type="checkbox"
 							checked={formData.require_ticket_names ?? true}
 							onchange={(e) => onUpdate({ require_ticket_names: e.currentTarget.checked })}
-							class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
+							class="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-ring"
 						/>
 						<div class="flex-1">
 							<div class="font-medium">{m['detailsStep.requireTicketNames']()}</div>

@@ -9,6 +9,7 @@
 	import InvitationListTab from '$lib/components/invitations/InvitationListTab.svelte';
 	import InvitationLinksTab from '$lib/components/invitations/InvitationLinksTab.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
 
 	interface Props {
 		data: PageData;
@@ -84,25 +85,20 @@
 <div class="space-y-6">
 	<!-- Header -->
 	<div>
-		<div class="mb-4">
-			<a
-				href={resolve('/(auth)/org/[slug]/admin/events', { slug: data.organization.slug })}
-				class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-			>
-				<ChevronLeft class="h-4 w-4" aria-hidden="true" />
-				{m['eventInvitationsAdmin.backToEvents']()}
-			</a>
-		</div>
-		<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
-			{m['eventInvitationsAdmin.pageTitle']()}
-		</h1>
-		<p class="mt-1 text-sm text-muted-foreground">{data.event.name}</p>
+		<a
+			href={resolve('/(auth)/org/[slug]/admin/events', { slug: data.organization.slug })}
+			class="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+		>
+			<ChevronLeft class="h-4 w-4" aria-hidden="true" />
+			{m['eventInvitationsAdmin.backToEvents']()}
+		</a>
+		<PageHeader title={m['eventInvitationsAdmin.pageTitle']()} subtitle={data.event.name} />
 	</div>
 
 	<!-- Success/Error Messages -->
 	{#if form?.success}
 		<div
-			class="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-4 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-100"
+			class="flex items-center gap-2 rounded-lg border border-success/40 bg-success/10 p-4 text-success"
 			role="alert"
 		>
 			<Check class="h-5 w-5 shrink-0" aria-hidden="true" />
@@ -129,7 +125,7 @@
 
 	{#if form?.errors?.form}
 		<div
-			class="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-100"
+			class="flex items-center gap-2 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-destructive"
 			role="alert"
 		>
 			<AlertCircle class="h-5 w-5 shrink-0" aria-hidden="true" />
