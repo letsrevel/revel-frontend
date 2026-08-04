@@ -229,7 +229,7 @@
 	<div class={cn('inline-flex flex-wrap items-center gap-2', className)} role="status">
 		{#if membershipStatus}
 			<span
-				class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium {statusStyles[
+				class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold {statusStyles[
 					membershipStatus
 				]}"
 				aria-label={m['membershipEligibility.memberStatusAriaLabel']({
