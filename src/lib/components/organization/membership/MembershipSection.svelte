@@ -161,12 +161,31 @@
 		/>
 	{/if}
 
-	<PageHeader
-		volume="celebration"
-		kicker={organization.name}
-		title={m['membershipTiers.heading']()}
-		subtitle={m['membershipTiers.subtitle']({ organizationName: organization.name })}
-	/>
+	<!--
+		Colour-block header (uplift, spec §9). CONTAINED rather than the full-bleed
+		ribbon the org profile and the two discovery listings wear: the h1 lives in
+		this component (a unit test pins it here), and the component is dropped
+		inside the route's container — so bleeding it to the viewport edge would
+		mean either moving the heading out or a negative-margin hack. A contained
+		block is also the right pitch for a sub-page: loud, but a step below the
+		profile that links to it.
+
+		`bg-secondary` at full strength is the same audit-enforced pair the
+		questionnaire routes' band uses, so it is a real poster panel in both
+		modes; `onBand` is what keeps the kicker off `text-primary`, which does NOT
+		clear AA on the light periwinkle (4.12:1 — see PageHeader).
+	-->
+	<div
+		class="rounded-lg bg-secondary px-6 py-8 text-secondary-foreground shadow-poster md:px-8 md:py-10"
+	>
+		<PageHeader
+			volume="poster"
+			onBand
+			kicker={organization.name}
+			title={m['membershipTiers.heading']()}
+			subtitle={m['membershipTiers.subtitle']({ organizationName: organization.name })}
+		/>
+	</div>
 
 	{#if hasStanding}
 		<!-- Summary mode (no tierId): the badge branches only, no eligibility

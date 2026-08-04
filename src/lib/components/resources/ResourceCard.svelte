@@ -167,7 +167,7 @@
 
 <article
 	class={cn(
-		'group relative flex flex-col gap-4 rounded-lg border bg-card p-4 transition-all hover:-translate-y-0.5 hover:shadow-lg',
+		'group relative flex flex-col gap-4 rounded-lg border-2 bg-card p-4 shadow-poster transition-all hover:-translate-y-1 hover:shadow-poster-lg',
 		isDeleting && 'opacity-50'
 	)}
 >

@@ -42,7 +42,7 @@
 
 <div
 	class={cn(
-		'flex flex-col items-center rounded-lg border bg-card px-6 py-10 text-center',
+		'flex flex-col items-center rounded-lg border-2 bg-card px-6 py-10 text-center shadow-poster',
 		className
 	)}
 >

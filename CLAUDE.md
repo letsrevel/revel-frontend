@@ -1086,6 +1086,13 @@ PR 7, mirrors `StatusBadge`) so routed adopters can attach `id`/`aria-label`/etc
 instead. `PageHeader`'s `decoration` slot is aria-hidden ornament only — status
 text goes through `actions` or `StatusBadge`, never `decoration`.
 
+**Band/wash pairing:** a mode-inert poster-solid ribbon pairs with a theme-aware
+tinted wash below it, and a theme `bg-secondary` band pairs with a plain
+`--background` body — never pair a band with a wash from the same token family.
+**Pull-up opacity rule:** whenever body content is pulled up to overlap a
+band's bottom edge, the first block it lands on must be an opaque surface
+(never `bg-card/NN`).
+
 **Typography scale** (encoded in the primitives; use the same classes when
 composing manually):
 

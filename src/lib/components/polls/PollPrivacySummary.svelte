@@ -61,7 +61,7 @@
 	const showVoterAnonymityRow = $derived(resultVisibility !== 'staff-only');
 </script>
 
-<section class="space-y-2 rounded-lg border bg-card/50 p-4">
+<section class="space-y-2 rounded-lg border bg-card p-4">
 	<!-- Who can vote -->
 	<div class="flex items-center gap-2 text-sm">
 		<Users class="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
