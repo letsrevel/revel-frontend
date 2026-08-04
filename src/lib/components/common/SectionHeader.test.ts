@@ -64,6 +64,42 @@ describe('SectionHeader', () => {
 		expect(screen.getByRole('heading', { level: 2 }).className).toContain('text-lg');
 	});
 
+	it('renders the subtitle under the heading, inside the heading block', () => {
+		const { container } = render(SectionHeader, {
+			props: { title: 'Social links', subtitle: 'Shown on your public page.' }
+		});
+		const subtitle = screen.getByText('Shown on your public page.');
+		expect(subtitle.tagName).toBe('P');
+		expect(subtitle.className).toContain('text-sm');
+		expect(subtitle.className).toContain('text-muted-foreground');
+		// It belongs to the heading's own column, not the flex row — that is the
+		// whole point over the hand-placed sibling paragraph it replaces, which
+		// sat on the parent section's spacing rhythm instead of the title's.
+		const heading = screen.getByRole('heading', { level: 2 });
+		expect(subtitle.parentElement).toBe(heading.parentElement);
+		expect(heading.nextElementSibling).toBe(subtitle);
+		expect(container.querySelector('p')).toBe(subtitle);
+	});
+
+	it('renders no subtitle node when the prop is absent', () => {
+		const { container } = render(SectionHeader, { props: { title: 'Social links' } });
+		expect(container.querySelectorAll('p')).toHaveLength(0);
+	});
+
+	it('subtitle coexists with kicker and actions', () => {
+		render(SectionHeader, {
+			props: {
+				title: 'Reports',
+				kicker: 'Owner',
+				subtitle: 'Delivered to your billing email.',
+				actions: snip('Configure')
+			}
+		});
+		expect(screen.getByText('Owner')).toBeInTheDocument();
+		expect(screen.getByText('Delivered to your billing email.')).toBeInTheDocument();
+		expect(screen.getByText('Configure')).toBeInTheDocument();
+	});
+
 	it('passes id through to the heading element', () => {
 		render(SectionHeader, { props: { title: 'Tickets', id: 'tickets-heading' } });
 		expect(screen.getByRole('heading', { level: 2 }).id).toBe('tickets-heading');
