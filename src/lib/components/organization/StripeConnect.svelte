@@ -351,9 +351,10 @@
 		>
 			<!-- Icon carries the tone; the body copy stays on --foreground for the
 			     same reason it always has (meaning is never color-only). The icon's
-			     `text-destructive` is --destructive-text since #781: 8.10:1 light /
-			     6.05:1 dark on this bg-destructive/10 composite, both audited in
-			     scripts/audit-brand-themes.py. The FILL value it used to resolve to
+			     `text-destructive` is --destructive-text since #781: at worst 7.20:1
+			     light / 6.05:1 dark on this bg-destructive/10 composite (--card and
+			     --background containers are both audited rows in
+			     scripts/audit-brand-themes.py). The FILL value it used to resolve to
 			     was ~2.7-2.95:1 here, failing even the 3:1 non-text floor. -->
 			<AlertCircle class="h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
 			<p class="text-sm">{connectMutation.error.message}</p>

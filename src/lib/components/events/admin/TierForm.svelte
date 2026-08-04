@@ -668,6 +668,10 @@
 				{@const fieldErrors = extractFieldErrors(error)}
 				{@const errorMsg = extractErrorMessage(error)}
 				{@const isBillingError = isBillingInfoRequiredError(errorMsg)}
+				<!-- This panel renders inside DialogContent (bg-background), but the
+				     dimmed copy stops at /90 so it stays AA on a card surface too:
+				     5.61:1 / 5.18:1 dark, vs 4.71:1 / 4.40:1 at /80. Audited on both
+				     in scripts/audit-brand-themes.py. -->
 				<div class="rounded-lg bg-destructive/10 p-3" role="alert">
 					<p class="font-medium text-destructive">{m['tierForm.error']()}</p>
 
@@ -690,7 +694,7 @@
 					{#if isBillingError}
 						<a
 							href={resolve('/(auth)/org/[slug]/admin/billing', { slug: organizationSlug })}
-							class="mt-2 inline-flex items-center gap-1 text-sm font-medium text-destructive underline hover:text-destructive/80"
+							class="mt-2 inline-flex items-center gap-1 text-sm font-medium text-destructive underline hover:text-destructive/90"
 						>
 							{m['tierForm.completeBillingInfo']()}
 						</a>

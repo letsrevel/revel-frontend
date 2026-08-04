@@ -103,9 +103,10 @@
 	     stay on `text-foreground` (always-audited body-text pair) with the
 	     icon alone carrying the destructive tone — the danger-framing rule,
 	     not a contrast workaround: since #781 `text-destructive` resolves to
-	     --destructive-text and measures 8.10:1 light / 6.05:1 dark on this
-	     tint (a COMPOSITED_PAIRS row now). It was 2.95:1 in dark before the
-	     split, which is why this note used to read as an apology. -->
+	     --destructive-text and measures at worst 7.20:1 light / 6.05:1 dark on
+	     this tint, over either container (both are COMPOSITED_PAIRS rows now).
+	     It was 2.95:1 in dark before the split, which is why this note used to
+	     read as an apology. -->
 	{#if form?.success}
 		<div class="relative overflow-hidden rounded-lg border border-success/40 bg-card" role="alert">
 			<div class="absolute inset-0 bg-success/10" aria-hidden="true"></div>

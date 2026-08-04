@@ -394,6 +394,13 @@
 <style>
 	:global(.required::after) {
 		content: ' *';
-		color: hsl(var(--destructive));
+		/* --destructive-text, NOT --destructive. The `text-destructive` utility is
+		   remapped to the text half of the split token in tailwind.config.ts, but
+		   that remap is a Tailwind theme key — it cannot reach raw CSS. Written as
+		   the fill value this asterisk measured 2.85:1 on the bg-card panel it sits
+		   in (dark), failing even the 3:1 non-text floor; the text token is 6.42:1
+		   there and 9.75:1 in light. Any `<style>` block colouring text or icons
+		   destructive must reach for this token by name. */
+		color: hsl(var(--destructive-text));
 	}
 </style>

@@ -30,8 +30,10 @@
 	// so it reuses `bg-highlight/20` + `text-highlight-foreground
 	// dark:text-highlight`; `danger` keeps a stronger /25 tint in dark (a /10 red
 	// wash is nearly invisible on aubergine) with `text-destructive` in both
-	// modes — 7.20:1 light / 5.84:1 dark since the destructive token was split
-	// into fill and text halves (#781). `success` passes AA as direct icon color.
+	// modes — at worst 7.20:1 light / 5.37:1 dark since the destructive token was
+	// split into fill and text halves (#781); this chip renders on both --card and
+	// --background surfaces and every combination is audited in
+	// scripts/audit-brand-themes.py. `success` passes AA as direct icon color.
 	const statusConfig = $derived.by(() => {
 		if (!evaluation || (evaluation.status as QuestionnaireEvaluationStatus) === 'pending review') {
 			return {

@@ -305,9 +305,12 @@
 						<!-- dark:bg-destructive/25 (AutoEvalRecommendation's pattern): a /10
 						     red wash is nearly invisible on the dark surface, so dark
 						     strengthens the tint. The icon stays `text-destructive`, which is
-						     --destructive-text since #781 — 8.10:1 light on /10, 5.37:1 dark on
-						     /25, both audited in scripts/audit-brand-themes.py. The old FILL
-						     value measured 2.69-2.95:1 here, under the 3:1 non-text floor. -->
+						     --destructive-text since #781. This panel is inside DialogContent
+						     (bg-background), so the governing figures are 7.20:1 light on /10
+						     and 5.84:1 dark on /25; over a bg-card container the same recipe is
+						     8.10:1 / 5.37:1. All four are audited rows in
+						     scripts/audit-brand-themes.py. The old FILL value measured
+						     2.69-2.95:1 here, under the 3:1 non-text floor. -->
 						<div
 							class="flex gap-2 rounded-md border border-destructive bg-destructive/10 p-3 text-sm dark:bg-destructive/25"
 						>

@@ -235,6 +235,28 @@ COMPOSITED_PAIRS = [
     # content — see the component comment for why the tint moved inward).
     ("destructive-text", 1, "destructive", 0.10, "background", 4.5, ("light",), "ImpersonationBanner copy"),
     ("destructive-text", 1, "destructive", 0.25, "background", 4.5, ("dark",), "ImpersonationBanner copy"),
+    # THE most common destructive recipe in the app: full-opacity error copy or
+    # an alert icon on a flat `bg-destructive/10` panel (OrgImageUploader,
+    # StripeConnect, admin settings/resources/invitations, create-org, the
+    # ticket/tier error boxes, the account/security disable-2FA panel at /5 —
+    # /10 is the worse of the two, so it covers /5). Checked over BOTH plausible
+    # containers because these panels move between page and card freely, and the
+    # per-site comments quote the worse of the two figures.
+    ("destructive-text", 1, "destructive", 0.10, "background", 4.5, BOTH, "error panel copy on a /10 tint (page)"),
+    ("destructive-text", 1, "destructive", 0.10, "card", 4.5, BOTH, "error panel copy on a /10 tint (card/dialog)"),
+    # Error panels whose SECONDARY copy is dimmed with the alpha modifier
+    # (`text-destructive/90`: TicketingStep, TierForm, WaitlistEntriesTable,
+    # the questionnaire/poll save errors). /90 is the floor — /80 measures
+    # 4.71:1 over the page and 4.40:1 over a card, i.e. it FAILS the moment such
+    # a panel is moved inside a Card. Both container surfaces are checked here
+    # so the panels can be relocated without re-deriving anything.
+    ("destructive-text", 0.9, "destructive", 0.10, "background", 4.5, BOTH, "dimmed error detail on an error panel (page)"),
+    ("destructive-text", 0.9, "destructive", 0.10, "card", 4.5, BOTH, "dimmed error detail on an error panel (card/dialog)"),
+    # StripeConnect's status icon: the same aria-hidden AlertCircle renders in a
+    # warning-tone card too, which is the tightest surface destructive lands on.
+    # Icon, so the 1.4.11 non-text floor applies — but audited so that the day
+    # someone puts TEXT on an amber tint, the script says so.
+    ("destructive-text", 1, "highlight", 0.20, "card", 3.0, BOTH, "StripeConnect status icon on a warning-tone card"),
     # Public page wash: bg-secondary/55, thinned to /28 in dark.
     ("foreground", 1, "secondary", 0.55, "background", 4.5, ("light",), "public page secondary wash"),
     ("muted-foreground", 1, "secondary", 0.55, "background", 4.5, ("light",), "muted copy on the secondary wash"),
@@ -275,15 +297,39 @@ def blend(over, alpha, base):
     """Paint `over` at `alpha` on an opaque `base`, the way a browser does."""
     return tuple(alpha * o + (1 - alpha) * b for o, b in zip(over, base))
 
+
 failures = 0
 confusables = 0
 for (brand, mode), toks in sorted(themes.items()):
     print(f"\n=== {brand} / {mode} ===")
     rgb = {k: hsl_to_rgb(*v) for k, v in toks.items() if k not in ("radius",)}
+
+    # A pair that names a token this theme does not define is a BROKEN pair, not
+    # an absent one — `hsl(var(--typo))` compiles to `hsl( / 1)`, which browsers
+    # drop, silently reverting the element to its inherited color. Skipping such
+    # rows would let a rename delete checks AND keep the audit green: renaming
+    # --destructive-text once dropped 16 PASS rows and still exited 0.
+    #
+    # The optional [data-brand=…] evaluation blocks legitimately declare only a
+    # subset of the palette, so they keep the lenient behaviour; the live theme
+    # must account for every token it references.
+    strict = brand == "default"
+
+    def resolve(token, note):
+        """Look a token up; in the live theme, a miss is a failure."""
+        global failures
+        if token is None or token in rgb:
+            return rgb[token] if token is not None else None
+        if strict:
+            failures += 1
+            print(f"  FAIL   ----  UNKNOWN TOKEN --{token}  [{note}]")
+        return "missing"
+
     for fg, bg, need, note in TEXT_PAIRS:
-        if fg not in rgb or bg not in rgb:
+        fg_c, bg_c = resolve(fg, note), resolve(bg, note)
+        if fg_c == "missing" or bg_c == "missing":
             continue
-        r = contrast(rgb[fg], rgb[bg])
+        r = contrast(fg_c, bg_c)
         ok = r >= need
         if not ok:
             failures += 1
@@ -294,10 +340,12 @@ for (brand, mode), toks in sorted(themes.items()):
     for fg, fg_a, wash, wash_a, base, need, modes, note in COMPOSITED_PAIRS:
         if mode not in modes:
             continue
-        if fg not in rgb or base not in rgb or (wash is not None and wash not in rgb):
+        fg_c, base_c, wash_c = resolve(fg, note), resolve(base, note), resolve(wash, note)
+        if "missing" in (fg_c, base_c, wash_c):
             continue
-        surface = rgb[base] if wash is None else blend(rgb[wash], wash_a, rgb[base])
-        ink = rgb[fg] if fg_a == 1 else blend(rgb[fg], fg_a, surface)
+        rgb_fg, rgb_base = fg_c, base_c
+        surface = rgb_base if wash is None else blend(wash_c, wash_a, rgb_base)
+        ink = rgb_fg if fg_a == 1 else blend(rgb_fg, fg_a, surface)
         r = contrast(ink, surface)
         ok = r >= need
         if not ok:

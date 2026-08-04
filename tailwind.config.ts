@@ -103,14 +103,33 @@ export default {
 			// --destructive-text. Light mode defines the two identically, so this
 			// changes nothing there; dark mode gets the AA-safe rose.
 			//
-			// Overriding `textColor` rather than sweeping ~520 call sites keeps the
+			// Overriding `textColor` rather than sweeping ~525 call sites keeps the
 			// class name every author already reaches for correct by construction —
 			// a new `text-destructive` written tomorrow is safe with no review.
-			// Only the textColor scale is remapped: border-/ring-/divide-/fill-
-			// destructive still resolve to --destructive via `colors` above.
-			// NOTE: this key REPLACES colors.destructive for the textColor scale,
-			// so `foreground` must be restated or `text-destructive-foreground`
-			// (the fill's label, ~67 call sites) would stop compiling.
+			//
+			// SCOPE, precisely: this remaps the `textColor` scale and nothing else,
+			// so it covers `text-destructive` and every variant of it (`hover:`,
+			// `focus:`, `group-hover:`, `data-[…]:`, and the alpha modifier
+			// `text-destructive/90`). It does NOT cover
+			//   · border-/ring-/divide-/fill-/stroke-/from-/to-destructive — correct,
+			//     those are the FILL and owe 1.4.11's 3:1, not 4.5:1;
+			//   · decoration-/placeholder-/caret-/accent-destructive — text-ish, but
+			//     separate Tailwind scales, so they still resolve to the fill. Zero
+			//     call sites today; don't reach for them to colour text;
+			//   · raw CSS in a `<style>` block — write `hsl(var(--destructive-text))`
+			//     by hand there (see routes/(auth)/create-org/+page.svelte).
+			// MERGE SEMANTICS, verified by compiling both variants rather than
+			// assumed: Tailwind DEEP-MERGES this key into the `colors.destructive`
+			// scale, it does not replace it. So `text-destructive-foreground` (the
+			// fill's label, 44 call sites) is inherited from `colors` and compiles
+			// even if the `foreground` line below is deleted. It is restated anyway
+			// — the pair is the point of this key, and stating it costs nothing and
+			// survives a future Tailwind that replaces instead of merging. What is
+			// genuinely load-bearing is `DEFAULT`: delete it and every
+			// `text-destructive` silently reverts to the fill. That direction IS
+			// covered by src/lib/utils/destructive-text-token.test.ts, which asserts
+			// resolveConfig() output (compiled reality, not this literal) and was
+			// mutation-tested to confirm it fails when the override is removed.
 			textColor: {
 				destructive: {
 					DEFAULT: 'hsl(var(--destructive-text) / <alpha-value>)',

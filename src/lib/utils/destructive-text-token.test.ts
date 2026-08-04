@@ -7,12 +7,21 @@
  * text it measured 3.11:1 on `--background` and 2.85:1 on `--card`.
  *
  * The fix is `--destructive-text`, wired to the `text-destructive` utility via a
- * `textColor` override in tailwind.config.ts so all ~520 existing call sites are
+ * `textColor` override in tailwind.config.ts so all ~525 existing call sites are
  * corrected at once and future ones are safe by default. Two things therefore
  * have to stay true, and neither is visible to a type checker:
- *   1. the utility wiring (text→text token, fill utilities→fill token, and the
- *      `foreground` key restated so `text-destructive-foreground` still exists);
+ *   1. the utility wiring — `text-destructive` on the text token, the fill
+ *      utilities still on the fill token, `text-destructive-foreground` intact;
  *   2. the dark value actually clearing 4.5:1 on the surfaces it lands on.
+ *
+ * (1) is asserted against `resolveConfig()` rather than the config literal, so
+ * it tests what Tailwind DOES with the override, not what we wrote. Mutation-
+ * tested: deleting the `textColor` override fails this file.
+ *
+ * Note the boundary this does NOT cover: the remap is a Tailwind theme key, so
+ * it reaches Tailwind utilities only. Raw CSS in a `<style>` block must name
+ * `--destructive-text` itself (see create-org/+page.svelte), and
+ * `decoration-/placeholder-/caret-/accent-destructive` still resolve to the fill.
  *
  * scripts/audit-brand-themes.py checks (2) as well, but it is a separate manual
  * gate; this keeps the regression inside `pnpm test`.
@@ -20,12 +29,21 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import resolveTailwindConfig from 'tailwindcss/resolveConfig';
 import tailwindConfig from '../../../tailwind.config';
 
 type ColorScale = { DEFAULT: string; foreground: string };
 
-const colors = tailwindConfig.theme.extend.colors as unknown as Record<string, ColorScale>;
-const textColor = tailwindConfig.theme.extend.textColor as unknown as Record<string, ColorScale>;
+// The RESOLVED theme, not the config literal. "`extend.textColor` replaces
+// `colors.destructive` for the text scale" is an assumption about Tailwind's
+// merge semantics, and asserting the literal would only prove what we typed: if
+// a future Tailwind merged instead of replaced, `text-destructive` would revert
+// to the fill while a literal-based test stayed green.
+const resolved = resolveTailwindConfig(tailwindConfig).theme as unknown as {
+	textColor: Record<string, ColorScale>;
+	backgroundColor: Record<string, ColorScale>;
+	borderColor: Record<string, ColorScale>;
+};
 
 // Read the stylesheet off disk rather than importing it: `?raw` still routes
 // through Vite's CSS pipeline, and the theme lives in plain text either way.
@@ -104,16 +122,21 @@ function composite(
 
 describe('the destructive text/fill token split (#781)', () => {
 	it('routes `text-destructive` to the text token and fill utilities to the fill token', () => {
-		expect(textColor.destructive.DEFAULT).toContain('var(--destructive-text)');
+		expect(resolved.textColor.destructive.DEFAULT).toContain('var(--destructive-text)');
 		// `colors` still drives bg-/border-/ring-/divide-destructive.
-		expect(colors.destructive.DEFAULT).toContain('var(--destructive)');
-		expect(colors.destructive.DEFAULT).not.toContain('var(--destructive-text)');
+		expect(resolved.backgroundColor.destructive.DEFAULT).toContain('var(--destructive)');
+		expect(resolved.backgroundColor.destructive.DEFAULT).not.toContain('var(--destructive-text)');
+		expect(resolved.borderColor.destructive.DEFAULT).toContain('var(--destructive)');
+		expect(resolved.borderColor.destructive.DEFAULT).not.toContain('var(--destructive-text)');
 	});
 
-	it('restates `foreground` so `text-destructive-foreground` survives the override', () => {
-		// The textColor key REPLACES colors.destructive for that scale, so an
-		// override with only DEFAULT would silently delete the fill's label class.
-		expect(textColor.destructive.foreground).toContain('var(--destructive-foreground)');
+	it('keeps `text-destructive-foreground` pointing at the fill label', () => {
+		// Asserts the INVARIANT, not the mechanism. Tailwind deep-merges the
+		// override into `colors.destructive` (compile-verified), so this survives
+		// whether or not tailwind.config.ts restates the key — which is exactly
+		// why it is written against the resolved scale: it stays true under merge
+		// OR replace semantics, and only fails if the pair itself is broken.
+		expect(resolved.textColor.destructive.foreground).toContain('var(--destructive-foreground)');
 	});
 
 	it('leaves light mode byte-identical to the fill token', () => {
