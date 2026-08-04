@@ -9,6 +9,8 @@
 	import type { PaymentMethod, TicketStatus } from '$lib/api/generated/types.gen';
 	import TicketListCard from '$lib/components/tickets/TicketListCard.svelte';
 	import HeldPassCard from '$lib/components/series-passes/HeldPassCard.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { seriesPassQueryKeys } from '$lib/queries/series-passes';
 	import { groupTicketsWithPasses } from '$lib/utils/ticket-pass-grouping';
 	import type { HeldSeriesPassSchema } from '$lib/api/generated/types.gen';
@@ -151,28 +153,24 @@
 
 <div class="container mx-auto px-4 py-6 md:py-8">
 	<!-- Page Header -->
-	<div class="mb-8">
-		<div class="mb-2 flex items-center gap-3">
-			<div class="rounded-lg bg-primary/10 p-2">
-				<Ticket class="h-6 w-6 text-primary" aria-hidden="true" />
-			</div>
-			<div>
-				<h1 class="text-2xl font-bold md:text-3xl">{m['dashboard.tickets.title']()}</h1>
-				<p class="text-muted-foreground">{m['dashboard.tickets.description']()}</p>
-			</div>
-		</div>
+	<PageHeader
+		title={m['dashboard.tickets.title']()}
+		subtitle={m['dashboard.tickets.description']()}
+		kicker={m['nav.myTickets']()}
+		volume="celebration"
+		class="mb-4"
+	/>
 
-		<!-- Ticket Count -->
-		{#if !ticketsQuery.isPending && totalCount > 0}
-			<p class="mt-4 text-sm text-muted-foreground">
-				{m['dashboard.tickets.showing']({
-					count: tickets.length.toString(),
-					total: totalCount.toString()
-				})}
-				{totalCount === 1 ? m['dashboard.tickets.ticket']() : m['dashboard.tickets.tickets']()}
-			</p>
-		{/if}
-	</div>
+	<!-- Ticket Count -->
+	{#if !ticketsQuery.isPending && totalCount > 0}
+		<p class="mb-6 text-sm text-muted-foreground">
+			{m['dashboard.tickets.showing']({
+				count: tickets.length.toString(),
+				total: totalCount.toString()
+			})}
+			{totalCount === 1 ? m['dashboard.tickets.ticket']() : m['dashboard.tickets.tickets']()}
+		</p>
+	{/if}
 
 	<!-- Search Bar -->
 	<div class="mb-6">
@@ -259,17 +257,8 @@
 		</div>
 	{:else if tickets.length === 0}
 		<!-- Empty State -->
-		<div class="rounded-lg border bg-card p-12 text-center">
-			<div
-				class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10"
-			>
-				<Ticket class="h-8 w-8 text-primary" aria-hidden="true" />
-			</div>
-			<h2 class="mb-2 text-xl font-semibold">{m['dashboardTicketsPage.noResults']()}</h2>
+		{#snippet ticketsEmptyAction()}
 			{#if statusFilter || paymentMethodFilter || debouncedSearch}
-				<p class="mb-4 text-muted-foreground">
-					{m['dashboardTicketsPage.noResultsFiltered']()}
-				</p>
 				<button
 					type="button"
 					onclick={() => {
@@ -283,9 +272,6 @@
 					{m['dashboardTicketsPage.clearFilters']()}
 				</button>
 			{:else}
-				<p class="mb-4 text-muted-foreground">
-					{m['dashboardTicketsPage.emptyHint']()}
-				</p>
 				<a
 					href={resolve('/(public)/events', {})}
 					class="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
@@ -293,7 +279,16 @@
 					{m['dashboardTicketsPage.browseEvents']()}
 				</a>
 			{/if}
-		</div>
+		{/snippet}
+		<EmptyState
+			icon={Ticket}
+			title={m['dashboardTicketsPage.noResults']()}
+			body={statusFilter || paymentMethodFilter || debouncedSearch
+				? m['dashboardTicketsPage.noResultsFiltered']()
+				: m['dashboardTicketsPage.emptyHint']()}
+			action={ticketsEmptyAction}
+			level={2}
+		/>
 	{:else}
 		<!-- Tickets Grid -->
 		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

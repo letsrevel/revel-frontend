@@ -10,9 +10,11 @@
 		eventseriesUnfollowEventSeries,
 		eventseriesUpdateEventSeriesFollow
 	} from '$lib/api/generated/sdk.gen';
-	import { Heart, Building2, Calendar, Loader2, ChevronLeft, ChevronRight } from '@lucide/svelte';
+	import { Building2, Calendar, Loader2, ChevronLeft, ChevronRight } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Checkbox } from '$lib/components/ui/checkbox';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { toast } from 'svelte-sonner';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
@@ -199,16 +201,12 @@
 
 <div class="container mx-auto px-4 py-6 md:py-8">
 	<!-- Page Header -->
-	<div class="mb-8">
-		<div class="mb-2 flex items-center gap-3">
-			<div class="rounded-lg bg-primary/10 p-2">
-				<Heart class="h-6 w-6 text-primary" aria-hidden="true" />
-			</div>
-			<div>
-				<h1 class="text-2xl font-bold md:text-3xl">{m['dashboard.following.title']()}</h1>
-			</div>
-		</div>
-	</div>
+	<PageHeader
+		title={m['dashboard.following.title']()}
+		kicker={m['dashboard.followingButton']()}
+		volume="celebration"
+		class="mb-8"
+	/>
 
 	<!-- Tabs -->
 	<div class="mb-6">
@@ -266,17 +264,17 @@
 					<Loader2 class="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
 				</div>
 			{:else if organizations.length === 0}
-				<div class="rounded-lg border bg-card p-12 text-center">
-					<div
-						class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10"
-					>
-						<Building2 class="h-8 w-8 text-primary" aria-hidden="true" />
-					</div>
-					<h3 class="mb-2 text-lg font-semibold">{m['dashboard.following.noOrganizations']()}</h3>
-					<Button href="/organizations" variant="default" class="mt-4">
+				{#snippet discoverOrganizationsAction()}
+					<Button href="/organizations" variant="default">
 						{m['dashboard.following.discoverOrganizations']()}
 					</Button>
-				</div>
+				{/snippet}
+				<EmptyState
+					icon={Building2}
+					title={m['dashboard.following.noOrganizations']()}
+					action={discoverOrganizationsAction}
+					level={3}
+				/>
 			{:else}
 				<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 					{#each organizations as follow (follow.id)}
@@ -299,7 +297,7 @@
 								<div class="min-w-0 flex-1">
 									<a
 										href={resolve('/(public)/org/[slug]', { slug: org.slug })}
-										class="block truncate font-semibold hover:text-primary hover:underline"
+										class="block truncate font-bold hover:text-primary hover:underline"
 									>
 										{org.name}
 									</a>
@@ -399,17 +397,17 @@
 					<Loader2 class="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
 				</div>
 			{:else if eventSeries.length === 0}
-				<div class="rounded-lg border bg-card p-12 text-center">
-					<div
-						class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10"
-					>
-						<Calendar class="h-8 w-8 text-primary" aria-hidden="true" />
-					</div>
-					<h3 class="mb-2 text-lg font-semibold">{m['dashboard.following.noEventSeries']()}</h3>
-					<Button href="/events" variant="default" class="mt-4">
+				{#snippet discoverEventSeriesAction()}
+					<Button href="/events" variant="default">
 						{m['dashboard.following.discoverEventSeries']()}
 					</Button>
-				</div>
+				{/snippet}
+				<EmptyState
+					icon={Calendar}
+					title={m['dashboard.following.noEventSeries']()}
+					action={discoverEventSeriesAction}
+					level={3}
+				/>
 			{:else}
 				<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 					{#each eventSeries as follow (follow.id)}
@@ -435,7 +433,7 @@
 											org_slug: series.organization.slug,
 											series_slug: series.slug
 										})}
-										class="block truncate font-semibold hover:text-primary hover:underline"
+										class="block truncate font-bold hover:text-primary hover:underline"
 									>
 										{series.name}
 									</a>

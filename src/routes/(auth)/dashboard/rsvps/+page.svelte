@@ -5,6 +5,8 @@
 	import { dashboardDashboardRsvps } from '$lib/api/generated/sdk.gen';
 	import type { RsvpStatus } from '$lib/api/generated/types.gen';
 	import RSVPCard from '$lib/components/rsvps/RSVPCard.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { CheckCircle2, Filter, ChevronLeft, ChevronRight, Loader2 } from '@lucide/svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
@@ -122,28 +124,24 @@
 
 <div class="container mx-auto px-4 py-6 md:py-8">
 	<!-- Page Header -->
-	<div class="mb-8">
-		<div class="mb-2 flex items-center gap-3">
-			<div class="rounded-lg bg-primary/10 p-2">
-				<CheckCircle2 class="h-6 w-6 text-primary" aria-hidden="true" />
-			</div>
-			<div>
-				<h1 class="text-2xl font-bold md:text-3xl">{m['dashboard.rsvps.title']()}</h1>
-				<p class="text-muted-foreground">{m['dashboard.rsvps.description']()}</p>
-			</div>
-		</div>
+	<PageHeader
+		title={m['dashboard.rsvps.title']()}
+		subtitle={m['dashboard.rsvps.description']()}
+		kicker={m['nav.rsvps']()}
+		volume="celebration"
+		class="mb-4"
+	/>
 
-		<!-- RSVP Count -->
-		{#if !rsvpsQuery.isPending && totalCount > 0}
-			<p class="mt-4 text-sm text-muted-foreground">
-				{m['dashboard.rsvps.showing']({
-					count: rsvps.length.toString(),
-					total: totalCount.toString()
-				})}
-				{totalCount === 1 ? m['dashboard.rsvps.rsvp']() : m['dashboard.rsvps.rsvps']()}
-			</p>
-		{/if}
-	</div>
+	<!-- RSVP Count -->
+	{#if !rsvpsQuery.isPending && totalCount > 0}
+		<p class="mb-6 text-sm text-muted-foreground">
+			{m['dashboard.rsvps.showing']({
+				count: rsvps.length.toString(),
+				total: totalCount.toString()
+			})}
+			{totalCount === 1 ? m['dashboard.rsvps.rsvp']() : m['dashboard.rsvps.rsvps']()}
+		</p>
+	{/if}
 
 	<!-- Search Bar -->
 	<div class="mb-6">
@@ -219,17 +217,8 @@
 		</div>
 	{:else if rsvps.length === 0}
 		<!-- Empty State -->
-		<div class="rounded-lg border bg-card p-12 text-center">
-			<div
-				class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10"
-			>
-				<CheckCircle2 class="h-8 w-8 text-primary" aria-hidden="true" />
-			</div>
-			<h2 class="mb-2 text-xl font-semibold">{m['dashboardRsvpsPage.noResults']()}</h2>
+		{#snippet rsvpsEmptyAction()}
 			{#if selectedStatuses.length || debouncedSearch}
-				<p class="mb-4 text-muted-foreground">
-					{m['dashboardRsvpsPage.noResultsFiltered']()}
-				</p>
 				<button
 					type="button"
 					onclick={() => {
@@ -241,9 +230,6 @@
 					{m['dashboardRsvpsPage.clearFilters']()}
 				</button>
 			{:else}
-				<p class="mb-4 text-muted-foreground">
-					{m['dashboardRsvpsPage.emptyHint']()}
-				</p>
 				<a
 					href={resolve('/(public)/events', {})}
 					class="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
@@ -251,7 +237,16 @@
 					{m['dashboardRsvpsPage.browseEvents']()}
 				</a>
 			{/if}
-		</div>
+		{/snippet}
+		<EmptyState
+			icon={CheckCircle2}
+			title={m['dashboardRsvpsPage.noResults']()}
+			body={selectedStatuses.length || debouncedSearch
+				? m['dashboardRsvpsPage.noResultsFiltered']()
+				: m['dashboardRsvpsPage.emptyHint']()}
+			action={rsvpsEmptyAction}
+			level={2}
+		/>
 	{:else}
 		<!-- RSVPs Grid -->
 		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
