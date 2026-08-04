@@ -12,6 +12,7 @@
 		MoreHorizontal
 	} from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import type { EventSeriesRecurrenceDetailSchema } from '$lib/api/generated/types.gen';
 	import RecurrenceSummary from './RecurrenceSummary.svelte';
 	import SeriesActionSheet from './SeriesActionSheet.svelte';
@@ -71,25 +72,23 @@
 
 <header class="rounded-lg border border-border bg-card p-4 shadow-sm md:p-6">
 	<div class="flex flex-wrap items-center gap-2">
-		<h1 class="flex-1 text-2xl font-bold tracking-tight md:text-3xl">
+		<h1 class="flex-1 text-2xl font-extrabold tracking-tight sm:text-3xl">
 			{series.name}
 		</h1>
 		{#if isPaused}
-			<span
-				class="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-0.5 text-xs font-medium text-muted-foreground"
+			<StatusBadge
+				tone="neutral"
+				icon={Pause}
+				label={m['recurringEvents.dashboard.statusPaused']()}
 				aria-label={m['recurringEvents.dashboard.statusPaused']()}
-			>
-				<Pause class="h-3 w-3" aria-hidden="true" />
-				{m['recurringEvents.dashboard.statusPaused']()}
-			</span>
+			/>
 		{:else}
-			<span
-				class="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-0.5 text-xs font-medium text-green-900 dark:bg-green-900/30 dark:text-green-200"
+			<StatusBadge
+				tone="success"
+				icon={Play}
+				label={m['recurringEvents.dashboard.statusActive']()}
 				aria-label={m['recurringEvents.dashboard.statusActive']()}
-			>
-				<Play class="h-3 w-3" aria-hidden="true" />
-				{m['recurringEvents.dashboard.statusActive']()}
-			</span>
+			/>
 		{/if}
 		<span
 			class="inline-flex items-center rounded-full bg-secondary px-3 py-0.5 text-xs font-medium text-secondary-foreground"

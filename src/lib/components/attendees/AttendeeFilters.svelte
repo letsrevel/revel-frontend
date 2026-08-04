@@ -44,10 +44,10 @@
 			onclick={() => onStatusFilter('yes')}
 			aria-pressed={activeStatusFilters.includes('yes')}
 			class={cn(
-				'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+				'rounded-md border px-3 py-1.5 text-sm font-medium transition-colors',
 				activeStatusFilters.includes('yes')
-					? 'bg-green-600 text-white'
-					: 'border border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-950'
+					? 'border-success bg-success text-success-foreground'
+					: 'border-success/50 bg-card text-foreground hover:bg-success/10'
 			)}
 		>
 			{m['attendeesAdmin.statsYes']()}
@@ -57,10 +57,10 @@
 			onclick={() => onStatusFilter('maybe')}
 			aria-pressed={activeStatusFilters.includes('maybe')}
 			class={cn(
-				'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+				'rounded-md border px-3 py-1.5 text-sm font-medium transition-colors',
 				activeStatusFilters.includes('maybe')
-					? 'bg-yellow-600 text-white'
-					: 'border border-yellow-600 text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-950'
+					? 'border-highlight bg-highlight text-highlight-foreground'
+					: 'border-highlight/50 bg-card text-foreground hover:bg-highlight/10'
 			)}
 		>
 			{m['attendeesAdmin.statsMaybe']()}
@@ -70,10 +70,10 @@
 			onclick={() => onStatusFilter('no')}
 			aria-pressed={activeStatusFilters.includes('no')}
 			class={cn(
-				'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+				'rounded-md border px-3 py-1.5 text-sm font-medium transition-colors',
 				activeStatusFilters.includes('no')
-					? 'bg-red-600 text-white'
-					: 'border border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-950'
+					? 'border-destructive bg-destructive text-destructive-foreground'
+					: 'border-destructive/50 bg-card text-foreground hover:bg-destructive/10'
 			)}
 		>
 			{m['attendeesAdmin.statsNo']()}

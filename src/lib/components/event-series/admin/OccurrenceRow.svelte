@@ -14,6 +14,8 @@
 	} from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
+	import type { Tone } from '$lib/components/common/tones';
 	import { formatEventDate } from '$lib/utils/date';
 	import type { EventInListSchema, EventStatus } from '$lib/api/generated/types.gen';
 
@@ -86,16 +88,19 @@
 		}
 	});
 
-	const statusChipClass = $derived.by(() => {
+	// Administrative status only (not the temporal open/upcoming/past logic
+	// EventStatusBadge shows) — this row's "open" means "published", so it
+	// keeps its own label set and just borrows the shared StatusBadge shell.
+	const statusTone = $derived.by((): Tone => {
 		switch (variant) {
 			case 'draft':
-				return 'bg-muted text-muted-foreground';
+				return 'neutral';
 			case 'open':
-				return 'bg-green-100 text-green-900 dark:bg-green-900/30 dark:text-green-200';
+				return 'success';
 			case 'closed':
-				return 'bg-amber-100 text-amber-900 dark:bg-amber-900/30 dark:text-amber-200';
+				return 'warning';
 			case 'cancelled':
-				return 'bg-destructive/10 text-destructive';
+				return 'danger';
 		}
 	});
 
@@ -139,7 +144,7 @@
 	class="flex flex-col gap-3 rounded-lg border border-l-4 border-border bg-card p-3 shadow-sm transition-colors hover:bg-accent/40 sm:flex-row sm:items-center sm:gap-4 {isDrifted
 		? 'border-l-destructive'
 		: showModifiedBadge
-			? 'border-l-amber-500'
+			? 'border-l-highlight'
 			: 'border-l-transparent'} {variant === 'cancelled' || variant === 'closed'
 		? 'opacity-70'
 		: ''}"
@@ -163,26 +168,18 @@
 	<div class="flex min-w-0 flex-1 flex-col gap-1.5">
 		<div class="flex flex-wrap items-center gap-2">
 			<h3 class="truncate text-sm font-semibold">{event.name}</h3>
-			<span
-				class="inline-flex flex-shrink-0 items-center rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide {statusChipClass}"
-			>
-				{statusLabel}
-			</span>
+			<StatusBadge tone={statusTone} label={statusLabel} size="sm" class="flex-shrink-0" />
 		</div>
 		{#if isDrifted || showModifiedBadge || hasAttendees}
 			<div class="flex flex-wrap items-center gap-2 text-xs">
 				{#if isDrifted}
-					<span
-						class="inline-flex items-center rounded-full bg-destructive/10 px-2 py-0.5 font-medium text-destructive"
-					>
-						{m['recurringEvents.row.driftedBadge']()}
-					</span>
+					<StatusBadge tone="danger" label={m['recurringEvents.row.driftedBadge']()} size="sm" />
 				{:else if showModifiedBadge}
-					<span
-						class="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 font-medium text-amber-900 dark:bg-amber-900/30 dark:text-amber-200"
-					>
-						{m['recurringEvents.row.modifiedBadge']()}
-					</span>
+					<StatusBadge
+						tone="warning"
+						label={m['recurringEvents.row.modifiedBadge']()}
+						size="sm"
+					/>
 				{/if}
 				{#if hasAttendees}
 					<span class="text-muted-foreground">
@@ -206,7 +203,7 @@
 			<Button
 				size="sm"
 				onclick={() => onPublish(event.id)}
-				class="h-8 gap-1 bg-green-600 px-2 text-white hover:bg-green-700 focus-visible:ring-green-700 dark:bg-green-600 dark:hover:bg-green-500"
+				class="h-8 gap-1 bg-success px-2 text-success-foreground hover:bg-success/90 focus-visible:ring-success"
 				data-testid="row-publish-occurrence"
 			>
 				<Megaphone class="h-4 w-4" aria-hidden="true" />
@@ -263,7 +260,7 @@
 					{#if variant === 'open' && onClose}
 						<DropdownMenu.Item
 							onclick={() => onClose(event.id)}
-							class="text-amber-700 focus:text-amber-700 dark:text-amber-400 dark:focus:text-amber-400"
+							class="text-highlight-foreground focus:text-highlight-foreground dark:text-highlight dark:focus:text-highlight"
 						>
 							<XCircle class="mr-2 h-4 w-4" aria-hidden="true" />
 							{m['orgAdmin.events.actions.close']()}

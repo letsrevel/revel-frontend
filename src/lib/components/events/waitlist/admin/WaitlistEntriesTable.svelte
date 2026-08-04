@@ -11,6 +11,7 @@
 		Users
 	} from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import WaitlistOfferStatusBadge from '$lib/components/events/waitlist/WaitlistOfferStatusBadge.svelte';
 	import OfferExpiryCountdown from '$lib/components/events/waitlist/OfferExpiryCountdown.svelte';
 	import type {
@@ -98,13 +99,11 @@
 		</p>
 	</div>
 {:else if data && data.results.length === 0}
-	<div class="rounded-lg border border-border bg-card p-12 text-center">
-		<Users class="mx-auto h-12 w-12 text-muted-foreground" aria-hidden="true" />
-		<h3 class="mt-4 text-lg font-semibold">{m['orgAdmin.waitlist.empty.title']()}</h3>
-		<p class="mt-2 text-sm text-muted-foreground">
-			{m['orgAdmin.waitlist.empty.description']()}
-		</p>
-	</div>
+	<EmptyState
+		icon={Users}
+		title={m['orgAdmin.waitlist.empty.title']()}
+		body={m['orgAdmin.waitlist.empty.description']()}
+	/>
 {:else if data}
 	<div class="rounded-lg border bg-card p-4">
 		<div class="flex items-center gap-2">
@@ -121,19 +120,29 @@
 		<table class="w-full border-collapse">
 			<thead class="bg-muted/50">
 				<tr>
-					<th class="px-4 py-3 text-left text-sm font-medium">
+					<th
+						class="px-4 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
+					>
 						{m['orgAdmin.waitlist.table.user']()}
 					</th>
-					<th class="px-4 py-3 text-left text-sm font-medium">
+					<th
+						class="px-4 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
+					>
 						{m['orgAdmin.waitlist.table.email']()}
 					</th>
-					<th class="px-4 py-3 text-left text-sm font-medium">
+					<th
+						class="px-4 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
+					>
 						{m['orgAdmin.waitlist.table.joinedAt']()}
 					</th>
-					<th class="px-4 py-3 text-left text-sm font-medium">
+					<th
+						class="px-4 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
+					>
 						{m['orgAdmin.waitlist.offer.statusColumn']()}
 					</th>
-					<th class="px-4 py-3 text-right text-sm font-medium">
+					<th
+						class="px-4 py-3 text-right text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
+					>
 						{m['orgAdmin.waitlist.table.actions']()}
 					</th>
 				</tr>

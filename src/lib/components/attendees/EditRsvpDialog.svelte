@@ -76,7 +76,7 @@
 								name="status"
 								value="yes"
 								bind:group={selectedStatus}
-								class="h-4 w-4 text-green-600 focus:ring-green-600"
+								class="h-4 w-4 text-success focus:ring-success"
 							/>
 							<span class="text-sm font-medium">{m['attendeesAdmin.editModalYesLabel']()}</span>
 						</label>
@@ -88,7 +88,7 @@
 								name="status"
 								value="maybe"
 								bind:group={selectedStatus}
-								class="h-4 w-4 text-yellow-600 focus:ring-yellow-600"
+								class="h-4 w-4 text-highlight-foreground focus:ring-highlight dark:text-highlight"
 							/>
 							<span class="text-sm font-medium">{m['attendeesAdmin.editModalMaybeLabel']()}</span>
 						</label>
@@ -100,7 +100,7 @@
 								name="status"
 								value="no"
 								bind:group={selectedStatus}
-								class="h-4 w-4 text-red-600 focus:ring-red-600"
+								class="h-4 w-4 text-destructive focus:ring-destructive"
 							/>
 							<span class="text-sm font-medium">{m['attendeesAdmin.editModalNoLabel']()}</span>
 						</label>
