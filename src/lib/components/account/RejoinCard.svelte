@@ -75,10 +75,11 @@
 	});
 </script>
 
-<Card class="border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40">
+<!-- Warning tint mirrors ToneTile's amber recipe (see security page). -->
+<Card class="border-highlight/40 bg-highlight/20">
 	<CardContent class="p-4">
 		<article aria-label={sub.organization_name}>
-			<h3 class="font-semibold">
+			<h3 class="font-bold">
 				{m['subscriptions.rejoin.title']({ org: sub.organization_name })}
 			</h3>
 

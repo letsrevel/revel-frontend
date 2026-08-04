@@ -4392,6 +4392,7 @@
 		"error_updateFailed": "Échec de la mise à jour du jeton",
 		"error_deleteFailed": "Échec de la suppression du lien"
 	},
+	"orgCreate.kicker": "Nouvelle organisation",
 	"orgCreate.alreadyOwner": "Tu possèdes déjà une organisation",
 	"orgCreate.alreadyOwnerDescription": "Chaque utilisateur·rice ne peut posséder qu'une seule organisation. Tu peux gérer ton organisation existante depuis le tableau de bord.",
 	"orgCreate.backToDashboard": "Retour au tableau de bord",
@@ -9135,6 +9136,7 @@
 		"inProgress": "En cours",
 		"closed": "Clôturées",
 		"empty": "Aucune candidature pour l'instant. Quand tu postules auprès d'une organisation, tu peux la suivre ici.",
+		"emptyTitle": "Aucune candidature pour l'instant",
 		"loadError": "Impossible de charger tes candidatures. Essaie de recharger la page.",
 		"appliedOn": "Candidature envoyée le {date}",
 		"tierLine": "Niveau : {tier}",

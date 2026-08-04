@@ -19,6 +19,9 @@
 	import { Button } from '$lib/components/ui/button';
 	import AudioPlayer from '$lib/components/questionnaires/AudioPlayer.svelte';
 	import { isAudio } from '$lib/utils/audio';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 
 	interface Props {
 		form: ActionData;
@@ -120,30 +123,28 @@
 </svelte:head>
 
 <div class="container mx-auto max-w-4xl px-4 py-8">
-	<!-- Page Header -->
-	<div class="mb-8">
-		<h1 class="text-3xl font-bold tracking-tight">{m['accountPrivacyPage.title']()}</h1>
-		<p class="mt-2 text-muted-foreground">
-			{m['accountPrivacyPage.subtitle']()}
-		</p>
-	</div>
+	<PageHeader
+		kicker={m['myInvoices.account']()}
+		title={m['accountPrivacyPage.title']()}
+		subtitle={m['accountPrivacyPage.subtitle']()}
+		class="mb-8"
+	/>
 
 	<!-- Success Message -->
 	{#if success}
-		<div
-			role="status"
-			class="mb-8 rounded-md border border-green-500 bg-green-50 p-6 dark:bg-green-950"
-		>
+		<!-- Composited tint mirrors ToneTile's audited success pair (>=3:1 vs
+		     background/card); body copy stays on --foreground/--muted-foreground. -->
+		<div role="status" class="mb-8 rounded-md border border-success/30 bg-success/10 p-6">
 			<div class="flex items-start gap-3">
-				<Mail class="h-6 w-6 flex-shrink-0 text-green-600 dark:text-green-400" aria-hidden="true" />
+				<Mail class="h-6 w-6 flex-shrink-0 text-success" aria-hidden="true" />
 				<div class="flex-1 space-y-2">
-					<p class="text-sm font-medium text-green-800 dark:text-green-200">
+					<p class="text-sm font-medium text-foreground">
 						{m['accountPrivacyPage.deletionEmailSent']()}
 					</p>
-					<p class="text-sm text-green-700 dark:text-green-300">
+					<p class="text-sm text-muted-foreground">
 						{m['accountPrivacyPage.deletionEmailBody']()}
 					</p>
-					<p class="text-xs text-green-600 dark:text-green-400">
+					<p class="text-xs text-muted-foreground">
 						{m['accountPrivacyPage.deletionEmailIgnore']()}
 					</p>
 				</div>
@@ -167,27 +168,22 @@
 				<Download class="h-6 w-6 text-primary" aria-hidden="true" />
 			</div>
 			<div class="flex-1">
-				<h2 class="text-xl font-semibold">{m['accountPrivacyPage.exportDataTitle']()}</h2>
+				<SectionHeader title={m['accountPrivacyPage.exportDataTitle']()} class="flex-1" />
 				<p class="mt-2 text-sm text-muted-foreground">
 					{m['accountPrivacyPage.exportDataDescription']()}
 				</p>
 
 				<!-- Export Success Message -->
 				{#if exportSuccess}
-					<div
-						role="status"
-						class="mt-4 rounded-md border border-green-500 bg-green-50 p-4 dark:bg-green-950"
-					>
+					<!-- Composited tint mirrors ToneTile's audited success pair. -->
+					<div role="status" class="mt-4 rounded-md border border-success/30 bg-success/10 p-4">
 						<div class="flex items-start gap-2">
-							<Check
-								class="h-5 w-5 flex-shrink-0 text-green-600 dark:text-green-400"
-								aria-hidden="true"
-							/>
+							<Check class="h-5 w-5 flex-shrink-0 text-success" aria-hidden="true" />
 							<div class="flex-1">
-								<p class="text-sm font-medium text-green-800 dark:text-green-200">
+								<p class="text-sm font-medium text-foreground">
 									{m['accountPrivacyPage.exportRequestReceived']()}
 								</p>
-								<p class="mt-1 text-sm text-green-700 dark:text-green-300">
+								<p class="mt-1 text-sm text-muted-foreground">
 									{m['accountPrivacyPage.exportEmailNote']()}
 								</p>
 							</div>
@@ -271,7 +267,7 @@
 				<FolderOpen class="h-6 w-6 text-primary" aria-hidden="true" />
 			</div>
 			<div class="flex-1">
-				<h2 class="text-xl font-semibold">{m['accountPrivacyPage.yourFilesTitle']()}</h2>
+				<SectionHeader title={m['accountPrivacyPage.yourFilesTitle']()} class="flex-1" />
 				<p class="mt-2 text-sm text-muted-foreground">
 					{m['accountPrivacyPage.yourFilesDescription']()}
 				</p>
@@ -347,13 +343,12 @@
 							})}
 						</p>
 					{:else}
-						<div class="flex flex-col items-center justify-center py-8 text-center">
-							<FolderOpen class="h-12 w-12 text-muted-foreground/50" aria-hidden="true" />
-							<h3 class="mt-4 text-sm font-medium">{m['accountPrivacyPage.noFilesTitle']()}</h3>
-							<p class="mt-1 text-xs text-muted-foreground">
-								{m['accountPrivacyPage.noFilesDescription']()}
-							</p>
-						</div>
+						<EmptyState
+							icon={FolderOpen}
+							level={3}
+							title={m['accountPrivacyPage.noFilesTitle']()}
+							body={m['accountPrivacyPage.noFilesDescription']()}
+						/>
 					{/if}
 				</div>
 			</div>
@@ -369,9 +364,10 @@
 				<AlertTriangle class="h-6 w-6 text-destructive" aria-hidden="true" />
 			</div>
 			<div class="flex-1">
-				<h2 class="text-xl font-semibold text-destructive">
-					{m['accountPrivacyPage.dangerZone']()}
-				</h2>
+				<!-- text-destructive as a heading would measure 2.85:1 in dark on this
+				     tint (below 4.5) — the same trap as the create-org/referral
+				     headings; the icon + border/tint already carry "danger zone". -->
+				<SectionHeader title={m['accountPrivacyPage.dangerZone']()} class="flex-1" />
 				<p class="mt-2 text-sm text-muted-foreground">
 					{m['accountPrivacyPage.dangerZoneDescription']()}
 				</p>
@@ -580,8 +576,10 @@
 				</div>
 			</div>
 
-			<div class="mb-6 rounded-md border border-amber-500/30 bg-amber-50 p-4 dark:bg-amber-950/30">
-				<p class="text-sm text-amber-800 dark:text-amber-200">
+			<!-- Warning tint mirrors ToneTile's amber recipe (see security page); raw
+			     text-highlight alone fails AA on the light background. -->
+			<div class="mb-6 rounded-md border border-highlight/40 bg-highlight/20 p-4">
+				<p class="text-sm text-highlight-foreground dark:text-highlight">
 					{m['accountPrivacyPage.fileDeleteModal_warning']()}
 				</p>
 			</div>

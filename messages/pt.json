@@ -4421,6 +4421,7 @@
 		"error_updateFailed": "Não foi possível atualizar o token",
 		"error_deleteFailed": "Não foi possível eliminar o link"
 	},
+	"orgCreate.kicker": "Nova organização",
 	"orgCreate.alreadyOwner": "Já és titular de uma organização",
 	"orgCreate.alreadyOwnerDescription": "Cada conta só pode ser titular de uma organização. Podes gerir a tua organização existente a partir do painel.",
 	"orgCreate.backToDashboard": "Voltar ao painel",
@@ -9135,6 +9136,7 @@
 		"inProgress": "Em curso",
 		"closed": "Encerradas",
 		"empty": "Ainda não há candidaturas. Quando te candidatares a uma organização, podes acompanhá-la aqui.",
+		"emptyTitle": "Ainda não há candidaturas",
 		"loadError": "Não foi possível carregar as tuas candidaturas. Tenta recarregar a página.",
 		"appliedOn": "Candidatura enviada em {date}",
 		"tierLine": "Nível: {tier}",

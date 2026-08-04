@@ -27,6 +27,9 @@
 		StripeAccountStatusSchema
 	} from '$lib/api/generated/types.gen';
 	import { BillingProfileForm } from '$lib/components/billing';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
+	import type { Tone } from '$lib/components/common/tones';
 
 	const user = $derived(authStore.user);
 	const accessToken = $derived(authStore.accessToken);
@@ -139,24 +142,26 @@
 		setTimeout(() => (linkCopied = false), 2000);
 	}
 
-	// Stripe status display
-	const stripeStatusInfo = $derived.by(() => {
+	// Stripe status display. `tone` drives the StatusBadge/card tint below —
+	// each of the five states gets its own tone so no real distinction (e.g.
+	// "incomplete" vs "restricted") collapses onto the same color.
+	const stripeStatusInfo = $derived.by((): { type: string; tone: Tone } => {
 		if (!stripeStatus || !isStripeConnected) {
-			return { type: 'not-connected', color: 'gray' };
+			return { type: 'not-connected', tone: 'neutral' };
 		}
 		if (stripeStatusQuery.isFetching) {
-			return { type: 'loading', color: 'blue' };
+			return { type: 'loading', tone: 'info' };
 		}
 		if (stripeChargesEnabled && stripeDetailsSubmitted) {
-			return { type: 'fully-connected', color: 'green' };
+			return { type: 'fully-connected', tone: 'success' };
 		}
 		if (!stripeDetailsSubmitted) {
-			return { type: 'incomplete', color: 'yellow' };
+			return { type: 'incomplete', tone: 'warning' };
 		}
 		if (!stripeChargesEnabled) {
-			return { type: 'restricted', color: 'red' };
+			return { type: 'restricted', tone: 'danger' };
 		}
-		return { type: 'unknown', color: 'gray' };
+		return { type: 'unknown', tone: 'neutral' };
 	});
 </script>
 
@@ -165,7 +170,7 @@
 </svelte:head>
 
 <div class="container mx-auto max-w-2xl px-4 py-8">
-	<h1 class="text-2xl font-bold">{m['referral.referralProgram']()}</h1>
+	<PageHeader kicker={m['myInvoices.account']()} title={m['referral.referralProgram']()} />
 
 	{#if !referralCode}
 		<p class="mt-4 text-muted-foreground">{m['referralPage.loading']()}</p>
@@ -175,9 +180,15 @@
 			<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 				<div>
 					<p class="text-sm text-muted-foreground">{m['referral.yourCode']()}</p>
-					<p class="font-mono text-lg font-bold">{referralCode.code}</p>
+					<p class="font-mono text-lg font-black">{referralCode.code}</p>
 					{#if !referralCode.is_active}
-						<p class="text-sm text-amber-600 dark:text-amber-400">
+						<!-- text-highlight-foreground is contrast-safe but reads as plain
+						     dark text on an untinted surface — pair with a visible icon so
+						     the warning survives without relying on color alone. -->
+						<p
+							class="flex items-center gap-1 text-sm text-highlight-foreground dark:text-highlight"
+						>
+							<AlertCircle class="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
 							{m['referral.codeInactive']()}
 						</p>
 					{/if}
@@ -196,21 +207,18 @@
 
 		<!-- Payout Setup Checklist -->
 		<section class="mt-8 rounded-lg border bg-card p-6">
-			<h2 class="text-lg font-semibold">{m['referral.setupChecklist']()}</h2>
+			<SectionHeader title={m['referral.setupChecklist']()} />
 			<p class="mt-1 text-sm text-muted-foreground">{m['referral.setupDescription']()}</p>
 
 			<div class="mt-4 space-y-3">
 				{#each [{ done: isStripeFullySetup, label: m['referral.stepStripe']() }, { done: isBillingComplete, label: m['referral.stepBilling']() }, { done: isSelfBillingAgreed, label: m['referral.stepSelfBilling']() }] as step, i (i)}
 					<div class="flex items-center gap-3">
 						{#if step.done}
-							<CircleCheck
-								class="h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400"
-								aria-hidden="true"
-							/>
+							<CircleCheck class="h-5 w-5 shrink-0 text-success" aria-hidden="true" />
 						{:else}
 							<Circle class="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
 						{/if}
-						<span class={step.done ? 'text-emerald-700 dark:text-emerald-300' : ''}>
+						<span class={step.done ? 'text-success' : ''}>
 							{step.label}
 						</span>
 					</div>
@@ -218,11 +226,12 @@
 			</div>
 
 			{#if isPayoutEligible}
+				<!-- Composited tint mirrors ToneTile's audited success pair. -->
 				<div
-					class="mt-4 flex items-center gap-2 rounded-md bg-emerald-50 p-3 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-200"
+					class="mt-4 flex items-center gap-2 rounded-md border border-success/30 bg-success/10 p-3 text-foreground"
 					role="status"
 				>
-					<Check class="h-5 w-5 shrink-0" aria-hidden="true" />
+					<Check class="h-5 w-5 shrink-0 text-success" aria-hidden="true" />
 					<span class="text-sm font-medium">{m['referral.allStepsComplete']()}</span>
 				</div>
 			{/if}
@@ -232,16 +241,17 @@
 		<section class="mt-6 rounded-lg border bg-card p-6">
 			<div class="mb-4 flex items-center gap-2">
 				<CreditCard class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-				<h2 class="text-lg font-semibold">{m['referral.stripeConnect']()}</h2>
+				<SectionHeader title={m['referral.stripeConnect']()} class="flex-1" />
 			</div>
 			<p class="text-sm text-muted-foreground">{m['referral.stripeConnectDescription']()}</p>
 
 			{#if justReturnedFromStripe}
+				<!-- Composited tint mirrors ToneTile's audited success pair. -->
 				<div
-					class="mt-4 flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-4 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-100"
+					class="mt-4 flex items-center gap-2 rounded-lg border border-success/30 bg-success/10 p-4 text-foreground"
 					role="alert"
 				>
-					<Check class="h-5 w-5 shrink-0" aria-hidden="true" />
+					<Check class="h-5 w-5 shrink-0 text-success" aria-hidden="true" />
 					<div>
 						<p class="font-medium">{m['referral.stripeWelcomeBack']()}</p>
 						<p class="text-sm">{m['referral.stripeVerifyingAccount']()}</p>
@@ -249,39 +259,41 @@
 				</div>
 			{/if}
 
-			<!-- Status Card -->
+			<!-- Status Card. Tone-tinted border/bg mirror the audited icon/accent
+			     pairs (>=3:1 vs background/card); body copy stays on
+			     --foreground/--muted-foreground so contrast never depends on the tint. -->
 			<div
 				class="mt-4 rounded-lg border-2 p-4
-					{stripeStatusInfo.color === 'green'
-					? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/30'
-					: stripeStatusInfo.color === 'yellow'
-						? 'border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950/30'
-						: stripeStatusInfo.color === 'red'
-							? 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30'
+					{stripeStatusInfo.tone === 'success'
+					? 'border-success/30 bg-success/10'
+					: stripeStatusInfo.tone === 'warning'
+						? 'border-highlight/40 bg-highlight/20'
+						: stripeStatusInfo.tone === 'danger'
+							? 'border-destructive/30 bg-destructive/10'
 							: 'border-border bg-muted'}"
 			>
 				<div class="flex items-start gap-3">
 					<div class="shrink-0">
 						{#if stripeStatusInfo.type === 'fully-connected'}
-							<div class="rounded-full bg-green-600 p-2">
-								<Check class="h-5 w-5 text-white" aria-hidden="true" />
+							<div class="rounded-full bg-success p-2 text-success-foreground">
+								<Check class="h-5 w-5" aria-hidden="true" />
 							</div>
 						{:else if stripeStatusInfo.type === 'incomplete'}
-							<div class="rounded-full bg-yellow-600 p-2">
-								<AlertTriangle class="h-5 w-5 text-white" aria-hidden="true" />
+							<div class="rounded-full bg-highlight p-2 text-highlight-foreground">
+								<AlertTriangle class="h-5 w-5" aria-hidden="true" />
 							</div>
 						{:else if stripeStatusInfo.type === 'restricted'}
-							<div class="rounded-full bg-red-600 p-2">
-								<AlertCircle class="h-5 w-5 text-white" aria-hidden="true" />
+							<div class="rounded-full bg-destructive p-2 text-destructive-foreground">
+								<AlertCircle class="h-5 w-5" aria-hidden="true" />
 							</div>
 						{:else}
-							<div class="rounded-full bg-gray-400 p-2">
-								<CreditCard class="h-5 w-5 text-white" aria-hidden="true" />
+							<div class="rounded-full bg-muted-foreground p-2 text-background">
+								<CreditCard class="h-5 w-5" aria-hidden="true" />
 							</div>
 						{/if}
 					</div>
 					<div class="flex-1">
-						<h3 class="font-semibold">
+						<h3 class="font-bold">
 							{#if stripeStatusInfo.type === 'fully-connected'}
 								{m['referral.stripeConnected']()}
 							{:else if stripeStatusInfo.type === 'incomplete'}
@@ -312,11 +324,16 @@
 									</dt>
 									<dd class="mt-0.5 flex items-center gap-1">
 										{#if stripeDetailsSubmitted}
-											<Check class="h-3 w-3 text-green-600" aria-hidden="true" />
-											<span class="text-green-700 dark:text-green-300">{m['referral.yes']()}</span>
+											<Check class="h-3 w-3 text-success" aria-hidden="true" />
+											<span class="text-success">{m['referral.yes']()}</span>
 										{:else}
-											<AlertCircle class="h-3 w-3 text-yellow-600" aria-hidden="true" />
-											<span class="text-yellow-700 dark:text-yellow-300">{m['referral.no']()}</span>
+											<AlertCircle
+												class="h-3 w-3 text-highlight-foreground dark:text-highlight"
+												aria-hidden="true"
+											/>
+											<span class="text-highlight-foreground dark:text-highlight"
+												>{m['referral.no']()}</span
+											>
 										{/if}
 									</dd>
 								</div>
@@ -324,13 +341,16 @@
 									<dt class="font-medium text-muted-foreground">
 										{m['referral.chargesEnabled']()}
 									</dt>
+									<!-- Bare on card: text-destructive measures 2.85:1 in dark
+									     (below 4.5). Only the icon carries the tone; the label
+									     reads on --foreground. -->
 									<dd class="mt-0.5 flex items-center gap-1">
 										{#if stripeChargesEnabled}
-											<Check class="h-3 w-3 text-green-600" aria-hidden="true" />
-											<span class="text-green-700 dark:text-green-300">{m['referral.yes']()}</span>
+											<Check class="h-3 w-3 text-success" aria-hidden="true" />
+											<span class="text-success">{m['referral.yes']()}</span>
 										{:else}
-											<AlertCircle class="h-3 w-3 text-red-600" aria-hidden="true" />
-											<span class="text-red-700 dark:text-red-300">{m['referral.no']()}</span>
+											<AlertCircle class="h-3 w-3 text-destructive" aria-hidden="true" />
+											<span class="text-foreground">{m['referral.no']()}</span>
 										{/if}
 									</dd>
 								</div>
@@ -341,11 +361,14 @@
 			</div>
 
 			{#if stripeConnectMutation.error}
+				<!-- text-destructive as lead text measures 2.85:1 in dark on this card
+				     tint (below 4.5); the border/tint + icon carry the tone, text reads
+				     on --foreground. -->
 				<div
-					class="mt-3 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-100"
+					class="mt-3 flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-foreground"
 					role="alert"
 				>
-					<AlertCircle class="h-4 w-4 shrink-0" aria-hidden="true" />
+					<AlertCircle class="h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
 					<p class="text-sm">{stripeConnectMutation.error.message}</p>
 				</div>
 			{/if}
@@ -387,13 +410,11 @@
 
 		<!-- Billing Information -->
 		<section class="mt-6 rounded-lg border bg-card p-6">
-			<div class="mb-4 flex items-center gap-2">
+			<div class="flex items-center gap-2">
 				<CreditCard class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-				<div>
-					<h2 class="text-lg font-semibold">{m['billing.form.title']()}</h2>
-					<p class="mt-1 text-sm text-muted-foreground">{m['billing.form.description']()}</p>
-				</div>
+				<SectionHeader title={m['billing.form.title']()} class="flex-1" />
 			</div>
+			<p class="mt-1 text-sm text-muted-foreground">{m['billing.form.description']()}</p>
 			<BillingProfileForm authToken={accessToken} showSelfBilling={true} />
 		</section>
 

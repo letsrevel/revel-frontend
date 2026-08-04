@@ -4421,6 +4421,7 @@
 		"error_updateFailed": "Failed to update token",
 		"error_deleteFailed": "Failed to delete link"
 	},
+	"orgCreate.kicker": "New Organization",
 	"orgCreate.alreadyOwner": "You already own an organization",
 	"orgCreate.alreadyOwnerDescription": "Each user can only own one organization. You can manage your existing organization from the dashboard.",
 	"orgCreate.backToDashboard": "Back to Dashboard",
@@ -9135,6 +9136,7 @@
 		"inProgress": "In progress",
 		"closed": "Closed",
 		"empty": "No applications yet. When you apply to join an organization, you can track it here.",
+		"emptyTitle": "No applications yet",
 		"loadError": "Could not load your applications. Try reloading the page.",
 		"appliedOn": "Applied on {date}",
 		"tierLine": "Tier: {tier}",

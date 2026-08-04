@@ -5,7 +5,9 @@
 	import type { MembershipApplicationSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import ApplicationRow from './ApplicationRow.svelte';
-	import { Loader2 } from '@lucide/svelte';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
+	import { ClipboardList, Loader2 } from '@lucide/svelte';
 
 	const accessToken = $derived(authStore.accessToken);
 
@@ -51,7 +53,7 @@
 </script>
 
 <section aria-labelledby="applications-heading" class="space-y-3">
-	<h2 id="applications-heading" class="text-lg font-semibold">{m['applications.title']()}</h2>
+	<SectionHeader id="applications-heading" title={m['applications.title']()} />
 
 	{#if isSectionPending}
 		<div role="status">
@@ -63,7 +65,13 @@
 		     live region the failure is silent to anyone who has moved focus on. -->
 		<p role="alert" class="text-sm text-destructive">{m['applications.loadError']()}</p>
 	{:else if applications.length === 0}
-		<p class="text-sm text-muted-foreground">{m['applications.empty']()}</p>
+		<!-- level=3: sits inside this section, whose own heading is the level-2. -->
+		<EmptyState
+			icon={ClipboardList}
+			level={3}
+			title={m['applications.emptyTitle']()}
+			body={m['applications.empty']()}
+		/>
 	{:else}
 		{#if inProgress.length > 0}
 			<h3 id="applications-in-progress-heading" class="text-sm font-medium text-muted-foreground">

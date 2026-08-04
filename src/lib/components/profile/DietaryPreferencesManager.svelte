@@ -176,7 +176,7 @@
 <div class="space-y-4">
 	<div class="flex items-start justify-between">
 		<div>
-			<h3 class="text-lg font-semibold">{m['dietary.preferences_sectionHeading']()}</h3>
+			<h3 class="text-lg font-bold">{m['dietary.preferences_sectionHeading']()}</h3>
 			<p class="text-sm text-muted-foreground">
 				{m['dietary.preferences_sectionDescription']()}
 			</p>
@@ -216,12 +216,17 @@
 					<div class="flex-1 space-y-2">
 						<div class="flex items-center justify-between">
 							<h4 class="font-medium">{pref.preference.name}</h4>
+							<!-- Solid audited pair (same fill StatusBadge uses for tone="success"):
+							     the /15 tint measured 4.10:1 on the actual surface (this manager
+							     renders in a plain bordered <li> on --background, not on --card),
+							     under the 4.5 floor for text-xs. success-foreground on success is
+							     9.92:1 in dark / audited >=4.5 in both modes. -->
 							<button
 								type="button"
 								onclick={() => handleToggleVisibility(pref)}
 								class="rounded px-2 py-1 text-xs font-medium transition-colors {pref.is_public
-									? 'bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-950 dark:text-green-400'
-									: 'bg-gray-100 text-gray-800 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400'}"
+									? 'bg-success text-success-foreground hover:bg-success/90'
+									: 'bg-muted text-muted-foreground hover:bg-muted/70'}"
 								aria-label={pref.is_public
 									? m['dietary.preferences_publicLabel']()
 									: m['dietary.preferences_privateLabel']()}

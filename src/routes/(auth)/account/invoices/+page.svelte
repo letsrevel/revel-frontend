@@ -25,6 +25,10 @@
 	} from '$lib/api/generated/sdk.gen';
 	import type { AttendeeInvoiceSchema } from '$lib/api/generated/types.gen';
 	import { formatDate } from '$lib/utils/date';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
+	import type { Tone } from '$lib/components/common/tones';
 
 	const accessToken = $derived(authStore.accessToken);
 
@@ -114,14 +118,17 @@
 		return formatMoney(amount, currency);
 	}
 
-	function statusColor(status: string): string {
+	/** Thin mapper: raw invoice status -> StatusBadge tone. `issued`/`cancelled`
+	 * are the only statuses the backend emits today; anything else falls back to
+	 * neutral rather than guessing a tone for a future value. */
+	function statusTone(status: string): Tone {
 		switch (status) {
 			case 'issued':
-				return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+				return 'info';
 			case 'cancelled':
-				return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+				return 'danger';
 			default:
-				return 'bg-muted text-muted-foreground';
+				return 'neutral';
 		}
 	}
 
@@ -153,10 +160,12 @@
 		</a>
 	</div>
 
-	<div class="mb-6">
-		<h1 class="text-2xl font-bold tracking-tight">{m['myInvoices.pageTitle']()}</h1>
-		<p class="mt-1 text-sm text-muted-foreground">{m['myInvoices.pageDescription']()}</p>
-	</div>
+	<!-- No kicker: the "Account" back-link two lines above already says it. -->
+	<PageHeader
+		title={m['myInvoices.pageTitle']()}
+		subtitle={m['myInvoices.pageDescription']()}
+		class="mb-6"
+	/>
 
 	<!-- Search -->
 	<div class="relative mb-6">
@@ -189,30 +198,28 @@
 			{m['referral.error']()}
 		</div>
 	{:else if invoices.length === 0}
-		<!-- Empty State -->
-		<div
-			class="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center"
-		>
-			<FileText class="mb-3 h-10 w-10 text-muted-foreground/50" aria-hidden="true" />
-			<h2 class="font-medium">{m['myInvoices.empty']()}</h2>
-			<p class="mt-1 text-sm text-muted-foreground">{m['myInvoices.emptyDescription']()}</p>
-		</div>
+		<EmptyState
+			icon={FileText}
+			level={2}
+			title={m['myInvoices.empty']()}
+			body={m['myInvoices.emptyDescription']()}
+		/>
 	{:else}
 		<!-- Invoice Table -->
 		<div class="overflow-x-auto rounded-lg border">
 			<table class="w-full text-sm">
 				<thead class="bg-muted/50">
-					<tr>
-						<th class="px-4 py-3 text-left font-medium">{m['myInvoices.invoiceNumber']()}</th>
-						<th class="hidden px-4 py-3 text-left font-medium sm:table-cell">
+					<tr class="text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
+						<th class="px-4 py-3 text-left">{m['myInvoices.invoiceNumber']()}</th>
+						<th class="hidden px-4 py-3 text-left sm:table-cell">
 							{m['myInvoices.seller']()}
 						</th>
-						<th class="hidden px-4 py-3 text-left font-medium md:table-cell">
+						<th class="hidden px-4 py-3 text-left md:table-cell">
 							{m['myInvoices.date']()}
 						</th>
-						<th class="px-4 py-3 text-left font-medium">{m['myInvoices.status']()}</th>
-						<th class="px-4 py-3 text-right font-medium">{m['myInvoices.amount']()}</th>
-						<th class="px-4 py-3 text-center font-medium">
+						<th class="px-4 py-3 text-left">{m['myInvoices.status']()}</th>
+						<th class="px-4 py-3 text-right">{m['myInvoices.amount']()}</th>
+						<th class="px-4 py-3 text-center">
 							<span class="sr-only">{m['myInvoices.actions']()}</span>
 						</th>
 					</tr>
@@ -237,13 +244,11 @@
 								{invoice.issued_at ? formatDate(invoice.issued_at) : formatDate(invoice.created_at)}
 							</td>
 							<td class="px-4 py-3">
-								<span
-									class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium {statusColor(
-										invoice.status
-									)}"
-								>
-									{statusLabel(invoice.status)}
-								</span>
+								<StatusBadge
+									tone={statusTone(invoice.status)}
+									label={statusLabel(invoice.status)}
+									size="sm"
+								/>
 							</td>
 							<td class="px-4 py-3 text-right font-mono">
 								{formatCurrency(invoice.total_gross, invoice.currency)}
@@ -325,13 +330,12 @@
 						<p class="text-xs text-muted-foreground">{m['myInvoices.invoiceNumber']()}</p>
 						<p class="text-lg font-semibold">{inv.invoice_number}</p>
 					</div>
-					<span
-						class="mt-1 inline-flex shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium {statusColor(
-							inv.status
-						)}"
-					>
-						{statusLabel(inv.status)}
-					</span>
+					<StatusBadge
+						tone={statusTone(inv.status)}
+						label={statusLabel(inv.status)}
+						size="sm"
+						class="mt-1 shrink-0"
+					/>
 				</div>
 
 				<!-- Seller -->

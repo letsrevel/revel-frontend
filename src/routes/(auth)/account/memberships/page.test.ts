@@ -157,7 +157,9 @@ describe('Account memberships page', () => {
 			renderPage();
 
 			expect(await screen.findByText(/don't have any active memberships/i)).toBeInTheDocument();
-			expect(await screen.findByText(/no applications yet/i)).toBeInTheDocument();
+			expect(
+				await screen.findByRole('heading', { level: 3, name: /no applications yet/i })
+			).toBeInTheDocument();
 		});
 
 		it('keeps the applications section mounted while the memberships lists are in flight', async () => {
@@ -177,7 +179,9 @@ describe('Account memberships page', () => {
 			);
 			renderPage();
 
-			expect(await screen.findByText(/no applications yet/i)).toBeInTheDocument();
+			expect(
+				await screen.findByRole('heading', { level: 3, name: /no applications yet/i })
+			).toBeInTheDocument();
 			expect(screen.getByRole('heading', { level: 2, name: 'Applications' })).toBeVisible();
 			// The memberships half is still loading, so it must not have decided it is empty.
 			expect(screen.queryByText(/don't have any active memberships/i)).toBeNull();
