@@ -215,7 +215,7 @@
 	}
 
 	.calendar-controls-title {
-		@apply flex-1 text-xl font-semibold;
+		@apply flex-1 text-xl font-extrabold;
 	}
 
 	.calendar-controls-nav {

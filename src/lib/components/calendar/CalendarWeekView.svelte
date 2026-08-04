@@ -115,7 +115,7 @@
 	}
 
 	.week-day-weekday {
-		@apply text-sm font-medium text-muted-foreground;
+		@apply text-xs font-extrabold uppercase tracking-[0.08em] text-muted-foreground;
 	}
 
 	.week-day-number {

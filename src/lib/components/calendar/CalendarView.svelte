@@ -100,7 +100,7 @@
 	}
 
 	.calendar-header-cell {
-		@apply p-2 text-center text-sm font-semibold text-muted-foreground;
+		@apply p-2 text-center text-xs font-extrabold uppercase tracking-[0.08em] text-muted-foreground;
 	}
 
 	.calendar-body {

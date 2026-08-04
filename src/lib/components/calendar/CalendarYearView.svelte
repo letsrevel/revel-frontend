@@ -85,7 +85,7 @@
 	}
 
 	.year-month-name {
-		@apply text-lg font-semibold;
+		@apply text-lg font-bold;
 	}
 
 	.year-month-events {
