@@ -78,7 +78,10 @@
 	 *
 	 * `border-primary` measures 6.99:1 light / 6.28:1 dark against `--card`, well
 	 * over the 3:1 non-text floor, so the open row is distinguishable without
-	 * relying on the (deliberately soft) `--border` resting edge.
+	 * relying on the (deliberately soft) `--border` resting edge. That floor
+	 * applies to the OPEN state only: the hover half-tone border (~2.5:1) is a
+	 * courtesy affordance, not a state indicator — hover is carried by the
+	 * shadow lift.
 	 */
 	function faqRowClass(open: boolean): string {
 		return cn(
@@ -286,7 +289,7 @@
 						     over the 3:1 non-text floor. -->
 						<button
 							type="button"
-							class="flex min-h-14 w-full items-center justify-between gap-3 px-4 py-4 text-left transition-colors hover:bg-primary/5 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring sm:px-5"
+							class="flex min-h-14 w-full items-center justify-between gap-3 rounded-2xl px-4 py-4 text-left transition-colors hover:bg-primary/5 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring sm:px-5"
 							onclick={() => toggleFaq(index)}
 							aria-expanded={openFaqIndex === index}
 							aria-controls={`faq-answer-${index}`}
