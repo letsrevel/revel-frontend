@@ -111,7 +111,7 @@
      poster-palette pair is invisible to scripts/audit-brand-themes.py, though
      these two ARE in its table):
        poster-white on poster-purple → 5.52:1 (title, kicker, subtitle)
-       poster-purple on poster-white → 5.52:1 (the Sticker's own text)
+       poster-white on poster-ink → 17.40:1 (the Sticker's own text — tint="ink")
      Sticker-chip rule: the chip shows the ORG'S logo or renders nothing —
      LogoChip enforces that itself, so a logo-less org simply gets a clean
      ribbon rather than the Revel mark as filler.
@@ -147,9 +147,17 @@
 	{:else if token}
 		<section class="bg-poster-purple text-poster-white">
 			<div class="container relative mx-auto max-w-md px-4 pb-20 pt-10 text-center sm:pt-14">
+				<!-- Mobile-first: org identity is the whole point of this page, so
+				     the chip renders in-flow and centred below `sm`, the same
+				     `chip` slot pattern `AuthBandLayout` uses. At `sm`+ the column
+				     is wide enough for the type to clear a pinned corner chip, so
+				     that absolute placement takes over instead (and this in-flow
+				     copy hides, rather than showing the chip twice). -->
+				<div class="mb-5 flex justify-center sm:hidden">
+					<LogoChip rotate={-8} logo={token.organization_logo_url} />
+				</div>
 				<!-- Pinned top-right; LogoChip owns its own transform, so the
-				     positioning lives on this wrapper. Hidden on mobile, where the
-				     column is too narrow for the type to clear it. -->
+				     positioning lives on this wrapper. -->
 				<div class="absolute right-2 top-6 hidden sm:block">
 					<LogoChip rotate={-8} logo={token.organization_logo_url} />
 				</div>
