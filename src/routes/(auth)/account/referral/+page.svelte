@@ -29,7 +29,6 @@
 	import { BillingProfileForm } from '$lib/components/billing';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
-	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import type { Tone } from '$lib/components/common/tones';
 
 	const user = $derived(authStore.user);
@@ -322,8 +321,13 @@
 											<Check class="h-3 w-3 text-success" aria-hidden="true" />
 											<span class="text-success">{m['referral.yes']()}</span>
 										{:else}
-											<AlertCircle class="h-3 w-3 text-highlight-foreground dark:text-highlight" aria-hidden="true" />
-											<span class="text-highlight-foreground dark:text-highlight">{m['referral.no']()}</span>
+											<AlertCircle
+												class="h-3 w-3 text-highlight-foreground dark:text-highlight"
+												aria-hidden="true"
+											/>
+											<span class="text-highlight-foreground dark:text-highlight"
+												>{m['referral.no']()}</span
+											>
 										{/if}
 									</dd>
 								</div>

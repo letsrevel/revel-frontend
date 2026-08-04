@@ -1,8 +1,5 @@
 <script lang="ts">
-	import {
-		getStatusLabel,
-		type SubscriptionStatus
-	} from '$lib/utils/subscriptions';
+	import { getStatusLabel, type SubscriptionStatus } from '$lib/utils/subscriptions';
 	import CommonStatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import type { Tone } from '$lib/components/common/tones';
 

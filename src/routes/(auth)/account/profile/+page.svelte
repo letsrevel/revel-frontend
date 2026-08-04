@@ -376,7 +376,10 @@
 
 				{#if verificationEmailSent}
 					<!-- Composited tint mirrors ToneTile's audited success pair. -->
-					<div role="status" class="space-y-2 rounded-md border border-success/30 bg-success/10 p-3">
+					<div
+						role="status"
+						class="space-y-2 rounded-md border border-success/30 bg-success/10 p-3"
+					>
 						<div class="flex items-center gap-2">
 							<Check class="h-5 w-5 text-success" aria-hidden="true" />
 							<p class="text-sm font-medium text-foreground">

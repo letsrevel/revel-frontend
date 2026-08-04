@@ -221,7 +221,11 @@
 								{/if}
 							</td>
 							<td class="px-4 py-3 text-center">
-								<StatusBadge tone={statusTone(payout.status)} label={statusLabel(payout.status)} size="sm" />
+								<StatusBadge
+									tone={statusTone(payout.status)}
+									label={statusLabel(payout.status)}
+									size="sm"
+								/>
 							</td>
 							<td class="px-4 py-3 text-right">
 								<div class="flex items-center justify-end gap-1">

@@ -348,9 +348,21 @@
 				</span>
 
 				{#if vatIdStatus === 'validated'}
-					<StatusBadge tone="success" icon={Check} label={m['billing.form.vatIdValidated']()} size="sm" role="status" />
+					<StatusBadge
+						tone="success"
+						icon={Check}
+						label={m['billing.form.vatIdValidated']()}
+						size="sm"
+						role="status"
+					/>
 				{:else if vatIdStatus === 'pending'}
-					<StatusBadge tone="warning" icon={AlertCircle} label={m['billing.form.vatIdPending']()} size="sm" role="status" />
+					<StatusBadge
+						tone="warning"
+						icon={AlertCircle}
+						label={m['billing.form.vatIdPending']()}
+						size="sm"
+						role="status"
+					/>
 				{/if}
 
 				<Button

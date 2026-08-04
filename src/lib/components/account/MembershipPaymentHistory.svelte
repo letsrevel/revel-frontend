@@ -211,7 +211,11 @@
 										{/if}
 									</td>
 									<td class="py-2">
-										<StatusBadge tone={statusTone(p.status)} label={statusLabel(p.status)} size="sm" />
+										<StatusBadge
+											tone={statusTone(p.status)}
+											label={statusLabel(p.status)}
+											size="sm"
+										/>
 									</td>
 								</tr>
 							{/each}

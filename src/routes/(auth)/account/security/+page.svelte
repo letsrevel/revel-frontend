@@ -192,9 +192,17 @@
 					</div>
 
 					{#if totpActive}
-						<StatusBadge tone="success" icon={CheckCircle} label={m['accountSecurityPage.statusEnabled']()} />
+						<StatusBadge
+							tone="success"
+							icon={CheckCircle}
+							label={m['accountSecurityPage.statusEnabled']()}
+						/>
 					{:else}
-						<StatusBadge tone="neutral" icon={XCircle} label={m['accountSecurityPage.statusDisabled']()} />
+						<StatusBadge
+							tone="neutral"
+							icon={XCircle}
+							label={m['accountSecurityPage.statusDisabled']()}
+						/>
 					{/if}
 				</div>
 
@@ -491,7 +499,9 @@
 						{#if !passwordResetRequested}
 							<!-- Composited tint mirrors ToneTile's audited info pair (>=3:1 vs
 							     background/card); body copy stays on --foreground. -->
-							<div class="mt-4 flex items-center gap-2 rounded-md border border-info/30 bg-info/10 p-3">
+							<div
+								class="mt-4 flex items-center gap-2 rounded-md border border-info/30 bg-info/10 p-3"
+							>
 								<Mail class="h-5 w-5 flex-shrink-0 text-info" aria-hidden="true" />
 								<p class="text-sm text-foreground">
 									{m['accountSecurityPage.emailWillBeSent']({ email: data.user?.email || '' })}

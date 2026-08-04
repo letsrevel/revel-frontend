@@ -244,7 +244,11 @@
 								{invoice.issued_at ? formatDate(invoice.issued_at) : formatDate(invoice.created_at)}
 							</td>
 							<td class="px-4 py-3">
-								<StatusBadge tone={statusTone(invoice.status)} label={statusLabel(invoice.status)} size="sm" />
+								<StatusBadge
+									tone={statusTone(invoice.status)}
+									label={statusLabel(invoice.status)}
+									size="sm"
+								/>
 							</td>
 							<td class="px-4 py-3 text-right font-mono">
 								{formatCurrency(invoice.total_gross, invoice.currency)}

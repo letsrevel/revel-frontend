@@ -101,10 +101,7 @@
 	{#if authStore.accessToken}
 		<!-- General Preferences -->
 		<div class="mb-8 rounded-lg border bg-card p-6">
-			<SectionHeader
-				title={m['accountSettingsPage.general.title']()}
-				class="mb-4"
-			/>
+			<SectionHeader title={m['accountSettingsPage.general.title']()} class="mb-4" />
 			<p class="mb-6 text-sm text-muted-foreground">
 				{m['accountSettingsPage.general.description']()}
 			</p>
@@ -146,10 +143,7 @@
 		<div class="mb-8 rounded-lg border bg-card p-6">
 			<div class="flex items-center gap-2">
 				<FileText class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-				<SectionHeader
-					title={m['accountSettingsPage.billing.title']()}
-					class="flex-1"
-				/>
+				<SectionHeader title={m['accountSettingsPage.billing.title']()} class="flex-1" />
 			</div>
 			<p class="mt-1 text-sm text-muted-foreground">
 				{m['accountSettingsPage.billing.description']()}
