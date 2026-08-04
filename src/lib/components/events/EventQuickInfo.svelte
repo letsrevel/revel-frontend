@@ -298,8 +298,16 @@
 
 	<!-- Capacity Status (if max_capacity exists) -->
 	{#if capacityDisplay}
+		<!-- `text-warning` compiled to nothing (no `--warning` token; the tone
+		     vocabulary maps warning -> highlight), so this row rendered plain.
+		     These are compact sidebar rows with no container to tint, so the
+		     emphasis has to be the text: `highlight-foreground` in light (15.90:1
+		     on the card — legible, near-ink) flipping to `highlight` in dark
+		     (9.17:1). The flip is mandatory: amber is 1.94:1 on a light card. The
+		     "Limited spots" / "Closes soon" line beneath says it in words, so
+		     nothing here is carried by colour alone. -->
 		<div
-			class={cn(itemClasses, isNearCapacity && 'text-warning')}
+			class={cn(itemClasses, isNearCapacity && 'text-highlight-foreground dark:text-highlight')}
 			role="listitem"
 			aria-live="polite"
 		>
@@ -316,7 +324,7 @@
 	<!-- RSVP Deadline (if rsvp_closes_at exists and event is not ticketed) -->
 	{#if rsvpDeadlineDisplay && !event.requires_ticket}
 		<div
-			class={cn(itemClasses, isDeadlineSoon && 'text-warning')}
+			class={cn(itemClasses, isDeadlineSoon && 'text-highlight-foreground dark:text-highlight')}
 			role="listitem"
 			aria-live="polite"
 		>

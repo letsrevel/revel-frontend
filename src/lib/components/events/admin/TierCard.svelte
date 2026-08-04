@@ -153,9 +153,23 @@
 {/snippet}
 
 {#snippet meta()}
-	<!-- Tier details. Price and type are promoted to the card's display price
-	     above, so this grid states everything the price line cannot. -->
+	<!-- Tier details. The price is ALSO promoted to the card's display number
+	     above, but it keeps its labelled `<dt>` row here: this is an organizer's
+	     config summary, where every configured field is expected to be readable
+	     as a labelled pair, and dropping the label orphaned `tierCard.price` /
+	     `tierCard.type`. The display number is the emphasis; the grid is the
+	     record. -->
 	<dl class="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+		<!-- Price & Type -->
+		<div>
+			<dt class="text-muted-foreground">{m['tierCard.price']()}</dt>
+			<dd class="font-bold">{priceDisplay()}</dd>
+		</div>
+		<div>
+			<dt class="text-muted-foreground">{m['tierCard.type']()}</dt>
+			<dd class="font-bold">{priceTypeDisplay()}</dd>
+		</div>
+
 		<!-- Payment Method -->
 		<div>
 			<dt class="text-muted-foreground">{m['tierCard.paymentMethod']()}</dt>

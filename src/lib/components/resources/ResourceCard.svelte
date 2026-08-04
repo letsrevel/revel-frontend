@@ -48,11 +48,14 @@
 	 * purple/grey ramp. Each row pairs its own icon AND its own label, so the
 	 * colour is redundant reinforcement, never the message (WCAG 1.4.1).
 	 *
-	 * These are 12px text directly on the card, so each needs >= 4.5:1. Measured
-	 * token-vs-card (light | dark), same computation as ToneTile's table:
-	 *   success 4.9 | 7.8 · info 9.3 | 7.2 · primary 5.9 | 5.3
-	 *   highlight-foreground 13.9 (light) / highlight 6.0 (dark) — amber itself is
-	 *   1.8:1 on a light card, which is why warning flips its token by mode.
+	 * These are 12px text sitting DIRECTLY on the card — no tint underneath — so
+	 * each needs >= 4.5:1 against the card itself. Hand-computed token-vs-card
+	 * (light | dark); do NOT reuse ToneTile's table here, those numbers are for an
+	 * icon on a 10% tint:
+	 *   success 5.68 | 9.53 · info 11.13 | 8.71 · primary 6.99 | 6.27
+	 *   muted-foreground 9.06 | 7.44
+	 *   highlight-foreground 15.90 (light) / highlight 9.17 (dark) — amber itself
+	 *   is 1.94:1 on a light card, which is why warning flips its token by mode.
 	 */
 	const visibilityInfo = $derived.by(() => {
 		switch (resource.visibility) {

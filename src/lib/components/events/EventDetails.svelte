@@ -146,10 +146,27 @@
 
 			<!-- Capacity -->
 			{#if capacityText}
+				<!-- Urgency emphasis. There is no `--warning` token — the tone vocabulary
+			     maps warning -> highlight — so the previous `border-warning
+			     bg-warning/5` / `text-warning` compiled to NOTHING and this cell
+			     rendered identically to its calm siblings.
+			     What differentiates it, per mode, and why the text colour flips:
+			       * the CONTAINER is the differentiator in light mode — a warm
+			         `bg-highlight/10` wash beside plain white `bg-card` cells.
+			         `border-highlight` is 1.94:1 on the light card, so it is
+			         decoration, not the signal (WCAG 1.4.11 does not bind: this is
+			         an informational cell, not a control, and the words —
+			         "Only N spots left" / the relative deadline — carry the meaning).
+			       * `--highlight-foreground` is near-ink, so in light mode it is
+			         simply legible (14.88:1 on the tint) rather than emphatic; in
+			         dark mode `text-highlight` is the amber emphasis (7.54:1 on the
+			         tint). The flip is mandatory: amber itself is 1.94:1 on a light
+			         card. Ratios hand-computed — composited alpha is invisible to
+			         scripts/audit-brand-themes.py. -->
 				<div
 					class={cn(
 						'flex gap-3 rounded-lg border p-4',
-						isNearCapacity ? 'border-warning bg-warning/5' : 'bg-card'
+						isNearCapacity ? 'border-highlight bg-highlight/10' : 'bg-card'
 					)}
 				>
 					<Users class="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
@@ -157,7 +174,13 @@
 						<div class="text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
 							{m['eventDetails.attendance_label']()}
 						</div>
-						<div class={cn('mt-1 font-bold', isNearCapacity && 'text-warning')} aria-live="polite">
+						<div
+							class={cn(
+								'mt-1 font-bold',
+								isNearCapacity && 'text-highlight-foreground dark:text-highlight'
+							)}
+							aria-live="polite"
+						>
 							{capacityText}
 							{#if seatsHeldText}
 								<span class="ml-1 text-xs font-normal text-muted-foreground">
@@ -171,10 +194,11 @@
 
 			<!-- RSVP Deadline -->
 			{#if rsvpDeadlineText}
+				<!-- Same recipe and same reasoning as the capacity cell above. -->
 				<div
 					class={cn(
 						'flex gap-3 rounded-lg border p-4',
-						isDeadlineSoon ? 'border-warning bg-warning/5' : 'bg-card'
+						isDeadlineSoon ? 'border-highlight bg-highlight/10' : 'bg-card'
 					)}
 				>
 					<Clock class="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
@@ -184,7 +208,10 @@
 						</div>
 						<time
 							datetime={event.rsvp_before}
-							class={cn('mt-1 block font-bold', isDeadlineSoon && 'text-warning')}
+							class={cn(
+								'mt-1 block font-bold',
+								isDeadlineSoon && 'text-highlight-foreground dark:text-highlight'
+							)}
 							aria-live="polite"
 						>
 							{rsvpDeadlineText}

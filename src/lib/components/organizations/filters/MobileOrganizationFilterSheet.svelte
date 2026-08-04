@@ -92,7 +92,7 @@
 {#if isOpen}
 	<!-- Backdrop -->
 	<div
-		class="fixed inset-0 z-40 bg-black/50 transition-opacity lg:hidden"
+		class="fixed inset-0 z-40 bg-poster-ink/50 transition-opacity lg:hidden"
 		onclick={onClose}
 		role="presentation"
 		aria-hidden="true"

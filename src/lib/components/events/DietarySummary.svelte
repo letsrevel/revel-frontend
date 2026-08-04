@@ -69,7 +69,28 @@
 		return m['dietary.eventSummary_attendeeCount']({ count });
 	}
 
-	// Get severity display info
+	/**
+	 * Severity ladder. This is a SAFETY surface, so the four steps must stay
+	 * distinguishable: an allergy at two opacities of the same amber as an
+	 * intolerance is not a ladder.
+	 *
+	 *   severe allergy  destructive/20 + AlertTriangle   (hardest stop)
+	 *   allergy         destructive/10 + AlertCircle     (same family, lighter)
+	 *   intolerant      highlight/10   + Circle          (amber: caution, not danger)
+	 *   dislike         muted          + Frown           (preference)
+	 *
+	 * Every step also carries its own icon AND its own translated label, so the
+	 * fill is redundant reinforcement and never the message (WCAG 1.4.1) — which
+	 * is what makes separating the two destructive steps by opacity alone safe.
+	 *
+	 * Ratios hand-computed (composited alpha is invisible to
+	 * scripts/audit-brand-themes.py) — `text-foreground` over the tint on a card,
+	 * light | dark:
+	 *   destructive/20 11.90 | 13.70 · destructive/10 14.50 | 14.79
+	 *   highlight/10   16.34 | 12.90
+	 * The borders are decoration at these alphas (border-destructive is 9.74:1 on
+	 * the light card but 2.86:1 on the dark one); the icon and the words carry it.
+	 */
 	function getSeverityInfo(type: RestrictionType): {
 		label: string;
 		color: string;
@@ -79,13 +100,13 @@
 			case 'severe_allergy':
 				return {
 					label: m['dietarySummary.severitySevereAllergy'](),
-					color: 'border-destructive/40 bg-destructive/10 text-foreground',
+					color: 'border-destructive/60 bg-destructive/20 text-foreground',
 					icon: AlertTriangle
 				};
 			case 'allergy':
 				return {
 					label: m['dietarySummary.severityAllergy'](),
-					color: 'border-highlight/60 bg-highlight/20 text-foreground',
+					color: 'border-destructive/40 bg-destructive/10 text-foreground',
 					icon: AlertCircle
 				};
 			case 'intolerant':

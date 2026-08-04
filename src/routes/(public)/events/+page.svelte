@@ -92,6 +92,24 @@
 	const calendarEvents = $derived(calendarQuery.data || []);
 	const isCalendarLoading = $derived(calendarQuery.isLoading);
 
+	/**
+	 * "N events found", or the calendar period's tally — `undefined` when there is
+	 * nothing to count, which is what `PageHeader` reads as "no subtitle".
+	 */
+	const countLabel = $derived.by((): string | undefined => {
+		if (error) return undefined;
+		if (viewMode === 'list') {
+			if (totalCount <= 0) return undefined;
+			return m['browse.events_count']({
+				count: totalCount,
+				eventPlural: totalCount === 1 ? m['common.plurals_event']() : m['common.plurals_events']()
+			});
+		}
+		const count = calendarEvents.length;
+		if (count <= 0) return undefined;
+		return `${count} ${count === 1 ? m['common.plurals_event']() : m['common.plurals_events']()}`;
+	});
+
 	// Mobile filter sheet state
 	let isMobileFilterOpen = $state(false);
 
@@ -173,11 +191,14 @@
 		{m['browse.events_skipTo']()}
 	</a>
 
-	<!-- Page Header -->
+	<!-- Page Header. The result count rides `subtitle`, exactly as /organizations
+	     does, rather than a paragraph pulled back under the header with a
+	     negative margin that breaks the moment the header wraps. -->
 	<PageHeader
 		volume="celebration"
 		kicker={m['browse.events_kicker']()}
 		title={m['browse.events_title']()}
+		subtitle={countLabel}
 		class="mb-8"
 	>
 		{#snippet actions()}
@@ -193,19 +214,6 @@
 			</Button>
 		{/snippet}
 	</PageHeader>
-	{#if !error && (viewMode === 'list' ? totalCount > 0 : calendarEvents.length > 0)}
-		<p class="-mt-6 mb-8 text-muted-foreground" aria-live="polite">
-			{#if viewMode === 'list'}
-				{m['browse.events_count']({
-					count: totalCount,
-					eventPlural: totalCount === 1 ? m['common.plurals_event']() : m['common.plurals_events']()
-				})}
-			{:else}
-				{calendarEvents.length}
-				{calendarEvents.length === 1 ? m['common.plurals_event']() : m['common.plurals_events']()}
-			{/if}
-		</p>
-	{/if}
 
 	<!-- Main Content: Sidebar + Event Grid -->
 	<div class="flex flex-col gap-8 lg:flex-row">

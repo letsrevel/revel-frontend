@@ -184,7 +184,10 @@
 	{/if}
 
 	{#if tiers.length === 0}
+		<!-- level 2: this sits directly under the page h1 that PageHeader renders,
+		     and EmptyState's default level 3 would skip a rank (axe heading-order). -->
 		<EmptyState
+			level={2}
 			icon={Users}
 			title={m['membershipTiers.tiersHeading']()}
 			body={m['membershipTiers.empty']({ organizationName: organization.name })}
