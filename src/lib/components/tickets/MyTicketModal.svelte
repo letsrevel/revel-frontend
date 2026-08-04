@@ -19,7 +19,8 @@
 		ChevronLeft,
 		ChevronRight,
 		Pencil,
-		X
+		X,
+		AlertCircle
 	} from '@lucide/svelte';
 	import { formatMoney } from '$lib/utils/format';
 	import QRCode from 'qrcode';
@@ -304,13 +305,13 @@
 						<div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
 							{#if activeTicketCount > 0}
 								<span class="flex items-center gap-1.5">
-									<span class="h-2 w-2 rounded-full bg-green-500"></span>
+									<span class="h-2 w-2 rounded-full bg-success"></span>
 									<span>{m['myTicketModal.activeCount']({ count: activeTicketCount })}</span>
 								</span>
 							{/if}
 							{#if pendingTicketCount > 0}
 								<span class="flex items-center gap-1.5">
-									<span class="h-2 w-2 rounded-full bg-orange-500"></span>
+									<span class="h-2 w-2 rounded-full bg-highlight"></span>
 									<span>{m['myTicketModal.pendingCount']({ count: pendingTicketCount })}</span>
 								</span>
 							{/if}
@@ -347,19 +348,26 @@
 					</div>
 				{/if}
 
-				<!-- Header -->
-				<div class="flex items-start justify-between">
-					<div class="flex items-center gap-3">
-						<div class="rounded-full bg-primary/10 p-3">
-							<Ticket class="h-6 w-6 text-primary" aria-hidden="true" />
-						</div>
-						<div>
-							<h2 class="text-xl font-bold">{eventName}</h2>
-							<p class="text-sm text-muted-foreground">
-								{ticket.tier?.name || m['myTicketModal.generalAdmission']()}
-							</p>
-						</div>
-					</div>
+				<!-- Header band — the brand moment (what people screenshot at the door).
+				     On the logo gradient (--logo-from -> --logo-to, the same pair
+				     RevelMark uses); inset (not bled to the dialog edge) so it never
+				     collides with the dialog's close button. Only large/bold text and
+				     icons sit on the gradient: white on the purple end measures
+				     ~5.5:1, white on the crimson end ~4.3:1 — that clears the WCAG AA
+				     *large-text* floor (3:1) at both ends but not the 4.5:1
+				     normal-text floor, so smaller metadata (tier name, status) stays
+				     off the gradient, on the dialog surface below. -->
+				<div
+					class="flex items-center gap-3 rounded-lg px-5 py-4"
+					style="background: linear-gradient(135deg, hsl(var(--logo-from)), hsl(var(--logo-to)));"
+				>
+					<Ticket class="h-6 w-6 shrink-0 text-poster-white" aria-hidden="true" />
+					<h2 class="text-xl font-black leading-tight text-poster-white">{eventName}</h2>
+				</div>
+				<div class="flex items-start justify-between gap-2">
+					<p class="text-sm font-extrabold uppercase tracking-[0.1em] text-muted-foreground">
+						{ticket.tier?.name || m['myTicketModal.generalAdmission']()}
+					</p>
 					<TicketStatusBadge status={ticket.status} />
 				</div>
 
@@ -414,36 +422,28 @@
 					</dl>
 				{/if}
 
-				<!-- Pending Payment Banner -->
+				<!-- Pending Payment Banner. Tint/text pair mirrors ToneTile's audited
+				     warning tokens (bg-highlight/20, text-highlight-foreground light /
+				     text-highlight dark — see ToneTile.svelte for the hand-verified
+				     ratios: 12.6:1 light, 6.7:1 dark). -->
 				{#if ticket.status === 'pending'}
 					{@const paymentGroup = currentTicketPaymentGroup}
 					{@const ticketsInGroup = paymentGroup?.tickets.length ?? 1}
-					<div
-						class="rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-950"
-						role="alert"
-					>
+					<div class="rounded-lg border border-highlight/40 bg-highlight/20 p-4" role="alert">
 						<div class="flex items-start gap-3">
-							<svg
-								class="h-5 w-5 shrink-0 text-orange-600 dark:text-orange-400"
-								fill="currentColor"
-								viewBox="0 0 20 20"
+							<AlertCircle
+								class="h-5 w-5 shrink-0 text-highlight-foreground dark:text-highlight"
 								aria-hidden="true"
-							>
-								<path
-									fill-rule="evenodd"
-									d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z"
-									clip-rule="evenodd"
-								/>
-							</svg>
+							/>
 							<div class="flex-1">
-								<p class="font-medium text-orange-900 dark:text-orange-100">
+								<p class="font-bold text-highlight-foreground dark:text-highlight">
 									{#if ticketsInGroup > 1}
 										{m['myTicketModal.ticketsPendingPayment']({ count: ticketsInGroup })}
 									{:else}
 										{m['myTicketModal.pendingPayment']()}
 									{/if}
 								</p>
-								<p class="mt-1 text-sm text-orange-800 dark:text-orange-200">
+								<p class="mt-1 text-sm text-highlight-foreground dark:text-highlight">
 									{#if ticket.tier?.payment_method === 'online'}
 										{ticketsInGroup > 1
 											? m['myTicketModal.pendingOnlinePlural']()
@@ -461,15 +461,13 @@
 
 								<!-- Manual Payment Instructions -->
 								{#if ticket.tier?.payment_method !== 'online' && ticket.tier?.manual_payment_instructions}
-									<div
-										class="mt-3 rounded-md border border-orange-300 bg-orange-100 p-3 dark:border-orange-700 dark:bg-orange-900"
-									>
-										<p class="text-sm font-medium text-orange-900 dark:text-orange-100">
+									<div class="mt-3 rounded-md border border-highlight/40 bg-card p-3">
+										<p class="text-sm font-bold text-foreground">
 											{m['myTicketModal.paymentInstructions']()}
 										</p>
 										<MarkdownContent
 											content={ticket.tier.manual_payment_instructions}
-											class="mt-1 text-sm text-orange-800 dark:text-orange-200"
+											class="mt-1 text-sm text-muted-foreground"
 										/>
 									</div>
 								{/if}
@@ -482,11 +480,11 @@
 											<button
 												onclick={() => onResumePayment(paymentId)}
 												disabled={isResumingPayment || isCancellingReservation}
-												class="inline-flex items-center gap-2 rounded-md bg-orange-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-orange-500 dark:hover:bg-orange-600"
+												class="inline-flex items-center gap-2 rounded-md bg-highlight px-4 py-2 text-sm font-medium text-highlight-foreground shadow-sm hover:bg-highlight/90 focus:outline-none focus:ring-2 focus:ring-highlight focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 											>
 												{#if isResumingPayment}
 													<div
-														class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+														class="h-4 w-4 animate-spin rounded-full border-2 border-highlight-foreground border-t-transparent"
 														aria-hidden="true"
 													></div>
 													{m['myTicketModal.processing']()}
@@ -499,11 +497,11 @@
 											<button
 												onclick={() => onCancelReservation(paymentId)}
 												disabled={isResumingPayment || isCancellingReservation}
-												class="inline-flex items-center gap-2 rounded-md border border-orange-300 bg-transparent px-4 py-2 text-sm font-medium text-orange-700 shadow-sm hover:bg-orange-100 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-900/50"
+												class="inline-flex items-center gap-2 rounded-md border border-highlight/60 bg-transparent px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-highlight/10 focus:outline-none focus:ring-2 focus:ring-highlight focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 											>
 												{#if isCancellingReservation}
 													<div
-														class="h-4 w-4 animate-spin rounded-full border-2 border-orange-600 border-t-transparent dark:border-orange-400"
+														class="h-4 w-4 animate-spin rounded-full border-2 border-foreground border-t-transparent"
 														aria-hidden="true"
 													></div>
 													{m['myTicketModal.cancelling']()}
@@ -574,10 +572,12 @@
 					</div>
 				{/if}
 
-				<!-- Checked In Info -->
+				<!-- Checked In Info. bg-info/10 + text-info mirrors ToneTile's audited
+				     info tokens (hand-verified 8.3:1 light / 8.0:1 dark — see
+				     ToneTile.svelte). -->
 				{#if ticket.status === 'checked_in' && checkedInDate}
-					<div class="rounded-lg bg-blue-50 p-4 text-sm dark:bg-blue-950/50">
-						<p class="font-medium text-blue-900 dark:text-blue-100">
+					<div class="rounded-lg bg-info/10 p-4 text-sm">
+						<p class="font-bold text-info">
 							{m['myTicketModal.checkedInAt']({ date: checkedInDate })}
 						</p>
 					</div>

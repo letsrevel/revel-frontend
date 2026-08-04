@@ -1,7 +1,8 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { CheckCircle, Clock, XCircle, Ticket as TicketIcon } from '@lucide/svelte';
-	import { cn } from '$lib/utils';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
+	import type { Tone } from '$lib/components/common/tones';
 
 	interface Props {
 		status: string;
@@ -10,56 +11,23 @@
 
 	const { status, class: className }: Props = $props();
 
-	const config = $derived.by(() => {
+	// Thin mapper over the shared StatusBadge (rebrand primitive): same filename,
+	// same props, same visible labels as before — only the rendering delegates
+	// to the audited solid-fill tone system instead of hand-picked hues.
+	const config = $derived.by((): { label: string; icon: typeof CheckCircle; tone: Tone } => {
 		switch (status) {
 			case 'active':
-				return {
-					label: m['ticketStatusBadge.active'](),
-					icon: CheckCircle,
-					className:
-						'bg-green-100 text-green-800 border-green-200 dark:bg-green-950 dark:text-green-100 dark:border-green-800'
-				};
+				return { label: m['ticketStatusBadge.active'](), icon: CheckCircle, tone: 'success' };
 			case 'pending':
-				return {
-					label: m['ticketStatusBadge.pending'](),
-					icon: Clock,
-					className:
-						'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-950 dark:text-orange-100 dark:border-orange-800'
-				};
+				return { label: m['ticketStatusBadge.pending'](), icon: Clock, tone: 'warning' };
 			case 'checked_in':
-				return {
-					label: m['ticketStatusBadge.checkedIn'](),
-					icon: TicketIcon,
-					className:
-						'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950 dark:text-blue-100 dark:border-blue-800'
-				};
+				return { label: m['ticketStatusBadge.checkedIn'](), icon: TicketIcon, tone: 'info' };
 			case 'cancelled':
-				return {
-					label: m['ticketStatusBadge.cancelled'](),
-					icon: XCircle,
-					className:
-						'bg-red-100 text-red-800 border-red-200 dark:bg-red-950 dark:text-red-100 dark:border-red-800'
-				};
+				return { label: m['ticketStatusBadge.cancelled'](), icon: XCircle, tone: 'danger' };
 			default:
-				return {
-					label: status.replace(/_/g, ' '),
-					icon: TicketIcon,
-					className:
-						'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700'
-				};
+				return { label: status.replace(/_/g, ' '), icon: TicketIcon, tone: 'neutral' };
 		}
 	});
-
-	const Icon = $derived(config.icon);
 </script>
 
-<span
-	class={cn(
-		'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold',
-		config.className,
-		className
-	)}
->
-	<Icon class="h-3.5 w-3.5" aria-hidden="true" />
-	{config.label}
-</span>
+<StatusBadge tone={config.tone} label={config.label} icon={config.icon} class={className} />
