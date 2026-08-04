@@ -5,8 +5,9 @@
 	import type { EventInListSchema } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
 	import { formatDateTime } from '$lib/utils/date';
-	import { getEventStatusColor } from '$lib/utils/status-colors';
+	import { getEventStatusTone } from '$lib/utils/status-colors';
 	import EventCoverImage from '$lib/components/events/EventCoverImage.svelte';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import {
 		Calendar,
@@ -181,14 +182,7 @@
 						{m['eventBadges.unlisted']()}
 					</span>
 				{/if}
-				<span
-					class={cn(
-						'rounded-full px-2 py-1 text-xs font-medium',
-						getEventStatusColor(event.status)
-					)}
-				>
-					{statusLabel}
-				</span>
+				<StatusBadge tone={getEventStatusTone(event.status)} label={statusLabel} />
 				<!-- More Actions Dropdown -->
 				<DropdownMenu.Root>
 					<DropdownMenu.Trigger>

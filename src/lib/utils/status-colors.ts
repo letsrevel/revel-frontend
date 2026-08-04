@@ -1,41 +1,44 @@
 /**
- * Status color and label utilities for admin pages.
- * Centralizes status badge styling across events, tickets, and attendees.
+ * Status tone and label utilities for admin pages.
+ * Centralizes status -> tone mapping across events, tickets, and
+ * attendees — every call site renders through `common/StatusBadge`, so
+ * these return a semantic `Tone`, never a raw color class.
  */
 
 import * as m from '$lib/paraglide/messages.js';
+import type { Tone } from '$lib/components/common/tones';
 
 // -- Event status --
 
-export function getEventStatusColor(status: string): string {
+export function getEventStatusTone(status: string): Tone {
 	switch (status) {
 		case 'draft':
-			return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100';
+			return 'neutral';
 		case 'open':
-			return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100';
+			return 'success';
 		case 'closed':
-			return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100';
+			return 'danger';
 		case 'cancelled':
-			return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100';
+			return 'warning';
 		default:
-			return 'bg-gray-100 text-gray-800';
+			return 'neutral';
 	}
 }
 
 // -- Ticket status --
 
-export function getTicketStatusColor(status: string): string {
+export function getTicketStatusTone(status: string): Tone {
 	switch (status) {
 		case 'pending':
-			return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100';
+			return 'warning';
 		case 'active':
-			return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100';
+			return 'success';
 		case 'checked_in':
-			return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100';
+			return 'info';
 		case 'cancelled':
-			return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100';
+			return 'danger';
 		default:
-			return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-100';
+			return 'neutral';
 	}
 }
 
@@ -56,16 +59,16 @@ export function getTicketStatusLabel(status: string): string {
 
 // -- RSVP status --
 
-export function getRsvpStatusColor(status: string): string {
+export function getRsvpStatusTone(status: string): Tone {
 	switch (status) {
 		case 'yes':
-			return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100';
+			return 'success';
 		case 'maybe':
-			return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100';
+			return 'warning';
 		case 'no':
-			return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100';
+			return 'danger';
 		default:
-			return 'bg-gray-100 text-gray-800';
+			return 'neutral';
 	}
 }
 

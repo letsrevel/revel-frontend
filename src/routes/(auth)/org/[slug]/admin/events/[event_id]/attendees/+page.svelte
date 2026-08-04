@@ -21,6 +21,8 @@
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import ExportButton from '$lib/components/common/ExportButton.svelte';
 	import MakeMemberModal from '$lib/components/members/MakeMemberModal.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import AttendeeStats from '$lib/components/attendees/AttendeeStats.svelte';
 	import AttendeeFilters from '$lib/components/attendees/AttendeeFilters.svelte';
 	import AttendeeTable from '$lib/components/attendees/AttendeeTable.svelte';
@@ -454,54 +456,49 @@
 <div class="space-y-6">
 	<!-- Header -->
 	<div>
-		<div class="mb-4">
+		<a
+			href={resolve('/(auth)/org/[slug]/admin/events', { slug: organization.slug })}
+			class="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+		>
+			<ChevronLeft class="h-4 w-4" aria-hidden="true" />
+			{m['attendeesAdmin.backToEvents']()}
+		</a>
+		{#snippet headerActions()}
+			<Button variant="outline" size="sm" onclick={() => (showCreateRsvpModal = true)}>
+				<UserPlus class="h-4 w-4" aria-hidden="true" />
+				{m['attendeesAdmin.createButton']()}
+			</Button>
 			<a
-				href={resolve('/(auth)/org/[slug]/admin/events', { slug: organization.slug })}
-				class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+				href={resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', {
+					slug: organization.slug,
+					event_id: data.event.id
+				})}
+				class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 			>
-				<ChevronLeft class="h-4 w-4" aria-hidden="true" />
-				{m['attendeesAdmin.backToEvents']()}
+				{m['eventEditor.editEvent']()}
 			</a>
-		</div>
-		<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-			<div>
-				<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
-					{m['attendeesAdmin.pageTitle']()}
-				</h1>
-				<p class="mt-1 text-sm text-muted-foreground">{data.event.name}</p>
-			</div>
-			<div class="flex flex-wrap items-center gap-2">
-				<Button variant="outline" size="sm" onclick={() => (showCreateRsvpModal = true)}>
-					<UserPlus class="h-4 w-4" aria-hidden="true" />
-					{m['attendeesAdmin.createButton']()}
-				</Button>
+			{#if data.event.waitlist_open}
 				<a
-					href={resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', {
+					href={resolve('/(auth)/org/[slug]/admin/events/[event_id]/waitlist', {
 						slug: organization.slug,
 						event_id: data.event.id
 					})}
 					class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 				>
-					{m['eventEditor.editEvent']()}
+					{m['eventActionSidebar.manageWaitlist']()}
 				</a>
-				{#if data.event.waitlist_open}
-					<a
-						href={resolve('/(auth)/org/[slug]/admin/events/[event_id]/waitlist', {
-							slug: organization.slug,
-							event_id: data.event.id
-						})}
-						class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-					>
-						{m['eventActionSidebar.manageWaitlist']()}
-					</a>
-				{/if}
-				<ExportButton
-					label={m['exportButton.exportAttendees']()}
-					onExport={handleExportAttendees}
-					{accessToken}
-				/>
-			</div>
-		</div>
+			{/if}
+			<ExportButton
+				label={m['exportButton.exportAttendees']()}
+				onExport={handleExportAttendees}
+				{accessToken}
+			/>
+		{/snippet}
+		<PageHeader
+			title={m['attendeesAdmin.pageTitle']()}
+			subtitle={data.event.name}
+			actions={headerActions}
+		/>
 	</div>
 
 	<!-- Stats (always shown) -->
@@ -518,17 +515,13 @@
 
 	<!-- Attendees list -->
 	{#if data.rsvps.length === 0}
-		<div class="rounded-lg border border-border bg-card p-12 text-center">
-			<Users class="mx-auto h-12 w-12 text-muted-foreground" aria-hidden="true" />
-			<h3 class="mt-4 text-lg font-semibold">{m['attendeesAdmin.noRsvpsHeading']()}</h3>
-			<p class="mt-2 text-sm text-muted-foreground">
-				{#if activeStatusFilters.length || searchQuery}
-					{m['attendeesAdmin.noRsvpsFiltered']()}
-				{:else}
-					{m['attendeesAdmin.noRsvpsEmpty']()}
-				{/if}
-			</p>
-		</div>
+		<EmptyState
+			icon={Users}
+			title={m['attendeesAdmin.noRsvpsHeading']()}
+			body={activeStatusFilters.length || searchQuery
+				? m['attendeesAdmin.noRsvpsFiltered']()
+				: m['attendeesAdmin.noRsvpsEmpty']()}
+		/>
 	{:else}
 		<AttendeeTable
 			rsvps={data.rsvps}

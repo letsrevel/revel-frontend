@@ -1,8 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { cn } from '$lib/utils/cn';
 	import { getUserDisplayName } from '$lib/utils/user-display';
-	import { getTicketStatusColor, getTicketStatusLabel } from '$lib/utils/status-colors';
+	import { getTicketStatusTone, getTicketStatusLabel } from '$lib/utils/status-colors';
 	import { formatPrice } from '$lib/utils/format';
 	import { formatDate } from '$lib/utils/date';
 	import {
@@ -34,6 +33,7 @@
 	} from '@lucide/svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import RefundStatusBadge from './RefundStatusBadge.svelte';
 	import TicketDiscountBadge from './TicketDiscountBadge.svelte';
 	import SeriesPassBadge from './SeriesPassBadge.svelte';
@@ -139,14 +139,10 @@
 					</div>
 				</div>
 				<div class="flex shrink-0 flex-col items-end gap-1">
-					<span
-						class={cn(
-							'rounded-full px-2 py-1 text-xs font-semibold',
-							getTicketStatusColor(ticket.status ?? '')
-						)}
-					>
-						{getTicketStatusLabel(ticket.status ?? '')}
-					</span>
+					<StatusBadge
+						tone={getTicketStatusTone(ticket.status ?? '')}
+						label={getTicketStatusLabel(ticket.status ?? '')}
+					/>
 					{#if ticket.status === 'cancelled'}
 						<RefundStatusBadge
 							status={ticket.payment?.refund_status}
