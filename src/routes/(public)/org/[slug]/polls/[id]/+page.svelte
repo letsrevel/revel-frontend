@@ -113,8 +113,13 @@
 
 	<!-- Body on plain `--background`, pulled up over the band's bottom edge — the
 	     merged questionnaire page's arrangement (see /events for why a
-	     `bg-secondary` band does not get a `bg-secondary` wash under it). Every
-	     block here is a Card, so the float is already theirs. -->
+	     `bg-secondary` band does not get a `bg-secondary` wash under it). Rule:
+	     when body content pulls up over a band this way, its first block must be
+	     an opaque surface — the pull-up straddles the band's own bottom edge, and
+	     a translucent block there shows a visible seam. `PollPrivacySummary` is
+	     that first block and is opaque `bg-card` for exactly this reason (it used
+	     to be `bg-card/50`, a 1.21:1 seam against the band); the Cards below it
+	     are opaque by default. -->
 	<div class="flex-1">
 		<main class="container mx-auto -mt-8 max-w-3xl space-y-6 px-4 pb-8">
 			{#if data.forbidden}
