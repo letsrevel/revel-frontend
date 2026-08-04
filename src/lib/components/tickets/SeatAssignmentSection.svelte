@@ -420,19 +420,23 @@
 			{#if showPriceLegend}
 				<!-- Price legend: color always paired with name/price text (#668).
 				     Swatches mirror the map's category ring on an available seat. -->
-				<!-- Solid chips, like the mock's zone legend. The swatch keeps the
-				     organizer's own category colour (user data, sweep-exempt) and
-				     the ring is theme-aware, so a category painted near-white or
-				     near-black still has a visible boundary on the card. -->
+				<!-- Solid chips, like the mock's zone legend. The SWATCH stays a
+				     ring-style disc — colour on the stroke, surface in the middle —
+				     because that is exactly how SeatMap draws an available seat
+				     (`fill-background` + `stroke={category.color}`); a solid disc
+				     here would stop mirroring the thing it explains. The chip's own
+				     2px border is what guarantees a boundary on the card, so a
+				     category painted near-white or near-black still reads as an
+				     entry even when its stroke does not. -->
 				<ul class="flex flex-wrap gap-1.5 text-xs" aria-label={m['seatPricing.legend']()}>
 					{#each legendEntries as entry (entry.id ?? 'unpainted')}
 						<li
 							class="inline-flex items-center gap-1.5 rounded-full border-2 border-border bg-card px-2.5 py-1"
 						>
 							<span
-								class="inline-block h-3 w-3 shrink-0 rounded-full ring-1 ring-inset ring-border"
-								style={entry.color ? `background-color: ${entry.color}` : undefined}
-								class:bg-muted={!entry.color}
+								class="inline-block h-3 w-3 shrink-0 rounded-full border-2 bg-background"
+								style={entry.color ? `border-color: ${entry.color}` : undefined}
+								class:border-border={!entry.color}
 								aria-hidden="true"
 							></span>
 							<span class="font-bold">
@@ -458,7 +462,14 @@
 				     dark-mode value, so `--background`, `--border`,
 				     `--muted-foreground` and the zoom controls all keep their AA
 				     pairs, and the organizer's price-category seat colours read
-				     against a consistent dark house instead of flipping. -->
+				     against a consistent dark house instead of flipping.
+				     Side effect worth knowing: `shadow-poster` reads
+				     `--poster-shadow`, which `.dark` redefines — and `.dark` is on
+				     THIS element, so the frame always casts the DARK-mode float
+				     (near-black, wider spread) even on a light page. That is the
+				     right answer here rather than a bug: a dark block needs the
+				     heavier shadow to separate from light paper, and the light
+				     float (ink at 15%) would barely register under it. -->
 				<div
 					class="dark h-[58vh] shrink-0 overflow-hidden rounded-[1.5rem] bg-background shadow-poster"
 				>

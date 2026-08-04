@@ -51,7 +51,7 @@
 	);
 </script>
 
-<Card class="group overflow-hidden transition-shadow hover:shadow-lg">
+<Card class="group overflow-hidden transition-shadow hover:shadow-poster-lg">
 	<div class="flex flex-col gap-4 p-4 md:p-6">
 		<div class="flex items-start gap-4">
 			<div class="shrink-0">

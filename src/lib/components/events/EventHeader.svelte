@@ -182,9 +182,16 @@
 		landing's move, applied to the app's most public page. The ribbon and the
 		chip are mode-INERT by the imagery rule (they are a poster panel, not a
 		surface); every pair on them is hand-verified against the fixed values,
-		since a poster-palette pair is invisible to scripts/audit-brand-themes.py:
-		  ink #0D1E1C on white          → 18.4:1
-		  Hearty Purple #8C3CDD on white → 5.54:1 (the text-xs kicker clears AA)
+		since a poster-palette pair is invisible to scripts/audit-brand-themes.py
+		(numbers are the audit script's own, for the HSL tokens):
+		  ink on white                   → 17.40:1
+		  Hearty Purple #8C3CDD on white →  5.52:1 (the text-xs kicker clears AA)
+		  white on crimson-DEEP          →  4.59:1 (the logo-less initial tile)
+		The initial tile's gradient ends on `crimson-deep`, not raw
+		`poster-crimson`: white on raw Light Crimson is 4.33:1, which fails AA
+		for the tile's 18px bold letter — the exact trap app.css documents at
+		the `--poster-crimson-deep` declaration. This is the DEFAULT rendering
+		for any org without a logo, not an edge case.
 		Note: always the ORGANIZATION logo/initial, never the event's.
 	-->
 	<div class="bg-poster-purple">
@@ -202,7 +209,7 @@
 					/>
 				{:else}
 					<div
-						class="flex h-12 w-12 items-center justify-center rounded-md bg-gradient-to-br from-poster-purple to-poster-crimson text-lg font-black text-poster-white"
+						class="flex h-12 w-12 items-center justify-center rounded-md bg-gradient-to-br from-poster-purple to-poster-crimson-deep text-lg font-black text-poster-white"
 					>
 						{event.organization.name.charAt(0).toUpperCase()}
 					</div>

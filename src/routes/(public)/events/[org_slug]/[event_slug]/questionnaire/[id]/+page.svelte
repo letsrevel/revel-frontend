@@ -112,7 +112,10 @@
 <div class="bg-background">
 	<section class="bg-secondary text-secondary-foreground">
 		<div class="container relative mx-auto max-w-3xl px-4 pb-20 pt-8">
-			<!-- Sticker-chip rule: the org's own logo, or nothing at all. -->
+			<!-- Sticker-chip rule: the org's own logo, or nothing at all. Pinned
+			     top-right, so the PageHeader below carries `md:pr-24` to keep a
+			     long title from running under it (the chip is aria-hidden
+			     ornament; the title must never be the thing that yields). -->
 			<LogoChip
 				class="absolute right-4 top-6 hidden md:block"
 				logo={data.event.organization.logo}
@@ -134,6 +137,7 @@
 				kicker={data.event.name}
 				title={data.questionnaire.name}
 				subtitle={m['questionnaireSubmissionPage.subtitle']({ eventName: data.event.name })}
+				class="md:pr-24"
 			/>
 			{#if data.questionnaire.description}
 				<div class="mt-6 rounded-[1.25rem] border-2 border-border bg-card p-5 shadow-poster">

@@ -5,7 +5,7 @@
 	 *
 	 * This is the landing SeatMapMock's pill: a white@14 strip on the map's
 	 * dark house with a full-opacity white tracked-uppercase label —
-	 * ~17.6:1, hand-verified, because a composited alpha over a poster value
+	 * 11.42:1, hand-verified, because a composited alpha over a poster value
 	 * is invisible to scripts/audit-brand-themes.py. The house is a mode-inert
 	 * theatre (scoped `dark` region), so these fixed values are correct in
 	 * both modes.

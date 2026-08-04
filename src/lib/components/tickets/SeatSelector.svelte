@@ -67,28 +67,70 @@
 	 * Every pair here is hand-verified against the fixed poster values, because
 	 * a poster-palette pair is invisible to scripts/audit-brand-themes.py, and
 	 * every status is carried by a GLYPH as well as a fill (check / spinner /
-	 * number / ✕), so nothing is encoded by colour alone:
-	 *   white  #FFFFFF on ink #0D1E1C → 18.46:1  (available seat, ink number)
-	 *   purple #8C3CDD on ink         →  3.20:1  (selected seat; non-text, ≥3:1)
-	 *   white  #FFFFFF on purple      →  5.52:1  (the check glyph on it)
+	 * number / ✕), so nothing is encoded by colour alone. Ratios below are the
+	 * audit script's own numbers for the HSL tokens (`poster-white on
+	 * poster-ink` prints 17.40; the literal #0D1E1C hex is 17.22):
+	 *   white  #FFFFFF on ink → 17.40:1  (available seat, ink number)
+	 *   purple #8C3CDD on ink →  3.15:1  (selected seat; non-text, ≥3:1 — and
+	 *                                     only just, so it stays glyph-carried)
+	 *   white  #FFFFFF on purple → 5.52:1 (the check glyph on it)
 	 * The unavailable fill is deliberately faint (white@15): it is inert, its
 	 * ✕ is a decorative duplicate of the accessible name (seatAriaLabel already
 	 * says "sold"/"held"/"blocked"), so SC 1.4.11 does not bite on it.
+	 *
+	 * SELECTION USES `ring-*`, NOT `outline-*`, ON PURPOSE. An unconditional
+	 * `outline` utility sets outline-style on the button and so SWALLOWS the
+	 * UA's :focus-visible ring — a selected seat would have had no visible
+	 * keyboard focus indicator at all (WCAG 2.4.7). The app defines no global
+	 * focus-visible rule to fall back on, so the shared button class below
+	 * carries an explicit amber focus outline for EVERY state (amber on ink is
+	 * 9.42:1; the outline sits in the offset gap, i.e. against the ink panel,
+	 * not against the seat fill).
 	 */
 	function seatClasses(seat: SeatView): string {
 		switch (seat.status) {
 			case 'mine':
-				return 'bg-poster-purple text-poster-white outline outline-2 outline-offset-2 outline-poster-white';
+				return 'bg-poster-purple text-poster-white ring-2 ring-poster-white ring-offset-2 ring-offset-poster-ink';
 			case 'pending':
 				return 'bg-poster-white/30 text-poster-white';
 			case 'available':
 				return disabled || maxReached
 					? 'cursor-not-allowed bg-poster-white/40 text-poster-ink'
-					: 'bg-poster-white text-poster-ink hover:-translate-y-0.5 hover:outline hover:outline-2 hover:outline-offset-2 hover:outline-poster-purple';
+					: 'bg-poster-white text-poster-ink hover:-translate-y-0.5 hover:ring-2 hover:ring-poster-purple hover:ring-offset-2 hover:ring-offset-poster-ink';
 			default:
 				// sold, held, blocked
 				return 'cursor-not-allowed bg-poster-white/15 text-poster-white/70';
 		}
+	}
+
+	/**
+	 * Shared seat-button chrome. The focus outline is explicit and lives here so
+	 * it applies to every status — including `mine`, whose ring would otherwise
+	 * be the only thing a keyboard user sees change.
+	 */
+	const seatButtonClass =
+		'relative flex h-9 w-9 flex-col items-center justify-center rounded-full text-[11px] font-extrabold ' +
+		'transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ' +
+		'focus-visible:outline-poster-amber [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11';
+
+	/**
+	 * Indicator-icon colour per status.
+	 *
+	 * Ink carries the LIGHT fills — white 17.40:1, white@40 (disabled) 3.79:1,
+	 * purple 3.15:1 — but on the faint white@15 unavailable fill ink measures
+	 * **1.58:1**, i.e. it vanishes. Those seats get white@70 instead, which is
+	 * 6.35:1 on that fill. (Pending's white@30 fill is the weakest ink pairing
+	 * at 2.70:1; it is a sub-second transient with a spinner already on it, so
+	 * it keeps ink rather than flickering colour mid-hold.)
+	 *
+	 * These icons are decorative duplicates — seatAriaLabel already names
+	 * "accessible" / "obstructed view" — so SC 1.4.11 does not bite. That is a
+	 * reason not to panic, not a reason to let the cue disappear.
+	 */
+	function indicatorClass(seat: SeatView): string {
+		const unavailable =
+			seat.status !== 'mine' && seat.status !== 'pending' && seat.status !== 'available';
+		return unavailable ? 'text-poster-white/70' : 'text-poster-ink';
 	}
 
 	function handleClick(seat: SeatView) {
@@ -115,7 +157,7 @@
 	<div class="rounded-[1.5rem] bg-poster-ink p-4 shadow-poster sm:p-5">
 		<!-- Stage indicator: the mock's pill — flat-bottomed, round-topped, wide
 		     tracking. white@14 over ink composites to a near-ink strip, so the
-		     full-opacity white label on it is ~17.6:1 (hand-verified; a composited
+		     full-opacity white label on it is 11.42:1 (hand-verified; a composited
 		     alpha is invisible to scripts/audit-brand-themes.py). -->
 		<p
 			class="rounded-b-md rounded-t-full bg-poster-white/[0.14] py-1.5 text-center text-[10px] font-extrabold uppercase tracking-[0.2em] text-poster-white"
@@ -140,9 +182,7 @@
 									type="button"
 									onclick={() => handleClick(seat)}
 									disabled={isSeatDisabled(seat)}
-									class="relative flex h-9 w-9 flex-col items-center justify-center rounded-full text-[11px] font-extrabold transition-all [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11 {seatClasses(
-										seat
-									)}"
+									class="{seatButtonClass} {seatClasses(seat)}"
 									aria-pressed={seat.status === 'mine'}
 									aria-busy={seat.status === 'pending'}
 									aria-disabled={seat.status === 'pending' ? true : undefined}
@@ -161,16 +201,21 @@
 									{/if}
 									<!-- Indicator icons. Decorative duplicates — seatAriaLabel
 									     already names "accessible" / "obstructed view", so SC 1.4.11
-									     does not bite — and they differ by SHAPE, not colour. Ink
-									     reads on every seat fill (18.5:1 on white, 3.9:1 on purple);
-									     replaces the old raw `text-blue-500`/`text-amber-600` hues. -->
+									     does not bite — and they differ by SHAPE, not colour. Colour
+									     per status via indicatorClass (ink on the light fills,
+									     white@70 on the faint unavailable one, where ink is 1.58:1
+									     and would vanish). These replaced two raw palette hues from
+									     the pre-sweep version; the class names are spelled out in
+									     the sweep-rule docs rather than here, so Tailwind's source
+									     scanner does not emit them as live utilities. -->
 									{#if seat.isAccessible || seat.isObstructedView}
+										{@const indicator = indicatorClass(seat)}
 										<div class="absolute -bottom-0.5 -right-0.5 flex gap-0.5">
 											{#if seat.isAccessible}
-												<Accessibility class="h-2.5 w-2.5 text-poster-ink" aria-hidden="true" />
+												<Accessibility class="h-2.5 w-2.5 {indicator}" aria-hidden="true" />
 											{/if}
 											{#if seat.isObstructedView}
-												<EyeOff class="h-2.5 w-2.5 text-poster-ink" aria-hidden="true" />
+												<EyeOff class="h-2.5 w-2.5 {indicator}" aria-hidden="true" />
 											{/if}
 										</div>
 									{/if}
@@ -186,7 +231,7 @@
 		     paired with its own label, so no meaning is colour-only — and the
 		     swatches are decorative duplicates of that text, which is why the
 		     faint "unavailable" chip is allowed to be faint. Full white on the
-		     white@12 chip measures ~17.9:1 (hand-verified). -->
+		     white@12 chip measures 12.23:1 (hand-verified). -->
 		<div class="mt-4 flex flex-wrap justify-center gap-1.5 text-[11px] font-bold">
 			<span class={legendChipClass}>
 				<span

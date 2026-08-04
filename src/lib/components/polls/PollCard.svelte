@@ -120,7 +120,7 @@
 	});
 </script>
 
-<Card class="transition-all hover:-translate-y-0.5 hover:shadow-lg">
+<Card class="transition-all hover:-translate-y-0.5 hover:shadow-poster-lg">
 	<CardHeader>
 		<div class="flex items-start justify-between gap-2">
 			<div class="min-w-0 flex-1">
