@@ -11,6 +11,7 @@
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import { slide } from 'svelte/transition';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
+	import Sticker from '$lib/components/brand/Sticker.svelte';
 	import FileUploadQuestion from '$lib/components/questionnaires/FileUploadQuestion.svelte';
 	import type {
 		QuestionnaireFileSchema,
@@ -305,10 +306,26 @@
 	 */
 	function optionRowClass(selected: boolean): string {
 		return cn(
-			'flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border-2 px-3 py-2 transition-colors',
-			selected ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/40'
+			// Uplift: the mock's rows are chunky sticker pills, not list items —
+			// full sticker radius, 44px min target, and a hover LIFT (the poster
+			// language is physical). `transition-all` covers the translate.
+			'flex min-h-12 cursor-pointer items-center gap-2.5 rounded-xl border-2 px-4 py-2.5 font-bold',
+			'transition-all hover:-translate-y-0.5',
+			selected
+				? 'border-primary bg-primary/10 shadow-poster'
+				: 'border-border hover:border-primary/50 hover:shadow-poster'
 		);
 	}
+
+	/**
+	 * The mock's card: a genuinely floating panel on a tinted page, not a
+	 * hairline rectangle. `bg-card` rather than a mode-inert `bg-poster-white`
+	 * — see the uplift report: in LIGHT mode `--card` IS white, so this is the
+	 * mock exactly; in dark mode a hard-white card would strand every nested
+	 * control (textarea, checkbox, radio, markdown prose, the file-upload
+	 * dropzone) on the wrong surface, and those all read theme tokens.
+	 */
+	const cardClass = 'rounded-[1.5rem] border-2 border-border bg-card p-6 shadow-poster sm:p-8';
 </script>
 
 <!-- Form -->
@@ -316,9 +333,24 @@
 	<!-- Non-conditional Sections -->
 	{#each flattened.sections
 		.filter((s) => !s.depends_on_option_id)
-		.sort((a, b) => a.order - b.order) as section (section.id)}
-		<div class="rounded-lg border bg-card p-6">
-			<h2 class="mb-2 text-xl font-extrabold">{section.name}</h2>
+		.sort((a, b) => a.order - b.order) as section, sectionIndex (section.id)}
+		<div class={cardClass}>
+			<!-- Numbered sticker: pure ornament (aria-hidden) and OUTSIDE the h2,
+			     so the heading's accessible name is still exactly section.name.
+			     Alternating tint/tilt is the poster's hand-placed feel; rotation
+			     stays inside Sticker's [-3, 3] clamp. -->
+			<div class="mb-4 flex items-start gap-3">
+				<span aria-hidden="true" class="shrink-0">
+					<Sticker
+						tint={sectionIndex % 2 === 0 ? 'purple' : 'crimson'}
+						rotate={sectionIndex % 2 === 0 ? -2 : 2}
+						class="text-sm tabular-nums"
+					>
+						{sectionIndex + 1}
+					</Sticker>
+				</span>
+				<h2 class="text-2xl font-extrabold leading-tight">{section.name}</h2>
+			</div>
 			{#if section.description}
 				<div class="mb-6">
 					<MarkdownContent content={section.description} class="text-muted-foreground" />
@@ -354,7 +386,7 @@
 				.sort((a, b) => a.order - b.order) as question (question.id)}
 				{@const isVisible = isQuestionVisible(question.id)}
 				{#if isVisible}
-					<div class="rounded-lg border bg-card p-6">
+					<div class={cardClass}>
 						{#if question.type === 'multiple_choice'}
 							{@render multipleChoiceQuestion(question, false)}
 						{:else if question.type === 'file_upload'}
@@ -368,18 +400,26 @@
 		</div>
 	{/if}
 
-	<!-- Submit Button -->
-	<div class="flex flex-col items-end gap-2 border-t pt-6">
+	<!-- Submit row — the mock's action strip: a floating bar, not a hairline
+	     divider, so the form ends on the same physical note it started. -->
+	<div
+		class="flex flex-col items-end gap-3 rounded-[1.5rem] border-2 border-border bg-card p-5 shadow-poster sm:p-6"
+	>
 		{#if !allRequiredAnswered}
 			<p class="text-sm text-muted-foreground">
 				{m['questionnaireSubmissionPage.validation_allRequired']()}
 			</p>
 		{/if}
 		<div class="flex items-center justify-end gap-4">
-			<Button type="button" variant="outline" onclick={onCancel}>
+			<Button type="button" variant="outline" size="lg" onclick={onCancel}>
 				{m['questionnaireSubmissionPage.button_cancel']()}
 			</Button>
-			<Button type="submit" disabled={submitting || !allRequiredAnswered}>
+			<Button
+				type="submit"
+				size="lg"
+				class="font-extrabold shadow-poster"
+				disabled={submitting || !allRequiredAnswered}
+			>
 				{#if submitting}
 					<Loader2 class="h-5 w-5 animate-spin" />
 					{m['questionnaireSubmissionPage.button_submitting']()}
@@ -419,7 +459,7 @@
 				<CornerDownRight class="mt-1 h-4 w-4 shrink-0 text-primary/60" aria-hidden="true" />
 			{/if}
 			<div class="flex-1">
-				<Label class="text-base">
+				<Label class="text-base font-bold">
 					<MarkdownContent content={question.question} inline={true} />
 					{#if question.is_mandatory}
 						<span class="text-destructive">*</span>
@@ -505,7 +545,7 @@
 			{/if}
 			<div class="flex-1">
 				<!-- FileUploadQuestion renders its file input with id `file-upload-<questionId>` -->
-				<Label for="file-upload-{question.id}" class="text-base">
+				<Label for="file-upload-{question.id}" class="text-base font-bold">
 					<MarkdownContent content={question.question} inline={true} />
 					{#if question.is_mandatory}
 						<span class="text-destructive">*</span>
@@ -537,7 +577,7 @@
 				<CornerDownRight class="mt-1 h-4 w-4 shrink-0 text-primary/60" aria-hidden="true" />
 			{/if}
 			<div class="flex-1">
-				<Label for={question.id} class="text-base">
+				<Label for={question.id} class="text-base font-bold">
 					<MarkdownContent content={question.question} inline={true} />
 					{#if question.is_mandatory}
 						<span class="text-destructive">*</span>
@@ -616,7 +656,7 @@
 
 			<!-- Conditional sections for this option -->
 			{#each getSectionsForOption(flattened, optionId).sort((a, b) => a.order - b.order) as conditionalSection (conditionalSection.id)}
-				<div class="ml-4 rounded-lg border border-primary/20 bg-primary/5 p-4">
+				<div class="ml-4 rounded-2xl border-2 border-primary/30 bg-primary/5 p-5">
 					<h3 class="mb-2 text-lg font-extrabold">{conditionalSection.name}</h3>
 					{#if conditionalSection.description}
 						<div class="mb-4">

@@ -60,7 +60,11 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			requires_ticket: event.requires_ticket,
 			organization: {
 				name: event.organization.name,
-				slug: event.organization.slug
+				slug: event.organization.slug,
+				// Feeds the band's decorative LogoChip — which renders nothing when
+				// both are null (sticker-chip rule), so no fallback is needed here.
+				logo: event.organization.logo ?? null,
+				logo_thumbnail_url: event.organization.logo_thumbnail_url ?? null
 			}
 		},
 		questionnaire

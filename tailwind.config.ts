@@ -99,6 +99,13 @@ export default {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
+			},
+			// The landing mocks' float. Both read a CSS variable rather than a
+			// literal so the shadow can flip per mode (app.css :root / .dark) —
+			// an ink shadow is invisible on the dark aubergine background.
+			boxShadow: {
+				poster: 'var(--poster-shadow)',
+				'poster-lg': 'var(--poster-shadow-lg)'
 			}
 		}
 	},

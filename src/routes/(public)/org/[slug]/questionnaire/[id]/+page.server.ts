@@ -60,7 +60,11 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 		organization: {
 			id: organization.id,
 			name: organization.name,
-			slug: organization.slug
+			slug: organization.slug,
+			// Feeds the band's decorative LogoChip — which renders nothing when
+			// both are null (sticker-chip rule), so no fallback is needed here.
+			logo: organization.logo ?? null,
+			logo_thumbnail_url: organization.logo_thumbnail_url ?? null
 		},
 		questionnaire
 	};

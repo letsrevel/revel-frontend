@@ -466,9 +466,11 @@
 		class="flex max-h-[92vh] flex-col {isUserChoiceSeat ? 'sm:max-w-4xl' : 'sm:max-w-lg'}"
 	>
 		<DialogHeader>
-			<DialogTitle class="flex items-center gap-2 text-xl">
+			<!-- Display type on the checkout dialog (uplift prototype). Copy and
+			     heading semantics are unchanged; only the scale and weight move. -->
+			<DialogTitle class="flex items-center gap-2.5 text-3xl font-black leading-[1.12]">
 				{@const Icon = dialogIcon}
-				<Icon class="h-5 w-5 text-primary" aria-hidden="true" />
+				<Icon class="h-7 w-7 shrink-0 text-primary" aria-hidden="true" />
 				{dialogTitle}
 			</DialogTitle>
 			<DialogDescription>
@@ -488,10 +490,10 @@
 
 		<div class="min-h-0 flex-1 space-y-4 overflow-y-auto py-2">
 			<!-- Tier Information Card -->
-			<div class="rounded-lg border border-border bg-muted/50 p-4">
+			<div class="rounded-[1.25rem] border-2 border-border bg-card p-5 shadow-poster">
 				<div class="flex items-start justify-between gap-4">
 					<div class="flex-1 space-y-1">
-						<h3 class="font-semibold">{tier.name}</h3>
+						<h3 class="text-lg font-extrabold">{tier.name}</h3>
 						{#if tier.description}
 							<MarkdownContent content={tier.description} class="text-sm text-muted-foreground" />
 						{/if}

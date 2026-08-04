@@ -29,7 +29,8 @@ describe('SectionHeader', () => {
 	it('celebration volume uses the display heading scale', () => {
 		render(SectionHeader, { props: { title: 'Highlights', volume: 'celebration' } });
 		const heading = screen.getByRole('heading', { level: 2 });
-		expect(heading.className).toContain('text-xl');
+		// text-2xl since the uplift prototype (was text-xl) — studio unchanged.
+		expect(heading.className).toContain('text-2xl');
 		expect(heading.className).toContain('font-extrabold');
 	});
 
@@ -44,6 +45,23 @@ describe('SectionHeader', () => {
 			props: { title: 'Details', kicker: 'Celebration', volume: 'celebration' }
 		});
 		expect(screen.getByText('Celebration').className).toContain('text-sm');
+	});
+
+	it('poster volume matches celebration at section level (PageHeader parity)', () => {
+		// The volume exists so poster-band screens name the same volume on both
+		// primitives instead of hand-rolling the scale; today it rides with
+		// celebration, and studio must stay the odd one out.
+		const { unmount } = render(SectionHeader, {
+			props: { title: 'Highlights', kicker: 'Poster', volume: 'poster' }
+		});
+		const posterHeading = screen.getByRole('heading', { level: 2 }).className;
+		expect(posterHeading).toContain('text-2xl');
+		expect(posterHeading).toContain('font-extrabold');
+		expect(screen.getByText('Poster').className).toContain('text-sm');
+		unmount();
+
+		render(SectionHeader, { props: { title: 'Highlights', volume: 'studio' } });
+		expect(screen.getByRole('heading', { level: 2 }).className).toContain('text-lg');
 	});
 
 	it('passes id through to the heading element', () => {

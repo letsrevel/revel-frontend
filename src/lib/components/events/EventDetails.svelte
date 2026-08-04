@@ -91,12 +91,18 @@
 	<!-- Description -->
 	{#if event.description}
 		{#key event.description}
-			<section aria-labelledby="description-heading">
+			<!-- The description is the page's biggest block of prose; on the
+			     uplift's tinted content panel it needs its own floating card, or
+			     it is the one thing left lying on the surface. -->
+			<section
+				aria-labelledby="description-heading"
+				class="rounded-lg border-2 bg-card p-6 shadow-poster sm:p-8"
+			>
 				<SectionHeader
 					volume="celebration"
 					id="description-heading"
 					title={m['eventDetails.about_heading']()}
-					class="mb-3"
+					class="mb-4"
 				/>
 				<MarkdownContent content={event.description} class="max-w-prose" />
 			</section>
@@ -114,7 +120,7 @@
 
 		<div class="grid gap-4 md:grid-cols-2">
 			<!-- Date & Time -->
-			<div class="flex gap-3 rounded-lg border bg-card p-4">
+			<div class="flex gap-3 rounded-lg border-2 bg-card p-4 shadow-poster">
 				<Calendar class="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
 				<div class="flex-1">
 					<div class="text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
@@ -165,7 +171,7 @@
 			         scripts/audit-brand-themes.py. -->
 				<div
 					class={cn(
-						'flex gap-3 rounded-lg border p-4',
+						'flex gap-3 rounded-lg border-2 p-4 shadow-poster',
 						isNearCapacity ? 'border-highlight bg-highlight/10' : 'bg-card'
 					)}
 				>
@@ -197,7 +203,7 @@
 				<!-- Same recipe and same reasoning as the capacity cell above. -->
 				<div
 					class={cn(
-						'flex gap-3 rounded-lg border p-4',
+						'flex gap-3 rounded-lg border-2 p-4 shadow-poster',
 						isDeadlineSoon ? 'border-highlight bg-highlight/10' : 'bg-card'
 					)}
 				>
@@ -221,7 +227,7 @@
 			{/if}
 
 			<!-- Event Type -->
-			<div class="flex gap-3 rounded-lg border bg-card p-4">
+			<div class="flex gap-3 rounded-lg border-2 bg-card p-4 shadow-poster">
 				<Info class="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
 				<div class="flex-1">
 					<div class="text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground">

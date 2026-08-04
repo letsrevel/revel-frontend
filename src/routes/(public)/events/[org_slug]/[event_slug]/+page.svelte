@@ -341,221 +341,163 @@
 		</div>
 	{/if}
 
-	<!-- Event Header -->
-	<EventHeader {event} class="mb-8" />
+	<!-- Event Header (cover → poster ribbon) -->
+	<EventHeader {event} />
 
-	<!-- Main Content -->
-	<div class="container mx-auto px-6 pb-16 md:px-8">
-		<!-- Mobile Action Card (at top, prominent) -->
-		<div class="mb-8 lg:hidden">
-			<EventActionSidebar
-				{event}
-				bind:userStatus
-				isAuthenticated={data.isAuthenticated}
-				userPermissions={data.userPermissions}
-				eventTokenDetails={data.eventTokenDetails}
-				variant="card"
-				canAttendWithoutLogin={event.can_attend_without_login}
-				onGetTicketsClick={openTicketTierModal}
-				onShowTicketClick={openMyTicketModal}
-				onResumePayment={handleResumePaymentFromSidebar}
-				isResumingPayment={resumePaymentMutation.isPending}
-				onGuestRsvpClick={openGuestRsvpDialog}
-				onInvitationRequestSuccess={refreshUserStatus}
-				onWhitelistRequestSuccess={refreshUserStatus}
-			/>
-		</div>
-
-		<div class="grid gap-8 lg:grid-cols-3">
-			<!-- Left Column: Event Details -->
-			<div class="space-y-8 lg:col-span-2">
-				<EventDetails {event} />
-
-				{#if data.isAuthenticated}
-					<!-- Announcements Section (high visibility, directly under details) -->
-					<EventAnnouncements eventId={event.id} />
-
-					<!-- Potluck Coordination Section -->
-					<!-- Show if potluck is open OR if there are existing items -->
-					{#if event.potluck_open || data.potluckItems.length > 0}
-						<div class="space-y-6">
-							<!-- Dietary Summary -->
-							<DietarySummary
-								eventId={event.id}
-								authToken={authStore.accessToken}
-								isAuthenticated={data.isAuthenticated}
-							/>
-
-							<!-- Potluck Items -->
-							<PotluckSection
-								{event}
-								permissions={potluckPermissions}
-								isAuthenticated={data.isAuthenticated}
-								{hasRSVPd}
-								initialItems={data.potluckItems}
-							/>
-						</div>
-					{/if}
-				{:else}
-					<!-- Consolidated sign-in prompt covering all auth-gated sections -->
-					<EventGuestSignInPrompt {event} />
-				{/if}
-
-				<!-- My Ticket (if user has a ticket) -->
-				{#if userTicket}
-					<MyTicket
-						ticket={userTicket}
-						eventName={event.name}
-						eventDate={event.start ? formatDateTime(event.start) : undefined}
-						eventLocation={formatEventLocation(event)}
-						onResumePayment={handleResumePaymentFromSidebar}
-						isResumingPayment={resumePaymentMutation.isPending}
-						totalTickets={userTickets.length}
-						onViewAllTickets={openMyTicketModal}
-					/>
-				{/if}
-
-				<!-- Season passes covering this event (shown with the regular tickets) -->
-				{#if event.event_series && event.requires_ticket && !userTicket}
-					<EventSeriesPassOffers
-						seriesId={event.event_series.id}
-						orgSlug={event.organization.slug}
-						seriesSlug={event.event_series.slug}
-						isAuthenticated={data.isAuthenticated}
-					/>
-				{/if}
-
-				<!-- Ticket Tiers (if event requires tickets and user doesn't have one) -->
-				{#if event.requires_ticket && !userTicket && ticketTiers.length > 0}
-					<TicketTierList
-						tiers={ticketTiers}
-						isAuthenticated={data.isAuthenticated}
-						hasTicket={!!userTicket}
-						{userStatus}
-						eventId={event.id}
-						eventSlug={event.slug}
-						organizationSlug={event.organization.slug}
-						eventName={event.name}
-						eventTokenDetails={data.eventTokenDetails}
-						canAttendWithoutLogin={event.can_attend_without_login}
-						{tierRemainingTickets}
-						timezone={event.timezone}
-						capacityDisclosed={viewerVisibility.show_capacity}
-						onSelectTier={handleSelectTier}
-						onGuestTierClick={openGuestTicketDialog}
-						onViewSeatingMap={hasSeatingMap
-							? () => {
-									showVenueOverview = true;
-								}
-							: undefined}
-					/>
-				{/if}
-
-				<!-- Schedule / Timeline Section -->
-				<EventSchedule
-					schedule={event.schedule}
-					eventStart={event.start}
-					timezone={event.timezone}
-					place={event.city?.name}
+	<!--
+		Tinted content panel (uplift prototype). The page body is no longer bare
+		`--background`: it is a periwinkle wash, so every card below reads as a
+		white sticker FLOATING on a colored surface rather than a rectangle on
+		paper. Composited alphas are invisible to scripts/audit-brand-themes.py,
+		so every text layer that lands directly on this panel (never inside a
+		card) is hand-verified against the composited colour:
+		  light — secondary@55 over background ⇒ hsl(231 88% 90%);
+		          foreground 12.42:1 · muted-foreground 6.45:1 · primary 4.97:1
+		  dark  — secondary@28 over background ⇒ hsl(246 33% 15%);
+		          foreground 15.75:1 · muted-foreground 7.47:1 · primary 6.30:1
+		(`primary` is the SectionHeader kicker; `foreground` the section headings.)
+	-->
+	<div class="bg-secondary/55 pt-8 dark:bg-secondary/[0.28]">
+		<div class="container mx-auto px-6 pb-16 md:px-8">
+			<!-- Mobile Action Card (at top, prominent) -->
+			<div class="mb-8 lg:hidden">
+				<EventActionSidebar
+					{event}
+					bind:userStatus
+					isAuthenticated={data.isAuthenticated}
+					userPermissions={data.userPermissions}
+					eventTokenDetails={data.eventTokenDetails}
+					variant="card"
+					canAttendWithoutLogin={event.can_attend_without_login}
+					onGetTicketsClick={openTicketTierModal}
+					onShowTicketClick={openMyTicketModal}
+					onResumePayment={handleResumePaymentFromSidebar}
+					isResumingPayment={resumePaymentMutation.isPending}
+					onGuestRsvpClick={openGuestRsvpDialog}
+					onInvitationRequestSuccess={refreshUserStatus}
+					onWhitelistRequestSuccess={refreshUserStatus}
 				/>
-
-				<!-- Resources Section -->
-				<EventResources resources={data.resources} />
-
-				<!-- Organization Info (below details on mobile, hidden on desktop) -->
-				<div class="lg:hidden">
-					<OrganizationInfo
-						organization={event.organization}
-						isAuthenticated={data.isAuthenticated}
-						isMember={data.isMember}
-						membershipTier={data.membershipTier}
-						membershipStatus={data.membershipStatus}
-						isOwner={data.isOwner}
-						isStaff={data.isStaff}
-					/>
-				</div>
-
-				<!-- Event Series (mobile only) -->
-				{#if event.event_series}
-					<section
-						aria-labelledby="series-heading-mobile"
-						class="rounded-lg border bg-card lg:hidden"
-					>
-						<div class="border-b p-4">
-							<SectionHeader
-								volume="celebration"
-								id="series-heading-mobile"
-								title={m['eventDetails.series_heading']()}
-							/>
-						</div>
-						<a
-							href={resolve('/(public)/events/[org_slug]/series/[series_slug]', {
-								org_slug: event.organization.slug,
-								series_slug: event.event_series.slug
-							})}
-							class="block p-4 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-						>
-							<div class="font-bold">{event.event_series.name}</div>
-							{#if event.event_series.description}
-								<p class="mt-1 text-sm text-muted-foreground">
-									{event.event_series.description}
-								</p>
-							{/if}
-						</a>
-					</section>
-				{/if}
-
-				<!-- Attendee List (mobile only) -->
-				<div class="lg:hidden">
-					<AttendeeList
-						eventId={event.id}
-						totalAttendees={event.attendee_count}
-						isAuthenticated={data.isAuthenticated}
-						listDisclosed={viewerVisibility.show_attendee_list}
-						userVisibility={data.userVisibility}
-						showPronounDistribution={viewerVisibility.show_pronoun_distribution}
-					/>
-				</div>
 			</div>
 
-			<!-- Right Column: Action Sidebar (desktop only) -->
-			<aside class="hidden lg:col-span-1 lg:block">
-				<div class="sticky top-4 space-y-6">
-					<EventActionSidebar
-						{event}
-						bind:userStatus
-						isAuthenticated={data.isAuthenticated}
-						userPermissions={data.userPermissions}
-						eventTokenDetails={data.eventTokenDetails}
-						variant="card"
-						canAttendWithoutLogin={event.can_attend_without_login}
-						onGetTicketsClick={openTicketTierModal}
-						onShowTicketClick={openMyTicketModal}
-						onResumePayment={handleResumePaymentFromSidebar}
-						isResumingPayment={resumePaymentMutation.isPending}
-						onGuestRsvpClick={openGuestRsvpDialog}
-						onInvitationRequestSuccess={refreshUserStatus}
-						onWhitelistRequestSuccess={refreshUserStatus}
+			<div class="grid gap-8 lg:grid-cols-3">
+				<!-- Left Column: Event Details -->
+				<div class="space-y-8 lg:col-span-2">
+					<EventDetails {event} />
+
+					{#if data.isAuthenticated}
+						<!-- Announcements Section (high visibility, directly under details) -->
+						<EventAnnouncements eventId={event.id} />
+
+						<!-- Potluck Coordination Section -->
+						<!-- Show if potluck is open OR if there are existing items -->
+						{#if event.potluck_open || data.potluckItems.length > 0}
+							<div class="space-y-6">
+								<!-- Dietary Summary -->
+								<DietarySummary
+									eventId={event.id}
+									authToken={authStore.accessToken}
+									isAuthenticated={data.isAuthenticated}
+								/>
+
+								<!-- Potluck Items -->
+								<PotluckSection
+									{event}
+									permissions={potluckPermissions}
+									isAuthenticated={data.isAuthenticated}
+									{hasRSVPd}
+									initialItems={data.potluckItems}
+								/>
+							</div>
+						{/if}
+					{:else}
+						<!-- Consolidated sign-in prompt covering all auth-gated sections -->
+						<EventGuestSignInPrompt {event} />
+					{/if}
+
+					<!-- My Ticket (if user has a ticket) -->
+					{#if userTicket}
+						<MyTicket
+							ticket={userTicket}
+							eventName={event.name}
+							eventDate={event.start ? formatDateTime(event.start) : undefined}
+							eventLocation={formatEventLocation(event)}
+							onResumePayment={handleResumePaymentFromSidebar}
+							isResumingPayment={resumePaymentMutation.isPending}
+							totalTickets={userTickets.length}
+							onViewAllTickets={openMyTicketModal}
+						/>
+					{/if}
+
+					<!-- Season passes covering this event (shown with the regular tickets) -->
+					{#if event.event_series && event.requires_ticket && !userTicket}
+						<EventSeriesPassOffers
+							seriesId={event.event_series.id}
+							orgSlug={event.organization.slug}
+							seriesSlug={event.event_series.slug}
+							isAuthenticated={data.isAuthenticated}
+						/>
+					{/if}
+
+					<!-- Ticket Tiers (if event requires tickets and user doesn't have one) -->
+					{#if event.requires_ticket && !userTicket && ticketTiers.length > 0}
+						<TicketTierList
+							tiers={ticketTiers}
+							isAuthenticated={data.isAuthenticated}
+							hasTicket={!!userTicket}
+							{userStatus}
+							eventId={event.id}
+							eventSlug={event.slug}
+							organizationSlug={event.organization.slug}
+							eventName={event.name}
+							eventTokenDetails={data.eventTokenDetails}
+							canAttendWithoutLogin={event.can_attend_without_login}
+							{tierRemainingTickets}
+							timezone={event.timezone}
+							capacityDisclosed={viewerVisibility.show_capacity}
+							onSelectTier={handleSelectTier}
+							onGuestTierClick={openGuestTicketDialog}
+							onViewSeatingMap={hasSeatingMap
+								? () => {
+										showVenueOverview = true;
+									}
+								: undefined}
+						/>
+					{/if}
+
+					<!-- Schedule / Timeline Section -->
+					<EventSchedule
+						schedule={event.schedule}
+						eventStart={event.start}
+						timezone={event.timezone}
+						place={event.city?.name}
 					/>
 
-					<!-- Organization Info (desktop only) -->
-					<OrganizationInfo
-						organization={event.organization}
-						isAuthenticated={data.isAuthenticated}
-						isMember={data.isMember}
-						membershipTier={data.membershipTier}
-						membershipStatus={data.membershipStatus}
-						isOwner={data.isOwner}
-						isStaff={data.isStaff}
-					/>
+					<!-- Resources Section -->
+					<EventResources resources={data.resources} />
 
-					<!-- Event Series (desktop only) -->
+					<!-- Organization Info (below details on mobile, hidden on desktop) -->
+					<div class="lg:hidden">
+						<OrganizationInfo
+							organization={event.organization}
+							isAuthenticated={data.isAuthenticated}
+							isMember={data.isMember}
+							membershipTier={data.membershipTier}
+							membershipStatus={data.membershipStatus}
+							isOwner={data.isOwner}
+							isStaff={data.isStaff}
+						/>
+					</div>
+
+					<!-- Event Series (mobile only) -->
 					{#if event.event_series}
-						<section aria-labelledby="series-heading-desktop" class="rounded-lg border bg-card">
+						<section
+							aria-labelledby="series-heading-mobile"
+							class="rounded-lg border-2 bg-card shadow-poster lg:hidden"
+						>
 							<div class="border-b p-4">
 								<SectionHeader
 									volume="celebration"
-									id="series-heading-desktop"
+									id="series-heading-mobile"
 									title={m['eventDetails.series_heading']()}
 								/>
 							</div>
@@ -576,41 +518,121 @@
 						</section>
 					{/if}
 
-					<!-- Attendee List (desktop only) -->
-					<AttendeeList
-						eventId={event.id}
-						totalAttendees={event.attendee_count}
-						isAuthenticated={data.isAuthenticated}
-						listDisclosed={viewerVisibility.show_attendee_list}
-						userVisibility={data.userVisibility}
-						showPronounDistribution={viewerVisibility.show_pronoun_distribution}
-					/>
+					<!-- Attendee List (mobile only) -->
+					<div class="lg:hidden">
+						<AttendeeList
+							eventId={event.id}
+							totalAttendees={event.attendee_count}
+							isAuthenticated={data.isAuthenticated}
+							listDisclosed={viewerVisibility.show_attendee_list}
+							userVisibility={data.userVisibility}
+							showPronounDistribution={viewerVisibility.show_pronoun_distribution}
+						/>
+					</div>
 				</div>
-			</aside>
-		</div>
 
-		<!-- Tags Section (bottom of page) -->
-		{#if event.tags && event.tags.length > 0}
-			<section aria-labelledby="tags-heading" class="container mx-auto border-t px-6 py-8 md:px-8">
-				<SectionHeader
-					volume="celebration"
-					id="tags-heading"
-					title={m['eventDetails.tags_heading']()}
-					class="mb-4"
-				/>
-				<!-- Tag chips: primary on a 10% primary tint. The tint composites to
-				     ~the page colour, so primary-vs-background governs — 5.3:1 light /
-				     5.9:1 dark (hand-recomputed; a composited alpha is invisible to
-				     scripts/audit-brand-themes.py). -->
-				<div class="flex flex-wrap gap-2">
-					{#each event.tags as tag (tag)}
-						<span class="rounded-full bg-primary/10 px-3 py-1 text-sm font-bold text-primary">
-							{tag}
-						</span>
-					{/each}
-				</div>
-			</section>
-		{/if}
+				<!-- Right Column: Action Sidebar (desktop only) -->
+				<aside class="hidden lg:col-span-1 lg:block">
+					<div class="sticky top-4 space-y-6">
+						<EventActionSidebar
+							{event}
+							bind:userStatus
+							isAuthenticated={data.isAuthenticated}
+							userPermissions={data.userPermissions}
+							eventTokenDetails={data.eventTokenDetails}
+							variant="card"
+							canAttendWithoutLogin={event.can_attend_without_login}
+							onGetTicketsClick={openTicketTierModal}
+							onShowTicketClick={openMyTicketModal}
+							onResumePayment={handleResumePaymentFromSidebar}
+							isResumingPayment={resumePaymentMutation.isPending}
+							onGuestRsvpClick={openGuestRsvpDialog}
+							onInvitationRequestSuccess={refreshUserStatus}
+							onWhitelistRequestSuccess={refreshUserStatus}
+						/>
+
+						<!-- Organization Info (desktop only) -->
+						<OrganizationInfo
+							organization={event.organization}
+							isAuthenticated={data.isAuthenticated}
+							isMember={data.isMember}
+							membershipTier={data.membershipTier}
+							membershipStatus={data.membershipStatus}
+							isOwner={data.isOwner}
+							isStaff={data.isStaff}
+						/>
+
+						<!-- Event Series (desktop only) -->
+						{#if event.event_series}
+							<section
+								aria-labelledby="series-heading-desktop"
+								class="rounded-lg border-2 bg-card shadow-poster"
+							>
+								<div class="border-b p-4">
+									<SectionHeader
+										volume="celebration"
+										id="series-heading-desktop"
+										title={m['eventDetails.series_heading']()}
+									/>
+								</div>
+								<a
+									href={resolve('/(public)/events/[org_slug]/series/[series_slug]', {
+										org_slug: event.organization.slug,
+										series_slug: event.event_series.slug
+									})}
+									class="block p-4 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+								>
+									<div class="font-bold">{event.event_series.name}</div>
+									{#if event.event_series.description}
+										<p class="mt-1 text-sm text-muted-foreground">
+											{event.event_series.description}
+										</p>
+									{/if}
+								</a>
+							</section>
+						{/if}
+
+						<!-- Attendee List (desktop only) -->
+						<AttendeeList
+							eventId={event.id}
+							totalAttendees={event.attendee_count}
+							isAuthenticated={data.isAuthenticated}
+							listDisclosed={viewerVisibility.show_attendee_list}
+							userVisibility={data.userVisibility}
+							showPronounDistribution={viewerVisibility.show_pronoun_distribution}
+						/>
+					</div>
+				</aside>
+			</div>
+
+			<!-- Tags Section (bottom of page) -->
+			{#if event.tags && event.tags.length > 0}
+				<section
+					aria-labelledby="tags-heading"
+					class="container mx-auto border-t px-6 py-8 md:px-8"
+				>
+					<SectionHeader
+						volume="celebration"
+						id="tags-heading"
+						title={m['eventDetails.tags_heading']()}
+						class="mb-4"
+					/>
+					<!-- Tag chips: primary on the card surface with a 2px primary edge —
+				     poster stickers, not washes. The card fill is opaque, so the
+				     audited primary-vs-card pair governs (6.99:1 light / 6.27:1
+				     dark, the same pair the questionnaire option rows rest on). -->
+					<div class="flex flex-wrap gap-2">
+						{#each event.tags as tag (tag)}
+							<span
+								class="rounded-full border-2 border-primary/40 bg-card px-4 py-1.5 text-sm font-extrabold text-primary shadow-poster"
+							>
+								{tag}
+							</span>
+						{/each}
+					</div>
+				</section>
+			{/if}
+		</div>
 	</div>
 </div>
 

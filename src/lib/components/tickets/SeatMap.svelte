@@ -23,6 +23,8 @@
 	import type { SectorSeatConfig, SectorTarget } from '$lib/components/events/venue-overview';
 	import SeatMapGhostSector from './SeatMapGhostSector.svelte';
 	import SeatMapSectorTarget from './SeatMapSectorTarget.svelte';
+	import SeatMapStageArrow from './SeatMapStageArrow.svelte';
+	import SeatMapStagePill from './SeatMapStagePill.svelte';
 	import { homeViewFor, SeatMapViewport } from './seat-map-viewport.svelte';
 	import {
 		computeSeatMapLayout,
@@ -30,7 +32,6 @@
 		type SeatPoint,
 		type SectorLayout
 	} from './seat-map-layout';
-	import { sectorWorldCenter, stageDirectionAngle, worldAngleFromUp } from './sector-transform';
 	import { rowsFromSeatViews, seatAriaLabel, type SeatView } from './seating-view';
 
 	interface Props {
@@ -502,72 +503,6 @@
 	{/if}
 {/snippet}
 
-<!--
-	Scoped-view stage indicator: a "STAGE" pill placed at the angle the sector
-	faces the venue stage (stageDirectionAngle, degrees clockwise from
-	screen-up). The sector renders un-rotated, so an angled section shows the
-	stage off at the correct relative angle instead of always at the top.
--->
-{#snippet stageArrow(sector: SectorLayout)}
-	{@const worldAngle = stage
-		? worldAngleFromUp(sectorWorldCenter(sector.transform, sector.width, sector.height), stage)
-		: 0}
-	{@const angle = stageDirectionAngle(sector.transform, worldAngle)}
-	{@const rad = (angle * Math.PI) / 180}
-	{@const dirX = Math.sin(rad)}
-	{@const dirY = -Math.cos(rad)}
-	{@const halfW = (sector.width * CELL) / 2}
-	{@const halfH = (sector.height * CELL) / 2}
-	{@const cx = SCOPED_MARGIN + halfW}
-	{@const cy = SCOPED_MARGIN + halfH}
-	<!-- Distance from centre to the sector's bounding-box edge along the stage
-	     direction, so the bar hugs the seats instead of floating a half-diagonal
-	     away. -->
-	{@const edge =
-		1 / Math.max(Math.abs(dirX) / Math.max(halfW, 1), Math.abs(dirY) / Math.max(halfH, 1))}
-	{@const BAR_THICK = 18}
-	{@const gap = 9}
-	{@const bx = cx + dirX * (edge + gap + BAR_THICK / 2)}
-	{@const by = cy + dirY * (edge + gap + BAR_THICK / 2)}
-	<!-- Bar width tracks the sector's smaller side so it reads as a stage facing
-	     the seats, but stays modest so an angled bar never spills past the margin. -->
-	{@const barW = Math.min(Math.max(Math.min(sector.width, sector.height) * CELL * 0.6, 60), 88)}
-	<!-- Past 90° the bar's own rotation would flip the label upside-down. -->
-	{@const flip = angle > 90 && angle < 270}
-	<g role="img" aria-label={stageLabel}>
-		<!-- Short connector tying the bar to the seat block it faces. -->
-		<line
-			x1={cx + dirX * edge}
-			y1={cy + dirY * edge}
-			x2={cx + dirX * (edge + gap)}
-			y2={cy + dirY * (edge + gap)}
-			class="stroke-muted-foreground/50"
-			stroke-width="2"
-			stroke-linecap="round"
-		/>
-		<!-- Bar rotated to sit perpendicular to the stage direction (the sector is
-		     drawn un-rotated, so this angle conveys where the stage actually is). -->
-		<g transform="translate({bx} {by}) rotate({angle})">
-			<rect
-				x={-barW / 2}
-				y={-BAR_THICK / 2}
-				width={barW}
-				height={BAR_THICK}
-				rx="8"
-				class="fill-muted"
-			/>
-			<text
-				text-anchor="middle"
-				dominant-baseline="central"
-				transform={flip ? 'rotate(180)' : undefined}
-				class="fill-muted-foreground text-[11px] font-medium tracking-widest"
-			>
-				{stageLabel}
-			</text>
-		</g>
-	</g>
-{/snippet}
-
 <!-- h-full: the svg must FILL the host's fixed-height frame so the viewBox
      letterboxes into it (`meet`) — without it the svg takes its intrinsic
      aspect-ratio height and the frame's overflow-hidden clips the chart. -->
@@ -604,7 +539,13 @@
 				     at the angle this sector faces the stage. The name sits BELOW the
 				     seats — the stage indicator owns the top edge (they used to
 				     collide when the stage direction was near "up"). -->
-				{@render stageArrow(onlySector)}
+				<SeatMapStageArrow
+					sector={onlySector}
+					{stage}
+					label={stageLabel}
+					cell={CELL}
+					margin={SCOPED_MARGIN}
+				/>
 				<text
 					x={SCOPED_MARGIN + 2}
 					y={SCOPED_MARGIN + onlySector.height * CELL + 16}
@@ -622,24 +563,8 @@
 				{@const stageX = stage ? canvasX(stage.x) : contentW / 2}
 				{@const stageY = stage ? canvasY(stage.y) : PAD + STAGE_H / 2}
 				{#if !hideStage}
-					<g role="img" aria-label={stageLabel}>
-						<rect
-							x={stageX - 60}
-							y={stageY - STAGE_H / 2}
-							width="120"
-							height={STAGE_H}
-							rx="8"
-							class="fill-muted"
-						/>
-						<text
-							x={stageX}
-							y={stageY}
-							text-anchor="middle"
-							dominant-baseline="central"
-							class="fill-muted-foreground text-[11px] font-medium tracking-widest"
-						>
-							{stageLabel}
-						</text>
+					<g role="img" aria-label={stageLabel} transform="translate({stageX} {stageY})">
+						<SeatMapStagePill label={stageLabel} width={120} height={STAGE_H} />
 					</g>
 				{/if}
 

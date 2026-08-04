@@ -33,6 +33,15 @@ describe('PageHeader', () => {
 		expect(h1.className).toContain('sm:text-4xl');
 	});
 
+	it('poster volume applies the loudest typography contract', () => {
+		render(PageHeader, { props: { title: 'Party time', volume: 'poster' } });
+		const h1 = screen.getByRole('heading', { level: 1 });
+		expect(h1.className).toContain('text-4xl');
+		expect(h1.className).toContain('font-black');
+		expect(h1.className).toContain('leading-[1.08]');
+		expect(h1.className).toContain('sm:text-5xl');
+	});
+
 	it('studio volume applies the full typography contract', () => {
 		render(PageHeader, { props: { title: 'Settings', volume: 'studio' } });
 		const h1 = screen.getByRole('heading', { level: 1 });
@@ -80,5 +89,46 @@ describe('PageHeader', () => {
 		unmount();
 		render(PageHeader, { props: { title: 'Hey', volume: 'studio', decoration: snip('New!') } });
 		expect(screen.queryByText('New!')).toBeNull();
+	});
+
+	it('kicker defaults to the primary accent off a band', () => {
+		render(PageHeader, { props: { title: 'Members', kicker: 'Organization' } });
+		expect(screen.getByText('Organization').className).toContain('text-primary');
+	});
+
+	it('onBand drops the accent kicker and muted subtitle for the band foreground', () => {
+		// The reason this prop exists: `text-primary` on the light periwinkle
+		// `--secondary` band measures 4.12:1, below AA for the kicker's 14px
+		// extrabold. Inheriting the band's own audited foreground is 9.01:1.
+		render(PageHeader, {
+			props: {
+				title: 'Apply',
+				kicker: 'Acme',
+				subtitle: 'Tell us about yourself.',
+				onBand: true
+			}
+		});
+		const kicker = screen.getByText('Acme');
+		expect(kicker.className).not.toContain('text-primary');
+		expect(kicker.className).toContain('text-current');
+		// Typography is untouched by the prop — only colour.
+		expect(kicker.className).toContain('font-extrabold');
+		expect(kicker.className).toContain('tracking-[0.12em]');
+
+		const subtitle = screen.getByText('Tell us about yourself.');
+		expect(subtitle.className).not.toContain('text-muted-foreground');
+		expect(subtitle.className).toContain('text-current');
+	});
+
+	it('onBand leaves the h1 inheriting, in every volume', () => {
+		render(PageHeader, { props: { title: 'Apply', volume: 'poster', onBand: true } });
+		const h1 = screen.getByRole('heading', { level: 1 });
+		expect(h1.className).not.toMatch(/\btext-(primary|muted-foreground|current)\b/);
+		expect(h1.className).toContain('text-4xl');
+	});
+
+	it('decoration also renders in poster volume', () => {
+		render(PageHeader, { props: { title: 'Hey', volume: 'poster', decoration: snip('New!') } });
+		expect(screen.getByText('New!').closest('[aria-hidden="true"]')).not.toBeNull();
 	});
 });
