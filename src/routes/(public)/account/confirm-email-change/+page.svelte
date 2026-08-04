@@ -8,7 +8,6 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import type { RevelUserSchema } from '$lib/api/generated/types.gen';
 	import type { ActionData } from './$types';
-	import EmptyState from '$lib/components/common/EmptyState.svelte';
 
 	interface Props {
 		form: ActionData;
@@ -41,14 +40,26 @@
 <div class="container mx-auto flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8">
 	<div class="w-full max-w-md space-y-8">
 		{#if success}
-			<!-- level=2: this EmptyState is the page's only heading. -->
-			<EmptyState
-				icon={CheckCircle}
-				tone="success"
-				title={m['confirmEmailChange.success_heading']()}
-				body={`${m['confirmEmailChange.success_body']({ new_email: newEmail })} ${m['confirmEmailChange.success_signoutNotice']()}`}
-				level={2}
-			/>
+			<!-- Hand-composed centerpiece (not the EmptyState primitive, which caps
+			     at h2/h3): this page's only heading must be an h1. role="status"
+			     because this state is reached in-place (form submit, no
+			     navigation) — same live-region treatment the reset pages use for
+			     their success box. -->
+			<div role="status" class="text-center">
+				<span
+					aria-hidden="true"
+					class="mx-auto flex h-14 w-14 -rotate-2 items-center justify-center rounded-2xl bg-success text-success-foreground shadow-sm"
+				>
+					<CheckCircle class="h-7 w-7" />
+				</span>
+				<h1 class="mt-4 text-3xl font-black leading-[1.12] sm:text-4xl">
+					{m['confirmEmailChange.success_heading']()}
+				</h1>
+				<p class="mt-1.5 text-muted-foreground">
+					{m['confirmEmailChange.success_body']({ new_email: newEmail })}
+					{m['confirmEmailChange.success_signoutNotice']()}
+				</p>
+			</div>
 
 			<div class="text-center">
 				<a
@@ -59,17 +70,22 @@
 				</a>
 			</div>
 		{:else if !token}
-			<!-- level=2: this EmptyState is the page's only heading. No poster tint
-			     for a broken/invalid link — "warning" is the closest EmptyState
-			     tone to an error without adopting the full destructive framing
-			     reserved for confirm-deletion. -->
-			<EmptyState
-				icon={AlertTriangle}
-				tone="warning"
-				title={m['confirmEmailChange.invalidLink_heading']()}
-				body={m['confirmEmailChange.invalidLink_body']()}
-				level={2}
-			/>
+			<!-- Hand-composed centerpiece: this page's only heading must be an h1.
+			     No poster tint for a broken/invalid link — "warning" (amber/ink,
+			     audited pair) is the closest honest match without adopting the
+			     full destructive framing reserved for confirm-deletion. -->
+			<div class="text-center">
+				<span
+					aria-hidden="true"
+					class="mx-auto flex h-14 w-14 -rotate-2 items-center justify-center rounded-2xl bg-poster-amber text-poster-ink shadow-sm"
+				>
+					<AlertTriangle class="h-7 w-7" />
+				</span>
+				<h1 class="mt-4 text-3xl font-black leading-[1.12] sm:text-4xl">
+					{m['confirmEmailChange.invalidLink_heading']()}
+				</h1>
+				<p class="mt-1.5 text-muted-foreground">{m['confirmEmailChange.invalidLink_body']()}</p>
+			</div>
 
 			<div class="text-center">
 				<a
@@ -80,19 +96,24 @@
 				</a>
 			</div>
 		{:else}
-			<!-- level=2: this EmptyState is the page's only heading. -->
-			<EmptyState
-				icon={Mail}
-				tone="brand"
-				title={m['confirmEmailChange.confirm_heading']()}
-				body={m['confirmEmailChange.confirm_intro']()}
-				level={2}
-			/>
+			<!-- Hand-composed centerpiece: this page's only heading must be an h1. -->
+			<div class="text-center">
+				<span
+					aria-hidden="true"
+					class="mx-auto flex h-14 w-14 -rotate-2 items-center justify-center rounded-2xl bg-poster-purple text-poster-white shadow-sm"
+				>
+					<Mail class="h-7 w-7" />
+				</span>
+				<h1 class="mt-4 text-3xl font-black leading-[1.12] sm:text-4xl">
+					{m['confirmEmailChange.confirm_heading']()}
+				</h1>
+				<p class="mt-1.5 text-muted-foreground">{m['confirmEmailChange.confirm_intro']()}</p>
+			</div>
 
-			<!-- Warning box: highlight/10 + border are decorative; title/body stay
+			<!-- Warning box: highlight/20 + border are decorative; title/body stay
 			     on foreground/muted-foreground, both already-audited pairs. -->
 			<div
-				class="rounded-md border border-highlight/30 bg-highlight/10 p-6 dark:border-highlight/40 dark:bg-highlight/15"
+				class="rounded-md border border-highlight/30 bg-highlight/20 p-6 dark:border-highlight/40 dark:bg-highlight/25"
 				role="region"
 				aria-labelledby="confirmEmailChange_warning_title"
 			>

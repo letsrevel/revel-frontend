@@ -50,24 +50,6 @@
 		return m['passwordStrength.strong']();
 	});
 
-	// Label color based on whether all requirements are met. `highlight` (amber)
-	// text needs the same light/dark swap ToneTile uses for its warning tone
-	// (amber-on-light fails at 1.8:1, so light mode falls back to
-	// highlight-foreground; dark mode uses highlight directly) — see
-	// ToneTile.svelte's verified-ratio comment for the underlying numbers.
-	// `destructive` as plain text (not a solid fill) is fine in light mode
-	// (8.63:1 on background) but the dark token is only ~3.1:1 against the
-	// dark background/card — under the 4.5:1 floor for this text-sm label —
-	// so dark mode swaps to destructive-foreground (white), 16.8-18.3:1,
-	// hand-verified since this pairing isn't in audit-brand-themes.py's
-	// TEXT_PAIRS (only the solid destructive-foreground-on-destructive pair is).
-	const labelColor = $derived.by(() => {
-		if (score === 5) return 'text-success';
-		if (score === 4) return 'text-info';
-		if (score === 3) return 'text-highlight-foreground dark:text-highlight';
-		return 'text-destructive dark:text-destructive-foreground';
-	});
-
 	// Update isValid whenever password requirements change
 	$effect(() => {
 		isValid = hasMinLength && hasUppercase && hasLowercase && hasDigit && hasSpecial;
@@ -94,74 +76,56 @@
 	{#if password.length > 0}
 		<div class="flex items-center justify-between text-sm">
 			<span class="text-muted-foreground">{m['passwordStrength.strength']()}</span>
-			<span class="font-medium {labelColor}" data-testid="strength-label">{strengthLabel}</span>
+			<span class="font-medium text-muted-foreground" data-testid="strength-label"
+				>{strengthLabel}</span
+			>
 		</div>
 	{/if}
 
 	<!-- Requirements checklist -->
 	{#if showRequirements && password.length > 0}
 		<div class="space-y-1.5 text-xs">
-			<div
-				class="flex items-center gap-2 {hasMinLength
-					? 'text-success'
-					: 'text-destructive dark:text-destructive-foreground'}"
-			>
+			<div class="flex items-center gap-2 text-muted-foreground">
 				{#if hasMinLength}
-					<Check class="h-3.5 w-3.5" aria-hidden="true" />
+					<Check class="h-3.5 w-3.5 text-success" aria-hidden="true" />
 				{:else}
-					<X class="h-3.5 w-3.5" aria-hidden="true" />
+					<X class="h-3.5 w-3.5 text-destructive" aria-hidden="true" />
 				{/if}
 				<span>{m['passwordStrength.atLeast8']()}</span>
 			</div>
 
-			<div
-				class="flex items-center gap-2 {hasUppercase
-					? 'text-success'
-					: 'text-destructive dark:text-destructive-foreground'}"
-			>
+			<div class="flex items-center gap-2 text-muted-foreground">
 				{#if hasUppercase}
-					<Check class="h-3.5 w-3.5" aria-hidden="true" />
+					<Check class="h-3.5 w-3.5 text-success" aria-hidden="true" />
 				{:else}
-					<X class="h-3.5 w-3.5" aria-hidden="true" />
+					<X class="h-3.5 w-3.5 text-destructive" aria-hidden="true" />
 				{/if}
 				<span>{m['passwordStrength.oneUppercase']()}</span>
 			</div>
 
-			<div
-				class="flex items-center gap-2 {hasLowercase
-					? 'text-success'
-					: 'text-destructive dark:text-destructive-foreground'}"
-			>
+			<div class="flex items-center gap-2 text-muted-foreground">
 				{#if hasLowercase}
-					<Check class="h-3.5 w-3.5" aria-hidden="true" />
+					<Check class="h-3.5 w-3.5 text-success" aria-hidden="true" />
 				{:else}
-					<X class="h-3.5 w-3.5" aria-hidden="true" />
+					<X class="h-3.5 w-3.5 text-destructive" aria-hidden="true" />
 				{/if}
 				<span>{m['passwordStrength.oneLowercase']()}</span>
 			</div>
 
-			<div
-				class="flex items-center gap-2 {hasDigit
-					? 'text-success'
-					: 'text-destructive dark:text-destructive-foreground'}"
-			>
+			<div class="flex items-center gap-2 text-muted-foreground">
 				{#if hasDigit}
-					<Check class="h-3.5 w-3.5" aria-hidden="true" />
+					<Check class="h-3.5 w-3.5 text-success" aria-hidden="true" />
 				{:else}
-					<X class="h-3.5 w-3.5" aria-hidden="true" />
+					<X class="h-3.5 w-3.5 text-destructive" aria-hidden="true" />
 				{/if}
 				<span>{m['passwordStrength.oneNumber']()}</span>
 			</div>
 
-			<div
-				class="flex items-center gap-2 {hasSpecial
-					? 'text-success'
-					: 'text-destructive dark:text-destructive-foreground'}"
-			>
+			<div class="flex items-center gap-2 text-muted-foreground">
 				{#if hasSpecial}
-					<Check class="h-3.5 w-3.5" aria-hidden="true" />
+					<Check class="h-3.5 w-3.5 text-success" aria-hidden="true" />
 				{:else}
-					<X class="h-3.5 w-3.5" aria-hidden="true" />
+					<X class="h-3.5 w-3.5 text-destructive" aria-hidden="true" />
 				{/if}
 				<span>{m['passwordStrength.oneSpecial']()}</span>
 			</div>

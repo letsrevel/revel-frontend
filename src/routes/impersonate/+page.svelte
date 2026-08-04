@@ -2,6 +2,7 @@
 	import { AlertTriangle, ArrowLeft, RefreshCw } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
+	import ToneTile from '$lib/components/common/ToneTile.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { PageData } from './$types';
 
@@ -22,11 +23,7 @@
 <div class="flex min-h-screen items-center justify-center bg-muted/50 p-4">
 	<Card.Root class="w-full max-w-md">
 		<Card.Header class="text-center">
-			<div
-				class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10"
-			>
-				<AlertTriangle class="h-8 w-8 text-destructive" aria-hidden="true" />
-			</div>
+			<ToneTile icon={AlertTriangle} tone="danger" size="lg" class="mx-auto mb-4" />
 			<Card.Title class="text-xl font-bold">{m['impersonatePage.errorTitle']()}</Card.Title>
 			<Card.Description>
 				{data.errorMessage}

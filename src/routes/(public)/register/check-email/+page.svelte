@@ -2,9 +2,8 @@
 	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
-	import { Mail, Loader2 } from '@lucide/svelte';
+	import { Mail, Loader2, AlertTriangle } from '@lucide/svelte';
 	import { accountResendVerificationEmail } from '$lib/api/generated/sdk.gen';
-	import EmptyState from '$lib/components/common/EmptyState.svelte';
 
 	const email = $derived($page.url.searchParams.get('email') || '');
 	let isResending = $state(false);
@@ -61,14 +60,20 @@
 <div class="container mx-auto flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8">
 	<div class="w-full max-w-md space-y-8 text-center">
 		<div>
-			<!-- level=2: this EmptyState is the page's only heading. -->
-			<EmptyState
-				icon={Mail}
-				title={m['checkEmailPage.checkYourEmail']()}
-				body={m['checkEmailPage.verificationLink']()}
-				level={2}
-				class="border-none bg-transparent p-0 shadow-none"
-			/>
+			<!-- Hand-composed centerpiece (not the EmptyState primitive, which caps
+			     at h2/h3): this page's only heading must be an h1. Chip recipe
+			     mirrors EmptyState's internal poster-tinted chip (audited pair:
+			     bg-poster-purple/text-poster-white). -->
+			<span
+				aria-hidden="true"
+				class="mx-auto flex h-14 w-14 -rotate-2 items-center justify-center rounded-2xl bg-poster-purple text-poster-white shadow-sm"
+			>
+				<Mail class="h-7 w-7" />
+			</span>
+			<h1 class="mt-4 text-3xl font-black leading-[1.12] sm:text-4xl">
+				{m['checkEmailPage.checkYourEmail']()}
+			</h1>
+			<p class="mt-1.5 text-muted-foreground">{m['checkEmailPage.verificationLink']()}</p>
 			{#if email}
 				<p class="mt-1.5 font-medium">{email}</p>
 			{/if}
@@ -79,11 +84,15 @@
 			<p>{m['checkEmailPage.clickLink']()}</p>
 		</div>
 
-		<!-- Spam Warning: highlight/10 + border are decorative; body text stays on
+		<!-- Spam Warning: highlight/20 + border are decorative; body text stays on
 		     the default foreground token (already-audited pair). -->
 		<div
-			class="rounded-md border border-highlight/30 bg-highlight/10 p-4 text-left dark:border-highlight/40 dark:bg-highlight/15"
+			class="flex items-start gap-3 rounded-md border border-highlight/30 bg-highlight/20 p-4 text-left dark:border-highlight/40 dark:bg-highlight/25"
 		>
+			<AlertTriangle
+				class="mt-0.5 h-5 w-5 flex-shrink-0 text-highlight-foreground dark:text-highlight"
+				aria-hidden="true"
+			/>
 			<p class="text-sm font-medium text-foreground">
 				{m['checkEmailPage.checkSpam']()}
 			</p>

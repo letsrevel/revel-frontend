@@ -111,8 +111,8 @@
 	{#if rejection}
 		<Card class="w-full max-w-md">
 			<CardHeader class="text-center">
-				<CardTitle class="text-2xl">{m['joinOrgPage.rejectedTitle']()}</CardTitle>
-				<CardDescription class="text-lg">{rejectionBody}</CardDescription>
+				<CardTitle class="text-3xl font-black">{m['joinOrgPage.rejectedTitle']()}</CardTitle>
+				<CardDescription class="text-lg font-bold">{rejectionBody}</CardDescription>
 			</CardHeader>
 			<CardContent class="space-y-6 text-center">
 				<p class="text-sm text-muted-foreground">{m['joinOrgPage.rejectedHint']()}</p>
@@ -136,7 +136,7 @@
 				</p>
 				<CardTitle class="mt-1 flex items-center justify-center gap-2 text-3xl font-black">
 					{m['joinOrgPage.invitedTitle']()}
-					<span aria-hidden="true"><Sticker tint="crimson" rotate={-3}>🎉</Sticker></span>
+					<span aria-hidden="true"><Sticker tint="ink" rotate={-3}>🎉</Sticker></span>
 				</CardTitle>
 				<CardDescription class="text-lg font-bold">
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -- API-derived organization name neutralized via escapeHtml before interpolation into a developer-authored i18n template -->

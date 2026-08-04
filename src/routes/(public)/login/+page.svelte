@@ -133,11 +133,11 @@
 					{#if useDemoDropdown}
 						<!-- Demo Mode: Account Selector -->
 						<div class="space-y-6">
-							<!-- highlight/10 + highlight/30 border are decorative (no text-contrast
+							<!-- highlight/20 + highlight/30 border are decorative (no text-contrast
 							     requirement); the body copy and link stay on the default foreground/
 							     primary tokens, both already audited pairs. -->
 							<div
-								class="rounded-md border border-highlight/30 bg-highlight/10 p-4 dark:border-highlight/40 dark:bg-highlight/15"
+								class="rounded-md border border-highlight/30 bg-highlight/20 p-4 dark:border-highlight/40 dark:bg-highlight/25"
 							>
 								<p class="text-sm text-foreground">
 									{m['login.demoNotice']()}

@@ -3,7 +3,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { enhance } from '$app/forms';
 	import type { ActionData, PageData } from './$types';
-	import { Loader2, ArrowLeft, Mail } from '@lucide/svelte';
+	import { Loader2, ArrowLeft, Mail, AlertTriangle } from '@lucide/svelte';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { SeoHead } from '$lib/seo';
 
@@ -71,8 +71,12 @@
 
 					<!-- Spam Warning -->
 					<div
-						class="rounded-md border border-highlight/30 bg-highlight/10 p-4 dark:border-highlight/40 dark:bg-highlight/15"
+						class="flex items-start gap-3 rounded-md border border-highlight/30 bg-highlight/20 p-4 dark:border-highlight/40 dark:bg-highlight/25"
 					>
+						<AlertTriangle
+							class="mt-0.5 h-5 w-5 flex-shrink-0 text-highlight-foreground dark:text-highlight"
+							aria-hidden="true"
+						/>
 						<p class="text-sm font-medium text-foreground">
 							{m['passwordResetPage.checkSpam']()}
 						</p>
