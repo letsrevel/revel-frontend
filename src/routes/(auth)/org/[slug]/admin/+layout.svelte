@@ -3,6 +3,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { Menu, ChevronRight, Home } from '@lucide/svelte';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import type { LayoutData } from './$types';
 
 	interface Props {
@@ -160,24 +161,25 @@
 						<Menu class="h-5 w-5" />
 					</button>
 
-					<h1 class="min-w-0 truncate text-base font-semibold sm:text-xl">
+					<!-- Not a heading: this sticky top bar's org name is chrome, not page
+					     content — every admin page renders its own h1 (PageHeader in the
+					     dashboard; PRs 8-10 for the rest), so a second h1 here would give
+					     each admin page two top-level headings. No e2e spec asserts a
+					     heading role here (grepped tests/e2e before demoting). -->
+					<p class="min-w-0 truncate text-base font-extrabold tracking-tight sm:text-xl">
 						{data.organization.name}
 						<span class="ml-2 text-sm font-normal text-muted-foreground"
 							>{m['orgAdmin.layout.adminBadge']()}</span
 						>
-					</h1>
+					</p>
 				</div>
 
 				<!-- Right: Role Badge -->
 				<div class="flex shrink-0 items-center gap-2">
 					{#if data.isOwner}
-						<span class="rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
-							{m['orgAdminLayout.ownerBadge']()}
-						</span>
+						<StatusBadge tone="brand" label={m['orgAdminLayout.ownerBadge']()} size="sm" />
 					{:else if data.isStaff}
-						<span class="rounded-md bg-accent px-2 py-1 text-xs font-medium"
-							>{m['orgAdmin.layout.staffBadge']()}</span
-						>
+						<StatusBadge tone="neutral" label={m['orgAdmin.layout.staffBadge']()} size="sm" />
 					{/if}
 				</div>
 			</div>
@@ -223,11 +225,9 @@
 							<!-- eslint-disable svelte/no-navigation-without-resolve -- href is a ResolvedPathname produced by resolve() in the nav item list above -->
 							<a
 								href={item.href}
-								class="relative block border-b-2 py-4 text-sm font-medium transition-colors {isActive(
-									item.href
-								)
-									? 'border-primary text-foreground'
-									: 'border-transparent text-muted-foreground hover:text-foreground'}"
+								class="relative block border-b-2 py-4 text-sm transition-colors {isActive(item.href)
+									? 'border-primary font-bold text-primary'
+									: 'border-transparent font-semibold text-muted-foreground hover:text-foreground'}"
 								aria-current={isActive(item.href) ? 'page' : undefined}
 							>
 								{item.label}
@@ -261,7 +261,7 @@
 			>
 				<!-- Breadcrumbs -->
 				<div class="mb-4 border-b pb-3">
-					<h2 class="mb-2 text-xs font-semibold uppercase text-muted-foreground">
+					<h2 class="mb-2 text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
 						{m['orgAdmin.layout.navigationHeading']()}
 					</h2>
 					<ol class="flex flex-wrap items-center gap-1.5 text-xs">
@@ -298,11 +298,11 @@
 							<a
 								href={item.href}
 								onclick={closeMobileMenu}
-								class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors {isActive(
+								class="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors {isActive(
 									item.href
 								)
-									? 'bg-primary/10 text-primary'
-									: 'text-muted-foreground hover:bg-accent hover:text-foreground'}"
+									? 'bg-primary/10 font-bold text-primary'
+									: 'font-semibold text-muted-foreground hover:bg-accent hover:text-foreground'}"
 								aria-current={isActive(item.href) ? 'page' : undefined}
 							>
 								{item.label}

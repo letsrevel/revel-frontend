@@ -1,17 +1,28 @@
 <script lang="ts">
 	import type { Component } from 'svelte';
 	import { cn } from '$lib/utils';
-	import type { Tone } from './tones';
+	import type { Tone, PosterTint } from './tones';
 
-	interface Props {
-		tone: Tone;
+	interface Base {
 		icon: Component;
 		size?: 'sm' | 'md' | 'lg';
 		/** Accessible name; omit when the tile sits next to visible text (decorative). */
 		label?: string;
 		class?: string;
 	}
-	const { tone, icon: Icon, size = 'md', label, class: className = '' }: Props = $props();
+	/**
+	 * `tone` (semantic, e.g. danger/success) and `tint` (fixed poster-palette
+	 * identity, e.g. the admin quick-actions grid) are additive and at least
+	 * one is required — this union enforces that at the type level. Three
+	 * legal shapes: tone-only, tint-only, or both (in which case `tint` wins —
+	 * see the tintClasses branch below; this lets a caller migrate from tone
+	 * to tint without an intermediate broken state). Fixed by PR 7's follow-up
+	 * round once `tint` gained callers with no semantic tone to fall back to —
+	 * an earlier "tone always required" design forced pointless filler tones.
+	 */
+	type Props = Base & ({ tone: Tone; tint?: PosterTint } | { tone?: Tone; tint: PosterTint });
+
+	const { tone, tint, icon: Icon, size = 'md', label, class: className = '' }: Props = $props();
 
 	// Soft tint + strong icon (replaces the app's hand-picked bg-blue-50
 	// dark:bg-blue-950 tiles). The composited tint is ~the surface color, so the
@@ -32,6 +43,23 @@
 			'bg-destructive/10 text-destructive dark:bg-destructive/25 dark:text-destructive-foreground',
 		neutral: 'bg-muted text-muted-foreground'
 	};
+	// Identity tint axis: SOLID fixed poster chips, same classes in both modes
+	// (imagery rule). Every pair is audited in scripts/audit-brand-themes.py
+	// TEXT_PAIRS (poster panels + "identity tile: ink icon on lavender"). The
+	// chip itself is mode-inert, but the card/page surface it sits on is NOT
+	// (bg-card flips light<->dark) — ink-on-dark-card measured 1.04:1 and
+	// paper-on-light-card 1.15:1, both invisible boundaries. `ring-1 ring-inset
+	// ring-border` gives every tint chip a theme-aware edge so it reads against
+	// either surface; verified visually in both modes (see rebrand-report.md).
+	const tintClasses: Record<PosterTint, string> = {
+		purple: 'bg-poster-purple text-poster-white ring-1 ring-inset ring-border',
+		lavender: 'bg-poster-lavender text-poster-ink ring-1 ring-inset ring-border',
+		periwinkle: 'bg-poster-periwinkle text-poster-ink ring-1 ring-inset ring-border',
+		amber: 'bg-poster-amber text-poster-ink ring-1 ring-inset ring-border',
+		crimson: 'bg-poster-crimson-deep text-poster-white ring-1 ring-inset ring-border',
+		ink: 'bg-poster-ink text-poster-white ring-1 ring-inset ring-border',
+		paper: 'bg-poster-paper text-poster-ink ring-1 ring-inset ring-border'
+	};
 	const sizeClasses = {
 		sm: 'h-8 w-8 rounded-md',
 		md: 'h-10 w-10 rounded-md',
@@ -44,7 +72,7 @@
 	class={cn(
 		'inline-flex shrink-0 items-center justify-center',
 		sizeClasses[size],
-		toneClasses[tone],
+		tint ? tintClasses[tint] : toneClasses[tone],
 		className
 	)}
 	role={label ? 'img' : undefined}

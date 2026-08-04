@@ -4,6 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import type { ResolvedPathname } from '$app/types';
+	import type { Component } from 'svelte';
 	import type { PageData } from './$types';
 	import {
 		Calendar,
@@ -25,6 +26,12 @@
 	} from '@lucide/svelte';
 	import { OrganizationDescription } from '$lib/components/organizations';
 	import AnnouncementModal from '$lib/components/announcements/AnnouncementModal.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
+	import ToneTile from '$lib/components/common/ToneTile.svelte';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
+	import type { PosterTint } from '$lib/components/common/tones';
+	import { assignQuickActionTints } from './quick-action-tints';
 	import { createQuery } from '@tanstack/svelte-query';
 	import {
 		eventpublicdiscoveryListEvents,
@@ -74,142 +81,116 @@
 	const eventsList = $derived(eventsQuery.data?.results ?? []);
 	const tiersList = $derived(tiersQuery.data ?? []);
 
+	interface QuickAction {
+		title: string;
+		description: string;
+		icon: Component;
+		href: ResolvedPathname;
+		tint: PosterTint;
+		badge?: string;
+	}
+
 	// Quick action cards (derived to properly track organization reactivity).
 	// Kept in sync with the admin nav in +layout.svelte: same destinations, same
-	// owner-gating for the financial surfaces (financials + billing).
-	const quickActions = $derived([
-		{
-			title: m['orgAdmin.dashboard.quickActions.events.title'](),
-			description: m['orgAdmin.dashboard.quickActions.events.description'](),
-			icon: Calendar,
-			href: resolve('/(auth)/org/[slug]/admin/events', { slug: organization.slug }),
-			color: 'text-blue-600 dark:text-blue-400',
-			bgColor: 'bg-blue-50 dark:bg-blue-950',
-			badge: undefined as string | undefined
-		},
-		{
-			title: m['orgAdmin.dashboard.quickActions.eventSeries.title'](),
-			description: m['orgAdmin.dashboard.quickActions.eventSeries.description'](),
-			icon: Repeat,
-			href: resolve('/(auth)/org/[slug]/admin/event-series', { slug: organization.slug }),
-			color: 'text-indigo-600 dark:text-indigo-400',
-			bgColor: 'bg-indigo-50 dark:bg-indigo-950',
-			badge: undefined as string | undefined
-		},
-		{
-			title: m['orgAdmin.dashboard.quickActions.tickets.title'](),
-			description: m['orgAdmin.dashboard.quickActions.tickets.description'](),
-			icon: Ticket,
-			href: resolve('/(auth)/org/[slug]/admin/tickets', { slug: organization.slug }),
-			color: 'text-teal-600 dark:text-teal-400',
-			bgColor: 'bg-teal-50 dark:bg-teal-950',
-			badge: undefined as string | undefined
-		},
-		{
-			title: m['orgAdmin.dashboard.quickActions.discountCodes.title'](),
-			description: m['orgAdmin.dashboard.quickActions.discountCodes.description'](),
-			icon: Tag,
-			href: resolve('/(auth)/org/[slug]/admin/discount-codes', { slug: organization.slug }),
-			color: 'text-amber-600 dark:text-amber-400',
-			bgColor: 'bg-amber-50 dark:bg-amber-950',
-			badge: undefined as string | undefined
-		},
-		{
-			title: m['orgAdmin.dashboard.quickActions.members.title'](),
-			description: m['orgAdmin.dashboard.quickActions.members.description'](),
-			icon: Users,
-			href: resolve('/(auth)/org/[slug]/admin/members', { slug: organization.slug }),
-			color: 'text-green-600 dark:text-green-400',
-			bgColor: 'bg-green-50 dark:bg-green-950',
-			badge: undefined as string | undefined
-		},
-		{
-			title: m['orgAdmin.dashboard.quickActions.polls.title'](),
-			description: m['orgAdmin.dashboard.quickActions.polls.description'](),
-			icon: BarChart3,
-			href: resolve('/(auth)/org/[slug]/admin/polls', { slug: organization.slug }),
-			color: 'text-cyan-600 dark:text-cyan-400',
-			bgColor: 'bg-cyan-50 dark:bg-cyan-950',
-			badge: undefined as string | undefined
-		},
-		{
-			title: m['orgAdmin.dashboard.quickActions.questionnaires.title'](),
-			description: m['orgAdmin.dashboard.quickActions.questionnaires.description'](),
-			icon: ClipboardList,
-			href: resolve('/(auth)/org/[slug]/admin/questionnaires', { slug: organization.slug }),
-			color: 'text-orange-600 dark:text-orange-400',
-			bgColor: 'bg-orange-50 dark:bg-orange-950',
-			badge: undefined as string | undefined
-		},
-		{
-			title: m['orgAdmin.dashboard.quickActions.resources.title'](),
-			description: m['orgAdmin.dashboard.quickActions.resources.description'](),
-			icon: FolderOpen,
-			href: resolve('/(auth)/org/[slug]/admin/resources', { slug: organization.slug }),
-			color: 'text-cyan-600 dark:text-cyan-400',
-			bgColor: 'bg-cyan-50 dark:bg-cyan-950',
-			badge: undefined as string | undefined
-		},
-		{
-			title: m['orgAdmin.dashboard.quickActions.venues.title'](),
-			description: m['orgAdmin.dashboard.quickActions.venues.description'](),
-			icon: MapPin,
-			href: resolve('/(auth)/org/[slug]/admin/venues', { slug: organization.slug }),
-			color: 'text-pink-600 dark:text-pink-400',
-			bgColor: 'bg-pink-50 dark:bg-pink-950',
-			badge: undefined as string | undefined
-		},
-		{
-			title: m['orgAdmin.dashboard.quickActions.blacklist.title'](),
-			description: m['orgAdmin.dashboard.quickActions.blacklist.description'](),
-			icon: Ban,
-			href: resolve('/(auth)/org/[slug]/admin/blacklist', { slug: organization.slug }),
-			color: 'text-red-600 dark:text-red-400',
-			bgColor: 'bg-red-50 dark:bg-red-950',
-			badge: undefined as string | undefined
-		},
-		// Owner-only financial surfaces (mirrors the nav's isOwner gating)
-		...(data.isOwner
-			? [
-					{
-						title: m['orgAdmin.dashboard.quickActions.billing.title'](),
-						description: m['orgAdmin.dashboard.quickActions.billing.description'](),
-						icon: CreditCard,
-						href: resolve('/(auth)/org/[slug]/admin/billing', { slug: organization.slug }),
-						color: 'text-slate-600 dark:text-slate-400',
-						bgColor: 'bg-slate-50 dark:bg-slate-950',
-						badge: undefined as string | undefined
-					},
-					{
-						title: m['orgAdmin.dashboard.quickActions.financials.title'](),
-						description: m['orgAdmin.dashboard.quickActions.financials.description'](),
-						icon: Wallet,
-						href: resolve('/(auth)/org/[slug]/admin/financials', { slug: organization.slug }),
-						color: 'text-emerald-600 dark:text-emerald-400',
-						bgColor: 'bg-emerald-50 dark:bg-emerald-950',
-						badge: undefined as string | undefined
-					}
-				]
-			: []),
-		{
-			title: m['announcements.title'](),
-			description: m['announcements.pageDescription'](),
-			icon: Megaphone,
-			href: resolve('/(auth)/org/[slug]/admin/announcements', { slug: organization.slug }),
-			color: 'text-yellow-600 dark:text-yellow-400',
-			bgColor: 'bg-yellow-50 dark:bg-yellow-950',
-			badge: undefined as string | undefined
-		},
-		{
-			title: m['orgAdmin.dashboard.quickActions.settings.title'](),
-			description: m['orgAdmin.dashboard.quickActions.settings.description'](),
-			icon: Settings,
-			href: resolve('/(auth)/org/[slug]/admin/settings', { slug: organization.slug }),
-			color: 'text-purple-600 dark:text-purple-400',
-			bgColor: 'bg-purple-50 dark:bg-purple-950',
-			badge: undefined as string | undefined
-		}
-	]);
+	// owner-gating for the financial surfaces (financials + billing). Every
+	// tile is pure destination identity — navigating to Blacklist or
+	// Financials isn't itself danger/success, the Ban/Wallet icons + labels
+	// already carry that meaning — so all 14 go through the shared `tint`
+	// cycle (assignQuickActionTints) rather than ToneTile's semantic `tone`.
+	const quickActions: QuickAction[] = $derived.by((): QuickAction[] => {
+		const base: Omit<QuickAction, 'tint'>[] = [
+			{
+				title: m['orgAdmin.dashboard.quickActions.events.title'](),
+				description: m['orgAdmin.dashboard.quickActions.events.description'](),
+				icon: Calendar,
+				href: resolve('/(auth)/org/[slug]/admin/events', { slug: organization.slug })
+			},
+			{
+				title: m['orgAdmin.dashboard.quickActions.eventSeries.title'](),
+				description: m['orgAdmin.dashboard.quickActions.eventSeries.description'](),
+				icon: Repeat,
+				href: resolve('/(auth)/org/[slug]/admin/event-series', { slug: organization.slug })
+			},
+			{
+				title: m['orgAdmin.dashboard.quickActions.tickets.title'](),
+				description: m['orgAdmin.dashboard.quickActions.tickets.description'](),
+				icon: Ticket,
+				href: resolve('/(auth)/org/[slug]/admin/tickets', { slug: organization.slug })
+			},
+			{
+				title: m['orgAdmin.dashboard.quickActions.discountCodes.title'](),
+				description: m['orgAdmin.dashboard.quickActions.discountCodes.description'](),
+				icon: Tag,
+				href: resolve('/(auth)/org/[slug]/admin/discount-codes', { slug: organization.slug })
+			},
+			{
+				title: m['orgAdmin.dashboard.quickActions.members.title'](),
+				description: m['orgAdmin.dashboard.quickActions.members.description'](),
+				icon: Users,
+				href: resolve('/(auth)/org/[slug]/admin/members', { slug: organization.slug })
+			},
+			{
+				title: m['orgAdmin.dashboard.quickActions.polls.title'](),
+				description: m['orgAdmin.dashboard.quickActions.polls.description'](),
+				icon: BarChart3,
+				href: resolve('/(auth)/org/[slug]/admin/polls', { slug: organization.slug })
+			},
+			{
+				title: m['orgAdmin.dashboard.quickActions.questionnaires.title'](),
+				description: m['orgAdmin.dashboard.quickActions.questionnaires.description'](),
+				icon: ClipboardList,
+				href: resolve('/(auth)/org/[slug]/admin/questionnaires', { slug: organization.slug })
+			},
+			{
+				title: m['orgAdmin.dashboard.quickActions.resources.title'](),
+				description: m['orgAdmin.dashboard.quickActions.resources.description'](),
+				icon: FolderOpen,
+				href: resolve('/(auth)/org/[slug]/admin/resources', { slug: organization.slug })
+			},
+			{
+				title: m['orgAdmin.dashboard.quickActions.venues.title'](),
+				description: m['orgAdmin.dashboard.quickActions.venues.description'](),
+				icon: MapPin,
+				href: resolve('/(auth)/org/[slug]/admin/venues', { slug: organization.slug })
+			},
+			{
+				title: m['orgAdmin.dashboard.quickActions.blacklist.title'](),
+				description: m['orgAdmin.dashboard.quickActions.blacklist.description'](),
+				icon: Ban,
+				href: resolve('/(auth)/org/[slug]/admin/blacklist', { slug: organization.slug })
+			},
+			// Owner-only financial surfaces (mirrors the nav's isOwner gating)
+			...(data.isOwner
+				? [
+						{
+							title: m['orgAdmin.dashboard.quickActions.billing.title'](),
+							description: m['orgAdmin.dashboard.quickActions.billing.description'](),
+							icon: CreditCard,
+							href: resolve('/(auth)/org/[slug]/admin/billing', { slug: organization.slug })
+						},
+						{
+							title: m['orgAdmin.dashboard.quickActions.financials.title'](),
+							description: m['orgAdmin.dashboard.quickActions.financials.description'](),
+							icon: Wallet,
+							href: resolve('/(auth)/org/[slug]/admin/financials', { slug: organization.slug })
+						}
+					]
+				: []),
+			{
+				title: m['announcements.title'](),
+				description: m['announcements.pageDescription'](),
+				icon: Megaphone,
+				href: resolve('/(auth)/org/[slug]/admin/announcements', { slug: organization.slug })
+			},
+			{
+				title: m['orgAdmin.dashboard.quickActions.settings.title'](),
+				description: m['orgAdmin.dashboard.quickActions.settings.description'](),
+				icon: Settings,
+				href: resolve('/(auth)/org/[slug]/admin/settings', { slug: organization.slug })
+			}
+		];
+		return assignQuickActionTints(base);
+	});
 
 	function navigateTo(href: ResolvedPathname, disabled = false) {
 		if (!disabled) {
@@ -233,41 +214,38 @@
 </svelte:head>
 
 <div class="space-y-6 px-4 md:px-0">
-	<!-- Welcome Header -->
-	<div>
-		<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
-			{m['orgAdmin.dashboard.pageTitle']({ orgName: organization.name })}
-		</h1>
-		<p class="mt-1 text-sm text-muted-foreground">
-			{m['orgAdmin.dashboard.pageDescription']()}
-		</p>
-	</div>
+	<PageHeader
+		title={m['orgAdmin.dashboard.pageTitle']({ orgName: organization.name })}
+		subtitle={m['orgAdmin.dashboard.pageDescription']()}
+		volume="studio"
+	/>
 
 	<!-- Quick Actions Section -->
 	<div class="space-y-4">
-		<div class="flex items-center justify-between">
-			<h2 class="text-lg font-semibold">{m['orgAdmin.dashboard.quickActionsHeading']()}</h2>
-			<div class="flex items-center gap-2">
+		{#snippet quickActionsHeaderActions()}
+			<button
+				type="button"
+				onclick={() => (announcementModalOpen = true)}
+				class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+			>
+				<Megaphone class="h-4 w-4" aria-hidden="true" />
+				{m['announcements.new']()}
+			</button>
+			{#if canCreateEvent}
 				<button
 					type="button"
-					onclick={() => (announcementModalOpen = true)}
-					class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					onclick={createEvent}
+					class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 				>
-					<Megaphone class="h-4 w-4" aria-hidden="true" />
-					{m['announcements.new']()}
+					<Plus class="h-4 w-4" aria-hidden="true" />
+					{m['orgAdmin.dashboard.createEventButton']()}
 				</button>
-				{#if canCreateEvent}
-					<button
-						type="button"
-						onclick={createEvent}
-						class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-					>
-						<Plus class="h-4 w-4" aria-hidden="true" />
-						{m['orgAdmin.dashboard.createEventButton']()}
-					</button>
-				{/if}
-			</div>
-		</div>
+			{/if}
+		{/snippet}
+		<SectionHeader
+			title={m['orgAdmin.dashboard.quickActionsHeading']()}
+			actions={quickActionsHeaderActions}
+		/>
 
 		<!-- Action Cards Grid -->
 		<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -289,14 +267,12 @@
 						</span>
 					{/if}
 
-					<!-- Icon -->
-					<div class="mb-4 inline-flex rounded-lg {action.bgColor} p-3">
-						<Icon class="h-6 w-6 {action.color}" aria-hidden="true" />
-					</div>
+					<!-- Every tile is pure destination identity -> tint, not tone (see quickActions above) -->
+					<ToneTile tint={action.tint} icon={Icon} size="lg" class="mb-4" />
 
 					<!-- Content -->
 					<div class="space-y-1">
-						<h3 class="font-semibold">{action.title}</h3>
+						<h3 class="font-bold">{action.title}</h3>
 						<p class="text-sm text-muted-foreground">{action.description}</p>
 					</div>
 
@@ -314,7 +290,7 @@
 
 	<!-- Organization Info Section -->
 	<div class="space-y-4">
-		<h2 class="text-lg font-semibold">{m['orgAdmin.dashboard.organizationDetailsHeading']()}</h2>
+		<SectionHeader title={m['orgAdmin.dashboard.organizationDetailsHeading']()} />
 
 		<div class="rounded-lg border border-border bg-card p-6 shadow-sm">
 			<dl class="grid gap-4 md:grid-cols-2">
@@ -353,17 +329,9 @@
 					</dt>
 					<dd class="mt-1">
 						{#if data.isOwner}
-							<span
-								class="inline-flex items-center rounded-md bg-primary/10 px-2 py-1 text-sm font-medium text-primary"
-							>
-								{m['orgAdmin.layout.ownerBadge']()}
-							</span>
+							<StatusBadge tone="brand" label={m['orgAdmin.layout.ownerBadge']()} />
 						{:else if data.isStaff}
-							<span
-								class="inline-flex items-center rounded-md bg-accent px-2 py-1 text-sm font-medium"
-							>
-								{m['orgAdmin.layout.staffBadge']()}
-							</span>
+							<StatusBadge tone="neutral" label={m['orgAdmin.layout.staffBadge']()} />
 						{/if}
 					</dd>
 				</div>
@@ -389,16 +357,14 @@
 
 	<!-- Permissions Notice (for staff members) -->
 	{#if data.isStaff && !data.isOwner}
-		<div
-			class="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950"
-		>
+		<div class="rounded-lg border border-info/30 bg-info/10 p-4">
 			<div class="flex gap-3">
-				<FileText class="h-5 w-5 text-blue-600 dark:text-blue-400" aria-hidden="true" />
+				<ToneTile tone="info" icon={FileText} size="sm" />
 				<div class="flex-1">
-					<h3 class="font-medium text-blue-900 dark:text-blue-100">
+					<h3 class="font-bold">
 						{m['orgAdmin.dashboard.permissions.staffNoticeTitle']()}
 					</h3>
-					<p class="mt-1 text-sm text-blue-700 dark:text-blue-300">
+					<p class="mt-1 text-sm text-muted-foreground">
 						{m['orgAdmin.dashboard.permissions.staffNoticeDescription']()}
 					</p>
 				</div>

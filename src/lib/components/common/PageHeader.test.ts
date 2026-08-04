@@ -56,6 +56,20 @@ describe('PageHeader', () => {
 		expect(screen.getByText('Invite')).toBeInTheDocument();
 	});
 
+	it('passes through arbitrary attributes to the header element', () => {
+		// Asserts on the <header> element directly rather than its implicit
+		// `banner` role: that role only holds here because the test renders the
+		// header straight into <body> — in real usage it can sit inside a
+		// sectioning element (losing the landmark role), so asserting role=banner
+		// would overstate what this test actually locks down (restProps spread).
+		const { container } = render(PageHeader, {
+			props: { title: 'Members', id: 'members-header', 'aria-label': 'Members admin header' }
+		});
+		const header = container.querySelector('header') as HTMLElement;
+		expect(header.id).toBe('members-header');
+		expect(header.getAttribute('aria-label')).toBe('Members admin header');
+	});
+
 	it('decoration renders in celebration and is decorative; ignored in studio', () => {
 		const { container, unmount } = render(PageHeader, {
 			props: { title: 'Hey', volume: 'celebration', decoration: snip('New!') }
