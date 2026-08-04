@@ -32,6 +32,8 @@
 	import { ArrowLeft, LayoutDashboard, Users } from '@lucide/svelte';
 	import SeatGridEditor, { type AisleMetadata } from '$lib/components/venues/SeatGridEditor.svelte';
 	import { toast } from 'svelte-sonner';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 
 	const organization = $derived($page.data.organization);
 	const venueId = $derived($page.params.venue_id);
@@ -524,29 +526,27 @@
 		</div>
 	{:else if sector}
 		<!-- Header -->
-		<div>
-			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
-				{m['orgAdmin.seats.pageTitle']({ sectorName: sector.name })}
-			</h1>
-			<p class="text-muted-foreground">{m['orgAdmin.seats.pageDescription']()}</p>
-		</div>
+		<PageHeader
+			kicker={m['orgAdmin.nav.venues']()}
+			title={m['orgAdmin.seats.pageTitle']({ sectorName: sector.name })}
+			subtitle={m['orgAdmin.seats.pageDescription']()}
+		/>
 
 		{#if isStandingSector}
 			<!-- Standing sectors have no seat map: explain instead of the editor -->
-			<div class="rounded-lg border bg-card p-8 text-center">
-				<Users class="mx-auto h-10 w-10 text-muted-foreground" aria-hidden="true" />
-				<h2 class="mt-3 text-lg font-semibold">
-					{m['orgAdmin.seats.standing.title']()}
-				</h2>
-				<p class="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-					{m['orgAdmin.seats.standing.description']()}
-				</p>
-				{#if sector.capacity != null}
-					<p class="mt-3 text-sm">
-						{m['orgAdmin.sectors.form.capacityLabel']()}: <strong>{sector.capacity}</strong>
-					</p>
-				{/if}
-			</div>
+			<EmptyState
+				icon={Users}
+				title={m['orgAdmin.seats.standing.title']()}
+				body={m['orgAdmin.seats.standing.description']()}
+			>
+				{#snippet action()}
+					{#if sector.capacity != null}
+						<p class="text-sm">
+							{m['orgAdmin.sectors.form.capacityLabel']()}: <strong>{sector.capacity}</strong>
+						</p>
+					{/if}
+				{/snippet}
+			</EmptyState>
 		{:else}
 			<!-- Seat Grid Editor -->
 			<SeatGridEditor
