@@ -132,6 +132,16 @@ TEXT_PAIRS = [  # (fg, bg, min_ratio, note)
     ("accent-foreground", "accent", 4.5, "accent label"),
     ("highlight-foreground", "highlight", 4.5, "highlight label"),
     ("destructive-foreground", "destructive", 4.5, "destructive label"),
+    # The destructive pair is SPLIT (issue #781): --destructive is the fill and
+    # only owes 1.4.11's 3:1, while destructive-as-text owes 4.5:1 and reads
+    # --destructive-text (wired to `text-destructive` in tailwind.config.ts).
+    # The dark fill measured 3.11:1 / 2.85:1 as text, which is why it is checked
+    # here at the non-text floor only and the text token carries the 4.5 rows.
+    ("destructive", "background", 3.0, "destructive as border/ring on page"),
+    ("destructive-text", "background", 4.5, "text-destructive on page"),
+    ("destructive-text", "card", 4.5, "text-destructive on card"),
+    ("destructive-text", "popover", 4.5, "text-destructive in popover/dialog"),
+    ("destructive-text", "muted", 4.5, "text-destructive on muted bg"),
     ("success-foreground", "success", 4.5, "success badge label"),
     ("info-foreground", "info", 4.5, "info badge label"),
     ("success", "background", 3.0, "success as icon/accent on page"),
@@ -189,6 +199,10 @@ COMPOSITED_PAIRS = [
     ("highlight-foreground", 1, "highlight", 0.20, "card", 3.0, ("light",), "ToneTile warning on card"),
     ("highlight", 1, "highlight", 0.20, "background", 3.0, ("dark",), "ToneTile warning on page"),
     ("highlight", 1, "highlight", 0.20, "card", 3.0, ("dark",), "ToneTile warning on card"),
+    ("destructive-text", 1, "destructive", 0.10, "background", 3.0, ("light",), "ToneTile danger on page"),
+    ("destructive-text", 1, "destructive", 0.10, "card", 3.0, ("light",), "ToneTile danger on card"),
+    ("destructive-text", 1, "destructive", 0.25, "background", 3.0, ("dark",), "ToneTile danger on page (dark bumps the tint)"),
+    ("destructive-text", 1, "destructive", 0.25, "card", 3.0, ("dark",), "ToneTile danger on card"),
     # Tag chips — EventCard / EventSeriesCard / OrganizationCard. Bold 12px: text.
     ("primary", 1, "primary", 0.10, "card", 4.5, BOTH, "tag chip label on a card"),
     # Stat/banner tints. AttendeeStats keeps an opaque bg-card UNDER the success
@@ -196,6 +210,8 @@ COMPOSITED_PAIRS = [
     ("success", 1, "success", 0.10, "card", 4.5, BOTH, "AttendeeStats/EventWizard success stat (opaque card layer)"),
     ("highlight-foreground", 1, "highlight", 0.10, "background", 4.5, ("light",), "AttendeeStats maybe stat"),
     ("highlight", 1, "highlight", 0.10, "background", 4.5, ("dark",), "AttendeeStats maybe stat"),
+    ("destructive-text", 1, "destructive", 0.10, "background", 4.5, ("light",), "AttendeeStats no stat"),
+    ("destructive-text", 1, "destructive", 0.25, "background", 4.5, ("dark",), "AttendeeStats no stat"),
     # Info / highlight banners (MyTicket on a card, MyTicketModal on a dialog).
     ("info", 1, "info", 0.10, "card", 4.5, BOTH, "MyTicket info banner"),
     ("info", 1, "info", 0.10, "background", 4.5, BOTH, "MyTicketModal / DemoBanner info banner"),
@@ -215,6 +231,10 @@ COMPOSITED_PAIRS = [
     ("foreground", 1, "primary", 0.10, "card", 4.5, BOTH, "QuestionnaireFillForm/PollVoteForm selected label"),
     ("foreground", 1, "success", 0.10, "background", 4.5, BOTH, "RSVPButtons / EventRSVP unselected tint"),
     ("foreground", 1, "destructive", 0.10, "background", 4.5, BOTH, "RSVPButtons / EventRSVP unselected tint"),
+    # Impersonation banner (bg on an opaque --background shell, not on scrolled
+    # content — see the component comment for why the tint moved inward).
+    ("destructive-text", 1, "destructive", 0.10, "background", 4.5, ("light",), "ImpersonationBanner copy"),
+    ("destructive-text", 1, "destructive", 0.25, "background", 4.5, ("dark",), "ImpersonationBanner copy"),
     # Public page wash: bg-secondary/55, thinned to /28 in dark.
     ("foreground", 1, "secondary", 0.55, "background", 4.5, ("light",), "public page secondary wash"),
     ("muted-foreground", 1, "secondary", 0.55, "background", 4.5, ("light",), "muted copy on the secondary wash"),
@@ -241,8 +261,14 @@ COMPOSITED_PAIRS = [
     ("poster-white", 1, "poster-ink", 0.45, "poster-lavender", 4.5, BOTH, "event header scrim (mid-gradient)"),
 ]
 
-SEMANTIC = ["primary", "secondary", "accent", "destructive", "highlight", "success", "info"]
-SEMANTIC_EXEMPT = set()  # pairs that are the same semantic in two roles; see issue #781
+SEMANTIC = [
+    "primary", "secondary", "accent", "destructive", "destructive-text",
+    "highlight", "success", "info",
+]
+# destructive and destructive-text are the same semantic in two roles (fill vs
+# text, issue #781) — they are SUPPOSED to look alike, so the pair is exempt
+# from the "meaning must not be hue-only" check. Nothing else is.
+SEMANTIC_EXEMPT = {frozenset(("destructive", "destructive-text"))}
 
 
 def blend(over, alpha, base):

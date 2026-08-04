@@ -429,7 +429,7 @@
 										<button
 											type="button"
 											onclick={() => handleDelete(code)}
-											class="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-destructive"
+											class="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
 											title={willHardDelete(code)
 												? m['discountCodesAdmin.delete.titleHardDelete']()
 												: m['discountCodesAdmin.delete.titleDeactivate']()}

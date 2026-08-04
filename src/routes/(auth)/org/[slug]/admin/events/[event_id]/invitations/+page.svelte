@@ -101,9 +101,11 @@
 	     background (below 4.5 for this normal-size text) — the card backing
 	     brings it to 4.94:1 (hand-verified). The error banner's heading/body
 	     stay on `text-foreground` (always-audited body-text pair) with the
-	     icon alone carrying the destructive tone — `text-destructive` on
-	     `bg-destructive/10` measures ~2.95:1 in dark mode, well under AA, and
-	     neither half of that pair is covered by audit-brand-themes.py. -->
+	     icon alone carrying the destructive tone — the danger-framing rule,
+	     not a contrast workaround: since #781 `text-destructive` resolves to
+	     --destructive-text and measures 8.10:1 light / 6.05:1 dark on this
+	     tint (a COMPOSITED_PAIRS row now). It was 2.95:1 in dark before the
+	     split, which is why this note used to read as an apology. -->
 	{#if form?.success}
 		<div class="relative overflow-hidden rounded-lg border border-success/40 bg-card" role="alert">
 			<div class="absolute inset-0 bg-success/10" aria-hidden="true"></div>

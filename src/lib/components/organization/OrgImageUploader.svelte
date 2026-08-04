@@ -192,9 +192,11 @@
 	<SectionHeader title={m['orgAdmin.settings.branding.heading']()} />
 
 	{#if uploadError}
-		<!-- Icon carries the tone, not the body text: dark --destructive as TEXT on
-		     this composite measures ~2.7-2.95:1 (fails both the 3:1 non-text and
-		     4.5:1 text floors). -->
+		<!-- Icon carries the tone, not the body text (danger-framing rule). The
+		     icon's `text-destructive` is --destructive-text since #781: 8.10:1
+		     light / 6.05:1 dark on this bg-destructive/10 composite, both audited
+		     in scripts/audit-brand-themes.py. The FILL value it used to resolve to
+		     measured ~2.7-2.95:1 here, failing even the 3:1 non-text floor. -->
 		<div
 			class="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-foreground"
 			role="alert"

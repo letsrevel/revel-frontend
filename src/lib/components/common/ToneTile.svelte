@@ -26,21 +26,25 @@
 
 	// Soft tint + strong icon (replaces the app's hand-picked bg-blue-50
 	// dark:bg-blue-950 tiles). The composited tint is ~the surface color, so the
-	// icon-vs-surface ratio governs; independently recomputed >= 3:1 (WCAG 1.4.11,
-	// non-text) in both modes — composited alpha is invisible to
-	// scripts/audit-brand-themes.py. Ratios as (light page/card | dark page/card):
-	//   brand 5.3/5.9 | 5.9/5.3 · info 8.3/9.3 | 8.0/7.2 · success 4.4/4.9 | 8.7/7.8
-	//   danger 7.2/8.1 | 12.0/11.0 (dark flips to white icon on /25 red tint —
-	//   dark destructive text on the /10 tint measured 2.95:1, under the floor)
-	//   warning 12.6/13.9 | 6.7/6.0 (amber on light is 1.8:1 -> highlight-foreground)
-	// Recompute if any of these token values move.
+	// icon-vs-surface ratio governs; every pair below is >= 3:1 (WCAG 1.4.11,
+	// non-text) in both modes. These are no longer hand-verified: they are
+	// COMPOSITED_PAIRS entries in scripts/audit-brand-themes.py (issue #783),
+	// which prints them. Ratios as (light page/card | dark page/card):
+	//   brand 5.29/5.94 | 5.93/5.35 · info 8.29/9.32 | 7.97/7.16
+	//   success 4.39/4.93 | 8.71/7.84 · danger 7.20/8.10 | 5.84/5.37
+	//   warning 12.55/13.90 | 6.63/5.96 (amber on light is 1.8:1 -> the
+	//   -foreground swap; the dark tone keeps the amber itself)
+	// The danger tone kept its dark /25 tint bump — a /10 red wash is close to
+	// invisible on the aubergine surface — but no longer whites out the icon:
+	// `text-destructive` resolves to --destructive-text, the AA-safe half of the
+	// split token (issue #781), instead of the fill value that measured 2.95:1.
+	// Re-run the audit script if any of these token values move.
 	const toneClasses: Record<Tone, string> = {
 		brand: 'bg-primary/10 text-primary',
 		info: 'bg-info/10 text-info',
 		success: 'bg-success/10 text-success',
 		warning: 'bg-highlight/20 text-highlight-foreground dark:text-highlight',
-		danger:
-			'bg-destructive/10 text-destructive dark:bg-destructive/25 dark:text-destructive-foreground',
+		danger: 'bg-destructive/10 text-destructive dark:bg-destructive/25',
 		neutral: 'bg-muted text-muted-foreground'
 	};
 	// Identity tint axis: SOLID fixed poster chips, same classes in both modes

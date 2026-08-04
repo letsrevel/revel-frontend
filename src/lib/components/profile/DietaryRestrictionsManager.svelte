@@ -359,9 +359,11 @@
 						{/if}
 
 						{#if restriction.restriction_type === 'severe_allergy'}
-							<!-- Bare on card: text-destructive measures 2.85:1 in dark (below
-							     4.5). Only the icon carries the tone; the line reads on
-							     --foreground, same pattern as the tinted-banner headings. -->
+							<!-- Only the icon carries the tone; the line reads on --foreground,
+							     same pattern as the tinted-banner headings. That is the
+							     danger-framing rule, not a contrast workaround: bare
+							     `text-destructive` on this card is 9.75:1 light / 6.42:1 dark
+							     since the token split (#781), against 2.85:1 before it. -->
 							<div class="flex items-center gap-2 text-sm text-foreground">
 								<AlertTriangle class="h-4 w-4 text-destructive" aria-hidden="true" />
 								<span>{m['dietaryRestrictionsManager.severeAllergyWarning']()}</span>

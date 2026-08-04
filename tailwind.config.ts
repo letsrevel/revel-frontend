@@ -95,6 +95,28 @@ export default {
 					white: 'hsl(var(--poster-white) / <alpha-value>)'
 				}
 			},
+			// `text-destructive` is destructive-as-TEXT, which owes WCAG 4.5:1 —
+			// a different obligation from `bg-destructive`, the FILL, which owes
+			// 3:1 and carries --destructive-foreground as its label. In dark mode
+			// one value cannot satisfy both (issue #781: the fill measured
+			// 3.11:1/2.85:1 when borrowed as text), so the text half reads
+			// --destructive-text. Light mode defines the two identically, so this
+			// changes nothing there; dark mode gets the AA-safe rose.
+			//
+			// Overriding `textColor` rather than sweeping ~520 call sites keeps the
+			// class name every author already reaches for correct by construction —
+			// a new `text-destructive` written tomorrow is safe with no review.
+			// Only the textColor scale is remapped: border-/ring-/divide-/fill-
+			// destructive still resolve to --destructive via `colors` above.
+			// NOTE: this key REPLACES colors.destructive for the textColor scale,
+			// so `foreground` must be restated or `text-destructive-foreground`
+			// (the fill's label, ~67 call sites) would stop compiling.
+			textColor: {
+				destructive: {
+					DEFAULT: 'hsl(var(--destructive-text) / <alpha-value>)',
+					foreground: 'hsl(var(--destructive-foreground) / <alpha-value>)'
+				}
+			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
