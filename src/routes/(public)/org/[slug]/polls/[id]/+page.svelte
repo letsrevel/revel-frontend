@@ -86,7 +86,7 @@
 			show a self-contained no-access page rather than falling through to
 			the global 404.
 		-->
-		<Card class="border-amber-500/50">
+		<Card class="border-highlight/60">
 			<CardHeader>
 				<CardTitle level={2}>{m['pollVoterPage.forbiddenTitle']()}</CardTitle>
 			</CardHeader>
@@ -125,7 +125,7 @@
 
 		<!-- State banners — order matters; first match wins -->
 		{#if poll.status === 'draft'}
-			<Card class="border-amber-500/50">
+			<Card class="border-highlight/60">
 				<CardContent class="py-4 text-sm">{m['pollVoterPage.draftBanner']()}</CardContent>
 			</Card>
 		{:else if requiresAuth}
@@ -135,7 +135,9 @@
 				generic "ineligible" banner (which implies they couldn't vote
 				even if signed in).
 			-->
-			<Card class="border-blue-500/50 bg-blue-50/30 dark:bg-blue-950/20">
+			<!-- Info tint: `bg-info/10` composites to ~the card colour, so the copy
+			     keeps `text-card-foreground` and the token contract's AA guarantee. -->
+			<Card class="border-info/60 bg-info/10">
 				<CardContent class="space-y-2 py-4 text-sm">
 					<p>{m['pollVoterPage.signInToVote']()}</p>
 					<Button href={`/login?next=${encodeURIComponent($page.url.pathname)}`}
@@ -161,7 +163,7 @@
 				the forbidden card which strips all poll details from
 				non-audience callers.
 			-->
-			<Card class="border-amber-500/50">
+			<Card class="border-highlight/60">
 				<CardContent class="py-4 text-sm">{m['pollVoterPage.ineligibleBanner']()}</CardContent>
 			</Card>
 		{:else if showVotedBanner}

@@ -4,12 +4,21 @@
 	import { isEventPast, isRSVPClosed } from '$lib/utils/date';
 	import { isEventFull } from '$lib/utils/event';
 	import { cn } from '$lib/utils/cn';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
+	import type { Tone } from '$lib/components/common/tones';
 	import { EyeOff } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
 	interface Badge {
 		label: string;
-		variant: 'default' | 'success' | 'secondary' | 'destructive' | 'outline' | 'cancelled';
+		/**
+		 * Semantic tone, resolved here rather than a private colour table — the
+		 * domain→tone mapper the rebrand asks for, so every fill is an audited
+		 * `StatusBadge` pair. The old `outline` and `secondary` variants both land
+		 * on `neutral`: they always said "context, not status", and nothing here
+		 * was ever distinguished by fill alone (every badge is a word).
+		 */
+		tone: Tone;
 		hasIcon?: boolean;
 	}
 
@@ -31,16 +40,16 @@
 		// Priority 0: Administrative Status (highest priority - show event status)
 		// These badges indicate the event's administrative state
 		if (event.status === 'draft') {
-			result.push({ label: m['orgAdmin.events.status.draft'](), variant: 'outline' });
+			result.push({ label: m['orgAdmin.events.status.draft'](), tone: 'neutral' });
 		} else if (event.status === 'cancelled') {
-			result.push({ label: m['orgAdmin.events.status.cancelled'](), variant: 'cancelled' });
+			result.push({ label: m['orgAdmin.events.status.cancelled'](), tone: 'warning' });
 		} else if (event.status === 'closed') {
-			result.push({ label: m['orgAdmin.events.status.closed'](), variant: 'destructive' });
+			result.push({ label: m['orgAdmin.events.status.closed'](), tone: 'danger' });
 		}
 
 		// Priority 0.5: Unlisted visibility (important context for staff/owners who can see it)
 		if (event.visibility === 'unlisted') {
-			result.push({ label: m['eventBadges.unlisted'](), variant: 'outline', hasIcon: true });
+			result.push({ label: m['eventBadges.unlisted'](), tone: 'neutral', hasIcon: true });
 		}
 
 		// If we already have 2 badges, stop here
@@ -49,11 +58,11 @@
 		// Priority 1: User Relationship
 		if (userStatus) {
 			if (userStatus.organizing) {
-				result.push({ label: m['eventBadges.youreOrganizing'](), variant: 'default' });
+				result.push({ label: m['eventBadges.youreOrganizing'](), tone: 'brand' });
 			} else if (userStatus.attending) {
-				result.push({ label: m['eventBadges.youreAttending'](), variant: 'success' });
+				result.push({ label: m['eventBadges.youreAttending'](), tone: 'success' });
 			} else if (userStatus.invitationPending) {
-				result.push({ label: m['eventBadges.invitationPending'](), variant: 'secondary' });
+				result.push({ label: m['eventBadges.invitationPending'](), tone: 'neutral' });
 			}
 		}
 
@@ -66,13 +75,13 @@
 		const rsvpClosed = isRSVPClosed(event.rsvp_before);
 
 		if (isPast) {
-			result.push({ label: m['eventBadges.pastEvent'](), variant: 'outline' });
+			result.push({ label: m['eventBadges.pastEvent'](), tone: 'neutral' });
 		} else if (isFull && !event.waitlist_open) {
-			result.push({ label: m['eventBadges.soldOut'](), variant: 'destructive' });
+			result.push({ label: m['eventBadges.soldOut'](), tone: 'danger' });
 		} else if (isFull && event.waitlist_open) {
-			result.push({ label: m['eventBadges.waitlistOpen'](), variant: 'secondary' });
+			result.push({ label: m['eventBadges.waitlistOpen'](), tone: 'info' });
 		} else if (rsvpClosed) {
-			result.push({ label: m['eventBadges.rsvpClosed'](), variant: 'outline' });
+			result.push({ label: m['eventBadges.rsvpClosed'](), tone: 'neutral' });
 		}
 
 		// If we already have 2 badges, stop here
@@ -80,50 +89,26 @@
 
 		// Priority 3: Event Type (only if we have room)
 		if (event.event_type === 'members-only') {
-			result.push({ label: m['eventBadges.membersOnly'](), variant: 'secondary' });
+			result.push({ label: m['eventBadges.membersOnly'](), tone: 'neutral' });
 		} else if (event.event_type === 'private') {
-			result.push({ label: m['eventBadges.private'](), variant: 'secondary' });
+			result.push({ label: m['eventBadges.private'](), tone: 'neutral' });
 		} else if (event.event_type === 'public') {
-			result.push({ label: m['eventBadges.public'](), variant: 'outline' });
+			result.push({ label: m['eventBadges.public'](), tone: 'neutral' });
 		}
 
 		// Return max 2 badges
 		return result.slice(0, 2);
 	});
-
-	/**
-	 * Get Tailwind classes for badge variant
-	 */
-	function getBadgeClasses(variant: Badge['variant']): string {
-		const baseClasses =
-			'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors';
-
-		// 700-level backgrounds: white text on green/orange-600 is < 4.5:1
-		// (WCAG AA fail); green-700 = 5.02:1, orange-700 = 5.18:1.
-		const variantClasses = {
-			default: 'bg-primary text-primary-foreground hover:bg-primary/90',
-			success:
-				'bg-green-700 text-white hover:bg-green-800 dark:bg-green-700 dark:hover:bg-green-800',
-			secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-			destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
-			outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
-			cancelled:
-				'bg-orange-700 text-white hover:bg-orange-800 dark:bg-orange-700 dark:hover:bg-orange-800'
-		};
-
-		return cn(baseClasses, variantClasses[variant]);
-	}
 </script>
 
 {#if badges.length > 0}
 	<div class={cn('flex flex-wrap gap-2', className)}>
 		{#each badges as badge (badge.label)}
-			<span class={getBadgeClasses(badge.variant)}>
-				{#if badge.hasIcon}
-					<EyeOff class="h-3 w-3" aria-hidden="true" />
-				{/if}
-				{badge.label}
-			</span>
+			<StatusBadge
+				tone={badge.tone}
+				label={badge.label}
+				icon={badge.hasIcon ? EyeOff : undefined}
+			/>
 		{/each}
 	</div>
 {/if}

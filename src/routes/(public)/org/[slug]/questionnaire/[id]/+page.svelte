@@ -11,6 +11,8 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { toast } from 'svelte-sonner';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import QuestionnaireFillForm from '$lib/components/questionnaires/QuestionnaireFillForm.svelte';
 
 	interface Props {
@@ -146,10 +148,12 @@
 			<ArrowLeft class="h-4 w-4" aria-hidden="true" />
 			{m['membershipQuestionnairePage.backToOrg']({ orgName: data.organization.name })}
 		</a>
-		<h1 class="text-3xl font-bold">{m['membershipQuestionnairePage.title']()}</h1>
-		<p class="mt-2 text-muted-foreground">
-			{m['membershipQuestionnairePage.subtitle']({ orgName: data.organization.name })}
-		</p>
+		<PageHeader
+			volume="celebration"
+			kicker={data.organization.name}
+			title={m['membershipQuestionnairePage.title']()}
+			subtitle={m['membershipQuestionnairePage.subtitle']({ orgName: data.organization.name })}
+		/>
 		{#if data.questionnaire.description}
 			<div class="mt-4 rounded-lg border bg-muted/50 p-4">
 				<MarkdownContent content={data.questionnaire.description} />
@@ -159,23 +163,20 @@
 
 	{#if autoAccepted}
 		<!-- Nothing left to review: the org page's eligibility CTA now advances to apply/join. -->
-		<div class="rounded-lg border bg-card p-8 text-center" role="status">
-			<div
-				class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10"
+		<div role="status">
+			<EmptyState
+				level={2}
+				tone="success"
+				icon={Check}
+				title={m['membershipQuestionnairePage.acceptedTitle']()}
+				body={m['membershipQuestionnairePage.acceptedBody']({ orgName: data.organization.name })}
 			>
-				<Check class="h-6 w-6 text-primary" aria-hidden="true" />
-			</div>
-			<h2 class="text-2xl font-semibold">
-				{m['membershipQuestionnairePage.acceptedTitle']()}
-			</h2>
-			<p class="mx-auto mt-2 max-w-md text-muted-foreground">
-				{m['membershipQuestionnairePage.acceptedBody']({ orgName: data.organization.name })}
-			</p>
-			<div class="mt-6">
-				<Button href={resolve('/(public)/org/[slug]', { slug: data.organization.slug })}>
-					{m['membershipQuestionnairePage.backToOrg']({ orgName: data.organization.name })}
-				</Button>
-			</div>
+				{#snippet action()}
+					<Button href={resolve('/(public)/org/[slug]', { slug: data.organization.slug })}>
+						{m['membershipQuestionnairePage.backToOrg']({ orgName: data.organization.name })}
+					</Button>
+				{/snippet}
+			</EmptyState>
 		</div>
 	{:else}
 		<QuestionnaireFillForm

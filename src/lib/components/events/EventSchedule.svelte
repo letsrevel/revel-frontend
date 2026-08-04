@@ -4,6 +4,7 @@
 	import { formatTimeOfDay, formatDate } from '$lib/utils/date';
 	import { AlertCircle, MapPin } from '@lucide/svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import EventTimezoneNote from './EventTimezoneNote.svelte';
 
 	interface Props {
@@ -53,7 +54,12 @@
 
 {#if hasSchedule}
 	<section class="rounded-lg border bg-card p-6" aria-labelledby="schedule-heading">
-		<h2 id="schedule-heading" class="mb-4 text-xl font-bold">{m['eventSchedule.title']()}</h2>
+		<SectionHeader
+			volume="celebration"
+			id="schedule-heading"
+			title={m['eventSchedule.title']()}
+			class="mb-4"
+		/>
 		<p class="mb-2 text-sm text-muted-foreground">{m['eventSchedule.description']()}</p>
 
 		<!-- Times below are in the event timezone, not the viewer's — shown once here. -->
@@ -65,7 +71,7 @@
 				<li class="flex items-start gap-4 rounded-md border p-4">
 					<!-- Time column -->
 					<div class="w-24 shrink-0 sm:w-28">
-						<p class="text-sm font-semibold tabular-nums leading-tight">{timeLabel(session)}</p>
+						<p class="text-sm font-bold tabular-nums leading-tight">{timeLabel(session)}</p>
 						{#if day}
 							<p class="mt-0.5 text-xs text-muted-foreground">{day}</p>
 						{/if}
@@ -74,10 +80,10 @@
 					<!-- Details -->
 					<div class="min-w-0 flex-1">
 						<div class="flex flex-wrap items-center gap-2">
-							<h3 class="font-semibold leading-tight">{session.title}</h3>
+							<h3 class="font-bold leading-tight">{session.title}</h3>
 							{#if session.is_required}
 								<span
-									class="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
+									class="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary"
 								>
 									<AlertCircle class="h-3 w-3" aria-hidden="true" />
 									{m['eventSchedule.requiredBadge']()}

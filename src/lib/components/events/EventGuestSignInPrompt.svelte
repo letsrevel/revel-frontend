@@ -73,7 +73,7 @@
 		<div class="flex items-start gap-3">
 			<LogIn class="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
 			<div>
-				<h2 id="guest-signin-heading" class="font-semibold">
+				<h2 id="guest-signin-heading" class="text-xl font-extrabold">
 					{m['eventGuestPrompt.title']()}
 				</h2>
 				<p class="mt-1 text-sm text-muted-foreground">{m['eventGuestPrompt.subtitle']()}</p>
@@ -82,7 +82,7 @@
 		<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended returnUrl query cannot be expressed through resolve() -->
 		<a
 			href={loginHref}
-			class="inline-flex shrink-0 items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+			class="inline-flex shrink-0 items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 		>
 			{m['eventGuestPrompt.cta']()}
 		</a>
@@ -95,7 +95,7 @@
 		onclick={() => (isExpanded = !isExpanded)}
 		aria-expanded={isExpanded}
 		aria-controls="guest-signin-perks"
-		class="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+		class="mt-3 inline-flex items-center gap-1.5 text-sm font-bold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 	>
 		{#if isExpanded}
 			<ChevronUp class="h-4 w-4" aria-hidden="true" />
@@ -112,7 +112,7 @@
 				<li class="flex items-start gap-3">
 					<Icon class="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
 					<div class="text-sm">
-						<p class="font-medium">{perk.label}</p>
+						<p class="font-bold">{perk.label}</p>
 						<p class="text-muted-foreground">{perk.description}</p>
 					</div>
 				</li>

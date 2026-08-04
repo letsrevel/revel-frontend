@@ -13,6 +13,8 @@
 	import DemoCardInfo from '$lib/components/common/DemoCardInfo.svelte';
 	import EligibilityStatusDisplay from '$lib/components/events/EligibilityStatusDisplay.svelte';
 	import { Button } from '$lib/components/ui/button';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
+	import Sticker from '$lib/components/brand/Sticker.svelte';
 	import { Map as MapIcon, Ticket } from '@lucide/svelte';
 
 	interface Props {
@@ -81,6 +83,20 @@
 		return !userStatus.allowed;
 	});
 
+	/**
+	 * Every visible tier is out of inventory — the one "moment" on this section
+	 * worth a Sticker (celebration volume allows at most one per viewport-height,
+	 * and this is the only one on the event page).
+	 *
+	 * Only `total_available === 0` counts: `null` is ambiguous since #825 (it can
+	 * mean "unlimited" OR "withheld"), so a page that hides capacity never claims
+	 * to be sold out. The sticker is a REPEAT of what each tier card already says
+	 * in words and in its own audited badge, so nothing is conveyed by it alone.
+	 */
+	const allSoldOut = $derived(
+		visibleTiers.length > 0 && visibleTiers.every((tier) => tier.total_available === 0)
+	);
+
 	// Check if user is eligible to purchase tickets
 	const isEligible = $derived.by(() => {
 		if (!userStatus) return true; // If no status, assume eligible (default behavior)
@@ -92,8 +108,15 @@
 {#if hasTiers}
 	<section class="rounded-lg border border-border bg-card p-6" aria-labelledby="ticket-tiers">
 		<div class="mb-4 flex items-center gap-2">
-			<Ticket class="h-5 w-5 text-primary" aria-hidden="true" />
-			<h2 id="ticket-tiers" class="text-xl font-bold">{m['ticketTierList.ticketOptions']()}</h2>
+			<Ticket class="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
+			<SectionHeader
+				volume="celebration"
+				id="ticket-tiers"
+				title={m['ticketTierList.ticketOptions']()}
+			/>
+			{#if allSoldOut}
+				<Sticker tint="crimson" rotate={-3} class="text-sm">{m['tierCard.soldOut']()}</Sticker>
+			{/if}
 		</div>
 
 		<!-- Map-first entry point (#679): start from the seating map instead of
@@ -140,7 +163,7 @@
 
 		{#if !isAuthenticated && !canAttendWithoutLogin}
 			<p class="mt-4 text-sm text-muted-foreground">
-				<a href={resolve('/(public)/login', {})} class="font-medium text-primary hover:underline"
+				<a href={resolve('/(public)/login', {})} class="font-bold text-primary hover:underline"
 					>{m['ticketTierList.signIn']()}</a
 				>
 				to claim your ticket

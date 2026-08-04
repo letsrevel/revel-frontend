@@ -9,6 +9,8 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { toast } from 'svelte-sonner';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import QuestionnaireFillForm from '$lib/components/questionnaires/QuestionnaireFillForm.svelte';
 	import type { QuestionnaireSubmissionSchema } from '$lib/api/generated';
 
@@ -111,10 +113,12 @@
 			<ArrowLeft class="h-4 w-4" />
 			{m['questionnaireSubmissionPage.backToEvent']()}
 		</a>
-		<h1 class="text-3xl font-bold">{data.questionnaire.name}</h1>
-		<p class="mt-2 text-muted-foreground">
-			{m['questionnaireSubmissionPage.subtitle']({ eventName: data.event.name })}
-		</p>
+		<PageHeader
+			volume="celebration"
+			kicker={data.event.name}
+			title={data.questionnaire.name}
+			subtitle={m['questionnaireSubmissionPage.subtitle']({ eventName: data.event.name })}
+		/>
 		{#if data.questionnaire.description}
 			<div class="mt-4 rounded-lg border bg-muted/50 p-4">
 				<MarkdownContent content={data.questionnaire.description} />
@@ -124,27 +128,24 @@
 
 	{#if autoAccepted}
 		<!-- Auto-accepted: no evaluation needed, the user is admitted immediately (#441) -->
-		<div class="rounded-lg border bg-card p-8 text-center" role="status">
-			<div
-				class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10"
-			>
-				<Check class="h-6 w-6 text-primary" aria-hidden="true" />
-			</div>
-			<h2 class="text-2xl font-semibold">
-				{m['questionnaireSubmissionPage.accepted_title']()}
-			</h2>
-			<p class="mx-auto mt-2 max-w-md text-muted-foreground">
-				{isTicketed
+		<div role="status">
+			<EmptyState
+				level={2}
+				tone="success"
+				icon={Check}
+				title={m['questionnaireSubmissionPage.accepted_title']()}
+				body={isTicketed
 					? m['questionnaireSubmissionPage.accepted_description_ticket']()
 					: m['questionnaireSubmissionPage.accepted_description_rsvp']()}
-			</p>
-			<div class="mt-6">
-				<Button href={eventUrl}>
-					{isTicketed
-						? m['questionnaireSubmissionPage.accepted_cta_ticket']()
-						: m['questionnaireSubmissionPage.accepted_cta_rsvp']()}
-				</Button>
-			</div>
+			>
+				{#snippet action()}
+					<Button href={eventUrl}>
+						{isTicketed
+							? m['questionnaireSubmissionPage.accepted_cta_ticket']()
+							: m['questionnaireSubmissionPage.accepted_cta_rsvp']()}
+					</Button>
+				{/snippet}
+			</EmptyState>
 		</div>
 	{:else}
 		<QuestionnaireFillForm

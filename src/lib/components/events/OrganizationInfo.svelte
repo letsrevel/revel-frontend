@@ -13,6 +13,7 @@
 	import OrgContactButton from '$lib/components/organization/OrgContactButton.svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import FollowButton from '$lib/components/common/FollowButton.svelte';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 
 	interface Props {
 		organization: OrganizationRetrieveSchema;
@@ -53,9 +54,11 @@
 </script>
 
 <section aria-labelledby="organizer-heading" class={cn('space-y-4', className)}>
-	<h2 id="organizer-heading" class="text-xl font-semibold">
-		{m['organizationInfo.aboutOrganizer']()}
-	</h2>
+	<SectionHeader
+		volume="celebration"
+		id="organizer-heading"
+		title={m['organizationInfo.aboutOrganizer']()}
+	/>
 
 	<div class="rounded-lg border bg-card p-6">
 		<!-- Organization Header -->
@@ -75,7 +78,7 @@
 			{/if}
 
 			<div class="flex-1">
-				<h3 class="text-lg font-semibold">{organization.name}</h3>
+				<h3 class="text-lg font-bold">{organization.name}</h3>
 				{#if organization.description}
 					<MarkdownContent
 						content={organization.description}
@@ -89,7 +92,7 @@
 		<div class="mt-6 flex flex-wrap gap-2">
 			<a
 				href={resolve('/(public)/org/[slug]', { slug: organization.slug })}
-				class="inline-flex rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+				class="inline-flex rounded-md border border-input bg-background px-4 py-2 text-sm font-bold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 			>
 				{m['organizationInfo.viewProfile']()}
 			</a>

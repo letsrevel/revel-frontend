@@ -20,7 +20,7 @@
 <div class="container mx-auto space-y-6 px-6 py-8 md:px-8 lg:py-12">
 	<a
 		href={resolve('/(public)/org/[slug]', { slug: organization.slug })}
-		class="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+		class="inline-flex items-center gap-2 text-sm font-bold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 	>
 		<ArrowLeft class="h-4 w-4" aria-hidden="true" />
 		{m['membershipTiers.backToOrg']({ organizationName: organization.name })}

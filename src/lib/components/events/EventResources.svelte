@@ -4,6 +4,8 @@
 	import { FileText, Link as LinkIcon, AlignLeft, ExternalLink, Download } from '@lucide/svelte';
 	import { getBackendUrl } from '$lib/config/api';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
+	import ToneTile from '$lib/components/common/ToneTile.svelte';
 
 	interface Props {
 		resources: AdditionalResourceSchema[];
@@ -38,8 +40,13 @@
 </script>
 
 {#if hasResources}
-	<section class="rounded-lg border bg-card p-6">
-		<h2 class="mb-4 text-xl font-bold">{m['eventResources.title']()}</h2>
+	<section class="rounded-lg border bg-card p-6" aria-labelledby="event-resources-heading">
+		<SectionHeader
+			volume="celebration"
+			id="event-resources-heading"
+			title={m['eventResources.title']()}
+			class="mb-4"
+		/>
 		<p class="mb-6 text-sm text-muted-foreground">{m['eventResources.description']()}</p>
 
 		<div class="space-y-3">
@@ -49,15 +56,11 @@
 					class="flex items-start gap-4 rounded-md border p-4 transition-all hover:bg-accent/50"
 				>
 					<!-- Icon -->
-					<div
-						class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary"
-					>
-						<IconComponent class="h-5 w-5" aria-hidden="true" />
-					</div>
+					<ToneTile tone="brand" icon={IconComponent} />
 
 					<!-- Content -->
 					<div class="min-w-0 flex-1">
-						<h3 class="font-semibold leading-tight">
+						<h3 class="font-bold leading-tight">
 							{resource.name || 'Untitled Resource'}
 						</h3>
 						{#if resource.description}
@@ -82,7 +85,7 @@
 						<button
 							type="button"
 							onclick={() => openResource(resource)}
-							class="shrink-0 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+							class="shrink-0 rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 							aria-label={resource.resource_type === 'file' ? 'Download file' : 'Open link'}
 						>
 							<span class="flex items-center gap-2">
