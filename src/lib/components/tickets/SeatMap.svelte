@@ -548,19 +548,21 @@
 		<!-- Bar rotated to sit perpendicular to the stage direction (the sector is
 		     drawn un-rotated, so this angle conveys where the stage actually is). -->
 		<g transform="translate({bx} {by}) rotate({angle})">
+			<!-- The mock's stage pill: white@14 strip on the map's dark house, full-
+			     opacity white label — ~17.6:1, hand-verified (composited alpha). -->
 			<rect
 				x={-barW / 2}
 				y={-BAR_THICK / 2}
 				width={barW}
 				height={BAR_THICK}
-				rx="8"
-				class="fill-muted"
+				rx="9"
+				class="fill-poster-white/[0.14]"
 			/>
 			<text
 				text-anchor="middle"
 				dominant-baseline="central"
 				transform={flip ? 'rotate(180)' : undefined}
-				class="fill-muted-foreground text-[11px] font-medium tracking-widest"
+				class="fill-poster-white text-[10px] font-extrabold uppercase tracking-[0.2em]"
 			>
 				{stageLabel}
 			</text>
@@ -623,20 +625,21 @@
 				{@const stageY = stage ? canvasY(stage.y) : PAD + STAGE_H / 2}
 				{#if !hideStage}
 					<g role="img" aria-label={stageLabel}>
+						<!-- See stageArrow: same mock pill, same hand-verified pair. -->
 						<rect
 							x={stageX - 60}
 							y={stageY - STAGE_H / 2}
 							width="120"
 							height={STAGE_H}
-							rx="8"
-							class="fill-muted"
+							rx="12"
+							class="fill-poster-white/[0.14]"
 						/>
 						<text
 							x={stageX}
 							y={stageY}
 							text-anchor="middle"
 							dominant-baseline="central"
-							class="fill-muted-foreground text-[11px] font-medium tracking-widest"
+							class="fill-poster-white text-[10px] font-extrabold uppercase tracking-[0.2em]"
 						>
 							{stageLabel}
 						</text>
