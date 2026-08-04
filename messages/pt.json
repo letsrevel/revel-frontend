@@ -2679,6 +2679,16 @@
 		"rejectedHint": "Contacta quem organiza para receberes um novo convite.",
 		"rejectedCta": "Explorar eventos"
 	},
+	"landingTemplate": {
+		"benefitsKicker": "Por que Revel",
+		"ctaKicker": "Começar",
+		"ctaSticker": "Código aberto",
+		"faqHeading": "Perguntas Frequentes",
+		"faqKicker": "Perguntas",
+		"featuresKicker": "O que está incluído",
+		"relatedHeading": "Tópicos Relacionados",
+		"relatedKicker": "Saiba mais"
+	},
 	"languageSwitcher": {
 		"selectLanguage": "Selecionar idioma: {name}"
 	},

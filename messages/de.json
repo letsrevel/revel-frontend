@@ -2679,6 +2679,16 @@
 		"rejectedHint": "Wende dich an die Organisator*innen, um eine neue Einladung zu erhalten.",
 		"rejectedCta": "Events durchstöbern"
 	},
+	"landingTemplate": {
+		"benefitsKicker": "Warum Revel",
+		"ctaKicker": "Jetzt loslegen",
+		"ctaSticker": "Open Source",
+		"faqHeading": "Häufig gestellte Fragen",
+		"faqKicker": "Fragen",
+		"featuresKicker": "Das ist inklusive",
+		"relatedHeading": "Verwandte Themen",
+		"relatedKicker": "Mehr entdecken"
+	},
 	"languageSwitcher": {
 		"selectLanguage": "Select language: {name}"
 	},
