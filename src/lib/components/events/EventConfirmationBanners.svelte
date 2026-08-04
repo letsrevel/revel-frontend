@@ -15,7 +15,7 @@
 {#if paymentSuccess}
 	<div class="container mx-auto px-6 pt-4 md:px-8">
 		<div
-			class="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-4 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-100"
+			class="flex items-center gap-2 rounded-lg border border-success/40 bg-success/10 p-4 text-foreground"
 			role="alert"
 		>
 			<svg class="h-5 w-5 shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
@@ -37,7 +37,7 @@
 {#if paymentCancelled}
 	<div class="container mx-auto px-6 pt-4 md:px-8">
 		<div
-			class="flex items-center gap-2 rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-100"
+			class="flex items-center gap-2 rounded-lg border border-highlight/50 bg-highlight/10 p-4 text-foreground"
 			role="alert"
 		>
 			<svg class="h-5 w-5 shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
@@ -59,7 +59,7 @@
 {#if rsvpConfirmed}
 	<div class="container mx-auto px-6 pt-4 md:px-8">
 		<div
-			class="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-4 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-100"
+			class="flex items-center gap-2 rounded-lg border border-success/40 bg-success/10 p-4 text-foreground"
 			role="alert"
 		>
 			<svg class="h-5 w-5 shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
@@ -81,7 +81,7 @@
 {#if ticketConfirmed}
 	<div class="container mx-auto px-6 pt-4 md:px-8">
 		<div
-			class="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-4 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-100"
+			class="flex items-center gap-2 rounded-lg border border-success/40 bg-success/10 p-4 text-foreground"
 			role="alert"
 		>
 			<svg class="h-5 w-5 shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">

@@ -218,9 +218,9 @@
 {#if isConfirming}
 	<Card
 		class={phase === 'done'
-			? 'border-green-300 bg-green-50 dark:border-green-800 dark:bg-green-950/40'
+			? 'border-success/50 bg-success/10'
 			: phase === 'timed_out'
-				? 'border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40'
+				? 'border-highlight/60 bg-highlight/10'
 				: ''}
 	>
 		<CardContent class="p-4">
@@ -234,17 +234,17 @@
 						<p class="mt-1 text-sm">{activationDetail}</p>
 					{/if}
 				{:else if phase === 'done'}
-					<h2 class="text-lg font-semibold">{m['subscribe.return.welcome']()}</h2>
+					<h2 class="text-lg font-extrabold">{m['subscribe.return.welcome']()}</h2>
 					<p class="mt-1 text-sm">{m['subscribe.return.welcomeBody']()}</p>
 				{:else}
-					<h2 class="text-lg font-semibold">{m['subscribe.return.slowTitle']()}</h2>
+					<h2 class="text-lg font-extrabold">{m['subscribe.return.slowTitle']()}</h2>
 					<p class="mt-1 text-sm">{m['subscribe.return.slow']()}</p>
 				{/if}
 			</div>
 			{#if phase === 'timed_out'}
 				<a
 					href={membershipsHref}
-					class="mt-3 inline-block text-sm font-medium text-primary underline-offset-4 hover:underline"
+					class="mt-3 inline-block text-sm font-bold text-primary underline-offset-4 hover:underline"
 				>
 					{m['subscribe.return.checkAccount']()}
 				</a>
@@ -252,9 +252,9 @@
 		</CardContent>
 	</Card>
 {:else}
-	<Card class="border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40">
+	<Card class="border-highlight/60 bg-highlight/10">
 		<CardContent class="p-4">
-			<h2 class="text-lg font-semibold">{m['subscribe.return.cancelledTitle']()}</h2>
+			<h2 class="text-lg font-extrabold">{m['subscribe.return.cancelledTitle']()}</h2>
 			<p class="mt-1 text-sm">{m['subscribe.return.cancelledBody']()}</p>
 
 			{#if resumableSub}

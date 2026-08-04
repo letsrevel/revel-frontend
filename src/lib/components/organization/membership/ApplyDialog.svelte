@@ -250,7 +250,7 @@
 		{#if showOutcome}
 			<div class="space-y-3">
 				{#if showMemberBadge}
-					<p class="flex items-center gap-2 text-sm font-medium text-green-700 dark:text-green-300">
+					<p class="flex items-center gap-2 text-sm font-bold text-success">
 						<CheckCircle2 class="h-5 w-5" aria-hidden="true" />
 						{m['membershipEligibility.memberBadge']()}
 					</p>

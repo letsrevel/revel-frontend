@@ -112,12 +112,14 @@
 		return plan && inline;
 	});
 
-	// Status badge styling, kept in step with MemberCard.svelte.
+	// Status badge styling, on the semantic tone tokens rather than a
+	// hand-picked green/yellow/grey/red ramp — each pill still carries its own
+	// translated label (`memberStatus.*`), so the fill never says it alone.
 	const statusStyles: Record<MembershipStatus, string> = {
-		active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100',
-		paused: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100',
-		cancelled: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100',
-		banned: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
+		active: 'bg-success text-success-foreground',
+		paused: 'bg-highlight text-highlight-foreground',
+		cancelled: 'bg-muted text-muted-foreground',
+		banned: 'bg-destructive text-destructive-foreground'
 	};
 
 	const accessToken = $derived(authStore.accessToken);
@@ -241,7 +243,7 @@
 
 		{#if membershipTier}
 			<span
-				class="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-100"
+				class="inline-flex items-center gap-1.5 rounded-full bg-info px-3 py-1.5 text-xs font-bold text-info-foreground"
 				aria-label={m['membershipEligibility.memberTierAriaLabel']({ tier: membershipTier.name })}
 			>
 				<Award class="h-3 w-3" aria-hidden="true" />
@@ -250,7 +252,7 @@
 		{:else if !membershipStatus}
 			<!-- Eligibility-derived membership: no server props to describe it. -->
 			<span
-				class="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1.5 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-100"
+				class="inline-flex items-center gap-1.5 rounded-full bg-success px-3 py-1.5 text-xs font-bold text-success-foreground"
 				aria-label={m['membershipEligibility.memberBadgeAriaLabel']()}
 			>
 				<Check class="h-3 w-3" aria-hidden="true" />
@@ -263,7 +265,7 @@
 {#if isOwner}
 	<div
 		class={cn(
-			'inline-flex items-center gap-2 rounded-md border border-primary bg-primary/10 px-4 py-2 text-sm font-medium text-primary dark:border-primary dark:bg-primary/20',
+			'inline-flex items-center gap-2 rounded-md border border-primary bg-primary/10 px-4 py-2 text-sm font-bold text-primary',
 			className
 		)}
 		role="status"
@@ -275,7 +277,7 @@
 {:else if isStaff}
 	<div
 		class={cn(
-			'inline-flex items-center gap-2 rounded-md border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300',
+			'inline-flex items-center gap-2 rounded-md border border-info/40 bg-info/10 px-4 py-2 text-sm font-bold text-foreground',
 			className
 		)}
 		role="status"

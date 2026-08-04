@@ -142,17 +142,14 @@
 			{#if emailSent}
 				<!-- Success state -->
 				<div class="space-y-4">
-					<div class="rounded-md bg-green-50 p-4 dark:bg-green-950">
+					<div class="rounded-md bg-success/10 p-4">
 						<div class="flex gap-3">
-							<Check
-								class="h-5 w-5 flex-shrink-0 text-green-600 dark:text-green-400"
-								aria-hidden="true"
-							/>
+							<Check class="h-5 w-5 flex-shrink-0 text-success" aria-hidden="true" />
 							<div>
-								<h4 class="font-medium text-green-900 dark:text-green-100">
+								<h4 class="font-bold text-foreground">
 									{m['orgContactEmailModal.verificationSentTitle']()}
 								</h4>
-								<p class="mt-1 text-sm text-green-800 dark:text-green-200">
+								<p class="mt-1 text-sm text-foreground">
 									{m['orgContactEmailModal.verificationSentPrefix']()}
 									<strong>{newEmail}</strong>.
 									{m['orgContactEmailModal.verificationSentSuffix']()}
@@ -191,7 +188,7 @@
 							bind:value={newEmail}
 							disabled={isUpdatingEmail}
 							placeholder={m['orgContactEmailModal.emailPlaceholder']()}
-							class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800"
+							class="mt-1 w-full rounded-md border-2 border-input bg-background px-3 py-2 text-sm text-foreground transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50"
 						/>
 						<p class="mt-1 text-xs text-muted-foreground">
 							{m['orgContactEmailModal.helperText']()}
@@ -199,13 +196,10 @@
 					</div>
 
 					{#if emailUpdateError}
-						<div class="rounded-md bg-red-50 p-3 dark:bg-red-950">
+						<div class="rounded-md bg-destructive/10 p-3">
 							<div class="flex gap-2">
-								<AlertCircle
-									class="h-5 w-5 flex-shrink-0 text-red-600 dark:text-red-400"
-									aria-hidden="true"
-								/>
-								<p class="text-sm text-red-800 dark:text-red-200">
+								<AlertCircle class="h-5 w-5 flex-shrink-0 text-destructive" aria-hidden="true" />
+								<p class="text-sm text-foreground">
 									{emailUpdateError}
 								</p>
 							</div>

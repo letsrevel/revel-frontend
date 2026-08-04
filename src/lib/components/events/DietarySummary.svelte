@@ -79,36 +79,31 @@
 			case 'severe_allergy':
 				return {
 					label: m['dietarySummary.severitySevereAllergy'](),
-					color:
-						'bg-red-100 text-red-800 border-red-200 dark:bg-red-950 dark:text-red-400 dark:border-red-900',
+					color: 'border-destructive/40 bg-destructive/10 text-foreground',
 					icon: AlertTriangle
 				};
 			case 'allergy':
 				return {
 					label: m['dietarySummary.severityAllergy'](),
-					color:
-						'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-950 dark:text-orange-400 dark:border-orange-900',
+					color: 'border-highlight/60 bg-highlight/20 text-foreground',
 					icon: AlertCircle
 				};
 			case 'intolerant':
 				return {
 					label: m['dietarySummary.severityIntolerant'](),
-					color:
-						'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-950 dark:text-yellow-400 dark:border-yellow-900',
+					color: 'border-highlight/40 bg-highlight/10 text-foreground',
 					icon: Circle
 				};
 			case 'dislike':
 				return {
 					label: m['dietarySummary.severityDislike'](),
-					color:
-						'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700',
+					color: 'border-border bg-muted text-muted-foreground',
 					icon: Frown
 				};
 			default:
 				return {
 					label: type,
-					color:
-						'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700',
+					color: 'border-border bg-muted text-muted-foreground',
 					icon: Circle
 				};
 		}
@@ -169,7 +164,7 @@
 			<div class="flex items-center gap-3">
 				<Info class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
 				<div>
-					<h3 class="font-semibold">{m['dietary.eventSummary_heading']()}</h3>
+					<h3 class="text-lg font-extrabold">{m['dietary.eventSummary_heading']()}</h3>
 					<p class="text-sm text-muted-foreground">{m['dietary.eventSummary_description']()}</p>
 				</div>
 			</div>
@@ -178,7 +173,7 @@
 				<a
 					href={profileDietaryUrl}
 					onclick={(e) => e.stopPropagation()}
-					class="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+					class="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-bold text-primary-foreground hover:bg-primary/90"
 					aria-label={m['dietarySummary.addDietaryPreferencesAriaLabel']()}
 				>
 					<span>{m['dietary.profile_quickActionButton']()}</span>

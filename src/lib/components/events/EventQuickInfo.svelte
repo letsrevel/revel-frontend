@@ -208,7 +208,7 @@
 	<div class={itemClasses} role="listitem">
 		<Calendar class={iconClasses} aria-hidden="true" />
 		<div class={textClasses}>
-			<time datetime={event.start} class="block font-medium">
+			<time datetime={event.start} class="block font-bold">
 				{formattedStartDate}
 			</time>
 		</div>
@@ -305,7 +305,7 @@
 		>
 			<Users class={iconClasses} aria-hidden="true" />
 			<div class={textClasses}>
-				<span class="block font-medium">{capacityDisplay}</span>
+				<span class="block font-bold">{capacityDisplay}</span>
 				{#if isNearCapacity}
 					<span class="text-xs text-muted-foreground">{m['eventQuickInfo.limitedSpots']()}</span>
 				{/if}
@@ -322,7 +322,7 @@
 		>
 			<Clock class={iconClasses} aria-hidden="true" />
 			<div class={textClasses}>
-				<time datetime={event.rsvp_before} class="block font-medium">
+				<time datetime={event.rsvp_before} class="block font-bold">
 					{rsvpDeadlineDisplay}
 				</time>
 				{#if isDeadlineSoon}

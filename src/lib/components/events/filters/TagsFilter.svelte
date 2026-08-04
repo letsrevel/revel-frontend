@@ -64,7 +64,9 @@
 <div class={cn('space-y-3', className)}>
 	<div class="flex items-center gap-2">
 		<Tag class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-		<h3 class="text-sm font-medium">{m['filters.tags.heading']()}</h3>
+		<h3 class="text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
+			{m['filters.tags.heading']()}
+		</h3>
 	</div>
 
 	{#if isLoading}
@@ -84,7 +86,7 @@
 					type="button"
 					onclick={() => handleTagClick(tag)}
 					class={cn(
-						'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+						'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
 						isSelected
 							? 'border-primary bg-primary text-primary-foreground hover:bg-primary/90'
 							: 'border-input bg-background hover:bg-accent hover:text-accent-foreground'

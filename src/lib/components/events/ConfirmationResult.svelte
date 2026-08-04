@@ -121,7 +121,7 @@
 				<Loader2 class="h-16 w-16 animate-spin text-primary" aria-hidden="true" />
 			</div>
 			<div class="space-y-2">
-				<h1 class="text-2xl font-bold">{m['guest_attendance.confirmation_processing']()}</h1>
+				<h1 class="text-2xl font-extrabold">{m['guest_attendance.confirmation_processing']()}</h1>
 				<p class="text-muted-foreground">
 					{m['guest_attendance.confirmation_wait']()}
 				</p>
@@ -135,7 +135,7 @@
 			</div>
 
 			<div class="space-y-3">
-				<h1 class="text-3xl font-bold">
+				<h1 class="text-3xl font-black leading-[1.12] sm:text-4xl">
 					{result.type === 'rsvp'
 						? m['guest_attendance.rsvp_confirmed_title']()
 						: m['guest_attendance.ticket_confirmed_title']()}
@@ -172,7 +172,9 @@
 			</div>
 
 			<div class="space-y-3">
-				<h1 class="text-3xl font-bold">{m['confirmationResult.confirmationFailed']()}</h1>
+				<h1 class="text-3xl font-black leading-[1.12] sm:text-4xl">
+					{m['confirmationResult.confirmationFailed']()}
+				</h1>
 				<Alert variant="destructive" class="text-left">
 					<AlertDescription>
 						{result.error || m['guest_attendance.network_error']()}

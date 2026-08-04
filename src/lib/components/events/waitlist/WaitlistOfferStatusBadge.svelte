@@ -17,15 +17,13 @@
 				return {
 					label: m['offerStatus.pending'](),
 					icon: Clock,
-					classes:
-						'bg-amber-100 text-amber-900 dark:bg-amber-950/40 dark:text-amber-200 ring-1 ring-amber-300/60 dark:ring-amber-800/60'
+					classes: 'bg-highlight text-highlight-foreground'
 				};
 			case 'claimed':
 				return {
 					label: m['offerStatus.claimed'](),
 					icon: Check,
-					classes:
-						'bg-emerald-100 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200 ring-1 ring-emerald-300/60 dark:ring-emerald-800/60'
+					classes: 'bg-success text-success-foreground'
 				};
 			case 'expired':
 				return {
@@ -37,8 +35,7 @@
 				return {
 					label: m['offerStatus.revoked'](),
 					icon: Ban,
-					classes:
-						'bg-red-100 text-red-900 dark:bg-red-950/40 dark:text-red-200 ring-1 ring-red-300/60 dark:ring-red-800/60'
+					classes: 'bg-destructive text-destructive-foreground'
 				};
 		}
 	});

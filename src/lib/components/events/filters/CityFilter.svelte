@@ -92,7 +92,9 @@
 <div class={cn('space-y-3', className)}>
 	<div class="flex items-center gap-2">
 		<MapPin class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-		<h3 class="text-sm font-medium">{m['filters.city.heading']()}</h3>
+		<h3 class="text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
+			{m['filters.city.heading']()}
+		</h3>
 	</div>
 
 	{#if selectedCity}
