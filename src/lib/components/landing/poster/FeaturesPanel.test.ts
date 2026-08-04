@@ -34,4 +34,13 @@ describe('FeaturesPanel', () => {
 			expect(hrefs).toContain(path);
 		}
 	});
+
+	it('keeps the trailing arrow affordance decorative (accessible name = label only)', () => {
+		render(FeaturesPanel, { props: { landingPagePrefix: '' } });
+		// The arrow is an aria-hidden icon, never part of the message string — the
+		// link must still be reachable by its exact label.
+		const link = screen.getByRole('link', { name: m['footer.solutionEventbrite']() });
+		expect(link.getAttribute('href')).toBe('/eventbrite-alternative');
+		expect(link.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
+	});
 });
