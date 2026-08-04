@@ -239,6 +239,7 @@
 								<StatusBadge
 									tone={statusTone(invoice.status)}
 									label={statusLabel(invoice.status)}
+									aria-label={statusLabel(invoice.status)}
 								/>
 							</td>
 							<td class="px-4 py-3 text-right font-mono">
@@ -353,7 +354,11 @@
 						</p>
 						<p class="text-lg font-semibold">{inv.invoice_number}</p>
 					</div>
-					<StatusBadge tone={statusTone(inv.status)} label={statusLabel(inv.status)} />
+					<StatusBadge
+						tone={statusTone(inv.status)}
+						label={statusLabel(inv.status)}
+						aria-label={statusLabel(inv.status)}
+					/>
 				</div>
 
 				<!-- Period -->

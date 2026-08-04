@@ -54,5 +54,7 @@
 	`title` carries the optional amount+currency tooltip via restProps.
 -->
 {#if known}
-	<CommonStatusBadge {tone} {label} size="sm" title={tooltip} aria-label={label} />
+	<!-- w-fit: this sits in TicketTable/TicketCardList's flex flex-col cell, which
+	     would otherwise stretch the pill to the cell's full width. -->
+	<CommonStatusBadge {tone} {label} size="sm" title={tooltip} aria-label={label} class="w-fit" />
 {/if}

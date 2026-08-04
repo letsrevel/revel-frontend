@@ -147,11 +147,14 @@
 
 	<!-- Error Message -->
 	{#if form?.errors && 'form' in form.errors}
+		<!-- Icon carries the tone, not the body text: dark --destructive as TEXT on
+		     this composite measures ~2.7-2.95:1 (fails both the 3:1 non-text and
+		     4.5:1 text floors). -->
 		<div
-			class="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive"
+			class="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-foreground"
 			role="alert"
 		>
-			<AlertCircle class="h-5 w-5 shrink-0" aria-hidden="true" />
+			<AlertCircle class="h-5 w-5 shrink-0 text-destructive" aria-hidden="true" />
 			<p class="text-sm font-medium">{form.errors.form}</p>
 		</div>
 	{/if}
@@ -359,7 +362,7 @@
 				<!-- Instagram -->
 				<div>
 					<label for="instagram_url" class="flex items-center gap-2 text-sm font-medium">
-						<Instagram class="h-4 w-4 text-[#E4405F]" aria-hidden="true" />
+						<Instagram class="h-4 w-4 text-[hsl(var(--brand-instagram))]" aria-hidden="true" />
 						Instagram
 					</label>
 					<input
@@ -375,7 +378,7 @@
 				<!-- Facebook -->
 				<div>
 					<label for="facebook_url" class="flex items-center gap-2 text-sm font-medium">
-						<Facebook class="h-4 w-4 text-[#1877F2]" aria-hidden="true" />
+						<Facebook class="h-4 w-4 text-[hsl(var(--brand-facebook))]" aria-hidden="true" />
 						Facebook
 					</label>
 					<input
@@ -391,7 +394,7 @@
 				<!-- Bluesky -->
 				<div>
 					<label for="bluesky_url" class="flex items-center gap-2 text-sm font-medium">
-						<AtSign class="h-4 w-4 text-[#1185FE]" aria-hidden="true" />
+						<AtSign class="h-4 w-4 text-[hsl(var(--brand-bluesky))]" aria-hidden="true" />
 						Bluesky
 					</label>
 					<input
@@ -528,6 +531,7 @@
 					<StatusBadge
 						tone="success"
 						label={m['orgAdmin.settings.membership.emailVerified']()}
+						aria-label={m['orgAdmin.settings.membership.emailVerified']()}
 						size="sm"
 						class="mt-1"
 					/>
@@ -536,6 +540,7 @@
 						tone="warning"
 						icon={AlertCircle}
 						label={m['orgAdmin.settings.membership.emailNotVerified']()}
+						aria-label={m['orgAdmin.settings.membership.emailNotVerified']()}
 						size="sm"
 						class="mt-1"
 					/>

@@ -323,7 +323,16 @@
 									<Check class="h-3 w-3 text-success" aria-hidden="true" />
 									<span class="text-foreground">{m['stripeConnect.yes']()}</span>
 								{:else}
-									<AlertCircle class="h-3 w-3 text-destructive" aria-hidden="true" />
+									<!-- This dl can render inside ANY status card (e.g. the
+									     warning-tone "incomplete" card, bg-highlight/20), not
+									     just the danger-tone one — plain text-destructive there
+									     measured 1.85:1 in dark (destructive's dark hue sits too
+									     close to the amber tint's lightness). destructive-foreground
+									     (white) on that same composite measures 10.88:1. -->
+									<AlertCircle
+										class="h-3 w-3 text-destructive dark:text-destructive-foreground"
+										aria-hidden="true"
+									/>
 									<span class="text-foreground">{m['stripeConnect.no']()}</span>
 								{/if}
 							</dd>
@@ -337,20 +346,24 @@
 	<!-- Error Display -->
 	{#if connectMutation?.error}
 		<div
-			class="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-destructive"
+			class="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-foreground"
 			role="alert"
 		>
-			<AlertCircle class="h-4 w-4 shrink-0" aria-hidden="true" />
+			<!-- Icon carries the tone, not the body text: dark --destructive as TEXT
+			     on this composite measures ~2.7-2.95:1 (fails both the 3:1 non-text
+			     and 4.5:1 text floors) — see StripeConnect's status-card comment for
+			     the same trap. -->
+			<AlertCircle class="h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
 			<p class="text-sm">{connectMutation.error.message}</p>
 		</div>
 	{/if}
 
 	{#if verifyQuery?.error}
 		<div
-			class="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-destructive"
+			class="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-foreground"
 			role="alert"
 		>
-			<AlertCircle class="h-4 w-4 shrink-0" aria-hidden="true" />
+			<AlertCircle class="h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
 			<p class="text-sm">{m['stripeConnect.failedToVerify']()}</p>
 		</div>
 	{/if}

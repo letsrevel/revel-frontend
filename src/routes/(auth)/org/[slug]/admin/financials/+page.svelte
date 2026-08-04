@@ -229,8 +229,13 @@
 		{:else}
 			<!-- Ticket totals -->
 			{#if sections.totals}
+				<!-- Bare h2, not SectionHeader: e2e locates this card as the deepest div
+				     containing the "Totals" heading (financials.spec.ts) — SectionHeader's
+				     two wrapper divs would make that innermost div hold only the heading,
+				     not the money figures below it. E2E specs are frozen; the app
+				     accommodates. Same reasoning for the two cards below. -->
 				<div class="space-y-4 rounded-lg border border-border bg-card p-5">
-					<SectionHeader title={m['financials.totalsHeading']()} />
+					<h2 class="text-lg font-bold">{m['financials.totalsHeading']()}</h2>
 					<CurrencyFinancialsSummary data={sections.totals} />
 					<FinancialsNote>{m['financials.netTaxableNote']()}</FinancialsNote>
 				</div>
@@ -239,7 +244,7 @@
 			<!-- Membership revenue (org-level, no VAT treatment) -->
 			{#if sections.memberships}
 				<div class="space-y-4 rounded-lg border border-border bg-card p-5">
-					<SectionHeader title={m['financials.membershipsHeading']()} />
+					<h2 class="text-lg font-bold">{m['financials.membershipsHeading']()}</h2>
 					<MembershipFinancialsSummary data={sections.memberships} />
 				</div>
 			{/if}
@@ -247,7 +252,7 @@
 			<!-- Tickets + memberships -->
 			{#if sections.combined}
 				<div class="space-y-4 rounded-lg border border-primary/40 bg-card p-5">
-					<SectionHeader title={m['financials.combinedHeading']()} />
+					<h2 class="text-lg font-bold">{m['financials.combinedHeading']()}</h2>
 					<CombinedTotalsSummary data={sections.combined} />
 				</div>
 			{/if}

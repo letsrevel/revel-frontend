@@ -582,6 +582,7 @@
 				<StatusBadge
 					tone={VAT_STATUS_TONE[vatStatus.type]}
 					label={vatStatus.label}
+					aria-label={vatStatus.label}
 					icon={vatStatus.type === 'validated'
 						? Check
 						: vatStatus.type === 'pending'

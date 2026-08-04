@@ -53,6 +53,15 @@
 		   the literal appears once; deliberately NOT part of the semantic audit. */
 		--brand-telegram: 200 100% 33%; /* fill: white labels measure ~5.4:1 (hand-verified; audit-exempt) — deliberately darker than Telegram's #0088cc so text-sm white labels pass AA in both modes (fill is NOT redefined in .dark) */
 		--brand-telegram-text: 200 100% 33%; /* text-on-surface: 4.8:1 on --background, 5.4:1 on card (hand-verified) */
+		/* More third-party brand identity: social-icon marks on the org settings
+		   page (decorative, aria-hidden — never text — so the WCAG 1.4.11 non-text
+		   3:1 floor applies, not the 4.5:1 text floor). Same rationale as
+		   --brand-telegram; audit-exempt. Converted precisely from the official
+		   brand hexes, not redefined in .dark (icons don't need a dark variant —
+		   hand-verified below at both surfaces in both modes). */
+		--brand-instagram: 349 75% 57%; /* #E4405F — 3.60:1 on background, 4.06:1 on card (light); 4.50:1/4.12:1 (dark) */
+		--brand-facebook: 214 89% 52%; /* #1877F2 — 3.78:1 on background, 4.27:1 on card (light); 4.28:1/3.92:1 (dark) */
+		--brand-bluesky: 211 99% 53%; /* #1185FE — 3.26:1 on background, 3.68:1 on card (light); 4.97:1/4.55:1 (dark) */
 		--border: 268 35% 84%;
 		--input: 268 35% 84%;
 		--ring: 270 70% 48%;
