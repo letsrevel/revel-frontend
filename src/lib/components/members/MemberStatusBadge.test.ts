@@ -5,7 +5,7 @@ import { getMemberStatusLabel, MEMBER_STATUS_ORDER } from '$lib/utils/member-sta
 import MemberStatusBadge from './MemberStatusBadge.svelte';
 
 /**
- * REGRESSION GUARD, mirroring `members/StatusBadge.test.ts`: this pill's
+ * REGRESSION GUARD, mirroring `members/SubscriptionStatusBadge.test.ts`: this pill's
  * accessible NAME is what locates it in `MemberCard` (roster) — a mapper over
  * `common/StatusBadge` that dropped its `aria-label` would still render the
  * right text on screen while `getByLabelText` stopped finding it. Every enum

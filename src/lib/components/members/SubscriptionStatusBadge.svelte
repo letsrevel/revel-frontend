@@ -24,7 +24,9 @@
 	it. It predates the shared primitive — every subscription surface (account
 	hub card, org landing inline card, admin subs table/drawer) is located by it,
 	so dropping it when this became a mapper silently un-named every one of them.
-	Passed through here rather than baked into `common/StatusBadge`: the primitive
-	has other consumers whose accessible name should keep coming from its content.
+	#788 since baked the same default into `common/StatusBadge` itself, so this
+	pass is now belt-and-suspenders rather than the only thing supplying the name.
+	It stays because the enum-driven test above it is the contract, and a mapper
+	that states its own accessible name cannot lose it to a primitive refactor.
 -->
 <CommonStatusBadge {tone} {label} size="sm" class={extraClass} aria-label={label} />

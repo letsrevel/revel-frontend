@@ -21,6 +21,26 @@
 		...restProps
 	}: Props = $props();
 
+	// The accessible name defaults to the visible label (#788). Every mapper used
+	// to have to remember to pass one; forgetting it in a single mapper un-named
+	// every subscription pill and took 19 e2e specs down with it (fixed in #772).
+	// Defaulting here retires that whole failure class.
+	//
+	// Presence-tested with `in` rather than `restProps['aria-label'] ?? label`, so
+	// that passing `aria-label={undefined}` is a real OPT-OUT and not just another
+	// way to spell "use the default". One call site needs that escape hatch —
+	// see `account/MembershipPaymentHistory.svelte`.
+	//
+	// An EMPTY label emits no attribute at all. Measured against axe-core 4.12.1
+	// (the version the e2e a11y smoke runs): on a role-less <span> WITH text
+	// content, `aria-label` lands in `incomplete` under aria-prohibited-attr —
+	// needs-review, not a violation, so the smoke stays green. On a span with NO
+	// text content the same rule fires as a SERIOUS violation. `label || undefined`
+	// keeps every badge on the safe side of that line.
+	const ariaLabel = $derived(
+		'aria-label' in restProps ? restProps['aria-label'] : label || undefined
+	);
+
 	// Solid fills only: every fg/bg pair below is a token pair enforced at
 	// >= 4.5:1 by scripts/audit-brand-themes.py in BOTH modes. No alpha here —
 	// that keeps this component fully covered by the audit, no hand math.
@@ -48,6 +68,7 @@
 		className
 	)}
 	{...restProps}
+	aria-label={ariaLabel}
 >
 	{#if Icon}
 		<Icon class={iconSizes[size]} aria-hidden="true" />

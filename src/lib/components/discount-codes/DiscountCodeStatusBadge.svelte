@@ -17,5 +17,5 @@
 </script>
 
 <!-- aria-label explicit per the house `common/StatusBadge` mapper pattern
-     (see `members/StatusBadge.svelte`). -->
+     (see `members/SubscriptionStatusBadge.svelte`). -->
 <CommonStatusBadge {tone} {label} size="sm" class={extraClass} aria-label={label} />

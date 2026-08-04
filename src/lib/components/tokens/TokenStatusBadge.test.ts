@@ -3,12 +3,12 @@ import { describe, it, expect } from 'vitest';
 import TokenStatusBadge from './TokenStatusBadge.svelte';
 
 /**
- * REGRESSION GUARD, same shape as `members/StatusBadge.test.ts`: this pill's
+ * REGRESSION GUARD, same shape as `members/SubscriptionStatusBadge.test.ts`: this pill's
  * accessible NAME is a cross-surface contract (event admin + org admin token
  * cards locate their status pill by it), not decoration. The rebrand turned
- * this into a thin mapper over `common/StatusBadge`, which does not default
- * an `aria-label` from its content — so this guards every status, not just a
- * sample, against that name silently vanishing again.
+ * this into a thin mapper over `common/StatusBadge`, which back then defaulted
+ * no `aria-label` from its content (#788 changed that) — so this guards every
+ * status, not just a sample, against that name silently vanishing again.
  */
 const STATUS_ORDER = ['active', 'expired', 'limit-reached', 'staff'] as const;
 

@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import WhitelistRequestStatusBadge from './WhitelistRequestStatusBadge.svelte';
 
 /**
- * REGRESSION GUARD, mirroring `members/StatusBadge.test.ts`: this pill's
+ * REGRESSION GUARD, mirroring `members/SubscriptionStatusBadge.test.ts`: this pill's
  * accessible NAME is what locates it on `WhitelistRequestCard`. The status
  * text itself is intentionally unlocalized (matches the pre-rebrand
  * behaviour) — this guard is about the aria-label surviving the move to the

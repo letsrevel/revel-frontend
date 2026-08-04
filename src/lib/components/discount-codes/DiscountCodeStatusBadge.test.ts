@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import DiscountCodeStatusBadge from './DiscountCodeStatusBadge.svelte';
 
 /**
- * REGRESSION GUARD, mirroring `members/StatusBadge.test.ts`: this pill's
+ * REGRESSION GUARD, mirroring `members/SubscriptionStatusBadge.test.ts`: this pill's
  * accessible NAME is what locates a code's active/inactive state in the
  * discount-codes admin table and its mobile card twin.
  */

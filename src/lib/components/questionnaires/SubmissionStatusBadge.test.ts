@@ -4,12 +4,13 @@ import { SUBMISSION_BADGE_STATUS_ORDER } from '$lib/utils/questionnaire-types';
 import SubmissionStatusBadge from './SubmissionStatusBadge.svelte';
 
 /**
- * REGRESSION GUARD, same shape as `members/StatusBadge.test.ts`: this pill's
+ * REGRESSION GUARD, same shape as `members/SubscriptionStatusBadge.test.ts`: this pill's
  * accessible NAME is a cross-surface contract (the submissions table and the
  * submission detail page locate it by its status text), not decoration. The
- * rebrand turned this into a thin mapper over `common/StatusBadge`, which does
- * not default an `aria-label` from its content — so this guards every status,
- * not just a sample, against that name silently vanishing again.
+ * rebrand turned this into a thin mapper over `common/StatusBadge`; the
+ * primitive now defaults the `aria-label` to its label text (#788), and the
+ * mapper still passes it explicitly (defense in depth) — this guards every
+ * status, not just a sample, against that name silently vanishing again.
  */
 const LABELS: Record<(typeof SUBMISSION_BADGE_STATUS_ORDER)[number], string> = {
 	draft: 'Draft',

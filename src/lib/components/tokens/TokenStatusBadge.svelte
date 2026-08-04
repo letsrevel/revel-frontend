@@ -39,9 +39,9 @@
 </script>
 
 <!--
-	`aria-label` is explicit: `common/StatusBadge` does not default one, and
+	`aria-label` is explicit (the primitive also defaults one since #788), and
 	every token surface (event admin card, org admin card) is located by its
 	status pill through this text — dropping it here silently un-names them
-	the same way it did for `members/StatusBadge` (see that component's test).
+	the same way it did for `members/SubscriptionStatusBadge` (see that component's test).
 -->
 <CommonStatusBadge {tone} {label} size="sm" class={className} aria-label={label} />

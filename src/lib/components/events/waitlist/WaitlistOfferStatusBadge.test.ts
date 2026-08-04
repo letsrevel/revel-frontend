@@ -14,11 +14,11 @@ const LABELS: Record<WaitlistOfferStatus, string> = {
 };
 
 /**
- * REGRESSION GUARD (see members/StatusBadge.test.ts for the incident this
- * pattern guards against). `common/StatusBadge` names itself from its text
- * content only — it never defaults `aria-label` — so every domain mapper
- * must pass it explicitly or `getByLabel` lookups against the badge silently
- * stop resolving. Pin every enum value, not a sample.
+ * REGRESSION GUARD (see members/SubscriptionStatusBadge.test.ts for the incident this
+ * pattern guards against). `common/StatusBadge` named itself from its text
+ * content only until #788, so every domain mapper had to pass `aria-label`
+ * explicitly or `getByLabel` lookups against the badge silently stopped
+ * resolving. The primitive defaults it now; pin every enum value regardless.
  */
 describe('events/waitlist/WaitlistOfferStatusBadge', () => {
 	it.each(WAITLIST_OFFER_STATUS_ORDER)(

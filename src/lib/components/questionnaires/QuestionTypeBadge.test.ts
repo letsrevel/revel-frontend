@@ -6,9 +6,10 @@ type QuestionType = 'multiple_choice' | 'free_text' | 'file_upload';
 
 /**
  * REGRESSION GUARD, same shape as the other rebrand `StatusBadge` mappers:
- * this pill's accessible NAME is not decoration, and `common/StatusBadge`
- * does not default an `aria-label` from its text content. This guards every
- * question type, not just a sample, against that name silently vanishing.
+ * this pill's accessible NAME is not decoration. `common/StatusBadge` defaults
+ * one from the visible label since #788, and the mapper passes it explicitly
+ * too; this guards every question type, not just a sample, against that name
+ * silently vanishing whichever of the two supplies it.
  */
 const TYPE_ORDER: QuestionType[] = ['multiple_choice', 'free_text', 'file_upload'];
 const LABELS: Record<QuestionType, string> = {

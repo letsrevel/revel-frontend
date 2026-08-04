@@ -49,8 +49,9 @@
 
 <!--
 	`aria-label` is deliberate, not redundant: this pill's accessible name is how
-	the ticket table/card list surfaces are addressed by tests, and the
-	`common/StatusBadge` primitive only names itself from visible text content.
+	the ticket table/card list surfaces are addressed by tests. Since #788 the
+	`common/StatusBadge` primitive defaults that name to the visible label, so
+	this pass is belt-and-suspenders that the enum-driven test pins either way.
 	`title` carries the optional amount+currency tooltip via restProps.
 -->
 {#if known}
