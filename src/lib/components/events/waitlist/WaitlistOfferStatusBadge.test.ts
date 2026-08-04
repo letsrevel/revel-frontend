@@ -21,12 +21,15 @@ const LABELS: Record<WaitlistOfferStatus, string> = {
  * stop resolving. Pin every enum value, not a sample.
  */
 describe('events/waitlist/WaitlistOfferStatusBadge', () => {
-	it.each(WAITLIST_OFFER_STATUS_ORDER)('exposes the %s label as the pill accessible name', (status) => {
-		render(WaitlistOfferStatusBadge, { props: { status } });
-		const label = LABELS[status];
-		expect(screen.getByLabelText(label)).toBeInTheDocument();
-		expect(screen.getByLabelText(label)).toHaveTextContent(label);
-	});
+	it.each(WAITLIST_OFFER_STATUS_ORDER)(
+		'exposes the %s label as the pill accessible name',
+		(status) => {
+			render(WaitlistOfferStatusBadge, { props: { status } });
+			const label = LABELS[status];
+			expect(screen.getByLabelText(label)).toBeInTheDocument();
+			expect(screen.getByLabelText(label)).toHaveTextContent(label);
+		}
+	);
 
 	it('maps status to the primitive tone (claimed → success, revoked → danger)', () => {
 		const claimed = render(WaitlistOfferStatusBadge, { props: { status: 'claimed' } });
