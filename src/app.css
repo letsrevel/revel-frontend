@@ -42,6 +42,16 @@
 		--highlight-foreground: 30 55% 12%;
 		--destructive: 350 78% 30%; /* maroon, never brand crimson */
 		--destructive-foreground: 0 0% 100%;
+		/* Rebrand additions (2026-08 platform rebrand): success/info join the
+		   semantic set — values tuned so audit-brand-themes.py passes both the
+		   AA pairs and the color-blind (lightness) separation. */
+		--success: 145 65% 28%; /* confirmations; deep green, white label */
+		--success-foreground: 0 0% 100%;
+		--info: 226 70% 32%; /* informational; periwinkle family, deepened for AA */
+		--info-foreground: 0 0% 100%;
+		/* Third-party brand identity (Telegram #0088cc) — centralized so the
+		   literal appears once; deliberately NOT part of the semantic audit. */
+		--brand-telegram: 200 100% 40%;
 		--border: 268 35% 84%;
 		--input: 268 35% 84%;
 		--ring: 270 70% 48%;
@@ -83,6 +93,10 @@
 		--highlight-foreground: 30 60% 10%;
 		--destructive: 0 70% 45%;
 		--destructive-foreground: 0 0% 100%;
+		--success: 145 55% 65%; /* glow green, ink label — mirrors the dark primary pattern */
+		--success-foreground: 173 40% 8%;
+		--info: 226 100% 82%; /* periwinkle glow, ink label */
+		--info-foreground: 173 40% 8%;
 		--border: 270 25% 20%;
 		--input: 270 25% 20%;
 		--ring: 268 60% 72%;
