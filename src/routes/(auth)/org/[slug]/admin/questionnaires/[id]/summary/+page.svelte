@@ -147,7 +147,7 @@
 		<PageHeader
 			title={m['questionnaireSummaryPage.title']()}
 			subtitle={questionnaire?.questionnaire.name}
-			kicker={data.organizationSlug}
+			kicker={data.organization.name}
 		>
 			{#snippet actions()}
 				<ExportButton

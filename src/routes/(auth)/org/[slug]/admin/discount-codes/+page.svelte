@@ -365,11 +365,17 @@
 									</span>
 								</td>
 								<td class="px-4 py-3">
+									<!-- The info pill's text is fine as `text-info` (info@10% composited
+									     over --background is 9.5:1+ in both modes). The success one is
+									     NOT: text-success@10%-success-tint over --background measures
+									     4.39:1 in LIGHT mode — under the 4.5:1 text-xs floor (dark is
+									     8.73:1, fine) — so it keeps `text-foreground` and only the tint
+									     carries the success identity. -->
 									<span
 										class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium {code.discount_type ===
 										'percentage'
 											? 'bg-info/10 text-info'
-											: 'bg-success/10 text-success'}"
+											: 'bg-success/10 text-foreground'}"
 									>
 										{formatValue(code)}
 									</span>
@@ -467,11 +473,15 @@
 									{/if}
 								</button>
 							</p>
+							<!-- Same fix as the desktop table cell: text-success@10%-success-tint
+							     over --background is 4.39:1 in light mode, under the text-xs
+							     floor — text-foreground carries the label, the tint carries the
+							     identity. Info pill (9.5:1+ both modes) is unaffected. -->
 							<span
 								class="mt-1 inline-flex rounded-full px-2 py-0.5 text-xs font-medium {code.discount_type ===
 								'percentage'
 									? 'bg-info/10 text-info'
-									: 'bg-success/10 text-success'}"
+									: 'bg-success/10 text-foreground'}"
 							>
 								{formatValue(code)}
 							</span>

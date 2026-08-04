@@ -276,12 +276,19 @@
 
 			<!-- Error Message -->
 			{#if errorMessage}
+				<!-- dark:bg-destructive/25 dark:text-destructive-foreground (AutoEvalRecommendation's
+				     pattern): plain text-destructive on this /10 tint measured 2.69-2.95:1 in
+				     dark mode, under the 3:1 non-text floor; the /25 tint + destructive-foreground
+				     (white) icon pairing measures ~14-15:1 instead. -->
 				<div
-					class="mb-6 flex gap-3 rounded-md border border-destructive/50 bg-destructive/10 p-4"
+					class="mb-6 flex gap-3 rounded-md border border-destructive/50 bg-destructive/10 p-4 dark:bg-destructive/25"
 					role="alert"
 					aria-live="assertive"
 				>
-					<AlertTriangle class="h-5 w-5 shrink-0 text-destructive" aria-hidden="true" />
+					<AlertTriangle
+						class="h-5 w-5 shrink-0 text-destructive dark:text-destructive-foreground"
+						aria-hidden="true"
+					/>
 					<div>
 						<p class="font-semibold text-foreground">{m['resourceModal.error']()}</p>
 						<p class="mt-1 text-sm text-foreground">{errorMessage}</p>

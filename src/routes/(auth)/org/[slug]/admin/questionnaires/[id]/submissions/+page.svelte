@@ -99,7 +99,7 @@
 		<PageHeader
 			title={m['questionnaireSubmissionsPage.title']()}
 			subtitle={m['questionnaireSubmissionsPage.subtitle']()}
-			kicker={data.organizationSlug}
+			kicker={data.organization.name}
 		>
 			{#snippet actions()}
 				<Button

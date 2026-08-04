@@ -302,10 +302,18 @@
 						{@render billingNotice('text-sm text-muted-foreground')}
 					{/if}
 					{#if selectedStatus === 'banned'}
+						<!-- dark:bg-destructive/25 dark:text-destructive-foreground
+						     (AutoEvalRecommendation's pattern): plain text-destructive on this
+						     /10 tint measured 2.69-2.95:1 in dark mode, under the 3:1 non-text
+						     floor; the /25 tint + destructive-foreground (white) icon pairing
+						     measures ~14-15:1 instead. -->
 						<div
-							class="flex gap-2 rounded-md border border-destructive bg-destructive/10 p-3 text-sm"
+							class="flex gap-2 rounded-md border border-destructive bg-destructive/10 p-3 text-sm dark:bg-destructive/25"
 						>
-							<AlertTriangle class="h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
+							<AlertTriangle
+								class="h-4 w-4 shrink-0 text-destructive dark:text-destructive-foreground"
+								aria-hidden="true"
+							/>
 							<div class="space-y-2 text-foreground">
 								<p>{m['manageMemberModal.bannedWarning']()}</p>
 								<!-- The confirm panel below restates this line, so show it here only
@@ -473,13 +481,26 @@
 					<!-- Blacklist Button/Confirmation -->
 					{#if onBlacklist}
 						{#if !showBlacklistConfirm}
+							<!-- Label stays text-foreground (danger framing rule): dark-mode
+							     `text-destructive` on this transparent/bg-background surface
+							     measured 3.13:1, under the 4.5:1 text floor (it replaced a
+							     passing pre-rebrand `dark:text-red-400`). Only the Ban icon
+							     carries the tone, split per mode since raw `text-destructive`
+							     has no audited page/background pair (trap 5): light keeps
+							     `text-destructive` (8.61:1 on background), dark swaps to
+							     `text-destructive-foreground` — white — which is 18.36:1 on
+							     the dark background. Hover keeps the same text-foreground
+							     label with the destructive/10 tint underneath.  -->
 							<Button
 								variant="outline"
 								onclick={handleBlacklistClick}
 								disabled={isProcessing}
-								class="w-full justify-start border-destructive bg-transparent text-destructive hover:bg-destructive/10 hover:text-destructive"
+								class="w-full justify-start border-destructive bg-transparent text-foreground hover:bg-destructive/10 hover:text-foreground"
 							>
-								<Ban class="mr-2 h-4 w-4" aria-hidden="true" />
+								<Ban
+									class="mr-2 h-4 w-4 text-destructive dark:text-destructive-foreground"
+									aria-hidden="true"
+								/>
 								{m['manageMemberModal.addToBlacklist']()}
 							</Button>
 						{:else}

@@ -183,7 +183,7 @@
 		<PageHeader
 			title={m['questionnaireSubmissionDetailPage.title']()}
 			subtitle={m['questionnaireSubmissionDetailPage.subtitle']()}
-			kicker={data.organizationSlug}
+			kicker={data.organization.name}
 		>
 			{#snippet actions()}
 				<SubmissionStatusBadge

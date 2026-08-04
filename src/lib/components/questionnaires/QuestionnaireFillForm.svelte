@@ -300,9 +300,8 @@
 	 * The selected fill is `bg-primary/10`, which composites to ~the card
 	 * colour, so the label keeps `text-foreground` and the token contract's AA
 	 * guarantee; the 2px `border-primary` is >= 3:1 non-text against the card
-	 * in both modes (5.9 light / 5.3 dark, the same measurement as ToneTile's
-	 * brand row). Selection is never carried by the fill alone — the
-	 * radio/checkbox state is.
+	 * in both modes (6.99 light / 6.27 dark, hand-verified against `--card`).
+	 * Selection is never carried by the fill alone — the radio/checkbox state is.
 	 */
 	function optionRowClass(selected: boolean): string {
 		return cn(
