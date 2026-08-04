@@ -7,6 +7,20 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import * as Tooltip from '$lib/components/ui/tooltip';
+	import RevelMark from '$lib/components/brand/RevelMark.svelte';
+
+	// Shared link treatment for the inverted band: this surface is a dark one
+	// in BOTH themes (ink in light, deepened card in dark — see the <footer>
+	// class below), so "muted" text needs its own recipe per side rather than
+	// the usual muted-foreground token (which assumes a light-mode-light /
+	// dark-mode-dark surface). Light: text-background/70 on the opaque ink bg
+	// measures 8.05:1 (full text-background is 15.43:1) — see the <footer>
+	// comment for the base numbers this scales from. Dark: bg-card is a normal
+	// themed surface, so muted-foreground/foreground on it are the SAME
+	// audited pairs used everywhere else (card-foreground/muted-foreground on
+	// card, both >= 4.5:1 in audit-brand-themes.py).
+	const footerLinkClass =
+		'text-background/70 transition-colors hover:text-background dark:text-muted-foreground dark:hover:text-foreground';
 
 	// Frontend version from environment variable (set in Dockerfile).
 	// Read via $env/dynamic/public so it has no compile-time requirement —
@@ -60,58 +74,64 @@
 	}
 </script>
 
-<footer class="border-t bg-muted/30">
-	<div class="container mx-auto max-w-5xl px-4 py-8 md:py-12">
+<!-- Inverted "band" echoing the poster ClosePanel: dark surface in BOTH
+     themes (ink in light, deepened card in dark — never a near-white band,
+     per the imagery rule the dark side must still read as a dark surface). -->
+<footer
+	class="bg-foreground text-background dark:border-t dark:border-border dark:bg-card dark:text-card-foreground"
+>
+	<div class="container mx-auto max-w-5xl px-4 py-10 md:py-14">
+		<!-- Brand lockup: hand-set per the Digital Styleguide's on-dark variant
+		     ("let's" Light, "revel." Semibold, all white/near-white, weights
+		     unchanged) — not RevelWordmark, whose accent-crimson period assumes
+		     a themed (non-inverted) background. Visible text is the link's
+		     accessible name (WCAG 2.5.3). text-background on bg-foreground
+		     mirrors the audited foreground-on-background pair (contrast is
+		     symmetric): 15.43:1 in light; dark reuses the audited
+		     card-foreground-on-card pair (foreground === card-foreground in
+		     this theme). -->
+		<a
+			href={resolve('/(public)', {})}
+			class="mb-8 inline-flex items-center gap-2 transition-opacity hover:opacity-80"
+		>
+			<RevelMark decorative class="h-7 w-auto" />
+			<span class="text-2xl leading-none tracking-[0.06em]">
+				<span class="font-light">let&rsquo;s</span><span class="font-semibold"> revel.</span>
+			</span>
+		</a>
+
 		<div class="grid grid-cols-2 gap-8 md:grid-cols-4">
 			<!-- Solutions - spans 2 columns on md+ -->
 			<div class="col-span-2">
-				<h3 class="mb-4 text-lg font-semibold">{m['footer.solutionsTitle']()}</h3>
+				<h3 class="mb-4 text-lg font-extrabold">{m['footer.solutionsTitle']()}</h3>
 				<div class="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
 					<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
-					<a
-						href="{landingPagePrefix}/eventbrite-alternative"
-						class="text-muted-foreground transition-colors hover:text-foreground"
-					>
+					<a href="{landingPagePrefix}/eventbrite-alternative" class={footerLinkClass}>
 						{m['footer.solutionEventbrite']()}
 					</a>
 					<!-- eslint-enable svelte/no-navigation-without-resolve -->
 					<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
-					<a
-						href="{landingPagePrefix}/privacy-focused-events"
-						class="text-muted-foreground transition-colors hover:text-foreground"
-					>
+					<a href="{landingPagePrefix}/privacy-focused-events" class={footerLinkClass}>
 						{m['footer.solutionPrivacy']()}
 					</a>
 					<!-- eslint-enable svelte/no-navigation-without-resolve -->
 					<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
-					<a
-						href="{landingPagePrefix}/self-hosted-event-platform"
-						class="text-muted-foreground transition-colors hover:text-foreground"
-					>
+					<a href="{landingPagePrefix}/self-hosted-event-platform" class={footerLinkClass}>
 						{m['footer.solutionSelfHosted']()}
 					</a>
 					<!-- eslint-enable svelte/no-navigation-without-resolve -->
 					<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
-					<a
-						href="{landingPagePrefix}/community-first-event-platform"
-						class="text-muted-foreground transition-colors hover:text-foreground"
-					>
+					<a href="{landingPagePrefix}/community-first-event-platform" class={footerLinkClass}>
 						{m['footer.solutionCommunity']()}
 					</a>
 					<!-- eslint-enable svelte/no-navigation-without-resolve -->
 					<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
-					<a
-						href="{landingPagePrefix}/queer-event-management"
-						class="text-muted-foreground transition-colors hover:text-foreground"
-					>
+					<a href="{landingPagePrefix}/queer-event-management" class={footerLinkClass}>
 						{m['footer.solutionQueer']()}
 					</a>
 					<!-- eslint-enable svelte/no-navigation-without-resolve -->
 					<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
-					<a
-						href="{landingPagePrefix}/kink-event-ticketing"
-						class="text-muted-foreground transition-colors hover:text-foreground"
-					>
+					<a href="{landingPagePrefix}/kink-event-ticketing" class={footerLinkClass}>
 						{m['footer.solutionKink']()}
 					</a>
 					<!-- eslint-enable svelte/no-navigation-without-resolve -->
@@ -120,29 +140,20 @@
 
 			<!-- Legal Links -->
 			<div>
-				<h3 class="mb-4 text-lg font-semibold">{m['footer.legalTitle']()}</h3>
+				<h3 class="mb-4 text-lg font-extrabold">{m['footer.legalTitle']()}</h3>
 				<ul class="space-y-2 text-sm">
 					<li>
-						<a
-							href={resolve('/(public)/legal/privacy', {})}
-							class="text-muted-foreground transition-colors hover:text-foreground"
-						>
+						<a href={resolve('/(public)/legal/privacy', {})} class={footerLinkClass}>
 							{m['footer.privacyPolicy']()}
 						</a>
 					</li>
 					<li>
-						<a
-							href={resolve('/(public)/legal/terms', {})}
-							class="text-muted-foreground transition-colors hover:text-foreground"
-						>
+						<a href={resolve('/(public)/legal/terms', {})} class={footerLinkClass}>
 							{m['footer.termsOfService']()}
 						</a>
 					</li>
 					<li>
-						<a
-							href="mailto:contact@letsrevel.io"
-							class="text-muted-foreground transition-colors hover:text-foreground"
-						>
+						<a href="mailto:contact@letsrevel.io" class={footerLinkClass}>
 							{m['footer.contact']()}
 						</a>
 					</li>
@@ -151,21 +162,15 @@
 
 			<!-- Resources -->
 			<div>
-				<h3 class="mb-4 text-lg font-semibold">{m['footer.resourcesTitle']()}</h3>
+				<h3 class="mb-4 text-lg font-extrabold">{m['footer.resourcesTitle']()}</h3>
 				<ul class="space-y-2 text-sm">
 					<li>
-						<a
-							href={resolve('/(public)/events', {})}
-							class="text-muted-foreground transition-colors hover:text-foreground"
-						>
+						<a href={resolve('/(public)/events', {})} class={footerLinkClass}>
 							{m['nav.browseEvents']()}
 						</a>
 					</li>
 					<li>
-						<a
-							href={resolve('/(public)/organizations', {})}
-							class="text-muted-foreground transition-colors hover:text-foreground"
-						>
+						<a href={resolve('/(public)/organizations', {})} class={footerLinkClass}>
 							{m['nav.organizations']()}
 						</a>
 					</li>
@@ -174,7 +179,7 @@
 							href="https://github.com/letsrevel"
 							target="_blank"
 							rel="noopener noreferrer"
-							class="text-muted-foreground transition-colors hover:text-foreground"
+							class={footerLinkClass}
 						>
 							{m['footer.github']()}
 						</a>
@@ -184,7 +189,7 @@
 							href="https://forms.gle/7wAqQXqrWk3X6Ddu7"
 							target="_blank"
 							rel="noopener noreferrer"
-							class="text-muted-foreground transition-colors hover:text-foreground"
+							class={footerLinkClass}
 						>
 							{m['footer.sendFeedback']()}
 						</a>
@@ -196,7 +201,7 @@
 		<!-- Version Info - Compact inline -->
 		<Tooltip.Provider>
 			<div
-				class="mt-8 flex flex-wrap items-center justify-center gap-4 border-t pt-6 text-xs text-muted-foreground"
+				class="mt-8 flex flex-wrap items-center justify-center gap-4 border-t border-background/20 pt-6 text-xs text-background/70 dark:border-border dark:text-muted-foreground"
 			>
 				<Tooltip.Root>
 					<!-- The link itself is the tooltip trigger (child snippet): a default
@@ -212,12 +217,15 @@
 								href={FRONTEND_REPO}
 								target="_blank"
 								rel="noopener noreferrer"
-								class="flex items-center gap-1.5 transition-colors hover:text-foreground"
+								class="flex items-center gap-1.5 transition-colors hover:text-background dark:hover:text-foreground"
 								aria-label="{m['footer.frontend']()} repository on GitHub"
 							>
 								<Github class="h-3.5 w-3.5" aria-hidden="true" />
 								<span>FE v{FRONTEND_VERSION}</span>
-								<Info class="h-3 w-3 text-muted-foreground/70" aria-hidden="true" />
+								<Info
+									class="h-3 w-3 text-background/50 dark:text-muted-foreground/70"
+									aria-hidden="true"
+								/>
 							</a>
 						{/snippet}
 					</Tooltip.Trigger>
@@ -236,7 +244,7 @@
 					</Tooltip.Content>
 				</Tooltip.Root>
 
-				<span class="text-muted-foreground/50">|</span>
+				<span class="text-background/45 dark:text-muted-foreground/50">|</span>
 
 				<Tooltip.Root>
 					<Tooltip.Trigger
@@ -249,12 +257,15 @@
 								href={BACKEND_REPO}
 								target="_blank"
 								rel="noopener noreferrer"
-								class="flex items-center gap-1.5 transition-colors hover:text-foreground"
+								class="flex items-center gap-1.5 transition-colors hover:text-background dark:hover:text-foreground"
 								aria-label="{m['footer.backend']()} repository on GitHub"
 							>
 								<Github class="h-3.5 w-3.5" aria-hidden="true" />
 								<span>BE v{backendVersion}{isDemoMode ? ' (demo)' : ''}</span>
-								<Info class="h-3 w-3 text-muted-foreground/70" aria-hidden="true" />
+								<Info
+									class="h-3 w-3 text-background/50 dark:text-muted-foreground/70"
+									aria-hidden="true"
+								/>
 							</a>
 						{/snippet}
 					</Tooltip.Trigger>
@@ -273,13 +284,13 @@
 					</Tooltip.Content>
 				</Tooltip.Root>
 
-				<span class="text-muted-foreground/50">|</span>
+				<span class="text-background/45 dark:text-muted-foreground/50">|</span>
 
 				<a
 					href="https://forms.gle/c6ovKV92nMQEbR877"
 					target="_blank"
 					rel="noopener noreferrer"
-					class="flex items-center gap-1.5 transition-colors hover:text-foreground"
+					class="flex items-center gap-1.5 transition-colors hover:text-background dark:hover:text-foreground"
 					aria-label={m['footer.reportBug']()}
 				>
 					<Bug class="h-3.5 w-3.5" aria-hidden="true" />
@@ -288,9 +299,17 @@
 			</div>
 		</Tooltip.Provider>
 
-		<!-- Cookie Notice -->
-		<div class="mt-8 border-t pt-8">
-			<div class="rounded-lg bg-muted/50 p-4 text-center text-sm text-muted-foreground">
+		<!-- Cookie Notice. Light: bg-background/10 (surface) composited over the
+		     opaque ink band, then text-background/90 composited over THAT
+		     surface (not directly over the ink) — 9.91:1 (re-verified; an
+		     earlier draft of this comment mistakenly quoted the full-opacity
+		     text number, 11.85:1). Dark keeps the original muted/50-on-card
+		     treatment (7.04:1, hand-verified) since that's already a themed,
+		     non-inverted surface. -->
+		<div class="mt-8 border-t border-background/20 pt-8 dark:border-border">
+			<div
+				class="rounded-lg bg-background/10 p-4 text-center text-sm text-background/90 dark:bg-muted/50 dark:text-muted-foreground"
+			>
 				<p>
 					{m['footer.cookieNotice']()}
 				</p>
@@ -298,7 +317,7 @@
 		</div>
 
 		<!-- Copyright -->
-		<div class="mt-6 text-center text-sm text-muted-foreground">
+		<div class="mt-6 text-center text-sm text-background/70 dark:text-muted-foreground">
 			<p>&copy; {new Date().getFullYear()} Revel. {m['footer.copyright']()}</p>
 		</div>
 	</div>

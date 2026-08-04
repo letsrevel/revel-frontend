@@ -26,42 +26,43 @@
 </script>
 
 {#if isDemoMode}
-	<div
-		class="mt-4 rounded-md border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950"
-	>
+	<!-- Demo → info tone (matches DemoBanner). text-info on bg-info/10 measures
+	     8.27:1 light / 7.98:1 dark (see DemoBanner for the base computation);
+	     the heading here is the same pair, just bolder. -->
+	<div class="mt-4 rounded-md border border-info/30 bg-info/10 p-4">
 		<div class="flex items-start gap-3">
-			<CreditCard class="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600 dark:text-blue-400" />
+			<CreditCard class="mt-0.5 h-5 w-5 flex-shrink-0 text-info" />
 			<div class="flex-1 space-y-2">
-				<h3 class="text-sm font-semibold text-blue-900 dark:text-blue-100">
+				<h3 class="text-sm font-bold text-info">
 					{m['demoCardInfo.demoPaymentTestCard']()}
 				</h3>
-				<p class="text-xs text-blue-800 dark:text-blue-200">
+				<p class="text-xs text-info">
 					{m['demoCardInfo.useTestCredentials']()}
 				</p>
 
 				<!-- Test Card Number -->
 				<div class="mt-2 flex items-center gap-2">
 					<div
-						class="flex-1 rounded border border-blue-300 bg-white px-3 py-2 font-mono text-sm dark:border-blue-700 dark:bg-blue-900"
+						class="flex-1 rounded border border-info/30 bg-card px-3 py-2 font-mono text-sm text-card-foreground"
 					>
 						{TEST_CARD_NUMBER}
 					</div>
 					<button
 						type="button"
 						onclick={copyCardNumber}
-						class="rounded-md border border-blue-300 bg-white p-2 transition-colors hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-blue-700 dark:bg-blue-900 dark:hover:bg-blue-800"
+						class="rounded-md border border-info/30 bg-card p-2 transition-colors hover:bg-info/10 focus:outline-none focus:ring-2 focus:ring-info"
 						aria-label={m['demoCardInfo.copyCardNumber']()}
 					>
 						{#if copied}
-							<Check class="h-4 w-4 text-green-600" aria-hidden="true" />
+							<Check class="h-4 w-4 text-success" aria-hidden="true" />
 						{:else}
-							<Copy class="h-4 w-4 text-blue-600 dark:text-blue-400" aria-hidden="true" />
+							<Copy class="h-4 w-4 text-info" aria-hidden="true" />
 						{/if}
 					</button>
 				</div>
 
 				<!-- Other Fields -->
-				<ul class="mt-2 space-y-1 text-xs text-blue-800 dark:text-blue-200">
+				<ul class="mt-2 space-y-1 text-xs text-info">
 					<li>
 						<strong>{m['demoCardInfo.expiry']()}</strong>
 						{m['demoCardInfo.expiryValue']()}

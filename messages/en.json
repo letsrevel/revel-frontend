@@ -2679,6 +2679,16 @@
 		"rejectedHint": "Contact the organizer to get a new invitation.",
 		"rejectedCta": "Browse events"
 	},
+	"landingTemplate": {
+		"benefitsKicker": "Why Revel",
+		"ctaKicker": "Get started",
+		"ctaSticker": "Open source",
+		"faqHeading": "Frequently Asked Questions",
+		"faqKicker": "Questions",
+		"featuresHeading": "What's included",
+		"relatedHeading": "Related Topics",
+		"relatedKicker": "Explore more"
+	},
 	"languageSwitcher": {
 		"selectLanguage": "Select language: {name}"
 	},

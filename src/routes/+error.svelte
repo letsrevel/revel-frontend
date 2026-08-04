@@ -11,19 +11,38 @@
 		AlertCircle,
 		LinkIcon
 	} from '@lucide/svelte';
+	import ToneTile from '$lib/components/common/ToneTile.svelte';
+	import Sticker from '$lib/components/brand/Sticker.svelte';
+	import type { Tone } from '$lib/components/common/tones';
 
 	// Get error details from page store
 	const status = $derived($page.status);
 	const message = $derived($page.error?.message || m['errorPage.defaultMessage']());
 
-	// Define error configurations for different status codes
-	const errorConfigs = {
+	// Define error configurations for different status codes. `tone` drives
+	// the ToneTile icon chip below — semantic, not decorative: info (404,
+	// benign miss), warning (401, needs auth), neutral (410, gone), danger
+	// (403/500, access/server failure). 403 and 500 share a tone (as the old
+	// red/red pairing did) but stay visually distinct via icon + copy, never
+	// color alone.
+	const errorConfigs: Record<
+		number,
+		{
+			title: () => string;
+			description: () => string;
+			icon: typeof Search;
+			tone: Tone;
+			suggestions: () => string[];
+			showBackButton: boolean;
+			showHomeButton: boolean;
+			showLoginButton?: boolean;
+		}
+	> = {
 		404: {
 			title: () => m['errorPage.error404_title'](),
 			description: () => m['errorPage.error404_description'](),
 			icon: Search,
-			iconColor: 'text-blue-600 dark:text-blue-400',
-			iconBg: 'bg-blue-50 dark:bg-blue-950',
+			tone: 'info',
 			suggestions: () => [
 				m['errorPage.error404_suggestion1'](),
 				m['errorPage.error404_suggestion2'](),
@@ -36,8 +55,7 @@
 			title: () => m['errorPage.error401_title'](),
 			description: () => m['errorPage.error401_description'](),
 			icon: Lock,
-			iconColor: 'text-amber-600 dark:text-amber-400',
-			iconBg: 'bg-amber-50 dark:bg-amber-950',
+			tone: 'warning',
 			suggestions: () => [
 				m['errorPage.error401_suggestion1'](),
 				m['errorPage.error401_suggestion2'](),
@@ -51,8 +69,7 @@
 			title: () => m['errorPage.error410_title'](),
 			description: () => m['errorPage.error410_description'](),
 			icon: LinkIcon,
-			iconColor: 'text-orange-600 dark:text-orange-400',
-			iconBg: 'bg-orange-50 dark:bg-orange-950',
+			tone: 'neutral',
 			suggestions: () => [
 				m['errorPage.error410_suggestion1'](),
 				m['errorPage.error410_suggestion2'](),
@@ -65,8 +82,7 @@
 			title: () => m['errorPage.error403_title'](),
 			description: () => m['errorPage.error403_description'](),
 			icon: Lock,
-			iconColor: 'text-red-600 dark:text-red-400',
-			iconBg: 'bg-red-50 dark:bg-red-950',
+			tone: 'danger',
 			suggestions: () => [
 				m['errorPage.error403_suggestion1'](),
 				m['errorPage.error403_suggestion2'](),
@@ -79,8 +95,7 @@
 			title: () => m['errorPage.error500_title'](),
 			description: () => m['errorPage.error500_description'](),
 			icon: ServerCrash,
-			iconColor: 'text-red-600 dark:text-red-400',
-			iconBg: 'bg-red-50 dark:bg-red-950',
+			tone: 'danger',
 			suggestions: () => [
 				m['errorPage.error500_suggestion1'](),
 				m['errorPage.error500_suggestion2'](),
@@ -93,12 +108,11 @@
 
 	// Get config for current status or default
 	const config = $derived(
-		errorConfigs[status as keyof typeof errorConfigs] || {
+		errorConfigs[status] || {
 			title: () => m['errorPage.errorDefault_title']({ status: status.toString() }),
 			description: () => message,
 			icon: AlertCircle,
-			iconColor: 'text-gray-600 dark:text-gray-400',
-			iconBg: 'bg-gray-50 dark:bg-gray-950',
+			tone: 'neutral' as Tone,
 			suggestions: () => [
 				m['errorPage.errorDefault_suggestion1'](),
 				m['errorPage.errorDefault_suggestion2']()
@@ -122,22 +136,29 @@
 
 <div class="flex min-h-screen items-center justify-center bg-background px-4 py-16">
 	<div class="w-full max-w-2xl">
-		<!-- Error Icon -->
-		<div class="mb-8 flex justify-center">
-			<div class="inline-flex rounded-full {config.iconBg} p-6">
-				<ErrorIcon class="h-16 w-16 {config.iconColor}" aria-hidden="true" />
-			</div>
+		<!-- Error Icon + status-code Sticker: the flagship personality moment.
+		     Both are decorative art, not a second announcement of the title —
+		     the h1 below is the actual accessible heading, and the status code
+		     is separately in the accessible errorPage.errorLabel text. ToneTile
+		     omits `label` (→ aria-hidden by default) rather than repeating
+		     config.title() as its accessible name; the Sticker is likewise
+		     wrapped aria-hidden. -->
+		<div class="mb-8 flex flex-col items-center gap-4">
+			<ToneTile tone={config.tone} icon={ErrorIcon} size="lg" />
+			<span aria-hidden="true">
+				<Sticker tint="purple" rotate={-3} class="text-2xl">{status}</Sticker>
+			</span>
 		</div>
 
 		<!-- Error Content -->
 		<div class="text-center">
 			<!-- Status Code -->
-			<p class="mb-2 text-sm font-semibold uppercase tracking-wider text-primary">
+			<p class="mb-2 text-sm font-extrabold uppercase tracking-[0.12em] text-primary">
 				{m['errorPage.errorLabel']({ status: status.toString() })}
 			</p>
 
 			<!-- Title -->
-			<h1 class="mb-4 text-4xl font-bold tracking-tight md:text-5xl">
+			<h1 class="mb-4 text-3xl font-black leading-[1.12] sm:text-4xl">
 				{config.title()}
 			</h1>
 
@@ -176,7 +197,7 @@
 					</button>
 				{/if}
 
-				{#if 'showLoginButton' in config && config.showLoginButton}
+				{#if config.showLoginButton}
 					<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
 					<a
 						href={`${resolve('/(public)/login', {})}?redirect=${encodeURIComponent($page.url.pathname)}`}

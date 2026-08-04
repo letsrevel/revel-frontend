@@ -185,7 +185,7 @@
 			<!-- eslint-disable svelte/no-navigation-without-resolve -- href is a ResolvedPathname produced by resolve() in the nav item list above -->
 			<a
 				href={item.href}
-				class="flex items-center gap-3 rounded-md px-4 py-3 text-base transition-colors hover:bg-accent hover:text-accent-foreground"
+				class="flex items-center gap-3 rounded-md px-4 py-3 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
 				onclick={handleItemClick}
 			>
 				<Icon class="h-5 w-5" aria-hidden="true" />
@@ -197,12 +197,16 @@
 		<!-- Referral Section (Mobile) -->
 		{#if isReferrer}
 			<div class="space-y-2 border-t pt-4">
-				<div role="heading" aria-level="3" class="px-4 text-sm font-semibold text-muted-foreground">
+				<div
+					role="heading"
+					aria-level="3"
+					class="px-4 text-xs font-extrabold uppercase tracking-[0.12em] text-primary"
+				>
 					{m['referral.referralProgram']()}
 				</div>
 				<a
 					href={resolve('/(auth)/account/referral', {})}
-					class="flex items-center gap-3 rounded-md px-4 py-2 text-base transition-colors hover:bg-accent hover:text-accent-foreground"
+					class="flex items-center gap-3 rounded-md px-4 py-2 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
 					onclick={handleItemClick}
 				>
 					<Gift class="h-5 w-5" aria-hidden="true" />
@@ -210,7 +214,7 @@
 				</a>
 				<a
 					href={resolve('/(auth)/account/referral/payouts', {})}
-					class="flex items-center gap-3 rounded-md px-4 py-2 text-base transition-colors hover:bg-accent hover:text-accent-foreground"
+					class="flex items-center gap-3 rounded-md px-4 py-2 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
 					onclick={handleItemClick}
 				>
 					<FileText class="h-5 w-5" aria-hidden="true" />
@@ -226,7 +230,7 @@
 					<div
 						role="heading"
 						aria-level="3"
-						class="px-4 text-sm font-semibold text-muted-foreground"
+						class="px-4 text-xs font-extrabold uppercase tracking-[0.12em] text-primary"
 					>
 						{m['userMenu.myOrganizations']()}
 					</div>
@@ -234,7 +238,7 @@
 						<div class="space-y-1">
 							<a
 								href={resolve('/(public)/org/[slug]', { slug: org.slug })}
-								class="flex items-center gap-3 rounded-md px-4 py-2 text-base transition-colors hover:bg-accent hover:text-accent-foreground"
+								class="flex items-center gap-3 rounded-md px-4 py-2 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
 								onclick={handleItemClick}
 							>
 								<Building2 class="h-5 w-5" aria-hidden="true" />
@@ -258,7 +262,7 @@
 				{#if !ownsOrganization() && features.organization_creation}
 					<a
 						href={resolve('/(auth)/create-org', {})}
-						class="flex items-center gap-3 rounded-md px-4 py-3 text-base transition-colors hover:bg-accent hover:text-accent-foreground"
+						class="flex items-center gap-3 rounded-md px-4 py-3 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
 						onclick={handleItemClick}
 					>
 						<PlusCircle class="h-5 w-5" aria-hidden="true" />
@@ -270,7 +274,7 @@
 
 		<button
 			type="button"
-			class="mt-4 flex w-full items-center gap-3 rounded-md border-t px-4 py-3 pt-6 text-base text-destructive transition-colors hover:bg-destructive/10"
+			class="mt-4 flex w-full items-center gap-3 rounded-md border-t px-4 py-3 pt-6 text-base font-medium text-destructive transition-colors hover:bg-destructive/10"
 			onclick={handleLogout}
 		>
 			<LogOut class="h-5 w-5" aria-hidden="true" />
@@ -318,7 +322,7 @@
 						<!-- eslint-disable svelte/no-navigation-without-resolve -- href is a ResolvedPathname produced by resolve() in the nav item list above -->
 						<a
 							href={item.href}
-							class="flex items-center gap-3 rounded-sm px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+							class="flex items-center gap-3 rounded-sm px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
 							onclick={handleItemClick}
 							role="menuitem"
 						>
@@ -333,12 +337,14 @@
 				{#if isReferrer}
 					<div class="border-t">
 						<div class="p-1">
-							<div class="px-3 py-2 text-xs font-semibold text-muted-foreground">
+							<div
+								class="px-3 py-2 text-xs font-extrabold uppercase tracking-[0.12em] text-primary"
+							>
 								{m['referral.referralProgram']()}
 							</div>
 							<a
 								href={resolve('/(auth)/account/referral', {})}
-								class="flex items-center gap-2 rounded-sm px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+								class="flex items-center gap-2 rounded-sm px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
 								onclick={handleItemClick}
 								role="menuitem"
 							>
@@ -347,7 +353,7 @@
 							</a>
 							<a
 								href={resolve('/(auth)/account/referral/payouts', {})}
-								class="flex items-center gap-2 rounded-sm px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+								class="flex items-center gap-2 rounded-sm px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
 								onclick={handleItemClick}
 								role="menuitem"
 							>
@@ -363,14 +369,16 @@
 					<div class="border-t">
 						<div class="p-1">
 							{#if userOrganizations.length > 0}
-								<div class="px-3 py-2 text-xs font-semibold text-muted-foreground">
+								<div
+									class="px-3 py-2 text-xs font-extrabold uppercase tracking-[0.12em] text-primary"
+								>
 									{m['userMenu.myOrganizations']()}
 								</div>
 								{#each userOrganizations as org (org.id)}
 									<div class="space-y-1">
 										<a
 											href={resolve('/(public)/org/[slug]', { slug: org.slug })}
-											class="flex items-center gap-2 rounded-sm px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+											class="flex items-center gap-2 rounded-sm px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
 											onclick={handleItemClick}
 											role="menuitem"
 										>
@@ -396,7 +404,7 @@
 							{#if !ownsOrganization() && features.organization_creation}
 								<a
 									href={resolve('/(auth)/create-org', {})}
-									class="flex items-center gap-2 rounded-sm px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+									class="flex items-center gap-2 rounded-sm px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
 									onclick={handleItemClick}
 									role="menuitem"
 								>
@@ -412,7 +420,7 @@
 				<div class="border-t p-1">
 					<button
 						type="button"
-						class="flex w-full items-center gap-3 rounded-sm px-3 py-2 text-sm text-destructive transition-colors hover:bg-destructive/10"
+						class="flex w-full items-center gap-3 rounded-sm px-3 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
 						onclick={handleLogout}
 						role="menuitem"
 					>

@@ -45,36 +45,43 @@
 		return format(new Date(iso), 'MMM d, yyyy HH:mm');
 	}
 
+	// Severity → tone: debug/neutral, info/info, warning/highlight, error/danger
+	// (soft), critical/danger (solid) — critical stays visually distinct from
+	// error via weight of fill, not hue alone (guardrail: never encode meaning
+	// by color alone). Soft pairs reuse ToneTile's audited token combos
+	// (src/lib/components/common/ToneTile.svelte); the solid critical pair is
+	// the StatusBadge-style audited destructive-foreground/destructive pair.
+	// These classes render on the INNER wrapper below, which sits on the
+	// outer sticky element's opaque bg-background — so every ratio computed
+	// against --background in this file's history is now literally true, not
+	// an assumption (the banner is `sticky top-0` and would otherwise
+	// composite over whatever page content has scrolled underneath it).
 	const severityConfig = {
 		debug: {
 			icon: Bug,
-			classes:
-				'border-gray-200 bg-gray-50 text-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100',
-			iconClasses: 'text-gray-500 dark:text-gray-400'
+			classes: 'border-border bg-muted text-muted-foreground',
+			iconClasses: 'text-muted-foreground'
 		},
 		info: {
 			icon: Info,
-			classes:
-				'border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-100',
-			iconClasses: 'text-blue-500 dark:text-blue-400'
+			classes: 'border-info/30 bg-info/10 text-info',
+			iconClasses: 'text-info'
 		},
 		warning: {
 			icon: AlertTriangle,
-			classes:
-				'border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100',
-			iconClasses: 'text-amber-500 dark:text-amber-400'
+			classes: 'border-highlight/40 bg-highlight/20 text-highlight-foreground dark:text-highlight',
+			iconClasses: 'text-highlight-foreground dark:text-highlight'
 		},
 		error: {
 			icon: AlertCircle,
 			classes:
-				'border-red-200 bg-red-50 text-red-900 dark:border-red-800 dark:bg-red-950 dark:text-red-100',
-			iconClasses: 'text-red-500 dark:text-red-400'
+				'border-destructive/30 bg-destructive/10 text-destructive dark:bg-destructive/25 dark:text-destructive-foreground',
+			iconClasses: 'text-destructive dark:text-destructive-foreground'
 		},
 		critical: {
 			icon: AlertOctagon,
-			classes:
-				'border-red-300 bg-red-100 text-red-900 dark:border-red-700 dark:bg-red-900 dark:text-red-100',
-			iconClasses: 'animate-pulse text-red-600 dark:text-red-400'
+			classes: 'border-destructive bg-destructive text-destructive-foreground',
+			iconClasses: 'animate-pulse text-destructive-foreground'
 		}
 	} as const;
 
@@ -83,39 +90,43 @@
 
 {#if visible && banner}
 	{@const Icon = config.icon}
-	<div
-		class="sticky top-0 z-[90] border-b px-4 py-3 {config.classes}"
-		role="alert"
-		aria-live="assertive"
-	>
-		<div class="container mx-auto flex items-start gap-3 md:items-center">
-			<Icon class="mt-0.5 h-5 w-5 flex-shrink-0 {config.iconClasses} md:mt-0" aria-hidden="true" />
-			<div class="flex-1 text-sm">
-				<p class="font-semibold">{banner.message}</p>
-				{#if banner.scheduled_at || banner.ends_at}
-					<p class="mt-1 text-xs opacity-80">
-						{#if banner.scheduled_at}
-							<span
-								>{m['maintenanceBanner.scheduled']({ time: formatTime(banner.scheduled_at) })}</span
-							>
-						{/if}
-						{#if banner.scheduled_at && banner.ends_at}
-							<span class="mx-1">&middot;</span>
-						{/if}
-						{#if banner.ends_at}
-							<span>{m['maintenanceBanner.until']({ time: formatTime(banner.ends_at) })}</span>
-						{/if}
-					</p>
-				{/if}
+	<!-- Opaque outer + tinted inner — see the severityConfig comment above. -->
+	<div class="sticky top-0 z-[90] bg-background" role="alert" aria-live="assertive">
+		<div class="border-b px-4 py-3 {config.classes}">
+			<div class="container mx-auto flex items-start gap-3 md:items-center">
+				<Icon
+					class="mt-0.5 h-5 w-5 flex-shrink-0 {config.iconClasses} md:mt-0"
+					aria-hidden="true"
+				/>
+				<div class="flex-1 text-sm">
+					<p class="font-semibold">{banner.message}</p>
+					{#if banner.scheduled_at || banner.ends_at}
+						<p class="mt-1 text-xs opacity-80">
+							{#if banner.scheduled_at}
+								<span
+									>{m['maintenanceBanner.scheduled']({
+										time: formatTime(banner.scheduled_at)
+									})}</span
+								>
+							{/if}
+							{#if banner.scheduled_at && banner.ends_at}
+								<span class="mx-1">&middot;</span>
+							{/if}
+							{#if banner.ends_at}
+								<span>{m['maintenanceBanner.until']({ time: formatTime(banner.ends_at) })}</span>
+							{/if}
+						</p>
+					{/if}
+				</div>
+				<button
+					type="button"
+					onclick={dismiss}
+					class="flex-shrink-0 rounded-md p-1 opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-current focus:ring-offset-2"
+					aria-label={m['maintenanceBanner.dismiss']()}
+				>
+					<X class="h-4 w-4" aria-hidden="true" />
+				</button>
 			</div>
-			<button
-				type="button"
-				onclick={dismiss}
-				class="flex-shrink-0 rounded-md p-1 opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-current focus:ring-offset-2"
-				aria-label={m['maintenanceBanner.dismiss']()}
-			>
-				<X class="h-4 w-4" aria-hidden="true" />
-			</button>
 		</div>
 	</div>
 {/if}

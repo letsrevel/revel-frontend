@@ -97,11 +97,9 @@
 						<!-- eslint-disable svelte/no-navigation-without-resolve -- href is a ResolvedPathname produced by resolve() in the nav item list above -->
 						<a
 							href={item.href}
-							class="block rounded-md px-4 py-3 text-base font-medium transition-colors {isActive(
-								item.href
-							)
-								? 'bg-accent text-accent-foreground'
-								: 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'}"
+							class="block rounded-md px-4 py-3 text-base transition-colors {isActive(item.href)
+								? 'bg-accent font-bold text-accent-foreground'
+								: 'font-semibold text-muted-foreground hover:bg-accent hover:text-accent-foreground'}"
 							onclick={handleLinkClick}
 							aria-current={isActive(item.href) ? 'page' : undefined}
 						>
