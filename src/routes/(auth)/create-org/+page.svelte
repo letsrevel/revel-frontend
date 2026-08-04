@@ -92,13 +92,17 @@
      affordance — the default `text-primary` kicker measures 4.12:1 there,
      below AA. The old `bg-primary/10` circle becomes the poster-tinted tilted
      chip (EmptyState's recipe; audited purple/white pair, mode-inert by the
-     imagery rule, aria-hidden ornament). -->
+     imagery rule, aria-hidden ornament) — it carries the same
+     `ring-1 ring-inset ring-border` every `ToneTile` tint chip does, since the
+     chip itself is mode-inert but the `bg-secondary` band under it is not,
+     and this pairing measures 2.23:1 (near-invisible) in dark mode without
+     the ring. -->
 <div class="min-h-[calc(100vh-4rem)] bg-background">
 	<section class="bg-secondary text-secondary-foreground">
 		<div class="container mx-auto max-w-2xl px-4 pb-20 pt-10 text-center sm:pt-14">
 			<span
 				aria-hidden="true"
-				class="mx-auto mb-5 flex h-16 w-16 -rotate-2 items-center justify-center rounded-2xl bg-poster-purple text-poster-white shadow-poster"
+				class="mx-auto mb-5 flex h-16 w-16 -rotate-2 items-center justify-center rounded-2xl bg-poster-purple text-poster-white shadow-poster ring-1 ring-inset ring-border"
 			>
 				<Building2 class="h-8 w-8" />
 			</span>

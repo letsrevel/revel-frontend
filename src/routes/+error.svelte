@@ -135,10 +135,11 @@
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
-<!-- Poster ribbon + floating card (uplift, spec §9). The page was a column of
-     centred type on bare background; it now opens on a full-strength
-     `bg-secondary` colour block — an audit-enforced pair in BOTH modes
-     (9.01:1 light / 8.17:1 dark for its own foreground), so the ribbon is a
+<!-- Celebration band + floating card (uplift, spec §9). The page was a column
+     of centred type on bare background; it now opens on a full-strength
+     `bg-secondary` colour block — theme-aware, not the mode-inert poster
+     ribbon the join pages use — an audit-enforced pair in BOTH modes
+     (9.00:1 light / 8.23:1 dark for its own foreground), so the band is a
      real poster panel that still respects the light/dark axis. The kicker and
      description inherit the band's foreground through PageHeader's `onBand`
      affordance; its default `text-primary` kicker measures 4.12:1 there,

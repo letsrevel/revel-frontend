@@ -103,7 +103,7 @@
      modes by the imagery rule. Hand-verified against the fixed poster values
      (both pairs are in scripts/audit-brand-themes.py's poster table):
        poster-white on poster-purple → 5.52:1 (title, kicker, subtitle)
-       poster-purple on poster-white → 5.52:1 (the Sticker's own text)
+       poster-white on poster-ink → 17.40:1 (the Sticker's own text — tint="ink")
      No sticker chip here, by the sticker-chip rule: an EVENT token preview
      carries the event's cover but no organization logo, and the Revel mark is
      never filler on someone else's invitation. The cover art becomes the
