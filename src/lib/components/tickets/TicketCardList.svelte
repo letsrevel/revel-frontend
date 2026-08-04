@@ -231,7 +231,7 @@
 							{#if ticket.payment.platform_fee_reverse_charge}
 								<div class="flex items-center justify-between text-xs">
 									<span class="text-muted-foreground">{m['tickets.reverseCharge']()}:</span>
-									<span class="font-medium text-blue-600 dark:text-blue-400"
+									<span class="font-medium text-info"
 										>{m['tickets.reverseChargeYes']()}</span
 									>
 								</div>

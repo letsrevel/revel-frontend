@@ -105,7 +105,7 @@
 {#snippet sortableHeader(label: string, field: TicketSortField)}
 	{@const dir = sortDirection(orderBy, field)}
 	<th
-		class="px-4 py-3 text-left text-sm font-semibold"
+		class="px-4 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 		aria-sort={dir === 'asc' ? 'ascending' : dir === 'desc' ? 'descending' : 'none'}
 	>
 		{#if onSort}
@@ -133,7 +133,7 @@
 	<table class="w-full">
 		<thead class="border-b bg-muted/50">
 			<tr>
-				<th class="px-4 py-3 text-left text-sm font-semibold"
+				<th class="px-4 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 					>{m['eventTicketsAdmin.headerAttendee']()}</th
 				>
 				{@render sortableHeader(m['eventTicketsAdmin.headerTier'](), 'tier__name')}
@@ -144,7 +144,7 @@
 				)}
 				{@render sortableHeader(m['eventTicketsAdmin.headerStatus'](), 'status')}
 				{@render sortableHeader(m['eventTicketsAdmin.headerPurchased'](), 'created_at')}
-				<th class="px-4 py-3 text-right text-sm font-semibold"
+				<th class="px-4 py-3 text-right text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 					>{m['eventTicketsAdmin.headerActions']()}</th
 				>
 			</tr>
