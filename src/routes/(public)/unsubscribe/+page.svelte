@@ -58,13 +58,16 @@
 	{:else if success}
 		<!-- Success message: EmptyState's playful tilted chip is the personality
 		     vehicle here too, replacing the raw green-*/50/900/950 hues with the
-		     audited success token pair. -->
+		     audited success token pair. EmptyState's own heading stays at its
+		     default level (3) — the page's real h1 is the sr-only one below, so
+		     the visible title isn't duplicated and the document still has
+		     exactly one h1. -->
+		<h1 class="sr-only">{m['unsubscribePage.successTitle']()}</h1>
 		<EmptyState
 			icon={Bell}
 			title={m['unsubscribePage.successTitle']()}
 			body={m['unsubscribePage.successDescription']()}
 			tone="success"
-			level={2}
 		/>
 		<p class="mt-4 text-center text-sm text-muted-foreground">
 			{m['unsubscribePage.redirecting']()}

@@ -6,7 +6,6 @@
 	import ToneTile from '$lib/components/common/ToneTile.svelte';
 	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import Sticker from '$lib/components/brand/Sticker.svelte';
-	import type { Tone } from '$lib/components/common/tones';
 	import {
 		Ticket,
 		Shield,
@@ -50,14 +49,6 @@
 		return iconMap[iconName] || Check;
 	}
 
-	// Feature tiles cycle through non-alarming semantic tones (never
-	// warning/danger — these are marketing bullets, not status signals) purely
-	// for rhythm; the tone carries no per-feature meaning.
-	const featureTones: Tone[] = ['brand', 'info', 'success'];
-	function getFeatureTone(index: number): Tone {
-		return featureTones[index % featureTones.length];
-	}
-
 	// FAQ accordion state
 	let openFaqIndex = $state<number | null>(null);
 
@@ -85,7 +76,18 @@
      text-poster-white on bg-poster-purple measures 5.52:1 (same pair
      ClosePanel documents for this exact color). Button variants below avoid
      any translucent-over-gradient wash so every pair stays a plain
-     opaque-or-bordered combination on this single audited number. -->
+     opaque-or-bordered combination on this single audited number.
+
+     TRAP (guardrail 6, hit here in its INVERSE form): a Button with a custom
+     bg-* class keeps the variant's default text unless you also set text-*
+     — but a custom text-* class ALSO keeps the variant's default bg-* unless
+     you explicitly set bg-* too. The "outline" branch below previously set
+     only text-poster-white, so shadcn's `outline` variant's own
+     `bg-background` (rest) and `hover:text-accent-foreground` (hover)
+     survived cn()'s merge untouched → white text on a light bg-background at
+     rest (1.13:1). Fixed by adding bg-transparent + hover:text-poster-white
+     so every state has an explicit bg AND text pair. Border also bumped to
+     /65 (was /60 = 2.96:1, under the 3:1 non-text floor) → 3.22:1. -->
 <section class="relative overflow-hidden bg-poster-purple py-16 md:py-24">
 	<div class="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
 	<div class="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
@@ -114,7 +116,7 @@
 							? 'bg-poster-white text-poster-purple hover:bg-poster-paper'
 							: button.variant === 'secondary'
 								? 'border-2 border-poster-white bg-transparent text-poster-white hover:bg-poster-white/10'
-								: 'border-poster-white/60 text-poster-white hover:bg-poster-white/10'}
+								: 'border-poster-white/65 bg-transparent text-poster-white hover:bg-poster-white/10 hover:text-poster-white'}
 					>
 						{button.text}
 					</Button>
@@ -141,15 +143,19 @@
 <section class="bg-muted/50 py-12 md:py-16">
 	<div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
 		<SectionHeader
-			title={m['landingTemplate.featuresKicker']()}
+			title={m['landingTemplate.featuresHeading']({}, { locale: content.locale })}
 			volume="celebration"
 			class="mb-8 justify-center text-center"
 		/>
 		<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-			{#each content.features as feature, i (feature.title)}
+			{#each content.features as feature (feature.title)}
 				{@const IconComponent = getIcon(feature.icon)}
 				<div class="rounded-lg border bg-card p-6 shadow-sm transition-shadow hover:shadow-md">
-					<ToneTile tone={getFeatureTone(i)} icon={IconComponent} size="lg" class="mb-4" />
+					<!-- Uniform brand tone: ToneTile's tone axis is semantic, and these
+					     marketing bullets carry no per-feature meaning to encode — the
+					     identity/tint axis for "same tone, different accent color per
+					     destination" lands with PR 7's poster-tint prop. -->
+					<ToneTile tone="brand" icon={IconComponent} size="lg" class="mb-4" />
 					<h3 class="mb-2 text-lg font-bold text-foreground">{feature.title}</h3>
 					<p class="text-sm text-muted-foreground">{feature.description}</p>
 				</div>
@@ -163,7 +169,7 @@
 	<div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
 		<SectionHeader
 			title={content.benefits.title}
-			kicker={m['landingTemplate.benefitsKicker']()}
+			kicker={m['landingTemplate.benefitsKicker']({}, { locale: content.locale })}
 			volume="celebration"
 			class="mb-8 justify-center text-center"
 		/>
@@ -182,8 +188,8 @@
 <section class="bg-muted/50 py-12 md:py-16">
 	<div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
 		<SectionHeader
-			title={m['landingTemplate.faqHeading']()}
-			kicker={m['landingTemplate.faqKicker']()}
+			title={m['landingTemplate.faqHeading']({}, { locale: content.locale })}
+			kicker={m['landingTemplate.faqKicker']({}, { locale: content.locale })}
 			volume="celebration"
 			class="mb-8 justify-center text-center"
 		/>
@@ -221,8 +227,13 @@
      normally — not aria-hidden — same as the poster's own sticker usage. -->
 <section class="bg-poster-purple py-12 md:py-16">
 	<div class="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-		<p class="mb-3">
-			<Sticker tint="crimson" rotate={-2}>{m['landingTemplate.ctaSticker']()}</Sticker>
+		<p class="text-sm font-extrabold uppercase tracking-[0.12em] text-poster-white">
+			{m['landingTemplate.ctaKicker']({}, { locale: content.locale })}
+		</p>
+		<p class="mb-3 mt-2">
+			<Sticker tint="crimson" rotate={-2}
+				>{m['landingTemplate.ctaSticker']({}, { locale: content.locale })}</Sticker
+			>
 		</p>
 		<h2 class="text-2xl font-extrabold text-poster-white md:text-3xl">
 			{content.cta.title}
@@ -244,7 +255,7 @@
 						? 'bg-poster-white text-poster-purple hover:bg-poster-paper'
 						: button.variant === 'secondary'
 							? 'border-2 border-poster-white bg-transparent text-poster-white hover:bg-poster-white/10'
-							: 'border-poster-white/60 text-poster-white hover:bg-poster-white/10'}
+							: 'border-poster-white/65 bg-transparent text-poster-white hover:bg-poster-white/10 hover:text-poster-white'}
 				>
 					{button.text}
 				</Button>
@@ -258,8 +269,8 @@
 	<section class="bg-background py-12 md:py-16">
 		<div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
 			<SectionHeader
-				title={m['landingTemplate.relatedHeading']()}
-				kicker={m['landingTemplate.relatedKicker']()}
+				title={m['landingTemplate.relatedHeading']({}, { locale: content.locale })}
+				kicker={m['landingTemplate.relatedKicker']({}, { locale: content.locale })}
 				volume="celebration"
 				class="mb-6 justify-center text-center"
 			/>

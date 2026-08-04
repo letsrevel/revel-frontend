@@ -137,10 +137,14 @@
 <div class="flex min-h-screen items-center justify-center bg-background px-4 py-16">
 	<div class="w-full max-w-2xl">
 		<!-- Error Icon + status-code Sticker: the flagship personality moment.
-		     The Sticker is decorative (aria-hidden) — the status code is already
-		     part of the accessible text below via errorPage.errorLabel. -->
+		     Both are decorative art, not a second announcement of the title —
+		     the h1 below is the actual accessible heading, and the status code
+		     is separately in the accessible errorPage.errorLabel text. ToneTile
+		     omits `label` (→ aria-hidden by default) rather than repeating
+		     config.title() as its accessible name; the Sticker is likewise
+		     wrapped aria-hidden. -->
 		<div class="mb-8 flex flex-col items-center gap-4">
-			<ToneTile tone={config.tone} icon={ErrorIcon} size="lg" label={config.title()} />
+			<ToneTile tone={config.tone} icon={ErrorIcon} size="lg" />
 			<span aria-hidden="true">
 				<Sticker tint="purple" rotate={-3} class="text-2xl">{status}</Sticker>
 			</span>

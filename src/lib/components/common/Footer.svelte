@@ -244,7 +244,7 @@
 					</Tooltip.Content>
 				</Tooltip.Root>
 
-				<span class="text-background/30 dark:text-muted-foreground/50">|</span>
+				<span class="text-background/45 dark:text-muted-foreground/50">|</span>
 
 				<Tooltip.Root>
 					<Tooltip.Trigger
@@ -284,7 +284,7 @@
 					</Tooltip.Content>
 				</Tooltip.Root>
 
-				<span class="text-background/30 dark:text-muted-foreground/50">|</span>
+				<span class="text-background/45 dark:text-muted-foreground/50">|</span>
 
 				<a
 					href="https://forms.gle/c6ovKV92nMQEbR877"
@@ -299,10 +299,13 @@
 			</div>
 		</Tooltip.Provider>
 
-		<!-- Cookie Notice. Light: bg-background/10 (surface) + text-background/90
-		     composited over the opaque ink band measures 11.85:1; dark keeps the
-		     original muted/50-on-card treatment (7.04:1, hand-verified) since
-		     that's already a themed, non-inverted surface. -->
+		<!-- Cookie Notice. Light: bg-background/10 (surface) composited over the
+		     opaque ink band, then text-background/90 composited over THAT
+		     surface (not directly over the ink) — 9.91:1 (re-verified; an
+		     earlier draft of this comment mistakenly quoted the full-opacity
+		     text number, 11.85:1). Dark keeps the original muted/50-on-card
+		     treatment (7.04:1, hand-verified) since that's already a themed,
+		     non-inverted surface. -->
 		<div class="mt-8 border-t border-background/20 pt-8 dark:border-border">
 			<div
 				class="rounded-lg bg-background/10 p-4 text-center text-sm text-background/90 dark:bg-muted/50 dark:text-muted-foreground"

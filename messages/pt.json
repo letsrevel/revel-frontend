@@ -2680,12 +2680,12 @@
 		"rejectedCta": "Explorar eventos"
 	},
 	"landingTemplate": {
-		"benefitsKicker": "Por que Revel",
+		"benefitsKicker": "Porquê Revel",
 		"ctaKicker": "Começar",
 		"ctaSticker": "Código aberto",
 		"faqHeading": "Perguntas Frequentes",
 		"faqKicker": "Perguntas",
-		"featuresKicker": "O que está incluído",
+		"featuresHeading": "O que está incluído",
 		"relatedHeading": "Tópicos Relacionados",
 		"relatedKicker": "Saiba mais"
 	},
