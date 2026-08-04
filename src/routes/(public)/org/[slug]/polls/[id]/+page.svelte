@@ -10,6 +10,7 @@
 	import PollStatusBadge from '$lib/components/polls/PollStatusBadge.svelte';
 	import PollVoteForm from '$lib/components/polls/PollVoteForm.svelte';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import { pollWithdrawVoteAction } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import type { PageData } from './$types';
@@ -78,151 +79,183 @@
 	<title>{m['pollVoterPage.title']({ name: poll?.questionnaire?.name ?? 'Poll' })}</title>
 </svelte:head>
 
-<main class="container mx-auto max-w-3xl space-y-6 px-4 py-8">
-	{#if data.forbidden}
-		<!--
-			Backend returned 403: the poll exists but the caller is not in any
-			audience. We don't have poll data to render the privacy summary, so
-			show a self-contained no-access page rather than falling through to
-			the global 404.
-		-->
-		<Card class="border-highlight/60">
-			<CardHeader>
-				<CardTitle level={2}>{m['pollVoterPage.forbiddenTitle']()}</CardTitle>
-			</CardHeader>
-			<CardContent class="space-y-3 py-4 text-sm">
-				<p>{m['pollVoterPage.forbiddenBody']()}</p>
-				{#if !data.isAuthenticated}
-					<Button href={`/login?next=${encodeURIComponent($page.url.pathname)}`}>
-						{m['pollVoterPage.signIn']()}
-					</Button>
-				{/if}
-			</CardContent>
-		</Card>
-	{:else if poll}
-		<Card>
-			<CardHeader>
-				<CardTitle level={2} class="flex items-center justify-between gap-2">
-					<span>{poll.questionnaire?.name ?? 'Poll'}</span>
-					<PollStatusBadge status={poll.status} />
-				</CardTitle>
-			</CardHeader>
-			<CardContent>
-				{#if poll.questionnaire?.description}
-					<p class="text-sm text-muted-foreground">{poll.questionnaire.description}</p>
-				{/if}
-			</CardContent>
-		</Card>
+<!--
+	Colour-block header band (uplift, spec §9). It replaces the title Card, which
+	also closes a real gap: this page had NO h1 at all — the poll's name was a
+	level-2 CardTitle and the level-2s below it had nothing to sit under. The
+	band's `PageHeader` is that h1 now, in both branches.
 
-		<PollPrivacySummary
-			voteVisibility={poll.vote_visibility}
-			resultVisibility={poll.result_visibility}
-			resultTiming={poll.result_timing}
-			staffAnonymous={poll.staff_anonymous}
-			publicAnonymous={poll.public_anonymous}
-			allowVoteChanges={poll.allow_vote_changes}
-		/>
+	`bg-secondary` at full strength is the audit-enforced pair the questionnaire
+	routes' band uses; `onBand` keeps the kicker off `text-primary`, which does
+	not clear AA on the light periwinkle (4.12:1 — see PageHeader). The status
+	badge rides `actions`, never `decoration`: that slot is aria-hidden ornament
+	and a poll's open/closed state is not ornament.
+-->
+<div class="flex min-h-screen flex-col bg-background">
+	<section class="bg-secondary text-secondary-foreground">
+		<div class="container mx-auto max-w-3xl px-4 pb-16 pt-8">
+			{#if data.forbidden}
+				<PageHeader volume="poster" onBand title={m['pollVoterPage.forbiddenTitle']()} />
+			{:else if poll}
+				<PageHeader
+					volume="poster"
+					onBand
+					title={poll.questionnaire?.name ?? 'Poll'}
+					subtitle={poll.questionnaire?.description ?? undefined}
+				>
+					{#snippet actions()}
+						<PollStatusBadge status={poll.status} />
+					{/snippet}
+				</PageHeader>
+			{/if}
+		</div>
+	</section>
 
-		<!-- State banners — order matters; first match wins -->
-		{#if poll.status === 'draft'}
-			<Card class="border-highlight/60">
-				<CardContent class="py-4 text-sm">{m['pollVoterPage.draftBanner']()}</CardContent>
-			</Card>
-		{:else if requiresAuth}
-			<!--
-				Anonymous viewer on public/unlisted poll: they can see the poll,
-				but voting needs auth. Surface a sign-in CTA rather than the
-				generic "ineligible" banner (which implies they couldn't vote
-				even if signed in).
-			-->
-			<!-- Info tint: `bg-info/10` composites to ~the card colour, so the copy
-			     keeps `text-card-foreground` and the token contract's AA guarantee. -->
-			<Card class="border-info/60 bg-info/10">
-				<CardContent class="space-y-2 py-4 text-sm">
-					<p>{m['pollVoterPage.signInToVote']()}</p>
-					<Button href={`/login?next=${encodeURIComponent($page.url.pathname)}`}
-						>{m['pollVoterPage.signIn']()}</Button
-					>
-				</CardContent>
-			</Card>
-		{:else if poll.status === 'closed' && poll.user_has_voted}
-			<Card>
-				<CardContent class="py-4 text-sm">{m['pollVoterPage.closedVotedBanner']()}</CardContent>
-			</Card>
-		{:else if poll.status === 'closed'}
-			<Card>
-				<CardContent class="py-4 text-sm">{m['pollVoterPage.closedNotVotedBanner']()}</CardContent>
-			</Card>
-		{:else if poll.status === 'open' && !poll.user_can_vote && !poll.user_has_voted}
-			<!--
-				Authenticated viewer who passes the BE audience check
-				(otherwise we'd be in the data.forbidden branch above) but
-				can't vote — typically a tier mismatch. We deliberately KEEP
-				the PollPrivacySummary visible above this banner so the user
-				can see WHY they're ineligible ("members in tier X"), unlike
-				the forbidden card which strips all poll details from
-				non-audience callers.
-			-->
-			<Card class="border-highlight/60">
-				<CardContent class="py-4 text-sm">{m['pollVoterPage.ineligibleBanner']()}</CardContent>
-			</Card>
-		{:else if showVotedBanner}
-			<Card>
-				<CardContent class="space-y-2 py-4 text-sm">
-					<p>{m['pollVoterPage.votedBanner']()}</p>
-					{#if poll.status === 'open' && poll.allow_vote_changes}
-						<div class="flex flex-wrap gap-2">
-							<Button variant="outline" size="sm" onclick={() => (editing = true)}>
-								{m['pollVoterPage.changeVote']()}
+	<!--
+		Tinted content panel — the same wash the event page and the org surfaces
+		use, so every card below floats. Composite and ratios are identical to
+		those pages' (a composited alpha is invisible to
+		scripts/audit-brand-themes.py):
+		  light — secondary@55 over background ⇒ hsl(231 88% 90%);
+		          foreground 12.42:1 · muted-foreground 6.45:1 · primary 4.97:1
+		  dark  — secondary@28 over background ⇒ hsl(246 33% 15%);
+		          foreground 15.75:1 · muted-foreground 7.47:1 · primary 6.30:1
+		Nothing lands directly on it — every block here is a Card — so the panel
+		is pure depth.
+	-->
+	<div class="flex-1 bg-secondary/55 dark:bg-secondary/[0.28]">
+		<main class="container mx-auto -mt-8 max-w-3xl space-y-6 px-4 pb-8">
+			{#if data.forbidden}
+				<!--
+					Backend returned 403: the poll exists but the caller is not in any
+					audience. We don't have poll data to render the privacy summary, so
+					show a self-contained no-access page rather than falling through to
+					the global 404.
+				-->
+				<Card class="border-highlight/60">
+					<CardContent class="space-y-3 py-4 text-sm">
+						<p>{m['pollVoterPage.forbiddenBody']()}</p>
+						{#if !data.isAuthenticated}
+							<Button href={`/login?next=${encodeURIComponent($page.url.pathname)}`}>
+								{m['pollVoterPage.signIn']()}
 							</Button>
-							<Button
-								variant="outline"
-								size="sm"
-								onclick={() => (withdrawConfirmOpen = true)}
-								disabled={withdrawing}
+						{/if}
+					</CardContent>
+				</Card>
+			{:else if poll}
+				<PollPrivacySummary
+					voteVisibility={poll.vote_visibility}
+					resultVisibility={poll.result_visibility}
+					resultTiming={poll.result_timing}
+					staffAnonymous={poll.staff_anonymous}
+					publicAnonymous={poll.public_anonymous}
+					allowVoteChanges={poll.allow_vote_changes}
+				/>
+
+				<!-- State banners — order matters; first match wins -->
+				{#if poll.status === 'draft'}
+					<Card class="border-highlight/60">
+						<CardContent class="py-4 text-sm">{m['pollVoterPage.draftBanner']()}</CardContent>
+					</Card>
+				{:else if requiresAuth}
+					<!--
+						Anonymous viewer on public/unlisted poll: they can see the poll,
+						but voting needs auth. Surface a sign-in CTA rather than the
+						generic "ineligible" banner (which implies they couldn't vote
+						even if signed in).
+					-->
+					<!-- Info tint: `bg-info/10` composites to ~the card colour, so the copy
+					     keeps `text-card-foreground` and the token contract's AA guarantee. -->
+					<Card class="border-info/60 bg-info/10">
+						<CardContent class="space-y-2 py-4 text-sm">
+							<p>{m['pollVoterPage.signInToVote']()}</p>
+							<Button href={`/login?next=${encodeURIComponent($page.url.pathname)}`}
+								>{m['pollVoterPage.signIn']()}</Button
 							>
-								{m['pollVoterPage.withdrawVote']()}
-							</Button>
-						</div>
-					{/if}
-				</CardContent>
-			</Card>
-		{/if}
+						</CardContent>
+					</Card>
+				{:else if poll.status === 'closed' && poll.user_has_voted}
+					<Card>
+						<CardContent class="py-4 text-sm">{m['pollVoterPage.closedVotedBanner']()}</CardContent>
+					</Card>
+				{:else if poll.status === 'closed'}
+					<Card>
+						<CardContent class="py-4 text-sm"
+							>{m['pollVoterPage.closedNotVotedBanner']()}</CardContent
+						>
+					</Card>
+				{:else if poll.status === 'open' && !poll.user_can_vote && !poll.user_has_voted}
+					<!--
+						Authenticated viewer who passes the BE audience check
+						(otherwise we'd be in the data.forbidden branch above) but
+						can't vote — typically a tier mismatch. We deliberately KEEP
+						the PollPrivacySummary visible above this banner so the user
+						can see WHY they're ineligible ("members in tier X"), unlike
+						the forbidden card which strips all poll details from
+						non-audience callers.
+					-->
+					<Card class="border-highlight/60">
+						<CardContent class="py-4 text-sm">{m['pollVoterPage.ineligibleBanner']()}</CardContent>
+					</Card>
+				{:else if showVotedBanner}
+					<Card>
+						<CardContent class="space-y-2 py-4 text-sm">
+							<p>{m['pollVoterPage.votedBanner']()}</p>
+							{#if poll.status === 'open' && poll.allow_vote_changes}
+								<div class="flex flex-wrap gap-2">
+									<Button variant="outline" size="sm" onclick={() => (editing = true)}>
+										{m['pollVoterPage.changeVote']()}
+									</Button>
+									<Button
+										variant="outline"
+										size="sm"
+										onclick={() => (withdrawConfirmOpen = true)}
+										disabled={withdrawing}
+									>
+										{m['pollVoterPage.withdrawVote']()}
+									</Button>
+								</div>
+							{/if}
+						</CardContent>
+					</Card>
+				{/if}
 
-		<!-- Vote form -->
-		{#if showForm && poll.questionnaire}
-			<Card>
-				<CardHeader>
-					<CardTitle level={2}>{m['pollVoterPage.castVoteTitle']()}</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<PollVoteForm
-						questionnaire={poll.questionnaire}
-						pollId={poll.id}
-						initialVote={poll.user_vote}
-						onSuccess={handleVoteSuccess}
-					/>
-				</CardContent>
-			</Card>
-		{/if}
+				<!-- Vote form -->
+				{#if showForm && poll.questionnaire}
+					<Card>
+						<CardHeader>
+							<CardTitle level={2}>{m['pollVoterPage.castVoteTitle']()}</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<PollVoteForm
+								questionnaire={poll.questionnaire}
+								pollId={poll.id}
+								initialVote={poll.user_vote}
+								onSuccess={handleVoteSuccess}
+							/>
+						</CardContent>
+					</Card>
+				{/if}
 
-		<!-- Results -->
-		{#if poll.user_can_see_results && poll.results}
-			<Card>
-				<CardHeader>
-					<CardTitle level={2}>{m['pollVoterPage.resultsTitle']()}</CardTitle>
-				</CardHeader>
-				<CardContent>
-					{#if poll.results.total_voters > 0}
-						<PollResultsView results={poll.results} staffAnonymous={poll.staff_anonymous} />
-					{:else}
-						<p class="text-sm text-muted-foreground">{m['pollVoterPage.resultsEmpty']()}</p>
-					{/if}
-				</CardContent>
-			</Card>
-		{/if}
-	{/if}
-</main>
+				<!-- Results -->
+				{#if poll.user_can_see_results && poll.results}
+					<Card>
+						<CardHeader>
+							<CardTitle level={2}>{m['pollVoterPage.resultsTitle']()}</CardTitle>
+						</CardHeader>
+						<CardContent>
+							{#if poll.results.total_voters > 0}
+								<PollResultsView results={poll.results} staffAnonymous={poll.staff_anonymous} />
+							{:else}
+								<p class="text-sm text-muted-foreground">{m['pollVoterPage.resultsEmpty']()}</p>
+							{/if}
+						</CardContent>
+					</Card>
+				{/if}
+			{/if}
+		</main>
+	</div>
+</div>
 
 <ConfirmDialog
 	isOpen={withdrawConfirmOpen}
