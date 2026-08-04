@@ -8,6 +8,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import CityAutocomplete from '$lib/components/forms/CityAutocomplete.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import { AlertCircle, Building2, CheckCircle, Loader2, Mail } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { PageData, ActionData } from './$types';
@@ -84,17 +85,22 @@
 </svelte:head>
 
 <div class="container mx-auto max-w-2xl px-4 py-8">
-	<!-- Header -->
+	<!-- The one Celebration moment in this cluster: creating an organization is
+	     an acquisition milestone, so it gets the display-scale PageHeader while
+	     the wizard body below stays studio-calm. -->
 	<div class="mb-8 text-center">
 		<div class="mb-4 flex justify-center">
 			<div class="rounded-full bg-primary/10 p-4">
 				<Building2 class="h-8 w-8 text-primary" aria-hidden="true" />
 			</div>
 		</div>
-		<h1 class="mb-2 text-3xl font-bold">{m['orgCreate.title']()}</h1>
-		<p class="text-muted-foreground">
-			{m['orgCreate.subtitle']()}
-		</p>
+		<PageHeader
+			volume="celebration"
+			kicker={m['orgCreate.kicker']()}
+			title={m['orgCreate.title']()}
+			subtitle={m['orgCreate.subtitle']()}
+			class="text-center sm:flex-col sm:items-center"
+		/>
 		<p class="mt-2 text-sm text-muted-foreground">
 			{m['createOrgPage.customizeHint']()}
 		</p>
@@ -102,25 +108,24 @@
 
 	<!-- Check if user already owns an organization -->
 	{#if ownsOrganization}
-		<div
-			class="rounded-lg border border-yellow-200 bg-yellow-50 p-6 dark:border-yellow-900 dark:bg-yellow-950"
-		>
+		<!-- Warning tint mirrors ToneTile's amber recipe (see security page). -->
+		<div class="rounded-lg border border-highlight/40 bg-highlight/20 p-6">
 			<div class="flex gap-3">
 				<AlertCircle
-					class="h-5 w-5 flex-shrink-0 text-yellow-600 dark:text-yellow-400"
+					class="h-5 w-5 flex-shrink-0 text-highlight-foreground dark:text-highlight"
 					aria-hidden="true"
 				/>
 				<div>
-					<h3 class="font-semibold text-yellow-900 dark:text-yellow-100">
+					<h3 class="font-bold text-highlight-foreground dark:text-highlight">
 						{m['orgCreate.alreadyOwner']()}
 					</h3>
-					<p class="mt-1 text-sm text-yellow-800 dark:text-yellow-200">
+					<p class="mt-1 text-sm text-foreground">
 						{m['orgCreate.alreadyOwnerDescription']()}
 					</p>
 					<div class="mt-4">
 						<a
 							href={resolve('/(auth)/dashboard', {})}
-							class="inline-flex items-center gap-2 rounded-md bg-yellow-600 px-4 py-2 text-sm font-medium text-white hover:bg-yellow-700 dark:bg-yellow-700 dark:hover:bg-yellow-600"
+							class="inline-flex items-center gap-2 rounded-md bg-highlight px-4 py-2 text-sm font-medium text-highlight-foreground hover:bg-highlight/90"
 						>
 							{m['orgCreate.backToDashboard']()}
 						</a>
@@ -130,23 +135,20 @@
 		</div>
 	{:else if !user?.email_verified}
 		<!-- Email not verified warning -->
-		<div class="rounded-lg border border-red-200 bg-red-50 p-6 dark:border-red-900 dark:bg-red-950">
+		<div class="rounded-lg border border-destructive/40 bg-destructive/10 p-6">
 			<div class="flex gap-3">
-				<AlertCircle
-					class="h-5 w-5 flex-shrink-0 text-red-600 dark:text-red-400"
-					aria-hidden="true"
-				/>
+				<AlertCircle class="h-5 w-5 flex-shrink-0 text-destructive" aria-hidden="true" />
 				<div>
-					<h3 class="font-semibold text-red-900 dark:text-red-100">
+					<h3 class="font-bold text-destructive">
 						{m['orgCreate.emailNotVerified']()}
 					</h3>
-					<p class="mt-1 text-sm text-red-800 dark:text-red-200">
+					<p class="mt-1 text-sm text-foreground">
 						{m['orgCreate.emailNotVerifiedDescription']()}
 					</p>
 					<div class="mt-4">
 						<a
 							href={resolve('/(auth)/account/profile', {})}
-							class="inline-flex items-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600"
+							class="inline-flex items-center gap-2 rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground hover:bg-destructive/90"
 						>
 							{m['orgCreate.verifyEmail']()}
 						</a>
@@ -220,22 +222,16 @@
 
 					<!-- Info about email verification -->
 					{#if contactEmailChanged}
-						<div class="flex gap-2 rounded-md bg-blue-50 p-3 dark:bg-blue-950">
-							<Mail
-								class="h-4 w-4 flex-shrink-0 text-blue-600 dark:text-blue-400"
-								aria-hidden="true"
-							/>
-							<p id="contact-email-hint" class="text-xs text-blue-800 dark:text-blue-200">
+						<div class="flex gap-2 rounded-md border border-info/30 bg-info/10 p-3">
+							<Mail class="h-4 w-4 flex-shrink-0 text-info" aria-hidden="true" />
+							<p id="contact-email-hint" class="text-xs text-foreground">
 								{m['orgCreate.form.contactEmailVerificationNeeded']()}
 							</p>
 						</div>
 					{:else}
-						<div class="flex gap-2 rounded-md bg-green-50 p-3 dark:bg-green-950">
-							<CheckCircle
-								class="h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400"
-								aria-hidden="true"
-							/>
-							<p id="contact-email-hint" class="text-xs text-green-800 dark:text-green-200">
+						<div class="flex gap-2 rounded-md border border-success/30 bg-success/10 p-3">
+							<CheckCircle class="h-4 w-4 flex-shrink-0 text-success" aria-hidden="true" />
+							<p id="contact-email-hint" class="text-xs text-foreground">
 								{m['orgCreate.form.contactEmailAutoVerified']()}
 							</p>
 						</div>
@@ -346,11 +342,11 @@
 	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
 		<div class="w-full max-w-md rounded-lg border bg-card p-6 shadow-xl">
 			<div class="mb-4 flex justify-center">
-				<div class="rounded-full bg-yellow-100 p-3 dark:bg-yellow-900">
-					<AlertCircle class="h-6 w-6 text-yellow-600 dark:text-yellow-400" aria-hidden="true" />
+				<div class="rounded-full bg-highlight p-3 text-highlight-foreground">
+					<AlertCircle class="h-6 w-6" aria-hidden="true" />
 				</div>
 			</div>
-			<h3 class="mb-2 text-center text-lg font-semibold">
+			<h3 class="mb-2 text-center text-lg font-bold">
 				{m['orgCreate.confirm.title']()}
 			</h3>
 			<p class="mb-1 text-center text-sm text-muted-foreground">

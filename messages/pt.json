@@ -4411,6 +4411,7 @@
 		"error_updateFailed": "Não foi possível atualizar o token",
 		"error_deleteFailed": "Não foi possível eliminar o link"
 	},
+	"orgCreate.kicker": "Nova organização",
 	"orgCreate.alreadyOwner": "Já és titular de uma organização",
 	"orgCreate.alreadyOwnerDescription": "Cada conta só pode ser titular de uma organização. Podes gerir a tua organização existente a partir do painel.",
 	"orgCreate.backToDashboard": "Voltar ao painel",

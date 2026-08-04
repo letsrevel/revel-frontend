@@ -4382,6 +4382,7 @@
 		"error_updateFailed": "Échec de la mise à jour du jeton",
 		"error_deleteFailed": "Échec de la suppression du lien"
 	},
+	"orgCreate.kicker": "Nouvelle organisation",
 	"orgCreate.alreadyOwner": "Tu possèdes déjà une organisation",
 	"orgCreate.alreadyOwnerDescription": "Chaque utilisateur·rice ne peut posséder qu'une seule organisation. Tu peux gérer ton organisation existante depuis le tableau de bord.",
 	"orgCreate.backToDashboard": "Retour au tableau de bord",

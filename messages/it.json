@@ -4411,6 +4411,7 @@
 		"error_updateFailed": "Impossibile aggiornare il token",
 		"error_deleteFailed": "Impossibile eliminare il link"
 	},
+	"orgCreate.kicker": "Nuova Organizzazione",
 	"orgCreate.alreadyOwner": "Possiedi già un'organizzazione",
 	"orgCreate.alreadyOwnerDescription": "Ogni utente può possedere solo un'organizzazione. Puoi gestire la tua organizzazione esistente dalla dashboard.",
 	"orgCreate.backToDashboard": "Torna alla Dashboard",
