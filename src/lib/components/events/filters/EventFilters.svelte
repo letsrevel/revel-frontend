@@ -96,7 +96,7 @@
 </script>
 
 <aside
-	class={cn('flex w-full flex-col gap-6 rounded-lg border bg-card p-6', className)}
+	class={cn('flex w-full flex-col gap-6 rounded-lg border-2 bg-card p-6 shadow-poster', className)}
 	aria-label={m['eventFilters.eventFilters']()}
 >
 	<!-- Header -->
