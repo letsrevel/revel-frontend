@@ -196,10 +196,7 @@
 </script>
 
 <div class={cn('space-y-4', className)}>
-	<span
-		class="block text-sm font-medium text-gray-900 dark:text-gray-100"
-		id="profile-picture-label"
-	>
+	<span class="block text-sm font-medium text-foreground" id="profile-picture-label">
 		{m['profilePage.profilePicture_label']()}
 	</span>
 

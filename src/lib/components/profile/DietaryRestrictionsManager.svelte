@@ -11,6 +11,8 @@
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { Plus, Trash2, Loader2, AlertTriangle } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
+	import type { Tone } from '$lib/components/common/tones';
 	import type {
 		DietaryRestrictionSchema,
 		DietaryRestrictionCreateSchema,
@@ -208,19 +210,20 @@
 		}
 	}
 
-	// Get severity badge color
-	function getSeverityColor(type: RestrictionType): string {
+	// Severity tone: each of the four levels gets its own tone so the
+	// escalation (dislike -> severe allergy) stays visible, not collapsed.
+	function getSeverityTone(type: RestrictionType): Tone {
 		switch (type) {
 			case 'dislike':
-				return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400';
+				return 'neutral';
 			case 'intolerant':
-				return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-400';
+				return 'info';
 			case 'allergy':
-				return 'bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-400';
+				return 'warning';
 			case 'severe_allergy':
-				return 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-400';
+				return 'danger';
 			default:
-				return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400';
+				return 'neutral';
 		}
 	}
 
@@ -286,7 +289,7 @@
 <div class="space-y-4">
 	<div class="flex items-start justify-between">
 		<div>
-			<h3 class="text-lg font-semibold">{m['dietary.restrictions_sectionHeading']()}</h3>
+			<h3 class="text-lg font-bold">{m['dietary.restrictions_sectionHeading']()}</h3>
 			<p class="text-sm text-muted-foreground">
 				{m['dietary.restrictions_sectionDescription']()}
 			</p>
@@ -325,19 +328,19 @@
 					<div class="flex-1 space-y-2">
 						<div class="flex flex-wrap items-center gap-2">
 							<h4 class="font-medium">{restriction.food_item.name}</h4>
-							<span
-								class="rounded px-2 py-1 text-xs font-medium {getSeverityColor(
-									restriction.restriction_type
-								)}"
-							>
-								{getSeverityLabel(restriction.restriction_type)}
-							</span>
+							<StatusBadge
+								tone={getSeverityTone(restriction.restriction_type)}
+								label={getSeverityLabel(restriction.restriction_type)}
+								size="sm"
+							/>
+							<!-- text-success unchanged by the light tint (>=5:1 vs card per
+							     audit-brand-themes.py; a 15% overlay barely shifts lightness). -->
 							<button
 								type="button"
 								onclick={() => handleToggleVisibility(restriction)}
 								class="ml-auto rounded px-2 py-1 text-xs font-medium transition-colors {restriction.is_public
-									? 'bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-950 dark:text-green-400'
-									: 'bg-gray-100 text-gray-800 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400'}"
+									? 'bg-success/15 text-success hover:bg-success/25'
+									: 'bg-muted text-muted-foreground hover:bg-muted/70'}"
 								aria-label={restriction.is_public
 									? m['dietary.restrictions_publicLabel']()
 									: m['dietary.restrictions_privateLabel']()}
@@ -353,7 +356,7 @@
 						{/if}
 
 						{#if restriction.restriction_type === 'severe_allergy'}
-							<div class="flex items-center gap-2 text-sm text-orange-600 dark:text-orange-400">
+							<div class="flex items-center gap-2 text-sm text-destructive">
 								<AlertTriangle class="h-4 w-4" aria-hidden="true" />
 								<span>{m['dietaryRestrictionsManager.severeAllergyWarning']()}</span>
 							</div>
