@@ -19,6 +19,7 @@
 	import { getExpirationDisplay, formatTokenUsage } from '$lib/utils/tokens';
 	import { formatEventDate } from '$lib/utils/date';
 	import { backendMessage } from '$lib/utils/api-error-detail';
+	import Sticker from '$lib/components/brand/Sticker.svelte';
 
 	const { data }: { data: PageData } = $props();
 
@@ -124,8 +125,14 @@
 						class="mx-auto mb-4 h-32 w-full rounded-lg object-cover"
 					/>
 				{/if}
-				<CardTitle class="text-2xl">{m['joinEventPage.invitedTitle']()}</CardTitle>
-				<CardDescription class="text-lg">
+				<p class="text-sm font-extrabold uppercase tracking-[0.12em] text-primary">
+					{m['joinEventPage.kicker']()}
+				</p>
+				<CardTitle class="mt-1 flex items-center justify-center gap-2 text-3xl font-black">
+					{m['joinEventPage.invitedTitle']()}
+					<span aria-hidden="true"><Sticker tint="crimson" rotate={-3}>🎉</Sticker></span>
+				</CardTitle>
+				<CardDescription class="text-lg font-bold">
 					<strong>{token.event_name}</strong>
 				</CardDescription>
 			</CardHeader>
@@ -180,17 +187,17 @@
 					<h3 class="font-semibold">{m['joinEventPage.benefitsTitle']()}</h3>
 					<ul class="space-y-1 text-sm text-muted-foreground">
 						<li class="flex items-center gap-2">
-							<CheckCircle class="h-4 w-4 text-green-600" aria-hidden="true" />
+							<CheckCircle class="h-4 w-4 text-success" aria-hidden="true" />
 							<span>{m['joinEventPage.benefit_invitation']()}</span>
 						</li>
 						{#if token.ticket_tiers?.length}
 							<li class="flex items-center gap-2">
-								<CheckCircle class="h-4 w-4 text-green-600" aria-hidden="true" />
+								<CheckCircle class="h-4 w-4 text-success" aria-hidden="true" />
 								<span>{m['joinEventPage.benefit_autoTicket']()}</span>
 							</li>
 						{/if}
 						<li class="flex items-center gap-2">
-							<CheckCircle class="h-4 w-4 text-green-600" aria-hidden="true" />
+							<CheckCircle class="h-4 w-4 text-success" aria-hidden="true" />
 							<span>{m['joinEventPage.benefit_rsvpConfirmation']()}</span>
 						</li>
 					</ul>

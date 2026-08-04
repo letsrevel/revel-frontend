@@ -27,7 +27,7 @@
 			>
 				<AlertTriangle class="h-8 w-8 text-destructive" aria-hidden="true" />
 			</div>
-			<Card.Title class="text-xl">{m['impersonatePage.errorTitle']()}</Card.Title>
+			<Card.Title class="text-xl font-bold">{m['impersonatePage.errorTitle']()}</Card.Title>
 			<Card.Description>
 				{data.errorMessage}
 			</Card.Description>
