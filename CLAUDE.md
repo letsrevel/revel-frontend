@@ -1066,10 +1066,17 @@ The poster language extends app-wide at three volumes (master spec:
 clamped [-3, 3]). Tone vocabulary: `common/tones.ts` (`brand | info | success |
 warning | danger | neutral`). `StatusBadge` is solid-fill only by design (audit-
 enforced pairs; no soft variant) — sizes `sm | md | lg`. `ToneTile`'s `tone` axis
-is semantic only; the admin quick-actions identity-color grid gets an additive
-poster-tint axis when PR 7 lands — don't overload `tone` for identity.
-`PageHeader`'s `decoration` slot is aria-hidden ornament only — status text
-goes through `actions` or `StatusBadge`, never `decoration`.
+stays semantic only; identity/destination coloring (the admin quick-actions grid)
+uses the additive, mutually-exclusive `tint` prop (PR 7) — a fixed poster-palette
+axis (`purple | lavender | periwinkle | amber | crimson | ink | paper`, type
+`PosterTint` in `common/tones.ts`) that renders a SOLID chip, identical in both
+modes (imagery rule), and wins over `tone` when both are set. Never overload
+`tone` for identity — reach for `tint` instead. `PageHeader` spreads arbitrary
+HTML attributes onto its `<header>` (`restProps`, PR 7, mirrors `StatusBadge`)
+so routed adopters can attach `id`/`aria-label`/etc; `SectionHeader` already took
+a plain `id` prop (forwarded to the heading) instead. `PageHeader`'s `decoration`
+slot is aria-hidden ornament only — status text goes through `actions` or
+`StatusBadge`, never `decoration`.
 
 **Typography scale** (encoded in the primitives; use the same classes when
 composing manually):
