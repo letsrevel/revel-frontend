@@ -32,7 +32,9 @@
 	const GAP = 9;
 
 	const worldAngle = $derived(
-		stage ? worldAngleFromUp(sectorWorldCenter(sector.transform, sector.width, sector.height), stage) : 0
+		stage
+			? worldAngleFromUp(sectorWorldCenter(sector.transform, sector.width, sector.height), stage)
+			: 0
 	);
 	const angle = $derived(stageDirectionAngle(sector.transform, worldAngle));
 	const rad = $derived((angle * Math.PI) / 180);
