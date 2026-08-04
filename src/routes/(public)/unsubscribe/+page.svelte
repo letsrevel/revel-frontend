@@ -8,6 +8,7 @@
 	import { Bell } from '@lucide/svelte';
 	import { SeoHead } from '$lib/seo';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 
 	const { data }: { data: PageData } = $props();
 
@@ -55,25 +56,19 @@
 			</a>
 		</div>
 	{:else if success}
-		<!-- Success message: hand-composed centerpiece (not the EmptyState
-		     primitive, which caps at h2/h3) so the page's only heading can be
-		     an h1 — mirrors the auth pages' interstitial pattern (see
-		     verify/+page.svelte). Chip recipe mirrors EmptyState's internal
-		     poster-tinted chip; success tone is right for "preferences saved". -->
-		<div class="text-center">
-			<span
-				aria-hidden="true"
-				class="mx-auto flex h-14 w-14 -rotate-2 items-center justify-center rounded-2xl bg-success text-success-foreground shadow-sm"
-			>
-				<Bell class="h-7 w-7" />
-			</span>
-			<h1 class="mt-4 text-3xl font-black leading-[1.12] sm:text-4xl">
-				{m['unsubscribePage.successTitle']()}
-			</h1>
-			<p class="mt-1.5 text-muted-foreground">
-				{m['unsubscribePage.successDescription']()}
-			</p>
-		</div>
+		<!-- Success message: the EmptyState DISPLAY variant (level 1). This block
+		     used to be hand-composed precisely because the primitive capped at
+		     h2/h3 and the page's only heading has to be an h1; level 1 lifts that
+		     cap, so the chip recipe, display scale and spacing now come from the
+		     primitive instead of being re-typed here. Success tone is still the
+		     right one for "preferences saved". -->
+		<EmptyState
+			level={1}
+			tone="success"
+			icon={Bell}
+			title={m['unsubscribePage.successTitle']()}
+			body={m['unsubscribePage.successDescription']()}
+		/>
 		<p class="mt-4 text-center text-sm text-muted-foreground">
 			{m['unsubscribePage.redirecting']()}
 		</p>
