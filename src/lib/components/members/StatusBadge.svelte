@@ -1,9 +1,10 @@
 <script lang="ts">
 	import {
-		getStatusConfig,
 		getStatusLabel,
 		type SubscriptionStatus
 	} from '$lib/utils/subscriptions';
+	import CommonStatusBadge from '$lib/components/common/StatusBadge.svelte';
+	import type { Tone } from '$lib/components/common/tones';
 
 	interface Props {
 		status: SubscriptionStatus;
@@ -12,13 +13,24 @@
 
 	const { status, class: extraClass = '' }: Props = $props();
 
-	const config = $derived(getStatusConfig(status));
+	/**
+	 * Thin mapper over the shared `StatusBadge` primitive: each of the six
+	 * `SubscriptionStatus` values keeps its OWN tone (no collapsing) — in
+	 * particular `paused` (admin-imposed, brand) stays visually distinct from
+	 * `cancelled` (over, neutral), a real distinction the old raw gray/muted
+	 * pairing barely carried.
+	 */
+	const TONE_MAP: Record<SubscriptionStatus, Tone> = {
+		active: 'success',
+		pending: 'info',
+		past_due: 'warning',
+		paused: 'brand',
+		cancelled: 'neutral',
+		expired: 'danger'
+	};
+
+	const tone = $derived(TONE_MAP[status]);
 	const label = $derived(getStatusLabel(status));
 </script>
 
-<span
-	class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {config.className} {extraClass}"
-	aria-label={label}
->
-	{label}
-</span>
+<CommonStatusBadge {tone} {label} size="sm" class={extraClass} />

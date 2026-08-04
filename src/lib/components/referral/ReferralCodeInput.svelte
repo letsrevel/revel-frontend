@@ -101,12 +101,13 @@
 	{#if isOpen}
 		<div class="space-y-3 border-t px-4 py-3">
 			{#if validatedCode}
-				<!-- Applied code display -->
-				<div class="rounded-md bg-emerald-50 p-3 dark:bg-emerald-950/30">
+				<!-- Applied code display. Composited tint mirrors ToneTile's audited
+				     success pair; body copy stays on --foreground/--success. -->
+				<div class="rounded-md border border-success/30 bg-success/10 p-3">
 					<div class="flex items-center justify-between">
 						<div class="flex items-center gap-2">
-							<Check class="h-4 w-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
-							<span class="font-mono font-semibold text-emerald-800 dark:text-emerald-300">
+							<Check class="h-4 w-4 text-success" aria-hidden="true" />
+							<span class="font-mono font-semibold text-success">
 								{validatedCode}
 							</span>
 						</div>
@@ -114,13 +115,13 @@
 							type="button"
 							onclick={handleRemove}
 							disabled={isProcessing}
-							class="rounded-md p-1 text-emerald-600 hover:bg-emerald-100 dark:text-emerald-400 dark:hover:bg-emerald-900/50"
+							class="rounded-md p-1 text-success hover:bg-success/15"
 							aria-label={m['referral.removeCode']()}
 						>
 							<X class="h-4 w-4" />
 						</button>
 					</div>
-					<p class="mt-1 text-sm text-emerald-700 dark:text-emerald-300">
+					<p class="mt-1 text-sm text-foreground">
 						{m['referral.validCode']()}
 					</p>
 				</div>

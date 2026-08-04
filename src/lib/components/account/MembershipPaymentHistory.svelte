@@ -9,6 +9,8 @@
 	import { MY_MEMBERSHIPS_KEY } from '$lib/utils/subscription-cache';
 	import { formatDate } from '$lib/utils/date';
 	import { formatMoney } from '$lib/utils/format';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
+	import type { Tone } from '$lib/components/common/tones';
 	import { ChevronDown, Loader2 } from '@lucide/svelte';
 
 	interface Props {
@@ -111,6 +113,23 @@
 		}
 	}
 
+	/** Thin mapper: raw payment status -> StatusBadge tone. Each of the four
+	 * backend statuses gets its own tone. */
+	function statusTone(status: PaymentStatus): Tone {
+		switch (status) {
+			case 'succeeded':
+				return 'success';
+			case 'pending':
+				return 'warning';
+			case 'failed':
+				return 'danger';
+			case 'refunded':
+				return 'neutral';
+			default:
+				return 'neutral';
+		}
+	}
+
 	function goTo(next: number) {
 		page = Math.min(Math.max(1, next), pageCount);
 	}
@@ -157,15 +176,17 @@
 				<div class="overflow-x-auto">
 					<table class="mt-1 w-full text-sm">
 						<caption class="sr-only">{m['subscriptions.payments.title']()}</caption>
-						<thead class="border-b text-left text-xs text-muted-foreground">
+						<thead
+							class="border-b text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
+						>
 							<tr>
-								<th scope="col" class="py-2 pr-3 font-medium">
+								<th scope="col" class="py-2 pr-3">
 									{m['subscriptions.payments.colDate']()}
 								</th>
-								<th scope="col" class="py-2 pr-3 font-medium">
+								<th scope="col" class="py-2 pr-3">
 									{m['subscriptions.payments.colAmount']()}
 								</th>
-								<th scope="col" class="py-2 font-medium">
+								<th scope="col" class="py-2">
 									{m['subscriptions.payments.colStatus']()}
 								</th>
 							</tr>
@@ -189,7 +210,9 @@
 											<span class="block text-xs text-muted-foreground">{refunded}</span>
 										{/if}
 									</td>
-									<td class="py-2">{statusLabel(p.status)}</td>
+									<td class="py-2">
+										<StatusBadge tone={statusTone(p.status)} label={statusLabel(p.status)} size="sm" />
+									</td>
 								</tr>
 							{/each}
 						</tbody>

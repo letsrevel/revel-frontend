@@ -254,7 +254,7 @@
 		<article aria-label={membership.organization_name}>
 			<div class="flex items-start justify-between gap-3">
 				<div class="min-w-0">
-					<h3 class="font-semibold">{membership.organization_name}</h3>
+					<h3 class="font-bold">{membership.organization_name}</h3>
 					{#if sub}
 						<p class="text-sm text-muted-foreground">
 							{sub.plan.name} · {formatPlanPrice(sub.plan)}
@@ -272,9 +272,10 @@
 
 			{#if sub && line}
 				{#if pastDueOnline}
+					<!-- Warning tint mirrors ToneTile's amber recipe (see security page). -->
 					<p
 						role="alert"
-						class="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-900/20 dark:text-amber-100"
+						class="mt-3 rounded-lg border border-highlight/40 bg-highlight/20 p-3 text-sm text-highlight-foreground dark:text-highlight"
 					>
 						{#if sub.grace_deadline}
 							{m['subscriptions.pastDue.bannerDated']({ date: formatDate(sub.grace_deadline) })}

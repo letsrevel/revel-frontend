@@ -52,7 +52,7 @@
 	{@const line = getDateLine(sub)}
 	<Card>
 		<CardContent class="p-4">
-			<h3 class="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+			<h3 class="text-xs font-extrabold uppercase tracking-[0.12em] text-primary">
 				{m['orgPublic.yourMembership.title']()}
 			</h3>
 			<div class="mt-1 font-medium">{sub.plan.name}</div>
