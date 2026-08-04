@@ -332,7 +332,9 @@
 
 <Card
 	class={cn(
-		'group cursor-pointer overflow-hidden transition-all hover:shadow-md',
+		// The item is a Card, so it already carries the 2px edge + `shadow-poster`
+		// (uplift); hover grows that float rather than swapping in shadow-md.
+		'group cursor-pointer overflow-hidden transition-all hover:shadow-poster-lg',
 		!isRead && 'border-l-4 border-l-primary bg-primary/5',
 		// bg-highlight/20 mirrors ToneTile's audited warning tokens (hand-verified
 		// 12.6:1 light / 6.7:1 dark — see ToneTile.svelte).
