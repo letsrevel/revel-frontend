@@ -18,6 +18,10 @@
 		ReferralPayoutStatementSchema
 	} from '$lib/api/generated/types.gen';
 	import { formatDate } from '$lib/utils/date';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
+	import type { Tone } from '$lib/components/common/tones';
 
 	const user = $derived(authStore.user);
 	const accessToken = $derived(authStore.accessToken);
@@ -109,20 +113,23 @@
 		return `${currency.toUpperCase()} ${num.toFixed(2)}`;
 	}
 
-	function statusColor(status: string): string {
+	/** Thin mapper: raw payout status -> StatusBadge tone. Each of the five
+	 * backend statuses gets its own tone so none of the real distinctions
+	 * (e.g. "pending" vs "failed") collapse onto the same color. */
+	function statusTone(status: string): Tone {
 		switch (status) {
 			case 'paid':
-				return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300';
+				return 'success';
 			case 'pending':
-				return 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300';
+				return 'warning';
 			case 'calculated':
-				return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
+				return 'neutral';
 			case 'failed':
-				return 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300';
+				return 'danger';
 			case 'rolled_over':
-				return 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300';
+				return 'info';
 			default:
-				return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
+				return 'neutral';
 		}
 	}
 
@@ -159,8 +166,11 @@
 		</a>
 	</div>
 
-	<h1 class="text-2xl font-bold">{m['referral.payoutsTitle']()}</h1>
-	<p class="mt-1 text-sm text-muted-foreground">{m['referral.payoutsDescription']()}</p>
+	<PageHeader
+		kicker={m['myInvoices.account']()}
+		title={m['referral.payoutsTitle']()}
+		subtitle={m['referral.payoutsDescription']()}
+	/>
 
 	{#if payoutsQuery.isLoading}
 		<div class="mt-8 flex justify-center">
@@ -174,21 +184,23 @@
 			{m['referral.error']()}
 		</div>
 	{:else if payouts.length === 0}
-		<div class="mt-8 rounded-lg border bg-card p-8 text-center">
-			<FileText class="mx-auto h-12 w-12 text-muted-foreground" aria-hidden="true" />
-			<h2 class="mt-4 text-lg font-semibold">{m['referral.noPayouts']()}</h2>
-			<p class="mt-1 text-sm text-muted-foreground">{m['referral.noPayoutsDescription']()}</p>
-		</div>
+		<EmptyState
+			icon={FileText}
+			level={2}
+			title={m['referral.noPayouts']()}
+			body={m['referral.noPayoutsDescription']()}
+			class="mt-8"
+		/>
 	{:else}
 		<!-- Payouts Table -->
 		<div class="mt-6 overflow-x-auto rounded-lg border">
 			<table class="w-full text-sm">
 				<thead class="border-b bg-muted/50">
-					<tr>
-						<th class="px-4 py-3 text-left font-medium">{m['referral.period']()}</th>
-						<th class="px-4 py-3 text-right font-medium">{m['referral.amount']()}</th>
-						<th class="px-4 py-3 text-center font-medium">{m['referral.status']()}</th>
-						<th class="px-4 py-3 text-right font-medium">{m['referral.actions']()}</th>
+					<tr class="text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
+						<th class="px-4 py-3 text-left">{m['referral.period']()}</th>
+						<th class="px-4 py-3 text-right">{m['referral.amount']()}</th>
+						<th class="px-4 py-3 text-center">{m['referral.status']()}</th>
+						<th class="px-4 py-3 text-right">{m['referral.actions']()}</th>
 					</tr>
 				</thead>
 				<tbody class="divide-y">
@@ -200,10 +212,7 @@
 							<td class="px-4 py-3 text-right font-mono text-sm">
 								{formatAmount(payout.payout_amount, payout.currency)}
 								{#if parseFloat(payout.rolled_over_amount) > 0}
-									<p
-										class="mt-0.5 text-xs text-blue-600 dark:text-blue-400"
-										title={m['referral.rolledOverTooltip']()}
-									>
+									<p class="mt-0.5 text-xs text-info" title={m['referral.rolledOverTooltip']()}>
 										{m['referral.rolledOverAmount']()}: {formatAmount(
 											payout.rolled_over_amount,
 											payout.currency
@@ -212,13 +221,7 @@
 								{/if}
 							</td>
 							<td class="px-4 py-3 text-center">
-								<span
-									class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium {statusColor(
-										payout.status
-									)}"
-								>
-									{statusLabel(payout.status)}
-								</span>
+								<StatusBadge tone={statusTone(payout.status)} label={statusLabel(payout.status)} size="sm" />
 							</td>
 							<td class="px-4 py-3 text-right">
 								<div class="flex items-center justify-end gap-1">
