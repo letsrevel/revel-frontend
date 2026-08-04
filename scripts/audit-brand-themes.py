@@ -117,6 +117,12 @@ TEXT_PAIRS = [  # (fg, bg, min_ratio, note)
     ("accent-foreground", "accent", 4.5, "accent label"),
     ("highlight-foreground", "highlight", 4.5, "highlight label"),
     ("destructive-foreground", "destructive", 4.5, "destructive label"),
+    ("success-foreground", "success", 4.5, "success badge label"),
+    ("info-foreground", "info", 4.5, "info badge label"),
+    ("success", "background", 3.0, "success as icon/accent on page"),
+    ("success", "card", 3.0, "success as icon/accent on card"),
+    ("info", "background", 3.0, "info as icon/accent on page"),
+    ("info", "card", 3.0, "info as icon/accent on card"),
     ("primary", "background", 3.0, "primary as text-primary/link on page"),
     ("primary", "card", 3.0, "primary on card"),
     ("ring", "background", 3.0, "focus ring visibility"),
@@ -132,7 +138,7 @@ TEXT_PAIRS = [  # (fg, bg, min_ratio, note)
     ("poster-crimson-deep", "poster-white", 4.5, "sticker text on white sticker"),
 ]
 
-SEMANTIC = ["primary", "secondary", "accent", "destructive", "highlight"]
+SEMANTIC = ["primary", "secondary", "accent", "destructive", "highlight", "success", "info"]
 
 failures = 0
 confusables = 0

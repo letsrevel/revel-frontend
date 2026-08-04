@@ -64,6 +64,15 @@ export default {
 					DEFAULT: 'hsl(var(--highlight) / <alpha-value>)',
 					foreground: 'hsl(var(--highlight-foreground) / <alpha-value>)'
 				},
+				// Rebrand additions: success/info complete the semantic set.
+				success: {
+					DEFAULT: 'hsl(var(--success) / <alpha-value>)',
+					foreground: 'hsl(var(--success-foreground) / <alpha-value>)'
+				},
+				info: {
+					DEFAULT: 'hsl(var(--info) / <alpha-value>)',
+					foreground: 'hsl(var(--info-foreground) / <alpha-value>)'
+				},
 				popover: {
 					DEFAULT: 'hsl(var(--popover) / <alpha-value>)',
 					foreground: 'hsl(var(--popover-foreground) / <alpha-value>)'
@@ -71,6 +80,19 @@ export default {
 				card: {
 					DEFAULT: 'hsl(var(--card) / <alpha-value>)',
 					foreground: 'hsl(var(--card-foreground) / <alpha-value>)'
+				},
+				// Poster palette as first-class utilities (bg-poster-amber, ...).
+				// Fixed values, identical in dark mode by design (imagery, not surfaces).
+				poster: {
+					purple: 'hsl(var(--poster-purple) / <alpha-value>)',
+					crimson: 'hsl(var(--poster-crimson) / <alpha-value>)',
+					'crimson-deep': 'hsl(var(--poster-crimson-deep) / <alpha-value>)',
+					lavender: 'hsl(var(--poster-lavender) / <alpha-value>)',
+					periwinkle: 'hsl(var(--poster-periwinkle) / <alpha-value>)',
+					amber: 'hsl(var(--poster-amber) / <alpha-value>)',
+					ink: 'hsl(var(--poster-ink) / <alpha-value>)',
+					paper: 'hsl(var(--poster-paper) / <alpha-value>)',
+					white: 'hsl(var(--poster-white) / <alpha-value>)'
 				}
 			},
 			borderRadius: {
