@@ -30,13 +30,15 @@
 
 	const widthPercentage = $derived((score / 5) * 100);
 
-	// Color based on score
+	// Color based on score. Tokens only (raw-hue sweep): success/info/highlight/
+	// destructive already carry their own dark-mode values, so no `dark:`
+	// override is needed here (unlike the raw Tailwind hues this replaces).
 	const barColor = $derived.by(() => {
 		if (score === 0) return 'bg-transparent';
-		if (score <= 2) return 'bg-red-500';
-		if (score === 3) return 'bg-yellow-500';
-		if (score === 4) return 'bg-blue-500';
-		return 'bg-green-500';
+		if (score <= 2) return 'bg-destructive';
+		if (score === 3) return 'bg-highlight';
+		if (score === 4) return 'bg-info';
+		return 'bg-success';
 	});
 
 	// Label based on score - only show positive labels when ALL requirements are met
@@ -48,12 +50,22 @@
 		return m['passwordStrength.strong']();
 	});
 
-	// Label color based on whether all requirements are met
+	// Label color based on whether all requirements are met. `highlight` (amber)
+	// text needs the same light/dark swap ToneTile uses for its warning tone
+	// (amber-on-light fails at 1.8:1, so light mode falls back to
+	// highlight-foreground; dark mode uses highlight directly) — see
+	// ToneTile.svelte's verified-ratio comment for the underlying numbers.
+	// `destructive` as plain text (not a solid fill) is fine in light mode
+	// (8.63:1 on background) but the dark token is only ~3.1:1 against the
+	// dark background/card — under the 4.5:1 floor for this text-sm label —
+	// so dark mode swaps to destructive-foreground (white), 16.8-18.3:1,
+	// hand-verified since this pairing isn't in audit-brand-themes.py's
+	// TEXT_PAIRS (only the solid destructive-foreground-on-destructive pair is).
 	const labelColor = $derived.by(() => {
-		if (score === 5) return 'text-green-600 dark:text-green-400';
-		if (score === 4) return 'text-blue-500';
-		if (score === 3) return 'text-yellow-500';
-		return 'text-red-500';
+		if (score === 5) return 'text-success';
+		if (score === 4) return 'text-info';
+		if (score === 3) return 'text-highlight-foreground dark:text-highlight';
+		return 'text-destructive dark:text-destructive-foreground';
 	});
 
 	// Update isValid whenever password requirements change
@@ -91,8 +103,8 @@
 		<div class="space-y-1.5 text-xs">
 			<div
 				class="flex items-center gap-2 {hasMinLength
-					? 'text-green-600 dark:text-green-400'
-					: 'text-red-500 dark:text-red-400'}"
+					? 'text-success'
+					: 'text-destructive dark:text-destructive-foreground'}"
 			>
 				{#if hasMinLength}
 					<Check class="h-3.5 w-3.5" aria-hidden="true" />
@@ -104,8 +116,8 @@
 
 			<div
 				class="flex items-center gap-2 {hasUppercase
-					? 'text-green-600 dark:text-green-400'
-					: 'text-red-500 dark:text-red-400'}"
+					? 'text-success'
+					: 'text-destructive dark:text-destructive-foreground'}"
 			>
 				{#if hasUppercase}
 					<Check class="h-3.5 w-3.5" aria-hidden="true" />
@@ -117,8 +129,8 @@
 
 			<div
 				class="flex items-center gap-2 {hasLowercase
-					? 'text-green-600 dark:text-green-400'
-					: 'text-red-500 dark:text-red-400'}"
+					? 'text-success'
+					: 'text-destructive dark:text-destructive-foreground'}"
 			>
 				{#if hasLowercase}
 					<Check class="h-3.5 w-3.5" aria-hidden="true" />
@@ -130,8 +142,8 @@
 
 			<div
 				class="flex items-center gap-2 {hasDigit
-					? 'text-green-600 dark:text-green-400'
-					: 'text-red-500 dark:text-red-400'}"
+					? 'text-success'
+					: 'text-destructive dark:text-destructive-foreground'}"
 			>
 				{#if hasDigit}
 					<Check class="h-3.5 w-3.5" aria-hidden="true" />
@@ -143,8 +155,8 @@
 
 			<div
 				class="flex items-center gap-2 {hasSpecial
-					? 'text-green-600 dark:text-green-400'
-					: 'text-red-500 dark:text-red-400'}"
+					? 'text-success'
+					: 'text-destructive dark:text-destructive-foreground'}"
 			>
 				{#if hasSpecial}
 					<Check class="h-3.5 w-3.5" aria-hidden="true" />
