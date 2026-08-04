@@ -45,14 +45,14 @@
 		<!-- Entry Info -->
 		<div class="min-w-0 flex-1">
 			<div class="flex items-center gap-2">
-				<h3 class="truncate font-semibold text-foreground">
+				<h3 class="truncate font-bold text-foreground">
 					{displayName}
 				</h3>
 				{#if isLinkedUser}
 					<span
-						class="inline-flex items-center rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-800 dark:bg-purple-900 dark:text-purple-100"
+						class="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
 					>
-						<User class="mr-1 h-3 w-3" />
+						<User class="mr-1 h-3 w-3" aria-hidden="true" />
 						{m['blacklistEntryCard.registeredUser']()}
 					</span>
 				{/if}

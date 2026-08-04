@@ -254,8 +254,8 @@
 				<div class="flex items-center gap-3">
 					<!-- Pulsing recording indicator -->
 					<div class="relative flex h-4 w-4 items-center justify-center">
-						<div class="absolute h-4 w-4 animate-ping rounded-full bg-red-500 opacity-75"></div>
-						<div class="relative h-3 w-3 rounded-full bg-red-500"></div>
+						<div class="absolute h-4 w-4 animate-ping rounded-full bg-destructive opacity-75"></div>
+						<div class="relative h-3 w-3 rounded-full bg-destructive"></div>
 					</div>
 
 					<!-- Timer -->
@@ -277,7 +277,7 @@
 				<Button
 					variant="default"
 					size="sm"
-					class="flex-1 gap-2 bg-red-600 hover:bg-red-700"
+					class="flex-1 gap-2 bg-destructive text-destructive-foreground hover:bg-destructive/90"
 					onclick={stopRecording}
 				>
 					<Square class="h-4 w-4" />

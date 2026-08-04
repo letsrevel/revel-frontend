@@ -8,9 +8,11 @@
 	} from '$lib/api/generated/sdk.gen';
 	import type { AdditionalResourceSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { Plus, Search, Filter } from '@lucide/svelte';
+	import { Plus, Search, Filter, AlertTriangle } from '@lucide/svelte';
 	import ResourceList from '$lib/components/resources/ResourceList.svelte';
 	import ResourceModal from '$lib/components/resources/ResourceModal.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 
 	const organization = $derived($page.data.organization);
 	const accessToken = $derived(authStore.accessToken);
@@ -113,15 +115,7 @@
 </script>
 
 <div class="space-y-6">
-	<!-- Header -->
-	<div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-		<div>
-			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
-				{m['orgAdmin.resources.pageTitle']()}
-			</h1>
-			<p class="text-muted-foreground">{m['orgAdmin.resources.pageDescription']()}</p>
-		</div>
-
+	{#snippet resourcesHeaderActions()}
 		<button
 			type="button"
 			onclick={handleCreate}
@@ -130,7 +124,13 @@
 			<Plus class="h-5 w-5" aria-hidden="true" />
 			{m['orgAdmin.resources.addResourceButton']()}
 		</button>
-	</div>
+	{/snippet}
+
+	<PageHeader
+		title={m['orgAdmin.resources.pageTitle']()}
+		subtitle={m['orgAdmin.resources.pageDescription']()}
+		actions={resourcesHeaderActions}
+	/>
 
 	<!-- Filters -->
 	<div class="flex flex-col gap-3 md:flex-row md:items-center">
@@ -182,9 +182,22 @@
 
 	<!-- Content -->
 	{#if error}
-		<div class="rounded-md bg-destructive/10 p-4 text-destructive" role="alert">
-			<p class="font-semibold">{m['orgAdmin.resources.error.title']()}</p>
-			<p class="mt-1 text-sm">{m['orgAdmin.resources.error.description']()}</p>
+		<!-- dark:bg-destructive/25 dark:text-destructive-foreground (AutoEvalRecommendation's
+		     pattern): plain text-destructive on this /10 tint measured 2.69-2.95:1 in dark
+		     mode, under the 3:1 non-text floor; the /25 tint + destructive-foreground (white)
+		     icon pairing measures ~14-15:1 instead. -->
+		<div
+			class="flex gap-3 rounded-md border border-destructive/50 bg-destructive/10 p-4 dark:bg-destructive/25"
+			role="alert"
+		>
+			<AlertTriangle
+				class="h-5 w-5 shrink-0 text-destructive dark:text-destructive-foreground"
+				aria-hidden="true"
+			/>
+			<div>
+				<p class="font-semibold text-foreground">{m['orgAdmin.resources.error.title']()}</p>
+				<p class="mt-1 text-sm text-foreground">{m['orgAdmin.resources.error.description']()}</p>
+			</div>
 		</div>
 	{:else if isLoading}
 		<div class="flex items-center justify-center py-12">
@@ -194,27 +207,16 @@
 			></div>
 		</div>
 	{:else if resources.length === 0}
-		<div
-			class="rounded-lg border-2 border-dashed border-gray-300 p-12 text-center dark:border-gray-600"
-		>
-			<Filter class="mx-auto h-12 w-12 text-muted-foreground" aria-hidden="true" />
-			<h3 class="mt-4 text-lg font-semibold">{m['orgAdmin.resources.empty.title']()}</h3>
-			<p class="mt-2 text-sm text-muted-foreground">
-				{searchQuery || typeFilter !== 'all' || visibilityFilter !== 'all'
-					? m['orgAdmin.resources.empty.withFilters']()
-					: m['orgAdmin.resources.empty.noFilters']()}
-			</p>
-			{#if !searchQuery && typeFilter === 'all' && visibilityFilter === 'all'}
-				<button
-					type="button"
-					onclick={handleCreate}
-					class="mt-4 inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-				>
-					<Plus class="h-5 w-5" aria-hidden="true" />
-					{m['orgAdmin.resources.addResourceButton']()}
-				</button>
-			{/if}
-		</div>
+		<EmptyState
+			icon={Filter}
+			title={m['orgAdmin.resources.empty.title']()}
+			body={searchQuery || typeFilter !== 'all' || visibilityFilter !== 'all'
+				? m['orgAdmin.resources.empty.withFilters']()
+				: m['orgAdmin.resources.empty.noFilters']()}
+			action={!searchQuery && typeFilter === 'all' && visibilityFilter === 'all'
+				? resourcesHeaderActions
+				: undefined}
+		/>
 	{:else}
 		<ResourceList
 			{resources}

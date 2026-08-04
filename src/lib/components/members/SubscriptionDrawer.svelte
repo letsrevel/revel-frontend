@@ -343,7 +343,7 @@
 					     being squeezed to a sliver once the email does yield. -->
 					<div class="flex items-start justify-between gap-4">
 						<div class="min-w-0">
-							<div class="text-base font-semibold">{sub.user_display_name}</div>
+							<div class="text-base font-bold">{sub.user_display_name}</div>
 							<div class="break-all text-xs text-muted-foreground">{sub.user_email}</div>
 						</div>
 						<StatusBadge status={sub.status} class="shrink-0" />
@@ -457,7 +457,7 @@
 			{/if}
 
 			<div class="pt-2">
-				<h4 class="mb-2 text-sm font-semibold">
+				<h4 class="mb-2 text-sm font-bold">
 					{m['orgAdmin.members.subscriptions.drawer.payments']()}
 				</h4>
 				{#if paymentsQuery.isLoading}

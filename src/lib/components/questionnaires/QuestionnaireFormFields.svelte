@@ -238,7 +238,7 @@
 					type="checkbox"
 					checked={requiresEvaluation}
 					onchange={(e) => onRequiresEvaluationChange(e.currentTarget.checked)}
-					class="h-4 w-4 rounded border-gray-300"
+					class="h-4 w-4 rounded border-input"
 					disabled={!canEdit || questionnaireType === 'feedback'}
 				/>
 				<Label for="requires-evaluation" class="font-normal"
@@ -370,7 +370,7 @@
 					type="checkbox"
 					checked={shuffleQuestions}
 					onchange={(e) => onShuffleQuestionsChange(e.currentTarget.checked)}
-					class="h-4 w-4 rounded border-gray-300"
+					class="h-4 w-4 rounded border-input"
 					disabled={!canEdit}
 				/>
 				<Label for="shuffle-questions" class="font-normal"
@@ -383,7 +383,7 @@
 					type="checkbox"
 					checked={shuffleSections}
 					onchange={(e) => onShuffleSectionsChange(e.currentTarget.checked)}
-					class="h-4 w-4 rounded border-gray-300"
+					class="h-4 w-4 rounded border-input"
 					disabled={!canEdit}
 				/>
 				<Label for="shuffle-sections" class="font-normal"
@@ -400,7 +400,7 @@
 					type="checkbox"
 					checked={membersExempt}
 					onchange={(e) => onMembersExemptChange(e.currentTarget.checked)}
-					class="h-4 w-4 rounded border-gray-300"
+					class="h-4 w-4 rounded border-input"
 					disabled={!canEdit}
 				/>
 				<Label for="members-exempt" class="font-normal"
@@ -421,7 +421,7 @@
 						type="checkbox"
 						checked={perEvent}
 						onchange={(e) => onPerEventChange(e.currentTarget.checked)}
-						class="h-4 w-4 rounded border-gray-300"
+						class="h-4 w-4 rounded border-input"
 						disabled={!canEdit}
 					/>
 					<Label for="per-event" class="font-normal"

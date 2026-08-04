@@ -27,4 +27,10 @@
 	);
 </script>
 
-<StatusBadge {tone} {label} size="sm" />
+<!--
+	`aria-label` is explicit: `common/StatusBadge` does not default one from its
+	content, and every poll surface (admin list/detail cards) locates this pill
+	by its status text — closing the same contract hole the other 11 mappers in
+	this program already guard against (see `members/StatusBadge.test.ts`).
+-->
+<StatusBadge {tone} {label} size="sm" aria-label={label} />

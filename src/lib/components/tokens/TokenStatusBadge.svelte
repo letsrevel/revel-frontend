@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { cn } from '$lib/utils/cn';
+	import CommonStatusBadge from '$lib/components/common/StatusBadge.svelte';
+	import type { Tone } from '$lib/components/common/tones';
 
 	interface Props {
 		status: 'active' | 'expired' | 'limit-reached' | 'staff';
@@ -9,34 +10,38 @@
 
 	const { status, class: className }: Props = $props();
 
-	const statusConfig = {
-		active: {
-			label: m['tokenStatusBadge.active'](),
-			classes: 'bg-green-100 text-green-800 border-green-200'
-		},
-		expired: {
-			label: m['tokenStatusBadge.expired'](),
-			classes: 'bg-red-100 text-red-800 border-red-200'
-		},
-		'limit-reached': {
-			label: m['tokenStatusBadge.limitReached'](),
-			classes: 'bg-yellow-100 text-yellow-800 border-yellow-200'
-		},
-		staff: {
-			label: m['tokenStatusBadge.staff'](),
-			classes: 'bg-purple-100 text-purple-800 border-purple-200'
-		}
+	/**
+	 * Thin mapper over the shared `StatusBadge` primitive (rebrand). `staff`
+	 * keeps its own identity as `brand` — it isn't a lifecycle state like the
+	 * other three, it is a distinct token *kind* (unlimited, staff-issued) — so
+	 * collapsing it onto `neutral` would erase the one distinction admins scan
+	 * this pill for. `expired` and `limit-reached` stay apart too: expired is
+	 * "the token itself lapsed" (`danger`, mirrors event-side
+	 * `WaitlistOfferStatusBadge`'s expired state), limit-reached is "the token
+	 * hit its use cap" (`warning`, still a live token, just capped).
+	 */
+	const TONE_MAP: Record<Props['status'], Tone> = {
+		active: 'success',
+		expired: 'danger',
+		'limit-reached': 'warning',
+		staff: 'brand'
 	};
 
-	const config = $derived(statusConfig[status]);
+	const LABEL_MAP: Record<Props['status'], () => string> = {
+		active: () => m['tokenStatusBadge.active'](),
+		expired: () => m['tokenStatusBadge.expired'](),
+		'limit-reached': () => m['tokenStatusBadge.limitReached'](),
+		staff: () => m['tokenStatusBadge.staff']()
+	};
+
+	const tone = $derived(TONE_MAP[status]);
+	const label = $derived(LABEL_MAP[status]());
 </script>
 
-<span
-	class={cn(
-		'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold',
-		config.classes,
-		className
-	)}
->
-	{config.label}
-</span>
+<!--
+	`aria-label` is explicit: `common/StatusBadge` does not default one, and
+	every token surface (event admin card, org admin card) is located by its
+	status pill through this text — dropping it here silently un-names them
+	the same way it did for `members/StatusBadge` (see that component's test).
+-->
+<CommonStatusBadge {tone} {label} size="sm" class={className} aria-label={label} />

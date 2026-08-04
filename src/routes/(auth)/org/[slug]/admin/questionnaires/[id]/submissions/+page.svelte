@@ -8,13 +8,16 @@
 	import { Card } from '$lib/components/ui/card';
 	import SubmissionStats from '$lib/components/questionnaires/SubmissionStats.svelte';
 	import SubmissionStatusBadge from '$lib/components/questionnaires/SubmissionStatusBadge.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import {
 		ArrowLeft,
 		ChevronLeft,
 		ChevronRight,
 		ChevronsLeft,
 		ChevronsRight,
-		ArrowUpDown
+		ArrowUpDown,
+		FileText
 	} from '@lucide/svelte';
 	import { resolveSubmissionBadgeStatus } from '$lib/utils/resolve-submission-badge-status';
 	import { formatDateTime } from '$lib/utils/date';
@@ -93,19 +96,21 @@
 			<ArrowLeft class="h-4 w-4" />
 			{m['questionnaireSubmissionsPage.backToQuestionnaires']()}
 		</a>
-		<div class="flex items-center justify-between">
-			<div>
-				<h1 class="text-3xl font-bold">{m['questionnaireSubmissionsPage.title']()}</h1>
-				<p class="mt-2 text-muted-foreground">{m['questionnaireSubmissionsPage.subtitle']()}</p>
-			</div>
-			<Button
-				href="/org/{data.organizationSlug}/admin/questionnaires/{data.questionnaireId}/summary"
-				variant="outline"
-				size="sm"
-			>
-				{m['questionnaireSubmissionsPage.viewSummary']()}
-			</Button>
-		</div>
+		<PageHeader
+			title={m['questionnaireSubmissionsPage.title']()}
+			subtitle={m['questionnaireSubmissionsPage.subtitle']()}
+			kicker={data.organization.name}
+		>
+			{#snippet actions()}
+				<Button
+					href="/org/{data.organizationSlug}/admin/questionnaires/{data.questionnaireId}/summary"
+					variant="outline"
+					size="sm"
+				>
+					{m['questionnaireSubmissionsPage.viewSummary']()}
+				</Button>
+			{/snippet}
+		</PageHeader>
 	</div>
 
 	<!-- Stats -->
@@ -197,18 +202,14 @@
 
 	<!-- Submissions List -->
 	{#if data.submissions.length === 0}
-		<Card class="p-12 text-center">
-			<p class="text-lg text-muted-foreground">
-				{m['questionnaireSubmissionsPage.noSubmissionsFound']()}
-			</p>
-			<p class="mt-2 text-sm text-muted-foreground">
-				{#if data.filters.search || data.filters.evaluationStatus}
-					{m['questionnaireSubmissionsPage.adjustFilters']()}
-				{:else}
-					{m['questionnaireSubmissionsPage.noSubmissionsYet']()}
-				{/if}
-			</p>
-		</Card>
+		<EmptyState
+			icon={FileText}
+			tone="neutral"
+			title={m['questionnaireSubmissionsPage.noSubmissionsFound']()}
+			body={data.filters.search || data.filters.evaluationStatus
+				? m['questionnaireSubmissionsPage.adjustFilters']()
+				: m['questionnaireSubmissionsPage.noSubmissionsYet']()}
+		/>
 	{:else}
 		<!-- Desktop Table View -->
 		<div class="hidden overflow-x-auto md:block">
@@ -216,21 +217,26 @@
 				<table class="w-full">
 					<thead class="border-b bg-muted/50">
 						<tr>
-							<th class="px-6 py-4 text-left text-sm font-medium"
+							<th
+								class="px-6 py-4 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 								>{m['questionnaireSubmissionsPage.header_respondent']()}</th
 							>
-							<th class="px-6 py-4 text-left text-sm font-medium"
+							<th
+								class="px-6 py-4 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 								>{m['questionnaireSubmissionsPage.header_submitted']()}</th
 							>
-							<th class="px-6 py-4 text-left text-sm font-medium"
+							<th
+								class="px-6 py-4 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 								>{m['questionnaireSubmissionsPage.header_evaluationStatus']()}</th
 							>
 							{#if data.requiresEvaluation}
-								<th class="px-6 py-4 text-left text-sm font-medium"
+								<th
+									class="px-6 py-4 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 									>{m['questionnaireSubmissionsPage.header_score']()}</th
 								>
 							{/if}
-							<th class="px-6 py-4 text-right text-sm font-medium"
+							<th
+								class="px-6 py-4 text-right text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 								>{m['questionnaireSubmissionsPage.header_actions']()}</th
 							>
 						</tr>

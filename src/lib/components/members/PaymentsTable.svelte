@@ -55,13 +55,19 @@
 		<table class="w-full text-sm">
 			<thead class="border-b text-left">
 				<tr>
-					<th scope="col" class="py-2"
+					<th
+						scope="col"
+						class="py-2 text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 						>{m['orgAdmin.members.subscriptions.drawer.paymentsCol.date']()}</th
 					>
-					<th scope="col" class="py-2"
+					<th
+						scope="col"
+						class="py-2 text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 						>{m['orgAdmin.members.subscriptions.drawer.paymentsCol.amount']()}</th
 					>
-					<th scope="col" class="py-2"
+					<th
+						scope="col"
+						class="py-2 text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 						>{m['orgAdmin.members.subscriptions.drawer.paymentsCol.status']()}</th
 					>
 					<th class="py-2"></th>

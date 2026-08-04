@@ -252,6 +252,7 @@ export function formatPlanPrice(plan: PricedPlan): string {
 export {
 	getStatusConfig,
 	getStatusLabel,
+	getStatusTone,
 	STATUS_ORDER,
 	type StatusConfig,
 	type StatusTone

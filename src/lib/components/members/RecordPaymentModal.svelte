@@ -80,7 +80,9 @@
 			</div>
 
 			{#if currencyWarning}
-				<p class="rounded border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+				<p
+					class="rounded border border-highlight bg-highlight/10 px-3 py-2 text-xs text-foreground"
+				>
 					{m['orgAdmin.members.subscriptions.recordPayment.currencyWarning']({
 						planCurrency: subscription.plan.currency,
 						selected: currency

@@ -21,15 +21,27 @@
 			evaluation.evaluator_id === null // Auto-eval has no evaluator
 	);
 
+	// Tone→class quads (rebrand): replaces hand-picked yellow/green/red
+	// bg+border+icon combos with token equivalents. The card-level `bgClass` is
+	// a flat, mode-invariant /10 tint (only default `text-foreground` heading/
+	// description sit on it, so no AA concern). The icon chip gets its own
+	// `iconBgClass`/`iconClass` pair copied verbatim from `ToneTile`'s audited
+	// tone table (`common/ToneTile.svelte`): `warning` has no `--warning` token,
+	// so it reuses `bg-highlight/20` + `text-highlight-foreground
+	// dark:text-highlight`; `danger`'s dark mode flips to a stronger /25 tint
+	// with `text-destructive-foreground` because plain `text-destructive` on a
+	// /10 tint measures 2.95:1 in dark mode (under the AA floor — see
+	// ToneTile's own ratio comment). `success` passes AA as direct icon color.
 	const statusConfig = $derived.by(() => {
 		if (!evaluation || (evaluation.status as QuestionnaireEvaluationStatus) === 'pending review') {
 			return {
 				icon: AlertCircle,
 				label: 'Awaiting Review',
 				description: 'This submission has not been evaluated yet.',
-				bgClass: 'bg-yellow-50 dark:bg-yellow-950/20',
-				borderClass: 'border-yellow-200 dark:border-yellow-800',
-				iconClass: 'text-yellow-700 dark:text-yellow-400'
+				bgClass: 'bg-highlight/10',
+				borderClass: 'border-highlight',
+				iconBgClass: 'bg-highlight/20',
+				iconClass: 'text-highlight-foreground dark:text-highlight'
 			};
 		}
 
@@ -38,9 +50,10 @@
 				icon: CheckCircle,
 				label: 'Recommended: Approve',
 				description: evaluation.comments || 'This submission meets the requirements.',
-				bgClass: 'bg-green-50 dark:bg-green-950/20',
-				borderClass: 'border-green-200 dark:border-green-800',
-				iconClass: 'text-green-700 dark:text-green-400'
+				bgClass: 'bg-success/10',
+				borderClass: 'border-success/50',
+				iconBgClass: 'bg-success/10',
+				iconClass: 'text-success'
 			};
 		}
 
@@ -48,9 +61,10 @@
 			icon: XCircle,
 			label: 'Recommended: Reject',
 			description: evaluation.comments || 'This submission does not meet the requirements.',
-			bgClass: 'bg-red-50 dark:bg-red-950/20',
-			borderClass: 'border-red-200 dark:border-red-800',
-			iconClass: 'text-red-700 dark:text-red-400'
+			bgClass: 'bg-destructive/10',
+			borderClass: 'border-destructive/50',
+			iconBgClass: 'bg-destructive/10 dark:bg-destructive/25',
+			iconClass: 'text-destructive dark:text-destructive-foreground'
 		};
 	});
 
@@ -78,7 +92,7 @@
 			<div
 				class={cn(
 					'flex h-12 w-12 shrink-0 items-center justify-center rounded-full',
-					statusConfig.bgClass
+					statusConfig.iconBgClass
 				)}
 			>
 				<IconComponent class={cn('h-6 w-6', statusConfig.iconClass)} aria-hidden="true" />
@@ -87,14 +101,14 @@
 			<!-- Content -->
 			<div class="flex-1 space-y-3">
 				<div class="flex items-center gap-2">
-					<Sparkles class="h-4 w-4 text-purple-500" aria-hidden="true" />
+					<Sparkles class="h-4 w-4 text-primary" aria-hidden="true" />
 					<Badge variant="outline" class="text-xs"
 						>{m['autoEvalRecommendation.aiRecommendation']()}</Badge
 					>
 				</div>
 
 				<div>
-					<h3 class="text-lg font-semibold">{statusConfig.label}</h3>
+					<h3 class="text-lg font-bold">{statusConfig.label}</h3>
 					<p class="mt-2 text-sm text-muted-foreground">{statusConfig.description}</p>
 				</div>
 
@@ -126,7 +140,7 @@
 
 			<div class="flex-1 space-y-3">
 				<div>
-					<h3 class="text-lg font-semibold">{m['autoEvalRecommendation.alreadyEvaluated']()}</h3>
+					<h3 class="text-lg font-bold">{m['autoEvalRecommendation.alreadyEvaluated']()}</h3>
 					<p class="mt-1 text-sm text-muted-foreground">
 						{#if evaluation.created_at}
 							{m['autoEvalRecommendation.evaluatedManuallyOn']({

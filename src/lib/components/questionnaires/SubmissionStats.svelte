@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { Clock, Check, TrendingUp } from '@lucide/svelte';
 	import { Card } from '$lib/components/ui/card';
+	import ToneTile from '$lib/components/common/ToneTile.svelte';
 
 	interface Props {
 		pendingCount: number;
@@ -39,9 +40,7 @@
 				<p class="text-3xl font-bold">{pendingCount}</p>
 				<p class="mt-1 text-xs text-muted-foreground">{m['submissionStats.needAttention']()}</p>
 			</div>
-			<div class="rounded-full bg-yellow-100 p-3 dark:bg-yellow-950">
-				<Clock class="h-6 w-6 text-yellow-900 dark:text-yellow-100" aria-hidden="true" />
-			</div>
+			<ToneTile tone="warning" icon={Clock} size="lg" class="rounded-full" />
 		</div>
 	</Card>
 
@@ -53,9 +52,7 @@
 				<p class="text-3xl font-bold">{approvedCount}</p>
 				<p class="mt-1 text-xs text-muted-foreground">{m['submissionStats.totalApproved']()}</p>
 			</div>
-			<div class="rounded-full bg-green-100 p-3 dark:bg-green-950">
-				<Check class="h-6 w-6 text-green-900 dark:text-green-100" aria-hidden="true" />
-			</div>
+			<ToneTile tone="success" icon={Check} size="lg" class="rounded-full" />
 		</div>
 	</Card>
 
@@ -71,9 +68,7 @@
 					{approvedCount}/{totalEvaluated} approved
 				</p>
 			</div>
-			<div class="rounded-full bg-blue-100 p-3 dark:bg-blue-950">
-				<TrendingUp class="h-6 w-6 text-blue-900 dark:text-blue-100" aria-hidden="true" />
-			</div>
+			<ToneTile tone="info" icon={TrendingUp} size="lg" class="rounded-full" />
 		</div>
 	</Card>
 </div>

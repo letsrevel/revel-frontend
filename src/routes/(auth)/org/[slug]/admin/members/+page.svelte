@@ -24,6 +24,7 @@
 		Info,
 		ChevronDown
 	} from '@lucide/svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import MembersTab from '$lib/components/members/MembersTab.svelte';
 	import StaffTab from '$lib/components/members/StaffTab.svelte';
 	import MembershipRequestsTab from '$lib/components/members/MembershipRequestsTab.svelte';
@@ -170,15 +171,7 @@
 
 <div class="space-y-6 px-4 md:px-0">
 	<!-- Header -->
-	<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-		<div class="min-w-0">
-			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
-				{m['orgAdmin.members.pageTitle']()}
-			</h1>
-			<p class="mt-1 text-sm text-muted-foreground">
-				{m['orgAdmin.members.pageDescription']()}
-			</p>
-		</div>
+	{#snippet headerActions()}
 		{#if canManageMembers}
 			<Button
 				onclick={() => {
@@ -191,7 +184,12 @@
 				{m['orgAdmin.members.inviteMembers']()}
 			</Button>
 		{/if}
-	</div>
+	{/snippet}
+	<PageHeader
+		title={m['orgAdmin.members.pageTitle']()}
+		subtitle={m['orgAdmin.members.pageDescription']()}
+		actions={headerActions}
+	/>
 
 	<!-- What membership grants (discreet inline disclosure, collapsed by default) -->
 	<details class="group">

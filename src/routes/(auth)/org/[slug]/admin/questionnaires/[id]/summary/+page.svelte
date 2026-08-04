@@ -17,6 +17,9 @@
 	import ScoreStatsCard from '$lib/components/questionnaires/ScoreStatsCard.svelte';
 	import PronounDistributionChart from '$lib/components/common/PronounDistributionChart.svelte';
 	import ExportButton from '$lib/components/common/ExportButton.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
+	import ToneTile from '$lib/components/common/ToneTile.svelte';
 	import { questionnaireExportSubmissions } from '$lib/api';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import type { PageData } from './$types';
@@ -141,17 +144,19 @@
 			<ArrowLeft class="h-4 w-4" />
 			{m['questionnaireSummaryPage.backToQuestionnaire']()}
 		</a>
-		<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-			<div>
-				<h1 class="text-3xl font-bold">{m['questionnaireSummaryPage.title']()}</h1>
-				<p class="mt-1 text-muted-foreground">{questionnaire?.questionnaire.name}</p>
-			</div>
-			<ExportButton
-				label={m['exportButton.exportSubmissions']()}
-				onExport={handleExportSubmissions}
-				accessToken={authStore.accessToken}
-			/>
-		</div>
+		<PageHeader
+			title={m['questionnaireSummaryPage.title']()}
+			subtitle={questionnaire?.questionnaire.name}
+			kicker={data.organization.name}
+		>
+			{#snippet actions()}
+				<ExportButton
+					label={m['exportButton.exportSubmissions']()}
+					onExport={handleExportSubmissions}
+					accessToken={authStore.accessToken}
+				/>
+			{/snippet}
+		</PageHeader>
 	</div>
 
 	<!-- Filters -->
@@ -216,13 +221,12 @@
 
 	{#if summary.total_submissions === 0}
 		<!-- Empty state -->
-		<Card class="p-12 text-center">
-			<FileText class="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
-			<p class="text-lg font-medium">{m['questionnaireSummaryPage.noSubmissions']()}</p>
-			<p class="mt-2 text-sm text-muted-foreground">
-				{m['questionnaireSummaryPage.noSubmissionsDescription']()}
-			</p>
-		</Card>
+		<EmptyState
+			icon={FileText}
+			tone="neutral"
+			title={m['questionnaireSummaryPage.noSubmissions']()}
+			body={m['questionnaireSummaryPage.noSubmissionsDescription']()}
+		/>
 	{:else}
 		<!-- Summary Cards -->
 		<div class="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -235,9 +239,7 @@
 						</p>
 						<p class="text-3xl font-bold">{summary.total_submissions}</p>
 					</div>
-					<div class="rounded-full bg-blue-100 p-3 dark:bg-blue-950">
-						<FileText class="h-6 w-6 text-blue-900 dark:text-blue-100" aria-hidden="true" />
-					</div>
+					<ToneTile tone="info" icon={FileText} size="lg" class="rounded-full" />
 				</div>
 			</Card>
 
@@ -250,9 +252,7 @@
 						</p>
 						<p class="text-3xl font-bold">{summary.unique_users}</p>
 					</div>
-					<div class="rounded-full bg-purple-100 p-3 dark:bg-purple-950">
-						<Users class="h-6 w-6 text-purple-900 dark:text-purple-100" aria-hidden="true" />
-					</div>
+					<ToneTile tone="brand" icon={Users} size="lg" class="rounded-full" />
 				</div>
 			</Card>
 
@@ -268,9 +268,7 @@
 							{summary.by_status_per_user.approved ?? 0}/{totalEvaluated}
 						</p>
 					</div>
-					<div class="rounded-full bg-green-100 p-3 dark:bg-green-950">
-						<TrendingUp class="h-6 w-6 text-green-900 dark:text-green-100" aria-hidden="true" />
-					</div>
+					<ToneTile tone="success" icon={TrendingUp} size="lg" class="rounded-full" />
 				</div>
 			</Card>
 
@@ -283,9 +281,7 @@
 						</p>
 						<p class="text-3xl font-bold">{summary.by_status_per_user.pending_review ?? 0}</p>
 					</div>
-					<div class="rounded-full bg-yellow-100 p-3 dark:bg-yellow-950">
-						<Clock class="h-6 w-6 text-yellow-900 dark:text-yellow-100" aria-hidden="true" />
-					</div>
+					<ToneTile tone="warning" icon={Clock} size="lg" class="rounded-full" />
 				</div>
 			</Card>
 		</div>

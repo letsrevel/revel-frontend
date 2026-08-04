@@ -247,22 +247,34 @@
 				<caption class="sr-only">{m['orgAdmin.members.payments.tableCaption']()}</caption>
 				<thead class="border-b">
 					<tr>
-						<th scope="col" class="px-3 py-2 text-left"
+						<th
+							scope="col"
+							class="px-3 py-2 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 							>{m['orgAdmin.members.payments.col.member']()}</th
 						>
-						<th scope="col" class="px-3 py-2 text-left"
+						<th
+							scope="col"
+							class="px-3 py-2 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 							>{m['orgAdmin.members.payments.col.plan']()}</th
 						>
-						<th scope="col" class="px-3 py-2 text-left"
+						<th
+							scope="col"
+							class="px-3 py-2 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 							>{m['orgAdmin.members.payments.col.amount']()}</th
 						>
-						<th scope="col" class="px-3 py-2 text-left"
+						<th
+							scope="col"
+							class="px-3 py-2 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 							>{m['orgAdmin.members.payments.col.status']()}</th
 						>
-						<th scope="col" class="px-3 py-2 text-left"
+						<th
+							scope="col"
+							class="px-3 py-2 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 							>{m['orgAdmin.members.payments.col.date']()}</th
 						>
-						<th scope="col" class="px-3 py-2 text-right"
+						<th
+							scope="col"
+							class="px-3 py-2 text-right text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 							>{m['orgAdmin.members.payments.col.actions']()}</th
 						>
 					</tr>

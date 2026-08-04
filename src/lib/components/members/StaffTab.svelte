@@ -16,6 +16,7 @@
 	import { Search, UserCog, Loader2 } from '@lucide/svelte';
 	import StaffCard from '$lib/components/members/StaffCard.svelte';
 	import PermissionsEditor from '$lib/components/members/PermissionsEditor.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
@@ -155,10 +156,8 @@
 
 <!-- Owner Notice -->
 {#if isOwner}
-	<div
-		class="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950 sm:p-4"
-	>
-		<p class="text-xs leading-relaxed text-blue-900 dark:text-blue-100 sm:text-sm">
+	<div class="rounded-lg border border-info bg-info/10 p-3 sm:p-4">
+		<p class="text-xs leading-relaxed text-foreground sm:text-sm">
 			{m['orgAdmin.members.ownerNotice']()}
 		</p>
 	</div>
@@ -174,15 +173,13 @@
 		<p class="text-sm text-destructive">{m['orgAdmin.members.errors.loadStaff']()}</p>
 	</div>
 {:else if staff.length === 0}
-	<div class="rounded-lg border border-dashed p-12 text-center">
-		<UserCog class="mx-auto h-12 w-12 text-muted-foreground" />
-		<h3 class="mt-4 font-semibold">{m['orgAdmin.members.empty.staff.title']()}</h3>
-		<p class="mt-2 text-sm text-muted-foreground">
-			{staffSearch
-				? m['orgAdmin.members.empty.staff.withSearch']()
-				: m['orgAdmin.members.empty.staff.noSearch']()}
-		</p>
-	</div>
+	<EmptyState
+		icon={UserCog}
+		title={m['orgAdmin.members.empty.staff.title']()}
+		body={staffSearch
+			? m['orgAdmin.members.empty.staff.withSearch']()
+			: m['orgAdmin.members.empty.staff.noSearch']()}
+	/>
 {:else}
 	<div class="grid gap-4 md:grid-cols-2">
 		{#each staff as staffMember (staffMember.user.email)}

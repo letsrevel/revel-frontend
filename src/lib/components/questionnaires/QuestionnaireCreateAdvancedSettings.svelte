@@ -57,7 +57,7 @@
 					id="shuffle-questions"
 					type="checkbox"
 					bind:checked={shuffleQuestions}
-					class="h-4 w-4 rounded border-gray-300"
+					class="h-4 w-4 rounded border-input"
 				/>
 				<Label for="shuffle-questions" class="font-normal"
 					>{m['questionnaireNewPage.shuffleQuestionsLabel']()}</Label
@@ -68,7 +68,7 @@
 					id="shuffle-sections"
 					type="checkbox"
 					bind:checked={shuffleSections}
-					class="h-4 w-4 rounded border-gray-300"
+					class="h-4 w-4 rounded border-input"
 				/>
 				<Label for="shuffle-sections" class="font-normal"
 					>{m['questionnaireNewPage.shuffleSectionsLabel']()}</Label
@@ -83,7 +83,7 @@
 					id="members-exempt"
 					type="checkbox"
 					bind:checked={membersExempt}
-					class="h-4 w-4 rounded border-gray-300"
+					class="h-4 w-4 rounded border-input"
 				/>
 				<Label for="members-exempt" class="font-normal"
 					>{m['questionnaireNewPage.membersExemptLabel']()}</Label
@@ -102,7 +102,7 @@
 						id="per-event"
 						type="checkbox"
 						bind:checked={perEvent}
-						class="h-4 w-4 rounded border-gray-300"
+						class="h-4 w-4 rounded border-input"
 					/>
 					<Label for="per-event" class="font-normal"
 						>{m['questionnaireNewPage.perEventLabel']()}</Label

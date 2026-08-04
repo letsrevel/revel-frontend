@@ -4,6 +4,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Trash2, Mail, Calendar, ShieldCheck, AlertCircle } from '@lucide/svelte';
 	import { formatDistanceToNow } from 'date-fns';
+	import CommonStatusBadge from '$lib/components/common/StatusBadge.svelte';
 
 	interface Props {
 		entry: WhitelistEntrySchema;
@@ -33,15 +34,15 @@
 		<!-- Entry Info -->
 		<div class="min-w-0 flex-1">
 			<div class="flex items-center gap-2">
-				<h3 class="truncate font-semibold text-foreground">
+				<h3 class="truncate font-bold text-foreground">
 					{entry.user_display_name}
 				</h3>
-				<span
-					class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-100"
-				>
-					<ShieldCheck class="h-3 w-3" />
-					{m['whitelistEntryCard.verified']()}
-				</span>
+				<CommonStatusBadge
+					tone="success"
+					icon={ShieldCheck}
+					label={m['whitelistEntryCard.verified']()}
+					size="sm"
+				/>
 			</div>
 
 			<!-- Email -->
@@ -52,18 +53,18 @@
 
 			<!-- Matched blacklist entries info -->
 			<div class="mt-2">
-				<span
-					class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-950 dark:text-amber-200"
-				>
-					<AlertCircle class="h-3 w-3" />
-					{entry.matched_entries_count === 1
+				<CommonStatusBadge
+					tone="warning"
+					icon={AlertCircle}
+					size="sm"
+					label={entry.matched_entries_count === 1
 						? m['whitelistEntryCard.clearedMatchingSingular']({
 								count: String(entry.matched_entries_count)
 							})
 						: m['whitelistEntryCard.clearedMatchingPlural']({
 								count: String(entry.matched_entries_count)
 							})}
-				</span>
+				/>
 			</div>
 
 			<!-- Metadata -->

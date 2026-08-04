@@ -63,7 +63,7 @@
 			<!-- Name and Status -->
 			<div class="flex items-center gap-2">
 				<Icon class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-				<h3 class="font-semibold">
+				<h3 class="font-bold">
 					{token.name || m['organizationTokenCard.unnamedToken']()}
 				</h3>
 				<TokenStatusBadge {status} />

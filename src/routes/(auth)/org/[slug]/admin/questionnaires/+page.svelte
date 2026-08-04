@@ -1,10 +1,12 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { Plus, Search } from '@lucide/svelte';
+	import { Plus, Search, FileText } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import QuestionnaireCard from '$lib/components/questionnaires/QuestionnaireCard.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import { invalidateOrgQuestionnaires } from '$lib/queries/org-questionnaires';
 	import type { PageData } from './$types';
@@ -47,19 +49,19 @@
 	<title>{m['orgAdmin.questionnaires.pageTitle']()} - {data.organization.name} Admin</title>
 </svelte:head>
 
-<!-- Page Header -->
-<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-	<div>
-		<h1 class="text-3xl font-bold tracking-tight">{m['orgAdmin.questionnaires.pageTitle']()}</h1>
-		<p class="mt-2 text-sm text-muted-foreground">
-			{m['orgAdmin.questionnaires.pageDescription']()}
-		</p>
-	</div>
-	<Button href="questionnaires/new" class="gap-2">
-		<Plus class="h-4 w-4" />
-		{m['orgAdmin.questionnaires.createQuestionnaireButton']()}
-	</Button>
-</div>
+<PageHeader
+	title={m['orgAdmin.questionnaires.pageTitle']()}
+	subtitle={m['orgAdmin.questionnaires.pageDescription']()}
+	kicker={data.organization.name}
+	class="mb-6"
+>
+	{#snippet actions()}
+		<Button href="questionnaires/new" class="gap-2">
+			<Plus class="h-4 w-4" />
+			{m['orgAdmin.questionnaires.createQuestionnaireButton']()}
+		</Button>
+	{/snippet}
+</PageHeader>
 
 <!-- Search Bar -->
 <div class="mb-6">
@@ -78,46 +80,32 @@
 {#if filteredQuestionnaires.length === 0}
 	{#if searchQuery}
 		<!-- No search results -->
-		<div class="flex flex-col items-center justify-center rounded-lg border border-dashed p-12">
-			<div class="mb-4 rounded-full bg-muted p-3">
-				<Search class="h-6 w-6 text-muted-foreground" />
-			</div>
-			<h3 class="mb-2 text-lg font-semibold">{m['orgAdmin.questionnaires.noResults.title']()}</h3>
-			<p class="mb-4 text-center text-sm text-muted-foreground">
-				{m['orgAdmin.questionnaires.noResults.description']({ query: searchQuery })}
-			</p>
-			<Button variant="outline" onclick={() => (searchQuery = '')}
-				>{m['orgAdmin.questionnaires.noResults.clearButton']()}</Button
-			>
-		</div>
+		<EmptyState
+			icon={Search}
+			tone="neutral"
+			title={m['orgAdmin.questionnaires.noResults.title']()}
+			body={m['orgAdmin.questionnaires.noResults.description']({ query: searchQuery })}
+		>
+			{#snippet action()}
+				<Button variant="outline" onclick={() => (searchQuery = '')}>
+					{m['orgAdmin.questionnaires.noResults.clearButton']()}
+				</Button>
+			{/snippet}
+		</EmptyState>
 	{:else}
 		<!-- Empty state -->
-		<div class="flex flex-col items-center justify-center rounded-lg border border-dashed p-12">
-			<div class="mb-4 rounded-full bg-muted p-3">
-				<svg
-					class="h-6 w-6 text-muted-foreground"
-					fill="none"
-					stroke="currentColor"
-					viewBox="0 0 24 24"
-					aria-hidden="true"
-				>
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-					/>
-				</svg>
-			</div>
-			<h3 class="mb-2 text-lg font-semibold">{m['orgAdmin.questionnaires.empty.title']()}</h3>
-			<p class="mb-4 text-center text-sm text-muted-foreground">
-				{m['orgAdmin.questionnaires.empty.description']()}
-			</p>
-			<Button href="questionnaires/new" class="gap-2">
-				<Plus class="h-4 w-4" />
-				{m['orgAdmin.questionnaires.createQuestionnaireButton']()}
-			</Button>
-		</div>
+		<EmptyState
+			icon={FileText}
+			title={m['orgAdmin.questionnaires.empty.title']()}
+			body={m['orgAdmin.questionnaires.empty.description']()}
+		>
+			{#snippet action()}
+				<Button href="questionnaires/new" class="gap-2">
+					<Plus class="h-4 w-4" />
+					{m['orgAdmin.questionnaires.createQuestionnaireButton']()}
+				</Button>
+			{/snippet}
+		</EmptyState>
 	{/if}
 {:else}
 	<!-- Questionnaires Grid -->

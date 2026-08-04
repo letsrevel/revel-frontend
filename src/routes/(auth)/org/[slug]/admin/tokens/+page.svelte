@@ -16,7 +16,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
-	import { Plus, Search, Loader2 } from '@lucide/svelte';
+	import { Plus, Search, Loader2, Link } from '@lucide/svelte';
 	import OrganizationTokenCard from '$lib/components/tokens/OrganizationTokenCard.svelte';
 	import OrganizationTokenModal from '$lib/components/tokens/OrganizationTokenModal.svelte';
 	import TokenShareDialog from '$lib/components/tokens/TokenShareDialog.svelte';
@@ -31,6 +31,8 @@
 	import { getOrganizationTokenUrl } from '$lib/utils/tokens';
 	import { toast } from 'svelte-sonner';
 	import * as m from '$lib/paraglide/messages.js';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 
 	const organization = $derived($page.data.organization);
 	const isOwner = $derived(!!$page.data.isOwner);
@@ -197,18 +199,17 @@
 
 <div class="space-y-6">
 	<!-- Header -->
-	<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-		<div class="min-w-0">
-			<h1 class="text-3xl font-bold">{m['orgAdminTokensPage.title']()}</h1>
-			<p class="text-muted-foreground">
-				{m['orgAdminTokensPage.subtitle']()}
-			</p>
-		</div>
+	{#snippet headerActions()}
 		<Button onclick={() => (isCreateModalOpen = true)} class="w-full sm:w-auto">
 			<Plus class="mr-2 h-4 w-4" aria-hidden="true" />
 			{m['orgAdminTokensPage.createButton']()}
 		</Button>
-	</div>
+	{/snippet}
+	<PageHeader
+		title={m['orgAdminTokensPage.title']()}
+		subtitle={m['orgAdminTokensPage.subtitle']()}
+		actions={headerActions}
+	/>
 
 	<!-- Search -->
 	<div class="relative">
@@ -231,16 +232,13 @@
 				<Loader2 class="h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
 			</div>
 		{:else if tokens.length === 0}
-			<div class="rounded-lg border border-dashed p-12 text-center">
-				<h3 class="text-lg font-semibold">{m['orgAdminTokensPage.empty_noLinks_title']()}</h3>
-				<p class="mt-2 text-sm text-muted-foreground">
-					{#if searchQuery}
-						{m['orgAdminTokensPage.empty_noLinks_search']()}
-					{:else}
-						{m['orgAdminTokensPage.empty_noLinks_initial']()}
-					{/if}
-				</p>
-			</div>
+			<EmptyState
+				icon={Link}
+				title={m['orgAdminTokensPage.empty_noLinks_title']()}
+				body={searchQuery
+					? m['orgAdminTokensPage.empty_noLinks_search']()
+					: m['orgAdminTokensPage.empty_noLinks_initial']()}
+			/>
 		{:else}
 			{#each tokens as token (token.id)}
 				<OrganizationTokenCard

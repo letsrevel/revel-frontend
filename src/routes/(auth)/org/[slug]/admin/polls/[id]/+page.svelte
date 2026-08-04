@@ -20,6 +20,8 @@
 	import PollStatusBar from '$lib/components/polls/PollStatusBar.svelte';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import DuplicatePollModal from '$lib/components/polls/DuplicatePollModal.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import QuestionTypeBadge from '$lib/components/questionnaires/QuestionTypeBadge.svelte';
 	import PollAudienceCard from '$lib/components/polls/PollAudienceCard.svelte';
 	import PollAnonymityCard from '$lib/components/polls/PollAnonymityCard.svelte';
 	import PollScheduleCard from '$lib/components/polls/PollScheduleCard.svelte';
@@ -279,15 +281,22 @@
 		<ArrowLeft class="h-4 w-4" />
 		{m['pollEditPage.backToList']()}
 	</Button>
-	<div class="flex items-center justify-between gap-2">
-		<h1 class="text-3xl font-bold tracking-tight">
-			{name || poll.questionnaire?.name || m['pollEditPage.pageTitle']()}
-		</h1>
-		<Button variant="outline" size="sm" class="gap-2" onclick={() => (isDuplicateModalOpen = true)}>
-			<Copy class="h-4 w-4" />
-			{m['pollEditPage.duplicate']()}
-		</Button>
-	</div>
+	<PageHeader
+		title={name || poll.questionnaire?.name || m['pollEditPage.pageTitle']()}
+		kicker={data.organization.name}
+	>
+		{#snippet actions()}
+			<Button
+				variant="outline"
+				size="sm"
+				class="gap-2"
+				onclick={() => (isDuplicateModalOpen = true)}
+			>
+				<Copy class="h-4 w-4" />
+				{m['pollEditPage.duplicate']()}
+			</Button>
+		{/snippet}
+	</PageHeader>
 </div>
 
 <div class="mx-auto max-w-4xl space-y-6">
@@ -346,7 +355,7 @@
 					<CardTitle>{m['pollNewPage.questionsTitle']()} ({totalQuestionCount})</CardTitle>
 					{#if !isDraft}
 						<CardDescription
-							class="mt-2 rounded-md bg-amber-50 p-2 text-amber-900 dark:bg-amber-950/30 dark:text-amber-200"
+							class="mt-2 rounded-md border border-highlight bg-highlight/10 p-2 text-foreground"
 						>
 							{m['pollEditPage.questionsLockedBanner']()}
 						</CardDescription>
@@ -438,10 +447,11 @@
 					<div class="space-y-3">
 						{#each allMc as question (question.id)}
 							<div class="rounded-lg border p-4">
-								<span
-									class="mb-2 inline-block rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700"
-									>{m['questionAnswerDisplay.multipleChoice']()}</span
-								>
+								<QuestionTypeBadge
+									type="multiple_choice"
+									label={m['questionAnswerDisplay.multipleChoice']()}
+									class="mb-2"
+								/>
 								<p class="font-medium">{question.question}</p>
 								{#if question.options}
 									<div class="mt-2 space-y-1">
@@ -457,19 +467,21 @@
 						{/each}
 						{#each allFt as question (question.id)}
 							<div class="rounded-lg border p-4">
-								<span
-									class="mb-2 inline-block rounded bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700"
-									>{m['questionAnswerDisplay.freeText']()}</span
-								>
+								<QuestionTypeBadge
+									type="free_text"
+									label={m['questionAnswerDisplay.freeText']()}
+									class="mb-2"
+								/>
 								<p class="font-medium">{question.question}</p>
 							</div>
 						{/each}
 						{#each allFu as question (question.id)}
 							<div class="rounded-lg border p-4">
-								<span
-									class="mb-2 inline-block rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700"
-									>{m['questionAnswerDisplay.fileUpload']()}</span
-								>
+								<QuestionTypeBadge
+									type="file_upload"
+									label={m['questionAnswerDisplay.fileUpload']()}
+									class="mb-2"
+								/>
 								<p class="font-medium">{question.question}</p>
 							</div>
 						{/each}
