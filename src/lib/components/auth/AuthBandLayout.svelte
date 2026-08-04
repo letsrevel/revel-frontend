@@ -40,8 +40,20 @@
 		chip?: Snippet;
 		/** Column width for both the band copy and the floating stack. */
 		width?: 'md' | 'lg' | 'xl';
-		/** The floating content. Cards already carry the 2px edge + poster float. */
-		children: Snippet;
+		/**
+		 * Marks the band's heading block as a live region (`role="status"`).
+		 * For the interstitials whose success state is reached IN PLACE (a form
+		 * submit with no navigation), where the h1 + body are the announcement.
+		 * The chip is aria-hidden ornament either way, so nothing is lost by the
+		 * region now starting at the header instead of the old wrapper div.
+		 */
+		status?: boolean;
+		/**
+		 * The floating content. Cards already carry the 2px edge + poster float.
+		 * Optional because some interstitials (a successful verification, say)
+		 * are the band and nothing else.
+		 */
+		children?: Snippet;
 		class?: string;
 	}
 	const {
@@ -50,6 +62,7 @@
 		subtitle,
 		chip,
 		width = 'md',
+		status = false,
 		children,
 		class: className = ''
 	}: Props = $props();
@@ -71,13 +84,16 @@
 				{kicker}
 				{title}
 				{subtitle}
+				role={status ? 'status' : undefined}
 				class="text-center sm:flex-col sm:items-center"
 			/>
 		</div>
 	</section>
 
 	<!-- Pulled up over the band's bottom edge: the float is the whole point. -->
-	<div class={cn('container mx-auto -mt-12 space-y-6 px-4 pb-16', widthClass)}>
-		{@render children()}
-	</div>
+	{#if children}
+		<div class={cn('container mx-auto -mt-12 space-y-6 px-4 pb-16', widthClass)}>
+			{@render children()}
+		</div>
+	{/if}
 </div>

@@ -4,6 +4,7 @@
 	import type { PageData } from './$types';
 	import { CheckCircle, XCircle } from '@lucide/svelte';
 	import { SeoHead } from '$lib/seo';
+	import AuthBandLayout from '$lib/components/auth/AuthBandLayout.svelte';
 
 	interface Props {
 		data: PageData;
@@ -14,39 +15,37 @@
 
 <SeoHead config={data.seo} />
 
-<div class="container mx-auto flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8">
-	<div class="w-full max-w-md space-y-8 text-center">
-		<!-- Hand-composed centerpiece (not the EmptyState primitive, which caps
-		     at h2/h3): this page's only heading must be an h1. Chip recipe
-		     mirrors EmptyState's internal poster-tinted chip. Failure has no
-		     "danger" tone in the poster palette — "warning" (amber/ink, audited
-		     pair) reads as the closest honest match for an expired/invalid link,
-		     short of the full destructive framing reserved for confirm-deletion. -->
-		<div>
-			<span
-				aria-hidden="true"
-				class="mx-auto flex h-14 w-14 -rotate-2 items-center justify-center rounded-2xl shadow-sm {data.success
-					? 'bg-success text-success-foreground'
-					: 'bg-poster-amber text-poster-ink'}"
-			>
-				{#if data.success}
-					<CheckCircle class="h-7 w-7" />
-				{:else}
-					<XCircle class="h-7 w-7" />
-				{/if}
-			</span>
-			<h1 class="mt-4 text-3xl font-black leading-[1.12] sm:text-4xl">
-				{data.success ? m['verifyPage.emailVerified']() : m['verifyPage.verificationFailed']()}
-			</h1>
-			<p class="mt-1.5 text-muted-foreground">
-				{data.success
-					? m['verifyPage.successRedirect']()
-					: `${data.error || m['verifyPage.couldNotVerify']()} ${m['verifyPage.linkExpiredOrInvalid']()}`}
-			</p>
-		</div>
+<!-- Colour-block band + floating action card (uplift). The status chip moves
+     INTO the band above the title — same recipe as before (EmptyState's
+     poster-tinted tilted chip), still aria-hidden ornament. Failure has no
+     "danger" tone in the poster palette; "warning" (amber/ink, audited pair)
+     stays the closest honest match for an expired/invalid link, short of the
+     full destructive framing reserved for confirm-deletion. The h1 and body
+     copy are unchanged keys, now carried by the band. -->
+{#snippet statusChip()}
+	<span
+		aria-hidden="true"
+		class="flex h-16 w-16 -rotate-2 items-center justify-center rounded-2xl shadow-poster {data.success
+			? 'bg-success text-success-foreground'
+			: 'bg-poster-amber text-poster-ink'}"
+	>
+		{#if data.success}
+			<CheckCircle class="h-8 w-8" />
+		{:else}
+			<XCircle class="h-8 w-8" />
+		{/if}
+	</span>
+{/snippet}
 
-		<!-- Actions -->
-		{#if !data.success}
+<AuthBandLayout
+	chip={statusChip}
+	title={data.success ? m['verifyPage.emailVerified']() : m['verifyPage.verificationFailed']()}
+	subtitle={data.success
+		? m['verifyPage.successRedirect']()
+		: `${data.error || m['verifyPage.couldNotVerify']()} ${m['verifyPage.linkExpiredOrInvalid']()}`}
+>
+	{#if !data.success}
+		<div class="rounded-lg border-2 border-border bg-card p-6 shadow-poster">
 			<div class="flex flex-col gap-3 sm:flex-row sm:justify-center">
 				<a
 					href={resolve('/(public)/register', {})}
@@ -61,6 +60,6 @@
 					{m['verifyPage.backToLogin']()}
 				</a>
 			</div>
-		{/if}
-	</div>
-</div>
+		</div>
+	{/if}
+</AuthBandLayout>

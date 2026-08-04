@@ -31,6 +31,13 @@
 	<meta name="description" content={m['accountDeletion.metaDescription']()} />
 </svelte:head>
 
+<!-- DELIBERATELY NOT on the uplift's celebration band (spec §9), unlike every
+     other page in this cluster. Deleting your account is an irreversible,
+     serious moment; a saturated poster panel would be the wrong register, and
+     this page already documents that exception for its tiles and tints below.
+     It takes the depth half of the uplift only: the 2px edge + poster float
+     that the rest of the app's surfaces now carry, so the silhouette matches
+     even though the colour language stays calm. -->
 <div class="container mx-auto flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8">
 	<div class="w-full max-w-md space-y-8">
 		{#if success}
@@ -50,7 +57,7 @@
 			     muted-foreground, both already-audited pairs. -->
 			<div
 				role="status"
-				class="rounded-md border border-success/40 bg-success/10 p-6 dark:border-success/50 dark:bg-success/15"
+				class="rounded-lg border-2 border-success/40 bg-success/10 p-6 shadow-poster dark:border-success/50 dark:bg-success/15"
 			>
 				<div class="space-y-2 text-sm">
 					<p class="font-medium text-foreground">
@@ -83,7 +90,10 @@
 				</p>
 			</div>
 
-			<div role="alert" class="rounded-md border border-destructive bg-destructive/10 p-4">
+			<div
+				role="alert"
+				class="rounded-lg border-2 border-destructive bg-destructive/10 p-4 shadow-poster"
+			>
 				<p class="text-sm font-medium text-destructive">
 					{m['accountDeletion.invalidTokenError']()}
 				</p>
@@ -122,8 +132,8 @@
 			{/if}
 
 			<!-- Warning Box -->
-			<div class="rounded-md border border-destructive/30 bg-destructive/5 p-6">
-				<h2 class="font-semibold text-destructive">{m['accountDeletion.confirmHeading']()}</h2>
+			<div class="rounded-lg border-2 border-destructive/40 bg-destructive/5 p-6 shadow-poster">
+				<h2 class="font-bold text-destructive">{m['accountDeletion.confirmHeading']()}</h2>
 				<div class="mt-4 space-y-2">
 					<p class="text-sm font-medium">{m['accountDeletion.warningYouWillLose']()}</p>
 					<ul class="space-y-1 text-sm text-muted-foreground">

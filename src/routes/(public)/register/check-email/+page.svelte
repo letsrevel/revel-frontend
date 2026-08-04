@@ -4,6 +4,7 @@
 	import { page } from '$app/stores';
 	import { Mail, Loader2, AlertTriangle } from '@lucide/svelte';
 	import { accountResendVerificationEmail } from '$lib/api/generated/sdk.gen';
+	import AuthBandLayout from '$lib/components/auth/AuthBandLayout.svelte';
 
 	const email = $derived($page.url.searchParams.get('email') || '');
 	let isResending = $state(false);
@@ -57,32 +58,31 @@
 	<meta name="description" content="Verify your email to complete registration" />
 </svelte:head>
 
-<div class="container mx-auto flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8">
-	<div class="w-full max-w-md space-y-8 text-center">
-		<div>
-			<!-- Hand-composed centerpiece (not the EmptyState primitive, which caps
-			     at h2/h3): this page's only heading must be an h1. Chip recipe
-			     mirrors EmptyState's internal poster-tinted chip (audited pair:
-			     bg-poster-purple/text-poster-white). -->
-			<span
-				aria-hidden="true"
-				class="mx-auto flex h-14 w-14 -rotate-2 items-center justify-center rounded-2xl bg-poster-purple text-poster-white shadow-sm"
-			>
-				<Mail class="h-7 w-7" />
-			</span>
-			<h1 class="mt-4 text-3xl font-black leading-[1.12] sm:text-4xl">
-				{m['checkEmailPage.checkYourEmail']()}
-			</h1>
-			<p class="mt-1.5 text-muted-foreground">{m['checkEmailPage.verificationLink']()}</p>
-			{#if email}
-				<p class="mt-1.5 font-medium">{email}</p>
-			{/if}
-		</div>
+<!-- Colour-block band + floating card (uplift). The mail chip moves INTO the
+     band above the title (same EmptyState poster-chip recipe, still
+     aria-hidden ornament); everything that follows floats on it. Copy, the
+     resend handler and all live-region roles are unchanged. -->
+{#snippet mailChip()}
+	<span
+		aria-hidden="true"
+		class="flex h-16 w-16 -rotate-2 items-center justify-center rounded-2xl bg-poster-purple text-poster-white shadow-poster"
+	>
+		<Mail class="h-8 w-8" />
+	</span>
+{/snippet}
+
+<AuthBandLayout
+	chip={mailChip}
+	title={m['checkEmailPage.checkYourEmail']()}
+	subtitle={m['checkEmailPage.verificationLink']()}
+>
+	<div class="space-y-6 rounded-lg border-2 border-border bg-card p-6 text-center shadow-poster">
+		{#if email}
+			<p class="font-bold">{email}</p>
+		{/if}
 
 		<!-- Instructions -->
-		<div class="space-y-4 text-sm text-muted-foreground">
-			<p>{m['checkEmailPage.clickLink']()}</p>
-		</div>
+		<p class="text-sm text-muted-foreground">{m['checkEmailPage.clickLink']()}</p>
 
 		<!-- Spam Warning: highlight/20 + border are decorative; body text stays on
 		     the default foreground token (already-audited pair). -->
@@ -99,7 +99,7 @@
 		</div>
 
 		<!-- Resend Section -->
-		<div class="space-y-3 border-t pt-6">
+		<div class="space-y-3 border-t-2 pt-6">
 			<p class="text-sm text-muted-foreground">{m['checkEmailPage.didNotReceive']()}</p>
 
 			{#if resendSuccess}
@@ -135,15 +135,15 @@
 				{/if}
 			</button>
 		</div>
-
-		<!-- Back to Login -->
-		<div class="text-sm">
-			<a
-				href={resolve('/(public)/login', {})}
-				class="text-primary underline-offset-4 hover:underline"
-			>
-				{m['checkEmailPage.backToLogin']()}
-			</a>
-		</div>
 	</div>
-</div>
+
+	<!-- Back to Login -->
+	<div class="text-center text-sm">
+		<a
+			href={resolve('/(public)/login', {})}
+			class="text-primary underline-offset-4 hover:underline"
+		>
+			{m['checkEmailPage.backToLogin']()}
+		</a>
+	</div>
+</AuthBandLayout>
