@@ -20,6 +20,9 @@
 	import { entryFor, selectSections } from '$lib/components/financials/entries';
 	import RevenueReportButton from '$lib/components/financials/RevenueReportButton.svelte';
 	import { BarChart3, ChevronDown, Loader2, ArrowUpDown } from '@lucide/svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import type { PageData } from './$types';
 
 	const { data }: { data: PageData } = $props();
@@ -122,13 +125,14 @@
 </svelte:head>
 
 <section class="space-y-6">
-	<header class="flex flex-wrap items-start justify-between gap-4">
-		<div>
-			<h1 class="text-2xl font-bold tracking-tight">{m['financials.title']()}</h1>
-			<p class="mt-1 text-sm text-muted-foreground">{m['financials.subtitle']()}</p>
-		</div>
+	{#snippet financialsActions()}
 		<RevenueReportButton {slug} {period} />
-	</header>
+	{/snippet}
+	<PageHeader
+		title={m['financials.title']()}
+		subtitle={m['financials.subtitle']()}
+		actions={financialsActions}
+	/>
 
 	<!-- Filters -->
 	<div
@@ -216,18 +220,17 @@
 		</p>
 
 		{#if sections.nothingAtAll}
-			<div class="rounded-lg border border-border bg-card p-12 text-center">
-				<BarChart3 class="mx-auto h-10 w-10 text-muted-foreground" aria-hidden="true" />
-				<h3 class="mt-4 text-lg font-semibold">{m['financials.empty.title']()}</h3>
-				<p class="mt-2 text-sm text-muted-foreground">{m['financials.empty.description']()}</p>
-			</div>
+			<EmptyState
+				icon={BarChart3}
+				level={2}
+				title={m['financials.empty.title']()}
+				body={m['financials.empty.description']()}
+			/>
 		{:else}
 			<!-- Ticket totals -->
 			{#if sections.totals}
 				<div class="space-y-4 rounded-lg border border-border bg-card p-5">
-					<h2 class="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-						{m['financials.totalsHeading']()}
-					</h2>
+					<SectionHeader title={m['financials.totalsHeading']()} />
 					<CurrencyFinancialsSummary data={sections.totals} />
 					<FinancialsNote>{m['financials.netTaxableNote']()}</FinancialsNote>
 				</div>
@@ -236,9 +239,7 @@
 			<!-- Membership revenue (org-level, no VAT treatment) -->
 			{#if sections.memberships}
 				<div class="space-y-4 rounded-lg border border-border bg-card p-5">
-					<h2 class="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-						{m['financials.membershipsHeading']()}
-					</h2>
+					<SectionHeader title={m['financials.membershipsHeading']()} />
 					<MembershipFinancialsSummary data={sections.memberships} />
 				</div>
 			{/if}
@@ -246,27 +247,22 @@
 			<!-- Tickets + memberships -->
 			{#if sections.combined}
 				<div class="space-y-4 rounded-lg border border-primary/40 bg-card p-5">
-					<h2 class="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-						{m['financials.combinedHeading']()}
-					</h2>
+					<SectionHeader title={m['financials.combinedHeading']()} />
 					<CombinedTotalsSummary data={sections.combined} />
 				</div>
 			{/if}
 
 			<!-- Per-event breakdown -->
 			<div>
-				<h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-					{m['financials.byEventHeading']()}
-				</h2>
+				<SectionHeader title={m['financials.byEventHeading']()} class="mb-3" />
 
 				{#if financials.events.length === 0}
-					<div class="rounded-lg border border-border bg-card p-12 text-center">
-						<BarChart3 class="mx-auto h-10 w-10 text-muted-foreground" aria-hidden="true" />
-						<h3 class="mt-4 text-lg font-semibold">{m['financials.empty.eventsTitle']()}</h3>
-						<p class="mt-2 text-sm text-muted-foreground">
-							{m['financials.empty.eventsDescription']()}
-						</p>
-					</div>
+					<EmptyState
+						icon={BarChart3}
+						level={3}
+						title={m['financials.empty.eventsTitle']()}
+						body={m['financials.empty.eventsDescription']()}
+					/>
 				{:else}
 					<ul class="space-y-2">
 						{#each financials.events as event (event.event_id)}
@@ -279,7 +275,7 @@
 									aria-expanded={expanded[event.event_id] ?? false}
 								>
 									<div class="min-w-0 flex-1">
-										<span class="block truncate font-semibold">{event.event_name}</span>
+										<span class="block truncate font-bold">{event.event_name}</span>
 										<span class="text-sm text-muted-foreground">
 											{formatEventDate(event.event_start)}
 										</span>
@@ -296,7 +292,8 @@
 
 									<div class="shrink-0 text-right">
 										<span class="block text-xs text-muted-foreground">{m['financials.net']()}</span>
-										<span class="font-semibold tabular-nums">
+										<!-- Headline revenue figure: studio's one permitted font-black flourish. -->
+										<span class="font-black tabular-nums">
 											{formatMoney(entry?.net ?? 0, entry?.currency ?? activeCurrency)}
 										</span>
 									</div>
