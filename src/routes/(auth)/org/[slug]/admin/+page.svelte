@@ -252,11 +252,15 @@
 			{#each quickActions as action (action.href)}
 				{@const Icon = action.icon}
 				{@const isDisabled = !!action.badge}
+				<!-- No transition class here on purpose: the only animatable hover change
+				     is the shadow, and the focus ring is itself a box-shadow — any
+				     transition covering it would fade the ring in instead of showing it
+				     at once. The shadow swap snaps instead. -->
 				<button
 					type="button"
 					onclick={() => navigateTo(action.href, isDisabled)}
 					disabled={isDisabled}
-					class="group relative rounded-lg border border-border bg-card p-6 text-left shadow-sm transition-all hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+					class="group relative rounded-lg border border-border bg-card p-6 text-left shadow-sm hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
 				>
 					<!-- Coming Soon Badge -->
 					{#if action.badge}
@@ -382,11 +386,3 @@
 	onClose={() => (announcementModalOpen = false)}
 	onSuccess={() => (announcementModalOpen = false)}
 />
-
-<style>
-	/* Ensure consistent focus states for accessibility */
-	:global(button:focus-visible) {
-		outline: 2px solid hsl(var(--ring));
-		outline-offset: 2px;
-	}
-</style>

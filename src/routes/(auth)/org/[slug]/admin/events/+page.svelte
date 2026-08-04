@@ -504,11 +504,3 @@
 {#if cancelEventId}
 	<CancelEventDialog bind:open={showCancelEventDialog} eventId={cancelEventId} />
 {/if}
-
-<style>
-	/* Ensure consistent focus states for accessibility */
-	:global(button:focus-visible) {
-		outline: 2px solid hsl(var(--ring));
-		outline-offset: 2px;
-	}
-</style>

@@ -409,11 +409,3 @@
 
 <!-- Cancel Event Dialog -->
 <CancelEventDialog bind:open={showCancelEventDialog} eventId={event.id} />
-
-<style>
-	/* Ensure consistent focus states for accessibility */
-	:global(button:focus-visible) {
-		outline: 2px solid hsl(var(--ring));
-		outline-offset: 2px;
-	}
-</style>

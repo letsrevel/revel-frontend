@@ -474,10 +474,3 @@
 		onClose={() => (showPublishOccurrence = false)}
 	/>
 {/if}
-
-<style>
-	:global(button:focus-visible) {
-		outline: 2px solid hsl(var(--ring));
-		outline-offset: 2px;
-	}
-</style>
