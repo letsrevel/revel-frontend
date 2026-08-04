@@ -22,6 +22,9 @@
 	} from '$lib/api/generated';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { toast } from 'svelte-sonner';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 
 	interface Props {
 		data: PageData;
@@ -175,30 +178,29 @@
 </svelte:head>
 
 <div class="container mx-auto max-w-2xl px-4 py-8">
-	<div class="mb-8">
-		<h1 class="text-3xl font-bold tracking-tight">{m['profilePage.heading']()}</h1>
-		<p class="mt-2 text-muted-foreground">{m['profilePage.subheading']()}</p>
-	</div>
+	<PageHeader
+		kicker={m['myInvoices.account']()}
+		title={m['profilePage.heading']()}
+		subtitle={m['profilePage.subheading']()}
+		class="mb-8"
+	/>
 
 	{#if redirectUrl}
-		<div
-			class="mb-6 rounded-md border border-blue-200 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-950"
-		>
-			<p class="text-sm text-blue-800 dark:text-blue-200">
-				<Info class="mr-2 inline-block h-4 w-4" aria-hidden="true" />
+		<!-- Composited tint mirrors ToneTile's audited info pair; body copy stays on --foreground. -->
+		<div class="mb-6 rounded-md border border-info/30 bg-info/10 p-4">
+			<p class="text-sm text-foreground">
+				<Info class="mr-2 inline-block h-4 w-4 text-info" aria-hidden="true" />
 				{m['profile.completeToReturn']()}
 			</p>
 		</div>
 	{/if}
 
 	{#if success}
-		<div
-			role="status"
-			class="mb-6 rounded-md border border-green-500 bg-green-50 p-4 dark:bg-green-950"
-		>
+		<!-- Composited tint mirrors ToneTile's audited success pair. -->
+		<div role="status" class="mb-6 rounded-md border border-success/30 bg-success/10 p-4">
 			<div class="flex items-center gap-2">
-				<Check class="h-5 w-5 text-green-600 dark:text-green-400" aria-hidden="true" />
-				<p class="text-sm font-medium text-green-800 dark:text-green-200">
+				<Check class="h-5 w-5 text-success" aria-hidden="true" />
+				<p class="text-sm font-medium text-foreground">
 					{#if redirectUrl}
 						{m['profile.savedRedirecting']()}
 					{:else}
@@ -328,48 +330,35 @@
 						class="flex h-10 w-full cursor-not-allowed rounded-md border border-input bg-muted px-3 py-2 text-sm text-muted-foreground"
 					/>
 					{#if emailVerified}
-						<div
-							class="flex items-center gap-1.5 rounded-md bg-green-100 px-3 py-1.5 dark:bg-green-950"
+						<StatusBadge
+							tone="success"
+							icon={ShieldCheck}
+							label={m['profile.email_verified']()}
 							role="status"
 							aria-label={m['profile.email_verified_label']()}
-						>
-							<ShieldCheck
-								class="h-4 w-4 flex-shrink-0 text-green-700 dark:text-green-400"
-								aria-hidden="true"
-							/>
-							<span class="text-xs font-medium text-green-800 dark:text-green-300">
-								{m['profile.email_verified']()}
-							</span>
-						</div>
+						/>
 					{:else}
-						<div
-							class="flex items-center gap-1.5 rounded-md bg-amber-100 px-3 py-1.5 dark:bg-amber-950"
+						<StatusBadge
+							tone="warning"
+							icon={ShieldAlert}
+							label={m['profile.email_unverified']()}
 							role="status"
 							aria-label={m['profile.email_unverified_label']()}
-						>
-							<ShieldAlert
-								class="h-4 w-4 flex-shrink-0 text-amber-700 dark:text-amber-400"
-								aria-hidden="true"
-							/>
-							<span class="text-xs font-medium text-amber-800 dark:text-amber-300">
-								{m['profile.email_unverified']()}
-							</span>
-						</div>
+						/>
 					{/if}
 				</div>
 
 				{#if !emailVerified}
-					<div
-						class="rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950"
-					>
-						<p class="mb-2 text-sm text-amber-900 dark:text-amber-200">
+					<!-- Warning tint mirrors ToneTile's amber recipe (see security page). -->
+					<div class="rounded-md border border-highlight/40 bg-highlight/20 p-3">
+						<p class="mb-2 text-sm text-highlight-foreground dark:text-highlight">
 							{m['profile.email_verificationNeeded']()}
 						</p>
 						<button
 							type="button"
 							onclick={handleResendVerification}
 							disabled={!canResendEmail}
-							class="inline-flex h-9 items-center justify-center gap-2 rounded-md bg-amber-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-amber-700 dark:hover:bg-amber-600"
+							class="inline-flex h-9 items-center justify-center gap-2 rounded-md bg-highlight px-3 py-2 text-sm font-medium text-highlight-foreground transition-colors hover:bg-highlight/90 focus:outline-none focus:ring-2 focus:ring-highlight focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 						>
 							{#if isResendingVerification}
 								<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
@@ -386,25 +375,23 @@
 				{/if}
 
 				{#if verificationEmailSent}
-					<div
-						role="status"
-						class="space-y-2 rounded-md border border-green-500 bg-green-50 p-3 dark:bg-green-950"
-					>
+					<!-- Composited tint mirrors ToneTile's audited success pair. -->
+					<div role="status" class="space-y-2 rounded-md border border-success/30 bg-success/10 p-3">
 						<div class="flex items-center gap-2">
-							<Check class="h-5 w-5 text-green-600 dark:text-green-400" aria-hidden="true" />
-							<p class="text-sm font-medium text-green-800 dark:text-green-200">
+							<Check class="h-5 w-5 text-success" aria-hidden="true" />
+							<p class="text-sm font-medium text-foreground">
 								{m['profile.email_resendSuccess']()}
 							</p>
 						</div>
-						<p class="text-sm text-green-700 dark:text-green-300">
+						<p class="text-sm text-muted-foreground">
 							{m['profile.email_checkSpam']()}
 						</p>
 					</div>
 				{/if}
 
 				{#if verificationError}
-					<div role="alert" class="rounded-md border border-red-500 bg-red-50 p-3 dark:bg-red-950">
-						<p class="text-sm font-medium text-red-800 dark:text-red-200">
+					<div role="alert" class="rounded-md border border-destructive bg-destructive/10 p-3">
+						<p class="text-sm font-medium text-destructive">
 							{verificationError}
 						</p>
 					</div>
@@ -623,20 +610,15 @@
 		<div class="mt-12 space-y-6" id="dietary-section">
 			<div class="border-t pt-8">
 				<div class="mb-6">
-					<h2 class="text-2xl font-bold tracking-tight">{m['dietary.profile_heading']()}</h2>
+					<SectionHeader title={m['dietary.profile_heading']()} />
 					<p class="mt-2 text-sm text-muted-foreground">
 						{m['dietary.profile_description']()}
 					</p>
 
-					<!-- Visibility Info -->
-					<div
-						class="mt-4 flex gap-2 rounded-md border border-blue-200 bg-blue-50 p-3 dark:border-blue-900 dark:bg-blue-950"
-					>
-						<Info
-							class="h-5 w-5 flex-shrink-0 text-blue-600 dark:text-blue-400"
-							aria-hidden="true"
-						/>
-						<p class="text-sm text-blue-800 dark:text-blue-200">
+					<!-- Visibility Info: composited tint mirrors ToneTile's audited info pair. -->
+					<div class="mt-4 flex gap-2 rounded-md border border-info/30 bg-info/10 p-3">
+						<Info class="h-5 w-5 flex-shrink-0 text-info" aria-hidden="true" />
+						<p class="text-sm text-foreground">
 							{m['dietary.profile_visibilityInfo']()}
 						</p>
 					</div>

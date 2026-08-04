@@ -4,6 +4,7 @@
 	import { Mail, Eye, EyeOff, AlertTriangle, CheckCircle, ShieldCheck } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import * as Dialog from '$lib/components/ui/dialog';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import type { RevelUserSchema } from '$lib/api/generated/types.gen';
 
 	interface EmailChangeFormState {
@@ -125,7 +126,7 @@
 
 		<div class="flex-1">
 			<div>
-				<h2 class="text-xl font-semibold">{m['accountSecurityPage.emailChange_title']()}</h2>
+				<h2 class="text-xl font-bold">{m['accountSecurityPage.emailChange_title']()}</h2>
 				<p class="mt-1 text-sm text-muted-foreground">
 					{m['accountSecurityPage.emailChange_description']()}
 				</p>
@@ -139,12 +140,13 @@
 						>
 						<span class="ml-1 font-medium">{currentEmail}</span>
 						{#if emailVerified}
-							<span
-								class="ml-2 inline-flex items-center gap-1 rounded bg-green-100 px-1.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-950 dark:text-green-300"
-							>
-								<ShieldCheck class="h-3 w-3" aria-hidden="true" />
-								{m['profile.email_verified']()}
-							</span>
+							<StatusBadge
+								tone="success"
+								icon={ShieldCheck}
+								label={m['profile.email_verified']()}
+								size="sm"
+								class="ml-2"
+							/>
 						{/if}
 					</p>
 				</div>
@@ -163,19 +165,22 @@
 
 			{#if showForm && !submissionSucceeded}
 				<div class="mt-6 rounded-lg border bg-muted/50 p-6">
-					<h3 class="font-semibold">{m['accountSecurityPage.emailChange_formTitle']()}</h3>
+					<h3 class="font-bold">{m['accountSecurityPage.emailChange_formTitle']()}</h3>
 					<p class="mt-2 text-sm text-muted-foreground">
 						{m['accountSecurityPage.emailChange_formDescription']()}
 					</p>
 
+					<!-- Warning tint mirrors ToneTile's amber recipe (light: highlight-foreground
+					     on bg-highlight/20 = 12.6:1; dark: text-highlight on the same tint =
+					     6.0:1) — raw text-highlight alone is only 1.8:1 on light background. -->
 					<div
-						class="mt-4 flex items-start gap-3 rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950"
+						class="mt-4 flex items-start gap-3 rounded-md border border-highlight/40 bg-highlight/20 p-3"
 					>
 						<AlertTriangle
-							class="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-700 dark:text-amber-400"
+							class="mt-0.5 h-5 w-5 flex-shrink-0 text-highlight-foreground dark:text-highlight"
 							aria-hidden="true"
 						/>
-						<p class="text-sm text-amber-900 dark:text-amber-200">
+						<p class="text-sm text-foreground">
 							{m['accountSecurityPage.emailChange_signoutWarning']()}
 						</p>
 					</div>
@@ -298,25 +303,24 @@
 			{/if}
 
 			{#if submissionSucceeded}
-				<div class="mt-6 rounded-md border border-green-500 bg-green-50 p-6 dark:bg-green-950">
+				<!-- Composited tint mirrors ToneTile's audited success pair (>=3:1 vs
+				     background/card); body copy stays on --foreground/--muted-foreground. -->
+				<div class="mt-6 rounded-md border border-success/30 bg-success/10 p-6">
 					<div class="flex items-start gap-3">
-						<CheckCircle
-							class="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600 dark:text-green-400"
-							aria-hidden="true"
-						/>
+						<CheckCircle class="mt-0.5 h-5 w-5 flex-shrink-0 text-success" aria-hidden="true" />
 						<div class="flex-1 space-y-2 text-sm">
-							<h3 class="font-medium text-green-800 dark:text-green-200">
+							<h3 class="font-bold text-foreground">
 								{m['accountSecurityPage.emailChange_successTitle']()}
 							</h3>
-							<p class="text-green-700 dark:text-green-300">
+							<p class="text-muted-foreground">
 								{m['accountSecurityPage.emailChange_successBody']({ new_email: submittedEmail })}
 							</p>
-							<p class="text-green-700 dark:text-green-300">
+							<p class="text-muted-foreground">
 								{m['accountSecurityPage.emailChange_successNotice']({
 									current_email: currentEmail
 								})}
 							</p>
-							<p class="text-xs text-green-700 dark:text-green-300">
+							<p class="text-xs text-muted-foreground">
 								{m['accountSecurityPage.emailChange_successExpiry']()}
 							</p>
 						</div>

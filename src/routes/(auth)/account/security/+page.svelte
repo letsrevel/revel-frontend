@@ -18,6 +18,8 @@
 	import type { PageData, ActionData } from './$types';
 	import QRCode from 'qrcode';
 	import { accountResetPasswordRequest } from '$lib/api/generated';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 
 	interface Props {
 		data: PageData;
@@ -164,13 +166,12 @@
 </svelte:head>
 
 <div class="container mx-auto max-w-4xl px-4 py-8">
-	<!-- Page Header -->
-	<div class="mb-8">
-		<h1 class="text-3xl font-bold">{m['accountSecurityPage.title']()}</h1>
-		<p class="mt-2 text-muted-foreground">
-			{m['accountSecurityPage.subtitle']()}
-		</p>
-	</div>
+	<PageHeader
+		kicker={m['myInvoices.account']()}
+		title={m['accountSecurityPage.title']()}
+		subtitle={m['accountSecurityPage.subtitle']()}
+		class="mb-8"
+	/>
 
 	<!-- 2FA Section -->
 	<div class="rounded-lg border bg-card p-6">
@@ -184,26 +185,17 @@
 			<div class="flex-1">
 				<div class="flex items-center justify-between">
 					<div>
-						<h2 class="text-xl font-semibold">{m['accountSecurityPage.twoFactorAuth']()}</h2>
+						<h2 class="text-xl font-bold">{m['accountSecurityPage.twoFactorAuth']()}</h2>
 						<p class="mt-1 text-sm text-muted-foreground">
 							{m['accountSecurityPage.twoFactorDescription']()}
 						</p>
 					</div>
 
-					<!-- Status Badge -->
-					<div
-						class="flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium {totpActive
-							? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-							: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'}"
-					>
-						{#if totpActive}
-							<CheckCircle class="h-4 w-4" aria-hidden="true" />
-							<span>{m['accountSecurityPage.statusEnabled']()}</span>
-						{:else}
-							<XCircle class="h-4 w-4" aria-hidden="true" />
-							<span>{m['accountSecurityPage.statusDisabled']()}</span>
-						{/if}
-					</div>
+					{#if totpActive}
+						<StatusBadge tone="success" icon={CheckCircle} label={m['accountSecurityPage.statusEnabled']()} />
+					{:else}
+						<StatusBadge tone="neutral" icon={XCircle} label={m['accountSecurityPage.statusDisabled']()} />
+					{/if}
 				</div>
 
 				<!-- Enable/Disable Button (when not in a flow) -->
@@ -256,7 +248,7 @@
 				<!-- Setup Flow -->
 				{#if showSetupFlow}
 					<div class="mt-6 rounded-lg border bg-muted/50 p-6">
-						<h3 class="font-semibold">{m['accountSecurityPage.setupTitle']()}</h3>
+						<h3 class="font-bold">{m['accountSecurityPage.setupTitle']()}</h3>
 
 						{#if provisioningUri}
 							<!-- Step 1: Scan QR Code -->
@@ -305,7 +297,7 @@
 													aria-label={m['accountSecurityPage.copyCodeLabel']()}
 												>
 													{#if manualEntryCopied}
-														<Check class="h-4 w-4 text-green-600" aria-hidden="true" />
+														<Check class="h-4 w-4 text-success" aria-hidden="true" />
 													{:else}
 														<Copy class="h-4 w-4" aria-hidden="true" />
 													{/if}
@@ -390,7 +382,7 @@
 						<div class="flex gap-3">
 							<AlertCircle class="h-5 w-5 text-destructive" aria-hidden="true" />
 							<div class="flex-1">
-								<h3 class="font-semibold text-destructive">
+								<h3 class="font-bold text-destructive">
 									{m['accountSecurityPage.disableTitle']()}
 								</h3>
 								<p class="mt-2 text-sm text-muted-foreground">
@@ -466,7 +458,7 @@
 			<div class="flex-1">
 				<div class="flex items-center justify-between">
 					<div>
-						<h2 class="text-xl font-semibold">{m['accountSecurityPage.passwordChange']()}</h2>
+						<h2 class="text-xl font-bold">{m['accountSecurityPage.passwordChange']()}</h2>
 						<p class="mt-1 text-sm text-muted-foreground">
 							{m['accountSecurityPage.passwordChangeDescription']()}
 						</p>
@@ -491,18 +483,17 @@
 				<!-- Password Change Flow -->
 				{#if showPasswordChangeFlow}
 					<div class="mt-6 rounded-lg border bg-muted/50 p-6">
-						<h3 class="font-semibold">{m['accountSecurityPage.requestPasswordResetTitle']()}</h3>
+						<h3 class="font-bold">{m['accountSecurityPage.requestPasswordResetTitle']()}</h3>
 						<p class="mt-2 text-sm text-muted-foreground">
 							{m['accountSecurityPage.requestPasswordResetDescription']()}
 						</p>
 
 						{#if !passwordResetRequested}
-							<div class="mt-4 flex items-center gap-2 rounded-md bg-blue-50 p-3 dark:bg-blue-950">
-								<Mail
-									class="h-5 w-5 flex-shrink-0 text-blue-600 dark:text-blue-400"
-									aria-hidden="true"
-								/>
-								<p class="text-sm text-blue-800 dark:text-blue-200">
+							<!-- Composited tint mirrors ToneTile's audited info pair (>=3:1 vs
+							     background/card); body copy stays on --foreground. -->
+							<div class="mt-4 flex items-center gap-2 rounded-md border border-info/30 bg-info/10 p-3">
+								<Mail class="h-5 w-5 flex-shrink-0 text-info" aria-hidden="true" />
+								<p class="text-sm text-foreground">
 									{m['accountSecurityPage.emailWillBeSent']({ email: data.user?.email || '' })}
 								</p>
 							</div>
@@ -527,19 +518,16 @@
 								</button>
 							</div>
 						{:else}
-							<div
-								class="mt-4 rounded-md border border-green-500 bg-green-50 p-4 dark:bg-green-950"
-							>
+							<!-- Composited tint mirrors ToneTile's audited success pair (>=3:1
+							     vs background/card); body copy stays on --foreground. -->
+							<div class="mt-4 rounded-md border border-success/30 bg-success/10 p-4">
 								<div class="flex items-center gap-2">
-									<CheckCircle
-										class="h-5 w-5 text-green-600 dark:text-green-400"
-										aria-hidden="true"
-									/>
+									<CheckCircle class="h-5 w-5 text-success" aria-hidden="true" />
 									<div class="flex-1">
-										<p class="text-sm font-medium text-green-800 dark:text-green-200">
+										<p class="text-sm font-medium text-foreground">
 											{m['accountSecurityPage.resetLinkSent']()}
 										</p>
-										<p class="mt-1 text-xs text-green-700 dark:text-green-300">
+										<p class="mt-1 text-xs text-muted-foreground">
 											{m['accountSecurityPage.checkEmailInbox']()}
 										</p>
 									</div>
@@ -564,22 +552,22 @@
 
 	<!-- Additional Security Tips -->
 	<div class="mt-6 rounded-lg border bg-muted/50 p-6">
-		<h3 class="font-semibold">{m['accountSecurityPage.securityTips']()}</h3>
+		<h3 class="font-bold">{m['accountSecurityPage.securityTips']()}</h3>
 		<ul class="mt-3 space-y-2 text-sm text-muted-foreground">
 			<li class="flex gap-2">
-				<CheckCircle class="h-5 w-5 flex-shrink-0 text-green-600" aria-hidden="true" />
+				<CheckCircle class="h-5 w-5 flex-shrink-0 text-success" aria-hidden="true" />
 				<span>{m['accountSecurityPage.tip1']()}</span>
 			</li>
 			<li class="flex gap-2">
-				<CheckCircle class="h-5 w-5 flex-shrink-0 text-green-600" aria-hidden="true" />
+				<CheckCircle class="h-5 w-5 flex-shrink-0 text-success" aria-hidden="true" />
 				<span>{m['accountSecurityPage.tip2']()}</span>
 			</li>
 			<li class="flex gap-2">
-				<CheckCircle class="h-5 w-5 flex-shrink-0 text-green-600" aria-hidden="true" />
+				<CheckCircle class="h-5 w-5 flex-shrink-0 text-success" aria-hidden="true" />
 				<span>{m['accountSecurityPage.tip3']()}</span>
 			</li>
 			<li class="flex gap-2">
-				<CheckCircle class="h-5 w-5 flex-shrink-0 text-green-600" aria-hidden="true" />
+				<CheckCircle class="h-5 w-5 flex-shrink-0 text-success" aria-hidden="true" />
 				<span>{m['accountSecurityPage.tip4']()}</span>
 			</li>
 		</ul>
