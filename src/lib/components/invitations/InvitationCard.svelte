@@ -7,6 +7,7 @@
 	import { getImageUrl } from '$lib/utils/url';
 	import { formatEventDateRange, formatDate } from '$lib/utils/date';
 	import { getEventLogo, getEventLogoThumbnail } from '$lib/utils/event';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 
 	interface Props {
 		invitation: MyEventInvitationSchema;
@@ -79,7 +80,7 @@
 			<!-- Event Details -->
 			<div class="min-w-0 flex-1">
 				<div class="mb-2">
-					<h3 class="text-lg font-semibold">
+					<h3 class="text-lg font-bold">
 						<a
 							href={resolve('/(public)/events/[id]', { id: invitation.event.id })}
 							class="hover:underline focus:underline focus:outline-none"
@@ -87,12 +88,13 @@
 							{invitation.event.name}
 						</a>
 					</h3>
-					<div
-						class="mt-1 inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300"
-					>
-						<CheckCircle2 class="h-3 w-3" aria-hidden="true" />
-						{m['invitationCard.specialInvitation']()}
-					</div>
+					<StatusBadge
+						tone="success"
+						label={m['invitationCard.specialInvitation']()}
+						icon={CheckCircle2}
+						size="sm"
+						class="mt-1"
+					/>
 				</div>
 
 				<!-- Event Metadata -->
@@ -150,7 +152,7 @@
 				<ul class="space-y-1">
 					{#each privileges as privilege (privilege)}
 						<li class="flex items-center gap-2 text-sm">
-							<CheckCircle2 class="h-4 w-4 shrink-0 text-green-600" aria-hidden="true" />
+							<CheckCircle2 class="h-4 w-4 shrink-0 text-success" aria-hidden="true" />
 							{privilege}
 						</li>
 					{/each}

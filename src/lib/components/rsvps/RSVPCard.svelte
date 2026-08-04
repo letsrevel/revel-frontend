@@ -12,6 +12,8 @@
 		getEventCoverArt,
 		getEventCoverArtThumbnail
 	} from '$lib/utils/event';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
+	import type { Tone } from '$lib/components/common/tones';
 
 	interface Props {
 		rsvp: UserRsvpSchema;
@@ -53,33 +55,18 @@
 	// Format created date
 	const createdDate = $derived(formatDate(rsvp.created_at));
 
-	// Get RSVP status info
-	const statusInfo = $derived.by(() => {
+	// Get RSVP status info — thin mapper onto the shared StatusBadge tone system
+	// (same visible labels as before, solid-fill tokens instead of hand-picked hues).
+	const statusInfo = $derived.by((): { label: string; icon: typeof CheckCircle2; tone: Tone } => {
 		switch (rsvp.status) {
 			case 'yes':
-				return {
-					label: m['rsvpCard.going'](),
-					icon: CheckCircle2,
-					colorClass: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-				};
+				return { label: m['rsvpCard.going'](), icon: CheckCircle2, tone: 'success' };
 			case 'no':
-				return {
-					label: m['rsvpCard.notGoing'](),
-					icon: XCircle,
-					colorClass: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
-				};
+				return { label: m['rsvpCard.notGoing'](), icon: XCircle, tone: 'danger' };
 			case 'maybe':
-				return {
-					label: m['rsvpCard.maybe'](),
-					icon: HelpCircle,
-					colorClass: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
-				};
+				return { label: m['rsvpCard.maybe'](), icon: HelpCircle, tone: 'warning' };
 			default:
-				return {
-					label: m['rsvpCard.unknown'](),
-					icon: HelpCircle,
-					colorClass: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300'
-				};
+				return { label: m['rsvpCard.unknown'](), icon: HelpCircle, tone: 'neutral' };
 		}
 	});
 
@@ -108,7 +95,7 @@
 			<!-- Event Details -->
 			<div class="min-w-0 flex-1">
 				<div class="mb-2">
-					<h3 class="text-lg font-semibold">
+					<h3 class="text-lg font-bold">
 						<a
 							href={resolve('/(public)/events/[id]', { id: rsvp.event.id })}
 							class="hover:underline focus:underline focus:outline-none"
@@ -116,12 +103,13 @@
 							{rsvp.event.name}
 						</a>
 					</h3>
-					<div
-						class="mt-1 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium {statusInfo.colorClass}"
-					>
-						<StatusIcon class="h-3 w-3" aria-hidden="true" />
-						{statusInfo.label}
-					</div>
+					<StatusBadge
+						tone={statusInfo.tone}
+						label={statusInfo.label}
+						icon={StatusIcon}
+						size="sm"
+						class="mt-1"
+					/>
 				</div>
 
 				<!-- Event Metadata -->
