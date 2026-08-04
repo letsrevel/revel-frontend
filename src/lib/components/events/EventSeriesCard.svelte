@@ -5,6 +5,7 @@
 	import { cn } from '$lib/utils/cn';
 	import { getImageUrl } from '$lib/utils/url';
 	import { Calendar, Tag, Users } from '@lucide/svelte';
+	import { getPosterFallbackGradient } from '$lib/utils/fallback-gradient';
 
 	interface Props {
 		series: EventSeriesRetrieveSchema;
@@ -58,15 +59,9 @@
 		seriesLogoThumbnailUrl || seriesLogoUrl || orgLogoThumbnailUrl || orgLogoUrl
 	);
 
-	// Fallback gradient based on series ID
-	const gradients = [
-		'from-blue-500 to-purple-600',
-		'from-green-500 to-teal-600',
-		'from-orange-500 to-pink-600',
-		'from-purple-500 to-indigo-600',
-		'from-red-500 to-orange-600'
-	];
-	const fallbackGradient = $derived(gradients[series.id.charCodeAt(0) % gradients.length]);
+	// Fallback gradient based on series ID — shared poster ramp, so a series, its
+	// organization and its events fall back to the same visual family.
+	const fallbackGradient = $derived(getPosterFallbackGradient(series.id));
 
 	// Accessible card label for screen readers
 	const accessibleLabel = $derived.by(() => {
@@ -88,7 +83,8 @@
 	const containerClasses = $derived(
 		cn(
 			'group relative overflow-hidden rounded-lg border bg-card transition-all',
-			'hover:shadow-lg focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
+			// Same lift on all three discovery cards (event / series / organization).
+			'hover:-translate-y-0.5 hover:shadow-lg focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
 			variant === 'compact' && 'flex flex-row md:flex-col',
 			variant === 'standard' && 'flex flex-col',
 			className
@@ -150,7 +146,7 @@
 				{:else}
 					<!-- Ultimate fallback: Users icon -->
 					<div class="flex h-full w-full items-center justify-center">
-						<Users class="h-16 w-16 text-white opacity-50" aria-hidden="true" />
+						<Users class="h-16 w-16 text-poster-white/60" aria-hidden="true" />
 					</div>
 				{/if}
 			</div>
@@ -159,7 +155,7 @@
 		<!-- Series indicator badge (top-right) -->
 		<div class="absolute right-2 top-2 z-20">
 			<div
-				class="rounded-full bg-background/90 px-2 py-1 text-xs font-medium backdrop-blur-sm"
+				class="rounded-full bg-background/90 px-2 py-1 text-xs font-bold backdrop-blur-sm"
 				aria-label={m['eventSeriesCard.eventSeries']()}
 			>
 				<div class="flex items-center gap-1">
@@ -181,7 +177,7 @@
 		<div class="space-y-1">
 			<h3
 				class={cn(
-					'line-clamp-2 font-semibold leading-tight',
+					'line-clamp-2 font-bold leading-tight',
 					variant === 'compact' ? 'text-base md:text-lg' : 'text-lg'
 				)}
 			>
@@ -212,9 +208,13 @@
 					<div class="flex items-start gap-2 text-sm">
 						<Tag class="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
 						<div class="flex flex-wrap gap-1">
+							<!-- Tag chips: primary on a 10% primary tint. The tint composites
+							     to ~the card colour, so primary-vs-card governs — 5.9:1 light /
+							     5.3:1 dark (hand-recomputed; a composited alpha is invisible to
+							     scripts/audit-brand-themes.py). -->
 							{#each series.tags.slice(0, 3) as tag (tag)}
 								<span
-									class="inline-block rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
+									class="inline-block rounded-full bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary"
 								>
 									{tag}
 								</span>

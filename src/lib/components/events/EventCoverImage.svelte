@@ -56,7 +56,7 @@
 			{#if logoUrl}
 				<div class="flex h-full w-full items-center justify-center p-4">
 					<div
-						class="aspect-square w-full max-w-[60%] overflow-hidden rounded-lg bg-white/10 p-4 backdrop-blur-sm"
+						class="aspect-square w-full max-w-[60%] overflow-hidden rounded-lg bg-poster-white/10 p-4 backdrop-blur-sm"
 					>
 						<img
 							src={logoUrl}
@@ -69,7 +69,7 @@
 			{:else}
 				<!-- Ultimate fallback: Calendar icon -->
 				<div class="flex h-full w-full items-center justify-center">
-					<Calendar class="h-16 w-16 text-white opacity-50" aria-hidden="true" />
+					<Calendar class="h-16 w-16 text-poster-white/60" aria-hidden="true" />
 				</div>
 			{/if}
 		</div>

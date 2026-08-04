@@ -30,6 +30,10 @@
 	import ClaimMembershipButton from '$lib/components/organizations/ClaimMembershipButton.svelte';
 	import OrgMembershipInline from '$lib/components/account/OrgMembershipInline.svelte';
 	import FollowButton from '$lib/components/common/FollowButton.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
+	import { getPosterFallbackGradient } from '$lib/utils/fallback-gradient';
 	import { SeoHead } from '$lib/seo';
 	import * as m from '$lib/paraglide/messages.js';
 
@@ -70,21 +74,9 @@
 			organization.telegram_url
 	);
 
-	// Fallback gradient for cover art
-	function getOrgFallbackGradient(orgId: string): string {
-		// Use org ID to generate consistent gradient
-		const hash = orgId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-		const gradients = [
-			'bg-gradient-to-br from-blue-500 to-indigo-600',
-			'bg-gradient-to-br from-purple-500 to-pink-600',
-			'bg-gradient-to-br from-green-500 to-teal-600',
-			'bg-gradient-to-br from-orange-500 to-red-600',
-			'bg-gradient-to-br from-cyan-500 to-blue-600'
-		];
-		return gradients[hash % gradients.length];
-	}
-
-	const fallbackGradient = $derived(getOrgFallbackGradient(organization.id));
+	// Fallback cover, on the shared poster ramp (see utils/fallback-gradient.ts):
+	// an org, its series and its events all fall back to the same visual family.
+	const fallbackGradient = $derived(getPosterFallbackGradient(organization.id));
 
 	// Filter resources to show only those marked for display on org page
 	const displayedResources = $derived(
@@ -188,12 +180,12 @@
 				/>
 				<!-- Gradient overlay -->
 				<div
-					class="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/60"
+					class="absolute inset-0 bg-gradient-to-b from-transparent via-poster-ink/20 to-poster-ink/60"
 				></div>
 			{:else}
 				<!-- Fallback gradient -->
-				<div class="h-full w-full {fallbackGradient}"></div>
-				<div class="absolute inset-0 bg-gradient-to-b from-black/10 to-black/60"></div>
+				<div class="h-full w-full bg-gradient-to-br {fallbackGradient}"></div>
+				<div class="absolute inset-0 bg-gradient-to-b from-poster-ink/10 to-poster-ink/60"></div>
 			{/if}
 		</div>
 	</section>
@@ -222,7 +214,12 @@
 
 				<!-- Organization Info -->
 				<div class="min-w-0 flex-1">
-					<h1 class="mb-2 text-3xl font-bold md:text-4xl">{organization.name}</h1>
+					<PageHeader
+						volume="celebration"
+						kicker={m['organizationProfile.kicker']()}
+						title={organization.name}
+						class="mb-2"
+					/>
 
 					<!-- Metadata Row -->
 					<div class="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
@@ -243,7 +240,7 @@
 										href={organization.instagram_url}
 										target="_blank"
 										rel="noopener noreferrer"
-										class="text-muted-foreground transition-colors hover:text-pink-500"
+										class="text-muted-foreground transition-colors hover:text-primary"
 										aria-label={m['organizationProfile.social_instagram']()}
 									>
 										<Instagram class="h-5 w-5" aria-hidden="true" />
@@ -256,7 +253,7 @@
 										href={organization.facebook_url}
 										target="_blank"
 										rel="noopener noreferrer"
-										class="text-muted-foreground transition-colors hover:text-blue-600"
+										class="text-muted-foreground transition-colors hover:text-primary"
 										aria-label={m['organizationProfile.social_facebook']()}
 									>
 										<Facebook class="h-5 w-5" aria-hidden="true" />
@@ -269,7 +266,7 @@
 										href={organization.bluesky_url}
 										target="_blank"
 										rel="noopener noreferrer"
-										class="text-muted-foreground transition-colors hover:text-sky-500"
+										class="text-muted-foreground transition-colors hover:text-primary"
 										aria-label={m['organizationProfile.social_bluesky']()}
 									>
 										<AtSign class="h-5 w-5" aria-hidden="true" />
@@ -282,7 +279,7 @@
 										href={organization.telegram_url}
 										target="_blank"
 										rel="noopener noreferrer"
-										class="text-muted-foreground transition-colors hover:text-blue-400"
+										class="text-muted-foreground transition-colors hover:text-primary"
 										aria-label={m['organizationProfile.social_telegram']()}
 									>
 										<Send class="h-5 w-5" aria-hidden="true" />
@@ -379,15 +376,17 @@
 		     predate the move still land on something that explains itself. -->
 		{#if organization.accept_membership_requests || data.membershipPlans.length > 0}
 			<section id="membership" aria-labelledby="membership-heading" class="mb-12">
-				<h2 id="membership-heading" class="text-2xl font-bold">
-					{m['membershipPlans.heading']()}
-				</h2>
+				<SectionHeader
+					volume="celebration"
+					id="membership-heading"
+					title={m['membershipPlans.heading']()}
+				/>
 				<p class="mt-1 text-sm text-muted-foreground">
 					{m['membershipTiers.landingBlurb']({ organizationName: organization.name })}
 				</p>
 				<a
 					href={resolve('/(public)/org/[slug]/membership', { slug: organization.slug })}
-					class="mt-3 inline-flex items-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					class="mt-3 inline-flex items-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-bold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 				>
 					{m['membershipPlans.viewMembership']()}
 					<ArrowRight class="h-4 w-4" aria-hidden="true" />
@@ -400,9 +399,11 @@
 			<section aria-labelledby="resources-heading" class="mb-12">
 				<div class="mb-6 flex items-center justify-between">
 					<div>
-						<h2 id="resources-heading" class="text-2xl font-bold">
-							{m['organizationProfile.resources_heading']()}
-						</h2>
+						<SectionHeader
+							volume="celebration"
+							id="resources-heading"
+							title={m['organizationProfile.resources_heading']()}
+						/>
 						<p class="mt-1 text-sm text-muted-foreground">
 							{m['organizationProfile.resources_description']({
 								organizationName: organization.name
@@ -411,7 +412,7 @@
 					</div>
 					<a
 						href={resolve('/(public)/org/[slug]/resources', { slug: organization.slug })}
-						class="text-sm font-medium text-primary hover:underline"
+						class="text-sm font-bold text-primary hover:underline"
 					>
 						{m['organizationProfile.resources_viewAll']()}
 					</a>
@@ -429,9 +430,11 @@
 			<section aria-labelledby="series-heading" class="mb-12">
 				<div class="mb-6 flex items-center justify-between">
 					<div>
-						<h2 id="series-heading" class="text-2xl font-bold">
-							{m['organizationProfile.eventSeries_heading']()}
-						</h2>
+						<SectionHeader
+							volume="celebration"
+							id="series-heading"
+							title={m['organizationProfile.eventSeries_heading']()}
+						/>
 						<p class="mt-1 text-sm text-muted-foreground">
 							{m['organizationProfile.eventSeries_description']({
 								organizationName: organization.name
@@ -489,9 +492,11 @@
 		<section aria-labelledby="events-heading" class="mb-12">
 			<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 				<div>
-					<h2 id="events-heading" class="text-2xl font-bold">
-						{m['organizationProfile.events_heading']()}
-					</h2>
+					<SectionHeader
+						volume="celebration"
+						id="events-heading"
+						title={m['organizationProfile.events_heading']()}
+					/>
 					<p class="mt-1 text-sm text-muted-foreground">
 						{m['organizationProfile.events_description']({ organizationName: organization.name })}
 					</p>
@@ -500,14 +505,14 @@
 				<div class="flex flex-wrap items-center gap-4">
 					<!-- Filter Toggle -->
 					<div class="flex items-center gap-2">
-						<label for="include-past" class="text-sm font-medium"
+						<label for="include-past" class="text-sm font-bold"
 							>{m['organizationProfile.events_includePast']()}</label
 						>
 						<input
 							id="include-past"
 							type="checkbox"
 							bind:checked={includePastEvents}
-							class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+							class="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 						/>
 					</div>
 
@@ -520,7 +525,7 @@
 								type="button"
 								onclick={() =>
 									(ticketType = isSelected ? undefined : (option.value as 'ticketed' | 'free'))}
-								class="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 {isSelected
+								class="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 {isSelected
 									? 'border-primary bg-primary text-primary-foreground hover:bg-primary/90'
 									: 'border-input bg-background hover:bg-accent hover:text-accent-foreground'}"
 								aria-pressed={isSelected}
@@ -588,31 +593,29 @@
 					</p>
 				</div>
 			{:else if events.length === 0}
-				<!-- Empty State -->
-				<div class="rounded-lg border bg-card p-8 text-center">
-					<Calendar class="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-					<h3 class="mb-2 text-lg font-semibold">
-						{includePastEvents
-							? m['organizationProfile.events_noEvents']()
-							: m['organizationProfile.events_noUpcoming']()}
-					</h3>
-					<p class="text-sm text-muted-foreground">
-						{includePastEvents
-							? m['organizationProfile.events_noEventsYet']({ organizationName: organization.name })
-							: m['organizationProfile.events_noUpcomingScheduled']({
-									organizationName: organization.name
-								})}
-					</p>
-					{#if !includePastEvents}
-						<button
-							type="button"
-							onclick={() => (includePastEvents = true)}
-							class="mt-4 text-sm font-medium text-primary hover:underline"
-						>
-							{m['organizationProfile.events_viewPast']()}
-						</button>
-					{/if}
-				</div>
+				<EmptyState
+					icon={Calendar}
+					title={includePastEvents
+						? m['organizationProfile.events_noEvents']()
+						: m['organizationProfile.events_noUpcoming']()}
+					body={includePastEvents
+						? m['organizationProfile.events_noEventsYet']({ organizationName: organization.name })
+						: m['organizationProfile.events_noUpcomingScheduled']({
+								organizationName: organization.name
+							})}
+				>
+					{#snippet action()}
+						{#if !includePastEvents}
+							<button
+								type="button"
+								onclick={() => (includePastEvents = true)}
+								class="text-sm font-bold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+							>
+								{m['organizationProfile.events_viewPast']()}
+							</button>
+						{/if}
+					{/snippet}
+				</EmptyState>
 			{:else}
 				<!-- Event Cards Grid -->
 				<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -654,12 +657,19 @@
 		<!-- Tags Section -->
 		{#if organization.tags && organization.tags.length > 0}
 			<section aria-labelledby="tags-heading" class="border-t pt-8">
-				<h2 id="tags-heading" class="mb-4 text-xl font-semibold">
-					{m['eventDetails.tags_heading']()}
-				</h2>
+				<SectionHeader
+					volume="celebration"
+					id="tags-heading"
+					title={m['eventDetails.tags_heading']()}
+					class="mb-4"
+				/>
+				<!-- Tag chips: primary on a 10% primary tint. The tint composites to
+				     ~the page colour, so primary-vs-background governs — 5.3:1 light /
+				     5.9:1 dark (hand-recomputed; a composited alpha is invisible to
+				     scripts/audit-brand-themes.py). -->
 				<div class="flex flex-wrap gap-2">
 					{#each organization.tags as tag (tag)}
-						<span class="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
+						<span class="rounded-full bg-primary/10 px-3 py-1 text-sm font-bold text-primary">
 							{tag}
 						</span>
 					{/each}

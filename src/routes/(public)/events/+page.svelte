@@ -19,6 +19,8 @@
 	} from '$lib/utils/filters';
 	import type { EventFilters as FilterState } from '$lib/utils/filters';
 	import { parseCalendarParams, getCurrentPeriod } from '$lib/utils/calendar';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { SeoHead } from '$lib/seo';
 	import * as m from '$lib/paraglide/messages.js';
 
@@ -172,28 +174,13 @@
 	</a>
 
 	<!-- Page Header -->
-	<header class="mb-8">
-		<div class="flex items-start justify-between gap-4">
-			<div>
-				<h1 class="text-4xl font-bold">{m['browse.events_title']()}</h1>
-				{#if !error && (viewMode === 'list' ? totalCount > 0 : calendarEvents.length > 0)}
-					<p class="mt-2 text-muted-foreground">
-						{#if viewMode === 'list'}
-							{m['browse.events_count']({
-								count: totalCount,
-								eventPlural:
-									totalCount === 1 ? m['common.plurals_event']() : m['common.plurals_events']()
-							})}
-						{:else}
-							{calendarEvents.length}
-							{calendarEvents.length === 1
-								? m['common.plurals_event']()
-								: m['common.plurals_events']()}
-						{/if}
-					</p>
-				{/if}
-			</div>
-
+	<PageHeader
+		volume="celebration"
+		kicker={m['browse.events_kicker']()}
+		title={m['browse.events_title']()}
+		class="mb-8"
+	>
+		{#snippet actions()}
 			<!-- View Toggle -->
 			<Button variant="outline" size="sm" onclick={toggleViewMode} class="flex items-center gap-2">
 				{#if viewMode === 'list'}
@@ -204,8 +191,21 @@
 					{m['calendar.list_view']()}
 				{/if}
 			</Button>
-		</div>
-	</header>
+		{/snippet}
+	</PageHeader>
+	{#if !error && (viewMode === 'list' ? totalCount > 0 : calendarEvents.length > 0)}
+		<p class="-mt-6 mb-8 text-muted-foreground" aria-live="polite">
+			{#if viewMode === 'list'}
+				{m['browse.events_count']({
+					count: totalCount,
+					eventPlural: totalCount === 1 ? m['common.plurals_event']() : m['common.plurals_events']()
+				})}
+			{:else}
+				{calendarEvents.length}
+				{calendarEvents.length === 1 ? m['common.plurals_event']() : m['common.plurals_events']()}
+			{/if}
+		</p>
+	{/if}
 
 	<!-- Main Content: Sidebar + Event Grid -->
 	<div class="flex flex-col gap-8 lg:flex-row">
@@ -237,27 +237,23 @@
 						</p>
 					</div>
 				{:else if events.length === 0}
-					<!-- Empty State -->
-					<div class="rounded-lg border bg-muted/50 p-12 text-center">
-						<Calendar class="mx-auto mb-4 h-16 w-16 text-muted-foreground" aria-hidden="true" />
-						<h2 class="text-2xl font-semibold">{m['browse.events_noEventsFound']()}</h2>
-						<p class="mt-2 text-muted-foreground">
+					<!-- level 2: the page's only other heading is the h1 above. -->
+					<EmptyState
+						level={2}
+						icon={Calendar}
+						title={m['browse.events_noEventsFound']()}
+						body={currentFilters.search || currentFilters.cityId || currentFilters.tags
+							? m['browse.events_tryAdjustingFilters']()
+							: m['browse.events_noUpcomingEvents']()}
+					>
+						{#snippet action()}
 							{#if currentFilters.search || currentFilters.cityId || currentFilters.tags}
-								{m['browse.events_tryAdjustingFilters']()}
-							{:else}
-								{m['browse.events_noUpcomingEvents']()}
+								<Button onclick={handleClearFilters}>
+									{m['browse.events_clearFilters']()}
+								</Button>
 							{/if}
-						</p>
-						{#if currentFilters.search || currentFilters.cityId || currentFilters.tags}
-							<button
-								type="button"
-								onclick={handleClearFilters}
-								class="mt-4 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-							>
-								{m['browse.events_clearFilters']()}
-							</button>
-						{/if}
-					</div>
+						{/snippet}
+					</EmptyState>
 				{:else}
 					<!-- Event Grid -->
 					<div

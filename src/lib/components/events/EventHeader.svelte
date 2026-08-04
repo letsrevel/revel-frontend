@@ -86,29 +86,49 @@
 			/>
 			<!-- Gradient overlay for text contrast -->
 			<div
-				class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"
+				class="absolute inset-0 bg-gradient-to-t from-poster-ink/85 via-poster-ink/45 to-transparent"
 			></div>
 		{:else}
-			<!-- Fallback gradient -->
-			<div class="h-full w-full {fallbackGradient}"></div>
-			<div class="absolute inset-0 bg-gradient-to-br from-black/20 to-black/40"></div>
+			<!-- Fallback cover. The direction utility was missing here, so the colour
+			     stops painted nothing and the hero rendered on bare background;
+			     restored alongside the poster ramp. The scrim now matches the
+			     cover-image branch, and the type block sits in the bottom third
+			     where `from-poster-ink/85` applies. Hand-computed against the
+			     LIGHTEST stop in the ramp (lavender, 68% L), because a composited
+			     alpha is invisible to scripts/audit-brand-themes.py:
+			       ink@85% over lavender → 14.1:1 vs white, 11.7:1 vs white/90
+			       ink@45% over lavender (mid-gradient) → 6.7:1 / 5.8:1
+			     so every text layer here clears AA on every cover. -->
+			<div class="h-full w-full bg-gradient-to-br {fallbackGradient}"></div>
+			<div
+				class="absolute inset-0 bg-gradient-to-t from-poster-ink/85 via-poster-ink/45 to-poster-ink/20"
+			></div>
 		{/if}
 
 		<!-- Header Content Overlay -->
 		<div class="absolute inset-0 flex flex-col justify-end p-6 pb-12 md:p-8">
 			<div class="max-w-4xl">
+				<!-- Kicker: who is putting this on. The organization badge below the
+				     cover repeats it as a link; up here it is the eyebrow that gives
+				     the display title something to sit on. -->
+				<p class="mb-1 text-sm font-extrabold uppercase tracking-[0.12em] text-poster-white/90">
+					{event.organization.name}
+				</p>
+
 				<!-- Event Name -->
-				<h1 class="mb-3 text-3xl font-bold text-white md:text-4xl lg:text-5xl">
+				<h1
+					class="mb-3 text-3xl font-black leading-[1.12] text-poster-white sm:text-4xl lg:text-5xl"
+				>
 					{event.name}
 				</h1>
 
 				<!-- Metadata Row -->
-				<div class="flex flex-col gap-2 text-sm text-white/90 md:text-base">
+				<div class="flex flex-col gap-2 text-sm text-poster-white/90 md:text-base">
 					<!-- Date (clickable to download iCal) -->
 					<button
 						type="button"
 						onclick={handleDownloadCalendar}
-						class="group flex items-center gap-2 transition-all hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black/50"
+						class="group flex items-center gap-2 transition-all hover:text-poster-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-ink/50"
 						title={m['eventHeader.downloadCalendarEventTitle']()}
 						aria-label={m['eventHeader.downloadCalendarEventFor']({ name: event.name })}
 					>
@@ -126,7 +146,7 @@
 							href={mapsUrl}
 							target="_blank"
 							rel="noopener noreferrer"
-							class="group flex items-center gap-2 transition-all hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black/50"
+							class="group flex items-center gap-2 transition-all hover:text-poster-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-ink/50"
 							aria-label="{locationDisplay} - {m['eventQuickInfo.openInMaps']()}"
 						>
 							<MapPin class="h-5 w-5 shrink-0" aria-hidden="true" />
@@ -147,10 +167,10 @@
 			<button
 				type="button"
 				onclick={handleShare}
-				class="absolute right-6 top-6 hidden rounded-full bg-white/20 p-3 backdrop-blur-sm transition-all hover:bg-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black/50 md:block"
+				class="absolute right-6 top-6 hidden rounded-full bg-poster-white/20 p-3 backdrop-blur-sm transition-all hover:bg-poster-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-ink/50 md:block"
 				aria-label={m['eventHeader.shareEvent']()}
 			>
-				<Share2 class="h-5 w-5 text-white" aria-hidden="true" />
+				<Share2 class="h-5 w-5 text-poster-white" aria-hidden="true" />
 			</button>
 		</div>
 	</div>
@@ -178,8 +198,10 @@
 			{/if}
 
 			<div class="flex flex-col">
-				<span class="text-xs text-muted-foreground">{m['eventHeader.organizedBy']()}</span>
-				<span class="font-semibold text-foreground group-hover:text-primary">
+				<span class="text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
+					{m['eventHeader.organizedBy']()}
+				</span>
+				<span class="font-bold text-foreground group-hover:text-primary">
 					{event.organization.name}
 				</span>
 			</div>
