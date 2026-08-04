@@ -238,15 +238,13 @@
 									class="mb-2"
 								/>
 
-								<!-- Organization Link -->
-								<a
-									href={resolve('/(public)/org/[slug]', { slug: series.organization.slug })}
-									class="mb-2 inline-block text-base font-bold text-primary hover:underline"
-								>
-									{m['eventSeriesDetailPage.byOrganization']({
-										organizationName: series.organization.name
-									})}
-								</a>
+								<!-- The "by {org}" link that used to sit here is gone: the ribbon
+								     directly above it is the same link to the same place, carrying
+								     the org's own mark and a richer accessible name, and the two
+								     ended up ~130px apart — visible duplication, unlike the event
+								     page's hero kicker, which is white-on-photo and reads as a
+								     separate visual context. The affordance is preserved, not
+								     removed. -->
 
 								<!-- Tags -->
 								{#if series.tags && series.tags.length > 0}

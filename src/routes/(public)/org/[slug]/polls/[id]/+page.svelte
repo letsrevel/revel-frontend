@@ -111,19 +111,11 @@
 		</div>
 	</section>
 
-	<!--
-		Tinted content panel — the same wash the event page and the org surfaces
-		use, so every card below floats. Composite and ratios are identical to
-		those pages' (a composited alpha is invisible to
-		scripts/audit-brand-themes.py):
-		  light — secondary@55 over background ⇒ hsl(231 88% 90%);
-		          foreground 12.42:1 · muted-foreground 6.45:1 · primary 4.97:1
-		  dark  — secondary@28 over background ⇒ hsl(246 33% 15%);
-		          foreground 15.75:1 · muted-foreground 7.47:1 · primary 6.30:1
-		Nothing lands directly on it — every block here is a Card — so the panel
-		is pure depth.
-	-->
-	<div class="flex-1 bg-secondary/55 dark:bg-secondary/[0.28]">
+	<!-- Body on plain `--background`, pulled up over the band's bottom edge — the
+	     merged questionnaire page's arrangement (see /events for why a
+	     `bg-secondary` band does not get a `bg-secondary` wash under it). Every
+	     block here is a Card, so the float is already theirs. -->
+	<div class="flex-1">
 		<main class="container mx-auto -mt-8 max-w-3xl space-y-6 px-4 pb-8">
 			{#if data.forbidden}
 				<!--

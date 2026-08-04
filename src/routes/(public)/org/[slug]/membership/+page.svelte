@@ -13,21 +13,13 @@
 
 <SeoHead config={data.seo} />
 
-<!--
-	Tinted page panel (uplift, spec §9) — the org profile's wash, so following
-	"View membership" from that page lands on the same surface rather than
-	dropping back onto bare paper. Full-bleed with `min-h-screen`, so a short
-	tier list cannot leave a `--background` strip underneath. Composite and
-	therefore ratios are identical to the profile's (a composited alpha is
-	invisible to scripts/audit-brand-themes.py):
-	  light — secondary@55 over background ⇒ hsl(231 88% 90%);
-	          foreground 12.42:1 · muted-foreground 6.45:1 · primary 4.97:1
-	  dark  — secondary@28 over background ⇒ hsl(246 33% 15%);
-	          foreground 15.75:1 · muted-foreground 7.47:1 · primary 6.30:1
-	The back link (`muted-foreground`) is the only copy that lands directly on
-	it; everything else is inside the header block or a tier card.
--->
-<div class="min-h-screen bg-secondary/55 dark:bg-secondary/[0.28]">
+<!-- Plain `--background` under `MembershipSection`'s own colour block: a
+     `bg-secondary` wash sits 5 points of lightness from a `bg-secondary` block
+     in light mode, which would flatten the block into the page. The tinted wash
+     is reserved for the pages whose header is the mode-inert poster-purple
+     ribbon (event, org profile, series). Tier cards float on their own
+     `shadow-poster`. -->
+<div class="min-h-screen">
 	<!-- The `(public)` layout does NOT wrap its children, so every page supplies its
 	     own container; without one the content runs edge to edge. Same values as the
 	     org landing page this is a sub-page of, so navigating between them does not

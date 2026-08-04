@@ -239,20 +239,17 @@
 	</section>
 
 	<!--
-		Tinted content panel — same wash the event detail page introduced, so the
-		filter aside and every card read as white stickers FLOATING on a coloured
-		surface instead of rectangles on paper. Composited alphas are invisible to
-		scripts/audit-brand-themes.py, so the text layers that land DIRECTLY on
-		this panel (never inside a card) are hand-verified against the composite;
-		the numbers are the event page's, because the composite is identical
-		(`--secondary` over `--background` at the same alphas):
-		  light — secondary@55 over background ⇒ hsl(231 88% 90%);
-		          foreground 12.42:1 · muted-foreground 6.45:1 · primary 4.97:1
-		  dark  — secondary@28 over background ⇒ hsl(246 33% 15%);
-		          foreground 15.75:1 · muted-foreground 7.47:1 · primary 6.30:1
-		(`muted-foreground` is the pagination tally, `foreground` the page indicator.)
+		Body on plain `--background`, pulled up over the band's bottom edge — the
+		merged questionnaire page's arrangement, not the event page's tinted wash.
+		Both were tried: a `bg-secondary/55` wash under a `bg-secondary` band lands
+		within 5 points of lightness of it in light mode, so the band stops reading
+		as a colour BLOCK and the page becomes one flat field. The event page can
+		afford the wash because its band is the mode-inert poster-purple ribbon,
+		which is dark enough that the step is unmissable. Here the separation has
+		to come from the band itself, and the float comes from the cards:
+		`shadow-poster` over paper, overlapping the cut.
 	-->
-	<div class="bg-secondary/55 pb-16 dark:bg-secondary/[0.28]">
+	<div class="pb-16">
 		<div class="container mx-auto px-4">
 			<!-- Main Content: Sidebar + Event Grid -->
 			<div class="-mt-8 flex flex-col gap-8 lg:flex-row">

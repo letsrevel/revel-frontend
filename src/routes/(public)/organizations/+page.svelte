@@ -126,17 +126,11 @@
 		</div>
 	</section>
 
-	<!--
-		Tinted content panel — identical composite to /events and the event detail
-		page, so the same hand-verified ratios govern (a composited alpha is
-		invisible to scripts/audit-brand-themes.py):
-		  light — secondary@55 over background ⇒ hsl(231 88% 90%);
-		          foreground 12.42:1 · muted-foreground 6.45:1 · primary 4.97:1
-		  dark  — secondary@28 over background ⇒ hsl(246 33% 15%);
-		          foreground 15.75:1 · muted-foreground 7.47:1 · primary 6.30:1
-		(`muted-foreground` is the pagination tally, `foreground` the page indicator.)
-	-->
-	<div class="bg-secondary/55 pb-16 dark:bg-secondary/[0.28]">
+	<!-- Body on plain `--background`, pulled up over the band's bottom edge — see
+	     /events for why a `bg-secondary` band does NOT get a `bg-secondary` wash
+	     under it (they land 5 points of lightness apart and the block stops
+	     reading as a block). The float is the cards' `shadow-poster`. -->
+	<div class="pb-16">
 		<div class="container mx-auto px-4">
 			<!-- Main Content: Sidebar + Organization Grid -->
 			<div class="-mt-8 flex flex-col gap-8 lg:flex-row">

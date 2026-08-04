@@ -80,18 +80,13 @@
 		</div>
 	</section>
 
-	<!--
-		Tinted content panel — the org profile's wash, so a resource list reads as
-		part of the same org. Composite and ratios identical to that page's (a
-		composited alpha is invisible to scripts/audit-brand-themes.py):
-		  light — secondary@55 over background ⇒ hsl(231 88% 90%);
-		          foreground 12.42:1 · muted-foreground 6.45:1 · primary 4.97:1
-		  dark  — secondary@28 over background ⇒ hsl(246 33% 15%);
-		          foreground 15.75:1 · muted-foreground 7.47:1 · primary 6.30:1
-		Nothing lands directly on it here — the toolbar controls and every card
-		carry their own surface — so the panel is pure depth.
-	-->
-	<div class="flex-1 bg-secondary/55 dark:bg-secondary/[0.28]">
+	<!-- Body on plain `--background`, pulled up over the band's bottom edge — the
+	     merged questionnaire page's arrangement. A `bg-secondary` wash under a
+	     `bg-secondary` band sits 5 points of lightness from it and the block stops
+	     reading as a block; the tinted wash is reserved for pages whose header is
+	     the mode-inert poster-purple ribbon (event, org profile, series). The
+	     float is the resource cards' `shadow-poster`. -->
+	<div class="flex-1">
 		<div class="container mx-auto -mt-8 space-y-6 px-6 pb-8 md:px-8 lg:pb-12">
 			<!-- Filters -->
 			<div class="flex flex-col gap-3 md:flex-row md:items-center">
