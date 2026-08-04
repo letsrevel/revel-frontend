@@ -25,15 +25,16 @@
 		<!-- Icon -->
 		<div class="flex justify-center">
 			{#if data.isVerifying}
-				<div class="rounded-full bg-blue-500/10 p-6">
-					<Loader2
-						class="h-12 w-12 animate-spin text-blue-600 dark:text-blue-400"
-						aria-hidden="true"
-					/>
+				<!-- Tinted status discs on semantic tokens. Icon-vs-surface only (no
+				     text sits on these), independently >= 3:1 in both modes — the same
+				     tints ToneTile measures: info 8.3 light / 8.0 dark, success 4.4 /
+				     8.7. -->
+				<div class="rounded-full bg-info/10 p-6">
+					<Loader2 class="h-12 w-12 animate-spin text-info" aria-hidden="true" />
 				</div>
 			{:else if data.success}
-				<div class="rounded-full bg-green-500/10 p-6">
-					<CheckCircle class="h-12 w-12 text-green-600 dark:text-green-400" aria-hidden="true" />
+				<div class="rounded-full bg-success/10 p-6">
+					<CheckCircle class="h-12 w-12 text-success" aria-hidden="true" />
 				</div>
 			{:else}
 				<div class="rounded-full bg-destructive/10 p-6">
@@ -45,14 +46,14 @@
 		<!-- Message -->
 		<div class="space-y-2">
 			{#if data.isVerifying}
-				<h1 class="text-3xl font-bold tracking-tight">
+				<h1 class="text-3xl font-black leading-[1.12] sm:text-4xl">
 					{m['orgVerifyContactEmail.verifying']()}
 				</h1>
 				<p class="text-muted-foreground">
 					{m['orgVerifyContactEmail.verifyingDescription']()}
 				</p>
 			{:else if data.success}
-				<h1 class="text-3xl font-bold tracking-tight">
+				<h1 class="text-3xl font-black leading-[1.12] sm:text-4xl">
 					{m['orgVerifyContactEmail.success']()}
 				</h1>
 				<p class="text-muted-foreground">
@@ -61,7 +62,7 @@
 					})}
 				</p>
 			{:else}
-				<h1 class="text-3xl font-bold tracking-tight">
+				<h1 class="text-3xl font-black leading-[1.12] sm:text-4xl">
 					{m['orgVerifyContactEmail.failure']()}
 				</h1>
 				<p class="text-muted-foreground">
@@ -76,7 +77,7 @@
 				{#if data.success && data.organizationSlug}
 					<a
 						href={resolve('/(auth)/org/[slug]/admin/settings', { slug: data.organizationSlug })}
-						class="inline-flex h-10 items-center justify-center rounded-md bg-primary px-6 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+						class="inline-flex h-10 items-center justify-center rounded-md bg-primary px-6 py-2 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					>
 						{m['orgVerifyContactEmail.goToSettings']()}
 					</a>
@@ -87,13 +88,13 @@
 					<div class="flex flex-col gap-3 sm:flex-row sm:justify-center">
 						<a
 							href={resolve('/(auth)/dashboard', {})}
-							class="inline-flex h-10 items-center justify-center rounded-md bg-primary px-6 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+							class="inline-flex h-10 items-center justify-center rounded-md bg-primary px-6 py-2 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						>
 							{m['orgVerifyContactEmail.goToDashboard']()}
 						</a>
 						<a
 							href={resolve('/(public)/login', {})}
-							class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-6 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+							class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-6 py-2 text-sm font-bold transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						>
 							{m['orgVerifyContactEmail.backToLogin']()}
 						</a>

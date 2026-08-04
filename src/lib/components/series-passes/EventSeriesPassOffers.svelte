@@ -5,6 +5,7 @@
 	import { seriesPassQueryKeys } from '$lib/queries/series-passes';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { ArrowRight } from '@lucide/svelte';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import SeriesPassCard from './SeriesPassCard.svelte';
 
 	interface Props {
@@ -39,15 +40,17 @@
 {#if passes.length > 0}
 	<section aria-labelledby="event-passes-heading" class="space-y-3">
 		<div class="flex flex-wrap items-baseline justify-between gap-2">
-			<h2 id="event-passes-heading" class="text-xl font-semibold">
-				{m['seriesPass.sectionHeading']()}
-			</h2>
+			<SectionHeader
+				volume="celebration"
+				id="event-passes-heading"
+				title={m['seriesPass.sectionHeading']()}
+			/>
 			<a
 				href={resolve('/(public)/events/[org_slug]/series/[series_slug]', {
 					org_slug: orgSlug,
 					series_slug: seriesSlug
 				})}
-				class="inline-flex items-center gap-1 text-sm text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+				class="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 			>
 				{m['seriesPass.viewSeriesLink']()}
 				<ArrowRight class="h-3.5 w-3.5" aria-hidden="true" />

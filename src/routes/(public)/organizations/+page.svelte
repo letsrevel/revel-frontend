@@ -16,6 +16,9 @@
 		countActiveOrganizationFilters
 	} from '$lib/utils/organizationFilters';
 	import type { OrganizationFilters as FilterState } from '$lib/utils/organizationFilters';
+	import { Button } from '$lib/components/ui/button';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { SeoHead } from '$lib/seo';
 	import * as m from '$lib/paraglide/messages.js';
 
@@ -94,20 +97,21 @@
 	</a>
 
 	<!-- Page Header -->
-	<header class="mb-8">
-		<h1 class="text-4xl font-bold">{m['browse.organizations_title']()}</h1>
-		{#if !error && totalCount > 0}
-			<p class="mt-2 text-muted-foreground">
-				{m['browse.organizations_count']({
+	<PageHeader
+		volume="celebration"
+		kicker={m['browse.organizations_kicker']()}
+		title={m['browse.organizations_title']()}
+		subtitle={!error && totalCount > 0
+			? m['browse.organizations_count']({
 					count: totalCount,
 					organizationPlural:
 						totalCount === 1
 							? m['common.plurals_organization']()
 							: m['common.plurals_organizations']()
-				})}
-			</p>
-		{/if}
-	</header>
+				})
+			: undefined}
+		class="mb-8"
+	/>
 
 	<!-- Main Content: Sidebar + Organization Grid -->
 	<div class="flex flex-col gap-8 lg:flex-row">
@@ -137,27 +141,23 @@
 					</p>
 				</div>
 			{:else if organizations.length === 0}
-				<!-- Empty State -->
-				<div class="rounded-lg border bg-muted/50 p-12 text-center">
-					<Users class="mx-auto mb-4 h-16 w-16 text-muted-foreground" aria-hidden="true" />
-					<h2 class="text-2xl font-semibold">{m['browse.organizations_noOrganizationsFound']()}</h2>
-					<p class="mt-2 text-muted-foreground">
+				<!-- level 2: the page's only other heading is the h1 above. -->
+				<EmptyState
+					level={2}
+					icon={Users}
+					title={m['browse.organizations_noOrganizationsFound']()}
+					body={currentFilters.search || currentFilters.cityId || currentFilters.tags
+						? m['browse.organizations_tryAdjustingFilters']()
+						: m['browse.organizations_noOrganizations']()}
+				>
+					{#snippet action()}
 						{#if currentFilters.search || currentFilters.cityId || currentFilters.tags}
-							{m['browse.organizations_tryAdjustingFilters']()}
-						{:else}
-							{m['browse.organizations_noOrganizations']()}
+							<Button onclick={handleClearFilters}>
+								{m['browse.organizations_clearFilters']()}
+							</Button>
 						{/if}
-					</p>
-					{#if currentFilters.search || currentFilters.cityId || currentFilters.tags}
-						<button
-							type="button"
-							onclick={handleClearFilters}
-							class="mt-4 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-						>
-							{m['browse.organizations_clearFilters']()}
-						</button>
-					{/if}
-				</div>
+					{/snippet}
+				</EmptyState>
 			{:else}
 				<!-- Organization Grid -->
 				<div

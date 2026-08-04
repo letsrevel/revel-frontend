@@ -111,7 +111,8 @@
 	const containerClasses = $derived(
 		cn(
 			'group relative overflow-hidden rounded-lg border bg-card transition-all',
-			'hover:shadow-lg focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
+			// Same lift on all three discovery cards (event / series / organization).
+			'hover:-translate-y-0.5 hover:shadow-lg focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
 			variant === 'compact' && 'flex flex-row md:flex-col',
 			variant === 'standard' && 'flex flex-col',
 			isPast && 'opacity-75',
@@ -192,7 +193,7 @@
 		<div class="space-y-1">
 			<h3
 				class={cn(
-					'line-clamp-2 font-semibold leading-tight',
+					'line-clamp-2 font-bold leading-tight',
 					variant === 'compact' ? 'text-base md:text-lg' : 'text-lg'
 				)}
 			>
@@ -249,9 +250,13 @@
 					<div class="flex items-start gap-2 text-sm">
 						<Tag class="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
 						<div class="flex flex-wrap gap-1">
+							<!-- Tag chips: primary on a 10% primary tint. The tint composites
+							     to ~the card colour, so primary-vs-card governs — 5.9:1 light /
+							     5.3:1 dark (recomputed by hand; a composited alpha is invisible
+							     to scripts/audit-brand-themes.py). -->
 							{#each event.tags.slice(0, 3) as tag (tag)}
 								<span
-									class="inline-block rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
+									class="inline-block rounded-full bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary"
 								>
 									{tag}
 								</span>

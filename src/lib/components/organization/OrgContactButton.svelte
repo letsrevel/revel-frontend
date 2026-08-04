@@ -127,9 +127,9 @@
 			{#if submitted}
 				<div class="py-8 text-center">
 					<div
-						class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900"
+						class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-success/10"
 					>
-						<Check class="h-8 w-8 text-green-600 dark:text-green-300" aria-hidden="true" />
+						<Check class="h-8 w-8 text-success" aria-hidden="true" />
 					</div>
 					<Dialog.Title class="text-xl font-semibold">
 						{m['orgContactButton.successTitle']()}
@@ -166,7 +166,7 @@
 							maxlength="200"
 							disabled={contactMutation.isPending}
 							placeholder={m['orgContactButton.subjectPlaceholder']()}
-							class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+							class="mt-1 w-full rounded-md border-2 border-input bg-background px-3 py-2 text-sm text-foreground transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50"
 						/>
 					</div>
 
@@ -182,7 +182,7 @@
 							required
 							disabled={contactMutation.isPending}
 							placeholder={m['orgContactButton.messagePlaceholder']()}
-							class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+							class="mt-1 w-full rounded-md border-2 border-input bg-background px-3 py-2 text-sm text-foreground transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50"
 						></textarea>
 						<p class="mt-1 text-xs text-muted-foreground">
 							{message.length}/2000 {m['orgContactButton.characters']()}
@@ -191,7 +191,7 @@
 
 					{#if contactMutation.isError}
 						<div
-							class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-100"
+							class="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-foreground"
 							role="alert"
 						>
 							{contactMutation.error?.message || m['orgContactButton.errors_genericFailure']()}

@@ -37,6 +37,16 @@
 	const isUrgent = $derived(!expired && remainingMs < 60 * 60 * 1000);
 	const isWarning = $derived(!expired && !isUrgent && remainingMs < 24 * 60 * 60 * 1000);
 
+	/**
+	 * Urgency bands on semantic tokens instead of hand-picked red/amber/emerald.
+	 *
+	 * The fill is a 10% tint, which composites to ~the page colour — so the body
+	 * text stays `text-foreground` and inherits the token contract's own AA
+	 * guarantee rather than needing a per-band foreground. The band itself is
+	 * carried by the 4px rail and the icon (>= 3:1 non-text in both modes, the
+	 * same tints ToneTile measures), never by the text colour, and never by
+	 * colour alone: the heading and the countdown say which band this is.
+	 */
 	const tone = $derived.by(() => {
 		if (expired) {
 			return {
@@ -47,24 +57,21 @@
 		}
 		if (isUrgent) {
 			return {
-				container:
-					'border-l-4 border-red-500 bg-red-50 text-red-950 dark:bg-red-950/30 dark:text-red-100',
-				icon: 'text-red-600 dark:text-red-300 animate-pulse',
+				container: 'border-l-4 border-destructive bg-destructive/10 text-foreground',
+				icon: 'text-destructive animate-pulse',
 				pulse: true
 			};
 		}
 		if (isWarning) {
 			return {
-				container:
-					'border-l-4 border-amber-500 bg-amber-50 text-amber-950 dark:bg-amber-950/30 dark:text-amber-100',
-				icon: 'text-amber-600 dark:text-amber-300',
+				container: 'border-l-4 border-highlight bg-highlight/10 text-foreground',
+				icon: 'text-highlight-foreground dark:text-highlight',
 				pulse: false
 			};
 		}
 		return {
-			container:
-				'border-l-4 border-emerald-500 bg-emerald-50 text-emerald-950 dark:bg-emerald-950/30 dark:text-emerald-100',
-			icon: 'text-emerald-600 dark:text-emerald-300',
+			container: 'border-l-4 border-success bg-success/10 text-foreground',
+			icon: 'text-success',
 			pulse: false
 		};
 	});
@@ -98,12 +105,10 @@
 		<div class="flex items-start gap-3 sm:items-center">
 			<Sparkles class={cn('h-8 w-8 shrink-0', tone.icon)} aria-hidden="true" />
 			<div class="flex flex-col gap-1">
-				<span
-					class="text-xs font-semibold uppercase tracking-wider text-muted-foreground sm:text-[0.7rem]"
-				>
+				<span class="text-sm font-extrabold uppercase tracking-[0.12em] text-primary">
 					{m['activeOffer.eyebrow']()}
 				</span>
-				<h2 class="text-xl font-bold leading-tight sm:text-2xl">
+				<h2 class="text-xl font-extrabold leading-tight sm:text-2xl">
 					{expired ? m['activeOffer.expired']() : m['activeOffer.header']()}
 				</h2>
 				{#if !expired}
@@ -123,7 +128,7 @@
 						compact
 						class={cn(
 							'font-mono tabular-nums',
-							isUrgent || isWarning ? 'text-lg font-semibold' : 'text-base font-medium'
+							isUrgent || isWarning ? 'text-lg font-extrabold' : 'text-base font-bold'
 						)}
 					/>
 				</div>

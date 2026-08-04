@@ -183,7 +183,7 @@
 {#if isOpen}
 	<!-- Backdrop -->
 	<div
-		class="fixed inset-0 z-40 bg-black/50 transition-opacity lg:hidden"
+		class="fixed inset-0 z-40 bg-poster-ink/50 transition-opacity lg:hidden"
 		onclick={onClose}
 		role="presentation"
 		aria-hidden="true"
@@ -219,7 +219,7 @@
 				</h2>
 				{#if activeFilterCount > 0}
 					<span
-						class="rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground"
+						class="rounded-full bg-primary px-2 py-0.5 text-xs font-bold text-primary-foreground"
 						aria-label="{activeFilterCount} {m['common.filters_activeFilters']()}"
 					>
 						{activeFilterCount}
@@ -251,7 +251,7 @@
 
 				<!-- Search Input -->
 				<div class="space-y-2">
-					<label for="mobile-event-search" class="text-sm font-medium"
+					<label for="mobile-event-search" class="text-sm font-bold"
 						>{m['common.search_label']()}</label
 					>
 					<SearchInput
@@ -315,7 +315,7 @@
 					<button
 						type="button"
 						onclick={onClearFilters}
-						class="flex items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						class="flex items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2.5 text-sm font-bold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						<X class="h-4 w-4" aria-hidden="true" />
 						{m['filters.mobile.clearAll']()}
@@ -325,7 +325,7 @@
 				<button
 					type="button"
 					onclick={handleApply}
-					class="rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					class="rounded-md bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 				>
 					{m['filters.mobile.showResults']({
 						count: totalCount,

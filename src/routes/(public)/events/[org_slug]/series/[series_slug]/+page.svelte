@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import type { PageData } from './$types';
-	import { Calendar, ArrowLeft, Repeat, ArrowDownUp, Settings } from '@lucide/svelte';
+	import { Calendar, ArrowLeft, ArrowDownUp, Settings } from '@lucide/svelte';
 	import { EventCard } from '$lib/components/events';
 	import { getImageUrl } from '$lib/utils/url';
 	import { SeoHead } from '$lib/seo';
@@ -9,6 +9,11 @@
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import FollowButton from '$lib/components/common/FollowButton.svelte';
 	import SeriesPassCard from '$lib/components/series-passes/SeriesPassCard.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
+	import Sticker from '$lib/components/brand/Sticker.svelte';
+	import { getPosterFallbackGradient } from '$lib/utils/fallback-gradient';
 
 	const { data }: { data: PageData } = $props();
 
@@ -28,20 +33,8 @@
 		getImageUrl(series.organization.logo_thumbnail_url || series.organization.logo)
 	);
 
-	// Fallback gradient
-	function getSeriesFallbackGradient(seriesId: string): string {
-		const hash = seriesId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-		const gradients = [
-			'bg-gradient-to-br from-blue-500 to-indigo-600',
-			'bg-gradient-to-br from-purple-500 to-pink-600',
-			'bg-gradient-to-br from-green-500 to-teal-600',
-			'bg-gradient-to-br from-orange-500 to-red-600',
-			'bg-gradient-to-br from-cyan-500 to-blue-600'
-		];
-		return gradients[hash % gradients.length];
-	}
-
-	const fallbackGradient = $derived(getSeriesFallbackGradient(series.id));
+	// Fallback cover, on the shared poster ramp (see utils/fallback-gradient.ts).
+	const fallbackGradient = $derived(getPosterFallbackGradient(series.id));
 
 	// Calculate pagination info
 	const totalPages = $derived(Math.ceil(totalCount / pageSize));
@@ -64,24 +57,21 @@
 				/>
 				<!-- Gradient overlay -->
 				<div
-					class="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/60"
+					class="absolute inset-0 bg-gradient-to-b from-transparent via-poster-ink/20 to-poster-ink/60"
 				></div>
 			{:else}
 				<!-- Fallback gradient -->
-				<div class="h-full w-full {fallbackGradient}"></div>
-				<div class="absolute inset-0 bg-gradient-to-b from-black/10 to-black/60"></div>
+				<div class="h-full w-full bg-gradient-to-br {fallbackGradient}"></div>
+				<div class="absolute inset-0 bg-gradient-to-b from-poster-ink/10 to-poster-ink/60"></div>
 			{/if}
 
-			<!-- Series Badge -->
+			<!-- Series badge. The one Sticker on this page (celebration volume caps
+			     them at one per viewport-height): a fixed-palette white sticker reads
+			     identically over any cover art, in either theme. -->
 			<div class="absolute right-4 top-4">
-				<div class="rounded-full bg-primary px-4 py-2 shadow-lg">
-					<div class="flex items-center gap-2">
-						<Repeat class="h-4 w-4 text-primary-foreground" aria-hidden="true" />
-						<span class="text-sm font-semibold text-primary-foreground"
-							>{m['eventSeriesDetailPage.badge_eventSeries']()}</span
-						>
-					</div>
-				</div>
+				<Sticker tint="purple" rotate={-3} class="text-sm">
+					{m['eventSeriesDetailPage.badge_eventSeries']()}
+				</Sticker>
 			</div>
 		</div>
 	</section>
@@ -108,7 +98,9 @@
 					class="rounded-lg border border-border bg-card p-4 shadow-sm"
 					aria-label={m['seriesPublicPage.adminActionsLabel']()}
 				>
-					<h3 class="mb-3 text-sm font-semibold">{m['eventSeriesDetailPage.admin_title']()}</h3>
+					<h3 class="mb-3 text-xs font-extrabold uppercase tracking-[0.12em] text-primary">
+						{m['eventSeriesDetailPage.admin_title']()}
+					</h3>
 					<div class="space-y-2">
 						<a
 							href={resolve('/(auth)/org/[slug]/admin/event-series/[series_id]/edit', {
@@ -150,12 +142,17 @@
 
 						<!-- Series Info -->
 						<div class="min-w-0 flex-1">
-							<h1 class="mb-2 text-3xl font-bold md:text-4xl">{series.name}</h1>
+							<PageHeader
+								volume="celebration"
+								kicker={m['eventSeriesCard.eventSeries']()}
+								title={series.name}
+								class="mb-2"
+							/>
 
 							<!-- Organization Link -->
 							<a
 								href={resolve('/(public)/org/[slug]', { slug: series.organization.slug })}
-								class="mb-2 inline-block text-base font-medium text-primary hover:underline"
+								class="mb-2 inline-block text-base font-bold text-primary hover:underline"
 							>
 								{m['eventSeriesDetailPage.byOrganization']({
 									organizationName: series.organization.name
@@ -167,7 +164,7 @@
 								<div class="mt-3 flex flex-wrap gap-2">
 									{#each series.tags as tag (tag)}
 										<span
-											class="inline-block rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary"
+											class="inline-block rounded-full bg-primary/10 px-3 py-1 text-sm font-bold text-primary"
 										>
 											{tag}
 										</span>
@@ -206,9 +203,11 @@
 				{#if seriesPasses.length > 0}
 					<section aria-labelledby="passes-heading">
 						<div class="mb-6">
-							<h2 id="passes-heading" class="text-2xl font-bold">
-								{m['seriesPass.sectionHeading']()}
-							</h2>
+							<SectionHeader
+								volume="celebration"
+								id="passes-heading"
+								title={m['seriesPass.sectionHeading']()}
+							/>
 							<p class="mt-1 text-sm text-muted-foreground">
 								{m['seriesPass.sectionDescription']()}
 							</p>
@@ -229,9 +228,11 @@
 				<section aria-labelledby="events-heading">
 					<div class="mb-6 flex flex-wrap items-end justify-between gap-4">
 						<div>
-							<h2 id="events-heading" class="text-2xl font-bold">
-								{m['eventSeriesDetailPage.events_heading']()}
-							</h2>
+							<SectionHeader
+								volume="celebration"
+								id="events-heading"
+								title={m['eventSeriesDetailPage.events_heading']()}
+							/>
 							{#if totalCount > 0}
 								<p class="mt-1 text-sm text-muted-foreground">
 									{m['eventSeriesDetailPage.events_count']({
@@ -259,14 +260,11 @@
 					</div>
 
 					{#if events.length === 0}
-						<!-- Empty State -->
-						<div class="rounded-lg border bg-card p-8 text-center">
-							<Calendar class="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-							<h3 class="mb-2 text-lg font-semibold">{m['eventSeriesDetailPage.empty_title']()}</h3>
-							<p class="text-sm text-muted-foreground">
-								{m['eventSeriesDetailPage.empty_description']()}
-							</p>
-						</div>
+						<EmptyState
+							icon={Calendar}
+							title={m['eventSeriesDetailPage.empty_title']()}
+							body={m['eventSeriesDetailPage.empty_description']()}
+						/>
 					{:else}
 						<!-- Event Cards Grid -->
 						<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -351,7 +349,9 @@
 				<aside class="hidden lg:col-span-1 lg:block">
 					<div class="sticky top-4 space-y-6">
 						<div class="rounded-lg border border-border bg-card p-4 shadow-sm">
-							<h3 class="mb-3 text-sm font-semibold">{m['eventSeriesDetailPage.admin_title']()}</h3>
+							<h3 class="mb-3 text-xs font-extrabold uppercase tracking-[0.12em] text-primary">
+								{m['eventSeriesDetailPage.admin_title']()}
+							</h3>
 							<div class="space-y-2">
 								<a
 									href={resolve('/(auth)/org/[slug]/admin/event-series/[series_id]/edit', {

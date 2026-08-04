@@ -827,6 +827,7 @@
 	},
 	"browse": {
 		"events_title": "Discover Events",
+		"events_kicker": "What's on",
 		"events_skipTo": "Skip to events",
 		"events_noEventsFound": "No events found",
 		"events_tryAdjustingFilters": "Try adjusting your filters to find more events.",
@@ -835,6 +836,7 @@
 		"events_listingsLabel": "Event listings",
 		"events_count": "{count} {eventPlural} found",
 		"organizations_title": "Discover Organizations",
+		"organizations_kicker": "Communities",
 		"organizations_skipTo": "Skip to organizations",
 		"organizations_noOrganizationsFound": "No organizations found",
 		"organizations_tryAdjustingFilters": "Try adjusting your filters to find more organizations.",
@@ -4532,6 +4534,7 @@
 	},
 	"organizationProfile": {
 		"editProfile": "Edit Profile",
+		"kicker": "Community",
 		"resources_heading": "Resources",
 		"resources_description": "Helpful documents, links, and information from {organizationName}",
 		"resources_viewAll": "View all",

@@ -2,9 +2,18 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { TicketTierDetailSchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
-	import { Card } from '$lib/components/ui/card';
+	import PricingCard from '$lib/components/common/PricingCard.svelte';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
-	import { Edit, Building2, LayoutGrid, Armchair, ChevronUp, ChevronDown } from '@lucide/svelte';
+	import {
+		Edit,
+		Building2,
+		LayoutGrid,
+		Armchair,
+		ChevronUp,
+		ChevronDown,
+		Ticket
+	} from '@lucide/svelte';
 	import { formatDateTime } from '$lib/utils/date';
 
 	interface Props {
@@ -137,158 +146,166 @@
 	});
 </script>
 
-<Card class="p-4">
-	<div class="flex items-start justify-between">
-		<div class="flex-1">
-			<!-- Header -->
-			<div class="flex items-center gap-2">
-				<h3 class="text-lg font-semibold">🎟️ {tier.name}</h3>
-				{#if tier.name === 'General Admission'}
-					<span
-						class="rounded bg-blue-100 px-2 py-1 text-xs text-blue-700 dark:bg-blue-950 dark:text-blue-300"
-						>{m['tierCard.default']()}</span
-					>
-				{/if}
-			</div>
+{#snippet badges()}
+	{#if tier.name === 'General Admission'}
+		<StatusBadge tone="info" size="sm" label={m['tierCard.default']()} />
+	{/if}
+{/snippet}
 
-			<!-- Description -->
-			{#if tier.description}
-				<MarkdownContent content={tier.description} class="mt-1 text-sm text-muted-foreground" />
-			{/if}
+{#snippet meta()}
+	<!-- Tier details. The price is ALSO promoted to the card's display number
+	     above, but it keeps its labelled `<dt>` row here: this is an organizer's
+	     config summary, where every configured field is expected to be readable
+	     as a labelled pair, and dropping the label orphaned `tierCard.price` /
+	     `tierCard.type`. The display number is the emphasis; the grid is the
+	     record. -->
+	<dl class="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+		<!-- Price & Type -->
+		<div>
+			<dt class="text-muted-foreground">{m['tierCard.price']()}</dt>
+			<dd class="font-bold">{priceDisplay()}</dd>
+		</div>
+		<div>
+			<dt class="text-muted-foreground">{m['tierCard.type']()}</dt>
+			<dd class="font-bold">{priceTypeDisplay()}</dd>
+		</div>
 
-			<!-- Tier Details Grid -->
-			<dl class="mt-3 grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
-				<!-- Price & Type -->
-				<div>
-					<dt class="text-muted-foreground">{m['tierCard.price']()}</dt>
-					<dd class="font-medium">{priceDisplay()}</dd>
-				</div>
-				<div>
-					<dt class="text-muted-foreground">{m['tierCard.type']()}</dt>
-					<dd class="font-medium">{priceTypeDisplay()}</dd>
-				</div>
+		<!-- Payment Method -->
+		<div>
+			<dt class="text-muted-foreground">{m['tierCard.paymentMethod']()}</dt>
+			<dd class="font-bold">{paymentMethodDisplay()}</dd>
+		</div>
 
-				<!-- Payment Method -->
-				<div>
-					<dt class="text-muted-foreground">{m['tierCard.paymentMethod']()}</dt>
-					<dd class="font-medium">{paymentMethodDisplay()}</dd>
-				</div>
+		<!-- Quantity -->
+		<div>
+			<dt class="text-muted-foreground">{m['tierCard.quantity']()}</dt>
+			<dd class="font-bold">{quantityDisplay()}</dd>
+		</div>
 
-				<!-- Quantity -->
-				<div>
-					<dt class="text-muted-foreground">{m['tierCard.quantity']()}</dt>
-					<dd class="font-medium">{quantityDisplay()}</dd>
-				</div>
+		<!-- Visibility -->
+		<div>
+			<dt class="text-muted-foreground">{m['tierCard.visibility']()}</dt>
+			<dd class="font-bold capitalize">{visibilityDisplay()}</dd>
+		</div>
 
-				<!-- Visibility -->
-				<div>
-					<dt class="text-muted-foreground">{m['tierCard.visibility']()}</dt>
-					<dd class="font-medium capitalize">{visibilityDisplay()}</dd>
-				</div>
+		<!-- Available To -->
+		<div>
+			<dt class="text-muted-foreground">{m['tierCard.availableTo']()}</dt>
+			<dd class="font-bold">{purchasableByDisplay()}</dd>
+		</div>
 
-				<!-- Available To -->
-				<div>
-					<dt class="text-muted-foreground">{m['tierCard.availableTo']()}</dt>
-					<dd class="font-medium">{purchasableByDisplay()}</dd>
-				</div>
+		<!-- Sales Window (full width) -->
+		<div class="col-span-2">
+			<dt class="text-muted-foreground">{m['tierCard.salesWindow']()}</dt>
+			<dd class="font-bold">{salesWindowDisplay()}</dd>
+		</div>
 
-				<!-- Sales Window (full width) -->
-				<div class="col-span-2">
-					<dt class="text-muted-foreground">{m['tierCard.salesWindow']()}</dt>
-					<dd class="font-medium">{salesWindowDisplay()}</dd>
-				</div>
+		<!-- Seat Assignment -->
+		<div>
+			<dt class="text-muted-foreground">
+				<span class="flex items-center gap-1">
+					<Armchair class="h-3 w-3" aria-hidden="true" />
+					{m['tierCard.seatAssignment.label']()}
+				</span>
+			</dt>
+			<dd class="font-bold">{seatAssignmentDisplay()}</dd>
+		</div>
 
-				<!-- Seat Assignment -->
-				<div>
-					<dt class="text-muted-foreground">
+		<!-- Max Tickets Per User -->
+		<div>
+			<dt class="text-muted-foreground">
+				{m['tierCard.maxTicketsPerUser']()}
+			</dt>
+			<dd class="font-bold">{maxTicketsDisplay()}</dd>
+		</div>
+
+		<!-- Venue/Sector (if configured) -->
+		{#if tier.venue || tier.sector}
+			<div class="col-span-2">
+				<dt class="text-muted-foreground">
+					<span class="flex items-center gap-1">
+						<Building2 class="h-3 w-3" aria-hidden="true" />
+						{m['tierCard.venueAndSector']()}
+					</span>
+				</dt>
+				<dd class="flex flex-wrap items-center gap-2 font-bold">
+					{#if tier.venue}
 						<span class="flex items-center gap-1">
-							<Armchair class="h-3 w-3" aria-hidden="true" />
-							{m['tierCard.seatAssignment.label']()}
+							<Building2 class="h-4 w-4 text-primary" aria-hidden="true" />
+							{tier.venue.name}
 						</span>
-					</dt>
-					<dd class="font-medium">{seatAssignmentDisplay()}</dd>
-				</div>
-
-				<!-- Max Tickets Per User -->
-				<div>
-					<dt class="text-muted-foreground">
-						{m['tierCard.maxTicketsPerUser']()}
-					</dt>
-					<dd class="font-medium">{maxTicketsDisplay()}</dd>
-				</div>
-
-				<!-- Venue/Sector (if configured) -->
-				{#if tier.venue || tier.sector}
-					<div class="col-span-2">
-						<dt class="text-muted-foreground">
-							<span class="flex items-center gap-1">
-								<Building2 class="h-3 w-3" aria-hidden="true" />
-								{m['tierCard.venueAndSector']()}
-							</span>
-						</dt>
-						<dd class="flex items-center gap-2 font-medium">
-							{#if tier.venue}
-								<span class="flex items-center gap-1">
-									<Building2 class="h-4 w-4 text-primary" aria-hidden="true" />
-									{tier.venue.name}
-								</span>
+					{/if}
+					{#if tier.venue && tier.sector}
+						<span class="text-muted-foreground">/</span>
+					{/if}
+					{#if tier.sector}
+						<span class="flex items-center gap-1">
+							<LayoutGrid class="h-4 w-4 text-primary" aria-hidden="true" />
+							{tier.sector.name}
+							{#if tier.sector.code}
+								<span class="text-xs font-normal text-muted-foreground">({tier.sector.code})</span>
 							{/if}
-							{#if tier.venue && tier.sector}
-								<span class="text-muted-foreground">/</span>
-							{/if}
-							{#if tier.sector}
-								<span class="flex items-center gap-1">
-									<LayoutGrid class="h-4 w-4 text-primary" aria-hidden="true" />
-									{tier.sector.name}
-									{#if tier.sector.code}
-										<span class="text-xs text-muted-foreground">({tier.sector.code})</span>
-									{/if}
-								</span>
-							{/if}
-						</dd>
-					</div>
-				{/if}
-			</dl>
+						</span>
+					{/if}
+				</dd>
+			</div>
+		{/if}
+	</dl>
 
-			<!-- Manual Payment Instructions -->
-			{#if tier.manual_payment_instructions}
-				<div class="mt-3 rounded-md border border-border bg-muted/50 p-2">
-					<p class="text-xs font-medium text-muted-foreground">
-						{m['tierCard.paymentInstructions']()}
-					</p>
-					<MarkdownContent content={tier.manual_payment_instructions} class="mt-1 text-sm" />
-				</div>
-			{/if}
+	<!-- Manual Payment Instructions -->
+	{#if tier.manual_payment_instructions}
+		<div class="mt-3 rounded-md border border-border bg-muted/50 p-2">
+			<p class="text-xs font-bold text-muted-foreground">
+				{m['tierCard.paymentInstructions']()}
+			</p>
+			<MarkdownContent content={tier.manual_payment_instructions} class="mt-1 text-sm" />
 		</div>
+	{/if}
+{/snippet}
 
-		<div class="flex flex-col items-center gap-1">
-			{#if onMoveUp || onMoveDown}
-				<div class="flex flex-col">
-					<Button
-						variant="ghost"
-						size="icon"
-						class="h-7 w-7"
-						onclick={onMoveUp}
-						disabled={!onMoveUp}
-						aria-label="Move {tier.name} up"
-					>
-						<ChevronUp class="h-4 w-4" />
-					</Button>
-					<Button
-						variant="ghost"
-						size="icon"
-						class="h-7 w-7"
-						onclick={onMoveDown}
-						disabled={!onMoveDown}
-						aria-label="Move {tier.name} down"
-					>
-						<ChevronDown class="h-4 w-4" />
-					</Button>
-				</div>
-			{/if}
-			<Button variant="ghost" size="icon" onclick={onEdit} aria-label="Edit {tier.name}">
-				<Edit class="h-4 w-4" />
-			</Button>
-		</div>
+{#snippet actions()}
+	<!-- Row on mobile (the card is a single column there), rail on sm+ -->
+	<div class="flex flex-row items-center gap-1 sm:flex-col">
+		{#if onMoveUp || onMoveDown}
+			<div class="flex flex-row sm:flex-col">
+				<Button
+					variant="ghost"
+					size="icon"
+					class="h-7 w-7"
+					onclick={onMoveUp}
+					disabled={!onMoveUp}
+					aria-label="Move {tier.name} up"
+				>
+					<ChevronUp class="h-4 w-4" />
+				</Button>
+				<Button
+					variant="ghost"
+					size="icon"
+					class="h-7 w-7"
+					onclick={onMoveDown}
+					disabled={!onMoveDown}
+					aria-label="Move {tier.name} down"
+				>
+					<ChevronDown class="h-4 w-4" />
+				</Button>
+			</div>
+		{/if}
+		<Button variant="ghost" size="icon" onclick={onEdit} aria-label="Edit {tier.name}">
+			<Edit class="h-4 w-4" />
+		</Button>
 	</div>
-</Card>
+{/snippet}
+
+<PricingCard
+	name={tier.name}
+	icon={Ticket}
+	price={priceDisplay()}
+	priceNote={priceTypeDisplay()}
+	{badges}
+	{meta}
+	{actions}
+>
+	{#if tier.description}
+		<MarkdownContent content={tier.description} class="text-sm text-muted-foreground" />
+	{/if}
+</PricingCard>

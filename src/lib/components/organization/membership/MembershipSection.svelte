@@ -14,6 +14,9 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { myOrgSubscriptionQueryOptions } from '$lib/queries/my-org-subscription';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
+	import { Users } from '@lucide/svelte';
 	import MembershipCta from './MembershipCta.svelte';
 	import TierCard from './TierCard.svelte';
 	import SubscribeDialog from './SubscribeDialog.svelte';
@@ -139,9 +142,12 @@
 	});
 </script>
 
+<!-- `aria-label` rather than `aria-labelledby`: the page h1 now comes from the
+     shared PageHeader, which owns its own heading element and exposes no id to
+     point at. The region keeps exactly the same accessible name. -->
 <section
 	id="membership"
-	aria-labelledby="membership-heading"
+	aria-label={m['membershipTiers.heading']()}
 	class="space-y-6"
 	bind:this={sectionEl}
 >
@@ -155,14 +161,12 @@
 		/>
 	{/if}
 
-	<div class="space-y-2">
-		<h1 id="membership-heading" class="text-3xl font-bold tracking-tight md:text-4xl">
-			{m['membershipTiers.heading']()}
-		</h1>
-		<p class="text-muted-foreground">
-			{m['membershipTiers.subtitle']({ organizationName: organization.name })}
-		</p>
-	</div>
+	<PageHeader
+		volume="celebration"
+		kicker={organization.name}
+		title={m['membershipTiers.heading']()}
+		subtitle={m['membershipTiers.subtitle']({ organizationName: organization.name })}
+	/>
 
 	{#if hasStanding}
 		<!-- Summary mode (no tierId): the badge branches only, no eligibility
@@ -180,9 +184,14 @@
 	{/if}
 
 	{#if tiers.length === 0}
-		<p class="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-			{m['membershipTiers.empty']({ organizationName: organization.name })}
-		</p>
+		<!-- level 2: this sits directly under the page h1 that PageHeader renders,
+		     and EmptyState's default level 3 would skip a rank (axe heading-order). -->
+		<EmptyState
+			level={2}
+			icon={Users}
+			title={m['membershipTiers.tiersHeading']()}
+			body={m['membershipTiers.empty']({ organizationName: organization.name })}
+		/>
 	{:else}
 		<div aria-labelledby="tiers-heading">
 			<h2 id="tiers-heading" class="sr-only">{m['membershipTiers.tiersHeading']()}</h2>
@@ -208,7 +217,7 @@
 	{#if refundPolicy}
 		<details class="rounded-lg border p-3">
 			<summary
-				class="cursor-pointer text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+				class="cursor-pointer text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 			>
 				{m['membershipPlans.refundPolicy']()}
 			</summary>

@@ -19,7 +19,9 @@
 <div class={cn('space-y-3', className)}>
 	<div class="flex items-center gap-2">
 		<Calendar class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-		<h3 class="text-sm font-medium">{m['filters.date.heading']()}</h3>
+		<h3 class="text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
+			{m['filters.date.heading']()}
+		</h3>
 	</div>
 
 	<div class="space-y-2">
@@ -28,7 +30,7 @@
 				type="checkbox"
 				checked={includePast}
 				onchange={handleToggle}
-				class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2"
+				class="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2"
 			/>
 			<span>{m['filters.date.includePast']()}</span>
 		</label>

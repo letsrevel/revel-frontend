@@ -3,6 +3,9 @@
 	import { FileText, Search, Filter } from '@lucide/svelte';
 	import type { AdditionalResourceSchema } from '$lib/api/generated/types.gen';
 	import * as m from '$lib/paraglide/messages.js';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
+	import ToneTile from '$lib/components/common/ToneTile.svelte';
 	import { getBackendUrl } from '$lib/config/api';
 
 	const data = $derived($page.data);
@@ -55,12 +58,12 @@
      its children, so a page without a container renders edge to edge. -->
 <div class="container mx-auto space-y-6 px-6 py-8 md:px-8 lg:py-12">
 	<!-- Header -->
-	<div>
-		<h1 class="text-3xl font-bold tracking-tight md:text-4xl">{m['orgResourcesPage.title']()}</h1>
-		<p class="mt-2 text-muted-foreground">
-			{m['orgResourcesPage.subtitle']({ organizationName: organization.name })}
-		</p>
-	</div>
+	<PageHeader
+		volume="celebration"
+		kicker={organization.name}
+		title={m['orgResourcesPage.title']()}
+		subtitle={m['orgResourcesPage.subtitle']({ organizationName: organization.name })}
+	/>
 
 	<!-- Filters -->
 	<div class="flex flex-col gap-3 md:flex-row md:items-center">
@@ -94,32 +97,25 @@
 
 	<!-- Resources Grid -->
 	{#if filteredResources.length === 0}
-		<div
-			class="rounded-lg border-2 border-dashed border-gray-300 p-12 text-center dark:border-gray-600"
-		>
-			<Filter class="mx-auto h-12 w-12 text-muted-foreground" aria-hidden="true" />
-			<h3 class="mt-4 text-lg font-semibold">{m['orgResourcesPage.empty_title']()}</h3>
-			<p class="mt-2 text-sm text-muted-foreground">
-				{searchQuery || typeFilter !== 'all'
-					? m['orgResourcesPage.empty_withFilters']()
-					: m['orgResourcesPage.empty_initial']()}
-			</p>
-		</div>
+		<EmptyState
+			level={2}
+			icon={Filter}
+			title={m['orgResourcesPage.empty_title']()}
+			body={searchQuery || typeFilter !== 'all'
+				? m['orgResourcesPage.empty_withFilters']()
+				: m['orgResourcesPage.empty_initial']()}
+		/>
 	{:else}
 		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 			{#each filteredResources as resource (resource.id)}
 				<article
-					class="flex flex-col gap-3 rounded-lg border bg-card p-4 transition-all hover:shadow-md"
+					class="flex flex-col gap-3 rounded-lg border bg-card p-4 transition-all hover:-translate-y-0.5 hover:shadow-lg"
 				>
 					<!-- Header -->
 					<div class="flex items-start gap-3">
-						<div
-							class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary"
-						>
-							<FileText class="h-5 w-5" aria-hidden="true" />
-						</div>
+						<ToneTile tone="brand" icon={FileText} />
 						<div class="min-w-0 flex-1">
-							<h3 class="truncate font-semibold leading-tight">
+							<h3 class="truncate font-bold leading-tight">
 								{resource.name || m['orgResourcesPage.resource_untitled']()}
 							</h3>
 							<p class="text-xs capitalize text-muted-foreground">
@@ -140,7 +136,7 @@
 						<button
 							type="button"
 							onclick={() => openResource(resource)}
-							class="mt-auto rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+							class="mt-auto rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 						>
 							{resource.resource_type === 'file'
 								? m['orgResourcesPage.button_viewFile']()

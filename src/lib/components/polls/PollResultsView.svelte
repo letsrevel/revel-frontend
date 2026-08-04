@@ -59,7 +59,7 @@
 					{#each stat.options as opt (opt.option_id)}
 						{#if opt.voters && opt.voters.length > 0}
 							<li class="flex flex-wrap items-center gap-x-2 gap-y-1">
-								<span class="font-medium text-foreground">{opt.option_text}:</span>
+								<span class="font-bold text-foreground">{opt.option_text}:</span>
 								{#each opt.voters as voter (voter.user_id)}
 									{@render voterPill(voter.user_display_name, voter.user_email, voter.user_id)}
 								{/each}
@@ -73,7 +73,9 @@
 
 	{#if (results.free_text_responses ?? []).length > 0}
 		<section class="space-y-2">
-			<h3 class="text-sm font-medium">{m['pollResults.freeTextHeading']()}</h3>
+			<h3 class="text-sm font-extrabold uppercase tracking-[0.12em] text-primary">
+				{m['pollResults.freeTextHeading']()}
+			</h3>
 			<ul class="space-y-2">
 				{#each results.free_text_responses ?? [] as r, i (i)}
 					<li class="rounded-md border bg-muted/30 p-3 text-sm">

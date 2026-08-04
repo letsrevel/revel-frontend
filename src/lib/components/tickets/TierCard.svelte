@@ -8,8 +8,9 @@
 	import { hasTierId } from '$lib/types/tickets';
 	import { tierPriceDisplay } from './tier-price-display';
 	import { Button } from '$lib/components/ui/button';
-	import { Card } from '$lib/components/ui/card';
-	import { Ticket, Clock, Users, AlertCircle } from '@lucide/svelte';
+	import PricingCard from '$lib/components/common/PricingCard.svelte';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
+	import { Ticket, Clock, Users, AlertCircle, Check } from '@lucide/svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import { formatDate } from '$lib/utils/date';
 
@@ -248,114 +249,107 @@
 	const membershipRestriction = $derived(checkMembershipTierRestriction());
 </script>
 
-<Card class="p-4 {tier.can_purchase === false ? 'opacity-60' : ''}">
-	<div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-		<!-- Tier Info -->
-		<div class="flex-1">
-			<div class="flex items-center gap-2">
-				<Ticket class="h-5 w-5 text-primary" aria-hidden="true" />
-				<h3 class="text-lg font-semibold">{tier.name}</h3>
-			</div>
+{#snippet badges()}
+	<!-- Inventory as a solid chip rather than a coloured line of text: sold out is
+	     the fact a buyer scans for, and StatusBadge's pairs are audited in both
+	     modes. Meaning is never carried by the fill alone — the label says it. -->
+	{#if availabilityStatus.message !== null && effectiveEligible}
+		<StatusBadge
+			tone={availabilityStatus.available ? 'neutral' : 'danger'}
+			icon={Users}
+			label={availabilityStatus.message}
+		/>
+	{/if}
+{/snippet}
 
-			<div class="mt-2 text-2xl font-bold text-primary">{priceDisplay()}</div>
+{#snippet meta()}
+	{#if !salesStatus.active}
+		<p class="flex items-center gap-1.5 text-sm text-muted-foreground">
+			<Clock class="h-4 w-4 shrink-0" aria-hidden="true" />
+			{salesStatus.message}
+		</p>
+	{/if}
+{/snippet}
 
-			{#if tier.description}
-				<MarkdownContent content={tier.description} class="mt-2 text-sm text-muted-foreground" />
-			{/if}
-
-			<!-- Status Indicators -->
-			<dl class="mt-3 flex flex-wrap gap-4 text-sm">
-				{#if !salesStatus.active}
-					<div class="flex items-center gap-1.5 text-muted-foreground">
-						<Clock class="h-4 w-4" aria-hidden="true" />
-						<dd>{salesStatus.message}</dd>
-					</div>
-				{/if}
-
-				{#if availabilityStatus.message !== null && effectiveEligible}
-					<div
-						class="flex items-center gap-1.5"
-						class:text-destructive={!availabilityStatus.available}
-					>
-						<Users class="h-4 w-4" aria-hidden="true" />
-						<dd>{availabilityStatus.message}</dd>
-					</div>
-				{/if}
-			</dl>
-		</div>
-
-		<!-- Action Button -->
-		<div class="flex shrink-0 flex-col items-end gap-2">
-			{#if !hasId}
-				<div class="rounded-md bg-destructive/10 px-4 py-2 text-sm text-destructive">
-					{m['tierCardAdmin.configError']()}
-				</div>
-			{:else if hasTicket}
-				<div
-					class="rounded-md bg-green-100 px-4 py-2 text-sm font-medium text-green-800 dark:bg-green-950 dark:text-green-100"
-				>
-					✓ {m['tierCardAdmin.youHaveTicket']()}
-				</div>
-			{:else if !salesStatus.active}
-				<Button disabled class="w-full sm:w-auto">{m['tierCardAdmin.notAvailable']()}</Button>
-			{:else if !availabilityStatus.available}
-				<Button disabled class="w-full sm:w-auto">{m['tierCardAdmin.soldOut']()}</Button>
-			{:else if !membershipRestriction.allowed}
-				<!-- User doesn't have required membership tier -->
-				<Button disabled class="w-full sm:w-auto">
-					<AlertCircle class="mr-2 h-4 w-4" />
-					{m['tierCardAdmin.notEligible']()}
-				</Button>
-				{#if membershipRestriction.reason}
-					<p class="max-w-[250px] text-right text-xs text-muted-foreground">
-						{membershipRestriction.reason}
-					</p>
-				{/if}
-			{:else if !isAuthenticated && !canAttendWithoutLogin}
-				<Button href="/login" variant="outline" class="w-full sm:w-auto"
-					>{m['tierCardAdmin.signInToGetTicket']()}</Button
-				>
-			{:else if !isAuthenticated && canAttendWithoutLogin}
-				<Button onclick={() => onGuestTierClick?.(tier)} class="w-full sm:w-auto">
-					{m['tierCardAdmin.getTicket']()}
-				</Button>
-			{:else if !effectiveEligible}
-				<!-- User is authenticated but not eligible for this tier - show reason -->
-				<Button disabled class="w-full sm:w-auto">
-					{#if tierPurchaseStatus.reason === 'Sold out'}
-						{m['tierCardAdmin.soldOut']()}
-					{:else if tierPurchaseStatus.reason === 'Limit reached'}
-						{m['tierCardAdmin.limitReached']()}
-					{:else}
-						{m['tierCardAdmin.notEligible']()}
-					{/if}
-				</Button>
-				{#if tierPurchaseStatus.reason && tierPurchaseStatus.reason !== 'Not eligible'}
-					<p class="max-w-[250px] text-right text-xs text-muted-foreground">
-						{tierPurchaseStatus.reason === 'Limit reached'
-							? m['tierCardAdmin.limitReachedDetail']()
-							: tierPurchaseStatus.reason === 'Sold out'
-								? m['tierCardAdmin.soldOutDetail']()
-								: m['tierCardAdmin.notAvailable']()}
-					</p>
-				{/if}
-			{:else if canClaim}
-				<Button onclick={() => onSelectTier(tier)} class="w-full sm:w-auto">
-					{m['tierCardAdmin.claimFreeTicket']()}
-				</Button>
-			{:else if canCheckout}
-				<Button onclick={() => onSelectTier(tier)} class="w-full sm:w-auto"
-					>{m['tierCardAdmin.buyTicket']()}</Button
-				>
-			{:else if canReserve}
-				<Button onclick={() => onSelectTier(tier)} variant="outline" class="w-full sm:w-auto">
-					{m['tierCardAdmin.reserveTicket']()}
-				</Button>
+{#snippet actions()}
+	{#if !hasId}
+		<p class="rounded-md bg-destructive/10 px-4 py-2 text-sm font-medium text-destructive">
+			{m['tierCardAdmin.configError']()}
+		</p>
+	{:else if hasTicket}
+		<StatusBadge tone="success" size="lg" icon={Check} label={m['tierCardAdmin.youHaveTicket']()} />
+	{:else if !salesStatus.active}
+		<Button disabled class="w-full sm:w-auto">{m['tierCardAdmin.notAvailable']()}</Button>
+	{:else if !availabilityStatus.available}
+		<Button disabled class="w-full sm:w-auto">{m['tierCardAdmin.soldOut']()}</Button>
+	{:else if !membershipRestriction.allowed}
+		<!-- User doesn't have required membership tier -->
+		<Button disabled class="w-full sm:w-auto">
+			<AlertCircle class="mr-2 h-4 w-4" />
+			{m['tierCardAdmin.notEligible']()}
+		</Button>
+		{#if membershipRestriction.reason}
+			<p class="max-w-[250px] text-xs text-muted-foreground sm:text-right">
+				{membershipRestriction.reason}
+			</p>
+		{/if}
+	{:else if !isAuthenticated && !canAttendWithoutLogin}
+		<Button href="/login" variant="outline" class="w-full sm:w-auto"
+			>{m['tierCardAdmin.signInToGetTicket']()}</Button
+		>
+	{:else if !isAuthenticated && canAttendWithoutLogin}
+		<Button onclick={() => onGuestTierClick?.(tier)} class="w-full sm:w-auto">
+			{m['tierCardAdmin.getTicket']()}
+		</Button>
+	{:else if !effectiveEligible}
+		<!-- User is authenticated but not eligible for this tier - show reason -->
+		<Button disabled class="w-full sm:w-auto">
+			{#if tierPurchaseStatus.reason === 'Sold out'}
+				{m['tierCardAdmin.soldOut']()}
+			{:else if tierPurchaseStatus.reason === 'Limit reached'}
+				{m['tierCardAdmin.limitReached']()}
 			{:else}
-				<div class="rounded-md bg-muted px-4 py-2 text-sm text-muted-foreground">
-					{m['tierCardAdmin.comingSoon']()}
-				</div>
+				{m['tierCardAdmin.notEligible']()}
 			{/if}
-		</div>
-	</div>
-</Card>
+		</Button>
+		{#if tierPurchaseStatus.reason && tierPurchaseStatus.reason !== 'Not eligible'}
+			<p class="max-w-[250px] text-xs text-muted-foreground sm:text-right">
+				{tierPurchaseStatus.reason === 'Limit reached'
+					? m['tierCardAdmin.limitReachedDetail']()
+					: tierPurchaseStatus.reason === 'Sold out'
+						? m['tierCardAdmin.soldOutDetail']()
+						: m['tierCardAdmin.notAvailable']()}
+			</p>
+		{/if}
+	{:else if canClaim}
+		<Button onclick={() => onSelectTier(tier)} class="w-full sm:w-auto">
+			{m['tierCardAdmin.claimFreeTicket']()}
+		</Button>
+	{:else if canCheckout}
+		<Button onclick={() => onSelectTier(tier)} class="w-full sm:w-auto"
+			>{m['tierCardAdmin.buyTicket']()}</Button
+		>
+	{:else if canReserve}
+		<Button onclick={() => onSelectTier(tier)} variant="outline" class="w-full sm:w-auto">
+			{m['tierCardAdmin.reserveTicket']()}
+		</Button>
+	{:else}
+		<p class="rounded-md bg-muted px-4 py-2 text-sm font-medium text-muted-foreground">
+			{m['tierCardAdmin.comingSoon']()}
+		</p>
+	{/if}
+{/snippet}
+
+<PricingCard
+	name={tier.name}
+	icon={Ticket}
+	price={priceDisplay()}
+	muted={tier.can_purchase === false}
+	{badges}
+	{meta}
+	{actions}
+>
+	{#if tier.description}
+		<MarkdownContent content={tier.description} class="text-sm text-muted-foreground" />
+	{/if}
+</PricingCard>

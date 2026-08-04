@@ -103,10 +103,10 @@
 	<div class="flex items-center justify-between">
 		<div class="flex items-center gap-2">
 			<Filter class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-			<h2 class="text-lg font-semibold">{m['common.filters_filters']()}</h2>
+			<h2 class="text-xl font-extrabold">{m['common.filters_filters']()}</h2>
 			{#if activeFilterCount > 0}
 				<span
-					class="rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground"
+					class="rounded-full bg-primary px-2 py-0.5 text-xs font-bold text-primary-foreground"
 					aria-label="{activeFilterCount} {m['common.filters_activeFilters']()}"
 				>
 					{activeFilterCount}
@@ -143,7 +143,7 @@
 
 	<!-- Search Input -->
 	<div class="space-y-2">
-		<label for="event-search" class="text-sm font-medium">{m['common.search_label']()}</label>
+		<label for="event-search" class="text-sm font-bold">{m['common.search_label']()}</label>
 		<SearchInput
 			id="event-search"
 			value={filters.search ?? ''}

@@ -130,7 +130,7 @@
 				<button
 					type="button"
 					onclick={() => (showPassModal = true)}
-					class="inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+					class="inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-primary px-3 py-2 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
 					<QrCode class="h-4 w-4" aria-hidden="true" />
 					{m['seriesPass.viewPass']()}

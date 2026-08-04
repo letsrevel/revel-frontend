@@ -3,6 +3,7 @@
 	import type { AnnouncementPublicSchema } from '$lib/api/generated/types.gen';
 	import { formatRelativeTime } from '$lib/utils/time';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
+	import ToneTile from '$lib/components/common/ToneTile.svelte';
 	import { Megaphone, Users, Layers, UserCog, Calendar } from '@lucide/svelte';
 
 	interface Props {
@@ -32,13 +33,9 @@
 <article class="rounded-lg border bg-card p-4">
 	<!-- Header -->
 	<div class="mb-3 flex items-start gap-3">
-		<div
-			class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"
-		>
-			<Megaphone class="h-5 w-5" aria-hidden="true" />
-		</div>
+		<ToneTile tone="brand" icon={Megaphone} class="rounded-full" />
 		<div class="min-w-0 flex-1">
-			<h3 class="font-semibold">{announcement.title}</h3>
+			<h3 class="font-bold">{announcement.title}</h3>
 			<div class="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm text-muted-foreground">
 				{#if announcement.sent_at}
 					<span

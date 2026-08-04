@@ -7,6 +7,7 @@ import type {
 	EventDetailSchema,
 	MinimalEventSchema
 } from '$lib/api/generated/types.gen';
+import { getPosterFallbackGradient } from './fallback-gradient';
 
 /**
  * Get display string for event access/pricing
@@ -70,23 +71,17 @@ export function getSpotsRemaining(event: EventInListSchema): number | null {
 }
 
 /**
- * Generate a deterministic gradient class for event fallback images
+ * Generate a deterministic gradient class for event fallback images.
+ *
+ * Delegates to the shared poster-palette ramp so an event, its series and its
+ * organization all fall back to the same visual family (see
+ * `utils/fallback-gradient.ts` for why these stay mode-inert).
+ *
  * @param eventId Event UUID
- * @returns Tailwind gradient class string
+ * @returns Tailwind gradient color-stop classes (caller supplies the direction)
  */
 export function getEventFallbackGradient(eventId: string): string {
-	const gradients = [
-		'from-purple-500 to-pink-500',
-		'from-blue-500 to-cyan-500',
-		'from-green-500 to-emerald-500',
-		'from-orange-500 to-red-500',
-		'from-indigo-500 to-purple-500',
-		'from-teal-500 to-green-500'
-	];
-
-	// Hash event ID to select gradient (deterministic)
-	const hash = eventId.split('').reduce((acc, char) => char.charCodeAt(0) + acc, 0);
-	return gradients[Math.abs(hash) % gradients.length];
+	return getPosterFallbackGradient(eventId);
 }
 
 /**

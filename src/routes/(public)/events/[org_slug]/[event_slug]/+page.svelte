@@ -27,6 +27,7 @@
 	import { eventHasSeatingMap } from '$lib/components/events/venue-overview';
 	import EventConfirmationBanners from '$lib/components/events/EventConfirmationBanners.svelte';
 	import { createCheckoutController } from '$lib/components/events/event-checkout-controller.svelte';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import { SeoHead } from '$lib/seo';
 	import {
 		isRSVP,
@@ -481,9 +482,11 @@
 						class="rounded-lg border bg-card lg:hidden"
 					>
 						<div class="border-b p-4">
-							<h2 id="series-heading-mobile" class="font-semibold">
-								{m['eventDetails.series_heading']()}
-							</h2>
+							<SectionHeader
+								volume="celebration"
+								id="series-heading-mobile"
+								title={m['eventDetails.series_heading']()}
+							/>
 						</div>
 						<a
 							href={resolve('/(public)/events/[org_slug]/series/[series_slug]', {
@@ -492,7 +495,7 @@
 							})}
 							class="block p-4 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 						>
-							<div class="font-medium">{event.event_series.name}</div>
+							<div class="font-bold">{event.event_series.name}</div>
 							{#if event.event_series.description}
 								<p class="mt-1 text-sm text-muted-foreground">
 									{event.event_series.description}
@@ -550,9 +553,11 @@
 					{#if event.event_series}
 						<section aria-labelledby="series-heading-desktop" class="rounded-lg border bg-card">
 							<div class="border-b p-4">
-								<h2 id="series-heading-desktop" class="font-semibold">
-									{m['eventDetails.series_heading']()}
-								</h2>
+								<SectionHeader
+									volume="celebration"
+									id="series-heading-desktop"
+									title={m['eventDetails.series_heading']()}
+								/>
 							</div>
 							<a
 								href={resolve('/(public)/events/[org_slug]/series/[series_slug]', {
@@ -561,7 +566,7 @@
 								})}
 								class="block p-4 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 							>
-								<div class="font-medium">{event.event_series.name}</div>
+								<div class="font-bold">{event.event_series.name}</div>
 								{#if event.event_series.description}
 									<p class="mt-1 text-sm text-muted-foreground">
 										{event.event_series.description}
@@ -587,12 +592,19 @@
 		<!-- Tags Section (bottom of page) -->
 		{#if event.tags && event.tags.length > 0}
 			<section aria-labelledby="tags-heading" class="container mx-auto border-t px-6 py-8 md:px-8">
-				<h2 id="tags-heading" class="mb-4 text-xl font-semibold">
-					{m['eventDetails.tags_heading']()}
-				</h2>
+				<SectionHeader
+					volume="celebration"
+					id="tags-heading"
+					title={m['eventDetails.tags_heading']()}
+					class="mb-4"
+				/>
+				<!-- Tag chips: primary on a 10% primary tint. The tint composites to
+				     ~the page colour, so primary-vs-background governs — 5.3:1 light /
+				     5.9:1 dark (hand-recomputed; a composited alpha is invisible to
+				     scripts/audit-brand-themes.py). -->
 				<div class="flex flex-wrap gap-2">
 					{#each event.tags as tag (tag)}
-						<span class="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
+						<span class="rounded-full bg-primary/10 px-3 py-1 text-sm font-bold text-primary">
 							{tag}
 						</span>
 					{/each}

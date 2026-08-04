@@ -139,12 +139,9 @@
 		<span
 			class={cn(
 				'shrink-0 rounded-full border px-2 py-1 text-xs font-medium',
-				statusBadgeVariant === 'success' &&
-					'border-green-200 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-950 dark:text-green-300',
-				statusBadgeVariant === 'info' &&
-					'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300',
-				statusBadgeVariant === 'default' &&
-					'border-gray-200 bg-gray-50 text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300'
+				statusBadgeVariant === 'success' && 'border-success/40 bg-success/10 text-foreground',
+				statusBadgeVariant === 'info' && 'border-info/40 bg-info/10 text-foreground',
+				statusBadgeVariant === 'default' && 'border-border bg-muted text-muted-foreground'
 			)}
 			aria-label={`Status: ${statusBadgeText}`}
 		>

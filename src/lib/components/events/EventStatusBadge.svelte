@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { EventDetailSchema, EventStatus } from '$lib/api/generated/types.gen';
-	import { cn } from '$lib/utils/cn';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
+	import type { Tone } from '$lib/components/common/tones';
 	import {
 		Calendar,
 		Clock,
@@ -30,11 +31,23 @@
 	const { event, class: className }: Props = $props();
 
 	/**
-	 * Badge configuration with label, variant, and icon
+	 * Badge configuration with label, tone, and icon
 	 */
 	interface BadgeConfig {
 		label: string;
-		variant: 'success' | 'default' | 'secondary' | 'destructive' | 'cancelled';
+		/**
+		 * Semantic tone, resolved here rather than a private colour table: this is
+		 * the domain→tone mapper the rebrand asks for, so every fill is an audited
+		 * `StatusBadge` token pair.
+		 *
+		 * The one collapse worth naming: CANCELLED and CLOSED used to be two
+		 * hand-picked hues (orange-700 / destructive). They stay distinguishable —
+		 * cancelled is `warning` (amber, the organizer called it off), closed is
+		 * `danger` (red, no longer joinable) — and, per the house rule, the label
+		 * carries the distinction on its own for anyone who cannot separate the
+		 * two hues.
+		 */
+		tone: Tone;
 		icon: LucideIcon;
 	}
 
@@ -55,7 +68,7 @@
 		if (event.status === 'draft') {
 			return {
 				label: m['orgAdmin.events.status.draft'](),
-				variant: 'secondary',
+				tone: 'neutral',
 				icon: FileText
 			};
 		}
@@ -63,7 +76,7 @@
 		if (event.status === 'cancelled') {
 			return {
 				label: m['orgAdmin.events.status.cancelled'](),
-				variant: 'cancelled',
+				tone: 'warning',
 				icon: Ban
 			};
 		}
@@ -71,7 +84,7 @@
 		if (event.status === 'closed') {
 			return {
 				label: m['orgAdmin.events.status.closed'](),
-				variant: 'destructive',
+				tone: 'danger',
 				icon: XCircle
 			};
 		}
@@ -85,7 +98,7 @@
 		if (endDate < now) {
 			return {
 				label: m['eventStatus.past'](),
-				variant: 'secondary',
+				tone: 'neutral',
 				icon: CheckCircle
 			};
 		}
@@ -96,7 +109,7 @@
 		if (event.is_full === true) {
 			return {
 				label: m['eventStatus.full'](),
-				variant: 'destructive',
+				tone: 'danger',
 				icon: AlertCircle
 			};
 		}
@@ -105,7 +118,7 @@
 		if (startDate <= now && now <= endDate) {
 			return {
 				label: m['eventStatus.ongoing'](),
-				variant: 'success',
+				tone: 'success',
 				icon: Clock
 			};
 		}
@@ -118,7 +131,7 @@
 		if (isToday) {
 			return {
 				label: m['eventStatus.happeningToday'](),
-				variant: 'success',
+				tone: 'success',
 				icon: Calendar
 			};
 		}
@@ -126,33 +139,10 @@
 		// 5. Default: Upcoming
 		return {
 			label: m['eventStatus.upcoming'](),
-			variant: 'default',
+			tone: 'brand',
 			icon: Calendar
 		};
 	});
-
-	/**
-	 * Get Tailwind classes for badge variant
-	 */
-	function getBadgeClasses(variant: BadgeConfig['variant']): string {
-		const baseClasses =
-			'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors';
-
-		// 700-level backgrounds: white text on green/orange-600 is < 4.5:1
-		// (WCAG AA fail — caught by the E2E a11y smoke once cancelled events
-		// appeared); green-700 = 5.02:1, orange-700 = 5.18:1.
-		const variantClasses = {
-			success:
-				'bg-green-700 text-white hover:bg-green-800 dark:bg-green-700 dark:hover:bg-green-800',
-			default: 'bg-primary text-primary-foreground hover:bg-primary/90',
-			secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-			destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
-			cancelled:
-				'bg-orange-700 text-white hover:bg-orange-800 dark:bg-orange-700 dark:hover:bg-orange-800'
-		};
-
-		return cn(baseClasses, variantClasses[variant]);
-	}
 </script>
 
 <!--
@@ -167,9 +157,12 @@
   <EventStatusBadge event={data.event} class="mb-4" />
 -->
 {#if badge}
-	{@const IconComponent = badge.icon}
-	<span class={cn(getBadgeClasses(badge.variant), className)} role="status" aria-live="polite">
-		<IconComponent class="h-3 w-3" aria-hidden="true" />
-		<span>{badge.label}</span>
-	</span>
+	<StatusBadge
+		tone={badge.tone}
+		label={badge.label}
+		icon={badge.icon}
+		class={className}
+		role="status"
+		aria-live="polite"
+	/>
 {/if}

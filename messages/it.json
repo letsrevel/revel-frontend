@@ -827,6 +827,7 @@
 	},
 	"browse": {
 		"events_title": "Scopri Eventi",
+		"events_kicker": "Cosa succede",
 		"events_skipTo": "Passa agli eventi",
 		"events_noEventsFound": "Nessun evento trovato",
 		"events_tryAdjustingFilters": "Prova a modificare i tuoi filtri per trovare più eventi.",
@@ -835,6 +836,7 @@
 		"events_listingsLabel": "Elenco eventi",
 		"events_count": "{count} {eventPlural} trovati",
 		"organizations_title": "Scopri Organizzazioni",
+		"organizations_kicker": "Community",
 		"organizations_skipTo": "Passa alle organizzazioni",
 		"organizations_noOrganizationsFound": "Nessuna organizzazione trovata",
 		"organizations_tryAdjustingFilters": "Prova a modificare i tuoi filtri per trovare più organizzazioni.",
@@ -4532,6 +4534,7 @@
 	},
 	"organizationProfile": {
 		"editProfile": "Modifica Profilo",
+		"kicker": "Community",
 		"resources_heading": "Risorse",
 		"resources_description": "Documenti utili, link e informazioni da {organizationName}",
 		"resources_viewAll": "Vedi tutto",

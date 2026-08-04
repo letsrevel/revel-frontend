@@ -429,7 +429,7 @@
 		<!-- Success Message -->
 		{#if showSuccess}
 			<div
-				class="rounded-md bg-green-50 p-3 text-sm text-green-900 dark:bg-green-950/50 dark:text-green-100"
+				class="rounded-md bg-success/10 p-3 text-sm text-foreground"
 				role="status"
 				aria-live="polite"
 			>

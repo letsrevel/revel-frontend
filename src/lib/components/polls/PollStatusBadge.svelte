@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { Badge } from '$lib/components/ui/badge';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
+	import type { Tone } from '$lib/components/common/tones';
 	import type { PollStatus } from '$lib/api/generated/types.gen';
 
 	interface Props {
@@ -15,12 +16,15 @@
 				? m['pollCard.status_open']()
 				: m['pollCard.status_closed']()
 	);
+
+	/**
+	 * Domain→tone mapper (rebrand): the hand-picked amber-700/emerald-700 pair is
+	 * gone, so both fills are now audited `StatusBadge` token pairs. Each state
+	 * still carries its own word — the fill never says it alone.
+	 */
+	const tone = $derived<Tone>(
+		status === 'draft' ? 'warning' : status === 'open' ? 'success' : 'neutral'
+	);
 </script>
 
-{#if status === 'draft'}
-	<Badge class="bg-amber-700 text-xs text-white hover:bg-amber-800">{label}</Badge>
-{:else if status === 'open'}
-	<Badge class="bg-emerald-700 text-xs text-white hover:bg-emerald-800">{label}</Badge>
-{:else}
-	<Badge variant="secondary" class="text-xs">{label}</Badge>
-{/if}
+<StatusBadge {tone} {label} size="sm" />
