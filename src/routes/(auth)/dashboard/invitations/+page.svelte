@@ -146,7 +146,7 @@
 	<PageHeader
 		title={m['dashboard.invitations.title']()}
 		subtitle={m['dashboard.invitations.description']()}
-		kicker={m['nav.invitations']()}
+		kicker={m['userMenu.dashboard']()}
 		volume="celebration"
 		class="mb-8"
 	/>
@@ -158,10 +158,10 @@
 				<button
 					type="button"
 					onclick={() => switchTab('invitations')}
-					class="inline-flex items-center gap-2 border-b-2 px-1 py-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 {activeTab ===
+					class="inline-flex items-center gap-2 border-b-2 px-1 py-4 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 {activeTab ===
 					'invitations'
-						? 'border-primary text-primary'
-						: 'border-transparent text-muted-foreground hover:border-muted-foreground/50 hover:text-foreground'}"
+						? 'border-primary font-bold text-primary'
+						: 'border-transparent font-semibold text-muted-foreground hover:border-muted-foreground/50 hover:text-foreground'}"
 					aria-current={activeTab === 'invitations' ? 'page' : undefined}
 				>
 					<Mail class="h-4 w-4" aria-hidden="true" />
@@ -178,10 +178,10 @@
 				<button
 					type="button"
 					onclick={() => switchTab('requests')}
-					class="inline-flex items-center gap-2 border-b-2 px-1 py-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 {activeTab ===
+					class="inline-flex items-center gap-2 border-b-2 px-1 py-4 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 {activeTab ===
 					'requests'
-						? 'border-primary text-primary'
-						: 'border-transparent text-muted-foreground hover:border-muted-foreground/50 hover:text-foreground'}"
+						? 'border-primary font-bold text-primary'
+						: 'border-transparent font-semibold text-muted-foreground hover:border-muted-foreground/50 hover:text-foreground'}"
 					aria-current={activeTab === 'requests' ? 'page' : undefined}
 				>
 					<Send class="h-4 w-4" aria-hidden="true" />

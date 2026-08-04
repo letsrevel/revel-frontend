@@ -127,7 +127,7 @@
 	<PageHeader
 		title={m['dashboard.rsvps.title']()}
 		subtitle={m['dashboard.rsvps.description']()}
-		kicker={m['nav.rsvps']()}
+		kicker={m['userMenu.dashboard']()}
 		volume="celebration"
 		class="mb-4"
 	/>

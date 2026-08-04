@@ -141,14 +141,20 @@
 	<div class="space-y-6">
 		<!-- Header band — the brand moment (what people screenshot at the door).
 		     Bleeds to the card edges on the logo gradient (--logo-from -> --logo-to,
-		     the same pair RevelMark uses). Only large/bold text and icons sit on the
-		     gradient: white on the purple end measures ~5.5:1, white on the crimson
-		     end ~4.3:1 — that clears the WCAG AA *large-text* floor (3:1) at both
-		     ends but not the 4.5:1 normal-text floor, so smaller metadata (tier
-		     name, status) stays off the gradient, on the card surface below. -->
+		     the same pair RevelMark uses). NOTE: --logo-from/--logo-to are already
+		     COMPLETE hsl(...) values (see app.css) — do not wrap them in another
+		     hsl() (see RevelMark.svelte:36 for the correct var()-only usage); doing
+		     so produces hsl(hsl(...)), an invalid value that drops the whole
+		     declaration and leaves the band transparent. Only large/bold text and
+		     icons sit on the gradient: white on the purple end measures ~5.5:1,
+		     white on the crimson end ~4.3:1 — that clears the WCAG AA *large-text*
+		     floor (3:1) at both ends but NOT the 4.5:1 normal-text floor. Do not
+		     shrink this text below the large-text threshold (effectively
+		     `font-black`/`sm:text-3xl` here). Smaller metadata (tier name, status)
+		     stays off the gradient, on the card surface below. -->
 		<div
-			class="-mx-6 -mt-6 mb-2 flex items-center gap-3 rounded-t-lg px-6 py-5"
-			style="background: linear-gradient(135deg, hsl(var(--logo-from)), hsl(var(--logo-to)));"
+			class="-mx-6 -mt-6 flex items-center gap-3 rounded-t-lg px-6 py-5"
+			style="background: linear-gradient(135deg, var(--logo-from), var(--logo-to));"
 		>
 			<Ticket class="h-7 w-7 shrink-0 text-poster-white" aria-hidden="true" />
 			<h2 class="text-2xl font-black leading-[1.12] text-poster-white sm:text-3xl">{eventName}</h2>
@@ -192,8 +198,11 @@
 
 		<!-- Pending Payment Banner. Tint/text pair mirrors ToneTile's audited
 		     warning tokens (bg-highlight/20, text-highlight-foreground light /
-		     text-highlight dark — see ToneTile.svelte for the hand-verified
-		     ratios: 12.6:1 light, 6.7:1 dark). -->
+		     text-highlight dark). Hand-verified on THIS surface (bg-highlight/20
+		     composited over --card, the Card this banner sits in): 13.93:1 light,
+		     5.96:1 dark. Recompute if this banner is ever moved onto a different
+		     surface (ToneTile.svelte's own comment is for its icon tile on
+		     page/card, not this banner). -->
 		{#if ticket.status === 'pending'}
 			<div class="rounded-lg border border-highlight/40 bg-highlight/20 p-4" role="alert">
 				<div class="flex items-start gap-3">
@@ -298,8 +307,8 @@
 		{/if}
 
 		<!-- Checked In Info. bg-info/10 + text-info mirrors ToneTile's audited
-		     info tokens (hand-verified 8.3:1 light / 8.0:1 dark — see
-		     ToneTile.svelte). -->
+		     info tokens. Hand-verified on THIS surface (bg-info/10 composited over
+		     --card, the Card this banner sits in): 9.31:1 light, 7.15:1 dark. -->
 		{#if ticket.status === 'checked_in' && checkedInDate}
 			<div class="rounded-lg bg-info/10 p-4 text-sm">
 				<p class="font-bold text-info">{m['myTicket.checkedInAt']()} {checkedInDate}</p>

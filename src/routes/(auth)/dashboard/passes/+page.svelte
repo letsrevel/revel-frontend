@@ -61,7 +61,7 @@
 	<PageHeader
 		title={m['seriesPass.myPassesTitle']()}
 		subtitle={m['seriesPass.myPassesDescription']()}
-		kicker={m['nav.myPasses']()}
+		kicker={m['userMenu.dashboard']()}
 		volume="celebration"
 		class="mb-8"
 	/>

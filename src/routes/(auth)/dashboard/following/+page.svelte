@@ -203,7 +203,7 @@
 	<!-- Page Header -->
 	<PageHeader
 		title={m['dashboard.following.title']()}
-		kicker={m['dashboard.followingButton']()}
+		kicker={m['userMenu.dashboard']()}
 		volume="celebration"
 		class="mb-8"
 	/>
@@ -215,10 +215,10 @@
 				<button
 					type="button"
 					onclick={() => switchTab('organizations')}
-					class="inline-flex items-center gap-2 border-b-2 px-1 py-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 {activeTab ===
+					class="inline-flex items-center gap-2 border-b-2 px-1 py-4 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 {activeTab ===
 					'organizations'
-						? 'border-primary text-primary'
-						: 'border-transparent text-muted-foreground hover:border-muted-foreground/50 hover:text-foreground'}"
+						? 'border-primary font-bold text-primary'
+						: 'border-transparent font-semibold text-muted-foreground hover:border-muted-foreground/50 hover:text-foreground'}"
 					aria-current={activeTab === 'organizations' ? 'page' : undefined}
 				>
 					<Building2 class="h-4 w-4" aria-hidden="true" />
@@ -235,10 +235,10 @@
 				<button
 					type="button"
 					onclick={() => switchTab('event-series')}
-					class="inline-flex items-center gap-2 border-b-2 px-1 py-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 {activeTab ===
+					class="inline-flex items-center gap-2 border-b-2 px-1 py-4 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 {activeTab ===
 					'event-series'
-						? 'border-primary text-primary'
-						: 'border-transparent text-muted-foreground hover:border-muted-foreground/50 hover:text-foreground'}"
+						? 'border-primary font-bold text-primary'
+						: 'border-transparent font-semibold text-muted-foreground hover:border-muted-foreground/50 hover:text-foreground'}"
 					aria-current={activeTab === 'event-series' ? 'page' : undefined}
 				>
 					<Calendar class="h-4 w-4" aria-hidden="true" />

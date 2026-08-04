@@ -156,7 +156,7 @@
 	<PageHeader
 		title={m['dashboard.tickets.title']()}
 		subtitle={m['dashboard.tickets.description']()}
-		kicker={m['nav.myTickets']()}
+		kicker={m['userMenu.dashboard']()}
 		volume="celebration"
 		class="mb-4"
 	/>
