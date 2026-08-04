@@ -167,7 +167,7 @@
 	</div>
 
 	<PageHeader
-		kicker={m['myInvoices.account']()}
+		kicker={m['referral.referralProgram']()}
 		title={m['referral.payoutsTitle']()}
 		subtitle={m['referral.payoutsDescription']()}
 	/>

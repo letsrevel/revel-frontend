@@ -11,19 +11,22 @@
 	const { status, class: extraClass = '' }: Props = $props();
 
 	/**
-	 * Thin mapper over the shared `StatusBadge` primitive: each of the six
-	 * `SubscriptionStatus` values keeps its OWN tone (no collapsing) — in
-	 * particular `paused` (admin-imposed, brand) stays visually distinct from
-	 * `cancelled` (over, neutral), a real distinction the old raw gray/muted
-	 * pairing barely carried.
+	 * Thin mapper over the shared `StatusBadge` primitive. `brand` is reserved
+	 * for emphasis, not for a suspended state, so `paused` takes `warning`
+	 * (needs attention) instead — it does not share `active`'s `success`, and
+	 * it stays visually louder than the two terminal states. `past_due` is a
+	 * harder problem than "pending payment" (it risks losing access), so it
+	 * escalates to `danger`. `cancelled` and `expired` collapse onto the same
+	 * `neutral` tone deliberately: both are terminal/over, and the label text
+	 * ("Cancelled" vs "Expired") — not the tone — carries the distinction.
 	 */
 	const TONE_MAP: Record<SubscriptionStatus, Tone> = {
 		active: 'success',
 		pending: 'info',
-		past_due: 'warning',
-		paused: 'brand',
+		past_due: 'danger',
+		paused: 'warning',
 		cancelled: 'neutral',
-		expired: 'danger'
+		expired: 'neutral'
 	};
 
 	const tone = $derived(TONE_MAP[status]);

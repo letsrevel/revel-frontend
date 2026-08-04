@@ -393,8 +393,11 @@
 				{/if}
 
 				{#if verificationError}
+					<!-- text-destructive as lead text measures 2.68:1 in dark on this tint
+					     (below 4.5); the border/tint carry the tone, text reads on
+					     --foreground. -->
 					<div role="alert" class="rounded-md border border-destructive bg-destructive/10 p-3">
-						<p class="text-sm font-medium text-destructive">
+						<p class="text-sm font-medium text-foreground">
 							{verificationError}
 						</p>
 					</div>

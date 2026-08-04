@@ -20,6 +20,7 @@
 	import AudioPlayer from '$lib/components/questionnaires/AudioPlayer.svelte';
 	import { isAudio } from '$lib/utils/audio';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 
 	interface Props {
@@ -167,7 +168,7 @@
 				<Download class="h-6 w-6 text-primary" aria-hidden="true" />
 			</div>
 			<div class="flex-1">
-				<h2 class="text-xl font-bold">{m['accountPrivacyPage.exportDataTitle']()}</h2>
+				<SectionHeader title={m['accountPrivacyPage.exportDataTitle']()} class="flex-1" />
 				<p class="mt-2 text-sm text-muted-foreground">
 					{m['accountPrivacyPage.exportDataDescription']()}
 				</p>
@@ -266,7 +267,7 @@
 				<FolderOpen class="h-6 w-6 text-primary" aria-hidden="true" />
 			</div>
 			<div class="flex-1">
-				<h2 class="text-xl font-bold">{m['accountPrivacyPage.yourFilesTitle']()}</h2>
+				<SectionHeader title={m['accountPrivacyPage.yourFilesTitle']()} class="flex-1" />
 				<p class="mt-2 text-sm text-muted-foreground">
 					{m['accountPrivacyPage.yourFilesDescription']()}
 				</p>
@@ -363,9 +364,10 @@
 				<AlertTriangle class="h-6 w-6 text-destructive" aria-hidden="true" />
 			</div>
 			<div class="flex-1">
-				<h2 class="text-xl font-bold text-destructive">
-					{m['accountPrivacyPage.dangerZone']()}
-				</h2>
+				<!-- text-destructive as a heading would measure 2.85:1 in dark on this
+				     tint (below 4.5) — the same trap as the create-org/referral
+				     headings; the icon + border/tint already carry "danger zone". -->
+				<SectionHeader title={m['accountPrivacyPage.dangerZone']()} class="flex-1" />
 				<p class="mt-2 text-sm text-muted-foreground">
 					{m['accountPrivacyPage.dangerZoneDescription']()}
 				</p>

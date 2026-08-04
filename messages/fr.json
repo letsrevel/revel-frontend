@@ -9120,6 +9120,7 @@
 		"inProgress": "En cours",
 		"closed": "Clôturées",
 		"empty": "Aucune candidature pour l'instant. Quand tu postules auprès d'une organisation, tu peux la suivre ici.",
+		"emptyTitle": "Aucune candidature pour l'instant",
 		"loadError": "Impossible de charger tes candidatures. Essaie de recharger la page.",
 		"appliedOn": "Candidature envoyée le {date}",
 		"tierLine": "Niveau : {tier}",

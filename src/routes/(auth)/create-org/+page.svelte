@@ -135,11 +135,14 @@
 		</div>
 	{:else if !user?.email_verified}
 		<!-- Email not verified warning -->
+		<!-- text-destructive as a heading measures 2.68:1 in dark on this tint
+		     (below 4.5); the border/tint + icon carry the tone, text reads on
+		     --foreground. -->
 		<div class="rounded-lg border border-destructive/40 bg-destructive/10 p-6">
 			<div class="flex gap-3">
 				<AlertCircle class="h-5 w-5 flex-shrink-0 text-destructive" aria-hidden="true" />
 				<div>
-					<h3 class="font-bold text-destructive">
+					<h3 class="font-bold text-foreground">
 						{m['orgCreate.emailNotVerified']()}
 					</h3>
 					<p class="mt-1 text-sm text-foreground">

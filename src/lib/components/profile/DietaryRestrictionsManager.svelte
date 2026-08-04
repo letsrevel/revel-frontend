@@ -333,13 +333,16 @@
 								label={getSeverityLabel(restriction.restriction_type)}
 								size="sm"
 							/>
-							<!-- text-success unchanged by the light tint (>=5:1 vs card per
-							     audit-brand-themes.py; a 15% overlay barely shifts lightness). -->
+							<!-- Solid audited pair (same fill StatusBadge uses for tone="success"):
+							     the /15 tint measured 4.10:1 on the actual surface (this manager
+							     renders in a plain bordered <li> on --background, not on --card),
+							     under the 4.5 floor for text-xs. success-foreground on success is
+							     9.92:1 in dark / audited >=4.5 in both modes. -->
 							<button
 								type="button"
 								onclick={() => handleToggleVisibility(restriction)}
 								class="ml-auto rounded px-2 py-1 text-xs font-medium transition-colors {restriction.is_public
-									? 'bg-success/15 text-success hover:bg-success/25'
+									? 'bg-success text-success-foreground hover:bg-success/90'
 									: 'bg-muted text-muted-foreground hover:bg-muted/70'}"
 								aria-label={restriction.is_public
 									? m['dietary.restrictions_publicLabel']()
@@ -356,8 +359,11 @@
 						{/if}
 
 						{#if restriction.restriction_type === 'severe_allergy'}
-							<div class="flex items-center gap-2 text-sm text-destructive">
-								<AlertTriangle class="h-4 w-4" aria-hidden="true" />
+							<!-- Bare on card: text-destructive measures 2.85:1 in dark (below
+							     4.5). Only the icon carries the tone; the line reads on
+							     --foreground, same pattern as the tinted-banner headings. -->
+							<div class="flex items-center gap-2 text-sm text-foreground">
+								<AlertTriangle class="h-4 w-4 text-destructive" aria-hidden="true" />
 								<span>{m['dietaryRestrictionsManager.severeAllergyWarning']()}</span>
 							</div>
 						{/if}

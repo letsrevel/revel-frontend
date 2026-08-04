@@ -160,8 +160,8 @@
 		</a>
 	</div>
 
+	<!-- No kicker: the "Account" back-link two lines above already says it. -->
 	<PageHeader
-		kicker={m['myInvoices.account']()}
 		title={m['myInvoices.pageTitle']()}
 		subtitle={m['myInvoices.pageDescription']()}
 		class="mb-6"

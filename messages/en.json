@@ -9120,6 +9120,7 @@
 		"inProgress": "In progress",
 		"closed": "Closed",
 		"empty": "No applications yet. When you apply to join an organization, you can track it here.",
+		"emptyTitle": "No applications yet",
 		"loadError": "Could not load your applications. Try reloading the page.",
 		"appliedOn": "Applied on {date}",
 		"tierLine": "Tier: {tier}",

@@ -4,6 +4,7 @@
 	import { Mail, Eye, EyeOff, AlertTriangle, CheckCircle, ShieldCheck } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import * as Dialog from '$lib/components/ui/dialog';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import type { RevelUserSchema } from '$lib/api/generated/types.gen';
 
@@ -125,12 +126,10 @@
 		</div>
 
 		<div class="flex-1">
-			<div>
-				<h2 class="text-xl font-bold">{m['accountSecurityPage.emailChange_title']()}</h2>
-				<p class="mt-1 text-sm text-muted-foreground">
-					{m['accountSecurityPage.emailChange_description']()}
-				</p>
-			</div>
+			<SectionHeader title={m['accountSecurityPage.emailChange_title']()} class="flex-1" />
+			<p class="mt-1 text-sm text-muted-foreground">
+				{m['accountSecurityPage.emailChange_description']()}
+			</p>
 
 			{#if !showForm && !submissionSucceeded}
 				<div class="mt-4">

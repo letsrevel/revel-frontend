@@ -182,7 +182,13 @@
 					<p class="text-sm text-muted-foreground">{m['referral.yourCode']()}</p>
 					<p class="font-mono text-lg font-black">{referralCode.code}</p>
 					{#if !referralCode.is_active}
-						<p class="text-sm text-highlight-foreground dark:text-highlight">
+						<!-- text-highlight-foreground is contrast-safe but reads as plain
+						     dark text on an untinted surface — pair with a visible icon so
+						     the warning survives without relying on color alone. -->
+						<p
+							class="flex items-center gap-1 text-sm text-highlight-foreground dark:text-highlight"
+						>
+							<AlertCircle class="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
 							{m['referral.codeInactive']()}
 						</p>
 					{/if}
@@ -335,13 +341,16 @@
 									<dt class="font-medium text-muted-foreground">
 										{m['referral.chargesEnabled']()}
 									</dt>
+									<!-- Bare on card: text-destructive measures 2.85:1 in dark
+									     (below 4.5). Only the icon carries the tone; the label
+									     reads on --foreground. -->
 									<dd class="mt-0.5 flex items-center gap-1">
 										{#if stripeChargesEnabled}
 											<Check class="h-3 w-3 text-success" aria-hidden="true" />
 											<span class="text-success">{m['referral.yes']()}</span>
 										{:else}
 											<AlertCircle class="h-3 w-3 text-destructive" aria-hidden="true" />
-											<span class="text-destructive">{m['referral.no']()}</span>
+											<span class="text-foreground">{m['referral.no']()}</span>
 										{/if}
 									</dd>
 								</div>
@@ -352,11 +361,14 @@
 			</div>
 
 			{#if stripeConnectMutation.error}
+				<!-- text-destructive as lead text measures 2.85:1 in dark on this card
+				     tint (below 4.5); the border/tint + icon carry the tone, text reads
+				     on --foreground. -->
 				<div
-					class="mt-3 flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-destructive"
+					class="mt-3 flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-foreground"
 					role="alert"
 				>
-					<AlertCircle class="h-4 w-4 shrink-0" aria-hidden="true" />
+					<AlertCircle class="h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
 					<p class="text-sm">{stripeConnectMutation.error.message}</p>
 				</div>
 			{/if}

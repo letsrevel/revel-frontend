@@ -66,7 +66,12 @@
 		<p role="alert" class="text-sm text-destructive">{m['applications.loadError']()}</p>
 	{:else if applications.length === 0}
 		<!-- level=3: sits inside this section, whose own heading is the level-2. -->
-		<EmptyState icon={ClipboardList} level={3} title={m['applications.empty']()} />
+		<EmptyState
+			icon={ClipboardList}
+			level={3}
+			title={m['applications.emptyTitle']()}
+			body={m['applications.empty']()}
+		/>
 	{:else}
 		{#if inProgress.length > 0}
 			<h3 id="applications-in-progress-heading" class="text-sm font-medium text-muted-foreground">

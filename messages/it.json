@@ -9120,6 +9120,7 @@
 		"inProgress": "In corso",
 		"closed": "Chiuse",
 		"empty": "Nessuna candidatura per ora. Quando ti candidi a un'organizzazione, puoi seguirla qui.",
+		"emptyTitle": "Nessuna candidatura per ora",
 		"loadError": "Non è stato possibile caricare le tue candidature. Prova a ricaricare la pagina.",
 		"appliedOn": "Candidatura inviata il {date}",
 		"tierLine": "Livello: {tier}",

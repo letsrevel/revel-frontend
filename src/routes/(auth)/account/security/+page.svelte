@@ -19,6 +19,7 @@
 	import QRCode from 'qrcode';
 	import { accountResetPasswordRequest } from '$lib/api/generated';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 
 	interface Props {
@@ -183,28 +184,26 @@
 			</div>
 
 			<div class="flex-1">
-				<div class="flex items-center justify-between">
-					<div>
-						<h2 class="text-xl font-bold">{m['accountSecurityPage.twoFactorAuth']()}</h2>
-						<p class="mt-1 text-sm text-muted-foreground">
-							{m['accountSecurityPage.twoFactorDescription']()}
-						</p>
-					</div>
-
-					{#if totpActive}
-						<StatusBadge
-							tone="success"
-							icon={CheckCircle}
-							label={m['accountSecurityPage.statusEnabled']()}
-						/>
-					{:else}
-						<StatusBadge
-							tone="neutral"
-							icon={XCircle}
-							label={m['accountSecurityPage.statusDisabled']()}
-						/>
-					{/if}
-				</div>
+				<SectionHeader title={m['accountSecurityPage.twoFactorAuth']()} class="flex-1">
+					{#snippet actions()}
+						{#if totpActive}
+							<StatusBadge
+								tone="success"
+								icon={CheckCircle}
+								label={m['accountSecurityPage.statusEnabled']()}
+							/>
+						{:else}
+							<StatusBadge
+								tone="neutral"
+								icon={XCircle}
+								label={m['accountSecurityPage.statusDisabled']()}
+							/>
+						{/if}
+					{/snippet}
+				</SectionHeader>
+				<p class="mt-1 text-sm text-muted-foreground">
+					{m['accountSecurityPage.twoFactorDescription']()}
+				</p>
 
 				<!-- Enable/Disable Button (when not in a flow) -->
 				{#if !showSetupFlow && !showDisableFlow}
@@ -464,14 +463,10 @@
 			</div>
 
 			<div class="flex-1">
-				<div class="flex items-center justify-between">
-					<div>
-						<h2 class="text-xl font-bold">{m['accountSecurityPage.passwordChange']()}</h2>
-						<p class="mt-1 text-sm text-muted-foreground">
-							{m['accountSecurityPage.passwordChangeDescription']()}
-						</p>
-					</div>
-				</div>
+				<SectionHeader title={m['accountSecurityPage.passwordChange']()} class="flex-1" />
+				<p class="mt-1 text-sm text-muted-foreground">
+					{m['accountSecurityPage.passwordChangeDescription']()}
+				</p>
 
 				<!-- Change Password Button (when not in flow) -->
 				{#if !showPasswordChangeFlow}
@@ -562,7 +557,7 @@
 
 	<!-- Additional Security Tips -->
 	<div class="mt-6 rounded-lg border bg-muted/50 p-6">
-		<h3 class="font-bold">{m['accountSecurityPage.securityTips']()}</h3>
+		<SectionHeader title={m['accountSecurityPage.securityTips']()} level={3} />
 		<ul class="mt-3 space-y-2 text-sm text-muted-foreground">
 			<li class="flex gap-2">
 				<CheckCircle class="h-5 w-5 flex-shrink-0 text-success" aria-hidden="true" />

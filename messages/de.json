@@ -9120,6 +9120,7 @@
 		"inProgress": "In Bearbeitung",
 		"closed": "Beendet",
 		"empty": "Noch keine Bewerbungen. Wenn du dich bei einer Organisation bewirbst, kannst du sie hier verfolgen.",
+		"emptyTitle": "Noch keine Bewerbungen",
 		"loadError": "Deine Bewerbungen konnten nicht geladen werden. Lade die Seite neu.",
 		"appliedOn": "Beworben am {date}",
 		"tierLine": "Stufe: {tier}",
