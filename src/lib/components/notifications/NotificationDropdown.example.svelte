@@ -146,39 +146,39 @@
 				<CardContent>
 					<ul class="space-y-2 text-sm">
 						<li class="flex items-start gap-2">
-							<span class="font-bold text-green-500">✓</span>
+							<span class="font-bold text-success">✓</span>
 							<span
 								><strong>Unread Badge:</strong> Shows count of unread notifications on bell icon</span
 							>
 						</li>
 						<li class="flex items-start gap-2">
-							<span class="font-bold text-green-500">✓</span>
+							<span class="font-bold text-success">✓</span>
 							<span
 								><strong>Compact List:</strong> Displays recent notifications in a scrollable dropdown</span
 							>
 						</li>
 						<li class="flex items-start gap-2">
-							<span class="font-bold text-green-500">✓</span>
+							<span class="font-bold text-success">✓</span>
 							<span><strong>View All Link:</strong> Direct link to full notifications page</span>
 						</li>
 						<li class="flex items-start gap-2">
-							<span class="font-bold text-green-500">✓</span>
+							<span class="font-bold text-success">✓</span>
 							<span
 								><strong>Keyboard Accessible:</strong> Tab to focus, Enter to open, Escape to close</span
 							>
 						</li>
 						<li class="flex items-start gap-2">
-							<span class="font-bold text-green-500">✓</span>
+							<span class="font-bold text-success">✓</span>
 							<span><strong>Mobile Responsive:</strong> Dropdown width adjusts to screen size</span>
 						</li>
 						<li class="flex items-start gap-2">
-							<span class="font-bold text-green-500">✓</span>
+							<span class="font-bold text-success">✓</span>
 							<span
 								><strong>Real-time Polling:</strong> Automatically checks for new notifications</span
 							>
 						</li>
 						<li class="flex items-start gap-2">
-							<span class="font-bold text-green-500">✓</span>
+							<span class="font-bold text-success">✓</span>
 							<span
 								><strong>Auto-close on Click:</strong> Navigates to notification detail and closes dropdown</span
 							>

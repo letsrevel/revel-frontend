@@ -95,7 +95,7 @@
 			<Bell class="h-5 w-5" />
 			<NotificationBadge
 				{authToken}
-				class="-right-2 -top-2 h-6 w-6 bg-blue-500 text-xs text-white"
+				class="-right-2 -top-2 h-6 w-6 bg-info text-xs text-info-foreground"
 			/>
 		</Button>
 	</section>
@@ -137,13 +137,16 @@
 				<Button variant="ghost" size="icon">
 					<Bell class="h-5 w-5" />
 				</Button>
-				<NotificationBadge {authToken} class="-right-1 -top-1 bg-orange-500" />
+				<NotificationBadge
+					{authToken}
+					class="-right-1 -top-1 bg-highlight text-highlight-foreground"
+				/>
 			</div>
 			<div class="relative">
 				<Button variant="ghost" size="icon">
 					<Bell class="h-5 w-5" />
 				</Button>
-				<NotificationBadge {authToken} class="-right-1 -top-1 bg-green-500" />
+				<NotificationBadge {authToken} class="-right-1 -top-1 bg-success text-success-foreground" />
 			</div>
 		</div>
 	</section>
