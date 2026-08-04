@@ -1067,16 +1067,24 @@ clamped [-3, 3]). Tone vocabulary: `common/tones.ts` (`brand | info | success |
 warning | danger | neutral`). `StatusBadge` is solid-fill only by design (audit-
 enforced pairs; no soft variant) — sizes `sm | md | lg`. `ToneTile`'s `tone` axis
 stays semantic only; identity/destination coloring (the admin quick-actions grid)
-uses the additive, mutually-exclusive `tint` prop (PR 7) — a fixed poster-palette
-axis (`purple | lavender | periwinkle | amber | crimson | ink | paper`, type
-`PosterTint` in `common/tones.ts`) that renders a SOLID chip, identical in both
-modes (imagery rule), and wins over `tone` when both are set. Never overload
-`tone` for identity — reach for `tint` instead. `PageHeader` spreads arbitrary
-HTML attributes onto its `<header>` (`restProps`, PR 7, mirrors `StatusBadge`)
-so routed adopters can attach `id`/`aria-label`/etc; `SectionHeader` already took
-a plain `id` prop (forwarded to the heading) instead. `PageHeader`'s `decoration`
-slot is aria-hidden ornament only — status text goes through `actions` or
-`StatusBadge`, never `decoration`.
+uses the additive `tint` prop (PR 7) — a fixed poster-palette axis (`purple |
+lavender | periwinkle | amber | crimson | ink | paper`, type `PosterTint` in
+`common/tones.ts`) that renders a SOLID chip, identical in both modes (imagery
+rule), and wins over `tone` when both are set. `Props` is a union
+(`{ tone: Tone; tint?: PosterTint } | { tone?: Tone; tint: PosterTint }`) — at
+least one of `tone`/`tint` is required, both may be given, tint-only is legal
+(no filler tone needed). Never overload `tone` for identity — reach for `tint`
+instead. **Every tint chip carries `ring-1 ring-inset ring-border`** (PR 7 fix
+round) — the chip itself is mode-inert by design, but the card/page surface
+under it is NOT, and at least one tint/surface pairing measured under 1.2:1
+(effectively invisible) in the flipped mode; the ring gives every tint chip a
+theme-aware boundary regardless of what it sits on. Don't drop it when adding a
+call site or a new tint. `PageHeader` spreads arbitrary HTML attributes onto its
+`<header>` (`restProps` via `Omit<HTMLAttributes<HTMLElement>, 'children'>`,
+PR 7, mirrors `StatusBadge`) so routed adopters can attach `id`/`aria-label`/etc;
+`SectionHeader` already took a plain `id` prop (forwarded to the heading)
+instead. `PageHeader`'s `decoration` slot is aria-hidden ornament only — status
+text goes through `actions` or `StatusBadge`, never `decoration`.
 
 **Typography scale** (encoded in the primitives; use the same classes when
 composing manually):

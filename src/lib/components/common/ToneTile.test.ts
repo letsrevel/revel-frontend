@@ -46,19 +46,32 @@ describe('ToneTile', () => {
 			paper: ['bg-poster-paper', 'text-poster-ink']
 		};
 
+		// tint-only (no tone at all) is a legal shape on its own — the union
+		// requires only one of tone/tint, and the admin quick-actions grid is a
+		// tint-only consumer (no semantic tone to fall back to).
 		for (const [tint, [bg, fg]] of Object.entries(expectedClasses) as [
 			PosterTint,
 			[string, string]
 		][]) {
-			it(`renders the audited solid pair for tint="${tint}"`, () => {
+			it(`renders the audited solid pair for tint="${tint}" (tint-only, no tone)`, () => {
 				const { container } = render(ToneTile, {
-					props: { tone: 'neutral', tint, icon: Calendar }
+					props: { tint, icon: Calendar }
 				});
 				const el = container.querySelector('span') as HTMLElement;
 				expect(el.className).toContain(bg);
 				expect(el.className).toContain(fg);
 			});
 		}
+
+		it('always carries a theme-aware ring so the fixed chip reads against either card surface', () => {
+			const { container } = render(ToneTile, {
+				props: { tint: 'ink', icon: Calendar }
+			});
+			const el = container.querySelector('span') as HTMLElement;
+			expect(el.className).toContain('ring-1');
+			expect(el.className).toContain('ring-inset');
+			expect(el.className).toContain('ring-border');
+		});
 
 		it('takes precedence over tone when both are set', () => {
 			const { container } = render(ToneTile, {
@@ -71,7 +84,7 @@ describe('ToneTile', () => {
 
 		it('stays a decorative aria-hidden icon next to visible text (no label)', () => {
 			const { container } = render(ToneTile, {
-				props: { tone: 'neutral', tint: 'amber', icon: Calendar }
+				props: { tint: 'amber', icon: Calendar }
 			});
 			const el = container.querySelector('span') as HTMLElement;
 			expect(el.getAttribute('aria-hidden')).toBe('true');
@@ -80,7 +93,7 @@ describe('ToneTile', () => {
 
 		it('is an accessibly named img when a label is given', () => {
 			const { container } = render(ToneTile, {
-				props: { tone: 'neutral', tint: 'ink', icon: Calendar, label: 'Settings' }
+				props: { tint: 'ink', icon: Calendar, label: 'Settings' }
 			});
 			const el = container.querySelector('span') as HTMLElement;
 			expect(el.getAttribute('role')).toBe('img');

@@ -3,26 +3,25 @@
 	import { cn } from '$lib/utils';
 	import type { Tone, PosterTint } from './tones';
 
-	interface Props {
-		tone: Tone;
-		/**
-		 * Identity-color axis (fixed poster palette), additive to `tone` and
-		 * mutually exclusive with it: when `tint` is set it takes over the
-		 * tile's styling entirely (solid fixed poster chip — imagery rule,
-		 * identical in light/dark) and `tone` is ignored for rendering. `tone`
-		 * stays a required prop for type stability across the ~20 existing
-		 * semantic call sites; pass any value when using `tint` (e.g. 'neutral').
-		 * Use `tint` only for pure destination/identity coloring (e.g. the admin
-		 * quick-actions grid) — semantic meaning (danger/success/...) must keep
-		 * using `tone`.
-		 */
-		tint?: PosterTint;
+	interface Base {
 		icon: Component;
 		size?: 'sm' | 'md' | 'lg';
 		/** Accessible name; omit when the tile sits next to visible text (decorative). */
 		label?: string;
 		class?: string;
 	}
+	/**
+	 * `tone` (semantic, e.g. danger/success) and `tint` (fixed poster-palette
+	 * identity, e.g. the admin quick-actions grid) are additive and at least
+	 * one is required — this union enforces that at the type level. Three
+	 * legal shapes: tone-only, tint-only, or both (in which case `tint` wins —
+	 * see the tintClasses branch below; this lets a caller migrate from tone
+	 * to tint without an intermediate broken state). Fixed by PR 7's follow-up
+	 * round once `tint` gained callers with no semantic tone to fall back to —
+	 * an earlier "tone always required" design forced pointless filler tones.
+	 */
+	type Props = Base & ({ tone: Tone; tint?: PosterTint } | { tone?: Tone; tint: PosterTint });
+
 	const { tone, tint, icon: Icon, size = 'md', label, class: className = '' }: Props = $props();
 
 	// Soft tint + strong icon (replaces the app's hand-picked bg-blue-50
@@ -46,15 +45,20 @@
 	};
 	// Identity tint axis: SOLID fixed poster chips, same classes in both modes
 	// (imagery rule). Every pair is audited in scripts/audit-brand-themes.py
-	// TEXT_PAIRS (poster panels + "identity tile: ink icon on lavender").
+	// TEXT_PAIRS (poster panels + "identity tile: ink icon on lavender"). The
+	// chip itself is mode-inert, but the card/page surface it sits on is NOT
+	// (bg-card flips light<->dark) — ink-on-dark-card measured 1.04:1 and
+	// paper-on-light-card 1.15:1, both invisible boundaries. `ring-1 ring-inset
+	// ring-border` gives every tint chip a theme-aware edge so it reads against
+	// either surface; verified visually in both modes (see rebrand-report.md).
 	const tintClasses: Record<PosterTint, string> = {
-		purple: 'bg-poster-purple text-poster-white',
-		lavender: 'bg-poster-lavender text-poster-ink',
-		periwinkle: 'bg-poster-periwinkle text-poster-ink',
-		amber: 'bg-poster-amber text-poster-ink',
-		crimson: 'bg-poster-crimson-deep text-poster-white',
-		ink: 'bg-poster-ink text-poster-white',
-		paper: 'bg-poster-paper text-poster-ink'
+		purple: 'bg-poster-purple text-poster-white ring-1 ring-inset ring-border',
+		lavender: 'bg-poster-lavender text-poster-ink ring-1 ring-inset ring-border',
+		periwinkle: 'bg-poster-periwinkle text-poster-ink ring-1 ring-inset ring-border',
+		amber: 'bg-poster-amber text-poster-ink ring-1 ring-inset ring-border',
+		crimson: 'bg-poster-crimson-deep text-poster-white ring-1 ring-inset ring-border',
+		ink: 'bg-poster-ink text-poster-white ring-1 ring-inset ring-border',
+		paper: 'bg-poster-paper text-poster-ink ring-1 ring-inset ring-border'
 	};
 	const sizeClasses = {
 		sm: 'h-8 w-8 rounded-md',

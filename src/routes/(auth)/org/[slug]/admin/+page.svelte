@@ -30,7 +30,8 @@
 	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import ToneTile from '$lib/components/common/ToneTile.svelte';
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
-	import type { Tone, PosterTint } from '$lib/components/common/tones';
+	import type { PosterTint } from '$lib/components/common/tones';
+	import { assignQuickActionTints } from './quick-action-tints';
 	import { createQuery } from '@tanstack/svelte-query';
 	import {
 		eventpublicdiscoveryListEvents,
@@ -80,108 +81,83 @@
 	const eventsList = $derived(eventsQuery.data?.results ?? []);
 	const tiersList = $derived(tiersQuery.data ?? []);
 
-	// Identity-tint cycle for destinations with no semantic meaning of their
-	// own (ToneTile's tint axis, spec §4.3). Assigned in array order below via
-	// nextTint() so consecutive tiles never repeat a tint; the two tiles with
-	// real semantic meaning (Blacklist, Financials) use `tone` instead and are
-	// skipped from the cycle.
-	const TINTS: PosterTint[] = [
-		'purple',
-		'lavender',
-		'periwinkle',
-		'amber',
-		'crimson',
-		'ink',
-		'paper'
-	];
-
 	interface QuickAction {
 		title: string;
 		description: string;
 		icon: Component;
 		href: ResolvedPathname;
-		tone?: Tone;
-		tint?: PosterTint;
+		tint: PosterTint;
 		badge?: string;
 	}
 
 	// Quick action cards (derived to properly track organization reactivity).
 	// Kept in sync with the admin nav in +layout.svelte: same destinations, same
-	// owner-gating for the financial surfaces (financials + billing).
-	const quickActions = $derived.by((): QuickAction[] => {
-		let tintIndex = 0;
-		const nextTint = (): PosterTint => TINTS[tintIndex++ % TINTS.length];
-
-		return [
+	// owner-gating for the financial surfaces (financials + billing). Every
+	// tile is pure destination identity — navigating to Blacklist or
+	// Financials isn't itself danger/success, the Ban/Wallet icons + labels
+	// already carry that meaning — so all 14 go through the shared `tint`
+	// cycle (assignQuickActionTints) rather than ToneTile's semantic `tone`.
+	const quickActions: QuickAction[] = $derived.by((): QuickAction[] => {
+		const base: Omit<QuickAction, 'tint'>[] = [
 			{
 				title: m['orgAdmin.dashboard.quickActions.events.title'](),
 				description: m['orgAdmin.dashboard.quickActions.events.description'](),
 				icon: Calendar,
-				href: resolve('/(auth)/org/[slug]/admin/events', { slug: organization.slug }),
-				tint: nextTint()
+				href: resolve('/(auth)/org/[slug]/admin/events', { slug: organization.slug })
 			},
 			{
 				title: m['orgAdmin.dashboard.quickActions.eventSeries.title'](),
 				description: m['orgAdmin.dashboard.quickActions.eventSeries.description'](),
 				icon: Repeat,
-				href: resolve('/(auth)/org/[slug]/admin/event-series', { slug: organization.slug }),
-				tint: nextTint()
+				href: resolve('/(auth)/org/[slug]/admin/event-series', { slug: organization.slug })
 			},
 			{
 				title: m['orgAdmin.dashboard.quickActions.tickets.title'](),
 				description: m['orgAdmin.dashboard.quickActions.tickets.description'](),
 				icon: Ticket,
-				href: resolve('/(auth)/org/[slug]/admin/tickets', { slug: organization.slug }),
-				tint: nextTint()
+				href: resolve('/(auth)/org/[slug]/admin/tickets', { slug: organization.slug })
 			},
 			{
 				title: m['orgAdmin.dashboard.quickActions.discountCodes.title'](),
 				description: m['orgAdmin.dashboard.quickActions.discountCodes.description'](),
 				icon: Tag,
-				href: resolve('/(auth)/org/[slug]/admin/discount-codes', { slug: organization.slug }),
-				tint: nextTint()
+				href: resolve('/(auth)/org/[slug]/admin/discount-codes', { slug: organization.slug })
 			},
 			{
 				title: m['orgAdmin.dashboard.quickActions.members.title'](),
 				description: m['orgAdmin.dashboard.quickActions.members.description'](),
 				icon: Users,
-				href: resolve('/(auth)/org/[slug]/admin/members', { slug: organization.slug }),
-				tint: nextTint()
+				href: resolve('/(auth)/org/[slug]/admin/members', { slug: organization.slug })
 			},
 			{
 				title: m['orgAdmin.dashboard.quickActions.polls.title'](),
 				description: m['orgAdmin.dashboard.quickActions.polls.description'](),
 				icon: BarChart3,
-				href: resolve('/(auth)/org/[slug]/admin/polls', { slug: organization.slug }),
-				tint: nextTint()
+				href: resolve('/(auth)/org/[slug]/admin/polls', { slug: organization.slug })
 			},
 			{
 				title: m['orgAdmin.dashboard.quickActions.questionnaires.title'](),
 				description: m['orgAdmin.dashboard.quickActions.questionnaires.description'](),
 				icon: ClipboardList,
-				href: resolve('/(auth)/org/[slug]/admin/questionnaires', { slug: organization.slug }),
-				tint: nextTint()
+				href: resolve('/(auth)/org/[slug]/admin/questionnaires', { slug: organization.slug })
 			},
 			{
 				title: m['orgAdmin.dashboard.quickActions.resources.title'](),
 				description: m['orgAdmin.dashboard.quickActions.resources.description'](),
 				icon: FolderOpen,
-				href: resolve('/(auth)/org/[slug]/admin/resources', { slug: organization.slug }),
-				tint: nextTint()
+				href: resolve('/(auth)/org/[slug]/admin/resources', { slug: organization.slug })
 			},
 			{
 				title: m['orgAdmin.dashboard.quickActions.venues.title'](),
 				description: m['orgAdmin.dashboard.quickActions.venues.description'](),
 				icon: MapPin,
-				href: resolve('/(auth)/org/[slug]/admin/venues', { slug: organization.slug }),
-				tint: nextTint()
+				href: resolve('/(auth)/org/[slug]/admin/venues', { slug: organization.slug })
 			},
 			{
 				title: m['orgAdmin.dashboard.quickActions.blacklist.title'](),
 				description: m['orgAdmin.dashboard.quickActions.blacklist.description'](),
 				icon: Ban,
-				href: resolve('/(auth)/org/[slug]/admin/blacklist', { slug: organization.slug }),
-				tone: 'danger'
+				href: resolve('/(auth)/org/[slug]/admin/blacklist', { slug: organization.slug })
 			},
 			// Owner-only financial surfaces (mirrors the nav's isOwner gating)
 			...(data.isOwner
@@ -190,15 +166,13 @@
 							title: m['orgAdmin.dashboard.quickActions.billing.title'](),
 							description: m['orgAdmin.dashboard.quickActions.billing.description'](),
 							icon: CreditCard,
-							href: resolve('/(auth)/org/[slug]/admin/billing', { slug: organization.slug }),
-							tint: nextTint()
+							href: resolve('/(auth)/org/[slug]/admin/billing', { slug: organization.slug })
 						},
 						{
 							title: m['orgAdmin.dashboard.quickActions.financials.title'](),
 							description: m['orgAdmin.dashboard.quickActions.financials.description'](),
 							icon: Wallet,
-							href: resolve('/(auth)/org/[slug]/admin/financials', { slug: organization.slug }),
-							tone: 'success' as Tone
+							href: resolve('/(auth)/org/[slug]/admin/financials', { slug: organization.slug })
 						}
 					]
 				: []),
@@ -206,17 +180,16 @@
 				title: m['announcements.title'](),
 				description: m['announcements.pageDescription'](),
 				icon: Megaphone,
-				href: resolve('/(auth)/org/[slug]/admin/announcements', { slug: organization.slug }),
-				tint: nextTint()
+				href: resolve('/(auth)/org/[slug]/admin/announcements', { slug: organization.slug })
 			},
 			{
 				title: m['orgAdmin.dashboard.quickActions.settings.title'](),
 				description: m['orgAdmin.dashboard.quickActions.settings.description'](),
 				icon: Settings,
-				href: resolve('/(auth)/org/[slug]/admin/settings', { slug: organization.slug }),
-				tint: nextTint()
+				href: resolve('/(auth)/org/[slug]/admin/settings', { slug: organization.slug })
 			}
 		];
+		return assignQuickActionTints(base);
 	});
 
 	function navigateTo(href: ResolvedPathname, disabled = false) {
@@ -243,7 +216,6 @@
 <div class="space-y-6 px-4 md:px-0">
 	<PageHeader
 		title={m['orgAdmin.dashboard.pageTitle']({ orgName: organization.name })}
-		kicker={m['orgAdmin.layout.adminBadge']()}
 		subtitle={m['orgAdmin.dashboard.pageDescription']()}
 		volume="studio"
 	/>
@@ -295,14 +267,8 @@
 						</span>
 					{/if}
 
-					<!-- Icon: tint = pure destination identity, tone = semantic (danger/success) -->
-					<ToneTile
-						tone={action.tone ?? 'neutral'}
-						tint={action.tint}
-						icon={Icon}
-						size="lg"
-						class="mb-4"
-					/>
+					<!-- Every tile is pure destination identity -> tint, not tone (see quickActions above) -->
+					<ToneTile tint={action.tint} icon={Icon} size="lg" class="mb-4" />
 
 					<!-- Content -->
 					<div class="space-y-1">

@@ -3,7 +3,7 @@
 	import type { HTMLAttributes } from 'svelte/elements';
 	import { cn } from '$lib/utils';
 
-	interface Props extends HTMLAttributes<HTMLElement> {
+	interface Props extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
 		/** Already-translated strings — i18n stays at the call site. */
 		title: string;
 		kicker?: string;

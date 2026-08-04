@@ -161,12 +161,17 @@
 						<Menu class="h-5 w-5" />
 					</button>
 
-					<h1 class="min-w-0 truncate text-base font-extrabold tracking-tight sm:text-xl">
+					<!-- Not a heading: this sticky top bar's org name is chrome, not page
+					     content — every admin page renders its own h1 (PageHeader in the
+					     dashboard; PRs 8-10 for the rest), so a second h1 here would give
+					     each admin page two top-level headings. No e2e spec asserts a
+					     heading role here (grepped tests/e2e before demoting). -->
+					<p class="min-w-0 truncate text-base font-extrabold tracking-tight sm:text-xl">
 						{data.organization.name}
 						<span class="ml-2 text-sm font-normal text-muted-foreground"
 							>{m['orgAdmin.layout.adminBadge']()}</span
 						>
-					</h1>
+					</p>
 				</div>
 
 				<!-- Right: Role Badge -->
