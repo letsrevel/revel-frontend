@@ -8,7 +8,7 @@
 	} from '$lib/api/generated/sdk.gen';
 	import InvitationCard from '$lib/components/invitations/InvitationCard.svelte';
 	import InvitationRequestCard from '$lib/components/invitations/InvitationRequestCard.svelte';
-	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import DashboardBandLayout from '$lib/components/dashboard/DashboardBandLayout.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { Mail, Send, Loader2, Filter } from '@lucide/svelte';
 	import { page } from '$app/state';
@@ -141,18 +141,18 @@
 	<meta name="description" content={m['dashboard.invitations.description']()} />
 </svelte:head>
 
-<div class="container mx-auto px-4 py-6 md:py-8">
-	<!-- Page Header -->
-	<PageHeader
-		title={m['dashboard.invitations.title']()}
-		subtitle={m['dashboard.invitations.description']()}
-		kicker={m['userMenu.dashboard']()}
-		volume="celebration"
-		class="mb-8"
-	/>
-
+<!-- Celebration band + floating tab card (uplift); see DashboardBandLayout for
+     the band's contrast contract. The tab strip is what meets the band's
+     bottom edge, so it gets a card surface of its own — a bare underline rule
+     landing on the cut reads as debris. Tab semantics (aria-current, the
+     switchTab handler, the URL params) are untouched. -->
+<DashboardBandLayout
+	title={m['dashboard.invitations.title']()}
+	subtitle={m['dashboard.invitations.description']()}
+	kicker={m['userMenu.dashboard']()}
+>
 	<!-- Tabs -->
-	<div class="mb-6">
+	<div class="mb-6 rounded-lg border-2 border-border bg-card px-4 shadow-poster sm:px-6">
 		<div class="border-b border-border">
 			<nav class="-mb-px flex gap-6" aria-label={m['dashboard.invitations.tabs']()}>
 				<button
@@ -395,4 +395,4 @@
 			{/if}
 		</div>
 	{/if}
-</div>
+</DashboardBandLayout>
