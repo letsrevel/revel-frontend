@@ -40,25 +40,23 @@
 <div class="container mx-auto flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8">
 	<div class="w-full max-w-md space-y-8">
 		{#if success}
-			<div class="text-center">
-				<div
-					class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-950"
+			<!-- Hand-composed centerpiece (not the EmptyState primitive, which caps
+			     at h2/h3): this page's only heading must be an h1. role="status"
+			     because this state is reached in-place (form submit, no
+			     navigation) — same live-region treatment the reset pages use for
+			     their success box. -->
+			<div role="status" class="text-center">
+				<span
+					aria-hidden="true"
+					class="mx-auto flex h-14 w-14 -rotate-2 items-center justify-center rounded-2xl bg-success text-success-foreground shadow-sm"
 				>
-					<CheckCircle class="h-8 w-8 text-green-600 dark:text-green-400" aria-hidden="true" />
-				</div>
-				<h1 class="text-3xl font-bold tracking-tight">
+					<CheckCircle class="h-7 w-7" />
+				</span>
+				<h1 class="mt-4 text-3xl font-black leading-[1.12] sm:text-4xl">
 					{m['confirmEmailChange.success_heading']()}
 				</h1>
-			</div>
-
-			<div
-				role="status"
-				class="space-y-3 rounded-md border border-green-500 bg-green-50 p-6 dark:bg-green-950"
-			>
-				<p class="text-sm font-medium text-green-800 dark:text-green-200">
+				<p class="mt-1.5 text-muted-foreground">
 					{m['confirmEmailChange.success_body']({ new_email: newEmail })}
-				</p>
-				<p class="text-sm text-green-700 dark:text-green-300">
 					{m['confirmEmailChange.success_signoutNotice']()}
 				</p>
 			</div>
@@ -72,16 +70,21 @@
 				</a>
 			</div>
 		{:else if !token}
+			<!-- Hand-composed centerpiece: this page's only heading must be an h1.
+			     No poster tint for a broken/invalid link — "warning" (amber/ink,
+			     audited pair) is the closest honest match without adopting the
+			     full destructive framing reserved for confirm-deletion. -->
 			<div class="text-center">
-				<div
-					class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10"
+				<span
+					aria-hidden="true"
+					class="mx-auto flex h-14 w-14 -rotate-2 items-center justify-center rounded-2xl bg-poster-amber text-poster-ink shadow-sm"
 				>
-					<AlertTriangle class="h-8 w-8 text-destructive" aria-hidden="true" />
-				</div>
-				<h1 class="text-3xl font-bold tracking-tight">
+					<AlertTriangle class="h-7 w-7" />
+				</span>
+				<h1 class="mt-4 text-3xl font-black leading-[1.12] sm:text-4xl">
 					{m['confirmEmailChange.invalidLink_heading']()}
 				</h1>
-				<p class="mt-2 text-muted-foreground">{m['confirmEmailChange.invalidLink_body']()}</p>
+				<p class="mt-1.5 text-muted-foreground">{m['confirmEmailChange.invalidLink_body']()}</p>
 			</div>
 
 			<div class="text-center">
@@ -93,39 +96,40 @@
 				</a>
 			</div>
 		{:else}
+			<!-- Hand-composed centerpiece: this page's only heading must be an h1. -->
 			<div class="text-center">
-				<div
-					class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10"
+				<span
+					aria-hidden="true"
+					class="mx-auto flex h-14 w-14 -rotate-2 items-center justify-center rounded-2xl bg-poster-purple text-poster-white shadow-sm"
 				>
-					<Mail class="h-8 w-8 text-primary" aria-hidden="true" />
-				</div>
-				<h1 class="text-3xl font-bold tracking-tight">
+					<Mail class="h-7 w-7" />
+				</span>
+				<h1 class="mt-4 text-3xl font-black leading-[1.12] sm:text-4xl">
 					{m['confirmEmailChange.confirm_heading']()}
 				</h1>
-				<p class="mt-2 text-muted-foreground">{m['confirmEmailChange.confirm_intro']()}</p>
+				<p class="mt-1.5 text-muted-foreground">{m['confirmEmailChange.confirm_intro']()}</p>
 			</div>
 
+			<!-- Warning box: highlight/20 + border are decorative; title/body stay
+			     on foreground/muted-foreground, both already-audited pairs. -->
 			<div
-				class="rounded-md border border-amber-200 bg-amber-50 p-6 dark:border-amber-900 dark:bg-amber-950"
+				class="rounded-md border border-highlight/30 bg-highlight/20 p-6 dark:border-highlight/40 dark:bg-highlight/25"
 				role="region"
 				aria-labelledby="confirmEmailChange_warning_title"
 			>
 				<div class="flex items-start gap-3">
 					<AlertTriangle
-						class="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-700 dark:text-amber-400"
+						class="mt-0.5 h-5 w-5 flex-shrink-0 text-highlight-foreground dark:text-highlight"
 						aria-hidden="true"
 					/>
 					<div class="flex-1 space-y-2">
-						<h2
-							id="confirmEmailChange_warning_title"
-							class="font-semibold text-amber-900 dark:text-amber-200"
-						>
+						<h2 id="confirmEmailChange_warning_title" class="font-semibold text-foreground">
 							{m['confirmEmailChange.confirm_warningTitle']()}
 						</h2>
-						<p class="text-sm text-amber-800 dark:text-amber-200">
+						<p class="text-sm text-muted-foreground">
 							{m['confirmEmailChange.confirm_warningBody']()}
 						</p>
-						<ul class="space-y-1 text-sm text-amber-800 dark:text-amber-200">
+						<ul class="space-y-1 text-sm text-muted-foreground">
 							<li class="flex gap-2">
 								<span aria-hidden="true">•</span>
 								<span>{m['confirmEmailChange.confirm_warningBullet1']()}</span>

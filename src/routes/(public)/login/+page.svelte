@@ -7,6 +7,7 @@
 	import type { ActionData, PageData } from './$types';
 	import TwoFactorInput from '$lib/components/forms/TwoFactorInput.svelte';
 	import { Eye, EyeOff, Loader2, ArrowLeft, ExternalLink } from '@lucide/svelte';
+	import { Card, CardContent } from '$lib/components/ui/card';
 	import { appStore } from '$lib/stores/app.svelte';
 	import {
 		DEMO_ACCOUNTS,
@@ -105,10 +106,13 @@
 <SeoHead config={data.seo} />
 
 <div class="container mx-auto flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8">
-	<div class="w-full max-w-md space-y-8">
+	<div class="w-full max-w-md space-y-6">
 		<!-- Header -->
 		<div class="text-center">
-			<h1 class="text-3xl font-bold tracking-tight">
+			<p class="text-sm font-extrabold uppercase tracking-[0.12em] text-primary">
+				{m['login.kicker']()}
+			</p>
+			<h1 class="mt-1 text-3xl font-black leading-[1.12] sm:text-4xl">
 				{requires2FA ? m['login.twoFactorAuth']() : m['login.welcomeBack']()}
 			</h1>
 			<p class="mt-2 text-muted-foreground">
@@ -116,305 +120,314 @@
 			</p>
 		</div>
 
-		<!-- Error Summary -->
-		{#if errors.form}
-			<div role="alert" class="rounded-md border border-destructive bg-destructive/10 p-4">
-				<p class="text-sm font-medium text-destructive">{errors.form}</p>
-			</div>
-		{/if}
-
-		{#if !requires2FA}
-			{#if useDemoDropdown}
-				<!-- Demo Mode: Account Selector -->
-				<div class="space-y-6">
-					<div
-						class="rounded-md border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-950"
-					>
-						<p class="text-sm text-orange-900 dark:text-orange-100">
-							{m['login.demoNotice']()}
-						</p>
-						<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
-						<a
-							href={DEMO_ACCOUNTS_README_URL}
-							target="_blank"
-							rel="noopener noreferrer"
-							class="mt-2 inline-flex items-center gap-1 text-sm font-medium text-orange-700 underline-offset-4 hover:underline dark:text-orange-300"
-						>
-							{m['login.viewAllTestAccounts']()}
-							<ExternalLink class="h-3 w-3" aria-hidden="true" />
-						</a>
-						<!-- eslint-enable svelte/no-navigation-without-resolve -->
-					</div>
-
-					<form
-						method="POST"
-						action="?/login{returnUrlSuffix}"
-						use:enhance={handleSubmit}
-						class="space-y-4"
-					>
-						<!-- Demo Account Selector -->
-						<div class="space-y-2">
-							<label for="demo-account" class="block text-sm font-medium">
-								{m['login.selectTestAccount']()}
-							</label>
-							<select
-								id="demo-account"
-								bind:value={selectedAccountEmail}
-								onchange={() => selectDemoAccount(selectedAccountEmail)}
-								disabled={isSubmitting}
-								class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-							>
-								<option value="">{m['login.chooseAccount']()}</option>
-								{#each DEMO_ACCOUNTS as account (account.email)}
-									<option value={account.email}>
-										{account.name} ({account.role}{account.organization
-											? ` - ${account.organization}`
-											: ''})
-									</option>
-								{/each}
-							</select>
-						</div>
-
-						<!-- Hidden inputs for form submission -->
-						<input type="hidden" name="email" value={email} />
-						<input type="hidden" name="password" value={password} />
-						<input type="hidden" name="rememberMe" value={rememberMe ? 'on' : ''} />
-
-						<!-- Selected Account Info -->
-						{#if selectedAccountEmail}
-							{@const account = DEMO_ACCOUNTS.find((a) => a.email === selectedAccountEmail)}
-							{#if account}
-								<div class="rounded-md border border-muted bg-muted/30 p-3">
-									<p class="text-sm font-medium">{account.name}</p>
-									<p class="mt-1 text-xs text-muted-foreground">{account.email}</p>
-									{#if account.description}
-										<p class="mt-1 text-xs text-muted-foreground">{account.description}</p>
-									{/if}
-								</div>
-							{/if}
-						{/if}
-
-						<!-- Submit Button -->
-						<button
-							type="submit"
-							disabled={isSubmitting || !selectedAccountEmail}
-							class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-						>
-							{#if isSubmitting}
-								<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-								<span>{m['login.signingIn']()}</span>
-							{:else}
-								<span
-									>{m['login.signInAs']()}
-									{selectedAccountEmail
-										? DEMO_ACCOUNTS.find((a) => a.email === selectedAccountEmail)?.name
-										: 'test user'}</span
-								>
-							{/if}
-						</button>
-					</form>
-
-					<!-- Toggle to the real email/password form -->
-					<div class="text-center text-sm">
-						<button
-							type="button"
-							onclick={() => {
-								showLoginForm = true;
-								// The toggle unmounts itself in the swap — move focus to the
-								// revealed form so keyboard users aren't dropped on <body>.
-								// tick(), not rAF: the input only exists after the swap
-								// flushes, but rAF is paint-bound and under load can fire
-								// seconds late, stealing focus from a field the user (or a
-								// password manager) is already typing into — the same
-								// keystroke-spray bug as the register nudge (#608/#609).
-								// tick()'s microtask resolves before any further input
-								// events can interleave.
-								void tick().then(() => document.getElementById('email')?.focus());
-							}}
-							class="text-primary underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-						>
-							{m['login.showLoginForm']()}
-						</button>
-					</div>
-				</div>
-			{:else}
-				<!-- Standard Login Form -->
-				<form
-					method="POST"
-					action="?/login{returnUrlSuffix}"
-					use:enhance={handleSubmit}
-					class="space-y-6"
-				>
-					<!-- Email Field -->
-					<div class="space-y-2">
-						<label for="email" class="block text-sm font-medium">
-							{m['login.emailAddress']()}
-						</label>
-						<input
-							id="email"
-							name="email"
-							type="email"
-							autocomplete="email"
-							required
-							bind:value={email}
-							aria-invalid={!!errors.email}
-							aria-describedby={errors.email ? 'email-error' : undefined}
-							disabled={isSubmitting}
-							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {errors.email
-								? 'border-destructive'
-								: ''}"
-							placeholder={m['login.emailPlaceholder']()}
-						/>
-						{#if errors.email}
-							<p id="email-error" class="text-sm text-destructive" role="alert">
-								{errors.email}
-							</p>
-						{/if}
-					</div>
-
-					<!-- Password Field -->
-					<div class="space-y-2">
-						<div class="flex items-center justify-between">
-							<label for="password" class="block text-sm font-medium">
-								{m['login.password']()}
-							</label>
-							<a
-								href={resolve('/(public)/password-reset', {})}
-								class="text-sm text-primary underline-offset-4 hover:underline"
-							>
-								{m['login.forgotPassword']()}
-							</a>
-						</div>
-						<div class="relative">
-							<input
-								id="password"
-								name="password"
-								type={showPassword ? 'text' : 'password'}
-								autocomplete="current-password"
-								required
-								bind:value={password}
-								onpaste={() => {
-									// Ensure paste always works on mobile
-									// This explicit handler prevents any interference from browser autofill
-									// that might block paste operations on iOS Safari
-								}}
-								aria-invalid={!!errors.password}
-								aria-describedby={errors.password ? 'password-error' : undefined}
-								disabled={isSubmitting}
-								class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {errors.password
-									? 'border-destructive'
-									: ''}"
-								placeholder={m['login.passwordPlaceholder']()}
-							/>
-							<button
-								type="button"
-								onclick={() => (showPassword = !showPassword)}
-								class="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-								aria-label={showPassword ? m['login.hidePassword']() : m['login.showPassword']()}
-							>
-								{#if showPassword}
-									<EyeOff class="h-4 w-4" aria-hidden="true" />
-								{:else}
-									<Eye class="h-4 w-4" aria-hidden="true" />
-								{/if}
-							</button>
-						</div>
-						{#if errors.password}
-							<p id="password-error" class="text-sm text-destructive" role="alert">
-								{errors.password}
-							</p>
-						{/if}
-					</div>
-
-					<!-- Remember Me Checkbox -->
-					<div class="flex items-center gap-2">
-						<input
-							id="rememberMe"
-							name="rememberMe"
-							type="checkbox"
-							bind:checked={rememberMe}
-							disabled={isSubmitting}
-							class="h-4 w-4 rounded border-input text-primary transition-colors focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-						/>
-						<label for="rememberMe" class="text-sm"> {m['login.rememberMe']()} </label>
-					</div>
-
-					<!-- Submit Button -->
-					<button
-						type="submit"
-						disabled={isSubmitting}
-						class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-					>
-						{#if isSubmitting}
-							<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-							<span>{m['login.signingIn']()}</span>
-						{:else}
-							<span>{m['login.signIn']()}</span>
-						{/if}
-					</button>
-				</form>
-
-				{#if isDemoMode}
-					<!-- Inverse toggle back to the demo-account dropdown -->
-					<div class="mt-4 text-center text-sm">
-						<button
-							type="button"
-							onclick={() => {
-								showLoginForm = false;
-								// Same focus hand-off as the inverse toggle above.
-								requestAnimationFrame(() => document.getElementById('demo-account')?.focus());
-							}}
-							class="text-primary underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-						>
-							{m['login.useADemoAccount']()}
-						</button>
+		<Card>
+			<CardContent class="space-y-6 p-6 sm:p-8">
+				<!-- Error Summary -->
+				{#if errors.form}
+					<div role="alert" class="rounded-md border border-destructive bg-destructive/10 p-4">
+						<p class="text-sm font-medium text-destructive">{errors.form}</p>
 					</div>
 				{/if}
-			{/if}
-		{:else}
-			<!-- 2FA Verification Form -->
-			<form
-				method="POST"
-				action="?/verify2FA{returnUrlSuffix}"
-				use:enhance={handleSubmit}
-				class="space-y-6"
-			>
-				<input type="hidden" name="tempToken" value={tempToken} />
-				<input type="hidden" name="rememberMe" value={rememberMe ? 'true' : 'false'} />
 
-				<!-- 2FA Code Input -->
-				<TwoFactorInput bind:value={otpCode} error={errors.code} disabled={isSubmitting} />
+				{#if !requires2FA}
+					{#if useDemoDropdown}
+						<!-- Demo Mode: Account Selector -->
+						<div class="space-y-6">
+							<!-- highlight/20 + highlight/30 border are decorative (no text-contrast
+							     requirement); the body copy and link stay on the default foreground/
+							     primary tokens, both already audited pairs. -->
+							<div
+								class="rounded-md border border-highlight/30 bg-highlight/20 p-4 dark:border-highlight/40 dark:bg-highlight/25"
+							>
+								<p class="text-sm text-foreground">
+									{m['login.demoNotice']()}
+								</p>
+								<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
+								<a
+									href={DEMO_ACCOUNTS_README_URL}
+									target="_blank"
+									rel="noopener noreferrer"
+									class="mt-2 inline-flex items-center gap-1 text-sm font-medium text-primary underline-offset-4 hover:underline"
+								>
+									{m['login.viewAllTestAccounts']()}
+									<ExternalLink class="h-3 w-3" aria-hidden="true" />
+								</a>
+								<!-- eslint-enable svelte/no-navigation-without-resolve -->
+							</div>
 
-				<!-- Hidden input for form submission -->
-				<input type="hidden" name="code" value={otpCode} />
+							<form
+								method="POST"
+								action="?/login{returnUrlSuffix}"
+								use:enhance={handleSubmit}
+								class="space-y-4"
+							>
+								<!-- Demo Account Selector -->
+								<div class="space-y-2">
+									<label for="demo-account" class="block text-sm font-medium">
+										{m['login.selectTestAccount']()}
+									</label>
+									<select
+										id="demo-account"
+										bind:value={selectedAccountEmail}
+										onchange={() => selectDemoAccount(selectedAccountEmail)}
+										disabled={isSubmitting}
+										class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+									>
+										<option value="">{m['login.chooseAccount']()}</option>
+										{#each DEMO_ACCOUNTS as account (account.email)}
+											<option value={account.email}>
+												{account.name} ({account.role}{account.organization
+													? ` - ${account.organization}`
+													: ''})
+											</option>
+										{/each}
+									</select>
+								</div>
 
-				<!-- Action Buttons -->
-				<div class="space-y-3">
-					<button
-						type="submit"
-						disabled={isSubmitting || otpCode.length !== 6}
-						class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-					>
-						{#if isSubmitting}
-							<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-							<span>{m['login.verifying']()}</span>
-						{:else}
-							<span>{m['login.verifyAndSignIn']()}</span>
+								<!-- Hidden inputs for form submission -->
+								<input type="hidden" name="email" value={email} />
+								<input type="hidden" name="password" value={password} />
+								<input type="hidden" name="rememberMe" value={rememberMe ? 'on' : ''} />
+
+								<!-- Selected Account Info -->
+								{#if selectedAccountEmail}
+									{@const account = DEMO_ACCOUNTS.find((a) => a.email === selectedAccountEmail)}
+									{#if account}
+										<div class="rounded-md border border-muted bg-muted/30 p-3">
+											<p class="text-sm font-medium">{account.name}</p>
+											<p class="mt-1 text-xs text-muted-foreground">{account.email}</p>
+											{#if account.description}
+												<p class="mt-1 text-xs text-muted-foreground">{account.description}</p>
+											{/if}
+										</div>
+									{/if}
+								{/if}
+
+								<!-- Submit Button -->
+								<button
+									type="submit"
+									disabled={isSubmitting || !selectedAccountEmail}
+									class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+								>
+									{#if isSubmitting}
+										<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
+										<span>{m['login.signingIn']()}</span>
+									{:else}
+										<span
+											>{m['login.signInAs']()}
+											{selectedAccountEmail
+												? DEMO_ACCOUNTS.find((a) => a.email === selectedAccountEmail)?.name
+												: 'test user'}</span
+										>
+									{/if}
+								</button>
+							</form>
+
+							<!-- Toggle to the real email/password form -->
+							<div class="text-center text-sm">
+								<button
+									type="button"
+									onclick={() => {
+										showLoginForm = true;
+										// The toggle unmounts itself in the swap — move focus to the
+										// revealed form so keyboard users aren't dropped on <body>.
+										// tick(), not rAF: the input only exists after the swap
+										// flushes, but rAF is paint-bound and under load can fire
+										// seconds late, stealing focus from a field the user (or a
+										// password manager) is already typing into — the same
+										// keystroke-spray bug as the register nudge (#608/#609).
+										// tick()'s microtask resolves before any further input
+										// events can interleave.
+										void tick().then(() => document.getElementById('email')?.focus());
+									}}
+									class="text-primary underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+								>
+									{m['login.showLoginForm']()}
+								</button>
+							</div>
+						</div>
+					{:else}
+						<!-- Standard Login Form -->
+						<form
+							method="POST"
+							action="?/login{returnUrlSuffix}"
+							use:enhance={handleSubmit}
+							class="space-y-6"
+						>
+							<!-- Email Field -->
+							<div class="space-y-2">
+								<label for="email" class="block text-sm font-medium">
+									{m['login.emailAddress']()}
+								</label>
+								<input
+									id="email"
+									name="email"
+									type="email"
+									autocomplete="email"
+									required
+									bind:value={email}
+									aria-invalid={!!errors.email}
+									aria-describedby={errors.email ? 'email-error' : undefined}
+									disabled={isSubmitting}
+									class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {errors.email
+										? 'border-destructive'
+										: ''}"
+									placeholder={m['login.emailPlaceholder']()}
+								/>
+								{#if errors.email}
+									<p id="email-error" class="text-sm text-destructive" role="alert">
+										{errors.email}
+									</p>
+								{/if}
+							</div>
+
+							<!-- Password Field -->
+							<div class="space-y-2">
+								<div class="flex items-center justify-between">
+									<label for="password" class="block text-sm font-medium">
+										{m['login.password']()}
+									</label>
+									<a
+										href={resolve('/(public)/password-reset', {})}
+										class="text-sm text-primary underline-offset-4 hover:underline"
+									>
+										{m['login.forgotPassword']()}
+									</a>
+								</div>
+								<div class="relative">
+									<input
+										id="password"
+										name="password"
+										type={showPassword ? 'text' : 'password'}
+										autocomplete="current-password"
+										required
+										bind:value={password}
+										onpaste={() => {
+											// Ensure paste always works on mobile
+											// This explicit handler prevents any interference from browser autofill
+											// that might block paste operations on iOS Safari
+										}}
+										aria-invalid={!!errors.password}
+										aria-describedby={errors.password ? 'password-error' : undefined}
+										disabled={isSubmitting}
+										class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {errors.password
+											? 'border-destructive'
+											: ''}"
+										placeholder={m['login.passwordPlaceholder']()}
+									/>
+									<button
+										type="button"
+										onclick={() => (showPassword = !showPassword)}
+										class="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+										aria-label={showPassword
+											? m['login.hidePassword']()
+											: m['login.showPassword']()}
+									>
+										{#if showPassword}
+											<EyeOff class="h-4 w-4" aria-hidden="true" />
+										{:else}
+											<Eye class="h-4 w-4" aria-hidden="true" />
+										{/if}
+									</button>
+								</div>
+								{#if errors.password}
+									<p id="password-error" class="text-sm text-destructive" role="alert">
+										{errors.password}
+									</p>
+								{/if}
+							</div>
+
+							<!-- Remember Me Checkbox -->
+							<div class="flex items-center gap-2">
+								<input
+									id="rememberMe"
+									name="rememberMe"
+									type="checkbox"
+									bind:checked={rememberMe}
+									disabled={isSubmitting}
+									class="h-4 w-4 rounded border-input text-primary transition-colors focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+								/>
+								<label for="rememberMe" class="text-sm"> {m['login.rememberMe']()} </label>
+							</div>
+
+							<!-- Submit Button -->
+							<button
+								type="submit"
+								disabled={isSubmitting}
+								class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+							>
+								{#if isSubmitting}
+									<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
+									<span>{m['login.signingIn']()}</span>
+								{:else}
+									<span>{m['login.signIn']()}</span>
+								{/if}
+							</button>
+						</form>
+
+						{#if isDemoMode}
+							<!-- Inverse toggle back to the demo-account dropdown -->
+							<div class="mt-4 text-center text-sm">
+								<button
+									type="button"
+									onclick={() => {
+										showLoginForm = false;
+										// Same focus hand-off as the inverse toggle above.
+										requestAnimationFrame(() => document.getElementById('demo-account')?.focus());
+									}}
+									class="text-primary underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+								>
+									{m['login.useADemoAccount']()}
+								</button>
+							</div>
 						{/if}
-					</button>
-
-					<button
-						type="button"
-						onclick={backToLogin}
-						disabled={isSubmitting}
-						class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+					{/if}
+				{:else}
+					<!-- 2FA Verification Form -->
+					<form
+						method="POST"
+						action="?/verify2FA{returnUrlSuffix}"
+						use:enhance={handleSubmit}
+						class="space-y-6"
 					>
-						<ArrowLeft class="h-4 w-4" aria-hidden="true" />
-						<span>{m['login.backToLogin']()}</span>
-					</button>
-				</div>
-			</form>
-		{/if}
+						<input type="hidden" name="tempToken" value={tempToken} />
+						<input type="hidden" name="rememberMe" value={rememberMe ? 'true' : 'false'} />
+
+						<!-- 2FA Code Input -->
+						<TwoFactorInput bind:value={otpCode} error={errors.code} disabled={isSubmitting} />
+
+						<!-- Hidden input for form submission -->
+						<input type="hidden" name="code" value={otpCode} />
+
+						<!-- Action Buttons -->
+						<div class="space-y-3">
+							<button
+								type="submit"
+								disabled={isSubmitting || otpCode.length !== 6}
+								class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+							>
+								{#if isSubmitting}
+									<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
+									<span>{m['login.verifying']()}</span>
+								{:else}
+									<span>{m['login.verifyAndSignIn']()}</span>
+								{/if}
+							</button>
+
+							<button
+								type="button"
+								onclick={backToLogin}
+								disabled={isSubmitting}
+								class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+							>
+								<ArrowLeft class="h-4 w-4" aria-hidden="true" />
+								<span>{m['login.backToLogin']()}</span>
+							</button>
+						</div>
+					</form>
+				{/if}
+			</CardContent>
+		</Card>
 
 		<!-- Register Link -->
 		{#if !requires2FA}

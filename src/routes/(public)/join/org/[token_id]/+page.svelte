@@ -19,6 +19,7 @@
 	import { getExpirationDisplay, formatTokenUsage } from '$lib/utils/tokens';
 	import { escapeHtml } from '$lib/utils/sanitize';
 	import { backendMessage } from '$lib/utils/api-error-detail';
+	import Sticker from '$lib/components/brand/Sticker.svelte';
 
 	const { data }: { data: PageData } = $props();
 
@@ -110,8 +111,8 @@
 	{#if rejection}
 		<Card class="w-full max-w-md">
 			<CardHeader class="text-center">
-				<CardTitle class="text-2xl">{m['joinOrgPage.rejectedTitle']()}</CardTitle>
-				<CardDescription class="text-lg">{rejectionBody}</CardDescription>
+				<CardTitle class="text-3xl font-black">{m['joinOrgPage.rejectedTitle']()}</CardTitle>
+				<CardDescription class="text-lg font-bold">{rejectionBody}</CardDescription>
 			</CardHeader>
 			<CardContent class="space-y-6 text-center">
 				<p class="text-sm text-muted-foreground">{m['joinOrgPage.rejectedHint']()}</p>
@@ -130,8 +131,14 @@
 						class="mx-auto mb-4 h-20 w-20 rounded-full object-cover"
 					/>
 				{/if}
-				<CardTitle class="text-2xl">{m['joinOrgPage.invitedTitle']()}</CardTitle>
-				<CardDescription class="text-lg">
+				<p class="text-sm font-extrabold uppercase tracking-[0.12em] text-primary">
+					{m['joinOrgPage.kicker']()}
+				</p>
+				<CardTitle class="mt-1 flex items-center justify-center gap-2 text-3xl font-black">
+					{m['joinOrgPage.invitedTitle']()}
+					<span aria-hidden="true"><Sticker tint="ink" rotate={-3}>🎉</Sticker></span>
+				</CardTitle>
+				<CardDescription class="text-lg font-bold">
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -- API-derived organization name neutralized via escapeHtml before interpolation into a developer-authored i18n template -->
 					{@html m['joinOrgPage.joinSubtitle']({
 						organizationName: escapeHtml(token.organization_name)
@@ -167,33 +174,33 @@
 					<ul class="space-y-1 text-sm text-muted-foreground">
 						{#if token.grants_staff_status}
 							<li class="flex items-center gap-2">
-								<CheckCircle class="h-4 w-4 text-green-600" aria-hidden="true" />
+								<CheckCircle class="h-4 w-4 text-success" aria-hidden="true" />
 								<span>{m['joinOrgPage.benefit_staffAccess']()}</span>
 							</li>
 							<li class="flex items-center gap-2">
-								<CheckCircle class="h-4 w-4 text-green-600" aria-hidden="true" />
+								<CheckCircle class="h-4 w-4 text-success" aria-hidden="true" />
 								<span>{m['joinOrgPage.benefit_manageEventsMembers']()}</span>
 							</li>
 						{:else if token.grants_membership}
 							<li class="flex items-center gap-2">
-								<CheckCircle class="h-4 w-4 text-green-600" aria-hidden="true" />
+								<CheckCircle class="h-4 w-4 text-success" aria-hidden="true" />
 								<span>{m['joinOrgPage.benefit_memberAccess']()}</span>
 							</li>
 							{#if token.membership_tier_name}
 								<li class="flex items-center gap-2">
-									<CheckCircle class="h-4 w-4 text-green-600" aria-hidden="true" />
+									<CheckCircle class="h-4 w-4 text-success" aria-hidden="true" />
 									<span>
 										{m['joinOrgPage.benefit_memberTier']({ tierName: token.membership_tier_name })}
 									</span>
 								</li>
 							{/if}
 							<li class="flex items-center gap-2">
-								<CheckCircle class="h-4 w-4 text-green-600" aria-hidden="true" />
+								<CheckCircle class="h-4 w-4 text-success" aria-hidden="true" />
 								<span>{m['joinOrgPage.benefit_membersOnlyEvents']()}</span>
 							</li>
 						{:else}
 							<li class="flex items-center gap-2">
-								<CheckCircle class="h-4 w-4 text-green-600" aria-hidden="true" />
+								<CheckCircle class="h-4 w-4 text-success" aria-hidden="true" />
 								<span>{m['joinOrgPage.benefit_viewDetails']()}</span>
 							</li>
 						{/if}

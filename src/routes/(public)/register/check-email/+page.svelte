@@ -2,7 +2,7 @@
 	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
-	import { Mail, Loader2 } from '@lucide/svelte';
+	import { Mail, Loader2, AlertTriangle } from '@lucide/svelte';
 	import { accountResendVerificationEmail } from '$lib/api/generated/sdk.gen';
 
 	const email = $derived($page.url.searchParams.get('email') || '');
@@ -59,19 +59,23 @@
 
 <div class="container mx-auto flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8">
 	<div class="w-full max-w-md space-y-8 text-center">
-		<!-- Icon -->
-		<div class="flex justify-center">
-			<div class="rounded-full bg-primary/10 p-6">
-				<Mail class="h-12 w-12 text-primary" aria-hidden="true" />
-			</div>
-		</div>
-
-		<!-- Header -->
-		<div class="space-y-2">
-			<h1 class="text-3xl font-bold tracking-tight">{m['checkEmailPage.checkYourEmail']()}</h1>
-			<p class="text-muted-foreground">{m['checkEmailPage.verificationLink']()}</p>
+		<div>
+			<!-- Hand-composed centerpiece (not the EmptyState primitive, which caps
+			     at h2/h3): this page's only heading must be an h1. Chip recipe
+			     mirrors EmptyState's internal poster-tinted chip (audited pair:
+			     bg-poster-purple/text-poster-white). -->
+			<span
+				aria-hidden="true"
+				class="mx-auto flex h-14 w-14 -rotate-2 items-center justify-center rounded-2xl bg-poster-purple text-poster-white shadow-sm"
+			>
+				<Mail class="h-7 w-7" />
+			</span>
+			<h1 class="mt-4 text-3xl font-black leading-[1.12] sm:text-4xl">
+				{m['checkEmailPage.checkYourEmail']()}
+			</h1>
+			<p class="mt-1.5 text-muted-foreground">{m['checkEmailPage.verificationLink']()}</p>
 			{#if email}
-				<p class="font-medium">{email}</p>
+				<p class="mt-1.5 font-medium">{email}</p>
 			{/if}
 		</div>
 
@@ -80,11 +84,16 @@
 			<p>{m['checkEmailPage.clickLink']()}</p>
 		</div>
 
-		<!-- Spam Warning -->
+		<!-- Spam Warning: highlight/20 + border are decorative; body text stays on
+		     the default foreground token (already-audited pair). -->
 		<div
-			class="rounded-md border border-amber-500/50 bg-amber-50 p-4 text-left dark:bg-amber-950/30"
+			class="flex items-start gap-3 rounded-md border border-highlight/30 bg-highlight/20 p-4 text-left dark:border-highlight/40 dark:bg-highlight/25"
 		>
-			<p class="text-sm font-medium text-amber-800 dark:text-amber-200">
+			<AlertTriangle
+				class="mt-0.5 h-5 w-5 flex-shrink-0 text-highlight-foreground dark:text-highlight"
+				aria-hidden="true"
+			/>
+			<p class="text-sm font-medium text-foreground">
 				{m['checkEmailPage.checkSpam']()}
 			</p>
 		</div>
@@ -96,10 +105,10 @@
 			{#if resendSuccess}
 				<div
 					role="status"
-					class="space-y-2 rounded-md border border-green-500 bg-green-500/10 p-3 text-sm text-green-700 dark:text-green-400"
+					class="space-y-2 rounded-md border border-success/40 bg-success/10 p-3 text-sm text-foreground dark:border-success/50 dark:bg-success/15"
 				>
 					<p>{m['checkEmailPage.resendSuccess']()}</p>
-					<p class="text-green-600 dark:text-green-500">{m['checkEmailPage.checkSpam']()}</p>
+					<p class="text-muted-foreground">{m['checkEmailPage.checkSpam']()}</p>
 				</div>
 			{/if}
 
