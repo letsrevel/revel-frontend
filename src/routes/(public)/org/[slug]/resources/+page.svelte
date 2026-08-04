@@ -133,7 +133,8 @@
 					{#each filteredResources as resource (resource.id)}
 						<!-- Same silhouette and lift as the three discovery cards: `border-2`
 						     + `shadow-poster`, so a resource reads as a white sticker
-						     floating on the tinted panel. -->
+						     floating on the page — this route's body sits on plain
+						     `--background` (see the comment above), not a tinted panel. -->
 						<article
 							class="flex flex-col gap-3 rounded-lg border-2 bg-card p-4 shadow-poster transition-all hover:-translate-y-1 hover:shadow-poster-lg"
 						>
