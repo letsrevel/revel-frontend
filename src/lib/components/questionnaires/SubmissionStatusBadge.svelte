@@ -55,8 +55,9 @@
 
 	Displays the evaluation status of a questionnaire submission with an
 	`aria-label`-carrying pill (thin mapper over `common/StatusBadge`). The
-	label is explicit because the primitive does not default one, and the
-	submissions table/detail page locate this pill by its status text.
+	label is passed explicitly even though the primitive has defaulted one since
+	#788, and the submissions table/detail page locate this pill by its status
+	text.
 
 	@component
 	@example

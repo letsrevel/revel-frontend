@@ -5,10 +5,11 @@ import type { PaymentStatus } from '$lib/api/generated/types.gen';
 import SubscriptionPaymentsStatusBadge from './SubscriptionPaymentsStatusBadge.svelte';
 
 /**
- * REGRESSION GUARD. `common/StatusBadge` names itself from its text content,
- * not from an implicit prop — a mapper that forgets `aria-label` silently
- * un-names its pill for every `getByLabel` lookup on the org-wide payments
- * ledger row/card. See `src/lib/components/members/StatusBadge.test.ts` for
+ * REGRESSION GUARD. Before #788 `common/StatusBadge` named itself from its
+ * text content alone, so a mapper that forgot `aria-label` silently un-named
+ * its pill for every `getByLabel` lookup on the org-wide payments ledger
+ * row/card. The primitive defaults the name now; this test pins it either
+ * way. See `src/lib/components/members/SubscriptionStatusBadge.test.ts` for
  * the incident this pattern guards against (19 e2e specs broke on exactly
  * this omission).
  */

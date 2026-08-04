@@ -12,10 +12,11 @@ const LABELS: Record<AnnouncementStatus, string> = {
 };
 
 /**
- * REGRESSION GUARD, same shape as `members/StatusBadge.test.ts`: this mapper
- * wraps `common/StatusBadge`, which names itself from visible text content —
- * `aria-label` here is what lets callers (and any future e2e lookup) address
- * the pill via `getByLabelText`. Assert it for every enum value, not a
+ * REGRESSION GUARD, same shape as `members/SubscriptionStatusBadge.test.ts`: this mapper
+ * wraps `common/StatusBadge`. The accessible NAME is what lets callers (and
+ * any future e2e lookup) address the pill via `getByLabelText` — passed here
+ * explicitly and, since #788, defaulted by the primitive as well. Assert it
+ * for every enum value, not a
  * sample, so a status silently losing its name doesn't slip through.
  */
 describe('announcements/AnnouncementStatusBadge', () => {

@@ -4,12 +4,13 @@ import type { PollStatus } from '$lib/api/generated/types.gen';
 import PollStatusBadge from './PollStatusBadge.svelte';
 
 /**
- * REGRESSION GUARD, same shape as `members/StatusBadge.test.ts`: this pill's
+ * REGRESSION GUARD, same shape as `members/SubscriptionStatusBadge.test.ts`: this pill's
  * accessible NAME is a cross-surface contract (admin poll list/detail cards
  * locate it by its status text), not decoration. `PollStatusBadge` shipped in
- * an earlier wave as a `common/StatusBadge` mapper WITHOUT an `aria-label` —
- * the primitive does not default one from its content — so this guards every
- * status, not just a sample, against that name being silently absent.
+ * an earlier wave as a `common/StatusBadge` mapper WITHOUT an `aria-label`,
+ * back when the primitive defaulted nothing (it defaults one since #788) — so
+ * this guards every status, not just a sample, against that name being
+ * silently absent.
  */
 const STATUS_ORDER: PollStatus[] = ['draft', 'open', 'closed'];
 

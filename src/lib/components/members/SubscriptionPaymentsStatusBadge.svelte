@@ -42,7 +42,8 @@
 
 <!--
 	`aria-label` is deliberate, not redundant: this pill is how the org-wide
-	payments ledger row/card is addressed by tests, and `common/StatusBadge`
-	only names itself from visible text content.
+	payments ledger row/card is addressed by tests. `common/StatusBadge` defaults
+	it from the visible label since #788; passing it here keeps the contract
+	explicit at the mapper.
 -->
 <CommonStatusBadge {tone} {label} icon={Icon} size="sm" aria-label={label} />

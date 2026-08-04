@@ -8,7 +8,7 @@ import {
 import MembershipRequestStatusBadge from './MembershipRequestStatusBadge.svelte';
 
 /**
- * REGRESSION GUARD, mirroring `members/StatusBadge.test.ts`: this pill's
+ * REGRESSION GUARD, mirroring `members/SubscriptionStatusBadge.test.ts`: this pill's
  * accessible NAME is what locates the "not pending" branch of
  * `MembershipRequestCard` (the review-history badge shown once actions are no
  * longer offered). Every enum value is asserted, not a sample.

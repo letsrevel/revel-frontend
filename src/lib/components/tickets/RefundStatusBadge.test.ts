@@ -7,11 +7,12 @@ import RefundStatusBadge, {
 } from './RefundStatusBadge.svelte';
 
 /**
- * REGRESSION GUARD. `common/StatusBadge` names itself from its text content,
- * not from an implicit prop — a mapper that forgets `aria-label` silently
- * un-names its pill for every `getByLabel` lookup in the ticket table / card
- * list, even though its own unit tests (which query by text) stay green. See
- * `src/lib/components/members/StatusBadge.test.ts` for the incident this
+ * REGRESSION GUARD. Before #788 `common/StatusBadge` named itself from its
+ * text content alone, so a mapper that forgot `aria-label` silently un-named
+ * its pill for every `getByLabel` lookup in the ticket table / card list, even
+ * though its own unit tests (which query by text) stayed green. The primitive
+ * defaults the name now; this test is what keeps it true either way. See
+ * `src/lib/components/members/SubscriptionStatusBadge.test.ts` for the incident this
  * pattern guards against (19 e2e specs broke on exactly this omission).
  */
 const LABELS: Record<KnownRefundStatus, string> = {

@@ -18,6 +18,6 @@
 </script>
 
 <!-- aria-label is explicit per the house `common/StatusBadge` mapper pattern
-     (see `members/StatusBadge.svelte`) — the primitive names itself off
-     content only. -->
+     (see `members/SubscriptionStatusBadge.svelte`). The primitive also defaults
+     it from the visible label since #788. -->
 <CommonStatusBadge {tone} {label} size="sm" class={extraClass} aria-label={label} />

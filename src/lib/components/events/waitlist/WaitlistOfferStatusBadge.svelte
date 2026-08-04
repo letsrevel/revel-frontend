@@ -49,6 +49,6 @@
 	aria-label is deliberate, not redundant with the visible text: this badge
 	is a `common/StatusBadge` consumer (see CLAUDE.md primitive contract) and
 	every domain mapper attaches its own aria-label explicitly — the primitive
-	does not default it.
+	defaults the same value since #788, so the two agree by construction.
 -->
 <StatusBadge {tone} {label} {icon} size="sm" class={className} aria-label={label} />

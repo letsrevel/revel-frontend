@@ -16,8 +16,9 @@
 
 <!--
 	`aria-label` is deliberate, not redundant with the visible text: this is the
-	canonical `common/StatusBadge` mapper pattern (see `members/StatusBadge.svelte`
-	for the subscription-status sibling) — the primitive names itself off its
-	content only, so the mapper supplies the accessible name explicitly.
+	canonical `common/StatusBadge` mapper pattern (see `members/SubscriptionStatusBadge.svelte`
+	for the subscription-status sibling). The primitive has defaulted this name
+	from the visible label since #788; the mapper still supplies it explicitly,
+	and the enum-driven test pins it whichever side provides it.
 -->
 <CommonStatusBadge {tone} {label} size="sm" class={extraClass} aria-label={label} />

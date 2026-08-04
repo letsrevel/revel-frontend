@@ -4,7 +4,7 @@ import { SUBMISSION_BADGE_STATUS_ORDER } from '$lib/utils/questionnaire-types';
 import SubmissionStatusBadge from './SubmissionStatusBadge.svelte';
 
 /**
- * REGRESSION GUARD, same shape as `members/StatusBadge.test.ts`: this pill's
+ * REGRESSION GUARD, same shape as `members/SubscriptionStatusBadge.test.ts`: this pill's
  * accessible NAME is a cross-surface contract (the submissions table and the
  * submission detail page locate it by its status text), not decoration. The
  * rebrand turned this into a thin mapper over `common/StatusBadge`, which does
