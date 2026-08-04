@@ -1,8 +1,9 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import type { HTMLAttributes } from 'svelte/elements';
 	import { cn } from '$lib/utils';
 
-	interface Props {
+	interface Props extends HTMLAttributes<HTMLElement> {
 		/** Already-translated strings — i18n stays at the call site. */
 		title: string;
 		kicker?: string;
@@ -22,11 +23,15 @@
 		volume = 'studio',
 		actions,
 		decoration,
-		class: className = ''
+		class: className = '',
+		...restProps
 	}: Props = $props();
 </script>
 
-<header class={cn('flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between', className)}>
+<header
+	class={cn('flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between', className)}
+	{...restProps}
+>
 	<div class="min-w-0">
 		{#if kicker}
 			<p class="text-sm font-extrabold uppercase tracking-[0.12em] text-primary">{kicker}</p>

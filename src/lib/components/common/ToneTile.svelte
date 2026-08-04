@@ -1,17 +1,29 @@
 <script lang="ts">
 	import type { Component } from 'svelte';
 	import { cn } from '$lib/utils';
-	import type { Tone } from './tones';
+	import type { Tone, PosterTint } from './tones';
 
 	interface Props {
 		tone: Tone;
+		/**
+		 * Identity-color axis (fixed poster palette), additive to `tone` and
+		 * mutually exclusive with it: when `tint` is set it takes over the
+		 * tile's styling entirely (solid fixed poster chip — imagery rule,
+		 * identical in light/dark) and `tone` is ignored for rendering. `tone`
+		 * stays a required prop for type stability across the ~20 existing
+		 * semantic call sites; pass any value when using `tint` (e.g. 'neutral').
+		 * Use `tint` only for pure destination/identity coloring (e.g. the admin
+		 * quick-actions grid) — semantic meaning (danger/success/...) must keep
+		 * using `tone`.
+		 */
+		tint?: PosterTint;
 		icon: Component;
 		size?: 'sm' | 'md' | 'lg';
 		/** Accessible name; omit when the tile sits next to visible text (decorative). */
 		label?: string;
 		class?: string;
 	}
-	const { tone, icon: Icon, size = 'md', label, class: className = '' }: Props = $props();
+	const { tone, tint, icon: Icon, size = 'md', label, class: className = '' }: Props = $props();
 
 	// Soft tint + strong icon (replaces the app's hand-picked bg-blue-50
 	// dark:bg-blue-950 tiles). The composited tint is ~the surface color, so the
@@ -32,6 +44,18 @@
 			'bg-destructive/10 text-destructive dark:bg-destructive/25 dark:text-destructive-foreground',
 		neutral: 'bg-muted text-muted-foreground'
 	};
+	// Identity tint axis: SOLID fixed poster chips, same classes in both modes
+	// (imagery rule). Every pair is audited in scripts/audit-brand-themes.py
+	// TEXT_PAIRS (poster panels + "identity tile: ink icon on lavender").
+	const tintClasses: Record<PosterTint, string> = {
+		purple: 'bg-poster-purple text-poster-white',
+		lavender: 'bg-poster-lavender text-poster-ink',
+		periwinkle: 'bg-poster-periwinkle text-poster-ink',
+		amber: 'bg-poster-amber text-poster-ink',
+		crimson: 'bg-poster-crimson-deep text-poster-white',
+		ink: 'bg-poster-ink text-poster-white',
+		paper: 'bg-poster-paper text-poster-ink'
+	};
 	const sizeClasses = {
 		sm: 'h-8 w-8 rounded-md',
 		md: 'h-10 w-10 rounded-md',
@@ -44,7 +68,7 @@
 	class={cn(
 		'inline-flex shrink-0 items-center justify-center',
 		sizeClasses[size],
-		toneClasses[tone],
+		tint ? tintClasses[tint] : toneClasses[tone],
 		className
 	)}
 	role={label ? 'img' : undefined}

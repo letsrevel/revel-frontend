@@ -56,6 +56,14 @@ describe('PageHeader', () => {
 		expect(screen.getByText('Invite')).toBeInTheDocument();
 	});
 
+	it('passes through arbitrary attributes to the header element', () => {
+		render(PageHeader, {
+			props: { title: 'Members', id: 'members-header', 'aria-label': 'Members admin header' }
+		});
+		const header = screen.getByRole('banner', { name: 'Members admin header' });
+		expect(header.id).toBe('members-header');
+	});
+
 	it('decoration renders in celebration and is decorative; ignored in studio', () => {
 		const { container, unmount } = render(PageHeader, {
 			props: { title: 'Hey', volume: 'celebration', decoration: snip('New!') }
