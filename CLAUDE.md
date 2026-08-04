@@ -1045,6 +1045,46 @@ Source PDF: `Revel_Digital-Styleguide.pdf` at this repo's root (**local-only, gi
 - **Fonts:** Nata Sans is the main brand font, universal on web and social; all weights in the family are allowed. **BBH Bartle** (open-source Google Font) is the additional display face **for social-media designs only** — do not ship it in the app. Both upper- and lowercase allowed, tracking 0.
 - **Picture style:** DO — colourful, warm image language; closeness and a sense of community; "real"-looking portraits. DON'T — classic stock imagery, people who read as actors/models, cold or distanced shots, corporate casual. (The landing page deliberately uses no photography; these rules bind social assets, OG images, and any future photo use.)
 
+### Rebrand volumes & shared primitives (2026-08 platform rebrand)
+
+The poster language extends app-wide at three volumes (master spec:
+`docs/superpowers/specs/2026-08-04-platform-rebrand-design.md`, local-only):
+
+- **Poster** (landing only): color-block panels, diagonal cuts, stickers. Frozen.
+- **Celebration** (public discovery, auth, error pages, user dashboard, ALL empty
+  states): display typography + kickers + sparing `Sticker` accents. Surfaces stay
+  on theme tokens; only decorative accents keep the fixed poster palette
+  (**imagery rule** — identical in dark mode, like the landing panels).
+- **Studio** (admin, dense forms/tables): heavy typography + tone tokens only.
+  No tilts, no cuts, no stickers — except empty states, which stay warm everywhere.
+
+**Shared primitives** (always prefer these over hand-rolled equivalents):
+`common/PageHeader` (page h1: kicker/title/subtitle/actions, `volume` prop),
+`common/SectionHeader`, `common/EmptyState` (poster-tinted tilted chip),
+`common/StatusBadge` (solid, tone-mapped — wrap domain enums in thin mappers),
+`common/ToneTile` (soft icon tile), `brand/Sticker` (celebration only, rotation
+clamped [-3, 3]). Tone vocabulary: `common/tones.ts` (`brand | info | success |
+warning | danger | neutral`).
+
+**Typography scale** (encoded in the primitives; use the same classes when
+composing manually):
+
+| Role | Classes |
+| --- | --- |
+| Display title (celebration h1) | `text-3xl font-black leading-[1.12] sm:text-4xl` |
+| Studio title (admin h1) | `text-2xl font-extrabold tracking-tight sm:text-3xl` |
+| Kicker | `text-sm font-extrabold uppercase tracking-[0.12em]` (`text-xs` in dense admin) |
+| Section heading | celebration `text-xl font-extrabold` · studio `text-lg font-bold` |
+| Card title | `font-bold` |
+
+**Raw-hue sweep rule:** in any file you touch, replace raw Tailwind palette color
+utilities (`bg-blue-50`, `text-emerald-600`, `dark:bg-indigo-950`, ...) with
+semantic tokens / `StatusBadge` / `ToneTile`. Exemptions: JS color objects for
+QR/canvas libraries, user-configurable data colors (e.g. seat categories), and
+`--brand-telegram`. New tokens `--success`/`--info` and the first-class
+`poster.*` Tailwind colors (`bg-poster-amber`, ...) exist for this. Never
+introduce new raw palette hues.
+
 ### Theme rules
 
 - **Use tokens, never raw hexes** in components (`bg-primary`, `text-muted-foreground`, …). Palette hexes appear only in `app.css`.

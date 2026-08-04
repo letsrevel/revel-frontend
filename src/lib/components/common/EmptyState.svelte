@@ -11,7 +11,14 @@
 		action?: Snippet;
 		class?: string;
 	}
-	const { icon: Icon, title, body, tone = 'brand', action, class: className = '' }: Props = $props();
+	const {
+		icon: Icon,
+		title,
+		body,
+		tone = 'brand',
+		action,
+		class: className = ''
+	}: Props = $props();
 
 	// Imagery rule: the chip is decorative art, so it keeps the FIXED poster
 	// palette in both modes (like the landing's stickers). Every solid pair
