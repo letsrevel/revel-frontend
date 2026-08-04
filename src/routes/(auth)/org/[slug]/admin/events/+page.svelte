@@ -31,6 +31,9 @@
 		Edit
 	} from '@lucide/svelte';
 	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 
 	const { data }: { data: PageData } = $props();
 
@@ -215,14 +218,7 @@
 
 <div class="space-y-6">
 	<!-- Header -->
-	<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-		<div>
-			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
-				{m['orgAdmin.events.pageTitle']()}
-			</h1>
-			<p class="mt-1 text-sm text-muted-foreground">{m['orgAdmin.events.pageDescription']()}</p>
-		</div>
-
+	{#snippet headerActions()}
 		{#if data.canCreateEvent}
 			<button
 				type="button"
@@ -233,34 +229,43 @@
 				{m['orgAdmin.events.createEventButton']()}
 			</button>
 		{/if}
-	</div>
+	{/snippet}
+	<PageHeader
+		kicker={m['orgAdmin.nav.events']()}
+		title={m['orgAdmin.events.pageTitle']()}
+		subtitle={m['orgAdmin.events.pageDescription']()}
+		actions={headerActions}
+	/>
 
 	<!-- Empty state -->
 	{#if data.events.length === 0}
-		<div class="rounded-lg border border-border bg-card p-12 text-center">
-			<Calendar class="mx-auto h-12 w-12 text-muted-foreground" aria-hidden="true" />
-			<h3 class="mt-4 text-lg font-semibold">{m['orgAdmin.events.empty.title']()}</h3>
-			<p class="mt-2 text-sm text-muted-foreground">{m['orgAdmin.events.empty.description']()}</p>
-			{#if data.canCreateEvent}
-				<button
-					type="button"
-					onclick={createEvent}
-					class="mt-6 inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-				>
-					<Plus class="h-5 w-5" aria-hidden="true" />
-					{m['orgAdmin.events.createEventButton']()}
-				</button>
-			{/if}
-		</div>
+		<EmptyState
+			icon={Calendar}
+			title={m['orgAdmin.events.empty.title']()}
+			body={m['orgAdmin.events.empty.description']()}
+		>
+			{#snippet action()}
+				{#if data.canCreateEvent}
+					<button
+						type="button"
+						onclick={createEvent}
+						class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+					>
+						<Plus class="h-5 w-5" aria-hidden="true" />
+						{m['orgAdmin.events.createEventButton']()}
+					</button>
+				{/if}
+			{/snippet}
+		</EmptyState>
 	{:else}
 		<!-- Draft Events -->
 		{#if draftEvents.length > 0}
 			<div class="space-y-4">
-				<h2 class="text-lg font-semibold">
-					{m['orgAdmin.events.sections.drafts']({
+				<SectionHeader
+					title={m['orgAdmin.events.sections.drafts']({
 						count: draftEvents.length
 					})}
-				</h2>
+				/>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{#each draftEvents as event (event.id)}
 						<AdminEventCard
@@ -280,11 +285,11 @@
 		<!-- Open Events -->
 		{#if openEvents.length > 0}
 			<div class="space-y-4">
-				<h2 class="text-lg font-semibold">
-					{m['orgAdmin.events.sections.open']({
+				<SectionHeader
+					title={m['orgAdmin.events.sections.open']({
 						count: openEvents.length
 					})}
-				</h2>
+				/>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{#each openEvents as event (event.id)}
 						<AdminEventCard
@@ -304,11 +309,11 @@
 		<!-- Closed Events -->
 		{#if closedEvents.length > 0}
 			<div class="space-y-4">
-				<h2 class="text-lg font-semibold">
-					{m['orgAdmin.events.sections.closed']({
+				<SectionHeader
+					title={m['orgAdmin.events.sections.closed']({
 						count: closedEvents.length
 					})}
-				</h2>
+				/>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{#each closedEvents as event (event.id)}
 						<AdminEventCard
@@ -328,11 +333,11 @@
 		<!-- Cancelled Events -->
 		{#if cancelledEvents.length > 0}
 			<div class="space-y-4">
-				<h2 class="text-lg font-semibold">
-					{m['orgAdmin.events.sections.cancelled']({
+				<SectionHeader
+					title={m['orgAdmin.events.sections.cancelled']({
 						count: cancelledEvents.length
 					})}
-				</h2>
+				/>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{#each cancelledEvents as event (event.id)}
 						<AdminEventCard
@@ -353,11 +358,11 @@
 			<!-- grayscale (not opacity): opacity-dimming blends buttons toward the page
 			     background and breaks WCAG contrast; grayscale preserves luminance (#595) -->
 			<div class="space-y-4 grayscale">
-				<h2 class="text-lg font-semibold">
-					{m['orgAdmin.events.sections.past']({
+				<SectionHeader
+					title={m['orgAdmin.events.sections.past']({
 						count: pastEvents.length
 					})}
-				</h2>
+				/>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{#each pastEvents as event (event.id)}
 						<div

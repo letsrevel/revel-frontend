@@ -6,6 +6,7 @@
 	import { ArrowLeft } from '@lucide/svelte';
 	import type { PageData } from './$types';
 	import RecurringEventWizard from '$lib/components/event-series/admin/RecurringEventWizard.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
 
 	const { data }: { data: PageData } = $props();
 
@@ -36,12 +37,12 @@
 			<ArrowLeft class="h-5 w-5" aria-hidden="true" />
 		</button>
 		<div class="flex-1">
-			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
-				{m['recurringEvents.wizard.title']()}
-			</h1>
-			<p class="mt-1 text-sm text-muted-foreground">
-				{m['recurringEvents.wizard.pageDescription']({ organizationName: organization.name })}
-			</p>
+			<PageHeader
+				title={m['recurringEvents.wizard.title']()}
+				subtitle={m['recurringEvents.wizard.pageDescription']({
+					organizationName: organization.name
+				})}
+			/>
 		</div>
 	</div>
 
