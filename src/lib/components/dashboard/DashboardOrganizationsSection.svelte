@@ -75,14 +75,14 @@
 			{#each visibleOrganizations as org (org.id)}
 				{@const descriptionText = org.description ? stripMarkdown(org.description) : ''}
 				<div
-					class="flex flex-col gap-4 rounded-lg border bg-card p-4 transition-shadow hover:shadow-md sm:flex-row sm:items-center"
+					class="flex flex-col gap-4 rounded-lg border-2 bg-card p-4 shadow-poster transition-shadow hover:shadow-poster-lg sm:flex-row sm:items-center"
 				>
 					<div class="flex min-w-0 flex-1 items-center gap-4">
 						{#if org.logo}
 							<img
 								src={getImageUrl(org.logo_thumbnail_url || org.logo)}
 								alt=""
-								class="h-16 w-16 shrink-0 rounded-full border object-cover"
+								class="h-16 w-16 shrink-0 rounded-full border-2 object-cover"
 							/>
 						{:else}
 							<div

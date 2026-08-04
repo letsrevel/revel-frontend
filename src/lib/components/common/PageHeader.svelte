@@ -26,8 +26,8 @@
 		 * survive a saturated band: on the light periwinkle `--secondary` it
 		 * measures **4.12:1**, below AA for the kicker's 14px extrabold text
 		 * (4.60:1 in dark, which passes — the prop covers both so the two modes
-		 * don't drift). Inheriting takes it to the band's own pair: 9.01:1
-		 * light / 8.17:1 dark. The subtitle's `text-muted-foreground` does clear
+		 * don't drift). Inheriting takes it to the band's own pair: 9.00:1
+		 * light / 8.23:1 dark. The subtitle's `text-muted-foreground` does clear
 		 * AA on that band (5.35 / 5.46) but goes full-strength too, so the whole
 		 * header reads as one block of band copy.
 		 *

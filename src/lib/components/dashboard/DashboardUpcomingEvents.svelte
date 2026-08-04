@@ -25,9 +25,13 @@
 	</a>
 {/snippet}
 
-<!-- Upcoming Events Section -->
+<!-- Upcoming Events Section. This can be the FIRST block below the dashboard's
+     -mt-12 band pull-up (brand-new user: no activity cards, no "Your Events"
+     section). It carries its own bg-card/border-2/shadow-poster wrapper so
+     that whenever it lands there, the "See all" link's `text-primary` sits on
+     an audited surface instead of the band itself (4.12:1, below AA). -->
 <section aria-labelledby="upcoming-events-heading">
-	<div class="mb-4">
+	<div class="mb-4 rounded-lg border-2 border-border bg-card p-4 shadow-poster sm:p-6">
 		<SectionHeader
 			title={m['dashboard.sections.discoverEvents']()}
 			volume="celebration"

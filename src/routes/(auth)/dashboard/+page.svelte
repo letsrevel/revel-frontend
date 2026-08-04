@@ -255,6 +255,15 @@
 	const hasAdminPermissions = (orgId: string) => userHasAdminPermissions(permissions, orgId);
 	const ownsOrganization = () => userOwnsOrganization(permissions);
 
+	// The quick-action chips sit on the SATURATED welcome band, which sets
+	// `text-secondary-foreground` on everything inside it. A chip painted
+	// `bg-card` would inherit that and end up with the band's text colour on a
+	// card-coloured surface — an unaudited pair. Each chip therefore carries its
+	// own explicit `text-card-foreground`, which is also what makes it read as a
+	// white poster sticker on the colour block.
+	const secondaryAction =
+		'inline-flex items-center gap-2 rounded-lg border-2 bg-card px-6 py-3 text-sm font-bold text-card-foreground shadow-poster transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2';
+
 	// Helper to check if a filter preset is currently active
 	const isFilterActive = (preset: DashboardFilterPreset) =>
 		isFilterActiveFor(yourEventsFilters, preset);
@@ -304,12 +313,19 @@
 	<meta name="description" content={m['dashboard.pageSubtitle']()} />
 </svelte:head>
 
-<div class="container mx-auto px-4 py-6 md:py-8">
-	<!-- Welcome Header -->
+<!-- Celebration band + floating content (uplift, spec §9). The dashboard is
+     the welcome moment, so it opens on a full-strength `bg-secondary` colour
+     block — an audit-enforced pair in BOTH modes, so the band is a real poster
+     panel that still respects the light/dark axis — with the page pulled up
+     over its bottom edge so the activity cards visibly float on colour. The
+     kicker and subtitle inherit the band's foreground through PageHeader's
+     `onBand` affordance (its default `text-primary` kicker measures 4.12:1
+     there, below AA for 14px extrabold). -->
+<div class="bg-background">
 	{#snippet quickActions()}
 		<a
 			href={resolve('/(public)/events', {})}
-			class="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+			class="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-poster transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 		>
 			<Sparkles class="h-4 w-4" aria-hidden="true" />
 			<span>{m['dashboard.browseEventsButton']()}</span>
@@ -322,18 +338,14 @@
 					href={resolve('/(auth)/org/[slug]/admin/events/new', {
 						slug: organizations.find((org) => hasAdminPermissions(org.id))?.slug ?? ''
 					})}
-					class="inline-flex items-center gap-2 rounded-lg border bg-background px-6 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+					class={secondaryAction}
 				>
 					<Calendar class="h-4 w-4" aria-hidden="true" />
 					<span>{m['dashboard.createEventButton']()}</span>
 				</a>
 			{:else}
 				<!-- Multiple admin orgs - scroll to organizations section to choose -->
-				<button
-					type="button"
-					onclick={scrollToOrganizations}
-					class="inline-flex items-center gap-2 rounded-lg border bg-background px-6 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-				>
+				<button type="button" onclick={scrollToOrganizations} class={secondaryAction}>
 					<Calendar class="h-4 w-4" aria-hidden="true" />
 					<span>{m['dashboard.createEventButton']()}</span>
 				</button>
@@ -341,20 +353,13 @@
 		{/if}
 
 		{#if organizations.length > 0}
-			<button
-				type="button"
-				onclick={scrollToOrganizations}
-				class="inline-flex items-center gap-2 rounded-lg border bg-background px-6 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-			>
+			<button type="button" onclick={scrollToOrganizations} class={secondaryAction}>
 				<Building2 class="h-4 w-4" aria-hidden="true" />
 				<span>{m['dashboard.myOrganizationsButton']()}</span>
 			</button>
 		{/if}
 
-		<a
-			href={resolve('/(auth)/dashboard/following', {})}
-			class="inline-flex items-center gap-2 rounded-lg border bg-background px-6 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-		>
+		<a href={resolve('/(auth)/dashboard/following', {})} class={secondaryAction}>
 			<Heart class="h-4 w-4" aria-hidden="true" />
 			<span>{m['dashboard.following.title']()}</span>
 		</a>
@@ -365,181 +370,196 @@
 				href={resolve('/(auth)/org/[slug]/admin', {
 					slug: organizations.find((org) => hasAdminPermissions(org.id))?.slug ?? ''
 				})}
-				class="inline-flex items-center gap-2 rounded-lg border bg-background px-6 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+				class={secondaryAction}
 			>
 				<Shield class="h-4 w-4" aria-hidden="true" />
 				<span>{m['dashboard.adminButton']()}</span>
 			</a>
 		{:else if organizations.filter((org) => hasAdminPermissions(org.id)).length > 1}
 			<!-- Multiple admin orgs - scroll to organizations section to choose -->
-			<button
-				type="button"
-				onclick={scrollToOrganizations}
-				class="inline-flex items-center gap-2 rounded-lg border bg-background px-6 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-			>
+			<button type="button" onclick={scrollToOrganizations} class={secondaryAction}>
 				<Shield class="h-4 w-4" aria-hidden="true" />
 				<span>{m['dashboard.adminButton']()}</span>
 			</button>
 		{:else if !ownsOrganization() && features.organization_creation}
 			<!-- User doesn't own an organization - show "Create Organization" CTA -->
-			<a
-				href={resolve('/(auth)/create-org', {})}
-				class="inline-flex items-center gap-2 rounded-lg border bg-background px-6 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-			>
+			<a href={resolve('/(auth)/create-org', {})} class={secondaryAction}>
 				<PlusCircle class="h-4 w-4" aria-hidden="true" />
 				<span>{m['dashboard.createOrganizationButton']()}</span>
 			</a>
 		{/if}
 	{/snippet}
-	<PageHeader
-		title={m['dashboard.pageTitle']({ firstName })}
-		subtitle={m['dashboard.pageSubtitle']()}
-		kicker={m['userMenu.dashboard']()}
-		volume="celebration"
-		actions={quickActions}
-		class="mb-8"
-	/>
+	<section class="bg-secondary text-secondary-foreground">
+		<div class="container mx-auto px-4 pb-20 pt-8 md:pt-10">
+			<PageHeader
+				title={m['dashboard.pageTitle']({ firstName })}
+				subtitle={m['dashboard.pageSubtitle']()}
+				kicker={m['userMenu.dashboard']()}
+				volume="poster"
+				onBand
+				actions={quickActions}
+			/>
+		</div>
+	</section>
 
-	<!-- Activity Summary Cards -->
-	<DashboardActivityCards {activeTicketsCount} {pendingInvitationsCount} {upcomingRsvpsCount} />
+	<div class="container mx-auto -mt-12 px-4 pb-8 md:pb-12">
+		<!-- Activity Summary Cards. `DashboardActivityCards` renders NOTHING
+		     when all three counts are zero (a brand-new user), so it cannot be
+		     trusted alone to land the -mt-12 pull-up on an opaque surface —
+		     the fix round found the next block down (the "Your Events" filter
+		     row here, or `DashboardUpcomingEvents`' header when this section
+		     is also hidden) sitting bare on the band's cut instead. Both of
+		     those now carry their own `bg-card border-2 shadow-poster` wrapper
+		     (matching the tickets/rsvps pages' "gather filters into one card"
+		     pattern) so whichever block ends up first is opaque
+		     UNCONDITIONALLY, regardless of activity state. -->
+		<DashboardActivityCards {activeTicketsCount} {pendingInvitationsCount} {upcomingRsvpsCount} />
 
-	<!-- Main Content Grid -->
-	<div class="space-y-8">
-		<!-- Your Events Section (with filters) - Show if user has ANY events -->
-		{#if hasAnyEvents}
-			<section aria-labelledby="your-events-heading">
-				<div class="mb-4">
-					<div class="mb-3 flex items-center justify-between">
-						<h2 id="your-events-heading" class="flex items-center gap-2 text-xl font-extrabold">
-							<Calendar class="h-5 w-5 text-primary" aria-hidden="true" />
-							<span>{m['dashboard.sections.yourEvents']()}</span>
-							{#if viewMode === 'list' && yourEvents.length > 0}
-								<span
-									class="inline-flex items-center justify-center rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground"
-								>
-									{yourEvents.length}
-								</span>
-							{:else if viewMode === 'calendar' && calendarEvents.length > 0}
-								<span
-									class="inline-flex items-center justify-center rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground"
-								>
-									{calendarEvents.length}
-								</span>
-							{/if}
-						</h2>
+		<!-- Main Content Grid -->
+		<div class="space-y-8">
+			<!-- Your Events Section (with filters) - Show if user has ANY events -->
+			{#if hasAnyEvents}
+				<section aria-labelledby="your-events-heading">
+					<div class="mb-4 rounded-lg border-2 border-border bg-card p-4 shadow-poster sm:p-6">
+						<div class="mb-3 flex items-center justify-between">
+							<h2 id="your-events-heading" class="flex items-center gap-2 text-xl font-extrabold">
+								<Calendar class="h-5 w-5 text-primary" aria-hidden="true" />
+								<span>{m['dashboard.sections.yourEvents']()}</span>
+								{#if viewMode === 'list' && yourEvents.length > 0}
+									<span
+										class="inline-flex items-center justify-center rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground"
+									>
+										{yourEvents.length}
+									</span>
+								{:else if viewMode === 'calendar' && calendarEvents.length > 0}
+									<span
+										class="inline-flex items-center justify-center rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground"
+									>
+										{calendarEvents.length}
+									</span>
+								{/if}
+							</h2>
 
-						<!-- View Toggle -->
-						<button
-							type="button"
-							onclick={toggleViewMode}
-							class="inline-flex items-center gap-2 rounded-md border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-						>
-							{#if viewMode === 'list'}
-								<Calendar class="h-4 w-4" aria-hidden="true" />
-								{m['calendar.calendar_view']()}
-							{:else}
-								<List class="h-4 w-4" aria-hidden="true" />
-								{m['calendar.list_view']()}
-							{/if}
-						</button>
-					</div>
+							<!-- View Toggle -->
+							<button
+								type="button"
+								onclick={toggleViewMode}
+								class="inline-flex items-center gap-2 rounded-md border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+							>
+								{#if viewMode === 'list'}
+									<Calendar class="h-4 w-4" aria-hidden="true" />
+									{m['calendar.calendar_view']()}
+								{:else}
+									<List class="h-4 w-4" aria-hidden="true" />
+									{m['calendar.list_view']()}
+								{/if}
+							</button>
+						</div>
 
-					<!-- Filter Bar (only show in list view) -->
-					{#if viewMode === 'list'}
-						<div class="flex flex-wrap items-center gap-2">
-							<Filter class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-							{#each filterPresets as preset (preset.labelKey)}
-								<!-- Only show "Organizing" filter if user can organize events -->
-								{#if preset.labelKey !== 'dashboard.filters.organizing' || canOrganizeEvents()}
+						<!-- Filter Bar (only show in list view) -->
+						{#if viewMode === 'list'}
+							<div class="flex flex-wrap items-center gap-2">
+								<Filter class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+								{#each filterPresets as preset (preset.labelKey)}
+									<!-- Only show "Organizing" filter if user can organize events -->
+									{#if preset.labelKey !== 'dashboard.filters.organizing' || canOrganizeEvents()}
+										<button
+											type="button"
+											onclick={() => applyFilterPreset(preset)}
+											class="rounded-md border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring {isFilterActive(
+												preset
+											)
+												? 'bg-primary text-primary-foreground hover:bg-primary/90'
+												: 'bg-background hover:bg-accent hover:text-accent-foreground'}"
+										>
+											{#if preset.labelKey === 'dashboard.filters.bookmarked'}
+												<Bookmark
+													class="mr-1 inline h-4 w-4 align-text-bottom"
+													aria-hidden="true"
+												/>
+											{/if}
+											{(m as unknown as Record<string, () => string>)[preset.labelKey]()}
+										</button>
+									{/if}
+								{/each}
+
+								<!-- Ticket Type Toggle -->
+								<span class="ml-1 text-muted-foreground">|</span>
+								{#each [{ value: 'ticketed', label: m['filters.ticketType.ticketed']() }, { value: 'free', label: m['filters.ticketType.free']() }] as option (option.value)}
+									{@const isSelected = ticketType === option.value}
 									<button
 										type="button"
-										onclick={() => applyFilterPreset(preset)}
-										class="rounded-md border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring {isFilterActive(
-											preset
-										)
+										onclick={() =>
+											(ticketType = isSelected ? undefined : (option.value as 'ticketed' | 'free'))}
+										class="rounded-md border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring {isSelected
 											? 'bg-primary text-primary-foreground hover:bg-primary/90'
 											: 'bg-background hover:bg-accent hover:text-accent-foreground'}"
+										aria-pressed={isSelected}
 									>
-										{#if preset.labelKey === 'dashboard.filters.bookmarked'}
-											<Bookmark class="mr-1 inline h-4 w-4 align-text-bottom" aria-hidden="true" />
-										{/if}
-										{(m as unknown as Record<string, () => string>)[preset.labelKey]()}
+										{option.label}
 									</button>
-								{/if}
-							{/each}
+								{/each}
+							</div>
+						{/if}
+					</div>
 
-							<!-- Ticket Type Toggle -->
-							<span class="ml-1 text-muted-foreground">|</span>
-							{#each [{ value: 'ticketed', label: m['filters.ticketType.ticketed']() }, { value: 'free', label: m['filters.ticketType.free']() }] as option (option.value)}
-								{@const isSelected = ticketType === option.value}
-								<button
-									type="button"
-									onclick={() =>
-										(ticketType = isSelected ? undefined : (option.value as 'ticketed' | 'free'))}
-									class="rounded-md border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring {isSelected
-										? 'bg-primary text-primary-foreground hover:bg-primary/90'
-										: 'bg-background hover:bg-accent hover:text-accent-foreground'}"
-									aria-pressed={isSelected}
-								>
-									{option.label}
-								</button>
-							{/each}
-						</div>
-					{/if}
-				</div>
-
-				{#if viewMode === 'list'}
-					<!-- List View -->
-					{#if yourEvents.length > 0}
-						<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-							{#each yourEvents.slice(0, 6) as event (event.id)}
-								<EventCard {event} />
-							{/each}
-						</div>
+					{#if viewMode === 'list'}
+						<!-- List View -->
+						{#if yourEvents.length > 0}
+							<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+								{#each yourEvents.slice(0, 6) as event (event.id)}
+									<EventCard {event} />
+								{/each}
+							</div>
+						{:else}
+							<!-- Empty state when filter returns no results -->
+							<EmptyState
+								icon={Calendar}
+								title={m['dashboard.emptyStates.noEvents']()}
+								body={m['dashboard.emptyStates.noEventsFiltered']()}
+								tone="neutral"
+							/>
+						{/if}
 					{:else}
-						<!-- Empty state when filter returns no results -->
-						<EmptyState
-							icon={Calendar}
-							title={m['dashboard.emptyStates.noEvents']()}
-							body={m['dashboard.emptyStates.noEventsFiltered']()}
-							tone="neutral"
+						<!-- Calendar View -->
+						<CalendarControls
+							view={calendarParams.view}
+							year={calendarParams.year}
+							month={calendarParams.month}
+							week={calendarParams.week}
+							baseUrl="/dashboard"
+							preserveParams={['viewMode']}
+						/>
+
+						<CalendarView
+							view={calendarParams.view}
+							year={calendarParams.year}
+							month={calendarParams.month}
+							week={calendarParams.week}
+							events={calendarEvents}
+							isLoading={isCalendarLoading}
+							onEventClick={handleEventClick}
 						/>
 					{/if}
-				{:else}
-					<!-- Calendar View -->
-					<CalendarControls
-						view={calendarParams.view}
-						year={calendarParams.year}
-						month={calendarParams.month}
-						week={calendarParams.week}
-						baseUrl="/dashboard"
-						preserveParams={['viewMode']}
-					/>
+				</section>
+			{/if}
 
-					<CalendarView
-						view={calendarParams.view}
-						year={calendarParams.year}
-						month={calendarParams.month}
-						week={calendarParams.week}
-						events={calendarEvents}
-						isLoading={isCalendarLoading}
-						onEventClick={handleEventClick}
-					/>
-				{/if}
-			</section>
-		{/if}
+			<!-- Upcoming Events Section -->
+			<DashboardUpcomingEvents {upcomingEvents} isLoading={upcomingEventsQuery.isLoading} />
 
-		<!-- Upcoming Events Section -->
-		<DashboardUpcomingEvents {upcomingEvents} isLoading={upcomingEventsQuery.isLoading} />
+			<!-- My Organizations Section -->
+			<DashboardOrganizationsSection
+				{organizations}
+				isLoading={organizationsQuery.isPending}
+				{permissions}
+			/>
+		</div>
 
-		<!-- My Organizations Section -->
-		<DashboardOrganizationsSection
-			{organizations}
-			isLoading={organizationsQuery.isPending}
-			{permissions}
+		<!-- Event Modal (for calendar clicks) -->
+		<EventModal
+			event={selectedEvent}
+			open={selectedEvent !== null}
+			onClose={handleCloseEventModal}
 		/>
 	</div>
-
-	<!-- Event Modal (for calendar clicks) -->
-	<EventModal event={selectedEvent} open={selectedEvent !== null} onClose={handleCloseEventModal} />
 </div>

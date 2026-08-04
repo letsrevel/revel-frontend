@@ -99,7 +99,7 @@ describe('PageHeader', () => {
 	it('onBand drops the accent kicker and muted subtitle for the band foreground', () => {
 		// The reason this prop exists: `text-primary` on the light periwinkle
 		// `--secondary` band measures 4.12:1, below AA for the kicker's 14px
-		// extrabold. Inheriting the band's own audited foreground is 9.01:1.
+		// extrabold. Inheriting the band's own audited foreground is 9.00:1.
 		render(PageHeader, {
 			props: {
 				title: 'Apply',

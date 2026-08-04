@@ -10,6 +10,14 @@
 		upcomingRsvpsCount: number;
 	}
 	let { activeTicketsCount, pendingInvitationsCount, upcomingRsvpsCount }: Props = $props();
+
+	// These three tiles are the first thing on the dashboard and they now sit on
+	// the welcome band's bottom edge, so they take the poster silhouette the
+	// rest of the app's surfaces gained: 2px edge, `shadow-poster` at rest,
+	// `shadow-poster-lg` on hover (the float grows instead of a generic
+	// shadow-lg). Colours are unchanged — `bg-card` + ToneTile's audited tints.
+	const activityCard =
+		'group rounded-lg border-2 bg-card p-6 shadow-poster transition-all hover:border-primary hover:shadow-poster-lg focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2';
 </script>
 
 <!-- Activity Summary Cards -->
@@ -17,10 +25,7 @@
 	<div class="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 		<!-- Active Tickets -->
 		{#if activeTicketsCount > 0}
-			<a
-				href={resolve('/(auth)/dashboard/tickets', {})}
-				class="group rounded-lg border bg-card p-6 transition-all hover:border-primary hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-			>
+			<a href={resolve('/(auth)/dashboard/tickets', {})} class={activityCard}>
 				<div class="flex items-start justify-between">
 					<div class="flex items-center gap-3">
 						<ToneTile tone="info" icon={Ticket} size="lg" />
@@ -28,7 +33,7 @@
 							<p class="text-sm font-medium text-muted-foreground">
 								{m['dashboard.activityCards.activeTickets']()}
 							</p>
-							<p class="text-3xl font-bold">{activeTicketsCount}</p>
+							<p class="text-3xl font-black">{activeTicketsCount}</p>
 						</div>
 					</div>
 					<ChevronRight
@@ -49,10 +54,7 @@
 		<!-- Upcoming RSVPs -->
 		{#if upcomingRsvpsCount > 0}
 			<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
-			<a
-				href={`${resolve('/(auth)/dashboard/rsvps', {})}?status=yes,maybe`}
-				class="group rounded-lg border bg-card p-6 transition-all hover:border-primary hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-			>
+			<a href={`${resolve('/(auth)/dashboard/rsvps', {})}?status=yes,maybe`} class={activityCard}>
 				<div class="flex items-start justify-between">
 					<div class="flex items-center gap-3">
 						<ToneTile tone="success" icon={CheckCircle2} size="lg" />
@@ -60,7 +62,7 @@
 							<p class="text-sm font-medium text-muted-foreground">
 								{m['dashboard.activityCards.upcomingRsvps']()}
 							</p>
-							<p class="text-3xl font-bold">{upcomingRsvpsCount}</p>
+							<p class="text-3xl font-black">{upcomingRsvpsCount}</p>
 						</div>
 					</div>
 					<ChevronRight
@@ -81,10 +83,7 @@
 
 		<!-- Pending Invitations -->
 		{#if pendingInvitationsCount > 0}
-			<a
-				href={resolve('/(auth)/dashboard/invitations', {})}
-				class="group rounded-lg border bg-card p-6 transition-all hover:border-primary hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-			>
+			<a href={resolve('/(auth)/dashboard/invitations', {})} class={activityCard}>
 				<div class="flex items-start justify-between">
 					<div class="flex items-center gap-3">
 						<ToneTile tone="brand" icon={Mail} size="lg" />
@@ -92,7 +91,7 @@
 							<p class="text-sm font-medium text-muted-foreground">
 								{m['dashboard.activityCards.pendingInvitations']()}
 							</p>
-							<p class="text-3xl font-bold">{pendingInvitationsCount}</p>
+							<p class="text-3xl font-black">{pendingInvitationsCount}</p>
 						</div>
 					</div>
 					<ChevronRight

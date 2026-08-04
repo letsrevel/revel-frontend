@@ -13,7 +13,7 @@
 	import { Building2, Calendar, Loader2, ChevronLeft, ChevronRight } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Checkbox } from '$lib/components/ui/checkbox';
-	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import DashboardBandLayout from '$lib/components/dashboard/DashboardBandLayout.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { toast } from 'svelte-sonner';
 	import { page } from '$app/state';
@@ -199,17 +199,11 @@
 	<title>{m['dashboard.following.title']()} - Revel</title>
 </svelte:head>
 
-<div class="container mx-auto px-4 py-6 md:py-8">
-	<!-- Page Header -->
-	<PageHeader
-		title={m['dashboard.following.title']()}
-		kicker={m['userMenu.dashboard']()}
-		volume="celebration"
-		class="mb-8"
-	/>
-
+<!-- Celebration band + floating tab card (uplift) — twin of the invitations
+     page; see DashboardBandLayout for the band's contrast contract. -->
+<DashboardBandLayout title={m['dashboard.following.title']()} kicker={m['userMenu.dashboard']()}>
 	<!-- Tabs -->
-	<div class="mb-6">
+	<div class="mb-6 rounded-lg border-2 border-border bg-card px-4 shadow-poster sm:px-6">
 		<div class="border-b border-border">
 			<nav class="-mb-px flex gap-6" aria-label={m['dashboardFollowingPage.tabsLabel']()}>
 				<button
@@ -279,7 +273,7 @@
 				<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 					{#each organizations as follow (follow.id)}
 						{@const org = follow.organization}
-						<div class="rounded-lg border bg-card p-4">
+						<div class="rounded-lg border-2 bg-card p-4 shadow-poster">
 							<div class="mb-3 flex items-start gap-3">
 								{#if org.logo}
 									<img
@@ -412,7 +406,7 @@
 				<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 					{#each eventSeries as follow (follow.id)}
 						{@const series = follow.event_series}
-						<div class="rounded-lg border bg-card p-4">
+						<div class="rounded-lg border-2 bg-card p-4 shadow-poster">
 							<div class="mb-3 flex items-start gap-3">
 								{#if series.logo}
 									<img
@@ -516,4 +510,4 @@
 			{/if}
 		</div>
 	{/if}
-</div>
+</DashboardBandLayout>

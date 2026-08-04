@@ -14,6 +14,7 @@
 	import ToneTile from '$lib/components/common/ToneTile.svelte';
 	import Sticker from '$lib/components/brand/Sticker.svelte';
 	import type { Tone } from '$lib/components/common/tones';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
 
 	// Get error details from page store
 	const status = $derived($page.status);
@@ -134,58 +135,66 @@
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
-<div class="flex min-h-screen items-center justify-center bg-background px-4 py-16">
-	<div class="w-full max-w-2xl">
-		<!-- Error Icon + status-code Sticker: the flagship personality moment.
-		     Both are decorative art, not a second announcement of the title —
-		     the h1 below is the actual accessible heading, and the status code
-		     is separately in the accessible errorPage.errorLabel text. ToneTile
-		     omits `label` (→ aria-hidden by default) rather than repeating
-		     config.title() as its accessible name; the Sticker is likewise
-		     wrapped aria-hidden. -->
-		<div class="mb-8 flex flex-col items-center gap-4">
-			<ToneTile tone={config.tone} icon={ErrorIcon} size="lg" />
-			<span aria-hidden="true">
-				<Sticker tint="purple" rotate={-3} class="text-2xl">{status}</Sticker>
-			</span>
+<!-- Celebration band + floating card (uplift, spec §9). The page was a column
+     of centred type on bare background; it now opens on a full-strength
+     `bg-secondary` colour block — theme-aware, not the mode-inert poster
+     ribbon the join pages use — an audit-enforced pair in BOTH modes
+     (9.00:1 light / 8.23:1 dark for its own foreground), so the band is a
+     real poster panel that still respects the light/dark axis. The kicker and
+     description inherit the band's foreground through PageHeader's `onBand`
+     affordance; its default `text-primary` kicker measures 4.12:1 there,
+     below AA for 14px extrabold.
+
+     The status Sticker is the band's ornament: a white poster sticker whose
+     purple-on-white pair is audited and mode-inert by the imagery rule.
+     The ToneTile deliberately did NOT move onto the band — its soft `/10`
+     tints and their icon ratios are computed against `bg-card`/page surfaces
+     (see ToneTile's table), so it stays inside the floating card where those
+     numbers hold. Both remain decorative art, not a second announcement: the
+     h1 is the accessible heading and the status code is separately in the
+     errorPage.errorLabel copy. -->
+<div class="min-h-screen bg-background">
+	<section class="bg-secondary text-secondary-foreground">
+		<div class="container mx-auto max-w-2xl px-4 pb-20 pt-12 text-center sm:pt-16">
+			<div class="mb-6 flex justify-center">
+				<span aria-hidden="true">
+					<Sticker tint="purple" rotate={-3} class="text-4xl sm:text-5xl">{status}</Sticker>
+				</span>
+			</div>
+			<PageHeader
+				volume="poster"
+				onBand
+				kicker={m['errorPage.errorLabel']({ status: status.toString() })}
+				title={config.title()}
+				subtitle={config.description()}
+				class="text-center sm:flex-col sm:items-center"
+			/>
 		</div>
+	</section>
 
-		<!-- Error Content -->
-		<div class="text-center">
-			<!-- Status Code -->
-			<p class="mb-2 text-sm font-extrabold uppercase tracking-[0.12em] text-primary">
-				{m['errorPage.errorLabel']({ status: status.toString() })}
-			</p>
-
-			<!-- Title -->
-			<h1 class="mb-4 text-3xl font-black leading-[1.12] sm:text-4xl">
-				{config.title()}
-			</h1>
-
-			<!-- Description -->
-			<p class="mb-8 text-lg text-muted-foreground">
-				{config.description()}
-			</p>
+	<div class="container mx-auto -mt-12 max-w-2xl space-y-6 px-4 pb-16">
+		<div class="rounded-lg border-2 border-border bg-card p-6 shadow-poster sm:p-8">
+			<div class="flex justify-center">
+				<ToneTile tone={config.tone} icon={ErrorIcon} size="lg" />
+			</div>
 
 			<!-- Suggestions -->
 			{#if config.suggestions && config.suggestions().length > 0}
-				<div class="mb-8 rounded-lg border bg-card p-6 text-left">
-					<h2 class="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-						{m['errorPage.whatYouCanDo']()}
-					</h2>
-					<ul class="space-y-2 text-sm">
-						{#each config.suggestions() as suggestion, i (i)}
-							<li class="flex items-start gap-2">
-								<span class="mt-1 text-primary" aria-hidden="true">•</span>
-								<span>{suggestion}</span>
-							</li>
-						{/each}
-					</ul>
-				</div>
+				<h2 class="mt-6 text-sm font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
+					{m['errorPage.whatYouCanDo']()}
+				</h2>
+				<ul class="mt-4 space-y-2 text-left text-sm">
+					{#each config.suggestions() as suggestion, i (i)}
+						<li class="flex items-start gap-2">
+							<span class="mt-1 text-primary" aria-hidden="true">•</span>
+							<span>{suggestion}</span>
+						</li>
+					{/each}
+				</ul>
 			{/if}
 
 			<!-- Action Buttons -->
-			<div class="flex flex-wrap items-center justify-center gap-3">
+			<div class="mt-8 flex flex-wrap items-center justify-center gap-3">
 				{#if config.showBackButton}
 					<button
 						type="button"
@@ -219,16 +228,16 @@
 					</a>
 				{/if}
 			</div>
-
-			<!-- Debug Info (only in development) -->
-			{#if import.meta.env.DEV && message}
-				<div class="mt-8 rounded-lg border border-muted bg-muted/50 p-4 text-left">
-					<h3 class="mb-2 text-sm font-semibold text-muted-foreground">
-						{m['errorPage.debugInfo']()}
-					</h3>
-					<pre class="overflow-x-auto text-xs text-muted-foreground">{message}</pre>
-				</div>
-			{/if}
 		</div>
+
+		<!-- Debug Info (only in development) -->
+		{#if import.meta.env.DEV && message}
+			<div class="rounded-lg border-2 border-muted bg-muted/50 p-4 text-left">
+				<h3 class="mb-2 text-sm font-semibold text-muted-foreground">
+					{m['errorPage.debugInfo']()}
+				</h3>
+				<pre class="overflow-x-auto text-xs text-muted-foreground">{message}</pre>
+			</div>
+		{/if}
 	</div>
 </div>
