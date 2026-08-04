@@ -43,6 +43,10 @@
 	import type { AttendeeInvoiceDetailSchema } from '$lib/api/generated/types.gen';
 	import type { LayoutData } from '../../$types';
 	import { formatDate } from '$lib/utils/date';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
+	import type { Tone } from '$lib/components/common/tones';
 
 	interface Props {
 		data: LayoutData;
@@ -213,13 +217,13 @@
 		return formatMoney(amount, currency);
 	}
 
-	const STATUS_COLORS: Record<string, string> = {
-		issued: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-		draft: 'bg-muted text-muted-foreground',
-		cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+	const STATUS_TONES: Record<string, Tone> = {
+		issued: 'info',
+		draft: 'neutral',
+		cancelled: 'danger'
 	};
-	function statusColor(s: string) {
-		return STATUS_COLORS[s] ?? 'bg-muted text-muted-foreground';
+	function statusTone(s: string): Tone {
+		return STATUS_TONES[s] ?? 'neutral';
 	}
 	function statusLabel(s: string) {
 		const l: Record<string, () => string> = {
@@ -266,14 +270,12 @@
 		>
 			<ArrowLeft class="h-5 w-5" />
 		</a>
-		<div>
-			<h1 class="text-2xl font-bold tracking-tight">
-				{m['orgAdmin.billing.attendeeInvoices.title']()}
-			</h1>
-			<p class="text-sm text-muted-foreground">
-				{m['orgAdmin.billing.attendeeInvoices.description']()}
-			</p>
-		</div>
+		<!-- No kicker: the back-to-billing link above already says it. -->
+		<PageHeader
+			title={m['orgAdmin.billing.attendeeInvoices.title']()}
+			subtitle={m['orgAdmin.billing.attendeeInvoices.description']()}
+			class="flex-1"
+		/>
 	</div>
 
 	<div class="relative max-w-sm">
@@ -306,36 +308,24 @@
 			<p class="text-sm">{extractErrorMessage(invoicesQuery.error)}</p>
 		</div>
 	{:else if !invoicesQuery?.data?.results?.length}
-		<div
-			class="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center"
-		>
-			<FileText class="mb-3 h-10 w-10 text-muted-foreground/50" aria-hidden="true" />
-			<h3 class="font-medium">{m['orgAdmin.billing.attendeeInvoices.empty']()}</h3>
-			<p class="mt-1 text-sm text-muted-foreground">
-				{m['orgAdmin.billing.attendeeInvoices.emptyDescription']()}
-			</p>
-		</div>
+		<EmptyState
+			icon={FileText}
+			title={m['orgAdmin.billing.attendeeInvoices.empty']()}
+			body={m['orgAdmin.billing.attendeeInvoices.emptyDescription']()}
+		/>
 	{:else}
 		<div class="overflow-x-auto rounded-lg border">
 			<table class="w-full text-sm">
 				<thead class="bg-muted/50">
-					<tr>
-						<th class="px-4 py-3 text-left font-medium"
+					<tr class="text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
+						<th class="px-4 py-3 text-left"
 							>{m['orgAdmin.billing.attendeeInvoices.invoiceNumber']()}</th
 						>
-						<th class="px-4 py-3 text-left font-medium"
-							>{m['orgAdmin.billing.attendeeInvoices.buyer']()}</th
-						>
-						<th class="px-4 py-3 text-left font-medium"
-							>{m['orgAdmin.billing.attendeeInvoices.status']()}</th
-						>
-						<th class="px-4 py-3 text-right font-medium"
-							>{m['orgAdmin.billing.attendeeInvoices.amount']()}</th
-						>
-						<th class="px-4 py-3 text-left font-medium"
-							>{m['orgAdmin.billing.attendeeInvoices.date']()}</th
-						>
-						<th class="px-4 py-3 text-center font-medium"
+						<th class="px-4 py-3 text-left">{m['orgAdmin.billing.attendeeInvoices.buyer']()}</th>
+						<th class="px-4 py-3 text-left">{m['orgAdmin.billing.attendeeInvoices.status']()}</th>
+						<th class="px-4 py-3 text-right">{m['orgAdmin.billing.attendeeInvoices.amount']()}</th>
+						<th class="px-4 py-3 text-left">{m['orgAdmin.billing.attendeeInvoices.date']()}</th>
+						<th class="px-4 py-3 text-center"
 							><span class="sr-only">{m['common.actions']()}</span></th
 						>
 					</tr>
@@ -357,11 +347,7 @@
 								<div class="text-xs text-muted-foreground">{invoice.buyer_email}</div>
 							</td>
 							<td class="px-4 py-3">
-								<span
-									class="rounded-full px-2.5 py-0.5 text-xs font-medium {statusColor(
-										invoice.status
-									)}">{statusLabel(invoice.status)}</span
-								>
+								<StatusBadge tone={statusTone(invoice.status)} label={statusLabel(invoice.status)} />
 							</td>
 							<td class="px-4 py-3 text-right font-mono"
 								>{formatCurrency(invoice.total_gross, invoice.currency)}</td
@@ -480,10 +466,7 @@
 						</p>
 						<p class="text-lg font-semibold">{inv.invoice_number}</p>
 					</div>
-					<span
-						class="mt-1 rounded-full px-2.5 py-0.5 text-xs font-medium {statusColor(inv.status)}"
-						>{statusLabel(inv.status)}</span
-					>
+					<StatusBadge tone={statusTone(inv.status)} label={statusLabel(inv.status)} class="mt-1" />
 				</div>
 
 				{#if isEditing}
