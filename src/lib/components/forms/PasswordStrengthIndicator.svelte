@@ -82,14 +82,25 @@
 		</div>
 	{/if}
 
-	<!-- Requirements checklist -->
+	<!-- Requirements checklist: row text stays on text-muted-foreground; only the
+	     Check/X icons carry the met/unmet color. `text-destructive` on the X icon
+	     is fine in light mode (8.63:1 on background/card) but the dark token is
+	     only ~2.85:1 against dark card — under the 3:1 non-text floor (WCAG
+	     1.4.11) — so dark mode swaps to destructive-foreground (white,
+	     16.8-18.3:1), matching ToneTile's danger-tone pairing for the same
+	     reason. Hand-verified since destructive-on-card isn't in
+	     audit-brand-themes.py's TEXT_PAIRS (only the solid destructive-foreground-
+	     on-destructive pair is). -->
 	{#if showRequirements && password.length > 0}
 		<div class="space-y-1.5 text-xs">
 			<div class="flex items-center gap-2 text-muted-foreground">
 				{#if hasMinLength}
 					<Check class="h-3.5 w-3.5 text-success" aria-hidden="true" />
 				{:else}
-					<X class="h-3.5 w-3.5 text-destructive" aria-hidden="true" />
+					<X
+						class="h-3.5 w-3.5 text-destructive dark:text-destructive-foreground"
+						aria-hidden="true"
+					/>
 				{/if}
 				<span>{m['passwordStrength.atLeast8']()}</span>
 			</div>
@@ -98,7 +109,10 @@
 				{#if hasUppercase}
 					<Check class="h-3.5 w-3.5 text-success" aria-hidden="true" />
 				{:else}
-					<X class="h-3.5 w-3.5 text-destructive" aria-hidden="true" />
+					<X
+						class="h-3.5 w-3.5 text-destructive dark:text-destructive-foreground"
+						aria-hidden="true"
+					/>
 				{/if}
 				<span>{m['passwordStrength.oneUppercase']()}</span>
 			</div>
@@ -107,7 +121,10 @@
 				{#if hasLowercase}
 					<Check class="h-3.5 w-3.5 text-success" aria-hidden="true" />
 				{:else}
-					<X class="h-3.5 w-3.5 text-destructive" aria-hidden="true" />
+					<X
+						class="h-3.5 w-3.5 text-destructive dark:text-destructive-foreground"
+						aria-hidden="true"
+					/>
 				{/if}
 				<span>{m['passwordStrength.oneLowercase']()}</span>
 			</div>
@@ -116,7 +133,10 @@
 				{#if hasDigit}
 					<Check class="h-3.5 w-3.5 text-success" aria-hidden="true" />
 				{:else}
-					<X class="h-3.5 w-3.5 text-destructive" aria-hidden="true" />
+					<X
+						class="h-3.5 w-3.5 text-destructive dark:text-destructive-foreground"
+						aria-hidden="true"
+					/>
 				{/if}
 				<span>{m['passwordStrength.oneNumber']()}</span>
 			</div>
@@ -125,7 +145,10 @@
 				{#if hasSpecial}
 					<Check class="h-3.5 w-3.5 text-success" aria-hidden="true" />
 				{:else}
-					<X class="h-3.5 w-3.5 text-destructive" aria-hidden="true" />
+					<X
+						class="h-3.5 w-3.5 text-destructive dark:text-destructive-foreground"
+						aria-hidden="true"
+					/>
 				{/if}
 				<span>{m['passwordStrength.oneSpecial']()}</span>
 			</div>
