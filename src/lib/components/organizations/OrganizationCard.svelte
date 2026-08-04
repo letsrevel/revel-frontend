@@ -61,9 +61,10 @@
 	// Container classes based on variant
 	const containerClasses = $derived(
 		cn(
-			'group relative overflow-hidden rounded-lg border bg-card transition-all',
-			// Same lift on all three discovery cards (event / series / organization).
-			'hover:-translate-y-0.5 hover:shadow-lg focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
+			'group relative overflow-hidden rounded-lg border-2 bg-card shadow-poster transition-all',
+			// Same silhouette and lift on all three discovery cards (event / series /
+			// organization) — see EventCard for why it is spelled out by hand.
+			'hover:-translate-y-1 hover:shadow-poster-lg focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
 			variant === 'compact' && 'flex flex-row md:flex-col',
 			variant === 'standard' && 'flex flex-col',
 			className

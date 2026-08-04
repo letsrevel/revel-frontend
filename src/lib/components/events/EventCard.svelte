@@ -110,9 +110,14 @@
 	// Container classes based on variant
 	const containerClasses = $derived(
 		cn(
-			'group relative overflow-hidden rounded-lg border bg-card transition-all',
-			// Same lift on all three discovery cards (event / series / organization).
-			'hover:-translate-y-0.5 hover:shadow-lg focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
+			'group relative overflow-hidden rounded-lg border-2 bg-card shadow-poster transition-all',
+			// Same silhouette and lift on all three discovery cards (event / series /
+			// organization): the thick edge + poster float that `ui/card` took
+			// globally in the uplift, applied by hand because these are bare
+			// `<article>`s rather than the Card primitive. The float is the point —
+			// discovery pages now sit on a tinted panel, so a card has to read as a
+			// white sticker ON it, not a rectangle cut out of it.
+			'hover:-translate-y-1 hover:shadow-poster-lg focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
 			variant === 'compact' && 'flex flex-row md:flex-col',
 			variant === 'standard' && 'flex flex-col',
 			isPast && 'opacity-75',

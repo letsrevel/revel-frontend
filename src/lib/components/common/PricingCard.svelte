@@ -72,7 +72,13 @@
 
 <div
 	class={cn(
-		'rounded-lg border bg-card p-4 text-card-foreground shadow-sm transition-shadow sm:p-5',
+		// Thick edge + poster float, matching what `ui/card` took globally in the
+		// uplift: a pricing card is the loudest decision surface on its page and
+		// was the only one still wearing shadcn's hairline silhouette.
+		// `bg-card` is spelled out as its own class ON THIS ELEMENT and must stay
+		// that way — `tests/e2e/support/membership-locators.ts` resolves a plan
+		// card by walking to the nearest `bg-card` ancestor of its heading.
+		'rounded-lg border-2 bg-card p-4 text-card-foreground shadow-poster transition-shadow sm:p-5',
 		layout === 'stack' && 'flex h-full flex-col',
 		muted && 'opacity-60',
 		className
