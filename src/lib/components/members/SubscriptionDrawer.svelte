@@ -23,7 +23,7 @@
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { AlertTriangle, ExternalLink, Loader2 } from '@lucide/svelte';
-	import StatusBadge from './StatusBadge.svelte';
+	import SubscriptionStatusBadge from './SubscriptionStatusBadge.svelte';
 	import PaymentsTable from './PaymentsTable.svelte';
 	import RecordPaymentModal from './RecordPaymentModal.svelte';
 	import CancelSubscriptionDialog from './CancelSubscriptionDialog.svelte';
@@ -346,7 +346,7 @@
 							<div class="text-base font-bold">{sub.user_display_name}</div>
 							<div class="break-all text-xs text-muted-foreground">{sub.user_email}</div>
 						</div>
-						<StatusBadge status={sub.status} class="shrink-0" />
+						<SubscriptionStatusBadge status={sub.status} class="shrink-0" />
 					</div>
 				</DialogTitle>
 			</DialogHeader>

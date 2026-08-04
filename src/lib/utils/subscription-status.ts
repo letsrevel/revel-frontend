@@ -40,7 +40,7 @@ export function getStatusConfig(status: SubscriptionStatus): StatusConfig {
 
 /**
  * Semantic `Tone` (rebrand vocabulary) for one `SubscriptionStatus`. The
- * single source both `members/StatusBadge` (single-status pill, `aria-label`
+ * single source both `members/SubscriptionStatusBadge` (single-status pill, `aria-label`
  * carries the name) and `members/SubscriptionMetrics` (label+count chip strip,
  * deliberately unlabelled — see `StatusBadge.test.ts`) render from, so the two
  * surfaces can't drift onto different tones for the same status again.

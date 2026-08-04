@@ -39,5 +39,5 @@
 </script>
 
 <!-- aria-label mirrors the visible (unlocalized) status text, per the house
-     `common/StatusBadge` mapper pattern (see `members/StatusBadge.svelte`). -->
+     `common/StatusBadge` mapper pattern (see `members/SubscriptionStatusBadge.svelte`). -->
 <CommonStatusBadge {tone} label={status} {icon} size="sm" class={extraClass} aria-label={status} />

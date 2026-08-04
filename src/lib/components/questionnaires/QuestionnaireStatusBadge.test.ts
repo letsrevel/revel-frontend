@@ -4,7 +4,7 @@ import type { QuestionnaireStatus } from '$lib/api/generated/types.gen';
 import QuestionnaireStatusBadge from './QuestionnaireStatusBadge.svelte';
 
 /**
- * REGRESSION GUARD, same shape as `members/StatusBadge.test.ts` and
+ * REGRESSION GUARD, same shape as `members/SubscriptionStatusBadge.test.ts` and
  * `polls/PollStatusBadge`'s sibling `SubmissionStatusBadge.test.ts`: this
  * pill's accessible NAME is not decoration, and `common/StatusBadge` does not
  * default an `aria-label` from its text content. This guards every status,

@@ -12,7 +12,7 @@
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
-	import StatusBadge from '$lib/components/members/StatusBadge.svelte';
+	import SubscriptionStatusBadge from '$lib/components/members/SubscriptionStatusBadge.svelte';
 	import CancelSubscriptionDialog from './subscription-actions/CancelSubscriptionDialog.svelte';
 	import ChangePlanDialog from './subscription-actions/ChangePlanDialog.svelte';
 	import MembershipPaymentHistory from './MembershipPaymentHistory.svelte';
@@ -264,7 +264,7 @@
 					{/if}
 				</div>
 				{#if sub}
-					<StatusBadge status={sub.status} />
+					<SubscriptionStatusBadge status={sub.status} />
 				{:else}
 					<Badge variant="secondary" class="capitalize">{membership.status}</Badge>
 				{/if}
