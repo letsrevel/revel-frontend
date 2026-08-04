@@ -403,7 +403,16 @@
 	</section>
 
 	<div class="container mx-auto -mt-12 px-4 pb-8 md:pb-12">
-		<!-- Activity Summary Cards -->
+		<!-- Activity Summary Cards. `DashboardActivityCards` renders NOTHING
+		     when all three counts are zero (a brand-new user), so it cannot be
+		     trusted alone to land the -mt-12 pull-up on an opaque surface —
+		     the fix round found the next block down (the "Your Events" filter
+		     row here, or `DashboardUpcomingEvents`' header when this section
+		     is also hidden) sitting bare on the band's cut instead. Both of
+		     those now carry their own `bg-card border-2 shadow-poster` wrapper
+		     (matching the tickets/rsvps pages' "gather filters into one card"
+		     pattern) so whichever block ends up first is opaque
+		     UNCONDITIONALLY, regardless of activity state. -->
 		<DashboardActivityCards {activeTicketsCount} {pendingInvitationsCount} {upcomingRsvpsCount} />
 
 		<!-- Main Content Grid -->
@@ -411,7 +420,7 @@
 			<!-- Your Events Section (with filters) - Show if user has ANY events -->
 			{#if hasAnyEvents}
 				<section aria-labelledby="your-events-heading">
-					<div class="mb-4">
+					<div class="mb-4 rounded-lg border-2 border-border bg-card p-4 shadow-poster sm:p-6">
 						<div class="mb-3 flex items-center justify-between">
 							<h2 id="your-events-heading" class="flex items-center gap-2 text-xl font-extrabold">
 								<Calendar class="h-5 w-5 text-primary" aria-hidden="true" />
