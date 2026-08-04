@@ -82,6 +82,16 @@
 		--poster-ink: 173 40% 8%; /* Ink #0D1E1C */
 		--poster-paper: 268 44% 95%; /* lavender paper panel */
 		--poster-white: 0 0% 100%;
+		/* Poster FLOAT — the landing mocks' depth, promoted to a token so every
+		   surface reads the same shadow and it can flip per mode. This is the
+		   one poster value that is NOT mode-inert: the landing's ink shadow is
+		   cast on a light panel; on the dark aubergine background an ink shadow
+		   is invisible (ink IS darker than nothing, but at 8% L it has almost no
+		   contrast against a 10% L surface), so dark mode casts near-black at a
+		   higher alpha and wider spread instead. Exposed as `shadow-poster` /
+		   `shadow-poster-lg` (tailwind.config.ts). */
+		--poster-shadow: 0 10px 30px hsl(var(--poster-ink) / 0.15);
+		--poster-shadow-lg: 0 18px 44px hsl(var(--poster-ink) / 0.22);
 	}
 
 	.dark {
@@ -111,6 +121,9 @@
 		--input: 270 25% 20%;
 		--ring: 268 60% 72%;
 		--brand-telegram-text: 200 85% 60%; /* 8.0:1 on dark background, 7.3:1 on dark popover (hand-verified) */
+		/* See the light-mode definition: ink casts no shadow on aubergine. */
+		--poster-shadow: 0 10px 30px hsl(0 0% 0% / 0.5);
+		--poster-shadow-lg: 0 20px 50px hsl(0 0% 0% / 0.62);
 	}
 }
 
