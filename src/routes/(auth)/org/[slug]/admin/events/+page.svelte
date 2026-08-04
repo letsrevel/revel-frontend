@@ -373,7 +373,7 @@
 							<div class="flex flex-1 flex-col gap-4 p-4">
 								<div class="space-y-2">
 									<div class="flex items-start justify-between gap-2">
-										<h3 class="line-clamp-2 flex-1 text-lg font-semibold leading-tight">
+										<h3 class="line-clamp-2 flex-1 text-lg font-bold leading-tight">
 											{event.name}
 										</h3>
 										<div class="flex items-center gap-2">

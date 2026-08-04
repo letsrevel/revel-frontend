@@ -167,7 +167,7 @@
 	     action cluster off-screen on intermediate viewports. -->
 	<div class="flex min-w-0 flex-1 flex-col gap-1.5">
 		<div class="flex flex-wrap items-center gap-2">
-			<h3 class="truncate text-sm font-semibold">{event.name}</h3>
+			<h3 class="truncate text-sm font-bold">{event.name}</h3>
 			<StatusBadge tone={statusTone} label={statusLabel} size="sm" class="flex-shrink-0" />
 		</div>
 		{#if isDrifted || showModifiedBadge || hasAttendees}

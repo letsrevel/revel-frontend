@@ -25,7 +25,7 @@
 		<div class="flex items-start gap-3">
 			<Settings class="mt-0.5 h-5 w-5 text-muted-foreground" aria-hidden="true" />
 			<div>
-				<h2 class="text-lg font-semibold">{m['orgAdmin.waitlist.settings.title']()}</h2>
+				<h2 class="text-lg font-bold">{m['orgAdmin.waitlist.settings.title']()}</h2>
 				{#if isLoading}
 					<p class="mt-1 text-sm text-muted-foreground">
 						<Loader2 class="inline h-3.5 w-3.5 animate-spin" aria-hidden="true" />

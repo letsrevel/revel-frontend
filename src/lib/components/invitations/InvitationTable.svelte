@@ -12,6 +12,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { getUserDisplayName } from '$lib/utils/user-display';
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 
 	interface Props {
 		title: string;
@@ -72,21 +73,17 @@
 </script>
 
 <div class="space-y-3">
-	<div class="flex items-center justify-between">
-		<h3 class="text-lg font-semibold">
-			{title}
-		</h3>
+	{#snippet tableActions()}
 		{#if selectedIds.size > 0}
-			<div class="flex items-center gap-2">
-				<span class="text-sm text-muted-foreground">
-					{m['eventInvitationsAdmin.selected']({ count: selectedIds.size })}
-				</span>
-				<Button size="sm" variant="outline" onclick={onClear}
-					>{m['eventInvitationsAdmin.clear']()}</Button
-				>
-			</div>
+			<span class="text-sm text-muted-foreground">
+				{m['eventInvitationsAdmin.selected']({ count: selectedIds.size })}
+			</span>
+			<Button size="sm" variant="outline" onclick={onClear}
+				>{m['eventInvitationsAdmin.clear']()}</Button
+			>
 		{/if}
-	</div>
+	{/snippet}
+	<SectionHeader {title} level={3} actions={tableActions} />
 
 	{#if invitations.length === 0}
 		<div class="rounded-lg border bg-card p-8 text-center">

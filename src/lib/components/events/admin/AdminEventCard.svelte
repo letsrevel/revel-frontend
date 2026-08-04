@@ -171,7 +171,7 @@
 	<div class="flex flex-1 flex-col gap-3 p-4">
 		<!-- Header -->
 		<div class="flex items-start justify-between gap-2">
-			<h3 class="flex-1 font-semibold">{event.name}</h3>
+			<h3 class="flex-1 font-bold">{event.name}</h3>
 			<div class="flex items-center gap-2">
 				{#if event.visibility === 'unlisted'}
 					<span

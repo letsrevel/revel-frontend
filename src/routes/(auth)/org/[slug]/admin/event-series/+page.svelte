@@ -148,7 +148,7 @@
 								<ToneTile tone="neutral" icon={Folder} size="lg" />
 							{/if}
 							<div class="min-w-0 flex-1">
-								<h3 class="line-clamp-1 font-semibold">{series.name}</h3>
+								<h3 class="line-clamp-1 font-bold">{series.name}</h3>
 								<p class="text-sm text-muted-foreground">{series.organization.name}</p>
 							</div>
 						</div>
