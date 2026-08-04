@@ -8,7 +8,6 @@
 	import { Bell } from '@lucide/svelte';
 	import { SeoHead } from '$lib/seo';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
-	import EmptyState from '$lib/components/common/EmptyState.svelte';
 
 	const { data }: { data: PageData } = $props();
 
@@ -56,19 +55,25 @@
 			</a>
 		</div>
 	{:else if success}
-		<!-- Success message: EmptyState's playful tilted chip is the personality
-		     vehicle here too, replacing the raw green-*/50/900/950 hues with the
-		     audited success token pair. EmptyState's own heading stays at its
-		     default level (3) — the page's real h1 is the sr-only one below, so
-		     the visible title isn't duplicated and the document still has
-		     exactly one h1. -->
-		<h1 class="sr-only">{m['unsubscribePage.successTitle']()}</h1>
-		<EmptyState
-			icon={Bell}
-			title={m['unsubscribePage.successTitle']()}
-			body={m['unsubscribePage.successDescription']()}
-			tone="success"
-		/>
+		<!-- Success message: hand-composed centerpiece (not the EmptyState
+		     primitive, which caps at h2/h3) so the page's only heading can be
+		     an h1 — mirrors the auth pages' interstitial pattern (see
+		     verify/+page.svelte). Chip recipe mirrors EmptyState's internal
+		     poster-tinted chip; success tone is right for "preferences saved". -->
+		<div class="text-center">
+			<span
+				aria-hidden="true"
+				class="mx-auto flex h-14 w-14 -rotate-2 items-center justify-center rounded-2xl bg-success text-success-foreground shadow-sm"
+			>
+				<Bell class="h-7 w-7" />
+			</span>
+			<h1 class="mt-4 text-3xl font-black leading-[1.12] sm:text-4xl">
+				{m['unsubscribePage.successTitle']()}
+			</h1>
+			<p class="mt-1.5 text-muted-foreground">
+				{m['unsubscribePage.successDescription']()}
+			</p>
+		</div>
 		<p class="mt-4 text-center text-sm text-muted-foreground">
 			{m['unsubscribePage.redirecting']()}
 		</p>
