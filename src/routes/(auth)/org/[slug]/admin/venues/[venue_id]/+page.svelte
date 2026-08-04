@@ -15,6 +15,8 @@
 	import SectorCard from '$lib/components/venues/SectorCard.svelte';
 	import SectorModal from '$lib/components/venues/SectorModal.svelte';
 	import PriceCategorySection from '$lib/components/venues/PriceCategorySection.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { toast } from 'svelte-sonner';
 
 	const organization = $derived(page.data.organization);
@@ -191,55 +193,51 @@
 		</div>
 	{:else if venue}
 		<!-- Header -->
-		<div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-			<div>
-				<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
-					{m['orgAdmin.sectors.pageTitle']({ venueName: venue.name })}
-				</h1>
-				<p class="text-muted-foreground">{m['orgAdmin.sectors.pageDescription']()}</p>
-			</div>
-
-			<div class="flex flex-wrap items-center gap-3">
-				<a
-					href={resolve('/(auth)/org/[slug]/admin/venues/[venue_id]/designer', {
-						slug: organization.slug,
-						venue_id: venueId
-					})}
-					class="inline-flex items-center gap-2 rounded-md border border-input px-4 py-2 font-semibold transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-				>
-					<PenTool class="h-5 w-5" aria-hidden="true" />
-					{m['seatDesigner.open']()}
-				</a>
-				<button
-					type="button"
-					onclick={handleCreate}
-					class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-				>
-					<Plus class="h-5 w-5" aria-hidden="true" />
-					{m['orgAdmin.sectors.createButton']()}
-				</button>
-			</div>
-		</div>
+		{#snippet headerActions()}
+			<a
+				href={resolve('/(auth)/org/[slug]/admin/venues/[venue_id]/designer', {
+					slug: organization.slug,
+					venue_id: venueId
+				})}
+				class="inline-flex items-center gap-2 rounded-md border border-input px-4 py-2 font-semibold transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+			>
+				<PenTool class="h-5 w-5" aria-hidden="true" />
+				{m['seatDesigner.open']()}
+			</a>
+			<button
+				type="button"
+				onclick={handleCreate}
+				class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+			>
+				<Plus class="h-5 w-5" aria-hidden="true" />
+				{m['orgAdmin.sectors.createButton']()}
+			</button>
+		{/snippet}
+		<PageHeader
+			kicker={m['orgAdmin.nav.venues']()}
+			title={m['orgAdmin.sectors.pageTitle']({ venueName: venue.name })}
+			subtitle={m['orgAdmin.sectors.pageDescription']()}
+			actions={headerActions}
+		/>
 
 		<!-- Content -->
 		{#if sectors.length === 0}
-			<div
-				class="rounded-lg border-2 border-dashed border-gray-300 p-12 text-center dark:border-gray-600"
+			<EmptyState
+				icon={LayoutGrid}
+				title={m['orgAdmin.sectors.empty.title']()}
+				body={m['orgAdmin.sectors.empty.description']()}
 			>
-				<LayoutGrid class="mx-auto h-12 w-12 text-muted-foreground" aria-hidden="true" />
-				<h3 class="mt-4 text-lg font-semibold">{m['orgAdmin.sectors.empty.title']()}</h3>
-				<p class="mt-2 text-sm text-muted-foreground">
-					{m['orgAdmin.sectors.empty.description']()}
-				</p>
-				<button
-					type="button"
-					onclick={handleCreate}
-					class="mt-4 inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-				>
-					<Plus class="h-5 w-5" aria-hidden="true" />
-					{m['orgAdmin.sectors.createButton']()}
-				</button>
-			</div>
+				{#snippet action()}
+					<button
+						type="button"
+						onclick={handleCreate}
+						class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					>
+						<Plus class="h-5 w-5" aria-hidden="true" />
+						{m['orgAdmin.sectors.createButton']()}
+					</button>
+				{/snippet}
+			</EmptyState>
 		{:else}
 			<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 				{#each sectors as sector (sector.id)}

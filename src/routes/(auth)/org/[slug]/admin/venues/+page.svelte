@@ -13,6 +13,8 @@
 	import { Plus, Search, Building2 } from '@lucide/svelte';
 	import VenueCard from '$lib/components/venues/VenueCard.svelte';
 	import VenueModal from '$lib/components/venues/VenueModal.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { toast } from 'svelte-sonner';
 
 	const organization = $derived($page.data.organization);
@@ -124,14 +126,7 @@
 
 <div class="space-y-6">
 	<!-- Header -->
-	<div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-		<div>
-			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
-				{m['orgAdmin.venues.pageTitle']()}
-			</h1>
-			<p class="text-muted-foreground">{m['orgAdmin.venues.pageDescription']()}</p>
-		</div>
-
+	{#snippet headerActions()}
 		<button
 			type="button"
 			onclick={handleCreate}
@@ -140,7 +135,13 @@
 			<Plus class="h-5 w-5" aria-hidden="true" />
 			{m['orgAdmin.venues.createButton']()}
 		</button>
-	</div>
+	{/snippet}
+	<PageHeader
+		kicker={m['orgAdmin.nav.venues']()}
+		title={m['orgAdmin.venues.pageTitle']()}
+		subtitle={m['orgAdmin.venues.pageDescription']()}
+		actions={headerActions}
+	/>
 
 	<!-- Search -->
 	<div class="relative max-w-md">
@@ -171,27 +172,26 @@
 			></div>
 		</div>
 	{:else if venues.length === 0}
-		<div
-			class="rounded-lg border-2 border-dashed border-gray-300 p-12 text-center dark:border-gray-600"
+		<EmptyState
+			icon={Building2}
+			title={m['orgAdmin.venues.empty.title']()}
+			body={searchQuery
+				? m['orgAdmin.venues.empty.withSearch']()
+				: m['orgAdmin.venues.empty.description']()}
 		>
-			<Building2 class="mx-auto h-12 w-12 text-muted-foreground" aria-hidden="true" />
-			<h3 class="mt-4 text-lg font-semibold">{m['orgAdmin.venues.empty.title']()}</h3>
-			<p class="mt-2 text-sm text-muted-foreground">
-				{searchQuery
-					? m['orgAdmin.venues.empty.withSearch']()
-					: m['orgAdmin.venues.empty.description']()}
-			</p>
-			{#if !searchQuery}
-				<button
-					type="button"
-					onclick={handleCreate}
-					class="mt-4 inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-				>
-					<Plus class="h-5 w-5" aria-hidden="true" />
-					{m['orgAdmin.venues.createButton']()}
-				</button>
-			{/if}
-		</div>
+			{#snippet action()}
+				{#if !searchQuery}
+					<button
+						type="button"
+						onclick={handleCreate}
+						class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					>
+						<Plus class="h-5 w-5" aria-hidden="true" />
+						{m['orgAdmin.venues.createButton']()}
+					</button>
+				{/if}
+			{/snippet}
+		</EmptyState>
 	{:else}
 		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 			{#each venues as venue (venue.id)}

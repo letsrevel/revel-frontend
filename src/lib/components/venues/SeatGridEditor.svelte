@@ -377,7 +377,7 @@
 		<!-- Blast radius BEFORE the paint commits (#674): the editor is opened in
 		     the context of one event, which is exactly what makes the venue-wide,
 		     immediate effect of repainting surprising. -->
-		<p class="mb-3 flex items-start gap-1.5 text-xs text-amber-700 dark:text-amber-400">
+		<p class="mb-3 flex items-start gap-1.5 text-xs text-highlight-foreground dark:text-highlight">
 			<TriangleAlert class="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
 			{m['seatGridEditor.paint.venueWideCaution']()}
 		</p>
@@ -453,7 +453,7 @@
 				<button
 					type="button"
 					onclick={markSelectedAccessible}
-					class="inline-flex items-center gap-1.5 rounded-md border border-blue-300 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-950 dark:text-blue-300 dark:hover:bg-blue-900"
+					class="inline-flex items-center gap-1.5 rounded-md border border-info/40 bg-info/10 px-3 py-1.5 text-sm font-medium text-info hover:bg-info/20"
 				>
 					<Accessibility class="h-4 w-4" />
 					{m['seatGridEditor.toggleAccessible']()}
@@ -461,7 +461,7 @@
 				<button
 					type="button"
 					onclick={markSelectedObstructed}
-					class="inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-3 py-1.5 text-sm font-medium text-amber-700 hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-300 dark:hover:bg-amber-900"
+					class="inline-flex items-center gap-1.5 rounded-md border border-highlight/60 bg-highlight/10 px-3 py-1.5 text-sm font-medium text-highlight-foreground hover:bg-highlight/20 dark:text-highlight"
 				>
 					<EyeOff class="h-4 w-4" />
 					{m['seatGridEditor.toggleObstructed']()}
