@@ -116,7 +116,7 @@
 			notification={readNotification}
 			{authToken}
 			onStatusChange={handleStatusChange}
-			class="border-2 border-blue-500"
+			class="border-2 border-info"
 		/>
 	</section>
 </div>

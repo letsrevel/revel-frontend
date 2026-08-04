@@ -108,9 +108,14 @@
 				<span class="text-sm font-extrabold uppercase tracking-[0.12em] text-primary">
 					{m['activeOffer.eyebrow']()}
 				</span>
-				<h2 class="text-xl font-extrabold leading-tight sm:text-2xl">
+				<!-- Not a heading: this banner can render above the event title (page
+				     h1, in EventHeader), which would make a real <h2> here precede
+				     the h1 in DOM order (axe heading-order, #790). The alert role +
+				     aria-live on the wrapper already announces this to AT. Visual
+				     classes unchanged. -->
+				<p class="text-xl font-extrabold leading-tight sm:text-2xl">
 					{expired ? m['activeOffer.expired']() : m['activeOffer.header']()}
-				</h2>
+				</p>
 				{#if !expired}
 					<p class="text-sm sm:text-base">
 						{m['activeOffer.body']({ time: formattedExpiry })}

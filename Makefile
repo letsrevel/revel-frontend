@@ -1,4 +1,4 @@
-.PHONY: dev build preview format format-check lint lint-fix types types-canary i18n-check i18n-hardcoded i18n-hardcoded-update file-length no-ssr-token audit-images audit-soft-404 audit licensecheck audit-deps check fix test test-coverage test-e2e generate-api bump-version bump-minor release
+.PHONY: dev build preview format format-check lint lint-fix types types-canary i18n-check i18n-freshness i18n-hardcoded i18n-hardcoded-update file-length no-ssr-token audit-images audit-soft-404 audit licensecheck audit-deps check fix test test-coverage test-e2e generate-api bump-version bump-minor release
 
 # ─────────────────────────────────────────────
 # Development
@@ -41,6 +41,15 @@ types-canary:
 
 i18n-check:
 	pnpm i18n:compile
+
+# Assert the compiled Paraglide bundle (src/lib/paraglide/messages/*.js) covers
+# every key in messages/*.json, BEFORE i18n-check recompiles it out from under
+# us. A stale bundle here means messages/*.json changed and `pnpm
+# paraglide:compile` wasn't re-run and committed — any page referencing the
+# missing key hard-500s at runtime (#789). Also the first step of `pnpm build`
+# so the same staleness fails a build, not just `make check`.
+i18n-freshness:
+	@node scripts/check-paraglide-freshness.mjs
 
 # Guard against shipping untranslated user-facing copy: fails if a NEW hardcoded
 # string (toast / aria-label / placeholder / title / alt / visible text) appears
@@ -91,7 +100,7 @@ audit-deps: audit licensecheck
 # i18n-check runs before the type checks: it compiles the Paraglide messages that
 # svelte-check resolves `$$lib/paraglide/*` against, and the canary refuses to run
 # without them (see scripts/check-type-gate-armed.sh).
-check: format-check lint i18n-check types types-canary i18n-hardcoded file-length no-ssr-token audit-images
+check: format-check lint i18n-freshness i18n-check types types-canary i18n-hardcoded file-length no-ssr-token audit-images
 
 # Auto-fix everything that can be auto-fixed
 fix: format lint-fix

@@ -151,7 +151,11 @@
 								<ToneTile tone="neutral" icon={Folder} size="lg" />
 							{/if}
 							<div class="min-w-0 flex-1">
-								<h3 class="line-clamp-1 font-bold">{series.name}</h3>
+								<!-- Card title, not a heading: the page h1 (PageHeader) is followed
+								     directly by this card with no intervening h2, so an <h3> here
+								     would skip a level (axe heading-order, #790). Visual classes
+								     unchanged. -->
+								<p class="line-clamp-1 font-bold">{series.name}</p>
 								<p class="text-sm text-muted-foreground">{series.organization.name}</p>
 							</div>
 						</div>
