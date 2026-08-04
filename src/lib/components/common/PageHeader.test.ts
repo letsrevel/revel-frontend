@@ -33,6 +33,15 @@ describe('PageHeader', () => {
 		expect(h1.className).toContain('sm:text-4xl');
 	});
 
+	it('poster volume applies the loudest typography contract', () => {
+		render(PageHeader, { props: { title: 'Party time', volume: 'poster' } });
+		const h1 = screen.getByRole('heading', { level: 1 });
+		expect(h1.className).toContain('text-4xl');
+		expect(h1.className).toContain('font-black');
+		expect(h1.className).toContain('leading-[1.08]');
+		expect(h1.className).toContain('sm:text-5xl');
+	});
+
 	it('studio volume applies the full typography contract', () => {
 		render(PageHeader, { props: { title: 'Settings', volume: 'studio' } });
 		const h1 = screen.getByRole('heading', { level: 1 });
@@ -80,5 +89,10 @@ describe('PageHeader', () => {
 		unmount();
 		render(PageHeader, { props: { title: 'Hey', volume: 'studio', decoration: snip('New!') } });
 		expect(screen.queryByText('New!')).toBeNull();
+	});
+
+	it('decoration also renders in poster volume', () => {
+		render(PageHeader, { props: { title: 'Hey', volume: 'poster', decoration: snip('New!') } });
+		expect(screen.getByText('New!').closest('[aria-hidden="true"]')).not.toBeNull();
 	});
 });

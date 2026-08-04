@@ -29,7 +29,8 @@ describe('SectionHeader', () => {
 	it('celebration volume uses the display heading scale', () => {
 		render(SectionHeader, { props: { title: 'Highlights', volume: 'celebration' } });
 		const heading = screen.getByRole('heading', { level: 2 });
-		expect(heading.className).toContain('text-xl');
+		// text-2xl since the uplift prototype (was text-xl) — studio unchanged.
+		expect(heading.className).toContain('text-2xl');
 		expect(heading.className).toContain('font-extrabold');
 	});
 
