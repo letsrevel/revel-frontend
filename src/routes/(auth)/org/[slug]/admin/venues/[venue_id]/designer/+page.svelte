@@ -26,8 +26,10 @@
 		VenueSectorWithSeatsSchema
 	} from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { ArrowLeft } from '@lucide/svelte';
+	import { ArrowLeft, LayoutGrid } from '@lucide/svelte';
 	import SeatMapDesigner from '$lib/components/venues/designer/SeatMapDesigner.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import {
 		buildDesignerModel,
 		type DesignerModel
@@ -217,21 +219,23 @@
 			></div>
 		</div>
 	{:else}
-		<div>
-			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">{pageTitle}</h1>
-			<p class="text-muted-foreground">
-				{m['seatDesigner.pageDescription']()}
-			</p>
-		</div>
+		<PageHeader
+			kicker={m['orgAdmin.nav.venues']()}
+			title={pageTitle}
+			subtitle={m['seatDesigner.pageDescription']()}
+		/>
 
 		{#if model.blocks.length === 0}
-			<div
-				class="rounded-lg border-2 border-dashed border-gray-300 p-12 text-center dark:border-gray-600"
-			>
-				<p class="text-sm text-muted-foreground">
-					{m['seatDesigner.empty']()}
-				</p>
-			</div>
+			<!-- `orgAdmin.sectors.empty.title` is reused deliberately — this venue's
+			     "no sectors yet" is exactly what leaves the designer with nothing to
+			     lay out, so the existing short title fits verbatim. Full explanation
+			     stays in `body`. -->
+			<EmptyState
+				icon={LayoutGrid}
+				title={m['orgAdmin.sectors.empty.title']()}
+				body={m['seatDesigner.empty']()}
+				level={2}
+			/>
 		{:else}
 			<SeatMapDesigner
 				{model}

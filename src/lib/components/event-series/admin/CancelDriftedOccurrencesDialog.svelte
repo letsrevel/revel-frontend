@@ -175,6 +175,22 @@
 				return m['recurringEvents.drift.bulkDialog.rowStatus.error']();
 		}
 	}
+
+	// Soft-tint chip classes mirror common/ToneTile's audited "icon/accent on
+	// surface" recipe (success/brand are legible as text in both modes; see
+	// CLAUDE.md trap list for why destructive/highlight would need a split).
+	function rowStatusChipClass(status: RowStatus): string {
+		switch (status) {
+			case 'done':
+				return 'bg-success/10 text-success';
+			case 'error':
+				return 'bg-destructive/10 text-destructive';
+			case 'inFlight':
+				return 'bg-primary/10 text-primary';
+			case 'pending':
+				return 'bg-muted text-muted-foreground';
+		}
+	}
 </script>
 
 <Dialog bind:open onOpenChange={(isOpen) => !isOpen && handleClose()}>
@@ -198,7 +214,7 @@
 
 		{#if exceedsSafetyThreshold}
 			<p
-				class="border-warning/50 bg-warning/10 mt-3 rounded-md border p-3 text-xs text-muted-foreground"
+				class="mt-3 rounded-md border border-highlight bg-highlight/10 p-3 text-xs text-muted-foreground"
 				data-testid="drift-bulk-threshold"
 			>
 				{m['recurringEvents.drift.bulkDialog.thresholdWarning']({ n: total })}
@@ -221,14 +237,9 @@
 						</p>
 					</div>
 					<span
-						class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium {status ===
-						'done'
-							? 'bg-green-100 text-green-900 dark:bg-green-900/30 dark:text-green-200'
-							: status === 'error'
-								? 'bg-destructive/10 text-destructive'
-								: status === 'inFlight'
-									? 'bg-primary/10 text-primary'
-									: 'bg-muted text-muted-foreground'}"
+						class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium {rowStatusChipClass(
+							status
+						)}"
 					>
 						{#if status === 'inFlight'}
 							<Loader2 class="h-3 w-3 animate-spin" aria-hidden="true" />
@@ -250,7 +261,7 @@
 				type="checkbox"
 				bind:checked={armed}
 				disabled={running || allDone}
-				class="mt-1 h-4 w-4 rounded border-gray-300 text-destructive focus:ring-2 focus:ring-destructive"
+				class="mt-1 h-4 w-4 rounded border-input text-destructive focus:ring-2 focus:ring-destructive"
 				data-testid="drift-bulk-arm"
 			/>
 			<div class="flex-1 text-sm">

@@ -1,12 +1,12 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { cn } from '$lib/utils/cn';
 	import { getUserDisplayName } from '$lib/utils/user-display';
-	import { getRsvpStatusColor, getRsvpStatusLabel } from '$lib/utils/status-colors';
+	import { getRsvpStatusTone, getRsvpStatusLabel } from '$lib/utils/status-colors';
 	import { formatDateTime } from '$lib/utils/date';
 	import { Edit, Trash2, UserPlus, MoreVertical, Ban } from '@lucide/svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Badge } from '$lib/components/ui/badge';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 	import RsvpNoteCell from './RsvpNoteCell.svelte';
 	import type { RsvpDetailSchema } from '$lib/api/generated/types.gen';
@@ -66,14 +66,11 @@
 							<p class="text-sm text-muted-foreground">{rsvp.user.email || 'N/A'}</p>
 						</div>
 					</div>
-					<span
-						class={cn(
-							'shrink-0 rounded-full px-2 py-1 text-xs font-semibold',
-							getRsvpStatusColor(rsvp.status)
-						)}
-					>
-						{getRsvpStatusLabel(rsvp.status)}
-					</span>
+					<StatusBadge
+						tone={getRsvpStatusTone(rsvp.status)}
+						label={getRsvpStatusLabel(rsvp.status)}
+						class="shrink-0"
+					/>
 				</div>
 
 				<p class="text-xs text-muted-foreground">

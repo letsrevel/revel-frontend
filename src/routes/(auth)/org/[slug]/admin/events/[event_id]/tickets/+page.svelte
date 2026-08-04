@@ -42,6 +42,8 @@
 	import RenameTicketHolderDialog from '$lib/components/tickets/RenameTicketHolderDialog.svelte';
 	import MakeMemberModal from '$lib/components/members/MakeMemberModal.svelte';
 	import ExportButton from '$lib/components/common/ExportButton.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { isSeriesPassCode } from '$lib/utils/series-pass-qr';
 	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 
@@ -466,47 +468,46 @@
 			<span>/</span>
 			<span>{data.event.name}</span>
 		</div>
-		<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-			<div>
-				<h1 class="text-3xl font-bold">{m['eventTicketsAdmin.pageTitle']()}</h1>
-				<p class="mt-2 text-muted-foreground">{m['eventTicketsAdmin.pageDescription']()}</p>
-			</div>
-			<div class="flex flex-wrap items-center gap-2">
+		{#snippet ticketsHeaderActions()}
+			<a
+				href={resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', {
+					slug: data.event.organization.slug,
+					event_id: data.event.id
+				})}
+				class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+			>
+				{m['eventEditor.editEvent']()}
+			</a>
+			<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
+			<a
+				href={`${resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', { slug: data.event.organization.slug, event_id: data.event.id })}?tab=ticketing`}
+				class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+			>
+				{m['eventEditor.ticketing']()}
+			</a>
+			<!-- eslint-enable svelte/no-navigation-without-resolve -->
+			{#if data.event.waitlist_open}
 				<a
-					href={resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', {
+					href={resolve('/(auth)/org/[slug]/admin/events/[event_id]/waitlist', {
 						slug: data.event.organization.slug,
 						event_id: data.event.id
 					})}
 					class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 				>
-					{m['eventEditor.editEvent']()}
+					{m['eventActionSidebar.manageWaitlist']()}
 				</a>
-				<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
-				<a
-					href={`${resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', { slug: data.event.organization.slug, event_id: data.event.id })}?tab=ticketing`}
-					class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-				>
-					{m['eventEditor.ticketing']()}
-				</a>
-				<!-- eslint-enable svelte/no-navigation-without-resolve -->
-				{#if data.event.waitlist_open}
-					<a
-						href={resolve('/(auth)/org/[slug]/admin/events/[event_id]/waitlist', {
-							slug: data.event.organization.slug,
-							event_id: data.event.id
-						})}
-						class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-					>
-						{m['eventActionSidebar.manageWaitlist']()}
-					</a>
-				{/if}
-				<ExportButton
-					label={m['exportButton.exportAttendees']()}
-					onExport={handleExportAttendees}
-					accessToken={authStore.accessToken}
-				/>
-			</div>
-		</div>
+			{/if}
+			<ExportButton
+				label={m['exportButton.exportAttendees']()}
+				onExport={handleExportAttendees}
+				accessToken={authStore.accessToken}
+			/>
+		{/snippet}
+		<PageHeader
+			title={m['eventTicketsAdmin.pageTitle']()}
+			subtitle={m['eventTicketsAdmin.pageDescription']()}
+			actions={ticketsHeaderActions}
+		/>
 	</div>
 
 	<!-- Check-in Button (QR Scanner) -->
@@ -544,19 +545,13 @@
 	<!-- Tickets List -->
 	<div class="mt-6">
 		{#if data.tickets.length === 0}
-			<div
-				class="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center"
-			>
-				<Ticket class="mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
-				<h3 class="mb-2 text-lg font-semibold">{m['eventTicketsAdmin.noTicketsFiltered']()}</h3>
-				<p class="text-sm text-muted-foreground">
-					{#if searchQuery || selectedStatus || selectedPaymentMethod || selectedSource}
-						{m['eventTicketsAdmin.noTicketsFiltered']()}
-					{:else}
-						{m['eventTicketsAdmin.noTicketsEmpty']()}
-					{/if}
-				</p>
-			</div>
+			<EmptyState
+				icon={Ticket}
+				title={m['eventTicketsAdmin.noTicketsFiltered']()}
+				body={searchQuery || selectedStatus || selectedPaymentMethod || selectedSource
+					? m['eventTicketsAdmin.noTicketsFiltered']()
+					: m['eventTicketsAdmin.noTicketsEmpty']()}
+			/>
 		{:else}
 			<!-- Desktop Table -->
 			<TicketTable

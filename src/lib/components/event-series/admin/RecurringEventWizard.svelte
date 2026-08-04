@@ -443,7 +443,7 @@
 				'flex h-10 w-10 items-center justify-center rounded-full border-2 font-semibold transition-colors',
 				currentStep === 'event'
 					? 'border-primary bg-primary text-primary-foreground'
-					: 'border-green-600 bg-green-600 text-white'
+					: 'border-success bg-success text-success-foreground'
 			)}
 			aria-current={currentStep === 'event' ? 'step' : undefined}
 		>

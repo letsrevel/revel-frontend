@@ -1,12 +1,12 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { cn } from '$lib/utils/cn';
 	import { getUserDisplayName } from '$lib/utils/user-display';
-	import { getRsvpStatusColor, getRsvpStatusLabel } from '$lib/utils/status-colors';
+	import { getRsvpStatusTone, getRsvpStatusLabel } from '$lib/utils/status-colors';
 	import { formatDateTime } from '$lib/utils/date';
 	import { Edit, Trash2, UserPlus, MoreVertical, Ban } from '@lucide/svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Badge } from '$lib/components/ui/badge';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 	import RsvpNoteCell from './RsvpNoteCell.svelte';
 	import type { RsvpDetailSchema } from '$lib/api/generated/types.gen';
@@ -38,32 +38,32 @@
 		<thead class="bg-muted/50">
 			<tr>
 				<th
-					class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
+					class="px-6 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 				>
 					{m['attendeesAdmin.tableHeaderName']()}
 				</th>
 				<th
-					class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
+					class="px-6 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 				>
 					{m['attendeesAdmin.tableHeaderEmail']()}
 				</th>
 				<th
-					class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
+					class="px-6 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 				>
 					{m['attendeesAdmin.tableHeaderStatus']()}
 				</th>
 				<th
-					class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
+					class="px-6 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 				>
 					{m['attendeesAdmin.tableHeaderNote']()}
 				</th>
 				<th
-					class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
+					class="px-6 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 				>
 					{m['attendeesAdmin.tableHeaderRsvpDate']()}
 				</th>
 				<th
-					class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground"
+					class="px-6 py-3 text-right text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 				>
 					{m['attendeesAdmin.tableHeaderActions']()}
 				</th>
@@ -105,14 +105,10 @@
 						{rsvp.user.email || 'N/A'}
 					</td>
 					<td class="whitespace-nowrap px-6 py-4 text-sm">
-						<span
-							class={cn(
-								'inline-flex rounded-full px-2 py-1 text-xs font-semibold',
-								getRsvpStatusColor(rsvp.status)
-							)}
-						>
-							{getRsvpStatusLabel(rsvp.status)}
-						</span>
+						<StatusBadge
+							tone={getRsvpStatusTone(rsvp.status)}
+							label={getRsvpStatusLabel(rsvp.status)}
+						/>
 					</td>
 					<td class="max-w-xs px-6 py-4 text-sm">
 						{#if rsvp.note}

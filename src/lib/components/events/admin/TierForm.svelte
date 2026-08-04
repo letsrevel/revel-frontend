@@ -562,7 +562,7 @@
 							type="checkbox"
 							bind:checked={allowUserCancellation}
 							disabled={isPending}
-							class="mt-0.5 h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary"
+							class="mt-0.5 h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-primary"
 						/>
 						<div>
 							<span class="text-sm font-medium">

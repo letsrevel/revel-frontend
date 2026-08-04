@@ -196,12 +196,14 @@
 		</DialogHeader>
 
 		<!-- Warning Banner -->
-		<div class="mx-6 mt-4 flex gap-2 rounded-md bg-orange-50 p-3 text-sm dark:bg-orange-950">
+		<div
+			class="mx-6 mt-4 flex gap-2 rounded-md border border-highlight bg-highlight/10 p-3 text-sm"
+		>
 			<AlertCircle
-				class="h-4 w-4 shrink-0 text-orange-600 dark:text-orange-400"
+				class="h-4 w-4 shrink-0 text-highlight-foreground dark:text-highlight"
 				aria-hidden="true"
 			/>
-			<p class="text-orange-900 dark:text-orange-100">
+			<p class="text-foreground">
 				<strong>{m['seriesQuestionnaireAssignmentModal.appliesToAllEvents']()}</strong>
 				{m['seriesQuestionnaireAssignmentModal.allEventsSuffix']()}
 			</p>

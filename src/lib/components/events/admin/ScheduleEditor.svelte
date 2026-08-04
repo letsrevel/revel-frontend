@@ -6,6 +6,7 @@
 	import { DurationInput } from '$lib/components/forms';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import { CalendarClock, Plus, Trash2, AlertTriangle } from '@lucide/svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { emptyRow, rowCompleteness, startsBeforeAnchor, type ScheduleRow } from './schedule-rows';
 	import { formatDateTimeReadback } from '$lib/utils/date';
 
@@ -33,7 +34,7 @@
 	<div class="flex items-start gap-2">
 		<CalendarClock class="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
 		<div>
-			<h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">
+			<h3 class="text-sm font-medium text-foreground">
 				{m['eventScheduleAdmin.title']()}
 			</h3>
 			<p class="mt-1 text-xs text-muted-foreground">
@@ -43,12 +44,11 @@
 	</div>
 
 	{#if rows.length === 0}
-		<div
-			class="rounded-lg border-2 border-dashed border-gray-300 p-6 text-center dark:border-gray-600"
-		>
-			<CalendarClock class="mx-auto h-8 w-8 text-muted-foreground" aria-hidden="true" />
-			<p class="mt-2 text-sm text-muted-foreground">{m['eventScheduleAdmin.empty']()}</p>
-		</div>
+		<EmptyState
+			icon={CalendarClock}
+			title={m['eventScheduleAdmin.emptyTitle']()}
+			body={m['eventScheduleAdmin.empty']()}
+		/>
 	{:else}
 		<ul class="space-y-4">
 			{#each rows as row, index (row.id)}
@@ -129,7 +129,7 @@
 							{:else if startBefore}
 								<p
 									id="schedule-start-warning-{row.id}"
-									class="mt-1 flex items-start gap-1 text-xs text-amber-600 dark:text-amber-500"
+									class="mt-1 flex items-start gap-1 text-xs text-highlight-foreground dark:text-highlight"
 								>
 									<AlertTriangle class="mt-0.5 h-3 w-3 shrink-0" aria-hidden="true" />
 									{m['eventScheduleAdmin.beforeStartWarning']()}
@@ -183,7 +183,7 @@
 							type="checkbox"
 							bind:checked={row.isRequired}
 							{disabled}
-							class="mt-0.5 h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary"
+							class="mt-0.5 h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-primary"
 						/>
 						<div>
 							<span class="text-sm font-medium">{m['eventScheduleAdmin.required']()}</span>

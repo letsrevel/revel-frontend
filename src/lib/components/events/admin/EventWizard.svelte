@@ -502,7 +502,7 @@
 				'flex h-10 w-10 items-center justify-center rounded-full border-2 font-semibold transition-colors',
 				currentStep === 1
 					? 'border-primary bg-primary text-primary-foreground'
-					: 'border-green-600 bg-green-600 text-white'
+					: 'border-success bg-success text-success-foreground'
 			)}
 			aria-current={currentStep === 1 ? 'step' : undefined}
 		>
@@ -515,7 +515,7 @@
 				currentStep === 2
 					? 'border-primary bg-primary text-primary-foreground'
 					: currentStep > 2
-						? 'border-green-600 bg-green-600 text-white'
+						? 'border-success bg-success text-success-foreground'
 						: 'border-border bg-background text-muted-foreground'
 			)}
 			aria-current={currentStep === 2 ? 'step' : undefined}
@@ -539,14 +539,20 @@
 		{/if}
 	</div>
 
-	<!-- Success message -->
+	<!-- Success message. `bg-success/10` alone composites against whatever
+	     sits behind it — over the page background that measures 4.39:1 for
+	     `text-success` (below 4.5 for this normal-size text); the opaque
+	     `bg-card` layer underneath fixes the backdrop so the tint composites
+	     to 4.94:1 instead (hand-verified; no destructive/success-on-background
+	     pair covers this composited case in scripts/audit-brand-themes.py). -->
 	{#if successMessage}
 		<div
-			class="rounded-md bg-green-50 p-4 text-green-900 dark:bg-green-950/50 dark:text-green-100"
+			class="relative overflow-hidden rounded-md border border-success/40 bg-card"
 			role="status"
 			aria-live="polite"
 		>
-			<p class="font-semibold">{successMessage}</p>
+			<div class="absolute inset-0 bg-success/10" aria-hidden="true"></div>
+			<p class="relative p-4 font-semibold text-success">{successMessage}</p>
 		</div>
 	{/if}
 

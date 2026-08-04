@@ -8845,6 +8845,7 @@
 		"title": "Programme",
 		"description": "Ajoute une chronologie des sessions pour cet événement. Les horaires sont relatifs au début de l'événement, ainsi le programme reste correct si tu dupliques l'événement.",
 		"empty": "Aucune session pour l'instant. Ajoute la première pour construire la chronologie de ton événement.",
+		"emptyTitle": "Aucune session pour l'instant",
 		"sessionNumber": "Session {number}",
 		"removeSession": "Supprimer la session",
 		"sessionTitle": "Titre de la session",

@@ -9,6 +9,7 @@
 		"title": "Schedule",
 		"description": "Add a timeline of sessions for this event. Times are relative to the event start, so the schedule stays correct if you duplicate the event.",
 		"empty": "No sessions yet. Add the first one to build your event timeline.",
+		"emptyTitle": "No sessions yet",
 		"sessionNumber": "Session {number}",
 		"removeSession": "Remove session",
 		"sessionTitle": "Session title",

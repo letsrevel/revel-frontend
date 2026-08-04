@@ -148,7 +148,7 @@
 				checked={resolved[toggle.key]}
 				{disabled}
 				onchange={(e) => setToggle(toggle.key, e.currentTarget.checked)}
-				class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
+				class="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-ring"
 				data-testid={toggle.testid}
 			/>
 			<div class="flex-1">

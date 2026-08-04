@@ -190,11 +190,11 @@
 			{/if}
 
 			<div
-				class="border-warning/50 bg-warning/10 flex items-start gap-3 rounded-md border p-3 text-sm"
+				class="flex items-start gap-3 rounded-md border border-highlight bg-highlight/10 p-3 text-sm"
 				data-testid="cancel-occurrence-body"
 			>
 				<AlertTriangle
-					class="text-warning-foreground mt-0.5 h-4 w-4 flex-shrink-0"
+					class="mt-0.5 h-4 w-4 flex-shrink-0 text-highlight-foreground dark:text-highlight"
 					aria-hidden="true"
 				/>
 				<p class="flex-1">

@@ -314,7 +314,7 @@
 					<div class="space-y-4 border-t p-3">
 						<!-- Info Box -->
 						<div
-							class="flex items-start gap-3 rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900 dark:border-blue-800 dark:bg-blue-950/50 dark:text-blue-100"
+							class="flex items-start gap-3 rounded-md border border-info/40 bg-info/10 p-3 text-sm text-info"
 						>
 							<HelpCircle class="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
 							<div class="space-y-2">

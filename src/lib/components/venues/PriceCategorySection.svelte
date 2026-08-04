@@ -9,6 +9,8 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 	import { Plus, Edit, Trash2, Tag } from '@lucide/svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import PriceCategoryModal from './PriceCategoryModal.svelte';
 	import { toast } from 'svelte-sonner';
 
@@ -122,16 +124,7 @@
 	aria-labelledby="price-categories-heading"
 >
 	<!-- Section header -->
-	<div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-		<div>
-			<h2 id="price-categories-heading" class="text-xl font-bold tracking-tight">
-				{m['orgAdmin.priceCategories.sectionTitle']()}
-			</h2>
-			<p class="text-sm text-muted-foreground">
-				{m['orgAdmin.priceCategories.sectionDescription']()}
-			</p>
-		</div>
-
+	{#snippet sectionActions()}
 		<button
 			type="button"
 			onclick={handleCreate}
@@ -140,7 +133,15 @@
 			<Plus class="h-5 w-5" aria-hidden="true" />
 			{m['orgAdmin.priceCategories.createButton']()}
 		</button>
-	</div>
+	{/snippet}
+	<SectionHeader
+		id="price-categories-heading"
+		title={m['orgAdmin.priceCategories.sectionTitle']()}
+		actions={sectionActions}
+	/>
+	<p class="-mt-2 text-sm text-muted-foreground">
+		{m['orgAdmin.priceCategories.sectionDescription']()}
+	</p>
 
 	{#if categoriesQuery.error}
 		<div class="rounded-md bg-destructive/10 p-4 text-destructive" role="alert">
@@ -162,25 +163,22 @@
 			</span>
 		</div>
 	{:else if categories.length === 0}
-		<div
-			class="rounded-lg border-2 border-dashed border-gray-300 p-8 text-center dark:border-gray-600"
+		<EmptyState
+			icon={Tag}
+			title={m['orgAdmin.priceCategories.empty.title']()}
+			body={m['orgAdmin.priceCategories.empty.description']()}
 		>
-			<Tag class="mx-auto h-10 w-10 text-muted-foreground" aria-hidden="true" />
-			<h3 class="mt-3 text-lg font-semibold">
-				{m['orgAdmin.priceCategories.empty.title']()}
-			</h3>
-			<p class="mt-2 text-sm text-muted-foreground">
-				{m['orgAdmin.priceCategories.empty.description']()}
-			</p>
-			<button
-				type="button"
-				onclick={handleCreate}
-				class="mt-4 inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-			>
-				<Plus class="h-5 w-5" aria-hidden="true" />
-				{m['orgAdmin.priceCategories.createButton']()}
-			</button>
-		</div>
+			{#snippet action()}
+				<button
+					type="button"
+					onclick={handleCreate}
+					class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+				>
+					<Plus class="h-5 w-5" aria-hidden="true" />
+					{m['orgAdmin.priceCategories.createButton']()}
+				</button>
+			{/snippet}
+		</EmptyState>
 	{:else}
 		<ul class="divide-y rounded-lg border bg-card shadow-sm">
 			{#each categories as category (category.id)}

@@ -148,12 +148,12 @@
 
 {#snippet registeredHeaders()}
 	<th
-		class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
+		class="px-4 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 	>
 		{m['eventInvitationsAdmin.headerUser']()}
 	</th>
 	<th
-		class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
+		class="px-4 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 	>
 		{m['eventInvitationsAdmin.headerEmail']()}
 	</th>
@@ -194,7 +194,7 @@
 
 {#snippet pendingHeaders()}
 	<th
-		class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
+		class="px-4 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 	>
 		{m['eventInvitationsAdmin.headerEmail']()}
 	</th>

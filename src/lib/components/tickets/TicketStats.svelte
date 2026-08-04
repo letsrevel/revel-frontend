@@ -51,13 +51,16 @@
 	<!-- Warning for incomplete (page-local) counts -->
 	{#if hasMultiplePages}
 		<div
-			class="flex items-start gap-2 rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-100"
+			class="flex items-start gap-2 rounded-lg border border-highlight bg-highlight/10 p-3"
 			role="alert"
 		>
-			<AlertTriangle class="h-5 w-5 shrink-0" aria-hidden="true" />
+			<AlertTriangle
+				class="h-5 w-5 shrink-0 text-highlight-foreground dark:text-highlight"
+				aria-hidden="true"
+			/>
 			<div>
 				<p class="font-medium">{m['eventTicketsAdmin.pageWarningTitle']()}</p>
-				<p class="text-sm">
+				<p class="text-sm text-muted-foreground">
 					{m['eventTicketsAdmin.pageWarningDescription']({ total: totalCount })}
 				</p>
 			</div>
@@ -71,19 +74,27 @@
 			<div class="text-sm text-muted-foreground">{m['eventTicketsAdmin.statsTotalPage']()}</div>
 		</div>
 		<div class="rounded-lg border bg-card p-4">
-			<div class="text-2xl font-bold text-yellow-600">{stats.pending}</div>
+			<div class="text-2xl font-bold text-highlight-foreground dark:text-highlight">
+				{stats.pending}
+			</div>
 			<div class="text-sm text-muted-foreground">{m['eventTicketsAdmin.statsPending']()}</div>
 		</div>
 		<div class="rounded-lg border bg-card p-4">
-			<div class="text-2xl font-bold text-green-600">{stats.active}</div>
+			<div class="text-2xl font-bold text-success">{stats.active}</div>
 			<div class="text-sm text-muted-foreground">{m['eventTicketsAdmin.statsActive']()}</div>
 		</div>
 		<div class="rounded-lg border bg-card p-4">
-			<div class="text-2xl font-bold text-blue-600">{stats.checkedIn}</div>
+			<div class="text-2xl font-bold text-info">{stats.checkedIn}</div>
 			<div class="text-sm text-muted-foreground">{m['eventTicketsAdmin.statsCheckedIn']()}</div>
 		</div>
 		<div class="rounded-lg border bg-card p-4">
-			<div class="text-2xl font-bold text-red-600">{stats.cancelled}</div>
+			<!-- dark --destructive on dark --card measures 2.86:1 (hand-verified,
+			     scripts/audit-brand-themes.py has no destructive/card pair — see
+			     CLAUDE.md trap list) — falls back to text-foreground in dark mode;
+			     the "Cancelled" label below still carries the meaning. -->
+			<div class="text-2xl font-bold text-destructive dark:text-foreground">
+				{stats.cancelled}
+			</div>
 			<div class="text-sm text-muted-foreground">{m['eventTicketsAdmin.statsCancelled']()}</div>
 		</div>
 	</div>

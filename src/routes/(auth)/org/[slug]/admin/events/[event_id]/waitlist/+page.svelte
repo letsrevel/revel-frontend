@@ -7,6 +7,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { AlertCircle, X } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import { Tabs, TabsContent, TabsList, TabsTrigger } from '$lib/components/ui/tabs';
 	import WaitlistSettingsCard from '$lib/components/events/waitlist/admin/WaitlistSettingsCard.svelte';
 	import WaitlistEntriesTable from '$lib/components/events/waitlist/admin/WaitlistEntriesTable.svelte';
@@ -344,18 +345,14 @@
 </svelte:head>
 
 <div class="space-y-6">
-	<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-		<div>
-			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
-				{m['orgAdmin.waitlist.pageTitle']()}
-			</h1>
-			<p class="mt-1 text-sm text-muted-foreground">{m['orgAdmin.waitlist.pageDescription']()}</p>
-		</div>
-	</div>
+	<PageHeader
+		title={m['orgAdmin.waitlist.pageTitle']()}
+		subtitle={m['orgAdmin.waitlist.pageDescription']()}
+	/>
 
 	{#if capacityBannerOpen}
 		<div
-			class="flex flex-col gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-100 sm:flex-row sm:items-center sm:justify-between"
+			class="flex flex-col gap-3 rounded-lg border border-highlight bg-highlight/10 p-4 text-sm text-highlight-foreground dark:text-highlight sm:flex-row sm:items-center sm:justify-between"
 			role="alert"
 		>
 			<div class="flex items-start gap-2">
@@ -367,7 +364,7 @@
 					variant="outline"
 					size="sm"
 					onclick={jumpToPendingOffers}
-					class="border-amber-400 bg-white text-amber-900 hover:bg-amber-100 dark:bg-amber-900/40 dark:text-amber-100 dark:hover:bg-amber-900/70"
+					class="border-highlight bg-transparent text-highlight-foreground hover:bg-highlight/20 dark:text-highlight"
 				>
 					{m['orgAdmin.waitlist.offer.viewPendingShortcut']()}
 				</Button>
