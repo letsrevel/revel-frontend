@@ -203,7 +203,7 @@
 			class={cn(
 				'markdown-editor-surface prose prose-sm max-w-none rounded-md border-2 px-3 py-2 dark:prose-invert',
 				'focus-within:border-primary focus-within:ring-2 focus-within:ring-primary',
-				error ? 'border-destructive' : 'border-gray-300 dark:border-gray-600',
+				error ? 'border-destructive' : 'border-border',
 				disabled && 'cursor-not-allowed opacity-50'
 			)}
 			class:hidden={!editor || sourceMode}

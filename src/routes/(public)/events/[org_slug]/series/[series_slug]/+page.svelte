@@ -88,9 +88,9 @@
 		landing hero's mark-and-hearts chip — pinned to the far end.
 
 		Ribbon, strip and chip are mode-INERT by the imagery rule (a poster panel
-		is not a surface), so every pair on them is hand-verified against the
-		fixed values; a poster-palette pair is invisible to
-		scripts/audit-brand-themes.py (numbers are the audit script's own):
+		is not a surface), so every pair on them is measured against the fixed
+		values rather than per-mode. All three are registered in
+		scripts/audit-brand-themes.py; numbers pasted from its output:
 		  ink on white                   → 17.40:1
 		  Hearty Purple #8C3CDD on white →  5.52:1 (the text-xs kicker clears AA)
 		  white on crimson-DEEP          →  4.59:1 (the logo-less initial tile)
@@ -154,12 +154,13 @@
 	<!--
 		Tinted content panel — the event detail page's wash, so a series and the
 		events it contains read as the same surface. Composite and therefore
-		ratios are identical to that page's (a composited alpha is invisible to
-		scripts/audit-brand-themes.py):
+		ratios are identical to that page's. The recipe IS registered in
+		COMPOSITED_PAIRS ("public page secondary wash"), so these figures are
+		pasted from scripts/audit-brand-themes.py — never hand-computed:
 		  light — secondary@55 over background ⇒ hsl(231 88% 90%);
-		          foreground 12.42:1 · muted-foreground 6.45:1 · primary 4.97:1
+		          foreground 12.36:1 · muted-foreground 6.43:1 · primary 4.97:1
 		  dark  — secondary@28 over background ⇒ hsl(246 33% 15%);
-		          foreground 15.75:1 · muted-foreground 7.47:1 · primary 6.30:1
+		          foreground 15.68:1 · muted-foreground 7.44:1 · primary 6.30:1
 		Everything landing directly on it is covered: the h1 and section headings
 		(`foreground`), the back link, tallies and blurbs (`muted-foreground`),
 		and the SectionHeader kickers plus the org link (`primary`).

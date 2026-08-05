@@ -171,9 +171,9 @@
 	pairing: the hero is a mode-INERT poster-solid ribbon, so per the CLAUDE.md
 	rule it takes a theme-aware tinted wash below it — the same composite the
 	org-profile and event-detail pages use, so an SEO page and the product it
-	sells read as one surface. Composited alphas are invisible to
-	scripts/audit-brand-themes.py, so the honest numbers (computed, not
-	estimated):
+	sells read as one surface. The recipe IS registered in COMPOSITED_PAIRS
+	("public page secondary wash"); numbers pasted from
+	scripts/audit-brand-themes.py:
 	  light — secondary@55 over background ⇒ foreground 12.36:1 ·
 	          muted-foreground 6.43:1 · primary 4.97:1
 	  dark  — secondary@28 over background ⇒ foreground 15.68:1 ·

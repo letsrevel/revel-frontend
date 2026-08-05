@@ -348,13 +348,14 @@
 		Tinted content panel (uplift prototype). The page body is no longer bare
 		`--background`: it is a periwinkle wash, so every card below reads as a
 		white sticker FLOATING on a colored surface rather than a rectangle on
-		paper. Composited alphas are invisible to scripts/audit-brand-themes.py,
-		so every text layer that lands directly on this panel (never inside a
-		card) is hand-verified against the composited colour:
+		paper. Every text layer that lands directly on this panel (never inside a
+		card) is covered by the "public page secondary wash" rows in
+		COMPOSITED_PAIRS, so these figures are pasted from
+		scripts/audit-brand-themes.py — never hand-computed:
 		  light — secondary@55 over background ⇒ hsl(231 88% 90%);
-		          foreground 12.42:1 · muted-foreground 6.45:1 · primary 4.97:1
+		          foreground 12.36:1 · muted-foreground 6.43:1 · primary 4.97:1
 		  dark  — secondary@28 over background ⇒ hsl(246 33% 15%);
-		          foreground 15.75:1 · muted-foreground 7.47:1 · primary 6.30:1
+		          foreground 15.68:1 · muted-foreground 7.44:1 · primary 6.30:1
 		(`primary` is the SectionHeader kicker; `foreground` the section headings.)
 	-->
 	<div class="bg-secondary/55 pt-8 dark:bg-secondary/[0.28]">
