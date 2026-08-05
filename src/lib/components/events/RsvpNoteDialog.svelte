@@ -45,12 +45,9 @@
 
 	const confirmClasses = $derived(
 		cn(
-			answer === 'yes' &&
-				'bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:text-white dark:hover:bg-green-600',
-			answer === 'maybe' &&
-				'bg-yellow-500 text-white hover:bg-yellow-600 dark:bg-yellow-600 dark:text-white dark:hover:bg-yellow-700',
-			answer === 'no' &&
-				'bg-red-600 text-white hover:bg-red-700 dark:bg-red-500 dark:text-white dark:hover:bg-red-600'
+			answer === 'yes' && 'bg-success text-success-foreground hover:bg-success/90',
+			answer === 'maybe' && 'bg-highlight text-highlight-foreground hover:bg-highlight/90',
+			answer === 'no' && 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
 		)
 	);
 </script>

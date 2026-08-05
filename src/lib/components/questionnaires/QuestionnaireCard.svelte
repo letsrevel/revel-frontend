@@ -32,6 +32,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import QuestionnaireAssignmentModal from './QuestionnaireAssignmentModal.svelte';
 	import DuplicateQuestionnaireModal from './DuplicateQuestionnaireModal.svelte';
+	import QuestionnaireStatusBadge from './QuestionnaireStatusBadge.svelte';
 	import {
 		Tooltip,
 		TooltipContent,
@@ -112,15 +113,6 @@
 	const statusLabel = $derived(
 		statusLabels[questionnaire.questionnaire.status]?.() || questionnaire.questionnaire.status
 	);
-
-	// Get status badge variant
-	const statusVariants: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
-		draft: 'outline',
-		ready: 'secondary',
-		published: 'default'
-	};
-
-	const statusVariant = $derived(statusVariants[questionnaire.questionnaire.status] || 'outline');
 
 	// Event assignment count (events + series)
 	const assignmentCount = $derived(
@@ -220,15 +212,10 @@
 					<Badge variant={typeVariant} class="text-xs">
 						{typeLabel}
 					</Badge>
-					{#if questionnaire.questionnaire.status === 'draft'}
-						<Badge class="bg-amber-500 text-xs text-white hover:bg-amber-600">
-							{statusLabel}
-						</Badge>
-					{:else}
-						<Badge variant={statusVariant} class="text-xs">
-							{statusLabel}
-						</Badge>
-					{/if}
+					<QuestionnaireStatusBadge
+						status={questionnaire.questionnaire.status}
+						label={statusLabel}
+					/>
 				</CardDescription>
 			</div>
 			<FileText class="h-5 w-5 flex-shrink-0 text-muted-foreground" aria-hidden="true" />
@@ -239,10 +226,13 @@
 			<!-- Pending Evaluations Alert -->
 			{#if questionnaire.pending_evaluations_count && questionnaire.pending_evaluations_count > 0}
 				<div
-					class="flex items-center gap-2 rounded-md border border-orange-500/50 bg-orange-50 px-3 py-2 text-sm text-orange-900 dark:border-orange-500/30 dark:bg-orange-950/20 dark:text-orange-200"
+					class="flex items-center gap-2 rounded-md border border-highlight bg-highlight/10 px-3 py-2 text-sm text-foreground"
 					role="status"
 				>
-					<AlertCircle class="h-4 w-4 shrink-0" aria-hidden="true" />
+					<AlertCircle
+						class="h-4 w-4 shrink-0 text-highlight-foreground dark:text-highlight"
+						aria-hidden="true"
+					/>
 					<p class="font-medium">
 						{questionnaire.pending_evaluations_count}
 						{questionnaire.pending_evaluations_count === 1

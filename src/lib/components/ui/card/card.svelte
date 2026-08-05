@@ -13,7 +13,14 @@
 
 <div
 	bind:this={ref}
-	class={cn('rounded-lg border bg-card text-card-foreground shadow-sm', className)}
+	class={cn(
+		// Poster silhouette (uplift prototype): the landing's cards are thick-
+		// edged and genuinely floating, so the app's default card stops being a
+		// hairline-and-shadow-sm rectangle. `rounded-lg` is already the 1.25rem
+		// sticker radius; the 2px border + `shadow-poster` are the change.
+		'rounded-lg border-2 bg-card text-card-foreground shadow-poster',
+		className
+	)}
 	{...restProps}
 >
 	{@render children?.()}

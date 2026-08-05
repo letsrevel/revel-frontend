@@ -1033,13 +1033,112 @@ The official palette from the ACIDHAIRS brand deck (June 2026, `revel-backend/lo
 **The shipped theme is "Bubble"** (decided 2026-07-08): sticker-round `--radius: 1.25rem`, lavender paper light mode, aubergine club dark mode with palette Lavender as the glow primary; crimson only as the "heart" accent, amber as highlight, maroon destructive. Its tokens live in `src/app.css` (`:root` + `.dark`) — that file is the single place to edit for any future rebrand (token NAMES are the stable contract; every component reads them). Retired candidates (gradient/midnight/mono, the crimson study, the pre-2026 purple/cyan brand, and the live A/B switcher) are preserved in git history at commit `3e6d2bb9`.
 
 - **Logo:** the "let's revel." lockup (`RevelWordmark.svelte` + `RevelMark.svelte`); the mark's gradient is `--logo-from`/`--logo-to` (Hearty Purple → Light Crimson).
-- **Typeface:** Nata Sans app-wide, via `@fontsource-variable/nata-sans` (imported in `app.css`) and `fontFamily.sans` in `tailwind.config.ts`. The chunky wide headline face in the deck is ACIDHAIRS's own deck typography, **not** a licensed brand asset — Nata Sans is the brand font, with no display face (evaluated and decided against; see commit `3e6d2bb9` for the Unbounded/Baloo 2 experiments).
+- **Typeface:** Nata Sans app-wide, via `@fontsource-variable/nata-sans` (imported in `app.css`) and `fontFamily.sans` in `tailwind.config.ts`. The chunky wide headline face in the ACIDHAIRS deck is that agency's own deck typography, **not** a licensed brand asset. The Digital Brand Styleguide (below) later added **BBH Bartle** as a display face — but for **social-media assets only**; the app and web stay Nata Sans (all weights allowed).
+
+### Digital Brand Styleguide (Isabella Radich, 2026)
+
+Source PDF: `Revel_Digital-Styleguide.pdf` at this repo's root (**local-only, gitignored — never commit it**); it layers on top of the ACIDHAIRS deck (`revel-backend/local_stuff/Revel_Presentation_Branding+Social-Media-Design.pdf`). Colors are identical to the palette table above. The rules it adds:
+
+- **Wordmark:** "let's" in Nata Sans **Light**, "revel" in **Semibold**, period after "revel". Tracking **60** (`tracking-[0.06em]`) on the wordmark **only** — everywhere else tracking stays 0. In the color lockup "let's" and the period are Ink, "revel" carries the brand gradient (white-on-dark variants: all white, weights unchanged). Any hand-set "let's revel." (e.g. the landing ClosePanel) must follow these weights.
+- **Logo gradient:** vertical linear, Hearty Purple (top) → Light Crimson (bottom), midpoint at 50%. `RevelMark.svelte` already implements this; don't re-derive it per-surface.
+- **Safe zones:** clear space of ½x around mark and lockup (x = the heart's height). Never set the logo flush against an edge — corner placements keep the ½x margin on both sides.
+- **Fonts:** Nata Sans is the main brand font, universal on web and social; all weights in the family are allowed. **BBH Bartle** (open-source Google Font) is the additional display face **for social-media designs only** — do not ship it in the app. Both upper- and lowercase allowed, tracking 0.
+- **Picture style:** DO — colourful, warm image language; closeness and a sense of community; "real"-looking portraits. DON'T — classic stock imagery, people who read as actors/models, cold or distanced shots, corporate casual. (The landing page deliberately uses no photography; these rules bind social assets, OG images, and any future photo use.)
+
+### Rebrand volumes & shared primitives (2026-08 platform rebrand)
+
+The poster language extends app-wide at three volumes (master spec:
+`docs/superpowers/specs/2026-08-04-platform-rebrand-design.md`, local-only):
+
+- **Poster** (landing only): color-block panels, diagonal cuts, stickers. Frozen.
+- **Celebration** (public discovery, auth, error pages, user dashboard, ALL empty
+  states): display typography + kickers + sparing `Sticker` accents. Surfaces stay
+  on theme tokens; only decorative accents keep the fixed poster palette
+  (**imagery rule** — identical in dark mode, like the landing panels).
+- **Studio** (admin, dense forms/tables): heavy typography + tone tokens only.
+  No tilts, no cuts, no stickers — except empty states, which stay warm everywhere.
+
+**Shared primitives** (always prefer these over hand-rolled equivalents):
+`common/PageHeader` (page h1: kicker/title/subtitle/actions, `volume` prop),
+`common/SectionHeader`, `common/EmptyState` (poster-tinted tilted chip),
+`common/StatusBadge` (solid, tone-mapped — wrap domain enums in thin mappers),
+`common/ToneTile` (soft icon tile), `brand/Sticker` (celebration only, rotation
+clamped [-3, 3]). Tone vocabulary: `common/tones.ts` (`brand | info | success |
+warning | danger | neutral`). `StatusBadge` is solid-fill only by design (audit-
+enforced pairs; no soft variant) — sizes `sm | md | lg`. `ToneTile`'s `tone` axis
+stays semantic only; identity/destination coloring (the admin quick-actions grid)
+uses the additive `tint` prop (PR 7) — a fixed poster-palette axis (`purple |
+lavender | periwinkle | amber | crimson | ink | paper`, type `PosterTint` in
+`common/tones.ts`) that renders a SOLID chip, identical in both modes (imagery
+rule), and wins over `tone` when both are set. `Props` is a union
+(`{ tone: Tone; tint?: PosterTint } | { tone?: Tone; tint: PosterTint }`) — at
+least one of `tone`/`tint` is required, both may be given, tint-only is legal
+(no filler tone needed). Never overload `tone` for identity — reach for `tint`
+instead. **Every tint chip carries `ring-1 ring-inset ring-border`** (PR 7 fix
+round) — the chip itself is mode-inert by design, but the card/page surface
+under it is NOT, and at least one tint/surface pairing measured under 1.2:1
+(effectively invisible) in the flipped mode; the ring gives every tint chip a
+theme-aware boundary regardless of what it sits on. Don't drop it when adding a
+call site or a new tint. `PageHeader` spreads arbitrary HTML attributes onto its
+`<header>` (`restProps` via `Omit<HTMLAttributes<HTMLElement>, 'children'>`,
+PR 7, mirrors `StatusBadge`) so routed adopters can attach `id`/`aria-label`/etc;
+`SectionHeader` already took a plain `id` prop (forwarded to the heading)
+instead. `PageHeader`'s `decoration` slot is aria-hidden ornament only — status
+text goes through `actions` or `StatusBadge`, never `decoration`.
+
+**Band/wash pairing:** a mode-inert poster-solid ribbon pairs with a theme-aware
+tinted wash below it, and a theme `bg-secondary` band pairs with a plain
+`--background` body — never pair a band with a wash from the same token family.
+**Pull-up opacity rule:** whenever body content is pulled up to overlap a
+band's bottom edge, the first block it lands on must be an opaque surface
+(never `bg-card/NN`).
+
+**Typography scale** (encoded in the primitives; use the same classes when
+composing manually):
+
+| Role | Classes |
+| --- | --- |
+| Display title (celebration h1) | `text-3xl font-black leading-[1.12] sm:text-4xl` |
+| Studio title (admin h1) | `text-2xl font-extrabold tracking-tight sm:text-3xl` |
+| Kicker | `text-sm font-extrabold uppercase tracking-[0.12em]` (`text-xs` in dense admin) |
+| Section heading | celebration `text-xl font-extrabold` · studio `text-lg font-bold` |
+| Card title | `font-bold` |
+
+**Raw-hue sweep rule:** in any file you touch, replace raw Tailwind palette color
+utilities (`bg-blue-50`, `text-emerald-600`, `dark:bg-indigo-950`, ...) with
+semantic tokens / `StatusBadge` / `ToneTile`. Exemptions: JS color objects for
+QR/canvas libraries, user-configurable data colors (e.g. seat categories), and
+the `--brand-telegram`/`--brand-telegram-text` pair. New tokens `--success`/`--info` and the first-class
+`poster.*` Tailwind colors (`bg-poster-amber`, ...) exist for this. Never
+introduce new raw palette hues.
 
 ### Theme rules
 
 - **Use tokens, never raw hexes** in components (`bg-primary`, `text-muted-foreground`, …). Palette hexes appear only in `app.css`.
 - **The theme must respect the light/dark axis.** The app styles content with `dark:` utilities (e.g. `prose dark:prose-invert`), which assume the `.dark` class controls surface darkness. A theme that keeps dark surfaces in light mode breaks readability everywhere.
 - **WCAG AA contract:** every `*-foreground` on its surface ≥ 4.5:1; `--primary` vs `--background` ≥ 3:1 (links, focus rings).
+- **Destructive is TWO tokens.** `--destructive` is the FILL (buttons, badges,
+  `StatusBadge danger`) and pairs with `--destructive-foreground`; it only owes
+  1.4.11's 3:1. `--destructive-text` is destructive-as-TEXT/ICON and owes 4.5:1.
+  `tailwind.config.ts` overrides `theme.extend.textColor.destructive`, so
+  `text-destructive` — and every variant of it (`hover:`, `focus:`,
+  `group-hover:`, `data-[…]:`, `text-destructive/90`) — resolves to
+  `--destructive-text`, while `bg-/border-/ring-/divide-/fill-destructive` keep
+  the fill. Light mode defines the two identically; only dark mode splits them.
+  Three consequences: (a) the restated `foreground` key next to the override is
+  defensive redundancy — Tailwind deep-merges `extend.textColor`, so omitting it
+  would still compile (proven by compiling both variants); keep it anyway for
+  explicitness; (b) **raw CSS is NOT covered** — inside a `<style>` block write
+  `hsl(var(--destructive-text))` for text/icons, never `hsl(var(--destructive))`;
+  (c) `decoration-/placeholder-/caret-/accent-destructive` still resolve to the
+  fill, so don't reach for them to colour text.
+- **Every translucent recipe belongs in `COMPOSITED_PAIRS`** in
+  `scripts/audit-brand-themes.py` — a `dark:` variant that swaps the tint or the
+  foreground is a *different* recipe, not the same one measured twice. Let the
+  script print the ratio and paste **that** into the code comment, never the
+  reverse: hand-written ratios were wrong repeatedly during the 2026-08 rebrand
+  (#783), and the script now FAILS on unknown token names instead of skipping
+  them, so a token rename can't silently disarm rows.
 - **Color-blind safety:** separate semantic colors (primary/accent/destructive/highlight) by _lightness_, not hue alone — protanopia/deuteranopia collapse red/purple/amber hue differences. Never encode meaning by color alone; pair with icon or text.
 - **Validate after any theme edit:** `python3 scripts/audit-brand-themes.py` checks the WCAG pairs and simulated color-blind separation. Keep it at 0 failures.
 

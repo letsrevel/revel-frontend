@@ -10,9 +10,11 @@
 		eventseriesUnfollowEventSeries,
 		eventseriesUpdateEventSeriesFollow
 	} from '$lib/api/generated/sdk.gen';
-	import { Heart, Building2, Calendar, Loader2, ChevronLeft, ChevronRight } from '@lucide/svelte';
+	import { Building2, Calendar, Loader2, ChevronLeft, ChevronRight } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Checkbox } from '$lib/components/ui/checkbox';
+	import DashboardBandLayout from '$lib/components/dashboard/DashboardBandLayout.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { toast } from 'svelte-sonner';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
@@ -197,30 +199,20 @@
 	<title>{m['dashboard.following.title']()} - Revel</title>
 </svelte:head>
 
-<div class="container mx-auto px-4 py-6 md:py-8">
-	<!-- Page Header -->
-	<div class="mb-8">
-		<div class="mb-2 flex items-center gap-3">
-			<div class="rounded-lg bg-primary/10 p-2">
-				<Heart class="h-6 w-6 text-primary" aria-hidden="true" />
-			</div>
-			<div>
-				<h1 class="text-2xl font-bold md:text-3xl">{m['dashboard.following.title']()}</h1>
-			</div>
-		</div>
-	</div>
-
+<!-- Celebration band + floating tab card (uplift) — twin of the invitations
+     page; see DashboardBandLayout for the band's contrast contract. -->
+<DashboardBandLayout title={m['dashboard.following.title']()} kicker={m['userMenu.dashboard']()}>
 	<!-- Tabs -->
-	<div class="mb-6">
+	<div class="mb-6 rounded-lg border-2 border-border bg-card px-4 shadow-poster sm:px-6">
 		<div class="border-b border-border">
 			<nav class="-mb-px flex gap-6" aria-label={m['dashboardFollowingPage.tabsLabel']()}>
 				<button
 					type="button"
 					onclick={() => switchTab('organizations')}
-					class="inline-flex items-center gap-2 border-b-2 px-1 py-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 {activeTab ===
+					class="inline-flex items-center gap-2 border-b-2 px-1 py-4 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 {activeTab ===
 					'organizations'
-						? 'border-primary text-primary'
-						: 'border-transparent text-muted-foreground hover:border-muted-foreground/50 hover:text-foreground'}"
+						? 'border-primary font-bold text-primary'
+						: 'border-transparent font-semibold text-muted-foreground hover:border-muted-foreground/50 hover:text-foreground'}"
 					aria-current={activeTab === 'organizations' ? 'page' : undefined}
 				>
 					<Building2 class="h-4 w-4" aria-hidden="true" />
@@ -237,10 +229,10 @@
 				<button
 					type="button"
 					onclick={() => switchTab('event-series')}
-					class="inline-flex items-center gap-2 border-b-2 px-1 py-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 {activeTab ===
+					class="inline-flex items-center gap-2 border-b-2 px-1 py-4 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 {activeTab ===
 					'event-series'
-						? 'border-primary text-primary'
-						: 'border-transparent text-muted-foreground hover:border-muted-foreground/50 hover:text-foreground'}"
+						? 'border-primary font-bold text-primary'
+						: 'border-transparent font-semibold text-muted-foreground hover:border-muted-foreground/50 hover:text-foreground'}"
 					aria-current={activeTab === 'event-series' ? 'page' : undefined}
 				>
 					<Calendar class="h-4 w-4" aria-hidden="true" />
@@ -266,22 +258,22 @@
 					<Loader2 class="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
 				</div>
 			{:else if organizations.length === 0}
-				<div class="rounded-lg border bg-card p-12 text-center">
-					<div
-						class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10"
-					>
-						<Building2 class="h-8 w-8 text-primary" aria-hidden="true" />
-					</div>
-					<h3 class="mb-2 text-lg font-semibold">{m['dashboard.following.noOrganizations']()}</h3>
-					<Button href="/organizations" variant="default" class="mt-4">
+				{#snippet discoverOrganizationsAction()}
+					<Button href="/organizations" variant="default">
 						{m['dashboard.following.discoverOrganizations']()}
 					</Button>
-				</div>
+				{/snippet}
+				<EmptyState
+					icon={Building2}
+					title={m['dashboard.following.noOrganizations']()}
+					action={discoverOrganizationsAction}
+					level={3}
+				/>
 			{:else}
 				<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 					{#each organizations as follow (follow.id)}
 						{@const org = follow.organization}
-						<div class="rounded-lg border bg-card p-4">
+						<div class="rounded-lg border-2 bg-card p-4 shadow-poster">
 							<div class="mb-3 flex items-start gap-3">
 								{#if org.logo}
 									<img
@@ -299,7 +291,7 @@
 								<div class="min-w-0 flex-1">
 									<a
 										href={resolve('/(public)/org/[slug]', { slug: org.slug })}
-										class="block truncate font-semibold hover:text-primary hover:underline"
+										class="block truncate font-bold hover:text-primary hover:underline"
 									>
 										{org.name}
 									</a>
@@ -399,22 +391,22 @@
 					<Loader2 class="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
 				</div>
 			{:else if eventSeries.length === 0}
-				<div class="rounded-lg border bg-card p-12 text-center">
-					<div
-						class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10"
-					>
-						<Calendar class="h-8 w-8 text-primary" aria-hidden="true" />
-					</div>
-					<h3 class="mb-2 text-lg font-semibold">{m['dashboard.following.noEventSeries']()}</h3>
-					<Button href="/events" variant="default" class="mt-4">
+				{#snippet discoverEventSeriesAction()}
+					<Button href="/events" variant="default">
 						{m['dashboard.following.discoverEventSeries']()}
 					</Button>
-				</div>
+				{/snippet}
+				<EmptyState
+					icon={Calendar}
+					title={m['dashboard.following.noEventSeries']()}
+					action={discoverEventSeriesAction}
+					level={3}
+				/>
 			{:else}
 				<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 					{#each eventSeries as follow (follow.id)}
 						{@const series = follow.event_series}
-						<div class="rounded-lg border bg-card p-4">
+						<div class="rounded-lg border-2 bg-card p-4 shadow-poster">
 							<div class="mb-3 flex items-start gap-3">
 								{#if series.logo}
 									<img
@@ -435,7 +427,7 @@
 											org_slug: series.organization.slug,
 											series_slug: series.slug
 										})}
-										class="block truncate font-semibold hover:text-primary hover:underline"
+										class="block truncate font-bold hover:text-primary hover:underline"
 									>
 										{series.name}
 									</a>
@@ -518,4 +510,4 @@
 			{/if}
 		</div>
 	{/if}
-</div>
+</DashboardBandLayout>

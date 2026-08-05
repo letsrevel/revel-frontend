@@ -1,8 +1,14 @@
+<script module lang="ts">
+	/** Every status this mapper understands, in the order the regression test walks them. */
+	export const WAITLIST_OFFER_STATUS_ORDER = ['pending', 'claimed', 'expired', 'revoked'] as const;
+</script>
+
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import type { WaitlistOfferStatus } from '$lib/api/generated/types.gen';
 	import { Ban, Check, Clock, X } from '@lucide/svelte';
-	import { cn } from '$lib/utils/cn';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
+	import type { Tone } from '$lib/components/common/tones';
 
 	interface Props {
 		status: WaitlistOfferStatus;
@@ -11,47 +17,38 @@
 
 	const { status, class: className }: Props = $props();
 
-	const config = $derived.by(() => {
-		switch (status) {
-			case 'pending':
-				return {
-					label: m['offerStatus.pending'](),
-					icon: Clock,
-					classes:
-						'bg-amber-100 text-amber-900 dark:bg-amber-950/40 dark:text-amber-200 ring-1 ring-amber-300/60 dark:ring-amber-800/60'
-				};
-			case 'claimed':
-				return {
-					label: m['offerStatus.claimed'](),
-					icon: Check,
-					classes:
-						'bg-emerald-100 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200 ring-1 ring-emerald-300/60 dark:ring-emerald-800/60'
-				};
-			case 'expired':
-				return {
-					label: m['offerStatus.expired'](),
-					icon: X,
-					classes: 'bg-muted text-muted-foreground ring-1 ring-border'
-				};
-			case 'revoked':
-				return {
-					label: m['offerStatus.revoked'](),
-					icon: Ban,
-					classes:
-						'bg-red-100 text-red-900 dark:bg-red-950/40 dark:text-red-200 ring-1 ring-red-300/60 dark:ring-red-800/60'
-				};
-		}
-	});
+	const TONE_MAP: Record<WaitlistOfferStatus, Tone> = {
+		pending: 'warning',
+		claimed: 'success',
+		expired: 'neutral',
+		revoked: 'danger'
+	};
+
+	const ICON_MAP: Record<WaitlistOfferStatus, typeof Clock> = {
+		pending: Clock,
+		claimed: Check,
+		expired: X,
+		revoked: Ban
+	};
+
+	const LABEL_MAP: Record<WaitlistOfferStatus, () => string> = {
+		pending: () => m['offerStatus.pending'](),
+		claimed: () => m['offerStatus.claimed'](),
+		expired: () => m['offerStatus.expired'](),
+		revoked: () => m['offerStatus.revoked']()
+	};
+
+	// Thin mapper over the shared StatusBadge primitive (rebrand PR 8):
+	// dense waitlist admin tables, so size stays 'sm'.
+	const tone = $derived(TONE_MAP[status]);
+	const icon = $derived(ICON_MAP[status]);
+	const label = $derived(LABEL_MAP[status]());
 </script>
 
-<span
-	class={cn(
-		'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
-		config.classes,
-		className
-	)}
-	aria-label={config.label}
->
-	<config.icon class="h-3 w-3" aria-hidden="true" />
-	<span>{config.label}</span>
-</span>
+<!--
+	aria-label is deliberate, not redundant with the visible text: this badge
+	is a `common/StatusBadge` consumer (see CLAUDE.md primitive contract) and
+	every domain mapper attaches its own aria-label explicitly — the primitive
+	defaults the same value since #788, so the two agree by construction.
+-->
+<StatusBadge {tone} {label} {icon} size="sm" class={className} aria-label={label} />

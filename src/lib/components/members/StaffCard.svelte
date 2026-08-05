@@ -60,7 +60,7 @@
 		<!-- Staff Info -->
 		<div class="min-w-0 flex-1">
 			<div class="flex flex-wrap items-center gap-2">
-				<h3 class="truncate font-semibold text-foreground">
+				<h3 class="truncate font-bold text-foreground">
 					{displayName}
 				</h3>
 				<Badge variant="secondary" class="text-xs">{m['staffCard.staff']()}</Badge>

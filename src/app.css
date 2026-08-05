@@ -42,6 +42,36 @@
 		--highlight-foreground: 30 55% 12%;
 		--destructive: 350 78% 30%; /* maroon, never brand crimson */
 		--destructive-foreground: 0 0% 100%;
+		/* Destructive as TEXT/ICON on a surface, as opposed to --destructive the
+		   FILL (buttons, badges, which pair with --destructive-foreground).
+		   A fill only owes WCAG 1.4.11's 3:1; text owes 4.5:1, and the dark fill
+		   value cannot serve both — see the .dark definition. Light mode has no
+		   such tension, so this is deliberately IDENTICAL to --destructive here
+		   and light-mode rendering is unchanged to the byte.
+		   Wired to `text-destructive` in tailwind.config.ts (textColor override),
+		   so every existing `text-destructive` call site resolves here while
+		   `bg-/border-/ring-destructive` keep the fill value. */
+		--destructive-text: 350 78% 30%; /* == --destructive; 8.63:1 on --background, 9.75:1 on --card */
+		/* Rebrand additions (2026-08 platform rebrand): success/info join the
+		   semantic set — values tuned so audit-brand-themes.py passes both the
+		   AA pairs and the color-blind (lightness) separation. */
+		--success: 145 65% 28%; /* confirmations; deep green, white label */
+		--success-foreground: 0 0% 100%;
+		--info: 226 70% 32%; /* informational; periwinkle family, deepened for AA */
+		--info-foreground: 0 0% 100%;
+		/* Third-party brand identity (Telegram, reference #0088cc) — centralized so
+		   the literal appears once; deliberately NOT part of the semantic audit. */
+		--brand-telegram: 200 100% 33%; /* fill: white labels measure ~5.4:1 (hand-verified; audit-exempt) — deliberately darker than Telegram's #0088cc so text-sm white labels pass AA in both modes (fill is NOT redefined in .dark) */
+		--brand-telegram-text: 200 100% 33%; /* text-on-surface: 4.8:1 on --background, 5.4:1 on card (hand-verified) */
+		/* More third-party brand identity: social-icon marks on the org settings
+		   page (decorative, aria-hidden — never text — so the WCAG 1.4.11 non-text
+		   3:1 floor applies, not the 4.5:1 text floor). Same rationale as
+		   --brand-telegram; audit-exempt. Converted precisely from the official
+		   brand hexes, not redefined in .dark (icons don't need a dark variant —
+		   hand-verified below at both surfaces in both modes). */
+		--brand-instagram: 349 75% 57%; /* #E4405F — 3.60:1 on background, 4.06:1 on card (light); 4.50:1/4.12:1 (dark) */
+		--brand-facebook: 214 89% 52%; /* #1877F2 — 3.78:1 on background, 4.27:1 on card (light); 4.28:1/3.92:1 (dark) */
+		--brand-bluesky: 211 99% 53%; /* #1185FE — 3.26:1 on background, 3.68:1 on card (light); 4.97:1/4.55:1 (dark) */
 		--border: 268 35% 84%;
 		--input: 268 35% 84%;
 		--ring: 270 70% 48%;
@@ -49,6 +79,29 @@
 		/* Logo gradient (RevelMark): Hearty Purple → Light Crimson. */
 		--logo-from: hsl(270 70% 55%);
 		--logo-to: hsl(3 79% 53%);
+		/* Poster panels (landing page). Fixed brand colors, identical in dark
+		   mode on purpose: the panels behave like imagery, not like surfaces.
+		   crimson-deep exists because white body text on raw Light Crimson is
+		   ~4.3:1 (fails AA normal text); 3 79% 50% measures >= 4.5:1. */
+		--poster-purple: 270 70% 55%; /* Hearty Purple #8C3CDD */
+		--poster-crimson: 3 79% 53%; /* Light Crimson #E6332A */
+		--poster-crimson-deep: 3 79% 50%; /* panel bg variant, AA vs white */
+		--poster-lavender: 268 55% 68%; /* Lavender #AB82DB */
+		--poster-periwinkle: 226 100% 80%; /* Periwinkle #9AB2FF */
+		--poster-amber: 38 94% 59%; /* Amber #F9B233 */
+		--poster-ink: 173 40% 8%; /* Ink #0D1E1C */
+		--poster-paper: 268 44% 95%; /* lavender paper panel */
+		--poster-white: 0 0% 100%;
+		/* Poster FLOAT — the landing mocks' depth, promoted to a token so every
+		   surface reads the same shadow and it can flip per mode. This is the
+		   one poster value that is NOT mode-inert: the landing's ink shadow is
+		   cast on a light panel; on the dark aubergine background an ink shadow
+		   is invisible (ink IS darker than nothing, but at 8% L it has almost no
+		   contrast against a 10% L surface), so dark mode casts near-black at a
+		   higher alpha and wider spread instead. Exposed as `shadow-poster` /
+		   `shadow-poster-lg` (tailwind.config.ts). */
+		--poster-shadow: 0 10px 30px hsl(var(--poster-ink) / 0.15);
+		--poster-shadow-lg: 0 18px 44px hsl(var(--poster-ink) / 0.22);
 	}
 
 	.dark {
@@ -68,12 +121,58 @@
 		--accent-foreground: 173 40% 8%;
 		--highlight: 38 94% 60%;
 		--highlight-foreground: 30 60% 10%;
-		--destructive: 0 70% 45%;
+		--destructive: 0 70% 45%; /* FILL only: white label = 5.88:1; as TEXT it is 3.11:1 on --background / 2.85:1 on --card (issue #781) */
 		--destructive-foreground: 0 0% 100%;
+		/* The text-safe half of the destructive pair (issue #781). The fill above
+		   must stay dark enough for a white label, which leaves it far under
+		   4.5:1 when borrowed as text — so dark mode splits the token. Rose
+		   rather than the fill's pure red: it keeps the light-mode maroon's hue
+		   family and stays clear of --accent (3 85% 62%, the crimson "heart"),
+		   which a plain lightened red would collide with under protanopia.
+		   All figures below are PRINTED BY scripts/audit-brand-themes.py, not
+		   hand-computed — paste from the script, never the reverse (#783):
+		     7.02:1 on --background · 6.42:1 on --card/--popover · 5.74:1 on
+		     --muted · 4.74:1 on --secondary · 6.05:1 on bg-destructive/10 over
+		     card · 5.37:1 on bg-destructive/25 over card.
+		   Color-blind separation vs the other semantics (worst simulated
+		   redmean dE): accent 107.9, success 67.5, highlight 108.4,
+		   primary 148.9, info 185.6. */
+		--destructive-text: 352 85% 72%;
+		--success: 145 55% 65%; /* glow green, ink label — mirrors the dark primary pattern */
+		--success-foreground: 173 40% 8%;
+		--info: 226 100% 82%; /* periwinkle glow, ink label */
+		--info-foreground: 173 40% 8%;
 		--border: 270 25% 20%;
 		--input: 270 25% 20%;
 		--ring: 268 60% 72%;
+		--brand-telegram-text: 200 85% 60%; /* 8.0:1 on dark background, 7.3:1 on dark popover (hand-verified) */
+		/* See the light-mode definition: ink casts no shadow on aubergine. */
+		--poster-shadow: 0 10px 30px hsl(0 0% 0% / 0.5);
+		--poster-shadow-lg: 0 20px 50px hsl(0 0% 0% / 0.62);
 	}
+}
+
+/* Poster diagonal-cut colors (landing). Each sets the reveal color used by
+   PosterPanel's .diagonal-cut gradient. Deliberately outside @layer base and
+   outside any component: they are applied via a dynamic `cutToClass` prop, so
+   Tailwind's content scan never sees them — plain global CSS survives purging. */
+.cut-amber {
+	--cut-color: hsl(var(--poster-amber));
+}
+.cut-periwinkle {
+	--cut-color: hsl(var(--poster-periwinkle));
+}
+.cut-crimson {
+	--cut-color: hsl(var(--poster-crimson-deep));
+}
+.cut-paper {
+	--cut-color: hsl(var(--poster-paper));
+}
+.cut-ink {
+	--cut-color: hsl(var(--poster-ink));
+}
+.cut-purple {
+	--cut-color: hsl(var(--poster-purple));
 }
 
 @layer base {
@@ -82,6 +181,65 @@
 	}
 	body {
 		@apply bg-background text-foreground;
+	}
+
+	/*
+	 * GLOBAL KEYBOARD-FOCUS FLOOR (#780).
+	 *
+	 * Before this rule the app had no base focus style at all, so anything that
+	 * declared no focus styling of its own depended on the browser's default
+	 * ring — and any element carrying an unconditional outline utility silently
+	 * swallowed it (that is the seat-picker regression the issue describes).
+	 * This gives every focusable element a token-driven ring as a FLOOR.
+	 *
+	 * Two mechanisms keep it a floor rather than a second ring stacked on top
+	 * of the ~318 call sites that already style their own focus:
+	 *
+	 *   1. `:where()` collapses the selector to specificity 0,0,0. Every
+	 *      Tailwind utility (0,1,0) and every scoped component rule therefore
+	 *      overrides it — including the outline-suppressing utility that each
+	 *      shadcn-svelte primitive here pairs with its own 2px ring. Those keep
+	 *      exactly the indicator they had; nothing double-rings. (Author-origin
+	 *      specificity 0 still beats the user-agent default ring, which is the
+	 *      whole point.)
+	 *      (The suppressing utility compiles to a TRANSPARENT 2px outline, not
+	 *      `outline: none` — so it is a genuine override at 0,2,0, not a no-op.)
+	 *   2. It is outline-based, not box-shadow/ring-based. An outline is not part
+	 *      of layout or scroll geometry, so it can never shift a sibling or grow
+	 *      a scroll container, and it occupies a different property from the
+	 *      `shadow-poster` float and from any ring used for selection state — so
+	 *      the floor and those two can coexist on one element without either
+	 *      overwriting the other. It is NOT immune to clipping: an
+	 *      `overflow: hidden` ancestor clips a descendant's outline exactly as it
+	 *      clips a ring (verified by pixel test). Elements whose indicator would
+	 *      be clipped away — e.g. EventCard's `absolute inset-0` overlay link
+	 *      inside an `overflow-hidden` article — are why those containers carry
+	 *      `focus-within:ring-*` on the clipping ancestor itself.
+	 *
+	 * CONTRAST — `--ring` is `--primary`, one of the pairs the accessibility
+	 * contract above pins and `scripts/audit-brand-themes.py` enforces
+	 * (primary vs background >= 3:1). Measured (not estimated) against the
+	 * surfaces the 2px offset gap can expose, worst case per mode:
+	 *   light  6.17:1 on --background, 6.99:1 on --card, 4.12:1 on --secondary
+	 *   dark   6.87:1 on --background, 6.27:1 on --card, 4.60:1 on --secondary
+	 * WCAG 2.1 AA wants 3:1 for non-text UI, so every theme surface clears it.
+	 *
+	 * The fixed poster panels are the one place `--ring` does NOT clear it: a
+	 * purple ring on a purple panel is 1.27:1 light / 2.07:1 dark. Most
+	 * focusables that sit on a poster panel therefore declare their own explicit
+	 * focus outline (amber on ink, ink on amber, ...) and override this rule via
+	 * mechanism 1 — but NOT all of them. `LandingPageTemplate.svelte` (the SEO
+	 * landing pages) renders plain shadcn Buttons on poster panels, which keep
+	 * the Button base's `--ring` ring. Those are not invisible, because the same
+	 * base adds a `ring-offset-background` band between button and ring, and
+	 * that band measures 4.88:1 light / 3.33:1 dark against poster-purple — so
+	 * the COMPOSITE indicator clears 3:1 in both modes today. It is off-brand
+	 * rather than non-compliant; issue #796 tracks a proper poster-panel focus
+	 * treatment. Do not read this rule as a guarantee for poster surfaces.
+	 */
+	:where(:focus-visible) {
+		outline: 2px solid hsl(var(--ring));
+		outline-offset: 2px;
 	}
 
 	/* Safe area insets for notched devices (iPhone X+, etc.) */

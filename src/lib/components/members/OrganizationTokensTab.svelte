@@ -31,6 +31,7 @@
 	import TokenShareDialog from '$lib/components/tokens/TokenShareDialog.svelte';
 	import { getOrganizationTokenUrl } from '$lib/utils/tokens';
 	import { toast } from 'svelte-sonner';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
@@ -205,23 +206,15 @@
 		<p class="text-sm text-destructive">{m['organizationTokensTab.loadFailed']()}</p>
 	</div>
 {:else if tokens.length === 0}
-	<div class="rounded-lg border border-dashed p-12 text-center">
-		<Link class="mx-auto h-12 w-12 text-muted-foreground" />
-		<h3 class="mt-4 font-semibold">
-			{#if tokenSearch}
-				{m['organizationTokensTab.emptySearchTitle']()}
-			{:else}
-				{m['organizationTokensTab.emptyTitle']()}
-			{/if}
-		</h3>
-		<p class="mt-2 text-sm text-muted-foreground">
-			{#if tokenSearch}
-				{m['organizationTokensTab.emptySearchDescription']()}
-			{:else}
-				{m['organizationTokensTab.emptyDescription']()}
-			{/if}
-		</p>
-	</div>
+	<EmptyState
+		icon={Link}
+		title={tokenSearch
+			? m['organizationTokensTab.emptySearchTitle']()
+			: m['organizationTokensTab.emptyTitle']()}
+		body={tokenSearch
+			? m['organizationTokensTab.emptySearchDescription']()
+			: m['organizationTokensTab.emptyDescription']()}
+	/>
 {:else}
 	<div class="space-y-4">
 		{#each tokens as token (token.id)}

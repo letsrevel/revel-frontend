@@ -61,7 +61,7 @@
 	const showVoterAnonymityRow = $derived(resultVisibility !== 'staff-only');
 </script>
 
-<section class="space-y-2 rounded-lg border bg-card/50 p-4">
+<section class="space-y-2 rounded-lg border bg-card p-4">
 	<!-- Who can vote -->
 	<div class="flex items-center gap-2 text-sm">
 		<Users class="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
@@ -90,7 +90,7 @@
 			</div>
 		{:else}
 			<div
-				class="flex items-center gap-2 rounded-md border border-amber-500/50 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:bg-amber-950/20 dark:text-amber-200"
+				class="flex items-center gap-2 rounded-md border border-highlight/60 bg-highlight/10 px-3 py-2 text-sm text-foreground"
 				role="note"
 			>
 				<AlertTriangle class="h-4 w-4 shrink-0" aria-hidden="true" />
@@ -102,7 +102,7 @@
 	<!-- Anonymity to staff — only shown when staff can see voter identity -->
 	{#if !staffAnonymous}
 		<div
-			class="flex items-center gap-2 rounded-md border border-amber-500/50 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:bg-amber-950/20 dark:text-amber-200"
+			class="flex items-center gap-2 rounded-md border border-highlight/60 bg-highlight/10 px-3 py-2 text-sm text-foreground"
 			role="note"
 		>
 			<AlertTriangle class="h-4 w-4 shrink-0" aria-hidden="true" />

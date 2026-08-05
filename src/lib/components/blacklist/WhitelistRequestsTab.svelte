@@ -4,6 +4,7 @@
 	import { ShieldAlert, Loader2, ChevronLeft, ChevronRight } from '@lucide/svelte';
 	import { WhitelistRequestCard } from '$lib/components/blacklist';
 	import type { WhitelistRequestSchema, Status } from '$lib/api/generated/types.gen';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 
 	interface PaginationInfo {
 		page: number;
@@ -88,8 +89,8 @@
 </div>
 
 <!-- Info Box -->
-<div class="rounded-lg border border-blue-500/30 bg-blue-50 p-3 dark:bg-blue-950/30">
-	<p class="text-sm text-blue-900 dark:text-blue-100">
+<div class="rounded-lg border border-info bg-info/10 p-3">
+	<p class="text-sm text-foreground">
 		{m['blacklistAdminPage.requestsInfo']()}
 	</p>
 </div>
@@ -106,15 +107,13 @@
 		</p>
 	</div>
 {:else if requests.length === 0}
-	<div class="rounded-lg border border-dashed p-12 text-center">
-		<ShieldAlert class="mx-auto h-12 w-12 text-muted-foreground" />
-		<h3 class="mt-4 font-semibold">{m['blacklistAdminPage.noRequests']()}</h3>
-		<p class="mt-2 text-sm text-muted-foreground">
-			{statusFilter === 'pending'
-				? m['blacklistAdminPage.noPendingRequests']()
-				: m['blacklistAdminPage.noRequestsMatchFilter']()}
-		</p>
-	</div>
+	<EmptyState
+		icon={ShieldAlert}
+		title={m['blacklistAdminPage.noRequests']()}
+		body={statusFilter === 'pending'
+			? m['blacklistAdminPage.noPendingRequests']()
+			: m['blacklistAdminPage.noRequestsMatchFilter']()}
+	/>
 {:else}
 	<div class="grid gap-4 md:grid-cols-2">
 		{#each requests as request (request.id)}

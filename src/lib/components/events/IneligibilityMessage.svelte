@@ -342,11 +342,9 @@
 	 */
 	function getVariantClasses(variant: 'warning' | 'info' | 'destructive' | 'muted'): string {
 		const classes = {
-			warning:
-				'border-yellow-200 bg-yellow-50 text-yellow-900 dark:border-yellow-800 dark:bg-yellow-950/50 dark:text-yellow-100',
-			info: 'border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-800 dark:bg-blue-950/50 dark:text-blue-100',
-			destructive:
-				'border-red-200 bg-red-50 text-red-900 dark:border-red-800 dark:bg-red-950/50 dark:text-red-100',
+			warning: 'border-highlight/50 bg-highlight/10 text-foreground',
+			info: 'border-info/40 bg-info/10 text-foreground',
+			destructive: 'border-destructive/40 bg-destructive/10 text-foreground',
 			muted:
 				'border-muted-foreground/20 bg-muted/50 text-muted-foreground dark:border-muted-foreground/10'
 		};
@@ -455,7 +453,7 @@
 			<!-- Application Deadline Display -->
 			{#if shouldShowDeadline && applyBefore}
 				<div
-					class="flex items-center gap-2 rounded-md bg-orange-50 px-3 py-2 text-sm text-orange-800 dark:bg-orange-950/30 dark:text-orange-200"
+					class="flex items-center gap-2 rounded-md bg-highlight/10 px-3 py-2 text-sm text-foreground"
 				>
 					<Calendar class="h-4 w-4 shrink-0" aria-hidden="true" />
 					<span>

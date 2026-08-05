@@ -27,6 +27,7 @@
 	import EventRSVP from './EventRSVP.svelte';
 	import EligibilityStatusDisplay from './EligibilityStatusDisplay.svelte';
 	import { Check, Ticket, CalendarDays, MessageSquare, Ban } from '@lucide/svelte';
+	import ToneTile from '$lib/components/common/ToneTile.svelte';
 	import { downloadRevelEventICalFile } from '$lib/utils/ical';
 	import EventManageSection from './EventManageSection.svelte';
 
@@ -324,13 +325,15 @@
 			>
 				<div class="flex items-start gap-2">
 					<Ban class="h-5 w-5 shrink-0 text-destructive" aria-hidden="true" />
-					<div role="heading" aria-level="3" class="flex-1 font-semibold text-destructive">
+					<div role="heading" aria-level="3" class="flex-1 font-extrabold text-destructive">
 						{m['eventActionSidebar.cancelledBannerTitle']()}
 					</div>
 				</div>
 				{#if event.cancellation_reason}
 					<div class="mt-1 text-sm">
-						<div class="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+						<div
+							class="mb-1 text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
+						>
 							{m['eventActionSidebar.cancelledBannerReasonLabel']()}
 						</div>
 						<p class="whitespace-pre-line break-words text-foreground">
@@ -343,14 +346,23 @@
 
 		<!-- Pending Payment Warning (for online tickets pending payment) -->
 		{#if shouldShowResumePayment}
+			<!-- Unfinished payment. Amber `highlight` tokens instead of a hand-picked
+			     orange ramp: the 10% tint composites to ~the card colour, so the copy
+			     stays `text-foreground` and keeps the token contract's AA guarantee,
+			     and the RESUME button uses the solid highlight pair (audited).
+			     TRAP guarded: a custom `bg-*` on a Button keeps the variant's
+			     `text-primary-foreground`, so the explicit text colour is required. -->
 			<div
-				class="flex flex-col gap-3 rounded-md border-2 border-orange-200 bg-orange-50 p-4 text-orange-900 dark:border-orange-800 dark:bg-orange-950/50 dark:text-orange-100"
+				class="flex flex-col gap-3 rounded-md border-2 border-highlight/60 bg-highlight/10 p-4 text-foreground"
 				role="alert"
 			>
 				<div class="flex items-start gap-2">
-					<Ticket class="h-5 w-5 shrink-0" aria-hidden="true" />
+					<Ticket
+						class="h-5 w-5 shrink-0 text-highlight-foreground dark:text-highlight"
+						aria-hidden="true"
+					/>
 					<div class="flex-1">
-						<div class="font-semibold">{m['eventActionSidebar.ticketPendingPayment']()}</div>
+						<div class="font-extrabold">{m['eventActionSidebar.ticketPendingPayment']()}</div>
 						{#if ticketTierName}
 							<div class="text-sm opacity-90">{ticketTierName}</div>
 						{/if}
@@ -363,7 +375,7 @@
 					type="button"
 					onclick={onResumePayment}
 					disabled={isResumingPayment}
-					class="w-full rounded-md border-2 border-orange-600 bg-orange-600 px-4 py-2 font-semibold text-white transition-colors hover:bg-orange-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-orange-500 dark:bg-orange-500"
+					class="w-full rounded-md border-2 border-highlight bg-highlight px-4 py-2 font-bold text-highlight-foreground transition-colors hover:bg-highlight/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 				>
 					{isResumingPayment
 						? m['eventActionSidebar.processing']()
@@ -373,7 +385,7 @@
 					<button
 						type="button"
 						onclick={onShowTicketClick}
-						class="w-full rounded-md border border-orange-300 bg-transparent px-4 py-2 text-sm font-medium text-orange-700 transition-colors hover:bg-orange-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-900/30"
+						class="w-full rounded-md border border-highlight/60 bg-transparent px-4 py-2 text-sm font-bold text-foreground transition-colors hover:bg-highlight/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						{#if userTickets.length > 1}
 							{m['eventActionSidebar.viewAllTickets']({ count: userTickets.length })}
@@ -387,23 +399,24 @@
 			<!-- Attendance Status Display (if user is attending) -->
 			{@const hasPendingTicket =
 				userTickets.length > 0 && userTickets.some((t) => t.status === 'pending')}
+			<!-- Same tint-plus-token-icon recipe as above; the words carry the state,
+			     the tint only reinforces it. -->
 			<div
 				class={cn(
-					'flex items-center gap-2 rounded-md p-3',
-					hasPendingTicket
-						? 'bg-orange-50 text-orange-900 dark:bg-orange-950/50 dark:text-orange-100'
-						: 'bg-green-50 text-green-900 dark:bg-green-950/50 dark:text-green-100'
+					'flex items-center gap-2 rounded-md p-3 text-foreground',
+					hasPendingTicket ? 'bg-highlight/10' : 'bg-success/10'
 				)}
 				role="status"
 				aria-live="polite"
 			>
-				{#if userStatus && isTicket(userStatus)}
-					<Ticket class="h-5 w-5 shrink-0" aria-hidden="true" />
-				{:else}
-					<Check class="h-5 w-5 shrink-0" aria-hidden="true" />
-				{/if}
+				<ToneTile
+					tone={hasPendingTicket ? 'warning' : 'success'}
+					icon={userStatus && isTicket(userStatus) ? Ticket : Check}
+					size="sm"
+					class="bg-transparent"
+				/>
 				<div class="flex-1">
-					<div class="font-semibold">{attendanceStatusText}</div>
+					<div class="font-extrabold">{attendanceStatusText}</div>
 					{#if ticketTierName}
 						<div class="text-sm opacity-90">{ticketTierName}</div>
 					{/if}
@@ -437,7 +450,7 @@
 				{#if shouldShowEligibility && userStatus && isEligibility(userStatus)}
 					<!-- Show eligibility status for ticketed events -->
 					<div>
-						<h3 class="mb-2 text-sm font-semibold">
+						<h3 class="mb-2 text-xs font-extrabold uppercase tracking-[0.12em] text-primary">
 							{m['eventActionSidebar.eligibilityStatus']()}
 						</h3>
 						<EligibilityStatusDisplay
@@ -477,7 +490,7 @@
 					<button
 						type="button"
 						onclick={handleSecondaryAction}
-						class="w-full cursor-pointer rounded-md border border-input bg-background px-4 py-2 text-sm font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						class="w-full cursor-pointer rounded-md border border-input bg-background px-4 py-2 text-sm font-bold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						<span class="flex items-center justify-center gap-2">
 							<Ticket class="h-4 w-4" aria-hidden="true" />
@@ -491,7 +504,7 @@
 					<button
 						type="button"
 						onclick={handleSecondaryAction}
-						class="w-full cursor-pointer rounded-md border border-input bg-background px-4 py-2 text-sm font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						class="w-full cursor-pointer rounded-md border border-input bg-background px-4 py-2 text-sm font-bold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						{showManageRSVP
 							? m['eventActionSidebar.hideRsvp']()
@@ -504,7 +517,7 @@
 					<button
 						type="button"
 						onclick={onGetTicketsClick}
-						class="w-full cursor-pointer rounded-md border border-primary bg-primary/10 px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						class="w-full cursor-pointer rounded-md border border-primary bg-primary/10 px-4 py-2 text-sm font-bold text-primary transition-colors hover:bg-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						<span class="flex items-center justify-center gap-2">
 							<Ticket class="h-4 w-4" aria-hidden="true" />
@@ -517,7 +530,7 @@
 				<button
 					type="button"
 					onclick={handleDownloadCalendar}
-					class="w-full cursor-pointer rounded-md border border-input bg-background px-4 py-2 text-sm font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					class="w-full cursor-pointer rounded-md border border-input bg-background px-4 py-2 text-sm font-bold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					aria-label={m['eventActionSidebar.downloadCalendarAriaLabel']()}
 				>
 					<span class="flex items-center justify-center gap-2">
@@ -528,14 +541,12 @@
 
 				<!-- Feedback Questionnaires (after event ends) -->
 				{#if hasFeedbackQuestionnaires}
-					<div
-						class="mt-4 rounded-md border-2 border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950/50"
-					>
-						<div class="mb-2 flex items-center gap-2 text-blue-900 dark:text-blue-100">
-							<MessageSquare class="h-5 w-5" aria-hidden="true" />
-							<span class="font-semibold">{m['eventActionSidebar.feedbackAvailable']()}</span>
+					<div class="mt-4 rounded-md border-2 border-info/40 bg-info/10 p-3">
+						<div class="mb-2 flex items-center gap-2 text-foreground">
+							<MessageSquare class="h-5 w-5 text-info" aria-hidden="true" />
+							<span class="font-extrabold">{m['eventActionSidebar.feedbackAvailable']()}</span>
 						</div>
-						<p class="mb-3 text-sm text-blue-800 dark:text-blue-200">
+						<p class="mb-3 text-sm text-muted-foreground">
 							{m['eventActionSidebar.feedbackDescription']()}
 						</p>
 						{#each feedbackQuestionnaires as questionnaireId (questionnaireId)}
@@ -545,7 +556,7 @@
 									event_slug: event.slug,
 									id: questionnaireId
 								})}
-								class="flex w-full items-center justify-center gap-2 rounded-md border-2 border-blue-600 bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-blue-500 dark:bg-blue-500"
+								class="flex w-full items-center justify-center gap-2 rounded-md border-2 border-info bg-info px-4 py-2 text-sm font-bold text-info-foreground transition-colors hover:bg-info/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 							>
 								<MessageSquare class="h-4 w-4" aria-hidden="true" />
 								{m['eventActionSidebar.giveFeedback']()}
@@ -590,7 +601,7 @@
 			<button
 				type="button"
 				onclick={handleDownloadCalendar}
-				class="w-full cursor-pointer rounded-md border border-input bg-background px-4 py-2 text-sm font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+				class="w-full cursor-pointer rounded-md border border-input bg-background px-4 py-2 text-sm font-bold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 				aria-label={m['eventActionSidebar.downloadCalendarAriaLabel']()}
 			>
 				<span class="flex items-center justify-center gap-2">

@@ -77,7 +77,11 @@
 	}
 
 	.year-month-card {
-		@apply flex flex-col items-center justify-center rounded-lg border border-border bg-card p-6 transition-all hover:border-primary hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+		/* Poster silhouette (uplift): 2px edge + the float that grows on hover,
+		   matching ui/card and the dashboard's activity tiles.
+		   The transition is scoped to colours (was "all"): the focus ring is a
+		   box-shadow, so animating box-shadow would fade the ring in. */
+		@apply flex flex-col items-center justify-center rounded-lg border-2 border-border bg-card p-6 shadow-poster transition-colors hover:border-primary hover:shadow-poster-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
 	}
 
 	.year-month-header {
@@ -85,7 +89,7 @@
 	}
 
 	.year-month-name {
-		@apply text-lg font-semibold;
+		@apply text-lg font-bold;
 	}
 
 	.year-month-events {

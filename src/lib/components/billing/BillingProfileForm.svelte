@@ -8,6 +8,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Check, AlertCircle, AlertTriangle, Loader2, Shield } from '@lucide/svelte';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import {
 		userbillingGetBillingProfile,
 		userbillingCreateBillingProfile,
@@ -162,22 +163,23 @@
 	});
 </script>
 
-<!-- Incomplete warning (only shown when profile exists but is incomplete) -->
+<!-- Incomplete warning (only shown when profile exists but is incomplete).
+     Warning tint mirrors ToneTile's amber recipe (see security page). -->
 {#if hasBillingProfile && !isBillingComplete}
 	<div
-		class="mt-4 flex items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-700 dark:bg-amber-950/30"
+		class="mt-4 flex items-start gap-3 rounded-lg border border-highlight/40 bg-highlight/20 p-4"
 		role="alert"
 		aria-live="polite"
 	>
 		<AlertTriangle
-			class="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400"
+			class="mt-0.5 h-5 w-5 shrink-0 text-highlight-foreground dark:text-highlight"
 			aria-hidden="true"
 		/>
 		<div>
-			<p class="font-medium text-amber-900 dark:text-amber-100">
+			<p class="font-medium text-highlight-foreground dark:text-highlight">
 				{m['billing.form.incomplete']()}
 			</p>
-			<p class="mt-1 text-sm text-amber-800 dark:text-amber-200">
+			<p class="mt-1 text-sm text-foreground">
 				{m['billing.form.incompleteDescription']()}
 			</p>
 		</div>
@@ -346,21 +348,21 @@
 				</span>
 
 				{#if vatIdStatus === 'validated'}
-					<span
-						class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300"
+					<StatusBadge
+						tone="success"
+						icon={Check}
+						label={m['billing.form.vatIdValidated']()}
+						size="sm"
 						role="status"
-					>
-						<Check class="h-3 w-3" aria-hidden="true" />
-						{m['billing.form.vatIdValidated']()}
-					</span>
+					/>
 				{:else if vatIdStatus === 'pending'}
-					<span
-						class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/50 dark:text-amber-300"
+					<StatusBadge
+						tone="warning"
+						icon={AlertCircle}
+						label={m['billing.form.vatIdPending']()}
+						size="sm"
 						role="status"
-					>
-						<AlertCircle class="h-3 w-3" aria-hidden="true" />
-						{m['billing.form.vatIdPending']()}
-					</span>
+					/>
 				{/if}
 
 				<Button

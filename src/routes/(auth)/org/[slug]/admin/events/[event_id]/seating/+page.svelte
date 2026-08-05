@@ -6,6 +6,7 @@
 	import SeatOverridesPanel from '$lib/components/events/admin/seating/SeatOverridesPanel.svelte';
 	import BoxOfficeSellPanel from '$lib/components/events/admin/seating/BoxOfficeSellPanel.svelte';
 	import { Tabs, TabsList, TabsTrigger, TabsContent } from '$lib/components/ui/tabs';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
 
 	const { data }: { data: PageData } = $props();
 
@@ -24,12 +25,10 @@
 </svelte:head>
 
 <div class="space-y-6">
-	<div>
-		<h1 class="text-2xl font-bold tracking-tight md:text-3xl">{pageTitle}</h1>
-		<p class="mt-1 text-sm text-muted-foreground">
-			{m['orgAdmin.seating.pageDescription']({ eventName: data.event.name })}
-		</p>
-	</div>
+	<PageHeader
+		title={pageTitle}
+		subtitle={m['orgAdmin.seating.pageDescription']({ eventName: data.event.name })}
+	/>
 
 	<Tabs bind:value={activeTab} class="w-full">
 		<TabsList class="grid w-full grid-cols-2 sm:inline-grid sm:w-auto">

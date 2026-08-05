@@ -3,6 +3,7 @@
 	import { page } from '$app/stores';
 	import type { PageData } from './$types';
 	import EventEditor from '$lib/components/events/admin/EventEditor.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
 
 	const { data }: { data: PageData } = $props();
 
@@ -20,12 +21,11 @@
 
 <div class="space-y-6">
 	<!-- Header Section -->
-	<div>
-		<h1 class="text-2xl font-bold tracking-tight md:text-3xl">{m['eventNewPage.title']()}</h1>
-		<p class="mt-1 text-sm text-muted-foreground">
-			{m['eventNewPage.subtitle']({ organizationName: organization.name })}
-		</p>
-	</div>
+	<PageHeader
+		kicker={m['orgAdmin.nav.events']()}
+		title={m['eventNewPage.title']()}
+		subtitle={m['eventNewPage.subtitle']({ organizationName: organization.name })}
+	/>
 
 	<!-- Event Editor Component -->
 	<div class="rounded-lg border bg-card text-card-foreground shadow-sm">
@@ -39,11 +39,3 @@
 		/>
 	</div>
 </div>
-
-<style>
-	/* Ensure consistent focus states for accessibility */
-	:global(button:focus-visible) {
-		outline: 2px solid hsl(var(--ring));
-		outline-offset: 2px;
-	}
-</style>

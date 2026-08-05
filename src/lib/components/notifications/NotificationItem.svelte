@@ -332,12 +332,20 @@
 
 <Card
 	class={cn(
-		'group cursor-pointer overflow-hidden transition-all hover:shadow-md',
+		// The item is a Card, so it already carries the 2px edge + `shadow-poster`
+		// (uplift); hover grows that float rather than swapping in shadow-md.
+		// The card is `role="button" tabindex="0"` with no focus utilities of its
+		// own, so its focus indicator is the global outline floor in app.css.
+		// `transition-shadow` (was `transition-all`) keeps the float animating
+		// while leaving that outline instant — `all` would have faded it in.
+		'group cursor-pointer overflow-hidden transition-shadow hover:shadow-poster-lg',
 		!isRead && 'border-l-4 border-l-primary bg-primary/5',
+		// bg-highlight/20 mirrors ToneTile's audited warning tokens (hand-verified
+		// 12.6:1 light / 6.7:1 dark — see ToneTile.svelte).
 		isWaitlistSpot &&
 			waitlistSpotData &&
 			!waitlistSpotData.expired &&
-			'border-l-4 border-l-amber-500 bg-amber-50 dark:bg-amber-950/30',
+			'border-l-4 border-l-highlight bg-highlight/20',
 		isWaitlistSpot && waitlistSpotData?.expired && 'border-l-4 border-l-muted bg-muted/30',
 		compact ? 'p-3' : 'p-4 md:p-6',
 		className
@@ -408,8 +416,8 @@
 							size={compact ? 'sm' : 'default'}
 							class={cn(
 								'min-h-11 w-full sm:w-auto',
-								'bg-amber-600 text-white hover:bg-amber-700',
-								'focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2'
+								'bg-highlight text-highlight-foreground hover:bg-highlight/90',
+								'focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2'
 							)}
 							onclick={handleClaim}
 						>

@@ -1,12 +1,12 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { cn } from '$lib/utils/cn';
 	import { getUserDisplayName } from '$lib/utils/user-display';
-	import { getRsvpStatusColor, getRsvpStatusLabel } from '$lib/utils/status-colors';
+	import { getRsvpStatusTone, getRsvpStatusLabel } from '$lib/utils/status-colors';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
 	import { Textarea } from '$lib/components/ui/textarea';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import type { RsvpDetailSchema } from '$lib/api/generated/types.gen';
 
 	interface Props {
@@ -51,14 +51,10 @@
 				<div class="rounded-lg bg-muted p-3">
 					<p class="text-sm font-medium">{m['attendeesAdmin.editModalCurrentStatus']()}</p>
 					<p class="mt-1">
-						<span
-							class={cn(
-								'inline-flex rounded-full px-2 py-1 text-xs font-semibold',
-								getRsvpStatusColor(rsvp.status)
-							)}
-						>
-							{getRsvpStatusLabel(rsvp.status)}
-						</span>
+						<StatusBadge
+							tone={getRsvpStatusTone(rsvp.status)}
+							label={getRsvpStatusLabel(rsvp.status)}
+						/>
 					</p>
 				</div>
 
@@ -76,7 +72,7 @@
 								name="status"
 								value="yes"
 								bind:group={selectedStatus}
-								class="h-4 w-4 text-green-600 focus:ring-green-600"
+								class="h-4 w-4 text-success focus:ring-success"
 							/>
 							<span class="text-sm font-medium">{m['attendeesAdmin.editModalYesLabel']()}</span>
 						</label>
@@ -88,7 +84,7 @@
 								name="status"
 								value="maybe"
 								bind:group={selectedStatus}
-								class="h-4 w-4 text-yellow-600 focus:ring-yellow-600"
+								class="h-4 w-4 text-highlight-foreground focus:ring-highlight dark:text-highlight"
 							/>
 							<span class="text-sm font-medium">{m['attendeesAdmin.editModalMaybeLabel']()}</span>
 						</label>
@@ -100,7 +96,7 @@
 								name="status"
 								value="no"
 								bind:group={selectedStatus}
-								class="h-4 w-4 text-red-600 focus:ring-red-600"
+								class="h-4 w-4 text-destructive focus:ring-destructive"
 							/>
 							<span class="text-sm font-medium">{m['attendeesAdmin.editModalNoLabel']()}</span>
 						</label>

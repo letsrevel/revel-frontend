@@ -16,6 +16,9 @@
 		countActiveOrganizationFilters
 	} from '$lib/utils/organizationFilters';
 	import type { OrganizationFilters as FilterState } from '$lib/utils/organizationFilters';
+	import { Button } from '$lib/components/ui/button';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { SeoHead } from '$lib/seo';
 	import * as m from '$lib/paraglide/messages.js';
 
@@ -84,173 +87,195 @@
 
 <SeoHead config={data.seo} />
 
-<div class="container mx-auto px-4 py-8">
-	<!-- Skip to content link for keyboard navigation -->
-	<a
-		href="#organizations-content"
-		class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
-	>
-		{m['browse.organizations_skipTo']()}
-	</a>
+<div class="bg-background">
+	<!--
+		Color-block header band (uplift, spec §9) — the twin of /events, so the two
+		discovery entrances read as one system rather than two designs. Same
+		full-strength `bg-secondary` poster panel (audit-enforced pair in both
+		modes), same shallow depth: a listing is a work surface.
 
-	<!-- Page Header -->
-	<header class="mb-8">
-		<h1 class="text-4xl font-bold">{m['browse.organizations_title']()}</h1>
-		{#if !error && totalCount > 0}
-			<p class="mt-2 text-muted-foreground">
-				{m['browse.organizations_count']({
-					count: totalCount,
-					organizationPlural:
-						totalCount === 1
-							? m['common.plurals_organization']()
-							: m['common.plurals_organizations']()
-				})}
-			</p>
-		{/if}
-	</header>
+		No sticker chip: discovery speaks for no single organization, and the
+		sticker-chip rule forbids the Revel mark as filler.
+	-->
+	<section class="bg-secondary text-secondary-foreground">
+		<div class="container mx-auto px-4 pb-16 pt-8">
+			<!-- Skip to content link for keyboard navigation -->
+			<a
+				href="#organizations-content"
+				class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
+			>
+				{m['browse.organizations_skipTo']()}
+			</a>
 
-	<!-- Main Content: Sidebar + Organization Grid -->
-	<div class="flex flex-col gap-8 lg:flex-row">
-		<!-- Filter Sidebar (Desktop) -->
-		<div class="hidden lg:block lg:w-80 lg:shrink-0">
-			<div class="sticky top-8">
-				<OrganizationFilters
-					filters={currentFilters}
-					onUpdateFilters={handleUpdateFilters}
-					onClearFilters={handleClearFilters}
-				/>
-			</div>
+			<!-- Page Header -->
+			<PageHeader
+				volume="poster"
+				onBand
+				kicker={m['browse.organizations_kicker']()}
+				title={m['browse.organizations_title']()}
+				subtitle={!error && totalCount > 0
+					? m['browse.organizations_count']({
+							count: totalCount,
+							organizationPlural:
+								totalCount === 1
+									? m['common.plurals_organization']()
+									: m['common.plurals_organizations']()
+						})
+					: undefined}
+			/>
 		</div>
+	</section>
 
-		<!-- Organization Content -->
-		<div id="organizations-content" class="flex-1">
-			{#if error}
-				<!-- Error State -->
-				<div
-					class="rounded-lg border border-destructive bg-destructive/10 p-8 text-center"
-					role="alert"
-					aria-live="polite"
-				>
-					<p class="font-semibold text-destructive">{error}</p>
-					<p class="mt-2 text-sm text-muted-foreground">
-						{m['common.errors_refreshPage']()}
-					</p>
+	<!-- Body on plain `--background`, pulled up over the band's bottom edge — see
+	     /events for why a `bg-secondary` band does NOT get a `bg-secondary` wash
+	     under it (they land 5 points of lightness apart and the block stops
+	     reading as a block). The float is the cards' `shadow-poster`. -->
+	<div class="pb-16">
+		<div class="container mx-auto px-4">
+			<!-- Main Content: Sidebar + Organization Grid -->
+			<div class="-mt-8 flex flex-col gap-8 lg:flex-row">
+				<!-- Filter Sidebar (Desktop) -->
+				<div class="hidden lg:block lg:w-80 lg:shrink-0">
+					<div class="sticky top-8">
+						<OrganizationFilters
+							filters={currentFilters}
+							onUpdateFilters={handleUpdateFilters}
+							onClearFilters={handleClearFilters}
+						/>
+					</div>
 				</div>
-			{:else if organizations.length === 0}
-				<!-- Empty State -->
-				<div class="rounded-lg border bg-muted/50 p-12 text-center">
-					<Users class="mx-auto mb-4 h-16 w-16 text-muted-foreground" aria-hidden="true" />
-					<h2 class="text-2xl font-semibold">{m['browse.organizations_noOrganizationsFound']()}</h2>
-					<p class="mt-2 text-muted-foreground">
-						{#if currentFilters.search || currentFilters.cityId || currentFilters.tags}
-							{m['browse.organizations_tryAdjustingFilters']()}
-						{:else}
-							{m['browse.organizations_noOrganizations']()}
-						{/if}
-					</p>
-					{#if currentFilters.search || currentFilters.cityId || currentFilters.tags}
-						<button
-							type="button"
-							onclick={handleClearFilters}
-							class="mt-4 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+
+				<!-- Organization Content -->
+				<div id="organizations-content" class="flex-1">
+					{#if error}
+						<!-- Error State. `bg-card` rather than the old `bg-destructive/10`
+						     wash: the panel underneath is itself tinted now, so a second
+						     alpha would stack two composites under `text-destructive`. On
+						     card it is the audited token pair, and the doubled destructive
+						     edge carries the alarm. -->
+						<div
+							class="rounded-lg border-2 border-destructive bg-card p-8 text-center shadow-poster"
+							role="alert"
+							aria-live="polite"
 						>
-							{m['browse.organizations_clearFilters']()}
-						</button>
+							<p class="font-semibold text-destructive">{error}</p>
+							<p class="mt-2 text-sm text-muted-foreground">
+								{m['common.errors_refreshPage']()}
+							</p>
+						</div>
+					{:else if organizations.length === 0}
+						<!-- level 2: the page's only other heading is the h1 above. -->
+						<EmptyState
+							level={2}
+							icon={Users}
+							title={m['browse.organizations_noOrganizationsFound']()}
+							body={currentFilters.search || currentFilters.cityId || currentFilters.tags
+								? m['browse.organizations_tryAdjustingFilters']()
+								: m['browse.organizations_noOrganizations']()}
+						>
+							{#snippet action()}
+								{#if currentFilters.search || currentFilters.cityId || currentFilters.tags}
+									<Button onclick={handleClearFilters}>
+										{m['browse.organizations_clearFilters']()}
+									</Button>
+								{/if}
+							{/snippet}
+						</EmptyState>
+					{:else}
+						<!-- Organization Grid -->
+						<div
+							class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3"
+							role="list"
+							aria-label={m['browse.organizations_listingsLabel']()}
+						>
+							{#each organizations as org, index (`${org.id}-${index}`)}
+								<div role="listitem">
+									<OrganizationCard organization={org} variant="standard" />
+								</div>
+							{/each}
+						</div>
+
+						<!-- Pagination -->
+						{#if totalPages > 1}
+							<nav
+								class="mt-12 flex flex-col items-center justify-between gap-4 sm:flex-row"
+								aria-label={m['organizationsListPage.paginationLabel']()}
+							>
+								<!-- Results info -->
+								<p class="text-sm text-muted-foreground" aria-live="polite">
+									{m['common.pagination_showing']()}
+									{showingFrom}–{showingTo}
+									{m['common.pagination_of']()}
+									{totalCount}
+									{m['common.plurals_organizations']()}
+								</p>
+
+								<!-- Pagination controls -->
+								<div class="flex items-center gap-2">
+									{#if hasPrevPage}
+										<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
+										<a
+											href="?{organizationFiltersToParams({
+												...currentFilters,
+												page: currentPage - 1
+											})}"
+											class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+											aria-label={m['organizationsListPage.goToPreviousPage']()}
+										>
+											{m['common.pagination_previous']()}
+										</a>
+										<!-- eslint-enable svelte/no-navigation-without-resolve -->
+									{:else}
+										<button
+											type="button"
+											disabled
+											class="inline-flex h-10 cursor-not-allowed items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium opacity-50"
+											aria-label={m['organizationsListPage.previousPageUnavailable']()}
+										>
+											{m['common.pagination_previous']()}
+										</button>
+									{/if}
+
+									<!-- Page indicator -->
+									<span
+										class="inline-flex h-10 items-center justify-center px-4 text-sm font-medium"
+										aria-current="page"
+									>
+										{m['common.pagination_page']()}
+										{currentPage}
+										{m['common.pagination_of']()}
+										{totalPages}
+									</span>
+
+									{#if hasNextPage}
+										<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
+										<a
+											href="?{organizationFiltersToParams({
+												...currentFilters,
+												page: currentPage + 1
+											})}"
+											class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+											aria-label={m['organizationsListPage.goToNextPage']()}
+										>
+											{m['common.pagination_next']()}
+										</a>
+										<!-- eslint-enable svelte/no-navigation-without-resolve -->
+									{:else}
+										<button
+											type="button"
+											disabled
+											class="inline-flex h-10 cursor-not-allowed items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium opacity-50"
+											aria-label={m['organizationsListPage.nextPageUnavailable']()}
+										>
+											{m['common.pagination_next']()}
+										</button>
+									{/if}
+								</div>
+							</nav>
+						{/if}
 					{/if}
 				</div>
-			{:else}
-				<!-- Organization Grid -->
-				<div
-					class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3"
-					role="list"
-					aria-label={m['browse.organizations_listingsLabel']()}
-				>
-					{#each organizations as org, index (`${org.id}-${index}`)}
-						<div role="listitem">
-							<OrganizationCard organization={org} variant="standard" />
-						</div>
-					{/each}
-				</div>
-
-				<!-- Pagination -->
-				{#if totalPages > 1}
-					<nav
-						class="mt-12 flex flex-col items-center justify-between gap-4 sm:flex-row"
-						aria-label={m['organizationsListPage.paginationLabel']()}
-					>
-						<!-- Results info -->
-						<p class="text-sm text-muted-foreground" aria-live="polite">
-							{m['common.pagination_showing']()}
-							{showingFrom}–{showingTo}
-							{m['common.pagination_of']()}
-							{totalCount}
-							{m['common.plurals_organizations']()}
-						</p>
-
-						<!-- Pagination controls -->
-						<div class="flex items-center gap-2">
-							{#if hasPrevPage}
-								<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
-								<a
-									href="?{organizationFiltersToParams({
-										...currentFilters,
-										page: currentPage - 1
-									})}"
-									class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
-									aria-label={m['organizationsListPage.goToPreviousPage']()}
-								>
-									{m['common.pagination_previous']()}
-								</a>
-								<!-- eslint-enable svelte/no-navigation-without-resolve -->
-							{:else}
-								<button
-									type="button"
-									disabled
-									class="inline-flex h-10 cursor-not-allowed items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium opacity-50"
-									aria-label={m['organizationsListPage.previousPageUnavailable']()}
-								>
-									{m['common.pagination_previous']()}
-								</button>
-							{/if}
-
-							<!-- Page indicator -->
-							<span
-								class="inline-flex h-10 items-center justify-center px-4 text-sm font-medium"
-								aria-current="page"
-							>
-								{m['common.pagination_page']()}
-								{currentPage}
-								{m['common.pagination_of']()}
-								{totalPages}
-							</span>
-
-							{#if hasNextPage}
-								<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
-								<a
-									href="?{organizationFiltersToParams({
-										...currentFilters,
-										page: currentPage + 1
-									})}"
-									class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
-									aria-label={m['organizationsListPage.goToNextPage']()}
-								>
-									{m['common.pagination_next']()}
-								</a>
-								<!-- eslint-enable svelte/no-navigation-without-resolve -->
-							{:else}
-								<button
-									type="button"
-									disabled
-									class="inline-flex h-10 cursor-not-allowed items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium opacity-50"
-									aria-label={m['organizationsListPage.nextPageUnavailable']()}
-								>
-									{m['common.pagination_next']()}
-								</button>
-							{/if}
-						</div>
-					</nav>
-				{/if}
-			{/if}
+			</div>
 		</div>
 	</div>
 
@@ -258,7 +283,7 @@
 	<button
 		type="button"
 		onclick={handleOpenMobileFilters}
-		class="fixed bottom-6 right-6 z-30 flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:hidden"
+		class="fixed bottom-6 right-6 z-30 flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground shadow-lg transition-colors hover:bg-primary/90 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:hidden"
 		aria-label={m['common.filters_openFilters']()}
 	>
 		<Filter class="h-4 w-4" aria-hidden="true" />

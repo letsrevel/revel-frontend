@@ -5,8 +5,9 @@
 	import type { EventInListSchema } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
 	import { formatDateTime } from '$lib/utils/date';
-	import { getEventStatusColor } from '$lib/utils/status-colors';
+	import { getEventStatusTone } from '$lib/utils/status-colors';
 	import EventCoverImage from '$lib/components/events/EventCoverImage.svelte';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import {
 		Calendar,
@@ -170,7 +171,7 @@
 	<div class="flex flex-1 flex-col gap-3 p-4">
 		<!-- Header -->
 		<div class="flex items-start justify-between gap-2">
-			<h3 class="flex-1 font-semibold">{event.name}</h3>
+			<h3 class="flex-1 font-bold">{event.name}</h3>
 			<div class="flex items-center gap-2">
 				{#if event.visibility === 'unlisted'}
 					<span
@@ -181,14 +182,7 @@
 						{m['eventBadges.unlisted']()}
 					</span>
 				{/if}
-				<span
-					class={cn(
-						'rounded-full px-2 py-1 text-xs font-medium',
-						getEventStatusColor(event.status)
-					)}
-				>
-					{statusLabel}
-				</span>
+				<StatusBadge tone={getEventStatusTone(event.status)} label={statusLabel} />
 				<!-- More Actions Dropdown -->
 				<DropdownMenu.Root>
 					<DropdownMenu.Trigger>
@@ -224,16 +218,22 @@
 						{#if variant === 'open' && onClose}
 							<DropdownMenu.Item
 								onclick={() => onClose(event.id)}
-								class="text-red-600 focus:text-red-600"
+								class="text-destructive focus:text-destructive"
 							>
 								<XCircle class="mr-2 h-4 w-4" />
 								{m['orgAdmin.events.actions.close']()}
 							</DropdownMenu.Item>
 						{/if}
 						{#if variant !== 'cancelled' && onCancel}
+							<!-- text-highlight-foreground alone passes AA (it's a dark ink,
+							     not amber) but reads as plain text next to the destructive
+							     red items below — no warning signal in light mode. The
+							     persistent bg-highlight/10 wash restores it; data-[highlighted]
+							     is a higher-specificity compound selector so the shared
+							     hover/focus bg-accent treatment still wins on interaction. -->
 							<DropdownMenu.Item
 								onclick={() => onCancel(event.id)}
-								class="text-orange-600 focus:text-orange-600"
+								class="bg-highlight/10 text-highlight-foreground focus:text-highlight-foreground dark:text-highlight dark:focus:text-highlight"
 							>
 								<Ban class="mr-2 h-4 w-4" />
 								{m['orgAdmin.events.actions.cancel']()}
@@ -302,7 +302,7 @@
 				<button
 					type="button"
 					onclick={() => onPublish(event.id)}
-					class="inline-flex items-center gap-1 rounded-md bg-green-700 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-green-800"
+					class="inline-flex items-center gap-1 rounded-md bg-success px-3 py-1 text-sm font-medium text-success-foreground transition-colors hover:bg-success/90"
 				>
 					<CheckCircle class="h-4 w-4" aria-hidden="true" />
 					{m['orgAdmin.events.actions.publish']()}
@@ -313,7 +313,7 @@
 					<button
 						type="button"
 						onclick={manageTickets}
-						class="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+						class="inline-flex items-center gap-1 rounded-md bg-poster-periwinkle px-3 py-1 text-sm font-medium text-poster-ink ring-1 ring-inset ring-border transition-colors hover:bg-poster-periwinkle/90"
 					>
 						<UserCheck class="h-4 w-4" aria-hidden="true" />
 						{m['orgAdmin.events.actions.tickets']()}
@@ -322,7 +322,7 @@
 					<button
 						type="button"
 						onclick={manageAttendees}
-						class="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+						class="inline-flex items-center gap-1 rounded-md bg-poster-periwinkle px-3 py-1 text-sm font-medium text-poster-ink ring-1 ring-inset ring-border transition-colors hover:bg-poster-periwinkle/90"
 					>
 						<UserCheck class="h-4 w-4" aria-hidden="true" />
 						{m['orgAdmin.events.actions.attendees']()}
@@ -331,7 +331,7 @@
 				<button
 					type="button"
 					onclick={manageInvitations}
-					class="inline-flex items-center gap-1 rounded-md bg-purple-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-purple-700"
+					class="inline-flex items-center gap-1 rounded-md bg-poster-purple px-3 py-1 text-sm font-medium text-poster-white ring-1 ring-inset ring-border transition-colors hover:bg-poster-purple/90"
 				>
 					<Mail class="h-4 w-4" aria-hidden="true" />
 					{m['orgAdmin.events.actions.invitations']()}
@@ -339,7 +339,7 @@
 				<button
 					type="button"
 					onclick={manageWaitlist}
-					class="inline-flex items-center gap-1 rounded-md bg-amber-700 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-amber-800"
+					class="inline-flex items-center gap-1 rounded-md bg-poster-amber px-3 py-1 text-sm font-medium text-poster-ink ring-1 ring-inset ring-border transition-colors hover:bg-poster-amber/90"
 				>
 					<ListPlus class="h-4 w-4" aria-hidden="true" />
 					{m['orgAdmin.events.actions.waitlist']()}
@@ -349,7 +349,7 @@
 				<button
 					type="button"
 					onclick={() => onReopen(event.id)}
-					class="inline-flex items-center gap-1 rounded-md bg-green-700 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-green-800"
+					class="inline-flex items-center gap-1 rounded-md bg-success px-3 py-1 text-sm font-medium text-success-foreground transition-colors hover:bg-success/90"
 				>
 					<CheckCircle class="h-4 w-4" aria-hidden="true" />
 					{m['orgAdmin.events.actions.reopen']()}

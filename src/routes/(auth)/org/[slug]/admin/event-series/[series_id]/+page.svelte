@@ -247,11 +247,11 @@
 	     recurring + paused (the existing pause banner). -->
 	{#if isBroken}
 		<div
-			class="border-warning/50 bg-warning/10 flex items-start gap-3 rounded-lg border p-4 text-sm"
+			class="flex items-start gap-3 rounded-lg border border-highlight bg-highlight/10 p-4 text-sm"
 			role="alert"
 		>
 			<AlertTriangle
-				class="text-warning-foreground mt-0.5 h-5 w-5 flex-shrink-0"
+				class="mt-0.5 h-5 w-5 flex-shrink-0 text-highlight-foreground dark:text-highlight"
 				aria-hidden="true"
 			/>
 			<div class="flex-1 space-y-1">
@@ -474,10 +474,3 @@
 		onClose={() => (showPublishOccurrence = false)}
 	/>
 {/if}
-
-<style>
-	:global(button:focus-visible) {
-		outline: 2px solid hsl(var(--ring));
-		outline-offset: 2px;
-	}
-</style>

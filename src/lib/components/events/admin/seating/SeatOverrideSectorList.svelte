@@ -30,7 +30,7 @@
 		}
 		switch (seat.status) {
 			case 'blocked':
-				return 'border-amber-500/60 bg-amber-50 dark:bg-amber-950/30';
+				return 'border-highlight/60 bg-highlight/10';
 			case 'sold':
 			case 'held':
 				return 'border-border/50 bg-muted/40';
@@ -115,11 +115,11 @@
 											<span class="text-muted-foreground">({status})</span>
 										{/if}
 										{#if seat.isAccessible}
-											<Accessibility class="h-3 w-3 text-blue-500" aria-hidden="true" />
+											<Accessibility class="h-3 w-3 text-info" aria-hidden="true" />
 										{/if}
 										{#if seat.isObstructedView}
 											<EyeOff
-												class="h-3 w-3 text-amber-600 dark:text-amber-400"
+												class="h-3 w-3 text-highlight-foreground dark:text-highlight"
 												aria-hidden="true"
 											/>
 										{/if}

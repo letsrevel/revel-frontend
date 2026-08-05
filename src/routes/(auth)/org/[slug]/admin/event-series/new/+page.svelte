@@ -9,6 +9,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Textarea } from '$lib/components/ui/textarea';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import { organizationadmincoreCreateEventSeries } from '$lib/api/generated';
 	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 
@@ -104,12 +105,10 @@
 			<ArrowLeft class="h-5 w-5" aria-hidden="true" />
 		</button>
 		<div class="flex-1">
-			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
-				{m['eventSeriesNewPage.title']()}
-			</h1>
-			<p class="mt-1 text-sm text-muted-foreground">
-				{m['eventSeriesNewPage.subtitle']({ organizationName: organization.name })}
-			</p>
+			<PageHeader
+				title={m['eventSeriesNewPage.title']()}
+				subtitle={m['eventSeriesNewPage.subtitle']({ organizationName: organization.name })}
+			/>
 		</div>
 	</div>
 
@@ -176,11 +175,3 @@
 		</div>
 	</form>
 </div>
-
-<style>
-	/* Ensure consistent focus states for accessibility */
-	:global(button:focus-visible) {
-		outline: 2px solid hsl(var(--ring));
-		outline-offset: 2px;
-	}
-</style>

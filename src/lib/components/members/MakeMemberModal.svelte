@@ -71,7 +71,7 @@
 				<!-- Tier Selection -->
 				{#if tiers.length === 0}
 					<div
-						class="rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-200"
+						class="rounded-lg border border-highlight bg-highlight/10 p-3 text-sm text-foreground"
 					>
 						{m['makeMemberModal.noTiersWarning']()}
 					</div>

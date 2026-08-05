@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import QuestionTypeBadge from './QuestionTypeBadge.svelte';
 	import type {
 		QuestionnaireQuestion as Question,
 		QuestionnaireSection as Section
@@ -22,7 +23,7 @@
 		<div class="mt-2 space-y-1">
 			{#each question.options as option (option.id)}
 				<div class="flex items-center gap-2 text-sm">
-					<span class={option.isCorrect ? 'font-medium text-green-600' : 'text-muted-foreground'}>
+					<span class={option.isCorrect ? 'font-medium text-success' : 'text-muted-foreground'}>
 						{option.isCorrect ? '\u2713' : '\u25CB'}
 					</span>
 					<span class={option.isCorrect ? 'font-medium' : ''}>{option.text}</span>
@@ -36,13 +37,10 @@
 						{#each option.conditionalQuestions as condQ (condQ.id)}
 							<div class="rounded border bg-muted/50 p-3">
 								<div class="mb-1 flex items-center gap-2">
-									<span
-										class="rounded px-2 py-0.5 text-xs font-medium {condQ.type === 'multiple_choice'
-											? 'bg-blue-100 text-blue-700'
-											: 'bg-purple-100 text-purple-700'}"
-									>
-										{condQ.type === 'multiple_choice' ? 'MC' : 'FT'}
-									</span>
+									<QuestionTypeBadge
+										type={condQ.type === 'multiple_choice' ? 'multiple_choice' : 'free_text'}
+										label={condQ.type === 'multiple_choice' ? 'MC' : 'FT'}
+									/>
 									{#if condQ.required}
 										<span class="text-xs text-destructive"
 											>{m['questionnaireReadOnlyView.required']()}</span
@@ -66,12 +64,12 @@
 				{/if}
 				<!-- Display conditional sections for this option -->
 				{#if option.conditionalSections && option.conditionalSections.length > 0}
-					<div class="ml-6 mt-2 space-y-2 border-l-2 border-green-500/30 pl-4">
+					<div class="ml-6 mt-2 space-y-2 border-l-2 border-primary/30 pl-4">
 						<p class="text-xs font-medium text-muted-foreground">
 							&#8627; {m['questionnaireReadOnlyView.ifSelectedShowSection']()}
 						</p>
 						{#each option.conditionalSections as condSection (condSection.id)}
-							<div class="rounded border border-green-500/50 bg-green-50/50 p-3">
+							<div class="rounded border border-primary/20 bg-primary/5 p-3">
 								<p class="mb-2 text-sm font-medium">{condSection.name}</p>
 								{#if condSection.description}
 									<p class="mb-2 text-xs text-muted-foreground">
@@ -81,14 +79,10 @@
 								{#each condSection.questions as condQ (condQ.id)}
 									<div class="mt-2 rounded border bg-background p-2">
 										<div class="mb-1 flex items-center gap-2">
-											<span
-												class="rounded px-2 py-0.5 text-xs font-medium {condQ.type ===
-												'multiple_choice'
-													? 'bg-blue-100 text-blue-700'
-													: 'bg-purple-100 text-purple-700'}"
-											>
-												{condQ.type === 'multiple_choice' ? 'MC' : 'FT'}
-											</span>
+											<QuestionTypeBadge
+												type={condQ.type === 'multiple_choice' ? 'multiple_choice' : 'free_text'}
+												label={condQ.type === 'multiple_choice' ? 'MC' : 'FT'}
+											/>
 										</div>
 										<p class="text-sm">{condQ.text}</p>
 									</div>
@@ -104,19 +98,14 @@
 
 {#snippet questionBadge(question: Question)}
 	<div class="mb-2 flex items-center gap-2">
-		<span
-			class="rounded px-2 py-1 text-xs font-medium {question.type === 'multiple_choice'
-				? 'bg-blue-100 text-blue-700'
-				: question.type === 'file_upload'
-					? 'bg-green-100 text-green-700'
-					: 'bg-purple-100 text-purple-700'}"
-		>
-			{question.type === 'multiple_choice'
+		<QuestionTypeBadge
+			type={question.type}
+			label={question.type === 'multiple_choice'
 				? 'Multiple Choice'
 				: question.type === 'file_upload'
 					? 'File Upload'
 					: 'Free Text'}
-		</span>
+		/>
 		{#if question.required}
 			<span class="text-xs text-destructive">{m['questionnaireReadOnlyView.required']()}</span>
 		{/if}

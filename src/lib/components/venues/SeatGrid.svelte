@@ -236,7 +236,7 @@
 		const inRect = isInSelectionRect(row, col);
 
 		const base =
-			'w-10 h-10 rounded transition-all duration-75 flex items-center justify-center text-xs font-medium select-none';
+			'w-10 h-10 rounded transition-colors duration-75 flex items-center justify-center text-xs font-medium select-none';
 
 		if (isSelected) {
 			return `${base} bg-primary text-primary-foreground ring-2 ring-primary ring-offset-1`;
@@ -334,7 +334,7 @@
 							<button
 								type="button"
 								onclick={() => removeHorizontalAisle(aisleAfterRow)}
-								class="flex h-5 w-full items-center justify-center text-xs text-amber-600 hover:text-destructive dark:text-amber-400"
+								class="flex h-5 w-full items-center justify-center text-xs text-highlight-foreground hover:text-destructive dark:text-highlight"
 								title={m['seatGridEditor.removeAisleAfterRow']({
 									row: getRowLabel(aisleAfterRow)
 								})}
@@ -425,7 +425,7 @@
 							<!-- Indicator icons -->
 							{#if seatData.is_accessible || seatData.is_obstructed_view}
 								<div
-									class="absolute -bottom-1 -right-1 flex gap-0.5 rounded bg-white/90 p-0.5 shadow-sm dark:bg-gray-900/90"
+									class="absolute -bottom-1 -right-1 flex gap-0.5 rounded bg-card/90 p-0.5 shadow-sm"
 								>
 									{#if seatData.is_accessible}
 										<Accessibility class="h-3 w-3 text-blue-600" />

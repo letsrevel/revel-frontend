@@ -6,8 +6,8 @@
 		PublicPlanSchema
 	} from '$lib/api/generated/types.gen';
 	import type { MembershipGateAction } from '$lib/utils/membership-eligibility';
-	import { Card, CardContent } from '$lib/components/ui/card';
-	import { Badge } from '$lib/components/ui/badge';
+	import PricingCard from '$lib/components/common/PricingCard.svelte';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import OrgContactButton from '$lib/components/organization/OrgContactButton.svelte';
 	import {
@@ -237,67 +237,54 @@
 	}
 </script>
 
-<!-- No `h-full`. It equalised heights back when plan cards were siblings in a
-     `grid gap-4 sm:grid-cols-2` ROW; since #720 they are stacked vertically in
-     TierCard's `space-y-3` block, where `height: 100%` makes EVERY card claim
-     the container's full height. Two cards then need 200% of a box sized for
-     100%, and the surplus escaped the card (`overflow: visible`) and painted
-     over the page footer. -->
-<Card class="flex flex-col">
-	<CardContent class="flex flex-1 flex-col gap-3 p-4">
-		<div class="flex flex-wrap items-start justify-between gap-2">
-			<h4 class="font-semibold">{plan.name}</h4>
-			{#if state === 'current'}
-				<Badge variant="secondary">{m['membershipPlans.yourPlan']()}</Badge>
-			{:else if state === 'sold_out'}
-				<Badge variant="secondary">{m['membershipPlans.soldOut']()}</Badge>
-			{:else if state === 'paused'}
-				<Badge variant="secondary">{m['membershipPlans.paused']()}</Badge>
-			{/if}
-		</div>
+{#snippet badges()}
+	<!-- Tones separated by what the state MEANS, not merely "this is a state":
+	     sold out is a hard stop, paused is temporary, "your plan" is good news.
+	     Every one carries its own words, so nothing is conveyed by fill alone. -->
+	{#if state === 'current'}
+		<StatusBadge tone="success" size="sm" label={m['membershipPlans.yourPlan']()} />
+	{:else if state === 'sold_out'}
+		<StatusBadge tone="danger" size="sm" label={m['membershipPlans.soldOut']()} />
+	{:else if state === 'paused'}
+		<StatusBadge tone="warning" size="sm" label={m['membershipPlans.paused']()} />
+	{/if}
+{/snippet}
 
-		<p class="text-xl font-semibold">{formatPlanPrice(plan)}</p>
+{#snippet meta()}
+	{#if state === 'sold_out'}
+		<p class="text-sm text-muted-foreground">{m['membershipPlans.soldOutHelper']()}</p>
+	{:else if state === 'paused'}
+		<p class="text-sm text-muted-foreground">{m['membershipPlans.pausedHelper']()}</p>
+	{/if}
+{/snippet}
 
-		{#if neverExpires}
-			<p class="-mt-2 text-sm text-muted-foreground">{m['subscriptions.neverExpires']()}</p>
-		{/if}
-
-		{#if plan.description}
-			<p class="whitespace-pre-line text-sm text-muted-foreground">{plan.description}</p>
-		{/if}
-
-		{#if state === 'sold_out'}
-			<p class="text-sm text-muted-foreground">{m['membershipPlans.soldOutHelper']()}</p>
-		{:else if state === 'paused'}
-			<p class="text-sm text-muted-foreground">{m['membershipPlans.pausedHelper']()}</p>
-		{/if}
-
-		<div class="mt-auto pt-1">
-			{#if action === 'current'}
-				<!-- A marker, not a control: there is nothing to press here, so
+{#snippet actions()}
+	<div class="w-full">
+		{#if action === 'current'}
+			<!-- A marker, not a control: there is nothing to press here, so
 				     nothing takes focus. The reason is plain text, never colour. -->
-				<p class="text-sm text-muted-foreground">
-					{isPendingCheckout
-						? m['membershipPlans.pendingCheckoutHelper']()
-						: m['membershipPlans.yourPlanHelper']()}
-				</p>
-			{:else if action === 'member'}
-				<p class="text-sm text-muted-foreground">{m['membershipPlans.alreadySubscribed']()}</p>
-				{#if canSwitch}
-					<!-- The switch itself lives in the account hub's ChangePlanDialog;
+			<p class="text-sm text-muted-foreground">
+				{isPendingCheckout
+					? m['membershipPlans.pendingCheckoutHelper']()
+					: m['membershipPlans.yourPlanHelper']()}
+			</p>
+		{:else if action === 'member'}
+			<p class="text-sm text-muted-foreground">{m['membershipPlans.alreadySubscribed']()}</p>
+			{#if canSwitch}
+				<!-- The switch itself lives in the account hub's ChangePlanDialog;
 					     this only navigates, so it can never 400. Labelled with the
 					     plan name for screen-reader users, who hear these links out
 					     of context and would otherwise get N identical "Change plan". -->
-					<a
-						href={membershipsHref}
-						aria-label={m['membershipPlans.changePlanCtaAria']({ plan: plan.name })}
-						class="mt-2 inline-block text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-					>
-						{m['membershipPlans.changePlanCta']()}<span aria-hidden="true"> →</span>
-					</a>
-				{/if}
-			{:else if action === 'offline'}
-				<!-- The one branch with no self-serve path at all: the plan is settled
+				<a
+					href={membershipsHref}
+					aria-label={m['membershipPlans.changePlanCtaAria']({ plan: plan.name })}
+					class="mt-2 inline-block text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+				>
+					{m['membershipPlans.changePlanCta']()}<span aria-hidden="true"> →</span>
+				</a>
+			{/if}
+		{:else if action === 'offline'}
+			<!-- The one branch with no self-serve path at all: the plan is settled
 				     with the organizers, so the sentence states that constraint and
 				     the CTA beneath it is how you reach them. The sentence stands
 				     alone when there is nobody to reach — it says what is true of the
@@ -308,25 +295,25 @@
 				     org's two contact channels (mailto and a dialog) already live in
 				     OrgContactButton, and splicing would mean cutting a translated
 				     string around an anchor. -->
-				<p class="text-sm text-muted-foreground">{m['membershipPlans.offlineManaged']()}</p>
-				{#if canContactOrganization}
-					<!-- Named for the org, not just "Contact organizer": these buttons
+			<p class="text-sm text-muted-foreground">{m['membershipPlans.offlineManaged']()}</p>
+			{#if canContactOrganization}
+				<!-- Named for the org, not just "Contact organizer": these buttons
 					     repeat down a page of plans and a screen-reader user hears them
 					     out of context. Full width on mobile like every other CTA here,
 					     so it cannot overflow a narrow card. -->
-					<OrgContactButton
-						{organizationSlug}
-						{organizationName}
-						{contactMethod}
-						{contactEmail}
-						{isAuthenticated}
-						variant="outline"
-						ariaLabel={m['orgContactButton.contactAriaLabel']({ organizationName })}
-						class="mt-2 w-full justify-center sm:w-auto"
-					/>
-				{/if}
-			{:else if isApplyAction}
-				<!-- #735. The one branch where a blocked gate still leaves the member
+				<OrgContactButton
+					{organizationSlug}
+					{organizationName}
+					{contactMethod}
+					{contactEmail}
+					{isAuthenticated}
+					variant="outline"
+					ariaLabel={m['orgContactButton.contactAriaLabel']({ organizationName })}
+					class="mt-2 w-full justify-center sm:w-auto"
+				/>
+			{/if}
+		{:else if isApplyAction}
+			<!-- #735. The one branch where a blocked gate still leaves the member
 				     something to press: the backend is waiting for an application that
 				     does not exist yet (`submit_application`), or for a fresh one after
 				     a rejection (`reapply`).
@@ -334,58 +321,80 @@
 				     sit on one tier, a screen-reader user hears them out of context,
 				     and the plan is exactly what distinguishes them — it is the id the
 				     application will carry. -->
-				<Button
-					class="w-full sm:w-auto"
-					onclick={handleApply}
-					disabled={ctaHeld}
-					aria-label={action === 'reapply'
-						? m['membershipPlans.reapplyCtaAria']({ plan: plan.name })
-						: m['membershipPlans.applyCtaAria']({ plan: plan.name })}
-				>
-					{action === 'reapply'
-						? m['membershipPlans.reapplyCta']()
-						: m['membershipPlans.applyCta']()}
-				</Button>
-				<!-- The order matters and is not obvious: approval comes BEFORE the
+			<Button
+				class="w-full sm:w-auto"
+				onclick={handleApply}
+				disabled={ctaHeld}
+				aria-label={action === 'reapply'
+					? m['membershipPlans.reapplyCtaAria']({ plan: plan.name })
+					: m['membershipPlans.applyCtaAria']({ plan: plan.name })}
+			>
+				{action === 'reapply' ? m['membershipPlans.reapplyCta']() : m['membershipPlans.applyCta']()}
+			</Button>
+			<!-- The order matters and is not obvious: approval comes BEFORE the
 				     charge (the backend's PaymentReadyGate is last), so this says so
 				     rather than letting the member expect a checkout. -->
-				<p class="mt-2 text-sm text-muted-foreground">
-					{isFree
-						? m['membershipPlans.applyJoinHelper']()
-						: m['membershipPlans.applySubscribeHelper']()}
-				</p>
-			{:else if action === 'gated'}
-				<!-- What replaces the CTA carries the reason itself, rather than
+			<p class="mt-2 text-sm text-muted-foreground">
+				{isFree
+					? m['membershipPlans.applyJoinHelper']()
+					: m['membershipPlans.applySubscribeHelper']()}
+			</p>
+		{:else if action === 'gated'}
+			<!-- What replaces the CTA carries the reason itself, rather than
 				     leaving a bare gap next to a requirement stated elsewhere on the
 				     card: the note IS the explanation, and `aria-describedby` ties it
 				     to the tier's full requirement list so the association is
 				     programmatic and not merely visual (WCAG 1.3.1). -->
-				<p
-					role="note"
-					class="text-sm text-muted-foreground"
-					aria-describedby={gateRequirementsId ?? undefined}
-				>
-					{isFree
-						? m['membershipPlans.gatedJoinHelper']()
-						: m['membershipPlans.gatedSubscribeHelper']()}
-					{#if gateReason}
-						<span class="block">{gateReason}</span>
-					{/if}
-				</p>
-			{:else if action === 'subscribe'}
-				<Button class="w-full sm:w-auto" onclick={handleSubscribe} disabled={ctaHeld}>
-					{isFree ? m['membershipPlans.joinFreeCta']() : m['membershipPlans.subscribeCta']()}
-				</Button>
-				{#if isFree}
-					<p class="mt-2 text-sm text-muted-foreground">{m['membershipPlans.freeHelper']()}</p>
+			<p
+				role="note"
+				class="text-sm text-muted-foreground"
+				aria-describedby={gateRequirementsId ?? undefined}
+			>
+				{isFree
+					? m['membershipPlans.gatedJoinHelper']()
+					: m['membershipPlans.gatedSubscribeHelper']()}
+				{#if gateReason}
+					<span class="block">{gateReason}</span>
 				{/if}
-			{:else if action === 'login'}
-				<!-- A real link, not a scripted redirect: it survives no-JS,
-				     middle-click and "open in new tab". -->
-				<Button href={loginHref} class="w-full sm:w-auto">
-					{isFree ? m['membershipPlans.loginToJoin']() : m['membershipPlans.loginToSubscribe']()}
-				</Button>
+			</p>
+		{:else if action === 'subscribe'}
+			<Button class="w-full sm:w-auto" onclick={handleSubscribe} disabled={ctaHeld}>
+				{isFree ? m['membershipPlans.joinFreeCta']() : m['membershipPlans.subscribeCta']()}
+			</Button>
+			{#if isFree}
+				<p class="mt-2 text-sm text-muted-foreground">{m['membershipPlans.freeHelper']()}</p>
 			{/if}
-		</div>
-	</CardContent>
-</Card>
+		{:else if action === 'login'}
+			<!-- A real link, not a scripted redirect: it survives no-JS,
+			     middle-click and "open in new tab". -->
+			<Button href={loginHref} class="w-full sm:w-auto">
+				{isFree ? m['membershipPlans.loginToJoin']() : m['membershipPlans.loginToSubscribe']()}
+			</Button>
+		{/if}
+	</div>
+{/snippet}
+
+<!-- No `h-full`. It equalised heights back when plan cards were siblings in a
+     `grid gap-4 sm:grid-cols-2` ROW; since #720 they are stacked vertically in
+     TierCard's `space-y-3` block, where `height: 100%` makes EVERY card claim
+     the container's full height. Two cards then need 200% of a box sized for
+     100%, and the surplus escaped the card (`overflow: visible`) and painted
+     over the page footer.
+
+     This IS the membership pricing moment — the number a would-be member
+     decides on — so it gets the shared PricingCard's display price rather than
+     the old `text-xl`. `level={4}`: the tier's own name is the h3 above it. -->
+<PricingCard
+	name={plan.name}
+	level={4}
+	layout="stack"
+	price={formatPlanPrice(plan)}
+	priceNote={neverExpires ? m['subscriptions.neverExpires']() : undefined}
+	{badges}
+	{meta}
+	{actions}
+>
+	{#if plan.description}
+		<p class="whitespace-pre-line text-sm text-muted-foreground">{plan.description}</p>
+	{/if}
+</PricingCard>

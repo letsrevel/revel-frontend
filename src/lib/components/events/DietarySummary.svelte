@@ -69,7 +69,28 @@
 		return m['dietary.eventSummary_attendeeCount']({ count });
 	}
 
-	// Get severity display info
+	/**
+	 * Severity ladder. This is a SAFETY surface, so the four steps must stay
+	 * distinguishable: an allergy at two opacities of the same amber as an
+	 * intolerance is not a ladder.
+	 *
+	 *   severe allergy  destructive/20 + AlertTriangle   (hardest stop)
+	 *   allergy         destructive/10 + AlertCircle     (same family, lighter)
+	 *   intolerant      highlight/10   + Circle          (amber: caution, not danger)
+	 *   dislike         muted          + Frown           (preference)
+	 *
+	 * Every step also carries its own icon AND its own translated label, so the
+	 * fill is redundant reinforcement and never the message (WCAG 1.4.1) — which
+	 * is what makes separating the two destructive steps by opacity alone safe.
+	 *
+	 * Ratios hand-computed (composited alpha is invisible to
+	 * scripts/audit-brand-themes.py) — `text-foreground` over the tint on a card,
+	 * light | dark:
+	 *   destructive/20 11.90 | 13.70 · destructive/10 14.50 | 14.79
+	 *   highlight/10   16.34 | 12.90
+	 * The borders are decoration at these alphas (border-destructive is 9.74:1 on
+	 * the light card but 2.86:1 on the dark one); the icon and the words carry it.
+	 */
 	function getSeverityInfo(type: RestrictionType): {
 		label: string;
 		color: string;
@@ -79,36 +100,31 @@
 			case 'severe_allergy':
 				return {
 					label: m['dietarySummary.severitySevereAllergy'](),
-					color:
-						'bg-red-100 text-red-800 border-red-200 dark:bg-red-950 dark:text-red-400 dark:border-red-900',
+					color: 'border-destructive/60 bg-destructive/20 text-foreground',
 					icon: AlertTriangle
 				};
 			case 'allergy':
 				return {
 					label: m['dietarySummary.severityAllergy'](),
-					color:
-						'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-950 dark:text-orange-400 dark:border-orange-900',
+					color: 'border-destructive/40 bg-destructive/10 text-foreground',
 					icon: AlertCircle
 				};
 			case 'intolerant':
 				return {
 					label: m['dietarySummary.severityIntolerant'](),
-					color:
-						'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-950 dark:text-yellow-400 dark:border-yellow-900',
+					color: 'border-highlight/40 bg-highlight/10 text-foreground',
 					icon: Circle
 				};
 			case 'dislike':
 				return {
 					label: m['dietarySummary.severityDislike'](),
-					color:
-						'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700',
+					color: 'border-border bg-muted text-muted-foreground',
 					icon: Frown
 				};
 			default:
 				return {
 					label: type,
-					color:
-						'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700',
+					color: 'border-border bg-muted text-muted-foreground',
 					icon: Circle
 				};
 		}
@@ -169,7 +185,7 @@
 			<div class="flex items-center gap-3">
 				<Info class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
 				<div>
-					<h3 class="font-semibold">{m['dietary.eventSummary_heading']()}</h3>
+					<h3 class="text-lg font-extrabold">{m['dietary.eventSummary_heading']()}</h3>
 					<p class="text-sm text-muted-foreground">{m['dietary.eventSummary_description']()}</p>
 				</div>
 			</div>
@@ -178,7 +194,7 @@
 				<a
 					href={profileDietaryUrl}
 					onclick={(e) => e.stopPropagation()}
-					class="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+					class="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-bold text-primary-foreground hover:bg-primary/90"
 					aria-label={m['dietarySummary.addDietaryPreferencesAriaLabel']()}
 				>
 					<span>{m['dietary.profile_quickActionButton']()}</span>

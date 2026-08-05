@@ -13,7 +13,10 @@
 	import { isWithinRevivalWindow } from '$lib/utils/subscriptions';
 	import { MY_MEMBERSHIPS_KEY, MY_SUBSCRIPTIONS_KEY } from '$lib/utils/subscription-cache';
 	import { Button } from '$lib/components/ui/button';
-	import { Loader2 } from '@lucide/svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
+	import { Loader2, Users } from '@lucide/svelte';
 
 	const accessToken = $derived(authStore.accessToken);
 
@@ -171,12 +174,10 @@
 </svelte:head>
 
 <div class="container mx-auto max-w-3xl space-y-6 px-4 py-6">
-	<h1 class="text-2xl font-bold">{m['account.memberships.title']()}</h1>
+	<PageHeader kicker={m['myInvoices.account']()} title={m['account.memberships.title']()} />
 
 	<section aria-labelledby="memberships-heading" class="space-y-3">
-		<h2 id="memberships-heading" class="text-lg font-semibold">
-			{m['account.memberships.sectionMemberships']()}
-		</h2>
+		<SectionHeader id="memberships-heading" title={m['account.memberships.sectionMemberships']()} />
 
 		{#if isSectionPending}
 			<div role="status">
@@ -203,15 +204,20 @@
 			{/if}
 
 			{#if showEmptyState}
-				<div class="rounded-lg border p-6 text-center">
-					<!-- h3, not h2: this sits *inside* the memberships section, so an h2
-					     here would read as a third top-level section. -->
-					<h3 class="font-medium">{m['account.memberships.empty.title']()}</h3>
-					<p class="mt-1 text-sm text-muted-foreground">{m['account.memberships.empty.body']()}</p>
-					<Button href="/organizations" variant="outline" class="mt-4">
-						{m['account.memberships.empty.cta']()}
-					</Button>
-				</div>
+				<!-- level=3: this sits *inside* the memberships section, so a level-2
+				     heading here would read as a third top-level section. -->
+				<EmptyState
+					icon={Users}
+					level={3}
+					title={m['account.memberships.empty.title']()}
+					body={m['account.memberships.empty.body']()}
+				>
+					{#snippet action()}
+						<Button href="/organizations" variant="outline">
+							{m['account.memberships.empty.cta']()}
+						</Button>
+					{/snippet}
+				</EmptyState>
 			{:else if !hasNoRows}
 				<div class="space-y-3">
 					{#each displayedMemberships as mb (mb.organization_id)}

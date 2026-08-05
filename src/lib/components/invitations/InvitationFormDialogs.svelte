@@ -194,7 +194,7 @@
 						placeholder={m['eventInvitationsAdmin.customMessagePlaceholder']()}
 						rows="3"
 						maxlength="500"
-						class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+						class="mt-1 w-full rounded-md border-2 border-input bg-background px-3 py-2 text-sm text-foreground transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
 					></textarea>
 					<p class="mt-1 text-xs text-muted-foreground">
 						{m['eventInvitationsAdmin.charactersCount']({ count: invitationMessage.length })}
@@ -285,7 +285,7 @@
 							placeholder={m['eventInvitationsAdmin.customMessagePlaceholder']()}
 							rows="3"
 							maxlength="500"
-							class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+							class="mt-1 w-full rounded-md border-2 border-input bg-background px-3 py-2 text-sm text-foreground transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
 						></textarea>
 						<p class="mt-1 text-xs text-muted-foreground">
 							{m['eventInvitationsAdmin.charactersCount']({
@@ -304,7 +304,7 @@
 								name="waives_questionnaire"
 								value="true"
 								bind:checked={editFormData.waives_questionnaire}
-								class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+								class="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 							/>
 							<span class="text-sm">{m['eventInvitationsAdmin.waiveQuestionnaire']()}</span>
 						</label>
@@ -315,7 +315,7 @@
 								name="waives_purchase"
 								value="true"
 								bind:checked={editFormData.waives_purchase}
-								class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+								class="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 							/>
 							<span class="text-sm">{m['eventInvitationsAdmin.waivePurchase']()}</span>
 						</label>
@@ -326,7 +326,7 @@
 								name="waives_membership_required"
 								value="true"
 								bind:checked={editFormData.waives_membership_required}
-								class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+								class="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 							/>
 							<span class="text-sm">{m['eventInvitationsAdmin.waiveMembership']()}</span>
 						</label>
@@ -337,7 +337,7 @@
 								name="waives_rsvp_deadline"
 								value="true"
 								bind:checked={editFormData.waives_rsvp_deadline}
-								class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+								class="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 							/>
 							<span class="text-sm">{m['eventInvitationsAdmin.waiveDeadline']()}</span>
 						</label>
@@ -348,7 +348,7 @@
 								name="overrides_max_attendees"
 								value="true"
 								bind:checked={editFormData.overrides_max_attendees}
-								class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+								class="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 							/>
 							<span class="text-sm">{m['eventInvitationsAdmin.overrideMaxAttendees']()}</span>
 						</label>
@@ -431,7 +431,7 @@
 						placeholder={m['eventInvitationsAdmin.customMessagePlaceholder']()}
 						rows="3"
 						maxlength="500"
-						class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+						class="mt-1 w-full rounded-md border-2 border-input bg-background px-3 py-2 text-sm text-foreground transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
 					></textarea>
 					<p class="mt-1 text-xs text-muted-foreground">
 						{m['eventInvitationsAdmin.charactersCount']({
@@ -450,7 +450,7 @@
 							name="waives_questionnaire"
 							value="true"
 							bind:checked={bulkEditFormData.waives_questionnaire}
-							class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+							class="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 						/>
 						<span class="text-sm">{m['eventInvitationsAdmin.waiveQuestionnaire']()}</span>
 					</label>
@@ -461,7 +461,7 @@
 							name="waives_purchase"
 							value="true"
 							bind:checked={bulkEditFormData.waives_purchase}
-							class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+							class="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 						/>
 						<span class="text-sm">{m['eventInvitationsAdmin.waivePurchase']()}</span>
 					</label>
@@ -472,7 +472,7 @@
 							name="waives_membership_required"
 							value="true"
 							bind:checked={bulkEditFormData.waives_membership_required}
-							class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+							class="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 						/>
 						<span class="text-sm">{m['eventInvitationsAdmin.waiveMembership']()}</span>
 					</label>
@@ -483,7 +483,7 @@
 							name="waives_rsvp_deadline"
 							value="true"
 							bind:checked={bulkEditFormData.waives_rsvp_deadline}
-							class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+							class="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 						/>
 						<span class="text-sm">{m['eventInvitationsAdmin.waiveDeadline']()}</span>
 					</label>
@@ -494,7 +494,7 @@
 							name="overrides_max_attendees"
 							value="true"
 							bind:checked={bulkEditFormData.overrides_max_attendees}
-							class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+							class="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 						/>
 						<span class="text-sm">{m['eventInvitationsAdmin.overrideMaxAttendees']()}</span>
 					</label>
@@ -531,7 +531,7 @@
 				type="checkbox"
 				name="waives_questionnaire"
 				value="true"
-				class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+				class="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 			/>
 			<span class="text-sm">{m['eventInvitationsAdmin.waiveQuestionnaire']()}</span>
 		</label>
@@ -541,7 +541,7 @@
 				type="checkbox"
 				name="waives_purchase"
 				value="true"
-				class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+				class="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 			/>
 			<span class="text-sm">{m['eventInvitationsAdmin.waivePurchase']()}</span>
 		</label>
@@ -551,7 +551,7 @@
 				type="checkbox"
 				name="waives_membership_required"
 				value="true"
-				class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+				class="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 			/>
 			<span class="text-sm">{m['eventInvitationsAdmin.waiveMembership']()}</span>
 		</label>
@@ -561,7 +561,7 @@
 				type="checkbox"
 				name="waives_rsvp_deadline"
 				value="true"
-				class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+				class="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 			/>
 			<span class="text-sm">{m['eventInvitationsAdmin.waiveDeadline']()}</span>
 		</label>
@@ -571,7 +571,7 @@
 				type="checkbox"
 				name="overrides_max_attendees"
 				value="true"
-				class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+				class="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 			/>
 			<span class="text-sm">{m['eventInvitationsAdmin.overrideMaxAttendees']()}</span>
 		</label>
@@ -599,7 +599,7 @@
 									onUpdate(selectedIds.filter((id) => id !== tier.id));
 								}
 							}}
-							class="mt-0.5 h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary"
+							class="mt-0.5 h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-primary"
 						/>
 						<div class="flex-1">
 							<span class="text-sm font-medium">{tier.name}</span>

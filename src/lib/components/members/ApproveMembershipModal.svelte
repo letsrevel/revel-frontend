@@ -120,7 +120,7 @@
 				<Button
 					onclick={handleConfirm}
 					disabled={!selectedTierId || isProcessing}
-					class="bg-green-600 hover:bg-green-700"
+					class="bg-success text-success-foreground hover:bg-success/90"
 				>
 					{#if isProcessing}
 						<Loader2 class="mr-2 h-4 w-4 animate-spin" />

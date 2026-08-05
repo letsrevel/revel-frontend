@@ -302,9 +302,20 @@
 						{@render billingNotice('text-sm text-muted-foreground')}
 					{/if}
 					{#if selectedStatus === 'banned'}
-						<div class="flex gap-2 rounded-md bg-red-50 p-3 text-sm dark:bg-red-950">
-							<AlertTriangle class="h-4 w-4 shrink-0 text-red-600 dark:text-red-400" />
-							<div class="space-y-2 text-red-800 dark:text-red-200">
+						<!-- dark:bg-destructive/25 (AutoEvalRecommendation's pattern): a /10
+						     red wash is nearly invisible on the dark surface, so dark
+						     strengthens the tint. The icon stays `text-destructive`, which is
+						     --destructive-text since #781. This panel is inside DialogContent
+						     (bg-background), so the governing figures are 7.20:1 light on /10
+						     and 5.84:1 dark on /25; over a bg-card container the same recipe is
+						     8.10:1 / 5.37:1. All four are audited rows in
+						     scripts/audit-brand-themes.py. The old FILL value measured
+						     2.69-2.95:1 here, under the 3:1 non-text floor. -->
+						<div
+							class="flex gap-2 rounded-md border border-destructive bg-destructive/10 p-3 text-sm dark:bg-destructive/25"
+						>
+							<AlertTriangle class="h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
+							<div class="space-y-2 text-foreground">
 								<p>{m['manageMemberModal.bannedWarning']()}</p>
 								<!-- The confirm panel below restates this line, so show it here only
 								     while that panel is closed — never the same sentence twice. -->
@@ -351,13 +362,13 @@
 							<div class="flex gap-2">
 								<AlertTriangle class="h-5 w-5 shrink-0 text-destructive" />
 								<div class="flex-1 space-y-2">
-									<p role="heading" aria-level="4" class="text-sm font-medium text-destructive">
+									<p role="heading" aria-level="4" class="text-sm font-medium text-foreground">
 										{m['manageMemberModal.banConfirmTitle']({ name: displayName })}
 									</p>
-									<p class="text-sm text-destructive/90">
+									<p class="text-sm text-foreground">
 										{m['manageMemberModal.banConfirmMessage']()}
 									</p>
-									{@render billingNotice('text-sm text-destructive/90')}
+									{@render billingNotice('text-sm text-foreground')}
 									<div class="flex gap-2">
 										<Button
 											bind:ref={banConfirmButton}
@@ -435,13 +446,13 @@
 							<div class="flex gap-2">
 								<AlertTriangle class="h-5 w-5 shrink-0 text-destructive" />
 								<div class="flex-1 space-y-2">
-									<p role="heading" aria-level="4" class="text-sm font-medium text-destructive">
+									<p role="heading" aria-level="4" class="text-sm font-medium text-foreground">
 										{m['manageMemberModal.removeConfirmTitle']()}
 									</p>
-									<p class="text-sm text-destructive/90">
+									<p class="text-sm text-foreground">
 										{m['manageMemberModal.removeConfirmMessage']({ name: displayName })}
 									</p>
-									{@render billingNotice('text-sm text-destructive/90')}
+									{@render billingNotice('text-sm text-foreground')}
 									<div class="flex gap-2">
 										<Button
 											variant="destructive"
@@ -471,37 +482,40 @@
 					<!-- Blacklist Button/Confirmation -->
 					{#if onBlacklist}
 						{#if !showBlacklistConfirm}
+							<!-- Label stays text-foreground (danger framing rule): meaning is
+							     never carried by color alone, and the destructive framing here
+							     is a whole sentence. Only the Ban icon carries the tone, and it
+							     no longer needs a per-mode split — `text-destructive` resolves
+							     to --destructive-text (#781): 8.63:1 light / 7.02:1 dark on the
+							     page background, both TEXT_PAIRS rows in
+							     scripts/audit-brand-themes.py. Before the split the same
+							     utility measured 3.13:1 in dark, under the text floor. Hover
+							     keeps the text-foreground label with the /10 tint underneath. -->
 							<Button
 								variant="outline"
 								onclick={handleBlacklistClick}
 								disabled={isProcessing}
-								class="w-full justify-start border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-400 dark:text-red-400 dark:hover:bg-red-950 dark:hover:text-red-300"
+								class="w-full justify-start border-destructive bg-transparent text-foreground hover:bg-destructive/10 hover:text-foreground"
 							>
-								<Ban class="mr-2 h-4 w-4" />
+								<Ban class="mr-2 h-4 w-4 text-destructive" aria-hidden="true" />
 								{m['manageMemberModal.addToBlacklist']()}
 							</Button>
 						{:else}
-							<div
-								class="space-y-3 rounded-lg border-2 border-red-500 bg-red-50 p-4 dark:bg-red-950/50"
-							>
+							<div class="space-y-3 rounded-lg border-2 border-destructive bg-destructive/10 p-4">
 								<div class="flex gap-2">
-									<Ban class="h-5 w-5 shrink-0 text-red-600 dark:text-red-400" />
+									<Ban class="h-5 w-5 shrink-0 text-destructive" aria-hidden="true" />
 									<div class="flex-1 space-y-3">
 										<div>
-											<p
-												role="heading"
-												aria-level="4"
-												class="text-sm font-medium text-red-900 dark:text-red-100"
-											>
+											<p role="heading" aria-level="4" class="text-sm font-medium text-foreground">
 												{m['manageMemberModal.blacklistConfirmTitle']({ name: displayName })}
 											</p>
-											<p class="text-sm text-red-800 dark:text-red-200">
+											<p class="text-sm text-foreground">
 												{m['manageMemberModal.blacklistConfirmMessage']()}
 											</p>
-											{@render billingNotice('mt-1 text-sm text-red-800 dark:text-red-200')}
+											{@render billingNotice('mt-1 text-sm text-foreground')}
 										</div>
 										<div class="space-y-2">
-											<Label for="blacklist-reason" class="text-sm text-red-900 dark:text-red-100">
+											<Label for="blacklist-reason" class="text-sm text-foreground">
 												{m['manageMemberModal.reasonOptional']()}
 											</Label>
 											<Textarea
@@ -510,7 +524,7 @@
 												placeholder={m['manageMemberModal.blacklistReasonPlaceholder']()}
 												rows={2}
 												disabled={isBlacklisting}
-												class="border-red-300 dark:border-red-700"
+												class="border-destructive/40"
 											/>
 										</div>
 										<div class="flex gap-2">

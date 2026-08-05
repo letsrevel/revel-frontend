@@ -42,6 +42,20 @@ export type SubmissionBadgeStatus =
 	'approved' | 'rejected' | 'pending review' | 'draft' | 'auto_accepted';
 
 /**
+ * Every `SubmissionBadgeStatus`, in display order. Not a backend enum (see
+ * above), so there is no generated iteration order to reuse — this is the one
+ * source `SubmissionStatusBadge`'s mapper and its regression-guard test both
+ * drive off, so a sixth status can't reach one and be missed by the other.
+ */
+export const SUBMISSION_BADGE_STATUS_ORDER: readonly SubmissionBadgeStatus[] = [
+	'draft',
+	'pending review',
+	'approved',
+	'auto_accepted',
+	'rejected'
+];
+
+/**
  * Type guards for questionnaire evaluation status
  */
 export function isApproved(status: QuestionnaireEvaluationStatus | null | undefined): boolean {

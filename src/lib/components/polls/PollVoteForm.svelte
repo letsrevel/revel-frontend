@@ -277,6 +277,30 @@
 	function isOptionSelected(questionId: string, optionId: string): boolean {
 		return multipleChoiceAnswers.get(questionId)?.includes(optionId) ?? false;
 	}
+
+	/**
+	 * The landing's QuestionnaireMock look, on theme tokens: rounded option rows
+	 * with a purple selected state.
+	 *
+	 * The row IS the `<label>`, so the whole padded box is the hit target the
+	 * hover state promises — a padded row that highlights on hover but only
+	 * activates on its 16px control is a lie, and a 44px-tall row is the mobile
+	 * target we want anyway. Purely markup: the native label/control association
+	 * (unchanged `for`/`id`) still drives selection, so keyboard and
+	 * screen-reader behaviour are untouched.
+	 *
+	 * The selected fill is `bg-primary/10`, which composites to ~the card colour,
+	 * so the label keeps `text-foreground` and the token contract's AA guarantee;
+	 * the 2px `border-primary` is >= 3:1 non-text against the card in both modes
+	 * (5.9 light / 5.3 dark, the same measurement as ToneTile's brand row).
+	 * Selection is never carried by the fill alone — the radio/checkbox state is.
+	 */
+	function optionRowClass(selected: boolean): string {
+		return cn(
+			'flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border-2 px-3 py-2 transition-colors',
+			selected ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/40'
+		);
+	}
 </script>
 
 <form onsubmit={handleSubmit} class="space-y-8">
@@ -285,7 +309,7 @@
 		.filter((s) => !s.depends_on_option_id)
 		.sort((a, b) => a.order - b.order) as section (section.id)}
 		<div class="rounded-lg border bg-card p-6">
-			<h3 class="mb-2 text-xl font-semibold">{section.name}</h3>
+			<h3 class="mb-2 text-xl font-extrabold">{section.name}</h3>
 			{#if section.description}
 				<div class="mb-6">
 					<MarkdownContent content={section.description} class="text-muted-foreground" />
@@ -386,20 +410,22 @@
 			>
 				{#each question.options ?? [] as option (option.id)}
 					<div class="space-y-2">
-						<div class="flex items-center space-x-2">
+						<label
+							for="{question.id}-{option.id}"
+							class={optionRowClass(isOptionSelected(question.id, option.id))}
+						>
 							<Checkbox
 								id="{question.id}-{option.id}"
 								checked={isOptionSelected(question.id, option.id)}
 								onCheckedChange={(checked) =>
 									handleMultipleChoiceChange(question.id, option.id, !!checked, true)}
 							/>
-							<label
-								for="{question.id}-{option.id}"
-								class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+							<span
+								class="flex-1 text-sm font-bold leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 							>
 								{option.option}
-							</label>
-						</div>
+							</span>
+						</label>
 						{@render conditionalContent(option.id, question.id)}
 					</div>
 				{/each}
@@ -414,10 +440,13 @@
 			>
 				{#each question.options ?? [] as option (option.id)}
 					<div class="space-y-2">
-						<div class="flex items-center space-x-2">
+						<Label
+							for="{question.id}-{option.id}"
+							class={optionRowClass(isOptionSelected(question.id, option.id))}
+						>
 							<RadioGroupItem value={option.id} id="{question.id}-{option.id}" />
-							<Label for="{question.id}-{option.id}">{option.option}</Label>
-						</div>
+							<span class="flex-1">{option.option}</span>
+						</Label>
 						{@render conditionalContent(option.id, question.id)}
 					</div>
 				{/each}
@@ -520,7 +549,7 @@
 
 			{#each getSectionsForOption(flattened, optionId).sort((a, b) => a.order - b.order) as conditionalSection (conditionalSection.id)}
 				<div class="ml-4 rounded-lg border border-primary/20 bg-primary/5 p-4">
-					<h4 class="mb-2 text-lg font-semibold">{conditionalSection.name}</h4>
+					<h4 class="mb-2 text-lg font-extrabold">{conditionalSection.name}</h4>
 					{#if conditionalSection.description}
 						<div class="mb-4">
 							<MarkdownContent

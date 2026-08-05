@@ -11,6 +11,7 @@
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import { slide } from 'svelte/transition';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
+	import Sticker from '$lib/components/brand/Sticker.svelte';
 	import FileUploadQuestion from '$lib/components/questionnaires/FileUploadQuestion.svelte';
 	import type {
 		QuestionnaireFileSchema,
@@ -280,6 +281,51 @@
 	function isOptionSelected(questionId: string, optionId: string): boolean {
 		return multipleChoiceAnswers.get(questionId)?.includes(optionId) || false;
 	}
+
+	/**
+	 * The landing's QuestionnaireMock look, on theme tokens: rounded option rows
+	 * with a purple selected state. Mirrors `polls/PollVoteForm`'s
+	 * `optionRowClass` exactly — this is the mock-alignment ledger handoff from
+	 * the public-discovery PR, which built the poll side of this pattern and
+	 * left the questionnaire side (this component, shared by both PUBLIC
+	 * questionnaire routes) for the owning cluster.
+	 *
+	 * The row IS the `<label>`, so the whole padded box is the hit target the
+	 * hover state promises — a padded row that highlights on hover but only
+	 * activates on its 16px control is a lie, and a 44px-tall row is the mobile
+	 * target we want anyway. Purely markup: the native label/control
+	 * association (unchanged `for`/`id`) still drives selection, so keyboard,
+	 * screen-reader, and `getByRole('radio'|'checkbox', { name })` behaviour
+	 * are untouched.
+	 *
+	 * The selected fill is `bg-primary/10`, which composites to ~the card
+	 * colour, so the label keeps `text-foreground` and the token contract's AA
+	 * guarantee; the 2px `border-primary` is >= 3:1 non-text against the card
+	 * in both modes (6.99 light / 6.27 dark, hand-verified against `--card`).
+	 * Selection is never carried by the fill alone — the radio/checkbox state is.
+	 */
+	function optionRowClass(selected: boolean): string {
+		return cn(
+			// Uplift: the mock's rows are chunky sticker pills, not list items —
+			// full sticker radius, 44px min target, and a hover LIFT (the poster
+			// language is physical). `transition-all` covers the translate.
+			'flex min-h-12 cursor-pointer items-center gap-2.5 rounded-xl border-2 px-4 py-2.5 font-bold',
+			'transition-all hover:-translate-y-0.5',
+			selected
+				? 'border-primary bg-primary/10 shadow-poster'
+				: 'border-border hover:border-primary/50 hover:shadow-poster'
+		);
+	}
+
+	/**
+	 * The mock's card: a genuinely floating panel on a tinted page, not a
+	 * hairline rectangle. `bg-card` rather than a mode-inert `bg-poster-white`
+	 * — see the uplift report: in LIGHT mode `--card` IS white, so this is the
+	 * mock exactly; in dark mode a hard-white card would strand every nested
+	 * control (textarea, checkbox, radio, markdown prose, the file-upload
+	 * dropzone) on the wrong surface, and those all read theme tokens.
+	 */
+	const cardClass = 'rounded-[1.5rem] border-2 border-border bg-card p-6 shadow-poster sm:p-8';
 </script>
 
 <!-- Form -->
@@ -287,9 +333,24 @@
 	<!-- Non-conditional Sections -->
 	{#each flattened.sections
 		.filter((s) => !s.depends_on_option_id)
-		.sort((a, b) => a.order - b.order) as section (section.id)}
-		<div class="rounded-lg border bg-card p-6">
-			<h2 class="mb-2 text-xl font-semibold">{section.name}</h2>
+		.sort((a, b) => a.order - b.order) as section, sectionIndex (section.id)}
+		<div class={cardClass}>
+			<!-- Numbered sticker: pure ornament (aria-hidden) and OUTSIDE the h2,
+			     so the heading's accessible name is still exactly section.name.
+			     Alternating tint/tilt is the poster's hand-placed feel; rotation
+			     stays inside Sticker's [-3, 3] clamp. -->
+			<div class="mb-4 flex items-start gap-3">
+				<span aria-hidden="true" class="shrink-0">
+					<Sticker
+						tint={sectionIndex % 2 === 0 ? 'purple' : 'crimson'}
+						rotate={sectionIndex % 2 === 0 ? -2 : 2}
+						class="text-sm tabular-nums"
+					>
+						{sectionIndex + 1}
+					</Sticker>
+				</span>
+				<h2 class="text-2xl font-extrabold leading-tight">{section.name}</h2>
+			</div>
 			{#if section.description}
 				<div class="mb-6">
 					<MarkdownContent content={section.description} class="text-muted-foreground" />
@@ -325,7 +386,7 @@
 				.sort((a, b) => a.order - b.order) as question (question.id)}
 				{@const isVisible = isQuestionVisible(question.id)}
 				{#if isVisible}
-					<div class="rounded-lg border bg-card p-6">
+					<div class={cardClass}>
 						{#if question.type === 'multiple_choice'}
 							{@render multipleChoiceQuestion(question, false)}
 						{:else if question.type === 'file_upload'}
@@ -339,18 +400,26 @@
 		</div>
 	{/if}
 
-	<!-- Submit Button -->
-	<div class="flex flex-col items-end gap-2 border-t pt-6">
+	<!-- Submit row — the mock's action strip: a floating bar, not a hairline
+	     divider, so the form ends on the same physical note it started. -->
+	<div
+		class="flex flex-col items-end gap-3 rounded-[1.5rem] border-2 border-border bg-card p-5 shadow-poster sm:p-6"
+	>
 		{#if !allRequiredAnswered}
 			<p class="text-sm text-muted-foreground">
 				{m['questionnaireSubmissionPage.validation_allRequired']()}
 			</p>
 		{/if}
 		<div class="flex items-center justify-end gap-4">
-			<Button type="button" variant="outline" onclick={onCancel}>
+			<Button type="button" variant="outline" size="lg" onclick={onCancel}>
 				{m['questionnaireSubmissionPage.button_cancel']()}
 			</Button>
-			<Button type="submit" disabled={submitting || !allRequiredAnswered}>
+			<Button
+				type="submit"
+				size="lg"
+				class="font-extrabold shadow-poster"
+				disabled={submitting || !allRequiredAnswered}
+			>
 				{#if submitting}
 					<Loader2 class="h-5 w-5 animate-spin" />
 					{m['questionnaireSubmissionPage.button_submitting']()}
@@ -390,7 +459,7 @@
 				<CornerDownRight class="mt-1 h-4 w-4 shrink-0 text-primary/60" aria-hidden="true" />
 			{/if}
 			<div class="flex-1">
-				<Label class="text-base">
+				<Label class="text-base font-bold">
 					<MarkdownContent content={question.question} inline={true} />
 					{#if question.is_mandatory}
 						<span class="text-destructive">*</span>
@@ -404,23 +473,29 @@
 
 		{#if useCheckboxes}
 			<!-- Checkboxes: for multiple answers OR single option (single option = yes/no choice) -->
-			<div class="space-y-2">
+			<div
+				class="space-y-2"
+				role="group"
+				aria-describedby={validationErrors.has(question.id) ? `${question.id}-error` : undefined}
+			>
 				{#each question.options || [] as option (option.id)}
 					<div class="space-y-2">
-						<div class="flex items-center space-x-2">
+						<label
+							for="{question.id}-{option.id}"
+							class={optionRowClass(isOptionSelected(question.id, option.id))}
+						>
 							<Checkbox
 								id="{question.id}-{option.id}"
 								checked={isOptionSelected(question.id, option.id)}
 								onCheckedChange={(checked) =>
 									handleMultipleChoiceChange(question.id, option.id, !!checked, true)}
 							/>
-							<label
-								for="{question.id}-{option.id}"
-								class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+							<span
+								class="flex-1 text-sm font-bold leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 							>
 								{option.option}
-							</label>
-						</div>
+							</span>
+						</label>
 						<!-- Conditional questions/sections for this option -->
 						{@render conditionalContent(option.id, question.id)}
 					</div>
@@ -432,13 +507,18 @@
 				value={multipleChoiceAnswers.get(question.id)?.[0] || ''}
 				onValueChange={(value: string) =>
 					handleMultipleChoiceChange(question.id, value, true, false)}
+				aria-invalid={validationErrors.has(question.id) ? true : undefined}
+				aria-describedby={validationErrors.has(question.id) ? `${question.id}-error` : undefined}
 			>
 				{#each question.options || [] as option (option.id)}
 					<div class="space-y-2">
-						<div class="flex items-center space-x-2">
+						<Label
+							for="{question.id}-{option.id}"
+							class={optionRowClass(isOptionSelected(question.id, option.id))}
+						>
 							<RadioGroupItem value={option.id} id="{question.id}-{option.id}" />
-							<Label for="{question.id}-{option.id}">{option.option}</Label>
-						</div>
+							<span class="flex-1">{option.option}</span>
+						</Label>
 						<!-- Conditional questions/sections for this option -->
 						{@render conditionalContent(option.id, question.id)}
 					</div>
@@ -447,7 +527,9 @@
 		{/if}
 
 		{#if validationErrors.has(question.id)}
-			<p class="text-sm text-destructive">{validationErrors.get(question.id)}</p>
+			<p id="{question.id}-error" class="text-sm text-destructive">
+				{validationErrors.get(question.id)}
+			</p>
 		{/if}
 	</div>
 {/snippet}
@@ -463,7 +545,7 @@
 			{/if}
 			<div class="flex-1">
 				<!-- FileUploadQuestion renders its file input with id `file-upload-<questionId>` -->
-				<Label for="file-upload-{question.id}" class="text-base">
+				<Label for="file-upload-{question.id}" class="text-base font-bold">
 					<MarkdownContent content={question.question} inline={true} />
 					{#if question.is_mandatory}
 						<span class="text-destructive">*</span>
@@ -495,7 +577,7 @@
 				<CornerDownRight class="mt-1 h-4 w-4 shrink-0 text-primary/60" aria-hidden="true" />
 			{/if}
 			<div class="flex-1">
-				<Label for={question.id} class="text-base">
+				<Label for={question.id} class="text-base font-bold">
 					<MarkdownContent content={question.question} inline={true} />
 					{#if question.is_mandatory}
 						<span class="text-destructive">*</span>
@@ -507,21 +589,32 @@
 			</div>
 		</div>
 
-		<!-- AI Evaluation Warning -->
+		<!-- AI Evaluation Warning. Both branches share the same `warning` tone
+		     (there is no `--warning` token — `border-highlight bg-highlight/10`
+		     is the audited pair); the copy, not the tint, distinguishes automatic
+		     from hybrid. Heading/lead text stays `text-foreground` per the dark
+		     `--destructive`-style trap for `--highlight` too — only the icon
+		     carries the tone. -->
 		{#if questionnaire.evaluation_mode === 'automatic'}
 			<div
-				class="flex items-start gap-2 rounded-md border border-orange-500/50 bg-orange-50 p-3 text-sm text-orange-900 dark:border-orange-500/30 dark:bg-orange-950/20 dark:text-orange-200"
+				class="flex items-start gap-2 rounded-md border border-highlight bg-highlight/10 p-3 text-sm text-foreground"
 				role="status"
 			>
-				<AlertCircle class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+				<AlertCircle
+					class="mt-0.5 h-4 w-4 shrink-0 text-highlight-foreground dark:text-highlight"
+					aria-hidden="true"
+				/>
 				<p>{m['questionnaireSubmissionPage.aiWarning_automatic']()}</p>
 			</div>
 		{:else if questionnaire.evaluation_mode === 'hybrid'}
 			<div
-				class="flex items-start gap-2 rounded-md border border-yellow-500/50 bg-yellow-50 p-3 text-sm text-yellow-900 dark:border-yellow-500/30 dark:bg-yellow-950/20 dark:text-yellow-200"
+				class="flex items-start gap-2 rounded-md border border-highlight bg-highlight/10 p-3 text-sm text-foreground"
 				role="status"
 			>
-				<AlertCircle class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+				<AlertCircle
+					class="mt-0.5 h-4 w-4 shrink-0 text-highlight-foreground dark:text-highlight"
+					aria-hidden="true"
+				/>
 				<p>{m['questionnaireSubmissionPage.aiWarning_hybrid']()}</p>
 			</div>
 		{/if}
@@ -563,8 +656,8 @@
 
 			<!-- Conditional sections for this option -->
 			{#each getSectionsForOption(flattened, optionId).sort((a, b) => a.order - b.order) as conditionalSection (conditionalSection.id)}
-				<div class="ml-4 rounded-lg border border-primary/20 bg-primary/5 p-4">
-					<h3 class="mb-2 text-lg font-semibold">{conditionalSection.name}</h3>
+				<div class="ml-4 rounded-2xl border-2 border-primary/30 bg-primary/5 p-5">
+					<h3 class="mb-2 text-lg font-extrabold">{conditionalSection.name}</h3>
 					{#if conditionalSection.description}
 						<div class="mb-4">
 							<MarkdownContent

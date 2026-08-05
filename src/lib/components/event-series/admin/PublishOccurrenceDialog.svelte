@@ -121,13 +121,10 @@
 			</div>
 
 			<div
-				class="flex items-start gap-3 rounded-md border border-green-500/40 bg-green-500/10 p-3 text-sm dark:border-green-700/50"
+				class="flex items-start gap-3 rounded-md border border-success/40 bg-success/10 p-3 text-sm"
 				data-testid="publish-occurrence-body"
 			>
-				<CheckCircle
-					class="mt-0.5 h-4 w-4 flex-shrink-0 text-green-700 dark:text-green-400"
-					aria-hidden="true"
-				/>
+				<CheckCircle class="mt-0.5 h-4 w-4 flex-shrink-0 text-success" aria-hidden="true" />
 				<p class="flex-1">
 					{m['recurringEvents.publishOccurrenceDialog.body']()}
 				</p>

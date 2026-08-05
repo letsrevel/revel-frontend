@@ -9,6 +9,7 @@
 	import InvitationListTab from '$lib/components/invitations/InvitationListTab.svelte';
 	import InvitationLinksTab from '$lib/components/invitations/InvitationLinksTab.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
 
 	interface Props {
 		data: PageData;
@@ -84,55 +85,61 @@
 <div class="space-y-6">
 	<!-- Header -->
 	<div>
-		<div class="mb-4">
-			<a
-				href={resolve('/(auth)/org/[slug]/admin/events', { slug: data.organization.slug })}
-				class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-			>
-				<ChevronLeft class="h-4 w-4" aria-hidden="true" />
-				{m['eventInvitationsAdmin.backToEvents']()}
-			</a>
-		</div>
-		<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
-			{m['eventInvitationsAdmin.pageTitle']()}
-		</h1>
-		<p class="mt-1 text-sm text-muted-foreground">{data.event.name}</p>
+		<a
+			href={resolve('/(auth)/org/[slug]/admin/events', { slug: data.organization.slug })}
+			class="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+		>
+			<ChevronLeft class="h-4 w-4" aria-hidden="true" />
+			{m['eventInvitationsAdmin.backToEvents']()}
+		</a>
+		<PageHeader title={m['eventInvitationsAdmin.pageTitle']()} subtitle={data.event.name} />
 	</div>
 
-	<!-- Success/Error Messages -->
+	<!-- Success/Error Messages. Both tints composite against whatever sits
+	     behind them, so each gets an opaque `bg-card` layer underneath:
+	     `text-success` on a bare `bg-success/10` measures 4.39:1 over the page
+	     background (below 4.5 for this normal-size text) — the card backing
+	     brings it to 4.94:1 (hand-verified). The error banner's heading/body
+	     stay on `text-foreground` (always-audited body-text pair) with the
+	     icon alone carrying the destructive tone — the danger-framing rule,
+	     not a contrast workaround: since #781 `text-destructive` resolves to
+	     --destructive-text and measures at worst 7.20:1 light / 6.05:1 dark on
+	     this tint, over either container (both are COMPOSITED_PAIRS rows now).
+	     It was 2.95:1 in dark before the split, which is why this note used to
+	     read as an apology. -->
 	{#if form?.success}
-		<div
-			class="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-4 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-100"
-			role="alert"
-		>
-			<Check class="h-5 w-5 shrink-0" aria-hidden="true" />
-			<p class="text-sm font-medium">
-				{#if form.action === 'approved'}
-					{m['eventInvitationsAdmin.requestApproved']()}
-				{:else if form.action === 'rejected'}
-					{m['eventInvitationsAdmin.requestRejected']()}
-				{:else if form.action === 'created'}
-					{m['eventInvitationsAdmin.invitationsCreated']({
-						created: form.data?.created_invitations || 0,
-						pending: form.data?.pending_invitations || 0
-					})}
-				{:else if form.action === 'deleted'}
-					{m['eventInvitationsAdmin.invitationDeleted']()}
-				{:else if form.action === 'updated'}
-					{m['eventInvitationsAdmin.invitationUpdated']()}
-				{:else if form.action === 'bulk_updated'}
-					{m['eventInvitationsAdmin.bulkUpdated']({ count: form.count || 0 })}
-				{/if}
-			</p>
+		<div class="relative overflow-hidden rounded-lg border border-success/40 bg-card" role="alert">
+			<div class="absolute inset-0 bg-success/10" aria-hidden="true"></div>
+			<div class="relative flex items-center gap-2 p-4">
+				<Check class="h-5 w-5 shrink-0 text-success" aria-hidden="true" />
+				<p class="text-sm font-medium text-success">
+					{#if form.action === 'approved'}
+						{m['eventInvitationsAdmin.requestApproved']()}
+					{:else if form.action === 'rejected'}
+						{m['eventInvitationsAdmin.requestRejected']()}
+					{:else if form.action === 'created'}
+						{m['eventInvitationsAdmin.invitationsCreated']({
+							created: form.data?.created_invitations || 0,
+							pending: form.data?.pending_invitations || 0
+						})}
+					{:else if form.action === 'deleted'}
+						{m['eventInvitationsAdmin.invitationDeleted']()}
+					{:else if form.action === 'updated'}
+						{m['eventInvitationsAdmin.invitationUpdated']()}
+					{:else if form.action === 'bulk_updated'}
+						{m['eventInvitationsAdmin.bulkUpdated']({ count: form.count || 0 })}
+					{/if}
+				</p>
+			</div>
 		</div>
 	{/if}
 
 	{#if form?.errors?.form}
 		<div
-			class="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-100"
+			class="flex items-center gap-2 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-foreground"
 			role="alert"
 		>
-			<AlertCircle class="h-5 w-5 shrink-0" aria-hidden="true" />
+			<AlertCircle class="h-5 w-5 shrink-0 text-destructive" aria-hidden="true" />
 			<p class="text-sm font-medium">{form.errors.form}</p>
 		</div>
 	{/if}

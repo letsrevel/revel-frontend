@@ -9,7 +9,7 @@
 	} from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { getApiUrl } from '$lib/config/api';
-	import { X } from '@lucide/svelte';
+	import { X, AlertTriangle } from '@lucide/svelte';
 	import ResourceForm from './ResourceForm.svelte';
 	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 
@@ -276,13 +276,24 @@
 
 			<!-- Error Message -->
 			{#if errorMessage}
+				<!-- dark:bg-destructive/25 (AutoEvalRecommendation's pattern): a /10 red
+				     wash is nearly invisible on the dark surface, so dark strengthens the
+				     tint. The icon stays `text-destructive`, which is --destructive-text
+				     since #781. This panel sits on the modal's own bg-background (line
+				     252), so the governing figures are 7.20:1 light on /10 and 5.84:1 dark
+				     on /25; over a bg-card container the same recipe is 8.10:1 / 5.37:1.
+				     All four are audited rows in scripts/audit-brand-themes.py. The old
+				     FILL value measured 2.69-2.95:1 here, under the 3:1 non-text floor. -->
 				<div
-					class="mb-6 rounded-md bg-destructive/10 p-4 text-destructive"
+					class="mb-6 flex gap-3 rounded-md border border-destructive/50 bg-destructive/10 p-4 dark:bg-destructive/25"
 					role="alert"
 					aria-live="assertive"
 				>
-					<p class="font-semibold">{m['resourceModal.error']()}</p>
-					<p class="mt-1 text-sm">{errorMessage}</p>
+					<AlertTriangle class="h-5 w-5 shrink-0 text-destructive" aria-hidden="true" />
+					<div>
+						<p class="font-semibold text-foreground">{m['resourceModal.error']()}</p>
+						<p class="mt-1 text-sm text-foreground">{errorMessage}</p>
+					</div>
 				</div>
 			{/if}
 

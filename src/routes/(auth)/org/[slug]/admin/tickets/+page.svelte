@@ -5,6 +5,9 @@
 	import { formatEventDate } from '$lib/utils/date';
 	import EventStatusBadge from '$lib/components/events/EventStatusBadge.svelte';
 	import { Ticket, ChevronRight, Users } from '@lucide/svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
+	import { Button } from '$lib/components/ui/button';
 
 	const { data }: { data: PageData } = $props();
 
@@ -18,25 +21,21 @@
 </svelte:head>
 
 <section class="space-y-6">
-	<header>
-		<h1 class="text-2xl font-bold tracking-tight">{m['orgAdmin.tickets.title']()}</h1>
-		<p class="mt-1 text-sm text-muted-foreground">{m['orgAdmin.tickets.subtitle']()}</p>
-	</header>
+	<PageHeader title={m['orgAdmin.tickets.title']()} subtitle={m['orgAdmin.tickets.subtitle']()} />
 
 	{#if events.length === 0}
-		<div class="rounded-lg border border-border bg-card p-12 text-center">
-			<Ticket class="mx-auto h-10 w-10 text-muted-foreground" aria-hidden="true" />
-			<h2 class="mt-4 text-lg font-semibold">{m['orgAdmin.tickets.empty.title']()}</h2>
-			<p class="mt-2 text-sm text-muted-foreground">
-				{m['orgAdmin.tickets.empty.description']()}
-			</p>
-			<a
-				href={resolve('/(auth)/org/[slug]/admin/events', { slug: slug })}
-				class="mt-4 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-			>
+		{#snippet goToEventsAction()}
+			<Button href={resolve('/(auth)/org/[slug]/admin/events', { slug: slug })}>
 				{m['orgAdmin.tickets.empty.cta']()}
-			</a>
-		</div>
+			</Button>
+		{/snippet}
+		<EmptyState
+			icon={Ticket}
+			level={2}
+			title={m['orgAdmin.tickets.empty.title']()}
+			body={m['orgAdmin.tickets.empty.description']()}
+			action={goToEventsAction}
+		/>
 	{:else}
 		<ul class="space-y-3">
 			{#each events as event (event.id)}
@@ -65,7 +64,7 @@
 
 						<div class="min-w-0 flex-1">
 							<div class="flex flex-wrap items-center gap-2">
-								<span class="truncate font-semibold">{event.name}</span>
+								<span class="truncate font-bold">{event.name}</span>
 								<EventStatusBadge {event} />
 							</div>
 							<div

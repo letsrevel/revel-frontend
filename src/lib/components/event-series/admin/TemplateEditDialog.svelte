@@ -331,7 +331,7 @@
 			type="checkbox"
 			bind:checked={flags[t.key]}
 			disabled={updateMutation.isPending}
-			class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
+			class="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-ring"
 			data-testid={t.testid}
 		/>
 		<div class="flex-1 text-sm font-medium">{t.label}</div>
@@ -630,7 +630,7 @@
 								type="checkbox"
 								bind:checked={visibilitySettings.show_pronoun_distribution}
 								disabled={updateMutation.isPending}
-								class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
+								class="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-ring"
 								data-testid="template-edit-public-pronoun-distribution"
 							/>
 							<div class="flex-1 text-sm font-medium">

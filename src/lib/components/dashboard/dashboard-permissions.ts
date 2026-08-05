@@ -3,6 +3,7 @@ import type {
 	MembershipStatus,
 	MembershipTierSchema
 } from '$lib/api/generated/types.gen';
+import type { Tone } from '$lib/components/common/tones';
 
 /**
  * Permission helpers for the dashboard, derived from the auth store's
@@ -106,10 +107,12 @@ export function ownsOrganization(permissions: OrganizationPermissionsSchema | nu
 	return Object.values(permissions.organization_permissions).some((perms) => perms === 'owner');
 }
 
-// Status badge styling (matching MemberCard.svelte)
-export const statusStyles: Record<MembershipStatus, string> = {
-	active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100',
-	paused: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100',
-	cancelled: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100',
-	banned: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
+// Membership status → StatusBadge tone mapping (rebrand: replaces the
+// hand-picked bg-green-100/dark:bg-green-900-style pairs with the shared
+// semantic tone system).
+export const statusTones: Record<MembershipStatus, Tone> = {
+	active: 'success',
+	paused: 'warning',
+	cancelled: 'neutral',
+	banned: 'danger'
 };

@@ -30,13 +30,15 @@
 
 	const widthPercentage = $derived((score / 5) * 100);
 
-	// Color based on score
+	// Color based on score. Tokens only (raw-hue sweep): success/info/highlight/
+	// destructive already carry their own dark-mode values, so no `dark:`
+	// override is needed here (unlike the raw Tailwind hues this replaces).
 	const barColor = $derived.by(() => {
 		if (score === 0) return 'bg-transparent';
-		if (score <= 2) return 'bg-red-500';
-		if (score === 3) return 'bg-yellow-500';
-		if (score === 4) return 'bg-blue-500';
-		return 'bg-green-500';
+		if (score <= 2) return 'bg-destructive';
+		if (score === 3) return 'bg-highlight';
+		if (score === 4) return 'bg-info';
+		return 'bg-success';
 	});
 
 	// Label based on score - only show positive labels when ALL requirements are met
@@ -46,14 +48,6 @@
 		if (score === 3) return m['passwordStrength.fair']();
 		if (score === 4) return m['passwordStrength.almostThere']();
 		return m['passwordStrength.strong']();
-	});
-
-	// Label color based on whether all requirements are met
-	const labelColor = $derived.by(() => {
-		if (score === 5) return 'text-green-600 dark:text-green-400';
-		if (score === 4) return 'text-blue-500';
-		if (score === 3) return 'text-yellow-500';
-		return 'text-red-500';
 	});
 
 	// Update isValid whenever password requirements change
@@ -82,74 +76,63 @@
 	{#if password.length > 0}
 		<div class="flex items-center justify-between text-sm">
 			<span class="text-muted-foreground">{m['passwordStrength.strength']()}</span>
-			<span class="font-medium {labelColor}" data-testid="strength-label">{strengthLabel}</span>
+			<span class="font-medium text-muted-foreground" data-testid="strength-label"
+				>{strengthLabel}</span
+			>
 		</div>
 	{/if}
 
-	<!-- Requirements checklist -->
+	<!-- Requirements checklist: row text stays on text-muted-foreground; only the
+	     Check/X icons carry the met/unmet color. `text-destructive` resolves to
+	     --destructive-text (issue #781), which is 8.63:1 on the light background
+	     and 7.02:1 / 6.42:1 on the dark background / card — comfortably over the
+	     3:1 non-text floor (WCAG 1.4.11) in both modes. The earlier dark-mode
+	     swap to white existed only because the utility used to resolve to the
+	     FILL value, which measured 2.85:1 here; both rows are TEXT_PAIRS in
+	     scripts/audit-brand-themes.py now, so this can't drift unnoticed. -->
 	{#if showRequirements && password.length > 0}
 		<div class="space-y-1.5 text-xs">
-			<div
-				class="flex items-center gap-2 {hasMinLength
-					? 'text-green-600 dark:text-green-400'
-					: 'text-red-500 dark:text-red-400'}"
-			>
+			<div class="flex items-center gap-2 text-muted-foreground">
 				{#if hasMinLength}
-					<Check class="h-3.5 w-3.5" aria-hidden="true" />
+					<Check class="h-3.5 w-3.5 text-success" aria-hidden="true" />
 				{:else}
-					<X class="h-3.5 w-3.5" aria-hidden="true" />
+					<X class="h-3.5 w-3.5 text-destructive" aria-hidden="true" />
 				{/if}
 				<span>{m['passwordStrength.atLeast8']()}</span>
 			</div>
 
-			<div
-				class="flex items-center gap-2 {hasUppercase
-					? 'text-green-600 dark:text-green-400'
-					: 'text-red-500 dark:text-red-400'}"
-			>
+			<div class="flex items-center gap-2 text-muted-foreground">
 				{#if hasUppercase}
-					<Check class="h-3.5 w-3.5" aria-hidden="true" />
+					<Check class="h-3.5 w-3.5 text-success" aria-hidden="true" />
 				{:else}
-					<X class="h-3.5 w-3.5" aria-hidden="true" />
+					<X class="h-3.5 w-3.5 text-destructive" aria-hidden="true" />
 				{/if}
 				<span>{m['passwordStrength.oneUppercase']()}</span>
 			</div>
 
-			<div
-				class="flex items-center gap-2 {hasLowercase
-					? 'text-green-600 dark:text-green-400'
-					: 'text-red-500 dark:text-red-400'}"
-			>
+			<div class="flex items-center gap-2 text-muted-foreground">
 				{#if hasLowercase}
-					<Check class="h-3.5 w-3.5" aria-hidden="true" />
+					<Check class="h-3.5 w-3.5 text-success" aria-hidden="true" />
 				{:else}
-					<X class="h-3.5 w-3.5" aria-hidden="true" />
+					<X class="h-3.5 w-3.5 text-destructive" aria-hidden="true" />
 				{/if}
 				<span>{m['passwordStrength.oneLowercase']()}</span>
 			</div>
 
-			<div
-				class="flex items-center gap-2 {hasDigit
-					? 'text-green-600 dark:text-green-400'
-					: 'text-red-500 dark:text-red-400'}"
-			>
+			<div class="flex items-center gap-2 text-muted-foreground">
 				{#if hasDigit}
-					<Check class="h-3.5 w-3.5" aria-hidden="true" />
+					<Check class="h-3.5 w-3.5 text-success" aria-hidden="true" />
 				{:else}
-					<X class="h-3.5 w-3.5" aria-hidden="true" />
+					<X class="h-3.5 w-3.5 text-destructive" aria-hidden="true" />
 				{/if}
 				<span>{m['passwordStrength.oneNumber']()}</span>
 			</div>
 
-			<div
-				class="flex items-center gap-2 {hasSpecial
-					? 'text-green-600 dark:text-green-400'
-					: 'text-red-500 dark:text-red-400'}"
-			>
+			<div class="flex items-center gap-2 text-muted-foreground">
 				{#if hasSpecial}
-					<Check class="h-3.5 w-3.5" aria-hidden="true" />
+					<Check class="h-3.5 w-3.5 text-success" aria-hidden="true" />
 				{:else}
-					<X class="h-3.5 w-3.5" aria-hidden="true" />
+					<X class="h-3.5 w-3.5 text-destructive" aria-hidden="true" />
 				{/if}
 				<span>{m['passwordStrength.oneSpecial']()}</span>
 			</div>

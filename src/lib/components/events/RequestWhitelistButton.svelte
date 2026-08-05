@@ -106,7 +106,7 @@
 {#if hasAlreadyRequested}
 	<!-- Already Requested Badge -->
 	<div
-		class="inline-flex items-center gap-2 rounded-md border border-yellow-200 bg-yellow-50 px-4 py-2 text-sm font-medium text-yellow-700 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-300 {className}"
+		class="inline-flex items-center gap-2 rounded-md border border-highlight/50 bg-highlight/10 px-4 py-2 text-sm font-bold text-foreground {className}"
 		role="status"
 		aria-label={m['requestWhitelistButton.alreadyRequested']()}
 	>
@@ -127,10 +127,10 @@
 				<!-- Success State -->
 				<div class="py-8 text-center">
 					<div
-						class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900"
+						class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-success/10"
 					>
 						<svg
-							class="h-8 w-8 text-green-600 dark:text-green-300"
+							class="h-8 w-8 text-success"
 							fill="none"
 							stroke="currentColor"
 							viewBox="0 0 24 24"
@@ -186,7 +186,7 @@
 							placeholder={m['requestWhitelistButton.messagePlaceholder']()}
 							rows="4"
 							maxlength="500"
-							class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+							class="mt-1 w-full rounded-md border-2 border-input bg-background px-3 py-2 text-sm text-foreground transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
 						></textarea>
 						<p class="mt-1 text-xs text-muted-foreground">
 							{m['requestWhitelistButton.characterCount']({ count: message.length })}
@@ -195,7 +195,7 @@
 
 					{#if requestMutation.isError}
 						<div
-							class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-100"
+							class="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-foreground"
 							role="alert"
 						>
 							{requestMutation.error?.message ||

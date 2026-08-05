@@ -28,7 +28,7 @@
 >
 	<div class="flex items-start justify-between gap-4">
 		<div class="min-w-0 flex-1">
-			<h3 class="truncate text-lg font-semibold">{venue.name}</h3>
+			<h3 class="truncate text-lg font-bold">{venue.name}</h3>
 			{#if venue.description}
 				<div class="mt-1 line-clamp-2 text-sm text-muted-foreground">
 					<MarkdownContent content={venue.description} inline={true} class="!prose-sm" />

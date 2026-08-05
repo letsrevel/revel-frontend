@@ -16,7 +16,8 @@
 		getMembershipStatusMessage
 	} from '$lib/utils/membership-eligibility';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
-	import { Card, CardContent } from '$lib/components/ui/card';
+	import PricingCard from '$lib/components/common/PricingCard.svelte';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import { ClipboardList, Gift, ShieldCheck } from '@lucide/svelte';
 	import ApplyDialog from './ApplyDialog.svelte';
 	import MembershipCta from './MembershipCta.svelte';
@@ -237,133 +238,124 @@
 	}
 </script>
 
+{#snippet badges()}
+	{#if isFree}
+		<StatusBadge tone="neutral" size="sm" icon={Gift} label={m['membershipTiers.freeBadge']()} />
+	{/if}
+{/snippet}
+
+{#snippet meta()}
+	<!-- What it takes to get in — and, once a verdict lands, where THIS viewer
+	     stands against it (#740). The tier's own fields decide which lines
+	     exist at all (they are facts about the tier, server-rendered and true
+	     for everyone); the verdict decides what each one says.
+
+	     A polite live region, and pre-mounted rather than injected with its
+	     first message: the lines are server-rendered with the tier's standing
+	     rules, the verdict arrives later over the same DOM, and a text swap
+	     that moves no focus is otherwise silent for a screen-reader user
+	     (WCAG 4.1.3). Every state is words — no colour, no icon-only cue. -->
+	{#if tier.requires_approval || tier.questionnaire_id}
+		<ul id={requirementsId} class="space-y-1.5 text-sm" aria-live="polite">
+			{#if tier.requires_approval}
+				<li class="flex items-start gap-2">
+					<ShieldCheck class="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+					<span>
+						{#if approvalState === 'status' && verdictMessage}
+							{verdictMessage}
+						{:else if approvalState === 'satisfied'}
+							{m['membershipTiers.approvalCleared']()}
+						{:else}
+							{m['membershipTiers.requiresApproval']()}
+						{/if}
+					</span>
+				</li>
+			{/if}
+			{#if tier.questionnaire_id}
+				<li class="flex items-start gap-2">
+					<ClipboardList class="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+					<span>
+						{#if questionnaireState === 'status' && verdictMessage}
+							<!-- Under review, on cooldown, or refused: there is nothing to
+						     open, so the link goes with the copy that offered it. -->
+							{verdictMessage}
+						{:else if questionnaireState === 'satisfied'}
+							{m['membershipTiers.questionnaireCleared']()}
+						{:else}
+							{m['membershipTiers.questionnaireRequired']()}
+							{#if tier.questionnaire_id}
+								<!-- Named with the tier: a screen-reader user tabbing the page
+							     would otherwise hear the same link text on every card. -->
+								<a
+									href={resolve('/(public)/org/[slug]/questionnaire/[id]', {
+										slug: organizationSlug,
+										id: tier.questionnaire_id
+									})}
+									aria-label={m['membershipTiers.questionnaireLinkAria']({ tier: tier.name })}
+									class="font-bold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+								>
+									{m['membershipTiers.questionnaireLink']()}
+								</a>
+							{/if}
+						{/if}
+					</span>
+				</li>
+			{/if}
+		</ul>
+	{/if}
+
+	{#if plans.length > 0}
+		<div class="mt-4 space-y-3">
+			{#each plans as plan (plan.id ?? `${tier.id}-${plan.name}`)}
+				<PlanCard
+					{plan}
+					{isAuthenticated}
+					{subscription}
+					{subscriptionLoading}
+					{organizationSlug}
+					{organizationName}
+					{contactMethod}
+					{contactEmail}
+					{onSubscribe}
+					{gateAction}
+					{gateReason}
+					{gatePending}
+					onApply={handleApply}
+					gateRequirementsId={requirementsId}
+				/>
+			{/each}
+		</div>
+	{/if}
+{/snippet}
+
+{#snippet actions()}
+	{#if showJoinCta && tierId}
+		<MembershipCta
+			{organizationSlug}
+			{organizationName}
+			{isAuthenticated}
+			{tierId}
+			tierName={tier.name}
+			planId={ctaPlanId}
+			plansInline={plans.length > 0}
+		/>
+	{/if}
+{/snippet}
+
 <!-- `<article>` + `aria-labelledby`, not a labelled `region`: the cards are peers
      in a list and each must announce which tier it is, but N landmarks on one
-     page would drown the page's real ones. -->
+     page would drown the page's real ones.
+
+     The card chrome itself is the shared PricingCard shell (the tier/pricing
+     look is one design across buyer tickets, organizer config and membership) —
+     this tier has no single price of its own, so the price slot stays empty and
+     the plan cards carry the numbers. -->
 <article class="h-full" aria-labelledby={headingId}>
-	<Card class="flex h-full flex-col">
-		<CardContent class="flex flex-1 flex-col gap-4 p-4 sm:p-5">
-			<div class="space-y-2">
-				<div class="flex flex-wrap items-start justify-between gap-2">
-					<h3 id={headingId} class="text-lg font-semibold">{tier.name}</h3>
-					{#if isFree}
-						<span
-							class="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground"
-						>
-							<Gift class="h-3 w-3" aria-hidden="true" />
-							{m['membershipTiers.freeBadge']()}
-						</span>
-					{/if}
-				</div>
-
-				{#if tier.description}
-					<MarkdownContent content={tier.description} class="text-sm text-muted-foreground" />
-				{/if}
-			</div>
-
-			<!-- What it takes to get in — and, once a verdict lands, where THIS viewer
-		     stands against it (#740). The tier's own fields decide which lines
-		     exist at all (they are facts about the tier, server-rendered and true
-		     for everyone); the verdict decides what each one says.
-
-		     A polite live region, and pre-mounted rather than injected with its
-		     first message: the lines are server-rendered with the tier's standing
-		     rules, the verdict arrives later over the same DOM, and a text swap
-		     that moves no focus is otherwise silent for a screen-reader user
-		     (WCAG 4.1.3). Every state is words — no colour, no icon-only cue. -->
-			{#if tier.requires_approval || tier.questionnaire_id}
-				<ul id={requirementsId} class="space-y-1.5 text-sm" aria-live="polite">
-					{#if tier.requires_approval}
-						<li class="flex items-start gap-2">
-							<ShieldCheck
-								class="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"
-								aria-hidden="true"
-							/>
-							<span>
-								{#if approvalState === 'status' && verdictMessage}
-									{verdictMessage}
-								{:else if approvalState === 'satisfied'}
-									{m['membershipTiers.approvalCleared']()}
-								{:else}
-									{m['membershipTiers.requiresApproval']()}
-								{/if}
-							</span>
-						</li>
-					{/if}
-					{#if tier.questionnaire_id}
-						<li class="flex items-start gap-2">
-							<ClipboardList
-								class="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"
-								aria-hidden="true"
-							/>
-							<span>
-								{#if questionnaireState === 'status' && verdictMessage}
-									<!-- Under review, on cooldown, or refused: there is nothing to
-								     open, so the link goes with the copy that offered it. -->
-									{verdictMessage}
-								{:else if questionnaireState === 'satisfied'}
-									{m['membershipTiers.questionnaireCleared']()}
-								{:else}
-									{m['membershipTiers.questionnaireRequired']()}
-									{#if tier.questionnaire_id}
-										<!-- Named with the tier: a screen-reader user tabbing the page
-									     would otherwise hear the same link text on every card. -->
-										<a
-											href={resolve('/(public)/org/[slug]/questionnaire/[id]', {
-												slug: organizationSlug,
-												id: tier.questionnaire_id
-											})}
-											aria-label={m['membershipTiers.questionnaireLinkAria']({ tier: tier.name })}
-											class="font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-										>
-											{m['membershipTiers.questionnaireLink']()}
-										</a>
-									{/if}
-								{/if}
-							</span>
-						</li>
-					{/if}
-				</ul>
-			{/if}
-
-			{#if plans.length > 0}
-				<div class="space-y-3">
-					{#each plans as plan (plan.id ?? `${tier.id}-${plan.name}`)}
-						<PlanCard
-							{plan}
-							{isAuthenticated}
-							{subscription}
-							{subscriptionLoading}
-							{organizationSlug}
-							{organizationName}
-							{contactMethod}
-							{contactEmail}
-							{onSubscribe}
-							{gateAction}
-							{gateReason}
-							{gatePending}
-							onApply={handleApply}
-							gateRequirementsId={requirementsId}
-						/>
-					{/each}
-				</div>
-			{/if}
-
-			<div class="mt-auto pt-1">
-				{#if showJoinCta && tierId}
-					<MembershipCta
-						{organizationSlug}
-						{organizationName}
-						{isAuthenticated}
-						{tierId}
-						tierName={tier.name}
-						planId={ctaPlanId}
-						plansInline={plans.length > 0}
-					/>
-				{/if}
-			</div>
-		</CardContent>
-	</Card>
+	<PricingCard name={tier.name} {headingId} layout="stack" {badges} {meta} {actions} class="h-full">
+		{#if tier.description}
+			<MarkdownContent content={tier.description} class="text-sm text-muted-foreground" />
+		{/if}
+	</PricingCard>
 </article>
 
 <!--

@@ -120,11 +120,11 @@
 	});
 </script>
 
-<Card class="transition-all hover:shadow-md">
+<Card class="transition-all hover:-translate-y-0.5 hover:shadow-poster-lg">
 	<CardHeader>
 		<div class="flex items-start justify-between gap-2">
 			<div class="min-w-0 flex-1">
-				<CardTitle class="line-clamp-1">{poll.questionnaire_name}</CardTitle>
+				<CardTitle class="line-clamp-1 font-bold">{poll.questionnaire_name}</CardTitle>
 				<CardDescription class="mt-1 flex flex-wrap gap-1">
 					<PollStatusBadge status={poll.status} />
 					<Badge variant="outline" class="text-xs">{poll.vote_visibility}</Badge>

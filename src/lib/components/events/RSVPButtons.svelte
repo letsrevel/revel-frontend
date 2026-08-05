@@ -55,30 +55,36 @@
 
 		return cn(
 			// Base styles
-			'flex h-12 w-full min-w-0 items-center justify-center gap-2 rounded-md px-4 py-3 text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+			'flex h-12 w-full min-w-0 items-center justify-center gap-2 rounded-md px-4 py-3 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
 			// Mobile, Tablet, Desktop: Full width, 48px height for touch
 			'xl:h-auto xl:min-w-[120px]',
-			// Yes button - Green theme
+			// The yes/maybe/no triad IS the semantic triad, so it now rides the
+			// success / highlight / destructive tokens instead of a hand-picked
+			// green/yellow/red ramp — same meaning, audited pairs, one dark mode.
+			//
+			// Unselected: a 10% tint that composites to ~the page colour, so the
+			// label stays `text-foreground` and inherits the token contract's AA
+			// guarantee. Selected: the solid token pair, which the audit script
+			// enforces at >= 4.5:1 in both modes. Selection is also carried by
+			// `aria-pressed` and the ring, never by fill alone.
 			answer === 'yes' &&
 				!selected &&
-				'border-2 border-green-200 bg-green-50 text-green-700 hover:border-green-300 hover:bg-green-100 dark:border-green-900 dark:bg-green-950 dark:text-green-400 dark:hover:border-green-800 dark:hover:bg-green-900',
+				'border-2 border-success/40 bg-success/10 text-foreground hover:border-success hover:bg-success/20',
 			answer === 'yes' &&
 				selected &&
-				'border-2 border-green-600 bg-green-600 text-white ring-2 ring-green-300 dark:border-green-500 dark:bg-green-500 dark:ring-green-400',
-			// Maybe button - Yellow theme
+				'border-2 border-success bg-success text-success-foreground ring-2 ring-success/50',
 			answer === 'maybe' &&
 				!selected &&
-				'border-2 border-yellow-200 bg-yellow-50 text-yellow-700 hover:border-yellow-300 hover:bg-yellow-100 dark:border-yellow-900 dark:bg-yellow-950 dark:text-yellow-400 dark:hover:border-yellow-800 dark:hover:bg-yellow-900',
+				'border-2 border-highlight/50 bg-highlight/10 text-foreground hover:border-highlight hover:bg-highlight/20',
 			answer === 'maybe' &&
 				selected &&
-				'border-2 border-yellow-500 bg-yellow-500 text-white ring-2 ring-yellow-300 dark:border-yellow-600 dark:bg-yellow-600 dark:ring-yellow-400',
-			// No button - Red theme
+				'border-2 border-highlight bg-highlight text-highlight-foreground ring-2 ring-highlight/50',
 			answer === 'no' &&
 				!selected &&
-				'border-2 border-red-200 bg-red-50 text-red-700 hover:border-red-300 hover:bg-red-100 dark:border-red-900 dark:bg-red-950 dark:text-red-400 dark:hover:border-red-800 dark:hover:bg-red-900',
+				'border-2 border-destructive/40 bg-destructive/10 text-foreground hover:border-destructive hover:bg-destructive/20',
 			answer === 'no' &&
 				selected &&
-				'border-2 border-red-600 bg-red-600 text-white ring-2 ring-red-300 dark:border-red-500 dark:bg-red-500 dark:ring-red-400',
+				'border-2 border-destructive bg-destructive text-destructive-foreground ring-2 ring-destructive/50',
 			// Loading state
 			loading && 'cursor-wait',
 			// Disabled state
@@ -171,11 +177,3 @@
 		<span>{m['rsvp.no_button']()}</span>
 	</button>
 </div>
-
-<style>
-	/* Ensure focus indicators are always visible */
-	button:focus-visible {
-		outline: 2px solid hsl(var(--ring));
-		outline-offset: 2px;
-	}
-</style>

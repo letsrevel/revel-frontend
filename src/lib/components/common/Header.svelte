@@ -82,9 +82,9 @@
 					<!-- eslint-disable svelte/no-navigation-without-resolve -- href is a ResolvedPathname produced by resolve() in the nav item list above -->
 					<a
 						href={item.href}
-						class="text-sm font-medium transition-colors hover:text-primary {isActive(item.href)
-							? 'text-foreground'
-							: 'text-muted-foreground'}"
+						class="text-sm transition-colors hover:text-primary {isActive(item.href)
+							? 'font-bold text-primary'
+							: 'font-semibold text-muted-foreground'}"
 						aria-current={isActive(item.href) ? 'page' : undefined}
 					>
 						{item.label}

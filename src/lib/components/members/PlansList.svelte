@@ -21,6 +21,7 @@
 	import { AlertTriangle, Pencil, Archive, Trash2, Plus, Loader2, RefreshCw } from '@lucide/svelte';
 	import PlanFormModal, { type PlanFormPayload } from './PlanFormModal.svelte';
 	import MigrateSubscribersDialog from './MigrateSubscribersDialog.svelte';
+	import CommonStatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import { formatPlanPrice, isLifetimePlan } from '$lib/utils/subscriptions';
 	import { backendMessage } from '$lib/utils/api-error-detail';
 
@@ -209,7 +210,7 @@
 
 <div class="space-y-2">
 	<div class="flex items-center justify-between">
-		<h4 class="text-sm font-semibold">{m['orgAdmin.members.plans.title']()}</h4>
+		<h4 class="text-sm font-bold">{m['orgAdmin.members.plans.title']()}</h4>
 		<Button size="sm" variant="outline" onclick={openCreate}>
 			<Plus class="mr-1 h-3 w-3" />
 			{m['orgAdmin.members.plans.add']()}
@@ -258,18 +259,18 @@
 												})}
 									</span>
 									{#if p.max_subscriptions != null && p.active_subscription_count >= p.max_subscriptions}
-										<span
-											class="rounded-full bg-red-100 px-2 py-0.5 text-red-900 dark:bg-red-900/30 dark:text-red-100"
-										>
-											{m['orgAdmin.members.plans.badge.soldOut']()}
-										</span>
+										<CommonStatusBadge
+											tone="danger"
+											label={m['orgAdmin.members.plans.badge.soldOut']()}
+											size="sm"
+										/>
 									{/if}
 									{#if p.sales_status === 'paused'}
-										<span
-											class="rounded-full bg-amber-100 px-2 py-0.5 text-amber-900 dark:bg-amber-900/30 dark:text-amber-100"
-										>
-											{m['orgAdmin.members.plans.badge.paused']()}
-										</span>
+										<CommonStatusBadge
+											tone="warning"
+											label={m['orgAdmin.members.plans.badge.paused']()}
+											size="sm"
+										/>
 									{/if}
 								</div>
 								{#if p.is_active === false}

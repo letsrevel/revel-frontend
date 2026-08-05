@@ -457,19 +457,19 @@
 		{#if showSuccess && successMessage}
 			<div
 				class={cn(
-					'flex items-start gap-3 rounded-md p-4',
-					successType === 'yes' &&
-						'bg-green-50 text-green-900 dark:bg-green-950/50 dark:text-green-100',
-					successType === 'maybe' &&
-						'bg-yellow-50 text-yellow-900 dark:bg-yellow-950/50 dark:text-yellow-100',
-					successType === 'no' && 'bg-red-50 text-red-900 dark:bg-red-950/50 dark:text-red-100'
+					// Tints at 10% composite to ~the page colour, so the copy keeps
+					// `text-foreground` and the token contract's AA guarantee.
+					'flex items-start gap-3 rounded-md p-4 text-foreground',
+					successType === 'yes' && 'bg-success/10',
+					successType === 'maybe' && 'bg-highlight/10',
+					successType === 'no' && 'bg-destructive/10'
 				)}
 				role="status"
 				aria-live="polite"
 			>
 				<Check class="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
 				<div class="flex-1">
-					<p class="font-semibold">{successMessage}</p>
+					<p class="font-extrabold">{successMessage}</p>
 					{#if noteNotSaved}
 						<p class="mt-1 text-sm">{m['eventRSVP.noteNotSaved']()}</p>
 					{/if}
@@ -478,9 +478,9 @@
 						onclick={handleChangeResponse}
 						class={cn(
 							'mt-2 text-sm underline hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-							successType === 'yes' && 'focus-visible:ring-green-600',
-							successType === 'maybe' && 'focus-visible:ring-yellow-600',
-							successType === 'no' && 'focus-visible:ring-red-600'
+							successType === 'yes' && 'focus-visible:ring-success',
+							successType === 'maybe' && 'focus-visible:ring-highlight',
+							successType === 'no' && 'focus-visible:ring-destructive'
 						)}
 					>
 						{m['eventRSVP.changeResponse']()}

@@ -4,7 +4,7 @@
 	import { seriespassGetSeriesPassQuote } from '$lib/api';
 	import { seriesPassQueryKeys } from '$lib/queries/series-passes';
 	import { createQuery } from '@tanstack/svelte-query';
-	import { Card } from '$lib/components/ui/card';
+	import PricingCard from '$lib/components/common/PricingCard.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { formatPrice } from '$lib/utils/format';
 	import { Ticket, CreditCard, HandCoins } from '@lucide/svelte';
@@ -67,31 +67,17 @@
 	}
 </script>
 
-<Card class="flex flex-col gap-4 border-primary/30 p-4 md:p-6">
-	<div class="flex items-start justify-between gap-3">
-		<div class="min-w-0 flex-1">
-			<div class="flex items-center gap-2">
-				<Ticket class="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
-				<h3 class="truncate text-lg font-semibold">{pass.name}</h3>
-			</div>
-			{#if pass.description}
-				<div class="mt-2 text-sm text-muted-foreground">
-					<MarkdownContent content={pass.description} />
-				</div>
-			{/if}
-		</div>
+{#snippet badges()}
+	<!-- The pre-discount season price, struck through beside the name: the big
+	     number below is what the buyer would actually pay today. -->
+	{#if isDiscounted}
+		<s class="text-sm text-muted-foreground line-through">
+			{formatPrice(pass.price, pass.currency, m['seriesPass.free']())}
+		</s>
+	{/if}
+{/snippet}
 
-		<!-- Price block -->
-		<div class="shrink-0 text-right">
-			{#if isDiscounted}
-				<p class="text-sm text-muted-foreground line-through">
-					{formatPrice(pass.price, pass.currency, m['seriesPass.free']())}
-				</p>
-			{/if}
-			<p class="text-2xl font-bold text-primary">{currentPrice}</p>
-		</div>
-	</div>
-
+{#snippet meta()}
 	<!-- Coverage / pro-rata line -->
 	{#if quote}
 		<p class="text-sm text-muted-foreground">
@@ -104,35 +90,51 @@
 
 	<!-- Payment method hint -->
 	{#if pass.payment_method === 'offline' || pass.payment_method === 'at_the_door'}
-		<p class="flex items-center gap-1.5 text-xs text-muted-foreground">
+		<p class="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
 			<HandCoins class="h-3.5 w-3.5" aria-hidden="true" />
 			{m['seriesPass.payOffline']()}
 		</p>
 	{:else if pass.payment_method === 'online'}
-		<p class="flex items-center gap-1.5 text-xs text-muted-foreground">
+		<p class="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
 			<CreditCard class="h-3.5 w-3.5" aria-hidden="true" />
 			{m['seriesPass.payOnline']()}
 		</p>
 	{/if}
+{/snippet}
 
-	<!-- CTA -->
-	<div class="mt-auto">
-		{#if quote && !quote.purchasable}
-			<Button class="w-full" disabled>
-				{m['seriesPass.notAvailable']()}
-			</Button>
-			{#if quote.reason}
-				<p class="mt-2 text-center text-xs text-muted-foreground" role="status">
-					{quote.reason}
-				</p>
-			{/if}
-		{:else}
-			<Button class="w-full" onclick={handleBuyClick} disabled={isButtonDisabled}>
-				{m['seriesPass.buyButton']()}
-			</Button>
+{#snippet actions()}
+	{#if quote && !quote.purchasable}
+		<Button class="w-full" disabled>
+			{m['seriesPass.notAvailable']()}
+		</Button>
+		{#if quote.reason}
+			<p class="mt-2 text-center text-xs text-muted-foreground" role="status">
+				{quote.reason}
+			</p>
 		{/if}
-	</div>
-</Card>
+	{:else}
+		<Button class="w-full" onclick={handleBuyClick} disabled={isButtonDisabled}>
+			{m['seriesPass.buyButton']()}
+		</Button>
+	{/if}
+{/snippet}
+
+<PricingCard
+	name={pass.name}
+	icon={Ticket}
+	price={currentPrice}
+	layout="stack"
+	class="h-full border-primary/30"
+	{badges}
+	{meta}
+	{actions}
+>
+	{#if pass.description}
+		<div class="text-sm text-muted-foreground">
+			<MarkdownContent content={pass.description} />
+		</div>
+	{/if}
+</PricingCard>
 
 {#if showPurchaseDialog && quote && pass.id}
 	<SeriesPassPurchaseDialog

@@ -4,6 +4,7 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Megaphone, Loader2 } from '@lucide/svelte';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import AnnouncementPublicCard from './AnnouncementPublicCard.svelte';
 
 	interface Props {
@@ -38,10 +39,10 @@
 	<section class="space-y-4">
 		<!-- Header -->
 		<div class="flex items-center gap-2">
-			<Megaphone class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-			<h2 class="text-xl font-semibold">{m['announcements.public.title']()}</h2>
+			<Megaphone class="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
+			<SectionHeader volume="celebration" title={m['announcements.public.title']()} />
 			{#if hasAnnouncements}
-				<span class="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+				<span class="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary">
 					{announcements.length}
 				</span>
 			{/if}

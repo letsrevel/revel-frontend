@@ -175,13 +175,11 @@
 			{#if sectorId}
 				{@const selectedStandingSector = standingSectors.find((s) => s.id === sectorId)}
 				{#if selectedStandingSector?.capacity}
-					<div
-						class="mt-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-800 dark:bg-amber-950"
-					>
-						<p class="font-medium text-amber-800 dark:text-amber-200">
+					<div class="mt-3 rounded-md border border-highlight bg-highlight/10 p-3 text-sm">
+						<p class="font-medium text-highlight-foreground dark:text-highlight">
 							{m['tierForm.sectorHardLimit.title']()}
 						</p>
-						<p class="mt-1 text-amber-700 dark:text-amber-300">
+						<p class="mt-1 text-foreground">
 							{m['tierForm.sectorHardLimit.description']({
 								capacity: selectedStandingSector.capacity.toString()
 							})}
@@ -291,13 +289,11 @@
 						{#if sectorId}
 							{@const selectedSector = selectedVenueSectors.find((s) => s.id === sectorId)}
 							{#if selectedSector?.capacity}
-								<div
-									class="mt-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-800 dark:bg-amber-950"
-								>
-									<p class="font-medium text-amber-800 dark:text-amber-200">
+								<div class="mt-3 rounded-md border border-highlight bg-highlight/10 p-3 text-sm">
+									<p class="font-medium text-highlight-foreground dark:text-highlight">
 										{m['tierForm.sectorHardLimit.title']()}
 									</p>
-									<p class="mt-1 text-amber-700 dark:text-amber-300">
+									<p class="mt-1 text-foreground">
 										{m['tierForm.sectorHardLimit.description']({
 											capacity: selectedSector.capacity.toString()
 										})}
@@ -366,14 +362,16 @@
 							     resolve_requested_zone accepts them, the picker finds no
 							     seats, every buyer gets a 409. Never intentional. -->
 							<div
-								class="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-800 dark:bg-amber-950"
+								class="rounded-md border border-highlight bg-highlight/10 p-3 text-sm"
 								role="alert"
 							>
-								<p class="flex items-center gap-1.5 font-medium text-amber-800 dark:text-amber-200">
+								<p
+									class="flex items-center gap-1.5 font-medium text-highlight-foreground dark:text-highlight"
+								>
 									<TriangleAlert class="h-4 w-4 shrink-0" aria-hidden="true" />
 									{m['tierForm.categoryPrices.unsellableTitle']()}
 								</p>
-								<p class="mt-1 text-amber-700 dark:text-amber-300">
+								<p class="mt-1 text-foreground">
 									{m['tierForm.categoryPrices.unsellableDescription']({ zones: unsellableNames })}
 								</p>
 							</div>
@@ -381,14 +379,16 @@
 
 						{#if pricingGaps.length > 0 && !isBestAvailable}
 							<div
-								class="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-800 dark:bg-amber-950"
+								class="rounded-md border border-highlight bg-highlight/10 p-3 text-sm"
 								role="alert"
 							>
-								<p class="flex items-center gap-1.5 font-medium text-amber-800 dark:text-amber-200">
+								<p
+									class="flex items-center gap-1.5 font-medium text-highlight-foreground dark:text-highlight"
+								>
 									<TriangleAlert class="h-4 w-4 shrink-0" aria-hidden="true" />
 									{m['tierForm.categoryPrices.gapsTitle']()}
 								</p>
-								<p class="mt-1 text-amber-700 dark:text-amber-300">
+								<p class="mt-1 text-foreground">
 									{m['tierForm.categoryPrices.gapsDescription']({ categories: gapNames })}
 								</p>
 							</div>

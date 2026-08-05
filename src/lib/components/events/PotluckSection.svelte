@@ -459,7 +459,7 @@
 			class="flex w-full items-center justify-between text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 		>
 			<div class="flex-1">
-				<h2 id="potluck-heading" class="text-xl font-semibold">{m['potluck.heading']()}</h2>
+				<h2 id="potluck-heading" class="text-xl font-extrabold">{m['potluck.heading']()}</h2>
 				<p class="mt-1 text-sm text-muted-foreground">
 					{stats.total}
 					{m['common.plurals_items']()} • {stats.claimed}
@@ -525,7 +525,7 @@
 					<button
 						type="button"
 						onclick={handleAddClick}
-						class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						<Plus class="h-4 w-4" aria-hidden="true" />
 						{permissions.hasManagePermission
@@ -577,7 +577,7 @@
 				{#each Object.entries(groupedItems) as [category, items] (category)}
 					{#if items.length > 0}
 						<div class="space-y-3">
-							<h3 class="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+							<h3 class="text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
 								{category} ({items.length})
 							</h3>
 							<div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

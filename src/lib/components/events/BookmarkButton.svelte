@@ -87,7 +87,7 @@
 
 	const buttonClasses = $derived(
 		cn(
-			'inline-flex h-9 w-9 items-center justify-center transition-all focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-60',
+			'inline-flex h-9 w-9 items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-60',
 			variant === 'float' &&
 				'rounded-full bg-black/45 text-white backdrop-blur-sm hover:bg-black/65 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black/50',
 			variant === 'inline' &&

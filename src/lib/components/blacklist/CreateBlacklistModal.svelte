@@ -98,21 +98,22 @@
 		>
 			<div class="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
 				<!-- Warning -->
-				<div
-					class="flex gap-3 rounded-md border border-amber-500/50 bg-amber-50 p-3 dark:bg-amber-950/30"
-				>
-					<AlertTriangle class="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
-					<div class="text-sm">
-						<p class="font-medium text-amber-900 dark:text-amber-100">
+				<div class="flex gap-3 rounded-md border border-highlight bg-highlight/10 p-3">
+					<AlertTriangle
+						class="h-5 w-5 shrink-0 text-highlight-foreground dark:text-highlight"
+						aria-hidden="true"
+					/>
+					<div class="text-sm text-foreground">
+						<p class="font-medium">
 							{m['blacklistModal.importantHeader']()}
 						</p>
-						<p class="mt-1 text-amber-800 dark:text-amber-200">
+						<p class="mt-1">
 							{m['blacklistModal.identifierMatchInfo']()}
 						</p>
-						<p class="mt-2 text-amber-800 dark:text-amber-200">
+						<p class="mt-2">
 							{m['membershipLoss.subscriptionCancelledOnMatch']()}
 						</p>
-						<p class="mt-2 text-amber-800 dark:text-amber-200">
+						<p class="mt-2">
 							{m['blacklistModal.gdprPersistInfo']()}
 						</p>
 					</div>

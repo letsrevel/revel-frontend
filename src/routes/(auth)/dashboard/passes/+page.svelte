@@ -5,6 +5,8 @@
 	import { seriespassListMySeriesPasses } from '$lib/api';
 	import { seriesPassQueryKeys } from '$lib/queries/series-passes';
 	import HeldPassCard from '$lib/components/series-passes/HeldPassCard.svelte';
+	import DashboardBandLayout from '$lib/components/dashboard/DashboardBandLayout.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { Ticket, ChevronLeft, ChevronRight, Loader2 } from '@lucide/svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
@@ -54,25 +56,28 @@
 	<meta name="description" content={m['seriesPass.myPassesDescription']()} />
 </svelte:head>
 
-<div class="container mx-auto px-4 py-6 md:py-8">
-	<!-- Page Header -->
-	<div class="mb-8">
-		<div class="mb-2 flex items-center gap-3">
-			<div class="rounded-lg bg-primary/10 p-2">
-				<Ticket class="h-6 w-6 text-primary" aria-hidden="true" />
-			</div>
-			<h1 class="text-2xl font-bold md:text-3xl">{m['seriesPass.myPassesTitle']()}</h1>
-		</div>
-		<p class="text-muted-foreground">{m['seriesPass.myPassesDescription']()}</p>
-	</div>
-
+<!-- Celebration band + floating content (uplift); see DashboardBandLayout for
+     the band's contrast contract. The pass grid, the empty state and the
+     loading/error panels are all card surfaces, so they meet the band's
+     bottom edge on their own. -->
+<DashboardBandLayout
+	title={m['seriesPass.myPassesTitle']()}
+	subtitle={m['seriesPass.myPassesDescription']()}
+	kicker={m['userMenu.dashboard']()}
+>
 	{#if passesQuery.isPending}
-		<div class="flex items-center justify-center py-16" role="status">
+		<div
+			class="flex items-center justify-center rounded-lg border-2 border-border bg-card py-16 shadow-poster"
+			role="status"
+		>
 			<Loader2 class="h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
 			<span class="sr-only">{m['seriesPass.loading']()}</span>
 		</div>
 	{:else if passesQuery.isError}
-		<div class="rounded-lg border border-destructive/40 bg-card p-8 text-center" role="alert">
+		<div
+			class="rounded-lg border-2 border-destructive/40 bg-card p-8 text-center shadow-poster"
+			role="alert"
+		>
 			<p class="mb-4 text-sm text-muted-foreground">{m['seriesPass.loadError']()}</p>
 			<button
 				type="button"
@@ -83,17 +88,21 @@
 			</button>
 		</div>
 	{:else if passes.length === 0}
-		<div class="rounded-lg border bg-card p-8 text-center">
-			<Ticket class="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
-			<h2 class="mb-2 text-lg font-semibold">{m['seriesPass.noPassesTitle']()}</h2>
-			<p class="mb-4 text-sm text-muted-foreground">{m['seriesPass.noPassesDescription']()}</p>
+		{#snippet browseEventsAction()}
 			<a
 				href={resolve('/(public)/events', {})}
 				class="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
 			>
 				{m['seriesPass.browseEvents']()}
 			</a>
-		</div>
+		{/snippet}
+		<EmptyState
+			icon={Ticket}
+			title={m['seriesPass.noPassesTitle']()}
+			body={m['seriesPass.noPassesDescription']()}
+			action={browseEventsAction}
+			level={2}
+		/>
 	{:else}
 		<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 			{#each passes as heldPass (heldPass.id)}
@@ -130,4 +139,4 @@
 			</nav>
 		{/if}
 	{/if}
-</div>
+</DashboardBandLayout>

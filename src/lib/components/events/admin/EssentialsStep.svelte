@@ -241,7 +241,7 @@
 					value="public"
 					checked={formData.visibility === 'public'}
 					onchange={(e) => onUpdate({ visibility: e.currentTarget.value as 'public' })}
-					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
+					class="h-4 w-4 border-input text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
 					<div class="font-medium group-hover:text-accent-foreground">
@@ -262,7 +262,7 @@
 					value="unlisted"
 					checked={formData.visibility === 'unlisted'}
 					onchange={(e) => onUpdate({ visibility: e.currentTarget.value as 'unlisted' })}
-					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
+					class="h-4 w-4 border-input text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
 					<div class="font-medium group-hover:text-accent-foreground">
@@ -283,7 +283,7 @@
 					value="private"
 					checked={formData.visibility === 'private'}
 					onchange={(e) => onUpdate({ visibility: e.currentTarget.value as 'private' })}
-					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
+					class="h-4 w-4 border-input text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
 					<div class="font-medium group-hover:text-accent-foreground">
@@ -304,7 +304,7 @@
 					value="members-only"
 					checked={formData.visibility === 'members-only'}
 					onchange={(e) => onUpdate({ visibility: e.currentTarget.value as 'members-only' })}
-					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
+					class="h-4 w-4 border-input text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
 					<div class="font-medium group-hover:text-accent-foreground">
@@ -325,7 +325,7 @@
 					value="staff-only"
 					checked={formData.visibility === 'staff-only'}
 					onchange={(e) => onUpdate({ visibility: e.currentTarget.value as 'staff-only' })}
-					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
+					class="h-4 w-4 border-input text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
 					<div class="font-medium group-hover:text-accent-foreground">
@@ -382,7 +382,7 @@
 					value="public"
 					checked={formData.event_type === 'public'}
 					onchange={() => onUpdate({ event_type: 'public' })}
-					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
+					class="h-4 w-4 border-input text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
 					<div class="font-medium group-hover:text-accent-foreground">
@@ -403,7 +403,7 @@
 					value="private"
 					checked={formData.event_type === 'private'}
 					onchange={() => onUpdate({ event_type: 'private' })}
-					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
+					class="h-4 w-4 border-input text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
 					<div class="font-medium group-hover:text-accent-foreground">
@@ -424,7 +424,7 @@
 					value="members-only"
 					checked={formData.event_type === 'members-only'}
 					onchange={() => onUpdate({ event_type: 'members-only' })}
-					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
+					class="h-4 w-4 border-input text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
 					<div class="font-medium group-hover:text-accent-foreground">
@@ -438,15 +438,11 @@
 		</div>
 
 		<!-- Dynamic explanation based on selected combination -->
-		<div
-			class="rounded-md border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950"
-			role="status"
-			aria-live="polite"
-		>
+		<div class="rounded-md border border-info/40 bg-info/10 p-4" role="status" aria-live="polite">
 			<div class="flex items-start gap-3">
 				<div class="flex-shrink-0">
 					<svg
-						class="h-5 w-5 text-blue-600 dark:text-blue-400"
+						class="h-5 w-5 text-info"
 						fill="none"
 						stroke="currentColor"
 						viewBox="0 0 24 24"
@@ -461,10 +457,10 @@
 					</svg>
 				</div>
 				<div class="flex-1">
-					<h4 class="text-sm font-medium text-blue-900 dark:text-blue-100">
+					<h4 class="text-sm font-medium text-info">
 						{m['essentialsStep.withTheseSettings']()}
 					</h4>
-					<div class="mt-2 space-y-1 text-sm text-blue-800 dark:text-blue-200">
+					<div class="mt-2 space-y-1 text-sm text-foreground">
 						<p>
 							<strong>{m['essentialsStep.whoCanView']()}</strong>
 							{combinationExplanation.viewDescription}
@@ -478,7 +474,7 @@
 							})}
 						</p>
 						{#if combinationExplanation.showJoinOrgHint}
-							<p class="mt-2 rounded-md bg-blue-100 px-2 py-1.5 text-xs dark:bg-blue-900">
+							<p class="mt-2 rounded-md bg-info/15 px-2 py-1.5 text-xs">
 								💡 <strong>{m['essentialsStep.tip']()}</strong>
 								{m['essentialsStep.joinOrgHint']()}
 							</p>
@@ -502,14 +498,14 @@
 			<!-- Immutability warning - Always visible in create mode -->
 			{#if !isEditMode}
 				<div
-					class="rounded-md border border-orange-200 bg-orange-50 px-3 py-2.5 text-sm dark:border-orange-800 dark:bg-orange-950"
+					class="rounded-md border border-highlight bg-highlight/10 px-3 py-2.5 text-sm"
 					role="alert"
 				>
 					<div class="flex items-start gap-2">
-						<span class="text-orange-600 dark:text-orange-400" aria-hidden="true">⚠️</span>
-						<div class="flex-1 text-orange-800 dark:text-orange-100">
+						<span class="text-highlight-foreground dark:text-highlight" aria-hidden="true">⚠️</span>
+						<div class="flex-1 text-foreground">
 							<p class="font-medium">{m['essentialsStep.ticketingImmutableWarning']()}</p>
-							<p class="mt-1 text-xs text-orange-700 dark:text-orange-200">
+							<p class="mt-1 text-xs text-muted-foreground">
 								{m['essentialsStep.ticketingImmutableHint']()}
 							</p>
 						</div>
@@ -528,7 +524,7 @@
 					checked={formData.requires_ticket || false}
 					onchange={(e) => onUpdate({ requires_ticket: e.currentTarget.checked })}
 					disabled={isEditMode}
-					class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+					class="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
 				/>
 				<div class="flex-1">
 					<div class="font-medium">{m['essentialsStep.requiresTicket']()}</div>
@@ -541,7 +537,7 @@
 			<!-- Edit mode warning -->
 			{#if isEditMode}
 				<div
-					class="rounded-md border border-yellow-200 bg-yellow-50 px-3 py-2 text-xs text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-100"
+					class="rounded-md border border-highlight bg-highlight/10 px-3 py-2 text-xs text-highlight-foreground dark:text-highlight"
 					role="alert"
 				>
 					⚠️ {m['essentialsStep.ticketingImmutableEditWarning']()}

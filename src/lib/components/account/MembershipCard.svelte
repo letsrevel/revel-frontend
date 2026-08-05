@@ -12,7 +12,7 @@
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
-	import StatusBadge from '$lib/components/members/StatusBadge.svelte';
+	import SubscriptionStatusBadge from '$lib/components/members/SubscriptionStatusBadge.svelte';
 	import CancelSubscriptionDialog from './subscription-actions/CancelSubscriptionDialog.svelte';
 	import ChangePlanDialog from './subscription-actions/ChangePlanDialog.svelte';
 	import MembershipPaymentHistory from './MembershipPaymentHistory.svelte';
@@ -254,7 +254,7 @@
 		<article aria-label={membership.organization_name}>
 			<div class="flex items-start justify-between gap-3">
 				<div class="min-w-0">
-					<h3 class="font-semibold">{membership.organization_name}</h3>
+					<h3 class="font-bold">{membership.organization_name}</h3>
 					{#if sub}
 						<p class="text-sm text-muted-foreground">
 							{sub.plan.name} · {formatPlanPrice(sub.plan)}
@@ -264,7 +264,7 @@
 					{/if}
 				</div>
 				{#if sub}
-					<StatusBadge status={sub.status} />
+					<SubscriptionStatusBadge status={sub.status} />
 				{:else}
 					<Badge variant="secondary" class="capitalize">{membership.status}</Badge>
 				{/if}
@@ -272,9 +272,10 @@
 
 			{#if sub && line}
 				{#if pastDueOnline}
+					<!-- Warning tint mirrors ToneTile's amber recipe (see security page). -->
 					<p
 						role="alert"
-						class="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-900/20 dark:text-amber-100"
+						class="mt-3 rounded-lg border border-highlight/40 bg-highlight/20 p-3 text-sm text-highlight-foreground dark:text-highlight"
 					>
 						{#if sub.grace_deadline}
 							{m['subscriptions.pastDue.bannerDated']({ date: formatDate(sub.grace_deadline) })}

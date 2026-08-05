@@ -153,7 +153,7 @@
 	<section class="rounded-lg border bg-card p-6 text-card-foreground shadow-sm">
 		<div class="mb-4 flex items-center gap-2">
 			<Users class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-			<h2 class="text-lg font-semibold">{m['attendeeList.whosComing']()}</h2>
+			<h2 class="text-xl font-extrabold">{m['attendeeList.whosComing']()}</h2>
 			{#if totalAttendees != null}
 				<span class="text-sm text-muted-foreground">({totalAttendees})</span>
 			{/if}
@@ -197,7 +197,7 @@
 
 							<!-- Attendee info -->
 							<div class="min-w-0 flex-1">
-								<p class="truncate font-medium">{attendee.display_name}</p>
+								<p class="truncate font-bold">{attendee.display_name}</p>
 								{#if attendee.pronouns}
 									<p class="truncate text-sm text-muted-foreground">({attendee.pronouns})</p>
 								{/if}
@@ -220,7 +220,7 @@
 
 							<!-- Attendee info -->
 							<div class="min-w-0 flex-1">
-								<p class="truncate font-medium">{attendee.display_name}</p>
+								<p class="truncate font-bold">{attendee.display_name}</p>
 								{#if attendee.pronouns}
 									<p class="truncate text-sm text-muted-foreground">({attendee.pronouns})</p>
 								{/if}

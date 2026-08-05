@@ -80,7 +80,7 @@
 	>
 		<!-- Header -->
 		<div class="flex shrink-0 items-center justify-between border-b px-4 py-3">
-			<DropdownMenu.Label class="p-0 text-base font-semibold">
+			<DropdownMenu.Label class="p-0 text-base font-bold">
 				{m['notificationDropdown.notifications']()}
 			</DropdownMenu.Label>
 			<Button

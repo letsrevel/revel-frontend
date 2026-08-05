@@ -5,7 +5,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { myOrgSubscriptionQueryOptions } from '$lib/queries/my-org-subscription';
 	import { Card, CardContent } from '$lib/components/ui/card';
-	import StatusBadge from '$lib/components/members/StatusBadge.svelte';
+	import SubscriptionStatusBadge from '$lib/components/members/SubscriptionStatusBadge.svelte';
 	import { formatPlanPrice, getDateLine } from '$lib/utils/subscriptions';
 	import { formatDate } from '$lib/utils/date';
 	import { resolve } from '$app/paths';
@@ -52,13 +52,13 @@
 	{@const line = getDateLine(sub)}
 	<Card>
 		<CardContent class="p-4">
-			<h3 class="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+			<h3 class="text-xs font-extrabold uppercase tracking-[0.12em] text-primary">
 				{m['orgPublic.yourMembership.title']()}
 			</h3>
 			<div class="mt-1 font-medium">{sub.plan.name}</div>
 			<div class="text-sm text-muted-foreground">{formatPlanPrice(sub.plan)}</div>
 			<div class="mt-2 flex items-center gap-2">
-				<StatusBadge status={sub.status} />
+				<SubscriptionStatusBadge status={sub.status} />
 				<span class="text-xs text-muted-foreground">
 					{#if line.kind === 'renewal'}
 						{m['subscriptions.dateLine.renewal']({ date: fmtDate(line.date) })}

@@ -7,6 +7,8 @@
 	import { resolve } from '$app/paths';
 	import { Bell } from '@lucide/svelte';
 	import { SeoHead } from '$lib/seo';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 
 	const { data }: { data: PageData } = $props();
 
@@ -40,7 +42,7 @@
 	{#if !data.token}
 		<!-- Invalid or missing token -->
 		<div class="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center">
-			<h1 class="text-2xl font-bold text-destructive">
+			<h1 class="text-2xl font-extrabold text-destructive">
 				{m['unsubscribePage.invalidTokenTitle']()}
 			</h1>
 			<p class="mt-2 text-muted-foreground">
@@ -54,31 +56,30 @@
 			</a>
 		</div>
 	{:else if success}
-		<!-- Success message -->
-		<div
-			class="rounded-lg border border-green-500/50 bg-green-50 p-6 text-center dark:bg-green-950/50"
-		>
-			<div class="mb-4 flex justify-center">
-				<Bell class="h-16 w-16 text-green-600 dark:text-green-400" aria-hidden="true" />
-			</div>
-			<h1 class="text-2xl font-bold text-green-900 dark:text-green-100">
-				{m['unsubscribePage.successTitle']()}
-			</h1>
-			<p class="mt-2 text-green-800 dark:text-green-200">
-				{m['unsubscribePage.successDescription']()}
-			</p>
-			<p class="mt-4 text-sm text-muted-foreground">
-				{m['unsubscribePage.redirecting']()}
-			</p>
-		</div>
+		<!-- Success message: the EmptyState DISPLAY variant (level 1). This block
+		     used to be hand-composed precisely because the primitive capped at
+		     h2/h3 and the page's only heading has to be an h1; level 1 lifts that
+		     cap, so the chip recipe, display scale and spacing now come from the
+		     primitive instead of being re-typed here. Success tone is still the
+		     right one for "preferences saved". -->
+		<EmptyState
+			level={1}
+			tone="success"
+			icon={Bell}
+			title={m['unsubscribePage.successTitle']()}
+			body={m['unsubscribePage.successDescription']()}
+		/>
+		<p class="mt-4 text-center text-sm text-muted-foreground">
+			{m['unsubscribePage.redirecting']()}
+		</p>
 	{:else}
 		<!-- Unsubscribe form -->
-		<div class="mb-8">
-			<h1 class="text-3xl font-bold tracking-tight">{m['unsubscribePage.title']()}</h1>
-			<p class="mt-2 text-muted-foreground">
-				{m['unsubscribePage.subtitle']()}
-			</p>
-		</div>
+		<PageHeader
+			title={m['unsubscribePage.title']()}
+			subtitle={m['unsubscribePage.subtitle']()}
+			volume="celebration"
+			class="mb-8"
+		/>
 
 		<div class="rounded-lg border bg-card p-6 text-card-foreground shadow-sm">
 			<NotificationPreferencesForm

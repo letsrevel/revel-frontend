@@ -107,7 +107,13 @@ describe('ApplicationsSection', () => {
 		mockList([]);
 		renderSection();
 
-		expect(await screen.findByText(/no applications yet/i)).toBeInTheDocument();
+		// The EmptyState splits into a title (h3) + body paragraph, both of which
+		// contain "no applications yet" — target the heading so the query doesn't
+		// ambiguously match both.
+		expect(
+			await screen.findByRole('heading', { level: 3, name: /no applications yet/i })
+		).toBeInTheDocument();
+		expect(screen.getByText(/when you apply to join an organization/i)).toBeInTheDocument();
 		expect(screen.queryByRole('list', { name: 'In progress' })).toBeNull();
 	});
 
@@ -156,7 +162,7 @@ describe('ApplicationsSection', () => {
 		mockList([]);
 		renderSection();
 
-		await screen.findByText(/no applications yet/i);
+		await screen.findByRole('heading', { level: 3, name: /no applications yet/i });
 		expect(listMock).toHaveBeenCalledWith(expect.objectContaining({ query: { page_size: 50 } }));
 	});
 });

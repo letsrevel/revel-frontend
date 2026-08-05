@@ -5,6 +5,7 @@
 	import { cn } from '$lib/utils/cn';
 	import * as m from '$lib/paraglide/messages.js';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import EventTimezoneNote from './EventTimezoneNote.svelte';
 
 	interface Props {
@@ -90,10 +91,19 @@
 	<!-- Description -->
 	{#if event.description}
 		{#key event.description}
-			<section aria-labelledby="description-heading">
-				<h2 id="description-heading" class="mb-3 text-xl font-semibold">
-					{m['eventDetails.about_heading']()}
-				</h2>
+			<!-- The description is the page's biggest block of prose; on the
+			     uplift's tinted content panel it needs its own floating card, or
+			     it is the one thing left lying on the surface. -->
+			<section
+				aria-labelledby="description-heading"
+				class="rounded-lg border-2 bg-card p-6 shadow-poster sm:p-8"
+			>
+				<SectionHeader
+					volume="celebration"
+					id="description-heading"
+					title={m['eventDetails.about_heading']()}
+					class="mb-4"
+				/>
 				<MarkdownContent content={event.description} class="max-w-prose" />
 			</section>
 		{/key}
@@ -101,20 +111,23 @@
 
 	<!-- Event Metadata Grid -->
 	<section aria-labelledby="details-heading">
-		<h2 id="details-heading" class="mb-3 text-xl font-semibold">
-			{m['eventDetails.details_heading']()}
-		</h2>
+		<SectionHeader
+			volume="celebration"
+			id="details-heading"
+			title={m['eventDetails.details_heading']()}
+			class="mb-3"
+		/>
 
 		<div class="grid gap-4 md:grid-cols-2">
 			<!-- Date & Time -->
-			<div class="flex gap-3 rounded-lg border bg-card p-4">
+			<div class="flex gap-3 rounded-lg border-2 bg-card p-4 shadow-poster">
 				<Calendar class="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
 				<div class="flex-1">
-					<div class="text-sm font-medium text-muted-foreground">
+					<div class="text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
 						{m['eventDetails.dateTime_label']()}
 					</div>
 					<div class="mt-1">
-						<time datetime={event.start} class="block font-medium">
+						<time datetime={event.start} class="block font-bold">
 							{formatEventDate(event.start, event.timezone, false)}
 						</time>
 						{#if event.is_open_ended}
@@ -139,19 +152,39 @@
 
 			<!-- Capacity -->
 			{#if capacityText}
+				<!-- Urgency emphasis. There is no `--warning` token — the tone vocabulary
+			     maps warning -> highlight — so the previous `border-warning
+			     bg-warning/5` / `text-warning` compiled to NOTHING and this cell
+			     rendered identically to its calm siblings.
+			     What differentiates it, per mode, and why the text colour flips:
+			       * the CONTAINER is the differentiator in light mode — a warm
+			         `bg-highlight/10` wash beside plain white `bg-card` cells.
+			         `border-highlight` is 1.94:1 on the light card, so it is
+			         decoration, not the signal (WCAG 1.4.11 does not bind: this is
+			         an informational cell, not a control, and the words —
+			         "Only N spots left" / the relative deadline — carry the meaning).
+			       * `--highlight-foreground` is near-ink, so in light mode it is
+			         simply legible (14.88:1 on the tint) rather than emphatic; in
+			         dark mode `text-highlight` is the amber emphasis (7.54:1 on the
+			         tint). The flip is mandatory: amber itself is 1.94:1 on a light
+			         card. Ratios hand-computed — composited alpha is invisible to
+			         scripts/audit-brand-themes.py. -->
 				<div
 					class={cn(
-						'flex gap-3 rounded-lg border p-4',
-						isNearCapacity ? 'border-warning bg-warning/5' : 'bg-card'
+						'flex gap-3 rounded-lg border-2 p-4 shadow-poster',
+						isNearCapacity ? 'border-highlight bg-highlight/10' : 'bg-card'
 					)}
 				>
 					<Users class="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
 					<div class="flex-1">
-						<div class="text-sm font-medium text-muted-foreground">
+						<div class="text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
 							{m['eventDetails.attendance_label']()}
 						</div>
 						<div
-							class={cn('mt-1 font-medium', isNearCapacity && 'text-warning')}
+							class={cn(
+								'mt-1 font-bold',
+								isNearCapacity && 'text-highlight-foreground dark:text-highlight'
+							)}
 							aria-live="polite"
 						>
 							{capacityText}
@@ -167,20 +200,24 @@
 
 			<!-- RSVP Deadline -->
 			{#if rsvpDeadlineText}
+				<!-- Same recipe and same reasoning as the capacity cell above. -->
 				<div
 					class={cn(
-						'flex gap-3 rounded-lg border p-4',
-						isDeadlineSoon ? 'border-warning bg-warning/5' : 'bg-card'
+						'flex gap-3 rounded-lg border-2 p-4 shadow-poster',
+						isDeadlineSoon ? 'border-highlight bg-highlight/10' : 'bg-card'
 					)}
 				>
 					<Clock class="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
 					<div class="flex-1">
-						<div class="text-sm font-medium text-muted-foreground">
+						<div class="text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
 							{m['eventDetails.rsvpDeadline_label']()}
 						</div>
 						<time
 							datetime={event.rsvp_before}
-							class={cn('mt-1 block font-medium', isDeadlineSoon && 'text-warning')}
+							class={cn(
+								'mt-1 block font-bold',
+								isDeadlineSoon && 'text-highlight-foreground dark:text-highlight'
+							)}
 							aria-live="polite"
 						>
 							{rsvpDeadlineText}
@@ -190,13 +227,13 @@
 			{/if}
 
 			<!-- Event Type -->
-			<div class="flex gap-3 rounded-lg border bg-card p-4">
+			<div class="flex gap-3 rounded-lg border-2 bg-card p-4 shadow-poster">
 				<Info class="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
 				<div class="flex-1">
-					<div class="text-sm font-medium text-muted-foreground">
+					<div class="text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
 						{m['eventDetails.eventType_label']()}
 					</div>
-					<div class="mt-1 font-medium capitalize">
+					<div class="mt-1 font-bold capitalize">
 						{event.event_type.replace('-', ' ')}
 					</div>
 					{#if visibilityMismatch}
@@ -226,9 +263,12 @@
 				aria-labelledby="invitation-heading"
 				class="rounded-lg border-2 border-primary/20 bg-primary/5 p-4"
 			>
-				<h2 id="invitation-heading" class="mb-2 text-lg font-semibold">
-					{m['eventDetails.invitation_heading']()}
-				</h2>
+				<SectionHeader
+					volume="celebration"
+					id="invitation-heading"
+					title={m['eventDetails.invitation_heading']()}
+					class="mb-2"
+				/>
 				<MarkdownContent content={event.invitation_message} class="max-w-prose" />
 			</section>
 		{/key}

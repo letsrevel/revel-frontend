@@ -233,7 +233,7 @@
 			<div
 				bind:this={resultEl}
 				tabindex="-1"
-				class="rounded-lg border border-emerald-500/40 bg-emerald-50 p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:bg-emerald-950/20"
+				class="rounded-lg border border-success/40 bg-success/10 p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 				role="status"
 			>
 				<h3 class="text-sm font-semibold">

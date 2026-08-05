@@ -5,6 +5,8 @@
 	import { dashboardDashboardRsvps } from '$lib/api/generated/sdk.gen';
 	import type { RsvpStatus } from '$lib/api/generated/types.gen';
 	import RSVPCard from '$lib/components/rsvps/RSVPCard.svelte';
+	import DashboardBandLayout from '$lib/components/dashboard/DashboardBandLayout.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { CheckCircle2, Filter, ChevronLeft, ChevronRight, Loader2 } from '@lucide/svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
@@ -120,22 +122,17 @@
 	<meta name="description" content={m['dashboard.rsvps.description']()} />
 </svelte:head>
 
-<div class="container mx-auto px-4 py-6 md:py-8">
-	<!-- Page Header -->
-	<div class="mb-8">
-		<div class="mb-2 flex items-center gap-3">
-			<div class="rounded-lg bg-primary/10 p-2">
-				<CheckCircle2 class="h-6 w-6 text-primary" aria-hidden="true" />
-			</div>
-			<div>
-				<h1 class="text-2xl font-bold md:text-3xl">{m['dashboard.rsvps.title']()}</h1>
-				<p class="text-muted-foreground">{m['dashboard.rsvps.description']()}</p>
-			</div>
-		</div>
-
+<!-- Celebration band + floating controls card (uplift) — twin of the tickets
+     page; see DashboardBandLayout for the band's contrast contract. -->
+<DashboardBandLayout
+	title={m['dashboard.rsvps.title']()}
+	subtitle={m['dashboard.rsvps.description']()}
+	kicker={m['userMenu.dashboard']()}
+>
+	<div class="mb-8 space-y-4 rounded-lg border-2 border-border bg-card p-4 shadow-poster sm:p-6">
 		<!-- RSVP Count -->
 		{#if !rsvpsQuery.isPending && totalCount > 0}
-			<p class="mt-4 text-sm text-muted-foreground">
+			<p class="text-sm text-muted-foreground">
 				{m['dashboard.rsvps.showing']({
 					count: rsvps.length.toString(),
 					total: totalCount.toString()
@@ -143,70 +140,70 @@
 				{totalCount === 1 ? m['dashboard.rsvps.rsvp']() : m['dashboard.rsvps.rsvps']()}
 			</p>
 		{/if}
-	</div>
 
-	<!-- Search Bar -->
-	<div class="mb-6">
-		<label for="search" class="sr-only">{m['dashboard.rsvps.searchPlaceholder']()}</label>
-		<input
-			id="search"
-			type="search"
-			bind:value={searchQuery}
-			placeholder={m['dashboard.rsvps.searchPlaceholder']()}
-			class="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-		/>
-	</div>
-
-	<!-- Filters -->
-	<div class="mb-6 space-y-4">
-		<!-- Status Filter -->
+		<!-- Search Bar -->
 		<div>
-			<div class="mb-2 flex items-center gap-2">
-				<Filter class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-				<span class="text-sm font-medium">{m['dashboard.rsvps.status']()}</span>
-			</div>
-			<div class="flex flex-wrap gap-2">
-				<button
-					type="button"
-					aria-pressed={selectedStatuses.length === 0}
-					onclick={() => setStatuses([])}
-					class="rounded-md border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring {selectedStatuses.length ===
-					0
-						? 'bg-primary text-primary-foreground hover:bg-primary/90'
-						: 'bg-background hover:bg-accent hover:text-accent-foreground'}"
-				>
-					{m['dashboard.rsvps.status_all']()}
-				</button>
-				{#each statusToggles as toggle (toggle.value)}
-					{@const active = selectedStatuses.includes(toggle.value)}
+			<label for="search" class="sr-only">{m['dashboard.rsvps.searchPlaceholder']()}</label>
+			<input
+				id="search"
+				type="search"
+				bind:value={searchQuery}
+				placeholder={m['dashboard.rsvps.searchPlaceholder']()}
+				class="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+			/>
+		</div>
+
+		<!-- Filters -->
+		<div class="space-y-4">
+			<!-- Status Filter -->
+			<div>
+				<div class="mb-2 flex items-center gap-2">
+					<Filter class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+					<span class="text-sm font-medium">{m['dashboard.rsvps.status']()}</span>
+				</div>
+				<div class="flex flex-wrap gap-2">
 					<button
 						type="button"
-						aria-pressed={active}
-						onclick={() => toggleStatus(toggle.value)}
-						class="rounded-md border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring {active
+						aria-pressed={selectedStatuses.length === 0}
+						onclick={() => setStatuses([])}
+						class="rounded-md border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring {selectedStatuses.length ===
+						0
 							? 'bg-primary text-primary-foreground hover:bg-primary/90'
 							: 'bg-background hover:bg-accent hover:text-accent-foreground'}"
 					>
-						{toggle.label}
+						{m['dashboard.rsvps.status_all']()}
 					</button>
-				{/each}
+					{#each statusToggles as toggle (toggle.value)}
+						{@const active = selectedStatuses.includes(toggle.value)}
+						<button
+							type="button"
+							aria-pressed={active}
+							onclick={() => toggleStatus(toggle.value)}
+							class="rounded-md border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring {active
+								? 'bg-primary text-primary-foreground hover:bg-primary/90'
+								: 'bg-background hover:bg-accent hover:text-accent-foreground'}"
+						>
+							{toggle.label}
+						</button>
+					{/each}
+				</div>
 			</div>
-		</div>
 
-		<!-- Include Past Events Checkbox -->
-		<div>
-			<div class="mb-2">
-				<span class="text-sm font-medium">{m['dashboardRsvpsPage.options']()}</span>
+			<!-- Include Past Events Checkbox -->
+			<div>
+				<div class="mb-2">
+					<span class="text-sm font-medium">{m['dashboardRsvpsPage.options']()}</span>
+				</div>
+				<label class="flex cursor-pointer items-center gap-2">
+					<input
+						type="checkbox"
+						bind:checked={includePast}
+						onchange={() => navigateToPage(1)}
+						class="h-4 w-4 cursor-pointer rounded border-input text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2"
+					/>
+					<span class="text-sm">{m['dashboard.rsvps.includePast']()}</span>
+				</label>
 			</div>
-			<label class="flex cursor-pointer items-center gap-2">
-				<input
-					type="checkbox"
-					bind:checked={includePast}
-					onchange={() => navigateToPage(1)}
-					class="h-4 w-4 cursor-pointer rounded border-input text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2"
-				/>
-				<span class="text-sm">{m['dashboard.rsvps.includePast']()}</span>
-			</label>
 		</div>
 	</div>
 
@@ -219,17 +216,8 @@
 		</div>
 	{:else if rsvps.length === 0}
 		<!-- Empty State -->
-		<div class="rounded-lg border bg-card p-12 text-center">
-			<div
-				class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10"
-			>
-				<CheckCircle2 class="h-8 w-8 text-primary" aria-hidden="true" />
-			</div>
-			<h2 class="mb-2 text-xl font-semibold">{m['dashboardRsvpsPage.noResults']()}</h2>
+		{#snippet rsvpsEmptyAction()}
 			{#if selectedStatuses.length || debouncedSearch}
-				<p class="mb-4 text-muted-foreground">
-					{m['dashboardRsvpsPage.noResultsFiltered']()}
-				</p>
 				<button
 					type="button"
 					onclick={() => {
@@ -241,9 +229,6 @@
 					{m['dashboardRsvpsPage.clearFilters']()}
 				</button>
 			{:else}
-				<p class="mb-4 text-muted-foreground">
-					{m['dashboardRsvpsPage.emptyHint']()}
-				</p>
 				<a
 					href={resolve('/(public)/events', {})}
 					class="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
@@ -251,7 +236,16 @@
 					{m['dashboardRsvpsPage.browseEvents']()}
 				</a>
 			{/if}
-		</div>
+		{/snippet}
+		<EmptyState
+			icon={CheckCircle2}
+			title={m['dashboardRsvpsPage.noResults']()}
+			body={selectedStatuses.length || debouncedSearch
+				? m['dashboardRsvpsPage.noResultsFiltered']()
+				: m['dashboardRsvpsPage.emptyHint']()}
+			action={rsvpsEmptyAction}
+			level={2}
+		/>
 	{:else}
 		<!-- RSVPs Grid -->
 		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -293,4 +287,4 @@
 			</div>
 		{/if}
 	{/if}
-</div>
+</DashboardBandLayout>

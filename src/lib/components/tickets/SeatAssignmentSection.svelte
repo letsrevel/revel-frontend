@@ -354,21 +354,27 @@
 {#if isUserChoiceSeat}
 	<!-- Seat Selection UI for user_choice mode (selection = server hold) -->
 	<div bind:this={seatingRootEl} class="space-y-3">
-		<div class="flex items-center justify-between">
-			<span class="flex items-center gap-2 text-sm font-medium leading-none">
-				<Armchair class="h-4 w-4" />
+		<!-- Section header at celebration volume: the seat step is the emotional
+		     peak of the purchase, so it gets display type and a counter chip
+		     instead of two lines of 14px grey. Copy is unchanged. -->
+		<div class="flex flex-wrap items-center justify-between gap-2">
+			<span class="flex items-center gap-2 text-xl font-extrabold leading-none">
+				<Armchair class="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
 				{m['ticketConfirmationDialog.selectSeats']()}
 			</span>
-			<span aria-live="polite" class="text-sm text-muted-foreground">
+			<span
+				aria-live="polite"
+				class="rounded-full border-2 border-primary/40 bg-card px-3 py-1 text-sm font-extrabold text-primary"
+			>
 				{heldCount} / {quantity}
 				{m['ticketConfirmationDialog.seatsSelected']()}
 			</span>
 		</div>
 
 		{#if tierVenue || tierSector}
-			<p class="text-sm text-muted-foreground">
+			<p class="text-sm font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
 				{#if tierVenue}
-					<span class="font-medium">{tierVenue.name}</span>
+					<span>{tierVenue.name}</span>
 				{/if}
 				{#if tierSector}
 					<span> - {tierSector.name}</span>
@@ -414,20 +420,31 @@
 			{#if showPriceLegend}
 				<!-- Price legend: color always paired with name/price text (#668).
 				     Swatches mirror the map's category ring on an available seat. -->
-				<ul class="flex flex-wrap gap-x-4 gap-y-1 text-xs" aria-label={m['seatPricing.legend']()}>
+				<!-- Solid chips, like the mock's zone legend. The SWATCH stays a
+				     ring-style disc — colour on the stroke, surface in the middle —
+				     because that is exactly how SeatMap draws an available seat
+				     (`fill-background` + `stroke={category.color}`); a solid disc
+				     here would stop mirroring the thing it explains. The chip's own
+				     2px border is what guarantees a boundary on the card, so a
+				     category painted near-white or near-black still reads as an
+				     entry even when its stroke does not. -->
+				<ul class="flex flex-wrap gap-1.5 text-xs" aria-label={m['seatPricing.legend']()}>
 					{#each legendEntries as entry (entry.id ?? 'unpainted')}
-						<li class="flex items-center gap-1.5">
+						<li
+							class="inline-flex items-center gap-1.5 rounded-full border-2 border-border bg-card px-2.5 py-1"
+						>
 							<span
 								class="inline-block h-3 w-3 shrink-0 rounded-full border-2 bg-background"
 								style={entry.color ? `border-color: ${entry.color}` : undefined}
 								class:border-border={!entry.color}
 								aria-hidden="true"
 							></span>
-							<span class="text-muted-foreground">
+							<span class="font-bold">
 								{entry.name ?? m['seatPricing.standardSeats']()}
 							</span>
 							{#if entry.available && entry.price != null}
-								<span class="font-medium">{formatMoney(entry.price, currency)}</span>
+								<span class="font-extrabold text-primary">{formatMoney(entry.price, currency)}</span
+								>
 							{:else}
 								<span class="text-muted-foreground">{m['seatPricing.notAvailable']()}</span>
 							{/if}
@@ -437,9 +454,24 @@
 			{/if}
 			{#if seatViewMode === 'map' && mapChart}
 				<!-- Tall map surface (the seated dialog widens for it); pan/zoom
-				     reaches anything beyond the box. -->
+				     reaches anything beyond the box.
+				     `dark` is deliberate and load-bearing: it makes the map house
+				     a THEATRE in both themes, matching the landing's SeatMapMock
+				     and the list view's ink panel. It is a scoped THEME, not a
+				     hardcoded colour — every token inside resolves to the audited
+				     dark-mode value, so `--background`, `--border`,
+				     `--muted-foreground` and the zoom controls all keep their AA
+				     pairs, and the organizer's price-category seat colours read
+				     against a consistent dark house instead of flipping.
+				     Side effect worth knowing: `shadow-poster` reads
+				     `--poster-shadow`, which `.dark` redefines — and `.dark` is on
+				     THIS element, so the frame always casts the DARK-mode float
+				     (near-black, wider spread) even on a light page. That is the
+				     right answer here rather than a bug: a dark block needs the
+				     heavier shadow to separate from light paper, and the light
+				     float (ink at 15%) would barely register under it. -->
 				<div
-					class="h-[58vh] shrink-0 overflow-hidden rounded-lg border border-border bg-background"
+					class="dark h-[58vh] shrink-0 overflow-hidden rounded-[1.5rem] bg-background shadow-poster"
 				>
 					<SeatMap
 						chart={mapChart}
@@ -477,8 +509,9 @@
 				</p>
 			{:else}
 				<!-- Seat Selection Grid (SeatSelector caps its own grid height so the
-				     hold notice and legend stay visible) -->
-				<div class="rounded-lg border border-border bg-background p-3">
+				     hold notice and legend stay visible). No frame here any more:
+				     SeatSelector now brings its own ink stage panel. -->
+				<div>
 					<SeatSelector
 						seats={seatViews}
 						onToggle={handleToggle}

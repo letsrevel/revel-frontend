@@ -68,7 +68,7 @@
 					type="checkbox"
 					checked={formData.requires_full_profile || false}
 					onchange={(e) => onUpdate({ requires_full_profile: e.currentTarget.checked })}
-					class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
+					class="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
 					<div class="font-medium">
@@ -88,7 +88,7 @@
 					type="checkbox"
 					checked={formData.accept_invitation_requests || false}
 					onchange={(e) => onUpdate({ accept_invitation_requests: e.currentTarget.checked })}
-					class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
+					class="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
 					<div class="font-medium">{m['detailsStep.acceptInvitationRequests']()}</div>

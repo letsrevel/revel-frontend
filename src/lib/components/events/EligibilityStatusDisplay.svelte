@@ -148,8 +148,8 @@
 <div
 	class={cn(
 		'rounded-lg border-2 p-4',
-		variant === 'success' && 'border-green-500/30 bg-green-500/5',
-		variant === 'warning' && 'border-yellow-500/30 bg-yellow-500/5',
+		variant === 'success' && 'border-success/40 bg-success/10',
+		variant === 'warning' && 'border-highlight/50 bg-highlight/10',
 		className
 	)}
 	role="status"
@@ -160,8 +160,8 @@
 		<div
 			class={cn(
 				'shrink-0',
-				variant === 'success' && 'text-green-600 dark:text-green-400',
-				variant === 'warning' && 'text-yellow-600 dark:text-yellow-400'
+				variant === 'success' && 'text-success',
+				variant === 'warning' && 'text-highlight-foreground dark:text-highlight'
 			)}
 		>
 			<IconComponent class="h-6 w-6" aria-hidden="true" />
@@ -250,7 +250,7 @@
 			<!-- Application Deadline Display -->
 			{#if shouldShowDeadline && applyBefore}
 				<div
-					class="mt-2 flex items-center gap-2 rounded-md bg-orange-50 px-3 py-2 text-sm text-orange-800 dark:bg-orange-950/30 dark:text-orange-200"
+					class="mt-2 flex items-center gap-2 rounded-md bg-highlight/10 px-3 py-2 text-sm text-foreground"
 				>
 					<Calendar class="h-4 w-4 shrink-0" aria-hidden="true" />
 					<span>

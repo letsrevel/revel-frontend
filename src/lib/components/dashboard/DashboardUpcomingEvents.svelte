@@ -2,7 +2,9 @@
 	import { resolve } from '$app/paths';
 	import { EventCard } from '$lib/components/events';
 	import EventCardSkeleton from '$lib/components/common/EventCardSkeleton.svelte';
-	import { Calendar, Sparkles, ChevronRight } from '@lucide/svelte';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
+	import { Calendar, ChevronRight } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { EventInListSchema } from '$lib/api/generated/types.gen';
 
@@ -13,22 +15,29 @@
 	let { upcomingEvents, isLoading }: Props = $props();
 </script>
 
-<!-- Upcoming Events Section -->
+{#snippet seeAllAction()}
+	<a
+		href={resolve('/(public)/events', {})}
+		class="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+	>
+		<span>{m['dashboard.activityCards.seeAll']()}</span>
+		<ChevronRight class="h-4 w-4" aria-hidden="true" />
+	</a>
+{/snippet}
+
+<!-- Upcoming Events Section. This can be the FIRST block below the dashboard's
+     -mt-12 band pull-up (brand-new user: no activity cards, no "Your Events"
+     section). It carries its own bg-card/border-2/shadow-poster wrapper so
+     that whenever it lands there, the "See all" link's `text-primary` sits on
+     an audited surface instead of the band itself (4.12:1, below AA). -->
 <section aria-labelledby="upcoming-events-heading">
-	<div class="mb-4 flex items-center justify-between">
-		<h2 id="upcoming-events-heading" class="flex items-center gap-2 text-xl font-semibold">
-			<Sparkles class="h-5 w-5 text-primary" aria-hidden="true" />
-			<span>{m['dashboard.sections.discoverEvents']()}</span>
-		</h2>
-		{#if upcomingEvents.length > 0}
-			<a
-				href={resolve('/(public)/events', {})}
-				class="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
-			>
-				<span>{m['dashboard.activityCards.seeAll']()}</span>
-				<ChevronRight class="h-4 w-4" aria-hidden="true" />
-			</a>
-		{/if}
+	<div class="mb-4 rounded-lg border-2 border-border bg-card p-4 shadow-poster sm:p-6">
+		<SectionHeader
+			title={m['dashboard.sections.discoverEvents']()}
+			volume="celebration"
+			id="upcoming-events-heading"
+			actions={upcomingEvents.length > 0 ? seeAllAction : undefined}
+		/>
 	</div>
 
 	{#if isLoading}
@@ -39,15 +48,12 @@
 		</div>
 	{:else if upcomingEvents.length === 0}
 		<!-- Empty State -->
-		<div class="rounded-lg border bg-card p-8 text-center">
-			<Calendar class="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
-			<h3 class="mb-2 text-lg font-semibold">
-				{m['dashboard.emptyStates.noEventsAvailable']()}
-			</h3>
-			<p class="mb-4 text-sm text-muted-foreground">
-				{m['dashboard.emptyStates.noEventsHint']()}
-			</p>
-		</div>
+		<EmptyState
+			icon={Calendar}
+			title={m['dashboard.emptyStates.noEventsAvailable']()}
+			body={m['dashboard.emptyStates.noEventsHint']()}
+			tone="neutral"
+		/>
 	{:else}
 		<!-- Event Cards -->
 		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

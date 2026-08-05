@@ -6,6 +6,8 @@
 	import type { ActionData } from './$types';
 	import PasswordStrengthIndicator from '$lib/components/forms/PasswordStrengthIndicator.svelte';
 	import { Loader2, Eye, EyeOff, CheckCircle } from '@lucide/svelte';
+	import { Card, CardContent } from '$lib/components/ui/card';
+	import AuthBandLayout from '$lib/components/auth/AuthBandLayout.svelte';
 
 	interface Props {
 		form: ActionData;
@@ -35,216 +37,212 @@
 	<meta name="description" content="Set a new password for your Revel account" />
 </svelte:head>
 
-<div class="container mx-auto flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8">
-	<div class="w-full max-w-md space-y-8">
-		<!-- Header -->
-		<div class="text-center">
-			<h1 class="text-3xl font-bold tracking-tight">
-				{success ? m['resetPasswordPage.headingSuccess']() : m['resetPasswordPage.heading']()}
-			</h1>
-			<p class="mt-2 text-muted-foreground">
-				{success ? m['resetPasswordPage.subtitleSuccess']() : m['resetPasswordPage.subtitle']()}
-			</p>
-		</div>
-
-		{#if success}
-			<!-- Success State -->
-			<div
-				role="status"
-				class="rounded-md border border-green-500 bg-green-50 p-6 dark:bg-green-950"
-			>
-				<div class="flex items-start gap-3">
-					<CheckCircle
-						class="h-6 w-6 flex-shrink-0 text-green-600 dark:text-green-400"
-						aria-hidden="true"
-					/>
-					<div class="flex-1 space-y-2">
-						<p class="text-sm font-medium text-green-800 dark:text-green-200">
-							{m['resetPasswordPage.successHeading']()}
-						</p>
-						<p class="text-sm text-green-700 dark:text-green-300">
-							{m['resetPasswordPage.successBody']()}
-						</p>
-					</div>
-				</div>
-			</div>
-
-			<!-- Login Button -->
-			<a
-				href={resolve('/(public)/login', {})}
-				class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-			>
-				{m['resetPasswordPage.signInToAccount']()}
-			</a>
-		{:else if !token}
-			<!-- Missing Token Error -->
-			<div role="alert" class="rounded-md border border-destructive bg-destructive/10 p-4">
-				<h2 class="text-sm font-medium text-destructive">
-					{m['resetPasswordPage.invalidTokenTitle']()}
-				</h2>
-				<p class="mt-2 text-sm text-muted-foreground">
-					{m['resetPasswordPage.invalidTokenDescription']()}
-				</p>
-			</div>
-
-			<a
-				href={resolve('/(public)/password-reset', {})}
-				class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-			>
-				{m['resetPasswordPage.requestNewLink']()}
-			</a>
-		{:else}
-			<!-- Error Summary -->
-			{#if errors.form}
-				<div role="alert" class="rounded-md border border-destructive bg-destructive/10 p-4">
-					<p class="text-sm font-medium text-destructive">{errors.form}</p>
-				</div>
-			{/if}
-
-			<!-- Password Reset Form -->
-			<form
-				method="POST"
-				action="?/resetPassword"
-				use:enhance={() => {
-					// Prevent duplicate submissions
-					if (isSubmitting) return;
-					isSubmitting = true;
-
-					return async ({ update }) => {
-						isSubmitting = false;
-						await update();
-					};
-				}}
-				class="space-y-6"
-			>
-				<input type="hidden" name="token" value={token} />
-
-				<!-- New Password Field -->
-				<div class="space-y-2">
-					<label for="password" class="block text-sm font-medium"
-						>{m['resetPasswordPage.newPasswordLabel']()}</label
-					>
-					<div class="relative">
-						<input
-							id="password"
-							name="password"
-							type={showPassword ? 'text' : 'password'}
-							autocomplete="new-password"
-							required
-							bind:value={password}
-							onpaste={() => {
-								// Ensure paste always works on mobile
-								// This explicit handler prevents any interference from browser autofill
-								// that might block paste operations on iOS Safari
-							}}
-							aria-invalid={!!errors.password}
-							aria-describedby={errors.password ? 'password-error' : 'password-requirements'}
-							disabled={isSubmitting}
-							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {errors.password
-								? 'border-destructive'
-								: ''}"
-							placeholder={m['resetPasswordPage.newPasswordPlaceholder']()}
-						/>
-						<button
-							type="button"
-							onclick={() => (showPassword = !showPassword)}
-							class="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-							aria-label={showPassword
-								? m['resetPasswordPage.hidePassword']()
-								: m['resetPasswordPage.showPassword']()}
-							tabindex={-1}
-						>
-							{#if showPassword}
-								<EyeOff class="h-4 w-4" aria-hidden="true" />
-							{:else}
-								<Eye class="h-4 w-4" aria-hidden="true" />
-							{/if}
-						</button>
-					</div>
-					{#if errors.password}
-						<p id="password-error" class="text-sm text-destructive" role="alert">
-							{errors.password}
-						</p>
-					{/if}
-				</div>
-
-				<!-- Password Strength Indicator -->
-				<div id="password-requirements">
-					<PasswordStrengthIndicator {password} />
-				</div>
-
-				<!-- Confirm Password Field -->
-				<div class="space-y-2">
-					<label for="confirmPassword" class="block text-sm font-medium"
-						>{m['resetPasswordPage.confirmPasswordLabel']()}</label
-					>
-					<div class="relative">
-						<input
-							id="confirmPassword"
-							name="confirmPassword"
-							type={showConfirmPassword ? 'text' : 'password'}
-							autocomplete="new-password"
-							required
-							bind:value={confirmPassword}
-							onpaste={() => {
-								// Ensure paste always works on mobile
-								// This explicit handler prevents any interference from browser autofill
-								// that might block paste operations on iOS Safari
-							}}
-							aria-invalid={!!errors.confirmPassword}
-							aria-describedby={errors.confirmPassword ? 'confirm-password-error' : undefined}
-							disabled={isSubmitting}
-							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {errors.confirmPassword
-								? 'border-destructive'
-								: ''}"
-							placeholder={m['resetPasswordPage.confirmPasswordPlaceholder']()}
-						/>
-						<button
-							type="button"
-							onclick={() => (showConfirmPassword = !showConfirmPassword)}
-							class="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-							aria-label={showConfirmPassword
-								? m['resetPasswordPage.hidePassword']()
-								: m['resetPasswordPage.showPassword']()}
-							tabindex={-1}
-						>
-							{#if showConfirmPassword}
-								<EyeOff class="h-4 w-4" aria-hidden="true" />
-							{:else}
-								<Eye class="h-4 w-4" aria-hidden="true" />
-							{/if}
-						</button>
-					</div>
-					{#if errors.confirmPassword}
-						<p id="confirm-password-error" class="text-sm text-destructive" role="alert">
-							{errors.confirmPassword}
-						</p>
-					{/if}
-				</div>
-
-				<!-- Submit Button -->
-				<button
-					type="submit"
-					disabled={isSubmitting}
-					class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+<!-- Colour-block band + floating card (uplift). Shell only. -->
+<AuthBandLayout
+	kicker={m['resetPasswordPage.kicker']()}
+	title={success ? m['resetPasswordPage.headingSuccess']() : m['resetPasswordPage.heading']()}
+	subtitle={success ? m['resetPasswordPage.subtitleSuccess']() : m['resetPasswordPage.subtitle']()}
+>
+	<Card>
+		<CardContent class="space-y-6 p-6 sm:p-8">
+			{#if success}
+				<!-- Success State: success/10 + border are decorative (no text-contrast
+					     requirement); title/body stay on foreground/muted-foreground, both
+					     already-audited pairs. -->
+				<div
+					role="status"
+					class="rounded-md border border-success/40 bg-success/10 p-6 dark:border-success/50 dark:bg-success/15"
 				>
-					{#if isSubmitting}
-						<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-						<span>{m['resetPasswordPage.submitting']()}</span>
-					{:else}
-						<span>{m['resetPasswordPage.submit']()}</span>
-					{/if}
-				</button>
-			</form>
+					<div class="flex items-start gap-3">
+						<CheckCircle class="h-6 w-6 flex-shrink-0 text-success" aria-hidden="true" />
+						<div class="flex-1 space-y-2">
+							<p class="text-sm font-medium text-foreground">
+								{m['resetPasswordPage.successHeading']()}
+							</p>
+							<p class="text-sm text-muted-foreground">
+								{m['resetPasswordPage.successBody']()}
+							</p>
+						</div>
+					</div>
+				</div>
 
-			<!-- Back to Login Link -->
-			<div class="text-center text-sm">
+				<!-- Login Button -->
 				<a
 					href={resolve('/(public)/login', {})}
-					class="text-primary underline-offset-4 hover:underline"
-					>{m['resetPasswordPage.backToLogin']()}</a
+					class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
-			</div>
-		{/if}
-	</div>
-</div>
+					{m['resetPasswordPage.signInToAccount']()}
+				</a>
+			{:else if !token}
+				<!-- Missing Token Error -->
+				<div role="alert" class="rounded-md border border-destructive bg-destructive/10 p-4">
+					<h2 class="text-sm font-medium text-destructive">
+						{m['resetPasswordPage.invalidTokenTitle']()}
+					</h2>
+					<p class="mt-2 text-sm text-muted-foreground">
+						{m['resetPasswordPage.invalidTokenDescription']()}
+					</p>
+				</div>
+
+				<a
+					href={resolve('/(public)/password-reset', {})}
+					class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+				>
+					{m['resetPasswordPage.requestNewLink']()}
+				</a>
+			{:else}
+				<!-- Error Summary -->
+				{#if errors.form}
+					<div role="alert" class="rounded-md border border-destructive bg-destructive/10 p-4">
+						<p class="text-sm font-medium text-destructive">{errors.form}</p>
+					</div>
+				{/if}
+
+				<!-- Password Reset Form -->
+				<form
+					method="POST"
+					action="?/resetPassword"
+					use:enhance={() => {
+						// Prevent duplicate submissions
+						if (isSubmitting) return;
+						isSubmitting = true;
+
+						return async ({ update }) => {
+							isSubmitting = false;
+							await update();
+						};
+					}}
+					class="space-y-6"
+				>
+					<input type="hidden" name="token" value={token} />
+
+					<!-- New Password Field -->
+					<div class="space-y-2">
+						<label for="password" class="block text-sm font-medium"
+							>{m['resetPasswordPage.newPasswordLabel']()}</label
+						>
+						<div class="relative">
+							<input
+								id="password"
+								name="password"
+								type={showPassword ? 'text' : 'password'}
+								autocomplete="new-password"
+								required
+								bind:value={password}
+								onpaste={() => {
+									// Ensure paste always works on mobile
+									// This explicit handler prevents any interference from browser autofill
+									// that might block paste operations on iOS Safari
+								}}
+								aria-invalid={!!errors.password}
+								aria-describedby={errors.password ? 'password-error' : 'password-requirements'}
+								disabled={isSubmitting}
+								class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {errors.password
+									? 'border-destructive'
+									: ''}"
+								placeholder={m['resetPasswordPage.newPasswordPlaceholder']()}
+							/>
+							<button
+								type="button"
+								onclick={() => (showPassword = !showPassword)}
+								class="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+								aria-label={showPassword
+									? m['resetPasswordPage.hidePassword']()
+									: m['resetPasswordPage.showPassword']()}
+								tabindex={-1}
+							>
+								{#if showPassword}
+									<EyeOff class="h-4 w-4" aria-hidden="true" />
+								{:else}
+									<Eye class="h-4 w-4" aria-hidden="true" />
+								{/if}
+							</button>
+						</div>
+						{#if errors.password}
+							<p id="password-error" class="text-sm text-destructive" role="alert">
+								{errors.password}
+							</p>
+						{/if}
+					</div>
+
+					<!-- Password Strength Indicator -->
+					<div id="password-requirements">
+						<PasswordStrengthIndicator {password} />
+					</div>
+
+					<!-- Confirm Password Field -->
+					<div class="space-y-2">
+						<label for="confirmPassword" class="block text-sm font-medium"
+							>{m['resetPasswordPage.confirmPasswordLabel']()}</label
+						>
+						<div class="relative">
+							<input
+								id="confirmPassword"
+								name="confirmPassword"
+								type={showConfirmPassword ? 'text' : 'password'}
+								autocomplete="new-password"
+								required
+								bind:value={confirmPassword}
+								onpaste={() => {
+									// Ensure paste always works on mobile
+									// This explicit handler prevents any interference from browser autofill
+									// that might block paste operations on iOS Safari
+								}}
+								aria-invalid={!!errors.confirmPassword}
+								aria-describedby={errors.confirmPassword ? 'confirm-password-error' : undefined}
+								disabled={isSubmitting}
+								class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {errors.confirmPassword
+									? 'border-destructive'
+									: ''}"
+								placeholder={m['resetPasswordPage.confirmPasswordPlaceholder']()}
+							/>
+							<button
+								type="button"
+								onclick={() => (showConfirmPassword = !showConfirmPassword)}
+								class="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+								aria-label={showConfirmPassword
+									? m['resetPasswordPage.hidePassword']()
+									: m['resetPasswordPage.showPassword']()}
+								tabindex={-1}
+							>
+								{#if showConfirmPassword}
+									<EyeOff class="h-4 w-4" aria-hidden="true" />
+								{:else}
+									<Eye class="h-4 w-4" aria-hidden="true" />
+								{/if}
+							</button>
+						</div>
+						{#if errors.confirmPassword}
+							<p id="confirm-password-error" class="text-sm text-destructive" role="alert">
+								{errors.confirmPassword}
+							</p>
+						{/if}
+					</div>
+
+					<!-- Submit Button -->
+					<button
+						type="submit"
+						disabled={isSubmitting}
+						class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+					>
+						{#if isSubmitting}
+							<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
+							<span>{m['resetPasswordPage.submitting']()}</span>
+						{:else}
+							<span>{m['resetPasswordPage.submit']()}</span>
+						{/if}
+					</button>
+				</form>
+
+				<!-- Back to Login Link -->
+				<div class="text-center text-sm">
+					<a
+						href={resolve('/(public)/login', {})}
+						class="text-primary underline-offset-4 hover:underline"
+						>{m['resetPasswordPage.backToLogin']()}</a
+					>
+				</div>
+			{/if}
+		</CardContent>
+	</Card>
+</AuthBandLayout>

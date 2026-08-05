@@ -9,6 +9,8 @@
 	import CityAutocomplete from '$lib/components/forms/CityAutocomplete.svelte';
 	import AttendeeVisibilitySelect from '$lib/components/profile/AttendeeVisibilitySelect.svelte';
 	import { Button } from '$lib/components/ui/button';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import { userpreferencesUpdateGeneralPreferences } from '$lib/api/generated';
 	import type { CitySchema } from '$lib/api/generated';
 	import type { VisibilityValue } from '$lib/schemas/preferences';
@@ -77,17 +79,20 @@
 </svelte:head>
 
 <div class="container mx-auto max-w-2xl px-4 py-8">
-	<div class="mb-8">
-		<h1 class="text-3xl font-bold tracking-tight">{m['accountSettingsPage.title']()}</h1>
-		<p class="mt-2 text-muted-foreground">{m['accountSettingsPage.subtitle']()}</p>
-	</div>
+	<PageHeader
+		kicker={m['myInvoices.account']()}
+		title={m['accountSettingsPage.title']()}
+		subtitle={m['accountSettingsPage.subtitle']()}
+		class="mb-8"
+	/>
 
 	{#if redirectUrl}
-		<div
-			class="mb-6 rounded-md border border-blue-200 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-950"
-		>
-			<p class="text-sm text-blue-800 dark:text-blue-200">
-				<Info class="mr-2 inline-block h-4 w-4" aria-hidden="true" />
+		<!-- Composited tint mirrors ToneTile's audited "info as icon/accent" pair
+		     (>=3:1 vs background/card per audit-brand-themes.py); body copy stays on
+		     --foreground so contrast never depends on the alpha overlay. -->
+		<div class="mb-6 rounded-md border border-info/30 bg-info/10 p-4">
+			<p class="text-sm text-foreground">
+				<Info class="mr-2 inline-block h-4 w-4 text-info" aria-hidden="true" />
 				{m['settings.updateToReturn']()}
 			</p>
 		</div>
@@ -96,7 +101,7 @@
 	{#if authStore.accessToken}
 		<!-- General Preferences -->
 		<div class="mb-8 rounded-lg border bg-card p-6">
-			<h2 class="mb-4 text-xl font-semibold">{m['accountSettingsPage.general.title']()}</h2>
+			<SectionHeader title={m['accountSettingsPage.general.title']()} class="mb-4" />
 			<p class="mb-6 text-sm text-muted-foreground">
 				{m['accountSettingsPage.general.description']()}
 			</p>
@@ -136,15 +141,13 @@
 
 		<!-- Billing Information -->
 		<div class="mb-8 rounded-lg border bg-card p-6">
-			<div class="mb-4 flex items-center gap-2">
+			<div class="flex items-center gap-2">
 				<FileText class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-				<div>
-					<h2 class="text-xl font-semibold">{m['accountSettingsPage.billing.title']()}</h2>
-					<p class="mt-1 text-sm text-muted-foreground">
-						{m['accountSettingsPage.billing.description']()}
-					</p>
-				</div>
+				<SectionHeader title={m['accountSettingsPage.billing.title']()} class="flex-1" />
 			</div>
+			<p class="mt-1 text-sm text-muted-foreground">
+				{m['accountSettingsPage.billing.description']()}
+			</p>
 			<BillingProfileForm authToken={authStore.accessToken} />
 		</div>
 

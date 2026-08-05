@@ -5,7 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
-		"build": "svelte-kit sync && vite build",
+		"build": "node scripts/check-paraglide-freshness.mjs && svelte-kit sync && vite build",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
@@ -23,6 +23,7 @@
 		"i18n:validate": "node scripts/validate-translations.js",
 		"i18n:check-imports": "bash scripts/check-i18n-imports.sh",
 		"i18n:hardcoded": "node scripts/check-i18n-hardcoded.mjs",
+		"i18n:check-freshness": "node scripts/check-paraglide-freshness.mjs",
 		"i18n:compile": "pnpm paraglide:compile && pnpm i18n:validate",
 		"audit:images": "tsx scripts/audit-image-alt.ts"
 	},

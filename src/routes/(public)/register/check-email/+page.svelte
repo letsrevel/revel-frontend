@@ -2,8 +2,9 @@
 	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
-	import { Mail, Loader2 } from '@lucide/svelte';
+	import { Mail, Loader2, AlertTriangle } from '@lucide/svelte';
 	import { accountResendVerificationEmail } from '$lib/api/generated/sdk.gen';
+	import AuthBandLayout from '$lib/components/auth/AuthBandLayout.svelte';
 
 	const email = $derived($page.url.searchParams.get('email') || '');
 	let isResending = $state(false);
@@ -57,49 +58,57 @@
 	<meta name="description" content="Verify your email to complete registration" />
 </svelte:head>
 
-<div class="container mx-auto flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8">
-	<div class="w-full max-w-md space-y-8 text-center">
-		<!-- Icon -->
-		<div class="flex justify-center">
-			<div class="rounded-full bg-primary/10 p-6">
-				<Mail class="h-12 w-12 text-primary" aria-hidden="true" />
-			</div>
-		</div>
+<!-- Colour-block band + floating card (uplift). The mail chip moves INTO the
+     band above the title (same EmptyState poster-chip recipe, still
+     aria-hidden ornament); everything that follows floats on it. Copy, the
+     resend handler and all live-region roles are unchanged. -->
+{#snippet mailChip()}
+	<span
+		aria-hidden="true"
+		class="flex h-16 w-16 -rotate-2 items-center justify-center rounded-2xl bg-poster-purple text-poster-white shadow-poster"
+	>
+		<Mail class="h-8 w-8" />
+	</span>
+{/snippet}
 
-		<!-- Header -->
-		<div class="space-y-2">
-			<h1 class="text-3xl font-bold tracking-tight">{m['checkEmailPage.checkYourEmail']()}</h1>
-			<p class="text-muted-foreground">{m['checkEmailPage.verificationLink']()}</p>
-			{#if email}
-				<p class="font-medium">{email}</p>
-			{/if}
-		</div>
+<AuthBandLayout
+	chip={mailChip}
+	title={m['checkEmailPage.checkYourEmail']()}
+	subtitle={m['checkEmailPage.verificationLink']()}
+>
+	<div class="space-y-6 rounded-lg border-2 border-border bg-card p-6 text-center shadow-poster">
+		{#if email}
+			<p class="font-bold">{email}</p>
+		{/if}
 
 		<!-- Instructions -->
-		<div class="space-y-4 text-sm text-muted-foreground">
-			<p>{m['checkEmailPage.clickLink']()}</p>
-		</div>
+		<p class="text-sm text-muted-foreground">{m['checkEmailPage.clickLink']()}</p>
 
-		<!-- Spam Warning -->
+		<!-- Spam Warning: highlight/20 + border are decorative; body text stays on
+		     the default foreground token (already-audited pair). -->
 		<div
-			class="rounded-md border border-amber-500/50 bg-amber-50 p-4 text-left dark:bg-amber-950/30"
+			class="flex items-start gap-3 rounded-md border border-highlight/30 bg-highlight/20 p-4 text-left dark:border-highlight/40 dark:bg-highlight/25"
 		>
-			<p class="text-sm font-medium text-amber-800 dark:text-amber-200">
+			<AlertTriangle
+				class="mt-0.5 h-5 w-5 flex-shrink-0 text-highlight-foreground dark:text-highlight"
+				aria-hidden="true"
+			/>
+			<p class="text-sm font-medium text-foreground">
 				{m['checkEmailPage.checkSpam']()}
 			</p>
 		</div>
 
 		<!-- Resend Section -->
-		<div class="space-y-3 border-t pt-6">
+		<div class="space-y-3 border-t-2 pt-6">
 			<p class="text-sm text-muted-foreground">{m['checkEmailPage.didNotReceive']()}</p>
 
 			{#if resendSuccess}
 				<div
 					role="status"
-					class="space-y-2 rounded-md border border-green-500 bg-green-500/10 p-3 text-sm text-green-700 dark:text-green-400"
+					class="space-y-2 rounded-md border border-success/40 bg-success/10 p-3 text-sm text-foreground dark:border-success/50 dark:bg-success/15"
 				>
 					<p>{m['checkEmailPage.resendSuccess']()}</p>
-					<p class="text-green-600 dark:text-green-500">{m['checkEmailPage.checkSpam']()}</p>
+					<p class="text-muted-foreground">{m['checkEmailPage.checkSpam']()}</p>
 				</div>
 			{/if}
 
@@ -126,15 +135,15 @@
 				{/if}
 			</button>
 		</div>
-
-		<!-- Back to Login -->
-		<div class="text-sm">
-			<a
-				href={resolve('/(public)/login', {})}
-				class="text-primary underline-offset-4 hover:underline"
-			>
-				{m['checkEmailPage.backToLogin']()}
-			</a>
-		</div>
 	</div>
-</div>
+
+	<!-- Back to Login -->
+	<div class="text-center text-sm">
+		<a
+			href={resolve('/(public)/login', {})}
+			class="text-primary underline-offset-4 hover:underline"
+		>
+			{m['checkEmailPage.backToLogin']()}
+		</a>
+	</div>
+</AuthBandLayout>

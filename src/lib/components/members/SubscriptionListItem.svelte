@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import type { SubscriptionSchema } from '$lib/api/generated/types.gen';
-	import StatusBadge from './StatusBadge.svelte';
+	import SubscriptionStatusBadge from './SubscriptionStatusBadge.svelte';
 	import { formatPlanPrice } from '$lib/utils/subscriptions';
 	import { formatDate } from '$lib/utils/date';
 
@@ -42,7 +42,7 @@
 		<div>{sub.plan.name}</div>
 		<div class="text-xs text-muted-foreground">{formatPlanPrice(sub.plan)}</div>
 	</td>
-	<td class="px-3 py-2"><StatusBadge status={sub.status} /></td>
+	<td class="px-3 py-2"><SubscriptionStatusBadge status={sub.status} /></td>
 	<td class="px-3 py-2 text-sm">{fmtDate(sub.current_period_end)}</td>
 </tr>
 
@@ -57,7 +57,7 @@
 			<div class="font-medium">{sub.user_display_name}</div>
 			<div class="text-xs text-muted-foreground">{sub.user_email}</div>
 		</div>
-		<StatusBadge status={sub.status} />
+		<SubscriptionStatusBadge status={sub.status} />
 	</div>
 	<div class="mt-2 text-sm">
 		{#if tierName}<span class="font-medium">{tierName}</span> ·

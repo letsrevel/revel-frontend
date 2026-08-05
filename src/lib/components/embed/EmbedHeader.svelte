@@ -33,7 +33,7 @@
 	{/if}
 
 	<div class="min-w-0 flex-1">
-		<h2 id={headingId} class="truncate text-sm font-semibold leading-tight">
+		<h2 id={headingId} class="truncate text-sm font-bold leading-tight">
 			<a
 				{href}
 				target="_blank"

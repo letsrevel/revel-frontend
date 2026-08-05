@@ -51,7 +51,7 @@
 	);
 </script>
 
-<Card class="group overflow-hidden transition-shadow hover:shadow-lg">
+<Card class="group overflow-hidden transition-shadow hover:shadow-poster-lg">
 	<div class="flex flex-col gap-4 p-4 md:p-6">
 		<div class="flex items-start gap-4">
 			<div class="shrink-0">
@@ -65,7 +65,7 @@
 			<div class="min-w-0 flex-1">
 				<div class="mb-2 flex items-start justify-between gap-2">
 					<div class="min-w-0 flex-1">
-						<h3 class="text-lg font-semibold">{heldPass.series_pass.name}</h3>
+						<h3 class="text-lg font-bold">{heldPass.series_pass.name}</h3>
 						{#if seriesOrgSlug}
 							<a
 								href={resolve('/(public)/events/[org_slug]/series/[series_slug]', {
@@ -130,7 +130,7 @@
 				<button
 					type="button"
 					onclick={() => (showPassModal = true)}
-					class="inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+					class="inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-primary px-3 py-2 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
 					<QrCode class="h-4 w-4" aria-hidden="true" />
 					{m['seriesPass.viewPass']()}

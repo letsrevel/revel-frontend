@@ -11,6 +11,7 @@
 		organizationadmincoreDeleteCoverArt
 	} from '$lib/api/generated/sdk.gen';
 	import { backendMessage } from '$lib/utils/api-error-detail';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 
 	interface Props {
 		slug: string;
@@ -188,14 +189,21 @@
 </script>
 
 <section class="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
-	<h2 class="text-lg font-semibold">{m['orgAdmin.settings.branding.heading']()}</h2>
+	<SectionHeader title={m['orgAdmin.settings.branding.heading']()} />
 
 	{#if uploadError}
+		<!-- Icon carries the tone, not the body text (danger-framing rule). The
+		     icon's `text-destructive` is --destructive-text since #781: at worst
+		     7.20:1 light / 6.05:1 dark on this bg-destructive/10 composite —
+		     "at worst" because the panel reads --card or --background depending on
+		     where it renders and both are audited rows in
+		     scripts/audit-brand-themes.py. The FILL value it used to resolve to
+		     measured ~2.7-2.95:1 here, failing even the 3:1 non-text floor. -->
 		<div
-			class="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-100"
+			class="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-foreground"
 			role="alert"
 		>
-			<AlertCircle class="h-5 w-5 shrink-0" aria-hidden="true" />
+			<AlertCircle class="h-5 w-5 shrink-0 text-destructive" aria-hidden="true" />
 			<p class="text-sm font-medium">{uploadError}</p>
 		</div>
 	{/if}

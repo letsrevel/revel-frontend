@@ -171,11 +171,24 @@
 			<table class="w-full text-sm">
 				<thead class="border-b">
 					<tr>
-						<th class="px-3 py-2 text-left">{m['orgAdmin.members.subscriptions.col.user']()}</th>
-						<th class="px-3 py-2 text-left">{m['orgAdmin.members.subscriptions.col.tier']()}</th>
-						<th class="px-3 py-2 text-left">{m['orgAdmin.members.subscriptions.col.plan']()}</th>
-						<th class="px-3 py-2 text-left">{m['orgAdmin.members.subscriptions.col.status']()}</th>
-						<th class="px-3 py-2 text-left"
+						<th
+							class="px-3 py-2 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
+							>{m['orgAdmin.members.subscriptions.col.user']()}</th
+						>
+						<th
+							class="px-3 py-2 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
+							>{m['orgAdmin.members.subscriptions.col.tier']()}</th
+						>
+						<th
+							class="px-3 py-2 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
+							>{m['orgAdmin.members.subscriptions.col.plan']()}</th
+						>
+						<th
+							class="px-3 py-2 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
+							>{m['orgAdmin.members.subscriptions.col.status']()}</th
+						>
+						<th
+							class="px-3 py-2 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 							>{m['orgAdmin.members.subscriptions.col.periodEnd']()}</th
 						>
 					</tr>

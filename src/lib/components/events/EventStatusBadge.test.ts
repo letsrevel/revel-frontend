@@ -64,7 +64,7 @@ describe('EventStatusBadge', () => {
 			render(EventStatusBadge, { props: { event } });
 
 			expect(screen.getByRole('status')).toHaveTextContent('Cancelled');
-			expect(screen.getByRole('status')).toHaveClass('bg-orange-700');
+			expect(screen.getByRole('status')).toHaveClass('bg-highlight');
 		});
 	});
 
@@ -146,7 +146,7 @@ describe('EventStatusBadge', () => {
 			render(EventStatusBadge, { props: { event } });
 
 			expect(screen.getByRole('status')).toHaveTextContent('Past');
-			expect(screen.getByRole('status')).toHaveClass('bg-secondary');
+			expect(screen.getByRole('status')).toHaveClass('bg-muted');
 		});
 	});
 
@@ -162,7 +162,7 @@ describe('EventStatusBadge', () => {
 			render(EventStatusBadge, { props: { event } });
 
 			expect(screen.getByRole('status')).toHaveTextContent('Ongoing');
-			expect(screen.getByRole('status')).toHaveClass('bg-green-700');
+			expect(screen.getByRole('status')).toHaveClass('bg-success');
 		});
 
 		it('shows "Ongoing" at the exact start time', () => {
@@ -204,7 +204,7 @@ describe('EventStatusBadge', () => {
 			render(EventStatusBadge, { props: { event } });
 
 			expect(screen.getByRole('status')).toHaveTextContent('Happening Today');
-			expect(screen.getByRole('status')).toHaveClass('bg-green-700');
+			expect(screen.getByRole('status')).toHaveClass('bg-success');
 		});
 
 		it('does not show "Happening Today" for events starting tomorrow', () => {

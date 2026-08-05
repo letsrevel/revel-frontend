@@ -30,7 +30,7 @@
 	function seatChipClasses(seat: SeatView, selected: boolean, selectable: boolean): string {
 		if (selected) return 'border-primary bg-primary/10';
 		if (!selectable) return 'border-border/40 bg-muted/40 opacity-60';
-		if (seat.status === 'blocked') return 'border-amber-500/60 bg-amber-50 dark:bg-amber-950/30';
+		if (seat.status === 'blocked') return 'border-highlight/60 bg-highlight/10';
 		return 'border-border bg-background';
 	}
 </script>
@@ -85,11 +85,11 @@
 											<span class="text-muted-foreground">({status})</span>
 										{/if}
 										{#if seat.isAccessible}
-											<Accessibility class="h-3 w-3 text-blue-500" aria-hidden="true" />
+											<Accessibility class="h-3 w-3 text-info" aria-hidden="true" />
 										{/if}
 										{#if seat.isObstructedView}
 											<EyeOff
-												class="h-3 w-3 text-amber-600 dark:text-amber-400"
+												class="h-3 w-3 text-highlight-foreground dark:text-highlight"
 												aria-hidden="true"
 											/>
 										{/if}

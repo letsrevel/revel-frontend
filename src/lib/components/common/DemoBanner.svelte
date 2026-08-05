@@ -37,8 +37,12 @@
 </script>
 
 {#if isDemoMode}
+	<!-- Demo → info tone. text-info on bg-info/10 (composited over --background)
+	     measures 8.27:1 light / 7.98:1 dark — both comfortably clear of the
+	     4.5:1 AA floor even applied to the whole paragraph, not just the icon
+	     (see scripts/audit-brand-themes.py for the base info-on-* pairs). -->
 	<div
-		class="border-b border-orange-200 bg-orange-50 px-4 py-3 text-orange-900 dark:border-orange-800 dark:bg-orange-950 dark:text-orange-100"
+		class="border-b border-info/30 bg-info/10 px-4 py-3 text-info"
 		role="alert"
 		aria-live="polite"
 	>

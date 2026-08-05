@@ -77,7 +77,7 @@
 	const createdDate = $derived(formatDate(ticket.created_at));
 </script>
 
-<Card class="group overflow-hidden transition-shadow hover:shadow-lg">
+<Card class="group overflow-hidden transition-shadow hover:shadow-poster-lg">
 	<div class="flex flex-col gap-4 p-4 md:p-6">
 		<!-- Header with Event Info -->
 		<div class="flex items-start gap-4">
@@ -98,7 +98,7 @@
 			<div class="min-w-0 flex-1">
 				<div class="mb-2 flex items-start justify-between gap-2">
 					<div class="min-w-0 flex-1">
-						<h3 class="text-lg font-semibold">
+						<h3 class="text-lg font-bold">
 							<a
 								href={resolve('/(public)/events/[id]', { id: ticket.event.id })}
 								class="hover:underline focus:underline focus:outline-none"

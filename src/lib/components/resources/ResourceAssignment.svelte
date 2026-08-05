@@ -8,6 +8,7 @@
 	import { cn } from '$lib/utils/cn';
 	import { formatDate } from '$lib/utils/date';
 	import { SvelteSet } from 'svelte/reactivity';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 
 	interface Props {
 		organizationId: string;
@@ -87,9 +88,7 @@
 <div class="space-y-4">
 	<!-- Header -->
 	<div>
-		<h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">
-			{m['resourceAssignment.assignToEvents']()}
-		</h3>
+		<SectionHeader title={m['resourceAssignment.assignToEvents']()} level={3} />
 		<p class="mt-1 text-xs text-muted-foreground">
 			{m['resourceAssignment.assignDescription']()}
 		</p>

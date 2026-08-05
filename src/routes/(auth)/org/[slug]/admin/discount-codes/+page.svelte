@@ -30,6 +30,9 @@
 	import { toast } from 'svelte-sonner';
 	import { formatDateTime } from '$lib/utils/date';
 	import * as m from '$lib/paraglide/messages.js';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
+	import DiscountCodeStatusBadge from '$lib/components/discount-codes/DiscountCodeStatusBadge.svelte';
 
 	const organization = $derived($page.data.organization);
 	const accessToken = $derived(authStore.accessToken);
@@ -216,14 +219,7 @@
 
 <div class="space-y-6">
 	<!-- Header -->
-	<div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-		<div>
-			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
-				{m['discountCodesAdmin.heading']()}
-			</h1>
-			<p class="text-muted-foreground">{m['discountCodesAdmin.description']()}</p>
-		</div>
-
+	{#snippet headerActions()}
 		<Button
 			onclick={() =>
 				goto(resolve('/(auth)/org/[slug]/admin/discount-codes/new', { slug: organization.slug }))}
@@ -231,7 +227,12 @@
 			<Plus class="mr-2 h-4 w-4" aria-hidden="true" />
 			{m['discountCodesAdmin.newCode']()}
 		</Button>
-	</div>
+	{/snippet}
+	<PageHeader
+		title={m['discountCodesAdmin.heading']()}
+		subtitle={m['discountCodesAdmin.description']()}
+		actions={headerActions}
+	/>
 
 	<!-- Filters -->
 	<div class="flex flex-col gap-3 md:flex-row md:items-center">
@@ -287,29 +288,25 @@
 			></div>
 		</div>
 	{:else if codes.length === 0}
-		<div
-			class="rounded-lg border-2 border-dashed border-gray-300 p-12 text-center dark:border-gray-600"
-		>
-			<Tag class="mx-auto h-12 w-12 text-muted-foreground" aria-hidden="true" />
-			<h3 class="mt-4 text-lg font-semibold">{m['discountCodesAdmin.empty.title']()}</h3>
-			<p class="mt-2 text-sm text-muted-foreground">
-				{searchQuery || activeFilter !== 'all' || typeFilter !== 'all'
-					? m['discountCodesAdmin.empty.adjustFilters']()
-					: m['discountCodesAdmin.empty.getStarted']()}
-			</p>
-			{#if !searchQuery && activeFilter === 'all' && typeFilter === 'all'}
-				<Button
-					class="mt-4"
-					onclick={() =>
-						goto(
-							resolve('/(auth)/org/[slug]/admin/discount-codes/new', { slug: organization.slug })
-						)}
-				>
-					<Plus class="mr-2 h-4 w-4" aria-hidden="true" />
-					{m['discountCodesAdmin.newCode']()}
-				</Button>
-			{/if}
-		</div>
+		{#snippet newCodeAction()}
+			<Button
+				onclick={() =>
+					goto(resolve('/(auth)/org/[slug]/admin/discount-codes/new', { slug: organization.slug }))}
+			>
+				<Plus class="mr-2 h-4 w-4" aria-hidden="true" />
+				{m['discountCodesAdmin.newCode']()}
+			</Button>
+		{/snippet}
+		<EmptyState
+			icon={Tag}
+			title={m['discountCodesAdmin.empty.title']()}
+			body={searchQuery || activeFilter !== 'all' || typeFilter !== 'all'
+				? m['discountCodesAdmin.empty.adjustFilters']()
+				: m['discountCodesAdmin.empty.getStarted']()}
+			action={searchQuery || activeFilter !== 'all' || typeFilter !== 'all'
+				? undefined
+				: newCodeAction}
+		/>
 	{:else}
 		<!-- Table (desktop) / Cards (mobile) -->
 		<div class="hidden md:block">
@@ -317,24 +314,32 @@
 				<table class="w-full text-sm">
 					<thead class="bg-muted/50">
 						<tr>
-							<th class="px-4 py-3 text-left font-medium">{m['discountCodesAdmin.table.code']()}</th
+							<th
+								class="px-4 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
+								>{m['discountCodesAdmin.table.code']()}</th
 							>
-							<th class="px-4 py-3 text-left font-medium"
+							<th
+								class="px-4 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 								>{m['discountCodesAdmin.table.discount']()}</th
 							>
-							<th class="px-4 py-3 text-left font-medium"
+							<th
+								class="px-4 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 								>{m['discountCodesAdmin.table.status']()}</th
 							>
-							<th class="px-4 py-3 text-left font-medium"
+							<th
+								class="px-4 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 								>{m['discountCodesAdmin.table.usage']()}</th
 							>
-							<th class="px-4 py-3 text-left font-medium"
+							<th
+								class="px-4 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 								>{m['discountCodesAdmin.table.validPeriod']()}</th
 							>
-							<th class="px-4 py-3 text-left font-medium"
+							<th
+								class="px-4 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 								>{m['discountCodesAdmin.table.scope']()}</th
 							>
-							<th class="px-4 py-3 text-right font-medium"
+							<th
+								class="px-4 py-3 text-right text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 								>{m['discountCodesAdmin.table.actions']()}</th
 							>
 						</tr>
@@ -352,7 +357,7 @@
 											aria-label={m['discountCodesAdmin.actions.copyAria']({ code: code.code })}
 										>
 											{#if copiedCodeId === code.id}
-												<Check class="h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />
+												<Check class="h-3.5 w-3.5 text-success" aria-hidden="true" />
 											{:else}
 												<Copy class="h-3.5 w-3.5" aria-hidden="true" />
 											{/if}
@@ -360,25 +365,23 @@
 									</span>
 								</td>
 								<td class="px-4 py-3">
+									<!-- The info pill's text is fine as `text-info` (info@10% composited
+									     over --background is 9.5:1+ in both modes). The success one is
+									     NOT: text-success@10%-success-tint over --background measures
+									     4.39:1 in LIGHT mode — under the 4.5:1 text-xs floor (dark is
+									     8.73:1, fine) — so it keeps `text-foreground` and only the tint
+									     carries the success identity. -->
 									<span
 										class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium {code.discount_type ===
 										'percentage'
-											? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
-											: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'}"
+											? 'bg-info/10 text-info'
+											: 'bg-success/10 text-foreground'}"
 									>
 										{formatValue(code)}
 									</span>
 								</td>
 								<td class="px-4 py-3">
-									<span
-										class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium {code.is_active
-											? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300'
-											: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'}"
-									>
-										{code.is_active
-											? m['discountCodesAdmin.status.active']()
-											: m['discountCodesAdmin.status.inactive']()}
-									</span>
+									<DiscountCodeStatusBadge isActive={!!code.is_active} />
 								</td>
 								<td class="px-4 py-3 text-muted-foreground">
 									{formatUsage(code)}
@@ -403,9 +406,9 @@
 												: m['discountCodesAdmin.actions.activateAria']()}
 										>
 											{#if code.is_active}
-												<ToggleRight class="h-4 w-4 text-emerald-600" />
+												<ToggleRight class="h-4 w-4 text-success" aria-hidden="true" />
 											{:else}
-												<ToggleLeft class="h-4 w-4" />
+												<ToggleLeft class="h-4 w-4" aria-hidden="true" />
 											{/if}
 										</button>
 										<button
@@ -421,12 +424,12 @@
 											title={m['discountCodesAdmin.actions.edit']()}
 											aria-label={m['discountCodesAdmin.actions.editAria']()}
 										>
-											<Pencil class="h-4 w-4" />
+											<Pencil class="h-4 w-4" aria-hidden="true" />
 										</button>
 										<button
 											type="button"
 											onclick={() => handleDelete(code)}
-											class="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-destructive"
+											class="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
 											title={willHardDelete(code)
 												? m['discountCodesAdmin.delete.titleHardDelete']()
 												: m['discountCodesAdmin.delete.titleDeactivate']()}
@@ -455,7 +458,7 @@
 				<div class="rounded-lg border p-4">
 					<div class="flex items-start justify-between">
 						<div>
-							<p class="flex items-center gap-2 font-mono text-lg font-semibold">
+							<p class="flex items-center gap-2 font-mono text-lg font-bold">
 								{code.code}
 								<button
 									type="button"
@@ -464,30 +467,26 @@
 									aria-label={m['discountCodesAdmin.actions.copyAria']({ code: code.code })}
 								>
 									{#if copiedCodeId === code.id}
-										<Check class="h-4 w-4 text-emerald-600" aria-hidden="true" />
+										<Check class="h-4 w-4 text-success" aria-hidden="true" />
 									{:else}
 										<Copy class="h-4 w-4" aria-hidden="true" />
 									{/if}
 								</button>
 							</p>
+							<!-- Same fix as the desktop table cell: text-success@10%-success-tint
+							     over --background is 4.39:1 in light mode, under the text-xs
+							     floor — text-foreground carries the label, the tint carries the
+							     identity. Info pill (9.5:1+ both modes) is unaffected. -->
 							<span
 								class="mt-1 inline-flex rounded-full px-2 py-0.5 text-xs font-medium {code.discount_type ===
 								'percentage'
-									? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
-									: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'}"
+									? 'bg-info/10 text-info'
+									: 'bg-success/10 text-foreground'}"
 							>
 								{formatValue(code)}
 							</span>
 						</div>
-						<span
-							class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium {code.is_active
-								? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300'
-								: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'}"
-						>
-							{code.is_active
-								? m['discountCodesAdmin.status.active']()
-								: m['discountCodesAdmin.status.inactive']()}
-						</span>
+						<DiscountCodeStatusBadge isActive={!!code.is_active} />
 					</div>
 
 					<div class="mt-3 grid grid-cols-2 gap-2 text-sm text-muted-foreground">
@@ -519,10 +518,10 @@
 							class="flex-1"
 						>
 							{#if code.is_active}
-								<ToggleRight class="mr-1 h-4 w-4 text-emerald-600" />
+								<ToggleRight class="mr-1 h-4 w-4 text-success" aria-hidden="true" />
 								{m['discountCodesAdmin.actions.deactivate']()}
 							{:else}
-								<ToggleLeft class="mr-1 h-4 w-4" />
+								<ToggleLeft class="mr-1 h-4 w-4" aria-hidden="true" />
 								{m['discountCodesAdmin.actions.activate']()}
 							{/if}
 						</Button>

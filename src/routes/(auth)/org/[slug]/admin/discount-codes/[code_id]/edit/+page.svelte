@@ -138,11 +138,13 @@
 			<ArrowLeft class="h-5 w-5" />
 		</Button>
 		<div>
-			<h1 class="text-2xl font-bold tracking-tight">{m['discountCodeEditPage.title']()}</h1>
+			<h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">
+				{m['discountCodeEditPage.title']()}
+			</h1>
 			{#if existingCode}
-				<p class="text-muted-foreground">
+				<p class="mt-2 text-muted-foreground">
 					{m['discountCodeEditPage.editing']()}
-					<span class="font-mono font-semibold">{existingCode.code}</span>
+					<span class="font-mono font-bold">{existingCode.code}</span>
 				</p>
 			{/if}
 		</div>

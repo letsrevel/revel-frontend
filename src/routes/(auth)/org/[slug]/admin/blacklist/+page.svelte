@@ -42,6 +42,8 @@
 		WhitelistRequestsTab
 	} from '$lib/components/blacklist';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { toast } from 'svelte-sonner';
 
 	const organization = $derived($page.data.organization);
@@ -408,20 +410,17 @@
 
 <div class="space-y-6 px-4 md:px-0">
 	<!-- Header -->
-	<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-		<div class="min-w-0">
-			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
-				{m['blacklistAdminPage.title']()}
-			</h1>
-			<p class="mt-1 text-sm text-muted-foreground">
-				{m['blacklistAdminPage.pageDescription']()}
-			</p>
-		</div>
+	{#snippet headerActions()}
 		<Button onclick={() => (createModalOpen = true)} class="w-full sm:w-auto">
 			<Plus class="mr-2 h-4 w-4" aria-hidden="true" />
 			{m['blacklistAdminPage.addToBlacklist']()}
 		</Button>
-	</div>
+	{/snippet}
+	<PageHeader
+		title={m['blacklistAdminPage.title']()}
+		subtitle={m['blacklistAdminPage.pageDescription']()}
+		actions={headerActions}
+	/>
 
 	<!-- Tabs -->
 	<Tabs bind:value={activeTab} class="w-full">
@@ -482,8 +481,8 @@
 			</div>
 
 			<!-- Info Box -->
-			<div class="rounded-lg border border-amber-500/30 bg-amber-50 p-3 dark:bg-amber-950/30">
-				<p class="text-sm text-amber-900 dark:text-amber-100">
+			<div class="rounded-lg border border-highlight bg-highlight/10 p-3">
+				<p class="text-sm text-foreground">
 					{m['blacklistAdminPage.blacklistInfo']()}
 				</p>
 			</div>
@@ -498,15 +497,13 @@
 					<p class="text-sm text-destructive">{m['blacklistAdminPage.loadBlacklistError']()}</p>
 				</div>
 			{:else if blacklistEntries.length === 0}
-				<div class="rounded-lg border border-dashed p-12 text-center">
-					<Ban class="mx-auto h-12 w-12 text-muted-foreground" />
-					<h3 class="mt-4 font-semibold">{m['blacklistAdminPage.noEntries']()}</h3>
-					<p class="mt-2 text-sm text-muted-foreground">
-						{blacklistSearch
-							? m['blacklistAdminPage.noEntriesMatchSearch']()
-							: m['blacklistAdminPage.noEntriesHint']()}
-					</p>
-				</div>
+				<EmptyState
+					icon={Ban}
+					title={m['blacklistAdminPage.noEntries']()}
+					body={blacklistSearch
+						? m['blacklistAdminPage.noEntriesMatchSearch']()
+						: m['blacklistAdminPage.noEntriesHint']()}
+				/>
 			{:else}
 				<div class="grid gap-4 md:grid-cols-2">
 					{#each blacklistEntries as entry (entry.id)}
@@ -564,8 +561,8 @@
 		<!-- Verified Users Tab -->
 		<TabsContent value="verified" class="space-y-4">
 			<!-- Info Box -->
-			<div class="rounded-lg border border-green-500/30 bg-green-50 p-3 dark:bg-green-950/30">
-				<p class="text-sm text-green-900 dark:text-green-100">
+			<div class="rounded-lg border border-success bg-success/10 p-3">
+				<p class="text-sm text-foreground">
 					{m['blacklistAdminPage.verifiedInfo']()}
 				</p>
 			</div>
@@ -580,13 +577,12 @@
 					<p class="text-sm text-destructive">{m['blacklistAdminPage.loadVerifiedError']()}</p>
 				</div>
 			{:else if whitelistEntries.length === 0}
-				<div class="rounded-lg border border-dashed p-12 text-center">
-					<ShieldCheck class="mx-auto h-12 w-12 text-muted-foreground" />
-					<h3 class="mt-4 font-semibold">{m['blacklistAdminPage.noVerifiedUsers']()}</h3>
-					<p class="mt-2 text-sm text-muted-foreground">
-						{m['blacklistAdminPage.noVerifiedUsersHint']()}
-					</p>
-				</div>
+				<EmptyState
+					icon={ShieldCheck}
+					title={m['blacklistAdminPage.noVerifiedUsers']()}
+					body={m['blacklistAdminPage.noVerifiedUsersHint']()}
+					tone="success"
+				/>
 			{:else}
 				<div class="grid gap-4 md:grid-cols-2">
 					{#each whitelistEntries as entry (entry.id)}

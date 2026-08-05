@@ -147,10 +147,7 @@
 	<!-- Resource Type Selection (only for new resources) -->
 	{#if !resource}
 		<div class="space-y-2">
-			<span
-				id="resource-type-label"
-				class="block text-sm font-medium text-gray-900 dark:text-gray-100"
-			>
+			<span id="resource-type-label" class="block text-sm font-medium text-foreground">
 				{m['resourceForm.resourceType']()}
 				<span class="text-destructive" aria-label={m['resourceForm.required']()}>*</span>
 			</span>
@@ -159,7 +156,7 @@
 					type="button"
 					onclick={() => handleTypeChange('file')}
 					class={cn(
-						'flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+						'flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
 						resourceType === 'file'
 							? 'border-primary bg-primary/5 text-primary'
 							: 'border-border hover:border-primary/50'
@@ -174,7 +171,7 @@
 					type="button"
 					onclick={() => handleTypeChange('link')}
 					class={cn(
-						'flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+						'flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
 						resourceType === 'link'
 							? 'border-primary bg-primary/5 text-primary'
 							: 'border-border hover:border-primary/50'
@@ -189,7 +186,7 @@
 					type="button"
 					onclick={() => handleTypeChange('text')}
 					class={cn(
-						'flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+						'flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
 						resourceType === 'text'
 							? 'border-primary bg-primary/5 text-primary'
 							: 'border-border hover:border-primary/50'
@@ -205,7 +202,7 @@
 
 	<!-- Name -->
 	<div class="space-y-2">
-		<label for="name" class="block text-sm font-medium text-gray-900 dark:text-gray-100">
+		<label for="name" class="block text-sm font-medium text-foreground">
 			{m['resourceForm.name']()}
 			<span class="text-destructive" aria-label={m['resourceForm.required']()}>*</span>
 		</label>
@@ -227,7 +224,7 @@
 
 	<!-- Description -->
 	<div class="space-y-2">
-		<label for="description" class="block text-sm font-medium text-gray-900 dark:text-gray-100">
+		<label for="description" class="block text-sm font-medium text-foreground">
 			{m['resourceForm.description']()}
 		</label>
 		<MarkdownEditor
@@ -247,7 +244,7 @@
 	<!-- Type-specific fields -->
 	{#if resourceType === 'file'}
 		<div class="space-y-2">
-			<label for="file" class="block text-sm font-medium text-gray-900 dark:text-gray-100">
+			<label for="file" class="block text-sm font-medium text-foreground">
 				{m['resourceForm.file']()}
 				{#if !resource}<span class="text-destructive" aria-label={m['resourceForm.required']()}
 						>*</span
@@ -271,7 +268,7 @@
 					type="file"
 					onchange={handleFileChange}
 					disabled={isSubmitting}
-					class="block w-full text-sm text-gray-900 file:mr-4 file:rounded-md file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-medium file:text-primary-foreground hover:file:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:text-gray-100"
+					class="block w-full text-sm text-foreground file:mr-4 file:rounded-md file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-medium file:text-primary-foreground hover:file:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 					aria-invalid={!!allErrors.file}
 					aria-describedby={allErrors.file ? 'file-error' : undefined}
 				/>
@@ -294,7 +291,7 @@
 		</div>
 	{:else if resourceType === 'link'}
 		<div class="space-y-2">
-			<label for="link" class="block text-sm font-medium text-gray-900 dark:text-gray-100">
+			<label for="link" class="block text-sm font-medium text-foreground">
 				{m['resourceForm.url']()}
 				<span class="text-destructive" aria-label={m['resourceForm.required']()}>*</span>
 			</label>
@@ -316,7 +313,7 @@
 		</div>
 	{:else if resourceType === 'text'}
 		<div class="space-y-2">
-			<label for="text" class="block text-sm font-medium text-gray-900 dark:text-gray-100">
+			<label for="text" class="block text-sm font-medium text-foreground">
 				{m['resourceForm.content']()}
 				<span class="text-destructive" aria-label={m['resourceForm.required']()}>*</span>
 			</label>
@@ -337,7 +334,7 @@
 
 	<!-- Visibility -->
 	<div class="space-y-2">
-		<label for="visibility" class="block text-sm font-medium text-gray-900 dark:text-gray-100">
+		<label for="visibility" class="block text-sm font-medium text-foreground">
 			{m['resourceForm.visibility']()}
 		</label>
 		<select
@@ -371,7 +368,7 @@
 			class="mt-0.5 h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 		/>
 		<div class="flex-1">
-			<label for="display-on-org" class="text-sm font-medium text-gray-900 dark:text-gray-100">
+			<label for="display-on-org" class="text-sm font-medium text-foreground">
 				{m['resourceForm.displayOnOrgPage']()}
 			</label>
 			<p class="text-xs text-muted-foreground">

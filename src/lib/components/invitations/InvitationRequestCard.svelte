@@ -10,6 +10,8 @@
 	import { eventpublicdiscoveryDeleteInvitationRequest } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { toast } from 'svelte-sonner';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
+	import type { Tone } from '$lib/components/common/tones';
 
 	interface Props {
 		request: EventInvitationRequestSchema;
@@ -39,37 +41,28 @@
 	// Format created date
 	const createdDate = $derived(formatDate(request.created_at));
 
-	// Status display
-	const statusDisplay = $derived.by(() => {
+	// Status display — thin mapper onto the shared StatusBadge tone system
+	// (same visible labels as before, solid-fill tokens instead of hand-picked hues).
+	const statusDisplay = $derived.by((): { label: string; tone: Tone; icon: typeof Clock } => {
 		switch (request.status) {
 			case 'pending':
-				return {
-					label: m['invitationRequestCard.statusPending'](),
-					class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-					icon: Clock
-				};
+				return { label: m['invitationRequestCard.statusPending'](), tone: 'warning', icon: Clock };
 			case 'approved':
 				return {
 					label: m['invitationRequestCard.statusApproved'](),
-					class: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+					tone: 'success',
 					icon: CheckCircle2
 				};
 			case 'rejected':
 				return {
 					label: m['invitationRequestCard.statusRejected'](),
-					class: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+					tone: 'danger',
 					icon: XCircle
 				};
 			default:
-				return {
-					label: request.status,
-					class: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
-					icon: Clock
-				};
+				return { label: request.status ?? '', tone: 'neutral', icon: Clock };
 		}
 	});
-
-	const StatusIcon = $derived(statusDisplay.icon);
 
 	// Cancel mutation
 	const cancelMutation = createMutation(() => ({
@@ -102,7 +95,7 @@
 	}
 </script>
 
-<Card class="group overflow-hidden transition-shadow hover:shadow-lg">
+<Card class="group overflow-hidden transition-shadow hover:shadow-poster-lg">
 	<div class="flex flex-col gap-4 p-4 md:p-6">
 		<!-- Header with Event Info -->
 		<div class="flex items-start gap-4">
@@ -127,7 +120,7 @@
 			<div class="min-w-0 flex-1">
 				<div class="mb-2 flex items-start justify-between gap-2">
 					<div class="min-w-0">
-						<h3 class="truncate text-lg font-semibold">
+						<h3 class="truncate text-lg font-bold">
 							<a
 								href={resolve('/(public)/events/[id]', { id: request.event.id })}
 								class="hover:underline focus:underline focus:outline-none"
@@ -136,12 +129,13 @@
 							</a>
 						</h3>
 					</div>
-					<div
-						class="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium {statusDisplay.class}"
-					>
-						<StatusIcon class="h-3 w-3" aria-hidden="true" />
-						{statusDisplay.label}
-					</div>
+					<StatusBadge
+						tone={statusDisplay.tone}
+						label={statusDisplay.label}
+						icon={statusDisplay.icon}
+						size="sm"
+						class="shrink-0"
+					/>
 				</div>
 
 				<!-- Event Metadata -->

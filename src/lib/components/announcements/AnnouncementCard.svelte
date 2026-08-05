@@ -3,6 +3,7 @@
 	import type { AnnouncementListSchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
+	import AnnouncementStatusBadge from './AnnouncementStatusBadge.svelte';
 	import {
 		Edit,
 		Trash2,
@@ -76,16 +77,8 @@
 	<!-- Content -->
 	<div class="min-w-0 flex-1">
 		<div class="mb-2 flex items-center gap-2">
-			<h3 class="truncate font-medium">{announcement.title}</h3>
-			<Badge variant={isDraft ? 'secondary' : isScheduled ? 'outline' : 'default'}>
-				{#if isDraft}
-					{m['announcements.card.draft']()}
-				{:else if isScheduled}
-					{m['announcements.card.scheduled']()}
-				{:else}
-					{m['announcements.card.sent']()}
-				{/if}
-			</Badge>
+			<h3 class="truncate font-bold">{announcement.title}</h3>
+			<AnnouncementStatusBadge status={announcement.status} />
 		</div>
 
 		<div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">

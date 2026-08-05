@@ -11,6 +11,7 @@
 		Users
 	} from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import WaitlistOfferStatusBadge from '$lib/components/events/waitlist/WaitlistOfferStatusBadge.svelte';
 	import OfferExpiryCountdown from '$lib/components/events/waitlist/OfferExpiryCountdown.svelte';
 	import type {
@@ -85,6 +86,11 @@
 		<span class="sr-only">{m['orgAdmin.waitlist.loading']()}</span>
 	</div>
 {:else if isError}
+	<!-- Dimmed destructive copy stops at /90. On this bg-destructive/10 panel the
+	     text token measures 5.61:1 (dark) / 6.11:1 (light) at /90, but only
+	     4.71:1 at /80 — and 4.40:1 at /80 if the panel is ever moved onto a
+	     `bg-card` surface, which fails. Both /90 surfaces are COMPOSITED_PAIRS
+	     rows in scripts/audit-brand-themes.py, so the panel can move freely. -->
 	<div
 		class="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center"
 		role="alert"
@@ -93,18 +99,17 @@
 		<h3 class="mt-4 text-lg font-semibold text-destructive">
 			{m['orgAdmin.waitlist.error.title']()}
 		</h3>
-		<p class="mt-2 text-sm text-destructive/80">
+		<p class="mt-2 text-sm text-destructive/90">
 			{m['orgAdmin.waitlist.error.description']()}
 		</p>
 	</div>
 {:else if data && data.results.length === 0}
-	<div class="rounded-lg border border-border bg-card p-12 text-center">
-		<Users class="mx-auto h-12 w-12 text-muted-foreground" aria-hidden="true" />
-		<h3 class="mt-4 text-lg font-semibold">{m['orgAdmin.waitlist.empty.title']()}</h3>
-		<p class="mt-2 text-sm text-muted-foreground">
-			{m['orgAdmin.waitlist.empty.description']()}
-		</p>
-	</div>
+	<EmptyState
+		icon={Users}
+		title={m['orgAdmin.waitlist.empty.title']()}
+		body={m['orgAdmin.waitlist.empty.description']()}
+		level={2}
+	/>
 {:else if data}
 	<div class="rounded-lg border bg-card p-4">
 		<div class="flex items-center gap-2">
@@ -121,19 +126,29 @@
 		<table class="w-full border-collapse">
 			<thead class="bg-muted/50">
 				<tr>
-					<th class="px-4 py-3 text-left text-sm font-medium">
+					<th
+						class="px-4 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
+					>
 						{m['orgAdmin.waitlist.table.user']()}
 					</th>
-					<th class="px-4 py-3 text-left text-sm font-medium">
+					<th
+						class="px-4 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
+					>
 						{m['orgAdmin.waitlist.table.email']()}
 					</th>
-					<th class="px-4 py-3 text-left text-sm font-medium">
+					<th
+						class="px-4 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
+					>
 						{m['orgAdmin.waitlist.table.joinedAt']()}
 					</th>
-					<th class="px-4 py-3 text-left text-sm font-medium">
+					<th
+						class="px-4 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
+					>
 						{m['orgAdmin.waitlist.offer.statusColumn']()}
 					</th>
-					<th class="px-4 py-3 text-right text-sm font-medium">
+					<th
+						class="px-4 py-3 text-right text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
+					>
 						{m['orgAdmin.waitlist.table.actions']()}
 					</th>
 				</tr>

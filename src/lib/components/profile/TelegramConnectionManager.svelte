@@ -146,7 +146,7 @@
 <div class="space-y-4">
 	<div class="flex items-center justify-between">
 		<div class="flex items-center gap-3">
-			<MessageCircle class="h-6 w-6 text-[#0088cc]" aria-hidden="true" />
+			<MessageCircle class="h-6 w-6 text-[hsl(var(--brand-telegram-text))]" aria-hidden="true" />
 			<div>
 				<h3 class="text-lg font-semibold">{m['telegram.heading']()}</h3>
 				<p class="text-sm text-muted-foreground">
@@ -203,7 +203,10 @@
 			<p class="mb-3 text-sm text-muted-foreground">
 				{m['telegram.notConnected_description']()}
 			</p>
-			<Button onclick={handleOpenConnectDialog} class="bg-[#0072ab] hover:bg-[#0072ab]/90">
+			<Button
+				onclick={handleOpenConnectDialog}
+				class="bg-[hsl(var(--brand-telegram))] text-white hover:bg-[hsl(var(--brand-telegram)/0.9)]"
+			>
 				<MessageCircle class="mr-2 h-4 w-4" aria-hidden="true" />
 				{m['telegram.buttons_connect']()}
 			</Button>
@@ -246,7 +249,7 @@
 							href={botLink}
 							target="_blank"
 							rel="noopener noreferrer"
-							class="inline-flex items-center gap-2 text-sm text-[#0072ab] underline-offset-4 hover:underline"
+							class="inline-flex items-center gap-2 text-sm text-[hsl(var(--brand-telegram-text))] underline-offset-4 hover:underline"
 						>
 							<MessageCircle class="h-4 w-4" aria-hidden="true" />
 							<span>@{botName}</span>
@@ -333,7 +336,7 @@
 				type="button"
 				onclick={handleConnectSubmit}
 				disabled={connectMutation.isPending || !otpValue.trim()}
-				class="w-full bg-[#0072ab] hover:bg-[#0072ab]/90 sm:w-auto"
+				class="w-full bg-[hsl(var(--brand-telegram))] text-white hover:bg-[hsl(var(--brand-telegram)/0.9)] sm:w-auto"
 			>
 				{#if connectMutation.isPending}
 					<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />

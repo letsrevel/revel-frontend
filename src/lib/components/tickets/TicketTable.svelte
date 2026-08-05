@@ -1,8 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { cn } from '$lib/utils/cn';
 	import { getUserDisplayName } from '$lib/utils/user-display';
-	import { getTicketStatusColor, getTicketStatusLabel } from '$lib/utils/status-colors';
+	import { getTicketStatusTone, getTicketStatusLabel } from '$lib/utils/status-colors';
 	import { formatPrice } from '$lib/utils/format';
 	import { formatDate } from '$lib/utils/date';
 	import {
@@ -37,6 +36,7 @@
 	} from '@lucide/svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import RefundStatusBadge from './RefundStatusBadge.svelte';
 	import TicketDiscountBadge from './TicketDiscountBadge.svelte';
 	import SeriesPassBadge from './SeriesPassBadge.svelte';
@@ -105,7 +105,7 @@
 {#snippet sortableHeader(label: string, field: TicketSortField)}
 	{@const dir = sortDirection(orderBy, field)}
 	<th
-		class="px-4 py-3 text-left text-sm font-semibold"
+		class="px-4 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 		aria-sort={dir === 'asc' ? 'ascending' : dir === 'desc' ? 'descending' : 'none'}
 	>
 		{#if onSort}
@@ -133,7 +133,8 @@
 	<table class="w-full">
 		<thead class="border-b bg-muted/50">
 			<tr>
-				<th class="px-4 py-3 text-left text-sm font-semibold"
+				<th
+					class="px-4 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 					>{m['eventTicketsAdmin.headerAttendee']()}</th
 				>
 				{@render sortableHeader(m['eventTicketsAdmin.headerTier'](), 'tier__name')}
@@ -144,7 +145,8 @@
 				)}
 				{@render sortableHeader(m['eventTicketsAdmin.headerStatus'](), 'status')}
 				{@render sortableHeader(m['eventTicketsAdmin.headerPurchased'](), 'created_at')}
-				<th class="px-4 py-3 text-right text-sm font-semibold"
+				<th
+					class="px-4 py-3 text-right text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
 					>{m['eventTicketsAdmin.headerActions']()}</th
 				>
 			</tr>
@@ -233,14 +235,11 @@
 					</td>
 					<td class="px-4 py-3">
 						<div class="flex flex-col gap-1">
-							<span
-								class={cn(
-									'inline-flex w-fit rounded-full px-2 py-1 text-xs font-semibold',
-									getTicketStatusColor(ticket.status ?? '')
-								)}
-							>
-								{getTicketStatusLabel(ticket.status ?? '')}
-							</span>
+							<StatusBadge
+								tone={getTicketStatusTone(ticket.status ?? '')}
+								label={getTicketStatusLabel(ticket.status ?? '')}
+								class="w-fit"
+							/>
 							{#if ticket.status === 'cancelled'}
 								<RefundStatusBadge
 									status={ticket.payment?.refund_status}

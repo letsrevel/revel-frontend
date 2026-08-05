@@ -9,6 +9,8 @@
 	import type { PaymentMethod, TicketStatus } from '$lib/api/generated/types.gen';
 	import TicketListCard from '$lib/components/tickets/TicketListCard.svelte';
 	import HeldPassCard from '$lib/components/series-passes/HeldPassCard.svelte';
+	import DashboardBandLayout from '$lib/components/dashboard/DashboardBandLayout.svelte';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { seriesPassQueryKeys } from '$lib/queries/series-passes';
 	import { groupTicketsWithPasses } from '$lib/utils/ticket-pass-grouping';
 	import type { HeldSeriesPassSchema } from '$lib/api/generated/types.gen';
@@ -149,22 +151,20 @@
 	<meta name="description" content={m['dashboard.tickets.description']()} />
 </svelte:head>
 
-<div class="container mx-auto px-4 py-6 md:py-8">
-	<!-- Page Header -->
-	<div class="mb-8">
-		<div class="mb-2 flex items-center gap-3">
-			<div class="rounded-lg bg-primary/10 p-2">
-				<Ticket class="h-6 w-6 text-primary" aria-hidden="true" />
-			</div>
-			<div>
-				<h1 class="text-2xl font-bold md:text-3xl">{m['dashboard.tickets.title']()}</h1>
-				<p class="text-muted-foreground">{m['dashboard.tickets.description']()}</p>
-			</div>
-		</div>
-
+<!-- Celebration band + floating controls card (uplift, spec §9). See
+     DashboardBandLayout for why `bg-secondary` at full strength is the
+     theme-aware poster panel. The count, search field and filter chips are
+     gathered into ONE card that meets the band's bottom edge — bare chips
+     landing on the cut read as debris. -->
+<DashboardBandLayout
+	title={m['dashboard.tickets.title']()}
+	subtitle={m['dashboard.tickets.description']()}
+	kicker={m['userMenu.dashboard']()}
+>
+	<div class="mb-8 space-y-4 rounded-lg border-2 border-border bg-card p-4 shadow-poster sm:p-6">
 		<!-- Ticket Count -->
 		{#if !ticketsQuery.isPending && totalCount > 0}
-			<p class="mt-4 text-sm text-muted-foreground">
+			<p class="text-sm text-muted-foreground">
 				{m['dashboard.tickets.showing']({
 					count: tickets.length.toString(),
 					total: totalCount.toString()
@@ -172,81 +172,81 @@
 				{totalCount === 1 ? m['dashboard.tickets.ticket']() : m['dashboard.tickets.tickets']()}
 			</p>
 		{/if}
-	</div>
 
-	<!-- Search Bar -->
-	<div class="mb-6">
-		<label for="search" class="sr-only">{m['dashboard.tickets.searchPlaceholder']()}</label>
-		<input
-			id="search"
-			type="search"
-			bind:value={searchQuery}
-			placeholder={m['dashboard.tickets.searchPlaceholder']()}
-			class="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-		/>
-	</div>
-
-	<!-- Filters -->
-	<div class="mb-6 space-y-4">
-		<!-- Status Filter -->
+		<!-- Search Bar -->
 		<div>
-			<div class="mb-2 flex items-center gap-2">
-				<Filter class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-				<span class="text-sm font-medium">{m['dashboard.tickets.status']()}</span>
-			</div>
-			<div class="flex flex-wrap gap-2">
-				{#each statusFilters as filter (filter.value ?? 'all')}
-					<button
-						type="button"
-						onclick={() => applyStatusFilter(filter.value)}
-						class="rounded-md border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring {isStatusFilterActive(
-							filter.value
-						)
-							? 'bg-primary text-primary-foreground hover:bg-primary/90'
-							: 'bg-background hover:bg-accent hover:text-accent-foreground'}"
-					>
-						{filter.label}
-					</button>
-				{/each}
-			</div>
+			<label for="search" class="sr-only">{m['dashboard.tickets.searchPlaceholder']()}</label>
+			<input
+				id="search"
+				type="search"
+				bind:value={searchQuery}
+				placeholder={m['dashboard.tickets.searchPlaceholder']()}
+				class="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+			/>
 		</div>
 
-		<!-- Payment Method Filter -->
-		<div>
-			<div class="mb-2">
-				<span class="text-sm font-medium">{m['dashboard.tickets.paymentMethod']()}</span>
+		<!-- Filters -->
+		<div class="space-y-4">
+			<!-- Status Filter -->
+			<div>
+				<div class="mb-2 flex items-center gap-2">
+					<Filter class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+					<span class="text-sm font-medium">{m['dashboard.tickets.status']()}</span>
+				</div>
+				<div class="flex flex-wrap gap-2">
+					{#each statusFilters as filter (filter.value ?? 'all')}
+						<button
+							type="button"
+							onclick={() => applyStatusFilter(filter.value)}
+							class="rounded-md border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring {isStatusFilterActive(
+								filter.value
+							)
+								? 'bg-primary text-primary-foreground hover:bg-primary/90'
+								: 'bg-background hover:bg-accent hover:text-accent-foreground'}"
+						>
+							{filter.label}
+						</button>
+					{/each}
+				</div>
 			</div>
-			<div class="flex flex-wrap gap-2">
-				{#each paymentMethodFilters as filter (filter.value ?? 'all')}
-					<button
-						type="button"
-						onclick={() => applyPaymentMethodFilter(filter.value)}
-						class="rounded-md border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring {isPaymentMethodFilterActive(
-							filter.value
-						)
-							? 'bg-primary text-primary-foreground hover:bg-primary/90'
-							: 'bg-background hover:bg-accent hover:text-accent-foreground'}"
-					>
-						{filter.label}
-					</button>
-				{/each}
-			</div>
-		</div>
 
-		<!-- Include Past Events Checkbox -->
-		<div>
-			<div class="mb-2">
-				<span class="text-sm font-medium">{m['dashboardTicketsPage.options']()}</span>
+			<!-- Payment Method Filter -->
+			<div>
+				<div class="mb-2">
+					<span class="text-sm font-medium">{m['dashboard.tickets.paymentMethod']()}</span>
+				</div>
+				<div class="flex flex-wrap gap-2">
+					{#each paymentMethodFilters as filter (filter.value ?? 'all')}
+						<button
+							type="button"
+							onclick={() => applyPaymentMethodFilter(filter.value)}
+							class="rounded-md border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring {isPaymentMethodFilterActive(
+								filter.value
+							)
+								? 'bg-primary text-primary-foreground hover:bg-primary/90'
+								: 'bg-background hover:bg-accent hover:text-accent-foreground'}"
+						>
+							{filter.label}
+						</button>
+					{/each}
+				</div>
 			</div>
-			<label class="flex cursor-pointer items-center gap-2">
-				<input
-					type="checkbox"
-					bind:checked={includePast}
-					onchange={() => navigateToPage(1)}
-					class="h-4 w-4 cursor-pointer rounded border-input text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2"
-				/>
-				<span class="text-sm">{m['dashboard.tickets.includePast']()}</span>
-			</label>
+
+			<!-- Include Past Events Checkbox -->
+			<div>
+				<div class="mb-2">
+					<span class="text-sm font-medium">{m['dashboardTicketsPage.options']()}</span>
+				</div>
+				<label class="flex cursor-pointer items-center gap-2">
+					<input
+						type="checkbox"
+						bind:checked={includePast}
+						onchange={() => navigateToPage(1)}
+						class="h-4 w-4 cursor-pointer rounded border-input text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2"
+					/>
+					<span class="text-sm">{m['dashboard.tickets.includePast']()}</span>
+				</label>
+			</div>
 		</div>
 	</div>
 
@@ -259,17 +259,8 @@
 		</div>
 	{:else if tickets.length === 0}
 		<!-- Empty State -->
-		<div class="rounded-lg border bg-card p-12 text-center">
-			<div
-				class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10"
-			>
-				<Ticket class="h-8 w-8 text-primary" aria-hidden="true" />
-			</div>
-			<h2 class="mb-2 text-xl font-semibold">{m['dashboardTicketsPage.noResults']()}</h2>
+		{#snippet ticketsEmptyAction()}
 			{#if statusFilter || paymentMethodFilter || debouncedSearch}
-				<p class="mb-4 text-muted-foreground">
-					{m['dashboardTicketsPage.noResultsFiltered']()}
-				</p>
 				<button
 					type="button"
 					onclick={() => {
@@ -283,9 +274,6 @@
 					{m['dashboardTicketsPage.clearFilters']()}
 				</button>
 			{:else}
-				<p class="mb-4 text-muted-foreground">
-					{m['dashboardTicketsPage.emptyHint']()}
-				</p>
 				<a
 					href={resolve('/(public)/events', {})}
 					class="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
@@ -293,7 +281,16 @@
 					{m['dashboardTicketsPage.browseEvents']()}
 				</a>
 			{/if}
-		</div>
+		{/snippet}
+		<EmptyState
+			icon={Ticket}
+			title={m['dashboardTicketsPage.noResults']()}
+			body={statusFilter || paymentMethodFilter || debouncedSearch
+				? m['dashboardTicketsPage.noResultsFiltered']()
+				: m['dashboardTicketsPage.emptyHint']()}
+			action={ticketsEmptyAction}
+			level={2}
+		/>
 	{:else}
 		<!-- Tickets Grid -->
 		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -339,4 +336,4 @@
 			</div>
 		{/if}
 	{/if}
-</div>
+</DashboardBandLayout>

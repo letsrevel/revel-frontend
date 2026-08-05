@@ -1,9 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import type {
-		MembershipRequestStatus,
-		OrganizationMembershipRequestRetrieve
-	} from '$lib/api/generated/types.gen';
+	import type { OrganizationMembershipRequestRetrieve } from '$lib/api/generated/types.gen';
 	import { resolve } from '$app/paths';
 	import { Button } from '$lib/components/ui/button';
 	import {
@@ -17,6 +14,7 @@
 	import { CheckCircle, XCircle, MessageSquare } from '@lucide/svelte';
 	import { formatRelativeTime } from '$lib/utils/date';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
+	import MembershipRequestStatusBadge from './MembershipRequestStatusBadge.svelte';
 
 	interface Props {
 		request: OrganizationMembershipRequestRetrieve;
@@ -36,31 +34,6 @@
 		isProcessing = false,
 		showActions = true
 	}: Props = $props();
-
-	// Every state the application state machine can be in. The label carries the
-	// meaning; the tint is decoration only (WCAG: never colour alone).
-	const STATUS_BADGES: Record<MembershipRequestStatus, { classes: string; label: () => string }> = {
-		pending: {
-			classes: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100',
-			label: () => m['membershipRequestCard.statusPending']()
-		},
-		approved: {
-			classes: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100',
-			label: () => m['membershipRequestCard.approved']()
-		},
-		completed: {
-			classes: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100',
-			label: () => m['membershipRequestCard.statusCompleted']()
-		},
-		rejected: {
-			classes: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100',
-			label: () => m['membershipRequestCard.rejected']()
-		},
-		cancelled: {
-			classes: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
-			label: () => m['membershipRequestCard.statusCancelled']()
-		}
-	};
 
 	// Dialog state
 	let dialogOpen = $state(false);
@@ -145,7 +118,7 @@
 				<div class="flex items-start justify-between gap-2">
 					<div class="min-w-0 flex-1">
 						<div class="flex flex-wrap items-center gap-2">
-							<h3 class="truncate font-semibold text-foreground">
+							<h3 class="truncate font-bold text-foreground">
 								{displayName}
 							</h3>
 							{#if request.tier}
@@ -235,15 +208,7 @@
 						{m['membershipRequestCard.requestedAt']({ time: createdAt })}
 					</p>
 					{#if !showActions && request.status}
-						<!-- `??` is not dead code: during a BE-ahead version skew the wire can
-						     carry a status this build has never heard of, and an unguarded
-						     lookup would TypeError every card in the tab. -->
-						{@const badge = STATUS_BADGES[request.status] ?? STATUS_BADGES.pending}
-						<span
-							class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {badge.classes}"
-						>
-							{badge.label()}
-						</span>
+						<MembershipRequestStatusBadge status={request.status} />
 					{/if}
 				</div>
 			</div>
@@ -269,7 +234,7 @@
 					onclick={handleApprove}
 					disabled={isProcessing}
 					aria-label={m['membershipRequestCard.approveRequestAria']({ name: displayName })}
-					class="bg-green-600 hover:bg-green-700"
+					class="bg-success text-success-foreground hover:bg-success/90"
 				>
 					<CheckCircle class="h-4 w-4" />
 					<span class="ml-2">{m['membershipRequestCard.approve']()}</span>
@@ -316,7 +281,7 @@
 		<div class="space-y-4 py-4">
 			<!-- User Information -->
 			<div class="space-y-2">
-				<h4 class="text-sm font-semibold">{m['membershipRequestCard.applicantInformation']()}</h4>
+				<h4 class="text-sm font-bold">{m['membershipRequestCard.applicantInformation']()}</h4>
 				<dl class="space-y-1 text-sm">
 					{#if request.user.first_name}
 						<div class="flex gap-2">
@@ -378,7 +343,7 @@
 			<!-- Message -->
 			{#if request.message}
 				<div class="space-y-2">
-					<h4 class="text-sm font-semibold">{m['membershipRequestCard.message']()}</h4>
+					<h4 class="text-sm font-bold">{m['membershipRequestCard.message']()}</h4>
 					<div
 						class="rounded-lg border border-border bg-muted/50 p-3 text-sm text-foreground"
 						style="white-space: pre-wrap; word-wrap: break-word;"
@@ -388,7 +353,7 @@
 				</div>
 			{:else}
 				<div class="space-y-2">
-					<h4 class="text-sm font-semibold">{m['membershipRequestCard.message']()}</h4>
+					<h4 class="text-sm font-bold">{m['membershipRequestCard.message']()}</h4>
 					<p class="text-sm italic text-muted-foreground">
 						{m['membershipRequestCard.noMessage']()}
 					</p>
@@ -398,7 +363,7 @@
 			<!-- Questionnaire submission -->
 			{#if submission}
 				<div class="space-y-2">
-					<h4 class="text-sm font-semibold">{m['membershipRequestCard.questionnaire']()}</h4>
+					<h4 class="text-sm font-bold">{m['membershipRequestCard.questionnaire']()}</h4>
 					<p class="text-sm">
 						<a
 							href={resolve(
@@ -446,7 +411,7 @@
 				variant="default"
 				onclick={handleApprove}
 				disabled={isProcessing}
-				class="bg-green-600 hover:bg-green-700"
+				class="bg-success text-success-foreground hover:bg-success/90"
 			>
 				<CheckCircle class="mr-2 h-4 w-4" />
 				{m['membershipRequestCard.approve']()}

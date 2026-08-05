@@ -21,7 +21,7 @@
 	<div class="flex items-start justify-between gap-4">
 		<div class="min-w-0 flex-1">
 			<div class="flex items-center gap-2">
-				<h3 class="truncate text-lg font-semibold">{sector.name}</h3>
+				<h3 class="truncate text-lg font-bold">{sector.name}</h3>
 				{#if sector.code}
 					<span class="rounded bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
 						{sector.code}

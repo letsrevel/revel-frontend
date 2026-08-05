@@ -68,21 +68,23 @@
 		generic: () => m['eventQuestionnaires.type_generic']()
 	};
 
-	// Status styling
+	// Status styling — token-backed tone classes (bg-{tone}/10 text-{tone}
+	// pairs mirror common/ToneTile's audited recipe; info/success are legible
+	// as text in both modes, so no foreground/dark split needed there).
 	const statusStyles: Record<string, { bg: string; text: string; label: () => string }> = {
 		draft: {
-			bg: 'bg-amber-100 dark:bg-amber-900/30',
-			text: 'text-amber-700 dark:text-amber-300',
+			bg: 'bg-muted',
+			text: 'text-muted-foreground',
 			label: () => m['eventQuestionnaires.status_draft']()
 		},
 		ready: {
-			bg: 'bg-blue-100 dark:bg-blue-900/30',
-			text: 'text-blue-700 dark:text-blue-300',
+			bg: 'bg-info/10',
+			text: 'text-info',
 			label: () => m['eventQuestionnaires.status_ready']()
 		},
 		published: {
-			bg: 'bg-green-100 dark:bg-green-900/30',
-			text: 'text-green-700 dark:text-green-300',
+			bg: 'bg-success/10',
+			text: 'text-success',
 			label: () => m['eventQuestionnaires.status_published']()
 		}
 	};
@@ -110,14 +112,12 @@
 
 	<!-- Warning if any questionnaire is not published -->
 	{#if hasUnpublishedQuestionnaires}
-		<div
-			class="flex items-start gap-3 rounded-lg border border-orange-300 bg-orange-50 p-3 dark:border-orange-700 dark:bg-orange-950/50"
-		>
+		<div class="flex items-start gap-3 rounded-lg border border-highlight bg-highlight/10 p-3">
 			<AlertTriangle
-				class="h-5 w-5 flex-shrink-0 text-orange-600 dark:text-orange-400"
+				class="h-5 w-5 flex-shrink-0 text-highlight-foreground dark:text-highlight"
 				aria-hidden="true"
 			/>
-			<p class="text-sm text-orange-800 dark:text-orange-200">
+			<p class="text-sm text-foreground">
 				{m['eventQuestionnaires.unpublishedWarning']()}
 			</p>
 		</div>
@@ -140,7 +140,7 @@
 				{@const isNotPublished = status !== 'published'}
 				<div
 					class="flex items-center justify-between rounded-lg border p-3 {isNotPublished
-						? 'border-orange-200 dark:border-orange-800'
+						? 'border-highlight/50'
 						: ''}"
 				>
 					<div class="min-w-0 flex-1">
@@ -150,7 +150,7 @@
 									<Tooltip.Root>
 										<Tooltip.Trigger>
 											<AlertTriangle
-												class="h-4 w-4 text-orange-500"
+												class="h-4 w-4 text-highlight-foreground dark:text-highlight"
 												aria-label={m['eventQuestionnaires.notEnforcedTooltip']()}
 											/>
 										</Tooltip.Trigger>

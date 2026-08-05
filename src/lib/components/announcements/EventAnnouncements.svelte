@@ -56,9 +56,9 @@
 		>
 			<div class="flex items-center gap-2">
 				<Megaphone class="h-5 w-5 text-primary" aria-hidden="true" />
-				<h2 class="text-lg font-semibold">{m['announcements.public.title']()}</h2>
+				<h2 class="text-xl font-extrabold">{m['announcements.public.title']()}</h2>
 				{#if hasAnnouncements}
-					<span class="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+					<span class="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary">
 						{announcements.length}
 					</span>
 				{/if}

@@ -250,6 +250,9 @@
 			</div>
 		</div>
 	{:else if tiersQuery.isError}
+		<!-- Dimmed destructive copy stops at /90 — see WaitlistEntriesTable for the
+		     numbers. /80 on this tint is 4.71:1 over the page and 4.40:1 over a
+		     card; /90 is 5.61:1 / 5.18:1 and is audited on both surfaces. -->
 		<div class="rounded-lg border border-destructive bg-destructive/10 p-4" role="alert">
 			<p class="font-medium text-destructive">{m['ticketingStep.errorLoadingTiers']()}</p>
 			<p class="mt-1 text-sm text-destructive/90">
@@ -259,12 +262,12 @@
 				<div class="mt-2 space-y-1">
 					{#if Array.isArray(tiersErrorInfo.detail)}
 						{#each tiersErrorInfo.detail as detail, i (i)}
-							<p class="text-xs text-destructive/80">
+							<p class="text-xs text-destructive/90">
 								• {detail.loc ? detail.loc.join(' → ') + ': ' : ''}{detail.msg}
 							</p>
 						{/each}
 					{:else}
-						<p class="text-xs text-destructive/80">{tiersErrorInfo.detail}</p>
+						<p class="text-xs text-destructive/90">{tiersErrorInfo.detail}</p>
 					{/if}
 				</div>
 			{/if}

@@ -112,8 +112,10 @@
 			<ArrowLeft class="h-5 w-5" />
 		</Button>
 		<div>
-			<h1 class="text-2xl font-bold tracking-tight">{m['discountCodeNewPage.title']()}</h1>
-			<p class="text-muted-foreground">{m['discountCodeNewPage.subtitle']()}</p>
+			<h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">
+				{m['discountCodeNewPage.title']()}
+			</h1>
+			<p class="mt-2 text-muted-foreground">{m['discountCodeNewPage.subtitle']()}</p>
 		</div>
 	</div>
 

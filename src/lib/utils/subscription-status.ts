@@ -11,40 +11,59 @@
  */
 import * as m from '$lib/paraglide/messages.js';
 import type { SubscriptionStatus } from '$lib/api/generated/types.gen';
+import type { Tone } from '$lib/components/common/tones';
 
 export type StatusTone = 'green' | 'blue' | 'amber' | 'gray' | 'red' | 'muted';
 
 export interface StatusConfig {
 	tone: StatusTone;
-	className: string;
 }
 
+// `tone` here is the pre-rebrand descriptive axis (kept: `subscriptions.test.ts`
+// pins these six values and nothing about them changed). `className` is GONE —
+// it was the last raw `bg-green-100`/`bg-gray-200` map in this codebase (the
+// rebrand's raw-hue sweep target). Every renderer now goes through
+// `getStatusTone` below, which maps onto the shared `common/StatusBadge` token
+// vocabulary instead.
 const STATUS_CONFIG: Record<SubscriptionStatus, StatusConfig> = {
-	active: {
-		tone: 'green',
-		className: 'bg-green-100 text-green-900 dark:bg-green-900/30 dark:text-green-100'
-	},
-	pending: {
-		tone: 'blue',
-		className: 'bg-blue-100 text-blue-900 dark:bg-blue-900/30 dark:text-blue-100'
-	},
-	past_due: {
-		tone: 'amber',
-		className: 'bg-amber-100 text-amber-900 dark:bg-amber-900/30 dark:text-amber-100'
-	},
-	paused: {
-		tone: 'gray',
-		className: 'bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-gray-100'
-	},
-	cancelled: { tone: 'muted', className: 'bg-muted text-muted-foreground' },
-	expired: {
-		tone: 'red',
-		className: 'bg-red-100 text-red-900 dark:bg-red-900/30 dark:text-red-100'
-	}
+	active: { tone: 'green' },
+	pending: { tone: 'blue' },
+	past_due: { tone: 'amber' },
+	paused: { tone: 'gray' },
+	cancelled: { tone: 'muted' },
+	expired: { tone: 'red' }
 };
 
 export function getStatusConfig(status: SubscriptionStatus): StatusConfig {
 	return STATUS_CONFIG[status];
+}
+
+/**
+ * Semantic `Tone` (rebrand vocabulary) for one `SubscriptionStatus`. The
+ * single source both `members/SubscriptionStatusBadge` (single-status pill, `aria-label`
+ * carries the name) and `members/SubscriptionMetrics` (label+count chip strip,
+ * deliberately unlabelled — see `SubscriptionStatusBadge.test.ts`) render from, so the two
+ * surfaces can't drift onto different tones for the same status again.
+ *
+ * `paused` does not share `active`'s `success` — it needs attention, so it
+ * takes `warning` — and it stays visually louder than the two terminal states.
+ * `past_due` is a harder problem than "pending payment" (it risks losing
+ * access), so it escalates to `danger`. `cancelled` and `expired` collapse
+ * onto the same `neutral` tone deliberately: both are terminal/over, and the
+ * label text ("Cancelled" vs "Expired") — not the tone — carries the
+ * distinction.
+ */
+const TONE_MAP: Record<SubscriptionStatus, Tone> = {
+	active: 'success',
+	pending: 'info',
+	past_due: 'danger',
+	paused: 'warning',
+	cancelled: 'neutral',
+	expired: 'neutral'
+};
+
+export function getStatusTone(status: SubscriptionStatus): Tone {
+	return TONE_MAP[status];
 }
 
 /**

@@ -4,13 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { Button } from '$lib/components/ui/button';
-	import {
-		Card,
-		CardContent,
-		CardDescription,
-		CardHeader,
-		CardTitle
-	} from '$lib/components/ui/card';
+	import { Card, CardContent } from '$lib/components/ui/card';
 	import { Calendar, CheckCircle, Loader2, Ticket } from '@lucide/svelte';
 	import { createMutation } from '@tanstack/svelte-query';
 	import { eventpublicdiscoveryClaimInvitation } from '$lib/api/generated/sdk.gen';
@@ -19,6 +13,9 @@
 	import { getExpirationDisplay, formatTokenUsage } from '$lib/utils/tokens';
 	import { formatEventDate } from '$lib/utils/date';
 	import { backendMessage } from '$lib/utils/api-error-detail';
+	import Sticker from '$lib/components/brand/Sticker.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import { getImageUrl } from '$lib/utils/url';
 
 	const { data }: { data: PageData } = $props();
 
@@ -100,118 +97,157 @@
 	{/if}
 </svelte:head>
 
-<div class="container mx-auto flex min-h-[80vh] items-center justify-center px-4 py-12">
+<!-- Poster ribbon + floating card (uplift, spec §9) — the org-token twin of
+     this page carries the same treatment. A live invitation is an IMAGERY
+     moment, so it opens on the solid Hearty Purple ribbon, mode-inert in both
+     modes by the imagery rule. Hand-verified against the fixed poster values
+     (both pairs are in scripts/audit-brand-themes.py's poster table):
+       poster-white on poster-purple → 5.52:1 (title, kicker, subtitle)
+       poster-white on poster-ink → 17.40:1 (the Sticker's own text — tint="ink")
+     No sticker chip here, by the sticker-chip rule: an EVENT token preview
+     carries the event's cover but no organization logo, and the Revel mark is
+     never filler on someone else's invitation. The cover art becomes the
+     ribbon's own image instead — the one identity mark this token can offer.
+
+     The rejection state stays on the theme-aware `bg-secondary` band: a link
+     that no longer works is not an invitation to celebrate. Copy and claim
+     logic are untouched throughout. -->
+<div class="min-h-[calc(100vh-4rem)] bg-background">
 	{#if rejection}
-		<Card class="w-full max-w-md">
-			<CardHeader class="text-center">
-				<CardTitle class="text-2xl">{m['joinEventPage.rejectedTitle']()}</CardTitle>
-				<CardDescription class="text-lg">{rejectionBody}</CardDescription>
-			</CardHeader>
-			<CardContent class="space-y-6 text-center">
-				<p class="text-sm text-muted-foreground">{m['joinEventPage.rejectedHint']()}</p>
-				<Button size="lg" class="w-full" href={resolve('/(public)/events', {})}>
-					{m['joinEventPage.rejectedCta']()}
-				</Button>
-			</CardContent>
-		</Card>
+		<section class="bg-secondary text-secondary-foreground">
+			<div class="container mx-auto max-w-md px-4 pb-20 pt-10 text-center sm:pt-14">
+				<PageHeader
+					volume="poster"
+					onBand
+					title={m['joinEventPage.rejectedTitle']()}
+					subtitle={rejectionBody ?? undefined}
+					class="text-center sm:flex-col sm:items-center"
+				/>
+			</div>
+		</section>
+
+		<div class="container mx-auto -mt-12 max-w-md px-4 pb-16">
+			<Card>
+				<CardContent class="space-y-6 p-6 text-center sm:p-8">
+					<p class="text-sm text-muted-foreground">{m['joinEventPage.rejectedHint']()}</p>
+					<Button size="lg" class="w-full" href={resolve('/(public)/events', {})}>
+						{m['joinEventPage.rejectedCta']()}
+					</Button>
+				</CardContent>
+			</Card>
+		</div>
 	{:else if token}
-		<Card class="w-full max-w-md">
-			<CardHeader class="text-center">
+		<section class="bg-poster-purple text-poster-white">
+			<div class="container mx-auto max-w-md px-4 pb-20 pt-10 text-center sm:pt-14">
 				{#if token.event_cover_url}
+					<!-- Decorative: the event's name is the h1's own subtitle right
+					     below, so an alt would only repeat it. -->
 					<img
-						src={token.event_cover_url}
-						alt={token.event_name}
-						class="mx-auto mb-4 h-32 w-full rounded-lg object-cover"
+						src={getImageUrl(token.event_cover_url)}
+						alt=""
+						class="mx-auto mb-6 h-32 w-full rounded-lg border-2 border-poster-white object-cover shadow-poster-lg"
 					/>
 				{/if}
-				<CardTitle class="text-2xl">{m['joinEventPage.invitedTitle']()}</CardTitle>
-				<CardDescription class="text-lg">
-					<strong>{token.event_name}</strong>
-				</CardDescription>
-			</CardHeader>
+				{#snippet celebrate()}
+					<Sticker tint="ink" rotate={-3}>🎉</Sticker>
+				{/snippet}
+				<PageHeader
+					volume="poster"
+					onBand
+					kicker={m['joinEventPage.kicker']()}
+					title={m['joinEventPage.invitedTitle']()}
+					decoration={celebrate}
+					class="text-center sm:flex-col sm:items-center"
+				/>
+				<p class="mt-2 text-lg font-bold">{token.event_name}</p>
+			</div>
+		</section>
 
-			<CardContent class="space-y-6">
-				<!-- Event Info (the token preview exposes name/start/cover only) -->
-				<div class="space-y-3 rounded-lg bg-muted p-4">
-					{#if formattedDate}
-						<div class="flex items-start gap-2 text-sm">
-							<Calendar class="mt-0.5 h-4 w-4 flex-shrink-0" aria-hidden="true" />
-							<div>
-								<div class="font-medium">{m['joinEventPage.whenLabel']()}</div>
-								<div class="text-muted-foreground">{formattedDate}</div>
-							</div>
-						</div>
-					{/if}
-
-					{#if token.ticket_tiers?.length}
-						<div class="flex items-start gap-2 text-sm">
-							<Ticket class="mt-0.5 h-4 w-4 flex-shrink-0" aria-hidden="true" />
-							<div>
-								<div class="font-medium">{m['joinEventPage.ticketTierLabel']()}</div>
-								<div class="text-muted-foreground">
-									{token.ticket_tiers.map((t) => t.name).join(', ')}
+		<div class="container mx-auto -mt-12 max-w-md px-4 pb-16">
+			<Card>
+				<CardContent class="space-y-6 p-6 sm:p-8">
+					<!-- Event Info (the token preview exposes name/start/cover only) -->
+					<div class="space-y-3 rounded-lg border-2 border-border bg-muted p-4">
+						{#if formattedDate}
+							<div class="flex items-start gap-2 text-sm">
+								<Calendar class="mt-0.5 h-4 w-4 flex-shrink-0" aria-hidden="true" />
+								<div>
+									<div class="font-bold">{m['joinEventPage.whenLabel']()}</div>
+									<div class="text-muted-foreground">{formattedDate}</div>
 								</div>
 							</div>
+						{/if}
+
+						{#if token.ticket_tiers?.length}
+							<div class="flex items-start gap-2 text-sm">
+								<Ticket class="mt-0.5 h-4 w-4 flex-shrink-0" aria-hidden="true" />
+								<div>
+									<div class="font-bold">{m['joinEventPage.ticketTierLabel']()}</div>
+									<div class="text-muted-foreground">
+										{token.ticket_tiers.map((t) => t.name).join(', ')}
+									</div>
+								</div>
+							</div>
+						{/if}
+					</div>
+
+					<!-- Token Info -->
+					<div class="space-y-2 rounded-lg border-2 p-3 text-sm">
+						<div class="flex items-center justify-between">
+							<span class="text-muted-foreground">{m['joinEventPage.expiresLabel']()}</span>
+							<span class="font-bold">{expirationDisplay}</span>
+						</div>
+						<div class="flex items-center justify-between">
+							<span class="text-muted-foreground">{m['joinEventPage.usedLabel']()}</span>
+							<span class="font-bold">{usageDisplay}</span>
+						</div>
+					</div>
+
+					<!-- Custom Message -->
+					{#if token.invitation_payload?.custom_message}
+						<div class="rounded-lg border-2 border-border bg-muted p-4 text-sm">
+							<p class="italic">{token.invitation_payload.custom_message}</p>
 						</div>
 					{/if}
-				</div>
 
-				<!-- Token Info -->
-				<div class="space-y-2 rounded-lg border p-3 text-sm">
-					<div class="flex items-center justify-between">
-						<span class="text-muted-foreground">{m['joinEventPage.expiresLabel']()}</span>
-						<span class="font-medium">{expirationDisplay}</span>
-					</div>
-					<div class="flex items-center justify-between">
-						<span class="text-muted-foreground">{m['joinEventPage.usedLabel']()}</span>
-						<span class="font-medium">{usageDisplay}</span>
-					</div>
-				</div>
-
-				<!-- Custom Message -->
-				{#if token.invitation_payload?.custom_message}
-					<div class="rounded-lg bg-muted p-4 text-sm">
-						<p class="italic">{token.invitation_payload.custom_message}</p>
-					</div>
-				{/if}
-
-				<!-- What you'll get -->
-				<div class="space-y-2">
-					<h3 class="font-semibold">{m['joinEventPage.benefitsTitle']()}</h3>
-					<ul class="space-y-1 text-sm text-muted-foreground">
-						<li class="flex items-center gap-2">
-							<CheckCircle class="h-4 w-4 text-green-600" aria-hidden="true" />
-							<span>{m['joinEventPage.benefit_invitation']()}</span>
-						</li>
-						{#if token.ticket_tiers?.length}
+					<!-- What you'll get -->
+					<div class="space-y-2">
+						<h2 class="font-extrabold">{m['joinEventPage.benefitsTitle']()}</h2>
+						<ul class="space-y-1 text-sm text-muted-foreground">
 							<li class="flex items-center gap-2">
-								<CheckCircle class="h-4 w-4 text-green-600" aria-hidden="true" />
-								<span>{m['joinEventPage.benefit_autoTicket']()}</span>
+								<CheckCircle class="h-4 w-4 shrink-0 text-success" aria-hidden="true" />
+								<span>{m['joinEventPage.benefit_invitation']()}</span>
 							</li>
+							{#if token.ticket_tiers?.length}
+								<li class="flex items-center gap-2">
+									<CheckCircle class="h-4 w-4 shrink-0 text-success" aria-hidden="true" />
+									<span>{m['joinEventPage.benefit_autoTicket']()}</span>
+								</li>
+							{/if}
+							<li class="flex items-center gap-2">
+								<CheckCircle class="h-4 w-4 shrink-0 text-success" aria-hidden="true" />
+								<span>{m['joinEventPage.benefit_rsvpConfirmation']()}</span>
+							</li>
+						</ul>
+					</div>
+
+					<!-- Action Button -->
+					<Button size="lg" class="w-full" onclick={handleClaim} disabled={claimMutation.isPending}>
+						{#if claimMutation.isPending}
+							<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+							{m['joinEventPage.claimingButton']()}
+						{:else if !isAuthenticated}
+							{m['joinEventPage.signInButton']()}
+						{:else}
+							{m['joinEventPage.claimButton']()}
 						{/if}
-						<li class="flex items-center gap-2">
-							<CheckCircle class="h-4 w-4 text-green-600" aria-hidden="true" />
-							<span>{m['joinEventPage.benefit_rsvpConfirmation']()}</span>
-						</li>
-					</ul>
-				</div>
+					</Button>
 
-				<!-- Action Button -->
-				<Button size="lg" class="w-full" onclick={handleClaim} disabled={claimMutation.isPending}>
-					{#if claimMutation.isPending}
-						<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
-						{m['joinEventPage.claimingButton']()}
-					{:else if !isAuthenticated}
-						{m['joinEventPage.signInButton']()}
-					{:else}
-						{m['joinEventPage.claimButton']()}
-					{/if}
-				</Button>
-
-				<p class="text-center text-xs text-muted-foreground">
-					{m['joinEventPage.agreementText']()}
-				</p>
-			</CardContent>
-		</Card>
+					<p class="text-center text-xs text-muted-foreground">
+						{m['joinEventPage.agreementText']()}
+					</p>
+				</CardContent>
+			</Card>
+		</div>
 	{/if}
 </div>

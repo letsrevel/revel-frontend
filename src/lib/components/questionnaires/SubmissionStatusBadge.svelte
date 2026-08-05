@@ -1,8 +1,8 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { Clock, Check, X, CheckCheck } from '@lucide/svelte';
-	import { Badge } from '$lib/components/ui/badge';
-	import { cn } from '$lib/utils/cn';
+	import CommonStatusBadge from '$lib/components/common/StatusBadge.svelte';
+	import type { Tone } from '$lib/components/common/tones';
 	import type { SubmissionBadgeStatus } from '$lib/utils/questionnaire-types';
 
 	interface Props {
@@ -12,63 +12,57 @@
 
 	const { status, class: className }: Props = $props();
 
-	// Map status to display config
-	const config = $derived.by(() => {
-		switch (status) {
-			case 'approved':
-				return {
-					icon: Check,
-					label: m['submissionStatusBadge.approved'](),
-					variant: 'success' as const,
-					className: 'bg-green-100 text-green-900 dark:bg-green-950 dark:text-green-100'
-				};
-			case 'rejected':
-				return {
-					icon: X,
-					label: m['submissionStatusBadge.rejected'](),
-					variant: 'destructive' as const,
-					className: 'bg-red-100 text-red-900 dark:bg-red-950 dark:text-red-100'
-				};
-			case 'pending review':
-				return {
-					icon: Clock,
-					label: m['submissionStatusBadge.pending'](),
-					variant: 'secondary' as const,
-					className: 'bg-yellow-100 text-yellow-900 dark:bg-yellow-950 dark:text-yellow-100'
-				};
-			case 'draft':
-				return {
-					icon: Clock,
-					label: m['submissionStatusBadge.draft'](),
-					variant: 'outline' as const,
-					className: 'bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100'
-				};
-			case 'auto_accepted':
-				return {
-					icon: CheckCheck,
-					label: m['submissionStatusBadge.autoAccepted'](),
-					variant: 'success' as const,
-					className: 'bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-100'
-				};
-		}
-	});
+	/**
+	 * Thin mapper over the shared `StatusBadge` primitive (rebrand). `approved`
+	 * and `auto_accepted` share `success` — both are acceptances, just via a
+	 * different mechanism — because the tone budget is for lifecycle stage, not
+	 * for provenance; the label text ("Approved" vs "Auto-accepted") and the
+	 * icon (`Check` vs `CheckCheck`) carry that distinction instead. `pending
+	 * review` takes `warning` (needs a human), `rejected` is `danger`, `draft`
+	 * is `neutral` (not yet a real submission).
+	 */
+	const TONE_MAP: Record<SubmissionBadgeStatus, Tone> = {
+		draft: 'neutral',
+		'pending review': 'warning',
+		approved: 'success',
+		auto_accepted: 'success',
+		rejected: 'danger'
+	};
 
-	const IconComponent = $derived(config.icon);
+	const ICON_MAP: Record<SubmissionBadgeStatus, typeof Clock> = {
+		draft: Clock,
+		'pending review': Clock,
+		approved: Check,
+		auto_accepted: CheckCheck,
+		rejected: X
+	};
+
+	const LABEL_MAP: Record<SubmissionBadgeStatus, () => string> = {
+		draft: () => m['submissionStatusBadge.draft'](),
+		'pending review': () => m['submissionStatusBadge.pending'](),
+		approved: () => m['submissionStatusBadge.approved'](),
+		auto_accepted: () => m['submissionStatusBadge.autoAccepted'](),
+		rejected: () => m['submissionStatusBadge.rejected']()
+	};
+
+	const tone = $derived(TONE_MAP[status]);
+	const icon = $derived(ICON_MAP[status]);
+	const label = $derived(LABEL_MAP[status]());
 </script>
 
 <!--
-  Submission Status Badge Component
+	Submission Status Badge Component
 
-  Displays the evaluation status of a questionnaire submission with appropriate
-  icon and color coding.
+	Displays the evaluation status of a questionnaire submission with an
+	`aria-label`-carrying pill (thin mapper over `common/StatusBadge`). The
+	label is passed explicitly even though the primitive has defaulted one since
+	#788, and the submissions table/detail page locate this pill by its status
+	text.
 
-  @component
-  @example
-  <SubmissionStatusBadge status="approved" />
-  <SubmissionStatusBadge status="pending review" />
-  <SubmissionStatusBadge status="auto_accepted" />
+	@component
+	@example
+	<SubmissionStatusBadge status="approved" />
+	<SubmissionStatusBadge status="pending review" />
+	<SubmissionStatusBadge status="auto_accepted" />
 -->
-<Badge class={cn(config.className, 'gap-1.5', className)}>
-	<IconComponent class="h-3 w-3" aria-hidden="true" />
-	<span>{config.label}</span>
-</Badge>
+<CommonStatusBadge {tone} {label} {icon} size="sm" class={className} aria-label={label} />

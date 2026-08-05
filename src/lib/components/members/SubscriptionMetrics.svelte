@@ -11,11 +11,12 @@
 	import { TriangleAlert } from '@lucide/svelte';
 	import { formatMoney, formatPercent } from '$lib/utils/format';
 	import {
-		getStatusConfig,
 		getStatusLabel,
+		getStatusTone,
 		STATUS_ORDER,
 		type SubscriptionStatus
 	} from '$lib/utils/subscriptions';
+	import type { Tone } from '$lib/components/common/tones';
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
@@ -60,6 +61,20 @@
 		className: string;
 	}
 
+	// Solid tone fills, same audited token pairs as `common/StatusBadge`'s
+	// `toneClasses` — duplicated rather than imported because the primitive
+	// doesn't export its class map, and this chip's shape (label + count in one
+	// pill) isn't the primitive's own. Every pair here is enforced >= 4.5:1 by
+	// scripts/audit-brand-themes.py in both modes.
+	const CHIP_TONE_CLASSES: Record<Tone, string> = {
+		brand: 'bg-primary text-primary-foreground',
+		info: 'bg-info text-info-foreground',
+		success: 'bg-success text-success-foreground',
+		warning: 'bg-highlight text-highlight-foreground',
+		danger: 'bg-destructive text-destructive-foreground',
+		neutral: 'bg-muted text-muted-foreground'
+	};
+
 	// Zero-count statuses are dropped, so a young org shows a short strip instead
 	// of six "0" chips — and an org with no subscriptions at all shows nothing.
 	const statusChips = $derived.by<StatusChip[]>(() => {
@@ -69,7 +84,7 @@
 			status,
 			label: getStatusLabel(status),
 			count: breakdown[status],
-			className: getStatusConfig(status).className
+			className: CHIP_TONE_CLASSES[getStatusTone(status)]
 		}));
 	});
 </script>
@@ -87,10 +102,11 @@
 						{m['orgAdmin.members.subscriptions.metrics.mrr']()}
 					</p>
 					{#if metrics.mixed_currency_warning}
-						<p
-							class="flex items-center gap-1 text-sm font-medium text-amber-700 dark:text-amber-300"
-						>
-							<TriangleAlert class="h-4 w-4 shrink-0" aria-hidden="true" />
+						<p class="flex items-center gap-1 text-sm font-medium text-foreground">
+							<TriangleAlert
+								class="h-4 w-4 shrink-0 text-highlight-foreground dark:text-highlight"
+								aria-hidden="true"
+							/>
 							{m['orgAdmin.members.subscriptions.metrics.mixedCurrency']()}
 						</p>
 					{:else}

@@ -66,19 +66,14 @@
 				{m['promoteToStaffDialog.confirmSuffix']()}
 			</p>
 
-			<div
-				class="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950"
-			>
+			<div class="rounded-lg border border-info bg-info/10 p-3">
 				<div class="flex gap-2">
-					<AlertCircle
-						class="h-5 w-5 shrink-0 text-blue-600 dark:text-blue-400"
-						aria-hidden="true"
-					/>
+					<AlertCircle class="h-5 w-5 shrink-0 text-info" aria-hidden="true" />
 					<div class="text-sm">
-						<p class="font-medium text-blue-900 dark:text-blue-100">
+						<p class="font-medium text-foreground">
 							{m['promoteToStaffDialog.defaultPermissions']()}
 						</p>
-						<p class="mt-1 text-blue-700 dark:text-blue-300">
+						<p class="mt-1 text-muted-foreground">
 							{m['promoteToStaffDialog.defaultPermissionsDescription']()}
 						</p>
 					</div>

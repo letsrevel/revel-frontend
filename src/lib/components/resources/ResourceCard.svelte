@@ -16,6 +16,7 @@
 		Ticket
 	} from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
+	import ToneTile from '$lib/components/common/ToneTile.svelte';
 	import { getBackendUrl } from '$lib/config/api';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 
@@ -42,44 +43,57 @@
 		}
 	});
 
-	// Get visibility icon and label
+	/**
+	 * Visibility, on semantic tokens instead of a hand-picked green/blue/orange/
+	 * purple/grey ramp. Each row pairs its own icon AND its own label, so the
+	 * colour is redundant reinforcement, never the message (WCAG 1.4.1).
+	 *
+	 * These are 12px text sitting DIRECTLY on the card — no tint underneath — so
+	 * each needs >= 4.5:1 against the card itself. Hand-computed token-vs-card
+	 * (light | dark); do NOT reuse ToneTile's table here, those numbers are for an
+	 * icon on a 10% tint:
+	 *   success 5.68 | 9.53 · info 11.13 | 8.71 · primary 6.99 | 6.27
+	 *   muted-foreground 9.06 | 7.44
+	 *   highlight-foreground 15.90 (light) / highlight 9.17 (dark) — amber itself
+	 *   is 1.94:1 on a light card, which is why warning flips its token by mode.
+	 */
 	const visibilityInfo = $derived.by(() => {
 		switch (resource.visibility) {
 			case 'public':
 				return {
 					icon: Globe,
 					label: m['resourceCard.visibilityPublic'](),
-					color: 'text-green-600 dark:text-green-400'
+					color: 'text-success'
 				};
 			case 'members-only':
 				return {
 					icon: Users,
 					label: m['resourceCard.visibilityMembersOnly'](),
-					color: 'text-blue-600 dark:text-blue-400'
+					color: 'text-info'
 				};
 			case 'staff-only':
 				return {
 					icon: Shield,
 					label: m['resourceCard.visibilityStaffOnly'](),
-					color: 'text-orange-600 dark:text-orange-400'
+					color: 'text-highlight-foreground dark:text-highlight'
 				};
 			case 'attendees-only':
 				return {
 					icon: Ticket,
 					label: m['resourceCard.visibilityAttendeesOnly'](),
-					color: 'text-purple-600 dark:text-purple-400'
+					color: 'text-primary'
 				};
 			case 'private':
 				return {
 					icon: Lock,
 					label: m['resourceCard.visibilityPrivate'](),
-					color: 'text-gray-600 dark:text-gray-400'
+					color: 'text-muted-foreground'
 				};
 			default:
 				return {
 					icon: Lock,
 					label: m['resourceCard.visibilityPrivate'](),
-					color: 'text-gray-600 dark:text-gray-400'
+					color: 'text-muted-foreground'
 				};
 		}
 	});
@@ -153,7 +167,7 @@
 
 <article
 	class={cn(
-		'group relative flex flex-col gap-4 rounded-lg border bg-card p-4 transition-all hover:shadow-md',
+		'group relative flex flex-col gap-4 rounded-lg border-2 bg-card p-4 shadow-poster transition-all hover:-translate-y-1 hover:shadow-poster-lg',
 		isDeleting && 'opacity-50'
 	)}
 >
@@ -163,16 +177,12 @@
 			<!-- Icon -->
 			{#if icon}
 				{@const IconComponent = icon}
-				<div
-					class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary"
-				>
-					<IconComponent class="h-5 w-5" aria-hidden="true" />
-				</div>
+				<ToneTile tone="brand" icon={IconComponent} />
 			{/if}
 
 			<!-- Title and Type -->
 			<div class="min-w-0 flex-1">
-				<h3 class="truncate text-lg font-semibold leading-tight">
+				<h3 class="truncate text-lg font-bold leading-tight">
 					{resource.name || m['resourceCard.untitledResource']()}
 				</h3>
 				<p class="text-sm text-muted-foreground">

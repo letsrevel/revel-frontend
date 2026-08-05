@@ -133,7 +133,9 @@
 		variant === 'secondary' &&
 			'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
 		variant === 'success' &&
-			'bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600',
+			// TRAP: a custom bg-* on a Button keeps the variant's
+			// text-primary-foreground, so the text colour is stated explicitly.
+			'bg-success text-success-foreground hover:bg-success/90',
 		variant === 'destructive' &&
 			'bg-destructive text-destructive-foreground hover:bg-destructive/90',
 		isDisabled && 'cursor-not-allowed opacity-50',

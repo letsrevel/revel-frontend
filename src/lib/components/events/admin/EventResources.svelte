@@ -7,6 +7,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { FileText, Link as LinkIcon, AlignLeft, ExternalLink, Plus } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
+	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 
 	interface Props {
@@ -108,7 +109,7 @@
 	<!-- Header -->
 	<div class="flex items-center justify-between">
 		<div>
-			<h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">
+			<h3 class="text-sm font-medium text-foreground">
 				{m['eventResourcesAdmin.attachResources']()}
 			</h3>
 			<p class="mt-1 text-xs text-muted-foreground">
@@ -141,23 +142,19 @@
 			></div>
 		</div>
 	{:else if resources.length === 0}
-		<div
-			class="rounded-lg border-2 border-dashed border-gray-300 p-6 text-center dark:border-gray-600"
-		>
-			<FileText class="mx-auto h-8 w-8 text-muted-foreground" aria-hidden="true" />
-			<p class="mt-2 text-sm text-muted-foreground">
-				{m['eventResourcesAdmin.noResourcesAvailable']()}
-			</p>
-			<a
-				href={resolve('/(auth)/org/[slug]/admin/resources', { slug: organizationSlug })}
-				class="mt-2 inline-flex items-center gap-1 text-sm text-primary hover:underline"
-				target="_blank"
-				rel="noopener noreferrer"
-			>
-				{m['eventResources.createFirstResource']()}
-				<ExternalLink class="h-3 w-3" aria-hidden="true" />
-			</a>
-		</div>
+		<EmptyState icon={FileText} title={m['eventResourcesAdmin.noResourcesAvailable']()}>
+			{#snippet action()}
+				<a
+					href={resolve('/(auth)/org/[slug]/admin/resources', { slug: organizationSlug })}
+					class="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+					target="_blank"
+					rel="noopener noreferrer"
+				>
+					{m['eventResources.createFirstResource']()}
+					<ExternalLink class="h-3 w-3" aria-hidden="true" />
+				</a>
+			{/snippet}
+		</EmptyState>
 	{:else}
 		<div class="space-y-2">
 			{#each resources as resource (resource.id)}
@@ -167,7 +164,7 @@
 					onclick={() => resource.id && toggleResource(resource.id)}
 					{disabled}
 					class={cn(
-						'flex w-full items-center gap-3 rounded-md border p-3 text-left transition-all hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
+						'flex w-full items-center gap-3 rounded-md border p-3 text-left transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
 						isSelected(resource.id || '') && 'border-primary bg-primary/5'
 					)}
 				>

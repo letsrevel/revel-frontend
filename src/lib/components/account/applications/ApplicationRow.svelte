@@ -1,5 +1,6 @@
 <script lang="ts" module>
 	import type { MembershipRequestStatus } from '$lib/api/generated/types.gen';
+	import type { Tone } from '$lib/components/common/tones';
 
 	/**
 	 * Statuses the backend will never move off. A row in one of these must not be
@@ -9,16 +10,15 @@
 	const TERMINAL = new Set<MembershipRequestStatus>(['rejected', 'cancelled', 'completed']);
 
 	/**
-	 * Chip tones mirror `STATUS_CONFIG` in `$lib/utils/subscriptions`. Separated by
-	 * lightness as much as hue, and always paired with the status word — the
-	 * colour is decoration, never the message.
+	 * Chip tones: each of the five statuses keeps its own tone, always paired
+	 * with the status word — the colour is decoration, never the message.
 	 */
-	const REQUEST_STATUS_CLASSES: Record<MembershipRequestStatus, string> = {
-		pending: 'bg-blue-100 text-blue-900 dark:bg-blue-900/30 dark:text-blue-100',
-		approved: 'bg-amber-100 text-amber-900 dark:bg-amber-900/30 dark:text-amber-100',
-		completed: 'bg-green-100 text-green-900 dark:bg-green-900/30 dark:text-green-100',
-		rejected: 'bg-red-100 text-red-900 dark:bg-red-900/30 dark:text-red-100',
-		cancelled: 'bg-muted text-muted-foreground'
+	const REQUEST_STATUS_TONES: Record<MembershipRequestStatus, Tone> = {
+		pending: 'info',
+		approved: 'warning',
+		completed: 'success',
+		rejected: 'danger',
+		cancelled: 'neutral'
 	};
 </script>
 
@@ -39,6 +39,7 @@
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import ApplyDialog from '$lib/components/organization/membership/ApplyDialog.svelte';
 	import { formatDate } from '$lib/utils/date';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import { getImageUrl } from '$lib/utils/url';
 	import { backendMessage } from '$lib/utils/api-error-detail';
 	import { MY_MEMBERSHIPS_KEY, MY_SUBSCRIPTIONS_KEY } from '$lib/utils/subscription-cache';
@@ -257,7 +258,7 @@
 				/>
 			{/if}
 			<div class="min-w-0">
-				<h4 class="font-semibold">
+				<h4 class="font-bold">
 					<a
 						class="hover:underline"
 						href={resolve('/(public)/org/[slug]', { slug: app.organization_slug })}
@@ -275,14 +276,13 @@
 				</p>
 			</div>
 		</div>
-		<span
-			class="inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-xs font-medium {REQUEST_STATUS_CLASSES[
-				app.status
-			]}"
+		<StatusBadge
+			tone={REQUEST_STATUS_TONES[app.status]}
+			label={statusLabel}
+			size="sm"
+			class="shrink-0"
 			aria-label={m['applications.statusAriaLabel']({ status: statusLabel })}
-		>
-			{statusLabel}
-		</span>
+		/>
 	</div>
 
 	{#if becameMember}

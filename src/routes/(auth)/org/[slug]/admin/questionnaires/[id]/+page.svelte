@@ -10,6 +10,7 @@
 	import QuestionnaireFormFields from '$lib/components/questionnaires/QuestionnaireFormFields.svelte';
 	import QuestionnaireEditAssignments from '$lib/components/questionnaires/QuestionnaireEditAssignments.svelte';
 	import QuestionnaireEditQuestionsCard from '$lib/components/questionnaires/QuestionnaireEditQuestionsCard.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import { questionnaireUpdateQuestionnaireStatus } from '$lib/api/generated/sdk.gen';
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import { invalidateOrgQuestionnaires } from '$lib/queries/org-questionnaires';
@@ -287,12 +288,12 @@
 			{m['questionnaireEditPage.backButton']()}
 		</Button>
 
-		<div class="flex items-center justify-between">
-			<div>
-				<h1 class="text-3xl font-bold tracking-tight">{m['questionnaireEditPage.title']()}</h1>
-				<p class="mt-2 text-sm text-muted-foreground">{m['questionnaireEditPage.subtitle']()}</p>
-			</div>
-			<div class="flex gap-2">
+		<PageHeader
+			title={m['questionnaireEditPage.title']()}
+			subtitle={m['questionnaireEditPage.subtitle']()}
+			kicker={data.organization.name}
+		>
+			{#snippet actions()}
 				<Button variant="outline" size="sm" onclick={() => (isDuplicateModalOpen = true)}>
 					{m['questionnaireEditPage.duplicate']()}
 				</Button>
@@ -303,8 +304,8 @@
 				>
 					{m['questionnaireEditPage.viewSummary']()}
 				</Button>
-			</div>
-		</div>
+			{/snippet}
+		</PageHeader>
 	</div>
 
 	<!-- Status Management -->
@@ -312,17 +313,15 @@
 
 	<!-- Info Banner -->
 	{#if isEditMode}
-		<div
-			class="mb-6 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-900 dark:bg-green-950"
-		>
+		<div class="mb-6 rounded-lg border border-success/50 bg-success/10 p-4">
 			<div class="flex items-start justify-between gap-3">
 				<div class="flex gap-3">
-					<Pencil class="h-5 w-5 flex-shrink-0 text-green-600 dark:text-green-500" />
+					<Pencil class="h-5 w-5 flex-shrink-0 text-success" />
 					<div class="text-sm">
-						<p class="font-medium text-green-800 dark:text-green-200">
+						<p class="font-medium text-foreground">
 							{m['questionnaireEditPage.editModeEnabled']()}
 						</p>
-						<p class="mt-1 text-green-700 dark:text-green-300">
+						<p class="mt-1 text-foreground">
 							{m['questionnaireEditPage.editModeDescription']()}
 						</p>
 					</div>
@@ -340,17 +339,15 @@
 			</div>
 		</div>
 	{:else}
-		<div
-			class="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-950"
-		>
+		<div class="mb-6 rounded-lg border border-info/50 bg-info/10 p-4">
 			<div class="flex items-start justify-between gap-3">
 				<div class="flex gap-3">
-					<FileEdit class="h-5 w-5 flex-shrink-0 text-blue-600 dark:text-blue-500" />
+					<FileEdit class="h-5 w-5 flex-shrink-0 text-info" />
 					<div class="text-sm">
-						<p class="font-medium text-blue-800 dark:text-blue-200">
+						<p class="font-medium text-foreground">
 							{m['questionnaireEditPage.viewMode']()}
 						</p>
-						<p class="mt-1 text-blue-700 dark:text-blue-300">
+						<p class="mt-1 text-foreground">
 							{m['questionnaireEditPage.viewModeDescription']()}
 						</p>
 					</div>
