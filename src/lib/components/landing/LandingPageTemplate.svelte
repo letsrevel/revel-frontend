@@ -124,7 +124,7 @@
 	 * needs the same treatment with its own band color.
 	 */
 	function ctaButtonClass(variant: LandingPageCTA['variant']): string {
-		const posterFocus = 'ring-offset-poster-purple focus-visible:ring-poster-white';
+		const posterFocus = 'focus-visible:ring-offset-poster-purple focus-visible:ring-poster-white';
 		switch (variant) {
 			case 'primary':
 				return `${posterFocus} bg-poster-white text-poster-purple hover:bg-poster-paper`;
