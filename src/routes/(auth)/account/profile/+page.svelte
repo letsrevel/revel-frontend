@@ -335,7 +335,7 @@
 							icon={ShieldCheck}
 							label={m['profile.email_verified']()}
 							role="status"
-							aria-label={m['profile.email_verified_label']()}
+							srLabel={m['profile.email_verified_label']()}
 						/>
 					{:else}
 						<StatusBadge
@@ -343,7 +343,7 @@
 							icon={ShieldAlert}
 							label={m['profile.email_unverified']()}
 							role="status"
-							aria-label={m['profile.email_unverified_label']()}
+							srLabel={m['profile.email_unverified_label']()}
 						/>
 					{/if}
 				</div>

@@ -120,11 +120,15 @@ test.describe('J18 recurring series admin @p2', () => {
 		await seriesAction(page, 'action-pause-resume');
 		await page.getByTestId('pause-resume-confirm').click();
 		await expect(page.getByText('Series paused.')).toBeVisible({ timeout: 15_000 });
-		await expect(page.getByLabel('Paused').first()).toBeVisible();
+		await expect(
+			page.getByTestId('status-badge').filter({ hasText: 'Paused' }).first()
+		).toBeVisible();
 
 		await seriesAction(page, 'action-pause-resume');
 		await expect(page.getByText('Series resumed.')).toBeVisible({ timeout: 15_000 });
-		await expect(page.getByLabel('Active').first()).toBeVisible();
+		await expect(
+			page.getByTestId('status-badge').filter({ hasText: 'Active' }).first()
+		).toBeVisible();
 
 		await context.close();
 	});

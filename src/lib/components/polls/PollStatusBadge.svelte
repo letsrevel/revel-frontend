@@ -28,9 +28,8 @@
 </script>
 
 <!--
-	`aria-label` is explicit even though `common/StatusBadge` has defaulted one
-	since #788: every poll surface (admin list/detail cards) locates this pill
-	by its status text — closing the same contract hole the other 11 mappers in
-	this program already guard against (see `members/SubscriptionStatusBadge.test.ts`).
+	Every poll surface (admin list/detail cards) locates this pill by its status
+	text, which is also its accessible name (#795) — pinned by the enum-driven
+	test, as in the other mappers (see `members/SubscriptionStatusBadge.test.ts`).
 -->
-<StatusBadge {tone} {label} size="sm" aria-label={label} />
+<StatusBadge {tone} {label} size="sm" />

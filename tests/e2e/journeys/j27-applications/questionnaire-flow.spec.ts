@@ -134,8 +134,12 @@ test.describe('j27 membership questionnaire @p2', () => {
 
 		await gotoHydrated(page, `/org/${org.slug}`);
 		await waitForClientAuth(page);
-		await expect(page.getByLabel('Membership status: Active')).toBeVisible({ timeout: 15_000 });
-		await expect(page.getByLabel(`Membership tier: ${DEFAULT_TIER}`)).toBeVisible();
+		await expect(
+			page.getByTestId('status-badge').filter({ hasText: 'Membership status: Active' })
+		).toBeVisible({ timeout: 15_000 });
+		await expect(
+			page.getByTestId('status-badge').filter({ hasText: `Membership tier: ${DEFAULT_TIER}` })
+		).toBeVisible();
 
 		await gotoHydrated(page, '/account/memberships');
 		await waitForClientAuth(page);

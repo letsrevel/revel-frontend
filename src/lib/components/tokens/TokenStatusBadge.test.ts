@@ -3,12 +3,10 @@ import { describe, it, expect } from 'vitest';
 import TokenStatusBadge from './TokenStatusBadge.svelte';
 
 /**
- * REGRESSION GUARD, same shape as `members/SubscriptionStatusBadge.test.ts`: this pill's
- * accessible NAME is a cross-surface contract (event admin + org admin token
- * cards locate their status pill by it), not decoration. The rebrand turned
- * this into a thin mapper over `common/StatusBadge`, which back then defaulted
- * no `aria-label` from its content (#788 changed that) — so this guards every
- * status, not just a sample, against that name silently vanishing again.
+ * REGRESSION GUARD, same shape as `members/SubscriptionStatusBadge.test.ts`:
+ * this pill's status text is a cross-surface contract (event admin + org admin
+ * token cards locate their status pill by it, and since #795 it is the
+ * accessible name too), not decoration. Every status is pinned, not a sample.
  */
 const STATUS_ORDER = ['active', 'expired', 'limit-reached', 'staff'] as const;
 
@@ -20,11 +18,10 @@ const LABELS: Record<(typeof STATUS_ORDER)[number], string> = {
 };
 
 describe('tokens/TokenStatusBadge', () => {
-	it.each(STATUS_ORDER)('exposes the %s label as the pill accessible name', (status) => {
+	it.each(STATUS_ORDER)('renders the %s label on the pill', (status) => {
 		render(TokenStatusBadge, { props: { status } });
 		const label = LABELS[status];
-		expect(screen.getByLabelText(label)).toBeInTheDocument();
-		expect(screen.getByLabelText(label)).toHaveTextContent(label);
+		expect(screen.getByTestId('status-badge')).toHaveTextContent(label);
 	});
 
 	it('maps status to the primitive tone (active → success, expired → danger)', () => {

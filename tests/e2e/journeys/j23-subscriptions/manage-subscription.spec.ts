@@ -146,7 +146,9 @@ async function subscribeAndPay(
 		page,
 		async (card) => {
 			await expect(card).toBeVisible({ timeout: 15_000 });
-			await expect(card.getByLabel('Active')).toBeVisible({ timeout: 10_000 });
+			await expect(
+				card.getByTestId('membership-subscription-status').filter({ hasText: 'Active' })
+			).toBeVisible({ timeout: 10_000 });
 			await expect(card.getByText(plan.name)).toBeVisible({ timeout: 5_000 });
 		},
 		150_000
@@ -210,7 +212,9 @@ test.describe('J23 manage subscription @p2', () => {
 		});
 		// …while the paid plan keeps billing until then.
 		await expect(card.getByText(standard.name)).toBeVisible();
-		await expect(card.getByLabel('Active')).toBeVisible();
+		await expect(
+			card.getByTestId('membership-subscription-status').filter({ hasText: 'Active' })
+		).toBeVisible();
 		// A second change would only 400 while one is pending (getMemberActions).
 		await expect(card.getByRole('button', { name: 'Change plan' })).toBeHidden();
 
@@ -244,7 +248,9 @@ test.describe('J23 manage subscription @p2', () => {
 		await expect(
 			card.getByText('Renewal is off. Resume it any time before this date to keep your membership.')
 		).toBeVisible();
-		await expect(card.getByLabel('Active')).toBeVisible();
+		await expect(
+			card.getByTestId('membership-subscription-status').filter({ hasText: 'Active' })
+		).toBeVisible();
 		await expect(card.getByRole('button', { name: 'Cancel membership' })).toBeHidden();
 		await expect(card.getByRole('button', { name: 'Change plan' })).toBeHidden();
 		await expect(card.getByRole('button', { name: 'Manage billing' })).toBeVisible();
@@ -302,7 +308,9 @@ test.describe('J23 manage subscription @p2', () => {
 			await expect(settled.getByText('€15.00 / month')).toBeVisible({ timeout: 5_000 });
 		});
 		await expect(card.getByText(/^Switching to /)).toBeHidden();
-		await expect(card.getByLabel('Active')).toBeVisible();
+		await expect(
+			card.getByTestId('membership-subscription-status').filter({ hasText: 'Active' })
+		).toBeVisible();
 
 		// --- Immediate cancel ---------------------------------------------------
 		await card.getByRole('button', { name: 'Cancel membership' }).click();
@@ -350,7 +358,9 @@ test.describe('J23 manage subscription @p2', () => {
 		// memberships dict, which keeps cancelled rows).
 		await gotoHydrated(page, ORG_PATH);
 		await waitForClientAuth(page);
-		await expect(page.getByLabel('Membership status: Cancelled')).toBeVisible({ timeout: 20_000 });
+		await expect(
+			page.getByTestId('status-badge').filter({ hasText: 'Membership status: Cancelled' })
+		).toBeVisible({ timeout: 20_000 });
 
 		await context.close();
 	});

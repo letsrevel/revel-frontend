@@ -251,7 +251,9 @@ test.describe('j27 gated + paid tier @p2', () => {
 		// — and not on the ungated neighbour or the org's default tier.
 		await gotoHydrated(page, `/org/${org.slug}`);
 		await waitForClientAuth(page);
-		await expect(page.getByLabel(`Membership tier: ${gatedTierName}`)).toBeVisible({
+		await expect(
+			page.getByTestId('status-badge').filter({ hasText: `Membership tier: ${gatedTierName}` })
+		).toBeVisible({
 			timeout: 20_000
 		});
 
@@ -399,7 +401,9 @@ test.describe('j27 gated + paid tier @p2', () => {
 		// ungated default one.
 		await gotoHydrated(page, `/org/${org.slug}`);
 		await waitForClientAuth(page);
-		await expect(page.getByLabel(`Membership tier: ${tierName}`)).toBeVisible({ timeout: 20_000 });
+		await expect(
+			page.getByTestId('status-badge').filter({ hasText: `Membership tier: ${tierName}` })
+		).toBeVisible({ timeout: 20_000 });
 
 		await page.context().close();
 	});

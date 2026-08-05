@@ -4,10 +4,39 @@
 	import { cn } from '$lib/utils';
 	import type { Tone } from './tones';
 
-	interface Props extends HTMLAttributes<HTMLSpanElement> {
+	// RULING (#795): a badge is text, and its accessible name is its content.
+	//
+	// `aria-label` is deliberately OMITTED from the public type. On a role-less
+	// <span> the implicit role is `generic`, which does not support name-from-
+	// author, so conforming AT ignores the attribute outright (axe reports it as
+	// `aria-prohibited-attr` — `incomplete` rather than a violation only because
+	// there is text content to fall back on). Every name the primitive used to
+	// emit was therefore reaching Playwright and nobody else.
+	//
+	// The `Omit` is doing the job #788's runtime default was doing. That default
+	// existed because forgetting the prop in ONE mapper un-named every
+	// subscription pill and took 19 e2e specs down with it (#772). A compile
+	// error retires that failure class more decisively — and without the
+	// prohibited attribute. Automation locates badges by `data-testid` below.
+	interface Props extends Omit<HTMLAttributes<HTMLSpanElement>, 'aria-label'> {
 		tone: Tone;
 		/** Already-translated label — i18n stays at the call site. */
 		label: string;
+		/**
+		 * Screen-reader name for the ~7 badges whose intended announcement is
+		 * genuinely richer than the visible text ("Membership status: Active",
+		 * "Email is verified"). Rendered as real sr-only CONTENT, with the visible
+		 * label hidden from AT so it is not read twice — the name still comes from
+		 * content, it is just content the sighted reader gets from context instead.
+		 *
+		 * Pass the whole sentence, already translated. Do NOT compose it from a
+		 * prefix plus `label`: word order and agreement differ across the six
+		 * locales.
+		 *
+		 * Leave unset unless the visible text is genuinely ambiguous on its own —
+		 * for the other ~70 badges the label IS the name and needs no help.
+		 */
+		srLabel?: string;
 		icon?: Component;
 		size?: 'sm' | 'md' | 'lg';
 		class?: string;
@@ -15,31 +44,12 @@
 	const {
 		tone,
 		label,
+		srLabel,
 		icon: Icon,
 		size = 'md',
 		class: className = '',
 		...restProps
 	}: Props = $props();
-
-	// The accessible name defaults to the visible label (#788). Every mapper used
-	// to have to remember to pass one; forgetting it in a single mapper un-named
-	// every subscription pill and took 19 e2e specs down with it (fixed in #772).
-	// Defaulting here retires that whole failure class.
-	//
-	// Presence-tested with `in` rather than `restProps['aria-label'] ?? label`, so
-	// that passing `aria-label={undefined}` is a real OPT-OUT and not just another
-	// way to spell "use the default". One call site needs that escape hatch —
-	// see `account/MembershipPaymentHistory.svelte`.
-	//
-	// An EMPTY label emits no attribute at all. Measured against axe-core 4.12.1
-	// (the version the e2e a11y smoke runs): on a role-less <span> WITH text
-	// content, `aria-label` lands in `incomplete` under aria-prohibited-attr —
-	// needs-review, not a violation, so the smoke stays green. On a span with NO
-	// text content the same rule fires as a SERIOUS violation. `label || undefined`
-	// keeps every badge on the safe side of that line.
-	const ariaLabel = $derived(
-		'aria-label' in restProps ? restProps['aria-label'] : label || undefined
-	);
 
 	// Solid fills only: every fg/bg pair below is a token pair enforced at
 	// >= 4.5:1 by scripts/audit-brand-themes.py in BOTH modes. No alpha here —
@@ -60,18 +70,27 @@
 	const iconSizes = { sm: 'h-3 w-3', md: 'h-3 w-3', lg: 'h-3.5 w-3.5' };
 </script>
 
+<!--
+  `data-testid` is the automation contract that #772/#788 were really protecting,
+  now labelled honestly as automation instead of dressed as accessibility. It is
+  emitted by the primitive so no mapper can forget it, and sits in restProps'
+  spread path so a call site can still override it.
+-->
 <span
+	data-testid="status-badge"
+	{...restProps}
 	class={cn(
 		'inline-flex items-center gap-1 rounded-full font-bold',
 		sizeClasses[size],
 		toneClasses[tone],
 		className
 	)}
-	{...restProps}
-	aria-label={ariaLabel}
 >
+	{#if srLabel}
+		<span class="sr-only">{srLabel}</span>
+	{/if}
 	{#if Icon}
 		<Icon class={iconSizes[size]} aria-hidden="true" />
 	{/if}
-	{label}
+	<span aria-hidden={srLabel ? 'true' : undefined}>{label}</span>
 </span>

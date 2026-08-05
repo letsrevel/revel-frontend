@@ -5,21 +5,18 @@ import { getMemberStatusLabel, MEMBER_STATUS_ORDER } from '$lib/utils/member-sta
 import MemberStatusBadge from './MemberStatusBadge.svelte';
 
 /**
- * REGRESSION GUARD, mirroring `members/SubscriptionStatusBadge.test.ts`: this pill's
- * accessible NAME is what locates it in `MemberCard` (roster) — a mapper over
- * `common/StatusBadge` that dropped its `aria-label` would still render the
- * right text on screen while `getByLabelText` stopped finding it. Every enum
- * value is asserted, not a sample, since the failure mode drops all of them
- * at once.
+ * REGRESSION GUARD, mirroring `members/SubscriptionStatusBadge.test.ts`: this
+ * pill's status text is what locates it in `MemberCard` (roster), and since #795
+ * it is the accessible name too. Every enum value is asserted, not a sample,
+ * since the failure mode drops all of them at once.
  */
 describe('members/MemberStatusBadge', () => {
 	it.each(MEMBER_STATUS_ORDER as MembershipStatus[])(
-		'exposes the %s label as the pill accessible name',
+		'renders the %s label on the pill',
 		(status) => {
 			render(MemberStatusBadge, { props: { status } });
 			const label = getMemberStatusLabel(status);
-			expect(screen.getByLabelText(label)).toBeInTheDocument();
-			expect(screen.getByLabelText(label)).toHaveTextContent(label);
+			expect(screen.getByTestId('status-badge')).toHaveTextContent(label);
 		}
 	);
 

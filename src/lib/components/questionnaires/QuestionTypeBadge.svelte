@@ -34,4 +34,4 @@
 	const tone = $derived(TONE_MAP[type]);
 </script>
 
-<StatusBadge {tone} {label} {size} class={className} aria-label={label} />
+<StatusBadge {tone} {label} {size} class={className} />

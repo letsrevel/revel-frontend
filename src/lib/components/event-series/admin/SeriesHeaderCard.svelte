@@ -80,14 +80,12 @@
 				tone="neutral"
 				icon={Pause}
 				label={m['recurringEvents.dashboard.statusPaused']()}
-				aria-label={m['recurringEvents.dashboard.statusPaused']()}
 			/>
 		{:else}
 			<StatusBadge
 				tone="success"
 				icon={Play}
 				label={m['recurringEvents.dashboard.statusActive']()}
-				aria-label={m['recurringEvents.dashboard.statusActive']()}
 			/>
 		{/if}
 		<span

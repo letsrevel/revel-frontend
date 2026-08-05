@@ -38,6 +38,7 @@
 	const icon = $derived(ICON_MAP[status] ?? Clock);
 </script>
 
-<!-- aria-label mirrors the visible (unlocalized) status text, per the house
-     `common/StatusBadge` mapper pattern (see `members/SubscriptionStatusBadge.svelte`). -->
-<CommonStatusBadge {tone} label={status} {icon} size="sm" class={extraClass} aria-label={status} />
+<!-- House `common/StatusBadge` mapper pattern (see
+     `members/SubscriptionStatusBadge.svelte`); the raw (unlocalized) status text
+     is both the visible label and the accessible name (#795). -->
+<CommonStatusBadge {tone} label={status} {icon} size="sm" class={extraClass} />

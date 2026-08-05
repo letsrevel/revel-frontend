@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { getStatusLabel, getStatusTone, type SubscriptionStatus } from '$lib/utils/subscriptions';
+	import type { HTMLAttributes } from 'svelte/elements';
 	import CommonStatusBadge from '$lib/components/common/StatusBadge.svelte';
 
-	interface Props {
+	interface Props extends Omit<HTMLAttributes<HTMLSpanElement>, 'aria-label'> {
 		status: SubscriptionStatus;
 		class?: string;
 	}
 
-	const { status, class: extraClass = '' }: Props = $props();
+	const { status, class: extraClass = '', ...restProps }: Props = $props();
 
 	// Tone mapping lives in `utils/subscription-status.ts::getStatusTone` — the
 	// single source this badge and `members/SubscriptionMetrics`'s chip strip
@@ -18,15 +19,11 @@
 </script>
 
 <!--
-	`aria-label` is deliberate and load-bearing, not redundant with the visible
-	text: the subscription status is the one bit of this pill that other surfaces
-	address it by, and the status word alone ("Active", "Past due") is what names
-	it. It predates the shared primitive — every subscription surface (account
-	hub card, org landing inline card, admin subs table/drawer) is located by it,
-	so dropping it when this became a mapper silently un-named every one of them.
-	#788 since baked the same default into `common/StatusBadge` itself, so this
-	pass is now belt-and-suspenders rather than the only thing supplying the name.
-	It stays because the enum-driven test above it is the contract, and a mapper
-	that states its own accessible name cannot lose it to a primitive refactor.
+	No `aria-label` here, or in any other mapper: per the #795 ruling the badge's
+	accessible name is its visible text, and `common/StatusBadge` omits the
+	attribute from its public type. Every subscription surface (account hub card,
+	org landing inline card, admin subs table/drawer) that used to be located by
+	that name is located by the primitive's `data-testid` plus this status text
+	instead; the enum-driven test above is still the contract for the text.
 -->
-<CommonStatusBadge {tone} {label} size="sm" class={extraClass} aria-label={label} />
+<CommonStatusBadge {tone} {label} size="sm" class={extraClass} {...restProps} />

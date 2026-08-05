@@ -8,16 +8,14 @@ import DiscountCodeStatusBadge from './DiscountCodeStatusBadge.svelte';
  * discount-codes admin table and its mobile card twin.
  */
 describe('discount-codes/DiscountCodeStatusBadge', () => {
-	it('exposes "Active" as the accessible name when active', () => {
+	it('renders "Active" on the pill when active', () => {
 		render(DiscountCodeStatusBadge, { props: { isActive: true } });
-		expect(screen.getByLabelText('Active')).toBeInTheDocument();
-		expect(screen.getByLabelText('Active')).toHaveTextContent('Active');
+		expect(screen.getByTestId('status-badge')).toHaveTextContent('Active');
 	});
 
-	it('exposes "Inactive" as the accessible name when inactive', () => {
+	it('renders "Inactive" on the pill when inactive', () => {
 		render(DiscountCodeStatusBadge, { props: { isActive: false } });
-		expect(screen.getByLabelText('Inactive')).toBeInTheDocument();
-		expect(screen.getByLabelText('Inactive')).toHaveTextContent('Inactive');
+		expect(screen.getByTestId('status-badge')).toHaveTextContent('Inactive');
 	});
 
 	it('maps active to the success tone and inactive to the neutral tone', () => {

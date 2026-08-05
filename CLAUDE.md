@@ -246,6 +246,22 @@ PR 7, mirrors `StatusBadge`) so routed adopters can attach `id`/`aria-label`/etc
 instead. `PageHeader`'s `decoration` slot is aria-hidden ornament only — status
 text goes through `actions` or `StatusBadge`, never `decoration`.
 
+**A badge is named by its content** (#795). `StatusBadge` renders a role-less
+`<span>`, whose implicit `generic` role does not support name-from-author, so
+`aria-label` on it is ARIA-prohibited and ignored by conforming AT — it is
+`Omit`ted from the component's props, and passing one is a type error. Do not
+"fix" that by adding a role: `status` is a live region (wrong for a static pill)
+and `img`/`note`/`group` all buy validity with per-badge screen-reader verbosity.
+When a badge genuinely needs a richer announcement than its visible text
+("Membership status: Active"), pass the whole already-translated sentence as
+**`srLabel`** — it renders as real `sr-only` content with the visible label
+`aria-hidden`, so nothing is read twice. Never compose it from a prefix plus
+`label`; word order and agreement differ across the six locales. Tests locate
+badges by the **`data-testid="status-badge"`** the primitive always emits
+(overridable — `account/MembershipCard` uses `membership-subscription-status` so
+a pending subscription and a pending payment stay addressable apart), never by
+accessible name.
+
 **Band/wash pairing:** a mode-inert poster-solid ribbon pairs with a theme-aware
 tinted wash below it, and a theme `bg-secondary` band pairs with a plain
 `--background` body — never pair a band with a wash from the same token family.

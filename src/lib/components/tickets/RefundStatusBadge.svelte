@@ -48,14 +48,13 @@
 </script>
 
 <!--
-	`aria-label` is deliberate, not redundant: this pill's accessible name is how
-	the ticket table/card list surfaces are addressed by tests. Since #788 the
-	`common/StatusBadge` primitive defaults that name to the visible label, so
-	this pass is belt-and-suspenders that the enum-driven test pins either way.
-	`title` carries the optional amount+currency tooltip via restProps.
+	The ticket table/card list surfaces are addressed by this pill's status text,
+	which is also its accessible name (#795) — pinned by the enum-driven test.
+	`title` carries the optional amount+currency tooltip via restProps; that is a
+	description, not a name, and stays valid on a role-less span.
 -->
 {#if known}
 	<!-- w-fit: this sits in TicketTable/TicketCardList's flex flex-col cell, which
 	     would otherwise stretch the pill to the cell's full width. -->
-	<CommonStatusBadge {tone} {label} size="sm" title={tooltip} aria-label={label} class="w-fit" />
+	<CommonStatusBadge {tone} {label} size="sm" title={tooltip} class="w-fit" />
 {/if}

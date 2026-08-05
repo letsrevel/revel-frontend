@@ -264,7 +264,14 @@
 					{/if}
 				</div>
 				{#if sub}
-					<SubscriptionStatusBadge status={sub.status} />
+					<!-- Its own testid, not the primitive's generic `status-badge`: the
+					     payment-history table further down this card renders status pills
+					     too, and a pending PAYMENT would otherwise answer a lookup meant for
+					     a pending SUBSCRIPTION (j23 revival.spec.ts). #795 -->
+					<SubscriptionStatusBadge
+						status={sub.status}
+						data-testid="membership-subscription-status"
+					/>
 				{:else}
 					<Badge variant="secondary" class="capitalize">{membership.status}</Badge>
 				{/if}

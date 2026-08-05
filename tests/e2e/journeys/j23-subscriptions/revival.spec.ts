@@ -297,7 +297,9 @@ test.describe('J23 revival window + past due @p2', () => {
 		// Grace semantics, PROBED: the member row stays ACTIVE and the past-due
 		// subscription is still inlined, so this is a full membership card
 		// carrying a warning — not a stripped terminal one.
-		await expect(card.getByLabel('Past due')).toBeVisible();
+		await expect(
+			card.getByTestId('membership-subscription-status').filter({ hasText: 'Past due' })
+		).toBeVisible();
 		await expect(card.getByText(`${PLAN_NAME} · ${PLAN_PRICE}`)).toBeVisible();
 
 		// The banner is the failure's only announcement, so it must reach a screen
@@ -387,7 +389,9 @@ test.describe('J23 revival window + past due @p2', () => {
 			// out-of-window test. The rejoin offer is gone with it: the offer is
 			// gated on an EXPIRED row, and the row is PENDING now.
 			await expect(card).toBeVisible({ timeout: 20_000 });
-			await expect(card.getByLabel('Pending')).toBeVisible();
+			await expect(
+				card.getByTestId('membership-subscription-status').filter({ hasText: 'Pending' })
+			).toBeVisible();
 			await expect(card.getByText(`${PLAN_NAME} · ${PLAN_PRICE}`)).toBeVisible();
 			await expect(card.getByText('Awaiting first payment')).toBeVisible();
 			await expect(page.getByRole('button', { name: 'Rejoin' })).toBeHidden();

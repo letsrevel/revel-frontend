@@ -5,11 +5,9 @@ import QuestionnaireStatusBadge from './QuestionnaireStatusBadge.svelte';
 
 /**
  * REGRESSION GUARD, same shape as `members/SubscriptionStatusBadge.test.ts` and
- * `polls/PollStatusBadge`'s sibling `SubmissionStatusBadge.test.ts`: this
- * pill's accessible NAME is not decoration. `common/StatusBadge` now defaults
- * the `aria-label` to its label text (#788), but the mapper still passes it
- * explicitly (defense in depth) — this guards every status, not just a
- * sample, against that name silently vanishing.
+ * its sibling `SubmissionStatusBadge.test.ts`: this pill's status text is not
+ * decoration — it is what locates the badge, and since #795 it is the accessible
+ * name too. Every status is pinned, not a sample.
  */
 const STATUS_ORDER: QuestionnaireStatus[] = ['draft', 'ready', 'published'];
 const LABELS: Record<QuestionnaireStatus, string> = {
@@ -24,11 +22,10 @@ const EXPECTED_TONE_CLASS: Record<QuestionnaireStatus, string> = {
 };
 
 describe('questionnaires/QuestionnaireStatusBadge', () => {
-	it.each(STATUS_ORDER)('exposes the %s label as the pill accessible name', (status) => {
+	it.each(STATUS_ORDER)('renders the %s label on the pill', (status) => {
 		const label = LABELS[status];
 		render(QuestionnaireStatusBadge, { props: { status, label } });
-		expect(screen.getByLabelText(label)).toBeInTheDocument();
-		expect(screen.getByLabelText(label)).toHaveTextContent(label);
+		expect(screen.getByTestId('status-badge')).toHaveTextContent(label);
 	});
 
 	it.each(STATUS_ORDER)('maps %s to its tone class', (status) => {

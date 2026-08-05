@@ -23,6 +23,8 @@
 		UserPlus
 	} from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
+	import type { Tone } from '$lib/components/common/tones';
 	import { resolve } from '$app/paths';
 
 	interface Props {
@@ -112,14 +114,17 @@
 		return plan && inline;
 	});
 
-	// Status badge styling, on the semantic tone tokens rather than a
-	// hand-picked green/yellow/grey/red ramp — each pill still carries its own
-	// translated label (`memberStatus.*`), so the fill never says it alone.
-	const statusStyles: Record<MembershipStatus, string> = {
-		active: 'bg-success text-success-foreground',
-		paused: 'bg-highlight text-highlight-foreground',
-		cancelled: 'bg-muted text-muted-foreground',
-		banned: 'bg-destructive text-destructive-foreground'
+	// Status badge styling on the semantic tone tokens rather than a hand-picked
+	// green/yellow/grey/red ramp — each pill still carries its own translated
+	// label (`memberStatus.*`), so the fill never says it alone. These are the
+	// same four pairs the pills used to spell out as class strings, now handed to
+	// `common/StatusBadge` as tones (#795): success/highlight/muted/destructive
+	// are exactly what tones success/warning/neutral/danger render.
+	const statusTones: Record<MembershipStatus, Tone> = {
+		active: 'success',
+		paused: 'warning',
+		cancelled: 'neutral',
+		banned: 'danger'
 	};
 
 	const accessToken = $derived(authStore.accessToken);
@@ -225,39 +230,43 @@
 
 {#snippet memberBadge()}
 	<!-- Ported from the legacy RequestMembershipButton: status pill + tier pill,
-	     each labelled by its own text so nothing is conveyed by colour alone. -->
+	     each labelled by its own text so nothing is conveyed by colour alone.
+	     Hand-rolled spans until #795 — they carried `aria-label` on a role-less
+	     <span>, the exact pattern that issue rules against, and their class
+	     strings were `common/StatusBadge`'s tone map spelled out by hand. Now they
+	     ARE StatusBadges: the tone map replaces `statusStyles`, `srLabel` turns
+	     each name into real sr-only content, and `class` pins the slightly roomier
+	     legacy geometry (gap-1.5 px-3 py-1.5) so nothing moves on screen. -->
 	<div class={cn('inline-flex flex-wrap items-center gap-2', className)} role="status">
 		{#if membershipStatus}
-			<span
-				class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold {statusStyles[
-					membershipStatus
-				]}"
-				aria-label={m['membershipEligibility.memberStatusAriaLabel']({
+			<StatusBadge
+				tone={statusTones[membershipStatus]}
+				label={m[`memberStatus.${membershipStatus}`]()}
+				icon={Check}
+				class="gap-1.5 px-3 py-1.5"
+				srLabel={m['membershipEligibility.memberStatusAriaLabel']({
 					status: m[`memberStatus.${membershipStatus}`]()
 				})}
-			>
-				<Check class="h-3 w-3" aria-hidden="true" />
-				{m[`memberStatus.${membershipStatus}`]()}
-			</span>
+			/>
 		{/if}
 
 		{#if membershipTier}
-			<span
-				class="inline-flex items-center gap-1.5 rounded-full bg-info px-3 py-1.5 text-xs font-bold text-info-foreground"
-				aria-label={m['membershipEligibility.memberTierAriaLabel']({ tier: membershipTier.name })}
-			>
-				<Award class="h-3 w-3" aria-hidden="true" />
-				{membershipTier.name}
-			</span>
+			<StatusBadge
+				tone="info"
+				label={membershipTier.name}
+				icon={Award}
+				class="gap-1.5 px-3 py-1.5"
+				srLabel={m['membershipEligibility.memberTierAriaLabel']({ tier: membershipTier.name })}
+			/>
 		{:else if !membershipStatus}
 			<!-- Eligibility-derived membership: no server props to describe it. -->
-			<span
-				class="inline-flex items-center gap-1.5 rounded-full bg-success px-3 py-1.5 text-xs font-bold text-success-foreground"
-				aria-label={m['membershipEligibility.memberBadgeAriaLabel']()}
-			>
-				<Check class="h-3 w-3" aria-hidden="true" />
-				{m['membershipEligibility.memberBadge']()}
-			</span>
+			<StatusBadge
+				tone="success"
+				label={m['membershipEligibility.memberBadge']()}
+				icon={Check}
+				class="gap-1.5 px-3 py-1.5"
+				srLabel={m['membershipEligibility.memberBadgeAriaLabel']()}
+			/>
 		{/if}
 	</div>
 {/snippet}
