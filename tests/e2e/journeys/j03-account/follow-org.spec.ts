@@ -150,8 +150,12 @@ test.describe('J3 follow org & request membership @p1', () => {
 		// The member-side CTA is now the membership badge, tier and all.
 		await gotoHydrated(page, `/org/${org.slug}`);
 		await waitForClientAuth(page);
-		await expect(page.getByLabel('Membership status: Active')).toBeVisible({ timeout: 15_000 });
-		await expect(page.getByLabel('Membership tier: General membership')).toBeVisible();
+		await expect(
+			page.getByTestId('status-badge').filter({ hasText: 'Membership status: Active' })
+		).toBeVisible({ timeout: 15_000 });
+		await expect(
+			page.getByTestId('status-badge').filter({ hasText: 'Membership tier: General membership' })
+		).toBeVisible();
 		await expect(page.getByRole('button', { name: 'Application pending' })).toBeHidden();
 
 		// Unfollow via the dropdown; the plain Follow button returns.

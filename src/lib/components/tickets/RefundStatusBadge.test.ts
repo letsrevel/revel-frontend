@@ -7,13 +7,12 @@ import RefundStatusBadge, {
 } from './RefundStatusBadge.svelte';
 
 /**
- * REGRESSION GUARD. Before #788 `common/StatusBadge` named itself from its
- * text content alone, so a mapper that forgot `aria-label` silently un-named
- * its pill for every `getByLabel` lookup in the ticket table / card list, even
- * though its own unit tests (which query by text) stayed green. The primitive
- * defaults the name now; this test is what keeps it true either way. See
- * `src/lib/components/members/SubscriptionStatusBadge.test.ts` for the incident this
- * pattern guards against (19 e2e specs broke on exactly this omission).
+ * REGRESSION GUARD. The ticket table / card list locate this pill by its
+ * status text, which since #795 is also its accessible name — the badge is
+ * addressed as `status-badge` + that text, and nothing hidden supplies it. Every
+ * enum value is pinned, not a sample. See
+ * `src/lib/components/members/SubscriptionStatusBadge.test.ts` for the incident
+ * this pattern guards against (19 e2e specs broke on one dropped label).
  */
 const LABELS: Record<KnownRefundStatus, string> = {
 	succeeded: m['adminTicketTable.refundStatus.succeeded'](),
@@ -22,11 +21,10 @@ const LABELS: Record<KnownRefundStatus, string> = {
 };
 
 describe('tickets/RefundStatusBadge', () => {
-	it.each(REFUND_STATUS_ORDER)('exposes the %s label as the pill accessible name', (status) => {
+	it.each(REFUND_STATUS_ORDER)('renders the %s label on the pill', (status) => {
 		render(RefundStatusBadge, { props: { status } });
 		const label = LABELS[status];
-		expect(screen.getByLabelText(label)).toBeInTheDocument();
-		expect(screen.getByLabelText(label)).toHaveTextContent(label);
+		expect(screen.getByTestId('status-badge')).toHaveTextContent(label);
 	});
 
 	it('renders nothing for an unknown/null status — never mislabels as "failed"', () => {
@@ -46,6 +44,6 @@ describe('tickets/RefundStatusBadge', () => {
 		render(RefundStatusBadge, {
 			props: { status: 'succeeded', amount: '12.00', currency: 'EUR' }
 		});
-		expect(screen.getByLabelText(LABELS.succeeded)).toHaveAttribute('title', '12.00 EUR');
+		expect(screen.getByTestId('status-badge')).toHaveAttribute('title', '12.00 EUR');
 	});
 });

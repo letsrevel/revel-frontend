@@ -198,7 +198,11 @@ describe('ApplicationRow', () => {
 	it('labels the status chip for assistive tech', () => {
 		renderRow(makeApplication({ status: 'rejected' }));
 
-		expect(screen.getByLabelText('Application status: Rejected')).toHaveTextContent('Rejected');
+		// `srLabel` renders the context as real sr-only content, so the chip reads
+		// "Application status: Rejected" and the visible word is hidden from AT.
+		const chip = screen.getByTestId('status-badge');
+		expect(chip).toHaveTextContent('Application status: Rejected');
+		expect(screen.getByText('Rejected')).toHaveAttribute('aria-hidden', 'true');
 	});
 
 	describe('actions', () => {

@@ -138,7 +138,9 @@ test.describe('J23 hosted-checkout subscribe @p2', () => {
 		await expect(boughtPlan.getByText("You're subscribed to this plan.")).toBeVisible();
 		// …and the grid's join CTAs are replaced by the member status pill (this
 		// one rides on invalidateAll() re-running the server load).
-		await expect(page.getByLabel('Membership status: Active')).toBeVisible({ timeout: 30_000 });
+		await expect(
+			page.getByTestId('status-badge').filter({ hasText: 'Membership status: Active' })
+		).toBeVisible({ timeout: 30_000 });
 
 		// The org landing page — which keeps the inline membership card — tells the
 		// same story on a fresh server load.
@@ -146,7 +148,9 @@ test.describe('J23 hosted-checkout subscribe @p2', () => {
 		await waitForClientAuth(page);
 		const inlineCard = page.locator('.bg-card').filter({ hasText: 'Your membership' });
 		await expect(inlineCard.getByText(plan.name)).toBeVisible({ timeout: 30_000 });
-		await expect(inlineCard.getByLabel('Active')).toBeVisible();
+		await expect(
+			inlineCard.getByTestId('membership-subscription-status').filter({ hasText: 'Active' })
+		).toBeVisible();
 
 		// The account hub tells the same story.
 		await gotoHydrated(page, '/account/memberships');
@@ -154,7 +158,9 @@ test.describe('J23 hosted-checkout subscribe @p2', () => {
 		const card = membershipCard(page, 'Revel Events Collective');
 		await expect(card).toBeVisible({ timeout: 20_000 });
 		await expect(card.getByText(plan.name)).toBeVisible();
-		await expect(card.getByLabel('Active')).toBeVisible();
+		await expect(
+			card.getByTestId('membership-subscription-status').filter({ hasText: 'Active' })
+		).toBeVisible();
 
 		// BE #774 follow-up, ONLINE side. This is the only place the real Stripe
 		// handles exist, so it is the only place that can prove the admin schema's
@@ -223,7 +229,9 @@ test.describe('J23 hosted-checkout subscribe @p2', () => {
 		await gotoHydrated(page, ORG_PATH);
 		await waitForClientAuth(page);
 		const inlineCard = page.locator('.bg-card').filter({ hasText: 'Your membership' });
-		await expect(inlineCard.getByLabel('Pending')).toBeVisible({ timeout: 20_000 });
+		await expect(
+			inlineCard.getByTestId('membership-subscription-status').filter({ hasText: 'Pending' })
+		).toBeVisible({ timeout: 20_000 });
 		await expect(inlineCard.getByText('Awaiting first payment')).toBeVisible();
 
 		// Abandon: walk away from the hosted page instead of paying, simulating

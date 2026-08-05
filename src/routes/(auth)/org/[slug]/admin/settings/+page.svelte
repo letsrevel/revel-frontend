@@ -537,7 +537,6 @@
 					<StatusBadge
 						tone="success"
 						label={m['orgAdmin.settings.membership.emailVerified']()}
-						aria-label={m['orgAdmin.settings.membership.emailVerified']()}
 						size="sm"
 						class="mt-1"
 					/>
@@ -546,7 +545,6 @@
 						tone="warning"
 						icon={AlertCircle}
 						label={m['orgAdmin.settings.membership.emailNotVerified']()}
-						aria-label={m['orgAdmin.settings.membership.emailNotVerified']()}
 						size="sm"
 						class="mt-1"
 					/>

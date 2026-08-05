@@ -211,19 +211,18 @@
 										{/if}
 									</td>
 									<td class="py-2">
-										<!-- Deliberately opted OUT of the primitive's default accessible name
-										     (#788). This table renders INSIDE the account hub's membership
-										     <article>, next to the subscription-status pill — and that pill's
-										     name is the cross-surface contract the e2e suite addresses the card
-										     by (`card.getByLabel('Pending')`, j23 revival.spec.ts). A pending
-										     PAYMENT row would answer the same lookup and trip Playwright strict
-										     mode, so this cell keeps the name it has always had: none. The
-										     status is still announced as the cell's text content. -->
+										<!-- Plain `status-badge` testid. This table renders INSIDE the account
+										     hub's membership <article>, next to the subscription-status pill, and
+										     a pending PAYMENT row would answer the same lookup as a pending
+										     SUBSCRIPTION and trip Playwright strict mode (j23 revival.spec.ts).
+										     That is why the pill above carries its own
+										     `membership-subscription-status` testid — the two are addressable
+										     apart, and this cell needs no opt-out of its own (#795, replacing the
+										     `aria-label={undefined}` hatch #788 needed). -->
 										<StatusBadge
 											tone={statusTone(p.status)}
 											label={statusLabel(p.status)}
 											size="sm"
-											aria-label={undefined}
 										/>
 									</td>
 								</tr>

@@ -79,15 +79,14 @@ describe('SeriesHeaderCard', () => {
 
 	it('shows the Active status pill when series is_active=true', () => {
 		render(SeriesHeaderCard, { props: { series: makeSeries() } });
-		// The pill uses aria-label to carry the status string.
-		expect(screen.getByLabelText(/active/i)).toBeInTheDocument();
+		expect(screen.getByTestId('status-badge')).toHaveTextContent(/active/i);
 	});
 
 	it('shows the Paused status pill when series is_active=false', () => {
 		render(SeriesHeaderCard, {
 			props: { series: makeSeries({ is_active: false }) }
 		});
-		expect(screen.getByLabelText(/paused/i)).toBeInTheDocument();
+		expect(screen.getByTestId('status-badge')).toHaveTextContent(/paused/i);
 	});
 
 	it('renders the recurrence summary when a rule is present', () => {

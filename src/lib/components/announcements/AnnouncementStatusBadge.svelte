@@ -30,4 +30,4 @@
 	);
 </script>
 
-<StatusBadge {tone} {label} size="sm" aria-label={label} />
+<StatusBadge {tone} {label} size="sm" />

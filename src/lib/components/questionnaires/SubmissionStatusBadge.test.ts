@@ -4,13 +4,11 @@ import { SUBMISSION_BADGE_STATUS_ORDER } from '$lib/utils/questionnaire-types';
 import SubmissionStatusBadge from './SubmissionStatusBadge.svelte';
 
 /**
- * REGRESSION GUARD, same shape as `members/SubscriptionStatusBadge.test.ts`: this pill's
- * accessible NAME is a cross-surface contract (the submissions table and the
- * submission detail page locate it by its status text), not decoration. The
- * rebrand turned this into a thin mapper over `common/StatusBadge`; the
- * primitive now defaults the `aria-label` to its label text (#788), and the
- * mapper still passes it explicitly (defense in depth) — this guards every
- * status, not just a sample, against that name silently vanishing again.
+ * REGRESSION GUARD, same shape as `members/SubscriptionStatusBadge.test.ts`:
+ * this pill's status TEXT is a cross-surface contract (the submissions table and
+ * the submission detail page locate it by that text, which since #795 is also
+ * its accessible name), not decoration. Every status is pinned, not a sample —
+ * the failure mode drops all of them at once.
  */
 const LABELS: Record<(typeof SUBMISSION_BADGE_STATUS_ORDER)[number], string> = {
 	draft: 'Draft',
@@ -21,15 +19,11 @@ const LABELS: Record<(typeof SUBMISSION_BADGE_STATUS_ORDER)[number], string> = {
 };
 
 describe('questionnaires/SubmissionStatusBadge', () => {
-	it.each(SUBMISSION_BADGE_STATUS_ORDER)(
-		'exposes the %s label as the pill accessible name',
-		(status) => {
-			render(SubmissionStatusBadge, { props: { status } });
-			const label = LABELS[status];
-			expect(screen.getByLabelText(label)).toBeInTheDocument();
-			expect(screen.getByLabelText(label)).toHaveTextContent(label);
-		}
-	);
+	it.each(SUBMISSION_BADGE_STATUS_ORDER)('renders the %s label on the pill', (status) => {
+		render(SubmissionStatusBadge, { props: { status } });
+		const label = LABELS[status];
+		expect(screen.getByTestId('status-badge')).toHaveTextContent(label);
+	});
 
 	it('collapses approved and auto_accepted onto the same tone, distinguished by label', () => {
 		const approved = render(SubmissionStatusBadge, { props: { status: 'approved' } });
@@ -40,8 +34,8 @@ describe('questionnaires/SubmissionStatusBadge', () => {
 		const autoEl = auto.container.querySelector('span') as HTMLElement;
 		expect(autoEl.className).toContain('bg-success');
 
-		expect(screen.getByLabelText('Approved')).toBeInTheDocument();
-		expect(screen.getByLabelText('Auto-accepted')).toBeInTheDocument();
+		expect(screen.getByText('Approved')).toBeInTheDocument();
+		expect(screen.getByText('Auto-accepted')).toBeInTheDocument();
 	});
 
 	it('maps rejected to danger', () => {

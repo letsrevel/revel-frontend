@@ -102,7 +102,7 @@
 										label={m['dashboardPage.ownerBadge']()}
 										icon={Crown}
 										size="sm"
-										aria-label={m['dashboardPage.ownerBadgeLabel']()}
+										srLabel={m['dashboardPage.ownerBadgeLabel']()}
 									/>
 								{:else if isStaff(permissions, org.id)}
 									<!-- Staff Badge -->
@@ -111,7 +111,7 @@
 										label={m['dashboardPage.staffBadge']()}
 										icon={Shield}
 										size="sm"
-										aria-label={m['dashboardPage.staffBadgeLabel']()}
+										srLabel={m['dashboardPage.staffBadgeLabel']()}
 									/>
 								{/if}
 							</div>
@@ -134,8 +134,8 @@
 											label={m[`memberStatus.${membershipStatus}`]()}
 											icon={Check}
 											size="sm"
-											aria-label={m['dashboardPage.membershipStatusLabel']({
-												status: membershipStatus
+											srLabel={m['dashboardPage.membershipStatusLabel']({
+												status: m[`memberStatus.${membershipStatus}`]()
 											})}
 										/>
 									{/if}
@@ -147,7 +147,7 @@
 											label={membershipTier.name}
 											icon={Award}
 											size="sm"
-											aria-label={m['dashboardPage.membershipTierLabel']({
+											srLabel={m['dashboardPage.membershipTierLabel']({
 												tier: membershipTier.name
 											})}
 										/>

@@ -17,7 +17,7 @@
 	const label = $derived(getMembershipRequestStatusLabel(status));
 </script>
 
-<!-- aria-label is explicit per the house `common/StatusBadge` mapper pattern
-     (see `members/SubscriptionStatusBadge.svelte`). The primitive also defaults
-     it from the visible label since #788. -->
-<CommonStatusBadge {tone} {label} size="sm" class={extraClass} aria-label={label} />
+<!-- House `common/StatusBadge` mapper pattern (see
+     `members/SubscriptionStatusBadge.svelte`): no ARIA of its own — the badge is
+     named by its visible text (#795). -->
+<CommonStatusBadge {tone} {label} size="sm" class={extraClass} />

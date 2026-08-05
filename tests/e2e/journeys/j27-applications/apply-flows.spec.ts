@@ -89,8 +89,12 @@ test.describe('j27 application flows @p2', () => {
 		// The org page reports it server-side: status + tier badges, not a CTA.
 		await gotoHydrated(page, `/org/${org.slug}`);
 		await waitForClientAuth(page);
-		await expect(page.getByLabel('Membership status: Active')).toBeVisible({ timeout: 15_000 });
-		await expect(page.getByLabel(`Membership tier: ${DEFAULT_TIER}`)).toBeVisible();
+		await expect(
+			page.getByTestId('status-badge').filter({ hasText: 'Membership status: Active' })
+		).toBeVisible({ timeout: 15_000 });
+		await expect(
+			page.getByTestId('status-badge').filter({ hasText: `Membership tier: ${DEFAULT_TIER}` })
+		).toBeVisible();
 
 		// The membership grid withdraws the offer tier by tier. The per-tier member
 		// badge is the settle signal: those CTAs resolve asynchronously, so
@@ -99,7 +103,9 @@ test.describe('j27 application flows @p2', () => {
 		await gotoHydrated(page, membershipPath(org.slug));
 		await waitForClientAuth(page);
 		await expect(
-			tierCard(page, DEFAULT_TIER).getByLabel('You are a member of this organization')
+			tierCard(page, DEFAULT_TIER)
+				.getByTestId('status-badge')
+				.filter({ hasText: 'You are a member of this organization' })
 		).toBeVisible({ timeout: 15_000 });
 		await expect(page.getByRole('button', { name: /^Join / })).toHaveCount(0);
 
@@ -113,7 +119,9 @@ test.describe('j27 application flows @p2', () => {
 		// message (CSS-capitalized, so the DOM string is lowercase).
 		await expect(card.getByText('active', { exact: true })).toBeVisible();
 		await expect(
-			applicationRow(page, 'Closed', org.name).getByLabel('Application status: Completed')
+			applicationRow(page, 'Closed', org.name)
+				.getByTestId('status-badge')
+				.filter({ hasText: 'Application status: Completed' })
 		).toBeVisible();
 		await expect(page.getByRole('list', { name: 'In progress' })).toBeHidden();
 
@@ -161,7 +169,9 @@ test.describe('j27 application flows @p2', () => {
 		await gotoHydrated(page, '/account/memberships');
 		await waitForClientAuth(page);
 		await expect(
-			applicationRow(page, 'In progress', org.name).getByLabel('Application status: Pending')
+			applicationRow(page, 'In progress', org.name)
+				.getByTestId('status-badge')
+				.filter({ hasText: 'Application status: Pending' })
 		).toBeVisible({ timeout: 15_000 });
 		await expect(membershipCard(page, org.name)).toBeHidden();
 
@@ -181,7 +191,9 @@ test.describe('j27 application flows @p2', () => {
 			await waitForClientAuth(page);
 			await expect(membershipCard(page, org.name)).toBeVisible({ timeout: 10_000 });
 			await expect(
-				applicationRow(page, 'Closed', org.name).getByLabel('Application status: Completed')
+				applicationRow(page, 'Closed', org.name)
+					.getByTestId('status-badge')
+					.filter({ hasText: 'Application status: Completed' })
 			).toBeVisible({ timeout: 10_000 });
 		}).toPass({ timeout: 30_000 });
 
@@ -245,10 +257,14 @@ test.describe('j27 application flows @p2', () => {
 		await gotoHydrated(page, '/account/memberships');
 		await waitForClientAuth(page);
 		await expect(
-			applicationRow(page, 'Closed', org.name).getByLabel('Application status: Rejected')
+			applicationRow(page, 'Closed', org.name)
+				.getByTestId('status-badge')
+				.filter({ hasText: 'Application status: Rejected' })
 		).toBeVisible({ timeout: 15_000 });
 		await expect(
-			applicationRow(page, 'In progress', org.name).getByLabel('Application status: Pending')
+			applicationRow(page, 'In progress', org.name)
+				.getByTestId('status-badge')
+				.filter({ hasText: 'Application status: Pending' })
 		).toBeVisible();
 
 		await page.context().close();
@@ -284,7 +300,9 @@ test.describe('j27 application flows @p2', () => {
 
 		// The row settles into "Closed", and nothing is left in progress.
 		await expect(
-			applicationRow(page, 'Closed', org.name).getByLabel('Application status: Cancelled')
+			applicationRow(page, 'Closed', org.name)
+				.getByTestId('status-badge')
+				.filter({ hasText: 'Application status: Cancelled' })
 		).toBeVisible({ timeout: 15_000 });
 		await expect(page.getByRole('list', { name: 'In progress' })).toBeHidden();
 

@@ -93,8 +93,12 @@ test.describe('j27 membership eligibility states @p2', () => {
 
 		// Both pills are labelled, so neither status nor tier is conveyed by
 		// colour alone.
-		await expect(page.getByLabel('Membership status: Active')).toBeVisible({ timeout: 15_000 });
-		await expect(page.getByLabel('Membership tier: General membership')).toBeVisible();
+		await expect(
+			page.getByTestId('status-badge').filter({ hasText: 'Membership status: Active' })
+		).toBeVisible({ timeout: 15_000 });
+		await expect(
+			page.getByTestId('status-badge').filter({ hasText: 'Membership tier: General membership' })
+		).toBeVisible();
 		// A member has nothing to apply for — whatever the org's join policy is.
 		await expect(page.getByRole('button', { name: /^Join / })).toBeHidden();
 		await expect(page.getByRole('button', { name: 'Application pending' })).toBeHidden();
@@ -169,7 +173,9 @@ test.describe('j27 membership eligibility states @p2', () => {
 		await gotoHydrated(gatedPage, '/account/memberships');
 		await waitForClientAuth(gatedPage);
 		await expect(
-			applicationRow(gatedPage, 'In progress', lax.name).getByLabel('Application status: Pending')
+			applicationRow(gatedPage, 'In progress', lax.name)
+				.getByTestId('status-badge')
+				.filter({ hasText: 'Application status: Pending' })
 		).toBeVisible({ timeout: 15_000 });
 		await expect(membershipCard(gatedPage, lax.name)).toBeHidden();
 		await gatedPage.context().close();
@@ -181,7 +187,9 @@ test.describe('j27 membership eligibility states @p2', () => {
 		await expect(card).toBeVisible({ timeout: 15_000 });
 		await expect(card.getByText('active', { exact: true })).toBeVisible();
 		await expect(
-			applicationRow(openPage, 'Closed', lax.name).getByLabel('Application status: Completed')
+			applicationRow(openPage, 'Closed', lax.name)
+				.getByTestId('status-badge')
+				.filter({ hasText: 'Application status: Completed' })
 		).toBeVisible();
 		await openPage.context().close();
 	});

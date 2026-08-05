@@ -53,11 +53,9 @@
 <!--
 	Submission Status Badge Component
 
-	Displays the evaluation status of a questionnaire submission with an
-	`aria-label`-carrying pill (thin mapper over `common/StatusBadge`). The
-	label is passed explicitly even though the primitive has defaulted one since
-	#788, and the submissions table/detail page locate this pill by its status
-	text.
+	Displays the evaluation status of a questionnaire submission as a thin mapper
+	over `common/StatusBadge`. The submissions table/detail page locate this pill
+	by its status text, which is also its accessible name (#795).
 
 	@component
 	@example
@@ -65,4 +63,4 @@
 	<SubmissionStatusBadge status="pending review" />
 	<SubmissionStatusBadge status="auto_accepted" />
 -->
-<CommonStatusBadge {tone} {label} {icon} size="sm" class={className} aria-label={label} />
+<CommonStatusBadge {tone} {label} {icon} size="sm" class={className} />

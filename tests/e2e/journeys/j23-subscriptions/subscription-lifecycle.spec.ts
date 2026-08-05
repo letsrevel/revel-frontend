@@ -76,7 +76,9 @@ test.describe('J23 subscription lifecycle @p2', () => {
 		}
 
 		// Succeeded initial payment → ACTIVE, and the payment row is recorded.
-		await expect(drawer.getByLabel('Active')).toBeVisible({ timeout: 15_000 });
+		await expect(drawer.getByTestId('status-badge').filter({ hasText: 'Active' })).toBeVisible({
+			timeout: 15_000
+		});
 		await expect(drawer.getByText('Payments')).toBeVisible();
 		// Currency-formatted since b163f3eb ("€15.00", not the raw "15.00 EUR" the
 		// cell rendered before the platform-fee work reused `formatMoney` here).
@@ -103,7 +105,9 @@ test.describe('J23 subscription lifecycle @p2', () => {
 		await expect(card).toBeVisible({ timeout: 15_000 });
 		await expect(card.getByText(plan.name)).toBeVisible();
 		await expect(card.getByText('€15.00 / month')).toBeVisible();
-		await expect(card.getByLabel('Active')).toBeVisible();
+		await expect(
+			card.getByTestId('membership-subscription-status').filter({ hasText: 'Active' })
+		).toBeVisible();
 
 		// An OFFLINE row is organization-managed, and the backend now says so
 		// itself: `me_subscriptions.change_plan` refuses one with a 400 (an offline
@@ -130,15 +134,21 @@ test.describe('J23 subscription lifecycle @p2', () => {
 		).toBeVisible();
 		await pauseDialog.getByRole('button', { name: 'Pause subscription' }).click();
 		await expect(pauseDialog).toBeHidden({ timeout: 15_000 });
-		await expect(drawer.getByLabel('Paused')).toBeVisible({ timeout: 15_000 });
+		await expect(drawer.getByTestId('status-badge').filter({ hasText: 'Paused' })).toBeVisible({
+			timeout: 15_000
+		});
 		await gotoHydrated(memberPage, '/account/memberships');
 		await waitForClientAuth(memberPage);
-		await expect(card.getByLabel('Paused')).toBeVisible({ timeout: 15_000 });
+		await expect(
+			card.getByTestId('membership-subscription-status').filter({ hasText: 'Paused' })
+		).toBeVisible({ timeout: 15_000 });
 		await memberContext.close();
 
 		// Resume → ACTIVE again.
 		await drawer.getByRole('button', { name: 'Resume', exact: true }).click();
-		await expect(drawer.getByLabel('Active')).toBeVisible({ timeout: 15_000 });
+		await expect(drawer.getByTestId('status-badge').filter({ hasText: 'Active' })).toBeVisible({
+			timeout: 15_000
+		});
 
 		// Immediate cancel needs the explicit acknowledgement.
 		await drawer.getByRole('button', { name: 'Cancel', exact: true }).click();
@@ -151,7 +161,9 @@ test.describe('J23 subscription lifecycle @p2', () => {
 			.click();
 		await confirmButton.click();
 		await expect(cancelDialog).toBeHidden({ timeout: 15_000 });
-		await expect(drawer.getByLabel('Cancelled')).toBeVisible({ timeout: 15_000 });
+		await expect(drawer.getByTestId('status-badge').filter({ hasText: 'Cancelled' })).toBeVisible({
+			timeout: 15_000
+		});
 		// Terminal state: no lifecycle actions remain.
 		await expect(drawer.getByRole('button', { name: 'Pause', exact: true })).toBeHidden();
 

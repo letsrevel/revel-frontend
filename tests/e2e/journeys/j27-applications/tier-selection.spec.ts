@@ -99,8 +99,12 @@ test.describe('j27 tier selection @p2', () => {
 		// backend would have fallen back to.
 		await gotoHydrated(page, `/org/${org.slug}`);
 		await waitForClientAuth(page);
-		await expect(page.getByLabel(`Membership tier: ${goldName}`)).toBeVisible({ timeout: 15_000 });
-		await expect(page.getByLabel(`Membership tier: ${DEFAULT_TIER}`)).toHaveCount(0);
+		await expect(
+			page.getByTestId('status-badge').filter({ hasText: `Membership tier: ${goldName}` })
+		).toBeVisible({ timeout: 15_000 });
+		await expect(
+			page.getByTestId('status-badge').filter({ hasText: `Membership tier: ${DEFAULT_TIER}` })
+		).toHaveCount(0);
 
 		await page.context().close();
 	});

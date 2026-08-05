@@ -281,7 +281,7 @@
 			label={statusLabel}
 			size="sm"
 			class="shrink-0"
-			aria-label={m['applications.statusAriaLabel']({ status: statusLabel })}
+			srLabel={m['applications.statusAriaLabel']({ status: statusLabel })}
 		/>
 	</div>
 

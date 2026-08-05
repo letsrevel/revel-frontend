@@ -3,19 +3,18 @@ import { describe, it, expect } from 'vitest';
 import WhitelistRequestStatusBadge from './WhitelistRequestStatusBadge.svelte';
 
 /**
- * REGRESSION GUARD, mirroring `members/SubscriptionStatusBadge.test.ts`: this pill's
- * accessible NAME is what locates it on `WhitelistRequestCard`. The status
- * text itself is intentionally unlocalized (matches the pre-rebrand
- * behaviour) — this guard is about the aria-label surviving the move to the
- * shared `common/StatusBadge` primitive, not about translation.
+ * REGRESSION GUARD, mirroring `members/SubscriptionStatusBadge.test.ts`: this
+ * pill's status text is what locates it on `WhitelistRequestCard`, and since
+ * #795 it is the accessible name too. The text itself is intentionally
+ * unlocalized (matches the pre-rebrand behaviour) — this guard is about the
+ * label surviving the move to the shared primitive, not about translation.
  */
 describe('blacklist/WhitelistRequestStatusBadge', () => {
 	it.each(['pending', 'approved', 'rejected'])(
-		'exposes the raw "%s" status as the pill accessible name',
+		'renders the raw "%s" status on the pill',
 		(status) => {
 			render(WhitelistRequestStatusBadge, { props: { status } });
-			expect(screen.getByLabelText(status)).toBeInTheDocument();
-			expect(screen.getByLabelText(status)).toHaveTextContent(status);
+			expect(screen.getByTestId('status-badge')).toHaveTextContent(status);
 		}
 	);
 
@@ -23,7 +22,7 @@ describe('blacklist/WhitelistRequestStatusBadge', () => {
 		const { container } = render(WhitelistRequestStatusBadge, {
 			props: { status: 'some_future_status' }
 		});
-		expect(screen.getByLabelText('some_future_status')).toBeInTheDocument();
+		expect(screen.getByTestId('status-badge')).toHaveTextContent('some_future_status');
 		expect(container.querySelector('span')?.className).toContain('bg-highlight');
 	});
 

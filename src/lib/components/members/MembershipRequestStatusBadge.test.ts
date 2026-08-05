@@ -15,12 +15,11 @@ import MembershipRequestStatusBadge from './MembershipRequestStatusBadge.svelte'
  */
 describe('members/MembershipRequestStatusBadge', () => {
 	it.each(MEMBERSHIP_REQUEST_STATUS_ORDER as MembershipRequestStatus[])(
-		'exposes the %s label as the pill accessible name',
+		'renders the %s label on the pill',
 		(status) => {
 			render(MembershipRequestStatusBadge, { props: { status } });
 			const label = getMembershipRequestStatusLabel(status);
-			expect(screen.getByLabelText(label)).toBeInTheDocument();
-			expect(screen.getByLabelText(label)).toHaveTextContent(label);
+			expect(screen.getByTestId('status-badge')).toHaveTextContent(label);
 		}
 	);
 

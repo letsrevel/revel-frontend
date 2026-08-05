@@ -12,19 +12,17 @@ const LABELS: Record<AnnouncementStatus, string> = {
 };
 
 /**
- * REGRESSION GUARD, same shape as `members/SubscriptionStatusBadge.test.ts`: this mapper
- * wraps `common/StatusBadge`. The accessible NAME is what lets callers (and
- * any future e2e lookup) address the pill via `getByLabelText` — passed here
- * explicitly and, since #788, defaulted by the primitive as well. Assert it
- * for every enum value, not a
- * sample, so a status silently losing its name doesn't slip through.
+ * REGRESSION GUARD, same shape as `members/SubscriptionStatusBadge.test.ts`:
+ * this mapper wraps `common/StatusBadge`. Its status text is what lets callers
+ * (and any e2e lookup) address the pill, and since #795 it is the accessible
+ * name too. Assert it for every enum value, not a sample, so a status silently
+ * losing its label doesn't slip through.
  */
 describe('announcements/AnnouncementStatusBadge', () => {
-	it.each(STATUSES)('exposes the %s label as the pill accessible name', (status) => {
+	it.each(STATUSES)('renders the %s label on the pill', (status) => {
 		render(AnnouncementStatusBadge, { props: { status } });
 		const label = LABELS[status];
-		expect(screen.getByLabelText(label)).toBeInTheDocument();
-		expect(screen.getByLabelText(label)).toHaveTextContent(label);
+		expect(screen.getByTestId('status-badge')).toHaveTextContent(label);
 	});
 
 	it('maps status to the primitive tone (draft → neutral, scheduled → info, sent → success)', () => {

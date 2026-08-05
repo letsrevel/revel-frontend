@@ -46,9 +46,7 @@
 </script>
 
 <!--
-	aria-label is deliberate, not redundant with the visible text: this badge
-	is a `common/StatusBadge` consumer (see CLAUDE.md primitive contract) and
-	every domain mapper attaches its own aria-label explicitly — the primitive
-	defaults the same value since #788, so the two agree by construction.
+	A `common/StatusBadge` consumer (see CLAUDE.md primitive contract). No
+	`aria-label`: the visible status text is the accessible name (#795).
 -->
-<StatusBadge {tone} {label} {icon} size="sm" class={className} aria-label={label} />
+<StatusBadge {tone} {label} {icon} size="sm" class={className} />

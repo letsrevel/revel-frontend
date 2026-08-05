@@ -4,13 +4,10 @@ import type { PollStatus } from '$lib/api/generated/types.gen';
 import PollStatusBadge from './PollStatusBadge.svelte';
 
 /**
- * REGRESSION GUARD, same shape as `members/SubscriptionStatusBadge.test.ts`: this pill's
- * accessible NAME is a cross-surface contract (admin poll list/detail cards
- * locate it by its status text), not decoration. `PollStatusBadge` shipped in
- * an earlier wave as a `common/StatusBadge` mapper WITHOUT an `aria-label`,
- * back when the primitive defaulted nothing (it defaults one since #788) — so
- * this guards every status, not just a sample, against that name being
- * silently absent.
+ * REGRESSION GUARD, same shape as `members/SubscriptionStatusBadge.test.ts`:
+ * this pill's status text is a cross-surface contract (admin poll list/detail
+ * cards locate it by that text, which since #795 is also its accessible name),
+ * not decoration. Every status is pinned, not a sample.
  */
 const STATUS_ORDER: PollStatus[] = ['draft', 'open', 'closed'];
 
@@ -27,11 +24,10 @@ const EXPECTED_TONE_CLASS: Record<PollStatus, string> = {
 };
 
 describe('polls/PollStatusBadge', () => {
-	it.each(STATUS_ORDER)('exposes the %s label as the pill accessible name', (status) => {
+	it.each(STATUS_ORDER)('renders the %s label on the pill', (status) => {
 		render(PollStatusBadge, { props: { status } });
 		const label = LABELS[status];
-		expect(screen.getByLabelText(label)).toBeInTheDocument();
-		expect(screen.getByLabelText(label)).toHaveTextContent(label);
+		expect(screen.getByTestId('status-badge')).toHaveTextContent(label);
 	});
 
 	it.each(STATUS_ORDER)('maps %s to its tone class', (status) => {

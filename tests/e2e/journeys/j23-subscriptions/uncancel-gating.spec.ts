@@ -119,7 +119,9 @@ test.describe('J23 uncancel gating @p2', () => {
 
 		// --- CONTROL: member row ACTIVE → the button is there --------------------
 		const okDrawer = await openDrawerFor(page, activeMember);
-		await expect(okDrawer.getByLabel('Active')).toBeVisible({ timeout: 15_000 });
+		await expect(okDrawer.getByTestId('status-badge').filter({ hasText: 'Active' })).toBeVisible({
+			timeout: 15_000
+		});
 		await expect(okDrawer.getByText(new RegExp(`^Cancels on .*(${MONTH})`))).toBeVisible();
 		await expect(okDrawer.getByRole('button', { name: 'Undo cancellation' })).toBeVisible();
 		// Corroborates that the row really is scheduled to cancel: Pause is refused
@@ -136,7 +138,9 @@ test.describe('J23 uncancel gating @p2', () => {
 		// was not mirrored onto it), and the cancellation is still booked — so the
 		// only thing that differs from the control above is `member_status`.
 		// Without these, the absence below could just be an unloaded drawer.
-		await expect(gatedDrawer.getByLabel('Active')).toBeVisible({ timeout: 15_000 });
+		await expect(gatedDrawer.getByTestId('status-badge').filter({ hasText: 'Active' })).toBeVisible(
+			{ timeout: 15_000 }
+		);
 		await expect(gatedDrawer.getByText(new RegExp(`^Cancels on .*(${MONTH})`))).toBeVisible();
 
 		// THE NEGATIVE: the backend would answer 403, so the drawer never offers it.

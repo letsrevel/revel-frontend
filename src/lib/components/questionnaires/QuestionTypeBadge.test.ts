@@ -24,11 +24,10 @@ const EXPECTED_TONE_CLASS: Record<QuestionType, string> = {
 };
 
 describe('questionnaires/QuestionTypeBadge', () => {
-	it.each(TYPE_ORDER)('exposes the %s label as the pill accessible name', (type) => {
+	it.each(TYPE_ORDER)('renders the %s label on the pill', (type) => {
 		const label = LABELS[type];
 		render(QuestionTypeBadge, { props: { type, label } });
-		expect(screen.getByLabelText(label)).toBeInTheDocument();
-		expect(screen.getByLabelText(label)).toHaveTextContent(label);
+		expect(screen.getByTestId('status-badge')).toHaveTextContent(label);
 	});
 
 	it.each(TYPE_ORDER)('maps %s to its tone class', (type) => {

@@ -58,7 +58,7 @@
 			<div class="mt-1 font-medium">{sub.plan.name}</div>
 			<div class="text-sm text-muted-foreground">{formatPlanPrice(sub.plan)}</div>
 			<div class="mt-2 flex items-center gap-2">
-				<SubscriptionStatusBadge status={sub.status} />
+				<SubscriptionStatusBadge status={sub.status} data-testid="membership-subscription-status" />
 				<span class="text-xs text-muted-foreground">
 					{#if line.kind === 'renewal'}
 						{m['subscriptions.dateLine.renewal']({ date: fmtDate(line.date) })}

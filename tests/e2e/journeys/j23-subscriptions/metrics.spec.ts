@@ -95,16 +95,20 @@ test.describe('J23 subscription metrics @p2', () => {
 
 		// The one subscription row behind those figures — a different claim from
 		// the strip above, and still worth making: it pins the row-level state, not
-		// the aggregate. StatusBadge exposes the status as its accessible NAME,
-		// while the strip's chips are plain <span>s with no aria-label, so
-		// getByLabel('Active') keeps resolving to badges only.
+		// the aggregate. The strip's chips are plain <span>s that never go through
+		// `common/StatusBadge`, so the `status-badge` testid resolves to badges
+		// only — a structural guarantee since #795, where it used to rest on the
+		// chips happening to carry no aria-label.
 		//
 		// Scoped twice over. To the open tab panel, because the Members tab stays
 		// mounted behind it and its membership rows carry an "Active" badge of
 		// their own; and to VISIBLE nodes, because each subscription renders both a
 		// desktop table row and a mobile card (one of which is always display:none)
 		// — so an unfiltered count is 2 per subscription and layout-dependent.
-		const activeBadges = subsPanel.getByLabel('Active').filter({ visible: true });
+		const activeBadges = subsPanel
+			.getByTestId('status-badge')
+			.filter({ hasText: 'Active' })
+			.filter({ visible: true });
 		await expect(activeBadges).toHaveCount(1);
 		await expect(subsPanel.getByText(member.email).filter({ visible: true })).toHaveCount(1);
 

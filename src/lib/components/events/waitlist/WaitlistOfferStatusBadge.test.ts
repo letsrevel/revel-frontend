@@ -14,22 +14,17 @@ const LABELS: Record<WaitlistOfferStatus, string> = {
 };
 
 /**
- * REGRESSION GUARD (see members/SubscriptionStatusBadge.test.ts for the incident this
- * pattern guards against). `common/StatusBadge` named itself from its text
- * content only until #788, so every domain mapper had to pass `aria-label`
- * explicitly or `getByLabel` lookups against the badge silently stopped
- * resolving. The primitive defaults it now; pin every enum value regardless.
+ * REGRESSION GUARD (see members/SubscriptionStatusBadge.test.ts for the incident
+ * this pattern guards against). The badge is addressed by `status-badge` plus its
+ * status text, which since #795 is also its accessible name — pin every enum
+ * value, since the failure mode drops all of them at once.
  */
 describe('events/waitlist/WaitlistOfferStatusBadge', () => {
-	it.each(WAITLIST_OFFER_STATUS_ORDER)(
-		'exposes the %s label as the pill accessible name',
-		(status) => {
-			render(WaitlistOfferStatusBadge, { props: { status } });
-			const label = LABELS[status];
-			expect(screen.getByLabelText(label)).toBeInTheDocument();
-			expect(screen.getByLabelText(label)).toHaveTextContent(label);
-		}
-	);
+	it.each(WAITLIST_OFFER_STATUS_ORDER)('renders the %s label on the pill', (status) => {
+		render(WaitlistOfferStatusBadge, { props: { status } });
+		const label = LABELS[status];
+		expect(screen.getByTestId('status-badge')).toHaveTextContent(label);
+	});
 
 	it('maps status to the primitive tone (claimed → success, revoked → danger)', () => {
 		const claimed = render(WaitlistOfferStatusBadge, { props: { status: 'claimed' } });
