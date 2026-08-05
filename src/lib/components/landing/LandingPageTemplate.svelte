@@ -1,5 +1,9 @@
 <script lang="ts">
-	import type { LandingPageContent, LandingPageFeature } from '$lib/data/landing-pages';
+	import type {
+		LandingPageCTA,
+		LandingPageContent,
+		LandingPageFeature
+	} from '$lib/data/landing-pages';
 	import { landingPages } from '$lib/data/landing-pages';
 	import { Button } from '$lib/components/ui/button';
 	import { cn } from '$lib/utils';
@@ -105,19 +109,46 @@
 		const relatedContent = landingPages[content.locale]?.[slug];
 		return relatedContent?.hero.headline || slug;
 	}
+
+	/**
+	 * Shared CTA Button recipe for the poster-purple bands (hero + closing CTA).
+	 *
+	 * Focus (#796): the Button base pairs a `--ring` ring with a
+	 * `ring-offset-background` gap — a theme-colored halo on a mode-inert
+	 * poster panel (`--ring` measures 1.27:1 light / 2.07:1 dark against
+	 * poster-purple; only the offset band kept the composite legal). Recolor
+	 * both halves to the band instead: a poster-white ring (5.52:1 on
+	 * poster-purple — the band's audited pair, identical in both modes) over an
+	 * offset gap painted the band's own purple, so the indicator is on-brand
+	 * and independent of the theme axis. Any future poster-band Button adopter
+	 * needs the same treatment with its own band color.
+	 */
+	function ctaButtonClass(variant: LandingPageCTA['variant']): string {
+		const posterFocus = 'ring-offset-poster-purple focus-visible:ring-poster-white';
+		switch (variant) {
+			case 'primary':
+				return `${posterFocus} bg-poster-white text-poster-purple hover:bg-poster-paper`;
+			case 'secondary':
+				return `${posterFocus} border-2 border-poster-white bg-transparent text-poster-white hover:bg-poster-white/10`;
+			case 'outline':
+				return `${posterFocus} border-poster-white/65 bg-transparent text-poster-white hover:bg-poster-white/10 hover:text-poster-white`;
+		}
+	}
 </script>
 
 <!-- Hero Section. Fixed poster-purple background (imagery rule: decorative
      brand panel, identical in both themes, like the landing's own panels).
      text-poster-white on bg-poster-purple measures 5.52:1 (same pair
-     ClosePanel documents for this exact color). Button variants below avoid
-     any translucent-over-gradient wash so every pair stays a plain
-     opaque-or-bordered combination on this single audited number.
+     ClosePanel documents for this exact color). The Button variants
+     (ctaButtonClass in the script, shared with the closing CTA band — focus
+     recipe documented there) avoid any translucent-over-gradient wash so
+     every pair stays a plain opaque-or-bordered combination on this single
+     audited number.
 
      TRAP (guardrail 6, hit here in its INVERSE form): a Button with a custom
      bg-* class keeps the variant's default text unless you also set text-*
      — but a custom text-* class ALSO keeps the variant's default bg-* unless
-     you explicitly set bg-* too. The "outline" branch below previously set
+     you explicitly set bg-* too. The "outline" branch previously set
      only text-poster-white, so shadcn's `outline` variant's own
      `bg-background` (rest) and `hover:text-accent-foreground` (hover)
      survived cn()'s merge untouched → white text on a light bg-background at
@@ -148,16 +179,7 @@
 							: button.variant === 'secondary'
 								? 'secondary'
 								: 'outline'}
-					<Button
-						href={button.href}
-						{variant}
-						size="lg"
-						class={button.variant === 'primary'
-							? 'bg-poster-white text-poster-purple hover:bg-poster-paper'
-							: button.variant === 'secondary'
-								? 'border-2 border-poster-white bg-transparent text-poster-white hover:bg-poster-white/10'
-								: 'border-poster-white/65 bg-transparent text-poster-white hover:bg-poster-white/10 hover:text-poster-white'}
-					>
+					<Button href={button.href} {variant} size="lg" class={ctaButtonClass(button.variant)}>
 						{button.text}
 					</Button>
 				{/each}
@@ -366,11 +388,7 @@
 							? 'secondary'
 							: 'outline'}
 					size="lg"
-					class={button.variant === 'primary'
-						? 'bg-poster-white text-poster-purple hover:bg-poster-paper'
-						: button.variant === 'secondary'
-							? 'border-2 border-poster-white bg-transparent text-poster-white hover:bg-poster-white/10'
-							: 'border-poster-white/65 bg-transparent text-poster-white hover:bg-poster-white/10 hover:text-poster-white'}
+					class={ctaButtonClass(button.variant)}
 				>
 					{button.text}
 				</Button>
