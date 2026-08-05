@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.1] - 2026-08-05
+
+### Fixed
+
+- Organization logo stickers no longer show decorative heart emoji around the logo (join pages, series page, questionnaire bands), and the event page header no longer shows the organization's logo twice — the "organized by" sticker already carries it.
+
 ## [2.3.0] - 2026-08-05
 
 ### Changed
