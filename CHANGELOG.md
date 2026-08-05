@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.2] - 2026-08-05
+
+### Fixed
+
+- Keyboard focus is now clearly visible on the call-to-action buttons of the SEO landing pages: on the purple poster bands the focus ring used the theme colour and was barely distinguishable from the band, and is now drawn in white over a purple gap, identically in light and dark mode.
+- Status pills (membership, ticket, request and event states) now read correctly in screen readers: their longer descriptions — such as "Membership status: Active" — were silently discarded by assistive technology and are now announced, without the visible label being read twice. The membership pill on the dashboard also announced the raw internal status value instead of the translated label.
+
 ## [2.3.1] - 2026-08-05
 
 ### Fixed
