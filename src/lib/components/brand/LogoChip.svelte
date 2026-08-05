@@ -44,7 +44,5 @@
 		style="transform: rotate({clamped}deg)"
 	>
 		<img {src} alt="" class="h-12 w-12 rounded-[14px] object-cover" />
-		<span class="absolute -left-3 -top-2 text-xl">❤️</span>
-		<span class="absolute -bottom-1.5 -right-2 text-sm">❤️</span>
 	</div>
 {/if}

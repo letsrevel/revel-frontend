@@ -9,7 +9,6 @@
 	import { MapPin, Calendar, Share2, ExternalLink } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import { toast } from 'svelte-sonner';
-	import LogoChip from '$lib/components/brand/LogoChip.svelte';
 
 	interface Props {
 		event: EventDetailSchema;
@@ -224,20 +223,6 @@
 					</span>
 				</div>
 			</a>
-			<!-- Positioning lives on the wrapper: LogoChip owns its own `transform`
-			     (the tilt), so a translate utility on the chip itself would be
-			     overwritten. Anchored to the ribbon's BOTTOM so the chip grows
-			     UPWARD over the cover — a sticker straddling the cut — instead of
-			     past the header's `overflow-hidden` bottom edge. Renders nothing
-			     for a logo-less org (sticker-chip rule) — the strip's initial
-			     tile is the only identity mark then, which is the point. -->
-			<div class="absolute bottom-3 right-8 hidden md:block">
-				<LogoChip
-					rotate={-8}
-					logo={event.organization.logo}
-					logoThumbnail={event.organization.logo_thumbnail_url}
-				/>
-			</div>
 		</div>
 	</div>
 </header>
