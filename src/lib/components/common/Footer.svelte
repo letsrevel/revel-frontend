@@ -83,13 +83,14 @@
 	<div class="container mx-auto max-w-5xl px-4 py-10 md:py-14">
 		<!-- Brand lockup: the SAME RevelWordmark the header renders, so the
 		     wordmark reads identically in the navbar and at the bottom of the
-		     page (it used to be hand-set here and drifted: wider tracking, no
-		     accent period). Its text is currentColor, so it inherits this
-		     band's inverted foreground; the lockup's crimson period is the one
-		     fixed hue, measuring 3.03:1 on the light-mode ink band (a 24px
-		     semibold glyph is WCAG large text, so 3:1 applies — and it is a
-		     logotype accent carrying no information besides) and 4.86:1 on the
-		     dark-mode card band.
+		     page (it used to be hand-set here, and drifted off the guide).
+		     The colour lockup, not `mono`: this band is dark, but so is the
+		     whole app in dark mode, and the gradient mark has always carried
+		     colour here — the knockout variant is for surfaces the gradient
+		     cannot read on (the poster's brand-gradient panel), not for every
+		     dark background. "let's" and the period are currentColor, so they
+		     take this band's inverted foreground, which is what the guide asks
+		     of them on dark.
 		     Visible text is the link's accessible name (WCAG 2.5.3).
 		     text-background on bg-foreground mirrors the audited
 		     foreground-on-background pair (contrast is symmetric): 15.43:1 in
