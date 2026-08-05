@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
+	import RevelWordmark from '$lib/components/brand/RevelWordmark.svelte';
 	import PosterPanel from './PosterPanel.svelte';
 
 	interface Props {
@@ -20,19 +21,17 @@
 	bgClass="bg-[linear-gradient(200deg,hsl(var(--poster-purple))_30%,hsl(var(--poster-crimson-deep))_140%)]"
 >
 	<div class="text-center text-[hsl(var(--poster-white))]">
-		<!-- The "let's revel." lockup per the Digital Brand Styleguide wordmark
-		     spec: "let's" Light, "revel" Semibold, tracking 60 (0.06em) — the one
-		     place tracking is raised; everywhere else it stays 0. Deliberately NOT
-		     RevelWordmark: that component is the fixed text-2xl header lockup
-		     (h-7 mark, `text-accent` period), which doesn't survive poster scale.
-		     The amber period measures 2.98:1 on the purple end / 2.90:1 at the far
-		     end — under the 3:1 large-text floor, kept under WCAG 1.4.3's logotype
-		     exception (it is the brand lockup's accent, mirroring RevelWordmark's
-		     accent period) and because the glyph carries no information: the
-		     heading reads identically without it. -->
-		<h2 class="text-4xl tracking-[0.06em] sm:text-5xl">
-			<span class="font-light">let&rsquo;s</span>
-			<span class="font-semibold">revel<span class="text-[hsl(var(--poster-amber))]">.</span></span>
+		<!-- RevelWordmark in the Digital Brand Styleguide's white-on-dark variant:
+		     the whole lockup flat in the panel's poster-white, weights unchanged.
+		     That variant is the right one here precisely because the colour
+		     lockup's purple→crimson "revel" would dissolve into the purple→crimson
+		     panel behind it. It also retires the amber period this heading used to
+		     hand-set — the guide gives the period one colour, the same Ink/white as
+		     "let's", never an accent hue. White measures 5.52:1 on the purple end
+		     and 5.38:1 at the far end. `mark={false}`: the R sits in the hero
+		     panel, and repeating it here would crowd the CTA. -->
+		<h2>
+			<RevelWordmark mono mark={false} class="text-4xl sm:text-5xl" />
 		</h2>
 		<!-- Full-opacity white. At text-lg/medium (18px — non-large, so the full
 		     4.5:1 applies) a 0.9 alpha measures 4.78:1 on the purple end and
