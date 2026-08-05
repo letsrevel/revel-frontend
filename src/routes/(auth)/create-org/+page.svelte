@@ -123,9 +123,17 @@
 	<div class="container mx-auto -mt-12 max-w-2xl px-4 pb-16">
 		<!-- Check if user already owns an organization -->
 		{#if ownsOrganization}
-			<!-- Warning tint mirrors ToneTile's amber recipe (see security page). -->
-			<div class="rounded-lg border-2 border-highlight/40 bg-highlight/20 p-6 shadow-poster">
-				<div class="flex gap-3">
+			<!-- Warning tint mirrors ToneTile's amber recipe (see security page).
+			     Two layers, not one: this block is the first thing the -mt-12
+			     pull-up lands on, so the outer shell must be OPAQUE (pull-up
+			     opacity rule) or the band bleeds through its top 3rem and takes
+			     the composite under the copy with it. `bg-card` is that shell;
+			     the tint rides inside it, so the audited recipe is
+			     "highlight/20 over card" (already registered) rather than
+			     "over background". Inner radius is `rounded-md` =
+			     calc(--radius - 2px), concentric with the 2px border. -->
+			<div class="rounded-lg border-2 border-highlight/40 bg-card shadow-poster">
+				<div class="flex gap-3 rounded-md bg-highlight/20 p-6">
 					<AlertCircle
 						class="h-5 w-5 flex-shrink-0 text-highlight-foreground dark:text-highlight"
 						aria-hidden="true"
@@ -154,9 +162,12 @@
 		     --foreground (danger-framing rule: meaning is never color-only).
 		     `text-destructive` would now be safe here too — 6.05:1 in dark since
 		     the token split (#781), against 2.68:1 before it — but the framing
-		     rule stands on its own. -->
-			<div class="rounded-lg border-2 border-destructive/40 bg-destructive/10 p-6 shadow-poster">
-				<div class="flex gap-3">
+		     rule stands on its own.
+		     Same two-layer shell as the branch above: opaque `bg-card` outer so
+		     the -mt-12 pull-up never lands on a translucent block, tint inside,
+		     giving the already-registered "destructive/10 over card" recipe. -->
+			<div class="rounded-lg border-2 border-destructive/40 bg-card shadow-poster">
+				<div class="flex gap-3 rounded-md bg-destructive/10 p-6">
 					<AlertCircle class="h-5 w-5 flex-shrink-0 text-destructive" aria-hidden="true" />
 					<div>
 						<h3 class="font-bold text-foreground">

@@ -23,8 +23,8 @@
 		 *
 		 * Level 1 introduces NO new colour pair — it only changes size and
 		 * spacing, so every ratio is the one levels 2/3 already ship: title
-		 * (foreground on card) 17.46:1 light / 15.69:1 dark, body
-		 * (muted-foreground on card) 9.06:1 / 7.44:1, and the chip pairs listed
+		 * (foreground on card) 17.40:1 light / 15.64:1 dark, body
+		 * (muted-foreground on card) 9.05:1 / 7.41:1, and the chip pairs listed
 		 * below. Only the body's SIZE moves, 14px → 16px, which loosens the
 		 * requirement rather than tightening it.
 		 *

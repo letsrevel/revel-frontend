@@ -203,9 +203,9 @@
 
 		Ribbon and sticker are mode-INERT by the imagery rule (a poster panel is
 		not a surface). No copy sits on the purple itself — the only text here is
-		the initial tile's letter, hand-verified against the fixed values because
-		a poster-palette pair is invisible to scripts/audit-brand-themes.py
-		(number is the audit script's own):
+		the initial tile's letter, measured against the fixed values rather than
+		per-mode. The pair is registered in scripts/audit-brand-themes.py;
+		number pasted from its output:
 		  white on crimson-DEEP →  4.59:1
 		The initial tile's gradient ends on `crimson-deep`, not raw
 		`poster-crimson`: white on raw Light Crimson is 4.33:1, which fails AA
@@ -240,12 +240,13 @@
 	<!--
 		Tinted content panel — the event detail page's wash, so an org profile and
 		the events it lists read as the same surface. Composite and therefore
-		ratios are identical to that page's (a composited alpha is invisible to
-		scripts/audit-brand-themes.py):
+		ratios are identical to that page's. The recipe IS registered in
+		COMPOSITED_PAIRS ("public page secondary wash"), so these figures are
+		pasted from scripts/audit-brand-themes.py — never hand-computed:
 		  light — secondary@55 over background ⇒ hsl(231 88% 90%);
-		          foreground 12.42:1 · muted-foreground 6.45:1 · primary 4.97:1
+		          foreground 12.36:1 · muted-foreground 6.43:1 · primary 4.97:1
 		  dark  — secondary@28 over background ⇒ hsl(246 33% 15%);
-		          foreground 15.75:1 · muted-foreground 7.47:1 · primary 6.30:1
+		          foreground 15.68:1 · muted-foreground 7.44:1 · primary 6.30:1
 		Everything that lands directly on it here is covered: the h1 and section
 		headings (`foreground`), the metadata/social row and section blurbs
 		(`muted-foreground`), and the SectionHeader kickers plus the inline

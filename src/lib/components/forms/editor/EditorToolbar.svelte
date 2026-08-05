@@ -176,7 +176,7 @@
 	tabindex="-1"
 	bind:this={toolbarEl}
 	onkeydown={onKeydown}
-	class="flex flex-wrap items-center gap-1 rounded-md border border-gray-300 bg-gray-50 p-1.5 dark:border-gray-600 dark:bg-gray-800"
+	class="flex flex-wrap items-center gap-1 rounded-md border border-border bg-muted p-1.5"
 >
 	{#each commands as cmd, i (cmd.key)}
 		<button
@@ -188,7 +188,7 @@
 			title={cmd.label}
 			onclick={cmd.run}
 			onfocus={() => (focusIndex = i)}
-			class="rounded p-1.5 transition-colors hover:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:opacity-50 aria-pressed:bg-primary/15 dark:hover:bg-gray-700"
+			class="rounded p-1.5 transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:opacity-50 aria-pressed:bg-primary/15"
 		>
 			<cmd.icon class="h-4 w-4" aria-hidden="true" />
 		</button>
@@ -202,7 +202,7 @@
 		title={m['markdownEditor.insertLink']()}
 		onclick={onInsertLink}
 		onfocus={() => (focusIndex = linkIndex)}
-		class="rounded p-1.5 hover:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:opacity-50 dark:hover:bg-gray-700"
+		class="rounded p-1.5 hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:opacity-50"
 	>
 		<LinkIcon class="h-4 w-4" aria-hidden="true" />
 	</button>
@@ -215,7 +215,7 @@
 		title={m['markdownEditor.viewSource']()}
 		onclick={onToggleSource}
 		onfocus={() => (focusIndex = sourceIndex)}
-		class="ml-auto rounded p-1.5 hover:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:opacity-50 dark:hover:bg-gray-700"
+		class="ml-auto rounded p-1.5 hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:opacity-50"
 	>
 		<SquareCode class="h-4 w-4" aria-hidden="true" />
 	</button>

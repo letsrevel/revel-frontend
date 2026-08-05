@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Landing page redesigned as a full-bleed color-block poster: brand-gradient hero with a rotating headline noun, amber pricing panel with direct fee comparison, dedicated panels for communities and for venues/theaters (premium seating), ticket-stub feature stubs, and an open-source panel. Replaces the card-grid landing page.
 
+### Fixed
+
+- On **Create organization**, the "you already own an organization" and "verify your email" notices no longer let the periwinkle header band bleed through their top edge — both now sit on an opaque card like the creation form does.
+
 ## [2.2.0] - 2026-08-03
 
 ### Added
