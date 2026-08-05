@@ -1,4 +1,4 @@
-import { error, isHttpError, redirect } from '@sveltejs/kit';
+import { error, isHttpError } from '@sveltejs/kit';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
 import {
@@ -21,20 +21,6 @@ import { canPerformAction } from '$lib/utils/permissions';
 
 export const load: PageServerLoad = async ({ params, locals, fetch, url, request }) => {
 	const { slug } = params;
-
-	// Stripe hands the member back to this URL — the success/cancel URLs are built
-	// server-side by the BACKEND (`subscription_stripe_service.py`, `/org/{slug}?
-	// membership_success=true`), so the frontend cannot re-point them. The card
-	// that explains the outcome now lives on the membership page, so forward the
-	// flag there. Outside the try below: a `redirect` is not an `HttpError`, and
-	// the catch would swallow it into a 500.
-	const isCheckoutReturn =
-		url.searchParams.has('membership_success') || url.searchParams.has('membership_cancelled');
-	if (isCheckoutReturn) {
-		// The whole query string travels: `?ot=` may be riding along on a private
-		// org, and the membership page reads it the same way this one does.
-		throw redirect(303, `/org/${encodeURIComponent(slug)}/membership${url.search}`);
-	}
 
 	try {
 		// Prepare headers with authentication if user is logged in
