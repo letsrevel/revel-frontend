@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.3] - 2026-08-05
+
+### Fixed
+
+- The "let's revel." logo now looks the same everywhere and matches the brand styleguide. The navbar, the page footer and the landing page's closing panel each drew it differently: the letter-spacing varied, the full stop was red in one place, amber in another and plain in the third, and the word "revel" was missing its purple-to-crimson brand gradient throughout.
+
 ## [2.3.2] - 2026-08-05
 
 ### Fixed
