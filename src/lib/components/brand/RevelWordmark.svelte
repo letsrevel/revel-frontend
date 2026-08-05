@@ -2,7 +2,9 @@
 	// "let's revel." lockup — the official R mark + the wordmark in the brand
 	// typeface (Nata Sans). Text uses currentColor so it adapts to light/dark;
 	// the trailing period picks up the crimson accent (the "heart" pop).
-	// Used as the header home button.
+	// Used as the header home button AND as the footer's brand lockup — the
+	// wordmark must read identically in both, so keep this the single source
+	// (never hand-set "let's revel." at a call site).
 	//
 	// The mark is decorative here: the visible "let's revel." text is the
 	// accessible name (WCAG 2.5.3 Label in Name), so the R must not add "Revel".
