@@ -242,6 +242,10 @@ test.describe('J23 hosted-checkout subscribe @p2', () => {
 		await expect(
 			page.getByText("Your payment wasn't completed. You can resume it whenever you're ready.")
 		).toBeVisible();
+		// Mirror of the success leg's stripped-flag check: the toHaveURL regex
+		// above deliberately tolerates a query string, so without this line the
+		// cancelled flag's onMount consumption would go unasserted.
+		expect(page.url()).not.toContain('membership_cancelled');
 
 		// Resume: the backend hands back a payable session for the same pending
 		// subscription, and the browser leaves for Stripe again.

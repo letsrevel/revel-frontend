@@ -225,17 +225,19 @@
 	 * WCAG 2.1 AA wants 3:1 for non-text UI, so every theme surface clears it.
 	 *
 	 * The fixed poster panels are the one place `--ring` does NOT clear it: a
-	 * purple ring on a purple panel is 1.27:1 light / 2.07:1 dark. Most
-	 * focusables that sit on a poster panel therefore declare their own explicit
-	 * focus outline (amber on ink, ink on amber, ...) and override this rule via
-	 * mechanism 1 — but NOT all of them. `LandingPageTemplate.svelte` (the SEO
-	 * landing pages) renders plain shadcn Buttons on poster panels, which keep
-	 * the Button base's `--ring` ring. Those are not invisible, because the same
-	 * base adds a `ring-offset-background` band between button and ring, and
-	 * that band measures 4.88:1 light / 3.33:1 dark against poster-purple — so
-	 * the COMPOSITE indicator clears 3:1 in both modes today. It is off-brand
-	 * rather than non-compliant; issue #796 tracks a proper poster-panel focus
-	 * treatment. Do not read this rule as a guarantee for poster surfaces.
+	 * purple ring on a purple panel is 1.27:1 light / 2.07:1 dark. Every
+	 * focusable that sits on a poster panel therefore declares its own explicit
+	 * poster-palette focus treatment and overrides this rule via mechanism 1 —
+	 * hand-written outlines (amber on ink, ink on amber, ...), and for shadcn
+	 * Buttons the recipe in `LandingPageTemplate.svelte`'s `ctaButtonClass`
+	 * (#796): recolor BOTH halves of the Button base's composite —
+	 * `focus-visible:ring-poster-white` for the ring,
+	 * `focus-visible:ring-offset-<band color>` for the offset gap (scoped like
+	 * EventHeader's, winning over the base's unscoped `ring-offset-background`
+	 * by variant specificity) — so the indicator stays on the band's audited pair
+	 * instead of a theme-colored halo on a mode-inert panel. Any new poster-band
+	 * Button adopter needs the same pair for its own band color. Do not read
+	 * this rule as a guarantee for poster surfaces.
 	 */
 	:where(:focus-visible) {
 		outline: 2px solid hsl(var(--ring));
