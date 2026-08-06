@@ -24,6 +24,33 @@ export function getDateLocale(): string {
 }
 
 /**
+ * Locale-appropriate range separator for the hand-built range branches (the
+ * DST-straddling cases where formatRange can't be used because each end
+ * carries its own offset). En dash with spaces matches what formatRange
+ * produces for the supported locales, so normal and DST ranges read alike.
+ */
+const RANGE_SEPARATOR = ' \u2013 ';
+
+/**
+ * Memoized Intl.DateTimeFormat instances. Constructing a formatter is
+ * expensive (ICU data lookup); event lists render dozens of dates with the
+ * same locale/timezone/options, so cache by a stable key. Option objects
+ * below are built with literal, fixed key order, so JSON.stringify is a
+ * stable cache key.
+ */
+const dtfCache = new Map<string, Intl.DateTimeFormat>();
+
+function getFormatter(locale: string, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
+	const key = `${locale}|${JSON.stringify(options)}`;
+	let formatter = dtfCache.get(key);
+	if (!formatter) {
+		formatter = new Intl.DateTimeFormat(locale, options);
+		dtfCache.set(key, formatter);
+	}
+	return formatter;
+}
+
+/**
  * Build the `timeZone` slice of an Intl options object.
  *
  * When a `timeZone` (IANA name, e.g. "Europe/Vienna") is supplied, all date
@@ -43,7 +70,7 @@ function tzOpt(timeZone?: string): { timeZone?: string } {
  */
 function getTimeZoneAbbreviation(date: Date, locale: string, timeZone?: string): string {
 	if (!timeZone) return '';
-	const parts = new Intl.DateTimeFormat(locale, {
+	const parts = getFormatter(locale, {
 		timeZone,
 		timeZoneName: 'short'
 	}).formatToParts(date);
@@ -55,13 +82,13 @@ function getTimeZoneAbbreviation(date: Date, locale: string, timeZone?: string):
  * Uses en-CA (ISO-like YYYY-MM-DD) for a stable, locale-independent compare.
  */
 function isSameDayInZone(a: Date, b: Date, timeZone?: string): boolean {
-	const opts: Intl.DateTimeFormatOptions = {
+	const formatter = getFormatter('en-CA', {
 		year: 'numeric',
 		month: '2-digit',
 		day: '2-digit',
 		...tzOpt(timeZone)
-	};
-	return a.toLocaleDateString('en-CA', opts) === b.toLocaleDateString('en-CA', opts);
+	});
+	return formatter.format(a) === formatter.format(b);
 }
 
 /**
@@ -90,13 +117,13 @@ export function formatEventDate(
 	const date = new Date(dateString);
 	const locale = getDateLocale();
 
-	const dateFormatter = new Intl.DateTimeFormat(locale, {
+	const dateFormatter = getFormatter(locale, {
 		weekday: 'short',
 		month: 'short',
 		day: 'numeric',
 		...tzOpt(timeZone)
 	});
-	const timeFormatter = new Intl.DateTimeFormat(locale, {
+	const timeFormatter = getFormatter(locale, {
 		hour: 'numeric',
 		minute: '2-digit',
 		...tzOpt(timeZone)
@@ -125,13 +152,13 @@ export function formatEventDateRange(
 	const end = new Date(endString);
 	const locale = getDateLocale();
 
-	const dateFormatter = new Intl.DateTimeFormat(locale, {
+	const dateFormatter = getFormatter(locale, {
 		weekday: 'short',
 		month: 'short',
 		day: 'numeric',
 		...tzOpt(timeZone)
 	});
-	const timeFormatter = new Intl.DateTimeFormat(locale, {
+	const timeFormatter = getFormatter(locale, {
 		hour: 'numeric',
 		minute: '2-digit',
 		...tzOpt(timeZone)
@@ -147,7 +174,7 @@ export function formatEventDateRange(
 	// collapsing (e.g. "8:00 – 11:00 PM" in en-US, "20:00–23:00" in de-DE).
 	if (isSameDayInZone(start, end, timeZone)) {
 		if (startTz !== endTz) {
-			return `${dateFormatter.format(start)} • ${withTz(timeFormatter.format(start), startTz)} - ${withTz(timeFormatter.format(end), endTz)}`;
+			return `${dateFormatter.format(start)} • ${withTz(timeFormatter.format(start), startTz)}${RANGE_SEPARATOR}${withTz(timeFormatter.format(end), endTz)}`;
 		}
 		return withTz(
 			`${dateFormatter.format(start)} • ${timeFormatter.formatRange(start, end)}`,
@@ -162,11 +189,11 @@ export function formatEventDateRange(
 	// to its own time so the end isn't mislabelled with the start's offset; when
 	// they match, append once at the end as before.
 	if (startTz !== endTz) {
-		return `${dateFormatter.format(start)} • ${withTz(timeFormatter.format(start), startTz)} - ${dateFormatter.format(end)} • ${withTz(timeFormatter.format(end), endTz)}`;
+		return `${dateFormatter.format(start)} • ${withTz(timeFormatter.format(start), startTz)}${RANGE_SEPARATOR}${dateFormatter.format(end)} • ${withTz(timeFormatter.format(end), endTz)}`;
 	}
 
 	return withTz(
-		`${dateFormatter.format(start)} • ${timeFormatter.format(start)} - ${dateFormatter.format(end)} • ${timeFormatter.format(end)}`,
+		`${dateFormatter.format(start)} • ${timeFormatter.format(start)}${RANGE_SEPARATOR}${dateFormatter.format(end)} • ${timeFormatter.format(end)}`,
 		startTz
 	);
 }
@@ -193,7 +220,9 @@ export function getRSVPDeadlineRelative(deadlineString: string): string | null {
 
 	const rtf = new Intl.RelativeTimeFormat(getDateLocale(), { numeric: 'always' });
 
-	const diffMinutes = Math.floor(diffMs / (1000 * 60));
+	// Clamp to at least 1 minute: a deadline seconds away must never read
+	// "in 0 minutes" while the RSVP is technically still open.
+	const diffMinutes = Math.max(1, Math.floor(diffMs / (1000 * 60)));
 	const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
 	const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
@@ -215,6 +244,9 @@ export function getRSVPDeadlineRelative(deadlineString: string): string | null {
  * "2 hours ago" / "yesterday". Uses Intl.RelativeTimeFormat so the
  * directional word ("in" / "ago" and its translations) is supplied by
  * the active locale rather than hardcoded.
+ *
+ * Month/year thresholds are calendar approximations (30/365 days) —
+ * adequate for casual UI copy, not for exact anniversary arithmetic.
  *
  * @param dateString ISO 8601 date-time string
  * @returns Relative phrase (e.g., "in 3 days", "2 hours ago")
@@ -246,12 +278,15 @@ export function formatRelativeTime(dateString: string): string {
  */
 export function isEventPast(endString: string): boolean {
 	const end = new Date(endString);
-	const now = new Date();
-	return end < now;
+	return end.getTime() <= Date.now();
 }
 
 /**
- * Check if RSVP deadline has passed
+ * Check if RSVP deadline has passed.
+ *
+ * Boundary matches getRSVPDeadlineRelative: the exact deadline instant counts
+ * as closed ("RSVP by X" means X itself is too late), so a surface combining
+ * both never shows an open button next to closed copy.
  * @param deadlineString ISO 8601 date-time string, null, or undefined
  * @returns true if deadline has passed
  */
@@ -259,8 +294,7 @@ export function isRSVPClosed(deadlineString: string | null | undefined): boolean
 	if (!deadlineString) return false;
 
 	const deadline = new Date(deadlineString);
-	const now = new Date();
-	return deadline < now;
+	return deadline.getTime() <= Date.now();
 }
 
 /**
@@ -294,11 +328,11 @@ export function formatEventDateForScreenReader(dateString: string, timeZone?: st
 	// the locale's own connector word ("Friday, October 20, 2025 at 8:00 PM" in
 	// en-US, "Freitag, 20. Oktober 2025 um 20:00" in de-DE) — replacing the
 	// previous hand-built string with an English-only ordinal suffix.
-	const formatted = date.toLocaleString(locale, {
+	const formatted = getFormatter(locale, {
 		dateStyle: 'full',
 		timeStyle: 'short',
 		...tzOpt(timeZone)
-	});
+	}).format(date);
 
 	return withTz(formatted, getTimeZoneAbbreviation(date, locale, timeZone));
 }
@@ -315,36 +349,34 @@ export function formatEventDateForScreenReader(dateString: string, timeZone?: st
  * @returns Formatted time string (e.g., "8:00 PM" for en-US or "20:00" for de-DE)
  */
 export function formatTimeOfDay(dateString: string, timeZone?: string): string {
-	const date = new Date(dateString);
-	const locale = getDateLocale();
-
-	return date.toLocaleTimeString(locale, {
+	return getFormatter(getDateLocale(), {
 		hour: 'numeric',
 		minute: '2-digit',
 		...tzOpt(timeZone)
-	});
+	}).format(new Date(dateString));
 }
 
 /**
  * Format a date for display in admin pages and lists
  * Uses locale-aware formatting with medium date and short time
- * @param dateString ISO 8601 date-time string
+ * @param date ISO 8601 date-time string, or an already-parsed Date (lets
+ *   callers that validated the value avoid a second parse)
  * @returns Formatted date string (e.g., "Oct 20, 2025, 8:00 PM" for en-US or "20. Okt. 2025, 20:00" for de-DE)
  */
-export function formatDateTime(dateString: string, timeZone?: string): string {
-	const date = new Date(dateString);
+export function formatDateTime(date: string | Date, timeZone?: string): string {
+	const parsed = date instanceof Date ? date : new Date(date);
 	const locale = getDateLocale();
 
-	const formatted = date.toLocaleString(locale, {
+	const formatted = getFormatter(locale, {
 		year: 'numeric',
 		month: 'short',
 		day: 'numeric',
 		hour: 'numeric',
 		minute: '2-digit',
 		...tzOpt(timeZone)
-	});
+	}).format(parsed);
 
-	return withTz(formatted, getTimeZoneAbbreviation(date, locale, timeZone));
+	return withTz(formatted, getTimeZoneAbbreviation(parsed, locale, timeZone));
 }
 
 /**
@@ -363,7 +395,7 @@ export function formatDateTimeReadback(value: string | null | undefined): string
 	if (!value) return '';
 	const date = new Date(value);
 	if (isNaN(date.getTime())) return '';
-	return formatDateTime(value);
+	return formatDateTime(date);
 }
 
 /**
@@ -372,49 +404,45 @@ export function formatDateTimeReadback(value: string | null | undefined): string
  * @returns Formatted date string (e.g., "Oct 20, 2025" for en-US or "20. Okt. 2025" for de-DE)
  */
 export function formatDate(dateString: string, timeZone?: string): string {
-	const date = new Date(dateString);
-	const locale = getDateLocale();
-
 	// Date-only: apply the timezone so the calendar day is correct, but don't
 	// append a tz abbreviation (it reads oddly next to a date with no time).
-	return date.toLocaleDateString(locale, {
+	return getFormatter(getDateLocale(), {
 		year: 'numeric',
 		month: 'short',
 		day: 'numeric',
 		...tzOpt(timeZone)
-	});
+	}).format(new Date(dateString));
 }
 
 /** Long-month date, no time, e.g. "October 20, 2025". */
 export function formatDateLongMonth(dateString: string, timeZone?: string): string {
-	return new Date(dateString).toLocaleDateString(getDateLocale(), {
+	return getFormatter(getDateLocale(), {
 		year: 'numeric',
 		month: 'long',
 		day: 'numeric',
 		...tzOpt(timeZone)
-	});
+	}).format(new Date(dateString));
 }
 
 /** Long-month date + time, e.g. "October 20, 2025, 8:00 PM". */
 export function formatDateTimeVerbose(dateString: string, timeZone?: string): string {
-	const locale = getDateLocale();
-	return new Date(dateString).toLocaleString(locale, {
+	return getFormatter(getDateLocale(), {
 		year: 'numeric',
 		month: 'long',
 		day: 'numeric',
 		hour: 'numeric',
 		minute: '2-digit',
 		...tzOpt(timeZone)
-	});
+	}).format(new Date(dateString));
 }
 
 /** Month + year only, e.g. "October 2025". */
 export function formatMonthYearLabel(dateString: string, timeZone?: string): string {
-	return new Date(dateString).toLocaleDateString(getDateLocale(), {
+	return getFormatter(getDateLocale(), {
 		year: 'numeric',
 		month: 'long',
 		...tzOpt(timeZone)
-	});
+	}).format(new Date(dateString));
 }
 
 /**

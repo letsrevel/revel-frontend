@@ -1,9 +1,16 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 // Force a stable locale so hour-cycle and month names are deterministic
-// regardless of the machine running the tests.
+// regardless of the machine running the tests. The mock is mutable so the
+// getDateLocale fallback (unknown UI language → en-US) can be exercised.
+//
+// NOTE: for full determinism, also pin TZ=UTC for the test run (vitest.config
+// `test.env: { TZ: 'UTC' }` or `TZ=UTC vitest` in the npm script) — the
+// no-timezone code paths render in the machine's local zone. The assertions
+// below are written to hold either way, but pinning removes the ambiguity.
+const mockLocale = vi.hoisted(() => ({ value: 'en' }));
 vi.mock('$lib/paraglide/runtime.js', () => ({
-	getLocale: () => 'en'
+	getLocale: () => mockLocale.value
 }));
 
 import {
@@ -17,12 +24,33 @@ import {
 	formatDateLongMonth,
 	formatDateTimeVerbose,
 	formatMonthYearLabel,
-	getRSVPDeadlineRelative
+	formatRelativeTime,
+	formatTimeOfDay,
+	getRSVPDeadlineRelative,
+	isEventPast,
+	isRSVPClosed,
+	isRSVPClosingSoon
 } from './date';
+
+afterEach(() => {
+	mockLocale.value = 'en';
+	vi.useRealTimers();
+});
 
 // A fixed winter instant (no DST ambiguity):
 //   19:00 UTC  →  14:00 (2:00 PM) EST in New York,  20:00 (8:00 PM) CET in Vienna.
 const WINTER_UTC = '2026-02-06T19:00:00Z';
+
+// Fixed "now" for every wall-clock-dependent test. Freezing time makes the
+// relative-time assertions exact instead of racing the real clock (a deadline
+// built as `now + 2h` and floored inside the function lands on "in 1 hour"
+// whenever any real time elapses in between).
+const FROZEN_NOW = '2026-06-15T10:00:00.000Z';
+
+function freezeTime(iso: string = FROZEN_NOW) {
+	vi.useFakeTimers();
+	vi.setSystemTime(new Date(iso));
+}
 
 describe('formatEventDate with an explicit timezone (#474)', () => {
 	it('renders the instant in the given timezone, not the viewer’s', () => {
@@ -36,6 +64,8 @@ describe('formatEventDate with an explicit timezone (#474)', () => {
 
 	it('appends a timezone abbreviation when a timezone is supplied', () => {
 		// New York's short name is reliably "EST" in winter across ICU versions.
+		// (Vienna renders as "GMT+1"/"GMT+2" in en-US on current full-ICU Node —
+		// the most ICU-version-sensitive assumption in this file.)
 		expect(formatEventDate(WINTER_UTC, 'America/New_York')).toContain('EST');
 	});
 
@@ -72,7 +102,7 @@ describe('formatEventDateRange same-day detection is timezone-aware', () => {
 		const ny = formatEventDateRange(start, end, 'America/New_York');
 		// formatRange output: locale range dash, shared day-period collapsed.
 		// (\s also matches the narrow no-break space ICU puts before "PM".)
-		expect(ny).toMatch(/5:00\s*[–-]\s*10:00\sPM/);
+		expect(ny).toMatch(/5:00\s*–\s*10:00\sPM/);
 		expect(ny.match(/•/g)?.length).toBe(1);
 	});
 
@@ -80,6 +110,12 @@ describe('formatEventDateRange same-day detection is timezone-aware', () => {
 		const vienna = formatEventDateRange(start, end, 'Europe/Vienna');
 		// A cross-day range repeats the bullet separator for the end date.
 		expect(vienna.match(/•/g)?.length).toBe(2);
+	});
+
+	it('uses the en dash separator in the hand-built cross-day branch (consistent with formatRange)', () => {
+		const vienna = formatEventDateRange(start, end, 'Europe/Vienna');
+		expect(vienna).toContain(' – ');
+		expect(vienna).not.toContain(' - ');
 	});
 
 	it('labels each end with its own offset across a DST transition', () => {
@@ -125,9 +161,22 @@ describe('formatDate applies the timezone to the calendar day without an abbrevi
 	});
 });
 
+describe('getDateLocale falls back to en-US for an unmapped UI language', () => {
+	it('renders English month names when the UI language is unknown', () => {
+		mockLocale.value = 'xx';
+		expect(formatDate(WINTER_UTC, 'America/New_York')).toContain('Feb');
+	});
+});
+
 describe('formatDateTime and screen-reader format carry the timezone', () => {
 	it('formatDateTime includes the localized time and abbreviation', () => {
 		const out = formatDateTime(WINTER_UTC, 'America/New_York');
+		expect(out).toContain('2:00 PM');
+		expect(out).toContain('EST');
+	});
+
+	it('formatDateTime also accepts an already-parsed Date', () => {
+		const out = formatDateTime(new Date(WINTER_UTC), 'America/New_York');
 		expect(out).toContain('2:00 PM');
 		expect(out).toContain('EST');
 	});
@@ -137,6 +186,15 @@ describe('formatDateTime and screen-reader format carry the timezone', () => {
 		expect(out).toContain('February');
 		expect(out).toContain('2:00 PM');
 		expect(out).toContain('EST');
+	});
+});
+
+describe('formatTimeOfDay', () => {
+	it('renders only the clock time in the supplied timezone, no abbreviation', () => {
+		const out = formatTimeOfDay(WINTER_UTC, 'America/New_York');
+		expect(out).toContain('2:00 PM');
+		expect(out).not.toContain('EST');
+		expect(out).not.toContain('February');
 	});
 });
 
@@ -233,28 +291,98 @@ describe('formatMonthYearLabel (#510)', () => {
 
 describe('getRSVPDeadlineRelative', () => {
 	it('returns null for a passed deadline (caller supplies the "closed" copy)', () => {
-		expect(getRSVPDeadlineRelative(new Date(Date.now() - 60_000).toISOString())).toBeNull();
+		freezeTime();
+		expect(getRSVPDeadlineRelative('2026-06-15T09:59:00.000Z')).toBeNull();
 	});
 
 	it('treats the exact deadline instant as closed', () => {
-		vi.useFakeTimers();
-		try {
-			const deadline = '2026-06-15T18:00:00.000Z';
-			vi.setSystemTime(new Date(deadline));
-			expect(getRSVPDeadlineRelative(deadline)).toBeNull();
-		} finally {
-			vi.useRealTimers();
-		}
+		freezeTime(FROZEN_NOW);
+		expect(getRSVPDeadlineRelative(FROZEN_NOW)).toBeNull();
 	});
 
 	it('returns a localized relative phrase for a future deadline', () => {
-		const out = getRSVPDeadlineRelative(new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString());
-		// en locale via the runtime mock; Intl.RelativeTimeFormat wording.
-		expect(out).toMatch(/^in 2 hours$/);
+		freezeTime(); // 10:00Z — deadline exactly 2h later
+		expect(getRSVPDeadlineRelative('2026-06-15T12:00:00.000Z')).toBe('in 2 hours');
 	});
 
 	it('uses minutes below one hour', () => {
-		const out = getRSVPDeadlineRelative(new Date(Date.now() + 30 * 60 * 1000).toISOString());
-		expect(out).toMatch(/^in (29|30) minutes$/);
+		freezeTime();
+		expect(getRSVPDeadlineRelative('2026-06-15T10:30:00.000Z')).toBe('in 30 minutes');
+	});
+
+	it('uses days at 24 hours and beyond', () => {
+		freezeTime();
+		expect(getRSVPDeadlineRelative('2026-06-18T10:00:00.000Z')).toBe('in 3 days');
+	});
+
+	it('never says "in 0 minutes" for a deadline seconds away', () => {
+		freezeTime();
+		expect(getRSVPDeadlineRelative('2026-06-15T10:00:30.000Z')).toBe('in 1 minute');
+	});
+});
+
+describe('formatRelativeTime', () => {
+	it('phrases future instants with "in …"', () => {
+		freezeTime();
+		expect(formatRelativeTime('2026-06-18T10:00:00.000Z')).toBe('in 3 days');
+		expect(formatRelativeTime('2026-06-15T12:00:00.000Z')).toBe('in 2 hours');
+	});
+
+	it('phrases past instants with "… ago" (or the locale idiom via numeric:auto)', () => {
+		freezeTime();
+		expect(formatRelativeTime('2026-06-15T08:00:00.000Z')).toBe('2 hours ago');
+		// numeric: 'auto' — exactly one day back becomes the idiom, not "1 day ago".
+		expect(formatRelativeTime('2026-06-14T10:00:00.000Z')).toBe('yesterday');
+	});
+
+	it('falls through to seconds below one minute', () => {
+		freezeTime();
+		expect(formatRelativeTime('2026-06-15T10:00:30.000Z')).toBe('in 30 seconds');
+	});
+});
+
+describe('isEventPast', () => {
+	it('is false while the event is still running', () => {
+		freezeTime();
+		expect(isEventPast('2026-06-15T11:00:00.000Z')).toBe(false);
+	});
+
+	it('is true once the end has passed', () => {
+		freezeTime();
+		expect(isEventPast('2026-06-15T09:00:00.000Z')).toBe(true);
+	});
+});
+
+describe('isRSVPClosed', () => {
+	it('is false for a nullish deadline (no deadline set)', () => {
+		expect(isRSVPClosed(null)).toBe(false);
+		expect(isRSVPClosed(undefined)).toBe(false);
+		expect(isRSVPClosed('')).toBe(false);
+	});
+
+	it('is false before the deadline and true after it', () => {
+		freezeTime();
+		expect(isRSVPClosed('2026-06-15T12:00:00.000Z')).toBe(false);
+		expect(isRSVPClosed('2026-06-15T09:00:00.000Z')).toBe(true);
+	});
+
+	it('treats the exact deadline instant as closed (consistent with getRSVPDeadlineRelative)', () => {
+		freezeTime(FROZEN_NOW);
+		expect(isRSVPClosed(FROZEN_NOW)).toBe(true);
+		// The two must never disagree at the boundary.
+		expect(getRSVPDeadlineRelative(FROZEN_NOW)).toBeNull();
+	});
+});
+
+describe('isRSVPClosingSoon', () => {
+	it('is false for a nullish deadline', () => {
+		expect(isRSVPClosingSoon(null)).toBe(false);
+	});
+
+	it('is true within 24 hours, false beyond, false once passed', () => {
+		freezeTime();
+		expect(isRSVPClosingSoon('2026-06-15T12:00:00.000Z')).toBe(true); // in 2h
+		expect(isRSVPClosingSoon('2026-06-17T10:00:00.000Z')).toBe(false); // in 48h
+		expect(isRSVPClosingSoon('2026-06-15T09:00:00.000Z')).toBe(false); // passed
 	});
 });
