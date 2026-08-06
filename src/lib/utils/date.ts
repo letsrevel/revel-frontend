@@ -4,14 +4,31 @@
 
 import { getLocale } from '$lib/paraglide/runtime.js';
 
-/** Maps the active Paraglide UI language to a BCP 47 date locale. */
+/**
+ * Maps the active Paraglide UI language to a BCP 47 date locale.
+ *
+ * Invariant: every mapped locale renders a *textual* month for the
+ * `month: 'short'` skeletons used throughout this file (guarded by a test).
+ *
+ * pt deliberately maps to pt-BR, not pt-PT: pt-PT's CLDR data resolves the
+ * short-month-with-day skeletons (MMMd → "d/MM", yMMMd → "dd/MM/y") to
+ * *numeric* patterns — Portugal's editorial convention for medium-length
+ * dates — so `formatEventDate` would render "sexta, 24/10" where every other
+ * locale shows a month word. The language material is identical between the
+ * two (same month/weekday names, same "de … de …" construction, same "às"
+ * connector); pt-BR differs only in preferring textual medium dates
+ * ("sex., 24 de out.") and three-letter weekday abbreviations ("sex." vs
+ * pt-PT "sexta") — natural, fully intelligible Portuguese for either
+ * audience, and consistent with the app-wide "month is always a word" intent
+ * (cf. formatDateTimeReadback).
+ */
 const LOCALE_MAP: Record<string, string> = {
 	en: 'en-US',
 	de: 'de-DE',
 	it: 'it-IT',
 	fr: 'fr-FR',
 	es: 'es-ES',
-	pt: 'pt-PT'
+	pt: 'pt-BR'
 };
 
 /**

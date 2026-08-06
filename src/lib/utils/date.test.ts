@@ -14,6 +14,7 @@ vi.mock('$lib/paraglide/runtime.js', () => ({
 }));
 
 import {
+	getDateLocale,
 	formatEventDate,
 	formatEventDateRange,
 	formatEventDateForScreenReader,
@@ -399,5 +400,52 @@ describe('isRSVPClosingSoon', () => {
 		expect(isRSVPClosingSoon('2026-06-15T12:00:00.000Z')).toBe(true); // in 2h
 		expect(isRSVPClosingSoon('2026-06-17T10:00:00.000Z')).toBe(false); // in 48h
 		expect(isRSVPClosingSoon('2026-06-15T09:00:00.000Z')).toBe(false); // passed
+	});
+});
+
+describe('every supported UI language uses a textual month in the short forms', () => {
+	// Mirrors the keys of LOCALE_MAP in date.ts. If a language is added there,
+	// add it here so the invariant below covers it.
+	const SUPPORTED_UI_LANGUAGES = ['en', 'de', 'it', 'fr', 'es', 'pt'];
+
+	// The invariant guarded here: the `month: 'short'` skeletons used across
+	// this file (MMMd in formatEventDate/formatEventDateRange, yMMMd in
+	// formatDateTime/formatDate/formatDateTimeReadback) must resolve to a
+	// *textual* month in every mapped locale. This is a property of the
+	// locale's CLDR pattern data, not of the requested options: a locale may
+	// have abbreviated month names yet map these skeletons to numeric
+	// patterns — pt-PT does exactly that ("sexta, 24/10"), which is why
+	// LOCALE_MAP maps pt to pt-BR ("sex., 24 de out.").
+	it.each(SUPPORTED_UI_LANGUAGES)(
+		'%s resolves the short-month-with-day skeletons to a month word',
+		(lang) => {
+			mockLocale.value = lang;
+			const locale = getDateLocale();
+
+			for (const options of [
+				{ month: 'short', day: 'numeric' }, // MMMd (formatEventDate)
+				{ year: 'numeric', month: 'short', day: 'numeric' } // yMMMd (formatDateTime, formatDate)
+			] as Intl.DateTimeFormatOptions[]) {
+				const month = new Intl.DateTimeFormat(locale, { ...options, timeZone: 'UTC' })
+					.formatToParts(new Date(WINTER_UTC))
+					.find((p) => p.type === 'month')?.value;
+
+				expect(month, `${lang} → ${locale} ${JSON.stringify(options)}`).toMatch(/\p{L}/u);
+			}
+		}
+	);
+
+	it.each(SUPPORTED_UI_LANGUAGES)('%s end-to-end: formatEventDate contains no numeric d/M', (lang) => {
+		mockLocale.value = lang;
+		// A numeric month pattern surfaces as slash-separated digits
+		// (pt-PT would render "sexta, 24/10 • …").
+		expect(formatEventDate(WINTER_UTC, 'Europe/Vienna')).not.toMatch(/\d+\/\d+/);
+	});
+
+	it('pt renders the Brazilian textual short date, not the pt-PT numeric one', () => {
+		mockLocale.value = 'pt';
+		const out = formatEventDate(WINTER_UTC, 'Europe/Vienna');
+		expect(out).toContain('fev.'); // "sex., 6 de fev. • 20:00 …"
+		expect(out).not.toContain('06/02');
 	});
 });
