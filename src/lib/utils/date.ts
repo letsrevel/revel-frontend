@@ -3,6 +3,7 @@
  */
 
 import { getLocale } from '$lib/paraglide/runtime.js';
+import * as m from '$lib/paraglide/messages.js';
 
 /** Maps the active Paraglide UI language to a BCP 47 date locale. */
 const LOCALE_MAP: Record<string, string> = {
@@ -170,19 +171,18 @@ export function formatEventDateRange(
  * Get a relative time description for an RSVP deadline, localized via
  * Intl.RelativeTimeFormat so the directional word and pluralization come
  * from the active locale ("in 2 days" / "in 2 Tagen" / "dans 2 jours").
+ * A passed deadline returns the translated "RSVP closed" message.
  * @param deadlineString ISO 8601 date-time string
- * @returns Relative time description (e.g., "in 2 days", "in 3 hours", "closed")
+ * @returns Relative time description (e.g., "in 2 days", "in 3 hours", "RSVP closed")
  */
 export function getRSVPDeadlineRelative(deadlineString: string): string {
 	const deadline = new Date(deadlineString);
 	const now = new Date();
 	const diffMs = deadline.getTime() - now.getTime();
 
-	// Already passed. NOTE: this status word is still English — it should be
-	// replaced with a Paraglide message (e.g. m.rsvp_closed()) at the call
-	// site or here once one exists, since Intl cannot translate it.
+	// Already passed
 	if (diffMs < 0) {
-		return 'closed';
+		return m['eventQuickInfo.rsvpClosed']();
 	}
 
 	const rtf = new Intl.RelativeTimeFormat(getDateLocale(), { numeric: 'always' });
