@@ -3,7 +3,6 @@
  */
 
 import { getLocale } from '$lib/paraglide/runtime.js';
-import * as m from '$lib/paraglide/messages.js';
 
 /** Maps the active Paraglide UI language to a BCP 47 date locale. */
 const LOCALE_MAP: Record<string, string> = {
@@ -139,11 +138,17 @@ export function formatEventDateRange(
 	});
 
 	const startTz = withAbbreviation ? getTimeZoneAbbreviation(start, locale, timeZone) : '';
+	const endTz = withAbbreviation ? getTimeZoneAbbreviation(end, locale, timeZone) : '';
 
-	// If same day, show date once. formatRange renders the time span with
-	// locale-appropriate punctuation and collapsing (e.g. "8:00 – 11:00 PM"
-	// in en-US, "20:00–23:00" in de-DE).
+	// If same day, show date once. A same-local-day range can still straddle a
+	// DST transition (fall-back: e.g. 01:00 GMT+2 → 12:00 GMT+1 on the same
+	// calendar day), in which case each time carries its own offset. Otherwise
+	// formatRange renders the span with locale-appropriate punctuation and
+	// collapsing (e.g. "8:00 – 11:00 PM" in en-US, "20:00–23:00" in de-DE).
 	if (isSameDayInZone(start, end, timeZone)) {
+		if (startTz !== endTz) {
+			return `${dateFormatter.format(start)} • ${withTz(timeFormatter.format(start), startTz)} - ${withTz(timeFormatter.format(end), endTz)}`;
+		}
 		return withTz(
 			`${dateFormatter.format(start)} • ${timeFormatter.formatRange(start, end)}`,
 			startTz
@@ -151,7 +156,6 @@ export function formatEventDateRange(
 	}
 
 	// Different days
-	const endTz = withAbbreviation ? getTimeZoneAbbreviation(end, locale, timeZone) : '';
 
 	// A multi-day range can straddle a DST transition, in which case start and
 	// end have different abbreviations/offsets (e.g. GMT+1 → GMT+2). Append each
@@ -171,18 +175,20 @@ export function formatEventDateRange(
  * Get a relative time description for an RSVP deadline, localized via
  * Intl.RelativeTimeFormat so the directional word and pluralization come
  * from the active locale ("in 2 days" / "in 2 Tagen" / "dans 2 jours").
- * A passed deadline returns the translated "RSVP closed" message.
  * @param deadlineString ISO 8601 date-time string
- * @returns Relative time description (e.g., "in 2 days", "in 3 hours", "RSVP closed")
+ * @returns Relative time description (e.g., "in 2 days", "in 3 hours"), or
+ *   null when the deadline has passed — the caller decides the "closed" copy
+ *   for its surface (e.g. eventQuickInfo.rsvpClosed), keeping UI messages out
+ *   of this utility.
  */
-export function getRSVPDeadlineRelative(deadlineString: string): string {
+export function getRSVPDeadlineRelative(deadlineString: string): string | null {
 	const deadline = new Date(deadlineString);
 	const now = new Date();
 	const diffMs = deadline.getTime() - now.getTime();
 
 	// Already passed
 	if (diffMs < 0) {
-		return m['eventQuickInfo.rsvpClosed']();
+		return null;
 	}
 
 	const rtf = new Intl.RelativeTimeFormat(getDateLocale(), { numeric: 'always' });

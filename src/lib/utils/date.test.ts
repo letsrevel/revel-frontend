@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-// Force a stable locale so 12-hour formatting (gated on en-US) is deterministic
+// Force a stable locale so hour-cycle and month names are deterministic
 // regardless of the machine running the tests.
 vi.mock('$lib/paraglide/runtime.js', () => ({
 	getLocale: () => 'en'
@@ -16,7 +16,8 @@ import {
 	formatEventTimezoneLabel,
 	formatDateLongMonth,
 	formatDateTimeVerbose,
-	formatMonthYearLabel
+	formatMonthYearLabel,
+	getRSVPDeadlineRelative
 } from './date';
 
 // A fixed winter instant (no DST ambiguity):
@@ -69,7 +70,10 @@ describe('formatEventDateRange same-day detection is timezone-aware', () => {
 
 	it('collapses to a single date when both ends fall on the same local day', () => {
 		const ny = formatEventDateRange(start, end, 'America/New_York');
-		expect(ny).toContain('5:00 PM - 10:00 PM');
+		// formatRange output: locale range dash, shared day-period collapsed.
+		// (\s also matches the narrow no-break space ICU puts before "PM".)
+		expect(ny).toMatch(/5:00\s*[–-]\s*10:00\sPM/);
+		expect(ny.match(/•/g)?.length).toBe(1);
 	});
 
 	it('shows two dates when the local days differ', () => {
@@ -88,6 +92,22 @@ describe('formatEventDateRange same-day detection is timezone-aware', () => {
 		);
 		expect(out).toContain('11:00 PM GMT+1');
 		expect(out).toContain('1:00 PM GMT+2');
+	});
+
+	it('labels each end with its own offset when a DST transition falls within a single local day', () => {
+		// Europe/Vienna falls back on 2026-10-25: 03:00 GMT+2 → 02:00 GMT+1.
+		// 23:00 UTC Oct 24 → 01:00 Oct 25 (GMT+2); 11:00 UTC Oct 25 → 12:00 Oct 25 (GMT+1).
+		// Same local calendar day, but the offsets differ — the range must not
+		// label the end time with the start's offset.
+		const out = formatEventDateRange(
+			'2026-10-24T23:00:00Z',
+			'2026-10-25T11:00:00Z',
+			'Europe/Vienna'
+		);
+		expect(out).toContain('1:00 AM GMT+2');
+		expect(out).toContain('12:00 PM GMT+1');
+		// Date still shown only once (same-day collapse preserved).
+		expect(out.match(/•/g)?.length).toBe(1);
 	});
 });
 
@@ -208,5 +228,22 @@ describe('formatMonthYearLabel (#510)', () => {
 	it('does not contain a time component', () => {
 		const out = formatMonthYearLabel('2026-06-07T12:00:00Z');
 		expect(out).not.toMatch(/\d+:\d+/);
+	});
+});
+
+describe('getRSVPDeadlineRelative', () => {
+	it('returns null for a passed deadline (caller supplies the "closed" copy)', () => {
+		expect(getRSVPDeadlineRelative(new Date(Date.now() - 60_000).toISOString())).toBeNull();
+	});
+
+	it('returns a localized relative phrase for a future deadline', () => {
+		const out = getRSVPDeadlineRelative(new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString());
+		// en locale via the runtime mock; Intl.RelativeTimeFormat wording.
+		expect(out).toMatch(/^in 2 hours$/);
+	});
+
+	it('uses minutes below one hour', () => {
+		const out = getRSVPDeadlineRelative(new Date(Date.now() + 30 * 60 * 1000).toISOString());
+		expect(out).toMatch(/^in (29|30) minutes$/);
 	});
 });
