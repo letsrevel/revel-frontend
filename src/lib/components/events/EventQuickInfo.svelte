@@ -158,7 +158,7 @@
 	const rsvpDeadlineDisplay = $derived.by(() => {
 		if (!event.rsvp_before) return null;
 		const relative = getRSVPDeadlineRelative(event.rsvp_before);
-		return relative === 'closed'
+		return relative === null
 			? m['eventQuickInfo.rsvpClosed']()
 			: m['eventQuickInfo.rsvpBy']({ deadline: relative });
 	});
