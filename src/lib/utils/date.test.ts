@@ -236,6 +236,17 @@ describe('getRSVPDeadlineRelative', () => {
 		expect(getRSVPDeadlineRelative(new Date(Date.now() - 60_000).toISOString())).toBeNull();
 	});
 
+	it('treats the exact deadline instant as closed', () => {
+		vi.useFakeTimers();
+		try {
+			const deadline = '2026-06-15T18:00:00.000Z';
+			vi.setSystemTime(new Date(deadline));
+			expect(getRSVPDeadlineRelative(deadline)).toBeNull();
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
 	it('returns a localized relative phrase for a future deadline', () => {
 		const out = getRSVPDeadlineRelative(new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString());
 		// en locale via the runtime mock; Intl.RelativeTimeFormat wording.

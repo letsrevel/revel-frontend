@@ -113,7 +113,7 @@ export function formatEventDate(
  * @param timeZone Optional IANA timezone to render in (e.g. the event's timezone)
  * @param withAbbreviation Append the tz abbreviation/offset (default true). Pass
  *   false on surfaces that show a separate "Times shown in …" label instead.
- * @returns Formatted date range (e.g., "Fri, Oct 20 • 8:00 PM - 11:00 PM GMT+1")
+ * @returns Formatted date range (e.g., "Fri, Oct 20 • 8:00 – 11:00 PM GMT+1")
  */
 export function formatEventDateRange(
 	startString: string,
@@ -186,8 +186,8 @@ export function getRSVPDeadlineRelative(deadlineString: string): string | null {
 	const now = new Date();
 	const diffMs = deadline.getTime() - now.getTime();
 
-	// Already passed
-	if (diffMs < 0) {
+	// Passed, or exactly at the deadline — "RSVP by X" means X itself is too late.
+	if (diffMs <= 0) {
 		return null;
 	}
 
@@ -284,7 +284,7 @@ export function isRSVPClosingSoon(deadlineString: string | null): boolean {
  * @param dateString ISO 8601 date-time string
  * @param timeZone Optional IANA timezone to render in (e.g. the event's timezone);
  *   when supplied, the tz abbreviation is appended (e.g. "… at 8:00 PM CET")
- * @returns Verbose date string (e.g., "Friday, October 20th, 2025 at 8:00 PM CET")
+ * @returns Verbose date string (e.g., "Friday, October 20, 2025 at 8:00 PM CET")
  */
 export function formatEventDateForScreenReader(dateString: string, timeZone?: string): string {
 	const date = new Date(dateString);
