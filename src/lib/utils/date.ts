@@ -51,15 +51,6 @@ function getTimeZoneAbbreviation(date: Date, locale: string, timeZone?: string):
 }
 
 /**
- * The day-of-month as computed in the given timezone (falls back to the
- * viewer's zone when none is supplied). Used instead of `Date.getDate()`,
- * which is always viewer-local.
- */
-function dayOfMonthInZone(date: Date, locale: string, timeZone?: string): string {
-	return date.toLocaleDateString(locale, { day: 'numeric', ...tzOpt(timeZone) });
-}
-
-/**
  * Whether two instants land on the same calendar day in the given timezone.
  * Uses en-CA (ISO-like YYYY-MM-DD) for a stable, locale-independent compare.
  */
@@ -81,7 +72,10 @@ function withTz(formatted: string, abbreviation: string): string {
 }
 
 /**
- * Format a date-time string for event display
+ * Format a date-time string for event display with locale-aware date ordering,
+ * punctuation, and time formats (e.g. "Fri, Oct 20 • 8:00 PM GMT+1" in en-US,
+ * "Fr., 20. Okt. • 20:00 MEZ" in de-DE). Hour cycle (12h/24h) is decided by
+ * the locale, not hardcoded.
  * @param dateString ISO 8601 date-time string
  * @param timeZone Optional IANA timezone to render in (e.g. the event's timezone)
  * @param withAbbreviation Append the tz abbreviation/offset (default true). Pass
@@ -96,17 +90,19 @@ export function formatEventDate(
 	const date = new Date(dateString);
 	const locale = getDateLocale();
 
-	const dayOfWeek = date.toLocaleDateString(locale, { weekday: 'short', ...tzOpt(timeZone) });
-	const month = date.toLocaleDateString(locale, { month: 'short', ...tzOpt(timeZone) });
-	const day = dayOfMonthInZone(date, locale, timeZone);
-	const time = date.toLocaleTimeString(locale, {
+	const dateFormatter = new Intl.DateTimeFormat(locale, {
+		weekday: 'short',
+		month: 'short',
+		day: 'numeric',
+		...tzOpt(timeZone)
+	});
+	const timeFormatter = new Intl.DateTimeFormat(locale, {
 		hour: 'numeric',
 		minute: '2-digit',
-		hour12: locale === 'en-US', // Only use 12-hour format for English
 		...tzOpt(timeZone)
 	});
 
-	const base = `${dayOfWeek}, ${month} ${day} • ${time}`;
+	const base = `${dateFormatter.format(date)} • ${timeFormatter.format(date)}`;
 	return withAbbreviation ? withTz(base, getTimeZoneAbbreviation(date, locale, timeZone)) : base;
 }
 
@@ -129,34 +125,31 @@ export function formatEventDateRange(
 	const end = new Date(endString);
 	const locale = getDateLocale();
 
-	const dayOfWeek = start.toLocaleDateString(locale, { weekday: 'short', ...tzOpt(timeZone) });
-	const month = start.toLocaleDateString(locale, { month: 'short', ...tzOpt(timeZone) });
-	const day = dayOfMonthInZone(start, locale, timeZone);
-
-	const startTime = start.toLocaleTimeString(locale, {
-		hour: 'numeric',
-		minute: '2-digit',
-		hour12: locale === 'en-US',
+	const dateFormatter = new Intl.DateTimeFormat(locale, {
+		weekday: 'short',
+		month: 'short',
+		day: 'numeric',
 		...tzOpt(timeZone)
 	});
-	const endTime = end.toLocaleTimeString(locale, {
+	const timeFormatter = new Intl.DateTimeFormat(locale, {
 		hour: 'numeric',
 		minute: '2-digit',
-		hour12: locale === 'en-US',
 		...tzOpt(timeZone)
 	});
 
 	const startTz = withAbbreviation ? getTimeZoneAbbreviation(start, locale, timeZone) : '';
 
-	// If same day, show date once.
+	// If same day, show date once. formatRange renders the time span with
+	// locale-appropriate punctuation and collapsing (e.g. "8:00 – 11:00 PM"
+	// in en-US, "20:00–23:00" in de-DE).
 	if (isSameDayInZone(start, end, timeZone)) {
-		return withTz(`${dayOfWeek}, ${month} ${day} • ${startTime} - ${endTime}`, startTz);
+		return withTz(
+			`${dateFormatter.format(start)} • ${timeFormatter.formatRange(start, end)}`,
+			startTz
+		);
 	}
 
 	// Different days
-	const endDayOfWeek = end.toLocaleDateString(locale, { weekday: 'short', ...tzOpt(timeZone) });
-	const endMonth = end.toLocaleDateString(locale, { month: 'short', ...tzOpt(timeZone) });
-	const endDay = dayOfMonthInZone(end, locale, timeZone);
 	const endTz = withAbbreviation ? getTimeZoneAbbreviation(end, locale, timeZone) : '';
 
 	// A multi-day range can straddle a DST transition, in which case start and
@@ -164,17 +157,19 @@ export function formatEventDateRange(
 	// to its own time so the end isn't mislabelled with the start's offset; when
 	// they match, append once at the end as before.
 	if (startTz !== endTz) {
-		return `${dayOfWeek}, ${month} ${day} • ${withTz(startTime, startTz)} - ${endDayOfWeek}, ${endMonth} ${endDay} • ${withTz(endTime, endTz)}`;
+		return `${dateFormatter.format(start)} • ${withTz(timeFormatter.format(start), startTz)} - ${dateFormatter.format(end)} • ${withTz(timeFormatter.format(end), endTz)}`;
 	}
 
 	return withTz(
-		`${dayOfWeek}, ${month} ${day} • ${startTime} - ${endDayOfWeek}, ${endMonth} ${endDay} • ${endTime}`,
+		`${dateFormatter.format(start)} • ${timeFormatter.format(start)} - ${dateFormatter.format(end)} • ${timeFormatter.format(end)}`,
 		startTz
 	);
 }
 
 /**
- * Get a relative time description for an RSVP deadline
+ * Get a relative time description for an RSVP deadline, localized via
+ * Intl.RelativeTimeFormat so the directional word and pluralization come
+ * from the active locale ("in 2 days" / "in 2 Tagen" / "dans 2 jours").
  * @param deadlineString ISO 8601 date-time string
  * @returns Relative time description (e.g., "in 2 days", "in 3 hours", "closed")
  */
@@ -183,24 +178,28 @@ export function getRSVPDeadlineRelative(deadlineString: string): string {
 	const now = new Date();
 	const diffMs = deadline.getTime() - now.getTime();
 
-	// Already passed
+	// Already passed. NOTE: this status word is still English — it should be
+	// replaced with a Paraglide message (e.g. m.rsvp_closed()) at the call
+	// site or here once one exists, since Intl cannot translate it.
 	if (diffMs < 0) {
 		return 'closed';
 	}
+
+	const rtf = new Intl.RelativeTimeFormat(getDateLocale(), { numeric: 'always' });
 
 	const diffMinutes = Math.floor(diffMs / (1000 * 60));
 	const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
 	const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
 	if (diffMinutes < 60) {
-		return `in ${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''}`;
+		return rtf.format(diffMinutes, 'minute');
 	}
 
 	if (diffHours < 24) {
-		return `in ${diffHours} hour${diffHours !== 1 ? 's' : ''}`;
+		return rtf.format(diffHours, 'hour');
 	}
 
-	return `in ${diffDays} day${diffDays !== 1 ? 's' : ''}`;
+	return rtf.format(diffDays, 'day');
 }
 
 /**
@@ -285,45 +284,17 @@ export function formatEventDateForScreenReader(dateString: string, timeZone?: st
 	const date = new Date(dateString);
 	const locale = getDateLocale();
 
-	const dayOfWeek = date.toLocaleDateString(locale, { weekday: 'long', ...tzOpt(timeZone) });
-	const month = date.toLocaleDateString(locale, { month: 'long', ...tzOpt(timeZone) });
-	const day = Number(date.toLocaleDateString('en-US', { day: 'numeric', ...tzOpt(timeZone) }));
-	const year = date.toLocaleDateString('en-US', { year: 'numeric', ...tzOpt(timeZone) });
-	const time = date.toLocaleTimeString(locale, {
-		hour: 'numeric',
-		minute: '2-digit',
-		hour12: locale === 'en-US',
+	// dateStyle/timeStyle produce the fully localized verbose form, including
+	// the locale's own connector word ("Friday, October 20, 2025 at 8:00 PM" in
+	// en-US, "Freitag, 20. Oktober 2025 um 20:00" in de-DE) — replacing the
+	// previous hand-built string with an English-only ordinal suffix.
+	const formatted = date.toLocaleString(locale, {
+		dateStyle: 'full',
+		timeStyle: 'short',
 		...tzOpt(timeZone)
 	});
-	const tz = getTimeZoneAbbreviation(date, locale, timeZone);
 
-	// Add ordinal suffix (st, nd, rd, th) - only for English
-	if (locale === 'en-US') {
-		const ordinal = getOrdinalSuffix(day);
-		return withTz(`${dayOfWeek}, ${month} ${day}${ordinal}, ${year} at ${time}`, tz);
-	}
-
-	// For other locales, use standard format
-	return withTz(`${dayOfWeek}, ${day} ${month} ${year} ${time}`, tz);
-}
-
-/**
- * Get ordinal suffix for a day number
- * @param day Day of month (1-31)
- * @returns Ordinal suffix ("st", "nd", "rd", "th")
- */
-function getOrdinalSuffix(day: number): string {
-	if (day > 3 && day < 21) return 'th';
-	switch (day % 10) {
-		case 1:
-			return 'st';
-		case 2:
-			return 'nd';
-		case 3:
-			return 'rd';
-		default:
-			return 'th';
-	}
+	return withTz(formatted, getTimeZoneAbbreviation(date, locale, timeZone));
 }
 
 /**
@@ -344,7 +315,6 @@ export function formatTimeOfDay(dateString: string, timeZone?: string): string {
 	return date.toLocaleTimeString(locale, {
 		hour: 'numeric',
 		minute: '2-digit',
-		hour12: locale === 'en-US',
 		...tzOpt(timeZone)
 	});
 }
@@ -365,7 +335,6 @@ export function formatDateTime(dateString: string, timeZone?: string): string {
 		day: 'numeric',
 		hour: 'numeric',
 		minute: '2-digit',
-		hour12: locale === 'en-US',
 		...tzOpt(timeZone)
 	});
 
@@ -429,7 +398,6 @@ export function formatDateTimeVerbose(dateString: string, timeZone?: string): st
 		day: 'numeric',
 		hour: 'numeric',
 		minute: '2-digit',
-		hour12: locale === 'en-US',
 		...tzOpt(timeZone)
 	});
 }
