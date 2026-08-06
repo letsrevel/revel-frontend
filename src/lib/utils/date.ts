@@ -32,6 +32,49 @@ export function getDateLocale(): string {
 const RANGE_SEPARATOR = ' \u2013 ';
 
 /**
+ * CLDR-derived spoken time suffix (de: " Uhr"), used by the screen-reader
+ * format.
+ *
+ * CLDR's single-instant time patterns carry no time word (de renders bare
+ * "20:00"), but its *interval* patterns do: de formats a range as
+ * "20:00–23:00 Uhr". Probe the locale's interval pattern once and reuse its
+ * trailing shared suffix for single times — but only when that tail is purely
+ * literal. A tail containing a real field is a collapsed shared component,
+ * not a time word (en collapses the day period: "8:00 – 11:00 PM"), and the
+ * single format already renders that field itself.
+ *
+ * Probed with two same-day-period instants pinned to UTC so the result
+ * depends on locale data only, never on the viewer's timezone. Cached per
+ * locale. Hardcodes no language: any locale whose CLDR interval data carries
+ * a literal time word gets it automatically.
+ */
+const spokenTimeSuffixCache = new Map<string, string>();
+
+function getSpokenTimeSuffix(locale: string): string {
+	const cached = spokenTimeSuffixCache.get(locale);
+	if (cached !== undefined) return cached;
+
+	const parts = getFormatter(locale, {
+		hour: 'numeric',
+		minute: '2-digit',
+		timeZone: 'UTC'
+	}).formatRangeToParts(
+		new Date(Date.UTC(2024, 0, 1, 13, 0)),
+		new Date(Date.UTC(2024, 0, 1, 14, 0))
+	);
+
+	const lastEnd = parts.map((p) => p.source).lastIndexOf('endRange');
+	const tail = parts.slice(lastEnd + 1);
+	const suffix =
+		tail.length > 0 && tail.every((p) => p.type === 'literal')
+			? tail.map((p) => p.value).join('')
+			: '';
+
+	spokenTimeSuffixCache.set(locale, suffix);
+	return suffix;
+}
+
+/**
  * Memoized Intl.DateTimeFormat instances. Constructing a formatter is
  * expensive (ICU data lookup); event lists render dozens of dates with the
  * same locale/timezone/options, so cache by a stable key. Option objects
@@ -328,11 +371,30 @@ export function formatEventDateForScreenReader(dateString: string, timeZone?: st
 	// the locale's own connector word ("Friday, October 20, 2025 at 8:00 PM" in
 	// en-US, "Freitag, 20. Oktober 2025 um 20:00" in de-DE) — replacing the
 	// previous hand-built string with an English-only ordinal suffix.
-	const formatted = getFormatter(locale, {
+	//
+	// CLDR's single-instant pattern omits the spoken time word ("20:00", never
+	// "20:00 Uhr" — only the *interval* pattern carries it). That's fine
+	// visually, but this string exists to be read aloud, and German times are
+	// spoken "zwanzig Uhr". getSpokenTimeSuffix derives the word from the
+	// locale's own CLDR interval data; when present, insert it after the
+	// minute via formatToParts so it lands correctly regardless of where the
+	// time sits in the locale's pattern. Locales without one take the plain
+	// format() path — deliberately, since format() and joined formatToParts
+	// output are not byte-identical on V8 (its NNBSP→space compatibility
+	// patch applies only to format()).
+	const suffix = getSpokenTimeSuffix(locale);
+	const formatter = getFormatter(locale, {
 		dateStyle: 'full',
 		timeStyle: 'short',
 		...tzOpt(timeZone)
-	}).format(date);
+	});
+
+	const formatted = suffix
+		? formatter
+				.formatToParts(date)
+				.map((p) => (p.type === 'minute' ? p.value + suffix : p.value))
+				.join('')
+		: formatter.format(date);
 
 	return withTz(formatted, getTimeZoneAbbreviation(date, locale, timeZone));
 }

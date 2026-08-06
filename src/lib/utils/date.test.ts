@@ -187,6 +187,21 @@ describe('formatDateTime and screen-reader format carry the timezone', () => {
 		expect(out).toContain('2:00 PM');
 		expect(out).toContain('EST');
 	});
+
+	it('screen-reader format appends the spoken "Uhr" after the minutes in German', () => {
+		mockLocale.value = 'de';
+		const out = formatEventDateForScreenReader(WINTER_UTC, 'Europe/Vienna');
+		// "Freitag, 6. Februar 2026 um 20:00 Uhr MEZ" — Uhr sits between the
+		// time and the tz abbreviation, not at the end of the string.
+		expect(out).toContain('Februar');
+		expect(out).toContain('20:00 Uhr');
+		expect(out).toMatch(/20:00 Uhr MEZ$/);
+	});
+
+	it('screen-reader format adds no time word for locales without one (en unchanged)', () => {
+		const out = formatEventDateForScreenReader(WINTER_UTC, 'Europe/Vienna');
+		expect(out).not.toContain('Uhr');
+	});
 });
 
 describe('formatTimeOfDay', () => {
