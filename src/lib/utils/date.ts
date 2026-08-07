@@ -4,14 +4,31 @@
 
 import { getLocale } from '$lib/paraglide/runtime.js';
 
-/** Maps the active Paraglide UI language to a BCP 47 date locale. */
+/**
+ * Maps the active Paraglide UI language to a BCP 47 date locale.
+ *
+ * Invariant: every mapped locale renders a *textual* month for the
+ * `month: 'short'` skeletons used throughout this file (guarded by a test).
+ *
+ * pt deliberately maps to pt-BR, not pt-PT: pt-PT's CLDR data resolves the
+ * short-month-with-day skeletons (MMMd → "d/MM", yMMMd → "dd/MM/y") to
+ * *numeric* patterns — Portugal's editorial convention for medium-length
+ * dates — so `formatEventDate` would render "sexta, 24/10" where every other
+ * locale shows a month word. The language material is identical between the
+ * two (same month/weekday names, same "de … de …" construction, same "às"
+ * connector); pt-BR differs only in preferring textual medium dates
+ * ("sex., 24 de out.") and three-letter weekday abbreviations ("sex." vs
+ * pt-PT "sexta") — natural, fully intelligible Portuguese for either
+ * audience, and consistent with the app-wide "month is always a word" intent
+ * (cf. formatDateTimeReadback).
+ */
 const LOCALE_MAP: Record<string, string> = {
 	en: 'en-US',
 	de: 'de-DE',
 	it: 'it-IT',
 	fr: 'fr-FR',
 	es: 'es-ES',
-	pt: 'pt-PT'
+	pt: 'pt-BR'
 };
 
 /**
@@ -21,6 +38,76 @@ const LOCALE_MAP: Record<string, string> = {
  */
 export function getDateLocale(): string {
 	return LOCALE_MAP[getLocale()] || 'en-US';
+}
+
+/**
+ * Locale-appropriate range separator for the hand-built range branches (the
+ * DST-straddling cases where formatRange can't be used because each end
+ * carries its own offset). En dash with spaces matches what formatRange
+ * produces for the supported locales, so normal and DST ranges read alike.
+ */
+const RANGE_SEPARATOR = ' \u2013 ';
+
+/**
+ * CLDR-derived spoken time suffix (de: " Uhr"), used by the screen-reader
+ * format.
+ *
+ * CLDR's single-instant time patterns carry no time word (de renders bare
+ * "20:00"), but its *interval* patterns do: de formats a range as
+ * "20:00–23:00 Uhr". Probe the locale's interval pattern once and reuse its
+ * trailing shared suffix for single times — but only when that tail is purely
+ * literal. A tail containing a real field is a collapsed shared component,
+ * not a time word (en collapses the day period: "8:00 – 11:00 PM"), and the
+ * single format already renders that field itself.
+ *
+ * Probed with two same-day-period instants pinned to UTC so the result
+ * depends on locale data only, never on the viewer's timezone. Cached per
+ * locale. Hardcodes no language: any locale whose CLDR interval data carries
+ * a literal time word gets it automatically.
+ */
+const spokenTimeSuffixCache = new Map<string, string>();
+
+function getSpokenTimeSuffix(locale: string): string {
+	const cached = spokenTimeSuffixCache.get(locale);
+	if (cached !== undefined) return cached;
+
+	const parts = getFormatter(locale, {
+		hour: 'numeric',
+		minute: '2-digit',
+		timeZone: 'UTC'
+	}).formatRangeToParts(
+		new Date(Date.UTC(2024, 0, 1, 13, 0)),
+		new Date(Date.UTC(2024, 0, 1, 14, 0))
+	);
+
+	const lastEnd = parts.map((p) => p.source).lastIndexOf('endRange');
+	const tail = parts.slice(lastEnd + 1);
+	const suffix =
+		tail.length > 0 && tail.every((p) => p.type === 'literal')
+			? tail.map((p) => p.value).join('')
+			: '';
+
+	spokenTimeSuffixCache.set(locale, suffix);
+	return suffix;
+}
+
+/**
+ * Memoized Intl.DateTimeFormat instances. Constructing a formatter is
+ * expensive (ICU data lookup); event lists render dozens of dates with the
+ * same locale/timezone/options, so cache by a stable key. Option objects
+ * below are built with literal, fixed key order, so JSON.stringify is a
+ * stable cache key.
+ */
+const dtfCache = new Map<string, Intl.DateTimeFormat>();
+
+function getFormatter(locale: string, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
+	const key = `${locale}|${JSON.stringify(options)}`;
+	let formatter = dtfCache.get(key);
+	if (!formatter) {
+		formatter = new Intl.DateTimeFormat(locale, options);
+		dtfCache.set(key, formatter);
+	}
+	return formatter;
 }
 
 /**
@@ -43,7 +130,7 @@ function tzOpt(timeZone?: string): { timeZone?: string } {
  */
 function getTimeZoneAbbreviation(date: Date, locale: string, timeZone?: string): string {
 	if (!timeZone) return '';
-	const parts = new Intl.DateTimeFormat(locale, {
+	const parts = getFormatter(locale, {
 		timeZone,
 		timeZoneName: 'short'
 	}).formatToParts(date);
@@ -51,26 +138,17 @@ function getTimeZoneAbbreviation(date: Date, locale: string, timeZone?: string):
 }
 
 /**
- * The day-of-month as computed in the given timezone (falls back to the
- * viewer's zone when none is supplied). Used instead of `Date.getDate()`,
- * which is always viewer-local.
- */
-function dayOfMonthInZone(date: Date, locale: string, timeZone?: string): string {
-	return date.toLocaleDateString(locale, { day: 'numeric', ...tzOpt(timeZone) });
-}
-
-/**
  * Whether two instants land on the same calendar day in the given timezone.
  * Uses en-CA (ISO-like YYYY-MM-DD) for a stable, locale-independent compare.
  */
 function isSameDayInZone(a: Date, b: Date, timeZone?: string): boolean {
-	const opts: Intl.DateTimeFormatOptions = {
+	const formatter = getFormatter('en-CA', {
 		year: 'numeric',
 		month: '2-digit',
 		day: '2-digit',
 		...tzOpt(timeZone)
-	};
-	return a.toLocaleDateString('en-CA', opts) === b.toLocaleDateString('en-CA', opts);
+	});
+	return formatter.format(a) === formatter.format(b);
 }
 
 /**
@@ -81,7 +159,10 @@ function withTz(formatted: string, abbreviation: string): string {
 }
 
 /**
- * Format a date-time string for event display
+ * Format a date-time string for event display with locale-aware date ordering,
+ * punctuation, and time formats (e.g. "Fri, Oct 20 • 8:00 PM GMT+1" in en-US,
+ * "Fr., 20. Okt. • 20:00 MEZ" in de-DE). Hour cycle (12h/24h) is decided by
+ * the locale, not hardcoded.
  * @param dateString ISO 8601 date-time string
  * @param timeZone Optional IANA timezone to render in (e.g. the event's timezone)
  * @param withAbbreviation Append the tz abbreviation/offset (default true). Pass
@@ -96,17 +177,19 @@ export function formatEventDate(
 	const date = new Date(dateString);
 	const locale = getDateLocale();
 
-	const dayOfWeek = date.toLocaleDateString(locale, { weekday: 'short', ...tzOpt(timeZone) });
-	const month = date.toLocaleDateString(locale, { month: 'short', ...tzOpt(timeZone) });
-	const day = dayOfMonthInZone(date, locale, timeZone);
-	const time = date.toLocaleTimeString(locale, {
+	const dateFormatter = getFormatter(locale, {
+		weekday: 'short',
+		month: 'short',
+		day: 'numeric',
+		...tzOpt(timeZone)
+	});
+	const timeFormatter = getFormatter(locale, {
 		hour: 'numeric',
 		minute: '2-digit',
-		hour12: locale === 'en-US', // Only use 12-hour format for English
 		...tzOpt(timeZone)
 	});
 
-	const base = `${dayOfWeek}, ${month} ${day} • ${time}`;
+	const base = `${dateFormatter.format(date)} • ${timeFormatter.format(date)}`;
 	return withAbbreviation ? withTz(base, getTimeZoneAbbreviation(date, locale, timeZone)) : base;
 }
 
@@ -117,7 +200,7 @@ export function formatEventDate(
  * @param timeZone Optional IANA timezone to render in (e.g. the event's timezone)
  * @param withAbbreviation Append the tz abbreviation/offset (default true). Pass
  *   false on surfaces that show a separate "Times shown in …" label instead.
- * @returns Formatted date range (e.g., "Fri, Oct 20 • 8:00 PM - 11:00 PM GMT+1")
+ * @returns Formatted date range (e.g., "Fri, Oct 20 • 8:00 – 11:00 PM GMT+1")
  */
 export function formatEventDateRange(
 	startString: string,
@@ -129,78 +212,89 @@ export function formatEventDateRange(
 	const end = new Date(endString);
 	const locale = getDateLocale();
 
-	const dayOfWeek = start.toLocaleDateString(locale, { weekday: 'short', ...tzOpt(timeZone) });
-	const month = start.toLocaleDateString(locale, { month: 'short', ...tzOpt(timeZone) });
-	const day = dayOfMonthInZone(start, locale, timeZone);
-
-	const startTime = start.toLocaleTimeString(locale, {
-		hour: 'numeric',
-		minute: '2-digit',
-		hour12: locale === 'en-US',
+	const dateFormatter = getFormatter(locale, {
+		weekday: 'short',
+		month: 'short',
+		day: 'numeric',
 		...tzOpt(timeZone)
 	});
-	const endTime = end.toLocaleTimeString(locale, {
+	const timeFormatter = getFormatter(locale, {
 		hour: 'numeric',
 		minute: '2-digit',
-		hour12: locale === 'en-US',
 		...tzOpt(timeZone)
 	});
 
 	const startTz = withAbbreviation ? getTimeZoneAbbreviation(start, locale, timeZone) : '';
+	const endTz = withAbbreviation ? getTimeZoneAbbreviation(end, locale, timeZone) : '';
 
-	// If same day, show date once.
+	// If same day, show date once. A same-local-day range can still straddle a
+	// DST transition (fall-back: e.g. 01:00 GMT+2 → 12:00 GMT+1 on the same
+	// calendar day), in which case each time carries its own offset. Otherwise
+	// formatRange renders the span with locale-appropriate punctuation and
+	// collapsing (e.g. "8:00 – 11:00 PM" in en-US, "20:00–23:00" in de-DE).
 	if (isSameDayInZone(start, end, timeZone)) {
-		return withTz(`${dayOfWeek}, ${month} ${day} • ${startTime} - ${endTime}`, startTz);
+		if (startTz !== endTz) {
+			return `${dateFormatter.format(start)} • ${withTz(timeFormatter.format(start), startTz)}${RANGE_SEPARATOR}${withTz(timeFormatter.format(end), endTz)}`;
+		}
+		return withTz(
+			`${dateFormatter.format(start)} • ${timeFormatter.formatRange(start, end)}`,
+			startTz
+		);
 	}
 
 	// Different days
-	const endDayOfWeek = end.toLocaleDateString(locale, { weekday: 'short', ...tzOpt(timeZone) });
-	const endMonth = end.toLocaleDateString(locale, { month: 'short', ...tzOpt(timeZone) });
-	const endDay = dayOfMonthInZone(end, locale, timeZone);
-	const endTz = withAbbreviation ? getTimeZoneAbbreviation(end, locale, timeZone) : '';
 
 	// A multi-day range can straddle a DST transition, in which case start and
 	// end have different abbreviations/offsets (e.g. GMT+1 → GMT+2). Append each
 	// to its own time so the end isn't mislabelled with the start's offset; when
 	// they match, append once at the end as before.
 	if (startTz !== endTz) {
-		return `${dayOfWeek}, ${month} ${day} • ${withTz(startTime, startTz)} - ${endDayOfWeek}, ${endMonth} ${endDay} • ${withTz(endTime, endTz)}`;
+		return `${dateFormatter.format(start)} • ${withTz(timeFormatter.format(start), startTz)}${RANGE_SEPARATOR}${dateFormatter.format(end)} • ${withTz(timeFormatter.format(end), endTz)}`;
 	}
 
 	return withTz(
-		`${dayOfWeek}, ${month} ${day} • ${startTime} - ${endDayOfWeek}, ${endMonth} ${endDay} • ${endTime}`,
+		`${dateFormatter.format(start)} • ${timeFormatter.format(start)}${RANGE_SEPARATOR}${dateFormatter.format(end)} • ${timeFormatter.format(end)}`,
 		startTz
 	);
 }
 
 /**
- * Get a relative time description for an RSVP deadline
+ * Get a relative time description for an RSVP deadline, localized via
+ * Intl.RelativeTimeFormat so the directional word and pluralization come
+ * from the active locale ("in 2 days" / "in 2 Tagen" / "dans 2 jours").
  * @param deadlineString ISO 8601 date-time string
- * @returns Relative time description (e.g., "in 2 days", "in 3 hours", "closed")
+ * @returns Relative time description (e.g., "in 2 days", "in 3 hours"), or
+ *   null when the deadline has passed — the caller decides the "closed" copy
+ *   for its surface (e.g. eventQuickInfo.rsvpClosed), keeping UI messages out
+ *   of this utility.
  */
-export function getRSVPDeadlineRelative(deadlineString: string): string {
+export function getRSVPDeadlineRelative(deadlineString: string): string | null {
 	const deadline = new Date(deadlineString);
 	const now = new Date();
 	const diffMs = deadline.getTime() - now.getTime();
 
-	// Already passed
-	if (diffMs < 0) {
-		return 'closed';
+	// Passed, or exactly at the deadline — "RSVP by X" means X itself is too late.
+	if (diffMs <= 0) {
+		return null;
 	}
 
-	const diffMinutes = Math.floor(diffMs / (1000 * 60));
+	const rtf = new Intl.RelativeTimeFormat(getDateLocale(), { numeric: 'always' });
+
+	// Clamp to at least 1 minute: a deadline seconds away must never read
+	// "in 0 minutes" while the RSVP is technically still open.
+	const diffMinutes = Math.max(1, Math.floor(diffMs / (1000 * 60)));
 	const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
 	const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
 	if (diffMinutes < 60) {
-		return `in ${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''}`;
+		return rtf.format(diffMinutes, 'minute');
 	}
 
 	if (diffHours < 24) {
-		return `in ${diffHours} hour${diffHours !== 1 ? 's' : ''}`;
+		return rtf.format(diffHours, 'hour');
 	}
 
-	return `in ${diffDays} day${diffDays !== 1 ? 's' : ''}`;
+	return rtf.format(diffDays, 'day');
 }
 
 /**
@@ -210,6 +304,9 @@ export function getRSVPDeadlineRelative(deadlineString: string): string {
  * "2 hours ago" / "yesterday". Uses Intl.RelativeTimeFormat so the
  * directional word ("in" / "ago" and its translations) is supplied by
  * the active locale rather than hardcoded.
+ *
+ * Month/year thresholds are calendar approximations (30/365 days) —
+ * adequate for casual UI copy, not for exact anniversary arithmetic.
  *
  * @param dateString ISO 8601 date-time string
  * @returns Relative phrase (e.g., "in 3 days", "2 hours ago")
@@ -241,12 +338,15 @@ export function formatRelativeTime(dateString: string): string {
  */
 export function isEventPast(endString: string): boolean {
 	const end = new Date(endString);
-	const now = new Date();
-	return end < now;
+	return end.getTime() <= Date.now();
 }
 
 /**
- * Check if RSVP deadline has passed
+ * Check if RSVP deadline has passed.
+ *
+ * Boundary matches getRSVPDeadlineRelative: the exact deadline instant counts
+ * as closed ("RSVP by X" means X itself is too late), so a surface combining
+ * both never shows an open button next to closed copy.
  * @param deadlineString ISO 8601 date-time string, null, or undefined
  * @returns true if deadline has passed
  */
@@ -254,8 +354,7 @@ export function isRSVPClosed(deadlineString: string | null | undefined): boolean
 	if (!deadlineString) return false;
 
 	const deadline = new Date(deadlineString);
-	const now = new Date();
-	return deadline < now;
+	return deadline.getTime() <= Date.now();
 }
 
 /**
@@ -279,51 +378,42 @@ export function isRSVPClosingSoon(deadlineString: string | null): boolean {
  * @param dateString ISO 8601 date-time string
  * @param timeZone Optional IANA timezone to render in (e.g. the event's timezone);
  *   when supplied, the tz abbreviation is appended (e.g. "… at 8:00 PM CET")
- * @returns Verbose date string (e.g., "Friday, October 20th, 2025 at 8:00 PM CET")
+ * @returns Verbose date string (e.g., "Friday, October 20, 2025 at 8:00 PM CET")
  */
 export function formatEventDateForScreenReader(dateString: string, timeZone?: string): string {
 	const date = new Date(dateString);
 	const locale = getDateLocale();
 
-	const dayOfWeek = date.toLocaleDateString(locale, { weekday: 'long', ...tzOpt(timeZone) });
-	const month = date.toLocaleDateString(locale, { month: 'long', ...tzOpt(timeZone) });
-	const day = Number(date.toLocaleDateString('en-US', { day: 'numeric', ...tzOpt(timeZone) }));
-	const year = date.toLocaleDateString('en-US', { year: 'numeric', ...tzOpt(timeZone) });
-	const time = date.toLocaleTimeString(locale, {
-		hour: 'numeric',
-		minute: '2-digit',
-		hour12: locale === 'en-US',
+	// dateStyle/timeStyle produce the fully localized verbose form, including
+	// the locale's own connector word ("Friday, October 20, 2025 at 8:00 PM" in
+	// en-US, "Freitag, 20. Oktober 2025 um 20:00" in de-DE) — replacing the
+	// previous hand-built string with an English-only ordinal suffix.
+	//
+	// CLDR's single-instant pattern omits the spoken time word ("20:00", never
+	// "20:00 Uhr" — only the *interval* pattern carries it). That's fine
+	// visually, but this string exists to be read aloud, and German times are
+	// spoken "zwanzig Uhr". getSpokenTimeSuffix derives the word from the
+	// locale's own CLDR interval data; when present, insert it after the
+	// minute via formatToParts so it lands correctly regardless of where the
+	// time sits in the locale's pattern. Locales without one take the plain
+	// format() path — deliberately, since format() and joined formatToParts
+	// output are not byte-identical on V8 (its NNBSP→space compatibility
+	// patch applies only to format()).
+	const suffix = getSpokenTimeSuffix(locale);
+	const formatter = getFormatter(locale, {
+		dateStyle: 'full',
+		timeStyle: 'short',
 		...tzOpt(timeZone)
 	});
-	const tz = getTimeZoneAbbreviation(date, locale, timeZone);
 
-	// Add ordinal suffix (st, nd, rd, th) - only for English
-	if (locale === 'en-US') {
-		const ordinal = getOrdinalSuffix(day);
-		return withTz(`${dayOfWeek}, ${month} ${day}${ordinal}, ${year} at ${time}`, tz);
-	}
+	const formatted = suffix
+		? formatter
+				.formatToParts(date)
+				.map((p) => (p.type === 'minute' ? p.value + suffix : p.value))
+				.join('')
+		: formatter.format(date);
 
-	// For other locales, use standard format
-	return withTz(`${dayOfWeek}, ${day} ${month} ${year} ${time}`, tz);
-}
-
-/**
- * Get ordinal suffix for a day number
- * @param day Day of month (1-31)
- * @returns Ordinal suffix ("st", "nd", "rd", "th")
- */
-function getOrdinalSuffix(day: number): string {
-	if (day > 3 && day < 21) return 'th';
-	switch (day % 10) {
-		case 1:
-			return 'st';
-		case 2:
-			return 'nd';
-		case 3:
-			return 'rd';
-		default:
-			return 'th';
-	}
+	return withTz(formatted, getTimeZoneAbbreviation(date, locale, timeZone));
 }
 
 /**
@@ -338,38 +428,34 @@ function getOrdinalSuffix(day: number): string {
  * @returns Formatted time string (e.g., "8:00 PM" for en-US or "20:00" for de-DE)
  */
 export function formatTimeOfDay(dateString: string, timeZone?: string): string {
-	const date = new Date(dateString);
-	const locale = getDateLocale();
-
-	return date.toLocaleTimeString(locale, {
+	return getFormatter(getDateLocale(), {
 		hour: 'numeric',
 		minute: '2-digit',
-		hour12: locale === 'en-US',
 		...tzOpt(timeZone)
-	});
+	}).format(new Date(dateString));
 }
 
 /**
  * Format a date for display in admin pages and lists
  * Uses locale-aware formatting with medium date and short time
- * @param dateString ISO 8601 date-time string
+ * @param date ISO 8601 date-time string, or an already-parsed Date (lets
+ *   callers that validated the value avoid a second parse)
  * @returns Formatted date string (e.g., "Oct 20, 2025, 8:00 PM" for en-US or "20. Okt. 2025, 20:00" for de-DE)
  */
-export function formatDateTime(dateString: string, timeZone?: string): string {
-	const date = new Date(dateString);
+export function formatDateTime(date: string | Date, timeZone?: string): string {
+	const parsed = date instanceof Date ? date : new Date(date);
 	const locale = getDateLocale();
 
-	const formatted = date.toLocaleString(locale, {
+	const formatted = getFormatter(locale, {
 		year: 'numeric',
 		month: 'short',
 		day: 'numeric',
 		hour: 'numeric',
 		minute: '2-digit',
-		hour12: locale === 'en-US',
 		...tzOpt(timeZone)
-	});
+	}).format(parsed);
 
-	return withTz(formatted, getTimeZoneAbbreviation(date, locale, timeZone));
+	return withTz(formatted, getTimeZoneAbbreviation(parsed, locale, timeZone));
 }
 
 /**
@@ -388,7 +474,7 @@ export function formatDateTimeReadback(value: string | null | undefined): string
 	if (!value) return '';
 	const date = new Date(value);
 	if (isNaN(date.getTime())) return '';
-	return formatDateTime(value);
+	return formatDateTime(date);
 }
 
 /**
@@ -397,50 +483,45 @@ export function formatDateTimeReadback(value: string | null | undefined): string
  * @returns Formatted date string (e.g., "Oct 20, 2025" for en-US or "20. Okt. 2025" for de-DE)
  */
 export function formatDate(dateString: string, timeZone?: string): string {
-	const date = new Date(dateString);
-	const locale = getDateLocale();
-
 	// Date-only: apply the timezone so the calendar day is correct, but don't
 	// append a tz abbreviation (it reads oddly next to a date with no time).
-	return date.toLocaleDateString(locale, {
+	return getFormatter(getDateLocale(), {
 		year: 'numeric',
 		month: 'short',
 		day: 'numeric',
 		...tzOpt(timeZone)
-	});
+	}).format(new Date(dateString));
 }
 
 /** Long-month date, no time, e.g. "October 20, 2025". */
 export function formatDateLongMonth(dateString: string, timeZone?: string): string {
-	return new Date(dateString).toLocaleDateString(getDateLocale(), {
+	return getFormatter(getDateLocale(), {
 		year: 'numeric',
 		month: 'long',
 		day: 'numeric',
 		...tzOpt(timeZone)
-	});
+	}).format(new Date(dateString));
 }
 
 /** Long-month date + time, e.g. "October 20, 2025, 8:00 PM". */
 export function formatDateTimeVerbose(dateString: string, timeZone?: string): string {
-	const locale = getDateLocale();
-	return new Date(dateString).toLocaleString(locale, {
+	return getFormatter(getDateLocale(), {
 		year: 'numeric',
 		month: 'long',
 		day: 'numeric',
 		hour: 'numeric',
 		minute: '2-digit',
-		hour12: locale === 'en-US',
 		...tzOpt(timeZone)
-	});
+	}).format(new Date(dateString));
 }
 
 /** Month + year only, e.g. "October 2025". */
 export function formatMonthYearLabel(dateString: string, timeZone?: string): string {
-	return new Date(dateString).toLocaleDateString(getDateLocale(), {
+	return getFormatter(getDateLocale(), {
 		year: 'numeric',
 		month: 'long',
 		...tzOpt(timeZone)
-	});
+	}).format(new Date(dateString));
 }
 
 /**

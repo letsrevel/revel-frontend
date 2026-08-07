@@ -105,3 +105,19 @@ describe('EventDetails — capacity disclosure', () => {
 		expect(screen.queryByText(/Attendance/i)).not.toBeInTheDocument();
 	});
 });
+
+describe('EventDetails — RSVP deadline', () => {
+	// PR #812 regression guard: getRSVPDeadlineRelative returns null for a passed
+	// deadline; the tile must keep showing the translated closed copy, not vanish
+	// (null here means "closed", not "no deadline set").
+	it('shows "RSVP closed" when the deadline has passed', () => {
+		const event = createMockEvent({ rsvp_before: '2020-01-01T00:00:00Z' });
+		render(EventDetails, { props: { event } });
+		expect(screen.getByText(/RSVP closed/i)).toBeInTheDocument();
+	});
+
+	it('omits the deadline tile when no deadline is set', () => {
+		render(EventDetails, { props: { event: createMockEvent({ rsvp_before: null }) } });
+		expect(screen.queryByText(/RSVP Deadline/i)).not.toBeInTheDocument();
+	});
+});

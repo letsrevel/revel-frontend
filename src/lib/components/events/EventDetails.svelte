@@ -15,10 +15,12 @@
 
 	const { event, class: className }: Props = $props();
 
-	// Compute RSVP deadline info
+	// Compute RSVP deadline info. A null from getRSVPDeadlineRelative means the
+	// deadline has passed (not "no deadline") — keep showing the tile with the
+	// translated closed copy rather than hiding it.
 	const rsvpDeadlineText = $derived.by(() => {
 		if (!event.rsvp_before) return null;
-		return getRSVPDeadlineRelative(event.rsvp_before);
+		return getRSVPDeadlineRelative(event.rsvp_before) ?? m['eventQuickInfo.rsvpClosed']();
 	});
 
 	const isDeadlineSoon = $derived.by(() => {
