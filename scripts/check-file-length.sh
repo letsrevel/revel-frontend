@@ -33,10 +33,17 @@ FAILED=0
 #   handlers from that state threads it through closures and breaks single
 #   ownership (same rationale as auth.svelte.ts). Raised to fit the snap-on-drop
 #   drag fix (blocks were trailing the cursor when snap was on).
+#   utils/date.ts → 570: CLAUDE.md + the ESLint toLocale* ban route ALL
+#   human-facing date formatting through this one file, so every formatter must
+#   live here — splitting it would weaken that single-entry-point contract.
+#   Roughly half the length is JSDoc documenting non-obvious CLDR/Intl behavior
+#   (#812: interval-pattern suffix probe, pt-BR pattern selection, DST range
+#   branches) that must stay next to the code it explains.
 max_for() {
     case "$1" in
         src/lib/stores/auth.svelte.ts) echo 620 ;;
         src/lib/components/venues/designer/designer-controller.svelte.ts) echo 540 ;;
+        src/lib/utils/date.ts) echo 570 ;;
         *) echo "$2" ;;
     esac
 }

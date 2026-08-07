@@ -435,12 +435,15 @@ describe('every supported UI language uses a textual month in the short forms', 
 		}
 	);
 
-	it.each(SUPPORTED_UI_LANGUAGES)('%s end-to-end: formatEventDate contains no numeric d/M', (lang) => {
-		mockLocale.value = lang;
-		// A numeric month pattern surfaces as slash-separated digits
-		// (pt-PT would render "sexta, 24/10 • …").
-		expect(formatEventDate(WINTER_UTC, 'Europe/Vienna')).not.toMatch(/\d+\/\d+/);
-	});
+	it.each(SUPPORTED_UI_LANGUAGES)(
+		'%s end-to-end: formatEventDate contains no numeric d/M',
+		(lang) => {
+			mockLocale.value = lang;
+			// A numeric month pattern surfaces as slash-separated digits
+			// (pt-PT would render "sexta, 24/10 • …").
+			expect(formatEventDate(WINTER_UTC, 'Europe/Vienna')).not.toMatch(/\d+\/\d+/);
+		}
+	);
 
 	it('pt renders the Brazilian textual short date, not the pt-PT numeric one', () => {
 		mockLocale.value = 'pt';
