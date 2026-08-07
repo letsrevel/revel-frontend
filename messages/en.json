@@ -6218,6 +6218,20 @@
 		"requestedAt": "Requested"
 	},
 	"announcements.form.loadingEvents": "Loading events...",
+	"announcements.form.eventSearchPlaceholder": "Search events by name...",
+	"announcements.form.eventSearchHint": "Type to search your organization's events. Use the up and down arrow keys to browse results, and Enter to select one.",
+	"announcements.form.clearEventSelection": "Clear selected event",
+	"announcements.form.noEventsMatch": "No events match your search",
+	"announcements.form.eventResultsCount": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "{count} event found",
+				"countPlural=*": "{count} events found"
+			}
+		}
+	],
 	"announcements.view": "View",
 	"audioPlayer": {
 		"playerLabel": "Audio player",

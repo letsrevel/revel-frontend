@@ -6218,6 +6218,20 @@
 		"requestedAt": "Angefordert"
 	},
 	"announcements.form.loadingEvents": "Ereignisse laden...",
+	"announcements.form.eventSearchPlaceholder": "Veranstaltungen nach Namen suchen...",
+	"announcements.form.eventSearchHint": "Tippe, um die Veranstaltungen deiner Organisation zu durchsuchen. Mit den Pfeiltasten nach oben und unten blätterst du durch die Ergebnisse, mit Enter wählst du eine aus.",
+	"announcements.form.clearEventSelection": "Ausgewählte Veranstaltung entfernen",
+	"announcements.form.noEventsMatch": "Keine Veranstaltung passt zu deiner Suche",
+	"announcements.form.eventResultsCount": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "{count} Veranstaltung gefunden",
+				"countPlural=*": "{count} Veranstaltungen gefunden"
+			}
+		}
+	],
 	"announcements.view": "Ansehen",
 	"audioPlayer": {
 		"playerLabel": "Audioplayer",

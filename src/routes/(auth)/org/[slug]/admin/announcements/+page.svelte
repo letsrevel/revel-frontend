@@ -11,7 +11,6 @@
 		organizationadminannouncementsSendAnnouncement,
 		organizationadminannouncementsUnscheduleAnnouncement,
 		organizationadminannouncementsGetAnnouncement,
-		eventpublicdiscoveryListEvents,
 		organizationadminmembersListMembershipTiers
 	} from '$lib/api/generated/sdk.gen';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
@@ -57,12 +56,10 @@
 	let viewingAnnouncement = $state<AnnouncementSchema | null>(null);
 	let isLoadingView = $state(false);
 	let editingAnnouncementId = $state<string | null>(null);
-	let includePastEvents = $state(false);
 
 	// Derived
 	const accessToken = $derived(authStore.accessToken);
 	const organizationSlug = $derived(data.organization.slug);
-	const organizationId = $derived(data.organization.id);
 
 	// Fetch announcements
 	const announcementsQuery = createQuery(() => ({
@@ -81,19 +78,6 @@
 			return response.data;
 		},
 		enabled: !!accessToken
-	}));
-
-	// Fetch events for the modal
-	const eventsQuery = createQuery(() => ({
-		queryKey: ['admin-events', organizationId, includePastEvents],
-		queryFn: async () => {
-			const response = await eventpublicdiscoveryListEvents({
-				query: { organization: organizationId, page_size: 100, include_past: includePastEvents }
-			});
-			if (response.error) throw response.error;
-			return response.data;
-		},
-		enabled: !!accessToken && !!organizationId
 	}));
 
 	// Fetch tiers for the modal
@@ -182,8 +166,6 @@
 
 	// Derived data
 	const announcements = $derived(announcementsQuery.data?.results ?? []);
-	const events = $derived(eventsQuery.data?.results ?? []);
-	const eventsLoading = $derived(eventsQuery.isLoading);
 	const tiers = $derived(tiersQuery.data ?? []);
 	const isLoading = $derived(announcementsQuery.isLoading);
 
@@ -392,18 +374,12 @@
 	open={modalOpen}
 	announcement={selectedAnnouncement}
 	{organizationSlug}
-	{events}
-	{eventsLoading}
-	{includePastEvents}
 	{tiers}
 	onClose={() => {
 		modalOpen = false;
 		selectedAnnouncement = null;
 	}}
 	onSuccess={handleModalSuccess}
-	onIncludePastChange={(includePast) => {
-		includePastEvents = includePast;
-	}}
 />
 
 <!-- Delete Confirmation Dialog -->
