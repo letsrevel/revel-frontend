@@ -1486,7 +1486,8 @@
 		"failedToCopyLink": "Échec de la copie du lien"
 	},
 	"eventTime": {
-		"shownIn": "Horaires affichés en {label}"
+		"shownIn": "Horaires affichés en {label}",
+		"shownInYours": "Horaires affichés dans votre fuseau horaire ({label})"
 	},
 	"eventInvitationsAdmin": {
 		"backToEvents": "Retour aux événements",

@@ -22,6 +22,7 @@ import {
 	formatDateTimeReadback,
 	formatDate,
 	formatEventTimezoneLabel,
+	formatViewerTimezoneLabel,
 	formatDateLongMonth,
 	formatDateTimeVerbose,
 	formatMonthYearLabel,
@@ -90,6 +91,32 @@ describe('formatEventTimezoneLabel', () => {
 
 	it('falls back to the IANA zone tail when no place is given', () => {
 		expect(formatEventTimezoneLabel(WINTER_UTC, 'America/New_York')).toBe('New York (EST)');
+	});
+});
+
+describe('formatViewerTimezoneLabel (#818)', () => {
+	// The viewer's zone is whatever the machine reports, so the expectation is
+	// derived from the same source rather than hardcoded — what's under test is
+	// the wiring (viewer zone + active locale + reference instant), not ICU.
+	function shortNameFor(iso: string): string {
+		const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+		const part = new Intl.DateTimeFormat('en-US', { timeZone, timeZoneName: 'short' })
+			.formatToParts(new Date(iso))
+			.find((p) => p.type === 'timeZoneName');
+		return part?.value ?? '';
+	}
+
+	it('labels the instant in the viewer’s own timezone', () => {
+		expect(formatViewerTimezoneLabel(WINTER_UTC)).toBe(shortNameFor(WINTER_UTC));
+	});
+
+	it('defaults to now when no reference instant is given', () => {
+		freezeTime();
+		expect(formatViewerTimezoneLabel()).toBe(shortNameFor(FROZEN_NOW));
+	});
+
+	it('carries no place name — unlike the event-zone label, it is offset only', () => {
+		expect(formatViewerTimezoneLabel(WINTER_UTC)).not.toContain('(');
 	});
 });
 

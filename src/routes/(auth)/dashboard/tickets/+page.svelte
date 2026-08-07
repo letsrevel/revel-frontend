@@ -9,6 +9,7 @@
 	import type { PaymentMethod, TicketStatus } from '$lib/api/generated/types.gen';
 	import TicketListCard from '$lib/components/tickets/TicketListCard.svelte';
 	import HeldPassCard from '$lib/components/series-passes/HeldPassCard.svelte';
+	import ViewerTimezoneNote from '$lib/components/events/ViewerTimezoneNote.svelte';
 	import DashboardBandLayout from '$lib/components/dashboard/DashboardBandLayout.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { seriesPassQueryKeys } from '$lib/queries/series-passes';
@@ -292,6 +293,12 @@
 			level={2}
 		/>
 	{:else}
+		<!-- Timezone disclosure (#818) — twin of the RSVPs list: these cards can
+		     only render viewer-local times (the dashboard payload carries no event
+		     timezone), so name the zone rather than let it differ silently from the
+		     event page's event-local times. -->
+		<ViewerTimezoneNote class="mb-3" />
+
 		<!-- Tickets Grid -->
 		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 			{#each listEntries as entry (entry.kind === 'ticket' ? entry.ticket.id : entry.heldPass.id)}

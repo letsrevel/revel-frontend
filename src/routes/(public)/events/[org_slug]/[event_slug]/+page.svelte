@@ -44,7 +44,7 @@
 	import { getPotluckPermissions } from '$lib/utils/permissions';
 	import { formatEventLocation } from '$lib/utils/event';
 	import { getUserRealName } from '$lib/utils/user-display';
-	import { formatDateTime } from '$lib/utils/date';
+	import { formatEventDate } from '$lib/utils/date';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import * as m from '$lib/paraglide/messages.js';
@@ -415,12 +415,14 @@
 						<EventGuestSignInPrompt {event} />
 					{/if}
 
-					<!-- My Ticket (if user has a ticket) -->
+					<!-- My Ticket (if user has a ticket). Its date uses formatEventDate in
+					     the EVENT's timezone (#818): same shape as the ticket list and its
+					     modal, and same clock time as the rest of this page. -->
 					{#if userTicket}
 						<MyTicket
 							ticket={userTicket}
 							eventName={event.name}
-							eventDate={event.start ? formatDateTime(event.start) : undefined}
+							eventDate={event.start ? formatEventDate(event.start, event.timezone) : undefined}
 							eventLocation={formatEventLocation(event)}
 							onResumePayment={handleResumePaymentFromSidebar}
 							isResumingPayment={resumePaymentMutation.isPending}
@@ -679,7 +681,7 @@
 		bind:open={showMyTicketModal}
 		tickets={userTickets}
 		eventName={event.name}
-		eventDate={event.start ? formatDateTime(event.start) : undefined}
+		eventDate={event.start ? formatEventDate(event.start, event.timezone) : undefined}
 		eventLocation={formatEventLocation(event)}
 		onResumePayment={handleResumePayment}
 		isResumingPayment={resumePaymentMutation.isPending}
