@@ -298,7 +298,19 @@
 	-->
 	{@render children()}
 {:else}
-	<ModeWatcher />
+	<!--
+		`disableHeadScriptInjection` (#816): mode-watcher's own FOUC snippet is
+		injected via {@html} as a BARE inline <script>. Its `nonce` prop can't help
+		us — SvelteKit's per-response nonce is only interpolated into app.html
+		(`%sveltekit.nonce%`) and is never exposed to components or load functions —
+		so under our production CSP (`script-src 'self' 'nonce-…'`) the browser
+		refused it and logged a violation on EVERY page load. The snippet never ran
+		anyway: the equivalent nonced script in src/app.html does the same job (same
+		'mode-watcher-mode' storage key, same `dark` class, same colorScheme), so
+		turning the injection off changes nothing but the console noise. Keep the two
+		in sync — app.html is now the ONLY anti-FOUC script.
+	-->
+	<ModeWatcher disableHeadScriptInjection />
 	<QueryClientProvider client={queryClient}>
 		<Toaster richColors position="top-right" />
 		<ImpersonationBanner />
