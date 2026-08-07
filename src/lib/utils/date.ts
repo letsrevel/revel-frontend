@@ -546,3 +546,23 @@ export function formatEventTimezoneLabel(
 	const name = place?.trim() || timeZone.split('/').pop()?.replace(/_/g, ' ') || timeZone;
 	return offset ? `${name} (${offset})` : name;
 }
+
+/**
+ * Short label for the VIEWER's own timezone, e.g. "CEST" or "GMT+2".
+ *
+ * Counterpart to `formatEventTimezoneLabel` for surfaces that can only render
+ * viewer-local times — the dashboard list payloads (`MinimalEventSchema`) carry
+ * no event timezone, so a list can't convert to the event's zone the way the
+ * event page does. No place name: the viewer's location is not news to them,
+ * the offset is what makes the two surfaces comparable. Render in the browser
+ * only — on the server `resolvedOptions()` reports the SERVER's zone.
+ *
+ * @param referenceString Optional ISO 8601 instant used to resolve the
+ *   (DST-aware) offset; defaults to now.
+ * @returns e.g. "GMT+2", or "" when the environment reports no timezone
+ */
+export function formatViewerTimezoneLabel(referenceString?: string): string {
+	const date = referenceString ? new Date(referenceString) : new Date();
+	const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+	return getTimeZoneAbbreviation(date, getDateLocale(), timeZone);
+}

@@ -257,7 +257,7 @@
 		<div class="space-y-2 text-sm text-muted-foreground">
 			<div class="flex items-center gap-2">
 				<Calendar class="h-4 w-4" aria-hidden="true" />
-				{formatDateTime(event.start)}
+				<time datetime={event.start}>{formatDateTime(event.start)}</time>
 			</div>
 			{#if event.city}
 				<div class="flex items-center gap-2">
