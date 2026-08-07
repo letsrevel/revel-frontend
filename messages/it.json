@@ -1795,7 +1795,6 @@
 		"spotsTaken": "{current} / {max} posti occupati",
 		"attendeeCount": "{count} partecipanti",
 		"rsvpClosed": "RSVP chiuso",
-		"rsvpBy": "RSVP entro {deadline}",
 		"openInMaps": "Apri in Mappe",
 		"mapOf": "Mappa di",
 		"visibilityNote": "Visibilità: {visibility}",
