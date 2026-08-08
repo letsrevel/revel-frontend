@@ -364,12 +364,25 @@ describe('CheckoutBillingSection', () => {
 				response: { status: 200 } as Response
 			} as never);
 
-			renderWithQueryClient({ isAuthenticated: true, authToken: 'token-xyz' });
+			const queryClient = new QueryClient({
+				defaultOptions: { queries: { retry: false } }
+			});
+			render(QueryClientTestWrapper, {
+				props: {
+					client: queryClient,
+					component: CheckoutBillingSection,
+					componentProps: { ...defaultProps, isAuthenticated: true, authToken: 'token-xyz' }
+				}
+			});
 			await fireEvent.click(screen.getByRole('checkbox', { name: /Request Invoice/i }));
 
+			// Settled query state, not just "the call happened": the 200+null body
+			// must land as success/null (the same terminal state the 404 path
+			// produces), with the form left blank.
 			await waitFor(() => {
-				expect(userbillingGetBillingProfile).toHaveBeenCalledTimes(1);
+				expect(queryClient.getQueryState(['user-billing-profile'])?.status).toBe('success');
 			});
+			expect(queryClient.getQueryData(['user-billing-profile'])).toBeNull();
 			const nameInput = screen.getByLabelText(/Legal Name/i) as HTMLInputElement;
 			expect(nameInput.value).toBe('');
 		});

@@ -94,6 +94,9 @@
 			// "Nothing saved yet" is 200 + null since BE #861. The 404 branch stays
 			// for deploy-lag tolerance (an older backend still answers 404 for the
 			// same empty state); either way it resolves to null, never an error.
+			// Non-404 failures ALSO resolve to null on purpose: the profile only
+			// feeds the optional invoice prefill, so checkout fails open (user
+			// types their details) instead of surfacing an error for a convenience.
 			if (response.response?.status === 404) return null;
 			if (response.error) return null;
 			return (response.data as UserBillingProfileSchema | null | undefined) ?? null;
