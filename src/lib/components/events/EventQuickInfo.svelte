@@ -1,7 +1,12 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import type { EventDetailSchema } from '$lib/api/generated/types.gen';
-	import { formatEventDate, getRSVPDeadlineRelative, isRSVPClosingSoon } from '$lib/utils/date';
+	import {
+		formatDateTime,
+		formatEventDate,
+		getRSVPDeadlineRelative,
+		isRSVPClosingSoon
+	} from '$lib/utils/date';
 	import { cn } from '$lib/utils/cn';
 	import {
 		Calendar,
@@ -155,13 +160,22 @@
 		return remaining <= 10 && remaining > 0;
 	});
 
-	const rsvpDeadlineDisplay = $derived.by(() => {
+	// The relative phrase already carries its own directional word ("in 6 days" /
+	// "in 6 Tagen" / "em 6 dias"), so it must stand ALONE under the "RSVP deadline"
+	// label — feeding it into a composing "RSVP by {deadline}" string doubled the
+	// preposition in every locale (#814). Same shape EventDetails already uses.
+	// A null from getRSVPDeadlineRelative means the deadline has passed.
+	const rsvpDeadlineText = $derived.by(() => {
 		if (!event.rsvp_before) return null;
-		const relative = getRSVPDeadlineRelative(event.rsvp_before);
-		return relative === null
-			? m['eventQuickInfo.rsvpClosed']()
-			: m['eventQuickInfo.rsvpBy']({ deadline: relative });
+		return getRSVPDeadlineRelative(event.rsvp_before) ?? m['eventQuickInfo.rsvpClosed']();
 	});
+
+	// The relative phrase alone leaves the exact cutoff undiscoverable, so the
+	// absolute instant is spelled out beneath it — in the event's timezone, with
+	// the tz abbreviation formatDateTime appends.
+	const rsvpDeadlineAbsolute = $derived(
+		event.rsvp_before ? formatDateTime(event.rsvp_before, event.timezone) : null
+	);
 
 	const isDeadlineSoon = $derived.by(() => {
 		if (!event.rsvp_before) return false;
@@ -322,7 +336,7 @@
 	{/if}
 
 	<!-- RSVP Deadline (if rsvp_closes_at exists and event is not ticketed) -->
-	{#if rsvpDeadlineDisplay && !event.requires_ticket}
+	{#if rsvpDeadlineText && !event.requires_ticket}
 		<div
 			class={cn(itemClasses, isDeadlineSoon && 'text-highlight-foreground dark:text-highlight')}
 			role="listitem"
@@ -330,8 +344,20 @@
 		>
 			<Clock class={iconClasses} aria-hidden="true" />
 			<div class={textClasses}>
-				<time datetime={event.rsvp_before} class="block font-bold">
-					{rsvpDeadlineDisplay}
+				<span
+					class="block text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
+				>
+					{m['eventDetails.rsvpDeadline_label']()}
+				</span>
+				<!-- Both lines describe the same instant, so one <time> wraps them:
+				     the relative phrase reads first, the exact cutoff sits under it. -->
+				<time datetime={event.rsvp_before} class="block">
+					<span class="block font-bold">{rsvpDeadlineText}</span>
+					{#if rsvpDeadlineAbsolute}
+						<span class="block text-xs font-normal text-muted-foreground">
+							{rsvpDeadlineAbsolute}
+						</span>
+					{/if}
 				</time>
 				{#if isDeadlineSoon}
 					<span class="text-xs text-muted-foreground">{m['eventQuickInfo.closesSoon']()}</span>
