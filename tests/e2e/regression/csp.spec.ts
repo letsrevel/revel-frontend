@@ -55,11 +55,13 @@ test.describe('production CSP', () => {
 		// CSP allow-lists it) or be a non-executable data block (ld+json), which
 		// the HTML spec never runs and CSP therefore never blocks. Anything else
 		// is a guaranteed console violation on every page load.
+		// The attribute must be a real `src`/`nonce` (not `data-src`/`data-nonce`)
+		// with a non-empty quoted value — `nonce=""` does not allow-list anything.
 		const offenders = [...html.matchAll(/<script\b([^>]*)>/g)]
 			.map(([, attrs]) => attrs)
-			.filter((attrs) => !/\bsrc=/.test(attrs))
-			.filter((attrs) => !/\bnonce=/.test(attrs))
-			.filter((attrs) => !/\btype=["']application\/ld\+json["']/.test(attrs));
+			.filter((attrs) => !/(?:^|\s)src\s*=\s*("[^"]+"|'[^']+')/.test(attrs))
+			.filter((attrs) => !/(?:^|\s)nonce\s*=\s*("[^"]+"|'[^']+')/.test(attrs))
+			.filter((attrs) => !/(?:^|\s)type\s*=\s*["']application\/ld\+json["']/.test(attrs));
 
 		expect(offenders, 'inline scripts without a nonce').toEqual([]);
 	});
