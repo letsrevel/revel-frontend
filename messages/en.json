@@ -1602,8 +1602,7 @@
 		"failedToCopyLink": "Failed to copy link"
 	},
 	"eventTime": {
-		"shownIn": "Times shown in {label}",
-		"shownInYours": "Times shown in your time zone ({label})"
+		"shownIn": "Times shown in {label}"
 	},
 	"eventInvitationsAdmin": {
 		"backToEvents": "Back to Events",

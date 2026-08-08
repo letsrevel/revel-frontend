@@ -1602,8 +1602,7 @@
 		"failedToCopyLink": "Falha ao copiar o link"
 	},
 	"eventTime": {
-		"shownIn": "Horários mostrados em {label}",
-		"shownInYours": "Horários mostrados no seu fuso horário ({label})"
+		"shownIn": "Horários mostrados em {label}"
 	},
 	"eventInvitationsAdmin": {
 		"backToEvents": "Voltar aos eventos",

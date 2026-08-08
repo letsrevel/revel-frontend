@@ -37,9 +37,11 @@
 			const response = await userbillingGetBillingProfile({
 				headers: { Authorization: `Bearer ${authToken}` }
 			});
+			// "Nothing saved yet" is 200 + null since BE #861 (404 kept for
+			// deploy-lag tolerance with older backends).
 			if (response.response?.status === 404) return null;
 			if (response.error) throw new Error('Failed to fetch billing profile');
-			return (response.data as UserBillingProfileSchema) ?? null;
+			return (response.data as UserBillingProfileSchema | null | undefined) ?? null;
 		},
 		enabled: !!authToken,
 		retry: false,

@@ -356,6 +356,37 @@ describe('CheckoutBillingSection', () => {
 			consoleError.mockRestore();
 		});
 
+		it('treats the new 200 + null contract (BE #861) as the same empty state', async () => {
+			const { userbillingGetBillingProfile } = await import('$lib/api/generated/sdk.gen');
+			vi.mocked(userbillingGetBillingProfile).mockResolvedValue({
+				data: null,
+				error: undefined,
+				response: { status: 200 } as Response
+			} as never);
+
+			const queryClient = new QueryClient({
+				defaultOptions: { queries: { retry: false } }
+			});
+			render(QueryClientTestWrapper, {
+				props: {
+					client: queryClient,
+					component: CheckoutBillingSection,
+					componentProps: { ...defaultProps, isAuthenticated: true, authToken: 'token-xyz' }
+				}
+			});
+			await fireEvent.click(screen.getByRole('checkbox', { name: /Request Invoice/i }));
+
+			// Settled query state, not just "the call happened": the 200+null body
+			// must land as success/null (the same terminal state the 404 path
+			// produces), with the form left blank.
+			await waitFor(() => {
+				expect(queryClient.getQueryState(['user-billing-profile'])?.status).toBe('success');
+			});
+			expect(queryClient.getQueryData(['user-billing-profile'])).toBeNull();
+			const nameInput = screen.getByLabelText(/Legal Name/i) as HTMLInputElement;
+			expect(nameInput.value).toBe('');
+		});
+
 		it('does not retry a 404, even under a retrying query client', async () => {
 			const { userbillingGetBillingProfile } = await import('$lib/api/generated/sdk.gen');
 			mock404(vi.mocked(userbillingGetBillingProfile));
