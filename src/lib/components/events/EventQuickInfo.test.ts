@@ -110,12 +110,33 @@ describe('EventQuickInfo', () => {
 		expect(screen.getByText('Limited spots remaining')).toBeInTheDocument();
 	});
 
+	// #814: the relative phrase carries its own preposition ("in 7 days"), so it
+	// must stand alone under the "RSVP Deadline" label — never composed into an
+	// "RSVP by {deadline}" string, which doubled the preposition in every locale.
 	it('displays RSVP deadline when rsvp_before is set in the future', () => {
 		// Use a future deadline relative to "now" — past deadlines render "RSVP closed"
 		const futureDeadline = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 		const eventWithFutureDeadline = { ...mockEvent, rsvp_before: futureDeadline };
 		render(EventQuickInfo, { props: { event: eventWithFutureDeadline } });
-		expect(screen.getByText(/RSVP by/i)).toBeInTheDocument();
+		expect(screen.getByText('RSVP Deadline')).toBeInTheDocument();
+		// The relative phrase is the whole content of its own element — nothing
+		// prefixes it (a few ms of drift floors "7 days" to 6, hence the \d+).
+		expect(screen.getByText(/^in \d+ days$/)).toBeInTheDocument();
+		expect(screen.queryByText(/RSVP by/i)).not.toBeInTheDocument();
+	});
+
+	it('shows the absolute cutoff alongside the relative deadline', () => {
+		const eventWithFutureDeadline = {
+			...mockEvent,
+			rsvp_before: '2099-10-24T19:00:00Z',
+			timezone: 'UTC'
+		};
+		const { container } = render(EventQuickInfo, { props: { event: eventWithFutureDeadline } });
+
+		// Textual month, never a numeric one (no DD/MM vs MM/DD ambiguity)
+		expect(screen.getByText(/Oct 24, 2099/)).toBeInTheDocument();
+		// The machine-readable instant rides on a <time datetime>
+		expect(container.querySelector('time[datetime="2099-10-24T19:00:00Z"]')).toBeInTheDocument();
 	});
 
 	it('displays "RSVP closed" when rsvp_before is in the past', () => {
@@ -123,6 +144,8 @@ describe('EventQuickInfo', () => {
 		const eventWithPastDeadline = { ...mockEvent, rsvp_before: pastDeadline };
 		render(EventQuickInfo, { props: { event: eventWithPastDeadline } });
 		expect(screen.getByText('RSVP closed')).toBeInTheDocument();
+		// The exact cutoff stays discoverable even once the deadline has passed
+		expect(screen.getByText('RSVP Deadline')).toBeInTheDocument();
 	});
 
 	it('does not display RSVP deadline when rsvp_before is not set', () => {

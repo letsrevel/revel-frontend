@@ -52,6 +52,24 @@ function visibilitySettingsForWrite(
  * Build the create-event payload (essential fields only). Identical between
  * EventWizard and EventEditor. `name`/`startIso` are passed explicitly because
  * callers validate them (non-null) before invoking.
+ *
+ * "Essentials only" means: everything the pre-creation form (EssentialsStep)
+ * actually collects must be here. It is not a free choice — a field the
+ * organizer filled in but that this builder drops is silently replaced by a
+ * backend default, and the value is only repaired by the PUT on the first
+ * subsequent "Save". An organizer who creates the draft and navigates away
+ * keeps the default forever (#813: `end` was dropped, so every new draft became
+ * a 24-hour event — `Event.save()` sets `end = start + 1 day` when `end` is
+ * falsy).
+ *
+ * `end`/`is_open_ended` follow the same rule as every update builder: an
+ * open-ended event sends `end: null` (the backend still derives its internal
+ * `start + 24h` horizon) and the flag decides, never the raw input value.
+ *
+ * `event_series_id` is included because create mode can be seeded with one:
+ * EventEditor's `initialEventSeriesId` prop (the ExdatesChipList "create a
+ * one-off event for this date" action) pre-attaches the new event to the
+ * originating series, and `Event.objects.create(**payload)` honors it.
  */
 export function buildEventCreateData(
 	formData: EventFormPayloadData,
@@ -61,6 +79,8 @@ export function buildEventCreateData(
 	return {
 		name,
 		start: startIso,
+		end: formData.is_open_ended ? null : toISOString(formData.end),
+		is_open_ended: formData.is_open_ended ?? false,
 		city_id: formData.city_id,
 		visibility: formData.visibility || 'public',
 		event_type: formData.event_type || 'public',
@@ -68,6 +88,7 @@ export function buildEventCreateData(
 		requires_ticket: formData.requires_ticket || false, // Send explicit false when unchecked
 		requires_full_profile: formData.requires_full_profile || false,
 		accept_rsvp_notes: formData.accept_rsvp_notes || false,
+		event_series_id: formData.event_series_id || null,
 		venue_id: formData.venue_id || null
 	};
 }

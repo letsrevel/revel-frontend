@@ -69,7 +69,21 @@
 	// Form validation
 	let billingNameError = $state('');
 
-	// 4. Query: pre-fill from billing profile when authenticated
+	// 4. Query: pre-fill from billing profile when the user asks for an invoice.
+	// Gated on `isOpen` as well: the profile is read ONLY by the prefill below, so
+	// firing on mount spent a request on every paid-checkout dialog — and for the
+	// many users with nothing saved the endpoint answers 404, which the browser
+	// still logs as a failed request even though we handle it (#817).
+	// All three operands are read unconditionally: `&&` evaluated inside the
+	// tracked options getter would leave the later ones unread — and therefore
+	// untracked — freezing `enabled` at its initial value.
+	const shouldLoadBillingProfile = $derived.by(() => {
+		const authenticated = isAuthenticated;
+		const hasToken = !!authToken;
+		const sectionOpen = isOpen;
+		return authenticated && hasToken && sectionOpen;
+	});
+
 	const billingProfileQuery = createQuery<UserBillingProfileSchema | null>(() => ({
 		queryKey: ['user-billing-profile'],
 		queryFn: async () => {
@@ -77,11 +91,14 @@
 			const response = await userbillingGetBillingProfile({
 				headers: { Authorization: `Bearer ${authToken}` }
 			});
+			// 404 = "nothing saved yet", an expected empty state rather than a
+			// failure: resolve to null so the query never lands in an error state
+			// and nothing is logged. `retry: false` keeps it from repeating too.
 			if (response.response?.status === 404) return null;
 			if (response.error) return null;
 			return (response.data as UserBillingProfileSchema) ?? null;
 		},
-		enabled: isAuthenticated && !!authToken,
+		enabled: shouldLoadBillingProfile,
 		retry: false,
 		staleTime: 60_000
 	}));

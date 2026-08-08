@@ -1682,7 +1682,6 @@
 		"spotsTaken": "{current} / {max} places prises",
 		"attendeeCount": "{count} participants",
 		"rsvpClosed": "Inscriptions closes",
-		"rsvpBy": "Inscription avant {deadline}",
 		"openInMaps": "Ouvrir dans Plans",
 		"mapOf": "Carte de",
 		"visibilityNote": "Visibilité : {visibility}",

@@ -1796,7 +1796,6 @@
 		"spotsTaken": "{current} / {max} vagas ocupadas",
 		"attendeeCount": "{count} a participar",
 		"rsvpClosed": "Inscrições encerradas",
-		"rsvpBy": "Inscrição até {deadline}",
 		"openInMaps": "Abrir no Mapas",
 		"mapOf": "Mapa de",
 		"visibilityNote": "Visibilidade: {visibility}",
