@@ -5,7 +5,6 @@
 	import { dashboardDashboardRsvps } from '$lib/api/generated/sdk.gen';
 	import type { RsvpStatus } from '$lib/api/generated/types.gen';
 	import RSVPCard from '$lib/components/rsvps/RSVPCard.svelte';
-	import ViewerTimezoneNote from '$lib/components/events/ViewerTimezoneNote.svelte';
 	import DashboardBandLayout from '$lib/components/dashboard/DashboardBandLayout.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { CheckCircle2, Filter, ChevronLeft, ChevronRight, Loader2 } from '@lucide/svelte';
@@ -248,13 +247,6 @@
 			level={2}
 		/>
 	{:else}
-		<!-- Timezone disclosure (#818): the event page renders each event in its
-		     OWN timezone next to a "Times shown in <place>" note, while this list
-		     can only render viewer-local times (the dashboard payload carries no
-		     event timezone). Naming the viewer's zone here is what keeps the two
-		     clock times comparable instead of unexplained. -->
-		<ViewerTimezoneNote class="mb-3" />
-
 		<!-- RSVPs Grid -->
 		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 			{#each rsvps as rsvp (rsvp.id)}

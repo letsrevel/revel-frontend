@@ -78,7 +78,7 @@
 										<p class="font-medium">{event.name}</p>
 										{#if event.start}
 											<p class="text-sm text-muted-foreground">
-												{formatDate(event.start)}
+												{formatDate(event.start, event.timezone)}
 											</p>
 										{/if}
 									</div>

@@ -24,10 +24,10 @@
 	const logoUrl = $derived(getImageUrl(logoThumbnailPath || logoPath));
 
 	// Format event date. `invitation.event` is an EventInListSchema, which carries
-	// a REQUIRED `timezone` — so unlike the dashboard RSVP/ticket cards (whose
-	// MinimalEventSchema payload has none) this card can and must render the
-	// event's OWN local time, matching EventCard and the event page. Only the
-	// start instant is shown, so the single-instant helper is the right one.
+	// a REQUIRED `timezone` — this card renders the event's OWN local time,
+	// matching EventCard, the event page, and (since BE #862 added `timezone` to
+	// MinimalEventSchema) the dashboard RSVP/ticket cards too. Only the start
+	// instant is shown, so the single-instant helper is the right one.
 	const eventDate = $derived.by(() => {
 		if (!invitation.event.start) return null;
 		return formatEventDate(invitation.event.start, invitation.event.timezone);

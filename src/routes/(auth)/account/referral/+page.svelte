@@ -105,10 +105,11 @@
 			const response = await userbillingGetBillingProfile({
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
-			// 404 means no billing profile yet - return null
+			// No billing profile yet is 200 + null since BE #861 (404 kept for
+			// deploy-lag tolerance with older backends) - return null
 			if (response.response?.status === 404) return null;
 			if (response.error) throw new Error('Failed to fetch billing profile');
-			return response.data as UserBillingProfileSchema;
+			return (response.data as UserBillingProfileSchema | null | undefined) ?? null;
 		},
 		enabled: !!accessToken && !!referralCode,
 		retry: false,

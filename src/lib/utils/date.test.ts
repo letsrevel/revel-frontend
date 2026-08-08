@@ -22,7 +22,6 @@ import {
 	formatDateTimeReadback,
 	formatDate,
 	formatEventTimezoneLabel,
-	formatViewerTimezoneLabel,
 	formatDateLongMonth,
 	formatDateTimeVerbose,
 	formatMonthYearLabel,
@@ -91,45 +90,6 @@ describe('formatEventTimezoneLabel', () => {
 
 	it('falls back to the IANA zone tail when no place is given', () => {
 		expect(formatEventTimezoneLabel(WINTER_UTC, 'America/New_York')).toBe('New York (EST)');
-	});
-});
-
-describe('formatViewerTimezoneLabel (#818)', () => {
-	// The viewer's zone is whatever the machine reports, so the expectation is
-	// derived from the same source rather than hardcoded — what's under test is
-	// the wiring (viewer zone → humanized name), not ICU.
-	function viewerZone(): string {
-		return Intl.DateTimeFormat().resolvedOptions().timeZone;
-	}
-
-	it('names the viewer’s own timezone, humanized from the IANA zone', () => {
-		const expected = viewerZone().split('/').pop()?.replace(/_/g, ' ');
-		expect(formatViewerTimezoneLabel()).toBe(expected);
-	});
-
-	it('replaces underscores in multi-word zone tails', () => {
-		// Guards the humanization itself regardless of the machine's own zone:
-		// "America/New_York" must never surface as "New_York".
-		expect(formatViewerTimezoneLabel()).not.toContain('_');
-	});
-
-	// The reason this label is a NAME and not an offset: it heads a list whose
-	// rows each render with the offset in effect at their own instant, so an
-	// offset here would contradict rows on the far side of a DST transition.
-	it('is DST-invariant — identical either side of a transition', () => {
-		freezeTime('2026-01-15T12:00:00Z');
-		const winter = formatViewerTimezoneLabel();
-		vi.setSystemTime(new Date('2026-07-15T12:00:00Z'));
-		const summer = formatViewerTimezoneLabel();
-
-		expect(summer).toBe(winter);
-	});
-
-	it('appends no parenthesized offset — unlike the event-zone label', () => {
-		// formatEventTimezoneLabel renders "New York (EST)"; this one stops at
-		// the name. (Not asserted via /GMT[+-]/: an `Etc/GMT±N` viewer zone is
-		// legitimately *named* "GMT+N".)
-		expect(formatViewerTimezoneLabel()).not.toContain('(');
 	});
 });
 

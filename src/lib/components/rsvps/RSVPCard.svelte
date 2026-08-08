@@ -33,13 +33,18 @@
 	const coverArtPath = $derived(getEventCoverArt(rsvp.event));
 	const coverArtUrl = $derived(getImageUrl(coverArtThumbnailPath || coverArtPath));
 
-	// Format event date
+	// Format event date — in the event's OWN timezone (MinimalEventSchema carries
+	// it since BE #862), matching the event page.
 	const eventDate = $derived.by(() => {
 		if (!rsvp.event.start) return null;
 		if (rsvp.event.is_open_ended) {
-			return `${formatEventDate(rsvp.event.start)} · ${m['eventDetails.openEnded']()}`;
+			return `${formatEventDate(rsvp.event.start, rsvp.event.timezone)} · ${m['eventDetails.openEnded']()}`;
 		}
-		return formatEventDateRange(rsvp.event.start, rsvp.event.end || rsvp.event.start);
+		return formatEventDateRange(
+			rsvp.event.start,
+			rsvp.event.end || rsvp.event.start,
+			rsvp.event.timezone
+		);
 	});
 
 	// Get event location
@@ -118,7 +123,7 @@
 						<li class="flex items-center gap-2 text-muted-foreground">
 							<Calendar class="h-4 w-4 shrink-0" aria-hidden="true" />
 							<!-- datetime carries the machine-readable start instant; the text
-							     is the localized (viewer-local) rendering. -->
+							     is the localized, event-timezone rendering. -->
 							<time datetime={rsvp.event.start} class="truncate">{eventDate}</time>
 						</li>
 					{/if}

@@ -30,11 +30,12 @@
 	const logoPath = $derived(getEventLogo(ticket.event));
 	const logoUrl = $derived(getImageUrl(logoThumbnailPath || logoPath));
 
-	// Format event date
+	// Format event date — in the event's OWN timezone (MinimalEventSchema carries
+	// it since BE #862), matching the event page and the ticket modal.
 	const eventDate = $derived.by(() => {
 		if (!ticket.event.start) return null;
 		// If no end date, just show start
-		return formatEventDateRange(ticket.event.start, ticket.event.start);
+		return formatEventDateRange(ticket.event.start, ticket.event.start, ticket.event.timezone);
 	});
 
 	// Get event location (will use venue name if available, then fallback to address)
@@ -122,7 +123,7 @@
 						<li class="flex items-center gap-2 text-muted-foreground">
 							<Calendar class="h-4 w-4 shrink-0" aria-hidden="true" />
 							<!-- datetime carries the machine-readable start instant; the text
-							     is the localized (viewer-local) rendering. -->
+							     is the localized, event-timezone rendering. -->
 							<time datetime={ticket.event.start} class="truncate">{eventDate}</time>
 						</li>
 					{/if}
