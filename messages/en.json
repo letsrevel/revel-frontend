@@ -1602,7 +1602,8 @@
 		"failedToCopyLink": "Failed to copy link"
 	},
 	"eventTime": {
-		"shownIn": "Times shown in {label}"
+		"shownIn": "Times shown in {label}",
+		"shownInYours": "Times shown in your time zone ({label})"
 	},
 	"eventInvitationsAdmin": {
 		"backToEvents": "Back to Events",
@@ -1797,7 +1798,6 @@
 		"spotsTaken": "{current} / {max} spots taken",
 		"attendeeCount": "{count} attending",
 		"rsvpClosed": "RSVP closed",
-		"rsvpBy": "RSVP by {deadline}",
 		"openInMaps": "Open in Maps",
 		"mapOf": "Map of",
 		"visibilityNote": "Visibility: {visibility}",

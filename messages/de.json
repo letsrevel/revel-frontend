@@ -1602,7 +1602,8 @@
 		"failedToCopyLink": "Link konnte nicht kopiert werden"
 	},
 	"eventTime": {
-		"shownIn": "Zeiten werden in {label} angezeigt"
+		"shownIn": "Zeiten werden in {label} angezeigt",
+		"shownInYours": "Zeiten werden in deiner Zeitzone angezeigt ({label})"
 	},
 	"eventInvitationsAdmin": {
 		"backToEvents": "Zurück zu den Events",
@@ -1797,7 +1798,6 @@
 		"spotsTaken": "{current} / {max} Plätze belegt",
 		"attendeeCount": "{count} Teilnehmer*innen",
 		"rsvpClosed": "Anmeldung geschlossen",
-		"rsvpBy": "Anmeldung bis {deadline}",
 		"openInMaps": "In Karten öffnen",
 		"mapOf": "Karte von",
 		"visibilityNote": "Sichtbarkeit: {visibility}",

@@ -546,3 +546,25 @@ export function formatEventTimezoneLabel(
 	const name = place?.trim() || timeZone.split('/').pop()?.replace(/_/g, ' ') || timeZone;
 	return offset ? `${name} (${offset})` : name;
 }
+
+/**
+ * Name of the VIEWER's own timezone, humanized from their IANA zone.
+ *
+ * Counterpart to `formatEventTimezoneLabel` for surfaces that can only render
+ * viewer-local times — the dashboard list payloads (`MinimalEventSchema`) carry
+ * no event timezone, so a list can't convert to the event's zone the way the
+ * event page does. Browser-only: on the server `resolvedOptions()` reports the
+ * SERVER's zone.
+ *
+ * Takes no instant and shows NO offset, unlike its twin: that label sits next to
+ * ONE event, this one heads a LIST whose rows each render with the offset in
+ * effect at their own instant, so across a DST transition none is true for all
+ * of them ("CET" over rows rendered in CEST). A zone NAME is DST-invariant.
+ *
+ * @returns e.g. "Vienna", or "" when the environment reports no timezone
+ */
+export function formatViewerTimezoneLabel(): string {
+	const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+	if (!timeZone) return '';
+	return timeZone.split('/').pop()?.replace(/_/g, ' ') || timeZone;
+}

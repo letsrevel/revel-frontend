@@ -225,10 +225,12 @@
 				variant === 'compact' && 'gap-1.5 border-t-0 pt-0 md:border-t md:pt-3'
 			)}
 		>
-			<!-- Date & Time -->
+			<!-- Date & Time. <time datetime> so the machine-readable instant survives
+			     on list surfaces too (crawlers, structured data) — the visible text
+			     stays the localized, event-timezone rendering. -->
 			<div class="flex items-center gap-2 text-sm">
 				<Calendar class="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-				<span class="truncate">{formattedDate}</span>
+				<time datetime={event.start} class="truncate">{formattedDate}</time>
 			</div>
 
 			<!-- Location -->

@@ -257,7 +257,13 @@
 		<div class="space-y-2 text-sm text-muted-foreground">
 			<div class="flex items-center gap-2">
 				<Calendar class="h-4 w-4" aria-hidden="true" />
-				{formatDateTime(event.start)}
+				<!-- Event-local, not viewer-local: EventInListSchema carries a required
+				     `timezone`, and the sibling surfaces (EventCard, the org-admin
+				     tickets list) already pass it. formatDateTime stays the helper here
+				     — it is the documented admin/lists format and keeps the year, which
+				     a list mixing drafts and past events needs — it just gains the
+				     event's zone (and, with it, the tz abbreviation). -->
+				<time datetime={event.start}>{formatDateTime(event.start, event.timezone)}</time>
 			</div>
 			{#if event.city}
 				<div class="flex items-center gap-2">

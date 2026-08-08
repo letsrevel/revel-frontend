@@ -27,11 +27,15 @@
 		-->
 		<!--
 			Anti-FOUC: apply the dark class before first paint so dark-mode users
-			never see a light flash on SSR loads (#440). mode-watcher injects an
-			equivalent <svelte:head> snippet, but it carries no nonce and is blocked
-			by our production CSP (script-src 'self'); this script is nonced via
-			%sveltekit.nonce% so it runs. Must stay synchronous (no defer/async) and
-			mirror mode-watcher's storage key ('mode-watcher-mode') and dark class.
+			never see a light flash on SSR loads (#440). This is the ONLY anti-FOUC
+			script: mode-watcher used to inject an equivalent <svelte:head> snippet,
+			but it carried no nonce, was blocked by our production CSP
+			(script-src 'self' 'nonce-…') and logged a violation on every page load,
+			so `<ModeWatcher disableHeadScriptInjection />` in src/routes/+layout.svelte
+			now turns it off (#816). This script is nonced via %sveltekit.nonce% so it
+			runs. Must stay synchronous (no defer/async) and mirror mode-watcher's
+			storage key ('mode-watcher-mode') and dark class — mode-watcher no longer
+			has a fallback to cover a drift here.
 
 			Embed documents (/embed/*) with an explicit ?theme=light|dark carry
 			data-theme-locked and are skipped: their theme is already applied to

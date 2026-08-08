@@ -1,15 +1,103 @@
 import { describe, it, expect } from 'vitest';
 import {
 	buildEditorUpdateData,
+	buildEventCreateData,
 	buildRecurringTemplateCreateData,
 	buildWizardStep1UpdateData,
 	buildWizardStep2UpdateData,
 	type EventFormPayloadData
 } from './event-payload';
+import { toISOString } from '$lib/utils/datetime';
 
 const NAME = 'Weekly Game Night';
 const START_ISO = '2026-08-01T18:00:00+02:00';
 const CITY_ID = 42;
+
+// The `datetime-local` value the organizer types, and the ISO string the
+// builders must derive from it. Resolved through the same helper the builders
+// use so the expectation stays correct under any machine timezone — what is
+// asserted here is that the field survives into the payload at all.
+const END_LOCAL = '2026-08-01T22:00';
+const END_ISO = toISOString(END_LOCAL);
+
+// #813. The create payload is the ONLY write for an organizer who fills in the
+// essentials, hits "Create", and navigates away — anything the form collects but
+// the builder drops is silently replaced by a backend default and never
+// repaired. `end` was dropped, and `Event.save()` sets `end = start + 1 day`
+// when it is falsy, so every abandoned draft became a 24-hour event.
+describe('buildEventCreateData', () => {
+	// Every field EssentialsStep (the pre-creation form) collects, plus the
+	// create-mode seeds EventEditor applies before the first POST.
+	const formData: EventFormPayloadData = {
+		name: NAME,
+		start: '2026-08-01T18:00',
+		end: END_LOCAL,
+		is_open_ended: false,
+		city_id: CITY_ID,
+		visibility: 'private',
+		event_type: 'members-only',
+		requires_ticket: true,
+		requires_full_profile: true,
+		accept_rsvp_notes: true,
+		event_series_id: 'series-1',
+		venue_id: 'venue-1'
+	};
+
+	it('carries every field the create form collects into the POST body', () => {
+		const payload = buildEventCreateData(formData, NAME, START_ISO);
+
+		expect(payload).toEqual({
+			name: NAME,
+			start: START_ISO,
+			end: END_ISO,
+			is_open_ended: false,
+			city_id: CITY_ID,
+			visibility: 'private',
+			event_type: 'members-only',
+			status: 'draft',
+			requires_ticket: true,
+			requires_full_profile: true,
+			accept_rsvp_notes: true,
+			event_series_id: 'series-1',
+			venue_id: 'venue-1'
+		});
+	});
+
+	it('sends the typed end so the backend does not default it to start + 24h', () => {
+		const payload = buildEventCreateData(formData, NAME, START_ISO);
+
+		expect(payload.end).toBe(END_ISO);
+		expect(payload.end).toContain('2026-08-01T22:00:00');
+		expect(payload.end).not.toBeNull();
+		expect(JSON.parse(JSON.stringify(payload))).toHaveProperty('end');
+	});
+
+	it('sends end as null and the flag as true for an open-ended event', () => {
+		const payload = buildEventCreateData({ ...formData, is_open_ended: true }, NAME, START_ISO);
+
+		expect(payload.end).toBeNull();
+		expect(payload.is_open_ended).toBe(true);
+	});
+
+	it('sends is_open_ended as an explicit false when the form never set it', () => {
+		const payload = buildEventCreateData({}, NAME, START_ISO);
+
+		expect(payload.is_open_ended).toBe(false);
+		expect(payload.end).toBeNull();
+	});
+
+	it('omits no field that the wizard/editor update payloads write back', () => {
+		const created = buildEventCreateData(formData, NAME, START_ISO);
+		const updated = buildEditorUpdateData(formData, START_ISO);
+
+		// Every key the create payload sends must round-trip identically through
+		// the first "Save" — a create/update disagreement is exactly the #813 bug.
+		for (const key of Object.keys(created) as (keyof typeof created)[]) {
+			if (key === 'status' || key === 'requires_ticket') continue; // create-only
+			expect([key, created[key]]).toEqual([key, updated[key as keyof typeof updated]]);
+		}
+	});
+});
 
 describe('buildRecurringTemplateCreateData', () => {
 	it('includes accept_rsvp_notes when the organizer enabled it', () => {

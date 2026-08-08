@@ -1602,7 +1602,8 @@
 		"failedToCopyLink": "Falha ao copiar o link"
 	},
 	"eventTime": {
-		"shownIn": "Horários mostrados em {label}"
+		"shownIn": "Horários mostrados em {label}",
+		"shownInYours": "Horários mostrados no seu fuso horário ({label})"
 	},
 	"eventInvitationsAdmin": {
 		"backToEvents": "Voltar aos eventos",
@@ -1797,7 +1798,6 @@
 		"spotsTaken": "{current} / {max} vagas ocupadas",
 		"attendeeCount": "{count} a participar",
 		"rsvpClosed": "Inscrições encerradas",
-		"rsvpBy": "Inscrição até {deadline}",
 		"openInMaps": "Abrir no Mapas",
 		"mapOf": "Mapa de",
 		"visibilityNote": "Visibilidade: {visibility}",

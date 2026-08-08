@@ -1602,7 +1602,8 @@
 		"failedToCopyLink": "Impossibile copiare il link"
 	},
 	"eventTime": {
-		"shownIn": "Orari mostrati in {label}"
+		"shownIn": "Orari mostrati in {label}",
+		"shownInYours": "Orari mostrati nel tuo fuso orario ({label})"
 	},
 	"eventInvitationsAdmin": {
 		"backToEvents": "Torna agli eventi",
@@ -1797,7 +1798,6 @@
 		"spotsTaken": "{current} / {max} posti occupati",
 		"attendeeCount": "{count} partecipanti",
 		"rsvpClosed": "RSVP chiuso",
-		"rsvpBy": "RSVP entro {deadline}",
 		"openInMaps": "Apri in Mappe",
 		"mapOf": "Mappa di",
 		"visibilityNote": "Visibilità: {visibility}",

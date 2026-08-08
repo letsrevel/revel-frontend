@@ -121,7 +121,9 @@
 					{#if eventDate}
 						<li class="flex items-center gap-2 text-muted-foreground">
 							<Calendar class="h-4 w-4 shrink-0" aria-hidden="true" />
-							<span class="truncate">{eventDate}</span>
+							<!-- datetime carries the machine-readable start instant; the text
+							     is the localized (viewer-local) rendering. -->
+							<time datetime={ticket.event.start} class="truncate">{eventDate}</time>
 						</li>
 					{/if}
 					{#if eventLocation}
@@ -133,7 +135,7 @@
 					<!-- Purchased Date -->
 					<li class="text-muted-foreground">
 						<span class="font-medium">{m['ticketListCard.purchased']()}</span>
-						{createdDate}
+						<time datetime={ticket.created_at}>{createdDate}</time>
 					</li>
 				</ul>
 			</div>
