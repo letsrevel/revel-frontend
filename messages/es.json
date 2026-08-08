@@ -1795,7 +1795,6 @@
 		"spotsTaken": "{current} / {max} plazas ocupadas",
 		"attendeeCount": "{count} participantes",
 		"rsvpClosed": "Confirmación cerrada",
-		"rsvpBy": "Confirma antes de {deadline}",
 		"openInMaps": "Abrir en Mapas",
 		"mapOf": "Mapa de",
 		"visibilityNote": "Visibilidad: {visibility}",

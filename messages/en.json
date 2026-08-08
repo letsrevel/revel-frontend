@@ -1795,7 +1795,6 @@
 		"spotsTaken": "{current} / {max} spots taken",
 		"attendeeCount": "{count} attending",
 		"rsvpClosed": "RSVP closed",
-		"rsvpBy": "RSVP by {deadline}",
 		"openInMaps": "Open in Maps",
 		"mapOf": "Map of",
 		"visibilityNote": "Visibility: {visibility}",
