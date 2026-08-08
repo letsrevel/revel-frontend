@@ -308,4 +308,75 @@ describe('CheckoutBillingSection', () => {
 			});
 		});
 	});
+
+	// A user who never saved billing details gets a 404 from GET /api/me/billing.
+	// That is an empty state, not a failure (#817).
+	describe('billing profile 404 (nothing saved yet)', () => {
+		function mock404(getBillingProfile: ReturnType<typeof vi.fn>) {
+			getBillingProfile.mockResolvedValue({
+				data: undefined,
+				error: { detail: 'Not found' },
+				response: { status: 404 } as Response
+			});
+		}
+
+		it('does not request the billing profile until the invoice section is opened', async () => {
+			const { userbillingGetBillingProfile } = await import('$lib/api/generated/sdk.gen');
+			mock404(vi.mocked(userbillingGetBillingProfile));
+
+			renderWithQueryClient({ isAuthenticated: true, authToken: 'token-xyz' });
+
+			// Collapsed: the profile is only ever read by the prefill, so nothing is fetched.
+			await waitFor(() => {
+				expect(userbillingGetBillingProfile).not.toHaveBeenCalled();
+			});
+
+			await fireEvent.click(screen.getByRole('checkbox', { name: /Request Invoice/i }));
+			await waitFor(() => {
+				expect(userbillingGetBillingProfile).toHaveBeenCalledTimes(1);
+			});
+		});
+
+		it('resolves to an empty profile without erroring or logging', async () => {
+			const { userbillingGetBillingProfile } = await import('$lib/api/generated/sdk.gen');
+			mock404(vi.mocked(userbillingGetBillingProfile));
+			const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+			renderWithQueryClient({ isAuthenticated: true, authToken: 'token-xyz' });
+			await fireEvent.click(screen.getByRole('checkbox', { name: /Request Invoice/i }));
+
+			await waitFor(() => {
+				expect(userbillingGetBillingProfile).toHaveBeenCalled();
+			});
+
+			// The form is simply blank — the 404 resolved to null, it did not throw.
+			const nameInput = screen.getByLabelText(/Legal Name/i) as HTMLInputElement;
+			expect(nameInput.value).toBe('');
+			expect(consoleError).not.toHaveBeenCalled();
+			consoleError.mockRestore();
+		});
+
+		it('does not retry a 404, even under a retrying query client', async () => {
+			const { userbillingGetBillingProfile } = await import('$lib/api/generated/sdk.gen');
+			mock404(vi.mocked(userbillingGetBillingProfile));
+
+			const queryClient = new QueryClient({
+				defaultOptions: { queries: { retry: 3, retryDelay: 0 } }
+			});
+			render(QueryClientTestWrapper, {
+				props: {
+					client: queryClient,
+					component: CheckoutBillingSection,
+					componentProps: { ...defaultProps, isAuthenticated: true, authToken: 'token-xyz' }
+				}
+			});
+			await fireEvent.click(screen.getByRole('checkbox', { name: /Request Invoice/i }));
+
+			await waitFor(() => {
+				expect(userbillingGetBillingProfile).toHaveBeenCalledTimes(1);
+			});
+			expect(queryClient.getQueryState(['user-billing-profile'])?.status).toBe('success');
+			expect(queryClient.getQueryData(['user-billing-profile'])).toBeNull();
+		});
+	});
 });
