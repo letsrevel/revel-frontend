@@ -78,6 +78,39 @@ describe('EventCombobox', () => {
 		return { ...result, onSelect };
 	}
 
+	/**
+	 * Same component, mounted inside a real <form> with a submit button — the
+	 * shape the composer gives it. Implicit submission is the behaviour under
+	 * test, and user-event only performs it when the keydown was NOT swallowed.
+	 */
+	function renderInForm(props: Record<string, unknown> = {}) {
+		const onSelect = vi.fn();
+		const onSubmit = vi.fn((event: Event) => event.preventDefault());
+		const form = document.createElement('form');
+		const submitButton = document.createElement('button');
+		submitButton.type = 'submit';
+		submitButton.textContent = 'Save draft';
+		form.appendChild(submitButton);
+		form.addEventListener('submit', onSubmit);
+		document.body.appendChild(form);
+
+		const result = render(QueryClientTestWrapper, {
+			target: form,
+			props: {
+				client: queryClient,
+				component: EventCombobox,
+				componentProps: {
+					organizationSlug: 'acme',
+					value: null,
+					valueLabel: null,
+					onSelect,
+					...props
+				}
+			}
+		});
+		return { ...result, onSelect, onSubmit };
+	}
+
 	it('exposes combobox semantics on the search field', () => {
 		mockSearch([]);
 		renderCombobox();
@@ -187,6 +220,43 @@ describe('EventCombobox', () => {
 		expect(onSelect).toHaveBeenCalledWith({ id: 'e-2', name: 'Beta' });
 	});
 
+	// Enter is swallowed only when it commits a highlight; otherwise the key must
+	// keep its default action, which inside the composer is the form's implicit
+	// submit (ARIA APG defines Enter for an editable combobox solely for the
+	// "an autocomplete suggestion is selected" case).
+	it('lets Enter submit the enclosing form when no option is highlighted', async () => {
+		const user = userEvent.setup();
+		mockSearch([makeEvent('Alpha', 'e-1')]);
+		const { onSelect, onSubmit } = renderInForm();
+
+		const input = screen.getByRole('combobox');
+		await user.click(input);
+		await screen.findByRole('option', { name: /Alpha/ });
+		expect(input).not.toHaveAttribute('aria-activedescendant');
+
+		await user.keyboard('{Enter}');
+
+		expect(onSubmit).toHaveBeenCalledTimes(1);
+		expect(onSelect).not.toHaveBeenCalled();
+	});
+
+	it('swallows Enter instead of submitting when an option is highlighted', async () => {
+		const user = userEvent.setup();
+		mockSearch([makeEvent('Alpha', 'e-1')]);
+		const { onSelect, onSubmit } = renderInForm();
+
+		const input = screen.getByRole('combobox');
+		await user.click(input);
+		await screen.findByRole('option', { name: /Alpha/ });
+		await user.keyboard('{ArrowDown}');
+		await waitFor(() => expect(input).toHaveAttribute('aria-activedescendant'));
+
+		await user.keyboard('{Enter}');
+
+		expect(onSelect).toHaveBeenCalledWith({ id: 'e-1', name: 'Alpha' });
+		expect(onSubmit).not.toHaveBeenCalled();
+	});
+
 	it('shows the selected label even when the event is not in the results', async () => {
 		mockSearch([makeEvent('Something Else', 'e-other')]);
 		renderCombobox({ value: 'e-late', valueLabel: 'Summer Sunset Music Festival' });
@@ -226,5 +296,33 @@ describe('EventCombobox', () => {
 		await user.type(input, 'zzz');
 
 		expect(await screen.findByText(m['announcements.form.noEventsMatch']())).toBeInTheDocument();
+	});
+
+	// An org whose events are all in the past answers "zero" to the default
+	// upcoming-only query, and must not be told it has no events at all.
+	it('offers past events instead of claiming the org has none when only upcoming are searched', async () => {
+		const user = userEvent.setup();
+		mockSearch([]);
+		renderCombobox();
+
+		await user.click(screen.getByRole('combobox'));
+
+		expect(await screen.findByText(m['announcements.form.noUpcomingEvents']())).toBeInTheDocument();
+		expect(
+			screen.getByText(m['announcements.form.noUpcomingEventsDescription']())
+		).toBeInTheDocument();
+		expect(screen.queryByText(m['announcements.form.noEvents']())).not.toBeInTheDocument();
+	});
+
+	it('claims the org has no events only once past events are included', async () => {
+		const user = userEvent.setup();
+		mockSearch([]);
+		renderCombobox({ includePast: true });
+
+		await user.click(screen.getByRole('combobox'));
+
+		expect(await screen.findByText(m['announcements.form.noEvents']())).toBeInTheDocument();
+		expect(screen.getByText(m['announcements.form.noEventsDescription']())).toBeInTheDocument();
+		expect(screen.queryByText(m['announcements.form.noUpcomingEvents']())).not.toBeInTheDocument();
 	});
 });

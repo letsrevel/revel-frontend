@@ -110,10 +110,20 @@
 
 	const results = $derived(eventsQuery.data?.results ?? []);
 	const isFetching = $derived(eventsQuery.isFetching);
-	/** No events at all in this organization — not merely no hits for the search. */
-	const orgHasNoEvents = $derived(
+	/** An empty answer to an unfiltered question — nothing was searched away. */
+	const emptyUnfiltered = $derived(
 		!isFetching && eventsQuery.isSuccess && results.length === 0 && searchTerm === ''
 	);
+	/**
+	 * No events at all in this organization. Only an `include_past` search can
+	 * support that claim: server-side the endpoint sets `next_events = !include_past`,
+	 * so with past events excluded an org whose every event has already happened
+	 * answers "zero" too — and telling its admin to "create an event first" would
+	 * be plainly false.
+	 */
+	const orgHasNoEvents = $derived(emptyUnfiltered && includePast);
+	/** Events may well exist, just none of them ahead of now. */
+	const orgHasNoUpcomingEvents = $derived(emptyUnfiltered && !includePast);
 
 	function optionId(index: number): string {
 		return `${listboxId}-option-${index}`;
@@ -204,11 +214,18 @@
 				activeIndex = results.length - 1;
 				return;
 			case 'Enter':
-				// Always swallow Enter while the list is open: the composer wraps this
-				// field in a <form> whose default submit saves the draft.
-				if (!open) return;
+				// Swallow Enter only when it actually commits a highlighted option.
+				// ARIA APG defines Enter for an editable combobox solely for the case
+				// where "an autocomplete suggestion is selected in the popup"; with
+				// nothing highlighted the key has no combobox meaning, so it must keep
+				// its default action instead of dying silently. That default is the
+				// composer <form>'s implicit submit (save draft), exactly as it was
+				// with the <select> this replaced. Harmless: `query` is display-only —
+				// the selection lives in the parent's `selectedEventId` — so leftover
+				// search text cannot reach the submitted payload.
+				if (!open || activeIndex < 0) return;
 				event.preventDefault();
-				if (activeIndex >= 0) pick(activeIndex);
+				pick(activeIndex);
 				return;
 			case 'Escape':
 				if (!open) return;
@@ -300,6 +317,11 @@
 					{:else if orgHasNoEvents}
 						<span class="block font-medium">{m['announcements.form.noEvents']()}</span>
 						<span class="mt-1 block text-xs">{m['announcements.form.noEventsDescription']()}</span>
+					{:else if orgHasNoUpcomingEvents}
+						<span class="block font-medium">{m['announcements.form.noUpcomingEvents']()}</span>
+						<span class="mt-1 block text-xs"
+							>{m['announcements.form.noUpcomingEventsDescription']()}</span
+						>
 					{:else}
 						{m['announcements.form.noEventsMatch']()}
 					{/if}
