@@ -3,7 +3,6 @@
 	import type {
 		AnnouncementSchema,
 		AnnouncementScheduleSchema,
-		EventInListSchema,
 		MembershipTierSchema
 	} from '$lib/api/generated/types.gen';
 	import {
@@ -19,6 +18,7 @@
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import AnnouncementScheduleFields from './AnnouncementScheduleFields.svelte';
+	import EventCombobox from './EventCombobox.svelte';
 	import type {
 		SendMode,
 		ScheduleKind,
@@ -46,13 +46,15 @@
 		open: boolean;
 		organizationSlug: string;
 		preSelectedEventId?: string;
-		events?: EventInListSchema[];
-		eventsLoading?: boolean;
-		includePastEvents?: boolean;
+		/**
+		 * Name of `preSelectedEventId`. The picker searches a paginated endpoint and
+		 * can therefore never assume the pre-selected event is among the rows it
+		 * happens to be showing, so the label has to come from the caller.
+		 */
+		preSelectedEventName?: string;
 		tiers?: MembershipTierSchema[];
 		onClose: () => void;
 		onSuccess: () => void;
-		onIncludePastChange?: (includePast: boolean) => void;
 	}
 
 	const {
@@ -60,13 +62,10 @@
 		open,
 		organizationSlug,
 		preSelectedEventId,
-		events = [],
-		eventsLoading = false,
-		includePastEvents = false,
+		preSelectedEventName,
 		tiers = [],
 		onClose,
-		onSuccess,
-		onIncludePastChange
+		onSuccess
 	}: Props = $props();
 
 	const queryClient = useQueryClient();
@@ -76,6 +75,9 @@
 	let body = $state('');
 	let targetType = $state<TargetType>('all_members');
 	let selectedEventId = $state<string | null>(null);
+	/** Kept alongside the id so the picker can label a selection it hasn't fetched. */
+	let selectedEventName = $state<string | null>(null);
+	let includePastEvents = $state(false);
 	let selectedTierIds = $state<string[]>([]);
 	let pastVisibility = $state(true);
 	let resendToNewSignups = $state(false);
@@ -97,6 +99,7 @@
 	// Sync form with announcement prop (for editing)
 	$effect(() => {
 		if (open) {
+			includePastEvents = false;
 			if (announcement) {
 				title = announcement.title;
 				body = announcement.body ?? '';
@@ -129,9 +132,12 @@
 				}
 
 				// Determine target type from announcement
+				selectedEventId = null;
+				selectedEventName = null;
 				if (announcement.event_id) {
 					targetType = 'event';
 					selectedEventId = announcement.event_id;
+					selectedEventName = announcement.event_name ?? null;
 				} else if (announcement.target_staff_only) {
 					targetType = 'staff_only';
 				} else if (announcement.target_tiers && announcement.target_tiers.length > 0) {
@@ -147,6 +153,7 @@
 				body = '';
 				targetType = preSelectedEventId ? 'event' : 'all_members';
 				selectedEventId = preSelectedEventId || null;
+				selectedEventName = preSelectedEventId ? (preSelectedEventName ?? null) : null;
 				selectedTierIds = [];
 				pastVisibility = true;
 				resendToNewSignups = false;
@@ -555,50 +562,37 @@
 
 				<!-- Event selector -->
 				{#if targetType === 'event'}
-					<div class="ml-11 space-y-2">
+					<div class="space-y-2 sm:ml-11">
 						<Label for="event-select">{m['announcements.form.selectEvent']()}</Label>
-						{#if eventsLoading}
-							<div class="flex items-center gap-2 text-sm text-muted-foreground">
-								<Loader2 class="h-4 w-4 animate-spin" />
-								{m['announcements.form.loadingEvents']()}
-							</div>
-						{:else if events.length === 0}
-							<div class="rounded-md border border-dashed p-4 text-center">
-								<p class="text-sm font-medium text-muted-foreground">
-									{m['announcements.form.noEvents']()}
-								</p>
-								<p class="mt-1 text-xs text-muted-foreground">
-									{m['announcements.form.noEventsDescription']()}
-								</p>
-							</div>
-						{:else}
-							<select
-								id="event-select"
-								value={selectedEventId ?? ''}
-								onchange={(e) => {
-									const value = e.currentTarget.value;
-									selectedEventId = value === '' ? null : value;
-								}}
-								class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-								disabled={isSaving}
-							>
-								<option value="">{m['announcements.form.selectEventPlaceholder']()}</option>
-								{#each events as event (event.id)}
-									<option value={event.id}>{event.name}</option>
-								{/each}
-							</select>
-						{/if}
+						<!--
+							A plain <select> capped at one page of events made every event past
+							the cap unselectable in a large org (#815) — this is a typeahead
+							over the same paginated endpoint instead.
+						-->
+						<EventCombobox
+							id="event-select"
+							{organizationSlug}
+							value={selectedEventId}
+							valueLabel={selectedEventName}
+							includePast={includePastEvents}
+							disabled={isSaving}
+							invalid={!!errors.target}
+							describedBy={errors.target ? 'announcement-target-error' : undefined}
+							onSelect={(choice) => {
+								selectedEventId = choice?.id ?? null;
+								selectedEventName = choice?.name ?? null;
+								errors.target = undefined;
+							}}
+						/>
 						<!-- Include past events checkbox -->
 						<div class="flex items-center gap-2">
 							<Checkbox
 								id="include-past-events"
 								checked={includePastEvents}
 								onCheckedChange={(checked) => {
-									if (onIncludePastChange) {
-										onIncludePastChange(checked === true);
-									}
+									includePastEvents = checked === true;
 								}}
-								disabled={isSaving || eventsLoading}
+								disabled={isSaving}
 							/>
 							<Label for="include-past-events" class="cursor-pointer text-sm font-normal">
 								{m['announcements.form.includePastEvents']()}
@@ -634,7 +628,9 @@
 				{/if}
 
 				{#if errors.target}
-					<p class="text-sm text-destructive">{errors.target}</p>
+					<!-- id is referenced by the event picker's aria-describedby so an
+					     invalid field announces WHY, not just "invalid". -->
+					<p id="announcement-target-error" class="text-sm text-destructive">{errors.target}</p>
 				{/if}
 			</div>
 

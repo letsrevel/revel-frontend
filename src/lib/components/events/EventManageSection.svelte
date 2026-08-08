@@ -8,10 +8,7 @@
 	import { Settings, Users, Mail, Megaphone, ListPlus } from '@lucide/svelte';
 	import AnnouncementModal from '$lib/components/announcements/AnnouncementModal.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
-	import {
-		eventpublicdiscoveryListEvents,
-		organizationadminmembersListMembershipTiers
-	} from '$lib/api/generated/sdk.gen';
+	import { organizationadminmembersListMembershipTiers } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 
 	interface Props {
@@ -23,7 +20,6 @@
 
 	// State for announcement modal
 	let announcementModalOpen = $state(false);
-	let includePastEvents = $state(false);
 
 	// Derived auth token
 	const accessToken = $derived(authStore.accessToken);
@@ -40,23 +36,6 @@
 		return !!orgPermissions;
 	});
 
-	// Fetch events for announcement modal (only when modal might be used)
-	const eventsQuery = createQuery(() => ({
-		queryKey: ['admin-events', event.organization?.id, includePastEvents],
-		queryFn: async () => {
-			const response = await eventpublicdiscoveryListEvents({
-				query: {
-					organization: event.organization?.id,
-					page_size: 100,
-					include_past: includePastEvents
-				}
-			});
-			if (response.error) throw response.error;
-			return response.data;
-		},
-		enabled: !!canManageEvent && !!event.organization?.id
-	}));
-
 	// Fetch tiers for announcement modal
 	const tiersQuery = createQuery(() => ({
 		queryKey: ['membership-tiers', event.organization?.slug],
@@ -72,8 +51,6 @@
 		enabled: !!canManageEvent && !!accessToken && !!event.organization?.slug
 	}));
 
-	const eventsList = $derived(eventsQuery.data?.results ?? []);
-	const eventsLoading = $derived(eventsQuery.isLoading);
 	const tiersList = $derived(tiersQuery.data ?? []);
 </script>
 
@@ -156,14 +133,9 @@
 		announcement={null}
 		organizationSlug={event.organization.slug}
 		preSelectedEventId={event.id}
-		events={eventsList}
-		{eventsLoading}
-		{includePastEvents}
+		preSelectedEventName={event.name}
 		tiers={tiersList}
 		onClose={() => (announcementModalOpen = false)}
 		onSuccess={() => (announcementModalOpen = false)}
-		onIncludePastChange={(includePast) => {
-			includePastEvents = includePast;
-		}}
 	/>
 {/if}

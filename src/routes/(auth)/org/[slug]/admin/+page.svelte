@@ -33,10 +33,7 @@
 	import type { PosterTint } from '$lib/components/common/tones';
 	import { assignQuickActionTints } from './quick-action-tints';
 	import { createQuery } from '@tanstack/svelte-query';
-	import {
-		eventpublicdiscoveryListEvents,
-		organizationadminmembersListMembershipTiers
-	} from '$lib/api/generated/sdk.gen';
+	import { organizationadminmembersListMembershipTiers } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 
 	const { data }: { data: PageData } = $props();
@@ -49,19 +46,6 @@
 
 	// Auth token for queries
 	const accessToken = $derived(authStore.accessToken);
-
-	// Fetch events for announcement modal
-	const eventsQuery = createQuery(() => ({
-		queryKey: ['admin-events', organization?.id],
-		queryFn: async () => {
-			const response = await eventpublicdiscoveryListEvents({
-				query: { organization: organization?.id, page_size: 100 }
-			});
-			if (response.error) throw response.error;
-			return response.data;
-		},
-		enabled: !!organization?.id
-	}));
 
 	// Fetch tiers for announcement modal
 	const tiersQuery = createQuery(() => ({
@@ -78,7 +62,6 @@
 		enabled: !!accessToken && !!organization?.slug
 	}));
 
-	const eventsList = $derived(eventsQuery.data?.results ?? []);
 	const tiersList = $derived(tiersQuery.data ?? []);
 
 	interface QuickAction {
@@ -381,7 +364,6 @@
 	open={announcementModalOpen}
 	announcement={null}
 	organizationSlug={organization.slug}
-	events={eventsList}
 	tiers={tiersList}
 	onClose={() => (announcementModalOpen = false)}
 	onSuccess={() => (announcementModalOpen = false)}

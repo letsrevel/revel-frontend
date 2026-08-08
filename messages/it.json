@@ -465,7 +465,9 @@
 	"announcements.form.titlePlaceholder": "Titolo dell'annuncio...",
 	"announcements.form.includePastEvents": "Includi eventi passati",
 	"announcements.form.noEvents": "Nessun evento disponibile",
-	"announcements.form.noEventsDescription": "Crea prima un evento, o abilita gli eventi passati per vedere quelli precedenti.",
+	"announcements.form.noEventsDescription": "Crea prima un evento: potrai poi annunciarlo ai suoi partecipanti.",
+	"announcements.form.noUpcomingEvents": "Nessun evento in programma",
+	"announcements.form.noUpcomingEventsDescription": "Abilita gli eventi passati per cercare tra quelli precedenti.",
 	"announcements.new": "Nuovo Annuncio",
 	"announcements.pageDescription": "Crea e gestisci annunci per i membri della tua organizzazione e i partecipanti agli eventi.",
 	"announcements.public.empty": "Nessun annuncio ancora",
@@ -6218,6 +6220,20 @@
 		"requestedAt": "Richiesto"
 	},
 	"announcements.form.loadingEvents": "Caricamento eventi...",
+	"announcements.form.eventSearchPlaceholder": "Cerca eventi per nome...",
+	"announcements.form.eventSearchHint": "Digita per cercare gli eventi della tua organizzazione. Usa le frecce su e giù per scorrere i risultati e Invio per selezionarne uno.",
+	"announcements.form.clearEventSelection": "Cancella l'evento selezionato",
+	"announcements.form.noEventsMatch": "Nessun evento corrisponde alla tua ricerca",
+	"announcements.form.eventResultsCount": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "{count} evento trovato",
+				"countPlural=*": "{count} eventi trovati"
+			}
+		}
+	],
 	"announcements.view": "Visualizza",
 	"audioPlayer": {
 		"playerLabel": "Lettore audio",

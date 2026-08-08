@@ -465,7 +465,9 @@
 	"announcements.form.titlePlaceholder": "Announcement title...",
 	"announcements.form.includePastEvents": "Include past events",
 	"announcements.form.noEvents": "No events available",
-	"announcements.form.noEventsDescription": "Create an event first, or enable past events to see older ones.",
+	"announcements.form.noEventsDescription": "Create an event first, then you can announce it to its attendees.",
+	"announcements.form.noUpcomingEvents": "No upcoming events",
+	"announcements.form.noUpcomingEventsDescription": "Enable past events to search older ones.",
 	"announcements.new": "New Announcement",
 	"announcements.pageDescription": "Create and manage announcements for your organization members and event attendees.",
 	"announcements.public.empty": "No announcements yet",
@@ -6218,6 +6220,20 @@
 		"requestedAt": "Requested"
 	},
 	"announcements.form.loadingEvents": "Loading events...",
+	"announcements.form.eventSearchPlaceholder": "Search events by name...",
+	"announcements.form.eventSearchHint": "Type to search your organization's events. Use the up and down arrow keys to browse results, and Enter to select one.",
+	"announcements.form.clearEventSelection": "Clear selected event",
+	"announcements.form.noEventsMatch": "No events match your search",
+	"announcements.form.eventResultsCount": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "{count} event found",
+				"countPlural=*": "{count} events found"
+			}
+		}
+	],
 	"announcements.view": "View",
 	"audioPlayer": {
 		"playerLabel": "Audio player",
