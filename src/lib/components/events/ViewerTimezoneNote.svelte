@@ -5,23 +5,29 @@
 	import { formatViewerTimezoneLabel } from '$lib/utils/date';
 
 	interface Props {
-		/** ISO instant used to resolve the (DST-aware) offset; defaults to now. */
-		reference?: string;
 		/** Optional extra classes for layout tuning by the host. */
 		class?: string;
 	}
 
-	const { reference, class: className = '' }: Props = $props();
+	const { class: className = '' }: Props = $props();
 
 	// Twin of EventTimezoneNote, for lists that can only render viewer-local
 	// times (the dashboard payloads carry no event timezone). Naming the
 	// viewer's zone is what makes the event page's event-local clock times
 	// comparable with these.
 	//
+	// Unlike its twin it takes NO reference instant, and so shows no offset. Its
+	// twin labels a single event and can resolve that event's offset exactly;
+	// this note heads a LIST whose rows each render with the offset in effect at
+	// their own instant, so across a DST transition no single offset describes
+	// them all — a "CET" heading over rows rendered in CEST would contradict the
+	// page. formatViewerTimezoneLabel therefore returns a DST-invariant zone
+	// name, which is true for every row.
+	//
 	// Browser-only by construction: on the server `resolvedOptions()` reports the
 	// SERVER's zone, so an SSR render would state a timezone that isn't the
 	// viewer's. Rendering nothing there is the honest fallback.
-	const label = $derived(browser ? formatViewerTimezoneLabel(reference) : '');
+	const label = $derived(browser ? formatViewerTimezoneLabel() : '');
 </script>
 
 {#if label}

@@ -97,26 +97,39 @@ describe('formatEventTimezoneLabel', () => {
 describe('formatViewerTimezoneLabel (#818)', () => {
 	// The viewer's zone is whatever the machine reports, so the expectation is
 	// derived from the same source rather than hardcoded — what's under test is
-	// the wiring (viewer zone + active locale + reference instant), not ICU.
-	function shortNameFor(iso: string): string {
-		const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-		const part = new Intl.DateTimeFormat('en-US', { timeZone, timeZoneName: 'short' })
-			.formatToParts(new Date(iso))
-			.find((p) => p.type === 'timeZoneName');
-		return part?.value ?? '';
+	// the wiring (viewer zone → humanized name), not ICU.
+	function viewerZone(): string {
+		return Intl.DateTimeFormat().resolvedOptions().timeZone;
 	}
 
-	it('labels the instant in the viewer’s own timezone', () => {
-		expect(formatViewerTimezoneLabel(WINTER_UTC)).toBe(shortNameFor(WINTER_UTC));
+	it('names the viewer’s own timezone, humanized from the IANA zone', () => {
+		const expected = viewerZone().split('/').pop()?.replace(/_/g, ' ');
+		expect(formatViewerTimezoneLabel()).toBe(expected);
 	});
 
-	it('defaults to now when no reference instant is given', () => {
-		freezeTime();
-		expect(formatViewerTimezoneLabel()).toBe(shortNameFor(FROZEN_NOW));
+	it('replaces underscores in multi-word zone tails', () => {
+		// Guards the humanization itself regardless of the machine's own zone:
+		// "America/New_York" must never surface as "New_York".
+		expect(formatViewerTimezoneLabel()).not.toContain('_');
 	});
 
-	it('carries no place name — unlike the event-zone label, it is offset only', () => {
-		expect(formatViewerTimezoneLabel(WINTER_UTC)).not.toContain('(');
+	// The reason this label is a NAME and not an offset: it heads a list whose
+	// rows each render with the offset in effect at their own instant, so an
+	// offset here would contradict rows on the far side of a DST transition.
+	it('is DST-invariant — identical either side of a transition', () => {
+		freezeTime('2026-01-15T12:00:00Z');
+		const winter = formatViewerTimezoneLabel();
+		vi.setSystemTime(new Date('2026-07-15T12:00:00Z'));
+		const summer = formatViewerTimezoneLabel();
+
+		expect(summer).toBe(winter);
+	});
+
+	it('appends no parenthesized offset — unlike the event-zone label', () => {
+		// formatEventTimezoneLabel renders "New York (EST)"; this one stops at
+		// the name. (Not asserted via /GMT[+-]/: an `Etc/GMT±N` viewer zone is
+		// legitimately *named* "GMT+N".)
+		expect(formatViewerTimezoneLabel()).not.toContain('(');
 	});
 });
 

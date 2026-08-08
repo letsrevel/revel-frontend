@@ -5,7 +5,7 @@
 	import { Card } from '$lib/components/ui/card';
 	import { Calendar, MapPin, Ticket, CheckCircle2, ChevronDown, ChevronUp } from '@lucide/svelte';
 	import { getImageUrl } from '$lib/utils/url';
-	import { formatEventDateRange, formatDate } from '$lib/utils/date';
+	import { formatEventDate, formatDate } from '$lib/utils/date';
 	import { getEventLogo, getEventLogoThumbnail } from '$lib/utils/event';
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 
@@ -23,10 +23,14 @@
 	const logoPath = $derived(getEventLogo(invitation.event));
 	const logoUrl = $derived(getImageUrl(logoThumbnailPath || logoPath));
 
-	// Format event date
+	// Format event date. `invitation.event` is an EventInListSchema, which carries
+	// a REQUIRED `timezone` — so unlike the dashboard RSVP/ticket cards (whose
+	// MinimalEventSchema payload has none) this card can and must render the
+	// event's OWN local time, matching EventCard and the event page. Only the
+	// start instant is shown, so the single-instant helper is the right one.
 	const eventDate = $derived.by(() => {
 		if (!invitation.event.start) return null;
-		return formatEventDateRange(invitation.event.start, invitation.event.start);
+		return formatEventDate(invitation.event.start, invitation.event.timezone);
 	});
 
 	// Get event location
@@ -103,7 +107,7 @@
 						<li class="flex items-center gap-2 text-muted-foreground">
 							<Calendar class="h-4 w-4 shrink-0" aria-hidden="true" />
 							<!-- datetime carries the machine-readable start instant; the text
-							     is the localized (viewer-local) rendering. -->
+							     is the localized rendering in the EVENT's timezone. -->
 							<time datetime={invitation.event.start} class="truncate">{eventDate}</time>
 						</li>
 					{/if}
