@@ -84,7 +84,7 @@
 				<div class="rounded-lg border bg-muted/30 p-4">
 					<div class="flex items-center justify-between">
 						<span class="font-medium">{m['learnMore.feeCalculator.creditCardFees']()}</span>
-						<span class="text-lg font-bold text-orange-600 dark:text-orange-400">
+						<span class="text-lg font-bold text-foreground">
 							{formatCurrency(stripeFee)}
 						</span>
 					</div>
@@ -149,15 +149,18 @@
 				<!-- Divider -->
 				<div class="border-t"></div>
 
-				<!-- Organization Receives -->
-				<div class="rounded-lg border-2 border-green-500 bg-green-50 p-4 dark:bg-green-950/30">
+				<!-- Organization Receives. Success recipe reuses audited pairs:
+				     text-success on bg-success/10 over background (3:1, large bold
+				     text) and text-foreground over the same tint (4.5:1) — see
+				     COMPOSITED_PAIRS in scripts/audit-brand-themes.py. -->
+				<div class="rounded-lg border-2 border-success bg-success/10 p-4">
 					<div class="flex items-center justify-between">
 						<span class="font-semibold">{m['learnMore.feeCalculator.organizationReceives']()}</span>
-						<span class="text-2xl font-bold text-green-600 dark:text-green-400">
+						<span class="text-2xl font-bold text-success">
 							{formatCurrency(organizerReceives)}
 						</span>
 					</div>
-					<p class="mt-1 text-xs text-muted-foreground">
+					<p class="mt-1 text-xs text-foreground">
 						{m['learnMore.feeCalculator.perTicketSoldAt']({
 							price: formatCurrency(safeTicketPrice)
 						})}
