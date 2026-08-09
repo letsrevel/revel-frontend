@@ -46,12 +46,15 @@
 	} from './tier-seating-payload';
 	import { Undo2 } from '@lucide/svelte';
 	import { formatDateTimeReadback } from '$lib/utils/date';
+	import type { PlatformFeeInfo } from '$lib/utils/fees';
 
 	interface Props {
 		tier: TicketTierDetailSchema | null; // null = create new
 		eventId: string;
 		organizationSlug: string;
 		organizationStripeConnected: boolean;
+		/** Org platform-fee terms for the net-payout preview (null hides it). */
+		platformFees?: PlatformFeeInfo | null;
 		membershipTiers?: MembershipTierSchema[];
 		eventVenueId?: string | null; // Pre-fill venue from event
 		onClose: () => void;
@@ -62,6 +65,7 @@
 		eventId,
 		organizationSlug,
 		organizationStripeConnected,
+		platformFees = null,
 		membershipTiers = [],
 		eventVenueId = null,
 		onClose
@@ -508,6 +512,8 @@
 					bind:pwycMax
 					{currencySymbol}
 					{isPending}
+					{platformFees}
+					showNetPayout={paymentMethod === 'online'}
 				/>
 			{/if}
 

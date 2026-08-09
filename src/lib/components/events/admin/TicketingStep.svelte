@@ -15,6 +15,7 @@
 	import TierForm from './TierForm.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { reorderByIds, swapAndCollectIds } from '$lib/utils/reorder';
+	import type { PlatformFeeInfo } from '$lib/utils/fees';
 	import { toast } from 'svelte-sonner';
 
 	// Form state fields this step reads/writes. The parent passes a wider event
@@ -34,6 +35,8 @@
 		eventId: string;
 		organizationSlug: string;
 		organizationStripeConnected: boolean;
+		/** Org platform-fee terms for the tier net-payout preview (null hides it). */
+		platformFees?: PlatformFeeInfo | null;
 		formData: EventFormData;
 		onUpdate: (updates: Partial<EventFormData>) => void;
 		onBack: () => void;
@@ -46,6 +49,7 @@
 		eventId,
 		organizationSlug,
 		organizationStripeConnected,
+		platformFees = null,
 		formData,
 		onUpdate,
 		onBack,
@@ -328,6 +332,7 @@
 		{eventId}
 		{organizationSlug}
 		{organizationStripeConnected}
+		{platformFees}
 		{membershipTiers}
 		eventVenueId={formData.venue_id || null}
 		onClose={handleCloseTierForm}

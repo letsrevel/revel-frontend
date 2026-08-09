@@ -1,6 +1,13 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
+	import {
+		DEFAULT_PLATFORM_FEE_PERCENT,
+		DEFAULT_PLATFORM_FEE_FIXED,
+		PLATFORM_VAT_RATE_PERCENT,
+		estimateNetPayout
+	} from '$lib/utils/fees';
+	import { formatMoney } from '$lib/utils/format';
 
 	interface Props {
 		open: boolean;
@@ -8,15 +15,10 @@
 	let { open = $bindable() }: Props = $props();
 
 	let ticketPrice = $state(20);
-
-	// Fee calculations
-	// Stripe fees: 1.5% + €0.25 for EU cards (higher for UK cards, see Stripe pricing)
-	const STRIPE_PERCENTAGE = 0.015; // 1.5%
-	const STRIPE_FIXED = 0.25; // €0.25
-
-	// Revel platform fee: 1.5% + €0.25
-	const REVEL_PERCENTAGE = 0.015; // 1.5%
-	const REVEL_FIXED = 0.25; // €0.25
+	// Whether Revel charges VAT on top of its platform fee (Austrian orgs and
+	// EU orgs without a validated VAT ID — cross-border EU B2B with a
+	// validated VAT ID is reverse-charged instead). Off by default.
+	let vatOnPlatformFee = $state(false);
 
 	// Guard against empty/invalid/non-positive input, which would otherwise
 	// yield NaN/Infinity percentages and negative receivable amounts.
@@ -26,25 +28,27 @@
 			: 0
 	);
 
-	const stripeFee = $derived(
-		safeTicketPrice > 0 ? safeTicketPrice * STRIPE_PERCENTAGE + STRIPE_FIXED : 0
+	// Stripe fee estimate assumes EEA cards (higher for UK cards, see Stripe
+	// pricing); platform fee is Revel's standard 1.5% + €0.25.
+	const breakdown = $derived(
+		estimateNetPayout({
+			price: safeTicketPrice,
+			platformFeePercent: DEFAULT_PLATFORM_FEE_PERCENT,
+			platformFeeFixed: DEFAULT_PLATFORM_FEE_FIXED,
+			platformFeeVatRate: vatOnPlatformFee ? PLATFORM_VAT_RATE_PERCENT : 0
+		})
 	);
-	const revelFee = $derived(
-		safeTicketPrice > 0 ? safeTicketPrice * REVEL_PERCENTAGE + REVEL_FIXED : 0
-	);
-	const totalFees = $derived(stripeFee + revelFee);
-	const organizerReceives = $derived(Math.max(safeTicketPrice - totalFees, 0));
+	const stripeFee = $derived(breakdown?.stripeFee ?? 0);
+	const revelFee = $derived(breakdown?.platformFee ?? 0);
+	const revelFeeVat = $derived(breakdown?.platformFeeVat ?? 0);
+	const totalFees = $derived(stripeFee + revelFee + revelFeeVat);
+	const organizerReceives = $derived(breakdown?.net ?? 0);
 	const feePercentage = $derived(
 		safeTicketPrice > 0 ? ((totalFees / safeTicketPrice) * 100).toFixed(1) : '0.0'
 	);
 
 	function formatCurrency(amount: number): string {
-		return new Intl.NumberFormat('en-EU', {
-			style: 'currency',
-			currency: 'EUR',
-			minimumFractionDigits: 2,
-			maximumFractionDigits: 2
-		}).format(amount);
+		return formatMoney(amount, 'EUR');
 	}
 </script>
 
@@ -105,8 +109,40 @@
 							{formatCurrency(revelFee)}
 						</span>
 					</div>
+					{#if vatOnPlatformFee}
+						<div class="mt-2 flex items-center justify-between border-t pt-2">
+							<span class="text-sm">
+								{m['learnMore.feeCalculator.vatOnPlatformFee']({
+									rate: PLATFORM_VAT_RATE_PERCENT
+								})}
+							</span>
+							<span class="font-bold text-primary">
+								{formatCurrency(revelFeeVat)}
+							</span>
+						</div>
+					{/if}
 					<p class="mt-1 text-xs text-muted-foreground">
 						{m['learnMore.feeCalculator.platformFeeDescription']()}
+					</p>
+				</div>
+
+				<!-- VAT on platform fee toggle -->
+				<div>
+					<label class="flex cursor-pointer items-start gap-2">
+						<input
+							type="checkbox"
+							bind:checked={vatOnPlatformFee}
+							aria-describedby="vat-checkbox-help"
+							class="mt-0.5 h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-primary"
+						/>
+						<span class="text-sm font-medium">
+							{m['learnMore.feeCalculator.vatCheckboxLabel']({
+								rate: PLATFORM_VAT_RATE_PERCENT
+							})}
+						</span>
+					</label>
+					<p id="vat-checkbox-help" class="mt-1 text-xs text-muted-foreground">
+						{m['learnMore.feeCalculator.vatCheckboxHelp']()}
 					</p>
 				</div>
 
@@ -136,9 +172,11 @@
 					percentage: feePercentage
 				})}
 			</p>
-			<p class="text-center text-xs text-muted-foreground/70">
-				{m['learnMore.feesExcludeVat']()}
-			</p>
+			{#if !vatOnPlatformFee}
+				<p class="text-center text-xs text-muted-foreground/70">
+					{m['learnMore.feesExcludeVat']()}
+				</p>
+			{/if}
 		</div>
 
 		<!-- Footer -->

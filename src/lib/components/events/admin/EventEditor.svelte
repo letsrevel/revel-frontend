@@ -36,6 +36,7 @@
 		type ScheduleRow
 	} from './schedule-rows';
 	import TicketingStep from './TicketingStep.svelte';
+	import { platformFeeInfoFrom } from '$lib/utils/fees';
 	import SaveBar from './SaveBar.svelte';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import { toast } from 'svelte-sonner';
@@ -622,6 +623,7 @@
 							{eventId}
 							organizationSlug={organization.slug}
 							organizationStripeConnected={organization.is_stripe_connected}
+							platformFees={platformFeeInfoFrom(organization)}
 							{formData}
 							onUpdate={updateFormData}
 							onBack={() => handleTabChange('details')}
