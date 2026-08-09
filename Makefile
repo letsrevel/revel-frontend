@@ -136,7 +136,8 @@ BACKEND_DIR := ../revel-backend
 # self-skip). Don't run from worktrees: one backend instance, one :8000.
 e2e-setup:
 	@test -d $(BACKEND_DIR) || { echo "❌ $(BACKEND_DIR) not found — expected the backend checkout next to this repo"; exit 1; }
-	$(MAKE) -C $(BACKEND_DIR) e2e-seed run-e2e-daemon
+	$(MAKE) -C $(BACKEND_DIR) e2e-seed
+	$(MAKE) -C $(BACKEND_DIR) run-e2e-daemon
 
 # Playwright suite with a mass-skip guard: journey specs self-skip when the
 # backend probe fails, so a wedged backend yields exit 0 with hundreds of
