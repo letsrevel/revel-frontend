@@ -30,7 +30,8 @@ import {
 	getRSVPDeadlineRelative,
 	isEventPast,
 	isRSVPClosed,
-	isRSVPClosingSoon
+	isRSVPClosingSoon,
+	SUPPORTED_UI_LANGUAGES
 } from './date';
 
 afterEach(() => {
@@ -48,7 +49,7 @@ const WINTER_UTC = '2026-02-06T19:00:00Z';
 // whenever any real time elapses in between).
 const FROZEN_NOW = '2026-06-15T10:00:00.000Z';
 
-function freezeTime(iso: string = FROZEN_NOW) {
+function freezeTime(iso: string = FROZEN_NOW): void {
 	vi.useFakeTimers();
 	vi.setSystemTime(new Date(iso));
 }
@@ -408,6 +409,13 @@ describe('formatRelativeTime', () => {
 		freezeTime(); // Mon Jun 15, 10:00 UTC
 		expect(formatRelativeTime('2026-06-17T08:00:00.000Z', 'UTC')).toBe('in 2 days');
 	});
+
+	it('returns "" for an unparseable date instead of throwing (consistent with formatDateTimeReadback)', () => {
+		expect(formatRelativeTime('not-a-date')).toBe('');
+		// NaN also slips past getRSVPDeadlineRelative's passed-deadline guard;
+		// the engine's finite check catches it there too.
+		expect(getRSVPDeadlineRelative('not-a-date')).toBe('');
+	});
 });
 
 describe('getRSVPDeadlineRelative escalates past days like formatRelativeTime', () => {
@@ -464,9 +472,8 @@ describe('isRSVPClosingSoon', () => {
 });
 
 describe('every supported UI language uses a textual month in the short forms', () => {
-	// Mirrors the keys of LOCALE_MAP in date.ts. If a language is added there,
-	// add it here so the invariant below covers it.
-	const SUPPORTED_UI_LANGUAGES = ['en', 'de', 'it', 'fr', 'es', 'pt'];
+	// Derived from LOCALE_MAP in date.ts — adding a language there
+	// automatically extends the invariant checks below.
 
 	// The invariant guarded here: the `month: 'short'` skeletons used across
 	// this file (MMMd in formatEventDate/formatEventDateRange, yMMMd in

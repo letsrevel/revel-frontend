@@ -32,6 +32,13 @@ const LOCALE_MAP: Record<string, string> = {
 };
 
 /**
+ * UI languages with an explicit locale mapping, derived from LOCALE_MAP.
+ * Exported so tests can iterate the supported set without hand-maintaining
+ * a parallel list.
+ */
+export const SUPPORTED_UI_LANGUAGES: readonly string[] = Object.keys(LOCALE_MAP);
+
+/**
  * Get the active UI language as a BCP 47 date locale (e.g. "en-US", "de-DE",
  * "it-IT", "fr-FR"). Drives every human-facing date in the app, so switching
  * the UI language switches month names. Exported so calendar.ts shares it.
@@ -333,6 +340,15 @@ function formatRelativeToNow(
 ): string {
 	const now = new Date();
 	const diffMs = target.getTime() - now.getTime();
+
+	// Invalid input (e.g. an unparseable date string) yields a NaN diff, which
+	// Intl.RelativeTimeFormat.format() rejects with a RangeError. Return "" —
+	// the same empty result formatDateTimeReadback uses for invalid input — so
+	// callers can render nothing instead of crashing.
+	if (!Number.isFinite(diffMs)) {
+		return '';
+	}
+
 	const rtf = new Intl.RelativeTimeFormat(getDateLocale(), { numeric: 'auto' });
 
 	for (const [unit, unitMs] of RELATIVE_UNITS) {
