@@ -30,7 +30,8 @@ import {
 	getRSVPDeadlineRelative,
 	isEventPast,
 	isRSVPClosed,
-	isRSVPClosingSoon
+	isRSVPClosingSoon,
+	SUPPORTED_UI_LANGUAGES
 } from './date';
 
 afterEach(() => {
@@ -48,7 +49,7 @@ const WINTER_UTC = '2026-02-06T19:00:00Z';
 // whenever any real time elapses in between).
 const FROZEN_NOW = '2026-06-15T10:00:00.000Z';
 
-function freezeTime(iso: string = FROZEN_NOW) {
+function freezeTime(iso: string = FROZEN_NOW): void {
 	vi.useFakeTimers();
 	vi.setSystemTime(new Date(iso));
 }
@@ -328,12 +329,60 @@ describe('getRSVPDeadlineRelative', () => {
 
 	it('uses days at 24 hours and beyond', () => {
 		freezeTime();
-		expect(getRSVPDeadlineRelative('2026-06-18T10:00:00.000Z')).toBe('in 3 days');
+		expect(getRSVPDeadlineRelative('2026-06-18T10:00:00.000Z', 'UTC')).toBe('in 3 days');
 	});
 
 	it('never says "in 0 minutes" for a deadline seconds away', () => {
 		freezeTime();
 		expect(getRSVPDeadlineRelative('2026-06-15T10:00:30.000Z')).toBe('in 1 minute');
+	});
+
+	it('counts calendar days, not 24-hour blocks: day after tomorrow at <48h reads "in 2 days"', () => {
+		freezeTime(); // Mon Jun 15, 10:00 UTC
+		// Wed Jun 17, 08:00 UTC — 46 elapsed hours, but two midnights away.
+		expect(getRSVPDeadlineRelative('2026-06-17T08:00:00.000Z', 'UTC')).toBe('in 2 days');
+	});
+
+	it('stays on hours below 24h even when the deadline is on the next calendar day', () => {
+		freezeTime(); // Mon Jun 15, 10:00 UTC
+		// Tue Jun 16, 09:00 UTC — calendar tomorrow, but only 23h away.
+		expect(getRSVPDeadlineRelative('2026-06-16T09:00:00.000Z', 'UTC')).toBe('in 23 hours');
+	});
+
+	it('switches to days at exactly 24 hours (as the locale idiom via numeric: auto)', () => {
+		freezeTime();
+		expect(getRSVPDeadlineRelative('2026-06-16T10:00:00.000Z', 'UTC')).toBe('tomorrow');
+	});
+
+	it('judges the calendar-day boundary in the supplied timezone', () => {
+		// 21:00 UTC Jun 15 = 17:00 Jun 15 in New York, 23:00 Jun 15 in Vienna.
+		// Deadline 23:30 UTC Jun 16 = 19:30 Jun 16 NY (one midnight away) but
+		// 01:30 Jun 17 Vienna (two midnights away). Elapsed: 26.5h in both.
+		freezeTime('2026-06-15T21:00:00.000Z');
+		expect(getRSVPDeadlineRelative('2026-06-16T23:30:00.000Z', 'America/New_York')).toBe(
+			'tomorrow'
+		);
+		expect(getRSVPDeadlineRelative('2026-06-16T23:30:00.000Z', 'Europe/Vienna')).toBe(
+			'in 2 days'
+		);
+	});
+
+	it('renders the day-count idiom of the active locale (de: übermorgen)', () => {
+		mockLocale.value = 'de';
+		freezeTime(); // Mon Jun 15, 10:00 UTC
+		expect(getRSVPDeadlineRelative('2026-06-17T08:00:00.000Z', 'UTC')).toBe('übermorgen');
+	});
+
+	it('falls back to hours when DST fall-back fits a ≥24h deadline into one local day', () => {
+		// Europe/Vienna falls back on 2026-10-25 (03:00 GMT+2 → 02:00 GMT+1),
+		// making Oct 25 a 25-hour local day. From 00:30 local (2026-10-24T22:30Z),
+		// a deadline 24 elapsed hours later is *still* Oct 25 locally (23:30
+		// GMT+1) — zero midnights crossed. "Tomorrow" would be false and
+		// "in 0 days" nonsense; the truthful phrase is the elapsed hours.
+		freezeTime('2026-10-24T22:30:00.000Z'); // 00:30 Oct 25, Vienna (GMT+2)
+		expect(getRSVPDeadlineRelative('2026-10-25T22:30:00.000Z', 'Europe/Vienna')).toBe(
+			'in 24 hours'
+		);
 	});
 });
 
@@ -354,6 +403,25 @@ describe('formatRelativeTime', () => {
 	it('falls through to seconds below one minute', () => {
 		freezeTime();
 		expect(formatRelativeTime('2026-06-15T10:00:30.000Z')).toBe('in 30 seconds');
+	});
+
+	it('shares the calendar-day semantics (day after tomorrow at <48h reads "in 2 days")', () => {
+		freezeTime(); // Mon Jun 15, 10:00 UTC
+		expect(formatRelativeTime('2026-06-17T08:00:00.000Z', 'UTC')).toBe('in 2 days');
+	});
+
+	it('returns "" for an unparseable date instead of throwing (consistent with formatDateTimeReadback)', () => {
+		expect(formatRelativeTime('not-a-date')).toBe('');
+		// NaN also slips past getRSVPDeadlineRelative's passed-deadline guard;
+		// the engine's finite check catches it there too.
+		expect(getRSVPDeadlineRelative('not-a-date')).toBe('');
+	});
+});
+
+describe('getRSVPDeadlineRelative escalates past days like formatRelativeTime', () => {
+	it('uses months for a deadline ≥30 days out', () => {
+		freezeTime(); // Jun 15 → Jul 30 is 45 days
+		expect(getRSVPDeadlineRelative('2026-07-30T10:00:00.000Z', 'UTC')).toBe('next month');
 	});
 });
 
@@ -404,9 +472,8 @@ describe('isRSVPClosingSoon', () => {
 });
 
 describe('every supported UI language uses a textual month in the short forms', () => {
-	// Mirrors the keys of LOCALE_MAP in date.ts. If a language is added there,
-	// add it here so the invariant below covers it.
-	const SUPPORTED_UI_LANGUAGES = ['en', 'de', 'it', 'fr', 'es', 'pt'];
+	// Derived from LOCALE_MAP in date.ts — adding a language there
+	// automatically extends the invariant checks below.
 
 	// The invariant guarded here: the `month: 'short'` skeletons used across
 	// this file (MMMd in formatEventDate/formatEventDateRange, yMMMd in
