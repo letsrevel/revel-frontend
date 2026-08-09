@@ -77,6 +77,8 @@ Individual checks (also available separately):
 - `make e2e` - Full E2E run: reseeds + spins up the backend (`../revel-backend`, daemonized gunicorn), then runs Playwright
 - `make e2e-setup` / `make e2e-run` / `make e2e-teardown` - the pieces: backend up+seeded; suite with a mass-skip warning (a wedged backend makes journey specs self-skip → false green); stop the daemon. Environment contract and caveats: `tests/e2e/README.md`. `stripe listen` stays a manual step; don't run from worktrees (one backend, one :8000).
 
+**Claude may run unit tests (`make test`) and drive E2E runs (`make e2e-setup` / `make e2e-run` / `make e2e-teardown`) whenever appropriate** — decided 2026-08-09, superseding the earlier "let the user run tests" rule. Judge the skip count on E2E runs, not just the exit code.
+
 ### Workflow: Before Committing
 
 ```bash
