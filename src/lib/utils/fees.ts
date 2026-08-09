@@ -78,14 +78,14 @@ function toFiniteNumber(value: unknown): number | null {
 
 /**
  * Build a {@link PlatformFeeInfo} from the admin organization object
- * (`OrganizationAdminDetailSchema`). Returns null when the fee fields are
- * missing/unparseable, in which case callers should not render a preview.
+ * (`OrganizationAdminDetailSchema`, which since backend #866 exposes the
+ * computed `platform_fee_vat_rate` — "0.00" under reverse charge / non-EU).
+ * Returns null when the fee fields are missing/unparseable, in which case
+ * callers should not render a preview.
  *
- * `platform_fee_vat_rate` is feature-detected at runtime rather than read
- * from the generated types: the backend does not expose the computed B2B
- * fee-VAT context yet (issue filed). Until it deploys, the rate is 0 and
- * previews exclude fee-VAT — the moment the field appears in the API
- * response, previews account for it without a client regen.
+ * Parsing stays runtime-tolerant (`unknown` input) because call sites hold
+ * the org as the narrower public `OrganizationRetrieveSchema` type, and so
+ * the preview degrades gracefully against an older backend too.
  */
 export function platformFeeInfoFrom(org: unknown): PlatformFeeInfo | null {
 	if (typeof org !== 'object' || org === null) return null;
