@@ -33,6 +33,7 @@ playwright/.cache/
 *.lcov
 .tests.output
 .tests.output.full
+.e2e.output
 
 # Vite
 vite.config.js.timestamp-*
