@@ -74,6 +74,8 @@ Individual checks (also available separately):
 - `make test` - Run unit tests (saves failures to `.tests.output`)
 - `make test-coverage` - Run tests with coverage report
 - `make test-e2e` - Run Playwright E2E tests
+- `make e2e` - Full E2E run: reseeds + spins up the backend (`../revel-backend`, daemonized gunicorn), then runs Playwright
+- `make e2e-setup` / `make e2e-run` / `make e2e-teardown` - the pieces: backend up+seeded; suite with a mass-skip warning (a wedged backend makes journey specs self-skip → false green); stop the daemon. Environment contract and caveats: `tests/e2e/README.md`. `stripe listen` stays a manual step; don't run from worktrees (one backend, one :8000).
 
 ### Workflow: Before Committing
 

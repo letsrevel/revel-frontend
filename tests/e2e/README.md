@@ -11,8 +11,8 @@ the built frontend.
 
 | Dependency | Where | Notes |
 | --- | --- | --- |
-| Backend | `http://localhost:8000` | `make run-e2e` in `revel-backend` (gunicorn + PgBouncer; plain `make run` exhausts Postgres connections at 4 workers) |
-| Reset | `uv run python src/manage.py reset_events --no-input && make seed && make bootstrap-tests` (backend repo) | Run before a full suite for determinism. Order matters: `reset_events` already re-runs `bootstrap_events` (a following `make bootstrap` fails on duplicates), and `seed` must run **before** `bootstrap-tests` — the seeder's payment/quantity sweeps are global, so seeding last would mutate the test fixtures (e.g. randomly refunding the sold-out event's tickets). The showcase seed (`make seed`) is required by the Teatro Grande specs (`getSeededBestAvailableEvent`).<br>**`reset_db → make bootstrap → make seed` is the WRONG order** and the way this has actually gone wrong: `make bootstrap` chains `bootstrap_test_events`, so a later `make seed` reaches those fixtures. `TicketSeeder._create_payments` selects `Ticket.objects.filter(tier__payment_method=ONLINE, payment__isnull=True)` with no scope at all and rolls some of them REFUNDED → ticket CANCELLED (`cancellation_source=stripe_dashboard`) + `tier.quantity_sold` decremented. Repairing a fixture after that takes BOTH halves — the `Ticket.status` rows *and* the denormalized counter |
+| Backend | `http://localhost:8000` | `make e2e-setup` (this repo) starts it — or manually: `make run-e2e` in `revel-backend` (gunicorn + PgBouncer; plain `make run` exhausts Postgres connections at 4 workers) |
+| Reset | `uv run python src/manage.py reset_events --no-input && make seed && make bootstrap-tests` (backend repo) | Included in `make e2e-setup` — or manually: run before a full suite for determinism. Order matters: `reset_events` already re-runs `bootstrap_events` (a following `make bootstrap` fails on duplicates), and `seed` must run **before** `bootstrap-tests` — the seeder's payment/quantity sweeps are global, so seeding last would mutate the test fixtures (e.g. randomly refunding the sold-out event's tickets). The showcase seed (`make seed`) is required by the Teatro Grande specs (`getSeededBestAvailableEvent`).<br>**`reset_db → make bootstrap → make seed` is the WRONG order** and the way this has actually gone wrong: `make bootstrap` chains `bootstrap_test_events`, so a later `make seed` reaches those fixtures. `TicketSeeder._create_payments` selects `Ticket.objects.filter(tier__payment_method=ONLINE, payment__isnull=True)` with no scope at all and rolls some of them REFUNDED → ticket CANCELLED (`cancellation_source=stripe_dashboard`) + `tier.quantity_sold` decremented. Repairing a fixture after that takes BOTH halves — the `Ticket.status` rows *and* the denormalized counter |
 | Celery | inline/eager | Questionnaire auto-eval, exports, etc. complete synchronously |
 | Mailpit | `http://localhost:8025` | Captures all outbound email; override with `E2E_MAILPIT_URL` |
 | Stripe | `stripe listen` forwarding to the backend | Backend `.env` needs `CONNECTED_TEST_STRIPE_ID` **at bootstrap time**, or online checkout fails |
@@ -21,6 +21,8 @@ the built frontend.
 ## Running
 
 ```bash
+make e2e                           # backend up + reseeded, then everything
+make e2e-setup && make e2e-run     # …as two halves; make e2e-teardown stops the backend
 pnpm test:e2e                      # everything
 pnpm test:e2e --grep @p0           # one tier (@p0–@p3)
 pnpm test:e2e --project=chromium   # desktop journeys only

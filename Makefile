@@ -1,4 +1,4 @@
-.PHONY: dev build preview format format-check lint lint-fix types types-canary i18n-check i18n-freshness i18n-hardcoded i18n-hardcoded-update file-length no-ssr-token audit-images audit-soft-404 audit licensecheck audit-deps check fix test test-coverage test-e2e generate-api bump-version bump-minor release
+.PHONY: dev build preview format format-check lint lint-fix types types-canary i18n-check i18n-freshness i18n-hardcoded i18n-hardcoded-update file-length no-ssr-token audit-images audit-soft-404 audit licensecheck audit-deps check fix test test-coverage test-e2e generate-api bump-version bump-minor release e2e-setup e2e-run e2e e2e-teardown
 
 # ─────────────────────────────────────────────
 # Development
@@ -122,6 +122,46 @@ test-coverage:
 
 test-e2e:
 	pnpm playwright test
+
+# ─────────────────────────────────────────────
+# E2E — full-stack quality-of-life targets
+# ─────────────────────────────────────────────
+
+BACKEND_DIR := ../revel-backend
+
+# Spin up + reseed the backend for an E2E run: docker + PgBouncer + a
+# daemonized gunicorn (pid/log at $(BACKEND_DIR)/.e2e-gunicorn.*), preceded by
+# the canonical reseed. Idempotent — any stale backend on :8000 is killed
+# first. Out of scope: `stripe listen` (interactive auth; Stripe specs
+# self-skip). Don't run from worktrees: one backend instance, one :8000.
+e2e-setup:
+	@test -d $(BACKEND_DIR) || { echo "❌ $(BACKEND_DIR) not found — expected the backend checkout next to this repo"; exit 1; }
+	$(MAKE) -C $(BACKEND_DIR) e2e-seed run-e2e-daemon
+
+# Playwright suite with a mass-skip guard: journey specs self-skip when the
+# backend probe fails, so a wedged backend yields exit 0 with hundreds of
+# skips (false green). Warn loudly, don't fail — partial runs (--grep) skip
+# legitimately. `make test-e2e` remains the raw, guard-free run.
+e2e-run:
+	@pnpm playwright test 2>&1 | tee .e2e.output; \
+	exit_code=$${PIPESTATUS[0]}; \
+	skipped=$$(grep -oE '[0-9]+ skipped' .e2e.output | tail -1 | grep -oE '[0-9]+' || true); \
+	if [ -n "$$skipped" ] && [ "$$skipped" -gt 10 ]; then \
+		echo ""; \
+		echo "⚠️⚠️⚠️  $$skipped tests SKIPPED — possible mass-skip FALSE GREEN (exit code $$exit_code)."; \
+		echo "Journey specs self-skip when the backend probe fails. Verify the backend"; \
+		echo "is healthy (make e2e-setup) before trusting this result."; \
+	fi; \
+	exit $$exit_code
+
+# The whole thing: backend up + reseeded, then the suite.
+e2e: e2e-setup
+	$(MAKE) e2e-run
+
+# Stop the daemonized backend. The docker stack (postgres/redis/mailpit/
+# pgbouncer) stays up — it's the shared dev environment.
+e2e-teardown:
+	$(MAKE) -C $(BACKEND_DIR) stop-e2e
 
 # ─────────────────────────────────────────────
 # API client
