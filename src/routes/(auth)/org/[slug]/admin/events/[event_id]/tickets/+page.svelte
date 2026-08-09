@@ -12,7 +12,6 @@
 	import {
 		eventadminticketsConfirmTicketPayment,
 		eventadminticketsUnconfirmTicketPayment,
-		eventadminticketsCancelTicket,
 		eventadminticketsCheckInTicket,
 		eventadminticketsGetTicket,
 		eventadminticketsExportAttendees
@@ -34,12 +33,15 @@
 		type CheckInDialogTicket
 	} from '$lib/components/tickets/checkin-adapter';
 	import { createTicketMemberAdmin } from '$lib/components/tickets/ticket-member-admin.svelte';
+	import { createTicketCancelRefundAdmin } from '$lib/components/tickets/ticket-cancel-refund-admin.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import QRScannerModal from '$lib/components/tickets/QRScannerModal.svelte';
 	import CheckInDialog from '$lib/components/tickets/CheckInDialog.svelte';
 	import ReseatDialog from '$lib/components/tickets/ReseatDialog.svelte';
 	import RenameTicketHolderDialog from '$lib/components/tickets/RenameTicketHolderDialog.svelte';
+	import RefundTicketDialog from '$lib/components/tickets/RefundTicketDialog.svelte';
+	import AdminCancelTicketDialog from '$lib/components/tickets/AdminCancelTicketDialog.svelte';
 	import MakeMemberModal from '$lib/components/members/MakeMemberModal.svelte';
 	import ExportButton from '$lib/components/common/ExportButton.svelte';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
@@ -61,8 +63,6 @@
 	let selectedOrderBy = $state<TicketOrderBy | undefined>(data.filters.orderBy ?? undefined);
 
 	// Confirmation dialogs
-	let showCancelDialog = $state(false);
-	let ticketToCancel = $state<AdminTicketSchema | null>(null);
 	let showConfirmPaymentDialog = $state(false);
 	let ticketToConfirm = $state<AdminTicketSchema | null>(null);
 	let showCheckInDialog = $state(false);
@@ -77,6 +77,14 @@
 	// Membership + blacklist admin actions (state, mutations, handlers).
 	const memberAdmin = createTicketMemberAdmin({
 		getSlug: () => data.event.organization.slug,
+		getAccessToken: () => authStore.accessToken
+	});
+
+	// Cancel + refund admin actions (organizer refunds, FE #831): routes
+	// online tickets to the refund-aware cancel dialog, keeps the plain
+	// confirm for the rest, and owns the refund-payment dialog state.
+	const cancelRefund = createTicketCancelRefundAdmin({
+		getEventId: () => data.event.id,
 		getAccessToken: () => authStore.accessToken
 	});
 
@@ -154,29 +162,6 @@
 		},
 		onError: () => {
 			toast.error(m['eventTicketsAdmin.unconfirmPaymentError']());
-		}
-	}));
-
-	/**
-	 * Cancel ticket mutation
-	 */
-	const cancelTicketMutation = createMutation(() => ({
-		mutationFn: async (ticketId: string) => {
-			const response = await eventadminticketsCancelTicket({
-				path: { event_id: data.event.id, ticket_id: ticketId },
-				headers: { Authorization: `Bearer ${authStore.accessToken}` }
-			});
-
-			if (response.error) {
-				throw new Error('Failed to cancel ticket');
-			}
-
-			return response.data;
-		},
-		onSuccess: () => {
-			showCancelDialog = false;
-			ticketToCancel = null;
-			invalidateAll();
 		}
 	}));
 
@@ -338,23 +323,6 @@
 		if (ticketToConfirm?.id) {
 			const pricePaid = isPwycTicket(ticketToConfirm) ? pwycPricePaid : undefined;
 			confirmPaymentMutation.mutate({ ticketId: ticketToConfirm.id, pricePaid });
-		}
-	}
-
-	/**
-	 * Handle cancel ticket
-	 */
-	function handleCancelTicket(ticket: AdminTicketSchema) {
-		ticketToCancel = ticket;
-		showCancelDialog = true;
-	}
-
-	/**
-	 * Submit cancel ticket
-	 */
-	function submitCancelTicket() {
-		if (ticketToCancel?.id) {
-			cancelTicketMutation.mutate(ticketToCancel.id);
 		}
 	}
 
@@ -560,18 +528,19 @@
 				onSort={handleSort}
 				checkInPending={checkInTicketMutation.isPending}
 				confirmPaymentPending={confirmPaymentMutation.isPending}
-				cancelTicketPending={cancelTicketMutation.isPending}
+				cancelTicketPending={cancelRefund.cancelTicketPending}
 				addMemberPending={memberAdmin.addMemberPending}
 				unconfirmPaymentPending={unconfirmPaymentMutation.isPending}
 				tiersLoading={memberAdmin.tiersLoading}
 				onCheckIn={handleCheckIn}
 				onConfirmPayment={handleConfirmPayment}
 				onMakeMember={memberAdmin.openMakeMemberModal}
-				onCancelTicket={handleCancelTicket}
+				onCancelTicket={cancelRefund.openCancel}
 				onBlacklist={memberAdmin.openBlacklistDialog}
 				onUnconfirmPayment={openUnconfirmPaymentDialog}
 				onReseat={handleReseat}
 				onRenameHolder={handleRenameHolder}
+				onRefundTicket={cancelRefund.openRefund}
 			/>
 
 			<!-- Mobile Cards -->
@@ -579,18 +548,19 @@
 				tickets={data.tickets}
 				checkInPending={checkInTicketMutation.isPending}
 				confirmPaymentPending={confirmPaymentMutation.isPending}
-				cancelTicketPending={cancelTicketMutation.isPending}
+				cancelTicketPending={cancelRefund.cancelTicketPending}
 				addMemberPending={memberAdmin.addMemberPending}
 				unconfirmPaymentPending={unconfirmPaymentMutation.isPending}
 				tiersLoading={memberAdmin.tiersLoading}
 				onCheckIn={handleCheckIn}
 				onConfirmPayment={handleConfirmPayment}
 				onMakeMember={memberAdmin.openMakeMemberModal}
-				onCancelTicket={handleCancelTicket}
+				onCancelTicket={cancelRefund.openCancel}
 				onBlacklist={memberAdmin.openBlacklistDialog}
 				onUnconfirmPayment={openUnconfirmPaymentDialog}
 				onReseat={handleReseat}
 				onRenameHolder={handleRenameHolder}
+				onRefundTicket={cancelRefund.openRefund}
 			/>
 		{/if}
 
@@ -637,18 +607,15 @@
 	onClose={closeConfirmPaymentDialog}
 />
 
-<!-- Cancel Confirmation Dialog -->
+<!-- Cancel Confirmation Dialog (offline/at-the-door/free) -->
 <ConfirmDialog
-	isOpen={showCancelDialog}
+	isOpen={cancelRefund.showCancelDialog}
 	title={m['eventTicketsAdmin.cancelTicketTitle']()}
 	message={m['eventTicketsAdmin.cancelTicketMessage']()}
 	confirmText={m['eventTicketsAdmin.cancelTicketButton']()}
 	cancelText={m['eventTicketsAdmin.cancelTicketKeep']()}
-	onConfirm={submitCancelTicket}
-	onCancel={() => {
-		showCancelDialog = false;
-		ticketToCancel = null;
-	}}
+	onConfirm={cancelRefund.submitCancel}
+	onCancel={cancelRefund.closeCancel}
 	variant="danger"
 />
 
@@ -700,6 +667,30 @@
 			ticketToRename = null;
 		}}
 		onRenamed={() => invalidateAll()}
+	/>
+{/if}
+
+<!-- Refund payment Dialog -->
+{#if cancelRefund.ticketToRefund?.id}
+	<RefundTicketDialog
+		open={cancelRefund.showRefundDialog}
+		ticketId={cancelRefund.ticketToRefund.id}
+		eventId={data.event.id}
+		accessToken={authStore.accessToken}
+		onClose={cancelRefund.closeRefund}
+		onRefunded={() => invalidateAll()}
+	/>
+{/if}
+
+<!-- Cancel online ticket Dialog (optional refund alongside cancellation) -->
+{#if cancelRefund.ticketToCancelOnline?.id}
+	<AdminCancelTicketDialog
+		open={cancelRefund.showOnlineCancelDialog}
+		ticketId={cancelRefund.ticketToCancelOnline.id}
+		eventId={data.event.id}
+		accessToken={authStore.accessToken}
+		onClose={cancelRefund.closeOnlineCancel}
+		onCancelled={() => invalidateAll()}
 	/>
 {/if}
 

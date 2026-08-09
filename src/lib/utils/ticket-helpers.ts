@@ -92,6 +92,23 @@ export function canManageTicket(ticket: any): boolean {
 }
 
 /**
+ * Check if an admin can cancel this ticket. Since organizer refunds (BE #865)
+ * cancellation applies to every payment method — online tickets take an
+ * optional refund alongside the cancellation.
+ */
+export function canAdminCancelTicket(ticket: any): boolean {
+	return ticket.status !== 'cancelled';
+}
+
+/**
+ * Check if the ticket's payment can be refunded in-app: online (Stripe)
+ * payments with a recorded payment row. Refunding never cancels the ticket.
+ */
+export function canRefundTicketPayment(ticket: any): boolean {
+	return ticket.tier?.payment_method === 'online' && !!ticket.payment;
+}
+
+/**
  * Check if payment can be unconfirmed (active ticket with offline/at_the_door payment)
  */
 export function canUnconfirmPayment(ticket: any): boolean {
