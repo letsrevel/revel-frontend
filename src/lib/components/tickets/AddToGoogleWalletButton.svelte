@@ -81,7 +81,7 @@
 	disabled={isOpening}
 	aria-busy={isOpening}
 	aria-label={m['addToGoogleWallet.label']()}
-	class="inline-flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-progress disabled:opacity-70 {className}"
+	class="inline-flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-progress {className}"
 >
 	<img src={badgeSrc} alt="" class="h-12 w-auto" draggable="false" />
 </button>

@@ -89,7 +89,7 @@
 	disabled={isDownloading}
 	aria-busy={isDownloading}
 	aria-label={m['addToWallet.addToAppleWallet']()}
-	class="inline-flex items-center justify-center rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-progress disabled:opacity-70 {className}"
+	class="inline-flex items-center justify-center rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-progress {className}"
 >
 	<img src={badgeSrc} alt="" class="h-12 w-auto" draggable="false" />
 </button>

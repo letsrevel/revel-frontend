@@ -5,13 +5,13 @@
  */
 export type WalletPlatform = 'android' | 'ios' | 'other';
 
-export function detectWalletPlatform(userAgent?: string): WalletPlatform {
+export function detectWalletPlatform(userAgent?: string, maxTouchPoints?: number): WalletPlatform {
 	const ua = userAgent ?? (typeof navigator !== 'undefined' ? navigator.userAgent : '');
+	const touchPoints =
+		maxTouchPoints ?? (typeof navigator !== 'undefined' ? navigator.maxTouchPoints : 0);
 	if (/android/i.test(ua)) return 'android';
 	if (/iphone|ipad|ipod/i.test(ua)) return 'ios';
 	// iPadOS 13+ reports itself as a Mac; a Mac with multitouch is an iPad.
-	if (/macintosh/i.test(ua) && typeof navigator !== 'undefined' && navigator.maxTouchPoints > 1) {
-		return 'ios';
-	}
+	if (/macintosh/i.test(ua) && touchPoints > 1) return 'ios';
 	return 'other';
 }

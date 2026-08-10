@@ -23,10 +23,12 @@ describe('detectWalletPlatform', () => {
 	});
 
 	it('treats desktop as other', () => {
-		// jsdom's navigator has maxTouchPoints 0, so the iPadOS-as-Mac branch
-		// stays off for a plain Macintosh UA.
-		expect(detectWalletPlatform(MAC_UA)).toBe('other');
-		expect(detectWalletPlatform(WINDOWS_UA)).toBe('other');
+		expect(detectWalletPlatform(MAC_UA, 0)).toBe('other');
+		expect(detectWalletPlatform(WINDOWS_UA, 0)).toBe('other');
+	});
+
+	it('treats a multitouch Mac UA as iPadOS', () => {
+		expect(detectWalletPlatform(MAC_UA, 5)).toBe('ios');
 	});
 
 	it('returns other for an empty UA', () => {
