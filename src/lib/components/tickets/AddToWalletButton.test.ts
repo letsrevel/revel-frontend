@@ -101,4 +101,18 @@ describe('AddToWalletButton', () => {
 		const alert = await screen.findByRole('alert');
 		expect(alert.textContent).toContain('Pass not found');
 	});
+
+	it('shows a localized generic failure message on unexpected errors', async () => {
+		ticketwalletDownloadApplePass.mockRejectedValue(new Error('network down'));
+		const user = userEvent.setup();
+		render(AddToWalletButton, { props: { id: 'ticket-1', name: 'My Event' } });
+
+		await user.click(screen.getByRole('button', { name: 'Add to Apple Wallet' }));
+
+		// Raw error text (unlocalized, possibly backend detail) must never
+		// reach the alert — only the localized generic message.
+		const alert = await screen.findByRole('alert');
+		expect(alert.textContent).toContain('Failed to download wallet pass');
+		expect(alert.textContent).not.toContain('network down');
+	});
 });

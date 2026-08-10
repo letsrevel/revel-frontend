@@ -44,15 +44,18 @@
 						});
 
 			if (!result.response?.ok || !result.data) {
+				// Known statuses map to localized messages directly; the catch
+				// below never surfaces raw error text (unlocalized, and may
+				// leak backend detail) — it logs and shows the generic message.
 				if (result.response?.status === 503) {
-					throw new Error(m['addToGoogleWallet.notConfigured']());
+					error = m['addToGoogleWallet.notConfigured']();
+				} else if (result.response?.status === 404) {
+					error =
+						kind === 'ticket' ? m['addToWallet.ticketNotFound']() : m['seriesPass.passNotFound']();
+				} else {
+					error = m['addToGoogleWallet.openFailed']();
 				}
-				if (result.response?.status === 404) {
-					throw new Error(
-						kind === 'ticket' ? m['addToWallet.ticketNotFound']() : m['seriesPass.passNotFound']()
-					);
-				}
-				throw new Error(m['addToGoogleWallet.openFailed']());
+				return;
 			}
 
 			const saveUrl = result.data.save_url;
@@ -69,7 +72,7 @@
 			}
 		} catch (err) {
 			console.error('Failed to open Google Wallet save link:', err);
-			error = err instanceof Error ? err.message : m['addToGoogleWallet.openFailed']();
+			error = m['addToGoogleWallet.openFailed']();
 		} finally {
 			isOpening = false;
 		}

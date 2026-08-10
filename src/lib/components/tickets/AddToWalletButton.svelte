@@ -46,19 +46,21 @@
 						});
 
 			if (!response.response?.ok) {
+				// Known statuses map to localized messages directly; the catch
+				// below never surfaces raw error text (unlocalized, and may
+				// leak backend detail) — it logs and shows the generic message.
 				if (response.response?.status === 503) {
-					throw new Error(m['addToWallet.notConfigured']());
+					error = m['addToWallet.notConfigured']();
+				} else if (response.response?.status === 404) {
+					error =
+						kind === 'ticket' ? m['addToWallet.ticketNotFound']() : m['seriesPass.passNotFound']();
+				} else {
+					error =
+						kind === 'ticket'
+							? m['addToWallet.downloadFailed']()
+							: m['seriesPass.walletDownloadFailed']();
 				}
-				if (response.response?.status === 404) {
-					throw new Error(
-						kind === 'ticket' ? m['addToWallet.ticketNotFound']() : m['seriesPass.passNotFound']()
-					);
-				}
-				throw new Error(
-					kind === 'ticket'
-						? m['addToWallet.downloadFailed']()
-						: m['seriesPass.walletDownloadFailed']()
-				);
+				return;
 			}
 
 			// Get the blob and trigger a download with a safe filename
@@ -77,7 +79,10 @@
 			window.URL.revokeObjectURL(url);
 		} catch (err) {
 			console.error('Failed to download Apple Wallet pass:', err);
-			error = err instanceof Error ? err.message : m['addToWallet.downloadFailed']();
+			error =
+				kind === 'ticket'
+					? m['addToWallet.downloadFailed']()
+					: m['seriesPass.walletDownloadFailed']();
 		} finally {
 			isDownloading = false;
 		}

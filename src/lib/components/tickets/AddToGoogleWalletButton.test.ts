@@ -142,14 +142,17 @@ describe('AddToGoogleWalletButton', () => {
 		expect(alert.textContent).toContain('Ticket not found');
 	});
 
-	it('shows a generic failure message on other errors', async () => {
+	it('shows a localized generic failure message on unexpected errors', async () => {
 		ticketwalletGoogleWalletSaveLink.mockRejectedValue(new Error('network down'));
 		const user = userEvent.setup();
 		render(AddToGoogleWalletButton, { props: { id: 'ticket-1' } });
 
 		await user.click(screen.getByRole('button', { name: 'Add to Google Wallet' }));
 
+		// Raw error text (unlocalized, possibly backend detail) must never
+		// reach the alert — only the localized generic message.
 		const alert = await screen.findByRole('alert');
-		expect(alert.textContent).toContain('network down');
+		expect(alert.textContent).toContain('Failed to open Google Wallet');
+		expect(alert.textContent).not.toContain('network down');
 	});
 });
