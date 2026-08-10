@@ -281,27 +281,6 @@
 									{m['eventTicketsAdmin.actionConfirmPayment']()}
 								</Button>
 							{/if}
-							{#if !ticket.membership && ticket.user?.id}
-								<Button
-									size="sm"
-									variant="outline"
-									onclick={() => onMakeMember(ticket)}
-									disabled={addMemberPending || tiersLoading}
-								>
-									<UserPlus class="h-4 w-4" aria-hidden="true" />
-									{m['makeMemberAction.button']()}
-								</Button>
-							{/if}
-							{#if ticket.tier?.payment_method === 'online' && ticket.payment?.stripe_dashboard_url}
-								<Button
-									size="sm"
-									variant="outline"
-									onclick={() => window.open(ticket.payment?.stripe_dashboard_url, '_blank')}
-								>
-									<ExternalLink class="h-4 w-4" aria-hidden="true" />
-									{m['ticketTable.manageOnStripe']()}
-								</Button>
-							{/if}
 							<!-- More actions dropdown -->
 							<DropdownMenu.Root>
 								<DropdownMenu.Trigger>
@@ -318,6 +297,23 @@
 									{/snippet}
 								</DropdownMenu.Trigger>
 								<DropdownMenu.Content align="end">
+									{#if !ticket.membership && ticket.user?.id}
+										<DropdownMenu.Item
+											onclick={() => onMakeMember(ticket)}
+											disabled={addMemberPending || tiersLoading}
+										>
+											<UserPlus class="mr-2 h-4 w-4" aria-hidden="true" />
+											{m['makeMemberAction.button']()}
+										</DropdownMenu.Item>
+									{/if}
+									{#if ticket.tier?.payment_method === 'online' && ticket.payment?.stripe_dashboard_url}
+										<DropdownMenu.Item
+											onclick={() => window.open(ticket.payment?.stripe_dashboard_url, '_blank')}
+										>
+											<ExternalLink class="mr-2 h-4 w-4" aria-hidden="true" />
+											{m['ticketTable.manageOnStripe']()}
+										</DropdownMenu.Item>
+									{/if}
 									{#if onRenameHolder && ticket.status !== 'checked_in' && ticket.status !== 'cancelled'}
 										<DropdownMenu.Item onclick={() => onRenameHolder(ticket)}>
 											<Pencil class="mr-2 h-4 w-4" aria-hidden="true" />
