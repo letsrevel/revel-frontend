@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-08-11
+
+### Added
+
+- **Add to Google Wallet**: tickets and series passes gain an "Add to Google Wallet" button alongside the existing Apple Wallet one (ticket list, ticket detail modal, series-pass downloads), using the official badge artwork localized for all six languages. On Android the Google button is listed first, on iOS and desktop the Apple one — nothing is ever hidden.
+- **Organizer refunds**: organizers can refund online (Stripe) ticket payments from the app — full or partial — via a new refund dialog in the tickets admin showing the amount paid, refunds so far, quick amount suggestions, an optional internal reason, and the refund history. Cancelling a ticket can now optionally include a refund, and cancelling an event offers an opt-in "Refund all tickets" background sweep with a per-currency preview against the available Stripe balance and a "Retry refunds" resume button. Refunding no longer implies cancelling: a refunded ticket stays valid, and active tickets can carry a partial-refund badge.
+- **Virtual events and VAT place of supply**: the event form gains a Taxes section with a "Virtual event" checkbox and a VAT-country override (with effective-country readout and a mismatch warning suggesting a tax adviser). For virtual events the address field becomes "Address or meeting link", and a meeting-link address renders as a clickable "Virtual event" row on the public event page instead of leaking a raw URL. Checkout shows a reverse-charge notice for virtual EU B2B buyers and an interim-VAT disclaimer for virtual B2C sales.
+- **Organizer payout transparency**: the landing-page fee calculator gains an "I'm charged VAT on the platform fee" checkbox that folds VAT into the totals, and online ticket tier forms show a "You get: ~€X per ticket" net-payout preview computed from the organization's actual fee rates and VAT treatment.
+- Pending pay-at-the-door tickets now show a "Pending payment confirmation" pill next to their downloads, clarifying that PDFs and wallet passes become valid only once payment is confirmed.
+
+### Changed
+
+- Tickets admin actions were rebalanced: Check In, Confirm payment, Refund payment and Cancel Ticket are inline on each row, while Make member, Manage on Stripe and the rarer actions live in the row's three-dot menu; short data columns no longer wrap.
+
+### Fixed
+
+- Dates and times are now fully localized: month and weekday names follow the UI language everywhere (German previously saw half-English output like "Fr., Okt. 24 • 20:00"), date ranges use locale-aware punctuation, ranges straddling a DST change label each end with its own timezone abbreviation, and Portuguese short dates keep a textual month.
+- Dashboard RSVP and ticket cards, invitation lists, and questionnaire assignments now show times in the event's timezone, matching the event page — previously they silently used the viewer's local clock.
+- The RSVP deadline on the event page no longer doubles its preposition ("RSVP by in 6 days" and equivalents in every language) — the relative time now stands alone under an "RSVP deadline" label, and the exact cutoff date and time is shown beneath it.
+- The announcement composer's event picker is now a searchable typeahead; previously it was a plain dropdown capped at 100 events, so in larger organizations every event past the cap was missing and could never receive an announcement.
+- New events keep the end date and time entered at creation — the create request silently dropped it, so every new draft became a 24-hour event until the next save repaired it. One-off events created from a recurring series' date list are now correctly attached to their series.
+- Opening the paid-ticket checkout no longer fires a failed billing request for buyers who never saved billing details — billing data is only fetched once the "request invoice" section is opened.
+
 ## [2.3.3] - 2026-08-05
 
 ### Fixed
