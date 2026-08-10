@@ -3,6 +3,9 @@
 	import { seriespassDownloadSeriesPassPdf, seriespassDownloadSeriesPassPkpass } from '$lib/api';
 	import { Download, Wallet, Loader2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
+	import { onMount } from 'svelte';
+	import AddToGoogleWalletButton from '$lib/components/tickets/AddToGoogleWalletButton.svelte';
+	import { detectWalletPlatform } from '$lib/utils/platform';
 
 	interface Props {
 		heldPassId: string;
@@ -10,6 +13,12 @@
 	}
 
 	const { heldPassId, passName }: Props = $props();
+
+	// Ordering only (never hides a rail): Google badge first on Android.
+	let googleWalletFirst = $state(false);
+	onMount(() => {
+		googleWalletFirst = detectWalletPlatform() === 'android';
+	});
 
 	let isDownloadingPdf = $state(false);
 	let isDownloadingPkpass = $state(false);
@@ -94,6 +103,12 @@
 		{/if}
 		{m['seriesPass.downloadPdf']()}
 	</button>
+	{#snippet googleWalletButton()}
+		<AddToGoogleWalletButton id={heldPassId} kind="series-pass" class="self-center" />
+	{/snippet}
+	{#if googleWalletFirst}
+		{@render googleWalletButton()}
+	{/if}
 	<button
 		type="button"
 		onclick={downloadPkpass}
@@ -107,4 +122,7 @@
 		{/if}
 		{m['seriesPass.addToWallet']()}
 	</button>
+	{#if !googleWalletFirst}
+		{@render googleWalletButton()}
+	{/if}
 </div>

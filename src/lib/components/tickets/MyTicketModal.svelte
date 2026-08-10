@@ -5,6 +5,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import TicketStatusBadge from './TicketStatusBadge.svelte';
 	import AddToWalletButton from './AddToWalletButton.svelte';
+	import AddToGoogleWalletButton from './AddToGoogleWalletButton.svelte';
 	import DownloadPdfButton from './DownloadPdfButton.svelte';
 	import CancelTicketDialog from './CancelTicketDialog.svelte';
 	import RenameTicketHolderDialog from './RenameTicketHolderDialog.svelte';
@@ -23,6 +24,8 @@
 		AlertCircle
 	} from '@lucide/svelte';
 	import { formatMoney } from '$lib/utils/format';
+	import { detectWalletPlatform } from '$lib/utils/platform';
+	import { onMount } from 'svelte';
 	import QRCode from 'qrcode';
 	import { formatDateTime } from '$lib/utils/date';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -57,6 +60,12 @@
 		onTicketCancelled,
 		onTicketRenamed
 	}: Props = $props();
+
+	// Ordering only (never hides a rail): Google badge first on Android.
+	let googleWalletFirst = $state(false);
+	onMount(() => {
+		googleWalletFirst = detectWalletPlatform() === 'android';
+	});
 
 	let showCancelDialog = $state(false);
 	let ticketIdToCancel = $state<string | null>(null);
@@ -567,8 +576,19 @@
 								{#if ticket.id}
 									<DownloadPdfButton ticketId={ticket.id} pdfUrl={ticket.pdf_url} />
 								{/if}
+								{#snippet googleWalletButton()}
+									{#if ticket.google_pass_available && ticket.id}
+										<AddToGoogleWalletButton id={ticket.id} kind="ticket" class="self-center" />
+									{/if}
+								{/snippet}
+								{#if googleWalletFirst}
+									{@render googleWalletButton()}
+								{/if}
 								{#if ticket.apple_pass_available && ticket.id}
 									<AddToWalletButton ticketId={ticket.id} {eventName} variant="secondary" />
+								{/if}
+								{#if !googleWalletFirst}
+									{@render googleWalletButton()}
 								{/if}
 							</div>
 						{:else}

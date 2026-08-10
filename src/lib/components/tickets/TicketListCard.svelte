@@ -7,7 +7,10 @@
 	import SeriesPassBadge from './SeriesPassBadge.svelte';
 	import MyTicketModal from './MyTicketModal.svelte';
 	import AddToWalletButton from './AddToWalletButton.svelte';
+	import AddToGoogleWalletButton from './AddToGoogleWalletButton.svelte';
 	import { Calendar, MapPin, Ticket, CalendarDays } from '@lucide/svelte';
+	import { onMount } from 'svelte';
+	import { detectWalletPlatform } from '$lib/utils/platform';
 	import { downloadRevelEventICalFile } from '$lib/utils/ical';
 	import { getImageUrl } from '$lib/utils/url';
 	import { formatEventDateRange, formatDate } from '$lib/utils/date';
@@ -23,6 +26,13 @@
 	const { ticket }: Props = $props();
 
 	let showTicketModal = $state(false);
+
+	// Ordering only (never hides a rail): Google badge first on Android.
+	// Set post-mount so SSR markup stays platform-neutral.
+	let googleWalletFirst = $state(false);
+	onMount(() => {
+		googleWalletFirst = detectWalletPlatform() === 'android';
+	});
 
 	// Logo with fallback hierarchy: event -> series -> organization
 	// Prefer thumbnail for card display (64x64)
@@ -179,8 +189,19 @@
 				{/if}
 
 				<!-- Add to Wallet (hide for cancelled tickets) -->
+				{#snippet googleWalletButton()}
+					{#if ticket.google_pass_available && ticket.id && ticket.status !== 'cancelled'}
+						<AddToGoogleWalletButton id={ticket.id} kind="ticket" />
+					{/if}
+				{/snippet}
+				{#if googleWalletFirst}
+					{@render googleWalletButton()}
+				{/if}
 				{#if ticket.apple_pass_available && ticket.id && ticket.status !== 'cancelled'}
 					<AddToWalletButton ticketId={ticket.id} eventName={ticket.event.name} variant="default" />
+				{/if}
+				{#if !googleWalletFirst}
+					{@render googleWalletButton()}
 				{/if}
 			</div>
 		</div>
