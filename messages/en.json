@@ -401,7 +401,6 @@
 		"loginToGetTickets": "Login to Get Tickets"
 	},
 	"addToWallet.addToAppleWallet": "Add to Apple Wallet",
-	"addToWallet.downloading": "Downloading...",
 	"downloadPdf.download": "Download PDF",
 	"downloadPdf.downloading": "Downloading...",
 	"adminButton": {
@@ -8296,6 +8295,11 @@
 	"addToWallet.notConfigured": "Apple Wallet is not configured for this event",
 	"addToWallet.ticketNotFound": "Ticket not found",
 	"addToWallet.downloadFailed": "Failed to download wallet pass",
+	"addToGoogleWallet.label": "Add to Google Wallet",
+	"addToGoogleWallet.notConfigured": "Google Wallet is not configured for this event",
+	"addToGoogleWallet.openFailed": "Failed to open Google Wallet",
+	"ticketDownloads.pendingNotice": "Pending payment confirmation",
+	"ticketDownloads.pendingNoticeDetail": "Downloads and wallet passes become valid only once your payment is confirmed.",
 	"checkInDialog.pwycOutsideRange": "This amount is outside the suggested range ({min} – {max})",
 	"checkInDialog.pwycBelowMin": "This amount is below the suggested minimum ({min})",
 	"checkInDialog.suggestedRange": "Suggested range: {min} – {max}",
@@ -9117,7 +9121,6 @@
 		"qrHint": "Show this QR code at the entrance of any covered event.",
 		"pendingPaymentNote": "Payment pending — the organizer will confirm it at the venue.",
 		"downloadPdf": "Download PDF",
-		"addToWallet": "Add to Apple Wallet",
 		"pdfDownloadFailed": "Failed to download the pass PDF",
 		"walletDownloadFailed": "Failed to download the wallet pass",
 		"loadError": "Couldn't load your passes. Please try again.",

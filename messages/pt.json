@@ -401,7 +401,6 @@
 		"loginToGetTickets": "Inicia sessão para obter bilhetes"
 	},
 	"addToWallet.addToAppleWallet": "Adicionar à Apple Wallet",
-	"addToWallet.downloading": "A transferir...",
 	"downloadPdf.download": "Transferir PDF",
 	"downloadPdf.downloading": "A transferir...",
 	"adminButton": {
@@ -8296,6 +8295,11 @@
 	"addToWallet.notConfigured": "O Apple Wallet não está configurado para este evento",
 	"addToWallet.ticketNotFound": "Bilhete não encontrado",
 	"addToWallet.downloadFailed": "Não foi possível transferir o passe do wallet",
+	"addToGoogleWallet.label": "Adicionar à Google Wallet",
+	"addToGoogleWallet.notConfigured": "A Google Wallet não está configurada para este evento",
+	"addToGoogleWallet.openFailed": "Não foi possível abrir a Google Wallet",
+	"ticketDownloads.pendingNotice": "A aguardar confirmação do pagamento",
+	"ticketDownloads.pendingNoticeDetail": "As transferências e os passes do wallet só serão válidos após a confirmação do pagamento.",
 	"checkInDialog.pwycOutsideRange": "Este valor está fora do intervalo sugerido ({min} – {max})",
 	"checkInDialog.pwycBelowMin": "Este valor está abaixo do mínimo sugerido ({min})",
 	"checkInDialog.suggestedRange": "Intervalo sugerido: {min} – {max}",
@@ -9117,7 +9121,6 @@
 		"qrHint": "Mostra este código QR à entrada de qualquer evento coberto.",
 		"pendingPaymentNote": "Pagamento pendente — a organização confirma-o no local.",
 		"downloadPdf": "Descarregar PDF",
-		"addToWallet": "Adicionar à Apple Wallet",
 		"pdfDownloadFailed": "Não foi possível descarregar o PDF do passe",
 		"walletDownloadFailed": "Não foi possível descarregar o passe da wallet",
 		"loadError": "Não foi possível carregar os teus passes. Tenta novamente.",
