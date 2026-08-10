@@ -207,7 +207,7 @@
 						</div>
 					</td>
 					<td class="px-4 py-3">
-						<div class="font-medium">{ticket.tier?.name || 'N/A'}</div>
+						<div class="whitespace-nowrap font-medium">{ticket.tier?.name || 'N/A'}</div>
 						{#if ticket.series_pass}
 							<SeriesPassBadge seriesPass={ticket.series_pass} class="mt-0.5" />
 						{/if}
@@ -222,7 +222,7 @@
 								})
 							: undefined}
 					>
-						<div class="font-medium">
+						<div class="whitespace-nowrap font-medium">
 							{formatPrice(
 								getTicketPrice(ticket),
 								ticket.payment?.currency || ticket.tier?.currency,
@@ -232,7 +232,7 @@
 						<TicketDiscountBadge {ticket} />
 					</td>
 					<td class="px-4 py-3">
-						<div class="flex items-center gap-1 text-sm">
+						<div class="flex items-center gap-1 whitespace-nowrap text-sm">
 							{@render paymentMethodIcon(ticket.tier?.payment_method || '')}
 							{getPaymentMethodLabel(ticket.tier?.payment_method || '')}
 						</div>
@@ -242,7 +242,7 @@
 							<StatusBadge
 								tone={getTicketStatusTone(ticket.status ?? '')}
 								label={getTicketStatusLabel(ticket.status ?? '')}
-								class="w-fit"
+								class="w-fit whitespace-nowrap"
 							/>
 							<!-- Refund state renders independent of ticket status: since
 							     organizer refunds, an active ticket can carry a (partial)
@@ -254,7 +254,7 @@
 							/>
 						</div>
 					</td>
-					<td class="px-4 py-3 text-sm text-muted-foreground">
+					<td class="whitespace-nowrap px-4 py-3 text-sm text-muted-foreground">
 						{formatDate(ticket.created_at)}
 					</td>
 					<td class="px-4 py-3">
@@ -270,15 +270,22 @@
 									{m['eventTicketsAdmin.actionCheckIn']()}
 								</Button>
 							{/if}
-							{#if canConfirmPayment(ticket)}
+							{#if onRefundTicket && canRefundTicketPayment(ticket)}
+								<Button size="sm" variant="outline" onclick={() => onRefundTicket(ticket)}>
+									<Undo2 class="h-4 w-4" aria-hidden="true" />
+									{m['refundTicket.menuItem']()}
+								</Button>
+							{/if}
+							{#if canAdminCancelTicket(ticket)}
 								<Button
 									size="sm"
-									variant="default"
-									onclick={() => onConfirmPayment(ticket)}
-									disabled={confirmPaymentPending}
+									variant="outline"
+									class="text-destructive hover:text-destructive"
+									onclick={() => onCancelTicket(ticket)}
+									disabled={cancelTicketPending}
 								>
-									<Check class="h-4 w-4" aria-hidden="true" />
-									{m['eventTicketsAdmin.actionConfirmPayment']()}
+									<X class="h-4 w-4" aria-hidden="true" />
+									{m['ticketTable.cancelTicket']()}
 								</Button>
 							{/if}
 							<!-- More actions dropdown -->
@@ -297,6 +304,15 @@
 									{/snippet}
 								</DropdownMenu.Trigger>
 								<DropdownMenu.Content align="end">
+									{#if canConfirmPayment(ticket)}
+										<DropdownMenu.Item
+											onclick={() => onConfirmPayment(ticket)}
+											disabled={confirmPaymentPending}
+										>
+											<Check class="mr-2 h-4 w-4" aria-hidden="true" />
+											{m['eventTicketsAdmin.actionConfirmPayment']()}
+										</DropdownMenu.Item>
+									{/if}
 									{#if !ticket.membership && ticket.user?.id}
 										<DropdownMenu.Item
 											onclick={() => onMakeMember(ticket)}
@@ -333,22 +349,6 @@
 										>
 											<Undo2 class="mr-2 h-4 w-4" aria-hidden="true" />
 											{m['eventTicketsAdmin.actionUnconfirmPayment']()}
-										</DropdownMenu.Item>
-									{/if}
-									{#if onRefundTicket && canRefundTicketPayment(ticket)}
-										<DropdownMenu.Item onclick={() => onRefundTicket(ticket)}>
-											<Undo2 class="mr-2 h-4 w-4" aria-hidden="true" />
-											{m['refundTicket.menuItem']()}
-										</DropdownMenu.Item>
-									{/if}
-									{#if canAdminCancelTicket(ticket)}
-										<DropdownMenu.Item
-											onclick={() => onCancelTicket(ticket)}
-											disabled={cancelTicketPending}
-											class="text-destructive focus:text-destructive"
-										>
-											<X class="mr-2 h-4 w-4" aria-hidden="true" />
-											{m['ticketTable.cancelTicket']()}
 										</DropdownMenu.Item>
 									{/if}
 									{#if ticket.user?.id}

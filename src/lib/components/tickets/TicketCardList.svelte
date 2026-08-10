@@ -253,16 +253,22 @@
 						{m['eventTicketsAdmin.actionCheckIn']()}
 					</Button>
 				{/if}
-				{#if canConfirmPayment(ticket)}
+				{#if onRefundTicket && canRefundTicketPayment(ticket)}
+					<Button size="sm" variant="outline" onclick={() => onRefundTicket(ticket)} class="flex-1">
+						<Undo2 class="h-4 w-4" aria-hidden="true" />
+						{m['refundTicket.menuItem']()}
+					</Button>
+				{/if}
+				{#if canAdminCancelTicket(ticket)}
 					<Button
 						size="sm"
-						variant="default"
-						onclick={() => onConfirmPayment(ticket)}
-						disabled={confirmPaymentPending}
-						class="flex-1"
+						variant="outline"
+						class="flex-1 text-destructive hover:text-destructive"
+						onclick={() => onCancelTicket(ticket)}
+						disabled={cancelTicketPending}
 					>
-						<Check class="h-4 w-4" aria-hidden="true" />
-						{m['eventTicketsAdmin.actionConfirmPayment']()}
+						<X class="h-4 w-4" aria-hidden="true" />
+						{m['ticketCardList.cancelTicket']()}
 					</Button>
 				{/if}
 				<!-- More actions dropdown for mobile -->
@@ -281,6 +287,15 @@
 						{/snippet}
 					</DropdownMenu.Trigger>
 					<DropdownMenu.Content align="end">
+						{#if canConfirmPayment(ticket)}
+							<DropdownMenu.Item
+								onclick={() => onConfirmPayment(ticket)}
+								disabled={confirmPaymentPending}
+							>
+								<Check class="mr-2 h-4 w-4" aria-hidden="true" />
+								{m['eventTicketsAdmin.actionConfirmPayment']()}
+							</DropdownMenu.Item>
+						{/if}
 						{#if !ticket.membership && ticket.user?.id}
 							<DropdownMenu.Item
 								onclick={() => onMakeMember(ticket)}
@@ -317,22 +332,6 @@
 							>
 								<Undo2 class="mr-2 h-4 w-4" aria-hidden="true" />
 								{m['eventTicketsAdmin.actionUnconfirmPayment']()}
-							</DropdownMenu.Item>
-						{/if}
-						{#if onRefundTicket && canRefundTicketPayment(ticket)}
-							<DropdownMenu.Item onclick={() => onRefundTicket(ticket)}>
-								<Undo2 class="mr-2 h-4 w-4" aria-hidden="true" />
-								{m['refundTicket.menuItem']()}
-							</DropdownMenu.Item>
-						{/if}
-						{#if canAdminCancelTicket(ticket)}
-							<DropdownMenu.Item
-								onclick={() => onCancelTicket(ticket)}
-								disabled={cancelTicketPending}
-								class="text-destructive focus:text-destructive"
-							>
-								<X class="mr-2 h-4 w-4" aria-hidden="true" />
-								{m['ticketCardList.cancelTicket']()}
 							</DropdownMenu.Item>
 						{/if}
 						{#if ticket.user?.id}

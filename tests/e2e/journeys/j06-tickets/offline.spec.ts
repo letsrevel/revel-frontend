@@ -71,7 +71,7 @@ test.describe('J6 offline payment @p2', () => {
 		await expect(success.getByText('Payment Instructions:')).toBeVisible();
 		await expect(success.getByText(INSTRUCTIONS)).toBeVisible();
 
-		// Staff side: the pending ticket has an inline "Confirm Payment" action.
+		// Staff side: confirm the pending ticket via the row's actions menu.
 		await gotoHydrated(asOwner, `/org/${event.orgSlug}/admin/events/${event.id}/tickets`);
 		await waitForClientAuth(asOwner);
 		const buyerRow = asOwner
@@ -80,7 +80,12 @@ test.describe('J6 offline payment @p2', () => {
 			.filter({ hasText: /Pending/i })
 			.first();
 		await expect(buyerRow).toBeVisible({ timeout: 15_000 });
-		await buyerRow.getByRole('button', { name: 'Confirm Payment' }).click();
+		await asOwner
+			.getByRole('button', { name: `More actions for ${buyer.firstName} ${buyer.lastName}` })
+			.filter({ visible: true })
+			.first()
+			.click();
+		await asOwner.getByRole('menuitem', { name: 'Confirm Payment' }).click();
 
 		const confirmPayment = asOwner.getByRole('dialog', { name: 'Confirm Payment' });
 		await expect(confirmPayment).toBeVisible({ timeout: 15_000 });
