@@ -2992,6 +2992,7 @@
 		"retryTitle": "Retry refunds",
 		"retryDescription": "This event is cancelled, but some tickets still have refundable online payments. Restart the refund run to process them.",
 		"retryButton": "Retry refunds",
+		"retrySuccessTitle": "Refunds restarted",
 		"retryNothingLeft": "All refundable online payments for this event have been processed.",
 		"refundsStartedAt": "Refunds started {datetime}"
 	},

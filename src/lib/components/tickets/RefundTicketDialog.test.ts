@@ -113,7 +113,9 @@ describe('RefundTicketDialog', () => {
 		const user = userEvent.setup();
 		renderDialog();
 		await user.click(await screen.findByRole('radio', { name: 'Custom amount' }));
-		const input = screen.getByLabelText('Refund amount');
+		// role query, not getByLabelText: the radiogroup is aria-labelledby the
+		// same "Refund amount" legend, so the label text matches two elements.
+		const input = screen.getByRole('spinbutton', { name: 'Refund amount' });
 		await user.clear(input);
 		await user.type(input, '99');
 		// findByText, not findByRole('alert'): the info Alert on this screen
@@ -173,15 +175,12 @@ describe('RefundTicketDialog', () => {
 		expect(screen.getByText('By organizer', { exact: false })).toBeInTheDocument();
 	});
 
-	it('never fires the mutation without an access token', async () => {
-		const user = userEvent.setup();
+	it('never fires the mutation without an access token', () => {
 		renderDialog({ accessToken: null });
 		// Without a token the context query is disabled, so the dialog stays in
 		// the loading state and no submit button exists to fire the mutation.
 		expect(screen.queryByRole('button', { name: /^Refund €/ })).not.toBeInTheDocument();
 		expect(eventadminticketsTicketRefundContext).not.toHaveBeenCalled();
 		expect(eventadminticketsRefundTicketPayment).not.toHaveBeenCalled();
-		// keep userEvent referenced (setup already asserted no-op path)
-		void user;
 	});
 });

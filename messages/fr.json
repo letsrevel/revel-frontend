@@ -2878,6 +2878,7 @@
 		"retryTitle": "Relancer les remboursements",
 		"retryDescription": "Cet événement est annulé, mais certains billets ont encore des paiements en ligne remboursables. Relance le traitement pour les rembourser.",
 		"retryButton": "Relancer les remboursements",
+		"retrySuccessTitle": "Remboursements relancés",
 		"retryNothingLeft": "Tous les paiements en ligne remboursables de cet événement ont été traités.",
 		"refundsStartedAt": "Remboursements lancés le {datetime}"
 	},

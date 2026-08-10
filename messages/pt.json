@@ -2992,6 +2992,7 @@
 		"retryTitle": "Repetir reembolsos",
 		"retryDescription": "Este evento está cancelado, mas alguns bilhetes ainda têm pagamentos online reembolsáveis. Reinicia o processamento para os reembolsar.",
 		"retryButton": "Repetir reembolsos",
+		"retrySuccessTitle": "Reembolsos reiniciados",
 		"retryNothingLeft": "Todos os pagamentos online reembolsáveis deste evento foram processados.",
 		"refundsStartedAt": "Reembolsos iniciados a {datetime}"
 	},

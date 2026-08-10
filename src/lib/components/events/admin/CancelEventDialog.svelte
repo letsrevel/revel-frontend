@@ -108,12 +108,17 @@
 			return response.data;
 		},
 		onSuccess: async (data) => {
-			toast.success(m['cancelEvent.successTitle'](), {
-				description: refundTickets
-					? m['cancelEvent.successWithRefunds']()
-					: m['cancelEvent.successDescription'](),
-				duration: 6000
-			});
+			// Retry mode only re-dispatches the refund sweep — "Event cancelled"
+			// would be misleading for an already-cancelled event.
+			toast.success(
+				retryRefunds ? m['cancelEvent.retrySuccessTitle']() : m['cancelEvent.successTitle'](),
+				{
+					description: refundTickets
+						? m['cancelEvent.successWithRefunds']()
+						: m['cancelEvent.successDescription'](),
+					duration: 6000
+				}
+			);
 			queryClient.invalidateQueries({ queryKey: ['events'] });
 			queryClient.invalidateQueries({ queryKey: ['event-cancellation-refund-preview', eventId] });
 			// Refresh the SvelteKit load functions so callers driven by
@@ -271,7 +276,8 @@
 
 		<DialogFooter class="gap-2">
 			<Button variant="outline" onclick={handleClose} disabled={cancelMutation.isPending}>
-				{m['cancelEvent.keepButton']()}
+				<!-- "Keep event" is nonsense once the event is already cancelled. -->
+				{retryRefunds ? m['refundTicket.close']() : m['cancelEvent.keepButton']()}
 			</Button>
 			{#if !nothingLeftToRefund}
 				<Button

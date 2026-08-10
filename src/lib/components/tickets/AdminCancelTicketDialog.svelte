@@ -165,6 +165,18 @@
 					<Loader2 class="h-5 w-5 animate-spin" aria-hidden="true" />
 					{m['refundTicket.loadingContext']()}
 				</div>
+			{:else if contextQuery.isError && !context}
+				<!-- Without the context the refund section can't render; say so
+				     (with retry) instead of silently offering a refundless cancel. -->
+				<Alert variant="destructive">
+					<AlertTriangle class="h-4 w-4" aria-hidden="true" />
+					<AlertDescription class="flex flex-wrap items-center justify-between gap-2">
+						{m['refundTicket.loadingError']()}
+						<Button size="sm" variant="outline" onclick={() => contextQuery.refetch()}>
+							{m['refundTicket.retry']()}
+						</Button>
+					</AlertDescription>
+				</Alert>
 			{:else if context && remaining > 0}
 				<div class="space-y-3 rounded-lg border border-border bg-muted/30 p-4">
 					<div class="flex items-start gap-2">
@@ -197,9 +209,14 @@
 								bind:value={refundAmount}
 								disabled={cancelMutation.isPending}
 								aria-invalid={!refundValid}
+								aria-describedby={!refundValid ? 'cancel-refund-amount-error' : undefined}
 							/>
 							{#if !refundValid}
-								<p class="mt-1 text-sm text-destructive" role="alert">
+								<p
+									id="cancel-refund-amount-error"
+									class="mt-1 text-sm text-destructive"
+									role="alert"
+								>
 									{m['refundTicket.amountInvalid']({
 										max: formatMoney(context.remaining_refundable, context.currency)
 									})}

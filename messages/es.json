@@ -2992,6 +2992,7 @@
 		"retryTitle": "Reintentar reembolsos",
 		"retryDescription": "Este evento está cancelado, pero algunas entradas aún tienen pagos online reembolsables. Reinicia el proceso de reembolso para procesarlos.",
 		"retryButton": "Reintentar reembolsos",
+		"retrySuccessTitle": "Reembolsos reiniciados",
 		"retryNothingLeft": "Todos los pagos online reembolsables de este evento se han procesado.",
 		"refundsStartedAt": "Reembolsos iniciados el {datetime}"
 	},

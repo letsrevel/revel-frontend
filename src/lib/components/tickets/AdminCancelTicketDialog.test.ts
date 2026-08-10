@@ -97,6 +97,19 @@ describe('AdminCancelTicketDialog', () => {
 		expect(eventadminticketsCancelTicket).not.toHaveBeenCalled();
 	});
 
+	it('shows an error with retry when the refund context fails to load', async () => {
+		eventadminticketsTicketRefundContext.mockResolvedValue({
+			data: undefined,
+			error: { detail: 'boom' },
+			response: { status: 500 }
+		});
+		renderDialog();
+		// The refund section can't render without the context — the dialog says
+		// so instead of silently offering a refundless cancel.
+		expect(await screen.findByText('Could not load the payment details.')).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
+	});
+
 	it('maps a 402 to the insufficient-balance copy and stays open', async () => {
 		const user = userEvent.setup();
 		eventadminticketsCancelTicket.mockResolvedValue({

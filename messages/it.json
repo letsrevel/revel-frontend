@@ -2992,6 +2992,7 @@
 		"retryTitle": "Riprova i rimborsi",
 		"retryDescription": "Questo evento è annullato, ma alcuni biglietti hanno ancora pagamenti online rimborsabili. Riavvia l'elaborazione per rimborsarli.",
 		"retryButton": "Riprova i rimborsi",
+		"retrySuccessTitle": "Rimborsi riavviati",
 		"retryNothingLeft": "Tutti i pagamenti online rimborsabili di questo evento sono stati elaborati.",
 		"refundsStartedAt": "Rimborsi avviati il {datetime}"
 	},

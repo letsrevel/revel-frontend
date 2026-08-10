@@ -40,6 +40,47 @@
 
 	type AmountMode = 'full' | 'policy' | 'custom';
 	let amountMode = $state<AmountMode>('full');
+
+	/**
+	 * WAI-ARIA radiogroup keyboard pattern: arrow keys cycle siblings (with
+	 * wrap), Home / End jump to the ends, and the selected radio owns
+	 * tabindex=0 (roving tabindex) so Tab enters/leaves the group as one stop.
+	 * Mirrors AnnouncementScheduleFields' handleRadiogroupKey.
+	 */
+	function handleRadiogroupKey(
+		event: KeyboardEvent,
+		items: readonly AmountMode[],
+		current: AmountMode,
+		select: (next: AmountMode) => void
+	): void {
+		const idx = items.indexOf(current);
+		let next: AmountMode | null = null;
+		switch (event.key) {
+			case 'ArrowRight':
+			case 'ArrowDown':
+				next = items[(idx + 1 + items.length) % items.length];
+				break;
+			case 'ArrowLeft':
+			case 'ArrowUp':
+				next = items[(idx - 1 + items.length) % items.length];
+				break;
+			case 'Home':
+				next = items[0];
+				break;
+			case 'End':
+				next = items[items.length - 1];
+				break;
+		}
+		if (next === null || next === current) return;
+		event.preventDefault();
+		select(next);
+		// Focus the newly-selected radio so keyboard context follows selection.
+		// requestAnimationFrame lets Svelte apply the new tabindex first.
+		requestAnimationFrame(() => {
+			const group = (event.currentTarget as HTMLElement | null)?.closest('[role="radiogroup"]');
+			group?.querySelector<HTMLElement>(`[role="radio"][data-rg-value="${next}"]`)?.focus();
+		});
+	}
 	let customAmount = $state('');
 	let reason = $state('');
 	let errorMessage = $state<string | null>(null);
@@ -105,6 +146,11 @@
 	});
 
 	const amountValid = $derived(selectedAmount > 0 && selectedAmount <= remaining);
+
+	// The radios present in the group, in visual order (policy is conditional).
+	const amountModes = $derived.by((): readonly AmountMode[] =>
+		policyAmount !== null ? ['full', 'policy', 'custom'] : ['full', 'custom']
+	);
 
 	const refundHistory = $derived.by((): TicketRefundSchema[] => {
 		if (!context?.refunds) return [];
@@ -258,15 +304,25 @@
 				{#if remaining > 0}
 					<!-- Quick-select chips -->
 					<fieldset>
-						<legend class="text-sm font-medium">{m['refundTicket.amountLabel']()}</legend>
-						<div class="mt-2 flex flex-wrap gap-2" role="radiogroup">
+						<legend id="refund-amount-legend" class="text-sm font-medium">
+							{m['refundTicket.amountLabel']()}
+						</legend>
+						<div
+							class="mt-2 flex flex-wrap gap-2"
+							role="radiogroup"
+							aria-labelledby="refund-amount-legend"
+						>
 							<Button
 								type="button"
 								size="sm"
 								variant={amountMode === 'full' ? 'default' : 'outline'}
 								role="radio"
 								aria-checked={amountMode === 'full'}
+								tabindex={amountMode === 'full' ? 0 : -1}
+								data-rg-value="full"
 								onclick={() => (amountMode = 'full')}
+								onkeydown={(e) =>
+									handleRadiogroupKey(e, amountModes, amountMode, (v) => (amountMode = v))}
 								disabled={refundMutation.isPending}
 							>
 								{m['refundTicket.quickFull']({
@@ -280,7 +336,11 @@
 									variant={amountMode === 'policy' ? 'default' : 'outline'}
 									role="radio"
 									aria-checked={amountMode === 'policy'}
+									tabindex={amountMode === 'policy' ? 0 : -1}
+									data-rg-value="policy"
 									onclick={() => (amountMode = 'policy')}
+									onkeydown={(e) =>
+										handleRadiogroupKey(e, amountModes, amountMode, (v) => (amountMode = v))}
 									disabled={refundMutation.isPending}
 								>
 									{m['refundTicket.quickPolicy']({
@@ -294,7 +354,11 @@
 								variant={amountMode === 'custom' ? 'default' : 'outline'}
 								role="radio"
 								aria-checked={amountMode === 'custom'}
+								tabindex={amountMode === 'custom' ? 0 : -1}
+								data-rg-value="custom"
 								onclick={() => (amountMode = 'custom')}
+								onkeydown={(e) =>
+									handleRadiogroupKey(e, amountModes, amountMode, (v) => (amountMode = v))}
 								disabled={refundMutation.isPending}
 							>
 								{m['refundTicket.quickCustom']()}
@@ -315,9 +379,16 @@
 									bind:value={customAmount}
 									disabled={refundMutation.isPending}
 									aria-invalid={customAmount !== '' && !amountValid}
+									aria-describedby={customAmount !== '' && !amountValid
+										? 'refund-custom-amount-error'
+										: undefined}
 								/>
 								{#if customAmount !== '' && !amountValid}
-									<p class="mt-1 text-sm text-destructive" role="alert">
+									<p
+										id="refund-custom-amount-error"
+										class="mt-1 text-sm text-destructive"
+										role="alert"
+									>
 										{m['refundTicket.amountInvalid']({
 											max: formatMoney(context.remaining_refundable, context.currency)
 										})}

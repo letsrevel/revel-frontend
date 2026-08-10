@@ -1,6 +1,7 @@
 import * as m from '$lib/paraglide/messages.js';
 import { formatMoney } from '$lib/utils/format';
 import { getUserDisplayName } from '$lib/utils/user-display';
+import type { AdminTicketSchema } from '$lib/api/generated/types.gen';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -96,7 +97,7 @@ export function canManageTicket(ticket: any): boolean {
  * cancellation applies to every payment method — online tickets take an
  * optional refund alongside the cancellation.
  */
-export function canAdminCancelTicket(ticket: any): boolean {
+export function canAdminCancelTicket(ticket: AdminTicketSchema): boolean {
 	return ticket.status !== 'cancelled';
 }
 
@@ -104,7 +105,7 @@ export function canAdminCancelTicket(ticket: any): boolean {
  * Check if the ticket's payment can be refunded in-app: online (Stripe)
  * payments with a recorded payment row. Refunding never cancels the ticket.
  */
-export function canRefundTicketPayment(ticket: any): boolean {
+export function canRefundTicketPayment(ticket: AdminTicketSchema): boolean {
 	return ticket.tier?.payment_method === 'online' && !!ticket.payment;
 }
 

@@ -2992,6 +2992,7 @@
 		"retryTitle": "Rückerstattungen erneut starten",
 		"retryDescription": "Diese Veranstaltung ist abgesagt, aber einige Tickets haben noch erstattungsfähige Online-Zahlungen. Starte den Erstattungslauf erneut, um sie zu verarbeiten.",
 		"retryButton": "Rückerstattungen erneut starten",
+		"retrySuccessTitle": "Rückerstattungen neu gestartet",
 		"retryNothingLeft": "Alle erstattungsfähigen Online-Zahlungen für diese Veranstaltung wurden verarbeitet.",
 		"refundsStartedAt": "Rückerstattungen gestartet am {datetime}"
 	},

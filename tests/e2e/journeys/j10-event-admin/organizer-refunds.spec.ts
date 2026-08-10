@@ -34,11 +34,14 @@ async function arrangePaidTicket(
 	});
 	const checkoutUrl = await startOnlineCheckout(buyer, event.id, tier.id);
 	const context = await browser.newContext();
-	await authenticateContext(context, buyer);
-	const buyerPage = await context.newPage();
-	await buyerPage.goto(checkoutUrl);
-	await completeStripeCheckout(buyerPage);
-	await context.close();
+	try {
+		await authenticateContext(context, buyer);
+		const buyerPage = await context.newPage();
+		await buyerPage.goto(checkoutUrl);
+		await completeStripeCheckout(buyerPage);
+	} finally {
+		await context.close();
+	}
 	return { event, buyer, tier };
 }
 
@@ -82,7 +85,9 @@ test.describe('J10 organizer refunds @p2', () => {
 		await expect(refundDialog.getByRole('radio', { name: /Full remaining/ })).toBeVisible();
 
 		await refundDialog.getByRole('radio', { name: 'Custom amount' }).click();
-		await refundDialog.getByLabel('Refund amount').fill('5.00');
+		// spinbutton role, not getByLabel: the radiogroup shares the
+		// "Refund amount" accessible name via its legend.
+		await refundDialog.getByRole('spinbutton', { name: 'Refund amount' }).fill('5.00');
 		await refundDialog.getByLabel('Reason (optional)').fill('E2E partial refund');
 		await refundDialog.getByRole('button', { name: /^Refund .*5[.,]00/ }).click();
 

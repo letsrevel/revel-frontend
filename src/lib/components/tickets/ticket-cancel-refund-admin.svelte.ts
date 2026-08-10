@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { createMutation } from '@tanstack/svelte-query';
 import { invalidateAll } from '$app/navigation';
 import { eventadminticketsCancelTicket } from '$lib/api';
@@ -37,13 +38,18 @@ export function createTicketCancelRefundAdmin(opts: Options) {
 	// The non-online cancel path: no body, fired from the generic ConfirmDialog.
 	const cancelTicketMutation = createMutation(() => ({
 		mutationFn: async (ticketId: string) => {
+			// Never send a literal "Bearer null" during the auth bootstrap window.
+			const accessToken = opts.getAccessToken();
+			if (!accessToken) {
+				throw new Error(m['adminCancelTicket.errorGeneric']());
+			}
 			const response = await eventadminticketsCancelTicket({
 				path: { event_id: opts.getEventId(), ticket_id: ticketId },
-				headers: { Authorization: `Bearer ${opts.getAccessToken()}` }
+				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
 			if (response.error) {
-				throw new Error('Failed to cancel ticket');
+				throw new Error(m['adminCancelTicket.errorGeneric']());
 			}
 
 			return response.data;
