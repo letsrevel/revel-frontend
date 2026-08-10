@@ -7,6 +7,7 @@
 	import AddToWalletButton from './AddToWalletButton.svelte';
 	import AddToGoogleWalletButton from './AddToGoogleWalletButton.svelte';
 	import DownloadPdfButton from './DownloadPdfButton.svelte';
+	import PendingDownloadsNotice from './PendingDownloadsNotice.svelte';
 	import CancelTicketDialog from './CancelTicketDialog.svelte';
 	import RenameTicketHolderDialog from './RenameTicketHolderDialog.svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
@@ -601,6 +602,13 @@
 							</div>
 						{/if}
 					</div>
+					<!-- Directly below the downloads (the box's last content): pending
+					     tickets keep their files for the pay-at-the-door flow, but must
+					     be labeled. Sits on DialogContent (--background) — the surface
+					     the audited "MyTicketModal warning banner" pair covers. -->
+					{#if ticket.status === 'pending'}
+						<PendingDownloadsNotice class="mt-2" />
+					{/if}
 				{/if}
 
 				<!-- Checked In Info. bg-info/10 + text-info mirrors ToneTile's audited

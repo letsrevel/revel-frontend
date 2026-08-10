@@ -8298,6 +8298,7 @@
 	"addToGoogleWallet.label": "Aggiungi a Google Wallet",
 	"addToGoogleWallet.notConfigured": "Google Wallet non è configurato per questo evento",
 	"addToGoogleWallet.openFailed": "Impossibile aprire Google Wallet",
+	"ticketDownloads.pendingNotice": "In attesa di conferma del pagamento — i download e i pass wallet saranno validi solo dopo la conferma del pagamento.",
 	"checkInDialog.pwycOutsideRange": "Questo importo è fuori dall'intervallo suggerito ({min} – {max})",
 	"checkInDialog.pwycBelowMin": "Questo importo è inferiore al minimo suggerito ({min})",
 	"checkInDialog.suggestedRange": "Intervallo suggerito: {min} – {max}",

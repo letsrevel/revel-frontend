@@ -8,6 +8,7 @@
 	import MyTicketModal from './MyTicketModal.svelte';
 	import AddToWalletButton from './AddToWalletButton.svelte';
 	import AddToGoogleWalletButton from './AddToGoogleWalletButton.svelte';
+	import PendingDownloadsNotice from './PendingDownloadsNotice.svelte';
 	import { Calendar, MapPin, Ticket, CalendarDays } from '@lucide/svelte';
 	import { onMount } from 'svelte';
 	import { detectWalletPlatform } from '$lib/utils/platform';
@@ -190,6 +191,12 @@
 
 				<!-- Add to Wallet (hide for cancelled tickets) -->
 				{#if ticket.id && ticket.status !== 'cancelled' && (ticket.apple_pass_available || ticket.google_pass_available)}
+					<!-- Pending tickets keep their wallet passes (pay-at-the-door flow)
+					     but must be labeled. Sits on the Card (--card) — the surface the
+					     audited "MyTicket warning banner" pair covers. -->
+					{#if ticket.status === 'pending'}
+						<PendingDownloadsNotice />
+					{/if}
 					{#snippet googleWalletButton()}
 						{#if ticket.google_pass_available && ticket.id}
 							<AddToGoogleWalletButton id={ticket.id} kind="ticket" />

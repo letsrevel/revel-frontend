@@ -259,6 +259,17 @@
 					</td>
 					<td class="px-4 py-3">
 						<div class="flex justify-end gap-2">
+							{#if canConfirmPayment(ticket)}
+								<Button
+									size="sm"
+									variant="default"
+									onclick={() => onConfirmPayment(ticket)}
+									disabled={confirmPaymentPending}
+								>
+									<Check class="h-4 w-4" aria-hidden="true" />
+									{m['eventTicketsAdmin.actionConfirmPayment']()}
+								</Button>
+							{/if}
 							{#if canCheckIn(ticket)}
 								<Button
 									size="sm"
@@ -304,15 +315,6 @@
 									{/snippet}
 								</DropdownMenu.Trigger>
 								<DropdownMenu.Content align="end">
-									{#if canConfirmPayment(ticket)}
-										<DropdownMenu.Item
-											onclick={() => onConfirmPayment(ticket)}
-											disabled={confirmPaymentPending}
-										>
-											<Check class="mr-2 h-4 w-4" aria-hidden="true" />
-											{m['eventTicketsAdmin.actionConfirmPayment']()}
-										</DropdownMenu.Item>
-									{/if}
 									{#if !ticket.membership && ticket.user?.id}
 										<DropdownMenu.Item
 											onclick={() => onMakeMember(ticket)}
