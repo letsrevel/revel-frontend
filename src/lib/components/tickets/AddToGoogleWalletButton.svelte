@@ -5,6 +5,7 @@
 		ticketwalletGoogleWalletSaveLink
 	} from '$lib/api/generated/sdk.gen';
 	import { getLocale } from '$lib/paraglide/runtime.js';
+	import { Loader2 } from '@lucide/svelte';
 
 	interface Props {
 		/** Ticket id (kind 'ticket') or held series-pass id (kind 'series-pass'). */
@@ -22,7 +23,7 @@
 	// guidelines — never restyled); one variant per app locale in static/wallet/.
 	const badgeSrc = $derived(`/wallet/google-wallet-badge-${getLocale()}.svg`);
 
-	async function openSaveLink() {
+	async function openSaveLink(): Promise<void> {
 		if (isOpening) return;
 		isOpening = true;
 		error = null;
@@ -81,13 +82,20 @@
 	disabled={isOpening}
 	aria-busy={isOpening}
 	aria-label={m['addToGoogleWallet.label']()}
-	class="inline-flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-progress {className}"
+	class="inline-flex items-center justify-center gap-2 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-progress {className}"
 >
+	{#if isOpening}
+		<!-- Adjacent spinner: visible busy feedback on touch devices without
+		     restyling or obstructing the official badge artwork. -->
+		<Loader2 class="h-5 w-5 animate-spin" aria-hidden="true" />
+	{/if}
 	<img src={badgeSrc} alt="" class="h-12 w-auto" draggable="false" />
 </button>
 
 {#if error}
-	<p class="mt-2 text-sm text-destructive" role="alert">
+	<!-- basis-full: the call sites place this component in flex-wrap rows, so
+	     the error must claim its own row instead of squeezing beside a badge. -->
+	<p class="w-full basis-full text-center text-sm text-destructive" role="alert">
 		{error}
 	</p>
 {/if}

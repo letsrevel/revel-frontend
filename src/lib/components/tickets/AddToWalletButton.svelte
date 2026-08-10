@@ -5,6 +5,7 @@
 		ticketwalletDownloadApplePass
 	} from '$lib/api/generated/sdk.gen';
 	import { getLocale } from '$lib/paraglide/runtime.js';
+	import { Loader2 } from '@lucide/svelte';
 
 	interface Props {
 		/** Ticket id (kind 'ticket') or held series-pass id (kind 'series-pass'). */
@@ -26,7 +27,7 @@
 	// developer.apple.com/wallet/add-to-apple-wallet-guidelines/).
 	const badgeSrc = $derived(`/wallet/apple-wallet-badge-${getLocale()}.svg`);
 
-	async function downloadApplePass() {
+	async function downloadApplePass(): Promise<void> {
 		if (isDownloading) return;
 		isDownloading = true;
 		error = null;
@@ -89,13 +90,20 @@
 	disabled={isDownloading}
 	aria-busy={isDownloading}
 	aria-label={m['addToWallet.addToAppleWallet']()}
-	class="inline-flex items-center justify-center rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-progress {className}"
+	class="inline-flex items-center justify-center gap-2 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-progress {className}"
 >
+	{#if isDownloading}
+		<!-- Adjacent spinner: visible busy feedback on touch devices without
+		     restyling or obstructing the official badge artwork. -->
+		<Loader2 class="h-5 w-5 animate-spin" aria-hidden="true" />
+	{/if}
 	<img src={badgeSrc} alt="" class="h-12 w-auto" draggable="false" />
 </button>
 
 {#if error}
-	<p class="mt-2 text-sm text-destructive" role="alert">
+	<!-- basis-full: the call sites place this component in flex-wrap rows, so
+	     the error must claim its own row instead of squeezing beside a badge. -->
+	<p class="w-full basis-full text-center text-sm text-destructive" role="alert">
 		{error}
 	</p>
 {/if}

@@ -12,14 +12,20 @@ vi.mock('$lib/api/generated/sdk.gen', () => ({
 
 const SAVE_URL = 'https://pay.google.com/gp/v/save/test-jwt';
 
-function okResult() {
+interface MockResult {
+	data?: { save_url: string };
+	error?: object;
+	response: { ok: boolean; status: number };
+}
+
+function okResult(): MockResult {
 	return {
 		data: { save_url: SAVE_URL },
 		response: { ok: true, status: 200 }
 	};
 }
 
-function errorResult(status: number) {
+function errorResult(status: number): MockResult {
 	return {
 		data: undefined,
 		error: {},

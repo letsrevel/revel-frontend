@@ -30,7 +30,7 @@
 			.substring(0, 30)
 	);
 
-	function saveBlob(blob: Blob, filename: string) {
+	function saveBlob(blob: Blob, filename: string): void {
 		const url = window.URL.createObjectURL(blob);
 		const link = document.createElement('a');
 		link.href = url;
@@ -41,7 +41,7 @@
 		window.URL.revokeObjectURL(url);
 	}
 
-	async function downloadPdf() {
+	async function downloadPdf(): Promise<void> {
 		if (isDownloadingPdf) return;
 		isDownloadingPdf = true;
 		try {

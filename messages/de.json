@@ -401,7 +401,6 @@
 		"loginToGetTickets": "Anmelden für Tickets"
 	},
 	"addToWallet.addToAppleWallet": "Zu Apple Wallet hinzufügen",
-	"addToWallet.downloading": "Wird heruntergeladen...",
 	"downloadPdf.download": "PDF herunterladen",
 	"downloadPdf.downloading": "Wird heruntergeladen...",
 	"adminButton": {
@@ -9120,7 +9119,6 @@
 		"qrHint": "Zeige diesen QR-Code am Eingang jedes abgedeckten Events.",
 		"pendingPaymentNote": "Zahlung ausstehend — die Organisation bestätigt sie vor Ort.",
 		"downloadPdf": "PDF herunterladen",
-		"addToWallet": "Zu Apple Wallet hinzufügen",
 		"pdfDownloadFailed": "Pass-PDF konnte nicht heruntergeladen werden",
 		"walletDownloadFailed": "Wallet-Pass konnte nicht heruntergeladen werden",
 		"loadError": "Deine Pässe konnten nicht geladen werden. Bitte versuche es erneut.",

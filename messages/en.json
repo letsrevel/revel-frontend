@@ -401,7 +401,6 @@
 		"loginToGetTickets": "Login to Get Tickets"
 	},
 	"addToWallet.addToAppleWallet": "Add to Apple Wallet",
-	"addToWallet.downloading": "Downloading...",
 	"downloadPdf.download": "Download PDF",
 	"downloadPdf.downloading": "Downloading...",
 	"adminButton": {
@@ -9120,7 +9119,6 @@
 		"qrHint": "Show this QR code at the entrance of any covered event.",
 		"pendingPaymentNote": "Payment pending — the organizer will confirm it at the venue.",
 		"downloadPdf": "Download PDF",
-		"addToWallet": "Add to Apple Wallet",
 		"pdfDownloadFailed": "Failed to download the pass PDF",
 		"walletDownloadFailed": "Failed to download the wallet pass",
 		"loadError": "Couldn't load your passes. Please try again.",

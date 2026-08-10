@@ -10,7 +10,11 @@ vi.mock('$lib/api/generated/sdk.gen', () => ({
 	seriespassDownloadSeriesPassPkpass
 }));
 
-function okResult() {
+interface MockResult {
+	response: { ok: boolean; status: number; blob?: () => Promise<Blob> };
+}
+
+function okResult(): MockResult {
 	return {
 		response: {
 			ok: true,
@@ -20,7 +24,7 @@ function okResult() {
 	};
 }
 
-function errorResult(status: number) {
+function errorResult(status: number): MockResult {
 	return { response: { ok: false, status } };
 }
 

@@ -287,7 +287,6 @@
 		"loginToGetTickets": "Connecte-toi pour obtenir des billets"
 	},
 	"addToWallet.addToAppleWallet": "Ajouter à Apple Wallet",
-	"addToWallet.downloading": "Téléchargement...",
 	"downloadPdf.download": "Télécharger le PDF",
 	"downloadPdf.downloading": "Téléchargement...",
 	"adminButton": {
@@ -9120,7 +9119,6 @@
 		"qrHint": "Présente ce code QR à l'entrée de chaque événement couvert.",
 		"pendingPaymentNote": "Paiement en attente — l'organisation le confirmera sur place.",
 		"downloadPdf": "Télécharger le PDF",
-		"addToWallet": "Ajouter à Apple Wallet",
 		"pdfDownloadFailed": "Échec du téléchargement du PDF du pass",
 		"walletDownloadFailed": "Échec du téléchargement du pass wallet",
 		"loadError": "Impossible de charger tes pass. Réessaie.",
