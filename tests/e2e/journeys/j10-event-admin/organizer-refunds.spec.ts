@@ -70,13 +70,8 @@ test.describe('J10 organizer refunds @p2', () => {
 			await expect(activeRow).toBeVisible({ timeout: 5_000 });
 		}).toPass({ timeout: 120_000 });
 
-		// Refund €5 of €20 via the row's actions menu.
-		await page
-			.getByRole('button', { name: `More actions for ${buyerName}` })
-			.filter({ visible: true })
-			.first()
-			.click();
-		await page.getByRole('menuitem', { name: 'Refund payment' }).click();
+		// Refund €5 of €20 via the row's inline Refund action.
+		await activeRow.getByRole('button', { name: 'Refund payment' }).first().click();
 
 		const refundDialog = page.getByRole('dialog', { name: 'Refund payment' });
 		await expect(refundDialog).toBeVisible({ timeout: 15_000 });
@@ -108,12 +103,7 @@ test.describe('J10 organizer refunds @p2', () => {
 		}).toPass({ timeout: 90_000 });
 
 		// The refund history in the dialog records the attempt.
-		await page
-			.getByRole('button', { name: `More actions for ${buyerName}` })
-			.filter({ visible: true })
-			.first()
-			.click();
-		await page.getByRole('menuitem', { name: 'Refund payment' }).click();
+		await refundBadgeRow.getByRole('button', { name: 'Refund payment' }).first().click();
 		const reopened = page.getByRole('dialog', { name: 'Refund payment' });
 		await expect(reopened.getByText('Refund history')).toBeVisible({ timeout: 15_000 });
 		await expect(reopened.getByText(/5[.,]00/).first()).toBeVisible();
