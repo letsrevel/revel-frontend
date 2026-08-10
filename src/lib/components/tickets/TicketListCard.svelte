@@ -189,19 +189,23 @@
 				{/if}
 
 				<!-- Add to Wallet (hide for cancelled tickets) -->
-				{#snippet googleWalletButton()}
-					{#if ticket.google_pass_available && ticket.id && ticket.status !== 'cancelled'}
-						<AddToGoogleWalletButton id={ticket.id} kind="ticket" class="self-center" />
-					{/if}
-				{/snippet}
-				{#if googleWalletFirst}
-					{@render googleWalletButton()}
-				{/if}
-				{#if ticket.apple_pass_available && ticket.id && ticket.status !== 'cancelled'}
-					<AddToWalletButton id={ticket.id} name={ticket.event.name} class="self-center" />
-				{/if}
-				{#if !googleWalletFirst}
-					{@render googleWalletButton()}
+				{#if ticket.id && ticket.status !== 'cancelled' && (ticket.apple_pass_available || ticket.google_pass_available)}
+					{#snippet googleWalletButton()}
+						{#if ticket.google_pass_available && ticket.id}
+							<AddToGoogleWalletButton id={ticket.id} kind="ticket" />
+						{/if}
+					{/snippet}
+					<div class="flex flex-wrap items-center justify-center gap-2">
+						{#if googleWalletFirst}
+							{@render googleWalletButton()}
+						{/if}
+						{#if ticket.apple_pass_available}
+							<AddToWalletButton id={ticket.id} name={ticket.event.name} />
+						{/if}
+						{#if !googleWalletFirst}
+							{@render googleWalletButton()}
+						{/if}
+					</div>
 				{/if}
 			</div>
 		</div>

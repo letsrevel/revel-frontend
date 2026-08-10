@@ -576,19 +576,23 @@
 								{#if ticket.id}
 									<DownloadPdfButton ticketId={ticket.id} pdfUrl={ticket.pdf_url} />
 								{/if}
-								{#snippet googleWalletButton()}
-									{#if ticket.google_pass_available && ticket.id}
-										<AddToGoogleWalletButton id={ticket.id} kind="ticket" class="self-center" />
-									{/if}
-								{/snippet}
-								{#if googleWalletFirst}
-									{@render googleWalletButton()}
-								{/if}
-								{#if ticket.apple_pass_available && ticket.id}
-									<AddToWalletButton id={ticket.id} name={eventName} class="self-center" />
-								{/if}
-								{#if !googleWalletFirst}
-									{@render googleWalletButton()}
+								{#if ticket.id && (ticket.apple_pass_available || ticket.google_pass_available)}
+									{#snippet googleWalletButton()}
+										{#if ticket.google_pass_available && ticket.id}
+											<AddToGoogleWalletButton id={ticket.id} kind="ticket" />
+										{/if}
+									{/snippet}
+									<div class="flex flex-wrap items-center justify-center gap-2">
+										{#if googleWalletFirst}
+											{@render googleWalletButton()}
+										{/if}
+										{#if ticket.apple_pass_available}
+											<AddToWalletButton id={ticket.id} name={eventName} />
+										{/if}
+										{#if !googleWalletFirst}
+											{@render googleWalletButton()}
+										{/if}
+									</div>
 								{/if}
 							</div>
 						{:else}

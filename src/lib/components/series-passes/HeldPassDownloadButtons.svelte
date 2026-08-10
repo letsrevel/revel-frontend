@@ -79,13 +79,15 @@
 		{m['seriesPass.downloadPdf']()}
 	</button>
 	{#snippet googleWalletButton()}
-		<AddToGoogleWalletButton id={heldPassId} kind="series-pass" class="self-center" />
+		<AddToGoogleWalletButton id={heldPassId} kind="series-pass" />
 	{/snippet}
-	{#if googleWalletFirst}
-		{@render googleWalletButton()}
-	{/if}
-	<AddToWalletButton id={heldPassId} kind="series-pass" name={passName} class="self-center" />
-	{#if !googleWalletFirst}
-		{@render googleWalletButton()}
-	{/if}
+	<div class="flex flex-wrap items-center justify-center gap-2">
+		{#if googleWalletFirst}
+			{@render googleWalletButton()}
+		{/if}
+		<AddToWalletButton id={heldPassId} kind="series-pass" name={passName} />
+		{#if !googleWalletFirst}
+			{@render googleWalletButton()}
+		{/if}
+	</div>
 </div>

@@ -4,6 +4,7 @@
 		seriespassDownloadSeriesPassPkpass,
 		ticketwalletDownloadApplePass
 	} from '$lib/api/generated/sdk.gen';
+	import { getLocale } from '$lib/paraglide/runtime.js';
 
 	interface Props {
 		/** Ticket id (kind 'ticket') or held series-pass id (kind 'series-pass'). */
@@ -19,12 +20,11 @@
 	let isDownloading = $state(false);
 	let error = $state<string | null>(null);
 
-	// Official "Add to Apple Wallet" badge artwork (fixed per Apple's Add to
-	// Apple Wallet guidelines — never restyled). Only the US-English badge is
-	// freely distributable; Apple's localized variants require a signed-in
-	// developer download — drop them in as apple-wallet-badge-<locale>.svg and
-	// switch this to a getLocale() lookup when available.
-	const badgeSrc = '/wallet/apple-wallet-badge-en.svg';
+	// Official localized "Add to Apple Wallet" badge artwork (fixed per
+	// Apple's Add to Apple Wallet guidelines — never restyled); one variant
+	// per app locale in static/wallet/, from Apple's badge pack (45 locales,
+	// developer.apple.com/wallet/add-to-apple-wallet-guidelines/).
+	const badgeSrc = $derived(`/wallet/apple-wallet-badge-${getLocale()}.svg`);
 
 	async function downloadApplePass() {
 		if (isDownloading) return;
