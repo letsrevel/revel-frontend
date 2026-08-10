@@ -178,6 +178,8 @@ describe('buildRecurringTemplateCreateData', () => {
 			can_attend_without_login: true,
 			require_ticket_names: false,
 			requires_full_profile: true,
+			is_virtual: false,
+			vat_country_code: '',
 			venue_id: 'venue-1',
 			location_maps_url: 'https://maps.example/x',
 			location_maps_embed: null,
@@ -285,6 +287,34 @@ describe('require_ticket_names write semantics', () => {
 
 		it(`${label}: preserves an explicit false`, () => {
 			expect(build({ require_ticket_names: false }).require_ticket_names).toBe(false);
+		});
+	}
+});
+
+// #830 (BE #869). Event save is a full-replacement PUT and both place-of-supply
+// fields have non-null backend defaults (`false` / `""`): an update builder
+// that omits them silently un-virtualizes the event and clears the VAT-country
+// override on every unrelated save.
+describe('place-of-supply write semantics (is_virtual / vat_country_code)', () => {
+	const builders = {
+		'wizard step 1': (f: EventFormPayloadData) => buildWizardStep1UpdateData(f),
+		'wizard step 2': (f: EventFormPayloadData) => buildWizardStep2UpdateData(f),
+		editor: (f: EventFormPayloadData) => buildEditorUpdateData(f, START_ISO),
+		'recurring template': (f: EventFormPayloadData) =>
+			buildRecurringTemplateCreateData(f, NAME, START_ISO, CITY_ID)
+	};
+
+	for (const [label, build] of Object.entries(builders)) {
+		it(`${label}: sends explicit defaults when the form never set them`, () => {
+			const payload = build({});
+			expect(payload.is_virtual).toBe(false);
+			expect(payload.vat_country_code).toBe('');
+		});
+
+		it(`${label}: round-trips a virtual event with a VAT-country override`, () => {
+			const payload = build({ is_virtual: true, vat_country_code: 'DE' });
+			expect(payload.is_virtual).toBe(true);
+			expect(payload.vat_country_code).toBe('DE');
 		});
 	}
 });

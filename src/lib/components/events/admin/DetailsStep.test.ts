@@ -165,3 +165,91 @@ describe('DetailsStep', () => {
 		expect(document.activeElement).toBe(descriptionTextarea);
 	});
 });
+
+// #830 (BE #869): place-of-supply fields — virtual toggle + VAT-country
+// override — live in the Taxes section; the mismatch warning is server-computed
+// (EventDetailSchema.vat_country_mismatch) and passed down as a prop.
+describe('DetailsStep — Taxes section', () => {
+	let queryClient: QueryClient;
+
+	beforeEach(() => {
+		queryClient = new QueryClient({
+			defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
+		});
+	});
+
+	const baseProps = {
+		formData: {
+			name: 'Test Event',
+			start: '2025-12-01T18:00:00',
+			city_id: 1,
+			visibility: 'public' as const,
+			event_type: 'public' as const,
+			requires_ticket: false
+		},
+		eventSeries: [],
+		questionnaires: [],
+		onUpdate: vi.fn(),
+		onUpdateImages: vi.fn()
+	};
+
+	function renderStep(props: Record<string, unknown> = {}) {
+		return render(QueryClientTestWrapper, {
+			props: {
+				client: queryClient,
+				component: DetailsStep,
+				componentProps: { ...baseProps, ...props }
+			}
+		});
+	}
+
+	it('renders the Taxes section (collapsed by default)', () => {
+		renderStep();
+		const toggle = screen.getByTestId('tax-section-toggle');
+		expect(toggle).toBeInTheDocument();
+		expect(toggle).toHaveAttribute('aria-expanded', 'false');
+	});
+
+	it('opens the section and calls onUpdate when toggling the virtual flag', async () => {
+		const onUpdate = vi.fn();
+		renderStep({ onUpdate });
+
+		await fireEvent.click(screen.getByTestId('tax-section-toggle'));
+		const checkbox = screen.getByRole('checkbox', { name: /Virtual event/i });
+		expect(checkbox).not.toBeChecked();
+
+		await fireEvent.click(checkbox);
+		expect(onUpdate).toHaveBeenCalledWith({ is_virtual: true });
+	});
+
+	it('auto-opens the section when the event is already virtual', () => {
+		renderStep({ formData: { ...baseProps.formData, is_virtual: true } });
+		expect(screen.getByTestId('tax-section-toggle')).toHaveAttribute('aria-expanded', 'true');
+		expect(screen.getByRole('checkbox', { name: /Virtual event/i })).toBeChecked();
+	});
+
+	it('uppercases and forwards the VAT-country override', async () => {
+		const onUpdate = vi.fn();
+		renderStep({ onUpdate, formData: { ...baseProps.formData, vat_country_code: '' } });
+
+		await fireEvent.click(screen.getByTestId('tax-section-toggle'));
+		const input = screen.getByLabelText(/VAT country override/i);
+		await fireEvent.input(input, { target: { value: 'de' } });
+		expect(onUpdate).toHaveBeenCalledWith({ vat_country_code: 'DE' });
+	});
+
+	it('shows the server-computed mismatch warning with the effective country', () => {
+		renderStep({ effectiveVatCountry: 'DE', vatCountryMismatch: true });
+		// Auto-opened: an active warning must not hide behind a collapsed section.
+		expect(screen.getByTestId('tax-section-toggle')).toHaveAttribute('aria-expanded', 'true');
+		expect(screen.getByText("VAT country differs from your organization's")).toBeInTheDocument();
+		expect(screen.getByText(/taxed in DE/i)).toBeInTheDocument();
+	});
+
+	it('shows no warning when the flag is false', async () => {
+		renderStep({ effectiveVatCountry: 'AT', vatCountryMismatch: false });
+		await fireEvent.click(screen.getByTestId('tax-section-toggle'));
+		expect(screen.getByText(/Effective VAT country: AT/i)).toBeInTheDocument();
+		expect(screen.queryByText(/differs from your organization/i)).not.toBeInTheDocument();
+	});
+});

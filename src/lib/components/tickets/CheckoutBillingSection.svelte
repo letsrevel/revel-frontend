@@ -388,12 +388,17 @@
 
 					<!-- Preview data -->
 					{#if hasVatPreviewData && vatPreview}
-						<!-- VAT ID validation status -->
+						<!-- VAT ID validation status. Raw emerald/amber swept to semantic
+						     tokens (#829): success as text, and the warning follows the
+						     highlight-foreground-light / highlight-dark flip the tone
+						     vocabulary uses for compact text-only warnings (amber itself
+						     fails on a light surface). Icon + words carry the meaning,
+						     never colour alone. -->
 						{#if vatPreview.vat_id_valid !== null && vatPreview.vat_id_valid !== undefined}
 							<div
 								class="flex items-center gap-1.5 text-sm {vatIdValid
-									? 'text-emerald-600 dark:text-emerald-400'
-									: 'text-amber-600 dark:text-amber-400'}"
+									? 'text-success'
+									: 'text-highlight-foreground dark:text-highlight'}"
 							>
 								{#if vatIdValid}
 									<Check class="h-3 w-3" aria-hidden="true" />
@@ -405,13 +410,24 @@
 							</div>
 						{/if}
 
-						<!-- Reverse charge banner -->
+						<!-- Reverse charge banner. Only ever true for VIRTUAL events since
+						     BE #868/#869 (physical admission is a domestic gross supply) —
+						     the backend is the single source of truth, no client gating.
+						     bg-info/10 + text-info over the dialog's --background is the
+						     audited "MyTicketModal / DemoBanner info banner" recipe
+						     (≥4.5 both modes, COMPOSITED_PAIRS). -->
 						{#if vatPreview.reverse_charge}
-							<div
-								class="rounded bg-blue-50 px-2 py-1.5 text-sm text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
-								role="status"
-							>
+							<div class="rounded bg-info/10 px-2 py-1.5 text-sm text-info" role="status">
 								{m['checkout.billing.reverseCharge']()}
+							</div>
+						{/if}
+
+						<!-- Virtual EU B2C interim treatment (#830/BE #869): charged at the
+						     organizer's rate; the buyer's country's rate may legally apply
+						     via OSS. Same audited info recipe as above. -->
+						{#if vatPreview.virtual_b2c_disclaimer}
+							<div class="rounded bg-info/10 px-2 py-1.5 text-sm text-info" role="status">
+								{m['checkout.billing.virtualB2cDisclaimer']()}
 							</div>
 						{/if}
 

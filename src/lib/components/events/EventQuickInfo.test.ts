@@ -249,3 +249,59 @@ describe('EventQuickInfo — capacity disclosure', () => {
 		expect(screen.getByText(/50 \/ 50 spots taken/i)).toBeInTheDocument();
 	});
 });
+
+// #830 (BE #869): virtual attendance is a per-event fact buyers see up front.
+describe('EventQuickInfo — virtual events', () => {
+	it('shows the virtual-event row when is_virtual is set', () => {
+		const event = { ...mockEvent, is_virtual: true };
+		render(EventQuickInfo, { props: { event } });
+		expect(screen.getByText(/Virtual event/i)).toBeInTheDocument();
+	});
+
+	it('omits the virtual-event row for physical events', () => {
+		render(EventQuickInfo, { props: { event: mockEvent } });
+		expect(screen.queryByText(/Virtual event/i)).not.toBeInTheDocument();
+	});
+
+	it('renders a URL address as a clickable join link and keeps it out of the location line', () => {
+		const event = { ...mockEvent, is_virtual: true, address: 'https://meet.example.com/room/42' };
+		render(EventQuickInfo, { props: { event } });
+		const link = screen.getByRole('link', { name: /Open event link/i });
+		expect(link).toHaveAttribute('href', 'https://meet.example.com/room/42');
+		expect(link).toHaveAttribute('target', '_blank');
+		expect(link).toHaveAttribute('rel', expect.stringContaining('noopener'));
+		// The location line falls back to the city — never the raw URL as text.
+		expect(screen.getByText('San Francisco, USA')).toBeInTheDocument();
+	});
+
+	it('keeps a plain-text address as location and renders no join link', () => {
+		const event = { ...mockEvent, is_virtual: true, address: 'Backstage entrance, Hall 2' };
+		render(EventQuickInfo, { props: { event } });
+		expect(screen.queryByRole('link', { name: /Open event link/i })).not.toBeInTheDocument();
+		expect(screen.getByText('Backstage entrance, Hall 2')).toBeInTheDocument();
+	});
+
+	it('never linkifies a javascript: address', () => {
+		const event = { ...mockEvent, is_virtual: true, address: 'javascript:alert(1)' };
+		render(EventQuickInfo, { props: { event } });
+		expect(screen.queryByRole('link', { name: /Open event link/i })).not.toBeInTheDocument();
+	});
+
+	it('drops the location row when only a join link remains', () => {
+		const event = {
+			...mockEvent,
+			is_virtual: true,
+			city: null,
+			address: 'https://meet.example.com/room/42'
+		};
+		render(EventQuickInfo, { props: { event } });
+		expect(screen.getByRole('link', { name: /Open event link/i })).toBeInTheDocument();
+		expect(screen.queryByText(/Location TBD/i)).not.toBeInTheDocument();
+	});
+
+	it('does not linkify a URL address on a physical event', () => {
+		const event = { ...mockEvent, is_virtual: false, address: 'https://example.com/not-a-place' };
+		render(EventQuickInfo, { props: { event } });
+		expect(screen.queryByRole('link', { name: /Open event link/i })).not.toBeInTheDocument();
+	});
+});

@@ -134,6 +134,8 @@
 		// Backend default is `true`, so seed with `?? true` — not `|| false`.
 		require_ticket_names: existingEvent?.require_ticket_names ?? true,
 		requires_full_profile: existingEvent?.requires_full_profile || false,
+		is_virtual: existingEvent?.is_virtual || false,
+		vat_country_code: existingEvent?.vat_country_code || '',
 		event_series_id: existingEvent?.event_series?.id || null,
 		venue_id: existingEvent?.venue?.id || null,
 		tags: existingEvent?.tags || [],
@@ -578,6 +580,8 @@
 				{selectedVenue}
 				{validationErrors}
 				{isEditMode}
+				effectiveVatCountry={existingEvent?.effective_vat_country || ''}
+				vatCountryMismatch={existingEvent?.vat_country_mismatch || false}
 				onCitySelect={handleCitySelect}
 				onVenueSelect={handleVenueSelect}
 				onUpdate={updateFormData}

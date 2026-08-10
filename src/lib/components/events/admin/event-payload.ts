@@ -136,6 +136,11 @@ export function buildRecurringTemplateCreateData(
 		can_attend_without_login: formData.can_attend_without_login ?? false,
 		require_ticket_names: formData.require_ticket_names ?? true,
 		requires_full_profile: formData.requires_full_profile ?? false,
+		// #830 (BE #869): full-replacement PUT + non-null backend defaults — omit
+		// these and every unrelated save un-virtualizes the event / clears the
+		// VAT-country override.
+		is_virtual: formData.is_virtual ?? false,
+		vat_country_code: formData.vat_country_code ?? '',
 		venue_id: formData.venue_id ?? null,
 		location_maps_url: formData.location_maps_url ?? null,
 		location_maps_embed: formData.location_maps_embed ?? null,
@@ -178,6 +183,11 @@ export function buildWizardStep1UpdateData(
 		// form field does not silently opt the event out of ticket-holder names.
 		require_ticket_names: formData.require_ticket_names ?? true,
 		requires_full_profile: formData.requires_full_profile || false,
+		// #830 (BE #869): full-replacement PUT + non-null backend defaults — omit
+		// these and every unrelated save un-virtualizes the event / clears the
+		// VAT-country override.
+		is_virtual: formData.is_virtual ?? false,
+		vat_country_code: formData.vat_country_code ?? '',
 		event_series_id: formData.event_series_id || null,
 		venue_id: formData.venue_id || null,
 		location_maps_url: formData.location_maps_url || null,
@@ -215,6 +225,11 @@ export function buildWizardStep2UpdateData(
 		// form field does not silently opt the event out of ticket-holder names.
 		require_ticket_names: formData.require_ticket_names ?? true,
 		requires_full_profile: formData.requires_full_profile || false,
+		// #830 (BE #869): full-replacement PUT + non-null backend defaults — omit
+		// these and every unrelated save un-virtualizes the event / clears the
+		// VAT-country override.
+		is_virtual: formData.is_virtual ?? false,
+		vat_country_code: formData.vat_country_code ?? '',
 		event_series_id: formData.event_series_id || null,
 		venue_id: formData.venue_id || null,
 		location_maps_url: formData.location_maps_url || null,
@@ -258,6 +273,11 @@ export function buildEditorUpdateData(
 		// form field does not silently opt the event out of ticket-holder names.
 		require_ticket_names: formData.require_ticket_names ?? true,
 		requires_full_profile: formData.requires_full_profile || false,
+		// #830 (BE #869): full-replacement PUT + non-null backend defaults — omit
+		// these and every unrelated save un-virtualizes the event / clears the
+		// VAT-country override.
+		is_virtual: formData.is_virtual ?? false,
+		vat_country_code: formData.vat_country_code ?? '',
 		event_series_id: formData.event_series_id || null,
 		venue_id: formData.venue_id || null,
 		location_maps_url: formData.location_maps_url || null,

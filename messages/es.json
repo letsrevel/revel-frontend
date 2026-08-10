@@ -1232,7 +1232,16 @@
 		"waitlistInfoBody1": "Cuando tu evento esté completo, cualquiera puede unirse a una lista de espera para recibir un aviso si se libera una plaza.",
 		"waitlistInfoBody2": "De forma predeterminada, cuando se libera una plaza —alguien cancela o aumentas el aforo—, se avisa a la vez a todas las personas en la lista de espera, y se la queda quien se apunte primero. No se reserva ninguna plaza.",
 		"waitlistInfoBody3": "Abre «Configurar lista de espera» para un control más preciso. Puedes ofrecer las plazas solo a unas pocas personas a la vez y reservárselas durante un plazo determinado. Elige a quién avisar por orden de lista o al azar (modo Sorteo), y fija una fecha límite: a partir de ahí, se avisa una última vez a quienes sigan en la lista de espera, y las plazas libres se asignan por orden de llegada hasta que empiece el evento.",
-		"waitlistInfoFeedbackCta": "Comparte tu opinión en GitHub"
+		"waitlistInfoFeedbackCta": "Comparte tu opinión en GitHub",
+		"taxes": "Impuestos e IVA",
+		"virtualEvent": "Evento virtual",
+		"virtualEventHint": "La asistencia es remota. El IVA se basa entonces en el país de quien compra, en lugar de la ubicación del evento.",
+		"vatCountry": "País de IVA personalizado",
+		"vatCountryPlaceholder": "p. ej. ES",
+		"vatCountryHint": "Código de país de dos letras (ISO). Déjalo vacío para usar el país derivado del recinto o de la ciudad del evento; si no, el país de IVA de tu organización.",
+		"effectiveVatCountry": "País de IVA efectivo: {country}",
+		"vatCountryMismatchTitle": "El país de IVA difiere del de tu organización",
+		"vatCountryMismatchBody": "Este evento tributa en {country}, un país distinto del país de IVA de tu organización. Puede requerirse un registro de IVA local o la ventanilla única (OSS): consulta a tu asesoría fiscal."
 	},
 	"dialogContent": {
 		"close": "Cerrar"
@@ -1599,7 +1608,8 @@
 		"organizedBy": "Organizado por",
 		"locationTbd": "Ubicación por determinar",
 		"linkCopiedToClipboard": "¡Enlace copiado al portapapeles!",
-		"failedToCopyLink": "No se ha podido copiar el enlace"
+		"failedToCopyLink": "No se ha podido copiar el enlace",
+		"virtualEvent": "Evento virtual"
 	},
 	"eventTime": {
 		"shownIn": "Horas mostradas en {label}"
@@ -1800,7 +1810,9 @@
 		"openInMaps": "Abrir en Mapas",
 		"mapOf": "Mapa de",
 		"visibilityNote": "Visibilidad: {visibility}",
-		"eventFull": "Evento completo"
+		"eventFull": "Evento completo",
+		"virtualEvent": "Evento virtual",
+		"openEventLink": "Abrir el enlace del evento"
 	},
 	"eventRSVP": {
 		"goingTo": "¡Vas a {eventName}!",
@@ -2812,7 +2824,10 @@
 		"mapsUrlHint": "Enlace para compartir la ubicación (por ejemplo, Google Maps)",
 		"mapsEmbed": "Código de inserción",
 		"mapsEmbedHint": "Pega el código HTML del iframe de Google Maps",
-		"mapsPreview": "Vista previa"
+		"mapsPreview": "Vista previa",
+		"addressLabelVirtual": "Dirección o enlace de acceso",
+		"addressPlaceholderVirtual": "p. ej. https://meet.example.com/sala, o una dirección",
+		"addressVirtualHint": "Pega aquí el enlace de la reunión: se mostrará como enlace clicable en la página del evento. Quién lo ve depende del ajuste de visibilidad de la dirección de abajo."
 	},
 	"login": {
 		"title": "Iniciar sesión - Revel",
@@ -6580,7 +6595,7 @@
 			"vatPreviewError": "No se pudo calcular la vista previa del IVA",
 			"vatIdValid": "Número de IVA válido",
 			"vatIdInvalid": "No se pudo validar el número de IVA",
-			"reverseCharge": "Se aplica la inversión del sujeto pasivo — no se cobra IVA",
+			"reverseCharge": "Evento virtual — se aplica la inversión del sujeto pasivo, IVA no cobrado (comprador profesional de la UE)",
 			"lineItem": "Concepto",
 			"lineNet": "Neto",
 			"lineVat": "IVA",
@@ -6588,7 +6603,8 @@
 			"totalNet": "Total neto",
 			"totalVat": "Total IVA",
 			"totalGross": "Total",
-			"billingNameRequired": "El nombre legal es obligatorio para la factura"
+			"billingNameRequired": "El nombre legal es obligatorio para la factura",
+			"virtualB2cDisclaimer": "El IVA se cobra al tipo del organizador. Al tratarse de un evento virtual, puede aplicarse legalmente el tipo de IVA de tu país."
 		}
 	},
 	"recurringEvents": {

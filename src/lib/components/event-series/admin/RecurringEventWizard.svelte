@@ -85,6 +85,8 @@
 		// Backend default is `true`.
 		require_ticket_names: true,
 		requires_full_profile: false,
+		is_virtual: false,
+		vat_country_code: '',
 		venue_id: null,
 		tags: [],
 		organization_logo: undefined,

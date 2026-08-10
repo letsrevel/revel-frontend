@@ -147,6 +147,9 @@ TEXT_PAIRS = [  # (fg, bg, min_ratio, note)
     ("info-foreground", "info", 4.5, "info badge label"),
     ("success", "background", 3.0, "success as icon/accent on page"),
     ("success", "card", 3.0, "success as icon/accent on card"),
+    # Checkout VAT-ID "valid" line (#829): success used as body TEXT on the
+    # checkout dialog surface, so it owes 4.5, not the icon floor above.
+    ("success", "background", 4.5, "success as text (checkout VAT-ID valid)"),
     ("info", "background", 3.0, "info as icon/accent on page"),
     ("info", "card", 3.0, "info as icon/accent on card"),
     ("primary", "background", 3.0, "primary as text-primary/link on page"),

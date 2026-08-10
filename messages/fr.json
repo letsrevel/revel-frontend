@@ -1118,7 +1118,16 @@
 		"waitlistInfoBody1": "Lorsque ton événement est complet, les personnes peuvent rejoindre une liste d'attente pour être averties si une place se libère.",
 		"waitlistInfoBody2": "Par défaut, lorsqu'une place se libère — quelqu'un annule ou tu augmentes la capacité — toutes les personnes en liste d'attente sont averties en même temps, et la première à s'inscrire conserve la place. Aucune place n'est réservée.",
 		"waitlistInfoBody3": "Ouvre « Configurer la liste d'attente » pour un contrôle plus fin. Tu peux attribuer les places à quelques personnes à la fois et leur réserver ces places pendant une durée définie. Choisis les destinataires dans l'ordre de la liste d'attente ou de manière aléatoire (mode Loterie), et fixe une date limite — après quoi chaque personne restant sur la liste d'attente est avertie une dernière fois et toute place libre est attribuée au premier arrivé jusqu'au début de l'événement.",
-		"waitlistInfoFeedbackCta": "Donne ton avis sur GitHub"
+		"waitlistInfoFeedbackCta": "Donne ton avis sur GitHub",
+		"taxes": "Taxes et TVA",
+		"virtualEvent": "Événement virtuel",
+		"virtualEventHint": "La participation se fait à distance. La TVA dépend alors du pays de la personne qui achète plutôt que du lieu de l'événement.",
+		"vatCountry": "Pays de TVA (remplacement)",
+		"vatCountryPlaceholder": "p. ex. FR",
+		"vatCountryHint": "Code pays à deux lettres (ISO). Laissez vide pour utiliser le pays déduit du lieu ou de la ville de l'événement, sinon le pays de TVA de votre organisation.",
+		"effectiveVatCountry": "Pays de TVA effectif : {country}",
+		"vatCountryMismatchTitle": "Le pays de TVA diffère de celui de votre organisation",
+		"vatCountryMismatchBody": "Cet événement est taxé en {country}, un pays différent du pays de TVA de votre organisation. Une immatriculation locale à la TVA ou le guichet unique (OSS) peut être nécessaire — consultez votre conseil fiscal."
 	},
 	"dialogContent": {
 		"close": "Fermer"
@@ -1485,7 +1494,8 @@
 		"organizedBy": "Organisé par",
 		"locationTbd": "Lieu à définir",
 		"linkCopiedToClipboard": "Lien copié dans le presse-papiers !",
-		"failedToCopyLink": "Échec de la copie du lien"
+		"failedToCopyLink": "Échec de la copie du lien",
+		"virtualEvent": "Événement virtuel"
 	},
 	"eventTime": {
 		"shownIn": "Horaires affichés en {label}"
@@ -1686,7 +1696,9 @@
 		"openInMaps": "Ouvrir dans Plans",
 		"mapOf": "Carte de",
 		"visibilityNote": "Visibilité : {visibility}",
-		"eventFull": "Événement complet"
+		"eventFull": "Événement complet",
+		"virtualEvent": "Événement virtuel",
+		"openEventLink": "Ouvrir le lien de l'événement"
 	},
 	"eventRSVP": {
 		"goingTo": "Tu participes à {eventName} !",
@@ -2698,7 +2710,10 @@
 		"mapsUrlHint": "Lien partageable vers le lieu (par ex. Google Maps)",
 		"mapsEmbed": "Code d'intégration",
 		"mapsEmbedHint": "Colle le code HTML iframe de Google Maps",
-		"mapsPreview": "Aperçu"
+		"mapsPreview": "Aperçu",
+		"addressLabelVirtual": "Adresse ou lien de connexion",
+		"addressPlaceholderVirtual": "p. ex. https://meet.example.com/salle, ou une adresse",
+		"addressVirtualHint": "Collez ici le lien de la réunion : il deviendra cliquable sur la page de l'événement. Sa visibilité suit le réglage de visibilité de l'adresse ci-dessous."
 	},
 	"login": {
 		"title": "Se connecter - Revel",
@@ -6550,7 +6565,7 @@
 			"vatPreviewError": "Impossible de calculer l'aperçu de la TVA",
 			"vatIdValid": "Numéro de TVA valide",
 			"vatIdInvalid": "Le numéro de TVA n'a pas pu être validé",
-			"reverseCharge": "L'autoliquidation s'applique — aucune TVA facturée",
+			"reverseCharge": "Événement virtuel — autoliquidation applicable, TVA non facturée (acheteur professionnel UE)",
 			"lineItem": "Article",
 			"lineNet": "Net",
 			"lineVat": "TVA",
@@ -6558,7 +6573,8 @@
 			"totalNet": "Total net",
 			"totalVat": "Total TVA",
 			"totalGross": "Total",
-			"billingNameRequired": "Le nom légal est obligatoire pour la facture"
+			"billingNameRequired": "Le nom légal est obligatoire pour la facture",
+			"virtualB2cDisclaimer": "La TVA est facturée au taux de l'organisateur. S'agissant d'un événement virtuel, le taux de TVA de votre pays peut légalement s'appliquer."
 		}
 	},
 	"recurringEvents": {
