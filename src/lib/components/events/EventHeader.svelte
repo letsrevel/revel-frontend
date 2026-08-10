@@ -4,7 +4,7 @@
 	import type { EventDetailSchema } from '$lib/api/generated/types.gen';
 	import { formatEventDate, formatEventDateRange } from '$lib/utils/date';
 	import { getEventFallbackGradient, getEventCoverArt } from '$lib/utils/event';
-	import { getImageUrl } from '$lib/utils/url';
+	import { asHttpUrl, getImageUrl } from '$lib/utils/url';
 	import { downloadRevelEventICalFile } from '$lib/utils/ical';
 	import { MapPin, Calendar, Share2, ExternalLink } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
@@ -35,12 +35,19 @@
 			return venueName;
 		}
 
-		// Fall back to event's address/city
-		if (!event.city) return event.address || m['eventHeader.locationTbd']();
+		// Fall back to event's address/city. A virtual event's address holding a
+		// join URL (#830) is not a place — keep the raw link out of the header
+		// line (EventQuickInfo renders it as a proper anchor) and say "Virtual
+		// event" instead of "Location TBD" when nothing physical remains.
+		const address = event.is_virtual && asHttpUrl(event.address) ? null : event.address;
+		const emptyLabel = event.is_virtual
+			? m['eventHeader.virtualEvent']()
+			: m['eventHeader.locationTbd']();
+		if (!event.city) return address || emptyLabel;
 		const cityCountry = event.city.country
 			? `${event.city.name}, ${event.city.country}`
 			: event.city.name;
-		return event.address ? `${event.address}, ${cityCountry}` : cityCountry;
+		return address ? `${address}, ${cityCountry}` : cityCountry;
 	});
 
 	// Compute maps URL - prioritize event's URL, fall back to venue's URL

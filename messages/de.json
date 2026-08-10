@@ -1232,7 +1232,16 @@
 		"waitlistInfoBody1": "Wenn dein Event ausgebucht ist, können sich Personen auf eine Warteliste setzen lassen, um benachrichtigt zu werden, sobald ein Platz frei wird.",
 		"waitlistInfoBody2": "Standardmäßig werden alle auf der Warteliste gleichzeitig benachrichtigt, sobald ein Platz frei wird — durch eine Stornierung oder weil du die Kapazität erhöhst. Wer sich zuerst anmeldet, bekommt den Platz. Es werden keine Plätze reserviert.",
 		"waitlistInfoBody3": "Öffne „Warteliste konfigurieren“ für mehr Kontrolle. Du kannst Plätze immer nur einigen Personen gleichzeitig anbieten und ihnen die Sitze für ein festgelegtes Zeitfenster reservieren. Wähle Empfänger*innen in Wartelisten-Reihenfolge oder zufällig (Losverfahren) und lege ein Cutoff-Datum fest — danach wird jede verbleibende Person auf der Warteliste ein letztes Mal benachrichtigt, und freie Plätze werden bis zum Eventbeginn an die Erstanmeldenden vergeben.",
-		"waitlistInfoFeedbackCta": "Feedback auf GitHub geben"
+		"waitlistInfoFeedbackCta": "Feedback auf GitHub geben",
+		"taxes": "Steuern & USt.",
+		"virtualEvent": "Virtuelles Event",
+		"virtualEventHint": "Die Teilnahme erfolgt remote. Die USt. richtet sich dann nach dem Land der Käufer*innen statt nach dem Veranstaltungsort.",
+		"vatCountry": "USt.-Land überschreiben",
+		"vatCountryPlaceholder": "z. B. AT",
+		"vatCountryHint": "Zweibuchstabiger Ländercode (ISO). Leer lassen, um das aus Venue bzw. Veranstaltungsstadt abgeleitete Land zu verwenden, ersatzweise das USt.-Land deiner Organisation.",
+		"effectiveVatCountry": "Effektives USt.-Land: {country}",
+		"vatCountryMismatchTitle": "USt.-Land weicht von dem deiner Organisation ab",
+		"vatCountryMismatchBody": "Dieses Event wird in {country} besteuert — das weicht vom USt.-Land deiner Organisation ab. Eventuell ist eine lokale USt.-Registrierung oder OSS nötig — frag deine Steuerberatung."
 	},
 	"dialogContent": {
 		"close": "Schließen"
@@ -1599,7 +1608,8 @@
 		"organizedBy": "Organisiert von",
 		"locationTbd": "Location TBD",
 		"linkCopiedToClipboard": "Link in die Zwischenablage kopiert!",
-		"failedToCopyLink": "Link konnte nicht kopiert werden"
+		"failedToCopyLink": "Link konnte nicht kopiert werden",
+		"virtualEvent": "Virtuelles Event"
 	},
 	"eventTime": {
 		"shownIn": "Zeiten werden in {label} angezeigt"
@@ -1800,7 +1810,9 @@
 		"openInMaps": "In Karten öffnen",
 		"mapOf": "Karte von",
 		"visibilityNote": "Sichtbarkeit: {visibility}",
-		"eventFull": "Veranstaltung ausgebucht"
+		"eventFull": "Veranstaltung ausgebucht",
+		"virtualEvent": "Virtuelles Event",
+		"openEventLink": "Event-Link öffnen"
 	},
 	"eventRSVP": {
 		"goingTo": "Du gehst zu {eventName}!",
@@ -2812,7 +2824,10 @@
 		"mapsUrlHint": "Teilbarer Link zum Standort (z.B. Google Maps)",
 		"mapsEmbed": "Einbettungscode",
 		"mapsEmbedHint": "Füge iframe-HTML von Google Maps ein",
-		"mapsPreview": "Vorschau"
+		"mapsPreview": "Vorschau",
+		"addressLabelVirtual": "Adresse oder Meeting-Link",
+		"addressPlaceholderVirtual": "z. B. https://meet.example.com/raum oder eine Adresse",
+		"addressVirtualHint": "Füge hier den Meeting-Link ein — auf der Eventseite wird er anklickbar. Wer ihn sieht, richtet sich nach der Adress-Sichtbarkeit unten."
 	},
 	"login": {
 		"title": "Anmelden - Revel",
@@ -6580,7 +6595,7 @@
 			"vatPreviewError": "USt-Vorschau konnte nicht berechnet werden",
 			"vatIdValid": "USt-IdNr. gültig",
 			"vatIdInvalid": "USt-IdNr. konnte nicht validiert werden",
-			"reverseCharge": "Reverse Charge — keine USt berechnet",
+			"reverseCharge": "Virtuelles Event — Reverse Charge, keine USt. berechnet (EU-Geschäftskund*in)",
 			"lineItem": "Position",
 			"lineNet": "Netto",
 			"lineVat": "USt",
@@ -6588,7 +6603,8 @@
 			"totalNet": "Netto gesamt",
 			"totalVat": "USt gesamt",
 			"totalGross": "Gesamt",
-			"billingNameRequired": "Rechtlicher Name ist für die Rechnung erforderlich"
+			"billingNameRequired": "Rechtlicher Name ist für die Rechnung erforderlich",
+			"virtualB2cDisclaimer": "Die USt. wird zum Satz der Veranstalter*in berechnet. Da dies ein virtuelles Event ist, kann rechtlich der USt.-Satz deines Landes gelten."
 		}
 	},
 	"recurringEvents": {

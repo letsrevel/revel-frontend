@@ -26,6 +26,7 @@
 	import AdmissionScreeningSection from './AdmissionScreeningSection.svelte';
 	import DetailsStepTagsInput from './DetailsStepTagsInput.svelte';
 	import DetailsStepMediaSection from './DetailsStepMediaSection.svelte';
+	import EventTaxSection from './EventTaxSection.svelte';
 	import EventVisibilitySection from './EventVisibilitySection.svelte';
 	import { isNonDefaultVisibility } from '$lib/utils/event-visibility';
 	import type { OrganizationQuestionnaireInListSchema } from '$lib/api/generated';
@@ -62,6 +63,10 @@
 		selectedVenue?: VenueDetailSchema | null;
 		validationErrors?: Record<string, string>;
 		isEditMode?: boolean;
+		/** Server-derived VAT country readout (edit mode only). */
+		effectiveVatCountry?: string;
+		/** Server-computed organizer warning (edit mode only, BE #869). */
+		vatCountryMismatch?: boolean;
 		onCitySelect?: (city: CitySchema | null) => void;
 		onVenueSelect?: (venue: VenueDetailSchema | null) => void;
 		onUpdate: (
@@ -98,6 +103,8 @@
 		selectedVenue = null,
 		validationErrors = {},
 		isEditMode = false,
+		effectiveVatCountry = '',
+		vatCountryMismatch = false,
 		onCitySelect = () => {
 			/* noop */
 		},
@@ -157,7 +164,10 @@
 			formData.tags && formData.tags.length > 0 ? 'advanced' : null,
 			hasScreeningSettings ? 'screening' : null,
 			// Never leave a non-default disclosure choice collapsed out of sight.
-			isNonDefaultVisibility(formData.visibility_settings) ? 'visibility' : null
+			isNonDefaultVisibility(formData.visibility_settings) ? 'visibility' : null,
+			// Same rule for place-of-supply: a virtual flag, a country override or
+			// an active mismatch warning must not hide behind a collapsed section.
+			formData.is_virtual || formData.vat_country_code || vatCountryMismatch ? 'taxes' : null
 		].filter((s): s is string => s !== null)
 	);
 
@@ -208,6 +218,16 @@
 		{onUpdate}
 		{onCitySelect}
 		{onVenueSelect}
+	/>
+
+	<!-- Taxes Section (place of supply: virtual flag + VAT country, BE #869) -->
+	<EventTaxSection
+		{formData}
+		{effectiveVatCountry}
+		{vatCountryMismatch}
+		isOpen={isSectionOpen('taxes')}
+		onToggle={() => toggleSection('taxes')}
+		{onUpdate}
 	/>
 
 	<!-- Basic Details Section -->

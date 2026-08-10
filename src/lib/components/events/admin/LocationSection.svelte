@@ -26,6 +26,7 @@
 		formData: {
 			venue_id?: string | null;
 			address?: string | null;
+			is_virtual?: boolean;
 			visibility_settings?: EventVisibilitySettings;
 			location_maps_url?: string | null;
 			location_maps_embed?: string | null;
@@ -242,12 +243,17 @@
 				</p>
 			{/if}
 
-			<!-- Address -->
+			<!-- Address. For virtual events (#830) the same field doubles as the
+			     meeting link: an http(s) URL entered here renders as a clickable
+			     join link on the public page (visibility still follows the
+			     address-visibility setting below). -->
 			<div class="space-y-2">
 				<label for="location-address" class="block text-sm font-medium">
 					<span class="flex items-center gap-2">
 						<MapPin class="h-4 w-4" aria-hidden="true" />
-						{m['locationSection.addressLabel']()}
+						{formData.is_virtual
+							? m['locationSection.addressLabelVirtual']()
+							: m['locationSection.addressLabel']()}
 					</span>
 				</label>
 				<input
@@ -255,9 +261,17 @@
 					type="text"
 					value={formData.address || ''}
 					oninput={(e) => onUpdate({ address: e.currentTarget.value || null })}
-					placeholder={m['locationSection.addressPlaceholder']()}
+					placeholder={formData.is_virtual
+						? m['locationSection.addressPlaceholderVirtual']()
+						: m['locationSection.addressPlaceholder']()}
+					aria-describedby={formData.is_virtual ? 'location-address-virtual-hint' : undefined}
 					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				/>
+				{#if formData.is_virtual}
+					<p id="location-address-virtual-hint" class="text-xs text-muted-foreground">
+						{m['locationSection.addressVirtualHint']()}
+					</p>
+				{/if}
 			</div>
 
 			<!-- Address Visibility -->
