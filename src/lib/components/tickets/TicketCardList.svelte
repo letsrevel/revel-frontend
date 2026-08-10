@@ -10,7 +10,8 @@
 		getTicketPrice,
 		canCheckIn,
 		canConfirmPayment,
-		canManageTicket,
+		canAdminCancelTicket,
+		canRefundTicketPayment,
 		canUnconfirmPayment,
 		getPaymentMethodLabel
 	} from '$lib/utils/ticket-helpers';
@@ -57,6 +58,8 @@
 		onReseat?: (ticket: AdminTicketSchema) => void;
 		/** Rename the holder on a ticket. Omit to hide the action. */
 		onRenameHolder?: (ticket: AdminTicketSchema) => void;
+		/** Refund an online payment (full/partial). Omit to hide the action. */
+		onRefundTicket?: (ticket: AdminTicketSchema) => void;
 	}
 
 	const {
@@ -74,7 +77,8 @@
 		onBlacklist,
 		onUnconfirmPayment,
 		onReseat,
-		onRenameHolder
+		onRenameHolder,
+		onRefundTicket
 	}: Props = $props();
 </script>
 
@@ -143,13 +147,14 @@
 						tone={getTicketStatusTone(ticket.status ?? '')}
 						label={getTicketStatusLabel(ticket.status ?? '')}
 					/>
-					{#if ticket.status === 'cancelled'}
-						<RefundStatusBadge
-							status={ticket.payment?.refund_status}
-							amount={ticket.payment?.refund_amount}
-							currency={ticket.payment?.currency}
-						/>
-					{/if}
+					<!-- Refund state renders independent of ticket status: since
+					     organizer refunds, an active ticket can carry a (partial)
+					     refund — never infer cancellation from refund state. -->
+					<RefundStatusBadge
+						status={ticket.payment?.refund_status}
+						amount={ticket.payment?.refund_amount}
+						currency={ticket.payment?.currency}
+					/>
 				</div>
 			</div>
 
@@ -320,7 +325,13 @@
 								{m['eventTicketsAdmin.actionUnconfirmPayment']()}
 							</DropdownMenu.Item>
 						{/if}
-						{#if canManageTicket(ticket) && ticket.status !== 'cancelled'}
+						{#if onRefundTicket && canRefundTicketPayment(ticket)}
+							<DropdownMenu.Item onclick={() => onRefundTicket(ticket)}>
+								<Undo2 class="mr-2 h-4 w-4" aria-hidden="true" />
+								{m['refundTicket.menuItem']()}
+							</DropdownMenu.Item>
+						{/if}
+						{#if canAdminCancelTicket(ticket)}
 							<DropdownMenu.Item
 								onclick={() => onCancelTicket(ticket)}
 								disabled={cancelTicketPending}

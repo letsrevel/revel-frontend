@@ -7,15 +7,26 @@
 	import EventEditor from '$lib/components/events/admin/EventEditor.svelte';
 	import DuplicateEventModal from '$lib/components/events/admin/DuplicateEventModal.svelte';
 	import CancelEventDialog from '$lib/components/events/admin/CancelEventDialog.svelte';
-	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
+	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import {
+		eventadmincoreCancellationRefundPreview,
 		eventadmincoreUpdateEventStatus,
 		eventadmincoreDeleteEvent
 	} from '$lib/api/generated/sdk.gen';
+	import type { EventRefundPreviewSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Tooltip from '$lib/components/ui/tooltip';
-	import { CheckCircle, XCircle, FileEdit, Trash2, Ban, MoreVertical, Copy } from '@lucide/svelte';
+	import {
+		CheckCircle,
+		XCircle,
+		FileEdit,
+		Trash2,
+		Ban,
+		MoreVertical,
+		Copy,
+		RotateCcw
+	} from '@lucide/svelte';
 	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import type { Tone } from '$lib/components/common/tones';
@@ -171,6 +182,26 @@
 	// Cancel event dialog state
 	let showCancelEventDialog = $state(false);
 
+	// Cancelled events with refundable online payments left get a
+	// "Retry refunds" affordance — re-POSTing cancel-with-refunds is the
+	// supported way to resume a partial sweep (idempotent on the backend).
+	const refundPreviewQuery = createQuery<EventRefundPreviewSchema>(() => ({
+		queryKey: ['event-cancellation-refund-preview', event.id],
+		queryFn: async () => {
+			const response = await eventadmincoreCancellationRefundPreview({
+				path: { event_id: event.id },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+			if (response.error || !response.data) throw new Error('preview-failed');
+			return response.data;
+		},
+		enabled: currentStatus === 'cancelled' && !!accessToken,
+		retry: false
+	}));
+	const hasRefundableTickets = $derived(
+		(refundPreviewQuery.data?.online_refundable_tickets ?? 0) > 0
+	);
+
 	/**
 	 * Open duplicate modal
 	 */
@@ -321,6 +352,26 @@
 						</Tooltip.Root>
 					{/if}
 
+					<!-- Retry refunds (cancelled events with refundable online payments left) -->
+					{#if currentStatus === 'cancelled' && hasRefundableTickets}
+						<Tooltip.Root>
+							<Tooltip.Trigger>
+								{#snippet child({ props })}
+									<button
+										{...props}
+										type="button"
+										onclick={cancelEvent}
+										class="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+									>
+										<RotateCcw class="h-4 w-4" aria-hidden="true" />
+										{m['cancelEvent.retryButton']()}
+									</button>
+								{/snippet}
+							</Tooltip.Trigger>
+							<Tooltip.Content>{m['cancelEvent.retryDescription']()}</Tooltip.Content>
+						</Tooltip.Root>
+					{/if}
+
 					<!-- Cancel event button (open/closed only — reversible, notifies attendees) -->
 					{#if currentStatus === 'open' || currentStatus === 'closed'}
 						<Tooltip.Root>
@@ -407,5 +458,9 @@
 	onClose={closeDuplicateModal}
 />
 
-<!-- Cancel Event Dialog -->
-<CancelEventDialog bind:open={showCancelEventDialog} eventId={event.id} />
+<!-- Cancel Event Dialog (doubles as the retry-refunds dialog once cancelled) -->
+<CancelEventDialog
+	bind:open={showCancelEventDialog}
+	eventId={event.id}
+	retryRefunds={currentStatus === 'cancelled'}
+/>
