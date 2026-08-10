@@ -57,8 +57,15 @@
 			const saveUrl = result.data.save_url;
 			// The fetch broke the synchronous click stack, so window.open may be
 			// popup-blocked — fall back to same-tab navigation with the URL.
-			const opened = window.open(saveUrl, '_blank', 'noopener');
-			if (!opened) window.location.href = saveUrl;
+			// Do NOT pass the 'noopener' feature: it makes window.open return
+			// null even on success, which would make this fallback always fire
+			// (double navigation). Null the opener on the handle instead.
+			const opened = window.open(saveUrl, '_blank');
+			if (opened) {
+				opened.opener = null;
+			} else {
+				window.location.href = saveUrl;
+			}
 		} catch (err) {
 			console.error('Failed to open Google Wallet save link:', err);
 			error = err instanceof Error ? err.message : m['addToGoogleWallet.openFailed']();

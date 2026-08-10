@@ -1,69 +1,77 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { ticketwalletDownloadApplePass } from '$lib/api/generated/sdk.gen';
-	import { Wallet } from '@lucide/svelte';
+	import {
+		seriespassDownloadSeriesPassPkpass,
+		ticketwalletDownloadApplePass
+	} from '$lib/api/generated/sdk.gen';
 
 	interface Props {
-		ticketId: string;
-		eventName: string;
-		/**
-		 * Visual variant:
-		 * - 'default': Full button with black background (Apple Wallet branding)
-		 * - 'secondary': Full button with white background (matches other action buttons)
-		 * - 'compact': Icon only button
-		 */
-		variant?: 'default' | 'secondary' | 'compact';
+		/** Ticket id (kind 'ticket') or held series-pass id (kind 'series-pass'). */
+		id: string;
+		kind?: 'ticket' | 'series-pass';
+		/** Event or pass name — used only for the downloaded .pkpass filename. */
+		name: string;
 		class?: string;
 	}
 
-	const { ticketId, eventName, variant = 'default', class: className = '' }: Props = $props();
+	const { id, kind = 'ticket', name, class: className = '' }: Props = $props();
 
 	let isDownloading = $state(false);
 	let error = $state<string | null>(null);
 
+	// Official "Add to Apple Wallet" badge artwork (fixed per Apple's Add to
+	// Apple Wallet guidelines — never restyled). Only the US-English badge is
+	// freely distributable; Apple's localized variants require a signed-in
+	// developer download — drop them in as apple-wallet-badge-<locale>.svg and
+	// switch this to a getLocale() lookup when available.
+	const badgeSrc = '/wallet/apple-wallet-badge-en.svg';
+
 	async function downloadApplePass() {
+		if (isDownloading) return;
 		isDownloading = true;
 		error = null;
 
 		try {
-			const response = await ticketwalletDownloadApplePass({
-				path: {
-					ticket_id: ticketId
-				},
-				// Request raw response to handle binary data
-				parseAs: 'stream'
-			});
+			const response =
+				kind === 'ticket'
+					? await ticketwalletDownloadApplePass({
+							path: { ticket_id: id },
+							// Request raw response to handle binary data
+							parseAs: 'stream'
+						})
+					: await seriespassDownloadSeriesPassPkpass({
+							path: { held_pass_id: id },
+							parseAs: 'stream'
+						});
 
-			// Check if we got a valid response
 			if (!response.response?.ok) {
 				if (response.response?.status === 503) {
 					throw new Error(m['addToWallet.notConfigured']());
-				} else if (response.response?.status === 404) {
-					throw new Error(m['addToWallet.ticketNotFound']());
-				} else {
-					throw new Error(m['addToWallet.downloadFailed']());
 				}
+				if (response.response?.status === 404) {
+					throw new Error(
+						kind === 'ticket' ? m['addToWallet.ticketNotFound']() : m['seriesPass.passNotFound']()
+					);
+				}
+				throw new Error(
+					kind === 'ticket'
+						? m['addToWallet.downloadFailed']()
+						: m['seriesPass.walletDownloadFailed']()
+				);
 			}
 
-			// Get the blob from the response
+			// Get the blob and trigger a download with a safe filename
 			const blob = await response.response.blob();
-
-			// Create a download link
 			const url = window.URL.createObjectURL(blob);
 			const link = document.createElement('a');
 			link.href = url;
-			// Use a safe filename based on event name and ticket ID
-			const safeName = eventName
+			const safeName = name
 				.toLowerCase()
 				.replace(/[^a-z0-9]+/g, '-')
 				.substring(0, 30);
-			link.download = `${safeName}-${ticketId.split('-')[0]}.pkpass`;
-
-			// Trigger download
+			link.download = `${safeName}-${id.split('-')[0]}.pkpass`;
 			document.body.appendChild(link);
 			link.click();
-
-			// Cleanup
 			document.body.removeChild(link);
 			window.URL.revokeObjectURL(url);
 		} catch (err) {
@@ -75,68 +83,17 @@
 	}
 </script>
 
-{#if variant === 'compact'}
-	<!-- Compact variant: Icon only (for space-constrained layouts) -->
-	<button
-		type="button"
-		onclick={downloadApplePass}
-		disabled={isDownloading}
-		class="inline-flex items-center gap-1.5 rounded-md border bg-background px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {className}"
-		aria-label={m['addToWallet.addToAppleWallet']()}
-		title={m['addToWallet.addToAppleWallet']()}
-	>
-		{#if isDownloading}
-			<div
-				class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-				aria-hidden="true"
-			></div>
-		{:else}
-			<Wallet class="h-4 w-4" aria-hidden="true" />
-		{/if}
-	</button>
-{:else if variant === 'secondary'}
-	<!-- Secondary variant: Full button with white background (matches action buttons) -->
-	<button
-		type="button"
-		onclick={downloadApplePass}
-		disabled={isDownloading}
-		class="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {className}"
-		aria-label={m['addToWallet.addToAppleWallet']()}
-	>
-		{#if isDownloading}
-			<div
-				class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-				aria-hidden="true"
-			></div>
-			<span>{m['addToWallet.downloading']()}</span>
-		{:else}
-			<Wallet class="h-4 w-4" aria-hidden="true" />
-			<span>{m['addToWallet.addToAppleWallet']()}</span>
-		{/if}
-	</button>
-{:else}
-	<!-- Default variant: Full button with Apple Wallet branding (black background) -->
-	<button
-		type="button"
-		onclick={downloadApplePass}
-		disabled={isDownloading}
-		class="inline-flex items-center justify-center gap-2 rounded-md bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-gray-100 dark:focus:ring-gray-100 {className}"
-		aria-label={m['addToWallet.addToAppleWallet']()}
-	>
-		{#if isDownloading}
-			<div
-				class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent dark:border-black dark:border-t-transparent"
-				aria-hidden="true"
-			></div>
-			<span>{m['addToWallet.downloading']()}</span>
-		{:else}
-			<Wallet class="h-4 w-4" aria-hidden="true" />
-			<span>{m['addToWallet.addToAppleWallet']()}</span>
-		{/if}
-	</button>
-{/if}
+<button
+	type="button"
+	onclick={downloadApplePass}
+	disabled={isDownloading}
+	aria-busy={isDownloading}
+	aria-label={m['addToWallet.addToAppleWallet']()}
+	class="inline-flex items-center justify-center rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-progress disabled:opacity-70 {className}"
+>
+	<img src={badgeSrc} alt="" class="h-12 w-auto" draggable="false" />
+</button>
 
-<!-- Error message -->
 {#if error}
 	<p class="mt-2 text-sm text-destructive" role="alert">
 		{error}

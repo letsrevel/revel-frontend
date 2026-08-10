@@ -29,10 +29,12 @@ function errorResult(status: number) {
 
 describe('AddToGoogleWalletButton', () => {
 	let openSpy: ReturnType<typeof vi.spyOn>;
+	let openedWindow: { opener: unknown };
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		openSpy = vi.spyOn(window, 'open').mockReturnValue({} as Window);
+		openedWindow = { opener: 'parent-window' };
+		openSpy = vi.spyOn(window, 'open').mockReturnValue(openedWindow as unknown as Window);
 	});
 
 	afterEach(() => {
@@ -47,7 +49,7 @@ describe('AddToGoogleWalletButton', () => {
 		expect(img?.getAttribute('src')).toBe('/wallet/google-wallet-badge-en.svg');
 	});
 
-	it('fetches the ticket save URL as JSON and opens it', async () => {
+	it('fetches the ticket save URL as JSON, opens it, and nulls the opener', async () => {
 		ticketwalletGoogleWalletSaveLink.mockResolvedValue(okResult());
 		const user = userEvent.setup();
 		render(AddToGoogleWalletButton, { props: { id: 'ticket-1' } });
@@ -59,9 +61,40 @@ describe('AddToGoogleWalletButton', () => {
 				path: { ticket_id: 'ticket-1' },
 				query: { format: 'json' }
 			});
-			expect(openSpy).toHaveBeenCalledWith(SAVE_URL, '_blank', 'noopener');
+			// No 'noopener' feature: it would force a null return even on
+			// success and make the popup-blocked fallback always fire.
+			expect(openSpy).toHaveBeenCalledWith(SAVE_URL, '_blank');
+			expect(openedWindow.opener).toBeNull();
 		});
 		expect(seriespassGoogleWalletSaveLink).not.toHaveBeenCalled();
+	});
+
+	it('falls back to same-tab navigation when the popup is blocked', async () => {
+		ticketwalletGoogleWalletSaveLink.mockResolvedValue(okResult());
+		openSpy.mockReturnValue(null);
+		const originalLocation = window.location;
+		const fakeLocation = { ...originalLocation, href: 'http://localhost/' };
+		Object.defineProperty(window, 'location', {
+			value: fakeLocation,
+			writable: true,
+			configurable: true
+		});
+		try {
+			const user = userEvent.setup();
+			render(AddToGoogleWalletButton, { props: { id: 'ticket-1' } });
+
+			await user.click(screen.getByRole('button', { name: 'Add to Google Wallet' }));
+
+			await waitFor(() => {
+				expect(fakeLocation.href).toBe(SAVE_URL);
+			});
+		} finally {
+			Object.defineProperty(window, 'location', {
+				value: originalLocation,
+				writable: true,
+				configurable: true
+			});
+		}
 	});
 
 	it('uses the series-pass endpoint for kind="series-pass"', async () => {

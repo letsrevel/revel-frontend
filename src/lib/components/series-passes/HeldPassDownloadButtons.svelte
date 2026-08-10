@@ -1,9 +1,10 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { seriespassDownloadSeriesPassPdf, seriespassDownloadSeriesPassPkpass } from '$lib/api';
-	import { Download, Wallet, Loader2 } from '@lucide/svelte';
+	import { seriespassDownloadSeriesPassPdf } from '$lib/api';
+	import { Download, Loader2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { onMount } from 'svelte';
+	import AddToWalletButton from '$lib/components/tickets/AddToWalletButton.svelte';
 	import AddToGoogleWalletButton from '$lib/components/tickets/AddToGoogleWalletButton.svelte';
 	import { detectWalletPlatform } from '$lib/utils/platform';
 
@@ -21,7 +22,6 @@
 	});
 
 	let isDownloadingPdf = $state(false);
-	let isDownloadingPkpass = $state(false);
 
 	const safeName = $derived(
 		passName
@@ -62,31 +62,6 @@
 			isDownloadingPdf = false;
 		}
 	}
-
-	async function downloadPkpass() {
-		if (isDownloadingPkpass) return;
-		isDownloadingPkpass = true;
-		try {
-			const response = await seriespassDownloadSeriesPassPkpass({
-				path: { held_pass_id: heldPassId },
-				parseAs: 'stream'
-			});
-			if (!response.response?.ok) {
-				if (response.response?.status === 503) {
-					throw new Error(m['addToWallet.notConfigured']());
-				}
-				if (response.response?.status === 404) {
-					throw new Error(m['seriesPass.passNotFound']());
-				}
-				throw new Error(m['seriesPass.walletDownloadFailed']());
-			}
-			saveBlob(await response.response.blob(), `${safeName}.pkpass`);
-		} catch (err) {
-			toast.error(err instanceof Error ? err.message : m['seriesPass.walletDownloadFailed']());
-		} finally {
-			isDownloadingPkpass = false;
-		}
-	}
 </script>
 
 <div class="flex flex-col gap-2">
@@ -109,19 +84,7 @@
 	{#if googleWalletFirst}
 		{@render googleWalletButton()}
 	{/if}
-	<button
-		type="button"
-		onclick={downloadPkpass}
-		disabled={isDownloadingPkpass}
-		class="inline-flex items-center justify-center gap-1.5 rounded-md border bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50"
-	>
-		{#if isDownloadingPkpass}
-			<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-		{:else}
-			<Wallet class="h-4 w-4" aria-hidden="true" />
-		{/if}
-		{m['seriesPass.addToWallet']()}
-	</button>
+	<AddToWalletButton id={heldPassId} kind="series-pass" name={passName} class="self-center" />
 	{#if !googleWalletFirst}
 		{@render googleWalletButton()}
 	{/if}

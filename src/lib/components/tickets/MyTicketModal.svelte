@@ -585,7 +585,7 @@
 									{@render googleWalletButton()}
 								{/if}
 								{#if ticket.apple_pass_available && ticket.id}
-									<AddToWalletButton ticketId={ticket.id} {eventName} variant="secondary" />
+									<AddToWalletButton id={ticket.id} name={eventName} class="self-center" />
 								{/if}
 								{#if !googleWalletFirst}
 									{@render googleWalletButton()}

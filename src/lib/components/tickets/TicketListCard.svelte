@@ -191,14 +191,14 @@
 				<!-- Add to Wallet (hide for cancelled tickets) -->
 				{#snippet googleWalletButton()}
 					{#if ticket.google_pass_available && ticket.id && ticket.status !== 'cancelled'}
-						<AddToGoogleWalletButton id={ticket.id} kind="ticket" />
+						<AddToGoogleWalletButton id={ticket.id} kind="ticket" class="self-center" />
 					{/if}
 				{/snippet}
 				{#if googleWalletFirst}
 					{@render googleWalletButton()}
 				{/if}
 				{#if ticket.apple_pass_available && ticket.id && ticket.status !== 'cancelled'}
-					<AddToWalletButton ticketId={ticket.id} eventName={ticket.event.name} variant="default" />
+					<AddToWalletButton id={ticket.id} name={ticket.event.name} class="self-center" />
 				{/if}
 				{#if !googleWalletFirst}
 					{@render googleWalletButton()}
