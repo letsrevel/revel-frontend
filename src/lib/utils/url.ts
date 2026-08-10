@@ -26,3 +26,24 @@ export function getBackendUrl(path: string | null | undefined): string | null {
  * Alias for getBackendUrl for semantic clarity when dealing with images
  */
 export const getImageUrl = getBackendUrl;
+
+/**
+ * Returns the normalized URL when the value parses as an absolute http(s) URL,
+ * else null. Used to decide whether user-entered free text (e.g. a virtual
+ * event's `address` holding a meeting link, #830) is safe to render as a
+ * clickable anchor — everything else (javascript:, data:, relative paths,
+ * plain street addresses) stays inert text.
+ */
+export function asHttpUrl(value: string | null | undefined): string | null {
+	if (!value) return null;
+	const trimmed = value.trim();
+	if (!trimmed) return null;
+	let url: URL;
+	try {
+		url = new URL(trimmed);
+	} catch {
+		return null;
+	}
+	if (url.protocol !== 'https:' && url.protocol !== 'http:') return null;
+	return url.toString();
+}

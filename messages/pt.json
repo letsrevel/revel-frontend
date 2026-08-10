@@ -1232,7 +1232,16 @@
 		"waitlistInfoBody1": "Quando o teu evento está cheio, as pessoas podem juntar-se a uma lista de espera para serem avisadas se surgir uma vaga.",
 		"waitlistInfoBody2": "Por predefinição, quando surge uma vaga — alguém cancela ou aumentas a capacidade — todas as pessoas na lista de espera são avisadas ao mesmo tempo, e quem se inscrever primeiro fica com o lugar. Não há lugares reservados.",
 		"waitlistInfoBody3": "Abre Configurar lista de espera para um controlo mais preciso. Podes atribuir vagas a algumas pessoas de cada vez e reservar-lhes esses lugares durante um período definido. Escolhe os destinatários pela ordem da lista de espera ou de forma aleatória (modo Sorteio), e define uma data-limite — depois disso, cada pessoa que ainda esteja na lista de espera é avisada uma última vez, e os lugares livres ficam disponíveis por ordem de chegada até ao início do evento.",
-		"waitlistInfoFeedbackCta": "Partilha feedback no GitHub"
+		"waitlistInfoFeedbackCta": "Partilha feedback no GitHub",
+		"taxes": "Impostos e IVA",
+		"virtualEvent": "Evento virtual",
+		"virtualEventHint": "A participação é remota. O IVA passa a basear-se no país de quem compra, em vez da localização do evento.",
+		"vatCountry": "País de IVA personalizado",
+		"vatCountryPlaceholder": "p. ex. PT",
+		"vatCountryHint": "Código de país de duas letras (ISO). Deixa vazio para usar o país derivado do local ou da cidade do evento; caso contrário, o país de IVA da tua organização.",
+		"effectiveVatCountry": "País de IVA efetivo: {country}",
+		"vatCountryMismatchTitle": "O país de IVA difere do da tua organização",
+		"vatCountryMismatchBody": "Este evento é tributado em {country}, um país diferente do país de IVA da tua organização. Pode ser necessário um registo de IVA local ou o balcão único (OSS) — consulta o teu consultor fiscal."
 	},
 	"dialogContent": {
 		"close": "Fechar"
@@ -1599,7 +1608,8 @@
 		"organizedBy": "Organizado por",
 		"locationTbd": "Localização por definir",
 		"linkCopiedToClipboard": "Link copiado para a área de transferência!",
-		"failedToCopyLink": "Falha ao copiar o link"
+		"failedToCopyLink": "Falha ao copiar o link",
+		"virtualEvent": "Evento virtual"
 	},
 	"eventTime": {
 		"shownIn": "Horários mostrados em {label}"
@@ -1800,7 +1810,9 @@
 		"openInMaps": "Abrir no Mapas",
 		"mapOf": "Mapa de",
 		"visibilityNote": "Visibilidade: {visibility}",
-		"eventFull": "Evento cheio"
+		"eventFull": "Evento cheio",
+		"virtualEvent": "Evento virtual",
+		"openEventLink": "Abrir a ligação do evento"
 	},
 	"eventRSVP": {
 		"goingTo": "Vais a {eventName}!",
@@ -2770,6 +2782,9 @@
 			"viewStripePricing": "Ver os preços do Stripe",
 			"platformFee": "Taxa da plataforma",
 			"platformFeeDescription": "1,5% + 0,25 € por transação. Esta taxa vai para o Revel, para manter o serviço a funcionar.",
+			"vatCheckboxLabel": "Pago IVA sobre a taxa da plataforma (+{rate}%)",
+			"vatCheckboxHelp": "Aplica-se a organizações austríacas e organizações da UE sem um número de IVA validado. Nos restantes casos aplica-se a autoliquidação — sem IVA adicionado.",
+			"vatOnPlatformFee": "IVA sobre a taxa da plataforma ({rate}%)",
 			"organizationReceives": "A tua organização recebe",
 			"perTicketSoldAt": "Por bilhete vendido a {price}",
 			"totalFees": "Taxas totais: {fees} ({percentage}% do preço do bilhete)",
@@ -2809,7 +2824,10 @@
 		"mapsUrlHint": "Link partilhável para a localização (por exemplo, Google Maps)",
 		"mapsEmbed": "Código de incorporação",
 		"mapsEmbedHint": "Cola o código iframe do Google Maps",
-		"mapsPreview": "Pré-visualização"
+		"mapsPreview": "Pré-visualização",
+		"addressLabelVirtual": "Morada ou ligação de acesso",
+		"addressPlaceholderVirtual": "p. ex. https://meet.example.com/sala, ou uma morada",
+		"addressVirtualHint": "Cola aqui a ligação da reunião — torna-se clicável na página do evento. Quem a vê segue a definição de visibilidade da morada abaixo."
 	},
 	"login": {
 		"title": "Iniciar sessão - Revel",
@@ -2974,7 +2992,71 @@
 		"cancelling": "A cancelar…",
 		"successTitle": "Evento cancelado",
 		"successDescription": "Participantes estão a ser notificados.",
-		"errorTitle": "Não foi possível cancelar o evento"
+		"errorTitle": "Não foi possível cancelar o evento",
+		"successWithRefunds": "Participantes estão a ser notificados e os reembolsos estão a ser processados em segundo plano.",
+		"refundTicketsLabel": "Reembolsar todos os bilhetes",
+		"refundTicketsHelp": "Cancela todos os bilhetes e reembolsa os pagamentos online em segundo plano. Bilhetes offline são cancelados sem reembolso.",
+		"previewLoading": "A verificar bilhetes reembolsáveis…",
+		"previewError": "Não foi possível carregar a pré-visualização dos reembolsos. Podes cancelar o evento na mesma.",
+		"previewCounts": "De {active} bilhetes ativos, {online} têm pagamentos online reembolsáveis e {offline} foram pagos offline.",
+		"previewCurrencyLine": "{total} por reembolsar",
+		"previewBalance": "Saldo Stripe disponível: {balance}",
+		"balanceInsufficient": "O teu saldo Stripe disponível pode não cobrir todos os reembolsos. Serão tentados na mesma; alguns podem falhar até carregares o saldo na Stripe.",
+		"irreversibleWarning": "Assim que os reembolsos começarem, o cancelamento já não poderá ser revertido.",
+		"asyncNote": "Os reembolsos são processados em segundo plano. A equipa da organização recebe uma notificação com o resumo quando terminarem.",
+		"retryTitle": "Repetir reembolsos",
+		"retryDescription": "Este evento está cancelado, mas alguns bilhetes ainda têm pagamentos online reembolsáveis. Reinicia o processamento para os reembolsar.",
+		"retryButton": "Repetir reembolsos",
+		"retrySuccessTitle": "Reembolsos reiniciados",
+		"retryNothingLeft": "Todos os pagamentos online reembolsáveis deste evento foram processados.",
+		"refundsStartedAt": "Reembolsos iniciados a {datetime}"
+	},
+	"refundTicket": {
+		"menuItem": "Reembolsar pagamento",
+		"dialogTitle": "Reembolsar pagamento",
+		"dialogDescription": "Emite um reembolso total ou parcial do pagamento deste bilhete. Reembolsar não cancela o bilhete.",
+		"loadingContext": "A carregar os detalhes do pagamento…",
+		"loadingError": "Não foi possível carregar os detalhes do pagamento.",
+		"retry": "Tentar novamente",
+		"close": "Fechar",
+		"amountPaid": "Montante pago",
+		"alreadyRefunded": "Reembolsado até agora",
+		"pendingNote": "{amount} desse valor ainda aguarda confirmação da Stripe.",
+		"remainingRefundable": "Reembolsável restante",
+		"quickFull": "Restante completo ({amount})",
+		"quickPolicy": "Sugestão da política ({amount})",
+		"quickCustom": "Montante personalizado",
+		"amountLabel": "Montante do reembolso",
+		"amountInvalid": "Introduz um montante acima de 0 e no máximo {max}.",
+		"reasonLabel": "Motivo (opcional)",
+		"reasonPlaceholder": "Nota interna sobre o motivo deste reembolso",
+		"ticketStaysValidNote": "O bilhete continua válido e quem participa não é notificado automaticamente de reembolsos parciais. Para cancelar também o bilhete, usa «Cancelar bilhete» — reembolsar e cancelar são operações separadas.",
+		"nothingLeft": "Este pagamento foi totalmente reembolsado.",
+		"submitButton": "Reembolsar {amount}",
+		"submitting": "A reembolsar…",
+		"successTitle": "Reembolso iniciado",
+		"successDescription": "{amount} será devolvido assim que a Stripe confirmar o reembolso.",
+		"errorInsufficientBalance": "O teu saldo Stripe disponível não cobre este reembolso. Carrega o saldo na Stripe e tenta novamente.",
+		"errorNothingToRefund": "Não há nada para reembolsar neste pagamento.",
+		"errorStripe": "A Stripe não conseguiu processar o reembolso. Tenta novamente dentro de alguns minutos.",
+		"errorAmount": "O montante do reembolso está fora do intervalo permitido.",
+		"errorGeneric": "Não foi possível emitir o reembolso.",
+		"historyTitle": "Histórico de reembolsos",
+		"historyFailure": "Motivo da falha: {reason}",
+		"source": {
+			"organizer_api": "Pela organização",
+			"user_cancellation": "Cancelamento pelo participante",
+			"event_cancellation": "Cancelamento do evento",
+			"stripe_dashboard": "Painel Stripe"
+		}
+	},
+	"adminCancelTicket": {
+		"refundSectionLabel": "Reembolsar também o participante",
+		"refundHint": "Podem ser reembolsados até {max} para o método de pagamento original.",
+		"noRefundNote": "Nenhum reembolso será emitido agora. Podes reembolsar o pagamento separadamente a qualquer momento.",
+		"successTitle": "Bilhete cancelado",
+		"successWithRefund": "Foi iniciado um reembolso de {amount}.",
+		"errorGeneric": "Não foi possível cancelar o bilhete."
 	},
 	"cancelTicket": {
 		"button": "Cancelar bilhete",
@@ -6118,7 +6200,13 @@
 		"seatingConfig.sectorRequiredHelp": "É necessário selecionar um setor para este modo de atribuição de lugares",
 		"seatingConfig.sectorHelp": "Seleciona o setor de onde os lugares serão atribuídos",
 		"seatingConfig.noSectorsRequired": "Não há setores disponíveis - adiciona primeiro setores ao local",
-		"seatingConfig.venueRequiredForSeats": "Seleciona um local para ativar a seleção de setor"
+		"seatingConfig.venueRequiredForSeats": "Seleciona um local para ativar a seleção de setor",
+		"netPayoutLabel": "Recebes:",
+		"netPayoutAmount": "~{amount}",
+		"netPayoutPerTicket": "por bilhete",
+		"netPayoutPerTicketAtMin": "por bilhete (ao preço mínimo)",
+		"netPayoutInfoAria": "Sobre esta estimativa",
+		"netPayoutTooltip": "Isto é uma estimativa: as taxas dos cartões variam consoante o país e o tipo de cartão (assumem-se cartões europeus) e o IVA pode ser adicionado à taxa da plataforma Revel consoante o teu país de faturação e o teu número de IVA (pode aplicar-se a autoliquidação). Os valores exatos constam das tuas faturas de taxas."
 	},
 	"tierForm.seatingConfig.noVenueConfigured": "Para ativar a atribuição de lugares, configura um local para este evento em Informações básicas.",
 	"tierForm.seatingConfig.standingSector": "Setor em pé",
@@ -6507,7 +6595,7 @@
 			"vatPreviewError": "Não foi possível calcular a pré-visualização do IVA",
 			"vatIdValid": "Número de IVA válido",
 			"vatIdInvalid": "Não foi possível validar o número de IVA",
-			"reverseCharge": "Aplica-se autoliquidação — sem cobrança de IVA",
+			"reverseCharge": "Evento virtual — aplica-se a autoliquidação (reverse charge), IVA não cobrado (comprador empresarial da UE)",
 			"lineItem": "Item",
 			"lineNet": "Líquido",
 			"lineVat": "IVA",
@@ -6515,7 +6603,8 @@
 			"totalNet": "Total líquido",
 			"totalVat": "Total de IVA",
 			"totalGross": "Total",
-			"billingNameRequired": "O nome legal é obrigatório para a fatura"
+			"billingNameRequired": "O nome legal é obrigatório para a fatura",
+			"virtualB2cDisclaimer": "O IVA é cobrado à taxa do organizador. Como este é um evento virtual, a taxa de IVA do teu país pode aplicar-se legalmente."
 		}
 	},
 	"recurringEvents": {

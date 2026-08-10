@@ -2,6 +2,15 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
+	import {
+		Tooltip,
+		TooltipContent,
+		TooltipProvider,
+		TooltipTrigger
+	} from '$lib/components/ui/tooltip';
+	import { Info } from '@lucide/svelte';
+	import { estimateNetPayout, type PlatformFeeInfo } from '$lib/utils/fees';
+	import { formatMoney } from '$lib/utils/format';
 	import { SUPPORTED_CURRENCIES, normalizeDecimalInput } from './tier-form-helpers';
 
 	interface Props {
@@ -12,6 +21,10 @@
 		pwycMax: string;
 		currencySymbol: string;
 		isPending: boolean;
+		/** Org platform-fee terms; null hides the net-payout preview. */
+		platformFees?: PlatformFeeInfo | null;
+		/** True only for online (Stripe) tiers — the preview is meaningless otherwise. */
+		showNetPayout?: boolean;
 	}
 
 	let {
@@ -21,8 +34,25 @@
 		pwycMin = $bindable(),
 		pwycMax = $bindable(),
 		currencySymbol,
-		isPending
+		isPending,
+		platformFees = null,
+		showNetPayout = false
 	}: Props = $props();
+
+	// "You get: ~X" preview for online tiers — PWYC previews at the minimum
+	// price (that is what the price field stores for PWYC anyway).
+	const netPayout = $derived.by(() => {
+		if (!showNetPayout || !platformFees) return null;
+		const effectivePrice = parseFloat(
+			normalizeDecimalInput(priceType === 'fixed' ? price : pwycMin)
+		);
+		return estimateNetPayout({
+			price: effectivePrice,
+			platformFeePercent: platformFees.percent,
+			platformFeeFixed: platformFees.fixed,
+			platformFeeVatRate: platformFees.vatRate
+		});
+	});
 </script>
 
 <div>
@@ -119,5 +149,37 @@
 				/>
 			</div>
 		</div>
+	</div>
+{/if}
+
+<!-- Net payout preview: online tiers only, and only when the org's fee terms
+     are known. The tooltip explains why it is approximate. -->
+{#if netPayout}
+	<div class="flex items-center gap-2 rounded-lg border bg-muted/30 px-4 py-3">
+		<p class="text-sm">
+			<span class="font-medium">{m['tierForm.netPayoutLabel']()}</span>
+			<span class="font-bold">
+				{m['tierForm.netPayoutAmount']({ amount: formatMoney(netPayout.net, currency) })}
+			</span>
+			<span class="text-muted-foreground">
+				{priceType === 'pwyc'
+					? m['tierForm.netPayoutPerTicketAtMin']()
+					: m['tierForm.netPayoutPerTicket']()}
+			</span>
+		</p>
+		<TooltipProvider>
+			<Tooltip>
+				<TooltipTrigger
+					type="button"
+					aria-label={m['tierForm.netPayoutInfoAria']()}
+					class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+				>
+					<Info class="h-4 w-4" aria-hidden="true" />
+				</TooltipTrigger>
+				<TooltipContent>
+					<p class="max-w-xs text-sm">{m['tierForm.netPayoutTooltip']()}</p>
+				</TooltipContent>
+			</Tooltip>
+		</TooltipProvider>
 	</div>
 {/if}

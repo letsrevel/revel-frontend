@@ -10,7 +10,8 @@
 		getTicketPrice,
 		canCheckIn,
 		canConfirmPayment,
-		canManageTicket,
+		canAdminCancelTicket,
+		canRefundTicketPayment,
 		canUnconfirmPayment,
 		getPaymentMethodLabel
 	} from '$lib/utils/ticket-helpers';
@@ -57,6 +58,8 @@
 		onReseat?: (ticket: AdminTicketSchema) => void;
 		/** Rename the holder on a ticket. Omit to hide the action. */
 		onRenameHolder?: (ticket: AdminTicketSchema) => void;
+		/** Refund an online payment (full/partial). Omit to hide the action. */
+		onRefundTicket?: (ticket: AdminTicketSchema) => void;
 	}
 
 	const {
@@ -74,7 +77,8 @@
 		onBlacklist,
 		onUnconfirmPayment,
 		onReseat,
-		onRenameHolder
+		onRenameHolder,
+		onRefundTicket
 	}: Props = $props();
 </script>
 
@@ -143,13 +147,14 @@
 						tone={getTicketStatusTone(ticket.status ?? '')}
 						label={getTicketStatusLabel(ticket.status ?? '')}
 					/>
-					{#if ticket.status === 'cancelled'}
-						<RefundStatusBadge
-							status={ticket.payment?.refund_status}
-							amount={ticket.payment?.refund_amount}
-							currency={ticket.payment?.currency}
-						/>
-					{/if}
+					<!-- Refund state renders independent of ticket status: since
+					     organizer refunds, an active ticket can carry a (partial)
+					     refund — never infer cancellation from refund state. -->
+					<RefundStatusBadge
+						status={ticket.payment?.refund_status}
+						amount={ticket.payment?.refund_amount}
+						currency={ticket.payment?.currency}
+					/>
 				</div>
 			</div>
 
@@ -248,39 +253,22 @@
 						{m['eventTicketsAdmin.actionCheckIn']()}
 					</Button>
 				{/if}
-				{#if canConfirmPayment(ticket)}
-					<Button
-						size="sm"
-						variant="default"
-						onclick={() => onConfirmPayment(ticket)}
-						disabled={confirmPaymentPending}
-						class="flex-1"
-					>
-						<Check class="h-4 w-4" aria-hidden="true" />
-						{m['eventTicketsAdmin.actionConfirmPayment']()}
+				{#if onRefundTicket && canRefundTicketPayment(ticket)}
+					<Button size="sm" variant="outline" onclick={() => onRefundTicket(ticket)} class="flex-1">
+						<Undo2 class="h-4 w-4" aria-hidden="true" />
+						{m['refundTicket.menuItem']()}
 					</Button>
 				{/if}
-				{#if !ticket.membership && ticket.user?.id}
+				{#if canAdminCancelTicket(ticket)}
 					<Button
 						size="sm"
 						variant="outline"
-						onclick={() => onMakeMember(ticket)}
-						disabled={addMemberPending || tiersLoading}
-						class="flex-1"
+						class="flex-1 text-destructive hover:text-destructive"
+						onclick={() => onCancelTicket(ticket)}
+						disabled={cancelTicketPending}
 					>
-						<UserPlus class="h-4 w-4" aria-hidden="true" />
-						{m['makeMemberAction.button']()}
-					</Button>
-				{/if}
-				{#if ticket.tier?.payment_method === 'online' && ticket.payment?.stripe_dashboard_url}
-					<Button
-						size="sm"
-						variant="outline"
-						onclick={() => window.open(ticket.payment?.stripe_dashboard_url, '_blank')}
-						class="w-full"
-					>
-						<ExternalLink class="h-4 w-4" aria-hidden="true" />
-						{m['ticketCardList.manageOnStripe']()}
+						<X class="h-4 w-4" aria-hidden="true" />
+						{m['ticketCardList.cancelTicket']()}
 					</Button>
 				{/if}
 				<!-- More actions dropdown for mobile -->
@@ -299,6 +287,32 @@
 						{/snippet}
 					</DropdownMenu.Trigger>
 					<DropdownMenu.Content align="end">
+						{#if canConfirmPayment(ticket)}
+							<DropdownMenu.Item
+								onclick={() => onConfirmPayment(ticket)}
+								disabled={confirmPaymentPending}
+							>
+								<Check class="mr-2 h-4 w-4" aria-hidden="true" />
+								{m['eventTicketsAdmin.actionConfirmPayment']()}
+							</DropdownMenu.Item>
+						{/if}
+						{#if !ticket.membership && ticket.user?.id}
+							<DropdownMenu.Item
+								onclick={() => onMakeMember(ticket)}
+								disabled={addMemberPending || tiersLoading}
+							>
+								<UserPlus class="mr-2 h-4 w-4" aria-hidden="true" />
+								{m['makeMemberAction.button']()}
+							</DropdownMenu.Item>
+						{/if}
+						{#if ticket.tier?.payment_method === 'online' && ticket.payment?.stripe_dashboard_url}
+							<DropdownMenu.Item
+								onclick={() => window.open(ticket.payment?.stripe_dashboard_url, '_blank')}
+							>
+								<ExternalLink class="mr-2 h-4 w-4" aria-hidden="true" />
+								{m['ticketCardList.manageOnStripe']()}
+							</DropdownMenu.Item>
+						{/if}
 						{#if onRenameHolder && ticket.status !== 'checked_in' && ticket.status !== 'cancelled'}
 							<DropdownMenu.Item onclick={() => onRenameHolder(ticket)}>
 								<Pencil class="mr-2 h-4 w-4" aria-hidden="true" />
@@ -318,16 +332,6 @@
 							>
 								<Undo2 class="mr-2 h-4 w-4" aria-hidden="true" />
 								{m['eventTicketsAdmin.actionUnconfirmPayment']()}
-							</DropdownMenu.Item>
-						{/if}
-						{#if canManageTicket(ticket) && ticket.status !== 'cancelled'}
-							<DropdownMenu.Item
-								onclick={() => onCancelTicket(ticket)}
-								disabled={cancelTicketPending}
-								class="text-destructive focus:text-destructive"
-							>
-								<X class="mr-2 h-4 w-4" aria-hidden="true" />
-								{m['ticketCardList.cancelTicket']()}
 							</DropdownMenu.Item>
 						{/if}
 						{#if ticket.user?.id}

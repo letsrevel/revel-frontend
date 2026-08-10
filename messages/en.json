@@ -1232,7 +1232,16 @@
 		"waitlistInfoBody1": "When your event is full, people can join a waitlist to be notified if a spot opens up.",
 		"waitlistInfoBody2": "By default, when a spot becomes available — someone cancels, or you raise the capacity — everyone on the waitlist is notified at the same time, and whoever signs up first keeps it. No seats are reserved.",
 		"waitlistInfoBody3": "Open Configure waitlist for finer control. You can hand out spots to a few people at a time and hold those seats just for them for a set window. Pick recipients in waitlist order or randomly (Lottery mode), and set a cutoff date — after that, every remaining person on the waitlist is notified one last time and any free seats are first-come-first-served until the event starts.",
-		"waitlistInfoFeedbackCta": "Share feedback on GitHub"
+		"waitlistInfoFeedbackCta": "Share feedback on GitHub",
+		"taxes": "Taxes & VAT",
+		"virtualEvent": "Virtual event",
+		"virtualEventHint": "Attendees join remotely. VAT is then based on each buyer's country instead of the event's location.",
+		"vatCountry": "VAT country override",
+		"vatCountryPlaceholder": "e.g. AT",
+		"vatCountryHint": "Two-letter country code (ISO). Leave empty to use the country derived from the venue or event city, falling back to your organization's VAT country.",
+		"effectiveVatCountry": "Effective VAT country: {country}",
+		"vatCountryMismatchTitle": "VAT country differs from your organization's",
+		"vatCountryMismatchBody": "This event is taxed in {country}, which differs from your organization's VAT country. A local VAT registration or OSS may be required — ask your tax adviser."
 	},
 	"dialogContent": {
 		"close": "Close"
@@ -1599,7 +1608,8 @@
 		"organizedBy": "Organized by",
 		"locationTbd": "Location TBD",
 		"linkCopiedToClipboard": "Link copied to clipboard!",
-		"failedToCopyLink": "Failed to copy link"
+		"failedToCopyLink": "Failed to copy link",
+		"virtualEvent": "Virtual event"
 	},
 	"eventTime": {
 		"shownIn": "Times shown in {label}"
@@ -1800,7 +1810,9 @@
 		"openInMaps": "Open in Maps",
 		"mapOf": "Map of",
 		"visibilityNote": "Visibility: {visibility}",
-		"eventFull": "Event full"
+		"eventFull": "Event full",
+		"virtualEvent": "Virtual event",
+		"openEventLink": "Open event link"
 	},
 	"eventRSVP": {
 		"goingTo": "You're going to {eventName}!",
@@ -2770,6 +2782,9 @@
 			"viewStripePricing": "View Stripe pricing",
 			"platformFee": "Platform Fee",
 			"platformFeeDescription": "1.5% + €0.25 per transaction. This goes to Revel to keep the lights on.",
+			"vatCheckboxLabel": "I'm charged VAT on the platform fee (+{rate}%)",
+			"vatCheckboxHelp": "Applies to Austrian organizations and EU organizations without a validated VAT ID. Otherwise reverse charge applies — no VAT added.",
+			"vatOnPlatformFee": "VAT on platform fee ({rate}%)",
 			"organizationReceives": "Your organization receives",
 			"perTicketSoldAt": "Per ticket sold at {price}",
 			"totalFees": "Total fees: {fees} ({percentage}% of ticket price)",
@@ -2809,7 +2824,10 @@
 		"mapsUrlHint": "Shareable link to the location (e.g., Google Maps)",
 		"mapsEmbed": "Embed Code",
 		"mapsEmbedHint": "Paste iframe HTML from Google Maps",
-		"mapsPreview": "Preview"
+		"mapsPreview": "Preview",
+		"addressLabelVirtual": "Address or meeting link",
+		"addressPlaceholderVirtual": "e.g. https://meet.example.com/room, or a street address",
+		"addressVirtualHint": "Paste the meeting link here — it becomes a clickable link on the event page. Who sees it follows the address visibility setting below."
 	},
 	"login": {
 		"title": "Sign In - Revel",
@@ -2974,7 +2992,71 @@
 		"cancelling": "Cancelling…",
 		"successTitle": "Event cancelled",
 		"successDescription": "Participants are being notified.",
-		"errorTitle": "Could not cancel event"
+		"successWithRefunds": "Participants are being notified and refunds are being processed in the background.",
+		"errorTitle": "Could not cancel event",
+		"refundTicketsLabel": "Refund all tickets",
+		"refundTicketsHelp": "Cancels every ticket and refunds online payments in the background. Offline tickets are cancelled without a refund.",
+		"previewLoading": "Checking refundable tickets…",
+		"previewError": "Could not load the refund preview. You can still cancel the event.",
+		"previewCounts": "Of {active} active tickets, {online} have refundable online payments and {offline} were paid offline.",
+		"previewCurrencyLine": "{total} to refund",
+		"previewBalance": "Available Stripe balance: {balance}",
+		"balanceInsufficient": "Your available Stripe balance may not cover all refunds. Refunds will still be attempted; some may fail until you top up your balance in Stripe.",
+		"irreversibleWarning": "Once refunds start, this cancellation can no longer be undone.",
+		"asyncNote": "Refunds run in the background. Organization staff receive a summary notification when they finish.",
+		"retryTitle": "Retry refunds",
+		"retryDescription": "This event is cancelled, but some tickets still have refundable online payments. Restart the refund run to process them.",
+		"retryButton": "Retry refunds",
+		"retrySuccessTitle": "Refunds restarted",
+		"retryNothingLeft": "All refundable online payments for this event have been processed.",
+		"refundsStartedAt": "Refunds started {datetime}"
+	},
+	"refundTicket": {
+		"menuItem": "Refund payment",
+		"dialogTitle": "Refund payment",
+		"dialogDescription": "Issue a full or partial refund for this ticket's payment. Refunding does not cancel the ticket.",
+		"loadingContext": "Loading payment details…",
+		"loadingError": "Could not load the payment details.",
+		"retry": "Retry",
+		"close": "Close",
+		"amountPaid": "Amount paid",
+		"alreadyRefunded": "Refunded so far",
+		"pendingNote": "{amount} of that is still awaiting Stripe confirmation.",
+		"remainingRefundable": "Remaining refundable",
+		"quickFull": "Full remaining ({amount})",
+		"quickPolicy": "Policy suggestion ({amount})",
+		"quickCustom": "Custom amount",
+		"amountLabel": "Refund amount",
+		"amountInvalid": "Enter an amount above 0 and no more than {max}.",
+		"reasonLabel": "Reason (optional)",
+		"reasonPlaceholder": "Internal note about why this refund was issued",
+		"ticketStaysValidNote": "The ticket stays valid and the attendee is not automatically notified of partial refunds. To cancel the ticket as well, use Cancel Ticket — refunding and cancelling are separate.",
+		"nothingLeft": "This payment has been fully refunded.",
+		"submitButton": "Refund {amount}",
+		"submitting": "Refunding…",
+		"successTitle": "Refund initiated",
+		"successDescription": "{amount} will be returned to the attendee once Stripe confirms the refund.",
+		"errorInsufficientBalance": "Your available Stripe balance can't cover this refund. Top up your balance in Stripe, then try again.",
+		"errorNothingToRefund": "There is nothing to refund on this payment.",
+		"errorStripe": "Stripe could not process the refund. Please try again in a few minutes.",
+		"errorAmount": "The refund amount is out of range.",
+		"errorGeneric": "Could not issue the refund.",
+		"historyTitle": "Refund history",
+		"historyFailure": "Failure reason: {reason}",
+		"source": {
+			"organizer_api": "By organizer",
+			"user_cancellation": "Attendee cancellation",
+			"event_cancellation": "Event cancellation",
+			"stripe_dashboard": "Stripe Dashboard"
+		}
+	},
+	"adminCancelTicket": {
+		"refundSectionLabel": "Also refund the attendee",
+		"refundHint": "Up to {max} can be refunded to the original payment method.",
+		"noRefundNote": "No refund will be issued now. You can refund the payment separately at any time.",
+		"successTitle": "Ticket cancelled",
+		"successWithRefund": "A refund of {amount} has been initiated.",
+		"errorGeneric": "Could not cancel the ticket."
 	},
 	"cancelTicket": {
 		"button": "Cancel ticket",
@@ -6118,7 +6200,13 @@
 		"seatingConfig.sectorRequiredHelp": "A sector must be selected for this seat assignment mode",
 		"seatingConfig.sectorHelp": "Select the sector where seats will be assigned from",
 		"seatingConfig.noSectorsRequired": "No sectors available - please add sectors to the venue first",
-		"seatingConfig.venueRequiredForSeats": "Select a venue to enable sector selection"
+		"seatingConfig.venueRequiredForSeats": "Select a venue to enable sector selection",
+		"netPayoutLabel": "You get:",
+		"netPayoutAmount": "~{amount}",
+		"netPayoutPerTicket": "per ticket",
+		"netPayoutPerTicketAtMin": "per ticket (at the minimum price)",
+		"netPayoutInfoAria": "About this estimate",
+		"netPayoutTooltip": "This is an estimate: card fees vary by card country and type (European cards assumed), and VAT may be added to Revel's platform fee depending on your billing country and VAT ID (reverse charge may apply). The exact amounts appear on your fee invoices."
 	},
 	"tierForm.seatingConfig.noVenueConfigured": "To enable seat assignment, configure a venue for this event in Basic Info.",
 	"tierForm.seatingConfig.standingSector": "Standing Sector",
@@ -6507,7 +6595,7 @@
 			"vatPreviewError": "Could not calculate VAT preview",
 			"vatIdValid": "VAT ID valid",
 			"vatIdInvalid": "VAT ID could not be validated",
-			"reverseCharge": "Reverse charge applies — no VAT charged",
+			"reverseCharge": "Virtual event — reverse charge applies, no VAT charged (EU business buyer)",
 			"lineItem": "Item",
 			"lineNet": "Net",
 			"lineVat": "VAT",
@@ -6515,7 +6603,8 @@
 			"totalNet": "Total Net",
 			"totalVat": "Total VAT",
 			"totalGross": "Total",
-			"billingNameRequired": "Legal name is required for invoice"
+			"billingNameRequired": "Legal name is required for invoice",
+			"virtualB2cDisclaimer": "VAT is charged at the organizer's rate. As this is a virtual event, your country's VAT rate may legally apply instead."
 		}
 	},
 	"recurringEvents": {

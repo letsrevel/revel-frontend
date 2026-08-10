@@ -1232,7 +1232,16 @@
 		"waitlistInfoBody1": "Wenn dein Event ausgebucht ist, können sich Personen auf eine Warteliste setzen lassen, um benachrichtigt zu werden, sobald ein Platz frei wird.",
 		"waitlistInfoBody2": "Standardmäßig werden alle auf der Warteliste gleichzeitig benachrichtigt, sobald ein Platz frei wird — durch eine Stornierung oder weil du die Kapazität erhöhst. Wer sich zuerst anmeldet, bekommt den Platz. Es werden keine Plätze reserviert.",
 		"waitlistInfoBody3": "Öffne „Warteliste konfigurieren“ für mehr Kontrolle. Du kannst Plätze immer nur einigen Personen gleichzeitig anbieten und ihnen die Sitze für ein festgelegtes Zeitfenster reservieren. Wähle Empfänger*innen in Wartelisten-Reihenfolge oder zufällig (Losverfahren) und lege ein Cutoff-Datum fest — danach wird jede verbleibende Person auf der Warteliste ein letztes Mal benachrichtigt, und freie Plätze werden bis zum Eventbeginn an die Erstanmeldenden vergeben.",
-		"waitlistInfoFeedbackCta": "Feedback auf GitHub geben"
+		"waitlistInfoFeedbackCta": "Feedback auf GitHub geben",
+		"taxes": "Steuern & USt.",
+		"virtualEvent": "Virtuelles Event",
+		"virtualEventHint": "Die Teilnahme erfolgt remote. Die USt. richtet sich dann nach dem Land der Käufer*innen statt nach dem Veranstaltungsort.",
+		"vatCountry": "USt.-Land überschreiben",
+		"vatCountryPlaceholder": "z. B. AT",
+		"vatCountryHint": "Zweibuchstabiger Ländercode (ISO). Leer lassen, um das aus Venue bzw. Veranstaltungsstadt abgeleitete Land zu verwenden, ersatzweise das USt.-Land deiner Organisation.",
+		"effectiveVatCountry": "Effektives USt.-Land: {country}",
+		"vatCountryMismatchTitle": "USt.-Land weicht von dem deiner Organisation ab",
+		"vatCountryMismatchBody": "Dieses Event wird in {country} besteuert — das weicht vom USt.-Land deiner Organisation ab. Eventuell ist eine lokale USt.-Registrierung oder OSS nötig — frag deine Steuerberatung."
 	},
 	"dialogContent": {
 		"close": "Schließen"
@@ -1599,7 +1608,8 @@
 		"organizedBy": "Organisiert von",
 		"locationTbd": "Location TBD",
 		"linkCopiedToClipboard": "Link in die Zwischenablage kopiert!",
-		"failedToCopyLink": "Link konnte nicht kopiert werden"
+		"failedToCopyLink": "Link konnte nicht kopiert werden",
+		"virtualEvent": "Virtuelles Event"
 	},
 	"eventTime": {
 		"shownIn": "Zeiten werden in {label} angezeigt"
@@ -1800,7 +1810,9 @@
 		"openInMaps": "In Karten öffnen",
 		"mapOf": "Karte von",
 		"visibilityNote": "Sichtbarkeit: {visibility}",
-		"eventFull": "Veranstaltung ausgebucht"
+		"eventFull": "Veranstaltung ausgebucht",
+		"virtualEvent": "Virtuelles Event",
+		"openEventLink": "Event-Link öffnen"
 	},
 	"eventRSVP": {
 		"goingTo": "Du gehst zu {eventName}!",
@@ -2770,6 +2782,9 @@
 			"viewStripePricing": "Stripe-Preise ansehen",
 			"platformFee": "Plattformgebühr",
 			"platformFeeDescription": "1,5% + 0,25€ pro Transaktion. Dies geht an Revel, um den Betrieb aufrechtzuerhalten.",
+			"vatCheckboxLabel": "Ich zahle MwSt. auf die Plattformgebühr (+{rate} %)",
+			"vatCheckboxHelp": "Gilt für österreichische Organisationen und EU-Organisationen ohne validierte UID. Andernfalls greift Reverse Charge — keine MwSt.",
+			"vatOnPlatformFee": "MwSt. auf die Plattformgebühr ({rate} %)",
 			"organizationReceives": "Deine Organisation erhält",
 			"perTicketSoldAt": "Pro verkauftem Ticket zu {price}",
 			"totalFees": "Gesamtgebühren: {fees} ({percentage}% des Ticketpreises)",
@@ -2809,7 +2824,10 @@
 		"mapsUrlHint": "Teilbarer Link zum Standort (z.B. Google Maps)",
 		"mapsEmbed": "Einbettungscode",
 		"mapsEmbedHint": "Füge iframe-HTML von Google Maps ein",
-		"mapsPreview": "Vorschau"
+		"mapsPreview": "Vorschau",
+		"addressLabelVirtual": "Adresse oder Meeting-Link",
+		"addressPlaceholderVirtual": "z. B. https://meet.example.com/raum oder eine Adresse",
+		"addressVirtualHint": "Füge hier den Meeting-Link ein — auf der Eventseite wird er anklickbar. Wer ihn sieht, richtet sich nach der Adress-Sichtbarkeit unten."
 	},
 	"login": {
 		"title": "Anmelden - Revel",
@@ -2974,7 +2992,71 @@
 		"cancelling": "Wird abgesagt…",
 		"successTitle": "Veranstaltung abgesagt",
 		"successDescription": "Die Teilnehmer*innen werden benachrichtigt.",
-		"errorTitle": "Veranstaltung konnte nicht abgesagt werden"
+		"errorTitle": "Veranstaltung konnte nicht abgesagt werden",
+		"successWithRefunds": "Die Teilnehmer*innen werden benachrichtigt und die Rückerstattungen laufen im Hintergrund.",
+		"refundTicketsLabel": "Alle Tickets zurückerstatten",
+		"refundTicketsHelp": "Storniert alle Tickets und erstattet Online-Zahlungen im Hintergrund. Offline-Tickets werden ohne Rückerstattung storniert.",
+		"previewLoading": "Erstattungsfähige Tickets werden geprüft…",
+		"previewError": "Die Erstattungsvorschau konnte nicht geladen werden. Du kannst die Veranstaltung trotzdem absagen.",
+		"previewCounts": "Von {active} aktiven Tickets haben {online} erstattungsfähige Online-Zahlungen und {offline} wurden offline bezahlt.",
+		"previewCurrencyLine": "{total} zu erstatten",
+		"previewBalance": "Verfügbares Stripe-Guthaben: {balance}",
+		"balanceInsufficient": "Dein verfügbares Stripe-Guthaben deckt möglicherweise nicht alle Rückerstattungen. Sie werden trotzdem versucht; einige können fehlschlagen, bis du dein Guthaben in Stripe aufstockst.",
+		"irreversibleWarning": "Sobald die Rückerstattungen starten, kann die Absage nicht mehr rückgängig gemacht werden.",
+		"asyncNote": "Rückerstattungen laufen im Hintergrund. Das Organisationsteam erhält eine zusammenfassende Benachrichtigung, sobald sie abgeschlossen sind.",
+		"retryTitle": "Rückerstattungen erneut starten",
+		"retryDescription": "Diese Veranstaltung ist abgesagt, aber einige Tickets haben noch erstattungsfähige Online-Zahlungen. Starte den Erstattungslauf erneut, um sie zu verarbeiten.",
+		"retryButton": "Rückerstattungen erneut starten",
+		"retrySuccessTitle": "Rückerstattungen neu gestartet",
+		"retryNothingLeft": "Alle erstattungsfähigen Online-Zahlungen für diese Veranstaltung wurden verarbeitet.",
+		"refundsStartedAt": "Rückerstattungen gestartet am {datetime}"
+	},
+	"refundTicket": {
+		"menuItem": "Zahlung zurückerstatten",
+		"dialogTitle": "Zahlung zurückerstatten",
+		"dialogDescription": "Erstatte die Zahlung dieses Tickets ganz oder teilweise. Eine Rückerstattung storniert das Ticket nicht.",
+		"loadingContext": "Zahlungsdetails werden geladen…",
+		"loadingError": "Die Zahlungsdetails konnten nicht geladen werden.",
+		"retry": "Erneut versuchen",
+		"close": "Schließen",
+		"amountPaid": "Bezahlter Betrag",
+		"alreadyRefunded": "Bisher erstattet",
+		"pendingNote": "{amount} davon wartet noch auf die Bestätigung durch Stripe.",
+		"remainingRefundable": "Noch erstattungsfähig",
+		"quickFull": "Voller Restbetrag ({amount})",
+		"quickPolicy": "Richtlinien-Vorschlag ({amount})",
+		"quickCustom": "Eigener Betrag",
+		"amountLabel": "Erstattungsbetrag",
+		"amountInvalid": "Gib einen Betrag über 0 und höchstens {max} ein.",
+		"reasonLabel": "Grund (optional)",
+		"reasonPlaceholder": "Interne Notiz, warum diese Rückerstattung ausgestellt wurde",
+		"ticketStaysValidNote": "Das Ticket bleibt gültig und die teilnehmende Person wird bei Teilerstattungen nicht automatisch benachrichtigt. Um das Ticket zusätzlich zu stornieren, nutze „Ticket stornieren“ — Erstatten und Stornieren sind getrennte Vorgänge.",
+		"nothingLeft": "Diese Zahlung wurde vollständig erstattet.",
+		"submitButton": "{amount} erstatten",
+		"submitting": "Wird erstattet…",
+		"successTitle": "Rückerstattung veranlasst",
+		"successDescription": "{amount} wird zurücküberwiesen, sobald Stripe die Rückerstattung bestätigt.",
+		"errorInsufficientBalance": "Dein verfügbares Stripe-Guthaben reicht für diese Rückerstattung nicht aus. Stocke dein Guthaben in Stripe auf und versuche es erneut.",
+		"errorNothingToRefund": "Bei dieser Zahlung gibt es nichts zu erstatten.",
+		"errorStripe": "Stripe konnte die Rückerstattung nicht verarbeiten. Bitte versuche es in ein paar Minuten erneut.",
+		"errorAmount": "Der Erstattungsbetrag liegt außerhalb des zulässigen Bereichs.",
+		"errorGeneric": "Die Rückerstattung konnte nicht veranlasst werden.",
+		"historyTitle": "Erstattungsverlauf",
+		"historyFailure": "Fehlergrund: {reason}",
+		"source": {
+			"organizer_api": "Durch Veranstalter*in",
+			"user_cancellation": "Stornierung durch Teilnehmer*in",
+			"event_cancellation": "Veranstaltungsabsage",
+			"stripe_dashboard": "Stripe-Dashboard"
+		}
+	},
+	"adminCancelTicket": {
+		"refundSectionLabel": "Zusätzlich zurückerstatten",
+		"refundHint": "Bis zu {max} können auf die ursprüngliche Zahlungsmethode erstattet werden.",
+		"noRefundNote": "Es wird jetzt keine Rückerstattung ausgestellt. Du kannst die Zahlung jederzeit separat erstatten.",
+		"successTitle": "Ticket storniert",
+		"successWithRefund": "Eine Rückerstattung von {amount} wurde veranlasst.",
+		"errorGeneric": "Das Ticket konnte nicht storniert werden."
 	},
 	"cancelTicket": {
 		"button": "Ticket stornieren",
@@ -6118,7 +6200,13 @@
 		"seatingConfig.sectorRequiredHelp": "Ein Sektor muss für diesen Sitzplatzmodus ausgewählt werden",
 		"seatingConfig.sectorHelp": "Wähle den Sektor, aus dem Plätze zugewiesen werden",
 		"seatingConfig.noSectorsRequired": "Keine Sektoren verfügbar - bitte zuerst Sektoren zum Veranstaltungsort hinzufügen",
-		"seatingConfig.venueRequiredForSeats": "Wähle einen Veranstaltungsort, um die Sektorauswahl zu aktivieren"
+		"seatingConfig.venueRequiredForSeats": "Wähle einen Veranstaltungsort, um die Sektorauswahl zu aktivieren",
+		"netPayoutLabel": "Du erhältst:",
+		"netPayoutAmount": "~{amount}",
+		"netPayoutPerTicket": "pro Ticket",
+		"netPayoutPerTicketAtMin": "pro Ticket (beim Mindestpreis)",
+		"netPayoutInfoAria": "Über diese Schätzung",
+		"netPayoutTooltip": "Dies ist eine Schätzung: Kartengebühren variieren je nach Land und Kartentyp (angenommen werden europäische Karten), und je nach Rechnungsland und UID kann MwSt. auf die Revel-Plattformgebühr anfallen (ggf. Reverse Charge). Die genauen Beträge findest du auf deinen Gebührenrechnungen."
 	},
 	"tierForm.seatingConfig.noVenueConfigured": "Um Sitzplatzzuweisung zu aktivieren, konfiguriere einen Veranstaltungsort in den Basisinformationen.",
 	"tierForm.seatingConfig.standingSector": "Stehplatz-Sektor",
@@ -6507,7 +6595,7 @@
 			"vatPreviewError": "USt-Vorschau konnte nicht berechnet werden",
 			"vatIdValid": "USt-IdNr. gültig",
 			"vatIdInvalid": "USt-IdNr. konnte nicht validiert werden",
-			"reverseCharge": "Reverse Charge — keine USt berechnet",
+			"reverseCharge": "Virtuelles Event — Reverse Charge, keine USt. berechnet (EU-Geschäftskund*in)",
 			"lineItem": "Position",
 			"lineNet": "Netto",
 			"lineVat": "USt",
@@ -6515,7 +6603,8 @@
 			"totalNet": "Netto gesamt",
 			"totalVat": "USt gesamt",
 			"totalGross": "Gesamt",
-			"billingNameRequired": "Rechtlicher Name ist für die Rechnung erforderlich"
+			"billingNameRequired": "Rechtlicher Name ist für die Rechnung erforderlich",
+			"virtualB2cDisclaimer": "Die USt. wird zum Satz der Veranstalter*in berechnet. Da dies ein virtuelles Event ist, kann rechtlich der USt.-Satz deines Landes gelten."
 		}
 	},
 	"recurringEvents": {

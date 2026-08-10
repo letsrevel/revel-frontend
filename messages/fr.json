@@ -1118,7 +1118,16 @@
 		"waitlistInfoBody1": "Lorsque ton événement est complet, les personnes peuvent rejoindre une liste d'attente pour être averties si une place se libère.",
 		"waitlistInfoBody2": "Par défaut, lorsqu'une place se libère — quelqu'un annule ou tu augmentes la capacité — toutes les personnes en liste d'attente sont averties en même temps, et la première à s'inscrire conserve la place. Aucune place n'est réservée.",
 		"waitlistInfoBody3": "Ouvre « Configurer la liste d'attente » pour un contrôle plus fin. Tu peux attribuer les places à quelques personnes à la fois et leur réserver ces places pendant une durée définie. Choisis les destinataires dans l'ordre de la liste d'attente ou de manière aléatoire (mode Loterie), et fixe une date limite — après quoi chaque personne restant sur la liste d'attente est avertie une dernière fois et toute place libre est attribuée au premier arrivé jusqu'au début de l'événement.",
-		"waitlistInfoFeedbackCta": "Donne ton avis sur GitHub"
+		"waitlistInfoFeedbackCta": "Donne ton avis sur GitHub",
+		"taxes": "Taxes et TVA",
+		"virtualEvent": "Événement virtuel",
+		"virtualEventHint": "La participation se fait à distance. La TVA dépend alors du pays de la personne qui achète plutôt que du lieu de l'événement.",
+		"vatCountry": "Pays de TVA (remplacement)",
+		"vatCountryPlaceholder": "p. ex. FR",
+		"vatCountryHint": "Code pays à deux lettres (ISO). Laissez vide pour utiliser le pays déduit du lieu ou de la ville de l'événement, sinon le pays de TVA de votre organisation.",
+		"effectiveVatCountry": "Pays de TVA effectif : {country}",
+		"vatCountryMismatchTitle": "Le pays de TVA diffère de celui de votre organisation",
+		"vatCountryMismatchBody": "Cet événement est taxé en {country}, un pays différent du pays de TVA de votre organisation. Une immatriculation locale à la TVA ou le guichet unique (OSS) peut être nécessaire — consultez votre conseil fiscal."
 	},
 	"dialogContent": {
 		"close": "Fermer"
@@ -1485,7 +1494,8 @@
 		"organizedBy": "Organisé par",
 		"locationTbd": "Lieu à définir",
 		"linkCopiedToClipboard": "Lien copié dans le presse-papiers !",
-		"failedToCopyLink": "Échec de la copie du lien"
+		"failedToCopyLink": "Échec de la copie du lien",
+		"virtualEvent": "Événement virtuel"
 	},
 	"eventTime": {
 		"shownIn": "Horaires affichés en {label}"
@@ -1686,7 +1696,9 @@
 		"openInMaps": "Ouvrir dans Plans",
 		"mapOf": "Carte de",
 		"visibilityNote": "Visibilité : {visibility}",
-		"eventFull": "Événement complet"
+		"eventFull": "Événement complet",
+		"virtualEvent": "Événement virtuel",
+		"openEventLink": "Ouvrir le lien de l'événement"
 	},
 	"eventRSVP": {
 		"goingTo": "Tu participes à {eventName} !",
@@ -2656,6 +2668,9 @@
 			"viewStripePricing": "Voir les tarifs Stripe",
 			"platformFee": "Frais de plateforme",
 			"platformFeeDescription": "1,5 % + 0,25 € par transaction. Cela revient à Revel pour assurer le fonctionnement.",
+			"vatCheckboxLabel": "Je paie la TVA sur les frais de plateforme (+{rate} %)",
+			"vatCheckboxHelp": "Concerne les organisations autrichiennes et les organisations de l'UE sans numéro de TVA validé. Sinon, l'autoliquidation s'applique — pas de TVA ajoutée.",
+			"vatOnPlatformFee": "TVA sur les frais de plateforme ({rate} %)",
 			"organizationReceives": "Ton organisation reçoit",
 			"perTicketSoldAt": "Par billet vendu à {price}",
 			"totalFees": "Frais totaux : {fees} ({percentage} % du prix du billet)",
@@ -2695,7 +2710,10 @@
 		"mapsUrlHint": "Lien partageable vers le lieu (par ex. Google Maps)",
 		"mapsEmbed": "Code d'intégration",
 		"mapsEmbedHint": "Colle le code HTML iframe de Google Maps",
-		"mapsPreview": "Aperçu"
+		"mapsPreview": "Aperçu",
+		"addressLabelVirtual": "Adresse ou lien de connexion",
+		"addressPlaceholderVirtual": "p. ex. https://meet.example.com/salle, ou une adresse",
+		"addressVirtualHint": "Collez ici le lien de la réunion : il deviendra cliquable sur la page de l'événement. Sa visibilité suit le réglage de visibilité de l'adresse ci-dessous."
 	},
 	"login": {
 		"title": "Se connecter - Revel",
@@ -2860,7 +2878,71 @@
 		"cancelling": "Annulation…",
 		"successTitle": "Événement annulé",
 		"successDescription": "Les participants sont en cours de notification.",
-		"errorTitle": "Impossible d'annuler l'événement"
+		"errorTitle": "Impossible d'annuler l'événement",
+		"successWithRefunds": "Les participants sont en cours de notification et les remboursements sont traités en arrière-plan.",
+		"refundTicketsLabel": "Rembourser tous les billets",
+		"refundTicketsHelp": "Annule tous les billets et rembourse les paiements en ligne en arrière-plan. Les billets hors ligne sont annulés sans remboursement.",
+		"previewLoading": "Vérification des billets remboursables…",
+		"previewError": "Impossible de charger l'aperçu des remboursements. Tu peux tout de même annuler l'événement.",
+		"previewCounts": "Sur {active} billets actifs, {online} ont des paiements en ligne remboursables et {offline} ont été payés hors ligne.",
+		"previewCurrencyLine": "{total} à rembourser",
+		"previewBalance": "Solde Stripe disponible : {balance}",
+		"balanceInsufficient": "Ton solde Stripe disponible pourrait ne pas couvrir tous les remboursements. Ils seront quand même tentés ; certains peuvent échouer tant que tu n'as pas rechargé ton solde dans Stripe.",
+		"irreversibleWarning": "Une fois les remboursements lancés, cette annulation ne pourra plus être annulée.",
+		"asyncNote": "Les remboursements sont traités en arrière-plan. L'équipe de l'organisation recevra une notification récapitulative une fois terminés.",
+		"retryTitle": "Relancer les remboursements",
+		"retryDescription": "Cet événement est annulé, mais certains billets ont encore des paiements en ligne remboursables. Relance le traitement pour les rembourser.",
+		"retryButton": "Relancer les remboursements",
+		"retrySuccessTitle": "Remboursements relancés",
+		"retryNothingLeft": "Tous les paiements en ligne remboursables de cet événement ont été traités.",
+		"refundsStartedAt": "Remboursements lancés le {datetime}"
+	},
+	"refundTicket": {
+		"menuItem": "Rembourser le paiement",
+		"dialogTitle": "Rembourser le paiement",
+		"dialogDescription": "Émets un remboursement total ou partiel du paiement de ce billet. Rembourser n'annule pas le billet.",
+		"loadingContext": "Chargement des détails du paiement…",
+		"loadingError": "Impossible de charger les détails du paiement.",
+		"retry": "Réessayer",
+		"close": "Fermer",
+		"amountPaid": "Montant payé",
+		"alreadyRefunded": "Déjà remboursé",
+		"pendingNote": "{amount} de ce montant attend encore la confirmation de Stripe.",
+		"remainingRefundable": "Restant remboursable",
+		"quickFull": "Totalité du restant ({amount})",
+		"quickPolicy": "Suggestion de la politique ({amount})",
+		"quickCustom": "Montant personnalisé",
+		"amountLabel": "Montant du remboursement",
+		"amountInvalid": "Saisis un montant supérieur à 0 et d'au plus {max}.",
+		"reasonLabel": "Raison (optionnel)",
+		"reasonPlaceholder": "Note interne expliquant pourquoi ce remboursement a été émis",
+		"ticketStaysValidNote": "Le billet reste valable et le participant n'est pas notifié automatiquement des remboursements partiels. Pour annuler aussi le billet, utilise « Annuler le billet » — rembourser et annuler sont des opérations distinctes.",
+		"nothingLeft": "Ce paiement a été intégralement remboursé.",
+		"submitButton": "Rembourser {amount}",
+		"submitting": "Remboursement…",
+		"successTitle": "Remboursement lancé",
+		"successDescription": "{amount} sera reversé au participant une fois le remboursement confirmé par Stripe.",
+		"errorInsufficientBalance": "Ton solde Stripe disponible ne peut pas couvrir ce remboursement. Recharge ton solde dans Stripe, puis réessaie.",
+		"errorNothingToRefund": "Il n'y a rien à rembourser sur ce paiement.",
+		"errorStripe": "Stripe n'a pas pu traiter le remboursement. Réessaie dans quelques minutes.",
+		"errorAmount": "Le montant du remboursement est hors limites.",
+		"errorGeneric": "Impossible d'émettre le remboursement.",
+		"historyTitle": "Historique des remboursements",
+		"historyFailure": "Motif de l'échec : {reason}",
+		"source": {
+			"organizer_api": "Par l'organisation",
+			"user_cancellation": "Annulation par le participant",
+			"event_cancellation": "Annulation de l'événement",
+			"stripe_dashboard": "Tableau de bord Stripe"
+		}
+	},
+	"adminCancelTicket": {
+		"refundSectionLabel": "Rembourser aussi le participant",
+		"refundHint": "Jusqu'à {max} peuvent être remboursés sur le moyen de paiement d'origine.",
+		"noRefundNote": "Aucun remboursement ne sera émis maintenant. Tu peux rembourser le paiement séparément à tout moment.",
+		"successTitle": "Billet annulé",
+		"successWithRefund": "Un remboursement de {amount} a été lancé.",
+		"errorGeneric": "Impossible d'annuler le billet."
 	},
 	"cancelTicket": {
 		"button": "Annuler le billet",
@@ -6088,7 +6170,13 @@
 		"seatingConfig.sectorRequiredHelp": "Un secteur doit être sélectionné pour ce mode d'attribution des places",
 		"seatingConfig.sectorHelp": "Sélectionne le secteur à partir duquel les places seront attribuées",
 		"seatingConfig.noSectorsRequired": "Aucun secteur disponible - ajoute d'abord des secteurs au lieu",
-		"seatingConfig.venueRequiredForSeats": "Sélectionne un lieu pour activer la sélection de secteur"
+		"seatingConfig.venueRequiredForSeats": "Sélectionne un lieu pour activer la sélection de secteur",
+		"netPayoutLabel": "Tu reçois :",
+		"netPayoutAmount": "~{amount}",
+		"netPayoutPerTicket": "par billet",
+		"netPayoutPerTicketAtMin": "par billet (au prix minimum)",
+		"netPayoutInfoAria": "À propos de cette estimation",
+		"netPayoutTooltip": "Il s'agit d'une estimation : les frais de carte varient selon le pays et le type de carte (cartes européennes supposées), et la TVA peut s'ajouter aux frais de plateforme de Revel selon ton pays de facturation et ton numéro de TVA (autoliquidation possible). Les montants exacts figurent sur tes factures de frais."
 	},
 	"tierForm.seatingConfig.noVenueConfigured": "Pour activer l'attribution des places, configure un lieu pour cet événement dans les Informations de base.",
 	"tierForm.seatingConfig.standingSector": "Secteur debout",
@@ -6477,7 +6565,7 @@
 			"vatPreviewError": "Impossible de calculer l'aperçu de la TVA",
 			"vatIdValid": "Numéro de TVA valide",
 			"vatIdInvalid": "Le numéro de TVA n'a pas pu être validé",
-			"reverseCharge": "L'autoliquidation s'applique — aucune TVA facturée",
+			"reverseCharge": "Événement virtuel — autoliquidation applicable, TVA non facturée (acheteur professionnel UE)",
 			"lineItem": "Article",
 			"lineNet": "Net",
 			"lineVat": "TVA",
@@ -6485,7 +6573,8 @@
 			"totalNet": "Total net",
 			"totalVat": "Total TVA",
 			"totalGross": "Total",
-			"billingNameRequired": "Le nom légal est obligatoire pour la facture"
+			"billingNameRequired": "Le nom légal est obligatoire pour la facture",
+			"virtualB2cDisclaimer": "La TVA est facturée au taux de l'organisateur. S'agissant d'un événement virtuel, le taux de TVA de votre pays peut légalement s'appliquer."
 		}
 	},
 	"recurringEvents": {

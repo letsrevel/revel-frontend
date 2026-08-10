@@ -59,6 +59,8 @@ vi.mock('$lib/paraglide/messages.js', () => ({
 	'checkout.billing.vatIdValid': () => 'VAT ID valid',
 	'checkout.billing.vatIdInvalid': () => 'VAT ID could not be validated',
 	'checkout.billing.reverseCharge': () => 'Reverse charge applies — no VAT charged',
+	'checkout.billing.virtualB2cDisclaimer': () =>
+		'VAT charged at the organizer’s rate; your country’s rate may apply',
 	'checkout.billing.lineItem': () => 'Item',
 	'checkout.billing.lineNet': () => 'Net',
 	'checkout.billing.lineVat': () => 'VAT',
@@ -250,6 +252,89 @@ describe('CheckoutBillingSection', () => {
 			await waitFor(() => {
 				expect(screen.getByText(/Reverse charge applies — no VAT charged/i)).toBeInTheDocument();
 			});
+			// BE #868/#869: reverse charge only ever arrives for virtual events, but
+			// the FE renders whatever the backend decides — no client-side gating.
+			expect(screen.queryByText(/VAT charged at the organizer’s rate/i)).not.toBeInTheDocument();
+		});
+
+		it('shows the virtual B2C disclaimer when the preview flags it (#830)', async () => {
+			const { eventpublicticketsVatPreview } = await import('$lib/api/generated/sdk.gen');
+			vi.mocked(eventpublicticketsVatPreview).mockResolvedValueOnce({
+				data: {
+					vat_id_valid: null,
+					vat_id_validation_error: null,
+					reverse_charge: false,
+					virtual_b2c_disclaimer: true,
+					line_items: [],
+					total_net: '41.67',
+					total_vat: '8.33',
+					total_gross: '50.00',
+					currency: 'EUR'
+				},
+				error: null,
+				response: { status: 200 } as Response
+			});
+
+			renderWithQueryClient();
+			await fireEvent.click(screen.getByRole('checkbox', { name: /Request Invoice/i }));
+
+			const vatInput = screen.getByLabelText(/VAT ID/i);
+			await fireEvent.input(vatInput, { target: { value: 'FR123456789' } });
+			await fireEvent.blur(vatInput);
+
+			await waitFor(() => {
+				expect(screen.getByText(/VAT charged at the organizer’s rate/i)).toBeInTheDocument();
+			});
+			expect(screen.queryByText(/Reverse charge applies/i)).not.toBeInTheDocument();
+		});
+
+		it('renders only the reverse-charge banner if the backend ever sent both flags', async () => {
+			// The flags are mutually exclusive by construction (reverse charge
+			// requires a validated VAT ID, the disclaimer requires the opposite);
+			// this pins the defensive else-if should that contract ever break.
+			const { eventpublicticketsVatPreview } = await import('$lib/api/generated/sdk.gen');
+			vi.mocked(eventpublicticketsVatPreview).mockResolvedValueOnce({
+				data: {
+					vat_id_valid: true,
+					vat_id_validation_error: null,
+					reverse_charge: true,
+					virtual_b2c_disclaimer: true,
+					line_items: [],
+					total_net: '50.00',
+					total_vat: '0.00',
+					total_gross: '50.00',
+					currency: 'EUR'
+				},
+				error: null,
+				response: { status: 200 } as Response
+			});
+
+			renderWithQueryClient();
+			await fireEvent.click(screen.getByRole('checkbox', { name: /Request Invoice/i }));
+
+			const vatInput = screen.getByLabelText(/VAT ID/i);
+			await fireEvent.input(vatInput, { target: { value: 'DE123456789' } });
+			await fireEvent.blur(vatInput);
+
+			await waitFor(() => {
+				expect(screen.getByText(/Reverse charge applies/i)).toBeInTheDocument();
+			});
+			expect(screen.queryByText(/VAT charged at the organizer’s rate/i)).not.toBeInTheDocument();
+		});
+
+		it('shows neither banner for a default physical-event preview', async () => {
+			renderWithQueryClient();
+			await fireEvent.click(screen.getByRole('checkbox', { name: /Request Invoice/i }));
+
+			const vatInput = screen.getByLabelText(/VAT ID/i);
+			await fireEvent.input(vatInput, { target: { value: 'ATU12345678' } });
+			await fireEvent.blur(vatInput);
+
+			await waitFor(() => {
+				expect(screen.getByText('Total Net')).toBeInTheDocument();
+			});
+			expect(screen.queryByText(/Reverse charge applies/i)).not.toBeInTheDocument();
+			expect(screen.queryByText(/VAT charged at the organizer’s rate/i)).not.toBeInTheDocument();
 		});
 
 		it('shows error message when VAT preview fails', async () => {

@@ -44,6 +44,10 @@ test.describe('J10 event lifecycle @p1', () => {
 		const reason = 'Venue flooded — E2E cancellation reason';
 		await page.getByRole('button', { name: 'Cancel event' }).click();
 		const cancelDialog = page.getByRole('dialog', { name: 'Cancel this event' });
+		// Organizer refunds (BE #870): the dialog now offers an opt-in refund
+		// sweep with an advisory preview. Left unchecked here — this event has
+		// no online payments; the full flow is covered in organizer-refunds.spec.
+		await expect(cancelDialog.getByLabel('Refund all tickets')).toBeVisible({ timeout: 15_000 });
 		await cancelDialog.getByLabel('Reason (optional)').fill(reason);
 		await cancelDialog.getByRole('button', { name: 'Cancel event' }).click();
 		// { exact: true } — the edit-page header concatenates "... Event cancelled",

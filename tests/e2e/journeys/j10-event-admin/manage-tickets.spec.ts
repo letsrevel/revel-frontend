@@ -66,32 +66,23 @@ test.describe('J10 manage tickets @p1', () => {
 			await expect(page).toHaveURL(/order_by=/, { timeout: 15_000 });
 		}
 
-		// Confirm alpha's offline payment → ACTIVE.
+		// Confirm alpha's offline payment → ACTIVE, via the row's actions menu.
 		const activeAlphaRow = page
 			.locator('tr, article, li, div')
 			.filter({ hasText: alphaName })
 			.filter({ hasText: /Active/ })
 			.filter({ visible: true })
 			.first();
-		// Scope to a container holding alpha but NOT beta — both tickets are
-		// pending, so a page-wide .first() could hit the wrong row.
-		await page
-			.locator('tr, article, li, div')
-			.filter({ hasText: alphaName })
-			.filter({ hasNot: page.getByText(`${beta.firstName} ${beta.lastName}`) })
-			.filter({ visible: true })
-			.first()
-			.getByRole('button', { name: 'Confirm Payment' })
-			.first()
-			.click();
+		const alphaKebab = page
+			.getByRole('button', { name: `More actions for ${alphaName}` })
+			.filter({ visible: true });
+		await alphaKebab.first().click();
+		await page.getByRole('menuitem', { name: 'Confirm Payment' }).click();
 		const confirmDialog = page.getByRole('dialog', { name: 'Confirm Payment' });
 		await confirmDialog.getByRole('button', { name: 'Confirm Payment' }).click();
 		await expect(activeAlphaRow).toBeVisible({ timeout: 20_000 });
 
 		// Revert it back to pending via the row's actions menu.
-		const alphaKebab = page
-			.getByRole('button', { name: `More actions for ${alphaName}` })
-			.filter({ visible: true });
 		const pendingAlphaRow = page
 			.locator('tr, article, li, div')
 			.filter({ hasText: alphaName })
@@ -110,11 +101,16 @@ test.describe('J10 manage tickets @p1', () => {
 			await expect(pendingAlphaRow).toBeVisible({ timeout: 5_000 });
 		}).toPass({ timeout: 60_000 });
 
-		// Admin-cancel beta's ticket.
+		// Admin-cancel beta's ticket via the inline row action.
 		const betaName = `${beta.firstName} ${beta.lastName}`;
-		const betaKebab = page
-			.getByRole('button', { name: `More actions for ${betaName}` })
-			.filter({ visible: true });
+		// Scope to a container holding beta but NOT alpha — a page-wide
+		// .first() could hit the wrong row's Cancel Ticket button.
+		const betaRow = page
+			.locator('tr, article, li, div')
+			.filter({ hasText: betaName })
+			.filter({ hasNot: page.getByText(alphaName) })
+			.filter({ visible: true })
+			.first();
 		const cancelledBetaRow = page
 			.locator('tr, article, li, div')
 			.filter({ hasText: betaName })
@@ -123,8 +119,10 @@ test.describe('J10 manage tickets @p1', () => {
 			.first();
 		await expect(async () => {
 			if (!(await cancelledBetaRow.isVisible())) {
-				await betaKebab.first().click({ timeout: 3_000 });
-				await page.getByRole('menuitem', { name: 'Cancel Ticket' }).click({ timeout: 3_000 });
+				await betaRow
+					.getByRole('button', { name: 'Cancel Ticket' })
+					.first()
+					.click({ timeout: 3_000 });
 				const cancelDialog = page.getByRole('dialog', { name: 'Cancel Ticket' });
 				await cancelDialog.getByRole('button', { name: 'Cancel Ticket' }).click({
 					timeout: 3_000

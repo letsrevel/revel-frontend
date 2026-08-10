@@ -16,10 +16,12 @@
 		Globe,
 		Building2,
 		ExternalLink,
-		Info
+		Info,
+		Video
 	} from '@lucide/svelte';
 	import VenueInfoModal from '$lib/components/venues/VenueInfoModal.svelte';
 	import { sanitizeMapEmbedUrl } from '$lib/utils/maps';
+	import { asHttpUrl } from '$lib/utils/url';
 
 	interface Props {
 		event: EventDetailSchema;
@@ -37,6 +39,16 @@
 	const mapsEmbed = $derived(
 		sanitizeMapEmbedUrl(event.location_maps_embed || event.venue?.location_maps_embed || null)
 	);
+
+	// Virtual events (#830): an `address` holding an http(s) URL is the join
+	// link — rendered as an anchor in the virtual row, and kept OUT of the
+	// location lines below (a raw URL is not a place). A plain-text address on
+	// a virtual event still renders as location like before.
+	const joinUrl = $derived(event.is_virtual ? asHttpUrl(event.address) : null);
+	const locationAddress = $derived(joinUrl ? null : event.address);
+	// With the join link shown and no physical anchor left, a "Location TBD"
+	// row under "Virtual event" would be noise — drop the row entirely.
+	const showLocationRow = $derived(!joinUrl || !!event.venue || !!event.city);
 
 	// Location split into two lines for better readability
 	const locationDisplay = $derived.by((): { primary: string; secondary?: string } => {
@@ -62,7 +74,7 @@
 
 		// Fall back to event's address and city
 		if (!event.city) {
-			return { primary: event.address || m['eventQuickInfo.locationTbd']() };
+			return { primary: locationAddress || m['eventQuickInfo.locationTbd']() };
 		}
 
 		const cityCountry = event.city.country
@@ -70,8 +82,8 @@
 			: event.city.name;
 
 		// If we have an address, it's primary and city is secondary
-		if (event.address) {
-			return { primary: event.address, secondary: cityCountry };
+		if (locationAddress) {
+			return { primary: locationAddress, secondary: cityCountry };
 		}
 
 		// Just city/country on primary line
@@ -228,55 +240,87 @@
 		</div>
 	</div>
 
+	<!-- Virtual attendance (#830/BE #869): buyers deciding on a ticket deserve
+	     to know attendance is remote before the description says so. -->
+	{#if event.is_virtual}
+		<div class={itemClasses} role="listitem">
+			<Video class={iconClasses} aria-hidden="true" />
+			<div class={textClasses}>
+				<span class="block font-bold">{m['eventQuickInfo.virtualEvent']()}</span>
+				{#if joinUrl}
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
+					<a
+						href={joinUrl}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="group block break-all text-primary hover:underline"
+						aria-label={m['eventQuickInfo.openEventLink']()}
+					>
+						<span class="inline-flex items-center gap-1">
+							{joinUrl}
+							<ExternalLink
+								class="h-3 w-3 shrink-0 opacity-70 group-hover:opacity-100"
+								aria-hidden="true"
+							/>
+						</span>
+					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
+				{/if}
+			</div>
+		</div>
+	{/if}
+
 	<!-- Location -->
-	<div class={itemClasses} role="listitem">
-		<MapPin class={iconClasses} aria-hidden="true" />
-		<div class={textClasses}>
-			{#if mapsUrl}
-				<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
-				<a
-					href={mapsUrl}
-					target="_blank"
-					rel="noopener noreferrer"
-					class="group block text-primary hover:underline"
-					aria-label="{locationDisplay.primary} - {m['eventQuickInfo.openInMaps']()}"
-				>
-					<span class="inline-flex items-center gap-1">
-						{locationDisplay.primary}
-						<ExternalLink class="h-3 w-3 opacity-70 group-hover:opacity-100" aria-hidden="true" />
-					</span>
-				</a>
-				<!-- eslint-enable svelte/no-navigation-without-resolve -->
-				{#if locationDisplay.secondary}
+	{#if showLocationRow}
+		<div class={itemClasses} role="listitem">
+			<MapPin class={iconClasses} aria-hidden="true" />
+			<div class={textClasses}>
+				{#if mapsUrl}
 					<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
 					<a
 						href={mapsUrl}
 						target="_blank"
 						rel="noopener noreferrer"
-						class="block text-xs text-muted-foreground hover:text-primary hover:underline"
+						class="group block text-primary hover:underline"
+						aria-label="{locationDisplay.primary} - {m['eventQuickInfo.openInMaps']()}"
 					>
-						{locationDisplay.secondary}
+						<span class="inline-flex items-center gap-1">
+							{locationDisplay.primary}
+							<ExternalLink class="h-3 w-3 opacity-70 group-hover:opacity-100" aria-hidden="true" />
+						</span>
 					</a>
 					<!-- eslint-enable svelte/no-navigation-without-resolve -->
+					{#if locationDisplay.secondary}
+						<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
+						<a
+							href={mapsUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="block text-xs text-muted-foreground hover:text-primary hover:underline"
+						>
+							{locationDisplay.secondary}
+						</a>
+						<!-- eslint-enable svelte/no-navigation-without-resolve -->
+					{/if}
+				{:else}
+					<span class="block">{locationDisplay.primary}</span>
+					{#if locationDisplay.secondary}
+						<span class="block text-xs text-muted-foreground">{locationDisplay.secondary}</span>
+					{/if}
 				{/if}
-			{:else}
-				<span class="block">{locationDisplay.primary}</span>
-				{#if locationDisplay.secondary}
-					<span class="block text-xs text-muted-foreground">{locationDisplay.secondary}</span>
+				{#if hasVenueAdditionalInfo && event.venue}
+					<button
+						type="button"
+						onclick={() => (venueInfoModalOpen = true)}
+						class="mt-1 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+					>
+						<Info class="h-3 w-3" aria-hidden="true" />
+						{m['venueInfo.moreInfo']()}
+					</button>
 				{/if}
-			{/if}
-			{#if hasVenueAdditionalInfo && event.venue}
-				<button
-					type="button"
-					onclick={() => (venueInfoModalOpen = true)}
-					class="mt-1 inline-flex items-center gap-1 text-xs text-primary hover:underline"
-				>
-					<Info class="h-3 w-3" aria-hidden="true" />
-					{m['venueInfo.moreInfo']()}
-				</button>
-			{/if}
+			</div>
 		</div>
-	</div>
+	{/if}
 
 	<!-- Map Embed -->
 	{#if mapsEmbed}
