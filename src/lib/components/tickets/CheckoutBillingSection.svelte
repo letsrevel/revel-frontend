@@ -393,7 +393,16 @@
 						     highlight-foreground-light / highlight-dark flip the tone
 						     vocabulary uses for compact text-only warnings (amber itself
 						     fails on a light surface). Icon + words carry the meaning,
-						     never colour alone. -->
+						     never colour alone.
+						     Surface note: this line sits TWO muted washes deep
+						     (bg-muted/20 section > bg-muted/30 box over the dialog's
+						     --background) — a stacked-tint site the audit script cannot
+						     express, so it is hand-verified here with the script's own
+						     compositing math: success 4.80:1 light / 9.63:1 dark;
+						     highlight-foreground 13.43:1 light / highlight 9.26:1 dark.
+						     Recompute if --muted, --success, --highlight or this nesting
+						     changes (the script's success-on-background row is only the
+						     token-level floor). -->
 						{#if vatPreview.vat_id_valid !== null && vatPreview.vat_id_valid !== undefined}
 							<div
 								class="flex items-center gap-1.5 text-sm {vatIdValid
@@ -413,19 +422,25 @@
 						<!-- Reverse charge banner. Only ever true for VIRTUAL events since
 						     BE #868/#869 (physical admission is a domestic gross supply) —
 						     the backend is the single source of truth, no client gating.
-						     bg-info/10 + text-info over the dialog's --background is the
-						     audited "MyTicketModal / DemoBanner info banner" recipe
-						     (≥4.5 both modes, COMPOSITED_PAIRS). -->
+						     The two flags are mutually exclusive by construction
+						     (reverse_charge requires a VALIDATED VAT ID, the B2C
+						     disclaimer requires the opposite), so the else-if is pure
+						     defence: if the backend contract ever broke, reverse charge —
+						     the one that changes the amount paid — wins over the
+						     disclaimer rather than both rendering contradictory advice.
+						     Colour: bg-info/10 + text-info on the same stacked-tint
+						     surface as the VAT-ID line above; hand-verified with the
+						     audit script's compositing math: 7.91:1 light / 7.23:1 dark
+						     (the "MyTicketModal / DemoBanner" COMPOSITED_PAIRS row covers
+						     only the single-wash variant). -->
 						{#if vatPreview.reverse_charge}
 							<div class="rounded bg-info/10 px-2 py-1.5 text-sm text-info" role="status">
 								{m['checkout.billing.reverseCharge']()}
 							</div>
-						{/if}
-
-						<!-- Virtual EU B2C interim treatment (#830/BE #869): charged at the
-						     organizer's rate; the buyer's country's rate may legally apply
-						     via OSS. Same audited info recipe as above. -->
-						{#if vatPreview.virtual_b2c_disclaimer}
+						{:else if vatPreview.virtual_b2c_disclaimer}
+							<!-- Virtual EU B2C interim treatment (#830/BE #869): charged at
+							     the organizer's rate; the buyer's country's rate may legally
+							     apply via OSS. -->
 							<div class="rounded bg-info/10 px-2 py-1.5 text-sm text-info" role="status">
 								{m['checkout.billing.virtualB2cDisclaimer']()}
 							</div>

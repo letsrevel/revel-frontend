@@ -288,6 +288,40 @@ describe('CheckoutBillingSection', () => {
 			expect(screen.queryByText(/Reverse charge applies/i)).not.toBeInTheDocument();
 		});
 
+		it('renders only the reverse-charge banner if the backend ever sent both flags', async () => {
+			// The flags are mutually exclusive by construction (reverse charge
+			// requires a validated VAT ID, the disclaimer requires the opposite);
+			// this pins the defensive else-if should that contract ever break.
+			const { eventpublicticketsVatPreview } = await import('$lib/api/generated/sdk.gen');
+			vi.mocked(eventpublicticketsVatPreview).mockResolvedValueOnce({
+				data: {
+					vat_id_valid: true,
+					vat_id_validation_error: null,
+					reverse_charge: true,
+					virtual_b2c_disclaimer: true,
+					line_items: [],
+					total_net: '50.00',
+					total_vat: '0.00',
+					total_gross: '50.00',
+					currency: 'EUR'
+				},
+				error: null,
+				response: { status: 200 } as Response
+			});
+
+			renderWithQueryClient();
+			await fireEvent.click(screen.getByRole('checkbox', { name: /Request Invoice/i }));
+
+			const vatInput = screen.getByLabelText(/VAT ID/i);
+			await fireEvent.input(vatInput, { target: { value: 'DE123456789' } });
+			await fireEvent.blur(vatInput);
+
+			await waitFor(() => {
+				expect(screen.getByText(/Reverse charge applies/i)).toBeInTheDocument();
+			});
+			expect(screen.queryByText(/VAT charged at the organizer’s rate/i)).not.toBeInTheDocument();
+		});
+
 		it('shows neither banner for a default physical-event preview', async () => {
 			renderWithQueryClient();
 			await fireEvent.click(screen.getByRole('checkbox', { name: /Request Invoice/i }));

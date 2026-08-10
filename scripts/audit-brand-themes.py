@@ -147,9 +147,12 @@ TEXT_PAIRS = [  # (fg, bg, min_ratio, note)
     ("info-foreground", "info", 4.5, "info badge label"),
     ("success", "background", 3.0, "success as icon/accent on page"),
     ("success", "card", 3.0, "success as icon/accent on card"),
-    # Checkout VAT-ID "valid" line (#829): success used as body TEXT on the
-    # checkout dialog surface, so it owes 4.5, not the icon floor above.
-    ("success", "background", 4.5, "success as text (checkout VAT-ID valid)"),
+    # success used as body TEXT (not icon) on a plain page surface owes 4.5.
+    # Token-level floor only: CheckoutBillingSection's VAT-ID line sits two
+    # muted washes deep (bg-muted/20 > bg-muted/30) — a stacked-tint surface
+    # this script deliberately cannot express (see COMPOSITED_PAIRS limits) —
+    # and is hand-checked in situ in that component's comment instead.
+    ("success", "background", 4.5, "success as body text on page"),
     ("info", "background", 3.0, "info as icon/accent on page"),
     ("info", "card", 3.0, "info as icon/accent on card"),
     ("primary", "background", 3.0, "primary as text-primary/link on page"),
