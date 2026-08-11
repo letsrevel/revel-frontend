@@ -122,9 +122,9 @@ export const eventbriteAlternativeDE: LandingPageContent = {
 	},
 	intro: {
 		paragraphs: [
-			'Frustriert von Eventbrite, das 3,7% plus Gebühren von jedem verkauften Ticket nimmt? Du bist nicht allein. Veranstalter überall suchen nach Alternativen, die nicht ihre Margen auffressen oder sie an eine unkontrollierbare Plattform binden.',
+			'Frustriert von Eventbrite, das 3,7% plus Gebühren von jedem verkauften Ticket nimmt? Du bist nicht allein. Veranstalter*innen überall suchen nach Alternativen, die nicht ihre Margen auffressen oder sie an eine unkontrollierbare Plattform binden.',
 			'Revel ist eine Open-Source Event-Management-Plattform mit einfacher, fairer Preisgestaltung: nur 1,5% + 0,25€ pro bezahltem Ticket bei unserer gehosteten Version – oder komplett kostenlos bei Selbst-Hosting. Deine Ticketeinnahmen gehören dir, nicht einem Konzern.',
-			'Entwickelt von Community-Organisatoren in Europa, bietet Revel alles was du brauchst: Ticketing, RSVPs, Teilnehmerverwaltung, Check-in-Tools und mehr. Alles während deine Daten dir gehören und deine Kosten planbar bleiben.'
+			'Entwickelt von Community-Organisator*innen in Europa, bietet Revel alles was du brauchst: Ticketing, RSVPs, Teilnehmer*innenverwaltung, Check-in-Tools und mehr. Alles während deine Daten dir gehören und deine Kosten planbar bleiben.'
 		]
 	},
 	features: [
@@ -166,11 +166,11 @@ export const eventbriteAlternativeDE: LandingPageContent = {
 		}
 	],
 	benefits: {
-		title: 'Warum Veranstalter Revel Wählen',
+		title: 'Warum Veranstalter*innen Revel Wählen',
 		items: [
 			'Behalte mehr von deinen Ticketeinnahmen mit bis zu 60% niedrigeren Gebühren als Eventbrite',
 			'Direkte Stripe-Auszahlungen – kein Warten auf Plattform-Auszahlungen',
-			'Exportiere deine Teilnehmerdaten jederzeit in Standardformaten',
+			'Exportiere deine Teilnehmer*innendaten jederzeit in Standardformaten',
 			'Kein Risiko, dass Plattform-Richtlinienänderungen deine Events lahmlegen',
 			'Europäisches Hosting mit voller DSGVO-Konformität',
 			'Aktive Entwicklung von einer Community, die zuhört'
@@ -198,7 +198,7 @@ export const eventbriteAlternativeDE: LandingPageContent = {
 		{
 			question: 'Kann ich meine Events von Eventbrite migrieren?',
 			answer:
-				'Ja. Mit Revel kannst du deine Events ganz einfach mit unserem intuitiven Event-Builder neu erstellen. Du kannst deine Teilnehmerlisten von Eventbrite als CSV exportieren und sie nutzen, um deine bestehende Community zu deinen neuen Revel-Events einzuladen.'
+				'Ja. Mit Revel kannst du deine Events ganz einfach mit unserem intuitiven Event-Builder neu erstellen. Du kannst deine Teilnehmer*innenlisten von Eventbrite als CSV exportieren und sie nutzen, um deine bestehende Community zu deinen neuen Revel-Events einzuladen.'
 		},
 		{
 			question: 'Ist Revel wirklich kostenlos zum Selbst-Hosten?',
@@ -233,7 +233,7 @@ export const eventbriteAlternativeIT: LandingPageContent = {
 		paragraphs: [
 			'Stanco di Eventbrite che prende il 3,7% più commissioni da ogni biglietto venduto? Non sei solo. Gli organizzatori di eventi ovunque cercano alternative che non erodano i loro margini o li vincolino a una piattaforma incontrollabile.',
 			'Revel è una piattaforma open-source per la gestione eventi con prezzi semplici e giusti: solo 1,5% + 0,25€ per biglietto a pagamento sulla nostra versione hosted—o completamente gratis se fai self-hosting. I ricavi dei tuoi biglietti vanno a te, non a una corporation.',
-			'Sviluppato da organizzatori di community in Europa, Revel ti dà tutto il necessario: ticketing, RSVP, gestione partecipanti, strumenti di check-in e altro. Il tutto mantenendo i tuoi dati tuoi e i costi prevedibili.'
+			'Sviluppato da persone che organizzano community in Europa, Revel ti dà tutto il necessario: ticketing, RSVP, gestione partecipanti, strumenti di check-in e altro. Il tutto mantenendo i tuoi dati tuoi e i costi prevedibili.'
 		]
 	},
 	features: [
@@ -279,7 +279,7 @@ export const eventbriteAlternativeIT: LandingPageContent = {
 		items: [
 			'Tieni più ricavi dei biglietti con commissioni fino al 60% inferiori a Eventbrite',
 			'Pagamenti Stripe diretti—niente attese per i versamenti della piattaforma',
-			'Esporta i dati dei partecipanti quando vuoi, in formati standard',
+			'Esporta i dati delle persone partecipanti quando vuoi, in formati standard',
 			'Nessun rischio che cambiamenti di policy blocchino i tuoi eventi',
 			'Hosting europeo con piena conformità GDPR',
 			'Sviluppo attivo da una community che ascolta'
@@ -490,7 +490,7 @@ export const eventbriteAlternativePT: LandingPageContent = {
 		items: [
 			'Fica com mais receitas dos teus bilhetes, com taxas até 60 % mais baixas do que o Eventbrite',
 			'Pagamentos diretos via Stripe – sem esperar pelos desembolsos da plataforma',
-			'Exporta os dados dos participantes quando quiseres, em formatos padrão',
+			'Exporta os dados das pessoas participantes quando quiseres, em formatos padrão',
 			'Sem risco de mudanças nas políticas da plataforma paralisarem os teus eventos',
 			'Alojamento europeu com total conformidade com o RGPD',
 			'Desenvolvimento ativo por uma comunidade que ouve'
@@ -556,9 +556,9 @@ export const eventbriteAlternativeFR: LandingPageContent = {
 	},
 	intro: {
 		paragraphs: [
-			'Frustré·e par Eventbrite, qui prélève 3,7 % plus des frais sur chaque billet vendu ? Tu n’es pas seul·e. Partout, les organisateurs cherchent des alternatives qui ne grignotent pas leurs marges et ne les enferment pas dans une plateforme incontrôlable.',
+			'Frustré·e par Eventbrite, qui prélève 3,7 % plus des frais sur chaque billet vendu ? Tu n’es pas seul·e. Partout, les organisateur·rices cherchent des alternatives qui ne grignotent pas leurs marges et ne les enferment pas dans une plateforme incontrôlable.',
 			'Revel est une plateforme open source de gestion d’événements avec une tarification simple et équitable : seulement 1,5 % + 0,25 € par billet payant sur notre version hébergée – ou totalement gratuite en auto-hébergement. Tes recettes de billetterie t’appartiennent, pas à un grand groupe.',
-			'Conçue par des organisateurs de communautés en Europe, Revel offre tout ce dont tu as besoin : billetterie, RSVP, gestion des participants, outils de check-in et bien plus. Le tout en gardant tes données et des coûts prévisibles.'
+			'Conçue par des organisateur·rices de communautés en Europe, Revel offre tout ce dont tu as besoin : billetterie, RSVP, gestion des participant·es, outils de check-in et bien plus. Le tout en gardant tes données et des coûts prévisibles.'
 		]
 	},
 	features: [
@@ -600,11 +600,11 @@ export const eventbriteAlternativeFR: LandingPageContent = {
 		}
 	],
 	benefits: {
-		title: 'Pourquoi les organisateurs choisissent Revel',
+		title: 'Pourquoi les organisateur·rices choisissent Revel',
 		items: [
 			'Garde une plus grande part de tes recettes de billetterie avec des frais jusqu’à 60 % inférieurs à ceux d’Eventbrite',
 			'Versements Stripe directs – plus besoin d’attendre les paiements de la plateforme',
-			'Exporte les données de tes participants à tout moment dans des formats standards',
+			'Exporte les données de tes participant·es à tout moment dans des formats standards',
 			'Aucun risque que des changements de règles de la plateforme paralysent tes événements',
 			'Hébergement européen avec conformité totale au RGPD',
 			'Un développement actif mené par une communauté à l’écoute'
@@ -632,7 +632,7 @@ export const eventbriteAlternativeFR: LandingPageContent = {
 		{
 			question: 'Puis-je migrer mes événements depuis Eventbrite ?',
 			answer:
-				'Oui. Avec Revel, tu peux facilement recréer tes événements grâce à notre éditeur d’événements intuitif. Tu peux exporter tes listes de participants depuis Eventbrite au format CSV et les utiliser pour inviter ta communauté existante à tes nouveaux événements Revel.'
+				'Oui. Avec Revel, tu peux facilement recréer tes événements grâce à notre éditeur d’événements intuitif. Tu peux exporter tes listes de participant·es depuis Eventbrite au format CSV et les utiliser pour inviter ta communauté existante à tes nouveaux événements Revel.'
 		},
 		{
 			question: 'Revel est-il vraiment gratuit en auto-hébergement ?',

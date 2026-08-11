@@ -111,26 +111,26 @@ export const kinkEventTicketingDE: LandingPageContent = {
 	meta: {
 		title: 'Ticketing für Kink & BDSM Events – Privat & Sicher | Revel',
 		description:
-			'Event-Management für Kink-, BDSM- und sex-positive Communities. Teilnehmer-Screening, Datenschutzkontrollen, Diskretion. Open-Source, selbst hostbar.',
+			'Event-Management für Kink-, BDSM- und sex-positive Communities. Teilnehmer*innen-Screening, Datenschutzkontrollen, Diskretion. Open-Source, selbst hostbar.',
 		keywords:
 			'bdsm event ticketing, kink veranstaltung, sex positive events, fetisch party ticketing, adult event plattform'
 	},
 	hero: {
 		headline: 'Diskretes Event-Management für Kink-Communities',
 		subheadline:
-			'Teilnehmer-Screening, Datenschutzkontrollen und vollständige Datenhoheit. Entwickelt für Events, die Diskretion erfordern.'
+			'Teilnehmer*innen-Screening, Datenschutzkontrollen und vollständige Datenhoheit. Entwickelt für Events, die Diskretion erfordern.'
 	},
 	intro: {
 		paragraphs: [
-			'Die Organisation von Kink- und BDSM-Events bedeutet, Privatsphäre, Konsens und Vertrauen in Einklang zu bringen – während man gleichzeitig Ticketing, RSVPs und Teilnehmerverwaltung handhabt. Die meisten Plattformen sind dafür nicht gebaut. Revel schon.',
-			'Entwickelt von Community-Organisatoren, die die einzigartigen Bedürfnisse sex-positiver Räume verstehen, ist Revel Open-Source Event-Software, die auf Diskretion ausgelegt ist. Screene Teilnehmer mit individuellen Fragebögen. Kontrolliere genau, wer deine Events sieht. Halte Teilnehmerdaten vollständig privat.',
+			'Die Organisation von Kink- und BDSM-Events bedeutet, Privatsphäre, Konsens und Vertrauen in Einklang zu bringen – während man gleichzeitig Ticketing, RSVPs und Teilnehmer*innenverwaltung handhabt. Die meisten Plattformen sind dafür nicht gebaut. Revel schon.',
+			'Entwickelt von Community-Organisator*innen, die die einzigartigen Bedürfnisse sex-positiver Räume verstehen, ist Revel Open-Source Event-Software, die auf Diskretion ausgelegt ist. Screene Teilnehmer*innen mit individuellen Fragebögen. Kontrolliere genau, wer deine Events sieht. Halte Teilnehmer*innendaten vollständig privat.',
 			'Ob du Play-Partys, Munches, Workshops oder große Fetisch-Events veranstaltest – Revel gibt dir die Werkzeuge, um das Vertrauen und die Sicherheit zu wahren, die deine Community erwartet – ohne Kompromisse bei den Funktionen oder Sorgen über Plattform-Zensur.'
 		]
 	},
 	features: [
 		{
 			icon: 'clipboard',
-			title: 'Teilnehmer-Screening',
+			title: 'Teilnehmer*innen-Screening',
 			description:
 				'Fragebögen vor dem Ticketkauf erforderlich. Bewerbungen manuell prüfen, basierend auf Kriterien automatisch genehmigen oder Hybrid-Workflows nutzen.'
 		},
@@ -144,7 +144,7 @@ export const kinkEventTicketingDE: LandingPageContent = {
 			icon: 'lock',
 			title: 'Vollständige Diskretion',
 			description:
-				'Keine Plattform, die deine Teilnehmerliste leaken kann. Selbst hosten für maximale Privatsphäre oder unsere sicheren europäischen Server nutzen.'
+				'Keine Plattform, die deine Teilnehmer*innenliste leaken kann. Selbst hosten für maximale Privatsphäre oder unsere sicheren europäischen Server nutzen.'
 		},
 		{
 			icon: 'shield',
@@ -166,10 +166,10 @@ export const kinkEventTicketingDE: LandingPageContent = {
 		}
 	],
 	benefits: {
-		title: 'Warum Kink-Organisatoren Revel Wählen',
+		title: 'Warum Kink-Organisator*innen Revel Wählen',
 		items: [
-			'Teilnehmer screenen für Community-Standards und Konsenskultur',
-			'Teilnehmeridentitäten und Event-Details privat halten',
+			'Teilnehmer*innen screenen für Community-Standards und Konsenskultur',
+			'Teilnehmer*innenidentitäten und Event-Details privat halten',
 			'Kein Risiko, dass Events wegen Plattform-Inhaltsrichtlinien entfernt werden',
 			'Vertrauenswürdige Mitglieder-Communities aufbauen und pflegen',
 			'Selbst hosten für komplette Kontrolle über sensible Daten',
@@ -191,9 +191,9 @@ export const kinkEventTicketingDE: LandingPageContent = {
 	},
 	faq: [
 		{
-			question: 'Wie funktioniert das Teilnehmer-Screening?',
+			question: 'Wie funktioniert das Teilnehmer*innen-Screening?',
 			answer:
-				'Du erstellst Fragebögen mit allen benötigten Fragen – Erfahrungslevel, Community-Referenzen, Konsens-Bestätigungen usw. Teilnehmer müssen den Fragebogen ausfüllen, bevor sie Tickets kaufen können. Du kannst Einreichungen manuell prüfen, Auto-Genehmigungs-Regeln setzen oder beide Ansätze kombinieren.'
+				'Du erstellst Fragebögen mit allen benötigten Fragen – Erfahrungslevel, Community-Referenzen, Konsens-Bestätigungen usw. Teilnehmer*innen müssen den Fragebogen ausfüllen, bevor sie Tickets kaufen können. Du kannst Einreichungen manuell prüfen, Auto-Genehmigungs-Regeln setzen oder beide Ansätze kombinieren.'
 		},
 		{
 			question: 'Kann ich meine Events komplett privat halten?',
@@ -232,7 +232,7 @@ export const kinkEventTicketingIT: LandingPageContent = {
 	intro: {
 		paragraphs: [
 			'Organizzare eventi kink e BDSM significa bilanciare privacy, consenso e fiducia—mentre si gestisce la logistica di ticketing, RSVP e gestione partecipanti. La maggior parte delle piattaforme non è costruita per questo. Revel sì.',
-			'Creato da organizzatori di community che comprendono le esigenze uniche degli spazi sex-positive, Revel è software open-source per eventi progettato per la discrezione. Fai screening dei partecipanti con questionari personalizzati. Controlla esattamente chi vede i tuoi eventi. Mantieni i dati dei partecipanti completamente privati.',
+			'Creato da persone che organizzano community e comprendono le esigenze uniche degli spazi sex-positive, Revel è software open-source per eventi progettato per la discrezione. Fai screening delle persone partecipanti con questionari personalizzati. Controlla esattamente chi vede i tuoi eventi. Mantieni i dati delle persone partecipanti completamente privati.',
 			'Che tu stia organizzando play party, munch, workshop o grandi eventi fetish, Revel ti dà gli strumenti per mantenere la fiducia e la sicurezza che la tua community si aspetta—senza compromessi sulle funzionalità o preoccupazioni sulla censura della piattaforma.'
 		]
 	},
@@ -278,7 +278,7 @@ export const kinkEventTicketingIT: LandingPageContent = {
 		title: 'Perché gli Organizzatori Kink Scelgono Revel',
 		items: [
 			'Screening partecipanti per mantenere gli standard della community e la cultura del consenso',
-			'Mantieni private le identità dei partecipanti e i dettagli degli eventi',
+			'Mantieni private le identità delle persone partecipanti e i dettagli degli eventi',
 			'Nessun rischio che gli eventi vengano rimossi per policy sui contenuti',
 			'Costruisci e mantieni community di membri fidati',
 			'Self-host per controllo completo sui dati sensibili',
@@ -550,8 +550,8 @@ export const kinkEventTicketingPT: LandingPageContent = {
 	},
 	intro: {
 		paragraphs: [
-			'Organizar eventos kink e BDSM implica equilibrar privacidade, consentimento e confiança, ao mesmo tempo que se gere a bilhética, as confirmações de presença e os participantes. A maioria das plataformas não foi pensada para isto. A Revel foi.',
-			'Criada por pessoas organizadoras de comunidades que compreendem as necessidades específicas dos espaços sex-positive, a Revel é um software de eventos de código aberto pensado para a discrição. Seleciona participantes com questionários personalizados. Controla exatamente quem vê os teus eventos. Mantém os dados dos participantes completamente privados.',
+			'Organizar eventos kink e BDSM implica equilibrar privacidade, consentimento e confiança, ao mesmo tempo que se gere a bilhética, as confirmações de presença e as pessoas participantes. A maioria das plataformas não foi pensada para isto. A Revel foi.',
+			'Criada por pessoas organizadoras de comunidades que compreendem as necessidades específicas dos espaços sex-positive, a Revel é um software de eventos de código aberto pensado para a discrição. Seleciona participantes com questionários personalizados. Controla exatamente quem vê os teus eventos. Mantém os dados das pessoas participantes completamente privados.',
 			'Quer organizes play parties, munches, workshops ou grandes eventos fetichistas, a Revel dá-te as ferramentas para manter a confiança e a segurança que a tua comunidade espera, sem abdicar de funcionalidades nem te preocupares com censura na plataforma.'
 		]
 	},
@@ -597,7 +597,7 @@ export const kinkEventTicketingPT: LandingPageContent = {
 		title: 'Porque é que quem organiza eventos kink escolhe a Revel',
 		items: [
 			'Seleciona participantes para manter os padrões da comunidade e a cultura do consentimento',
-			'Mantém privadas as identidades dos participantes e os detalhes do evento',
+			'Mantém privadas as identidades das pessoas participantes e os detalhes do evento',
 			'Sem risco de os teus eventos serem removidos por políticas de conteúdo da plataforma',
 			'Constrói e mantém comunidades de membros de confiança',
 			'Autoaloja-te para teres controlo total sobre dados sensíveis',

@@ -122,9 +122,9 @@ export const privacyFocusedEventsDE: LandingPageContent = {
 	},
 	intro: {
 		paragraphs: [
-			'Die meisten Event-Plattformen sammeln deine Teilnehmerdaten für Werbung, teilen sie mit Dritten und verstecken die Details in langen Datenschutzerklärungen. Wenn dir die Privatsphäre deiner Community wichtig ist – oder du einfach die DSGVO einhalten musst – brauchst du einen anderen Ansatz.',
-			'Revel ist Open-Source Event-Management, das mit Datenschutz als Kernprinzip entwickelt wurde, nicht als Nachgedanke. Wir tracken keine Nutzer durchs Web. Wir verkaufen keine Daten. Wir haben nicht mal ein Geschäftsmodell, das uns dazu anreizen würde.',
-			'Gehostet auf europäischer Infrastruktur mit voller DSGVO-Konformität, oder selbst hosten für komplette Kontrolle. Deine Teilnehmerdaten bleiben deine, und deine Community kann darauf vertrauen, dass ihre Informationen verantwortungsvoll behandelt werden.'
+			'Die meisten Event-Plattformen sammeln deine Teilnehmer*innendaten für Werbung, teilen sie mit Dritten und verstecken die Details in langen Datenschutzerklärungen. Wenn dir die Privatsphäre deiner Community wichtig ist – oder du einfach die DSGVO einhalten musst – brauchst du einen anderen Ansatz.',
+			'Revel ist Open-Source Event-Management, das mit Datenschutz als Kernprinzip entwickelt wurde, nicht als Nachgedanke. Wir tracken keine Nutzer*innen durchs Web. Wir verkaufen keine Daten. Wir haben nicht mal ein Geschäftsmodell, das uns dazu anreizen würde.',
+			'Gehostet auf europäischer Infrastruktur mit voller DSGVO-Konformität, oder selbst hosten für komplette Kontrolle. Deine Teilnehmer*innendaten bleiben deine, und deine Community kann darauf vertrauen, dass ihre Informationen verantwortungsvoll behandelt werden.'
 		]
 	},
 	features: [
@@ -132,7 +132,7 @@ export const privacyFocusedEventsDE: LandingPageContent = {
 			icon: 'shield',
 			title: 'Keine Drittanbieter-Tracker',
 			description:
-				'Kein Google Analytics, keine Facebook-Pixel, keine Werbe-SDKs. Wir tracken deine Teilnehmer nicht durchs Web.'
+				'Kein Google Analytics, keine Facebook-Pixel, keine Werbe-SDKs. Wir tracken deine Teilnehmer*innen nicht durchs Web.'
 		},
 		{
 			icon: 'globe',
@@ -168,7 +168,7 @@ export const privacyFocusedEventsDE: LandingPageContent = {
 	benefits: {
 		title: 'Datenschutz als Feature, Nicht als Checkbox',
 		items: [
-			'Volle DSGVO-Konformität für europäische Veranstalter und Teilnehmer',
+			'Volle DSGVO-Konformität für europäische Veranstalter*innen und Teilnehmer*innen',
 			'Kein Datenverkauf oder Teilen mit Werbetreibenden',
 			'Transparenter, prüfbarer Open-Source-Code',
 			'Europäisches Hosting mit Datensouveränität',
@@ -196,14 +196,14 @@ export const privacyFocusedEventsDE: LandingPageContent = {
 				'Wir praktizieren Datenminimierung, bieten Datenexport- und Löschtools, holen ordnungsgemäße Einwilligung ein und hosten auf europäischer Infrastruktur. Als Open Source kannst du unsere Datenpraktiken direkt im Code prüfen.'
 		},
 		{
-			question: 'Verkauft ihr Teilnehmerdaten?',
+			question: 'Verkauft ihr Teilnehmer*innendaten?',
 			answer:
 				'Nein. Wir haben kein Werbe-Geschäftsmodell. Unsere Einnahmen kommen von einer kleinen Pro-Ticket-Gebühr bei bezahlten Events (für gehostete Kunden). Wir haben keinen Anreiz, deine Daten zu monetarisieren.'
 		},
 		{
 			question: 'Welche Daten sammelt ihr?',
 			answer:
-				'Nur das Notwendige: Account-Informationen, Event-Details, Ticket-Käufe und Teilnehmerlisten. Wir tracken kein Browsing-Verhalten, erstellen keine Werbeprofile oder sammeln Daten über das hinaus, was du explizit angibst.'
+				'Nur das Notwendige: Account-Informationen, Event-Details, Ticket-Käufe und Teilnehmer*innenlisten. Wir tracken kein Browsing-Verhalten, erstellen keine Werbeprofile oder sammeln Daten über das hinaus, was du explizit angibst.'
 		},
 		{
 			question: 'Kann ich komplette Datenkontrolle bekommen?',
@@ -231,8 +231,8 @@ export const privacyFocusedEventsIT: LandingPageContent = {
 	},
 	intro: {
 		paragraphs: [
-			'La maggior parte delle piattaforme eventi raccoglie i dati dei partecipanti per la pubblicità, li condivide con terze parti e nasconde i dettagli in lunghe policy sulla privacy. Se ti importa della privacy della tua community—o semplicemente devi conformarti al GDPR—hai bisogno di un approccio diverso.',
-			'Revel è gestione eventi open-source costruita con la privacy come principio fondamentale, non come ripensamento. Non tracciamo gli utenti sul web. Non vendiamo dati. Non abbiamo nemmeno un modello di business che ci incentiverebbe a farlo.',
+			'La maggior parte delle piattaforme eventi raccoglie i dati delle persone partecipanti per la pubblicità, li condivide con terze parti e nasconde i dettagli in lunghe policy sulla privacy. Se ti importa della privacy della tua community—o semplicemente devi conformarti al GDPR—hai bisogno di un approccio diverso.',
+			'Revel è gestione eventi open-source costruita con la privacy come principio fondamentale, non come ripensamento. Non tracciamo le persone sul web. Non vendiamo dati. Non abbiamo nemmeno un modello di business che ci incentiverebbe a farlo.',
 			'Hostato su infrastruttura europea con piena conformità GDPR, o fai self-host per controllo completo. I dati dei tuoi partecipanti restano tuoi, e la tua community può fidarsi che le loro informazioni sono gestite responsabilmente.'
 		]
 	},
@@ -301,7 +301,7 @@ export const privacyFocusedEventsIT: LandingPageContent = {
 				'Pratichiamo minimizzazione dati, forniamo strumenti di export e cancellazione dati, otteniamo consenso appropriato e hostiamo su infrastruttura europea. Come open source, puoi verificare le nostre pratiche dati direttamente nel codice.'
 		},
 		{
-			question: 'Vendete i dati dei partecipanti?',
+			question: 'Vendete i dati delle persone partecipanti?',
 			answer:
 				'No. Non abbiamo un modello di business pubblicitario. I nostri ricavi vengono da una piccola commissione per biglietto su eventi a pagamento (per clienti hosted). Non abbiamo incentivo a monetizzare i tuoi dati.'
 		},
@@ -625,7 +625,7 @@ export const privacyFocusedEventsPT: LandingPageContent = {
 				'Praticamos a minimização de dados, disponibilizamos ferramentas de exportação e eliminação de dados, obtemos o consentimento adequado e alojamos em infraestrutura europeia. Sendo código aberto, podes auditar as nossas práticas de dados diretamente no código.'
 		},
 		{
-			question: 'Vendem os dados dos participantes?',
+			question: 'Vendem os dados das pessoas participantes?',
 			answer:
 				'Não. Não temos qualquer modelo de negócio publicitário. As nossas receitas vêm de uma pequena comissão por bilhete em eventos pagos (para clientes com alojamento gerido). Não temos incentivo para monetizar os teus dados.'
 		},

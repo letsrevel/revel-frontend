@@ -128,7 +128,7 @@ export const communityFirstEventPlatformDE: LandingPageContent = {
 	intro: {
 		paragraphs: [
 			'Die meisten Event-Plattformen behandeln jedes Treffen als einmalige Transaktion. Aber echte Communities brauchen mehr—sie brauchen Struktur, Kontinuität und Tools, die fortlaufende Beziehungen unterstützen.',
-			'Revel ist zuerst für Communities gebaut. Erstelle Organisationen mit Mitgliedschaftsstufen, weise Rollen und Berechtigungen zu und nutze Features wie unser einzigartiges Potluck-Koordinationssystem, um Events kollaborativer zu machen und weniger Arbeit für Organisatoren.',
+			'Revel ist zuerst für Communities gebaut. Erstelle Organisationen mit Mitgliedschaftsstufen, weise Rollen und Berechtigungen zu und nutze Features wie unser einzigartiges Potluck-Koordinationssystem, um Events kollaborativer zu machen und weniger Arbeit für Organisator*innen.',
 			'Egal ob du einen Buchclub, eine Hobbygruppe, ein professionelles Netzwerk oder einen Makerspace leitest, Revel gibt dir die Infrastruktur, um von lockeren Meetups zu einer florierenden Community zu wachsen—ohne teure Abos oder Plattform-Lock-in.'
 		]
 	},
@@ -171,7 +171,7 @@ export const communityFirstEventPlatformDE: LandingPageContent = {
 		}
 	],
 	benefits: {
-		title: 'Warum Community-Organisatoren Revel Wählen',
+		title: 'Warum Community-Organisator*innen Revel Wählen',
 		items: [
 			'Baue dauerhafte Mitgliedschaftsstrukturen, nicht nur Event-Listen',
 			'Koordiniere Potlucks und geteilte Verantwortlichkeiten mühelos',
@@ -203,7 +203,7 @@ export const communityFirstEventPlatformDE: LandingPageContent = {
 		{
 			question: 'Was ist Potluck-Koordination?',
 			answer:
-				'Es ist ein integriertes System, das Teilnehmern ermöglicht zu koordinieren, wer was zu Events mitbringt. Verwalte Ernährungseinschränkungen, Mengen-Management und Item-Zuweisungen—keine chaotischen Spreadsheets oder externe Tools mehr. Es ist großartig für Potlucks, Equipment-Sharing, Freiwilligen-Koordination und mehr.'
+				'Es ist ein integriertes System, das Teilnehmer*innen ermöglicht zu koordinieren, wer was zu Events mitbringt. Verwalte Ernährungseinschränkungen, Mengen-Management und Item-Zuweisungen—keine chaotischen Spreadsheets oder externe Tools mehr. Es ist großartig für Potlucks, Equipment-Sharing, Freiwilligen-Koordination und mehr.'
 		},
 		{
 			question: 'Kann ich Nur-Mitglieder Events erstellen?',
@@ -242,7 +242,7 @@ export const communityFirstEventPlatformIT: LandingPageContent = {
 	intro: {
 		paragraphs: [
 			'La maggior parte delle piattaforme eventi tratta ogni incontro come transazione singola. Ma le vere community hanno bisogno di più—struttura, continuità e strumenti che supportano relazioni continuative.',
-			'Revel è costruito prima di tutto per le community. Crea organizzazioni con livelli membership, assegna ruoli e permessi, e usa funzionalità come il nostro sistema unico di coordinamento potluck per rendere gli eventi più collaborativi e meno lavoro per gli organizzatori.',
+			'Revel è costruito prima di tutto per le community. Crea organizzazioni con livelli membership, assegna ruoli e permessi, e usa funzionalità come il nostro sistema unico di coordinamento potluck per rendere gli eventi più collaborativi e meno lavoro per chi organizza.',
 			"Che tu gestisca un club del libro, gruppo hobby, network professionale o makerspace, Revel ti dà l'infrastruttura per crescere da meetup casuali a community fiorenti—senza abbonamenti costosi o lock-in della piattaforma."
 		]
 	},
@@ -313,7 +313,7 @@ export const communityFirstEventPlatformIT: LandingPageContent = {
 		{
 			question: "Cos'è il coordinamento potluck?",
 			answer:
-				'È un sistema integrato che permette ai partecipanti di coordinare chi porta cosa agli eventi. Gestisci restrizioni dietetiche, gestione quantità e assegnazioni item—niente più spreadsheet caotici o strumenti esterni. È ottimo per potluck, condivisione equipment, coordinamento volontari e altro.'
+				'È un sistema integrato che permette alle persone partecipanti di coordinare chi porta cosa agli eventi. Gestisci restrizioni dietetiche, gestione quantità e assegnazioni item—niente più spreadsheet caotici o strumenti esterni. È ottimo per potluck, condivisione equipment, coordinamento volontari e altro.'
 		},
 		{
 			question: 'Posso creare eventi solo-membri?',
@@ -586,7 +586,7 @@ export const communityFirstEventPlatformFR: LandingPageContent = {
 	intro: {
 		paragraphs: [
 			"La plupart des plateformes événementielles traitent chaque rencontre comme une transaction isolée. Mais les vraies communautés ont besoin de plus : de structure, de continuité et d'outils qui soutiennent des relations dans la durée.",
-			"Revel est pensé d'abord pour les communautés. Crée des organisations avec des niveaux d'adhésion, attribue des rôles et des permissions, et profite de fonctionnalités comme notre système unique de coordination de repas partagés pour rendre tes événements plus collaboratifs et moins de travail pour les organisateurs.",
+			"Revel est pensé d'abord pour les communautés. Crée des organisations avec des niveaux d'adhésion, attribue des rôles et des permissions, et profite de fonctionnalités comme notre système unique de coordination de repas partagés pour rendre tes événements plus collaboratifs et moins de travail pour les organisateur·rices.",
 			"Que tu animes un club de lecture, un groupe de loisirs, un réseau professionnel ou un fablab, Revel te donne l'infrastructure pour passer de simples rencontres informelles à une communauté florissante, sans abonnements coûteux ni enfermement propriétaire."
 		]
 	},
@@ -629,7 +629,7 @@ export const communityFirstEventPlatformFR: LandingPageContent = {
 		}
 	],
 	benefits: {
-		title: 'Pourquoi les organisateurs de communautés choisissent Revel',
+		title: 'Pourquoi les organisateur·rices de communautés choisissent Revel',
 		items: [
 			"Construis des structures d'adhésion durables, pas seulement des listes d'événements",
 			'Coordonne les repas partagés et les responsabilités collectives sans effort',
@@ -661,7 +661,7 @@ export const communityFirstEventPlatformFR: LandingPageContent = {
 		{
 			question: "Qu'est-ce que la coordination de repas partagés ?",
 			answer:
-				"C'est un système intégré qui permet aux participants de coordonner qui apporte quoi à tes événements. Gère les restrictions alimentaires, les quantités et l'attribution des articles : fini les tableurs chaotiques ou les outils externes. C'est idéal pour les repas partagés, le partage de matériel, la coordination des bénévoles et bien plus."
+				"C'est un système intégré qui permet aux participant·es de coordonner qui apporte quoi à tes événements. Gère les restrictions alimentaires, les quantités et l'attribution des articles : fini les tableurs chaotiques ou les outils externes. C'est idéal pour les repas partagés, le partage de matériel, la coordination des bénévoles et bien plus."
 		},
 		{
 			question: 'Puis-je créer des événements réservés aux membres ?',
