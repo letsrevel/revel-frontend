@@ -2591,7 +2591,7 @@
 		"relatedKicker": "En savoir plus"
 	},
 	"languageSwitcher": {
-		"selectLanguage": "Select language: {name}"
+		"selectLanguage": "Choisir la langue : {name}"
 	},
 	"learnMore": {
 		"metaTitle": "En savoir plus sur Revel - Plateforme de gestion d'événements communautaires",
@@ -4988,7 +4988,7 @@
 		"editNameType": "Modifier le nom et le type du questionnaire",
 		"admission": "Admission",
 		"membership": "Adhésion",
-		"feedback": "Feedback",
+		"feedback": "Retours",
 		"generic": "Générique",
 		"automatic": "Automatique",
 		"manual": "Manuel",
@@ -5836,10 +5836,10 @@
 		"scoreLabel": "Score :"
 	},
 	"tagInput": {
-		"placeholderDefault": "Add tag and press Enter...",
-		"required": "required",
-		"tagAriaLabel": "Tag: {tag}, press Delete to remove",
-		"removeTag": "Remove {tag}"
+		"placeholderDefault": "Ajoute un tag et appuie sur Entrée...",
+		"required": "requis",
+		"tagAriaLabel": "Tag : {tag}, appuie sur Suppr pour retirer",
+		"removeTag": "Retirer {tag}"
 	},
 	"telegram": {
 		"heading": "Telegram",
@@ -6294,7 +6294,7 @@
 	"audioPlayer": {
 		"playerLabel": "Lecteur audio",
 		"play": "Lire",
-		"pause": "Pause",
+		"pause": "Mettre en pause",
 		"speed": "Vitesse de lecture",
 		"seekLabel": "Avancer",
 		"download": "Télécharger l'audio"
@@ -6699,7 +6699,7 @@
 		"dashboard": {
 			"title": "{seriesName}",
 			"pageDescription": "Gérer la série récurrente {seriesName}",
-			"statusActive": "Active",
+			"statusActive": "Actif",
 			"statusPaused": "En pause",
 			"autoPublishOn": "Publication automatique activée",
 			"autoPublishOff": "Examiner chaque brouillon",

@@ -23,7 +23,6 @@ const colors = {
 	reset: '\x1b[0m',
 	red: '\x1b[31m',
 	green: '\x1b[32m',
-	yellow: '\x1b[33m',
 	blue: '\x1b[34m',
 	bold: '\x1b[1m'
 };
@@ -49,6 +48,22 @@ function getAllKeys(obj, prefix = '') {
 		}
 	}
 	return keys;
+}
+
+/**
+ * Flatten to a { serializedPathArray: value } map. Keys are JSON-encoded path ARRAYS,
+ * not dotted strings: the catalogs mix nested objects with literal dotted keys, so 42
+ * dotted paths collide and would double-count.
+ */
+function flatten(node, path = [], out = {}) {
+	if (Array.isArray(node)) {
+		node.forEach((v, i) => flatten(v, [...path, i], out));
+	} else if (node && typeof node === 'object') {
+		for (const [k, v] of Object.entries(node)) flatten(v, [...path, k], out);
+	} else if (typeof node === 'string') {
+		out[JSON.stringify(path)] = node;
+	}
+	return out;
 }
 
 function findEmptyStrings(obj, prefix = '') {
@@ -137,7 +152,6 @@ function main() {
 	log('\n=== Translation Validation ===\n', 'bold');
 
 	let hasErrors = false;
-	let hasWarnings = false;
 
 	// Load translation files
 	log('Loading translation files...', 'blue');
@@ -210,17 +224,18 @@ function main() {
 
 	// Placeholders
 	log('=== Placeholder Validation ===', 'bold');
+	// A dropped placeholder is a user-visible defect, not a style nit: Paraglide's
+	// no-match fallback renders the message KEY, so a locale missing {count} can put
+	// a literal `someScope.someKey` on screen. Fail, don't warn.
 	if (langs.every((l) => l.placeholders.length === 0)) {
 		log('✓ All placeholders are consistent\n', 'green');
 	} else {
-		hasWarnings = true;
+		hasErrors = true;
 		for (const l of langs) {
 			if (l.placeholders.length === 0) continue;
-			log(`⚠ ${l.name} has ${l.placeholders.length} placeholder issues:`, 'yellow');
-			l.placeholders
-				.slice(0, 3)
-				.forEach((issue) => log(`  ${issue.key}: ${issue.issue}`, 'yellow'));
-			if (l.placeholders.length > 3) log(`  ... and ${l.placeholders.length - 3} more`, 'yellow');
+			log(`✗ ${l.name} has ${l.placeholders.length} placeholder issues:`, 'red');
+			l.placeholders.slice(0, 3).forEach((issue) => log(`  ${issue.key}: ${issue.issue}`, 'red'));
+			if (l.placeholders.length > 3) log(`  ... and ${l.placeholders.length - 3} more`, 'red');
 		}
 		log('');
 	}
@@ -229,22 +244,28 @@ function main() {
 	log('=== Summary ===', 'bold');
 	log(`Total keys: ${enKeys.size}`);
 	log(`Languages: ${langs.length + 1} (${[SOURCE, ...langs].map((l) => l.name).join(', ')})`);
+	// "Completion" used to count non-empty keys, so a catalog that shipped the English
+	// string verbatim still read 100%. Count only values that actually DIFFER from the
+	// source, and surface the deliberately-identical ones separately — see
+	// scripts/check-i18n-untranslated.mjs, which is what enforces that split.
+	const enFlat = flatten(en);
 	for (const l of langs) {
-		const pct = (((l.keys.size - l.empty.length) / enKeys.size) * 100).toFixed(1);
-		log(`${l.name} completion: ${pct}%`);
+		const flat = flatten(l.data);
+		const identical = Object.keys(enFlat).filter((k) => enFlat[k] === flat[k]).length;
+		const translated = enKeys.size - identical - l.empty.length;
+		const pct = ((translated / enKeys.size) * 100).toFixed(1);
+		log(
+			`${l.name} translated: ${pct}% (${translated}/${enKeys.size}, ${identical} identical to English)`
+		);
 	}
 	log('');
 
 	if (hasErrors) {
 		log('✗ Validation failed with errors', 'red');
 		process.exit(1);
-	} else if (hasWarnings) {
-		log('⚠ Validation passed with warnings', 'yellow');
-		process.exit(0);
-	} else {
-		log('✓ All validations passed!', 'green');
-		process.exit(0);
 	}
+	log('✓ All validations passed!', 'green');
+	process.exit(0);
 }
 
 main();

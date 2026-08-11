@@ -9,9 +9,10 @@ export type {
 	LandingPageFeature,
 	LandingPageCTA,
 	LandingPageContent,
+	LandingPageLocale,
 	LandingPageSlug
 } from './types';
-import type { LandingPageContent, LandingPageSlug } from './types';
+import type { LandingPageContent, LandingPageLocale, LandingPageSlug } from './types';
 import {
 	eventbriteAlternativeEN,
 	eventbriteAlternativeDE,
@@ -61,7 +62,15 @@ import {
 	communityFirstEventPlatformPT
 } from './community-first-event-platform';
 
-export const landingPages: Record<string, Record<string, LandingPageContent>> = {
+/**
+ * Total map: every locale × every slug. TypeScript now rejects a landing page that
+ * is missing a locale (or a locale missing a page) at compile time — previously both
+ * index signatures were `string`, so an incomplete page compiled and broke silently.
+ */
+export const landingPages: Record<
+	LandingPageLocale,
+	Record<LandingPageSlug, LandingPageContent>
+> = {
 	en: {
 		'eventbrite-alternative': eventbriteAlternativeEN,
 		'queer-event-management': queerEventManagementEN,
@@ -122,7 +131,10 @@ export const landingPageSlugs: LandingPageSlug[] = [
 ];
 
 export function getLandingPage(locale: string, slug: string): LandingPageContent | undefined {
-	return landingPages[locale]?.[slug];
+	// Callers pass raw route params, so widen for the lookup; the literal above is
+	// what carries the completeness guarantee.
+	const table: Record<string, Record<string, LandingPageContent>> = landingPages;
+	return table[locale]?.[slug];
 }
 
 /**
