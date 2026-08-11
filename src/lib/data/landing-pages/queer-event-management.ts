@@ -111,20 +111,20 @@ export const queerEventManagementDE: LandingPageContent = {
 	meta: {
 		title: 'Event-Management für LGBTQ+ Communities | Revel',
 		description:
-			'Open-Source Event-Plattform von und für queere Communities. Datenschutzkontrollen, Teilnehmer-Screening, kein Zensurrisiko. Gehostet in Europa.',
+			'Open-Source Event-Plattform von und für queere Communities. Datenschutzkontrollen, Teilnehmer*innen-Screening, kein Zensurrisiko. Gehostet in Europa.',
 		keywords:
 			'lgbtq event plattform, queere veranstaltungen, gay event ticketing, pride events, queer community'
 	},
 	hero: {
 		headline: 'Event-Software, Die Queere Communities Versteht',
 		subheadline:
-			'Entwickelt von LGBTQ+ Organisatoren für Events, die Mainstream-Plattformen nicht unterstützen können.'
+			'Entwickelt von LGBTQ+ Organisator*innen für Events, die Mainstream-Plattformen nicht unterstützen können.'
 	},
 	intro: {
 		paragraphs: [
 			'Mainstream Event-Plattformen wurden nicht mit queeren Communities im Sinn entwickelt. Vage Inhaltsrichtlinien, die deine Events markieren. Algorithmen, die die Sichtbarkeit unterdrücken. Kein Verständnis für Safer Spaces oder community-spezifische Bedürfnisse.',
-			'Revel ist anders. Entwickelt von queeren Event-Organisatoren in Europa, ist es eine Open-Source-Plattform für Communities, die mehr als nur Ticketing brauchen – sie brauchen Vertrauen, Privatsphäre und die Freiheit, Events ohne Angst vor Deplatforming zu veranstalten.',
-			'Ob du Pride-Partys, queere Meetups, Drag-Shows oder Community-Treffen organisierst – Revel gibt dir die Werkzeuge, um deine Community aufzubauen und zu schützen. Mitgliederverwaltung, Teilnehmer-Screening, Sichtbarkeitskontrollen und vollständige Datenhoheit – alles in einer Plattform.'
+			'Revel ist anders. Entwickelt von queeren Event-Organisator*innen in Europa, ist es eine Open-Source-Plattform für Communities, die mehr als nur Ticketing brauchen – sie brauchen Vertrauen, Privatsphäre und die Freiheit, Events ohne Angst vor Deplatforming zu veranstalten.',
+			'Ob du Pride-Partys, queere Meetups, Drag-Shows oder Community-Treffen organisierst – Revel gibt dir die Werkzeuge, um deine Community aufzubauen und zu schützen. Mitgliederverwaltung, Teilnehmer*innen-Screening, Sichtbarkeitskontrollen und vollständige Datenhoheit – alles in einer Plattform.'
 		]
 	},
 	features: [
@@ -142,15 +142,15 @@ export const queerEventManagementDE: LandingPageContent = {
 		},
 		{
 			icon: 'clipboard',
-			title: 'Teilnehmer-Screening',
+			title: 'Teilnehmer*innen-Screening',
 			description:
-				'Individuelle Fragebögen, um sicherzustellen, dass Teilnehmer zu den Werten deiner Community passen. Manuelle Prüfung, automatische Genehmigung oder Hybrid-Workflows.'
+				'Individuelle Fragebögen, um sicherzustellen, dass Teilnehmer*innen zu den Werten deiner Community passen. Manuelle Prüfung, automatische Genehmigung oder Hybrid-Workflows.'
 		},
 		{
 			icon: 'eye',
 			title: 'Datenschutzkontrollen',
 			description:
-				'Öffentliche, nur für Mitglieder oder nur auf Einladung zugängliche Events. Kontrolliere, wer was sieht, und halte Teilnehmerlisten privat.'
+				'Öffentliche, nur für Mitglieder oder nur auf Einladung zugängliche Events. Kontrolliere, wer was sieht, und halte Teilnehmer*innenlisten privat.'
 		},
 		{
 			icon: 'lock',
@@ -166,10 +166,10 @@ export const queerEventManagementDE: LandingPageContent = {
 		}
 	],
 	benefits: {
-		title: 'Warum LGBTQ+ Organisatoren Revel Vertrauen',
+		title: 'Warum LGBTQ+ Organisator*innen Revel Vertrauen',
 		items: [
 			'Kein Risiko, dass Events durch Plattform-Richtlinien markiert oder entfernt werden',
-			'Teilnehmer screenen für sicherere Räume',
+			'Teilnehmer*innen screenen für sicherere Räume',
 			'Nachhaltige Community-Mitgliedschaften aufbauen, nicht nur Event-für-Event-Listen',
 			'Volle Kontrolle über die Daten deiner Community',
 			'Entwickelt von Menschen, die queere Event-Organisation verstehen',
@@ -198,7 +198,7 @@ export const queerEventManagementDE: LandingPageContent = {
 		{
 			question: 'Kann ich kontrollieren, wer an meinen Events teilnimmt?',
 			answer:
-				'Ja. Revel enthält ein leistungsfähiges Fragebogensystem, mit dem du von Teilnehmern verlangen kannst, Fragen zu beantworten, bevor sie Tickets kaufen oder RSVPen. Du kannst Einreichungen manuell prüfen, Auto-Genehmigungs-Regeln einrichten oder einen Hybrid-Ansatz verwenden.'
+				'Ja. Revel enthält ein leistungsfähiges Fragebogensystem, mit dem du von Teilnehmer*innen verlangen kannst, Fragen zu beantworten, bevor sie Tickets kaufen oder RSVPen. Du kannst Einreichungen manuell prüfen, Auto-Genehmigungs-Regeln einrichten oder einen Hybrid-Ansatz verwenden.'
 		},
 		{
 			question: 'Sind die Daten meiner Community sicher?',
@@ -253,7 +253,7 @@ export const queerEventManagementIT: LandingPageContent = {
 			icon: 'clipboard',
 			title: 'Screening Partecipanti',
 			description:
-				'Questionari personalizzati per assicurare che i partecipanti siano in linea con i valori della community. Revisione manuale, auto-approvazione o workflow ibridi.'
+				'Questionari personalizzati per assicurare che le persone partecipanti siano in linea con i valori della community. Revisione manuale, auto-approvazione o workflow ibridi.'
 		},
 		{
 			icon: 'eye',
@@ -303,7 +303,7 @@ export const queerEventManagementIT: LandingPageContent = {
 		{
 			question: 'Posso controllare chi partecipa ai miei eventi?',
 			answer:
-				'Sì. Revel include un potente sistema di questionari che ti permette di richiedere ai partecipanti di rispondere a domande prima di acquistare biglietti o fare RSVP. Puoi revisionare le risposte manualmente, impostare regole di auto-approvazione o usare un approccio ibrido.'
+				'Sì. Revel include un potente sistema di questionari che ti permette di richiedere alle persone partecipanti di rispondere a domande prima di acquistare biglietti o fare RSVP. Puoi revisionare le risposte manualmente, impostare regole di auto-approvazione o usare un approccio ibrido.'
 		},
 		{
 			question: 'I dati della mia community sono al sicuro?',

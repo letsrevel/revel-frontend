@@ -123,7 +123,7 @@ export const selfHostedEventPlatformDE: LandingPageContent = {
 	intro: {
 		paragraphs: [
 			'Warum monatliche SaaS-Gebühren zahlen und einem Konzern die Daten deiner Community anvertrauen? Revel ist Open-Source Event-Management-Software, die du in Minuten auf eigener Infrastruktur betreiben kannst.',
-			'Entwickelt mit modernen Technologien – Django, PostgreSQL, Redis und Docker – ist Revel produktionsreif und praxiserprobt. Vollständiges Ticketing mit Stripe-Integration, RSVPs, Mitgliederverwaltung, Teilnehmer-Screening, QR-Check-in und mehr. Alle Funktionen kommerzieller Plattformen, ohne wiederkehrende Kosten oder Datenbedenken.',
+			'Entwickelt mit modernen Technologien – Django, PostgreSQL, Redis und Docker – ist Revel produktionsreif und praxiserprobt. Vollständiges Ticketing mit Stripe-Integration, RSVPs, Mitgliederverwaltung, Teilnehmer*innen-Screening, QR-Check-in und mehr. Alle Funktionen kommerzieller Plattformen, ohne wiederkehrende Kosten oder Datenbedenken.',
 			'MIT-lizenziert bedeutet, du kannst es nutzen, modifizieren und betreiben wie du willst. Kein Vendor Lock-in. Keine überraschenden Preisänderungen. Keine Plattform, die entscheidet, welche Events du veranstalten kannst. Deine Infrastruktur, deine Regeln.'
 		]
 	},
@@ -543,7 +543,7 @@ export const selfHostedEventPlatformFR: LandingPageContent = {
 	intro: {
 		paragraphs: [
 			'Pourquoi payer des abonnements SaaS mensuels et confier les données de ta communauté à une multinationale ? Revel est un logiciel de gestion d’événements open source que tu peux faire tourner en quelques minutes sur ta propre infrastructure.',
-			'Conçu avec des technologies modernes – Django, PostgreSQL, Redis et Docker – Revel est prêt pour la production et éprouvé sur le terrain. Billetterie complète avec intégration Stripe, RSVP, gestion des membres, sélection des participants, check-in par QR code et bien plus. Toutes les fonctionnalités des plateformes commerciales, sans coûts récurrents ni inquiétudes sur tes données.',
+			'Conçu avec des technologies modernes – Django, PostgreSQL, Redis et Docker – Revel est prêt pour la production et éprouvé sur le terrain. Billetterie complète avec intégration Stripe, RSVP, gestion des membres, sélection des participant·es, check-in par QR code et bien plus. Toutes les fonctionnalités des plateformes commerciales, sans coûts récurrents ni inquiétudes sur tes données.',
 			'La licence MIT signifie que tu peux l’utiliser, le modifier et l’exploiter comme tu veux. Aucun verrouillage propriétaire. Aucune hausse de tarif surprise. Aucune plateforme qui décide quels événements tu as le droit d’organiser. Ton infrastructure, tes règles.'
 		]
 	},
