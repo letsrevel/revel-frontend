@@ -1,20 +1,24 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import {
+		membershipwalletGoogleWalletSaveLink,
 		seriespassGoogleWalletSaveLink,
 		ticketwalletGoogleWalletSaveLink
 	} from '$lib/api/generated/sdk.gen';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import { Loader2 } from '@lucide/svelte';
 
-	interface Props {
-		/** Ticket id (kind 'ticket') or held series-pass id (kind 'series-pass'). */
-		id: string;
-		kind?: 'ticket' | 'series-pass';
-		class?: string;
-	}
+	/** Same union rationale as `AddToWalletButton`: memberships are slug-addressed. */
+	type Props = { class?: string } & (
+		| { kind?: 'ticket' | 'series-pass'; id: string; slug?: never }
+		| { kind: 'membership'; slug: string; id?: never }
+	);
 
-	const { id, kind = 'ticket', class: className = '' }: Props = $props();
+	// NOT destructured — see `AddToWalletButton` for why.
+	const props: Props = $props();
+
+	const kind = $derived(props.kind ?? 'ticket');
+	const className = $derived(props.class ?? '');
 
 	let isOpening = $state(false);
 	let error = $state<string | null>(null);
@@ -22,6 +26,13 @@
 	// Official localized "Add to Google Wallet" badge artwork (fixed per brand
 	// guidelines — never restyled); one variant per app locale in static/wallet/.
 	const badgeSrc = $derived(`/wallet/google-wallet-badge-${getLocale()}.svg`);
+
+	/** Per-kind copy, so a 404 names the thing the member actually asked for. */
+	function notFoundMessage(): string {
+		if (kind === 'membership') return m['membershipCard.notFound']();
+		if (kind === 'series-pass') return m['seriesPass.passNotFound']();
+		return m['addToWallet.ticketNotFound']();
+	}
 
 	async function openSaveLink(): Promise<void> {
 		if (isOpening) return;
@@ -33,15 +44,20 @@
 			// link — there is no file download. `format=json` returns the URL
 			// instead of a cross-origin 302 the SPA could not follow.
 			const result =
-				kind === 'ticket'
-					? await ticketwalletGoogleWalletSaveLink({
-							path: { ticket_id: id },
+				props.kind === 'membership'
+					? await membershipwalletGoogleWalletSaveLink({
+							path: { slug: props.slug },
 							query: { format: 'json' }
 						})
-					: await seriespassGoogleWalletSaveLink({
-							path: { held_pass_id: id },
-							query: { format: 'json' }
-						});
+					: props.kind === 'series-pass'
+						? await seriespassGoogleWalletSaveLink({
+								path: { held_pass_id: props.id },
+								query: { format: 'json' }
+							})
+						: await ticketwalletGoogleWalletSaveLink({
+								path: { ticket_id: props.id },
+								query: { format: 'json' }
+							});
 
 			if (!result.response?.ok || !result.data) {
 				// Known statuses map to localized messages directly; the catch
@@ -50,8 +66,7 @@
 				if (result.response?.status === 503) {
 					error = m['addToGoogleWallet.notConfigured']();
 				} else if (result.response?.status === 404) {
-					error =
-						kind === 'ticket' ? m['addToWallet.ticketNotFound']() : m['seriesPass.passNotFound']();
+					error = notFoundMessage();
 				} else {
 					error = m['addToGoogleWallet.openFailed']();
 				}

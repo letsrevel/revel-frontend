@@ -5,9 +5,11 @@ import AddToGoogleWalletButton from './AddToGoogleWalletButton.svelte';
 
 const ticketwalletGoogleWalletSaveLink = vi.hoisted(() => vi.fn());
 const seriespassGoogleWalletSaveLink = vi.hoisted(() => vi.fn());
+const membershipwalletGoogleWalletSaveLink = vi.hoisted(() => vi.fn());
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	ticketwalletGoogleWalletSaveLink,
-	seriespassGoogleWalletSaveLink
+	seriespassGoogleWalletSaveLink,
+	membershipwalletGoogleWalletSaveLink
 }));
 
 const SAVE_URL = 'https://pay.google.com/gp/v/save/test-jwt';
@@ -154,5 +156,35 @@ describe('AddToGoogleWalletButton', () => {
 		const alert = await screen.findByRole('alert');
 		expect(alert.textContent).toContain('Failed to open Google Wallet');
 		expect(alert.textContent).not.toContain('network down');
+	});
+
+	// Memberships are slug-addressed, and `format=json` is as load-bearing here as
+	// on the other two arms: a browser client cannot follow the cross-origin 302.
+	it('uses the membership endpoint and the org slug for kind="membership"', async () => {
+		membershipwalletGoogleWalletSaveLink.mockResolvedValue(okResult());
+		const user = userEvent.setup();
+		render(AddToGoogleWalletButton, { props: { slug: 'acme-collective', kind: 'membership' } });
+
+		await user.click(screen.getByRole('button', { name: 'Add to Google Wallet' }));
+
+		await waitFor(() => {
+			expect(membershipwalletGoogleWalletSaveLink).toHaveBeenCalledWith({
+				path: { slug: 'acme-collective' },
+				query: { format: 'json' }
+			});
+		});
+		expect(ticketwalletGoogleWalletSaveLink).not.toHaveBeenCalled();
+		expect(seriespassGoogleWalletSaveLink).not.toHaveBeenCalled();
+	});
+
+	it('shows the membership not-found message on 404', async () => {
+		membershipwalletGoogleWalletSaveLink.mockResolvedValue(errorResult(404));
+		const user = userEvent.setup();
+		render(AddToGoogleWalletButton, { props: { slug: 'acme-collective', kind: 'membership' } });
+
+		await user.click(screen.getByRole('button', { name: 'Add to Google Wallet' }));
+
+		const alert = await screen.findByRole('alert');
+		expect(alert.textContent).toContain('Membership card not found');
 	});
 });

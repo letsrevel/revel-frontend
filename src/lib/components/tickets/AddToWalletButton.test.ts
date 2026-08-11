@@ -5,9 +5,11 @@ import AddToWalletButton from './AddToWalletButton.svelte';
 
 const ticketwalletDownloadApplePass = vi.hoisted(() => vi.fn());
 const seriespassDownloadSeriesPassPkpass = vi.hoisted(() => vi.fn());
+const membershipwalletDownloadApplePass = vi.hoisted(() => vi.fn());
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	ticketwalletDownloadApplePass,
-	seriespassDownloadSeriesPassPkpass
+	seriespassDownloadSeriesPassPkpass,
+	membershipwalletDownloadApplePass
 }));
 
 interface MockResult {
@@ -78,6 +80,58 @@ describe('AddToWalletButton', () => {
 			});
 		});
 		expect(ticketwalletDownloadApplePass).not.toHaveBeenCalled();
+	});
+
+	// Memberships are addressed by ORGANIZATION SLUG, not a UUID — the prop union
+	// exists precisely so this can't be passed as `id` by mistake.
+	it('uses the membership endpoint and the org slug for kind="membership"', async () => {
+		membershipwalletDownloadApplePass.mockResolvedValue(okResult());
+		const user = userEvent.setup();
+		render(AddToWalletButton, {
+			props: { slug: 'acme-collective', kind: 'membership', name: 'Acme Collective' }
+		});
+
+		await user.click(screen.getByRole('button', { name: 'Add to Apple Wallet' }));
+
+		await waitFor(() => {
+			expect(membershipwalletDownloadApplePass).toHaveBeenCalledWith({
+				path: { slug: 'acme-collective' },
+				parseAs: 'stream'
+			});
+		});
+		expect(ticketwalletDownloadApplePass).not.toHaveBeenCalled();
+		expect(seriespassDownloadSeriesPassPkpass).not.toHaveBeenCalled();
+	});
+
+	it('names the membership download after the organization', async () => {
+		membershipwalletDownloadApplePass.mockResolvedValue(okResult());
+		const user = userEvent.setup();
+		const clicked: string[] = [];
+		vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
+			this: HTMLAnchorElement
+		) {
+			clicked.push(this.download);
+		});
+		render(AddToWalletButton, {
+			props: { slug: 'acme-collective', kind: 'membership', name: 'Acme Collective!' }
+		});
+
+		await user.click(screen.getByRole('button', { name: 'Add to Apple Wallet' }));
+
+		await waitFor(() => expect(clicked).toEqual(['acme-collective-membership.pkpass']));
+	});
+
+	it('shows the membership not-found message on 404', async () => {
+		membershipwalletDownloadApplePass.mockResolvedValue(errorResult(404));
+		const user = userEvent.setup();
+		render(AddToWalletButton, {
+			props: { slug: 'acme-collective', kind: 'membership', name: 'Acme Collective' }
+		});
+
+		await user.click(screen.getByRole('button', { name: 'Add to Apple Wallet' }));
+
+		const alert = await screen.findByRole('alert');
+		expect(alert.textContent).toContain('Membership card not found');
 	});
 
 	it('shows the not-configured message on 503', async () => {

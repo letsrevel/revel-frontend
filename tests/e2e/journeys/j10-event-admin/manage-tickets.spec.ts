@@ -66,7 +66,10 @@ test.describe('J10 manage tickets @p1', () => {
 			await expect(page).toHaveURL(/order_by=/, { timeout: 15_000 });
 		}
 
-		// Confirm alpha's offline payment → ACTIVE, via the row's actions menu.
+		// Confirm alpha's offline payment → ACTIVE via the INLINE row action. The
+		// v2.4.0 rebalance (#834) moved Check In / Confirm payment / Refund /
+		// Cancel onto the row; the kebab below still owns Revert to Pending.
+		const betaName = `${beta.firstName} ${beta.lastName}`;
 		const activeAlphaRow = page
 			.locator('tr, article, li, div')
 			.filter({ hasText: alphaName })
@@ -76,8 +79,15 @@ test.describe('J10 manage tickets @p1', () => {
 		const alphaKebab = page
 			.getByRole('button', { name: `More actions for ${alphaName}` })
 			.filter({ visible: true });
-		await alphaKebab.first().click();
-		await page.getByRole('menuitem', { name: 'Confirm Payment' }).click();
+		// Scoped to a container holding alpha but NOT beta — both tickets are
+		// PENDING here, so a page-wide .first() could confirm the wrong one.
+		const pendingAlphaOnlyRow = page
+			.locator('tr, article, li, div')
+			.filter({ hasText: alphaName })
+			.filter({ hasNot: page.getByText(betaName) })
+			.filter({ visible: true })
+			.first();
+		await pendingAlphaOnlyRow.getByRole('button', { name: 'Confirm Payment' }).first().click();
 		const confirmDialog = page.getByRole('dialog', { name: 'Confirm Payment' });
 		await confirmDialog.getByRole('button', { name: 'Confirm Payment' }).click();
 		await expect(activeAlphaRow).toBeVisible({ timeout: 20_000 });
@@ -102,7 +112,6 @@ test.describe('J10 manage tickets @p1', () => {
 		}).toPass({ timeout: 60_000 });
 
 		// Admin-cancel beta's ticket via the inline row action.
-		const betaName = `${beta.firstName} ${beta.lastName}`;
 		// Scope to a container holding beta but NOT alpha — a page-wide
 		// .first() could hit the wrong row's Cancel Ticket button.
 		const betaRow = page

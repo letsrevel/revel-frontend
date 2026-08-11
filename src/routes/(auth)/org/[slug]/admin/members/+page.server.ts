@@ -10,6 +10,11 @@ export const load: PageServerLoad = async ({ parent }) => {
 		isOwner || canPerformAction(permissions, organization.id, 'manage_members');
 	const canManageSubscriptions =
 		isOwner || canPerformAction(permissions, organization.id, 'manage_subscriptions');
+	// Door verification is gated on `check_in_attendees`, NOT `manage_members`:
+	// reading a membership card at a door is not editing the roster, and the
+	// backend's verify endpoint draws the line in the same place.
+	const canVerifyMembers =
+		isOwner || canPerformAction(permissions, organization.id, 'check_in_attendees');
 
 	// `manage_subscriptions` is a standalone role: a billing staffer who cannot
 	// touch the roster still needs this page for the Subscriptions tab. Each tab
@@ -24,6 +29,7 @@ export const load: PageServerLoad = async ({ parent }) => {
 		isStaff,
 		permissions,
 		canManageMembers,
-		canManageSubscriptions
+		canManageSubscriptions,
+		canVerifyMembers
 	};
 };

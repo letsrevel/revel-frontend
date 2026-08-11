@@ -7,6 +7,7 @@
 	import AddToWalletButton from '$lib/components/tickets/AddToWalletButton.svelte';
 	import AddToGoogleWalletButton from '$lib/components/tickets/AddToGoogleWalletButton.svelte';
 	import { detectWalletPlatform } from '$lib/utils/platform';
+	import { toFilenameSlug } from '$lib/utils/filename';
 
 	interface Props {
 		heldPassId: string;
@@ -23,12 +24,7 @@
 
 	let isDownloadingPdf = $state(false);
 
-	const safeName = $derived(
-		passName
-			.toLowerCase()
-			.replace(/[^a-z0-9]+/g, '-')
-			.substring(0, 30)
-	);
+	const safeName = $derived(toFilenameSlug(passName, 'pass'));
 
 	function saveBlob(blob: Blob, filename: string): void {
 		const url = window.URL.createObjectURL(blob);
@@ -50,14 +46,21 @@
 				parseAs: 'stream'
 			});
 			if (!response.response?.ok) {
-				if (response.response?.status === 404) {
-					throw new Error(m['seriesPass.passNotFound']());
-				}
-				throw new Error(m['seriesPass.pdfDownloadFailed']());
+				toast.error(
+					response.response?.status === 404
+						? m['seriesPass.passNotFound']()
+						: m['seriesPass.pdfDownloadFailed']()
+				);
+				return;
 			}
 			saveBlob(await response.response.blob(), `${safeName}-pass.pdf`);
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : m['seriesPass.pdfDownloadFailed']());
+			// Raw error text is unlocalized and may carry backend detail: the old
+			// `err.message` path leaked things like "ECONNRESET from upstream" into
+			// a toast. Log it, show the localized line. Same rule the wallet badges
+			// have always followed.
+			console.error('Failed to download series-pass PDF:', err);
+			toast.error(m['seriesPass.pdfDownloadFailed']());
 		} finally {
 			isDownloadingPdf = false;
 		}

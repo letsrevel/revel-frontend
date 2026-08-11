@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
+	import { resolve } from '$app/paths';
 	import type { PageData } from './$types';
 	import { createQuery } from '@tanstack/svelte-query';
 	import {
@@ -22,7 +23,8 @@
 		CreditCard,
 		Receipt,
 		Info,
-		ChevronDown
+		ChevronDown,
+		ScanLine
 	} from '@lucide/svelte';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import MembersTab from '$lib/components/members/MembersTab.svelte';
@@ -43,6 +45,7 @@
 	// (and fire no roster query, which would 403).
 	const canManageMembers = $derived(!!data.canManageMembers);
 	const canManageSubscriptions = $derived(!!data.canManageSubscriptions);
+	const canVerifyMembers = $derived(!!data.canVerifyMembers);
 
 	// Active tab state
 	const MEMBER_TABS = ['members', 'staff', 'requests', 'tiers', 'tokens'] as const;
@@ -172,6 +175,20 @@
 <div class="space-y-6 px-4 md:px-0">
 	<!-- Header -->
 	{#snippet headerActions()}
+		{#if canVerifyMembers}
+			<!-- Gated on `check_in_attendees`, not `canManageMembers`: an owner or a
+			     roster manager without door duty should not be handed a scanner.
+			     A steward holding ONLY `check_in_attendees` never reaches this page
+			     (the load 403s them) — their way in is the admin quick-actions tile. -->
+			<Button
+				href={resolve('/(auth)/org/[slug]/admin/members/verify', { slug: organization.slug })}
+				variant="outline"
+				class="w-full sm:w-auto"
+			>
+				<ScanLine class="mr-2 h-4 w-4" aria-hidden="true" />
+				{m['orgAdmin.members.verifyCard']()}
+			</Button>
+		{/if}
 		{#if canManageMembers}
 			<Button
 				onclick={() => {

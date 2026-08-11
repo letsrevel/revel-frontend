@@ -2050,7 +2050,8 @@
 		"checkInError": "Check-in des Tickets fehlgeschlagen",
 		"filterBySource": "Nach Herkunft filtern",
 		"sourceDirect": "Direktkauf",
-		"sourcePass": "Saisonpass"
+		"sourcePass": "Saisonpass",
+		"checkInSuccessGeneric": "Eingecheckt"
 	},
 	"eventTokenCard": {
 		"type": "Typ:",
@@ -3296,6 +3297,10 @@
 				"polls": {
 					"title": "Umfragen",
 					"description": "Umfragen erstellen und Mitgliedermeinungen einholen"
+				},
+				"verifyMembers": {
+					"title": "Mitglieder prüfen",
+					"description": "Mitgliedsausweise am Eingang scannen"
 				}
 			},
 			"orgDetails": {
@@ -3805,7 +3810,8 @@
 				"screening": "Die Möglichkeit, Prüfungs-Fragebögen bei deinen Events zu überspringen",
 				"exclusive": "Zugang zu Events und Ticket-Stufen nur für Mitglieder",
 				"fees": "Mitgliedschaftsgebühren und Rabatte, die du einrichtest"
-			}
+			},
+			"verifyCard": "Ausweis prüfen"
 		},
 		"eventSeries": {
 			"pageTitle": "Veranstaltungsreihen",
@@ -9365,5 +9371,41 @@
 	"myTicketModal.renameHolder": "Inhaber*in umbenennen",
 	"myTicketModal.addHolderName": "Namen hinzufügen",
 	"ticketTable.renameHolder": "Inhaber*in umbenennen",
-	"ticketCardList.renameHolder": "Inhaber*in umbenennen"
+	"ticketCardList.renameHolder": "Inhaber*in umbenennen",
+	"membershipCard.showCard": "Ausweis anzeigen",
+	"membershipCard.dialogDescription": "Dein Mitgliedsausweis",
+	"membershipCard.qrAlt": "QR-Code des Mitgliedsausweises",
+	"membershipCard.qrHint": "Veranstalter*innen scannen diesen Code am Eingang. Dein Mitgliedsstatus wird im Moment des Scans geprüft.",
+	"membershipCard.memberLabel": "Mitglied",
+	"membershipCard.tierLabel": "Stufe",
+	"membershipCard.memberSinceLabel": "Mitglied seit",
+	"membershipCard.downloadPdf": "PDF herunterladen",
+	"membershipCard.notFound": "Mitgliedsausweis nicht gefunden",
+	"membershipCard.walletDownloadFailed": "Mitgliedsausweis konnte nicht heruntergeladen werden",
+	"membershipCard.pdfDownloadFailed": "PDF konnte nicht heruntergeladen werden",
+	"membershipCard.statusNoticePaused": "Diese Mitgliedschaft ist pausiert. Beim Scannen des Ausweises wird sie als pausiert angezeigt.",
+	"membershipCard.statusNoticeCancelled": "Diese Mitgliedschaft ist beendet. Beim Scannen des Ausweises wird sie als gekündigt angezeigt.",
+	"membershipCard.statusNoticeBanned": "Diese Mitgliedschaft wurde entzogen. Beim Scannen des Ausweises wird sie als gesperrt angezeigt.",
+	"memberVerify.pageTitle": "Mitgliedsausweis prüfen",
+	"memberVerify.pageSubtitle": "Scanne einen Ausweis, um zu sehen, wem er gehört und ob die Mitgliedschaft aktiv ist.",
+	"memberVerify.manualEntryLabel": "Ausweiscode eingeben",
+	"memberVerify.manualEntryPlaceholder": "member:… oder der Code auf dem Ausweis",
+	"memberVerify.manualEntrySubmit": "Prüfen",
+	"memberVerify.resultRegionLabel": "Scan-Ergebnis",
+	"memberVerify.idlePrompt": "Richte die Kamera auf einen Mitgliedsausweis.",
+	"memberVerify.unknownMember": "Unbekanntes Mitglied",
+	"memberVerify.tierLabel": "Stufe",
+	"memberVerify.memberSinceLabel": "Mitglied seit",
+	"memberVerify.notFound": "Kein Mitgliedsausweis dieser Organisation passt zu diesem Code.",
+	"memberVerify.error": "Dieser Ausweis konnte nicht geprüft werden. Bitte versuche es erneut.",
+	"memberVerify.warningPaused": "Diese Mitgliedschaft ist pausiert und gewährt derzeit keine Mitgliedsvorteile.",
+	"memberVerify.warningCancelled": "Diese Mitgliedschaft ist beendet.",
+	"memberVerify.warningBanned": "Diese Person ist von dieser Organisation gesperrt.",
+	"memberScan.title": "Mitgliedsausweis",
+	"memberScan.dialogDescription": "Es wurde nichts eingecheckt. Ein Mitgliedsausweis weist aus, wer ihn vorzeigt — er gewährt keinen Einlass.",
+	"memberScan.ticketsHeading": "Tickets für dieses Event",
+	"memberScan.untitledTier": "Ticket",
+	"memberScan.checkInTicket": "Einchecken",
+	"memberScan.close": "Schließen",
+	"memberScan.checkedInSuccess": "Eingecheckt: {name}"
 }
