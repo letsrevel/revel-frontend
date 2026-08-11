@@ -7,14 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-08-11
+
 ### Added
 
 - **Membership cards**: every membership on "My Memberships" now has a "Show card" button that opens the member's card — organization branding, their name and pronouns, tier, member-since date, and a QR code — plus Add to Apple Wallet, Add to Google Wallet and Download PDF where the organization has them configured. The card is an identity credential, not a ticket: it never admits anyone by itself, its validity is checked at the moment it is scanned, and it is shown for paused, cancelled and banned memberships too, each stating in words what a scan of it will report.
 - **Verify a card at the door**: organizations gain a scanner at Members → Verify a card (and from the admin quick actions) that works outside any event — a clubhouse door, a members' night. Each scan shows the member's photo, name, pronouns, tier and true status, with paused, cancelled and banned called out explicitly rather than reported as a failed lookup. The camera stays live between scans, and a manual code field is always available. Requires the "check in attendees" permission.
 - **Membership cards at event check-in**: the event scanner now accepts membership cards as well as tickets and series passes. A member holding exactly one ticket for the event is checked in on the spot; otherwise nothing is checked in and staff get a report showing who the person is, whether their membership is live, and which tickets they hold — each with its own Check in button.
 
+### Changed
+
+- Gender-inclusive wording now applies across all six languages. German follows the gender-star convention consistently — including the SEO landing pages, which a catalog sweep never reached — and drops the ungrammatical `Mitglieder*innen`. French uses neutral rephrasing with the point médian as a fallback; Italian, Spanish and Portuguese use neutral rephrasing only, with no glyphs, since screen readers mangle them.
+
 ### Fixed
 
+- Large parts of the German and Italian interface no longer appear in English despite the language being set: 661 German and 589 Italian strings shipped as the untranslated English original and have now been translated, with terminology matched to the wording used in Revel's emails.
 - Download errors on ticket, series-pass and membership PDFs no longer surface raw technical text (for example a network error's `ECONNRESET from upstream`); every failure now shows a translated message.
 - Generated pass and PDF filenames no longer end up with a doubled hyphen when the event or organization name ends in punctuation.
 
