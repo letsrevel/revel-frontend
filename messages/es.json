@@ -2050,7 +2050,8 @@
 		"checkInError": "No se pudo registrar la entrada",
 		"filterBySource": "Filtrar por origen",
 		"sourceDirect": "Compra directa",
-		"sourcePass": "Pase de temporada"
+		"sourcePass": "Pase de temporada",
+		"checkInSuccessGeneric": "Entrada registrada"
 	},
 	"eventTokenCard": {
 		"type": "Tipo:",
@@ -3296,6 +3297,10 @@
 				"polls": {
 					"title": "Encuestas",
 					"description": "Crea encuestas y recoge la opinión de los miembros"
+				},
+				"verifyMembers": {
+					"title": "Verificar miembros",
+					"description": "Escanea tarjetas de miembro en la entrada"
 				}
 			},
 			"orgDetails": {
@@ -3805,7 +3810,8 @@
 				"screening": "La posibilidad de saltarse los cuestionarios de selección en tus eventos",
 				"exclusive": "Acceso a eventos y tipos de entrada exclusivos para miembros",
 				"fees": "Las cuotas y descuentos por nivel de membresía que configures"
-			}
+			},
+			"verifyCard": "Verificar una tarjeta"
 		},
 		"eventSeries": {
 			"pageTitle": "Series de eventos",
@@ -9365,5 +9371,41 @@
 	"myTicketModal.renameHolder": "Renombrar titular",
 	"myTicketModal.addHolderName": "Añadir nombre",
 	"ticketTable.renameHolder": "Renombrar titular",
-	"ticketCardList.renameHolder": "Renombrar titular"
+	"ticketCardList.renameHolder": "Renombrar titular",
+	"membershipCard.showCard": "Ver tarjeta",
+	"membershipCard.dialogDescription": "Tu tarjeta de miembro",
+	"membershipCard.qrAlt": "Código QR de la tarjeta de miembro",
+	"membershipCard.qrHint": "La organización escanea este código en la entrada. El estado de tu membresía se comprueba en el momento del escaneo.",
+	"membershipCard.memberLabel": "Miembro",
+	"membershipCard.tierLabel": "Nivel",
+	"membershipCard.memberSinceLabel": "Miembro desde",
+	"membershipCard.downloadPdf": "Descargar PDF",
+	"membershipCard.notFound": "Tarjeta de miembro no encontrada",
+	"membershipCard.walletDownloadFailed": "No se pudo descargar la tarjeta de miembro",
+	"membershipCard.pdfDownloadFailed": "No se pudo descargar el PDF",
+	"membershipCard.statusNoticePaused": "Esta membresía está en pausa. Al escanear la tarjeta aparecerá como pausada.",
+	"membershipCard.statusNoticeCancelled": "Esta membresía ha terminado. Al escanear la tarjeta aparecerá como cancelada.",
+	"membershipCard.statusNoticeBanned": "Esta membresía ha sido revocada. Al escanear la tarjeta aparecerá como vetada.",
+	"memberVerify.pageTitle": "Verificar una tarjeta de miembro",
+	"memberVerify.pageSubtitle": "Escanea una tarjeta para ver a quién pertenece y si la membresía está activa.",
+	"memberVerify.manualEntryLabel": "Introduce un código de tarjeta",
+	"memberVerify.manualEntryPlaceholder": "member:… o el código de la tarjeta",
+	"memberVerify.manualEntrySubmit": "Verificar",
+	"memberVerify.resultRegionLabel": "Resultado del escaneo",
+	"memberVerify.idlePrompt": "Apunta la cámara a una tarjeta de miembro.",
+	"memberVerify.unknownMember": "Miembro desconocido",
+	"memberVerify.tierLabel": "Nivel",
+	"memberVerify.memberSinceLabel": "Miembro desde",
+	"memberVerify.notFound": "Ninguna tarjeta de miembro de esta organización coincide con este código.",
+	"memberVerify.error": "No se pudo verificar esta tarjeta. Inténtalo de nuevo.",
+	"memberVerify.warningPaused": "Esta membresía está en pausa y ahora mismo no da derecho a las ventajas de miembro.",
+	"memberVerify.warningCancelled": "Esta membresía ha terminado.",
+	"memberVerify.warningBanned": "Esta persona está vetada de esta organización.",
+	"memberScan.title": "Tarjeta de miembro",
+	"memberScan.dialogDescription": "No se registró ninguna entrada. La tarjeta identifica a quien la muestra; no da acceso al evento.",
+	"memberScan.ticketsHeading": "Entradas para este evento",
+	"memberScan.untitledTier": "Entrada",
+	"memberScan.checkInTicket": "Registrar entrada",
+	"memberScan.close": "Cerrar",
+	"memberScan.checkedInSuccess": "Entrada registrada: {name}"
 }

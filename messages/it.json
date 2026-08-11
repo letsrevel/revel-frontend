@@ -2050,7 +2050,8 @@
 		"checkInError": "Impossibile effettuare il check-in del biglietto",
 		"filterBySource": "Filtra per origine",
 		"sourceDirect": "Acquisto diretto",
-		"sourcePass": "Abbonamento"
+		"sourcePass": "Abbonamento",
+		"checkInSuccessGeneric": "Ingresso registrato"
 	},
 	"eventTokenCard": {
 		"type": "Tipo:",
@@ -3296,6 +3297,10 @@
 				"polls": {
 					"title": "Sondaggi",
 					"description": "Crea sondaggi e raccogli le opinioni dei membri"
+				},
+				"verifyMembers": {
+					"title": "Verifica membri",
+					"description": "Scansiona le tessere all'ingresso"
 				}
 			},
 			"orgDetails": {
@@ -3805,7 +3810,8 @@
 				"screening": "La possibilità di saltare i questionari di selezione sui tuoi eventi",
 				"exclusive": "Accesso a eventi e livelli di biglietto riservati ai membri",
 				"fees": "Quote di iscrizione e sconti che configuri"
-			}
+			},
+			"verifyCard": "Verifica una tessera"
 		},
 		"eventSeries": {
 			"pageTitle": "Serie di Eventi",
@@ -9365,5 +9371,41 @@
 	"myTicketModal.renameHolder": "Rinomina intestatario",
 	"myTicketModal.addHolderName": "Aggiungi nome",
 	"ticketTable.renameHolder": "Rinomina intestatario",
-	"ticketCardList.renameHolder": "Rinomina intestatario"
+	"ticketCardList.renameHolder": "Rinomina intestatario",
+	"membershipCard.showCard": "Mostra tessera",
+	"membershipCard.dialogDescription": "La tua tessera associativa",
+	"membershipCard.qrAlt": "Codice QR della tessera",
+	"membershipCard.qrHint": "Chi organizza scansiona questo codice all'ingresso. Lo stato della tessera viene verificato al momento della scansione.",
+	"membershipCard.memberLabel": "Membro",
+	"membershipCard.tierLabel": "Livello",
+	"membershipCard.memberSinceLabel": "Membro dal",
+	"membershipCard.downloadPdf": "Scarica PDF",
+	"membershipCard.notFound": "Tessera non trovata",
+	"membershipCard.walletDownloadFailed": "Impossibile scaricare la tessera",
+	"membershipCard.pdfDownloadFailed": "Impossibile scaricare il PDF",
+	"membershipCard.statusNoticePaused": "Questa iscrizione è in pausa. Alla scansione della tessera risulterà in pausa.",
+	"membershipCard.statusNoticeCancelled": "Questa iscrizione è terminata. Alla scansione della tessera risulterà annullata.",
+	"membershipCard.statusNoticeBanned": "Questa iscrizione è stata revocata. Alla scansione della tessera risulterà bandita.",
+	"memberVerify.pageTitle": "Verifica una tessera",
+	"memberVerify.pageSubtitle": "Scansiona una tessera per vedere a chi appartiene e se l'iscrizione è attiva.",
+	"memberVerify.manualEntryLabel": "Inserisci il codice della tessera",
+	"memberVerify.manualEntryPlaceholder": "member:… o il codice sulla tessera",
+	"memberVerify.manualEntrySubmit": "Verifica",
+	"memberVerify.resultRegionLabel": "Esito della scansione",
+	"memberVerify.idlePrompt": "Inquadra una tessera con la fotocamera.",
+	"memberVerify.unknownMember": "Membro sconosciuto",
+	"memberVerify.tierLabel": "Livello",
+	"memberVerify.memberSinceLabel": "Membro dal",
+	"memberVerify.notFound": "Nessuna tessera di questa organizzazione corrisponde a questo codice.",
+	"memberVerify.error": "Impossibile verificare questa tessera. Riprova.",
+	"memberVerify.warningPaused": "Questa iscrizione è in pausa e al momento non dà diritto ai vantaggi riservati ai membri.",
+	"memberVerify.warningCancelled": "Questa iscrizione è terminata.",
+	"memberVerify.warningBanned": "Questa persona è stata bandita da questa organizzazione.",
+	"memberScan.title": "Tessera associativa",
+	"memberScan.dialogDescription": "Non è stato registrato alcun ingresso. La tessera identifica chi la mostra, non dà diritto a entrare.",
+	"memberScan.ticketsHeading": "Biglietti per questo evento",
+	"memberScan.untitledTier": "Biglietto",
+	"memberScan.checkInTicket": "Registra ingresso",
+	"memberScan.close": "Chiudi",
+	"memberScan.checkedInSuccess": "Ingresso registrato: {name}"
 }
