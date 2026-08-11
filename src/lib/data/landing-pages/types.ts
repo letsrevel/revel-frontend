@@ -59,6 +59,15 @@ export interface LandingPageContent {
 	relatedPages: string[];
 }
 
+/**
+ * The locales every landing page must provide. Derived from `LandingPageContent`
+ * so the two can't drift. Used to type the `landingPages` lookup as a total map:
+ * these pages are hand-authored per locale (they are NOT in messages/*.json, so no
+ * i18n check covers them), and before this was `Record<string, …>` a page could ship
+ * with only some locales and silently 404 the rest.
+ */
+export type LandingPageLocale = LandingPageContent['locale'];
+
 export type LandingPageSlug =
 	| 'eventbrite-alternative'
 	| 'queer-event-management'

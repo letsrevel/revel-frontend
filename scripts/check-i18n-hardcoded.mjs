@@ -15,7 +15,7 @@
  *   3. visible text nodes:  >Some Text<
  *
  * Excluded (never scanned):
- *   - SEO landing pages: src/routes/(public)/{de,it,fr,es,pt}/**, src/lib/data/landing-pages.ts
+ *   - SEO landing pages: src/routes/(public)/{de,it,fr,es,pt}/**, src/lib/data/landing-pages/
  *   - generated / paraglide / data / *.test.* / *.spec.* / *.d.ts / *.example.*
  *   - <style> blocks, <svelte:head> blocks, HTML/JS comments
  *   - <script> bodies, for rule 3 only (rules 1 and 2 still scan them)
@@ -50,7 +50,7 @@ const UPDATE = process.argv.includes('--update');
 const EXCLUDE = [
 	/\/paraglide\//,
 	/\/api\/generated\//,
-	/\/lib\/data\/landing-pages\.ts$/,
+	/\/lib\/data\/landing-pages\//,
 	/\/routes\/\(public\)\/(de|it|fr|es|pt)\//, // localized SEO landing pages
 	/\.test\./,
 	/\.spec\./,
@@ -292,7 +292,7 @@ Fix one of these ways:
     \`i18n-ignore\` comment on that line, OR
   • Accept it into the baseline:  make i18n-hardcoded-update   (only for legitimate non-prose)
 
-SEO landing pages (src/routes/(public)/{de,it,fr,es,pt}, src/lib/data/landing-pages.ts) are intentionally excluded.`);
+SEO landing pages (src/routes/(public)/{de,it,fr,es,pt}, src/lib/data/landing-pages/) are intentionally excluded.`);
 	process.exit(1);
 }
 

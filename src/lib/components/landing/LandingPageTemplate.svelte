@@ -4,7 +4,7 @@
 		LandingPageContent,
 		LandingPageFeature
 	} from '$lib/data/landing-pages';
-	import { landingPages } from '$lib/data/landing-pages';
+	import { getLandingPage } from '$lib/data/landing-pages';
 	import { Button } from '$lib/components/ui/button';
 	import { cn } from '$lib/utils';
 	import * as m from '$lib/paraglide/messages.js';
@@ -106,7 +106,8 @@
 	}
 
 	function getRelatedPageTitle(slug: string): string {
-		const relatedContent = landingPages[content.locale]?.[slug];
+		// `relatedPages` is a plain string[], so go through the widening lookup helper.
+		const relatedContent = getLandingPage(content.locale, slug);
 		return relatedContent?.hero.headline || slug;
 	}
 
