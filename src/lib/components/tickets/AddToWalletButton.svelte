@@ -1,22 +1,38 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import {
+		membershipwalletDownloadApplePass,
 		seriespassDownloadSeriesPassPkpass,
 		ticketwalletDownloadApplePass
 	} from '$lib/api/generated/sdk.gen';
 	import { getLocale } from '$lib/paraglide/runtime.js';
+	import { toFilenameSlug } from '$lib/utils/filename';
 	import { Loader2 } from '@lucide/svelte';
 
-	interface Props {
-		/** Ticket id (kind 'ticket') or held series-pass id (kind 'series-pass'). */
-		id: string;
-		kind?: 'ticket' | 'series-pass';
-		/** Event or pass name — used only for the downloaded .pkpass filename. */
+	/**
+	 * Tickets and series passes are addressed by UUID; a membership card is
+	 * addressed by its ORGANIZATION SLUG (`/api/me/organizations/{slug}/…`), so it
+	 * cannot borrow the `id` prop without lying about what the value is. The two
+	 * shapes are a discriminated union rather than one loose `id: string`, which
+	 * would have compiled just as happily with a member UUID passed by mistake.
+	 */
+	type Props = {
+		/** Event, pass, or organization name — used only for the downloaded .pkpass filename. */
 		name: string;
 		class?: string;
-	}
+	} & (
+		| { kind?: 'ticket' | 'series-pass'; id: string; slug?: never }
+		| { kind: 'membership'; slug: string; id?: never }
+	);
 
-	const { id, kind = 'ticket', name, class: className = '' }: Props = $props();
+	// NOT destructured: Svelte 5 cannot destructure a union-typed `$props()` —
+	// narrowing has to happen on the object. The three read-only locals below
+	// keep the markup as legible as the destructured version was.
+	const props: Props = $props();
+
+	const kind = $derived(props.kind ?? 'ticket');
+	const name = $derived(props.name);
+	const className = $derived(props.class ?? '');
 
 	let isDownloading = $state(false);
 	let error = $state<string | null>(null);
@@ -27,23 +43,41 @@
 	// developer.apple.com/wallet/add-to-apple-wallet-guidelines/).
 	const badgeSrc = $derived(`/wallet/apple-wallet-badge-${getLocale()}.svg`);
 
+	/** Per-kind copy, so a 404 names the thing the member actually asked for. */
+	function notFoundMessage(): string {
+		if (kind === 'membership') return m['membershipCard.notFound']();
+		if (kind === 'series-pass') return m['seriesPass.passNotFound']();
+		return m['addToWallet.ticketNotFound']();
+	}
+
+	function downloadFailedMessage(): string {
+		if (kind === 'membership') return m['membershipCard.walletDownloadFailed']();
+		if (kind === 'series-pass') return m['seriesPass.walletDownloadFailed']();
+		return m['addToWallet.downloadFailed']();
+	}
+
 	async function downloadApplePass(): Promise<void> {
 		if (isDownloading) return;
 		isDownloading = true;
 		error = null;
 
 		try {
+			// Request raw responses throughout to handle the binary pass bytes.
 			const response =
-				kind === 'ticket'
-					? await ticketwalletDownloadApplePass({
-							path: { ticket_id: id },
-							// Request raw response to handle binary data
+				props.kind === 'membership'
+					? await membershipwalletDownloadApplePass({
+							path: { slug: props.slug },
 							parseAs: 'stream'
 						})
-					: await seriespassDownloadSeriesPassPkpass({
-							path: { held_pass_id: id },
-							parseAs: 'stream'
-						});
+					: props.kind === 'series-pass'
+						? await seriespassDownloadSeriesPassPkpass({
+								path: { held_pass_id: props.id },
+								parseAs: 'stream'
+							})
+						: await ticketwalletDownloadApplePass({
+								path: { ticket_id: props.id },
+								parseAs: 'stream'
+							});
 
 			if (!response.response?.ok) {
 				// Known statuses map to localized messages directly; the catch
@@ -52,13 +86,9 @@
 				if (response.response?.status === 503) {
 					error = m['addToWallet.notConfigured']();
 				} else if (response.response?.status === 404) {
-					error =
-						kind === 'ticket' ? m['addToWallet.ticketNotFound']() : m['seriesPass.passNotFound']();
+					error = notFoundMessage();
 				} else {
-					error =
-						kind === 'ticket'
-							? m['addToWallet.downloadFailed']()
-							: m['seriesPass.walletDownloadFailed']();
+					error = downloadFailedMessage();
 				}
 				return;
 			}
@@ -68,21 +98,20 @@
 			const url = window.URL.createObjectURL(blob);
 			const link = document.createElement('a');
 			link.href = url;
-			const safeName = name
-				.toLowerCase()
-				.replace(/[^a-z0-9]+/g, '-')
-				.substring(0, 30);
-			link.download = `${safeName}-${id.split('-')[0]}.pkpass`;
+			const safeName = toFilenameSlug(name);
+			// A ticket/pass is one of many, so its filename carries the id's first
+			// segment to stay unique in a Downloads folder. A membership card is one
+			// per organization — the org name alone already disambiguates it, and a
+			// slug segment would only repeat what `safeName` says.
+			const suffix = props.kind === 'membership' ? 'membership' : props.id.split('-')[0];
+			link.download = `${safeName}-${suffix}.pkpass`;
 			document.body.appendChild(link);
 			link.click();
 			document.body.removeChild(link);
 			window.URL.revokeObjectURL(url);
 		} catch (err) {
 			console.error('Failed to download Apple Wallet pass:', err);
-			error =
-				kind === 'ticket'
-					? m['addToWallet.downloadFailed']()
-					: m['seriesPass.walletDownloadFailed']();
+			error = downloadFailedMessage();
 		} finally {
 			isDownloading = false;
 		}
