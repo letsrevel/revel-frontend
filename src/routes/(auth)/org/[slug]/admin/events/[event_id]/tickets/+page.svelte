@@ -12,8 +12,6 @@
 	import {
 		eventadminticketsConfirmTicketPayment,
 		eventadminticketsUnconfirmTicketPayment,
-		eventadminticketsCheckInTicket,
-		eventadminticketsGetTicket,
 		eventadminticketsExportAttendees
 	} from '$lib/api';
 	import type { PageData } from './$types';
@@ -28,12 +26,9 @@
 		type TicketOrderBy,
 		type TicketSortField
 	} from '$lib/components/tickets/ticket-sort';
-	import {
-		toCheckInTicket,
-		type CheckInDialogTicket
-	} from '$lib/components/tickets/checkin-adapter';
 	import { createTicketMemberAdmin } from '$lib/components/tickets/ticket-member-admin.svelte';
 	import { createTicketCancelRefundAdmin } from '$lib/components/tickets/ticket-cancel-refund-admin.svelte';
+	import { createTicketScanCheckIn } from '$lib/components/tickets/ticket-scan-checkin.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import QRScannerModal from '$lib/components/tickets/QRScannerModal.svelte';
@@ -43,11 +38,10 @@
 	import RefundTicketDialog from '$lib/components/tickets/RefundTicketDialog.svelte';
 	import AdminCancelTicketDialog from '$lib/components/tickets/AdminCancelTicketDialog.svelte';
 	import MakeMemberModal from '$lib/components/members/MakeMemberModal.svelte';
+	import MemberScanResultDialog from '$lib/components/members/MemberScanResultDialog.svelte';
 	import ExportButton from '$lib/components/common/ExportButton.svelte';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
-	import { isSeriesPassCode } from '$lib/utils/series-pass-qr';
-	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 
 	const { data }: { data: PageData } = $props();
 
@@ -65,10 +59,6 @@
 	// Confirmation dialogs
 	let showConfirmPaymentDialog = $state(false);
 	let ticketToConfirm = $state<AdminTicketSchema | null>(null);
-	let showCheckInDialog = $state(false);
-	let ticketToCheckIn = $state<CheckInDialogTicket | null>(null);
-	let checkInDialogError = $state<string | null>(null);
-	let showQRScanner = $state(false);
 	let showReseatDialog = $state(false);
 	let ticketToReseat = $state<AdminTicketSchema | null>(null);
 	let showRenameDialog = $state(false);
@@ -77,6 +67,14 @@
 	// Membership + blacklist admin actions (state, mutations, handlers).
 	const memberAdmin = createTicketMemberAdmin({
 		getSlug: () => data.event.organization.slug,
+		getAccessToken: () => authStore.accessToken
+	});
+
+	// Scan → check-in flow: the QR scanner, the confirm dialog, and the
+	// membership-card report (`member:` codes, FE #845). Lives outside this file
+	// because the route is a dozen lines under the 750-line cap.
+	const scanCheckIn = createTicketScanCheckIn({
+		getEventId: () => data.event.id,
 		getAccessToken: () => authStore.accessToken
 	});
 
@@ -162,45 +160,6 @@
 		},
 		onError: () => {
 			toast.error(m['eventTicketsAdmin.unconfirmPaymentError']());
-		}
-	}));
-
-	/**
-	 * Check-in ticket mutation
-	 */
-	const checkInTicketMutation = createMutation(() => ({
-		// `code` is a ticket UUID or a series-pass QR payload (`series:<uuid>`);
-		// the backend resolves pass codes to the holder's ticket for this event.
-		mutationFn: async ({ code, pricePaid }: { code: string; pricePaid?: string }) => {
-			const response = await eventadminticketsCheckInTicket({
-				path: { event_id: data.event.id, code },
-				body: pricePaid ? { price_paid: pricePaid } : undefined,
-				headers: { Authorization: `Bearer ${authStore.accessToken}` }
-			});
-
-			if (response.error) {
-				const errorDetail =
-					extractApiErrorDetail(response.error) ?? m['eventTicketsAdmin.checkInError']();
-				// silent: the onError below shows the specific message; without the
-				// flag the global mutations.onError in +layout.svelte adds a second
-				// generic "Action failed" toast for the same failure.
-				throw Object.assign(new Error(errorDetail), { silent: true });
-			}
-
-			return response.data;
-		},
-		onSuccess: () => {
-			showCheckInDialog = false;
-			ticketToCheckIn = null;
-			checkInDialogError = null;
-			invalidateAll();
-		},
-		onError: (err) => {
-			const message = err instanceof Error ? err.message : m['eventTicketsAdmin.checkInError']();
-			// The dialog stays open on failure, so it shows the reason inline;
-			// the toast still covers scan-initiated check-ins with no dialog.
-			checkInDialogError = message;
-			toast.error(message);
 		}
 	}));
 
@@ -327,70 +286,6 @@
 	}
 
 	/**
-	 * Handle manual check-in
-	 */
-	function handleCheckIn(ticket: AdminTicketSchema) {
-		ticketToCheckIn = toCheckInTicket(ticket);
-		checkInDialogError = null;
-		showCheckInDialog = true;
-	}
-
-	/**
-	 * Submit check-in
-	 */
-	function submitCheckIn(pricePaid?: string) {
-		if (ticketToCheckIn) {
-			checkInTicketMutation.mutate({ code: ticketToCheckIn.id, pricePaid });
-		}
-	}
-
-	/**
-	 * Handle QR code scan.
-	 *
-	 * Ticket QRs carry a ticket UUID we can preview via GET before confirming.
-	 * Series-pass QRs carry `series:<uuid>` — there is no preview endpoint for
-	 * those, so we check in directly and report the resolved attendee.
-	 */
-	async function handleQRScan(code: string) {
-		if (isSeriesPassCode(code)) {
-			showQRScanner = false;
-			checkInTicketMutation.mutate(
-				{ code },
-				{
-					onSuccess: (checkedIn) => {
-						toast.success(
-							m['eventTicketsAdmin.passCheckInSuccess']({
-								name: checkedIn ? getUserDisplayName(checkedIn.user) : ''
-							})
-						);
-					}
-				}
-			);
-			return;
-		}
-		try {
-			// Fetch ticket details
-			const response = await eventadminticketsGetTicket({
-				path: { event_id: data.event.id, ticket_id: code },
-				headers: { Authorization: `Bearer ${authStore.accessToken}` }
-			});
-
-			if (response.error || !response.data) {
-				throw new Error('Ticket not found');
-			}
-
-			// Show confirmation dialog with ticket info
-			ticketToCheckIn = toCheckInTicket(response.data);
-			checkInDialogError = null;
-			showCheckInDialog = true;
-			showQRScanner = false;
-		} catch (err) {
-			console.error('Failed to fetch ticket:', err);
-			// Error will be shown in the scanner component
-		}
-	}
-
-	/**
 	 * Open the reseat dialog for a seated ticket.
 	 */
 	function handleReseat(ticket: AdminTicketSchema) {
@@ -483,7 +378,7 @@
 		<Button
 			variant="default"
 			class="inline-flex items-center gap-2"
-			onclick={() => (showQRScanner = true)}
+			onclick={() => (scanCheckIn.showQRScanner = true)}
 		>
 			<QrCode class="h-4 w-4" aria-hidden="true" />
 			{m['eventTicketsAdmin.scanQRButton']()}
@@ -526,13 +421,13 @@
 				tickets={data.tickets}
 				orderBy={selectedOrderBy}
 				onSort={handleSort}
-				checkInPending={checkInTicketMutation.isPending}
+				checkInPending={scanCheckIn.checkInPending}
 				confirmPaymentPending={confirmPaymentMutation.isPending}
 				cancelTicketPending={cancelRefund.cancelTicketPending}
 				addMemberPending={memberAdmin.addMemberPending}
 				unconfirmPaymentPending={unconfirmPaymentMutation.isPending}
 				tiersLoading={memberAdmin.tiersLoading}
-				onCheckIn={handleCheckIn}
+				onCheckIn={scanCheckIn.openCheckIn}
 				onConfirmPayment={handleConfirmPayment}
 				onMakeMember={memberAdmin.openMakeMemberModal}
 				onCancelTicket={cancelRefund.openCancel}
@@ -546,13 +441,13 @@
 			<!-- Mobile Cards -->
 			<TicketCardList
 				tickets={data.tickets}
-				checkInPending={checkInTicketMutation.isPending}
+				checkInPending={scanCheckIn.checkInPending}
 				confirmPaymentPending={confirmPaymentMutation.isPending}
 				cancelTicketPending={cancelRefund.cancelTicketPending}
 				addMemberPending={memberAdmin.addMemberPending}
 				unconfirmPaymentPending={unconfirmPaymentMutation.isPending}
 				tiersLoading={memberAdmin.tiersLoading}
-				onCheckIn={handleCheckIn}
+				onCheckIn={scanCheckIn.openCheckIn}
 				onConfirmPayment={handleConfirmPayment}
 				onMakeMember={memberAdmin.openMakeMemberModal}
 				onCancelTicket={cancelRefund.openCancel}
@@ -621,24 +516,32 @@
 
 <!-- Check-in Confirmation Dialog -->
 <CheckInDialog
-	isOpen={showCheckInDialog}
-	ticket={ticketToCheckIn}
-	needsPaymentConfirmation={ticketToCheckIn ? needsPaymentConfirmation(ticketToCheckIn) : false}
-	onConfirm={submitCheckIn}
-	onCancel={() => {
-		showCheckInDialog = false;
-		ticketToCheckIn = null;
-		checkInDialogError = null;
-	}}
-	isLoading={checkInTicketMutation.isPending}
-	errorMessage={checkInDialogError}
+	isOpen={scanCheckIn.showCheckInDialog}
+	ticket={scanCheckIn.ticketToCheckIn}
+	needsPaymentConfirmation={scanCheckIn.ticketToCheckIn
+		? needsPaymentConfirmation(scanCheckIn.ticketToCheckIn)
+		: false}
+	onConfirm={scanCheckIn.submitCheckIn}
+	onCancel={scanCheckIn.closeCheckIn}
+	isLoading={scanCheckIn.checkInPending}
+	errorMessage={scanCheckIn.checkInDialogError}
+/>
+
+<!-- Membership card scanned: a REPORT, not a check-in. Opens only when the
+     backend burned nothing — the exactly-one-ticket case returns a normal
+     check-in result and never reaches here. -->
+<MemberScanResultDialog
+	report={scanCheckIn.memberReport}
+	pendingTicketId={scanCheckIn.pendingMemberTicketId}
+	onCheckInTicket={scanCheckIn.checkInMemberTicket}
+	onClose={scanCheckIn.closeMemberReport}
 />
 
 <!-- QR Scanner Modal -->
 <QRScannerModal
-	isOpen={showQRScanner}
-	onClose={() => (showQRScanner = false)}
-	onScan={handleQRScan}
+	isOpen={scanCheckIn.showQRScanner}
+	onClose={() => (scanCheckIn.showQRScanner = false)}
+	onScan={scanCheckIn.handleQRScan}
 />
 
 <!-- Reseat (move seat) Dialog -->
