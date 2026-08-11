@@ -6,7 +6,7 @@
 	import TicketStatusBadge from './TicketStatusBadge.svelte';
 	import AddToWalletButton from './AddToWalletButton.svelte';
 	import AddToGoogleWalletButton from './AddToGoogleWalletButton.svelte';
-	import DownloadPdfButton from './DownloadPdfButton.svelte';
+	import TicketPdfDownloadButton from './TicketPdfDownloadButton.svelte';
 	import PendingDownloadsNotice from './PendingDownloadsNotice.svelte';
 	import CancelTicketDialog from './CancelTicketDialog.svelte';
 	import RenameTicketHolderDialog from './RenameTicketHolderDialog.svelte';
@@ -575,7 +575,7 @@
 							<p class="text-center text-sm text-muted-foreground">{m['myTicketModal.showQr']()}</p>
 							<div class="flex w-full flex-col gap-2">
 								{#if ticket.id}
-									<DownloadPdfButton ticketId={ticket.id} pdfUrl={ticket.pdf_url} />
+									<TicketPdfDownloadButton ticketId={ticket.id} {eventName} />
 								{/if}
 								{#if ticket.id && (ticket.apple_pass_available || ticket.google_pass_available)}
 									{#snippet googleWalletButton()}

@@ -4,7 +4,7 @@
 	import { Card } from '$lib/components/ui/card';
 	import TicketStatusBadge from './TicketStatusBadge.svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
-	import DownloadPdfButton from './DownloadPdfButton.svelte';
+	import TicketPdfDownloadButton from './TicketPdfDownloadButton.svelte';
 	import { Ticket, Calendar, MapPin, User, Armchair, Banknote, AlertCircle } from '@lucide/svelte';
 	import { formatDateTime } from '$lib/utils/date';
 	import { formatMoney } from '$lib/utils/format';
@@ -296,7 +296,7 @@
 					/>
 					<p class="text-center text-sm text-muted-foreground">{m['myTicket.showQr']()}</p>
 					{#if ticket.id}
-						<DownloadPdfButton ticketId={ticket.id} pdfUrl={ticket.pdf_url} />
+						<TicketPdfDownloadButton ticketId={ticket.id} {eventName} />
 					{/if}
 				{:else}
 					<div class="text-center text-sm text-destructive">

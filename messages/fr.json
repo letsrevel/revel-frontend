@@ -288,7 +288,8 @@
 	},
 	"addToWallet.addToAppleWallet": "Ajouter à Apple Wallet",
 	"downloadPdf.download": "Télécharger le PDF",
-	"downloadPdf.downloading": "Téléchargement...",
+	"downloadPdf.failed": "Échec du téléchargement du PDF du billet",
+	"downloadPdf.notFound": "Billet introuvable",
 	"adminButton": {
 		"selectOrganization": "Sélectionner une organisation"
 	},

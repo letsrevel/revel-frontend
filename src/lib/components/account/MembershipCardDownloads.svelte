@@ -1,12 +1,13 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { membershipwalletDownloadPdf } from '$lib/api';
-	import { Download, Loader2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { onMount } from 'svelte';
 	import AddToWalletButton from '$lib/components/tickets/AddToWalletButton.svelte';
 	import AddToGoogleWalletButton from '$lib/components/tickets/AddToGoogleWalletButton.svelte';
+	import PdfDownloadButton from '$lib/components/common/PdfDownloadButton.svelte';
 	import { detectWalletPlatform } from '$lib/utils/platform';
+	import { saveBlob } from '$lib/utils/download';
 	import { toFilenameSlug } from '$lib/utils/filename';
 
 	interface Props {
@@ -32,24 +33,9 @@
 		googleWalletFirst = detectWalletPlatform() === 'android';
 	});
 
-	let isDownloadingPdf = $state(false);
-
 	const safeName = $derived(toFilenameSlug(organizationName, 'membership'));
 
-	function saveBlob(blob: Blob, filename: string): void {
-		const url = window.URL.createObjectURL(blob);
-		const link = document.createElement('a');
-		link.href = url;
-		link.download = filename;
-		document.body.appendChild(link);
-		link.click();
-		document.body.removeChild(link);
-		window.URL.revokeObjectURL(url);
-	}
-
 	async function downloadPdf(): Promise<void> {
-		if (isDownloadingPdf) return;
-		isDownloadingPdf = true;
 		try {
 			const response = await membershipwalletDownloadPdf({
 				path: { slug },
@@ -69,8 +55,6 @@
 			// and may carry backend detail, so it is logged and never shown.
 			console.error('Failed to download membership PDF:', err);
 			toast.error(m['membershipCard.pdfDownloadFailed']());
-		} finally {
-			isDownloadingPdf = false;
 		}
 	}
 </script>
@@ -82,19 +66,7 @@
 	wallet integration configured at all.
 -->
 <div class="flex flex-col gap-2">
-	<button
-		type="button"
-		onclick={downloadPdf}
-		disabled={isDownloadingPdf}
-		class="inline-flex items-center justify-center gap-1.5 rounded-md border bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50"
-	>
-		{#if isDownloadingPdf}
-			<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-		{:else}
-			<Download class="h-4 w-4" aria-hidden="true" />
-		{/if}
-		{m['membershipCard.downloadPdf']()}
-	</button>
+	<PdfDownloadButton onDownload={downloadPdf} label={m['membershipCard.downloadPdf']()} />
 
 	{#snippet googleWalletButton()}
 		<AddToGoogleWalletButton kind="membership" {slug} />

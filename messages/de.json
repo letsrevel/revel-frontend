@@ -402,7 +402,8 @@
 	},
 	"addToWallet.addToAppleWallet": "Zu Apple Wallet hinzufügen",
 	"downloadPdf.download": "PDF herunterladen",
-	"downloadPdf.downloading": "Wird heruntergeladen...",
+	"downloadPdf.failed": "Ticket-PDF konnte nicht heruntergeladen werden",
+	"downloadPdf.notFound": "Ticket nicht gefunden",
 	"adminButton": {
 		"selectOrganization": "Organisation auswählen"
 	},

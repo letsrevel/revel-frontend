@@ -75,21 +75,12 @@ test.describe('J6 ticket management @p1', () => {
 		await expect(modal.getByRole('img', { name: 'Ticket QR Code' })).toBeVisible();
 		await expect(modal.getByText('Ticket ID:')).toBeVisible();
 
-		// PDF download: served either as a blob download or (with a pre-signed
-		// URL) a new tab — accept both, reject the inline error alert.
-		const downloadOrPopup = Promise.race([
-			page
-				.waitForEvent('download', { timeout: 30_000 })
-				.then(() => 'download' as const)
-				.catch(() => null),
-			page
-				.waitForEvent('popup', { timeout: 30_000 })
-				.then(() => 'popup' as const)
-				.catch(() => null)
-		]);
+		// PDF download: always a blob download named after the event — the
+		// pre-signed-URL new-tab path is gone, so a popup here is a regression.
+		const downloadPromise = page.waitForEvent('download', { timeout: 30_000 });
 		await modal.getByRole('button', { name: 'Download PDF' }).click();
-		expect(['download', 'popup']).toContain(await downloadOrPopup);
-		await expect(modal.getByRole('alert')).not.toBeVisible();
+		const download = await downloadPromise;
+		expect(download.suggestedFilename()).toMatch(/-ticket\.pdf$/);
 
 		await context.close();
 	});

@@ -402,7 +402,8 @@
 	},
 	"addToWallet.addToAppleWallet": "Añadir a Apple Wallet",
 	"downloadPdf.download": "Descargar PDF",
-	"downloadPdf.downloading": "Descargando...",
+	"downloadPdf.failed": "No se pudo descargar el PDF de la entrada",
+	"downloadPdf.notFound": "Entrada no encontrada",
 	"adminButton": {
 		"selectOrganization": "Seleccionar organización"
 	},
