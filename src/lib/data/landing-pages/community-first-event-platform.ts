@@ -128,7 +128,7 @@ export const communityFirstEventPlatformDE: LandingPageContent = {
 	intro: {
 		paragraphs: [
 			'Die meisten Event-Plattformen behandeln jedes Treffen als einmalige Transaktion. Aber echte Communities brauchen mehr—sie brauchen Struktur, Kontinuität und Tools, die fortlaufende Beziehungen unterstützen.',
-			'Revel ist zuerst für Communities gebaut. Erstelle Organisationen mit Mitgliedschaftsstufen, weise Rollen und Berechtigungen zu und nutze Features wie unser einzigartiges Potluck-Koordinationssystem, um Events kollaborativer zu machen und weniger Arbeit für Organisator*innen.',
+			'Revel ist zuerst für Communities gebaut. Erstelle Organisationen mit Mitgliedschaftsstufen, weise Rollen und Berechtigungen zu und nutze Features wie unser einzigartiges Potluck-Koordinationssystem, um Events kollaborativer zu machen und Organisator*innen Arbeit abzunehmen.',
 			'Egal ob du einen Buchclub, eine Hobbygruppe, ein professionelles Netzwerk oder einen Makerspace leitest, Revel gibt dir die Infrastruktur, um von lockeren Meetups zu einer florierenden Community zu wachsen—ohne teure Abos oder Plattform-Lock-in.'
 		]
 	},
@@ -203,7 +203,7 @@ export const communityFirstEventPlatformDE: LandingPageContent = {
 		{
 			question: 'Was ist Potluck-Koordination?',
 			answer:
-				'Es ist ein integriertes System, das Teilnehmer*innen ermöglicht zu koordinieren, wer was zu Events mitbringt. Verwalte Ernährungseinschränkungen, Mengen-Management und Item-Zuweisungen—keine chaotischen Spreadsheets oder externe Tools mehr. Es ist großartig für Potlucks, Equipment-Sharing, Freiwilligen-Koordination und mehr.'
+				'Es ist ein integriertes System, mit dem Teilnehmer*innen koordinieren können, wer was zu Events mitbringt. Verwalte Ernährungseinschränkungen, Mengen-Management und Item-Zuweisungen—keine chaotischen Spreadsheets oder externe Tools mehr. Es ist großartig für Potlucks, Equipment-Sharing, Freiwilligen-Koordination und mehr.'
 		},
 		{
 			question: 'Kann ich Nur-Mitglieder Events erstellen?',

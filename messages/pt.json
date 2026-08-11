@@ -2330,7 +2330,7 @@
 			"communitiesStickerWord": "Demasiado kinky",
 			"communitiesH1b": "para o Eventbrite?",
 			"communitiesH1c": "Demasiado grandes para um grupo de conversa?",
-			"communitiesBody": "Coletivos queer, clubes kink, jantares partilhados, clubes de leitura. Seleciona quem participa, mantém as listas de pessoas convidadas privadas e deixa as tuas pessoas confirmar presença sem alimentar mais um intermediário de dados.",
+			"communitiesBody": "Coletivos queer, clubes kink, jantares partilhados, clubes de leitura. Seleciona quem participa, mantém as listas de pessoas convidadas privadas e deixa as tuas pessoas confirmarem presença sem alimentar mais um intermediário de dados.",
 			"communitiesPill1": "seleção de participantes",
 			"communitiesPill2": "listas de pessoas convidadas privadas",
 			"communitiesPill3": "refeições partilhadas 🥗",
@@ -3438,7 +3438,7 @@
 				"rsvps": "Confirmações"
 			},
 			"confirmations": {
-				"publish": "Queres mesmo publicar este evento? Vai ficar visível para quem usa a Revel.",
+				"publish": "Queres mesmo publicar este evento? Vai ficar visível para todas as pessoas.",
 				"close": "Queres mesmo encerrar este evento? As confirmações de presença e a venda de bilhetes vão parar.",
 				"delete": "Queres mesmo eliminar este evento? Esta ação não pode ser desfeita e vai remover o evento da visualização pública.",
 				"reopen": "Queres mesmo reabrir este evento?",

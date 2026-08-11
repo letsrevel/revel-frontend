@@ -124,7 +124,7 @@ export const privacyFocusedEventsDE: LandingPageContent = {
 		paragraphs: [
 			'Die meisten Event-Plattformen sammeln deine Teilnehmer*innendaten für Werbung, teilen sie mit Dritten und verstecken die Details in langen Datenschutzerklärungen. Wenn dir die Privatsphäre deiner Community wichtig ist – oder du einfach die DSGVO einhalten musst – brauchst du einen anderen Ansatz.',
 			'Revel ist Open-Source Event-Management, das mit Datenschutz als Kernprinzip entwickelt wurde, nicht als Nachgedanke. Wir tracken keine Nutzer*innen durchs Web. Wir verkaufen keine Daten. Wir haben nicht mal ein Geschäftsmodell, das uns dazu anreizen würde.',
-			'Gehostet auf europäischer Infrastruktur mit voller DSGVO-Konformität, oder selbst hosten für komplette Kontrolle. Deine Teilnehmer*innendaten bleiben deine, und deine Community kann darauf vertrauen, dass ihre Informationen verantwortungsvoll behandelt werden.'
+			'Nutze die gehostete Version auf europäischer Infrastruktur mit voller DSGVO-Konformität oder hoste Revel selbst für komplette Kontrolle. Deine Teilnehmer*innendaten bleiben deine, und deine Community kann darauf vertrauen, dass ihre Informationen verantwortungsvoll behandelt werden.'
 		]
 	},
 	features: [
