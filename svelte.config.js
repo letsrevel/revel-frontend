@@ -38,6 +38,13 @@ const config = {
 			$api: 'src/lib/api'
 		},
 
+		// A long-lived tab polls /_app/version.json; when a deploy is detected,
+		// SvelteKit turns the next client-side navigation into a full-page load,
+		// so it never requests hashed chunks the new deploy no longer ships.
+		// Only effective if the proxy serves version.json with `no-cache` — the
+		// Caddyfiles were fixed together with this line; keep them in sync.
+		version: { pollInterval: 60_000 },
+
 		// Content Security Policy — only enforced in production
 		// In dev, Vite's HMR injects inline scripts without the CSP nonce, which breaks the page
 		...(isDev

@@ -10,6 +10,7 @@ import { appendCspApiOrigin, relaxCspFrameAncestors } from '$lib/server/csp';
 import { ROOT_ATTRIBUTES_PLACEHOLDER, rootAttributesFor } from '$lib/server/embed';
 import { isEmbedPath } from '$lib/embed/constants';
 import { requiresAuth, loginRedirectPath } from '$lib/server/auth-guard';
+import { handleDocumentCacheControl } from '$lib/server/document-cache';
 import {
 	getAccessTokenCookieOptions,
 	getRefreshTokenCookieOptions,
@@ -426,7 +427,8 @@ export const handle = sequence(
 	handleAuth,
 	handleAuthGuard,
 	handlePreloadOptimization,
-	handleCsp
+	handleCsp,
+	handleDocumentCacheControl
 );
 
 // Unhandled SSR errors → structured error log + SSR error metric (see module).

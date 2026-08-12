@@ -373,7 +373,7 @@
 
 	<!-- Action Buttons -->
 	{#if browser}
-		<div class="flex items-center gap-3">
+		<div class="flex flex-wrap items-center gap-3">
 			{#if !isConnected || status.type === 'incomplete' || status.type === 'restricted'}
 				<Button
 					onclick={handleConnect}
@@ -430,7 +430,10 @@
 		</div>
 	{:else}
 		<!-- Server-side placeholder -->
-		<div class="flex items-center gap-3">
+		<!-- Wraps: two side-by-side buttons ("Verify account status" + "Go to
+		     Stripe Dashboard") ran 26px past the right edge of a phone and made
+		     the whole settings page scroll sideways. -->
+		<div class="flex flex-wrap items-center gap-3">
 			{#if !isConnected || status.type === 'incomplete' || status.type === 'restricted'}
 				<Button disabled class="inline-flex items-center gap-2">
 					<ExternalLink class="h-4 w-4" aria-hidden="true" />

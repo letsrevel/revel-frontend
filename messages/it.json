@@ -402,7 +402,8 @@
 	},
 	"addToWallet.addToAppleWallet": "Aggiungi a Apple Wallet",
 	"downloadPdf.download": "Scarica PDF",
-	"downloadPdf.downloading": "Download in corso...",
+	"downloadPdf.failed": "Impossibile scaricare il PDF del biglietto",
+	"downloadPdf.notFound": "Biglietto non trovato",
 	"adminButton": {
 		"selectOrganization": "Seleziona Organizzazione"
 	},

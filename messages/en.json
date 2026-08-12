@@ -402,7 +402,8 @@
 	},
 	"addToWallet.addToAppleWallet": "Add to Apple Wallet",
 	"downloadPdf.download": "Download PDF",
-	"downloadPdf.downloading": "Downloading...",
+	"downloadPdf.failed": "Failed to download the ticket PDF",
+	"downloadPdf.notFound": "Ticket not found",
 	"adminButton": {
 		"selectOrganization": "Select Organization"
 	},
