@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.1] - 2026-08-12
+
+### Changed
+
+- The **Download PDF** button now looks and behaves identically on tickets, series passes and membership cards. Ticket PDFs are saved in place instead of opening in a new tab (which popup blockers could suppress) and are named after the event (`<event-slug>-ticket.pdf`) rather than a raw ticket UUID.
+
+### Fixed
+
+- Admin tab strips no longer bleed off both edges of a phone screen — on the organization Members and Blacklist pages the first and last tab were pushed outside the viewport and could not be scrolled to.
+- Sticky admin bars no longer stack into each other: page-level bars pinned themselves at a fixed offset that only matched the mobile admin header, so on wider screens they sat *inside* it and the translucent layers smeared together. They now follow the real header height, and on viewports under 640px tall (a landscape phone) the sticky chrome is dropped entirely instead of eating the screen.
+- Two pages no longer scroll sideways on a phone: organization settings (the Stripe action buttons ran past the right edge, and a long contact email now truncates with its full address on hover), and the embed builder (the code snippet now scrolls inside its own box).
+- Ticket PDF download failures now show a translated message instead of hardcoded English.
+- Downloaded PDFs and wallet passes no longer occasionally fail to save in Firefox and Safari, where the download could be cancelled before the browser had read it.
+- Pages no longer appear unstyled after a new deployment on iOS Safari, which had been restoring a cached copy of the old page that referenced assets no longer being served. Long-lived tabs also notice a new deployment and reload fully on the next navigation.
+
 ## [2.5.0] - 2026-08-11
 
 ### Added
