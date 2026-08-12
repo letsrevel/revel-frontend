@@ -14,12 +14,21 @@
 	const { isSaving, onSave, onSaveAndExit, position, disabled = false }: Props = $props();
 </script>
 
+<!--
+	The top bar pins below the org-admin header, whose height the admin layout
+	publishes as `--admin-sticky-top`; the 8rem fallback is the old hardcoded
+	value, which only ever matched the mobile header. `tall:` because on a
+	landscape phone the sticky stack left no room to scroll. The inset is set
+	only for `top` — giving a `bottom-0` sticky a `top` too would re-pin it to
+	the top edge.
+-->
 <div
 	class={cn(
 		'z-20 border-border bg-background/80 px-4 py-3 backdrop-blur-sm',
-		position === 'top' && 'sticky top-[8rem] border-b',
+		position === 'top' && 'border-b tall:sticky',
 		position === 'bottom' && 'sticky bottom-0 border-t'
 	)}
+	style={position === 'top' ? 'top: var(--admin-sticky-top, 8rem)' : undefined}
 >
 	<div class="mx-auto flex max-w-4xl flex-col gap-2 sm:flex-row sm:justify-end">
 		<button

@@ -518,7 +518,13 @@
 					{m['orgAdmin.settings.membership.contactEmailLabel']()}
 				</span>
 				<div class="mt-1 flex items-center gap-2">
-					<div class="flex-1 rounded-md border-2 border-input bg-muted px-3 py-2 text-sm">
+					<!-- `min-w-0` + truncate: a flex item defaults to `min-width: auto`, so
+					     a long contact address refused to shrink and shoved the button off
+					     the right edge of a phone screen. -->
+					<div
+						class="min-w-0 flex-1 truncate rounded-md border-2 border-input bg-muted px-3 py-2 text-sm"
+						title={data.organization.contact_email || undefined}
+					>
 						{data.organization.contact_email || m['orgSettingsPage.noContactEmail']()}
 					</div>
 					<button
@@ -526,7 +532,7 @@
 						onclick={() => {
 							showEmailModal = true;
 						}}
-						class="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+						class="inline-flex shrink-0 items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
 					>
 						<Mail class="h-4 w-4" aria-hidden="true" />
 						{m['orgSettingsPage.changeButton']()}

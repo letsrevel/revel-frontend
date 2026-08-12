@@ -20,6 +20,14 @@ export default {
 			}
 		},
 		extend: {
+			// Height-based, deliberately not part of the mobile-first width scale
+			// (`raw`): admin chrome stacks three sticky layers — site header, org
+			// header, page tab strip. On a landscape phone (~390px tall) that stack
+			// eats the entire viewport and the translucent layers pile onto each
+			// other. Sticky chrome is therefore opt-in above this height.
+			screens: {
+				tall: { raw: '(min-height: 640px)' }
+			},
 			// Nata Sans is the brand font (imported in app.css); preflight picks
 			// this up, so it applies app-wide without per-component classes.
 			fontFamily: {

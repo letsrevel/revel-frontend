@@ -16,6 +16,14 @@
 	// Mobile menu state
 	let mobileMenuOpen = $state(false);
 
+	/**
+	 * Measured, never assumed: this header is one row on mobile and three on
+	 * `md` (breadcrumbs + nav), so any page that pinned itself below a hardcoded
+	 * 8rem ended up *inside* it on desktop, where both layers are translucent.
+	 * Published as `--admin-sticky-top` for pages with their own sticky bar.
+	 */
+	let adminHeaderHeight = $state(0);
+
 	// Get current path
 	const currentPath = $derived($page.url.pathname);
 
@@ -140,11 +148,17 @@
 	]);
 </script>
 
-<!-- Admin Layout -->
-<div class="min-h-screen bg-background">
-	<!-- Admin Header -->
+<!-- Admin Layout. 4rem = the site header above this one (Header.svelte, h-16). -->
+<div
+	class="min-h-screen bg-background"
+	style="--admin-sticky-top: calc(4rem + {adminHeaderHeight}px)"
+>
+	<!-- Admin Header. Sticky only when the viewport is tall enough to spare the
+	     room: on a landscape phone this bar plus the site header plus a page's
+	     own tab strip left nothing to scroll, and all three are translucent. -->
 	<header
-		class="sticky top-16 z-30 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+		bind:clientHeight={adminHeaderHeight}
+		class="top-16 z-30 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 tall:sticky"
 	>
 		<div class="container mx-auto px-4">
 			<!-- Top Bar -->
