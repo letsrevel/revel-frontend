@@ -53,7 +53,7 @@
 		"eslint-plugin-svelte": "^3.22.0",
 		"glob": "^13.0.6",
 		"globals": "^17.8.0",
-		"jsdom": "^29.1.1",
+		"jsdom": "^30.0.1",
 		"otplib": "^13.4.1",
 		"postcss": "^8.5.25",
 		"prettier": "~3.9.5",
