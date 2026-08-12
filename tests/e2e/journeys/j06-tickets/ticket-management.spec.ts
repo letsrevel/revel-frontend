@@ -77,10 +77,18 @@ test.describe('J6 ticket management @p1', () => {
 
 		// PDF download: always a blob download named after the event — the
 		// pre-signed-URL new-tab path is gone, so a popup here is a regression.
+		// Prefix AND suffix: a suffix alone would also accept `ticket-ticket.pdf`,
+		// the fallback a missing event name produces, so it would not prove the
+		// name reached the button at all. Only a prefix, though — the exact slug
+		// rules (punctuation, 30-char cap) are toFilenameSlug's own unit tests.
+		const slugPrefix = event.name
+			.toLowerCase()
+			.replace(/[^a-z0-9]+/g, '-')
+			.slice(0, 20);
 		const downloadPromise = page.waitForEvent('download', { timeout: 30_000 });
 		await modal.getByRole('button', { name: 'Download PDF' }).click();
 		const download = await downloadPromise;
-		expect(download.suggestedFilename()).toMatch(/-ticket\.pdf$/);
+		expect(download.suggestedFilename()).toMatch(new RegExp(`^${slugPrefix}.*-ticket\\.pdf$`));
 
 		await context.close();
 	});

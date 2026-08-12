@@ -13,5 +13,9 @@ export function saveBlob(blob: Blob, filename: string): void {
 	document.body.appendChild(link);
 	link.click();
 	document.body.removeChild(link);
-	window.URL.revokeObjectURL(url);
+	// Revoked on a later task, not inline: the browser starts the download
+	// asynchronously, and revoking in the same tick can invalidate the URL
+	// before it does — Firefox and Safari then abort the download silently.
+	// (Inherited from all three original copies of this helper.)
+	setTimeout(() => window.URL.revokeObjectURL(url), 0);
 }

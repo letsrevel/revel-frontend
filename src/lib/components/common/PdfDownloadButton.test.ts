@@ -20,6 +20,14 @@ describe('PdfDownloadButton', () => {
 	/**
 	 * `disabled` alone loses the race between the click and the first await, so a
 	 * fast double-click used to fire two downloads and write the file twice.
+	 *
+	 * Both clicks are dispatched in ONE tick, deliberately not through
+	 * `userEvent`: the guard only matters in the window before Svelte has
+	 * flushed `disabled`, and any route that waits for that flush first — a
+	 * second `user.click()`, or a bare `.click()` after `toBeDisabled()` —
+	 * passes with the guard deleted, because jsdom refuses to dispatch a click
+	 * on a disabled control at all. (Verified by deleting the guard: the
+	 * previous version of this test still passed.)
 	 */
 	it('ignores a second click while a download is in flight', async () => {
 		let release!: () => void;
@@ -29,15 +37,14 @@ describe('PdfDownloadButton', () => {
 					release = resolve;
 				})
 		);
-		const user = userEvent.setup();
 		render(PdfDownloadButton, { props: { onDownload } });
 
 		const button = screen.getByRole('button', { name: 'Download PDF' });
-		await user.click(button);
-		await waitFor(() => expect(button).toBeDisabled());
+		button.click();
 		button.click();
 		expect(onDownload).toHaveBeenCalledTimes(1);
 
+		await waitFor(() => expect(button).toBeDisabled());
 		release();
 		await waitFor(() => expect(button).not.toBeDisabled());
 	});
