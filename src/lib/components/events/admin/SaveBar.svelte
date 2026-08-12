@@ -23,6 +23,12 @@
 	`tall:` because on a landscape phone the sticky stack left no room to
 	scroll. The inset is set only for `top` — giving a `bottom-0` sticky a `top`
 	too would re-pin it to the top edge.
+
+	The bottom bar deliberately stays sticky at EVERY viewport height: the
+	landscape bug was the stacked, offset-dependent top chrome, while this is a
+	single ~56px row with no offset arithmetic, and it is the only save
+	affordance on a long form — unsticking it would make a landscape-phone user
+	scroll to the form's end to save.
 -->
 <div
 	class={cn(
