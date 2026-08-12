@@ -107,6 +107,9 @@ jobs:
       - name: Validate translations
         run: node scripts/validate-translations.js
 
+      - name: Guard against untranslated copy (value identical to English)
+        run: node scripts/check-i18n-untranslated.mjs
+
       - name: Guard against new hardcoded (untranslated) strings
         run: node scripts/check-i18n-hardcoded.mjs
 

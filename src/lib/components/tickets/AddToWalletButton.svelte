@@ -1,144 +1,143 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { ticketwalletDownloadApplePass } from '$lib/api/generated/sdk.gen';
-	import { Wallet } from '@lucide/svelte';
+	import {
+		membershipwalletDownloadApplePass,
+		seriespassDownloadSeriesPassPkpass,
+		ticketwalletDownloadApplePass
+	} from '$lib/api/generated/sdk.gen';
+	import { getLocale } from '$lib/paraglide/runtime.js';
+	import { toFilenameSlug } from '$lib/utils/filename';
+	import { Loader2 } from '@lucide/svelte';
 
-	interface Props {
-		ticketId: string;
-		eventName: string;
-		/**
-		 * Visual variant:
-		 * - 'default': Full button with black background (Apple Wallet branding)
-		 * - 'secondary': Full button with white background (matches other action buttons)
-		 * - 'compact': Icon only button
-		 */
-		variant?: 'default' | 'secondary' | 'compact';
+	/**
+	 * Tickets and series passes are addressed by UUID; a membership card is
+	 * addressed by its ORGANIZATION SLUG (`/api/me/organizations/{slug}/…`), so it
+	 * cannot borrow the `id` prop without lying about what the value is. The two
+	 * shapes are a discriminated union rather than one loose `id: string`, which
+	 * would have compiled just as happily with a member UUID passed by mistake.
+	 */
+	type Props = {
+		/** Event, pass, or organization name — used only for the downloaded .pkpass filename. */
+		name: string;
 		class?: string;
-	}
+	} & (
+		| { kind?: 'ticket' | 'series-pass'; id: string; slug?: never }
+		| { kind: 'membership'; slug: string; id?: never }
+	);
 
-	const { ticketId, eventName, variant = 'default', class: className = '' }: Props = $props();
+	// NOT destructured: Svelte 5 cannot destructure a union-typed `$props()` —
+	// narrowing has to happen on the object. The three read-only locals below
+	// keep the markup as legible as the destructured version was.
+	const props: Props = $props();
+
+	const kind = $derived(props.kind ?? 'ticket');
+	const name = $derived(props.name);
+	const className = $derived(props.class ?? '');
 
 	let isDownloading = $state(false);
 	let error = $state<string | null>(null);
 
-	async function downloadApplePass() {
+	// Official localized "Add to Apple Wallet" badge artwork (fixed per
+	// Apple's Add to Apple Wallet guidelines — never restyled); one variant
+	// per app locale in static/wallet/, from Apple's badge pack (45 locales,
+	// developer.apple.com/wallet/add-to-apple-wallet-guidelines/).
+	const badgeSrc = $derived(`/wallet/apple-wallet-badge-${getLocale()}.svg`);
+
+	/** Per-kind copy, so a 404 names the thing the member actually asked for. */
+	function notFoundMessage(): string {
+		if (kind === 'membership') return m['membershipCard.notFound']();
+		if (kind === 'series-pass') return m['seriesPass.passNotFound']();
+		return m['addToWallet.ticketNotFound']();
+	}
+
+	function downloadFailedMessage(): string {
+		if (kind === 'membership') return m['membershipCard.walletDownloadFailed']();
+		if (kind === 'series-pass') return m['seriesPass.walletDownloadFailed']();
+		return m['addToWallet.downloadFailed']();
+	}
+
+	async function downloadApplePass(): Promise<void> {
+		if (isDownloading) return;
 		isDownloading = true;
 		error = null;
 
 		try {
-			const response = await ticketwalletDownloadApplePass({
-				path: {
-					ticket_id: ticketId
-				},
-				// Request raw response to handle binary data
-				parseAs: 'stream'
-			});
+			// Request raw responses throughout to handle the binary pass bytes.
+			const response =
+				props.kind === 'membership'
+					? await membershipwalletDownloadApplePass({
+							path: { slug: props.slug },
+							parseAs: 'stream'
+						})
+					: props.kind === 'series-pass'
+						? await seriespassDownloadSeriesPassPkpass({
+								path: { held_pass_id: props.id },
+								parseAs: 'stream'
+							})
+						: await ticketwalletDownloadApplePass({
+								path: { ticket_id: props.id },
+								parseAs: 'stream'
+							});
 
-			// Check if we got a valid response
 			if (!response.response?.ok) {
+				// Known statuses map to localized messages directly; the catch
+				// below never surfaces raw error text (unlocalized, and may
+				// leak backend detail) — it logs and shows the generic message.
 				if (response.response?.status === 503) {
-					throw new Error(m['addToWallet.notConfigured']());
+					error = m['addToWallet.notConfigured']();
 				} else if (response.response?.status === 404) {
-					throw new Error(m['addToWallet.ticketNotFound']());
+					error = notFoundMessage();
 				} else {
-					throw new Error(m['addToWallet.downloadFailed']());
+					error = downloadFailedMessage();
 				}
+				return;
 			}
 
-			// Get the blob from the response
+			// Get the blob and trigger a download with a safe filename
 			const blob = await response.response.blob();
-
-			// Create a download link
 			const url = window.URL.createObjectURL(blob);
 			const link = document.createElement('a');
 			link.href = url;
-			// Use a safe filename based on event name and ticket ID
-			const safeName = eventName
-				.toLowerCase()
-				.replace(/[^a-z0-9]+/g, '-')
-				.substring(0, 30);
-			link.download = `${safeName}-${ticketId.split('-')[0]}.pkpass`;
-
-			// Trigger download
+			const safeName = toFilenameSlug(name);
+			// A ticket/pass is one of many, so its filename carries the id's first
+			// segment to stay unique in a Downloads folder. A membership card is one
+			// per organization — the org name alone already disambiguates it, and a
+			// slug segment would only repeat what `safeName` says.
+			const suffix = props.kind === 'membership' ? 'membership' : props.id.split('-')[0];
+			link.download = `${safeName}-${suffix}.pkpass`;
 			document.body.appendChild(link);
 			link.click();
-
-			// Cleanup
 			document.body.removeChild(link);
 			window.URL.revokeObjectURL(url);
 		} catch (err) {
 			console.error('Failed to download Apple Wallet pass:', err);
-			error = err instanceof Error ? err.message : m['addToWallet.downloadFailed']();
+			error = downloadFailedMessage();
 		} finally {
 			isDownloading = false;
 		}
 	}
 </script>
 
-{#if variant === 'compact'}
-	<!-- Compact variant: Icon only (for space-constrained layouts) -->
-	<button
-		type="button"
-		onclick={downloadApplePass}
-		disabled={isDownloading}
-		class="inline-flex items-center gap-1.5 rounded-md border bg-background px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {className}"
-		aria-label={m['addToWallet.addToAppleWallet']()}
-		title={m['addToWallet.addToAppleWallet']()}
-	>
-		{#if isDownloading}
-			<div
-				class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-				aria-hidden="true"
-			></div>
-		{:else}
-			<Wallet class="h-4 w-4" aria-hidden="true" />
-		{/if}
-	</button>
-{:else if variant === 'secondary'}
-	<!-- Secondary variant: Full button with white background (matches action buttons) -->
-	<button
-		type="button"
-		onclick={downloadApplePass}
-		disabled={isDownloading}
-		class="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {className}"
-		aria-label={m['addToWallet.addToAppleWallet']()}
-	>
-		{#if isDownloading}
-			<div
-				class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-				aria-hidden="true"
-			></div>
-			<span>{m['addToWallet.downloading']()}</span>
-		{:else}
-			<Wallet class="h-4 w-4" aria-hidden="true" />
-			<span>{m['addToWallet.addToAppleWallet']()}</span>
-		{/if}
-	</button>
-{:else}
-	<!-- Default variant: Full button with Apple Wallet branding (black background) -->
-	<button
-		type="button"
-		onclick={downloadApplePass}
-		disabled={isDownloading}
-		class="inline-flex items-center justify-center gap-2 rounded-md bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-gray-100 dark:focus:ring-gray-100 {className}"
-		aria-label={m['addToWallet.addToAppleWallet']()}
-	>
-		{#if isDownloading}
-			<div
-				class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent dark:border-black dark:border-t-transparent"
-				aria-hidden="true"
-			></div>
-			<span>{m['addToWallet.downloading']()}</span>
-		{:else}
-			<Wallet class="h-4 w-4" aria-hidden="true" />
-			<span>{m['addToWallet.addToAppleWallet']()}</span>
-		{/if}
-	</button>
-{/if}
+<button
+	type="button"
+	onclick={downloadApplePass}
+	disabled={isDownloading}
+	aria-busy={isDownloading}
+	aria-label={m['addToWallet.addToAppleWallet']()}
+	class="inline-flex items-center justify-center gap-2 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-progress {className}"
+>
+	{#if isDownloading}
+		<!-- Adjacent spinner: visible busy feedback on touch devices without
+		     restyling or obstructing the official badge artwork. -->
+		<Loader2 class="h-5 w-5 animate-spin" aria-hidden="true" />
+	{/if}
+	<img src={badgeSrc} alt="" class="h-12 w-auto" draggable="false" />
+</button>
 
-<!-- Error message -->
 {#if error}
-	<p class="mt-2 text-sm text-destructive" role="alert">
+	<!-- basis-full: the call sites place this component in flex-wrap rows, so
+	     the error must claim its own row instead of squeezing beside a badge. -->
+	<p class="w-full basis-full text-center text-sm text-destructive" role="alert">
 		{error}
 	</p>
 {/if}

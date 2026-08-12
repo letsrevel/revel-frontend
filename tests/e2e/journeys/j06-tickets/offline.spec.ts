@@ -80,12 +80,10 @@ test.describe('J6 offline payment @p2', () => {
 			.filter({ hasText: /Pending/i })
 			.first();
 		await expect(buyerRow).toBeVisible({ timeout: 15_000 });
-		await asOwner
-			.getByRole('button', { name: `More actions for ${buyer.firstName} ${buyer.lastName}` })
-			.filter({ visible: true })
-			.first()
-			.click();
-		await asOwner.getByRole('menuitem', { name: 'Confirm Payment' }).click();
+		// Confirm Payment is an INLINE row action, not an overflow-menu item: the
+		// v2.4.0 rebalance (#834) moved Check In / Confirm payment / Refund /
+		// Cancel onto the row and left only the rarer actions in the kebab.
+		await buyerRow.getByRole('button', { name: 'Confirm Payment' }).first().click();
 
 		const confirmPayment = asOwner.getByRole('dialog', { name: 'Confirm Payment' });
 		await expect(confirmPayment).toBeVisible({ timeout: 15_000 });

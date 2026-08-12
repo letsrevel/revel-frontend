@@ -16,6 +16,7 @@
 	import CancelSubscriptionDialog from './subscription-actions/CancelSubscriptionDialog.svelte';
 	import ChangePlanDialog from './subscription-actions/ChangePlanDialog.svelte';
 	import MembershipPaymentHistory from './MembershipPaymentHistory.svelte';
+	import MembershipCardModal from './MembershipCardModal.svelte';
 	import {
 		formatPlanPrice,
 		getDateLine,
@@ -47,6 +48,7 @@
 
 	let cancelOpen = $state(false);
 	let changePlanOpen = $state(false);
+	let cardOpen = $state(false);
 	// Set on success and never cleared: the browser is on its way to Stripe, so
 	// the button must stay in its loading state until the page is replaced. One
 	// latch per destination — the portal and the resumed Checkout are different
@@ -357,6 +359,21 @@
 			{/if}
 
 			<div class="mt-3 flex flex-wrap gap-2">
+				<!--
+					Offered on EVERY status, including banned and cancelled: the card is an
+					identity credential whose validity is resolved live at the door, so a
+					member is entitled to see what a scan of it would report about them.
+					The modal states the status in words; hiding the card would only turn a
+					knowable fact into a surprise at the door.
+
+					`secondary`, not `default`: the row's solid slot is already spoken for
+					by whichever recovery action `getMemberActions` offers (uncancel /
+					resume payment), and two competing primaries would flatten that
+					hierarchy exactly when it matters.
+				-->
+				<Button variant="secondary" size="sm" onclick={() => (cardOpen = true)}>
+					{m['membershipCard.showCard']()}
+				</Button>
 				<Button href="/org/{membership.organization_slug}" variant="outline" size="sm">
 					{m['account.memberships.viewOrg']()}
 				</Button>
@@ -441,3 +458,7 @@
 	<ChangePlanDialog open={changePlanOpen} onOpenChange={(next) => (changePlanOpen = next)} {sub} />
 	<CancelSubscriptionDialog open={cancelOpen} onOpenChange={(next) => (cancelOpen = next)} {sub} />
 {/if}
+
+<!-- Outside the `{#if sub}` above: the card exists for legacy memberships with no
+     subscription at all, which is most of them. -->
+<MembershipCardModal open={cardOpen} {membership} onClose={() => (cardOpen = false)} />

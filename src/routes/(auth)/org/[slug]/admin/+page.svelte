@@ -22,7 +22,8 @@
 		Ticket,
 		Tag,
 		Wallet,
-		CreditCard
+		CreditCard,
+		ScanLine
 	} from '@lucide/svelte';
 	import { OrganizationDescription } from '$lib/components/organizations';
 	import AnnouncementModal from '$lib/components/announcements/AnnouncementModal.svelte';
@@ -35,11 +36,19 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import { organizationadminmembersListMembershipTiers } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { canPerformAction } from '$lib/utils/permissions';
 
 	const { data }: { data: PageData } = $props();
 
 	const organization = $derived($page.data.organization);
 	const canCreateEvent = $derived(data.canCreateEvent);
+
+	// Door verification is `check_in_attendees`, which the admin layout does not
+	// pre-extract (it only lifts the two event-authoring flags), so derive it from
+	// the permissions payload the layout already returns.
+	const canVerifyMembers = $derived(
+		data.isOwner || canPerformAction(data.permissions, organization.id, 'check_in_attendees')
+	);
 
 	// State for announcement modal
 	let announcementModalOpen = $state(false);
@@ -112,6 +121,21 @@
 				icon: Users,
 				href: resolve('/(auth)/org/[slug]/admin/members', { slug: organization.slug })
 			},
+			// Gated on `check_in_attendees`, the same permission the backend's verify
+			// endpoint requires. This is the ONLY entry point for a door steward who
+			// holds nothing else — the Members page itself 403s them.
+			...(canVerifyMembers
+				? [
+						{
+							title: m['orgAdmin.dashboard.quickActions.verifyMembers.title'](),
+							description: m['orgAdmin.dashboard.quickActions.verifyMembers.description'](),
+							icon: ScanLine,
+							href: resolve('/(auth)/org/[slug]/admin/members/verify', {
+								slug: organization.slug
+							})
+						}
+					]
+				: []),
 			{
 				title: m['orgAdmin.dashboard.quickActions.polls.title'](),
 				description: m['orgAdmin.dashboard.quickActions.polls.description'](),

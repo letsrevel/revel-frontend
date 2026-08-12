@@ -1,8 +1,13 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { seriespassDownloadSeriesPassPdf, seriespassDownloadSeriesPassPkpass } from '$lib/api';
-	import { Download, Wallet, Loader2 } from '@lucide/svelte';
+	import { seriespassDownloadSeriesPassPdf } from '$lib/api';
+	import { Download, Loader2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
+	import { onMount } from 'svelte';
+	import AddToWalletButton from '$lib/components/tickets/AddToWalletButton.svelte';
+	import AddToGoogleWalletButton from '$lib/components/tickets/AddToGoogleWalletButton.svelte';
+	import { detectWalletPlatform } from '$lib/utils/platform';
+	import { toFilenameSlug } from '$lib/utils/filename';
 
 	interface Props {
 		heldPassId: string;
@@ -11,17 +16,17 @@
 
 	const { heldPassId, passName }: Props = $props();
 
+	// Ordering only (never hides a rail): Google badge first on Android.
+	let googleWalletFirst = $state(false);
+	onMount(() => {
+		googleWalletFirst = detectWalletPlatform() === 'android';
+	});
+
 	let isDownloadingPdf = $state(false);
-	let isDownloadingPkpass = $state(false);
 
-	const safeName = $derived(
-		passName
-			.toLowerCase()
-			.replace(/[^a-z0-9]+/g, '-')
-			.substring(0, 30)
-	);
+	const safeName = $derived(toFilenameSlug(passName, 'pass'));
 
-	function saveBlob(blob: Blob, filename: string) {
+	function saveBlob(blob: Blob, filename: string): void {
 		const url = window.URL.createObjectURL(blob);
 		const link = document.createElement('a');
 		link.href = url;
@@ -32,7 +37,7 @@
 		window.URL.revokeObjectURL(url);
 	}
 
-	async function downloadPdf() {
+	async function downloadPdf(): Promise<void> {
 		if (isDownloadingPdf) return;
 		isDownloadingPdf = true;
 		try {
@@ -41,41 +46,23 @@
 				parseAs: 'stream'
 			});
 			if (!response.response?.ok) {
-				if (response.response?.status === 404) {
-					throw new Error(m['seriesPass.passNotFound']());
-				}
-				throw new Error(m['seriesPass.pdfDownloadFailed']());
+				toast.error(
+					response.response?.status === 404
+						? m['seriesPass.passNotFound']()
+						: m['seriesPass.pdfDownloadFailed']()
+				);
+				return;
 			}
 			saveBlob(await response.response.blob(), `${safeName}-pass.pdf`);
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : m['seriesPass.pdfDownloadFailed']());
+			// Raw error text is unlocalized and may carry backend detail: the old
+			// `err.message` path leaked things like "ECONNRESET from upstream" into
+			// a toast. Log it, show the localized line. Same rule the wallet badges
+			// have always followed.
+			console.error('Failed to download series-pass PDF:', err);
+			toast.error(m['seriesPass.pdfDownloadFailed']());
 		} finally {
 			isDownloadingPdf = false;
-		}
-	}
-
-	async function downloadPkpass() {
-		if (isDownloadingPkpass) return;
-		isDownloadingPkpass = true;
-		try {
-			const response = await seriespassDownloadSeriesPassPkpass({
-				path: { held_pass_id: heldPassId },
-				parseAs: 'stream'
-			});
-			if (!response.response?.ok) {
-				if (response.response?.status === 503) {
-					throw new Error(m['addToWallet.notConfigured']());
-				}
-				if (response.response?.status === 404) {
-					throw new Error(m['seriesPass.passNotFound']());
-				}
-				throw new Error(m['seriesPass.walletDownloadFailed']());
-			}
-			saveBlob(await response.response.blob(), `${safeName}.pkpass`);
-		} catch (err) {
-			toast.error(err instanceof Error ? err.message : m['seriesPass.walletDownloadFailed']());
-		} finally {
-			isDownloadingPkpass = false;
 		}
 	}
 </script>
@@ -94,17 +81,16 @@
 		{/if}
 		{m['seriesPass.downloadPdf']()}
 	</button>
-	<button
-		type="button"
-		onclick={downloadPkpass}
-		disabled={isDownloadingPkpass}
-		class="inline-flex items-center justify-center gap-1.5 rounded-md border bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50"
-	>
-		{#if isDownloadingPkpass}
-			<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-		{:else}
-			<Wallet class="h-4 w-4" aria-hidden="true" />
+	{#snippet googleWalletButton()}
+		<AddToGoogleWalletButton id={heldPassId} kind="series-pass" />
+	{/snippet}
+	<div class="flex flex-wrap items-center justify-center gap-2">
+		{#if googleWalletFirst}
+			{@render googleWalletButton()}
 		{/if}
-		{m['seriesPass.addToWallet']()}
-	</button>
+		<AddToWalletButton id={heldPassId} kind="series-pass" name={passName} />
+		{#if !googleWalletFirst}
+			{@render googleWalletButton()}
+		{/if}
+	</div>
 </div>

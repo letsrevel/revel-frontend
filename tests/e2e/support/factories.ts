@@ -669,6 +669,37 @@ async function findMemberUserId(api: ApiClient, orgSlug: string, email: string):
 	return member.user.id;
 }
 
+export interface MyMembershipRow {
+	id: string;
+	/** `member:<member_id>` — the scan contract, rendered verbatim by the card. */
+	qr_payload: string;
+	organization_slug: string;
+	status: string;
+	apple_pass_available: boolean;
+	google_pass_available: boolean;
+}
+
+/**
+ * Read a member's own membership row, which carries the `member:<uuid>` QR
+ * payload the card renders and both scanner surfaces consume.
+ *
+ * Specs must take the payload from HERE rather than assembling it: the backend
+ * owns the `member:` namespace, and a test that builds its own string would keep
+ * passing after that contract changed.
+ */
+export async function getMyMembership(
+	user: ThrowawayUser,
+	orgSlug: string
+): Promise<MyMembershipRow> {
+	const api = await ApiClient.login(user.email, user.password);
+	const page = await api.get<{ results: MyMembershipRow[] }>('/api/me/memberships?page_size=50');
+	const row = page.results.find((m) => m.organization_slug === orgSlug);
+	if (!row) {
+		throw new Error(`${user.email} has no membership of ${orgSlug}`);
+	}
+	return row;
+}
+
 /** Set an existing member's status (active/paused/cancelled/banned) as the org owner. */
 export async function setMemberStatus(
 	owner: ThrowawayUser,

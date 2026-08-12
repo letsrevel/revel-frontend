@@ -401,7 +401,6 @@
 		"loginToGetTickets": "Login to Get Tickets"
 	},
 	"addToWallet.addToAppleWallet": "Add to Apple Wallet",
-	"addToWallet.downloading": "Downloading...",
 	"downloadPdf.download": "Download PDF",
 	"downloadPdf.downloading": "Downloading...",
 	"adminButton": {
@@ -2051,7 +2050,8 @@
 		"checkInError": "Failed to check in ticket",
 		"filterBySource": "Filter by source",
 		"sourceDirect": "Direct purchase",
-		"sourcePass": "Season pass"
+		"sourcePass": "Season pass",
+		"checkInSuccessGeneric": "Checked in"
 	},
 	"eventTokenCard": {
 		"type": "Type:",
@@ -3297,6 +3297,10 @@
 				"polls": {
 					"title": "Polls",
 					"description": "Run polls and gather member input"
+				},
+				"verifyMembers": {
+					"title": "Verify members",
+					"description": "Scan membership cards at the door"
 				}
 			},
 			"orgDetails": {
@@ -3806,7 +3810,8 @@
 				"screening": "The ability to skip screening questionnaires on your events",
 				"exclusive": "Access to members-only events and ticket tiers",
 				"fees": "Membership-tier fees and discounts you set up"
-			}
+			},
+			"verifyCard": "Verify a card"
 		},
 		"eventSeries": {
 			"pageTitle": "Event Series",
@@ -8296,6 +8301,11 @@
 	"addToWallet.notConfigured": "Apple Wallet is not configured for this event",
 	"addToWallet.ticketNotFound": "Ticket not found",
 	"addToWallet.downloadFailed": "Failed to download wallet pass",
+	"addToGoogleWallet.label": "Add to Google Wallet",
+	"addToGoogleWallet.notConfigured": "Google Wallet is not configured for this event",
+	"addToGoogleWallet.openFailed": "Failed to open Google Wallet",
+	"ticketDownloads.pendingNotice": "Pending payment confirmation",
+	"ticketDownloads.pendingNoticeDetail": "Downloads and wallet passes become valid only once your payment is confirmed.",
 	"checkInDialog.pwycOutsideRange": "This amount is outside the suggested range ({min} – {max})",
 	"checkInDialog.pwycBelowMin": "This amount is below the suggested minimum ({min})",
 	"checkInDialog.suggestedRange": "Suggested range: {min} – {max}",
@@ -9117,7 +9127,6 @@
 		"qrHint": "Show this QR code at the entrance of any covered event.",
 		"pendingPaymentNote": "Payment pending — the organizer will confirm it at the venue.",
 		"downloadPdf": "Download PDF",
-		"addToWallet": "Add to Apple Wallet",
 		"pdfDownloadFailed": "Failed to download the pass PDF",
 		"walletDownloadFailed": "Failed to download the wallet pass",
 		"loadError": "Couldn't load your passes. Please try again.",
@@ -9362,5 +9371,41 @@
 	"myTicketModal.renameHolder": "Rename holder",
 	"myTicketModal.addHolderName": "Add holder name",
 	"ticketTable.renameHolder": "Rename holder",
-	"ticketCardList.renameHolder": "Rename holder"
+	"ticketCardList.renameHolder": "Rename holder",
+	"membershipCard.showCard": "Show card",
+	"membershipCard.dialogDescription": "Your membership card",
+	"membershipCard.qrAlt": "Membership card QR code",
+	"membershipCard.qrHint": "Organizers scan this at the door. Your membership status is checked at the moment of the scan.",
+	"membershipCard.memberLabel": "Member",
+	"membershipCard.tierLabel": "Tier",
+	"membershipCard.memberSinceLabel": "Member since",
+	"membershipCard.downloadPdf": "Download PDF",
+	"membershipCard.notFound": "Membership card not found",
+	"membershipCard.walletDownloadFailed": "Could not download the membership card",
+	"membershipCard.pdfDownloadFailed": "Could not download the PDF",
+	"membershipCard.statusNoticePaused": "This membership is paused. Organizers will see it as paused when they scan the card.",
+	"membershipCard.statusNoticeCancelled": "This membership has ended. Organizers will see it as cancelled when they scan the card.",
+	"membershipCard.statusNoticeBanned": "This membership has been revoked. Organizers will see it as banned when they scan the card.",
+	"memberVerify.pageTitle": "Verify a membership card",
+	"memberVerify.pageSubtitle": "Scan a card to see who it belongs to and whether the membership is live.",
+	"memberVerify.manualEntryLabel": "Enter a card code",
+	"memberVerify.manualEntryPlaceholder": "member:… or the code on the card",
+	"memberVerify.manualEntrySubmit": "Verify",
+	"memberVerify.resultRegionLabel": "Scan result",
+	"memberVerify.idlePrompt": "Point the camera at a membership card.",
+	"memberVerify.unknownMember": "Unknown member",
+	"memberVerify.tierLabel": "Tier",
+	"memberVerify.memberSinceLabel": "Member since",
+	"memberVerify.notFound": "No membership card in this organization matches this code.",
+	"memberVerify.error": "Could not verify this card. Please try again.",
+	"memberVerify.warningPaused": "This membership is paused and does not currently grant member benefits.",
+	"memberVerify.warningCancelled": "This membership has ended.",
+	"memberVerify.warningBanned": "This person is banned from this organization.",
+	"memberScan.title": "Membership card",
+	"memberScan.dialogDescription": "Nothing was checked in. A membership card identifies who is holding it; it does not admit them.",
+	"memberScan.ticketsHeading": "Tickets for this event",
+	"memberScan.untitledTier": "Ticket",
+	"memberScan.checkInTicket": "Check in",
+	"memberScan.close": "Close",
+	"memberScan.checkedInSuccess": "Checked in: {name}"
 }
