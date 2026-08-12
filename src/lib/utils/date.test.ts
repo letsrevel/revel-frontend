@@ -362,9 +362,7 @@ describe('getRSVPDeadlineRelative', () => {
 		expect(getRSVPDeadlineRelative('2026-06-16T23:30:00.000Z', 'America/New_York')).toBe(
 			'tomorrow'
 		);
-		expect(getRSVPDeadlineRelative('2026-06-16T23:30:00.000Z', 'Europe/Vienna')).toBe(
-			'in 2 days'
-		);
+		expect(getRSVPDeadlineRelative('2026-06-16T23:30:00.000Z', 'Europe/Vienna')).toBe('in 2 days');
 	});
 
 	it('renders the day-count idiom of the active locale (de: übermorgen)', () => {

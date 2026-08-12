@@ -392,10 +392,7 @@ function formatRelativeToNow(
  *   the "closed" copy for its surface (e.g. eventQuickInfo.rsvpClosed),
  *   keeping UI messages out of this utility.
  */
-export function getRSVPDeadlineRelative(
-	deadlineString: string,
-	timeZone?: string
-): string | null {
+export function getRSVPDeadlineRelative(deadlineString: string, timeZone?: string): string | null {
 	const deadline = new Date(deadlineString);
 
 	// Passed, or exactly at the deadline — "RSVP by X" means X itself is too late.
