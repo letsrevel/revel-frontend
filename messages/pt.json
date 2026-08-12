@@ -402,7 +402,8 @@
 	},
 	"addToWallet.addToAppleWallet": "Adicionar à Apple Wallet",
 	"downloadPdf.download": "Transferir PDF",
-	"downloadPdf.downloading": "A transferir...",
+	"downloadPdf.failed": "Não foi possível descarregar o PDF do bilhete",
+	"downloadPdf.notFound": "Bilhete não encontrado",
 	"adminButton": {
 		"selectOrganization": "Selecionar organização"
 	},

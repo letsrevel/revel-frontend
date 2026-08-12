@@ -233,8 +233,17 @@
 
 	<!-- Tabs -->
 	<Tabs bind:value={activeTab} class="w-full">
-		<div class="sticky top-32 z-20 -mb-px bg-background pb-3 pt-1">
-			<TabsList class="h-auto w-full grid-cols-3 gap-0.5 sm:grid-cols-7 sm:gap-1">
+		<!-- `top` comes from the admin layout, which measures its own header: the
+		     hardcoded 8rem here only ever matched the mobile header (the desktop
+		     one carries two extra rows), so the strip used to pin *inside* it.
+		     No fallback — while the property is absent (SSR, pre-hydration) this
+		     resolves to `top: auto` and the strip scrolls instead of pinning at a
+		     guess. -->
+		<div
+			class="z-20 -mb-px bg-background pb-3 pt-1 tall:sticky"
+			style="top: var(--admin-sticky-top)"
+		>
+			<TabsList class="grid h-auto w-full grid-cols-3 gap-0.5 sm:grid-cols-7 sm:gap-1">
 				{#if canManageMembers}
 					<TabsTrigger value="members" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
 						<Users class="h-4 w-4 shrink-0" />

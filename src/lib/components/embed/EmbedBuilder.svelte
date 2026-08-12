@@ -166,9 +166,15 @@
 	);
 </script>
 
+<!--
+	`min-w-0` on both columns: a grid item defaults to `min-width: auto`, so the
+	snippet `<pre>` sized this column by its longest line and pushed the whole
+	page past the viewport on a phone — its own `overflow-x-auto` never engaged
+	because nothing upstream constrained it.
+-->
 <div class="grid gap-6 lg:grid-cols-2">
 	<!-- ── Configuration ─────────────────────────────────────────────── -->
-	<div class="space-y-6">
+	<div class="min-w-0 space-y-6">
 		<Card>
 			<CardHeader>
 				<CardTitle>{m['embedBuilder.whatTitle']()}</CardTitle>
@@ -415,7 +421,7 @@
 	<!-- ── Snippet, then preview ─────────────────────────────────────────
 	     The snippet comes first: it is what the organizer came for, and a list
 	     preview is tall enough to push anything below it off the screen. -->
-	<div class="space-y-6">
+	<div class="min-w-0 space-y-6">
 		<Card>
 			<CardHeader>
 				<CardTitle>{m['embedBuilder.snippetTitle']()}</CardTitle>
