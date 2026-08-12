@@ -72,11 +72,11 @@ importers:
         specifier: ^2.3.8
         version: 2.3.8
       isomorphic-dompurify:
-        specifier: ^3.20.0
-        version: 3.20.0(@noble/hashes@2.2.0)
+        specifier: ^3.22.0
+        version: 3.22.0(@noble/hashes@2.2.0)
       marked:
-        specifier: ^18.0.7
-        version: 18.0.7
+        specifier: ^18.0.9
+        version: 18.0.9
       mode-watcher:
         specifier: ^1.1.0
         version: 1.1.0(svelte@5.56.8(@typescript-eslint/types@8.65.0))
@@ -87,8 +87,8 @@ importers:
         specifier: ^1.5.4
         version: 1.5.4
       svelte-dnd-action:
-        specifier: ^0.9.76
-        version: 0.9.76(svelte@5.56.8(@typescript-eslint/types@8.65.0))
+        specifier: ^0.9.78
+        version: 0.9.78(svelte@5.56.8(@typescript-eslint/types@8.65.0))
       svelte-easy-crop:
         specifier: ^5.0.1
         version: 5.0.1(svelte@5.56.8(@typescript-eslint/types@8.65.0))
@@ -99,8 +99,8 @@ importers:
         specifier: ^3.6.0
         version: 3.6.0
       tailwind-variants:
-        specifier: ^3.3.0
-        version: 3.3.0(tailwind-merge@3.6.0)(tailwindcss@3.4.19(tsx@4.23.1)(yaml@2.9.0))
+        specifier: ^3.3.1
+        version: 3.3.1(tailwind-merge@3.6.0)(tailwindcss@3.4.19(tsx@4.23.1)(yaml@2.9.0))
       zod:
         specifier: ^4.4.3
         version: 4.4.3
@@ -239,8 +239,8 @@ packages:
     resolution: {integrity: sha512-KVw6qIiCTUQhByfTd78h2yD1/00waTmm9uy/R7Ck/ctUyAPj+AEDLkQIdJW0T8+qGgj3j5bpNKK7Q3G+LedJWg==}
     engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0}
 
-  '@asamuzakjp/css-color@6.0.5':
-    resolution: {integrity: sha512-mbhpPMmnw/kwW19aRNmSUl1QzLbdGo1SCuE49BT98MNwqF6zaHb3o2owssFc/PEO/4t2UjqtCNwocuDtJornzA==}
+  '@asamuzakjp/css-color@6.0.7':
+    resolution: {integrity: sha512-vC/bk1Lz7Tn/EfU9/apOTBk80/8dyGyWMowPoV1tJ52muDGsDqt2HPT2klrFUiY60MQmQv9q8yIht15JnBgDGw==}
     engines: {node: ^22.13.0 || >=24.0.0}
 
   '@asamuzakjp/dom-selector@7.1.1':
@@ -1989,8 +1989,8 @@ packages:
   isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
 
-  isomorphic-dompurify@3.20.0:
-    resolution: {integrity: sha512-WH3UcdmOrqLJF6qHaGnGINNMRwkQXVtvxlhEdygP3FdbuPjfFEsvjaqA5E16uYlNvAT5uGqK4MPvJBvtTtriEA==}
+  isomorphic-dompurify@3.22.0:
+    resolution: {integrity: sha512-cz/BkSODnQir4IV2quqbuEHhAGz4MAYGvhoemsxuwMpY/oZbRHlNjPLPyIQ0fdULiwDPUE+OHPwWb6XTEiNk1A==}
     engines: {node: ^22.22.2 || ^24.15.0 || >=26.0.0}
 
   jiti@1.21.7:
@@ -2180,8 +2180,8 @@ packages:
     engines: {node: '>= 20'}
     hasBin: true
 
-  marked@18.0.7:
-    resolution: {integrity: sha512-iDVQ5ldaiKXn6b2JroX5kgRfmwgqolW7NpaEzTl1k/2Zh1njIEN9yniyLV/mOvWwtsE8OGgkjsCYvijuPk1dtA==}
+  marked@18.0.9:
+    resolution: {integrity: sha512-/Sa4qiiHZxf0/FQdBBowr9q4r10krCwMvpK48FUBdXdUXScDxiQGR9zCPrFgRVR5LU3iySOiIjy09ZQvADir1w==}
     engines: {node: '>= 20'}
     hasBin: true
 
@@ -2743,8 +2743,8 @@ packages:
       svelte: ^4.0.0 || ^5.0.0-next.0
       typescript: ^5.0.0 || ^6.0.0
 
-  svelte-dnd-action@0.9.76:
-    resolution: {integrity: sha512-5yKiEkeMITG6cdRqXGdGkk8Inn5JzZVC0V6hBg2ZbMa723hh7iNYn3zXPmw9Ww9eWd6ECpPItZF9wUD5tA+Iaw==}
+  svelte-dnd-action@0.9.78:
+    resolution: {integrity: sha512-qov+j3A9Umo1Ng2b2PaQ/nTDBo1sogAw19DF1KZ35Pcx/9yJtlmnKYKVHjCz9iqUH+g1sk4XuCstxPZFFPEa/Q==}
     peerDependencies:
       svelte: '>=3.23.0 || ^5.0.0-next.0'
 
@@ -2792,8 +2792,8 @@ packages:
   tailwind-merge@3.6.0:
     resolution: {integrity: sha512-uxL7qAVQriqRQPAyK3pj66VqskWqoZ37PW94jwOTwNfq/z9oyu1V+eqrZqtR2+fCiXdYOZe/Modt8GtvqNzu+w==}
 
-  tailwind-variants@3.3.0:
-    resolution: {integrity: sha512-t1QsB42dcwUdaCEArO0tRZcP0nbCcAmJKRYCs7jmwYSFOCXlGqgO8c0TrCYm9OranYmT6i9YOi8LFo2gxmxnow==}
+  tailwind-variants@3.3.1:
+    resolution: {integrity: sha512-4pAvwUtM4HKBiRZftncAbpn6V9Hhwoa5Fl7O2u5zbp7Z5Cvu+/o/6+176WY3WCEES209543quG8zFIcXCsc5Jw==}
     engines: {node: '>=16.9.x', pnpm: '>=7.x'}
     peerDependencies:
       tailwind-merge: '>=3.0.0'
@@ -3125,7 +3125,7 @@ snapshots:
       '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.0)
       '@csstools/css-tokenizer': 4.0.0
 
-  '@asamuzakjp/css-color@6.0.5':
+  '@asamuzakjp/css-color@6.0.7':
     dependencies:
       '@csstools/css-calc': 3.3.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)
       '@csstools/css-color-parser': 4.1.10(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)
@@ -4712,7 +4712,7 @@ snapshots:
 
   isexe@2.0.0: {}
 
-  isomorphic-dompurify@3.20.0(@noble/hashes@2.2.0):
+  isomorphic-dompurify@3.22.0(@noble/hashes@2.2.0):
     dependencies:
       dompurify: 3.4.13
       jsdom: 30.0.1(@noble/hashes@2.2.0)
@@ -4760,7 +4760,7 @@ snapshots:
 
   jsdom@30.0.1(@noble/hashes@2.2.0):
     dependencies:
-      '@asamuzakjp/css-color': 6.0.5
+      '@asamuzakjp/css-color': 6.0.7
       '@asamuzakjp/dom-selector': 8.3.2
       '@bramus/specificity': 2.4.2
       '@csstools/css-syntax-patches-for-csstree': 1.1.7(css-tree@3.2.1)
@@ -4886,7 +4886,7 @@ snapshots:
 
   marked@17.0.6: {}
 
-  marked@18.0.7: {}
+  marked@18.0.9: {}
 
   mdn-data@2.27.1: {}
 
@@ -5417,7 +5417,7 @@ snapshots:
     transitivePeerDependencies:
       - picomatch
 
-  svelte-dnd-action@0.9.76(svelte@5.56.8(@typescript-eslint/types@8.65.0)):
+  svelte-dnd-action@0.9.78(svelte@5.56.8(@typescript-eslint/types@8.65.0)):
     dependencies:
       svelte: 5.56.8(@typescript-eslint/types@8.65.0)
 
@@ -5485,7 +5485,7 @@ snapshots:
 
   tailwind-merge@3.6.0: {}
 
-  tailwind-variants@3.3.0(tailwind-merge@3.6.0)(tailwindcss@3.4.19(tsx@4.23.1)(yaml@2.9.0)):
+  tailwind-variants@3.3.1(tailwind-merge@3.6.0)(tailwindcss@3.4.19(tsx@4.23.1)(yaml@2.9.0)):
     optionalDependencies:
       tailwind-merge: 3.6.0
       tailwindcss: 3.4.19(tsx@4.23.1)(yaml@2.9.0)
