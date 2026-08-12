@@ -427,7 +427,7 @@
 		<!-- Offset owned by the admin layout — see the note on the members page. -->
 		<div
 			class="z-20 -mb-px bg-background pb-3 pt-1 tall:sticky"
-			style="top: var(--admin-sticky-top, 8rem)"
+			style="top: var(--admin-sticky-top)"
 		>
 			<TabsList class="grid h-auto w-full grid-cols-3 gap-0.5 sm:gap-1">
 				<TabsTrigger value="blacklist" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">

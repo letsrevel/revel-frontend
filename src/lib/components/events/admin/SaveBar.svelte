@@ -15,12 +15,14 @@
 </script>
 
 <!--
-	The top bar pins below the org-admin header, whose height the admin layout
-	publishes as `--admin-sticky-top`; the 8rem fallback is the old hardcoded
-	value, which only ever matched the mobile header. `tall:` because on a
-	landscape phone the sticky stack left no room to scroll. The inset is set
-	only for `top` — giving a `bottom-0` sticky a `top` too would re-pin it to
-	the top edge.
+	The top bar pins below the org-admin header, whose height that layout
+	measures and publishes as `--admin-sticky-top` (both EventEditor call sites
+	are admin routes, so it is always in scope). No fallback on purpose: until
+	the layout has measured, the property is absent, `top` computes to `auto`,
+	and this bar scrolls with the page instead of pinning at a guessed offset.
+	`tall:` because on a landscape phone the sticky stack left no room to
+	scroll. The inset is set only for `top` — giving a `bottom-0` sticky a `top`
+	too would re-pin it to the top edge.
 -->
 <div
 	class={cn(
@@ -28,7 +30,7 @@
 		position === 'top' && 'border-b tall:sticky',
 		position === 'bottom' && 'sticky bottom-0 border-t'
 	)}
-	style={position === 'top' ? 'top: var(--admin-sticky-top, 8rem)' : undefined}
+	style={position === 'top' ? 'top: var(--admin-sticky-top)' : undefined}
 >
 	<div class="mx-auto flex max-w-4xl flex-col gap-2 sm:flex-row sm:justify-end">
 		<button

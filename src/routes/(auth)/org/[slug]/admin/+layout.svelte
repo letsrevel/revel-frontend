@@ -21,6 +21,13 @@
 	 * `md` (breadcrumbs + nav), so any page that pinned itself below a hardcoded
 	 * 8rem ended up *inside* it on desktop, where both layers are translucent.
 	 * Published as `--admin-sticky-top` for pages with their own sticky bar.
+	 *
+	 * 0 means "not measured yet" and is deliberately NOT published: server-
+	 * rendered markup would otherwise carry `calc(4rem + 0px)` and pin those
+	 * bars at 64px — inside this header — for the whole pre-hydration window.
+	 * With the property absent their `top: var(--admin-sticky-top)` is invalid
+	 * at computed-value time, so `top` is `auto` and a sticky bar simply does
+	 * not stick until the real offset arrives.
 	 */
 	let adminHeaderHeight = $state(0);
 
@@ -151,7 +158,7 @@
 <!-- Admin Layout. 4rem = the site header above this one (Header.svelte, h-16). -->
 <div
 	class="min-h-screen bg-background"
-	style="--admin-sticky-top: calc(4rem + {adminHeaderHeight}px)"
+	style={adminHeaderHeight ? `--admin-sticky-top: calc(4rem + ${adminHeaderHeight}px)` : undefined}
 >
 	<!-- Admin Header. Sticky only when the viewport is tall enough to spare the
 	     room: on a landscape phone this bar plus the site header plus a page's
