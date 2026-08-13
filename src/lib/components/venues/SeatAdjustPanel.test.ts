@@ -101,10 +101,12 @@ describe('SeatAdjustPanel — the seat inspector', () => {
 		expect(onNudgeChange).toHaveBeenLastCalledWith({ dx: 0 });
 	});
 
-	it('describes the rotation field as stored-but-not-yet-drawn', () => {
+	it('describes which way the rotation points (0 = notch up, toward the stage side)', () => {
 		const { getByLabelText, container } = harness();
 		const describedBy = getByLabelText('Rotation (degrees)').getAttribute('aria-describedby');
-		expect(container.querySelector(`#${describedBy}`)?.textContent).toContain('later update');
+		const help = container.querySelector(`#${describedBy}`)?.textContent;
+		expect(help).toContain('0°');
+		expect(help).toContain('clockwise');
 	});
 
 	it('offers reset and remove for the selected seat', async () => {

@@ -33,6 +33,7 @@
 		type SectorLayout
 	} from './seat-map-layout';
 	import { rowsFromSeatViews, seatAriaLabel, type SeatView } from './seating-view';
+	import { buildSeatRotationLookup, notchSegment } from './seat-rotation';
 
 	interface Props {
 		chart: VenueChartSchema;
@@ -220,6 +221,14 @@
 		)
 	);
 
+	/**
+	 * Seat id -> rotation degrees, from each sector's `metadata.seatRotations`
+	 * mirror (BE #894 whitelists it for the public chart). Defensive by
+	 * construction: an absent or malformed key yields an empty lookup and every
+	 * seat renders plain, so this never depends on backend deploy order.
+	 */
+	const seatRotation = $derived(buildSeatRotationLookup(chart.sectors));
+
 	function categoryFor(seatId: string): PriceCategorySchema | undefined {
 		const categoryId = seatCategoryId.get(seatId);
 		return categoryId ? categoryById.get(categoryId) : undefined;
@@ -367,6 +376,7 @@
 {#snippet seatShape(pt: SeatPoint, view: SeatView | undefined, cx: number, cy: number)}
 	{@const status = view?.status ?? 'blocked'}
 	{@const category = categoryFor(pt.seatId)}
+	{@const rot = seatRotation.get(pt.seatId) ?? 0}
 	<title>{seatLabelFor(pt, view)}</title>
 	{#if status === 'mine'}
 		<circle {cx} {cy} r={SEAT_R + 3} class="fill-none stroke-primary/40" stroke-width="2" />
@@ -415,6 +425,23 @@
 			stroke-width="1.5"
 			fill="none"
 			stroke-linecap="round"
+		/>
+	{/if}
+	{#if rot !== 0}
+		<!-- Seat-back orientation notch — same geometry the sector editor draws
+		     (seat-rotation.ts owns the contract: degrees clockwise from "up",
+		     sector-local, so the sector's own group rotation carries it along). -->
+		{@const notch = notchSegment(rot, SEAT_R)}
+		<line
+			x1={cx + notch.x1}
+			y1={cy + notch.y1}
+			x2={cx + notch.x2}
+			y2={cy + notch.y2}
+			class={status === 'mine' ? 'stroke-primary-foreground' : 'stroke-muted-foreground'}
+			stroke-width={notch.width}
+			stroke-linecap="round"
+			data-testid="seat-rotation-notch"
+			data-rot={rot}
 		/>
 	{/if}
 {/snippet}

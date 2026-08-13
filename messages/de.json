@@ -8677,7 +8677,7 @@
 	"seatGridEditor.adjust.dxLabel": "Seitlich verschieben (Sitze)",
 	"seatGridEditor.adjust.dyLabel": "Nach hinten verschieben (Reihen)",
 	"seatGridEditor.adjust.rotLabel": "Drehung (Grad)",
-	"seatGridEditor.adjust.rotHint": "Die Drehung wird schon gespeichert; der Sitzplan zeichnet sie ab einem späteren Update.",
+	"seatGridEditor.adjust.rotHint": "0° richtet die Markierung nach oben aus, zur Bühnenseite des Sektors; höhere Werte drehen den Sitz im Uhrzeigersinn.",
 	"seatGridEditor.adjust.rowNote": "Ein Sitz behält seine Reihe. Für eine andere Reihe entfern ihn und füg ihn dort hinzu.",
 	"seatGridEditor.adjust.resetSeat": "Sitz zurücksetzen",
 	"seatGridEditor.adjust.removeSeat": "Sitz entfernen",

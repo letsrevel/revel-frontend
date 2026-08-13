@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/svelte';
+import { render, screen, fireEvent, cleanup } from '@testing-library/svelte';
 import { describe, it, expect, vi } from 'vitest';
 import type {
 	ChartSeatSchema,
@@ -570,6 +570,76 @@ describe('SeatMap', () => {
 				screen.getByRole('img', { name: 'Stalls: sold through a different ticket' })
 			).toBeInTheDocument();
 			expect(screen.queryByRole('button', { name: /Seat A1/ })).not.toBeInTheDocument();
+		});
+	});
+
+	// Per-seat rotation (#852 phase 4): the buyer reads the compact
+	// `metadata.seatRotations` mirror (the admin-only rowLayout recipe never
+	// reaches this surface) and draws the SAME orientation notch the sector
+	// editor draws. Absent or malformed ⇒ no notches, so a backend that does not
+	// serve the key yet renders exactly as before.
+	describe('seat rotation notches', () => {
+		const notches = () =>
+			Array.from(document.querySelectorAll<SVGLineElement>('[data-testid="seat-rotation-notch"]'));
+
+		it('draws a notch only for the seats the mirror rotates', () => {
+			renderMap({
+				chart: makeChart([chartSeat('a1'), chartSeat('a2'), chartSeat('b1')], {}, {
+					metadata: { seatRotations: { A1: 90, B1: -45 } }
+				} as Partial<ChartSectorSchema>)
+			});
+			expect(
+				notches()
+					.map((line) => line.getAttribute('data-rot'))
+					.sort()
+			).toEqual(['-45', '90']);
+		});
+
+		it('orients the notch by the stored angle (90 = clockwise from up = right)', () => {
+			renderMap({
+				chart: makeChart([chartSeat('a1'), chartSeat('a2'), chartSeat('b1')], {}, {
+					metadata: { seatRotations: { A1: 90, A2: 180 } }
+				} as Partial<ChartSectorSchema>)
+			});
+			const byRot = new Map(notches().map((line) => [line.getAttribute('data-rot'), line]));
+			const read = (rot: string) => {
+				const line = byRot.get(rot);
+				if (!line) throw new Error(`no notch at ${rot}`);
+				return {
+					dx: Number(line.getAttribute('x2')) - Number(line.getAttribute('x1')),
+					dy: Number(line.getAttribute('y2')) - Number(line.getAttribute('y1'))
+				};
+			};
+			// 90° sweeps to the seat's right; 180° points down the screen (and
+			// normalizes to -180, the [-180, 180) representative of half a turn).
+			expect(read('90').dx).toBeGreaterThan(0);
+			expect(read('90').dy).toBeCloseTo(0, 6);
+			expect(read('-180').dy).toBeGreaterThan(0);
+			expect(read('-180').dx).toBeCloseTo(0, 6);
+		});
+
+		it('renders no notch at all without the mirror, and ignores a malformed one', () => {
+			renderMap();
+			expect(notches()).toHaveLength(0);
+
+			cleanup();
+			renderMap({
+				chart: makeChart([chartSeat('a1')], {}, {
+					metadata: { seatRotations: 'garbage', rowLayout: { seatNudges: [{ rot: 90 }] } }
+				} as Partial<ChartSectorSchema>),
+				seats: [view('a1')]
+			});
+			expect(notches()).toHaveLength(0);
+		});
+
+		it('ignores rotations naming labels that no seat carries, and plain zeroes', () => {
+			renderMap({
+				chart: makeChart([chartSeat('a1'), chartSeat('a2')], {}, {
+					metadata: { seatRotations: { Z9: 30, A1: 0, A2: 360 } }
+				} as Partial<ChartSectorSchema>),
+				seats: [view('a1'), view('a2')]
+			});
+			expect(notches()).toHaveLength(0);
 		});
 	});
 });

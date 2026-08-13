@@ -8647,7 +8647,7 @@
 	"seatGridEditor.adjust.dxLabel": "Décaler latéralement (sièges)",
 	"seatGridEditor.adjust.dyLabel": "Décaler vers l’arrière (rangées)",
 	"seatGridEditor.adjust.rotLabel": "Rotation (degrés)",
-	"seatGridEditor.adjust.rotHint": "La rotation est déjà enregistrée ; le plan de salle commencera à l’afficher dans une prochaine mise à jour.",
+	"seatGridEditor.adjust.rotHint": "0° oriente le repère vers le haut, du côté scène du secteur ; les valeurs plus élevées font tourner le siège dans le sens des aiguilles d’une montre.",
 	"seatGridEditor.adjust.rowNote": "Un siège garde sa rangée. Pour le placer dans une autre, supprimez-le et ajoutez-le là-bas.",
 	"seatGridEditor.adjust.resetSeat": "Réinitialiser le siège",
 	"seatGridEditor.adjust.removeSeat": "Supprimer le siège",

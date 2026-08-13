@@ -8677,7 +8677,7 @@
 	"seatGridEditor.adjust.dxLabel": "Desplazar lateralmente (asientos)",
 	"seatGridEditor.adjust.dyLabel": "Desplazar hacia atrás (filas)",
 	"seatGridEditor.adjust.rotLabel": "Rotación (grados)",
-	"seatGridEditor.adjust.rotHint": "La rotación ya se guarda; el mapa de asientos empezará a dibujarla en una actualización posterior.",
+	"seatGridEditor.adjust.rotHint": "0° orienta la marca hacia arriba, hacia el lado del escenario del sector; los valores más altos giran el asiento en sentido horario.",
 	"seatGridEditor.adjust.rowNote": "Un asiento conserva su fila. Para llevarlo a otra, elimínalo y añádelo allí.",
 	"seatGridEditor.adjust.resetSeat": "Restablecer asiento",
 	"seatGridEditor.adjust.removeSeat": "Eliminar asiento",

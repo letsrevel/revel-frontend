@@ -28,7 +28,7 @@ function seat(row: string, number: number): VenueSeatSchema {
 /** A 2 x 3 seated sector — small enough to reason about, real enough to save. */
 const EXISTING = ['A', 'B'].flatMap((row) => [1, 2, 3].map((n) => seat(row, n)));
 
-function renderEditor(onPersist = vi.fn()) {
+function renderEditor(onPersist = vi.fn(), sectorMetadata: Record<string, unknown> | null = null) {
 	const client = new QueryClient({
 		defaultOptions: { queries: { retry: false, gcTime: 0 } }
 	});
@@ -38,7 +38,7 @@ function renderEditor(onPersist = vi.fn()) {
 			component: SeatGridEditor,
 			componentProps: {
 				existingSeats: EXISTING,
-				sectorMetadata: null,
+				sectorMetadata,
 				sectorShape: null,
 				organizationSlug: 'org',
 				venueId: 'venue-1',
@@ -432,5 +432,146 @@ describe('SeatGridEditor — row order flips the rank space, not the room', () =
 		expect(savedRecipe(onPersist)).toMatchObject({
 			seatNudges: [{ row: 1, seat: 0, dx: 0.5 }]
 		});
+	});
+});
+
+// The buyer never receives the rowLayout recipe, so a save mirrors its
+// rotations into `metadata.seatRotations`, keyed by SEAT LABEL. The mirror is
+// sparse: nothing rotated ⇒ `null` ⇒ the page REMOVES the key.
+describe('SeatGridEditor — buyer-facing rotation mirror', () => {
+	const savedRotations = (onPersist: ReturnType<typeof vi.fn>) => {
+		const [, metadata] = onPersist.mock.calls.at(-1) ?? [];
+		return (metadata as { seatRotations?: Record<string, number> | null } | undefined)
+			?.seatRotations;
+	};
+
+	async function rotateSelected(user: ReturnType<typeof userEvent.setup>, degrees: string) {
+		const rot = screen.getByLabelText('Rotation (degrees)') as HTMLInputElement;
+		await user.clear(rot);
+		await user.type(rot, degrees);
+		await tick();
+	}
+
+	it('mirrors a rotated seat under its LABEL while the recipe keeps the rank', async () => {
+		const user = userEvent.setup();
+		const { onPersist } = renderEditor();
+		await tick();
+
+		await user.click(screen.getByTestId('adjust-mode-toggle'));
+		await user.click(cell('1-2'));
+		await rotateSelected(user, '30');
+		await save(user);
+
+		// Recipe: rank 1 (row B), adjacency 2. Mirror: the seat's label.
+		expect(savedRecipe(onPersist)).toMatchObject({ seatNudges: [{ row: 1, seat: 2, rot: 30 }] });
+		expect(savedRotations(onPersist)).toEqual({ B3: 30 });
+	});
+
+	it('resolves rank-addressed nudges to the right label under an inverted row order', async () => {
+		const user = userEvent.setup();
+		const { onPersist } = renderEditor();
+		await tick();
+
+		await user.click(screen.getByTestId('adjust-mode-toggle'));
+		await user.click(cell('0-0'));
+		await rotateSelected(user, '45');
+		await user.selectOptions(screen.getByLabelText('Row Order'), 'bottom');
+		await tick();
+		await save(user);
+
+		// Row A is rank 1 once inverted — and it is STILL seat A1 that turned.
+		expect(savedRecipe(onPersist)).toMatchObject({ seatNudges: [{ row: 1, seat: 0, rot: 45 }] });
+		expect(savedRotations(onPersist)).toEqual({ A1: 45 });
+	});
+
+	it('normalizes the mirrored angle exactly like the recipe does', async () => {
+		const user = userEvent.setup();
+		const { onPersist } = renderEditor();
+		await tick();
+
+		await user.click(screen.getByTestId('adjust-mode-toggle'));
+		await user.click(cell('0-1'));
+		await rotateSelected(user, '200');
+		await save(user);
+
+		expect(savedRecipe(onPersist)).toMatchObject({ seatNudges: [{ row: 0, seat: 1, rot: -160 }] });
+		expect(savedRotations(onPersist)).toEqual({ A2: -160 });
+	});
+
+	it('skips seats nudged without rotation, and removes the key when none is rotated', async () => {
+		const user = userEvent.setup();
+		const { onPersist } = renderEditor();
+		await tick();
+
+		await user.click(screen.getByTestId('adjust-mode-toggle'));
+		cell('0-1').focus();
+		await user.keyboard('{ArrowRight}');
+		await save(user);
+
+		// A position nudge is not a rotation: the recipe carries it, the mirror
+		// stays empty and the key is removed (`null`).
+		expect(savedRecipe(onPersist)).toMatchObject({ seatNudges: [{ row: 0, seat: 1, dx: 0.1 }] });
+		expect(savedRotations(onPersist)).toBeNull();
+	});
+
+	it('drops the mirror entry again when the rotation is zeroed', async () => {
+		const user = userEvent.setup();
+		const { onPersist } = renderEditor();
+		await tick();
+
+		await user.click(screen.getByTestId('adjust-mode-toggle'));
+		await user.click(cell('1-1'));
+		await rotateSelected(user, '90');
+		await save(user);
+		expect(savedRotations(onPersist)).toEqual({ B2: 90 });
+
+		await user.clear(screen.getByLabelText('Rotation (degrees)'));
+		await tick();
+		await save(user);
+		expect(savedRotations(onPersist)).toBeNull();
+	});
+
+	it('drops the mirror entry when the rotated seat is removed', async () => {
+		const user = userEvent.setup();
+		const { onPersist } = renderEditor();
+		await tick();
+
+		await user.click(screen.getByTestId('adjust-mode-toggle'));
+		await user.click(cell('1-1'));
+		await rotateSelected(user, '90');
+		await user.click(screen.getByRole('button', { name: 'Remove seat' }));
+		await save(user);
+
+		expect(savedRotations(onPersist)).toBeNull();
+	});
+
+	it('a plain grid saves no mirror at all', async () => {
+		const user = userEvent.setup();
+		const { onPersist } = renderEditor();
+		await tick();
+
+		await save(user);
+		expect(savedRecipe(onPersist)).toBeUndefined();
+		expect(savedRotations(onPersist)).toBeNull();
+	});
+
+	it('leaves the stored mirror ALONE when an unreadable recipe rides through untouched', async () => {
+		const user = userEvent.setup();
+		const onPersist = vi.fn();
+		renderEditor(onPersist, {
+			// A newer build's recipe this one cannot parse: it is written back
+			// verbatim, so its mirror — which we cannot re-derive — must not be
+			// touched either (the key is OMITTED, not null).
+			rowLayout: { version: 99, kind: 'rows', futureKnob: 3 },
+			seatRotations: { A1: 90 }
+		});
+		await tick();
+
+		await save(user);
+		const [, metadata] = onPersist.mock.calls.at(-1) ?? [];
+		expect(metadata as Record<string, unknown>).toMatchObject({
+			rowLayout: { version: 99, kind: 'rows', futureKnob: 3 }
+		});
+		expect('seatRotations' in (metadata as Record<string, unknown>)).toBe(false);
 	});
 });

@@ -358,6 +358,89 @@ test.describe('J8 sector geometry @p2', () => {
 		await close();
 	});
 
+	// Phase 4 (Task C): rotation becomes VISIBLE. The editor draws a seat-back
+	// notch on any seat with a non-zero `rot`, and the save mirrors those
+	// rotations into `metadata.seatRotations` (label -> degrees) — the compact,
+	// buyer-facing view of the admin-only rowLayout recipe.
+	//
+	// The buyer map reads that mirror and draws the SAME notch; asserting it
+	// through a public chart additionally requires the sector-metadata
+	// whitelist (BE #894). That is a backend-side assertion, covered here at the
+	// admin level plus a SeatMap fixture unit test, and worth extending with a
+	// buyer-chart check once #894 ships. It is deliberately NOT a skipped test.
+	test('adjust mode: rotate a seat → the notch appears and the save mirrors seatRotations', async ({
+		browser
+	}) => {
+		test.setTimeout(150_000);
+		const { page, api, slug, venueId, sectorId, close } = await openSectorEditor(browser);
+
+		const adjustToggle = page.getByTestId('adjust-mode-toggle');
+		await expect(adjustToggle).toBeVisible({ timeout: 15_000 });
+		// Nothing is rotated yet: no seat wears a notch.
+		await expect(page.getByTestId('seat-rotation-notch')).toHaveCount(0);
+
+		await adjustToggle.click();
+		await page.locator('[data-cell="0-1"]').click();
+		await expect(page.getByTestId('adjust-inspector-title')).toContainText('A2');
+
+		const rotation = page.getByLabel('Rotation (degrees)');
+		await rotation.fill('45');
+
+		// Exactly one notch, on the seat that turned, drawn at the stored angle.
+		const notch = page.locator('[data-cell="0-1"] [data-testid="seat-rotation-notch"]');
+		await expect(notch).toHaveAttribute('data-rot', '45');
+		await expect(page.getByTestId('seat-rotation-notch')).toHaveCount(1);
+
+		await page.getByRole('button', { name: 'Save Changes' }).click();
+		await expect(page.getByText('Seats updated successfully')).toBeVisible({ timeout: 15_000 });
+		await expect(page.getByRole('button', { name: 'Save Changes' })).toBeEnabled({
+			timeout: 15_000
+		});
+
+		const sectors = await api.get<
+			Array<{
+				id: string;
+				metadata?: {
+					rowLayout?: { seatNudges?: Array<Record<string, number>> };
+					seatRotations?: Record<string, number>;
+				};
+			}>
+		>(`/api/organization-admin/${slug}/venues/${venueId}/sectors`);
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		const saved = sectors.find((s) => s.id === sectorId)!;
+		// Admin truth (rank-addressed) and buyer mirror (label-keyed), together.
+		expect(saved.metadata?.rowLayout?.seatNudges).toEqual([{ row: 0, seat: 1, rot: 45 }]);
+		expect(saved.metadata?.seatRotations).toEqual({ A2: 45 });
+
+		// The notch survives a reload — it is drawn from the persisted recipe,
+		// not from session state.
+		await page.reload();
+		await waitForClientAuth(page);
+		await expect(page.locator('[data-cell="0-1"] [data-testid="seat-rotation-notch"]')).toHaveCount(
+			1,
+			{ timeout: 15_000 }
+		);
+
+		// Zeroing it removes the mirror key entirely (sparse, like seatNudges).
+		await page.getByTestId('adjust-mode-toggle').click();
+		await page.locator('[data-cell="0-1"]').click();
+		await page.getByLabel('Rotation (degrees)').fill('0');
+		await expect(page.getByTestId('seat-rotation-notch')).toHaveCount(0);
+		await page.getByRole('button', { name: 'Save Changes' }).click();
+		await expect(page.getByText('Seats updated successfully')).toBeVisible({ timeout: 15_000 });
+		await expect(page.getByRole('button', { name: 'Save Changes' })).toBeEnabled({
+			timeout: 15_000
+		});
+
+		const after = await api.get<Array<{ id: string; metadata?: Record<string, unknown> }>>(
+			`/api/organization-admin/${slug}/venues/${venueId}/sectors`
+		);
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		expect('seatRotations' in (after.find((s) => s.id === sectorId)!.metadata ?? {})).toBe(false);
+
+		await close();
+	});
+
 	test('adjust mode: drag a seat, and add one to a row', async ({ browser }) => {
 		test.setTimeout(150_000);
 		const { page, api, slug, venueId, sectorId, close } = await openSectorEditor(browser);

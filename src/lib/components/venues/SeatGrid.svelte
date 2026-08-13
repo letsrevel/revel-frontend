@@ -23,6 +23,7 @@
 	import type { SeatData } from './seat-grid-types';
 	import { paintTextColor } from './seat-grid-save';
 	import { applyRectangle, rectangleBounds } from './seat-grid-rect';
+	import SeatRotationNotch from './SeatRotationNotch.svelte';
 	import { aisleShift } from './seat-layout-bake';
 	import {
 		ARROW_NUDGE,
@@ -81,6 +82,11 @@
 		 * gesture keeps today's toggle/paint/rectangle semantics untouched.
 		 */
 		adjust?: SeatAdjustState | null;
+		/**
+		 * This cell's stored rotation in degrees (0 = none). A rotated seat draws
+		 * the same orientation notch the buyer's map draws — see seat-rotation.ts.
+		 */
+		rotationFor?: (row: number, col: number) => number;
 		/** Add `delta` (seat pitches) to this seat's own nudge, snapped. */
 		onNudgeSeat?: (
 			row: number,
@@ -116,6 +122,7 @@
 		activePaint = null,
 		priceCategories = [],
 		adjust = null,
+		rotationFor,
 		onNudgeSeat,
 		onAddSeatToRow,
 		onAddSeatAt,
@@ -703,6 +710,7 @@
 							})}${paint ? `, ${paint.name}` : ''}`}
 						>
 							{#if seatData?.exists}
+								<SeatRotationNotch rot={rotationFor?.(r, c) ?? 0} size={BUTTON_PX} />
 								<span class="text-[10px]">{getSeatLabel(r, c)}</span>
 								<!-- Indicator icons -->
 								{#if seatData.is_accessible || seatData.is_obstructed_view}

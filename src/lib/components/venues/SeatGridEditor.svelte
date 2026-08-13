@@ -9,11 +9,17 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import { organizationadminvenuesListPriceCategories } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { Accessibility, EyeOff, Paintbrush, Redo2, Undo2 } from '@lucide/svelte';
+	import { Redo2, Undo2 } from '@lucide/svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import type { SeatData } from './seat-grid-types';
 	import { buildSeatSavePlan, deriveAdjacencyIndex, type SeatSavePlan } from './seat-grid-save';
-	import { defaultRowLayout, resolveRowLayoutForSave, type RowLayoutRecipe } from './row-layout';
+	import {
+		defaultRowLayout,
+		isDefaultRowLayout,
+		resolveRowLayoutForSave,
+		rotationsByLabel,
+		type RowLayoutRecipe
+	} from './row-layout';
 	import { cellKeyFor, hydrateGrid, rowLabelFor, seatLabelFor } from './seat-grid-hydrate';
 	import type { AisleMetadata } from './seat-grid-hydrate';
 	import {
@@ -39,6 +45,7 @@
 	import SeatGeometryPanel from './SeatGeometryPanel.svelte';
 	import SeatPaintPalette from './SeatPaintPalette.svelte';
 	import SeatGridLegend from './SeatGridLegend.svelte';
+	import SeatSelectionActions from './SeatSelectionActions.svelte';
 	import SeatAdjustPanel from './SeatAdjustPanel.svelte';
 	import ShapeFitDialog from './ShapeFitDialog.svelte';
 
@@ -55,6 +62,14 @@
 	export interface SectorMetadataUpdate {
 		aisles: AisleMetadata;
 		rowLayout: unknown;
+		/**
+		 * Buyer-facing rotation mirror `{ "<seat label>": degrees }` of the recipe's
+		 * nudges (`rotationsByLabel`) — the buyer never receives `rowLayout`. An
+		 * object ⇒ write it, `null` ⇒ REMOVE the key (nothing is rotated), key
+		 * OMITTED ⇒ leave the stored one alone, which is what an untouched
+		 * 'unsupported' recipe needs: its mirror belongs to the build that wrote it.
+		 */
+		seatRotations?: Record<string, number> | null;
 		shape?: Coordinate2d[] | null;
 	}
 
@@ -365,6 +380,26 @@
 		return { rank: geometry.rankForRow(row), seat: deriveAdjacencyIndex(col) };
 	}
 
+	/**
+	 * Inverse of `nudgeAddress`, for the rotation mirror: the LABEL of the seat a
+	 * (rank, adjacency_index) pair addresses, `null` when it addresses no live
+	 * seat. Ranks are dense over the populated rows and flip under
+	 * `invertRowOrder`, so the row comes from `rankForRow`, never from arithmetic.
+	 */
+	function labelForAddress(rank: number, seat: number): string | null {
+		const rankFor = geometry.rankForRow;
+		const row = geometry.populatedRows.find((candidate) => rankFor(candidate) === rank);
+		if (row === undefined) return null;
+		if (!seats.get(getCellKey(row, seat))?.exists) return null;
+		return getSeatLabel(row, seat);
+	}
+
+	/** A cell's stored rotation, for the grid's orientation notch (0 = none). */
+	function rotationFor(row: number, col: number): number {
+		const { rank, seat } = nudgeAddress(row, col);
+		return findNudge(rowLayout, rank, seat)?.rot ?? 0;
+	}
+
 	const selectedNudge = $derived.by(() => {
 		const picked = adjust.selected;
 		if (picked === null) return null;
@@ -521,6 +556,10 @@
 	// paint -> metadata. `shape` follows the SectorMetadataUpdate contract:
 	// omitted key ⇒ untouched, `null` ⇒ clear, an array ⇒ replace.
 	function persist(shape: Coordinate2d[] | null | undefined) {
+		// An 'unsupported' recipe the admin never touched rides through verbatim
+		// (resolveRowLayoutForSave) — so must its mirror, underivable from here.
+		const keepMirror = rowLayoutUnsupported && isDefaultRowLayout(rowLayout);
+		const rotations = rotationsByLabel(rowLayout.seatNudges, labelForAddress);
 		onPersist(buildPlan(), {
 			aisles: {
 				verticalAisles: [...verticalAisles].sort((a, b) => a - b),
@@ -533,6 +572,9 @@
 				rowLayoutUnsupported,
 				rowLayoutUnsupportedRaw
 			),
+			...(keepMirror
+				? {}
+				: { seatRotations: Object.keys(rotations).length > 0 ? rotations : null }),
 			...(shape !== undefined ? { shape } : {})
 		});
 	}
@@ -596,55 +638,15 @@
 	<SeatPaintPalette {priceCategories} {activePaint} {manageCategoriesHref} onToggle={togglePaint} />
 
 	<!-- Selection Actions -->
-	{#if selectedCount > 0}
-		<div class="flex flex-wrap items-center gap-3 rounded-lg border bg-card p-3">
-			<span class="text-sm font-medium">
-				{m['seatGridEditor.seatsSelected']({ count: selectedCount })}
-			</span>
-			<div class="flex flex-wrap gap-2">
-				<button
-					type="button"
-					onclick={markSelectedAccessible}
-					class="inline-flex items-center gap-1.5 rounded-md border border-info/40 bg-info/10 px-3 py-1.5 text-sm font-medium text-info hover:bg-info/20"
-				>
-					<Accessibility class="h-4 w-4" />
-					{m['seatGridEditor.toggleAccessible']()}
-				</button>
-				<button
-					type="button"
-					onclick={markSelectedObstructed}
-					class="inline-flex items-center gap-1.5 rounded-md border border-highlight/60 bg-highlight/10 px-3 py-1.5 text-sm font-medium text-highlight-foreground hover:bg-highlight/20 dark:text-highlight"
-				>
-					<EyeOff class="h-4 w-4" />
-					{m['seatGridEditor.toggleObstructed']()}
-				</button>
-				{#if activePaint}
-					<button
-						type="button"
-						onclick={paintSelected}
-						class="inline-flex items-center gap-1.5 rounded-md border border-input px-3 py-1.5 text-sm font-medium hover:bg-accent"
-					>
-						<Paintbrush class="h-4 w-4" />
-						{m['seatGridEditor.paint.applyToSelected']()}
-					</button>
-				{/if}
-				<button
-					type="button"
-					onclick={deleteSelected}
-					class="rounded-md bg-destructive px-3 py-1.5 text-sm font-medium text-destructive-foreground hover:bg-destructive/90"
-				>
-					{m['seatGridEditor.deleteSelected']()}
-				</button>
-				<button
-					type="button"
-					onclick={clearSelection}
-					class="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-accent"
-				>
-					{m['seatGridEditor.clearSelection']()}
-				</button>
-			</div>
-		</div>
-	{/if}
+	<SeatSelectionActions
+		count={selectedCount}
+		canPaint={activePaint !== null}
+		onToggleAccessible={markSelectedAccessible}
+		onToggleObstructed={markSelectedObstructed}
+		onPaint={paintSelected}
+		onDelete={deleteSelected}
+		onClear={clearSelection}
+	/>
 
 	<!-- Grid + row-geometry panel split view. There is no separate preview any
 	     more: the grid IS the preview, drawing every cell at its baked position.
@@ -692,6 +694,7 @@
 				{activePaint}
 				{priceCategories}
 				{adjust}
+				{rotationFor}
 				onNudgeSeat={handleNudgeSeat}
 				onAddSeatToRow={handleAddSeatToRow}
 				onAddSeatAt={handleAddSeatAt}

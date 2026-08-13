@@ -213,14 +213,18 @@
 	// the existing metadata so we never clobber other keys — notably the layout
 	// designer's `transform` (sector-block placement) and `floor` stored in the
 	// same blob. `rowLayout: undefined` REMOVES the key (plain grid,
-	// byte-identical to today). The shape rides its own, earlier mutation above,
-	// and is deliberately NOT written here a second time.
+	// byte-identical to today), and so does `seatRotations: null` — the
+	// buyer-facing rotation mirror is sparse, and an OMITTED key leaves whatever
+	// is stored untouched. The shape rides its own, earlier mutation above, and
+	// is deliberately NOT written here a second time.
 	const updateSectorMutation = createMutation(() => ({
 		mutationFn: async (update: SectorMetadataUpdate) => {
 			const existing = (sectorQuery.data?.metadata ?? {}) as Record<string, unknown>;
 			const metadata: Record<string, unknown> = { ...existing, aisles: update.aisles };
 			if (update.rowLayout === undefined) delete metadata.rowLayout;
 			else metadata.rowLayout = update.rowLayout;
+			if (update.seatRotations === null) delete metadata.seatRotations;
+			else if (update.seatRotations !== undefined) metadata.seatRotations = update.seatRotations;
 			const response = await organizationadminvenuesUpdateSector({
 				path: { slug: organization.slug, venue_id: venueId, sector_id: sectorId },
 				body: { metadata },

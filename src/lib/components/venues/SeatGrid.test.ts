@@ -420,4 +420,61 @@ describe('SeatGrid — abandoning a drag', () => {
 		expect(harness.adjust.drag).toBeNull();
 		expect(container.querySelector<HTMLElement>('[data-cell="0-1"]')?.style.left).toBe(home);
 	});
+
+	// Rotation is VISIBLE here exactly as it is on the buyer's map: the same
+	// seat-rotation.ts geometry, drawn on the seats that carry a non-zero `rot`
+	// and on no others.
+	describe('rotation notch', () => {
+		const notchIn = (container: HTMLElement, key: string) =>
+			container.querySelector<SVGSVGElement>(
+				`[data-cell="${key}"] [data-testid="seat-rotation-notch"]`
+			);
+
+		it('draws no notch when nothing is rotated', () => {
+			const { container } = render(SeatGrid, props());
+			expect(container.querySelectorAll('[data-testid="seat-rotation-notch"]')).toHaveLength(0);
+		});
+
+		it('draws a notch on the rotated seat only', () => {
+			const rotations = new Map([['0-1', 90]]);
+			const { container } = render(SeatGrid, {
+				...props(),
+				rotationFor: (row: number, col: number) => rotations.get(`${row}-${col}`) ?? 0
+			});
+			expect(container.querySelectorAll('[data-testid="seat-rotation-notch"]')).toHaveLength(1);
+			expect(notchIn(container, '0-1')?.dataset.rot).toBe('90');
+			expect(notchIn(container, '0-0')).toBeNull();
+		});
+
+		it('turns the notch with the value, clockwise from up', async () => {
+			const base = props();
+			const line = (container: HTMLElement) =>
+				container.querySelector<SVGLineElement>(
+					'[data-cell="0-1"] [data-testid="seat-rotation-notch"] line'
+				);
+			const rotate = (deg: number) => ({
+				...base,
+				rotationFor: (row: number, col: number) => (row === 0 && col === 1 ? deg : 0)
+			});
+			const { container, rerender } = render(SeatGrid, rotate(0));
+			expect(line(container)).toBeNull();
+
+			const center = BUTTON_PX / 2;
+			await rerender(rotate(0));
+			await rerender(rotate(90));
+			const right = line(container);
+			if (!right) throw new Error('no notch line');
+			// 90° points right: the stroke runs out along +x at the seat's midline.
+			expect(Number(right.getAttribute('x2'))).toBeGreaterThan(center);
+			expect(Number(right.getAttribute('y2'))).toBeCloseTo(center, 6);
+
+			// -90° is its mirror image, and 0 puts the notch back to plain "up".
+			await rerender(rotate(-90));
+			const left = line(container);
+			expect(Number(left?.getAttribute('x2'))).toBeLessThan(center);
+
+			await rerender(rotate(0));
+			expect(line(container)).toBeNull();
+		});
+	});
 });

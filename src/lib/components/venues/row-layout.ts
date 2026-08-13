@@ -4,6 +4,8 @@
 // recipe exists solely so the editor can re-edit; persistence truth is the
 // baked per-seat position (see seat-layout-bake.ts).
 
+import { normalizeRotation } from '$lib/components/tickets/seat-rotation';
+
 export const CURVE_MIN = -30;
 export const CURVE_MAX = 30;
 export const CURVE_STEP = 0.2;
@@ -38,7 +40,11 @@ export interface SeatNudge {
 	seat: number;
 	dx?: number;
 	dy?: number;
-	/** Degrees clockwise, normalized to [-180, 180). Never affects position. */
+	/**
+	 * Degrees clockwise from "up", normalized to [-180, 180). Never affects
+	 * position — it orients the seat-back NOTCH both surfaces draw (the one
+	 * contract lives in `tickets/seat-rotation.ts`).
+	 */
 	rot?: number;
 }
 
@@ -77,12 +83,6 @@ function clamp(value: number, min: number, max: number): number {
 
 function asNumber(value: unknown): number | undefined {
 	return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
-}
-
-/** Wraps degrees into [-180, 180) (e.g. 200 -> -160, 180 -> -180). */
-function normalizeRotation(value: number): number {
-	const wrapped = ((value % 360) + 360) % 360; // [0, 360)
-	return wrapped >= 180 ? wrapped - 360 : wrapped;
 }
 
 function parseOverride(value: unknown): RowOverride | null {
@@ -258,9 +258,13 @@ export function resolveRowLayoutForSave(
 /**
  * Build the buyer-facing rotation mirror `{ seat label: degrees }` from the
  * admin-only nudge recipe — written into `sector.metadata.seatRotations` on
- * save (Task C) so the buyer map can render a rotated seat notch without ever
- * reading `rowLayout`. Skips rot 0/absent (nothing to announce) and any nudge
- * whose (row, seat) does not resolve to a live seat label.
+ * save so the buyer map can render a rotated seat notch without ever reading
+ * `rowLayout` (whitelisted for the public chart by BE #894; read back through
+ * `tickets/seat-rotation.ts`'s defensive parser, so a backend that does not
+ * serve the key yet simply draws no notches). Skips rot 0/absent (nothing to
+ * announce) and any nudge whose (row, seat) does not resolve to a live seat
+ * label. An EMPTY result means "remove the key" at the call site — the mirror
+ * is sparse, exactly like `seatNudges`.
  */
 export function rotationsByLabel(
 	nudges: readonly SeatNudge[],
