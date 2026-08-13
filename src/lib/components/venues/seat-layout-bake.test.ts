@@ -168,3 +168,80 @@ describe('bakeSeatPositions — curve', () => {
 		}
 	});
 });
+
+describe('bakeSeatPositions — seatNudges', () => {
+	it('absent nudges leave the output identical to the golden default', () => {
+		const withEmptyNudges = bake({
+			verticalAisles: [1],
+			horizontalAisles: [0],
+			recipe: { ...defaultRowLayout(), seatNudges: [] }
+		});
+		const withoutField = bake({ verticalAisles: [1], horizontalAisles: [0] });
+		expect([...withEmptyNudges]).toEqual([...withoutField]);
+	});
+
+	it('a nudge moves exactly its target seat; every other seat stays byte-identical', () => {
+		const before = bake({});
+		const after = bake({
+			recipe: { ...defaultRowLayout(), seatNudges: [{ row: 1, seat: 0, dx: 0.2, dy: -0.1 }] }
+		});
+		expect(after.get('1-0')).toEqual({ x: 0.2, y: 0.9 });
+		for (const [key, point] of before) {
+			if (key === '1-0') continue;
+			expect(after.get(key)).toEqual(point);
+		}
+	});
+
+	it('rotation-only nudges never change position', () => {
+		const before = bake({});
+		const after = bake({
+			recipe: { ...defaultRowLayout(), seatNudges: [{ row: 1, seat: 0, rot: 45 }] }
+		});
+		expect([...after]).toEqual([...before]);
+	});
+
+	it('composes with curve: the delta applies AFTER arc placement', () => {
+		const curved = bake({
+			cells: grid(1, 5),
+			recipe: { ...defaultRowLayout(), curve: 10 }
+		});
+		const curvedWithNudge = bake({
+			cells: grid(1, 5),
+			recipe: {
+				...defaultRowLayout(),
+				curve: 10,
+				seatNudges: [{ row: 0, seat: 2, dx: 0.3, dy: 0.4 }]
+			}
+		});
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		const base = curved.get('0-2')!;
+		expect(curvedWithNudge.get('0-2')).toEqual({
+			x: Math.round((base.x + 0.3) * 1000) / 1000,
+			y: Math.round((base.y + 0.4) * 1000) / 1000
+		});
+		// untouched seats on the curved row stay identical
+		expect(curvedWithNudge.get('0-0')).toEqual(curved.get('0-0'));
+		expect(curvedWithNudge.get('0-4')).toEqual(curved.get('0-4'));
+	});
+
+	it('addresses the correct physical row by rank under invertRowOrder', () => {
+		// 3 rows, inverted: rank 0 (front row) is physical row 2.
+		const after = bakeSeatPositions({
+			cells: grid(3, 4),
+			verticalAisles: [],
+			horizontalAisles: [],
+			invertRowOrder: true,
+			recipe: { ...defaultRowLayout(), seatNudges: [{ row: 0, seat: 0, dx: 3 }] }
+		});
+		expect(after.get('2-0')).toEqual({ x: 3, y: 2 });
+		expect(after.get('0-0')).toEqual({ x: 0, y: 0 });
+	});
+
+	it('a nudge addressing a seat that does not exist is silently ignored', () => {
+		const before = bake({});
+		const after = bake({
+			recipe: { ...defaultRowLayout(), seatNudges: [{ row: 99, seat: 99, dx: 5 }] }
+		});
+		expect([...after]).toEqual([...before]);
+	});
+});

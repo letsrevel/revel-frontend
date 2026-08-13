@@ -186,5 +186,31 @@ export function bakeSeatPositions(input: BakeInput): Map<string, Coordinate2d> {
 			});
 		});
 	}
+
+	// 4. Per-seat nudges apply LAST, on top of whatever the generator placed —
+	// a nudge composes with (and survives) curve/stagger/override edits by
+	// design. Rotation never touches position; it feeds the separate
+	// seatRotations mirror (`rotationsByLabel`) instead.
+	if (recipe.seatNudges.length > 0) {
+		const maxRank = rows.length - 1;
+		const rankToRow = new Map<number, number>();
+		rows.forEach((row, index) => {
+			const rank = input.invertRowOrder ? maxRank - index : index;
+			rankToRow.set(rank, row);
+		});
+		for (const nudge of recipe.seatNudges) {
+			if (nudge.dx === undefined && nudge.dy === undefined) continue;
+			const physicalRow = rankToRow.get(nudge.row);
+			if (physicalRow === undefined) continue;
+			const key = `${physicalRow}-${nudge.seat}`;
+			const point = positions.get(key);
+			if (!point) continue;
+			positions.set(key, {
+				x: round3(point.x + (nudge.dx ?? 0)),
+				y: round3(point.y + (nudge.dy ?? 0))
+			});
+		}
+	}
+
 	return positions;
 }

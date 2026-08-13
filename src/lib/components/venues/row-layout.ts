@@ -21,6 +21,27 @@ export interface RowOverride {
 	dy?: number;
 }
 
+/**
+ * Sparse per-seat position/rotation DELTA — never an absolute. Identity is
+ * (0,0,0); a nudge composes with (and survives) later curve/spacing edits
+ * because the bake applies it last, on top of whatever the generator placed.
+ *
+ * Addressed by (row_order rank, adjacency_index) — the same logical coordinate
+ * space as `RowOverride.row`, NOT physical grid row/col. `seat` is the raw
+ * column index (adjacency_index is identity over columns, see
+ * `deriveAdjacencyIndex`).
+ */
+export interface SeatNudge {
+	/** row_order rank (dense, front row = 0) — same space as RowOverride.row. */
+	row: number;
+	/** adjacency_index (raw column index). */
+	seat: number;
+	dx?: number;
+	dy?: number;
+	/** Degrees clockwise, normalized to [-180, 180). Never affects position. */
+	rot?: number;
+}
+
 export interface RowLayoutRecipe {
 	version: 1;
 	kind: 'rows';
@@ -30,6 +51,7 @@ export interface RowLayoutRecipe {
 	stagger: number;
 	align: 'left' | 'center' | 'right';
 	rowOverrides: RowOverride[];
+	seatNudges: SeatNudge[];
 }
 
 export type RowLayoutParse =
@@ -38,7 +60,15 @@ export type RowLayoutParse =
 	| { status: 'ok'; recipe: RowLayoutRecipe; raw: Record<string, unknown> };
 
 export function defaultRowLayout(): RowLayoutRecipe {
-	return { version: 1, kind: 'rows', curve: 0, stagger: 0, align: 'left', rowOverrides: [] };
+	return {
+		version: 1,
+		kind: 'rows',
+		curve: 0,
+		stagger: 0,
+		align: 'left',
+		rowOverrides: [],
+		seatNudges: []
+	};
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -47,6 +77,12 @@ function clamp(value: number, min: number, max: number): number {
 
 function asNumber(value: unknown): number | undefined {
 	return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+}
+
+/** Wraps degrees into [-180, 180) (e.g. 200 -> -160, 180 -> -180). */
+function normalizeRotation(value: number): number {
+	const wrapped = ((value % 360) + 360) % 360; // [0, 360)
+	return wrapped >= 180 ? wrapped - 360 : wrapped;
 }
 
 function parseOverride(value: unknown): RowOverride | null {
@@ -64,6 +100,30 @@ function parseOverride(value: unknown): RowOverride | null {
 	const dy = asNumber(record.dy);
 	if (dy !== undefined) override.dy = clamp(dy, -ROW_SHIFT_LIMIT, ROW_SHIFT_LIMIT);
 	return override;
+}
+
+/**
+ * Parse one seatNudges[] entry. Drops malformed entries (non-integer/negative
+ * row or seat, non-object) and entries left with no effective field once
+ * non-finite dx/dy/rot are stripped — such an entry is indistinguishable from
+ * absent and would just be dead weight in the persisted recipe.
+ */
+function parseNudge(value: unknown): SeatNudge | null {
+	if (typeof value !== 'object' || value === null) return null;
+	const record = value as Record<string, unknown>;
+	const row = asNumber(record.row);
+	if (row === undefined || !Number.isInteger(row) || row < 0) return null;
+	const seat = asNumber(record.seat);
+	if (seat === undefined || !Number.isInteger(seat) || seat < 0) return null;
+	const nudge: SeatNudge = { row, seat };
+	const dx = asNumber(record.dx);
+	if (dx !== undefined) nudge.dx = clamp(dx, -ROW_SHIFT_LIMIT, ROW_SHIFT_LIMIT);
+	const dy = asNumber(record.dy);
+	if (dy !== undefined) nudge.dy = clamp(dy, -ROW_SHIFT_LIMIT, ROW_SHIFT_LIMIT);
+	const rot = asNumber(record.rot);
+	if (rot !== undefined) nudge.rot = normalizeRotation(rot);
+	if (nudge.dx === undefined && nudge.dy === undefined && nudge.rot === undefined) return null;
+	return nudge;
 }
 
 /** Defensive parse of sector.metadata.rowLayout (unknown-shaped JSON). */
@@ -88,6 +148,9 @@ export function parseRowLayout(
 			? record.rowOverrides
 					.map(parseOverride)
 					.filter((override): override is RowOverride => override !== null)
+			: [],
+		seatNudges: Array.isArray(record.seatNudges)
+			? record.seatNudges.map(parseNudge).filter((nudge): nudge is SeatNudge => nudge !== null)
 			: []
 	};
 	return { status: 'ok', recipe, raw: record };
@@ -129,7 +192,8 @@ export function isDefaultRowLayout(recipe: RowLayoutRecipe): boolean {
 		recipe.curve === 0 &&
 		recipe.stagger === 0 &&
 		recipe.align === 'left' &&
-		recipe.rowOverrides.length === 0
+		recipe.rowOverrides.length === 0 &&
+		recipe.seatNudges.length === 0
 	);
 }
 
@@ -144,7 +208,7 @@ export function serializeRowLayout(
 	raw?: Record<string, unknown>
 ): Record<string, unknown> | undefined {
 	if (isDefaultRowLayout(recipe)) return undefined;
-	return {
+	const out: Record<string, unknown> = {
 		...(raw ?? {}),
 		version: recipe.version,
 		kind: recipe.kind,
@@ -153,6 +217,16 @@ export function serializeRowLayout(
 		align: recipe.align,
 		rowOverrides: recipe.rowOverrides.map((override) => ({ ...override }))
 	};
+	// seatNudges rides sparse: omit the key entirely when empty (rather than
+	// writing `[]`), and drop any stale key a prior `raw` blob carried once the
+	// recipe no longer has nudges — `raw` is spread first, so an explicit
+	// `delete` is needed to actually clear it.
+	if (recipe.seatNudges.length > 0) {
+		out.seatNudges = recipe.seatNudges.map((nudge) => ({ ...nudge }));
+	} else {
+		delete out.seatNudges;
+	}
+	return out;
 }
 
 /**
@@ -179,4 +253,25 @@ export function resolveRowLayoutForSave(
 		return unsupportedRaw;
 	}
 	return serializeRowLayout(recipe, raw);
+}
+
+/**
+ * Build the buyer-facing rotation mirror `{ seat label: degrees }` from the
+ * admin-only nudge recipe — written into `sector.metadata.seatRotations` on
+ * save (Task C) so the buyer map can render a rotated seat notch without ever
+ * reading `rowLayout`. Skips rot 0/absent (nothing to announce) and any nudge
+ * whose (row, seat) does not resolve to a live seat label.
+ */
+export function rotationsByLabel(
+	nudges: readonly SeatNudge[],
+	labelFor: (row: number, seat: number) => string | null
+): Record<string, number> {
+	const result: Record<string, number> = {};
+	for (const nudge of nudges) {
+		if (!nudge.rot) continue;
+		const label = labelFor(nudge.row, nudge.seat);
+		if (label === null) continue;
+		result[label] = nudge.rot;
+	}
+	return result;
 }

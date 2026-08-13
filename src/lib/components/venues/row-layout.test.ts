@@ -5,8 +5,10 @@ import {
 	isDefaultRowLayout,
 	parseRowLayout,
 	resolveRowLayoutForSave,
+	rotationsByLabel,
 	serializeRowLayout,
-	CURVE_MAX
+	CURVE_MAX,
+	ROW_SHIFT_LIMIT
 } from './row-layout';
 
 describe('hasCustomSeatPositions', () => {
@@ -64,6 +66,7 @@ describe('parseRowLayout', () => {
 		expect(parsed.recipe.stagger).toBe(0);
 		expect(parsed.recipe.align).toBe('left');
 		expect(parsed.recipe.rowOverrides).toEqual([]);
+		expect(parsed.recipe.seatNudges).toEqual([]);
 	});
 
 	it('clamps out-of-range numbers and drops malformed overrides', () => {
@@ -118,6 +121,176 @@ describe('serializeRowLayout / isDefaultRowLayout', () => {
 		expect(parsed.status).toBe('ok');
 		if (parsed.status !== 'ok') return;
 		expect(parsed.recipe).toEqual(recipe);
+	});
+});
+
+describe('seatNudges — parse/serialize', () => {
+	it('defaults to an empty array', () => {
+		expect(defaultRowLayout().seatNudges).toEqual([]);
+	});
+
+	it('parses a valid nudge and round-trips through serialize', () => {
+		const parsed = parseRowLayout({
+			rowLayout: {
+				version: 1,
+				kind: 'rows',
+				seatNudges: [{ row: 1, seat: 2, dx: 0.3, dy: -0.1, rot: 15 }]
+			}
+		});
+		expect(parsed.status).toBe('ok');
+		if (parsed.status !== 'ok') return;
+		expect(parsed.recipe.seatNudges).toEqual([{ row: 1, seat: 2, dx: 0.3, dy: -0.1, rot: 15 }]);
+
+		const serialized = serializeRowLayout(parsed.recipe);
+		expect(serialized?.seatNudges).toEqual([{ row: 1, seat: 2, dx: 0.3, dy: -0.1, rot: 15 }]);
+		const reparsed = parseRowLayout({ rowLayout: serialized });
+		expect(reparsed.status).toBe('ok');
+		if (reparsed.status !== 'ok') return;
+		expect(reparsed.recipe.seatNudges).toEqual(parsed.recipe.seatNudges);
+	});
+
+	it('clamps dx/dy to ROW_SHIFT_LIMIT and normalizes rot to [-180, 180)', () => {
+		const parsed = parseRowLayout({
+			rowLayout: {
+				version: 1,
+				kind: 'rows',
+				seatNudges: [
+					{ row: 0, seat: 0, dx: 999, dy: -999 },
+					{ row: 0, seat: 1, rot: 200 },
+					{ row: 0, seat: 2, rot: -200 },
+					{ row: 0, seat: 3, rot: 180 },
+					{ row: 0, seat: 4, rot: -180 }
+				]
+			}
+		});
+		expect(parsed.status).toBe('ok');
+		if (parsed.status !== 'ok') return;
+		expect(parsed.recipe.seatNudges).toEqual([
+			{ row: 0, seat: 0, dx: ROW_SHIFT_LIMIT, dy: -ROW_SHIFT_LIMIT },
+			{ row: 0, seat: 1, rot: -160 },
+			{ row: 0, seat: 2, rot: 160 },
+			{ row: 0, seat: 3, rot: -180 },
+			{ row: 0, seat: 4, rot: -180 }
+		]);
+	});
+
+	it('drops malformed entries: non-integer/negative row or seat, non-object entries', () => {
+		const parsed = parseRowLayout({
+			rowLayout: {
+				version: 1,
+				kind: 'rows',
+				seatNudges: [
+					{ row: 1.5, seat: 0, dx: 1 },
+					{ row: 0, seat: -1, dx: 1 },
+					{ row: -1, seat: 0, dx: 1 },
+					null,
+					'garbage',
+					{ row: 2, seat: 3, dx: 0.5 }
+				]
+			}
+		});
+		expect(parsed.status).toBe('ok');
+		if (parsed.status !== 'ok') return;
+		expect(parsed.recipe.seatNudges).toEqual([{ row: 2, seat: 3, dx: 0.5 }]);
+	});
+
+	it('drops non-finite deltas but keeps the entry if another field is still effective', () => {
+		const parsed = parseRowLayout({
+			rowLayout: {
+				version: 1,
+				kind: 'rows',
+				seatNudges: [{ row: 0, seat: 0, dx: Number.NaN, dy: Number.POSITIVE_INFINITY, rot: 10 }]
+			}
+		});
+		expect(parsed.status).toBe('ok');
+		if (parsed.status !== 'ok') return;
+		expect(parsed.recipe.seatNudges).toEqual([{ row: 0, seat: 0, rot: 10 }]);
+	});
+
+	it('drops entries with no effective fields (all deltas absent or non-finite)', () => {
+		const parsed = parseRowLayout({
+			rowLayout: {
+				version: 1,
+				kind: 'rows',
+				seatNudges: [
+					{ row: 0, seat: 0 },
+					{ row: 0, seat: 1, dx: Number.NaN, dy: Number.POSITIVE_INFINITY, rot: Number.NaN }
+				]
+			}
+		});
+		expect(parsed.status).toBe('ok');
+		if (parsed.status !== 'ok') return;
+		expect(parsed.recipe.seatNudges).toEqual([]);
+	});
+
+	it('a recipe with only seatNudges (all else default) is non-default', () => {
+		const recipe = { ...defaultRowLayout(), seatNudges: [{ row: 0, seat: 0, dx: 0.1 }] };
+		expect(isDefaultRowLayout(recipe)).toBe(false);
+	});
+
+	it('serializes seatNudges only when non-empty', () => {
+		const withNudges = {
+			...defaultRowLayout(),
+			curve: 3,
+			seatNudges: [{ row: 0, seat: 0, dx: 1 }]
+		};
+		expect(serializeRowLayout(withNudges)?.seatNudges).toEqual([{ row: 0, seat: 0, dx: 1 }]);
+
+		const withoutNudges = { ...defaultRowLayout(), curve: 3 };
+		expect(serializeRowLayout(withoutNudges)?.seatNudges).toBeUndefined();
+	});
+
+	it('clears a stale seatNudges key from raw once the recipe no longer carries nudges', () => {
+		const raw = { version: 1, kind: 'rows', curve: 3, seatNudges: [{ row: 0, seat: 0, dx: 1 }] };
+		const recipe = { ...defaultRowLayout(), curve: 3, seatNudges: [] };
+		expect(serializeRowLayout(recipe, raw)?.seatNudges).toBeUndefined();
+	});
+
+	it('preserves unknown sibling keys alongside seatNudges', () => {
+		const parsed = parseRowLayout({
+			rowLayout: {
+				version: 1,
+				kind: 'rows',
+				curve: 2,
+				futureKnob: 'keep-me',
+				seatNudges: [{ row: 0, seat: 0, dx: 0.4 }]
+			}
+		});
+		expect(parsed.status).toBe('ok');
+		if (parsed.status !== 'ok') return;
+		const out = serializeRowLayout(parsed.recipe, parsed.raw);
+		expect(out?.futureKnob).toBe('keep-me');
+		expect(out?.seatNudges).toEqual([{ row: 0, seat: 0, dx: 0.4 }]);
+	});
+});
+
+describe('rotationsByLabel', () => {
+	it('skips zero and absent rotation', () => {
+		const result = rotationsByLabel(
+			[
+				{ row: 0, seat: 0, rot: 0 },
+				{ row: 0, seat: 1, dx: 0.5 }
+			],
+			(row, seat) => `R${row}S${seat}`
+		);
+		expect(result).toEqual({});
+	});
+
+	it('skips entries whose label resolves to null', () => {
+		const result = rotationsByLabel([{ row: 0, seat: 0, rot: 15 }], () => null);
+		expect(result).toEqual({});
+	});
+
+	it('maps degrees by label for non-zero rotations', () => {
+		const result = rotationsByLabel(
+			[
+				{ row: 0, seat: 0, rot: 15 },
+				{ row: 1, seat: 2, rot: -30 },
+				{ row: 2, seat: 0, rot: 0 }
+			],
+			(row, seat) => `R${row}S${seat}`
+		);
+		expect(result).toEqual({ R0S0: 15, R1S2: -30 });
 	});
 });
 
