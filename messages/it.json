@@ -8660,9 +8660,18 @@
 	"seatGridEditor.geometry.previewTitle": "Anteprima",
 	"seatGridEditor.geometry.previewAria": "Anteprima in tempo reale della disposizione dei posti",
 	"seatGridEditor.geometry.previewStage": "PALCO",
-	"seatGridEditor.geometry.unsupportedRecipe": "La geometria salvata di questo settore usa un formato più recente. Modificarla qui la sovrascriverebbe, quindi i controlli partono dai valori predefiniti.",
+	"seatGridEditor.geometry.unsupportedRecipe": "La geometria salvata di questo settore usa un formato più recente. I controlli qui sotto partono dai valori predefiniti; se li modifichi, la geometria salvata verrà sostituita al salvataggio.",
 	"seatGridEditor.shapeFit.title": "Il contorno non è più adatto",
-	"seatGridEditor.shapeFit.body": "{count} posti ora cadono fuori dal contorno disegnato per questo settore. Rigenera un contorno adattato, oppure cancellalo e ridisegnalo più tardi nel designer.",
+	"seatGridEditor.shapeFit.body": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "{count} posto ora cade fuori dal contorno disegnato per questo settore. Rigenera un contorno adattato, oppure cancellalo e ridisegnalo più tardi nel designer.",
+				"countPlural=*": "{count} posti ora cadono fuori dal contorno disegnato per questo settore. Rigenera un contorno adattato, oppure cancellalo e ridisegnalo più tardi nel designer."
+			}
+		}
+	],
 	"seatGridEditor.shapeFit.fit": "Adatta automaticamente il contorno",
 	"seatGridEditor.shapeFit.clear": "Cancella contorno",
 	"seatGridEditor.shapeFit.cancel": "Annulla salvataggio",

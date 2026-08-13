@@ -8630,9 +8630,18 @@
 	"seatGridEditor.geometry.previewTitle": "Aperçu",
 	"seatGridEditor.geometry.previewAria": "Aperçu en direct du plan des places",
 	"seatGridEditor.geometry.previewStage": "SCÈNE",
-	"seatGridEditor.geometry.unsupportedRecipe": "La géométrie enregistrée de ce secteur utilise un format plus récent. La modifier ici l'écraserait, donc les réglages partent des valeurs par défaut.",
+	"seatGridEditor.geometry.unsupportedRecipe": "La géométrie enregistrée de ce secteur utilise un format plus récent. Les réglages ci-dessous partent des valeurs par défaut ; si tu les modifies, la géométrie enregistrée sera remplacée à l'enregistrement.",
 	"seatGridEditor.shapeFit.title": "Le contour ne correspond plus",
-	"seatGridEditor.shapeFit.body": "{count} places tombent désormais hors du contour dessiné de ce secteur. Régénère un contour ajusté, ou efface-le et redessine-le plus tard dans le concepteur.",
+	"seatGridEditor.shapeFit.body": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "{count} place tombe désormais hors du contour dessiné de ce secteur. Régénère un contour ajusté, ou efface-le et redessine-le plus tard dans le concepteur.",
+				"countPlural=*": "{count} places tombent désormais hors du contour dessiné de ce secteur. Régénère un contour ajusté, ou efface-le et redessine-le plus tard dans le concepteur."
+			}
+		}
+	],
 	"seatGridEditor.shapeFit.fit": "Ajuster automatiquement le contour",
 	"seatGridEditor.shapeFit.clear": "Effacer le contour",
 	"seatGridEditor.shapeFit.cancel": "Annuler l'enregistrement",

@@ -8660,9 +8660,18 @@
 	"seatGridEditor.geometry.previewTitle": "Vista previa",
 	"seatGridEditor.geometry.previewAria": "Vista previa en vivo de la disposición de asientos",
 	"seatGridEditor.geometry.previewStage": "ESCENARIO",
-	"seatGridEditor.geometry.unsupportedRecipe": "La geometría guardada de este sector usa un formato más reciente. Editarla aquí la sobrescribiría, así que los controles empiezan con los valores predeterminados.",
+	"seatGridEditor.geometry.unsupportedRecipe": "La geometría guardada de este sector usa un formato más reciente. Los controles de abajo empiezan con los valores predeterminados; si los cambias, la geometría guardada se reemplazará al guardar.",
 	"seatGridEditor.shapeFit.title": "El contorno ya no encaja",
-	"seatGridEditor.shapeFit.body": "{count} asientos ahora quedan fuera del contorno dibujado de este sector. Regenera un contorno ajustado, o bórralo y vuelve a dibujarlo más tarde en el diseñador.",
+	"seatGridEditor.shapeFit.body": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "{count} asiento ahora queda fuera del contorno dibujado de este sector. Regenera un contorno ajustado, o bórralo y vuelve a dibujarlo más tarde en el diseñador.",
+				"countPlural=*": "{count} asientos ahora quedan fuera del contorno dibujado de este sector. Regenera un contorno ajustado, o bórralo y vuelve a dibujarlo más tarde en el diseñador."
+			}
+		}
+	],
 	"seatGridEditor.shapeFit.fit": "Ajustar contorno automáticamente",
 	"seatGridEditor.shapeFit.clear": "Borrar contorno",
 	"seatGridEditor.shapeFit.cancel": "Cancelar guardado",

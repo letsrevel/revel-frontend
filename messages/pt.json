@@ -8660,9 +8660,18 @@
 	"seatGridEditor.geometry.previewTitle": "Pré-visualização",
 	"seatGridEditor.geometry.previewAria": "Pré-visualização em direto da disposição dos lugares",
 	"seatGridEditor.geometry.previewStage": "PALCO",
-	"seatGridEditor.geometry.unsupportedRecipe": "A geometria guardada deste setor usa um formato mais recente. Editar aqui substituiria essa geometria, por isso os controlos partem dos valores predefinidos.",
+	"seatGridEditor.geometry.unsupportedRecipe": "A geometria guardada deste setor usa um formato mais recente. Os controlos abaixo partem dos valores predefinidos; se os alterares, a geometria guardada será substituída ao gravar.",
 	"seatGridEditor.shapeFit.title": "O contorno já não encaixa",
-	"seatGridEditor.shapeFit.body": "{count} lugares agora ficam fora do contorno desenhado deste setor. Gera novamente um contorno ajustado, ou limpa-o e volta a desenhá-lo mais tarde no editor de disposição.",
+	"seatGridEditor.shapeFit.body": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "{count} lugar agora fica fora do contorno desenhado deste setor. Gera novamente um contorno ajustado, ou limpa-o e volta a desenhá-lo mais tarde no editor de disposição.",
+				"countPlural=*": "{count} lugares agora ficam fora do contorno desenhado deste setor. Gera novamente um contorno ajustado, ou limpa-o e volta a desenhá-lo mais tarde no editor de disposição."
+			}
+		}
+	],
 	"seatGridEditor.shapeFit.fit": "Ajustar automaticamente o contorno",
 	"seatGridEditor.shapeFit.clear": "Limpar contorno",
 	"seatGridEditor.shapeFit.cancel": "Cancelar gravação",

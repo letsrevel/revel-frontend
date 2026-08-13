@@ -3,6 +3,7 @@ import {
 	defaultRowLayout,
 	isDefaultRowLayout,
 	parseRowLayout,
+	resolveRowLayoutForSave,
 	serializeRowLayout,
 	CURVE_MAX
 } from './row-layout';
@@ -84,5 +85,41 @@ describe('serializeRowLayout / isDefaultRowLayout', () => {
 		expect(parsed.status).toBe('ok');
 		if (parsed.status !== 'ok') return;
 		expect(parsed.recipe).toEqual(recipe);
+	});
+});
+
+describe('resolveRowLayoutForSave', () => {
+	it('preserves an untouched unsupported blob byte-for-byte (regression: any save must not destroy a newer-format recipe)', () => {
+		const untouchedBlob = { version: 2, kind: 'polar', futureField: 'keep-me' };
+		const result = resolveRowLayoutForSave(
+			defaultRowLayout(),
+			undefined,
+			/* unsupported */ true,
+			untouchedBlob
+		);
+		expect(result).toBe(untouchedBlob);
+	});
+
+	it('preserves a non-object unsupported blob too (parseRowLayout can flag a string/array as unsupported)', () => {
+		const result = resolveRowLayoutForSave(defaultRowLayout(), undefined, true, 'garbage');
+		expect(result).toBe('garbage');
+	});
+
+	it('overwrites the unsupported blob once the admin edits the recipe away from default', () => {
+		const untouchedBlob = { version: 2, kind: 'polar' };
+		const editedRecipe = { ...defaultRowLayout(), curve: 6 };
+		const result = resolveRowLayoutForSave(editedRecipe, undefined, true, untouchedBlob);
+		expect(result).toEqual(serializeRowLayout(editedRecipe));
+		expect(result).not.toBe(untouchedBlob);
+	});
+
+	it('falls back to normal serialize behavior when the recipe was never unsupported', () => {
+		expect(
+			resolveRowLayoutForSave(defaultRowLayout(), undefined, false, undefined)
+		).toBeUndefined();
+		const recipe = { ...defaultRowLayout(), curve: 3 };
+		expect(resolveRowLayoutForSave(recipe, undefined, false, undefined)).toEqual(
+			serializeRowLayout(recipe)
+		);
 	});
 });

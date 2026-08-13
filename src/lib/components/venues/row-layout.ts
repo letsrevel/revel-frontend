@@ -123,3 +123,29 @@ export function serializeRowLayout(
 		rowOverrides: recipe.rowOverrides.map((override) => ({ ...override }))
 	};
 }
+
+/**
+ * Decide what to write to sector.metadata.rowLayout on save. Wraps
+ * `serializeRowLayout` with one extra case: an 'unsupported' blob (a
+ * newer-format recipe this build can't parse) that the admin never actually
+ * edited — the on-screen recipe is still exactly `defaultRowLayout()` — must
+ * be written back byte-for-byte instead of being collapsed to `undefined` by
+ * `serializeRowLayout`'s "default recipe deletes the key" rule, which would
+ * silently destroy the newer blob on ANY save (painting a seat, adding an
+ * aisle, never touching geometry at all).
+ *
+ * Once the admin actually moves a control away from default, the unsupported
+ * blob IS meant to be overwritten — that falls through to the normal
+ * `serializeRowLayout` path below.
+ */
+export function resolveRowLayoutForSave(
+	recipe: RowLayoutRecipe,
+	raw: Record<string, unknown> | undefined,
+	unsupported: boolean,
+	unsupportedRaw: unknown
+): unknown {
+	if (unsupported && isDefaultRowLayout(recipe)) {
+		return unsupportedRaw;
+	}
+	return serializeRowLayout(recipe, raw);
+}

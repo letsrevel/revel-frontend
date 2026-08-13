@@ -8660,9 +8660,18 @@
 	"seatGridEditor.geometry.previewTitle": "Vorschau",
 	"seatGridEditor.geometry.previewAria": "Live-Vorschau des Sitzplans",
 	"seatGridEditor.geometry.previewStage": "BÜHNE",
-	"seatGridEditor.geometry.unsupportedRecipe": "Die gespeicherte Geometrie dieses Sektors nutzt ein neueres Format. Eine Bearbeitung hier würde sie überschreiben, daher starten die Regler mit den Standardwerten.",
+	"seatGridEditor.geometry.unsupportedRecipe": "Die gespeicherte Geometrie dieses Sektors nutzt ein neueres Format. Die Regler unten starten mit den Standardwerten; änderst du sie, wird die gespeicherte Geometrie beim Speichern ersetzt.",
 	"seatGridEditor.shapeFit.title": "Umriss passt nicht mehr",
-	"seatGridEditor.shapeFit.body": "{count} Plätze liegen jetzt außerhalb des gezeichneten Umrisses dieses Sektors. Erzeuge einen neu angepassten Umriss, oder lösche ihn und zeichne ihn später im Designer neu.",
+	"seatGridEditor.shapeFit.body": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "{count} Platz liegt jetzt außerhalb des gezeichneten Umrisses dieses Sektors. Erzeuge einen neu angepassten Umriss, oder lösche ihn und zeichne ihn später im Designer neu.",
+				"countPlural=*": "{count} Plätze liegen jetzt außerhalb des gezeichneten Umrisses dieses Sektors. Erzeuge einen neu angepassten Umriss, oder lösche ihn und zeichne ihn später im Designer neu."
+			}
+		}
+	],
 	"seatGridEditor.shapeFit.fit": "Umriss automatisch anpassen",
 	"seatGridEditor.shapeFit.clear": "Umriss löschen",
 	"seatGridEditor.shapeFit.cancel": "Speichern abbrechen",

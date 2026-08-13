@@ -8660,9 +8660,18 @@
 	"seatGridEditor.geometry.previewTitle": "Preview",
 	"seatGridEditor.geometry.previewAria": "Live preview of the seat layout",
 	"seatGridEditor.geometry.previewStage": "STAGE",
-	"seatGridEditor.geometry.unsupportedRecipe": "This sector's saved geometry uses a newer format. Editing geometry here would overwrite it, so the controls start from defaults.",
+	"seatGridEditor.geometry.unsupportedRecipe": "This sector's saved geometry uses a newer format. The controls below start from defaults; changing them will replace the saved geometry when you save.",
 	"seatGridEditor.shapeFit.title": "Outline no longer fits",
-	"seatGridEditor.shapeFit.body": "{count} seats now fall outside this sector's drawn outline. Regenerate a fitted outline, or clear it and redraw it later in the designer.",
+	"seatGridEditor.shapeFit.body": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "{count} seat now falls outside this sector's drawn outline. Regenerate a fitted outline, or clear it and redraw it later in the designer.",
+				"countPlural=*": "{count} seats now fall outside this sector's drawn outline. Regenerate a fitted outline, or clear it and redraw it later in the designer."
+			}
+		}
+	],
 	"seatGridEditor.shapeFit.fit": "Auto-fit outline",
 	"seatGridEditor.shapeFit.clear": "Clear outline",
 	"seatGridEditor.shapeFit.cancel": "Cancel save",

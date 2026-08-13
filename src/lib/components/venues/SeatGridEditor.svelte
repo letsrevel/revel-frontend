@@ -21,7 +21,7 @@
 	import {
 		defaultRowLayout,
 		parseRowLayout,
-		serializeRowLayout,
+		resolveRowLayoutForSave,
 		type RowLayoutRecipe
 	} from './row-layout';
 	import { bakeSeatPositions } from './seat-layout-bake';
@@ -42,11 +42,15 @@
 	/**
 	 * Everything one save persists to sector.metadata (+ shape). `rowLayout:
 	 * undefined` ⇒ REMOVE the metadata key (plain grid stays byte-identical to
-	 * today). `shape: undefined` ⇒ untouched, `null` ⇒ clear, an array ⇒ replace.
+	 * today); otherwise the value is written verbatim. Typed `unknown` rather
+	 * than `Record<string, unknown>` because an untouched 'unsupported' blob
+	 * (see `resolveRowLayoutForSave`) is passed through byte-for-byte and isn't
+	 * guaranteed to be a plain object — it's whatever a newer build wrote.
+	 * `shape: undefined` ⇒ untouched, `null` ⇒ clear, an array ⇒ replace.
 	 */
 	export interface SectorMetadataUpdate {
 		aisles: AisleMetadata;
-		rowLayout: Record<string, unknown> | undefined;
+		rowLayout: unknown;
 		shape?: Coordinate2d[] | null;
 	}
 
@@ -142,6 +146,11 @@
 	let rowLayout = $state<RowLayoutRecipe>(defaultRowLayout());
 	let rowLayoutRaw = $state<Record<string, unknown> | undefined>(undefined);
 	let rowLayoutUnsupported = $state(false);
+	// The original, unparsed metadata.rowLayout value when parse status is
+	// 'unsupported' (a newer-format blob this build can't read) — preserved so
+	// an untouched save can write it back verbatim instead of destroying it.
+	// See `resolveRowLayoutForSave`.
+	let rowLayoutUnsupportedRaw = $state<unknown>(undefined);
 
 	// Shape-fit gate (runs on SAVE only): a baked layout that no longer fits
 	// the sector's drawn outline offers an auto-fit replacement or clearing it.
@@ -228,10 +237,12 @@
 			rowLayout = parsedRowLayout.recipe;
 			rowLayoutRaw = parsedRowLayout.raw;
 			rowLayoutUnsupported = false;
+			rowLayoutUnsupportedRaw = undefined;
 		} else {
 			rowLayout = defaultRowLayout();
 			rowLayoutRaw = undefined;
 			rowLayoutUnsupported = parsedRowLayout.status === 'unsupported';
+			rowLayoutUnsupportedRaw = rowLayoutUnsupported ? sectorMetadata?.rowLayout : undefined;
 		}
 
 		// Try to infer grid size from existing seats
@@ -437,7 +448,12 @@
 				horizontalAisles: [...horizontalAisles].sort((a, b) => a - b),
 				invertRowOrder
 			},
-			rowLayout: serializeRowLayout(rowLayout, rowLayoutRaw),
+			rowLayout: resolveRowLayoutForSave(
+				rowLayout,
+				rowLayoutRaw,
+				rowLayoutUnsupported,
+				rowLayoutUnsupportedRaw
+			),
 			...(shape !== undefined ? { shape } : {})
 		});
 	}

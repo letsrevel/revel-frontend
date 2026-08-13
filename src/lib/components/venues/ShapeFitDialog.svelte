@@ -33,7 +33,7 @@
 		<DialogHeader>
 			<DialogTitle>{m['seatGridEditor.shapeFit.title']()}</DialogTitle>
 			<DialogDescription>
-				{m['seatGridEditor.shapeFit.body']({ count: String(violatingCount) })}
+				{m['seatGridEditor.shapeFit.body']({ count: violatingCount })}
 			</DialogDescription>
 		</DialogHeader>
 
