@@ -36,6 +36,39 @@ describe('SeatGeometryPanel', () => {
 		expect(slider.value).toBe('12');
 	});
 
+	it('associates the curve help text with both curve inputs via aria-describedby', () => {
+		const { getByLabelText, container } = render(SeatGeometryPanel, {
+			recipe: defaultRowLayout(),
+			rowOptions: [],
+			unsupported: false
+		});
+
+		const slider = getByLabelText('Curve') as HTMLInputElement;
+		const exactInput = getByLabelText('Exact curve value') as HTMLInputElement;
+		const help = container.querySelector('#geo-curve-help');
+
+		expect(help).toBeTruthy();
+		expect(slider.getAttribute('aria-describedby')).toBe('geo-curve-help');
+		expect(exactInput.getAttribute('aria-describedby')).toBe('geo-curve-help');
+	});
+
+	it('clamps a typed out-of-range curve value instead of applying it verbatim', async () => {
+		const user = userEvent.setup();
+		const { getByLabelText } = render(SeatGeometryPanel, {
+			recipe: defaultRowLayout(),
+			rowOptions: [],
+			unsupported: false
+		});
+
+		const slider = getByLabelText('Curve') as HTMLInputElement;
+		const exactInput = getByLabelText('Exact curve value') as HTMLInputElement;
+
+		await user.clear(exactInput);
+		await user.type(exactInput, '999');
+
+		expect(slider.value).toBe('30');
+	});
+
 	// No `.test.svelte.ts` runes-in-test pattern exists in this project (grep
 	// found zero files), so this asserts via the DOM the checkbox controls
 	// rather than reading the bound `recipe` object back: the stagger amount

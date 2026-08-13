@@ -5,6 +5,7 @@
 		CURVE_MAX,
 		CURVE_MIN,
 		CURVE_STEP,
+		ROW_SHIFT_LIMIT,
 		STAGGER_MAX,
 		STAGGER_MIN,
 		defaultRowLayout,
@@ -46,10 +47,18 @@
 		updateRecipe({ stagger: checked ? 0.5 : 0 });
 	}
 
-	function parseOptionalNumber(raw: string): number | undefined {
+	// Clamp is local (row-layout's own `clamp` is a persistence-boundary detail
+	// and stays unexported) — this is the equivalent guard at the input
+	// boundary, so a typed out-of-range value can never reach `recipe` even
+	// transiently (WCAG 3.3.1: prevention beats post-hoc error identification).
+	function clamp(value: number, min: number, max: number): number {
+		return Math.min(max, Math.max(min, value));
+	}
+
+	function parseOptionalNumber(raw: string, min: number, max: number): number | undefined {
 		if (raw.trim() === '') return undefined;
 		const value = Number(raw);
-		return Number.isFinite(value) ? value : undefined;
+		return Number.isFinite(value) ? clamp(value, min, max) : undefined;
 	}
 
 	function writeOverride(patch: Partial<Omit<RowOverride, 'row'>>) {
@@ -112,6 +121,7 @@
 					max={CURVE_MAX}
 					step={CURVE_STEP}
 					value={recipe.curve}
+					aria-describedby="geo-curve-help"
 					oninput={(e) => updateRecipe({ curve: Number(e.currentTarget.value) })}
 					class="w-full max-w-xs"
 				/>
@@ -126,14 +136,15 @@
 					max={CURVE_MAX}
 					step={CURVE_STEP}
 					value={recipe.curve}
+					aria-describedby="geo-curve-help"
 					oninput={(e) => {
-						const parsed = parseOptionalNumber(e.currentTarget.value);
+						const parsed = parseOptionalNumber(e.currentTarget.value, CURVE_MIN, CURVE_MAX);
 						if (parsed !== undefined) updateRecipe({ curve: parsed });
 					}}
 					class="w-20 rounded-md border border-input bg-background px-3 py-2 text-sm"
 				/>
 			</div>
-			<p class="mt-1 text-xs text-muted-foreground">
+			<p id="geo-curve-help" class="mt-1 text-xs text-muted-foreground">
 				{m['seatGridEditor.geometry.curveHelp']()}
 			</p>
 		</div>
@@ -164,7 +175,10 @@
 						max={STAGGER_MAX}
 						step="0.1"
 						value={recipe.stagger}
-						oninput={(e) => updateRecipe({ stagger: Number(e.currentTarget.value) })}
+						oninput={(e) => {
+							const parsed = parseOptionalNumber(e.currentTarget.value, STAGGER_MIN, STAGGER_MAX);
+							if (parsed !== undefined) updateRecipe({ stagger: parsed });
+						}}
 						class="w-24 rounded-md border border-input bg-background px-3 py-2 text-sm"
 					/>
 				</div>
@@ -224,7 +238,10 @@
 						max={CURVE_MAX}
 						step={CURVE_STEP}
 						value={selectedOverride?.curve ?? ''}
-						oninput={(e) => writeOverride({ curve: parseOptionalNumber(e.currentTarget.value) })}
+						oninput={(e) =>
+							writeOverride({
+								curve: parseOptionalNumber(e.currentTarget.value, CURVE_MIN, CURVE_MAX)
+							})}
 						class="w-24 rounded-md border border-input bg-background px-3 py-2 text-sm"
 					/>
 				</div>
@@ -237,7 +254,10 @@
 						type="number"
 						step="0.1"
 						value={selectedOverride?.dx ?? ''}
-						oninput={(e) => writeOverride({ dx: parseOptionalNumber(e.currentTarget.value) })}
+						oninput={(e) =>
+							writeOverride({
+								dx: parseOptionalNumber(e.currentTarget.value, -ROW_SHIFT_LIMIT, ROW_SHIFT_LIMIT)
+							})}
 						class="w-24 rounded-md border border-input bg-background px-3 py-2 text-sm"
 					/>
 				</div>
@@ -250,7 +270,10 @@
 						type="number"
 						step="0.1"
 						value={selectedOverride?.dy ?? ''}
-						oninput={(e) => writeOverride({ dy: parseOptionalNumber(e.currentTarget.value) })}
+						oninput={(e) =>
+							writeOverride({
+								dy: parseOptionalNumber(e.currentTarget.value, -ROW_SHIFT_LIMIT, ROW_SHIFT_LIMIT)
+							})}
 						class="w-24 rounded-md border border-input bg-background px-3 py-2 text-sm"
 					/>
 				</div>

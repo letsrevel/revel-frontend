@@ -637,12 +637,21 @@
 		</div>
 	{/if}
 
-	<!-- Grid + row-geometry panel/preview split view. `min-w-0` on the grid
-	     column is required — a flex/grid child without it refuses to shrink
-	     below its content's intrinsic width, which is the recurring
-	     mobile-overflow root cause in this codebase. -->
+	<!-- Grid + row-geometry panel/preview split view. The panel+preview column
+	     comes FIRST in DOM order so the geometry panel is keyboard-reachable
+	     without tabbing through the whole seat grid first; explicit grid
+	     placement pins the visual layout so at `xl:` the grid still reads on
+	     the left and the panel on the right. Below `xl:` (stacked), the panel
+	     sits above the grid — intended, mirrors SeatGridConfig above the grid.
+	     `min-w-0` on the grid column is required — a flex/grid child without it
+	     refuses to shrink below its content's intrinsic width, which is the
+	     recurring mobile-overflow root cause in this codebase. -->
 	<div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
-		<div class="min-w-0">
+		<div class="space-y-4 xl:col-start-2 xl:row-start-1">
+			<SeatGeometryPanel bind:recipe={rowLayout} {rowOptions} unsupported={rowLayoutUnsupported} />
+			<SeatLayoutPreview seats={previewSeats} shape={sectorShape} proposedShape={pendingShape} />
+		</div>
+		<div class="min-w-0 xl:col-start-1 xl:row-start-1">
 			<SeatGrid
 				{seats}
 				{selectedCells}
@@ -657,10 +666,6 @@
 				{activePaint}
 				{priceCategories}
 			/>
-		</div>
-		<div class="space-y-4">
-			<SeatGeometryPanel bind:recipe={rowLayout} {rowOptions} unsupported={rowLayoutUnsupported} />
-			<SeatLayoutPreview seats={previewSeats} shape={sectorShape} proposedShape={pendingShape} />
 		</div>
 	</div>
 
