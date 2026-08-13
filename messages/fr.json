@@ -8612,6 +8612,7 @@
 	"seatGridEditor.geometry.explainer": "Courbe et décale les rangées pour les adapter à la salle réelle. L'aperçu montre exactement ce que les acheteur·euse·s verront.",
 	"seatGridEditor.geometry.curveLabel": "Courbure",
 	"seatGridEditor.geometry.curveHelp": "0 est droit. Une valeur positive courbe les rangées à l'opposé de la scène, comme dans un théâtre.",
+	"seatGridEditor.geometry.curveExactLabel": "Valeur exacte de la courbure",
 	"seatGridEditor.geometry.staggerLabel": "Décaler les rangées alternées",
 	"seatGridEditor.geometry.staggerAmountLabel": "Décalage (largeurs de siège)",
 	"seatGridEditor.geometry.alignLabel": "Alignement des rangées",

@@ -12,8 +12,28 @@ describe('SeatGeometryPanel', () => {
 			unsupported: false
 		});
 		expect(getByLabelText('Curve')).toBeTruthy();
+		expect(getByLabelText('Exact curve value')).toBeTruthy();
 		expect(getByLabelText('Stagger alternate rows')).toBeTruthy();
 		expect(getByLabelText('Row alignment')).toBeTruthy();
+	});
+
+	it('typing an exact curve value updates the slider', async () => {
+		const user = userEvent.setup();
+		const { getByLabelText } = render(SeatGeometryPanel, {
+			recipe: defaultRowLayout(),
+			rowOptions: [],
+			unsupported: false
+		});
+
+		const slider = getByLabelText('Curve') as HTMLInputElement;
+		const exactInput = getByLabelText('Exact curve value') as HTMLInputElement;
+
+		expect(slider.value).toBe('0');
+
+		await user.clear(exactInput);
+		await user.type(exactInput, '12');
+
+		expect(slider.value).toBe('12');
 	});
 
 	// No `.test.svelte.ts` runes-in-test pattern exists in this project (grep

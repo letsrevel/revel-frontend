@@ -8642,6 +8642,7 @@
 	"seatGridEditor.geometry.explainer": "Curva e desloca as filas para as adaptar à sala real. A pré-visualização mostra exatamente o que quem compra vai ver.",
 	"seatGridEditor.geometry.curveLabel": "Curvatura",
 	"seatGridEditor.geometry.curveHelp": "0 é reta. Valores positivos afastam as filas do palco, como num teatro.",
+	"seatGridEditor.geometry.curveExactLabel": "Valor exato da curvatura",
 	"seatGridEditor.geometry.staggerLabel": "Desfasar filas alternadas",
 	"seatGridEditor.geometry.staggerAmountLabel": "Quantidade de desfasamento (larguras de lugar)",
 	"seatGridEditor.geometry.alignLabel": "Alinhamento das filas",

@@ -116,6 +116,22 @@
 					class="w-full max-w-xs"
 				/>
 				<span aria-hidden="true" class="w-10 text-sm tabular-nums">{recipe.curve}</span>
+				<label for="geo-curve-exact" class="sr-only">
+					{m['seatGridEditor.geometry.curveExactLabel']()}
+				</label>
+				<input
+					id="geo-curve-exact"
+					type="number"
+					min={CURVE_MIN}
+					max={CURVE_MAX}
+					step={CURVE_STEP}
+					value={recipe.curve}
+					oninput={(e) => {
+						const parsed = parseOptionalNumber(e.currentTarget.value);
+						if (parsed !== undefined) updateRecipe({ curve: parsed });
+					}}
+					class="w-20 rounded-md border border-input bg-background px-3 py-2 text-sm"
+				/>
 			</div>
 			<p class="mt-1 text-xs text-muted-foreground">
 				{m['seatGridEditor.geometry.curveHelp']()}

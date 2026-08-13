@@ -8642,6 +8642,7 @@
 	"seatGridEditor.geometry.explainer": "Curva e sfalsa le file per adattarle alla sala reale. L'anteprima mostra esattamente cosa vedranno gli acquirenti.",
 	"seatGridEditor.geometry.curveLabel": "Curva",
 	"seatGridEditor.geometry.curveHelp": "0 è dritta. I valori positivi curvano le file lontano dal palco, come in un teatro.",
+	"seatGridEditor.geometry.curveExactLabel": "Valore esatto della curva",
 	"seatGridEditor.geometry.staggerLabel": "Sfalsa le file alterne",
 	"seatGridEditor.geometry.staggerAmountLabel": "Entità dello sfalsamento (larghezze di posto)",
 	"seatGridEditor.geometry.alignLabel": "Allineamento delle file",

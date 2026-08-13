@@ -8642,6 +8642,7 @@
 	"seatGridEditor.geometry.explainer": "Biege und versetze Reihen, um sie an den realen Raum anzupassen. Die Vorschau zeigt genau das, was Käufer*innen sehen werden.",
 	"seatGridEditor.geometry.curveLabel": "Kurve",
 	"seatGridEditor.geometry.curveHelp": "0 ist gerade. Positive Werte biegen die Reihen von der Bühne weg, wie in einem Theater.",
+	"seatGridEditor.geometry.curveExactLabel": "Exakter Kurvenwert",
 	"seatGridEditor.geometry.staggerLabel": "Abwechselnde Reihen versetzen",
 	"seatGridEditor.geometry.staggerAmountLabel": "Versatzbetrag (Sitzbreiten)",
 	"seatGridEditor.geometry.alignLabel": "Reihenausrichtung",

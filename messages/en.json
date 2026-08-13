@@ -8642,6 +8642,7 @@
 	"seatGridEditor.geometry.explainer": "Bend and offset rows to match the physical room. The preview shows exactly what buyers will see.",
 	"seatGridEditor.geometry.curveLabel": "Curve",
 	"seatGridEditor.geometry.curveHelp": "0 is straight. Positive bends rows away from the stage, like a theater.",
+	"seatGridEditor.geometry.curveExactLabel": "Exact curve value",
 	"seatGridEditor.geometry.staggerLabel": "Stagger alternate rows",
 	"seatGridEditor.geometry.staggerAmountLabel": "Stagger amount (seat widths)",
 	"seatGridEditor.geometry.alignLabel": "Row alignment",
