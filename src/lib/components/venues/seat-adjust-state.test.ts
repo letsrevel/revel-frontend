@@ -14,6 +14,7 @@ import {
 	clearNudge,
 	findNudge,
 	growColumns,
+	mirrorRowRanks,
 	nearestRowIndex,
 	nextColumnInRow,
 	normalizeRotationInput,
@@ -380,5 +381,92 @@ describe('SeatDragController', () => {
 		expect(state.drag).toBeNull();
 		expect(drag.finish(pointer(40, 40))).toBe(false);
 		expect(commits).toEqual([]);
+	});
+});
+
+describe('mirrorRowRanks — the row-order toggle (seat follows seat)', () => {
+	it('flips every nudge rank so the SAME physical seat keeps its delta', () => {
+		const cells = cellMap(['0-0', '0-1', '1-0', '1-1', '2-0', '2-1']);
+		const bake = (recipe: ReturnType<typeof defaultRowLayout>, invert: boolean) =>
+			bakeSeatPositions({
+				cells,
+				verticalAisles: [],
+				horizontalAisles: [],
+				invertRowOrder: invert,
+				recipe
+			});
+
+		// Rank 0 with rows 0..2 NOT inverted = physical row 0.
+		const upright = upsertNudge(defaultRowLayout(), 0, 1, { dx: 2, rot: 30 });
+		const before = bake(upright, false);
+		expect(before.get('0-1')).toEqual({ x: 3, y: 0 });
+
+		// Inverting re-ranks (row 0 becomes rank 2) but moves nothing physically.
+		const inverted = mirrorRowRanks(upright, 3);
+		expect(inverted.seatNudges).toEqual([{ row: 2, seat: 1, dx: 2, rot: 30 }]);
+		expect(bake(inverted, true).get('0-1')).toEqual({ x: 3, y: 0 });
+		// And every other seat is exactly where it was, too.
+		expect([...bake(inverted, true).entries()]).toEqual([...before.entries()]);
+	});
+
+	it('mirrors rowOverrides in the same motion', () => {
+		const recipe = {
+			...defaultRowLayout(),
+			rowOverrides: [
+				{ row: 0, dx: 1 },
+				{ row: 2, curve: 5 }
+			]
+		};
+		expect(mirrorRowRanks(recipe, 3).rowOverrides).toEqual([
+			{ row: 0, curve: 5 },
+			{ row: 2, dx: 1 }
+		]);
+	});
+
+	it('is its own inverse — toggling back restores the original recipe', () => {
+		const recipe = upsertNudge(defaultRowLayout(), 1, 3, { dy: -1.5 });
+		expect(mirrorRowRanks(mirrorRowRanks(recipe, 4), 4).seatNudges).toEqual(recipe.seatNudges);
+	});
+
+	it('drops entries addressing ranks outside the current row space', () => {
+		let recipe = upsertNudge(defaultRowLayout(), 0, 0, { dx: 1 });
+		recipe = upsertNudge(recipe, 9, 0, { dx: 2 });
+		expect(mirrorRowRanks(recipe, 2).seatNudges).toEqual([{ row: 1, seat: 0, dx: 1 }]);
+	});
+
+	it('handles a single-row (and an empty) sector without producing junk ranks', () => {
+		const single = upsertNudge(defaultRowLayout(), 0, 0, { dx: 1 });
+		expect(mirrorRowRanks(single, 1).seatNudges).toEqual([{ row: 0, seat: 0, dx: 1 }]);
+		expect(mirrorRowRanks(single, 0).seatNudges).toEqual([]);
+	});
+});
+
+describe('SeatDragController — abandoning a gesture', () => {
+	it('cancel() mid-drag leaves nothing to commit', () => {
+		const state = new SeatAdjustState();
+		state.setActive(true);
+		const commits: unknown[] = [];
+		const drag = new SeatDragController(() => state, {
+			cellPx: 48,
+			onCommit: () => commits.push(1)
+		});
+
+		drag.start(0, 0, { clientX: 0, clientY: 0 } as PointerEvent);
+		drag.move({ clientX: 48, clientY: 0 } as PointerEvent);
+		expect(drag.isDragging).toBe(true);
+
+		drag.cancel();
+		expect(drag.isDragging).toBe(false);
+		expect(state.drag).toBeNull();
+		expect(drag.finish({ clientX: 48, clientY: 0, shiftKey: false } as PointerEvent)).toBe(false);
+		expect(commits).toEqual([]);
+	});
+
+	it('leaving the mode drops the live offset', () => {
+		const state = new SeatAdjustState();
+		state.setActive(true);
+		state.drag = { key: '0-0', dx: 10, dy: 10 };
+		state.setActive(false);
+		expect(state.drag).toBeNull();
 	});
 });

@@ -285,3 +285,152 @@ describe('SeatGridEditor — undo/redo', () => {
 		expect(cell('0-4').textContent?.trim()).toBe('A5');
 	});
 });
+
+describe('SeatGridEditor — a removed seat leaves no nudge behind', () => {
+	it('"Remove seat" forgets the nudge, so a seat added back starts at home', async () => {
+		const user = userEvent.setup();
+		const { onPersist } = renderEditor();
+		await tick();
+
+		await user.click(screen.getByTestId('adjust-mode-toggle'));
+		cell('0-2').focus();
+		await user.keyboard('{Shift>}{ArrowRight}{ArrowRight}{/Shift}');
+		await tick();
+		const nudged = cell('0-2').style.left;
+
+		await user.click(cell('0-2'));
+		await user.click(screen.getByRole('button', { name: 'Remove seat' }));
+		await tick();
+
+		// Add it straight back at the same address: it must land on the lattice,
+		// not two half-pitches to the right of it.
+		await user.click(screen.getByLabelText('Add a seat to row A'));
+		await tick();
+		expect(cell('0-2').textContent?.trim()).toBe('A3');
+		expect(cell('0-2').style.left).not.toBe(nudged);
+
+		await save(user);
+		expect(savedRecipe(onPersist)).toBeUndefined();
+	});
+
+	it('"Delete Selected" forgets the nudges of every seat it removes', async () => {
+		const user = userEvent.setup();
+		const { onPersist } = renderEditor();
+		await tick();
+
+		await user.click(screen.getByTestId('adjust-mode-toggle'));
+		cell('1-1').focus();
+		await user.keyboard('{ArrowDown}');
+		await tick();
+
+		// Back to normal mode to use the bulk selection actions.
+		await user.click(screen.getByTestId('adjust-mode-toggle'));
+		await user.click(cell('1-1'));
+		await user.click(screen.getByRole('button', { name: 'Delete Selected' }));
+		await tick();
+		await save(user);
+
+		expect(savedRecipe(onPersist)).toBeUndefined();
+	});
+
+	it('regenerating the grid drops every nudge with it', async () => {
+		const user = userEvent.setup();
+		const { onPersist } = renderEditor();
+		await tick();
+
+		await user.click(screen.getByTestId('adjust-mode-toggle'));
+		cell('0-0').focus();
+		await user.keyboard('{ArrowRight}');
+		await tick();
+
+		await user.click(screen.getByRole('button', { name: 'Empty Grid' }));
+		await tick();
+		await user.click(screen.getByRole('button', { name: 'Fill All' }));
+		await tick();
+		await save(user);
+
+		expect(savedRecipe(onPersist)).toBeUndefined();
+	});
+
+	it('an add-anywhere drop is measured from the seat’s LATTICE home', async () => {
+		const user = userEvent.setup();
+		const { onPersist } = renderEditor();
+		await tick();
+
+		await user.click(screen.getByTestId('adjust-mode-toggle'));
+		// Push A4 far to the right, then delete it — the classic resurrection trap.
+		await user.click(screen.getByLabelText('Add a seat to row A'));
+		await tick();
+		cell('0-3').focus();
+		await user.keyboard('{Shift>}{ArrowRight}{ArrowRight}{ArrowRight}{ArrowRight}{/Shift}');
+		await user.click(screen.getByRole('button', { name: 'Remove seat' }));
+		await tick();
+
+		// Drop a new seat at the same address via add-anywhere. jsdom has no
+		// layout, so the click resolves to the canvas origin: the nudge must be
+		// the (negative) delta from A4's own home — not that minus a stale +2.
+		await user.click(screen.getByTestId('adjust-add-seat-toggle'));
+		await user.click(screen.getByTestId('seat-grid-add-anywhere'));
+		await tick();
+		await save(user);
+
+		const recipe = savedRecipe(onPersist) as { seatNudges: Array<{ dx?: number }> };
+		expect(recipe.seatNudges).toHaveLength(1);
+		// A4's home is x = 3; the click resolved to x = -0.5, so dx = -3.5. A
+		// leftover +2 would have made it -5.5.
+		expect(recipe.seatNudges[0].dx).toBeCloseTo(-3.5, 5);
+	});
+});
+
+describe('SeatGridEditor — row order flips the rank space, not the room', () => {
+	it('a nudged seat keeps its delta when the row order is inverted', async () => {
+		const user = userEvent.setup();
+		const { onPersist } = renderEditor();
+		await tick();
+
+		await user.click(screen.getByTestId('adjust-mode-toggle'));
+		cell('1-0').focus();
+		await user.keyboard('{Shift>}{ArrowRight}{/Shift}');
+		await tick();
+		const nudgedLeft = cell('1-0').style.left;
+		const neighbourLeft = cell('0-0').style.left;
+
+		const rowOrder = screen.getByLabelText('Row Order');
+		await user.selectOptions(rowOrder, 'bottom');
+		await tick();
+
+		// Same physical seat, same physical position — inverting relabels, it
+		// does not move the room.
+		expect(cell('1-0').style.left).toBe(nudgedLeft);
+		expect(cell('0-0').style.left).toBe(neighbourLeft);
+
+		await save(user);
+		// …and the recipe now addresses that seat by its NEW rank (row B was
+		// rank 1 of 2 rows, and is rank 0 once the order is inverted).
+		expect(savedRecipe(onPersist)).toMatchObject({
+			seatNudges: [{ row: 0, seat: 0, dx: 0.5 }]
+		});
+	});
+
+	it('undo after an inversion restores the recipe exactly once', async () => {
+		const user = userEvent.setup();
+		const { onPersist } = renderEditor();
+		await tick();
+
+		await user.click(screen.getByTestId('adjust-mode-toggle'));
+		cell('1-0').focus();
+		await user.keyboard('{Shift>}{ArrowRight}{/Shift}');
+		await tick();
+
+		await user.selectOptions(screen.getByLabelText('Row Order'), 'bottom');
+		await tick();
+		await user.click(screen.getByTestId('seat-grid-undo'));
+		await tick();
+		await save(user);
+
+		// Back to the pre-inversion state: rank 1, not mirrored twice.
+		expect(savedRecipe(onPersist)).toMatchObject({
+			seatNudges: [{ row: 1, seat: 0, dx: 0.5 }]
+		});
+	});
+});

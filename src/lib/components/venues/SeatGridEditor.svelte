@@ -19,6 +19,7 @@
 	import {
 		SeatAdjustState,
 		clearNudge,
+		mirrorRowRanks,
 		findNudge,
 		growColumns,
 		nearestRowIndex,
@@ -214,6 +215,7 @@
 	// Generate empty grid
 	function generateEmptyGrid() {
 		history.commit();
+		forgetAllNudges();
 		seats.clear();
 		selectedCells.clear();
 		verticalAisles.clear();
@@ -224,6 +226,7 @@
 	// Generate full grid (all seats)
 	function generateFullGrid() {
 		history.commit();
+		forgetAllNudges();
 		seats.clear();
 		for (let r = 0; r < rows; r++) {
 			for (let c = 0; c < columns; c++) {
@@ -244,11 +247,18 @@
 	function deleteSelected() {
 		history.commit();
 		const before = geometry.populatedRows;
+		// Addresses must be read while the rows are still populated — ranks are
+		// dense over populated rows, so they shift the moment a row empties.
+		const removed = [...selectedCells].map((key) => {
+			const [row, col] = key.split('-').map(Number);
+			return nudgeAddress(row, col);
+		});
 		for (const key of selectedCells) {
 			seats.delete(key);
 		}
 		selectedCells.clear();
 		dropStaleSelection();
+		forgetNudgesAt(removed);
 		reindexNudges(before);
 	}
 
@@ -368,6 +378,24 @@
 	});
 
 	/**
+	 * Drop the nudges of seats that no longer exist. The bake silently skips a
+	 * nudge that resolves to no baked position, so an orphan LOOKS harmless —
+	 * but it stays in the recipe, comes back to life the moment a seat returns
+	 * at that address, and poisons the "drop it where I clicked" maths, which
+	 * measures the new seat's home from the bake.
+	 */
+	function forgetNudgesAt(addresses: ReadonlyArray<{ rank: number; seat: number }>) {
+		for (const { rank, seat } of addresses) {
+			rowLayout = clearNudge(rowLayout, rank, seat);
+		}
+	}
+
+	/** Wholesale grid regeneration: every nudge is addressed at a dead seat. */
+	function forgetAllNudges() {
+		if (rowLayout.seatNudges.length > 0) rowLayout = { ...rowLayout, seatNudges: [] };
+	}
+
+	/**
 	 * Re-address nudges after the POPULATED row set changed: ranks are dense, so
 	 * a row that gained (or lost) its first seat re-ranks every row behind it.
 	 */
@@ -404,6 +432,9 @@
 		columns = growColumns(columns, col);
 		rows = Math.max(rows, row + 1);
 		reindexNudges(before);
+		// A seat that once lived here may have left a nudge behind; the new seat
+		// starts at its lattice home, not wherever its predecessor was pushed.
+		forgetNudgesAt([nudgeAddress(row, col)]);
 		adjust.select({ row, col });
 		return col;
 	}
@@ -424,6 +455,16 @@
 			dx: snapNudge(point.x - home.x),
 			dy: snapNudge(point.y - home.y)
 		});
+	}
+
+	/**
+	 * The row-order toggle flips the rank space but moves nothing physically, so
+	 * every rank-addressed entry flips with it (seat follows seat) or it would
+	 * re-target its mirror row. Called from the config's own handler, never an
+	 * $effect: an undo restores a recipe that already matches its inversion.
+	 */
+	function handleRowOrderChange() {
+		rowLayout = mirrorRowRanks(rowLayout, geometry.populatedRows.length);
 	}
 
 	/** Inspector writes: typed values are taken at face value, only rounded. */
@@ -453,10 +494,12 @@
 		if (picked === null) return;
 		history.commit();
 		const before = geometry.populatedRows;
+		const removed = nudgeAddress(picked.row, picked.col);
 		const key = getCellKey(picked.row, picked.col);
 		seats.delete(key);
 		selectedCells.delete(key);
 		adjust.select(null);
+		forgetNudgesAt([removed]);
 		reindexNudges(before);
 	}
 
@@ -546,6 +589,7 @@
 		onGenerateEmpty={generateEmptyGrid}
 		onGenerateFull={generateFullGrid}
 		onBeforeEdit={recordEdit}
+		onRowOrderChange={handleRowOrderChange}
 	/>
 
 	<!-- Price category palette (seat painting) -->

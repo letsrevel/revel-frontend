@@ -342,3 +342,82 @@ describe('SeatGrid — adjust mode', () => {
 		expect(harness.edits).toEqual([undefined]);
 	});
 });
+
+describe('SeatGrid — abandoning a drag', () => {
+	function adjustHarness() {
+		const adjust = new SeatAdjustState();
+		adjust.setActive(true);
+		const nudges: unknown[] = [];
+		const edits: Array<string | undefined> = [];
+		const base = props();
+		return {
+			adjust,
+			nudges,
+			edits,
+			seats: base.seats,
+			selectedCells: base.selectedCells,
+			props: {
+				...base,
+				adjust,
+				onNudgeSeat: (...args: unknown[]) => nudges.push(args),
+				onBeforeEdit: (key?: string) => edits.push(key)
+			}
+		};
+	}
+
+	it('leaving the mode mid-drag commits nothing and swallows the trailing click', async () => {
+		const harness = adjustHarness();
+		const { container } = render(SeatGrid, harness.props);
+		const target = container.querySelector<HTMLElement>('[data-cell="0-1"]');
+		if (!target) throw new Error('no cell');
+
+		target.dispatchEvent(
+			new PointerEvent('pointerdown', { bubbles: true, button: 0, clientX: 0, clientY: 0 })
+		);
+		target.dispatchEvent(
+			new PointerEvent('pointermove', { bubbles: true, clientX: 48, clientY: 0 })
+		);
+		await tick();
+		const moved = target.style.left;
+
+		// Escape (the editor's window handler calls exactly this).
+		harness.adjust.setActive(false);
+		await tick();
+
+		// The button snapped back — the drag was abandoned, not committed.
+		expect(container.querySelector<HTMLElement>('[data-cell="0-1"]')?.style.left).not.toBe(moved);
+
+		// The release, and the click the browser synthesizes after it, are inert:
+		// no nudge, no history entry, and no fall-through to the normal-mode
+		// toggle/select branch.
+		target.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, clientX: 48, clientY: 0 }));
+		target.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+		await tick();
+
+		expect(harness.nudges).toEqual([]);
+		expect(harness.edits).toEqual([]);
+		expect(harness.selectedCells.size).toBe(0);
+		expect(harness.seats.get('0-1')?.exists).toBe(true);
+	});
+
+	it('a pointermove after leaving the mode cannot revive the drag', async () => {
+		const harness = adjustHarness();
+		const { container } = render(SeatGrid, harness.props);
+		const target = container.querySelector<HTMLElement>('[data-cell="0-1"]');
+		if (!target) throw new Error('no cell');
+		const home = target.style.left;
+
+		target.dispatchEvent(
+			new PointerEvent('pointerdown', { bubbles: true, button: 0, clientX: 0, clientY: 0 })
+		);
+		harness.adjust.setActive(false);
+		await tick();
+		target.dispatchEvent(
+			new PointerEvent('pointermove', { bubbles: true, clientX: 90, clientY: 0 })
+		);
+		await tick();
+
+		expect(harness.adjust.drag).toBeNull();
+		expect(container.querySelector<HTMLElement>('[data-cell="0-1"]')?.style.left).toBe(home);
+	});
+});

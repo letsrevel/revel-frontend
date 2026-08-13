@@ -15,6 +15,11 @@
 		 * the order of the two input listeners is not ours to decide.
 		 */
 		onBeforeEdit?: (coalesceKey?: string) => void;
+		/**
+		 * Fired AFTER `invertRowOrder` flipped. The rank space every row-addressed
+		 * geometry entry lives in flips with it, so the editor has to mirror them.
+		 */
+		onRowOrderChange?: () => void;
 	}
 
 	let {
@@ -24,7 +29,8 @@
 		invertRowOrder = $bindable(),
 		onGenerateEmpty,
 		onGenerateFull,
-		onBeforeEdit
+		onBeforeEdit,
+		onRowOrderChange
 	}: Props = $props();
 
 	/** Typing through an empty field must not blank the grid size. */
@@ -103,6 +109,7 @@
 				onchange={(e) => {
 					onBeforeEdit?.();
 					invertRowOrder = e.currentTarget.value === 'bottom';
+					onRowOrderChange?.();
 				}}
 				class="rounded-md border border-input bg-background px-3 py-2 text-sm"
 			>

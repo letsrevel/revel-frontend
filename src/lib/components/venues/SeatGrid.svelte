@@ -22,6 +22,7 @@
 	import type { Coordinate2d, PriceCategorySchema } from '$lib/api/generated/types.gen';
 	import type { SeatData } from './seat-grid-types';
 	import { paintTextColor } from './seat-grid-save';
+	import { applyRectangle, rectangleBounds } from './seat-grid-rect';
 	import { aisleShift } from './seat-layout-bake';
 	import {
 		ARROW_NUDGE,
@@ -132,6 +133,21 @@
 		}
 	});
 
+	/**
+	 * A gesture that ends without committing (drag cancelled, or the mode left
+	 * mid-drag) still produces a `click` on the button. Swallow exactly one, or
+	 * an Escape mid-drag would fall through to the NORMAL-mode branch and
+	 * toggle/select the cell the admin was only trying to move.
+	 */
+	let swallowNextClick = false;
+
+	/** Leaving the mode mid-drag must abandon the gesture, not commit it. */
+	$effect(() => {
+		if (adjustActive) return;
+		if (drag.isDragging) swallowNextClick = true;
+		drag.cancel();
+	});
+
 	function handlePointerDown(row: number, col: number, event: PointerEvent) {
 		if (!adjustActive || event.button !== 0) return;
 		if (!seats.get(getCellKey(row, col))?.exists) return;
@@ -141,6 +157,24 @@
 		if (target instanceof HTMLElement && typeof target.setPointerCapture === 'function') {
 			target.setPointerCapture(event.pointerId);
 		}
+	}
+
+	function handlePointerMove(event: PointerEvent) {
+		// Gated on the mode: a pointermove after Escape must not revive the drag.
+		if (adjustActive) drag.move(event);
+	}
+
+	function handlePointerUp(event: PointerEvent) {
+		if (!adjustActive) {
+			handlePointerCancel();
+			return;
+		}
+		if (drag.finish(event)) swallowNextClick = true;
+	}
+
+	function handlePointerCancel() {
+		if (drag.isDragging) swallowNextClick = true;
+		drag.cancel();
 	}
 
 	// Arrow keys are the pointer-free equivalent of a drag: same nudge, same
@@ -204,6 +238,10 @@
 	function handleCellClick(row: number, col: number) {
 		// If we were dragging, the drag handler already processed this
 		if (isSelecting) return;
+		if (swallowNextClick) {
+			swallowNextClick = false;
+			return;
+		}
 
 		// Adjust mode: a click SELECTS the seat for the inspector and never
 		// toggles or paints it — that's the friction the mode exists for.
@@ -285,54 +323,17 @@
 			return;
 		}
 
-		// Calculate selection rectangle
+		// One undo point for the whole gesture, then the shared rectangle rules
+		// (paint / fill / select — see seat-grid-rect.ts).
 		onBeforeEdit?.();
-		const minRow = Math.min(selectionStart.row, selectionEnd.row);
-		const maxRow = Math.max(selectionStart.row, selectionEnd.row);
-		const minCol = Math.min(selectionStart.col, selectionEnd.col);
-		const maxCol = Math.max(selectionStart.col, selectionEnd.col);
-
-		if (activePaint) {
-			// Painting mode: drag paints every existing seat in the rectangle
-			for (let r = minRow; r <= maxRow; r++) {
-				for (let c = minCol; c <= maxCol; c++) {
-					paintCell(getCellKey(r, c));
-				}
-			}
-			isSelecting = false;
-			selectionStart = null;
-			selectionEnd = null;
-			return;
-		}
-
-		// Check if both start and end cells are empty
-		const startKey = getCellKey(selectionStart.row, selectionStart.col);
-		const endKey = getCellKey(selectionEnd.row, selectionEnd.col);
-		const startEmpty = !seats.get(startKey)?.exists;
-		const endEmpty = !seats.get(endKey)?.exists;
-
-		if (startEmpty && endEmpty) {
-			// Fill the selection rectangle with seats
-			for (let r = minRow; r <= maxRow; r++) {
-				for (let c = minCol; c <= maxCol; c++) {
-					seats.set(getCellKey(r, c), {
-						exists: true,
-						is_accessible: false,
-						is_obstructed_view: false
-					});
-				}
-			}
-		} else {
-			// Select all cells in rectangle that have seats (add to existing selection)
-			for (let r = minRow; r <= maxRow; r++) {
-				for (let c = minCol; c <= maxCol; c++) {
-					const key = getCellKey(r, c);
-					if (seats.get(key)?.exists) {
-						selectedCells.add(key);
-					}
-				}
-			}
-		}
+		applyRectangle({
+			seats,
+			selectedCells,
+			start: selectionStart,
+			end: selectionEnd,
+			activePaint,
+			keyFor: getCellKey
+		});
 
 		isSelecting = false;
 		selectionStart = null;
@@ -342,12 +343,7 @@
 	// Check if cell is in current selection rectangle
 	function isInSelectionRect(row: number, col: number): boolean {
 		if (!isSelecting || !selectionStart || !selectionEnd) return false;
-
-		const minRow = Math.min(selectionStart.row, selectionEnd.row);
-		const maxRow = Math.max(selectionStart.row, selectionEnd.row);
-		const minCol = Math.min(selectionStart.col, selectionEnd.col);
-		const maxCol = Math.max(selectionStart.col, selectionEnd.col);
-
+		const { minRow, maxRow, minCol, maxCol } = rectangleBounds(selectionStart, selectionEnd);
 		return row >= minRow && row <= maxRow && col >= minCol && col <= maxCol;
 	}
 
@@ -692,9 +688,9 @@
 							onmouseenter={() => handleMouseMove(r, c)}
 							onclick={() => handleCellClick(r, c)}
 							onpointerdown={(e) => handlePointerDown(r, c, e)}
-							onpointermove={(e) => drag.move(e)}
-							onpointerup={(e) => drag.finish(e)}
-							onpointercancel={() => drag.cancel()}
+							onpointermove={(e) => handlePointerMove(e)}
+							onpointerup={(e) => handlePointerUp(e)}
+							onpointercancel={() => handlePointerCancel()}
 							onkeydown={(e) => handleCellKeydown(r, c, e)}
 							aria-label={`${m['seatGridEditor.seatLabel']({
 								seat: getSeatLabel(r, c),

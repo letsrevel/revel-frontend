@@ -198,6 +198,37 @@ export function remapNudgeRanks(
 }
 
 /**
+ * Mirror every rank-addressed entry after `invertRowOrder` flipped.
+ *
+ * SEMANTICS: **seat follows seat.** Inverting a sector changes labels and
+ * row_order ranks; it never moves the physical room (the bake has no inversion
+ * term at all — see seat-layout-bake's frame contract). So a nudged seat must
+ * keep ITS nudge: rank `r` becomes `maxRank - r` for both `seatNudges` and
+ * `rowOverrides`, which is exactly the transform `buildRowOrderLookup` applies
+ * to the same physical row. Without this, every rank-addressed entry silently
+ * re-targets its mirror row and nudged seats teleport.
+ *
+ * `rowCount` is the number of POPULATED rows (the rank space's size). Entries
+ * outside that space are orphans and get dropped.
+ */
+export function mirrorRowRanks(recipe: RowLayoutRecipe, rowCount: number): RowLayoutRecipe {
+	const maxRank = rowCount - 1;
+	const inRange = (rank: number) => rank >= 0 && rank <= maxRank;
+	return {
+		...recipe,
+		rowOverrides: recipe.rowOverrides
+			.filter((override) => inRange(override.row))
+			.map((override) => ({ ...override, row: maxRank - override.row }))
+			.sort((a, b) => a.row - b.row),
+		seatNudges: sortNudges(
+			recipe.seatNudges
+				.filter((nudge) => inRange(nudge.row))
+				.map((nudge) => ({ ...nudge, row: maxRank - nudge.row }))
+		)
+	};
+}
+
+/**
  * The grid's column count after appending a seat at `col`: the grid grows by
  * exactly the columns needed, never shrinks. Appending past the right edge is
  * legal — the row simply gets one more column than the grid had.
