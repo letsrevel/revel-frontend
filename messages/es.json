@@ -8642,7 +8642,7 @@
 	"seatGridEditor.geometry.explainer": "Curva y desplaza las filas para adaptarlas a la sala real. La vista previa muestra exactamente lo que verá quien compra.",
 	"seatGridEditor.geometry.curveLabel": "Curvatura",
 	"seatGridEditor.geometry.curveHelp": "0 es recta. Los valores positivos alejan las filas del escenario, como en un teatro.",
-	"seatGridEditor.geometry.staggerLabel": "Alternar el desplazamiento de las filas",
+	"seatGridEditor.geometry.staggerLabel": "Desplazar filas alternas",
 	"seatGridEditor.geometry.staggerAmountLabel": "Cantidad de desplazamiento (anchos de asiento)",
 	"seatGridEditor.geometry.alignLabel": "Alineación de las filas",
 	"seatGridEditor.geometry.alignLeft": "Izquierda",
