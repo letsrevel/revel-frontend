@@ -327,8 +327,13 @@
 			invertRowOrder,
 			getRowLabel,
 			getSeatLabel,
-			getXPosition,
-			getYPosition
+			// TEMPORARY equivalence closure — reproduces the editor's aisle-shifted
+			// rendering positions verbatim. A later task (seat-geometry-phase1 #8)
+			// swaps this for the baked-geometry pipeline.
+			getPosition: (rowIndex, colIndex) => ({
+				x: getXPosition(colIndex),
+				y: getYPosition(rowIndex)
+			})
 		});
 
 		onPersist(plan, {

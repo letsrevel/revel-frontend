@@ -33,8 +33,7 @@ function makeInput(
 		invertRowOrder: options.invertRowOrder ?? false,
 		getRowLabel,
 		getSeatLabel,
-		getXPosition: (c) => c,
-		getYPosition: (r) => r
+		getPosition: (r, c) => ({ x: c, y: r })
 	};
 }
 
@@ -200,13 +199,30 @@ describe('buildSeatSavePlan — creates', () => {
 			['0-1', seat()],
 			['0-2', seat()] // sits just past the aisle
 		]);
-		const input = { ...makeInput(cells), getXPosition: (c: number) => (c >= 2 ? c + 1.5 : c) };
+		const input = {
+			...makeInput(cells),
+			getPosition: (r: number, c: number) => ({ x: c >= 2 ? c + 1.5 : c, y: r })
+		};
 
 		const plan = buildSeatSavePlan(input);
 
 		const byLabel = new Map(plan.creates.map((s) => [s.label, s]));
 		expect(byLabel.get('A3')?.adjacency_index).toBe(2);
 		expect(byLabel.get('A3')?.position).toEqual({ x: 3.5, y: 0 });
+	});
+
+	it('persists the position returned by getPosition verbatim (curved values)', () => {
+		const cells = new Map([['0-0', { exists: true, is_accessible: false, is_obstructed_view: false }]]);
+		const plan = buildSeatSavePlan({
+			cells,
+			existingSeats: [],
+			rows: 1,
+			invertRowOrder: false,
+			getRowLabel: () => 'A',
+			getSeatLabel: () => 'A1',
+			getPosition: () => ({ x: 1.234, y: 0.5 })
+		});
+		expect(plan.creates[0].position).toEqual({ x: 1.234, y: 0.5 });
 	});
 
 	it('skips non-existing cells and malformed keys', () => {
