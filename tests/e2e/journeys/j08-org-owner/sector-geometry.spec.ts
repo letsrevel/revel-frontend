@@ -267,4 +267,145 @@ test.describe('J8 sector geometry @p2', () => {
 
 		await close();
 	});
+	// Phase 4 (Task B): "Adjust seats" mode — the friction gate. Only inside it
+	// does a seat drag; the delta becomes ONE seatNudge on the recipe and moves
+	// exactly that seat's baked position. Undo is session-only and window-level.
+	test('adjust mode: keyboard-nudge a seat → save writes seatNudges and the moved position', async ({
+		browser
+	}) => {
+		test.setTimeout(150_000);
+		const { page, api, slug, venueId, sectorId, close } = await openSectorEditor(browser);
+
+		const adjustToggle = page.getByTestId('adjust-mode-toggle');
+		await expect(adjustToggle).toBeVisible({ timeout: 15_000 });
+		await expect(adjustToggle).toHaveAttribute('aria-pressed', 'false');
+
+		const seat = page.locator('[data-cell="0-1"]');
+		const homeLeft = await seat.evaluate((node) => (node as HTMLElement).offsetLeft);
+
+		// Off: a click still toggles the cell (normal editing is untouched). Undo
+		// that immediately so the rest of the test starts from the saved grid.
+		await seat.click();
+		await expect(page.getByTestId('seat-grid-undo')).toBeEnabled();
+		await page.getByTestId('seat-grid-undo').click();
+
+		// On: the same click SELECTS the seat, and the inspector names it.
+		await adjustToggle.click();
+		await expect(adjustToggle).toHaveAttribute('aria-pressed', 'true');
+		await seat.click();
+		await expect(page.getByTestId('adjust-inspector-title')).toContainText('A2');
+
+		// Keyboard nudge (the WCAG path): Shift = half-seat steps.
+		await seat.focus();
+		await page.keyboard.press('Shift+ArrowRight');
+		await expect
+			.poll(async () => seat.evaluate((node) => (node as HTMLElement).offsetLeft), {
+				timeout: 5_000
+			})
+			.toBeGreaterThan(homeLeft);
+		await expect(page.getByLabel('Move sideways (seats)')).toHaveValue('0.5');
+
+		// Undo BEFORE saving reverts the grid to its un-nudged geometry...
+		await page.getByTestId('seat-grid-undo').click();
+		await expect
+			.poll(async () => seat.evaluate((node) => (node as HTMLElement).offsetLeft), {
+				timeout: 5_000
+			})
+			.toBe(homeLeft);
+		// ...and redo puts it back.
+		await page.getByTestId('seat-grid-redo').click();
+		await expect
+			.poll(async () => seat.evaluate((node) => (node as HTMLElement).offsetLeft), {
+				timeout: 5_000
+			})
+			.toBeGreaterThan(homeLeft);
+
+		await page.getByRole('button', { name: 'Save Changes' }).click();
+		await expect(page.getByText('Seats updated successfully')).toBeVisible({ timeout: 15_000 });
+		await expect(page.getByRole('button', { name: 'Save Changes' })).toBeEnabled({
+			timeout: 15_000
+		});
+
+		const sectors = await api.get<
+			Array<{
+				id: string;
+				metadata?: { rowLayout?: { seatNudges?: Array<Record<string, number>> } };
+				seats?: Array<{ label: string; position?: { x: number; y: number } | null }>;
+			}>
+		>(`/api/organization-admin/${slug}/venues/${venueId}/sectors`);
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		const saved = sectors.find((s) => s.id === sectorId)!;
+
+		// ONE nudge, addressed by (row_order rank, adjacency_index) — never two.
+		expect(saved.metadata?.rowLayout?.seatNudges).toEqual([{ row: 0, seat: 1, dx: 0.5 }]);
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		const positions = new Map(saved.seats!.map((s) => [s.label, s.position]));
+		// A2 sits half a seat right of its lattice slot; its neighbours did not move.
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		expect(positions.get('A2')!.x).toBeCloseTo(1.5, 5);
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		expect(positions.get('A1')!.x).toBeCloseTo(0, 5);
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		expect(positions.get('A3')!.x).toBeCloseTo(2, 5);
+
+		// The recipe hydrates back into the inspector after a reload.
+		await page.reload();
+		await waitForClientAuth(page);
+		await page.getByTestId('adjust-mode-toggle').click();
+		await page.locator('[data-cell="0-1"]').click();
+		await expect(page.getByLabel('Move sideways (seats)')).toHaveValue('0.5');
+
+		await close();
+	});
+
+	test('adjust mode: drag a seat, and add one to a row', async ({ browser }) => {
+		test.setTimeout(150_000);
+		const { page, api, slug, venueId, sectorId, close } = await openSectorEditor(browser);
+
+		await expect(page.getByTestId('adjust-mode-toggle')).toBeVisible({ timeout: 15_000 });
+		await page.getByTestId('adjust-mode-toggle').click();
+
+		// Drag B2 one full cell to the right (CELL_PX = 48). Scroll first:
+		// `page.mouse` takes VIEWPORT coordinates, so a bounding box below the
+		// fold would put the press somewhere else entirely.
+		const seat = page.locator('[data-cell="1-1"]');
+		await seat.scrollIntoViewIfNeeded();
+		const box = await seat.boundingBox();
+		if (!box) throw new Error('no seat box');
+		await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+		await page.mouse.down();
+		await page.mouse.move(box.x + box.width / 2 + 48, box.y + box.height / 2, { steps: 8 });
+		await page.mouse.up();
+		await expect(page.getByLabel('Move sideways (seats)')).toHaveValue('1');
+
+		// A row's "+" appends a seat at its end — row C had C1..C5, so C6 appears.
+		await page.getByLabel('Add a seat to row C').click();
+		await expect(page.locator('[data-cell="2-5"]')).toHaveText('C6');
+
+		await page.getByRole('button', { name: 'Save Changes' }).click();
+		await expect(page.getByText('Seats updated successfully')).toBeVisible({ timeout: 15_000 });
+		await expect(page.getByRole('button', { name: 'Save Changes' })).toBeEnabled({
+			timeout: 15_000
+		});
+
+		const sectors = await api.get<
+			Array<{
+				id: string;
+				metadata?: { rowLayout?: { seatNudges?: Array<Record<string, number>> } };
+				seats?: Array<{ label: string; position?: { x: number; y: number } | null }>;
+			}>
+		>(`/api/organization-admin/${slug}/venues/${venueId}/sectors`);
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		const saved = sectors.find((s) => s.id === sectorId)!;
+		expect(saved.metadata?.rowLayout?.seatNudges).toEqual([{ row: 1, seat: 1, dx: 1 }]);
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		const positions = new Map(saved.seats!.map((s) => [s.label, s.position]));
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		expect(positions.get('B2')!.x).toBeCloseTo(2, 5);
+		// The appended seat persisted, at the end of its row.
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		expect(positions.get('C6')!.x).toBeCloseTo(5, 5);
+
+		await close();
+	});
 });

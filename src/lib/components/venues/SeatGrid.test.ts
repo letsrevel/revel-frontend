@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { render } from '@testing-library/svelte';
+import userEvent from '@testing-library/user-event';
+import { tick } from 'svelte';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import type { Coordinate2d } from '$lib/api/generated/types.gen';
 import type { SeatData } from './seat-grid-types';
 import { defaultRowLayout, type RowLayoutRecipe } from './row-layout';
 import { bakeSeatPositions } from './seat-layout-bake';
 import { BUTTON_PX, CELL_PX, syntheticCells } from './seat-grid-layout';
+import { SeatAdjustState } from './seat-adjust-state.svelte';
 import SeatGrid from './SeatGrid.svelte';
 
 const ROWS = 3;
@@ -167,5 +170,175 @@ describe('SeatGrid — stage side', () => {
 		// Row A is still drawn at the smallest y; the stage moved to the bottom,
 		// so A is the row FURTHEST from the stage — rank order is unchanged.
 		expect(cellStyle(container, '0-0').top).toBeLessThan(cellStyle(container, '2-0').top);
+	});
+});
+
+describe('SeatGrid — adjust mode', () => {
+	interface AdjustHarness {
+		adjust: SeatAdjustState;
+		nudges: Array<{ row: number; col: number; dx: number; dy: number; coarse: boolean }>;
+		addedRows: number[];
+		addedPoints: Coordinate2d[];
+		edits: Array<string | undefined>;
+	}
+
+	function adjustProps(options: Options & { active?: boolean; addArmed?: boolean } = {}) {
+		const adjust = new SeatAdjustState();
+		if (options.active ?? true) adjust.setActive(true);
+		if (options.addArmed) adjust.setAddArmed(true);
+		const harness: AdjustHarness = {
+			adjust,
+			nudges: [],
+			addedRows: [],
+			addedPoints: [],
+			edits: []
+		};
+		return {
+			props: {
+				...props(options),
+				adjust,
+				onNudgeSeat: (
+					row: number,
+					col: number,
+					delta: { dx: number; dy: number },
+					coarse: boolean
+				) => harness.nudges.push({ row, col, dx: delta.dx, dy: delta.dy, coarse }),
+				onAddSeatToRow: (row: number) => harness.addedRows.push(row),
+				onAddSeatAt: (point: Coordinate2d) => harness.addedPoints.push(point),
+				onBeforeEdit: (key?: string) => harness.edits.push(key)
+			},
+			harness
+		};
+	}
+
+	const cell = (container: HTMLElement, key: string): HTMLElement => {
+		const button = container.querySelector<HTMLElement>(`[data-cell="${key}"]`);
+		if (!button) throw new Error(`no cell ${key}`);
+		return button;
+	};
+
+	it('gates selection: a click only selects a seat while the mode is ON', async () => {
+		const user = userEvent.setup();
+		const off = adjustProps({ active: false });
+		const { container } = render(SeatGrid, off.props);
+		await user.click(cell(container, '1-2'));
+		expect(off.harness.adjust.selected).toBeNull();
+
+		const on = adjustProps();
+		const second = render(SeatGrid, on.props);
+		await user.click(cell(second.container, '1-2'));
+		expect(on.harness.adjust.selected).toEqual({ row: 1, col: 2 });
+	});
+
+	it('a click in adjust mode never toggles or paints the cell', async () => {
+		const user = userEvent.setup();
+		const { props: adjusted, harness } = adjustProps();
+		const { container } = render(SeatGrid, adjusted);
+		await user.click(cell(container, '0-0'));
+		// The cell map is untouched — no seat removed, no history entry.
+		expect(adjusted.seats.get('0-0')?.exists).toBe(true);
+		expect(harness.edits).toEqual([]);
+	});
+
+	it('gates dragging: pointer moves only nudge while the mode is ON', () => {
+		const off = adjustProps({ active: false });
+		const first = render(SeatGrid, off.props);
+		const target = cell(first.container, '0-1');
+		target.dispatchEvent(
+			new PointerEvent('pointerdown', { bubbles: true, button: 0, clientX: 0, clientY: 0 })
+		);
+		target.dispatchEvent(
+			new PointerEvent('pointermove', { bubbles: true, clientX: 48, clientY: 0 })
+		);
+		target.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, clientX: 48, clientY: 0 }));
+		expect(off.harness.nudges).toEqual([]);
+
+		const on = adjustProps();
+		const second = render(SeatGrid, on.props);
+		const draggable = cell(second.container, '0-1');
+		draggable.dispatchEvent(
+			new PointerEvent('pointerdown', { bubbles: true, button: 0, clientX: 0, clientY: 0 })
+		);
+		draggable.dispatchEvent(
+			new PointerEvent('pointermove', { bubbles: true, clientX: 24, clientY: -48 })
+		);
+		draggable.dispatchEvent(
+			new PointerEvent('pointerup', { bubbles: true, clientX: 24, clientY: -48 })
+		);
+		// 24px / 48px per pitch = half a seat right, one full row up.
+		expect(on.harness.nudges).toEqual([{ row: 0, col: 1, dx: 0.5, dy: -1, coarse: false }]);
+		// Exactly ONE undo entry for the whole gesture.
+		expect(on.harness.edits).toEqual([undefined]);
+	});
+
+	it('moves the dragged button live, before anything is committed', async () => {
+		const { props: adjusted } = adjustProps();
+		const { container } = render(SeatGrid, adjusted);
+		const target = cell(container, '0-1');
+		const before = parseFloat(target.style.left);
+		target.dispatchEvent(
+			new PointerEvent('pointerdown', { bubbles: true, button: 0, clientX: 0, clientY: 0 })
+		);
+		target.dispatchEvent(
+			new PointerEvent('pointermove', { bubbles: true, clientX: 30, clientY: 0 })
+		);
+		await tick();
+		expect(parseFloat(cell(container, '0-1').style.left)).toBeCloseTo(before + 30, 5);
+	});
+
+	it('nudges with the arrow keys, coarsely with Shift, and coalesces the burst', async () => {
+		const user = userEvent.setup();
+		const { props: adjusted, harness } = adjustProps();
+		const { container } = render(SeatGrid, adjusted);
+		const target = cell(container, '2-3');
+		target.focus();
+
+		await user.keyboard('{ArrowRight}');
+		await user.keyboard('{Shift>}{ArrowUp}{/Shift}');
+
+		expect(harness.nudges).toEqual([
+			{ row: 2, col: 3, dx: 0.1, dy: 0, coarse: false },
+			{ row: 2, col: 3, dx: 0, dy: -0.5, coarse: true }
+		]);
+		// Selection follows the keyboard, and the burst is coalescible.
+		expect(harness.adjust.selected).toEqual({ row: 2, col: 3 });
+		expect(harness.edits).toEqual(['nudge', 'nudge']);
+	});
+
+	it('ignores arrow keys entirely while the mode is off', async () => {
+		const user = userEvent.setup();
+		const { props: adjusted, harness } = adjustProps({ active: false });
+		const { container } = render(SeatGrid, adjusted);
+		cell(container, '2-3').focus();
+		await user.keyboard('{ArrowRight}');
+		expect(harness.nudges).toEqual([]);
+	});
+
+	it('offers a keyboard-reachable "add seat" button per row, at the row end', async () => {
+		const user = userEvent.setup();
+		const { props: adjusted, harness } = adjustProps();
+		const { container, getByLabelText } = render(SeatGrid, adjusted);
+		expect(container.querySelectorAll('[data-testid="seat-grid-add-to-row"]')).toHaveLength(ROWS);
+
+		const rowB = getByLabelText('Add a seat to row B');
+		expect(rowB.tagName).toBe('BUTTON');
+		await user.click(rowB);
+		expect(harness.addedRows).toEqual([1]);
+		expect(harness.edits).toEqual([undefined]);
+	});
+
+	it('arms "add anywhere" only in adjust mode, and reports the clicked point', async () => {
+		const user = userEvent.setup();
+		const unarmed = render(SeatGrid, adjustProps().props);
+		expect(unarmed.container.querySelector('[data-testid="seat-grid-add-anywhere"]')).toBeNull();
+
+		const { props: adjusted, harness } = adjustProps({ addArmed: true });
+		const { container } = render(SeatGrid, adjusted);
+		const target = container.querySelector<HTMLElement>('[data-testid="seat-grid-add-anywhere"]');
+		if (!target) throw new Error('no add-anywhere target');
+		// jsdom reports a zero-size box, so the click resolves against origin 0.
+		await user.click(target);
+		expect(harness.addedPoints).toHaveLength(1);
+		expect(harness.edits).toEqual([undefined]);
 	});
 });

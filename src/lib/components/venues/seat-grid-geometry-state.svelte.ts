@@ -21,6 +21,7 @@ import { buildRowOrderLookup } from './seat-grid-save';
 import { syntheticCells } from './seat-grid-layout';
 import type { PreviewSeat } from './SeatLayoutPreview.svelte';
 import type { RowOption } from './SeatGeometryPanel.svelte';
+import type { RowCenterline } from './seat-adjust-state.svelte';
 
 export interface SeatGeometrySources {
 	/** The editor's live cell map (stable identity, mutated in place). */
@@ -77,9 +78,9 @@ export class SeatGeometryState {
 		return merged;
 	});
 
-	/** Populated rows, dense-ranked front-to-back, for the override picker. */
-	readonly rowOptions = $derived.by<RowOption[]>(() => {
-		const populated = [
+	/** Physical indices of the rows holding at least one seat, ascending. */
+	readonly populatedRows = $derived.by<number[]>(() =>
+		[
 			// Throwaway dedupe inside a derived — spread immediately, never stored.
 			// eslint-disable-next-line svelte/prefer-svelte-reactivity
 			...new Set(
@@ -87,9 +88,36 @@ export class SeatGeometryState {
 					.filter(([, data]) => data.exists)
 					.map(([key]) => Number(key.split('-')[0]))
 			)
-		];
-		const rankFor = buildRowOrderLookup(populated, this.sources.invertRowOrder());
-		return populated
+		].sort((a, b) => a - b)
+	);
+
+	/**
+	 * Physical row -> row_order rank, the coordinate space `RowOverride.row` and
+	 * `SeatNudge.row` are addressed in (dense over POPULATED rows, front = 0).
+	 */
+	readonly rankForRow = $derived.by<(row: number) => number>(() =>
+		buildRowOrderLookup(this.populatedRows, this.sources.invertRowOrder())
+	);
+
+	/**
+	 * Each populated row's baked baseline y, for "add a seat where I clicked".
+	 * A row's left-most seat is always an arc ENDPOINT, so its y is the row's
+	 * own baseline (curve sags the middle, never the ends).
+	 */
+	readonly rowCenterlines = $derived.by<RowCenterline[]>(() =>
+		this.populatedRows.map((row) => {
+			const first = [...this.sources.cells]
+				.filter(([key, data]) => data.exists && Number(key.split('-')[0]) === row)
+				.map(([key]) => Number(key.split('-')[1]))
+				.sort((a, b) => a - b)[0];
+			return { row, y: this.baked.get(`${row}-${first}`)?.y ?? row };
+		})
+	);
+
+	/** Populated rows, dense-ranked front-to-back, for the override picker. */
+	readonly rowOptions = $derived.by<RowOption[]>(() => {
+		const rankFor = this.rankForRow;
+		return this.populatedRows
 			.map((row) => ({ rank: rankFor(row), label: this.sources.rowLabel(row) }))
 			.sort((a, b) => a.rank - b.rank);
 	});

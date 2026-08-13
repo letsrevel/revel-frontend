@@ -8,6 +8,13 @@
 		invertRowOrder: boolean;
 		onGenerateEmpty: () => void;
 		onGenerateFull: () => void;
+		/**
+		 * Record an undo point BEFORE the write. These controls are written
+		 * explicitly rather than with `bind:` precisely so the history entry is
+		 * guaranteed to be captured before the value changes — with a binding,
+		 * the order of the two input listeners is not ours to decide.
+		 */
+		onBeforeEdit?: (coalesceKey?: string) => void;
 	}
 
 	let {
@@ -16,8 +23,15 @@
 		useLetters = $bindable(),
 		invertRowOrder = $bindable(),
 		onGenerateEmpty,
-		onGenerateFull
+		onGenerateFull,
+		onBeforeEdit
 	}: Props = $props();
+
+	/** Typing through an empty field must not blank the grid size. */
+	function readSize(raw: string, fallback: number): number {
+		const value = Number(raw);
+		return Number.isFinite(value) && value >= 1 ? Math.floor(value) : fallback;
+	}
 </script>
 
 <!-- Grid Configuration -->
@@ -34,7 +48,11 @@
 				type="number"
 				min="1"
 				max="30"
-				bind:value={rows}
+				value={rows}
+				oninput={(e) => {
+					onBeforeEdit?.('grid-size');
+					rows = readSize(e.currentTarget.value, rows);
+				}}
 				class="w-20 rounded-md border border-input bg-background px-3 py-2 text-sm"
 			/>
 		</div>
@@ -48,7 +66,11 @@
 				type="number"
 				min="1"
 				max="30"
-				bind:value={columns}
+				value={columns}
+				oninput={(e) => {
+					onBeforeEdit?.('grid-size');
+					columns = readSize(e.currentTarget.value, columns);
+				}}
 				class="w-20 rounded-md border border-input bg-background px-3 py-2 text-sm"
 			/>
 		</div>
@@ -59,11 +81,15 @@
 			</label>
 			<select
 				id="row-prefix"
-				bind:value={useLetters}
+				value={useLetters ? 'letters' : 'numbers'}
+				onchange={(e) => {
+					onBeforeEdit?.();
+					useLetters = e.currentTarget.value === 'letters';
+				}}
 				class="rounded-md border border-input bg-background px-3 py-2 text-sm"
 			>
-				<option value={true}>A, B, C...</option>
-				<option value={false}>1, 2, 3...</option>
+				<option value="letters">A, B, C...</option>
+				<option value="numbers">1, 2, 3...</option>
 			</select>
 		</div>
 
@@ -73,13 +99,17 @@
 			</label>
 			<select
 				id="row-order"
-				bind:value={invertRowOrder}
+				value={invertRowOrder ? 'bottom' : 'top'}
+				onchange={(e) => {
+					onBeforeEdit?.();
+					invertRowOrder = e.currentTarget.value === 'bottom';
+				}}
 				class="rounded-md border border-input bg-background px-3 py-2 text-sm"
 			>
-				<option value={false}
+				<option value="top"
 					>{m['seatGridEditor.rowOrderTop']({ label: useLetters ? 'A' : '1' })}</option
 				>
-				<option value={true}
+				<option value="bottom"
 					>{m['seatGridEditor.rowOrderBottom']({ label: useLetters ? 'A' : '1' })}</option
 				>
 			</select>

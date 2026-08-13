@@ -24,6 +24,14 @@
 	import { paintTextColor } from './seat-grid-save';
 	import { aisleShift } from './seat-layout-bake';
 	import {
+		ARROW_NUDGE,
+		NUDGE_COARSE_STEP,
+		NUDGE_STEP,
+		SeatDragController,
+		nextColumnInRow,
+		type SeatAdjustState
+	} from './seat-adjust-state.svelte';
+	import {
 		AISLE_ZONE_PX,
 		BUTTON_PX,
 		CELL_PX,
@@ -35,7 +43,10 @@
 		edgePx,
 		gapBand,
 		gapCenter,
-		round
+		markerStyle,
+		round,
+		rowEndAnchor,
+		worldPointFromClick
 	} from './seat-grid-layout';
 
 	interface Props {
@@ -63,6 +74,28 @@
 		activePaint?: { categoryId: string | null } | null;
 		/** Venue price categories, for painted-cell colors and names. */
 		priceCategories?: PriceCategorySchema[];
+		/**
+		 * "Adjust seats" mode. While it is ON, a click SELECTS a seat for the
+		 * inspector and a drag moves it; while it is off (or absent) every
+		 * gesture keeps today's toggle/paint/rectangle semantics untouched.
+		 */
+		adjust?: SeatAdjustState | null;
+		/** Add `delta` (seat pitches) to this seat's own nudge, snapped. */
+		onNudgeSeat?: (
+			row: number,
+			col: number,
+			delta: { dx: number; dy: number },
+			coarse: boolean
+		) => void;
+		/** Append one seat at the end of this row. */
+		onAddSeatToRow?: (row: number) => void;
+		/** Add a seat to the nearest row, nudged onto this world point. */
+		onAddSeatAt?: (point: Coordinate2d) => void;
+		/**
+		 * Record an undo point — called BEFORE each mutation. A `coalesceKey`
+		 * marks a continuous gesture (held arrow key) that should undo in one step.
+		 */
+		onBeforeEdit?: (coalesceKey?: string) => void;
 	}
 
 	const {
@@ -80,8 +113,64 @@
 		shape = null,
 		proposedShape = null,
 		activePaint = null,
-		priceCategories = []
+		priceCategories = [],
+		adjust = null,
+		onNudgeSeat,
+		onAddSeatToRow,
+		onAddSeatAt,
+		onBeforeEdit
 	}: Props = $props();
+
+	const adjustActive = $derived(adjust?.active ?? false);
+	const addArmed = $derived(adjustActive && (adjust?.addArmed ?? false));
+
+	const drag = new SeatDragController(() => adjust, {
+		cellPx: CELL_PX,
+		onCommit: (row, col, delta, coarse) => {
+			onBeforeEdit?.();
+			onNudgeSeat?.(row, col, delta, coarse);
+		}
+	});
+
+	function handlePointerDown(row: number, col: number, event: PointerEvent) {
+		if (!adjustActive || event.button !== 0) return;
+		if (!seats.get(getCellKey(row, col))?.exists) return;
+		adjust?.select({ row, col });
+		drag.start(row, col, event);
+		const target = event.currentTarget;
+		if (target instanceof HTMLElement && typeof target.setPointerCapture === 'function') {
+			target.setPointerCapture(event.pointerId);
+		}
+	}
+
+	// Arrow keys are the pointer-free equivalent of a drag: same nudge, same
+	// snapping, coalesced into one undo entry while a key is held down.
+	function handleCellKeydown(row: number, col: number, event: KeyboardEvent) {
+		if (!adjustActive) return;
+		const direction = ARROW_NUDGE[event.key];
+		if (!direction || !seats.get(getCellKey(row, col))?.exists) return;
+		event.preventDefault();
+		adjust?.select({ row, col });
+		const step = event.shiftKey ? NUDGE_COARSE_STEP : NUDGE_STEP;
+		onBeforeEdit?.('nudge');
+		onNudgeSeat?.(row, col, { dx: direction.dx * step, dy: direction.dy * step }, event.shiftKey);
+	}
+
+	/** One "add seat" button per row, anchored past the row's last seat. */
+	const plusAnchors = $derived.by(() =>
+		Array.from({ length: rows }, (_, row) => ({
+			row,
+			point: rowEndAnchor(positions, row, nextColumnInRow(seats, row))
+		}))
+	);
+
+	// Add-anywhere: a click on free canvas becomes a world point (the per-row
+	// "+" buttons are the precise keyboard path; see worldPointFromClick).
+	function handleCanvasAdd(event: MouseEvent) {
+		if (!addArmed || !(event.currentTarget instanceof HTMLElement)) return;
+		onBeforeEdit?.();
+		onAddSeatAt?.(worldPointFromClick(event.currentTarget.getBoundingClientRect(), event, frame));
+	}
 
 	const categoryById = $derived(
 		new Map(priceCategories.flatMap((c) => (c.id ? [[c.id, c] as const] : [])))
@@ -116,8 +205,17 @@
 		// If we were dragging, the drag handler already processed this
 		if (isSelecting) return;
 
+		// Adjust mode: a click SELECTS the seat for the inspector and never
+		// toggles or paints it — that's the friction the mode exists for.
+		if (adjustActive) {
+			if (seats.get(getCellKey(row, col))?.exists) adjust?.select({ row, col });
+			return;
+		}
+
 		const key = getCellKey(row, col);
 		const seat = seats.get(key);
+		// Every branch below mutates the grid, so record the undo point once here.
+		onBeforeEdit?.();
 
 		if (activePaint) {
 			if (seat?.exists) {
@@ -147,7 +245,7 @@
 
 	// Handle mouse down - start potential drag selection
 	function handleMouseDown(row: number, col: number, event: MouseEvent) {
-		if (event.button !== 0) return;
+		if (event.button !== 0 || adjustActive) return;
 
 		// Store start position for potential drag
 		selectionStart = { row, col };
@@ -158,7 +256,7 @@
 
 	// Handle mouse move - update selection (only start drag if moved to different cell)
 	function handleMouseMove(row: number, col: number) {
-		if (!selectionStart) return;
+		if (!selectionStart || adjustActive) return;
 
 		// Only start drag selection if mouse moved to a different cell
 		if (!isSelecting && (row !== selectionStart.row || col !== selectionStart.col)) {
@@ -188,6 +286,7 @@
 		}
 
 		// Calculate selection rectangle
+		onBeforeEdit?.();
 		const minRow = Math.min(selectionStart.row, selectionEnd.row);
 		const maxRow = Math.max(selectionStart.row, selectionEnd.row);
 		const minCol = Math.min(selectionStart.col, selectionEnd.col);
@@ -254,11 +353,13 @@
 
 	// Aisle mutations (stored as the index the aisle sits AFTER)
 	function toggleVerticalAisle(afterCol: number) {
+		onBeforeEdit?.();
 		if (verticalAisles.has(afterCol)) verticalAisles.delete(afterCol);
 		else verticalAisles.add(afterCol);
 	}
 
 	function toggleHorizontalAisle(afterRow: number) {
+		onBeforeEdit?.();
 		if (horizontalAisles.has(afterRow)) horizontalAisles.delete(afterRow);
 		else horizontalAisles.add(afterRow);
 	}
@@ -273,6 +374,21 @@
 
 		const base =
 			'absolute rounded transition-colors duration-75 flex items-center justify-center text-xs font-medium select-none';
+
+		if (adjustActive) {
+			// Empty cells are inert in this mode (nothing to select or drag), so
+			// they step out of the way entirely: no pointer target — which is what
+			// lets a click on free canvas reach the add-anywhere layer — and,
+			// paired with `disabled` on the button, no tab stop either.
+			if (!hasSeat) {
+				return `${base} pointer-events-none border-2 border-dashed border-muted-foreground/20 text-muted-foreground/30`;
+			}
+			const grabbing = adjust?.drag?.key === key;
+			const picked = adjust?.isSelected(row, col) ?? false;
+			return `${base} touch-none bg-success text-success-foreground z-10 ${
+				grabbing ? 'cursor-grabbing opacity-90 z-30' : 'cursor-grab'
+			} ${picked ? 'ring-2 ring-primary ring-offset-2 z-30' : ''}`;
+		}
 
 		if (isSelected) {
 			return `${base} bg-primary text-primary-foreground ring-2 ring-primary ring-offset-1 z-20`;
@@ -294,8 +410,14 @@
 
 	const verticalAisleList = $derived([...verticalAisles]);
 
+	// The per-row "add seat" buttons sit one slot past each row's last seat, so
+	// they take part in the frame — otherwise a full row's button would be drawn
+	// outside the canvas and clipped.
 	const frame = $derived.by(() =>
-		canvasFrame({ cells: [...positions.values()], polygons: [shape, proposedShape] })
+		canvasFrame({
+			cells: [...positions.values(), ...plusAnchors.map(({ point }) => point)],
+			polygons: [shape, proposedShape]
+		})
 	);
 
 	function pointAt(row: number, col: number): Coordinate2d {
@@ -510,6 +632,40 @@
 					{/if}
 				</svg>
 
+				{#if addArmed}
+					<!-- Add-anywhere target. It sits UNDER the seat buttons (which stay
+					     clickable for selection) and OVER the empty cells, which go
+					     pointer-events-none while armed, so every click on free canvas
+					     lands here with its exact coordinates. Keyboard users get the
+					     precise per-row "+" buttons instead; see handleCanvasAdd. -->
+					<button
+						type="button"
+						data-testid="seat-grid-add-anywhere"
+						class="absolute inset-0 z-0 cursor-crosshair rounded bg-primary/5 ring-1 ring-inset ring-primary/30"
+						aria-label={m['seatGridEditor.adjust.addAnywhereTarget']()}
+						onclick={handleCanvasAdd}
+					></button>
+				{/if}
+
+				{#each plusAnchors as anchor (anchor.row)}
+					<button
+						type="button"
+						data-testid="seat-grid-add-to-row"
+						data-row={anchor.row}
+						class="absolute z-20 flex items-center justify-center rounded-full border border-dashed border-primary/50 bg-card text-primary transition-colors hover:border-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						style={markerStyle(anchor.point, frame, 24)}
+						aria-label={m['seatGridEditor.adjust.addSeatToRow']({
+							row: getRowLabel(anchor.row)
+						})}
+						onclick={() => {
+							onBeforeEdit?.();
+							onAddSeatToRow?.(anchor.row);
+						}}
+					>
+						<Plus class="h-3.5 w-3.5" aria-hidden="true" />
+					</button>
+				{/each}
+
 				{#each Array(rows) as _, r (r)}
 					{#each Array(columns) as _, c (c)}
 						{@const cellKey = getCellKey(r, c)}
@@ -522,10 +678,12 @@
 						<button
 							type="button"
 							data-cell={cellKey}
+							disabled={adjustActive && !seatData?.exists}
 							class={getCellClass(r, c)}
 							style="{cellButtonStyle(
 								pointAt(r, c),
-								frame
+								frame,
+								adjust?.offsetFor(cellKey)
 							)} width: {BUTTON_PX}px; height: {BUTTON_PX}px;{paint && !paintOverridden
 								? ` background-color: ${paint.color}; color: ${paintTextColor(paint.color)};`
 								: ''}"
@@ -533,6 +691,11 @@
 							onmousedown={(e) => handleMouseDown(r, c, e)}
 							onmouseenter={() => handleMouseMove(r, c)}
 							onclick={() => handleCellClick(r, c)}
+							onpointerdown={(e) => handlePointerDown(r, c, e)}
+							onpointermove={(e) => drag.move(e)}
+							onpointerup={(e) => drag.finish(e)}
+							onpointercancel={() => drag.cancel()}
+							onkeydown={(e) => handleCellKeydown(r, c, e)}
 							aria-label={`${m['seatGridEditor.seatLabel']({
 								seat: getSeatLabel(r, c),
 								accessible: seatData?.is_accessible

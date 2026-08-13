@@ -9,30 +9,37 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import { organizationadminvenuesListPriceCategories } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { Accessibility, EyeOff, Paintbrush, Eraser, Tag, TriangleAlert } from '@lucide/svelte';
+	import { Accessibility, EyeOff, Paintbrush, Redo2, Undo2 } from '@lucide/svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import type { SeatData } from './seat-grid-types';
-	import { buildSeatSavePlan, readExistingPaint, type SeatSavePlan } from './seat-grid-save';
+	import { buildSeatSavePlan, deriveAdjacencyIndex, type SeatSavePlan } from './seat-grid-save';
+	import { defaultRowLayout, resolveRowLayoutForSave, type RowLayoutRecipe } from './row-layout';
+	import { cellKeyFor, hydrateGrid, rowLabelFor, seatLabelFor } from './seat-grid-hydrate';
+	import type { AisleMetadata } from './seat-grid-hydrate';
 	import {
-		defaultRowLayout,
-		hasCustomSeatPositions,
-		parseRowLayout,
-		resolveRowLayoutForSave,
-		type RowLayoutRecipe
-	} from './row-layout';
+		SeatAdjustState,
+		clearNudge,
+		findNudge,
+		growColumns,
+		nearestRowIndex,
+		nextColumnInRow,
+		normalizeRotationInput,
+		remapNudgeRanks,
+		roundNudge,
+		snapNudge,
+		upsertNudge,
+		type NudgePatch
+	} from './seat-adjust-state.svelte';
+	import { createEditorHistory, undoRedoIntent } from './seat-grid-history.svelte';
 	import { SeatGeometryState } from './seat-grid-geometry-state.svelte';
 	import { autoFitShape, fitsWithinShape } from './shape-fit';
 	import SeatGridConfig from './SeatGridConfig.svelte';
 	import SeatGrid from './SeatGrid.svelte';
 	import SeatGeometryPanel from './SeatGeometryPanel.svelte';
+	import SeatPaintPalette from './SeatPaintPalette.svelte';
+	import SeatGridLegend from './SeatGridLegend.svelte';
+	import SeatAdjustPanel from './SeatAdjustPanel.svelte';
 	import ShapeFitDialog from './ShapeFitDialog.svelte';
-
-	// Aisle metadata structure stored in sector
-	export interface AisleMetadata {
-		verticalAisles: number[]; // Column indices after which aisles appear
-		horizontalAisles: number[]; // Row indices after which aisles appear
-		invertRowOrder: boolean; // If true, row A is at the bottom
-	}
 
 	/**
 	 * Everything one save persists to sector.metadata (+ shape). `rowLayout:
@@ -104,7 +111,6 @@
 
 	// Active paint chip: null = paint mode off; categoryId null = eraser
 	let activePaint = $state<{ categoryId: string | null } | null>(null);
-	const eraserActive = $derived(activePaint !== null && activePaint.categoryId === null);
 
 	function togglePaint(categoryId: string | null) {
 		activePaint = activePaint && activePaint.categoryId === categoryId ? null : { categoryId };
@@ -113,6 +119,7 @@
 	// Apply the active paint chip to every selected seat
 	function paintSelected() {
 		if (!activePaint) return;
+		history.commit();
 		for (const key of selectedCells) {
 			const seat = seats.get(key);
 			if (seat?.exists) {
@@ -160,168 +167,53 @@
 	// Track if grid has been initialized
 	let initialized = $state(false);
 
-	// Generate row label (A, B, C... or 1, 2, 3...)
+	// Label vocabulary (pure, shared with the save plan and the hydrator).
 	function getRowLabel(index: number): string {
-		if (useLetters) {
-			let label = '';
-			let i = index;
-			do {
-				label = String.fromCharCode(65 + (i % 26)) + label;
-				i = Math.floor(i / 26) - 1;
-			} while (i >= 0);
-			return label;
-		}
-		return String(index + 1);
+		return rowLabelFor(index, useLetters);
 	}
 
-	// Get seat label from row and column
 	function getSeatLabel(rowIndex: number, colIndex: number): string {
-		const rowLabel = getRowLabel(rowIndex);
-		const colLabel = colIndex + 1;
-		// Use separator when both are numbers to avoid confusion (e.g., "1-1" instead of "11")
-		if (!useLetters) {
-			return `${rowLabel}-${colLabel}`;
-		}
-		return `${rowLabel}${colLabel}`;
+		return seatLabelFor(rowIndex, colIndex, useLetters);
 	}
 
-	// Get cell key
 	function getCellKey(row: number, col: number): string {
-		return `${row}-${col}`;
-	}
-
-	// Parse a row label ("A", "AA", or "3") into a zero-based row index; -1 if unparseable
-	function parseRowLabelToIndex(rowLabel: string): number {
-		if (/^\d+$/.test(rowLabel)) {
-			return parseInt(rowLabel, 10) - 1;
-		}
-		if (/^[A-Z]+$/i.test(rowLabel)) {
-			const upper = rowLabel.toUpperCase();
-			let index = 0;
-			for (let i = 0; i < upper.length; i++) {
-				index = index * 26 + (upper.charCodeAt(i) - 64);
-			}
-			return index - 1;
-		}
-		return -1;
+		return cellKeyFor(row, col);
 	}
 
 	// Initialize grid from existing seats and metadata. Guarded by the
 	// `initialized` flag below, and every write here is a plain overwrite
 	// (clear-then-repopulate or direct reassignment) rather than additive.
 	function initializeFromExisting() {
-		seats.clear();
+		const hydrated = hydrateGrid({ existingSeats, sectorMetadata, rows, columns, useLetters });
 
-		// Load aisle metadata if available
-		const aisles = sectorMetadata?.aisles as AisleMetadata | undefined;
-		if (aisles) {
+		seats.clear();
+		for (const [key, data] of hydrated.cells) seats.set(key, data);
+
+		if (hydrated.aisles) {
 			verticalAisles.clear();
 			horizontalAisles.clear();
-			for (const col of aisles.verticalAisles || []) {
-				verticalAisles.add(col);
-			}
-			for (const row of aisles.horizontalAisles || []) {
-				horizontalAisles.add(row);
-			}
-			invertRowOrder = aisles.invertRowOrder ?? false;
+			for (const col of hydrated.aisles.verticalAisles) verticalAisles.add(col);
+			for (const row of hydrated.aisles.horizontalAisles) horizontalAisles.add(row);
+			invertRowOrder = hydrated.aisles.invertRowOrder;
 		}
 
-		// Load the row-geometry recipe if present (admin-only key; absent for
-		// every plain grid).
-		const parsedRowLayout = parseRowLayout(sectorMetadata);
-		if (parsedRowLayout.status === 'ok') {
-			rowLayout = parsedRowLayout.recipe;
-			rowLayoutRaw = parsedRowLayout.raw;
-			rowLayoutUnsupported = false;
-			rowLayoutUnsupportedRaw = undefined;
-			rowLayoutDesynced = false;
-		} else {
-			rowLayout = defaultRowLayout();
-			rowLayoutRaw = undefined;
-			rowLayoutUnsupported = parsedRowLayout.status === 'unsupported';
-			rowLayoutUnsupportedRaw = rowLayoutUnsupported ? sectorMetadata?.rowLayout : undefined;
-			// Only 'absent' can be a desync: an 'unsupported' blob has its own,
-			// more specific banner and its own preservation rule.
-			rowLayoutDesynced =
-				parsedRowLayout.status === 'absent' && hasCustomSeatPositions(existingSeats);
-		}
+		rowLayout = hydrated.rowLayout;
+		rowLayoutRaw = hydrated.rowLayoutRaw;
+		rowLayoutUnsupported = hydrated.rowLayoutUnsupported;
+		rowLayoutUnsupportedRaw = hydrated.rowLayoutUnsupportedRaw;
+		rowLayoutDesynced = hydrated.rowLayoutDesynced;
+		useLetters = hydrated.useLetters;
+		rows = hydrated.rows;
+		columns = hydrated.columns;
 
-		// Try to infer grid size from existing seats
-		let maxRow = 0;
-		let maxCol = 0;
-		let sawNumericRow = false;
-		let sawLetterRow = false;
-
-		for (const seat of existingSeats) {
-			let rowIndex = -1;
-			let colNum = -1;
-			let rowIsNumeric = false;
-
-			// Prefer the explicit row/number fields (row_label, with the transitional
-			// `row` alias as fallback) — labels alone are ambiguous for numeric rows
-			const rowLabel = seat.row_label ?? seat.row;
-			if (rowLabel && seat.number !== null && seat.number !== undefined) {
-				rowIndex = parseRowLabelToIndex(rowLabel);
-				colNum = seat.number - 1;
-				rowIsNumeric = /^\d+$/.test(rowLabel);
-			}
-
-			// Fall back to parsing the label ("A1" letter-row or "1-1" numeric-row style)
-			if (rowIndex < 0 || colNum < 0) {
-				const letterMatch = seat.label.match(/^([A-Z]+)(\d+)$/i);
-				const numericMatch = seat.label.match(/^(\d+)-(\d+)$/);
-				if (letterMatch) {
-					rowIndex = parseRowLabelToIndex(letterMatch[1]);
-					colNum = parseInt(letterMatch[2], 10) - 1;
-					rowIsNumeric = false;
-				} else if (numericMatch) {
-					rowIndex = parseRowLabelToIndex(numericMatch[1]);
-					colNum = parseInt(numericMatch[2], 10) - 1;
-					rowIsNumeric = true;
-				}
-			}
-
-			if (rowIndex < 0 || colNum < 0) continue;
-
-			if (rowIsNumeric) {
-				sawNumericRow = true;
-			} else {
-				sawLetterRow = true;
-			}
-
-			maxRow = Math.max(maxRow, rowIndex);
-			maxCol = Math.max(maxCol, colNum);
-
-			// Store seat with its accessibility flags and painted category from
-			// the backend (price_category_id, BE #734), so existing paint shows on
-			// reload. An undefined (untouched) baseline is never sent on save, so
-			// reloading and re-saving a painted venue cannot unpaint anything.
-			const persistedPaint = readExistingPaint(seat);
-			seats.set(getCellKey(rowIndex, colNum), {
-				exists: true,
-				is_accessible: seat.is_accessible ?? false,
-				is_obstructed_view: seat.is_obstructed_view ?? false,
-				...(persistedPaint !== undefined ? { priceCategoryId: persistedPaint } : {})
-			});
-		}
-
-		// Numeric row labels only round-trip if the label generator stays numeric —
-		// otherwise saving would relabel every seat and bulk-delete the originals
-		if (sawNumericRow && !sawLetterRow) {
-			useLetters = false;
-		}
-
-		// Set grid size to accommodate existing seats
-		if (existingSeats.length > 0) {
-			rows = Math.max(rows, maxRow + 1);
-			columns = Math.max(columns, maxCol + 1);
-		}
-
+		// Hydration is not an edit: nothing before this point is undoable.
+		history.reset();
 		initialized = true;
 	}
 
 	// Generate empty grid
 	function generateEmptyGrid() {
+		history.commit();
 		seats.clear();
 		selectedCells.clear();
 		verticalAisles.clear();
@@ -331,6 +223,7 @@
 
 	// Generate full grid (all seats)
 	function generateFullGrid() {
+		history.commit();
 		seats.clear();
 		for (let r = 0; r < rows; r++) {
 			for (let c = 0; c < columns; c++) {
@@ -349,14 +242,19 @@
 
 	// Delete selected seats
 	function deleteSelected() {
+		history.commit();
+		const before = geometry.populatedRows;
 		for (const key of selectedCells) {
 			seats.delete(key);
 		}
 		selectedCells.clear();
+		dropStaleSelection();
+		reindexNudges(before);
 	}
 
 	// Mark selected seats as accessible
 	function markSelectedAccessible() {
+		history.commit();
 		for (const key of selectedCells) {
 			const seat = seats.get(key);
 			if (seat) {
@@ -367,6 +265,7 @@
 
 	// Mark selected seats as obstructed view
 	function markSelectedObstructed() {
+		history.commit();
 		for (const key of selectedCells) {
 			const seat = seats.get(key);
 			if (seat) {
@@ -395,6 +294,171 @@
 		priceCategories: () => priceCategories,
 		rowLabel: getRowLabel
 	});
+
+	// --- Undo/redo ---------------------------------------------------------
+	// One history over the WHOLE editor state: cells (with paint and
+	// accessibility), aisles, grid size/labels/inversion, and the geometry recipe
+	// including per-seat nudges. Snapshots are restored INTO the live containers,
+	// never over them, so the grid, the geometry state and the save plan keep
+	// their references. Session-only: a reload starts from the saved sector.
+	const history = createEditorHistory({
+		cells: seats,
+		verticalAisles,
+		horizontalAisles,
+		readScalars: () => ({ rows, columns, useLetters, invertRowOrder, recipe: rowLayout }),
+		writeScalars: (scalars) => {
+			rows = scalars.rows;
+			columns = scalars.columns;
+			useLetters = scalars.useLetters;
+			invertRowOrder = scalars.invertRowOrder;
+			rowLayout = scalars.recipe;
+		},
+		afterRestore: dropStaleSelection
+	});
+
+	/** Forget selections pointing at cells the restored state has no seat in. */
+	function dropStaleSelection() {
+		for (const key of [...selectedCells]) {
+			if (!seats.get(key)?.exists) selectedCells.delete(key);
+		}
+		const picked = adjust.selected;
+		if (picked && !seats.get(getCellKey(picked.row, picked.col))?.exists) adjust.select(null);
+	}
+
+	/** `commit`, or `commitDebounced` when the caller names a gesture. */
+	function recordEdit(coalesceKey?: string) {
+		if (coalesceKey === undefined) history.commit();
+		else history.commitDebounced(coalesceKey);
+	}
+
+	function handleWindowKeydown(event: KeyboardEvent) {
+		// Escape leaves adjust mode (but never fights the shape dialog's own).
+		if (event.key === 'Escape' && adjust.active && !shapeDialogOpen) {
+			adjust.setActive(false);
+			return;
+		}
+		const intent = undoRedoIntent(event);
+		if (intent === null) return;
+		event.preventDefault();
+		if (intent === 'undo') history.undo();
+		else history.redo();
+	}
+
+	// --- Adjust seats ------------------------------------------------------
+	const adjust = new SeatAdjustState();
+
+	/**
+	 * A physical cell as the recipe addresses it: row_order RANK (dense over
+	 * populated rows) plus adjacency_index. Never physical (row, col).
+	 */
+	function nudgeAddress(row: number, col: number): { rank: number; seat: number } {
+		return { rank: geometry.rankForRow(row), seat: deriveAdjacencyIndex(col) };
+	}
+
+	const selectedNudge = $derived.by(() => {
+		const picked = adjust.selected;
+		if (picked === null) return null;
+		const { rank, seat } = nudgeAddress(picked.row, picked.col);
+		return findNudge(rowLayout, rank, seat) ?? null;
+	});
+
+	const selectedSeatLabel = $derived.by(() => {
+		const picked = adjust.selected;
+		return picked === null ? null : getSeatLabel(picked.row, picked.col);
+	});
+
+	/**
+	 * Re-address nudges after the POPULATED row set changed: ranks are dense, so
+	 * a row that gained (or lost) its first seat re-ranks every row behind it.
+	 */
+	function reindexNudges(rowsBefore: number[]) {
+		const rowsAfter = geometry.populatedRows;
+		if (rowsBefore.length === rowsAfter.length) return;
+		rowLayout = remapNudgeRanks(rowLayout, rowsBefore, rowsAfter, invertRowOrder);
+	}
+
+	/** Add a drag/arrow delta onto the seat's OWN nudge (replace, never append). */
+	function handleNudgeSeat(
+		row: number,
+		col: number,
+		delta: { dx: number; dy: number },
+		coarse: boolean
+	) {
+		const { rank, seat } = nudgeAddress(row, col);
+		const current = findNudge(rowLayout, rank, seat);
+		rowLayout = upsertNudge(rowLayout, rank, seat, {
+			dx: snapNudge((current?.dx ?? 0) + delta.dx, coarse),
+			dy: snapNudge((current?.dy ?? 0) + delta.dy, coarse)
+		});
+	}
+
+	/** Append one seat at the end of a row, growing the grid if it has to. */
+	function handleAddSeatToRow(row: number): number {
+		const before = geometry.populatedRows;
+		const col = nextColumnInRow(seats, row);
+		seats.set(getCellKey(row, col), {
+			exists: true,
+			is_accessible: false,
+			is_obstructed_view: false
+		});
+		columns = growColumns(columns, col);
+		rows = Math.max(rows, row + 1);
+		reindexNudges(before);
+		adjust.select({ row, col });
+		return col;
+	}
+
+	/**
+	 * Add a seat where the admin clicked: it joins the NEAREST populated row (a
+	 * seat never changes row afterwards — see the panel's note) at that row's
+	 * end, and a nudge carries it from there to the exact drop point.
+	 */
+	function handleAddSeatAt(point: Coordinate2d) {
+		const row = nearestRowIndex(geometry.rowCenterlines, point.y) ?? 0;
+		const col = handleAddSeatToRow(row);
+		// Read the bake AFTER the cell exists: that is the seat's un-nudged home,
+		// so the delta below is exactly what moves it under the pointer.
+		const home = geometry.positionAt(row, col);
+		const { rank, seat } = nudgeAddress(row, col);
+		rowLayout = upsertNudge(rowLayout, rank, seat, {
+			dx: snapNudge(point.x - home.x),
+			dy: snapNudge(point.y - home.y)
+		});
+	}
+
+	/** Inspector writes: typed values are taken at face value, only rounded. */
+	function handleInspectorChange(patch: NudgePatch) {
+		const picked = adjust.selected;
+		if (picked === null) return;
+		history.commitDebounced('inspector');
+		const { rank, seat } = nudgeAddress(picked.row, picked.col);
+		rowLayout = upsertNudge(rowLayout, rank, seat, {
+			...(patch.dx !== undefined ? { dx: roundNudge(patch.dx) } : {}),
+			...(patch.dy !== undefined ? { dy: roundNudge(patch.dy) } : {}),
+			...(patch.rot !== undefined ? { rot: normalizeRotationInput(patch.rot) } : {})
+		});
+	}
+
+	function handleResetSeat() {
+		const picked = adjust.selected;
+		if (picked === null) return;
+		history.commit();
+		const { rank, seat } = nudgeAddress(picked.row, picked.col);
+		rowLayout = clearNudge(rowLayout, rank, seat);
+	}
+
+	/** Same effect as toggling the cell off in normal mode. */
+	function handleRemoveSeat() {
+		const picked = adjust.selected;
+		if (picked === null) return;
+		history.commit();
+		const before = geometry.populatedRows;
+		const key = getCellKey(picked.row, picked.col);
+		seats.delete(key);
+		selectedCells.delete(key);
+		adjust.select(null);
+		reindexNudges(before);
+	}
 
 	// Build the full persistence plan (creates/updates/deletes/paint batches,
 	// with explicit row_order/adjacency_index ranks and baked positions).
@@ -465,7 +529,12 @@
 			initializeFromExisting();
 		}
 	});
+
+	// Release the coalescing timer when the editor goes away.
+	$effect(() => () => history.dispose());
 </script>
+
+<svelte:window onkeydown={handleWindowKeydown} />
 
 <div class="space-y-6">
 	<!-- Grid Configuration -->
@@ -476,87 +545,11 @@
 		bind:invertRowOrder
 		onGenerateEmpty={generateEmptyGrid}
 		onGenerateFull={generateFullGrid}
+		onBeforeEdit={recordEdit}
 	/>
 
 	<!-- Price category palette (seat painting) -->
-	<div class="rounded-lg border bg-card p-4">
-		<div class="mb-1 flex items-center gap-2">
-			<Paintbrush class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-			<h3 class="font-semibold">{m['seatGridEditor.paint.title']()}</h3>
-		</div>
-
-		<!-- What painting achieves — otherwise the palette reads as purely cosmetic. -->
-		<p class="mb-1 text-xs text-muted-foreground">
-			{m['seatGridEditor.paint.explainer']()}
-		</p>
-		<!-- Blast radius BEFORE the paint commits (#674): the editor is opened in
-		     the context of one event, which is exactly what makes the venue-wide,
-		     immediate effect of repainting surprising. -->
-		<p class="mb-3 flex items-start gap-1.5 text-xs text-highlight-foreground dark:text-highlight">
-			<TriangleAlert class="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-			{m['seatGridEditor.paint.venueWideCaution']()}
-		</p>
-
-		{#if priceCategories.length === 0}
-			<p class="text-sm text-muted-foreground">
-				{m['seatGridEditor.paint.noCategories']()}
-			</p>
-			<!-- eslint-disable svelte/no-navigation-without-resolve -- href built with resolve() above, plus a hash fragment -->
-			<a
-				href={manageCategoriesHref}
-				class="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-primary underline-offset-4 hover:underline"
-			>
-				<Tag class="h-4 w-4" aria-hidden="true" />
-				{m['seatGridEditor.paint.manageCategories']()}
-			</a>
-			<!-- eslint-enable svelte/no-navigation-without-resolve -->
-		{:else}
-			<div
-				class="flex flex-wrap items-center gap-2"
-				role="group"
-				aria-label={m['seatGridEditor.paint.paletteLabel']()}
-			>
-				{#each priceCategories as category (category.id)}
-					{@const categoryId = category.id}
-					{#if categoryId}
-						{@const isActive = activePaint?.categoryId === categoryId}
-						<button
-							type="button"
-							onclick={() => togglePaint(categoryId)}
-							aria-pressed={isActive}
-							class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors {isActive
-								? 'border-primary bg-primary/10 ring-2 ring-primary ring-offset-1'
-								: 'border-input hover:bg-accent'}"
-						>
-							<span
-								class="h-3.5 w-3.5 shrink-0 rounded-full border border-black/20"
-								style="background-color: {category.color};"
-								aria-hidden="true"
-							></span>
-							{category.name}
-						</button>
-					{/if}
-				{/each}
-				<button
-					type="button"
-					onclick={() => togglePaint(null)}
-					aria-pressed={eraserActive}
-					class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors {eraserActive
-						? 'border-primary bg-primary/10 ring-2 ring-primary ring-offset-1'
-						: 'border-input hover:bg-accent'}"
-				>
-					<Eraser class="h-3.5 w-3.5" aria-hidden="true" />
-					{m['seatGridEditor.paint.unpainted']()}
-				</button>
-			</div>
-
-			{#if activePaint}
-				<p class="mt-2 text-xs text-muted-foreground" role="status">
-					{m['seatGridEditor.paint.activeHint']()}
-				</p>
-			{/if}
-		{/if}
-	</div>
+	<SeatPaintPalette {priceCategories} {activePaint} {manageCategoriesHref} onToggle={togglePaint} />
 
 	<!-- Selection Actions -->
 	{#if selectedCount > 0}
@@ -626,6 +619,15 @@
 				unsupported={rowLayoutUnsupported}
 				desynced={rowLayoutDesynced}
 				{invertRowOrder}
+				onBeforeEdit={recordEdit}
+			/>
+			<SeatAdjustPanel
+				{adjust}
+				selectedLabel={selectedSeatLabel}
+				nudge={selectedNudge}
+				onNudgeChange={handleInspectorChange}
+				onResetSeat={handleResetSeat}
+				onRemoveSeat={handleRemoveSeat}
 			/>
 		</div>
 		<div class="min-w-0 xl:col-start-1 xl:row-start-1">
@@ -645,60 +647,40 @@
 				proposedShape={pendingShape}
 				{activePaint}
 				{priceCategories}
+				{adjust}
+				onNudgeSeat={handleNudgeSeat}
+				onAddSeatToRow={handleAddSeatToRow}
+				onAddSeatAt={handleAddSeatAt}
+				onBeforeEdit={recordEdit}
 			/>
 		</div>
 	</div>
 
 	<!-- Legend & Stats -->
-	<div class="flex flex-wrap items-center justify-between gap-4 rounded-lg border bg-card p-4">
-		<div class="flex flex-wrap items-center gap-4 text-sm md:gap-6">
-			<div class="flex items-center gap-2">
-				<div class="h-6 w-6 rounded bg-success"></div>
-				<span>{m['seatGridEditor.legendSeat']()}</span>
-			</div>
-			<div class="flex items-center gap-2">
-				<div class="h-6 w-6 rounded border-2 border-muted-foreground/20 bg-muted/20"></div>
-				<span>{m['seatGridEditor.legendEmpty']()}</span>
-			</div>
-			<div class="flex items-center gap-2">
-				<div class="h-6 w-6 rounded bg-primary ring-2 ring-primary ring-offset-1"></div>
-				<span>{m['seatGridEditor.legendSelected']()}</span>
-			</div>
-			<div class="flex items-center gap-2">
-				<div class="h-6 w-6 rounded bg-highlight/25"></div>
-				<span>{m['seatGridEditor.legendAisle']()}</span>
-			</div>
-			<div class="flex items-center gap-2">
-				<Accessibility class="h-4 w-4 text-info" />
-				<span>{m['seatGridEditor.legendAccessible']()}</span>
-			</div>
-			<div class="flex items-center gap-2">
-				<EyeOff class="h-4 w-4 text-highlight-foreground dark:text-highlight" />
-				<span>{m['seatGridEditor.legendObstructed']()}</span>
-			</div>
-			{#if priceCategories.length > 0}
-				<div class="flex items-center gap-2">
-					<div class="flex overflow-hidden rounded" aria-hidden="true">
-						{#each priceCategories.slice(0, 3) as category (category.id)}
-							<div class="h-6 w-2" style="background-color: {category.color};"></div>
-						{/each}
-					</div>
-					<span>
-						{m['seatGridEditor.legendPainted']()}
-					</span>
-				</div>
-			{/if}
-		</div>
+	<SeatGridLegend {priceCategories} {totalSeats} />
 
-		<div class="text-sm text-muted-foreground">
-			{m['seatGridEditor.totalLabel']()}
-			<strong>{totalSeats}</strong>
-			{m['seatGridEditor.totalSeatsSuffix']({ count: totalSeats })}
-		</div>
-	</div>
-
-	<!-- Save Button -->
-	<div class="flex justify-end">
+	<!-- Undo/redo + Save -->
+	<div class="flex flex-wrap items-center justify-end gap-2">
+		<button
+			type="button"
+			onclick={() => history.undo()}
+			disabled={!history.canUndo}
+			data-testid="seat-grid-undo"
+			class="inline-flex items-center gap-1.5 rounded-md border border-input px-4 py-2 text-sm font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50"
+		>
+			<Undo2 class="h-4 w-4" aria-hidden="true" />
+			{m['seatGridEditor.adjust.undo']()}
+		</button>
+		<button
+			type="button"
+			onclick={() => history.redo()}
+			disabled={!history.canRedo}
+			data-testid="seat-grid-redo"
+			class="inline-flex items-center gap-1.5 rounded-md border border-input px-4 py-2 text-sm font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50"
+		>
+			<Redo2 class="h-4 w-4" aria-hidden="true" />
+			{m['seatGridEditor.adjust.redo']()}
+		</button>
 		<button
 			type="button"
 			onclick={handleSave}

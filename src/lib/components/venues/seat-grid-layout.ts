@@ -77,11 +77,65 @@ export function centerPx(value: number, origin: number): number {
 	return (value - origin + 0.5) * CELL_PX;
 }
 
-/** Absolute `left`/`top` for a BUTTON_PX-square button centred on a cell. */
-export function cellButtonStyle(point: Coordinate2d, frame: CanvasFrame): string {
-	const left = centerPx(point.x, frame.originX) - BUTTON_PX / 2;
-	const top = centerPx(point.y, frame.originY) - BUTTON_PX / 2;
+/**
+ * Absolute `left`/`top` for a BUTTON_PX-square button centred on a cell.
+ *
+ * `offset` is a live PIXEL displacement (a seat mid-drag, before its delta is
+ * committed to the recipe) — it moves the button only, never the bake.
+ */
+export function cellButtonStyle(
+	point: Coordinate2d,
+	frame: CanvasFrame,
+	offset: { dx: number; dy: number } = { dx: 0, dy: 0 }
+): string {
+	const left = centerPx(point.x, frame.originX) - BUTTON_PX / 2 + offset.dx;
+	const top = centerPx(point.y, frame.originY) - BUTTON_PX / 2 + offset.dy;
 	return `left: ${round(left)}px; top: ${round(top)}px;`;
+}
+
+/** Absolute `left`/`top` for a small square marker centred on a world point. */
+export function markerStyle(point: Coordinate2d, frame: CanvasFrame, sizePx: number): string {
+	const left = centerPx(point.x, frame.originX) - sizePx / 2;
+	const top = centerPx(point.y, frame.originY) - sizePx / 2;
+	return `left: ${round(left)}px; top: ${round(top)}px; width: ${sizePx}px; height: ${sizePx}px;`;
+}
+
+/** World coordinate whose cell CENTRE sits at `px` on this axis. */
+export function worldFromCenterPx(px: number, origin: number): number {
+	return px / CELL_PX + origin - 0.5;
+}
+
+/**
+ * The world point a click on the canvas lands on. A keyboard activation carries
+ * no coordinates (`detail === 0`) and falls back to the canvas centre.
+ */
+export function worldPointFromClick(
+	box: { left: number; top: number; width: number; height: number },
+	event: { clientX: number; clientY: number; detail: number },
+	frame: CanvasFrame
+): Coordinate2d {
+	const px = event.detail === 0 ? box.width / 2 : event.clientX - box.left;
+	const py = event.detail === 0 ? box.height / 2 : event.clientY - box.top;
+	return {
+		x: worldFromCenterPx(px, frame.originX),
+		y: worldFromCenterPx(py, frame.originY)
+	};
+}
+
+/**
+ * Where a row's "add a seat" affordance sits: the slot `col` would occupy —
+ * from the drawn lattice when it exists, else one pitch past the row's last
+ * drawn cell (a full row's next slot is off the lattice by definition).
+ */
+export function rowEndAnchor(
+	positions: ReadonlyMap<string, Coordinate2d>,
+	row: number,
+	col: number
+): Coordinate2d {
+	const at = positions.get(`${row}-${col}`);
+	if (at) return at;
+	const previous = positions.get(`${row}-${Math.max(0, col - 1)}`);
+	return previous ? { x: previous.x + 1, y: previous.y } : { x: col, y: row };
 }
 
 /**

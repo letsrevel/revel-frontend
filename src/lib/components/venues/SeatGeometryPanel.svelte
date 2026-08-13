@@ -34,6 +34,12 @@
 		 * the stage" flips with it.
 		 */
 		invertRowOrder?: boolean;
+		/**
+		 * Record an undo point BEFORE the write. A `coalesceKey` marks a
+		 * continuous control (slider, typed number), whose whole burst of input
+		 * events must undo in ONE step rather than one per event.
+		 */
+		onBeforeEdit?: (coalesceKey?: string) => void;
 	}
 
 	let {
@@ -41,7 +47,8 @@
 		rowOptions,
 		unsupported,
 		desynced = false,
-		invertRowOrder = false
+		invertRowOrder = false,
+		onBeforeEdit
 	}: Props = $props();
 
 	let selectedRank = $state<number | null>(null);
@@ -57,7 +64,11 @@
 	// nested field) so the component reacts correctly regardless of whether
 	// the caller's own value is itself a deeply-reactive $state object —
 	// reassigning the bindable prop is what actually notifies the binding.
-	function updateRecipe(patch: Partial<Omit<RowLayoutRecipe, 'version' | 'kind'>>) {
+	function updateRecipe(
+		patch: Partial<Omit<RowLayoutRecipe, 'version' | 'kind'>>,
+		coalesceKey?: string
+	) {
+		onBeforeEdit?.(coalesceKey);
 		recipe = { ...recipe, ...patch };
 	}
 
@@ -88,7 +99,7 @@
 			merged.stagger !== undefined ||
 			merged.dx !== undefined ||
 			merged.dy !== undefined;
-		updateRecipe({ rowOverrides: hasContent ? [...rest, merged] : rest });
+		updateRecipe({ rowOverrides: hasContent ? [...rest, merged] : rest }, 'row-override');
 	}
 
 	function clearOverride() {
@@ -99,6 +110,7 @@
 	}
 
 	function resetAll() {
+		onBeforeEdit?.();
 		recipe = defaultRowLayout();
 		selectedRank = null;
 	}
@@ -150,7 +162,7 @@
 					step={CURVE_STEP}
 					value={recipe.curve}
 					aria-describedby="geo-curve-help"
-					oninput={(e) => updateRecipe({ curve: Number(e.currentTarget.value) })}
+					oninput={(e) => updateRecipe({ curve: Number(e.currentTarget.value) }, 'curve')}
 					class="w-full max-w-xs"
 				/>
 				<span aria-hidden="true" class="w-10 text-sm tabular-nums">{recipe.curve}</span>
@@ -167,7 +179,7 @@
 					aria-describedby="geo-curve-help"
 					oninput={(e) => {
 						const parsed = parseOptionalNumber(e.currentTarget.value, CURVE_MIN, CURVE_MAX);
-						if (parsed !== undefined) updateRecipe({ curve: parsed });
+						if (parsed !== undefined) updateRecipe({ curve: parsed }, 'curve');
 					}}
 					class="w-20 rounded-md border border-input bg-background px-3 py-2 text-sm"
 				/>
