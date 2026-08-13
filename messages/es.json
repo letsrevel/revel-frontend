@@ -4246,6 +4246,7 @@
 	"orgAdmin.seats.toast.deleteError": "No se pudieron eliminar los asientos",
 	"orgAdmin.seats.toast.deleted": "Asientos eliminados correctamente",
 	"orgAdmin.seats.toast.metadataError": "No se pudo guardar la configuración de los pasillos",
+	"orgAdmin.seats.toast.shapeError": "No se pudo guardar el contorno del sector",
 	"orgAdmin.seats.toast.saveError": "No se pudieron guardar los asientos",
 	"orgAdmin.seats.toast.saved": "Asientos guardados correctamente",
 	"orgAdmin.seats.toast.updateError": "No se pudieron actualizar los asientos",
@@ -8642,6 +8643,7 @@
 	"seatGridEditor.geometry.explainer": "Curva y desplaza las filas para adaptarlas a la sala real. La vista previa muestra exactamente lo que verá quien compra.",
 	"seatGridEditor.geometry.curveLabel": "Curvatura",
 	"seatGridEditor.geometry.curveHelp": "0 es recta. Los valores positivos alejan las filas del escenario, como en un teatro.",
+	"seatGridEditor.geometry.curveHelpInverted": "0 es recta. El orden de las filas de este sector está invertido, así que los valores positivos acercan las filas al escenario.",
 	"seatGridEditor.geometry.curveExactLabel": "Valor exacto de la curvatura",
 	"seatGridEditor.geometry.staggerLabel": "Desplazar filas alternas",
 	"seatGridEditor.geometry.staggerAmountLabel": "Cantidad de desplazamiento (anchos de asiento)",
@@ -8661,6 +8663,7 @@
 	"seatGridEditor.geometry.previewAria": "Vista previa en vivo de la disposición de asientos",
 	"seatGridEditor.geometry.previewStage": "ESCENARIO",
 	"seatGridEditor.geometry.unsupportedRecipe": "La geometría guardada de este sector usa un formato más reciente. Los controles de abajo empiezan con los valores predeterminados; si los cambias, la geometría guardada se reemplazará al guardar.",
+	"seatGridEditor.geometry.desyncedRecipe": "Los asientos de este sector tienen posiciones personalizadas pero no hay ajustes de geometría guardados. Si guardas desde esta pantalla, las posiciones se reconstruirán a partir de los controles de abajo.",
 	"seatGridEditor.shapeFit.title": "El contorno ya no encaja",
 	"seatGridEditor.shapeFit.body": [
 		{

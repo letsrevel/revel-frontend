@@ -4246,6 +4246,7 @@
 	"orgAdmin.seats.toast.deleteError": "Impossibile eliminare i posti",
 	"orgAdmin.seats.toast.deleted": "Posti eliminati con successo",
 	"orgAdmin.seats.toast.metadataError": "Impossibile salvare la configurazione dei corridoi",
+	"orgAdmin.seats.toast.shapeError": "Impossibile salvare il contorno del settore",
 	"orgAdmin.seats.toast.saveError": "Impossibile salvare i posti",
 	"orgAdmin.seats.toast.saved": "Posti salvati con successo",
 	"orgAdmin.seats.toast.updateError": "Impossibile aggiornare i posti",
@@ -8642,6 +8643,7 @@
 	"seatGridEditor.geometry.explainer": "Curva e sfalsa le file per adattarle alla sala reale. L'anteprima mostra esattamente cosa vedranno gli acquirenti.",
 	"seatGridEditor.geometry.curveLabel": "Curva",
 	"seatGridEditor.geometry.curveHelp": "0 è dritta. I valori positivi curvano le file lontano dal palco, come in un teatro.",
+	"seatGridEditor.geometry.curveHelpInverted": "0 è dritta. L'ordine delle file di questo settore è invertito, quindi i valori positivi curvano le file verso il palco.",
 	"seatGridEditor.geometry.curveExactLabel": "Valore esatto della curva",
 	"seatGridEditor.geometry.staggerLabel": "Sfalsa le file alterne",
 	"seatGridEditor.geometry.staggerAmountLabel": "Entità dello sfalsamento (larghezze di posto)",
@@ -8661,6 +8663,7 @@
 	"seatGridEditor.geometry.previewAria": "Anteprima in tempo reale della disposizione dei posti",
 	"seatGridEditor.geometry.previewStage": "PALCO",
 	"seatGridEditor.geometry.unsupportedRecipe": "La geometria salvata di questo settore usa un formato più recente. I controlli qui sotto partono dai valori predefiniti; se li modifichi, la geometria salvata verrà sostituita al salvataggio.",
+	"seatGridEditor.geometry.desyncedRecipe": "I posti di questo settore hanno posizioni personalizzate ma nessuna impostazione di geometria salvata. Se salvi da questa schermata, le posizioni verranno ricostruite dai controlli qui sotto.",
 	"seatGridEditor.shapeFit.title": "Il contorno non è più adatto",
 	"seatGridEditor.shapeFit.body": [
 		{

@@ -14,6 +14,7 @@
 	} from '$lib/api/generated/sdk.gen';
 	import type {
 		AffectedTierSchema,
+		Coordinate2d,
 		UnsellableZoneTierSchema,
 		PriceCategorySchema,
 		SeatPaintResultSchema,
@@ -177,13 +178,43 @@
 		}
 	}));
 
-	// Sector metadata update mutation (aisles, row-geometry recipe, and shape).
-	// Merge into the existing metadata so we never clobber other keys —
-	// notably the layout designer's `transform` (sector-block placement) and
-	// `floor` stored in the same blob. `rowLayout: undefined` REMOVES the key
-	// (plain grid, byte-identical to today); `shape` follows the
-	// SectorMetadataUpdate contract (omitted ⇒ untouched, `null` ⇒ clear, an
-	// array ⇒ replace) and is a top-level sector field, not metadata.
+	// Shape-only sector write. Issued BEFORE any seat write (see handlePersist):
+	// the backend validates every seat position in `bulk_create_seats` /
+	// `bulk_update_seats` against the CURRENTLY PERSISTED `sector.shape`, so a
+	// save that replaces or clears the outline must land the new outline first
+	// or the seat writes 400 against the outline the admin is replacing.
+	// `update_sector` itself runs no seats-in-shape validation, so the reverse
+	// order is always safe.
+	const updateShapeMutation = createMutation(() => ({
+		mutationFn: async (shape: Coordinate2d[] | null) => {
+			const response = await organizationadminvenuesUpdateSector({
+				path: { slug: organization.slug, venue_id: venueId, sector_id: sectorId },
+				body: { shape },
+				headers: {
+					Authorization: `Bearer ${accessToken}`
+				}
+			});
+
+			if (response.error) {
+				throw new Error('Failed to update sector shape');
+			}
+
+			return response.data;
+		},
+		onSuccess: () => {
+			invalidateSectorViews();
+		},
+		onError: () => {
+			toast.error(m['orgAdmin.seats.toast.shapeError']());
+		}
+	}));
+
+	// Sector metadata update mutation (aisles + row-geometry recipe). Merge into
+	// the existing metadata so we never clobber other keys — notably the layout
+	// designer's `transform` (sector-block placement) and `floor` stored in the
+	// same blob. `rowLayout: undefined` REMOVES the key (plain grid,
+	// byte-identical to today). The shape rides its own, earlier mutation above,
+	// and is deliberately NOT written here a second time.
 	const updateSectorMutation = createMutation(() => ({
 		mutationFn: async (update: SectorMetadataUpdate) => {
 			const existing = (sectorQuery.data?.metadata ?? {}) as Record<string, unknown>;
@@ -192,10 +223,7 @@
 			else metadata.rowLayout = update.rowLayout;
 			const response = await organizationadminvenuesUpdateSector({
 				path: { slug: organization.slug, venue_id: venueId, sector_id: sectorId },
-				body: {
-					metadata,
-					...(update.shape !== undefined ? { shape: update.shape } : {})
-				},
+				body: { metadata },
 				headers: {
 					Authorization: `Bearer ${accessToken}`
 				}
@@ -387,10 +415,29 @@
 	}
 
 	// Orchestrated save: paint preview + live-sales confirmation first (nothing
-	// written yet, so cancelling aborts the WHOLE save cleanly), then bulk
-	// create/update/delete, then paint batches (existing seats only — new
-	// seats carry their paint in the create payload), then sector metadata.
-	// Each mutation surfaces its own toast.
+	// written yet, so cancelling aborts the WHOLE save cleanly), then the
+	// sector SHAPE when the save changes it, then bulk create/update/delete,
+	// then paint batches (existing seats only — new seats carry their paint in
+	// the create payload), then sector metadata. Each mutation surfaces its own
+	// toast, and any failure aborts the rest of the sequence.
+	//
+	// Two ordering rules, both about the backend's seats-in-shape validation:
+	//
+	// 1. SHAPE FIRST. `bulk_create_seats`/`bulk_update_seats` reject any seat
+	//    position outside the *persisted* shape. When the shape-fit dialog
+	//    fires it is precisely because the baked positions violate the CURRENT
+	//    outline, so writing seats before the new outline made Auto-fit and
+	//    Clear 400 every time. `update_sector` validates no seats, and
+	//    `autoFitShape`'s hull contains every baked point by construction, so
+	//    landing the shape first always unblocks the seat writes.
+	// 2. Bulk ops run SEQUENTIALLY, creates → updates → deletes, rather than in
+	//    a Promise.all. Deletes are the only bulk op the backend does NOT
+	//    validate, so in the parallel form a rejected create/update could commit
+	//    alongside a successful delete — seats gone, replacements missing. Last
+	//    and sequential means a failure upstream leaves the deletes unissued.
+	//    The cost is up to two extra round trips on a save that does all three;
+	//    an admin save is not latency-critical, and a partial write here is
+	//    destructive.
 	async function handlePersist(plan: SeatSavePlan, metadata: SectorMetadataUpdate) {
 		// Confirmation step (#674): a repricing on an event that is ON SALE
 		// rewrites the economics of a live on-sale for every event at the venue
@@ -424,17 +471,20 @@
 		}
 
 		try {
-			const bulkOps: Promise<unknown>[] = [];
+			// `shape === undefined` ⇒ the save doesn't touch the outline.
+			if (metadata.shape !== undefined) {
+				await updateShapeMutation.mutateAsync(metadata.shape);
+			}
+
 			if (plan.creates.length > 0) {
-				bulkOps.push(bulkCreateMutation.mutateAsync(plan.creates));
+				await bulkCreateMutation.mutateAsync(plan.creates);
 			}
 			if (plan.updates.length > 0) {
-				bulkOps.push(bulkUpdateMutation.mutateAsync(plan.updates));
+				await bulkUpdateMutation.mutateAsync(plan.updates);
 			}
 			if (plan.deleteLabels.length > 0) {
-				bulkOps.push(bulkDeleteMutation.mutateAsync(plan.deleteLabels));
+				await bulkDeleteMutation.mutateAsync(plan.deleteLabels);
 			}
-			await Promise.all(bulkOps);
 
 			const paintResults: SeatPaintResultSchema[] = [];
 			for (const batch of plan.paintBatches) {
@@ -482,7 +532,8 @@
 	const isLoading = $derived(sectorQuery.isLoading);
 	const error = $derived(sectorQuery.error);
 	const isSaving = $derived(
-		bulkCreateMutation.isPending ||
+		updateShapeMutation.isPending ||
+			bulkCreateMutation.isPending ||
 			bulkDeleteMutation.isPending ||
 			bulkUpdateMutation.isPending ||
 			paintMutation.isPending ||

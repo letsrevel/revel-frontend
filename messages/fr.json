@@ -4216,6 +4216,7 @@
 	"orgAdmin.seats.toast.deleteError": "Échec de la suppression des places",
 	"orgAdmin.seats.toast.deleted": "Places supprimées avec succès",
 	"orgAdmin.seats.toast.metadataError": "Échec de l'enregistrement de la configuration des allées",
+	"orgAdmin.seats.toast.shapeError": "Échec de l'enregistrement du contour du secteur",
 	"orgAdmin.seats.toast.saveError": "Échec de l'enregistrement des places",
 	"orgAdmin.seats.toast.saved": "Places enregistrées avec succès",
 	"orgAdmin.seats.toast.updateError": "Échec de la mise à jour des places",
@@ -8612,6 +8613,7 @@
 	"seatGridEditor.geometry.explainer": "Courbe et décale les rangées pour les adapter à la salle réelle. L'aperçu montre exactement ce que les acheteur·euse·s verront.",
 	"seatGridEditor.geometry.curveLabel": "Courbure",
 	"seatGridEditor.geometry.curveHelp": "0 est droit. Une valeur positive courbe les rangées à l'opposé de la scène, comme dans un théâtre.",
+	"seatGridEditor.geometry.curveHelpInverted": "0 est droit. L'ordre des rangées de ce secteur est inversé : une valeur positive courbe donc les rangées vers la scène.",
 	"seatGridEditor.geometry.curveExactLabel": "Valeur exacte de la courbure",
 	"seatGridEditor.geometry.staggerLabel": "Décaler les rangées alternées",
 	"seatGridEditor.geometry.staggerAmountLabel": "Décalage (largeurs de siège)",
@@ -8631,6 +8633,7 @@
 	"seatGridEditor.geometry.previewAria": "Aperçu en direct du plan des places",
 	"seatGridEditor.geometry.previewStage": "SCÈNE",
 	"seatGridEditor.geometry.unsupportedRecipe": "La géométrie enregistrée de ce secteur utilise un format plus récent. Les réglages ci-dessous partent des valeurs par défaut ; si tu les modifies, la géométrie enregistrée sera remplacée à l'enregistrement.",
+	"seatGridEditor.geometry.desyncedRecipe": "Les sièges de ce secteur ont des positions personnalisées mais aucun réglage de géométrie enregistré. Enregistrer depuis cet écran reconstruira les positions à partir des réglages ci-dessous.",
 	"seatGridEditor.shapeFit.title": "Le contour ne correspond plus",
 	"seatGridEditor.shapeFit.body": [
 		{

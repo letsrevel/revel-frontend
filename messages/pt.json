@@ -4246,6 +4246,7 @@
 	"orgAdmin.seats.toast.deleteError": "Não foi possível eliminar os lugares",
 	"orgAdmin.seats.toast.deleted": "Lugares eliminados com sucesso",
 	"orgAdmin.seats.toast.metadataError": "Não foi possível guardar a configuração dos corredores",
+	"orgAdmin.seats.toast.shapeError": "Não foi possível guardar o contorno do setor",
 	"orgAdmin.seats.toast.saveError": "Não foi possível guardar os lugares",
 	"orgAdmin.seats.toast.saved": "Lugares guardados com sucesso",
 	"orgAdmin.seats.toast.updateError": "Não foi possível atualizar os lugares",
@@ -8642,6 +8643,7 @@
 	"seatGridEditor.geometry.explainer": "Curva e desloca as filas para as adaptar à sala real. A pré-visualização mostra exatamente o que quem compra vai ver.",
 	"seatGridEditor.geometry.curveLabel": "Curvatura",
 	"seatGridEditor.geometry.curveHelp": "0 é reta. Valores positivos afastam as filas do palco, como num teatro.",
+	"seatGridEditor.geometry.curveHelpInverted": "0 é reta. A ordem das filas deste setor está invertida, por isso os valores positivos aproximam as filas do palco.",
 	"seatGridEditor.geometry.curveExactLabel": "Valor exato da curvatura",
 	"seatGridEditor.geometry.staggerLabel": "Desfasar filas alternadas",
 	"seatGridEditor.geometry.staggerAmountLabel": "Quantidade de desfasamento (larguras de lugar)",
@@ -8661,6 +8663,7 @@
 	"seatGridEditor.geometry.previewAria": "Pré-visualização em direto da disposição dos lugares",
 	"seatGridEditor.geometry.previewStage": "PALCO",
 	"seatGridEditor.geometry.unsupportedRecipe": "A geometria guardada deste setor usa um formato mais recente. Os controlos abaixo partem dos valores predefinidos; se os alterares, a geometria guardada será substituída ao gravar.",
+	"seatGridEditor.geometry.desyncedRecipe": "Os lugares deste setor têm posições personalizadas mas não há definições de geometria guardadas. Se gravares neste ecrã, as posições serão reconstruídas a partir dos controlos abaixo.",
 	"seatGridEditor.shapeFit.title": "O contorno já não encaixa",
 	"seatGridEditor.shapeFit.body": [
 		{

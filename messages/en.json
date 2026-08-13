@@ -4246,6 +4246,7 @@
 	"orgAdmin.seats.toast.deleteError": "Failed to delete seats",
 	"orgAdmin.seats.toast.deleted": "Seats deleted successfully",
 	"orgAdmin.seats.toast.metadataError": "Failed to save aisle configuration",
+	"orgAdmin.seats.toast.shapeError": "Failed to save the sector outline",
 	"orgAdmin.seats.toast.saveError": "Failed to save seats",
 	"orgAdmin.seats.toast.saved": "Seats saved successfully",
 	"orgAdmin.seats.toast.updateError": "Failed to update seats",
@@ -8642,6 +8643,7 @@
 	"seatGridEditor.geometry.explainer": "Bend and offset rows to match the physical room. The preview shows exactly what buyers will see.",
 	"seatGridEditor.geometry.curveLabel": "Curve",
 	"seatGridEditor.geometry.curveHelp": "0 is straight. Positive bends rows away from the stage, like a theater.",
+	"seatGridEditor.geometry.curveHelpInverted": "0 is straight. This sector's row order is inverted, so positive bends rows toward the stage.",
 	"seatGridEditor.geometry.curveExactLabel": "Exact curve value",
 	"seatGridEditor.geometry.staggerLabel": "Stagger alternate rows",
 	"seatGridEditor.geometry.staggerAmountLabel": "Stagger amount (seat widths)",
@@ -8661,6 +8663,7 @@
 	"seatGridEditor.geometry.previewAria": "Live preview of the seat layout",
 	"seatGridEditor.geometry.previewStage": "STAGE",
 	"seatGridEditor.geometry.unsupportedRecipe": "This sector's saved geometry uses a newer format. The controls below start from defaults; changing them will replace the saved geometry when you save.",
+	"seatGridEditor.geometry.desyncedRecipe": "This sector's seats have custom positions but no saved geometry settings. Saving from this screen will rebuild positions from the controls below.",
 	"seatGridEditor.shapeFit.title": "Outline no longer fits",
 	"seatGridEditor.shapeFit.body": [
 		{
