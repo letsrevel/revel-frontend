@@ -14,9 +14,18 @@
 		seats: PreviewSeat[];
 		shape?: Coordinate2d[] | null;
 		proposedShape?: Coordinate2d[] | null;
+		/**
+		 * Mirrors the editor's row inversion. Baked positions NEVER flip under it
+		 * (frozen bake contract), so an inverted sector's front row — rank 0, the
+		 * one next to the stage — is the one with the LARGEST y. The stage bar
+		 * therefore has to move to the bottom edge, or the preview would show the
+		 * front row furthest from the stage and contradict both the seat grid
+		 * (which always draws the stage-adjacent row first) and the curve help.
+		 */
+		invertRowOrder?: boolean;
 	}
 
-	const { seats, shape = null, proposedShape = null }: Props = $props();
+	const { seats, shape = null, proposedShape = null, invertRowOrder = false }: Props = $props();
 
 	const CELL = 24;
 	const SEAT_R = 8;
@@ -48,10 +57,14 @@
 		};
 	});
 
+	// The stage band is extra viewBox room OUTSIDE the seat bounds — above them
+	// for a normal sector, below them for an inverted one (see `invertRowOrder`).
+	// Seat and polygon coordinates are untouched either way: only the band moves.
 	const vbX = $derived(bounds.minX * CELL);
-	const vbY = $derived(bounds.minY * CELL - STAGE_H - STAGE_GAP);
+	const vbY = $derived(bounds.minY * CELL - (invertRowOrder ? 0 : STAGE_H + STAGE_GAP));
 	const vbW = $derived(bounds.width * CELL);
 	const vbH = $derived(bounds.height * CELL + STAGE_H + STAGE_GAP);
+	const stageY = $derived(invertRowOrder ? vbY + vbH - STAGE_H : vbY);
 
 	function cx(x: number): number {
 		return (x + 0.5) * CELL;
@@ -73,15 +86,16 @@
 	>
 		<rect
 			x={vbX + vbW * 0.25}
-			y={vbY}
+			y={stageY}
 			width={vbW * 0.5}
 			height={STAGE_H}
 			rx="7"
+			data-testid="preview-stage"
 			class="fill-muted"
 		/>
 		<text
 			x={vbX + vbW * 0.5}
-			y={vbY + STAGE_H - 4}
+			y={stageY + STAGE_H - 4}
 			text-anchor="middle"
 			class="fill-muted-foreground text-[8px] font-semibold"
 		>

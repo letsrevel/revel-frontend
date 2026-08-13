@@ -101,4 +101,41 @@ describe('SeatGeometryPanel', () => {
 		});
 		expect(getByRole('alert').textContent).toContain('newer format');
 	});
+
+	it('shows the desynced-recipe warning banner without disabling any control', () => {
+		const { getByRole, getByLabelText } = render(SeatGeometryPanel, {
+			recipe: defaultRowLayout(),
+			rowOptions: [],
+			unsupported: false,
+			desynced: true
+		});
+		expect(getByRole('alert').textContent).toContain('custom positions');
+		// Warning only — the admin must still be able to save from this screen.
+		expect((getByLabelText('Curve') as HTMLInputElement).disabled).toBe(false);
+	});
+
+	it('omits the desynced banner by default', () => {
+		const { queryByRole } = render(SeatGeometryPanel, {
+			recipe: defaultRowLayout(),
+			rowOptions: [],
+			unsupported: false
+		});
+		expect(queryByRole('alert')).toBeNull();
+	});
+
+	// Positive curve always displaces rows toward +y; which side of the room
+	// that is depends on the inversion, so the help text has to flip with it.
+	it('flips the curve help text for an inverted sector', () => {
+		const props = { recipe: defaultRowLayout(), rowOptions: [], unsupported: false };
+		const normal = render(SeatGeometryPanel, props);
+		expect(normal.container.querySelector('#geo-curve-help')?.textContent).toContain(
+			'away from the stage'
+		);
+		normal.unmount();
+
+		const inverted = render(SeatGeometryPanel, { ...props, invertRowOrder: true });
+		expect(inverted.container.querySelector('#geo-curve-help')?.textContent).toContain(
+			'toward the stage'
+		);
+	});
 });

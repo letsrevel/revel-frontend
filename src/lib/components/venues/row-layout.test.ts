@@ -1,12 +1,45 @@
 import { describe, expect, it } from 'vitest';
 import {
 	defaultRowLayout,
+	hasCustomSeatPositions,
 	isDefaultRowLayout,
 	parseRowLayout,
 	resolveRowLayoutForSave,
 	serializeRowLayout,
 	CURVE_MAX
 } from './row-layout';
+
+describe('hasCustomSeatPositions', () => {
+	it('is false for an empty sector and for seats with no position', () => {
+		expect(hasCustomSeatPositions([])).toBe(false);
+		expect(hasCustomSeatPositions([{}, { position: null }])).toBe(false);
+	});
+
+	it('is false for a plain grid (whole-unit cell + aisle-shift positions)', () => {
+		expect(
+			hasCustomSeatPositions([
+				{ position: { x: 0, y: 0 } },
+				{ position: { x: 6, y: 2 } },
+				{ position: { x: -1, y: 0 } }
+			])
+		).toBe(false);
+	});
+
+	it('is true when any seat is off the integer lattice', () => {
+		// A curved/staggered bake — the seats-ok/metadata-failed fingerprint.
+		expect(
+			hasCustomSeatPositions([{ position: { x: 0, y: 0 } }, { position: { x: 1.5, y: 0 } }])
+		).toBe(true);
+		expect(hasCustomSeatPositions([{ position: { x: 2, y: 0.437 } }])).toBe(true);
+	});
+
+	it('treats a non-finite coordinate as custom', () => {
+		expect(hasCustomSeatPositions([{ position: { x: Number.NaN, y: 0 } }])).toBe(true);
+		expect(hasCustomSeatPositions([{ position: { x: 0, y: Number.POSITIVE_INFINITY } }])).toBe(
+			true
+		);
+	});
+});
 
 describe('parseRowLayout', () => {
 	it('returns absent when metadata has no rowLayout key', () => {

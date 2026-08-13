@@ -93,6 +93,37 @@ export function parseRowLayout(
 	return { status: 'ok', recipe, raw: record };
 }
 
+/** The only field the desync check reads off a persisted seat. */
+export interface PositionedSeat {
+	position?: { x: number; y: number } | null;
+}
+
+/**
+ * True when any seat carries a position the plain grid generator could not have
+ * produced — i.e. a non-integer x or y. Grid positions are whole cell indices
+ * (plus whole-unit aisle shifts); every curve/stagger/fractional-shift recipe
+ * lands seats off the integer lattice.
+ *
+ * Used to detect the seats-ok/metadata-failed seam: a save whose seat writes
+ * committed but whose sector-metadata write did not leaves curved seats with no
+ * stored recipe, and the panel would silently hydrate to default and re-bake the
+ * room straight on the NEXT save. Pairing this with `parseRowLayout` returning
+ * 'absent' is what warns the admin before that happens.
+ *
+ * Deliberately cheap and one-directional: a recipe made only of integer dx/dy
+ * shifts (or of `align` alone) bakes back onto the lattice and is not detected.
+ * False negatives just mean no banner; there are no false positives from a grid
+ * this editor wrote. NaN/Infinity count as custom — such a seat is not on the
+ * lattice either.
+ */
+export function hasCustomSeatPositions(seats: readonly PositionedSeat[]): boolean {
+	return seats.some(
+		(seat) =>
+			seat.position != null &&
+			(!Number.isInteger(seat.position.x) || !Number.isInteger(seat.position.y))
+	);
+}
+
 export function isDefaultRowLayout(recipe: RowLayoutRecipe): boolean {
 	return (
 		recipe.curve === 0 &&

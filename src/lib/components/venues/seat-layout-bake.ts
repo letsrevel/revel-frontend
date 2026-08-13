@@ -4,9 +4,13 @@
 // passthrough always applies and no consumer ever needs the recipe.
 //
 // Frame contract: same as the legacy grid editor — the grid is physical space
-// with the stage side at y = 0 (top). invertRowOrder affects only ranks and
+// with y growing along the row axis. invertRowOrder affects only ranks and
 // labels, never geometry, so it does not appear in any position formula (it
-// only keys the row overrides, which are addressed by row_order rank).
+// only keys the row overrides, which are addressed by row_order rank). One
+// consequence, which every renderer of these positions has to honour: the stage
+// side is y = 0 for a NORMAL sector, but the MAX-y side for an inverted one
+// (there, rank 0 — the front row — is the highest row index). See
+// SeatLayoutPreview's stage bar and the curve help text.
 import type { Coordinate2d } from '$lib/api/generated/types.gen';
 import type { SeatData } from './seat-grid-types';
 import type { RowLayoutRecipe, RowOverride } from './row-layout';

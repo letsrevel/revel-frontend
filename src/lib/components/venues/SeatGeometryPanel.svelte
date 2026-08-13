@@ -22,9 +22,27 @@
 		recipe: RowLayoutRecipe;
 		rowOptions: RowOption[];
 		unsupported: boolean;
+		/**
+		 * Seats carry custom positions but no saved recipe — the next save will
+		 * rebuild them from these controls. Warning only; saving stays allowed.
+		 */
+		desynced?: boolean;
+		/**
+		 * Mirrors the editor's row inversion. Positive curve always displaces a
+		 * row toward +y; the stage sits at y = 0 for a normal sector and at the
+		 * max-y side for an inverted one, so the help text's "toward"/"away from
+		 * the stage" flips with it.
+		 */
+		invertRowOrder?: boolean;
 	}
 
-	let { recipe = $bindable(), rowOptions, unsupported }: Props = $props();
+	let {
+		recipe = $bindable(),
+		rowOptions,
+		unsupported,
+		desynced = false,
+		invertRowOrder = false
+	}: Props = $props();
 
 	let selectedRank = $state<number | null>(null);
 	const staggerOn = $derived(recipe.stagger !== 0);
@@ -103,6 +121,16 @@
 		</div>
 	{/if}
 
+	{#if desynced}
+		<div
+			role="alert"
+			class="mb-3 flex items-start gap-1.5 text-xs text-highlight-foreground dark:text-highlight"
+		>
+			<TriangleAlert class="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+			{m['seatGridEditor.geometry.desyncedRecipe']()}
+		</div>
+	{/if}
+
 	<p class="mb-4 text-xs text-muted-foreground">
 		{m['seatGridEditor.geometry.explainer']()}
 	</p>
@@ -145,7 +173,9 @@
 				/>
 			</div>
 			<p id="geo-curve-help" class="mt-1 text-xs text-muted-foreground">
-				{m['seatGridEditor.geometry.curveHelp']()}
+				{invertRowOrder
+					? m['seatGridEditor.geometry.curveHelpInverted']()
+					: m['seatGridEditor.geometry.curveHelp']()}
 			</p>
 		</div>
 

@@ -20,6 +20,7 @@
 	} from './seat-grid-save';
 	import {
 		defaultRowLayout,
+		hasCustomSeatPositions,
 		parseRowLayout,
 		resolveRowLayoutForSave,
 		type RowLayoutRecipe
@@ -42,11 +43,12 @@
 	/**
 	 * Everything one save persists to sector.metadata (+ shape). `rowLayout:
 	 * undefined` ⇒ REMOVE the metadata key (plain grid stays byte-identical to
-	 * today); otherwise the value is written verbatim. Typed `unknown` rather
-	 * than `Record<string, unknown>` because an untouched 'unsupported' blob
-	 * (see `resolveRowLayoutForSave`) is passed through byte-for-byte and isn't
-	 * guaranteed to be a plain object — it's whatever a newer build wrote.
-	 * `shape: undefined` ⇒ untouched, `null` ⇒ clear, an array ⇒ replace.
+	 * today); otherwise written verbatim, and typed `unknown` because an
+	 * untouched 'unsupported' blob (see `resolveRowLayoutForSave`) rides through
+	 * byte-for-byte and is whatever a newer build wrote. `shape: undefined` ⇒
+	 * untouched, `null` ⇒ clear, an array ⇒ replace; the page writes it FIRST,
+	 * before any seat write, because the backend validates seat positions
+	 * against the persisted shape (see handlePersist).
 	 */
 	export interface SectorMetadataUpdate {
 		aisles: AisleMetadata;
@@ -151,6 +153,9 @@
 	// an untouched save can write it back verbatim instead of destroying it.
 	// See `resolveRowLayoutForSave`.
 	let rowLayoutUnsupportedRaw = $state<unknown>(undefined);
+	// Seats off the grid lattice with no stored recipe — the fingerprint of a
+	// save whose seat writes landed and whose metadata write didn't. Warn only.
+	let rowLayoutDesynced = $state(false);
 
 	// Shape-fit gate (runs on SAVE only): a baked layout that no longer fits
 	// the sector's drawn outline offers an auto-fit replacement or clearing it.
@@ -208,11 +213,8 @@
 	}
 
 	// Initialize grid from existing seats and metadata. Guarded by the
-	// `initialized` flag below (never called twice for one mount), and every
-	// write here is a plain overwrite (clear-then-repopulate or direct
-	// reassignment) rather than additive, so a hypothetical re-call — e.g. a
-	// future re-mount after save/invalidate — cannot double-apply either the
-	// aisles or the row-layout recipe.
+	// `initialized` flag below, and every write here is a plain overwrite
+	// (clear-then-repopulate or direct reassignment) rather than additive.
 	function initializeFromExisting() {
 		seats.clear();
 
@@ -238,11 +240,16 @@
 			rowLayoutRaw = parsedRowLayout.raw;
 			rowLayoutUnsupported = false;
 			rowLayoutUnsupportedRaw = undefined;
+			rowLayoutDesynced = false;
 		} else {
 			rowLayout = defaultRowLayout();
 			rowLayoutRaw = undefined;
 			rowLayoutUnsupported = parsedRowLayout.status === 'unsupported';
 			rowLayoutUnsupportedRaw = rowLayoutUnsupported ? sectorMetadata?.rowLayout : undefined;
+			// Only 'absent' can be a desync: an 'unsupported' blob has its own,
+			// more specific banner and its own preservation rule.
+			rowLayoutDesynced =
+				parsedRowLayout.status === 'absent' && hasCustomSeatPositions(existingSeats);
 		}
 
 		// Try to infer grid size from existing seats
@@ -383,8 +390,7 @@
 	// aisles + geometry recipe — the single source of truth for both the live
 	// preview and the save payload. Reads every reactive operand unconditionally
 	// (SvelteMap/SvelteSet spreads + invertRowOrder + rowLayout) so a mutation to
-	// any of them retriggers the bake (the TanStack `||`-freeze rule applies here
-	// too: no early return before every operand has been read).
+	// any of them retriggers the bake (no early return before every read).
 	const bakedPositions = $derived.by(() =>
 		bakeSeatPositions({
 			cells: seats,
@@ -438,9 +444,9 @@
 		});
 	}
 
-	// Hand the plan + metadata to the page, which sequences bulk ops -> paint
-	// -> metadata. `shape` follows the SectorMetadataUpdate contract: omitted
-	// key ⇒ untouched, `null` ⇒ clear, an array ⇒ replace.
+	// Hand the plan + metadata to the page, which sequences shape -> bulk ops ->
+	// paint -> metadata. `shape` follows the SectorMetadataUpdate contract:
+	// omitted key ⇒ untouched, `null` ⇒ clear, an array ⇒ replace.
 	function persist(shape: Coordinate2d[] | null | undefined) {
 		onPersist(buildPlan(), {
 			aisles: {
@@ -640,16 +646,26 @@
 	<!-- Grid + row-geometry panel/preview split view. The panel+preview column
 	     comes FIRST in DOM order so the geometry panel is keyboard-reachable
 	     without tabbing through the whole seat grid first; explicit grid
-	     placement pins the visual layout so at `xl:` the grid still reads on
-	     the left and the panel on the right. Below `xl:` (stacked), the panel
-	     sits above the grid — intended, mirrors SeatGridConfig above the grid.
+	     placement keeps the grid left and the panel right at `xl:`. Stacked
+	     below `xl:`, the panel sits above the grid (mirrors SeatGridConfig).
 	     `min-w-0` on the grid column is required — a flex/grid child without it
 	     refuses to shrink below its content's intrinsic width, which is the
 	     recurring mobile-overflow root cause in this codebase. -->
 	<div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
 		<div class="space-y-4 xl:col-start-2 xl:row-start-1">
-			<SeatGeometryPanel bind:recipe={rowLayout} {rowOptions} unsupported={rowLayoutUnsupported} />
-			<SeatLayoutPreview seats={previewSeats} shape={sectorShape} proposedShape={pendingShape} />
+			<SeatGeometryPanel
+				bind:recipe={rowLayout}
+				{rowOptions}
+				unsupported={rowLayoutUnsupported}
+				desynced={rowLayoutDesynced}
+				{invertRowOrder}
+			/>
+			<SeatLayoutPreview
+				seats={previewSeats}
+				shape={sectorShape}
+				proposedShape={pendingShape}
+				{invertRowOrder}
+			/>
 		</div>
 		<div class="min-w-0 xl:col-start-1 xl:row-start-1">
 			<SeatGrid
