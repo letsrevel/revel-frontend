@@ -95,28 +95,31 @@ export function bakeSeatPositions(input: BakeInput): Map<string, Coordinate2d> {
 		if (cols) cols.push(col);
 		else colsByRow.set(row, [col]);
 	}
-	const rows = [...colsByRow.keys()].sort((a, b) => a - b);
+	// Sort rows once and carry each row's (sorted) cols alongside it, so later
+	// steps consume the value captured here instead of re-querying the map
+	// (which TypeScript can't know is still populated for the same keys).
+	const rowEntries = [...colsByRow.entries()]
+		.sort(([a], [b]) => a - b)
+		.map(([row, cols]) => ({ row, cols: cols.sort((a, b) => a - b) }));
+	const rows = rowEntries.map(({ row }) => row);
 	const rankFor = buildRowOrderLookup(rows, input.invertRowOrder);
 	const overrides = new Map<number, RowOverride>(
 		recipe.rowOverrides.map((override) => [override.row, override])
 	);
 
 	// 2. Base x per seat and per-row widths (for alignment).
-	const baseXsByRow = new Map<number, number[]>();
-	let maxWidth = 0;
-	for (const row of rows) {
-		const cols = colsByRow.get(row)!.sort((a, b) => a - b);
-		colsByRow.set(row, cols);
+	const rowGeometry = rowEntries.map(({ row, cols }) => {
 		const baseXs = cols.map((col) => col + aisleShift(input.verticalAisles, col));
-		baseXsByRow.set(row, baseXs);
-		maxWidth = Math.max(maxWidth, baseXs[baseXs.length - 1] - baseXs[0]);
-	}
+		return { row, cols, baseXs };
+	});
+	const maxWidth = rowGeometry.reduce(
+		(max, { baseXs }) => Math.max(max, baseXs[baseXs.length - 1] - baseXs[0]),
+		0
+	);
 
 	// 3. Place each row.
 	const positions = new Map<string, Coordinate2d>();
-	for (const row of rows) {
-		const cols = colsByRow.get(row)!;
-		const baseXs = baseXsByRow.get(row)!;
+	for (const { row, cols, baseXs } of rowGeometry) {
 		const first = baseXs[0];
 		const width = baseXs[baseXs.length - 1] - first;
 		const override = overrides.get(rankFor(row));

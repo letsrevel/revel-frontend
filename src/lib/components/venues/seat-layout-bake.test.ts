@@ -84,6 +84,7 @@ describe('bakeSeatPositions — curve', () => {
 		const positions = bake({ cells: grid(1, 5), recipe: { ...defaultRowLayout(), curve: 10 } });
 		expect(positions.get('0-0')).toEqual({ x: 0, y: 0 });
 		expect(positions.get('0-4')).toEqual({ x: 4, y: 0 });
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const mid = positions.get('0-2')!;
 		expect(mid.y).toBeGreaterThan(0.5); // sags downward (+y = away from stage)
 		expect(mid.y).toBeLessThanOrEqual(10 * CONTROL_SAG_PER_CURVE);
@@ -92,6 +93,7 @@ describe('bakeSeatPositions — curve', () => {
 
 	it('negative curve bows toward the stage', () => {
 		const positions = bake({ cells: grid(1, 5), recipe: { ...defaultRowLayout(), curve: -10 } });
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		expect(positions.get('0-2')!.y).toBeLessThan(-0.5);
 	});
 
@@ -103,7 +105,12 @@ describe('bakeSeatPositions — curve', () => {
 			invertRowOrder: false,
 			recipe: { ...defaultRowLayout(), curve: 20 }
 		});
-		const pts = Array.from({ length: 9 }, (_, i) => positions.get(`0-${i}`)!);
+		const pts = Array.from({ length: 9 }, (_, i) => {
+			const point = positions.get(`0-${i}`);
+			expect(point).toBeDefined();
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			return point!;
+		});
 		const gaps = pts.slice(1).map((p, i) => Math.hypot(p.x - pts[i].x, p.y - pts[i].y));
 		const min = Math.min(...gaps);
 		const max = Math.max(...gaps);

@@ -109,9 +109,13 @@ test.describe('J8 sector geometry @p2', () => {
 				seats?: Array<{ label: string; position?: { x: number; y: number } | null }>;
 			}>
 		>(`/api/organization-admin/${slug}/venues/${venueId}/sectors`);
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const saved = sectors.find((s) => s.id === sectorId)!;
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const positions = new Map(saved.seats!.map((s) => [s.label, s.position]));
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		for (const seat of saved.seats!) expect(seat.position).toBeTruthy();
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		expect(positions.get('A3')!.y).toBeGreaterThan(positions.get('A1')!.y);
 		expect(saved.metadata?.rowLayout?.curve).toBe(12);
 
@@ -151,9 +155,11 @@ test.describe('J8 sector geometry @p2', () => {
 				seats?: Array<{ position?: unknown }>;
 			}>
 		>(`/api/organization-admin/${slug}/venues/${venueId}/sectors`);
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const saved = sectors.find((s) => s.id === sectorId)!;
 		expect(saved.metadata?.rowLayout).toBeUndefined();
 		// Positions ARE baked now (integers) — the gate's death is the feature.
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		for (const seat of saved.seats!) expect(seat.position).toBeTruthy();
 
 		await close();

@@ -62,6 +62,7 @@ describe('autoFitShape', () => {
 			{ x: 3, y: 4.2 },
 			{ x: 1.5, y: 2 }
 		];
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const shape = autoFitShape(points)!;
 		expect(shape.length).toBeGreaterThanOrEqual(3);
 		for (const point of points) expect(pointInPolygon(point, shape)).toBe(true);
@@ -69,6 +70,7 @@ describe('autoFitShape', () => {
 
 	it('handles a single collinear row (degenerate hull) via a padded rectangle', () => {
 		const row = Array.from({ length: 8 }, (_, i) => ({ x: i, y: 2 }));
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const shape = autoFitShape(row)!;
 		expect(shape.length).toBeGreaterThanOrEqual(4);
 		for (const point of row) expect(pointInPolygon(point, shape)).toBe(true);
@@ -83,6 +85,7 @@ describe('autoFitShape', () => {
 			x: i * 0.7,
 			y: Math.sin((i / 19) * Math.PI) * 3
 		}));
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const shape = autoFitShape(arc)!;
 		expect(fitsWithinShape(arc, shape)).toBe(true);
 	});
@@ -106,6 +109,7 @@ describe('autoFitShape', () => {
 			const phi = (i / sampleCount) * 2 * Math.PI;
 			return { x: semiMajor * Math.cos(phi), y: semiMinor * Math.sin(phi) };
 		});
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const shape = autoFitShape(points, 0.75)!;
 		for (const point of points) {
 			expect(pointInPolygon(point, shape)).toBe(true);
