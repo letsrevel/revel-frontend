@@ -12,12 +12,7 @@
 	import { Accessibility, EyeOff, Paintbrush, Eraser, Tag, TriangleAlert } from '@lucide/svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import type { SeatData } from './seat-grid-types';
-	import {
-		buildSeatSavePlan,
-		buildRowOrderLookup,
-		readExistingPaint,
-		type SeatSavePlan
-	} from './seat-grid-save';
+	import { buildSeatSavePlan, readExistingPaint, type SeatSavePlan } from './seat-grid-save';
 	import {
 		defaultRowLayout,
 		hasCustomSeatPositions,
@@ -25,12 +20,11 @@
 		resolveRowLayoutForSave,
 		type RowLayoutRecipe
 	} from './row-layout';
-	import { bakeSeatPositions } from './seat-layout-bake';
+	import { SeatGeometryState } from './seat-grid-geometry-state.svelte';
 	import { autoFitShape, fitsWithinShape } from './shape-fit';
 	import SeatGridConfig from './SeatGridConfig.svelte';
 	import SeatGrid from './SeatGrid.svelte';
-	import SeatGeometryPanel, { type RowOption } from './SeatGeometryPanel.svelte';
-	import SeatLayoutPreview, { type PreviewSeat } from './SeatLayoutPreview.svelte';
+	import SeatGeometryPanel from './SeatGeometryPanel.svelte';
 	import ShapeFitDialog from './ShapeFitDialog.svelte';
 
 	// Aisle metadata structure stored in sector
@@ -386,46 +380,21 @@
 		selectedCells.clear();
 	}
 
-	// Baked per-seat positions (sector-local units) from the current grid +
-	// aisles + geometry recipe — the single source of truth for both the live
-	// preview and the save payload. Reads every reactive operand unconditionally
-	// (SvelteMap/SvelteSet spreads + invertRowOrder + rowLayout) so a mutation to
-	// any of them retriggers the bake (no early return before every read).
-	const bakedPositions = $derived.by(() =>
-		bakeSeatPositions({
-			cells: seats,
-			verticalAisles: [...verticalAisles],
-			horizontalAisles: [...horizontalAisles],
-			invertRowOrder,
-			recipe: rowLayout
-		})
-	);
-
-	// Populated rows, dense-ranked front-to-back — feeds the geometry panel's
-	// per-row override picker.
-	const rowOptions = $derived.by<RowOption[]>(() => {
-		const populated = [
-			...new Set(
-				[...seats].filter(([, data]) => data.exists).map(([key]) => Number(key.split('-')[0]))
-			)
-		];
-		const rankFor = buildRowOrderLookup(populated, invertRowOrder);
-		return populated
-			.map((row) => ({ rank: rankFor(row), label: getRowLabel(row) }))
-			.sort((a, b) => a.rank - b.rank);
+	// All derived geometry (real bake, display lattice, row options, thumbnail
+	// seats) lives in one runes class so this component stays inside its file
+	// cap. The bake is the single source of truth for BOTH the save payload and
+	// the position the grid draws each cell at — the editor is the preview.
+	const geometry = new SeatGeometryState({
+		cells: seats,
+		verticalAisles,
+		horizontalAisles,
+		rows: () => rows,
+		columns: () => columns,
+		invertRowOrder: () => invertRowOrder,
+		recipe: () => rowLayout,
+		priceCategories: () => priceCategories,
+		rowLabel: getRowLabel
 	});
-
-	// Baked seats for the live SVG preview, carrying their paint color so the
-	// preview mirrors the palette.
-	const previewSeats = $derived.by<PreviewSeat[]>(() =>
-		[...seats]
-			.filter(([, data]) => data.exists)
-			.map(([key, data]) => {
-				const position = bakedPositions.get(key) ?? { x: 0, y: 0 };
-				const category = priceCategories.find((c) => c.id === data.priceCategoryId);
-				return { key, x: position.x, y: position.y, categoryColor: category?.color ?? null };
-			})
-	);
 
 	// Build the full persistence plan (creates/updates/deletes/paint batches,
 	// with explicit row_order/adjacency_index ranks and baked positions).
@@ -437,10 +406,7 @@
 			invertRowOrder,
 			getRowLabel,
 			getSeatLabel,
-			getPosition: (rowIndex, colIndex) => {
-				const point = bakedPositions.get(getCellKey(rowIndex, colIndex));
-				return point ?? { x: colIndex, y: rowIndex };
-			}
+			getPosition: (rowIndex, colIndex) => geometry.positionAt(rowIndex, colIndex)
 		});
 	}
 
@@ -469,7 +435,7 @@
 	// the save and offers a regenerated fitted outline or clearing it via
 	// ShapeFitDialog, instead of persisting seats the backend would reject.
 	function handleSave() {
-		const points = [...bakedPositions.values()];
+		const points = [...geometry.baked.values()];
 		if (sectorShape && sectorShape.length >= 3 && !fitsWithinShape(points, sectorShape)) {
 			violatingCount = points.filter((point) => !fitsWithinShape([point], sectorShape)).length;
 			pendingShape = autoFitShape(points);
@@ -643,27 +609,22 @@
 		</div>
 	{/if}
 
-	<!-- Grid + row-geometry panel/preview split view. The panel+preview column
-	     comes FIRST in DOM order so the geometry panel is keyboard-reachable
-	     without tabbing through the whole seat grid first; explicit grid
-	     placement keeps the grid left and the panel right at `xl:`. Stacked
-	     below `xl:`, the panel sits above the grid (mirrors SeatGridConfig).
-	     `min-w-0` on the grid column is required — a flex/grid child without it
-	     refuses to shrink below its content's intrinsic width, which is the
-	     recurring mobile-overflow root cause in this codebase. -->
+	<!-- Grid + row-geometry panel split view. There is no separate preview any
+	     more: the grid IS the preview, drawing every cell at its baked position.
+	     The panel column comes FIRST in DOM order so the geometry controls are
+	     keyboard-reachable without tabbing through the whole seat grid first;
+	     explicit grid placement keeps the grid left and the panel right at `xl:`.
+	     Stacked below `xl:`, the panel sits above the grid (mirrors
+	     SeatGridConfig). `min-w-0` on the grid column is required — a flex/grid
+	     child without it refuses to shrink below its content's intrinsic width,
+	     which is the recurring mobile-overflow root cause in this codebase. -->
 	<div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
 		<div class="space-y-4 xl:col-start-2 xl:row-start-1">
 			<SeatGeometryPanel
 				bind:recipe={rowLayout}
-				{rowOptions}
+				rowOptions={geometry.rowOptions}
 				unsupported={rowLayoutUnsupported}
 				desynced={rowLayoutDesynced}
-				{invertRowOrder}
-			/>
-			<SeatLayoutPreview
-				seats={previewSeats}
-				shape={sectorShape}
-				proposedShape={pendingShape}
 				{invertRowOrder}
 			/>
 		</div>
@@ -679,6 +640,9 @@
 				{getRowLabel}
 				{getSeatLabel}
 				{getCellKey}
+				positions={geometry.display}
+				shape={sectorShape}
+				proposedShape={pendingShape}
 				{activePaint}
 				{priceCategories}
 			/>
@@ -689,7 +653,7 @@
 	<div class="flex flex-wrap items-center justify-between gap-4 rounded-lg border bg-card p-4">
 		<div class="flex flex-wrap items-center gap-4 text-sm md:gap-6">
 			<div class="flex items-center gap-2">
-				<div class="h-6 w-6 rounded bg-green-500"></div>
+				<div class="h-6 w-6 rounded bg-success"></div>
 				<span>{m['seatGridEditor.legendSeat']()}</span>
 			</div>
 			<div class="flex items-center gap-2">
@@ -701,15 +665,15 @@
 				<span>{m['seatGridEditor.legendSelected']()}</span>
 			</div>
 			<div class="flex items-center gap-2">
-				<div class="h-6 w-6 rounded bg-amber-500/30 dark:bg-amber-400/20"></div>
+				<div class="h-6 w-6 rounded bg-highlight/25"></div>
 				<span>{m['seatGridEditor.legendAisle']()}</span>
 			</div>
 			<div class="flex items-center gap-2">
-				<Accessibility class="h-4 w-4 text-blue-500" />
+				<Accessibility class="h-4 w-4 text-info" />
 				<span>{m['seatGridEditor.legendAccessible']()}</span>
 			</div>
 			<div class="flex items-center gap-2">
-				<EyeOff class="h-4 w-4 text-amber-500" />
+				<EyeOff class="h-4 w-4 text-highlight-foreground dark:text-highlight" />
 				<span>{m['seatGridEditor.legendObstructed']()}</span>
 			</div>
 			{#if priceCategories.length > 0}
@@ -746,4 +710,12 @@
 	</div>
 </div>
 
-<ShapeFitDialog bind:open={shapeDialogOpen} {violatingCount} onChoose={handleShapeChoice} />
+<ShapeFitDialog
+	bind:open={shapeDialogOpen}
+	{violatingCount}
+	seats={geometry.previewSeats}
+	shape={sectorShape}
+	proposedShape={pendingShape}
+	{invertRowOrder}
+	onChoose={handleShapeChoice}
+/>

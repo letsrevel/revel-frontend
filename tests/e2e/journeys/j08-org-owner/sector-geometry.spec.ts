@@ -6,10 +6,12 @@ import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 
 // J8 — sector GEOMETRY (seat-geometry phase 1): the sector editor's geometry
-// panel bends rows (curve) with a live preview, Save bakes an explicit
-// position onto EVERY seat, and the recipe round-trips through
-// sector.metadata.rowLayout. Bake math is unit-tested (seat-layout-bake);
-// this spec proves panel -> preview -> save -> persistence wiring end to end.
+// panel bends rows (curve) IN THE GRID ITSELF — there is one WYSIWYG editing
+// surface, whose cell buttons sit at the baked positions checkout renders —
+// Save bakes an explicit position onto EVERY seat, and the recipe round-trips
+// through sector.metadata.rowLayout. Bake math is unit-tested
+// (seat-layout-bake); this spec proves panel -> grid -> save -> persistence
+// wiring end to end.
 //
 // Isolation: throwaway org + venue + one seated sector arranged via API.
 
@@ -93,31 +95,34 @@ async function openSectorEditor(
 }
 
 test.describe('J8 sector geometry @p2', () => {
-	test('curve slider bends preview → save bakes positions → recipe round-trips', async ({
+	test('curve slider bends the grid → save bakes positions → recipe round-trips', async ({
 		browser
 	}) => {
 		test.setTimeout(150_000);
 		const { page, api, slug, venueId, sectorId, close } = await openSectorEditor(browser);
 
-		// Panel + preview render.
+		// Panel + the single WYSIWYG grid render.
 		const curve = page.getByRole('slider', { name: 'Curve' });
 		await expect(curve).toBeVisible({ timeout: 15_000 });
-		const preview = page.getByRole('img', { name: 'Live preview of the seat layout' });
-		await expect(preview).toBeVisible();
+		await expect(page.getByTestId('seat-grid-canvas')).toBeVisible();
 
-		// Straight baseline: every circle in row A shares one cy.
-		const rowACy = async () =>
-			preview
-				.locator('circle')
-				.evaluateAll((nodes) => nodes.slice(0, 5).map((n) => Number(n.getAttribute('cy'))));
-		const flat = await rowACy();
+		// The grid IS the preview now: cell buttons are absolutely positioned at
+		// their baked coordinates, so the curve has to move THEM. Row A spans
+		// data-cell 0-0 .. 0-4; the arc pins its endpoints and sags the middle.
+		const cellTop = (key: string) =>
+			page.locator(`[data-cell="${key}"]`).evaluate((node) => (node as HTMLElement).offsetTop);
+
+		// Straight baseline: the whole row is level.
+		const flat = await Promise.all(['0-0', '0-2', '0-4'].map(cellTop));
 		expect(new Set(flat).size).toBe(1);
 
 		// Bend: range inputs respond to fill().
 		await curve.fill('12');
 		await expect
-			.poll(async () => new Set(await rowACy()).size, { timeout: 5_000 })
-			.toBeGreaterThan(1);
+			.poll(async () => (await cellTop('0-2')) - (await cellTop('0-0')), { timeout: 5_000 })
+			.toBeGreaterThan(0);
+		// Endpoints stay level with each other — that's an arc, not a tilt.
+		expect(await cellTop('0-4')).toBe(await cellTop('0-0'));
 
 		// Save the whole plan. Seats already exist, so this round-trips through
 		// the bulk-UPDATE mutation (`orgAdmin.seats.toast.updated`), not create.
@@ -217,6 +222,11 @@ test.describe('J8 sector geometry @p2', () => {
 		await page.getByRole('button', { name: 'Save Changes' }).click();
 		const dialog = page.getByRole('dialog');
 		await expect(dialog.getByText('Outline no longer fits')).toBeVisible({ timeout: 15_000 });
+		// The proposed outline is drawn INSIDE the dialog (it used to live in the
+		// editor's side preview, i.e. behind this modal's own overlay).
+		const thumbnail = dialog.getByRole('img', { name: 'Live preview of the seat layout' });
+		await expect(thumbnail).toBeVisible();
+		await expect(thumbnail.locator('polygon')).toHaveCount(2);
 
 		await dialog.getByRole('button', { name: 'Auto-fit outline' }).click();
 

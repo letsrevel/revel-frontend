@@ -8640,7 +8640,7 @@
 	"seatGridEditor.paint.manageCategories": "Preiskategorien verwalten",
 	"seatGridEditor.legendPainted": "Eingefärbt (Farbe und Name des Platzes zeigen die Preiskategorie)",
 	"seatGridEditor.geometry.title": "Reihengeometrie",
-	"seatGridEditor.geometry.explainer": "Biege und versetze Reihen, um sie an den realen Raum anzupassen. Die Vorschau zeigt genau das, was Käufer*innen sehen werden.",
+	"seatGridEditor.geometry.explainer": "Biege und versetze Reihen, um sie an den realen Raum anzupassen. Das Raster zeigt genau das, was Käufer*innen sehen werden.",
 	"seatGridEditor.geometry.curveLabel": "Kurve",
 	"seatGridEditor.geometry.curveHelp": "0 ist gerade. Positive Werte biegen die Reihen von der Bühne weg, wie in einem Theater.",
 	"seatGridEditor.geometry.curveHelpInverted": "0 ist gerade. Die Reihenfolge dieses Sektors ist umgekehrt, daher biegen positive Werte die Reihen zur Bühne hin.",

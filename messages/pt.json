@@ -8640,7 +8640,7 @@
 	"seatGridEditor.paint.manageCategories": "Gerir categorias de preço",
 	"seatGridEditor.legendPainted": "Pintado (a cor e o nome do lugar mostram a sua categoria de preço)",
 	"seatGridEditor.geometry.title": "Geometria das filas",
-	"seatGridEditor.geometry.explainer": "Curva e desloca as filas para as adaptar à sala real. A pré-visualização mostra exatamente o que quem compra vai ver.",
+	"seatGridEditor.geometry.explainer": "Curva e desloca as filas para as adaptar à sala real. A grelha mostra exatamente o que quem compra vai ver.",
 	"seatGridEditor.geometry.curveLabel": "Curvatura",
 	"seatGridEditor.geometry.curveHelp": "0 é reta. Valores positivos afastam as filas do palco, como num teatro.",
 	"seatGridEditor.geometry.curveHelpInverted": "0 é reta. A ordem das filas deste setor está invertida, por isso os valores positivos aproximam as filas do palco.",

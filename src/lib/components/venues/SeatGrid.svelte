@@ -1,10 +1,42 @@
 <script lang="ts">
+	/**
+	 * WYSIWYG sector grid: ONE editing surface that draws every cell at its
+	 * BAKED position (seat-layout-bake.ts) — the exact coordinates the buyer's
+	 * seat map renders at checkout. There is no separate straight lattice and
+	 * no separate curved preview any more; bending a row in SeatGeometryPanel
+	 * bends this grid.
+	 *
+	 * Editing stays LOGICAL: clicks, drag-fill rectangles, painting and
+	 * selection are all addressed by (row, column) indices, so a curved,
+	 * staggered or aisle-split room fills exactly like a plain one. Only the
+	 * pixel placement is geometric.
+	 *
+	 * The rails stay STRAIGHT: row labels track their row's baked y, column
+	 * labels keep their aisle-shifted x (index hints — under curvature only the
+	 * row endpoints line up under them, which is fine), and the aisle add/remove
+	 * hover zones live on the rails exactly as before.
+	 */
 	import * as m from '$lib/paraglide/messages.js';
 	import { Plus, Accessibility, EyeOff } from '@lucide/svelte';
 	import type { SvelteMap, SvelteSet } from 'svelte/reactivity';
-	import type { PriceCategorySchema } from '$lib/api/generated/types.gen';
+	import type { Coordinate2d, PriceCategorySchema } from '$lib/api/generated/types.gen';
 	import type { SeatData } from './seat-grid-types';
 	import { paintTextColor } from './seat-grid-save';
+	import { aisleShift } from './seat-layout-bake';
+	import {
+		AISLE_ZONE_PX,
+		BUTTON_PX,
+		CELL_PX,
+		COL_RAIL_PX,
+		RAIL_PX,
+		canvasFrame,
+		cellButtonStyle,
+		centerPx,
+		edgePx,
+		gapBand,
+		gapCenter,
+		round
+	} from './seat-grid-layout';
 
 	interface Props {
 		seats: SvelteMap<string, SeatData>;
@@ -17,6 +49,16 @@
 		getRowLabel: (index: number) => string;
 		getSeatLabel: (rowIndex: number, colIndex: number) => string;
 		getCellKey: (row: number, col: number) => string;
+		/**
+		 * Baked position of EVERY drawn cell — real seats from the save bake,
+		 * empty click targets from the synthetic all-exist lattice
+		 * (SeatGeometryState.display).
+		 */
+		positions: ReadonlyMap<string, Coordinate2d>;
+		/** The sector's persisted outline, drawn as an underlay. */
+		shape?: Coordinate2d[] | null;
+		/** The auto-fit candidate, drawn dashed while the shape dialog is open. */
+		proposedShape?: Coordinate2d[] | null;
 		/** Active paint chip: `null` = paint mode off; `categoryId: null` = eraser. */
 		activePaint?: { categoryId: string | null } | null;
 		/** Venue price categories, for painted-cell colors and names. */
@@ -34,6 +76,9 @@
 		getRowLabel,
 		getSeatLabel,
 		getCellKey,
+		positions,
+		shape = null,
+		proposedShape = null,
 		activePaint = null,
 		priceCategories = []
 	}: Props = $props();
@@ -207,24 +252,15 @@
 		return row >= minRow && row <= maxRow && col >= minCol && col <= maxCol;
 	}
 
-	// Add vertical aisle at position (inserts between columns)
-	function addVerticalAisle(afterCol: number) {
-		verticalAisles.add(afterCol);
+	// Aisle mutations (stored as the index the aisle sits AFTER)
+	function toggleVerticalAisle(afterCol: number) {
+		if (verticalAisles.has(afterCol)) verticalAisles.delete(afterCol);
+		else verticalAisles.add(afterCol);
 	}
 
-	// Add horizontal aisle at position (inserts between rows)
-	function addHorizontalAisle(afterRow: number) {
-		horizontalAisles.add(afterRow);
-	}
-
-	// Remove vertical aisle
-	function removeVerticalAisle(col: number) {
-		verticalAisles.delete(col);
-	}
-
-	// Remove horizontal aisle
-	function removeHorizontalAisle(row: number) {
-		horizontalAisles.delete(row);
+	function toggleHorizontalAisle(afterRow: number) {
+		if (horizontalAisles.has(afterRow)) horizontalAisles.delete(afterRow);
+		else horizontalAisles.add(afterRow);
 	}
 
 	// Get cell class
@@ -236,209 +272,301 @@
 		const inRect = isInSelectionRect(row, col);
 
 		const base =
-			'w-10 h-10 rounded transition-colors duration-75 flex items-center justify-center text-xs font-medium select-none';
+			'absolute rounded transition-colors duration-75 flex items-center justify-center text-xs font-medium select-none';
 
 		if (isSelected) {
-			return `${base} bg-primary text-primary-foreground ring-2 ring-primary ring-offset-1`;
+			return `${base} bg-primary text-primary-foreground ring-2 ring-primary ring-offset-1 z-20`;
 		}
 
 		if (inRect) {
-			return `${base} ${hasSeat ? 'bg-primary/70 text-primary-foreground' : 'bg-primary/30'} ring-1 ring-primary`;
+			return `${base} ${hasSeat ? 'bg-primary/70 text-primary-foreground' : 'bg-primary/30'} ring-1 ring-primary z-20`;
 		}
 
 		if (hasSeat) {
-			return `${base} bg-green-500 hover:bg-green-600 text-white cursor-pointer`;
+			return `${base} bg-success text-success-foreground hover:bg-success/85 cursor-pointer z-10`;
 		}
 
 		// Empty cell - visible border in both light and dark mode
 		return `${base} bg-muted/20 hover:bg-muted/40 border-2 border-muted-foreground/20 hover:border-muted-foreground/40 text-muted-foreground/30 cursor-pointer`;
 	}
+
+	// --- Geometry -----------------------------------------------------------
+
+	const verticalAisleList = $derived([...verticalAisles]);
+
+	const frame = $derived.by(() =>
+		canvasFrame({ cells: [...positions.values()], polygons: [shape, proposedShape] })
+	);
+
+	function pointAt(row: number, col: number): Coordinate2d {
+		return positions.get(getCellKey(row, col)) ?? { x: col, y: row };
+	}
+
+	/**
+	 * A row's baseline y. Column 0 is always an arc ENDPOINT, so its baked y is
+	 * the row's own y (curve sags the middle, never the ends) — which is what
+	 * the row label and the horizontal aisle rail line up with.
+	 */
+	function rowY(row: number): number {
+		return pointAt(row, 0).y;
+	}
+
+	/** A column's aisle-shifted x, independent of any row's curve/stagger. */
+	function colX(col: number): number {
+		return col + aisleShift(verticalAisleList, col);
+	}
+
+	function polyPoints(polygon: Coordinate2d[]): string {
+		return polygon
+			.map((p) => `${round(edgePx(p.x, frame.originX))},${round(edgePx(p.y, frame.originY))}`)
+			.join(' ');
+	}
+
+	/** Amber bands marking the slot each aisle opens up. */
+	const aisleBands = $derived.by(() => {
+		const bands: Array<{ x: number; y: number; width: number; height: number }> = [];
+		for (let c = 1; c < columns; c++) {
+			if (!verticalAisles.has(c - 1)) continue;
+			const { start, width } = gapBand(colX(c - 1), colX(c));
+			if (width <= 0) continue;
+			bands.push({
+				x: round(edgePx(start, frame.originX)),
+				y: 0,
+				width: round(width * CELL_PX),
+				height: frame.heightPx
+			});
+		}
+		for (let r = 1; r < rows; r++) {
+			if (!horizontalAisles.has(r - 1)) continue;
+			const { start, width } = gapBand(rowY(r - 1), rowY(r));
+			if (width <= 0) continue;
+			bands.push({
+				x: 0,
+				y: round(edgePx(start, frame.originY)),
+				width: frame.widthPx,
+				height: round(width * CELL_PX)
+			});
+		}
+		return bands;
+	});
 </script>
 
 <svelte:window onmouseup={handleMouseUp} />
 
+{#snippet stageBar()}
+	<div class="flex" style="padding-left: {RAIL_PX}px;">
+		<div class="flex justify-center" style="width: {frame.widthPx}px;">
+			<div
+				data-testid="seat-grid-stage"
+				class="rounded-lg bg-muted px-8 py-2 text-sm font-medium text-muted-foreground"
+			>
+				{m['seatGridEditor.stage']()}
+			</div>
+		</div>
+	</div>
+{/snippet}
+
 <!-- Grid -->
 <div class="overflow-x-auto rounded-lg border bg-card p-4">
 	<div class="inline-block">
-		<!-- Stage Indicator (above column headers, centered with grid) -->
-		<div class="mb-4 flex">
-			<!-- Offset for row labels -->
-			<div class="w-14 shrink-0"></div>
-			<!-- Stage centered over columns -->
-			<div class="flex flex-1 justify-center">
-				<div class="rounded-lg bg-muted px-8 py-2 text-sm font-medium text-muted-foreground">
-					{m['seatGridEditor.stage']()}
-				</div>
-			</div>
-		</div>
+		<!-- Stage indicator. Baked positions NEVER flip under invertRowOrder, so
+		     an inverted sector's front row (rank 0) carries the LARGEST y and the
+		     stage bar moves to the BOTTOM — the convention SeatLayoutPreview and
+		     the curve help already ship. -->
+		{#if !invertRowOrder}
+			<div class="mb-4">{@render stageBar()}</div>
+		{/if}
 
-		<!-- Column Headers -->
-		<div class="flex items-end">
-			<!-- Corner space for row labels + aisle zone -->
-			<div class="h-12 w-14"></div>
-			{#each Array(columns) as _, c (c)}
-				{@const colIndex = c}
-				<!-- Aisle indicator/insertion zone before this column (except first) -->
-				{#if colIndex > 0}
-					<div
-						class="group relative flex h-12 w-2 cursor-pointer items-center justify-center hover:w-5"
-					>
-						{#if verticalAisles.has(colIndex - 1)}
-							<button
-								type="button"
-								onclick={() => removeVerticalAisle(colIndex - 1)}
-								class="flex h-full w-5 items-center justify-center text-xs text-primary hover:text-destructive"
-								title={m['seatGridEditor.removeAisleAfterColumn']({ column: colIndex })}
-							>
-								|
-							</button>
-						{:else}
-							<button
-								type="button"
-								onclick={() => addVerticalAisle(colIndex - 1)}
-								class="hidden h-6 w-5 items-center justify-center rounded bg-primary/10 text-primary opacity-0 transition-opacity group-hover:flex group-hover:opacity-100"
-								title={m['seatGridEditor.addAisleAfterColumn']({ column: colIndex })}
-							>
-								<Plus class="h-3 w-3" />
-							</button>
-						{/if}
-					</div>
-				{/if}
-				<div class="flex h-12 w-10 flex-col items-center justify-end">
-					<div
-						class="flex h-8 w-10 items-center justify-center text-xs font-medium text-muted-foreground"
-					>
-						{colIndex + 1}
-					</div>
-				</div>
-			{/each}
-		</div>
-
-		<!-- Rows (with logical index accounting for inversion) -->
-		{#each Array(rows) as _, displayIndex (displayIndex)}
-			{@const logicalRow = invertRowOrder ? rows - 1 - displayIndex : displayIndex}
-
-			<!-- Aisle insertion zone between rows (at left edge only) -->
-			{#if displayIndex > 0}
-				{@const prevLogicalRow = invertRowOrder ? rows - displayIndex : displayIndex - 1}
-				{@const aisleAfterRow = invertRowOrder ? logicalRow : prevLogicalRow}
-				{@const hasHorizontalAisle = horizontalAisles.has(aisleAfterRow)}
-				{@const aisleHeight = hasHorizontalAisle ? 'h-5' : 'h-2'}
-				<div class="flex items-center {aisleHeight}">
-					<div
-						class="group flex w-14 cursor-pointer items-center justify-center {hasHorizontalAisle
-							? 'h-5'
-							: 'h-2 hover:h-6'}"
-					>
-						{#if hasHorizontalAisle}
-							<button
-								type="button"
-								onclick={() => removeHorizontalAisle(aisleAfterRow)}
-								class="flex h-5 w-full items-center justify-center text-xs text-highlight-foreground hover:text-destructive dark:text-highlight"
-								title={m['seatGridEditor.removeAisleAfterRow']({
-									row: getRowLabel(aisleAfterRow)
-								})}
-							>
-								—
-							</button>
-						{:else}
-							<button
-								type="button"
-								onclick={() => addHorizontalAisle(aisleAfterRow)}
-								class="hidden h-6 w-full items-center justify-center rounded bg-primary/10 text-primary opacity-0 transition-opacity group-hover:flex group-hover:opacity-100"
-								title={m['seatGridEditor.addAisleAfterRow']({ row: getRowLabel(aisleAfterRow) })}
-							>
-								<Plus class="h-3 w-3" />
-							</button>
-						{/if}
-					</div>
-					<!-- Row gap with matching column structure for continuous vertical aisles -->
-					{#each Array(columns) as _, c (c)}
-						{#if c > 0 && verticalAisles.has(c - 1)}
-							<!-- Vertical aisle continues through this gap -->
-							<div
-								class="w-5 {aisleHeight} {hasHorizontalAisle
-									? 'bg-amber-500/50 dark:bg-amber-400/30'
-									: 'bg-amber-500/30 dark:bg-amber-400/20'}"
-							></div>
-						{:else if c > 0}
-							<!-- Regular spacer -->
-							<div
-								class="w-2 {aisleHeight} {hasHorizontalAisle
-									? 'bg-amber-500/30 dark:bg-amber-400/20'
-									: ''}"
-							></div>
-						{/if}
-						<!-- Cell-width space -->
-						<div
-							class="w-10 {aisleHeight} {hasHorizontalAisle
-								? 'bg-amber-500/30 dark:bg-amber-400/20'
-								: ''}"
-						></div>
-					{/each}
-				</div>
-			{/if}
-
-			<div class="flex items-center gap-0">
-				<!-- Row Label -->
-				<div
-					class="flex h-10 w-14 items-center justify-center text-xs font-medium text-muted-foreground"
-				>
-					{getRowLabel(logicalRow)}
-				</div>
-
-				<!-- Cells -->
+		<!-- Column labels + vertical-aisle zones -->
+		<div class="flex">
+			<div class="shrink-0" style="width: {RAIL_PX}px; height: {COL_RAIL_PX}px;"></div>
+			<div class="relative" style="width: {frame.widthPx}px; height: {COL_RAIL_PX}px;">
 				{#each Array(columns) as _, c (c)}
-					<!-- Spacer for vertical aisle (before this cell, except first) -->
-					{#if c > 0 && verticalAisles.has(c - 1)}
-						<div class="h-10 w-5 bg-amber-500/30 dark:bg-amber-400/20"></div>
-					{:else if c > 0}
-						<div class="w-2"></div>
-					{/if}
-					{@const cellKey = getCellKey(logicalRow, c)}
-					{@const seatData = seats.get(cellKey)}
-					{@const paint =
-						seatData?.exists && seatData.priceCategoryId
-							? categoryById.get(seatData.priceCategoryId)
-							: undefined}
-					{@const paintOverridden = selectedCells.has(cellKey) || isInSelectionRect(logicalRow, c)}
-					<button
-						type="button"
-						class="{getCellClass(logicalRow, c)} relative"
-						style={paint && !paintOverridden
-							? `background-color: ${paint.color}; color: ${paintTextColor(paint.color)};`
-							: undefined}
-						title={paint?.name}
-						onmousedown={(e) => handleMouseDown(logicalRow, c, e)}
-						onmouseenter={() => handleMouseMove(logicalRow, c)}
-						onclick={() => handleCellClick(logicalRow, c)}
-						aria-label={`${m['seatGridEditor.seatLabel']({
-							seat: getSeatLabel(logicalRow, c),
-							accessible: seatData?.is_accessible ? m['seatGridEditor.seatAccessibleSuffix']() : '',
-							obstructed: seatData?.is_obstructed_view
-								? m['seatGridEditor.seatObstructedSuffix']()
-								: ''
-						})}${paint ? `, ${paint.name}` : ''}`}
+					<div
+						class="absolute bottom-0 flex items-end justify-center text-xs font-medium text-muted-foreground"
+						style="left: {round(
+							centerPx(colX(c), frame.originX) - CELL_PX / 2
+						)}px; width: {CELL_PX}px;"
 					>
-						{#if seatData?.exists}
-							<span class="text-[10px]">{getSeatLabel(logicalRow, c)}</span>
-							<!-- Indicator icons -->
-							{#if seatData.is_accessible || seatData.is_obstructed_view}
-								<div
-									class="absolute -bottom-1 -right-1 flex gap-0.5 rounded bg-card/90 p-0.5 shadow-sm"
+						{c + 1}
+					</div>
+					{#if c > 0}
+						{@const hasAisle = verticalAisles.has(c - 1)}
+						<div
+							class="group absolute bottom-0 flex items-end justify-center"
+							style="left: {round(
+								edgePx(gapCenter(colX(c - 1), colX(c)), frame.originX) - AISLE_ZONE_PX / 2
+							)}px; width: {AISLE_ZONE_PX}px; height: {COL_RAIL_PX}px;"
+						>
+							{#if hasAisle}
+								<button
+									type="button"
+									onclick={() => toggleVerticalAisle(c - 1)}
+									class="flex h-full w-full items-center justify-center text-xs text-primary hover:text-destructive"
+									title={m['seatGridEditor.removeAisleAfterColumn']({ column: c })}
 								>
-									{#if seatData.is_accessible}
-										<Accessibility class="h-3 w-3 text-blue-600" />
-									{/if}
-									{#if seatData.is_obstructed_view}
-										<EyeOff class="h-3 w-3 text-amber-600" />
-									{/if}
-								</div>
+									|
+								</button>
+							{:else}
+								<button
+									type="button"
+									onclick={() => toggleVerticalAisle(c - 1)}
+									class="hidden h-6 w-full items-center justify-center rounded bg-primary/10 text-primary opacity-0 transition-opacity group-hover:flex group-hover:opacity-100"
+									title={m['seatGridEditor.addAisleAfterColumn']({ column: c })}
+								>
+									<Plus class="h-3 w-3" />
+								</button>
 							{/if}
-						{/if}
-					</button>
+						</div>
+					{/if}
 				{/each}
 			</div>
-		{/each}
+		</div>
+
+		<!-- Row labels + horizontal-aisle zones, then the geometry canvas -->
+		<div class="flex">
+			<div class="relative shrink-0" style="width: {RAIL_PX}px; height: {frame.heightPx}px;">
+				{#each Array(rows) as _, r (r)}
+					<div
+						class="absolute flex w-full items-center justify-center text-xs font-medium text-muted-foreground"
+						style="top: {round(centerPx(rowY(r), frame.originY) - 10)}px; height: 20px;"
+					>
+						{getRowLabel(r)}
+					</div>
+					{#if r > 0}
+						{@const hasAisle = horizontalAisles.has(r - 1)}
+						<div
+							class="group absolute flex w-full items-center justify-center"
+							style="top: {round(
+								edgePx(gapCenter(rowY(r - 1), rowY(r)), frame.originY) - AISLE_ZONE_PX / 2
+							)}px; height: {AISLE_ZONE_PX}px;"
+						>
+							{#if hasAisle}
+								<button
+									type="button"
+									onclick={() => toggleHorizontalAisle(r - 1)}
+									class="flex h-full w-full items-center justify-center text-xs text-highlight-foreground hover:text-destructive dark:text-highlight"
+									title={m['seatGridEditor.removeAisleAfterRow']({ row: getRowLabel(r - 1) })}
+								>
+									—
+								</button>
+							{:else}
+								<button
+									type="button"
+									onclick={() => toggleHorizontalAisle(r - 1)}
+									class="hidden h-full w-full items-center justify-center rounded bg-primary/10 text-primary opacity-0 transition-opacity group-hover:flex group-hover:opacity-100"
+									title={m['seatGridEditor.addAisleAfterRow']({ row: getRowLabel(r - 1) })}
+								>
+									<Plus class="h-3 w-3" />
+								</button>
+							{/if}
+						</div>
+					{/if}
+				{/each}
+			</div>
+
+			<div
+				class="relative"
+				data-testid="seat-grid-canvas"
+				style="width: {frame.widthPx}px; height: {frame.heightPx}px;"
+			>
+				<!-- Underlay: aisle bands + the sector outline, in the SAME frame as
+				     the buttons (origin = min over baked cells and outline vertices). -->
+				<svg
+					class="pointer-events-none absolute inset-0"
+					width={frame.widthPx}
+					height={frame.heightPx}
+					viewBox="0 0 {frame.widthPx} {frame.heightPx}"
+					aria-hidden="true"
+				>
+					{#each aisleBands as band, index (index)}
+						<rect
+							x={band.x}
+							y={band.y}
+							width={band.width}
+							height={band.height}
+							class="fill-highlight/25"
+							data-testid="seat-grid-aisle-band"
+						/>
+					{/each}
+					{#if shape}
+						<polygon
+							points={polyPoints(shape)}
+							data-testid="seat-grid-shape"
+							fill="none"
+							stroke="hsl(var(--border))"
+							stroke-width="2"
+						/>
+					{/if}
+					{#if proposedShape}
+						<polygon
+							points={polyPoints(proposedShape)}
+							data-testid="seat-grid-proposed-shape"
+							fill="none"
+							stroke="hsl(var(--primary))"
+							stroke-width="2"
+							stroke-dasharray="6 4"
+						/>
+					{/if}
+				</svg>
+
+				{#each Array(rows) as _, r (r)}
+					{#each Array(columns) as _, c (c)}
+						{@const cellKey = getCellKey(r, c)}
+						{@const seatData = seats.get(cellKey)}
+						{@const paint =
+							seatData?.exists && seatData.priceCategoryId
+								? categoryById.get(seatData.priceCategoryId)
+								: undefined}
+						{@const paintOverridden = selectedCells.has(cellKey) || isInSelectionRect(r, c)}
+						<button
+							type="button"
+							data-cell={cellKey}
+							class={getCellClass(r, c)}
+							style="{cellButtonStyle(
+								pointAt(r, c),
+								frame
+							)} width: {BUTTON_PX}px; height: {BUTTON_PX}px;{paint && !paintOverridden
+								? ` background-color: ${paint.color}; color: ${paintTextColor(paint.color)};`
+								: ''}"
+							title={paint?.name}
+							onmousedown={(e) => handleMouseDown(r, c, e)}
+							onmouseenter={() => handleMouseMove(r, c)}
+							onclick={() => handleCellClick(r, c)}
+							aria-label={`${m['seatGridEditor.seatLabel']({
+								seat: getSeatLabel(r, c),
+								accessible: seatData?.is_accessible
+									? m['seatGridEditor.seatAccessibleSuffix']()
+									: '',
+								obstructed: seatData?.is_obstructed_view
+									? m['seatGridEditor.seatObstructedSuffix']()
+									: ''
+							})}${paint ? `, ${paint.name}` : ''}`}
+						>
+							{#if seatData?.exists}
+								<span class="text-[10px]">{getSeatLabel(r, c)}</span>
+								<!-- Indicator icons -->
+								{#if seatData.is_accessible || seatData.is_obstructed_view}
+									<div
+										class="absolute -bottom-1 -right-1 flex gap-0.5 rounded bg-card/90 p-0.5 shadow-sm"
+									>
+										{#if seatData.is_accessible}
+											<Accessibility class="h-3 w-3 text-info" />
+										{/if}
+										{#if seatData.is_obstructed_view}
+											<EyeOff class="h-3 w-3 text-highlight-foreground dark:text-highlight" />
+										{/if}
+									</div>
+								{/if}
+							{/if}
+						</button>
+					{/each}
+				{/each}
+			</div>
+		</div>
+
+		{#if invertRowOrder}
+			<div class="mt-4">{@render stageBar()}</div>
+		{/if}
 	</div>
 </div>

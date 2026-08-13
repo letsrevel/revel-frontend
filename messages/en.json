@@ -8640,7 +8640,7 @@
 	"seatGridEditor.paint.manageCategories": "Manage price categories",
 	"seatGridEditor.legendPainted": "Painted (seat color and name show its price category)",
 	"seatGridEditor.geometry.title": "Row geometry",
-	"seatGridEditor.geometry.explainer": "Bend and offset rows to match the physical room. The preview shows exactly what buyers will see.",
+	"seatGridEditor.geometry.explainer": "Bend and offset rows to match the physical room. The grid shows exactly what buyers will see.",
 	"seatGridEditor.geometry.curveLabel": "Curve",
 	"seatGridEditor.geometry.curveHelp": "0 is straight. Positive bends rows away from the stage, like a theater.",
 	"seatGridEditor.geometry.curveHelpInverted": "0 is straight. This sector's row order is inverted, so positive bends rows toward the stage.",

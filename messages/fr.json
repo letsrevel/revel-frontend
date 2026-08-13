@@ -8610,7 +8610,7 @@
 	"seatGridEditor.paint.manageCategories": "Gérer les catégories de prix",
 	"seatGridEditor.legendPainted": "Coloré (la couleur et le nom de la place indiquent sa catégorie de prix)",
 	"seatGridEditor.geometry.title": "Géométrie des rangées",
-	"seatGridEditor.geometry.explainer": "Courbe et décale les rangées pour les adapter à la salle réelle. L'aperçu montre exactement ce que les acheteur·euse·s verront.",
+	"seatGridEditor.geometry.explainer": "Courbe et décale les rangées pour les adapter à la salle réelle. La grille montre exactement ce que les acheteur·euse·s verront.",
 	"seatGridEditor.geometry.curveLabel": "Courbure",
 	"seatGridEditor.geometry.curveHelp": "0 est droit. Une valeur positive courbe les rangées à l'opposé de la scène, comme dans un théâtre.",
 	"seatGridEditor.geometry.curveHelpInverted": "0 est droit. L'ordre des rangées de ce secteur est inversé : une valeur positive courbe donc les rangées vers la scène.",

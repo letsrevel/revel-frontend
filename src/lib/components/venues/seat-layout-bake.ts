@@ -33,9 +33,20 @@ export interface BakeInput {
 	recipe: RowLayoutRecipe;
 }
 
-function aisleShift(aisles: readonly number[], index: number): number {
+/**
+ * Extra units of gap accumulated before `index`, from aisle metadata.
+ *
+ * An aisle is stored as the index it sits AFTER (`SeatGrid` writes
+ * `verticalAisles.add(column - 1)` for the gap drawn before `column`), so
+ * aisle `V` must shift everything STRICTLY AFTER `V` — matching the buyer
+ * map's own legacy derivation (`gapsBefore` in tickets/seat-map-layout.ts).
+ * It shipped as `aisle <= index`, which shifted the aisle's own row/column
+ * too and therefore opened the gap one slot early; the editor grid now draws
+ * these same baked coordinates, which is how the off-by-one surfaced.
+ */
+export function aisleShift(aisles: readonly number[], index: number): number {
 	let shift = 0;
-	for (const aisle of aisles) if (aisle <= index) shift += 1;
+	for (const aisle of aisles) if (aisle < index) shift += 1;
 	return shift;
 }
 
