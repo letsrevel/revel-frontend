@@ -212,7 +212,9 @@ describe('buildSeatSavePlan — creates', () => {
 	});
 
 	it('persists the position returned by getPosition verbatim (curved values)', () => {
-		const cells = new Map([['0-0', { exists: true, is_accessible: false, is_obstructed_view: false }]]);
+		const cells = new Map([
+			['0-0', { exists: true, is_accessible: false, is_obstructed_view: false }]
+		]);
 		const plan = buildSeatSavePlan({
 			cells,
 			existingSeats: [],

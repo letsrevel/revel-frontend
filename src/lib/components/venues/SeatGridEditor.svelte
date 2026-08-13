@@ -1,16 +1,36 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { resolve } from '$app/paths';
-	import type { VenueSeatSchema, PriceCategorySchema } from '$lib/api/generated/types.gen';
+	import type {
+		VenueSeatSchema,
+		PriceCategorySchema,
+		Coordinate2d
+	} from '$lib/api/generated/types.gen';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { organizationadminvenuesListPriceCategories } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Accessibility, EyeOff, Paintbrush, Eraser, Tag, TriangleAlert } from '@lucide/svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import type { SeatData } from './seat-grid-types';
-	import { buildSeatSavePlan, readExistingPaint, type SeatSavePlan } from './seat-grid-save';
+	import {
+		buildSeatSavePlan,
+		buildRowOrderLookup,
+		readExistingPaint,
+		type SeatSavePlan
+	} from './seat-grid-save';
+	import {
+		defaultRowLayout,
+		parseRowLayout,
+		serializeRowLayout,
+		type RowLayoutRecipe
+	} from './row-layout';
+	import { bakeSeatPositions } from './seat-layout-bake';
+	import { autoFitShape, fitsWithinShape } from './shape-fit';
 	import SeatGridConfig from './SeatGridConfig.svelte';
 	import SeatGrid from './SeatGrid.svelte';
+	import SeatGeometryPanel, { type RowOption } from './SeatGeometryPanel.svelte';
+	import SeatLayoutPreview, { type PreviewSeat } from './SeatLayoutPreview.svelte';
+	import ShapeFitDialog from './ShapeFitDialog.svelte';
 
 	// Aisle metadata structure stored in sector
 	export interface AisleMetadata {
@@ -19,17 +39,36 @@
 		invertRowOrder: boolean; // If true, row A is at the bottom
 	}
 
+	/**
+	 * Everything one save persists to sector.metadata (+ shape). `rowLayout:
+	 * undefined` ⇒ REMOVE the metadata key (plain grid stays byte-identical to
+	 * today). `shape: undefined` ⇒ untouched, `null` ⇒ clear, an array ⇒ replace.
+	 */
+	export interface SectorMetadataUpdate {
+		aisles: AisleMetadata;
+		rowLayout: Record<string, unknown> | undefined;
+		shape?: Coordinate2d[] | null;
+	}
+
 	interface Props {
 		existingSeats: VenueSeatSchema[];
-		sectorMetadata?: { aisles?: AisleMetadata } | null;
+		sectorMetadata?: Record<string, unknown> | null;
+		sectorShape: Coordinate2d[] | null;
 		organizationSlug: string;
 		venueId: string;
-		onPersist: (plan: SeatSavePlan, metadata: { aisles: AisleMetadata }) => void;
+		onPersist: (plan: SeatSavePlan, metadata: SectorMetadataUpdate) => void;
 		isSaving: boolean;
 	}
 
-	const { existingSeats, sectorMetadata, organizationSlug, venueId, onPersist, isSaving }: Props =
-		$props();
+	const {
+		existingSeats,
+		sectorMetadata,
+		sectorShape,
+		organizationSlug,
+		venueId,
+		onPersist,
+		isSaving
+	}: Props = $props();
 
 	const accessToken = $derived(authStore.accessToken);
 
@@ -98,6 +137,18 @@
 	// Selection state
 	const selectedCells = new SvelteSet<string>();
 
+	// Row-geometry recipe (curve/stagger/align/per-row overrides), edited via
+	// SeatGeometryPanel and baked into per-seat positions on save.
+	let rowLayout = $state<RowLayoutRecipe>(defaultRowLayout());
+	let rowLayoutRaw = $state<Record<string, unknown> | undefined>(undefined);
+	let rowLayoutUnsupported = $state(false);
+
+	// Shape-fit gate (runs on SAVE only): a baked layout that no longer fits
+	// the sector's drawn outline offers an auto-fit replacement or clearing it.
+	let shapeDialogOpen = $state(false);
+	let pendingShape = $state<Coordinate2d[] | null>(null);
+	let violatingCount = $state(0);
+
 	// Track if grid has been initialized
 	let initialized = $state(false);
 
@@ -131,24 +182,6 @@
 		return `${row}-${col}`;
 	}
 
-	// Calculate actual X position accounting for vertical aisles
-	function getXPosition(col: number): number {
-		let x = col;
-		for (const aisleCol of verticalAisles) {
-			if (aisleCol <= col) x++;
-		}
-		return x;
-	}
-
-	// Calculate actual Y position accounting for horizontal aisles
-	function getYPosition(row: number): number {
-		let y = row;
-		for (const aisleRow of horizontalAisles) {
-			if (aisleRow <= row) y++;
-		}
-		return y;
-	}
-
 	// Parse a row label ("A", "AA", or "3") into a zero-based row index; -1 if unparseable
 	function parseRowLabelToIndex(rowLabel: string): number {
 		if (/^\d+$/.test(rowLabel)) {
@@ -165,21 +198,40 @@
 		return -1;
 	}
 
-	// Initialize grid from existing seats and metadata
+	// Initialize grid from existing seats and metadata. Guarded by the
+	// `initialized` flag below (never called twice for one mount), and every
+	// write here is a plain overwrite (clear-then-repopulate or direct
+	// reassignment) rather than additive, so a hypothetical re-call — e.g. a
+	// future re-mount after save/invalidate — cannot double-apply either the
+	// aisles or the row-layout recipe.
 	function initializeFromExisting() {
 		seats.clear();
 
 		// Load aisle metadata if available
-		if (sectorMetadata?.aisles) {
+		const aisles = sectorMetadata?.aisles as AisleMetadata | undefined;
+		if (aisles) {
 			verticalAisles.clear();
 			horizontalAisles.clear();
-			for (const col of sectorMetadata.aisles.verticalAisles || []) {
+			for (const col of aisles.verticalAisles || []) {
 				verticalAisles.add(col);
 			}
-			for (const row of sectorMetadata.aisles.horizontalAisles || []) {
+			for (const row of aisles.horizontalAisles || []) {
 				horizontalAisles.add(row);
 			}
-			invertRowOrder = sectorMetadata.aisles.invertRowOrder ?? false;
+			invertRowOrder = aisles.invertRowOrder ?? false;
+		}
+
+		// Load the row-geometry recipe if present (admin-only key; absent for
+		// every plain grid).
+		const parsedRowLayout = parseRowLayout(sectorMetadata);
+		if (parsedRowLayout.status === 'ok') {
+			rowLayout = parsedRowLayout.recipe;
+			rowLayoutRaw = parsedRowLayout.raw;
+			rowLayoutUnsupported = false;
+		} else {
+			rowLayout = defaultRowLayout();
+			rowLayoutRaw = undefined;
+			rowLayoutUnsupported = parsedRowLayout.status === 'unsupported';
 		}
 
 		// Try to infer grid size from existing seats
@@ -316,33 +368,103 @@
 		selectedCells.clear();
 	}
 
-	// Save changes: build the full persistence plan (creates/updates/deletes/
-	// paint batches, with explicit row_order/adjacency_index ranks) and hand it
-	// to the page, which sequences bulk ops -> paint -> metadata.
-	function handleSave() {
-		const plan = buildSeatSavePlan({
+	// Baked per-seat positions (sector-local units) from the current grid +
+	// aisles + geometry recipe — the single source of truth for both the live
+	// preview and the save payload. Reads every reactive operand unconditionally
+	// (SvelteMap/SvelteSet spreads + invertRowOrder + rowLayout) so a mutation to
+	// any of them retriggers the bake (the TanStack `||`-freeze rule applies here
+	// too: no early return before every operand has been read).
+	const bakedPositions = $derived.by(() =>
+		bakeSeatPositions({
+			cells: seats,
+			verticalAisles: [...verticalAisles],
+			horizontalAisles: [...horizontalAisles],
+			invertRowOrder,
+			recipe: rowLayout
+		})
+	);
+
+	// Populated rows, dense-ranked front-to-back — feeds the geometry panel's
+	// per-row override picker.
+	const rowOptions = $derived.by<RowOption[]>(() => {
+		const populated = [
+			...new Set(
+				[...seats].filter(([, data]) => data.exists).map(([key]) => Number(key.split('-')[0]))
+			)
+		];
+		const rankFor = buildRowOrderLookup(populated, invertRowOrder);
+		return populated
+			.map((row) => ({ rank: rankFor(row), label: getRowLabel(row) }))
+			.sort((a, b) => a.rank - b.rank);
+	});
+
+	// Baked seats for the live SVG preview, carrying their paint color so the
+	// preview mirrors the palette.
+	const previewSeats = $derived.by<PreviewSeat[]>(() =>
+		[...seats]
+			.filter(([, data]) => data.exists)
+			.map(([key, data]) => {
+				const position = bakedPositions.get(key) ?? { x: 0, y: 0 };
+				const category = priceCategories.find((c) => c.id === data.priceCategoryId);
+				return { key, x: position.x, y: position.y, categoryColor: category?.color ?? null };
+			})
+	);
+
+	// Build the full persistence plan (creates/updates/deletes/paint batches,
+	// with explicit row_order/adjacency_index ranks and baked positions).
+	function buildPlan(): SeatSavePlan {
+		return buildSeatSavePlan({
 			cells: seats,
 			existingSeats,
 			rows,
 			invertRowOrder,
 			getRowLabel,
 			getSeatLabel,
-			// TEMPORARY equivalence closure — reproduces the editor's aisle-shifted
-			// rendering positions verbatim. A later task (seat-geometry-phase1 #8)
-			// swaps this for the baked-geometry pipeline.
-			getPosition: (rowIndex, colIndex) => ({
-				x: getXPosition(colIndex),
-				y: getYPosition(rowIndex)
-			})
+			getPosition: (rowIndex, colIndex) => {
+				const point = bakedPositions.get(getCellKey(rowIndex, colIndex));
+				return point ?? { x: colIndex, y: rowIndex };
+			}
 		});
+	}
 
-		onPersist(plan, {
+	// Hand the plan + metadata to the page, which sequences bulk ops -> paint
+	// -> metadata. `shape` follows the SectorMetadataUpdate contract: omitted
+	// key ⇒ untouched, `null` ⇒ clear, an array ⇒ replace.
+	function persist(shape: Coordinate2d[] | null | undefined) {
+		onPersist(buildPlan(), {
 			aisles: {
 				verticalAisles: [...verticalAisles].sort((a, b) => a - b),
 				horizontalAisles: [...horizontalAisles].sort((a, b) => a - b),
 				invertRowOrder
-			}
+			},
+			rowLayout: serializeRowLayout(rowLayout, rowLayoutRaw),
+			...(shape !== undefined ? { shape } : {})
 		});
+	}
+
+	// Save changes. The shape gate runs on SAVE only (never live): a baked
+	// layout that no longer fits the sector's drawn outline (>= 3 points) stops
+	// the save and offers a regenerated fitted outline or clearing it via
+	// ShapeFitDialog, instead of persisting seats the backend would reject.
+	function handleSave() {
+		const points = [...bakedPositions.values()];
+		if (sectorShape && sectorShape.length >= 3 && !fitsWithinShape(points, sectorShape)) {
+			violatingCount = points.filter((point) => !fitsWithinShape([point], sectorShape)).length;
+			pendingShape = autoFitShape(points);
+			shapeDialogOpen = true;
+			return;
+		}
+		persist(undefined);
+	}
+
+	function handleShapeChoice(choice: 'fit' | 'clear' | 'cancel') {
+		shapeDialogOpen = false;
+		if (choice === 'cancel') {
+			pendingShape = null;
+			return;
+		}
+		persist(choice === 'fit' ? pendingShape : null);
+		pendingShape = null;
 	}
 
 	// Count stats
@@ -499,21 +621,32 @@
 		</div>
 	{/if}
 
-	<!-- Grid -->
-	<SeatGrid
-		{seats}
-		{selectedCells}
-		{verticalAisles}
-		{horizontalAisles}
-		{rows}
-		{columns}
-		{invertRowOrder}
-		{getRowLabel}
-		{getSeatLabel}
-		{getCellKey}
-		{activePaint}
-		{priceCategories}
-	/>
+	<!-- Grid + row-geometry panel/preview split view. `min-w-0` on the grid
+	     column is required — a flex/grid child without it refuses to shrink
+	     below its content's intrinsic width, which is the recurring
+	     mobile-overflow root cause in this codebase. -->
+	<div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
+		<div class="min-w-0">
+			<SeatGrid
+				{seats}
+				{selectedCells}
+				{verticalAisles}
+				{horizontalAisles}
+				{rows}
+				{columns}
+				{invertRowOrder}
+				{getRowLabel}
+				{getSeatLabel}
+				{getCellKey}
+				{activePaint}
+				{priceCategories}
+			/>
+		</div>
+		<div class="space-y-4">
+			<SeatGeometryPanel bind:recipe={rowLayout} {rowOptions} unsupported={rowLayoutUnsupported} />
+			<SeatLayoutPreview seats={previewSeats} shape={sectorShape} proposedShape={pendingShape} />
+		</div>
+	</div>
 
 	<!-- Legend & Stats -->
 	<div class="flex flex-wrap items-center justify-between gap-4 rounded-lg border bg-card p-4">
@@ -575,3 +708,5 @@
 		</button>
 	</div>
 </div>
+
+<ShapeFitDialog bind:open={shapeDialogOpen} {violatingCount} onChoose={handleShapeChoice} />

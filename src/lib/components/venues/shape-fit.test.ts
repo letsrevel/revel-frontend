@@ -33,8 +33,24 @@ const square = [
 
 describe('fitsWithinShape', () => {
 	it('accepts points inside and rejects points outside', () => {
-		expect(fitsWithinShape([{ x: 0, y: 0 }, { x: 4, y: 4 }], square)).toBe(true);
-		expect(fitsWithinShape([{ x: 0, y: 0 }, { x: 9, y: 0 }], square)).toBe(false);
+		expect(
+			fitsWithinShape(
+				[
+					{ x: 0, y: 0 },
+					{ x: 4, y: 4 }
+				],
+				square
+			)
+		).toBe(true);
+		expect(
+			fitsWithinShape(
+				[
+					{ x: 0, y: 0 },
+					{ x: 9, y: 0 }
+				],
+				square
+			)
+		).toBe(false);
 	});
 });
 

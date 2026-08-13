@@ -30,7 +30,9 @@
 	} from '$lib/components/venues/seat-grid-save';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { ArrowLeft, LayoutDashboard, Users } from '@lucide/svelte';
-	import SeatGridEditor, { type AisleMetadata } from '$lib/components/venues/SeatGridEditor.svelte';
+	import SeatGridEditor, {
+		type SectorMetadataUpdate
+	} from '$lib/components/venues/SeatGridEditor.svelte';
 	import { toast } from 'svelte-sonner';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
@@ -175,15 +177,25 @@
 		}
 	}));
 
-	// Sector metadata update mutation (for aisles and row order). Merge into the
-	// existing metadata so we never clobber other keys — notably the layout
-	// designer's `transform` (sector-block placement) stored in the same blob.
+	// Sector metadata update mutation (aisles, row-geometry recipe, and shape).
+	// Merge into the existing metadata so we never clobber other keys —
+	// notably the layout designer's `transform` (sector-block placement) and
+	// `floor` stored in the same blob. `rowLayout: undefined` REMOVES the key
+	// (plain grid, byte-identical to today); `shape` follows the
+	// SectorMetadataUpdate contract (omitted ⇒ untouched, `null` ⇒ clear, an
+	// array ⇒ replace) and is a top-level sector field, not metadata.
 	const updateSectorMutation = createMutation(() => ({
-		mutationFn: async (metadata: { aisles: AisleMetadata }) => {
+		mutationFn: async (update: SectorMetadataUpdate) => {
 			const existing = (sectorQuery.data?.metadata ?? {}) as Record<string, unknown>;
+			const metadata: Record<string, unknown> = { ...existing, aisles: update.aisles };
+			if (update.rowLayout === undefined) delete metadata.rowLayout;
+			else metadata.rowLayout = update.rowLayout;
 			const response = await organizationadminvenuesUpdateSector({
 				path: { slug: organization.slug, venue_id: venueId, sector_id: sectorId },
-				body: { metadata: { ...existing, aisles: metadata.aisles } },
+				body: {
+					metadata,
+					...(update.shape !== undefined ? { shape: update.shape } : {})
+				},
 				headers: {
 					Authorization: `Bearer ${accessToken}`
 				}
@@ -379,7 +391,7 @@
 	// create/update/delete, then paint batches (existing seats only — new
 	// seats carry their paint in the create payload), then sector metadata.
 	// Each mutation surfaces its own toast.
-	async function handlePersist(plan: SeatSavePlan, metadata: { aisles: AisleMetadata }) {
+	async function handlePersist(plan: SeatSavePlan, metadata: SectorMetadataUpdate) {
 		// Confirmation step (#674): a repricing on an event that is ON SALE
 		// rewrites the economics of a live on-sale for every event at the venue
 		// — an after-the-fact toast is not enough there. The dry-run preview
@@ -552,7 +564,8 @@
 			<!-- Seat Grid Editor -->
 			<SeatGridEditor
 				existingSeats={sector.seats || []}
-				sectorMetadata={sector.metadata as { aisles?: AisleMetadata } | null}
+				sectorMetadata={sector.metadata ?? null}
+				sectorShape={sector.shape ?? null}
 				organizationSlug={organization.slug}
 				{venueId}
 				onPersist={handlePersist}
