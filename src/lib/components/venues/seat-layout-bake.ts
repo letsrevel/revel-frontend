@@ -40,9 +40,22 @@ export interface BakeInput {
  * `verticalAisles.add(column - 1)` for the gap drawn before `column`), so
  * aisle `V` must shift everything STRICTLY AFTER `V` — matching the buyer
  * map's own legacy derivation (`gapsBefore` in tickets/seat-map-layout.ts).
- * It shipped as `aisle <= index`, which shifted the aisle's own row/column
- * too and therefore opened the gap one slot early; the editor grid now draws
- * these same baked coordinates, which is how the off-by-one surfaced.
+ *
+ * The legacy grid editor's `getXPosition`/`getYPosition` (shipped since the
+ * grid editor's introduction, `git show ab9ca829:.../SeatGridEditor.svelte`)
+ * used `aisle <= index`, which shifts the aisle's own row/column too and so
+ * opens the gap one slot EARLY; every persisted position that predates this
+ * change carries that off-by-one. This bake deliberately adopts
+ * `aisle < index` instead — a bug fix, not a parity break — to agree with
+ * both the rails' own "gap between v and v+1" semantics and the buyer map's
+ * position-less fallback (`gapsBefore`, which already used `<`). Keeping the
+ * legacy `<=` here would have made always-bake actively WORSE: a position-less
+ * legacy aisled sector currently renders correctly via that `<`-based
+ * fallback, and baking it for the first time with `<=` would shift it out of
+ * agreement with how it renders today. The one disclosed regression is the
+ * opposite case — a legacy sector that already has PERSISTED `<=` positions
+ * and aisles moves its aisle-index columns/rows by one unit the next time it
+ * is re-saved, correcting them to the rails' convention.
  */
 export function aisleShift(aisles: readonly number[], index: number): number {
 	let shift = 0;

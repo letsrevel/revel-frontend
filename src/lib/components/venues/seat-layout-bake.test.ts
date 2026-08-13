@@ -24,14 +24,23 @@ function bake(partial: Partial<BakeInput>): Map<string, { x: number; y: number }
 }
 
 describe('bakeSeatPositions — golden identity', () => {
-	it('default recipe reproduces the legacy grid positions exactly (integers)', () => {
+	it('default recipe reproduces the CORRECTED (buyer-map-fallback) grid positions exactly (integers)', () => {
 		const positions = bake({ verticalAisles: [1], horizontalAisles: [0] });
 		// An aisle is stored as the index it sits AFTER, so it must shift only
 		// what comes STRICTLY AFTER it — matching `gapsBefore` in the buyer map's
-		// legacy derivation (tickets/seat-map-layout.ts):
+		// position-less fallback (tickets/seat-map-layout.ts):
 		//   x = col + count(vAisles < col), y = row + count(hAisles < row)
 		// vAisles [1] ⇒ the gap opens between columns 1 and 2;
 		// hAisles [0] ⇒ the gap opens between rows 0 and 1.
+		//
+		// NOTE: this is identity with that `<`-based fallback, NOT with bytes
+		// the legacy grid editor actually persisted. The legacy editor's
+		// getXPosition/getYPosition (`git show ab9ca829:.../SeatGridEditor.svelte`)
+		// used `aisle <= index` and shipped that way since the grid editor's
+		// introduction, so every position it wrote carries a one-slot-early
+		// off-by-one relative to these expectations. This bake deliberately
+		// departs from that persisted convention — see `aisleShift` in
+		// seat-layout-bake.ts for the full rationale and disclosed consequence.
 		expect(positions.get('0-0')).toEqual({ x: 0, y: 0 });
 		expect(positions.get('0-1')).toEqual({ x: 1, y: 0 });
 		expect(positions.get('0-2')).toEqual({ x: 3, y: 0 });
@@ -40,11 +49,11 @@ describe('bakeSeatPositions — golden identity', () => {
 		expect(positions.get('2-2')).toEqual({ x: 3, y: 3 });
 	});
 
-	// Regression: the bake shipped with `aisle <= index`, which shifted the
-	// aisle's own row/column too and so opened every gap one slot EARLY —
-	// disagreeing with both the editor's aisle rails and the buyer map's
-	// no-position fallback. The WYSIWYG grid draws these coordinates, so the
-	// two derivations have to agree exactly.
+	// Regression: an earlier draft of this bake used `aisle <= index`, which
+	// shifted the aisle's own row/column too and so opened every gap one slot
+	// EARLY — disagreeing with both the editor's aisle rails and the buyer
+	// map's no-position fallback. The WYSIWYG grid draws these coordinates, so
+	// the two derivations have to agree exactly.
 	it('opens the aisle gap on the same side as the buyer map fallback', () => {
 		const positions = bake({ verticalAisles: [2] });
 		const xs = [0, 1, 2, 3].map((col) => positions.get(`0-${col}`)?.x);
