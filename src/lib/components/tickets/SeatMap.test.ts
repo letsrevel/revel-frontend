@@ -166,6 +166,82 @@ describe('SeatMap', () => {
 		});
 	});
 
+	// The unified seat language (#852): the map is the landing mock made real —
+	// a poster-ink house, SOLID dots in the seat's own colour, unavailable seats
+	// dimmed by LIGHTNESS (never an X, never a hue swap), selection as a white
+	// offset ring. These assertions pin the contract, not the incidental markup.
+	describe('visual language', () => {
+		const seatCircle = (name: string): SVGCircleElement | null =>
+			seatButton(name).querySelector('circle');
+
+		it('paints the house as a mode-inert poster-ink panel', () => {
+			const { container } = render(SeatMap, {
+				props: {
+					chart: makeChart([chartSeat('a1')]),
+					seats: [view('a1')],
+					onToggle: vi.fn()
+				}
+			});
+			const panel = container.querySelector('div.bg-poster-ink');
+			expect(panel).toBeTruthy();
+			// No `dark:` variant anywhere on it: a picture of a room, not a surface.
+			expect(panel?.className).not.toMatch(/dark:/);
+		});
+
+		it('fills an available seat with its price-category colour', () => {
+			renderMap({
+				chart: makeChart(
+					[chartSeat('a1', { price_category_id: 'cat-1' }), chartSeat('a2'), chartSeat('b1')],
+					{ price_categories: [{ id: 'cat-1', name: 'Gold', color: '#aa0000', display_order: 0 }] }
+				)
+			});
+			expect(seatCircle('Seat A1, Gold')?.getAttribute('fill')).toBe('#aa0000');
+		});
+
+		it('falls back to poster Periwinkle for an unpainted seat', () => {
+			renderMap();
+			expect(seatCircle('Seat A1')?.getAttribute('fill')).toBe('hsl(var(--poster-periwinkle))');
+		});
+
+		it('dims sold/held/blocked seats instead of drawing an X pattern', () => {
+			renderMap({
+				seats: [view('a1', { status: 'sold' }), view('a2', { status: 'held' }), view('b1')]
+			});
+			for (const name of ['Seat A1, sold', 'Seat A2, held by someone else']) {
+				const seat = seatButton(name);
+				expect(seat.querySelector('circle')?.getAttribute('class')).toContain(
+					'fill-poster-white/25'
+				);
+				// The old treatment: a diagonal pattern fill plus an X glyph.
+				expect(seat.querySelector('path')).toBeNull();
+				expect(seat.querySelector('circle')?.getAttribute('fill') ?? '').not.toMatch(/url\(/);
+			}
+		});
+
+		it('rings a held-by-me seat in white and keeps its own colour under the check', () => {
+			renderMap({
+				chart: makeChart(
+					[chartSeat('a1', { price_category_id: 'cat-1' }), chartSeat('a2'), chartSeat('b1')],
+					{ price_categories: [{ id: 'cat-1', name: 'Gold', color: '#aa0000', display_order: 0 }] }
+				),
+				seats: [view('a1', { status: 'mine' }), view('a2'), view('b1')]
+			});
+			const seat = seatButton('Seat A1, Gold');
+			const circles = seat.querySelectorAll('circle');
+			expect(circles[0].getAttribute('class')).toContain('stroke-poster-white');
+			expect(circles[1].getAttribute('fill')).toBe('#aa0000');
+			// The check glyph is drawn in whatever reads on that fill (#aa0000 is dark).
+			expect(seat.querySelector('path')?.getAttribute('stroke')).toBe('#ffffff');
+		});
+
+		it('keeps focus indicators on the poster palette (the theme ring drowns on ink)', () => {
+			renderMap();
+			expect(seatButton('Seat A1').getAttribute('class')).toContain(
+				'focus-visible:outline-poster-amber'
+			);
+		});
+	});
+
 	describe('sector transforms', () => {
 		it('keeps a rotated single sector interactive with a stage indicator', () => {
 			// A scoped sector rotated 90°: it renders un-rotated (readable) but the

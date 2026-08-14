@@ -465,9 +465,8 @@
 					{#if seatViewMode === 'map' && mapChart}
 						<!-- Tall map surface (the seated dialog widens for it); pan/zoom
 						     reaches anything beyond the box. -->
-						<div
-							class="h-[58vh] shrink-0 overflow-hidden rounded-lg border border-border bg-background"
-						>
+						<!-- Frame only: SeatMap paints its own poster-ink house (#852). -->
+						<div class="h-[58vh] shrink-0 overflow-hidden rounded-[20px] shadow-poster">
 							<SeatMap
 								chart={mapChart}
 								seats={seatViews}

@@ -169,6 +169,12 @@ TEXT_PAIRS = [  # (fg, bg, min_ratio, note)
     ("poster-purple", "poster-white", 4.5, "sticker text on white sticker"),
     ("poster-crimson-deep", "poster-white", 4.5, "sticker text on white sticker"),
     ("poster-ink", "poster-lavender", 4.5, "identity tile: ink icon on lavender"),
+    # Seat surfaces (#852): the buyer's map and the sector editor draw the same
+    # room — solid seat dots on the ink house, Periwinkle when the organizer
+    # painted no price category on them.
+    ("poster-ink", "poster-periwinkle", 4.5, "seat label/glyph on an unpainted seat"),
+    ("poster-periwinkle", "poster-ink", 3.0, "an unpainted seat against the house"),
+    ("poster-crimson", "poster-ink", 3.0, "aisle-remove affordance on the seat canvas"),
 ]
 
 BOTH = ("light", "dark")
@@ -284,6 +290,18 @@ COMPOSITED_PAIRS = [
     ("poster-white", 0.80, None, 0, "poster-ink", 4.5, BOTH, "poster panel secondary copy (white @80%)"),
     ("poster-white", 1, "poster-white", 0.14, "poster-ink", 4.5, BOTH, "seat-map stage pill / legend strip"),
     ("poster-white", 1, "poster-white", 0.12, "poster-ink", 4.5, BOTH, "seat-map zone chip"),
+    # Seat-map chrome ON the ink house (#852). `--ring` is a purple halo on a
+    # poster panel, so these carry their own poster treatment; the faces they
+    # sit on are translucent white, which is exactly what this family is for.
+    ("poster-white", 1, "poster-white", 0.10, "poster-ink", 4.5, BOTH, "seat-map zoom control glyph"),
+    ("poster-white", 1, "poster-white", 0.15, "poster-ink", 4.5, BOTH, "seat-map wheel hint / aisle add affordance"),
+    # A seat's own body against the house. The IN-FLIGHT hold (white@40) is the
+    # weakest one that still has to be spotted at a glance; the dim
+    # sold/held/blocked seat (white@25, 2.26:1) deliberately is not — see
+    # tickets/seat-map-paint.ts for why that one is hand-argued, not a row here
+    # (what carries the meaning is dim-vs-solid, an adjacency this family's
+    # single-wash model cannot express).
+    ("poster-white", 0.40, None, 0, "poster-ink", 3.0, BOTH, "seat being held (pending) against the house"),
     ("poster-ink", 1, "poster-white", 0.95, "poster-crimson-deep", 4.5, BOTH, "venues panel pill"),
     ("poster-white", 1, "poster-ink", 0.20, "poster-purple", 4.5, BOTH, "hero panel stat wash (purple end)"),
     ("poster-white", 1, "poster-ink", 0.20, "poster-crimson-deep", 4.5, BOTH, "hero panel stat wash (crimson end)"),

@@ -15,13 +15,24 @@
 	 * labels keep their aisle-shifted x (index hints — under curvature only the
 	 * row endpoints line up under them, which is fine), and the aisle add/remove
 	 * hover zones live on the rails exactly as before.
+	 *
+	 * VISUAL LANGUAGE (#852): this canvas is the same room the buyer sees —
+	 * the landing mock's poster-ink house, solid round seat dots in their
+	 * price-category colour (poster Periwinkle when unpainted), empty slots as
+	 * ghost outlines, selection as a white offset ring, and the mock's stage
+	 * pill. The panel is mode-inert (imagery rule); the rails and their aisle
+	 * affordances sit ON it in white@80, so the whole editing surface is one
+	 * picture instead of a card with a picture in it. `seat-grid-cell-class.ts`
+	 * owns the per-cell classes (and the measured contrast), `seat-map-paint.ts`
+	 * the fill/label colours the buyer's map uses for the very same seats.
 	 */
 	import * as m from '$lib/paraglide/messages.js';
 	import { Plus, Accessibility, EyeOff } from '@lucide/svelte';
 	import type { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import type { Coordinate2d, PriceCategorySchema } from '$lib/api/generated/types.gen';
 	import type { SeatData } from './seat-grid-types';
-	import { paintTextColor } from './seat-grid-save';
+	import { seatFill, seatGlyphColor } from '$lib/components/tickets/seat-map-paint';
+	import { seatCellClass } from './seat-grid-cell-class';
 	import { applyRectangle, SeatRectSelector } from './seat-grid-rect.svelte';
 	import SeatRotationNotch from './SeatRotationNotch.svelte';
 	import { aisleShift } from './seat-layout-bake';
@@ -347,46 +358,29 @@
 		else horizontalAisles.add(afterRow);
 	}
 
-	// Get cell class
+	/** Per-cell classes (seat-grid-cell-class.ts owns the visual language). */
 	function getCellClass(row: number, col: number): string {
 		const key = getCellKey(row, col);
-		const seatData = seats.get(key);
-		const hasSeat = seatData?.exists ?? false;
-		const isSelected = selectedCells.has(key);
-		const inRect = isInSelectionRect(row, col);
+		return seatCellClass({
+			hasSeat: seats.get(key)?.exists ?? false,
+			isSelected: selectedCells.has(key),
+			inRect: isInSelectionRect(row, col),
+			adjustActive,
+			grabbing: adjust?.drag?.key === key,
+			picked: adjust?.isSelected(row, col) ?? false
+		});
+	}
 
-		const base =
-			'absolute rounded transition-colors duration-75 flex items-center justify-center text-xs font-medium select-none';
-
-		if (adjustActive) {
-			// Empty cells are inert in this mode (nothing to select or drag), so
-			// they step out of the way entirely: no pointer target — which is what
-			// lets a click on free canvas reach the add-anywhere layer — and,
-			// paired with `disabled` on the button, no tab stop either.
-			if (!hasSeat) {
-				return `${base} pointer-events-none border-2 border-dashed border-muted-foreground/20 text-muted-foreground/30`;
-			}
-			const grabbing = adjust?.drag?.key === key;
-			const picked = adjust?.isSelected(row, col) ?? false;
-			return `${base} touch-none bg-success text-success-foreground z-10 ${
-				grabbing ? 'cursor-grabbing opacity-90 z-30' : 'cursor-grab'
-			} ${picked ? 'ring-2 ring-primary ring-offset-2 z-30' : ''}`;
-		}
-
-		if (isSelected) {
-			return `${base} bg-primary text-primary-foreground ring-2 ring-primary ring-offset-1 z-20`;
-		}
-
-		if (inRect) {
-			return `${base} ${hasSeat ? 'bg-primary/70 text-primary-foreground' : 'bg-primary/30'} ring-1 ring-primary z-20`;
-		}
-
-		if (hasSeat) {
-			return `${base} bg-success text-success-foreground hover:bg-success/85 cursor-pointer z-10`;
-		}
-
-		// Empty cell - visible border in both light and dark mode
-		return `${base} bg-muted/20 hover:bg-muted/40 border-2 border-muted-foreground/20 hover:border-muted-foreground/40 text-muted-foreground/30 cursor-pointer`;
+	/**
+	 * A seat's body + label colour, inline because a price-category colour is
+	 * USER DATA (the one legitimate exception to the raw-hue sweep rule).
+	 * Unpainted seats take poster Periwinkle with an ink label — the exact pair
+	 * the buyer's map draws, so a sector looks the same on both surfaces.
+	 * Selection deliberately does NOT override the fill any more: the white ring
+	 * says "selected" while the seat keeps showing what it is painted.
+	 */
+	function seatFillStyle(categoryColor?: string | null): string {
+		return ` background-color: ${seatFill(categoryColor)}; color: ${seatGlyphColor(categoryColor)};`;
 	}
 
 	// --- Geometry -----------------------------------------------------------
@@ -427,7 +421,16 @@
 			.join(' ');
 	}
 
-	/** Amber bands marking the slot each aisle opens up. */
+	/**
+	 * Shared chrome for the rail affordances. `--ring` is a purple halo on a
+	 * poster panel (app.css spells out why it is 1.27:1 there), so everything
+	 * focusable on this canvas declares amber instead — 9.42:1 on ink.
+	 */
+	const railButtonClass =
+		'items-center justify-center focus-visible:outline focus-visible:outline-2 ' +
+		'focus-visible:outline-offset-2 focus-visible:outline-poster-amber';
+
+	/** Faint light bands marking the slot each aisle opens up. */
 	const aisleBands = $derived.by(() => {
 		const bands: Array<{ x: number; y: number; width: number; height: number }> = [];
 		for (let c = 1; c < columns; c++) {
@@ -459,11 +462,18 @@
 <svelte:window onmouseup={handleMouseUp} />
 
 {#snippet stageBar()}
+	<!-- The landing mock's stage pill, verbatim: white@14 over ink composites to
+	     a near-ink strip, so the full-opacity white tracked label on it is
+	     11.42:1 (hand-verified — a composited alpha over a poster value is
+	     invisible to the audit script). An inverted sector puts the stage at the
+	     BOTTOM, so the pill's round edge flips to face the seats. -->
 	<div class="flex" style="padding-left: {RAIL_PX}px;">
 		<div class="flex justify-center" style="width: {frame.widthPx}px;">
 			<div
 				data-testid="seat-grid-stage"
-				class="rounded-lg bg-muted px-8 py-2 text-sm font-medium text-muted-foreground"
+				class="{invertRowOrder
+					? 'rounded-b-full rounded-t-md'
+					: 'rounded-b-md rounded-t-full'} bg-poster-white/[0.14] px-8 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.2em] text-poster-white"
 			>
 				{m['seatGridEditor.stage']()}
 			</div>
@@ -471,8 +481,11 @@
 	</div>
 {/snippet}
 
-<!-- Grid -->
-<div class="overflow-x-auto rounded-lg border bg-card p-4">
+<!-- The editing canvas IS the room: one poster-ink panel, identical in light and
+     dark (imagery rule), with the rails and their aisle affordances riding on it
+     in white. Everything outside this panel — the palette, the geometry panel,
+     the legend — stays on theme tokens. -->
+<div class="overflow-x-auto rounded-[20px] bg-poster-ink p-4 shadow-poster">
 	<div class="inline-block">
 		<!-- Stage indicator. Baked positions NEVER flip under invertRowOrder, so
 		     an inverted sector's front row (rank 0) carries the LARGEST y and the
@@ -488,7 +501,7 @@
 			<div class="relative" style="width: {frame.widthPx}px; height: {COL_RAIL_PX}px;">
 				{#each Array(columns) as _, c (c)}
 					<div
-						class="absolute bottom-0 flex items-end justify-center text-xs font-medium text-muted-foreground"
+						class="absolute bottom-0 flex items-end justify-center text-xs font-bold text-poster-white/80"
 						style="left: {round(
 							centerPx(colX(c), frame.originX) - CELL_PX / 2
 						)}px; width: {CELL_PX}px;"
@@ -507,7 +520,7 @@
 								<button
 									type="button"
 									onclick={() => toggleVerticalAisle(c - 1)}
-									class="flex h-full w-full items-center justify-center text-xs text-primary hover:text-destructive"
+									class="{railButtonClass} flex h-full w-full text-xs text-poster-amber hover:text-poster-crimson"
 									title={m['seatGridEditor.removeAisleAfterColumn']({ column: c })}
 								>
 									|
@@ -516,7 +529,7 @@
 								<button
 									type="button"
 									onclick={() => toggleVerticalAisle(c - 1)}
-									class="hidden h-6 w-full items-center justify-center rounded bg-primary/10 text-primary opacity-0 transition-opacity group-hover:flex group-hover:opacity-100"
+									class="{railButtonClass} hidden h-6 w-full rounded-full bg-poster-white/15 text-poster-white opacity-0 transition-opacity group-hover:flex group-hover:opacity-100"
 									title={m['seatGridEditor.addAisleAfterColumn']({ column: c })}
 								>
 									<Plus class="h-3 w-3" />
@@ -533,7 +546,7 @@
 			<div class="relative shrink-0" style="width: {RAIL_PX}px; height: {frame.heightPx}px;">
 				{#each Array(rows) as _, r (r)}
 					<div
-						class="absolute flex w-full items-center justify-center text-xs font-medium text-muted-foreground"
+						class="absolute flex w-full items-center justify-center text-xs font-bold text-poster-white/80"
 						style="top: {round(centerPx(rowY(r), frame.originY) - 10)}px; height: 20px;"
 					>
 						{getRowLabel(r)}
@@ -550,7 +563,7 @@
 								<button
 									type="button"
 									onclick={() => toggleHorizontalAisle(r - 1)}
-									class="flex h-full w-full items-center justify-center text-xs text-highlight-foreground hover:text-destructive dark:text-highlight"
+									class="{railButtonClass} flex h-full w-full text-xs text-poster-amber hover:text-poster-crimson"
 									title={m['seatGridEditor.removeAisleAfterRow']({ row: getRowLabel(r - 1) })}
 								>
 									—
@@ -559,7 +572,7 @@
 								<button
 									type="button"
 									onclick={() => toggleHorizontalAisle(r - 1)}
-									class="hidden h-full w-full items-center justify-center rounded bg-primary/10 text-primary opacity-0 transition-opacity group-hover:flex group-hover:opacity-100"
+									class="{railButtonClass} hidden h-full w-full rounded-full bg-poster-white/15 text-poster-white opacity-0 transition-opacity group-hover:flex group-hover:opacity-100"
 									title={m['seatGridEditor.addAisleAfterRow']({ row: getRowLabel(r - 1) })}
 								>
 									<Plus class="h-3 w-3" />
@@ -590,7 +603,7 @@
 							y={band.y}
 							width={band.width}
 							height={band.height}
-							class="fill-highlight/25"
+							class="fill-poster-white/[0.08]"
 							data-testid="seat-grid-aisle-band"
 						/>
 					{/each}
@@ -599,7 +612,7 @@
 							points={polyPoints(shape)}
 							data-testid="seat-grid-shape"
 							fill="none"
-							stroke="hsl(var(--border))"
+							stroke="hsl(var(--poster-white) / 0.35)"
 							stroke-width="2"
 						/>
 					{/if}
@@ -608,7 +621,7 @@
 							points={polyPoints(proposedShape)}
 							data-testid="seat-grid-proposed-shape"
 							fill="none"
-							stroke="hsl(var(--primary))"
+							stroke="hsl(var(--poster-amber))"
 							stroke-width="2"
 							stroke-dasharray="6 4"
 						/>
@@ -624,7 +637,7 @@
 					<button
 						type="button"
 						data-testid="seat-grid-add-anywhere"
-						class="absolute inset-0 z-0 cursor-crosshair rounded bg-primary/5 ring-1 ring-inset ring-primary/30"
+						class="absolute inset-0 z-0 cursor-crosshair rounded-[16px] bg-poster-white/5 ring-1 ring-inset ring-poster-amber/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-poster-amber"
 						aria-label={m['seatGridEditor.adjust.addAnywhereTarget']()}
 						onclick={handleCanvasAdd}
 					></button>
@@ -635,7 +648,7 @@
 						type="button"
 						data-testid="seat-grid-add-to-row"
 						data-row={anchor.row}
-						class="absolute z-20 flex items-center justify-center rounded-full border border-dashed border-primary/50 bg-card text-primary transition-colors hover:border-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						class="absolute z-20 flex items-center justify-center rounded-full border border-dashed border-poster-white/50 text-poster-white transition-colors hover:border-poster-amber hover:bg-poster-white/15 hover:text-poster-amber focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-poster-amber"
 						style={markerStyle(anchor.point, frame, 24)}
 						aria-label={m['seatGridEditor.adjust.addSeatToRow']({
 							row: getRowLabel(anchor.row)
@@ -657,7 +670,6 @@
 							seatData?.exists && seatData.priceCategoryId
 								? categoryById.get(seatData.priceCategoryId)
 								: undefined}
-						{@const paintOverridden = selectedCells.has(cellKey) || isInSelectionRect(r, c)}
 						<button
 							type="button"
 							data-cell={cellKey}
@@ -667,8 +679,8 @@
 								pointAt(r, c),
 								frame,
 								adjust?.offsetFor(cellKey)
-							)} width: {BUTTON_PX}px; height: {BUTTON_PX}px;{paint && !paintOverridden
-								? ` background-color: ${paint.color}; color: ${paintTextColor(paint.color)};`
+							)} width: {BUTTON_PX}px; height: {BUTTON_PX}px;{seatData?.exists
+								? seatFillStyle(paint?.color)
 								: ''}"
 							title={paint?.name}
 							onmousedown={(e) => handleMouseDown(r, c, e)}
@@ -691,17 +703,22 @@
 						>
 							{#if seatData?.exists}
 								<SeatRotationNotch rot={rotationFor?.(r, c) ?? 0} size={BUTTON_PX} />
-								<span class="text-[10px]">{getSeatLabel(r, c)}</span>
-								<!-- Indicator icons -->
+								<span>{getSeatLabel(r, c)}</span>
+								<!-- Indicator icons. They sit on their OWN ink chip rather than on
+								     the seat, because a seat's fill is the organizer's colour and
+								     nothing can be promised about contrast on it; on ink,
+								     Periwinkle is 8.36:1 and Amber 9.42:1. They differ by SHAPE
+								     too, and both are already named in the cell's accessible
+								     label, so they are never the only carrier. -->
 								{#if seatData.is_accessible || seatData.is_obstructed_view}
 									<div
-										class="absolute -bottom-1 -right-1 flex gap-0.5 rounded bg-card/90 p-0.5 shadow-sm"
+										class="absolute -bottom-1 -right-1 flex gap-0.5 rounded-full bg-poster-ink p-0.5"
 									>
 										{#if seatData.is_accessible}
-											<Accessibility class="h-3 w-3 text-info" />
+											<Accessibility class="h-3 w-3 text-poster-periwinkle" />
 										{/if}
 										{#if seatData.is_obstructed_view}
-											<EyeOff class="h-3 w-3 text-highlight-foreground dark:text-highlight" />
+											<EyeOff class="h-3 w-3 text-poster-amber" />
 										{/if}
 									</div>
 								{/if}

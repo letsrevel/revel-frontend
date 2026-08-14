@@ -478,3 +478,87 @@ describe('SeatGrid — abandoning a drag', () => {
 		});
 	});
 });
+
+// The editor and the buyer's map draw the SAME room (#852). These pin the seat
+// language itself — solid dots in the seat's own colour on a poster-ink house,
+// empty slots as ghost outlines, selection as a white offset ring — so a future
+// restyle of one surface cannot silently walk away from the other.
+describe('SeatGrid — unified seat language (#852)', () => {
+	const cellOf = (container: HTMLElement, key: string): HTMLElement => {
+		const button = container.querySelector<HTMLElement>(`[data-cell="${key}"]`);
+		if (!button) throw new Error(`no cell ${key}`);
+		return button;
+	};
+
+	it('draws the canvas as a mode-inert poster-ink panel', () => {
+		const { container } = render(SeatGrid, props());
+		const panel = container.querySelector('div.bg-poster-ink');
+		expect(panel).toBeTruthy();
+		expect(panel?.className).not.toMatch(/dark:/);
+	});
+
+	it('draws the stage as the landing mock’s pill, flipped for an inverted sector', () => {
+		const { container } = render(SeatGrid, props());
+		const stage = container.querySelector('[data-testid="seat-grid-stage"]');
+		expect(stage?.className).toContain('rounded-t-full');
+		expect(stage?.className).toContain('bg-poster-white/[0.14]');
+		expect(stage?.className).toContain('tracking-[0.2em]');
+
+		const inverted = render(SeatGrid, props({ invertRowOrder: true }));
+		expect(
+			inverted.container.querySelector('[data-testid="seat-grid-stage"]')?.className
+		).toContain('rounded-b-full');
+	});
+
+	it('fills an unpainted seat with poster Periwinkle and labels it in ink', () => {
+		const { container } = render(SeatGrid, props());
+		const seat = cellOf(container, '0-0');
+		expect(seat.style.backgroundColor).toBe('hsl(var(--poster-periwinkle))');
+		expect(seat.style.color).toBe('hsl(var(--poster-ink))');
+		expect(seat.className).toContain('rounded-full');
+	});
+
+	it('keeps a painted seat on its price-category colour, with a readable label', () => {
+		const base = props();
+		base.seats.set('0-0', {
+			exists: true,
+			is_accessible: false,
+			is_obstructed_view: false,
+			priceCategoryId: 'cat-1'
+		});
+		const { container } = render(SeatGrid, {
+			...base,
+			priceCategories: [{ id: 'cat-1', name: 'Gold', color: '#aa0000', display_order: 0 }]
+		});
+		const seat = cellOf(container, '0-0');
+		expect(seat.style.backgroundColor).toBe('rgb(170, 0, 0)');
+		// paintTextColor: white reads on that dark red.
+		expect(seat.style.color).toBe('rgb(255, 255, 255)');
+	});
+
+	it('draws an empty cell as a ghost outline with no fill', () => {
+		const base = props();
+		base.seats.delete('0-0');
+		const { container } = render(SeatGrid, base);
+		const empty = cellOf(container, '0-0');
+		expect(empty.style.backgroundColor).toBe('');
+		expect(empty.className).toContain('border-poster-white/10');
+		expect(empty.className).toContain('rounded-full');
+	});
+
+	it('marks a selected seat with a white offset ring and keeps its own fill', () => {
+		const base = props();
+		base.selectedCells.add('0-0');
+		const { container } = render(SeatGrid, base);
+		const seat = cellOf(container, '0-0');
+		expect(seat.className).toContain('outline-poster-white');
+		expect(seat.className).toContain('outline-offset-2');
+		// Selection no longer paints over the seat: you still see what it is.
+		expect(seat.style.backgroundColor).toBe('hsl(var(--poster-periwinkle))');
+	});
+
+	it('gives every seat a focus indicator that survives the ink panel', () => {
+		const { container } = render(SeatGrid, props());
+		expect(cellOf(container, '0-0').className).toContain('focus-visible:outline-poster-amber');
+	});
+});

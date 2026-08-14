@@ -1,7 +1,14 @@
 <!-- src/lib/components/venues/SeatLayoutPreview.svelte -->
 <script lang="ts">
+	/**
+	 * Thumbnail of a baked sector (the shape-fit dialog's picture). Same room,
+	 * same language as the editor canvas and the buyer's map (#852): solid seat
+	 * dots on the poster-ink house, the landing mock's stage pill, price-category
+	 * colours inline because they are user data.
+	 */
 	import * as m from '$lib/paraglide/messages.js';
 	import type { Coordinate2d } from '$lib/api/generated/types.gen';
+	import { seatFill } from '$lib/components/tickets/seat-map-paint';
 
 	export interface PreviewSeat {
 		key: string;
@@ -77,27 +84,31 @@
 	}
 </script>
 
-<div class="rounded-lg border bg-card p-2">
+<div class="rounded-[20px] bg-poster-ink p-3">
 	<svg
 		viewBox="{vbX} {vbY} {vbW} {vbH}"
 		class="h-auto w-full"
 		role="img"
 		aria-label={m['seatGridEditor.geometry.previewAria']()}
 	>
+		<!-- The mock's stage pill. It stays a <rect> (fully rounded rather than
+		     round-top/flat-bottom) because at thumbnail scale the two read the
+		     same, and the placement tests address it by y/height. white@14 over
+		     ink puts the full-white label at 11.42:1 — hand-verified. -->
 		<rect
 			x={vbX + vbW * 0.25}
 			y={stageY}
 			width={vbW * 0.5}
 			height={STAGE_H}
-			rx="7"
+			rx={STAGE_H / 2}
 			data-testid="preview-stage"
-			class="fill-muted"
+			class="fill-poster-white/[0.14]"
 		/>
 		<text
 			x={vbX + vbW * 0.5}
 			y={stageY + STAGE_H - 4}
 			text-anchor="middle"
-			class="fill-muted-foreground text-[8px] font-semibold"
+			class="fill-poster-white text-[7px] font-extrabold uppercase tracking-[0.2em]"
 		>
 			{m['seatGridEditor.geometry.previewStage']()}
 		</text>
@@ -105,7 +116,7 @@
 			<polygon
 				points={polyPoints(shape)}
 				fill="none"
-				stroke="hsl(var(--border))"
+				stroke="hsl(var(--poster-white) / 0.35)"
 				stroke-width="1.5"
 			/>
 		{/if}
@@ -113,19 +124,13 @@
 			<polygon
 				points={polyPoints(proposedShape)}
 				fill="none"
-				stroke="hsl(var(--primary))"
+				stroke="hsl(var(--poster-amber))"
 				stroke-width="1.5"
 				stroke-dasharray="4 3"
 			/>
 		{/if}
 		{#each seats as seat (seat.key)}
-			<circle
-				cx={cx(seat.x)}
-				cy={cy(seat.y)}
-				r={SEAT_R}
-				fill={seat.categoryColor ?? 'hsl(var(--primary))'}
-				opacity="0.9"
-			/>
+			<circle cx={cx(seat.x)} cy={cy(seat.y)} r={SEAT_R} fill={seatFill(seat.categoryColor)} />
 		{/each}
 	</svg>
 </div>

@@ -56,7 +56,7 @@
 	role="button"
 	tabindex="0"
 	aria-label={target.label}
-	class="cursor-pointer outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
+	class="cursor-pointer outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-poster-amber"
 	onclick={onSelect}
 	onkeydown={handleKeydown}
 >
@@ -69,7 +69,7 @@
 				width={sector.width * cell}
 				height={sector.height * cell}
 				rx="12"
-				class="fill-muted/40 stroke-border"
+				class="fill-poster-white/[0.06] stroke-poster-white/30"
 				stroke-dasharray="6 4"
 				stroke-width="1.5"
 			/>
@@ -78,7 +78,7 @@
 				y={(sector.height * cell) / 2}
 				text-anchor="middle"
 				dominant-baseline="central"
-				class="fill-muted-foreground text-[11px]"
+				class="fill-poster-white/80 text-[11px]"
 			>
 				{standingLabelText}
 			</text>
@@ -86,7 +86,7 @@
 			{#if sector.shape}
 				<polygon
 					points={sector.shape.map((p) => `${p.x * cell},${p.y * cell}`).join(' ')}
-					class="fill-muted/30 stroke-border/70"
+					class="fill-poster-white/[0.06] stroke-poster-white/20"
 					stroke-width="1"
 				/>
 			{:else}
@@ -96,16 +96,18 @@
 					width={sector.width * cell + 12}
 					height={sector.height * cell + 12}
 					rx="10"
-					class="fill-muted/25 stroke-border/60"
+					class="fill-poster-white/[0.05] stroke-poster-white/20"
 					stroke-width="1"
 				/>
 			{/if}
+			<!-- On-sale sector, seats not individually pickable yet: brighter than a
+			     ghost's white@20 so "buy into this sector" reads as live. -->
 			{#each sector.seats as pt (pt.seatId)}
 				<circle
 					cx={(pt.x + 0.5) * cell}
 					cy={(pt.y + 0.5) * cell}
 					r={seatR - 3}
-					class="fill-muted-foreground/35"
+					class="fill-poster-white/40"
 				/>
 			{/each}
 		{/if}
@@ -119,7 +121,7 @@
 			width={chipW}
 			height={chipH}
 			rx="8"
-			class="fill-background/90 stroke-border"
+			class="fill-poster-ink/90 stroke-poster-white/40"
 			stroke-width="1"
 		/>
 		{#each target.lines as line, index (index)}
@@ -128,7 +130,7 @@
 				y={chipY + PAD_Y + index * LINE_H + LINE_H / 2}
 				text-anchor="middle"
 				dominant-baseline="central"
-				class="fill-foreground text-[11px] font-medium"
+				class="fill-poster-white text-[11px] font-medium"
 			>
 				{line}
 			</text>
@@ -143,6 +145,6 @@
 		width={box.width}
 		height={box.height}
 		rx="10"
-		class="fill-transparent transition-colors hover:fill-primary/10"
+		class="fill-transparent transition-colors hover:fill-poster-white/10"
 	/>
 </g>
