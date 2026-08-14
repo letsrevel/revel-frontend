@@ -234,11 +234,51 @@ describe('SeatMap', () => {
 			expect(seat.querySelector('path')?.getAttribute('stroke')).toBe('#ffffff');
 		});
 
-		it('keeps focus indicators on the poster palette (the theme ring drowns on ink)', () => {
+		// An SVG container has NO box model, so a `focus-visible:outline-*`
+		// utility on the seat <g> never paints — Chromium falls back to its own
+		// blue bounding-box ring and other engines draw nothing. The indicator is
+		// therefore real geometry: an amber ring circle revealed by
+		// `group-focus-visible`, with the UA ring suppressed only because that
+		// replacement exists. Asserting the ELEMENT (not a class string on the
+		// group) is what makes this test able to fail if the ring goes away.
+		it('draws keyboard focus as an amber ring circle, outside the white mine ring', () => {
 			renderMap();
-			expect(seatButton('Seat A1').getAttribute('class')).toContain(
-				'focus-visible:outline-poster-amber'
-			);
+			const seat = seatButton('Seat A1');
+			expect(seat.getAttribute('class')).toContain('group');
+			// Never drop the UA ring without a replacement — so both must be true.
+			expect(seat.getAttribute('class')).toContain('outline-none');
+
+			const ring = seat.querySelector('[data-testid="seat-focus-ring"]');
+			expect(ring).toBeTruthy();
+			expect(ring?.getAttribute('class')).toContain('stroke-poster-amber');
+			expect(ring?.getAttribute('class')).toContain('opacity-0');
+			expect(ring?.getAttribute('class')).toContain('group-focus-visible:opacity-100');
+			expect(ring?.getAttribute('fill')).toBe('none');
+			// Radius sits outside the `mine` ring (SEAT_R + 3) so the two cues
+			// never collide: amber for focus, white for "held by me".
+			expect(Number(ring?.getAttribute('r'))).toBeGreaterThan(11 + 3);
+		});
+
+		it('gives every interactive seat its own focus ring', () => {
+			renderMap();
+			const seats = document.querySelectorAll('[data-seat-id][role="button"]');
+			expect(seats).toHaveLength(3);
+			for (const seat of seats) {
+				expect(seat.querySelector('[data-testid="seat-focus-ring"]')).toBeTruthy();
+			}
+		});
+
+		it('draws the same amber focus geometry on whole-sector targets', () => {
+			renderMap({
+				sectorTargets: [{ sectorId: 'sec-1', label: 'Stalls, EUR 10.00', lines: ['Stalls'] }],
+				interactive: false
+			});
+			const target = document.querySelector('[data-sector-target="sec-1"]');
+			expect(target?.getAttribute('class')).toContain('group');
+			expect(target?.getAttribute('class')).toContain('outline-none');
+			const ring = target?.querySelector('[data-testid="sector-focus-ring"]');
+			expect(ring?.getAttribute('class')).toContain('stroke-poster-amber');
+			expect(ring?.getAttribute('class')).toContain('group-focus-visible:opacity-100');
 		});
 	});
 

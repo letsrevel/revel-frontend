@@ -56,7 +56,7 @@
 	role="button"
 	tabindex="0"
 	aria-label={target.label}
-	class="cursor-pointer outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-poster-amber"
+	class="group cursor-pointer outline-none"
 	onclick={onSelect}
 	onkeydown={handleKeydown}
 >
@@ -146,5 +146,23 @@
 		height={box.height}
 		rx="10"
 		class="fill-transparent transition-colors hover:fill-poster-white/10"
+	/>
+
+	<!-- Focus as real geometry (see the seat ring in SeatMap.svelte for why an
+	     `outline` utility is inert on an SVG container). A whole-sector target is
+	     hit as a rectangle, so its ring is one, drawn just outside that hit area
+	     in amber (9.42:1 on ink) and LAST so a neighbouring sector cannot paint
+	     over it. `outline-none` on the group is safe precisely because this
+	     replacement exists. -->
+	<rect
+		x={box.x - 4}
+		y={box.y - 4}
+		width={box.width + 8}
+		height={box.height + 8}
+		rx="14"
+		fill="none"
+		stroke-width="2"
+		data-testid="sector-focus-ring"
+		class="pointer-events-none stroke-poster-amber opacity-0 group-focus-visible:opacity-100"
 	/>
 </g>

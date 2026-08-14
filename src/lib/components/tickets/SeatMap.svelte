@@ -515,6 +515,14 @@
 			{@const cx = (pt.x + 0.5) * CELL}
 			{@const cy = (pt.y + 0.5) * CELL}
 			{#if seatInteractive(pt.seatId) && view}
+				<!-- Focus is drawn as REAL SVG GEOMETRY, not an `outline` utility: an
+				     SVG container has no box model, so `focus-visible:outline-*` on
+				     this <g> never paints (Chromium falls back to its own blue
+				     bounding-box ring; Safari/Firefox draw nothing at all). The amber
+				     ring below is a sibling circle toggled by `group-focus-visible`,
+				     and `outline-none` suppresses the UA ring ONLY because that
+				     replacement exists. Amber (9.42:1 on ink) and a radius OUTSIDE the
+				     white `mine` ring keep the two cues distinct. -->
 				<g
 					data-seat-id={pt.seatId}
 					role="button"
@@ -523,13 +531,20 @@
 					aria-pressed={view.status === 'mine'}
 					aria-disabled={canToggle(view) ? undefined : true}
 					aria-busy={view.status === 'pending' ? true : undefined}
-					class="{canToggle(view)
-						? 'cursor-pointer'
-						: 'cursor-not-allowed'} outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-poster-amber"
+					class="group {canToggle(view) ? 'cursor-pointer' : 'cursor-not-allowed'} outline-none"
 					onclick={() => handleSeatClick(view)}
 					onkeydown={(event) => handleSeatKeydown(event, view)}
 				>
 					{@render seatShape(pt, view, cx, cy)}
+					<circle
+						{cx}
+						{cy}
+						r={SEAT_R + 6}
+						fill="none"
+						stroke-width="2"
+						data-testid="seat-focus-ring"
+						class="pointer-events-none stroke-poster-amber opacity-0 group-focus-visible:opacity-100"
+					/>
 				</g>
 			{:else}
 				<g data-seat-id={pt.seatId} aria-hidden="true">
