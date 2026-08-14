@@ -1,65 +1,30 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { SeatAdjustState, type NudgePatch } from './seat-adjust-state.svelte';
-import SeatAdjustPanel from './SeatAdjustPanel.svelte';
+import type { NudgePatch } from './seat-adjust-state.svelte';
+import SeatAdjustInspector from './SeatAdjustInspector.svelte';
 
-function harness(options: { active?: boolean; selected?: boolean; nudge?: NudgePatch } = {}) {
-	const adjust = new SeatAdjustState();
-	if (options.active ?? true) adjust.setActive(true);
+/**
+ * The mode toggle and the "Add seat" sub-toggle live in `SeatSelectionActions`
+ * now (see its own test file) — this component is the single-seat inspector
+ * row only, and the caller (`SeatGridEditor`) mounts it exclusively when a
+ * seat is selected. There is no "no selection" state to cover here.
+ */
+function harness(options: { nudge?: NudgePatch; selectedLabel?: string } = {}) {
 	const onNudgeChange = vi.fn();
 	const onResetSeat = vi.fn();
 	const onRemoveSeat = vi.fn();
-	const result = render(SeatAdjustPanel, {
-		adjust,
-		selectedLabel: (options.selected ?? true) ? 'B3' : null,
+	const result = render(SeatAdjustInspector, {
+		selectedLabel: options.selectedLabel ?? 'B3',
 		nudge: options.nudge ?? null,
 		onNudgeChange,
 		onResetSeat,
 		onRemoveSeat
 	});
-	return { adjust, onNudgeChange, onResetSeat, onRemoveSeat, ...result };
+	return { onNudgeChange, onResetSeat, onRemoveSeat, ...result };
 }
 
-describe('SeatAdjustPanel — the mode toggle', () => {
-	it('announces its state with aria-pressed and flips the mode', async () => {
-		const user = userEvent.setup();
-		const { adjust, getByTestId } = harness({ active: false });
-		const toggle = getByTestId('adjust-mode-toggle');
-		expect(toggle).toHaveAttribute('aria-pressed', 'false');
-
-		await user.click(toggle);
-		expect(adjust.active).toBe(true);
-		expect(getByTestId('adjust-mode-toggle')).toHaveAttribute('aria-pressed', 'true');
-	});
-
-	it('hides the sub-controls and the inspector while the mode is off', () => {
-		const { queryByTestId } = harness({ active: false });
-		expect(queryByTestId('adjust-add-seat-toggle')).toBeNull();
-		expect(queryByTestId('adjust-inspector-title')).toBeNull();
-	});
-
-	it('arms and disarms "add seat" without leaving the mode', async () => {
-		const user = userEvent.setup();
-		const { adjust, getByTestId } = harness();
-		const addToggle = getByTestId('adjust-add-seat-toggle');
-		expect(addToggle).toHaveAttribute('aria-pressed', 'false');
-
-		await user.click(addToggle);
-		expect(adjust.addArmed).toBe(true);
-		await user.click(getByTestId('adjust-add-seat-toggle'));
-		expect(adjust.addArmed).toBe(false);
-		expect(adjust.active).toBe(true);
-	});
-});
-
-describe('SeatAdjustPanel — the seat inspector', () => {
-	it('prompts for a selection when there is none', () => {
-		const { getByText, queryByTestId } = harness({ selected: false });
-		expect(getByText('Select a seat on the grid to fine-tune it.')).toBeTruthy();
-		expect(queryByTestId('adjust-inspector-title')).toBeNull();
-	});
-
+describe('SeatAdjustInspector', () => {
 	it('names the selected seat and shows its stored nudge', () => {
 		const { getByTestId, getByLabelText } = harness({ nudge: { dx: 1.5, dy: -0.5, rot: 45 } });
 		expect(getByTestId('adjust-inspector-title').textContent).toContain('B3');

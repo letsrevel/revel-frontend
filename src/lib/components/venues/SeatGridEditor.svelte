@@ -33,7 +33,7 @@
 	import SeatPaintPalette from './SeatPaintPalette.svelte';
 	import SeatGridLegend from './SeatGridLegend.svelte';
 	import SeatSelectionActions from './SeatSelectionActions.svelte';
-	import SeatAdjustPanel from './SeatAdjustPanel.svelte';
+	import SeatAdjustInspector from './SeatAdjustInspector.svelte';
 	import ShapeFitDialog from './ShapeFitDialog.svelte';
 
 	/**
@@ -488,8 +488,11 @@
 	<!-- Price category palette (seat painting) -->
 	<SeatPaintPalette {priceCategories} {activePaint} {manageCategoriesHref} onToggle={togglePaint} />
 
-	<!-- Selection Actions -->
+	<!-- Seat editor toolbar: the "Adjust seats" mode switch (always first) plus,
+	     only outside adjust mode with an active selection, the bulk selection
+	     actions. -->
 	<SeatSelectionActions
+		{adjust}
 		count={selectedCount}
 		canPaint={activePaint !== null}
 		onToggleAccessible={markSelectedAccessible}
@@ -498,6 +501,18 @@
 		onDelete={deleteSelected}
 		onClear={clearSelection}
 	/>
+
+	<!-- Single-seat inspector: a full-width row directly below the toolbar,
+	     visible only while adjust mode is on AND a seat is selected. -->
+	{#if adjust.active && adjustActions.selectedSeatLabel !== null}
+		<SeatAdjustInspector
+			selectedLabel={adjustActions.selectedSeatLabel}
+			nudge={adjustActions.selectedNudge}
+			onNudgeChange={adjustActions.handleInspectorChange}
+			onResetSeat={adjustActions.handleResetSeat}
+			onRemoveSeat={adjustActions.handleRemoveSeat}
+		/>
+	{/if}
 
 	<!-- Grid + row-geometry panel split view. There is no separate preview any
 	     more: the grid IS the preview, drawing every cell at its baked position.
@@ -517,14 +532,6 @@
 				desynced={rowLayoutDesynced}
 				{invertRowOrder}
 				onBeforeEdit={recordEdit}
-			/>
-			<SeatAdjustPanel
-				{adjust}
-				selectedLabel={adjustActions.selectedSeatLabel}
-				nudge={adjustActions.selectedNudge}
-				onNudgeChange={adjustActions.handleInspectorChange}
-				onResetSeat={adjustActions.handleResetSeat}
-				onRemoveSeat={adjustActions.handleRemoveSeat}
 			/>
 		</div>
 		<div class="min-w-0 xl:col-start-1 xl:row-start-1">
