@@ -101,12 +101,13 @@ describe('SeatAdjustPanel — the seat inspector', () => {
 		expect(onNudgeChange).toHaveBeenLastCalledWith({ dx: 0 });
 	});
 
-	it('describes which way the rotation points (0 = notch up, toward the stage side)', () => {
+	it('describes the rotation contract without claiming it follows the stage', () => {
 		const { getByLabelText, container } = harness();
 		const describedBy = getByLabelText('Rotation (degrees)').getAttribute('aria-describedby');
 		const help = container.querySelector(`#${describedBy}`)?.textContent;
 		expect(help).toContain('0°');
 		expect(help).toContain('clockwise');
+		expect(help).toContain('does not follow the stage');
 	});
 
 	it('offers reset and remove for the selected seat', async () => {

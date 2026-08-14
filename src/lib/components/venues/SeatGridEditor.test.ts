@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/svelte';
+import { fireEvent, render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import { QueryClient } from '@tanstack/svelte-query';
@@ -69,6 +69,18 @@ function seatTally(): number {
 
 async function save(user: ReturnType<typeof userEvent.setup>) {
 	await user.click(screen.getByRole('button', { name: 'Save Changes' }));
+}
+
+const savedRotations = (onPersist: ReturnType<typeof vi.fn>) => {
+	const [, metadata] = onPersist.mock.calls.at(-1) ?? [];
+	return (metadata as { seatRotations?: Record<string, number> | null } | undefined)?.seatRotations;
+};
+
+async function rotateSelected(user: ReturnType<typeof userEvent.setup>, degrees: string) {
+	const rot = screen.getByLabelText('Rotation (degrees)') as HTMLInputElement;
+	await user.clear(rot);
+	await user.type(rot, degrees);
+	await tick();
 }
 
 describe('SeatGridEditor — adjust mode end to end', () => {
@@ -439,19 +451,6 @@ describe('SeatGridEditor — row order flips the rank space, not the room', () =
 // rotations into `metadata.seatRotations`, keyed by SEAT LABEL. The mirror is
 // sparse: nothing rotated ⇒ `null` ⇒ the page REMOVES the key.
 describe('SeatGridEditor — buyer-facing rotation mirror', () => {
-	const savedRotations = (onPersist: ReturnType<typeof vi.fn>) => {
-		const [, metadata] = onPersist.mock.calls.at(-1) ?? [];
-		return (metadata as { seatRotations?: Record<string, number> | null } | undefined)
-			?.seatRotations;
-	};
-
-	async function rotateSelected(user: ReturnType<typeof userEvent.setup>, degrees: string) {
-		const rot = screen.getByLabelText('Rotation (degrees)') as HTMLInputElement;
-		await user.clear(rot);
-		await user.type(rot, degrees);
-		await tick();
-	}
-
 	it('mirrors a rotated seat under its LABEL while the recipe keeps the rank', async () => {
 		const user = userEvent.setup();
 		const { onPersist } = renderEditor();
@@ -573,5 +572,96 @@ describe('SeatGridEditor — buyer-facing rotation mirror', () => {
 			rowLayout: { version: 99, kind: 'rows', futureKnob: 3 }
 		});
 		expect('seatRotations' in (metadata as Record<string, unknown>)).toBe(false);
+	});
+});
+
+// Rank-addressed entries (seatNudges, and the rotations mirrored from them)
+// are addressed over the POPULATED rows only. A normal-mode add that turns an
+// EMPTY row populated re-ranks every row behind it — the adjust-mode paths
+// already reindexed themselves (see the tests above); these cover the
+// normal-mode paths gaining the same guard.
+describe('SeatGridEditor — normal-mode adds reindex rank-addressed entries', () => {
+	/** Empty row A via the bulk selection action, leaving B the only populated row. */
+	async function emptyRowA(user: ReturnType<typeof userEvent.setup>) {
+		await user.click(cell('0-0'));
+		await user.click(cell('0-1'));
+		await user.click(cell('0-2'));
+		await user.click(screen.getByRole('button', { name: 'Delete Selected' }));
+		await tick();
+	}
+
+	/** Rotate B2 while it is the ONLY populated row — its nudge starts at rank 0. */
+	async function rotateOnlyPopulatedRow(user: ReturnType<typeof userEvent.setup>) {
+		await user.click(screen.getByTestId('adjust-mode-toggle'));
+		await user.click(cell('1-1'));
+		await rotateSelected(user, '90');
+		await user.click(screen.getByTestId('adjust-mode-toggle'));
+		await tick();
+	}
+
+	it('a click that populates the empty row keeps the other row’s rotation addressed', async () => {
+		const user = userEvent.setup();
+		const { onPersist } = renderEditor();
+		await tick();
+
+		await emptyRowA(user);
+		await rotateOnlyPopulatedRow(user);
+		// B2's notch renders while row A is still empty (rank 0).
+		expect(cell('1-1').querySelector('[data-rot="90"]')).not.toBeNull();
+
+		// Normal-mode click on an empty cell in row A populates it again.
+		await user.click(cell('0-0'));
+		await tick();
+		expect(cell('0-0').textContent?.trim()).toBe('A1');
+		// The notch is still on B2, unmoved and un-rotated by the reindex.
+		expect(cell('1-1').querySelector('[data-rot="90"]')).not.toBeNull();
+
+		await save(user);
+		// Row A is populated again, so row B is rank 1 now, not rank 0.
+		expect(savedRecipe(onPersist)).toMatchObject({ seatNudges: [{ row: 1, seat: 1, rot: 90 }] });
+		expect(savedRotations(onPersist)).toEqual({ B2: 90 });
+	});
+
+	it('a drag-fill that populates the empty row keeps the other row’s rotation addressed', async () => {
+		const user = userEvent.setup();
+		const { onPersist } = renderEditor();
+		await tick();
+
+		await emptyRowA(user);
+		await rotateOnlyPopulatedRow(user);
+
+		// Both corners of the drag are empty ⇒ the rectangle rule fills seats.
+		await fireEvent.mouseDown(cell('0-0'), { button: 0 });
+		await fireEvent.mouseEnter(cell('0-2'));
+		await fireEvent.mouseUp(window);
+		await tick();
+		expect(cell('0-0').textContent?.trim()).toBe('A1');
+		expect(cell('0-2').textContent?.trim()).toBe('A3');
+
+		await save(user);
+		expect(savedRecipe(onPersist)).toMatchObject({ seatNudges: [{ row: 1, seat: 1, rot: 90 }] });
+		expect(savedRotations(onPersist)).toEqual({ B2: 90 });
+	});
+
+	it('undo of the add restores the pre-add recipe exactly (un-reindexes atomically)', async () => {
+		const user = userEvent.setup();
+		const { onPersist } = renderEditor();
+		await tick();
+
+		await emptyRowA(user);
+		await rotateOnlyPopulatedRow(user);
+
+		await user.click(cell('0-0'));
+		await tick();
+		expect(cell('0-0').textContent?.trim()).toBe('A1');
+
+		await user.click(screen.getByTestId('seat-grid-undo'));
+		await tick();
+		expect(cell('0-0').textContent?.trim()).toBe('');
+
+		await save(user);
+		// Back to the pre-add state: row B is rank 0 again, not double-mapped.
+		expect(savedRecipe(onPersist)).toMatchObject({ seatNudges: [{ row: 0, seat: 1, rot: 90 }] });
+		expect(savedRotations(onPersist)).toEqual({ B2: 90 });
 	});
 });

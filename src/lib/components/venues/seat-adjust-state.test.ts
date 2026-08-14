@@ -312,6 +312,27 @@ describe('remapNudgeRanks — populated rows changed under the nudges', () => {
 		const recipe = upsertNudge(defaultRowLayout(), 1, 2, { dx: 1, rot: 30 });
 		expect(remapNudgeRanks(recipe, [0, 1], [0, 1], false).seatNudges).toEqual(recipe.seatNudges);
 	});
+
+	it('re-addresses rowOverrides the same way, alongside seatNudges', () => {
+		// Before: rows 0 and 2 populated — row 2 is rank 1.
+		const recipe = { ...defaultRowLayout(), rowOverrides: [{ row: 1, curve: 5 }] };
+		// After: row 1 gains a seat too, so row 2 becomes rank 2.
+		const remapped = remapNudgeRanks(recipe, [0, 2], [0, 1, 2], false);
+		expect(remapped.rowOverrides).toEqual([{ row: 2, curve: 5 }]);
+	});
+
+	it('drops a rowOverride whose row lost its last seat, keeping the same physical row for the survivor', () => {
+		const recipe = {
+			...defaultRowLayout(),
+			rowOverrides: [
+				{ row: 0, curve: 3 },
+				{ row: 1, curve: -3 }
+			]
+		};
+		// Row 0 (rank 0) empties; row 5 (rank 1) survives and becomes rank 0.
+		const remapped = remapNudgeRanks(recipe, [0, 5], [5], false);
+		expect(remapped.rowOverrides).toEqual([{ row: 0, curve: -3 }]);
+	});
 });
 
 describe('SeatDragController', () => {

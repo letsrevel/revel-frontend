@@ -12,7 +12,7 @@
 	import { Redo2, Undo2 } from '@lucide/svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import type { SeatData } from './seat-grid-types';
-	import { buildSeatSavePlan, deriveAdjacencyIndex, type SeatSavePlan } from './seat-grid-save';
+	import { buildSeatSavePlan, type SeatSavePlan } from './seat-grid-save';
 	import {
 		defaultRowLayout,
 		isDefaultRowLayout,
@@ -22,21 +22,8 @@
 	} from './row-layout';
 	import { cellKeyFor, hydrateGrid, rowLabelFor, seatLabelFor } from './seat-grid-hydrate';
 	import type { AisleMetadata } from './seat-grid-hydrate';
-	import {
-		SeatAdjustState,
-		clearNudge,
-		mirrorRowRanks,
-		findNudge,
-		growColumns,
-		nearestRowIndex,
-		nextColumnInRow,
-		normalizeRotationInput,
-		remapNudgeRanks,
-		roundNudge,
-		snapNudge,
-		upsertNudge,
-		type NudgePatch
-	} from './seat-adjust-state.svelte';
+	import { SeatAdjustState } from './seat-adjust-state.svelte';
+	import { SeatAdjustActions } from './seat-grid-adjust-actions.svelte';
 	import { createEditorHistory, undoRedoIntent } from './seat-grid-history.svelte';
 	import { SeatGeometryState } from './seat-grid-geometry-state.svelte';
 	import { autoFitShape, fitsWithinShape } from './shape-fit';
@@ -230,7 +217,7 @@
 	// Generate empty grid
 	function generateEmptyGrid() {
 		history.commit();
-		forgetAllNudges();
+		adjustActions.forgetAllNudges();
 		seats.clear();
 		selectedCells.clear();
 		verticalAisles.clear();
@@ -241,7 +228,7 @@
 	// Generate full grid (all seats)
 	function generateFullGrid() {
 		history.commit();
-		forgetAllNudges();
+		adjustActions.forgetAllNudges();
 		seats.clear();
 		for (let r = 0; r < rows; r++) {
 			for (let c = 0; c < columns; c++) {
@@ -266,15 +253,15 @@
 		// dense over populated rows, so they shift the moment a row empties.
 		const removed = [...selectedCells].map((key) => {
 			const [row, col] = key.split('-').map(Number);
-			return nudgeAddress(row, col);
+			return adjustActions.nudgeAddress(row, col);
 		});
 		for (const key of selectedCells) {
 			seats.delete(key);
 		}
 		selectedCells.clear();
 		dropStaleSelection();
-		forgetNudgesAt(removed);
-		reindexNudges(before);
+		adjustActions.forgetNudgesAt(removed);
+		adjustActions.reindexNudges(before);
 	}
 
 	// Mark selected seats as accessible
@@ -370,173 +357,37 @@
 	}
 
 	// --- Adjust seats ------------------------------------------------------
+	// The mode/selection flag lives here; the actual nudge addressing, the
+	// inspector's read/write surface, and the reindexing on a populated-row
+	// change all live in `SeatAdjustActions` (seat-grid-adjust-actions.svelte.ts)
+	// — extracted so this file stays inside its line cap. `adjustActions` is
+	// also `SeatGrid`'s `onCellsMutated` callback: a NORMAL-mode add (click or
+	// drag-fill) that populates a previously-empty row goes through the exact
+	// same `reindexNudges` the adjust-mode paths use, via `SeatAdjustActions`.
 	const adjust = new SeatAdjustState();
-
-	/**
-	 * A physical cell as the recipe addresses it: row_order RANK (dense over
-	 * populated rows) plus adjacency_index. Never physical (row, col).
-	 */
-	function nudgeAddress(row: number, col: number): { rank: number; seat: number } {
-		return { rank: geometry.rankForRow(row), seat: deriveAdjacencyIndex(col) };
-	}
-
-	/**
-	 * Inverse of `nudgeAddress`, for the rotation mirror: the LABEL of the seat a
-	 * (rank, adjacency_index) pair addresses, `null` when it addresses no live
-	 * seat. Ranks are dense over the populated rows and flip under
-	 * `invertRowOrder`, so the row comes from `rankForRow`, never from arithmetic.
-	 */
-	function labelForAddress(rank: number, seat: number): string | null {
-		const rankFor = geometry.rankForRow;
-		const row = geometry.populatedRows.find((candidate) => rankFor(candidate) === rank);
-		if (row === undefined) return null;
-		if (!seats.get(getCellKey(row, seat))?.exists) return null;
-		return getSeatLabel(row, seat);
-	}
-
-	/** A cell's stored rotation, for the grid's orientation notch (0 = none). */
-	function rotationFor(row: number, col: number): number {
-		const { rank, seat } = nudgeAddress(row, col);
-		return findNudge(rowLayout, rank, seat)?.rot ?? 0;
-	}
-
-	const selectedNudge = $derived.by(() => {
-		const picked = adjust.selected;
-		if (picked === null) return null;
-		const { rank, seat } = nudgeAddress(picked.row, picked.col);
-		return findNudge(rowLayout, rank, seat) ?? null;
+	const adjustActions = new SeatAdjustActions({
+		adjust,
+		selectedCells,
+		seats,
+		geometry,
+		rowLayout: () => rowLayout,
+		setRowLayout: (recipe) => {
+			rowLayout = recipe;
+		},
+		rows: () => rows,
+		setRows: (value) => {
+			rows = value;
+		},
+		columns: () => columns,
+		setColumns: (value) => {
+			columns = value;
+		},
+		invertRowOrder: () => invertRowOrder,
+		getCellKey,
+		getSeatLabel,
+		commit: () => history.commit(),
+		commitDebounced: (key) => history.commitDebounced(key)
 	});
-
-	const selectedSeatLabel = $derived.by(() => {
-		const picked = adjust.selected;
-		return picked === null ? null : getSeatLabel(picked.row, picked.col);
-	});
-
-	/**
-	 * Drop the nudges of seats that no longer exist. The bake silently skips a
-	 * nudge that resolves to no baked position, so an orphan LOOKS harmless —
-	 * but it stays in the recipe, comes back to life the moment a seat returns
-	 * at that address, and poisons the "drop it where I clicked" maths, which
-	 * measures the new seat's home from the bake.
-	 */
-	function forgetNudgesAt(addresses: ReadonlyArray<{ rank: number; seat: number }>) {
-		for (const { rank, seat } of addresses) {
-			rowLayout = clearNudge(rowLayout, rank, seat);
-		}
-	}
-
-	/** Wholesale grid regeneration: every nudge is addressed at a dead seat. */
-	function forgetAllNudges() {
-		if (rowLayout.seatNudges.length > 0) rowLayout = { ...rowLayout, seatNudges: [] };
-	}
-
-	/**
-	 * Re-address nudges after the POPULATED row set changed: ranks are dense, so
-	 * a row that gained (or lost) its first seat re-ranks every row behind it.
-	 */
-	function reindexNudges(rowsBefore: number[]) {
-		const rowsAfter = geometry.populatedRows;
-		if (rowsBefore.length === rowsAfter.length) return;
-		rowLayout = remapNudgeRanks(rowLayout, rowsBefore, rowsAfter, invertRowOrder);
-	}
-
-	/** Add a drag/arrow delta onto the seat's OWN nudge (replace, never append). */
-	function handleNudgeSeat(
-		row: number,
-		col: number,
-		delta: { dx: number; dy: number },
-		coarse: boolean
-	) {
-		const { rank, seat } = nudgeAddress(row, col);
-		const current = findNudge(rowLayout, rank, seat);
-		rowLayout = upsertNudge(rowLayout, rank, seat, {
-			dx: snapNudge((current?.dx ?? 0) + delta.dx, coarse),
-			dy: snapNudge((current?.dy ?? 0) + delta.dy, coarse)
-		});
-	}
-
-	/** Append one seat at the end of a row, growing the grid if it has to. */
-	function handleAddSeatToRow(row: number): number {
-		const before = geometry.populatedRows;
-		const col = nextColumnInRow(seats, row);
-		seats.set(getCellKey(row, col), {
-			exists: true,
-			is_accessible: false,
-			is_obstructed_view: false
-		});
-		columns = growColumns(columns, col);
-		rows = Math.max(rows, row + 1);
-		reindexNudges(before);
-		// A seat that once lived here may have left a nudge behind; the new seat
-		// starts at its lattice home, not wherever its predecessor was pushed.
-		forgetNudgesAt([nudgeAddress(row, col)]);
-		adjust.select({ row, col });
-		return col;
-	}
-
-	/**
-	 * Add a seat where the admin clicked: it joins the NEAREST populated row (a
-	 * seat never changes row afterwards — see the panel's note) at that row's
-	 * end, and a nudge carries it from there to the exact drop point.
-	 */
-	function handleAddSeatAt(point: Coordinate2d) {
-		const row = nearestRowIndex(geometry.rowCenterlines, point.y) ?? 0;
-		const col = handleAddSeatToRow(row);
-		// Read the bake AFTER the cell exists: that is the seat's un-nudged home,
-		// so the delta below is exactly what moves it under the pointer.
-		const home = geometry.positionAt(row, col);
-		const { rank, seat } = nudgeAddress(row, col);
-		rowLayout = upsertNudge(rowLayout, rank, seat, {
-			dx: snapNudge(point.x - home.x),
-			dy: snapNudge(point.y - home.y)
-		});
-	}
-
-	/**
-	 * The row-order toggle flips the rank space but moves nothing physically, so
-	 * every rank-addressed entry flips with it (seat follows seat) or it would
-	 * re-target its mirror row. Called from the config's own handler, never an
-	 * $effect: an undo restores a recipe that already matches its inversion.
-	 */
-	function handleRowOrderChange() {
-		rowLayout = mirrorRowRanks(rowLayout, geometry.populatedRows.length);
-	}
-
-	/** Inspector writes: typed values are taken at face value, only rounded. */
-	function handleInspectorChange(patch: NudgePatch) {
-		const picked = adjust.selected;
-		if (picked === null) return;
-		history.commitDebounced('inspector');
-		const { rank, seat } = nudgeAddress(picked.row, picked.col);
-		rowLayout = upsertNudge(rowLayout, rank, seat, {
-			...(patch.dx !== undefined ? { dx: roundNudge(patch.dx) } : {}),
-			...(patch.dy !== undefined ? { dy: roundNudge(patch.dy) } : {}),
-			...(patch.rot !== undefined ? { rot: normalizeRotationInput(patch.rot) } : {})
-		});
-	}
-
-	function handleResetSeat() {
-		const picked = adjust.selected;
-		if (picked === null) return;
-		history.commit();
-		const { rank, seat } = nudgeAddress(picked.row, picked.col);
-		rowLayout = clearNudge(rowLayout, rank, seat);
-	}
-
-	/** Same effect as toggling the cell off in normal mode. */
-	function handleRemoveSeat() {
-		const picked = adjust.selected;
-		if (picked === null) return;
-		history.commit();
-		const before = geometry.populatedRows;
-		const removed = nudgeAddress(picked.row, picked.col);
-		const key = getCellKey(picked.row, picked.col);
-		seats.delete(key);
-		selectedCells.delete(key);
-		adjust.select(null);
-		forgetNudgesAt([removed]);
-		reindexNudges(before);
-	}
 
 	// Build the full persistence plan (creates/updates/deletes/paint batches,
 	// with explicit row_order/adjacency_index ranks and baked positions).
@@ -559,7 +410,7 @@
 		// An 'unsupported' recipe the admin never touched rides through verbatim
 		// (resolveRowLayoutForSave) — so must its mirror, underivable from here.
 		const keepMirror = rowLayoutUnsupported && isDefaultRowLayout(rowLayout);
-		const rotations = rotationsByLabel(rowLayout.seatNudges, labelForAddress);
+		const rotations = rotationsByLabel(rowLayout.seatNudges, adjustActions.labelForAddress);
 		onPersist(buildPlan(), {
 			aisles: {
 				verticalAisles: [...verticalAisles].sort((a, b) => a - b),
@@ -631,7 +482,7 @@
 		onGenerateEmpty={generateEmptyGrid}
 		onGenerateFull={generateFullGrid}
 		onBeforeEdit={recordEdit}
-		onRowOrderChange={handleRowOrderChange}
+		onRowOrderChange={adjustActions.handleRowOrderChange}
 	/>
 
 	<!-- Price category palette (seat painting) -->
@@ -669,11 +520,11 @@
 			/>
 			<SeatAdjustPanel
 				{adjust}
-				selectedLabel={selectedSeatLabel}
-				nudge={selectedNudge}
-				onNudgeChange={handleInspectorChange}
-				onResetSeat={handleResetSeat}
-				onRemoveSeat={handleRemoveSeat}
+				selectedLabel={adjustActions.selectedSeatLabel}
+				nudge={adjustActions.selectedNudge}
+				onNudgeChange={adjustActions.handleInspectorChange}
+				onResetSeat={adjustActions.handleResetSeat}
+				onRemoveSeat={adjustActions.handleRemoveSeat}
 			/>
 		</div>
 		<div class="min-w-0 xl:col-start-1 xl:row-start-1">
@@ -694,10 +545,11 @@
 				{activePaint}
 				{priceCategories}
 				{adjust}
-				{rotationFor}
-				onNudgeSeat={handleNudgeSeat}
-				onAddSeatToRow={handleAddSeatToRow}
-				onAddSeatAt={handleAddSeatAt}
+				rotationFor={adjustActions.rotationFor}
+				onNudgeSeat={adjustActions.handleNudgeSeat}
+				onAddSeatToRow={adjustActions.handleAddSeatToRow}
+				onAddSeatAt={adjustActions.handleAddSeatAt}
+				onCellsMutated={adjustActions.reindexNudges}
 				onBeforeEdit={recordEdit}
 			/>
 		</div>

@@ -12,7 +12,12 @@
  * editor's rank lookup before calling in here.
  */
 import type { SeatData } from './seat-grid-types';
-import { ROW_SHIFT_LIMIT, type RowLayoutRecipe, type SeatNudge } from './row-layout';
+import {
+	ROW_SHIFT_LIMIT,
+	type RowLayoutRecipe,
+	type RowOverride,
+	type SeatNudge
+} from './row-layout';
 import { buildRowOrderLookup } from './seat-grid-save';
 
 /** Free-drag rounding, in seat-pitch units. */
@@ -165,12 +170,33 @@ export function nextColumnInRow(cells: ReadonlyMap<string, SeatData>, row: numbe
 }
 
 /**
- * Re-address every nudge after the set of POPULATED rows changed.
+ * Physical row indices holding at least one seat, ascending and deduped —
+ * the POPULATED set `remapNudgeRanks`/`mirrorRowRanks` address against.
+ * Shared by `SeatGeometryState.populatedRows` and by normal-mode callers in
+ * `SeatGrid` that need a snapshot BEFORE a mutation that might add or remove
+ * a row's only seat.
+ */
+export function populatedRowsOf(cells: ReadonlyMap<string, SeatData>): number[] {
+	// Throwaway dedupe, built and dropped inside this pure function — nothing
+	// here is ever read from a template, so a plain Set is correct.
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity
+	const rows = new Set<number>();
+	for (const [key, data] of cells) {
+		if (!data.exists) continue;
+		const [row] = key.split('-').map(Number);
+		rows.add(row);
+	}
+	return [...rows].sort((a, b) => a - b);
+}
+
+/**
+ * Re-address every rank-addressed entry (`seatNudges` AND `rowOverrides`)
+ * after the set of POPULATED rows changed.
  *
- * Nudges are keyed by row_order RANK (dense over populated rows), so making an
- * empty row populated re-ranks every row behind it — and a nudge that isn't
- * re-mapped would silently start moving a different seat. Nudges whose row no
- * longer exists are dropped.
+ * Both are keyed by row_order RANK (dense over populated rows), so making an
+ * empty row populated re-ranks every row behind it — and an entry that isn't
+ * re-mapped would silently start addressing a different physical row. Entries
+ * whose row no longer exists are dropped.
  */
 export function remapNudgeRanks(
 	recipe: RowLayoutRecipe,
@@ -194,7 +220,19 @@ export function remapNudgeRanks(
 		if (row === undefined || !survivors.has(row)) continue;
 		remapped.push({ ...nudge, row: rankAfter(row) });
 	}
-	return { ...recipe, seatNudges: sortNudges(remapped) };
+
+	const remappedOverrides: RowOverride[] = [];
+	for (const override of recipe.rowOverrides) {
+		const row = rowByOldRank.get(override.row);
+		if (row === undefined || !survivors.has(row)) continue;
+		remappedOverrides.push({ ...override, row: rankAfter(row) });
+	}
+
+	return {
+		...recipe,
+		seatNudges: sortNudges(remapped),
+		rowOverrides: remappedOverrides.sort((a, b) => a.row - b.row)
+	};
 }
 
 /**

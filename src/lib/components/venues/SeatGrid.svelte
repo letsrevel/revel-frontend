@@ -22,7 +22,7 @@
 	import type { Coordinate2d, PriceCategorySchema } from '$lib/api/generated/types.gen';
 	import type { SeatData } from './seat-grid-types';
 	import { paintTextColor } from './seat-grid-save';
-	import { applyRectangle, rectangleBounds } from './seat-grid-rect';
+	import { applyRectangle, SeatRectSelector } from './seat-grid-rect.svelte';
 	import SeatRotationNotch from './SeatRotationNotch.svelte';
 	import { aisleShift } from './seat-layout-bake';
 	import {
@@ -31,6 +31,7 @@
 		NUDGE_STEP,
 		SeatDragController,
 		nextColumnInRow,
+		populatedRowsOf,
 		type SeatAdjustState
 	} from './seat-adjust-state.svelte';
 	import {
@@ -103,6 +104,12 @@
 		 * marks a continuous gesture (held arrow key) that should undo in one step.
 		 */
 		onBeforeEdit?: (coalesceKey?: string) => void;
+		/**
+		 * A NORMAL-mode mutation batch just finished (one call/click or drag-fill)
+		 * and may have populated/emptied a row — adjust-mode already reindexes
+		 * itself. `rowsBefore` is the snapshot taken BEFORE the batch.
+		 */
+		onCellsMutated?: (rowsBefore: number[]) => void;
 	}
 
 	const {
@@ -126,7 +133,8 @@
 		onNudgeSeat,
 		onAddSeatToRow,
 		onAddSeatAt,
-		onBeforeEdit
+		onBeforeEdit,
+		onCellsMutated
 	}: Props = $props();
 
 	const adjustActive = $derived(adjust?.active ?? false);
@@ -226,10 +234,20 @@
 		}
 	}
 
-	// Selection state
-	let isSelecting = $state(false);
-	let selectionStart = $state<{ row: number; col: number } | null>(null);
-	let selectionEnd = $state<{ row: number; col: number } | null>(null);
+	/** Create a seat at an empty cell — may populate a row, so snapshot/reindex. */
+	function addSeat(key: string, priceCategoryId?: string | null): void {
+		const rowsBefore = populatedRowsOf(seats);
+		seats.set(key, {
+			exists: true,
+			is_accessible: false,
+			is_obstructed_view: false,
+			priceCategoryId
+		});
+		onCellsMutated?.(rowsBefore);
+	}
+
+	// Normal-mode drag-to-select/fill gesture.
+	const rectSelect = new SeatRectSelector();
 
 	// Toggle single seat selection (for clicking on existing seats)
 	function selectSeat(row: number, col: number) {
@@ -244,7 +262,7 @@
 	// Handle cell click
 	function handleCellClick(row: number, col: number) {
 		// If we were dragging, the drag handler already processed this
-		if (isSelecting) return;
+		if (rectSelect.isSelecting) return;
 		if (swallowNextClick) {
 			swallowNextClick = false;
 			return;
@@ -269,12 +287,7 @@
 			} else if (activePaint.categoryId !== null) {
 				// Painting an empty cell creates the seat already painted
 				// (the eraser deliberately does nothing on empty cells)
-				seats.set(key, {
-					exists: true,
-					is_accessible: false,
-					is_obstructed_view: false,
-					priceCategoryId: activePaint.categoryId
-				});
+				addSeat(key, activePaint.categoryId);
 			}
 			return;
 		}
@@ -284,74 +297,41 @@
 			selectSeat(row, col);
 		} else {
 			// Clicking on empty cell: add a seat (don't clear selection)
-			seats.set(key, { exists: true, is_accessible: false, is_obstructed_view: false });
+			addSeat(key);
 		}
 	}
 
 	// Handle mouse down - start potential drag selection
 	function handleMouseDown(row: number, col: number, event: MouseEvent) {
 		if (event.button !== 0 || adjustActive) return;
-
-		// Store start position for potential drag
-		selectionStart = { row, col };
-		selectionEnd = { row, col };
-		// Don't set isSelecting yet - only set it if mouse moves to different cell
-		// Don't clear selection - let clicks accumulate
+		rectSelect.down(row, col);
 	}
 
-	// Handle mouse move - update selection (only start drag if moved to different cell)
+	// Handle mouse move - only starts a live drag once it leaves the start cell
 	function handleMouseMove(row: number, col: number) {
-		if (!selectionStart || adjustActive) return;
-
-		// Only start drag selection if mouse moved to a different cell
-		if (!isSelecting && (row !== selectionStart.row || col !== selectionStart.col)) {
-			isSelecting = true;
-		}
-
-		if (isSelecting) {
-			selectionEnd = { row, col };
-		}
+		if (adjustActive) return;
+		rectSelect.move(row, col);
 	}
 
-	// Handle mouse up - finalize drag selection (if any)
+	// Handle mouse up - finalize the drag gesture, if any (rectangle rules:
+	// seat-grid-rect.ts). A fill can populate a swath of rows in one go, so
+	// snapshot/reindex once, only when the gesture actually applied something.
 	function handleMouseUp() {
-		// If we weren't dragging, just reset and let click handler work
-		if (!isSelecting) {
-			selectionStart = null;
-			selectionEnd = null;
-			return;
-		}
-
-		// We were dragging - finalize the selection
-		if (!selectionStart || !selectionEnd) {
-			isSelecting = false;
-			selectionStart = null;
-			selectionEnd = null;
-			return;
-		}
-
-		// One undo point for the whole gesture, then the shared rectangle rules
-		// (paint / fill / select — see seat-grid-rect.ts).
+		const input = rectSelect.finish({ seats, selectedCells, activePaint, keyFor: getCellKey });
+		if (!input) return;
+		const rowsBefore = populatedRowsOf(seats);
 		onBeforeEdit?.();
-		applyRectangle({
-			seats,
-			selectedCells,
-			start: selectionStart,
-			end: selectionEnd,
-			activePaint,
-			keyFor: getCellKey
-		});
-
-		isSelecting = false;
-		selectionStart = null;
-		selectionEnd = null;
+		applyRectangle(input);
+		onCellsMutated?.(rowsBefore);
 	}
 
 	// Check if cell is in current selection rectangle
 	function isInSelectionRect(row: number, col: number): boolean {
-		if (!isSelecting || !selectionStart || !selectionEnd) return false;
-		const { minRow, maxRow, minCol, maxCol } = rectangleBounds(selectionStart, selectionEnd);
-		return row >= minRow && row <= maxRow && col >= minCol && col <= maxCol;
+		const bounds = rectSelect.bounds;
+		if (!bounds) return false;
+		return (
+			row >= bounds.minRow && row <= bounds.maxRow && col >= bounds.minCol && col <= bounds.maxCol
+		);
 	}
 
 	// Aisle mutations (stored as the index the aisle sits AFTER)

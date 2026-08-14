@@ -72,3 +72,45 @@ export function applyRectangle(input: RectangleInput): void {
 		}
 	}
 }
+
+/**
+ * The normal-mode drag-to-select/fill gesture: `down` arms it, `move` only
+ * flips it into a live rectangle once the pointer leaves the starting cell
+ * (so a plain click never becomes a 1x1 drag), `finish` commits via
+ * `applyRectangle` and returns `null` for a plain click (nothing to apply).
+ */
+export class SeatRectSelector {
+	isSelecting = $state(false);
+	private start: CellRef | null = null;
+	private end = $state<CellRef | null>(null);
+
+	/** The live rectangle's bounds while dragging, for the highlight overlay. */
+	get bounds() {
+		return this.isSelecting && this.start && this.end
+			? rectangleBounds(this.start, this.end)
+			: null;
+	}
+
+	down(row: number, col: number): void {
+		this.start = { row, col };
+		this.end = { row, col };
+	}
+
+	move(row: number, col: number): void {
+		if (!this.start) return;
+		if (!this.isSelecting && (row !== this.start.row || col !== this.start.col)) {
+			this.isSelecting = true;
+		}
+		if (this.isSelecting) this.end = { row, col };
+	}
+
+	/** Finish the gesture; `null` when it never left the starting cell. */
+	finish(input: Omit<RectangleInput, 'start' | 'end'>): RectangleInput | null {
+		const wasSelecting = this.isSelecting;
+		const { start, end } = this;
+		this.isSelecting = false;
+		this.start = null;
+		this.end = null;
+		return wasSelecting && start && end ? { ...input, start, end } : null;
+	}
+}

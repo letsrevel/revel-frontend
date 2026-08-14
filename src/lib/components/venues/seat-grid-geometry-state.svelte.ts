@@ -21,7 +21,7 @@ import { buildRowOrderLookup } from './seat-grid-save';
 import { syntheticCells } from './seat-grid-layout';
 import type { PreviewSeat } from './SeatLayoutPreview.svelte';
 import type { RowOption } from './SeatGeometryPanel.svelte';
-import type { RowCenterline } from './seat-adjust-state.svelte';
+import { populatedRowsOf, type RowCenterline } from './seat-adjust-state.svelte';
 
 export interface SeatGeometrySources {
 	/** The editor's live cell map (stable identity, mutated in place). */
@@ -79,17 +79,7 @@ export class SeatGeometryState {
 	});
 
 	/** Physical indices of the rows holding at least one seat, ascending. */
-	readonly populatedRows = $derived.by<number[]>(() =>
-		[
-			// Throwaway dedupe inside a derived — spread immediately, never stored.
-			// eslint-disable-next-line svelte/prefer-svelte-reactivity
-			...new Set(
-				[...this.sources.cells]
-					.filter(([, data]) => data.exists)
-					.map(([key]) => Number(key.split('-')[0]))
-			)
-		].sort((a, b) => a - b)
-	);
+	readonly populatedRows = $derived.by<number[]>(() => populatedRowsOf(this.sources.cells));
 
 	/**
 	 * Physical row -> row_order rank, the coordinate space `RowOverride.row` and

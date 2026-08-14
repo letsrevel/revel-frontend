@@ -8677,7 +8677,7 @@
 	"seatGridEditor.adjust.dxLabel": "Deslocar lateralmente (lugares)",
 	"seatGridEditor.adjust.dyLabel": "Deslocar para trás (filas)",
 	"seatGridEditor.adjust.rotLabel": "Rotação (graus)",
-	"seatGridEditor.adjust.rotHint": "0° orienta a marca para cima, para o lado do palco do setor; valores mais altos rodam o lugar no sentido dos ponteiros do relógio.",
+	"seatGridEditor.adjust.rotHint": "0° orienta a marca para cima. A rotação é absoluta e não acompanha o palco; valores mais altos rodam o lugar no sentido dos ponteiros do relógio.",
 	"seatGridEditor.adjust.rowNote": "Um lugar mantém a sua fila. Para o mover para outra, remova-o e adicione-o lá.",
 	"seatGridEditor.adjust.resetSeat": "Repor lugar",
 	"seatGridEditor.adjust.removeSeat": "Remover lugar",

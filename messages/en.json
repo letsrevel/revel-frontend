@@ -8677,7 +8677,7 @@
 	"seatGridEditor.adjust.dxLabel": "Move sideways (seats)",
 	"seatGridEditor.adjust.dyLabel": "Move back (rows)",
 	"seatGridEditor.adjust.rotLabel": "Rotation (degrees)",
-	"seatGridEditor.adjust.rotHint": "0° points the notch up — toward the sector's stage side; higher values turn the seat clockwise.",
+	"seatGridEditor.adjust.rotHint": "0° points the notch up. Rotation is absolute — it does not follow the stage; higher values turn the seat clockwise.",
 	"seatGridEditor.adjust.rowNote": "A seat keeps its row. To move it to another row, remove it and add it there.",
 	"seatGridEditor.adjust.resetSeat": "Reset seat",
 	"seatGridEditor.adjust.removeSeat": "Remove seat",

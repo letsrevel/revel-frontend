@@ -8677,7 +8677,7 @@
 	"seatGridEditor.adjust.dxLabel": "Sposta lateralmente (posti)",
 	"seatGridEditor.adjust.dyLabel": "Sposta indietro (file)",
 	"seatGridEditor.adjust.rotLabel": "Rotazione (gradi)",
-	"seatGridEditor.adjust.rotHint": "0° orienta la tacca verso l'alto, cioè verso il lato palco del settore; i valori più alti ruotano il posto in senso orario.",
+	"seatGridEditor.adjust.rotHint": "0° orienta la tacca verso l'alto. La rotazione è assoluta e non segue il palco; i valori più alti ruotano il posto in senso orario.",
 	"seatGridEditor.adjust.rowNote": "Un posto resta nella sua fila. Per spostarlo in un’altra fila, eliminalo e aggiungilo lì.",
 	"seatGridEditor.adjust.resetSeat": "Ripristina posto",
 	"seatGridEditor.adjust.removeSeat": "Elimina posto",
