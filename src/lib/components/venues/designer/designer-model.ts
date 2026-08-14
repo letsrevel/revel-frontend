@@ -33,6 +33,12 @@ export interface DesignerSeatDot {
 	label: string;
 	x: number;
 	y: number;
+	/**
+	 * The price category the organizer painted on this seat, or null. Carried so
+	 * the designer can draw the seat in its category colour — the same fill the
+	 * buyer's map and the sector editor use (tickets/seat-map-paint.ts).
+	 */
+	priceCategoryId: string | null;
 }
 
 /** A sector rendered as a rigid, movable/rotatable block. */
@@ -264,6 +270,13 @@ export function buildDesignerModel(
 		if (!raw) continue;
 		const rawShape = raw.shape && raw.shape.length >= 3 ? raw.shape.map((p) => ({ ...p })) : null;
 		const activeSeats = (raw.seats ?? []).filter((seat) => seat.is_active !== false);
+		// The laid-out geometry carries no paint, so the category comes from the
+		// admin seat list the layout was built from.
+		const categoryBySeatId = new Map(
+			(raw.seats ?? []).flatMap((seat) =>
+				seat.id ? [[seat.id, seat.price_category_id ?? null] as const] : []
+			)
+		);
 		blocks.push({
 			id: laid.id,
 			name: laid.name,
@@ -272,7 +285,8 @@ export function buildDesignerModel(
 				id: seat.seatId,
 				label: seat.label,
 				x: seat.x,
-				y: seat.y
+				y: seat.y,
+				priceCategoryId: categoryBySeatId.get(seat.seatId) ?? null
 			})),
 			shape: laid.shape ? laid.shape.map((p) => ({ ...p })) : null,
 			width: laid.width,

@@ -302,6 +302,12 @@ COMPOSITED_PAIRS = [
     # (what carries the meaning is dim-vs-solid, an adjacency this family's
     # single-wash model cannot express).
     ("poster-white", 0.40, None, 0, "poster-ink", 3.0, BOTH, "seat being held (pending) against the house"),
+    # Layout designer (#852). Unlike the buyer's map, every footprint here is an
+    # interaction TARGET, so its edge owes the 1.4.11 non-text floor — the buyer
+    # map's decorative white@12 footprint line would not do. Selection is full
+    # white (17.40:1) and focus is amber (9.42:1), both drawn as geometry.
+    ("poster-white", 0.40, None, 0, "poster-ink", 3.0, BOTH, "designer block/stage edge on the house"),
+    ("poster-white", 0.70, None, 0, "poster-ink", 3.0, BOTH, "designer rotate-handle stem / add-vertex handle"),
     ("poster-ink", 1, "poster-white", 0.95, "poster-crimson-deep", 4.5, BOTH, "venues panel pill"),
     ("poster-white", 1, "poster-ink", 0.20, "poster-purple", 4.5, BOTH, "hero panel stat wash (purple end)"),
     ("poster-white", 1, "poster-ink", 0.20, "poster-crimson-deep", 4.5, BOTH, "hero panel stat wash (crimson end)"),
