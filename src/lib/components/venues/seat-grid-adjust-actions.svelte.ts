@@ -129,7 +129,15 @@ export class SeatAdjustActions {
 	 */
 	reindexNudges = (rowsBefore: number[]): void => {
 		const rowsAfter = this.sources.geometry.populatedRows;
-		if (rowsBefore.length === rowsAfter.length) return;
+		// Compare membership, not just size: no single batch empties one row AND
+		// populates another today, but a future op that does would re-rank rows
+		// at a constant count and silently corrupt every rank-addressed entry.
+		if (
+			rowsBefore.length === rowsAfter.length &&
+			rowsBefore.every((row, index) => row === rowsAfter[index])
+		) {
+			return;
+		}
 		this.sources.setRowLayout(
 			remapNudgeRanks(
 				this.sources.rowLayout(),

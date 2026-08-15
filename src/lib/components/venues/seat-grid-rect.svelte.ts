@@ -5,7 +5,8 @@
  *
  * Three outcomes, in priority order:
  *  1. paint armed  → paint every EXISTING seat inside the rectangle;
- *  2. both corners empty → fill the rectangle with seats;
+ *  2. both corners empty → fill the rectangle's empty cells with seats
+ *     (a seat already inside keeps its paint and flags);
  *  3. otherwise    → add every existing seat inside it to the selection.
  */
 import type { SvelteMap, SvelteSet } from 'svelte/reactivity';
@@ -65,7 +66,9 @@ export function applyRectangle(input: RectangleInput): void {
 				// The eraser deliberately does nothing to empty cells.
 				if (seat?.exists) seats.set(key, { ...seat, priceCategoryId: activePaint.categoryId });
 			} else if (filling) {
-				seats.set(key, newSeat());
+				// A fill ADDS the missing seats; one already configured inside the
+				// rectangle keeps its paint and flags.
+				if (!seat?.exists) seats.set(key, newSeat());
 			} else if (seat?.exists) {
 				selectedCells.add(key);
 			}

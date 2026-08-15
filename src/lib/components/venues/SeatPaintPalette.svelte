@@ -44,7 +44,7 @@
 		<p class="text-sm text-muted-foreground">
 			{m['seatGridEditor.paint.noCategories']()}
 		</p>
-		<!-- eslint-disable svelte/no-navigation-without-resolve -- href built with resolve() above, plus a hash fragment -->
+		<!-- eslint-disable svelte/no-navigation-without-resolve -- href is the manageCategoriesHref prop, resolve()d by the caller, plus a hash fragment -->
 		<a
 			href={manageCategoriesHref}
 			class="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-primary underline-offset-4 hover:underline"
@@ -72,7 +72,7 @@
 							: 'border-input hover:bg-accent'}"
 					>
 						<span
-							class="h-3.5 w-3.5 shrink-0 rounded-full border border-black/20"
+							class="h-3.5 w-3.5 shrink-0 rounded-full ring-1 ring-inset ring-border"
 							style="background-color: {category.color};"
 							aria-hidden="true"
 						></span>

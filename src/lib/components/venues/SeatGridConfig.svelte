@@ -33,10 +33,16 @@
 		onRowOrderChange
 	}: Props = $props();
 
+	/** The inputs' declared bound — typed values must honor it too, or a stray
+	 *  digit ("300") explodes the synthetic lattice the editor bakes per cell. */
+	const MAX_GRID_SIZE = 30;
+
 	/** Typing through an empty field must not blank the grid size. */
 	function readSize(raw: string, fallback: number): number {
 		const value = Number(raw);
-		return Number.isFinite(value) && value >= 1 ? Math.floor(value) : fallback;
+		return Number.isFinite(value) && value >= 1
+			? Math.min(Math.floor(value), MAX_GRID_SIZE)
+			: fallback;
 	}
 </script>
 
@@ -53,7 +59,7 @@
 				id="grid-rows"
 				type="number"
 				min="1"
-				max="30"
+				max={MAX_GRID_SIZE}
 				value={rows}
 				oninput={(e) => {
 					onBeforeEdit?.('grid-size');
@@ -71,7 +77,7 @@
 				id="grid-cols"
 				type="number"
 				min="1"
-				max="30"
+				max={MAX_GRID_SIZE}
 				value={columns}
 				oninput={(e) => {
 					onBeforeEdit?.('grid-size');

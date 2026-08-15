@@ -219,7 +219,7 @@
 						value={recipe.stagger}
 						oninput={(e) => {
 							const parsed = parseOptionalNumber(e.currentTarget.value, STAGGER_MIN, STAGGER_MAX);
-							if (parsed !== undefined) updateRecipe({ stagger: parsed });
+							if (parsed !== undefined) updateRecipe({ stagger: parsed }, 'stagger');
 						}}
 						class="w-24 rounded-md border border-input bg-background px-3 py-2 text-sm"
 					/>

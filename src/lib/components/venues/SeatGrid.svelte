@@ -634,9 +634,13 @@
 					     pointer-events-none while armed, so every click on free canvas
 					     lands here with its exact coordinates. Keyboard users get the
 					     precise per-row "+" buttons instead; see handleCanvasAdd. -->
+					<!-- tabindex=-1: a keyboard "click" carries no coordinates and would
+					     drop the seat at the canvas origin; keyboard users add via the
+					     per-row "+" buttons instead. -->
 					<button
 						type="button"
 						data-testid="seat-grid-add-anywhere"
+						tabindex="-1"
 						class="absolute inset-0 z-0 cursor-crosshair rounded-[16px] bg-poster-white/5 ring-1 ring-inset ring-poster-amber/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-poster-amber"
 						aria-label={m['seatGridEditor.adjust.addAnywhereTarget']()}
 						onclick={handleCanvasAdd}

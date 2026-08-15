@@ -52,18 +52,30 @@ export function canvasFrame({ cells, polygons = [] }: FrameInput): CanvasFrame {
 	if (cells.length === 0 && vertices.length === 0) {
 		return { originX: 0, originY: 0, widthPx: CELL_PX, heightPx: CELL_PX };
 	}
-	const xs = [...cells.map((c) => c.x), ...vertices.map((v) => v.x)];
-	const ys = [...cells.map((c) => c.y), ...vertices.map((v) => v.y)];
+	// Single pass, not Math.min(...spread): a spread turns every cell into a
+	// call argument, and V8 overflows the stack past ~65k of them.
+	let originX = Infinity;
+	let originY = Infinity;
+	let farX = -Infinity;
+	let farY = -Infinity;
 	// Cells own a full unit square; polygon vertices are bare points.
-	const farXs = [...cells.map((c) => c.x + 1), ...vertices.map((v) => v.x)];
-	const farYs = [...cells.map((c) => c.y + 1), ...vertices.map((v) => v.y)];
-	const originX = Math.min(...xs);
-	const originY = Math.min(...ys);
+	for (const c of cells) {
+		if (c.x < originX) originX = c.x;
+		if (c.y < originY) originY = c.y;
+		if (c.x + 1 > farX) farX = c.x + 1;
+		if (c.y + 1 > farY) farY = c.y + 1;
+	}
+	for (const v of vertices) {
+		if (v.x < originX) originX = v.x;
+		if (v.y < originY) originY = v.y;
+		if (v.x > farX) farX = v.x;
+		if (v.y > farY) farY = v.y;
+	}
 	return {
 		originX,
 		originY,
-		widthPx: (Math.max(...farXs) - originX) * CELL_PX,
-		heightPx: (Math.max(...farYs) - originY) * CELL_PX
+		widthPx: (farX - originX) * CELL_PX,
+		heightPx: (farY - originY) * CELL_PX
 	};
 }
 

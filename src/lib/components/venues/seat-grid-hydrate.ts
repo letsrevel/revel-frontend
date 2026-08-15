@@ -100,11 +100,17 @@ export interface HydratedGrid {
 export function hydrateGrid(input: HydrateInput): HydratedGrid {
 	const { existingSeats, sectorMetadata } = input;
 
-	const rawAisles = sectorMetadata?.aisles as AisleMetadata | undefined;
+	// Defensive like `parseRowLayout` below: metadata is free-form JSON, so a
+	// non-array value here must degrade to "no aisles", not throw mid-hydrate.
+	const rawAisles = sectorMetadata?.aisles as Partial<AisleMetadata> | undefined;
 	const aisles: AisleMetadata | null = rawAisles
 		? {
-				verticalAisles: [...(rawAisles.verticalAisles || [])],
-				horizontalAisles: [...(rawAisles.horizontalAisles || [])],
+				verticalAisles: Array.isArray(rawAisles.verticalAisles)
+					? [...rawAisles.verticalAisles]
+					: [],
+				horizontalAisles: Array.isArray(rawAisles.horizontalAisles)
+					? [...rawAisles.horizontalAisles]
+					: [],
 				invertRowOrder: rawAisles.invertRowOrder ?? false
 			}
 		: null;
