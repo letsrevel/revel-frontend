@@ -71,6 +71,10 @@ overrides:
   # tailwindcss@3.4.x pins a vulnerable postcss@<=8.5.17 in its dep chain; direct
   # postcss was bumped in package.json, this bumps the transitive tree entry.
   'postcss@<8.5.18': '>=8.5.18'
+  # GHSA-2v37-7h3g-55p8: nanoid predictable-ID vulnerability in <3.3.18. Reached
+  # transitively via postcss (5 paths). Scoped to the v3 line so consumers that
+  # require() nanoid 3 (CJS) are not force-jumped to the ESM-only 4/5 majors.
+  'nanoid@<3.3.18': '>=3.3.18 <4.0.0'
   # Dedupe @tiptap/pm to a single version. @tiptap/starter-kit floats its
   # sub-extensions ahead of the directly declared @tiptap/core, and each side
   # pulls its own @tiptap/pm — two @tiptap/core instances whose ChainedCommands
