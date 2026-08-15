@@ -296,7 +296,8 @@
 			/>
 		</div>
 	{/if}
-	<div class="min-h-0 flex-1 overflow-hidden rounded-lg border bg-muted/20">
+	<!-- Frame only: SeatMap paints its own poster-ink house (#852). -->
+	<div class="min-h-0 flex-1 overflow-hidden rounded-[20px]">
 		<SeatMap
 			chart={displayChart ?? chart}
 			seats={seatViews}

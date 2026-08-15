@@ -4,11 +4,21 @@
 	 *
 	 * Geometry comes from seat-map-layout.ts (unit space, scaled to pixels
 	 * here); seat statuses come from the `seats` prop built via
-	 * seating-view.buildSeatViews (source of truth). Seats are colored by
-	 * status FIRST and never by color alone: mine gets a check glyph,
-	 * sold/held/blocked get a diagonal pattern plus an X glyph, pending
-	 * pulses, and price-category color accents always pair with the category
-	 * name in the seat's accessible name and hover title.
+	 * seating-view.buildSeatViews (source of truth).
+	 *
+	 * VISUAL LANGUAGE (#852): this is the landing page's SeatMapMock made real,
+	 * and the sector editor draws the identical room — solid round dots on a
+	 * mode-inert poster-ink panel, the mock's stage pill, a white offset ring
+	 * for the seats you hold. `seat-map-paint.ts` owns the fill/glyph rules and
+	 * documents the measured contrast; the panel is deliberately the same in
+	 * light and dark (imagery rule) while everything AROUND it stays on theme
+	 * tokens.
+	 *
+	 * Status is never carried by colour alone: `mine` gets a check glyph and a
+	 * ring, `pending` pulses and sets aria-busy, unavailable seats dim to
+	 * white@25 with the reason ("sold" / "held" / "blocked") in their
+	 * accessible name and hover title, and a price-category colour always
+	 * pairs with the category name in that same name.
 	 */
 	import * as m from '$lib/paraglide/messages.js';
 	import type {
@@ -33,6 +43,8 @@
 		type SectorLayout
 	} from './seat-map-layout';
 	import { rowsFromSeatViews, seatAriaLabel, type SeatView } from './seating-view';
+	import { buildSeatRotationLookup, notchSegment } from './seat-rotation';
+	import { seatFill, seatGlyphColor } from './seat-map-paint';
 
 	interface Props {
 		chart: VenueChartSchema;
@@ -152,8 +164,6 @@
 		onSectorSelect?.(sectorId);
 	}
 
-	const uid = $props.id();
-
 	// Pixels per layout unit and derived canvas geometry.
 	const CELL = 32;
 	const SEAT_R = 11;
@@ -219,6 +229,14 @@
 			)
 		)
 	);
+
+	/**
+	 * Seat id -> rotation degrees, from each sector's `metadata.seatRotations`
+	 * mirror (BE #894 whitelists it for the public chart). Defensive by
+	 * construction: an absent or malformed key yields an empty lookup and every
+	 * seat renders plain, so this never depends on backend deploy order.
+	 */
+	const seatRotation = $derived(buildSeatRotationLookup(chart.sectors));
 
 	function categoryFor(seatId: string): PriceCategorySchema | undefined {
 		const categoryId = seatCategoryId.get(seatId);
@@ -358,63 +376,80 @@
 		return `${Math.max(counts.capacity - counts.taken, 0)}/${counts.capacity}`;
 	}
 
+	/**
+	 * Zoom chrome ON the ink panel. `--ring` is a purple halo on a poster panel
+	 * (1.27:1 light / 2.07:1 dark — see app.css), so these declare their own
+	 * poster focus treatment: amber on ink is 9.42:1. The white@10 button face
+	 * composites to 1.33:1 against the panel, and full white on it is 13.08:1
+	 * (that pair, and the wheel hint's white@15, are rows in COMPOSITED_PAIRS).
+	 */
 	const controlClass =
-		'flex h-9 w-9 items-center justify-center rounded-md border border-border bg-background/90 ' +
-		'text-foreground shadow-sm transition-colors hover:bg-muted ' +
-		'[@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11';
+		'flex h-9 w-9 items-center justify-center rounded-full border border-poster-white/20 ' +
+		'bg-poster-white/10 text-poster-white transition-colors hover:bg-poster-white/20 ' +
+		'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ' +
+		'focus-visible:outline-poster-amber [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11';
 </script>
 
 {#snippet seatShape(pt: SeatPoint, view: SeatView | undefined, cx: number, cy: number)}
 	{@const status = view?.status ?? 'blocked'}
 	{@const category = categoryFor(pt.seatId)}
+	{@const fill = seatFill(category?.color)}
+	{@const glyph = seatGlyphColor(category?.color)}
+	{@const live = status === 'mine' || status === 'available'}
+	{@const rot = seatRotation.get(pt.seatId) ?? 0}
 	<title>{seatLabelFor(pt, view)}</title>
 	{#if status === 'mine'}
-		<circle {cx} {cy} r={SEAT_R + 3} class="fill-none stroke-primary/40" stroke-width="2" />
-		<circle {cx} {cy} r={SEAT_R} class="fill-primary stroke-primary" />
+		<!-- Held by me: the mock's white offset ring (an `outline-offset-2
+		     outline-2` in SVG terms) around the seat's own colour, plus the check.
+		     White on ink is 17.40:1, and the glyph rides paintTextColor so it stays
+		     readable on any category colour the organizer picked. -->
+		<circle {cx} {cy} r={SEAT_R + 3} fill="none" class="stroke-poster-white" stroke-width="2" />
+		<circle {cx} {cy} r={SEAT_R} {fill} />
 		<path
 			d="M {cx - 4.5} {cy + 0.5} l 3 3 l 6 -7"
-			class="stroke-primary-foreground"
+			stroke={glyph}
 			stroke-width="2"
 			fill="none"
 			stroke-linecap="round"
 			stroke-linejoin="round"
 		/>
 	{:else if status === 'pending'}
-		<circle
-			{cx}
-			{cy}
-			r={SEAT_R}
-			class="animate-pulse fill-primary/15 stroke-primary/60"
-			stroke-width="2"
-		/>
+		<!-- In-flight hold: white@40 (3.79:1 on ink) and pulsing, with aria-busy
+		     on the seat group — brighter than the @25 dim so a seat being taken
+		     never reads as one already gone. -->
+		<circle {cx} {cy} r={SEAT_R} class="animate-pulse fill-poster-white/40" />
 	{:else if status === 'available'}
 		<circle
 			{cx}
 			{cy}
 			r={SEAT_R}
-			class="fill-background {category ? '' : 'stroke-border'} {seatMaxReached(pt.seatId) ||
-			disabled
-				? 'opacity-50'
-				: ''}"
-			stroke={category?.color}
-			stroke-width="2"
+			{fill}
+			class={seatMaxReached(pt.seatId) || disabled ? 'opacity-50' : ''}
 		/>
 	{:else}
-		<!-- sold / held / blocked: diagonal pattern + X glyph, not color alone -->
-		<circle
-			{cx}
-			{cy}
-			r={SEAT_R}
-			fill="url(#{uid}-unavailable)"
-			class="stroke-border/50"
-			stroke-width="1.5"
-		/>
-		<path
-			d="M {cx - 3.5} {cy - 3.5} l 7 7 M {cx + 3.5} {cy - 3.5} l -7 7"
-			class="stroke-muted-foreground/60"
-			stroke-width="1.5"
-			fill="none"
+		<!-- sold / held / blocked: the mock's dim seat. Not an X, not a pattern —
+		     availability reads as LIGHTNESS (solid vs white@25, 3.70:1 apart), which
+		     survives every colour-vision deficiency; the reason stays in the
+		     accessible name and the <title> above. -->
+		<circle {cx} {cy} r={SEAT_R} class="fill-poster-white/25" />
+	{/if}
+	{#if rot !== 0}
+		<!-- Seat-back orientation notch — same geometry the sector editor draws
+		     (seat-rotation.ts owns the contract: degrees clockwise from "up",
+		     sector-local, so the sector's own group rotation carries it along).
+		     On a solid seat it takes that seat's own glyph colour; on the faint
+		     dim/pending fills ink would vanish, so it goes white@80. -->
+		{@const notch = notchSegment(rot, SEAT_R)}
+		<line
+			x1={cx + notch.x1}
+			y1={cy + notch.y1}
+			x2={cx + notch.x2}
+			y2={cy + notch.y2}
+			stroke={live ? glyph : 'hsl(var(--poster-white) / 0.8)'}
+			stroke-width={notch.width}
 			stroke-linecap="round"
+			data-testid="seat-rotation-notch"
+			data-rot={rot}
 		/>
 	{/if}
 {/snippet}
@@ -441,7 +476,7 @@
 				width={sector.width * CELL}
 				height={sector.height * CELL}
 				rx="12"
-				class="fill-muted/40 stroke-border"
+				class="fill-poster-white/[0.06] stroke-poster-white/30"
 				stroke-dasharray="6 4"
 				stroke-width="1.5"
 			/>
@@ -450,16 +485,18 @@
 				y={(sector.height * CELL) / 2}
 				text-anchor="middle"
 				dominant-baseline="central"
-				class="fill-muted-foreground text-[11px]"
+				class="fill-poster-white/80 text-[11px]"
 			>
 				{counts ? `${standingLabelText} · ${counts}` : standingLabelText}
 			</text>
 		</g>
 	{:else}
+		<!-- Sector footprint: a barely-there wash on the ink house, so the seats
+		     stay the loudest thing in frame (white@4 fill / white@12 edge). -->
 		{#if sector.shape}
 			<polygon
 				points={sector.shape.map((p) => `${p.x * CELL},${p.y * CELL}`).join(' ')}
-				class="fill-muted/30 stroke-border/60"
+				class="fill-poster-white/[0.05] stroke-poster-white/[0.12]"
 				stroke-width="1"
 			/>
 		{:else}
@@ -469,7 +506,7 @@
 				width={sector.width * CELL + 12}
 				height={sector.height * CELL + 12}
 				rx="10"
-				class="fill-muted/20 stroke-border/50"
+				class="fill-poster-white/[0.04] stroke-poster-white/[0.12]"
 				stroke-width="1"
 			/>
 		{/if}
@@ -478,6 +515,14 @@
 			{@const cx = (pt.x + 0.5) * CELL}
 			{@const cy = (pt.y + 0.5) * CELL}
 			{#if seatInteractive(pt.seatId) && view}
+				<!-- Focus is drawn as REAL SVG GEOMETRY, not an `outline` utility: an
+				     SVG container has no box model, so `focus-visible:outline-*` on
+				     this <g> never paints (Chromium falls back to its own blue
+				     bounding-box ring; Safari/Firefox draw nothing at all). The amber
+				     ring below is a sibling circle toggled by `group-focus-visible`,
+				     and `outline-none` suppresses the UA ring ONLY because that
+				     replacement exists. Amber (9.42:1 on ink) and a radius OUTSIDE the
+				     white `mine` ring keep the two cues distinct. -->
 				<g
 					data-seat-id={pt.seatId}
 					role="button"
@@ -486,13 +531,20 @@
 					aria-pressed={view.status === 'mine'}
 					aria-disabled={canToggle(view) ? undefined : true}
 					aria-busy={view.status === 'pending' ? true : undefined}
-					class="{canToggle(view)
-						? 'cursor-pointer'
-						: 'cursor-not-allowed'} outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
+					class="group {canToggle(view) ? 'cursor-pointer' : 'cursor-not-allowed'} outline-none"
 					onclick={() => handleSeatClick(view)}
 					onkeydown={(event) => handleSeatKeydown(event, view)}
 				>
 					{@render seatShape(pt, view, cx, cy)}
+					<circle
+						{cx}
+						{cy}
+						r={SEAT_R + 6}
+						fill="none"
+						stroke-width="2"
+						data-testid="seat-focus-ring"
+						class="pointer-events-none stroke-poster-amber opacity-0 group-focus-visible:opacity-100"
+					/>
 				</g>
 			{:else}
 				<g data-seat-id={pt.seatId} aria-hidden="true">
@@ -505,8 +557,17 @@
 
 <!-- h-full: the svg must FILL the host's fixed-height frame so the viewBox
      letterboxes into it (`meet`) — without it the svg takes its intrinsic
-     aspect-ratio height and the frame's overflow-hidden clips the chart. -->
-<div class="relative h-full" bind:clientWidth={boxW} bind:clientHeight={boxH}>
+     aspect-ratio height and the frame's overflow-hidden clips the chart.
+
+     The panel is the landing mock's house: poster ink, 20px radius, IDENTICAL
+     in light and dark (imagery rule — it is a picture of a room, not a
+     surface). Hosts supply the frame's height and clipping only; every piece of
+     chrome that lands on it below carries its own poster-palette treatment. -->
+<div
+	class="relative h-full rounded-[20px] bg-poster-ink"
+	bind:clientWidth={boxW}
+	bind:clientHeight={boxH}
+>
 	<svg
 		bind:this={svgEl}
 		use:viewport.wheelZoom
@@ -521,18 +582,6 @@
 		onpointercancel={viewport.onPointerEnd}
 		onpointerleave={viewport.onPointerEnd}
 	>
-		<defs>
-			<pattern
-				id="{uid}-unavailable"
-				patternUnits="userSpaceOnUse"
-				width="5"
-				height="5"
-				patternTransform="rotate(45)"
-			>
-				<rect width="5" height="5" class="fill-muted/60" />
-				<line x1="0" y1="0" x2="0" y2="5" class="stroke-muted-foreground/30" stroke-width="2" />
-			</pattern>
-		</defs>
 		<g transform="translate({viewport.tx} {viewport.ty}) scale({viewport.scale})">
 			{#if onlySector}
 				<!-- Scoped single-sector view: render un-rotated with the stage arrow
@@ -549,7 +598,7 @@
 				<text
 					x={SCOPED_MARGIN + 2}
 					y={SCOPED_MARGIN + onlySector.height * CELL + 16}
-					class="fill-muted-foreground text-[11px] font-medium"
+					class="fill-poster-white/80 text-[11px] font-medium"
 				>
 					{onlySector.name}
 				</text>
@@ -585,8 +634,8 @@
 						y={canvasY(aabb.minY) - 6}
 						text-anchor="middle"
 						class="{ghost
-							? 'fill-muted-foreground/60'
-							: 'fill-muted-foreground'} text-[11px] font-medium"
+							? 'fill-poster-white/50'
+							: 'fill-poster-white/80'} text-[11px] font-medium"
 					>
 						{sector.name}
 					</text>
@@ -634,7 +683,7 @@
 			aria-hidden="true"
 			class="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center"
 		>
-			<span class="rounded-full bg-foreground/80 px-3 py-1.5 text-xs text-background shadow">
+			<span class="rounded-full bg-poster-white/15 px-3 py-1.5 text-xs text-poster-white">
 				{m['seatMap.wheelZoomHint']()}
 			</span>
 		</div>

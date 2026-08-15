@@ -24,7 +24,7 @@
 	labelled group; nothing focusable inside. Rendered in sector-LOCAL
 	coordinates — the caller wraps it in the placing/rotating transform.
 -->
-<g role="img" aria-label="{sector.name}: {label}" class="opacity-60">
+<g role="img" aria-label="{sector.name}: {label}">
 	<title>{sector.name}: {label}</title>
 	{#if sector.kind === 'standing'}
 		<rect
@@ -33,7 +33,7 @@
 			width={sector.width * cell}
 			height={sector.height * cell}
 			rx="12"
-			class="fill-muted/25 stroke-border/60"
+			class="fill-poster-white/[0.04] stroke-poster-white/20"
 			stroke-dasharray="6 4"
 			stroke-width="1.5"
 		/>
@@ -41,7 +41,7 @@
 		{#if sector.shape}
 			<polygon
 				points={sector.shape.map((p) => `${p.x * cell},${p.y * cell}`).join(' ')}
-				class="fill-muted/20 stroke-border/40"
+				class="fill-poster-white/[0.04] stroke-poster-white/[0.10]"
 				stroke-width="1"
 			/>
 		{:else}
@@ -51,16 +51,19 @@
 				width={sector.width * cell + 12}
 				height={sector.height * cell + 12}
 				rx="10"
-				class="fill-muted/15 stroke-border/40"
+				class="fill-poster-white/[0.03] stroke-poster-white/[0.10]"
 				stroke-width="1"
 			/>
 		{/if}
+		<!-- Ghost seats sit BELOW the dim-unavailable white@25: same lightness
+		     language as the rest of the map (solid = for sale, faint = not), and
+		     smaller, so a ghost sector never competes with the one being bought. -->
 		{#each sector.seats as pt (pt.seatId)}
 			<circle
 				cx={(pt.x + 0.5) * cell}
 				cy={(pt.y + 0.5) * cell}
 				r={seatR - 3}
-				class="fill-muted-foreground/15"
+				class="fill-poster-white/20"
 			/>
 		{/each}
 	{/if}

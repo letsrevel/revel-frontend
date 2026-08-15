@@ -71,6 +71,18 @@ describe('buildDesignerModel', () => {
 		expect(block.metadata).toMatchObject({ aisles: { verticalAisles: [2] } });
 	});
 
+	it('carries each seat price category through to the dot (#852 seat colours)', () => {
+		const sector = positioned();
+		sector.seats = (sector.seats ?? []).map((seat, index) =>
+			index === 0 ? { ...seat, price_category_id: 'gold' } : { ...seat }
+		);
+		const block = blockOf(buildDesignerModel([sector], null), 'a');
+		// The designer paints a seat with `seat-map-paint`'s rules, so the block
+		// has to know which category (if any) each dot carries — an unpainted seat
+		// stays explicitly null rather than undefined.
+		expect(block.seats.map((s) => s.priceCategoryId)).toEqual(['gold', null]);
+	});
+
 	it('reads a stored transform from sector metadata verbatim', () => {
 		const model = buildDesignerModel([arranged()], null);
 		const block = blockOf(model, 'b');

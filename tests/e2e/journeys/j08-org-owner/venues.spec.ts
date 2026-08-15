@@ -59,8 +59,10 @@ test.describe('J8 venues @p2', () => {
 		// Into the sector → bulk-create a 2×3 grid of seats.
 		await page.getByLabel('Manage seats').first().click();
 		await expect(page.getByRole('heading', { name: 'Seats - Balcony' })).toBeVisible();
-		await page.getByLabel('Rows').fill('2');
-		await page.getByLabel('Columns').fill('3');
+		// Role-scoped: `getByLabel` matches accessible names by SUBSTRING, and the
+		// geometry panel's "Stagger alternate rows" checkbox also contains "Rows".
+		await page.getByRole('spinbutton', { name: 'Rows' }).fill('2');
+		await page.getByRole('spinbutton', { name: 'Columns' }).fill('3');
 		await page.getByRole('button', { name: 'Fill All' }).click();
 		await expect(page.getByText('Total:')).toContainText('6');
 		await page.getByRole('button', { name: 'Save Changes' }).click();

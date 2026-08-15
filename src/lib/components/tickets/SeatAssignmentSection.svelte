@@ -455,24 +455,15 @@
 			{#if seatViewMode === 'map' && mapChart}
 				<!-- Tall map surface (the seated dialog widens for it); pan/zoom
 				     reaches anything beyond the box.
-				     `dark` is deliberate and load-bearing: it makes the map house
-				     a THEATRE in both themes, matching the landing's SeatMapMock
-				     and the list view's ink panel. It is a scoped THEME, not a
-				     hardcoded colour — every token inside resolves to the audited
-				     dark-mode value, so `--background`, `--border`,
-				     `--muted-foreground` and the zoom controls all keep their AA
-				     pairs, and the organizer's price-category seat colours read
-				     against a consistent dark house instead of flipping.
-				     Side effect worth knowing: `shadow-poster` reads
-				     `--poster-shadow`, which `.dark` redefines — and `.dark` is on
-				     THIS element, so the frame always casts the DARK-mode float
-				     (near-black, wider spread) even on a light page. That is the
-				     right answer here rather than a bug: a dark block needs the
-				     heavier shadow to separate from light paper, and the light
-				     float (ink at 15%) would barely register under it. -->
-				<div
-					class="dark h-[58vh] shrink-0 overflow-hidden rounded-[1.5rem] bg-background shadow-poster"
-				>
+				     The scoped-`dark` trick this frame used to carry is GONE (#852):
+				     SeatMap now paints its own poster-ink house with fixed poster
+				     values, so the theatre no longer depends on borrowing dark-mode
+				     tokens, and every seat state is hand-verified against ink
+				     instead of against whatever `--background` resolved to. The
+				     frame here supplies height, clipping and the float only.
+				     `shadow-poster` is theme-aware on purpose: the panel is a
+				     picture, but the shadow it casts belongs to the page under it. -->
+				<div class="h-[58vh] shrink-0 overflow-hidden rounded-[20px] shadow-poster">
 					<SeatMap
 						chart={mapChart}
 						seats={seatViews}
