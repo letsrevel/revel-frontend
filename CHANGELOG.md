@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.6.0] - 2026-08-18
+
+### Added
+
+- **High-fidelity seat geometry** for seated venues:
+  - Rows can now curve (theater-style arcs), stagger, and align left/center/right, with per-row overrides — no longer just rectangular grids. Every save bakes an explicit position for every seat, so the buyer map renders exactly what the organizer laid out.
+  - The sector editor is now WYSIWYG: seats are shown at their real coordinates, so what you edit is what checkout renders, with a live geometry panel alongside.
+  - A new **Adjust seats** mode allows dragging or arrow-key nudging individual seats, rotating them, appending seats to a row, adding seats anywhere, and removing them — with full session undo/redo (`Cmd/Ctrl+Z`).
+  - Seat rotation is visible to buyers too, rendered as a seat-back notch on the checkout map.
+  - When adjusted seats no longer fit a drawn sector outline, a dialog offers to auto-fit or clear the outline instead of failing the save.
+
+### Changed
+
+- All seat surfaces (designer, editor, checkout map) now share one visual language: dark poster-ink panel, solid price-category color dots, dimmed unavailable seats (the X marks are gone), a circular selection ring, and a clear amber keyboard-focus ring.
+- The organization admin header and tab strip now scroll away with the page instead of staying pinned, leaving only the global navbar fixed — more room for content on every admin page.
+
+### Fixed
+
+- Seats next to an aisle no longer sit one unit apart between the editor and the buyer map: the legacy editor stored aisle-shifted positions with an off-by-one that disagreed with its own aisle rails. Re-saving an existing sector with aisles applies the correction.
+
 ## [2.5.1] - 2026-08-12
 
 ### Changed
