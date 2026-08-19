@@ -34,14 +34,13 @@ export interface EventCartDeps {
 	eventRemaining: () => number | null;
 }
 
-/** A tier the buyer can quantity-pick without any extra input (spec §2.1). */
-export function quickBuyEligible(tier: TierSchemaWithId, requireTicketNames: boolean): boolean {
-	return (
-		!requireTicketNames &&
-		tier.price_type !== 'pwyc' &&
-		tier.seat_assignment_mode === 'none' &&
-		tier.payment_method !== 'hidden'
-	);
+/**
+ * A tier the buyer can quantity-pick with a stepper (spec §2.1). Names and
+ * PWYC amounts are no longer disqualifying here — they're collected in the
+ * checkout sheet before submit (see `EventCart.needsSheet`).
+ */
+export function quickBuyEligible(tier: TierSchemaWithId): boolean {
+	return tier.seat_assignment_mode === 'none' && tier.payment_method !== 'hidden';
 }
 
 export class EventCart {
@@ -120,5 +119,24 @@ export class EventCart {
 
 	clear(): void {
 		this.groups = [];
+	}
+
+	/** True when checkout needs the sheet: any group needs names or a PWYC amount. */
+	needsSheet(requireTicketNames: boolean): boolean {
+		return this.groups.some((g) => requireTicketNames || g.tier.price_type === 'pwyc');
+	}
+
+	/** Writes a guest name at `index`, padding `guestNames` to the group's quantity first. */
+	setGuestName(tierId: string, index: number, value: string): void {
+		const group = this.groupFor(tierId);
+		if (!group) return;
+		while (group.guestNames.length < group.quantity) group.guestNames.push('');
+		group.guestNames[index] = value;
+	}
+
+	setPwycAmount(tierId: string, value: string | null): void {
+		const group = this.groupFor(tierId);
+		if (!group) return;
+		group.pwycAmount = value;
 	}
 }

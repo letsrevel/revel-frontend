@@ -453,7 +453,6 @@
 								: undefined}
 							cart={data.isAuthenticated ? cart : undefined}
 							quickBuyDisabled={cartController.isPending}
-							requireTicketNames={event.require_ticket_names}
 							{eventRemaining}
 						/>
 					{/if}
