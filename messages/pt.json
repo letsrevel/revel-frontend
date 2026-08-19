@@ -9467,5 +9467,38 @@
 	"memberScan.untitledTier": "Bilhete",
 	"memberScan.checkInTicket": "Registar entrada",
 	"memberScan.close": "Fechar",
-	"memberScan.checkedInSuccess": "Entrada registada: {name}"
+	"memberScan.checkedInSuccess": "Entrada registada: {name}",
+	"cart": {
+		"addOne": "Adicionar um {tierName}",
+		"removeOne": "Remover um {tierName}",
+		"quantityFor": "Quantidade de {tierName}",
+		"cannotMixCurrency": "Não pode ser combinado com a tua seleção atual (moeda diferente)",
+		"cannotMixPayment": "Não pode ser combinado com a tua seleção atual (método de pagamento diferente)",
+		"ticketCount": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} bilhete",
+					"countPlural=*": "{count} bilhetes"
+				}
+			}
+		],
+		"buy": "Comprar",
+		"free": "Grátis",
+		"checkoutFailed": "Falha no pagamento",
+		"staleCart": "O teu carrinho está desatualizado — alguns bilhetes já não estão disponíveis. Atualiza a página e tenta novamente.",
+		"saleWindowClosed": "O período de venda de um bilhete no teu carrinho acabou de terminar. Atualiza a página.",
+		"eventTicketsLeft": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "Podes obter mais {count} bilhete para este evento",
+					"countPlural=*": "Podes obter mais {count} bilhetes para este evento"
+				}
+			}
+		],
+		"summaryRegion": "Resumo do carrinho"
+	}
 }

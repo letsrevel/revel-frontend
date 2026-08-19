@@ -9467,5 +9467,38 @@
 	"memberScan.untitledTier": "Billet",
 	"memberScan.checkInTicket": "Enregistrer",
 	"memberScan.close": "Fermer",
-	"memberScan.checkedInSuccess": "Enregistré : {name}"
+	"memberScan.checkedInSuccess": "Enregistré : {name}",
+	"cart": {
+		"addOne": "Ajouter un {tierName}",
+		"removeOne": "Retirer un {tierName}",
+		"quantityFor": "Quantité pour {tierName}",
+		"cannotMixCurrency": "Ne peut pas être combiné avec ta sélection actuelle (devise différente)",
+		"cannotMixPayment": "Ne peut pas être combiné avec ta sélection actuelle (mode de paiement différent)",
+		"ticketCount": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} billet",
+					"countPlural=*": "{count} billets"
+				}
+			}
+		],
+		"buy": "Acheter",
+		"free": "Gratuit",
+		"checkoutFailed": "Échec du paiement",
+		"staleCart": "Ton panier n'est plus à jour — certains billets ne sont plus disponibles. Actualise la page et réessaie.",
+		"saleWindowClosed": "La période de vente d'un billet de ton panier vient de se terminer. Actualise la page.",
+		"eventTicketsLeft": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "Tu peux obtenir {count} billet de plus pour cet événement",
+					"countPlural=*": "Tu peux obtenir {count} billets de plus pour cet événement"
+				}
+			}
+		],
+		"summaryRegion": "Résumé du panier"
+	}
 }
