@@ -13,6 +13,8 @@
 	import { Ticket, Clock, Users, AlertCircle, Check } from '@lucide/svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import { formatDate } from '$lib/utils/date';
+	import type { JoinBlock } from './cart.svelte';
+	import TierQuantityStepper from './TierQuantityStepper.svelte';
 
 	interface Props {
 		tier: TierSchemaWithId;
@@ -32,6 +34,14 @@
 		 * like the pre-#825 world.
 		 */
 		capacityDisclosed?: boolean;
+		/** Quick-buy inline stepper (#853): present only when the tier is
+		 * quantity-pickable without extra input. */
+		quickBuy?: {
+			quantity: number;
+			max: number;
+			joinBlock: JoinBlock;
+			onSetQuantity: (quantity: number) => void;
+		};
 		onSelectTier: (tier: TierSchemaWithId) => void;
 		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 	}
@@ -46,6 +56,7 @@
 		tierRemainingInfo,
 		timezone,
 		capacityDisclosed = true,
+		quickBuy,
 		onSelectTier,
 		onGuestTierClick
 	}: Props = $props();
@@ -320,6 +331,21 @@
 						? m['tierCardAdmin.soldOutDetail']()
 						: m['tierCardAdmin.notAvailable']()}
 			</p>
+		{/if}
+	{:else if quickBuy && (canClaim || canCheckout || canReserve)}
+		{#if quickBuy.joinBlock}
+			<p class="max-w-[250px] text-xs text-muted-foreground sm:text-right">
+				{quickBuy.joinBlock === 'currency'
+					? m['cart.cannotMixCurrency']()
+					: m['cart.cannotMixPayment']()}
+			</p>
+		{:else}
+			<TierQuantityStepper
+				tierName={tier.name}
+				quantity={quickBuy.quantity}
+				max={quickBuy.max}
+				onSetQuantity={quickBuy.onSetQuantity}
+			/>
 		{/if}
 	{:else if canClaim}
 		<Button onclick={() => onSelectTier(tier)} class="w-full sm:w-auto">
