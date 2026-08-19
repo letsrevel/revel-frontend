@@ -5,10 +5,16 @@ import {
 	getEligibilityRefusalMessage,
 	getNextStepMessage,
 	getReasonCodeMessage,
+	hasAttendingSignal,
 	isEligibilityRefusal,
 	isMembershipTierRefusal
 } from './eligibility';
-import type { EventUserEligibility } from '$lib/api/generated/types.gen';
+import type {
+	EventUserEligibility,
+	EventUserStatusResponse,
+	UserTicketSchema
+} from '$lib/api/generated/types.gen';
+import type { EventRsvpSchemaActual, EventTicketSchemaActual } from './eligibility';
 import * as m from '$lib/paraglide/messages.js';
 
 const EVENT_ID = '11111111-1111-1111-1111-111111111111';
@@ -155,5 +161,61 @@ describe('isMembershipTierRefusal', () => {
 	it('does not fire on plain errors', () => {
 		expect(isMembershipTierRefusal(new Error('network down'))).toBe(false);
 		expect(isMembershipTierRefusal(null)).toBe(false);
+	});
+});
+
+describe('hasAttendingSignal', () => {
+	function ticket(status: UserTicketSchema['status']): UserTicketSchema {
+		return { id: 't1', status } as unknown as UserTicketSchema;
+	}
+
+	it('returns false for a nullish status', () => {
+		expect(hasAttendingSignal(null)).toBe(false);
+		expect(hasAttendingSignal(undefined)).toBe(false);
+	});
+
+	it('returns true for the unified response with an active (non-cancelled) ticket', () => {
+		const status: EventUserStatusResponse = { tickets: [ticket('active')] };
+		expect(hasAttendingSignal(status)).toBe(true);
+	});
+
+	it('returns true for the unified response with a positive RSVP', () => {
+		const status: EventUserStatusResponse = {
+			tickets: [],
+			rsvp: { status: 'yes' } as EventUserStatusResponse['rsvp']
+		};
+		expect(hasAttendingSignal(status)).toBe(true);
+	});
+
+	it('returns false for the unified response with only a cancelled ticket and no RSVP', () => {
+		const status: EventUserStatusResponse = { tickets: [ticket('cancelled')] };
+		expect(hasAttendingSignal(status)).toBe(false);
+	});
+
+	it('returns false for the unified response with no tickets and no RSVP', () => {
+		const status: EventUserStatusResponse = { tickets: [] };
+		expect(hasAttendingSignal(status)).toBe(false);
+	});
+
+	it('returns true for a legacy RSVP with status "yes"', () => {
+		const status = { status: 'yes' } as unknown as EventRsvpSchemaActual;
+		expect(hasAttendingSignal(status)).toBe(true);
+	});
+
+	it('returns false for a legacy RSVP with status "no"', () => {
+		const status = { status: 'no' } as unknown as EventRsvpSchemaActual;
+		expect(hasAttendingSignal(status)).toBe(false);
+	});
+
+	it('returns true for a legacy ticket with status "active" or "checked_in"', () => {
+		const active = { status: 'active', tier: 'x' } as unknown as EventTicketSchemaActual;
+		const checkedIn = { status: 'checked_in', tier: 'x' } as unknown as EventTicketSchemaActual;
+		expect(hasAttendingSignal(active)).toBe(true);
+		expect(hasAttendingSignal(checkedIn)).toBe(true);
+	});
+
+	it('returns false for a legacy ticket with status "cancelled"', () => {
+		const status = { status: 'cancelled', tier: 'x' } as unknown as EventTicketSchemaActual;
+		expect(hasAttendingSignal(status)).toBe(false);
 	});
 });

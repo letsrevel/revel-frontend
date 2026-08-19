@@ -9467,5 +9467,38 @@
 	"memberScan.untitledTier": "Entrada",
 	"memberScan.checkInTicket": "Registrar entrada",
 	"memberScan.close": "Cerrar",
-	"memberScan.checkedInSuccess": "Entrada registrada: {name}"
+	"memberScan.checkedInSuccess": "Entrada registrada: {name}",
+	"cart": {
+		"addOne": "Añadir un {tierName}",
+		"removeOne": "Quitar un {tierName}",
+		"quantityFor": "Cantidad de {tierName}",
+		"cannotMixCurrency": "No se puede combinar con tu selección actual (moneda diferente)",
+		"cannotMixPayment": "No se puede combinar con tu selección actual (método de pago diferente)",
+		"ticketCount": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} entrada",
+					"countPlural=*": "{count} entradas"
+				}
+			}
+		],
+		"buy": "Comprar",
+		"free": "Gratis",
+		"checkoutFailed": "Error en el pago",
+		"staleCart": "Tu carrito está desactualizado — algunas entradas ya no están disponibles. Actualiza la página e inténtalo de nuevo.",
+		"saleWindowClosed": "El plazo de venta de una entrada de tu carrito acaba de cerrarse. Actualiza la página.",
+		"eventTicketsLeft": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "Puedes conseguir {count} entrada más para este evento",
+					"countPlural=*": "Puedes conseguir {count} entradas más para este evento"
+				}
+			}
+		],
+		"summaryRegion": "Resumen del carrito"
+	}
 }

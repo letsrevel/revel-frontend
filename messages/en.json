@@ -9467,5 +9467,38 @@
 	"memberScan.untitledTier": "Ticket",
 	"memberScan.checkInTicket": "Check in",
 	"memberScan.close": "Close",
-	"memberScan.checkedInSuccess": "Checked in: {name}"
+	"memberScan.checkedInSuccess": "Checked in: {name}",
+	"cart": {
+		"addOne": "Add one {tierName}",
+		"removeOne": "Remove one {tierName}",
+		"quantityFor": "Quantity for {tierName}",
+		"cannotMixCurrency": "Can't be combined with your current selection (different currency)",
+		"cannotMixPayment": "Can't be combined with your current selection (different payment method)",
+		"ticketCount": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} ticket",
+					"countPlural=*": "{count} tickets"
+				}
+			}
+		],
+		"buy": "Buy",
+		"free": "Free",
+		"checkoutFailed": "Checkout failed",
+		"staleCart": "Your cart is out of date — some tickets are no longer available. Please refresh the page and try again.",
+		"saleWindowClosed": "The sale window for a ticket in your cart just closed. Please refresh the page.",
+		"eventTicketsLeft": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "You can get {count} more ticket for this event",
+					"countPlural=*": "You can get {count} more tickets for this event"
+				}
+			}
+		],
+		"summaryRegion": "Cart summary"
+	}
 }

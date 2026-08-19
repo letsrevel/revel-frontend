@@ -27,17 +27,16 @@
 	import { eventHasSeatingMap } from '$lib/components/events/venue-overview';
 	import EventConfirmationBanners from '$lib/components/events/EventConfirmationBanners.svelte';
 	import { createCheckoutController } from '$lib/components/events/event-checkout-controller.svelte';
+	import { consumePostRedirectParams } from '$lib/components/events/post-redirect-params';
 	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import { SeoHead } from '$lib/seo';
 	import {
-		isRSVP,
 		isTicket,
 		isEligibility,
 		isUserStatusResponse,
-		hasActiveTickets,
-		hasPositiveRsvp,
 		hasActiveWaitlistOffer,
 		getActiveTickets,
+		hasAttendingSignal,
 		type EventTicketSchemaActual
 	} from '$lib/utils/eligibility';
 	import type { TierRemainingTicketsSchema } from '$lib/api/generated/types.gen';
@@ -46,9 +45,14 @@
 	import { getUserRealName } from '$lib/utils/user-display';
 	import { formatEventDate } from '$lib/utils/date';
 	import { onMount } from 'svelte';
-	import { browser } from '$app/environment';
 	import * as m from '$lib/paraglide/messages.js';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { EventCart } from '$lib/components/tickets/cart.svelte';
+	import { cartTotal, cartTotalArgs } from '$lib/components/tickets/checkout-total';
+	import { buildCartItems } from '$lib/components/tickets/cart-payload';
+	import CartSummaryBar from '$lib/components/tickets/CartSummaryBar.svelte';
+	import { createCartCheckoutController } from '$lib/components/events/cart-checkout-controller.svelte';
+	import { defaultGuestName } from '$lib/components/tickets/purchase-items';
 
 	const { data }: { data: PageData } = $props();
 
@@ -72,30 +76,7 @@
 
 	// Check if user has RSVP'd or has tickets (reactive to userStatus changes)
 	// Users with tickets should be able to claim potluck items
-	const hasRSVPd = $derived.by(() => {
-		if (!userStatus) return false;
-
-		// New unified format: EventUserStatusResponse with tickets array and/or RSVP
-		if (isUserStatusResponse(userStatus)) {
-			// User has active tickets = can claim potluck items
-			if (hasActiveTickets(userStatus)) return true;
-			// User has positive RSVP = can claim potluck items
-			if (hasPositiveRsvp(userStatus)) return true;
-			return false;
-		}
-
-		// Legacy format: Single RSVP
-		if (isRSVP(userStatus)) {
-			return userStatus.status === 'yes';
-		}
-
-		// Legacy format: Single Ticket
-		if (isTicket(userStatus)) {
-			return userStatus.status === 'active' || userStatus.status === 'checked_in';
-		}
-
-		return false;
-	});
+	const hasRSVPd = $derived(hasAttendingSignal(userStatus));
 
 	// Compute permissions for potluck management
 	const potluckPermissions = $derived(
@@ -127,6 +108,12 @@
 
 	// First user ticket (for backward compatibility)
 	const userTicket = $derived(userTickets.length > 0 ? userTickets[0] : null);
+
+	// Stranded-cart guard: unmounts TicketTierList but not the isEmpty-gated
+	// summary bar (no-op for cart purchases, already cleared there).
+	$effect(() => {
+		if (userTicket) cart.clear();
+	});
 
 	// Get per-tier remaining tickets info for the user
 	// Only show user-specific remaining info if they can actually purchase more
@@ -248,6 +235,47 @@
 		}
 	});
 
+	// BE #902 populates event_remaining on BOTH my-status shapes (status AND
+	// eligibility — the first-time-buyer case), so read it unconditionally.
+	// Tolerant cast: deploy-order-free, and covers the legacy single-RSVP/ticket
+	// shapes, which never carry it. null = no event-level cap.
+	const eventRemaining = $derived.by((): number | null => {
+		if (!userStatus) return null;
+		return (userStatus as { event_remaining?: number | null }).event_remaining ?? null;
+	});
+
+	// Quick-buy cart (#853): authed-only, wired into TicketTierList's per-tier
+	// steppers and the sticky CartSummaryBar below.
+	const cart = new EventCart({
+		remainingFor: (tierId) => tierRemainingTickets?.find((t) => t.tier_id === tierId),
+		eventRemaining: () => eventRemaining
+	});
+
+	const cartController = createCartCheckoutController({
+		eventId: event.id,
+		queryClient,
+		refreshUserStatus,
+		setShowMyTicketModal: (open) => {
+			showMyTicketModal = open;
+		},
+		onPurchaseComplete: () => cart.clear()
+	});
+
+	const cartTotalDisplay = $derived(cartTotal(cart.groups.map(cartTotalArgs)));
+
+	async function handleCartBuy() {
+		try {
+			await cartController.checkoutCart({
+				items: buildCartItems(cart.groups, {
+					requireTicketNames: event.require_ticket_names,
+					defaultName: defaultGuestName(ticketHolderDefaultName)
+				})
+			});
+		} catch {
+			// error surfaced via controller toast
+		}
+	}
+
 	// Handle payment success/cancelled redirects
 	let paymentSuccess = $state(false);
 	let paymentCancelled = $state(false);
@@ -257,80 +285,39 @@
 	let ticketConfirmed = $state(false);
 
 	onMount(() => {
-		if (browser) {
-			const urlParams = new URLSearchParams(window.location.search);
+		const params = consumePostRedirectParams();
+		paymentSuccess = params.paymentSuccess;
+		paymentCancelled = params.paymentCancelled;
+		rsvpConfirmed = params.rsvpConfirmed;
+		ticketConfirmed = params.ticketConfirmed;
+		initialDiscountCode = params.discountCode;
 
-			// Check for payment success
-			if (urlParams.get('payment_success') === 'true') {
-				paymentSuccess = true;
-				// Remove parameter from URL
-				const cleanUrl = window.location.pathname;
-				window.history.replaceState({}, '', cleanUrl);
+		if (paymentSuccess || rsvpConfirmed || ticketConfirmed) {
+			queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
+		}
 
-				// Refresh event status to get the ticket
-				queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
-
-				// Auto-open ticket modal after a delay
-				setTimeout(() => {
-					if (userTicket) {
-						openMyTicketModal();
-					}
-				}, 1000);
-			}
-
-			// Check for payment cancelled
-			if (urlParams.get('payment_cancelled') === 'true') {
-				paymentCancelled = true;
-				// Remove parameter from URL
-				const cleanUrl = window.location.pathname;
-				window.history.replaceState({}, '', cleanUrl);
-			}
-
-			// Check for RSVP confirmation
-			const rsvpParam = urlParams.get('rsvp');
-			if (rsvpParam && ['yes', 'no', 'maybe'].includes(rsvpParam)) {
-				rsvpConfirmed = rsvpParam;
-				// Remove parameter from URL
-				const cleanUrl = window.location.pathname;
-				window.history.replaceState({}, '', cleanUrl);
-
-				// Refresh event status
-				queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
-			}
-
-			// Check for ticket confirmation
-			if (urlParams.get('ticket_id')) {
-				ticketConfirmed = true;
-				// Remove parameter from URL
-				const cleanUrl = window.location.pathname;
-				window.history.replaceState({}, '', cleanUrl);
-
-				// Refresh event status to get the ticket
-				queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
-
-				// Auto-open ticket modal after a delay
-				setTimeout(() => {
-					if (userTicket) {
-						openMyTicketModal();
-					}
-				}, 1000);
-			}
-
-			// Check for discount code
-			const discountParam = urlParams.get('discount');
-			if (discountParam) {
-				initialDiscountCode = discountParam.toUpperCase();
-				// Remove parameter from URL
-				const cleanUrl = window.location.pathname;
-				window.history.replaceState({}, '', cleanUrl);
-			}
+		// Auto-open the ticket modal after a delay once the refreshed status
+		// (queued above) has had a chance to land.
+		if (paymentSuccess) {
+			setTimeout(() => {
+				if (userTicket) {
+					openMyTicketModal();
+				}
+			}, 1000);
+		}
+		if (ticketConfirmed) {
+			setTimeout(() => {
+				if (userTicket) {
+					openMyTicketModal();
+				}
+			}, 1000);
 		}
 	});
 </script>
 
 <SeoHead config={data.seo} />
 
-<div class="min-h-screen bg-background">
+<div class="min-h-screen bg-background" class:pb-24={!cart.isEmpty}>
 	<!-- Post-redirect confirmation banners (payment / RSVP / ticket) -->
 	<EventConfirmationBanners {paymentSuccess} {paymentCancelled} {rsvpConfirmed} {ticketConfirmed} />
 
@@ -464,6 +451,10 @@
 										showVenueOverview = true;
 									}
 								: undefined}
+							cart={data.isAuthenticated ? cart : undefined}
+							quickBuyDisabled={cartController.isPending}
+							requireTicketNames={event.require_ticket_names}
+							{eventRemaining}
 						/>
 					{/if}
 
@@ -638,6 +629,17 @@
 		</div>
 	</div>
 </div>
+
+{#if data.isAuthenticated && !cart.isEmpty}
+	<CartSummaryBar
+		count={cart.totalCount}
+		totalDisplay={cartTotalDisplay}
+		currency={cart.currency}
+		isFree={cart.paymentMethod === 'free'}
+		isPending={cartController.isPending}
+		onBuy={handleCartBuy}
+	/>
+{/if}
 
 <!-- Ticket Tier Selection Modal -->
 <TicketTierModal

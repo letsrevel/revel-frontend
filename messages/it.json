@@ -9467,5 +9467,38 @@
 	"memberScan.untitledTier": "Biglietto",
 	"memberScan.checkInTicket": "Registra ingresso",
 	"memberScan.close": "Chiudi",
-	"memberScan.checkedInSuccess": "Ingresso registrato: {name}"
+	"memberScan.checkedInSuccess": "Ingresso registrato: {name}",
+	"cart": {
+		"addOne": "Aggiungi un {tierName}",
+		"removeOne": "Rimuovi un {tierName}",
+		"quantityFor": "Quantità per {tierName}",
+		"cannotMixCurrency": "Non può essere combinato con la tua selezione attuale (valuta diversa)",
+		"cannotMixPayment": "Non può essere combinato con la tua selezione attuale (metodo di pagamento diverso)",
+		"ticketCount": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} biglietto",
+					"countPlural=*": "{count} biglietti"
+				}
+			}
+		],
+		"buy": "Acquista",
+		"free": "Gratuito",
+		"checkoutFailed": "Pagamento non riuscito",
+		"staleCart": "Il tuo carrello non è aggiornato — alcuni biglietti non sono più disponibili. Aggiorna la pagina e riprova.",
+		"saleWindowClosed": "La finestra di vendita per un biglietto nel tuo carrello si è appena chiusa. Aggiorna la pagina.",
+		"eventTicketsLeft": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "Puoi ottenere {count} altro biglietto per questo evento",
+					"countPlural=*": "Puoi ottenere {count} altri biglietti per questo evento"
+				}
+			}
+		],
+		"summaryRegion": "Riepilogo carrello"
+	}
 }

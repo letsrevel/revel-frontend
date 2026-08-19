@@ -9,6 +9,8 @@
 		TierRemainingTicketsSchema
 	} from '$lib/api/generated/types.gen';
 	import { isEligibility } from '$lib/utils/eligibility';
+	import type { EventCart } from './cart.svelte';
+	import { quickBuyEligible } from './cart.svelte';
 	import TierCard from './TierCard.svelte';
 	import DemoCardInfo from '$lib/components/common/DemoCardInfo.svelte';
 	import EligibilityStatusDisplay from '$lib/components/events/EligibilityStatusDisplay.svelte';
@@ -35,6 +37,16 @@
 		timezone?: string | null;
 		/** The event's `visibility_settings.show_capacity` (#825) — see TierCard. */
 		capacityDisclosed?: boolean;
+		/** Quick-buy cart (#853). When present, quantity-pickable tiers get an
+		 * inline stepper instead of the buy dialog. */
+		cart?: EventCart;
+		/** Disables every quick-buy stepper (both buttons) — set while a cart
+		 * checkout is in flight so quantities can't change mid-submit. */
+		quickBuyDisabled?: boolean;
+		/** Tiers that require per-ticket guest names are never quick-buy eligible. */
+		requireTicketNames?: boolean;
+		/** Event-level shared remaining budget (BE #901); null = no cap / unknown. */
+		eventRemaining?: number | null;
 		onSelectTier: (tier: TierSchemaWithId) => void;
 		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 		/** Map-first entry point (#679): opens the whole-venue seating overview. */
@@ -56,6 +68,10 @@
 		tierRemainingTickets,
 		timezone,
 		capacityDisclosed = true,
+		cart,
+		quickBuyDisabled = false,
+		requireTicketNames = false,
+		eventRemaining = null,
 		onSelectTier,
 		onGuestTierClick,
 		onViewSeatingMap
@@ -119,6 +135,12 @@
 			{/if}
 		</div>
 
+		{#if eventRemaining !== null}
+			<p class="mb-4 text-sm text-muted-foreground">
+				{m['cart.eventTicketsLeft']({ count: eventRemaining })}
+			</p>
+		{/if}
+
 		<!-- Map-first entry point (#679): start from the seating map instead of
 		     the tier list. Only rendered when the event has a mapped venue. -->
 		{#if onViewSeatingMap}
@@ -155,6 +177,15 @@
 					tierRemainingInfo={getTierRemainingInfo(tier.id)}
 					{timezone}
 					{capacityDisclosed}
+					quickBuy={cart && quickBuyEligible(tier, requireTicketNames)
+						? {
+								quantity: cart.quantityFor(tier.id),
+								max: cart.maxQuantity(tier),
+								joinBlock: cart.joinBlock(tier),
+								onSetQuantity: (quantity: number) => cart.setQuantity(tier, quantity),
+								disabled: quickBuyDisabled
+							}
+						: undefined}
 					{onSelectTier}
 					{onGuestTierClick}
 				/>

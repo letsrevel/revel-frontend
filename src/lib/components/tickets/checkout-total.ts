@@ -80,3 +80,36 @@ export function checkoutTotal(args: CheckoutTotalArgs): string | null {
 	const cents = toCents(args.discountedPrice ?? tier.price);
 	return cents == null ? null : fromCents(cents * quantity);
 }
+
+/** Maps one cart group onto CheckoutTotalArgs (chart/discount arrive in PR 2/3). */
+export interface CartTotalGroup {
+	tier: CheckoutTotalArgs['tier'];
+	quantity: number;
+	seatIds: readonly string[];
+	pwycAmount: string | null;
+	priceCategoryId: string | null;
+}
+
+export function cartTotalArgs(group: CartTotalGroup): CheckoutTotalArgs {
+	return {
+		tier: group.tier,
+		quantity: group.quantity,
+		heldSeatIds: group.seatIds,
+		chart: null,
+		selectedZoneId: group.priceCategoryId,
+		pwycAmount: group.pwycAmount ?? '',
+		discountedPrice: null
+	};
+}
+
+/** Whole-cart total: sum of per-group totals, null while ANY group is unknown. */
+export function cartTotal(argsList: CheckoutTotalArgs[]): string | null {
+	if (argsList.length === 0) return null;
+	let sum = 0;
+	for (const args of argsList) {
+		const total = checkoutTotal(args);
+		if (total == null) return null;
+		sum += Math.round(Number.parseFloat(total) * 100);
+	}
+	return fromCents(sum);
+}

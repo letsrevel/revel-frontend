@@ -126,6 +126,37 @@ export function isAttending(status: UserEventStatusResponse): boolean {
 }
 
 /**
+ * Whether this user status counts as "attending" for the purpose of potluck
+ * item claiming — across every shape `/my-status` can return, including the
+ * legacy single-RSVP and single-ticket formats `isAttending` above doesn't
+ * cover. Used by the event page (`hasRSVPd`) to gate `PotluckSection`.
+ */
+export function hasAttendingSignal(status: UserEventStatus | null | undefined): boolean {
+	if (!status) return false;
+
+	// New unified format: EventUserStatusResponse with tickets array and/or RSVP
+	if (isUserStatusResponse(status)) {
+		// User has active tickets = can claim potluck items
+		if (hasActiveTickets(status)) return true;
+		// User has positive RSVP = can claim potluck items
+		if (hasPositiveRsvp(status)) return true;
+		return false;
+	}
+
+	// Legacy format: Single RSVP
+	if (isRSVP(status)) {
+		return status.status === 'yes';
+	}
+
+	// Legacy format: Single Ticket
+	if (isTicket(status)) {
+		return status.status === 'active' || status.status === 'checked_in';
+	}
+
+	return false;
+}
+
+/**
  * Localized prose per event reason code.
  *
  * Deliberately near-empty, mirroring `membership-eligibility.ts`: every other

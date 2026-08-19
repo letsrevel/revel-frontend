@@ -4,7 +4,7 @@ import type {
 	TicketTierSchema,
 	VenueChartSchema
 } from '$lib/api/generated/types.gen';
-import { checkoutTotal, type CheckoutTotalArgs } from './checkout-total';
+import { checkoutTotal, cartTotal, cartTotalArgs, type CheckoutTotalArgs } from './checkout-total';
 
 function tier(overrides: Partial<TicketTierSchema> = {}): CheckoutTotalArgs['tier'] {
 	return {
@@ -99,5 +99,62 @@ describe('checkoutTotal', () => {
 
 	it('stays exact on cent arithmetic (integer cents, no float drift)', () => {
 		expect(checkoutTotal(args({ tier: tier({ price: '0.10' }), quantity: 3 }))).toBe('0.30');
+	});
+});
+
+describe('cartTotal', () => {
+	const fixed = (price: string, quantity: number): CheckoutTotalArgs =>
+		cartTotalArgs({
+			tier: {
+				payment_method: 'online',
+				price_type: 'fixed',
+				price,
+				seat_assignment_mode: 'none',
+				seat_pricing: null
+			},
+			quantity,
+			seatIds: [],
+			pwycAmount: null,
+			priceCategoryId: null
+		});
+	it('sums groups in integer cents', () => {
+		expect(cartTotal([fixed('25.00', 2), fixed('10.00', 1)])).toBe('60.00');
+	});
+	it('is 0.00 for free carts and null when empty or any group is unknown', () => {
+		expect(
+			cartTotal([
+				cartTotalArgs({
+					tier: {
+						payment_method: 'free',
+						price_type: 'fixed',
+						price: '0',
+						seat_assignment_mode: 'none',
+						seat_pricing: null
+					},
+					quantity: 2,
+					seatIds: [],
+					pwycAmount: null,
+					priceCategoryId: null
+				})
+			])
+		).toBe('0.00');
+		expect(cartTotal([])).toBe(null);
+		expect(
+			cartTotal([
+				cartTotalArgs({
+					tier: {
+						payment_method: 'online',
+						price_type: 'pwyc',
+						price: '5',
+						seat_assignment_mode: 'none',
+						seat_pricing: null
+					},
+					quantity: 1,
+					seatIds: [],
+					pwycAmount: null,
+					priceCategoryId: null
+				})
+			])
+		).toBe(null);
 	});
 });
