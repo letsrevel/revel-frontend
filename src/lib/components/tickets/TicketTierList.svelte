@@ -40,6 +40,9 @@
 		/** Quick-buy cart (#853). When present, quantity-pickable tiers get an
 		 * inline stepper instead of the buy dialog. */
 		cart?: EventCart;
+		/** Disables every quick-buy stepper (both buttons) — set while a cart
+		 * checkout is in flight so quantities can't change mid-submit. */
+		quickBuyDisabled?: boolean;
 		/** Tiers that require per-ticket guest names are never quick-buy eligible. */
 		requireTicketNames?: boolean;
 		/** Event-level shared remaining budget (BE #901); null = no cap / unknown. */
@@ -66,6 +69,7 @@
 		timezone,
 		capacityDisclosed = true,
 		cart,
+		quickBuyDisabled = false,
 		requireTicketNames = false,
 		eventRemaining = null,
 		onSelectTier,
@@ -178,7 +182,8 @@
 								quantity: cart.quantityFor(tier.id),
 								max: cart.maxQuantity(tier),
 								joinBlock: cart.joinBlock(tier),
-								onSetQuantity: (quantity: number) => cart.setQuantity(tier, quantity)
+								onSetQuantity: (quantity: number) => cart.setQuantity(tier, quantity),
+								disabled: quickBuyDisabled
 							}
 						: undefined}
 					{onSelectTier}

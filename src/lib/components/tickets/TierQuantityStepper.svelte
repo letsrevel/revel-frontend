@@ -4,6 +4,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
 	import { Minus, Plus } from '@lucide/svelte';
+	import { MAX_TICKETS_PER_GROUP } from './cart.svelte';
 
 	interface Props {
 		tierName: string;
@@ -43,7 +44,7 @@
 	>
 		<Plus class="h-4 w-4" />
 	</Button>
-	{#if max < 100 && quantity > 0}
+	{#if max < MAX_TICKETS_PER_GROUP && quantity > 0}
 		<span class="text-sm text-muted-foreground">
 			{m['ticketConfirmationDialog.maxHint']({ max })}
 		</span>

@@ -24,6 +24,7 @@ import {
 import * as m from '$lib/paraglide/messages.js';
 import { toast } from 'svelte-sonner';
 import { checkoutError } from './checkout-error';
+import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 
 export interface CartCheckoutParams {
 	items: CheckoutGroupSchema[];
@@ -198,7 +199,13 @@ export function createCartCheckoutController(deps: CartCheckoutDeps) {
 					throw new Error(m['cart.staleCart'](), { cause: response.error });
 				}
 				if (status === 403) {
-					throw new Error(m['cart.saleWindowClosed'](), { cause: response.error });
+					// The backend also 403s tier purchasability ("You are not allowed
+					// to purchase from this tier.") on top of a closed sale window —
+					// shape-safe: prefer the backend's own detail, fall back to the
+					// sale-window copy rather than matching on message text.
+					throw new Error(extractApiErrorDetail(response.error) ?? m['cart.saleWindowClosed'](), {
+						cause: response.error
+					});
 				}
 				throw checkoutError(response.error, m['cart.checkoutFailed']());
 			}

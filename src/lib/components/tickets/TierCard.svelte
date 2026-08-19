@@ -41,6 +41,8 @@
 			max: number;
 			joinBlock: JoinBlock;
 			onSetQuantity: (quantity: number) => void;
+			/** Disables both stepper buttons — set while a cart checkout is in flight. */
+			disabled: boolean;
 		};
 		onSelectTier: (tier: TierSchemaWithId) => void;
 		onGuestTierClick?: (tier: TierSchemaWithId) => void;
@@ -345,6 +347,7 @@
 				quantity={quickBuy.quantity}
 				max={quickBuy.max}
 				onSetQuantity={quickBuy.onSetQuantity}
+				disabled={quickBuy.disabled}
 			/>
 		{/if}
 	{:else if canClaim}

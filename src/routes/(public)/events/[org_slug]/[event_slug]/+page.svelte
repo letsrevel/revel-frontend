@@ -109,6 +109,12 @@
 	// First user ticket (for backward compatibility)
 	const userTicket = $derived(userTickets.length > 0 ? userTickets[0] : null);
 
+	// Stranded-cart guard: unmounts TicketTierList but not the isEmpty-gated
+	// summary bar (no-op for cart purchases, already cleared there).
+	$effect(() => {
+		if (userTicket) cart.clear();
+	});
+
 	// Get per-tier remaining tickets info for the user
 	// Only show user-specific remaining info if they can actually purchase more
 	const tierRemainingTickets = $derived.by((): TierRemainingTicketsSchema[] | undefined => {
@@ -258,12 +264,16 @@
 	const cartTotalDisplay = $derived(cartTotal(cart.groups.map(cartTotalArgs)));
 
 	async function handleCartBuy() {
-		await cartController.checkoutCart({
-			items: buildCartItems(cart.groups, {
-				requireTicketNames: event.require_ticket_names,
-				defaultName: defaultGuestName(ticketHolderDefaultName)
-			})
-		});
+		try {
+			await cartController.checkoutCart({
+				items: buildCartItems(cart.groups, {
+					requireTicketNames: event.require_ticket_names,
+					defaultName: defaultGuestName(ticketHolderDefaultName)
+				})
+			});
+		} catch {
+			// error surfaced via controller toast
+		}
 	}
 
 	// Handle payment success/cancelled redirects
@@ -442,6 +452,7 @@
 									}
 								: undefined}
 							cart={data.isAuthenticated ? cart : undefined}
+							quickBuyDisabled={cartController.isPending}
 							requireTicketNames={event.require_ticket_names}
 							{eventRemaining}
 						/>
