@@ -114,8 +114,7 @@
 	// First user ticket (for backward compatibility)
 	const userTicket = $derived(userTickets.length > 0 ? userTickets[0] : null);
 
-	// Stranded-cart guard: unmounts TicketTierList but not the isEmpty-gated
-	// summary bar (no-op for cart purchases, already cleared there).
+	// Stranded-cart guard: unmounts TicketTierList (no-op for cart purchases).
 	$effect(() => {
 		if (userTicket) cart.clear();
 	});
@@ -156,8 +155,7 @@
 	let showGuestTicketDialog = $state(false);
 	let showVenueOverview = $state(false);
 	let selectedTierForGuest = $state<TierSchemaWithId | null>(null);
-	// The next guest dialog was opened BY a section switch: it should scroll
-	// its seating UI into view (the keyed remount lands at the top).
+	// Opened by a section switch: scroll seating into view (remount lands at top).
 	let guestFocusSeating = $state(false);
 	let preSelectedTier = $state<TierSchemaWithId | null>(null);
 	// Seat-picker entry point (#853 PR 3): the tier being picked also gates
@@ -166,8 +164,7 @@
 	// released) rather than lingering across picking sessions.
 	let pickSeatsTier = $state<TierSchemaWithId | null>(null);
 
-	// Map-first entry point (#679): only when a purchasable tier sells a venue
-	// sector (the chart itself is fetched lazily when the dialog opens).
+	// Map-first entry point (#679): only when a purchasable tier sells a venue sector.
 	const hasSeatingMap = $derived(eventHasSeatingMap(ticketTiers, tierRemainingTickets));
 
 	// Handle modals
@@ -309,6 +306,8 @@
 	// no-names event skip it entirely (direct checkout below).
 	let showCheckoutSheet = $state(false);
 	let cartPurchaseError = $state<unknown>(null);
+	// Guards the BA-hold round-trip: cartController.isPending misses it.
+	let holdingSeats = $state(false);
 
 	// Stranded-cart guard: a cart that empties out from under an open sheet
 	// (e.g. the last held seat expiring) must close it rather than show an
@@ -337,11 +336,11 @@
 			showCheckoutSheet = true;
 			return;
 		}
+		if (holdingSeats || cartController.isPending) return;
+		holdingSeats = true;
 		try {
 			// '' / null keep the fingerprint byte-identical to PR 1's `{ items }`.
 			const params = buildCartCheckoutParams(buildCartCheckoutItems(), '', null);
-			// A resumed checkout (identical retry) already owns its seat holds
-			// from the original reserve call — skip re-holding in that case.
 			const skip = cartController.wouldResume(params);
 			const hold = await holdBestAvailableGroups(cart.bestAvailableGroups, seatHoldRegistry, skip);
 			if (!hold.ok) {
@@ -351,6 +350,8 @@
 			await cartController.checkoutCart(params);
 		} catch {
 			// error surfaced via controller toast
+		} finally {
+			holdingSeats = false;
 		}
 	}
 
@@ -361,6 +362,8 @@
 		discountCode: string;
 		billingInfo: BuyerBillingInfoSchema | null;
 	}) {
+		if (holdingSeats || cartController.isPending) return;
+		holdingSeats = true;
 		try {
 			const params = buildCartCheckoutParams(buildCartCheckoutItems(), discountCode, billingInfo);
 			const skip = cartController.wouldResume(params);
@@ -372,9 +375,10 @@
 			await cartController.checkoutCart(params);
 			showCheckoutSheet = false;
 		} catch (e) {
-			// Sheet stays open with the inline error; the controller's toast still
-			// fires too (accepted duplication — see task brief).
+			// Sheet stays open with the inline error; controller toast fires too.
 			cartPurchaseError = e;
+		} finally {
+			holdingSeats = false;
 		}
 	}
 
@@ -558,7 +562,7 @@
 									}
 								: undefined}
 							cart={data.isAuthenticated ? cart : undefined}
-							quickBuyDisabled={cartController.isPending}
+							quickBuyDisabled={cartController.isPending || holdingSeats}
 							{eventRemaining}
 							onPickSeats={data.isAuthenticated
 								? (tier) => {
@@ -667,7 +671,7 @@
 		totalDisplay={cartTotalDisplay}
 		currency={cart.currency}
 		isFree={cart.paymentMethod === 'free'}
-		isPending={cartController.isPending}
+		isPending={cartController.isPending || holdingSeats}
 		onBuy={handleCartBuy}
 		onDiscountClick={cart.groups.some((g) => discountApplicable(g.tier))
 			? () => {
@@ -686,7 +690,7 @@
 		authToken={authStore.accessToken}
 		organizationSlug={event.organization.slug}
 		{initialDiscountCode}
-		isProcessing={cartController.isPending}
+		isProcessing={cartController.isPending || holdingSeats}
 		purchaseError={cartPurchaseError}
 		onConfirm={handleSheetConfirm}
 		chart={seatHoldRegistry.chart}
