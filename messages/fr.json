@@ -9502,7 +9502,20 @@
 		"summaryRegion": "Résumé du panier",
 		"discountLink": "Code de réduction ?",
 		"seatsHeld": "Sièges réservés",
-		"holdsExpired": "Tes sièges réservés ont expiré — sélectionne-les à nouveau."
+		"holdsExpired": "Tes sièges réservés ont expiré — sélectionne-les à nouveau.",
+		"pickSeatsTitle": "Choisir les sièges — {tierName}",
+		"pickSeats": "Choisir les sièges…",
+		"seatsPicked": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} siège · modifier",
+					"countPlural=*": "{count} sièges · modifier"
+				}
+			}
+		],
+		"seatPickerDone": "Terminé"
 	},
 	"cartSheet": {
 		"title": "Paiement",

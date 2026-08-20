@@ -52,6 +52,7 @@
 	import CartSummaryBar from '$lib/components/tickets/CartSummaryBar.svelte';
 	import CartSeatHolds from '$lib/components/tickets/CartSeatHolds.svelte';
 	import { CartSeatHoldRegistry } from '$lib/components/tickets/cart-seat-registry.svelte';
+	import SeatPickerDialog from '$lib/components/tickets/SeatPickerDialog.svelte';
 	import CheckoutSheet from '$lib/components/tickets/CheckoutSheet.svelte';
 	import { createCartCheckoutController } from '$lib/components/events/cart-checkout-controller.svelte';
 	import { defaultGuestName } from '$lib/components/tickets/purchase-items';
@@ -157,6 +158,11 @@
 	// its seating UI into view (the keyed remount lands at the top).
 	let guestFocusSeating = $state(false);
 	let preSelectedTier = $state<TierSchemaWithId | null>(null);
+	// Seat-picker entry point (#853 PR 3): the tier being picked also gates
+	// SeatPickerDialog's mount — closing/hand-off nulls this, unmounting the
+	// dialog so its transient controller is destroyed (and un-handed-off holds
+	// released) rather than lingering across picking sessions.
+	let pickSeatsTier = $state<TierSchemaWithId | null>(null);
 
 	// Map-first entry point (#679): only when a purchasable tier sells a venue
 	// sector (the chart itself is fetched lazily when the dialog opens).
@@ -202,6 +208,14 @@
 		showGuestTicketDialog = false;
 		selectedTierForGuest = null;
 		guestFocusSeating = false;
+	}
+
+	// SeatPickerDialog's `open` reads/writes through `pickSeatsTier` itself
+	// (bind:open function form): the tier being non-null IS "open", so the
+	// dialog fully unmounts on close instead of just hiding — its transient
+	// controller is constructed fresh per picking session (see SeatPickerDialog).
+	function handleSeatPickerOpenChange(open: boolean): void {
+		if (!open) pickSeatsTier = null;
 	}
 
 	async function handleGuestAttendanceSuccess() {
@@ -532,6 +546,11 @@
 							cart={data.isAuthenticated ? cart : undefined}
 							quickBuyDisabled={cartController.isPending}
 							{eventRemaining}
+							onPickSeats={data.isAuthenticated
+								? (tier) => {
+										pickSeatsTier = tier;
+									}
+								: undefined}
 						/>
 					{/if}
 
@@ -657,6 +676,21 @@
 		purchaseError={cartPurchaseError}
 		onConfirm={handleSheetConfirm}
 		chart={seatHoldRegistry.chart}
+	/>
+{/if}
+
+<!-- Seat-picker dialog (#853 PR 3): mounted only while a tier is being
+     picked — NOT gated on !cart.isEmpty, since the first pick happens
+     before any cart group exists. -->
+{#if pickSeatsTier}
+	{@const tier = pickSeatsTier}
+	<SeatPickerDialog
+		bind:open={() => pickSeatsTier !== null, handleSeatPickerOpenChange}
+		{tier}
+		eventId={event.id}
+		{cart}
+		registry={seatHoldRegistry}
+		maxSeats={cart.maxQuantity(tier)}
 	/>
 {/if}
 

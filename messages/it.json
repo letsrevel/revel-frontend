@@ -9502,7 +9502,20 @@
 		"summaryRegion": "Riepilogo carrello",
 		"discountLink": "Codice sconto?",
 		"seatsHeld": "Posti riservati",
-		"holdsExpired": "I tuoi posti riservati sono scaduti — selezionali di nuovo."
+		"holdsExpired": "I tuoi posti riservati sono scaduti — selezionali di nuovo.",
+		"pickSeatsTitle": "Scegli i posti — {tierName}",
+		"pickSeats": "Scegli i posti…",
+		"seatsPicked": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} posto · modifica",
+					"countPlural=*": "{count} posti · modifica"
+				}
+			}
+		],
+		"seatPickerDone": "Fatto"
 	},
 	"cartSheet": {
 		"title": "Cassa",

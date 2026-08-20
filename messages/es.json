@@ -9502,7 +9502,20 @@
 		"summaryRegion": "Resumen del carrito",
 		"discountLink": "¿Código de descuento?",
 		"seatsHeld": "Asientos reservados",
-		"holdsExpired": "Tus asientos reservados han caducado — vuelve a seleccionarlos."
+		"holdsExpired": "Tus asientos reservados han caducado — vuelve a seleccionarlos.",
+		"pickSeatsTitle": "Elegir asientos — {tierName}",
+		"pickSeats": "Elegir asientos…",
+		"seatsPicked": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} asiento · editar",
+					"countPlural=*": "{count} asientos · editar"
+				}
+			}
+		],
+		"seatPickerDone": "Listo"
 	},
 	"cartSheet": {
 		"title": "Pago",

@@ -44,6 +44,15 @@
 			/** Disables both stepper buttons — set while a cart checkout is in flight. */
 			disabled: boolean;
 		};
+		/** Seat-picker entry point (#853 PR 3): present only for `user_choice`
+		 * tiers when a cart is available — replaces the stepper/CTA with a
+		 * "Pick seats…" button, plus a held-count summary once the group exists. */
+		pickSeats?: {
+			/** Seats already held for this tier's cart group (`cart.quantityFor`). */
+			heldCount: number;
+			joinBlock: JoinBlock;
+			onPick: () => void;
+		};
 		onSelectTier: (tier: TierSchemaWithId) => void;
 		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 	}
@@ -59,6 +68,7 @@
 		timezone,
 		capacityDisclosed = true,
 		quickBuy,
+		pickSeats,
 		onSelectTier,
 		onGuestTierClick
 	}: Props = $props();
@@ -332,6 +342,28 @@
 					: tierPurchaseStatus.reason === 'Sold out'
 						? m['tierCardAdmin.soldOutDetail']()
 						: m['tierCardAdmin.notAvailable']()}
+			</p>
+		{/if}
+	{:else if pickSeats && (canClaim || canCheckout || canReserve)}
+		<!-- Seat picker entry point (#853 PR 3): the button stays visible (and
+		     re-openable to edit an existing pick) even when a currency/payment
+		     mix would block it — it's just DISABLED, with the same hint copy
+		     the quick-buy stepper shows for the same reason (binding ruling). -->
+		{#if pickSeats.heldCount > 0}
+			<StatusBadge
+				tone="brand"
+				size="sm"
+				label={m['cart.seatsPicked']({ count: pickSeats.heldCount })}
+			/>
+		{/if}
+		<Button onclick={pickSeats.onPick} disabled={!!pickSeats.joinBlock} class="w-full sm:w-auto">
+			{m['cart.pickSeats']()}
+		</Button>
+		{#if pickSeats.joinBlock}
+			<p class="max-w-[250px] text-xs text-muted-foreground sm:text-right">
+				{pickSeats.joinBlock === 'currency'
+					? m['cart.cannotMixCurrency']()
+					: m['cart.cannotMixPayment']()}
 			</p>
 		{/if}
 	{:else if quickBuy && (canClaim || canCheckout || canReserve)}
