@@ -9500,7 +9500,9 @@
 			}
 		],
 		"summaryRegion": "Cart summary",
-		"discountLink": "Discount code?"
+		"discountLink": "Discount code?",
+		"seatsHeld": "Seats held",
+		"holdsExpired": "Your held seats expired — please pick them again"
 	},
 	"cartSheet": {
 		"title": "Checkout",

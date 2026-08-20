@@ -9500,7 +9500,9 @@
 			}
 		],
 		"summaryRegion": "Résumé du panier",
-		"discountLink": "Code de réduction ?"
+		"discountLink": "Code de réduction ?",
+		"seatsHeld": "Sièges réservés",
+		"holdsExpired": "Tes sièges réservés ont expiré — sélectionne-les à nouveau."
 	},
 	"cartSheet": {
 		"title": "Paiement",

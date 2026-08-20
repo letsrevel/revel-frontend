@@ -9500,7 +9500,9 @@
 			}
 		],
 		"summaryRegion": "Warenkorb-Übersicht",
-		"discountLink": "Rabattcode?"
+		"discountLink": "Rabattcode?",
+		"seatsHeld": "Plätze reserviert",
+		"holdsExpired": "Deine reservierten Plätze sind abgelaufen — bitte wähle sie erneut aus."
 	},
 	"cartSheet": {
 		"title": "Kasse",

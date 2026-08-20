@@ -4,6 +4,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
 	import { LoaderCircle } from '@lucide/svelte';
+	import OfferExpiryCountdown from '$lib/components/events/waitlist/OfferExpiryCountdown.svelte';
 
 	interface Props {
 		count: number;
@@ -15,10 +16,21 @@
 		/** Sheet entry point for the discount code (PR 2). Bar renders no link
 		 * when omitted — callers that never mount the sheet stay unaffected. */
 		onDiscountClick?: () => void;
+		/** Event-wide seat-hold expiry (#853 PR 3) — omitted/null renders no
+		 * countdown (no seated group in the cart, or holds not seeded yet). */
+		holdExpiresAt?: string | null;
 	}
 
-	const { count, totalDisplay, currency, isFree, isPending, onBuy, onDiscountClick }: Props =
-		$props();
+	const {
+		count,
+		totalDisplay,
+		currency,
+		isFree,
+		isPending,
+		onBuy,
+		onDiscountClick,
+		holdExpiresAt = null
+	}: Props = $props();
 </script>
 
 <div
@@ -45,6 +57,11 @@
 				>
 					{m['cart.discountLink']()}
 				</button>
+			{/if}
+			{#if holdExpiresAt}
+				<p class="text-xs text-muted-foreground">
+					{m['cart.seatsHeld']()} · <OfferExpiryCountdown expiresAt={holdExpiresAt} compact />
+				</p>
 			{/if}
 		</div>
 		<Button onclick={onBuy} disabled={isPending || count === 0} class="min-w-28">

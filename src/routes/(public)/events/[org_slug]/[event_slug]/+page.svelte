@@ -43,13 +43,15 @@
 	import { formatEventLocation } from '$lib/utils/event';
 	import { getUserRealName } from '$lib/utils/user-display';
 	import { formatEventDate } from '$lib/utils/date';
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { EventCart } from '$lib/components/tickets/cart.svelte';
 	import { cartTotal, cartTotalArgs } from '$lib/components/tickets/checkout-total';
 	import { discountApplicable } from '$lib/components/tickets/cart-discount';
 	import { buildCartItems, buildCartCheckoutParams } from '$lib/components/tickets/cart-payload';
 	import CartSummaryBar from '$lib/components/tickets/CartSummaryBar.svelte';
+	import CartSeatHolds from '$lib/components/tickets/CartSeatHolds.svelte';
+	import { CartSeatHoldRegistry } from '$lib/components/tickets/cart-seat-registry.svelte';
 	import CheckoutSheet from '$lib/components/tickets/CheckoutSheet.svelte';
 	import { createCartCheckoutController } from '$lib/components/events/cart-checkout-controller.svelte';
 	import { defaultGuestName } from '$lib/components/tickets/purchase-items';
@@ -251,6 +253,11 @@
 		eventRemaining: () => eventRemaining
 	});
 
+	// Cart-lifetime seat-hold ownership (#853 PR 3): one SeatHoldController per
+	// seated group, registered here so the picker/sheet/confirm flow (later
+	// tasks) can reuse them. Mounted below via <CartSeatHolds>.
+	const seatHoldRegistry = new CartSeatHoldRegistry();
+
 	const cartController = createCartCheckoutController({
 		eventId: event.id,
 		queryClient,
@@ -258,7 +265,17 @@
 		setShowMyTicketModal: (open) => {
 			showMyTicketModal = open;
 		},
-		onPurchaseComplete: () => cart.clear()
+		onPurchaseComplete: () => {
+			// Tickets now own the held seats — flag it BEFORE clearing so
+			// CartSeatGroupHolds' destroy handler (fired by the groups
+			// disappearing below) skips its release-on-unmount. Reset once
+			// the resulting unmounts have settled.
+			seatHoldRegistry.handedOffToCheckout = true;
+			cart.clear();
+			void tick().then(() => {
+				seatHoldRegistry.handedOffToCheckout = false;
+			});
+		}
 	});
 
 	const cartTotalDisplay = $derived(cartTotal(cart.groups.map(cartTotalArgs)));
@@ -602,6 +619,8 @@
 </div>
 
 {#if data.isAuthenticated && !cart.isEmpty}
+	<CartSeatHolds {cart} registry={seatHoldRegistry} eventId={event.id} />
+
 	<CartSummaryBar
 		count={cart.totalCount}
 		totalDisplay={cartTotalDisplay}
@@ -614,6 +633,7 @@
 					showCheckoutSheet = true;
 				}
 			: undefined}
+		holdExpiresAt={seatHoldRegistry.expiresAt}
 	/>
 
 	<CheckoutSheet

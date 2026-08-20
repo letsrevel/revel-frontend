@@ -9500,7 +9500,9 @@
 			}
 		],
 		"summaryRegion": "Riepilogo carrello",
-		"discountLink": "Codice sconto?"
+		"discountLink": "Codice sconto?",
+		"seatsHeld": "Posti riservati",
+		"holdsExpired": "I tuoi posti riservati sono scaduti — selezionali di nuovo."
 	},
 	"cartSheet": {
 		"title": "Cassa",

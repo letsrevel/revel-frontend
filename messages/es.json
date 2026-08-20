@@ -9500,7 +9500,9 @@
 			}
 		],
 		"summaryRegion": "Resumen del carrito",
-		"discountLink": "¿Código de descuento?"
+		"discountLink": "¿Código de descuento?",
+		"seatsHeld": "Asientos reservados",
+		"holdsExpired": "Tus asientos reservados han caducado — vuelve a seleccionarlos."
 	},
 	"cartSheet": {
 		"title": "Pago",

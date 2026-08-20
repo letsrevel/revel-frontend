@@ -9500,7 +9500,9 @@
 			}
 		],
 		"summaryRegion": "Resumo do carrinho",
-		"discountLink": "Código de desconto?"
+		"discountLink": "Código de desconto?",
+		"seatsHeld": "Lugares reservados",
+		"holdsExpired": "Os teus lugares reservados expiraram — volta a selecioná-los."
 	},
 	"cartSheet": {
 		"title": "Pagamento",
