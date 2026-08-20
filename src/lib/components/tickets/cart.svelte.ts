@@ -37,10 +37,12 @@ export interface EventCartDeps {
 /**
  * A tier the buyer can quantity-pick with a stepper (spec §2.1). Names and
  * PWYC amounts are no longer disqualifying here — they're collected in the
- * checkout sheet before submit (see `EventCart.needsSheet`).
+ * checkout sheet before submit (see `EventCart.needsSheet`). Best-available
+ * seated tiers are steppable too (the sheet collects zone/accessible); only
+ * `user_choice` tiers need the seat picker instead of a stepper.
  */
 export function quickBuyEligible(tier: TierSchemaWithId): boolean {
-	return tier.seat_assignment_mode === 'none' && tier.payment_method !== 'hidden';
+	return tier.seat_assignment_mode !== 'user_choice' && tier.payment_method !== 'hidden';
 }
 
 export class EventCart {
@@ -55,6 +57,14 @@ export class EventCart {
 	readonly totalCount = $derived(this.groups.reduce((sum, g) => sum + g.quantity, 0));
 	readonly currency = $derived(this.groups[0]?.tier.currency ?? null);
 	readonly paymentMethod = $derived(this.groups[0]?.tier.payment_method ?? null);
+	/** Groups whose tier requires the buyer to pick specific seats. */
+	readonly userChoiceGroups = $derived(
+		this.groups.filter((g) => g.tier.seat_assignment_mode === 'user_choice')
+	);
+	/** Groups whose tier auto-assigns seats server-side (still needs zone/accessible in the sheet). */
+	readonly bestAvailableGroups = $derived(
+		this.groups.filter((g) => g.tier.seat_assignment_mode === 'best_available')
+	);
 
 	groupFor(tierId: string): CartGroup | undefined {
 		return this.groups.find((g) => g.tier.id === tierId);
@@ -91,9 +101,15 @@ export class EventCart {
 		return Math.max(0, cap);
 	}
 
+	/**
+	 * `user_choice` tiers are quantity-driven by the seat picker, not the stepper —
+	 * guard on the tier's (or an already-present group's) seat mode and no-op.
+	 */
 	setQuantity(tier: TierSchemaWithId, quantity: number): void {
-		const clamped = Math.max(0, Math.min(quantity, this.maxQuantity(tier)));
+		if (tier.seat_assignment_mode === 'user_choice') return;
 		const existing = this.groupFor(tier.id);
+		if (existing?.tier.seat_assignment_mode === 'user_choice') return;
+		const clamped = Math.max(0, Math.min(quantity, this.maxQuantity(tier)));
 		if (clamped === 0) {
 			if (existing) this.groups = this.groups.filter((g) => g.tier.id !== tier.id);
 			return;
@@ -117,13 +133,68 @@ export class EventCart {
 		];
 	}
 
+	/**
+	 * Writes the picked seat ids for a `user_choice` tier, creating the group if
+	 * absent (respecting `joinBlock`, same as `setQuantity`) and deriving
+	 * `quantity` from `seatIds.length`; an empty array removes the group.
+	 * Deliberately uncapped here — the seat picker's own controller enforces the
+	 * max (via its `getMaxQuantity` callback) as seats are picked, so the store
+	 * doesn't duplicate that logic or truncate a list handed to it.
+	 */
+	setSeatIds(tier: TierSchemaWithId, seatIds: string[]): void {
+		const existing = this.groupFor(tier.id);
+		if (seatIds.length === 0) {
+			if (existing) this.groups = this.groups.filter((g) => g.tier.id !== tier.id);
+			return;
+		}
+		if (existing) {
+			existing.seatIds = seatIds;
+			existing.quantity = seatIds.length;
+			return;
+		}
+		if (this.joinBlock(tier)) return;
+		this.groups = [
+			...this.groups,
+			{
+				tier,
+				quantity: seatIds.length,
+				guestNames: [],
+				pwycAmount: null,
+				priceCategoryId: null,
+				accessibleRequired: false,
+				seatIds
+			}
+		];
+	}
+
+	setZone(tierId: string, priceCategoryId: string | null): void {
+		const group = this.groupFor(tierId);
+		if (!group) return;
+		group.priceCategoryId = priceCategoryId;
+	}
+
+	setAccessible(tierId: string, value: boolean): void {
+		const group = this.groupFor(tierId);
+		if (!group) return;
+		group.accessibleRequired = value;
+	}
+
 	clear(): void {
 		this.groups = [];
 	}
 
-	/** True when checkout needs the sheet: any group needs names or a PWYC amount. */
+	/**
+	 * True when checkout needs the sheet: any group needs names or a PWYC
+	 * amount, or auto-assigns seats server-side (best_available groups collect
+	 * zone/accessible in the sheet).
+	 */
 	needsSheet(requireTicketNames: boolean): boolean {
-		return this.groups.some((g) => requireTicketNames || g.tier.price_type === 'pwyc');
+		return this.groups.some(
+			(g) =>
+				requireTicketNames ||
+				g.tier.price_type === 'pwyc' ||
+				g.tier.seat_assignment_mode === 'best_available'
+		);
 	}
 
 	/** Writes a guest name at `index`, padding `guestNames` to the group's quantity first. */
