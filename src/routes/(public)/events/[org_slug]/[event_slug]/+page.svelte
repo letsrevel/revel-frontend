@@ -676,6 +676,7 @@
 		purchaseError={cartPurchaseError}
 		onConfirm={handleSheetConfirm}
 		chart={seatHoldRegistry.chart}
+		registry={seatHoldRegistry}
 	/>
 {/if}
 
