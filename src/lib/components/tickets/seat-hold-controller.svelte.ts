@@ -402,6 +402,37 @@ export class SeatHoldController {
 		this.#refetchAvailability();
 	};
 
+	/**
+	 * Release a caller-chosen subset of holds (group-scoped, unlike
+	 * `releaseAll`'s server-side "everything"). Patches the cached availability
+	 * by REMOVING only these ids from `my_holds` — never a full `[]` wipe: with
+	 * several controllers sharing the `['seating-availability', eventId]` cache
+	 * key, a whole-list wipe would make every other controller's
+	 * `adoptServerHolds` see nothing.
+	 */
+	release = async (seatIds: string[]): Promise<void> => {
+		if (seatIds.length === 0) return;
+		this.pendingSeatIds = [...this.pendingSeatIds, ...seatIds];
+		try {
+			await eventpublicseatingReleaseSeats({
+				path: { event_id: this.#opts.eventId },
+				body: { seat_ids: seatIds }
+			});
+		} catch {
+			// Best-effort; the refetch below reconciles.
+		} finally {
+			this.pendingSeatIds = this.pendingSeatIds.filter((id) => !seatIds.includes(id));
+		}
+		this.myHolds = this.myHolds.filter((id) => !seatIds.includes(id));
+		if (this.myHolds.length === 0) this.holdExpiresAt = null;
+		this.#queryClient.setQueryData<SeatingAvailabilitySchema>(
+			['seating-availability', this.#opts.eventId],
+			(old) =>
+				old ? { ...old, my_holds: (old.my_holds ?? []).filter((id) => !seatIds.includes(id)) } : old
+		);
+		this.#refetchAvailability();
+	};
+
 	/** Release the newest holds beyond the given quantity (quantity decreased). */
 	trimTo = async (quantity: number): Promise<void> => {
 		const keep = Math.max(0, quantity);

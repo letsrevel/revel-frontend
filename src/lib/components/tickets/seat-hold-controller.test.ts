@@ -555,6 +555,80 @@ describe('SeatHoldController', () => {
 		});
 	});
 
+	describe('release (group-scoped)', () => {
+		it('is a no-op on an empty array (no network call)', async () => {
+			const controller = setup();
+
+			await controller.release([]);
+
+			expect(eventpublicseatingReleaseSeats).not.toHaveBeenCalled();
+		});
+
+		it('releases only the given seat ids, leaving other holds untouched', async () => {
+			mockResult(eventpublicseatingHoldBestAvailable, {
+				data: { held_seat_ids: ['s1', 's2', 's3'], conflicts: [], expires_at: EXPIRES_AT }
+			});
+			const controller = setup({ getQuantity: () => 3 });
+			await controller.holdBestAvailable('tier-1', 3, false, null);
+
+			await controller.release(['s2']);
+
+			expect(eventpublicseatingReleaseSeats).toHaveBeenCalledWith({
+				path: { event_id: 'event-1' },
+				body: { seat_ids: ['s2'] }
+			});
+			expect(controller.myHolds).toEqual(['s1', 's3']);
+			expect(controller.holdExpiresAt).toBe(EXPIRES_AT);
+			expect(controller.pendingSeatIds).toEqual([]);
+		});
+
+		it('nulls holdExpiresAt only when myHolds empties', async () => {
+			mockResult(eventpublicseatingHoldBestAvailable, {
+				data: { held_seat_ids: ['s1', 's2'], conflicts: [], expires_at: EXPIRES_AT }
+			});
+			const controller = setup({ getQuantity: () => 2 });
+			await controller.holdBestAvailable('tier-1', 2, false, null);
+
+			await controller.release(['s1', 's2']);
+
+			expect(controller.myHolds).toEqual([]);
+			expect(controller.holdExpiresAt).toBeNull();
+		});
+
+		it('patches the cached availability by removing only the released ids from my_holds', async () => {
+			mockResult(eventpublicseatingGetAvailability, {
+				data: {
+					seats: { s1: 'held', s2: 'held' },
+					standing: {},
+					my_holds: ['s1', 's2'],
+					my_holds_expire_at: EXPIRES_AT
+				}
+			});
+			const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+			const controller = setup({}, client);
+			await waitFor(() => {
+				expect(controller.availabilityQuery.data).toBeDefined();
+			});
+			// Keep the post-release refetch in flight — the cache patch must be
+			// synchronous, not dependent on the refetch landing. Unlike
+			// releaseAll's wipe, other controllers sharing this cache key must
+			// still see the surviving hold (s2) in my_holds.
+			vi.mocked(eventpublicseatingGetAvailability).mockImplementation(
+				// eslint-disable-next-line @typescript-eslint/no-empty-function -- never-resolving promise
+				() => new Promise(() => {}) as never
+			);
+
+			await controller.release(['s1']);
+
+			const cached = client.getQueryData<{
+				my_holds: string[];
+				my_holds_expire_at: string | null;
+			}>(['seating-availability', 'event-1']);
+			expect(cached?.my_holds).toEqual(['s2']);
+			expect(cached?.my_holds_expire_at).toBe(EXPIRES_AT);
+		});
+	});
+
 	describe('anonymous hold registry', () => {
 		it('records the event on hold and clears it on releaseAll when anonymous', async () => {
 			mockResult(eventpublicseatingHoldSeats, {
