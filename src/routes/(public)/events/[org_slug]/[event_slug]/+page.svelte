@@ -19,11 +19,7 @@
 	import TicketTierList from '$lib/components/tickets/TicketTierList.svelte';
 	import EventSeriesPassOffers from '$lib/components/series-passes/EventSeriesPassOffers.svelte';
 	import MyTicket from '$lib/components/tickets/MyTicket.svelte';
-	import TicketTierModal from '$lib/components/tickets/TicketTierModal.svelte';
-	import MyTicketModal from '$lib/components/tickets/MyTicketModal.svelte';
-	import GuestRsvpDialog from '$lib/components/events/GuestRsvpDialog.svelte';
-	import GuestTicketDialog from '$lib/components/events/GuestTicketDialog.svelte';
-	import VenueOverviewDialog from '$lib/components/events/VenueOverviewDialog.svelte';
+	import EventPurchaseDialogs from '$lib/components/events/EventPurchaseDialogs.svelte';
 	import { eventHasSeatingMap } from '$lib/components/events/venue-overview';
 	import EventConfirmationBanners from '$lib/components/events/EventConfirmationBanners.svelte';
 	import { createCheckoutController } from '$lib/components/events/event-checkout-controller.svelte';
@@ -640,110 +636,38 @@
 	/>
 {/if}
 
-<!-- Ticket Tier Selection Modal -->
-<TicketTierModal
-	seriesInfo={event.event_series
-		? {
-				seriesId: event.event_series.id,
-				orgSlug: event.organization.slug,
-				seriesSlug: event.event_series.slug
-			}
-		: null}
-	bind:open={showTicketTierModal}
-	tiers={ticketTiers}
-	eventId={event.id}
-	organizationSlug={event.organization.slug}
+<!-- Purchase-dialog cluster (TicketTierModal, MyTicketModal, GuestRsvpDialog, VenueOverviewDialog, GuestTicketDialog) -->
+<EventPurchaseDialogs
+	{event}
+	{ticketTiers}
+	{tierRemainingTickets}
 	isAuthenticated={data.isAuthenticated}
 	membershipTier={data.membershipTier}
-	canAttendWithoutLogin={event.can_attend_without_login}
-	{tierRemainingTickets}
-	timezone={event.timezone}
 	capacityDisclosed={viewerVisibility.show_capacity}
-	eventMaxTicketsPerUser={event.max_tickets_per_user}
-	userName={ticketHolderDefaultName}
-	requireTicketNames={event.require_ticket_names}
-	{preSelectedTier}
+	{ticketHolderDefaultName}
 	{initialDiscountCode}
-	onClose={closeTicketTierModal}
+	{hasSeatingMap}
+	{userTickets}
+	isResumingPayment={resumePaymentMutation.isPending}
+	isCancellingReservation={cancelReservationMutation.isPending}
+	{refreshUserStatus}
 	onClaimTicket={handleClaimTicket}
 	onCheckout={handleCheckout}
 	{hasResumableCheckout}
+	onResumePayment={handleResumePayment}
+	onCancelReservation={handleCancelReservation}
+	onSelectTier={handleSelectTier}
 	onGuestTierClick={openGuestTicketDialog}
-	onViewSeatingMap={hasSeatingMap
-		? () => {
-				showVenueOverview = true;
-			}
-		: undefined}
+	onGuestRsvpClose={closeGuestRsvpDialog}
+	onGuestAttendanceSuccess={handleGuestAttendanceSuccess}
+	onGuestTicketClose={closeGuestTicketDialog}
+	onTicketTierModalClose={closeTicketTierModal}
+	bind:showTicketTierModal
+	bind:showMyTicketModal
+	bind:showGuestRsvpDialog
+	bind:showGuestTicketDialog
+	bind:showVenueOverview
+	bind:preSelectedTier
+	bind:selectedTierForGuest
+	bind:guestFocusSeating
 />
-
-<!-- My Ticket Modal -->
-{#if userTickets.length > 0}
-	<MyTicketModal
-		bind:open={showMyTicketModal}
-		tickets={userTickets}
-		eventName={event.name}
-		eventDate={event.start ? formatEventDate(event.start, event.timezone) : undefined}
-		eventLocation={formatEventLocation(event)}
-		onResumePayment={handleResumePayment}
-		isResumingPayment={resumePaymentMutation.isPending}
-		onCancelReservation={handleCancelReservation}
-		isCancellingReservation={cancelReservationMutation.isPending}
-		onTicketCancelled={async () => {
-			showMyTicketModal = false;
-			await refreshUserStatus();
-			queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
-		}}
-		onTicketRenamed={async () => {
-			await refreshUserStatus();
-			queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
-		}}
-	/>
-{/if}
-
-<!-- Guest RSVP Dialog -->
-{#if !data.isAuthenticated && event.can_attend_without_login && !event.requires_ticket}
-	<GuestRsvpDialog
-		bind:open={showGuestRsvpDialog}
-		eventId={event.id}
-		acceptsNotes={event.accept_rsvp_notes}
-		onClose={closeGuestRsvpDialog}
-		onSuccess={handleGuestAttendanceSuccess}
-	/>
-{/if}
-
-<!-- Whole-venue seating overview (map-first tier selection, #679) -->
-{#if hasSeatingMap}
-	<VenueOverviewDialog
-		bind:open={showVenueOverview}
-		eventId={event.id}
-		tiers={ticketTiers}
-		isAuthenticated={data.isAuthenticated}
-		canAttendWithoutLogin={event.can_attend_without_login}
-		{tierRemainingTickets}
-		eventMaxTicketsPerUser={event.max_tickets_per_user}
-		onSelectTier={handleSelectTier}
-		onGuestTierClick={openGuestTicketDialog}
-	/>
-{/if}
-
-<!-- Guest Ticket Dialog -->
-{#if !data.isAuthenticated && event.can_attend_without_login && event.requires_ticket && selectedTierForGuest}
-	{#key selectedTierForGuest.id}
-		<GuestTicketDialog
-			bind:open={showGuestTicketDialog}
-			eventId={event.id}
-			tier={selectedTierForGuest}
-			allTiers={ticketTiers}
-			eventMaxTicketsPerUser={event.max_tickets_per_user}
-			requireTicketNames={event.require_ticket_names}
-			onClose={closeGuestTicketDialog}
-			onSuccess={handleGuestAttendanceSuccess}
-			focusSeating={guestFocusSeating}
-			onSwitchTier={(tier) => {
-				selectedTierForGuest = tier;
-				showGuestTicketDialog = true;
-				guestFocusSeating = true;
-			}}
-		/>
-	{/key}
-{/if}
