@@ -562,7 +562,7 @@
 			{#if showGuestNames}
 				<GuestNameInputs
 					{guestNames}
-					{quantity}
+					idPrefix="tcd"
 					{isProcessing}
 					{guestNameError}
 					onUpdateName={updateGuestName}
@@ -593,6 +593,7 @@
 			{#if isPwyc}
 				<PwycInput
 					currency={tier.currency}
+					idPrefix="tcd"
 					{minAmount}
 					{maxAmount}
 					{pwycAmount}

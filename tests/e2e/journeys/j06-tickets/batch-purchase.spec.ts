@@ -63,8 +63,8 @@ test.describe('J6 batch purchase @p3', () => {
 
 			// Take 2 of the 3 allowed — a second guest-name input appears.
 			await page.getByRole('button', { name: 'Increase quantity' }).click();
-			await expect(page.getByText('Ticket Holders', { exact: true })).toBeVisible();
-			await page.getByPlaceholder('Guest 2 name').fill('E2E Guest Two');
+			await expect(page.getByText('Ticket holder names', { exact: true })).toBeVisible();
+			await page.getByPlaceholder('Name for ticket 2').fill('E2E Guest Two');
 
 			const success = page.getByRole('dialog', { name: 'Your Ticket', exact: true });
 			const claim = page.getByRole('button', { name: 'Claim Ticket', exact: true });

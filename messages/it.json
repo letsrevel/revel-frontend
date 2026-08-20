@@ -9499,6 +9499,35 @@
 				}
 			}
 		],
-		"summaryRegion": "Riepilogo carrello"
+		"summaryRegion": "Riepilogo carrello",
+		"discountLink": "Codice sconto?"
+	},
+	"cartSheet": {
+		"title": "Cassa",
+		"payNow": "Paga ora",
+		"reserve": "Prenota",
+		"claim": "Ottieni",
+		"groupTickets": [
+			{
+				"declarations": ["input tierName", "input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{tierName} × {count}",
+					"countPlural=*": "{tierName} × {count}"
+				}
+			}
+		],
+		"namesHeading": "Nomi dei titolari dei biglietti",
+		"nameLabel": "Nome per il biglietto {index}",
+		"nameRequired": "Inserisci un nome per ogni biglietto",
+		"pwycRange": "Intervallo: {min} – {max}",
+		"pwycHeading": "Scegli il tuo importo",
+		"discountSection": "Codice sconto",
+		"discountApplies": "Si applica a {tierName}",
+		"discountNotApplicable": "Non si applica a questo tipo di biglietto",
+		"discountNoMatch": "Questo codice non si applica a nulla nel tuo carrello",
+		"discountCheckFailed": "Non siamo riusciti a verificare questo codice — verrà comunque applicato al pagamento",
+		"billingSection": "Dati di fatturazione",
+		"close": "Chiudi"
 	}
 }

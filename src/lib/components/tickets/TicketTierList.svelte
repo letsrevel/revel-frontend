@@ -43,8 +43,6 @@
 		/** Disables every quick-buy stepper (both buttons) — set while a cart
 		 * checkout is in flight so quantities can't change mid-submit. */
 		quickBuyDisabled?: boolean;
-		/** Tiers that require per-ticket guest names are never quick-buy eligible. */
-		requireTicketNames?: boolean;
 		/** Event-level shared remaining budget (BE #901); null = no cap / unknown. */
 		eventRemaining?: number | null;
 		onSelectTier: (tier: TierSchemaWithId) => void;
@@ -70,7 +68,6 @@
 		capacityDisclosed = true,
 		cart,
 		quickBuyDisabled = false,
-		requireTicketNames = false,
 		eventRemaining = null,
 		onSelectTier,
 		onGuestTierClick,
@@ -177,7 +174,7 @@
 					tierRemainingInfo={getTierRemainingInfo(tier.id)}
 					{timezone}
 					{capacityDisclosed}
-					quickBuy={cart && quickBuyEligible(tier, requireTicketNames)
+					quickBuy={cart && quickBuyEligible(tier)
 						? {
 								quantity: cart.quantityFor(tier.id),
 								max: cart.maxQuantity(tier),

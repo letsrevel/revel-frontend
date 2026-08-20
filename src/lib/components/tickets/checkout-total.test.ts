@@ -103,7 +103,7 @@ describe('checkoutTotal', () => {
 });
 
 describe('cartTotal', () => {
-	const fixed = (price: string, quantity: number): CheckoutTotalArgs =>
+	const fixed = (price: string, quantity: number, discountedPrice?: string): CheckoutTotalArgs =>
 		cartTotalArgs({
 			tier: {
 				payment_method: 'online',
@@ -115,10 +115,31 @@ describe('cartTotal', () => {
 			quantity,
 			seatIds: [],
 			pwycAmount: null,
-			priceCategoryId: null
+			priceCategoryId: null,
+			discountedPrice: discountedPrice ?? null
 		});
 	it('sums groups in integer cents', () => {
 		expect(cartTotal([fixed('25.00', 2), fixed('10.00', 1)])).toBe('60.00');
+	});
+	it('uses the discounted price when supplied on a flat-priced group', () => {
+		expect(cartTotal([fixed('30.00', 2, '20.00')])).toBe('40.00');
+	});
+	it('ignores discountedPrice on a PWYC group (branch precedence makes it inert)', () => {
+		const pwyc = cartTotalArgs({
+			tier: {
+				payment_method: 'online',
+				price_type: 'pwyc',
+				price: '5',
+				seat_assignment_mode: 'none',
+				seat_pricing: null
+			},
+			quantity: 2,
+			seatIds: [],
+			pwycAmount: '10.00',
+			priceCategoryId: null,
+			discountedPrice: '5.00'
+		});
+		expect(cartTotal([pwyc])).toBe('20.00');
 	});
 	it('is 0.00 for free carts and null when empty or any group is unknown', () => {
 		expect(
@@ -134,7 +155,8 @@ describe('cartTotal', () => {
 					quantity: 2,
 					seatIds: [],
 					pwycAmount: null,
-					priceCategoryId: null
+					priceCategoryId: null,
+					discountedPrice: null
 				})
 			])
 		).toBe('0.00');
@@ -152,7 +174,8 @@ describe('cartTotal', () => {
 					quantity: 1,
 					seatIds: [],
 					pwycAmount: null,
-					priceCategoryId: null
+					priceCategoryId: null,
+					discountedPrice: null
 				})
 			])
 		).toBe(null);

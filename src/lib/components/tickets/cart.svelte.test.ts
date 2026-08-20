@@ -18,17 +18,16 @@ function makeTier(overrides: Partial<TierSchemaWithId> = {}): TierSchemaWithId {
 const noLimits = { remainingFor: () => undefined, eventRemaining: () => null };
 
 describe('quickBuyEligible', () => {
-	it('accepts fixed-price unseated tiers when names are off', () => {
-		expect(quickBuyEligible(makeTier(), false)).toBe(true);
+	it('accepts fixed-price unseated tiers', () => {
+		expect(quickBuyEligible(makeTier())).toBe(true);
 	});
-	it('rejects when names required / pwyc / seated / hidden', () => {
-		expect(quickBuyEligible(makeTier(), true)).toBe(false);
-		expect(quickBuyEligible(makeTier({ price_type: 'pwyc' }), false)).toBe(false);
-		expect(quickBuyEligible(makeTier({ seat_assignment_mode: 'user_choice' }), false)).toBe(false);
-		expect(quickBuyEligible(makeTier({ seat_assignment_mode: 'best_available' }), false)).toBe(
-			false
-		);
-		expect(quickBuyEligible(makeTier({ payment_method: 'hidden' }), false)).toBe(false);
+	it('accepts pwyc and names-required tiers now (sheet handles the extra input)', () => {
+		expect(quickBuyEligible(makeTier({ price_type: 'pwyc' }))).toBe(true);
+	});
+	it('rejects seated/hidden tiers', () => {
+		expect(quickBuyEligible(makeTier({ seat_assignment_mode: 'user_choice' }))).toBe(false);
+		expect(quickBuyEligible(makeTier({ seat_assignment_mode: 'best_available' }))).toBe(false);
+		expect(quickBuyEligible(makeTier({ payment_method: 'hidden' }))).toBe(false);
 	});
 });
 
@@ -94,5 +93,62 @@ describe('EventCart', () => {
 		cart.setQuantity(makeTier(), 2);
 		cart.clear();
 		expect(cart.isEmpty).toBe(true);
+	});
+
+	describe('needsSheet', () => {
+		it('is false for an empty cart or all-flat groups regardless of requireTicketNames', () => {
+			const cart = new EventCart(noLimits);
+			expect(cart.needsSheet(false)).toBe(false);
+			expect(cart.needsSheet(true)).toBe(false);
+			cart.setQuantity(makeTier(), 2);
+			expect(cart.needsSheet(false)).toBe(false);
+		});
+		it('is true when requireTicketNames is set and any group exists', () => {
+			const cart = new EventCart(noLimits);
+			cart.setQuantity(makeTier(), 1);
+			expect(cart.needsSheet(true)).toBe(true);
+		});
+		it('is true when a pwyc group joins, even with requireTicketNames false', () => {
+			const cart = new EventCart(noLimits);
+			cart.setQuantity(makeTier(), 1);
+			cart.setQuantity(makeTier({ price_type: 'pwyc' }), 1);
+			expect(cart.needsSheet(false)).toBe(true);
+		});
+	});
+
+	describe('setGuestName', () => {
+		it('pads guestNames to quantity and writes the given index', () => {
+			const cart = new EventCart(noLimits);
+			const tier = makeTier();
+			cart.setQuantity(tier, 3);
+			cart.setGuestName(tier.id, 1, 'Ada Lovelace');
+			expect(cart.groupFor(tier.id)?.guestNames).toEqual(['', 'Ada Lovelace', '']);
+		});
+		it('is a no-op for an unknown tierId', () => {
+			const cart = new EventCart(noLimits);
+			const tier = makeTier();
+			cart.setQuantity(tier, 2);
+			cart.setGuestName('does-not-exist', 0, 'Nope');
+			expect(cart.groupFor(tier.id)?.guestNames).toEqual([]);
+		});
+	});
+
+	describe('setPwycAmount', () => {
+		it('writes the pwyc amount on the matching group', () => {
+			const cart = new EventCart(noLimits);
+			const tier = makeTier({ price_type: 'pwyc' });
+			cart.setQuantity(tier, 1);
+			cart.setPwycAmount(tier.id, '15.00');
+			expect(cart.groupFor(tier.id)?.pwycAmount).toBe('15.00');
+			cart.setPwycAmount(tier.id, null);
+			expect(cart.groupFor(tier.id)?.pwycAmount).toBe(null);
+		});
+		it('is a no-op for an unknown tierId', () => {
+			const cart = new EventCart(noLimits);
+			const tier = makeTier();
+			cart.setQuantity(tier, 1);
+			cart.setPwycAmount('does-not-exist', '9.00');
+			expect(cart.groupFor(tier.id)?.pwycAmount).toBe(null);
+		});
 	});
 });

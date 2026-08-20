@@ -9499,6 +9499,35 @@
 				}
 			}
 		],
-		"summaryRegion": "Warenkorb-Übersicht"
+		"summaryRegion": "Warenkorb-Übersicht",
+		"discountLink": "Rabattcode?"
+	},
+	"cartSheet": {
+		"title": "Kasse",
+		"payNow": "Jetzt bezahlen",
+		"reserve": "Reservieren",
+		"claim": "Sichern",
+		"groupTickets": [
+			{
+				"declarations": ["input tierName", "input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{tierName} × {count}",
+					"countPlural=*": "{tierName} × {count}"
+				}
+			}
+		],
+		"namesHeading": "Namen der Ticketinhaber*innen",
+		"nameLabel": "Name für Ticket {index}",
+		"nameRequired": "Bitte gib für jedes Ticket einen Namen ein",
+		"pwycRange": "Bereich: {min} – {max}",
+		"pwycHeading": "Wähle deinen Betrag",
+		"discountSection": "Rabattcode",
+		"discountApplies": "Gilt für {tierName}",
+		"discountNotApplicable": "Gilt nicht für diesen Tickettyp",
+		"discountNoMatch": "Dieser Code gilt für nichts in deinem Warenkorb",
+		"discountCheckFailed": "Wir konnten diesen Code nicht überprüfen — er wird an der Kasse trotzdem angewendet",
+		"billingSection": "Rechnungsinformationen",
+		"close": "Schließen"
 	}
 }

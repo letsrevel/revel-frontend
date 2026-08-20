@@ -10,8 +10,10 @@
 	interface Props {
 		/** Whatever the purchase path threw, or `null` when there is no error. */
 		error?: unknown;
-		/** The tier being bought — the only source of the required tier names. */
-		tier: TierSchemaWithId;
+		/** The tier being bought — a source of the required tier names. */
+		tier?: TierSchemaWithId;
+		/** Multiple tiers (cart checkout) — unioned with `tier` when both are given. */
+		tiers?: TierSchemaWithId[];
 		/**
 		 * Organizing org's slug. Without it the membership link is omitted rather
 		 * than guessed: a wrong destination is worse than none.
@@ -19,22 +21,31 @@
 		organizationSlug?: string | null;
 	}
 
-	const { error = null, tier, organizationSlug = null }: Props = $props();
+	const { error = null, tier, tiers, organizationSlug = null }: Props = $props();
 
 	const message = $derived(
 		error ? extractPurchaseErrorMessage(error, m['ticketConfirmationDialog.errorGeneric']()) : ''
 	);
 
-	// The purchase was refused because this tier is gated to membership tiers the
-	// buyer does not hold (BE #807). It is the one purchase error with somewhere
-	// to send the buyer, so it gets a CTA the others don't.
+	// The purchase was refused because a tier in the purchase is gated to
+	// membership tiers the buyer does not hold (BE #807). It is the one purchase
+	// error with somewhere to send the buyer, so it gets a CTA the others don't.
 	const membershipGateRefused = $derived(isMembershipTierRefusal(error));
 
 	// Which membership tiers would satisfy the gate. The refusal payload names
 	// NONE of them (and cannot say whether the buyer is a non-member or a member
-	// on the wrong tier), so they come off the tier — the same list TierCard reads.
+	// on the wrong tier), so they come off the tier(s) — the same list TierCard
+	// reads. `tier` and `tiers` union (deduped) so a single-tier purchase and a
+	// multi-group cart checkout both work through the same prop.
+	const consideredTiers = $derived([...(tier ? [tier] : []), ...(tiers ?? [])]);
 	const requiredTierNames = $derived(
-		(tier.restricted_to_membership_tiers ?? []).map((t) => t.name).filter(Boolean)
+		Array.from(
+			new Set(
+				consideredTiers.flatMap((t) =>
+					(t.restricted_to_membership_tiers ?? []).map((mt) => mt.name).filter(Boolean)
+				)
+			)
+		)
 	);
 
 	// The link below points at the org's membership page — the only surface where

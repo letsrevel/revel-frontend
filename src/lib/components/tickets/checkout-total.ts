@@ -88,6 +88,7 @@ export interface CartTotalGroup {
 	seatIds: readonly string[];
 	pwycAmount: string | null;
 	priceCategoryId: string | null;
+	discountedPrice?: string | null;
 }
 
 export function cartTotalArgs(group: CartTotalGroup): CheckoutTotalArgs {
@@ -98,7 +99,7 @@ export function cartTotalArgs(group: CartTotalGroup): CheckoutTotalArgs {
 		chart: null,
 		selectedZoneId: group.priceCategoryId,
 		pwycAmount: group.pwycAmount ?? '',
-		discountedPrice: null
+		discountedPrice: group.discountedPrice ?? null
 	};
 }
 

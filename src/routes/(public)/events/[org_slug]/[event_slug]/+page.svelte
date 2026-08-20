@@ -19,11 +19,7 @@
 	import TicketTierList from '$lib/components/tickets/TicketTierList.svelte';
 	import EventSeriesPassOffers from '$lib/components/series-passes/EventSeriesPassOffers.svelte';
 	import MyTicket from '$lib/components/tickets/MyTicket.svelte';
-	import TicketTierModal from '$lib/components/tickets/TicketTierModal.svelte';
-	import MyTicketModal from '$lib/components/tickets/MyTicketModal.svelte';
-	import GuestRsvpDialog from '$lib/components/events/GuestRsvpDialog.svelte';
-	import GuestTicketDialog from '$lib/components/events/GuestTicketDialog.svelte';
-	import VenueOverviewDialog from '$lib/components/events/VenueOverviewDialog.svelte';
+	import EventPurchaseDialogs from '$lib/components/events/EventPurchaseDialogs.svelte';
 	import { eventHasSeatingMap } from '$lib/components/events/venue-overview';
 	import EventConfirmationBanners from '$lib/components/events/EventConfirmationBanners.svelte';
 	import { createCheckoutController } from '$lib/components/events/event-checkout-controller.svelte';
@@ -39,7 +35,10 @@
 		hasAttendingSignal,
 		type EventTicketSchemaActual
 	} from '$lib/utils/eligibility';
-	import type { TierRemainingTicketsSchema } from '$lib/api/generated/types.gen';
+	import type {
+		TierRemainingTicketsSchema,
+		BuyerBillingInfoSchema
+	} from '$lib/api/generated/types.gen';
 	import { getPotluckPermissions } from '$lib/utils/permissions';
 	import { formatEventLocation } from '$lib/utils/event';
 	import { getUserRealName } from '$lib/utils/user-display';
@@ -49,8 +48,10 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { EventCart } from '$lib/components/tickets/cart.svelte';
 	import { cartTotal, cartTotalArgs } from '$lib/components/tickets/checkout-total';
-	import { buildCartItems } from '$lib/components/tickets/cart-payload';
+	import { discountApplicable } from '$lib/components/tickets/cart-discount';
+	import { buildCartItems, buildCartCheckoutParams } from '$lib/components/tickets/cart-payload';
 	import CartSummaryBar from '$lib/components/tickets/CartSummaryBar.svelte';
+	import CheckoutSheet from '$lib/components/tickets/CheckoutSheet.svelte';
 	import { createCartCheckoutController } from '$lib/components/events/cart-checkout-controller.svelte';
 	import { defaultGuestName } from '$lib/components/tickets/purchase-items';
 
@@ -263,16 +264,65 @@
 
 	const cartTotalDisplay = $derived(cartTotal(cart.groups.map(cartTotalArgs)));
 
+	// Checkout sheet (#853 PR 2): multi-tier carts and any require_ticket_names
+	// event route here for names/PWYC/discount/billing; single-tier carts on a
+	// no-names event skip it entirely (direct checkout below).
+	let showCheckoutSheet = $state(false);
+	let cartPurchaseError = $state<unknown>(null);
+
+	// Stranded-cart guard: a cart that empties out from under an open sheet
+	// (e.g. the last held seat expiring) must close it rather than show an
+	// empty checkout form.
+	$effect(() => {
+		if (cart.isEmpty) showCheckoutSheet = false;
+	});
+
+	// Closing the sheet (confirm, cancel, or the stranded-cart guard above)
+	// discards any inline purchase error — the next open starts clean.
+	$effect(() => {
+		if (!showCheckoutSheet) cartPurchaseError = null;
+	});
+
+	function buildCartCheckoutItems() {
+		return buildCartItems(cart.groups, {
+			requireTicketNames: event.require_ticket_names,
+			defaultName: defaultGuestName(ticketHolderDefaultName)
+		});
+	}
+
 	async function handleCartBuy() {
+		// A URL-seeded discount code needs the sheet too, even on a direct
+		// single-tier "Buy" — skipping straight to checkout would drop it.
+		if (cart.needsSheet(event.require_ticket_names) || initialDiscountCode) {
+			showCheckoutSheet = true;
+			return;
+		}
 		try {
-			await cartController.checkoutCart({
-				items: buildCartItems(cart.groups, {
-					requireTicketNames: event.require_ticket_names,
-					defaultName: defaultGuestName(ticketHolderDefaultName)
-				})
-			});
+			// '' / null keep the fingerprint byte-identical to PR 1's `{ items }`.
+			await cartController.checkoutCart(
+				buildCartCheckoutParams(buildCartCheckoutItems(), '', null)
+			);
 		} catch {
 			// error surfaced via controller toast
+		}
+	}
+
+	async function handleSheetConfirm({
+		discountCode,
+		billingInfo
+	}: {
+		discountCode: string;
+		billingInfo: BuyerBillingInfoSchema | null;
+	}) {
+		try {
+			await cartController.checkoutCart(
+				buildCartCheckoutParams(buildCartCheckoutItems(), discountCode, billingInfo)
+			);
+			showCheckoutSheet = false;
+		} catch (e) {
+			// Sheet stays open with the inline error; the controller's toast still
+			// fires too (accepted duplication — see task brief).
+			cartPurchaseError = e;
 		}
 	}
 
@@ -453,7 +503,6 @@
 								: undefined}
 							cart={data.isAuthenticated ? cart : undefined}
 							quickBuyDisabled={cartController.isPending}
-							requireTicketNames={event.require_ticket_names}
 							{eventRemaining}
 						/>
 					{/if}
@@ -638,113 +687,60 @@
 		isFree={cart.paymentMethod === 'free'}
 		isPending={cartController.isPending}
 		onBuy={handleCartBuy}
+		onDiscountClick={cart.groups.some((g) => discountApplicable(g.tier))
+			? () => {
+					showCheckoutSheet = true;
+				}
+			: undefined}
+	/>
+
+	<CheckoutSheet
+		bind:open={showCheckoutSheet}
+		{cart}
+		eventId={event.id}
+		requireTicketNames={event.require_ticket_names}
+		isAuthenticated={data.isAuthenticated}
+		authToken={authStore.accessToken}
+		organizationSlug={event.organization.slug}
+		{initialDiscountCode}
+		isProcessing={cartController.isPending}
+		purchaseError={cartPurchaseError}
+		onConfirm={handleSheetConfirm}
 	/>
 {/if}
 
-<!-- Ticket Tier Selection Modal -->
-<TicketTierModal
-	seriesInfo={event.event_series
-		? {
-				seriesId: event.event_series.id,
-				orgSlug: event.organization.slug,
-				seriesSlug: event.event_series.slug
-			}
-		: null}
-	bind:open={showTicketTierModal}
-	tiers={ticketTiers}
-	eventId={event.id}
-	organizationSlug={event.organization.slug}
+<!-- Purchase-dialog cluster (TicketTierModal, MyTicketModal, GuestRsvpDialog, VenueOverviewDialog, GuestTicketDialog) -->
+<EventPurchaseDialogs
+	{event}
+	{ticketTiers}
+	{tierRemainingTickets}
 	isAuthenticated={data.isAuthenticated}
 	membershipTier={data.membershipTier}
-	canAttendWithoutLogin={event.can_attend_without_login}
-	{tierRemainingTickets}
-	timezone={event.timezone}
 	capacityDisclosed={viewerVisibility.show_capacity}
-	eventMaxTicketsPerUser={event.max_tickets_per_user}
-	userName={ticketHolderDefaultName}
-	requireTicketNames={event.require_ticket_names}
-	{preSelectedTier}
+	{ticketHolderDefaultName}
 	{initialDiscountCode}
-	onClose={closeTicketTierModal}
+	{hasSeatingMap}
+	{userTickets}
+	isResumingPayment={resumePaymentMutation.isPending}
+	isCancellingReservation={cancelReservationMutation.isPending}
+	{refreshUserStatus}
 	onClaimTicket={handleClaimTicket}
 	onCheckout={handleCheckout}
 	{hasResumableCheckout}
+	onResumePayment={handleResumePayment}
+	onCancelReservation={handleCancelReservation}
+	onSelectTier={handleSelectTier}
 	onGuestTierClick={openGuestTicketDialog}
-	onViewSeatingMap={hasSeatingMap
-		? () => {
-				showVenueOverview = true;
-			}
-		: undefined}
+	onGuestRsvpClose={closeGuestRsvpDialog}
+	onGuestAttendanceSuccess={handleGuestAttendanceSuccess}
+	onGuestTicketClose={closeGuestTicketDialog}
+	onTicketTierModalClose={closeTicketTierModal}
+	bind:showTicketTierModal
+	bind:showMyTicketModal
+	bind:showGuestRsvpDialog
+	bind:showGuestTicketDialog
+	bind:showVenueOverview
+	bind:preSelectedTier
+	bind:selectedTierForGuest
+	bind:guestFocusSeating
 />
-
-<!-- My Ticket Modal -->
-{#if userTickets.length > 0}
-	<MyTicketModal
-		bind:open={showMyTicketModal}
-		tickets={userTickets}
-		eventName={event.name}
-		eventDate={event.start ? formatEventDate(event.start, event.timezone) : undefined}
-		eventLocation={formatEventLocation(event)}
-		onResumePayment={handleResumePayment}
-		isResumingPayment={resumePaymentMutation.isPending}
-		onCancelReservation={handleCancelReservation}
-		isCancellingReservation={cancelReservationMutation.isPending}
-		onTicketCancelled={async () => {
-			showMyTicketModal = false;
-			await refreshUserStatus();
-			queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
-		}}
-		onTicketRenamed={async () => {
-			await refreshUserStatus();
-			queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
-		}}
-	/>
-{/if}
-
-<!-- Guest RSVP Dialog -->
-{#if !data.isAuthenticated && event.can_attend_without_login && !event.requires_ticket}
-	<GuestRsvpDialog
-		bind:open={showGuestRsvpDialog}
-		eventId={event.id}
-		acceptsNotes={event.accept_rsvp_notes}
-		onClose={closeGuestRsvpDialog}
-		onSuccess={handleGuestAttendanceSuccess}
-	/>
-{/if}
-
-<!-- Whole-venue seating overview (map-first tier selection, #679) -->
-{#if hasSeatingMap}
-	<VenueOverviewDialog
-		bind:open={showVenueOverview}
-		eventId={event.id}
-		tiers={ticketTiers}
-		isAuthenticated={data.isAuthenticated}
-		canAttendWithoutLogin={event.can_attend_without_login}
-		{tierRemainingTickets}
-		eventMaxTicketsPerUser={event.max_tickets_per_user}
-		onSelectTier={handleSelectTier}
-		onGuestTierClick={openGuestTicketDialog}
-	/>
-{/if}
-
-<!-- Guest Ticket Dialog -->
-{#if !data.isAuthenticated && event.can_attend_without_login && event.requires_ticket && selectedTierForGuest}
-	{#key selectedTierForGuest.id}
-		<GuestTicketDialog
-			bind:open={showGuestTicketDialog}
-			eventId={event.id}
-			tier={selectedTierForGuest}
-			allTiers={ticketTiers}
-			eventMaxTicketsPerUser={event.max_tickets_per_user}
-			requireTicketNames={event.require_ticket_names}
-			onClose={closeGuestTicketDialog}
-			onSuccess={handleGuestAttendanceSuccess}
-			focusSeating={guestFocusSeating}
-			onSwitchTier={(tier) => {
-				selectedTierForGuest = tier;
-				showGuestTicketDialog = true;
-				guestFocusSeating = true;
-			}}
-		/>
-	{/key}
-{/if}

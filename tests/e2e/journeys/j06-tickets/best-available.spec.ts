@@ -87,12 +87,12 @@ async function claimTwoBestAvailable(
 	// with the buyer's profile name but is re-filled when empty (defensive:
 	// canSubmit requires every name once quantity > 1).
 	await confirmDialog.getByRole('button', { name: 'Increase quantity' }).click();
-	await expect(confirmDialog.getByText('Ticket Holders', { exact: true })).toBeVisible();
-	const firstGuest = confirmDialog.getByPlaceholder('Your name');
+	await expect(confirmDialog.getByText('Ticket holder names', { exact: true })).toBeVisible();
+	const firstGuest = confirmDialog.getByPlaceholder('Name for ticket 1');
 	if ((await firstGuest.inputValue()).trim() === '') {
 		await firstGuest.fill('E2E Guest One');
 	}
-	await confirmDialog.getByPlaceholder('Guest 2 name').fill('E2E Guest Two');
+	await confirmDialog.getByPlaceholder('Name for ticket 2').fill('E2E Guest Two');
 
 	// Reserve: holds the best-available block, then the claim consumes it. On
 	// a retry the dialog releases the stale block first, so no holds leak.

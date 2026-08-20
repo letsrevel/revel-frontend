@@ -9499,6 +9499,35 @@
 				}
 			}
 		],
-		"summaryRegion": "Resumo do carrinho"
+		"summaryRegion": "Resumo do carrinho",
+		"discountLink": "Código de desconto?"
+	},
+	"cartSheet": {
+		"title": "Pagamento",
+		"payNow": "Pagar agora",
+		"reserve": "Reservar",
+		"claim": "Obter",
+		"groupTickets": [
+			{
+				"declarations": ["input tierName", "input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{tierName} × {count}",
+					"countPlural=*": "{tierName} × {count}"
+				}
+			}
+		],
+		"namesHeading": "Nomes das pessoas titulares dos bilhetes",
+		"nameLabel": "Nome para o bilhete {index}",
+		"nameRequired": "Indica um nome para cada bilhete",
+		"pwycRange": "Intervalo: {min} – {max}",
+		"pwycHeading": "Escolhe o teu valor",
+		"discountSection": "Código de desconto",
+		"discountApplies": "Aplica-se a {tierName}",
+		"discountNotApplicable": "Não se aplica a este tipo de bilhete",
+		"discountNoMatch": "Este código não se aplica a nada no teu carrinho",
+		"discountCheckFailed": "Não conseguimos verificar este código — ainda assim será aplicado no pagamento",
+		"billingSection": "Dados de faturação",
+		"close": "Fechar"
 	}
 }

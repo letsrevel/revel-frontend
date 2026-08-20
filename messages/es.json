@@ -9499,6 +9499,35 @@
 				}
 			}
 		],
-		"summaryRegion": "Resumen del carrito"
+		"summaryRegion": "Resumen del carrito",
+		"discountLink": "¿Código de descuento?"
+	},
+	"cartSheet": {
+		"title": "Pago",
+		"payNow": "Pagar ahora",
+		"reserve": "Reservar",
+		"claim": "Conseguir",
+		"groupTickets": [
+			{
+				"declarations": ["input tierName", "input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{tierName} × {count}",
+					"countPlural=*": "{tierName} × {count}"
+				}
+			}
+		],
+		"namesHeading": "Nombres de las personas titulares de las entradas",
+		"nameLabel": "Nombre para la entrada {index}",
+		"nameRequired": "Introduce un nombre para cada entrada",
+		"pwycRange": "Rango: {min} – {max}",
+		"pwycHeading": "Elige tu importe",
+		"discountSection": "Código de descuento",
+		"discountApplies": "Se aplica a {tierName}",
+		"discountNotApplicable": "No se aplica a este tipo de entrada",
+		"discountNoMatch": "Este código no se aplica a nada en tu carrito",
+		"discountCheckFailed": "No pudimos comprobar este código — aun así se aplicará al finalizar la compra",
+		"billingSection": "Información de facturación",
+		"close": "Cerrar"
 	}
 }
