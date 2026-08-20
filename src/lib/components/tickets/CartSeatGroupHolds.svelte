@@ -25,6 +25,7 @@
 		type SeatHoldControllerOptions
 	} from './seat-hold-controller.svelte';
 	import { holdConflictMessage } from './purchase-error';
+	import { shouldSyncSeatIds } from './cart-seat-sync';
 	import { toast } from 'svelte-sonner';
 
 	interface Props {
@@ -109,7 +110,9 @@
 	// THIS controller instance's availability query has resolved them — the
 	// first pass seeds from the snapshot, later passes adopt anything that
 	// landed after (adoptServerHolds' own docstring covers this hand-off).
-	let seeded = false;
+	// `$state`, not a plain flag: the live-sync effect below reads it to
+	// gate its own re-runs, so the write here must be reactively visible.
+	let seeded = $state(false);
 	$effect(() => {
 		if (!isUserChoice) return;
 		const chart = controller.chartQuery.data;
@@ -125,8 +128,15 @@
 
 	// Live sync: the controller's held seats ARE the group's seatIds. The
 	// ONLY other writer is the host's expiry sweep (which clears to []).
+	// Gated on `seeded` (shouldSyncSeatIds): on the very first reactive
+	// flush `controller.myHolds` is still `[]` (chart/availability are still
+	// in flight above), and `cart.setSeatIds(tier, [])` REMOVES the group —
+	// syncing before the seed/adopt effect's first pass would strip a group
+	// whose seats already exist server-side (the venue-overview hand-off)
+	// and unmount this very component before it gets the chance to adopt
+	// them. See cart-seat-sync.ts for the (unit-tested) gate itself.
 	$effect(() => {
-		if (!isUserChoice) return;
+		if (!shouldSyncSeatIds(isUserChoice, seeded)) return;
 		cart.setSeatIds(tier, controller.myHolds);
 	});
 </script>

@@ -8,12 +8,24 @@
  * sheet's zone/accessible fields, the confirm-time best-available hold) can
  * reuse the SAME controller instead of standing up a second one that doesn't
  * know about the first's holds. Kept dumb on purpose: no query logic, no
- * side effects — just storage plus the one cross-cutting derived value
- * (the countdown needs SOME controller's availability data, and any
- * registered one will do since they all share the
- * `['seating-availability', eventId]` query-cache entry).
+ * side effects — just storage plus two cross-cutting derived values (the
+ * countdown needs SOME controller's availability data, and cart totals need
+ * SOME controller's chart data; any registered one will do for either, since
+ * they all share the `['seating-availability', eventId]` and
+ * `['seating-chart', eventId]` query-cache entries respectively — the chart
+ * key isn't even sector-scoped, so one controller's chart IS the whole
+ * venue's).
+ *
+ * The registry is the home for `chart` (rather than a prop `CartSeatHolds`
+ * exposes) because it's already the one object both `CartSeatHolds` (the
+ * writer, via its children's controllers) and the page (the reader, for
+ * `cartTotalArgs`/`CheckoutSheet`) hold a reference to — mirroring
+ * `expiresAt`, which solves the identical "read from whichever controller
+ * has it" problem. Adding a return channel through `CartSeatHolds` itself
+ * would mean threading a second prop back up for no benefit.
  */
 import { SvelteMap } from 'svelte/reactivity';
+import type { VenueChartSchema } from '$lib/api/generated/types.gen';
 import type { SeatHoldController } from './seat-hold-controller.svelte';
 
 export class CartSeatHoldRegistry {
@@ -56,5 +68,23 @@ export class CartSeatHoldRegistry {
 			}
 		}
 		return earliest;
+	});
+
+	/**
+	 * The venue chart, read from whichever registered controller's
+	 * `chartQuery` has data first — every controller for this event shares the
+	 * `['seating-chart', eventId]` cache entry (keyed by event only, not by
+	 * sector), so any one of them holds the full venue chart. Feeds
+	 * `CheckoutTotalArgs.chart`: without it, a `user_choice` group's total is
+	 * unresolvable, and `cartTotal` returns `null` (unknown) the moment ANY
+	 * group is unknown — so a missing chart silently blanks the WHOLE cart's
+	 * total, not just the seated group's.
+	 */
+	readonly chart = $derived.by((): VenueChartSchema | null => {
+		for (const controller of this.#controllers.values()) {
+			const data = controller.chartQuery.data;
+			if (data) return data;
+		}
+		return null;
 	});
 }

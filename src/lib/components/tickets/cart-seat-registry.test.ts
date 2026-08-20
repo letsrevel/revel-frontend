@@ -1,12 +1,22 @@
 import { describe, it, expect } from 'vitest';
 import { CartSeatHoldRegistry } from './cart-seat-registry.svelte';
 import type { SeatHoldController } from './seat-hold-controller.svelte';
+import type { VenueChartSchema } from '$lib/api/generated/types.gen';
 
 /** Minimal fake — only the shape `CartSeatHoldRegistry` actually reads. */
-function fakeController(myHoldsExpireAt: string | null | undefined): SeatHoldController {
+function fakeController(
+	myHoldsExpireAt: string | null | undefined,
+	chartData: VenueChartSchema | undefined = undefined
+): SeatHoldController {
 	return {
-		availabilityQuery: { data: { my_holds_expire_at: myHoldsExpireAt } }
+		availabilityQuery: { data: { my_holds_expire_at: myHoldsExpireAt } },
+		chartQuery: { data: chartData }
 	} as unknown as SeatHoldController;
+}
+
+/** A minimal-but-distinguishable stand-in venue chart for identity checks. */
+function fakeChart(id: string): VenueChartSchema {
+	return { id, sectors: [] } as unknown as VenueChartSchema;
 }
 
 describe('CartSeatHoldRegistry', () => {
@@ -88,5 +98,39 @@ describe('CartSeatHoldRegistry', () => {
 		const registry = new CartSeatHoldRegistry();
 		registry.handedOffToCheckout = true;
 		expect(registry.handedOffToCheckout).toBe(true);
+	});
+
+	it('chart is null when nothing is registered', () => {
+		const registry = new CartSeatHoldRegistry();
+		expect(registry.chart).toBeNull();
+	});
+
+	it('chart is null when no registered controller has chart data yet', () => {
+		const registry = new CartSeatHoldRegistry();
+		registry.set('tier-1', fakeController(null));
+		registry.set('tier-2', fakeController(null));
+		expect(registry.chart).toBeNull();
+	});
+
+	it('chart returns the single loaded controller’s chart', () => {
+		const registry = new CartSeatHoldRegistry();
+		const chart = fakeChart('venue-1');
+		registry.set('tier-1', fakeController(null, chart));
+		expect(registry.chart).toBe(chart);
+	});
+
+	it('chart returns SOME controller’s chart when only one has loaded', () => {
+		const registry = new CartSeatHoldRegistry();
+		const chart = fakeChart('venue-1');
+		registry.set('tier-1', fakeController(null)); // chart still in flight
+		registry.set('tier-2', fakeController(null, chart));
+		expect(registry.chart).toBe(chart);
+	});
+
+	it('chart becomes null again after the loaded controller is deleted', () => {
+		const registry = new CartSeatHoldRegistry();
+		registry.set('tier-1', fakeController(null, fakeChart('venue-1')));
+		registry.delete('tier-1');
+		expect(registry.chart).toBeNull();
 	});
 });

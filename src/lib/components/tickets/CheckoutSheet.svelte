@@ -39,7 +39,11 @@
 	} from './pwyc-validation';
 	import { sheetValidationError } from './checkout-sheet-validation';
 	import { formatMoney } from '$lib/utils/format';
-	import type { BuyerBillingInfoSchema, VatPreviewItemSchema } from '$lib/api/generated/types.gen';
+	import type {
+		BuyerBillingInfoSchema,
+		VatPreviewItemSchema,
+		VenueChartSchema
+	} from '$lib/api/generated/types.gen';
 
 	interface Props {
 		open: boolean;
@@ -56,6 +60,10 @@
 			discountCode: string;
 			billingInfo: BuyerBillingInfoSchema | null;
 		}) => Promise<void>;
+		/** Venue chart for seated groups' totals (#853 PR 3) — from the page's
+		 * seat-hold registry; null/omitted while no user_choice controller has
+		 * loaded one yet (seated totals stay unresolved, same as before). */
+		chart?: VenueChartSchema | null;
 	}
 
 	let {
@@ -69,7 +77,8 @@
 		initialDiscountCode = '',
 		isProcessing,
 		purchaseError,
-		onConfirm
+		onConfirm,
+		chart = null
 	}: Props = $props();
 
 	// Discount: sheet-local input/results. Only the APPLIED code string
@@ -165,6 +174,7 @@
 					tier: group.tier,
 					quantity: group.quantity,
 					seatIds: group.seatIds,
+					chart,
 					pwycAmount: group.pwycAmount,
 					priceCategoryId: group.priceCategoryId,
 					discountedPrice: discountResult?.byTier.get(group.tier.id)?.discounted_price ?? null
@@ -201,6 +211,7 @@
 				tier: group.tier,
 				quantity: group.quantity,
 				seatIds: group.seatIds,
+				chart,
 				pwycAmount: group.pwycAmount,
 				priceCategoryId: group.priceCategoryId,
 				discountedPrice: discountResult?.byTier.get(group.tier.id)?.discounted_price ?? null

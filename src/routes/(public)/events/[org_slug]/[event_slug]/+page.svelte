@@ -278,7 +278,15 @@
 		}
 	});
 
-	const cartTotalDisplay = $derived(cartTotal(cart.groups.map(cartTotalArgs)));
+	// Chart threaded from the registry (shared across every registered
+	// controller for this event — see cart-seat-registry.svelte.ts): without
+	// it a seated group's total is unresolvable, which blanks the WHOLE
+	// cart's total (cartTotal returns null the moment ANY group is unknown).
+	const cartTotalDisplay = $derived(
+		cartTotal(
+			cart.groups.map((group) => cartTotalArgs({ ...group, chart: seatHoldRegistry.chart }))
+		)
+	);
 
 	// Checkout sheet (#853 PR 2): multi-tier carts and any require_ticket_names
 	// event route here for names/PWYC/discount/billing; single-tier carts on a
@@ -648,6 +656,7 @@
 		isProcessing={cartController.isPending}
 		purchaseError={cartPurchaseError}
 		onConfirm={handleSheetConfirm}
+		chart={seatHoldRegistry.chart}
 	/>
 {/if}
 
