@@ -12,9 +12,13 @@
 		isFree: boolean;
 		isPending: boolean;
 		onBuy: () => void;
+		/** Sheet entry point for the discount code (PR 2). Bar renders no link
+		 * when omitted — callers that never mount the sheet stay unaffected. */
+		onDiscountClick?: () => void;
 	}
 
-	const { count, totalDisplay, currency, isFree, isPending, onBuy }: Props = $props();
+	const { count, totalDisplay, currency, isFree, isPending, onBuy, onDiscountClick }: Props =
+		$props();
 </script>
 
 <div
@@ -24,14 +28,25 @@
 	data-testid="cart-summary-bar"
 >
 	<div class="container mx-auto flex items-center justify-between gap-4 px-6 py-3 md:px-8">
-		<p class="text-sm font-bold" aria-live="polite">
-			{m['cart.ticketCount']({ count })}
-			{#if isFree}
-				<span class="text-muted-foreground">· {m['cart.free']()}</span>
-			{:else if totalDisplay !== null}
-				<span class="text-muted-foreground">· {currency} {totalDisplay}</span>
+		<div class="min-w-0">
+			<p class="text-sm font-bold" aria-live="polite">
+				{m['cart.ticketCount']({ count })}
+				{#if isFree}
+					<span class="text-muted-foreground">· {m['cart.free']()}</span>
+				{:else if totalDisplay !== null}
+					<span class="text-muted-foreground">· {currency} {totalDisplay}</span>
+				{/if}
+			</p>
+			{#if onDiscountClick}
+				<button
+					type="button"
+					onclick={onDiscountClick}
+					class="text-xs font-semibold text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+				>
+					{m['cart.discountLink']()}
+				</button>
 			{/if}
-		</p>
+		</div>
 		<Button onclick={onBuy} disabled={isPending || count === 0} class="min-w-28">
 			{#if isPending}
 				<LoaderCircle class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />

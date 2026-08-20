@@ -35,7 +35,10 @@
 		hasAttendingSignal,
 		type EventTicketSchemaActual
 	} from '$lib/utils/eligibility';
-	import type { TierRemainingTicketsSchema } from '$lib/api/generated/types.gen';
+	import type {
+		TierRemainingTicketsSchema,
+		BuyerBillingInfoSchema
+	} from '$lib/api/generated/types.gen';
 	import { getPotluckPermissions } from '$lib/utils/permissions';
 	import { formatEventLocation } from '$lib/utils/event';
 	import { getUserRealName } from '$lib/utils/user-display';
@@ -45,8 +48,9 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { EventCart } from '$lib/components/tickets/cart.svelte';
 	import { cartTotal, cartTotalArgs } from '$lib/components/tickets/checkout-total';
-	import { buildCartItems } from '$lib/components/tickets/cart-payload';
+	import { buildCartItems, buildCartCheckoutParams } from '$lib/components/tickets/cart-payload';
 	import CartSummaryBar from '$lib/components/tickets/CartSummaryBar.svelte';
+	import CheckoutSheet from '$lib/components/tickets/CheckoutSheet.svelte';
 	import { createCartCheckoutController } from '$lib/components/events/cart-checkout-controller.svelte';
 	import { defaultGuestName } from '$lib/components/tickets/purchase-items';
 
@@ -259,16 +263,63 @@
 
 	const cartTotalDisplay = $derived(cartTotal(cart.groups.map(cartTotalArgs)));
 
+	// Checkout sheet (#853 PR 2): multi-tier carts and any require_ticket_names
+	// event route here for names/PWYC/discount/billing; single-tier carts on a
+	// no-names event skip it entirely (direct checkout below).
+	let showCheckoutSheet = $state(false);
+	let cartPurchaseError = $state<unknown>(null);
+
+	// Stranded-cart guard: a cart that empties out from under an open sheet
+	// (e.g. the last held seat expiring) must close it rather than show an
+	// empty checkout form.
+	$effect(() => {
+		if (cart.isEmpty) showCheckoutSheet = false;
+	});
+
+	// Closing the sheet (confirm, cancel, or the stranded-cart guard above)
+	// discards any inline purchase error — the next open starts clean.
+	$effect(() => {
+		if (!showCheckoutSheet) cartPurchaseError = null;
+	});
+
+	function buildCartCheckoutItems() {
+		return buildCartItems(cart.groups, {
+			requireTicketNames: event.require_ticket_names,
+			defaultName: defaultGuestName(ticketHolderDefaultName)
+		});
+	}
+
 	async function handleCartBuy() {
+		if (cart.needsSheet(event.require_ticket_names)) {
+			showCheckoutSheet = true;
+			return;
+		}
 		try {
-			await cartController.checkoutCart({
-				items: buildCartItems(cart.groups, {
-					requireTicketNames: event.require_ticket_names,
-					defaultName: defaultGuestName(ticketHolderDefaultName)
-				})
-			});
+			// '' / null keep the fingerprint byte-identical to PR 1's `{ items }`.
+			await cartController.checkoutCart(
+				buildCartCheckoutParams(buildCartCheckoutItems(), '', null)
+			);
 		} catch {
 			// error surfaced via controller toast
+		}
+	}
+
+	async function handleSheetConfirm({
+		discountCode,
+		billingInfo
+	}: {
+		discountCode: string;
+		billingInfo: BuyerBillingInfoSchema | null;
+	}) {
+		try {
+			await cartController.checkoutCart(
+				buildCartCheckoutParams(buildCartCheckoutItems(), discountCode, billingInfo)
+			);
+			showCheckoutSheet = false;
+		} catch (e) {
+			// Sheet stays open with the inline error; the controller's toast still
+			// fires too (accepted duplication — see task brief).
+			cartPurchaseError = e;
 		}
 	}
 
@@ -633,6 +684,23 @@
 		isFree={cart.paymentMethod === 'free'}
 		isPending={cartController.isPending}
 		onBuy={handleCartBuy}
+		onDiscountClick={() => {
+			showCheckoutSheet = true;
+		}}
+	/>
+
+	<CheckoutSheet
+		bind:open={showCheckoutSheet}
+		{cart}
+		eventId={event.id}
+		requireTicketNames={event.require_ticket_names}
+		isAuthenticated={data.isAuthenticated}
+		authToken={authStore.accessToken}
+		organizationSlug={event.organization.slug}
+		{initialDiscountCode}
+		isProcessing={cartController.isPending}
+		purchaseError={cartPurchaseError}
+		onConfirm={handleSheetConfirm}
 	/>
 {/if}
 
