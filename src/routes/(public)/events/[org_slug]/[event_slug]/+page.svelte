@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
 	import type { PageData } from './$types';
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
@@ -7,6 +6,8 @@
 	import EventHeader from '$lib/components/events/EventHeader.svelte';
 	import EventDetails from '$lib/components/events/EventDetails.svelte';
 	import EventActionSidebar from '$lib/components/events/EventActionSidebar.svelte';
+	import EventSeriesLinkCard from '$lib/components/events/EventSeriesLinkCard.svelte';
+	import EventTagsSection from '$lib/components/events/EventTagsSection.svelte';
 	import ActiveOfferBanner from '$lib/components/events/waitlist/ActiveOfferBanner.svelte';
 	import OrganizationInfo from '$lib/components/events/OrganizationInfo.svelte';
 	import PotluckSection from '$lib/components/events/PotluckSection.svelte';
@@ -24,7 +25,6 @@
 	import EventConfirmationBanners from '$lib/components/events/EventConfirmationBanners.svelte';
 	import { createCheckoutController } from '$lib/components/events/event-checkout-controller.svelte';
 	import { consumePostRedirectParams } from '$lib/components/events/post-redirect-params';
-	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import { SeoHead } from '$lib/seo';
 	import {
 		isTicket,
@@ -44,7 +44,6 @@
 	import { getUserRealName } from '$lib/utils/user-display';
 	import { formatEventDate } from '$lib/utils/date';
 	import { onMount } from 'svelte';
-	import * as m from '$lib/paraglide/messages.js';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { EventCart } from '$lib/components/tickets/cart.svelte';
 	import { cartTotal, cartTotalArgs } from '$lib/components/tickets/checkout-total';
@@ -365,6 +364,25 @@
 	});
 </script>
 
+{#snippet actionSidebar()}
+	<EventActionSidebar
+		{event}
+		bind:userStatus
+		isAuthenticated={data.isAuthenticated}
+		userPermissions={data.userPermissions}
+		eventTokenDetails={data.eventTokenDetails}
+		variant="card"
+		canAttendWithoutLogin={event.can_attend_without_login}
+		onGetTicketsClick={openTicketTierModal}
+		onShowTicketClick={openMyTicketModal}
+		onResumePayment={handleResumePaymentFromSidebar}
+		isResumingPayment={resumePaymentMutation.isPending}
+		onGuestRsvpClick={openGuestRsvpDialog}
+		onInvitationRequestSuccess={refreshUserStatus}
+		onWhitelistRequestSuccess={refreshUserStatus}
+	/>
+{/snippet}
+
 <SeoHead config={data.seo} />
 
 <div class="min-h-screen bg-background" class:pb-24={!cart.isEmpty}>
@@ -399,22 +417,7 @@
 		<div class="container mx-auto px-6 pb-16 md:px-8">
 			<!-- Mobile Action Card (at top, prominent) -->
 			<div class="mb-8 lg:hidden">
-				<EventActionSidebar
-					{event}
-					bind:userStatus
-					isAuthenticated={data.isAuthenticated}
-					userPermissions={data.userPermissions}
-					eventTokenDetails={data.eventTokenDetails}
-					variant="card"
-					canAttendWithoutLogin={event.can_attend_without_login}
-					onGetTicketsClick={openTicketTierModal}
-					onShowTicketClick={openMyTicketModal}
-					onResumePayment={handleResumePaymentFromSidebar}
-					isResumingPayment={resumePaymentMutation.isPending}
-					onGuestRsvpClick={openGuestRsvpDialog}
-					onInvitationRequestSuccess={refreshUserStatus}
-					onWhitelistRequestSuccess={refreshUserStatus}
-				/>
+				{@render actionSidebar()}
 			</div>
 
 			<div class="grid gap-8 lg:grid-cols-3">
@@ -533,32 +536,12 @@
 
 					<!-- Event Series (mobile only) -->
 					{#if event.event_series}
-						<section
-							aria-labelledby="series-heading-mobile"
-							class="rounded-lg border-2 bg-card shadow-poster lg:hidden"
-						>
-							<div class="border-b p-4">
-								<SectionHeader
-									volume="celebration"
-									id="series-heading-mobile"
-									title={m['eventDetails.series_heading']()}
-								/>
-							</div>
-							<a
-								href={resolve('/(public)/events/[org_slug]/series/[series_slug]', {
-									org_slug: event.organization.slug,
-									series_slug: event.event_series.slug
-								})}
-								class="block p-4 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-							>
-								<div class="font-bold">{event.event_series.name}</div>
-								{#if event.event_series.description}
-									<p class="mt-1 text-sm text-muted-foreground">
-										{event.event_series.description}
-									</p>
-								{/if}
-							</a>
-						</section>
+						<EventSeriesLinkCard
+							series={event.event_series}
+							orgSlug={event.organization.slug}
+							headingId="series-heading-mobile"
+							class="lg:hidden"
+						/>
 					{/if}
 
 					<!-- Attendee List (mobile only) -->
@@ -577,22 +560,7 @@
 				<!-- Right Column: Action Sidebar (desktop only) -->
 				<aside class="hidden lg:col-span-1 lg:block">
 					<div class="sticky top-4 space-y-6">
-						<EventActionSidebar
-							{event}
-							bind:userStatus
-							isAuthenticated={data.isAuthenticated}
-							userPermissions={data.userPermissions}
-							eventTokenDetails={data.eventTokenDetails}
-							variant="card"
-							canAttendWithoutLogin={event.can_attend_without_login}
-							onGetTicketsClick={openTicketTierModal}
-							onShowTicketClick={openMyTicketModal}
-							onResumePayment={handleResumePaymentFromSidebar}
-							isResumingPayment={resumePaymentMutation.isPending}
-							onGuestRsvpClick={openGuestRsvpDialog}
-							onInvitationRequestSuccess={refreshUserStatus}
-							onWhitelistRequestSuccess={refreshUserStatus}
-						/>
+						{@render actionSidebar()}
 
 						<!-- Organization Info (desktop only) -->
 						<OrganizationInfo
@@ -607,32 +575,11 @@
 
 						<!-- Event Series (desktop only) -->
 						{#if event.event_series}
-							<section
-								aria-labelledby="series-heading-desktop"
-								class="rounded-lg border-2 bg-card shadow-poster"
-							>
-								<div class="border-b p-4">
-									<SectionHeader
-										volume="celebration"
-										id="series-heading-desktop"
-										title={m['eventDetails.series_heading']()}
-									/>
-								</div>
-								<a
-									href={resolve('/(public)/events/[org_slug]/series/[series_slug]', {
-										org_slug: event.organization.slug,
-										series_slug: event.event_series.slug
-									})}
-									class="block p-4 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-								>
-									<div class="font-bold">{event.event_series.name}</div>
-									{#if event.event_series.description}
-										<p class="mt-1 text-sm text-muted-foreground">
-											{event.event_series.description}
-										</p>
-									{/if}
-								</a>
-							</section>
+							<EventSeriesLinkCard
+								series={event.event_series}
+								orgSlug={event.organization.slug}
+								headingId="series-heading-desktop"
+							/>
 						{/if}
 
 						<!-- Attendee List (desktop only) -->
@@ -649,32 +596,7 @@
 			</div>
 
 			<!-- Tags Section (bottom of page) -->
-			{#if event.tags && event.tags.length > 0}
-				<section
-					aria-labelledby="tags-heading"
-					class="container mx-auto border-t px-6 py-8 md:px-8"
-				>
-					<SectionHeader
-						volume="celebration"
-						id="tags-heading"
-						title={m['eventDetails.tags_heading']()}
-						class="mb-4"
-					/>
-					<!-- Tag chips: primary on the card surface with a 2px primary edge —
-				     poster stickers, not washes. The card fill is opaque, so the
-				     audited primary-vs-card pair governs (6.99:1 light / 6.27:1
-				     dark, the same pair the questionnaire option rows rest on). -->
-					<div class="flex flex-wrap gap-2">
-						{#each event.tags as tag (tag)}
-							<span
-								class="rounded-full border-2 border-primary/40 bg-card px-4 py-1.5 text-sm font-extrabold text-primary shadow-poster"
-							>
-								{tag}
-							</span>
-						{/each}
-					</div>
-				</section>
-			{/if}
+			<EventTagsSection tags={event.tags} />
 		</div>
 	</div>
 </div>
