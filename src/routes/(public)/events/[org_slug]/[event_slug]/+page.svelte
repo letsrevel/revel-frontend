@@ -56,6 +56,8 @@
 	import CheckoutSheet from '$lib/components/tickets/CheckoutSheet.svelte';
 	import { createCartCheckoutController } from '$lib/components/events/cart-checkout-controller.svelte';
 	import { defaultGuestName } from '$lib/components/tickets/purchase-items';
+	import { holdBestAvailableGroups } from '$lib/components/tickets/cart-ba-holds';
+	import { toast } from 'svelte-sonner';
 
 	const { data }: { data: PageData } = $props();
 
@@ -337,9 +339,16 @@
 		}
 		try {
 			// '' / null keep the fingerprint byte-identical to PR 1's `{ items }`.
-			await cartController.checkoutCart(
-				buildCartCheckoutParams(buildCartCheckoutItems(), '', null)
-			);
+			const params = buildCartCheckoutParams(buildCartCheckoutItems(), '', null);
+			// A resumed checkout (identical retry) already owns its seat holds
+			// from the original reserve call — skip re-holding in that case.
+			const skip = cartController.wouldResume(params);
+			const hold = await holdBestAvailableGroups(cart.bestAvailableGroups, seatHoldRegistry, skip);
+			if (!hold.ok) {
+				toast.error(hold.message);
+				return;
+			}
+			await cartController.checkoutCart(params);
 		} catch {
 			// error surfaced via controller toast
 		}
@@ -353,9 +362,14 @@
 		billingInfo: BuyerBillingInfoSchema | null;
 	}) {
 		try {
-			await cartController.checkoutCart(
-				buildCartCheckoutParams(buildCartCheckoutItems(), discountCode, billingInfo)
-			);
+			const params = buildCartCheckoutParams(buildCartCheckoutItems(), discountCode, billingInfo);
+			const skip = cartController.wouldResume(params);
+			const hold = await holdBestAvailableGroups(cart.bestAvailableGroups, seatHoldRegistry, skip);
+			if (!hold.ok) {
+				cartPurchaseError = new Error(hold.message);
+				return;
+			}
+			await cartController.checkoutCart(params);
 			showCheckoutSheet = false;
 		} catch (e) {
 			// Sheet stays open with the inline error; the controller's toast still
