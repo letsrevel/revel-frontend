@@ -12,6 +12,8 @@
 		pwycError: string;
 		isProcessing: boolean;
 		suggestions: number[];
+		/** Prefixes the amount input/error ids so two instances (one per cart group) never collide. */
+		idPrefix: string;
 		onAmountChange: (value: string) => void;
 		onKeydown: (e: KeyboardEvent) => void;
 	}
@@ -24,29 +26,35 @@
 		pwycError,
 		isProcessing,
 		suggestions,
+		idPrefix,
 		onAmountChange,
 		onKeydown
 	}: Props = $props();
 
 	// Derive aria-invalid from error and validation state
 	const hasError = $derived(!!pwycError);
+	const amountId = $derived(`${idPrefix}-pwyc-amount`);
+	const errorId = $derived(`${idPrefix}-amount-error`);
 </script>
 
 <div class="space-y-3">
 	<div class="space-y-2">
-		<Label for="pwyc-amount">{m['ticketConfirmationDialog.paymentAmount']()}</Label>
+		<Label for={amountId}>{m['ticketConfirmationDialog.paymentAmount']()}</Label>
 		<div class="text-xs text-muted-foreground">
-			Range: {currency}
-			{minAmount.toFixed(2)} - {maxAmount !== null
-				? `${currency} ${maxAmount.toFixed(2)}`
-				: 'any amount'}
+			{m['cartSheet.pwycRange']({
+				min: `${currency} ${minAmount.toFixed(2)}`,
+				max:
+					maxAmount !== null
+						? `${currency} ${maxAmount.toFixed(2)}`
+						: m['ticketConfirmationDialog.anyAmount']()
+			})}
 		</div>
 		<div class="relative">
 			<span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
 				{currency}
 			</span>
 			<Input
-				id="pwyc-amount"
+				id={amountId}
 				type="text"
 				inputmode="decimal"
 				value={pwycAmount}
@@ -61,11 +69,11 @@
 				placeholder={minAmount.toFixed(2)}
 				disabled={isProcessing}
 				aria-invalid={hasError ? 'true' : 'false'}
-				aria-describedby={hasError ? 'amount-error' : undefined}
+				aria-describedby={hasError ? errorId : undefined}
 			/>
 		</div>
 		{#if pwycError}
-			<p id="amount-error" class="text-sm text-destructive" role="alert">
+			<p id={errorId} class="text-sm text-destructive" role="alert">
 				{pwycError}
 			</p>
 		{/if}

@@ -9499,6 +9499,34 @@
 				}
 			}
 		],
-		"summaryRegion": "Cart summary"
+		"summaryRegion": "Cart summary",
+		"discountLink": "Discount code?"
+	},
+	"cartSheet": {
+		"title": "Checkout",
+		"payNow": "Pay Now",
+		"reserve": "Reserve",
+		"claim": "Claim",
+		"groupTickets": [
+			{
+				"declarations": ["input tierName", "input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{tierName} × {count}",
+					"countPlural=*": "{tierName} × {count}"
+				}
+			}
+		],
+		"namesHeading": "Ticket holder names",
+		"nameLabel": "Name for ticket {index}",
+		"nameRequired": "Please enter a name for every ticket",
+		"pwycRange": "Range: {min} – {max}",
+		"pwycHeading": "Choose your amount",
+		"discountSection": "Discount code",
+		"discountApplies": "Applies to {tierName}",
+		"discountNotApplicable": "Doesn't apply to this ticket type",
+		"discountNoMatch": "This code doesn't apply to anything in your cart",
+		"billingSection": "Billing information",
+		"close": "Close"
 	}
 }
