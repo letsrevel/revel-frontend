@@ -81,11 +81,12 @@ export function checkoutTotal(args: CheckoutTotalArgs): string | null {
 	return cents == null ? null : fromCents(cents * quantity);
 }
 
-/** Maps one cart group onto CheckoutTotalArgs (chart/discount arrive in PR 2/3). */
+/** Maps one cart group onto CheckoutTotalArgs (discount arrives in PR 2/3). */
 export interface CartTotalGroup {
 	tier: CheckoutTotalArgs['tier'];
 	quantity: number;
 	seatIds: readonly string[];
+	chart?: VenueChartSchema | null;
 	pwycAmount: string | null;
 	priceCategoryId: string | null;
 	discountedPrice?: string | null;
@@ -96,7 +97,7 @@ export function cartTotalArgs(group: CartTotalGroup): CheckoutTotalArgs {
 		tier: group.tier,
 		quantity: group.quantity,
 		heldSeatIds: group.seatIds,
-		chart: null,
+		chart: group.chart ?? null,
 		selectedZoneId: group.priceCategoryId,
 		pwycAmount: group.pwycAmount ?? '',
 		discountedPrice: group.discountedPrice ?? null
