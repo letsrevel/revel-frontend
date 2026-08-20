@@ -9526,6 +9526,7 @@
 		"discountApplies": "Gilt für {tierName}",
 		"discountNotApplicable": "Gilt nicht für diesen Tickettyp",
 		"discountNoMatch": "Dieser Code gilt für nichts in deinem Warenkorb",
+		"discountCheckFailed": "Wir konnten diesen Code nicht überprüfen — er wird an der Kasse trotzdem angewendet",
 		"billingSection": "Rechnungsinformationen",
 		"close": "Schließen"
 	}

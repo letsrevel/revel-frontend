@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { discountApplicable, validateCartDiscount } from './cart-discount';
+import { discountApplicable, discountStaysApplied, validateCartDiscount } from './cart-discount';
 import type { ValidateDiscountFn } from './cart-discount';
 import type { CartGroup } from './cart.svelte';
 import type { TierSchemaWithId } from '$lib/types/tickets';
@@ -151,5 +151,50 @@ describe('validateCartDiscount', () => {
 		// Both starts happen before either group's promise settles sequentially-blocking.
 		expect(order[0]).toBe('start-tier-a');
 		expect(order[1]).toBe('start-tier-b');
+	});
+});
+
+describe('discountStaysApplied', () => {
+	it('stays applied when at least one applicable group came back valid', () => {
+		const groupA = makeGroup({ tier: makeTier({ id: 'tier-a' }) });
+		const groupB = makeGroup({ tier: makeTier({ id: 'tier-b' }) });
+		const result = {
+			byTier: new Map([
+				['tier-a', makeValidationResponse({ valid: false, message: 'nope' })],
+				['tier-b', makeValidationResponse({ valid: true })]
+			]),
+			anyValid: true
+		};
+
+		expect(discountStaysApplied(result, [groupA, groupB])).toBe(true);
+	});
+
+	it('stays applied when every applicable group is a transport failure (no map entries)', () => {
+		const groupA = makeGroup({ tier: makeTier({ id: 'tier-a' }) });
+		const groupB = makeGroup({ tier: makeTier({ id: 'tier-b' }) });
+		const result = { byTier: new Map(), anyValid: false };
+
+		expect(discountStaysApplied(result, [groupA, groupB])).toBe(true);
+	});
+
+	it('clears once there is at least one real invalid response and none valid', () => {
+		const groupA = makeGroup({ tier: makeTier({ id: 'tier-a' }) });
+		const groupB = makeGroup({ tier: makeTier({ id: 'tier-b' }) });
+		const result = {
+			byTier: new Map([
+				['tier-a', makeValidationResponse({ valid: false, message: 'invalid code' })]
+				// tier-b: transport failure, no entry — still a real "no" from tier-a.
+			]),
+			anyValid: false
+		};
+
+		expect(discountStaysApplied(result, [groupA, groupB])).toBe(false);
+	});
+
+	it('is false when there are no applicable groups at all', () => {
+		const freeGroup = makeGroup({ tier: makeTier({ payment_method: 'free' }) });
+		const result = { byTier: new Map(), anyValid: false };
+
+		expect(discountStaysApplied(result, [freeGroup])).toBe(false);
 	});
 });

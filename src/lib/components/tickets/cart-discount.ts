@@ -63,6 +63,20 @@ export async function validateCartDiscount(
 	return { byTier, anyValid };
 }
 
+/**
+ * Whether a checked code should stay "applied" after `validateCartDiscount`:
+ * true when it's valid for some group, OR when every applicable group's check
+ * failed at the transport layer (a `null` response is "no answer", not
+ * "invalid" — dropping the code there would silently lose a possibly-good
+ * code over a network hiccup instead of letting checkout retry it honestly).
+ * False only once there's at least one REAL response and none of them valid.
+ */
+export function discountStaysApplied(result: CartDiscountResult, groups: CartGroup[]): boolean {
+	const applicableCount = groups.filter((group) => discountApplicable(group.tier)).length;
+	const allChecksFailed = applicableCount > 0 && result.byTier.size === 0;
+	return result.anyValid || allChecksFailed;
+}
+
 /** Real ValidateDiscountFn wrapping the generated SDK call for a fixed event. */
 export function makeValidateDiscountFn(eventId: string): ValidateDiscountFn {
 	return async (tierId: string, code: string) => {

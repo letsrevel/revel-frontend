@@ -48,6 +48,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { EventCart } from '$lib/components/tickets/cart.svelte';
 	import { cartTotal, cartTotalArgs } from '$lib/components/tickets/checkout-total';
+	import { discountApplicable } from '$lib/components/tickets/cart-discount';
 	import { buildCartItems, buildCartCheckoutParams } from '$lib/components/tickets/cart-payload';
 	import CartSummaryBar from '$lib/components/tickets/CartSummaryBar.svelte';
 	import CheckoutSheet from '$lib/components/tickets/CheckoutSheet.svelte';
@@ -290,7 +291,9 @@
 	}
 
 	async function handleCartBuy() {
-		if (cart.needsSheet(event.require_ticket_names)) {
+		// A URL-seeded discount code needs the sheet too, even on a direct
+		// single-tier "Buy" — skipping straight to checkout would drop it.
+		if (cart.needsSheet(event.require_ticket_names) || initialDiscountCode) {
 			showCheckoutSheet = true;
 			return;
 		}
@@ -684,9 +687,11 @@
 		isFree={cart.paymentMethod === 'free'}
 		isPending={cartController.isPending}
 		onBuy={handleCartBuy}
-		onDiscountClick={() => {
-			showCheckoutSheet = true;
-		}}
+		onDiscountClick={cart.groups.some((g) => discountApplicable(g.tier))
+			? () => {
+					showCheckoutSheet = true;
+				}
+			: undefined}
 	/>
 
 	<CheckoutSheet

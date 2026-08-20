@@ -280,8 +280,8 @@ test.describe('J6 map-first venue overview @p2', () => {
 			await expect(confirmDialog.getByText('2 / 2 selected')).toBeVisible();
 
 			// Reserve to success — the adopted holds become the tickets' seats.
-			await confirmDialog.getByPlaceholder('Your name').fill('Seat Buyer');
-			await confirmDialog.getByPlaceholder('Guest 2 name').fill('Plus One');
+			await confirmDialog.getByPlaceholder('Name for ticket 1').fill('Seat Buyer');
+			await confirmDialog.getByPlaceholder('Name for ticket 2').fill('Plus One');
 			const success = page.getByRole('dialog', { name: 'Your Ticket', exact: true });
 			await expect(async () => {
 				if (await success.isVisible()) return;

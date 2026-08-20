@@ -5,6 +5,7 @@
 	 * survives a close — so writes go through `cart.setGuestName`/
 	 * `setPwycAmount` only. Only the discount input/results and the
 	 * accordion-open flags are sheet-local (see `EventCart.needsSheet`). */
+	import { untrack } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import {
 		Dialog,
@@ -24,6 +25,7 @@
 	import type { EventCart, CartGroup } from './cart.svelte';
 	import {
 		discountApplicable,
+		discountStaysApplied,
 		makeValidateDiscountFn,
 		validateCartDiscount,
 		type CartDiscountResult
@@ -81,15 +83,29 @@
 
 	// Seed the initial (e.g. URL param) code exactly once, on first mount —
 	// never re-seed on a later reopen, which would stomp whatever the buyer
-	// has since typed or cleared.
+	// has since typed or cleared. Validation is deferred to the open-effect
+	// below: `+page.svelte` opens the sheet whenever a URL discount code is
+	// present (even for a single-tier direct "Buy"), so seeding must not fire
+	// the network call while the sheet is still closed.
 	$effect(() => {
 		if (seeded) return;
 		seeded = true;
 		if (initialDiscountCode) {
 			discountInput = initialDiscountCode;
 			discountOpen = true;
-			void applyDiscount();
 		}
+	});
+
+	// Re-validate whenever the sheet opens with a code on the books — covers
+	// both the seeded code's first check and refreshing stale per-group
+	// feedback/footer total after the buyer changed quantities or groups while
+	// the sheet was closed. Keyed on `open` only: applyDiscount() itself
+	// writes discountInput/appliedDiscountCode, so reading them untracked here
+	// keeps this effect from re-triggering on its own writes.
+	$effect(() => {
+		if (!open) return;
+		const hasCode = untrack(() => !!discountInput.trim());
+		if (hasCode) void applyDiscount();
 	});
 
 	async function applyDiscount() {
@@ -99,7 +115,7 @@
 		const result = await validateCartDiscount(code, cart.groups, makeValidateDiscountFn(eventId));
 		discountValidating = false;
 		discountResult = result;
-		appliedDiscountCode = result.anyValid ? code : '';
+		appliedDiscountCode = discountStaysApplied(result, cart.groups) ? code : '';
 	}
 
 	// Billing section ref: getBillingInfo()/validate() called at submit time.
@@ -119,8 +135,9 @@
 	const showBilling = $derived(cart.groups.some((group) => group.tier.invoicing_available));
 
 	// Submit gate: the pure, unit-tested helper decides which rule fails
-	// first. `submitAttempted` only governs when per-field inline errors show.
-	let submitAttempted = $state(false);
+	// first. It's live (no "submit attempted" flag) and drives both the
+	// disabled confirm button and the footer hint below — the shipped
+	// disabled-with-hint UX, not per-field inline alerts on submit.
 	const validationError = $derived(sheetValidationError(cart.groups, requireTicketNames));
 
 	// First offending PWYC group's precise reason (empty/below-min/above-max)
@@ -167,17 +184,14 @@
 		return Array.from({ length: group.quantity }, (_, index) => group.guestNames[index] ?? '');
 	}
 
-	function groupNameError(group: CartGroup): string {
-		if (!submitAttempted || !requireTicketNames) return '';
-		const missing = guestNamesFor(group).some((name) => !name.trim());
-		return missing ? m['cartSheet.nameRequired']() : '';
-	}
-
+	// Live inline feedback for the amount field only — below-min/above-max/
+	// non-numeric entries show as the buyer types. The "empty" case is
+	// suppressed here: an untouched field isn't an error to nag about inline,
+	// the disabled button + footer hint already cover it.
 	function groupPwycError(group: CartGroup): string {
-		if (!submitAttempted) return '';
 		const { minAmount, maxAmount } = pwycBounds(group.tier);
 		const validation = validatePwycAmount(group.pwycAmount ?? '', minAmount, maxAmount);
-		if (validation.valid) return '';
+		if (validation.valid || validation.error === 'empty') return '';
 		return pwycErrorMessage(validation.error, group.tier.currency, minAmount, maxAmount);
 	}
 
@@ -195,8 +209,7 @@
 	}
 
 	async function handleConfirm() {
-		submitAttempted = true;
-		if (sheetValidationError(cart.groups, requireTicketNames)) return;
+		if (validationError) return;
 		if (billingSection && !billingSection.validate()) return;
 		await onConfirm({
 			discountCode: appliedDiscountCode,
@@ -204,9 +217,19 @@
 		});
 	}
 
+	// GuestNameInputs' onClearError exists for callers with real per-field,
+	// submit-triggered error state (e.g. TicketConfirmationDialog). This sheet
+	// has none — the disabled button + footer hint is the whole submit gate —
+	// so there's nothing to clear, and importantly nothing shared across groups.
+	// eslint-disable-next-line @typescript-eslint/no-empty-function
+	function noop(): void {}
+
+	// Same guard as the (disabled) confirm button: Enter in a PWYC field must
+	// not bypass it and submit while some group is still invalid.
 	function handlePwycKeydown(e: KeyboardEvent) {
 		if (e.key === 'Enter' && !isProcessing) {
 			e.preventDefault();
+			if (validationError) return;
 			void handleConfirm();
 		}
 	}
@@ -246,13 +269,15 @@
 					</div>
 
 					{#if requireTicketNames}
+						<!-- No per-field inline alert here: the disabled confirm button +
+						     footer hint (below) is the shipped submit gate. -->
 						<GuestNameInputs
 							guestNames={guestNamesFor(group)}
 							idPrefix={group.tier.id}
 							{isProcessing}
-							guestNameError={groupNameError(group)}
+							guestNameError=""
 							onUpdateName={(index, value) => cart.setGuestName(group.tier.id, index, value)}
-							onClearError={() => (submitAttempted = false)}
+							onClearError={noop}
 						/>
 					{/if}
 
@@ -342,9 +367,15 @@
 											<span class="text-success">
 												{m['cartSheet.discountApplies']({ tierName: group.tier.name })}
 											</span>
-										{:else}
+										{:else if response}
 											<span class="text-destructive">
-												{response?.message || m['cartSheet.discountNoMatch']()}
+												{response.message || m['cartSheet.discountNoMatch']()}
+											</span>
+										{:else}
+											<!-- Transport failure for this group's check specifically — not
+											     "invalid", so stay neutral rather than implying the code is bad. -->
+											<span class="text-muted-foreground">
+												{m['cartSheet.discountCheckFailed']()}
 											</span>
 										{/if}
 									</p>
@@ -388,7 +419,7 @@
 		<DialogFooter class="flex-col gap-2">
 			{#if validationError && !isProcessing}
 				<p class="text-center text-sm text-highlight-foreground dark:text-highlight">
-					<AlertCircle class="mr-1 inline-block h-4 w-4" />
+					<AlertCircle class="mr-1 inline-block h-4 w-4" aria-hidden="true" />
 					{#if validationError === 'names'}
 						{m['cartSheet.nameRequired']()}
 					{:else if firstInvalidPwyc}

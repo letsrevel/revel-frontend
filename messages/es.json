@@ -9526,6 +9526,7 @@
 		"discountApplies": "Se aplica a {tierName}",
 		"discountNotApplicable": "No se aplica a este tipo de entrada",
 		"discountNoMatch": "Este código no se aplica a nada en tu carrito",
+		"discountCheckFailed": "No pudimos comprobar este código — aun así se aplicará al finalizar la compra",
 		"billingSection": "Información de facturación",
 		"close": "Cerrar"
 	}

@@ -163,16 +163,23 @@ test.describe('J6 cart checkout sheet @p1', () => {
 		// click is needed to surface the footer hint).
 		await expect(confirmButton).toBeDisabled();
 
-		// Below the tier's minimum (5.00) — still blocked, with the precise
-		// min-amount hint in the footer.
+		// Below the tier's minimum (5.00) — still blocked. Both the field's own
+		// live error (PwycInput, role="alert") and the footer's precise hint
+		// (a plain, non-alert paragraph) show the same text.
 		await amountInput.fill('2');
-		await expect(sheet.getByText('Minimum amount is EUR 5.00')).toBeVisible();
+		const inlineError = sheet.getByRole('alert');
+		const footerHint = sheet.locator('p:not([role="alert"])', {
+			hasText: 'Minimum amount is EUR 5.00'
+		});
+		await expect(inlineError).toHaveText('Minimum amount is EUR 5.00');
+		await expect(footerHint).toBeVisible();
 		await expect(confirmButton).toBeDisabled();
 
 		// A valid amount unblocks confirm and the footer totals the mix:
 		// 10.00 (PWYC) + 12.00 (flat) = 22.00.
 		await amountInput.fill('10');
-		await expect(sheet.getByText('Minimum amount is EUR 5.00')).toBeHidden();
+		await expect(inlineError).toBeHidden();
+		await expect(footerHint).toBeHidden();
 		await expect(confirmButton).toBeEnabled();
 		// Scoped to the footer's "Total" row specifically — the dialog
 		// description above it renders the same total inline, and an

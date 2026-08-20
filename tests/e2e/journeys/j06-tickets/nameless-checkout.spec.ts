@@ -76,10 +76,11 @@ test.describe('J6 nameless checkout @p1', () => {
 			await page.getByRole('button', { name: 'Increase quantity' }).click();
 			await expect(page.getByRole('button', { name: 'Decrease quantity' })).toBeEnabled();
 
-			// With names required this would now reveal the "Ticket Holders" block
-			// and a "Guest 2 name" input — with the flag off neither may appear.
-			await expect(page.getByText('Ticket Holders', { exact: true })).toBeHidden();
-			await expect(page.getByPlaceholder('Guest 2 name')).toBeHidden();
+			// With names required this would now reveal the "Ticket holder names"
+			// block and a "Name for ticket 2" input — with the flag off neither may
+			// appear.
+			await expect(page.getByText('Ticket holder names', { exact: true })).toBeHidden();
+			await expect(page.getByPlaceholder('Name for ticket 2')).toBeHidden();
 
 			// `exact` matters: a substring match on "Your Ticket" also hits the
 			// "Select Your Ticket" tier dialog.

@@ -5,7 +5,7 @@
  * The two-step reserve → checkout-session machinery below (`resumeHeldCheckout`,
  * `withCheckoutSessionUrl`, `sessionFailureError`, `handleCheckoutSuccess`) is
  * mirrored from `event-checkout-controller.svelte.ts`, which this cart flow will
- * fully replace: its single-tier mutations are deleted in PR 2 of this series
+ * fully replace: its single-tier mutations are deleted in PR 3 of this series
  * once the cart UI ships everywhere the old ticket-tier modal does today.
  */
 import { createMutation, type QueryClient } from '@tanstack/svelte-query';

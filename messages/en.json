@@ -9526,6 +9526,7 @@
 		"discountApplies": "Applies to {tierName}",
 		"discountNotApplicable": "Doesn't apply to this ticket type",
 		"discountNoMatch": "This code doesn't apply to anything in your cart",
+		"discountCheckFailed": "We couldn't check this code — it will still be applied at checkout",
 		"billingSection": "Billing information",
 		"close": "Close"
 	}
