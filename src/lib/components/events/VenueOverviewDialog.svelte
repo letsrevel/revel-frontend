@@ -41,6 +41,9 @@
 		tierRemainingTickets?: TierRemainingTicketsSchema[];
 		/** Event-level max tickets per user (seat-selection cap fallback). */
 		eventMaxTicketsPerUser?: number | null;
+		/** Seat ids already owned by the cart — threaded straight through to
+		 * `VenueOverviewMap` (see its prop doc; #853 final-review fix 1). */
+		protectedSeatIds?: ReadonlySet<string>;
 		/**
 		 * Route an authenticated buyer into the cart. `heldSeatIds`, when present,
 		 * carries seats this dialog's map already held server-side for a
@@ -60,6 +63,7 @@
 		canAttendWithoutLogin = false,
 		tierRemainingTickets,
 		eventMaxTicketsPerUser = null,
+		protectedSeatIds = new Set(),
 		onSelectTier,
 		onGuestTierClick
 	}: Props = $props();
@@ -167,6 +171,7 @@
 			{needsLogin}
 			{tierRemainingTickets}
 			{eventMaxTicketsPerUser}
+			{protectedSeatIds}
 			onSectorTarget={handleSectorSelect}
 			onContinue={route}
 		/>

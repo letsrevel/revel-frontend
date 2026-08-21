@@ -6,11 +6,13 @@ import type { VenueChartSchema } from '$lib/api/generated/types.gen';
 /** Minimal fake — only the shape `CartSeatHoldRegistry` actually reads. */
 function fakeController(
 	myHoldsExpireAt: string | null | undefined,
-	chartData: VenueChartSchema | undefined = undefined
+	chartData: VenueChartSchema | undefined = undefined,
+	myHolds: string[] = []
 ): SeatHoldController {
 	return {
 		availabilityQuery: { data: { my_holds_expire_at: myHoldsExpireAt } },
-		chartQuery: { data: chartData }
+		chartQuery: { data: chartData },
+		myHolds
 	} as unknown as SeatHoldController;
 }
 
@@ -132,5 +134,40 @@ describe('CartSeatHoldRegistry', () => {
 		registry.set('tier-1', fakeController(null, fakeChart('venue-1')));
 		registry.delete('tier-1');
 		expect(registry.chart).toBeNull();
+	});
+
+	describe('otherHolds', () => {
+		it('is empty when nothing is registered', () => {
+			const registry = new CartSeatHoldRegistry();
+			expect(registry.otherHolds('tier-1')).toEqual(new Set());
+		});
+
+		it('is empty when the only registered controller is the excluded one', () => {
+			const registry = new CartSeatHoldRegistry();
+			registry.set('tier-1', fakeController(null, undefined, ['s1', 's2']));
+			expect(registry.otherHolds('tier-1')).toEqual(new Set());
+		});
+
+		it('unions holds from every OTHER registered controller', () => {
+			const registry = new CartSeatHoldRegistry();
+			registry.set('tier-a', fakeController(null, undefined, ['s1']));
+			registry.set('tier-b', fakeController(null, undefined, ['s2', 's3']));
+			registry.set('tier-c', fakeController(null, undefined, ['s4']));
+			expect(registry.otherHolds('tier-b')).toEqual(new Set(['s1', 's4']));
+		});
+
+		it('excludes the given tier even when it has holds too', () => {
+			const registry = new CartSeatHoldRegistry();
+			registry.set('tier-a', fakeController(null, undefined, ['s1']));
+			registry.set('tier-b', fakeController(null, undefined, ['s2']));
+			expect(registry.otherHolds('tier-a')).toEqual(new Set(['s2']));
+			expect(registry.otherHolds('tier-a')).not.toContain('s1');
+		});
+
+		it('an unregistered excludeTierId still unions every controller', () => {
+			const registry = new CartSeatHoldRegistry();
+			registry.set('tier-a', fakeController(null, undefined, ['s1']));
+			expect(registry.otherHolds('tier-nonexistent')).toEqual(new Set(['s1']));
+		});
 	});
 });

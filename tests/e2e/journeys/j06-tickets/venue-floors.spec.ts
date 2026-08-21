@@ -203,7 +203,9 @@ test.describe('J6 venue floors @p2', () => {
 				}
 				await expect(seatB1).toHaveAttribute('aria-pressed', 'true', { timeout: 5_000 });
 			}).toPass({ timeout: 60_000 });
-			await expect(picker.getByText('1 / 1 selected')).toBeVisible();
+			// Denominator is the tier's max_tickets_per_user cap (4), not the held
+			// count — #853 final-review fix (self-referential chip).
+			await expect(picker.getByText('1 / 4 selected')).toBeVisible();
 
 			// Whole venue: floor chips appear and DEFAULT to the tier's floor
 			// (Upper), not the first one.
@@ -227,7 +229,9 @@ test.describe('J6 venue floors @p2', () => {
 			// held and the count untouched.
 			await upperChip.click();
 			await expect(seatB1).toHaveAttribute('aria-pressed', 'true', { timeout: 15_000 });
-			await expect(picker.getByText('1 / 1 selected')).toBeVisible();
+			// Denominator is the tier's max_tickets_per_user cap (4), not the held
+			// count — #853 final-review fix (self-referential chip).
+			await expect(picker.getByText('1 / 4 selected')).toBeVisible();
 		} finally {
 			await context.close();
 		}

@@ -62,7 +62,6 @@
 		controller: SeatHoldController;
 		tierVenue: { name: string } | null;
 		tierSector: { id?: string | null; name: string } | null;
-		quantity: number;
 		/** Hard purchase ceiling — seat taps grow the counter up to this. */
 		maxQuantity: number;
 		isProcessing: boolean;
@@ -88,7 +87,6 @@
 		controller,
 		tierVenue,
 		tierSector,
-		quantity,
 		maxQuantity,
 		isProcessing,
 		seatSelectionError,
@@ -272,7 +270,7 @@
 			aria-live="polite"
 			class="rounded-full border-2 border-primary/40 bg-card px-3 py-1 text-sm font-extrabold text-primary"
 		>
-			{heldCount} / {quantity}
+			{heldCount} / {maxQuantity}
 			{m['ticketConfirmationDialog.seatsSelected']()}
 		</span>
 	</div>

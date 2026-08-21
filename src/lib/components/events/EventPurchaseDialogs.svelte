@@ -30,6 +30,10 @@
 		tierRemainingTickets?: TierRemainingTicketsSchema[];
 		isAuthenticated: boolean;
 		hasSeatingMap: boolean;
+		/** Seat ids already owned by the cart — passed to VenueOverviewDialog so
+		 * its map never adopts or releases the cart's own holds (#853
+		 * final-review fix 1). */
+		protectedSeatIds?: ReadonlySet<string>;
 		userTickets: EventTicketSchemaActual[];
 		isResumingPayment: boolean;
 		isCancellingReservation: boolean;
@@ -60,6 +64,7 @@
 		tierRemainingTickets,
 		isAuthenticated,
 		hasSeatingMap,
+		protectedSeatIds = new Set(),
 		userTickets,
 		isResumingPayment,
 		isCancellingReservation,
@@ -127,6 +132,7 @@
 		canAttendWithoutLogin={event.can_attend_without_login}
 		{tierRemainingTickets}
 		eventMaxTicketsPerUser={event.max_tickets_per_user}
+		{protectedSeatIds}
 		{onSelectTier}
 		{onGuestTierClick}
 	/>

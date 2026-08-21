@@ -56,7 +56,7 @@
 	import CheckoutSheet from '$lib/components/tickets/CheckoutSheet.svelte';
 	import { createCartCheckoutController } from '$lib/components/events/cart-checkout-controller.svelte';
 	import { defaultGuestName } from '$lib/components/tickets/purchase-items';
-	import { holdBestAvailableGroups } from '$lib/components/tickets/cart-ba-holds';
+	import * as cartBaHolds from '$lib/components/tickets/cart-ba-holds';
 	import { readTierMapPref, writeTierMapPref } from '$lib/components/tickets/seat-view-toggle';
 	import { toast } from 'svelte-sonner';
 
@@ -120,9 +120,10 @@
 		userStatus && isUserStatusResponse(userStatus) ? (userStatus.can_purchase_more ?? true) : true
 	);
 
-	// Stranded-cart guard: a stray pre-ticket cart selection doesn't survive into buy-more.
+	// Stranded-cart guard, gated like the tier-list render below — `userTicket`
+	// alone cleared on EVERY status refresh, wiping a legit buy-more cart (fix 3).
 	$effect(() => {
-		if (userTicket) cart.clear();
+		if (userTicket && !canBuyMore) cart.clear();
 	});
 
 	// Get per-tier remaining tickets info for the user
@@ -191,6 +192,9 @@
 		if (tier.seat_assignment_mode === 'user_choice') {
 			if (heldSeatIds) {
 				cart.setSeatIds(tier, heldSeatIds);
+				// A join-block can leave the overview's held seats orphaned (#853 fix 4).
+				const block = cartBaHolds.releaseJoinBlockedHolds(cart, tier, heldSeatIds, event.id);
+				if (block) toast.error(cartBaHolds.joinBlockMessage(block));
 			} else {
 				pickSeatsTier = tier;
 			}
@@ -279,6 +283,9 @@
 	// tasks) can reuse them. Mounted below via <CartSeatHolds>.
 	const seatHoldRegistry = new CartSeatHoldRegistry();
 
+	// Seat ids the cart owns — the overview must never adopt/release these (fix 1).
+	const protectedSeatIds = $derived(new Set(cart.groups.flatMap((group) => group.seatIds)));
+
 	const cartController = createCartCheckoutController({
 		eventId: event.id,
 		queryClient,
@@ -337,6 +344,15 @@
 		});
 	}
 
+	// Deps for `submitCart` (cart-ba-holds.ts) — `cart` is live, so built once.
+	const cartSubmitDeps = {
+		cart,
+		registry: seatHoldRegistry,
+		controller: cartController,
+		isHolding: () => holdingSeats,
+		setHolding: (value: boolean) => (holdingSeats = value)
+	};
+
 	async function handleCartBuy() {
 		// A URL-seeded discount code needs the sheet too, even on a direct
 		// single-tier "Buy" — skipping straight to checkout would drop it.
@@ -344,23 +360,12 @@
 			showCheckoutSheet = true;
 			return;
 		}
-		if (holdingSeats || cartController.isPending) return;
-		holdingSeats = true;
-		try {
-			// '' / null keep the fingerprint byte-identical to PR 1's `{ items }`.
-			const params = buildCartCheckoutParams(buildCartCheckoutItems(), '', null);
-			const skip = cartController.wouldResume(params);
-			const hold = await holdBestAvailableGroups(cart.bestAvailableGroups, seatHoldRegistry, skip);
-			if (!hold.ok) {
-				toast.error(hold.message);
-				return;
-			}
-			await cartController.checkoutCart(params);
-		} catch {
-			// error surfaced via controller toast
-		} finally {
-			holdingSeats = false;
-		}
+		// '' / null keep the fingerprint byte-identical to PR 1's `{ items }`.
+		const params = buildCartCheckoutParams(buildCartCheckoutItems(), '', null);
+		// onError omitted: the controller's own toast surfaces the failure.
+		await cartBaHolds.submitCart(params, cartSubmitDeps, {
+			onHoldFailure: (message) => toast.error(message)
+		});
 	}
 
 	async function handleSheetConfirm({
@@ -370,24 +375,13 @@
 		discountCode: string;
 		billingInfo: BuyerBillingInfoSchema | null;
 	}) {
-		if (holdingSeats || cartController.isPending) return;
-		holdingSeats = true;
-		try {
-			const params = buildCartCheckoutParams(buildCartCheckoutItems(), discountCode, billingInfo);
-			const skip = cartController.wouldResume(params);
-			const hold = await holdBestAvailableGroups(cart.bestAvailableGroups, seatHoldRegistry, skip);
-			if (!hold.ok) {
-				cartPurchaseError = new Error(hold.message);
-				return;
-			}
-			await cartController.checkoutCart(params);
-			showCheckoutSheet = false;
-		} catch (e) {
-			// Sheet stays open with the inline error; controller toast fires too.
-			cartPurchaseError = e;
-		} finally {
-			holdingSeats = false;
-		}
+		const params = buildCartCheckoutParams(buildCartCheckoutItems(), discountCode, billingInfo);
+		// Sheet stays open with the inline error either way; controller toast fires too.
+		const ok = await cartBaHolds.submitCart(params, cartSubmitDeps, {
+			onHoldFailure: (message) => (cartPurchaseError = new Error(message)),
+			onError: (e) => (cartPurchaseError = e)
+		});
+		if (ok) showCheckoutSheet = false;
 	}
 
 	// Handle payment success/cancelled redirects
@@ -730,6 +724,7 @@
 	{tierRemainingTickets}
 	isAuthenticated={data.isAuthenticated}
 	{hasSeatingMap}
+	{protectedSeatIds}
 	{userTickets}
 	isResumingPayment={resumePaymentMutation.isPending}
 	isCancellingReservation={cancelReservationMutation.isPending}

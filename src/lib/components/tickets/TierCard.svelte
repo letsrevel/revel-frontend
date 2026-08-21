@@ -51,6 +51,9 @@
 			/** Seats already held for this tier's cart group (`cart.quantityFor`). */
 			heldCount: number;
 			joinBlock: JoinBlock;
+			/** Set while a cart checkout/hold round-trip is in flight — same
+			 * signal as `quickBuy.disabled` (#853 final-review bundled minor). */
+			disabled: boolean;
 			onPick: () => void;
 		};
 		onSelectTier: (tier: TierSchemaWithId) => void;
@@ -356,7 +359,11 @@
 				label={m['cart.seatsPicked']({ count: pickSeats.heldCount })}
 			/>
 		{/if}
-		<Button onclick={pickSeats.onPick} disabled={!!pickSeats.joinBlock} class="w-full sm:w-auto">
+		<Button
+			onclick={pickSeats.onPick}
+			disabled={!!pickSeats.joinBlock || pickSeats.disabled}
+			class="w-full sm:w-auto"
+		>
 			{m['cart.pickSeats']()}
 		</Button>
 		{#if pickSeats.joinBlock}

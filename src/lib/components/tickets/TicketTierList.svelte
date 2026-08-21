@@ -194,6 +194,7 @@
 						? {
 								heldCount: cart.quantityFor(tier.id),
 								joinBlock: cart.joinBlock(tier),
+								disabled: quickBuyDisabled,
 								onPick: () => onPickSeats(tier)
 							}
 						: undefined}

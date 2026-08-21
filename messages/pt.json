@@ -9504,6 +9504,7 @@
 		"seatsHeld": "Lugares reservados",
 		"holdsExpired": "Os teus lugares reservados expiraram — volta a selecioná-los.",
 		"pickSeatsTitle": "Escolher lugares — {tierName}",
+		"pickSeatsDescription": "Toca nos lugares no mapa para os reservar para este bilhete.",
 		"pickSeats": "Escolher lugares…",
 		"seatsPicked": [
 			{

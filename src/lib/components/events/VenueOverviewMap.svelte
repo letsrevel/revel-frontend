@@ -48,6 +48,16 @@
 		tierRemainingTickets?: TierRemainingTicketsSchema[];
 		/** Event-level max tickets per user (tier-level value wins when set). */
 		eventMaxTicketsPerUser?: number | null;
+		/**
+		 * Seat ids already owned by the cart (union of every seated group's
+		 * `seatIds` — #853 final-review fix 1). The overview's `my_holds` seed
+		 * spans the buyer's WHOLE identity, not just this session, so an
+		 * un-narrowed adopt/release here would treat the cart's own holds as
+		 * this map's to browse away and release. Excluded from adoption, and
+		 * carved out of every release call. Guests / no-cart callers pass an
+		 * empty set, which is a no-op on both.
+		 */
+		protectedSeatIds?: ReadonlySet<string>;
 		/** A whole-sector target was activated (1:1 route or 1:N chooser). */
 		onSectorTarget: (sectorId: string) => void;
 		/**
@@ -63,6 +73,7 @@
 		needsLogin,
 		tierRemainingTickets,
 		eventMaxTicketsPerUser = null,
+		protectedSeatIds = new Set(),
 		onSectorTarget,
 		onContinue
 	}: Props = $props();
@@ -220,7 +231,9 @@
 		for (const sector of chart.sectors ?? []) {
 			if (!selectableSectors.has(sector.id)) continue;
 			for (const seat of sector.seats ?? []) {
-				if (seat.is_active !== false) validIds.add(seat.id);
+				// Cart-protected ids are the CART's holds, not this browse
+				// session's — never adopt them here (fix 1).
+				if (seat.is_active !== false && !protectedSeatIds.has(seat.id)) validIds.add(seat.id);
 			}
 		}
 		const firstHeld = (availability.my_holds ?? []).find((id) => validIds.has(id));
@@ -236,7 +249,10 @@
 		if (!sectorId || !selectableSectors.has(sectorId)) return;
 		if (activeSectorId && activeSectorId !== sectorId && controller.myHolds.length > 0) {
 			const previousName = selectableSectors.get(activeSectorId)?.sectorName ?? activeSectorId;
-			await controller.releaseAll();
+			// Group-scoped, not releaseAll (fix 1): releaseAll wipes every hold
+			// server-side, including the cart's — this only ever drops THIS
+			// session's own previous-sector picks.
+			await controller.release(controller.myHolds.filter((id) => !protectedSeatIds.has(id)));
 			quantity = 1;
 			announcement = m['venueOverview.selectionReleased']({ sector: previousName });
 		}
@@ -268,13 +284,15 @@
 			: null
 	);
 
-	// Closed without Continue: release ALL holds (exactly like the purchase
-	// dialogs); after a hand-off the purchase path owns them. Pending taps are
-	// released too — an in-flight hold could land after the unmount. A plain
-	// browse-and-close with no taps skips the request entirely.
+	// Closed without Continue: release this session's OWN holds (fix 1 —
+	// group-scoped `release`, never `releaseAll`, which would also wipe the
+	// cart's holds server-side for a buyer who picked seats, then opened the
+	// overview just to browse). After a hand-off the purchase path owns them.
+	// Pending taps are released too — an in-flight hold could land after the
+	// unmount. A plain browse-and-close with no taps skips the request entirely.
 	$effect(() => () => {
 		if (!handedOff && (controller.myHolds.length > 0 || controller.pendingSeatIds.length > 0)) {
-			void controller.releaseAll();
+			void controller.release(controller.myHolds.filter((id) => !protectedSeatIds.has(id)));
 		}
 	});
 </script>

@@ -9502,8 +9502,9 @@
 		"summaryRegion": "Cart summary",
 		"discountLink": "Discount code?",
 		"seatsHeld": "Seats held",
-		"holdsExpired": "Your held seats expired — please pick them again",
+		"holdsExpired": "Your held seats expired — please pick them again.",
 		"pickSeatsTitle": "Pick seats — {tierName}",
+		"pickSeatsDescription": "Tap seats on the map to hold them for this ticket.",
 		"pickSeats": "Pick seats…",
 		"seatsPicked": [
 			{

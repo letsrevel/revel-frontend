@@ -115,6 +115,28 @@ function conflictReasonFrom(error: unknown): HoldConflictReason {
 	return 'unavailable';
 }
 
+/**
+ * One-shot release with no controller to own it (#853 final-review fix 4).
+ * The venue-overview hand-off can leave a `user_choice` group's just-held
+ * seats orphaned: `cart.setSeatIds` no-ops when `joinBlock` refuses to create
+ * the group (currency/payment-method mismatch), so nothing ever registers a
+ * `SeatHoldController` for that tier to `.release()` them through. Mirrors
+ * `SeatHoldController.release`'s one-shot POST, minus the component-context
+ * machinery (no `createQuery`/`useQueryClient`, no local `myHolds` to patch)
+ * since there is no controller instance here to keep in sync.
+ */
+export async function releaseOrphanedSeatHolds(eventId: string, seatIds: string[]): Promise<void> {
+	if (seatIds.length === 0) return;
+	try {
+		await eventpublicseatingReleaseSeats({
+			path: { event_id: eventId },
+			body: { seat_ids: seatIds }
+		});
+	} catch {
+		// Best-effort: unreleased holds expire server-side within minutes.
+	}
+}
+
 export class SeatHoldController {
 	/** Seat geometry/labels/price categories — changes rarely, cached 5 min. */
 	readonly chartQuery: CreateQueryResult<VenueChartSchema, Error>;

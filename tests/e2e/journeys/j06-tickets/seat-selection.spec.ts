@@ -123,7 +123,9 @@ test.describe('J6 seat selection @p2', () => {
 				await seatB3.click();
 			}
 			await expect(seatB3).toHaveAttribute('aria-pressed', 'true', { timeout: 5_000 });
-			await expect(picker.getByText('1 / 1 selected')).toBeVisible({ timeout: 5_000 });
+			// Denominator is the real per-purchase cap (MAX_TICKETS_PER_GROUP),
+			// not the held count — #853 final-review fix (self-referential chip).
+			await expect(picker.getByText('1 / 50 selected')).toBeVisible({ timeout: 5_000 });
 		}).toPass({ timeout: 60_000 });
 		await expect(picker.getByText('Selected seats are held for you for 10 minutes.')).toBeVisible();
 
@@ -285,14 +287,16 @@ test.describe('J6 seat selection @p2', () => {
 				await seatB2.click();
 			}
 			await expect(seatB2).toHaveAttribute('aria-pressed', 'true', { timeout: 5_000 });
-			await expect(picker.getByText('1 / 1 selected')).toBeVisible({ timeout: 5_000 });
+			// Denominator is the tier's max_tickets_per_user cap (4), not the held
+			// count — #853 final-review fix (self-referential chip).
+			await expect(picker.getByText('1 / 4 selected')).toBeVisible({ timeout: 5_000 });
 		}).toPass({ timeout: 60_000 });
 		await expect(async () => {
 			if ((await seatB3.getAttribute('aria-pressed')) !== 'true') {
 				await seatB3.click();
 			}
 			await expect(seatB3).toHaveAttribute('aria-pressed', 'true', { timeout: 5_000 });
-			await expect(picker.getByText('2 / 2 selected')).toBeVisible({ timeout: 5_000 });
+			await expect(picker.getByText('2 / 4 selected')).toBeVisible({ timeout: 5_000 });
 		}).toPass({ timeout: 60_000 });
 
 		// Reload WITHOUT clicking Done (the cart never learned about these
@@ -310,7 +314,7 @@ test.describe('J6 seat selection @p2', () => {
 			'aria-pressed',
 			'true'
 		);
-		await expect(picker.getByText('2 / 2 selected')).toBeVisible();
+		await expect(picker.getByText('2 / 4 selected')).toBeVisible();
 
 		await context.close();
 	});

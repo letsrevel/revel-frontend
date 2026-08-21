@@ -532,4 +532,114 @@ test.describe('J6 map-first venue overview @p2', () => {
 			await context.close();
 		}
 	});
+
+	// #853 final-review CRITICAL fix 1 regression: `VenueOverviewMap` used to
+	// adopt the buyer's server-wide `my_holds` into its OWN transient selection
+	// and release EVERYTHING (`releaseAll`) on an unhandled close — including a
+	// cart group's holds picked earlier via `SeatPickerDialog`, in the SAME
+	// sector the overview also exposes for direct seat selection. A buyer who
+	// picks seats, then opens the overview just to browse, must be able to
+	// close it without Continue and still have their cart hold (and its
+	// countdown) intact — proven here by completing the purchase afterward.
+	test('picker pick survives a browse-and-close of the venue overview, then Buy succeeds', async ({
+		browser
+	}) => {
+		test.setTimeout(180_000);
+
+		const owner = await ApiClient.login(PERSONAS.owner.email, PERSONAS.owner.password);
+		const venue = await owner.post<{ id: string }>(
+			'/api/organization-admin/revel-events-collective/venues',
+			{ name: uniqueName('Protect Venue') }
+		);
+		const sector = await owner.post<{ id: string }>(
+			`/api/organization-admin/revel-events-collective/venues/${venue.id}/sectors`,
+			{
+				name: 'Protected Stalls',
+				kind: 'seated',
+				seats: [
+					{ label: 'A1', row: 'A', number: 1 },
+					{ label: 'A2', row: 'A', number: 2 }
+				]
+			}
+		);
+		const [event, buyer] = await Promise.all([
+			createTicketedEvent({
+				freeTier: false,
+				event: { venue_id: venue.id, require_ticket_names: false }
+			}),
+			createVerifiedUser('OverviewProtect')
+		]);
+		await deleteDefaultTier(event.id);
+		const tier = await createTicketTier(event.id, {
+			name: 'Protect Seats',
+			payment_method: 'offline',
+			price: '20.00',
+			seat_assignment_mode: 'user_choice',
+			venue_id: venue.id,
+			sector_id: sector.id,
+			max_tickets_per_user: 4
+		});
+
+		const context = await browser.newContext();
+		await authenticateContext(context, buyer);
+		const page = await context.newPage();
+		try {
+			await gotoHydrated(page, event.path);
+			await waitForClientAuth(page);
+
+			// Pick A1 via the tier card's "Pick seats…" CTA (SeatPickerDialog) —
+			// a first-pick session, no cart group exists yet.
+			const tierCard = tierCardLocator(page, tier.name);
+			const picker = page.getByTestId('seat-picker-dialog');
+			await tierCard.getByRole('button', { name: 'Pick seats…', exact: true }).click();
+			await expect(picker).toBeVisible({ timeout: 8_000 });
+
+			const pickerSeatA1 = picker.getByRole('button', { name: /^Seat A1(,|$)/ });
+			await expect(async () => {
+				if ((await pickerSeatA1.getAttribute('aria-pressed')) !== 'true') {
+					await pickerSeatA1.click();
+				}
+				await expect(pickerSeatA1).toHaveAttribute('aria-pressed', 'true', { timeout: 5_000 });
+			}).toPass({ timeout: 60_000 });
+			await picker.getByRole('button', { name: 'Done', exact: true }).click();
+			await expect(picker).toBeHidden();
+
+			// The cart group + its countdown are live.
+			await expect(tierCard.getByText('1 seat · edit')).toBeVisible();
+			const summaryBar = page.getByTestId('cart-summary-bar');
+			await expect(summaryBar).toContainText('Seats held');
+
+			// Open the overview just to browse. "Protected Stalls" is sold by
+			// exactly this ONE purchasable user_choice tier, so it renders as a
+			// directly seat-selectable sector — the SAME sector the picker just
+			// held A1 in.
+			const overview = page.getByRole('dialog', { name: 'Seating map' });
+			const openMap = page.getByRole('button', { name: 'View seating map', exact: true });
+			await expect(async () => {
+				if (await overview.isVisible()) return;
+				await openMap.click();
+				await expect(overview).toBeVisible({ timeout: 8_000 });
+			}).toPass({ timeout: 60_000 });
+			await expect(overview.getByRole('button', { name: /^Seat A1(,|$)/ })).toBeVisible({
+				timeout: 15_000
+			});
+
+			// Close WITHOUT Continue. Before the fix, the map's teardown effect
+			// called `controller.releaseAll()` here, wiping the cart's holds too.
+			await page.keyboard.press('Escape');
+			await expect(overview).toBeHidden();
+
+			// The cart's hold survived the browse-and-close: countdown and badge
+			// both still present.
+			await expect(summaryBar).toContainText('Seats held');
+			await expect(tierCard.getByText('1 seat · edit')).toBeVisible();
+
+			// Buy proves the server-side hold is genuinely still alive — a wiped
+			// hold would fail the purchase instead of completing it.
+			await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+			await expect(page.getByText(/reserved/i)).toBeVisible({ timeout: 10_000 });
+		} finally {
+			await context.close();
+		}
+	});
 });

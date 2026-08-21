@@ -52,6 +52,26 @@ export class CartSeatHoldRegistry {
 	}
 
 	/**
+	 * Union of `myHolds` across every registered controller EXCEPT
+	 * `excludeTierId` (#853 final-review fix 5). A sector can legally be sold
+	 * by both a `user_choice` tier and a `best_available` tier — their
+	 * controllers share the identity-wide `['seating-availability', eventId]`
+	 * cache, so `availability.my_holds` mixes both tiers' holds together. A
+	 * `user_choice` group's adopt effect must filter its candidate seat ids
+	 * against this set BEFORE seeding, or it will happily claim the
+	 * `best_available` group's already-held block as its own.
+	 */
+	otherHolds(excludeTierId: string): Set<string> {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- local lookup set built and consumed synchronously by the caller, never mutated afterwards
+		const ids = new Set<string>();
+		for (const [tierId, controller] of this.#controllers) {
+			if (tierId === excludeTierId) continue;
+			for (const id of controller.myHolds) ids.add(id);
+		}
+		return ids;
+	}
+
+	/**
 	 * Earliest `my_holds_expire_at` across every registered controller's
 	 * availability data — event-wide in practice (every controller for this
 	 * event shares the same query-cache entry), but computed defensively as a

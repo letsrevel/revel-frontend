@@ -9504,6 +9504,7 @@
 		"seatsHeld": "Asientos reservados",
 		"holdsExpired": "Tus asientos reservados han caducado — vuelve a seleccionarlos.",
 		"pickSeatsTitle": "Elegir asientos — {tierName}",
+		"pickSeatsDescription": "Toca los asientos en el mapa para reservarlos para esta entrada.",
 		"pickSeats": "Elegir asientos…",
 		"seatsPicked": [
 			{

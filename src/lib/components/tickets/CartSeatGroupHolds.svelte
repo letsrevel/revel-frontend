@@ -120,7 +120,18 @@
 		if (!chart || !availability) return;
 		if (!seeded) {
 			seeded = true;
-			controller.seedFromAvailability(validSeatIdsFor(chart));
+			// Same-sector cross-adoption (#853 final-review fix 5): a sector can
+			// be legally sold by BOTH a user_choice tier and a best_available
+			// tier. Both controllers' availability queries share the SAME
+			// identity-wide `['seating-availability', eventId]` cache entry, so
+			// `availability.my_holds` mixes holds from every tier the buyer has
+			// touched — seeding straight off the sector's seat ids would happily
+			// adopt the best_available group's already-held block as this
+			// group's own seats. Excluding every OTHER registered controller's
+			// current holds keeps each group's adoption in its own lane.
+			const validIds = validSeatIdsFor(chart);
+			for (const id of registry.otherHolds(tier.id)) validIds.delete(id);
+			controller.seedFromAvailability(validIds);
 			return;
 		}
 		controller.adoptServerHolds();

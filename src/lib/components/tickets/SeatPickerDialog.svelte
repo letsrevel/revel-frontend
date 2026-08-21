@@ -33,6 +33,7 @@
 		DialogContent,
 		DialogHeader,
 		DialogTitle,
+		DialogDescription,
 		DialogFooter
 	} from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
@@ -67,6 +68,13 @@
 	// the teardown release below is skipped — the seats now belong to the
 	// cart group, not this transient controller.
 	let handedOff = false;
+
+	// Captured once, at open time (#853 final-review fix 2): whether this
+	// session is EDITING an already-picked tier (a cart group exists) vs. a
+	// FIRST pick (no group yet). An edit-session close without Done must not
+	// release the group's existing holds — see onDestroy below.
+	// svelte-ignore state_referenced_locally
+	const wasEditSession = cart.groupFor(tier.id) !== undefined;
 
 	// Declared ahead of `options` (explicit type) so `getQuantity` can close
 	// over it without a circular type-inference error — only ever CALLED after
@@ -125,6 +133,15 @@
 
 	onDestroy(() => {
 		if (handedOff) return;
+		if (wasEditSession) {
+			// Minimal fix per controller ruling: any close during an EDIT
+			// session is treated as Done — releasing here would strip seats
+			// out of an existing cart group behind the buyer's back.
+			cart.setSeatIds(tier, transient.myHolds);
+			return;
+		}
+		// First-pick session with no group yet: abandoning the dialog releases
+		// whatever this transient controller is still holding.
 		if (transient.myHolds.length === 0) return;
 		void transient.release(transient.myHolds);
 	});
@@ -151,6 +168,7 @@
 			<DialogTitle class="text-3xl font-black leading-[1.12]">
 				{m['cart.pickSeatsTitle']({ tierName: tier.name })}
 			</DialogTitle>
+			<DialogDescription>{m['cart.pickSeatsDescription']()}</DialogDescription>
 		</DialogHeader>
 
 		<div class="min-h-0 flex-1 overflow-y-auto py-2">
@@ -159,7 +177,6 @@
 				controller={transient}
 				tierVenue={tier.venue ?? null}
 				tierSector={tier.sector ?? null}
-				quantity={transient.myHolds.length}
 				maxQuantity={maxSeats}
 				isProcessing={false}
 				seatSelectionError=""

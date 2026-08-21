@@ -9504,6 +9504,7 @@
 		"seatsHeld": "Plätze reserviert",
 		"holdsExpired": "Deine reservierten Plätze sind abgelaufen — bitte wähle sie erneut aus.",
 		"pickSeatsTitle": "Plätze wählen — {tierName}",
+		"pickSeatsDescription": "Tippe auf Plätze in der Karte, um sie für dieses Ticket zu reservieren.",
 		"pickSeats": "Plätze wählen…",
 		"seatsPicked": [
 			{

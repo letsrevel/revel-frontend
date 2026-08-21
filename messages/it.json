@@ -9504,6 +9504,7 @@
 		"seatsHeld": "Posti riservati",
 		"holdsExpired": "I tuoi posti riservati sono scaduti — selezionali di nuovo.",
 		"pickSeatsTitle": "Scegli i posti — {tierName}",
+		"pickSeatsDescription": "Tocca i posti sulla mappa per riservarli per questo biglietto.",
 		"pickSeats": "Scegli i posti…",
 		"seatsPicked": [
 			{
