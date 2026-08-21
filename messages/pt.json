@@ -9500,7 +9500,23 @@
 			}
 		],
 		"summaryRegion": "Resumo do carrinho",
-		"discountLink": "Código de desconto?"
+		"discountLink": "Código de desconto?",
+		"seatsHeld": "Lugares reservados",
+		"holdsExpired": "Os teus lugares reservados expiraram — volta a selecioná-los.",
+		"pickSeatsTitle": "Escolher lugares — {tierName}",
+		"pickSeatsDescription": "Toca nos lugares no mapa para os reservar para este bilhete.",
+		"pickSeats": "Escolher lugares…",
+		"seatsPicked": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} lugar · editar",
+					"countPlural=*": "{count} lugares · editar"
+				}
+			}
+		],
+		"seatPickerDone": "Concluído"
 	},
 	"cartSheet": {
 		"title": "Pagamento",

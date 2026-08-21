@@ -83,12 +83,13 @@ export function writeSeatMapScopePref(scope: SeatMapScope): void {
 
 /**
  * Tier-list map preference: once the buyer opens the seating map from the
- * tier modal, subsequent tier-modal opens this session auto-open the overview
- * (fired once per modal open — the list stays reachable by closing it).
+ * inline tier list, the event page auto-opens the venue overview on mount for
+ * the rest of the session (see the page's onMount) — the tier list stays
+ * reachable by closing the overview.
  */
 export const TIER_MAP_PREF_KEY = 'revel:tier-map-pref';
 
-/** Whether the buyer chose the map from the tier modal this session (SSR-safe). */
+/** Whether the buyer chose the map this session (SSR-safe). */
 export function readTierMapPref(): boolean {
 	if (typeof window === 'undefined') return false;
 	try {

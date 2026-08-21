@@ -221,6 +221,22 @@ export function createCartCheckoutController(deps: CartCheckoutDeps) {
 		checkoutCart: async (params: CartCheckoutParams) => {
 			await checkoutCartMutation.mutateAsync(params);
 		},
+		/**
+		 * Pure peek: would `checkoutCart(params)` RESUME a held reservation
+		 * instead of reserving afresh? Rebuilds the fingerprint the exact same
+		 * way the mutation does (`JSON.stringify(params)` — the two must never
+		 * drift) and forwards to `reservationRetry.wouldResume`, which makes no
+		 * network call and never consumes the held handle.
+		 *
+		 * Callers (the confirm-time best-available hold step) use this to skip
+		 * re-holding seats: a resumed reservation already owns its holds from
+		 * the original reserve call, so holding again would just release and
+		 * reacquire the same block for nothing.
+		 */
+		wouldResume: (params: CartCheckoutParams): boolean => {
+			const fingerprint = JSON.stringify(params); // must match mutationFn's fingerprint exactly
+			return reservationRetry.wouldResume(fingerprint);
+		},
 		get isPending() {
 			return checkoutCartMutation.isPending;
 		}

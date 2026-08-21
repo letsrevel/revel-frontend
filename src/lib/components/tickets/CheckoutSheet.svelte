@@ -18,11 +18,11 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { AlertCircle, ChevronDown, Loader2, Tag } from '@lucide/svelte';
-	import GuestNameInputs from './GuestNameInputs.svelte';
-	import PwycInput from './PwycInput.svelte';
+	import CheckoutSheetGroup from './CheckoutSheetGroup.svelte';
 	import PurchaseErrorAlert from './PurchaseErrorAlert.svelte';
 	import CheckoutBillingSection from './CheckoutBillingSection.svelte';
 	import type { EventCart, CartGroup } from './cart.svelte';
+	import type { CartSeatHoldRegistry } from './cart-seat-registry.svelte';
 	import {
 		discountApplicable,
 		discountStaysApplied,
@@ -30,16 +30,15 @@
 		validateCartDiscount,
 		type CartDiscountResult
 	} from './cart-discount';
-	import { cartTotal, cartTotalArgs, checkoutTotal } from './checkout-total';
-	import {
-		pwycBounds,
-		pwycErrorMessage,
-		pwycSuggestions,
-		validatePwycAmount
-	} from './pwyc-validation';
+	import { cartTotal, cartTotalArgs } from './checkout-total';
+	import { pwycBounds, pwycErrorMessage, validatePwycAmount } from './pwyc-validation';
 	import { sheetValidationError } from './checkout-sheet-validation';
 	import { formatMoney } from '$lib/utils/format';
-	import type { BuyerBillingInfoSchema, VatPreviewItemSchema } from '$lib/api/generated/types.gen';
+	import type {
+		BuyerBillingInfoSchema,
+		VatPreviewItemSchema,
+		VenueChartSchema
+	} from '$lib/api/generated/types.gen';
 
 	interface Props {
 		open: boolean;
@@ -56,6 +55,13 @@
 			discountCode: string;
 			billingInfo: BuyerBillingInfoSchema | null;
 		}) => Promise<void>;
+		/** Venue chart for seated groups' totals (#853 PR 3) — from the page's
+		 * seat-hold registry; null/omitted while no user_choice controller has
+		 * loaded one yet (seated totals stay unresolved, same as before). */
+		chart?: VenueChartSchema | null;
+		/** Cart-lifetime seat-hold controller registry (#853 PR 3, Task 5):
+		 * threaded down to each `CheckoutSheetGroup` for its zone availability. */
+		registry: CartSeatHoldRegistry;
 	}
 
 	let {
@@ -69,7 +75,9 @@
 		initialDiscountCode = '',
 		isProcessing,
 		purchaseError,
-		onConfirm
+		onConfirm,
+		chart = null,
+		registry
 	}: Props = $props();
 
 	// Discount: sheet-local input/results. Only the APPLIED code string
@@ -165,6 +173,7 @@
 					tier: group.tier,
 					quantity: group.quantity,
 					seatIds: group.seatIds,
+					chart,
 					pwycAmount: group.pwycAmount,
 					priceCategoryId: group.priceCategoryId,
 					discountedPrice: discountResult?.byTier.get(group.tier.id)?.discounted_price ?? null
@@ -180,32 +189,10 @@
 		return m['cartSheet.claim']();
 	});
 
-	function guestNamesFor(group: CartGroup): string[] {
-		return Array.from({ length: group.quantity }, (_, index) => group.guestNames[index] ?? '');
-	}
-
-	// Live inline feedback for the amount field only — below-min/above-max/
-	// non-numeric entries show as the buyer types. The "empty" case is
-	// suppressed here: an untouched field isn't an error to nag about inline,
-	// the disabled button + footer hint already cover it.
-	function groupPwycError(group: CartGroup): string {
-		const { minAmount, maxAmount } = pwycBounds(group.tier);
-		const validation = validatePwycAmount(group.pwycAmount ?? '', minAmount, maxAmount);
-		if (validation.valid || validation.error === 'empty') return '';
-		return pwycErrorMessage(validation.error, group.tier.currency, minAmount, maxAmount);
-	}
-
-	function groupTotal(group: CartGroup): string | null {
-		return checkoutTotal(
-			cartTotalArgs({
-				tier: group.tier,
-				quantity: group.quantity,
-				seatIds: group.seatIds,
-				pwycAmount: group.pwycAmount,
-				priceCategoryId: group.priceCategoryId,
-				discountedPrice: discountResult?.byTier.get(group.tier.id)?.discounted_price ?? null
-			})
-		);
+	/** This group's per-ticket discounted price, when a discount is applied —
+	 * threaded down to `CheckoutSheetGroup` for its own total computation. */
+	function discountedPriceFor(group: CartGroup): string | null {
+		return discountResult?.byTier.get(group.tier.id)?.discounted_price ?? null;
 	}
 
 	async function handleConfirm() {
@@ -216,13 +203,6 @@
 			billingInfo: billingSection?.getBillingInfo() ?? null
 		});
 	}
-
-	// GuestNameInputs' onClearError exists for callers with real per-field,
-	// submit-triggered error state (e.g. TicketConfirmationDialog). This sheet
-	// has none — the disabled button + footer hint is the whole submit gate —
-	// so there's nothing to clear, and importantly nothing shared across groups.
-	// eslint-disable-next-line @typescript-eslint/no-empty-function
-	function noop(): void {}
 
 	// Same guard as the (disabled) confirm button: Enter in a PWYC field must
 	// not bypass it and submit while some group is still invalid.
@@ -256,51 +236,17 @@
 
 		<div class="min-h-0 flex-1 space-y-4 overflow-y-auto py-2">
 			{#each cart.groups as group (group.tier.id)}
-				<div class="space-y-3 rounded-[1.25rem] border-2 border-border bg-card p-4 shadow-poster">
-					<div class="flex items-center justify-between gap-3">
-						<p class="font-bold">
-							{m['cartSheet.groupTickets']({ tierName: group.tier.name, count: group.quantity })}
-						</p>
-						{#if !isFree}
-							<p class="text-sm font-semibold text-primary">
-								{formatMoney(groupTotal(group), group.tier.currency)}
-							</p>
-						{/if}
-					</div>
-
-					{#if requireTicketNames}
-						<!-- No per-field inline alert here: the disabled confirm button +
-						     footer hint (below) is the shipped submit gate. -->
-						<GuestNameInputs
-							guestNames={guestNamesFor(group)}
-							idPrefix={group.tier.id}
-							{isProcessing}
-							guestNameError=""
-							onUpdateName={(index, value) => cart.setGuestName(group.tier.id, index, value)}
-							onClearError={noop}
-						/>
-					{/if}
-
-					{#if group.tier.price_type === 'pwyc'}
-						{@const bounds = pwycBounds(group.tier)}
-						<!-- No separate "Choose your amount" heading here: PwycInput's own
-						     "Payment Amount" <Label> already names this control — stacking
-						     cartSheet.pwycHeading directly above it would say the same thing
-						     twice (flagged in Task 5's report as a call this task must make). -->
-						<PwycInput
-							currency={group.tier.currency}
-							idPrefix={group.tier.id}
-							minAmount={bounds.minAmount}
-							maxAmount={bounds.maxAmount}
-							pwycAmount={group.pwycAmount ?? ''}
-							pwycError={groupPwycError(group)}
-							{isProcessing}
-							suggestions={pwycSuggestions(bounds.minAmount, bounds.maxAmount)}
-							onAmountChange={(value) => cart.setPwycAmount(group.tier.id, value)}
-							onKeydown={handlePwycKeydown}
-						/>
-					{/if}
-				</div>
+				<CheckoutSheetGroup
+					{group}
+					{cart}
+					{requireTicketNames}
+					{isProcessing}
+					{isFree}
+					{chart}
+					discountedPrice={discountedPriceFor(group)}
+					{registry}
+					onPwycKeydown={handlePwycKeydown}
+				/>
 			{/each}
 
 			<!-- Discount code (cart-wide, fans out over every applicable group) -->
@@ -422,13 +368,15 @@
 					<AlertCircle class="mr-1 inline-block h-4 w-4" aria-hidden="true" />
 					{#if validationError === 'names'}
 						{m['cartSheet.nameRequired']()}
-					{:else if firstInvalidPwyc}
+					{:else if validationError === 'pwyc' && firstInvalidPwyc}
 						{pwycErrorMessage(
 							firstInvalidPwyc.validation.error,
 							firstInvalidPwyc.group.tier.currency,
 							firstInvalidPwyc.bounds.minAmount,
 							firstInvalidPwyc.bounds.maxAmount
 						)}
+					{:else if validationError === 'zone'}
+						{m['seatZones.selectHint']()}
 					{/if}
 				</p>
 			{/if}

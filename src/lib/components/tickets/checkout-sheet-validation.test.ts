@@ -123,4 +123,89 @@ describe('sheetValidationError', () => {
 		});
 		expect(sheetValidationError([group], false)).toBeNull();
 	});
+
+	// #853 PR 3: a mapped best-available tier (non-empty seat_pricing.categories)
+	// is a mandatory zone pick — the backend has no default price_category_id.
+	it('returns "zone" when a mapped best-available group has no priceCategoryId', () => {
+		const group = makeGroup({
+			tier: makeTier({
+				seat_assignment_mode: 'best_available',
+				seat_pricing: { categories: [{ id: 'gold', name: 'Gold', color: null, price: '10.00' }] }
+			}),
+			priceCategoryId: null
+		});
+		expect(sheetValidationError([group], false)).toBe('zone');
+	});
+
+	it('returns null when a mapped best-available group has a priceCategoryId set', () => {
+		const group = makeGroup({
+			tier: makeTier({
+				seat_assignment_mode: 'best_available',
+				seat_pricing: { categories: [{ id: 'gold', name: 'Gold', color: null, price: '10.00' }] }
+			}),
+			priceCategoryId: 'gold'
+		});
+		expect(sheetValidationError([group], false)).toBeNull();
+	});
+
+	it('does not require a zone for an UNMAPPED best-available group (empty seat_pricing)', () => {
+		const group = makeGroup({
+			tier: makeTier({ seat_assignment_mode: 'best_available', seat_pricing: null }),
+			priceCategoryId: null
+		});
+		expect(sheetValidationError([group], false)).toBeNull();
+	});
+
+	it('does not require a zone for a non-best-available group even with priceCategoryId null', () => {
+		const group = makeGroup({
+			tier: makeTier({ seat_assignment_mode: 'none' }),
+			priceCategoryId: null
+		});
+		expect(sheetValidationError([group], false)).toBeNull();
+	});
+
+	it('returns "names" before "zone" within the same group (names checked first)', () => {
+		const group = makeGroup({
+			tier: makeTier({
+				seat_assignment_mode: 'best_available',
+				seat_pricing: { categories: [{ id: 'gold', name: 'Gold', color: null, price: '10.00' }] }
+			}),
+			quantity: 1,
+			guestNames: [''],
+			priceCategoryId: null
+		});
+		expect(sheetValidationError([group], true)).toBe('names');
+	});
+
+	it('returns "pwyc" before "zone" within the same group (pwyc checked before zone)', () => {
+		const group = makeGroup({
+			tier: makeTier({
+				price_type: 'pwyc',
+				seat_assignment_mode: 'best_available',
+				seat_pricing: { categories: [{ id: 'gold', name: 'Gold', color: null, price: '10.00' }] }
+			}),
+			pwycAmount: null,
+			priceCategoryId: null
+		});
+		expect(sheetValidationError([group], false)).toBe('pwyc');
+	});
+
+	it('returns "zone" from an earlier group before a later group\'s "names" failure', () => {
+		const zoneGroup = makeGroup({
+			tier: makeTier({
+				id: 'zone-tier',
+				seat_assignment_mode: 'best_available',
+				seat_pricing: { categories: [{ id: 'gold', name: 'Gold', color: null, price: '10.00' }] }
+			}),
+			quantity: 1,
+			guestNames: ['Alice'],
+			priceCategoryId: null
+		});
+		const namesGroup = makeGroup({
+			tier: makeTier({ id: 'named-tier' }),
+			quantity: 1,
+			guestNames: ['']
+		});
+		expect(sheetValidationError([zoneGroup, namesGroup], true)).toBe('zone');
+	});
 });

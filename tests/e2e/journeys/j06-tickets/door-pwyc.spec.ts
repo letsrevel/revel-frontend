@@ -12,9 +12,20 @@ import type { Browser, Locator, Page } from '@playwright/test';
 // J6.4/J6.5 (USER_JOURNEYS.md) — at-the-door and pay-what-you-can tiers:
 // - at_the_door checkout creates an immediately ACTIVE ticket (payment is
 //   collected on arrival; no staff confirmation gate, unlike offline).
-// - PWYC enforces its min/max range in the confirmation dialog and carries
+// - PWYC enforces its min/max range in the checkout sheet and carries
 //   the chosen amount; exercised on BOTH manual payment methods —
 //   at_the_door (→ ACTIVE) and offline (→ PENDING + instructions).
+//
+// #853 rewrite (wave 2, task 11 blast-radius fix): outside every prior wave's
+// assigned file list, structurally broken by the `TicketTierModal`/
+// `TicketConfirmationDialog` deletion until the full matrix gate caught it
+// here (see free-tier.spec.ts's header for the shared rationale). Both
+// payment methods are `quickBuyEligible` — the inline stepper replaces the
+// tier dialog, and a PWYC tier always forces the checkout sheet open
+// (`EventCart.needsSheet` — pwyc is unconditional, unlike `require_ticket_names`).
+// The min/max copy also moved: the sheet's inline+footer validation both use
+// `pwycErrorMessage` ("Minimum/Maximum amount is {amount}"), not the old
+// dialog's "Amount must be at least/cannot exceed" hint text.
 //
 // Isolation: each test API-arranges its own event + tier + throwaway buyer.
 
@@ -28,24 +39,41 @@ async function openBuyerPage(browser: Browser, path: string) {
 	return { context, page };
 }
 
-// Reserve-flow idempotent loop (same shape as free-tier.spec.ts): clicks
-// during dialog re-renders are occasionally dropped, so retry from whatever
-// state the UI is in. `beforeConfirm` runs whenever the confirm dialog is
-// open (PWYC amount fill — re-runs harmlessly on retries).
-async function reserveTicket(page: Page, beforeConfirm?: (dialog: Locator) => Promise<void>) {
-	const tierDialog = page.getByRole('dialog', { name: 'Select Your Ticket' });
-	const confirmDialog = page.getByRole('dialog', { name: 'Reserve Ticket' });
+/**
+ * Bump `tierName`'s inline stepper to 1, open the sheet via the cart summary
+ * bar, run `beforeConfirm` (PWYC amount fill — re-runs harmlessly on
+ * retries), then Reserve. Idempotent loop throughout: clicks during
+ * rerenders are occasionally dropped, so retry from whatever state the UI is
+ * in.
+ */
+async function reserveTicket(
+	page: Page,
+	tierName: string,
+	beforeConfirm?: (sheet: Locator) => Promise<void>
+) {
+	const stepper = page.getByRole('group', { name: `Quantity for ${tierName}` });
+	await expect(stepper).toBeVisible({ timeout: 15_000 });
+	const addButton = stepper.getByRole('button', { name: `Add one ${tierName}` });
+	await expect(async () => {
+		if ((await stepper.locator('span[aria-live="polite"]').textContent()) !== '0') return;
+		await addButton.click();
+		await expect(stepper.locator('span[aria-live="polite"]')).toHaveText('1', { timeout: 5_000 });
+	}).toPass({ timeout: 30_000 });
+
+	const summaryBar = page.getByTestId('cart-summary-bar');
+	const sheet = page.getByRole('dialog', { name: 'Checkout' });
 	const success = page.getByRole('dialog', { name: 'Your Ticket', exact: true });
 	await expect(async () => {
 		if (await success.isVisible()) return;
-		if (!(await confirmDialog.isVisible())) {
-			if (!(await tierDialog.isVisible())) {
-				await page.getByRole('button', { name: 'Get Tickets', exact: true }).click();
-			}
-			await tierDialog.getByRole('button', { name: 'Reserve Ticket' }).click();
+		if (!(await sheet.isVisible())) {
+			await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+			await expect(sheet).toBeVisible({ timeout: 8_000 });
 		}
-		await beforeConfirm?.(confirmDialog);
-		await confirmDialog.getByRole('button', { name: 'Reserve Ticket' }).click();
+		// Names are required by default (these events never set
+		// require_ticket_names: false) — the sheet never prefills ticket 1.
+		await sheet.getByLabel('Name for ticket 1').fill('E2E Door Buyer');
+		await beforeConfirm?.(sheet);
+		await sheet.getByRole('button', { name: 'Reserve', exact: true }).click();
 		await expect(success).toBeVisible({ timeout: 8_000 });
 	}).toPass({ timeout: 60_000 });
 	return success;
@@ -62,7 +90,7 @@ test.describe('J6 at-the-door & PWYC @p2', () => {
 		});
 
 		const { context, page } = await openBuyerPage(browser, event.path);
-		const success = await reserveTicket(page);
+		const success = await reserveTicket(page, 'At The Door');
 
 		// ACTIVE straight away — no pending-payment banner, no staff gate.
 		await expect(success.getByText('Active', { exact: true }).first()).toBeVisible();
@@ -97,26 +125,33 @@ test.describe('J6 at-the-door & PWYC @p2', () => {
 
 		const { context, page } = await openBuyerPage(browser, event.path);
 
-		// Open the confirm dialog once to exercise the range validation before
-		// completing the reservation inside the idempotent loop.
-		const tierDialog = page.getByRole('dialog', { name: 'Select Your Ticket' });
-		const confirmDialog = page.getByRole('dialog', { name: 'Reserve Ticket' });
+		// Bump the stepper and open the sheet once to exercise the range
+		// validation before completing the reservation inside the idempotent
+		// loop. A PWYC tier forces the sheet open regardless of
+		// require_ticket_names.
+		const stepper = page.getByRole('group', { name: 'Quantity for Door PWYC' });
+		await expect(stepper).toBeVisible({ timeout: 15_000 });
+		const sheet = page.getByRole('dialog', { name: 'Checkout' });
 		await expect(async () => {
-			if (await confirmDialog.isVisible()) return;
-			if (!(await tierDialog.isVisible())) {
-				await page.getByRole('button', { name: 'Get Tickets', exact: true }).click();
+			if (await sheet.isVisible()) return;
+			if ((await stepper.locator('span[aria-live="polite"]').textContent()) === '0') {
+				await stepper.getByRole('button', { name: 'Add one Door PWYC' }).click();
 			}
-			await tierDialog.getByRole('button', { name: 'Reserve Ticket' }).click();
-			await expect(confirmDialog).toBeVisible({ timeout: 8_000 });
-		}).toPass({ timeout: 60_000 });
+			const summaryBar = page.getByTestId('cart-summary-bar');
+			await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+			await expect(sheet).toBeVisible({ timeout: 8_000 });
+		}).toPass({ timeout: 30_000 });
 
-		const amount = confirmDialog.getByLabel('Payment Amount');
+		// Min/max validation uses pwycErrorMessage's copy ("Minimum/Maximum
+		// amount is {amount}"), rendered both as the field's inline alert and
+		// the sheet's footer hint.
+		const amount = sheet.getByLabel('Payment Amount');
 		await amount.fill('2');
-		await expect(confirmDialog.getByText(/Amount must be at least EUR 5\.00/)).toBeVisible();
+		await expect(sheet.getByText(/Minimum amount is EUR 5\.00/).first()).toBeVisible();
 		await amount.fill('100');
-		await expect(confirmDialog.getByText(/Amount cannot exceed EUR 50\.00/)).toBeVisible();
+		await expect(sheet.getByText(/Maximum amount is EUR 50\.00/).first()).toBeVisible();
 
-		const success = await reserveTicket(page, async (dialog) => {
+		const success = await reserveTicket(page, 'Door PWYC', async (dialog) => {
 			await dialog.getByLabel('Payment Amount').fill('12.50');
 		});
 		await expect(success.getByText('Active', { exact: true }).first()).toBeVisible();
@@ -138,7 +173,7 @@ test.describe('J6 at-the-door & PWYC @p2', () => {
 		});
 
 		const { context, page } = await openBuyerPage(browser, event.path);
-		const success = await reserveTicket(page, async (dialog) => {
+		const success = await reserveTicket(page, 'Transfer PWYC', async (dialog) => {
 			await dialog.getByLabel('Payment Amount').fill('7.50');
 		});
 

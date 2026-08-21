@@ -180,4 +180,53 @@ describe('cartTotal', () => {
 			])
 		).toBe(null);
 	});
+
+	it('threads chart into user_choice seated groups via cartTotalArgs', () => {
+		const uc = {
+			tier: {
+				payment_method: 'online',
+				price_type: 'fixed',
+				price: '20.00',
+				seat_assignment_mode: 'user_choice' as const,
+				seat_pricing: pricing
+			},
+			quantity: 1,
+			seatIds: ['a1', 'b1'],
+			chart,
+			pwycAmount: null,
+			priceCategoryId: null,
+			discountedPrice: null
+		};
+
+		// With chart provided, should resolve the real seat total (gold=55 + unpainted=20 = 75)
+		expect(cartTotal([cartTotalArgs(uc)])).toBe('75.00');
+
+		// Without chart (group.chart undefined), should yield null
+		const ucWithoutChart = { ...uc, chart: undefined };
+		expect(cartTotal([cartTotalArgs(ucWithoutChart)])).toBeNull();
+
+		// Explicitly null chart should also yield null
+		const ucNullChart = { ...uc, chart: null };
+		expect(cartTotal([cartTotalArgs(ucNullChart)])).toBeNull();
+	});
+
+	it('does not affect non-seated groups when chart is threaded', () => {
+		// Non-seated flat tier should be unaffected by chart presence
+		const flatWithChart = cartTotalArgs({
+			tier: {
+				payment_method: 'online',
+				price_type: 'fixed',
+				price: '25.00',
+				seat_assignment_mode: 'none',
+				seat_pricing: null
+			},
+			quantity: 2,
+			seatIds: [],
+			chart, // Provide chart even for non-seated
+			pwycAmount: null,
+			priceCategoryId: null,
+			discountedPrice: null
+		});
+		expect(cartTotal([flatWithChart])).toBe('50.00');
+	});
 });

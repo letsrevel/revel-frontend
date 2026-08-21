@@ -44,6 +44,18 @@
 			/** Disables both stepper buttons — set while a cart checkout is in flight. */
 			disabled: boolean;
 		};
+		/** Seat-picker entry point (#853 PR 3): present only for `user_choice`
+		 * tiers when a cart is available — replaces the stepper/CTA with a
+		 * "Pick seats…" button, plus a held-count summary once the group exists. */
+		pickSeats?: {
+			/** Seats already held for this tier's cart group (`cart.quantityFor`). */
+			heldCount: number;
+			joinBlock: JoinBlock;
+			/** Set while a cart checkout/hold round-trip is in flight — same
+			 * signal as `quickBuy.disabled` (#853 final-review bundled minor). */
+			disabled: boolean;
+			onPick: () => void;
+		};
 		onSelectTier: (tier: TierSchemaWithId) => void;
 		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 	}
@@ -59,6 +71,7 @@
 		timezone,
 		capacityDisclosed = true,
 		quickBuy,
+		pickSeats,
 		onSelectTier,
 		onGuestTierClick
 	}: Props = $props();
@@ -189,11 +202,15 @@
 		};
 	});
 
-	// Can claim free ticket
+	// Can claim free ticket. `hasTicket` is NOT a guard here (#853 regression
+	// fix): a buyer who already holds a ticket for this event can still be
+	// eligible for another of this tier — that's the buy-more case, and
+	// per-tier/per-user limits already gate it via `effectiveEligible`
+	// (`tierRemainingInfo`). `hasTicket` alone only drives the fallback badge
+	// below, for contexts with no quick-buy/seat-pick mechanism (see `actions`).
 	const canClaim = $derived(
 		hasId &&
 			isAuthenticated &&
-			!hasTicket &&
 			effectiveEligible &&
 			salesStatus.active &&
 			availabilityStatus.available &&
@@ -204,7 +221,6 @@
 	const canCheckout = $derived(
 		hasId &&
 			isAuthenticated &&
-			!hasTicket &&
 			effectiveEligible &&
 			salesStatus.active &&
 			availabilityStatus.available &&
@@ -215,7 +231,6 @@
 	const canReserve = $derived(
 		hasId &&
 			isAuthenticated &&
-			!hasTicket &&
 			effectiveEligible &&
 			salesStatus.active &&
 			availabilityStatus.available &&
@@ -289,8 +304,6 @@
 		<p class="rounded-md bg-destructive/10 px-4 py-2 text-sm font-medium text-destructive">
 			{m['tierCardAdmin.configError']()}
 		</p>
-	{:else if hasTicket}
-		<StatusBadge tone="success" size="lg" icon={Check} label={m['tierCardAdmin.youHaveTicket']()} />
 	{:else if !salesStatus.active}
 		<Button disabled class="w-full sm:w-auto">{m['tierCardAdmin.notAvailable']()}</Button>
 	{:else if !availabilityStatus.available}
@@ -334,6 +347,32 @@
 						: m['tierCardAdmin.notAvailable']()}
 			</p>
 		{/if}
+	{:else if pickSeats && (canClaim || canCheckout || canReserve)}
+		<!-- Seat picker entry point (#853 PR 3): the button stays visible (and
+		     re-openable to edit an existing pick) even when a currency/payment
+		     mix would block it — it's just DISABLED, with the same hint copy
+		     the quick-buy stepper shows for the same reason (binding ruling). -->
+		{#if pickSeats.heldCount > 0}
+			<StatusBadge
+				tone="brand"
+				size="sm"
+				label={m['cart.seatsPicked']({ count: pickSeats.heldCount })}
+			/>
+		{/if}
+		<Button
+			onclick={pickSeats.onPick}
+			disabled={!!pickSeats.joinBlock || pickSeats.disabled}
+			class="w-full sm:w-auto"
+		>
+			{m['cart.pickSeats']()}
+		</Button>
+		{#if pickSeats.joinBlock}
+			<p class="max-w-[250px] text-xs text-muted-foreground sm:text-right">
+				{pickSeats.joinBlock === 'currency'
+					? m['cart.cannotMixCurrency']()
+					: m['cart.cannotMixPayment']()}
+			</p>
+		{/if}
 	{:else if quickBuy && (canClaim || canCheckout || canReserve)}
 		{#if quickBuy.joinBlock}
 			<p class="max-w-[250px] text-xs text-muted-foreground sm:text-right">
@@ -350,6 +389,12 @@
 				disabled={quickBuy.disabled}
 			/>
 		{/if}
+	{:else if hasTicket}
+		<!-- Fallback for contexts with no quick-buy/seat-pick mechanism (guest
+		     ticket holders, no cart) — buy-more there still routes through the
+		     single-select dialog, which doesn't support re-purchase, so this is
+		     purely informational (#853 regression fix; see `canClaim` comment). -->
+		<StatusBadge tone="success" size="lg" icon={Check} label={m['tierCardAdmin.youHaveTicket']()} />
 	{:else if canClaim}
 		<Button onclick={() => onSelectTier(tier)} class="w-full sm:w-auto">
 			{m['tierCardAdmin.claimFreeTicket']()}

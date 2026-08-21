@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
 	import type { PageData } from './$types';
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
@@ -7,6 +6,8 @@
 	import EventHeader from '$lib/components/events/EventHeader.svelte';
 	import EventDetails from '$lib/components/events/EventDetails.svelte';
 	import EventActionSidebar from '$lib/components/events/EventActionSidebar.svelte';
+	import EventSeriesLinkCard from '$lib/components/events/EventSeriesLinkCard.svelte';
+	import EventTagsSection from '$lib/components/events/EventTagsSection.svelte';
 	import ActiveOfferBanner from '$lib/components/events/waitlist/ActiveOfferBanner.svelte';
 	import OrganizationInfo from '$lib/components/events/OrganizationInfo.svelte';
 	import PotluckSection from '$lib/components/events/PotluckSection.svelte';
@@ -24,7 +25,6 @@
 	import EventConfirmationBanners from '$lib/components/events/EventConfirmationBanners.svelte';
 	import { createCheckoutController } from '$lib/components/events/event-checkout-controller.svelte';
 	import { consumePostRedirectParams } from '$lib/components/events/post-redirect-params';
-	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import { SeoHead } from '$lib/seo';
 	import {
 		isTicket,
@@ -43,17 +43,22 @@
 	import { formatEventLocation } from '$lib/utils/event';
 	import { getUserRealName } from '$lib/utils/user-display';
 	import { formatEventDate } from '$lib/utils/date';
-	import { onMount } from 'svelte';
-	import * as m from '$lib/paraglide/messages.js';
+	import { onMount, tick } from 'svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { EventCart } from '$lib/components/tickets/cart.svelte';
 	import { cartTotal, cartTotalArgs } from '$lib/components/tickets/checkout-total';
 	import { discountApplicable } from '$lib/components/tickets/cart-discount';
 	import { buildCartItems, buildCartCheckoutParams } from '$lib/components/tickets/cart-payload';
 	import CartSummaryBar from '$lib/components/tickets/CartSummaryBar.svelte';
+	import CartSeatHolds from '$lib/components/tickets/CartSeatHolds.svelte';
+	import { CartSeatHoldRegistry } from '$lib/components/tickets/cart-seat-registry.svelte';
+	import SeatPickerDialog from '$lib/components/tickets/SeatPickerDialog.svelte';
 	import CheckoutSheet from '$lib/components/tickets/CheckoutSheet.svelte';
 	import { createCartCheckoutController } from '$lib/components/events/cart-checkout-controller.svelte';
 	import { defaultGuestName } from '$lib/components/tickets/purchase-items';
+	import * as cartBaHolds from '$lib/components/tickets/cart-ba-holds';
+	import { readTierMapPref, writeTierMapPref } from '$lib/components/tickets/seat-view-toggle';
+	import { toast } from 'svelte-sonner';
 
 	const { data }: { data: PageData } = $props();
 
@@ -110,10 +115,15 @@
 	// First user ticket (for backward compatibility)
 	const userTicket = $derived(userTickets.length > 0 ? userTickets[0] : null);
 
-	// Stranded-cart guard: unmounts TicketTierList but not the isEmpty-gated
-	// summary bar (no-op for cart purchases, already cleared there).
+	// Buy-more eligibility (#853 fix): same read as EventActionSidebar's canPurchaseMore.
+	const canBuyMore = $derived(
+		userStatus && isUserStatusResponse(userStatus) ? (userStatus.can_purchase_more ?? true) : true
+	);
+
+	// Stranded-cart guard, gated like the tier-list render below — `userTicket`
+	// alone cleared on EVERY status refresh, wiping a legit buy-more cart (fix 3).
 	$effect(() => {
-		if (userTicket) cart.clear();
+		if (userTicket && !canBuyMore) cart.clear();
 	});
 
 	// Get per-tier remaining tickets info for the user
@@ -146,38 +156,52 @@
 	let initialDiscountCode = $state('');
 
 	// Modal states
-	let showTicketTierModal = $state(false);
 	let showMyTicketModal = $state(false);
 	let showGuestRsvpDialog = $state(false);
 	let showGuestTicketDialog = $state(false);
 	let showVenueOverview = $state(false);
 	let selectedTierForGuest = $state<TierSchemaWithId | null>(null);
-	// The next guest dialog was opened BY a section switch: it should scroll
-	// its seating UI into view (the keyed remount lands at the top).
+	// Opened by a section switch: scroll seating into view (remount lands at top).
 	let guestFocusSeating = $state(false);
-	let preSelectedTier = $state<TierSchemaWithId | null>(null);
+	// Seat-picker entry point: the tier being picked also gates SeatPickerDialog's
+	// mount, so closing/hand-off unmounts it (destroying its transient controller).
+	let pickSeatsTier = $state<TierSchemaWithId | null>(null);
 
-	// Map-first entry point (#679): only when a purchasable tier sells a venue
-	// sector (the chart itself is fetched lazily when the dialog opens).
+	// Map-first entry point (#679): only when a purchasable tier sells a venue sector.
 	const hasSeatingMap = $derived(eventHasSeatingMap(ticketTiers, tierRemainingTickets));
-
-	// Handle modals
-	function openTicketTierModal() {
-		showTicketTierModal = true;
-	}
-
-	function closeTicketTierModal() {
-		showTicketTierModal = false;
-		preSelectedTier = null;
-	}
 
 	function openMyTicketModal() {
 		showMyTicketModal = true;
 	}
 
-	function handleSelectTier(tier: TierSchemaWithId) {
-		preSelectedTier = tier;
-		showTicketTierModal = true;
+	/** Scrolls the inline ticket-tier list into view (sidebar "Get tickets" CTA). */
+	function scrollToTicketTiers(): void {
+		document.getElementById('ticket-tiers')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+	}
+
+	/** Using the map button remembers the preference for this session (#679). */
+	function openVenueOverview(): void {
+		writeTierMapPref();
+		showVenueOverview = true;
+	}
+
+	// Routes a tier picked outside the inline steppers into the cart: held
+	// `user_choice` seats adopt straight into a group, unheld opens the picker,
+	// everything else starts the group at quantity 1 and scrolls to it.
+	function handleSelectTier(tier: TierSchemaWithId, heldSeatIds?: string[]): void {
+		if (tier.seat_assignment_mode === 'user_choice') {
+			if (heldSeatIds) {
+				cart.setSeatIds(tier, heldSeatIds);
+				// A join-block can leave the overview's held seats orphaned (#853 fix 4).
+				const block = cartBaHolds.releaseJoinBlockedHolds(cart, tier, heldSeatIds, event.id);
+				if (block) toast.error(cartBaHolds.joinBlockMessage(block));
+			} else {
+				pickSeatsTier = tier;
+			}
+			return;
+		}
+		if (cart.quantityFor(tier.id) === 0) cart.setQuantity(tier, 1);
+		scrollToTicketTiers();
 	}
 
 	// Guest dialog handlers
@@ -203,6 +227,14 @@
 		guestFocusSeating = false;
 	}
 
+	// SeatPickerDialog's `open` reads/writes through `pickSeatsTier` itself
+	// (bind:open function form): the tier being non-null IS "open", so the
+	// dialog fully unmounts on close instead of just hiding — its transient
+	// controller is constructed fresh per picking session (see SeatPickerDialog).
+	function handleSeatPickerOpenChange(open: boolean): void {
+		if (!open) pickSeatsTier = null;
+	}
+
 	async function handleGuestAttendanceSuccess() {
 		// Refresh user status to update local state
 		await refreshUserStatus();
@@ -210,14 +242,11 @@
 		queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
 	}
 
-	// Ticket checkout controller — owns purchase/resume/cancel mutations and side effects.
+	// Ticket checkout controller — pending-ticket resume/cancel only (purchasing is the cart below).
 	const {
 		refreshUserStatus,
 		resumePaymentMutation,
 		cancelReservationMutation,
-		handleClaimTicket,
-		handleCheckout,
-		hasResumableCheckout,
 		handleResumePayment,
 		handleResumePaymentFromSidebar,
 		handleCancelReservation
@@ -225,12 +254,9 @@
 		eventId: event.id,
 		queryClient,
 		getUserTickets: () => userTickets,
-		getTicketHolderDefaultName: () => ticketHolderDefaultName,
-		getRequireTicketNames: () => event.require_ticket_names,
 		setUserStatus: (status) => {
 			userStatus = status;
 		},
-		onCloseTicketTierModal: closeTicketTierModal,
 		setShowMyTicketModal: (open) => {
 			showMyTicketModal = open;
 		}
@@ -252,6 +278,14 @@
 		eventRemaining: () => eventRemaining
 	});
 
+	// Cart-lifetime seat-hold ownership (#853 PR 3): one SeatHoldController per
+	// seated group, registered here so the picker/sheet/confirm flow (later
+	// tasks) can reuse them. Mounted below via <CartSeatHolds>.
+	const seatHoldRegistry = new CartSeatHoldRegistry();
+
+	// Seat ids the cart owns — the overview must never adopt/release these (fix 1).
+	const protectedSeatIds = $derived(new Set(cart.groups.flatMap((group) => group.seatIds)));
+
 	const cartController = createCartCheckoutController({
 		eventId: event.id,
 		queryClient,
@@ -259,16 +293,36 @@
 		setShowMyTicketModal: (open) => {
 			showMyTicketModal = open;
 		},
-		onPurchaseComplete: () => cart.clear()
+		onPurchaseComplete: () => {
+			// Tickets now own the held seats — flag it BEFORE clearing so
+			// CartSeatGroupHolds' destroy handler (fired by the groups
+			// disappearing below) skips its release-on-unmount. Reset once
+			// the resulting unmounts have settled.
+			seatHoldRegistry.handedOffToCheckout = true;
+			cart.clear();
+			void tick().then(() => {
+				seatHoldRegistry.handedOffToCheckout = false;
+			});
+		}
 	});
 
-	const cartTotalDisplay = $derived(cartTotal(cart.groups.map(cartTotalArgs)));
+	// Chart threaded from the registry (shared across every registered
+	// controller for this event — see cart-seat-registry.svelte.ts): without
+	// it a seated group's total is unresolvable, which blanks the WHOLE
+	// cart's total (cartTotal returns null the moment ANY group is unknown).
+	const cartTotalDisplay = $derived(
+		cartTotal(
+			cart.groups.map((group) => cartTotalArgs({ ...group, chart: seatHoldRegistry.chart }))
+		)
+	);
 
 	// Checkout sheet (#853 PR 2): multi-tier carts and any require_ticket_names
 	// event route here for names/PWYC/discount/billing; single-tier carts on a
 	// no-names event skip it entirely (direct checkout below).
 	let showCheckoutSheet = $state(false);
 	let cartPurchaseError = $state<unknown>(null);
+	// Guards the BA-hold round-trip: cartController.isPending misses it.
+	let holdingSeats = $state(false);
 
 	// Stranded-cart guard: a cart that empties out from under an open sheet
 	// (e.g. the last held seat expiring) must close it rather than show an
@@ -290,6 +344,15 @@
 		});
 	}
 
+	// Deps for `submitCart` (cart-ba-holds.ts) — `cart` is live, so built once.
+	const cartSubmitDeps = {
+		cart,
+		registry: seatHoldRegistry,
+		controller: cartController,
+		isHolding: () => holdingSeats,
+		setHolding: (value: boolean) => (holdingSeats = value)
+	};
+
 	async function handleCartBuy() {
 		// A URL-seeded discount code needs the sheet too, even on a direct
 		// single-tier "Buy" — skipping straight to checkout would drop it.
@@ -297,14 +360,12 @@
 			showCheckoutSheet = true;
 			return;
 		}
-		try {
-			// '' / null keep the fingerprint byte-identical to PR 1's `{ items }`.
-			await cartController.checkoutCart(
-				buildCartCheckoutParams(buildCartCheckoutItems(), '', null)
-			);
-		} catch {
-			// error surfaced via controller toast
-		}
+		// '' / null keep the fingerprint byte-identical to PR 1's `{ items }`.
+		const params = buildCartCheckoutParams(buildCartCheckoutItems(), '', null);
+		// onError omitted: the controller's own toast surfaces the failure.
+		await cartBaHolds.submitCart(params, cartSubmitDeps, {
+			onHoldFailure: (message) => toast.error(message)
+		});
 	}
 
 	async function handleSheetConfirm({
@@ -314,16 +375,13 @@
 		discountCode: string;
 		billingInfo: BuyerBillingInfoSchema | null;
 	}) {
-		try {
-			await cartController.checkoutCart(
-				buildCartCheckoutParams(buildCartCheckoutItems(), discountCode, billingInfo)
-			);
-			showCheckoutSheet = false;
-		} catch (e) {
-			// Sheet stays open with the inline error; the controller's toast still
-			// fires too (accepted duplication — see task brief).
-			cartPurchaseError = e;
-		}
+		const params = buildCartCheckoutParams(buildCartCheckoutItems(), discountCode, billingInfo);
+		// Sheet stays open with the inline error either way; controller toast fires too.
+		const ok = await cartBaHolds.submitCart(params, cartSubmitDeps, {
+			onHoldFailure: (message) => (cartPurchaseError = new Error(message)),
+			onError: (e) => (cartPurchaseError = e)
+		});
+		if (ok) showCheckoutSheet = false;
 	}
 
 	// Handle payment success/cancelled redirects
@@ -362,8 +420,32 @@
 				}
 			}, 1000);
 		}
+
+		// Map-first entry point (#679): once chosen this session, land on it.
+		if (hasSeatingMap && !userTicket && readTierMapPref()) {
+			showVenueOverview = true;
+		}
 	});
 </script>
+
+{#snippet actionSidebar()}
+	<EventActionSidebar
+		{event}
+		bind:userStatus
+		isAuthenticated={data.isAuthenticated}
+		userPermissions={data.userPermissions}
+		eventTokenDetails={data.eventTokenDetails}
+		variant="card"
+		canAttendWithoutLogin={event.can_attend_without_login}
+		onGetTicketsClick={scrollToTicketTiers}
+		onShowTicketClick={openMyTicketModal}
+		onResumePayment={handleResumePaymentFromSidebar}
+		isResumingPayment={resumePaymentMutation.isPending}
+		onGuestRsvpClick={openGuestRsvpDialog}
+		onInvitationRequestSuccess={refreshUserStatus}
+		onWhitelistRequestSuccess={refreshUserStatus}
+	/>
+{/snippet}
 
 <SeoHead config={data.seo} />
 
@@ -399,22 +481,7 @@
 		<div class="container mx-auto px-6 pb-16 md:px-8">
 			<!-- Mobile Action Card (at top, prominent) -->
 			<div class="mb-8 lg:hidden">
-				<EventActionSidebar
-					{event}
-					bind:userStatus
-					isAuthenticated={data.isAuthenticated}
-					userPermissions={data.userPermissions}
-					eventTokenDetails={data.eventTokenDetails}
-					variant="card"
-					canAttendWithoutLogin={event.can_attend_without_login}
-					onGetTicketsClick={openTicketTierModal}
-					onShowTicketClick={openMyTicketModal}
-					onResumePayment={handleResumePaymentFromSidebar}
-					isResumingPayment={resumePaymentMutation.isPending}
-					onGuestRsvpClick={openGuestRsvpDialog}
-					onInvitationRequestSuccess={refreshUserStatus}
-					onWhitelistRequestSuccess={refreshUserStatus}
-				/>
+				{@render actionSidebar()}
 			</div>
 
 			<div class="grid gap-8 lg:grid-cols-3">
@@ -478,8 +545,9 @@
 						/>
 					{/if}
 
-					<!-- Ticket Tiers (if event requires tickets and user doesn't have one) -->
-					{#if event.requires_ticket && !userTicket && ticketTiers.length > 0}
+					<!-- Ticket Tiers: buy-more re-entry point (#853) — shows with no
+					     ticket, or with one if the backend still allows more. -->
+					{#if event.requires_ticket && ticketTiers.length > 0 && (!userTicket || canBuyMore)}
 						<TicketTierList
 							tiers={ticketTiers}
 							isAuthenticated={data.isAuthenticated}
@@ -496,14 +564,15 @@
 							capacityDisclosed={viewerVisibility.show_capacity}
 							onSelectTier={handleSelectTier}
 							onGuestTierClick={openGuestTicketDialog}
-							onViewSeatingMap={hasSeatingMap
-								? () => {
-										showVenueOverview = true;
+							onViewSeatingMap={hasSeatingMap ? openVenueOverview : undefined}
+							cart={data.isAuthenticated ? cart : undefined}
+							quickBuyDisabled={cartController.isPending || holdingSeats}
+							{eventRemaining}
+							onPickSeats={data.isAuthenticated
+								? (tier) => {
+										pickSeatsTier = tier;
 									}
 								: undefined}
-							cart={data.isAuthenticated ? cart : undefined}
-							quickBuyDisabled={cartController.isPending}
-							{eventRemaining}
 						/>
 					{/if}
 
@@ -533,32 +602,12 @@
 
 					<!-- Event Series (mobile only) -->
 					{#if event.event_series}
-						<section
-							aria-labelledby="series-heading-mobile"
-							class="rounded-lg border-2 bg-card shadow-poster lg:hidden"
-						>
-							<div class="border-b p-4">
-								<SectionHeader
-									volume="celebration"
-									id="series-heading-mobile"
-									title={m['eventDetails.series_heading']()}
-								/>
-							</div>
-							<a
-								href={resolve('/(public)/events/[org_slug]/series/[series_slug]', {
-									org_slug: event.organization.slug,
-									series_slug: event.event_series.slug
-								})}
-								class="block p-4 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-							>
-								<div class="font-bold">{event.event_series.name}</div>
-								{#if event.event_series.description}
-									<p class="mt-1 text-sm text-muted-foreground">
-										{event.event_series.description}
-									</p>
-								{/if}
-							</a>
-						</section>
+						<EventSeriesLinkCard
+							series={event.event_series}
+							orgSlug={event.organization.slug}
+							headingId="series-heading-mobile"
+							class="lg:hidden"
+						/>
 					{/if}
 
 					<!-- Attendee List (mobile only) -->
@@ -577,22 +626,7 @@
 				<!-- Right Column: Action Sidebar (desktop only) -->
 				<aside class="hidden lg:col-span-1 lg:block">
 					<div class="sticky top-4 space-y-6">
-						<EventActionSidebar
-							{event}
-							bind:userStatus
-							isAuthenticated={data.isAuthenticated}
-							userPermissions={data.userPermissions}
-							eventTokenDetails={data.eventTokenDetails}
-							variant="card"
-							canAttendWithoutLogin={event.can_attend_without_login}
-							onGetTicketsClick={openTicketTierModal}
-							onShowTicketClick={openMyTicketModal}
-							onResumePayment={handleResumePaymentFromSidebar}
-							isResumingPayment={resumePaymentMutation.isPending}
-							onGuestRsvpClick={openGuestRsvpDialog}
-							onInvitationRequestSuccess={refreshUserStatus}
-							onWhitelistRequestSuccess={refreshUserStatus}
-						/>
+						{@render actionSidebar()}
 
 						<!-- Organization Info (desktop only) -->
 						<OrganizationInfo
@@ -607,32 +641,11 @@
 
 						<!-- Event Series (desktop only) -->
 						{#if event.event_series}
-							<section
-								aria-labelledby="series-heading-desktop"
-								class="rounded-lg border-2 bg-card shadow-poster"
-							>
-								<div class="border-b p-4">
-									<SectionHeader
-										volume="celebration"
-										id="series-heading-desktop"
-										title={m['eventDetails.series_heading']()}
-									/>
-								</div>
-								<a
-									href={resolve('/(public)/events/[org_slug]/series/[series_slug]', {
-										org_slug: event.organization.slug,
-										series_slug: event.event_series.slug
-									})}
-									class="block p-4 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-								>
-									<div class="font-bold">{event.event_series.name}</div>
-									{#if event.event_series.description}
-										<p class="mt-1 text-sm text-muted-foreground">
-											{event.event_series.description}
-										</p>
-									{/if}
-								</a>
-							</section>
+							<EventSeriesLinkCard
+								series={event.event_series}
+								orgSlug={event.organization.slug}
+								headingId="series-heading-desktop"
+							/>
 						{/if}
 
 						<!-- Attendee List (desktop only) -->
@@ -649,49 +662,27 @@
 			</div>
 
 			<!-- Tags Section (bottom of page) -->
-			{#if event.tags && event.tags.length > 0}
-				<section
-					aria-labelledby="tags-heading"
-					class="container mx-auto border-t px-6 py-8 md:px-8"
-				>
-					<SectionHeader
-						volume="celebration"
-						id="tags-heading"
-						title={m['eventDetails.tags_heading']()}
-						class="mb-4"
-					/>
-					<!-- Tag chips: primary on the card surface with a 2px primary edge —
-				     poster stickers, not washes. The card fill is opaque, so the
-				     audited primary-vs-card pair governs (6.99:1 light / 6.27:1
-				     dark, the same pair the questionnaire option rows rest on). -->
-					<div class="flex flex-wrap gap-2">
-						{#each event.tags as tag (tag)}
-							<span
-								class="rounded-full border-2 border-primary/40 bg-card px-4 py-1.5 text-sm font-extrabold text-primary shadow-poster"
-							>
-								{tag}
-							</span>
-						{/each}
-					</div>
-				</section>
-			{/if}
+			<EventTagsSection tags={event.tags} />
 		</div>
 	</div>
 </div>
 
 {#if data.isAuthenticated && !cart.isEmpty}
+	<CartSeatHolds {cart} registry={seatHoldRegistry} eventId={event.id} />
+
 	<CartSummaryBar
 		count={cart.totalCount}
 		totalDisplay={cartTotalDisplay}
 		currency={cart.currency}
 		isFree={cart.paymentMethod === 'free'}
-		isPending={cartController.isPending}
+		isPending={cartController.isPending || holdingSeats}
 		onBuy={handleCartBuy}
 		onDiscountClick={cart.groups.some((g) => discountApplicable(g.tier))
 			? () => {
 					showCheckoutSheet = true;
 				}
 			: undefined}
+		holdExpiresAt={seatHoldRegistry.expiresAt}
 	/>
 
 	<CheckoutSheet
@@ -703,30 +694,41 @@
 		authToken={authStore.accessToken}
 		organizationSlug={event.organization.slug}
 		{initialDiscountCode}
-		isProcessing={cartController.isPending}
+		isProcessing={cartController.isPending || holdingSeats}
 		purchaseError={cartPurchaseError}
 		onConfirm={handleSheetConfirm}
+		chart={seatHoldRegistry.chart}
+		registry={seatHoldRegistry}
 	/>
 {/if}
 
-<!-- Purchase-dialog cluster (TicketTierModal, MyTicketModal, GuestRsvpDialog, VenueOverviewDialog, GuestTicketDialog) -->
+<!-- Seat-picker dialog (#853 PR 3): mounted only while a tier is being
+     picked — NOT gated on !cart.isEmpty, since the first pick happens
+     before any cart group exists. -->
+{#if pickSeatsTier}
+	{@const tier = pickSeatsTier}
+	<SeatPickerDialog
+		bind:open={() => pickSeatsTier !== null, handleSeatPickerOpenChange}
+		{tier}
+		eventId={event.id}
+		{cart}
+		registry={seatHoldRegistry}
+		maxSeats={cart.maxQuantity(tier)}
+	/>
+{/if}
+
+<!-- Purchase-dialog cluster (MyTicketModal, GuestRsvpDialog, VenueOverviewDialog, GuestTicketDialog) -->
 <EventPurchaseDialogs
 	{event}
 	{ticketTiers}
 	{tierRemainingTickets}
 	isAuthenticated={data.isAuthenticated}
-	membershipTier={data.membershipTier}
-	capacityDisclosed={viewerVisibility.show_capacity}
-	{ticketHolderDefaultName}
-	{initialDiscountCode}
 	{hasSeatingMap}
+	{protectedSeatIds}
 	{userTickets}
 	isResumingPayment={resumePaymentMutation.isPending}
 	isCancellingReservation={cancelReservationMutation.isPending}
 	{refreshUserStatus}
-	onClaimTicket={handleClaimTicket}
-	onCheckout={handleCheckout}
-	{hasResumableCheckout}
 	onResumePayment={handleResumePayment}
 	onCancelReservation={handleCancelReservation}
 	onSelectTier={handleSelectTier}
@@ -734,13 +736,10 @@
 	onGuestRsvpClose={closeGuestRsvpDialog}
 	onGuestAttendanceSuccess={handleGuestAttendanceSuccess}
 	onGuestTicketClose={closeGuestTicketDialog}
-	onTicketTierModalClose={closeTicketTierModal}
-	bind:showTicketTierModal
 	bind:showMyTicketModal
 	bind:showGuestRsvpDialog
 	bind:showGuestTicketDialog
 	bind:showVenueOverview
-	bind:preSelectedTier
 	bind:selectedTierForGuest
 	bind:guestFocusSeating
 />

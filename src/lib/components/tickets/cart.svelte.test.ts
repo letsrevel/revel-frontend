@@ -24,9 +24,11 @@ describe('quickBuyEligible', () => {
 	it('accepts pwyc and names-required tiers now (sheet handles the extra input)', () => {
 		expect(quickBuyEligible(makeTier({ price_type: 'pwyc' }))).toBe(true);
 	});
-	it('rejects seated/hidden tiers', () => {
+	it('accepts best-available seated tiers now (stepper; zone/accessible collected in the sheet)', () => {
+		expect(quickBuyEligible(makeTier({ seat_assignment_mode: 'best_available' }))).toBe(true);
+	});
+	it('rejects user_choice and hidden-payment tiers', () => {
 		expect(quickBuyEligible(makeTier({ seat_assignment_mode: 'user_choice' }))).toBe(false);
-		expect(quickBuyEligible(makeTier({ seat_assignment_mode: 'best_available' }))).toBe(false);
 		expect(quickBuyEligible(makeTier({ payment_method: 'hidden' }))).toBe(false);
 	});
 });
@@ -114,6 +116,11 @@ describe('EventCart', () => {
 			cart.setQuantity(makeTier({ price_type: 'pwyc' }), 1);
 			expect(cart.needsSheet(false)).toBe(true);
 		});
+		it('is true when a best_available group joins, even with requireTicketNames false', () => {
+			const cart = new EventCart(noLimits);
+			cart.setQuantity(makeTier({ seat_assignment_mode: 'best_available' }), 1);
+			expect(cart.needsSheet(false)).toBe(true);
+		});
 	});
 
 	describe('setGuestName', () => {
@@ -149,6 +156,100 @@ describe('EventCart', () => {
 			cart.setQuantity(tier, 1);
 			cart.setPwycAmount('does-not-exist', '9.00');
 			expect(cart.groupFor(tier.id)?.pwycAmount).toBe(null);
+		});
+	});
+
+	describe('setSeatIds', () => {
+		it('creates a user_choice group with quantity = seatIds.length', () => {
+			const cart = new EventCart(noLimits);
+			const tier = makeTier({ seat_assignment_mode: 'user_choice' });
+			cart.setSeatIds(tier, ['seat-1', 'seat-2']);
+			expect(cart.groupFor(tier.id)?.seatIds).toEqual(['seat-1', 'seat-2']);
+			expect(cart.groupFor(tier.id)?.quantity).toBe(2);
+		});
+		it('updates seatIds and quantity on an existing group', () => {
+			const cart = new EventCart(noLimits);
+			const tier = makeTier({ seat_assignment_mode: 'user_choice' });
+			cart.setSeatIds(tier, ['seat-1']);
+			cart.setSeatIds(tier, ['seat-1', 'seat-2', 'seat-3']);
+			expect(cart.groupFor(tier.id)?.seatIds).toEqual(['seat-1', 'seat-2', 'seat-3']);
+			expect(cart.groupFor(tier.id)?.quantity).toBe(3);
+		});
+		it('removes the group when seatIds becomes empty', () => {
+			const cart = new EventCart(noLimits);
+			const tier = makeTier({ seat_assignment_mode: 'user_choice' });
+			cart.setSeatIds(tier, ['seat-1']);
+			cart.setSeatIds(tier, []);
+			expect(cart.groupFor(tier.id)).toBeUndefined();
+		});
+		it('respects joinBlock when creating a group, like setQuantity', () => {
+			const cart = new EventCart(noLimits);
+			cart.setQuantity(makeTier({ currency: 'EUR', payment_method: 'online' }), 1);
+			const blocked = makeTier({ seat_assignment_mode: 'user_choice', currency: 'USD' });
+			cart.setSeatIds(blocked, ['seat-1']);
+			expect(cart.groupFor(blocked.id)).toBeUndefined();
+		});
+	});
+
+	describe('setQuantity on user_choice tiers', () => {
+		it('is a no-op on an existing user_choice group (the seat picker owns quantity)', () => {
+			const cart = new EventCart(noLimits);
+			const tier = makeTier({ seat_assignment_mode: 'user_choice' });
+			cart.setSeatIds(tier, ['seat-1', 'seat-2']);
+			cart.setQuantity(tier, 5);
+			expect(cart.quantityFor(tier.id)).toBe(2);
+		});
+		it('does not create a user_choice group', () => {
+			const cart = new EventCart(noLimits);
+			const tier = makeTier({ seat_assignment_mode: 'user_choice' });
+			cart.setQuantity(tier, 2);
+			expect(cart.groupFor(tier.id)).toBeUndefined();
+		});
+	});
+
+	describe('setZone', () => {
+		it('writes priceCategoryId on the matching group', () => {
+			const cart = new EventCart(noLimits);
+			const tier = makeTier();
+			cart.setQuantity(tier, 1);
+			cart.setZone(tier.id, 'cat-1');
+			expect(cart.groupFor(tier.id)?.priceCategoryId).toBe('cat-1');
+			cart.setZone(tier.id, null);
+			expect(cart.groupFor(tier.id)?.priceCategoryId).toBe(null);
+		});
+		it('is a no-op for an unknown tierId', () => {
+			const cart = new EventCart(noLimits);
+			cart.setZone('does-not-exist', 'cat-1');
+			expect(cart.isEmpty).toBe(true);
+		});
+	});
+
+	describe('setAccessible', () => {
+		it('writes accessibleRequired on the matching group', () => {
+			const cart = new EventCart(noLimits);
+			const tier = makeTier();
+			cart.setQuantity(tier, 1);
+			cart.setAccessible(tier.id, true);
+			expect(cart.groupFor(tier.id)?.accessibleRequired).toBe(true);
+		});
+		it('is a no-op for an unknown tierId', () => {
+			const cart = new EventCart(noLimits);
+			cart.setAccessible('does-not-exist', true);
+			expect(cart.isEmpty).toBe(true);
+		});
+	});
+
+	describe('userChoiceGroups / bestAvailableGroups', () => {
+		it('filters groups by seat_assignment_mode', () => {
+			const cart = new EventCart(noLimits);
+			const flat = makeTier();
+			const ba = makeTier({ seat_assignment_mode: 'best_available' });
+			const uc = makeTier({ seat_assignment_mode: 'user_choice' });
+			cart.setQuantity(flat, 1);
+			cart.setQuantity(ba, 1);
+			cart.setSeatIds(uc, ['seat-1']);
+			expect(cart.userChoiceGroups.map((g) => g.tier.id)).toEqual([uc.id]);
+			expect(cart.bestAvailableGroups.map((g) => g.tier.id)).toEqual([ba.id]);
 		});
 	});
 });

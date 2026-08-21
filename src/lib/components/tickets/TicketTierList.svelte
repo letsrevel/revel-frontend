@@ -49,6 +49,9 @@
 		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 		/** Map-first entry point (#679): opens the whole-venue seating overview. */
 		onViewSeatingMap?: () => void;
+		/** Seat-picker entry point (#853 PR 3): opens `SeatPickerDialog` for a
+		 * `user_choice` tier. Only wired when `cart` is also present. */
+		onPickSeats?: (tier: TierSchemaWithId) => void;
 	}
 
 	const {
@@ -71,7 +74,8 @@
 		eventRemaining = null,
 		onSelectTier,
 		onGuestTierClick,
-		onViewSeatingMap
+		onViewSeatingMap,
+		onPickSeats
 	}: Props = $props();
 
 	/**
@@ -181,6 +185,17 @@
 								joinBlock: cart.joinBlock(tier),
 								onSetQuantity: (quantity: number) => cart.setQuantity(tier, quantity),
 								disabled: quickBuyDisabled
+							}
+						: undefined}
+					pickSeats={cart &&
+					onPickSeats &&
+					tier.seat_assignment_mode === 'user_choice' &&
+					tier.payment_method !== 'hidden'
+						? {
+								heldCount: cart.quantityFor(tier.id),
+								joinBlock: cart.joinBlock(tier),
+								disabled: quickBuyDisabled,
+								onPick: () => onPickSeats(tier)
 							}
 						: undefined}
 					{onSelectTier}

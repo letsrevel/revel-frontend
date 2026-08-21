@@ -41,8 +41,16 @@
 		tierRemainingTickets?: TierRemainingTicketsSchema[];
 		/** Event-level max tickets per user (seat-selection cap fallback). */
 		eventMaxTicketsPerUser?: number | null;
-		/** Route an authenticated buyer into the tier's purchase dialog. */
-		onSelectTier: (tier: TierSchemaWithId) => void;
+		/** Seat ids already owned by the cart — threaded straight through to
+		 * `VenueOverviewMap` (see its prop doc; #853 final-review fix 1). */
+		protectedSeatIds?: ReadonlySet<string>;
+		/**
+		 * Route an authenticated buyer into the cart. `heldSeatIds`, when present,
+		 * carries seats this dialog's map already held server-side for a
+		 * `user_choice` tier's Continue action — the page adopts them straight
+		 * into a cart group instead of opening the seat picker.
+		 */
+		onSelectTier: (tier: TierSchemaWithId, heldSeatIds?: string[]) => void;
 		/** Route a guest buyer into the guest ticket dialog (same as TierCard). */
 		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 	}
@@ -55,6 +63,7 @@
 		canAttendWithoutLogin = false,
 		tierRemainingTickets,
 		eventMaxTicketsPerUser = null,
+		protectedSeatIds = new Set(),
 		onSelectTier,
 		onGuestTierClick
 	}: Props = $props();
@@ -116,13 +125,13 @@
 	}
 
 	/** Close the overview surfaces, then hand off to the page's purchase path. */
-	function route(tier: TierSchemaWithId): void {
+	function route(tier: TierSchemaWithId, heldSeatIds?: string[]): void {
 		closeChooser();
 		open = false;
 		if (!isAuthenticated && canAttendWithoutLogin) {
 			onGuestTierClick?.(tier);
 		} else {
-			onSelectTier(tier);
+			onSelectTier(tier, heldSeatIds);
 		}
 	}
 
@@ -162,6 +171,7 @@
 			{needsLogin}
 			{tierRemainingTickets}
 			{eventMaxTicketsPerUser}
+			{protectedSeatIds}
 			onSectorTarget={handleSectorSelect}
 			onContinue={route}
 		/>

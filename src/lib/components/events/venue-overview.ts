@@ -191,8 +191,7 @@ export function seatSellingTier(entry: SectorOverviewEntry): TierSchemaWithId | 
 }
 
 /**
- * Effective selection cap for a tier, mirroring the purchase dialog's
- * `effectiveMaxQuantity` fed by TicketTierModal's `getMaxQuantityForTier`:
+ * Effective selection cap for a tier, mirroring the cart's `maxQuantity`:
  * tier inventory, tier-level max per user (falling back to the event-level
  * one), and — when the my-status endpoint supplied it — the buyer's personal
  * remaining quota. Never below 1 (the overview only offers purchasable tiers).

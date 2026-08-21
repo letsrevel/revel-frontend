@@ -9500,7 +9500,23 @@
 			}
 		],
 		"summaryRegion": "Warenkorb-Übersicht",
-		"discountLink": "Rabattcode?"
+		"discountLink": "Rabattcode?",
+		"seatsHeld": "Plätze reserviert",
+		"holdsExpired": "Deine reservierten Plätze sind abgelaufen — bitte wähle sie erneut aus.",
+		"pickSeatsTitle": "Plätze wählen — {tierName}",
+		"pickSeatsDescription": "Tippe auf Plätze in der Karte, um sie für dieses Ticket zu reservieren.",
+		"pickSeats": "Plätze wählen…",
+		"seatsPicked": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} Platz · bearbeiten",
+					"countPlural=*": "{count} Plätze · bearbeiten"
+				}
+			}
+		],
+		"seatPickerDone": "Fertig"
 	},
 	"cartSheet": {
 		"title": "Kasse",

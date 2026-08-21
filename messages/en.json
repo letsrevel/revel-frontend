@@ -9500,7 +9500,23 @@
 			}
 		],
 		"summaryRegion": "Cart summary",
-		"discountLink": "Discount code?"
+		"discountLink": "Discount code?",
+		"seatsHeld": "Seats held",
+		"holdsExpired": "Your held seats expired — please pick them again.",
+		"pickSeatsTitle": "Pick seats — {tierName}",
+		"pickSeatsDescription": "Tap seats on the map to hold them for this ticket.",
+		"pickSeats": "Pick seats…",
+		"seatsPicked": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} seat · edit",
+					"countPlural=*": "{count} seats · edit"
+				}
+			}
+		],
+		"seatPickerDone": "Done"
 	},
 	"cartSheet": {
 		"title": "Checkout",

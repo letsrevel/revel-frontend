@@ -1,30 +1,24 @@
 <script lang="ts">
 	/**
-	 * The event page's purchase-dialog cluster (#853 task 7): TicketTierModal,
-	 * MyTicketModal, GuestRsvpDialog, VenueOverviewDialog, GuestTicketDialog.
-	 * Pure markup + state extraction from +page.svelte for page headroom — no
-	 * behavior change. The five `open` flags are bindable because other page
-	 * code (sidebar callbacks, the cart controller, TicketTierList's
-	 * onViewSeatingMap) writes them directly; `preSelectedTier`,
-	 * `selectedTierForGuest`, and `guestFocusSeating` are bindable because both
-	 * this component's own inline handlers (onSwitchTier, onViewSeatingMap) AND
-	 * the page's `handleSelectTier`/`openGuestTicketDialog` (still needed there
-	 * for TicketTierList's onSelectTier/onGuestTierClick) read and write them —
-	 * keeping them page-owned avoids duplicating that state in two places.
+	 * The event page's purchase-dialog cluster (#853 task 7, slimmed in task 9):
+	 * MyTicketModal, GuestRsvpDialog, VenueOverviewDialog, GuestTicketDialog. The
+	 * single-tier `TicketTierModal`/`TicketConfirmationDialog` path died with the
+	 * cart — purchasing now happens inline on the page (quick-buy steppers, the
+	 * seat picker, the checkout sheet). Pure markup + state extraction from
+	 * +page.svelte for page headroom — no behavior change. The `open` flags are
+	 * bindable because other page code (sidebar callbacks, the cart controller,
+	 * TicketTierList's onViewSeatingMap) writes them directly; `selectedTierForGuest`
+	 * and `guestFocusSeating` are bindable because both this component's own inline
+	 * handler (onSwitchTier) AND the page's `openGuestTicketDialog` (still needed
+	 * there for TicketTierList's onGuestTierClick) read and write them — keeping
+	 * them page-owned avoids duplicating that state in two places.
 	 */
 	import { useQueryClient } from '@tanstack/svelte-query';
-	import type { TierSchemaWithId, SeatingCheckoutFields } from '$lib/types/tickets';
-	import type {
-		EventDetailSchema,
-		MembershipTierSchema,
-		TierRemainingTicketsSchema,
-		TicketPurchaseItem,
-		BuyerBillingInfoSchema
-	} from '$lib/api/generated/types.gen';
+	import type { TierSchemaWithId } from '$lib/types/tickets';
+	import type { EventDetailSchema, TierRemainingTicketsSchema } from '$lib/api/generated/types.gen';
 	import type { EventTicketSchemaActual } from '$lib/utils/eligibility';
 	import { formatEventDate } from '$lib/utils/date';
 	import { formatEventLocation } from '$lib/utils/event';
-	import TicketTierModal from '$lib/components/tickets/TicketTierModal.svelte';
 	import MyTicketModal from '$lib/components/tickets/MyTicketModal.svelte';
 	import GuestRsvpDialog from './GuestRsvpDialog.svelte';
 	import GuestTicketDialog from './GuestTicketDialog.svelte';
@@ -35,57 +29,31 @@
 		ticketTiers: TierSchemaWithId[];
 		tierRemainingTickets?: TierRemainingTicketsSchema[];
 		isAuthenticated: boolean;
-		membershipTier?: MembershipTierSchema | null;
-		capacityDisclosed?: boolean;
-		ticketHolderDefaultName: string;
-		initialDiscountCode: string;
 		hasSeatingMap: boolean;
+		/** Seat ids already owned by the cart — passed to VenueOverviewDialog so
+		 * its map never adopts or releases the cart's own holds (#853
+		 * final-review fix 1). */
+		protectedSeatIds?: ReadonlySet<string>;
 		userTickets: EventTicketSchemaActual[];
 		isResumingPayment: boolean;
 		isCancellingReservation: boolean;
 		/** Refreshes `userStatus` on the page — also drives the two MyTicketModal closures below. */
 		refreshUserStatus: () => Promise<void>;
-		onClaimTicket: (
-			tierId: string,
-			tickets?: TicketPurchaseItem[],
-			discountCode?: string,
-			billingInfo?: BuyerBillingInfoSchema,
-			seating?: SeatingCheckoutFields
-		) => void;
-		onCheckout?: (
-			tierId: string,
-			isPwyc: boolean,
-			amount?: number,
-			tickets?: TicketPurchaseItem[],
-			discountCode?: string,
-			billingInfo?: BuyerBillingInfoSchema,
-			seating?: SeatingCheckoutFields
-		) => void;
-		hasResumableCheckout?: (
-			tierId: string,
-			isPwyc: boolean,
-			amount?: number,
-			tickets?: TicketPurchaseItem[],
-			discountCode?: string,
-			billingInfo?: BuyerBillingInfoSchema,
-			seating?: SeatingCheckoutFields
-		) => boolean;
 		onResumePayment?: (paymentId: string) => void;
 		onCancelReservation?: (paymentId: string) => void;
-		/** Also used by the page's TicketTierList (map §7). */
-		onSelectTier: (tier: TierSchemaWithId) => void;
+		/** Also used by the page's TicketTierList (map §7). Routes an authenticated
+		 * buyer into the cart — `heldSeatIds` carries any seats the venue overview
+		 * already held server-side for a `user_choice` tier's Continue action. */
+		onSelectTier: (tier: TierSchemaWithId, heldSeatIds?: string[]) => void;
 		/** Also used by the page's TicketTierList (map §7). */
 		onGuestTierClick?: (tier?: TierSchemaWithId) => void;
 		onGuestRsvpClose: () => void;
 		onGuestAttendanceSuccess: () => void | Promise<void>;
 		onGuestTicketClose: () => void;
-		onTicketTierModalClose: () => void;
-		showTicketTierModal: boolean;
 		showMyTicketModal: boolean;
 		showGuestRsvpDialog: boolean;
 		showGuestTicketDialog: boolean;
 		showVenueOverview: boolean;
-		preSelectedTier: TierSchemaWithId | null;
 		selectedTierForGuest: TierSchemaWithId | null;
 		guestFocusSeating: boolean;
 	}
@@ -95,18 +63,12 @@
 		ticketTiers,
 		tierRemainingTickets,
 		isAuthenticated,
-		membershipTier = null,
-		capacityDisclosed = true,
-		ticketHolderDefaultName,
-		initialDiscountCode,
 		hasSeatingMap,
+		protectedSeatIds = new Set(),
 		userTickets,
 		isResumingPayment,
 		isCancellingReservation,
 		refreshUserStatus,
-		onClaimTicket,
-		onCheckout,
-		hasResumableCheckout,
 		onResumePayment,
 		onCancelReservation,
 		onSelectTier,
@@ -114,55 +76,16 @@
 		onGuestRsvpClose,
 		onGuestAttendanceSuccess,
 		onGuestTicketClose,
-		onTicketTierModalClose,
-		showTicketTierModal = $bindable(),
 		showMyTicketModal = $bindable(),
 		showGuestRsvpDialog = $bindable(),
 		showGuestTicketDialog = $bindable(),
 		showVenueOverview = $bindable(),
-		preSelectedTier = $bindable(),
 		selectedTierForGuest = $bindable(),
 		guestFocusSeating = $bindable()
 	}: Props = $props();
 
 	const queryClient = useQueryClient();
 </script>
-
-<!-- Ticket Tier Selection Modal -->
-<TicketTierModal
-	seriesInfo={event.event_series
-		? {
-				seriesId: event.event_series.id,
-				orgSlug: event.organization.slug,
-				seriesSlug: event.event_series.slug
-			}
-		: null}
-	bind:open={showTicketTierModal}
-	tiers={ticketTiers}
-	eventId={event.id}
-	organizationSlug={event.organization.slug}
-	{isAuthenticated}
-	{membershipTier}
-	canAttendWithoutLogin={event.can_attend_without_login}
-	{tierRemainingTickets}
-	timezone={event.timezone}
-	{capacityDisclosed}
-	eventMaxTicketsPerUser={event.max_tickets_per_user}
-	userName={ticketHolderDefaultName}
-	requireTicketNames={event.require_ticket_names}
-	{preSelectedTier}
-	{initialDiscountCode}
-	onClose={onTicketTierModalClose}
-	{onClaimTicket}
-	{onCheckout}
-	{hasResumableCheckout}
-	{onGuestTierClick}
-	onViewSeatingMap={hasSeatingMap
-		? () => {
-				showVenueOverview = true;
-			}
-		: undefined}
-/>
 
 <!-- My Ticket Modal -->
 {#if userTickets.length > 0}
@@ -209,6 +132,7 @@
 		canAttendWithoutLogin={event.can_attend_without_login}
 		{tierRemainingTickets}
 		eventMaxTicketsPerUser={event.max_tickets_per_user}
+		{protectedSeatIds}
 		{onSelectTier}
 		{onGuestTierClick}
 	/>
