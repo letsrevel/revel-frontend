@@ -72,6 +72,24 @@ export class CartSeatHoldRegistry {
 	}
 
 	/**
+	 * Union of `myHolds` across EVERY registered controller, including the
+	 * caller's own tier (#853 PR 4) — unlike `otherHolds`, there's no exclusion
+	 * here: this feeds the event page's `protectedSeatIds`, which guards the
+	 * venue-overview browse-and-close flow against releasing ANY cart-held
+	 * seat. `cart.groups[].seatIds` alone misses `best_available` holds (they
+	 * only land in a group's `seatIds` after checkout confirm), so those seats
+	 * were unprotected mid-cart — this closes that PR-3-parked residual.
+	 */
+	allHolds(): string[] {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- local dedup set built and consumed synchronously by the caller, never mutated afterwards
+		const ids = new Set<string>();
+		for (const controller of this.#controllers.values()) {
+			for (const id of controller.myHolds) ids.add(id);
+		}
+		return [...ids];
+	}
+
+	/**
 	 * Earliest `my_holds_expire_at` across every registered controller's
 	 * availability data — event-wide in practice (every controller for this
 	 * event shares the same query-cache entry), but computed defensively as a

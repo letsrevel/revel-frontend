@@ -17,6 +17,7 @@
 	 * here — best-available seats aren't picked, they're assigned at confirm.
 	 */
 	import { onDestroy } from 'svelte';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import type { VenueChartSchema } from '$lib/api/generated/types.gen';
 	import type { CartGroup, EventCart } from './cart.svelte';
 	import type { CartSeatHoldRegistry } from './cart-seat-registry.svelte';
@@ -66,7 +67,11 @@
 			if (isUserChoice) return;
 			cart.setQuantity(tier, next);
 		},
-		isAuthenticated: () => true, // this host only mounts in the authed block
+		// Live now (#853 PR 4) rather than hardcoded true: this host still only
+		// mounts in the authed block (Task 5 widens that), but reading the real
+		// token here — rather than assuming — is what arms the controller's
+		// anonymous-hold sessionStorage bookkeeping once it does.
+		isAuthenticated: () => !!authStore.accessToken,
 		onConflict: (_seatIds, reason) => {
 			toast.error(holdConflictMessage(reason));
 		}

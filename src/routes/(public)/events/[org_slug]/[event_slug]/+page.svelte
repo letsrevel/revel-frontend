@@ -275,7 +275,8 @@
 	// steppers and the sticky CartSummaryBar below.
 	const cart = new EventCart({
 		remainingFor: (tierId) => tierRemainingTickets?.find((t) => t.tier_id === tierId),
-		eventRemaining: () => eventRemaining
+		eventRemaining: () => eventRemaining,
+		eventMaxTicketsPerUser: () => event.max_tickets_per_user ?? null
 	});
 
 	// Cart-lifetime seat-hold ownership (#853 PR 3): one SeatHoldController per
@@ -283,8 +284,11 @@
 	// tasks) can reuse them. Mounted below via <CartSeatHolds>.
 	const seatHoldRegistry = new CartSeatHoldRegistry();
 
-	// Seat ids the cart owns — the overview must never adopt/release these (fix 1).
-	const protectedSeatIds = $derived(new Set(cart.groups.flatMap((group) => group.seatIds)));
+	// Seat ids the cart owns (own seatIds + all live holds) — the overview
+	// must never adopt/release these (fix 1; PR 4 adds BA holds pre-confirm).
+	const protectedSeatIds = $derived(
+		new Set([...cart.groups.flatMap((group) => group.seatIds), ...seatHoldRegistry.allHolds()])
+	);
 
 	const cartController = createCartCheckoutController({
 		eventId: event.id,
@@ -356,7 +360,8 @@
 	async function handleCartBuy() {
 		// A URL-seeded discount code needs the sheet too, even on a direct
 		// single-tier "Buy" — skipping straight to checkout would drop it.
-		if (cart.needsSheet(event.require_ticket_names) || initialDiscountCode) {
+		// isGuest explicit false for now (Task 5 threads real auth state here).
+		if (cart.needsSheet(event.require_ticket_names, false) || initialDiscountCode) {
 			showCheckoutSheet = true;
 			return;
 		}

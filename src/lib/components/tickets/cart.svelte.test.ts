@@ -80,6 +80,18 @@ describe('EventCart', () => {
 		expect(cart.maxQuantity(b)).toBe(1); // 3 − 2 already in cart
 		expect(cart.maxQuantity(a)).toBe(3); // own quantity doesn't double-count
 	});
+	it('falls back to eventMaxTicketsPerUser when guest-shaped deps carry no per-tier/event-remaining info (#853 PR 4)', () => {
+		const cart = new EventCart({
+			remainingFor: () => undefined,
+			eventRemaining: () => null,
+			eventMaxTicketsPerUser: () => 3
+		});
+		expect(cart.maxQuantity(makeTier({ total_available: 10 }))).toBe(3);
+	});
+	it('an absent eventMaxTicketsPerUser dep leaves maxQuantity unchanged (optional dep)', () => {
+		const cart = new EventCart(noLimits);
+		expect(cart.maxQuantity(makeTier({ total_available: 10 }))).toBe(10);
+	});
 	it('blocks mixed currency and mixed payment method', () => {
 		const cart = new EventCart(noLimits);
 		cart.setQuantity(makeTier({ currency: 'EUR', payment_method: 'online' }), 1);
@@ -120,6 +132,16 @@ describe('EventCart', () => {
 			const cart = new EventCart(noLimits);
 			cart.setQuantity(makeTier({ seat_assignment_mode: 'best_available' }), 1);
 			expect(cart.needsSheet(false)).toBe(true);
+		});
+		it('is true for a guest with a flat group even when nothing else would force the sheet (#853 PR 4)', () => {
+			const cart = new EventCart(noLimits);
+			cart.setQuantity(makeTier(), 1);
+			expect(cart.needsSheet(false, true)).toBe(true);
+		});
+		it('isGuest defaults to false, leaving existing call sites unaffected', () => {
+			const cart = new EventCart(noLimits);
+			cart.setQuantity(makeTier(), 1);
+			expect(cart.needsSheet(false)).toBe(false);
 		});
 	});
 
