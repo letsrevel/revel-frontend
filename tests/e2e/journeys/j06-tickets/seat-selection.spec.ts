@@ -16,10 +16,23 @@ import { PERSONAS } from '../../support/personas';
 import { ApiClient } from '../../support/api';
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
+import type { Page } from '@playwright/test';
 
-// J19→J6 (USER_JOURNEYS.md) — USER_CHOICE seat selection at checkout: the
-// confirmation dialog renders the sector's seat map, an already-sold seat is
-// blocked, and the chosen seat lands on the ticket.
+// J19→J6 (USER_JOURNEYS.md) — USER_CHOICE seat selection: the seat picker
+// dialog (#853 PR 3 cart flow) renders the sector's seat map, an already-sold
+// seat is blocked, and the chosen seat lands on the ticket.
+//
+// #853 rewrite (wave 1, task 10): the legacy TicketConfirmationDialog is
+// deleted. `user_choice` tiers now render a "Pick seats…" button directly on
+// the tier card (no wrapping tier-select dialog) that opens
+// `SeatPickerDialog` (testid `seat-picker-dialog`, accessible name
+// "Pick seats — {tierName}") over the SAME seat map/list UI
+// (`SeatPickerPanel`, extracted verbatim from the old dialog). "Done" syncs
+// the picked seats into the cart (tier card then shows an "N seats · edit"
+// badge); the sticky `CartSummaryBar`'s "Buy" completes the purchase. Events
+// arrange `require_ticket_names: false` so a single-tier cart skips the
+// checkout sheet and buys directly — the sheet's own seated-group behavior is
+// best-available.spec.ts's territory.
 //
 // Seating phase 1 (#657): selection IS a server-side TTL hold — every tap is
 // a POST /seating/holds round-trip (the seat renders busy while in flight,
@@ -35,17 +48,41 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 // accessible (aria "…, accessible"), so the spec works in row B where seat
 // names are bare.
 
+function tierCardLocator(page: Page, tierName: string) {
+	// `div.bg-card`, NOT bare `.bg-card` — TicketTierList's wrapping <section>
+	// carries the class too (it's a card-styled surface holding every tier
+	// card), so a bare class filter matches BOTH the section and the one
+	// PricingCard whose heading it contains. The tag discriminates: only
+	// PricingCard's root is a <div>.
+	return page
+		.locator('div.bg-card')
+		.filter({ has: page.getByRole('heading', { name: tierName, exact: true }) });
+}
+
+/** Opens the seat picker for a `user_choice` tier via its tier-card CTA. */
+async function openPicker(page: Page, tierName: string) {
+	await tierCardLocator(page, tierName)
+		.getByRole('button', { name: 'Pick seats…', exact: true })
+		.click();
+	const picker = page.getByTestId('seat-picker-dialog');
+	await expect(picker).toBeVisible({ timeout: 8_000 });
+	return picker;
+}
+
 test.describe('J6 seat selection @p2', () => {
-	test('seat map at checkout → taken seat blocked → chosen seat on ticket', async ({ browser }) => {
+	test('seat map at purchase → taken seat blocked → chosen seat on ticket', async ({ browser }) => {
 		const hall = await createPlainConcertHall();
 		const [event, buyer, otherBuyer] = await Promise.all([
 			// The event itself needs the venue: the phase-2 chart/availability
 			// endpoints resolve it from event.venue_id, not from the tier.
-			createTicketedEvent({ freeTier: false, event: { venue_id: hall.venueId } }),
+			createTicketedEvent({
+				freeTier: false,
+				event: { venue_id: hall.venueId, require_ticket_names: false }
+			}),
 			createVerifiedUser('SeatBuyer'),
 			createVerifiedUser('SeatTaker')
 		]);
-		await deleteDefaultTier(event.id); // its card also says "Reserve Ticket"
+		await deleteDefaultTier(event.id);
 		const tier = await createTicketTier(event.id, {
 			name: 'Choose Your Seat',
 			payment_method: 'offline',
@@ -67,46 +104,42 @@ test.describe('J6 seat selection @p2', () => {
 		await gotoHydrated(page, event.path);
 		await waitForClientAuth(page);
 
-		// Open the confirmation dialog (idempotent loop, see free-tier.spec.ts).
-		const tierDialog = page.getByRole('dialog', { name: 'Select Your Ticket' });
-		const confirmDialog = page.getByRole('dialog', { name: 'Reserve Ticket' });
-		await expect(async () => {
-			if (await confirmDialog.isVisible()) return;
-			if (!(await tierDialog.isVisible())) {
-				await page.getByRole('button', { name: 'Get Tickets', exact: true }).click();
-			}
-			await tierDialog.getByRole('button', { name: 'Reserve Ticket' }).click();
-			await expect(confirmDialog).toBeVisible({ timeout: 8_000 });
-		}).toPass({ timeout: 60_000 });
+		const picker = await openPicker(page, tier.name);
 
 		// Seat map: stage marker, the sold seat disabled (sparse availability map
 		// renders it with the "sold" accessible name), a free seat clickable.
-		await expect(confirmDialog.getByText('Select Your Seats')).toBeVisible();
-		await expect(confirmDialog.getByText('STAGE')).toBeVisible({ timeout: 15_000 });
-		await expect(confirmDialog.getByRole('button', { name: 'Seat B1, sold' })).toBeDisabled();
+		await expect(picker.getByText('Select Your Seats')).toBeVisible();
+		await expect(picker.getByText('STAGE')).toBeVisible({ timeout: 15_000 });
+		await expect(picker.getByRole('button', { name: 'Seat B1, sold' })).toBeDisabled();
 
-		// Choose B3, then reserve. Each tap is now a hold round-trip (the seat is
-		// briefly "Seat B3, updating" while the POST is in flight), so the retry
-		// loop only clicks when the seat isn't already pressed — a second click
-		// would RELEASE the hold. The pressed state plus the 10-minute-hold notice
-		// prove the server hold is live before reserving.
-		const seatB3 = confirmDialog.getByRole('button', { name: /^Seat B3(,|$)/ });
-		const success = page.getByRole('dialog', { name: 'Your Ticket', exact: true });
+		// Choose B3. Each tap is now a hold round-trip (the seat is briefly
+		// "Seat B3, updating" while the POST is in flight), so the retry loop
+		// only clicks when the seat isn't already pressed — a second click would
+		// RELEASE the hold. The pressed state plus the 10-minute-hold notice
+		// prove the server hold is live before Done.
+		const seatB3 = picker.getByRole('button', { name: /^Seat B3(,|$)/ });
 		await expect(async () => {
-			if (await success.isVisible()) return;
 			if ((await seatB3.getAttribute('aria-pressed')) !== 'true') {
 				await seatB3.click();
 			}
 			await expect(seatB3).toHaveAttribute('aria-pressed', 'true', { timeout: 5_000 });
-			await expect(confirmDialog.getByText('1 / 1 selected')).toBeVisible({ timeout: 5_000 });
-			await expect(
-				confirmDialog.getByText('Selected seats are held for you for 10 minutes.')
-			).toBeVisible();
-			await confirmDialog.getByRole('button', { name: 'Reserve Ticket' }).click();
-			await expect(success).toBeVisible({ timeout: 8_000 });
+			await expect(picker.getByText('1 / 1 selected')).toBeVisible({ timeout: 5_000 });
 		}).toPass({ timeout: 60_000 });
+		await expect(picker.getByText('Selected seats are held for you for 10 minutes.')).toBeVisible();
+
+		await picker.getByRole('button', { name: 'Done', exact: true }).click();
+		await expect(picker).toBeHidden();
+
+		// Tier card shows the held-seats badge, then Buy completes the purchase
+		// directly (no sheet — names aren't required and this is the only group).
+		await expect(tierCardLocator(page, tier.name).getByText('1 seat · edit')).toBeVisible();
+		const summaryBar = page.getByTestId('cart-summary-bar');
+		await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+		await expect(page.getByText(/reserved/i)).toBeVisible({ timeout: 10_000 });
 
 		// The ticket carries the chosen seat ("Venue • Sector • Row B, Seat 3").
+		const success = page.getByRole('dialog', { name: 'Your Ticket', exact: true });
+		await expect(success).toBeVisible({ timeout: 8_000 });
 		await expect(success.getByText(/Row B, Seat 3/)).toBeVisible();
 
 		await context.close();
@@ -114,10 +147,11 @@ test.describe('J6 seat selection @p2', () => {
 
 	// Per-seat-category pricing (#668, BE #739): a user_choice tier prices row A
 	// via a painted category (55.00) while unpainted row B falls back to the
-	// tier's base price (20.00). The dialog shows the price legend and range,
-	// each seat's accessible name carries its resolved price, the selection
-	// total sums server-resolved prices, and the issued (pending offline)
-	// ticket shows the per-ticket amount due — price_paid, not tier.price.
+	// tier's base price (20.00). The tier card shows the price range, the
+	// picker's legend pairs each category with its resolved price, each seat's
+	// accessible name carries its resolved price, the selection total sums
+	// server-resolved prices, and the issued (pending offline) ticket shows the
+	// per-ticket amount due — price_paid, not tier.price.
 	//
 	// Isolation: own venue via createCategoryPricedVenue — painting a shared
 	// venue would break concurrently-saved category-priced tiers (coverage is
@@ -127,11 +161,14 @@ test.describe('J6 seat selection @p2', () => {
 	}) => {
 		const venue = await createCategoryPricedVenue('revel-events-collective');
 		const [event, buyer] = await Promise.all([
-			createTicketedEvent({ freeTier: false, event: { venue_id: venue.venueId } }),
+			createTicketedEvent({
+				freeTier: false,
+				event: { venue_id: venue.venueId, require_ticket_names: false }
+			}),
 			createVerifiedUser('PricedSeatBuyer')
 		]);
 		await deleteDefaultTier(event.id);
-		await createTicketTier(event.id, {
+		const tier = await createTicketTier(event.id, {
 			name: 'Priced Seats',
 			payment_method: 'offline',
 			price: '20.00',
@@ -147,22 +184,15 @@ test.describe('J6 seat selection @p2', () => {
 		await gotoHydrated(page, event.path);
 		await waitForClientAuth(page);
 
-		const tierDialog = page.getByRole('dialog', { name: 'Select Your Ticket' });
-		const confirmDialog = page.getByRole('dialog', { name: 'Reserve Ticket' });
-		await expect(async () => {
-			if (await confirmDialog.isVisible()) return;
-			if (!(await tierDialog.isVisible())) {
-				await page.getByRole('button', { name: 'Get Tickets', exact: true }).click();
-			}
-			await tierDialog.getByRole('button', { name: 'Reserve Ticket' }).click();
-			await expect(confirmDialog).toBeVisible({ timeout: 8_000 });
-		}).toPass({ timeout: 60_000 });
+		// Price range on the tier card (min base 20.00 – max category 55.00),
+		// visible before the picker ever opens.
+		await expect(tierCardLocator(page, tier.name).getByText('EUR 20.00 - EUR 55.00')).toBeVisible();
 
-		// Price range on the tier card (min base 20.00 – max category 55.00) and
-		// the legend pairing each category (and the unpainted fallback) with its
+		const picker = await openPicker(page, tier.name);
+
+		// The legend pairs each category (and the unpainted fallback) with its
 		// resolved price.
-		await expect(confirmDialog.getByText('EUR 20.00 - EUR 55.00')).toBeVisible();
-		const legend = confirmDialog.getByRole('list', { name: 'Seat prices' });
+		const legend = picker.getByRole('list', { name: 'Seat prices' });
 		await expect(legend).toBeVisible({ timeout: 15_000 });
 		await expect(legend.getByText(venue.category.name)).toBeVisible();
 		await expect(legend.getByText('€55.00')).toBeVisible();
@@ -171,53 +201,63 @@ test.describe('J6 seat selection @p2', () => {
 
 		// Each seat's accessible name carries its own resolved price (dumb
 		// server-side lookup: painted → category price, unpainted → base).
-		const seatA1 = confirmDialog.getByRole('button', { name: 'Seat A1, €55.00' });
+		const seatA1 = picker.getByRole('button', { name: 'Seat A1, €55.00' });
 		await expect(seatA1).toBeVisible();
-		await expect(confirmDialog.getByRole('button', { name: 'Seat B1, €20.00' })).toBeVisible();
+		await expect(picker.getByRole('button', { name: 'Seat B1, €20.00' })).toBeVisible();
 
-		// Selecting the painted seat shows the running estimate for the held set —
-		// and the STICKY FOOTER total, which stays in view however far the seat
-		// map pushes the in-flow estimate below the fold.
-		const success = page.getByRole('dialog', { name: 'Your Ticket', exact: true });
+		// Selecting the painted seat shows the running estimate for the held set
+		// — and the sticky footer total, which stays in view however far the
+		// seat map pushes the in-flow estimate below the fold.
 		await expect(async () => {
-			if (await success.isVisible()) return;
 			if ((await seatA1.getAttribute('aria-pressed')) !== 'true') {
 				await seatA1.click();
 			}
 			await expect(seatA1).toHaveAttribute('aria-pressed', 'true', { timeout: 5_000 });
-			await expect(confirmDialog.getByText('Selected seats: €55.00')).toBeVisible({
-				timeout: 5_000
-			});
+			await expect(picker.getByText('Selected seats: €55.00')).toBeVisible({ timeout: 5_000 });
 			await expect(
-				confirmDialog.locator('p', { hasText: /^Total/ }).filter({ hasText: '€55.00' })
+				picker.locator('p', { hasText: /^Total/ }).filter({ hasText: '€55.00' })
 			).toBeVisible();
-			await confirmDialog.getByRole('button', { name: 'Reserve Ticket' }).click();
-			await expect(success).toBeVisible({ timeout: 8_000 });
 		}).toPass({ timeout: 60_000 });
+
+		await picker.getByRole('button', { name: 'Done', exact: true }).click();
+		await expect(picker).toBeHidden();
+
+		const summaryBar = page.getByTestId('cart-summary-bar');
+		await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+		await expect(page.getByText(/reserved/i)).toBeVisible({ timeout: 10_000 });
 
 		// The pending offline ticket shows the per-ticket amount due — the
 		// category price actually charged, not the tier's base price.
+		const success = page.getByRole('dialog', { name: 'Your Ticket', exact: true });
+		await expect(success).toBeVisible({ timeout: 8_000 });
 		await expect(success.getByText(/Row A, Seat 1/)).toBeVisible();
 		await expect(success.getByText('Amount due: €55.00')).toBeVisible();
 
 		await context.close();
 	});
 
-	// Taps DRIVE the quantity counter (no pre-incrementing), and a reload
-	// restores the buyer's full held selection as their own — the seed adopts
-	// up to the MAX purchasable quantity and grows the counter to match
-	// (previously it capped at the reset counter of 1, rendering the buyer's
-	// own surviving holds as foreign "held by someone else" seats).
-	test('taps grow the counter; reload restores the whole selection as mine', async ({
+	// Taps DRIVE the count (no pre-set quantity — `user_choice` has no
+	// independent stepper, the tap-driven transient controller IS the
+	// counter), and reopening the picker after a full page reload restores the
+	// buyer's held selection as their own: the transient controller seeds from
+	// the server's `my_holds` on mount (same mechanism `adoptServerHolds` uses
+	// elsewhere), so both seats come back pressed without ever touching the
+	// cart (which is in-memory only and does NOT survive a reload — the picker
+	// reopening, not the tier-card badge, is what proves the server-side hold
+	// survived).
+	test('taps grow the count; reopening the picker after reload restores the whole selection as mine', async ({
 		browser
 	}) => {
 		const hall = await createPlainConcertHall();
 		const [event, buyer] = await Promise.all([
-			createTicketedEvent({ freeTier: false, event: { venue_id: hall.venueId } }),
+			createTicketedEvent({
+				freeTier: false,
+				event: { venue_id: hall.venueId, require_ticket_names: false }
+			}),
 			createVerifiedUser('TapGrow')
 		]);
 		await deleteDefaultTier(event.id);
-		await createTicketTier(event.id, {
+		const tier = await createTicketTier(event.id, {
 			name: 'Tap Grow Seats',
 			payment_method: 'offline',
 			price: '15.00',
@@ -230,65 +270,54 @@ test.describe('J6 seat selection @p2', () => {
 		const context = await browser.newContext();
 		await authenticateContext(context, buyer);
 		const page = await context.newPage();
+		await gotoHydrated(page, event.path);
+		await waitForClientAuth(page);
 
-		const openDialog = async () => {
-			await gotoHydrated(page, event.path);
-			await waitForClientAuth(page);
-			const tierDialog = page.getByRole('dialog', { name: 'Select Your Ticket' });
-			const confirmDialog = page.getByRole('dialog', { name: 'Reserve Ticket' });
-			await expect(async () => {
-				if (await confirmDialog.isVisible()) return;
-				if (!(await tierDialog.isVisible())) {
-					await page.getByRole('button', { name: 'Get Tickets', exact: true }).click();
-				}
-				await tierDialog.getByRole('button', { name: 'Reserve Ticket' }).click();
-				await expect(confirmDialog).toBeVisible({ timeout: 8_000 });
-			}).toPass({ timeout: 60_000 });
-			return confirmDialog;
-		};
+		let picker = await openPicker(page, tier.name);
 
-		let confirmDialog = await openDialog();
-
-		// Tap B2 WITHOUT touching the stepper: 1/1. Tap B3: the counter GROWS
-		// to 2 and the seat holds — no manual increment needed. Only click
-		// while unpressed (a second tap would release the hold).
-		const seatB2 = confirmDialog.getByRole('button', { name: /^Seat B2(,|$)/ });
-		const seatB3 = confirmDialog.getByRole('button', { name: /^Seat B3(,|$)/ });
+		// Tap B2: 1/1. Tap B3: the count GROWS to 2 — no manual increment
+		// needed. Only click while unpressed (a second tap would release the
+		// hold).
+		const seatB2 = picker.getByRole('button', { name: /^Seat B2(,|$)/ });
+		const seatB3 = picker.getByRole('button', { name: /^Seat B3(,|$)/ });
 		await expect(async () => {
 			if ((await seatB2.getAttribute('aria-pressed')) !== 'true') {
 				await seatB2.click();
 			}
 			await expect(seatB2).toHaveAttribute('aria-pressed', 'true', { timeout: 5_000 });
-			await expect(confirmDialog.getByText('1 / 1 selected')).toBeVisible({ timeout: 5_000 });
+			await expect(picker.getByText('1 / 1 selected')).toBeVisible({ timeout: 5_000 });
 		}).toPass({ timeout: 60_000 });
 		await expect(async () => {
 			if ((await seatB3.getAttribute('aria-pressed')) !== 'true') {
 				await seatB3.click();
 			}
 			await expect(seatB3).toHaveAttribute('aria-pressed', 'true', { timeout: 5_000 });
-			await expect(confirmDialog.getByText('2 / 2 selected')).toBeVisible({ timeout: 5_000 });
+			await expect(picker.getByText('2 / 2 selected')).toBeVisible({ timeout: 5_000 });
 		}).toPass({ timeout: 60_000 });
 
-		// Reload and reopen: BOTH seats come back as the buyer's own selection
-		// (pressed, not foreign-held) and the counter is restored to 2.
-		confirmDialog = await openDialog();
-		await expect(confirmDialog.getByRole('button', { name: /^Seat B2(,|$)/ })).toHaveAttribute(
+		// Reload WITHOUT clicking Done (the cart never learned about these
+		// picks — only the server-side hold is real) and reopen: BOTH seats
+		// come back as the buyer's own selection (pressed, not foreign-held).
+		await gotoHydrated(page, event.path);
+		await waitForClientAuth(page);
+		picker = await openPicker(page, tier.name);
+		await expect(picker.getByRole('button', { name: /^Seat B2(,|$)/ })).toHaveAttribute(
 			'aria-pressed',
 			'true',
 			{ timeout: 15_000 }
 		);
-		await expect(confirmDialog.getByRole('button', { name: /^Seat B3(,|$)/ })).toHaveAttribute(
+		await expect(picker.getByRole('button', { name: /^Seat B3(,|$)/ })).toHaveAttribute(
 			'aria-pressed',
 			'true'
 		);
-		await expect(confirmDialog.getByText('2 / 2 selected')).toBeVisible();
+		await expect(picker.getByText('2 / 2 selected')).toBeVisible();
 
 		await context.close();
 	});
 
 	// Painting a category onto seats is a venue-wide op that always succeeds —
 	// a tier whose map doesn't price it then has seats it cannot sell. With the
-	// dialog OPEN the tier payload goes stale while the chart refetches (the
+	// picker OPEN the tier payload goes stale while the chart refetches (the
 	// availability response echoes chart_updated_at, and any hold round-trip
 	// refetches availability), so the repainted seat's category id is absent
 	// from seat_pricing entirely. The allow-list rule must grey it out like a
@@ -299,11 +328,14 @@ test.describe('J6 seat selection @p2', () => {
 	}) => {
 		const venue = await createCategoryPricedVenue('revel-events-collective');
 		const [event, buyer] = await Promise.all([
-			createTicketedEvent({ freeTier: false, event: { venue_id: venue.venueId } }),
+			createTicketedEvent({
+				freeTier: false,
+				event: { venue_id: venue.venueId, require_ticket_names: false }
+			}),
 			createVerifiedUser('RepaintBuyer')
 		]);
 		await deleteDefaultTier(event.id);
-		await createTicketTier(event.id, {
+		const tier = await createTicketTier(event.id, {
 			name: 'Priced Seats',
 			payment_method: 'offline',
 			price: '20.00',
@@ -319,23 +351,14 @@ test.describe('J6 seat selection @p2', () => {
 		await gotoHydrated(page, event.path);
 		await waitForClientAuth(page);
 
-		const tierDialog = page.getByRole('dialog', { name: 'Select Your Ticket' });
-		const confirmDialog = page.getByRole('dialog', { name: 'Reserve Ticket' });
-		await expect(async () => {
-			if (await confirmDialog.isVisible()) return;
-			if (!(await tierDialog.isVisible())) {
-				await page.getByRole('button', { name: 'Get Tickets', exact: true }).click();
-			}
-			await tierDialog.getByRole('button', { name: 'Reserve Ticket' }).click();
-			await expect(confirmDialog).toBeVisible({ timeout: 8_000 });
-		}).toPass({ timeout: 60_000 });
+		const picker = await openPicker(page, tier.name);
 
 		// B1 starts unpainted and sellable at the base price.
-		await expect(confirmDialog.getByRole('button', { name: 'Seat B1, €20.00' })).toBeVisible({
+		await expect(picker.getByRole('button', { name: 'Seat B1, €20.00' })).toBeVisible({
 			timeout: 15_000
 		});
 
-		// NOW, dialog open: paint B1 with a brand-new category the tier has
+		// NOW, picker open: paint B1 with a brand-new category the tier has
 		// never heard of (venue-wide op — never blocked by this tier's config).
 		const late = await createPriceCategory(
 			'revel-events-collective',
@@ -358,7 +381,7 @@ test.describe('J6 seat selection @p2', () => {
 		// round-trip refetches availability, whose chart_updated_at echo has
 		// moved, which invalidates and refetches the chart. Only click while
 		// unpressed — a second tap would release the hold.
-		const seatA1 = confirmDialog.getByRole('button', { name: 'Seat A1, €55.00' });
+		const seatA1 = picker.getByRole('button', { name: 'Seat A1, €55.00' });
 		await expect(async () => {
 			if ((await seatA1.getAttribute('aria-pressed')) !== 'true') {
 				await seatA1.click();
@@ -369,7 +392,7 @@ test.describe('J6 seat selection @p2', () => {
 		// The repainted seat greys out in place: disabled, "unavailable" aria,
 		// no price quoted — while the tier's stale seat_pricing never listed
 		// the new category at all.
-		const b1Blocked = confirmDialog.getByRole('button', { name: 'Seat B1, unavailable' });
+		const b1Blocked = picker.getByRole('button', { name: 'Seat B1, unavailable' });
 		await expect(b1Blocked).toBeVisible({ timeout: 15_000 });
 		await expect(b1Blocked).toBeDisabled();
 
@@ -378,8 +401,7 @@ test.describe('J6 seat selection @p2', () => {
 
 	// Whole-venue context (map scope toggle): the tier's sector stays fully
 	// interactive while every other sector renders as a labelled inert ghost —
-	// spatial context without pretending foreign seats are sold out. The sticky
-	// footer total is visible throughout (flat tier: price × quantity).
+	// spatial context without pretending foreign seats are sold out.
 	test('whole-venue scope shows other sectors as inert ghosts, own seats stay selectable', async ({
 		browser
 	}) => {
@@ -409,11 +431,14 @@ test.describe('J6 seat selection @p2', () => {
 			]
 		});
 		const [event, buyer] = await Promise.all([
-			createTicketedEvent({ freeTier: false, event: { venue_id: venue.id } }),
+			createTicketedEvent({
+				freeTier: false,
+				event: { venue_id: venue.id, require_ticket_names: false }
+			}),
 			createVerifiedUser('VenueScope')
 		]);
 		await deleteDefaultTier(event.id);
-		await createTicketTier(event.id, {
+		const tier = await createTicketTier(event.id, {
 			name: 'Front Seats',
 			payment_method: 'offline',
 			price: '20.00',
@@ -428,42 +453,40 @@ test.describe('J6 seat selection @p2', () => {
 		await gotoHydrated(page, event.path);
 		await waitForClientAuth(page);
 
-		const tierDialog = page.getByRole('dialog', { name: 'Select Your Ticket' });
-		const confirmDialog = page.getByRole('dialog', { name: 'Reserve Ticket' });
-		await expect(async () => {
-			if (await confirmDialog.isVisible()) return;
-			if (!(await tierDialog.isVisible())) {
-				await page.getByRole('button', { name: 'Get Tickets', exact: true }).click();
-			}
-			await tierDialog.getByRole('button', { name: 'Reserve Ticket' }).click();
-			await expect(confirmDialog).toBeVisible({ timeout: 8_000 });
-		}).toPass({ timeout: 60_000 });
+		const picker = await openPicker(page, tier.name);
 
 		// Multi-sector chart defaults to the map view; scope starts at the tier's
 		// own section, so the other sector is nowhere in sight.
-		const sectionBtn = confirmDialog.getByRole('button', { name: 'This section' });
+		const sectionBtn = picker.getByRole('button', { name: 'This section' });
 		await expect(sectionBtn).toBeVisible({ timeout: 15_000 });
 		await expect(sectionBtn).toHaveAttribute('aria-pressed', 'true');
-		await expect(confirmDialog.getByText('Rear Balcony')).toBeHidden();
-		// Flat tier: the sticky footer total shows price × quantity immediately.
-		await expect(
-			confirmDialog.locator('p', { hasText: /^Total/ }).filter({ hasText: '€20.00' })
-		).toBeVisible();
+		await expect(picker.getByText('Rear Balcony')).toBeHidden();
 
 		// Whole venue: the other sector appears as ONE labelled inert ghost (no
 		// seat buttons of its own), while the tier's seats remain selectable.
-		await confirmDialog.getByRole('button', { name: 'Whole venue' }).click();
+		await picker.getByRole('button', { name: 'Whole venue' }).click();
 		await expect(
-			confirmDialog.getByRole('img', { name: 'Rear Balcony: sold through a different ticket' })
+			picker.getByRole('img', { name: 'Rear Balcony: sold through a different ticket' })
 		).toBeVisible();
-		await expect(confirmDialog.getByRole('button', { name: /Seat B1/ })).toBeHidden();
-		const seatA1 = confirmDialog.getByRole('button', { name: /^Seat A1/ });
+		await expect(picker.getByRole('button', { name: /Seat B1/ })).toBeHidden();
+		const seatA1 = picker.getByRole('button', { name: /^Seat A1/ });
 		await expect(async () => {
 			if ((await seatA1.getAttribute('aria-pressed')) !== 'true') {
 				await seatA1.click();
 			}
 			await expect(seatA1).toHaveAttribute('aria-pressed', 'true', { timeout: 5_000 });
 		}).toPass({ timeout: 60_000 });
+
+		// Flat tier: the picker's OWN footer total is a per-seat-category
+		// estimate only (`estimatedSeatTotal` needs `tier.seat_pricing`, which
+		// the backend deliberately omits for an unpainted flat tier — see
+		// `resolve_seat_pricing`), so it never renders here. The price ×
+		// quantity total for a flat tier is the CART's job: Done syncs the pick
+		// into the cart group, and the summary bar's total (which always knows
+		// how to price a flat tier, seat_pricing or not) shows it.
+		await picker.getByRole('button', { name: 'Done', exact: true }).click();
+		await expect(picker).toBeHidden();
+		await expect(page.getByTestId('cart-summary-bar')).toContainText('EUR 20.00');
 
 		await context.close();
 	});
