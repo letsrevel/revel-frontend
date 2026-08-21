@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { buildCartItems, buildCartCheckoutParams } from './cart-payload';
+import {
+	buildCartItems,
+	buildCartCheckoutParams,
+	buildGuestCartCheckoutParams
+} from './cart-payload';
 import type { TierSchemaWithId } from '$lib/types/tickets';
 import type { CheckoutGroupSchema, BuyerBillingInfoSchema } from '$lib/api/generated/types.gen';
 
@@ -154,5 +158,169 @@ describe('buildCartCheckoutParams', () => {
 		const minimal = { items };
 		const minimalJson = JSON.stringify(minimal);
 		expect(json1).toBe(minimalJson);
+	});
+});
+
+describe('buildGuestCartCheckoutParams', () => {
+	function makeCheckoutGroup(): CheckoutGroupSchema {
+		return {
+			tier_id: crypto.randomUUID(),
+			tickets: [{ guest_name: 'Bob' }]
+		};
+	}
+
+	it('constructs with strict key order: items, email, first_name, last_name, discountCode, billingInfo', () => {
+		const items: CheckoutGroupSchema[] = [makeCheckoutGroup()];
+		const identity = { email: ' guest@example.com ', firstName: 'John', lastName: 'Doe' };
+		const billingInfo: BuyerBillingInfoSchema = { country: 'US' };
+
+		const result = buildGuestCartCheckoutParams(items, identity, 'CODE', billingInfo);
+		const keys = Object.keys(result);
+		expect(keys).toEqual([
+			'items',
+			'email',
+			'first_name',
+			'last_name',
+			'discountCode',
+			'billingInfo'
+		]);
+	});
+
+	it('includes email in fingerprint: different emails produce different JSON', () => {
+		const items: CheckoutGroupSchema[] = [makeCheckoutGroup()];
+		const identity1 = { email: 'alice@example.com' };
+		const identity2 = { email: 'bob@example.com' };
+
+		const result1 = buildGuestCartCheckoutParams(items, identity1, '', null);
+		const result2 = buildGuestCartCheckoutParams(items, identity2, '', null);
+
+		const json1 = JSON.stringify(result1);
+		const json2 = JSON.stringify(result2);
+		expect(json1).not.toBe(json2);
+	});
+
+	it('produces identical fingerprint for two identical calls', () => {
+		const items: CheckoutGroupSchema[] = [makeCheckoutGroup()];
+		const identity = { email: 'guest@example.com' };
+
+		const result1 = buildGuestCartCheckoutParams(items, identity, '', null);
+		const result2 = buildGuestCartCheckoutParams(items, identity, '', null);
+
+		const json1 = JSON.stringify(result1);
+		const json2 = JSON.stringify(result2);
+		expect(json1).toBe(json2);
+	});
+
+	it('omits first_name when blank or whitespace; preserves trimmed value otherwise', () => {
+		const items: CheckoutGroupSchema[] = [makeCheckoutGroup()];
+
+		// Empty string: omit
+		const result1 = buildGuestCartCheckoutParams(
+			items,
+			{ email: 'guest@example.com', firstName: '' },
+			'',
+			null
+		);
+		expect(result1).not.toHaveProperty('first_name');
+
+		// Whitespace: omit
+		const result2 = buildGuestCartCheckoutParams(
+			items,
+			{ email: 'guest@example.com', firstName: '  ' },
+			'',
+			null
+		);
+		expect(result2).not.toHaveProperty('first_name');
+
+		// Trimmed value: preserve
+		const result3 = buildGuestCartCheckoutParams(
+			items,
+			{ email: 'guest@example.com', firstName: ' John ' },
+			'',
+			null
+		);
+		expect(result3.first_name).toBe('John');
+	});
+
+	it('omits last_name when blank or whitespace; preserves trimmed value otherwise', () => {
+		const items: CheckoutGroupSchema[] = [makeCheckoutGroup()];
+
+		// Empty string: omit
+		const result1 = buildGuestCartCheckoutParams(
+			items,
+			{ email: 'guest@example.com', lastName: '' },
+			'',
+			null
+		);
+		expect(result1).not.toHaveProperty('last_name');
+
+		// Whitespace: omit
+		const result2 = buildGuestCartCheckoutParams(
+			items,
+			{ email: 'guest@example.com', lastName: '  ' },
+			'',
+			null
+		);
+		expect(result2).not.toHaveProperty('last_name');
+
+		// Trimmed value: preserve
+		const result3 = buildGuestCartCheckoutParams(
+			items,
+			{ email: 'guest@example.com', lastName: ' Doe ' },
+			'',
+			null
+		);
+		expect(result3.last_name).toBe('Doe');
+	});
+
+	it('omits discountCode when empty or whitespace', () => {
+		const items: CheckoutGroupSchema[] = [makeCheckoutGroup()];
+		const identity = { email: 'guest@example.com' };
+
+		const result1 = buildGuestCartCheckoutParams(items, identity, '', null);
+		expect(result1).not.toHaveProperty('discountCode');
+
+		const result2 = buildGuestCartCheckoutParams(items, identity, '  ', null);
+		expect(result2).not.toHaveProperty('discountCode');
+
+		const result3 = buildGuestCartCheckoutParams(items, identity, ' CODE ', null);
+		expect(result3.discountCode).toBe('CODE');
+	});
+
+	it('omits billingInfo when null; includes when provided', () => {
+		const items: CheckoutGroupSchema[] = [makeCheckoutGroup()];
+		const identity = { email: 'guest@example.com' };
+
+		const result1 = buildGuestCartCheckoutParams(items, identity, '', null);
+		expect(result1).not.toHaveProperty('billingInfo');
+
+		const billingInfo: BuyerBillingInfoSchema = { country: 'US' };
+		const result2 = buildGuestCartCheckoutParams(items, identity, '', billingInfo);
+		expect(result2.billingInfo).toEqual(billingInfo);
+	});
+
+	it('produces byte-identical fingerprint for minimal params (empty discount, null billing)', () => {
+		const items: CheckoutGroupSchema[] = [makeCheckoutGroup()];
+		const identity = { email: 'guest@example.com' };
+
+		const result1 = buildGuestCartCheckoutParams(items, identity, '', null);
+		const result2 = buildGuestCartCheckoutParams(items, identity, '', null);
+
+		const json1 = JSON.stringify(result1);
+		const json2 = JSON.stringify(result2);
+		expect(json1).toBe(json2);
+
+		// Should match minimal object: { items, email }
+		const minimal = { items, email: 'guest@example.com' };
+		const minimalJson = JSON.stringify(minimal);
+		expect(json1).toBe(minimalJson);
+	});
+
+	it('trims email (always required)', () => {
+		const items: CheckoutGroupSchema[] = [makeCheckoutGroup()];
+		const identity = { email: '  guest@example.com  ' };
+
+		const result = buildGuestCartCheckoutParams(items, identity, '', null);
+		expect(result.email).toBe('guest@example.com');
 	});
 });
