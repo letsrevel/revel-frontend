@@ -50,8 +50,11 @@
 		eventMaxTicketsPerUser?: number | null;
 		/** A whole-sector target was activated (1:1 route or 1:N chooser). */
 		onSectorTarget: (sectorId: string) => void;
-		/** Continue with the held seats: hand the holds to the purchase path. */
-		onContinue: (tier: TierSchemaWithId) => void;
+		/**
+		 * Continue with the held seats: hand the holds to the purchase path (the
+		 * cart adopts them into a `user_choice` group — see `onContinue`'s caller).
+		 */
+		onContinue: (tier: TierSchemaWithId, heldSeatIds: string[]) => void;
 	}
 
 	const {
@@ -244,7 +247,9 @@
 	function handleContinue(): void {
 		if (!active || heldCount === 0) return;
 		handedOff = true;
-		onContinue(active.tier);
+		// Snapshot the ids: the cart's `setSeatIds` adopts them into a new group,
+		// but `controller.myHolds` keeps living on this (about-to-unmount) instance.
+		onContinue(active.tier, [...controller.myHolds]);
 	}
 
 	// Estimated total for the held seats (server-resolved prices only; the

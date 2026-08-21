@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildPurchaseTicketItems, defaultGuestName, defaultPurchaseItems } from './purchase-items';
+import { buildPurchaseTicketItems, defaultGuestName } from './purchase-items';
 
 const base = {
 	guestNames: ['Alice A', 'Bob B'],
@@ -81,18 +81,6 @@ describe('buildPurchaseTicketItems', () => {
 				})
 			)
 		).toBe('[{"seat_id":"s1"},{"seat_id":"s2"}]');
-	});
-});
-
-describe('defaultPurchaseItems', () => {
-	it('carries the buyer name when the event requires names', () => {
-		expect(defaultPurchaseItems(true, 'Alice A')).toEqual([{ guest_name: 'Alice A' }]);
-	});
-
-	it('is a single nameless item when the event does not require names', () => {
-		const items = defaultPurchaseItems(false, 'Alice A');
-		expect(items).toEqual([{}]);
-		expect('guest_name' in items[0]).toBe(false);
 	});
 });
 

@@ -57,6 +57,7 @@
 	import { createCartCheckoutController } from '$lib/components/events/cart-checkout-controller.svelte';
 	import { defaultGuestName } from '$lib/components/tickets/purchase-items';
 	import { holdBestAvailableGroups } from '$lib/components/tickets/cart-ba-holds';
+	import { readTierMapPref, writeTierMapPref } from '$lib/components/tickets/seat-view-toggle';
 	import { toast } from 'svelte-sonner';
 
 	const { data }: { data: PageData } = $props();
@@ -149,7 +150,6 @@
 	let initialDiscountCode = $state('');
 
 	// Modal states
-	let showTicketTierModal = $state(false);
 	let showMyTicketModal = $state(false);
 	let showGuestRsvpDialog = $state(false);
 	let showGuestTicketDialog = $state(false);
@@ -157,33 +157,42 @@
 	let selectedTierForGuest = $state<TierSchemaWithId | null>(null);
 	// Opened by a section switch: scroll seating into view (remount lands at top).
 	let guestFocusSeating = $state(false);
-	let preSelectedTier = $state<TierSchemaWithId | null>(null);
-	// Seat-picker entry point (#853 PR 3): the tier being picked also gates
-	// SeatPickerDialog's mount — closing/hand-off nulls this, unmounting the
-	// dialog so its transient controller is destroyed (and un-handed-off holds
-	// released) rather than lingering across picking sessions.
+	// Seat-picker entry point: the tier being picked also gates SeatPickerDialog's
+	// mount, so closing/hand-off unmounts it (destroying its transient controller).
 	let pickSeatsTier = $state<TierSchemaWithId | null>(null);
 
 	// Map-first entry point (#679): only when a purchasable tier sells a venue sector.
 	const hasSeatingMap = $derived(eventHasSeatingMap(ticketTiers, tierRemainingTickets));
 
-	// Handle modals
-	function openTicketTierModal() {
-		showTicketTierModal = true;
-	}
-
-	function closeTicketTierModal() {
-		showTicketTierModal = false;
-		preSelectedTier = null;
-	}
-
 	function openMyTicketModal() {
 		showMyTicketModal = true;
 	}
 
-	function handleSelectTier(tier: TierSchemaWithId) {
-		preSelectedTier = tier;
-		showTicketTierModal = true;
+	/** Scrolls the inline ticket-tier list into view (sidebar "Get tickets" CTA). */
+	function scrollToTicketTiers(): void {
+		document.getElementById('ticket-tiers')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+	}
+
+	/** Using the map button remembers the preference for this session (#679). */
+	function openVenueOverview(): void {
+		writeTierMapPref();
+		showVenueOverview = true;
+	}
+
+	// Routes a tier picked outside the inline steppers into the cart: held
+	// `user_choice` seats adopt straight into a group, unheld opens the picker,
+	// everything else starts the group at quantity 1 and scrolls to it.
+	function handleSelectTier(tier: TierSchemaWithId, heldSeatIds?: string[]): void {
+		if (tier.seat_assignment_mode === 'user_choice') {
+			if (heldSeatIds) {
+				cart.setSeatIds(tier, heldSeatIds);
+			} else {
+				pickSeatsTier = tier;
+			}
+			return;
+		}
+		if (cart.quantityFor(tier.id) === 0) cart.setQuantity(tier, 1);
+		scrollToTicketTiers();
 	}
 
 	// Guest dialog handlers
@@ -224,14 +233,11 @@
 		queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
 	}
 
-	// Ticket checkout controller — owns purchase/resume/cancel mutations and side effects.
+	// Ticket checkout controller — pending-ticket resume/cancel only (purchasing is the cart below).
 	const {
 		refreshUserStatus,
 		resumePaymentMutation,
 		cancelReservationMutation,
-		handleClaimTicket,
-		handleCheckout,
-		hasResumableCheckout,
 		handleResumePayment,
 		handleResumePaymentFromSidebar,
 		handleCancelReservation
@@ -239,12 +245,9 @@
 		eventId: event.id,
 		queryClient,
 		getUserTickets: () => userTickets,
-		getTicketHolderDefaultName: () => ticketHolderDefaultName,
-		getRequireTicketNames: () => event.require_ticket_names,
 		setUserStatus: (status) => {
 			userStatus = status;
 		},
-		onCloseTicketTierModal: closeTicketTierModal,
 		setShowMyTicketModal: (open) => {
 			showMyTicketModal = open;
 		}
@@ -418,6 +421,11 @@
 				}
 			}, 1000);
 		}
+
+		// Map-first entry point (#679): once chosen this session, land on it.
+		if (hasSeatingMap && !userTicket && readTierMapPref()) {
+			showVenueOverview = true;
+		}
 	});
 </script>
 
@@ -430,7 +438,7 @@
 		eventTokenDetails={data.eventTokenDetails}
 		variant="card"
 		canAttendWithoutLogin={event.can_attend_without_login}
-		onGetTicketsClick={openTicketTierModal}
+		onGetTicketsClick={scrollToTicketTiers}
 		onShowTicketClick={openMyTicketModal}
 		onResumePayment={handleResumePaymentFromSidebar}
 		isResumingPayment={resumePaymentMutation.isPending}
@@ -556,11 +564,7 @@
 							capacityDisclosed={viewerVisibility.show_capacity}
 							onSelectTier={handleSelectTier}
 							onGuestTierClick={openGuestTicketDialog}
-							onViewSeatingMap={hasSeatingMap
-								? () => {
-										showVenueOverview = true;
-									}
-								: undefined}
+							onViewSeatingMap={hasSeatingMap ? openVenueOverview : undefined}
 							cart={data.isAuthenticated ? cart : undefined}
 							quickBuyDisabled={cartController.isPending || holdingSeats}
 							{eventRemaining}
@@ -713,24 +717,17 @@
 	/>
 {/if}
 
-<!-- Purchase-dialog cluster (TicketTierModal, MyTicketModal, GuestRsvpDialog, VenueOverviewDialog, GuestTicketDialog) -->
+<!-- Purchase-dialog cluster (MyTicketModal, GuestRsvpDialog, VenueOverviewDialog, GuestTicketDialog) -->
 <EventPurchaseDialogs
 	{event}
 	{ticketTiers}
 	{tierRemainingTickets}
 	isAuthenticated={data.isAuthenticated}
-	membershipTier={data.membershipTier}
-	capacityDisclosed={viewerVisibility.show_capacity}
-	{ticketHolderDefaultName}
-	{initialDiscountCode}
 	{hasSeatingMap}
 	{userTickets}
 	isResumingPayment={resumePaymentMutation.isPending}
 	isCancellingReservation={cancelReservationMutation.isPending}
 	{refreshUserStatus}
-	onClaimTicket={handleClaimTicket}
-	onCheckout={handleCheckout}
-	{hasResumableCheckout}
 	onResumePayment={handleResumePayment}
 	onCancelReservation={handleCancelReservation}
 	onSelectTier={handleSelectTier}
@@ -738,13 +735,10 @@
 	onGuestRsvpClose={closeGuestRsvpDialog}
 	onGuestAttendanceSuccess={handleGuestAttendanceSuccess}
 	onGuestTicketClose={closeGuestTicketDialog}
-	onTicketTierModalClose={closeTicketTierModal}
-	bind:showTicketTierModal
 	bind:showMyTicketModal
 	bind:showGuestRsvpDialog
 	bind:showGuestTicketDialog
 	bind:showVenueOverview
-	bind:preSelectedTier
 	bind:selectedTierForGuest
 	bind:guestFocusSeating
 />

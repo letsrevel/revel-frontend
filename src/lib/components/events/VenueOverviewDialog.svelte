@@ -41,8 +41,13 @@
 		tierRemainingTickets?: TierRemainingTicketsSchema[];
 		/** Event-level max tickets per user (seat-selection cap fallback). */
 		eventMaxTicketsPerUser?: number | null;
-		/** Route an authenticated buyer into the tier's purchase dialog. */
-		onSelectTier: (tier: TierSchemaWithId) => void;
+		/**
+		 * Route an authenticated buyer into the cart. `heldSeatIds`, when present,
+		 * carries seats this dialog's map already held server-side for a
+		 * `user_choice` tier's Continue action — the page adopts them straight
+		 * into a cart group instead of opening the seat picker.
+		 */
+		onSelectTier: (tier: TierSchemaWithId, heldSeatIds?: string[]) => void;
 		/** Route a guest buyer into the guest ticket dialog (same as TierCard). */
 		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 	}
@@ -116,13 +121,13 @@
 	}
 
 	/** Close the overview surfaces, then hand off to the page's purchase path. */
-	function route(tier: TierSchemaWithId): void {
+	function route(tier: TierSchemaWithId, heldSeatIds?: string[]): void {
 		closeChooser();
 		open = false;
 		if (!isAuthenticated && canAttendWithoutLogin) {
 			onGuestTierClick?.(tier);
 		} else {
-			onSelectTier(tier);
+			onSelectTier(tier, heldSeatIds);
 		}
 	}
 

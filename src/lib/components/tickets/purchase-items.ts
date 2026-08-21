@@ -32,19 +32,6 @@ export interface PurchaseItemsOptions {
 	useHeldSeats: boolean;
 }
 
-/**
- * The single-ticket fallback shape used when a purchase path has no per-ticket
- * items of its own. It MUST stay identical across every call site: the
- * reservation-resume fingerprint is `JSON.stringify` of the mutation params, so
- * a divergent default would silently stop identical retries from resuming.
- */
-export function defaultPurchaseItems(
-	requireTicketNames: boolean,
-	userName: string
-): TicketPurchaseItem[] {
-	return requireTicketNames ? [{ guest_name: defaultGuestName(userName) }] : [{}];
-}
-
 export function buildPurchaseTicketItems(opts: PurchaseItemsOptions): TicketPurchaseItem[] {
 	return opts.guestNames.map((name, index) => {
 		const ticket: TicketPurchaseItem = {};
