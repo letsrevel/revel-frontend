@@ -2,11 +2,14 @@
  * Cart checkout controller (#853) over POST /events/{event_id}/checkout — the
  * multi-tier cart endpoint that replaces the single-tier checkout flow.
  *
- * The two-step reserve → checkout-session machinery below (`resumeHeldCheckout`,
- * `withCheckoutSessionUrl`, `sessionFailureError`, `handleCheckoutSuccess`) is
- * mirrored from `event-checkout-controller.svelte.ts`, which this cart flow will
- * fully replace: its single-tier mutations are deleted in PR 3 of this series
- * once the cart UI ships everywhere the old ticket-tier modal does today.
+ * The two-step reserve → checkout-session machinery (`resumeHeldCheckout`,
+ * `withCheckoutSessionUrl`, `sessionFailureError`) that this controller used to
+ * define inline now lives in `cart-checkout-machinery.ts`, shared with the
+ * guest cart controller (`guest-cart-checkout-controller.svelte.ts`) — this
+ * controller's own behavior, error branches, toasts, and success flow are
+ * unchanged, it just calls the extracted helpers. `handleCheckoutSuccess`
+ * stays here: the guest response shape differs (a `message` email-confirmation
+ * branch, no ticket-modal), so it isn't shared machinery.
  */
 import { createMutation, type QueryClient } from '@tanstack/svelte-query';
 import { eventpublicticketsMultiTierCheckout } from '$lib/api';
@@ -16,11 +19,7 @@ import type {
 	BatchCheckoutResponse,
 	BuyerBillingInfoSchema
 } from '$lib/api/generated/types.gen';
-import {
-	createReservationRetry,
-	resolveCheckoutUrl,
-	CheckoutSessionError
-} from '$lib/utils/checkout-session';
+import { createCheckoutMachinery } from './cart-checkout-machinery';
 import * as m from '$lib/paraglide/messages.js';
 import { toast } from 'svelte-sonner';
 import { checkoutError } from './checkout-error';
@@ -56,75 +55,18 @@ export function createCartCheckoutController(deps: CartCheckoutDeps) {
 	const { eventId, queryClient, refreshUserStatus, setShowMyTicketModal, onPurchaseComplete } =
 		deps;
 
-	// Held reservation from a session step that is pending or failed — an
-	// identical retry (same fingerprint) replays only the idempotent session
-	// call instead of re-reserving, which would strand the first reservation
-	// and can trip max_tickets_per_user (PENDING tickets count toward it).
-	const reservationRetry = createReservationRetry('user');
-
-	// An expired reservation was released server-side — there is no pending
-	// ticket left to "Resume Payment" on, so it gets its own message.
-	function sessionFailureError(error: CheckoutSessionError): Error {
-		const message = error.expired
-			? m['eventPage.paymentStartFailedExpired']()
-			: m['eventPage.paymentStartFailed']();
-		return new Error(message, { cause: error });
-	}
-
-	/**
-	 * Resume a previously reserved purchase whose session step didn't complete
-	 * (retryable failure, or the buyer came back from Stripe and bought again
-	 * with identical parameters). Returns a redirect-ready response, or `null`
-	 * when there is nothing to resume and the caller should reserve afresh.
-	 */
-	async function resumeHeldCheckout(fingerprint: string): Promise<BatchCheckoutResponse | null> {
-		try {
-			const checkoutUrl = await reservationRetry.resume(fingerprint);
-			return checkoutUrl
-				? { checkout_url: checkoutUrl, tickets: [], requires_payment: true }
-				: null;
-		} catch (error) {
-			if (error instanceof CheckoutSessionError) {
-				throw sessionFailureError(error);
-			}
-			throw error;
-		}
-	}
-
-	/**
-	 * Two-step online checkout (#464): the checkout endpoint only RESERVES
-	 * (returning `reservation_id`); the Stripe URL comes from a second,
-	 * idempotent checkout-session call. Chain it here, inside the mutation, so
-	 * the pending/disabled state spans both requests, and merge the URL back
-	 * into the response so the success handler stays payment-agnostic.
-	 *
-	 * If the session step fails the reservation is still held server-side:
-	 * the handle is kept so an identical retry resumes it, the user status is
-	 * refreshed so the pending ticket's "Resume Payment" action (which also
-	 * recreates the session) appears, and a retryable error is surfaced.
-	 */
-	async function withCheckoutSessionUrl(
-		data: BatchCheckoutResponse,
-		fingerprint: string
-	): Promise<BatchCheckoutResponse> {
-		if (data.requires_payment && data.reservation_id) {
-			reservationRetry.remember(data.reservation_id, fingerprint);
-		}
-		try {
-			const checkoutUrl = await resolveCheckoutUrl(data, 'user');
-			return checkoutUrl ? { ...data, checkout_url: checkoutUrl } : data;
-		} catch (error) {
-			if (error instanceof CheckoutSessionError) {
-				if (error.expired) {
-					reservationRetry.clear();
-				}
-				await refreshUserStatus();
-				queryClient.invalidateQueries({ queryKey: ['event-status', eventId] });
-				throw sessionFailureError(error);
-			}
-			throw error;
-		}
-	}
+	// Shared reserve → checkout-session machinery (see cart-checkout-machinery.ts):
+	// resume/reserve/session-chaining semantics are byte-identical to before this
+	// was extracted, just no longer defined inline. On a retryable session
+	// failure, refresh the user status so the pending ticket's "Resume Payment"
+	// action (which also recreates the session) appears.
+	const { reservationRetry, resumeHeldCheckout, withCheckoutSessionUrl } =
+		createCheckoutMachinery<BatchCheckoutResponse>({
+			eventId,
+			queryClient,
+			kind: 'user',
+			onSessionFailure: refreshUserStatus
+		});
 
 	/**
 	 * Handle a successful cart checkout response. Unlike the single-tier
