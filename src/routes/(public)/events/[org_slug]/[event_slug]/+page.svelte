@@ -115,7 +115,12 @@
 	// First user ticket (for backward compatibility)
 	const userTicket = $derived(userTickets.length > 0 ? userTickets[0] : null);
 
-	// Stranded-cart guard: unmounts TicketTierList (no-op for cart purchases).
+	// Buy-more eligibility (#853 fix): same read as EventActionSidebar's canPurchaseMore.
+	const canBuyMore = $derived(
+		userStatus && isUserStatusResponse(userStatus) ? (userStatus.can_purchase_more ?? true) : true
+	);
+
+	// Stranded-cart guard: a stray pre-ticket cart selection doesn't survive into buy-more.
 	$effect(() => {
 		if (userTicket) cart.clear();
 	});
@@ -546,8 +551,9 @@
 						/>
 					{/if}
 
-					<!-- Ticket Tiers (if event requires tickets and user doesn't have one) -->
-					{#if event.requires_ticket && !userTicket && ticketTiers.length > 0}
+					<!-- Ticket Tiers: buy-more re-entry point (#853) — shows with no
+					     ticket, or with one if the backend still allows more. -->
+					{#if event.requires_ticket && ticketTiers.length > 0 && (!userTicket || canBuyMore)}
 						<TicketTierList
 							tiers={ticketTiers}
 							isAuthenticated={data.isAuthenticated}

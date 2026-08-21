@@ -199,11 +199,15 @@
 		};
 	});
 
-	// Can claim free ticket
+	// Can claim free ticket. `hasTicket` is NOT a guard here (#853 regression
+	// fix): a buyer who already holds a ticket for this event can still be
+	// eligible for another of this tier — that's the buy-more case, and
+	// per-tier/per-user limits already gate it via `effectiveEligible`
+	// (`tierRemainingInfo`). `hasTicket` alone only drives the fallback badge
+	// below, for contexts with no quick-buy/seat-pick mechanism (see `actions`).
 	const canClaim = $derived(
 		hasId &&
 			isAuthenticated &&
-			!hasTicket &&
 			effectiveEligible &&
 			salesStatus.active &&
 			availabilityStatus.available &&
@@ -214,7 +218,6 @@
 	const canCheckout = $derived(
 		hasId &&
 			isAuthenticated &&
-			!hasTicket &&
 			effectiveEligible &&
 			salesStatus.active &&
 			availabilityStatus.available &&
@@ -225,7 +228,6 @@
 	const canReserve = $derived(
 		hasId &&
 			isAuthenticated &&
-			!hasTicket &&
 			effectiveEligible &&
 			salesStatus.active &&
 			availabilityStatus.available &&
@@ -299,8 +301,6 @@
 		<p class="rounded-md bg-destructive/10 px-4 py-2 text-sm font-medium text-destructive">
 			{m['tierCardAdmin.configError']()}
 		</p>
-	{:else if hasTicket}
-		<StatusBadge tone="success" size="lg" icon={Check} label={m['tierCardAdmin.youHaveTicket']()} />
 	{:else if !salesStatus.active}
 		<Button disabled class="w-full sm:w-auto">{m['tierCardAdmin.notAvailable']()}</Button>
 	{:else if !availabilityStatus.available}
@@ -382,6 +382,12 @@
 				disabled={quickBuy.disabled}
 			/>
 		{/if}
+	{:else if hasTicket}
+		<!-- Fallback for contexts with no quick-buy/seat-pick mechanism (guest
+		     ticket holders, no cart) — buy-more there still routes through the
+		     single-select dialog, which doesn't support re-purchase, so this is
+		     purely informational (#853 regression fix; see `canClaim` comment). -->
+		<StatusBadge tone="success" size="lg" icon={Check} label={m['tierCardAdmin.youHaveTicket']()} />
 	{:else if canClaim}
 		<Button onclick={() => onSelectTier(tier)} class="w-full sm:w-auto">
 			{m['tierCardAdmin.claimFreeTicket']()}

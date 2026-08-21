@@ -112,6 +112,70 @@ test.describe('J6 cart quick-buy @p1', () => {
 		await context.close();
 	});
 
+	test('buy-more: tier list stays put after a purchase, second stepper buy adds to combined tickets', async ({
+		browser
+	}) => {
+		// Regression coverage for #853: TicketTierModal's removal left
+		// ticket-holders with no re-entry point into the tier list. The page
+		// gate now also renders it when the backend still allows more
+		// purchases — this exercises that path end to end.
+		const event = await createTicketedEvent({
+			freeTier: false,
+			event: { require_ticket_names: false }
+		});
+		await deleteDefaultTier(event.id);
+
+		const tier = await createTicketTier(event.id, {
+			name: 'Buy More Entry',
+			payment_method: 'offline',
+			price: '10.00',
+			price_type: 'fixed',
+			seat_assignment_mode: 'none',
+			total_quantity: 50
+		});
+
+		const { context, page } = await openBuyerPage(browser, event.path);
+
+		const tierHeading = page.getByRole('heading', { name: 'Ticket Options' });
+		const stepper = page.getByRole('group', { name: `Quantity for ${tier.name}` });
+		const addButton = stepper.getByRole('button', { name: `Add one ${tier.name}` });
+		const summaryBar = page.getByTestId('cart-summary-bar');
+		const modal = page.getByRole('dialog', { name: 'Your Ticket', exact: true });
+
+		// First purchase: one ticket.
+		await addButton.click();
+		await expect(stepper.locator('span[aria-live="polite"]')).toHaveText('1');
+		await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+		await expect(page.getByText(/reserved/i)).toBeVisible({ timeout: 10_000 });
+		await expect(modal).toBeVisible({ timeout: 8_000 });
+		// A single ticket has no summary badge (that only appears once there are
+		// multiple, or an online pending group) — the per-ticket banner is the
+		// signal here.
+		await expect(modal.getByText('Your ticket is pending payment')).toBeVisible();
+		await page.keyboard.press('Escape');
+		await expect(summaryBar).toBeHidden();
+
+		// The regression: the tier list must still be here (or back) for the
+		// ticket-holder — not unmounted now that `userTicket` is truthy.
+		await expect(tierHeading).toBeVisible();
+		await expect(addButton).toBeVisible();
+		await expect(addButton).toBeEnabled();
+
+		// Second purchase via the same stepper, proving buy-more actually works
+		// end to end (not just that the section is visible).
+		await addButton.click();
+		await expect(stepper.locator('span[aria-live="polite"]')).toHaveText('1');
+		await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+		await expect(page.getByText(/reserved/i)).toBeVisible({ timeout: 10_000 });
+
+		// My-ticket modal now lists both tickets combined.
+		await expect(modal).toBeVisible({ timeout: 8_000 });
+		await expect(modal.getByText('2 pending payment')).toBeVisible();
+		await expect(modal.getByText('Ticket 1 of 2')).toBeVisible();
+
+		await context.close();
+	});
+
 	test('stepper caps at total_available: a 2-ticket tier refuses a third add', async ({
 		browser
 	}) => {
