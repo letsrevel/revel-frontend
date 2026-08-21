@@ -19,12 +19,20 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 //
 // 1. Foreign-hold conflict: holds are all-or-nothing server-side, so a tap on
 //    a seat someone else just held 409s (conflict_reason "unavailable"). The
-//    dialog must surface the conflict copy in its polite live region and,
-//    after the forced availability refetch, render the seat disabled with the
+//    UI must surface the conflict copy in its polite live region and, after
+//    the forced availability refetch, render the seat disabled with the
 //    "held by someone else" accessible name. Ordering matters: the dialog
 //    opens FIRST (caching an availability snapshot where the seat is free),
 //    THEN the rival holds it via the API, THEN the buyer taps it — tapping is
 //    the only client action that reveals the staleness.
+//
+//    #853 rewrite (wave 2, task 11): the legacy `TicketConfirmationDialog`
+//    this test opened is deleted — a `user_choice` tier's "Pick seats…"
+//    button on the tier card now opens `SeatPickerDialog` (testid
+//    `seat-picker-dialog`) instead, hosting the SAME `SeatPickerPanel` seat
+//    map/conflict-alert UI verbatim (wave-1 convention, see
+//    seat-selection.spec.ts). Only the entry point and the dialog host
+//    changed; the conflict mechanics themselves are untouched.
 //
 // 2. Release-on-login: anonymous holds belong to the signed guest cookie. A
 //    logged-in purchase would see them as FOREIGN 409s, so the app records
@@ -96,22 +104,21 @@ test.describe('J19 seat holds @p2', () => {
 			await gotoHydrated(page, event.path);
 			await waitForClientAuth(page);
 
-			// Open the confirmation dialog (idempotent loop, see seat-selection.spec.ts).
-			const tierDialog = page.getByRole('dialog', { name: 'Select Your Ticket' });
-			const confirmDialog = page.getByRole('dialog', { name: 'Reserve Ticket' });
+			// Open the seat picker (idempotent loop, see seat-selection.spec.ts).
+			const tierCard = page
+				.locator('div.bg-card')
+				.filter({ has: page.getByRole('heading', { name: 'Choose Your Seat', exact: true }) });
+			const picker = page.getByTestId('seat-picker-dialog');
 			await expect(async () => {
-				if (await confirmDialog.isVisible()) return;
-				if (!(await tierDialog.isVisible())) {
-					await page.getByRole('button', { name: 'Get Tickets', exact: true }).click();
-				}
-				await tierDialog.getByRole('button', { name: 'Reserve Ticket' }).click();
-				await expect(confirmDialog).toBeVisible({ timeout: 8_000 });
+				if (await picker.isVisible()) return;
+				await tierCard.getByRole('button', { name: 'Pick seats…', exact: true }).click();
+				await expect(picker).toBeVisible({ timeout: 8_000 });
 			}).toPass({ timeout: 60_000 });
 
 			// The map is rendered with B2 free — this availability snapshot is now
 			// the client's cache; nothing refetches it until the buyer's next tap.
-			await expect(confirmDialog.getByText('STAGE')).toBeVisible({ timeout: 15_000 });
-			const freeSeat = confirmDialog.getByRole('button', { name: /^Seat B2(,|$)/ });
+			await expect(picker.getByText('STAGE')).toBeVisible({ timeout: 15_000 });
+			const freeSeat = picker.getByRole('button', { name: /^Seat B2(,|$)/ });
 			await expect(freeSeat).toBeEnabled();
 
 			// NOW the rival grabs B2 through the API — the buyer's map is stale.
@@ -119,8 +126,8 @@ test.describe('J19 seat holds @p2', () => {
 			holdCleanups.push({ user: rival, eventId: event.id });
 
 			// Tapping the stale seat POSTs a hold that 409s (all-or-nothing). The
-			// conflict copy must land in the dialog's polite live region.
-			const conflict = confirmDialog
+			// conflict copy must land in the picker's polite live region.
+			const conflict = picker
 				.locator('[aria-live="polite"]')
 				.getByText('That seat was just taken — please pick another.');
 			await expect(async () => {
@@ -131,14 +138,14 @@ test.describe('J19 seat holds @p2', () => {
 
 			// The 409 forces an availability refetch: B2 flips to the disabled
 			// held-by-someone-else state (accessible name carries the status).
-			const heldSeat = confirmDialog.getByRole('button', {
+			const heldSeat = picker.getByRole('button', {
 				name: 'Seat B2, held by someone else'
 			});
 			await expect(heldSeat).toBeDisabled({ timeout: 15_000 });
 
 			// Recovery: a different free seat still holds fine (hold-aware loop —
 			// a second click would release), and the next tap clears the conflict.
-			const altSeat = confirmDialog.getByRole('button', { name: /^Seat B4(,|$)/ });
+			const altSeat = picker.getByRole('button', { name: /^Seat B4(,|$)/ });
 			await expect(async () => {
 				if ((await altSeat.getAttribute('aria-pressed')) !== 'true') {
 					await altSeat.click();
@@ -147,7 +154,7 @@ test.describe('J19 seat holds @p2', () => {
 			}).toPass({ timeout: 30_000 });
 			holdCleanups.push({ user: buyer, eventId: event.id });
 			await expect(
-				confirmDialog.getByText('Selected seats are held for you for 10 minutes.')
+				picker.getByText('Selected seats are held for you for 10 minutes.')
 			).toBeVisible();
 			await expect(conflict).toBeHidden();
 		} finally {

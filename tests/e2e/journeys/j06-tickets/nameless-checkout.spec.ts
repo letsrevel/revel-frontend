@@ -21,6 +21,17 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 // arrive named and the modal's button reads "Rename holder" (see the comment
 // at that click).
 //
+// #853 rewrite (wave 2, task 11 blast-radius fix): outside every prior wave's
+// assigned file list, structurally broken by the `TicketTierModal`/
+// `TicketConfirmationDialog` deletion until the full matrix gate caught it
+// here (see free-tier.spec.ts's header for the shared rationale). The 'Group
+// Entry' tier is `quickBuyEligible` — its inline stepper replaces the tier
+// dialog's quantity selector, and since this event's `require_ticket_names`
+// is OFF and the tier is neither PWYC nor best_available, `EventCart.needsSheet`
+// stays false — Buy goes straight to claim, same as before, just with no
+// sheet to assert "no name inputs" on (the checkout sheet never mounts at all
+// for this cart).
+//
 // Isolation: an own event (the flag changes checkout's shape) plus a
 // throwaway buyer (tickets consume the per-user tier limit); the auto
 // "General Admission" tier is dropped so the arranged tier is the only
@@ -52,43 +63,33 @@ test.describe('J6 nameless checkout @p1', () => {
 			await gotoHydrated(page, event.path);
 			await waitForClientAuth(page);
 
-			// Tier dialog → confirmation dialog with the quantity stepper. Run as
-			// an idempotent loop: clicks during dialog re-renders are occasionally
-			// dropped (same shape as batch-purchase.spec.ts).
-			const tierDialog = page.getByRole('dialog', { name: 'Select Your Ticket' });
-			const quantityLabel = page.getByText('Number of Tickets');
-			await expect(async () => {
-				if (await quantityLabel.isVisible()) return;
-				if (await tierDialog.isVisible()) {
-					await tierDialog.getByRole('button', { name: 'Claim Free Ticket' }).click();
-				} else {
-					await page.getByRole('button', { name: 'Get Tickets', exact: true }).click();
-					await tierDialog.getByRole('button', { name: 'Claim Free Ticket' }).click();
-				}
-				await expect(quantityLabel).toBeVisible({ timeout: 8_000 });
-			}).toPass({ timeout: 60_000 });
+			// Inline stepper: take 2 of the 3 allowed. The "Remove one" button
+			// becoming enabled proves the click actually registered — without
+			// that discriminator a dropped click would leave quantity at 1, where
+			// BOTH negative assertions below pass vacuously (a checkout sheet only
+			// ever mounts for require_ticket_names/pwyc/best_available carts).
+			const stepper = page.getByRole('group', { name: 'Quantity for Group Entry' });
+			await expect(stepper).toBeVisible({ timeout: 15_000 });
+			const addButton = stepper.getByRole('button', { name: 'Add one Group Entry' });
+			await addButton.click();
+			await expect(stepper.getByRole('button', { name: 'Remove one Group Entry' })).toBeEnabled();
+			await addButton.click();
+			await expect(stepper.locator('span[aria-live="polite"]')).toHaveText('2');
 
-			// Take 2 of the 3 allowed. The "Decrease quantity" button is disabled
-			// at quantity 1, so its becoming enabled is what proves the stepper
-			// actually moved — without that discriminator a dropped click would
-			// leave quantity at 1, where BOTH negative assertions below pass
-			// vacuously (the name inputs only ever render for quantity > 1).
-			await page.getByRole('button', { name: 'Increase quantity' }).click();
-			await expect(page.getByRole('button', { name: 'Decrease quantity' })).toBeEnabled();
-
-			// With names required this would now reveal the "Ticket holder names"
-			// block and a "Name for ticket 2" input — with the flag off neither may
-			// appear.
+			// This event's require_ticket_names is OFF and the tier is neither
+			// PWYC nor best_available, so EventCart.needsSheet stays false — no
+			// checkout sheet mounts at all, hence no "Ticket holder names" block
+			// or per-ticket name input anywhere on the page.
 			await expect(page.getByText('Ticket holder names', { exact: true })).toBeHidden();
-			await expect(page.getByPlaceholder('Name for ticket 2')).toBeHidden();
+			await expect(page.getByLabel('Name for ticket 2')).toBeHidden();
+			await expect(page.getByRole('dialog', { name: 'Checkout' })).toBeHidden();
 
-			// `exact` matters: a substring match on "Your Ticket" also hits the
-			// "Select Your Ticket" tier dialog.
+			// Buy goes straight to claim (direct checkout, no sheet).
 			const success = page.getByRole('dialog', { name: 'Your Ticket', exact: true });
-			const claim = page.getByRole('button', { name: 'Claim Ticket', exact: true });
+			const summaryBar = page.getByTestId('cart-summary-bar');
 			await expect(async () => {
 				if (await success.isVisible()) return;
-				await claim.click();
+				await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
 				await expect(success).toBeVisible({ timeout: 8_000 });
 			}).toPass({ timeout: 40_000 });
 			await page.keyboard.press('Escape');

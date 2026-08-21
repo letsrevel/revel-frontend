@@ -150,6 +150,22 @@ test.describe('J6 venue floors @p2', () => {
 		}
 	});
 
+	// #853 rewrite (wave 2, task 11): the legacy `TicketTierModal` ("Select
+	// Your Ticket") + `TicketConfirmationDialog` ("Reserve Ticket") this test
+	// opened are BOTH deleted — structurally impossible to keep as a pure
+	// locator-sanity read, so (per this task's brief) only this purchase leg
+	// is rewritten; the sibling overview test above is untouched. "Reserve
+	// Ticket" is now a tier-card button that opens `SeatPickerDialog`
+	// directly (testid `seat-picker-dialog`), hosting the SAME
+	// `SeatPickerPanel` whole-venue-scope + floor-chip UI verbatim (wave-1
+	// convention). One behavior did narrow in the move: `SeatPickerDialog`
+	// never wires `allTiers`/`onSwitchTier` into the panel (confirmed by
+	// reading the source — only the unauthenticated guest dialog still does),
+	// so the OTHER sold sector on the ground floor is no longer a clickable
+	// switch target — it renders as an inert ghost, same as any other
+	// out-of-scope sector (see seat-selection.spec.ts's whole-venue test).
+	// The floor-default + pure-presentation-switching properties this test is
+	// actually about are unaffected by that change.
 	test("purchase dialog defaults to the tier's floor; held seat survives floor switching", async ({
 		browser
 	}) => {
@@ -167,46 +183,43 @@ test.describe('J6 venue floors @p2', () => {
 			await gotoHydrated(page, eventPath);
 			await waitForClientAuth(page);
 
-			// Open the Balcony Ticket purchase dialog (its sector is on the
-			// UPPER floor) via the tier list.
-			const tierDialog = page.getByRole('dialog', { name: 'Select Your Ticket' });
-			const confirmDialog = page.getByRole('dialog', { name: 'Reserve Ticket' });
+			// Open the seat picker for Balcony Ticket (its sector is on the UPPER
+			// floor) via the tier card's "Pick seats…" button.
+			const balconyCard = page
+				.locator('div.bg-card')
+				.filter({ has: page.getByRole('heading', { name: 'Balcony Ticket', exact: true }) });
+			const picker = page.getByTestId('seat-picker-dialog');
 			await expect(async () => {
-				if (await confirmDialog.isVisible()) return;
-				if (!(await tierDialog.isVisible())) {
-					await page.getByRole('button', { name: 'Get Tickets', exact: true }).click();
-				}
-				const balconyCard = tierDialog
-					.locator('.bg-card')
-					.filter({ has: page.getByRole('heading', { name: 'Balcony Ticket', exact: true }) });
-				await balconyCard.getByRole('button', { name: 'Reserve Ticket' }).click();
-				await expect(confirmDialog).toBeVisible({ timeout: 8_000 });
+				if (await picker.isVisible()) return;
+				await balconyCard.getByRole('button', { name: 'Pick seats…', exact: true }).click();
+				await expect(picker).toBeVisible({ timeout: 8_000 });
 			}).toPass({ timeout: 60_000 });
 
 			// Hold B1 in the default "This section" scope (a real server hold).
-			const seatB1 = confirmDialog.getByRole('button', { name: /^Seat B1(,|$)/ });
+			const seatB1 = picker.getByRole('button', { name: /^Seat B1(,|$)/ });
 			await expect(async () => {
 				if ((await seatB1.getAttribute('aria-pressed')) !== 'true') {
 					await seatB1.click();
 				}
 				await expect(seatB1).toHaveAttribute('aria-pressed', 'true', { timeout: 5_000 });
 			}).toPass({ timeout: 60_000 });
-			await expect(confirmDialog.getByText('1 / 1 selected')).toBeVisible();
+			await expect(picker.getByText('1 / 1 selected')).toBeVisible();
 
 			// Whole venue: floor chips appear and DEFAULT to the tier's floor
 			// (Upper), not the first one.
-			await confirmDialog.getByRole('button', { name: 'Whole venue' }).click();
-			const chips = confirmDialog.getByRole('group', { name: 'Floors' });
+			await picker.getByRole('button', { name: 'Whole venue' }).click();
+			const chips = picker.getByRole('group', { name: 'Floors' });
 			const groundChip = chips.getByRole('button', { name: 'Ground floor', exact: true });
 			const upperChip = chips.getByRole('button', { name: 'Upper floor', exact: true });
 			await expect(upperChip).toHaveAttribute('aria-pressed', 'true', { timeout: 15_000 });
 			await expect(seatB1).toHaveAttribute('aria-pressed', 'true');
 
-			// The ground floor's view shows the OTHER sold sector as a labelled
-			// switch target on its own floor — and no held seats.
+			// The ground floor's view shows the OTHER sold sector as an inert
+			// ghost (not a switch target — see the note above) on its own floor
+			// — and no held seats.
 			await groundChip.click();
 			await expect(
-				confirmDialog.getByRole('button', { name: /^Ground Stalls: Stalls Ticket/ })
+				picker.getByRole('img', { name: 'Ground Stalls: sold through a different ticket' })
 			).toBeVisible({ timeout: 15_000 });
 			await expect(seatB1).toBeHidden();
 
@@ -214,7 +227,7 @@ test.describe('J6 venue floors @p2', () => {
 			// held and the count untouched.
 			await upperChip.click();
 			await expect(seatB1).toHaveAttribute('aria-pressed', 'true', { timeout: 15_000 });
-			await expect(confirmDialog.getByText('1 / 1 selected')).toBeVisible();
+			await expect(picker.getByText('1 / 1 selected')).toBeVisible();
 		} finally {
 			await context.close();
 		}
