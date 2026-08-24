@@ -8,7 +8,7 @@
  * direct access to them for reasons outside checkout), so this factory takes
  * them as deps rather than constructing them.
  */
-import { tick, untrack } from 'svelte';
+import { tick } from 'svelte';
 import type { QueryClient } from '@tanstack/svelte-query';
 import { toast } from 'svelte-sonner';
 import * as m from '$lib/paraglide/messages.js';
@@ -27,6 +27,7 @@ import { defaultGuestName } from '../tickets/purchase-items';
 import * as cartBaHolds from '../tickets/cart-ba-holds';
 import { createCartCheckoutController } from './cart-checkout-controller.svelte';
 import { createGuestCartCheckoutController } from './guest-cart-checkout-controller.svelte';
+import { createSignInDetector } from './sign-in-detector';
 
 export interface CartPurchaseFlowDeps {
 	event: EventDetailSchema;
@@ -119,18 +120,22 @@ export function createCartPurchaseFlow(deps: CartPurchaseFlowDeps) {
 	// `/login` in another tab, or client-side navigation back to this page)
 	// while cart items and a guest identity are still in memory — those were
 	// priced/held under the anonymous identity and must not silently carry
-	// over to the new authenticated one. Seeded from `isAuthenticated` (the
-	// trustworthy per-request SSR truth) rather than `authStore.isAuthenticated`
-	// at init: the client auth store starts empty and only catches up via the
-	// bootstrap-gate refresh (auth.svelte.ts), so seeding from the live store
-	// would misfire this guard for an already-authenticated visitor whose token
-	// simply hasn't landed yet.
-	let wasAuthenticated = $state(isAuthenticated);
+	// over to the new authenticated one. `createSignInDetector` (pure, unit
+	// tested) is seeded from `isAuthenticated` (the trustworthy per-request
+	// SSR truth) and reports a genuine false→true transition on the LIVE
+	// `authStore` exactly once — critically, it does NOT fire on the client
+	// auth store's bootstrap-gate catch-up (auth.svelte.ts), which can observe
+	// `authStore.isAuthenticated === false` on this effect's first several
+	// runs even for an already-authenticated visitor. An earlier version of
+	// this guard wrote `wasAuthenticated = nowAuthenticated` unconditionally,
+	// which let that stale bootstrap `false` clobber the `true` SSR seed —
+	// the eventual bootstrap resolution then looked exactly like a guest
+	// signing in and wiped a real authenticated buyer's cart. See
+	// `sign-in-detector.ts` for the fixed state machine and its tests.
+	const signInDetector = createSignInDetector(isAuthenticated);
 	$effect(() => {
 		const nowAuthenticated = authStore.isAuthenticated;
-		// untrack: this effect must not re-run on its own write below.
-		const justSignedIn = nowAuthenticated && !untrack(() => wasAuthenticated);
-		if (justSignedIn && !cart.isEmpty) {
+		if (signInDetector.check(nowAuthenticated) && !cart.isEmpty) {
 			// Bare-client release FIRST: the anonymous-cookie identity, not the
 			// new Bearer token, owns these holds (see seat-holds.ts's module
 			// doc) — releasing after `cart.clear()` would let the per-group
@@ -140,7 +145,6 @@ export function createCartPurchaseFlow(deps: CartPurchaseFlowDeps) {
 			guestIdentity.clear();
 			toast.info(m['cart.signedInCartCleared']());
 		}
-		wasAuthenticated = nowAuthenticated;
 	});
 
 	function buildCartCheckoutItems() {
