@@ -14,7 +14,7 @@ import { toast } from 'svelte-sonner';
 import * as m from '$lib/paraglide/messages.js';
 import type { EventDetailSchema, BuyerBillingInfoSchema } from '$lib/api/generated/types.gen';
 import { authStore } from '$lib/stores/auth.svelte';
-import { releaseAnonymousHolds } from '$lib/utils/seat-holds';
+import { clearAnonymousHoldRecord, releaseAnonymousHolds } from '$lib/utils/seat-holds';
 import type { EventCart } from '../tickets/cart.svelte';
 import type { CartSeatHoldRegistry } from '../tickets/cart-seat-registry.svelte';
 import { GuestIdentity } from '../tickets/guest-identity.svelte';
@@ -49,8 +49,10 @@ export function createCartPurchaseFlow(deps: CartPurchaseFlowDeps) {
 	const { event, eventId, queryClient, isAuthenticated, cart, registry } = deps;
 
 	// Guest buyer identity for the cart checkout sheet — lives for the flow's
-	// (i.e. the page's) lifetime, cleared after a successful guest purchase or
-	// on login mid-cart.
+	// (i.e. the page's) lifetime. NOT cleared after a successful guest
+	// purchase (deliberate: lets a guest buy again without retyping their
+	// details) — only on login mid-cart, where the identity belongs to an
+	// anonymous session that no longer applies.
 	const guestIdentity = new GuestIdentity();
 
 	// The guest checkout controller's `message` branch (non-online tiers): the
@@ -80,6 +82,13 @@ export function createCartPurchaseFlow(deps: CartPurchaseFlowDeps) {
 	function handlePurchaseComplete() {
 		registry.handedOffToCheckout = true;
 		cart.clear();
+		// The anon-hold record (if any) now names holds owned by the reservation
+		// or confirmation this purchase handed off to — not an abandoned cart —
+		// so a later sign-in's hasAnonymousHolds()/releaseAnonymousHolds() in
+		// +layout.svelte must not touch them. Clear the record rather than
+		// leave it for that cleanup to release out from under a pending
+		// email-confirmation or in-flight Stripe redirect.
+		clearAnonymousHoldRecord(eventId);
 		void tick().then(() => {
 			registry.handedOffToCheckout = false;
 		});

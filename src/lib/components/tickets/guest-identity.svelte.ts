@@ -2,8 +2,10 @@
  * Guest buyer identity for the cart checkout sheet (#853 PR 4): the email
  * (and, for events with `require_ticket_names` on, first/last name) an
  * unauthenticated buyer supplies for a purchase. Lives for the sheet's
- * lifetime — the host (`+page.svelte`, Task 5) owns the instance and calls
- * `clear()` after a successful purchase or on login mid-cart.
+ * lifetime — the host (`+page.svelte`, Task 5) owns the instance. `clear()`
+ * is called only on login mid-cart, NOT after a successful guest purchase —
+ * that's deliberate, so a guest who buys again doesn't have to retype their
+ * details.
  *
  * Trim-on-write: every setter trims leading/trailing whitespace immediately,
  * so `identity.email`/`firstName`/`lastName` are ALWAYS already-trimmed by
@@ -46,7 +48,8 @@ export class GuestIdentity {
 		this.#lastName = value.trim();
 	}
 
-	/** Reset every field to empty — called after a successful purchase or on login mid-cart. */
+	/** Reset every field to empty — called on login mid-cart only (NOT after a
+	 * successful guest purchase; see the class doc). */
 	clear(): void {
 		this.#email = '';
 		this.#firstName = '';
