@@ -9546,6 +9546,16 @@
 		"discountNoMatch": "Dieser Code gilt für nichts in deinem Warenkorb",
 		"discountCheckFailed": "Wir konnten diesen Code nicht überprüfen — er wird an der Kasse trotzdem angewendet",
 		"billingSection": "Rechnungsinformationen",
-		"close": "Schließen"
+		"close": "Schließen",
+		"confirmedTicketCount": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} Ticket bestätigt",
+					"countPlural=*": "{count} Tickets bestätigt"
+				}
+			}
+		]
 	}
 }

@@ -9546,6 +9546,16 @@
 		"discountNoMatch": "This code doesn't apply to anything in your cart",
 		"discountCheckFailed": "We couldn't check this code — it will still be applied at checkout",
 		"billingSection": "Billing information",
-		"close": "Close"
+		"close": "Close",
+		"confirmedTicketCount": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} ticket confirmed",
+					"countPlural=*": "{count} tickets confirmed"
+				}
+			}
+		]
 	}
 }
