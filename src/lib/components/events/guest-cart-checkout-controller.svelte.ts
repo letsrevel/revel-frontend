@@ -21,12 +21,14 @@ import { checkoutError } from './checkout-error';
 import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 import { getEligibilityRefusalMessage } from '$lib/utils/eligibility';
 
-// Next steps a guest can complete without an account (eligibility check).
-// Imported (not duplicated) from `guest-checkout-payload.ts`, which the
-// legacy `GuestTicketDialog` tree still uses until it is deleted (#853 PR4
-// task 6) — re-exported here so the sheet only needs one import.
-import { GUEST_COMPATIBLE_STEPS } from './guest-checkout-payload';
-export { GUEST_COMPATIBLE_STEPS };
+/** Next steps a guest can complete without an account (eligibility check). */
+// eslint-disable-next-line svelte/prefer-svelte-reactivity -- module-level constant, never mutated, not read from a template
+export const GUEST_COMPATIBLE_STEPS: ReadonlySet<string> = new Set([
+	'purchase_ticket',
+	'rsvp',
+	'wait_for_event_to_open',
+	'wait_for_open_spot'
+]);
 
 /**
  * Thrown when a guest checkout is refused because the next required step
