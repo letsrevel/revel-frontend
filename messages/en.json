@@ -9536,6 +9536,7 @@
 		"namesHeading": "Ticket holder names",
 		"nameLabel": "Name for ticket {index}",
 		"nameRequired": "Please enter a name for every ticket",
+		"guestNameRequired": "Please enter your first and last name",
 		"pwycRange": "Range: {min} – {max}",
 		"pwycHeading": "Choose your amount",
 		"discountSection": "Discount code",

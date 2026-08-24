@@ -9536,6 +9536,7 @@
 		"namesHeading": "Nomi dei titolari dei biglietti",
 		"nameLabel": "Nome per il biglietto {index}",
 		"nameRequired": "Inserisci un nome per ogni biglietto",
+		"guestNameRequired": "Inserisci il tuo nome e cognome",
 		"pwycRange": "Intervallo: {min} – {max}",
 		"pwycHeading": "Scegli il tuo importo",
 		"discountSection": "Codice sconto",

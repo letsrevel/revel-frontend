@@ -9536,6 +9536,7 @@
 		"namesHeading": "Nomes das pessoas titulares dos bilhetes",
 		"nameLabel": "Nome para o bilhete {index}",
 		"nameRequired": "Indica um nome para cada bilhete",
+		"guestNameRequired": "Indica o teu nome próprio e apelido",
 		"pwycRange": "Intervalo: {min} – {max}",
 		"pwycHeading": "Escolhe o teu valor",
 		"discountSection": "Código de desconto",

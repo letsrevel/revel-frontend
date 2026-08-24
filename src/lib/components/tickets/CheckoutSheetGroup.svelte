@@ -8,6 +8,8 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Label } from '$lib/components/ui/label';
+	import { Alert, AlertDescription } from '$lib/components/ui/alert';
+	import { Info } from '@lucide/svelte';
 	import GuestNameInputs from './GuestNameInputs.svelte';
 	import PwycInput from './PwycInput.svelte';
 	import type { EventCart, CartGroup } from './cart.svelte';
@@ -36,6 +38,10 @@
 		/** Cart-lifetime seat-hold controller registry (#853 PR 3, Task 5): the
 		 * source of this group's zone availability, when it's a seated tier. */
 		registry: CartSeatHoldRegistry;
+		/** #853 PR 4: true for an unauthenticated buyer — gates the
+		 * best-available email-assignment notice below (ported from the legacy
+		 * `GuestTicketSeatSection`'s `guestTicketDialog.bestAvailableEmailNotice`). */
+		isGuest: boolean;
 		onPwycKeydown: (e: KeyboardEvent) => void;
 	}
 
@@ -48,6 +54,7 @@
 		chart,
 		discountedPrice,
 		registry,
+		isGuest,
 		onPwycKeydown
 	}: Props = $props();
 
@@ -233,5 +240,13 @@
 				{m['ticketConfirmationDialog.accessibleSeatsLabel']()}
 			</Label>
 		</div>
+		{#if isGuest}
+			<Alert>
+				<Info class="h-4 w-4" />
+				<AlertDescription>
+					{m['guestTicketDialog.bestAvailableEmailNotice']()}
+				</AlertDescription>
+			</Alert>
+		{/if}
 	{/if}
 </div>

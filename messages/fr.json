@@ -9536,6 +9536,7 @@
 		"namesHeading": "Noms des titulaires des billets",
 		"nameLabel": "Nom pour le billet {index}",
 		"nameRequired": "Saisis un nom pour chaque billet",
+		"guestNameRequired": "Saisis ton prénom et ton nom",
 		"pwycRange": "Plage : {min} – {max}",
 		"pwycHeading": "Choisis ton montant",
 		"discountSection": "Code de réduction",

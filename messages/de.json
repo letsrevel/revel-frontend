@@ -9536,6 +9536,7 @@
 		"namesHeading": "Namen der Ticketinhaber*innen",
 		"nameLabel": "Name für Ticket {index}",
 		"nameRequired": "Bitte gib für jedes Ticket einen Namen ein",
+		"guestNameRequired": "Bitte gib deinen Vor- und Nachnamen ein",
 		"pwycRange": "Bereich: {min} – {max}",
 		"pwycHeading": "Wähle deinen Betrag",
 		"discountSection": "Rabattcode",

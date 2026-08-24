@@ -9536,6 +9536,7 @@
 		"namesHeading": "Nombres de las personas titulares de las entradas",
 		"nameLabel": "Nombre para la entrada {index}",
 		"nameRequired": "Introduce un nombre para cada entrada",
+		"guestNameRequired": "Introduce tu nombre y apellidos",
 		"pwycRange": "Rango: {min} – {max}",
 		"pwycHeading": "Elige tu importe",
 		"discountSection": "Código de descuento",

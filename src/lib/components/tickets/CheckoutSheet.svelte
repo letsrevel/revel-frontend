@@ -6,6 +6,7 @@
 	 * `setPwycAmount` only. Only the discount input/results and the
 	 * accordion-open flags are sheet-local (see `EventCart.needsSheet`). */
 	import { untrack } from 'svelte';
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import {
 		Dialog,
@@ -21,8 +22,12 @@
 	import CheckoutSheetGroup from './CheckoutSheetGroup.svelte';
 	import PurchaseErrorAlert from './PurchaseErrorAlert.svelte';
 	import CheckoutBillingSection from './CheckoutBillingSection.svelte';
+	import GuestIdentityFields from './GuestIdentityFields.svelte';
+	import GuestOnlinePaymentNotice from './GuestOnlinePaymentNotice.svelte';
 	import type { EventCart, CartGroup } from './cart.svelte';
 	import type { CartSeatHoldRegistry } from './cart-seat-registry.svelte';
+	import type { GuestIdentity } from './guest-identity.svelte';
+	import { guestIdentityError } from './guest-identity.svelte';
 	import {
 		discountApplicable,
 		discountStaysApplied,
@@ -62,6 +67,12 @@
 		/** Cart-lifetime seat-hold controller registry (#853 PR 3, Task 5):
 		 * threaded down to each `CheckoutSheetGroup` for its zone availability. */
 		registry: CartSeatHoldRegistry;
+		/** #853 PR 4: the guest buyer identity store — owned by the page,
+		 * `undefined` for authenticated buyers (and for every existing call site
+		 * until Task 5 wires guest checkout). When absent while `!isAuthenticated`
+		 * the guest identity block/gating is skipped entirely — defensive, not
+		 * expected to happen once the page passes it through. */
+		identity?: GuestIdentity;
 	}
 
 	let {
@@ -77,7 +88,8 @@
 		purchaseError,
 		onConfirm,
 		chart = null,
-		registry
+		registry,
+		identity
 	}: Props = $props();
 
 	// Discount: sheet-local input/results. Only the APPLIED code string
@@ -148,6 +160,26 @@
 	// disabled-with-hint UX, not per-field inline alerts on submit.
 	const validationError = $derived(sheetValidationError(cart.groups, requireTicketNames));
 
+	// Guest-only gate (#853 PR 4): checked BEFORE validationError below — an
+	// unauthenticated buyer without a usable email/name has nothing to submit
+	// regardless of the cart's own state. `identity` is optional (defensive:
+	// every current call site is authenticated and omits it), so this is a
+	// no-op for `isAuthenticated` and for the not-yet-wired guest path alike.
+	const guestError = $derived(
+		!isAuthenticated && identity ? guestIdentityError(identity, requireTicketNames) : null
+	);
+
+	// Split the translated "Already have an account? <a>Log in</a>" string around
+	// its <a> markers so we can render a real anchor instead of {@html}-injecting
+	// translator-editable content (latent XSS channel). Ported from the legacy
+	// `GuestTicketFooter`.
+	const orLoginParts = $derived.by(() => {
+		const message = m['guest_attendance.or_login']();
+		const match = message.match(/^(.*)<a>(.*)<\/a>(.*)$/s);
+		if (!match) return { before: message, link: '', after: '' };
+		return { before: match[1], link: match[2], after: match[3] };
+	});
+
 	// First offending PWYC group's precise reason (empty/below-min/above-max)
 	// for the footer hint text — sheetValidationError only reports the tag.
 	const firstInvalidPwyc = $derived.by(() => {
@@ -196,6 +228,7 @@
 	}
 
 	async function handleConfirm() {
+		if (guestError) return;
 		if (validationError) return;
 		if (billingSection && !billingSection.validate()) return;
 		await onConfirm({
@@ -209,7 +242,7 @@
 	function handlePwycKeydown(e: KeyboardEvent) {
 		if (e.key === 'Enter' && !isProcessing) {
 			e.preventDefault();
-			if (validationError) return;
+			if (guestError || validationError) return;
 			void handleConfirm();
 		}
 	}
@@ -235,6 +268,17 @@
 		</DialogHeader>
 
 		<div class="min-h-0 flex-1 space-y-4 overflow-y-auto py-2">
+			<!-- Purchaser identity (#853 PR 4): only for an unauthenticated buyer,
+			     and only once `identity` is actually threaded through (Task 5). -->
+			{#if !isAuthenticated && identity}
+				<GuestIdentityFields
+					{identity}
+					{requireTicketNames}
+					{isProcessing}
+					idPrefix="cart-sheet-guest"
+				/>
+			{/if}
+
 			{#each cart.groups as group (group.tier.id)}
 				<CheckoutSheetGroup
 					{group}
@@ -245,6 +289,7 @@
 					{chart}
 					discountedPrice={discountedPriceFor(group)}
 					{registry}
+					isGuest={!isAuthenticated}
 					onPwycKeydown={handlePwycKeydown}
 				/>
 			{/each}
@@ -355,6 +400,11 @@
 				</div>
 			{/if}
 
+			<!-- #853 PR 4: cart-wide, guests only, redirect-to-Stripe heads-up. -->
+			{#if !isAuthenticated && cart.paymentMethod === 'online'}
+				<GuestOnlinePaymentNotice />
+			{/if}
+
 			<PurchaseErrorAlert
 				error={purchaseError}
 				tiers={cart.groups.map((group) => group.tier)}
@@ -363,7 +413,18 @@
 		</div>
 
 		<DialogFooter class="flex-col gap-2">
-			{#if validationError && !isProcessing}
+			{#if guestError && !isProcessing}
+				<!-- Guest identity gate takes priority: without a usable email/name
+				     there is nothing to submit, regardless of the cart's own state. -->
+				<p class="text-center text-sm text-highlight-foreground dark:text-highlight">
+					<AlertCircle class="mr-1 inline-block h-4 w-4" aria-hidden="true" />
+					{#if guestError === 'email'}
+						{m['guest_attendance.validation_email']()}
+					{:else}
+						{m['cartSheet.guestNameRequired']()}
+					{/if}
+				</p>
+			{:else if validationError && !isProcessing}
 				<p class="text-center text-sm text-highlight-foreground dark:text-highlight">
 					<AlertCircle class="mr-1 inline-block h-4 w-4" aria-hidden="true" />
 					{#if validationError === 'names'}
@@ -397,7 +458,7 @@
 				</Button>
 				<Button
 					onclick={handleConfirm}
-					disabled={isProcessing || !!validationError}
+					disabled={isProcessing || !!guestError || !!validationError}
 					class="flex-1 sm:flex-initial"
 				>
 					{#if isProcessing}
@@ -408,6 +469,19 @@
 					{/if}
 				</Button>
 			</div>
+
+			<!-- #853 PR 4: subtle login link for guests — ported from the legacy
+			     `GuestTicketFooter`. -->
+			{#if !isAuthenticated}
+				<div class="border-t pt-3 text-center text-xs text-muted-foreground">
+					<p>
+						{orLoginParts.before}{#if orLoginParts.link}<a
+								href={resolve('/(public)/login', {})}
+								class="text-primary hover:underline">{orLoginParts.link}</a
+							>{/if}{orLoginParts.after}
+					</p>
+				</div>
+			{/if}
 		</DialogFooter>
 	</DialogContent>
 </Dialog>

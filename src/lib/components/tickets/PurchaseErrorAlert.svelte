@@ -6,6 +6,7 @@
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import { isMembershipTierRefusal } from '$lib/utils/eligibility';
 	import { extractPurchaseErrorMessage } from './purchase-error';
+	import { GuestAccountRequiredError } from '../events/guest-cart-checkout-controller.svelte';
 
 	interface Props {
 		/** Whatever the purchase path threw, or `null` when there is no error. */
@@ -52,6 +53,15 @@
 	// a qualifying tier can be obtained. Deliberately not "Join organization": a
 	// plain membership request grants no tier and would dead-end, which is why the
 	// backend refuses to send this case down the become_member path at all.
+
+	// A guest's next required step (e.g. become_member, complete_questionnaire)
+	// has no guest-compatible path (#853 PR 4 — `guest-cart-checkout-controller`'s
+	// error mapping). Ported from the legacy `GuestTicketErrorAlert`'s
+	// `requiresAccount` branch: extended here rather than kept as a separate
+	// component, since this is the one alert every checkout surface (single-tier
+	// and cart) already renders errors through — a guest wrapper would just
+	// re-implement the same message/Alert plumbing around it.
+	const requiresAccount = $derived(error instanceof GuestAccountRequiredError);
 </script>
 
 {#if message}
@@ -72,6 +82,28 @@
 				>
 					{m['membershipPlans.viewMembership']()}
 				</a>
+			{/if}
+			{#if requiresAccount}
+				<p class="mt-2">
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
+					<a
+						href={`${resolve('/(public)/login', {})}?redirect=${encodeURIComponent(window.location.pathname)}`}
+						class="font-medium underline hover:no-underline"
+					>
+						{m['guestTicketDialog.logIn']()}
+					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
+					{m['guestTicketDialog.or']()}
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
+					<a
+						href={`${resolve('/(public)/register', {})}?redirect=${encodeURIComponent(window.location.pathname)}`}
+						class="font-medium underline hover:no-underline"
+					>
+						{m['guestTicketDialog.createAnAccount']()}
+					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
+					{m['guestTicketDialog.toContinue']()}
+				</p>
 			{/if}
 		</AlertDescription>
 	</Alert>
