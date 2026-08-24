@@ -27,6 +27,7 @@
 	 * leaks a hold.
 	 */
 	import { onDestroy } from 'svelte';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import {
 		Dialog,
@@ -95,7 +96,11 @@
 		onAutoGrowQuantity: () => {
 			// Nothing to grow independently — see getQuantity above.
 		},
-		isAuthenticated: () => true, // this dialog only opens from the authed cart flow
+		// Live now (#853 PR 4) rather than hardcoded true: this dialog still only
+		// opens from the authed cart flow (Task 5 widens that), but reading the
+		// real token here — rather than assuming — is what arms the
+		// controller's anonymous-hold sessionStorage bookkeeping once it does.
+		isAuthenticated: () => !!authStore.accessToken,
 		onConflict: (_seatIds, reason) => {
 			panelRef?.reportConflict(reason);
 		}

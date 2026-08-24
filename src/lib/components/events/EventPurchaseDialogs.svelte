@@ -1,17 +1,15 @@
 <script lang="ts">
 	/**
-	 * The event page's purchase-dialog cluster (#853 task 7, slimmed in task 9):
-	 * MyTicketModal, GuestRsvpDialog, VenueOverviewDialog, GuestTicketDialog. The
-	 * single-tier `TicketTierModal`/`TicketConfirmationDialog` path died with the
-	 * cart — purchasing now happens inline on the page (quick-buy steppers, the
-	 * seat picker, the checkout sheet). Pure markup + state extraction from
-	 * +page.svelte for page headroom — no behavior change. The `open` flags are
-	 * bindable because other page code (sidebar callbacks, the cart controller,
-	 * TicketTierList's onViewSeatingMap) writes them directly; `selectedTierForGuest`
-	 * and `guestFocusSeating` are bindable because both this component's own inline
-	 * handler (onSwitchTier) AND the page's `openGuestTicketDialog` (still needed
-	 * there for TicketTierList's onGuestTierClick) read and write them — keeping
-	 * them page-owned avoids duplicating that state in two places.
+	 * The event page's purchase-dialog cluster (#853 task 7, slimmed in Task 5,
+	 * further slimming to come in task 9): MyTicketModal, GuestRsvpDialog,
+	 * VenueOverviewDialog. The single-tier `TicketTierModal`/
+	 * `TicketConfirmationDialog` path died with the cart, and the guest ticket
+	 * dialog died with the guest cart (#853 Task 5) — purchasing now happens
+	 * inline on the page for every buyer, authenticated or guest (quick-buy
+	 * steppers, the seat picker, the checkout sheet). Pure markup + state
+	 * extraction from +page.svelte for page headroom — no behavior change. The
+	 * `open` flags are bindable because other page code (sidebar callbacks, the
+	 * cart controller, TicketTierList's onViewSeatingMap) writes them directly.
 	 */
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
@@ -21,7 +19,6 @@
 	import { formatEventLocation } from '$lib/utils/event';
 	import MyTicketModal from '$lib/components/tickets/MyTicketModal.svelte';
 	import GuestRsvpDialog from './GuestRsvpDialog.svelte';
-	import GuestTicketDialog from './GuestTicketDialog.svelte';
 	import VenueOverviewDialog from './VenueOverviewDialog.svelte';
 
 	interface Props {
@@ -41,21 +38,15 @@
 		refreshUserStatus: () => Promise<void>;
 		onResumePayment?: (paymentId: string) => void;
 		onCancelReservation?: (paymentId: string) => void;
-		/** Also used by the page's TicketTierList (map §7). Routes an authenticated
-		 * buyer into the cart — `heldSeatIds` carries any seats the venue overview
+		/** Also used by the page's TicketTierList (map §7). Routes the buyer
+		 * into the cart — `heldSeatIds` carries any seats the venue overview
 		 * already held server-side for a `user_choice` tier's Continue action. */
 		onSelectTier: (tier: TierSchemaWithId, heldSeatIds?: string[]) => void;
-		/** Also used by the page's TicketTierList (map §7). */
-		onGuestTierClick?: (tier?: TierSchemaWithId) => void;
 		onGuestRsvpClose: () => void;
 		onGuestAttendanceSuccess: () => void | Promise<void>;
-		onGuestTicketClose: () => void;
 		showMyTicketModal: boolean;
 		showGuestRsvpDialog: boolean;
-		showGuestTicketDialog: boolean;
 		showVenueOverview: boolean;
-		selectedTierForGuest: TierSchemaWithId | null;
-		guestFocusSeating: boolean;
 	}
 
 	let {
@@ -72,16 +63,11 @@
 		onResumePayment,
 		onCancelReservation,
 		onSelectTier,
-		onGuestTierClick,
 		onGuestRsvpClose,
 		onGuestAttendanceSuccess,
-		onGuestTicketClose,
 		showMyTicketModal = $bindable(),
 		showGuestRsvpDialog = $bindable(),
-		showGuestTicketDialog = $bindable(),
-		showVenueOverview = $bindable(),
-		selectedTierForGuest = $bindable(),
-		guestFocusSeating = $bindable()
+		showVenueOverview = $bindable()
 	}: Props = $props();
 
 	const queryClient = useQueryClient();
@@ -134,28 +120,5 @@
 		eventMaxTicketsPerUser={event.max_tickets_per_user}
 		{protectedSeatIds}
 		{onSelectTier}
-		{onGuestTierClick}
 	/>
-{/if}
-
-<!-- Guest Ticket Dialog -->
-{#if !isAuthenticated && event.can_attend_without_login && event.requires_ticket && selectedTierForGuest}
-	{#key selectedTierForGuest.id}
-		<GuestTicketDialog
-			bind:open={showGuestTicketDialog}
-			eventId={event.id}
-			tier={selectedTierForGuest}
-			allTiers={ticketTiers}
-			eventMaxTicketsPerUser={event.max_tickets_per_user}
-			requireTicketNames={event.require_ticket_names}
-			onClose={onGuestTicketClose}
-			onSuccess={onGuestAttendanceSuccess}
-			focusSeating={guestFocusSeating}
-			onSwitchTier={(tier) => {
-				selectedTierForGuest = tier;
-				showGuestTicketDialog = true;
-				guestFocusSeating = true;
-			}}
-		/>
-	{/key}
 {/if}

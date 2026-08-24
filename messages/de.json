@@ -5948,13 +5948,8 @@
 	"ticketConfirmationDialog": {
 		"paymentAmount": "Zahlungsbetrag",
 		"quickSelect": "Schnellauswahl:",
-		"agreeToTerms": "Mit dem Fortfahren stimmst du den Bedingungen der Veranstaltung zu.",
-		"bestAvailableTitle": "Beste verfügbare Plätze",
-		"bestAvailableDesc": "Deine Plätze werden automatisch zugewiesen – nebeneinanderliegende Plätze im besten verfügbaren Block.",
 		"accessibleSeatsLabel": "Ich benötige rollstuhlgerechte Plätze",
 		"bestAvailableConflict": "Nicht genügend nebeneinanderliegende Plätze verfügbar – versuche es mit einer kleineren Anzahl.",
-		"generalEntrance": "Allgemeiner Einlass",
-		"generalEntranceDesc": "Dieses Ticket gewährt allgemeinen Einlass ohne zugewiesene Sitzplätze.",
 		"selectSeats": "Wähle deine Plätze",
 		"seatsSelected": "ausgewählt",
 		"loadingSeats": "Verfügbare Plätze werden geladen...",
@@ -5962,7 +5957,6 @@
 		"defaultGuestName": "Gast",
 		"bestAvailableRetry": "Plätze wurden vergeben, während deine zugewiesen wurden – bitte versuche es erneut."
 	},
-	"ticketConfirmationDialog.selectMoreSeats": "Bitte wähle noch {count} Sitzplatz/Sitzplätze",
 	"ticketListCard": {
 		"purchased": "Gekauft:",
 		"addToCalendar": "Zum Kalender hinzufügen"
@@ -5976,13 +5970,6 @@
 	"ticketTierList": {
 		"ticketOptions": "Ticketoptionen",
 		"signIn": "Anmelden"
-	},
-	"ticketTierModal": {
-		"noTickets": "Derzeit keine Tickets verfügbar.",
-		"paymentInstructions": "Zahlungsanweisungen:",
-		"signIn": "Anmelden",
-		"soldOut": "Ausverkauft",
-		"agreeToTerms": "Mit dem Beanspruchen eines Tickets stimmst du den Bedingungen der Veranstaltung zu."
 	},
 	"ticketingStep": {
 		"ticketingOptions": "Ticketoptionen",
@@ -6097,7 +6084,6 @@
 		"claimFreeTicket": "Gratis-Ticket sichern",
 		"buyTicket": "Ticket kaufen",
 		"reserveTicket": "Ticket reservieren",
-		"getTicket": "Ticket holen",
 		"configError": "Konfigurationsfehler",
 		"youHaveTicket": "Du hast ein Ticket",
 		"limitReached": "Limit erreicht",
@@ -7823,30 +7809,7 @@
 	"guestRsvpDialog.createAnAccount": "ein Konto erstellen",
 	"guestRsvpDialog.toContinue": "um fortzufahren.",
 	"guestRsvpDialog.failedToSubmit": "Zusage konnte nicht gesendet werden",
-	"guestTicketDialog.failedToLoadSeats": "Verfügbare Plätze konnten nicht geladen werden",
-	"guestTicketDialog.pleaseEnterYourName": "Bitte gib deinen Namen ein",
-	"guestTicketDialog.pleaseEnterTicketHolderName": "Bitte gib einen Namen für Ticketinhaber*in {number} ein",
-	"guestTicketDialog.pleaseSelectMoreSeatOne": "Bitte wähle noch 1 Platz aus",
-	"guestTicketDialog.pleaseSelectMoreSeats": "Bitte wähle noch {count} Plätze aus",
-	"guestTicketDialog.failedToCheckout": "Bezahlvorgang konnte nicht abgeschlossen werden",
-	"guestTicketDialog.paymentStartFailed": "Deine Tickets sind reserviert, aber die Zahlung konnte nicht gestartet werden. Bitte versuche es erneut.",
-	"guestTicketDialog.paymentStartFailedExpired": "Deine Reservierung ist abgelaufen, bevor die Zahlung gestartet werden konnte. Bitte starte den Kauf erneut.",
-	"guestTicketDialog.numberOfTickets": "Anzahl der Tickets",
-	"guestTicketDialog.decreaseQuantity": "Menge verringern",
-	"guestTicketDialog.increaseQuantity": "Menge erhöhen",
-	"guestTicketDialog.maxQuantity": "(Max.: {max})",
-	"guestTicketDialog.total": "Gesamt:",
-	"guestTicketDialog.ticketHolderNames": "Namen der Ticketinhaber*innen",
-	"guestTicketDialog.ticketHolderNamesHint": "Gib den Namen für jede*n Ticketinhaber*in ein (wird auf dem Ticket gedruckt)",
-	"guestTicketDialog.yourName": "Dein Name",
-	"guestTicketDialog.guestName": "Name von Gast {number}",
-	"guestTicketDialog.yourNamePlaceholder": "Dein Name",
-	"guestTicketDialog.guestNamePlaceholder": "Name von Gast {number}",
-	"guestTicketDialog.selectYourSeat": "Wähle deinen Platz",
-	"guestTicketDialog.noSeatsAvailable": "Keine Plätze für diese Kategorie verfügbar",
-	"guestTicketDialog.selectedSeats": "{selected} von {total} Plätzen ausgewählt",
 	"guestTicketDialog.bestAvailableEmailNotice": "Deine Plätze werden automatisch zugewiesen, sobald du deine E-Mail bestätigst.",
-	"guestTicketDialog.quickSelect": "Schnellauswahl",
 	"guestTicketDialog.onlinePaymentNotice": "Du wirst zu unserem sicheren Zahlungsanbieter weitergeleitet, um deinen Kauf abzuschließen.",
 	"guestTicketDialog.logIn": "Anmelden",
 	"guestTicketDialog.or": "oder",
@@ -8416,7 +8379,6 @@
 	"ticketListCard.viewTicketAndQr": "Ticket und QR-Code ansehen",
 	"ticketListCard.viewTicket": "Ticket ansehen",
 	"ticketListCard.viewEvent": "Veranstaltung ansehen",
-	"ticketTierModal.selectYourTicket": "Wähle dein Ticket",
 	"eventTokenCard.toastTokenIdMissing": "Token-ID fehlt",
 	"eventTokenCard.toastLinkCopied": "Link in die Zwischenablage kopiert!",
 	"eventTokenCard.toastCopyFailed": "Link konnte nicht kopiert werden",
@@ -8444,36 +8406,14 @@
 	"ticketConfirmationDialog.errorMinAmount": "Der Mindestbetrag ist {amount}",
 	"ticketConfirmationDialog.errorMaxAmount": "Der Höchstbetrag ist {amount}",
 	"ticketConfirmationDialog.errorInvalidAmount": "Ungültiger Betrag",
-	"ticketConfirmationDialog.errorEnterYourName": "Bitte gib deinen Namen ein",
-	"ticketConfirmationDialog.errorEnterHolderName": "Bitte gib einen Namen für Ticketinhaber*in {number} ein",
 	"ticketConfirmationDialog.errorGeneric": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
-	"ticketConfirmationDialog.descClaimFree": "Bestätige, dass du dieses kostenlose Ticket für die Veranstaltung sichern möchtest.",
-	"ticketConfirmationDialog.descReserveAtDoor": "Reserviere deinen Platz und zahle an der Tür.",
-	"ticketConfirmationDialog.descReserveOffline": "Reserviere deinen Platz und zahle offline.",
-	"ticketConfirmationDialog.descPwyc": "Wähle, wie viel du für dein Ticket zahlen möchtest.",
-	"ticketConfirmationDialog.descOnline": "Bestätige deinen Kauf. Du wirst weitergeleitet, um die Zahlung abzuschließen.",
 	"ticketConfirmationDialog.numberOfTickets": "Anzahl der Tickets",
 	"ticketConfirmationDialog.decreaseQuantity": "Menge verringern",
 	"ticketConfirmationDialog.increaseQuantity": "Menge erhöhen",
 	"ticketConfirmationDialog.maxHint": "(max. {max})",
-	"ticketConfirmationDialog.securePaymentNotice": "Du wirst zu unserem sicheren Zahlungsanbieter weitergeleitet, um deinen Kauf abzuschließen.",
-	"ticketConfirmationDialog.onlyOneRemaining": "Nur noch 1 Ticket übrig!",
-	"ticketConfirmationDialog.onlyNRemaining": "Nur noch {count} Tickets übrig!",
 	"ticketConfirmationDialog.unableToComplete": "Anfrage konnte nicht abgeschlossen werden",
-	"ticketConfirmationDialog.hintEnterYourName": "Bitte gib oben deinen Namen ein",
-	"ticketConfirmationDialog.hintEnterAllNames": "Bitte gib oben die Namen aller Ticketinhaber*innen ein",
-	"ticketConfirmationDialog.hintEnterAmount": "Bitte gib einen Zahlungsbetrag ein",
-	"ticketConfirmationDialog.hintMinAmount": "Der Betrag muss mindestens {amount} sein",
-	"ticketConfirmationDialog.hintMaxAmount": "Der Betrag darf {amount} nicht überschreiten",
-	"ticketConfirmationDialog.hintSelectOneMoreSeat": "Bitte wähle noch 1 Platz aus",
-	"ticketConfirmationDialog.hintSelectMoreSeats": "Bitte wähle noch {count} Plätze aus",
 	"ticketConfirmationDialog.cancel": "Abbrechen",
-	"ticketConfirmationDialog.redirectingToPayment": "Weiterleitung zur Zahlung...",
 	"ticketConfirmationDialog.processing": "Wird verarbeitet...",
-	"ticketConfirmationDialog.claimTicket": "Ticket sichern",
-	"ticketConfirmationDialog.reserveTicket": "Ticket reservieren",
-	"ticketConfirmationDialog.continueToPayment": "Weiter zur Zahlung",
-	"ticketConfirmationDialog.proceedToPayment": "Zur Zahlung",
 	"eventTokenModal.titleEdit": "Einladungslink bearbeiten",
 	"eventTokenModal.titleCreate": "Einladungslink erstellen",
 	"eventTokenModal.descEdit": "Aktualisiere die Link-Einstellungen. Die teilbare URL bleibt gleich.",
@@ -9516,7 +9456,8 @@
 				}
 			}
 		],
-		"seatPickerDone": "Fertig"
+		"seatPickerDone": "Fertig",
+		"signedInCartCleared": "Du bist jetzt angemeldet — dein Gast-Warenkorb wurde geleert."
 	},
 	"cartSheet": {
 		"title": "Kasse",
@@ -9536,6 +9477,7 @@
 		"namesHeading": "Namen der Ticketinhaber*innen",
 		"nameLabel": "Name für Ticket {index}",
 		"nameRequired": "Bitte gib für jedes Ticket einen Namen ein",
+		"guestNameRequired": "Bitte gib deinen Vor- und Nachnamen ein",
 		"pwycRange": "Bereich: {min} – {max}",
 		"pwycHeading": "Wähle deinen Betrag",
 		"discountSection": "Rabattcode",
@@ -9544,6 +9486,16 @@
 		"discountNoMatch": "Dieser Code gilt für nichts in deinem Warenkorb",
 		"discountCheckFailed": "Wir konnten diesen Code nicht überprüfen — er wird an der Kasse trotzdem angewendet",
 		"billingSection": "Rechnungsinformationen",
-		"close": "Schließen"
+		"close": "Schließen",
+		"confirmedTicketCount": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} Ticket bestätigt",
+					"countPlural=*": "{count} Tickets bestätigt"
+				}
+			}
+		]
 	}
 }

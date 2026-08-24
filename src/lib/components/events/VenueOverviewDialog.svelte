@@ -45,14 +45,15 @@
 		 * `VenueOverviewMap` (see its prop doc; #853 final-review fix 1). */
 		protectedSeatIds?: ReadonlySet<string>;
 		/**
-		 * Route an authenticated buyer into the cart. `heldSeatIds`, when present,
-		 * carries seats this dialog's map already held server-side for a
-		 * `user_choice` tier's Continue action — the page adopts them straight
-		 * into a cart group instead of opening the seat picker.
+		 * Route the buyer into the cart. `heldSeatIds`, when present, carries
+		 * seats this dialog's map already held server-side for a `user_choice`
+		 * tier's Continue action — the page adopts them straight into a cart
+		 * group instead of opening the seat picker. Guests route through the
+		 * same callback (#853 Task 5): the widened cart mount gate means a cart
+		 * always exists when `canAttendWithoutLogin`, so there is no separate
+		 * guest fork to route into anymore.
 		 */
 		onSelectTier: (tier: TierSchemaWithId, heldSeatIds?: string[]) => void;
-		/** Route a guest buyer into the guest ticket dialog (same as TierCard). */
-		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 	}
 
 	let {
@@ -64,8 +65,7 @@
 		tierRemainingTickets,
 		eventMaxTicketsPerUser = null,
 		protectedSeatIds = new Set(),
-		onSelectTier,
-		onGuestTierClick
+		onSelectTier
 	}: Props = $props();
 
 	const CHART_STALE_TIME_MS = 5 * 60 * 1000;
@@ -124,15 +124,12 @@
 		chooserEntry = null;
 	}
 
-	/** Close the overview surfaces, then hand off to the page's purchase path. */
+	/** Close the overview surfaces, then hand off to the page's purchase path
+	 * (cart-based for every buyer — see `onSelectTier`'s prop doc). */
 	function route(tier: TierSchemaWithId, heldSeatIds?: string[]): void {
 		closeChooser();
 		open = false;
-		if (!isAuthenticated && canAttendWithoutLogin) {
-			onGuestTierClick?.(tier);
-		} else {
-			onSelectTier(tier, heldSeatIds);
-		}
+		onSelectTier(tier, heldSeatIds);
 	}
 
 	function modeHint(mode: SectorTierMode): string {

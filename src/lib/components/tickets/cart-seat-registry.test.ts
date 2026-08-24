@@ -170,4 +170,41 @@ describe('CartSeatHoldRegistry', () => {
 			expect(registry.otherHolds('tier-nonexistent')).toEqual(new Set(['s1']));
 		});
 	});
+
+	describe('allHolds', () => {
+		it('is empty when nothing is registered', () => {
+			const registry = new CartSeatHoldRegistry();
+			expect(registry.allHolds()).toEqual([]);
+		});
+
+		it('is empty when the only registered controller has no holds', () => {
+			const registry = new CartSeatHoldRegistry();
+			registry.set('tier-1', fakeController(null, undefined, []));
+			expect(registry.allHolds()).toEqual([]);
+		});
+
+		it('unions holds from every registered controller, INCLUDING the caller’s own', () => {
+			const registry = new CartSeatHoldRegistry();
+			registry.set('tier-a', fakeController(null, undefined, ['s1']));
+			registry.set('tier-b', fakeController(null, undefined, ['s2', 's3']));
+			registry.set('tier-c', fakeController(null, undefined, ['s4']));
+			expect(new Set(registry.allHolds())).toEqual(new Set(['s1', 's2', 's3', 's4']));
+		});
+
+		it('dedups seat ids shared across controllers (BA/user_choice sector overlap)', () => {
+			const registry = new CartSeatHoldRegistry();
+			registry.set('tier-a', fakeController(null, undefined, ['s1', 's2']));
+			registry.set('tier-b', fakeController(null, undefined, ['s2', 's3']));
+			expect(new Set(registry.allHolds())).toEqual(new Set(['s1', 's2', 's3']));
+			expect(registry.allHolds()).toHaveLength(3);
+		});
+
+		it('reflects a delete removing that controller’s holds', () => {
+			const registry = new CartSeatHoldRegistry();
+			registry.set('tier-a', fakeController(null, undefined, ['s1']));
+			registry.set('tier-b', fakeController(null, undefined, ['s2']));
+			registry.delete('tier-a');
+			expect(registry.allHolds()).toEqual(['s2']);
+		});
+	});
 });

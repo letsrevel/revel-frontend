@@ -32,6 +32,13 @@ export interface EventCartDeps {
 	remainingFor: (tierId: string) => TierRemainingTicketsSchema | undefined;
 	/** Event-level shared budget (BE #901); null = no cap / not exposed yet. */
 	eventRemaining: () => number | null;
+	/**
+	 * Event's own `max_tickets_per_user` (#853 PR 4) — a guest has no
+	 * `remainingFor`/`eventRemaining` info (both come from my-status, which
+	 * requires auth), so this is the ONLY per-user cap a guest cart can see.
+	 * Optional: absent = no cap from this term (unchanged pre-PR-4 behavior).
+	 */
+	eventMaxTicketsPerUser?: () => number | null;
 }
 
 /**
@@ -94,6 +101,8 @@ export class EventCart {
 		const matchedInfo = info && info.tier_id === tier.id ? info : undefined;
 		const tierTerm = matchedInfo ? matchedInfo.remaining : (tier.max_tickets_per_user ?? null);
 		if (tierTerm != null) cap = Math.min(cap, tierTerm);
+		const eventMaxTickets = this.#deps.eventMaxTicketsPerUser?.();
+		if (eventMaxTickets != null) cap = Math.min(cap, eventMaxTickets);
 		const eventRemaining = this.#deps.eventRemaining();
 		if (eventRemaining != null) {
 			cap = Math.min(cap, eventRemaining - (this.totalCount - this.quantityFor(tier.id)));
@@ -186,14 +195,20 @@ export class EventCart {
 	/**
 	 * True when checkout needs the sheet: any group needs names or a PWYC
 	 * amount, or auto-assigns seats server-side (best_available groups collect
-	 * zone/accessible in the sheet).
+	 * zone/accessible in the sheet). `isGuest` (#853 PR 4) unconditionally
+	 * forces the sheet too — a guest needs it for contact/billing details the
+	 * direct-buy path never collects; an empty cart never reaches Buy, so the
+	 * unguarded OR is harmless.
 	 */
-	needsSheet(requireTicketNames: boolean): boolean {
-		return this.groups.some(
-			(g) =>
-				requireTicketNames ||
-				g.tier.price_type === 'pwyc' ||
-				g.tier.seat_assignment_mode === 'best_available'
+	needsSheet(requireTicketNames: boolean, isGuest = false): boolean {
+		return (
+			isGuest ||
+			this.groups.some(
+				(g) =>
+					requireTicketNames ||
+					g.tier.price_type === 'pwyc' ||
+					g.tier.seat_assignment_mode === 'best_available'
+			)
 		);
 	}
 

@@ -38,12 +38,16 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 //    logged-in purchase would see them as FOREIGN 409s, so the app records
 //    hold-carrying events in sessionStorage (seat-holds.ts) and the root
 //    layout releases them cookie-identified right after the auth bootstrap.
-//    Closing the guest dialog normally RELEASES holds (reset effect), so the
-//    abandoned-hold path is reached by HARD-navigating away with the dialog
-//    still open — a full-page load skips the close handler while the
+//    Closing `SeatPickerDialog` normally RELEASES an un-handed-off hold on
+//    destroy, so the abandoned-hold path is reached by HARD-navigating away
+//    with the dialog still open (Done never clicked) — a full-page load tears
+//    the whole SPA down before that teardown release can run, while the
 //    sessionStorage record survives same-tab navigation. Login itself ends in
 //    a full reload (login/+page.svelte does window.location.href on the 303),
 //    which re-runs the layout bootstrap that fires the release.
+//
+//    #853 rewrite (task 9): this test also opened the now-deleted legacy
+//    guest dialog — same `SeatPickerDialog` entry-point swap as item 1 above.
 //
 // Isolation: own events on Org Alpha attached to the seeded "Revel Concert
 // Hall" (availability is per event); offline tiers keep Stripe out. Row A is
@@ -175,7 +179,7 @@ test.describe('J19 seat holds @p2', () => {
 			}),
 			createVerifiedUser('HoldLogin')
 		]);
-		await deleteDefaultTier(event.id); // its card also says "Get Ticket" to guests
+		await deleteDefaultTier(event.id); // its stepper would also render
 		await createTicketTier(event.id, {
 			name: 'Guest Choose Seat',
 			payment_method: 'offline',
@@ -186,29 +190,29 @@ test.describe('J19 seat holds @p2', () => {
 		});
 		const seatId = await seatIdByLabel(event.id, 'C3');
 
-		// ANONYMOUS visitor: the tier card CTA opens the guest dialog directly.
+		// ANONYMOUS visitor: #853 PR 3/4 replaced the legacy guest dialog — the
+		// tier card's "Pick seats…" button (same as an authenticated buyer's,
+		// `TierCard`'s `canTransact` gate) opens `SeatPickerDialog` directly.
 		await gotoHydrated(page, event.path);
-		const guestDialog = page.getByRole('dialog', { name: 'Get tickets without an account' });
+		const picker = page.getByTestId('seat-picker-dialog');
 		await expect(async () => {
-			if (await guestDialog.isVisible()) return;
-			await page.getByRole('button', { name: 'Get Ticket', exact: true }).first().click();
-			await expect(guestDialog).toBeVisible({ timeout: 5_000 });
+			if (await picker.isVisible()) return;
+			await page.getByRole('button', { name: 'Pick seats…', exact: true }).first().click();
+			await expect(picker).toBeVisible({ timeout: 8_000 });
 		}).toPass({ timeout: 60_000 });
 
-		await expect(guestDialog.getByText('STAGE')).toBeVisible({ timeout: 15_000 });
+		await expect(picker.getByText('STAGE')).toBeVisible({ timeout: 15_000 });
 
 		// Tap C3 — the first anonymous hold mints the signed guest cookie and
 		// records the event in sessionStorage for release-on-login.
-		const seat = guestDialog.getByRole('button', { name: /^Seat C3(,|$)/ });
+		const seat = picker.getByRole('button', { name: /^Seat C3(,|$)/ });
 		await expect(async () => {
 			if ((await seat.getAttribute('aria-pressed')) !== 'true') {
 				await seat.click();
 			}
 			await expect(seat).toHaveAttribute('aria-pressed', 'true', { timeout: 5_000 });
 		}).toPass({ timeout: 60_000 });
-		await expect(
-			guestDialog.getByText('Selected seats are held for you for 10 minutes.')
-		).toBeVisible();
+		await expect(picker.getByText('Selected seats are held for you for 10 minutes.')).toBeVisible();
 
 		// Server truth: the seat reads as held to an identity-less probe (the
 		// raw fetch carries no cookie jar, so the hold is foreign to it).
@@ -218,14 +222,25 @@ test.describe('J19 seat holds @p2', () => {
 			})
 			.toBe('held');
 
-		// HARD-navigate away with the dialog still open: the full-page load
-		// skips the dialog's close-time release, so the hold stays alive…
+		// HARD-navigate away WITHOUT hitting Done: the full-page load tears the
+		// whole SPA down before `SeatPickerDialog`'s `onDestroy` release can run
+		// (same "skips the close-time release" property the legacy dialog had —
+		// only the mechanism moved from an effect to onDestroy), so the hold
+		// stays alive…
 		await gotoHydrated(page, '/login');
 		expect((await getSeatingAvailability(event.id)).seats[seatId]).toBe('held');
 
 		// …until login. The 303 → full reload re-runs the root layout's auth
 		// bootstrap, which reads the sessionStorage record and releases the
 		// guest-cookie holds without an Authorization header (seat-holds.ts).
+		// Note: this canary never hands the pick to a cart group (no Done click),
+		// so `cart.isEmpty` stays true across the reload and the mid-cart sign-in
+		// guard's `cart.signedInCartCleared` toast (cart-purchase-flow.ts) does
+		// NOT fire here — that guard reacts to a LIVE authStore transition with a
+		// non-empty cart, which needs an in-SPA sign-in (no full reload) to
+		// observe; login's own 303 always full-reloads. It's covered by
+		// sign-in-detector.test.ts instead. This test's job is the hold-release
+		// half only, preserving the original canary's intent.
 		await uiLogin(page, account);
 		await waitForClientAuth(page);
 

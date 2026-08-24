@@ -46,7 +46,6 @@
 		/** Event-level shared remaining budget (BE #901); null = no cap / unknown. */
 		eventRemaining?: number | null;
 		onSelectTier: (tier: TierSchemaWithId) => void;
-		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 		/** Map-first entry point (#679): opens the whole-venue seating overview. */
 		onViewSeatingMap?: () => void;
 		/** Seat-picker entry point (#853 PR 3): opens `SeatPickerDialog` for a
@@ -73,7 +72,6 @@
 		quickBuyDisabled = false,
 		eventRemaining = null,
 		onSelectTier,
-		onGuestTierClick,
 		onViewSeatingMap,
 		onPickSeats
 	}: Props = $props();
@@ -199,7 +197,6 @@
 							}
 						: undefined}
 					{onSelectTier}
-					{onGuestTierClick}
 				/>
 			{/each}
 		</div>

@@ -57,7 +57,6 @@
 			onPick: () => void;
 		};
 		onSelectTier: (tier: TierSchemaWithId) => void;
-		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 	}
 
 	const {
@@ -72,9 +71,16 @@
 		capacityDisclosed = true,
 		quickBuy,
 		pickSeats,
-		onSelectTier,
-		onGuestTierClick
+		onSelectTier
 	}: Props = $props();
+
+	// A buyer who can transact — authenticated, or a guest the event allows to
+	// attend without an account (#853 Task 5). With the widened cart mount
+	// gate a cart always exists in the latter case too, so `canClaim`/
+	// `canCheckout`/`canReserve` below gate on this instead of `isAuthenticated`
+	// alone — otherwise a guest would fall through every quick-buy/pick-seats
+	// branch straight to "Coming soon".
+	const canTransact = $derived(isAuthenticated || canAttendWithoutLogin);
 
 	/**
 	 * Check tier purchase status based on per-tier info from my-status endpoint
@@ -210,7 +216,7 @@
 	// below, for contexts with no quick-buy/seat-pick mechanism (see `actions`).
 	const canClaim = $derived(
 		hasId &&
-			isAuthenticated &&
+			canTransact &&
 			effectiveEligible &&
 			salesStatus.active &&
 			availabilityStatus.available &&
@@ -220,7 +226,7 @@
 	// Can checkout for online payment
 	const canCheckout = $derived(
 		hasId &&
-			isAuthenticated &&
+			canTransact &&
 			effectiveEligible &&
 			salesStatus.active &&
 			availabilityStatus.available &&
@@ -230,7 +236,7 @@
 	// Can reserve offline/at-the-door ticket
 	const canReserve = $derived(
 		hasId &&
-			isAuthenticated &&
+			canTransact &&
 			effectiveEligible &&
 			salesStatus.active &&
 			availabilityStatus.available &&
@@ -323,10 +329,6 @@
 		<Button href="/login" variant="outline" class="w-full sm:w-auto"
 			>{m['tierCardAdmin.signInToGetTicket']()}</Button
 		>
-	{:else if !isAuthenticated && canAttendWithoutLogin}
-		<Button onclick={() => onGuestTierClick?.(tier)} class="w-full sm:w-auto">
-			{m['tierCardAdmin.getTicket']()}
-		</Button>
 	{:else if !effectiveEligible}
 		<!-- User is authenticated but not eligible for this tier - show reason -->
 		<Button disabled class="w-full sm:w-auto">

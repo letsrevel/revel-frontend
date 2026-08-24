@@ -36,8 +36,22 @@ export class CartSeatHoldRegistry {
 	 * the purchased tickets now own the held seats, so `CartSeatGroupHolds`'
 	 * destroy handler must NOT release them. Reset back to `false` once the
 	 * clear (and the resulting unmounts) have settled.
+	 *
+	 * Deliberately a PLAIN field, not `$state` (task 9 finding): nothing ever
+	 * reads it reactively (no `$derived`/`$effect` depends on it — the only
+	 * reader is `CartSeatGroupHolds`' `onDestroy`, a plain synchronous
+	 * callback), yet under `$state` this was observed reading a stale `false`
+	 * inside that `onDestroy` in the SAME synchronous turn it was set `true`
+	 * moments earlier in `cart-purchase-flow.ts` — Svelte 5's proxy/effect
+	 * batching can defer a `$state` write's visibility to an effect triggered
+	 * by a SIBLING write in the same synchronous batch, even though a plain
+	 * property read sees the new value immediately. A plain field has no such
+	 * batching semantics: the write is visible to every reader synchronously,
+	 * which is exactly the guarantee this boolean depends on to protect a
+	 * guest's pending (ticket-less) hold from being released out from under
+	 * the email-confirm flow.
 	 */
-	handedOffToCheckout = $state(false);
+	handedOffToCheckout = false;
 
 	get(tierId: string): SeatHoldController | undefined {
 		return this.#controllers.get(tierId);
@@ -69,6 +83,24 @@ export class CartSeatHoldRegistry {
 			for (const id of controller.myHolds) ids.add(id);
 		}
 		return ids;
+	}
+
+	/**
+	 * Union of `myHolds` across EVERY registered controller, including the
+	 * caller's own tier (#853 PR 4) — unlike `otherHolds`, there's no exclusion
+	 * here: this feeds the event page's `protectedSeatIds`, which guards the
+	 * venue-overview browse-and-close flow against releasing ANY cart-held
+	 * seat. `cart.groups[].seatIds` alone misses `best_available` holds (they
+	 * only land in a group's `seatIds` after checkout confirm), so those seats
+	 * were unprotected mid-cart — this closes that PR-3-parked residual.
+	 */
+	allHolds(): string[] {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- local dedup set built and consumed synchronously by the caller, never mutated afterwards
+		const ids = new Set<string>();
+		for (const controller of this.#controllers.values()) {
+			for (const id of controller.myHolds) ids.add(id);
+		}
+		return [...ids];
 	}
 
 	/**
