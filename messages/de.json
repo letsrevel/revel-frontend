@@ -9516,7 +9516,8 @@
 				}
 			}
 		],
-		"seatPickerDone": "Fertig"
+		"seatPickerDone": "Fertig",
+		"signedInCartCleared": "Du bist jetzt angemeldet — dein Gast-Warenkorb wurde geleert."
 	},
 	"cartSheet": {
 		"title": "Kasse",

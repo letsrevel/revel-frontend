@@ -102,19 +102,22 @@ export function joinBlockMessage(block: NonNullable<JoinBlock>): string {
 	return block === 'currency' ? m['cart.cannotMixCurrency']() : m['cart.cannotMixPayment']();
 }
 
-/** The checkout controller surface `submitCart` needs — `createCartCheckoutController`'s return shape. */
-export interface CartSubmitController {
-	wouldResume: (params: CartCheckoutParams) => boolean;
-	checkoutCart: (params: CartCheckoutParams) => Promise<void>;
+/** The checkout controller surface `submitCart` needs — `createCartCheckoutController`'s
+ * return shape by default. Generic over the params type (#853 Task 5) so the
+ * SAME orchestration also drives `createGuestCartCheckoutController`, whose
+ * `GuestCartCheckoutParams` carries the buyer's email/name alongside `items`. */
+export interface CartSubmitController<P = CartCheckoutParams> {
+	wouldResume: (params: P) => boolean;
+	checkoutCart: (params: P) => Promise<void>;
 	readonly isPending: boolean;
 }
 
-export interface SubmitCartDeps {
+export interface SubmitCartDeps<P = CartCheckoutParams> {
 	/** Read live: `cart.bestAvailableGroups` is a `$derived` getter, so a
 	 * `SubmitCartDeps` built once at page init stays fresh across calls. */
 	cart: EventCart;
 	registry: CartSeatHoldRegistry;
-	controller: CartSubmitController;
+	controller: CartSubmitController<P>;
 	/** The page's `holdingSeats` guard flag (`controller.isPending` alone
 	 * misses the BA-hold round-trip). */
 	isHolding: () => boolean;
@@ -136,9 +139,9 @@ export interface SubmitCartHandlers {
  * whether checkout completed — the caller decides what to do with that
  * (e.g. close the sheet).
  */
-export async function submitCart(
-	params: CartCheckoutParams,
-	deps: SubmitCartDeps,
+export async function submitCart<P>(
+	params: P,
+	deps: SubmitCartDeps<P>,
 	handlers: SubmitCartHandlers
 ): Promise<boolean> {
 	if (deps.isHolding() || deps.controller.isPending) return false;

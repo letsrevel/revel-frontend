@@ -9516,7 +9516,8 @@
 				}
 			}
 		],
-		"seatPickerDone": "Concluído"
+		"seatPickerDone": "Concluído",
+		"signedInCartCleared": "Iniciaste sessão — o teu carrinho de convidado foi limpo."
 	},
 	"cartSheet": {
 		"title": "Pagamento",

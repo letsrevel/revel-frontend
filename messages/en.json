@@ -9516,7 +9516,8 @@
 				}
 			}
 		],
-		"seatPickerDone": "Done"
+		"seatPickerDone": "Done",
+		"signedInCartCleared": "You're signed in — your guest cart was cleared."
 	},
 	"cartSheet": {
 		"title": "Checkout",

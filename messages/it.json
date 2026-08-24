@@ -9516,7 +9516,8 @@
 				}
 			}
 		],
-		"seatPickerDone": "Fatto"
+		"seatPickerDone": "Fatto",
+		"signedInCartCleared": "Hai eseguito l'accesso — il tuo carrello ospite è stato svuotato."
 	},
 	"cartSheet": {
 		"title": "Cassa",

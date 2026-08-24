@@ -35,27 +35,23 @@
 		hasAttendingSignal,
 		type EventTicketSchemaActual
 	} from '$lib/utils/eligibility';
-	import type {
-		TierRemainingTicketsSchema,
-		BuyerBillingInfoSchema
-	} from '$lib/api/generated/types.gen';
+	import type { TierRemainingTicketsSchema } from '$lib/api/generated/types.gen';
 	import { getPotluckPermissions } from '$lib/utils/permissions';
 	import { formatEventLocation } from '$lib/utils/event';
 	import { getUserRealName } from '$lib/utils/user-display';
 	import { formatEventDate } from '$lib/utils/date';
-	import { onMount, tick } from 'svelte';
+	import { onMount } from 'svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { EventCart } from '$lib/components/tickets/cart.svelte';
 	import { cartTotal, cartTotalArgs } from '$lib/components/tickets/checkout-total';
 	import { discountApplicable } from '$lib/components/tickets/cart-discount';
-	import { buildCartItems, buildCartCheckoutParams } from '$lib/components/tickets/cart-payload';
 	import CartSummaryBar from '$lib/components/tickets/CartSummaryBar.svelte';
 	import CartSeatHolds from '$lib/components/tickets/CartSeatHolds.svelte';
 	import { CartSeatHoldRegistry } from '$lib/components/tickets/cart-seat-registry.svelte';
 	import SeatPickerDialog from '$lib/components/tickets/SeatPickerDialog.svelte';
 	import CheckoutSheet from '$lib/components/tickets/CheckoutSheet.svelte';
-	import { createCartCheckoutController } from '$lib/components/events/cart-checkout-controller.svelte';
-	import { defaultGuestName } from '$lib/components/tickets/purchase-items';
+	import CartEmailConfirmation from '$lib/components/tickets/CartEmailConfirmation.svelte';
+	import { createCartPurchaseFlow } from '$lib/components/events/cart-purchase-flow.svelte';
 	import * as cartBaHolds from '$lib/components/tickets/cart-ba-holds';
 	import { readTierMapPref, writeTierMapPref } from '$lib/components/tickets/seat-view-toggle';
 	import { toast } from 'svelte-sonner';
@@ -158,11 +154,7 @@
 	// Modal states
 	let showMyTicketModal = $state(false);
 	let showGuestRsvpDialog = $state(false);
-	let showGuestTicketDialog = $state(false);
 	let showVenueOverview = $state(false);
-	let selectedTierForGuest = $state<TierSchemaWithId | null>(null);
-	// Opened by a section switch: scroll seating into view (remount lands at top).
-	let guestFocusSeating = $state(false);
 	// Seat-picker entry point: the tier being picked also gates SeatPickerDialog's
 	// mount, so closing/hand-off unmounts it (destroying its transient controller).
 	let pickSeatsTier = $state<TierSchemaWithId | null>(null);
@@ -213,20 +205,6 @@
 		showGuestRsvpDialog = false;
 	}
 
-	function openGuestTicketDialog(tier?: TierSchemaWithId) {
-		if (tier) {
-			selectedTierForGuest = tier;
-		}
-		showGuestTicketDialog = true;
-		guestFocusSeating = false;
-	}
-
-	function closeGuestTicketDialog() {
-		showGuestTicketDialog = false;
-		selectedTierForGuest = null;
-		guestFocusSeating = false;
-	}
-
 	// SeatPickerDialog's `open` reads/writes through `pickSeatsTier` itself
 	// (bind:open function form): the tier being non-null IS "open", so the
 	// dialog fully unmounts on close instead of just hiding — its transient
@@ -271,8 +249,9 @@
 		return (userStatus as { event_remaining?: number | null }).event_remaining ?? null;
 	});
 
-	// Quick-buy cart (#853): authed-only, wired into TicketTierList's per-tier
-	// steppers and the sticky CartSummaryBar below.
+	// Quick-buy cart (#853): wired into TicketTierList's per-tier steppers and
+	// the sticky CartSummaryBar below. Available to guests too (#853 Task 5) —
+	// see `canUseCart`.
 	const cart = new EventCart({
 		remainingFor: (tierId) => tierRemainingTickets?.find((t) => t.tier_id === tierId),
 		eventRemaining: () => eventRemaining,
@@ -290,23 +269,30 @@
 		new Set([...cart.groups.flatMap((group) => group.seatIds), ...seatHoldRegistry.allHolds()])
 	);
 
-	const cartController = createCartCheckoutController({
+	// Cart mount gate (#853 Task 5, widened from authed-only): a guest gets the
+	// cart too, whenever the event both allows attending without login AND
+	// actually requires a ticket (an RSVP-only event has no tiers to cart —
+	// its guest path is `GuestRsvpDialog`, untouched here).
+	const canUseCart = $derived(
+		data.isAuthenticated || (event.can_attend_without_login && event.requires_ticket)
+	);
+
+	// Cart purchase orchestration (#853 Task 5): authed + guest checkout
+	// controllers, the guest identity, the checkout sheet's open/error state,
+	// and the confirm-time submit handlers — extracted to keep this file under
+	// the length budget (plan ruling 10). See cart-purchase-flow.svelte.ts.
+	const purchaseFlow = createCartPurchaseFlow({
+		event,
 		eventId: event.id,
 		queryClient,
+		isAuthenticated: data.isAuthenticated,
+		cart,
+		registry: seatHoldRegistry,
+		getInitialDiscountCode: () => initialDiscountCode,
+		getTicketHolderDefaultName: () => ticketHolderDefaultName,
 		refreshUserStatus,
 		setShowMyTicketModal: (open) => {
 			showMyTicketModal = open;
-		},
-		onPurchaseComplete: () => {
-			// Tickets now own the held seats — flag it BEFORE clearing so
-			// CartSeatGroupHolds' destroy handler (fired by the groups
-			// disappearing below) skips its release-on-unmount. Reset once
-			// the resulting unmounts have settled.
-			seatHoldRegistry.handedOffToCheckout = true;
-			cart.clear();
-			void tick().then(() => {
-				seatHoldRegistry.handedOffToCheckout = false;
-			});
 		}
 	});
 
@@ -319,75 +305,6 @@
 			cart.groups.map((group) => cartTotalArgs({ ...group, chart: seatHoldRegistry.chart }))
 		)
 	);
-
-	// Checkout sheet (#853 PR 2): multi-tier carts and any require_ticket_names
-	// event route here for names/PWYC/discount/billing; single-tier carts on a
-	// no-names event skip it entirely (direct checkout below).
-	let showCheckoutSheet = $state(false);
-	let cartPurchaseError = $state<unknown>(null);
-	// Guards the BA-hold round-trip: cartController.isPending misses it.
-	let holdingSeats = $state(false);
-
-	// Stranded-cart guard: a cart that empties out from under an open sheet
-	// (e.g. the last held seat expiring) must close it rather than show an
-	// empty checkout form.
-	$effect(() => {
-		if (cart.isEmpty) showCheckoutSheet = false;
-	});
-
-	// Closing the sheet (confirm, cancel, or the stranded-cart guard above)
-	// discards any inline purchase error — the next open starts clean.
-	$effect(() => {
-		if (!showCheckoutSheet) cartPurchaseError = null;
-	});
-
-	function buildCartCheckoutItems() {
-		return buildCartItems(cart.groups, {
-			requireTicketNames: event.require_ticket_names,
-			defaultName: defaultGuestName(ticketHolderDefaultName)
-		});
-	}
-
-	// Deps for `submitCart` (cart-ba-holds.ts) — `cart` is live, so built once.
-	const cartSubmitDeps = {
-		cart,
-		registry: seatHoldRegistry,
-		controller: cartController,
-		isHolding: () => holdingSeats,
-		setHolding: (value: boolean) => (holdingSeats = value)
-	};
-
-	async function handleCartBuy() {
-		// A URL-seeded discount code needs the sheet too, even on a direct
-		// single-tier "Buy" — skipping straight to checkout would drop it.
-		// isGuest explicit false for now (Task 5 threads real auth state here).
-		if (cart.needsSheet(event.require_ticket_names, false) || initialDiscountCode) {
-			showCheckoutSheet = true;
-			return;
-		}
-		// '' / null keep the fingerprint byte-identical to PR 1's `{ items }`.
-		const params = buildCartCheckoutParams(buildCartCheckoutItems(), '', null);
-		// onError omitted: the controller's own toast surfaces the failure.
-		await cartBaHolds.submitCart(params, cartSubmitDeps, {
-			onHoldFailure: (message) => toast.error(message)
-		});
-	}
-
-	async function handleSheetConfirm({
-		discountCode,
-		billingInfo
-	}: {
-		discountCode: string;
-		billingInfo: BuyerBillingInfoSchema | null;
-	}) {
-		const params = buildCartCheckoutParams(buildCartCheckoutItems(), discountCode, billingInfo);
-		// Sheet stays open with the inline error either way; controller toast fires too.
-		const ok = await cartBaHolds.submitCart(params, cartSubmitDeps, {
-			onHoldFailure: (message) => (cartPurchaseError = new Error(message)),
-			onError: (e) => (cartPurchaseError = e)
-		});
-		if (ok) showCheckoutSheet = false;
-	}
 
 	// Handle payment success/cancelled redirects
 	let paymentSuccess = $state(false);
@@ -568,12 +485,11 @@
 							timezone={event.timezone}
 							capacityDisclosed={viewerVisibility.show_capacity}
 							onSelectTier={handleSelectTier}
-							onGuestTierClick={openGuestTicketDialog}
 							onViewSeatingMap={hasSeatingMap ? openVenueOverview : undefined}
-							cart={data.isAuthenticated ? cart : undefined}
-							quickBuyDisabled={cartController.isPending || holdingSeats}
+							cart={canUseCart ? cart : undefined}
+							quickBuyDisabled={purchaseFlow.isProcessing}
 							{eventRemaining}
-							onPickSeats={data.isAuthenticated
+							onPickSeats={canUseCart
 								? (tier) => {
 										pickSeatsTier = tier;
 									}
@@ -672,7 +588,7 @@
 	</div>
 </div>
 
-{#if data.isAuthenticated && !cart.isEmpty}
+{#if canUseCart && !cart.isEmpty}
 	<CartSeatHolds {cart} registry={seatHoldRegistry} eventId={event.id} />
 
 	<CartSummaryBar
@@ -680,18 +596,18 @@
 		totalDisplay={cartTotalDisplay}
 		currency={cart.currency}
 		isFree={cart.paymentMethod === 'free'}
-		isPending={cartController.isPending || holdingSeats}
-		onBuy={handleCartBuy}
+		isPending={purchaseFlow.isProcessing}
+		onBuy={purchaseFlow.handleCartBuy}
 		onDiscountClick={cart.groups.some((g) => discountApplicable(g.tier))
 			? () => {
-					showCheckoutSheet = true;
+					purchaseFlow.showCheckoutSheet = true;
 				}
 			: undefined}
 		holdExpiresAt={seatHoldRegistry.expiresAt}
 	/>
 
 	<CheckoutSheet
-		bind:open={showCheckoutSheet}
+		bind:open={purchaseFlow.showCheckoutSheet}
 		{cart}
 		eventId={event.id}
 		requireTicketNames={event.require_ticket_names}
@@ -699,11 +615,12 @@
 		authToken={authStore.accessToken}
 		organizationSlug={event.organization.slug}
 		{initialDiscountCode}
-		isProcessing={cartController.isPending || holdingSeats}
-		purchaseError={cartPurchaseError}
-		onConfirm={handleSheetConfirm}
+		isProcessing={purchaseFlow.isProcessing}
+		purchaseError={purchaseFlow.cartPurchaseError}
+		onConfirm={purchaseFlow.handleSheetConfirm}
 		chart={seatHoldRegistry.chart}
 		registry={seatHoldRegistry}
+		identity={data.isAuthenticated ? undefined : purchaseFlow.guestIdentity}
 	/>
 {/if}
 
@@ -722,7 +639,7 @@
 	/>
 {/if}
 
-<!-- Purchase-dialog cluster (MyTicketModal, GuestRsvpDialog, VenueOverviewDialog, GuestTicketDialog) -->
+<!-- Purchase-dialog cluster (MyTicketModal, GuestRsvpDialog, VenueOverviewDialog) -->
 <EventPurchaseDialogs
 	{event}
 	{ticketTiers}
@@ -737,14 +654,26 @@
 	onResumePayment={handleResumePayment}
 	onCancelReservation={handleCancelReservation}
 	onSelectTier={handleSelectTier}
-	onGuestTierClick={openGuestTicketDialog}
 	onGuestRsvpClose={closeGuestRsvpDialog}
 	onGuestAttendanceSuccess={handleGuestAttendanceSuccess}
-	onGuestTicketClose={closeGuestTicketDialog}
 	bind:showMyTicketModal
 	bind:showGuestRsvpDialog
-	bind:showGuestTicketDialog
 	bind:showVenueOverview
-	bind:selectedTierForGuest
-	bind:guestFocusSeating
 />
+
+<!-- Guest cart email-confirmation (#853 Task 5): the guest checkout controller's
+     `message` branch — no ticket exists client-side yet, the backend emailed a
+     confirm link. Mounted independently of the checkout sheet (which is
+     already closed by `onEmailConfirmationPending` by the time this renders). -->
+{#if purchaseFlow.guestEmailConfirmation}
+	<CartEmailConfirmation
+		bind:open={
+			() => purchaseFlow.guestEmailConfirmation !== null,
+			(open) => {
+				if (!open) purchaseFlow.guestEmailConfirmation = null;
+			}
+		}
+		email={purchaseFlow.guestEmailConfirmation.email}
+		onClose={() => (purchaseFlow.guestEmailConfirmation = null)}
+	/>
+{/if}

@@ -40,7 +40,16 @@
 		registry: CartSeatHoldRegistry;
 		/** #853 PR 4: true for an unauthenticated buyer — gates the
 		 * best-available email-assignment notice below (ported from the legacy
-		 * `GuestTicketSeatSection`'s `guestTicketDialog.bestAvailableEmailNotice`). */
+		 * `GuestTicketSeatSection`'s `guestTicketDialog.bestAvailableEmailNotice`).
+		 * #853 Task 5: a guest's best-available seats are now held at CONFIRM
+		 * time (the same `holdBestAvailableGroups` step the authed path uses —
+		 * see `cart-ba-holds.ts`), same as an authed buyer. The notice's actual
+		 * claim — seats get assigned when the buyer confirms their email — only
+		 * still holds for the non-online payment methods, where the reservation
+		 * stays pending until the emailed confirm link is clicked; an online
+		 * guest is redirected straight to Stripe with no separate email-confirm
+		 * step, so the notice would be false for them. Gated below on
+		 * `group.tier.payment_method !== 'online'` in addition to `isGuest`. */
 		isGuest: boolean;
 		onPwycKeydown: (e: KeyboardEvent) => void;
 	}
@@ -240,7 +249,7 @@
 				{m['ticketConfirmationDialog.accessibleSeatsLabel']()}
 			</Label>
 		</div>
-		{#if isGuest}
+		{#if isGuest && group.tier.payment_method !== 'online'}
 			<Alert>
 				<Info class="h-4 w-4" />
 				<AlertDescription>

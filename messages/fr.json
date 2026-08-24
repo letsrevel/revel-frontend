@@ -9516,7 +9516,8 @@
 				}
 			}
 		],
-		"seatPickerDone": "Terminé"
+		"seatPickerDone": "Terminé",
+		"signedInCartCleared": "Connexion réussie — ton panier invité a été vidé."
 	},
 	"cartSheet": {
 		"title": "Paiement",
