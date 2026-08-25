@@ -45,10 +45,13 @@ test.describe('J20 discount lifecycle @p2', () => {
 		browser
 	}) => {
 		const [event, buyer] = await Promise.all([
-			createTicketedEvent({ freeTier: false }),
+			// Names off: the sheet is entered via the summary bar's discount link,
+			// and the discount round-trip shouldn't be confounded by the unrelated
+			// holder-name validation gate.
+			createTicketedEvent({ freeTier: false, event: { require_ticket_names: false } }),
 			createVerifiedUser('Discount')
 		]);
-		await deleteDefaultTier(event.id); // its card also says "Reserve Ticket"
+		await deleteDefaultTier(event.id); // its card also renders a stepper
 		await createTicketTier(event.id, {
 			name: 'Discountable Entry',
 			payment_method: 'offline',
@@ -73,36 +76,43 @@ test.describe('J20 discount lifecycle @p2', () => {
 		await gotoHydrated(page, event.path);
 		await waitForClientAuth(page);
 
-		const tierDialog = page.getByRole('dialog', { name: 'Select Your Ticket' });
-		const confirmDialog = page.getByRole('dialog', { name: 'Reserve Ticket' });
-		await expect(async () => {
-			if (await confirmDialog.isVisible()) return;
-			if (!(await tierDialog.isVisible())) {
-				await page.getByRole('button', { name: 'Get Tickets', exact: true }).click();
-			}
-			await tierDialog.getByRole('button', { name: 'Reserve Ticket' }).click();
-			await expect(confirmDialog).toBeVisible({ timeout: 8_000 });
-		}).toPass({ timeout: 60_000 });
+		// Cart flow (#853): one ticket via the tier stepper, then the summary
+		// bar's "Discount code?" link opens the checkout sheet (this cart needs
+		// no other input, so Buy alone would checkout directly).
+		const stepper = page.getByRole('group', { name: 'Quantity for Discountable Entry' });
+		await stepper.getByRole('button', { name: 'Add one Discountable Entry' }).click();
+		const summaryBar = page.getByTestId('cart-summary-bar');
+		await summaryBar.getByRole('button', { name: 'Discount code?' }).click();
 
-		await confirmDialog.getByRole('button', { name: 'Have a discount code?' }).click();
-		const codeInput = confirmDialog.getByLabel('Discount code');
+		const sheet = page.getByRole('dialog', { name: 'Checkout' });
+		await expect(sheet).toBeVisible();
+
+		// Open the discount accordion; a bogus code gets the backend's per-group
+		// "invalid" verdict in the results live-region.
+		await sheet.getByRole('button', { name: 'Discount code' }).click();
+		const codeInput = sheet.getByRole('textbox', { name: 'Discount code' });
 		await codeInput.fill('E2ENOSUCHCODE');
-		await confirmDialog.getByRole('button', { name: 'Apply' }).click();
-		await expect(confirmDialog.getByRole('alert')).toBeVisible({ timeout: 15_000 });
+		await sheet.getByRole('button', { name: 'Apply' }).click();
+		const results = sheet.locator('[aria-live="polite"]');
+		await expect(results.locator('p', { hasText: 'Discountable Entry' })).toContainText(
+			/invalid discount code/i,
+			{ timeout: 15_000 }
+		);
 
+		// The real code applies to the tier and halves the footer total (€20 → €10).
 		await codeInput.fill(CODE);
-		await confirmDialog.getByRole('button', { name: 'Apply' }).click();
-		// Applied state: -50.00% badge and the discounted €10.00 per-ticket price.
-		await expect(confirmDialog.getByText(/-50(\.00)?%/)).toBeVisible({ timeout: 15_000 });
-		await expect(confirmDialog.getByText(/10[.,]00/).first()).toBeVisible();
+		await sheet.getByRole('button', { name: 'Apply' }).click();
+		await expect(results.getByText('Applies to Discountable Entry')).toBeVisible({
+			timeout: 15_000
+		});
+		const footerTotal = sheet.locator('p', { hasText: 'Total' });
+		await expect(footerTotal).toContainText('€10.00');
 
 		// Reserve — usage is recorded as soon as the (pending) ticket exists.
+		await sheet.getByRole('button', { name: 'Reserve', exact: true }).click();
+		await expect(page.getByText(/reserved/i)).toBeVisible({ timeout: 10_000 });
 		const success = page.getByRole('dialog', { name: 'Your Ticket', exact: true });
-		await expect(async () => {
-			if (await success.isVisible()) return;
-			await confirmDialog.getByRole('button', { name: 'Reserve Ticket' }).click();
-			await expect(success).toBeVisible({ timeout: 8_000 });
-		}).toPass({ timeout: 60_000 });
+		await expect(success).toBeVisible({ timeout: 8_000 });
 		await context.close();
 
 		await expect(async () => {
