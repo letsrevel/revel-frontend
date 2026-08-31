@@ -176,6 +176,63 @@ test.describe('J6 cart quick-buy @p1', () => {
 		await context.close();
 	});
 
+	test('event per-person cap: filling it on one tier explains the dead stepper on another', async ({
+		browser
+	}) => {
+		// When the event-level max_tickets_per_user is consumed by the cart,
+		// OTHER tiers' steppers drop to max 0 — previously a dead "+" button
+		// with no copy. The card now replaces the stepper with the event-limit
+		// hint, and restores it when room frees up.
+		const event = await createTicketedEvent({
+			freeTier: false,
+			event: { require_ticket_names: false, max_tickets_per_user: 1 }
+		});
+		await deleteDefaultTier(event.id);
+
+		const tierA = await createTicketTier(event.id, {
+			name: 'Limit A',
+			payment_method: 'offline',
+			price: '10.00',
+			price_type: 'fixed',
+			seat_assignment_mode: 'none',
+			total_quantity: 50
+		});
+		const tierB = await createTicketTier(event.id, {
+			name: 'Limit B',
+			payment_method: 'offline',
+			price: '15.00',
+			price_type: 'fixed',
+			seat_assignment_mode: 'none',
+			total_quantity: 50
+		});
+
+		const { context, page } = await openBuyerPage(browser, event.path);
+
+		const stepperA = page.getByRole('group', { name: `Quantity for ${tierA.name}` });
+		const stepperB = page.getByRole('group', { name: `Quantity for ${tierB.name}` });
+		const hint = page.getByText("You've reached this event's ticket limit per person.");
+
+		// With room in the cap, both steppers render and no hint shows.
+		await expect(stepperB).toBeVisible();
+		await expect(hint).toBeHidden();
+
+		await stepperA.getByRole('button', { name: `Add one ${tierA.name}` }).click();
+		await expect(stepperA.locator('span[aria-live="polite"]')).toHaveText('1');
+
+		// Tier B's stepper is replaced by the explanatory hint, not left as a
+		// dead control; tier A keeps its own stepper so the cart stays editable.
+		await expect(hint).toBeVisible();
+		await expect(stepperB).toHaveCount(0);
+		await expect(stepperA).toBeVisible();
+
+		// Freeing the slot restores tier B's stepper and clears the hint.
+		await stepperA.getByRole('button', { name: `Remove one ${tierA.name}` }).click();
+		await expect(stepperB).toBeVisible();
+		await expect(hint).toBeHidden();
+
+		await context.close();
+	});
+
 	test('stepper caps at total_available: a 2-ticket tier refuses a third add', async ({
 		browser
 	}) => {

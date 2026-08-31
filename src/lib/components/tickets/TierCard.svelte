@@ -50,6 +50,10 @@
 		pickSeats?: {
 			/** Seats already held for this tier's cart group (`cart.quantityFor`). */
 			heldCount: number;
+			/** `cart.maxQuantity(tier)` — 0 means the layered caps (event per-person
+			 * limit, event remaining minus other cart groups) leave no room, so the
+			 * picker would open but allow zero picks. */
+			max: number;
 			joinBlock: JoinBlock;
 			/** Set while a cart checkout/hold round-trip is in flight — same
 			 * signal as `quickBuy.disabled` (#853 final-review bundled minor). */
@@ -363,7 +367,9 @@
 		{/if}
 		<Button
 			onclick={pickSeats.onPick}
-			disabled={!!pickSeats.joinBlock || pickSeats.disabled}
+			disabled={!!pickSeats.joinBlock ||
+				pickSeats.disabled ||
+				(pickSeats.max === 0 && pickSeats.heldCount === 0)}
 			class="w-full sm:w-auto"
 		>
 			{m['cart.pickSeats']()}
@@ -374,6 +380,10 @@
 					? m['cart.cannotMixCurrency']()
 					: m['cart.cannotMixPayment']()}
 			</p>
+		{:else if pickSeats.max === 0 && pickSeats.heldCount === 0}
+			<p class="max-w-[250px] text-xs text-muted-foreground sm:text-right">
+				{m['cart.eventLimitReached']()}
+			</p>
 		{/if}
 	{:else if quickBuy && (canClaim || canCheckout || canReserve)}
 		{#if quickBuy.joinBlock}
@@ -381,6 +391,15 @@
 				{quickBuy.joinBlock === 'currency'
 					? m['cart.cannotMixCurrency']()
 					: m['cart.cannotMixPayment']()}
+			</p>
+		{:else if quickBuy.max === 0 && quickBuy.quantity === 0}
+			<!-- The layered caps (event per-person limit, event remaining minus
+			     other cart groups) leave no room for this tier — say so instead of
+			     rendering a dead stepper with no explanation. A tier's OWN
+			     exhaustion (sold out / per-tier limit) never reaches this branch:
+			     those fail `effectiveEligible`/`availabilityStatus` above. -->
+			<p class="max-w-[250px] text-xs text-muted-foreground sm:text-right">
+				{m['cart.eventLimitReached']()}
 			</p>
 		{:else}
 			<TierQuantityStepper

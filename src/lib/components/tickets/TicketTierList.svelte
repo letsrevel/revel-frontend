@@ -191,6 +191,7 @@
 					tier.payment_method !== 'hidden'
 						? {
 								heldCount: cart.quantityFor(tier.id),
+								max: cart.maxQuantity(tier),
 								joinBlock: cart.joinBlock(tier),
 								disabled: quickBuyDisabled,
 								onPick: () => onPickSeats(tier)

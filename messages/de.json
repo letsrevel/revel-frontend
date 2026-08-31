@@ -9414,6 +9414,7 @@
 		"quantityFor": "Anzahl für {tierName}",
 		"cannotMixCurrency": "Kann nicht mit deiner aktuellen Auswahl kombiniert werden (andere Währung)",
 		"cannotMixPayment": "Kann nicht mit deiner aktuellen Auswahl kombiniert werden (andere Zahlungsart)",
+		"eventLimitReached": "Du hast das Ticketlimit pro Person für dieses Event erreicht.",
 		"ticketCount": [
 			{
 				"declarations": ["input count", "local countPlural = count: plural"],
