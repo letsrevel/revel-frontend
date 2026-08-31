@@ -18,6 +18,7 @@
 	import EventGuestSignInPrompt from '$lib/components/events/EventGuestSignInPrompt.svelte';
 	import AttendeeList from '$lib/components/events/AttendeeList.svelte';
 	import TicketTierList from '$lib/components/tickets/TicketTierList.svelte';
+	import TicketTiersDialog from '$lib/components/tickets/TicketTiersDialog.svelte';
 	import EventSeriesPassOffers from '$lib/components/series-passes/EventSeriesPassOffers.svelte';
 	import MyTicket from '$lib/components/tickets/MyTicket.svelte';
 	import EventPurchaseDialogs from '$lib/components/events/EventPurchaseDialogs.svelte';
@@ -166,9 +167,23 @@
 		showMyTicketModal = true;
 	}
 
-	/** Scrolls the inline ticket-tier list into view (sidebar "Get tickets" CTA). */
+	/** Scrolls the inline ticket-tier list into view (non-cart fallback). */
 	function scrollToTicketTiers(): void {
 		document.getElementById('ticket-tiers')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+	}
+
+	// Sidebar "Get tickets" CTA → focused tiers dialog (hosts the same
+	// TicketTierList snippet as the inline section). Scroll remains the
+	// fallback for the no-cart case, where the dialog's footer has no cart
+	// to read.
+	let showTiersDialog = $state(false);
+
+	function handleGetTicketsClick(): void {
+		if (canUseCart) {
+			showTiersDialog = true;
+		} else {
+			scrollToTicketTiers();
+		}
 	}
 
 	/** Using the map button remembers the preference for this session (#679). */
@@ -193,7 +208,9 @@
 			return;
 		}
 		if (cart.quantityFor(tier.id) === 0) cart.setQuantity(tier, 1);
-		scrollToTicketTiers();
+		// Inside the tiers dialog the group is already on screen — scrolling
+		// the page underneath would just disorient on dismiss.
+		if (!showTiersDialog) scrollToTicketTiers();
 	}
 
 	// Guest dialog handlers
@@ -350,6 +367,35 @@
 	});
 </script>
 
+{#snippet tierList(headingId: string)}
+	<TicketTierList
+		{headingId}
+		tiers={ticketTiers}
+		isAuthenticated={data.isAuthenticated}
+		hasTicket={!!userTicket}
+		{userStatus}
+		eventId={event.id}
+		eventSlug={event.slug}
+		organizationSlug={event.organization.slug}
+		eventName={event.name}
+		eventTokenDetails={data.eventTokenDetails}
+		canAttendWithoutLogin={event.can_attend_without_login}
+		{tierRemainingTickets}
+		timezone={event.timezone}
+		capacityDisclosed={viewerVisibility.show_capacity}
+		onSelectTier={handleSelectTier}
+		onViewSeatingMap={hasSeatingMap ? openVenueOverview : undefined}
+		cart={canUseCart ? cart : undefined}
+		quickBuyDisabled={purchaseFlow.isProcessing}
+		{eventRemaining}
+		onPickSeats={canUseCart
+			? (tier) => {
+					pickSeatsTier = tier;
+				}
+			: undefined}
+	/>
+{/snippet}
+
 {#snippet actionSidebar()}
 	<EventActionSidebar
 		{event}
@@ -359,7 +405,7 @@
 		eventTokenDetails={data.eventTokenDetails}
 		variant="card"
 		canAttendWithoutLogin={event.can_attend_without_login}
-		onGetTicketsClick={scrollToTicketTiers}
+		onGetTicketsClick={handleGetTicketsClick}
 		onShowTicketClick={openMyTicketModal}
 		onResumePayment={handleResumePaymentFromSidebar}
 		isResumingPayment={resumePaymentMutation.isPending}
@@ -470,31 +516,7 @@
 					<!-- Ticket Tiers: buy-more re-entry point (#853) — shows with no
 					     ticket, or with one if the backend still allows more. -->
 					{#if event.requires_ticket && ticketTiers.length > 0 && (!userTicket || canBuyMore)}
-						<TicketTierList
-							tiers={ticketTiers}
-							isAuthenticated={data.isAuthenticated}
-							hasTicket={!!userTicket}
-							{userStatus}
-							eventId={event.id}
-							eventSlug={event.slug}
-							organizationSlug={event.organization.slug}
-							eventName={event.name}
-							eventTokenDetails={data.eventTokenDetails}
-							canAttendWithoutLogin={event.can_attend_without_login}
-							{tierRemainingTickets}
-							timezone={event.timezone}
-							capacityDisclosed={viewerVisibility.show_capacity}
-							onSelectTier={handleSelectTier}
-							onViewSeatingMap={hasSeatingMap ? openVenueOverview : undefined}
-							cart={canUseCart ? cart : undefined}
-							quickBuyDisabled={purchaseFlow.isProcessing}
-							{eventRemaining}
-							onPickSeats={canUseCart
-								? (tier) => {
-										pickSeatsTier = tier;
-									}
-								: undefined}
-						/>
+						{@render tierList('ticket-tiers')}
 					{/if}
 
 					<!-- Schedule / Timeline Section -->
@@ -587,6 +609,22 @@
 		</div>
 	</div>
 </div>
+
+<!-- Focused tiers dialog (sidebar CTA) — NOT gated on !cart.isEmpty: it must
+     open with an empty cart. Same render gate as the inline section. -->
+{#if canUseCart && event.requires_ticket && ticketTiers.length > 0 && (!userTicket || canBuyMore)}
+	<TicketTiersDialog
+		bind:open={showTiersDialog}
+		count={cart.totalCount}
+		totalDisplay={cartTotalDisplay}
+		currency={cart.currency}
+		isFree={cart.paymentMethod === 'free'}
+		isPending={purchaseFlow.isProcessing}
+		onCheckout={purchaseFlow.handleCartBuy}
+	>
+		{@render tierList('ticket-tiers-dialog')}
+	</TicketTiersDialog>
+{/if}
 
 {#if canUseCart && !cart.isEmpty}
 	<CartSeatHolds {cart} registry={seatHoldRegistry} eventId={event.id} />

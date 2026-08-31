@@ -51,6 +51,9 @@
 		/** Seat-picker entry point (#853 PR 3): opens `SeatPickerDialog` for a
 		 * `user_choice` tier. Only wired when `cart` is also present. */
 		onPickSeats?: (tier: TierSchemaWithId) => void;
+		/** Heading anchor id — the list mounts twice since the tiers dialog
+		 * (page body + dialog), so each mount needs its own id. */
+		headingId?: string;
 	}
 
 	const {
@@ -73,7 +76,8 @@
 		eventRemaining = null,
 		onSelectTier,
 		onViewSeatingMap,
-		onPickSeats
+		onPickSeats,
+		headingId = 'ticket-tiers'
 	}: Props = $props();
 
 	/**
@@ -121,12 +125,12 @@
 </script>
 
 {#if hasTiers}
-	<section class="rounded-lg border border-border bg-card p-6" aria-labelledby="ticket-tiers">
+	<section class="rounded-lg border border-border bg-card p-6" aria-labelledby={headingId}>
 		<div class="mb-4 flex items-center gap-2">
 			<Ticket class="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
 			<SectionHeader
 				volume="celebration"
-				id="ticket-tiers"
+				id={headingId}
 				title={m['ticketTierList.ticketOptions']()}
 			/>
 			{#if allSoldOut}
