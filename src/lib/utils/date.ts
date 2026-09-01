@@ -32,6 +32,13 @@ const LOCALE_MAP: Record<string, string> = {
 };
 
 /**
+ * UI languages with an explicit locale mapping, derived from LOCALE_MAP.
+ * Exported so tests can iterate the supported set without hand-maintaining
+ * a parallel list.
+ */
+export const SUPPORTED_UI_LANGUAGES: readonly string[] = Object.keys(LOCALE_MAP);
+
+/**
  * Get the active UI language as a BCP 47 date locale (e.g. "en-US", "de-DE",
  * "it-IT", "fr-FR"). Drives every human-facing date in the app, so switching
  * the UI language switches month names. Exported so calendar.ts shares it.
@@ -258,77 +265,158 @@ export function formatEventDateRange(
 	);
 }
 
+const MINUTE_MS = 60 * 1000;
+const HOUR_MS = 60 * MINUTE_MS;
+const DAY_MS = 24 * HOUR_MS;
+
+/**
+ * Signed number of calendar-day boundaries (midnights) between two instants
+ * in the given timezone — 0 for the same local day, 1 for "tomorrow", 2 for
+ * "the day after tomorrow", regardless of the clock times involved.
+ *
+ * Reads each instant's local Y-M-D via the same en-CA (YYYY-MM-DD) formatter
+ * trick as isSameDayInZone, then differences them as UTC midnights — exact
+ * arithmetic, immune to the DST offset shifts that make dividing raw
+ * epoch-millisecond differences by 24h drift near transitions.
+ */
+function calendarDaysBetween(from: Date, to: Date, timeZone?: string): number {
+	const formatter = getFormatter('en-CA', {
+		year: 'numeric',
+		month: '2-digit',
+		day: '2-digit',
+		...tzOpt(timeZone)
+	});
+	const utcMidnight = (d: Date): number => {
+		const [year, month, day] = formatter.format(d).split('-').map(Number);
+		return Date.UTC(year, month - 1, day);
+	};
+	return Math.round((utcMidnight(to) - utcMidnight(from)) / DAY_MS);
+}
+
+/**
+ * Unit ladder for relative phrases, largest first. An instant qualifies for
+ * the first unit whose span it meets or exceeds; below every threshold the
+ * caller-chosen floor unit applies. Month/year spans are calendar
+ * approximations (30/365 days) — adequate for casual UI copy, not for exact
+ * anniversary arithmetic.
+ */
+const RELATIVE_UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
+	['year', 365 * DAY_MS],
+	['month', 30 * DAY_MS],
+	['day', DAY_MS],
+	['hour', HOUR_MS],
+	['minute', MINUTE_MS]
+];
+
+/**
+ * Shared core of formatRelativeTime and getRSVPDeadlineRelative: a
+ * locale-aware relative phrase for an instant, measured against now.
+ *
+ * Uses Intl.RelativeTimeFormat with numeric: 'auto', so single-step values
+ * become the locale's idiom where one exists ("tomorrow" / "morgen",
+ * "übermorgen" for +2 days in German, "yesterday", "next month") instead of
+ * "in 1 day".
+ *
+ * The day unit counts *calendar days* (midnights crossed in the given
+ * timezone), not 24-hour blocks: an instant on the day after tomorrow reads
+ * "in 2 days" even when fewer than 48 elapsed hours away, matching how
+ * people count days against a calendar. Below 24 elapsed hours the hour unit
+ * applies, even across a midnight. When DST fall-back fits a ≥24h span into
+ * a single 25-hour local day (zero midnights crossed), the phrase falls back
+ * to hours — a day phrase would be either nonsense ("in 0 days") or false
+ * ("tomorrow" for a same-day instant).
+ *
+ * @param target The instant to describe
+ * @param timeZone Optional IANA timezone the calendar-day boundary is judged
+ *   in; defaults to the viewer's timezone
+ * @param minUnit Floor unit for tiny spans: 'second' renders "in 30 seconds",
+ *   'minute' clamps to "in 1 minute" for surfaces where seconds-level copy
+ *   would be noise
+ */
+function formatRelativeToNow(
+	target: Date,
+	timeZone: string | undefined,
+	minUnit: 'second' | 'minute'
+): string {
+	const now = new Date();
+	const diffMs = target.getTime() - now.getTime();
+
+	// Invalid input (e.g. an unparseable date string) yields a NaN diff, which
+	// Intl.RelativeTimeFormat.format() rejects with a RangeError. Return "" —
+	// the same empty result formatDateTimeReadback uses for invalid input — so
+	// callers can render nothing instead of crashing.
+	if (!Number.isFinite(diffMs)) {
+		return '';
+	}
+
+	const rtf = new Intl.RelativeTimeFormat(getDateLocale(), { numeric: 'auto' });
+
+	for (const [unit, unitMs] of RELATIVE_UNITS) {
+		if (Math.abs(diffMs) < unitMs) {
+			continue;
+		}
+		if (unit === 'day') {
+			const days = calendarDaysBetween(now, target, timeZone);
+			if (days !== 0) {
+				return rtf.format(days, 'day');
+			}
+			// ≥24 elapsed hours yet zero midnights crossed: DST fall-back has
+			// fit the span into a single 25-hour local day. A day phrase would
+			// be wrong either way ("in 0 days" is nonsense, "tomorrow" is
+			// false for a same-day instant) — fall through to hours, which
+			// renders the truthful "in 24 hours" / "in 25 hours".
+			continue;
+		}
+		return rtf.format(Math.trunc(diffMs / unitMs), unit);
+	}
+
+	// Below one minute.
+	if (minUnit === 'minute') {
+		return rtf.format(Math.sign(diffMs), 'minute');
+	}
+	return rtf.format(Math.trunc(diffMs / 1000), 'second');
+}
+
 /**
  * Get a relative time description for an RSVP deadline, localized via
- * Intl.RelativeTimeFormat so the directional word and pluralization come
- * from the active locale ("in 2 days" / "in 2 Tagen" / "dans 2 jours").
+ * Intl.RelativeTimeFormat (see formatRelativeToNow for unit selection and
+ * calendar-day semantics; a deadline seconds away is clamped to "in 1 minute"
+ * rather than counting down seconds).
+ *
  * @param deadlineString ISO 8601 date-time string
- * @returns Relative time description (e.g., "in 2 days", "in 3 hours"), or
- *   null when the deadline has passed — the caller decides the "closed" copy
- *   for its surface (e.g. eventQuickInfo.rsvpClosed), keeping UI messages out
- *   of this utility.
+ * @param timeZone Optional IANA timezone the calendar-day boundary is judged
+ *   in; defaults to the viewer's timezone, which is the calendar an RSVP'ing
+ *   viewer plans against.
+ * @returns Relative time description (e.g., "tomorrow", "in 2 days",
+ *   "in 3 hours"), or null when the deadline has passed — the caller decides
+ *   the "closed" copy for its surface (e.g. eventQuickInfo.rsvpClosed),
+ *   keeping UI messages out of this utility.
  */
-export function getRSVPDeadlineRelative(deadlineString: string): string | null {
+export function getRSVPDeadlineRelative(deadlineString: string, timeZone?: string): string | null {
 	const deadline = new Date(deadlineString);
-	const now = new Date();
-	const diffMs = deadline.getTime() - now.getTime();
 
 	// Passed, or exactly at the deadline — "RSVP by X" means X itself is too late.
-	if (diffMs <= 0) {
+	if (deadline.getTime() - Date.now() <= 0) {
 		return null;
 	}
 
-	const rtf = new Intl.RelativeTimeFormat(getDateLocale(), { numeric: 'always' });
-
-	// Clamp to at least 1 minute: a deadline seconds away must never read
-	// "in 0 minutes" while the RSVP is technically still open.
-	const diffMinutes = Math.max(1, Math.floor(diffMs / (1000 * 60)));
-	const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-	const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-	if (diffMinutes < 60) {
-		return rtf.format(diffMinutes, 'minute');
-	}
-
-	if (diffHours < 24) {
-		return rtf.format(diffHours, 'hour');
-	}
-
-	return rtf.format(diffDays, 'day');
+	return formatRelativeToNow(deadline, timeZone, 'minute');
 }
 
 /**
  * Format an ISO datetime as a locale-aware relative time phrase.
  *
  * Future times read "in 3 days" / "in 2 hours"; past times read
- * "2 hours ago" / "yesterday". Uses Intl.RelativeTimeFormat so the
- * directional word ("in" / "ago" and its translations) is supplied by
- * the active locale rather than hardcoded.
- *
- * Month/year thresholds are calendar approximations (30/365 days) —
- * adequate for casual UI copy, not for exact anniversary arithmetic.
+ * "2 hours ago" / "yesterday" (see formatRelativeToNow for unit selection,
+ * calendar-day semantics, and the locale idioms numeric: 'auto' enables).
  *
  * @param dateString ISO 8601 date-time string
+ * @param timeZone Optional IANA timezone the calendar-day boundary is judged
+ *   in; defaults to the viewer's timezone
  * @returns Relative phrase (e.g., "in 3 days", "2 hours ago")
  */
-export function formatRelativeTime(dateString: string): string {
-	const diffMs = new Date(dateString).getTime() - Date.now();
-	const rtf = new Intl.RelativeTimeFormat(getDateLocale(), { numeric: 'auto' });
-
-	const units: [Intl.RelativeTimeFormatUnit, number][] = [
-		['year', 1000 * 60 * 60 * 24 * 365],
-		['month', 1000 * 60 * 60 * 24 * 30],
-		['day', 1000 * 60 * 60 * 24],
-		['hour', 1000 * 60 * 60],
-		['minute', 1000 * 60]
-	];
-
-	for (const [unit, ms] of units) {
-		if (Math.abs(diffMs) >= ms) {
-			return rtf.format(Math.trunc(diffMs / ms), unit);
-		}
-	}
-	return rtf.format(Math.trunc(diffMs / 1000), 'second');
+export function formatRelativeTime(dateString: string, timeZone?: string): string {
+	return formatRelativeToNow(new Date(dateString), timeZone, 'second');
 }
 
 /**
