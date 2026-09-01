@@ -4,7 +4,14 @@ import type {
 	TicketTierSchema,
 	VenueChartSchema
 } from '$lib/api/generated/types.gen';
-import { checkoutTotal, type CheckoutTotalArgs } from './checkout-total';
+import {
+	checkoutTotal,
+	cartTotal,
+	cartTotalArgs,
+	vatPreviewItems,
+	type CheckoutTotalArgs
+} from './checkout-total';
+import type { CartGroup } from './cart.svelte';
 
 function tier(overrides: Partial<TicketTierSchema> = {}): CheckoutTotalArgs['tier'] {
 	return {
@@ -99,5 +106,165 @@ describe('checkoutTotal', () => {
 
 	it('stays exact on cent arithmetic (integer cents, no float drift)', () => {
 		expect(checkoutTotal(args({ tier: tier({ price: '0.10' }), quantity: 3 }))).toBe('0.30');
+	});
+});
+
+describe('cartTotal', () => {
+	const fixed = (price: string, quantity: number, discountedPrice?: string): CheckoutTotalArgs =>
+		cartTotalArgs({
+			tier: {
+				payment_method: 'online',
+				price_type: 'fixed',
+				price,
+				seat_assignment_mode: 'none',
+				seat_pricing: null
+			},
+			quantity,
+			seatIds: [],
+			pwycAmount: null,
+			priceCategoryId: null,
+			discountedPrice: discountedPrice ?? null
+		});
+	it('sums groups in integer cents', () => {
+		expect(cartTotal([fixed('25.00', 2), fixed('10.00', 1)])).toBe('60.00');
+	});
+	it('uses the discounted price when supplied on a flat-priced group', () => {
+		expect(cartTotal([fixed('30.00', 2, '20.00')])).toBe('40.00');
+	});
+	it('ignores discountedPrice on a PWYC group (branch precedence makes it inert)', () => {
+		const pwyc = cartTotalArgs({
+			tier: {
+				payment_method: 'online',
+				price_type: 'pwyc',
+				price: '5',
+				seat_assignment_mode: 'none',
+				seat_pricing: null
+			},
+			quantity: 2,
+			seatIds: [],
+			pwycAmount: '10.00',
+			priceCategoryId: null,
+			discountedPrice: '5.00'
+		});
+		expect(cartTotal([pwyc])).toBe('20.00');
+	});
+	it('is 0.00 for free carts and null when empty or any group is unknown', () => {
+		expect(
+			cartTotal([
+				cartTotalArgs({
+					tier: {
+						payment_method: 'free',
+						price_type: 'fixed',
+						price: '0',
+						seat_assignment_mode: 'none',
+						seat_pricing: null
+					},
+					quantity: 2,
+					seatIds: [],
+					pwycAmount: null,
+					priceCategoryId: null,
+					discountedPrice: null
+				})
+			])
+		).toBe('0.00');
+		expect(cartTotal([])).toBe(null);
+		expect(
+			cartTotal([
+				cartTotalArgs({
+					tier: {
+						payment_method: 'online',
+						price_type: 'pwyc',
+						price: '5',
+						seat_assignment_mode: 'none',
+						seat_pricing: null
+					},
+					quantity: 1,
+					seatIds: [],
+					pwycAmount: null,
+					priceCategoryId: null,
+					discountedPrice: null
+				})
+			])
+		).toBe(null);
+	});
+
+	it('threads chart into user_choice seated groups via cartTotalArgs', () => {
+		const uc = {
+			tier: {
+				payment_method: 'online',
+				price_type: 'fixed',
+				price: '20.00',
+				seat_assignment_mode: 'user_choice' as const,
+				seat_pricing: pricing
+			},
+			quantity: 1,
+			seatIds: ['a1', 'b1'],
+			chart,
+			pwycAmount: null,
+			priceCategoryId: null,
+			discountedPrice: null
+		};
+
+		// With chart provided, should resolve the real seat total (gold=55 + unpainted=20 = 75)
+		expect(cartTotal([cartTotalArgs(uc)])).toBe('75.00');
+
+		// Without chart (group.chart undefined), should yield null
+		const ucWithoutChart = { ...uc, chart: undefined };
+		expect(cartTotal([cartTotalArgs(ucWithoutChart)])).toBeNull();
+
+		// Explicitly null chart should also yield null
+		const ucNullChart = { ...uc, chart: null };
+		expect(cartTotal([cartTotalArgs(ucNullChart)])).toBeNull();
+	});
+
+	it('does not affect non-seated groups when chart is threaded', () => {
+		// Non-seated flat tier should be unaffected by chart presence
+		const flatWithChart = cartTotalArgs({
+			tier: {
+				payment_method: 'online',
+				price_type: 'fixed',
+				price: '25.00',
+				seat_assignment_mode: 'none',
+				seat_pricing: null
+			},
+			quantity: 2,
+			seatIds: [],
+			chart, // Provide chart even for non-seated
+			pwycAmount: null,
+			priceCategoryId: null,
+			discountedPrice: null
+		});
+		expect(cartTotal([flatWithChart])).toBe('50.00');
+	});
+});
+
+describe('vatPreviewItems', () => {
+	function group(overrides: Partial<CartGroup> = {}): CartGroup {
+		return {
+			tier: { id: 'tier-1' } as CartGroup['tier'],
+			quantity: 2,
+			guestNames: [],
+			pwycAmount: null,
+			priceCategoryId: null,
+			accessibleRequired: false,
+			seatIds: [],
+			...overrides
+		};
+	}
+
+	it('maps tier_id and count, omitting the optional fields when unset', () => {
+		expect(vatPreviewItems([group()])).toEqual([{ tier_id: 'tier-1', count: 2 }]);
+	});
+
+	it('includes price_category_id when the group has a zone', () => {
+		expect(vatPreviewItems([group({ priceCategoryId: 'cat-9' })])).toEqual([
+			{ tier_id: 'tier-1', count: 2, price_category_id: 'cat-9' }
+		]);
+	});
+
+	it('includes seat_ids for a seated group — per-seat category pricing disagrees with checkout without them (#863 review)', () => {
+		expect(vatPreviewItems([group({ quantity: 2, seatIds: ['s1', 's2'] })])).toEqual([
+			{ tier_id: 'tier-1', count: 2, seat_ids: ['s1', 's2'] }
+		]);
 	});
 });

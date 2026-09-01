@@ -16,21 +16,6 @@
 	// Mobile menu state
 	let mobileMenuOpen = $state(false);
 
-	/**
-	 * Measured, never assumed: this header is one row on mobile and three on
-	 * `md` (breadcrumbs + nav), so any page that pinned itself below a hardcoded
-	 * 8rem ended up *inside* it on desktop, where both layers are translucent.
-	 * Published as `--admin-sticky-top` for pages with their own sticky bar.
-	 *
-	 * 0 means "not measured yet" and is deliberately NOT published: server-
-	 * rendered markup would otherwise carry `calc(4rem + 0px)` and pin those
-	 * bars at 64px — inside this header — for the whole pre-hydration window.
-	 * With the property absent their `top: var(--admin-sticky-top)` is invalid
-	 * at computed-value time, so `top` is `auto` and a sticky bar simply does
-	 * not stick until the real offset arrives.
-	 */
-	let adminHeaderHeight = $state(0);
-
 	// Get current path
 	const currentPath = $derived($page.url.pathname);
 
@@ -155,18 +140,23 @@
 	]);
 </script>
 
-<!-- Admin Layout. 4rem = the site header above this one (Header.svelte, h-16). -->
-<div
-	class="min-h-screen bg-background"
-	style={adminHeaderHeight ? `--admin-sticky-top: calc(4rem + ${adminHeaderHeight}px)` : undefined}
->
-	<!-- Admin Header. Sticky only when the viewport is tall enough to spare the
-	     room: on a landscape phone this bar plus the site header plus a page's
-	     own tab strip left nothing to scroll, and all three are translucent. -->
-	<header
-		bind:clientHeight={adminHeaderHeight}
-		class="top-16 z-30 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 tall:sticky"
-	>
+<!--
+	Admin Layout. 4rem = the site header above this one (Header.svelte, h-16).
+
+	This block (org name/badge, breadcrumb, tab strip) deliberately does NOT
+	stick at any viewport size: on a laptop it used to eat roughly a third of
+	the screen in tools like the sector seat editor, on top of the global site
+	header, leaving barely any room to work (reported 2026-08-13). It now
+	scrolls away with the rest of the page like ordinary content.
+
+	`--admin-sticky-top` stays published as a static navbar-only offset for
+	pages that keep their own independent sticky sub-toolbar (SaveBar's top
+	bar, the blacklist/members tab strips) — those aren't part of "the chrome"
+	being unstuck here, they just needed their pin point corrected now that
+	this header no longer sits above them at a fixed height.
+-->
+<div class="min-h-screen bg-background" style="--admin-sticky-top: 4rem">
+	<header class="w-full border-b bg-background">
 		<div class="container mx-auto px-4">
 			<!-- Top Bar -->
 			<div class="flex h-16 items-center justify-between gap-2">
@@ -182,7 +172,7 @@
 						<Menu class="h-5 w-5" />
 					</button>
 
-					<!-- Not a heading: this sticky top bar's org name is chrome, not page
+					<!-- Not a heading: this top bar's org name is chrome, not page
 					     content — every admin page renders its own h1 (PageHeader in the
 					     dashboard; PRs 8-10 for the rest), so a second h1 here would give
 					     each admin page two top-level headings. No e2e spec asserts a

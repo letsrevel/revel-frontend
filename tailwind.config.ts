@@ -21,10 +21,12 @@ export default {
 		},
 		extend: {
 			// Height-based, deliberately not part of the mobile-first width scale
-			// (`raw`): admin chrome stacks three sticky layers — site header, org
-			// header, page tab strip. On a landscape phone (~390px tall) that stack
-			// eats the entire viewport and the translucent layers pile onto each
-			// other. Sticky chrome is therefore opt-in above this height.
+			// (`raw`): a handful of in-page sticky bars (SaveBar's top bar, the
+			// blacklist/members tab strips) still stack under the global site
+			// header. On a landscape phone (~390px tall) that two-layer stack
+			// eats the entire viewport, so sticking is opt-in above this height.
+			// (The org-admin header block itself no longer sticks at all —
+			// unstuck 2026-08-13 — so it's no longer part of this stack.)
 			screens: {
 				tall: { raw: '(min-height: 640px)' }
 			},

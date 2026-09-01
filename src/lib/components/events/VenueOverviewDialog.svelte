@@ -41,10 +41,19 @@
 		tierRemainingTickets?: TierRemainingTicketsSchema[];
 		/** Event-level max tickets per user (seat-selection cap fallback). */
 		eventMaxTicketsPerUser?: number | null;
-		/** Route an authenticated buyer into the tier's purchase dialog. */
-		onSelectTier: (tier: TierSchemaWithId) => void;
-		/** Route a guest buyer into the guest ticket dialog (same as TierCard). */
-		onGuestTierClick?: (tier: TierSchemaWithId) => void;
+		/** Seat ids already owned by the cart — threaded straight through to
+		 * `VenueOverviewMap` (see its prop doc; #853 final-review fix 1). */
+		protectedSeatIds?: ReadonlySet<string>;
+		/**
+		 * Route the buyer into the cart. `heldSeatIds`, when present, carries
+		 * seats this dialog's map already held server-side for a `user_choice`
+		 * tier's Continue action — the page adopts them straight into a cart
+		 * group instead of opening the seat picker. Guests route through the
+		 * same callback (#853 Task 5): the widened cart mount gate means a cart
+		 * always exists when `canAttendWithoutLogin`, so there is no separate
+		 * guest fork to route into anymore.
+		 */
+		onSelectTier: (tier: TierSchemaWithId, heldSeatIds?: string[]) => void;
 	}
 
 	let {
@@ -55,8 +64,8 @@
 		canAttendWithoutLogin = false,
 		tierRemainingTickets,
 		eventMaxTicketsPerUser = null,
-		onSelectTier,
-		onGuestTierClick
+		protectedSeatIds = new Set(),
+		onSelectTier
 	}: Props = $props();
 
 	const CHART_STALE_TIME_MS = 5 * 60 * 1000;
@@ -115,15 +124,12 @@
 		chooserEntry = null;
 	}
 
-	/** Close the overview surfaces, then hand off to the page's purchase path. */
-	function route(tier: TierSchemaWithId): void {
+	/** Close the overview surfaces, then hand off to the page's purchase path
+	 * (cart-based for every buyer — see `onSelectTier`'s prop doc). */
+	function route(tier: TierSchemaWithId, heldSeatIds?: string[]): void {
 		closeChooser();
 		open = false;
-		if (!isAuthenticated && canAttendWithoutLogin) {
-			onGuestTierClick?.(tier);
-		} else {
-			onSelectTier(tier);
-		}
+		onSelectTier(tier, heldSeatIds);
 	}
 
 	function modeHint(mode: SectorTierMode): string {
@@ -162,6 +168,7 @@
 			{needsLogin}
 			{tierRemainingTickets}
 			{eventMaxTicketsPerUser}
+			{protectedSeatIds}
 			onSectorTarget={handleSectorSelect}
 			onContinue={route}
 		/>

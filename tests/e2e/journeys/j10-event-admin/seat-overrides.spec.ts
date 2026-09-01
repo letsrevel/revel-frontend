@@ -20,7 +20,7 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 //    panel reports "1 override(s) applied, 0 released.", lists the seat under
 //    the blocked summary, and re-renders its checkbox as "…, unavailable" after
 //    the forced availability refetch. A separate buyer context then sees that
-//    seat rendered unavailable in the public purchase dialog. Releasing the
+//    seat rendered unavailable in the public seat picker. Releasing the
 //    override frees the seat again — the buyer view recovers on reopen (fresh
 //    availability fetch).
 //
@@ -34,7 +34,7 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 // (10×10 grid, rows A–J; row A is accessible so seats are picked from rows
 // B/C where accessible names are bare). Overrides are per-event state on a
 // throwaway event, so no cleanup is needed. The tiers are offline user_choice
-// (Stripe stays out; the buyer dialog renders the seat picker).
+// (Stripe stays out; the tier card renders the "Pick seats…" CTA).
 
 const OFFLINE_USER_CHOICE_TIER = {
 	name: 'Choose Your Seat',
@@ -66,25 +66,18 @@ async function toggleSeatCheckbox(
 }
 
 /**
- * Open the public purchase confirmation dialog for a user_choice tier. Fresh
- * navigation each call, so a second call reloads and refetches availability —
- * the "reopen after the override changed" step. Idempotent open loop mirrors
- * seat-selection.spec.ts.
+ * Open the public seat picker for the event's single user_choice tier (#853:
+ * the tier card's "Pick seats…" CTA replaced the legacy purchase dialog).
+ * Fresh navigation each call, so a second call reloads and refetches
+ * availability — the "reopen after the override changed" step.
  */
-async function openConfirmDialog(page: Page, event: CreatedEvent) {
+async function openSeatPicker(page: Page, event: CreatedEvent) {
 	await gotoHydrated(page, event.path);
 	await waitForClientAuth(page);
-	const tierDialog = page.getByRole('dialog', { name: 'Select Your Ticket' });
-	const confirmDialog = page.getByRole('dialog', { name: 'Reserve Ticket' });
-	await expect(async () => {
-		if (await confirmDialog.isVisible()) return;
-		if (!(await tierDialog.isVisible())) {
-			await page.getByRole('button', { name: 'Get Tickets', exact: true }).click();
-		}
-		await tierDialog.getByRole('button', { name: 'Reserve Ticket' }).click();
-		await expect(confirmDialog).toBeVisible({ timeout: 8_000 });
-	}).toPass({ timeout: 60_000 });
-	return confirmDialog;
+	await page.getByRole('button', { name: 'Pick seats…', exact: true }).click();
+	const picker = page.getByTestId('seat-picker-dialog');
+	await expect(picker).toBeVisible({ timeout: 8_000 });
+	return picker;
 }
 
 test.describe('J10 box-office seat overrides @p2', () => {
@@ -100,7 +93,7 @@ test.describe('J10 box-office seat overrides @p2', () => {
 			createTicketedEvent({ freeTier: false, event: { venue_id: hall.venueId } }),
 			createVerifiedUser('OverrideBuyer')
 		]);
-		await deleteDefaultTier(event.id); // its auto-tier card also says "Reserve Ticket"
+		await deleteDefaultTier(event.id); // its auto-tier card also renders a stepper
 		await createTicketTier(event.id, {
 			...OFFLINE_USER_CHOICE_TIER,
 			venue_id: hall.venueId,
@@ -133,13 +126,11 @@ test.describe('J10 box-office seat overrides @p2', () => {
 		try {
 			await authenticateContext(context, buyer);
 			const page = await context.newPage();
-			const confirmDialog = await openConfirmDialog(page, event);
-			await expect(confirmDialog.getByRole('group', { name: 'Seat display' })).toBeVisible({
+			const picker = await openSeatPicker(page, event);
+			await expect(picker.getByText('STAGE')).toBeVisible({ timeout: 15_000 });
+			await expect(picker.getByRole('button', { name: 'Seat B2, unavailable' })).toBeVisible({
 				timeout: 15_000
 			});
-			await expect(confirmDialog.getByRole('button', { name: 'Seat B2, unavailable' })).toBeVisible(
-				{ timeout: 15_000 }
-			);
 
 			// OWNER: RELEASE the override on B2 (reason not required for release).
 			await toggleSeatCheckbox(owner, 'Seat B2, unavailable');
@@ -153,7 +144,7 @@ test.describe('J10 box-office seat overrides @p2', () => {
 			});
 
 			// BUYER: reopen (reload → fresh availability) — the seat is free again.
-			const reopened = await openConfirmDialog(page, event);
+			const reopened = await openSeatPicker(page, event);
 			await expect(reopened.getByRole('button', { name: /^Seat B2(,|$)/ })).toBeVisible({
 				timeout: 15_000
 			});

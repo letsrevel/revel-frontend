@@ -6,6 +6,7 @@
 	import { CheckCircle2, XCircle, Loader2 } from '@lucide/svelte';
 	import { eventpublicdiscoveryConfirmGuestAction } from '$lib/api';
 	import { handleGuestAttendanceError } from '$lib/utils/guestAttendance';
+	import { summarizeConfirmedTickets, type TierBreakdownEntry } from './confirmation-tickets';
 
 	interface Props {
 		token: string;
@@ -21,6 +22,8 @@
 		type?: 'rsvp' | 'ticket';
 		rsvpStatus?: 'yes' | 'no' | 'maybe';
 		ticketId?: string;
+		ticketCount?: number;
+		tierBreakdown?: TierBreakdownEntry[];
 		error?: string;
 	}>({ success: false });
 
@@ -62,16 +65,17 @@
 					rsvpStatus: data.status as 'yes' | 'no' | 'maybe'
 				};
 			} else if ('tickets' in data && Array.isArray(data.tickets) && data.tickets.length > 0) {
-				// Ticket confirmation (BatchCheckoutResponse)
-				const firstTicket = data.tickets[0];
-				const eventId =
-					'event' in firstTicket && firstTicket.event ? firstTicket.event.id : undefined;
+				// Ticket confirmation (BatchCheckoutResponse) — the cart can mint
+				// tickets across multiple tiers in one confirmation.
+				const summary = summarizeConfirmedTickets(data.tickets);
 
 				result = {
 					success: true,
-					eventId,
+					eventId: summary.eventId,
 					type: 'ticket',
-					ticketId: firstTicket.id ?? undefined
+					ticketId: summary.ticketId,
+					ticketCount: summary.count,
+					tierBreakdown: summary.tierBreakdown
 				};
 			} else {
 				throw new Error('Unexpected response format from confirmation');
@@ -145,6 +149,18 @@
 						? m['guest_attendance.rsvp_confirmed_body']()
 						: m['guest_attendance.ticket_confirmed_body']()}
 				</p>
+				{#if result.type === 'ticket' && result.ticketCount !== undefined}
+					<p class="font-semibold">
+						{m['cartSheet.confirmedTicketCount']({ count: result.ticketCount })}
+					</p>
+					{#if result.tierBreakdown && result.tierBreakdown.length > 1}
+						<ul class="space-y-1 text-sm text-muted-foreground">
+							{#each result.tierBreakdown as entry, index (index)}
+								<li>{m['cart.ticketCount']({ count: entry.count })} · {entry.tierName}</li>
+							{/each}
+						</ul>
+					{/if}
+				{/if}
 			</div>
 
 			{#if result.eventId}

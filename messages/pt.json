@@ -3895,6 +3895,7 @@
 				"breakdown": "Detalhe do valor",
 				"totalNet": "Valor líquido",
 				"totalVat": "IVA ({rate}%)",
+				"totalVatMixed": "IVA",
 				"totalGross": "Total",
 				"reverseCharge": "Autoliquidação",
 				"reverseChargeYes": "Sim",
@@ -4246,6 +4247,7 @@
 	"orgAdmin.seats.toast.deleteError": "Não foi possível eliminar os lugares",
 	"orgAdmin.seats.toast.deleted": "Lugares eliminados com sucesso",
 	"orgAdmin.seats.toast.metadataError": "Não foi possível guardar a configuração dos corredores",
+	"orgAdmin.seats.toast.shapeError": "Não foi possível guardar o contorno do setor",
 	"orgAdmin.seats.toast.saveError": "Não foi possível guardar os lugares",
 	"orgAdmin.seats.toast.saved": "Lugares guardados com sucesso",
 	"orgAdmin.seats.toast.updateError": "Não foi possível atualizar os lugares",
@@ -5947,13 +5949,8 @@
 	"ticketConfirmationDialog": {
 		"paymentAmount": "Valor do pagamento",
 		"quickSelect": "Seleção rápida:",
-		"agreeToTerms": "Ao continuares, aceitas os termos e condições do evento.",
-		"bestAvailableTitle": "Melhores lugares disponíveis",
-		"bestAvailableDesc": "Os teus lugares serão atribuídos automaticamente — lugares adjacentes, no melhor bloco disponível.",
 		"accessibleSeatsLabel": "Preciso de lugares acessíveis a cadeiras de rodas",
 		"bestAvailableConflict": "Não há lugares adjacentes suficientes disponíveis — tenta uma quantidade menor.",
-		"generalEntrance": "Entrada geral",
-		"generalEntranceDesc": "Este bilhete dá acesso de entrada geral, sem lugar atribuído.",
 		"selectSeats": "Seleciona os teus lugares",
 		"seatsSelected": "selecionados",
 		"loadingSeats": "A carregar lugares disponíveis...",
@@ -5961,7 +5958,6 @@
 		"defaultGuestName": "Visitante",
 		"bestAvailableRetry": "Alguns lugares foram ocupados enquanto os teus eram atribuídos — tenta novamente."
 	},
-	"ticketConfirmationDialog.selectMoreSeats": "Seleciona mais {count} lugar(es)",
 	"ticketListCard": {
 		"purchased": "Comprado:",
 		"addToCalendar": "Adicionar ao calendário"
@@ -5975,13 +5971,6 @@
 	"ticketTierList": {
 		"ticketOptions": "Opções de bilhete",
 		"signIn": "Iniciar sessão"
-	},
-	"ticketTierModal": {
-		"noTickets": "Não há bilhetes disponíveis neste momento.",
-		"paymentInstructions": "Instruções de pagamento:",
-		"signIn": "Iniciar sessão",
-		"soldOut": "Esgotado",
-		"agreeToTerms": "Ao solicitares um bilhete, aceitas os termos e condições do evento."
 	},
 	"ticketingStep": {
 		"ticketingOptions": "Opções de bilhética",
@@ -6096,7 +6085,6 @@
 		"claimFreeTicket": "Solicitar bilhete gratuito",
 		"buyTicket": "Comprar bilhete",
 		"reserveTicket": "Reservar bilhete",
-		"getTicket": "Obter bilhete",
 		"configError": "Erro de configuração",
 		"youHaveTicket": "Tens um bilhete",
 		"limitReached": "Limite atingido",
@@ -6564,6 +6552,7 @@
 		"breakdown": "Detalhe dos montantes",
 		"totalNet": "Montante líquido",
 		"totalVat": "IVA ({rate}%)",
+		"totalVatMixed": "IVA",
 		"totalGross": "Total",
 		"reverseCharge": "Autoliquidação",
 		"reverseChargeYes": "Sim — IVA não cobrado (B2B UE)",
@@ -7822,30 +7811,7 @@
 	"guestRsvpDialog.createAnAccount": "criar uma conta",
 	"guestRsvpDialog.toContinue": "para continuar.",
 	"guestRsvpDialog.failedToSubmit": "Não foi possível enviar a confirmação de presença",
-	"guestTicketDialog.failedToLoadSeats": "Não foi possível carregar os lugares disponíveis",
-	"guestTicketDialog.pleaseEnterYourName": "Indica o teu nome",
-	"guestTicketDialog.pleaseEnterTicketHolderName": "Indica um nome para a pessoa titular do bilhete {number}",
-	"guestTicketDialog.pleaseSelectMoreSeatOne": "Seleciona mais 1 lugar",
-	"guestTicketDialog.pleaseSelectMoreSeats": "Seleciona mais {count} lugares",
-	"guestTicketDialog.failedToCheckout": "Não foi possível concluir o pagamento",
-	"guestTicketDialog.paymentStartFailed": "Os teus bilhetes estão reservados, mas não foi possível iniciar o pagamento. Tenta novamente.",
-	"guestTicketDialog.paymentStartFailedExpired": "A tua reserva expirou antes de o pagamento poder ser iniciado. Volta a começar a tua compra.",
-	"guestTicketDialog.numberOfTickets": "Número de bilhetes",
-	"guestTicketDialog.decreaseQuantity": "Diminuir quantidade",
-	"guestTicketDialog.increaseQuantity": "Aumentar quantidade",
-	"guestTicketDialog.maxQuantity": "(Máx.: {max})",
-	"guestTicketDialog.total": "Total:",
-	"guestTicketDialog.ticketHolderNames": "Nomes das pessoas titulares dos bilhetes",
-	"guestTicketDialog.ticketHolderNamesHint": "Indica o nome de cada titular do bilhete (vai ser impresso no respetivo bilhete)",
-	"guestTicketDialog.yourName": "O teu nome",
-	"guestTicketDialog.guestName": "Nome da pessoa convidada {number}",
-	"guestTicketDialog.yourNamePlaceholder": "O teu nome",
-	"guestTicketDialog.guestNamePlaceholder": "Nome da pessoa convidada {number}",
-	"guestTicketDialog.selectYourSeat": "Escolhe o teu lugar",
-	"guestTicketDialog.noSeatsAvailable": "Não há lugares disponíveis para este tipo de bilhete",
-	"guestTicketDialog.selectedSeats": "Selecionados {selected} de {total} lugares",
 	"guestTicketDialog.bestAvailableEmailNotice": "Os teus lugares vão ser atribuídos automaticamente quando confirmares o teu e-mail.",
-	"guestTicketDialog.quickSelect": "Seleção rápida",
 	"guestTicketDialog.onlinePaymentNotice": "Vamos redirecionar-te para o nosso fornecedor de pagamento seguro para concluíres a tua compra.",
 	"guestTicketDialog.logIn": "Iniciar sessão",
 	"guestTicketDialog.or": "ou",
@@ -8415,7 +8381,6 @@
 	"ticketListCard.viewTicketAndQr": "Ver bilhete e código QR",
 	"ticketListCard.viewTicket": "Ver bilhete",
 	"ticketListCard.viewEvent": "Ver evento",
-	"ticketTierModal.selectYourTicket": "Seleciona o teu bilhete",
 	"eventTokenCard.toastTokenIdMissing": "Falta o ID do token",
 	"eventTokenCard.toastLinkCopied": "Link copiado para a área de transferência!",
 	"eventTokenCard.toastCopyFailed": "Não foi possível copiar o link",
@@ -8443,36 +8408,14 @@
 	"ticketConfirmationDialog.errorMinAmount": "O valor mínimo é {amount}",
 	"ticketConfirmationDialog.errorMaxAmount": "O valor máximo é {amount}",
 	"ticketConfirmationDialog.errorInvalidAmount": "Valor inválido",
-	"ticketConfirmationDialog.errorEnterYourName": "Indica o teu nome",
-	"ticketConfirmationDialog.errorEnterHolderName": "Indica um nome para a pessoa titular do bilhete {number}",
 	"ticketConfirmationDialog.errorGeneric": "Ocorreu um erro. Tenta novamente.",
-	"ticketConfirmationDialog.descClaimFree": "Confirma que queres obter este bilhete gratuito para o evento.",
-	"ticketConfirmationDialog.descReserveAtDoor": "Reserva o teu lugar e paga à entrada.",
-	"ticketConfirmationDialog.descReserveOffline": "Reserva o teu lugar e conclui o pagamento offline.",
-	"ticketConfirmationDialog.descPwyc": "Escolhe quanto queres pagar pelo teu bilhete.",
-	"ticketConfirmationDialog.descOnline": "Confirma a tua compra. De seguida, vais concluir o pagamento.",
 	"ticketConfirmationDialog.numberOfTickets": "Número de bilhetes",
 	"ticketConfirmationDialog.decreaseQuantity": "Diminuir quantidade",
 	"ticketConfirmationDialog.increaseQuantity": "Aumentar quantidade",
 	"ticketConfirmationDialog.maxHint": "(máx. {max})",
-	"ticketConfirmationDialog.securePaymentNotice": "Para concluíres a compra, vais continuar num fornecedor de pagamentos seguro.",
-	"ticketConfirmationDialog.onlyOneRemaining": "Resta apenas 1 bilhete!",
-	"ticketConfirmationDialog.onlyNRemaining": "Restam apenas {count} bilhetes!",
 	"ticketConfirmationDialog.unableToComplete": "Não foi possível concluir o pedido",
-	"ticketConfirmationDialog.hintEnterYourName": "Indica o teu nome acima",
-	"ticketConfirmationDialog.hintEnterAllNames": "Indica os nomes de todas as pessoas titulares dos bilhetes acima",
-	"ticketConfirmationDialog.hintEnterAmount": "Indica um valor de pagamento",
-	"ticketConfirmationDialog.hintMinAmount": "O valor tem de ser, no mínimo, {amount}",
-	"ticketConfirmationDialog.hintMaxAmount": "O valor não pode exceder {amount}",
-	"ticketConfirmationDialog.hintSelectOneMoreSeat": "Seleciona mais 1 lugar",
-	"ticketConfirmationDialog.hintSelectMoreSeats": "Seleciona mais {count} lugares",
 	"ticketConfirmationDialog.cancel": "Cancelar",
-	"ticketConfirmationDialog.redirectingToPayment": "A encaminhar para o pagamento...",
 	"ticketConfirmationDialog.processing": "A processar...",
-	"ticketConfirmationDialog.claimTicket": "Obter bilhete",
-	"ticketConfirmationDialog.reserveTicket": "Reservar bilhete",
-	"ticketConfirmationDialog.continueToPayment": "Continuar para o pagamento",
-	"ticketConfirmationDialog.proceedToPayment": "Avançar para o pagamento",
 	"eventTokenModal.titleEdit": "Editar link de convite",
 	"eventTokenModal.titleCreate": "Criar link de convite",
 	"eventTokenModal.descEdit": "Atualiza as definições do link. O URL para partilhar mantém-se o mesmo.",
@@ -8541,8 +8484,8 @@
 	"tokenShareDialog.copyLinkLabel": "Copiar link para a área de transferência",
 	"tokenShareDialog.share": "Partilhar",
 	"seatGridEditor.rowOrder": "Ordem das filas",
-	"seatGridEditor.rowOrderTop": "{label} em cima (padrão)",
-	"seatGridEditor.rowOrderBottom": "{label} em baixo (invertido)",
+	"seatGridEditor.rowOrderTop": "{label} mais próximo do palco (padrão)",
+	"seatGridEditor.rowOrderBottom": "{label} mais distante do palco (invertido)",
 	"seatGridEditor.emptyGrid": "Grelha vazia",
 	"seatGridEditor.fillAll": "Preencher tudo",
 	"seatGridEditor.instructions": "Clica nas células para ativar ou desativar lugares. Arrasta de uma célula vazia para outra para preencher uma área com lugares. Passa o cursor entre as etiquetas para adicionar corredores.",
@@ -8638,6 +8581,64 @@
 	"seatGridEditor.paint.venueWideCaution": "A pintura aplica-se de imediato a todos os eventos deste local — repintar ou despintar um lugar altera o que quem compra paga, não só para o evento que estás a preparar.",
 	"seatGridEditor.paint.manageCategories": "Gerir categorias de preço",
 	"seatGridEditor.legendPainted": "Pintado (a cor e o nome do lugar mostram a sua categoria de preço)",
+	"seatGridEditor.geometry.title": "Geometria das filas",
+	"seatGridEditor.geometry.explainer": "Curva e desloca as filas para as adaptar à sala real. A grelha mostra exatamente o que quem compra vai ver.",
+	"seatGridEditor.geometry.curveLabel": "Curvatura",
+	"seatGridEditor.geometry.curveHelp": "0 é reta. Valores positivos afastam as filas do palco, como num teatro.",
+	"seatGridEditor.geometry.curveHelpInverted": "0 é reta. A ordem das filas deste setor está invertida, por isso os valores positivos aproximam as filas do palco.",
+	"seatGridEditor.geometry.curveExactLabel": "Valor exato da curvatura",
+	"seatGridEditor.geometry.staggerLabel": "Desfasar filas alternadas",
+	"seatGridEditor.geometry.staggerAmountLabel": "Quantidade de desfasamento (larguras de lugar)",
+	"seatGridEditor.geometry.alignLabel": "Alinhamento das filas",
+	"seatGridEditor.geometry.alignLeft": "Esquerda",
+	"seatGridEditor.geometry.alignCenter": "Centrado",
+	"seatGridEditor.geometry.alignRight": "Direita",
+	"seatGridEditor.geometry.rowOverridesTitle": "Ajustes por fila",
+	"seatGridEditor.geometry.rowSelectLabel": "Fila",
+	"seatGridEditor.geometry.rowSelectPlaceholder": "Escolhe uma fila…",
+	"seatGridEditor.geometry.overrideCurveLabel": "Curvatura (esta fila)",
+	"seatGridEditor.geometry.overrideDxLabel": "Deslocar lateralmente (lugares)",
+	"seatGridEditor.geometry.overrideDyLabel": "Deslocar para trás (filas)",
+	"seatGridEditor.geometry.clearOverride": "Limpar ajuste da fila",
+	"seatGridEditor.geometry.resetAll": "Repor geometria",
+	"seatGridEditor.geometry.previewTitle": "Pré-visualização",
+	"seatGridEditor.geometry.previewAria": "Pré-visualização em direto da disposição dos lugares",
+	"seatGridEditor.geometry.previewStage": "PALCO",
+	"seatGridEditor.geometry.unsupportedRecipe": "A geometria guardada deste setor usa um formato mais recente. Os controlos abaixo partem dos valores predefinidos; se os alterares, a geometria guardada será substituída ao gravar.",
+	"seatGridEditor.geometry.desyncedRecipe": "Os lugares deste setor têm posições personalizadas mas não há definições de geometria guardadas. Se gravares neste ecrã, as posições serão reconstruídas a partir dos controlos abaixo.",
+	"seatGridEditor.adjust.title": "Ajustar lugares",
+	"seatGridEditor.adjust.explainer": "Move lugares individuais para fora da fila ou ajusta um de cada vez. O clique e a pintura normais ficam em pausa enquanto isto está ativo.",
+	"seatGridEditor.adjust.toggle": "Ajustar lugares",
+	"seatGridEditor.adjust.hintOn": "Arrasta um lugar para o mover, ou seleciona-o e usa as setas. Mantém Shift para passos de meio lugar.",
+	"seatGridEditor.adjust.addSeat": "Adicionar lugar",
+	"seatGridEditor.adjust.addSeatHint": "Clica em qualquer ponto da grelha: o lugar entra na fila mais próxima e fica onde clicaste.",
+	"seatGridEditor.adjust.addAnywhereTarget": "Adicionar um lugar onde clicar",
+	"seatGridEditor.adjust.addSeatToRow": "Adicionar um lugar à fila {row}",
+	"seatGridEditor.adjust.inspectorTitle": "Lugar {seat}",
+	"seatGridEditor.adjust.noSelection": "Seleciona um lugar na grelha para o ajustar.",
+	"seatGridEditor.adjust.dxLabel": "Deslocar lateralmente (lugares)",
+	"seatGridEditor.adjust.dyLabel": "Deslocar para trás (filas)",
+	"seatGridEditor.adjust.rotLabel": "Rotação (graus)",
+	"seatGridEditor.adjust.rotHint": "0° orienta a marca para cima. A rotação é absoluta e não acompanha o palco; valores mais altos rodam o lugar no sentido dos ponteiros do relógio.",
+	"seatGridEditor.adjust.rowNote": "Um lugar mantém a sua fila. Para o mover para outra, remove-o e adiciona-o lá.",
+	"seatGridEditor.adjust.resetSeat": "Repor lugar",
+	"seatGridEditor.adjust.removeSeat": "Remover lugar",
+	"seatGridEditor.adjust.undo": "Anular",
+	"seatGridEditor.adjust.redo": "Refazer",
+	"seatGridEditor.shapeFit.title": "O contorno já não encaixa",
+	"seatGridEditor.shapeFit.body": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "{count} lugar agora fica fora do contorno desenhado deste setor. Gera novamente um contorno ajustado, ou limpa-o e volta a desenhá-lo mais tarde no editor de disposição.",
+				"countPlural=*": "{count} lugares agora ficam fora do contorno desenhado deste setor. Gera novamente um contorno ajustado, ou limpa-o e volta a desenhá-lo mais tarde no editor de disposição."
+			}
+		}
+	],
+	"seatGridEditor.shapeFit.fit": "Ajustar automaticamente o contorno",
+	"seatGridEditor.shapeFit.clear": "Limpar contorno",
+	"seatGridEditor.shapeFit.cancel": "Cancelar gravação",
 	"seatDesigner.open": "Abrir o editor de disposição",
 	"seatDesigner.title": "Editor de disposição",
 	"seatDesigner.pageTitle": "Editor de disposição – {venueName}",
@@ -9408,5 +9409,96 @@
 	"memberScan.untitledTier": "Bilhete",
 	"memberScan.checkInTicket": "Registar entrada",
 	"memberScan.close": "Fechar",
-	"memberScan.checkedInSuccess": "Entrada registada: {name}"
+	"memberScan.checkedInSuccess": "Entrada registada: {name}",
+	"cart": {
+		"addOne": "Adicionar um {tierName}",
+		"removeOne": "Remover um {tierName}",
+		"quantityFor": "Quantidade de {tierName}",
+		"cannotMixCurrency": "Não pode ser combinado com a tua seleção atual (moeda diferente)",
+		"cannotMixPayment": "Não pode ser combinado com a tua seleção atual (método de pagamento diferente)",
+		"eventLimitReached": "Atingiste o limite de bilhetes por pessoa para este evento.",
+		"ticketCount": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} bilhete",
+					"countPlural=*": "{count} bilhetes"
+				}
+			}
+		],
+		"buy": "Comprar",
+		"free": "Grátis",
+		"checkoutFailed": "Falha no pagamento",
+		"staleCart": "O teu carrinho está desatualizado — alguns bilhetes já não estão disponíveis. Atualiza a página e tenta novamente.",
+		"saleWindowClosed": "O período de venda de um bilhete no teu carrinho acabou de terminar. Atualiza a página.",
+		"eventTicketsLeft": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "Podes obter mais {count} bilhete para este evento",
+					"countPlural=*": "Podes obter mais {count} bilhetes para este evento"
+				}
+			}
+		],
+		"summaryRegion": "Resumo do carrinho",
+		"discountLink": "Código de desconto?",
+		"seatsHeld": "Lugares reservados",
+		"holdsExpired": "Os teus lugares reservados expiraram — volta a selecioná-los.",
+		"pickSeatsTitle": "Escolher lugares — {tierName}",
+		"pickSeatsDescription": "Toca nos lugares no mapa para os reservar para este bilhete.",
+		"pickSeats": "Escolher lugares…",
+		"seatsPicked": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} lugar · editar",
+					"countPlural=*": "{count} lugares · editar"
+				}
+			}
+		],
+		"seatPickerDone": "Concluído",
+		"signedInCartCleared": "Iniciaste sessão — o teu carrinho de convidado foi limpo."
+	},
+	"cartSheet": {
+		"title": "Pagamento",
+		"payNow": "Pagar agora",
+		"reserve": "Reservar",
+		"claim": "Obter",
+		"groupTickets": [
+			{
+				"declarations": ["input tierName", "input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{tierName} × {count}",
+					"countPlural=*": "{tierName} × {count}"
+				}
+			}
+		],
+		"namesHeading": "Nomes das pessoas titulares dos bilhetes",
+		"nameLabel": "Nome para o bilhete {index}",
+		"nameRequired": "Indica um nome para cada bilhete",
+		"guestNameRequired": "Indica o teu nome próprio e apelido",
+		"pwycRange": "Intervalo: {min} – {max}",
+		"pwycHeading": "Escolhe o teu valor",
+		"discountSection": "Código de desconto",
+		"discountApplies": "Aplica-se a {tierName}",
+		"discountNotApplicable": "Não se aplica a este tipo de bilhete",
+		"discountNoMatch": "Este código não se aplica a nada no teu carrinho",
+		"discountCheckFailed": "Não conseguimos verificar este código — ainda assim será aplicado no pagamento",
+		"billingSection": "Dados de faturação",
+		"close": "Fechar",
+		"confirmedTicketCount": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} bilhete confirmado",
+					"countPlural=*": "{count} bilhetes confirmados"
+				}
+			}
+		]
+	}
 }

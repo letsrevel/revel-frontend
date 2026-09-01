@@ -15,14 +15,15 @@
 </script>
 
 <!--
-	The top bar pins below the org-admin header, whose height that layout
-	measures and publishes as `--admin-sticky-top` (both EventEditor call sites
-	are admin routes, so it is always in scope). No fallback on purpose: until
-	the layout has measured, the property is absent, `top` computes to `auto`,
-	and this bar scrolls with the page instead of pinning at a guessed offset.
-	`tall:` because on a landscape phone the sticky stack left no room to
-	scroll. The inset is set only for `top` — giving a `bottom-0` sticky a `top`
-	too would re-pin it to the top edge.
+	The top bar pins below the global site header: the org-admin layout
+	publishes `--admin-sticky-top` as that navbar's height (both EventEditor
+	call sites are admin routes, so it is always in scope). The org-admin
+	header block itself no longer sticks (unstuck 2026-08-13 — it used to eat
+	a third of a laptop screen), so this bar's own offset only ever needs to
+	clear the site header above it. `tall:` because on a landscape phone the
+	site header plus this bar left no room to scroll. The inset is set only
+	for `top` — giving a `bottom-0` sticky a `top` too would re-pin it to the
+	top edge.
 
 	The bottom bar deliberately stays sticky at EVERY viewport height: the
 	landscape bug was the stacked, offset-dependent top chrome, while this is a

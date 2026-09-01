@@ -16,11 +16,13 @@
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		organizationadminvenuesGetVenue,
+		organizationadminvenuesListPriceCategories,
 		organizationadminvenuesListSectors,
 		organizationadminvenuesUpdateSector,
 		organizationadminvenuesUpdateVenue
 	} from '$lib/api/generated/sdk.gen';
 	import type {
+		PriceCategorySchema,
 		VenueDetailSchema,
 		VenueSectorUpdateSchema,
 		VenueSectorWithSeatsSchema
@@ -71,6 +73,24 @@
 			return (response.data as VenueSectorWithSeatsSchema[]) || [];
 		}
 	}));
+
+	// Seat COLOURS only: the canvas draws each seat in its price-category colour,
+	// exactly like the grid editor and the buyer's map. Same query key as
+	// PriceCategorySection/SeatGridEditor so all three share one cache entry, and
+	// deliberately NOT part of the loading/error gates — a venue with no
+	// categories (or a slow request) just renders unpainted seats.
+	const categoriesQuery = createQuery<PriceCategorySchema[]>(() => ({
+		queryKey: ['org-admin', organization.slug, 'venue', venueId, 'price-categories'],
+		queryFn: async () => {
+			const response = await organizationadminvenuesListPriceCategories({
+				path: { slug: organization.slug, venue_id: venueId },
+				headers: authHeaders
+			});
+			if (response.error || !response.data) throw new Error('Failed to load price categories');
+			return response.data;
+		}
+	}));
+	const priceCategories = $derived(categoriesQuery.data ?? []);
 
 	// Freeze the model on first successful load: the designer's world frame
 	// (initial transforms, shape-persist offsets) must not shift under unsaved
@@ -243,6 +263,7 @@
 				onSave={handleSave}
 				onDirtyChange={(value) => (dirty = value)}
 				{sectorEditorHref}
+				{priceCategories}
 			/>
 		{/if}
 	{/if}

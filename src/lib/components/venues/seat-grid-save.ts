@@ -118,10 +118,8 @@ export interface SeatSavePlanInput {
 	invertRowOrder: boolean;
 	getRowLabel: (rowIndex: number) => string;
 	getSeatLabel: (rowIndex: number, colIndex: number) => string;
-	/** Rendered x for a column (accounts for vertical aisles). */
-	getXPosition: (colIndex: number) => number;
-	/** Rendered y for a row (accounts for horizontal aisles). */
-	getYPosition: (rowIndex: number) => number;
+	/** Baked position for a populated cell (sector-local units). */
+	getPosition: (rowIndex: number, colIndex: number) => { x: number; y: number };
 }
 
 /**
@@ -239,7 +237,7 @@ export function buildSeatSavePlan(input: SeatSavePlanInput): SeatSavePlan {
 			// Write contract still uses `row`; becomes `row_label` in the Phase-2 rename.
 			row: input.getRowLabel(row),
 			number: col + 1,
-			position: { x: input.getXPosition(col), y: input.getYPosition(row) },
+			position: input.getPosition(row, col),
 			is_accessible: data.is_accessible,
 			is_obstructed_view: data.is_obstructed_view,
 			is_active: true,

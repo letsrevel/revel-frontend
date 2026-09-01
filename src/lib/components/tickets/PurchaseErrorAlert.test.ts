@@ -4,6 +4,7 @@ import PurchaseErrorAlert from './PurchaseErrorAlert.svelte';
 import type { EventUserEligibility } from '$lib/api/generated/types.gen';
 import type { TierSchemaWithId } from '$lib/types/tickets';
 import * as m from '$lib/paraglide/messages.js';
+import { GuestAccountRequiredError } from '../events/guest-cart-checkout-controller.svelte';
 
 const EVENT_ID = '11111111-1111-1111-1111-111111111111';
 
@@ -112,5 +113,43 @@ describe('PurchaseErrorAlert', () => {
 	it('falls back to the generic message for an unreadable error', () => {
 		renderAlert({ error: {} });
 		expect(screen.getByText(m['ticketConfirmationDialog.errorGeneric']())).toBeInTheDocument();
+	});
+
+	// #853 PR 4: a guest checkout refused because the next step (e.g.
+	// become_member) has no guest-compatible path — GuestAccountRequiredError,
+	// not a membership-tier gate, so it gets its own CTA pair.
+	describe('GuestAccountRequiredError', () => {
+		const accountRequiredError = new GuestAccountRequiredError('Please complete a questionnaire.', {
+			next_step: 'complete_questionnaire'
+		});
+
+		it('renders login and create-account links instead of the membership CTA', () => {
+			renderAlert({ error: accountRequiredError, tier: ungatedTier });
+			expect(screen.getByText('Please complete a questionnaire.')).toBeInTheDocument();
+			expect(
+				screen.getByRole('link', { name: m['guestTicketDialog.logIn']() })
+			).toBeInTheDocument();
+			expect(
+				screen.getByRole('link', { name: m['guestTicketDialog.createAnAccount']() })
+			).toBeInTheDocument();
+			expect(
+				screen.queryByRole('link', { name: m['membershipPlans.viewMembership']() })
+			).toBeNull();
+		});
+
+		it('points the login/register links at the current path with a redirect param', () => {
+			renderAlert({ error: accountRequiredError, tier: ungatedTier });
+			const loginLink = screen.getByRole('link', { name: m['guestTicketDialog.logIn']() });
+			const registerLink = screen.getByRole('link', {
+				name: m['guestTicketDialog.createAnAccount']()
+			});
+			expect(loginLink).toHaveAttribute('href', `/login?redirect=${encodeURIComponent('/')}`);
+			expect(registerLink).toHaveAttribute('href', `/register?redirect=${encodeURIComponent('/')}`);
+		});
+
+		it('shows no account-required CTA for an unrelated purchase failure', () => {
+			renderAlert({ error: { detail: 'Sold out.' } });
+			expect(screen.queryByRole('link', { name: m['guestTicketDialog.logIn']() })).toBeNull();
+		});
 	});
 });

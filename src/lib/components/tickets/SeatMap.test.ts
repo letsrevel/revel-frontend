@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/svelte';
+import { render, screen, fireEvent, cleanup } from '@testing-library/svelte';
 import { describe, it, expect, vi } from 'vitest';
 import type {
 	ChartSeatSchema,
@@ -163,6 +163,122 @@ describe('SeatMap', () => {
 			expect(screen.queryByRole('button', { name: /Seat/ })).not.toBeInTheDocument();
 			// Zoom controls remain.
 			expect(screen.getByRole('button', { name: 'Zoom in' })).toBeInTheDocument();
+		});
+	});
+
+	// The unified seat language (#852): the map is the landing mock made real —
+	// a poster-ink house, SOLID dots in the seat's own colour, unavailable seats
+	// dimmed by LIGHTNESS (never an X, never a hue swap), selection as a white
+	// offset ring. These assertions pin the contract, not the incidental markup.
+	describe('visual language', () => {
+		const seatCircle = (name: string): SVGCircleElement | null =>
+			seatButton(name).querySelector('circle');
+
+		it('paints the house as a mode-inert poster-ink panel', () => {
+			const { container } = render(SeatMap, {
+				props: {
+					chart: makeChart([chartSeat('a1')]),
+					seats: [view('a1')],
+					onToggle: vi.fn()
+				}
+			});
+			const panel = container.querySelector('div.bg-poster-ink');
+			expect(panel).toBeTruthy();
+			// No `dark:` variant anywhere on it: a picture of a room, not a surface.
+			expect(panel?.className).not.toMatch(/dark:/);
+		});
+
+		it('fills an available seat with its price-category colour', () => {
+			renderMap({
+				chart: makeChart(
+					[chartSeat('a1', { price_category_id: 'cat-1' }), chartSeat('a2'), chartSeat('b1')],
+					{ price_categories: [{ id: 'cat-1', name: 'Gold', color: '#aa0000', display_order: 0 }] }
+				)
+			});
+			expect(seatCircle('Seat A1, Gold')?.getAttribute('fill')).toBe('#aa0000');
+		});
+
+		it('falls back to poster Periwinkle for an unpainted seat', () => {
+			renderMap();
+			expect(seatCircle('Seat A1')?.getAttribute('fill')).toBe('hsl(var(--poster-periwinkle))');
+		});
+
+		it('dims sold/held/blocked seats instead of drawing an X pattern', () => {
+			renderMap({
+				seats: [view('a1', { status: 'sold' }), view('a2', { status: 'held' }), view('b1')]
+			});
+			for (const name of ['Seat A1, sold', 'Seat A2, held by someone else']) {
+				const seat = seatButton(name);
+				expect(seat.querySelector('circle')?.getAttribute('class')).toContain(
+					'fill-poster-white/25'
+				);
+				// The old treatment: a diagonal pattern fill plus an X glyph.
+				expect(seat.querySelector('path')).toBeNull();
+				expect(seat.querySelector('circle')?.getAttribute('fill') ?? '').not.toMatch(/url\(/);
+			}
+		});
+
+		it('rings a held-by-me seat in white and keeps its own colour under the check', () => {
+			renderMap({
+				chart: makeChart(
+					[chartSeat('a1', { price_category_id: 'cat-1' }), chartSeat('a2'), chartSeat('b1')],
+					{ price_categories: [{ id: 'cat-1', name: 'Gold', color: '#aa0000', display_order: 0 }] }
+				),
+				seats: [view('a1', { status: 'mine' }), view('a2'), view('b1')]
+			});
+			const seat = seatButton('Seat A1, Gold');
+			const circles = seat.querySelectorAll('circle');
+			expect(circles[0].getAttribute('class')).toContain('stroke-poster-white');
+			expect(circles[1].getAttribute('fill')).toBe('#aa0000');
+			// The check glyph is drawn in whatever reads on that fill (#aa0000 is dark).
+			expect(seat.querySelector('path')?.getAttribute('stroke')).toBe('#ffffff');
+		});
+
+		// An SVG container has NO box model, so a `focus-visible:outline-*`
+		// utility on the seat <g> never paints — Chromium falls back to its own
+		// blue bounding-box ring and other engines draw nothing. The indicator is
+		// therefore real geometry: an amber ring circle revealed by
+		// `group-focus-visible`, with the UA ring suppressed only because that
+		// replacement exists. Asserting the ELEMENT (not a class string on the
+		// group) is what makes this test able to fail if the ring goes away.
+		it('draws keyboard focus as an amber ring circle, outside the white mine ring', () => {
+			renderMap();
+			const seat = seatButton('Seat A1');
+			expect(seat.getAttribute('class')).toContain('group');
+			// Never drop the UA ring without a replacement — so both must be true.
+			expect(seat.getAttribute('class')).toContain('outline-none');
+
+			const ring = seat.querySelector('[data-testid="seat-focus-ring"]');
+			expect(ring).toBeTruthy();
+			expect(ring?.getAttribute('class')).toContain('stroke-poster-amber');
+			expect(ring?.getAttribute('class')).toContain('opacity-0');
+			expect(ring?.getAttribute('class')).toContain('group-focus-visible:opacity-100');
+			expect(ring?.getAttribute('fill')).toBe('none');
+			// Radius sits outside the `mine` ring (SEAT_R + 3) so the two cues
+			// never collide: amber for focus, white for "held by me".
+			expect(Number(ring?.getAttribute('r'))).toBeGreaterThan(11 + 3);
+		});
+
+		it('gives every interactive seat its own focus ring', () => {
+			renderMap();
+			const seats = document.querySelectorAll('[data-seat-id][role="button"]');
+			expect(seats).toHaveLength(3);
+			for (const seat of seats) {
+				expect(seat.querySelector('[data-testid="seat-focus-ring"]')).toBeTruthy();
+			}
+		});
+
+		it('draws the same amber focus geometry on whole-sector targets', () => {
+			renderMap({
+				sectorTargets: [{ sectorId: 'sec-1', label: 'Stalls, EUR 10.00', lines: ['Stalls'] }],
+				interactive: false
+			});
+			const target = document.querySelector('[data-sector-target="sec-1"]');
+			expect(target?.getAttribute('class')).toContain('group');
+			expect(target?.getAttribute('class')).toContain('outline-none');
+			const ring = target?.querySelector('[data-testid="sector-focus-ring"]');
+			expect(ring?.getAttribute('class')).toContain('stroke-poster-amber');
+			expect(ring?.getAttribute('class')).toContain('group-focus-visible:opacity-100');
 		});
 	});
 
@@ -570,6 +686,76 @@ describe('SeatMap', () => {
 				screen.getByRole('img', { name: 'Stalls: sold through a different ticket' })
 			).toBeInTheDocument();
 			expect(screen.queryByRole('button', { name: /Seat A1/ })).not.toBeInTheDocument();
+		});
+	});
+
+	// Per-seat rotation (#852 phase 4): the buyer reads the compact
+	// `metadata.seatRotations` mirror (the admin-only rowLayout recipe never
+	// reaches this surface) and draws the SAME orientation notch the sector
+	// editor draws. Absent or malformed ⇒ no notches, so a backend that does not
+	// serve the key yet renders exactly as before.
+	describe('seat rotation notches', () => {
+		const notches = () =>
+			Array.from(document.querySelectorAll<SVGLineElement>('[data-testid="seat-rotation-notch"]'));
+
+		it('draws a notch only for the seats the mirror rotates', () => {
+			renderMap({
+				chart: makeChart([chartSeat('a1'), chartSeat('a2'), chartSeat('b1')], {}, {
+					metadata: { seatRotations: { A1: 90, B1: -45 } }
+				} as Partial<ChartSectorSchema>)
+			});
+			expect(
+				notches()
+					.map((line) => line.getAttribute('data-rot'))
+					.sort()
+			).toEqual(['-45', '90']);
+		});
+
+		it('orients the notch by the stored angle (90 = clockwise from up = right)', () => {
+			renderMap({
+				chart: makeChart([chartSeat('a1'), chartSeat('a2'), chartSeat('b1')], {}, {
+					metadata: { seatRotations: { A1: 90, A2: 180 } }
+				} as Partial<ChartSectorSchema>)
+			});
+			const byRot = new Map(notches().map((line) => [line.getAttribute('data-rot'), line]));
+			const read = (rot: string) => {
+				const line = byRot.get(rot);
+				if (!line) throw new Error(`no notch at ${rot}`);
+				return {
+					dx: Number(line.getAttribute('x2')) - Number(line.getAttribute('x1')),
+					dy: Number(line.getAttribute('y2')) - Number(line.getAttribute('y1'))
+				};
+			};
+			// 90° sweeps to the seat's right; 180° points down the screen (and
+			// normalizes to -180, the [-180, 180) representative of half a turn).
+			expect(read('90').dx).toBeGreaterThan(0);
+			expect(read('90').dy).toBeCloseTo(0, 6);
+			expect(read('-180').dy).toBeGreaterThan(0);
+			expect(read('-180').dx).toBeCloseTo(0, 6);
+		});
+
+		it('renders no notch at all without the mirror, and ignores a malformed one', () => {
+			renderMap();
+			expect(notches()).toHaveLength(0);
+
+			cleanup();
+			renderMap({
+				chart: makeChart([chartSeat('a1')], {}, {
+					metadata: { seatRotations: 'garbage', rowLayout: { seatNudges: [{ rot: 90 }] } }
+				} as Partial<ChartSectorSchema>),
+				seats: [view('a1')]
+			});
+			expect(notches()).toHaveLength(0);
+		});
+
+		it('ignores rotations naming labels that no seat carries, and plain zeroes', () => {
+			renderMap({
+				chart: makeChart([chartSeat('a1'), chartSeat('a2')], {}, {
+					metadata: { seatRotations: { Z9: 30, A1: 0, A2: 360 } }
+				} as Partial<ChartSectorSchema>),
+				seats: [view('a1'), view('a2')]
+			});
+			expect(notches()).toHaveLength(0);
 		});
 	});
 });

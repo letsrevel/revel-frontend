@@ -29,7 +29,18 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 //   Spec 2 (standing capacity): a STANDING sector with a hard capacity of 2
 //   backing a GA (seat_assignment_mode 'none') tier. Two API claims fill it,
 //   and the next purchase through the UI hits the backend's 429 ("This sector
-//   is full.") surfaced in the confirmation dialog's error alert.
+//   is full.") surfaced in the checkout sheet's inline error alert.
+//
+// #853 rewrite (wave 2, task 11): ONLY the purchase legs move to the cart
+// flow — every arrange step above (org/venue/sector/category/paint/filler
+// claims) is untouched. Both tiers here are `quickBuyEligible` (best_available
+// and 'none' respectively) — neither ever had a seat picker, so both now
+// drive the tier card's inline quick-buy stepper + the sticky `CartSummaryBar`
+// + the checkout sheet (`getByRole('dialog', { name: 'Checkout' })`) instead
+// of the deleted `TicketTierModal`/`TicketConfirmationDialog` pair. Neither
+// event sets `require_ticket_names: false`, so the sheet opens even at
+// quantity 1 (`EventCart.needsSheet`) — same wave-1 convention
+// best-available.spec.ts's `claimBestAvailable` helper uses.
 //
 // Isolation: every run arranges its own org/venue/event, so parallel workers
 // and reruns never collide.
@@ -39,6 +50,16 @@ const SEAT_RE = /Row ([A-Z0-9]+), Seat (\d+)/;
 interface SeatRef {
 	row: string;
 	number: number;
+}
+
+function tierCardLocator(page: Page, tierName: string) {
+	// `div.bg-card`, NOT bare `.bg-card` — TicketTierList's wrapping <section>
+	// carries the class too, so a bare class filter matches both the section
+	// and the one PricingCard whose heading it contains. The tag discriminates:
+	// only PricingCard's root is a <div>.
+	return page
+		.locator('div.bg-card')
+		.filter({ has: page.getByRole('heading', { name: tierName, exact: true }) });
 }
 
 interface CreatedSeatingVenue {
@@ -231,24 +252,28 @@ test.describe('J19 self-service seating @p2', () => {
 			await gotoHydrated(page, event.path);
 			await waitForClientAuth(page);
 
-			// Reach the confirmation dialog (idempotent loop) and attempt the
-			// claim. The tier is NOT sold out at the inventory level, so the UI
-			// lets the buyer through — the backend's hard sector-capacity check
-			// answers 429, whose detail ("This sector is full.") lands in the
-			// dialog's destructive error alert.
-			const tierDialog = page.getByRole('dialog', { name: 'Select Your Ticket' });
-			const confirmDialog = page.getByRole('dialog', { name: 'Claim Free Ticket' });
-			await expect(async () => {
-				if (await confirmDialog.isVisible()) return;
-				if (!(await tierDialog.isVisible())) {
-					await page.getByRole('button', { name: 'Get Tickets', exact: true }).click();
-				}
-				await tierDialog.getByRole('button', { name: 'Claim Free Ticket' }).click();
-				await expect(confirmDialog).toBeVisible({ timeout: 8_000 });
-			}).toPass({ timeout: 60_000 });
+			// Bump the tier's inline quick-buy stepper to 1 and open the sheet
+			// (idempotent loop). The tier is NOT sold out at the inventory level,
+			// so the UI lets the buyer through — the backend's hard
+			// sector-capacity check answers 429, whose detail ("This sector is
+			// full.") lands in the checkout sheet's inline error alert.
+			const tierCard = tierCardLocator(page, tier.name);
+			const stepper = tierCard.getByRole('group', { name: `Quantity for ${tier.name}` });
+			await expect(stepper).toBeVisible({ timeout: 15_000 });
+			await stepper.getByRole('button', { name: `Add one ${tier.name}` }).click();
+			await expect(stepper.locator('span[aria-live="polite"]')).toHaveText('1');
 
-			await confirmDialog.getByRole('button', { name: 'Claim Ticket', exact: true }).click();
-			await expect(confirmDialog.getByText('This sector is full.')).toBeVisible({
+			const summaryBar = page.getByTestId('cart-summary-bar');
+			const sheet = page.getByRole('dialog', { name: 'Checkout' });
+			await expect(async () => {
+				if (await sheet.isVisible()) return;
+				await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+				await expect(sheet).toBeVisible({ timeout: 8_000 });
+			}).toPass({ timeout: 30_000 });
+			await sheet.getByLabel('Name for ticket 1').fill('E2E Standing Buyer');
+
+			await sheet.getByRole('button', { name: 'Claim', exact: true }).click();
+			await expect(sheet.getByText('This sector is full.')).toBeVisible({
 				timeout: 15_000
 			});
 		} finally {
@@ -258,69 +283,61 @@ test.describe('J19 self-service seating @p2', () => {
 });
 
 /**
- * Drive one 2-ticket best-available claim on a FREE tier: entry button → tier
- * dialog → confirmation dialog (asserting the no-map best-available UI) →
- * quantity 2 (both guest names) → claim → success modal. Idempotent loops
- * throughout — a retried claim releases any stale block and re-holds
- * server-side, so retries stay hold-consistent.
+ * Drive one 2-ticket best-available claim on a FREE tier: bump the tier
+ * card's inline stepper to 2, open the sheet via the cart summary bar, fill
+ * both guest names, then Claim. Idempotent loop on the final click — a
+ * retried claim releases any stale block and re-holds server-side, so
+ * retries stay hold-consistent. Mirrors best-available.spec.ts's
+ * `claimBestAvailable` (wave 1).
  */
 async function claimTwoBestAvailableFree(
 	page: Page,
 	event: CreatedEvent,
 	tierName: string
 ): Promise<void> {
-	const tierDialog = page.getByRole('dialog', { name: 'Select Your Ticket' });
-	const tierCard = tierDialog
-		.locator('.bg-card')
-		.filter({ has: page.getByRole('heading', { name: tierName, exact: true }) });
-	const confirmDialog = page.getByRole('dialog', { name: 'Claim Free Ticket' });
-	const bestPanel = confirmDialog.getByText('Best available seats');
-	await expect(async () => {
-		if (await bestPanel.isVisible()) return;
-		if (!(await tierDialog.isVisible())) {
-			await page.getByRole('button', { name: 'Get Tickets', exact: true }).click();
-		}
-		await tierCard.getByRole('button', { name: 'Claim Free Ticket' }).click();
-		await expect(bestPanel).toBeVisible({ timeout: 8_000 });
-	}).toPass({ timeout: 60_000 });
+	const tierCard = tierCardLocator(page, tierName);
+	const stepper = tierCard.getByRole('group', { name: `Quantity for ${tierName}` });
+	await expect(stepper).toBeVisible({ timeout: 15_000 });
 
-	// Best-available UI: auto-assignment panel + accessible-seats opt-in, NO
-	// seat grid (the server picks).
+	const add = stepper.getByRole('button', { name: `Add one ${tierName}` });
+	await add.click();
+	await add.click();
+	await expect(stepper.locator('span[aria-live="polite"]')).toHaveText('2');
+
+	const summaryBar = page.getByTestId('cart-summary-bar');
+	const sheet = page.getByRole('dialog', { name: 'Checkout' });
+	await expect(async () => {
+		if (await sheet.isVisible()) return;
+		await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+		await expect(sheet).toBeVisible({ timeout: 8_000 });
+	}).toPass({ timeout: 30_000 });
+
+	// No seat map/list ever renders for a best-available group — the server
+	// picks the seats; the accessible opt-in stays available.
+	await expect(sheet.getByText('Select Your Seats')).toBeHidden();
+	await expect(sheet.getByText('STAGE')).toBeHidden();
 	await expect(
-		confirmDialog.getByText('Your seats will be assigned automatically', { exact: false })
+		sheet.getByRole('checkbox', { name: 'I need wheelchair-accessible seats' })
 	).toBeVisible();
-	await expect(
-		confirmDialog.getByRole('checkbox', { name: 'I need wheelchair-accessible seats' })
-	).toBeVisible();
-	await expect(confirmDialog.getByText('Select Your Seats')).toBeHidden();
-	await expect(confirmDialog.getByText('STAGE')).toBeHidden();
 
 	// Mapped tier (pricing convergence): the mandatory zone picker renders and
 	// the single zone auto-selects once availability loads — the claim button
 	// stays gated until then, so wait for the check before claiming.
-	await expect(confirmDialog.getByText('Seating zone', { exact: true })).toBeVisible();
-	await expect(confirmDialog.getByRole('radio', { name: /Galleria/ })).toBeChecked({
+	await expect(sheet.getByText('Seating zone', { exact: true })).toBeVisible();
+	await expect(sheet.getByRole('radio', { name: /Galleria/ })).toBeChecked({
 		timeout: 8_000
 	});
 
-	// Quantity 2 — the second guest-name input appears; the first is prefilled
-	// with the buyer's profile name but re-filled when empty (canSubmit requires
-	// every name once quantity > 1).
-	await confirmDialog.getByRole('button', { name: 'Increase quantity' }).click();
-	await expect(confirmDialog.getByText('Ticket Holders', { exact: true })).toBeVisible();
-	const firstGuest = confirmDialog.getByPlaceholder('Your name');
-	if ((await firstGuest.inputValue()).trim() === '') {
-		await firstGuest.fill('E2E Guest One');
-	}
-	await confirmDialog.getByPlaceholder('Guest 2 name').fill('E2E Guest Two');
+	await sheet.getByLabel('Name for ticket 1').fill('E2E Guest One');
+	await sheet.getByLabel('Name for ticket 2').fill('E2E Guest Two');
 
 	// Claim: holds the best-available block, then the claim consumes it. On a
-	// retry the dialog releases the stale block first, so no holds leak.
+	// retry the confirm flow releases the stale block first, so no holds leak.
 	const success = page.getByRole('dialog', { name: 'Your Ticket', exact: true });
-	const claim = confirmDialog.getByRole('button', { name: 'Claim Ticket', exact: true });
+	const claim = sheet.getByRole('button', { name: 'Claim', exact: true });
 	await expect(async () => {
 		if (await success.isVisible()) return;
-		await claim.click();
+		if (await claim.isVisible()) await claim.click();
 		await expect(success).toBeVisible({ timeout: 10_000 });
 	}).toPass({ timeout: 40_000 });
 	await page.keyboard.press('Escape');

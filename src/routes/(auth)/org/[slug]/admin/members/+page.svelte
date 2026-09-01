@@ -233,12 +233,9 @@
 
 	<!-- Tabs -->
 	<Tabs bind:value={activeTab} class="w-full">
-		<!-- `top` comes from the admin layout, which measures its own header: the
-		     hardcoded 8rem here only ever matched the mobile header (the desktop
-		     one carries two extra rows), so the strip used to pin *inside* it.
-		     No fallback — while the property is absent (SSR, pre-hydration) this
-		     resolves to `top: auto` and the strip scrolls instead of pinning at a
-		     guess. -->
+		<!-- `top` comes from the admin layout as a static navbar-only offset: the
+		     org-admin header block above this strip no longer sticks (unstuck
+		     2026-08-13), so this only ever needs to clear the global site header. -->
 		<div
 			class="z-20 -mb-px bg-background pb-3 pt-1 tall:sticky"
 			style="top: var(--admin-sticky-top)"

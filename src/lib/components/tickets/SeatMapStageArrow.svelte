@@ -72,7 +72,7 @@
 		y1={cy + dirY * edge}
 		x2={cx + dirX * (edge + GAP)}
 		y2={cy + dirY * (edge + GAP)}
-		class="stroke-muted-foreground/50"
+		class="stroke-poster-white/50"
 		stroke-width="2"
 		stroke-linecap="round"
 	/>
