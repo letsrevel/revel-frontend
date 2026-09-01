@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
 	import type { PageData } from './$types';
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
@@ -7,6 +6,8 @@
 	import EventHeader from '$lib/components/events/EventHeader.svelte';
 	import EventDetails from '$lib/components/events/EventDetails.svelte';
 	import EventActionSidebar from '$lib/components/events/EventActionSidebar.svelte';
+	import EventSeriesLinkCard from '$lib/components/events/EventSeriesLinkCard.svelte';
+	import EventTagsSection from '$lib/components/events/EventTagsSection.svelte';
 	import ActiveOfferBanner from '$lib/components/events/waitlist/ActiveOfferBanner.svelte';
 	import OrganizationInfo from '$lib/components/events/OrganizationInfo.svelte';
 	import PotluckSection from '$lib/components/events/PotluckSection.svelte';
@@ -17,27 +18,22 @@
 	import EventGuestSignInPrompt from '$lib/components/events/EventGuestSignInPrompt.svelte';
 	import AttendeeList from '$lib/components/events/AttendeeList.svelte';
 	import TicketTierList from '$lib/components/tickets/TicketTierList.svelte';
+	import TicketTiersDialog from '$lib/components/tickets/TicketTiersDialog.svelte';
 	import EventSeriesPassOffers from '$lib/components/series-passes/EventSeriesPassOffers.svelte';
 	import MyTicket from '$lib/components/tickets/MyTicket.svelte';
-	import TicketTierModal from '$lib/components/tickets/TicketTierModal.svelte';
-	import MyTicketModal from '$lib/components/tickets/MyTicketModal.svelte';
-	import GuestRsvpDialog from '$lib/components/events/GuestRsvpDialog.svelte';
-	import GuestTicketDialog from '$lib/components/events/GuestTicketDialog.svelte';
-	import VenueOverviewDialog from '$lib/components/events/VenueOverviewDialog.svelte';
+	import EventPurchaseDialogs from '$lib/components/events/EventPurchaseDialogs.svelte';
 	import { eventHasSeatingMap } from '$lib/components/events/venue-overview';
 	import EventConfirmationBanners from '$lib/components/events/EventConfirmationBanners.svelte';
 	import { createCheckoutController } from '$lib/components/events/event-checkout-controller.svelte';
-	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
+	import { consumePostRedirectParams } from '$lib/components/events/post-redirect-params';
 	import { SeoHead } from '$lib/seo';
 	import {
-		isRSVP,
 		isTicket,
 		isEligibility,
 		isUserStatusResponse,
-		hasActiveTickets,
-		hasPositiveRsvp,
 		hasActiveWaitlistOffer,
 		getActiveTickets,
+		hasAttendingSignal,
 		type EventTicketSchemaActual
 	} from '$lib/utils/eligibility';
 	import type { TierRemainingTicketsSchema } from '$lib/api/generated/types.gen';
@@ -46,9 +42,20 @@
 	import { getUserRealName } from '$lib/utils/user-display';
 	import { formatEventDate } from '$lib/utils/date';
 	import { onMount } from 'svelte';
-	import { browser } from '$app/environment';
-	import * as m from '$lib/paraglide/messages.js';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { EventCart } from '$lib/components/tickets/cart.svelte';
+	import { cartTotal, cartTotalArgs } from '$lib/components/tickets/checkout-total';
+	import { discountApplicable } from '$lib/components/tickets/cart-discount';
+	import CartSummaryBar from '$lib/components/tickets/CartSummaryBar.svelte';
+	import CartSeatHolds from '$lib/components/tickets/CartSeatHolds.svelte';
+	import { CartSeatHoldRegistry } from '$lib/components/tickets/cart-seat-registry.svelte';
+	import SeatPickerDialog from '$lib/components/tickets/SeatPickerDialog.svelte';
+	import CheckoutSheet from '$lib/components/tickets/CheckoutSheet.svelte';
+	import CartEmailConfirmation from '$lib/components/tickets/CartEmailConfirmation.svelte';
+	import { createCartPurchaseFlow } from '$lib/components/events/cart-purchase-flow.svelte';
+	import * as cartBaHolds from '$lib/components/tickets/cart-ba-holds';
+	import { readTierMapPref, writeTierMapPref } from '$lib/components/tickets/seat-view-toggle';
+	import { toast } from 'svelte-sonner';
 
 	const { data }: { data: PageData } = $props();
 
@@ -72,30 +79,7 @@
 
 	// Check if user has RSVP'd or has tickets (reactive to userStatus changes)
 	// Users with tickets should be able to claim potluck items
-	const hasRSVPd = $derived.by(() => {
-		if (!userStatus) return false;
-
-		// New unified format: EventUserStatusResponse with tickets array and/or RSVP
-		if (isUserStatusResponse(userStatus)) {
-			// User has active tickets = can claim potluck items
-			if (hasActiveTickets(userStatus)) return true;
-			// User has positive RSVP = can claim potluck items
-			if (hasPositiveRsvp(userStatus)) return true;
-			return false;
-		}
-
-		// Legacy format: Single RSVP
-		if (isRSVP(userStatus)) {
-			return userStatus.status === 'yes';
-		}
-
-		// Legacy format: Single Ticket
-		if (isTicket(userStatus)) {
-			return userStatus.status === 'active' || userStatus.status === 'checked_in';
-		}
-
-		return false;
-	});
+	const hasRSVPd = $derived(hasAttendingSignal(userStatus));
 
 	// Compute permissions for potluck management
 	const potluckPermissions = $derived(
@@ -128,6 +112,17 @@
 	// First user ticket (for backward compatibility)
 	const userTicket = $derived(userTickets.length > 0 ? userTickets[0] : null);
 
+	// Buy-more eligibility (#853 fix): same read as EventActionSidebar's canPurchaseMore.
+	const canBuyMore = $derived(
+		userStatus && isUserStatusResponse(userStatus) ? (userStatus.can_purchase_more ?? true) : true
+	);
+
+	// Stranded-cart guard, gated like the tier-list render below — `userTicket`
+	// alone cleared on EVERY status refresh, wiping a legit buy-more cart (fix 3).
+	$effect(() => {
+		if (userTicket && !canBuyMore) cart.clear();
+	});
+
 	// Get per-tier remaining tickets info for the user
 	// Only show user-specific remaining info if they can actually purchase more
 	const tierRemainingTickets = $derived.by((): TierRemainingTicketsSchema[] | undefined => {
@@ -158,38 +153,64 @@
 	let initialDiscountCode = $state('');
 
 	// Modal states
-	let showTicketTierModal = $state(false);
 	let showMyTicketModal = $state(false);
 	let showGuestRsvpDialog = $state(false);
-	let showGuestTicketDialog = $state(false);
 	let showVenueOverview = $state(false);
-	let selectedTierForGuest = $state<TierSchemaWithId | null>(null);
-	// The next guest dialog was opened BY a section switch: it should scroll
-	// its seating UI into view (the keyed remount lands at the top).
-	let guestFocusSeating = $state(false);
-	let preSelectedTier = $state<TierSchemaWithId | null>(null);
+	// Seat-picker entry point: the tier being picked also gates SeatPickerDialog's
+	// mount, so closing/hand-off unmounts it (destroying its transient controller).
+	let pickSeatsTier = $state<TierSchemaWithId | null>(null);
 
-	// Map-first entry point (#679): only when a purchasable tier sells a venue
-	// sector (the chart itself is fetched lazily when the dialog opens).
+	// Map-first entry point (#679): only when a purchasable tier sells a venue sector.
 	const hasSeatingMap = $derived(eventHasSeatingMap(ticketTiers, tierRemainingTickets));
-
-	// Handle modals
-	function openTicketTierModal() {
-		showTicketTierModal = true;
-	}
-
-	function closeTicketTierModal() {
-		showTicketTierModal = false;
-		preSelectedTier = null;
-	}
 
 	function openMyTicketModal() {
 		showMyTicketModal = true;
 	}
 
-	function handleSelectTier(tier: TierSchemaWithId) {
-		preSelectedTier = tier;
-		showTicketTierModal = true;
+	/** Scrolls the inline ticket-tier list into view (non-cart fallback). */
+	function scrollToTicketTiers(): void {
+		document.getElementById('ticket-tiers')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+	}
+
+	// Sidebar "Get tickets" CTA → focused tiers dialog (hosts the same
+	// TicketTierList snippet as the inline section). Scroll remains the
+	// fallback for the no-cart case, where the dialog's footer has no cart
+	// to read.
+	let showTiersDialog = $state(false);
+
+	function handleGetTicketsClick(): void {
+		if (canUseCart) {
+			showTiersDialog = true;
+		} else {
+			scrollToTicketTiers();
+		}
+	}
+
+	/** Using the map button remembers the preference for this session (#679). */
+	function openVenueOverview(): void {
+		writeTierMapPref();
+		showVenueOverview = true;
+	}
+
+	// Routes a tier picked outside the inline steppers into the cart: held
+	// `user_choice` seats adopt straight into a group, unheld opens the picker,
+	// everything else starts the group at quantity 1 and scrolls to it.
+	function handleSelectTier(tier: TierSchemaWithId, heldSeatIds?: string[]): void {
+		if (tier.seat_assignment_mode === 'user_choice') {
+			if (heldSeatIds) {
+				cart.setSeatIds(tier, heldSeatIds);
+				// A join-block can leave the overview's held seats orphaned (#853 fix 4).
+				const block = cartBaHolds.releaseJoinBlockedHolds(cart, tier, heldSeatIds, event.id);
+				if (block) toast.error(cartBaHolds.joinBlockMessage(block));
+			} else {
+				pickSeatsTier = tier;
+			}
+			return;
+		}
+		if (cart.quantityFor(tier.id) === 0) cart.setQuantity(tier, 1);
+		// Inside the tiers dialog the group is already on screen — scrolling
+		// the page underneath would just disorient on dismiss.
+		if (!showTiersDialog) scrollToTicketTiers();
 	}
 
 	// Guest dialog handlers
@@ -201,18 +222,12 @@
 		showGuestRsvpDialog = false;
 	}
 
-	function openGuestTicketDialog(tier?: TierSchemaWithId) {
-		if (tier) {
-			selectedTierForGuest = tier;
-		}
-		showGuestTicketDialog = true;
-		guestFocusSeating = false;
-	}
-
-	function closeGuestTicketDialog() {
-		showGuestTicketDialog = false;
-		selectedTierForGuest = null;
-		guestFocusSeating = false;
+	// SeatPickerDialog's `open` reads/writes through `pickSeatsTier` itself
+	// (bind:open function form): the tier being non-null IS "open", so the
+	// dialog fully unmounts on close instead of just hiding — its transient
+	// controller is constructed fresh per picking session (see SeatPickerDialog).
+	function handleSeatPickerOpenChange(open: boolean): void {
+		if (!open) pickSeatsTier = null;
 	}
 
 	async function handleGuestAttendanceSuccess() {
@@ -222,14 +237,11 @@
 		queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
 	}
 
-	// Ticket checkout controller — owns purchase/resume/cancel mutations and side effects.
+	// Ticket checkout controller — pending-ticket resume/cancel only (purchasing is the cart below).
 	const {
 		refreshUserStatus,
 		resumePaymentMutation,
 		cancelReservationMutation,
-		handleClaimTicket,
-		handleCheckout,
-		hasResumableCheckout,
 		handleResumePayment,
 		handleResumePaymentFromSidebar,
 		handleCancelReservation
@@ -237,16 +249,79 @@
 		eventId: event.id,
 		queryClient,
 		getUserTickets: () => userTickets,
-		getTicketHolderDefaultName: () => ticketHolderDefaultName,
-		getRequireTicketNames: () => event.require_ticket_names,
 		setUserStatus: (status) => {
 			userStatus = status;
 		},
-		onCloseTicketTierModal: closeTicketTierModal,
 		setShowMyTicketModal: (open) => {
 			showMyTicketModal = open;
 		}
 	});
+
+	// BE #902 populates event_remaining on BOTH my-status shapes (status AND
+	// eligibility — the first-time-buyer case), so read it unconditionally.
+	// Tolerant cast: deploy-order-free, and covers the legacy single-RSVP/ticket
+	// shapes, which never carry it. null = no event-level cap.
+	const eventRemaining = $derived.by((): number | null => {
+		if (!userStatus) return null;
+		return (userStatus as { event_remaining?: number | null }).event_remaining ?? null;
+	});
+
+	// Quick-buy cart (#853): wired into TicketTierList's per-tier steppers and
+	// the sticky CartSummaryBar below. Available to guests too (#853 Task 5) —
+	// see `canUseCart`.
+	const cart = new EventCart({
+		remainingFor: (tierId) => tierRemainingTickets?.find((t) => t.tier_id === tierId),
+		eventRemaining: () => eventRemaining,
+		eventMaxTicketsPerUser: () => event.max_tickets_per_user ?? null
+	});
+
+	// Cart-lifetime seat-hold ownership (#853 PR 3): one SeatHoldController per
+	// seated group, registered here so the picker/sheet/confirm flow (later
+	// tasks) can reuse them. Mounted below via <CartSeatHolds>.
+	const seatHoldRegistry = new CartSeatHoldRegistry();
+
+	// Seat ids the cart owns (own seatIds + all live holds) — the overview
+	// must never adopt/release these (fix 1; PR 4 adds BA holds pre-confirm).
+	const protectedSeatIds = $derived(
+		new Set([...cart.groups.flatMap((group) => group.seatIds), ...seatHoldRegistry.allHolds()])
+	);
+
+	// Cart mount gate (#853 Task 5, widened from authed-only): a guest gets the
+	// cart too, whenever the event both allows attending without login AND
+	// actually requires a ticket (an RSVP-only event has no tiers to cart —
+	// its guest path is `GuestRsvpDialog`, untouched here).
+	const canUseCart = $derived(
+		data.isAuthenticated || (event.can_attend_without_login && event.requires_ticket)
+	);
+
+	// Cart purchase orchestration (#853 Task 5): authed + guest checkout
+	// controllers, the guest identity, the checkout sheet's open/error state,
+	// and the confirm-time submit handlers — extracted to keep this file under
+	// the length budget (plan ruling 10). See cart-purchase-flow.svelte.ts.
+	const purchaseFlow = createCartPurchaseFlow({
+		event,
+		eventId: event.id,
+		queryClient,
+		isAuthenticated: data.isAuthenticated,
+		cart,
+		registry: seatHoldRegistry,
+		getInitialDiscountCode: () => initialDiscountCode,
+		getTicketHolderDefaultName: () => ticketHolderDefaultName,
+		refreshUserStatus,
+		setShowMyTicketModal: (open) => {
+			showMyTicketModal = open;
+		}
+	});
+
+	// Chart threaded from the registry (shared across every registered
+	// controller for this event — see cart-seat-registry.svelte.ts): without
+	// it a seated group's total is unresolvable, which blanks the WHOLE
+	// cart's total (cartTotal returns null the moment ANY group is unknown).
+	const cartTotalDisplay = $derived(
+		cartTotal(
+			cart.groups.map((group) => cartTotalArgs({ ...group, chart: seatHoldRegistry.chart }))
+		)
+	);
 
 	// Handle payment success/cancelled redirects
 	let paymentSuccess = $state(false);
@@ -257,80 +332,92 @@
 	let ticketConfirmed = $state(false);
 
 	onMount(() => {
-		if (browser) {
-			const urlParams = new URLSearchParams(window.location.search);
+		const params = consumePostRedirectParams();
+		paymentSuccess = params.paymentSuccess;
+		paymentCancelled = params.paymentCancelled;
+		rsvpConfirmed = params.rsvpConfirmed;
+		ticketConfirmed = params.ticketConfirmed;
+		initialDiscountCode = params.discountCode;
 
-			// Check for payment success
-			if (urlParams.get('payment_success') === 'true') {
-				paymentSuccess = true;
-				// Remove parameter from URL
-				const cleanUrl = window.location.pathname;
-				window.history.replaceState({}, '', cleanUrl);
+		if (paymentSuccess || rsvpConfirmed || ticketConfirmed) {
+			queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
+		}
 
-				// Refresh event status to get the ticket
-				queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
+		// Auto-open the ticket modal after a delay once the refreshed status
+		// (queued above) has had a chance to land.
+		if (paymentSuccess) {
+			setTimeout(() => {
+				if (userTicket) {
+					openMyTicketModal();
+				}
+			}, 1000);
+		}
+		if (ticketConfirmed) {
+			setTimeout(() => {
+				if (userTicket) {
+					openMyTicketModal();
+				}
+			}, 1000);
+		}
 
-				// Auto-open ticket modal after a delay
-				setTimeout(() => {
-					if (userTicket) {
-						openMyTicketModal();
-					}
-				}, 1000);
-			}
-
-			// Check for payment cancelled
-			if (urlParams.get('payment_cancelled') === 'true') {
-				paymentCancelled = true;
-				// Remove parameter from URL
-				const cleanUrl = window.location.pathname;
-				window.history.replaceState({}, '', cleanUrl);
-			}
-
-			// Check for RSVP confirmation
-			const rsvpParam = urlParams.get('rsvp');
-			if (rsvpParam && ['yes', 'no', 'maybe'].includes(rsvpParam)) {
-				rsvpConfirmed = rsvpParam;
-				// Remove parameter from URL
-				const cleanUrl = window.location.pathname;
-				window.history.replaceState({}, '', cleanUrl);
-
-				// Refresh event status
-				queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
-			}
-
-			// Check for ticket confirmation
-			if (urlParams.get('ticket_id')) {
-				ticketConfirmed = true;
-				// Remove parameter from URL
-				const cleanUrl = window.location.pathname;
-				window.history.replaceState({}, '', cleanUrl);
-
-				// Refresh event status to get the ticket
-				queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
-
-				// Auto-open ticket modal after a delay
-				setTimeout(() => {
-					if (userTicket) {
-						openMyTicketModal();
-					}
-				}, 1000);
-			}
-
-			// Check for discount code
-			const discountParam = urlParams.get('discount');
-			if (discountParam) {
-				initialDiscountCode = discountParam.toUpperCase();
-				// Remove parameter from URL
-				const cleanUrl = window.location.pathname;
-				window.history.replaceState({}, '', cleanUrl);
-			}
+		// Map-first entry point (#679): once chosen this session, land on it.
+		if (hasSeatingMap && !userTicket && readTierMapPref()) {
+			showVenueOverview = true;
 		}
 	});
 </script>
 
+{#snippet tierList(headingId: string)}
+	<TicketTierList
+		{headingId}
+		tiers={ticketTiers}
+		isAuthenticated={data.isAuthenticated}
+		hasTicket={!!userTicket}
+		{userStatus}
+		eventId={event.id}
+		eventSlug={event.slug}
+		organizationSlug={event.organization.slug}
+		eventName={event.name}
+		eventTokenDetails={data.eventTokenDetails}
+		canAttendWithoutLogin={event.can_attend_without_login}
+		{tierRemainingTickets}
+		timezone={event.timezone}
+		capacityDisclosed={viewerVisibility.show_capacity}
+		onSelectTier={handleSelectTier}
+		onViewSeatingMap={hasSeatingMap ? openVenueOverview : undefined}
+		cart={canUseCart ? cart : undefined}
+		quickBuyDisabled={purchaseFlow.isProcessing}
+		{eventRemaining}
+		onPickSeats={canUseCart
+			? (tier) => {
+					pickSeatsTier = tier;
+				}
+			: undefined}
+	/>
+{/snippet}
+
+{#snippet actionSidebar()}
+	<EventActionSidebar
+		{event}
+		bind:userStatus
+		isAuthenticated={data.isAuthenticated}
+		userPermissions={data.userPermissions}
+		eventTokenDetails={data.eventTokenDetails}
+		variant="card"
+		canAttendWithoutLogin={event.can_attend_without_login}
+		onGetTicketsClick={handleGetTicketsClick}
+		onShowTicketClick={openMyTicketModal}
+		onResumePayment={handleResumePaymentFromSidebar}
+		isResumingPayment={resumePaymentMutation.isPending}
+		onGuestRsvpClick={openGuestRsvpDialog}
+		onInvitationRequestSuccess={refreshUserStatus}
+		onWhitelistRequestSuccess={refreshUserStatus}
+	/>
+{/snippet}
+
 <SeoHead config={data.seo} />
 
-<div class="min-h-screen bg-background">
+<div class="min-h-screen bg-background" class:pb-24={!cart.isEmpty}>
 	<!-- Post-redirect confirmation banners (payment / RSVP / ticket) -->
 	<EventConfirmationBanners {paymentSuccess} {paymentCancelled} {rsvpConfirmed} {ticketConfirmed} />
 
@@ -362,22 +449,7 @@
 		<div class="container mx-auto px-6 pb-16 md:px-8">
 			<!-- Mobile Action Card (at top, prominent) -->
 			<div class="mb-8 lg:hidden">
-				<EventActionSidebar
-					{event}
-					bind:userStatus
-					isAuthenticated={data.isAuthenticated}
-					userPermissions={data.userPermissions}
-					eventTokenDetails={data.eventTokenDetails}
-					variant="card"
-					canAttendWithoutLogin={event.can_attend_without_login}
-					onGetTicketsClick={openTicketTierModal}
-					onShowTicketClick={openMyTicketModal}
-					onResumePayment={handleResumePaymentFromSidebar}
-					isResumingPayment={resumePaymentMutation.isPending}
-					onGuestRsvpClick={openGuestRsvpDialog}
-					onInvitationRequestSuccess={refreshUserStatus}
-					onWhitelistRequestSuccess={refreshUserStatus}
-				/>
+				{@render actionSidebar()}
 			</div>
 
 			<div class="grid gap-8 lg:grid-cols-3">
@@ -441,30 +513,10 @@
 						/>
 					{/if}
 
-					<!-- Ticket Tiers (if event requires tickets and user doesn't have one) -->
-					{#if event.requires_ticket && !userTicket && ticketTiers.length > 0}
-						<TicketTierList
-							tiers={ticketTiers}
-							isAuthenticated={data.isAuthenticated}
-							hasTicket={!!userTicket}
-							{userStatus}
-							eventId={event.id}
-							eventSlug={event.slug}
-							organizationSlug={event.organization.slug}
-							eventName={event.name}
-							eventTokenDetails={data.eventTokenDetails}
-							canAttendWithoutLogin={event.can_attend_without_login}
-							{tierRemainingTickets}
-							timezone={event.timezone}
-							capacityDisclosed={viewerVisibility.show_capacity}
-							onSelectTier={handleSelectTier}
-							onGuestTierClick={openGuestTicketDialog}
-							onViewSeatingMap={hasSeatingMap
-								? () => {
-										showVenueOverview = true;
-									}
-								: undefined}
-						/>
+					<!-- Ticket Tiers: buy-more re-entry point (#853) — shows with no
+					     ticket, or with one if the backend still allows more. -->
+					{#if event.requires_ticket && ticketTiers.length > 0 && (!userTicket || canBuyMore)}
+						{@render tierList('ticket-tiers')}
 					{/if}
 
 					<!-- Schedule / Timeline Section -->
@@ -493,32 +545,12 @@
 
 					<!-- Event Series (mobile only) -->
 					{#if event.event_series}
-						<section
-							aria-labelledby="series-heading-mobile"
-							class="rounded-lg border-2 bg-card shadow-poster lg:hidden"
-						>
-							<div class="border-b p-4">
-								<SectionHeader
-									volume="celebration"
-									id="series-heading-mobile"
-									title={m['eventDetails.series_heading']()}
-								/>
-							</div>
-							<a
-								href={resolve('/(public)/events/[org_slug]/series/[series_slug]', {
-									org_slug: event.organization.slug,
-									series_slug: event.event_series.slug
-								})}
-								class="block p-4 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-							>
-								<div class="font-bold">{event.event_series.name}</div>
-								{#if event.event_series.description}
-									<p class="mt-1 text-sm text-muted-foreground">
-										{event.event_series.description}
-									</p>
-								{/if}
-							</a>
-						</section>
+						<EventSeriesLinkCard
+							series={event.event_series}
+							orgSlug={event.organization.slug}
+							headingId="series-heading-mobile"
+							class="lg:hidden"
+						/>
 					{/if}
 
 					<!-- Attendee List (mobile only) -->
@@ -537,22 +569,7 @@
 				<!-- Right Column: Action Sidebar (desktop only) -->
 				<aside class="hidden lg:col-span-1 lg:block">
 					<div class="sticky top-4 space-y-6">
-						<EventActionSidebar
-							{event}
-							bind:userStatus
-							isAuthenticated={data.isAuthenticated}
-							userPermissions={data.userPermissions}
-							eventTokenDetails={data.eventTokenDetails}
-							variant="card"
-							canAttendWithoutLogin={event.can_attend_without_login}
-							onGetTicketsClick={openTicketTierModal}
-							onShowTicketClick={openMyTicketModal}
-							onResumePayment={handleResumePaymentFromSidebar}
-							isResumingPayment={resumePaymentMutation.isPending}
-							onGuestRsvpClick={openGuestRsvpDialog}
-							onInvitationRequestSuccess={refreshUserStatus}
-							onWhitelistRequestSuccess={refreshUserStatus}
-						/>
+						{@render actionSidebar()}
 
 						<!-- Organization Info (desktop only) -->
 						<OrganizationInfo
@@ -567,32 +584,11 @@
 
 						<!-- Event Series (desktop only) -->
 						{#if event.event_series}
-							<section
-								aria-labelledby="series-heading-desktop"
-								class="rounded-lg border-2 bg-card shadow-poster"
-							>
-								<div class="border-b p-4">
-									<SectionHeader
-										volume="celebration"
-										id="series-heading-desktop"
-										title={m['eventDetails.series_heading']()}
-									/>
-								</div>
-								<a
-									href={resolve('/(public)/events/[org_slug]/series/[series_slug]', {
-										org_slug: event.organization.slug,
-										series_slug: event.event_series.slug
-									})}
-									class="block p-4 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-								>
-									<div class="font-bold">{event.event_series.name}</div>
-									{#if event.event_series.description}
-										<p class="mt-1 text-sm text-muted-foreground">
-											{event.event_series.description}
-										</p>
-									{/if}
-								</a>
-							</section>
+							<EventSeriesLinkCard
+								series={event.event_series}
+								orgSlug={event.organization.slug}
+								headingId="series-heading-desktop"
+							/>
 						{/if}
 
 						<!-- Attendee List (desktop only) -->
@@ -609,140 +605,113 @@
 			</div>
 
 			<!-- Tags Section (bottom of page) -->
-			{#if event.tags && event.tags.length > 0}
-				<section
-					aria-labelledby="tags-heading"
-					class="container mx-auto border-t px-6 py-8 md:px-8"
-				>
-					<SectionHeader
-						volume="celebration"
-						id="tags-heading"
-						title={m['eventDetails.tags_heading']()}
-						class="mb-4"
-					/>
-					<!-- Tag chips: primary on the card surface with a 2px primary edge —
-				     poster stickers, not washes. The card fill is opaque, so the
-				     audited primary-vs-card pair governs (6.99:1 light / 6.27:1
-				     dark, the same pair the questionnaire option rows rest on). -->
-					<div class="flex flex-wrap gap-2">
-						{#each event.tags as tag (tag)}
-							<span
-								class="rounded-full border-2 border-primary/40 bg-card px-4 py-1.5 text-sm font-extrabold text-primary shadow-poster"
-							>
-								{tag}
-							</span>
-						{/each}
-					</div>
-				</section>
-			{/if}
+			<EventTagsSection tags={event.tags} />
 		</div>
 	</div>
 </div>
 
-<!-- Ticket Tier Selection Modal -->
-<TicketTierModal
-	seriesInfo={event.event_series
-		? {
-				seriesId: event.event_series.id,
-				orgSlug: event.organization.slug,
-				seriesSlug: event.event_series.slug
-			}
-		: null}
-	bind:open={showTicketTierModal}
-	tiers={ticketTiers}
-	eventId={event.id}
-	organizationSlug={event.organization.slug}
-	isAuthenticated={data.isAuthenticated}
-	membershipTier={data.membershipTier}
-	canAttendWithoutLogin={event.can_attend_without_login}
+<!-- Focused tiers dialog (sidebar CTA) — NOT gated on !cart.isEmpty: it must
+     open with an empty cart. Same render gate as the inline section. -->
+{#if canUseCart && event.requires_ticket && ticketTiers.length > 0 && (!userTicket || canBuyMore)}
+	<TicketTiersDialog
+		bind:open={showTiersDialog}
+		count={cart.totalCount}
+		totalDisplay={cartTotalDisplay}
+		currency={cart.currency}
+		isFree={cart.paymentMethod === 'free'}
+		isPending={purchaseFlow.isProcessing}
+		onCheckout={purchaseFlow.handleCartBuy}
+	>
+		{@render tierList('ticket-tiers-dialog')}
+	</TicketTiersDialog>
+{/if}
+
+{#if canUseCart && !cart.isEmpty}
+	<CartSeatHolds {cart} registry={seatHoldRegistry} eventId={event.id} />
+
+	<CartSummaryBar
+		count={cart.totalCount}
+		totalDisplay={cartTotalDisplay}
+		currency={cart.currency}
+		isFree={cart.paymentMethod === 'free'}
+		isPending={purchaseFlow.isProcessing}
+		onBuy={purchaseFlow.handleCartBuy}
+		onDiscountClick={cart.groups.some((g) => discountApplicable(g.tier))
+			? () => {
+					purchaseFlow.showCheckoutSheet = true;
+				}
+			: undefined}
+		holdExpiresAt={seatHoldRegistry.expiresAt}
+	/>
+
+	<CheckoutSheet
+		bind:open={purchaseFlow.showCheckoutSheet}
+		{cart}
+		eventId={event.id}
+		requireTicketNames={event.require_ticket_names}
+		isAuthenticated={purchaseFlow.isAuthenticated}
+		authToken={authStore.accessToken}
+		organizationSlug={event.organization.slug}
+		{initialDiscountCode}
+		isProcessing={purchaseFlow.isProcessing}
+		purchaseError={purchaseFlow.cartPurchaseError}
+		onConfirm={purchaseFlow.handleSheetConfirm}
+		chart={seatHoldRegistry.chart}
+		registry={seatHoldRegistry}
+		identity={purchaseFlow.isAuthenticated ? undefined : purchaseFlow.guestIdentity}
+	/>
+{/if}
+
+<!-- Seat-picker dialog (#853 PR 3): mounted only while a tier is being
+     picked — NOT gated on !cart.isEmpty, since the first pick happens
+     before any cart group exists. -->
+{#if pickSeatsTier}
+	{@const tier = pickSeatsTier}
+	<SeatPickerDialog
+		bind:open={() => pickSeatsTier !== null, handleSeatPickerOpenChange}
+		{tier}
+		eventId={event.id}
+		{cart}
+		registry={seatHoldRegistry}
+		maxSeats={cart.maxQuantity(tier)}
+	/>
+{/if}
+
+<!-- Purchase-dialog cluster (MyTicketModal, GuestRsvpDialog, VenueOverviewDialog) -->
+<EventPurchaseDialogs
+	{event}
+	{ticketTiers}
 	{tierRemainingTickets}
-	timezone={event.timezone}
-	capacityDisclosed={viewerVisibility.show_capacity}
-	eventMaxTicketsPerUser={event.max_tickets_per_user}
-	userName={ticketHolderDefaultName}
-	requireTicketNames={event.require_ticket_names}
-	{preSelectedTier}
-	{initialDiscountCode}
-	onClose={closeTicketTierModal}
-	onClaimTicket={handleClaimTicket}
-	onCheckout={handleCheckout}
-	{hasResumableCheckout}
-	onGuestTierClick={openGuestTicketDialog}
-	onViewSeatingMap={hasSeatingMap
-		? () => {
-				showVenueOverview = true;
-			}
-		: undefined}
+	isAuthenticated={data.isAuthenticated}
+	{hasSeatingMap}
+	{protectedSeatIds}
+	{userTickets}
+	isResumingPayment={resumePaymentMutation.isPending}
+	isCancellingReservation={cancelReservationMutation.isPending}
+	{refreshUserStatus}
+	onResumePayment={handleResumePayment}
+	onCancelReservation={handleCancelReservation}
+	onSelectTier={handleSelectTier}
+	onGuestRsvpClose={closeGuestRsvpDialog}
+	onGuestAttendanceSuccess={handleGuestAttendanceSuccess}
+	bind:showMyTicketModal
+	bind:showGuestRsvpDialog
+	bind:showVenueOverview
 />
 
-<!-- My Ticket Modal -->
-{#if userTickets.length > 0}
-	<MyTicketModal
-		bind:open={showMyTicketModal}
-		tickets={userTickets}
-		eventName={event.name}
-		eventDate={event.start ? formatEventDate(event.start, event.timezone) : undefined}
-		eventLocation={formatEventLocation(event)}
-		onResumePayment={handleResumePayment}
-		isResumingPayment={resumePaymentMutation.isPending}
-		onCancelReservation={handleCancelReservation}
-		isCancellingReservation={cancelReservationMutation.isPending}
-		onTicketCancelled={async () => {
-			showMyTicketModal = false;
-			await refreshUserStatus();
-			queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
-		}}
-		onTicketRenamed={async () => {
-			await refreshUserStatus();
-			queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
-		}}
+<!-- Guest cart email-confirmation (#853 Task 5): the guest checkout controller's
+     `message` branch — no ticket exists client-side yet, the backend emailed a
+     confirm link. Mounted independently of the checkout sheet (which is
+     already closed by `onEmailConfirmationPending` by the time this renders). -->
+{#if purchaseFlow.guestEmailConfirmation}
+	<CartEmailConfirmation
+		bind:open={
+			() => purchaseFlow.guestEmailConfirmation !== null,
+			(open) => {
+				if (!open) purchaseFlow.guestEmailConfirmation = null;
+			}
+		}
+		email={purchaseFlow.guestEmailConfirmation.email}
+		onClose={() => (purchaseFlow.guestEmailConfirmation = null)}
 	/>
-{/if}
-
-<!-- Guest RSVP Dialog -->
-{#if !data.isAuthenticated && event.can_attend_without_login && !event.requires_ticket}
-	<GuestRsvpDialog
-		bind:open={showGuestRsvpDialog}
-		eventId={event.id}
-		acceptsNotes={event.accept_rsvp_notes}
-		onClose={closeGuestRsvpDialog}
-		onSuccess={handleGuestAttendanceSuccess}
-	/>
-{/if}
-
-<!-- Whole-venue seating overview (map-first tier selection, #679) -->
-{#if hasSeatingMap}
-	<VenueOverviewDialog
-		bind:open={showVenueOverview}
-		eventId={event.id}
-		tiers={ticketTiers}
-		isAuthenticated={data.isAuthenticated}
-		canAttendWithoutLogin={event.can_attend_without_login}
-		{tierRemainingTickets}
-		eventMaxTicketsPerUser={event.max_tickets_per_user}
-		onSelectTier={handleSelectTier}
-		onGuestTierClick={openGuestTicketDialog}
-	/>
-{/if}
-
-<!-- Guest Ticket Dialog -->
-{#if !data.isAuthenticated && event.can_attend_without_login && event.requires_ticket && selectedTierForGuest}
-	{#key selectedTierForGuest.id}
-		<GuestTicketDialog
-			bind:open={showGuestTicketDialog}
-			eventId={event.id}
-			tier={selectedTierForGuest}
-			allTiers={ticketTiers}
-			eventMaxTicketsPerUser={event.max_tickets_per_user}
-			requireTicketNames={event.require_ticket_names}
-			onClose={closeGuestTicketDialog}
-			onSuccess={handleGuestAttendanceSuccess}
-			focusSeating={guestFocusSeating}
-			onSwitchTier={(tier) => {
-				selectedTierForGuest = tier;
-				showGuestTicketDialog = true;
-				guestFocusSeating = true;
-			}}
-		/>
-	{/key}
 {/if}

@@ -14,7 +14,8 @@
 	import type {
 		UserBillingProfileSchema,
 		BuyerBillingInfoSchema,
-		VatPreviewResponseSchema
+		VatPreviewResponseSchema,
+		VatPreviewItemSchema
 	} from '$lib/api/generated/types.gen';
 
 	// 2. Props interface
@@ -34,6 +35,16 @@
 		isAuthenticated: boolean;
 		authToken?: string | null;
 		disabled?: boolean;
+		/** Cart-aware preview: when present, supersedes the single-tier
+		 * `tierId`/`quantity`/`priceCategoryId` fields in the VAT preview
+		 * request body. The legacy fields stay untouched for existing callers. */
+		items?: VatPreviewItemSchema[];
+		/** PWYC price override for the multi-item preview. Only read when
+		 * `items` is provided; the caller passes it iff exactly one PWYC
+		 * group exists in the cart — with 2+ PWYC groups it is omitted
+		 * (the preview is then an estimate; checkout resolves each group's
+		 * amount server-side). */
+		pwycAmountOverride?: string | null;
 	}
 
 	const {
@@ -49,7 +60,9 @@
 		priceCategoryId = null,
 		isAuthenticated,
 		authToken = null,
-		disabled = false
+		disabled = false,
+		items,
+		pwycAmountOverride = null
 	}: Props = $props();
 
 	// 3. Local state
@@ -129,12 +142,19 @@
 		}
 	});
 
-	// A zone switch changes the unit price on a mapped best-available tier —
-	// refresh an already-visible preview so it never quotes the old zone. Only
-	// the zone is tracked: the guard reads are untracked so the fetch writing
-	// `vatPreview` can't re-trigger the effect.
+	// Every pricing input that lands in the preview request is tracked here: a
+	// zone switch, a changed cart `items` array, an applied/removed discount
+	// code, or an edited PWYC amount (cart override AND the legacy single-tier
+	// prop) all change the taxable amount — refresh an already-visible preview
+	// so it never quotes stale data (#863 review added the last three). The
+	// guard reads are untracked so the fetch writing `vatPreview` can't
+	// re-trigger the effect.
 	$effect(() => {
 		void priceCategoryId;
+		void items;
+		void discountCode;
+		void pwycAmountOverride;
+		void pwycAmount;
 		untrack(() => {
 			if (isOpen && vatPreview) void fetchVatPreview();
 		});
@@ -152,7 +172,18 @@
 		vatPreviewError = '';
 
 		try {
-			const pwycValue = isPwyc && pwycAmount ? parseFloat(pwycAmount) : undefined;
+			// Cart-aware callers (multi-item preview) pass `pwycAmountOverride` only
+			// when exactly one PWYC group exists in the cart; with 2+ PWYC groups it
+			// is omitted on purpose — the preview is then an estimate and checkout
+			// resolves each group's amount server-side. Legacy single-tier callers
+			// keep the old isPwyc/pwycAmount behavior untouched.
+			const pwycValue = items
+				? pwycAmountOverride
+					? parseFloat(pwycAmountOverride)
+					: undefined
+				: isPwyc && pwycAmount
+					? parseFloat(pwycAmount)
+					: undefined;
 
 			const response = await eventpublicticketsVatPreview({
 				path: { event_id: eventId },
@@ -164,7 +195,7 @@
 						billing_address: billingAddress.trim() || undefined,
 						billing_email: billingEmail.trim() || undefined
 					},
-					items: [
+					items: items ?? [
 						{
 							tier_id: tierId,
 							count: quantity,

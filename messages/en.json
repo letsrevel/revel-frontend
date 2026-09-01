@@ -5948,13 +5948,8 @@
 	"ticketConfirmationDialog": {
 		"paymentAmount": "Payment Amount",
 		"quickSelect": "Quick select:",
-		"agreeToTerms": "By proceeding, you agree to the event's terms and conditions.",
-		"bestAvailableTitle": "Best available seats",
-		"bestAvailableDesc": "Your seats will be assigned automatically — adjacent seats, best block available.",
 		"accessibleSeatsLabel": "I need wheelchair-accessible seats",
 		"bestAvailableConflict": "Not enough adjacent seats available — try a smaller quantity.",
-		"generalEntrance": "General Entrance",
-		"generalEntranceDesc": "This ticket grants general admission without assigned seating.",
 		"selectSeats": "Select Your Seats",
 		"seatsSelected": "selected",
 		"loadingSeats": "Loading available seats...",
@@ -5962,7 +5957,6 @@
 		"defaultGuestName": "Guest",
 		"bestAvailableRetry": "Seats were taken while assigning yours — please try again."
 	},
-	"ticketConfirmationDialog.selectMoreSeats": "Please select {count} more seat(s)",
 	"ticketListCard": {
 		"purchased": "Purchased:",
 		"addToCalendar": "Add to Calendar"
@@ -5976,13 +5970,6 @@
 	"ticketTierList": {
 		"ticketOptions": "Ticket Options",
 		"signIn": "Sign in"
-	},
-	"ticketTierModal": {
-		"noTickets": "No tickets available at this time.",
-		"paymentInstructions": "Payment Instructions:",
-		"signIn": "Sign in",
-		"soldOut": "Sold out",
-		"agreeToTerms": "By claiming a ticket, you agree to the event's terms and conditions."
 	},
 	"ticketingStep": {
 		"ticketingOptions": "Ticketing Options",
@@ -6097,7 +6084,6 @@
 		"claimFreeTicket": "Claim Free Ticket",
 		"buyTicket": "Buy Ticket",
 		"reserveTicket": "Reserve Ticket",
-		"getTicket": "Get Ticket",
 		"configError": "Configuration Error",
 		"youHaveTicket": "You have a ticket",
 		"limitReached": "Limit Reached",
@@ -7823,30 +7809,7 @@
 	"guestRsvpDialog.createAnAccount": "create an account",
 	"guestRsvpDialog.toContinue": "to continue.",
 	"guestRsvpDialog.failedToSubmit": "Failed to submit RSVP",
-	"guestTicketDialog.failedToLoadSeats": "Failed to load available seats",
-	"guestTicketDialog.pleaseEnterYourName": "Please enter your name",
-	"guestTicketDialog.pleaseEnterTicketHolderName": "Please enter a name for ticket holder {number}",
-	"guestTicketDialog.pleaseSelectMoreSeatOne": "Please select 1 more seat",
-	"guestTicketDialog.pleaseSelectMoreSeats": "Please select {count} more seats",
-	"guestTicketDialog.failedToCheckout": "Failed to complete checkout",
-	"guestTicketDialog.paymentStartFailed": "Your tickets are reserved, but the payment could not be started. Please try again.",
-	"guestTicketDialog.paymentStartFailedExpired": "Your reservation expired before the payment could be started. Please start your purchase again.",
-	"guestTicketDialog.numberOfTickets": "Number of Tickets",
-	"guestTicketDialog.decreaseQuantity": "Decrease quantity",
-	"guestTicketDialog.increaseQuantity": "Increase quantity",
-	"guestTicketDialog.maxQuantity": "(Max: {max})",
-	"guestTicketDialog.total": "Total:",
-	"guestTicketDialog.ticketHolderNames": "Ticket Holder Names",
-	"guestTicketDialog.ticketHolderNamesHint": "Enter the name for each ticket holder (will be printed on their ticket)",
-	"guestTicketDialog.yourName": "Your Name",
-	"guestTicketDialog.guestName": "Guest {number} Name",
-	"guestTicketDialog.yourNamePlaceholder": "Your name",
-	"guestTicketDialog.guestNamePlaceholder": "Guest {number} name",
-	"guestTicketDialog.selectYourSeat": "Select Your Seat",
-	"guestTicketDialog.noSeatsAvailable": "No seats available for this tier",
-	"guestTicketDialog.selectedSeats": "Selected {selected} of {total} seats",
 	"guestTicketDialog.bestAvailableEmailNotice": "Your seats will be assigned automatically when you confirm your email.",
-	"guestTicketDialog.quickSelect": "Quick Select",
 	"guestTicketDialog.onlinePaymentNotice": "You'll be redirected to our secure payment provider to complete your purchase.",
 	"guestTicketDialog.logIn": "Log in",
 	"guestTicketDialog.or": "or",
@@ -8416,7 +8379,6 @@
 	"ticketListCard.viewTicketAndQr": "View ticket and QR code",
 	"ticketListCard.viewTicket": "View Ticket",
 	"ticketListCard.viewEvent": "View Event",
-	"ticketTierModal.selectYourTicket": "Select Your Ticket",
 	"eventTokenCard.toastTokenIdMissing": "Token ID is missing",
 	"eventTokenCard.toastLinkCopied": "Link copied to clipboard!",
 	"eventTokenCard.toastCopyFailed": "Failed to copy link",
@@ -8444,36 +8406,14 @@
 	"ticketConfirmationDialog.errorMinAmount": "Minimum amount is {amount}",
 	"ticketConfirmationDialog.errorMaxAmount": "Maximum amount is {amount}",
 	"ticketConfirmationDialog.errorInvalidAmount": "Invalid amount",
-	"ticketConfirmationDialog.errorEnterYourName": "Please enter your name",
-	"ticketConfirmationDialog.errorEnterHolderName": "Please enter a name for ticket holder {number}",
 	"ticketConfirmationDialog.errorGeneric": "Something went wrong. Please try again.",
-	"ticketConfirmationDialog.descClaimFree": "Confirm that you'd like to claim this free ticket for the event.",
-	"ticketConfirmationDialog.descReserveAtDoor": "Reserve your spot and complete payment at the door.",
-	"ticketConfirmationDialog.descReserveOffline": "Reserve your spot and complete payment offline.",
-	"ticketConfirmationDialog.descPwyc": "Choose how much you'd like to pay for your ticket.",
-	"ticketConfirmationDialog.descOnline": "Confirm your purchase. You'll be redirected to complete payment.",
 	"ticketConfirmationDialog.numberOfTickets": "Number of Tickets",
 	"ticketConfirmationDialog.decreaseQuantity": "Decrease quantity",
 	"ticketConfirmationDialog.increaseQuantity": "Increase quantity",
 	"ticketConfirmationDialog.maxHint": "(max {max})",
-	"ticketConfirmationDialog.securePaymentNotice": "You'll be redirected to our secure payment provider to complete your purchase.",
-	"ticketConfirmationDialog.onlyOneRemaining": "Only 1 ticket remaining!",
-	"ticketConfirmationDialog.onlyNRemaining": "Only {count} tickets remaining!",
 	"ticketConfirmationDialog.unableToComplete": "Unable to complete request",
-	"ticketConfirmationDialog.hintEnterYourName": "Please enter your name above",
-	"ticketConfirmationDialog.hintEnterAllNames": "Please enter names for all ticket holders above",
-	"ticketConfirmationDialog.hintEnterAmount": "Please enter a payment amount",
-	"ticketConfirmationDialog.hintMinAmount": "Amount must be at least {amount}",
-	"ticketConfirmationDialog.hintMaxAmount": "Amount cannot exceed {amount}",
-	"ticketConfirmationDialog.hintSelectOneMoreSeat": "Please select 1 more seat",
-	"ticketConfirmationDialog.hintSelectMoreSeats": "Please select {count} more seats",
 	"ticketConfirmationDialog.cancel": "Cancel",
-	"ticketConfirmationDialog.redirectingToPayment": "Redirecting to payment...",
 	"ticketConfirmationDialog.processing": "Processing...",
-	"ticketConfirmationDialog.claimTicket": "Claim Ticket",
-	"ticketConfirmationDialog.reserveTicket": "Reserve Ticket",
-	"ticketConfirmationDialog.continueToPayment": "Continue to Payment",
-	"ticketConfirmationDialog.proceedToPayment": "Proceed to Payment",
 	"eventTokenModal.titleEdit": "Edit Invitation Link",
 	"eventTokenModal.titleCreate": "Create Invitation Link",
 	"eventTokenModal.descEdit": "Update link settings. The shareable URL will remain the same.",
@@ -9467,5 +9407,96 @@
 	"memberScan.untitledTier": "Ticket",
 	"memberScan.checkInTicket": "Check in",
 	"memberScan.close": "Close",
-	"memberScan.checkedInSuccess": "Checked in: {name}"
+	"memberScan.checkedInSuccess": "Checked in: {name}",
+	"cart": {
+		"addOne": "Add one {tierName}",
+		"removeOne": "Remove one {tierName}",
+		"quantityFor": "Quantity for {tierName}",
+		"cannotMixCurrency": "Can't be combined with your current selection (different currency)",
+		"cannotMixPayment": "Can't be combined with your current selection (different payment method)",
+		"eventLimitReached": "You've reached this event's ticket limit per person.",
+		"ticketCount": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} ticket",
+					"countPlural=*": "{count} tickets"
+				}
+			}
+		],
+		"buy": "Buy",
+		"free": "Free",
+		"checkoutFailed": "Checkout failed",
+		"staleCart": "Your cart is out of date — some tickets are no longer available. Please refresh the page and try again.",
+		"saleWindowClosed": "The sale window for a ticket in your cart just closed. Please refresh the page.",
+		"eventTicketsLeft": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "You can get {count} more ticket for this event",
+					"countPlural=*": "You can get {count} more tickets for this event"
+				}
+			}
+		],
+		"summaryRegion": "Cart summary",
+		"discountLink": "Discount code?",
+		"seatsHeld": "Seats held",
+		"holdsExpired": "Your held seats expired — please pick them again.",
+		"pickSeatsTitle": "Pick seats — {tierName}",
+		"pickSeatsDescription": "Tap seats on the map to hold them for this ticket.",
+		"pickSeats": "Pick seats…",
+		"seatsPicked": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} seat · edit",
+					"countPlural=*": "{count} seats · edit"
+				}
+			}
+		],
+		"seatPickerDone": "Done",
+		"signedInCartCleared": "You're signed in — your guest cart was cleared."
+	},
+	"cartSheet": {
+		"title": "Checkout",
+		"payNow": "Pay Now",
+		"reserve": "Reserve",
+		"claim": "Claim",
+		"groupTickets": [
+			{
+				"declarations": ["input tierName", "input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{tierName} × {count}",
+					"countPlural=*": "{tierName} × {count}"
+				}
+			}
+		],
+		"namesHeading": "Ticket holder names",
+		"nameLabel": "Name for ticket {index}",
+		"nameRequired": "Please enter a name for every ticket",
+		"guestNameRequired": "Please enter your first and last name",
+		"pwycRange": "Range: {min} – {max}",
+		"pwycHeading": "Choose your amount",
+		"discountSection": "Discount code",
+		"discountApplies": "Applies to {tierName}",
+		"discountNotApplicable": "Doesn't apply to this ticket type",
+		"discountNoMatch": "This code doesn't apply to anything in your cart",
+		"discountCheckFailed": "We couldn't check this code — it will still be applied at checkout",
+		"billingSection": "Billing information",
+		"close": "Close",
+		"confirmedTicketCount": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} ticket confirmed",
+					"countPlural=*": "{count} tickets confirmed"
+				}
+			}
+		]
+	}
 }

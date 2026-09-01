@@ -9,19 +9,25 @@ import { gotoHydrated } from '../../support/navigation';
 import { completeStripeCheckout } from '../../support/stripe';
 
 // J7 (#753) — email-only guest checkout on a `can_attend_without_login` event
-// whose `require_ticket_names` is OFF: the guest dialog collects ONLY an
-// email (the first/last-name fields guest-online-checkout.spec.ts fills are
-// not rendered at all), and the reserve → checkout-session chain still reaches
-// the hosted Stripe page and pays.
+// whose `require_ticket_names` is OFF: the checkout sheet's guest identity
+// block (`GuestIdentityFields`) collects ONLY an email — no first/last name —
+// and per-ticket holder-name inputs are skipped too (`CheckoutSheetGroup`
+// gates `GuestNameInputs` on the same flag). The reserve → checkout-session
+// chain still reaches the hosted Stripe page and pays.
 //
-// Isolation: an own event — the flag changes the guest dialog's shape. The
-// tier is capped at max_tickets_per_user=1 so the dialog stays in its
-// single-ticket shape, and the auto "General Admission" tier is dropped
-// because every tier card shows the same "Get Ticket" CTA to a logged-out
-// guest (strict mode).
+// #853 rewrite (task 9): the legacy `GuestTicketDialog` this exercised is
+// deleted; the guest now gets the same inline stepper + `CartSummaryBar` +
+// checkout sheet an authenticated buyer sees (Buy always opens the sheet for
+// a guest — `EventCart.needsSheet`).
+//
+// Isolation: an own event — the flag changes the sheet's identity/name
+// fields. The auto "Free Entry" tier is dropped so only the target tier's
+// stepper renders.
 
 test.describe('J7 guest email-only checkout @p2', () => {
-	test('guest dialog shows no name fields and reaches Stripe with email only', async ({ page }) => {
+	test('sheet identity block shows only email and reaches Stripe with email only', async ({
+		page
+	}) => {
 		// Stripe's hosted page round-trip doesn't fit the default budget.
 		test.setTimeout(240_000);
 
@@ -30,28 +36,35 @@ test.describe('J7 guest email-only checkout @p2', () => {
 			event: { can_attend_without_login: true, require_ticket_names: false }
 		});
 		await deleteDefaultTier(event.id);
-		await createTicketTier(event.id, { name: 'Email Only Entry', max_tickets_per_user: 1 });
+		const tier = await createTicketTier(event.id, { name: 'Email Only Entry' });
 
 		const email = uniqueEmail('EmailOnly');
 		await gotoHydrated(page, event.path);
 
-		const guestDialog = page.getByRole('dialog', { name: 'Get tickets without an account' });
-		const tierCta = page.getByRole('button', { name: 'Get Ticket', exact: true }).first();
+		const stepper = page.getByRole('group', { name: `Quantity for ${tier.name}` });
+		await expect(stepper).toBeVisible({ timeout: 15_000 });
+		await stepper.getByRole('button', { name: `Add one ${tier.name}` }).click();
+		await expect(stepper.locator('span[aria-live="polite"]')).toHaveText('1');
 
-		// Same idempotent-loop shape as guest-online-checkout.spec.ts: clicks
+		const summaryBar = page.getByTestId('cart-summary-bar');
+		const sheet = page.getByRole('dialog', { name: 'Checkout' });
+		const payNow = sheet.getByRole('button', { name: 'Pay Now', exact: true });
+
+		// Idempotent loop (same shape as guest-online-checkout.spec.ts): clicks
 		// during hydration/dialog re-renders are occasionally dropped, so retry
 		// from whatever state the UI is in until the Stripe URL is reached.
 		await expect(async () => {
 			if (page.url().includes('checkout.stripe.com')) return;
-			if (!(await guestDialog.isVisible())) {
-				await tierCta.click();
-				await expect(guestDialog).toBeVisible({ timeout: 5_000 });
+			if (!(await sheet.isVisible())) {
+				await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+				await expect(sheet).toBeVisible({ timeout: 8_000 });
 			}
-			await expect(guestDialog.getByLabel('First name')).toBeHidden();
-			await expect(guestDialog.getByLabel('Last name')).toBeHidden();
-			await guestDialog.getByLabel('Email address').fill(email);
-			await expect(guestDialog.getByLabel('Email address')).toHaveValue(email, { timeout: 2_000 });
-			await guestDialog.getByRole('button', { name: 'Get Ticket', exact: true }).click();
+			await expect(sheet.getByLabel('First name')).toBeHidden();
+			await expect(sheet.getByLabel('Last name')).toBeHidden();
+			await expect(sheet.getByLabel('Name for ticket 1')).toBeHidden();
+			await sheet.getByLabel('Email address').fill(email);
+			await expect(sheet.getByLabel('Email address')).toHaveValue(email, { timeout: 2_000 });
+			await payNow.click();
 			await page.waitForURL(/checkout\.stripe\.com/, { timeout: 15_000 });
 		}).toPass({ timeout: 90_000 });
 

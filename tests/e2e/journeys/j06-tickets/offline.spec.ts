@@ -12,6 +12,14 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 // with the organizer's manual payment instructions → staff confirms the
 // payment in the event admin → ticket flips ACTIVE for the buyer.
 //
+// #853 rewrite (wave 2, task 11 blast-radius fix): outside every prior wave's
+// assigned file list, structurally broken by the `TicketTierModal`/
+// `TicketConfirmationDialog` deletion until the full matrix gate caught it
+// here (see free-tier.spec.ts's header for the shared rationale). The
+// 'Bank Transfer' tier is `quickBuyEligible` — its inline stepper + the
+// checkout sheet (names required by default) replace the dialog cluster; the
+// sheet's payment-method button is "Reserve" for `offline` (`cartSheet.reserve`).
+//
 // Isolation: API-arranged event + offline tier + throwaway buyer; the seeded
 // offline tiers (Workshop Seat, Standing Room) stay untouched.
 
@@ -41,27 +49,27 @@ test.describe('J6 offline payment @p2', () => {
 		await gotoHydrated(page, event.path);
 		await waitForClientAuth(page);
 
-		// CTA → tier dialog → "Reserve Ticket" card button → confirm dialog →
-		// "Reserve Ticket" confirm. Same idempotent-loop shape as
-		// free-tier.spec.ts (clicks during dialog re-renders are occasionally
-		// dropped); success signal is the auto-opened "Your Ticket" modal. The
-		// card button and the confirm button share the name "Reserve Ticket" —
-		// they're distinguished by their containing dialog.
-		const tierDialog = page.getByRole('dialog', { name: 'Select Your Ticket' });
-		const confirmDialog = page.getByRole('dialog', { name: 'Reserve Ticket' });
+		// Stepper → Buy → sheet (names required) → Reserve. Idempotent loop:
+		// clicks during rerenders are occasionally dropped; success signal is
+		// the auto-opened "Your Ticket" modal.
+		const stepper = page.getByRole('group', { name: 'Quantity for Bank Transfer' });
+		await expect(stepper).toBeVisible({ timeout: 15_000 });
+		await stepper.getByRole('button', { name: 'Add one Bank Transfer' }).click();
+		await expect(stepper.locator('span[aria-live="polite"]')).toHaveText('1');
+
+		const summaryBar = page.getByTestId('cart-summary-bar');
+		const sheet = page.getByRole('dialog', { name: 'Checkout' });
+		await expect(async () => {
+			if (await sheet.isVisible()) return;
+			await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+			await expect(sheet).toBeVisible({ timeout: 8_000 });
+		}).toPass({ timeout: 30_000 });
+		await sheet.getByLabel('Name for ticket 1').fill('E2E Offline Buyer');
+
 		const success = page.getByRole('dialog', { name: 'Your Ticket', exact: true });
 		await expect(async () => {
 			if (await success.isVisible()) return;
-			if (await confirmDialog.isVisible()) {
-				await confirmDialog.getByRole('button', { name: 'Reserve Ticket' }).click();
-			} else if (await tierDialog.isVisible()) {
-				await tierDialog.getByRole('button', { name: 'Reserve Ticket' }).click();
-				await confirmDialog.getByRole('button', { name: 'Reserve Ticket' }).click();
-			} else {
-				await page.getByRole('button', { name: 'Get Tickets', exact: true }).click();
-				await tierDialog.getByRole('button', { name: 'Reserve Ticket' }).click();
-				await confirmDialog.getByRole('button', { name: 'Reserve Ticket' }).click();
-			}
+			await sheet.getByRole('button', { name: 'Reserve', exact: true }).click();
 			await expect(success).toBeVisible({ timeout: 8_000 });
 		}).toPass({ timeout: 60_000 });
 

@@ -1,4 +1,7 @@
 <script lang="ts">
+	/** Ported verbatim from the legacy `GuestTicketOnlinePaymentNotice`
+	 * (events/) — cart-wide notice, rendered once in `CheckoutSheet` for
+	 * guests when `cart.paymentMethod === 'online'`. */
 	import * as m from '$lib/paraglide/messages.js';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
 	import { CreditCard } from '@lucide/svelte';

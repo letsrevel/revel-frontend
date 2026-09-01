@@ -115,6 +115,28 @@ function conflictReasonFrom(error: unknown): HoldConflictReason {
 	return 'unavailable';
 }
 
+/**
+ * One-shot release with no controller to own it (#853 final-review fix 4).
+ * The venue-overview hand-off can leave a `user_choice` group's just-held
+ * seats orphaned: `cart.setSeatIds` no-ops when `joinBlock` refuses to create
+ * the group (currency/payment-method mismatch), so nothing ever registers a
+ * `SeatHoldController` for that tier to `.release()` them through. Mirrors
+ * `SeatHoldController.release`'s one-shot POST, minus the component-context
+ * machinery (no `createQuery`/`useQueryClient`, no local `myHolds` to patch)
+ * since there is no controller instance here to keep in sync.
+ */
+export async function releaseOrphanedSeatHolds(eventId: string, seatIds: string[]): Promise<void> {
+	if (seatIds.length === 0) return;
+	try {
+		await eventpublicseatingReleaseSeats({
+			path: { event_id: eventId },
+			body: { seat_ids: seatIds }
+		});
+	} catch {
+		// Best-effort: unreleased holds expire server-side within minutes.
+	}
+}
+
 export class SeatHoldController {
 	/** Seat geometry/labels/price categories — changes rarely, cached 5 min. */
 	readonly chartQuery: CreateQueryResult<VenueChartSchema, Error>;
@@ -399,6 +421,37 @@ export class SeatHoldController {
 		if (!this.#opts.isAuthenticated()) {
 			clearAnonymousHoldRecord(this.#opts.eventId);
 		}
+		this.#refetchAvailability();
+	};
+
+	/**
+	 * Release a caller-chosen subset of holds (group-scoped, unlike
+	 * `releaseAll`'s server-side "everything"). Patches the cached availability
+	 * by REMOVING only these ids from `my_holds` — never a full `[]` wipe: with
+	 * several controllers sharing the `['seating-availability', eventId]` cache
+	 * key, a whole-list wipe would make every other controller's
+	 * `adoptServerHolds` see nothing.
+	 */
+	release = async (seatIds: string[]): Promise<void> => {
+		if (seatIds.length === 0) return;
+		this.pendingSeatIds = [...this.pendingSeatIds, ...seatIds];
+		try {
+			await eventpublicseatingReleaseSeats({
+				path: { event_id: this.#opts.eventId },
+				body: { seat_ids: seatIds }
+			});
+		} catch {
+			// Best-effort; the refetch below reconciles.
+		} finally {
+			this.pendingSeatIds = this.pendingSeatIds.filter((id) => !seatIds.includes(id));
+		}
+		this.myHolds = this.myHolds.filter((id) => !seatIds.includes(id));
+		if (this.myHolds.length === 0) this.holdExpiresAt = null;
+		this.#queryClient.setQueryData<SeatingAvailabilitySchema>(
+			['seating-availability', this.#opts.eventId],
+			(old) =>
+				old ? { ...old, my_holds: (old.my_holds ?? []).filter((id) => !seatIds.includes(id)) } : old
+		);
 		this.#refetchAvailability();
 	};
 

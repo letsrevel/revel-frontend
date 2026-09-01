@@ -9,6 +9,8 @@
 		TierRemainingTicketsSchema
 	} from '$lib/api/generated/types.gen';
 	import { isEligibility } from '$lib/utils/eligibility';
+	import type { EventCart } from './cart.svelte';
+	import { quickBuyEligible } from './cart.svelte';
 	import TierCard from './TierCard.svelte';
 	import DemoCardInfo from '$lib/components/common/DemoCardInfo.svelte';
 	import EligibilityStatusDisplay from '$lib/components/events/EligibilityStatusDisplay.svelte';
@@ -35,10 +37,23 @@
 		timezone?: string | null;
 		/** The event's `visibility_settings.show_capacity` (#825) — see TierCard. */
 		capacityDisclosed?: boolean;
+		/** Quick-buy cart (#853). When present, quantity-pickable tiers get an
+		 * inline stepper instead of the buy dialog. */
+		cart?: EventCart;
+		/** Disables every quick-buy stepper (both buttons) — set while a cart
+		 * checkout is in flight so quantities can't change mid-submit. */
+		quickBuyDisabled?: boolean;
+		/** Event-level shared remaining budget (BE #901); null = no cap / unknown. */
+		eventRemaining?: number | null;
 		onSelectTier: (tier: TierSchemaWithId) => void;
-		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 		/** Map-first entry point (#679): opens the whole-venue seating overview. */
 		onViewSeatingMap?: () => void;
+		/** Seat-picker entry point (#853 PR 3): opens `SeatPickerDialog` for a
+		 * `user_choice` tier. Only wired when `cart` is also present. */
+		onPickSeats?: (tier: TierSchemaWithId) => void;
+		/** Heading anchor id — the list mounts twice since the tiers dialog
+		 * (page body + dialog), so each mount needs its own id. */
+		headingId?: string;
 	}
 
 	const {
@@ -56,9 +71,13 @@
 		tierRemainingTickets,
 		timezone,
 		capacityDisclosed = true,
+		cart,
+		quickBuyDisabled = false,
+		eventRemaining = null,
 		onSelectTier,
-		onGuestTierClick,
-		onViewSeatingMap
+		onViewSeatingMap,
+		onPickSeats,
+		headingId = 'ticket-tiers'
 	}: Props = $props();
 
 	/**
@@ -106,18 +125,24 @@
 </script>
 
 {#if hasTiers}
-	<section class="rounded-lg border border-border bg-card p-6" aria-labelledby="ticket-tiers">
+	<section class="rounded-lg border border-border bg-card p-6" aria-labelledby={headingId}>
 		<div class="mb-4 flex items-center gap-2">
 			<Ticket class="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
 			<SectionHeader
 				volume="celebration"
-				id="ticket-tiers"
+				id={headingId}
 				title={m['ticketTierList.ticketOptions']()}
 			/>
 			{#if allSoldOut}
 				<Sticker tint="crimson" rotate={-3} class="text-sm">{m['tierCard.soldOut']()}</Sticker>
 			{/if}
 		</div>
+
+		{#if eventRemaining !== null}
+			<p class="mb-4 text-sm text-muted-foreground">
+				{m['cart.eventTicketsLeft']({ count: eventRemaining })}
+			</p>
+		{/if}
 
 		<!-- Map-first entry point (#679): start from the seating map instead of
 		     the tier list. Only rendered when the event has a mapped venue. -->
@@ -155,8 +180,28 @@
 					tierRemainingInfo={getTierRemainingInfo(tier.id)}
 					{timezone}
 					{capacityDisclosed}
+					quickBuy={cart && quickBuyEligible(tier)
+						? {
+								quantity: cart.quantityFor(tier.id),
+								max: cart.maxQuantity(tier),
+								joinBlock: cart.joinBlock(tier),
+								onSetQuantity: (quantity: number) => cart.setQuantity(tier, quantity),
+								disabled: quickBuyDisabled
+							}
+						: undefined}
+					pickSeats={cart &&
+					onPickSeats &&
+					tier.seat_assignment_mode === 'user_choice' &&
+					tier.payment_method !== 'hidden'
+						? {
+								heldCount: cart.quantityFor(tier.id),
+								max: cart.maxQuantity(tier),
+								joinBlock: cart.joinBlock(tier),
+								disabled: quickBuyDisabled,
+								onPick: () => onPickSeats(tier)
+							}
+						: undefined}
 					{onSelectTier}
-					{onGuestTierClick}
 				/>
 			{/each}
 		</div>

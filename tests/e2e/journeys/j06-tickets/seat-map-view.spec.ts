@@ -10,26 +10,50 @@ import {
 } from '../../support/factories';
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
+import type { Page } from '@playwright/test';
 
 // J6 / #659 — the buyer seat-picker Map/List view toggle. The SVG map and the
 // row-list are alternative renderings of the SAME hold state; toggling between
 // them must preserve the selection.
 //
+// #853 rewrite (wave 1, task 10): the legacy per-tier confirmation dialog is
+// deleted — the map/list toggle now lives inside `SeatPickerDialog` (testid
+// `seat-picker-dialog`), opened via the `user_choice` tier card's "Pick
+// seats…" button. `SeatPickerPanel` (map/list/toggle/zoom UI) was extracted
+// verbatim from the old dialog, so the toggle/zoom/pan behavior under test is
+// byte-identical — only the host and the opening path changed.
+//
 // Smoke only (deep geometry/heuristic behaviour is covered by the unit tests
 // seat-view-toggle.test.ts / SeatMap.test.ts / seat-map-layout.test.ts): open
-// the confirmation dialog, drive the 'Seat display' toggle to Map, assert the
-// SVG map ("Seat map" group) renders, tap a seat ON THE MAP (a real hold
-// round-trip), assert it reads pressed with the held notice, then toggle to
-// List and assert the same seat shows selected there — state shared through
-// the seat-hold controller.
+// the picker, drive the 'Seat display' toggle to Map, assert the SVG map
+// ("Seat map" group) renders, tap a seat ON THE MAP (a real hold round-trip),
+// assert it reads pressed with the held notice, then toggle to List and
+// assert the same seat shows selected there — state shared through the seat-
+// hold controller.
 //
 // Note: the seeded "Revel Concert Hall" has 100 active seats in a single
 // sector, so the complexity heuristic (>60 seats) actually defaults this chart
 // to MAP, not List — the spec drives the toggle explicitly rather than leaning
 // on the default. Isolation: own offline user_choice event on Org Alpha
-// attached to the hall; row A is accessible, so B2 (bare accessible name) is
-// used. Hold-aware retries: a second tap on a pressed seat RELEASES it, so the
-// loop only clicks when the seat isn't already pressed.
+// attached to the hall (require_ticket_names: false so a single-tier cart
+// buys directly, though these tests never reach Buy); row A is accessible, so
+// B2 (bare accessible name) is used. Hold-aware retries: a second tap on a
+// pressed seat RELEASES it, so the loop only clicks when the seat isn't
+// already pressed.
+
+async function openPicker(page: Page, tierName: string) {
+	// `div.bg-card`, NOT bare `.bg-card` — TicketTierList's wrapping <section>
+	// carries the class too, so a bare class filter matches both the section
+	// and the one PricingCard whose heading it contains. The tag discriminates:
+	// only PricingCard's root is a <div>.
+	const tierCard = page
+		.locator('div.bg-card')
+		.filter({ has: page.getByRole('heading', { name: tierName, exact: true }) });
+	await tierCard.getByRole('button', { name: 'Pick seats…', exact: true }).click();
+	const picker = page.getByTestId('seat-picker-dialog');
+	await expect(picker).toBeVisible({ timeout: 8_000 });
+	return picker;
+}
 
 test.describe('J6 seat map view @p2', () => {
 	const holdCleanups: Array<{ user: ThrowawayUser; eventId: string }> = [];
@@ -48,11 +72,14 @@ test.describe('J6 seat map view @p2', () => {
 		const hall = await createPlainConcertHall();
 		const [event, buyer] = await Promise.all([
 			// The chart/availability endpoints resolve the venue from event.venue_id.
-			createTicketedEvent({ freeTier: false, event: { venue_id: hall.venueId } }),
+			createTicketedEvent({
+				freeTier: false,
+				event: { venue_id: hall.venueId, require_ticket_names: false }
+			}),
 			createVerifiedUser('MapBuyer')
 		]);
-		await deleteDefaultTier(event.id); // its auto-tier card also says "Reserve Ticket"
-		await createTicketTier(event.id, {
+		await deleteDefaultTier(event.id);
+		const tier = await createTicketTier(event.id, {
 			name: 'Choose Your Seat',
 			payment_method: 'offline',
 			price: '25.00',
@@ -68,25 +95,15 @@ test.describe('J6 seat map view @p2', () => {
 			await gotoHydrated(page, event.path);
 			await waitForClientAuth(page);
 
-			// Open the confirmation dialog (idempotent loop, see seat-selection.spec.ts).
-			const tierDialog = page.getByRole('dialog', { name: 'Select Your Ticket' });
-			const confirmDialog = page.getByRole('dialog', { name: 'Reserve Ticket' });
-			await expect(async () => {
-				if (await confirmDialog.isVisible()) return;
-				if (!(await tierDialog.isVisible())) {
-					await page.getByRole('button', { name: 'Get Tickets', exact: true }).click();
-				}
-				await tierDialog.getByRole('button', { name: 'Reserve Ticket' }).click();
-				await expect(confirmDialog).toBeVisible({ timeout: 8_000 });
-			}).toPass({ timeout: 60_000 });
+			const picker = await openPicker(page, tier.name);
 
 			// The Map/List segmented control appears once the seats have loaded.
-			const displayToggle = confirmDialog.getByRole('group', { name: 'Seat display' });
+			const displayToggle = picker.getByRole('group', { name: 'Seat display' });
 			await expect(displayToggle).toBeVisible({ timeout: 15_000 });
 
 			// Switch to the MAP view and assert the SVG surface renders.
 			await displayToggle.getByRole('button', { name: 'Map' }).click();
-			const seatMap = confirmDialog.getByRole('group', { name: 'Seat map' });
+			const seatMap = picker.getByRole('group', { name: 'Seat map' });
 			await expect(seatMap).toBeVisible({ timeout: 15_000 });
 
 			// Tap B2 ON THE MAP — each tap is a hold round-trip (briefly "…, updating"
@@ -101,13 +118,13 @@ test.describe('J6 seat map view @p2', () => {
 			}).toPass({ timeout: 30_000 });
 			holdCleanups.push({ user: buyer, eventId: event.id });
 			await expect(
-				confirmDialog.getByText('Selected seats are held for you for 10 minutes.')
+				picker.getByText('Selected seats are held for you for 10 minutes.')
 			).toBeVisible();
 
 			// Toggle back to the LIST — the same seat is still selected (shared state).
 			await displayToggle.getByRole('button', { name: 'List' }).click();
 			await expect(seatMap).toBeHidden();
-			const listSeat = confirmDialog.getByRole('button', { name: /^Seat B2(,|$)/ });
+			const listSeat = picker.getByRole('button', { name: /^Seat B2(,|$)/ });
 			await expect(listSeat).toHaveAttribute('aria-pressed', 'true', { timeout: 10_000 });
 		} finally {
 			await context.close();
@@ -128,11 +145,14 @@ test.describe('J6 seat map view @p2', () => {
 
 		const hall = await createPlainConcertHall();
 		const [event, buyer] = await Promise.all([
-			createTicketedEvent({ freeTier: false, event: { venue_id: hall.venueId } }),
+			createTicketedEvent({
+				freeTier: false,
+				event: { venue_id: hall.venueId, require_ticket_names: false }
+			}),
 			createVerifiedUser('ZoomBuyer')
 		]);
 		await deleteDefaultTier(event.id);
-		await createTicketTier(event.id, {
+		const tier = await createTicketTier(event.id, {
 			name: 'Choose Your Seat',
 			payment_method: 'offline',
 			price: '25.00',
@@ -148,21 +168,12 @@ test.describe('J6 seat map view @p2', () => {
 			await gotoHydrated(page, event.path);
 			await waitForClientAuth(page);
 
-			const tierDialog = page.getByRole('dialog', { name: 'Select Your Ticket' });
-			const confirmDialog = page.getByRole('dialog', { name: 'Reserve Ticket' });
-			await expect(async () => {
-				if (await confirmDialog.isVisible()) return;
-				if (!(await tierDialog.isVisible())) {
-					await page.getByRole('button', { name: 'Get Tickets', exact: true }).click();
-				}
-				await tierDialog.getByRole('button', { name: 'Reserve Ticket' }).click();
-				await expect(confirmDialog).toBeVisible({ timeout: 8_000 });
-			}).toPass({ timeout: 60_000 });
+			const picker = await openPicker(page, tier.name);
 
-			const displayToggle = confirmDialog.getByRole('group', { name: 'Seat display' });
+			const displayToggle = picker.getByRole('group', { name: 'Seat display' });
 			await expect(displayToggle).toBeVisible({ timeout: 15_000 });
 			await displayToggle.getByRole('button', { name: 'Map' }).click();
-			const seatMap = confirmDialog.getByRole('group', { name: 'Seat map' });
+			const seatMap = picker.getByRole('group', { name: 'Seat map' });
 			await expect(seatMap).toBeVisible({ timeout: 15_000 });
 
 			// The viewport <g> is the svg's only direct group child.
@@ -202,21 +213,21 @@ test.describe('J6 seat map view @p2', () => {
 			await page.mouse.move(startX + 40, startY + 25, { steps: 8 });
 			await page.mouse.up();
 			await expect(surface).not.toHaveAttribute('transform', initial);
-			await expect(confirmDialog).toBeVisible();
+			await expect(picker).toBeVisible();
 			await expect(seatMap.locator('[aria-pressed="true"]')).toHaveCount(0);
 
 			// Zoom in ×2 clicks: scale 1 → 1.25 → 1.5625 (exact float products;
 			// the pan offset above only changes the translate part).
-			await confirmDialog.getByRole('button', { name: 'Zoom in' }).click();
+			await picker.getByRole('button', { name: 'Zoom in' }).click();
 			await expect(surface).toHaveAttribute('transform', /scale\(1\.25\)/);
-			await confirmDialog.getByRole('button', { name: 'Zoom in' }).click();
+			await picker.getByRole('button', { name: 'Zoom in' }).click();
 			await expect(surface).toHaveAttribute('transform', /scale\(1\.5625\)/);
 
 			// Zoom out steps back down (1.5625 × 0.8 = 1.25), reset restores the
 			// exact initial transform.
-			await confirmDialog.getByRole('button', { name: 'Zoom out' }).click();
+			await picker.getByRole('button', { name: 'Zoom out' }).click();
 			await expect(surface).toHaveAttribute('transform', /scale\(1\.25\)/);
-			await confirmDialog.getByRole('button', { name: 'Reset zoom' }).click();
+			await picker.getByRole('button', { name: 'Reset zoom' }).click();
 			await expect(surface).toHaveAttribute('transform', 'translate(0 0) scale(1)');
 		} finally {
 			await context.close();

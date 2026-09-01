@@ -6,12 +6,15 @@
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import { isMembershipTierRefusal } from '$lib/utils/eligibility';
 	import { extractPurchaseErrorMessage } from './purchase-error';
+	import { GuestAccountRequiredError } from '../events/guest-cart-checkout-controller.svelte';
 
 	interface Props {
 		/** Whatever the purchase path threw, or `null` when there is no error. */
 		error?: unknown;
-		/** The tier being bought — the only source of the required tier names. */
-		tier: TierSchemaWithId;
+		/** The tier being bought — a source of the required tier names. */
+		tier?: TierSchemaWithId;
+		/** Multiple tiers (cart checkout) — unioned with `tier` when both are given. */
+		tiers?: TierSchemaWithId[];
 		/**
 		 * Organizing org's slug. Without it the membership link is omitted rather
 		 * than guessed: a wrong destination is worse than none.
@@ -19,28 +22,46 @@
 		organizationSlug?: string | null;
 	}
 
-	const { error = null, tier, organizationSlug = null }: Props = $props();
+	const { error = null, tier, tiers, organizationSlug = null }: Props = $props();
 
 	const message = $derived(
 		error ? extractPurchaseErrorMessage(error, m['ticketConfirmationDialog.errorGeneric']()) : ''
 	);
 
-	// The purchase was refused because this tier is gated to membership tiers the
-	// buyer does not hold (BE #807). It is the one purchase error with somewhere
-	// to send the buyer, so it gets a CTA the others don't.
+	// The purchase was refused because a tier in the purchase is gated to
+	// membership tiers the buyer does not hold (BE #807). It is the one purchase
+	// error with somewhere to send the buyer, so it gets a CTA the others don't.
 	const membershipGateRefused = $derived(isMembershipTierRefusal(error));
 
 	// Which membership tiers would satisfy the gate. The refusal payload names
 	// NONE of them (and cannot say whether the buyer is a non-member or a member
-	// on the wrong tier), so they come off the tier — the same list TierCard reads.
+	// on the wrong tier), so they come off the tier(s) — the same list TierCard
+	// reads. `tier` and `tiers` union (deduped) so a single-tier purchase and a
+	// multi-group cart checkout both work through the same prop.
+	const consideredTiers = $derived([...(tier ? [tier] : []), ...(tiers ?? [])]);
 	const requiredTierNames = $derived(
-		(tier.restricted_to_membership_tiers ?? []).map((t) => t.name).filter(Boolean)
+		Array.from(
+			new Set(
+				consideredTiers.flatMap((t) =>
+					(t.restricted_to_membership_tiers ?? []).map((mt) => mt.name).filter(Boolean)
+				)
+			)
+		)
 	);
 
 	// The link below points at the org's membership page — the only surface where
 	// a qualifying tier can be obtained. Deliberately not "Join organization": a
 	// plain membership request grants no tier and would dead-end, which is why the
 	// backend refuses to send this case down the become_member path at all.
+
+	// A guest's next required step (e.g. become_member, complete_questionnaire)
+	// has no guest-compatible path (#853 PR 4 — `guest-cart-checkout-controller`'s
+	// error mapping). Ported from the legacy `GuestTicketErrorAlert`'s
+	// `requiresAccount` branch: extended here rather than kept as a separate
+	// component, since this is the one alert every checkout surface (single-tier
+	// and cart) already renders errors through — a guest wrapper would just
+	// re-implement the same message/Alert plumbing around it.
+	const requiresAccount = $derived(error instanceof GuestAccountRequiredError);
 </script>
 
 {#if message}
@@ -61,6 +82,28 @@
 				>
 					{m['membershipPlans.viewMembership']()}
 				</a>
+			{/if}
+			{#if requiresAccount}
+				<p class="mt-2">
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
+					<a
+						href={`${resolve('/(public)/login', {})}?redirect=${encodeURIComponent(window.location.pathname)}`}
+						class="font-medium underline hover:no-underline"
+					>
+						{m['guestTicketDialog.logIn']()}
+					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
+					{m['guestTicketDialog.or']()}
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
+					<a
+						href={`${resolve('/(public)/register', {})}?redirect=${encodeURIComponent(window.location.pathname)}`}
+						class="font-medium underline hover:no-underline"
+					>
+						{m['guestTicketDialog.createAnAccount']()}
+					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
+					{m['guestTicketDialog.toContinue']()}
+				</p>
 			{/if}
 		</AlertDescription>
 	</Alert>

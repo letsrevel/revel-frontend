@@ -4,12 +4,35 @@
  * No runes here — plain functions so this stays unit-testable.
  */
 import * as m from '$lib/paraglide/messages.js';
+import type { TierSchemaWithId } from '$lib/types/tickets';
 
 export type PwycValidationError = 'empty' | 'invalid' | 'below_min' | 'above_max';
 
 export interface PwycValidation {
 	valid: boolean;
 	error: PwycValidationError | null;
+}
+
+export interface PwycBounds {
+	minAmount: number;
+	maxAmount: number | null;
+}
+
+/**
+ * Derives the buyer-facing PWYC amount bounds for a tier: min falls back to
+ * the tier's flat price when no explicit `pwyc_min` is set (and to 1 if
+ * neither parses), max is the parsed `pwyc_max` or null when absent/invalid.
+ */
+export function pwycBounds(
+	tier: Pick<TierSchemaWithId, 'price' | 'pwyc_min' | 'pwyc_max'>
+): PwycBounds {
+	const parsedMin = parseFloat(tier.pwyc_min ?? tier.price);
+	const minAmount = Number.isNaN(parsedMin) ? 1 : parsedMin;
+
+	const parsedMax = tier.pwyc_max != null ? parseFloat(tier.pwyc_max) : NaN;
+	const maxAmount = Number.isNaN(parsedMax) ? null : parsedMax;
+
+	return { minAmount, maxAmount };
 }
 
 export function validatePwycAmount(

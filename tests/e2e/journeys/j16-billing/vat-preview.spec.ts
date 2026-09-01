@@ -88,19 +88,21 @@ async function arrange(label: string, options: { isVirtual?: boolean } = {}): Pr
 	return { eventPath: event.path, buyer };
 }
 
-/** Open the purchase confirmation dialog for a fixed-price online tier. */
-async function openConfirmDialog(page: Page) {
-	const tierDialog = page.getByRole('dialog', { name: 'Select Your Ticket' });
-	const confirmDialog = page.getByRole('dialog', { name: 'Confirm Purchase' });
-	await expect(async () => {
-		if (await confirmDialog.isVisible()) return;
-		if (!(await tierDialog.isVisible())) {
-			await page.getByRole('button', { name: 'Get Tickets', exact: true }).click();
-		}
-		await tierDialog.getByRole('button', { name: 'Buy Ticket' }).click();
-		await expect(confirmDialog).toBeVisible({ timeout: 8_000 });
-	}).toPass({ timeout: 60_000 });
-	return confirmDialog;
+/**
+ * Cart flow (#853): add one Invoiced Entry via its tier stepper and open the
+ * checkout sheet — the billing form's only host. The event keeps the backend
+ * default require_ticket_names=true, so Buy opens the sheet rather than
+ * checking out directly (the name is never filled: these tests only assert
+ * the VAT preview, never confirm).
+ */
+async function openCheckoutSheet(page: Page) {
+	const stepper = page.getByRole('group', { name: 'Quantity for Invoiced Entry' });
+	await stepper.getByRole('button', { name: 'Add one Invoiced Entry' }).click();
+	const summaryBar = page.getByTestId('cart-summary-bar');
+	await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+	const sheet = page.getByRole('dialog', { name: 'Checkout' });
+	await expect(sheet).toBeVisible({ timeout: 8_000 });
+	return sheet;
 }
 
 test.describe('J16 VAT preview @p2', () => {
@@ -116,7 +118,7 @@ test.describe('J16 VAT preview @p2', () => {
 		await gotoHydrated(page, eventPath);
 		await waitForClientAuth(page);
 
-		const confirmDialog = await openConfirmDialog(page);
+		const confirmDialog = await openCheckoutSheet(page);
 
 		// Expand the billing form and fill the domestic B2B case. The preview
 		// fetch fires on VAT-ID blur.
@@ -161,7 +163,7 @@ test.describe('J16 VAT preview @p2', () => {
 		await gotoHydrated(page, eventPath);
 		await waitForClientAuth(page);
 
-		const confirmDialog = await openConfirmDialog(page);
+		const confirmDialog = await openCheckoutSheet(page);
 
 		await confirmDialog.getByRole('checkbox', { name: 'Request Invoice' }).click();
 		await confirmDialog.getByLabel('Legal Name').fill('E2E Buyer Srl');

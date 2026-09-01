@@ -5948,13 +5948,8 @@
 	"ticketConfirmationDialog": {
 		"paymentAmount": "Importe del pago",
 		"quickSelect": "Selección rápida:",
-		"agreeToTerms": "Al continuar, aceptas los términos y condiciones del evento.",
-		"bestAvailableTitle": "Mejores asientos disponibles",
-		"bestAvailableDesc": "Tus asientos se asignarán automáticamente — asientos contiguos, en el mejor bloque disponible.",
 		"accessibleSeatsLabel": "Necesito asientos accesibles para sillas de ruedas",
 		"bestAvailableConflict": "No hay suficientes asientos contiguos disponibles — prueba con una cantidad menor.",
-		"generalEntrance": "Entrada general",
-		"generalEntranceDesc": "Esta entrada da acceso general sin asiento asignado.",
 		"selectSeats": "Selecciona tus asientos",
 		"seatsSelected": "seleccionados",
 		"loadingSeats": "Cargando asientos disponibles...",
@@ -5962,7 +5957,6 @@
 		"defaultGuestName": "Persona invitada",
 		"bestAvailableRetry": "Se ocuparon otros asientos mientras se asignaban los tuyos — inténtalo de nuevo."
 	},
-	"ticketConfirmationDialog.selectMoreSeats": "Selecciona {count} asiento(s) más",
 	"ticketListCard": {
 		"purchased": "Comprada:",
 		"addToCalendar": "Añadir al calendario"
@@ -5976,13 +5970,6 @@
 	"ticketTierList": {
 		"ticketOptions": "Opciones de entrada",
 		"signIn": "Iniciar sesión"
-	},
-	"ticketTierModal": {
-		"noTickets": "No hay entradas disponibles en este momento.",
-		"paymentInstructions": "Instrucciones de pago:",
-		"signIn": "Iniciar sesión",
-		"soldOut": "Agotado",
-		"agreeToTerms": "Al reclamar una entrada, aceptas los términos y condiciones del evento."
 	},
 	"ticketingStep": {
 		"ticketingOptions": "Opciones de entrada",
@@ -6097,7 +6084,6 @@
 		"claimFreeTicket": "Reclamar entrada gratuita",
 		"buyTicket": "Comprar entrada",
 		"reserveTicket": "Reservar entrada",
-		"getTicket": "Conseguir entrada",
 		"configError": "Error de configuración",
 		"youHaveTicket": "Tienes una entrada",
 		"limitReached": "Límite alcanzado",
@@ -7823,30 +7809,7 @@
 	"guestRsvpDialog.createAnAccount": "crea una cuenta",
 	"guestRsvpDialog.toContinue": "para continuar.",
 	"guestRsvpDialog.failedToSubmit": "No se pudo enviar la confirmación de asistencia",
-	"guestTicketDialog.failedToLoadSeats": "No se pudieron cargar los asientos disponibles",
-	"guestTicketDialog.pleaseEnterYourName": "Introduce tu nombre",
-	"guestTicketDialog.pleaseEnterTicketHolderName": "Introduce un nombre para la persona titular de la entrada {number}",
-	"guestTicketDialog.pleaseSelectMoreSeatOne": "Selecciona 1 asiento más",
-	"guestTicketDialog.pleaseSelectMoreSeats": "Selecciona {count} asientos más",
-	"guestTicketDialog.failedToCheckout": "No se pudo completar el pago",
-	"guestTicketDialog.paymentStartFailed": "Tus entradas están reservadas, pero no se pudo iniciar el pago. Vuelve a intentarlo.",
-	"guestTicketDialog.paymentStartFailedExpired": "Tu reserva caducó antes de que se pudiera iniciar el pago. Vuelve a empezar la compra.",
-	"guestTicketDialog.numberOfTickets": "Número de entradas",
-	"guestTicketDialog.decreaseQuantity": "Disminuir cantidad",
-	"guestTicketDialog.increaseQuantity": "Aumentar cantidad",
-	"guestTicketDialog.maxQuantity": "(Máx.: {max})",
-	"guestTicketDialog.total": "Total:",
-	"guestTicketDialog.ticketHolderNames": "Nombres de las personas titulares de las entradas",
-	"guestTicketDialog.ticketHolderNamesHint": "Introduce el nombre de cada persona titular de una entrada (se imprimirá en su entrada)",
-	"guestTicketDialog.yourName": "Tu nombre",
-	"guestTicketDialog.guestName": "Nombre del acompañante {number}",
-	"guestTicketDialog.yourNamePlaceholder": "Tu nombre",
-	"guestTicketDialog.guestNamePlaceholder": "Nombre del acompañante {number}",
-	"guestTicketDialog.selectYourSeat": "Elige tu asiento",
-	"guestTicketDialog.noSeatsAvailable": "No hay asientos disponibles para este tipo de entrada",
-	"guestTicketDialog.selectedSeats": "Seleccionados {selected} de {total} asientos",
 	"guestTicketDialog.bestAvailableEmailNotice": "Tus asientos se asignarán automáticamente cuando confirmes tu correo electrónico.",
-	"guestTicketDialog.quickSelect": "Selección rápida",
 	"guestTicketDialog.onlinePaymentNotice": "Se te redirigirá a nuestro proveedor de pago seguro para completar la compra.",
 	"guestTicketDialog.logIn": "Iniciar sesión",
 	"guestTicketDialog.or": "o",
@@ -8416,7 +8379,6 @@
 	"ticketListCard.viewTicketAndQr": "Ver entrada y código QR",
 	"ticketListCard.viewTicket": "Ver entrada",
 	"ticketListCard.viewEvent": "Ver evento",
-	"ticketTierModal.selectYourTicket": "Elige tu entrada",
 	"eventTokenCard.toastTokenIdMissing": "Falta el ID del token",
 	"eventTokenCard.toastLinkCopied": "¡Enlace copiado al portapapeles!",
 	"eventTokenCard.toastCopyFailed": "No se ha podido copiar el enlace",
@@ -8444,36 +8406,14 @@
 	"ticketConfirmationDialog.errorMinAmount": "El importe mínimo es {amount}",
 	"ticketConfirmationDialog.errorMaxAmount": "El importe máximo es {amount}",
 	"ticketConfirmationDialog.errorInvalidAmount": "Importe no válido",
-	"ticketConfirmationDialog.errorEnterYourName": "Introduce tu nombre",
-	"ticketConfirmationDialog.errorEnterHolderName": "Introduce un nombre para la persona titular de la entrada {number}",
 	"ticketConfirmationDialog.errorGeneric": "Algo ha salido mal. Inténtalo de nuevo.",
-	"ticketConfirmationDialog.descClaimFree": "Confirma que quieres conseguir esta entrada gratuita para el evento.",
-	"ticketConfirmationDialog.descReserveAtDoor": "Reserva tu plaza y completa el pago en la puerta.",
-	"ticketConfirmationDialog.descReserveOffline": "Reserva tu plaza y completa el pago offline.",
-	"ticketConfirmationDialog.descPwyc": "Elige cuánto quieres pagar por tu entrada.",
-	"ticketConfirmationDialog.descOnline": "Confirma tu compra. Te redirigiremos para completar el pago.",
 	"ticketConfirmationDialog.numberOfTickets": "Número de entradas",
 	"ticketConfirmationDialog.decreaseQuantity": "Reducir cantidad",
 	"ticketConfirmationDialog.increaseQuantity": "Aumentar cantidad",
 	"ticketConfirmationDialog.maxHint": "(máx. {max})",
-	"ticketConfirmationDialog.securePaymentNotice": "Te redirigiremos a nuestro proveedor de pago seguro para completar la compra.",
-	"ticketConfirmationDialog.onlyOneRemaining": "¡Solo queda 1 entrada!",
-	"ticketConfirmationDialog.onlyNRemaining": "¡Solo quedan {count} entradas!",
 	"ticketConfirmationDialog.unableToComplete": "No se ha podido completar la solicitud",
-	"ticketConfirmationDialog.hintEnterYourName": "Introduce tu nombre arriba",
-	"ticketConfirmationDialog.hintEnterAllNames": "Introduce arriba los nombres de todas las personas titulares de las entradas",
-	"ticketConfirmationDialog.hintEnterAmount": "Introduce un importe de pago",
-	"ticketConfirmationDialog.hintMinAmount": "El importe debe ser de al menos {amount}",
-	"ticketConfirmationDialog.hintMaxAmount": "El importe no puede superar {amount}",
-	"ticketConfirmationDialog.hintSelectOneMoreSeat": "Selecciona 1 asiento más",
-	"ticketConfirmationDialog.hintSelectMoreSeats": "Selecciona {count} asientos más",
 	"ticketConfirmationDialog.cancel": "Cancelar",
-	"ticketConfirmationDialog.redirectingToPayment": "Redirigiendo al pago...",
 	"ticketConfirmationDialog.processing": "Procesando...",
-	"ticketConfirmationDialog.claimTicket": "Conseguir entrada",
-	"ticketConfirmationDialog.reserveTicket": "Reservar entrada",
-	"ticketConfirmationDialog.continueToPayment": "Continuar al pago",
-	"ticketConfirmationDialog.proceedToPayment": "Proceder al pago",
 	"eventTokenModal.titleEdit": "Editar enlace de invitación",
 	"eventTokenModal.titleCreate": "Crear enlace de invitación",
 	"eventTokenModal.descEdit": "Actualiza los ajustes del enlace. La URL para compartir no cambiará.",
@@ -9467,5 +9407,96 @@
 	"memberScan.untitledTier": "Entrada",
 	"memberScan.checkInTicket": "Registrar entrada",
 	"memberScan.close": "Cerrar",
-	"memberScan.checkedInSuccess": "Entrada registrada: {name}"
+	"memberScan.checkedInSuccess": "Entrada registrada: {name}",
+	"cart": {
+		"addOne": "Añadir un {tierName}",
+		"removeOne": "Quitar un {tierName}",
+		"quantityFor": "Cantidad de {tierName}",
+		"cannotMixCurrency": "No se puede combinar con tu selección actual (moneda diferente)",
+		"cannotMixPayment": "No se puede combinar con tu selección actual (método de pago diferente)",
+		"eventLimitReached": "Has alcanzado el límite de entradas por persona para este evento.",
+		"ticketCount": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} entrada",
+					"countPlural=*": "{count} entradas"
+				}
+			}
+		],
+		"buy": "Comprar",
+		"free": "Gratis",
+		"checkoutFailed": "Error en el pago",
+		"staleCart": "Tu carrito está desactualizado — algunas entradas ya no están disponibles. Actualiza la página e inténtalo de nuevo.",
+		"saleWindowClosed": "El plazo de venta de una entrada de tu carrito acaba de cerrarse. Actualiza la página.",
+		"eventTicketsLeft": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "Puedes conseguir {count} entrada más para este evento",
+					"countPlural=*": "Puedes conseguir {count} entradas más para este evento"
+				}
+			}
+		],
+		"summaryRegion": "Resumen del carrito",
+		"discountLink": "¿Código de descuento?",
+		"seatsHeld": "Asientos reservados",
+		"holdsExpired": "Tus asientos reservados han caducado — vuelve a seleccionarlos.",
+		"pickSeatsTitle": "Elegir asientos — {tierName}",
+		"pickSeatsDescription": "Toca los asientos en el mapa para reservarlos para esta entrada.",
+		"pickSeats": "Elegir asientos…",
+		"seatsPicked": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} asiento · editar",
+					"countPlural=*": "{count} asientos · editar"
+				}
+			}
+		],
+		"seatPickerDone": "Listo",
+		"signedInCartCleared": "Has iniciado sesión — tu carrito de invitado se ha vaciado."
+	},
+	"cartSheet": {
+		"title": "Pago",
+		"payNow": "Pagar ahora",
+		"reserve": "Reservar",
+		"claim": "Conseguir",
+		"groupTickets": [
+			{
+				"declarations": ["input tierName", "input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{tierName} × {count}",
+					"countPlural=*": "{tierName} × {count}"
+				}
+			}
+		],
+		"namesHeading": "Nombres de las personas titulares de las entradas",
+		"nameLabel": "Nombre para la entrada {index}",
+		"nameRequired": "Introduce un nombre para cada entrada",
+		"guestNameRequired": "Introduce tu nombre y apellidos",
+		"pwycRange": "Rango: {min} – {max}",
+		"pwycHeading": "Elige tu importe",
+		"discountSection": "Código de descuento",
+		"discountApplies": "Se aplica a {tierName}",
+		"discountNotApplicable": "No se aplica a este tipo de entrada",
+		"discountNoMatch": "Este código no se aplica a nada en tu carrito",
+		"discountCheckFailed": "No pudimos comprobar este código — aun así se aplicará al finalizar la compra",
+		"billingSection": "Información de facturación",
+		"close": "Cerrar",
+		"confirmedTicketCount": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} entrada confirmada",
+					"countPlural=*": "{count} entradas confirmadas"
+				}
+			}
+		]
+	}
 }

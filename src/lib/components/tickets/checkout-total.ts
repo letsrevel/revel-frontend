@@ -22,7 +22,12 @@
  *
  * No runes here — plain functions so this stays unit-testable.
  */
-import type { TicketTierSchema, VenueChartSchema } from '$lib/api/generated/types.gen';
+import type {
+	TicketTierSchema,
+	VatPreviewItemSchema,
+	VenueChartSchema
+} from '$lib/api/generated/types.gen';
+import type { CartGroup } from './cart.svelte';
 import { estimatedSeatTotal } from './seat-pricing';
 import { isMappedBestAvailable } from './seat-zones';
 
@@ -79,4 +84,55 @@ export function checkoutTotal(args: CheckoutTotalArgs): string | null {
 
 	const cents = toCents(args.discountedPrice ?? tier.price);
 	return cents == null ? null : fromCents(cents * quantity);
+}
+
+/** Maps one cart group onto CheckoutTotalArgs (discount arrives in PR 2/3). */
+export interface CartTotalGroup {
+	tier: CheckoutTotalArgs['tier'];
+	quantity: number;
+	seatIds: readonly string[];
+	chart?: VenueChartSchema | null;
+	pwycAmount: string | null;
+	priceCategoryId: string | null;
+	discountedPrice?: string | null;
+}
+
+export function cartTotalArgs(group: CartTotalGroup): CheckoutTotalArgs {
+	return {
+		tier: group.tier,
+		quantity: group.quantity,
+		heldSeatIds: group.seatIds,
+		chart: group.chart ?? null,
+		selectedZoneId: group.priceCategoryId,
+		pwycAmount: group.pwycAmount ?? '',
+		discountedPrice: group.discountedPrice ?? null
+	};
+}
+
+/** Whole-cart total: sum of per-group totals, null while ANY group is unknown. */
+export function cartTotal(argsList: CheckoutTotalArgs[]): string | null {
+	if (argsList.length === 0) return null;
+	let sum = 0;
+	for (const args of argsList) {
+		const total = checkoutTotal(args);
+		if (total == null) return null;
+		sum += Math.round(Number.parseFloat(total) * 100);
+	}
+	return fromCents(sum);
+}
+
+/**
+ * VAT-preview request lines for the cart, one per group. `seat_ids` is sent
+ * whenever the group holds seats: the preview endpoint needs them to price
+ * per-seat categories — without them it charges the tier's flat price for
+ * every ticket and disagrees with checkout (#863 review; see
+ * VatPreviewItemSchema's own doc).
+ */
+export function vatPreviewItems(groups: CartGroup[]): VatPreviewItemSchema[] {
+	return groups.map((group) => ({
+		tier_id: group.tier.id,
+		count: group.quantity,
+		...(group.priceCategoryId ? { price_category_id: group.priceCategoryId } : {}),
+		...(group.seatIds.length > 0 ? { seat_ids: group.seatIds } : {})
+	}));
 }

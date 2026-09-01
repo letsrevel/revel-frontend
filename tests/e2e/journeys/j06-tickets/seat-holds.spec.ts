@@ -19,23 +19,35 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 //
 // 1. Foreign-hold conflict: holds are all-or-nothing server-side, so a tap on
 //    a seat someone else just held 409s (conflict_reason "unavailable"). The
-//    dialog must surface the conflict copy in its polite live region and,
-//    after the forced availability refetch, render the seat disabled with the
+//    UI must surface the conflict copy in its polite live region and, after
+//    the forced availability refetch, render the seat disabled with the
 //    "held by someone else" accessible name. Ordering matters: the dialog
 //    opens FIRST (caching an availability snapshot where the seat is free),
 //    THEN the rival holds it via the API, THEN the buyer taps it — tapping is
 //    the only client action that reveals the staleness.
 //
+//    #853 rewrite (wave 2, task 11): the legacy `TicketConfirmationDialog`
+//    this test opened is deleted — a `user_choice` tier's "Pick seats…"
+//    button on the tier card now opens `SeatPickerDialog` (testid
+//    `seat-picker-dialog`) instead, hosting the SAME `SeatPickerPanel` seat
+//    map/conflict-alert UI verbatim (wave-1 convention, see
+//    seat-selection.spec.ts). Only the entry point and the dialog host
+//    changed; the conflict mechanics themselves are untouched.
+//
 // 2. Release-on-login: anonymous holds belong to the signed guest cookie. A
 //    logged-in purchase would see them as FOREIGN 409s, so the app records
 //    hold-carrying events in sessionStorage (seat-holds.ts) and the root
 //    layout releases them cookie-identified right after the auth bootstrap.
-//    Closing the guest dialog normally RELEASES holds (reset effect), so the
-//    abandoned-hold path is reached by HARD-navigating away with the dialog
-//    still open — a full-page load skips the close handler while the
+//    Closing `SeatPickerDialog` normally RELEASES an un-handed-off hold on
+//    destroy, so the abandoned-hold path is reached by HARD-navigating away
+//    with the dialog still open (Done never clicked) — a full-page load tears
+//    the whole SPA down before that teardown release can run, while the
 //    sessionStorage record survives same-tab navigation. Login itself ends in
 //    a full reload (login/+page.svelte does window.location.href on the 303),
 //    which re-runs the layout bootstrap that fires the release.
+//
+//    #853 rewrite (task 9): this test also opened the now-deleted legacy
+//    guest dialog — same `SeatPickerDialog` entry-point swap as item 1 above.
 //
 // Isolation: own events on Org Alpha attached to the seeded "Revel Concert
 // Hall" (availability is per event); offline tiers keep Stripe out. Row A is
@@ -96,22 +108,21 @@ test.describe('J19 seat holds @p2', () => {
 			await gotoHydrated(page, event.path);
 			await waitForClientAuth(page);
 
-			// Open the confirmation dialog (idempotent loop, see seat-selection.spec.ts).
-			const tierDialog = page.getByRole('dialog', { name: 'Select Your Ticket' });
-			const confirmDialog = page.getByRole('dialog', { name: 'Reserve Ticket' });
+			// Open the seat picker (idempotent loop, see seat-selection.spec.ts).
+			const tierCard = page
+				.locator('div.bg-card')
+				.filter({ has: page.getByRole('heading', { name: 'Choose Your Seat', exact: true }) });
+			const picker = page.getByTestId('seat-picker-dialog');
 			await expect(async () => {
-				if (await confirmDialog.isVisible()) return;
-				if (!(await tierDialog.isVisible())) {
-					await page.getByRole('button', { name: 'Get Tickets', exact: true }).click();
-				}
-				await tierDialog.getByRole('button', { name: 'Reserve Ticket' }).click();
-				await expect(confirmDialog).toBeVisible({ timeout: 8_000 });
+				if (await picker.isVisible()) return;
+				await tierCard.getByRole('button', { name: 'Pick seats…', exact: true }).click();
+				await expect(picker).toBeVisible({ timeout: 8_000 });
 			}).toPass({ timeout: 60_000 });
 
 			// The map is rendered with B2 free — this availability snapshot is now
 			// the client's cache; nothing refetches it until the buyer's next tap.
-			await expect(confirmDialog.getByText('STAGE')).toBeVisible({ timeout: 15_000 });
-			const freeSeat = confirmDialog.getByRole('button', { name: /^Seat B2(,|$)/ });
+			await expect(picker.getByText('STAGE')).toBeVisible({ timeout: 15_000 });
+			const freeSeat = picker.getByRole('button', { name: /^Seat B2(,|$)/ });
 			await expect(freeSeat).toBeEnabled();
 
 			// NOW the rival grabs B2 through the API — the buyer's map is stale.
@@ -119,8 +130,8 @@ test.describe('J19 seat holds @p2', () => {
 			holdCleanups.push({ user: rival, eventId: event.id });
 
 			// Tapping the stale seat POSTs a hold that 409s (all-or-nothing). The
-			// conflict copy must land in the dialog's polite live region.
-			const conflict = confirmDialog
+			// conflict copy must land in the picker's polite live region.
+			const conflict = picker
 				.locator('[aria-live="polite"]')
 				.getByText('That seat was just taken — please pick another.');
 			await expect(async () => {
@@ -131,14 +142,14 @@ test.describe('J19 seat holds @p2', () => {
 
 			// The 409 forces an availability refetch: B2 flips to the disabled
 			// held-by-someone-else state (accessible name carries the status).
-			const heldSeat = confirmDialog.getByRole('button', {
+			const heldSeat = picker.getByRole('button', {
 				name: 'Seat B2, held by someone else'
 			});
 			await expect(heldSeat).toBeDisabled({ timeout: 15_000 });
 
 			// Recovery: a different free seat still holds fine (hold-aware loop —
 			// a second click would release), and the next tap clears the conflict.
-			const altSeat = confirmDialog.getByRole('button', { name: /^Seat B4(,|$)/ });
+			const altSeat = picker.getByRole('button', { name: /^Seat B4(,|$)/ });
 			await expect(async () => {
 				if ((await altSeat.getAttribute('aria-pressed')) !== 'true') {
 					await altSeat.click();
@@ -147,7 +158,7 @@ test.describe('J19 seat holds @p2', () => {
 			}).toPass({ timeout: 30_000 });
 			holdCleanups.push({ user: buyer, eventId: event.id });
 			await expect(
-				confirmDialog.getByText('Selected seats are held for you for 10 minutes.')
+				picker.getByText('Selected seats are held for you for 10 minutes.')
 			).toBeVisible();
 			await expect(conflict).toBeHidden();
 		} finally {
@@ -168,7 +179,7 @@ test.describe('J19 seat holds @p2', () => {
 			}),
 			createVerifiedUser('HoldLogin')
 		]);
-		await deleteDefaultTier(event.id); // its card also says "Get Ticket" to guests
+		await deleteDefaultTier(event.id); // its stepper would also render
 		await createTicketTier(event.id, {
 			name: 'Guest Choose Seat',
 			payment_method: 'offline',
@@ -179,29 +190,29 @@ test.describe('J19 seat holds @p2', () => {
 		});
 		const seatId = await seatIdByLabel(event.id, 'C3');
 
-		// ANONYMOUS visitor: the tier card CTA opens the guest dialog directly.
+		// ANONYMOUS visitor: #853 PR 3/4 replaced the legacy guest dialog — the
+		// tier card's "Pick seats…" button (same as an authenticated buyer's,
+		// `TierCard`'s `canTransact` gate) opens `SeatPickerDialog` directly.
 		await gotoHydrated(page, event.path);
-		const guestDialog = page.getByRole('dialog', { name: 'Get tickets without an account' });
+		const picker = page.getByTestId('seat-picker-dialog');
 		await expect(async () => {
-			if (await guestDialog.isVisible()) return;
-			await page.getByRole('button', { name: 'Get Ticket', exact: true }).first().click();
-			await expect(guestDialog).toBeVisible({ timeout: 5_000 });
+			if (await picker.isVisible()) return;
+			await page.getByRole('button', { name: 'Pick seats…', exact: true }).first().click();
+			await expect(picker).toBeVisible({ timeout: 8_000 });
 		}).toPass({ timeout: 60_000 });
 
-		await expect(guestDialog.getByText('STAGE')).toBeVisible({ timeout: 15_000 });
+		await expect(picker.getByText('STAGE')).toBeVisible({ timeout: 15_000 });
 
 		// Tap C3 — the first anonymous hold mints the signed guest cookie and
 		// records the event in sessionStorage for release-on-login.
-		const seat = guestDialog.getByRole('button', { name: /^Seat C3(,|$)/ });
+		const seat = picker.getByRole('button', { name: /^Seat C3(,|$)/ });
 		await expect(async () => {
 			if ((await seat.getAttribute('aria-pressed')) !== 'true') {
 				await seat.click();
 			}
 			await expect(seat).toHaveAttribute('aria-pressed', 'true', { timeout: 5_000 });
 		}).toPass({ timeout: 60_000 });
-		await expect(
-			guestDialog.getByText('Selected seats are held for you for 10 minutes.')
-		).toBeVisible();
+		await expect(picker.getByText('Selected seats are held for you for 10 minutes.')).toBeVisible();
 
 		// Server truth: the seat reads as held to an identity-less probe (the
 		// raw fetch carries no cookie jar, so the hold is foreign to it).
@@ -211,14 +222,25 @@ test.describe('J19 seat holds @p2', () => {
 			})
 			.toBe('held');
 
-		// HARD-navigate away with the dialog still open: the full-page load
-		// skips the dialog's close-time release, so the hold stays alive…
+		// HARD-navigate away WITHOUT hitting Done: the full-page load tears the
+		// whole SPA down before `SeatPickerDialog`'s `onDestroy` release can run
+		// (same "skips the close-time release" property the legacy dialog had —
+		// only the mechanism moved from an effect to onDestroy), so the hold
+		// stays alive…
 		await gotoHydrated(page, '/login');
 		expect((await getSeatingAvailability(event.id)).seats[seatId]).toBe('held');
 
 		// …until login. The 303 → full reload re-runs the root layout's auth
 		// bootstrap, which reads the sessionStorage record and releases the
 		// guest-cookie holds without an Authorization header (seat-holds.ts).
+		// Note: this canary never hands the pick to a cart group (no Done click),
+		// so `cart.isEmpty` stays true across the reload and the mid-cart sign-in
+		// guard's `cart.signedInCartCleared` toast (cart-purchase-flow.ts) does
+		// NOT fire here — that guard reacts to a LIVE authStore transition with a
+		// non-empty cart, which needs an in-SPA sign-in (no full reload) to
+		// observe; login's own 303 always full-reloads. It's covered by
+		// sign-in-detector.test.ts instead. This test's job is the hold-release
+		// half only, preserving the original canary's intent.
 		await uiLogin(page, account);
 		await waitForClientAuth(page);
 
