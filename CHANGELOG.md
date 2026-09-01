@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.7.0] - 2026-09-01
+
+### Added
+
+- **Cart checkout**: buying tickets is now one cart-first flow for every buyer type, replacing the per-tier purchase-dialog chain.
+  - Quick-buy +/− steppers directly on tier cards, a sticky summary bar with running total and seat-hold countdown, and a single **Buy** button — one reservation, one payment session, no matter how many tiers are in the cart.
+  - A single (skippable) checkout sheet collects per-ticket names, pay-what-you-can amounts, zone and accessible-seating choices, a cart-level discount code with honest per-tier applicability feedback, a multi-item VAT preview, and billing details.
+  - Seated tiers join the cart via **Pick seats…**; seat holds now live as long as the cart, with a visible countdown, and the venue overview map hands selected seats straight into the cart.
+  - Guests get the same steppers, seat picker, and checkout sheet — including discount codes — with an email-confirmation step for carts that aren't paid online, now supporting multiple tickets across multiple tiers in one confirmation.
+  - Ticket limits are now layered: per-tier availability, the event-wide ticket budget, and your personal cap combine into a clear "N tickets left for you at this event" line.
+
+### Changed
+
+- The seat map no longer auto-opens for visitors who already hold a ticket, and buying additional tickets is now governed by the backend's purchase-eligibility check rather than a dialog-only rule.
+
+### Fixed
+
+- RSVP deadlines are now counted in calendar days in your timezone: a deadline on the day after tomorrow no longer reads "in 1 day", single-step values use the locale's idiom ("tomorrow", "übermorgen"), and deadlines under 24 hours away keep hour-level urgency. Relative timestamps across the app share the same engine, and an unparseable date no longer crashes the page.
+- Invoices with mixed VAT rates (e.g. 22% + 10% items) no longer claim a single VAT rate on `/account/invoices` and the org-admin attendee-invoices view — they now show a rate-less VAT total plus a per-rate breakdown table (rate / net / VAT / gross), matching the invoice PDF.
+- A guest's held seats could be silently released before they clicked their confirmation email, and a stale anonymous hold could survive into checkout and free confirmation-pending seats after a later sign-in — both races are fixed.
+
 ## [2.6.0] - 2026-08-18
 
 ### Added
