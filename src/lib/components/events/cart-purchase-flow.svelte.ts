@@ -27,15 +27,16 @@ import { defaultGuestName } from '../tickets/purchase-items';
 import * as cartBaHolds from '../tickets/cart-ba-holds';
 import { createCartCheckoutController } from './cart-checkout-controller.svelte';
 import { createGuestCartCheckoutController } from './guest-cart-checkout-controller.svelte';
-import { createSignInDetector } from './sign-in-detector';
+import { createLiveAuth } from './live-auth.svelte';
 
 export interface CartPurchaseFlowDeps {
 	event: EventDetailSchema;
 	eventId: string;
 	queryClient: QueryClient;
 	/** The trustworthy per-request SSR truth (`data.isAuthenticated`) — static
-	 * for the page's lifetime; see the login-mid-cart effect below for why the
-	 * live `authStore` is read separately rather than used here. */
+	 * for the page's lifetime, used only to SEED the flow's live auth state;
+	 * see the login-mid-cart effect below for why the live `authStore` is
+	 * read separately rather than used here. */
 	isAuthenticated: boolean;
 	cart: EventCart;
 	registry: CartSeatHoldRegistry;
@@ -129,22 +130,34 @@ export function createCartPurchaseFlow(deps: CartPurchaseFlowDeps) {
 	// `/login` in another tab, or client-side navigation back to this page)
 	// while cart items and a guest identity are still in memory — those were
 	// priced/held under the anonymous identity and must not silently carry
-	// over to the new authenticated one. `createSignInDetector` (pure, unit
-	// tested) is seeded from `isAuthenticated` (the trustworthy per-request
-	// SSR truth) and reports a genuine false→true transition on the LIVE
-	// `authStore` exactly once — critically, it does NOT fire on the client
-	// auth store's bootstrap-gate catch-up (auth.svelte.ts), which can observe
-	// `authStore.isAuthenticated === false` on this effect's first several
-	// runs even for an already-authenticated visitor. An earlier version of
-	// this guard wrote `wasAuthenticated = nowAuthenticated` unconditionally,
-	// which let that stale bootstrap `false` clobber the `true` SSR seed —
-	// the eventual bootstrap resolution then looked exactly like a guest
-	// signing in and wiped a real authenticated buyer's cart. See
-	// `sign-in-detector.ts` for the fixed state machine and its tests.
-	const signInDetector = createSignInDetector(isAuthenticated);
+	// over to the new authenticated one. `createLiveAuth` (unit tested) wraps
+	// `createSignInDetector`, which is seeded from `isAuthenticated` (the
+	// trustworthy per-request SSR truth) and reports a genuine false→true
+	// transition on the LIVE `authStore` exactly once — critically, it does
+	// NOT fire on the client auth store's bootstrap-gate catch-up
+	// (auth.svelte.ts), which can observe `authStore.isAuthenticated ===
+	// false` on this effect's first several runs even for an
+	// already-authenticated visitor. An earlier version of this guard wrote
+	// `wasAuthenticated = nowAuthenticated` unconditionally, which let that
+	// stale bootstrap `false` clobber the `true` SSR seed — the eventual
+	// bootstrap resolution then looked exactly like a guest signing in and
+	// wiped a real authenticated buyer's cart. See `sign-in-detector.ts` for
+	// the fixed state machine and its tests.
+	//
+	// Beyond clearing the anonymous cart, the same one-shot transition flips
+	// `liveAuth.isAuthenticated` permanently (monotonic: SSR `true`, OR a
+	// sign-in was observed) — the checkout branching below (`handleCartBuy`'s
+	// `needsSheet`, `handleSheetConfirm`'s authed-vs-guest controller pick)
+	// and the page's CheckoutSheet props read THAT, never the captured SSR
+	// value, so a re-built cart after a mid-page sign-in checks out
+	// authenticated instead of as a stale guest (#863 review). `observe` is
+	// called exactly once per effect run — the detector's result must never
+	// be consumed twice — and the flip happens regardless of cart emptiness,
+	// while the cart-clearing branch keeps its non-empty condition.
+	const liveAuth = createLiveAuth(isAuthenticated);
 	$effect(() => {
-		const nowAuthenticated = authStore.isAuthenticated;
-		if (signInDetector.check(nowAuthenticated) && !cart.isEmpty) {
+		const justSignedIn = liveAuth.observe(authStore.isAuthenticated);
+		if (justSignedIn && !cart.isEmpty) {
 			// Bare-client release FIRST: the anonymous-cookie identity, not the
 			// new Bearer token, owns these holds (see seat-holds.ts's module
 			// doc) — releasing after `cart.clear()` would let the per-group
@@ -187,9 +200,10 @@ export function createCartPurchaseFlow(deps: CartPurchaseFlowDeps) {
 		// single-tier "Buy" — skipping straight to checkout would drop it.
 		// `needsSheet` is unconditionally true for a guest (identity has nowhere
 		// else to go), so this only ever short-circuits to checkout for an
-		// authenticated buyer.
+		// authenticated buyer. Live truth, not the captured SSR value: a buyer
+		// who signed in mid-page must not be forced through the guest sheet.
 		if (
-			cart.needsSheet(event.require_ticket_names, !isAuthenticated) ||
+			cart.needsSheet(event.require_ticket_names, !liveAuth.isAuthenticated) ||
 			deps.getInitialDiscountCode()
 		) {
 			showCheckoutSheet = true;
@@ -219,7 +233,10 @@ export function createCartPurchaseFlow(deps: CartPurchaseFlowDeps) {
 		// controller's own toast fires too. The guest branch's `message`
 		// response closes the sheet itself (`onEmailConfirmationPending`) before
 		// `submitCart` resolves, so the `ok`-guarded close below is a no-op then.
-		const ok = isAuthenticated
+		// Live truth: after a mid-page sign-in a re-built cart must check out
+		// via the authed controller, never `/checkout/public` with the cleared
+		// guest identity.
+		const ok = liveAuth.isAuthenticated
 			? await cartBaHolds.submitCart(
 					buildCartCheckoutParams(items, discountCode, billingInfo),
 					cartSubmitDeps,
@@ -261,6 +278,12 @@ export function createCartPurchaseFlow(deps: CartPurchaseFlowDeps) {
 		},
 		get isProcessing() {
 			return cartController.isPending || guestCartController.isPending || holdingSeats;
+		},
+		/** Monotonic live truth (SSR seed OR observed sign-in) — what the
+		 * CheckoutSheet props and all checkout branching must read, never the
+		 * static `data.isAuthenticated`. */
+		get isAuthenticated() {
+			return liveAuth.isAuthenticated;
 		},
 		handleCartBuy,
 		handleSheetConfirm

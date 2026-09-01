@@ -649,7 +649,7 @@
 		{cart}
 		eventId={event.id}
 		requireTicketNames={event.require_ticket_names}
-		isAuthenticated={data.isAuthenticated}
+		isAuthenticated={purchaseFlow.isAuthenticated}
 		authToken={authStore.accessToken}
 		organizationSlug={event.organization.slug}
 		{initialDiscountCode}
@@ -658,7 +658,7 @@
 		onConfirm={purchaseFlow.handleSheetConfirm}
 		chart={seatHoldRegistry.chart}
 		registry={seatHoldRegistry}
-		identity={data.isAuthenticated ? undefined : purchaseFlow.guestIdentity}
+		identity={purchaseFlow.isAuthenticated ? undefined : purchaseFlow.guestIdentity}
 	/>
 {/if}
 
