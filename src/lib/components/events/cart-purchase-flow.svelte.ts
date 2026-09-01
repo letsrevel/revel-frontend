@@ -144,9 +144,11 @@ export function createCartPurchaseFlow(deps: CartPurchaseFlowDeps) {
 	// wiped a real authenticated buyer's cart. See `sign-in-detector.ts` for
 	// the fixed state machine and its tests.
 	//
-	// Beyond clearing the anonymous cart, the same one-shot transition flips
-	// `liveAuth.isAuthenticated` permanently (monotonic: SSR `true`, OR a
-	// sign-in was observed) — the checkout branching below (`handleCartBuy`'s
+	// Beyond clearing the anonymous cart, the same one-shot transition raises
+	// `liveAuth.isAuthenticated` (SSR `true`, OR a sign-in was observed —
+	// lowered again only by a real in-place logout after the live store
+	// confirmed a session; see live-auth.svelte.ts) — the checkout branching
+	// below (`handleCartBuy`'s
 	// `needsSheet`, `handleSheetConfirm`'s authed-vs-guest controller pick)
 	// and the page's CheckoutSheet props read THAT, never the captured SSR
 	// value, so a re-built cart after a mid-page sign-in checks out
@@ -279,9 +281,10 @@ export function createCartPurchaseFlow(deps: CartPurchaseFlowDeps) {
 		get isProcessing() {
 			return cartController.isPending || guestCartController.isPending || holdingSeats;
 		},
-		/** Monotonic live truth (SSR seed OR observed sign-in) — what the
-		 * CheckoutSheet props and all checkout branching must read, never the
-		 * static `data.isAuthenticated`. */
+		/** Live truth (SSR seed OR observed sign-in, lowered by an in-place
+		 * logout after session confirmation — see live-auth.svelte.ts) — what
+		 * the CheckoutSheet props and all checkout branching must read, never
+		 * the static `data.isAuthenticated`. */
 		get isAuthenticated() {
 			return liveAuth.isAuthenticated;
 		},
