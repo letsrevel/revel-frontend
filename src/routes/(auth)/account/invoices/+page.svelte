@@ -28,6 +28,7 @@
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
+	import InvoiceVatBreakdownTable from '$lib/components/financials/InvoiceVatBreakdownTable.svelte';
 	import type { Tone } from '$lib/components/common/tones';
 
 	const accessToken = $derived(authStore.accessToken);
@@ -415,7 +416,11 @@
 						</div>
 						<div class="flex justify-between">
 							<dt class="text-muted-foreground">
-								{m['myInvoices.totalVat']({ rate: inv.vat_rate })}
+								{#if inv.has_mixed_vat_rates}
+									{m['myInvoices.totalVatMixed']()}
+								{:else}
+									{m['myInvoices.totalVat']({ rate: inv.vat_rate })}
+								{/if}
 							</dt>
 							<dd class="font-mono">{formatCurrency(inv.total_vat, inv.currency)}</dd>
 						</div>
@@ -424,6 +429,11 @@
 							<dd class="font-mono">{formatCurrency(inv.total_gross, inv.currency)}</dd>
 						</div>
 					</dl>
+					{#if inv.has_mixed_vat_rates && inv.vat_breakdown.length > 0}
+						<div class="mt-3 border-t pt-3">
+							<InvoiceVatBreakdownTable buckets={inv.vat_breakdown} currency={inv.currency} />
+						</div>
+					{/if}
 				</div>
 
 				<!-- Reverse charge -->
