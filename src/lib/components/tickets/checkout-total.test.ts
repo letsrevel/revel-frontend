@@ -4,7 +4,14 @@ import type {
 	TicketTierSchema,
 	VenueChartSchema
 } from '$lib/api/generated/types.gen';
-import { checkoutTotal, cartTotal, cartTotalArgs, type CheckoutTotalArgs } from './checkout-total';
+import {
+	checkoutTotal,
+	cartTotal,
+	cartTotalArgs,
+	vatPreviewItems,
+	type CheckoutTotalArgs
+} from './checkout-total';
+import type { CartGroup } from './cart.svelte';
 
 function tier(overrides: Partial<TicketTierSchema> = {}): CheckoutTotalArgs['tier'] {
 	return {
@@ -228,5 +235,36 @@ describe('cartTotal', () => {
 			discountedPrice: null
 		});
 		expect(cartTotal([flatWithChart])).toBe('50.00');
+	});
+});
+
+describe('vatPreviewItems', () => {
+	function group(overrides: Partial<CartGroup> = {}): CartGroup {
+		return {
+			tier: { id: 'tier-1' } as CartGroup['tier'],
+			quantity: 2,
+			guestNames: [],
+			pwycAmount: null,
+			priceCategoryId: null,
+			accessibleRequired: false,
+			seatIds: [],
+			...overrides
+		};
+	}
+
+	it('maps tier_id and count, omitting the optional fields when unset', () => {
+		expect(vatPreviewItems([group()])).toEqual([{ tier_id: 'tier-1', count: 2 }]);
+	});
+
+	it('includes price_category_id when the group has a zone', () => {
+		expect(vatPreviewItems([group({ priceCategoryId: 'cat-9' })])).toEqual([
+			{ tier_id: 'tier-1', count: 2, price_category_id: 'cat-9' }
+		]);
+	});
+
+	it('includes seat_ids for a seated group — per-seat category pricing disagrees with checkout without them (#863 review)', () => {
+		expect(vatPreviewItems([group({ quantity: 2, seatIds: ['s1', 's2'] })])).toEqual([
+			{ tier_id: 'tier-1', count: 2, seat_ids: ['s1', 's2'] }
+		]);
 	});
 });

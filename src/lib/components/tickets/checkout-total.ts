@@ -22,7 +22,12 @@
  *
  * No runes here — plain functions so this stays unit-testable.
  */
-import type { TicketTierSchema, VenueChartSchema } from '$lib/api/generated/types.gen';
+import type {
+	TicketTierSchema,
+	VatPreviewItemSchema,
+	VenueChartSchema
+} from '$lib/api/generated/types.gen';
+import type { CartGroup } from './cart.svelte';
 import { estimatedSeatTotal } from './seat-pricing';
 import { isMappedBestAvailable } from './seat-zones';
 
@@ -114,4 +119,20 @@ export function cartTotal(argsList: CheckoutTotalArgs[]): string | null {
 		sum += Math.round(Number.parseFloat(total) * 100);
 	}
 	return fromCents(sum);
+}
+
+/**
+ * VAT-preview request lines for the cart, one per group. `seat_ids` is sent
+ * whenever the group holds seats: the preview endpoint needs them to price
+ * per-seat categories — without them it charges the tier's flat price for
+ * every ticket and disagrees with checkout (#863 review; see
+ * VatPreviewItemSchema's own doc).
+ */
+export function vatPreviewItems(groups: CartGroup[]): VatPreviewItemSchema[] {
+	return groups.map((group) => ({
+		tier_id: group.tier.id,
+		count: group.quantity,
+		...(group.priceCategoryId ? { price_category_id: group.priceCategoryId } : {}),
+		...(group.seatIds.length > 0 ? { seat_ids: group.seatIds } : {})
+	}));
 }

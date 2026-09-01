@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sheetValidationError } from './checkout-sheet-validation';
+import { confirmBlocked, sheetValidationError } from './checkout-sheet-validation';
 import type { CartGroup } from './cart.svelte';
 import type { TierSchemaWithId } from '$lib/types/tickets';
 
@@ -207,5 +207,34 @@ describe('sheetValidationError', () => {
 			guestNames: ['']
 		});
 		expect(sheetValidationError([zoneGroup, namesGroup], true)).toBe('zone');
+	});
+});
+
+describe('confirmBlocked', () => {
+	const clear = {
+		isProcessing: false,
+		discountValidating: false,
+		guestError: null,
+		validationError: null
+	};
+
+	it('is false when nothing blocks', () => {
+		expect(confirmBlocked(clear)).toBe(false);
+	});
+
+	it('blocks while processing', () => {
+		expect(confirmBlocked({ ...clear, isProcessing: true })).toBe(true);
+	});
+
+	it('blocks while a discount validation is in flight — confirm must not overtake it (#863 review)', () => {
+		expect(confirmBlocked({ ...clear, discountValidating: true })).toBe(true);
+	});
+
+	it('blocks on a guest identity error', () => {
+		expect(confirmBlocked({ ...clear, guestError: 'email' })).toBe(true);
+	});
+
+	it('blocks on a sheet validation error', () => {
+		expect(confirmBlocked({ ...clear, validationError: 'names' })).toBe(true);
 	});
 });

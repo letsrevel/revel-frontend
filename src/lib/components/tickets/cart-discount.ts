@@ -8,14 +8,14 @@ import type { DiscountCodeValidationResponse } from '$lib/api/generated/types.ge
 import { eventpublicticketsValidateDiscount } from '$lib/api/generated/sdk.gen';
 import type { CartGroup } from './cart.svelte';
 
-/** A group a discount code can actually reduce client-side: flat-priced, paid.
- *  PR 2 carts are unseated anyway; keep the seat clause for PR 3 safety. */
+/** A group a discount code can actually reduce: paid, non-PWYC. Seat mode is
+ *  deliberately NOT a factor (#863 review dropped PR 2's temporary seat
+ *  clause): the BE applies a validated code to any non-PWYC tier
+ *  (batch_ticket_service/context.py::_dc_for), category-priced seats included —
+ *  the client's discounted total is then an estimate; checkout is
+ *  authoritative. */
 export function discountApplicable(tier: CartGroup['tier']): boolean {
-	return (
-		tier.payment_method !== 'free' &&
-		tier.price_type !== 'pwyc' &&
-		tier.seat_assignment_mode === 'none'
-	);
+	return tier.payment_method !== 'free' && tier.price_type !== 'pwyc';
 }
 
 export interface CartDiscountResult {
@@ -65,16 +65,18 @@ export async function validateCartDiscount(
 
 /**
  * Whether a checked code should stay "applied" after `validateCartDiscount`:
- * true when it's valid for some group, OR when every applicable group's check
+ * true when it's valid for some group, OR while ANY applicable group's check
  * failed at the transport layer (a `null` response is "no answer", not
- * "invalid" — dropping the code there would silently lose a possibly-good
- * code over a network hiccup instead of letting checkout retry it honestly).
- * False only once there's at least one REAL response and none of them valid.
+ * "invalid"). Validity is per-tier, so tier A's real "no" says nothing about
+ * an unanswered tier B — the code could be valid for exactly that group, and
+ * dropping it would strip it before checkout's authoritative validation gets
+ * to see it (#863 review). False only once EVERY applicable group has a real
+ * response and none of them is valid.
  */
 export function discountStaysApplied(result: CartDiscountResult, groups: CartGroup[]): boolean {
 	const applicableCount = groups.filter((group) => discountApplicable(group.tier)).length;
-	const allChecksFailed = applicableCount > 0 && result.byTier.size === 0;
-	return result.anyValid || allChecksFailed;
+	const anyUnanswered = applicableCount > result.byTier.size;
+	return result.anyValid || (applicableCount > 0 && anyUnanswered);
 }
 
 /** Real ValidateDiscountFn wrapping the generated SDK call for a fixed event. */

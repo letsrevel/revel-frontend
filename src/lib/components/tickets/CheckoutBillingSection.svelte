@@ -142,14 +142,19 @@
 		}
 	});
 
-	// A zone switch (or, for the cart-aware caller, a changed cart `items`
-	// array) changes the unit price / composition of the preview — refresh an
-	// already-visible preview so it never quotes stale data. Only those two
-	// are tracked: the guard reads are untracked so the fetch writing
-	// `vatPreview` can't re-trigger the effect.
+	// Every pricing input that lands in the preview request is tracked here: a
+	// zone switch, a changed cart `items` array, an applied/removed discount
+	// code, or an edited PWYC amount (cart override AND the legacy single-tier
+	// prop) all change the taxable amount — refresh an already-visible preview
+	// so it never quotes stale data (#863 review added the last three). The
+	// guard reads are untracked so the fetch writing `vatPreview` can't
+	// re-trigger the effect.
 	$effect(() => {
 		void priceCategoryId;
 		void items;
+		void discountCode;
+		void pwycAmountOverride;
+		void pwycAmount;
 		untrack(() => {
 			if (isOpen && vatPreview) void fetchVatPreview();
 		});

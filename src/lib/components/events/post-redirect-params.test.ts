@@ -15,6 +15,14 @@ describe('consumePostRedirectParams', () => {
 		seedUrl('');
 	});
 
+	it('preserves the URL hash when stripping params (#863 review)', () => {
+		seedUrl('?payment_success=true&foo=1#ticket-tiers');
+		const result = consumePostRedirectParams();
+		expect(result.paymentSuccess).toBe(true);
+		expect(window.location.search).toBe('?foo=1');
+		expect(window.location.hash).toBe('#ticket-tiers');
+	});
+
 	it('returns all-false/null defaults when there are no params', () => {
 		expect(consumePostRedirectParams()).toEqual({
 			paymentSuccess: false,

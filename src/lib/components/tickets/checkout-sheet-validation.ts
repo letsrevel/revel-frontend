@@ -40,3 +40,22 @@ export function sheetValidationError(
 	}
 	return null;
 }
+
+export interface ConfirmBlockedArgs {
+	isProcessing: boolean;
+	discountValidating: boolean;
+	guestError: unknown;
+	validationError: unknown;
+}
+
+/**
+ * Single gate for the sheet's confirm button (#863 review). A click while a
+ * discount validation round-trip is in flight would check out with the
+ * PREVIOUS `appliedDiscountCode` (apply → instant confirm races the result
+ * away) — so an in-flight validation blocks exactly like processing does.
+ */
+export function confirmBlocked(args: ConfirmBlockedArgs): boolean {
+	return (
+		args.isProcessing || args.discountValidating || !!args.guestError || !!args.validationError
+	);
+}

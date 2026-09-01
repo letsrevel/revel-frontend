@@ -207,6 +207,13 @@ describe('hasAttendingSignal', () => {
 		expect(hasAttendingSignal(status)).toBe(false);
 	});
 
+	it('returns true for a legacy RSVP with status "maybe", matching the unified shape (#863 review)', () => {
+		// The unified branch counts `maybe` via hasPositiveRsvp; the legacy
+		// branch must agree or potluck access depends on the response shape.
+		const status = { status: 'maybe' } as unknown as EventRsvpSchemaActual;
+		expect(hasAttendingSignal(status)).toBe(true);
+	});
+
 	it('returns true for a legacy ticket with status "active" or "checked_in"', () => {
 		const active = { status: 'active', tier: 'x' } as unknown as EventTicketSchemaActual;
 		const checkedIn = { status: 'checked_in', tier: 'x' } as unknown as EventTicketSchemaActual;

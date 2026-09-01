@@ -101,8 +101,14 @@ export class EventCart {
 		const matchedInfo = info && info.tier_id === tier.id ? info : undefined;
 		const tierTerm = matchedInfo ? matchedInfo.remaining : (tier.max_tickets_per_user ?? null);
 		if (tierTerm != null) cap = Math.min(cap, tierTerm);
+		// Per-person event budget: the fallback for when my-status carries no
+		// event_remaining (the guest path). Shared across the whole cart, so
+		// other groups' quantities consume it — mirroring the eventRemaining
+		// term below (#863 review).
 		const eventMaxTickets = this.#deps.eventMaxTicketsPerUser?.();
-		if (eventMaxTickets != null) cap = Math.min(cap, eventMaxTickets);
+		if (eventMaxTickets != null) {
+			cap = Math.min(cap, eventMaxTickets - (this.totalCount - this.quantityFor(tier.id)));
+		}
 		const eventRemaining = this.#deps.eventRemaining();
 		if (eventRemaining != null) {
 			cap = Math.min(cap, eventRemaining - (this.totalCount - this.quantityFor(tier.id)));

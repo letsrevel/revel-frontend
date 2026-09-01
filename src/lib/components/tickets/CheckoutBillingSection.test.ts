@@ -2,6 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/svelte';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
 import CheckoutBillingSection from './CheckoutBillingSection.svelte';
+import CheckoutBillingSectionTestHost from './CheckoutBillingSectionTestHost.svelte';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 
 // Mock API functions
@@ -93,6 +94,14 @@ function renderWithQueryClient(props: Record<string, unknown> = {}) {
 			componentProps: { ...defaultProps, ...props }
 		}
 	});
+}
+
+// For effect-tracking tests: testing-library's rerender invalidates EVERY
+// prop read (its props proxy is $state.raw-coarse), masking untracked-prop
+// bugs — the stateful host mutates its own $state via exported setters
+// instead, so only genuinely tracked reads re-fire effects.
+function renderHost(props: Record<string, unknown> = {}) {
+	return render(CheckoutBillingSectionTestHost, { props });
 }
 
 describe('CheckoutBillingSection', () => {
@@ -210,6 +219,42 @@ describe('CheckoutBillingSection', () => {
 				expect(screen.getByText('Total VAT')).toBeInTheDocument();
 				expect(screen.getByText('Total')).toBeInTheDocument();
 			});
+		});
+
+		it('refreshes a visible preview when the applied discount code changes (#863 review)', async () => {
+			const { eventpublicticketsVatPreview } = await import('$lib/api/generated/sdk.gen');
+			const { component } = renderHost();
+			await fireEvent.click(screen.getByRole('checkbox', { name: /Request Invoice/i }));
+
+			const vatInput = screen.getByLabelText(/VAT ID/i);
+			await fireEvent.input(vatInput, { target: { value: 'ATU12345678' } });
+			await fireEvent.blur(vatInput);
+			await waitFor(() => expect(screen.getByText('Total Net')).toBeInTheDocument());
+			expect(vi.mocked(eventpublicticketsVatPreview)).toHaveBeenCalledTimes(1);
+
+			// The discount changes the taxable amount — a visible preview must
+			// refetch, not keep quoting the pre-discount numbers.
+			component.setDiscountCode('SAVE10');
+			await waitFor(() => expect(vi.mocked(eventpublicticketsVatPreview)).toHaveBeenCalledTimes(2));
+		});
+
+		it('refreshes a visible preview when the PWYC amount changes (#863 review)', async () => {
+			const { eventpublicticketsVatPreview } = await import('$lib/api/generated/sdk.gen');
+			const items = [{ tier_id: 'tier-456', count: 2 }];
+			const { component } = renderHost({
+				initialItems: items,
+				initialPwycAmountOverride: '10.00'
+			});
+			await fireEvent.click(screen.getByRole('checkbox', { name: /Request Invoice/i }));
+
+			const vatInput = screen.getByLabelText(/VAT ID/i);
+			await fireEvent.input(vatInput, { target: { value: 'ATU12345678' } });
+			await fireEvent.blur(vatInput);
+			await waitFor(() => expect(screen.getByText('Total Net')).toBeInTheDocument());
+			expect(vi.mocked(eventpublicticketsVatPreview)).toHaveBeenCalledTimes(1);
+
+			component.setPwycAmountOverride('25.00');
+			await waitFor(() => expect(vi.mocked(eventpublicticketsVatPreview)).toHaveBeenCalledTimes(2));
 		});
 
 		it('shows VAT ID valid status when validation succeeds', async () => {

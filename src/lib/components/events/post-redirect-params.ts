@@ -63,7 +63,9 @@ export function consumePostRedirectParams(): PostRedirectParams {
 
 	if (mutated) {
 		const query = params.toString();
-		const cleanUrl = window.location.pathname + (query ? `?${query}` : '');
+		// Hash preserved: `?payment_success=true#ticket-tiers` must keep its
+		// anchor after the params are scrubbed (#863 review).
+		const cleanUrl = window.location.pathname + (query ? `?${query}` : '') + window.location.hash;
 		window.history.replaceState({}, '', cleanUrl);
 	}
 

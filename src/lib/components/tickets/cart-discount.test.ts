@@ -58,8 +58,8 @@ describe('discountApplicable', () => {
 		expect(discountApplicable(makeTier({ price_type: 'pwyc' }))).toBe(false);
 	});
 
-	it('is not applicable for a seated tier', () => {
-		expect(discountApplicable(makeTier({ seat_assignment_mode: 'user_choice' }))).toBe(false);
+	it('is applicable for a seated tier — BE applies discounts to any non-PWYC tier (#863 review)', () => {
+		expect(discountApplicable(makeTier({ seat_assignment_mode: 'user_choice' }))).toBe(true);
 	});
 });
 
@@ -177,13 +177,30 @@ describe('discountStaysApplied', () => {
 		expect(discountStaysApplied(result, [groupA, groupB])).toBe(true);
 	});
 
-	it('clears once there is at least one real invalid response and none valid', () => {
+	it('stays applied when one tier is invalid but another had no answer (#863 review)', () => {
+		// tier-a's real "no" only speaks for tier-a — the code could still be
+		// valid for the unanswered tier-b, and dropping it here would strip it
+		// before checkout's authoritative validation gets to see it.
 		const groupA = makeGroup({ tier: makeTier({ id: 'tier-a' }) });
 		const groupB = makeGroup({ tier: makeTier({ id: 'tier-b' }) });
 		const result = {
 			byTier: new Map([
 				['tier-a', makeValidationResponse({ valid: false, message: 'invalid code' })]
-				// tier-b: transport failure, no entry — still a real "no" from tier-a.
+				// tier-b: transport failure, no entry.
+			]),
+			anyValid: false
+		};
+
+		expect(discountStaysApplied(result, [groupA, groupB])).toBe(true);
+	});
+
+	it('clears once every applicable group has a real response and none is valid', () => {
+		const groupA = makeGroup({ tier: makeTier({ id: 'tier-a' }) });
+		const groupB = makeGroup({ tier: makeTier({ id: 'tier-b' }) });
+		const result = {
+			byTier: new Map([
+				['tier-a', makeValidationResponse({ valid: false, message: 'invalid code' })],
+				['tier-b', makeValidationResponse({ valid: false, message: 'invalid code' })]
 			]),
 			anyValid: false
 		};

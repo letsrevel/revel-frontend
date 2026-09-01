@@ -143,9 +143,10 @@ export function hasAttendingSignal(status: UserEventStatus | null | undefined): 
 		return false;
 	}
 
-	// Legacy format: Single RSVP
+	// Legacy format: Single RSVP — same positive statuses as hasPositiveRsvp,
+	// or potluck access would depend on which /my-status shape came back.
 	if (isRSVP(status)) {
-		return status.status === 'yes';
+		return status.status === 'yes' || status.status === 'maybe';
 	}
 
 	// Legacy format: Single Ticket

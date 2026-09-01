@@ -48,6 +48,7 @@
 		type SeatHoldControllerOptions
 	} from './seat-hold-controller.svelte';
 	import { estimatedSeatTotal } from './seat-pricing';
+	import { seatPickerCloseAction } from './seat-picker-close';
 	import SeatPickerPanel from './SeatPickerPanel.svelte';
 
 	interface Props {
@@ -123,7 +124,12 @@
 		return ids;
 	}
 
-	let seeded = $state(false);
+	// Plain field, not $state: its only reactive context is the effect below
+	// (which re-runs on the queries, not on this flag), and onDestroy must
+	// read it reliably — a $state written in an effect can stale-read in a
+	// synchronous onDestroy under effect batching (the handedOffToCheckout
+	// lesson, #853).
+	let seeded = false;
 	$effect(() => {
 		const chart = transient.chartQuery.data;
 		const availability = transient.availabilityQuery.data;
@@ -136,19 +142,23 @@
 		transient.adoptServerHolds();
 	});
 
+	// Close disposition lives in the pure, unit-tested seatPickerCloseAction —
+	// notably an EDIT-session close before the first seed leaves the group
+	// untouched (#863 review): the transient controller holds nothing yet, and
+	// writing its empty list would delete the buyer's prior selection on a
+	// quick Escape over a cold load.
 	onDestroy(() => {
-		if (handedOff) return;
-		if (wasEditSession) {
-			// Minimal fix per controller ruling: any close during an EDIT
-			// session is treated as Done — releasing here would strip seats
-			// out of an existing cart group behind the buyer's back.
+		const action = seatPickerCloseAction({
+			handedOff,
+			wasEditSession,
+			seeded,
+			holdCount: transient.myHolds.length
+		});
+		if (action === 'write-holds') {
 			cart.setSeatIds(tier, transient.myHolds);
-			return;
+		} else if (action === 'release') {
+			void transient.release(transient.myHolds);
 		}
-		// First-pick session with no group yet: abandoning the dialog releases
-		// whatever this transient controller is still holding.
-		if (transient.myHolds.length === 0) return;
-		void transient.release(transient.myHolds);
 	});
 
 	// Whichever registered controller's chart loaded first (shared cache key —

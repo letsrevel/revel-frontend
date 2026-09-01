@@ -35,9 +35,9 @@
 		validateCartDiscount,
 		type CartDiscountResult
 	} from './cart-discount';
-	import { cartTotal, cartTotalArgs } from './checkout-total';
+	import { cartTotal, cartTotalArgs, vatPreviewItems } from './checkout-total';
 	import { pwycBounds, pwycErrorMessage, validatePwycAmount } from './pwyc-validation';
-	import { sheetValidationError } from './checkout-sheet-validation';
+	import { confirmBlocked, sheetValidationError } from './checkout-sheet-validation';
 	import { formatMoney } from '$lib/utils/format';
 	import type {
 		BuyerBillingInfoSchema,
@@ -141,13 +141,7 @@
 	// Billing section ref: getBillingInfo()/validate() called at submit time.
 	let billingSection: CheckoutBillingSection | undefined = $state();
 
-	const billingItems = $derived<VatPreviewItemSchema[]>(
-		cart.groups.map((group) => ({
-			tier_id: group.tier.id,
-			count: group.quantity,
-			...(group.priceCategoryId ? { price_category_id: group.priceCategoryId } : {})
-		}))
-	);
+	const billingItems = $derived<VatPreviewItemSchema[]>(vatPreviewItems(cart.groups));
 	const pwycGroups = $derived(cart.groups.filter((group) => group.tier.price_type === 'pwyc'));
 	// Exactly one PWYC group: its amount previews honestly. With 2+, omitted —
 	// the preview stays an estimate and checkout resolves each server-side.
@@ -458,7 +452,12 @@
 				</Button>
 				<Button
 					onclick={handleConfirm}
-					disabled={isProcessing || !!guestError || !!validationError}
+					disabled={confirmBlocked({
+						isProcessing,
+						discountValidating,
+						guestError,
+						validationError
+					})}
 					class="flex-1 sm:flex-initial"
 				>
 					{#if isProcessing}

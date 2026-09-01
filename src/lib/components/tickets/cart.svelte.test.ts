@@ -88,6 +88,21 @@ describe('EventCart', () => {
 		});
 		expect(cart.maxQuantity(makeTier({ total_available: 10 }))).toBe(3);
 	});
+	it('eventMaxTicketsPerUser is a shared budget: other groups consume it (#863 review)', () => {
+		// The guest path has no my-status `event_remaining` (that term does its
+		// own cross-group subtraction), so the fallback must subtract too — or
+		// a cap of 3 allows 3 per TIER and checkout rejects the cart.
+		const cart = new EventCart({
+			remainingFor: () => undefined,
+			eventRemaining: () => null,
+			eventMaxTicketsPerUser: () => 3
+		});
+		const a = makeTier({ total_available: 10 });
+		const b = makeTier({ total_available: 10 });
+		cart.setQuantity(a, 2);
+		expect(cart.maxQuantity(b)).toBe(1); // 3 − 2 already in cart
+		expect(cart.maxQuantity(a)).toBe(3); // own quantity doesn't double-count
+	});
 	it('an absent eventMaxTicketsPerUser dep leaves maxQuantity unchanged (optional dep)', () => {
 		const cart = new EventCart(noLimits);
 		expect(cart.maxQuantity(makeTier({ total_available: 10 }))).toBe(10);
