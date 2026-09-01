@@ -38,16 +38,44 @@ describe('createLiveAuth', () => {
 		expect(auth.isAuthenticated).toBe(true);
 	});
 
-	it('is monotonic: a later false observation (logout without reload) never lowers it', () => {
+	it('lowers on a false observed AFTER the live store confirmed a session (#869 review)', () => {
+		// authStore.logout() runs in place on refresh failure or impersonation
+		// expiry, without navigating — the page stays mounted with no token. A
+		// false read after a confirmed true is that logout, not bootstrap
+		// noise, and checkout branching must stop claiming authenticated (or
+		// confirm submits to the authed endpoint with no Authorization header).
 		const auth = createLiveAuth(false);
 
 		expect(auth.observe(true)).toBe(true);
-		// Flap back to false and true again — the detector stays quiet and the
-		// live flag never drops (the page's SSR data is stale either way; a
-		// signed-out buyer gets fresh truth on the next navigation/reload).
 		expect(auth.observe(false)).toBe(false);
-		expect(auth.isAuthenticated).toBe(true);
+		expect(auth.isAuthenticated).toBe(false);
+
+		// A later sign-in raises it again (the one-shot transition report
+		// stays once-ever — only isAuthenticated recovers).
 		expect(auth.observe(true)).toBe(false);
+		expect(auth.isAuthenticated).toBe(true);
+	});
+
+	it('seeded true: an in-place logout after bootstrap catch-up lowers it (#869 review)', () => {
+		const auth = createLiveAuth(true);
+
+		expect(auth.observe(false)).toBe(false); // bootstrap noise
+		expect(auth.observe(true)).toBe(false); // catch-up: session confirmed
+		expect(auth.isAuthenticated).toBe(true);
+
+		expect(auth.observe(false)).toBe(false); // real logout
+		expect(auth.isAuthenticated).toBe(false);
+	});
+
+	it('seeded true: a store that NEVER confirms keeps the seed (matches every other SSR read)', () => {
+		// Bootstrap-refresh failure: the live store never reaches true. Every
+		// false read is indistinguishable from bootstrap noise, so the SSR
+		// seed stands — the same stale-true the rest of the page's
+		// data.isAuthenticated reads have (pre-existing, out of scope).
+		const auth = createLiveAuth(true);
+
+		expect(auth.observe(false)).toBe(false);
+		expect(auth.observe(false)).toBe(false);
 		expect(auth.isAuthenticated).toBe(true);
 	});
 
