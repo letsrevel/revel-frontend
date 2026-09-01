@@ -81,4 +81,4 @@ overrides:
   # augmentation no longer merges (toggleBold / setLink etc. vanish from the
   # types). Pinning pm collapses them to one instance. Keep in lockstep with the
   # @tiptap/* version in package.json.
-  '@tiptap/pm': '3.29.2'
+  '@tiptap/pm': '3.30.5'
