@@ -6,8 +6,10 @@
 	interface Props {
 		/**
 		 * Per-VAT-rate buckets of a single attendee invoice (#870). Distinct from
-		 * RateBucketTable's org-financials RateBucketSchema — these reconcile
-		 * exactly to the invoice's header totals.
+		 * RateBucketTable's org-financials RateBucketSchema. Generated invoices
+		 * reconcile these to the header totals, but a hand-edited draft can carry
+		 * buckets that disagree with its header (backend #911) — never build
+		 * cross-checks on the two agreeing.
 		 */
 		buckets: InvoiceVatBucketSchema[];
 		currency: string;
