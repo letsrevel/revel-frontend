@@ -15,12 +15,14 @@
 	import { toast } from 'svelte-sonner';
 	import TwoFactorInput from '$lib/components/forms/TwoFactorInput.svelte';
 	import EmailChangeCard from './email-change-card.svelte';
+	import LinkedIdentitiesCard from './linked-identities-card.svelte';
 	import type { PageData, ActionData } from './$types';
 	import QRCode from 'qrcode';
 	import { accountResetPasswordRequest } from '$lib/api/generated';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
+	import { authStore } from '$lib/stores/auth.svelte';
 
 	interface Props {
 		data: PageData;
@@ -452,6 +454,10 @@
 	</div>
 
 	<EmailChangeCard user={data.user} {form} />
+
+	{#if authStore.accessToken}
+		<LinkedIdentitiesCard authToken={authStore.accessToken} />
+	{/if}
 
 	<!-- Password Change Section -->
 	<div class="mt-6 rounded-lg border bg-card p-6">
