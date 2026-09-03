@@ -9,9 +9,9 @@
 	 no headroom. So NOTHING on this panel may soften white with an alpha: white@75%
 	 composites to 3.08:1, an AA failure at every size. Every white string here is
 	 full-opacity, and hierarchy comes from weight, size and tracking instead. -->
-<!-- Panel order: venues sits between the amber pricing panel and the periwinkle
-	 communities panel, so the bottom cut reveals periwinkle. -->
-<PosterPanel bgClass="bg-[hsl(var(--poster-crimson-deep))]" cutToClass="cut-periwinkle">
+<!-- Panel order: venues sits between the amber pricing panel and the lavender
+	 clubs panel, so the bottom cut reveals lavender. -->
+<PosterPanel bgClass="bg-[hsl(var(--poster-crimson-deep))]" cutToClass="cut-lavender">
 	<div class="flex flex-wrap-reverse items-center gap-9">
 		<SeatMapMock />
 		<!-- basis-full below sm pushes the seat map onto its own row; min-w-0 keeps the

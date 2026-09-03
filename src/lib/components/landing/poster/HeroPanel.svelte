@@ -39,7 +39,8 @@
 	const nouns = $derived([
 		m['home.poster.heroNoun1'](),
 		m['home.poster.heroNoun2'](),
-		m['home.poster.heroNoun3']()
+		m['home.poster.heroNoun3'](),
+		m['home.poster.heroNoun4']()
 	]);
 </script>
 

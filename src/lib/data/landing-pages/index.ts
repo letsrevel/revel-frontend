@@ -61,6 +61,14 @@ import {
 	communityFirstEventPlatformES,
 	communityFirstEventPlatformPT
 } from './community-first-event-platform';
+import {
+	clubMembershipManagementEN,
+	clubMembershipManagementDE,
+	clubMembershipManagementIT,
+	clubMembershipManagementFR,
+	clubMembershipManagementES,
+	clubMembershipManagementPT
+} from './club-membership-management';
 
 /**
  * Total map: every locale × every slug. TypeScript now rejects a landing page that
@@ -77,7 +85,8 @@ export const landingPages: Record<
 		'kink-event-ticketing': kinkEventTicketingEN,
 		'self-hosted-event-platform': selfHostedEventPlatformEN,
 		'privacy-focused-events': privacyFocusedEventsEN,
-		'community-first-event-platform': communityFirstEventPlatformEN
+		'community-first-event-platform': communityFirstEventPlatformEN,
+		'club-membership-management': clubMembershipManagementEN
 	},
 	de: {
 		'eventbrite-alternative': eventbriteAlternativeDE,
@@ -85,7 +94,8 @@ export const landingPages: Record<
 		'kink-event-ticketing': kinkEventTicketingDE,
 		'self-hosted-event-platform': selfHostedEventPlatformDE,
 		'privacy-focused-events': privacyFocusedEventsDE,
-		'community-first-event-platform': communityFirstEventPlatformDE
+		'community-first-event-platform': communityFirstEventPlatformDE,
+		'club-membership-management': clubMembershipManagementDE
 	},
 	it: {
 		'eventbrite-alternative': eventbriteAlternativeIT,
@@ -93,7 +103,8 @@ export const landingPages: Record<
 		'kink-event-ticketing': kinkEventTicketingIT,
 		'self-hosted-event-platform': selfHostedEventPlatformIT,
 		'privacy-focused-events': privacyFocusedEventsIT,
-		'community-first-event-platform': communityFirstEventPlatformIT
+		'community-first-event-platform': communityFirstEventPlatformIT,
+		'club-membership-management': clubMembershipManagementIT
 	},
 	fr: {
 		'eventbrite-alternative': eventbriteAlternativeFR,
@@ -101,7 +112,8 @@ export const landingPages: Record<
 		'kink-event-ticketing': kinkEventTicketingFR,
 		'self-hosted-event-platform': selfHostedEventPlatformFR,
 		'privacy-focused-events': privacyFocusedEventsFR,
-		'community-first-event-platform': communityFirstEventPlatformFR
+		'community-first-event-platform': communityFirstEventPlatformFR,
+		'club-membership-management': clubMembershipManagementFR
 	},
 	es: {
 		'eventbrite-alternative': eventbriteAlternativeES,
@@ -109,7 +121,8 @@ export const landingPages: Record<
 		'kink-event-ticketing': kinkEventTicketingES,
 		'self-hosted-event-platform': selfHostedEventPlatformES,
 		'privacy-focused-events': privacyFocusedEventsES,
-		'community-first-event-platform': communityFirstEventPlatformES
+		'community-first-event-platform': communityFirstEventPlatformES,
+		'club-membership-management': clubMembershipManagementES
 	},
 	pt: {
 		'eventbrite-alternative': eventbriteAlternativePT,
@@ -117,7 +130,8 @@ export const landingPages: Record<
 		'kink-event-ticketing': kinkEventTicketingPT,
 		'self-hosted-event-platform': selfHostedEventPlatformPT,
 		'privacy-focused-events': privacyFocusedEventsPT,
-		'community-first-event-platform': communityFirstEventPlatformPT
+		'community-first-event-platform': communityFirstEventPlatformPT,
+		'club-membership-management': clubMembershipManagementPT
 	}
 };
 
@@ -127,7 +141,8 @@ export const landingPageSlugs: LandingPageSlug[] = [
 	'kink-event-ticketing',
 	'self-hosted-event-platform',
 	'privacy-focused-events',
-	'community-first-event-platform'
+	'community-first-event-platform',
+	'club-membership-management'
 ];
 
 export function getLandingPage(locale: string, slug: string): LandingPageContent | undefined {

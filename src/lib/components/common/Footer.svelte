@@ -135,6 +135,11 @@
 						{m['footer.solutionKink']()}
 					</a>
 					<!-- eslint-enable svelte/no-navigation-without-resolve -->
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
+					<a href="{landingPagePrefix}/club-membership-management" class={footerLinkClass}>
+						{m['footer.solutionClubs']()}
+					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
 				</div>
 			</div>
 
