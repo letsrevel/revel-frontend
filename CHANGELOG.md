@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.7.1] - 2026-09-04
+
+### Added
+
+- **Club membership SEO page**: a new `/club-membership-management` landing page (also under `/de`, `/it`, `/fr`, `/es`, `/pt`) speaks to gyms, yoga studios, dance schools and choirs — memberships, members-only classes with a plain RSVP, series passes as class packs, and Wallet membership cards — with a FAQ, `hreflang` alternates, and a place in the sitemap, footer and use-case grid.
+- **"For clubs & studios" panel** on the home page, between the venues and communities panels, with a membership-card illustration showing a members-only class RSVP.
+
+### Changed
+
+- Home page hero now also rotates "class 🏋️" and describes Revel as the platform "for communities, clubs and independent venues" (all six languages); the features panel gains a fifth "Memberships & passes" card.
+- README and web-app manifest positioning widened from LGBTQ+/community events to communities, clubs and independent venues.
+
 ## [2.7.0] - 2026-09-01
 
 ### Added
