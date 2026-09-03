@@ -122,6 +122,33 @@ describe('getSsoProviders', () => {
 		expect(await getSsoProviders(fakeFetch)).toEqual([]);
 	});
 
+	it('drops malformed provider entries but keeps valid ones', async () => {
+		mockedApiApiVersion.mockResolvedValue({
+			data: {
+				version: '1.0.0',
+				features: DEFAULT_FEATURES,
+				sso_providers: [
+					{ key: 'google', name: 'Google' },
+					{ key: '', name: 'empty key' },
+					{ name: 'no key at all' },
+					'not-an-object'
+				]
+			},
+			error: undefined
+		} as never);
+
+		expect(await getSsoProviders(fakeFetch)).toEqual([{ key: 'google', name: 'Google' }]);
+	});
+
+	it('fails CLOSED to [] when sso_providers is not an array', async () => {
+		mockedApiApiVersion.mockResolvedValue({
+			data: { version: '1.0.0', features: DEFAULT_FEATURES, sso_providers: 'garbage' },
+			error: undefined
+		} as never);
+
+		expect(await getSsoProviders(fakeFetch)).toEqual([]);
+	});
+
 	it('shares the cache with getFeatures (one upstream call total)', async () => {
 		mockedApiApiVersion.mockResolvedValue({
 			data: { version: '1.0.0', features: DEFAULT_FEATURES, sso_providers: [] },

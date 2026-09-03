@@ -453,7 +453,10 @@
 				</button>
 			</form>
 
-			<SsoProviderButtons providers={data.ssoProviders} />
+			<SsoProviderButtons
+				providers={data.ssoProviders}
+				returnUrl={$page.url.searchParams.get('returnUrl')}
+			/>
 		</CardContent>
 	</Card>
 

@@ -1,6 +1,24 @@
+import { z } from 'zod';
 import { apiApiVersion } from '$lib/api/generated/sdk.gen';
 import type { SsoProviderSchema } from '$lib/api/generated/types.gen';
 import { resolveFeatures, DEFAULT_FEATURES, type Features } from '$lib/utils/features';
+
+/*
+ * Runtime guard for the provider list: entries feed the OIDC start URL and the
+ * button label directly, so a malformed entry (missing/empty key or name)
+ * would render a broken login link. Filtered per entry — one bad provider
+ * must not take down the others.
+ */
+const ssoProviderSchema = z.object({ key: z.string().min(1), name: z.string().min(1) });
+
+function parseSsoProviders(raw: unknown): SsoProviderSchema[] {
+	if (!Array.isArray(raw)) {
+		return [];
+	}
+	return raw.filter(
+		(entry): entry is SsoProviderSchema => ssoProviderSchema.safeParse(entry).success
+	);
+}
 
 const TTL_MS = 5 * 60 * 1000;
 
@@ -39,7 +57,7 @@ async function getVersionInfo(fetch: typeof globalThis.fetch): Promise<VersionIn
 		const value: VersionInfo = {
 			features: resolveFeatures(data.features),
 			demo: data.demo ?? false,
-			ssoProviders: data.sso_providers ?? []
+			ssoProviders: parseSsoProviders(data.sso_providers)
 		};
 		cache = { value, expiry: Date.now() + TTL_MS };
 		return value;

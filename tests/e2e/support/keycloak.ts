@@ -6,7 +6,23 @@ import { fetchWithRetry } from './api';
  * started by `make e2e-setup`. Seeded users share the bootstrap password;
  * per-run throwaway users go through the admin REST API.
  */
-const KEYCLOAK_URL = process.env.E2E_KEYCLOAK_URL ?? 'http://localhost:8080';
+/**
+ * The admin API sends real credentials (the admin password, then a bearer
+ * token). Plain http is acceptable only toward a loopback host; a remote
+ * Keycloak must be https so the credentials never cross the wire in clear.
+ */
+function requireLoopbackOrHttps(raw: string): string {
+	const url = new URL(raw);
+	const loopback = ['localhost', '127.0.0.1', '[::1]', '::1'].includes(url.hostname);
+	if (url.protocol !== 'https:' && !loopback) {
+		throw new Error(`E2E_KEYCLOAK_URL must use https for non-loopback hosts, got: ${raw}`);
+	}
+	return raw;
+}
+
+const KEYCLOAK_URL = requireLoopbackOrHttps(
+	process.env.E2E_KEYCLOAK_URL ?? 'http://localhost:8080'
+);
 const REALM = 'revel';
 const ADMIN_USER = 'admin';
 const ADMIN_PASSWORD = 'admin';
@@ -61,7 +77,11 @@ async function adminToken(): Promise<string> {
 	if (!response.ok) {
 		throw new Error(`Keycloak admin token failed: ${response.status}`);
 	}
-	return ((await response.json()) as { access_token: string }).access_token;
+	const payload = (await response.json()) as { access_token?: unknown };
+	if (typeof payload.access_token !== 'string' || payload.access_token.length === 0) {
+		throw new Error('Keycloak admin token response carried no access_token string');
+	}
+	return payload.access_token;
 }
 
 /** Create a throwaway realm user (password = KEYCLOAK_PASSWORD). */

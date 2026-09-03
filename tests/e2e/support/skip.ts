@@ -55,7 +55,13 @@ export async function isDemoMode(): Promise<boolean> {
  */
 export async function ssoProvider(key: string): Promise<{ key: string; name: string } | null> {
 	const info = await versionInfo();
-	return info?.sso_providers?.find((provider) => provider.key === key) ?? null;
+	// Defensive: a malformed /version payload should read as "no provider"
+	// (a skip with a clear message), not a throw inside beforeEach.
+	const providers = info?.sso_providers;
+	if (!Array.isArray(providers)) {
+		return null;
+	}
+	return providers.find((provider) => provider.key === key) ?? null;
 }
 
 export const BACKEND_DOWN_MESSAGE =
