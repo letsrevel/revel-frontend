@@ -12,6 +12,7 @@ import { API_URL, fetchWithRetry } from './api';
 interface VersionInfo {
 	demo?: boolean;
 	features?: Record<string, boolean>;
+	sso_providers?: { key: string; name: string }[];
 }
 
 let probe: Promise<VersionInfo | null> | undefined;
@@ -45,6 +46,16 @@ export async function isBackendUp(): Promise<boolean> {
  */
 export async function isDemoMode(): Promise<boolean> {
 	return (await versionInfo())?.demo === true;
+}
+
+/**
+ * Whether the backend lists a configured OIDC provider under this key.
+ * Reuses the cached /api/version probe. OIDC journeys self-skip when the
+ * stack was started without the Keycloak overlay (backend PR #920).
+ */
+export async function ssoProvider(key: string): Promise<{ key: string; name: string } | null> {
+	const info = await versionInfo();
+	return info?.sso_providers?.find((provider) => provider.key === key) ?? null;
 }
 
 export const BACKEND_DOWN_MESSAGE =
