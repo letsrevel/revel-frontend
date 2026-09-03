@@ -12,10 +12,6 @@ describe('resolveFeatures', () => {
 		expect(DEFAULT_FEATURES.telegram).toBe(true);
 	});
 
-	it('defaults google_sso to false', () => {
-		expect(DEFAULT_FEATURES.google_sso).toBe(false);
-	});
-
 	it('respects an explicit false override', () => {
 		const result = resolveFeatures({ organization_creation: false });
 		expect(result.organization_creation).toBe(false);

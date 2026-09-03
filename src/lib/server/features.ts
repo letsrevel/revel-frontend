@@ -1,4 +1,5 @@
 import { apiApiVersion } from '$lib/api/generated/sdk.gen';
+import type { SsoProviderSchema } from '$lib/api/generated/types.gen';
 import { resolveFeatures, DEFAULT_FEATURES, type Features } from '$lib/utils/features';
 
 const TTL_MS = 5 * 60 * 1000;
@@ -6,9 +7,10 @@ const TTL_MS = 5 * 60 * 1000;
 interface VersionInfo {
 	features: Features;
 	demo: boolean;
+	ssoProviders: SsoProviderSchema[];
 }
 
-const FALLBACK: VersionInfo = { features: DEFAULT_FEATURES, demo: false };
+const FALLBACK: VersionInfo = { features: DEFAULT_FEATURES, demo: false, ssoProviders: [] };
 
 let cache: { value: VersionInfo; expiry: number } | null = null;
 
@@ -36,7 +38,8 @@ async function getVersionInfo(fetch: typeof globalThis.fetch): Promise<VersionIn
 		}
 		const value: VersionInfo = {
 			features: resolveFeatures(data.features),
-			demo: data.demo ?? false
+			demo: data.demo ?? false,
+			ssoProviders: data.sso_providers ?? []
 		};
 		cache = { value, expiry: Date.now() + TTL_MS };
 		return value;
@@ -58,4 +61,15 @@ export async function getFeatures(fetch: typeof globalThis.fetch): Promise<Featu
  */
 export async function getDemoMode(fetch: typeof globalThis.fetch): Promise<boolean> {
 	return (await getVersionInfo(fetch)).demo;
+}
+
+/**
+ * Configured OIDC login providers from `/version` (cached). Fail-CLOSED: any
+ * failure yields [] — no providers, no SSO buttons. Unlike the feature flags,
+ * showing a button for an unconfigured provider would be a dead link.
+ */
+export async function getSsoProviders(
+	fetch: typeof globalThis.fetch
+): Promise<SsoProviderSchema[]> {
+	return (await getVersionInfo(fetch)).ssoProviders;
 }
