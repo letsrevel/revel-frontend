@@ -255,17 +255,19 @@ revel-frontend/
 
 ### SEO Landing Pages
 
-Multi-language landing pages targeting specific audiences and use cases:
+Multi-language landing pages targeting specific audiences and use cases. Every page
+ships in six locales: `/{slug}` (EN) plus the `/de/`, `/it/`, `/fr/`, `/es/` and `/pt/`
+prefixes (e.g. `/fr/eventbrite-alternative`), with `hreflang` alternates between them.
 
-| Page | EN | DE | IT | Target Audience |
-|------|----|----|----| --------------- |
-| Eventbrite Alternative | `/eventbrite-alternative` | `/de/eventbrite-alternative` | `/it/eventbrite-alternative` | Cost-conscious organizers |
-| Queer Event Management | `/queer-event-management` | `/de/queer-event-management` | `/it/queer-event-management` | LGBTQ+ communities |
-| Kink Event Ticketing | `/kink-event-ticketing` | `/de/kink-event-ticketing` | `/it/kink-event-ticketing` | Kink/BDSM communities |
-| Self-Hosted Platform | `/self-hosted-event-platform` | `/de/self-hosted-event-platform` | `/it/self-hosted-event-platform` | Tech-savvy, privacy-first |
-| Privacy-Focused Events | `/privacy-focused-events` | `/de/privacy-focused-events` | `/it/privacy-focused-events` | GDPR/European market |
-| Community-First Platform | `/community-first-event-platform` | `/de/community-first-event-platform` | `/it/community-first-event-platform` | Book clubs, hobby groups, networks |
-| Club Membership Management | `/club-membership-management` | `/de/club-membership-management` | `/it/club-membership-management` | Gyms, yoga studios, dance schools, choirs |
+| Page | Slug | Target Audience |
+|------|------|-----------------|
+| Eventbrite Alternative | `eventbrite-alternative` | Cost-conscious organizers |
+| Queer Event Management | `queer-event-management` | LGBTQ+ communities |
+| Kink Event Ticketing | `kink-event-ticketing` | Kink/BDSM communities |
+| Self-Hosted Platform | `self-hosted-event-platform` | Tech-savvy, privacy-first |
+| Privacy-Focused Events | `privacy-focused-events` | GDPR/European market |
+| Community-First Platform | `community-first-event-platform` | Book clubs, hobby groups, networks |
+| Club Membership Management | `club-membership-management` | Gyms, yoga studios, dance schools, choirs |
 
 **Features:**
 - Keyword-optimized meta titles and descriptions
@@ -274,7 +276,7 @@ Multi-language landing pages targeting specific audiences and use cases:
 - Internal linking between related pages
 - CTAs linking to demo, GitHub, and contact
 
-**Content location:** `src/lib/data/landing-pages.ts`
+**Content location:** `src/lib/data/landing-pages/` (one module per slug, all six locales)
 
 ---
 

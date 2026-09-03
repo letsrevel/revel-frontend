@@ -13,11 +13,17 @@ describe('ClubsPanel', () => {
 		).toBeInTheDocument();
 	});
 
-	it('keeps the mock decorative: one role=img, no inner text exposed to AT', () => {
+	it('keeps the mock decorative: one role=img whose inner text is aria-hidden', () => {
 		render(ClubsPanel);
 		const img = screen.getByRole('img', { name: m['home.poster.memberMockAria']() });
-		// Every inner layer is aria-hidden, so the tier name is not an accessible node.
-		expect(screen.queryByRole('heading', { name: m['home.poster.memberMockTier']() })).toBeNull();
-		expect(img.querySelector('[aria-hidden="true"]')).not.toBeNull();
+		// The tier name is in the DOM (visible) but must sit inside an aria-hidden
+		// subtree of the role=img, so AT reads the single label and never the card.
+		const tier = screen.getByText(m['home.poster.memberMockTier']());
+		expect(img.contains(tier)).toBe(true);
+		expect(tier.closest('[aria-hidden="true"]')).not.toBeNull();
+		// Every direct child of the role=img is hidden — no layer leaks out.
+		for (const child of Array.from(img.children)) {
+			expect(child.getAttribute('aria-hidden')).toBe('true');
+		}
 	});
 });
