@@ -8,6 +8,7 @@
 	import ReferralCodeInput from '$lib/components/referral/ReferralCodeInput.svelte';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import AuthBandLayout from '$lib/components/auth/AuthBandLayout.svelte';
+	import SsoProviderButtons from '$lib/components/auth/SsoProviderButtons.svelte';
 	import { Eye, EyeOff, Loader2, Sparkles, ArrowRight } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { SeoHead } from '$lib/seo';
@@ -451,6 +452,8 @@
 					{/if}
 				</button>
 			</form>
+
+			<SsoProviderButtons providers={data.ssoProviders} />
 		</CardContent>
 	</Card>
 

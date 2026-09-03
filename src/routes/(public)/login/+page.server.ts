@@ -4,7 +4,7 @@ import { loginSchema, otpSchema } from '$lib/schemas/auth';
 import { authObtainToken, authObtainTokenWithOtp } from '$lib/api/client';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { establishSession } from '$lib/server/session';
-import { getDemoMode } from '$lib/server/features';
+import { getDemoMode, getSsoProviders } from '$lib/server/features';
 import { log } from '$lib/server/logger';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
@@ -18,7 +18,8 @@ export const load: PageServerLoad = async ({ url, request, fetch }) => {
 	// client-side (appStore fetching /version after mount) visibly SWAPPED the
 	// form and ate credentials typed in the window (#596).
 	const demo = await getDemoMode(fetch);
-	return { seo, demo };
+	const ssoProviders = await getSsoProviders(fetch);
+	return { seo, demo, ssoProviders };
 };
 
 export const actions = {
