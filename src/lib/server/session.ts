@@ -28,11 +28,7 @@ export async function establishSession(
 ): Promise<void> {
 	cookies.set('access_token', tokens.access, getAccessTokenCookieOptions(rememberMe));
 	cookies.set('refresh_token', tokens.refresh, getRefreshTokenCookieOptions(rememberMe));
-	cookies.set(
-		'remember_me',
-		rememberMe ? 'true' : 'false',
-		getRememberMeCookieOptions(rememberMe)
-	);
+	cookies.set('remember_me', rememberMe ? 'true' : 'false', getRememberMeCookieOptions(rememberMe));
 
 	const claimResults = await claimPendingTokens(cookies, tokens.access, fetchFn);
 	setClaimFlashCookie(cookies, claimResults);
