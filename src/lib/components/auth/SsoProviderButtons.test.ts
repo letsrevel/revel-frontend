@@ -28,4 +28,21 @@ describe('SsoProviderButtons', () => {
 		render(SsoProviderButtons, { props: { providers: [] } });
 		expect(screen.queryByRole('link')).toBeNull();
 	});
+
+	it('shows official brand marks for known providers only, without changing link names', () => {
+		render(SsoProviderButtons, {
+			props: {
+				providers: [...providers, { key: 'github', name: 'GitHub' }]
+			}
+		});
+
+		// icons are decorative: accessible names stay "Continue with X"
+		const google = screen.getByRole('link', { name: 'Continue with Google' });
+		const github = screen.getByRole('link', { name: 'Continue with GitHub' });
+		const keycloak = screen.getByRole('link', { name: 'Continue with Keycloak (e2e)' });
+
+		expect(google.querySelector('[data-testid="sso-icon-google"]')).toBeTruthy();
+		expect(github.querySelector('[data-testid="sso-icon-github"]')).toBeTruthy();
+		expect(keycloak.querySelector('svg')).toBeNull();
+	});
 });
