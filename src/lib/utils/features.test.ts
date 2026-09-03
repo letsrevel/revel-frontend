@@ -23,7 +23,6 @@ describe('resolveFeatures', () => {
 		const raw = {
 			organization_creation: false,
 			telegram: false,
-			google_sso: true,
 			llm_evaluation: false
 		};
 		expect(resolveFeatures(raw)).toEqual(raw);

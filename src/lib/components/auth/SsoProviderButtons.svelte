@@ -19,12 +19,12 @@
 
 {#if providers.length > 0}
 	<div class="space-y-3">
-		<div class="flex items-center gap-3" aria-hidden="true">
-			<div class="h-px flex-1 bg-border"></div>
+		<div class="flex items-center gap-3">
+			<div class="h-px flex-1 bg-border" aria-hidden="true"></div>
 			<span class="text-xs uppercase tracking-wide text-muted-foreground">
 				{m['login.ssoDivider']()}
 			</span>
-			<div class="h-px flex-1 bg-border"></div>
+			<div class="h-px flex-1 bg-border" aria-hidden="true"></div>
 		</div>
 		{#each providers as provider (provider.key)}
 			<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL: browser navigation to the backend's OIDC start endpoint -->

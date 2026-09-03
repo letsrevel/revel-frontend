@@ -55,7 +55,7 @@
 				headers: { Authorization: `Bearer ${authToken}` }
 			});
 			if (response.error) {
-				throw new Error(extractErrorMessage(response.error));
+				throw new Error(extractErrorMessage(response.error, m['login.oidcError_generic']()));
 			}
 			return identity;
 		},
