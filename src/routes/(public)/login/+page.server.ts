@@ -2,13 +2,8 @@ import { fail, redirect, isRedirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { loginSchema, otpSchema } from '$lib/schemas/auth';
 import { authObtainToken, authObtainTokenWithOtp } from '$lib/api/client';
-import {
-	getAccessTokenCookieOptions,
-	getRefreshTokenCookieOptions,
-	getRememberMeCookieOptions
-} from '$lib/utils/cookies';
 import { extractErrorMessage } from '$lib/utils/errors';
-import { claimPendingTokens, setClaimFlashCookie } from '$lib/server/token-claim';
+import { establishSession } from '$lib/server/session';
 import { getDemoMode } from '$lib/server/features';
 import { log } from '$lib/server/logger';
 import { buildSeo } from '$lib/seo';
@@ -72,25 +67,7 @@ export const actions = {
 			// Success - check if we have tokens
 			if (response.response?.ok && response.data && 'access' in response.data) {
 				const { access, refresh } = response.data;
-
-				// Store access token (1 hour - matches backend ACCESS_TOKEN_LIFETIME)
-				cookies.set('access_token', access, getAccessTokenCookieOptions(data.rememberMe));
-
-				// Store refresh token
-				// When rememberMe is true: cookie persists for 30 days
-				// When rememberMe is false: session cookie (expires when browser closes)
-				cookies.set('refresh_token', refresh, getRefreshTokenCookieOptions(data.rememberMe));
-
-				// Store "remember me" preference for use during token refresh
-				cookies.set(
-					'remember_me',
-					data.rememberMe ? 'true' : 'false',
-					getRememberMeCookieOptions(data.rememberMe)
-				);
-
-				// Claim any pending invitation tokens (org/event)
-				const claimResults = await claimPendingTokens(cookies, access, fetch);
-				setClaimFlashCookie(cookies, claimResults);
+				await establishSession(cookies, { access, refresh }, data.rememberMe, fetch);
 
 				// Redirect to returnUrl (same-origin only) or dashboard
 				const returnUrl = safeReturnUrl(url.searchParams.get('returnUrl'));
@@ -163,25 +140,7 @@ export const actions = {
 			// Success - check if we have tokens
 			if (response.response?.ok && response.data) {
 				const { access, refresh } = response.data;
-
-				// Store access token (1 hour - matches backend ACCESS_TOKEN_LIFETIME)
-				cookies.set('access_token', access, getAccessTokenCookieOptions(data.rememberMe));
-
-				// Store refresh token
-				// When rememberMe is true: cookie persists for 30 days
-				// When rememberMe is false: session cookie (expires when browser closes)
-				cookies.set('refresh_token', refresh, getRefreshTokenCookieOptions(data.rememberMe));
-
-				// Store "remember me" preference for use during token refresh
-				cookies.set(
-					'remember_me',
-					data.rememberMe ? 'true' : 'false',
-					getRememberMeCookieOptions(data.rememberMe)
-				);
-
-				// Claim any pending invitation tokens (org/event)
-				const claimResults = await claimPendingTokens(cookies, access, fetch);
-				setClaimFlashCookie(cookies, claimResults);
+				await establishSession(cookies, { access, refresh }, data.rememberMe, fetch);
 
 				// Redirect to returnUrl (same-origin only) or dashboard
 				const returnUrl = safeReturnUrl(url.searchParams.get('returnUrl'));
