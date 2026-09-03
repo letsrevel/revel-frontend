@@ -74,4 +74,5 @@ export type LandingPageSlug =
 	| 'kink-event-ticketing'
 	| 'self-hosted-event-platform'
 	| 'privacy-focused-events'
-	| 'community-first-event-platform';
+	| 'community-first-event-platform'
+	| 'club-membership-management';

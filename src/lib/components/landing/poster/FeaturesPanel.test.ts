@@ -9,17 +9,18 @@ const SEO_PATHS = [
 	'/privacy-focused-events',
 	'/self-hosted-event-platform',
 	'/eventbrite-alternative',
-	'/community-first-event-platform'
+	'/community-first-event-platform',
+	'/club-membership-management'
 ];
 
 describe('FeaturesPanel', () => {
-	it('renders the four feature stubs', () => {
+	it('renders the five feature stubs', () => {
 		render(FeaturesPanel, { props: { landingPagePrefix: '' } });
 		expect(screen.getByText(m['home.poster.feat1Title']())).toBeInTheDocument();
-		expect(screen.getByText(m['home.poster.feat4Title']())).toBeInTheDocument();
+		expect(screen.getByText(m['home.poster.feat5Title']())).toBeInTheDocument();
 	});
 
-	it('keeps all six SEO landing links with the locale prefix', () => {
+	it('keeps all seven SEO landing links with the locale prefix', () => {
 		render(FeaturesPanel, { props: { landingPagePrefix: '/it' } });
 		const hrefs = screen.getAllByRole('link').map((a) => a.getAttribute('href'));
 		for (const path of SEO_PATHS) {

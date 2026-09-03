@@ -11,7 +11,13 @@
 		 * `bg-[...]` class, and passing one would render no strip at all.
 		 */
 		cutToClass?:
-			'cut-amber' | 'cut-periwinkle' | 'cut-crimson' | 'cut-paper' | 'cut-ink' | 'cut-purple';
+			| 'cut-amber'
+			| 'cut-periwinkle'
+			| 'cut-crimson'
+			| 'cut-paper'
+			| 'cut-ink'
+			| 'cut-purple'
+			| 'cut-lavender';
 		cutDirection?: 'right' | 'left';
 		children: Snippet;
 	}

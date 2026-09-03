@@ -1,7 +1,7 @@
 {
 	"name": "Revel - Community Events",
 	"short_name": "Revel",
-	"description": "Discover LGBTQ+, queer, and sex-positive community events near you",
+	"description": "The free, open-source event platform for communities, clubs and independent venues",
 	"start_url": "/",
 	"display": "standalone",
 	"background_color": "#1a0b2e",

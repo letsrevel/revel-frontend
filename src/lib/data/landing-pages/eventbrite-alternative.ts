@@ -102,7 +102,11 @@ export const eventbriteAlternativeEN: LandingPageContent = {
 				'Our hosted version runs on European infrastructure, ensuring GDPR compliance and data sovereignty. If you self-host, you choose where your data lives.'
 		}
 	],
-	relatedPages: ['self-hosted-event-platform', 'privacy-focused-events']
+	relatedPages: [
+		'self-hosted-event-platform',
+		'privacy-focused-events',
+		'club-membership-management'
+	]
 };
 
 export const eventbriteAlternativeDE: LandingPageContent = {
@@ -211,7 +215,11 @@ export const eventbriteAlternativeDE: LandingPageContent = {
 				'Unsere gehostete Version läuft auf europäischer Infrastruktur und gewährleistet DSGVO-Konformität und Datensouveränität. Beim Selbst-Hosting entscheidest du, wo deine Daten liegen.'
 		}
 	],
-	relatedPages: ['self-hosted-event-platform', 'privacy-focused-events']
+	relatedPages: [
+		'self-hosted-event-platform',
+		'privacy-focused-events',
+		'club-membership-management'
+	]
 };
 
 export const eventbriteAlternativeIT: LandingPageContent = {
@@ -316,7 +324,11 @@ export const eventbriteAlternativeIT: LandingPageContent = {
 				'La nostra versione hosted gira su infrastruttura europea, garantendo conformità GDPR e sovranità dei dati. Se fai self-host, scegli tu dove risiedono i tuoi dati.'
 		}
 	],
-	relatedPages: ['self-hosted-event-platform', 'privacy-focused-events']
+	relatedPages: [
+		'self-hosted-event-platform',
+		'privacy-focused-events',
+		'club-membership-management'
+	]
 };
 
 export const eventbriteAlternativeES: LandingPageContent = {
@@ -422,7 +434,11 @@ export const eventbriteAlternativeES: LandingPageContent = {
 				'Nuestra versión alojada funciona sobre infraestructura europea, lo que garantiza el cumplimiento del RGPD y la soberanía de los datos. Si te auto-alojas, tú decides dónde viven tus datos.'
 		}
 	],
-	relatedPages: ['self-hosted-event-platform', 'privacy-focused-events']
+	relatedPages: [
+		'self-hosted-event-platform',
+		'privacy-focused-events',
+		'club-membership-management'
+	]
 };
 
 export const eventbriteAlternativePT: LandingPageContent = {
@@ -536,7 +552,11 @@ export const eventbriteAlternativePT: LandingPageContent = {
 				'A nossa versão alojada funciona em infraestrutura europeia, garantindo conformidade com o RGPD e soberania de dados. Se optares por auto-hospedar, és tu que decides onde ficam os teus dados.'
 		}
 	],
-	relatedPages: ['self-hosted-event-platform', 'privacy-focused-events']
+	relatedPages: [
+		'self-hosted-event-platform',
+		'privacy-focused-events',
+		'club-membership-management'
+	]
 };
 
 export const eventbriteAlternativeFR: LandingPageContent = {
@@ -645,5 +665,9 @@ export const eventbriteAlternativeFR: LandingPageContent = {
 				'Notre version hébergée fonctionne sur une infrastructure européenne, garantissant la conformité au RGPD et la souveraineté des données. En auto-hébergement, c’est toi qui décides où se trouvent tes données.'
 		}
 	],
-	relatedPages: ['self-hosted-event-platform', 'privacy-focused-events']
+	relatedPages: [
+		'self-hosted-event-platform',
+		'privacy-focused-events',
+		'club-membership-management'
+	]
 };

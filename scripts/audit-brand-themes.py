@@ -169,6 +169,9 @@ TEXT_PAIRS = [  # (fg, bg, min_ratio, note)
     ("poster-purple", "poster-white", 4.5, "sticker text on white sticker"),
     ("poster-crimson-deep", "poster-white", 4.5, "sticker text on white sticker"),
     ("poster-ink", "poster-lavender", 4.5, "identity tile: ink icon on lavender"),
+    ("poster-ink", "poster-lavender", 4.5, "poster clubs panel body"),
+    ("poster-white", "poster-purple", 4.5, "membership card mock header band"),
+    ("poster-ink", "poster-amber", 4.5, "membership card mock RSVP chip"),
     # Seat surfaces (#852): the buyer's map and the sector editor draw the same
     # room — solid seat dots on the ink house, Periwinkle when the organizer
     # painted no price category on them.
@@ -312,6 +315,7 @@ COMPOSITED_PAIRS = [
     ("poster-white", 0.40, None, 0, "poster-ink", 3.0, BOTH, "designer block/stage edge on the house"),
     ("poster-white", 0.70, None, 0, "poster-ink", 3.0, BOTH, "designer rotate-handle stem / add-vertex handle"),
     ("poster-ink", 1, "poster-white", 0.95, "poster-crimson-deep", 4.5, BOTH, "venues panel pill"),
+    ("poster-ink", 1, "poster-ink", 0.12, "poster-lavender", 4.5, BOTH, "clubs panel pill"),
     ("poster-white", 1, "poster-ink", 0.20, "poster-purple", 4.5, BOTH, "hero panel stat wash (purple end)"),
     ("poster-white", 1, "poster-ink", 0.20, "poster-crimson-deep", 4.5, BOTH, "hero panel stat wash (crimson end)"),
     ("poster-white", 1, "poster-ink", 0.85, "poster-lavender", 4.5, BOTH, "event header scrim (top, lightest ramp stop)"),

@@ -16,7 +16,8 @@ const LANDING_SLUGS = [
 	'kink-event-ticketing',
 	'self-hosted-event-platform',
 	'privacy-focused-events',
-	'community-first-event-platform'
+	'community-first-event-platform',
+	'club-membership-management'
 ];
 
 const LANGS = ['en', 'de', 'it', 'fr', 'es', 'pt'] as const;

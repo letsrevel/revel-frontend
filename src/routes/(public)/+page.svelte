@@ -10,6 +10,7 @@
 		PricingPanel,
 		CommunitiesPanel,
 		VenuesPanel,
+		ClubsPanel,
 		FeaturesPanel,
 		OpenSourcePanel,
 		ClosePanel
@@ -33,6 +34,7 @@
 <HeroPanel {isAuthenticated} />
 <PricingPanel onOpenCalculator={() => (showFeeCalculator = true)} />
 <VenuesPanel />
+<ClubsPanel />
 <CommunitiesPanel />
 <FeaturesPanel {landingPagePrefix} />
 <OpenSourcePanel />

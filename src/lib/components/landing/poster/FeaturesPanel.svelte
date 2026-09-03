@@ -40,6 +40,13 @@
 			tilt: 'rotate-[0.9deg]',
 			title: m['home.poster.feat4Title'](),
 			body: m['home.poster.feat4Body']()
+		},
+		{
+			emoji: '💳',
+			border: 'border-[hsl(var(--poster-purple))]',
+			tilt: '-rotate-[0.7deg]',
+			title: m['home.poster.feat5Title'](),
+			body: m['home.poster.feat5Body']()
 		}
 	]);
 
@@ -49,7 +56,8 @@
 		{ path: '/privacy-focused-events', label: m['footer.solutionPrivacy']() },
 		{ path: '/self-hosted-event-platform', label: m['footer.solutionSelfHosted']() },
 		{ path: '/eventbrite-alternative', label: m['footer.solutionEventbrite']() },
-		{ path: '/community-first-event-platform', label: m['footer.solutionCommunity']() }
+		{ path: '/community-first-event-platform', label: m['footer.solutionCommunity']() },
+		{ path: '/club-membership-management', label: m['footer.solutionClubs']() }
 	]);
 </script>
 
@@ -62,7 +70,10 @@
 			{m['home.poster.featuresLabel']()}
 		</p>
 		<h2 class="mt-2 text-3xl font-black sm:text-4xl">{m['home.poster.featuresH1']()}</h2>
-		<div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+		<!-- Five stubs: 2-up from sm, 5-up from lg. The odd fifth card would orphan
+			 on the 2-up grid, so it spans both columns there (`last:` variant) and
+			 drops back to one track at lg. -->
+		<div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
 			<!-- Keyed by index, not by the title: the list is static and index-stable,
 				 and keying by a translated string would throw each_key_duplicate on a
 				 locale where two stub titles happen to collide (same reason as
@@ -70,7 +81,7 @@
 			{#each stubs as stub, i (i)}
 				<!-- `p-[18px]`: Tailwind's default spacing scale has no 4.5 step here. -->
 				<div
-					class="rounded-2xl border-2 border-dashed bg-[hsl(var(--poster-white))] p-[18px] {stub.border} {stub.tilt}"
+					class="rounded-2xl border-2 border-dashed bg-[hsl(var(--poster-white))] p-[18px] sm:last:col-span-2 lg:last:col-span-1 {stub.border} {stub.tilt}"
 				>
 					<p class="text-2xl" aria-hidden="true">{stub.emoji}</p>
 					<p class="mt-1.5 font-extrabold">{stub.title}</p>

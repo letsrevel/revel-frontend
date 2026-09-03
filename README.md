@@ -8,7 +8,7 @@
 ![SvelteKit](https://img.shields.io/badge/sveltekit-5.0+-FF3E00.svg?logo=svelte&logoColor=white&style=for-the-badge)
 ![TypeScript](https://img.shields.io/badge/typescript-5.0+-3178C6.svg?logo=typescript&logoColor=white&style=for-the-badge)
 
-Revel is an open-source, community-focused event management and ticketing platform. This repository contains the frontend web application, built with modern web technologies to provide a fast, accessible, and delightful user experience.
+Revel is an open-source event management, ticketing and membership platform for communities, clubs and independent venues. A gym, a yoga studio, a dance school or a choir gets monthly or annual memberships, members-only classes with a plain RSVP, series passes, and membership cards in Apple/Google Wallet — next to the full event ticketing, seat maps and attendee vetting that queer collectives, kink clubs and independent theaters already use. This repository contains the frontend web application, built with modern web technologies to provide a fast, accessible, and delightful user experience.
 
 ---
 
@@ -67,7 +67,7 @@ This frontend embodies Revel's core values:
 - **Mobile-First Design:** Optimized for mobile devices and progressive enhancement for larger screens
 - **Performance Matters:** Fast load times, especially on slower networks and devices
 - **Privacy-Conscious:** Minimal tracking, user data stays secure
-- **Inclusive by Design:** Built for diverse communities including LGBTQ+ and sex-positive groups
+- **Inclusive by Design:** Built for diverse communities including LGBTQ+ and sex-positive groups — and just as much for the sports club, yoga studio or choir down the road
 - **Clean, Maintainable Code:** TypeScript strict mode, comprehensive testing, excellent DX
 
 ---
@@ -264,6 +264,8 @@ Multi-language landing pages targeting specific audiences and use cases:
 | Kink Event Ticketing | `/kink-event-ticketing` | `/de/kink-event-ticketing` | `/it/kink-event-ticketing` | Kink/BDSM communities |
 | Self-Hosted Platform | `/self-hosted-event-platform` | `/de/self-hosted-event-platform` | `/it/self-hosted-event-platform` | Tech-savvy, privacy-first |
 | Privacy-Focused Events | `/privacy-focused-events` | `/de/privacy-focused-events` | `/it/privacy-focused-events` | GDPR/European market |
+| Community-First Platform | `/community-first-event-platform` | `/de/community-first-event-platform` | `/it/community-first-event-platform` | Book clubs, hobby groups, networks |
+| Club Membership Management | `/club-membership-management` | `/de/club-membership-management` | `/it/club-membership-management` | Gyms, yoga studios, dance schools, choirs |
 
 **Features:**
 - Keyword-optimized meta titles and descriptions

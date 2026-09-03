@@ -107,7 +107,11 @@ export const communityFirstEventPlatformEN: LandingPageContent = {
 				"Book clubs, running groups, maker spaces, professional networks, hobby communities, special interest groups, and more. Any community that wants more than just basic event listings benefits from Revel's organization and membership features."
 		}
 	],
-	relatedPages: ['eventbrite-alternative', 'self-hosted-event-platform']
+	relatedPages: [
+		'club-membership-management',
+		'eventbrite-alternative',
+		'self-hosted-event-platform'
+	]
 };
 
 export const communityFirstEventPlatformDE: LandingPageContent = {
@@ -221,7 +225,11 @@ export const communityFirstEventPlatformDE: LandingPageContent = {
 				'Buchclubs, Laufgruppen, Makerspaces, professionelle Netzwerke, Hobby-Communities, Spezialinteressengruppen und mehr. Jede Community, die mehr als nur einfache Event-Listings will, profitiert von Revels Organisations- und Mitgliedschafts-Features.'
 		}
 	],
-	relatedPages: ['eventbrite-alternative', 'self-hosted-event-platform']
+	relatedPages: [
+		'club-membership-management',
+		'eventbrite-alternative',
+		'self-hosted-event-platform'
+	]
 };
 
 export const communityFirstEventPlatformIT: LandingPageContent = {
@@ -331,7 +339,11 @@ export const communityFirstEventPlatformIT: LandingPageContent = {
 				'Club del libro, gruppi running, makerspace, network professionali, community hobby, gruppi interesse speciale e altro. Qualsiasi community che vuole più dei semplici listing eventi beneficia delle funzionalità organizzazione e membership di Revel.'
 		}
 	],
-	relatedPages: ['eventbrite-alternative', 'self-hosted-event-platform']
+	relatedPages: [
+		'club-membership-management',
+		'eventbrite-alternative',
+		'self-hosted-event-platform'
+	]
 };
 
 export const communityFirstEventPlatformES: LandingPageContent = {
@@ -446,7 +458,11 @@ export const communityFirstEventPlatformES: LandingPageContent = {
 				'Clubes de lectura, grupos de running, espacios maker, redes profesionales, comunidades de aficiones, grupos de interés especial y mucho más. Cualquier comunidad que quiera algo más que simples listados de eventos se beneficia de las funciones de organización y membresía de Revel.'
 		}
 	],
-	relatedPages: ['eventbrite-alternative', 'self-hosted-event-platform']
+	relatedPages: [
+		'club-membership-management',
+		'eventbrite-alternative',
+		'self-hosted-event-platform'
+	]
 };
 
 export const communityFirstEventPlatformPT: LandingPageContent = {
@@ -565,7 +581,11 @@ export const communityFirstEventPlatformPT: LandingPageContent = {
 				'Clubes de leitura, grupos de corrida, espaços maker, redes profissionais, comunidades de passatempos, grupos de interesse especial e muito mais. Qualquer comunidade que queira mais do que simples listagens de eventos beneficia das funcionalidades de organização e adesão do Revel.'
 		}
 	],
-	relatedPages: ['eventbrite-alternative', 'self-hosted-event-platform']
+	relatedPages: [
+		'club-membership-management',
+		'eventbrite-alternative',
+		'self-hosted-event-platform'
+	]
 };
 
 export const communityFirstEventPlatformFR: LandingPageContent = {
@@ -679,5 +699,9 @@ export const communityFirstEventPlatformFR: LandingPageContent = {
 				"Clubs de lecture, groupes de course, fablabs, réseaux professionnels, communautés de loisirs, groupes d'intérêt spécialisés et bien plus. Toute communauté qui veut plus que de simples listes d'événements profite des fonctionnalités d'organisation et d'adhésion de Revel."
 		}
 	],
-	relatedPages: ['eventbrite-alternative', 'self-hosted-event-platform']
+	relatedPages: [
+		'club-membership-management',
+		'eventbrite-alternative',
+		'self-hosted-event-platform'
+	]
 };

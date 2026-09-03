@@ -22,7 +22,8 @@ export const SEO_PAGE_SLUGS = [
 	'kink-event-ticketing',
 	'self-hosted-event-platform',
 	'privacy-focused-events',
-	'community-first-event-platform'
+	'community-first-event-platform',
+	'club-membership-management'
 ] as const;
 
 export type SeoPageSlug = (typeof SEO_PAGE_SLUGS)[number];
