@@ -301,6 +301,7 @@
 	const purchaseFlow = createCartPurchaseFlow({
 		event,
 		eventId: event.id,
+		eventToken: data.eventTokenDetails?.id,
 		queryClient,
 		isAuthenticated: data.isAuthenticated,
 		cart,
@@ -694,6 +695,7 @@
 	onSelectTier={handleSelectTier}
 	onGuestRsvpClose={closeGuestRsvpDialog}
 	onGuestAttendanceSuccess={handleGuestAttendanceSuccess}
+	eventToken={data.eventTokenDetails?.id}
 	bind:showMyTicketModal
 	bind:showGuestRsvpDialog
 	bind:showVenueOverview

@@ -44,6 +44,9 @@
 		onSelectTier: (tier: TierSchemaWithId, heldSeatIds?: string[]) => void;
 		onGuestRsvpClose: () => void;
 		onGuestAttendanceSuccess: () => void | Promise<void>;
+		/** Invitation-link token id (`?et=`) — forwarded to GuestRsvpDialog as
+		 * `X-Event-Token` (backend #923). */
+		eventToken?: string | null;
 		showMyTicketModal: boolean;
 		showGuestRsvpDialog: boolean;
 		showVenueOverview: boolean;
@@ -65,6 +68,7 @@
 		onSelectTier,
 		onGuestRsvpClose,
 		onGuestAttendanceSuccess,
+		eventToken = null,
 		showMyTicketModal = $bindable(),
 		showGuestRsvpDialog = $bindable(),
 		showVenueOverview = $bindable()
@@ -102,6 +106,7 @@
 	<GuestRsvpDialog
 		bind:open={showGuestRsvpDialog}
 		eventId={event.id}
+		{eventToken}
 		acceptsNotes={event.accept_rsvp_notes}
 		onClose={onGuestRsvpClose}
 		onSuccess={onGuestAttendanceSuccess}

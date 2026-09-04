@@ -2672,6 +2672,7 @@
 		"claimButton": "Richiedi Invito",
 		"claimingButton": "Richiesta Invito...",
 		"signInButton": "Accedi per Richiedere",
+		"continueAsGuestButton": "Continua senza account",
 		"agreementText": "Richiedendo, sarai invitato a questo evento",
 		"toast_success": "Hai ricevuto un invito a {eventName}!",
 		"toast_error": "Richiesta invito fallita. Il token potrebbe essere scaduto o non valido.",

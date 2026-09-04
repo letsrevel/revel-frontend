@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import type {
+		EventTokenSchema,
 		MembershipTierSchema,
 		TierRemainingTicketsSchema
 	} from '$lib/api/generated/types.gen';
@@ -25,6 +26,12 @@
 		canAttendWithoutLogin?: boolean;
 		/** Per-tier remaining tickets info (from my-status endpoint) */
 		tierRemainingInfo?: TierRemainingTicketsSchema;
+		/** Invitation-link token details when the page was loaded with `?et=`
+		 * (backend #923): a granting token lets an anonymous guest into
+		 * invited/invited_and_members tiers that the listing marks
+		 * `can_purchase: false` — the backend cannot know the guest yet, so the
+		 * claim happens at checkout via `X-Event-Token`. */
+		eventTokenDetails?: EventTokenSchema | null;
 		/** The event's IANA timezone, so sales windows render event-local (#474). */
 		timezone?: string | null;
 		/**
@@ -71,6 +78,7 @@
 		membershipTier = null,
 		canAttendWithoutLogin = false,
 		tierRemainingInfo,
+		eventTokenDetails = null,
 		timezone,
 		capacityDisclosed = true,
 		quickBuy,
@@ -87,12 +95,31 @@
 	const canTransact = $derived(isAuthenticated || canAttendWithoutLogin);
 
 	/**
+	 * A granting invitation-link token unlocks invited tiers for anonymous
+	 * guests (backend #923). Guest-only: a signed-in user's `can_purchase`
+	 * already reflects their real invitations. Members-only tiers stay
+	 * blocked, and a token that names specific tiers only unlocks those.
+	 */
+	const tokenGrantsTierAccess = $derived.by(() => {
+		if (isAuthenticated || !canAttendWithoutLogin) return false;
+		if (!eventTokenDetails?.grants_invitation) return false;
+		if (tier.purchasable_by !== 'invited' && tier.purchasable_by !== 'invited_and_members') {
+			return false;
+		}
+		const tokenTiers = eventTokenDetails.ticket_tiers;
+		if (tokenTiers && tokenTiers.length > 0) {
+			return tokenTiers.some((tokenTier) => tokenTier.id === tier.id);
+		}
+		return true;
+	});
+
+	/**
 	 * Check tier purchase status based on per-tier info from my-status endpoint
 	 * This takes precedence over the general isEligible flag
 	 */
 	const tierPurchaseStatus = $derived.by(() => {
 		// Tier-level purchasability (from tier listing endpoint, accounts for invitation-linked restrictions)
-		if (tier.can_purchase === false) {
+		if (tier.can_purchase === false && !tokenGrantsTierAccess) {
 			return { canPurchase: false, reason: 'Not available' };
 		}
 
@@ -441,7 +468,7 @@
 	name={tier.name}
 	icon={Ticket}
 	price={priceDisplay()}
-	muted={tier.can_purchase === false}
+	muted={tier.can_purchase === false && !tokenGrantsTierAccess}
 	{badges}
 	{meta}
 	{actions}

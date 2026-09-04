@@ -32,6 +32,10 @@ import { createLiveAuth } from './live-auth.svelte';
 export interface CartPurchaseFlowDeps {
 	event: EventDetailSchema;
 	eventId: string;
+	/** Invitation-link token id (`eventTokenDetails.id`) when the page was
+	 * loaded with `?et=` — forwarded to the guest checkout controller as
+	 * `X-Event-Token` (backend #923). */
+	eventToken?: string | null;
 	queryClient: QueryClient;
 	/** The trustworthy per-request SSR truth (`data.isAuthenticated`) — static
 	 * for the page's lifetime, used only to SEED the flow's live auth state;
@@ -105,6 +109,7 @@ export function createCartPurchaseFlow(deps: CartPurchaseFlowDeps) {
 
 	const guestCartController = createGuestCartCheckoutController({
 		eventId,
+		eventToken: deps.eventToken,
 		queryClient,
 		onPurchaseComplete: handlePurchaseComplete,
 		onEmailConfirmationPending: (message, email) => {

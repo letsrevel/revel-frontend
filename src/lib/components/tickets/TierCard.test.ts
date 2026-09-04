@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/svelte';
 import { describe, it, expect, vi } from 'vitest';
 import TierCard from './TierCard.svelte';
 import type { TierSchemaWithId } from '$lib/types/tickets';
+import type { EventTokenSchema, TicketTierSchema } from '$lib/api/generated/types.gen';
 
 function makeTier(overrides: Partial<TierSchemaWithId> = {}): TierSchemaWithId {
 	return {
@@ -102,5 +103,112 @@ describe('TierCard — can_purchase=false for anonymous guests', () => {
 	it('still renders the enabled CTA when can_purchase is true', () => {
 		renderAnonymousGuestCard(makeTier({ can_purchase: true, payment_method: 'free' }));
 		expect(screen.getByRole('button', { name: /claim free ticket/i })).toBeEnabled();
+	});
+});
+
+// Backend #923: guests can claim invitation links. The anonymous tier listing
+// still reports can_purchase: false for invited-only tiers even when a token
+// is present (the backend cannot know the guest yet), so a granting token must
+// unlock the guest path client-side for invited/invited_and_members tiers.
+describe('TierCard — invitation-link token unlocks invited tiers for guests', () => {
+	function makeToken(overrides: Partial<EventTokenSchema> = {}): EventTokenSchema {
+		return {
+			id: 'token-1',
+			event_name: 'Test Event',
+			event_slug: 'test-event',
+			organization_slug: 'test-org',
+			event_start: '2026-10-01T18:00:00Z',
+			issuer: 'user-1',
+			event: 'event-1',
+			created_at: '2026-09-01T00:00:00Z',
+			grants_invitation: true,
+			ticket_tiers: [],
+			...overrides
+		};
+	}
+
+	function renderWithToken(
+		tier: TierSchemaWithId,
+		eventTokenDetails: EventTokenSchema | null,
+		props: Record<string, unknown> = {}
+	) {
+		render(TierCard, {
+			props: {
+				tier,
+				isAuthenticated: false,
+				canAttendWithoutLogin: true,
+				isEligible: true,
+				eventTokenDetails,
+				onSelectTier: vi.fn(),
+				...props
+			}
+		});
+	}
+
+	const invitedTier = () =>
+		makeTier({ can_purchase: false, purchasable_by: 'invited', payment_method: 'free' });
+
+	it('enables the guest CTA on an invited tier when a granting token is present', () => {
+		renderWithToken(invitedTier(), makeToken());
+		expect(screen.getByRole('button', { name: /claim free ticket/i })).toBeEnabled();
+	});
+
+	it('enables invited_and_members tiers too', () => {
+		renderWithToken(
+			makeTier({
+				can_purchase: false,
+				purchasable_by: 'invited_and_members',
+				payment_method: 'online',
+				price: '10.00'
+			}),
+			makeToken()
+		);
+		expect(screen.getByRole('button', { name: /buy ticket/i })).toBeEnabled();
+	});
+
+	it('keeps members-only tiers blocked despite a granting token', () => {
+		renderWithToken(
+			makeTier({ can_purchase: false, purchasable_by: 'members', payment_method: 'free' }),
+			makeToken()
+		);
+		expect(screen.queryByRole('button', { name: /claim free ticket/i })).not.toBeInTheDocument();
+	});
+
+	it('stays disabled when the token does not grant an invitation', () => {
+		renderWithToken(invitedTier(), makeToken({ grants_invitation: false }));
+		expect(screen.queryByRole('button', { name: /claim free ticket/i })).not.toBeInTheDocument();
+	});
+
+	it('stays disabled without any token (fix for the incident stands)', () => {
+		renderWithToken(invitedTier(), null);
+		expect(screen.queryByRole('button', { name: /claim free ticket/i })).not.toBeInTheDocument();
+	});
+
+	it('restricts to the token’s tiers when the token names specific tiers', () => {
+		const tierScopedToken = makeToken({
+			ticket_tiers: [makeTier({ id: 'tier-1' }) as TicketTierSchema]
+		});
+		renderWithToken(invitedTier(), tierScopedToken);
+		expect(screen.getByRole('button', { name: /claim free ticket/i })).toBeEnabled();
+	});
+
+	it('blocks tiers the token does not name', () => {
+		const otherTierToken = makeToken({
+			ticket_tiers: [makeTier({ id: 'other-tier' }) as TicketTierSchema]
+		});
+		renderWithToken(invitedTier(), otherTierToken);
+		expect(screen.queryByRole('button', { name: /claim free ticket/i })).not.toBeInTheDocument();
+	});
+
+	it('never applies the token path for authenticated users', () => {
+		// A signed-in user's can_purchase already reflects their real
+		// invitations; the token override is guest-only.
+		renderWithToken(invitedTier(), makeToken(), { isAuthenticated: true });
+		expect(screen.queryByRole('button', { name: /claim free ticket/i })).not.toBeInTheDocument();
+	});
+
+	it('never applies the token path when the event disallows guests', () => {
+		renderWithToken(invitedTier(), makeToken(), { canAttendWithoutLogin: false });
+		expect(screen.queryByRole('button', { name: /claim free ticket/i })).not.toBeInTheDocument();
 	});
 });

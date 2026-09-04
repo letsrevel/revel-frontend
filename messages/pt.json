@@ -2672,6 +2672,7 @@
 		"claimButton": "Resgatar convite",
 		"claimingButton": "A resgatar convite...",
 		"signInButton": "Inicia sessão para resgatar",
+		"continueAsGuestButton": "Continuar sem conta",
 		"agreementText": "Ao resgatar, terás um convite para este evento",
 		"toast_success": "Tens um convite para {eventName}!",
 		"toast_error": "Não foi possível resgatar o convite. O token pode ter expirado ou ser inválido.",

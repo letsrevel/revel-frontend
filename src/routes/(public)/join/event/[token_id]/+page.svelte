@@ -70,6 +70,20 @@
 		claimMutation.mutate();
 	}
 
+	// Guest shortcut (backend #923): when the token's event allows attending
+	// without a login, an anonymous visitor can skip sign-in and take the token
+	// straight to the event page — `?et=` is captured by hooks.server.ts and
+	// claimed at guest checkout/RSVP time via X-Event-Token. Sign-in stays the
+	// primary action; guest is an alternative, not a replacement.
+	const guestEventHref = $derived.by(() => {
+		if (isAuthenticated || !data.canAttendWithoutLogin || !token) return null;
+		const eventPath = resolve('/(public)/events/[org_slug]/[event_slug]', {
+			org_slug: token.organization_slug,
+			event_slug: token.event_slug
+		});
+		return `${eventPath}?et=${encodeURIComponent(tokenId)}`;
+	});
+
 	const expirationDisplay = $derived(getExpirationDisplay(token?.expires_at));
 	const usageDisplay = $derived(formatTokenUsage(token?.uses, token?.max_uses));
 	const formattedDate = $derived(token?.event_start ? formatEventDate(token.event_start) : null);
@@ -242,6 +256,14 @@
 							{m['joinEventPage.claimButton']()}
 						{/if}
 					</Button>
+
+					{#if guestEventHref}
+						<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() builds the event path; the ?et= query cannot be expressed through resolve() -->
+						<Button size="lg" variant="outline" class="w-full" href={guestEventHref}>
+							{m['joinEventPage.continueAsGuestButton']()}
+						</Button>
+						<!-- eslint-enable svelte/no-navigation-without-resolve -->
+					{/if}
 
 					<p class="text-center text-xs text-muted-foreground">
 						{m['joinEventPage.agreementText']()}

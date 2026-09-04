@@ -83,6 +83,13 @@ export function mapGuestCheckoutError(error: unknown, status: number | undefined
 export interface GuestCartCheckoutDeps {
 	/** The event id used for the checkout call. */
 	eventId: string;
+	/**
+	 * Invitation-link token id (`eventTokenDetails.id`) when the event page was
+	 * loaded with `?et=`. Sent as `X-Event-Token` so the backend claims the
+	 * link for the guest before eligibility and tier-access checks run
+	 * (backend #923).
+	 */
+	eventToken?: string | null;
 	queryClient: QueryClient;
 	/** Called after any fully-successful purchase (clear the cart). */
 	onPurchaseComplete: () => void;
@@ -103,7 +110,7 @@ export interface GuestCartCheckoutDeps {
  * `createMutation`).
  */
 export function createGuestCartCheckoutController(deps: GuestCartCheckoutDeps) {
-	const { eventId, queryClient, onPurchaseComplete, onEmailConfirmationPending } = deps;
+	const { eventId, eventToken, queryClient, onPurchaseComplete, onEmailConfirmationPending } = deps;
 
 	// Shared reserve → checkout-session machinery (see cart-checkout-machinery.ts).
 	// Guests have no "my status" to refresh on a retryable session failure, so
@@ -183,7 +190,8 @@ export function createGuestCartCheckoutController(deps: GuestCartCheckoutDeps) {
 			};
 			const response = await eventpublicguestGuestMultiTierCheckout({
 				path: { event_id: eventId },
-				body
+				body,
+				...(eventToken ? { headers: { 'X-Event-Token': eventToken } } : {})
 			});
 			if (response.error) {
 				const status = response.response?.status;
