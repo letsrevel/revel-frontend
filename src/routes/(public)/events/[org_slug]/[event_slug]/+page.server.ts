@@ -49,7 +49,8 @@ export const load: PageServerLoad = async ({
 		// header the tier listing silently falls back to public-only and an
 		// invited guest never sees their tier. A token for another event is
 		// ignored server-side (and its details are discarded below).
-		const eventToken = url.searchParams.get('et') ?? cookies.get('pending_event_token') ?? null;
+		// `||`, not `??`: a bare `?et=` reads as '' and must not suppress the cookie.
+		const eventToken = url.searchParams.get('et') || cookies.get('pending_event_token') || null;
 		if (eventToken) {
 			headers['X-Event-Token'] = eventToken;
 		}

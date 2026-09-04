@@ -44,7 +44,9 @@ function ok<T>(data: T): { data: T; error: undefined } {
 }
 
 /** Minimal stand-in for the SvelteKit load event this loader actually reads. */
-function loadEvent(options: { search?: string; cookieToken?: string | null } = {}) {
+function loadEvent(
+	options: { search?: string; cookieToken?: string | null } = {}
+): Parameters<typeof load>[0] {
 	return {
 		params: { id: 'event-1' },
 		locals: { user: null },
@@ -92,6 +94,21 @@ describe('event [id] loader — invitation-link token', () => {
 			ok({ id: 'tok-2', event: 'event-1', grants_invitation: true }) as never
 		);
 		await load(loadEvent({ cookieToken: 'tok-2' }));
+
+		expect(listTiers).toHaveBeenCalledWith(
+			expect.objectContaining({
+				headers: expect.objectContaining({ 'X-Event-Token': 'tok-2' })
+			})
+		);
+	});
+
+	it('treats an empty ?et= as absent and still falls back to the cookie', async () => {
+		// URLSearchParams.get('et') returns '' for a bare `?et=`; `??` would
+		// keep it and suppress a valid pending_event_token cookie.
+		getTokenDetails.mockResolvedValue(
+			ok({ id: 'tok-2', event: 'event-1', grants_invitation: true }) as never
+		);
+		await load(loadEvent({ search: '?et=', cookieToken: 'tok-2' }));
 
 		expect(listTiers).toHaveBeenCalledWith(
 			expect.objectContaining({
