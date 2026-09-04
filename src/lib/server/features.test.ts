@@ -5,7 +5,7 @@ vi.mock('$lib/api/generated/sdk.gen', () => ({
 }));
 
 import { apiApiVersion } from '$lib/api/generated/sdk.gen';
-import { getFeatures, getDemoMode, __resetFeaturesCache } from './features';
+import { getFeatures, getDemoMode, getSsoProviders, __resetFeaturesCache } from './features';
 import { DEFAULT_FEATURES } from '$lib/utils/features';
 
 const mockedApiApiVersion = vi.mocked(apiApiVersion);
@@ -24,7 +24,6 @@ describe('getFeatures', () => {
 				features: {
 					organization_creation: false,
 					telegram: true,
-					google_sso: false,
 					llm_evaluation: true
 				}
 			},
@@ -92,6 +91,73 @@ describe('getDemoMode', () => {
 
 		await getFeatures(fakeFetch);
 		expect(await getDemoMode(fakeFetch)).toBe(true);
+		expect(mockedApiApiVersion).toHaveBeenCalledTimes(1);
+	});
+});
+
+describe('getSsoProviders', () => {
+	it('returns the providers from the /version payload', async () => {
+		mockedApiApiVersion.mockResolvedValue({
+			data: {
+				version: '1.0.0',
+				features: DEFAULT_FEATURES,
+				sso_providers: [{ key: 'google', name: 'Google' }]
+			},
+			error: undefined
+		} as never);
+
+		expect(await getSsoProviders(fakeFetch)).toEqual([{ key: 'google', name: 'Google' }]);
+	});
+
+	it('fails CLOSED to [] when the call throws', async () => {
+		mockedApiApiVersion.mockRejectedValue(new Error('boom'));
+		expect(await getSsoProviders(fakeFetch)).toEqual([]);
+	});
+
+	it('fails CLOSED to [] when sso_providers is absent from the payload', async () => {
+		mockedApiApiVersion.mockResolvedValue({
+			data: { version: '1.0.0', features: DEFAULT_FEATURES },
+			error: undefined
+		} as never);
+		expect(await getSsoProviders(fakeFetch)).toEqual([]);
+	});
+
+	it('drops malformed provider entries but keeps valid ones', async () => {
+		mockedApiApiVersion.mockResolvedValue({
+			data: {
+				version: '1.0.0',
+				features: DEFAULT_FEATURES,
+				sso_providers: [
+					{ key: 'google', name: 'Google' },
+					{ key: '', name: 'empty key' },
+					{ name: 'no key at all' },
+					{ key: 'empty-name', name: '' },
+					{ key: 'no-name-at-all' },
+					'not-an-object'
+				]
+			},
+			error: undefined
+		} as never);
+
+		expect(await getSsoProviders(fakeFetch)).toEqual([{ key: 'google', name: 'Google' }]);
+	});
+
+	it('fails CLOSED to [] when sso_providers is not an array', async () => {
+		mockedApiApiVersion.mockResolvedValue({
+			data: { version: '1.0.0', features: DEFAULT_FEATURES, sso_providers: 'garbage' },
+			error: undefined
+		} as never);
+
+		expect(await getSsoProviders(fakeFetch)).toEqual([]);
+	});
+
+	it('shares the cache with getFeatures (one upstream call total)', async () => {
+		mockedApiApiVersion.mockResolvedValue({
+			data: { version: '1.0.0', features: DEFAULT_FEATURES, sso_providers: [] },
+			error: undefined
+		} as never);
+		await getFeatures(fakeFetch);
+		await getSsoProviders(fakeFetch);
 		expect(mockedApiApiVersion).toHaveBeenCalledTimes(1);
 	});
 });

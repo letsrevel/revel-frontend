@@ -1,4 +1,8 @@
 @import '@fontsource-variable/nata-sans';
+/* Google Sans Medium (500) ONLY, and only for the "Continue with Google"
+   button: Google's sign-in branding guidelines mandate it there. Never use it
+   for anything else — the app face is Nata Sans. */
+@import '@fontsource/google-sans/500.css';
 
 @tailwind base;
 @tailwind components;
@@ -72,6 +76,24 @@
 		--brand-instagram: 349 75% 57%; /* #E4405F — 3.60:1 on background, 4.06:1 on card (light); 4.50:1/4.12:1 (dark) */
 		--brand-facebook: 214 89% 52%; /* #1877F2 — 3.78:1 on background, 4.27:1 on card (light); 4.28:1/3.92:1 (dark) */
 		--brand-bluesky: 211 99% 53%; /* #1185FE — 3.26:1 on background, 3.68:1 on card (light); 4.97:1/4.55:1 (dark) */
+		/* Google's four-color "G" mark (SSO sign-in buttons, SsoProviderButtons).
+		   Stored as the EXACT official hexes: this is logo artwork, not UI color,
+		   so it stays outside the HSL token grammar and audit-brand-themes.py
+		   deliberately doesn't parse it (hex values don't match its triplet
+		   regex). Mode-inert like the other brand marks; never redefined in
+		   .dark. Google's own dark sign-in button keeps these colors too. */
+		--brand-google-blue: #4285f4;
+		--brand-google-green: #34a853;
+		--brand-google-yellow: #fbbc04;
+		--brand-google-red: #e94235;
+		/* Google sign-in button chrome, straight from the branding-guidelines
+		   sample assets (light theme here, dark theme overridden in .dark).
+		   Like the mark above these are brand-mandated hexes, not UI tokens —
+		   the audit script doesn't parse them and MUST not: Google fixes the
+		   pairs. Light: #FFF fill / #747775 stroke / #1F1F1F text. */
+		--brand-google-fill: #ffffff;
+		--brand-google-stroke: #747775;
+		--brand-google-text: #1f1f1f;
 		--border: 268 35% 84%;
 		--input: 268 35% 84%;
 		--ring: 270 70% 48%;
@@ -146,6 +168,12 @@
 		--input: 270 25% 20%;
 		--ring: 268 60% 72%;
 		--brand-telegram-text: 200 85% 60%; /* 8.0:1 on dark background, 7.3:1 on dark popover (hand-verified) */
+		/* Google sign-in button, official dark theme (branding-guidelines
+		   sample: #131314 fill / #8E918F stroke / #E3E3E3 text; the four-color
+		   G stays as-is — Google's own dark button keeps it on the dark fill). */
+		--brand-google-fill: #131314;
+		--brand-google-stroke: #8e918f;
+		--brand-google-text: #e3e3e3;
 		/* See the light-mode definition: ink casts no shadow on aubergine. */
 		--poster-shadow: 0 10px 30px hsl(0 0% 0% / 0.5);
 		--poster-shadow-lg: 0 20px 50px hsl(0 0% 0% / 0.62);

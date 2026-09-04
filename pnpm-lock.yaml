@@ -42,6 +42,9 @@ importers:
       '@fontsource-variable/nata-sans':
         specifier: ^5.3.0
         version: 5.3.0
+      '@fontsource/google-sans':
+        specifier: ^5.3.1
+        version: 5.3.1
       '@tanstack/svelte-query':
         specifier: ^6.1.46
         version: 6.1.48(svelte@5.57.0(@typescript-eslint/types@8.68.0))
@@ -516,6 +519,9 @@ packages:
 
   '@fontsource-variable/nata-sans@5.3.0':
     resolution: {integrity: sha512-16MF7YtqYd1TsMlyTDLDze3vRPP65O7I6d0B0fYrt5BKAbgtoDNev9L0v4Ks8c2ESEQUkJ+mNJqxzoo18hprXA==}
+
+  '@fontsource/google-sans@5.3.1':
+    resolution: {integrity: sha512-vPaxyKtWMAecphz5CHerhBAIhnRNzQs0dn4KEr8d9Zx5MsoRBXZgFG43Lso2h7w46HVb7S+ku1sdVkGvONz1kQ==}
 
   '@hey-api/codegen-core@0.9.1':
     resolution: {integrity: sha512-s97jL1dgTMuiMHv2BZ1X4Tgd99Mf9GOvGdNqNcGwIMmnR+PgYNoraj4Zvp134MKsNCap/m7k0r0vKKnl56pj4w==}
@@ -3264,6 +3270,8 @@ snapshots:
   '@floating-ui/utils@0.2.11': {}
 
   '@fontsource-variable/nata-sans@5.3.0': {}
+
+  '@fontsource/google-sans@5.3.1': {}
 
   '@hey-api/codegen-core@0.9.1':
     dependencies:

@@ -6,6 +6,7 @@
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import type { ActionData, PageData } from './$types';
 	import TwoFactorInput from '$lib/components/forms/TwoFactorInput.svelte';
+	import SsoProviderButtons from '$lib/components/auth/SsoProviderButtons.svelte';
 	import { Eye, EyeOff, Loader2, ArrowLeft, ExternalLink } from '@lucide/svelte';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import AuthBandLayout from '$lib/components/auth/AuthBandLayout.svelte';
@@ -17,6 +18,7 @@
 	} from '$lib/constants/demo-accounts';
 	import * as m from '$lib/paraglide/messages.js';
 	import { SeoHead } from '$lib/seo';
+	import { oidcErrorMessage } from '$lib/utils/oidc-errors';
 
 	interface Props {
 		data: PageData;
@@ -44,6 +46,10 @@
 		const returnUrl = page.url.searchParams.get('returnUrl');
 		return returnUrl ? `&returnUrl=${encodeURIComponent(returnUrl)}` : '';
 	});
+
+	// The backend appends ?error=oidc_<code> to the login redirect when the
+	// OIDC browser flow fails (BE PR #919). null for any non-OIDC/absent code.
+	const oidcError = $derived(oidcErrorMessage(page.url.searchParams.get('error')));
 
 	// Form state
 	let email = $state(form?.email || '');
@@ -120,6 +126,12 @@
 			{#if errors.form}
 				<div role="alert" class="rounded-md border border-destructive bg-destructive/10 p-4">
 					<p class="text-sm font-medium text-destructive">{errors.form}</p>
+				</div>
+			{/if}
+
+			{#if oidcError}
+				<div role="alert" class="rounded-md border border-destructive bg-destructive/10 p-4">
+					<p class="text-sm font-medium text-destructive">{oidcError}</p>
 				</div>
 			{/if}
 
@@ -373,6 +385,15 @@
 							</button>
 						</div>
 					{/if}
+				{/if}
+
+				{#if !useDemoDropdown}
+					<!-- SSO stays off the demo-account dropdown variant: it only appears
+					     once the user explicitly switches to the real login form. -->
+					<SsoProviderButtons
+						providers={data.ssoProviders}
+						returnUrl={page.url.searchParams.get('returnUrl')}
+					/>
 				{/if}
 			{:else}
 				<!-- 2FA Verification Form -->

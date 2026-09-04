@@ -3,7 +3,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { registerSchema } from '$lib/schemas/auth';
 import { accountRegister } from '$lib/api/generated/sdk.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
-import { getDemoMode } from '$lib/server/features';
+import { getDemoMode, getSsoProviders } from '$lib/server/features';
 import { log } from '$lib/server/logger';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
@@ -14,6 +14,7 @@ export const load: PageServerLoad = async ({ fetch, cookies, url, request }) => 
 	// server-side (getDemoMode is cached and fail-open) keeps the overlay in the
 	// SSR render — no hydration-time swap. Non-demo backends see no overlay.
 	const demo = await getDemoMode(fetch);
+	const ssoProviders = await getSsoProviders(fetch);
 
 	const lang = resolveLang(request);
 	const seo = buildSeo({ kind: 'auth', url, lang, page: 'register' });
@@ -21,6 +22,7 @@ export const load: PageServerLoad = async ({ fetch, cookies, url, request }) => 
 	return {
 		referralCodeFromCookie: cookies.get('referral_code') || '',
 		demo,
+		ssoProviders,
 		seo
 	};
 };

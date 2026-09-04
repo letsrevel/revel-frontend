@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { enhance } from '$app/forms';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import type { ActionData, PageData } from './$types';
 	import PasswordStrengthIndicator from '$lib/components/forms/PasswordStrengthIndicator.svelte';
 	import ReferralCodeInput from '$lib/components/referral/ReferralCodeInput.svelte';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import AuthBandLayout from '$lib/components/auth/AuthBandLayout.svelte';
+	import SsoProviderButtons from '$lib/components/auth/SsoProviderButtons.svelte';
 	import { Eye, EyeOff, Loader2, Sparkles, ArrowRight } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { SeoHead } from '$lib/seo';
@@ -30,7 +31,7 @@
 
 	// Referral code: URL param takes priority, then cookie fallback
 	const initialReferralCode = $derived(
-		$page.url.searchParams.get('ref') || data.referralCodeFromCookie || ''
+		page.url.searchParams.get('ref') || data.referralCodeFromCookie || ''
 	);
 	let referralCode = $state('');
 
@@ -451,6 +452,11 @@
 					{/if}
 				</button>
 			</form>
+
+			<SsoProviderButtons
+				providers={data.ssoProviders}
+				returnUrl={page.url.searchParams.get('returnUrl')}
+			/>
 		</CardContent>
 	</Card>
 
