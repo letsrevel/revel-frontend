@@ -1,4 +1,10 @@
 import * as m from '$lib/paraglide/messages.js';
+import {
+	extractApiErrorDetail,
+	extractValidationErrors,
+	isResponseMessage
+} from '$lib/utils/api-error-detail';
+import { getEligibilityRefusalMessage } from '$lib/utils/eligibility';
 
 /**
  * Maps backend error messages to localized user-friendly messages
@@ -44,10 +50,13 @@ export function getLocalizedError(errorMessage: string | undefined): string {
 		return m['guest_attendance.token_expired']();
 	}
 
-	// Pattern: Token already used
+	// Pattern: Token already used. The confirm endpoint blacklists a token on
+	// first use, so a second click on the same email link answers 401
+	// "Token is blacklisted." — the same user-facing situation.
 	if (
-		lowerMessage.includes('already') &&
-		(lowerMessage.includes('confirmed') || lowerMessage.includes('used'))
+		lowerMessage.includes('blacklisted') ||
+		(lowerMessage.includes('already') &&
+			(lowerMessage.includes('confirmed') || lowerMessage.includes('used')))
 	) {
 		return m['guest_attendance.token_used']();
 	}
@@ -97,6 +106,36 @@ export function getLocalizedError(errorMessage: string | undefined): string {
 }
 
 /**
+ * Bare `{ reason: string }` probe for eligibility-ish payloads that lack the
+ * `event_id` the full `isEligibilityRefusal` predicate requires. Real
+ * predicate narrowing, no casts (house rule from api-error-detail.ts).
+ */
+function plainReason(value: unknown): string | null {
+	if (value && typeof value === 'object' && 'reason' in value) {
+		const reason = value.reason;
+		if (typeof reason === 'string' && reason !== '') return reason;
+	}
+	return null;
+}
+
+/**
+ * Reads the message out of a backend error payload by composing the canonical
+ * shape-safe helpers (api-error-detail.ts, eligibility.ts) instead of
+ * hand-rolled casts: `detail` (string or 422 list) → eligibility refusal
+ * (reason_code-aware) → bare `reason` → `{ errors }` map → `message` last
+ * (genuine on almost no endpoints — see backendMessage's rationale).
+ */
+function messageFromErrorBody(body: unknown): string | null {
+	return (
+		extractApiErrorDetail(body) ??
+		getEligibilityRefusalMessage(body) ??
+		plainReason(body) ??
+		extractValidationErrors(body) ??
+		(isResponseMessage(body) ? body.message : null)
+	);
+}
+
+/**
  * Extracts error message from various error formats
  * @param error - Error object from API call
  * @returns Error message string
@@ -108,19 +147,18 @@ export function extractErrorMessage(error: unknown): string {
 	}
 
 	if (error && typeof error === 'object') {
-		// Handle @hey-api/client error format
-		if ('body' in error && error.body && typeof error.body === 'object') {
-			const body = error.body as Record<string, unknown>;
-			if ('detail' in body && typeof body.detail === 'string') {
-				return body.detail;
+		// Some wrappers nest the payload under `body`
+		if ('body' in error) {
+			const fromBody = messageFromErrorBody(error.body);
+			if (fromBody) {
+				return fromBody;
 			}
-			// Handle EventUserEligibility format (e.g. { allowed: false, reason: "..." })
-			if ('reason' in body && typeof body.reason === 'string') {
-				return body.reason;
-			}
-			if ('message' in body && typeof body.message === 'string') {
-				return body.message;
-			}
+		}
+
+		// The @hey-api client's `response.error` IS the parsed body itself
+		const direct = messageFromErrorBody(error);
+		if (direct) {
+			return direct;
 		}
 
 		// Handle Error instance

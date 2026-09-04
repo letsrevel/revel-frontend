@@ -25,13 +25,24 @@
 	interface Props {
 		open: boolean;
 		eventId: string;
+		/** Invitation-link token id when the page was loaded with `?et=` — sent
+		 * as `X-Event-Token` so the backend claims the link for the guest before
+		 * eligibility checks run (backend #923). */
+		eventToken?: string | null;
 		/** Whether the event accepts an optional note with RSVPs. */
 		acceptsNotes?: boolean;
 		onClose: () => void;
 		onSuccess?: () => void;
 	}
 
-	let { open = $bindable(), eventId, acceptsNotes = false, onClose, onSuccess }: Props = $props();
+	let {
+		open = $bindable(),
+		eventId,
+		eventToken = null,
+		acceptsNotes = false,
+		onClose,
+		onSuccess
+	}: Props = $props();
 
 	// Form state
 	let formData = $state<GuestRsvpData>({
@@ -135,6 +146,7 @@
 		try {
 			const response = await eventpublicguestGuestRsvp({
 				path: { event_id: eventId, answer: formData.answer },
+				...(eventToken ? { headers: { 'X-Event-Token': eventToken } } : {}),
 				body: {
 					email: formData.email,
 					first_name: formData.first_name,

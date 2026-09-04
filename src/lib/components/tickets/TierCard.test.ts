@@ -56,3 +56,51 @@ describe('TierCard — inventory disclosure', () => {
 		expect(screen.getAllByText(/sold out/i).length).toBeGreaterThan(0);
 	});
 });
+
+// Prod incident 2026-09-04 ("Kitts Meets"): the tier listing returns
+// `can_purchase: false` for anonymous visitors on any non-public tier, but
+// `effectiveEligible` only consulted it when `tierRemainingInfo` (authenticated
+// my-status data) existed. A logged-out guest on a can_attend_without_login
+// event therefore saw an ENABLED CTA on an invited-only tier and hit a dead
+// confirmation link / 403 at checkout.
+describe('TierCard — can_purchase=false for anonymous guests', () => {
+	function renderAnonymousGuestCard(tier: TierSchemaWithId): void {
+		render(TierCard, {
+			props: {
+				tier,
+				isAuthenticated: false,
+				canAttendWithoutLogin: true,
+				isEligible: true,
+				tierRemainingInfo: undefined,
+				onSelectTier: vi.fn()
+			}
+		});
+	}
+
+	it('never renders an enabled claim/buy/reserve action on a free tier', () => {
+		renderAnonymousGuestCard(makeTier({ can_purchase: false, payment_method: 'free' }));
+		expect(screen.queryByRole('button', { name: /claim free ticket/i })).not.toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: /buy ticket/i })).not.toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: /reserve ticket/i })).not.toBeInTheDocument();
+	});
+
+	it('never renders an enabled buy action on a paid tier', () => {
+		renderAnonymousGuestCard(
+			makeTier({ can_purchase: false, payment_method: 'online', price: '10.00' })
+		);
+		expect(screen.queryByRole('button', { name: /buy ticket/i })).not.toBeInTheDocument();
+	});
+
+	it('shows a disabled action with a visible reason instead of "Coming soon"', () => {
+		renderAnonymousGuestCard(makeTier({ can_purchase: false, payment_method: 'free' }));
+		const disabledCta = screen.getByRole('button', { name: /not eligible/i });
+		expect(disabledCta).toBeDisabled();
+		expect(screen.getByText(/not available/i)).toBeInTheDocument();
+		expect(screen.queryByText(/coming soon/i)).not.toBeInTheDocument();
+	});
+
+	it('still renders the enabled CTA when can_purchase is true', () => {
+		renderAnonymousGuestCard(makeTier({ can_purchase: true, payment_method: 'free' }));
+		expect(screen.getByRole('button', { name: /claim free ticket/i })).toBeEnabled();
+	});
+});

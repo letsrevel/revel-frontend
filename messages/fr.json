@@ -2558,6 +2558,7 @@
 		"claimButton": "Réclamer l'invitation",
 		"claimingButton": "Réclamation de l'invitation...",
 		"signInButton": "Se connecter pour réclamer",
+		"continueAsGuestButton": "Continuer sans compte",
 		"agreementText": "En réclamant, tu seras invité·e à cet événement",
 		"toast_success": "Tu as reçu une invitation à {eventName} !",
 		"toast_error": "Échec de la réclamation de l'invitation. Le jeton est peut-être expiré ou invalide.",

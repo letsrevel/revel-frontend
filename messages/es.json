@@ -2672,6 +2672,7 @@
 		"claimButton": "Reclamar invitación",
 		"claimingButton": "Reclamando invitación...",
 		"signInButton": "Inicia sesión para reclamarla",
+		"continueAsGuestButton": "Continuar sin cuenta",
 		"agreementText": "Al reclamarla, se te invitará a este evento",
 		"toast_success": "¡Te han invitado a {eventName}!",
 		"toast_error": "No se pudo reclamar la invitación. Puede que el token haya caducado o no sea válido.",

@@ -2672,6 +2672,7 @@
 		"claimButton": "Claim Invitation",
 		"claimingButton": "Claiming Invitation...",
 		"signInButton": "Sign In to Claim",
+		"continueAsGuestButton": "Continue as guest",
 		"agreementText": "By claiming, you'll be invited to this event",
 		"toast_success": "You've been invited to {eventName}!",
 		"toast_error": "Failed to claim invitation. The token may be expired or invalid.",

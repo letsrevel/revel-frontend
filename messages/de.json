@@ -2672,6 +2672,7 @@
 		"claimButton": "Einladung beanspruchen",
 		"claimingButton": "Einladung beanspruchen...",
 		"signInButton": "Anmelden zum Beanspruchen",
+		"continueAsGuestButton": "Als Gast fortfahren",
 		"agreementText": "Durch Beanspruchen wirst du zu dieser Veranstaltung eingeladen",
 		"toast_success": "Du wurdest zu {eventName} eingeladen!",
 		"toast_error": "Einladung konnte nicht beansprucht werden. Das Token könnte abgelaufen oder ungültig sein.",

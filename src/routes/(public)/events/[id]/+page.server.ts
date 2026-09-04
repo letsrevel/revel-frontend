@@ -25,7 +25,15 @@ import type {
 	VisibilityPreference
 } from '$lib/api/generated/types.gen';
 
-export const load: PageServerLoad = async ({ params, locals, fetch, url, request, setHeaders }) => {
+export const load: PageServerLoad = async ({
+	params,
+	locals,
+	fetch,
+	url,
+	request,
+	setHeaders,
+	cookies
+}) => {
 	const { id } = params;
 
 	try {
@@ -35,8 +43,14 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 			headers['Authorization'] = `Bearer ${locals.user.accessToken}`;
 		}
 
-		// Check for event token (?et=) for visibility
-		const eventToken = url.searchParams.get('et');
+		// Event token for visibility AND the token-aware tier listing (backend
+		// #923): ?et= on the first navigation, falling back to the
+		// pending_event_token cookie hooks.server.ts captured — without the
+		// header the tier listing silently falls back to public-only and an
+		// invited guest never sees their tier. A token for another event is
+		// ignored server-side (and its details are discarded below).
+		// `||`, not `??`: a bare `?et=` reads as '' and must not suppress the cookie.
+		const eventToken = url.searchParams.get('et') || cookies.get('pending_event_token') || null;
 		if (eventToken) {
 			headers['X-Event-Token'] = eventToken;
 		}
@@ -199,7 +213,10 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 					headers
 				});
 
-				if (tokenResponse.data) {
+				// The pending_event_token cookie is global, not event-scoped: a
+				// token for event A must not surface invitation UI or ride guest
+				// mutations on event B (the backend ignores it there anyway).
+				if (tokenResponse.data && tokenResponse.data.event === event.id) {
 					eventTokenDetails = tokenResponse.data;
 					log.debug('event_token_details_fetched', {
 						tokenId: eventTokenDetails.id,
