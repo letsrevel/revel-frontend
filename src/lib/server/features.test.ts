@@ -131,6 +131,8 @@ describe('getSsoProviders', () => {
 					{ key: 'google', name: 'Google' },
 					{ key: '', name: 'empty key' },
 					{ name: 'no key at all' },
+					{ key: 'empty-name', name: '' },
+					{ key: 'no-name-at-all' },
 					'not-an-object'
 				]
 			},

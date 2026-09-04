@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { enhance } from '$app/forms';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import type { ActionData, PageData } from './$types';
 	import PasswordStrengthIndicator from '$lib/components/forms/PasswordStrengthIndicator.svelte';
@@ -31,7 +31,7 @@
 
 	// Referral code: URL param takes priority, then cookie fallback
 	const initialReferralCode = $derived(
-		$page.url.searchParams.get('ref') || data.referralCodeFromCookie || ''
+		page.url.searchParams.get('ref') || data.referralCodeFromCookie || ''
 	);
 	let referralCode = $state('');
 
@@ -455,7 +455,7 @@
 
 			<SsoProviderButtons
 				providers={data.ssoProviders}
-				returnUrl={$page.url.searchParams.get('returnUrl')}
+				returnUrl={page.url.searchParams.get('returnUrl')}
 			/>
 		</CardContent>
 	</Card>

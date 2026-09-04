@@ -12,7 +12,9 @@ import { API_URL, fetchWithRetry } from './api';
 interface VersionInfo {
 	demo?: boolean;
 	features?: Record<string, boolean>;
-	sso_providers?: { key: string; name: string }[];
+	// Left unknown on purpose: the payload is an unchecked JSON cast, so the
+	// entries are validated at the ssoProvider() lookup, not trusted here.
+	sso_providers?: unknown;
 }
 
 let probe: Promise<VersionInfo | null> | undefined;
@@ -61,7 +63,20 @@ export async function ssoProvider(key: string): Promise<{ key: string; name: str
 	if (!Array.isArray(providers)) {
 		return null;
 	}
-	return providers.find((provider) => provider.key === key) ?? null;
+	// Per-entry guard (mirrors the app's parseSsoProviders): a malformed entry
+	// — even a null — must not throw out of the lookup, and must not hide a
+	// valid provider elsewhere in the list.
+	return (
+		providers.find(
+			(provider): provider is { key: string; name: string } =>
+				typeof provider === 'object' &&
+				provider !== null &&
+				'key' in provider &&
+				provider.key === key &&
+				'name' in provider &&
+				typeof provider.name === 'string'
+		) ?? null
+	);
 }
 
 export const BACKEND_DOWN_MESSAGE =
