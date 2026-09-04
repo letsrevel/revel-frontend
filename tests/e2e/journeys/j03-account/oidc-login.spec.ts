@@ -32,6 +32,20 @@ function errorAlert(page: Page): Locator {
 	return page.getByRole('alert').filter({ hasNotText: 'Demo Mode' });
 }
 
+/**
+ * On demo backends (the e2e stack is one) /login defaults to the demo-account
+ * dropdown, which deliberately hides the SSO buttons — they only render on the
+ * real email/password form. Flip to it before reaching for a provider link.
+ * gotoHydrated has already settled hydration, so the visibility check is
+ * deterministic (and a non-demo backend simply never renders the toggle).
+ */
+async function showLoginForm(page: Page): Promise<void> {
+	const toggle = page.getByRole('button', { name: 'Show login form' });
+	if (await toggle.isVisible()) {
+		await toggle.click();
+	}
+}
+
 test.describe('J03 OIDC login @p1', () => {
 	test.beforeEach(async () => {
 		const provider = await ssoProvider('keycloak');
@@ -49,6 +63,7 @@ test.describe('J03 OIDC login @p1', () => {
 		await createKeycloakUser({ email: revelUser.email });
 
 		await gotoHydrated(page, '/login?returnUrl=%2Fevents');
+		await showLoginForm(page);
 		await page.getByRole('link', { name: /Continue with Keycloak/ }).click();
 		await loginAtKeycloak(page, revelUser.email);
 
@@ -80,6 +95,7 @@ test.describe('J03 OIDC login @p1', () => {
 		await createKeycloakUser({ email });
 
 		await gotoHydrated(page, '/login');
+		await showLoginForm(page);
 		await page.getByRole('link', { name: /Continue with Keycloak/ }).click();
 		await loginAtKeycloak(page, email);
 		// No returnUrl was given: the backend's safe_return_url defaults the
@@ -135,6 +151,7 @@ test.describe('J03 OIDC login @p1', () => {
 		await createKeycloakUser({ email, emailVerified: false });
 
 		await gotoHydrated(page, '/login');
+		await showLoginForm(page);
 		await page.getByRole('link', { name: /Continue with Keycloak/ }).click();
 		await loginAtKeycloak(page, email);
 
@@ -146,6 +163,7 @@ test.describe('J03 OIDC login @p1', () => {
 		page
 	}) => {
 		await gotoHydrated(page, '/login');
+		await showLoginForm(page);
 		await page.getByRole('link', { name: /Continue with Keycloak/ }).click();
 		// We really are at the provider (state cookie set, PKCE challenge issued).
 		await page.locator('#kc-login').waitFor();

@@ -387,10 +387,14 @@
 					{/if}
 				{/if}
 
-				<SsoProviderButtons
-					providers={data.ssoProviders}
-					returnUrl={page.url.searchParams.get('returnUrl')}
-				/>
+				{#if !useDemoDropdown}
+					<!-- SSO stays off the demo-account dropdown variant: it only appears
+					     once the user explicitly switches to the real login form. -->
+					<SsoProviderButtons
+						providers={data.ssoProviders}
+						returnUrl={page.url.searchParams.get('returnUrl')}
+					/>
+				{/if}
 			{:else}
 				<!-- 2FA Verification Form -->
 				<form
