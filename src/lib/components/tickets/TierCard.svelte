@@ -2,7 +2,6 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import type {
-		EventTokenSchema,
 		MembershipTierSchema,
 		TierRemainingTicketsSchema
 	} from '$lib/api/generated/types.gen';
@@ -26,12 +25,6 @@
 		canAttendWithoutLogin?: boolean;
 		/** Per-tier remaining tickets info (from my-status endpoint) */
 		tierRemainingInfo?: TierRemainingTicketsSchema;
-		/** Invitation-link token details when the page was loaded with `?et=`
-		 * (backend #923): a granting token lets an anonymous guest into
-		 * invited/invited_and_members tiers that the listing marks
-		 * `can_purchase: false` — the backend cannot know the guest yet, so the
-		 * claim happens at checkout via `X-Event-Token`. */
-		eventTokenDetails?: EventTokenSchema | null;
 		/** The event's IANA timezone, so sales windows render event-local (#474). */
 		timezone?: string | null;
 		/**
@@ -78,7 +71,6 @@
 		membershipTier = null,
 		canAttendWithoutLogin = false,
 		tierRemainingInfo,
-		eventTokenDetails = null,
 		timezone,
 		capacityDisclosed = true,
 		quickBuy,
@@ -95,34 +87,16 @@
 	const canTransact = $derived(isAuthenticated || canAttendWithoutLogin);
 
 	/**
-	 * A granting invitation-link token unlocks invited tiers for anonymous
-	 * guests (backend #923). Guest-only: a signed-in user's `can_purchase`
-	 * already reflects their real invitations. Members-only tiers stay
-	 * blocked, and a token for another event never applies — a public event
-	 * page can load token details for an unrelated `?et=`, and the backend
-	 * ignores other-event tokens at checkout.
-	 *
-	 * The token's `ticket_tiers` are deliberately NOT consulted: they are the
-	 * tiers auto-ASSIGNED on claim, not a purchase restriction. The backend's
-	 * assert_purchasable_by passes ANY invited tier for an invitation holder
-	 * unless that tier sets restrict_purchase_to_linked_invitations — a flag
-	 * the public tier schema does not expose, so the card stays permissive and
-	 * the rare restricted-and-unlinked tier gets a clear 403 at checkout.
-	 */
-	const tokenGrantsTierAccess = $derived.by(() => {
-		if (isAuthenticated || !canAttendWithoutLogin) return false;
-		if (!eventTokenDetails?.grants_invitation) return false;
-		if (eventTokenDetails.event !== tier.event_id) return false;
-		return tier.purchasable_by === 'invited' || tier.purchasable_by === 'invited_and_members';
-	});
-
-	/**
 	 * Check tier purchase status based on per-tier info from my-status endpoint
 	 * This takes precedence over the general isEligible flag
 	 */
 	const tierPurchaseStatus = $derived.by(() => {
-		// Tier-level purchasability (from tier listing endpoint, accounts for invitation-linked restrictions)
-		if (tier.can_purchase === false && !tokenGrantsTierAccess) {
+		// Tier-level purchasability from the tier listing endpoint. Since
+		// backend #923 the listing is token-aware for anonymous viewers too —
+		// with a granting invitation link (X-Event-Token on the SSR fetch) it
+		// reports can_purchase honestly for invited tiers, so the card simply
+		// trusts it; no client-side token logic belongs here.
+		if (tier.can_purchase === false) {
 			return { canPurchase: false, reason: 'Not available' };
 		}
 
@@ -471,7 +445,7 @@
 	name={tier.name}
 	icon={Ticket}
 	price={priceDisplay()}
-	muted={tier.can_purchase === false && !tokenGrantsTierAccess}
+	muted={tier.can_purchase === false}
 	{badges}
 	{meta}
 	{actions}

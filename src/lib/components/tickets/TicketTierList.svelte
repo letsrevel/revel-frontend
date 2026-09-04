@@ -177,7 +177,6 @@
 					{isEligible}
 					{membershipTier}
 					{canAttendWithoutLogin}
-					{eventTokenDetails}
 					tierRemainingInfo={getTierRemainingInfo(tier.id)}
 					{timezone}
 					{capacityDisclosed}
