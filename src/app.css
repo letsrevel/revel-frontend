@@ -1,4 +1,8 @@
 @import '@fontsource-variable/nata-sans';
+/* Google Sans Medium (500) ONLY, and only for the "Continue with Google"
+   button: Google's sign-in branding guidelines mandate it there. Never use it
+   for anything else — the app face is Nata Sans. */
+@import '@fontsource/google-sans/500.css';
 
 @tailwind base;
 @tailwind components;
@@ -80,8 +84,16 @@
 		   .dark. Google's own dark sign-in button keeps these colors too. */
 		--brand-google-blue: #4285f4;
 		--brand-google-green: #34a853;
-		--brand-google-yellow: #fbbc05;
-		--brand-google-red: #ea4335;
+		--brand-google-yellow: #fbbc04;
+		--brand-google-red: #e94235;
+		/* Google sign-in button chrome, straight from the branding-guidelines
+		   sample assets (light theme here, dark theme overridden in .dark).
+		   Like the mark above these are brand-mandated hexes, not UI tokens —
+		   the audit script doesn't parse them and MUST not: Google fixes the
+		   pairs. Light: #FFF fill / #747775 stroke / #1F1F1F text. */
+		--brand-google-fill: #ffffff;
+		--brand-google-stroke: #747775;
+		--brand-google-text: #1f1f1f;
 		--border: 268 35% 84%;
 		--input: 268 35% 84%;
 		--ring: 270 70% 48%;
@@ -156,6 +168,12 @@
 		--input: 270 25% 20%;
 		--ring: 268 60% 72%;
 		--brand-telegram-text: 200 85% 60%; /* 8.0:1 on dark background, 7.3:1 on dark popover (hand-verified) */
+		/* Google sign-in button, official dark theme (branding-guidelines
+		   sample: #131314 fill / #8E918F stroke / #E3E3E3 text; the four-color
+		   G stays as-is — Google's own dark button keeps it on the dark fill). */
+		--brand-google-fill: #131314;
+		--brand-google-stroke: #8e918f;
+		--brand-google-text: #e3e3e3;
 		/* See the light-mode definition: ink casts no shadow on aubergine. */
 		--poster-shadow: 0 10px 30px hsl(0 0% 0% / 0.5);
 		--poster-shadow-lg: 0 20px 50px hsl(0 0% 0% / 0.62);
