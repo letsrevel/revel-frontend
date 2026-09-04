@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.8.0] - 2026-09-04
+
+### Added
+
+- **Single sign-on (OIDC)**: "Continue with …" buttons on `/login` and `/register` for any identity provider the backend has configured, with a dedicated `/auth/callback` that signs you in and returns you to where you started; failed sign-ins show a translated explanation on the login page. A new "Linked sign-in methods" card on `/account/security` lists your connected providers and lets you unlink one (with confirmation).
+- **Guest invitation links**: on an invitation-link join page for an event that allows attending without an account, anonymous visitors get a "Continue as guest" option; the invitation token then travels with them to the event page — unlocking the invited-only tiers the link grants, and staying attached through guest checkout and guest RSVP (and across reloads via a cookie fallback).
+
+### Fixed
+
+- Guests confirming a checkout or RSVP via email no longer hit a generic "No data returned from confirmation" wall — the page now shows the backend's actual reason (tier not allowed, sale window closed, expired token, …), localized where recognized, and clicking an already-used confirmation link shows the "already confirmed" message instead of an error.
+- Logged-out visitors no longer see an enabled purchase button on ticket tiers they aren't allowed to buy (invited-only or members-only tiers): the card now shows a disabled button with a visible "Not Available" reason.
+
 ## [2.7.1] - 2026-09-04
 
 ### Added
