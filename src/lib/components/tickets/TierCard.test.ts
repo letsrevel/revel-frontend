@@ -65,7 +65,7 @@ describe('TierCard — inventory disclosure', () => {
 // event therefore saw an ENABLED CTA on an invited-only tier and hit a dead
 // confirmation link / 403 at checkout.
 describe('TierCard — can_purchase=false for anonymous guests', () => {
-	function renderAnonymousGuestCard(tier: TierSchemaWithId) {
+	function renderAnonymousGuestCard(tier: TierSchemaWithId): void {
 		render(TierCard, {
 			props: {
 				tier,
@@ -131,7 +131,7 @@ describe('TierCard — invitation-link token unlocks invited tiers for guests', 
 		tier: TierSchemaWithId,
 		eventTokenDetails: EventTokenSchema | null,
 		props: Record<string, unknown> = {}
-	) {
+	): void {
 		render(TierCard, {
 			props: {
 				tier,
@@ -184,7 +184,23 @@ describe('TierCard — invitation-link token unlocks invited tiers for guests', 
 		expect(screen.queryByRole('button', { name: /claim free ticket/i })).not.toBeInTheDocument();
 	});
 
-	it('restricts to the token’s tiers when the token names specific tiers', () => {
+	it('ignores tokens for another event', () => {
+		// A public event page can load token details for an unrelated ?et=
+		// token; the backend ignores other-event tokens at checkout, so the
+		// card must not enable the restricted tier.
+		renderWithToken(invitedTier(), makeToken({ event: 'other-event' }));
+		expect(screen.queryByRole('button', { name: /claim free ticket/i })).not.toBeInTheDocument();
+	});
+
+	// The token's ticket_tiers are the tiers auto-ASSIGNED on claim, not a
+	// purchase restriction: the backend's assert_purchasable_by passes ANY
+	// invited tier for an invitation holder unless that tier sets
+	// restrict_purchase_to_linked_invitations — a flag the public tier schema
+	// does not expose. So a granting token unlocks invited tiers regardless of
+	// which tiers it names; the rare restricted-and-unlinked tier gets a clear
+	// 403 at checkout (surfaced since this PR) rather than being silently
+	// blocked here alongside legitimately purchasable ones.
+	it('unlocks an invited tier the token happens to name', () => {
 		const tierScopedToken = makeToken({
 			ticket_tiers: [makeTier({ id: 'tier-1' }) as TicketTierSchema]
 		});
@@ -192,12 +208,12 @@ describe('TierCard — invitation-link token unlocks invited tiers for guests', 
 		expect(screen.getByRole('button', { name: /claim free ticket/i })).toBeEnabled();
 	});
 
-	it('blocks tiers the token does not name', () => {
+	it('also unlocks an invited tier the token does not name', () => {
 		const otherTierToken = makeToken({
 			ticket_tiers: [makeTier({ id: 'other-tier' }) as TicketTierSchema]
 		});
 		renderWithToken(invitedTier(), otherTierToken);
-		expect(screen.queryByRole('button', { name: /claim free ticket/i })).not.toBeInTheDocument();
+		expect(screen.getByRole('button', { name: /claim free ticket/i })).toBeEnabled();
 	});
 
 	it('never applies the token path for authenticated users', () => {

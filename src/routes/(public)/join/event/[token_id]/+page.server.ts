@@ -35,8 +35,10 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 	// The token preview carries no event settings, so ask the event itself
 	// whether guests may proceed without an account (backend #923: the guest
 	// checkout/RSVP endpoints claim the link via X-Event-Token). The token
-	// header makes a private event visible for this lookup; failure just means
-	// no guest shortcut is offered.
+	// header makes a private event visible for this lookup. The client resolves
+	// HTTP errors rather than throwing (`?? false` covers those); the catch is
+	// only for network-level failures. Either way the lookup is non-critical —
+	// no guest shortcut is offered and the sign-in path remains available.
 	let canAttendWithoutLogin = false;
 	try {
 		const eventResponse = await eventpublicdetailsGetEvent({
@@ -46,7 +48,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 		});
 		canAttendWithoutLogin = eventResponse.data?.can_attend_without_login ?? false;
 	} catch {
-		// Non-critical: the sign-in path always remains available.
+		// Network failure only — see above.
 	}
 
 	return {

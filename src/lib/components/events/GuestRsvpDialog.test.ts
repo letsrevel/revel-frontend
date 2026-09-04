@@ -15,7 +15,7 @@ vi.mock('$lib/stores/auth.svelte', () => ({
 // pointer-events toggling on its own timers, which makes userEvent's pointer
 // simulation flaky for the second dialog rendered in one file. fireEvent
 // drives bind:value and form submission deterministically.
-async function fillAndSubmit() {
+async function fillAndSubmit(): Promise<void> {
 	await fireEvent.input(screen.getByLabelText(/email address/i), {
 		target: { value: 'guest@example.com' }
 	});
@@ -24,7 +24,7 @@ async function fillAndSubmit() {
 	await fireEvent.click(screen.getByRole('button', { name: /submit rsvp/i }));
 }
 
-function renderDialog(props: Record<string, unknown> = {}) {
+function renderDialog(props: Record<string, unknown> = {}): void {
 	render(GuestRsvpDialog, {
 		props: {
 			open: true,

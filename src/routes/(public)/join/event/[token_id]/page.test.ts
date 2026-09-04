@@ -32,7 +32,7 @@ function makeToken(overrides: Partial<EventTokenSchema> = {}): EventTokenSchema 
 	};
 }
 
-function renderPage(data: Record<string, unknown>) {
+function renderPage(data: Record<string, unknown>): void {
 	render(QueryClientTestWrapper, {
 		props: {
 			client: new QueryClient({

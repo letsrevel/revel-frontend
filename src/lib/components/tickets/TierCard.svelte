@@ -98,19 +98,22 @@
 	 * A granting invitation-link token unlocks invited tiers for anonymous
 	 * guests (backend #923). Guest-only: a signed-in user's `can_purchase`
 	 * already reflects their real invitations. Members-only tiers stay
-	 * blocked, and a token that names specific tiers only unlocks those.
+	 * blocked, and a token for another event never applies — a public event
+	 * page can load token details for an unrelated `?et=`, and the backend
+	 * ignores other-event tokens at checkout.
+	 *
+	 * The token's `ticket_tiers` are deliberately NOT consulted: they are the
+	 * tiers auto-ASSIGNED on claim, not a purchase restriction. The backend's
+	 * assert_purchasable_by passes ANY invited tier for an invitation holder
+	 * unless that tier sets restrict_purchase_to_linked_invitations — a flag
+	 * the public tier schema does not expose, so the card stays permissive and
+	 * the rare restricted-and-unlinked tier gets a clear 403 at checkout.
 	 */
 	const tokenGrantsTierAccess = $derived.by(() => {
 		if (isAuthenticated || !canAttendWithoutLogin) return false;
 		if (!eventTokenDetails?.grants_invitation) return false;
-		if (tier.purchasable_by !== 'invited' && tier.purchasable_by !== 'invited_and_members') {
-			return false;
-		}
-		const tokenTiers = eventTokenDetails.ticket_tiers;
-		if (tokenTiers && tokenTiers.length > 0) {
-			return tokenTiers.some((tokenTier) => tokenTier.id === tier.id);
-		}
-		return true;
+		if (eventTokenDetails.event !== tier.event_id) return false;
+		return tier.purchasable_by === 'invited' || tier.purchasable_by === 'invited_and_members';
 	});
 
 	/**

@@ -22,4 +22,29 @@ describe('extractErrorMessage', () => {
 	it('still reads an Error message', () => {
 		expect(extractErrorMessage(new Error('Boom'))).toBe('Boom');
 	});
+
+	// The full backend error vocabulary (api-error-detail.ts): django-ninja's
+	// request-validation 422 ships `detail` as a LIST, and model validation
+	// ships `{ errors: { field: [...] } }` — both must surface readable text,
+	// not fall through to the generic network-error copy.
+	it('reads the 422 request-validation list-shaped detail', () => {
+		expect(
+			extractErrorMessage({ detail: [{ msg: 'Email required' }, { msg: 'Name required' }] })
+		).toBe('Email required, Name required');
+	});
+
+	it('reads a ValidationErrorResponse errors map', () => {
+		expect(extractErrorMessage({ errors: { email: ['Invalid email'] } })).toBe('Invalid email');
+	});
+
+	it('prefers the localized reason_code copy for an eligibility refusal', () => {
+		expect(
+			extractErrorMessage({
+				allowed: false,
+				event_id: 'event-1',
+				reason_code: 'membership_tier_required',
+				reason: 'raw backend prose'
+			})
+		).toBe('This ticket is reserved for specific membership tiers.');
+	});
 });

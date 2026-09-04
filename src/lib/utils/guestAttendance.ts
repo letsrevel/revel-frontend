@@ -1,4 +1,10 @@
 import * as m from '$lib/paraglide/messages.js';
+import {
+	extractApiErrorDetail,
+	extractValidationErrors,
+	isResponseMessage
+} from '$lib/utils/api-error-detail';
+import { getEligibilityRefusalMessage } from '$lib/utils/eligibility';
 
 /**
  * Maps backend error messages to localized user-friendly messages
@@ -97,20 +103,33 @@ export function getLocalizedError(errorMessage: string | undefined): string {
 }
 
 /**
- * Reads the message out of a backend error payload:
- * `{ detail }`, EventUserEligibility `{ allowed, reason }`, or `{ message }`.
+ * Bare `{ reason: string }` probe for eligibility-ish payloads that lack the
+ * `event_id` the full `isEligibilityRefusal` predicate requires. Real
+ * predicate narrowing, no casts (house rule from api-error-detail.ts).
  */
-function messageFromErrorBody(body: Record<string, unknown>): string | undefined {
-	if (typeof body.detail === 'string') {
-		return body.detail;
+function plainReason(value: unknown): string | null {
+	if (value && typeof value === 'object' && 'reason' in value) {
+		const reason = value.reason;
+		if (typeof reason === 'string' && reason !== '') return reason;
 	}
-	if (typeof body.reason === 'string') {
-		return body.reason;
-	}
-	if (typeof body.message === 'string') {
-		return body.message;
-	}
-	return undefined;
+	return null;
+}
+
+/**
+ * Reads the message out of a backend error payload by composing the canonical
+ * shape-safe helpers (api-error-detail.ts, eligibility.ts) instead of
+ * hand-rolled casts: `detail` (string or 422 list) → eligibility refusal
+ * (reason_code-aware) → bare `reason` → `{ errors }` map → `message` last
+ * (genuine on almost no endpoints — see backendMessage's rationale).
+ */
+function messageFromErrorBody(body: unknown): string | null {
+	return (
+		extractApiErrorDetail(body) ??
+		getEligibilityRefusalMessage(body) ??
+		plainReason(body) ??
+		extractValidationErrors(body) ??
+		(isResponseMessage(body) ? body.message : null)
+	);
 }
 
 /**
@@ -126,15 +145,15 @@ export function extractErrorMessage(error: unknown): string {
 
 	if (error && typeof error === 'object') {
 		// Some wrappers nest the payload under `body`
-		if ('body' in error && error.body && typeof error.body === 'object') {
-			const fromBody = messageFromErrorBody(error.body as Record<string, unknown>);
+		if ('body' in error) {
+			const fromBody = messageFromErrorBody(error.body);
 			if (fromBody) {
 				return fromBody;
 			}
 		}
 
 		// The @hey-api client's `response.error` IS the parsed body itself
-		const direct = messageFromErrorBody(error as Record<string, unknown>);
+		const direct = messageFromErrorBody(error);
 		if (direct) {
 			return direct;
 		}
