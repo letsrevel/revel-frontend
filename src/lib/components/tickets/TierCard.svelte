@@ -116,12 +116,14 @@
 	});
 
 	/**
-	 * Effective eligibility - considers both general eligibility and per-tier status
-	 * If we have tier-specific info, use it; otherwise fall back to isEligible
+	 * Effective eligibility. `tierPurchaseStatus` already folds in every input:
+	 * `tier.can_purchase === false` always wins (the tier listing sets it for
+	 * anonymous visitors on any non-public tier — gating it behind
+	 * `tierRemainingInfo`, which only authenticated users have, let logged-out
+	 * guests buy into invited-only tiers), then per-user remaining info when
+	 * present, then the general `isEligible` fallback.
 	 */
-	const effectiveEligible = $derived(
-		tierRemainingInfo ? tierPurchaseStatus.canPurchase : isEligible
-	);
+	const effectiveEligible = $derived(tierPurchaseStatus.canPurchase);
 
 	// Check if tier has ID (required for checkout)
 	const hasId = $derived(hasTierId(tier));

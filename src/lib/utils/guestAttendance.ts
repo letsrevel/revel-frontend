@@ -97,6 +97,23 @@ export function getLocalizedError(errorMessage: string | undefined): string {
 }
 
 /**
+ * Reads the message out of a backend error payload:
+ * `{ detail }`, EventUserEligibility `{ allowed, reason }`, or `{ message }`.
+ */
+function messageFromErrorBody(body: Record<string, unknown>): string | undefined {
+	if (typeof body.detail === 'string') {
+		return body.detail;
+	}
+	if (typeof body.reason === 'string') {
+		return body.reason;
+	}
+	if (typeof body.message === 'string') {
+		return body.message;
+	}
+	return undefined;
+}
+
+/**
  * Extracts error message from various error formats
  * @param error - Error object from API call
  * @returns Error message string
@@ -108,19 +125,18 @@ export function extractErrorMessage(error: unknown): string {
 	}
 
 	if (error && typeof error === 'object') {
-		// Handle @hey-api/client error format
+		// Some wrappers nest the payload under `body`
 		if ('body' in error && error.body && typeof error.body === 'object') {
-			const body = error.body as Record<string, unknown>;
-			if ('detail' in body && typeof body.detail === 'string') {
-				return body.detail;
+			const fromBody = messageFromErrorBody(error.body as Record<string, unknown>);
+			if (fromBody) {
+				return fromBody;
 			}
-			// Handle EventUserEligibility format (e.g. { allowed: false, reason: "..." })
-			if ('reason' in body && typeof body.reason === 'string') {
-				return body.reason;
-			}
-			if ('message' in body && typeof body.message === 'string') {
-				return body.message;
-			}
+		}
+
+		// The @hey-api client's `response.error` IS the parsed body itself
+		const direct = messageFromErrorBody(error as Record<string, unknown>);
+		if (direct) {
+			return direct;
 		}
 
 		// Handle Error instance

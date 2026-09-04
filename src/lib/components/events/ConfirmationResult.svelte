@@ -40,6 +40,19 @@
 				body: { token }
 			});
 
+			// The client does not throw on non-2xx: rejections (403 tier rule,
+			// 400 eligibility, expired/used token, seat errors) arrive as
+			// `response.error` with `data` undefined. Pass the raw payload to the
+			// error mapper so its detail/reason gets localized instead of being
+			// masked by the generic no-data message.
+			if (response.error) {
+				result = {
+					success: false,
+					error: handleGuestAttendanceError(response.error)
+				};
+				return;
+			}
+
 			const data = response.data;
 
 			if (!data) {
