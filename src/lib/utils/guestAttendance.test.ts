@@ -1,5 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { extractErrorMessage } from './guestAttendance';
+import { extractErrorMessage, getLocalizedError } from './guestAttendance';
+
+describe('getLocalizedError', () => {
+	it('maps the reused-token 401 ("Token is blacklisted.") to the already-confirmed copy', () => {
+		// Guests double-click confirmation email links all the time; the raw
+		// backend sentence would render verbatim otherwise.
+		expect(getLocalizedError('Token is blacklisted.')).toBe(
+			'This action has already been confirmed.'
+		);
+	});
+});
 
 describe('extractErrorMessage', () => {
 	// The @hey-api client resolves non-2xx as { error } where `error` IS the

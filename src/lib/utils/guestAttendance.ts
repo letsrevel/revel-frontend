@@ -50,10 +50,13 @@ export function getLocalizedError(errorMessage: string | undefined): string {
 		return m['guest_attendance.token_expired']();
 	}
 
-	// Pattern: Token already used
+	// Pattern: Token already used. The confirm endpoint blacklists a token on
+	// first use, so a second click on the same email link answers 401
+	// "Token is blacklisted." — the same user-facing situation.
 	if (
-		lowerMessage.includes('already') &&
-		(lowerMessage.includes('confirmed') || lowerMessage.includes('used'))
+		lowerMessage.includes('blacklisted') ||
+		(lowerMessage.includes('already') &&
+			(lowerMessage.includes('confirmed') || lowerMessage.includes('used')))
 	) {
 		return m['guest_attendance.token_used']();
 	}
