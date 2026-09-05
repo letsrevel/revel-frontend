@@ -107,7 +107,12 @@ async function refreshSession(
 	const rememberMe = event.cookies.get('remember_me') === 'true';
 
 	try {
-		const { data, error: refreshError } = await tokenRefresh({ body: { refresh: refreshToken } });
+		// `event.fetch` (not the global) so `handleFetch` below rewrites this call
+		// to INTERNAL_API_URL — see #883.
+		const { data, error: refreshError } = await tokenRefresh({
+			body: { refresh: refreshToken },
+			fetch: event.fetch
+		});
 
 		if (refreshError || !data || !data.access || !data.refresh) {
 			log.warning('token_refresh_failed', { error: refreshError });

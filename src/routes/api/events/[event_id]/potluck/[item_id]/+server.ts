@@ -26,7 +26,7 @@ function getErrorMessage(err: unknown): unknown {
  * PATCH /api/events/[event_id]/potluck/[item_id]
  * Update a potluck item
  */
-export const PATCH: RequestHandler = async ({ request, params, locals }) => {
+export const PATCH: RequestHandler = async ({ request, params, locals, fetch }) => {
 	if (!locals.user?.accessToken) {
 		throw error(401, 'Unauthorized');
 	}
@@ -44,7 +44,8 @@ export const PATCH: RequestHandler = async ({ request, params, locals }) => {
 			},
 			headers: {
 				Authorization: `Bearer ${locals.user.accessToken}`
-			}
+			},
+			fetch
 		});
 
 		if (!response.data) {
@@ -79,7 +80,7 @@ export const PATCH: RequestHandler = async ({ request, params, locals }) => {
  * DELETE /api/events/[event_id]/potluck/[item_id]
  * Delete a potluck item
  */
-export const DELETE: RequestHandler = async ({ params, locals }) => {
+export const DELETE: RequestHandler = async ({ params, locals, fetch }) => {
 	if (!locals.user?.accessToken) {
 		throw error(401, 'Unauthorized');
 	}
@@ -89,7 +90,8 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 			path: { event_id: params.event_id, item_id: params.item_id },
 			headers: {
 				Authorization: `Bearer ${locals.user.accessToken}`
-			}
+			},
+			fetch
 		});
 
 		return json({ success: true });
