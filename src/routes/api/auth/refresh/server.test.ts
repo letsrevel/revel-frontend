@@ -10,8 +10,14 @@ import { POST } from './+server';
 
 const mockedTokenRefresh = vi.mocked(tokenRefresh);
 
+interface FakeCookies {
+	cookies: Cookies;
+	jar: Map<string, string>;
+	deleted: string[];
+}
+
 /** A cookie jar that records writes so assertions can read them back. */
-function fakeCookies(initial: Record<string, string> = {}) {
+function fakeCookies(initial: Record<string, string> = {}): FakeCookies {
 	const jar = new Map<string, string>(Object.entries(initial));
 	const deleted: string[] = [];
 	const cookies = {
@@ -30,7 +36,7 @@ function fakeCookies(initial: Record<string, string> = {}) {
 /** The request-scoped fetch SvelteKit hands the handler; `handleFetch` wraps it. */
 const requestFetch = vi.fn() as unknown as typeof fetch;
 
-function postArgs(cookies: Cookies) {
+function postArgs(cookies: Cookies): Parameters<typeof POST>[0] {
 	return { cookies, fetch: requestFetch } as unknown as Parameters<typeof POST>[0];
 }
 
