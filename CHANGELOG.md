@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.8.1] - 2026-09-06
+
+### Fixed
+
+- Signing in no longer appears to succeed and then silently drop back to logged out on self-hosted or containerized deployments where the public API address isn't reachable from inside the frontend container: the session-refresh call — and the potluck endpoints — now go through the internal API address like every other server-side request.
+
 ## [2.8.0] - 2026-09-04
 
 ### Added
