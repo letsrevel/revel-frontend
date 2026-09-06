@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.8.2] - 2026-09-06
+
+### Fixed
+
+- Long email addresses (and email-shaped display names) no longer overflow the Submitter Information card on the questionnaire submission review page — they now wrap inside the card.
+
 ## [2.8.1] - 2026-09-06
 
 ### Fixed
