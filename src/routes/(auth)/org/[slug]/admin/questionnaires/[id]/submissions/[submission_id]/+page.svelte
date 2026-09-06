@@ -272,11 +272,11 @@
 							class="shrink-0"
 							clickable={true}
 						/>
-						<div class="flex-1">
+						<div class="min-w-0 flex-1">
 							<p class="text-sm font-medium text-muted-foreground">
 								{m['questionnaireSubmissionDetailPage.nameLabel']()}
 							</p>
-							<p class="text-base font-medium">
+							<p class="break-words text-base font-medium">
 								{data.submission.user.display_name}
 								{#if data.submission.user.pronouns}
 									<span class="font-normal text-muted-foreground"
@@ -319,7 +319,7 @@
 						>
 							<Mail class="h-5 w-5 text-primary" aria-hidden="true" />
 						</div>
-						<div class="flex-1">
+						<div class="min-w-0 flex-1">
 							<p class="text-sm font-medium text-muted-foreground">
 								{m['questionnaireSubmissionDetailPage.emailLabel']()}
 							</p>
