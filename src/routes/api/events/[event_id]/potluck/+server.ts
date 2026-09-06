@@ -6,7 +6,7 @@ import { potluckListPotluckItems, potluckCreatePotluckItem } from '$lib/api';
  * GET /api/events/[event_id]/potluck
  * List all potluck items for an event
  */
-export const GET: RequestHandler = async ({ params, locals }) => {
+export const GET: RequestHandler = async ({ params, locals, fetch }) => {
 	if (!locals.user?.accessToken) {
 		throw error(401, 'Unauthorized');
 	}
@@ -16,7 +16,8 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 			path: { event_id: params.event_id },
 			headers: {
 				Authorization: `Bearer ${locals.user.accessToken}`
-			}
+			},
+			fetch
 		});
 
 		if (!response.data) {
@@ -34,7 +35,7 @@ export const GET: RequestHandler = async ({ params, locals }) => {
  * POST /api/events/[event_id]/potluck
  * Create a new potluck item
  */
-export const POST: RequestHandler = async ({ request, params, locals }) => {
+export const POST: RequestHandler = async ({ request, params, locals, fetch }) => {
 	if (!locals.user?.accessToken) {
 		throw error(401, 'Unauthorized');
 	}
@@ -53,7 +54,8 @@ export const POST: RequestHandler = async ({ request, params, locals }) => {
 			},
 			headers: {
 				Authorization: `Bearer ${locals.user.accessToken}`
-			}
+			},
+			fetch
 		});
 
 		if (!response.data) {

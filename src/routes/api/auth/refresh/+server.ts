@@ -21,8 +21,15 @@ import {
  *
  * The client can't access the httpOnly refresh token cookie directly,
  * so this server endpoint reads it and calls the backend.
+ *
+ * The request-scoped `fetch` MUST be forwarded to the SDK call (see #883).
+ * Without it the generated client falls back to `globalThis.fetch`, which
+ * `handleFetch` never sees — so the refresh is not rewritten to
+ * INTERNAL_API_URL. In containerized deployments where the browser-facing API
+ * origin is unreachable from the frontend container, that makes sign-in appear
+ * to succeed and then silently fall back to logged-out.
  */
-export const POST: RequestHandler = async ({ cookies }) => {
+export const POST: RequestHandler = async ({ cookies, fetch }) => {
 	const refreshToken = cookies.get('refresh_token');
 	// Read the "remember me" preference to preserve cookie behavior
 	const rememberMe = cookies.get('remember_me') === 'true';
@@ -39,7 +46,8 @@ export const POST: RequestHandler = async ({ cookies }) => {
 		const { data, error: refreshError } = await tokenRefresh({
 			body: {
 				refresh: refreshToken
-			}
+			},
+			fetch
 		});
 
 		if (refreshError || !data || !data.access) {
