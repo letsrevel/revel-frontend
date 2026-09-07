@@ -5,7 +5,13 @@ vi.mock('$lib/api/generated/sdk.gen', () => ({
 }));
 
 import { apiApiVersion } from '$lib/api/generated/sdk.gen';
-import { getFeatures, getDemoMode, getSsoProviders, __resetFeaturesCache } from './features';
+import {
+	getFeatures,
+	getDemoMode,
+	getSsoProviders,
+	getDemoBookingUrl,
+	__resetFeaturesCache
+} from './features';
 import { DEFAULT_FEATURES } from '$lib/utils/features';
 
 const mockedApiApiVersion = vi.mocked(apiApiVersion);
@@ -158,6 +164,58 @@ describe('getSsoProviders', () => {
 		} as never);
 		await getFeatures(fakeFetch);
 		await getSsoProviders(fakeFetch);
+		expect(mockedApiApiVersion).toHaveBeenCalledTimes(1);
+	});
+});
+
+describe('getDemoBookingUrl', () => {
+	it('returns the URL from the /version payload', async () => {
+		mockedApiApiVersion.mockResolvedValue({
+			data: {
+				version: '1.0.0',
+				features: DEFAULT_FEATURES,
+				demo_booking_url: 'https://cal.example.com/revel'
+			},
+			error: undefined
+		} as never);
+
+		expect(await getDemoBookingUrl(fakeFetch)).toBe('https://cal.example.com/revel');
+	});
+
+	it('fails CLOSED to null when the call throws', async () => {
+		mockedApiApiVersion.mockRejectedValue(new Error('network'));
+		expect(await getDemoBookingUrl(fakeFetch)).toBeNull();
+	});
+
+	it('fails CLOSED to null when the field is absent or null', async () => {
+		mockedApiApiVersion.mockResolvedValue({
+			data: { version: '1.0.0', features: DEFAULT_FEATURES, demo_booking_url: null },
+			error: undefined
+		} as never);
+
+		expect(await getDemoBookingUrl(fakeFetch)).toBeNull();
+	});
+
+	it('rejects non-http(s) values (a link href must never be javascript:)', async () => {
+		mockedApiApiVersion.mockResolvedValue({
+			data: {
+				version: '1.0.0',
+				features: DEFAULT_FEATURES,
+				demo_booking_url: 'javascript:alert(1)'
+			},
+			error: undefined
+		} as never);
+
+		expect(await getDemoBookingUrl(fakeFetch)).toBeNull();
+	});
+
+	it('shares the cache with getFeatures (one upstream call total)', async () => {
+		mockedApiApiVersion.mockResolvedValue({
+			data: { version: '1.0.0', features: DEFAULT_FEATURES, demo_booking_url: null },
+			error: undefined
+		} as never);
+		await getFeatures(fakeFetch);
+		await getDemoBookingUrl(fakeFetch);
 		expect(mockedApiApiVersion).toHaveBeenCalledTimes(1);
 	});
 });
