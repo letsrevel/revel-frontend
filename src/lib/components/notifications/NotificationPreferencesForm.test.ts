@@ -277,6 +277,48 @@ describe('NotificationPreferencesForm', () => {
 		expect(screen.getByRole('button', { name: /save changes/i })).toBeDisabled();
 	});
 
+	it('accepts the API\'s "HH:MM:SS" digest time without marking the form invalid (#889)', () => {
+		// GET /api/notification-preferences returns a Django time string with
+		// seconds; the form must normalise it instead of failing validation.
+		renderForm({
+			preferences: { ...mockPreferences, digest_send_time: '09:00:00' },
+			authToken: 'test-token'
+		});
+
+		expect(screen.getByLabelText('Send time')).toHaveValue('09:00');
+		expect(screen.queryByText(/invalid time format/i)).not.toBeInTheDocument();
+		// Untouched form: no changes detected, so Save is disabled without error
+		expect(screen.getByRole('button', { name: /save changes/i })).toBeDisabled();
+	});
+
+	it('sends the digest time as "HH:MM" even when seeded with seconds (#889)', async () => {
+		const user = userEvent.setup();
+
+		const { notificationpreferenceUpdatePreferences } = await import('$lib/api');
+		vi.mocked(notificationpreferenceUpdatePreferences).mockResolvedValue({
+			data: mockPreferences,
+			error: undefined,
+			response: {} as Response
+		});
+
+		renderForm({
+			preferences: { ...mockPreferences, digest_send_time: '09:00:00' },
+			authToken: 'test-token'
+		});
+
+		// Make an unrelated change so Save enables, then save
+		await user.click(screen.getByRole('checkbox', { name: /event reminders/i }));
+		await user.click(screen.getByRole('button', { name: /save changes/i }));
+
+		await waitFor(() => {
+			expect(notificationpreferenceUpdatePreferences).toHaveBeenCalledWith(
+				expect.objectContaining({
+					body: expect.objectContaining({ digest_send_time: '09:00' })
+				})
+			);
+		});
+	});
+
 	it('handles null preferences gracefully', () => {
 		renderForm({
 			preferences: null,
