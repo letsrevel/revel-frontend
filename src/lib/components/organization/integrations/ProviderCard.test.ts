@@ -15,6 +15,7 @@ import {
 vi.mock('$lib/api/generated/sdk.gen', async (importOriginal) => ({
 	...(await importOriginal<typeof import('$lib/api/generated/sdk.gen')>()),
 	organizationintegrationsAccounts: vi.fn(),
+	organizationintegrationsRemoteEvents: vi.fn().mockResolvedValue({ data: [], error: undefined }),
 	organizationintegrationsConnect: vi.fn(),
 	organizationintegrationsDisconnect: vi.fn(),
 	organizationintegrationsUpdate: vi.fn()
@@ -94,6 +95,7 @@ describe('ProviderCard', () => {
 		expect(screen.getByText(/since /)).toBeInTheDocument();
 		expect(screen.getByRole('checkbox', { name: /up to date automatically/ })).not.toBeChecked();
 		expect(screen.getByRole('button', { name: 'Disconnect' })).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'Import from Eventbrite' })).toBeInTheDocument();
 		expect(screen.queryByRole('button', { name: 'Connect Eventbrite' })).toBeNull();
 	});
 

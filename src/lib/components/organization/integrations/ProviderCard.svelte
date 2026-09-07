@@ -9,6 +9,7 @@
 		AlertTriangle,
 		Check,
 		ExternalLink,
+		Download,
 		Loader2,
 		Plug,
 		Unplug
@@ -32,6 +33,7 @@
 	} from '$lib/utils/integration-errors';
 	import { connectionView } from './connection-view';
 	import AccountPicker from './AccountPicker.svelte';
+	import ImportDialog from './ImportDialog.svelte';
 
 	interface Props {
 		organizationSlug: string;
@@ -47,6 +49,7 @@
 
 	let actionError = $state<IntegrationErrorInfo | null>(null);
 	let showDisconnect = $state(false);
+	let showImport = $state(false);
 	// Optimistic mirror of the checkbox (writable derived): the server value
 	// wins whenever the list is re-fetched, and a failed PATCH snaps it back.
 	let autoSync = $derived(connection.auto_sync ?? false);
@@ -288,6 +291,17 @@
 				{/if}
 			</Button>
 		{/if}
+		{#if view.kind === 'active'}
+			<Button
+				variant="outline"
+				onclick={() => (showImport = true)}
+				disabled={!browser}
+				class="inline-flex items-center gap-2"
+			>
+				<Download class="h-4 w-4" aria-hidden="true" />
+				{m['integrations.import.button']({ platform })}
+			</Button>
+		{/if}
 		{#if view.canDisconnect}
 			<Button
 				variant="outline"
@@ -311,3 +325,14 @@
 	onConfirm={() => disconnect.mutate()}
 	onCancel={() => (showDisconnect = false)}
 />
+
+{#if browser && view.kind === 'active'}
+	<ImportDialog
+		open={showImport}
+		onOpenChange={(open) => (showImport = open)}
+		{organizationSlug}
+		provider={connection.provider}
+		{platform}
+		stripeConnected={connection.stripe_connected ?? false}
+	/>
+{/if}
