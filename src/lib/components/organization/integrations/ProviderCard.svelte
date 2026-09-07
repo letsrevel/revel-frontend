@@ -47,12 +47,9 @@
 
 	let actionError = $state<IntegrationErrorInfo | null>(null);
 	let showDisconnect = $state(false);
-	// Optimistic mirror of the checkbox; the server value wins whenever the
-	// list is re-fetched, and a failed PATCH snaps it back.
-	let autoSync = $state(false);
-	$effect(() => {
-		autoSync = connection.auto_sync ?? false;
-	});
+	// Optimistic mirror of the checkbox (writable derived): the server value
+	// wins whenever the list is re-fetched, and a failed PATCH snaps it back.
+	let autoSync = $derived(connection.auto_sync ?? false);
 
 	function toInfo(err: unknown): IntegrationErrorInfo {
 		return isIntegrationErrorInfo(err) ? err : integrationErrorFromResponse(err, platform);

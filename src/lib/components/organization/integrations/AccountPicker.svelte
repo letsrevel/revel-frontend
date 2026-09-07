@@ -52,9 +52,7 @@
 		},
 		onSuccess: () => onSelected(),
 		onError: (err: unknown) => {
-			submitError = isIntegrationErrorInfo(err)
-				? err
-				: integrationErrorFromResponse(err, platform);
+			submitError = isIntegrationErrorInfo(err) ? err : integrationErrorFromResponse(err, platform);
 		}
 	}));
 
