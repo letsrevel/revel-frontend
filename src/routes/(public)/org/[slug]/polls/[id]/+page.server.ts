@@ -18,7 +18,6 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 	});
 
 	if (res.error) {
-		throwIfTransientUpstream(res.response);
 		const status = res.response?.status ?? 500;
 		// Backend distinguishes 403 (poll exists, caller not in any audience)
 		// from 404 (poll genuinely does not exist). Render an inline "no
@@ -32,9 +31,13 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 			};
 		}
 		log.error('poll_load_failed', { error: res.error, status });
+		// After logging (so throttling/outages stay visible in the structured
+		// logs), a transient upstream failure (429/5xx) becomes a 503 page.
+		throwIfTransientUpstream(res.response);
 		const message = extractErrorMessage(res.error, 'Failed to load poll');
-		// 403 is handled above; preserve any other upstream client-error status
-		// (401/404/410/422) and only normalize 5xx / transport failures to 500.
+		// 403 is handled above and 429/5xx became a 503 above; preserve any
+		// other upstream client-error status (401/404/410/422). Only a
+		// status-less transport failure still falls back to 500 here.
 		throw error(status >= 400 && status < 500 ? status : 500, message);
 	}
 

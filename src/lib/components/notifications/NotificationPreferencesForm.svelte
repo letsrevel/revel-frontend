@@ -47,9 +47,10 @@
 	// The API returns digest_send_time as Django "HH:MM:SS"; the form, the
 	// validation regex, and the payload all use "HH:MM" — normalise every read
 	// of the preference or Save starts out disabled with "Invalid time format"
-	// until the time is retyped (#889).
+	// until the time is retyped (#889). Only well-formed values are truncated;
+	// anything else passes through unchanged so validation still rejects it.
 	function toHHMM(time: string): string {
-		return time.slice(0, 5);
+		return /^\d{2}:\d{2}(:\d{2})?$/.test(time) ? time.slice(0, 5) : time;
 	}
 
 	const queryClient = useQueryClient();

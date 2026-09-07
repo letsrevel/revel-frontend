@@ -286,9 +286,20 @@ describe('NotificationPreferencesForm', () => {
 		});
 
 		expect(screen.getByLabelText('Send time')).toHaveValue('09:00');
-		expect(screen.queryByText(/invalid time format/i)).not.toBeInTheDocument();
+		expect(screen.queryByText(/please enter a valid time/i)).not.toBeInTheDocument();
 		// Untouched form: no changes detected, so Save is disabled without error
 		expect(screen.getByRole('button', { name: /save changes/i })).toBeDisabled();
+	});
+
+	it('does not truncate malformed digest times — validation still rejects them', () => {
+		// toHHMM only normalises well-formed "HH:MM[:SS]" values; a corrupt
+		// preference must NOT be silently truncated into something submittable.
+		renderForm({
+			preferences: { ...mockPreferences, digest_send_time: '99:99:00' },
+			authToken: 'test-token'
+		});
+
+		expect(screen.getByText(/please enter a valid time/i)).toBeInTheDocument();
 	});
 
 	it('sends the digest time as "HH:MM" even when seeded with seconds (#889)', async () => {

@@ -23,9 +23,10 @@
 
 	// Define error configurations for different status codes. `tone` drives
 	// the ToneTile icon chip below — semantic, not decorative: info (404,
-	// benign miss), warning (401, needs auth), neutral (410, gone), danger
-	// (403/500, access/server failure). 403 and 500 share a tone (as the old
-	// red/red pairing did) but stay visually distinct via icon + copy, never
+	// benign miss), warning (401 needs auth, 503 transient upstream
+	// busy/outage — both recoverable by the visitor), neutral (410, gone),
+	// danger (403/500, access/server failure). Statuses that share a tone
+	// (403/500, 401/503) stay visually distinct via icon + copy, never
 	// color alone.
 	const errorConfigs: Record<
 		number,

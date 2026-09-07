@@ -27,12 +27,12 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	});
 
 	if (eventError || !event) {
-		throwIfTransientUpstream(eventResponse);
 		log.error('questionnaire_event_fetch_failed', {
 			error: eventError,
 			orgSlug: org_slug,
 			eventSlug: event_slug
 		});
+		throwIfTransientUpstream(eventResponse);
 		throw error(404, 'Event not found');
 	}
 
@@ -57,8 +57,8 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	});
 
 	if (questionnaireError || !questionnaire) {
-		throwIfTransientUpstream(questionnaireResponse);
 		log.error('questionnaire_fetch_failed', { error: questionnaireError, questionnaireId });
+		throwIfTransientUpstream(questionnaireResponse);
 		throw error(404, 'Questionnaire not found');
 	}
 

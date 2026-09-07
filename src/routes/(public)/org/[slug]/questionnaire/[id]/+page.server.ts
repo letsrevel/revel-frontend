@@ -28,8 +28,8 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 	});
 
 	if (orgError || !organization) {
-		throwIfTransientUpstream(orgResponse);
 		log.error('membership_questionnaire_org_fetch_failed', { error: orgError, slug });
+		throwIfTransientUpstream(orgResponse);
 		throw error(404, 'Organization not found');
 	}
 
@@ -57,12 +57,12 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 	});
 
 	if (questionnaireError || !questionnaire) {
-		throwIfTransientUpstream(questionnaireResponse);
 		log.error('membership_questionnaire_fetch_failed', {
 			error: questionnaireError,
 			slug,
 			questionnaireId
 		});
+		throwIfTransientUpstream(questionnaireResponse);
 		throw error(404, 'Questionnaire not found');
 	}
 

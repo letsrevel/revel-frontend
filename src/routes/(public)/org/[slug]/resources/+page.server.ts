@@ -32,6 +32,7 @@ export const load: PageServerLoad = async ({ params, fetch, locals }) => {
 	});
 
 	if (resourcesResponse.error) {
+		throwIfTransientUpstream(resourcesResponse.response);
 		const errorMessage = extractErrorMessage(resourcesResponse.error, 'Failed to load resources');
 		throw error(500, errorMessage);
 	}

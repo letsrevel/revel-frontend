@@ -36,12 +36,12 @@ export const load: PageServerLoad = async ({ params, url, fetch, locals, request
 		});
 
 		if (seriesResponse.error || !seriesResponse.data) {
-			throwIfTransientUpstream(seriesResponse.response);
 			log.error('event_series_fetch_failed', {
 				error: seriesResponse.error,
 				orgSlug: org_slug,
 				seriesSlug: series_slug
 			});
+			throwIfTransientUpstream(seriesResponse.response);
 			throw svelteKitError(404, 'Event series not found');
 		}
 

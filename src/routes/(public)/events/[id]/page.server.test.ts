@@ -130,9 +130,9 @@ describe('event [id] loader — invitation-link token', () => {
 		expect(result.eventTokenDetails?.id).toBe('tok-1');
 	});
 
-	it.each([429, 500, 502, 503])(
+	it.each([429, 500, 502, 503, 504])(
 		'surfaces an upstream %i as a 503, never a 404 (#890)',
-		async (upstreamStatus) => {
+		async (upstreamStatus: number): Promise<void> => {
 			// The API client resolves throttled/failing responses as "no data";
 			// mapping that to 404 tells a rate-limited visitor (and crawlers)
 			// that a live event does not exist.
@@ -146,7 +146,7 @@ describe('event [id] loader — invitation-link token', () => {
 		}
 	);
 
-	it('still 404s when the API actually says 404', async () => {
+	it('still 404s when the API actually says 404', async (): Promise<void> => {
 		getEvent.mockResolvedValue({
 			data: undefined,
 			error: { detail: 'Not found' },
