@@ -6084,6 +6084,8 @@
 		"salesPaused": "Verkauf pausiert",
 		"pauseSales": "Verkauf pausieren",
 		"resumeSales": "Verkauf fortsetzen",
+		"pauseSalesFor": "Verkauf für {name} pausieren",
+		"resumeSalesFor": "Verkauf für {name} fortsetzen",
 		"soldElsewhere": "Anderswo verkauft",
 		"soldOn": "{platform}: {count}",
 		"default": "Standard",

@@ -54,7 +54,7 @@
 		eventId: string;
 		listing: EventListingSchema;
 		/** The saved event: the eligibility pre-check mirrors what the backend will evaluate. */
-		event: Pick<EventDetailSchema, 'event_type' | 'end' | 'requires_ticket'>;
+		event: Pick<EventDetailSchema, 'event_type' | 'is_open_ended' | 'requires_ticket'>;
 		isOwner: boolean;
 		/** The event's Revel tiers: sold counts on both sides, and `sales_paused` per tier. */
 		tiers: Pick<

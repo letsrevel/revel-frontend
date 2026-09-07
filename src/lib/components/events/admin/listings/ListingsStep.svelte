@@ -16,7 +16,7 @@
 		organizationSlug: string;
 		eventId: string;
 		/** The saved event, for the eligibility pre-check on the cards. */
-		event: Pick<EventDetailSchema, 'event_type' | 'end' | 'requires_ticket'>;
+		event: Pick<EventDetailSchema, 'event_type' | 'is_open_ended' | 'requires_ticket'>;
 		isOwner: boolean;
 	}
 	const { organizationSlug, eventId, event, isOwner }: Props = $props();

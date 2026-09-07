@@ -124,16 +124,18 @@ describe('listingView', () => {
 describe('pushBlockers', () => {
 	it('is empty for a public, timed, ticketed event', () => {
 		expect(
-			pushBlockers({ event_type: 'public', end: '2026-10-01T20:00:00Z', requires_ticket: true })
+			pushBlockers({ event_type: 'public', is_open_ended: false, requires_ticket: true })
 		).toEqual([]);
 	});
 
 	it('lists every rule the event breaks', () => {
-		expect(pushBlockers({ event_type: 'private', end: '', requires_ticket: false })).toEqual([
-			'event_private',
-			'event_open_ended',
-			'event_no_tickets'
-		]);
+		expect(
+			pushBlockers({ event_type: 'private', is_open_ended: true, requires_ticket: false })
+		).toEqual(['event_private', 'event_open_ended', 'event_no_tickets']);
+	});
+
+	it('treats an absent is_open_ended flag as timed', () => {
+		expect(pushBlockers({ event_type: 'public', requires_ticket: true })).toEqual([]);
 	});
 });
 

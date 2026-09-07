@@ -52,7 +52,7 @@ function listing(overrides: Partial<EventListingSchema> = {}): EventListingSchem
 
 const eligibleEvent = {
 	event_type: 'public' as const,
-	end: '2026-10-01T20:00:00Z',
+	is_open_ended: false,
 	requires_ticket: true
 };
 
@@ -109,7 +109,9 @@ describe('ListingCard', () => {
 	});
 
 	it('explains why an ineligible event cannot be listed and disables the button', () => {
-		renderCard(listing(), { event: { event_type: 'private', end: '', requires_ticket: true } });
+		renderCard(listing(), {
+			event: { event_type: 'private', is_open_ended: true, requires_ticket: true }
+		});
 		expect(screen.getByText(/cannot be listed on Eventbrite yet/)).toBeInTheDocument();
 		expect(screen.getByText('Only public events can be listed on Eventbrite.')).toBeInTheDocument();
 		expect(screen.getByText('Add an end time before listing on Eventbrite.')).toBeInTheDocument();
@@ -185,7 +187,7 @@ describe('ListingCard', () => {
 
 	it('also blocks Update listing when the event became ineligible after listing', () => {
 		renderCard(listing({ link: link({ remote_status: 'live' }) }), {
-			event: { event_type: 'private', end: '2026-10-01T20:00:00Z', requires_ticket: true }
+			event: { event_type: 'private', is_open_ended: false, requires_ticket: true }
 		});
 		expect(screen.getByRole('button', { name: 'Update listing' })).toBeDisabled();
 		expect(screen.getByText('Only public events can be listed on Eventbrite.')).toBeInTheDocument();

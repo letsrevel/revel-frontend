@@ -6084,6 +6084,8 @@
 		"salesPaused": "Ventas en pausa",
 		"pauseSales": "Pausar ventas",
 		"resumeSales": "Reanudar ventas",
+		"pauseSalesFor": "Pausar ventas de {name}",
+		"resumeSalesFor": "Reanudar ventas de {name}",
 		"soldElsewhere": "Vendidas en otros sitios",
 		"soldOn": "{platform}: {count}",
 		"default": "Predeterminado",

@@ -38,7 +38,10 @@
 			});
 			if (res.error || !res.data) throw integrationErrorFromResponse(res.error, platform);
 			return res.data;
-		}
+		},
+		// A failure here is terminal for the picker (the 409 above, access
+		// revoked); retrying only repeats it and delays the message.
+		retry: false
 	}));
 
 	const select = createMutation(() => ({
@@ -56,7 +59,15 @@
 		}
 	}));
 
-	const loadError = $derived(isIntegrationErrorInfo(accounts.error) ? accounts.error : null);
+	// A rejection thrown before the queryFn's own conversion (a network failure
+	// inside the SDK call) still needs a rendered error, not a blank panel.
+	const loadError = $derived(
+		accounts.error
+			? isIntegrationErrorInfo(accounts.error)
+				? accounts.error
+				: integrationErrorFromResponse(accounts.error, platform)
+			: null
+	);
 
 	function inputId(remoteId: string): string {
 		return `account-${provider}-${remoteId}`;

@@ -140,11 +140,13 @@ export type PushBlocker = 'event_private' | 'event_open_ended' | 'event_no_ticke
  * of failing with a 400.
  */
 export function pushBlockers(
-	event: Pick<EventDetailSchema, 'event_type' | 'end' | 'requires_ticket'>
+	event: Pick<EventDetailSchema, 'event_type' | 'is_open_ended' | 'requires_ticket'>
 ): PushBlocker[] {
 	const blockers: PushBlocker[] = [];
 	if (event.event_type !== 'public') blockers.push('event_private');
-	if (!event.end) blockers.push('event_open_ended');
+	// `end` is always set (the backend fills an operational horizon even for
+	// open-ended events); `is_open_ended` is the flag the mapper checks.
+	if (event.is_open_ended) blockers.push('event_open_ended');
 	if (!event.requires_ticket) blockers.push('event_no_tickets');
 	return blockers;
 }

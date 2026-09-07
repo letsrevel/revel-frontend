@@ -6084,6 +6084,8 @@
 		"salesPaused": "Sales paused",
 		"pauseSales": "Pause sales",
 		"resumeSales": "Resume sales",
+		"pauseSalesFor": "Pause sales for {name}",
+		"resumeSalesFor": "Resume sales for {name}",
 		"soldElsewhere": "Sold elsewhere",
 		"soldOn": "{platform}: {count}",
 		"default": "Default",

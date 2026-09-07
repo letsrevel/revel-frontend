@@ -1,5 +1,6 @@
 import * as m from '$lib/paraglide/messages.js';
 import type { IntegrationErrorCode } from '$lib/api/generated/types.gen';
+import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 
 /**
  * Copy for every stable code the backend's `integrations` app can return
@@ -84,7 +85,9 @@ function readEnvelope(error: unknown): {
 	if (typeof error !== 'object' || error === null) return { provider_message: null };
 	const e = error as Record<string, unknown>;
 	return {
-		detail: typeof e.detail === 'string' ? e.detail : undefined,
+		// Covers both `detail` shapes — the plain string and django-ninja's
+		// request-validation 422 list (`api-error-detail.ts`).
+		detail: extractApiErrorDetail(error) ?? undefined,
 		code: typeof e.code === 'string' ? e.code : undefined,
 		provider_message: typeof e.provider_message === 'string' ? e.provider_message : null
 	};

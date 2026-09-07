@@ -73,7 +73,15 @@
 		// gone); retrying only repeats the 409 and delays the message.
 		retry: false
 	}));
-	const loadError = $derived(isIntegrationErrorInfo(remote.error) ? remote.error : null);
+	// A rejection thrown before the queryFn's own conversion (a network failure
+	// inside the SDK call) still needs a rendered error, not a blank panel.
+	const loadError = $derived(
+		remote.error
+			? isIntegrationErrorInfo(remote.error)
+				? remote.error
+				: integrationErrorFromResponse(remote.error, platform)
+			: null
+	);
 
 	// Import is a 202 with no event ids; the observable signal is the remote list
 	// reporting each queued id as `already_linked`. Bounded: 3 s for two minutes.

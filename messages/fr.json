@@ -1998,7 +1998,7 @@
 		"saving": "Enregistrement...",
 		"tabDetails": "Détails de l'événement",
 		"tabTicketing": "Billetterie",
-		"tabListings": "Annonces",
+		"tabListings": "Annonces externes",
 		"editEvent": "Modifier l'événement",
 		"ticketing": "Billetterie",
 		"validationErrorToast": "Corrige les erreurs signalées avant d'enregistrer."
@@ -6054,6 +6054,8 @@
 		"salesPaused": "Ventes en pause",
 		"pauseSales": "Mettre les ventes en pause",
 		"resumeSales": "Reprendre les ventes",
+		"pauseSalesFor": "Mettre les ventes en pause pour {name}",
+		"resumeSalesFor": "Reprendre les ventes pour {name}",
 		"soldElsewhere": "Vendus ailleurs",
 		"soldOn": "{platform} : {count}",
 		"default": "Par défaut",

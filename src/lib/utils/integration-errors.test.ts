@@ -55,6 +55,20 @@ describe('integrationErrorFromResponse', () => {
 		expect(info.providerMessage).toBeNull();
 	});
 
+	it('joins the messages of a request-validation 422 detail list', () => {
+		const info = integrationErrorFromResponse(
+			{
+				detail: [
+					{ msg: 'ensure this value has at least 1 items', loc: ['body', 'remote_ids'] },
+					{ msg: 'field required', loc: ['body', 'provider'] }
+				]
+			},
+			'Eventbrite'
+		);
+		expect(info.code).toBeNull();
+		expect(info.message).toBe('ensure this value has at least 1 items, field required');
+	});
+
 	it('falls back to the generic line when the body is not an envelope', () => {
 		const info = integrationErrorFromResponse(new Error('network down'), 'Eventbrite');
 		expect(info.code).toBeNull();

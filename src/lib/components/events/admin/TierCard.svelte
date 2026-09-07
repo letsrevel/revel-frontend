@@ -332,9 +332,9 @@
 				size="icon"
 				onclick={onTogglePause}
 				disabled={pausePending}
-				aria-label="{tier.sales_paused
-					? m['tierCard.resumeSales']()
-					: m['tierCard.pauseSales']()} {tier.name}"
+				aria-label={tier.sales_paused
+					? m['tierCard.resumeSalesFor']({ name: tier.name })
+					: m['tierCard.pauseSalesFor']({ name: tier.name })}
 				title={tier.sales_paused ? m['tierCard.resumeSales']() : m['tierCard.pauseSales']()}
 			>
 				{#if tier.sales_paused}

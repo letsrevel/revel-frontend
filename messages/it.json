@@ -2112,7 +2112,7 @@
 		"saving": "Salvataggio...",
 		"tabDetails": "Dettagli Evento",
 		"tabTicketing": "Biglietteria",
-		"tabListings": "Annunci",
+		"tabListings": "Annunci esterni",
 		"editEvent": "Modifica Evento",
 		"ticketing": "Biglietteria",
 		"validationErrorToast": "Correggi gli errori evidenziati prima di salvare."
@@ -6084,6 +6084,8 @@
 		"salesPaused": "Vendite in pausa",
 		"pauseSales": "Metti in pausa le vendite",
 		"resumeSales": "Riprendi le vendite",
+		"pauseSalesFor": "Metti in pausa le vendite per {name}",
+		"resumeSalesFor": "Riprendi le vendite per {name}",
 		"soldElsewhere": "Venduti altrove",
 		"soldOn": "{platform}: {count}",
 		"default": "Predefinito",
