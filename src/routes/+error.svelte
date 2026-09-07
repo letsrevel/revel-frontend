@@ -9,7 +9,8 @@
 		Search,
 		ServerCrash,
 		AlertCircle,
-		LinkIcon
+		LinkIcon,
+		Hourglass
 	} from '@lucide/svelte';
 	import ToneTile from '$lib/components/common/ToneTile.svelte';
 	import Sticker from '$lib/components/brand/Sticker.svelte';
@@ -22,9 +23,10 @@
 
 	// Define error configurations for different status codes. `tone` drives
 	// the ToneTile icon chip below — semantic, not decorative: info (404,
-	// benign miss), warning (401, needs auth), neutral (410, gone), danger
-	// (403/500, access/server failure). 403 and 500 share a tone (as the old
-	// red/red pairing did) but stay visually distinct via icon + copy, never
+	// benign miss), warning (401 needs auth, 503 transient upstream
+	// busy/outage — both recoverable by the visitor), neutral (410, gone),
+	// danger (403/500, access/server failure). Statuses that share a tone
+	// (403/500, 401/503) stay visually distinct via icon + copy, never
 	// color alone.
 	const errorConfigs: Record<
 		number,
@@ -101,6 +103,22 @@
 				m['errorPage.error500_suggestion1'](),
 				m['errorPage.error500_suggestion2'](),
 				m['errorPage.error500_suggestion3']()
+			],
+			showBackButton: true,
+			showHomeButton: true
+		},
+		// SSR loads answer 503 when the backend is throttling (429) or briefly
+		// down (5xx) — the page exists, it's just busy (#890). Warning, not
+		// danger: nothing is broken and nothing was the visitor's fault.
+		503: {
+			title: () => m['errorPage.error503_title'](),
+			description: () => m['errorPage.error503_description'](),
+			icon: Hourglass,
+			tone: 'warning',
+			suggestions: () => [
+				m['errorPage.error503_suggestion1'](),
+				m['errorPage.error503_suggestion2'](),
+				m['errorPage.error503_suggestion3']()
 			],
 			showBackButton: true,
 			showHomeButton: true

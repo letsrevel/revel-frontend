@@ -3,6 +3,7 @@ import { error } from '@sveltejs/kit';
 import { organizationGetOrganizationTokenDetails } from '$lib/api/generated/sdk.gen';
 import type { OrganizationTokenRejectionSchema } from '$lib/api/generated/types.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
+import { throwIfTransientUpstream } from '$lib/server/upstream';
 
 export const load: PageServerLoad = async ({ params, fetch }) => {
 	const tokenId = params.token_id;
@@ -24,6 +25,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 	}
 
 	if (response.error || !response.data) {
+		throwIfTransientUpstream(response.response);
 		const errorMessage = extractErrorMessage(response.error, 'Token not found or expired');
 		throw error(404, errorMessage);
 	}

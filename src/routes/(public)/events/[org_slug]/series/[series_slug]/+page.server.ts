@@ -9,6 +9,7 @@ import {
 	seriespassListSeriesPasses
 } from '$lib/api';
 import { error as svelteKitError } from '@sveltejs/kit';
+import { throwIfTransientUpstream } from '$lib/server/upstream';
 import type { OrganizationPermissionsSchema } from '$lib/api/generated/types.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
 
@@ -40,6 +41,7 @@ export const load: PageServerLoad = async ({ params, url, fetch, locals, request
 				orgSlug: org_slug,
 				seriesSlug: series_slug
 			});
+			throwIfTransientUpstream(seriesResponse.response);
 			throw svelteKitError(404, 'Event series not found');
 		}
 

@@ -44,6 +44,15 @@
 	// Determine if we're in unsubscribe mode
 	const isUnsubscribeMode = $derived(!!unsubscribeToken);
 
+	// The API returns digest_send_time as Django "HH:MM:SS"; the form, the
+	// validation regex, and the payload all use "HH:MM" — normalise every read
+	// of the preference or Save starts out disabled with "Invalid time format"
+	// until the time is retyped (#889). Only well-formed values are truncated;
+	// anything else passes through unchanged so validation still rejects it.
+	function toHHMM(time: string): string {
+		return /^\d{2}:\d{2}(:\d{2})?$/.test(time) ? time.slice(0, 5) : time;
+	}
+
 	const queryClient = useQueryClient();
 
 	// Query for Telegram connection status (only in authenticated mode)
@@ -67,7 +76,7 @@
 		preferences?.enabled_channels ?? ['in_app', 'email']
 	);
 	let digestFrequency = $state<string>(preferences?.digest_frequency ?? 'immediate');
-	let digestSendTime = $state<string>(preferences?.digest_send_time ?? '09:00');
+	let digestSendTime = $state<string>(toHHMM(preferences?.digest_send_time ?? '09:00'));
 	let notificationTypeSettings = $state<Record<string, NotificationTypeSettings>>(
 		preferences?.notification_type_settings ?? {}
 	);
@@ -79,7 +88,7 @@
 			eventReminders = preferences.event_reminders_enabled ?? true;
 			enabledChannels = preferences.enabled_channels ?? ['in_app', 'email'];
 			digestFrequency = preferences.digest_frequency ?? 'immediate';
-			digestSendTime = preferences.digest_send_time ?? '09:00';
+			digestSendTime = toHHMM(preferences.digest_send_time ?? '09:00');
 			notificationTypeSettings = preferences.notification_type_settings ?? {};
 		}
 	});
@@ -99,7 +108,7 @@
 		const refEventReminders = preferences?.event_reminders_enabled ?? defaultEventReminders;
 		const refEnabledChannels = preferences?.enabled_channels ?? defaultEnabledChannels;
 		const refDigestFrequency = preferences?.digest_frequency ?? defaultDigestFrequency;
-		const refDigestSendTime = preferences?.digest_send_time ?? defaultDigestSendTime;
+		const refDigestSendTime = toHHMM(preferences?.digest_send_time ?? defaultDigestSendTime);
 		const refNotificationTypeSettings =
 			preferences?.notification_type_settings ?? defaultNotificationTypeSettings;
 
@@ -255,7 +264,7 @@
 		eventReminders = preferences?.event_reminders_enabled ?? true;
 		enabledChannels = preferences?.enabled_channels ?? ['in_app', 'email'];
 		digestFrequency = preferences?.digest_frequency ?? 'immediate';
-		digestSendTime = preferences?.digest_send_time ?? '09:00';
+		digestSendTime = toHHMM(preferences?.digest_send_time ?? '09:00');
 		notificationTypeSettings = preferences?.notification_type_settings ?? {};
 	}
 </script>

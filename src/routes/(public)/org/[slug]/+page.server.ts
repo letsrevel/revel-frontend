@@ -9,6 +9,7 @@ import {
 	organizationListMembershipPlans
 } from '$lib/api';
 import { log } from '$lib/server/logger';
+import { throwIfTransientUpstream } from '$lib/server/upstream';
 import type { PageServerLoad } from './$types';
 import type {
 	OrganizationPermissionsSchema,
@@ -43,6 +44,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 		});
 
 		if (!orgResponse.data) {
+			throwIfTransientUpstream(orgResponse.response);
 			if (orgResponse.response?.status === 410) {
 				throw error(410, 'This invitation link is no longer valid');
 			}

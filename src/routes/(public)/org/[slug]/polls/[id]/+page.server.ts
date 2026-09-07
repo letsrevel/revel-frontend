@@ -2,6 +2,7 @@ import { error } from '@sveltejs/kit';
 import { pollGetPoll } from '$lib/api/generated/sdk.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { log } from '$lib/server/logger';
+import { throwIfTransientUpstream } from '$lib/server/upstream';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, locals, fetch }) => {
@@ -30,9 +31,13 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 			};
 		}
 		log.error('poll_load_failed', { error: res.error, status });
+		// After logging (so throttling/outages stay visible in the structured
+		// logs), a transient upstream failure (429/5xx) becomes a 503 page.
+		throwIfTransientUpstream(res.response);
 		const message = extractErrorMessage(res.error, 'Failed to load poll');
-		// 403 is handled above; preserve any other upstream client-error status
-		// (401/404/410/422) and only normalize 5xx / transport failures to 500.
+		// 403 is handled above and 429/5xx became a 503 above; preserve any
+		// other upstream client-error status (401/404/410/422). Only a
+		// status-less transport failure still falls back to 500 here.
 		throw error(status >= 400 && status < 500 ? status : 500, message);
 	}
 
