@@ -9431,6 +9431,7 @@
 	"listings.publish.message": "Der Eintrag wird für Käuferinnen und Käufer auf {platform} sichtbar. Sobald es Bestellungen gibt, lässt {platform} keine Rücknahme mehr zu, nur eine Absage.",
 	"listings.publish.confirm": "Veröffentlichen",
 	"listings.autoSync.label": "Automatische Aktualisierung",
+	"listings.autoSync.inherit": "Organisationseinstellung folgen",
 	"listings.autoSync.inheritOn": "Organisationseinstellung folgen (derzeit an)",
 	"listings.autoSync.inheritOff": "Organisationseinstellung folgen (derzeit aus)",
 	"listings.autoSync.on": "Für dieses Event an",

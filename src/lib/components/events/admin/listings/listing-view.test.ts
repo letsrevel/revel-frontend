@@ -76,7 +76,9 @@ describe('listingView', () => {
 	});
 
 	it('is broken when the remote listing is gone, offering a fresh push only', () => {
-		const v = listingView(listing({ link: link({ sync_state: 'broken', remote_id: '', remote_url: '' }) }));
+		const v = listingView(
+			listing({ link: link({ sync_state: 'broken', remote_id: '', remote_url: '' }) })
+		);
 		expect(v.kind).toBe('broken');
 		expect(v.canPush).toBe(true);
 		expect(v.canView).toBe(false);

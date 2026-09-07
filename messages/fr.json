@@ -9431,6 +9431,7 @@
 	"listings.publish.message": "L'annonce devient visible pour les acheteurs sur {platform}. Dès qu'elle a des commandes, {platform} ne permet plus de la dépublier, seulement de l'annuler.",
 	"listings.publish.confirm": "Publier",
 	"listings.autoSync.label": "Mises à jour automatiques",
+	"listings.autoSync.inherit": "Suivre le réglage de l'organisation",
 	"listings.autoSync.inheritOn": "Suivre le réglage de l'organisation (actuellement activé)",
 	"listings.autoSync.inheritOff": "Suivre le réglage de l'organisation (actuellement désactivé)",
 	"listings.autoSync.on": "Activées pour cet événement",

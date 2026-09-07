@@ -9431,6 +9431,7 @@
 	"listings.publish.message": "L'annuncio diventa visibile a chi acquista su {platform}. Una volta che ha ordini, {platform} non permette di riportarlo in bozza, solo di annullarlo.",
 	"listings.publish.confirm": "Pubblica",
 	"listings.autoSync.label": "Aggiornamenti automatici",
+	"listings.autoSync.inherit": "Segui l'impostazione dell'organizzazione",
 	"listings.autoSync.inheritOn": "Segui l'impostazione dell'organizzazione (ora attivi)",
 	"listings.autoSync.inheritOff": "Segui l'impostazione dell'organizzazione (ora disattivi)",
 	"listings.autoSync.on": "Attivi per questo evento",

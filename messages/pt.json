@@ -9431,6 +9431,7 @@
 	"listings.publish.message": "A publicação fica visível para os compradores no {platform}. Assim que tiver encomendas, o {platform} não permite despublicá-la, só cancelá-la.",
 	"listings.publish.confirm": "Publicar",
 	"listings.autoSync.label": "Atualizações automáticas",
+	"listings.autoSync.inherit": "Seguir a definição da organização",
 	"listings.autoSync.inheritOn": "Seguir a definição da organização (atualmente ativas)",
 	"listings.autoSync.inheritOff": "Seguir a definição da organização (atualmente inativas)",
 	"listings.autoSync.on": "Ativas para este evento",

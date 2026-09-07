@@ -9431,6 +9431,7 @@
 	"listings.publish.message": "The listing goes live for buyers on {platform}. Once it has orders, {platform} will not let it be unpublished, only cancelled.",
 	"listings.publish.confirm": "Publish",
 	"listings.autoSync.label": "Automatic updates",
+	"listings.autoSync.inherit": "Follow organization setting",
 	"listings.autoSync.inheritOn": "Follow organization setting (currently on)",
 	"listings.autoSync.inheritOff": "Follow organization setting (currently off)",
 	"listings.autoSync.on": "On for this event",

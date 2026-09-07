@@ -71,7 +71,14 @@ export function listingView(listing: EventListingSchema): ListingView {
 	}
 	const canView = link.remote_url !== '' && link.sync_state !== 'broken';
 	if (link.sync_state === 'pending') {
-		return { kind: 'pending', tone: 'info', canPush: false, canPublish: false, canView, canSetAutoSync: true };
+		return {
+			kind: 'pending',
+			tone: 'info',
+			canPush: false,
+			canPublish: false,
+			canView,
+			canSetAutoSync: true
+		};
 	}
 	if (link.sync_state === 'broken') {
 		return {
@@ -84,11 +91,25 @@ export function listingView(listing: EventListingSchema): ListingView {
 		};
 	}
 	if (link.sync_state === 'failed') {
-		return { kind: 'failed', tone: 'danger', canPush: true, canPublish: false, canView, canSetAutoSync: true };
+		return {
+			kind: 'failed',
+			tone: 'danger',
+			canPush: true,
+			canPublish: false,
+			canView,
+			canSetAutoSync: true
+		};
 	}
 	switch (link.remote_status) {
 		case 'live':
-			return { kind: 'live', tone: 'success', canPush: true, canPublish: false, canView, canSetAutoSync: true };
+			return {
+				kind: 'live',
+				tone: 'success',
+				canPush: true,
+				canPublish: false,
+				canView,
+				canSetAutoSync: true
+			};
 		case 'cancelled':
 			return {
 				kind: 'cancelled',
@@ -99,7 +120,14 @@ export function listingView(listing: EventListingSchema): ListingView {
 				canSetAutoSync: false
 			};
 		default:
-			return { kind: 'draft', tone: 'info', canPush: true, canPublish: true, canView, canSetAutoSync: true };
+			return {
+				kind: 'draft',
+				tone: 'info',
+				canPush: true,
+				canPublish: true,
+				canView,
+				canSetAutoSync: true
+			};
 	}
 }
 
