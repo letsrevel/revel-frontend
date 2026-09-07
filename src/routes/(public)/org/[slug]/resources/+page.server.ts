@@ -2,6 +2,7 @@ import { organizationListResources, organizationGetOrganization } from '$lib/api
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { extractErrorMessage } from '$lib/utils/errors';
+import { throwIfTransientUpstream } from '$lib/server/upstream';
 
 export const load: PageServerLoad = async ({ params, fetch, locals }) => {
 	// Prepare headers with authentication if user is logged in
@@ -18,6 +19,7 @@ export const load: PageServerLoad = async ({ params, fetch, locals }) => {
 	});
 
 	if (organizationResponse.error) {
+		throwIfTransientUpstream(organizationResponse.response);
 		const errorMessage = extractErrorMessage(organizationResponse.error, 'Organization not found');
 		throw error(404, errorMessage);
 	}

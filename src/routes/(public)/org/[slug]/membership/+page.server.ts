@@ -7,6 +7,7 @@ import {
 	permissionMyPermissions
 } from '$lib/api';
 import { log } from '$lib/server/logger';
+import { throwIfTransientUpstream } from '$lib/server/upstream';
 import type { PageServerLoad } from './$types';
 import type {
 	MembershipStatus,
@@ -41,6 +42,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 		const orgResponse = await organizationGetOrganization({ fetch, path: { slug }, headers });
 
 		if (!orgResponse.data) {
+			throwIfTransientUpstream(orgResponse.response);
 			if (orgResponse.response?.status === 410) {
 				throw error(410, 'This invitation link is no longer valid');
 			}

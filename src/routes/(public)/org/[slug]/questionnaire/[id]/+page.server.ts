@@ -5,6 +5,7 @@ import {
 	memembershipquestionnaireGetMembershipQuestionnaire
 } from '$lib/api';
 import { log } from '$lib/server/logger';
+import { throwIfTransientUpstream } from '$lib/server/upstream';
 
 export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 	const { slug, id: questionnaireId } = params;
@@ -16,13 +17,18 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 		headers['Authorization'] = `Bearer ${locals.user.accessToken}`;
 	}
 
-	const { data: organization, error: orgError } = await organizationGetOrganization({
+	const {
+		data: organization,
+		error: orgError,
+		response: orgResponse
+	} = await organizationGetOrganization({
 		fetch,
 		path: { slug },
 		headers
 	});
 
 	if (orgError || !organization) {
+		throwIfTransientUpstream(orgResponse);
 		log.error('membership_questionnaire_org_fetch_failed', { error: orgError, slug });
 		throw error(404, 'Organization not found');
 	}
@@ -38,16 +44,20 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 
 	// 404s unless this is the org's membership questionnaire (or a tier override) —
 	// unrelated org questionnaires are deliberately unreachable here.
-	const { data: questionnaire, error: questionnaireError } =
-		await memembershipquestionnaireGetMembershipQuestionnaire({
-			fetch,
-			path: { slug, questionnaire_id: questionnaireId },
-			headers: {
-				Authorization: `Bearer ${locals.user.accessToken}`
-			}
-		});
+	const {
+		data: questionnaire,
+		error: questionnaireError,
+		response: questionnaireResponse
+	} = await memembershipquestionnaireGetMembershipQuestionnaire({
+		fetch,
+		path: { slug, questionnaire_id: questionnaireId },
+		headers: {
+			Authorization: `Bearer ${locals.user.accessToken}`
+		}
+	});
 
 	if (questionnaireError || !questionnaire) {
+		throwIfTransientUpstream(questionnaireResponse);
 		log.error('membership_questionnaire_fetch_failed', {
 			error: questionnaireError,
 			slug,

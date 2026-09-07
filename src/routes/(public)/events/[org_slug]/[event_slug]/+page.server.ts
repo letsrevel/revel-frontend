@@ -2,6 +2,7 @@ import { error, isHttpError } from '@sveltejs/kit';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
 import { log } from '$lib/server/logger';
+import { throwIfTransientUpstream } from '$lib/server/upstream';
 import {
 	eventpublicdetailsGetEventBySlugs,
 	eventpublicattendanceGetMyEventStatus,
@@ -63,6 +64,7 @@ export const load: PageServerLoad = async ({
 		});
 
 		if (!eventResponse.data) {
+			throwIfTransientUpstream(eventResponse.response);
 			if (eventResponse.response?.status === 410) {
 				throw error(410, 'This invitation link is no longer valid');
 			}

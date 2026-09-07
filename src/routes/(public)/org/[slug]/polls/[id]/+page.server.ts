@@ -2,6 +2,7 @@ import { error } from '@sveltejs/kit';
 import { pollGetPoll } from '$lib/api/generated/sdk.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { log } from '$lib/server/logger';
+import { throwIfTransientUpstream } from '$lib/server/upstream';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, locals, fetch }) => {
@@ -17,6 +18,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 	});
 
 	if (res.error) {
+		throwIfTransientUpstream(res.response);
 		const status = res.response?.status ?? 500;
 		// Backend distinguishes 403 (poll exists, caller not in any audience)
 		// from 404 (poll genuinely does not exist). Render an inline "no

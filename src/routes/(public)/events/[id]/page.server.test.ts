@@ -130,6 +130,32 @@ describe('event [id] loader — invitation-link token', () => {
 		expect(result.eventTokenDetails?.id).toBe('tok-1');
 	});
 
+	it.each([429, 500, 502, 503])(
+		'surfaces an upstream %i as a 503, never a 404 (#890)',
+		async (upstreamStatus) => {
+			// The API client resolves throttled/failing responses as "no data";
+			// mapping that to 404 tells a rate-limited visitor (and crawlers)
+			// that a live event does not exist.
+			getEvent.mockResolvedValue({
+				data: undefined,
+				error: { detail: 'Request was throttled.' },
+				response: new Response(null, { status: upstreamStatus })
+			} as never);
+
+			await expect(load(loadEvent())).rejects.toMatchObject({ status: 503 });
+		}
+	);
+
+	it('still 404s when the API actually says 404', async () => {
+		getEvent.mockResolvedValue({
+			data: undefined,
+			error: { detail: 'Not found' },
+			response: new Response(null, { status: 404 })
+		} as never);
+
+		await expect(load(loadEvent())).rejects.toMatchObject({ status: 404 });
+	});
+
 	it('discards token details for another event', async () => {
 		// The cookie is global, not event-scoped: a pending token for event A
 		// must not surface invitation UI (or ride guest mutations) on event B.

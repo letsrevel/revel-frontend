@@ -5,6 +5,7 @@ import {
 	eventpublicattendanceGetQuestionnaire
 } from '$lib/api/client';
 import { log } from '$lib/server/logger';
+import { throwIfTransientUpstream } from '$lib/server/upstream';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const { org_slug, event_slug, id: questionnaireId } = params;
@@ -16,12 +17,17 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	}
 
 	// Fetch the event to get its ID (pass auth to see private events)
-	const { data: event, error: eventError } = await eventpublicdetailsGetEventBySlugs({
+	const {
+		data: event,
+		error: eventError,
+		response: eventResponse
+	} = await eventpublicdetailsGetEventBySlugs({
 		path: { event_slug, org_slug },
 		headers
 	});
 
 	if (eventError || !event) {
+		throwIfTransientUpstream(eventResponse);
 		log.error('questionnaire_event_fetch_failed', {
 			error: eventError,
 			orgSlug: org_slug,
@@ -39,15 +45,19 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	}
 
 	// Fetch the questionnaire
-	const { data: questionnaire, error: questionnaireError } =
-		await eventpublicattendanceGetQuestionnaire({
-			path: { event_id: event.id, questionnaire_id: questionnaireId },
-			headers: {
-				Authorization: `Bearer ${locals.user.accessToken}`
-			}
-		});
+	const {
+		data: questionnaire,
+		error: questionnaireError,
+		response: questionnaireResponse
+	} = await eventpublicattendanceGetQuestionnaire({
+		path: { event_id: event.id, questionnaire_id: questionnaireId },
+		headers: {
+			Authorization: `Bearer ${locals.user.accessToken}`
+		}
+	});
 
 	if (questionnaireError || !questionnaire) {
+		throwIfTransientUpstream(questionnaireResponse);
 		log.error('questionnaire_fetch_failed', { error: questionnaireError, questionnaireId });
 		throw error(404, 'Questionnaire not found');
 	}

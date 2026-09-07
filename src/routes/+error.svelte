@@ -9,7 +9,8 @@
 		Search,
 		ServerCrash,
 		AlertCircle,
-		LinkIcon
+		LinkIcon,
+		Hourglass
 	} from '@lucide/svelte';
 	import ToneTile from '$lib/components/common/ToneTile.svelte';
 	import Sticker from '$lib/components/brand/Sticker.svelte';
@@ -101,6 +102,22 @@
 				m['errorPage.error500_suggestion1'](),
 				m['errorPage.error500_suggestion2'](),
 				m['errorPage.error500_suggestion3']()
+			],
+			showBackButton: true,
+			showHomeButton: true
+		},
+		// SSR loads answer 503 when the backend is throttling (429) or briefly
+		// down (5xx) — the page exists, it's just busy (#890). Warning, not
+		// danger: nothing is broken and nothing was the visitor's fault.
+		503: {
+			title: () => m['errorPage.error503_title'](),
+			description: () => m['errorPage.error503_description'](),
+			icon: Hourglass,
+			tone: 'warning',
+			suggestions: () => [
+				m['errorPage.error503_suggestion1'](),
+				m['errorPage.error503_suggestion2'](),
+				m['errorPage.error503_suggestion3']()
 			],
 			showBackButton: true,
 			showHomeButton: true
