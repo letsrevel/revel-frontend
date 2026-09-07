@@ -386,6 +386,7 @@
 				</Button>
 			{/if}
 			{#if view.canView && link}
+				<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL on the platform, not an app route -->
 				<a
 					href={link.remote_url}
 					target="_blank"
@@ -395,6 +396,7 @@
 					<ExternalLink class="h-4 w-4" aria-hidden="true" />
 					{m['listings.action.view']({ platform })}
 				</a>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 			{/if}
 		</div>
 	{/if}

@@ -442,7 +442,9 @@
 				userCity={data.userCity}
 				orgCity={data.orgCity}
 				eventSeries={data.eventSeries}
-				initialTab={($page.url.searchParams.get('tab') as 'details' | 'ticketing') ?? undefined}
+				initialTab={($page.url.searchParams.get('tab') as 'details' | 'ticketing' | 'listings') ??
+					undefined}
+				isOwner={data.isOwner}
 			/>
 		{/key}
 	</div>
