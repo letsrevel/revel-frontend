@@ -9346,6 +9346,7 @@
 	"integrations.landing.connected": "{platform} is connected.",
 	"integrations.landing.chooseAccount": "Almost there. Choose which {platform} account Revel should use.",
 	"integrations.card.notConnected.body": "List your events on {platform} from Revel. Revel stays the place you edit; {platform} receives a copy.",
+	"integrations.card.notConnected.title": "Not connected",
 	"integrations.card.connect": "Connect {platform}",
 	"integrations.card.connecting": "Opening {platform}…",
 	"integrations.card.connectedAs": "Connected as {account}",

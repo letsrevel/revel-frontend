@@ -24,7 +24,13 @@
 	let landing = $state<LandingOutcome>(null);
 
 	// The OAuth callback lands here with one query key. Read it once, then strip
-	// it (Stripe Connect does the same) so a reload does not replay the strip.
+	// it so a reload does not replay the strip. Deliberately the raw history
+	// API, not $app/navigation's replaceState: the latter throws "Cannot call
+	// replaceState(...) before router is initialized" from onMount (and from
+	// afterNavigate) during hydration. The house idiom for a consumed redirect
+	// param is this raw call (StripeConnect, MembershipSection,
+	// post-redirect-params.ts); the SvelteKit dev warning is the accepted
+	// trade-off.
 	onMount(() => {
 		const params = new URLSearchParams(window.location.search);
 		landing = landingOutcome(params);

@@ -151,7 +151,7 @@
 			case 'access-lost':
 				return m['integrations.card.accessLost.title']();
 			default:
-				return platform;
+				return m['integrations.card.notConnected.title']();
 		}
 	});
 
