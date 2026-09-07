@@ -95,6 +95,7 @@
 	);
 	let salesStartAt = $state(toDatetimeLocal(tier?.sales_start_at));
 	let salesEndAt = $state(toDatetimeLocal(tier?.sales_end_at));
+	let salesPaused = $state(tier?.sales_paused ?? false);
 	// Unambiguous textual readbacks for the native datetime inputs; '' when the
 	// value is empty or unparseable, so each hint is gated on the rendered text.
 	const salesStartReadback = $derived(formatDateTimeReadback(salesStartAt));
@@ -360,6 +361,7 @@
 			total_quantity: totalQuantity ? parseInt(totalQuantity) : null,
 			sales_start_at: salesStartAt ? toTimezoneAwareISO(salesStartAt) : null,
 			sales_end_at: salesEndAt ? toTimezoneAwareISO(salesEndAt) : null,
+			sales_paused: salesPaused,
 			visibility,
 			purchasable_by: purchasableBy,
 			restricted_to_membership_tiers_ids:
@@ -616,6 +618,7 @@
 				bind:restrictPurchaseToLinkedInvitations
 				bind:restrictedToMembershipTiersIds
 				{membershipTiers}
+				bind:salesPaused
 				{isPending}
 			/>
 

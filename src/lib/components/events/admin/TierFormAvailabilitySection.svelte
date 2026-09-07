@@ -16,6 +16,8 @@
 		restrictPurchaseToLinkedInvitations: boolean;
 		restrictedToMembershipTiersIds: string[];
 		membershipTiers: MembershipTierSchema[];
+		/** Organizer kill switch: hides the tier from checkout until resumed, sales window untouched. */
+		salesPaused: boolean;
 		isPending: boolean;
 	}
 
@@ -31,6 +33,7 @@
 		restrictPurchaseToLinkedInvitations = $bindable(),
 		restrictedToMembershipTiersIds = $bindable(),
 		membershipTiers,
+		salesPaused = $bindable(),
 		isPending
 	}: Props = $props();
 </script>
@@ -48,6 +51,20 @@
 	/>
 	<p class="mt-1 text-xs text-muted-foreground">{m['tierForm.unlimitedTickets']()}</p>
 </div>
+
+<!-- Pause sales (kill switch, independent of the sales window) -->
+<label class="flex cursor-pointer items-start gap-2">
+	<input
+		type="checkbox"
+		bind:checked={salesPaused}
+		disabled={isPending}
+		class="mt-0.5 h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-primary"
+	/>
+	<div>
+		<span class="text-sm font-medium">{m['tierForm.pauseSales']()}</span>
+		<p class="text-xs text-muted-foreground">{m['tierForm.pauseSalesHelp']()}</p>
+	</div>
+</label>
 
 <!-- Sales Period -->
 <div class="grid grid-cols-2 gap-4">
