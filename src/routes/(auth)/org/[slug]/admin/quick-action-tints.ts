@@ -9,7 +9,7 @@ import type { PosterTint } from '$lib/components/common/tones';
  *
  * This uniform cycle (no skipped/special-cased tiles) guarantees "no
  * grid-adjacent tile repeats a tint" for BOTH quick-actions grid variants
- * (12 tiles non-owner, 15 owner) at BOTH column counts the grid uses
+ * (12 tiles non-owner, 16 owner: the verify-members tile is always on for an owner) at BOTH column counts the grid uses
  * (`md:grid-cols-2` -> vertical offset 2, `lg:grid-cols-4` -> vertical offset
  * 4), plus the horizontal offset of 1 — because `TINTS.length` (7) is prime
  * and every one of those offsets is smaller than 7 and non-zero, so it can

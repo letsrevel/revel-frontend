@@ -6,7 +6,7 @@ import type { IntegrationErrorCode } from '$lib/api/generated/types.gen';
  * (`IntegrationErrorSchema.code`, `SyncReportEntry.code`, `?error=` on the
  * OAuth landing). The backend's `detail` is translated too, but on its own
  * locale and in its own words; these lines say what happened and what to do
- * next, and always name the platform.
+ * next, and name the platform wherever the line is about it.
  *
  * Keyed as a full `Record` on purpose: a renamed or added backend code fails
  * `make types` here instead of silently falling through to the generic line.

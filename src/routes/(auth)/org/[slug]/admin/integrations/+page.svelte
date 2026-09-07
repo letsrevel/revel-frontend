@@ -39,7 +39,12 @@
 			const rest = new URLSearchParams(
 				[...params].filter(([key]) => !landingKeys.includes(key))
 			).toString();
-			window.history.replaceState({}, '', window.location.pathname + (rest ? `?${rest}` : ''));
+			// Hash preserved, as post-redirect-params.ts does (#863 review).
+			window.history.replaceState(
+				{},
+				'',
+				window.location.pathname + (rest ? `?${rest}` : '') + window.location.hash
+			);
 		}
 	});
 

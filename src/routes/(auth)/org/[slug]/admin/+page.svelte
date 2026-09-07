@@ -88,7 +88,7 @@
 	// owner-gating for the financial surfaces (financials + billing). Every
 	// tile is pure destination identity — navigating to Blacklist or
 	// Financials isn't itself danger/success, the Ban/Wallet icons + labels
-	// already carry that meaning — so all 15 go through the shared `tint`
+	// already carry that meaning — so all 16 go through the shared `tint`
 	// cycle (assignQuickActionTints) rather than ToneTile's semantic `tone`.
 	const quickActions: QuickAction[] = $derived.by((): QuickAction[] => {
 		const base: Omit<QuickAction, 'tint'>[] = [
