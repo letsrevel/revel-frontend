@@ -68,7 +68,10 @@
 	const remote = createQuery(() => ({
 		queryKey: listKey,
 		queryFn: fetchRemoteEvents,
-		enabled: open && stage === 'pick'
+		enabled: open && stage === 'pick',
+		// A failure here is terminal for this dialog (access revoked, provider
+		// gone); retrying only repeats the 409 and delays the message.
+		retry: false
 	}));
 	const loadError = $derived(isIntegrationErrorInfo(remote.error) ? remote.error : null);
 
