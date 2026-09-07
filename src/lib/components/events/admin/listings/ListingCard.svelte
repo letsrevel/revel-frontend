@@ -20,7 +20,11 @@
 	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import type { Tone } from '$lib/components/common/tones';
-	import type { EventDetailSchema, EventListingSchema } from '$lib/api/generated/types.gen';
+	import type {
+		EventDetailSchema,
+		EventListingSchema,
+		TicketTierDetailSchema
+	} from '$lib/api/generated/types.gen';
 	import {
 		eventintegrationsPublish,
 		eventintegrationsPush,
@@ -35,11 +39,13 @@
 		type IntegrationErrorInfo
 	} from '$lib/utils/integration-errors';
 	import SyncReport from './SyncReport.svelte';
+	import LinkedTiersTable from './LinkedTiersTable.svelte';
 	import {
 		autoSyncChoice,
 		autoSyncPayload,
 		listingView,
 		pushBlockers,
+		soldTotals,
 		type AutoSyncChoice
 	} from './listing-view';
 
@@ -50,13 +56,26 @@
 		/** The saved event: the eligibility pre-check mirrors what the backend will evaluate. */
 		event: Pick<EventDetailSchema, 'event_type' | 'end' | 'requires_ticket'>;
 		isOwner: boolean;
+		/** The event's Revel tiers: sold counts on both sides, and `sales_paused` per tier. */
+		tiers: Pick<
+			TicketTierDetailSchema,
+			'id' | 'quantity_sold' | 'external_sales' | 'sales_paused'
+		>[];
 		/** The list has been pending for over ten minutes; say so instead of spinning silently. */
 		pendingSlow: boolean;
 		/** The tab re-fetches the listings after any change. */
 		onChanged: () => void;
 	}
-	const { organizationSlug, eventId, listing, event, isOwner, pendingSlow, onChanged }: Props =
-		$props();
+	const {
+		organizationSlug,
+		eventId,
+		listing,
+		event,
+		isOwner,
+		tiers,
+		pendingSlow,
+		onChanged
+	}: Props = $props();
 
 	const platform = $derived(listing.display_name);
 	const link = $derived(listing.link ?? null);
@@ -65,6 +84,10 @@
 	// private after listing must not round-trip a 400 on "Update listing".
 	const blockers = $derived(view.canPush ? pushBlockers(event) : []);
 	const headingId = $derived(`listing-${listing.provider}`);
+	const sold = $derived(soldTotals(tiers, listing.provider));
+	const showTiers = $derived(
+		link !== null && link.tiers.length > 0 && view.kind !== 'broken' && view.kind !== 'pending'
+	);
 	const integrationsHref = $derived(
 		resolve('/(auth)/org/[slug]/admin/integrations', { slug: organizationSlug })
 	);
@@ -311,6 +334,11 @@
 					{#each timeline as line (line)}
 						<p class="mt-1 text-xs text-muted-foreground">{line}</p>
 					{/each}
+					{#if link && view.kind !== 'broken'}
+						<p class="mt-1 text-sm font-medium text-foreground">
+							{m['listings.sold']({ revel: sold.revel, external: sold.external, platform })}
+						</p>
+					{/if}
 				</div>
 
 				{#if view.canSetAutoSync && link}
@@ -358,6 +386,10 @@
 
 	{#if link && link.sync_report.length > 0 && view.kind !== 'pending'}
 		<SyncReport report={link.sync_report} {platform} idPrefix={headingId} />
+	{/if}
+
+	{#if showTiers && link}
+		<LinkedTiersTable {eventId} provider={listing.provider} {platform} {link} {tiers} {onChanged} />
 	{/if}
 
 	{#if view.canPush || view.canPublish || view.canView}

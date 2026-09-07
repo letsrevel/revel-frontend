@@ -5,7 +5,10 @@
 	import { AlertCircle, Loader2, Megaphone } from '@lucide/svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import type { EventDetailSchema, EventListingSchema } from '$lib/api/generated/types.gen';
-	import { eventintegrationsListListings } from '$lib/api/generated/sdk.gen';
+	import {
+		eventadminticketsListTicketTiers,
+		eventintegrationsListListings
+	} from '$lib/api/generated/sdk.gen';
 	import ListingCard from './ListingCard.svelte';
 	import { listingsRefetchInterval, PENDING_SLOW_AFTER_MS } from './listing-view';
 
@@ -64,8 +67,17 @@
 			.map(([provider]) => provider);
 	});
 
+	// Same key as the Ticketing tab, so the two tabs share one cache entry.
+	const tiersKey = $derived(['event-admin', eventId, 'ticket-tiers'] as const);
+	const tiersQuery = createQuery(() => ({
+		queryKey: tiersKey,
+		queryFn: () => eventadminticketsListTicketTiers({ path: { event_id: eventId } })
+	}));
+	const tiers = $derived(tiersQuery.data?.data?.results ?? []);
+
 	function refresh() {
 		void queryClient.invalidateQueries({ queryKey });
+		void queryClient.invalidateQueries({ queryKey: tiersKey });
 	}
 </script>
 
@@ -100,6 +112,7 @@
 				{listing}
 				{event}
 				{isOwner}
+				{tiers}
 				pendingSlow={slowProviders.includes(listing.provider)}
 				onChanged={refresh}
 			/>

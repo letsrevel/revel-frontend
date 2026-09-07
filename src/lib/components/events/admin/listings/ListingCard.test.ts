@@ -58,7 +58,17 @@ const eligibleEvent = {
 
 function renderCard(
 	l: EventListingSchema,
-	opts: { isOwner?: boolean; pendingSlow?: boolean; event?: typeof eligibleEvent } = {}
+	opts: {
+		isOwner?: boolean;
+		pendingSlow?: boolean;
+		event?: typeof eligibleEvent;
+		tiers?: {
+			id: string;
+			quantity_sold?: number;
+			external_sales?: { provider: string; quantity_sold: number; paused: boolean }[];
+			sales_paused?: boolean;
+		}[];
+	} = {}
 ) {
 	const onChanged = vi.fn();
 	const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -72,6 +82,7 @@ function renderCard(
 				listing: l,
 				event: opts.event ?? eligibleEvent,
 				isOwner: opts.isOwner ?? true,
+				tiers: opts.tiers ?? [],
 				pendingSlow: opts.pendingSlow ?? false,
 				onChanged
 			}
@@ -128,6 +139,37 @@ describe('ListingCard', () => {
 		await user.click(within(dialog).getByRole('button', { name: 'Publish' }));
 		await waitFor(() => expect(vi.mocked(eventintegrationsPublish)).toHaveBeenCalled());
 		await waitFor(() => expect(onChanged).toHaveBeenCalled());
+	});
+
+	it('sums sales on both sides and lists the linked tickets on a live listing', () => {
+		renderCard(
+			listing({
+				link: link({
+					remote_status: 'live',
+					tiers: [
+						{
+							tier_id: 't1',
+							tier_name: 'General',
+							remote_id: 'tc-1',
+							remote_quantity_sold: 4,
+							remote_paused: false
+						}
+					]
+				})
+			}),
+			{
+				tiers: [
+					{
+						id: 't1',
+						quantity_sold: 10,
+						external_sales: [{ provider: 'eventbrite', quantity_sold: 4, paused: false }]
+					}
+				]
+			}
+		);
+		expect(screen.getByText('Sold: 10 on Revel, 4 on Eventbrite')).toBeInTheDocument();
+		expect(screen.getByRole('heading', { name: 'Tickets' })).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'Pause General on Eventbrite' })).toBeInTheDocument();
 	});
 
 	it('shows Update and View on a live listing, without Publish', () => {
