@@ -7,23 +7,24 @@
 	import type { Component } from 'svelte';
 	import type { PageData } from './$types';
 	import {
-		Calendar,
-		Repeat,
-		Users,
-		Settings,
-		FileText,
-		Plus,
-		ClipboardList,
-		FolderOpen,
 		Ban,
+		BarChart3,
+		Calendar,
+		ClipboardList,
+		CreditCard,
+		FileText,
+		FolderOpen,
 		MapPin,
 		Megaphone,
-		BarChart3,
-		Ticket,
+		Plug,
+		Plus,
+		Repeat,
+		ScanLine,
+		Settings,
 		Tag,
-		Wallet,
-		CreditCard,
-		ScanLine
+		Ticket,
+		Users,
+		Wallet
 	} from '@lucide/svelte';
 	import { OrganizationDescription } from '$lib/components/organizations';
 	import AnnouncementModal from '$lib/components/announcements/AnnouncementModal.svelte';
@@ -87,7 +88,7 @@
 	// owner-gating for the financial surfaces (financials + billing). Every
 	// tile is pure destination identity — navigating to Blacklist or
 	// Financials isn't itself danger/success, the Ban/Wallet icons + labels
-	// already carry that meaning — so all 14 go through the shared `tint`
+	// already carry that meaning — so all 15 go through the shared `tint`
 	// cycle (assignQuickActionTints) rather than ToneTile's semantic `tone`.
 	const quickActions: QuickAction[] = $derived.by((): QuickAction[] => {
 		const base: Omit<QuickAction, 'tint'>[] = [
@@ -180,6 +181,12 @@
 							description: m['orgAdmin.dashboard.quickActions.financials.description'](),
 							icon: Wallet,
 							href: resolve('/(auth)/org/[slug]/admin/financials', { slug: organization.slug })
+						},
+						{
+							title: m['orgAdmin.dashboard.quickActions.integrations.title'](),
+							description: m['orgAdmin.dashboard.quickActions.integrations.description'](),
+							icon: Plug,
+							href: resolve('/(auth)/org/[slug]/admin/integrations', { slug: organization.slug })
 						}
 					]
 				: []),

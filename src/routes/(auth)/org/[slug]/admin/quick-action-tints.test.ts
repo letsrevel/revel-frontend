@@ -3,7 +3,7 @@ import { assignQuickActionTints, TINTS } from './quick-action-tints';
 
 /**
  * Locks the "no grid-adjacent tile repeats a tint" property for both
- * quick-actions grid variants (12 tiles = non-owner, 14 = owner) across both
+ * quick-actions grid variants (12 tiles = non-owner, 15 = owner) across both
  * column counts the grid actually uses (md:grid-cols-2 -> offset 2,
  * lg:grid-cols-4 -> offset 4), plus the horizontal same-row offset of 1.
  */
@@ -25,12 +25,12 @@ describe('assignQuickActionTints', () => {
 		expectNoAdjacentRepeats(12);
 	});
 
-	it('never repeats a tint at grid-adjacent offsets — owner grid (14 tiles)', () => {
-		expectNoAdjacentRepeats(14);
+	it('never repeats a tint at grid-adjacent offsets — owner grid (15 tiles)', () => {
+		expectNoAdjacentRepeats(15);
 	});
 
-	it('cycles through every tint at least once across 14 tiles', () => {
-		const tinted = assignQuickActionTints(Array.from({ length: 14 }, (_, i) => i));
+	it('cycles through every tint at least once across 15 tiles', () => {
+		const tinted = assignQuickActionTints(Array.from({ length: 15 }, (_, i) => i));
 		expect(new Set(tinted.map((t) => t.tint)).size).toBe(TINTS.length);
 	});
 
