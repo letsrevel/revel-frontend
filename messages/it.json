@@ -1399,6 +1399,7 @@
 			"upgrade_membership": "Guarda le opzioni di iscrizione dell'organizzazione per scoprire quali livelli puoi ottenere."
 		},
 		"reason": {
+			"sales_paused": "La vendita dei biglietti è in pausa in questo momento. Torna presto.",
 			"membership_tier_required": "Questo biglietto è riservato a livelli di iscrizione specifici."
 		},
 		"rsvpNextStep": "Conferma la partecipazione all'evento",
@@ -6080,6 +6081,11 @@
 		"noTickets": "Nessun biglietto trovato"
 	},
 	"tierCard": {
+		"salesPaused": "Vendite in pausa",
+		"pauseSales": "Metti in pausa le vendite",
+		"resumeSales": "Riprendi le vendite",
+		"soldElsewhere": "Venduti altrove",
+		"soldOn": "{platform}: {count}",
 		"default": "Predefinito",
 		"price": "Prezzo",
 		"type": "Tipo",
@@ -6103,6 +6109,7 @@
 		"remaining": "{count} rimanenti"
 	},
 	"tierCardAdmin": {
+		"salesPaused": "Vendite in pausa",
 		"notAvailable": "Non Disponibile",
 		"soldOut": "Esauriti",
 		"signInToGetTicket": "Accedi per Ottenere Biglietto",
@@ -6131,6 +6138,8 @@
 		"confirm": "Elimina livello"
 	},
 	"tierForm": {
+		"pauseSales": "Metti in pausa le vendite",
+		"pauseSalesHelp": "Nasconde questo biglietto dal checkout su Revel finché non riprendi. Il periodo di vendita non cambia. Se l'evento è pubblicato altrove, viene nascosto anche lì al prossimo aggiornamento.",
 		"descriptionOptional": "Descrizione (facoltativo)",
 		"paymentMethod": "Metodo di Pagamento *",
 		"free": "Gratuito",
@@ -6383,6 +6392,7 @@
 	"tierForm.completeBillingInfo": "Completa le informazioni di fatturazione",
 	"tierForm.fieldErrorsTitle": "Alcuni campi non sono stati salvati:",
 	"tierForm.field": {
+		"sales_paused": "Metti in pausa le vendite",
 		"name": "Nome del livello",
 		"description": "Descrizione",
 		"price": "Prezzo",
@@ -9440,6 +9450,22 @@
 	"listings.report.skipped": "Non inviato a {platform}",
 	"listings.report.notes": "Note",
 	"listings.report.detailsFromPlatform": "Dettagli da {platform}",
+	"listings.sold": "Venduti: {revel} su Revel, {external} su {platform}",
+	"listings.tiers.heading": "Biglietti",
+	"listings.tiers.column.ticket": "Biglietto",
+	"listings.tiers.column.sold": "Venduti su {platform}",
+	"listings.tiers.column.state": "Vendite su {platform}",
+	"listings.tiers.updated": "aggiornato {when}",
+	"listings.tiers.notYet": "non ancora",
+	"listings.tiers.onSale": "In vendita",
+	"listings.tiers.paused": "In pausa",
+	"listings.tiers.pause": "Metti in pausa",
+	"listings.tiers.resume": "Riprendi",
+	"listings.tiers.pauseAll": "Metti tutto in pausa su {platform}",
+	"listings.tiers.resumeAll": "Riprendi tutto su {platform}",
+	"listings.tiers.hiddenByRevel": "Nascosto su {platform} finché le vendite sono in pausa su Revel",
+	"listings.tiers.promoNote": "La pausa nasconde il biglietto su {platform}. Chi ha un codice promozionale legato a quel biglietto può ancora comprarlo.",
+	"listings.tiers.rowAction": "{action} {ticket} su {platform}",
 	"integrations.import.button": "Importa da {platform}",
 	"integrations.import.title": "Importa da {platform}",
 	"integrations.import.body": "Scegli gli eventi da portare in Revel come bozze. Dopo, Revel è il posto dove li modifichi.",

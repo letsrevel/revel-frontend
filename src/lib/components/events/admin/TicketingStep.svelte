@@ -4,6 +4,7 @@
 	import {
 		eventadminticketsListTicketTiers,
 		eventadminticketsReorderTicketTiers,
+		eventadminticketsUpdateTicketTier,
 		organizationadminmembersListMembershipTiers
 	} from '$lib/api/generated/sdk.gen';
 	import type { TicketTierDetailSchema } from '$lib/api/generated/types.gen';
@@ -83,6 +84,30 @@
 	}));
 
 	const queryClient = useQueryClient();
+
+	// One-click Revel kill switch from the card. The tier PUT is a partial
+	// update, so `sales_paused` alone is the whole body. One mutation for every
+	// card, so every pause button waits while any pause is in flight.
+	const pauseMutation = createMutation(() => ({
+		mutationFn: async (input: { tierId: string; salesPaused: boolean }) => {
+			const res = await eventadminticketsUpdateTicketTier({
+				path: { event_id: eventId, tier_id: input.tierId },
+				body: { sales_paused: input.salesPaused }
+			});
+			if (res.error) throw res.error;
+			return res.data;
+		},
+		onSettled: () => {
+			queryClient.invalidateQueries({ queryKey: ['event-admin', eventId, 'ticket-tiers'] });
+		}
+	}));
+
+	// The schema types `id` as optional; a tier without one cannot be addressed.
+	function togglePauseFor(tier: TicketTierDetailSchema): (() => void) | undefined {
+		const tierId = tier.id;
+		if (!tierId) return undefined;
+		return () => pauseMutation.mutate({ tierId, salesPaused: !tier.sales_paused });
+	}
 
 	let editingTier = $state<TicketTierDetailSchema | null>(null);
 	let showTierForm = $state(false);
@@ -282,6 +307,8 @@
 				<TierCard
 					{tier}
 					onEdit={() => handleEditTier(tier)}
+					onTogglePause={togglePauseFor(tier)}
+					pausePending={pauseMutation.isPending}
 					onMoveUp={tiers.length >= 2 && index > 0 ? () => handleMoveTier(index, 'up') : undefined}
 					onMoveDown={tiers.length >= 2 && index < tiers.length - 1
 						? () => handleMoveTier(index, 'down')

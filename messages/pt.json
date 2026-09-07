@@ -1399,6 +1399,7 @@
 			"upgrade_membership": "Consulta as opções de adesão da organização para ver que níveis podes obter."
 		},
 		"reason": {
+			"sales_paused": "A venda de bilhetes está em pausa neste momento. Volta em breve.",
 			"membership_tier_required": "Este bilhete está reservado a níveis de adesão específicos."
 		},
 		"rsvpNextStep": "Confirma presença no evento",
@@ -6080,6 +6081,11 @@
 		"noTickets": "Nenhum bilhete encontrado"
 	},
 	"tierCard": {
+		"salesPaused": "Vendas em pausa",
+		"pauseSales": "Pausar vendas",
+		"resumeSales": "Retomar vendas",
+		"soldElsewhere": "Vendidos noutros sítios",
+		"soldOn": "{platform}: {count}",
 		"default": "Predefinido",
 		"price": "Preço",
 		"type": "Tipo",
@@ -6103,6 +6109,7 @@
 		"remaining": "{count} restantes"
 	},
 	"tierCardAdmin": {
+		"salesPaused": "Vendas em pausa",
 		"notAvailable": "Não disponível",
 		"soldOut": "Esgotado",
 		"signInToGetTicket": "Inicia sessão para obter bilhete",
@@ -6131,6 +6138,8 @@
 		"confirm": "Eliminar nível"
 	},
 	"tierForm": {
+		"pauseSales": "Pausar vendas",
+		"pauseSalesHelp": "Esconde este bilhete do checkout no Revel até retomares. O período de vendas não muda. Se o evento estiver publicado noutro sítio, também fica escondido lá na próxima atualização.",
 		"descriptionOptional": "Descrição (opcional)",
 		"paymentMethod": "Método de pagamento *",
 		"free": "Gratuito",
@@ -6383,6 +6392,7 @@
 	"tierForm.completeBillingInfo": "Completa os teus dados de faturação",
 	"tierForm.fieldErrorsTitle": "Alguns campos não puderam ser guardados:",
 	"tierForm.field": {
+		"sales_paused": "Pausar vendas",
 		"name": "Nome do nível",
 		"description": "Descrição",
 		"price": "Preço",
@@ -9440,6 +9450,22 @@
 	"listings.report.skipped": "Não enviado para o {platform}",
 	"listings.report.notes": "Notas",
 	"listings.report.detailsFromPlatform": "Detalhes do {platform}",
+	"listings.sold": "Vendidos: {revel} no Revel, {external} no {platform}",
+	"listings.tiers.heading": "Bilhetes",
+	"listings.tiers.column.ticket": "Bilhete",
+	"listings.tiers.column.sold": "Vendidos no {platform}",
+	"listings.tiers.column.state": "Vendas no {platform}",
+	"listings.tiers.updated": "atualizado {when}",
+	"listings.tiers.notYet": "ainda não",
+	"listings.tiers.onSale": "À venda",
+	"listings.tiers.paused": "Em pausa",
+	"listings.tiers.pause": "Pausar",
+	"listings.tiers.resume": "Retomar",
+	"listings.tiers.pauseAll": "Pausar tudo no {platform}",
+	"listings.tiers.resumeAll": "Retomar tudo no {platform}",
+	"listings.tiers.hiddenByRevel": "Escondido no {platform} enquanto as vendas estiverem em pausa no Revel",
+	"listings.tiers.promoNote": "Pausar esconde o bilhete no {platform}. Quem tiver um código promocional ligado a esse bilhete ainda o pode comprar.",
+	"listings.tiers.rowAction": "{action} {ticket} no {platform}",
 	"integrations.import.button": "Importar do {platform}",
 	"integrations.import.title": "Importar do {platform}",
 	"integrations.import.body": "Escolhe os eventos a trazer para o Revel como rascunhos. Depois, o Revel é onde os editas.",

@@ -17,6 +17,7 @@ const LABELS: Record<string, () => string> = {
 	total_quantity: () => m['tierForm.field.total_quantity'](),
 	sales_start_at: () => m['tierForm.field.sales_start_at'](),
 	sales_end_at: () => m['tierForm.field.sales_end_at'](),
+	sales_paused: () => m['tierForm.field.sales_paused'](),
 	visibility: () => m['tierForm.field.visibility'](),
 	purchasable_by: () => m['tierForm.field.purchasable_by'](),
 	restricted_to_membership_tiers_ids: () =>
