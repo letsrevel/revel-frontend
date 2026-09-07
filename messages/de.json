@@ -1399,6 +1399,7 @@
 			"upgrade_membership": "Sieh dir die Mitgliedschaftsoptionen der Organisation an, um zu erfahren, welche Stufen du erhalten kannst."
 		},
 		"reason": {
+			"sales_paused": "Der Ticketverkauf ist gerade pausiert. Schau bald wieder vorbei.",
 			"membership_tier_required": "Dieses Ticket ist bestimmten Mitgliedschaftsstufen vorbehalten."
 		},
 		"rsvpNextStep": "Zur Veranstaltung zusagen",
@@ -6080,6 +6081,11 @@
 		"noTickets": "Keine Tickets gefunden"
 	},
 	"tierCard": {
+		"salesPaused": "Verkauf pausiert",
+		"pauseSales": "Verkauf pausieren",
+		"resumeSales": "Verkauf fortsetzen",
+		"soldElsewhere": "Anderswo verkauft",
+		"soldOn": "{platform}: {count}",
 		"default": "Standard",
 		"price": "Preis",
 		"type": "Typ",
@@ -6103,6 +6109,7 @@
 		"remaining": "{count} übrig"
 	},
 	"tierCardAdmin": {
+		"salesPaused": "Verkauf pausiert",
 		"notAvailable": "Nicht verfügbar",
 		"soldOut": "Ausverkauft",
 		"signInToGetTicket": "Anmelden, um Ticket zu bekommen",
@@ -6131,6 +6138,8 @@
 		"confirm": "Stufe löschen"
 	},
 	"tierForm": {
+		"pauseSales": "Verkauf pausieren",
+		"pauseSalesHelp": "Verbirgt dieses Ticket im Revel-Checkout, bis du den Verkauf fortsetzt. Der Verkaufszeitraum bleibt unverändert. Ist das Event anderswo eingetragen, wird es dort bei der nächsten Aktualisierung ebenfalls verborgen.",
 		"descriptionOptional": "Beschreibung (optional)",
 		"paymentMethod": "Zahlungsmethode *",
 		"free": "Kostenlos",
@@ -6383,6 +6392,7 @@
 	"tierForm.completeBillingInfo": "Vervollständigen Sie Ihre Rechnungsdaten",
 	"tierForm.fieldErrorsTitle": "Einige Felder konnten nicht gespeichert werden:",
 	"tierForm.field": {
+		"sales_paused": "Verkauf pausieren",
 		"name": "Stufenname",
 		"description": "Beschreibung",
 		"price": "Preis",
@@ -9440,6 +9450,22 @@
 	"listings.report.skipped": "Nicht an {platform} übertragen",
 	"listings.report.notes": "Hinweise",
 	"listings.report.detailsFromPlatform": "Details von {platform}",
+	"listings.sold": "Verkauft: {revel} auf Revel, {external} auf {platform}",
+	"listings.tiers.heading": "Tickets",
+	"listings.tiers.column.ticket": "Ticket",
+	"listings.tiers.column.sold": "Verkauft auf {platform}",
+	"listings.tiers.column.state": "Verkauf auf {platform}",
+	"listings.tiers.updated": "aktualisiert {when}",
+	"listings.tiers.notYet": "noch nicht",
+	"listings.tiers.onSale": "Im Verkauf",
+	"listings.tiers.paused": "Pausiert",
+	"listings.tiers.pause": "Pausieren",
+	"listings.tiers.resume": "Fortsetzen",
+	"listings.tiers.pauseAll": "Alle auf {platform} pausieren",
+	"listings.tiers.resumeAll": "Alle auf {platform} fortsetzen",
+	"listings.tiers.hiddenByRevel": "Auf {platform} verborgen, solange der Verkauf auf Revel pausiert ist",
+	"listings.tiers.promoNote": "Pausieren verbirgt das Ticket auf {platform}. Wer einen mit diesem Ticket verknüpften Promo-Code hat, kann es weiterhin kaufen.",
+	"listings.tiers.rowAction": "{ticket} auf {platform} {action}",
 	"integrations.import.button": "Von {platform} importieren",
 	"integrations.import.title": "Von {platform} importieren",
 	"integrations.import.body": "Wähle die Events, die als Entwürfe nach Revel geholt werden sollen. Danach werden sie in Revel bearbeitet.",

@@ -1399,6 +1399,7 @@
 			"upgrade_membership": "Check the organization's membership options to see which tiers you can get."
 		},
 		"reason": {
+			"sales_paused": "Ticket sales are paused right now. Check back soon.",
 			"membership_tier_required": "This ticket is reserved for specific membership tiers."
 		},
 		"rsvpNextStep": "RSVP to the event",
@@ -6080,6 +6081,11 @@
 		"noTickets": "No tickets found"
 	},
 	"tierCard": {
+		"salesPaused": "Sales paused",
+		"pauseSales": "Pause sales",
+		"resumeSales": "Resume sales",
+		"soldElsewhere": "Sold elsewhere",
+		"soldOn": "{platform}: {count}",
 		"default": "Default",
 		"price": "Price",
 		"type": "Type",
@@ -6103,6 +6109,7 @@
 		"remaining": "{count} remaining"
 	},
 	"tierCardAdmin": {
+		"salesPaused": "Sales paused",
 		"notAvailable": "Not Available",
 		"soldOut": "Sold Out",
 		"signInToGetTicket": "Sign in to Get Ticket",
@@ -6131,6 +6138,8 @@
 		"confirm": "Delete Tier"
 	},
 	"tierForm": {
+		"pauseSales": "Pause sales",
+		"pauseSalesHelp": "Hides this ticket from checkout on Revel until you resume. The sales window is not changed. If the event is listed elsewhere, it is hidden there too on the next update.",
 		"descriptionOptional": "Description (optional)",
 		"paymentMethod": "Payment Method *",
 		"free": "Free",
@@ -6383,6 +6392,7 @@
 	"tierForm.completeBillingInfo": "Complete your billing info",
 	"tierForm.fieldErrorsTitle": "Some fields couldn't be saved:",
 	"tierForm.field": {
+		"sales_paused": "Pause sales",
 		"name": "Tier name",
 		"description": "Description",
 		"price": "Price",
@@ -9440,6 +9450,22 @@
 	"listings.report.skipped": "Not sent to {platform}",
 	"listings.report.notes": "Notes",
 	"listings.report.detailsFromPlatform": "Details from {platform}",
+	"listings.sold": "Sold: {revel} on Revel, {external} on {platform}",
+	"listings.tiers.heading": "Tickets",
+	"listings.tiers.column.ticket": "Ticket",
+	"listings.tiers.column.sold": "Sold on {platform}",
+	"listings.tiers.column.state": "Sales on {platform}",
+	"listings.tiers.updated": "updated {when}",
+	"listings.tiers.notYet": "not yet",
+	"listings.tiers.onSale": "On sale",
+	"listings.tiers.paused": "Paused",
+	"listings.tiers.pause": "Pause",
+	"listings.tiers.resume": "Resume",
+	"listings.tiers.pauseAll": "Pause all on {platform}",
+	"listings.tiers.resumeAll": "Resume all on {platform}",
+	"listings.tiers.hiddenByRevel": "Hidden on {platform} while sales are paused on Revel",
+	"listings.tiers.promoNote": "Pausing hides the ticket on {platform}. Anyone holding a promo code linked to that ticket can still buy it.",
+	"listings.tiers.rowAction": "{action} {ticket} on {platform}",
 	"integrations.import.button": "Import from {platform}",
 	"integrations.import.title": "Import from {platform}",
 	"integrations.import.body": "Pick the events to bring into Revel as drafts. Afterwards Revel is the place you edit them.",

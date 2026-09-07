@@ -1285,6 +1285,7 @@
 			"upgrade_membership": "Consulte les options d'adhésion de l'organisation pour voir quels niveaux tu peux obtenir."
 		},
 		"reason": {
+			"sales_paused": "La vente des billets est en pause pour le moment. Revenez bientôt.",
 			"membership_tier_required": "Ce billet est réservé à certains niveaux d'adhésion."
 		},
 		"rsvpNextStep": "Confirme ta participation à l'événement",
@@ -6050,6 +6051,11 @@
 		"noTickets": "Aucun billet trouvé"
 	},
 	"tierCard": {
+		"salesPaused": "Ventes en pause",
+		"pauseSales": "Mettre les ventes en pause",
+		"resumeSales": "Reprendre les ventes",
+		"soldElsewhere": "Vendus ailleurs",
+		"soldOn": "{platform} : {count}",
 		"default": "Par défaut",
 		"price": "Prix",
 		"type": "Type",
@@ -6073,6 +6079,7 @@
 		"remaining": "{count} restant(s)"
 	},
 	"tierCardAdmin": {
+		"salesPaused": "Ventes en pause",
 		"notAvailable": "Non disponible",
 		"soldOut": "Épuisé",
 		"signInToGetTicket": "Se connecter pour obtenir un billet",
@@ -6101,6 +6108,8 @@
 		"confirm": "Supprimer le niveau"
 	},
 	"tierForm": {
+		"pauseSales": "Mettre les ventes en pause",
+		"pauseSalesHelp": "Masque ce billet du paiement sur Revel jusqu'à la reprise. La période de vente ne change pas. Si l'événement est publié ailleurs, il y est aussi masqué à la prochaine mise à jour.",
 		"descriptionOptional": "Description (facultatif)",
 		"paymentMethod": "Mode de paiement *",
 		"free": "Gratuit",
@@ -6353,6 +6362,7 @@
 	"tierForm.completeBillingInfo": "Complète tes informations de facturation",
 	"tierForm.fieldErrorsTitle": "Certains champs n'ont pas pu être enregistrés :",
 	"tierForm.field": {
+		"sales_paused": "Mettre les ventes en pause",
 		"name": "Nom du niveau",
 		"description": "Description",
 		"price": "Prix",
@@ -9440,6 +9450,22 @@
 	"listings.report.skipped": "Non envoyé à {platform}",
 	"listings.report.notes": "Remarques",
 	"listings.report.detailsFromPlatform": "Détails de {platform}",
+	"listings.sold": "Vendus : {revel} sur Revel, {external} sur {platform}",
+	"listings.tiers.heading": "Billets",
+	"listings.tiers.column.ticket": "Billet",
+	"listings.tiers.column.sold": "Vendus sur {platform}",
+	"listings.tiers.column.state": "Ventes sur {platform}",
+	"listings.tiers.updated": "mis à jour {when}",
+	"listings.tiers.notYet": "pas encore",
+	"listings.tiers.onSale": "En vente",
+	"listings.tiers.paused": "En pause",
+	"listings.tiers.pause": "Mettre en pause",
+	"listings.tiers.resume": "Reprendre",
+	"listings.tiers.pauseAll": "Tout mettre en pause sur {platform}",
+	"listings.tiers.resumeAll": "Tout reprendre sur {platform}",
+	"listings.tiers.hiddenByRevel": "Masqué sur {platform} tant que les ventes sont en pause sur Revel",
+	"listings.tiers.promoNote": "La mise en pause masque le billet sur {platform}. Une personne disposant d'un code promo lié à ce billet peut encore l'acheter.",
+	"listings.tiers.rowAction": "{action} {ticket} sur {platform}",
 	"integrations.import.button": "Importer depuis {platform}",
 	"integrations.import.title": "Importer depuis {platform}",
 	"integrations.import.body": "Choisissez les événements à rapatrier dans Revel comme brouillons. Ensuite, Revel est l'endroit où vous les modifiez.",
