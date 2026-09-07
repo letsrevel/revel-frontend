@@ -7,8 +7,10 @@
 	interface Props {
 		/** Feature flag: false swaps the primary CTA for "Browse events". */
 		canCreateOrg: boolean;
+		/** Booking-page URL from `/version`; null hides the "Book a call" CTA. */
+		demoBookingUrl?: string | null;
 	}
-	const { canCreateOrg }: Props = $props();
+	const { canCreateOrg, demoBookingUrl = null }: Props = $props();
 </script>
 
 <!-- Last panel, so no cut. crimson-deep (not raw crimson) per the panel rule:
@@ -68,6 +70,17 @@
 			>
 				{m['home.poster.closeTryDemo']()}
 			</a>
+			{#if demoBookingUrl}
+				<!-- eslint-disable svelte/no-navigation-without-resolve -- external booking page configured in the backend admin; not an app route -->
+				<a
+					href={demoBookingUrl}
+					target="_blank"
+					rel="noopener noreferrer"
+					class="rounded-full border-2 border-[hsl(var(--poster-white))] px-7 py-3 font-bold text-[hsl(var(--poster-white))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+				>
+					{m['home.poster.bookCall']()}
+				</a>
+			{/if}
 		</div>
 	</div>
 </PosterPanel>

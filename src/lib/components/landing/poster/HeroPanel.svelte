@@ -9,8 +9,10 @@
 
 	interface Props {
 		isAuthenticated: boolean;
+		/** Booking-page URL from `/version`; null hides the "Book a call" CTA. */
+		demoBookingUrl?: string | null;
 	}
-	const { isAuthenticated }: Props = $props();
+	const { isAuthenticated, demoBookingUrl = null }: Props = $props();
 
 	/**
 	 * Inclusive rotating-vowel kicker for locales whose welcome adjective
@@ -133,6 +135,19 @@
 						class="rounded-full border-2 border-[hsl(var(--poster-white))] bg-[hsl(var(--poster-ink)/0.20)] px-6 py-3 font-bold text-[hsl(var(--poster-white))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
 					>
 						{m['home.poster.heroPeekDemo']()}
+					</a>
+				{/if}
+				{#if demoBookingUrl}
+					<!-- Same ink-tinted ghost recipe as the CTA above, for the same
+				     AA reason. -->
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- external booking page configured in the backend admin; not an app route -->
+					<a
+						href={demoBookingUrl}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="rounded-full border-2 border-[hsl(var(--poster-white))] bg-[hsl(var(--poster-ink)/0.20)] px-6 py-3 font-bold text-[hsl(var(--poster-white))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+					>
+						{m['home.poster.bookCall']()}
 					</a>
 				{/if}
 			</div>

@@ -31,13 +31,13 @@
 
 <SeoHead config={data.seo} />
 
-<HeroPanel {isAuthenticated} />
+<HeroPanel {isAuthenticated} demoBookingUrl={data.demoBookingUrl} />
 <PricingPanel onOpenCalculator={() => (showFeeCalculator = true)} />
 <VenuesPanel />
 <ClubsPanel />
 <CommunitiesPanel />
 <FeaturesPanel {landingPagePrefix} />
 <OpenSourcePanel />
-<ClosePanel {canCreateOrg} />
+<ClosePanel {canCreateOrg} demoBookingUrl={data.demoBookingUrl} />
 
 <FeeCalculatorModal bind:open={showFeeCalculator} />

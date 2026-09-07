@@ -43,4 +43,19 @@ describe('ClosePanel', () => {
 		// window.opener access from the demo origin would be a tabnabbing vector.
 		expect(demo.getAttribute('rel')).toContain('noopener');
 	});
+
+	it('omits the book-a-call CTA when no booking URL is configured', () => {
+		render(ClosePanel, { props: { canCreateOrg: true } });
+		expect(screen.queryByRole('link', { name: m['home.poster.bookCall']() })).toBeNull();
+	});
+
+	it('renders the book-a-call CTA next to the demo link when a URL is set', () => {
+		render(ClosePanel, {
+			props: { canCreateOrg: true, demoBookingUrl: 'https://cal.example.com/revel' }
+		});
+		const call = screen.getByRole('link', { name: m['home.poster.bookCall']() });
+		expect(call).toHaveAttribute('href', 'https://cal.example.com/revel');
+		expect(call).toHaveAttribute('target', '_blank');
+		expect(call.getAttribute('rel')).toContain('noopener');
+	});
 });

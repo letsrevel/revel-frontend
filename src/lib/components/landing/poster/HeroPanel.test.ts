@@ -35,6 +35,25 @@ describe('HeroPanel', () => {
 		expect(demo.getAttribute('rel')).toContain('noopener');
 	});
 
+	it('omits the book-a-call CTA when no booking URL is configured', () => {
+		render(HeroPanel, { props: { isAuthenticated: false } });
+		expect(screen.queryByRole('link', { name: m['home.poster.bookCall']() })).toBeNull();
+	});
+
+	it('renders the book-a-call CTA in both auth states when a URL is set', () => {
+		// The CTA sits outside the auth switch: a sales lead can be logged in or out.
+		for (const isAuthenticated of [false, true]) {
+			const { unmount } = render(HeroPanel, {
+				props: { isAuthenticated, demoBookingUrl: 'https://cal.example.com/revel' }
+			});
+			const call = screen.getByRole('link', { name: m['home.poster.bookCall']() });
+			expect(call).toHaveAttribute('href', 'https://cal.example.com/revel');
+			expect(call).toHaveAttribute('target', '_blank');
+			expect(call.getAttribute('rel')).toContain('noopener');
+			unmount();
+		}
+	});
+
 	it('shows dashboard CTA when logged in', () => {
 		render(HeroPanel, { props: { isAuthenticated: true } });
 		expect(screen.getByRole('link', { name: m['userMenu.dashboard']() })).toBeInTheDocument();

@@ -20,15 +20,30 @@ function parseSsoProviders(raw: unknown): SsoProviderSchema[] {
 	);
 }
 
+/*
+ * The booking URL renders as a link href, so only accept absolute http(s)
+ * URLs — anything else (relative paths, javascript:, malformed admin input)
+ * degrades to "no button" rather than a broken or dangerous link.
+ */
+function parseDemoBookingUrl(raw: unknown): string | null {
+	return typeof raw === 'string' && /^https?:\/\//.test(raw) ? raw : null;
+}
+
 const TTL_MS = 5 * 60 * 1000;
 
 interface VersionInfo {
 	features: Features;
 	demo: boolean;
 	ssoProviders: SsoProviderSchema[];
+	demoBookingUrl: string | null;
 }
 
-const FALLBACK: VersionInfo = { features: DEFAULT_FEATURES, demo: false, ssoProviders: [] };
+const FALLBACK: VersionInfo = {
+	features: DEFAULT_FEATURES,
+	demo: false,
+	ssoProviders: [],
+	demoBookingUrl: null
+};
 
 let cache: { value: VersionInfo; expiry: number } | null = null;
 
@@ -57,7 +72,8 @@ async function getVersionInfo(fetch: typeof globalThis.fetch): Promise<VersionIn
 		const value: VersionInfo = {
 			features: resolveFeatures(data.features),
 			demo: data.demo ?? false,
-			ssoProviders: parseSsoProviders(data.sso_providers)
+			ssoProviders: parseSsoProviders(data.sso_providers),
+			demoBookingUrl: parseDemoBookingUrl(data.demo_booking_url)
 		};
 		cache = { value, expiry: Date.now() + TTL_MS };
 		return value;
@@ -90,4 +106,13 @@ export async function getSsoProviders(
 	fetch: typeof globalThis.fetch
 ): Promise<SsoProviderSchema[]> {
 	return (await getVersionInfo(fetch)).ssoProviders;
+}
+
+/**
+ * Public demo-booking link from `/version` (cached). Fail-CLOSED: any failure
+ * or unset/invalid URL yields null — the landing page simply omits its
+ * "Book a call" CTA rather than rendering a dead link.
+ */
+export async function getDemoBookingUrl(fetch: typeof globalThis.fetch): Promise<string | null> {
+	return (await getVersionInfo(fetch)).demoBookingUrl;
 }
