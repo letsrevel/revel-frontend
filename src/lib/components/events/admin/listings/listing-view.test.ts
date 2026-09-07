@@ -191,7 +191,7 @@ describe('listingsRefetchInterval', () => {
 });
 
 describe('soldTotals', () => {
-	it('sums Revel sales and the given platform\'s sales across tiers', () => {
+	it("sums Revel sales and the given platform's sales across tiers", () => {
 		const totals = soldTotals(
 			[
 				{
@@ -201,7 +201,10 @@ describe('soldTotals', () => {
 						{ provider: 'other', quantity_sold: 99, paused: false }
 					]
 				},
-				{ quantity_sold: 3, external_sales: [{ provider: 'eventbrite', quantity_sold: 2, paused: true }] },
+				{
+					quantity_sold: 3,
+					external_sales: [{ provider: 'eventbrite', quantity_sold: 2, paused: true }]
+				},
 				{ quantity_sold: undefined, external_sales: undefined }
 			],
 			'eventbrite'
