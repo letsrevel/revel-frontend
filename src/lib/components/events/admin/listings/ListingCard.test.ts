@@ -141,6 +141,14 @@ describe('ListingCard', () => {
 		expect(screen.queryByRole('button', { name: /Publish/ })).toBeNull();
 	});
 
+	it('also blocks Update listing when the event became ineligible after listing', () => {
+		renderCard(listing({ link: link({ remote_status: 'live' }) }), {
+			event: { event_type: 'private', end: '2026-10-01T20:00:00Z', requires_ticket: true }
+		});
+		expect(screen.getByRole('button', { name: 'Update listing' })).toBeDisabled();
+		expect(screen.getByText('Only public events can be listed on Eventbrite.')).toBeInTheDocument();
+	});
+
 	it('shows the sending state, and the slow copy after ten minutes', () => {
 		renderCard(listing({ link: link({ sync_state: 'pending' }) }), { pendingSlow: true });
 		expect(screen.getByText('Sending to Eventbrite…')).toBeInTheDocument();

@@ -61,7 +61,9 @@
 	const platform = $derived(listing.display_name);
 	const link = $derived(listing.link ?? null);
 	const view = $derived(listingView(listing));
-	const blockers = $derived(view.kind === 'unlisted' ? pushBlockers(event) : []);
+	// Whenever a push is offered, not only before the first one: an event made
+	// private after listing must not round-trip a 400 on "Update listing".
+	const blockers = $derived(view.canPush ? pushBlockers(event) : []);
 	const headingId = $derived(`listing-${listing.provider}`);
 	const integrationsHref = $derived(
 		resolve('/(auth)/org/[slug]/admin/integrations', { slug: organizationSlug })
@@ -287,7 +289,7 @@
 					{#if body}
 						<p class="mt-1 text-sm text-muted-foreground">{body}</p>
 					{/if}
-					{#if view.kind === 'unlisted' && blockers.length > 0}
+					{#if blockers.length > 0}
 						<ul class="mt-2 list-inside list-disc space-y-1 text-sm text-foreground">
 							{#each blockers as code (code)}
 								<li>{integrationErrorMessage(code, platform)}</li>

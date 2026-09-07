@@ -1,12 +1,13 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { SvelteMap } from 'svelte/reactivity';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { AlertCircle, Loader2, Megaphone } from '@lucide/svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import type { EventDetailSchema, EventListingSchema } from '$lib/api/generated/types.gen';
 	import { eventintegrationsListListings } from '$lib/api/generated/sdk.gen';
 	import ListingCard from './ListingCard.svelte';
-	import { hasPendingLink, listingsRefetchInterval, PENDING_SLOW_AFTER_MS } from './listing-view';
+	import { listingsRefetchInterval, PENDING_SLOW_AFTER_MS } from './listing-view';
 
 	interface Props {
 		organizationSlug: string;
@@ -20,31 +21,47 @@
 	const queryClient = useQueryClient();
 	const queryKey = $derived(['event-admin', eventId, 'listings'] as const);
 
-	// When the current pending stretch began; null while nothing is pending.
-	// Plain (not `$state`): it is written from the query function, and the
-	// derived below re-reads it whenever a fetch lands (`dataUpdatedAt`).
-	let pendingSinceRef: number | null = null;
+	// When each provider's current pending stretch began, written from the query
+	// function and read by the derived below on every fetch. Per provider, so a
+	// push that starts on one platform does not inherit another platform's
+	// ten-minute-old clock.
+	const pendingSince = new SvelteMap<string, number>();
 
 	const listings = createQuery(() => ({
 		queryKey,
 		queryFn: async (): Promise<EventListingSchema[]> => {
 			const res = await eventintegrationsListListings({ path: { event_id: eventId } });
 			if (res.error || !res.data) throw new Error(m['listings.loadFailed']());
-			const pending = hasPendingLink(res.data);
-			if (pending && pendingSinceRef === null) pendingSinceRef = Date.now();
-			if (!pending) pendingSinceRef = null;
+			const now = Date.now();
+			for (const listing of res.data) {
+				if (listing.link?.sync_state === 'pending') {
+					if (!pendingSince.has(listing.provider)) pendingSince.set(listing.provider, now);
+				} else {
+					pendingSince.delete(listing.provider);
+				}
+			}
 			return res.data;
 		},
-		// Poll only while a push is in flight; slow down after ten minutes.
+		// Poll only while a push is in flight; slow down once the oldest pending
+		// stretch passes ten minutes.
 		refetchInterval: (query) =>
-			listingsRefetchInterval(query.state.data, pendingSinceRef, Date.now()),
+			listingsRefetchInterval(query.state.data, earliestPending(), Date.now()),
 		refetchIntervalInBackground: false
 	}));
 
+	function earliestPending(): number | null {
+		let earliest: number | null = null;
+		for (const t of pendingSince.values()) if (earliest === null || t < earliest) earliest = t;
+		return earliest;
+	}
+
 	// Re-evaluated on every fetch, which is at least every 30 s while pending.
-	const pendingSlow = $derived.by(() => {
+	const slowProviders = $derived.by((): string[] => {
 		void listings.dataUpdatedAt;
-		return pendingSinceRef !== null && Date.now() - pendingSinceRef >= PENDING_SLOW_AFTER_MS;
+		const now = Date.now();
+		return [...pendingSince]
+			.filter(([, since]) => now - since >= PENDING_SLOW_AFTER_MS)
+			.map(([provider]) => provider);
 	});
 
 	function refresh() {
@@ -73,7 +90,7 @@
 			icon={Megaphone}
 			title={m['listings.empty.title']()}
 			body={m['listings.empty.body']()}
-			level={3}
+			level={2}
 		/>
 	{:else if listings.data}
 		{#each listings.data as listing (listing.provider)}
@@ -83,7 +100,7 @@
 				{listing}
 				{event}
 				{isOwner}
-				{pendingSlow}
+				pendingSlow={slowProviders.includes(listing.provider)}
 				onChanged={refresh}
 			/>
 		{/each}
