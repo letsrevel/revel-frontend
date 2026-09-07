@@ -10,7 +10,7 @@
 		eventintegrationsListListings
 	} from '$lib/api/generated/sdk.gen';
 	import ListingCard from './ListingCard.svelte';
-	import { listingsRefetchInterval, PENDING_SLOW_AFTER_MS } from './listing-view';
+	import { listingsRefetchInterval, PENDING_SLOW_AFTER_MS, TIERS_REFRESH_MS } from './listing-view';
 
 	interface Props {
 		organizationSlug: string;
@@ -69,9 +69,13 @@
 
 	// Same key as the Ticketing tab, so the two tabs share one cache entry.
 	const tiersKey = $derived(['event-admin', eventId, 'ticket-tiers'] as const);
+	// Refreshed on the idle cadence too: the "Sold: … on Revel, … on Eventbrite"
+	// line comes from here and must not drift from the per-ticket counts below it.
 	const tiersQuery = createQuery(() => ({
 		queryKey: tiersKey,
-		queryFn: () => eventadminticketsListTicketTiers({ path: { event_id: eventId } })
+		queryFn: () => eventadminticketsListTicketTiers({ path: { event_id: eventId } }),
+		refetchInterval: TIERS_REFRESH_MS,
+		refetchIntervalInBackground: false
 	}));
 	const tiers = $derived(tiersQuery.data?.data?.results ?? []);
 

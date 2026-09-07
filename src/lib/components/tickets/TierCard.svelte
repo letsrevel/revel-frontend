@@ -100,12 +100,6 @@
 			return { canPurchase: false, reason: 'Not available' };
 		}
 
-		// Organizer kill switch (backend `sales_paused`): checkout refuses the
-		// tier; the card says why instead of showing a dead button.
-		if (tier.sales_paused) {
-			return { canPurchase: false, reason: 'Sales paused' };
-		}
-
 		// If no per-user remaining info, fall back to general isEligible
 		if (!tierRemainingInfo) {
 			return { canPurchase: isEligible, reason: isEligible ? undefined : 'Not eligible' };
@@ -207,6 +201,8 @@
 	 * `message === null` is what suppresses the inventory row in the template.
 	 */
 	const availabilityStatus = $derived.by(() => {
+		// Organizer kill switch (backend `sales_paused`): checkout refuses the
+		// tier (`can_purchase` is false), so this drives the badge and the CTA copy.
 		if (tier.sales_paused) {
 			return { available: false, message: m['tierCard.salesPaused']() };
 		}
@@ -307,7 +303,9 @@
 	<!-- Inventory as a solid chip rather than a coloured line of text: sold out is
 	     the fact a buyer scans for, and StatusBadge's pairs are audited in both
 	     modes. Meaning is never carried by the fill alone — the label says it. -->
-	{#if availabilityStatus.message !== null && effectiveEligible}
+	<!-- A paused tier is never purchasable, so it never passes `effectiveEligible`;
+	     the badge still has to say why, which is the one fact the buyer scans for. -->
+	{#if availabilityStatus.message !== null && (effectiveEligible || tier.sales_paused)}
 		<StatusBadge
 			tone={availabilityStatus.available ? 'neutral' : 'danger'}
 			icon={Users}

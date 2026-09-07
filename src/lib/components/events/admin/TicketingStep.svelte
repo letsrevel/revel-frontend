@@ -86,11 +86,10 @@
 	const queryClient = useQueryClient();
 
 	// One-click Revel kill switch from the card. The tier PUT is a partial
-	// update, so `sales_paused` alone is the whole body.
-	let pausingTierId = $state<string | null>(null);
+	// update, so `sales_paused` alone is the whole body. One mutation for every
+	// card, so every pause button waits while any pause is in flight.
 	const pauseMutation = createMutation(() => ({
 		mutationFn: async (input: { tierId: string; salesPaused: boolean }) => {
-			pausingTierId = input.tierId;
 			const res = await eventadminticketsUpdateTicketTier({
 				path: { event_id: eventId, tier_id: input.tierId },
 				body: { sales_paused: input.salesPaused }
@@ -99,7 +98,6 @@
 			return res.data;
 		},
 		onSettled: () => {
-			pausingTierId = null;
 			queryClient.invalidateQueries({ queryKey: ['event-admin', eventId, 'ticket-tiers'] });
 		}
 	}));
@@ -310,7 +308,7 @@
 					{tier}
 					onEdit={() => handleEditTier(tier)}
 					onTogglePause={togglePauseFor(tier)}
-					pausePending={pausingTierId === tier.id}
+					pausePending={pauseMutation.isPending}
 					onMoveUp={tiers.length >= 2 && index > 0 ? () => handleMoveTier(index, 'up') : undefined}
 					onMoveDown={tiers.length >= 2 && index < tiers.length - 1
 						? () => handleMoveTier(index, 'down')

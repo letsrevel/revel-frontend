@@ -35,21 +35,30 @@
 
 	const headingId = $derived(`listing-${provider}-tiers`);
 	const rows = $derived(link.tiers);
-	const allPaused = $derived(rows.length > 0 && rows.every((r) => r.remote_paused));
 
 	function revelPaused(row: TierLinkSchema): boolean {
 		return tiers.find((t) => t.id === row.tier_id)?.sales_paused === true;
 	}
+	// A tier paused on Revel is hidden on the platform whatever `remote_paused`
+	// says (the mapper hides it on every push, and resume will not un-hide it),
+	// so the state column and the bulk action treat it as paused.
+	function effectivelyPaused(row: TierLinkSchema): boolean {
+		return row.remote_paused || revelPaused(row);
+	}
+	const allPaused = $derived(rows.length > 0 && rows.every(effectivelyPaused));
+	// "Resume all" only when something would actually come back on sale.
+	const anyResumable = $derived(rows.some((r) => r.remote_paused && !revelPaused(r)));
 
-	// Per-tier failures from the last pause/resume, keyed by tier id. Cleared
-	// on the next attempt; the backend answers 200 even when some tiers fail.
+	// Per-tier failures from the last pause/resume, keyed by tier id, reset
+	// when the next attempt starts; the backend answers 200 even when some
+	// tiers fail.
 	let failures = $state<Record<string, TierPauseFailureSchema>>({});
 	let actionError = $state<IntegrationErrorInfo | null>(null);
 	let busyTier = $state<string | 'all' | null>(null);
 
 	// Synchronous on the backend by design: a kill switch must not say
-	// "pending". The refreshed link comes back in the response; the tab
-	// re-fetch keeps every other card in step.
+	// "pending". The response carries the refreshed link, but the tab's
+	// re-fetch is what re-renders every card, so only `failed` is read here.
 	const toggle = createMutation(() => ({
 		mutationFn: async (input: { tierId: string | null; paused: boolean }) => {
 			busyTier = input.tierId ?? 'all';
@@ -74,6 +83,7 @@
 
 	function run(tierId: string | null, paused: boolean) {
 		actionError = null;
+		failures = {};
 		toggle.mutate({ tierId, paused });
 	}
 
@@ -92,7 +102,7 @@
 				variant="outline"
 				size="sm"
 				onclick={() => run(null, !allPaused)}
-				disabled={!browser || toggle.isPending}
+				disabled={!browser || toggle.isPending || (allPaused && !anyResumable)}
 				class="inline-flex items-center gap-2"
 			>
 				{#if busyTier === 'all'}
@@ -119,9 +129,12 @@
 		</div>
 	{/if}
 
+	<!-- One DOM for every viewport: below `md` the header row is hidden and each
+	     cell stacks as a block with its own small label, so phones get a card per
+	     ticket without a second copy of the buttons. -->
 	<div class="overflow-x-auto rounded-lg border border-border">
 		<table class="w-full text-sm">
-			<thead class="bg-muted/50">
+			<thead class="hidden bg-muted/50 md:table-header-group">
 				<tr>
 					<th
 						class="px-3 py-2 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground"
@@ -138,15 +151,22 @@
 					<th class="px-3 py-2"><span class="sr-only">{m['listings.tiers.heading']()}</span></th>
 				</tr>
 			</thead>
-			<tbody>
+			<tbody class="block md:table-row-group">
 				{#each rows as row (row.tier_id)}
-					{@const paused = row.remote_paused}
+					{@const paused = effectivelyPaused(row)}
 					{@const hiddenByRevel = revelPaused(row)}
 					{@const failure = failures[row.tier_id]}
 					{@const action = paused ? m['listings.tiers.resume']() : m['listings.tiers.pause']()}
-					<tr class="border-t border-border align-top">
-						<td class="px-3 py-2 font-medium text-foreground">{row.tier_name}</td>
-						<td class="whitespace-nowrap px-3 py-2 text-foreground">
+					<tr class="block border-t border-border p-3 md:table-row md:p-0 md:align-top">
+						<td class="block py-1 font-medium text-foreground md:table-cell md:px-3 md:py-2">
+							{row.tier_name}
+						</td>
+						<td
+							class="block py-1 text-foreground md:table-cell md:whitespace-nowrap md:px-3 md:py-2"
+						>
+							<span class="mr-2 text-xs uppercase tracking-[0.12em] text-muted-foreground md:hidden"
+								>{m['listings.tiers.column.sold']({ platform })}</span
+							>
 							{row.remote_quantity_sold}
 							<span class="block text-xs text-muted-foreground">
 								{row.counts_updated_at
@@ -154,7 +174,10 @@
 									: m['listings.tiers.notYet']()}
 							</span>
 						</td>
-						<td class="px-3 py-2">
+						<td class="block py-1 md:table-cell md:px-3 md:py-2">
+							<span class="mr-2 text-xs uppercase tracking-[0.12em] text-muted-foreground md:hidden"
+								>{m['listings.tiers.column.state']({ platform })}</span
+							>
 							<StatusBadge
 								tone={paused ? 'warning' : 'neutral'}
 								label={paused ? m['listings.tiers.paused']() : m['listings.tiers.onSale']()}
@@ -174,12 +197,12 @@
 								</p>
 							{/if}
 						</td>
-						<td class="whitespace-nowrap px-3 py-2 text-right">
+						<td class="block py-1 md:table-cell md:whitespace-nowrap md:px-3 md:py-2 md:text-right">
 							<Button
 								variant="ghost"
 								size="sm"
 								onclick={() => run(row.tier_id, !paused)}
-								disabled={!browser || toggle.isPending || (paused && hiddenByRevel)}
+								disabled={!browser || toggle.isPending || hiddenByRevel}
 								aria-label={m['listings.tiers.rowAction']({
 									action,
 									ticket: row.tier_name,

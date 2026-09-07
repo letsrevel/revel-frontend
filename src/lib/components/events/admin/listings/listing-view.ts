@@ -209,6 +209,8 @@ const PENDING_FAST_INTERVAL_MS = 3_000;
 const PENDING_SLOW_INTERVAL_MS = 30_000;
 /** Idle cadence: sold counts change out of band, so keep them fresh while the tab is open. */
 const IDLE_INTERVAL_MS = 60_000;
+/** The event's own tiers refresh on the same cadence; the sold summary reads both. */
+export const TIERS_REFRESH_MS = IDLE_INTERVAL_MS;
 
 export function hasPendingLink(listings: EventListingSchema[] | undefined): boolean {
 	return (listings ?? []).some((l) => l.link?.sync_state === 'pending');

@@ -163,6 +163,26 @@ describe('LinkedTiersTable', () => {
 		expect(screen.getByRole('button', { name: 'Resume General on Eventbrite' })).toBeDisabled();
 	});
 
+	it('reads a Revel-paused ticket as paused even when the platform flag is off', () => {
+		renderTable([tierLink({ remote_paused: false })], [{ id: 't1', sales_paused: true }]);
+		expect(screen.getByTestId('status-badge')).toHaveTextContent('Paused');
+		expect(screen.getByRole('button', { name: 'Resume General on Eventbrite' })).toBeDisabled();
+	});
+
+	it('disables Resume all when every paused ticket is held by a Revel pause', () => {
+		renderTable(
+			[
+				tierLink({ remote_paused: true }),
+				tierLink({ tier_id: 't2', tier_name: 'VIP', remote_paused: true })
+			],
+			[
+				{ id: 't1', sales_paused: true },
+				{ id: 't2', sales_paused: true }
+			]
+		);
+		expect(screen.getByRole('button', { name: 'Resume all on Eventbrite' })).toBeDisabled();
+	});
+
 	it('carries the promo-code caveat', () => {
 		renderTable([tierLink()]);
 		expect(screen.getByText(/promo code/)).toBeInTheDocument();

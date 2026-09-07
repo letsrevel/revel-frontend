@@ -59,8 +59,8 @@ describe('TierCard — inventory disclosure', () => {
 	// Organizer kill switch (integrations #894): the tier stays visible so a
 	// buyer sees it exists, with the badge and the disabled CTA both saying why.
 	it('reports paused sales instead of inventory, with a disabled action', () => {
-		renderCard(makeTier({ total_available: 25, sales_paused: true }), true);
-		expect(screen.getAllByText(/sales paused/i).length).toBeGreaterThan(0);
+		renderCard(makeTier({ total_available: 25, sales_paused: true, can_purchase: false }), true);
+		expect(screen.getByTestId('status-badge')).toHaveTextContent(/sales paused/i);
 		expect(screen.queryByText(/remaining/i)).toBeNull();
 		expect(screen.getByRole('button', { name: /sales paused/i })).toBeDisabled();
 	});
