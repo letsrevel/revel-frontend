@@ -2,7 +2,8 @@ import type {
 	EventDetailSchema,
 	EventLinkSchema,
 	EventListingSchema,
-	SyncReportEntry
+	SyncReportEntry,
+	TicketTierDetailSchema
 } from '$lib/api/generated/types.gen';
 import type { Tone } from '$lib/components/common/tones';
 
@@ -182,27 +183,51 @@ export function autoSyncPayload(choice: AutoSyncChoice): boolean | null {
 	return choice === 'on';
 }
 
+/**
+ * Tickets sold on Revel and on one platform, summed over the event's tiers.
+ * The platform figure comes from `external_sales`, which webhooks and the
+ * 15-minute reconcile keep current out of band.
+ */
+export function soldTotals(
+	tiers: Pick<TicketTierDetailSchema, 'quantity_sold' | 'external_sales'>[],
+	provider: string
+): { revel: number; external: number } {
+	let revel = 0;
+	let external = 0;
+	for (const tier of tiers) {
+		revel += tier.quantity_sold ?? 0;
+		for (const sale of tier.external_sales ?? []) {
+			if (sale.provider === provider) external += sale.quantity_sold;
+		}
+	}
+	return { revel, external };
+}
+
 /** After this long in `pending`, the card says so and polling slows down. */
 export const PENDING_SLOW_AFTER_MS = 10 * 60_000;
 const PENDING_FAST_INTERVAL_MS = 3_000;
 const PENDING_SLOW_INTERVAL_MS = 30_000;
+/** Idle cadence: sold counts change out of band, so keep them fresh while the tab is open. */
+const IDLE_INTERVAL_MS = 60_000;
 
 export function hasPendingLink(listings: EventListingSchema[] | undefined): boolean {
 	return (listings ?? []).some((l) => l.link?.sync_state === 'pending');
 }
 
 /**
- * Poll only while a push is in flight. A link can stay `pending` for many
- * minutes under retries (and, in three backend edge cases, forever), so the
- * cadence drops after ten minutes rather than stopping: silence would read as
- * a hang.
+ * Fast while a push is in flight, slow once the tab is idle. A link can stay
+ * `pending` for many minutes under retries (and, in three backend edge cases,
+ * forever), so the cadence drops after ten minutes rather than stopping:
+ * silence would read as a hang. Idle polling keeps the sold counts current;
+ * `refetchIntervalInBackground: false` at the call site stops it in a hidden tab.
  */
 export function listingsRefetchInterval(
 	listings: EventListingSchema[] | undefined,
 	pendingSince: number | null,
 	now: number
 ): number | false {
-	if (!hasPendingLink(listings)) return false;
+	if (listings === undefined) return false;
+	if (!hasPendingLink(listings)) return IDLE_INTERVAL_MS;
 	if (pendingSince !== null && now - pendingSince >= PENDING_SLOW_AFTER_MS) {
 		return PENDING_SLOW_INTERVAL_MS;
 	}

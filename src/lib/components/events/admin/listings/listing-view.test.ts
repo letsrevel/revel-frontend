@@ -12,7 +12,8 @@ import {
 	listingView,
 	listingsRefetchInterval,
 	PENDING_SLOW_AFTER_MS,
-	pushBlockers
+	pushBlockers,
+	soldTotals
 } from './listing-view';
 
 function link(overrides: Partial<EventLinkSchema> = {}): EventLinkSchema {
@@ -172,9 +173,10 @@ describe('listingsRefetchInterval', () => {
 	const pending = [listing({ link: link({ sync_state: 'pending' }) })];
 	const settled = [listing({ link: link() })];
 
-	it('does not poll when nothing is pending', () => {
+	it('polls once a minute when nothing is pending, and not before the first load', () => {
 		expect(hasPendingLink(settled)).toBe(false);
-		expect(listingsRefetchInterval(settled, null, 0)).toBe(false);
+		expect(listingsRefetchInterval(settled, null, 0)).toBe(60_000);
+		expect(listingsRefetchInterval([], null, 0)).toBe(60_000);
 		expect(listingsRefetchInterval(undefined, null, 0)).toBe(false);
 	});
 
@@ -185,5 +187,25 @@ describe('listingsRefetchInterval', () => {
 
 	it('slows to 30 s once pending has lasted ten minutes', () => {
 		expect(listingsRefetchInterval(pending, 0, PENDING_SLOW_AFTER_MS)).toBe(30_000);
+	});
+});
+
+describe('soldTotals', () => {
+	it('sums Revel sales and the given platform\'s sales across tiers', () => {
+		const totals = soldTotals(
+			[
+				{
+					quantity_sold: 12,
+					external_sales: [
+						{ provider: 'eventbrite', quantity_sold: 5, paused: false },
+						{ provider: 'other', quantity_sold: 99, paused: false }
+					]
+				},
+				{ quantity_sold: 3, external_sales: [{ provider: 'eventbrite', quantity_sold: 2, paused: true }] },
+				{ quantity_sold: undefined, external_sales: undefined }
+			],
+			'eventbrite'
+		);
+		expect(totals).toEqual({ revel: 15, external: 7 });
 	});
 });
