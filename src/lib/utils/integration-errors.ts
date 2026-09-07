@@ -106,3 +106,24 @@ export function integrationErrorFromResponse(
 		providerMessage: provider_message
 	};
 }
+
+export function isIntegrationErrorInfo(value: unknown): value is IntegrationErrorInfo {
+	return (
+		typeof value === 'object' &&
+		value !== null &&
+		typeof (value as IntegrationErrorInfo).message === 'string' &&
+		'providerMessage' in value
+	);
+}
+
+/**
+ * What a mutation throws when the component renders the failure inline:
+ * `silent: true` keeps the root layout's global "Action failed" toast quiet
+ * (it reads that flag off the thrown error).
+ */
+export function silentIntegrationError(
+	error: unknown,
+	platform: string
+): IntegrationErrorInfo & { silent: true } {
+	return { ...integrationErrorFromResponse(error, platform), silent: true };
+}
