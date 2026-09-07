@@ -173,7 +173,10 @@ export function hasAttendingSignal(status: UserEventStatus | null | undefined): 
  * that is true of both, and the FE-localized version beats the backend's.
  */
 const REASON_CODE_MESSAGES: Partial<Record<ReasonCode, () => string>> = {
-	membership_tier_required: () => m['eligibility.reason.membership_tier_required']()
+	membership_tier_required: () => m['eligibility.reason.membership_tier_required'](),
+	// Every tier is paused by the organizer (integrations #894): the backend's
+	// line names the mechanism; buyers only need to know it is temporary.
+	sales_paused: () => m['eligibility.reason.sales_paused']()
 };
 
 /**

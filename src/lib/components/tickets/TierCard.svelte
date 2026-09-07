@@ -100,6 +100,12 @@
 			return { canPurchase: false, reason: 'Not available' };
 		}
 
+		// Organizer kill switch (backend `sales_paused`): checkout refuses the
+		// tier; the card says why instead of showing a dead button.
+		if (tier.sales_paused) {
+			return { canPurchase: false, reason: 'Sales paused' };
+		}
+
 		// If no per-user remaining info, fall back to general isEligible
 		if (!tierRemainingInfo) {
 			return { canPurchase: isEligible, reason: isEligible ? undefined : 'Not eligible' };
@@ -133,7 +139,7 @@
 	const hasId = $derived(hasTierId(tier));
 
 	// Format price display
-	const priceDisplay = $derived(() => {
+	const priceDisplay = $derived.by(() => {
 		if (tier.payment_method === 'free') return m['tierCardAdmin.free']();
 
 		if (tier.price_type === 'pwyc') {
@@ -201,6 +207,10 @@
 	 * `message === null` is what suppresses the inventory row in the template.
 	 */
 	const availabilityStatus = $derived.by(() => {
+		if (tier.sales_paused) {
+			return { available: false, message: m['tierCard.salesPaused']() };
+		}
+
 		if (tier.total_available === null) {
 			return {
 				available: true,
@@ -322,6 +332,8 @@
 		</p>
 	{:else if !salesStatus.active}
 		<Button disabled class="w-full sm:w-auto">{m['tierCardAdmin.notAvailable']()}</Button>
+	{:else if tier.sales_paused}
+		<Button disabled class="w-full sm:w-auto">{m['tierCardAdmin.salesPaused']()}</Button>
 	{:else if !availabilityStatus.available}
 		<Button disabled class="w-full sm:w-auto">{m['tierCardAdmin.soldOut']()}</Button>
 	{:else if !membershipRestriction.allowed}
@@ -444,7 +456,7 @@
 <PricingCard
 	name={tier.name}
 	icon={Ticket}
-	price={priceDisplay()}
+	price={priceDisplay}
 	muted={tier.can_purchase === false}
 	{badges}
 	{meta}
