@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.9.0] - 2026-09-07
+
+### Added
+
+- "Book a call" button on the landing page (in both the hero and the closing panel) when a demo-booking link is configured on the backend; it opens in a new tab and only appears once the link is set, translated in all six languages.
+
+### Fixed
+
+- Picking a daily/weekly digest in notification preferences no longer immediately shows "Invalid time format" with Save disabled — the send time returned by the API (with seconds) is now accepted as-is.
+- A rate-limited or temporarily failing backend no longer makes public pages (events, organizations, series, questionnaires, polls, join links) report "not found": visitors now get a proper "Just a Moment" temporarily-unavailable page — localized in all six languages — instead of a misleading 404.
+
 ## [2.8.2] - 2026-09-06
 
 ### Fixed
