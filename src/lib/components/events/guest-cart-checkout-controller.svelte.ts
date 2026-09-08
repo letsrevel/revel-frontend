@@ -20,7 +20,7 @@ import { toast } from 'svelte-sonner';
 import { checkoutError } from './checkout-error';
 import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 import { getEligibilityRefusalMessage } from '$lib/utils/eligibility';
-import { readAttributionFromUrl } from '$lib/utils/attribution';
+import { readAttributionFromCurrentUrl } from '$lib/utils/attribution';
 
 /** Next steps a guest can complete without an account (eligibility check). */
 // eslint-disable-next-line svelte/prefer-svelte-reactivity -- module-level constant, never mutated, not read from a template
@@ -188,7 +188,7 @@ export function createGuestCartCheckoutController(deps: GuestCartCheckoutDeps) {
 				last_name: params.last_name,
 				discount_code: params.discountCode || undefined,
 				billing_info: params.billingInfo || undefined,
-				attribution: readAttributionFromUrl(new URL(window.location.href))
+				attribution: readAttributionFromCurrentUrl()
 			};
 			const response = await eventpublicguestGuestMultiTierCheckout({
 				path: { event_id: eventId },

@@ -23,7 +23,7 @@
 	import { formatPrice } from '$lib/utils/format';
 	import { toast } from 'svelte-sonner';
 	import { extractErrorMessage } from '$lib/utils/errors';
-	import { readAttributionFromUrl } from '$lib/utils/attribution';
+	import { readAttributionFromCurrentUrl } from '$lib/utils/attribution';
 
 	interface Props {
 		pass: SeriesPassSchema;
@@ -61,7 +61,7 @@
 			}
 			const response = await seriespassCheckoutSeriesPass({
 				path: { pass_id: pass.id ?? '' },
-				body: { attribution: readAttributionFromUrl(new URL(window.location.href)) }
+				body: { attribution: readAttributionFromCurrentUrl() }
 			});
 			if (response.error || !response.data) {
 				throw new Error(extractErrorMessage(response.error, m['seriesPass.checkoutFailed']()));

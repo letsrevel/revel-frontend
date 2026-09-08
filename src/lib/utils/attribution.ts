@@ -12,7 +12,7 @@ export const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_conten
 export type UtmKey = (typeof UTM_KEYS)[number];
 
 const MAX_LEN = 100;
-const ALLOWED_VALUE = /^[A-Za-z0-9._:\-]+$/;
+const ALLOWED_VALUE = /^[A-Za-z0-9._:-]+$/;
 
 /** Trim, cap at 100 chars, allow-list charset; `null` when nothing survives. */
 export function sanitizeUtmValue(raw: string | null | undefined): string | null {
@@ -29,6 +29,15 @@ export function readAttributionFromUrl(url: URL): TicketAttribution | null {
 		if (value !== null) attribution[key] = value;
 	}
 	return Object.keys(attribution).length > 0 ? attribution : null;
+}
+
+/**
+ * Browser-only convenience over `readAttributionFromUrl` for checkout
+ * mutations, which run client-side at reserve time. Kept here (plain .ts)
+ * so `.svelte.ts` controllers don't construct a transient URL themselves.
+ */
+export function readAttributionFromCurrentUrl(): TicketAttribution | null {
+	return readAttributionFromUrl(new URL(window.location.href));
 }
 
 /**
