@@ -15,6 +15,7 @@
 	import MembershipFinancialsSummary from '$lib/components/financials/MembershipFinancialsSummary.svelte';
 	import CombinedTotalsSummary from '$lib/components/financials/CombinedTotalsSummary.svelte';
 	import FinancialsNote from '$lib/components/financials/FinancialsNote.svelte';
+	import AttributionBreakdownSection from '$lib/components/financials/AttributionBreakdownSection.svelte';
 	import PeriodFilter from '$lib/components/financials/PeriodFilter.svelte';
 	import type { PeriodValue } from '$lib/components/financials/period';
 	import { entryFor, selectSections } from '$lib/components/financials/entries';
@@ -170,6 +171,14 @@
 			</div>
 		</div>
 	</div>
+
+	<!-- Sales by source (#880 follow-up; moved here from /admin/tickets) —
+	     independent of the financials query below, so it stays usable even
+	     while that query is loading or has failed. -->
+	<AttributionBreakdownSection
+		slug={data.organization.slug}
+		organizationId={data.organization.id}
+	/>
 
 	<!-- Currency switcher -->
 	{#if financials && financials.available_currencies.length > 1}

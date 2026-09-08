@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
+import { userEvent } from '@testing-library/user-event';
 import SalesBySourceCard from './SalesBySourceCard.svelte';
 import type { TicketAttributionBucketSchema } from '$lib/api/generated/types.gen';
 
@@ -22,21 +23,26 @@ const buckets: TicketAttributionBucketSchema[] = [
 ];
 const currentUrl = new URL('https://x.test/org/acme/admin/events/e1/tickets?status=active&page=3');
 
+// Most of these tests are about row/link/filter rendering, not the disclosure
+// behavior — render with `collapsible: false` (today's always-open markup) so
+// content is directly queryable, exactly as it was before the card became
+// collapsible by default. The `collapsible` describe block below covers the
+// disclosure itself.
 describe('SalesBySourceCard', () => {
 	it('renders one row per bucket with counts, and the null bucket as Direct', () => {
-		render(SalesBySourceCard, { buckets, currentUrl });
+		render(SalesBySourceCard, { buckets, currentUrl, collapsible: false });
 		expect(screen.getByText('newsletter')).toBeInTheDocument();
 		expect(screen.getByText('Direct')).toBeInTheDocument();
 		expect(screen.getByText('2')).toBeInTheDocument();
 	});
 
 	it('renders the "Sales by source" heading by default', () => {
-		render(SalesBySourceCard, { buckets, currentUrl });
+		render(SalesBySourceCard, { buckets, currentUrl, collapsible: false });
 		expect(screen.getByRole('heading', { name: 'Sales by source' })).toBeInTheDocument();
 	});
 
 	it('tagged rows link to a same-page utm filter, preserving other filters and resetting page', () => {
-		render(SalesBySourceCard, { buckets, currentUrl });
+		render(SalesBySourceCard, { buckets, currentUrl, collapsible: false });
 		const link = screen.getByRole('link', { name: /newsletter/ });
 		const href = new URL(link.getAttribute('href') ?? '', currentUrl);
 		expect(href.searchParams.get('utm_source')).toBe('newsletter');
@@ -46,7 +52,7 @@ describe('SalesBySourceCard', () => {
 	});
 
 	it('a bucket without a campaign filters by source only', () => {
-		render(SalesBySourceCard, { buckets, currentUrl });
+		render(SalesBySourceCard, { buckets, currentUrl, collapsible: false });
 		const link = screen.getByRole('link', { name: /revel-embed/ });
 		const href = new URL(link.getAttribute('href') ?? '', currentUrl);
 		expect(href.searchParams.get('utm_source')).toBe('revel-embed');
@@ -54,7 +60,7 @@ describe('SalesBySourceCard', () => {
 	});
 
 	it('the Direct row is not a link', () => {
-		render(SalesBySourceCard, { buckets, currentUrl });
+		render(SalesBySourceCard, { buckets, currentUrl, collapsible: false });
 		expect(screen.queryByRole('link', { name: /Direct/ })).toBeNull();
 	});
 
@@ -62,7 +68,7 @@ describe('SalesBySourceCard', () => {
 		const filtered = new URL(
 			String(currentUrl) + '&utm_source=newsletter&utm_campaign=spring-2026'
 		);
-		render(SalesBySourceCard, { buckets, currentUrl: filtered });
+		render(SalesBySourceCard, { buckets, currentUrl: filtered, collapsible: false });
 		expect(screen.getByRole('link', { name: /newsletter/ })).toHaveAttribute(
 			'aria-current',
 			'true'
@@ -75,7 +81,7 @@ describe('SalesBySourceCard', () => {
 	});
 
 	it('shows the all-direct empty state when only the direct bucket exists', () => {
-		render(SalesBySourceCard, { buckets: [buckets[2]], currentUrl });
+		render(SalesBySourceCard, { buckets: [buckets[2]], currentUrl, collapsible: false });
 		expect(screen.getByText(/direct so far/i)).toBeInTheDocument();
 		expect(screen.queryByRole('table')).toBeNull();
 	});
@@ -88,7 +94,11 @@ describe('SalesBySourceCard', () => {
 			utm_content: 'story',
 			count: 5
 		};
-		render(SalesBySourceCard, { buckets: [...buckets, untaggedBucket], currentUrl });
+		render(SalesBySourceCard, {
+			buckets: [...buckets, untaggedBucket],
+			currentUrl,
+			collapsible: false
+		});
 		expect(screen.getByText('social · story')).toBeInTheDocument();
 		expect(screen.getByText('5')).toBeInTheDocument();
 		expect(screen.queryByRole('link', { name: /social · story/ })).toBeNull();
@@ -98,7 +108,7 @@ describe('SalesBySourceCard', () => {
 
 	it('sanitizes junk currentUrl utm_source/utm_campaign instead of rendering a chip or an active row', () => {
 		const junkUrl = new URL(String(currentUrl) + '&utm_source=%20%20&utm_campaign=');
-		render(SalesBySourceCard, { buckets, currentUrl: junkUrl });
+		render(SalesBySourceCard, { buckets, currentUrl: junkUrl, collapsible: false });
 		expect(screen.queryByText(/Filtered by/)).toBeNull();
 		expect(screen.queryByRole('link', { name: /Clear filter/ })).toBeNull();
 		expect(document.querySelector('[aria-current]')).toBeNull();
@@ -110,23 +120,43 @@ describe('SalesBySourceCard', () => {
 		);
 
 		it('renders every bucket as a plain row, with no links at all', () => {
-			render(SalesBySourceCard, { buckets, currentUrl: filteredUrl, filterable: false });
+			render(SalesBySourceCard, {
+				buckets,
+				currentUrl: filteredUrl,
+				filterable: false,
+				collapsible: false
+			});
 			expect(screen.queryByRole('link')).toBeNull();
 		});
 
 		it('marks no row as active', () => {
-			render(SalesBySourceCard, { buckets, currentUrl: filteredUrl, filterable: false });
+			render(SalesBySourceCard, {
+				buckets,
+				currentUrl: filteredUrl,
+				filterable: false,
+				collapsible: false
+			});
 			expect(document.querySelector('[aria-current]')).toBeNull();
 		});
 
 		it('never renders the "Filtered by" chip or clear link', () => {
-			render(SalesBySourceCard, { buckets, currentUrl: filteredUrl, filterable: false });
+			render(SalesBySourceCard, {
+				buckets,
+				currentUrl: filteredUrl,
+				filterable: false,
+				collapsible: false
+			});
 			expect(screen.queryByText(/Filtered by/)).toBeNull();
 			expect(screen.queryByText(/Clear filter/)).toBeNull();
 		});
 
 		it('still renders bucket labels and counts', () => {
-			render(SalesBySourceCard, { buckets, currentUrl: filteredUrl, filterable: false });
+			render(SalesBySourceCard, {
+				buckets,
+				currentUrl: filteredUrl,
+				filterable: false,
+				collapsible: false
+			});
 			expect(screen.getByText('newsletter')).toBeInTheDocument();
 			expect(screen.getByText('revel-embed')).toBeInTheDocument();
 			expect(screen.getByText('Direct')).toBeInTheDocument();
@@ -137,7 +167,7 @@ describe('SalesBySourceCard', () => {
 
 	describe('showHeading={false}', () => {
 		it('does not render a heading, but the table keeps its accessible name via the sr-only caption', () => {
-			render(SalesBySourceCard, { buckets, currentUrl, showHeading: false });
+			render(SalesBySourceCard, { buckets, currentUrl, showHeading: false, collapsible: false });
 			expect(screen.queryByRole('heading')).toBeNull();
 			expect(
 				screen.getByRole('table', { name: 'Non-cancelled tickets grouped by campaign tag' })
@@ -145,7 +175,7 @@ describe('SalesBySourceCard', () => {
 		});
 
 		it('still renders bucket labels and counts', () => {
-			render(SalesBySourceCard, { buckets, currentUrl, showHeading: false });
+			render(SalesBySourceCard, { buckets, currentUrl, showHeading: false, collapsible: false });
 			expect(screen.getByText('newsletter')).toBeInTheDocument();
 			expect(screen.getByText('Direct')).toBeInTheDocument();
 		});
@@ -158,10 +188,69 @@ describe('SalesBySourceCard', () => {
 				buckets,
 				currentUrl: filteredUrl,
 				showHeading: false,
-				filterable: true
+				filterable: true,
+				collapsible: false
 			});
 			expect(screen.getByText(/Filtered by/)).toBeInTheDocument();
 			expect(screen.queryByRole('heading')).toBeNull();
 		});
+	});
+});
+
+describe('SalesBySourceCard collapsible (default)', () => {
+	it('renders as a <details> with the heading in the summary', () => {
+		render(SalesBySourceCard, { buckets, currentUrl });
+		const details = document.querySelector('details');
+		expect(details).not.toBeNull();
+		expect(details?.querySelector('summary')).toContainElement(
+			screen.getByRole('heading', { name: 'Sales by source' })
+		);
+	});
+
+	it('is collapsed by default: row content is not visible until opened', () => {
+		render(SalesBySourceCard, { buckets, currentUrl });
+		const details = document.querySelector('details') as HTMLDetailsElement;
+		expect(details.open).toBe(false);
+		expect(screen.getByText('newsletter')).not.toBeVisible();
+	});
+
+	it('opens on clicking the summary, revealing the table', async () => {
+		const user = userEvent.setup();
+		render(SalesBySourceCard, { buckets, currentUrl });
+		await user.click(screen.getByRole('heading', { name: 'Sales by source' }));
+		const details = document.querySelector('details') as HTMLDetailsElement;
+		expect(details.open).toBe(true);
+		expect(screen.getByText('newsletter')).toBeVisible();
+	});
+
+	it('auto-opens when the current URL carries an active utm filter', () => {
+		const filtered = new URL(
+			String(currentUrl) + '&utm_source=newsletter&utm_campaign=spring-2026'
+		);
+		render(SalesBySourceCard, { buckets, currentUrl: filtered });
+		const details = document.querySelector('details') as HTMLDetailsElement;
+		expect(details.open).toBe(true);
+		expect(screen.getByText(/Filtered by/)).toBeVisible();
+	});
+
+	it('manual toggling persists: closing after an auto-open stays closed', async () => {
+		const user = userEvent.setup();
+		const filtered = new URL(
+			String(currentUrl) + '&utm_source=newsletter&utm_campaign=spring-2026'
+		);
+		render(SalesBySourceCard, { buckets, currentUrl: filtered });
+		const details = document.querySelector('details') as HTMLDetailsElement;
+		expect(details.open).toBe(true);
+
+		await user.click(screen.getByRole('heading', { name: 'Sales by source' }));
+		expect(details.open).toBe(false);
+	});
+});
+
+describe('SalesBySourceCard collapsible={false}', () => {
+	it('renders no <details> element — plain always-visible markup', () => {
+		render(SalesBySourceCard, { buckets, currentUrl, collapsible: false });
+		expect(document.querySelector('details')).toBeNull();
+		expect(screen.getByText('newsletter')).toBeInTheDocument();
 	});
 });

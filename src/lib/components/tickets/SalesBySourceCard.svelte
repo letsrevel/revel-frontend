@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { ChevronDown } from '@lucide/svelte';
 	import type { TicketAttributionBucketSchema } from '$lib/api/generated/types.gen';
 	import { sanitizeUtmValue } from '$lib/utils/attribution';
 
@@ -17,11 +18,25 @@
 		 * Whether the card renders its own "Sales by source" heading (default `true`). Set to
 		 * `false` when a caller already renders an equivalent heading above the card (e.g. the
 		 * org-wide page's `SectionHeader`) so the visible heading isn't duplicated. The table's
-		 * sr-only caption still gives the table an accessible name either way.
+		 * sr-only caption still gives the table an accessible name either way. Only ever combined
+		 * with `collapsible={false}` — a collapsible card always shows its own heading in the
+		 * `<summary>`, so there is nothing to duplicate.
 		 */
 		showHeading?: boolean;
+		/**
+		 * Whether the card renders as a native collapsible `<details>` (default `true`, matching
+		 * the event tickets page). Set to `false` for embeds that already own their own disclosure
+		 * (e.g. the org-wide financials section) so today's always-open markup is preserved exactly.
+		 */
+		collapsible?: boolean;
 	}
-	const { buckets, currentUrl, filterable = true, showHeading = true }: Props = $props();
+	const {
+		buckets,
+		currentUrl,
+		filterable = true,
+		showHeading = true,
+		collapsible = true
+	}: Props = $props();
 
 	const isDirect = (b: TicketAttributionBucketSchema) =>
 		!b.utm_source && !b.utm_medium && !b.utm_campaign && !b.utm_content;
@@ -65,32 +80,35 @@
 
 	const isActive = (b: TicketAttributionBucketSchema) =>
 		(b.utm_source ?? null) === activeSource && (b.utm_campaign ?? null) === activeCampaign;
+
+	// Collapsed by default; a filter arriving via the URL (e.g. a shared link,
+	// or `back`) forces the card open so the active filter is never hidden. A
+	// one-way `open={...}` attribute would fight manual toggling on every
+	// re-render, so this is `bind:open` plus an effect that only ever opens —
+	// never closes — the disclosure.
+	let expanded = $state(false);
+	$effect(() => {
+		if (isFiltered) expanded = true;
+	});
 </script>
 
-<div class="rounded-lg border bg-card p-4">
-	{#if showHeading || isFiltered}
-		<div class="flex flex-wrap items-center justify-between gap-2">
-			{#if showHeading}
-				<h2 class="font-bold">{m['tickets.salesBySource.title']()}</h2>
-			{/if}
-			{#if isFiltered}
-				<div class="flex items-center gap-2 text-xs text-muted-foreground">
-					<span>{m['tickets.salesBySource.filteredBy']({ label: filteredLabel })}</span>
-					<!-- eslint-disable svelte/no-navigation-without-resolve -- this card is pure w.r.t. navigation: it derives hrefs from an arbitrary caller-supplied currentUrl, not a known route id, so resolve() cannot express them -->
-					<a
-						href={clearHref()}
-						data-sveltekit-replacestate
-						data-sveltekit-keepfocus
-						class="rounded-full border px-3 py-1 font-medium hover:bg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-					>
-						{m['tickets.salesBySource.clearFilter']()}
-					</a>
-					<!-- eslint-enable svelte/no-navigation-without-resolve -->
-				</div>
-			{/if}
-		</div>
-	{/if}
+{#snippet filteredChip()}
+	<div class="flex items-center gap-2 text-xs text-muted-foreground">
+		<span>{m['tickets.salesBySource.filteredBy']({ label: filteredLabel })}</span>
+		<!-- eslint-disable svelte/no-navigation-without-resolve -- this card is pure w.r.t. navigation: it derives hrefs from an arbitrary caller-supplied currentUrl, not a known route id, so resolve() cannot express them -->
+		<a
+			href={clearHref()}
+			data-sveltekit-replacestate
+			data-sveltekit-keepfocus
+			class="rounded-full border px-3 py-1 font-medium hover:bg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+		>
+			{m['tickets.salesBySource.clearFilter']()}
+		</a>
+		<!-- eslint-enable svelte/no-navigation-without-resolve -->
+	</div>
+{/snippet}
 
+{#snippet tableBody()}
 	{#if tagged.length === 0}
 		<p class="mt-3 text-sm text-muted-foreground">{m['tickets.salesBySource.allDirect']()}</p>
 	{:else}
@@ -180,4 +198,40 @@
 			</table>
 		</div>
 	{/if}
-</div>
+{/snippet}
+
+{#if collapsible}
+	<details class="group rounded-lg border bg-card" bind:open={expanded}>
+		<summary
+			class="flex cursor-pointer list-none items-center justify-between gap-2 p-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring [&::-webkit-details-marker]:hidden"
+		>
+			<h2 class="font-bold">{m['tickets.salesBySource.title']()}</h2>
+			<ChevronDown
+				class="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180"
+				aria-hidden="true"
+			/>
+		</summary>
+		<div class="px-4 pb-4">
+			{#if isFiltered}
+				<div class="mb-3">
+					{@render filteredChip()}
+				</div>
+			{/if}
+			{@render tableBody()}
+		</div>
+	</details>
+{:else}
+	<div class="rounded-lg border bg-card p-4">
+		{#if showHeading || isFiltered}
+			<div class="flex flex-wrap items-center justify-between gap-2">
+				{#if showHeading}
+					<h2 class="font-bold">{m['tickets.salesBySource.title']()}</h2>
+				{/if}
+				{#if isFiltered}
+					{@render filteredChip()}
+				{/if}
+			</div>
+		{/if}
+		{@render tableBody()}
+	</div>
+{/if}
