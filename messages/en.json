@@ -4074,6 +4074,37 @@
 	"orgAdmin.tickets.empty.title": "No ticketed events yet",
 	"orgAdmin.tickets.empty.description": "Once you create an event that requires a ticket, it will show up here for ticket management.",
 	"orgAdmin.tickets.empty.cta": "Go to Events",
+	"orgAdmin.tickets.salesBySource.title": "Sales by source",
+	"orgAdmin.tickets.salesBySource.sinceAriaLabel": "Time range",
+	"orgAdmin.tickets.salesBySource.sincePresetAll": "All time",
+	"orgAdmin.tickets.salesBySource.sincePresetLast7": "Last 7 days",
+	"orgAdmin.tickets.salesBySource.sincePresetLast30": "Last 30 days",
+	"orgAdmin.tickets.salesBySource.sincePresetLast90": "Last 90 days",
+	"orgAdmin.tickets.salesBySource.sincePresetThisYear": "This year",
+	"orgAdmin.tickets.salesBySource.sincePresetCustom": "Custom",
+	"orgAdmin.tickets.salesBySource.eventFilterAriaLabel": "Filter by event",
+	"orgAdmin.tickets.salesBySource.eventFilterAll": "All events",
+	"orgAdmin.tickets.salesBySource.eventFilterCount": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "{count} event",
+				"countPlural=*": "{count} events"
+			}
+		}
+	],
+	"orgAdmin.tickets.salesBySource.noResults": "No results for these filters.",
+	"orgAdmin.tickets.salesBySource.resultsAnnouncement": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "Showing {count} source",
+				"countPlural=*": "Showing {count} sources"
+			}
+		}
+	],
 	"orgAdmin.billing": {
 		"pageTitle": "Billing & VAT",
 		"pageDescription": "Manage your billing information, VAT settings, and view invoices",
@@ -6427,6 +6458,25 @@
 	"tickets.reverseCharge": "Reverse charge",
 	"tickets.reverseChargeYes": "Yes (EU B2B)",
 	"tickets.vatTooltip": "Net: {net} / VAT: {vat} ({rate}%)",
+	"tickets.salesBySource.title": "Sales by source",
+	"tickets.salesBySource.caption": "Non-cancelled tickets grouped by campaign tag",
+	"tickets.salesBySource.source": "Source",
+	"tickets.salesBySource.tickets": "Tickets",
+	"tickets.salesBySource.direct": "Direct",
+	"tickets.salesBySource.allDirect": "All sales are direct so far. Tagged links, campaigns and embeds will show up here.",
+	"tickets.salesBySource.filteredBy": "Filtered by {label}",
+	"tickets.salesBySource.clearFilter": "Clear filter",
+	"tickets.salesBySource.filterRow": "Filter tickets by {label}",
+	"tickets.list.resultsAnnouncement": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "Showing {count} ticket",
+				"countPlural=*": "Showing {count} tickets"
+			}
+		}
+	],
 	"referral": {
 		"haveReferralCode": "Have a referral code?",
 		"enterCode": "Enter code",
@@ -9549,6 +9599,7 @@
 	"embedBuilder.tabIframe": "iframe",
 	"embedBuilder.tabScriptHint": "Recommended. Resizes itself and keeps working when we ship improvements.",
 	"embedBuilder.tabIframeHint": "For sites that strip <script> tags. Fixed height, no auto-resize.",
+	"embedBuilder.attributionHint": "Campaign tags (utm_source, utm_medium, utm_campaign, utm_content) on the page hosting the script snippet flow through to your sales-by-source report.",
 	"embedBuilder.copySnippet": "Copy snippet",
 	"embedBuilder.copied": "Copied",
 	"embedBuilder.copySuccess": "Snippet copied to your clipboard",

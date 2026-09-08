@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import type { PageData } from './$types';
 	import { Calendar, ArrowLeft, ArrowDownUp, Settings } from '@lucide/svelte';
 	import { EventCard } from '$lib/components/events';
@@ -15,6 +16,7 @@
 	import Sticker from '$lib/components/brand/Sticker.svelte';
 	import LogoChip from '$lib/components/brand/LogoChip.svelte';
 	import { getPosterFallbackGradient } from '$lib/utils/fallback-gradient';
+	import { withUtmParams } from '$lib/utils/attribution';
 
 	const { data }: { data: PageData } = $props();
 
@@ -339,7 +341,10 @@
 							<!-- Sort Order Toggle -->
 							<!-- eslint-disable svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?"+params string preserves the current pathname (resolve() cannot express search params) -->
 							<a
-								href="?order_by={orderBy === '-start' ? 'start' : '-start'}"
+								href={withUtmParams(
+									`?order_by=${orderBy === '-start' ? 'start' : '-start'}`,
+									page.url
+								)}
 								class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 								aria-label={orderBy === '-start'
 									? m['eventSeriesDetailPage.sort_ariaLabel_newest']()
@@ -383,7 +388,7 @@
 										{#if hasPrevPage}
 											<!-- eslint-disable svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?"+params string preserves the current pathname (resolve() cannot express search params) -->
 											<a
-												href="?page={currentPage - 1}"
+												href={withUtmParams(`?page=${currentPage - 1}`, page.url)}
 												class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 												aria-label={m['seriesPublicPage.goToPreviousPage']()}
 											>
@@ -414,7 +419,7 @@
 										{#if hasNextPage}
 											<!-- eslint-disable svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?"+params string preserves the current pathname (resolve() cannot express search params) -->
 											<a
-												href="?page={currentPage + 1}"
+												href={withUtmParams(`?page=${currentPage + 1}`, page.url)}
 												class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 												aria-label={m['seriesPublicPage.goToNextPage']()}
 											>

@@ -126,6 +126,8 @@ TEXT_PAIRS = [  # (fg, bg, min_ratio, note)
     ("popover-foreground", "popover", 4.5, "popover text"),
     ("primary-foreground", "primary", 4.5, "primary button label"),
     ("secondary-foreground", "secondary", 4.5, "secondary button label"),
+    ("foreground", "secondary", 4.5, "SalesBySourceCard active row source label on bg-secondary"),
+    ("muted-foreground", "secondary", 4.5, "SalesBySourceCard active row medium/content line on bg-secondary"),
     ("muted-foreground", "muted", 4.5, "muted text on muted bg"),
     ("foreground", "muted", 4.5, "MarkdownEditor toolbar icons on the muted strip"),
     ("muted-foreground", "background", 4.5, "muted text on page"),

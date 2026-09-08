@@ -9,6 +9,7 @@
  */
 
 import type { EventType } from '$lib/api/generated/types.gen';
+import { sanitizeUtmValue } from '$lib/utils/attribution';
 import {
 	EMBED_DEFAULT_PAGE_SIZE,
 	EMBED_MAX_PAGE_SIZE,
@@ -36,14 +37,38 @@ export function parseEmbedTheme(raw: string | null | undefined): EmbedTheme {
 
 /**
  * `?utm_content=` is appended by the loader script and carries the *host page*
- * hostname, which we echo back onto outbound links. It lands in HTML
- * attributes, so restrict it to hostname-shaped characters rather than trust
- * whatever a third-party page sent.
+ * hostname. Same charset as every campaign tag — single authority lives in
+ * `$lib/utils/attribution.ts` (mirrors the backend sanitiser).
  */
 export function sanitizeUtmContent(raw: string | null | undefined): string | null {
-	if (!raw) return null;
-	const trimmed = raw.trim().slice(0, 100);
-	return /^[a-zA-Z0-9.\-:_]+$/.test(trimmed) ? trimmed : null;
+	return sanitizeUtmValue(raw);
+}
+
+/** Host-page campaign tags forwarded by the loader; replace the embed convention entirely. */
+export interface UtmOverride {
+	utm_source: string;
+	utm_medium?: string;
+	utm_campaign?: string;
+	utm_content?: string;
+}
+
+/**
+ * The organizer's own campaign tags win (#880, decided 2026-09-08): when the host
+ * page carried a valid `utm_source`, the embed's outbound links use the host's
+ * tags verbatim and none of the `embed / <surface> / <org slug> / <hostname>`
+ * defaults. No valid `utm_source` → no override.
+ */
+export function parseUtmOverride(params: URLSearchParams): UtmOverride | null {
+	const source = sanitizeUtmValue(params.get('utm_source'));
+	if (!source) return null;
+	const override: UtmOverride = { utm_source: source };
+	const medium = sanitizeUtmValue(params.get('utm_medium'));
+	const campaign = sanitizeUtmValue(params.get('utm_campaign'));
+	const content = sanitizeUtmValue(params.get('utm_content'));
+	if (medium) override.utm_medium = medium;
+	if (campaign) override.utm_campaign = campaign;
+	if (content) override.utm_content = content;
+	return override;
 }
 
 /**

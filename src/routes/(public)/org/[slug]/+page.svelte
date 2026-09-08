@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import type { PageData } from './$types';
 	import {
 		MapPin,
@@ -34,6 +35,7 @@
 	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { getPosterFallbackGradient } from '$lib/utils/fallback-gradient';
+	import { withUtmParams } from '$lib/utils/attribution';
 	import { SeoHead } from '$lib/seo';
 	import * as m from '$lib/paraglide/messages.js';
 
@@ -599,9 +601,12 @@
 						<!-- Calendar View Shortcut -->
 						<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
 						<a
-							href="/events?organization={organization.id}&organization_name={encodeURIComponent(
-								organization.name
-							)}&organization_slug={organization.slug}&viewMode=calendar"
+							href={withUtmParams(
+								`/events?organization=${organization.id}&organization_name=${encodeURIComponent(
+									organization.name
+								)}&organization_slug=${organization.slug}&viewMode=calendar`,
+								page.url
+							)}
 							class="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
 						>
 							<CalendarDays class="h-4 w-4" aria-hidden="true" />
@@ -612,9 +617,12 @@
 						<!-- Browse All Button -->
 						<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
 						<a
-							href="/events?organization={organization.id}&organization_name={encodeURIComponent(
-								organization.name
-							)}&organization_slug={organization.slug}"
+							href={withUtmParams(
+								`/events?organization=${organization.id}&organization_name=${encodeURIComponent(
+									organization.name
+								)}&organization_slug=${organization.slug}`,
+								page.url
+							)}
 							class="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
 						>
 							{m['organizationProfile.events_browseAll']()}

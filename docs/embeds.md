@@ -69,3 +69,21 @@ a non-`json` `format` is a 501. Event, organization and series pages advertise i
 - **Theme without JavaScript**: an explicit `?theme` is stamped onto `<html>` server-side along
   with `data-theme-locked`, which tells the anti-FOUC script in `src/app.html` to stand down.
   `localStorage` is partitioned per host page inside a third-party iframe and is never consulted.
+
+## Attribution
+
+Ticket purchases record the `utm_source` / `utm_medium` / `utm_campaign` /
+`utm_content` tags present on the page URL at checkout (#880). Nothing is ever
+stored on the visitor's device — the tags live in the URL only.
+
+- **Script snippet:** the loader reads the *host page's* query string. If it
+  carries a `utm_source`, all four `utm_*` params are forwarded onto the iframe
+  and the embed's outbound links use them verbatim, replacing the embed defaults
+  entirely — the organizer's own campaign tags win. Otherwise the embed
+  convention applies (`utm_source=embed`, `utm_medium=<surface>`,
+  `utm_campaign=<org slug>`, `utm_content=<host hostname>`).
+- **Raw iframe / oEmbed:** cannot see the host page URL, so they attribute at
+  embed level only (embed defaults / `utm_medium=oembed`).
+- Organizers see the result as the "Sales by source" breakdown on the event's
+  tickets admin page, as `utm_source`/`utm_campaign` list filters, and as four
+  UTM columns in the attendee export.

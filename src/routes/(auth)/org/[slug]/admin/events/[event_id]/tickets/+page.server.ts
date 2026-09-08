@@ -4,11 +4,17 @@ import type { PageServerLoad } from './$types';
 import {
 	eventpublicdetailsGetEvent,
 	eventadminticketsListTickets,
-	eventadminticketsGetEventRevenue
+	eventadminticketsGetEventRevenue,
+	eventadminticketsTicketAttributionBreakdown
 } from '$lib/api';
 import { parseTicketOrderBy } from '$lib/components/tickets/ticket-sort';
-import type { AdminTicketSchema, EventFinancialsSchema } from '$lib/api/generated/types.gen';
+import type {
+	AdminTicketSchema,
+	EventFinancialsSchema,
+	TicketAttributionBucketSchema
+} from '$lib/api/generated/types.gen';
 import { log } from '$lib/server/logger';
+import { sanitizeUtmValue } from '$lib/utils/attribution';
 
 export const load: PageServerLoad = async ({ parent, params, locals, fetch, url }) => {
 	const parentData = await parent();
@@ -89,6 +95,10 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 		.catch(undefined)
 		.parse(url.searchParams.get('source') || undefined);
 	const search = url.searchParams.get('search') || undefined;
+	// Exact-match passthrough filters (#880). Sanitised so junk never reaches the
+	// query; the values come from breakdown-row links we build ourselves anyway.
+	const utmSource = sanitizeUtmValue(url.searchParams.get('utm_source')) ?? undefined;
+	const utmCampaign = sanitizeUtmValue(url.searchParams.get('utm_campaign')) ?? undefined;
 	const orderBy = parseTicketOrderBy(url.searchParams.get('order_by'));
 	// Validate the untrusted `page` param: coerce to a positive integer, falling
 	// back to 1 for missing/garbage values (avoids sending NaN to the API).
@@ -113,6 +123,23 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 			return null;
 		});
 
+	// Purchase-attribution breakdown (#880), busiest-bucket-first; independent of
+	// the current page / filters. Loaded in parallel; failures degrade to null.
+	const attributionPromise: Promise<TicketAttributionBucketSchema[] | null> =
+		eventadminticketsTicketAttributionBreakdown({
+			fetch,
+			path: { event_id: params.event_id },
+			headers
+		})
+			.then((res) => res.data ?? null)
+			.catch((err) => {
+				log.error('event_attribution_breakdown_load_failed', {
+					error: err,
+					eventId: params.event_id
+				});
+				return null;
+			});
+
 	// Load tickets with filters
 	let tickets: AdminTicketSchema[];
 	let totalCount = 0;
@@ -126,6 +153,8 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 			query: {
 				status,
 				tier__payment_method: paymentMethod,
+				utm_source: utmSource,
+				utm_campaign: utmCampaign,
 				source,
 				search,
 				order_by: orderBy,
@@ -159,12 +188,15 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 		currentPage: page,
 		pageSize,
 		revenue: await revenuePromise,
+		attributionBreakdown: await attributionPromise,
 		filters: {
 			status,
 			paymentMethod,
 			source,
 			search,
-			orderBy
+			orderBy,
+			utmSource,
+			utmCampaign
 		}
 	};
 };

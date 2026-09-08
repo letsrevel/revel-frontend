@@ -4074,6 +4074,37 @@
 	"orgAdmin.tickets.empty.title": "Noch keine Events mit Tickets",
 	"orgAdmin.tickets.empty.description": "Sobald du ein Event erstellst, das ein Ticket erfordert, erscheint es hier zur Ticketverwaltung.",
 	"orgAdmin.tickets.empty.cta": "Zu den Events",
+	"orgAdmin.tickets.salesBySource.title": "Verkäufe nach Quelle",
+	"orgAdmin.tickets.salesBySource.sinceAriaLabel": "Zeitraum",
+	"orgAdmin.tickets.salesBySource.sincePresetAll": "Gesamter Zeitraum",
+	"orgAdmin.tickets.salesBySource.sincePresetLast7": "Letzte 7 Tage",
+	"orgAdmin.tickets.salesBySource.sincePresetLast30": "Letzte 30 Tage",
+	"orgAdmin.tickets.salesBySource.sincePresetLast90": "Letzte 90 Tage",
+	"orgAdmin.tickets.salesBySource.sincePresetThisYear": "Dieses Jahr",
+	"orgAdmin.tickets.salesBySource.sincePresetCustom": "Benutzerdefiniert",
+	"orgAdmin.tickets.salesBySource.eventFilterAriaLabel": "Nach Event filtern",
+	"orgAdmin.tickets.salesBySource.eventFilterAll": "Alle Events",
+	"orgAdmin.tickets.salesBySource.eventFilterCount": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "{count} Event",
+				"countPlural=*": "{count} Events"
+			}
+		}
+	],
+	"orgAdmin.tickets.salesBySource.noResults": "Keine Ergebnisse für diese Filter.",
+	"orgAdmin.tickets.salesBySource.resultsAnnouncement": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "Zeige {count} Quelle",
+				"countPlural=*": "Zeige {count} Quellen"
+			}
+		}
+	],
 	"orgAdmin.billing": {
 		"pageTitle": "Abrechnung & USt",
 		"pageDescription": "Verwalte deine Rechnungsdaten, USt-Einstellungen und sieh Rechnungen ein",
@@ -6427,6 +6458,25 @@
 	"tickets.reverseCharge": "Reverse Charge",
 	"tickets.reverseChargeYes": "Ja (EU B2B)",
 	"tickets.vatTooltip": "Netto: {net} / MwSt: {vat} ({rate}%)",
+	"tickets.salesBySource.title": "Verkäufe nach Quelle",
+	"tickets.salesBySource.caption": "Nicht stornierte Tickets, gruppiert nach Kampagnen-Tag",
+	"tickets.salesBySource.source": "Quelle",
+	"tickets.salesBySource.tickets": "Tickets",
+	"tickets.salesBySource.direct": "Direkt",
+	"tickets.salesBySource.allDirect": "Bisher sind alle Verkäufe direkt. Getaggte Links, Kampagnen und Embeds erscheinen hier, sobald sie genutzt werden.",
+	"tickets.salesBySource.filteredBy": "Gefiltert nach {label}",
+	"tickets.salesBySource.clearFilter": "Filter aufheben",
+	"tickets.salesBySource.filterRow": "Tickets nach {label} filtern",
+	"tickets.list.resultsAnnouncement": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "Zeige {count} Ticket",
+				"countPlural=*": "Zeige {count} Tickets"
+			}
+		}
+	],
 	"referral": {
 		"haveReferralCode": "Hast du einen Empfehlungscode?",
 		"enterCode": "Code eingeben",
@@ -9549,6 +9599,7 @@
 	"embedBuilder.tabIframe": "iframe",
 	"embedBuilder.tabScriptHint": "Empfohlen. Passt die Höhe selbst an und profitiert automatisch von Verbesserungen.",
 	"embedBuilder.tabIframeHint": "Für Websites, die <script>-Tags entfernen. Feste Höhe, keine automatische Anpassung.",
+	"embedBuilder.attributionHint": "Kampagnen-Tags (utm_source, utm_medium, utm_campaign, utm_content) auf der Seite, die das Skript-Snippet einbindet, fließen in deinen Bericht „Verkäufe nach Quelle\" ein.",
 	"embedBuilder.copySnippet": "Code kopieren",
 	"embedBuilder.copied": "Kopiert",
 	"embedBuilder.copySuccess": "Code in die Zwischenablage kopiert",

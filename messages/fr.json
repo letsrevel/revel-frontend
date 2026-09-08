@@ -4044,6 +4044,37 @@
 	"orgAdmin.tickets.empty.title": "Aucun événement avec billets pour l'instant",
 	"orgAdmin.tickets.empty.description": "Dès que tu crées un événement nécessitant un billet, il apparaîtra ici pour la gestion des billets.",
 	"orgAdmin.tickets.empty.cta": "Aller aux événements",
+	"orgAdmin.tickets.salesBySource.title": "Ventes par source",
+	"orgAdmin.tickets.salesBySource.sinceAriaLabel": "Période",
+	"orgAdmin.tickets.salesBySource.sincePresetAll": "Toute la période",
+	"orgAdmin.tickets.salesBySource.sincePresetLast7": "7 derniers jours",
+	"orgAdmin.tickets.salesBySource.sincePresetLast30": "30 derniers jours",
+	"orgAdmin.tickets.salesBySource.sincePresetLast90": "90 derniers jours",
+	"orgAdmin.tickets.salesBySource.sincePresetThisYear": "Cette année",
+	"orgAdmin.tickets.salesBySource.sincePresetCustom": "Personnalisé",
+	"orgAdmin.tickets.salesBySource.eventFilterAriaLabel": "Filtrer par événement",
+	"orgAdmin.tickets.salesBySource.eventFilterAll": "Tous les événements",
+	"orgAdmin.tickets.salesBySource.eventFilterCount": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "{count} événement",
+				"countPlural=*": "{count} événements"
+			}
+		}
+	],
+	"orgAdmin.tickets.salesBySource.noResults": "Aucun résultat pour ces filtres.",
+	"orgAdmin.tickets.salesBySource.resultsAnnouncement": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "Affichage de {count} source",
+				"countPlural=*": "Affichage de {count} sources"
+			}
+		}
+	],
 	"orgAdmin.billing": {
 		"pageTitle": "Facturation et TVA",
 		"pageDescription": "Gère tes informations de facturation, tes paramètres de TVA et consulte tes factures",
@@ -6397,6 +6428,25 @@
 	"tickets.reverseCharge": "Autoliquidation",
 	"tickets.reverseChargeYes": "Oui (B2B UE)",
 	"tickets.vatTooltip": "Net : {net} / TVA : {vat} ({rate} %)",
+	"tickets.salesBySource.title": "Ventes par source",
+	"tickets.salesBySource.caption": "Billets non annulés regroupés par étiquette de campagne",
+	"tickets.salesBySource.source": "Source",
+	"tickets.salesBySource.tickets": "Billets",
+	"tickets.salesBySource.direct": "Direct",
+	"tickets.salesBySource.allDirect": "Pour l'instant, toutes les ventes sont directes. Les liens taggés, les campagnes et les embeds apparaîtront ici.",
+	"tickets.salesBySource.filteredBy": "Filtré par {label}",
+	"tickets.salesBySource.clearFilter": "Retirer le filtre",
+	"tickets.salesBySource.filterRow": "Filtrer les billets par {label}",
+	"tickets.list.resultsAnnouncement": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "Affichage de {count} billet",
+				"countPlural=*": "Affichage de {count} billets"
+			}
+		}
+	],
 	"referral": {
 		"haveReferralCode": "Tu as un code de parrainage ?",
 		"enterCode": "Saisir un code",
@@ -9549,6 +9599,7 @@
 	"embedBuilder.tabIframe": "iframe",
 	"embedBuilder.tabScriptHint": "Recommandé. S'adapte tout seul et profite automatiquement de nos améliorations.",
 	"embedBuilder.tabIframeHint": "Pour les sites qui suppriment les balises <script>. Hauteur fixe, sans ajustement.",
+	"embedBuilder.attributionHint": "Les étiquettes de campagne (utm_source, utm_medium, utm_campaign, utm_content) présentes sur la page qui héberge le script remontent dans ton rapport des ventes par source.",
 	"embedBuilder.copySnippet": "Copier le code",
 	"embedBuilder.copied": "Copié",
 	"embedBuilder.copySuccess": "Code copié dans le presse-papiers",

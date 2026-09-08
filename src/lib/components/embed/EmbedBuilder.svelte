@@ -438,6 +438,7 @@
 					</Tabs.List>
 					<Tabs.Content value="script" class="space-y-3">
 						{@render snippetPanel(scriptSnippet, m['embedBuilder.tabScriptHint']())}
+						<p class="text-xs text-muted-foreground">{m['embedBuilder.attributionHint']()}</p>
 					</Tabs.Content>
 					<Tabs.Content value="iframe" class="space-y-3">
 						{@render snippetPanel(iframeSnippet, m['embedBuilder.tabIframeHint']())}

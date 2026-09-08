@@ -21,7 +21,8 @@
 		origin: page.url.origin,
 		medium: data.viaOembed ? 'oembed' : 'series',
 		campaign: data.series.organization.slug,
-		content: data.utmContent
+		content: data.utmContent,
+		override: data.utmOverride
 	});
 
 	// Same fallback ladder the event embed uses: series thumbnail, series logo,

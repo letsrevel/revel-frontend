@@ -20,6 +20,7 @@
 	import TicketTable from '$lib/components/tickets/TicketTable.svelte';
 	import TicketCardList from '$lib/components/tickets/TicketCardList.svelte';
 	import TicketStats from '$lib/components/tickets/TicketStats.svelte';
+	import SalesBySourceCard from '$lib/components/tickets/SalesBySourceCard.svelte';
 	import ConfirmPaymentDialog from '$lib/components/tickets/ConfirmPaymentDialog.svelte';
 	import {
 		nextOrderBy,
@@ -391,6 +392,13 @@
 	<!-- Stats (always shown) -->
 	<TicketStats {stats} totalCount={data.totalCount} {hasMultiplePages} revenue={data.revenue} />
 
+	<!-- Sales by Source Card -->
+	{#if data.attributionBreakdown && data.attributionBreakdown.length > 0}
+		<div class="mt-6">
+			<SalesBySourceCard buckets={data.attributionBreakdown} currentUrl={$page.url} />
+		</div>
+	{/if}
+
 	<!-- Search and Filters -->
 	<TicketFilters
 		{searchQuery}
@@ -407,11 +415,23 @@
 
 	<!-- Tickets List -->
 	<div class="mt-6">
+		<!-- Announces the visible result count whenever filters change the loaded
+		     tickets (WCAG 4.1.3) — one shared live region for the card's row
+		     links/clear link and this page's own search/status/payment/source
+		     filters, since all of them re-fetch via the same `data.totalCount`. -->
+		<div role="status" aria-live="polite" class="sr-only">
+			{m['tickets.list.resultsAnnouncement']({ count: data.totalCount })}
+		</div>
 		{#if data.tickets.length === 0}
 			<EmptyState
 				icon={Ticket}
 				title={m['eventTicketsAdmin.noTicketsFiltered']()}
-				body={searchQuery || selectedStatus || selectedPaymentMethod || selectedSource
+				body={searchQuery ||
+				selectedStatus ||
+				selectedPaymentMethod ||
+				selectedSource ||
+				!!data.filters.utmSource ||
+				!!data.filters.utmCampaign
 					? m['eventTicketsAdmin.noTicketsFiltered']()
 					: m['eventTicketsAdmin.noTicketsEmpty']()}
 			/>

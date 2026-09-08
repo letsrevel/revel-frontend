@@ -24,7 +24,8 @@
 		// The slug from the route, not from a fetched record: attribution must
 		// work even when the list comes back empty.
 		campaign: data.orgSlug,
-		content: data.utmContent
+		content: data.utmContent,
+		override: data.utmOverride
 	});
 
 	const orgHref = $derived(buildEmbedLink(links.origin, organizationPath(data.orgSlug), links));

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import type { EventInListSchema } from '$lib/api/generated/types.gen';
 	import type { UserEventStatus } from './types';
@@ -6,6 +7,7 @@
 	import { formatEventDate, formatEventDateForScreenReader, isEventPast } from '$lib/utils/date';
 	import { getEventAccessDisplay } from '$lib/utils/event';
 	import { formatPrice } from '$lib/utils/format';
+	import { withUtmParams } from '$lib/utils/attribution';
 	import { Calendar, MapPin, Ticket, Tag } from '@lucide/svelte';
 	import BookmarkButton from './BookmarkButton.svelte';
 	import EventCoverImage from './EventCoverImage.svelte';
@@ -89,12 +91,19 @@
 		!lean && $navigating !== null && $navigating.to?.url.pathname === eventUrl
 	);
 
+	// Carry campaign tags across public surfaces (#880): identical output when
+	// the current URL has no utm_* (so authed/dashboard usage is unaffected);
+	// an explicit `href` prop (the embed grid's absolute tagged links) always
+	// wins untouched.
 	const cardHref = $derived(
 		href ??
-			resolve('/(public)/events/[org_slug]/[event_slug]', {
-				org_slug: event.organization.slug,
-				event_slug: event.slug
-			})
+			withUtmParams(
+				resolve('/(public)/events/[org_slug]/[event_slug]', {
+					org_slug: event.organization.slug,
+					event_slug: event.slug
+				}),
+				page.url
+			)
 	);
 
 	// "from €12" / "Free". Formatting stays in the component so it follows the

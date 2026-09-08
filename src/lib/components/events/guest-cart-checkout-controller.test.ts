@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, waitFor } from '@testing-library/svelte';
 import { QueryClient } from '@tanstack/svelte-query';
 import {
@@ -151,5 +151,41 @@ describe('createGuestCartCheckoutController — invitation-link token header', (
 		});
 		const options = eventpublicguestGuestMultiTierCheckout.mock.calls[0][0];
 		expect(options.headers ?? {}).not.toHaveProperty('X-Event-Token');
+	});
+
+	afterEach(() => {
+		window.history.replaceState({}, '', '/');
+	});
+
+	it('stamps sanitised utm tags from the page URL onto the reserve payload', async () => {
+		window.history.replaceState(
+			{},
+			'',
+			'/events/acme/party?utm_source=instagram&utm_campaign=sept&utm_medium=b a d&other=1'
+		);
+		const controller = await renderController(makeDeps());
+		await controller.checkoutCart(makeParams());
+
+		await waitFor(() => {
+			expect(eventpublicguestGuestMultiTierCheckout).toHaveBeenCalledWith(
+				expect.objectContaining({
+					body: expect.objectContaining({
+						attribution: { utm_source: 'instagram', utm_campaign: 'sept' }
+					})
+				})
+			);
+		});
+	});
+
+	it('sends attribution: null when the URL carries no tags', async () => {
+		window.history.replaceState({}, '', '/events/acme/party');
+		const controller = await renderController(makeDeps());
+		await controller.checkoutCart(makeParams());
+
+		await waitFor(() => {
+			expect(eventpublicguestGuestMultiTierCheckout).toHaveBeenCalledWith(
+				expect.objectContaining({ body: expect.objectContaining({ attribution: null }) })
+			);
+		});
 	});
 });
