@@ -23,7 +23,8 @@
 		origin: page.url.origin,
 		medium: data.viaOembed ? 'oembed' : 'event',
 		campaign: data.event.organization.slug,
-		content: data.utmContent
+		content: data.utmContent,
+		override: data.utmOverride
 	});
 
 	const eventHref = $derived(

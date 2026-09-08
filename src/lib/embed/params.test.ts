@@ -3,6 +3,7 @@ import {
 	parseEmbedTheme,
 	parseEmbedTags,
 	parseEmbedListFilters,
+	parseUtmOverride,
 	sanitizeUtmContent
 } from './params';
 import { EMBED_DEFAULT_PAGE_SIZE, EMBED_MAX_PAGE_SIZE, isEmbedPath } from './constants';
@@ -122,5 +123,22 @@ describe('parseEmbedListFilters', () => {
 		expect(parseEmbedListFilters(params('city_id=0')).cityId).toBeNull();
 		expect(parseEmbedListFilters(params('city_id=-1')).cityId).toBeNull();
 		expect(parseEmbedListFilters(params('city_id=1.5')).cityId).toBeNull();
+	});
+});
+
+describe('parseUtmOverride', () => {
+	it('returns null without a utm_source', () => {
+		expect(parseUtmOverride(new URLSearchParams('utm_campaign=sept'))).toBeNull();
+	});
+
+	it('returns null when utm_source is junk', () => {
+		expect(parseUtmOverride(new URLSearchParams('utm_source=a b'))).toBeNull();
+	});
+
+	it('returns the surviving keys only', () => {
+		const override = parseUtmOverride(
+			new URLSearchParams('utm_source=newsletter&utm_campaign=sept&utm_medium=b a d')
+		);
+		expect(override).toEqual({ utm_source: 'newsletter', utm_campaign: 'sept' });
 	});
 });

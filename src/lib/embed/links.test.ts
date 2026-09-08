@@ -50,6 +50,29 @@ describe('path builders', () => {
 	});
 });
 
+describe('buildEmbedLink with a host-UTM override', () => {
+	it('replaces the WHOLE embed convention with the host tags', () => {
+		const url = new URL(
+			buildEmbedLink('https://letsrevel.io', '/events/acme/party', {
+				medium: 'event',
+				campaign: 'acme',
+				content: 'partner.example.org',
+				override: { utm_source: 'newsletter', utm_campaign: 'sept' }
+			})
+		);
+		expect(url.searchParams.get('utm_source')).toBe('newsletter');
+		expect(url.searchParams.get('utm_campaign')).toBe('sept');
+		expect(url.searchParams.get('utm_medium')).toBeNull(); // absent key stays absent
+		expect(url.searchParams.get('utm_content')).toBeNull(); // hostname default NOT mixed in
+	});
+
+	it('is byte-identical to today without an override', () => {
+		expect(
+			buildEmbedLink('https://letsrevel.io', '/e', { medium: 'event', campaign: 'acme' })
+		).toBe('https://letsrevel.io/e?utm_source=embed&utm_medium=event&utm_campaign=acme');
+	});
+});
+
 describe('poweredByLink', () => {
 	it('points at the site root with attribution intact', () => {
 		const url = new URL(poweredByLink(ORIGIN, { medium: 'event', campaign: 'acme' }));

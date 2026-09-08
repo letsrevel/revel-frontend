@@ -44,6 +44,33 @@ export function sanitizeUtmContent(raw: string | null | undefined): string | nul
 	return sanitizeUtmValue(raw);
 }
 
+/** Host-page campaign tags forwarded by the loader; replace the embed convention entirely. */
+export interface UtmOverride {
+	utm_source: string;
+	utm_medium?: string;
+	utm_campaign?: string;
+	utm_content?: string;
+}
+
+/**
+ * The organizer's own campaign tags win (#880, decided 2026-09-08): when the host
+ * page carried a valid `utm_source`, the embed's outbound links use the host's
+ * tags verbatim and none of the `embed / <surface> / <org slug> / <hostname>`
+ * defaults. No valid `utm_source` → no override.
+ */
+export function parseUtmOverride(params: URLSearchParams): UtmOverride | null {
+	const source = sanitizeUtmValue(params.get('utm_source'));
+	if (!source) return null;
+	const override: UtmOverride = { utm_source: source };
+	const medium = sanitizeUtmValue(params.get('utm_medium'));
+	const campaign = sanitizeUtmValue(params.get('utm_campaign'));
+	const content = sanitizeUtmValue(params.get('utm_content'));
+	if (medium) override.utm_medium = medium;
+	if (campaign) override.utm_campaign = campaign;
+	if (content) override.utm_content = content;
+	return override;
+}
+
 /**
  * Parse a boolean-ish query value. Anything other than an explicit truthy
  * token is false — an embed should never silently start showing past events.

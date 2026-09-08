@@ -1,7 +1,7 @@
 import type { LayoutServerLoad } from './$types';
 import { getLocale } from '$lib/i18n';
 import { EMBED_CACHE_CONTROL } from '$lib/embed/constants';
-import { parseEmbedTheme, sanitizeUtmContent } from '$lib/embed/params';
+import { parseEmbedTheme, parseUtmOverride, sanitizeUtmContent } from '$lib/embed/params';
 
 /**
  * Embeds render fully server-side and ship no client bundle.
@@ -32,6 +32,9 @@ export const load: LayoutServerLoad = async ({ url, setHeaders }) => {
 		// Host-page hostname, stamped on the iframe URL by the loader script and
 		// echoed back onto every outbound link as `utm_content`.
 		utmContent: sanitizeUtmContent(url.searchParams.get('utm_content')),
+		// Host-page campaign tags (loader passthrough, #880). Non-null only when the
+		// host page carried a valid utm_source; replaces the embed link convention.
+		utmOverride: parseUtmOverride(url.searchParams),
 		// Set by /oembed on the iframe it hands to consumers. An oEmbed consumer's
 		// page cannot be named (no hostname to read), so the attribution moves to
 		// `utm_medium=oembed` instead of `utm_content`.

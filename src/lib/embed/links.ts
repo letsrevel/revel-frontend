@@ -13,9 +13,14 @@
  * `utm_content` is not known server-side: the loader script reads
  * `location.hostname` on the host page and puts it on the iframe URL, and the
  * embed echoes it back onto its outbound links.
+ *
+ * When the host page itself carried a valid `utm_source` (#880), that
+ * `UtmOverride` REPLACES the whole convention above verbatim — absent keys
+ * stay absent, nothing is merged with the embed defaults.
  */
 
 import type { EmbedMedium } from './constants';
+import type { UtmOverride } from './params';
 
 /** Everything a component needs to build attributed outbound links. */
 export interface EmbedLinkContext extends EmbedLinkAttribution {
@@ -29,6 +34,8 @@ export interface EmbedLinkAttribution {
 	campaign: string;
 	/** Host page hostname, forwarded by the loader script. */
 	content?: string | null;
+	/** Host-page tags; when set they REPLACE the embed convention (spec §2.3). */
+	override?: UtmOverride | null;
 }
 
 /**
@@ -40,9 +47,16 @@ export interface EmbedLinkAttribution {
 export function buildEmbedLink(
 	origin: string,
 	path: string,
-	{ medium, campaign, content }: EmbedLinkAttribution
+	{ medium, campaign, content, override }: EmbedLinkAttribution
 ): string {
 	const url = new URL(path, origin);
+	if (override) {
+		url.searchParams.set('utm_source', override.utm_source);
+		if (override.utm_medium) url.searchParams.set('utm_medium', override.utm_medium);
+		if (override.utm_campaign) url.searchParams.set('utm_campaign', override.utm_campaign);
+		if (override.utm_content) url.searchParams.set('utm_content', override.utm_content);
+		return url.toString();
+	}
 	url.searchParams.set('utm_source', 'embed');
 	url.searchParams.set('utm_medium', medium);
 	url.searchParams.set('utm_campaign', campaign);
