@@ -88,7 +88,7 @@
 									aria-label={m['tickets.salesBySource.filterRow']({
 										label: [bucket.utm_source, bucket.utm_campaign].filter(Boolean).join(' · ')
 									})}
-									class="-mx-1 flex flex-col rounded-md px-1 py-0.5 hover:bg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring aria-[current=true]:bg-secondary aria-[current=true]:font-semibold"
+									class="-mx-1 flex flex-col rounded-md border-l-2 border-l-transparent px-1 py-0.5 hover:bg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring aria-[current=true]:border-l-primary aria-[current=true]:bg-secondary aria-[current=true]:pl-2 aria-[current=true]:font-semibold"
 								>
 									<span class="font-medium"
 										>{bucket.utm_source ?? '—'}{#if bucket.utm_campaign}<span
