@@ -4,17 +4,18 @@ import { PERSONAS } from '../../support/personas';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 import { pickSelectOption } from '../../support/ui';
 
-// Purchase attribution, org-wide follow-up (#880) — `/org/[slug]/admin/tickets`
-// aggregates the org's "Sales by source" across every ticketed event, with
-// since/event_ids URL-param filters (see attribution-presets.ts and the
-// +page.server.ts load). Unlike the per-event card
-// (attribution-breakdown.spec.ts), this one renders with `filterable={false}`
-// (no single ticket list to filter into), so its bucket rows are plain text,
-// never links.
+// Purchase attribution, org-wide follow-up (#880, follow-up D) — the org-wide
+// "Sales by source" breakdown moved from `/org/[slug]/admin/tickets` to its
+// own collapsed-by-default disclosure on `/org/[slug]/admin/financials`
+// (AttributionBreakdownSection.svelte), with since/event_ids URL-param
+// filters (see attribution-presets.ts). It now loads client-side via
+// TanStack Query, gated on the disclosure having been opened at least once —
+// so this spec expands the section first and waits for query results with
+// `expect(...).toBeVisible()` polling rather than fixed sleeps.
 //
-// The Eligibility Test Organization has several ticketed events, so this page
-// does NOT redirect (shouldRedirectToSingle only fires for exactly one active
-// event) — landing on the org page itself is asserted before proceeding.
+// Unlike the per-event card (attribution-breakdown.spec.ts), this one renders
+// with `filterable={false}` (no single ticket list to filter into), so its
+// bucket rows are plain text, never links.
 //
 // Selecting the seeded `test-sold-out-event` in the event filter narrows the
 // org-wide totals down to that event's deterministic 2/1/1/1 bucket mix (see
@@ -30,7 +31,7 @@ const ORG_SLUG = 'eligibility-test-org';
 const EVENT_SLUG = 'test-sold-out-event';
 
 test.describe('J10 org-wide attribution breakdown @p1', () => {
-	test('sales-by-source renders org-wide, unlinked, with working since/event filters', async ({
+	test('sales-by-source lives on financials, starts collapsed, and filters work once expanded', async ({
 		asTestAdmin
 	}) => {
 		const api = await ApiClient.login(PERSONAS.testAdmin.email, PERSONAS.testAdmin.password);
@@ -39,31 +40,40 @@ test.describe('J10 org-wide attribution breakdown @p1', () => {
 		);
 
 		const page = asTestAdmin;
-		await gotoHydrated(page, `/org/${ORG_SLUG}/admin/tickets`);
+		await gotoHydrated(page, `/org/${ORG_SLUG}/admin/financials`);
 		await waitForClientAuth(page);
+		await expect(page.getByRole('heading', { name: 'Financials' })).toBeVisible();
 
-		// Confirm we actually landed on the org-wide picker page, not redirected
-		// to a single event's tickets page (shouldRedirectToSingle).
-		await expect(page).toHaveURL(new RegExp(`/org/${ORG_SLUG}/admin/tickets(\\?|$)`));
-		await expect(page).not.toHaveURL(/\/admin\/events\/.+\/tickets/);
-		await expect(page.getByRole('heading', { name: 'Tickets', exact: true }).first()).toBeVisible();
-
-		// The card renders with `showHeading={false}` here (the SectionHeader
-		// above it already provides the "Sales by source" heading, so the card
-		// doesn't duplicate it) — only one heading with that name exists.
+		// Only one heading with this name exists: the section's own <summary>
+		// heading (the nested SalesBySourceCard renders with showHeading={false}
+		// so it doesn't duplicate it).
 		const heading = page.getByRole('heading', { name: 'Sales by source' });
 		await expect(heading).toHaveCount(1);
 		await expect(heading).toBeVisible();
 
+		// The heading's grandparent is the <details> (its own parent is only the
+		// <summary>) — the controls and card live in a sibling <div> of the
+		// summary, both children of <details>.
+		const card = heading.locator('..').locator('..');
+
 		const sinceControl = page.getByLabel('Time range');
 		const eventControl = page.getByLabel('Filter by event');
+
+		// Collapsed by default: the controls exist in the DOM (inside the closed
+		// <details>) but are not visible, and neither query has anything to show.
+		await expect(sinceControl).toBeHidden();
+		await expect(eventControl).toBeHidden();
+
+		// Expand: clicking anywhere inside the <summary> (the heading lives
+		// there) toggles the disclosure open and fires both client-side queries.
+		await heading.click();
 		await expect(sinceControl).toBeVisible();
 		await expect(eventControl).toBeVisible();
 
-		// The page renders exactly one <table> (the SalesBySourceCard's); the
-		// events list below it is a <ul>, not a table.
-		const table = page.locator('table');
-		await expect(table).toBeVisible();
+		// The section renders exactly one <table> once the breakdown query
+		// resolves (client-side — poll rather than assume it's already there).
+		const table = card.locator('table');
+		await expect(table).toBeVisible({ timeout: 15_000 });
 		await expect(table.locator('tbody tr').first()).toBeVisible();
 
 		// Org has direct sales from seed: a "Direct" row is present.
@@ -78,18 +88,22 @@ test.describe('J10 org-wide attribution breakdown @p1', () => {
 		// still-open menu overlay would intercept the next click — close it
 		// explicitly afterwards.
 		await eventControl.click();
+		await expect(page.getByRole('menuitemcheckbox', { name: event.name })).toBeVisible({
+			timeout: 15_000
+		});
 		await page.getByRole('menuitemcheckbox', { name: event.name }).click();
 		await page.keyboard.press('Escape');
 		await expect(page).toHaveURL(new RegExp(`event_ids=${event.id}`));
 		// Dropdown trigger label reflects the one selected event.
 		await expect(eventControl).toHaveText('1 event');
 
-		// The table now shows exactly the deterministic seeded buckets.
+		// The table now shows exactly the deterministic seeded buckets (the
+		// query re-runs against the new event_ids param — poll for the update).
 		const newsletterRow = table.locator('tr').filter({ hasText: 'newsletter' });
 		const instagramRow = table.locator('tr').filter({ hasText: 'instagram' });
 		const embedRow = table.locator('tr').filter({ hasText: 'revel-embed' });
 		const directRow = table.locator('tr').filter({ hasText: 'Direct' });
-		await expect(newsletterRow.locator('td').last()).toHaveText('2');
+		await expect(newsletterRow.locator('td').last()).toHaveText('2', { timeout: 15_000 });
 		await expect(instagramRow.locator('td').last()).toHaveText('1');
 		await expect(embedRow.locator('td').last()).toHaveText('1');
 		await expect(directRow.locator('td').last()).toHaveText('1');
@@ -109,9 +123,16 @@ test.describe('J10 org-wide attribution breakdown @p1', () => {
 		// The seeded tickets' created_at values are recent (fixture setup time),
 		// so "last 7 days" combined with the event filter is expected to still
 		// surface the same deterministic buckets rather than an empty result.
-		await expect(newsletterRow.locator('td').last()).toHaveText('2');
+		await expect(newsletterRow.locator('td').last()).toHaveText('2', { timeout: 15_000 });
 		await expect(instagramRow.locator('td').last()).toHaveText('1');
 		await expect(embedRow.locator('td').last()).toHaveText('1');
 		await expect(directRow.locator('td').last()).toHaveText('1');
+
+		// The old home page is back to a plain event picker: the section no
+		// longer renders there.
+		await gotoHydrated(page, `/org/${ORG_SLUG}/admin/tickets`);
+		await waitForClientAuth(page);
+		await expect(page.getByRole('heading', { name: 'Tickets', exact: true }).first()).toBeVisible();
+		await expect(page.getByRole('heading', { name: 'Sales by source' })).toHaveCount(0);
 	});
 });

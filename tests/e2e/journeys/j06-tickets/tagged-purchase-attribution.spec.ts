@@ -126,12 +126,18 @@ test.describe('J6 tagged purchase attribution @p1', () => {
 		await waitForClientAuth(admin);
 
 		// See attribution-breakdown.spec.ts for why this needs two ancestor hops:
-		// the heading's immediate parent is only the flex title row, a sibling of
-		// the table wrapper.
-		const card = admin
-			.getByRole('heading', { name: 'Sales by source' })
-			.locator('..')
-			.locator('..');
+		// the heading's immediate parent is only the <summary>, a sibling of the
+		// disclosure body (table, "Filtered by" chip), both children of
+		// <details>. The card is a collapsible <details> collapsed by default
+		// (#880 follow-up D) — expand it before interacting with the row link,
+		// since a closed <details> hides its content (text is still readable,
+		// but not clickable).
+		const heading = admin.getByRole('heading', { name: 'Sales by source' });
+		await expect(heading).toBeVisible();
+		const card = heading.locator('..').locator('..');
+		await heading.click();
+		await expect(card.getByRole('table')).toBeVisible();
+
 		const instagramRow = card.locator('tr').filter({ hasText: 'instagram' });
 		await expect(instagramRow).toContainText('e2e-attrib');
 		await expect(instagramRow.locator('td').last()).toHaveText('1');
