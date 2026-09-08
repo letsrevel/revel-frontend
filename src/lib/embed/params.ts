@@ -9,6 +9,7 @@
  */
 
 import type { EventType } from '$lib/api/generated/types.gen';
+import { sanitizeUtmValue } from '$lib/utils/attribution';
 import {
 	EMBED_DEFAULT_PAGE_SIZE,
 	EMBED_MAX_PAGE_SIZE,
@@ -36,14 +37,11 @@ export function parseEmbedTheme(raw: string | null | undefined): EmbedTheme {
 
 /**
  * `?utm_content=` is appended by the loader script and carries the *host page*
- * hostname, which we echo back onto outbound links. It lands in HTML
- * attributes, so restrict it to hostname-shaped characters rather than trust
- * whatever a third-party page sent.
+ * hostname. Same charset as every campaign tag — single authority lives in
+ * `$lib/utils/attribution.ts` (mirrors the backend sanitiser).
  */
 export function sanitizeUtmContent(raw: string | null | undefined): string | null {
-	if (!raw) return null;
-	const trimmed = raw.trim().slice(0, 100);
-	return /^[a-zA-Z0-9.\-:_]+$/.test(trimmed) ? trimmed : null;
+	return sanitizeUtmValue(raw);
 }
 
 /**
