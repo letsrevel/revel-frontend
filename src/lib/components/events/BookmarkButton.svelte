@@ -44,11 +44,10 @@
 	// *before* mutationFn runs.
 	const mutation = createMutation(() => ({
 		mutationFn: async (next: boolean) => {
-			if (next) {
-				await eventpublicattendanceBookmarkEvent({ path: { event_id: eventId } });
-			} else {
-				await eventpublicattendanceUnbookmarkEvent({ path: { event_id: eventId } });
-			}
+			const res = next
+				? await eventpublicattendanceBookmarkEvent({ path: { event_id: eventId } })
+				: await eventpublicattendanceUnbookmarkEvent({ path: { event_id: eventId } });
+			if (res.error) throw res.error;
 		},
 		onMutate: (next: boolean) => {
 			pending = true;

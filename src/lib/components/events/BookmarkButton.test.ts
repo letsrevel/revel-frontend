@@ -147,6 +147,25 @@ describe('BookmarkButton', () => {
 		expect(toast.success).not.toHaveBeenCalled();
 	});
 
+	it('reverts and shows an error toast when the API resolves with an HTTP error body', async () => {
+		// The generated client does not reject on HTTP errors — it resolves with
+		// `{ error }` — so the mutationFn must throw it for onError to fire.
+		const user = userEvent.setup();
+		vi.mocked(eventpublicattendanceBookmarkEvent).mockResolvedValueOnce({
+			data: undefined,
+			error: { detail: 'Nope' },
+			response: { ok: false, status: 400 }
+		} as never);
+		renderButton({ eventId: 'e1', isBookmarked: false });
+		const btn = screen.getByRole('button');
+
+		await user.click(btn);
+
+		await waitFor(() => expect(btn).toHaveAttribute('aria-pressed', 'false'));
+		expect(toast.error).toHaveBeenCalled();
+		expect(toast.success).not.toHaveBeenCalled();
+	});
+
 	describe('onlyWhenBookmarked (card indicator)', () => {
 		it('renders nothing when not bookmarked', () => {
 			const { container } = renderButton({

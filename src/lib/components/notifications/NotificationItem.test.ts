@@ -372,6 +372,32 @@ describe('NotificationItem', () => {
 		});
 	});
 
+	it('shows error toast and skips onStatusChange when mark read resolves with an HTTP error body', async () => {
+		// The generated client does not reject on HTTP errors — it resolves with
+		// `{ error }` — so the mutationFn must throw it for onError to fire.
+		const notification = createMockNotification();
+		const onStatusChange = vi.fn();
+		const { notificationMarkRead } = await import('$lib/api/generated');
+		const { toast } = await import('svelte-sonner');
+
+		vi.mocked(notificationMarkRead).mockResolvedValueOnce({
+			data: undefined,
+			error: { detail: 'Nope' },
+			response: { ok: false, status: 400 }
+		} as never);
+
+		renderItem({ notification, authToken: mockAuthToken, onStatusChange });
+
+		await user.click(screen.getByRole('button', { name: /mark as read/i }));
+
+		await vi.waitFor(() => {
+			expect(toast.error).toHaveBeenCalled();
+		});
+		expect(onStatusChange).not.toHaveBeenCalled();
+		// Optimistic flip reverted: the toggle offers "mark as read" again.
+		expect(screen.getByRole('button', { name: /mark as read/i })).toBeInTheDocument();
+	});
+
 	it('stops propagation when clicking mark read/unread button', async () => {
 		const notification = createMockNotification();
 		const { goto } = await import('$app/navigation');

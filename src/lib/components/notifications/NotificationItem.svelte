@@ -50,10 +50,12 @@
 	// Mark as read mutation
 	const markReadMutation = createMutation(() => ({
 		mutationFn: async () => {
-			return await notificationMarkRead({
+			const res = await notificationMarkRead({
 				path: { notification_id: notification.id },
 				headers: { Authorization: `Bearer ${authToken}` }
 			});
+			if (res.error) throw res.error;
+			return res.data;
 		},
 		onMutate: () => {
 			// Optimistic update
@@ -78,10 +80,12 @@
 	// Mark as unread mutation
 	const markUnreadMutation = createMutation(() => ({
 		mutationFn: async () => {
-			return await notificationMarkUnread({
+			const res = await notificationMarkUnread({
 				path: { notification_id: notification.id },
 				headers: { Authorization: `Bearer ${authToken}` }
 			});
+			if (res.error) throw res.error;
+			return res.data;
 		},
 		onMutate: () => {
 			// Optimistic update

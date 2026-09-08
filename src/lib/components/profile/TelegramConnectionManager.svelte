@@ -20,6 +20,7 @@
 		telegramConnectAccount,
 		telegramDisconnectAccount
 	} from '$lib/api/generated/sdk.gen';
+	import { extractErrorMessage } from '$lib/utils/errors';
 
 	interface Props {
 		authToken: string;
@@ -58,6 +59,7 @@
 				headers: { Authorization: `Bearer ${authToken}` },
 				body: { otp }
 			});
+			if (result.error) throw result.error;
 			return result.data;
 		},
 		onSuccess: () => {
@@ -66,18 +68,18 @@
 			otpValue = '';
 			otpError = '';
 		},
-		onError: (error: Error) => {
-			const errorMessage = error.message || 'Failed to connect Telegram account';
-			otpError = errorMessage;
+		onError: (error: unknown) => {
+			otpError = extractErrorMessage(error, m['telegram.connect_errorGeneric']());
 		}
 	}));
 
 	// Disconnect mutation
 	const disconnectMutation = createMutation(() => ({
 		mutationFn: async () => {
-			await telegramDisconnectAccount({
+			const result = await telegramDisconnectAccount({
 				headers: { Authorization: `Bearer ${authToken}` }
 			});
+			if (result.error) throw result.error;
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['telegram', 'status'] });
@@ -316,7 +318,7 @@
 				<Alert variant="destructive">
 					<AlertCircle class="h-4 w-4" />
 					<AlertDescription>
-						{connectMutation.error?.message || m['telegram.connect_errorGeneric']()}
+						{extractErrorMessage(connectMutation.error, m['telegram.connect_errorGeneric']())}
 					</AlertDescription>
 				</Alert>
 			{/if}

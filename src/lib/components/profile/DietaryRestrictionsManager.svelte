@@ -95,6 +95,7 @@
 				body: { name },
 				headers: { Authorization: `Bearer ${authToken}` }
 			});
+			if (response.error) throw response.error;
 			return response.data;
 		}
 	}));
@@ -118,6 +119,7 @@
 				body: data as DietaryRestrictionCreateSchema,
 				headers: { Authorization: `Bearer ${authToken}` }
 			});
+			if (response.error) throw response.error;
 			return response.data;
 		},
 		onSuccess: () => {
@@ -142,10 +144,11 @@
 	// Delete restriction mutation
 	const deleteRestrictionMutation = createMutation(() => ({
 		mutationFn: async (restrictionId: string) => {
-			await dietaryDeleteDietaryRestriction({
+			const response = await dietaryDeleteDietaryRestriction({
 				path: { restriction_id: restrictionId },
 				headers: { Authorization: `Bearer ${authToken}` }
 			});
+			if (response.error) throw response.error;
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['dietary', 'restrictions'] });
@@ -171,6 +174,7 @@
 				body: data,
 				headers: { Authorization: `Bearer ${authToken}` }
 			});
+			if (response.error) throw response.error;
 			return response.data;
 		},
 		onSuccess: () => {

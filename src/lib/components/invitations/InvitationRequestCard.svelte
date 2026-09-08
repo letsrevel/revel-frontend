@@ -10,6 +10,7 @@
 	import { eventpublicdiscoveryDeleteInvitationRequest } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { toast } from 'svelte-sonner';
+	import { extractErrorMessage } from '$lib/utils/errors';
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import type { Tone } from '$lib/components/common/tones';
 
@@ -70,10 +71,11 @@
 			if (!accessToken || !request.id) {
 				throw new Error('Missing authentication or request ID');
 			}
-			await eventpublicdiscoveryDeleteInvitationRequest({
+			const res = await eventpublicdiscoveryDeleteInvitationRequest({
 				headers: { Authorization: `Bearer ${accessToken}` },
 				path: { request_id: request.id }
 			});
+			if (res.error) throw res.error;
 		},
 		onSuccess: () => {
 			toast.success(m['invitationRequestCard.requestCancelled']());
@@ -83,7 +85,7 @@
 		onError: (error) => {
 			console.error('Failed to cancel request:', error);
 			toast.error(m['invitationRequestCard.cancelFailed'](), {
-				description: error.message || m['invitationRequestCard.pleaseTryAgain']()
+				description: extractErrorMessage(error, m['invitationRequestCard.pleaseTryAgain']())
 			});
 		}
 	}));

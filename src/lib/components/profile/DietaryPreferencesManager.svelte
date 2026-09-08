@@ -58,6 +58,7 @@
 				body: data,
 				headers: { Authorization: `Bearer ${authToken}` }
 			});
+			if (response.error) throw response.error;
 			return response.data;
 		},
 		onSuccess: () => {
@@ -78,10 +79,11 @@
 	// Delete preference mutation
 	const deletePreferenceMutation = createMutation(() => ({
 		mutationFn: async (preferenceId: string) => {
-			await dietaryDeleteDietaryPreference({
+			const response = await dietaryDeleteDietaryPreference({
 				path: { preference_id: preferenceId },
 				headers: { Authorization: `Bearer ${authToken}` }
 			});
+			if (response.error) throw response.error;
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['dietary', 'my-preferences'] });
@@ -107,6 +109,7 @@
 				body: data,
 				headers: { Authorization: `Bearer ${authToken}` }
 			});
+			if (response.error) throw response.error;
 			return response.data;
 		},
 		onSuccess: () => {

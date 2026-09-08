@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/svelte';
+import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
@@ -106,8 +106,17 @@ describe('TierForm API error surfacing', () => {
 		const user = userEvent.setup();
 		const { onClose } = renderForm(null);
 
-		await user.type(screen.getByLabelText(/Tier Name/i), 'Early Bird');
-		await user.click(screen.getByRole('button', { name: 'Create Tier' }));
+		// Fill the name via a direct input event: the dialog also mounts the
+		// tiptap MarkdownEditor, which can steal focus mid-`user.type` and
+		// swallow keystrokes (flaky in jsdom).
+		const nameInput = screen.getByLabelText(/Tier Name/i);
+		await fireEvent.input(nameInput, { target: { value: 'Early Bird' } });
+		await waitFor(() => expect(nameInput).toHaveValue('Early Bird'));
+		const createButton = screen.getByRole('button', { name: 'Create Tier' });
+		// The submit button stays disabled until the name state flushes; clicking
+		// a still-disabled button is a silent no-op, so wait for it.
+		await waitFor(() => expect(createButton).toBeEnabled());
+		await user.click(createButton);
 
 		await waitFor(() => expect(eventadminticketsCreateTicketTier).toHaveBeenCalled());
 		await waitFor(() =>
