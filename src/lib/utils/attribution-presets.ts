@@ -1,6 +1,6 @@
 /**
  * "Since" preset mapping for the org-wide "Sales by source" filters (#880
- * follow-up, `/org/[slug]/admin/tickets`). Pure so the ISO-string mapping and
+ * follow-up, `/org/[slug]/admin/financials`). Pure so the ISO-string mapping and
  * its reverse (URL → active preset) are cheaply unit-testable — the page
  * component only wires these to `goto()`.
  */
