@@ -42,7 +42,8 @@ const MESSAGES: Record<IntegrationErrorCode, (args: Args) => string> = {
 	image_missing: () => m['integrations.error.image_missing'](),
 	pause_failed: (a) => m['integrations.error.pause_failed'](a),
 	tier_not_linked: (a) => m['integrations.error.tier_not_linked'](a),
-	stripe_not_connected: () => m['integrations.error.stripe_not_connected']()
+	stripe_not_connected: () => m['integrations.error.stripe_not_connected'](),
+	import_failed: () => m['integrations.error.import_failed']()
 };
 
 /** Landing-page variants: the same code means something else mid-OAuth. */

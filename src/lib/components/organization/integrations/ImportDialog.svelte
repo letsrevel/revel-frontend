@@ -16,15 +16,17 @@
 	} from '$lib/components/ui/dialog';
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import type { Tone } from '$lib/components/common/tones';
-	import type { RemoteEventSummarySchema } from '$lib/api/generated/types.gen';
+	import type { ImportJobSchema, RemoteEventSummarySchema } from '$lib/api/generated/types.gen';
 	import {
 		organizationintegrationsImportEvents,
+		organizationintegrationsImportJobs,
 		organizationintegrationsRemoteEvents
 	} from '$lib/api/generated/sdk.gen';
 	import { PollUntil } from '$lib/queries/poll-until';
 	import { formatDate } from '$lib/utils/date';
 	import {
 		integrationErrorFromResponse,
+		integrationErrorMessage,
 		isIntegrationErrorInfo,
 		silentIntegrationError,
 		type IntegrationErrorInfo
@@ -49,10 +51,15 @@
 	// What the user did; the poll's outcome refines `importing` into the rest.
 	let stage = $state<'pick' | 'importing'>('pick');
 	let selected = $state<string[]>([]);
-	let queued = $state<string[]>([]);
+	/** The jobs the 202 queued, as returned; the poll refreshes their status. */
+	let initialJobs = $state<ImportJobSchema[]>([]);
+	let jobIds = $state<string[]>([]);
+	/** Remote event names by remote id — the jobs only carry ids. */
+	let names = $state<Record<string, string>>({});
 	let skipped = $state<string[]>([]);
 	let submitError = $state<IntegrationErrorInfo | null>(null);
 	let timedOut = $state(false);
+	let invalidatedRound = $state(false);
 
 	const queryClient = useQueryClient();
 	const listKey = $derived(['org-integration-remote-events', organizationSlug, provider] as const);
@@ -83,30 +90,62 @@
 			: null
 	);
 
-	// Import is a 202 with no event ids; the observable signal is the remote list
-	// reporting each queued id as `already_linked`. Bounded: 3 s for two minutes.
-	const poll = new PollUntil<RemoteEventSummarySchema[]>({
+	async function fetchImportJobs(): Promise<ImportJobSchema[]> {
+		const res = await organizationintegrationsImportJobs({
+			path: { slug: organizationSlug, provider },
+			query: { ids: jobIds }
+		});
+		if (res.error || !res.data) throw integrationErrorFromResponse(res.error, platform);
+		return res.data;
+	}
+
+	function isSettled(job: ImportJobSchema | undefined): boolean {
+		return job?.status === 'done' || job?.status === 'failed';
+	}
+
+	// The 202 returns job rows; the poll watches them settle in Revel's own
+	// database (no platform call per tick). Bounded: 3 s for two minutes.
+	const poll = new PollUntil<ImportJobSchema[]>({
 		// Frozen at mount on purpose: the dialog is mounted once per provider card.
-		queryKey: untrack(() => [...listKey, 'import']),
-		queryFn: fetchRemoteEvents,
-		isDone: (events) =>
-			queued.every((id) => events.find((e) => e.remote_id === id)?.already_linked),
-		enabled: () => stage === 'importing',
+		queryKey: untrack(() => ['org-integration-import-jobs', organizationSlug, provider]),
+		queryFn: fetchImportJobs,
+		isDone: (jobs) => jobIds.every((id) => isSettled(jobs.find((j) => j.id === id))),
+		// The endpoint 422s on an empty ids list; with no jobs there is nothing to poll.
+		enabled: () => stage === 'importing' && jobIds.length > 0,
 		onTimeout: () => {
 			timedOut = true;
 		}
 	});
 	const pollQuery = createQuery(() => poll.options());
-	const linkedCount = $derived.by(() => {
-		void timedOut;
-		const events = pollQuery.data ?? [];
-		return queued.filter((id) => events.find((e) => e.remote_id === id)?.already_linked).length;
+	/** Each queued job at its freshest known state, in submission order. */
+	const jobRows = $derived.by((): ImportJobSchema[] => {
+		const latest = pollQuery.data ?? [];
+		return jobIds.flatMap((id) => {
+			const job = latest.find((j) => j.id === id) ?? initialJobs.find((j) => j.id === id);
+			return job ? [job] : [];
+		});
 	});
+	const settledCount = $derived(jobRows.filter((j) => j.status !== 'queued').length);
+	const doneCount = $derived(jobRows.filter((j) => j.status === 'done').length);
+	const failedCount = $derived(jobRows.filter((j) => j.status === 'failed').length);
 	const phase = $derived.by((): Phase => {
 		if (stage === 'pick') return 'pick';
+		// Everything selected was already linked: nothing was queued, done at once.
+		if (jobIds.length === 0) return 'done';
 		void timedOut; // re-run when the deadline lapses, not just when data changes
 		const p = poll.phase(pollQuery.data);
 		return p === 'done' ? 'done' : p === 'timed_out' ? 'timed_out' : 'importing';
+	});
+
+	// The poll settling means the drafts exist (or failed): refresh the picker's
+	// `already_linked` flags and any cached event lists, so the new drafts show
+	// up without a manual reload even when the user navigates without closing.
+	$effect(() => {
+		if (phase === 'done' && stage === 'importing' && jobIds.length > 0 && !invalidatedRound) {
+			invalidatedRound = true;
+			void queryClient.invalidateQueries({ queryKey: listKey });
+			void queryClient.invalidateQueries({ queryKey: ['events'] });
+		}
 	});
 
 	const importMutation = createMutation(() => ({
@@ -119,11 +158,15 @@
 			return res.data;
 		},
 		onSuccess: (data) => {
-			queued = data.queued;
+			initialJobs = data.jobs;
+			jobIds = data.jobs.map((j) => j.id);
 			skipped = data.skipped;
+			const byId: Record<string, string> = {};
+			for (const ev of remote.data ?? []) byId[ev.remote_id] = ev.name;
+			names = byId;
 			timedOut = false;
+			invalidatedRound = false;
 			poll.reset();
-			// With nothing queued the poll's `isDone` is vacuously true: 'done' at once.
 			stage = 'importing';
 		},
 		onError: (err: unknown) => {
@@ -142,14 +185,40 @@
 
 	function close() {
 		// A finished import changes `already_linked`; a reopened picker must not
-		// offer the same events again.
-		if (stage !== 'pick') void queryClient.invalidateQueries({ queryKey: listKey });
+		// offer the same events again. (A settled poll already invalidated; this
+		// covers closing mid-import or after a timeout.)
+		if (stage !== 'pick') {
+			void queryClient.invalidateQueries({ queryKey: listKey });
+			// Drafts that landed before a timeout or early close still deserve
+			// fresh event lists, even though the poll never settled.
+			if (doneCount > 0) void queryClient.invalidateQueries({ queryKey: ['events'] });
+		}
 		stage = 'pick';
 		selected = [];
-		queued = [];
+		initialJobs = [];
+		jobIds = [];
+		names = {};
 		skipped = [];
 		submitError = null;
 		onOpenChange(false);
+	}
+
+	function jobName(job: ImportJobSchema): string {
+		return names[job.remote_id] ?? job.remote_id;
+	}
+
+	function failureMessage(job: ImportJobSchema): string {
+		return (
+			integrationErrorMessage(job.error_code, platform) ??
+			(job.error_message || m['integrations.error.generic']({ platform }))
+		);
+	}
+
+	function draftHref(eventId: string): string {
+		return resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', {
+			slug: organizationSlug,
+			event_id: eventId
+		});
 	}
 
 	const STATUS_TONE: Record<RemoteEventSummarySchema['status'], Tone> = {
@@ -320,17 +389,19 @@
 		{:else if phase === 'importing'}
 			<p class="flex items-center gap-2 text-sm text-foreground" role="status">
 				<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-				{m['integrations.import.progress']({ done: linkedCount, total: queued.length })}
+				{m['integrations.import.progress']({ done: settledCount, total: jobIds.length })}
 			</p>
 		{:else}
 			<div class="space-y-2" role="status">
 				{#if phase === 'done'}
-					<p class="flex items-center gap-2 text-sm text-foreground">
-						<Check class="h-4 w-4 shrink-0 text-success" aria-hidden="true" />
-						{queued.length === 1
-							? m['integrations.import.doneOne']()
-							: m['integrations.import.done']({ count: queued.length })}
-					</p>
+					{#if doneCount > 0}
+						<p class="flex items-center gap-2 text-sm text-foreground">
+							<Check class="h-4 w-4 shrink-0 text-success" aria-hidden="true" />
+							{doneCount === 1
+								? m['integrations.import.doneOne']()
+								: m['integrations.import.done']({ count: doneCount })}
+						</p>
+					{/if}
 				{:else}
 					<p class="flex items-center gap-2 text-sm text-foreground">
 						<AlertTriangle
@@ -340,12 +411,74 @@
 						{m['integrations.import.timeout']()}
 					</p>
 				{/if}
+				{#if failedCount > 0}
+					<p class="flex items-center gap-2 text-sm text-foreground">
+						<AlertCircle class="h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
+						{failedCount === 1
+							? m['integrations.import.failedOne']()
+							: m['integrations.import.failed']({ count: failedCount })}
+					</p>
+				{/if}
 				{#if skipped.length > 0}
 					<p class="text-sm text-muted-foreground">
 						{m['integrations.import.skipped']({ count: skipped.length })}
 					</p>
 				{/if}
 			</div>
+			{#if jobRows.length > 0}
+				<ul class="space-y-2">
+					{#each jobRows as row (row.id)}
+						<li class="flex items-start gap-2 text-sm">
+							{#if row.status === 'done'}
+								<Check class="mt-0.5 h-4 w-4 shrink-0 text-success" aria-hidden="true" />
+								<div class="min-w-0">
+									<p class="text-foreground">
+										<span class="font-medium">{jobName(row)}</span>
+										<span class="text-muted-foreground"
+											>· {m['integrations.import.job.done']()}</span
+										>
+									</p>
+									{#if row.event_id}
+										<!-- eslint-disable svelte/no-navigation-without-resolve -- href is a ResolvedPathname produced by resolve() in draftHref -->
+										<a
+											href={draftHref(row.event_id)}
+											class="text-primary underline underline-offset-2"
+											aria-label={m['integrations.import.job.openDraftFor']({ name: jobName(row) })}
+										>
+											{m['integrations.import.job.openDraft']()}
+										</a>
+										<!-- eslint-enable svelte/no-navigation-without-resolve -->
+									{/if}
+								</div>
+							{:else if row.status === 'failed'}
+								<AlertCircle class="mt-0.5 h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
+								<div class="min-w-0">
+									<p class="text-foreground">
+										<span class="font-medium">{jobName(row)}</span>
+										<span class="text-muted-foreground">· {failureMessage(row)}</span>
+									</p>
+									{#if row.provider_message}
+										<details class="mt-1 text-xs text-muted-foreground">
+											<summary class="cursor-pointer"
+												>{m['integrations.card.detailsFromPlatform']({ platform })}</summary
+											>
+											<p class="mt-1 break-words">{row.provider_message}</p>
+										</details>
+									{/if}
+								</div>
+							{:else}
+								<Loader2 class="mt-0.5 h-4 w-4 shrink-0 animate-spin" aria-hidden="true" />
+								<p class="text-foreground">
+									<span class="font-medium">{jobName(row)}</span>
+									<span class="text-muted-foreground"
+										>· {m['integrations.import.job.pending']()}</span
+									>
+								</p>
+							{/if}
+						</li>
+					{/each}
+				</ul>
+			{/if}
 			<DialogFooter>
 				<Button variant="outline" onclick={close}>{m['integrations.import.close']()}</Button>
 				<!-- eslint-disable svelte/no-navigation-without-resolve -- href is a ResolvedPathname produced by resolve() above -->
