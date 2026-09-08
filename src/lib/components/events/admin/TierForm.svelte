@@ -294,12 +294,19 @@
 	// Get current currency symbol for display
 	const currencySymbol = $derived(CURRENCY_SYMBOLS[currency] || currency);
 
+	// The generated client resolves with `{ error }` on HTTP errors instead of
+	// rejecting (ThrowOnError = false), so each mutationFn must throw the error
+	// body itself — otherwise a 400/422 lands in onSuccess and closes the dialog
+	// without ever showing the error panel below.
 	const tierCreateMutation = createMutation(() => ({
-		mutationFn: (data: TicketTierCreateSchema) =>
-			eventadminticketsCreateTicketTier({
+		mutationFn: async (data: TicketTierCreateSchema) => {
+			const res = await eventadminticketsCreateTicketTier({
 				path: { event_id: eventId },
 				body: data
-			}),
+			});
+			if (res.error) throw res.error;
+			return res.data;
+		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['event-admin', eventId, 'ticket-tiers'] });
 			onClose();
@@ -307,12 +314,14 @@
 	}));
 
 	const tierUpdateMutation = createMutation(() => ({
-		mutationFn: (data: TicketTierUpdateSchema) => {
+		mutationFn: async (data: TicketTierUpdateSchema) => {
 			if (!tier?.id) throw new Error('Cannot update tier without an id');
-			return eventadminticketsUpdateTicketTier({
+			const res = await eventadminticketsUpdateTicketTier({
 				path: { event_id: eventId, tier_id: tier.id },
 				body: data
 			});
+			if (res.error) throw res.error;
+			return res.data;
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['event-admin', eventId, 'ticket-tiers'] });
@@ -321,11 +330,13 @@
 	}));
 
 	const tierDeleteMutation = createMutation(() => ({
-		mutationFn: () => {
+		mutationFn: async () => {
 			if (!tier?.id) throw new Error('Cannot delete tier without an id');
-			return eventadminticketsDeleteTicketTier({
+			const res = await eventadminticketsDeleteTicketTier({
 				path: { event_id: eventId, tier_id: tier.id }
 			});
+			if (res.error) throw res.error;
+			return res.data;
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['event-admin', eventId, 'ticket-tiers'] });
