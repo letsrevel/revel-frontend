@@ -153,6 +153,22 @@ export function extractFieldErrors(error: unknown): { field: string; messages: s
 }
 
 /**
+ * Mark an error as already surfaced to the user so the global mutation
+ * `onError` in the root layout skips its generic "Action failed" toast.
+ *
+ * Use when a mutation has NO local `onError` (so the global default fires)
+ * but the failure is already shown some other way — an inline panel driven
+ * by `mutation.error`, or a caller's try/catch toast. Mutations WITH a local
+ * `onError` replace the global default entirely and don't need this.
+ */
+export function markSilent<T>(error: T): T {
+	if (typeof error === 'object' && error !== null) {
+		(error as { silent?: boolean }).silent = true;
+	}
+	return error;
+}
+
+/**
  * Get a user-friendly error message for an HTTP status code
  */
 function getStatusMessage(status: number): string | null {

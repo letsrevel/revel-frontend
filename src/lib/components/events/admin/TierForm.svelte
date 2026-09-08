@@ -30,7 +30,7 @@
 	import TierFormAvailabilitySection from './TierFormAvailabilitySection.svelte';
 	import TierFormSeatingSection from './TierFormSeatingSection.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { extractErrorMessage, extractFieldErrors } from '$lib/utils/errors';
+	import { extractErrorMessage, extractFieldErrors, markSilent } from '$lib/utils/errors';
 	import { tierFieldLabel } from './tier-field-labels';
 	import {
 		CURRENCY_SYMBOLS,
@@ -297,14 +297,17 @@
 	// The generated client resolves with `{ error }` on HTTP errors instead of
 	// rejecting (ThrowOnError = false), so each mutationFn must throw the error
 	// body itself — otherwise a 400/422 lands in onSuccess and closes the dialog
-	// without ever showing the error panel below.
+	// without ever showing the error panel below. `markSilent` keeps the global
+	// "Action failed" toast from duplicating that panel (the RefundTicketDialog
+	// convention); the body is thrown unwrapped so extractFieldErrors still
+	// sees the pydantic detail array.
 	const tierCreateMutation = createMutation(() => ({
 		mutationFn: async (data: TicketTierCreateSchema) => {
 			const res = await eventadminticketsCreateTicketTier({
 				path: { event_id: eventId },
 				body: data
 			});
-			if (res.error) throw res.error;
+			if (res.error) throw markSilent(res.error);
 			return res.data;
 		},
 		onSuccess: () => {
@@ -320,7 +323,7 @@
 				path: { event_id: eventId, tier_id: tier.id },
 				body: data
 			});
-			if (res.error) throw res.error;
+			if (res.error) throw markSilent(res.error);
 			return res.data;
 		},
 		onSuccess: () => {
@@ -335,7 +338,7 @@
 			const res = await eventadminticketsDeleteTicketTier({
 				path: { event_id: eventId, tier_id: tier.id }
 			});
-			if (res.error) throw res.error;
+			if (res.error) throw markSilent(res.error);
 			return res.data;
 		},
 		onSuccess: () => {

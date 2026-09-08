@@ -48,8 +48,16 @@ const pausedOnlineTier = {
 
 function renderForm(tier: TicketTierDetailSchema | null = pausedOnlineTier) {
 	const onClose = vi.fn();
+	// Mirrors the app QueryClient: a default mutations.onError (the global
+	// "Action failed" toast in +layout.svelte) that skips errors marked
+	// `silent: true`. TierForm renders its own inline panel, so its thrown
+	// errors must carry that flag.
+	const globalOnError = vi.fn();
 	const client = new QueryClient({
-		defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
+		defaultOptions: {
+			queries: { retry: false },
+			mutations: { retry: false, onError: globalOnError }
+		}
 	});
 	render(QueryClientTestWrapper, {
 		props: {
@@ -64,7 +72,7 @@ function renderForm(tier: TicketTierDetailSchema | null = pausedOnlineTier) {
 			}
 		}
 	});
-	return { onClose };
+	return { onClose, globalOnError };
 }
 
 describe('TierForm API error surfacing', () => {
@@ -88,6 +96,18 @@ describe('TierForm API error surfacing', () => {
 			expect(screen.getByText('You must connect to Stripe first.')).toBeInTheDocument()
 		);
 		expect(onClose).not.toHaveBeenCalled();
+	});
+
+	it('marks the thrown error silent so the global "Action failed" toast is suppressed', async () => {
+		const user = userEvent.setup();
+		const { globalOnError } = renderForm();
+
+		await user.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+		await waitFor(() => expect(globalOnError).toHaveBeenCalled());
+		// The inline panel is the only feedback: the global handler must see
+		// `silent: true` (the RefundTicketDialog convention) and skip its toast.
+		expect(globalOnError.mock.calls[0][0]).toMatchObject({ silent: true });
 	});
 
 	it('closes the dialog when the update succeeds', async () => {
