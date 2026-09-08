@@ -6406,7 +6406,16 @@
 	"tickets.salesBySource.filteredBy": "Filtré par {label}",
 	"tickets.salesBySource.clearFilter": "Retirer le filtre",
 	"tickets.salesBySource.filterRow": "Filtrer les billets par {label}",
-	"tickets.list.resultsAnnouncement": "Affichage de {count} billets",
+	"tickets.list.resultsAnnouncement": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "Affichage de {count} billet",
+				"countPlural=*": "Affichage de {count} billets"
+			}
+		}
+	],
 	"referral": {
 		"haveReferralCode": "Tu as un code de parrainage ?",
 		"enterCode": "Saisir un code",

@@ -6436,7 +6436,16 @@
 	"tickets.salesBySource.filteredBy": "Filtrado por {label}",
 	"tickets.salesBySource.clearFilter": "Quitar filtro",
 	"tickets.salesBySource.filterRow": "Filtrar entradas por {label}",
-	"tickets.list.resultsAnnouncement": "Mostrando {count} entradas",
+	"tickets.list.resultsAnnouncement": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "Mostrando {count} entrada",
+				"countPlural=*": "Mostrando {count} entradas"
+			}
+		}
+	],
 	"referral": {
 		"haveReferralCode": "¿Tienes un código de referido?",
 		"enterCode": "Introduce el código",

@@ -74,4 +74,28 @@ describe('SalesBySourceCard', () => {
 		expect(screen.getByText(/direct so far/i)).toBeInTheDocument();
 		expect(screen.queryByRole('table')).toBeNull();
 	});
+
+	it('a bucket with neither utm_source nor utm_campaign renders as a non-link row, not active', () => {
+		const untaggedBucket: TicketAttributionBucketSchema = {
+			utm_source: null,
+			utm_medium: 'social',
+			utm_campaign: null,
+			utm_content: 'story',
+			count: 5
+		};
+		render(SalesBySourceCard, { buckets: [...buckets, untaggedBucket], currentUrl });
+		expect(screen.getByText('social · story')).toBeInTheDocument();
+		expect(screen.getByText('5')).toBeInTheDocument();
+		expect(screen.queryByRole('link', { name: /social · story/ })).toBeNull();
+		// No row in the table carries aria-current on this unfiltered URL.
+		expect(document.querySelector('[aria-current]')).toBeNull();
+	});
+
+	it('sanitizes junk currentUrl utm_source/utm_campaign instead of rendering a chip or an active row', () => {
+		const junkUrl = new URL(String(currentUrl) + '&utm_source=%20%20&utm_campaign=');
+		render(SalesBySourceCard, { buckets, currentUrl: junkUrl });
+		expect(screen.queryByText(/Filtered by/)).toBeNull();
+		expect(screen.queryByRole('link', { name: /Clear filter/ })).toBeNull();
+		expect(document.querySelector('[aria-current]')).toBeNull();
+	});
 });

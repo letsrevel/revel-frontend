@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import type { TicketAttributionBucketSchema } from '$lib/api/generated/types.gen';
+	import { sanitizeUtmValue } from '$lib/utils/attribution';
 
 	interface Props {
 		buckets: TicketAttributionBucketSchema[];
@@ -12,11 +13,22 @@
 	const isDirect = (b: TicketAttributionBucketSchema) =>
 		!b.utm_source && !b.utm_medium && !b.utm_campaign && !b.utm_content;
 
-	const tagged = $derived(buckets.filter((b) => !isDirect(b)));
+	/** A bucket can only be filtered on by row link when it carries a source or campaign tag. */
+	const hasUtmIdentity = (b: TicketAttributionBucketSchema) =>
+		Boolean(b.utm_source) || Boolean(b.utm_campaign);
+
+	const bucketKey = (b: TicketAttributionBucketSchema) =>
+		JSON.stringify([b.utm_source, b.utm_medium, b.utm_campaign, b.utm_content]);
+
+	/** Rows rendered as filter links: real source and/or campaign tags. */
+	const linkable = $derived(buckets.filter((b) => !isDirect(b) && hasUtmIdentity(b)));
+	/** Rows with only medium/content (no source, no campaign): shown, not linkable, not "active". */
+	const untagged = $derived(buckets.filter((b) => !isDirect(b) && !hasUtmIdentity(b)));
+	const tagged = $derived([...linkable, ...untagged]);
 	const direct = $derived(buckets.find(isDirect) ?? null);
 
-	const activeSource = $derived(currentUrl.searchParams.get('utm_source'));
-	const activeCampaign = $derived(currentUrl.searchParams.get('utm_campaign'));
+	const activeSource = $derived(sanitizeUtmValue(currentUrl.searchParams.get('utm_source')));
+	const activeCampaign = $derived(sanitizeUtmValue(currentUrl.searchParams.get('utm_campaign')));
 	const isFiltered = $derived(activeSource !== null || activeCampaign !== null);
 	const filteredLabel = $derived([activeSource, activeCampaign].filter(Boolean).join(' · '));
 
@@ -52,6 +64,7 @@
 				<a
 					href={clearHref()}
 					data-sveltekit-replacestate
+					data-sveltekit-keepfocus
 					class="rounded-full border px-3 py-1 font-medium hover:bg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
 				>
 					{m['tickets.salesBySource.clearFilter']()}
@@ -76,7 +89,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each tagged as bucket (JSON.stringify( [bucket.utm_source, bucket.utm_medium, bucket.utm_campaign, bucket.utm_content] ))}
+					{#each linkable as bucket (bucketKey(bucket))}
 						<tr class="border-b border-border/50 last:border-0">
 							<td class="py-2 pr-4">
 								<!-- eslint-disable svelte/no-navigation-without-resolve -- this card is pure w.r.t. navigation: it derives hrefs from an arbitrary caller-supplied currentUrl, not a known route id, so resolve() cannot express them -->
@@ -104,6 +117,21 @@
 									{/if}
 								</a>
 								<!-- eslint-enable svelte/no-navigation-without-resolve -->
+							</td>
+							<td class="py-2 text-right tabular-nums">{bucket.count}</td>
+						</tr>
+					{/each}
+					{#each untagged as bucket (bucketKey(bucket))}
+						<tr class="border-b border-border/50 last:border-0">
+							<td class="py-2 pr-4 text-muted-foreground">
+								<div class="flex flex-col">
+									<span>—</span>
+									{#if bucket.utm_medium || bucket.utm_content}
+										<span class="text-xs">
+											{[bucket.utm_medium, bucket.utm_content].filter(Boolean).join(' · ')}
+										</span>
+									{/if}
+								</div>
 							</td>
 							<td class="py-2 text-right tabular-nums">{bucket.count}</td>
 						</tr>

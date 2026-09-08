@@ -6436,7 +6436,16 @@
 	"tickets.salesBySource.filteredBy": "Filtrado por {label}",
 	"tickets.salesBySource.clearFilter": "Remover filtro",
 	"tickets.salesBySource.filterRow": "Filtrar bilhetes por {label}",
-	"tickets.list.resultsAnnouncement": "A mostrar {count} bilhetes",
+	"tickets.list.resultsAnnouncement": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "A mostrar {count} bilhete",
+				"countPlural=*": "A mostrar {count} bilhetes"
+			}
+		}
+	],
 	"referral": {
 		"haveReferralCode": "Tens um código de indicação?",
 		"enterCode": "Introduzir código",
