@@ -65,10 +65,20 @@
 		if (params[key]) src.searchParams.set(key, params[key]);
 	});
 
-	// Attribution: the embed cannot see the page framing it, so the loader
-	// names it. Matches utm_source=embed / utm_medium / utm_campaign, which the
-	// embed itself adds to every outbound link.
-	src.searchParams.set('utm_content', window.location.hostname);
+	// Attribution (#880). If the host page itself carries campaign tags, forward
+	// them verbatim — the organizer's own campaign wins and REPLACES the embed
+	// defaults (values are sanitised server-side). Otherwise the loader names the
+	// host: utm_content=<hostname>, and the embed adds utm_source/medium/campaign.
+	// This is additive (query params only) — the v1 contract is unchanged.
+	var hostParams = new URLSearchParams(window.location.search);
+	if (hostParams.get('utm_source')) {
+		['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'].forEach(function (key) {
+			var value = hostParams.get(key);
+			if (value) src.searchParams.set(key, value);
+		});
+	} else {
+		src.searchParams.set('utm_content', window.location.hostname);
+	}
 
 	var iframe = document.createElement('iframe');
 	iframe.src = src.toString();
