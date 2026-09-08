@@ -7,8 +7,14 @@
 		buckets: TicketAttributionBucketSchema[];
 		/** The page's current URL — row hrefs are derived from it (pure component). */
 		currentUrl: URL;
+		/**
+		 * Whether tagged buckets render as filter links (default `true`). Set to `false` for
+		 * aggregate views (e.g. the org-wide breakdown) that have no single ticket list to filter —
+		 * every bucket then renders as a plain row and the "Filtered by" chip never appears.
+		 */
+		filterable?: boolean;
 	}
-	const { buckets, currentUrl }: Props = $props();
+	const { buckets, currentUrl, filterable = true }: Props = $props();
 
 	const isDirect = (b: TicketAttributionBucketSchema) =>
 		!b.utm_source && !b.utm_medium && !b.utm_campaign && !b.utm_content;
@@ -29,7 +35,7 @@
 
 	const activeSource = $derived(sanitizeUtmValue(currentUrl.searchParams.get('utm_source')));
 	const activeCampaign = $derived(sanitizeUtmValue(currentUrl.searchParams.get('utm_campaign')));
-	const isFiltered = $derived(activeSource !== null || activeCampaign !== null);
+	const isFiltered = $derived(filterable && (activeSource !== null || activeCampaign !== null));
 	const filteredLabel = $derived([activeSource, activeCampaign].filter(Boolean).join(' · '));
 
 	function rowHref(bucket: TicketAttributionBucketSchema): string {
@@ -92,31 +98,48 @@
 					{#each linkable as bucket (bucketKey(bucket))}
 						<tr class="border-b border-border/50 last:border-0">
 							<td class="py-2 pr-4">
-								<!-- eslint-disable svelte/no-navigation-without-resolve -- this card is pure w.r.t. navigation: it derives hrefs from an arbitrary caller-supplied currentUrl, not a known route id, so resolve() cannot express them -->
-								<a
-									href={rowHref(bucket)}
-									data-sveltekit-replacestate
-									data-sveltekit-keepfocus
-									aria-current={isActive(bucket) ? 'true' : undefined}
-									aria-label={m['tickets.salesBySource.filterRow']({
-										label: [bucket.utm_source, bucket.utm_campaign].filter(Boolean).join(' · ')
-									})}
-									class="-mx-1 flex flex-col rounded-md border-l-2 border-l-transparent px-1 py-0.5 hover:bg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring aria-[current=true]:border-l-primary aria-[current=true]:bg-secondary aria-[current=true]:pl-2 aria-[current=true]:font-semibold"
-								>
-									<span class="font-medium"
-										>{bucket.utm_source ?? '—'}{#if bucket.utm_campaign}<span
-												class="text-muted-foreground"
-											>
-												· {bucket.utm_campaign}</span
-											>{/if}</span
+								{#if filterable}
+									<!-- eslint-disable svelte/no-navigation-without-resolve -- this card is pure w.r.t. navigation: it derives hrefs from an arbitrary caller-supplied currentUrl, not a known route id, so resolve() cannot express them -->
+									<a
+										href={rowHref(bucket)}
+										data-sveltekit-replacestate
+										data-sveltekit-keepfocus
+										aria-current={isActive(bucket) ? 'true' : undefined}
+										aria-label={m['tickets.salesBySource.filterRow']({
+											label: [bucket.utm_source, bucket.utm_campaign].filter(Boolean).join(' · ')
+										})}
+										class="-mx-1 flex flex-col rounded-md border-l-2 border-l-transparent px-1 py-0.5 hover:bg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring aria-[current=true]:border-l-primary aria-[current=true]:bg-secondary aria-[current=true]:pl-2 aria-[current=true]:font-semibold"
 									>
-									{#if bucket.utm_medium || bucket.utm_content}
-										<span class="text-xs text-muted-foreground">
-											{[bucket.utm_medium, bucket.utm_content].filter(Boolean).join(' · ')}
-										</span>
-									{/if}
-								</a>
-								<!-- eslint-enable svelte/no-navigation-without-resolve -->
+										<span class="font-medium"
+											>{bucket.utm_source ?? '—'}{#if bucket.utm_campaign}<span
+													class="text-muted-foreground"
+												>
+													· {bucket.utm_campaign}</span
+												>{/if}</span
+										>
+										{#if bucket.utm_medium || bucket.utm_content}
+											<span class="text-xs text-muted-foreground">
+												{[bucket.utm_medium, bucket.utm_content].filter(Boolean).join(' · ')}
+											</span>
+										{/if}
+									</a>
+									<!-- eslint-enable svelte/no-navigation-without-resolve -->
+								{:else}
+									<div class="flex flex-col">
+										<span class="font-medium"
+											>{bucket.utm_source ?? '—'}{#if bucket.utm_campaign}<span
+													class="text-muted-foreground"
+												>
+													· {bucket.utm_campaign}</span
+												>{/if}</span
+										>
+										{#if bucket.utm_medium || bucket.utm_content}
+											<span class="text-xs text-muted-foreground">
+												{[bucket.utm_medium, bucket.utm_content].filter(Boolean).join(' · ')}
+											</span>
+										{/if}
+									</div>
+								{/if}
 							</td>
 							<td class="py-2 text-right tabular-nums">{bucket.count}</td>
 						</tr>

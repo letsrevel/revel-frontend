@@ -98,4 +98,35 @@ describe('SalesBySourceCard', () => {
 		expect(screen.queryByRole('link', { name: /Clear filter/ })).toBeNull();
 		expect(document.querySelector('[aria-current]')).toBeNull();
 	});
+
+	describe('filterable={false}', () => {
+		const filteredUrl = new URL(
+			String(currentUrl) + '&utm_source=newsletter&utm_campaign=spring-2026'
+		);
+
+		it('renders every bucket as a plain row, with no links at all', () => {
+			render(SalesBySourceCard, { buckets, currentUrl: filteredUrl, filterable: false });
+			expect(screen.queryByRole('link')).toBeNull();
+		});
+
+		it('marks no row as active', () => {
+			render(SalesBySourceCard, { buckets, currentUrl: filteredUrl, filterable: false });
+			expect(document.querySelector('[aria-current]')).toBeNull();
+		});
+
+		it('never renders the "Filtered by" chip or clear link', () => {
+			render(SalesBySourceCard, { buckets, currentUrl: filteredUrl, filterable: false });
+			expect(screen.queryByText(/Filtered by/)).toBeNull();
+			expect(screen.queryByText(/Clear filter/)).toBeNull();
+		});
+
+		it('still renders bucket labels and counts', () => {
+			render(SalesBySourceCard, { buckets, currentUrl: filteredUrl, filterable: false });
+			expect(screen.getByText('newsletter')).toBeInTheDocument();
+			expect(screen.getByText('revel-embed')).toBeInTheDocument();
+			expect(screen.getByText('Direct')).toBeInTheDocument();
+			expect(screen.getByText('2')).toBeInTheDocument();
+			expect(screen.getAllByText('1')).toHaveLength(2);
+		});
+	});
 });
