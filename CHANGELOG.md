@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.10.0] - 2026-09-08
+
+### Added
+
+- **Eventbrite integration**: organizations can connect an Eventbrite account and cross-list their events.
+  - Owner-only Integrations page under org admin (also reachable from the admin dashboard quick actions): connect or reconnect an Eventbrite account, pick which Eventbrite organization to link, toggle auto-sync, and disconnect — with clear landing states after the OAuth round-trip and a translated explanation for every error the connection can hit.
+  - New **Listings** tab in the event editor: create an Eventbrite draft, publish it, push updates, and follow a per-field sync report; while a sync is running the tab polls so status stays live.
+  - Ticket sales visible on both sides: per-tier sold counts from Eventbrite next to Revel's own, with totals in the listing header.
+  - Ticket sales can be paused and resumed per tier — on Eventbrite, and on Revel itself via a new switch on the tier card; paused tiers show a badge, and attendees see honest "sales paused" messaging instead of a generic unavailable state.
+  - Import existing Eventbrite events into Revel as draft events, with per-event progress, failure details, and a link to each created draft.
+
 ## [2.9.0] - 2026-09-07
 
 ### Added
