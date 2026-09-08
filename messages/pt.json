@@ -4074,6 +4074,37 @@
 	"orgAdmin.tickets.empty.title": "Ainda não há eventos com bilhetes",
 	"orgAdmin.tickets.empty.description": "Assim que criares um evento que exija bilhete, ele aparece aqui para gestão de bilhetes.",
 	"orgAdmin.tickets.empty.cta": "Ir para eventos",
+	"orgAdmin.tickets.salesBySource.title": "Vendas por origem",
+	"orgAdmin.tickets.salesBySource.sinceAriaLabel": "Período",
+	"orgAdmin.tickets.salesBySource.sincePresetAll": "Todo o período",
+	"orgAdmin.tickets.salesBySource.sincePresetLast7": "Últimos 7 dias",
+	"orgAdmin.tickets.salesBySource.sincePresetLast30": "Últimos 30 dias",
+	"orgAdmin.tickets.salesBySource.sincePresetLast90": "Últimos 90 dias",
+	"orgAdmin.tickets.salesBySource.sincePresetThisYear": "Este ano",
+	"orgAdmin.tickets.salesBySource.sincePresetCustom": "Personalizado",
+	"orgAdmin.tickets.salesBySource.eventFilterAriaLabel": "Filtrar por evento",
+	"orgAdmin.tickets.salesBySource.eventFilterAll": "Todos os eventos",
+	"orgAdmin.tickets.salesBySource.eventFilterCount": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "{count} evento",
+				"countPlural=*": "{count} eventos"
+			}
+		}
+	],
+	"orgAdmin.tickets.salesBySource.noResults": "Sem resultados para estes filtros.",
+	"orgAdmin.tickets.salesBySource.resultsAnnouncement": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "A mostrar {count} origem",
+				"countPlural=*": "A mostrar {count} origens"
+			}
+		}
+	],
 	"orgAdmin.billing": {
 		"pageTitle": "Faturação e IVA",
 		"pageDescription": "Gere as tuas informações de faturação, as definições de IVA e consulta as faturas",

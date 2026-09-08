@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { sanitizeUtmValue, readAttributionFromUrl, withUtmParams } from './attribution';
+import {
+	sanitizeUtmValue,
+	readAttributionFromUrl,
+	withUtmParams,
+	formatTicketAttributionLine
+} from './attribution';
 
 describe('sanitizeUtmValue', () => {
 	it.each([
@@ -66,5 +71,50 @@ describe('withUtmParams', () => {
 	it('drops junk values instead of carrying them', () => {
 		const junky = new URL('https://letsrevel.io/?utm_source=ok&utm_medium=b a d');
 		expect(withUtmParams('/e', junky)).toBe('/e?utm_source=ok');
+	});
+});
+
+describe('formatTicketAttributionLine', () => {
+	it('returns null when there is no attribution', () => {
+		expect(formatTicketAttributionLine(null)).toBeNull();
+		expect(formatTicketAttributionLine(undefined)).toBeNull();
+	});
+
+	it('returns null when the attribution object carries no tags', () => {
+		expect(formatTicketAttributionLine({})).toBeNull();
+	});
+
+	it('joins source and campaign when both are present', () => {
+		expect(formatTicketAttributionLine({ utm_source: 'instagram', utm_campaign: 'launch' })).toBe(
+			'instagram · launch'
+		);
+	});
+
+	it('renders only source when campaign is absent', () => {
+		expect(formatTicketAttributionLine({ utm_source: 'instagram' })).toBe('instagram');
+	});
+
+	it('renders only campaign when source is absent', () => {
+		expect(formatTicketAttributionLine({ utm_campaign: 'launch' })).toBe('launch');
+	});
+
+	it('falls back to medium · content when neither source nor campaign is present', () => {
+		expect(formatTicketAttributionLine({ utm_medium: 'social', utm_content: 'story' })).toBe(
+			'social · story'
+		);
+	});
+
+	it('falls back to medium alone when content is also absent', () => {
+		expect(formatTicketAttributionLine({ utm_medium: 'social' })).toBe('social');
+	});
+
+	it('prefers source/campaign over medium/content when both groups are present', () => {
+		expect(
+			formatTicketAttributionLine({
+				utm_source: 'instagram',
+				utm_medium: 'social',
+				utm_content: 'story'
+			})
+		).toBe('instagram');
 	});
 });

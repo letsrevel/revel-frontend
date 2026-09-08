@@ -56,3 +56,23 @@ export function withUtmParams(href: string, currentUrl: URL): string {
 	}
 	return url.pathname + url.search + url.hash;
 }
+
+/**
+ * Short "source · campaign" line for an admin ticket row (#880 follow-up).
+ * Falls back to "medium · content" when neither source nor campaign is
+ * present; `null` when the ticket carries no attribution at all (renders
+ * nothing — the values are raw tags, never i18n'd).
+ */
+export function formatTicketAttributionLine(
+	attribution: TicketAttribution | null | undefined
+): string | null {
+	if (!attribution) return null;
+	const primary = [attribution.utm_source, attribution.utm_campaign].filter(
+		(v): v is string => !!v
+	);
+	const parts =
+		primary.length > 0
+			? primary
+			: [attribution.utm_medium, attribution.utm_content].filter((v): v is string => !!v);
+	return parts.length > 0 ? parts.join(' · ') : null;
+}

@@ -4074,6 +4074,37 @@
 	"orgAdmin.tickets.empty.title": "No ticketed events yet",
 	"orgAdmin.tickets.empty.description": "Once you create an event that requires a ticket, it will show up here for ticket management.",
 	"orgAdmin.tickets.empty.cta": "Go to Events",
+	"orgAdmin.tickets.salesBySource.title": "Sales by source",
+	"orgAdmin.tickets.salesBySource.sinceAriaLabel": "Time range",
+	"orgAdmin.tickets.salesBySource.sincePresetAll": "All time",
+	"orgAdmin.tickets.salesBySource.sincePresetLast7": "Last 7 days",
+	"orgAdmin.tickets.salesBySource.sincePresetLast30": "Last 30 days",
+	"orgAdmin.tickets.salesBySource.sincePresetLast90": "Last 90 days",
+	"orgAdmin.tickets.salesBySource.sincePresetThisYear": "This year",
+	"orgAdmin.tickets.salesBySource.sincePresetCustom": "Custom",
+	"orgAdmin.tickets.salesBySource.eventFilterAriaLabel": "Filter by event",
+	"orgAdmin.tickets.salesBySource.eventFilterAll": "All events",
+	"orgAdmin.tickets.salesBySource.eventFilterCount": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "{count} event",
+				"countPlural=*": "{count} events"
+			}
+		}
+	],
+	"orgAdmin.tickets.salesBySource.noResults": "No results for these filters.",
+	"orgAdmin.tickets.salesBySource.resultsAnnouncement": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "Showing {count} source",
+				"countPlural=*": "Showing {count} sources"
+			}
+		}
+	],
 	"orgAdmin.billing": {
 		"pageTitle": "Billing & VAT",
 		"pageDescription": "Manage your billing information, VAT settings, and view invoices",

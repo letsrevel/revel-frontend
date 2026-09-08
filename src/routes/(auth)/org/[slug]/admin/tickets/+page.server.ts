@@ -1,11 +1,16 @@
-import { eventpublicdiscoveryListEvents } from '$lib/api/generated/sdk.gen';
+import { z } from 'zod';
+import {
+	eventpublicdiscoveryListEvents,
+	organizationadminticketsTicketAttributionBreakdown
+} from '$lib/api/generated/sdk.gen';
+import type { TicketAttributionBucketSchema } from '$lib/api/generated/types.gen';
 import type { PageServerLoad } from './$types';
 import { error, redirect } from '@sveltejs/kit';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { log } from '$lib/server/logger';
 import { shouldRedirectToSingle, sortTicketEventsForPicker } from '$lib/utils/ticket-event-picker';
 
-export const load: PageServerLoad = async ({ parent, params, locals, fetch }) => {
+export const load: PageServerLoad = async ({ parent, params, locals, fetch, url }) => {
 	const { organization } = await parent();
 	const user = locals.user;
 
@@ -49,7 +54,40 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch }) =>
 		throw redirect(303, `/org/${params.slug}/admin/events/${single.id}/tickets`);
 	}
 
+	// Org-wide "Sales by source" filters (#880 follow-up), URL-param driven.
+	// `since` is untrusted input — only kept when it parses as a real date.
+	// `event_ids` is filtered to UUID-shaped values; the backend ignores ids
+	// that don't belong to this org anyway, so there's nothing to intersect.
+	const sinceParam = url.searchParams.get('since');
+	const since =
+		sinceParam !== null && Number.isFinite(new Date(sinceParam).getTime()) ? sinceParam : null;
+	const eventIds = url.searchParams
+		.getAll('event_ids')
+		.filter((id) => z.string().uuid().safeParse(id).success);
+
+	const attributionBreakdown: TicketAttributionBucketSchema[] | null =
+		await organizationadminticketsTicketAttributionBreakdown({
+			fetch,
+			path: { slug: organization.slug },
+			query: {
+				since: since ?? undefined,
+				event_ids: eventIds.length > 0 ? eventIds : undefined
+			},
+			headers
+		})
+			.then((res) => res.data ?? null)
+			.catch((err) => {
+				log.error('org_attribution_breakdown_load_failed', {
+					error: err,
+					orgId: organization.id
+				});
+				return null;
+			});
+
 	return {
-		events: sortTicketEventsForPicker(events)
+		events: sortTicketEventsForPicker(events),
+		attributionBreakdown,
+		since,
+		eventIds
 	};
 };

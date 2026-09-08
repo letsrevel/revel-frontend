@@ -38,6 +38,7 @@
 	import RefundStatusBadge from './RefundStatusBadge.svelte';
 	import TicketDiscountBadge from './TicketDiscountBadge.svelte';
 	import SeriesPassBadge from './SeriesPassBadge.svelte';
+	import { formatTicketAttributionLine } from '$lib/utils/attribution';
 	import type { AdminTicketSchema } from '$lib/api';
 
 	interface Props {
@@ -100,6 +101,7 @@
 	{#each tickets as ticket (ticket.id)}
 		{@const guestName = getGuestNameIfDifferent(ticket)}
 		{@const seatInfo = getSeatDisplay(ticket)}
+		{@const attributionLine = formatTicketAttributionLine(ticket.attribution)}
 		<div class="rounded-lg border bg-card p-4">
 			<div class="mb-3 flex items-start justify-between gap-2">
 				<div class="flex flex-1 items-start gap-3">
@@ -139,6 +141,9 @@
 						<div class="text-sm text-muted-foreground">{ticket.user.email || 'N/A'}</div>
 						{#if seatInfo}
 							<div class="mt-1 text-xs text-primary">{seatInfo}</div>
+						{/if}
+						{#if attributionLine}
+							<div class="text-xs text-muted-foreground">{attributionLine}</div>
 						{/if}
 					</div>
 				</div>

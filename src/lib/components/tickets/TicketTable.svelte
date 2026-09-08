@@ -42,6 +42,7 @@
 	import TicketDiscountBadge from './TicketDiscountBadge.svelte';
 	import SeriesPassBadge from './SeriesPassBadge.svelte';
 	import { sortDirection, type TicketOrderBy, type TicketSortField } from './ticket-sort';
+	import { formatTicketAttributionLine } from '$lib/utils/attribution';
 	import type { AdminTicketSchema } from '$lib/api';
 
 	interface Props {
@@ -159,6 +160,7 @@
 			{#each tickets as ticket (ticket.id)}
 				{@const guestName = getGuestNameIfDifferent(ticket)}
 				{@const seatInfo = getSeatDisplay(ticket)}
+				{@const attributionLine = formatTicketAttributionLine(ticket.attribution)}
 				<tr class="hover:bg-muted/30">
 					<td class="px-4 py-3">
 						<div class="flex items-start gap-3">
@@ -202,6 +204,9 @@
 									<div class="mt-1 text-xs text-primary">
 										{seatInfo}
 									</div>
+								{/if}
+								{#if attributionLine}
+									<div class="text-xs text-muted-foreground">{attributionLine}</div>
 								{/if}
 							</div>
 						</div>

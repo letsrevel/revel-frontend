@@ -1,18 +1,98 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
 	import * as m from '$lib/paraglide/messages.js';
 	import { formatEventDate } from '$lib/utils/date';
 	import EventStatusBadge from '$lib/components/events/EventStatusBadge.svelte';
 	import { Ticket, ChevronRight, Users } from '@lucide/svelte';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { Button } from '$lib/components/ui/button';
+	import * as Select from '$lib/components/ui/select';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import SalesBySourceCard from '$lib/components/tickets/SalesBySourceCard.svelte';
+	import {
+		sinceForPreset,
+		presetForSince,
+		SELECTABLE_SINCE_PRESETS,
+		type SincePreset
+	} from '$lib/utils/attribution-presets';
 
 	const { data }: { data: PageData } = $props();
 
 	const slug = $derived(data.organization.slug);
 	const events = $derived(data.events);
+
+	// ─── Org-wide "Sales by source" (#880 follow-up) ────────────────────────
+	const attributionBreakdown = $derived(data.attributionBreakdown ?? null);
+	const since = $derived(data.since ?? null);
+	const eventIds = $derived(data.eventIds ?? []);
+	const activePreset = $derived(presetForSince(since));
+	const hasActiveFilter = $derived(since !== null || eventIds.length > 0);
+	const bucketCount = $derived(attributionBreakdown?.length ?? 0);
+	// Shown when there's data to show OR a filter is active (so an empty
+	// filtered result doesn't strand the controls with no way to clear them).
+	const showSalesSection = $derived(
+		(attributionBreakdown !== null && attributionBreakdown.length > 0) || hasActiveFilter
+	);
+	const showEmptyFiltered = $derived(
+		hasActiveFilter && (attributionBreakdown === null || attributionBreakdown.length === 0)
+	);
+	const eventFilterLabel = $derived(
+		eventIds.length === 0
+			? m['orgAdmin.tickets.salesBySource.eventFilterAll']()
+			: m['orgAdmin.tickets.salesBySource.eventFilterCount']({ count: eventIds.length })
+	);
+
+	function sincePresetLabel(preset: SincePreset): string {
+		switch (preset) {
+			case 'all':
+				return m['orgAdmin.tickets.salesBySource.sincePresetAll']();
+			case 'last7':
+				return m['orgAdmin.tickets.salesBySource.sincePresetLast7']();
+			case 'last30':
+				return m['orgAdmin.tickets.salesBySource.sincePresetLast30']();
+			case 'last90':
+				return m['orgAdmin.tickets.salesBySource.sincePresetLast90']();
+			case 'thisYear':
+				return m['orgAdmin.tickets.salesBySource.sincePresetThisYear']();
+			case 'custom':
+				return m['orgAdmin.tickets.salesBySource.sincePresetCustom']();
+		}
+	}
+
+	/** Mutates a clone of the current URL and navigates to it, preserving
+	 * every param this feature doesn't touch. */
+	function updateUrl(mutate: (url: URL) => void) {
+		const url = new URL($page.url);
+		mutate(url);
+		const query = url.searchParams.toString();
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- same-route query-only update; the relative path+"?"+params string preserves the current pathname (resolve() cannot express search params)
+		goto(`${url.pathname}${query ? `?${query}` : ''}`, {
+			replaceState: true,
+			keepFocus: true,
+			noScroll: true
+		});
+	}
+
+	function selectSincePreset(preset: SincePreset) {
+		updateUrl((url) => {
+			url.searchParams.delete('since');
+			const iso = sinceForPreset(preset);
+			if (iso) url.searchParams.set('since', iso);
+		});
+	}
+
+	function toggleEventFilter(eventId: string, checked: boolean) {
+		updateUrl((url) => {
+			const next = checked ? [...eventIds, eventId] : eventIds.filter((id) => id !== eventId);
+			url.searchParams.delete('event_ids');
+			for (const id of next) url.searchParams.append('event_ids', id);
+		});
+	}
 </script>
 
 <svelte:head>
@@ -22,6 +102,77 @@
 
 <section class="space-y-6">
 	<PageHeader title={m['orgAdmin.tickets.title']()} subtitle={m['orgAdmin.tickets.subtitle']()} />
+
+	{#if showSalesSection}
+		<div class="space-y-4">
+			<SectionHeader title={m['orgAdmin.tickets.salesBySource.title']()} />
+
+			<div class="flex flex-wrap items-center gap-3">
+				<Select.Root
+					type="single"
+					value={activePreset === 'custom' ? '' : activePreset}
+					onValueChange={(v) => {
+						if (v) selectSincePreset(v as SincePreset);
+					}}
+				>
+					<Select.Trigger
+						class="w-full sm:w-52"
+						aria-label={m['orgAdmin.tickets.salesBySource.sinceAriaLabel']()}
+					>
+						{sincePresetLabel(activePreset)}
+					</Select.Trigger>
+					<Select.Content>
+						{#each SELECTABLE_SINCE_PRESETS as preset (preset)}
+							<Select.Item value={preset}>{sincePresetLabel(preset)}</Select.Item>
+						{/each}
+					</Select.Content>
+				</Select.Root>
+
+				<DropdownMenu.Root>
+					<DropdownMenu.Trigger>
+						{#snippet child({ props })}
+							<Button
+								{...props}
+								variant="outline"
+								class="gap-2"
+								aria-label={m['orgAdmin.tickets.salesBySource.eventFilterAriaLabel']()}
+							>
+								{eventFilterLabel}
+							</Button>
+						{/snippet}
+					</DropdownMenu.Trigger>
+					<DropdownMenu.Content align="start" class="w-64">
+						{#each events as event (event.id)}
+							<DropdownMenu.CheckboxItem
+								checked={eventIds.includes(event.id)}
+								onCheckedChange={(checked) => toggleEventFilter(event.id, checked)}
+							>
+								{event.name}
+							</DropdownMenu.CheckboxItem>
+						{/each}
+					</DropdownMenu.Content>
+				</DropdownMenu.Root>
+			</div>
+
+			<!-- Announces the visible bucket-row count whenever the since/event
+			     filters change what the card shows (WCAG 4.1.3). -->
+			<div role="status" aria-live="polite" class="sr-only">
+				{m['orgAdmin.tickets.salesBySource.resultsAnnouncement']({ count: bucketCount })}
+			</div>
+
+			{#if showEmptyFiltered}
+				<p class="text-sm text-muted-foreground">
+					{m['orgAdmin.tickets.salesBySource.noResults']()}
+				</p>
+			{:else if attributionBreakdown}
+				<SalesBySourceCard
+					buckets={attributionBreakdown}
+					currentUrl={$page.url}
+					filterable={false}
+				/>
+			{/if}
+		</div>
+	{/if}
 
 	{#if events.length === 0}
 		{#snippet goToEventsAction()}

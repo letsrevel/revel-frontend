@@ -4074,6 +4074,37 @@
 	"orgAdmin.tickets.empty.title": "Nessun evento con biglietti",
 	"orgAdmin.tickets.empty.description": "Quando crei un evento che richiede un biglietto, comparirà qui per la gestione dei biglietti.",
 	"orgAdmin.tickets.empty.cta": "Vai agli Eventi",
+	"orgAdmin.tickets.salesBySource.title": "Vendite per fonte",
+	"orgAdmin.tickets.salesBySource.sinceAriaLabel": "Intervallo di date",
+	"orgAdmin.tickets.salesBySource.sincePresetAll": "Sempre",
+	"orgAdmin.tickets.salesBySource.sincePresetLast7": "Ultimi 7 giorni",
+	"orgAdmin.tickets.salesBySource.sincePresetLast30": "Ultimi 30 giorni",
+	"orgAdmin.tickets.salesBySource.sincePresetLast90": "Ultimi 90 giorni",
+	"orgAdmin.tickets.salesBySource.sincePresetThisYear": "Quest'anno",
+	"orgAdmin.tickets.salesBySource.sincePresetCustom": "Personalizzato",
+	"orgAdmin.tickets.salesBySource.eventFilterAriaLabel": "Filtra per evento",
+	"orgAdmin.tickets.salesBySource.eventFilterAll": "Tutti gli eventi",
+	"orgAdmin.tickets.salesBySource.eventFilterCount": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "{count} evento",
+				"countPlural=*": "{count} eventi"
+			}
+		}
+	],
+	"orgAdmin.tickets.salesBySource.noResults": "Nessun risultato per questi filtri.",
+	"orgAdmin.tickets.salesBySource.resultsAnnouncement": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "Visualizzazione di {count} fonte",
+				"countPlural=*": "Visualizzazione di {count} fonti"
+			}
+		}
+	],
 	"orgAdmin.billing": {
 		"pageTitle": "Fatturazione e IVA",
 		"pageDescription": "Gestisci le informazioni di fatturazione, le impostazioni IVA e visualizza le fatture",
