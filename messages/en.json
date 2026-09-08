@@ -9559,6 +9559,7 @@
 	"embedBuilder.tabIframe": "iframe",
 	"embedBuilder.tabScriptHint": "Recommended. Resizes itself and keeps working when we ship improvements.",
 	"embedBuilder.tabIframeHint": "For sites that strip <script> tags. Fixed height, no auto-resize.",
+	"embedBuilder.attributionHint": "Campaign tags (utm_source, utm_medium, utm_campaign, utm_content) on the page hosting the script snippet flow through to your sales-by-source report.",
 	"embedBuilder.copySnippet": "Copy snippet",
 	"embedBuilder.copied": "Copied",
 	"embedBuilder.copySuccess": "Snippet copied to your clipboard",

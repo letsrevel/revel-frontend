@@ -9559,6 +9559,7 @@
 	"embedBuilder.tabIframe": "iframe",
 	"embedBuilder.tabScriptHint": "Consigliato. Si ridimensiona da solo e continua a funzionare quando pubblichiamo miglioramenti.",
 	"embedBuilder.tabIframeHint": "Per i siti che rimuovono i tag <script>. Altezza fissa, nessun ridimensionamento.",
+	"embedBuilder.attributionHint": "I tag di campagna (utm_source, utm_medium, utm_campaign, utm_content) presenti sulla pagina che ospita lo script confluiscono nel tuo report delle vendite per fonte.",
 	"embedBuilder.copySnippet": "Copia il codice",
 	"embedBuilder.copied": "Copiato",
 	"embedBuilder.copySuccess": "Codice copiato negli appunti",

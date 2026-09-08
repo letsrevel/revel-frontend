@@ -9559,6 +9559,7 @@
 	"embedBuilder.tabIframe": "iframe",
 	"embedBuilder.tabScriptHint": "Empfohlen. Passt die Höhe selbst an und profitiert automatisch von Verbesserungen.",
 	"embedBuilder.tabIframeHint": "Für Websites, die <script>-Tags entfernen. Feste Höhe, keine automatische Anpassung.",
+	"embedBuilder.attributionHint": "Kampagnen-Tags (utm_source, utm_medium, utm_campaign, utm_content) auf der Seite, die das Skript-Snippet einbindet, fließen in deinen Bericht „Verkäufe nach Quelle\" ein.",
 	"embedBuilder.copySnippet": "Code kopieren",
 	"embedBuilder.copied": "Kopiert",
 	"embedBuilder.copySuccess": "Code in die Zwischenablage kopiert",

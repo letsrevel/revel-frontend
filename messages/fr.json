@@ -9559,6 +9559,7 @@
 	"embedBuilder.tabIframe": "iframe",
 	"embedBuilder.tabScriptHint": "Recommandé. S'adapte tout seul et profite automatiquement de nos améliorations.",
 	"embedBuilder.tabIframeHint": "Pour les sites qui suppriment les balises <script>. Hauteur fixe, sans ajustement.",
+	"embedBuilder.attributionHint": "Les étiquettes de campagne (utm_source, utm_medium, utm_campaign, utm_content) présentes sur la page qui héberge le script remontent dans ton rapport des ventes par source.",
 	"embedBuilder.copySnippet": "Copier le code",
 	"embedBuilder.copied": "Copié",
 	"embedBuilder.copySuccess": "Code copié dans le presse-papiers",

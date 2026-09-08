@@ -419,7 +419,12 @@
 			<EmptyState
 				icon={Ticket}
 				title={m['eventTicketsAdmin.noTicketsFiltered']()}
-				body={searchQuery || selectedStatus || selectedPaymentMethod || selectedSource || !!data.filters.utmSource || !!data.filters.utmCampaign
+				body={searchQuery ||
+				selectedStatus ||
+				selectedPaymentMethod ||
+				selectedSource ||
+				!!data.filters.utmSource ||
+				!!data.filters.utmCampaign
 					? m['eventTicketsAdmin.noTicketsFiltered']()
 					: m['eventTicketsAdmin.noTicketsEmpty']()}
 			/>
