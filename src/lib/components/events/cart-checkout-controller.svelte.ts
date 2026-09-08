@@ -24,6 +24,7 @@ import * as m from '$lib/paraglide/messages.js';
 import { toast } from 'svelte-sonner';
 import { checkoutError } from './checkout-error';
 import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
+import { readAttributionFromUrl } from '$lib/utils/attribution';
 
 export interface CartCheckoutParams {
 	items: CheckoutGroupSchema[];
@@ -127,7 +128,11 @@ export function createCartCheckoutController(deps: CartCheckoutDeps) {
 			const body: MultiTierCheckoutPayload = {
 				items: params.items,
 				discount_code: params.discountCode || undefined,
-				billing_info: params.billingInfo || undefined
+				billing_info: params.billingInfo || undefined,
+				// Campaign tags read off the URL at reserve time — never stored anywhere
+				// (#880). Not part of the resume fingerprint: a resumed reservation was
+				// already stamped at first reserve.
+				attribution: readAttributionFromUrl(new URL(window.location.href))
 			};
 			const response = await eventpublicticketsMultiTierCheckout({
 				path: { event_id: eventId },
