@@ -1,7 +1,19 @@
 import { render, screen } from '@testing-library/svelte';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import EventSeriesCard from './EventSeriesCard.svelte';
 import type { EventSeriesRetrieveSchema } from '$lib/api/generated/types.gen';
+
+// `$app/state`'s real `page.url` stays a static placeholder (`new URL('a:')`)
+// outside of an actual SvelteKit navigation, so it never reflects
+// `window.history` changes made in tests. Mirror `window.location` instead —
+// this is what the component sees as "the current URL" for UTM carry (#880).
+vi.mock('$app/state', () => ({
+	page: {
+		get url() {
+			return new URL(window.location.href);
+		}
+	}
+}));
 
 const mockEventSeries: EventSeriesRetrieveSchema = {
 	id: 'series-123',
@@ -33,6 +45,10 @@ const mockEventSeries: EventSeriesRetrieveSchema = {
 };
 
 describe('EventSeriesCard', () => {
+	afterEach(() => {
+		window.history.replaceState({}, '', '/');
+	});
+
 	it('renders series name and organization name', () => {
 		render(EventSeriesCard, {
 			props: {
@@ -127,6 +143,21 @@ describe('EventSeriesCard', () => {
 
 		const link = screen.getByLabelText(/tech talk series/i);
 		expect(link).toHaveAttribute('href', '/events/tech-community/series/tech-talk-series');
+	});
+
+	it('carries the current URL utm tags onto its default href', async () => {
+		window.history.replaceState({}, '', '/org/acme?utm_source=newsletter&utm_campaign=sept');
+
+		render(EventSeriesCard, {
+			props: {
+				series: mockEventSeries
+			}
+		});
+
+		const link = screen.getByRole('link');
+		const href = new URL(link.getAttribute('href') ?? '', 'https://x.test');
+		expect(href.searchParams.get('utm_source')).toBe('newsletter');
+		expect(href.searchParams.get('utm_campaign')).toBe('sept');
 	});
 
 	it('has accessible card label for screen readers', () => {

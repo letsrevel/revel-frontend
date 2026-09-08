@@ -1,9 +1,11 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import type { OrganizationRetrieveSchema } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
 	import { getImageUrl } from '$lib/utils/url';
 	import { stripMarkdown } from '$lib/seo';
+	import { withUtmParams } from '$lib/utils/attribution';
 	import { MapPin, Users, Tag } from '@lucide/svelte';
 	import { getPosterFallbackGradient } from '$lib/utils/fallback-gradient';
 	import * as m from '$lib/paraglide/messages.js';
@@ -75,6 +77,12 @@
 		)
 	);
 
+	// Carry campaign tags across public surfaces (#880): identical output when
+	// the current URL has no utm_* (so authed/dashboard usage is unaffected).
+	const cardHref = $derived(
+		withUtmParams(resolve('/(public)/org/[slug]', { slug: organization.slug }), page.url)
+	);
+
 	// Image container classes based on variant
 	const imageContainerClasses = $derived(
 		cn(
@@ -87,14 +95,20 @@
 
 <article class={containerClasses}>
 	<!-- Clickable overlay link for accessibility -->
+	<!--
+		`cardHref` is resolve()d then carries UTM tags (#880); the eslint rule
+		can't see through the wrapper, so it's disabled for this element only.
+	-->
+	<!-- eslint-disable svelte/no-navigation-without-resolve -->
 	<a
-		href={resolve('/(public)/org/[slug]', { slug: organization.slug })}
+		href={cardHref}
 		data-sveltekit-preload-data="hover"
 		class="absolute inset-0 z-10"
 		aria-label={accessibleLabel}
 	>
 		<span class="sr-only">{m['organizationProfile.viewDetails']()}</span>
 	</a>
+	<!-- eslint-enable svelte/no-navigation-without-resolve -->
 
 	<!-- Cover Image -->
 	<div class={imageContainerClasses}>

@@ -1,9 +1,11 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { EventSeriesRetrieveSchema } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
 	import { getImageUrl } from '$lib/utils/url';
+	import { withUtmParams } from '$lib/utils/attribution';
 	import { Calendar, Tag, Users } from '@lucide/svelte';
 	import { getPosterFallbackGradient } from '$lib/utils/fallback-gradient';
 
@@ -28,12 +30,19 @@
 		target = null
 	}: Props = $props();
 
+	// Carry campaign tags across public surfaces (#880): identical output when
+	// the current URL has no utm_* (so authed/dashboard usage is unaffected);
+	// an explicit `href` prop (the embed grid's absolute tagged links) always
+	// wins untouched.
 	const cardHref = $derived(
 		href ??
-			resolve('/(public)/events/[org_slug]/series/[series_slug]', {
-				org_slug: series.organization.slug,
-				series_slug: series.slug
-			})
+			withUtmParams(
+				resolve('/(public)/events/[org_slug]/series/[series_slug]', {
+					org_slug: series.organization.slug,
+					series_slug: series.slug
+				}),
+				page.url
+			)
 	);
 
 	// Image state
