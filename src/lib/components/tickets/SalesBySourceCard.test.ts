@@ -30,6 +30,11 @@ describe('SalesBySourceCard', () => {
 		expect(screen.getByText('2')).toBeInTheDocument();
 	});
 
+	it('renders the "Sales by source" heading by default', () => {
+		render(SalesBySourceCard, { buckets, currentUrl });
+		expect(screen.getByRole('heading', { name: 'Sales by source' })).toBeInTheDocument();
+	});
+
 	it('tagged rows link to a same-page utm filter, preserving other filters and resetting page', () => {
 		render(SalesBySourceCard, { buckets, currentUrl });
 		const link = screen.getByRole('link', { name: /newsletter/ });
@@ -127,6 +132,36 @@ describe('SalesBySourceCard', () => {
 			expect(screen.getByText('Direct')).toBeInTheDocument();
 			expect(screen.getByText('2')).toBeInTheDocument();
 			expect(screen.getAllByText('1')).toHaveLength(2);
+		});
+	});
+
+	describe('showHeading={false}', () => {
+		it('does not render a heading, but the table keeps its accessible name via the sr-only caption', () => {
+			render(SalesBySourceCard, { buckets, currentUrl, showHeading: false });
+			expect(screen.queryByRole('heading')).toBeNull();
+			expect(
+				screen.getByRole('table', { name: 'Non-cancelled tickets grouped by campaign tag' })
+			).toBeInTheDocument();
+		});
+
+		it('still renders bucket labels and counts', () => {
+			render(SalesBySourceCard, { buckets, currentUrl, showHeading: false });
+			expect(screen.getByText('newsletter')).toBeInTheDocument();
+			expect(screen.getByText('Direct')).toBeInTheDocument();
+		});
+
+		it('leaves the "Filtered by" chip logic untouched — still keyed to filterable', () => {
+			const filteredUrl = new URL(
+				String(currentUrl) + '&utm_source=newsletter&utm_campaign=spring-2026'
+			);
+			render(SalesBySourceCard, {
+				buckets,
+				currentUrl: filteredUrl,
+				showHeading: false,
+				filterable: true
+			});
+			expect(screen.getByText(/Filtered by/)).toBeInTheDocument();
+			expect(screen.queryByRole('heading')).toBeNull();
 		});
 	});
 });

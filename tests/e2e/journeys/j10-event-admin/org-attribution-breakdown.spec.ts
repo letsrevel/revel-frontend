@@ -48,23 +48,21 @@ test.describe('J10 org-wide attribution breakdown @p1', () => {
 		await expect(page).not.toHaveURL(/\/admin\/events\/.+\/tickets/);
 		await expect(page.getByRole('heading', { name: 'Tickets', exact: true }).first()).toBeVisible();
 
-		// Two elements share the "Sales by source" accessible name: the
-		// SectionHeader and the card's own <h2> (see attribution-breakdown.spec.ts
-		// for the same ambiguity on the per-event page). The card's heading is the
-		// second (last) one in DOM order; two ancestor hops up from it reaches the
-		// card's own wrapper (`rounded-lg border bg-card p-4`), a sibling of the
-		// controls row this heading sits in.
-		const headings = page.getByRole('heading', { name: 'Sales by source' });
-		await expect(headings).toHaveCount(2);
-		const card = headings.last().locator('..').locator('..');
-		await expect(card).toBeVisible();
+		// The card renders with `showHeading={false}` here (the SectionHeader
+		// above it already provides the "Sales by source" heading, so the card
+		// doesn't duplicate it) — only one heading with that name exists.
+		const heading = page.getByRole('heading', { name: 'Sales by source' });
+		await expect(heading).toHaveCount(1);
+		await expect(heading).toBeVisible();
 
 		const sinceControl = page.getByLabel('Time range');
 		const eventControl = page.getByLabel('Filter by event');
 		await expect(sinceControl).toBeVisible();
 		await expect(eventControl).toBeVisible();
 
-		const table = card.locator('table');
+		// The page renders exactly one <table> (the SalesBySourceCard's); the
+		// events list below it is a <ul>, not a table.
+		const table = page.locator('table');
 		await expect(table).toBeVisible();
 		await expect(table.locator('tbody tr').first()).toBeVisible();
 

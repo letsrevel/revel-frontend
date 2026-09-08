@@ -13,8 +13,15 @@
 		 * every bucket then renders as a plain row and the "Filtered by" chip never appears.
 		 */
 		filterable?: boolean;
+		/**
+		 * Whether the card renders its own "Sales by source" heading (default `true`). Set to
+		 * `false` when a caller already renders an equivalent heading above the card (e.g. the
+		 * org-wide page's `SectionHeader`) so the visible heading isn't duplicated. The table's
+		 * sr-only caption still gives the table an accessible name either way.
+		 */
+		showHeading?: boolean;
 	}
-	const { buckets, currentUrl, filterable = true }: Props = $props();
+	const { buckets, currentUrl, filterable = true, showHeading = true }: Props = $props();
 
 	const isDirect = (b: TicketAttributionBucketSchema) =>
 		!b.utm_source && !b.utm_medium && !b.utm_campaign && !b.utm_content;
@@ -61,24 +68,28 @@
 </script>
 
 <div class="rounded-lg border bg-card p-4">
-	<div class="flex flex-wrap items-center justify-between gap-2">
-		<h2 class="font-bold">{m['tickets.salesBySource.title']()}</h2>
-		{#if isFiltered}
-			<div class="flex items-center gap-2 text-xs text-muted-foreground">
-				<span>{m['tickets.salesBySource.filteredBy']({ label: filteredLabel })}</span>
-				<!-- eslint-disable svelte/no-navigation-without-resolve -- this card is pure w.r.t. navigation: it derives hrefs from an arbitrary caller-supplied currentUrl, not a known route id, so resolve() cannot express them -->
-				<a
-					href={clearHref()}
-					data-sveltekit-replacestate
-					data-sveltekit-keepfocus
-					class="rounded-full border px-3 py-1 font-medium hover:bg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-				>
-					{m['tickets.salesBySource.clearFilter']()}
-				</a>
-				<!-- eslint-enable svelte/no-navigation-without-resolve -->
-			</div>
-		{/if}
-	</div>
+	{#if showHeading || isFiltered}
+		<div class="flex flex-wrap items-center justify-between gap-2">
+			{#if showHeading}
+				<h2 class="font-bold">{m['tickets.salesBySource.title']()}</h2>
+			{/if}
+			{#if isFiltered}
+				<div class="flex items-center gap-2 text-xs text-muted-foreground">
+					<span>{m['tickets.salesBySource.filteredBy']({ label: filteredLabel })}</span>
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- this card is pure w.r.t. navigation: it derives hrefs from an arbitrary caller-supplied currentUrl, not a known route id, so resolve() cannot express them -->
+					<a
+						href={clearHref()}
+						data-sveltekit-replacestate
+						data-sveltekit-keepfocus
+						class="rounded-full border px-3 py-1 font-medium hover:bg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+					>
+						{m['tickets.salesBySource.clearFilter']()}
+					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
+				</div>
+			{/if}
+		</div>
+	{/if}
 
 	{#if tagged.length === 0}
 		<p class="mt-3 text-sm text-muted-foreground">{m['tickets.salesBySource.allDirect']()}</p>

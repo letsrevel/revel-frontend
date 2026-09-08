@@ -155,8 +155,10 @@ describe('Sales by source section', () => {
 				} as never
 			}
 		});
-		// Both the section heading and the card's own <h2> read "Sales by source".
-		expect(screen.getAllByText('Sales by source').length).toBeGreaterThan(0);
+		// The card is rendered with `showHeading={false}` so only the SectionHeader's
+		// heading reads "Sales by source" — not a duplicate.
+		expect(screen.getAllByText('Sales by source')).toHaveLength(1);
+		expect(screen.getByRole('heading', { name: 'Sales by source' })).toBeInTheDocument();
 		expect(screen.getByText('instagram')).toBeInTheDocument();
 	});
 

@@ -169,6 +169,7 @@
 					buckets={attributionBreakdown}
 					currentUrl={$page.url}
 					filterable={false}
+					showHeading={false}
 				/>
 			{/if}
 		</div>
