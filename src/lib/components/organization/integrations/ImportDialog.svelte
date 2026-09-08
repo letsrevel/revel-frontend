@@ -117,6 +117,16 @@
 		}
 	});
 	const pollQuery = createQuery(() => poll.options());
+	// A failing progress check is worth surfacing: the interval keeps trying
+	// until the deadline, but two minutes of silent "Importing…" over a dead
+	// session or network would end in reassuring timeout copy that may be false.
+	const pollError = $derived(
+		pollQuery.error
+			? isIntegrationErrorInfo(pollQuery.error)
+				? pollQuery.error
+				: integrationErrorFromResponse(pollQuery.error, platform)
+			: null
+	);
 	/** Each queued job at its freshest known state, in submission order. */
 	const jobRows = $derived.by((): ImportJobSchema[] => {
 		const latest = pollQuery.data ?? [];
@@ -391,6 +401,15 @@
 				<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
 				{m['integrations.import.progress']({ done: settledCount, total: jobIds.length })}
 			</p>
+			{#if pollError}
+				<div
+					class="flex items-start gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3"
+					role="alert"
+				>
+					<AlertCircle class="mt-0.5 h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
+					<p class="text-sm text-foreground">{pollError.message}</p>
+				</div>
+			{/if}
 		{:else}
 			<div class="space-y-2" role="status">
 				{#if phase === 'done'}
@@ -425,6 +444,17 @@
 					</p>
 				{/if}
 			</div>
+			{#if phase === 'timed_out' && pollError}
+				<!-- The deadline lapsed while progress checks were failing: the
+				     timeout copy alone would overpromise, so say what went wrong. -->
+				<div
+					class="flex items-start gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3"
+					role="alert"
+				>
+					<AlertCircle class="mt-0.5 h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
+					<p class="text-sm text-foreground">{pollError.message}</p>
+				</div>
+			{/if}
 			{#if jobRows.length > 0}
 				<ul class="space-y-2">
 					{#each jobRows as row (row.id)}

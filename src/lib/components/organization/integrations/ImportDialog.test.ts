@@ -214,6 +214,97 @@ describe('ImportDialog', () => {
 		expect(screen.queryByRole('link', { name: /Open draft/ })).not.toBeInTheDocument();
 	});
 
+	// Flush pending timers plus the promise/render microtasks they queue.
+	async function tick(ms = 0) {
+		await vi.advanceTimersByTimeAsync(ms);
+		await vi.advanceTimersByTimeAsync(0);
+	}
+
+	it('keeps showing progress until a later tick settles every job', async () => {
+		vi.useFakeTimers();
+		try {
+			const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTimeAsync });
+			const doneJ1 = job({
+				id: 'j1',
+				remote_id: 'r1',
+				status: 'done',
+				event_id: 'e1',
+				event_slug: 'autumn'
+			});
+			vi.mocked(organizationintegrationsImportJobs)
+				.mockResolvedValueOnce(
+					// First check: one settled, one still queued.
+					ok([doneJ1, job({ id: 'j2', remote_id: 'r2' })]) as unknown as JobsResult
+				)
+				.mockResolvedValue(
+					ok([
+						doneJ1,
+						job({ id: 'j2', remote_id: 'r2', status: 'done', event_id: 'e2', event_slug: 'gala' })
+					]) as unknown as JobsResult
+				);
+			renderDialog();
+			await tick();
+			await user.click(screen.getByRole('checkbox', { name: 'Select Autumn Market' }));
+			await user.click(screen.getByRole('checkbox', { name: 'Select Winter Gala' }));
+			await user.click(screen.getByRole('button', { name: 'Import 2 events' }));
+			await tick();
+			expect(screen.getByText('Importing… 1 of 2')).toBeInTheDocument();
+
+			// The next 3 s poll tick settles the last job.
+			await tick(3000);
+			expect(screen.getByText('2 events imported as drafts.')).toBeInTheDocument();
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	it('shows the timeout note with pending rows when jobs stay queued past the deadline', async () => {
+		vi.useFakeTimers();
+		try {
+			const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTimeAsync });
+			vi.mocked(organizationintegrationsImportEvents).mockResolvedValue(
+				ok({ jobs: [job({ id: 'j1', remote_id: 'r1' })], skipped: [] }) as unknown as ImportResult
+			);
+			// The job never settles.
+			vi.mocked(organizationintegrationsImportJobs).mockResolvedValue(
+				ok([job({ id: 'j1', remote_id: 'r1' })]) as unknown as JobsResult
+			);
+			renderDialog();
+			await tick();
+			await user.click(screen.getByRole('checkbox', { name: 'Select Autumn Market' }));
+			await user.click(screen.getByRole('button', { name: 'Import 1 event' }));
+			await tick();
+			expect(screen.getByText('Importing… 0 of 1')).toBeInTheDocument();
+
+			await tick(121_000);
+			expect(
+				screen.getByText('Still importing. The new drafts will appear under Events.')
+			).toBeInTheDocument();
+			// The pending row still names the event, marked as in flight.
+			expect(screen.getByText('Autumn Market')).toBeInTheDocument();
+			expect(screen.getByText(/Still importing…/)).toBeInTheDocument();
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	it('surfaces a failing progress check while the poll keeps trying', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationintegrationsImportJobs).mockRejectedValue(new TypeError('fetch failed'));
+		renderDialog();
+		await waitFor(() => expect(screen.getByText('Autumn Market')).toBeInTheDocument());
+		await user.click(screen.getByRole('checkbox', { name: 'Select Autumn Market' }));
+		await user.click(screen.getByRole('button', { name: 'Import 1 event' }));
+
+		await waitFor(() =>
+			expect(screen.getByRole('alert')).toHaveTextContent(
+				'Something went wrong with Eventbrite. Try again in a moment.'
+			)
+		);
+		// Still importing: the interval keeps trying until the deadline.
+		expect(screen.getByText('Importing… 0 of 2')).toBeInTheDocument();
+	});
+
 	it('shows the mapped error when the list cannot be loaded', async () => {
 		vi.mocked(organizationintegrationsRemoteEvents).mockResolvedValue({
 			data: undefined,
