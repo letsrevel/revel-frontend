@@ -19,6 +19,7 @@
 	} from '$lib/utils/filters';
 	import type { EventFilters as FilterState } from '$lib/utils/filters';
 	import { parseCalendarParams, getCurrentPeriod } from '$lib/utils/calendar';
+	import { withUtmParams } from '$lib/utils/attribution';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { SeoHead } from '$lib/seo';
@@ -134,15 +135,17 @@
 
 		const params = filtersToParams(newFilters);
 		// eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() validates the route id; the appended query string cannot be expressed through resolve()
-		goto(`${resolve('/(public)/events', {})}?${params}`, { replaceState: false, keepFocus: true });
+		goto(withUtmParams(`${resolve('/(public)/events', {})}?${params}`, $page.url), {
+			replaceState: false,
+			keepFocus: true
+		});
 	}
 
 	function handleClearFilters(): void {
 		const params = filtersToParams(clearFilters());
+		const target = `${resolve('/(public)/events', {})}${params.toString() ? `?${params}` : ''}`;
 		// eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() validates the route id; the appended query string cannot be expressed through resolve()
-		goto(`${resolve('/(public)/events', {})}${params.toString() ? `?${params}` : ''}`, {
-			replaceState: false
-		});
+		goto(withUtmParams(target, $page.url), { replaceState: false });
 	}
 
 	function handleOpenMobileFilters(): void {
@@ -344,7 +347,10 @@
 										{#if hasPrevPage}
 											<!-- eslint-disable svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?"+params string preserves the current pathname (resolve() cannot express search params) -->
 											<a
-												href="?{filtersToParams({ ...currentFilters, page: currentPage - 1 })}"
+												href={withUtmParams(
+													`?${filtersToParams({ ...currentFilters, page: currentPage - 1 })}`,
+													$page.url
+												)}
 												class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
 												aria-label={m['eventsListPage.goToPreviousPage']()}
 											>
@@ -376,7 +382,10 @@
 										{#if hasNextPage}
 											<!-- eslint-disable svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?"+params string preserves the current pathname (resolve() cannot express search params) -->
 											<a
-												href="?{filtersToParams({ ...currentFilters, page: currentPage + 1 })}"
+												href={withUtmParams(
+													`?${filtersToParams({ ...currentFilters, page: currentPage + 1 })}`,
+													$page.url
+												)}
 												class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
 												aria-label={m['eventsListPage.goToNextPage']()}
 											>
