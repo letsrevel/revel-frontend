@@ -85,6 +85,12 @@
 					{
 						href: resolve('/(auth)/org/[slug]/admin/financials', { slug: data.organization.slug }),
 						label: m['orgAdmin.nav.financials']()
+					},
+					{
+						href: resolve('/(auth)/org/[slug]/admin/integrations', {
+							slug: data.organization.slug
+						}),
+						label: m['orgAdmin.nav.integrations']()
 					}
 				]
 			: []),

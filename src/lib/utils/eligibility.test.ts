@@ -34,6 +34,12 @@ const membershipTierRefusal: EventUserEligibility = {
 };
 
 describe('getReasonCodeMessage', () => {
+	it('maps sales_paused to localized copy', () => {
+		expect(getReasonCodeMessage('sales_paused')).toBe(
+			'Ticket sales are paused right now. Check back soon.'
+		);
+	});
+
 	it('maps membership_tier_required to localized copy', () => {
 		expect(getReasonCodeMessage('membership_tier_required')).toBe(
 			m['eligibility.reason.membership_tier_required']()

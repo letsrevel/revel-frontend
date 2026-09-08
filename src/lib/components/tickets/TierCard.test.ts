@@ -55,6 +55,15 @@ describe('TierCard — inventory disclosure', () => {
 		renderCard(makeTier({ total_available: 0 }), false);
 		expect(screen.getAllByText(/sold out/i).length).toBeGreaterThan(0);
 	});
+
+	// Organizer kill switch (integrations #894): the tier stays visible so a
+	// buyer sees it exists, with the badge and the disabled CTA both saying why.
+	it('reports paused sales instead of inventory, with a disabled action', () => {
+		renderCard(makeTier({ total_available: 25, sales_paused: true, can_purchase: false }), true);
+		expect(screen.getByTestId('status-badge')).toHaveTextContent(/sales paused/i);
+		expect(screen.queryByText(/remaining/i)).toBeNull();
+		expect(screen.getByRole('button', { name: /sales paused/i })).toBeDisabled();
+	});
 });
 
 // Prod incident 2026-09-04 ("Kitts Meets"): the tier listing returns

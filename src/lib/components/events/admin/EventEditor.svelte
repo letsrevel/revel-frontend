@@ -38,6 +38,7 @@
 	import TicketingStep from './TicketingStep.svelte';
 	import { platformFeeInfoFrom } from '$lib/utils/fees';
 	import SaveBar from './SaveBar.svelte';
+	import ListingsStep from './listings/ListingsStep.svelte';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import { toast } from 'svelte-sonner';
 	import { scrollToFirstInvalid } from '$lib/utils/scroll';
@@ -48,7 +49,9 @@
 		userCity?: CitySchema | null;
 		orgCity?: CitySchema | null;
 		eventSeries?: EventSeriesRetrieveSchema[];
-		initialTab?: 'details' | 'ticketing';
+		initialTab?: 'details' | 'ticketing' | 'listings';
+		/** Owner-only actions on the Listings tab (connecting a platform) link to Integrations. */
+		isOwner?: boolean;
 		/** Optional `start` datetime to seed the form with (create mode only).
 		 *  Used by the ExdatesChipList "Create one-off event for this date"
 		 *  action on the recurring-series dashboard, which navigates here with
@@ -67,6 +70,7 @@
 		orgCity,
 		eventSeries = [],
 		initialTab,
+		isOwner = false,
 		initialStart,
 		initialEventSeriesId
 	}: Props = $props();
@@ -160,7 +164,7 @@
 
 	// Editor state (after formData so derived can reference it)
 	let eventCreated = $state(false);
-	let activeTab = $state<'details' | 'ticketing'>(initialTab ?? 'details');
+	let activeTab = $state<'details' | 'ticketing' | 'listings'>(initialTab ?? 'details');
 	const isEditMode = $derived(!!existingEvent);
 	const showTabs = $derived(isEditMode && !!formData.requires_ticket);
 	let tabsEl = $state<HTMLDivElement | null>(null);
@@ -505,7 +509,7 @@
 	// --- Tab URL sync ---
 
 	function handleTabChange(value: string): void {
-		activeTab = value as 'details' | 'ticketing';
+		activeTab = value as 'details' | 'ticketing' | 'listings';
 		if (isEditMode) {
 			const url = new URL(window.location.href);
 			if (value === 'details') {
@@ -615,6 +619,9 @@
 					<Tabs.Trigger value="ticketing" class="flex-1">
 						{m['eventEditor.tabTicketing']()}
 					</Tabs.Trigger>
+					<Tabs.Trigger value="listings" class="flex-1">
+						{m['eventEditor.tabListings']()}
+					</Tabs.Trigger>
 				</Tabs.List>
 
 				<Tabs.Content value="details" class="mt-6 space-y-6">
@@ -633,6 +640,16 @@
 							onBack={() => handleTabChange('details')}
 							onNext={() => handleSave(true)}
 							standalone={false}
+						/>
+					{/if}
+				</Tabs.Content>
+				<Tabs.Content value="listings" class="mt-6">
+					{#if eventId && existingEvent}
+						<ListingsStep
+							{eventId}
+							organizationSlug={organization.slug}
+							event={existingEvent}
+							{isOwner}
 						/>
 					{/if}
 				</Tabs.Content>

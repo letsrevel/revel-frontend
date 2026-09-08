@@ -35,6 +35,12 @@
 
 	const organization = $derived($page.data.organization);
 	const event = $derived(data.event);
+	// An unknown ?tab= would leave the controlled Tabs.Root with no active
+	// panel; anything but a real tab name falls back to the default.
+	const initialTab = $derived.by((): 'details' | 'ticketing' | 'listings' | undefined => {
+		const tab = $page.url.searchParams.get('tab');
+		return tab === 'details' || tab === 'ticketing' || tab === 'listings' ? tab : undefined;
+	});
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
 
@@ -442,7 +448,8 @@
 				userCity={data.userCity}
 				orgCity={data.orgCity}
 				eventSeries={data.eventSeries}
-				initialTab={($page.url.searchParams.get('tab') as 'details' | 'ticketing') ?? undefined}
+				{initialTab}
+				isOwner={data.isOwner}
 			/>
 		{/key}
 	</div>

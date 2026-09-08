@@ -133,7 +133,7 @@
 	const hasId = $derived(hasTierId(tier));
 
 	// Format price display
-	const priceDisplay = $derived(() => {
+	const priceDisplay = $derived.by(() => {
 		if (tier.payment_method === 'free') return m['tierCardAdmin.free']();
 
 		if (tier.price_type === 'pwyc') {
@@ -201,6 +201,12 @@
 	 * `message === null` is what suppresses the inventory row in the template.
 	 */
 	const availabilityStatus = $derived.by(() => {
+		// Organizer kill switch (backend `sales_paused`): checkout refuses the
+		// tier (`can_purchase` is false), so this drives the badge and the CTA copy.
+		if (tier.sales_paused) {
+			return { available: false, message: m['tierCard.salesPaused']() };
+		}
+
 		if (tier.total_available === null) {
 			return {
 				available: true,
@@ -297,7 +303,9 @@
 	<!-- Inventory as a solid chip rather than a coloured line of text: sold out is
 	     the fact a buyer scans for, and StatusBadge's pairs are audited in both
 	     modes. Meaning is never carried by the fill alone — the label says it. -->
-	{#if availabilityStatus.message !== null && effectiveEligible}
+	<!-- A paused tier is never purchasable, so it never passes `effectiveEligible`;
+	     the badge still has to say why, which is the one fact the buyer scans for. -->
+	{#if availabilityStatus.message !== null && (effectiveEligible || tier.sales_paused)}
 		<StatusBadge
 			tone={availabilityStatus.available ? 'neutral' : 'danger'}
 			icon={Users}
@@ -322,6 +330,8 @@
 		</p>
 	{:else if !salesStatus.active}
 		<Button disabled class="w-full sm:w-auto">{m['tierCardAdmin.notAvailable']()}</Button>
+	{:else if tier.sales_paused}
+		<Button disabled class="w-full sm:w-auto">{m['tierCardAdmin.salesPaused']()}</Button>
 	{:else if !availabilityStatus.available}
 		<Button disabled class="w-full sm:w-auto">{m['tierCardAdmin.soldOut']()}</Button>
 	{:else if !membershipRestriction.allowed}
@@ -444,7 +454,7 @@
 <PricingCard
 	name={tier.name}
 	icon={Ticket}
-	price={priceDisplay()}
+	price={priceDisplay}
 	muted={tier.can_purchase === false}
 	{badges}
 	{meta}

@@ -12,6 +12,8 @@
 		Armchair,
 		ChevronUp,
 		ChevronDown,
+		Pause,
+		Play,
 		Ticket
 	} from '@lucide/svelte';
 	import { formatDateTime } from '$lib/utils/date';
@@ -21,9 +23,26 @@
 		onEdit: () => void;
 		onMoveUp?: () => void;
 		onMoveDown?: () => void;
+		/** Flip `sales_paused` without opening the form; absent = no button. */
+		onTogglePause?: () => void;
+		pausePending?: boolean;
 	}
 
-	const { tier, onEdit, onMoveUp, onMoveDown }: Props = $props();
+	const {
+		tier,
+		onEdit,
+		onMoveUp,
+		onMoveDown,
+		onTogglePause,
+		pausePending = false
+	}: Props = $props();
+
+	// Platform names live on the org-level connection list, not on the tier;
+	// the key is stable and there is one platform today.
+	const PLATFORM_NAMES: Record<string, string> = { eventbrite: 'Eventbrite' };
+	function platformName(provider: string): string {
+		return PLATFORM_NAMES[provider] ?? provider;
+	}
 
 	const CURRENCY_SYMBOLS: Record<string, string> = {
 		AUD: 'A$',
@@ -68,7 +87,7 @@
 		return formatDateTime(dateString);
 	}
 
-	const priceDisplay = $derived(() => {
+	const priceDisplay = $derived.by(() => {
 		const currency = tier.currency || 'EUR';
 		if (tier.payment_method === 'free') return 'Free';
 		if (tier.price_type === 'pwyc') {
@@ -79,12 +98,12 @@
 		return formatPrice(tier.price || 0, currency);
 	});
 
-	const priceTypeDisplay = $derived(() => {
+	const priceTypeDisplay = $derived.by(() => {
 		if (tier.payment_method === 'free') return 'Free';
 		return tier.price_type === 'pwyc' ? 'Pay What You Can' : 'Fixed Price';
 	});
 
-	const quantityDisplay = $derived(() => {
+	const quantityDisplay = $derived.by(() => {
 		if (tier.total_quantity === null) return 'Unlimited';
 		// `?? 0` is safe here and only here: this is a staff-only admin surface, and
 		// organization owners/staff bypass `visibility_settings` entirely (#825), so
@@ -94,7 +113,7 @@
 		return `${available} of ${tier.total_quantity} remaining`;
 	});
 
-	const paymentMethodDisplay = $derived(() => {
+	const paymentMethodDisplay = $derived.by(() => {
 		const methods: Record<string, string> = {
 			free: 'Free',
 			online: 'Online (Stripe)',
@@ -105,11 +124,11 @@
 		return methods[pm] || pm.replace(/_/g, ' ');
 	});
 
-	const visibilityDisplay = $derived(() => {
+	const visibilityDisplay = $derived.by(() => {
 		return (tier.visibility ?? 'public').replace(/-/g, ' ');
 	});
 
-	const purchasableByDisplay = $derived(() => {
+	const purchasableByDisplay = $derived.by(() => {
 		const options: Record<string, string> = {
 			public: 'Anyone',
 			members: 'Members Only',
@@ -120,7 +139,7 @@
 		return options[pb] || pb.replace(/_/g, ' ');
 	});
 
-	const salesWindowDisplay = $derived(() => {
+	const salesWindowDisplay = $derived.by(() => {
 		const start = formatDate(tier.sales_start_at);
 		const end = formatDate(tier.sales_end_at);
 		if (start === 'Not set' && end === 'Not set') return 'Always available';
@@ -129,7 +148,7 @@
 		return `${start} - ${end}`;
 	});
 
-	const seatAssignmentDisplay = $derived(() => {
+	const seatAssignmentDisplay = $derived.by(() => {
 		const modes: Record<string, string> = {
 			none: m['tierCard.seatAssignment.none'](),
 			best_available: m['tierCard.seatAssignment.bestAvailable'](),
@@ -138,7 +157,7 @@
 		return modes[tier.seat_assignment_mode] || modes.none;
 	});
 
-	const maxTicketsDisplay = $derived(() => {
+	const maxTicketsDisplay = $derived.by(() => {
 		if (tier.max_tickets_per_user === null || tier.max_tickets_per_user === undefined) {
 			return m['tierCard.maxTickets.inherit']();
 		}
@@ -149,6 +168,9 @@
 {#snippet badges()}
 	{#if tier.name === 'General Admission'}
 		<StatusBadge tone="info" size="sm" label={m['tierCard.default']()} />
+	{/if}
+	{#if tier.sales_paused}
+		<StatusBadge tone="warning" size="sm" label={m['tierCard.salesPaused']()} />
 	{/if}
 {/snippet}
 
@@ -163,41 +185,55 @@
 		<!-- Price & Type -->
 		<div>
 			<dt class="text-muted-foreground">{m['tierCard.price']()}</dt>
-			<dd class="font-bold">{priceDisplay()}</dd>
+			<dd class="font-bold">{priceDisplay}</dd>
 		</div>
 		<div>
 			<dt class="text-muted-foreground">{m['tierCard.type']()}</dt>
-			<dd class="font-bold">{priceTypeDisplay()}</dd>
+			<dd class="font-bold">{priceTypeDisplay}</dd>
 		</div>
 
 		<!-- Payment Method -->
 		<div>
 			<dt class="text-muted-foreground">{m['tierCard.paymentMethod']()}</dt>
-			<dd class="font-bold">{paymentMethodDisplay()}</dd>
+			<dd class="font-bold">{paymentMethodDisplay}</dd>
 		</div>
 
 		<!-- Quantity -->
 		<div>
 			<dt class="text-muted-foreground">{m['tierCard.quantity']()}</dt>
-			<dd class="font-bold">{quantityDisplay()}</dd>
+			<dd class="font-bold">{quantityDisplay}</dd>
 		</div>
+
+		<!-- Sold elsewhere (per connected platform, from external_sales) -->
+		{#if tier.external_sales && tier.external_sales.length > 0}
+			<div>
+				<dt class="text-muted-foreground">{m['tierCard.soldElsewhere']()}</dt>
+				<dd class="font-bold">
+					{tier.external_sales
+						.map((s) =>
+							m['tierCard.soldOn']({ platform: platformName(s.provider), count: s.quantity_sold })
+						)
+						.join(', ')}
+				</dd>
+			</div>
+		{/if}
 
 		<!-- Visibility -->
 		<div>
 			<dt class="text-muted-foreground">{m['tierCard.visibility']()}</dt>
-			<dd class="font-bold capitalize">{visibilityDisplay()}</dd>
+			<dd class="font-bold capitalize">{visibilityDisplay}</dd>
 		</div>
 
 		<!-- Available To -->
 		<div>
 			<dt class="text-muted-foreground">{m['tierCard.availableTo']()}</dt>
-			<dd class="font-bold">{purchasableByDisplay()}</dd>
+			<dd class="font-bold">{purchasableByDisplay}</dd>
 		</div>
 
 		<!-- Sales Window (full width) -->
 		<div class="col-span-2">
 			<dt class="text-muted-foreground">{m['tierCard.salesWindow']()}</dt>
-			<dd class="font-bold">{salesWindowDisplay()}</dd>
+			<dd class="font-bold">{salesWindowDisplay}</dd>
 		</div>
 
 		<!-- Seat Assignment -->
@@ -208,7 +244,7 @@
 					{m['tierCard.seatAssignment.label']()}
 				</span>
 			</dt>
-			<dd class="font-bold">{seatAssignmentDisplay()}</dd>
+			<dd class="font-bold">{seatAssignmentDisplay}</dd>
 		</div>
 
 		<!-- Max Tickets Per User -->
@@ -216,7 +252,7 @@
 			<dt class="text-muted-foreground">
 				{m['tierCard.maxTicketsPerUser']()}
 			</dt>
-			<dd class="font-bold">{maxTicketsDisplay()}</dd>
+			<dd class="font-bold">{maxTicketsDisplay}</dd>
 		</div>
 
 		<!-- Venue/Sector (if configured) -->
@@ -290,6 +326,24 @@
 				</Button>
 			</div>
 		{/if}
+		{#if onTogglePause}
+			<Button
+				variant="ghost"
+				size="icon"
+				onclick={onTogglePause}
+				disabled={pausePending}
+				aria-label={tier.sales_paused
+					? m['tierCard.resumeSalesFor']({ name: tier.name })
+					: m['tierCard.pauseSalesFor']({ name: tier.name })}
+				title={tier.sales_paused ? m['tierCard.resumeSales']() : m['tierCard.pauseSales']()}
+			>
+				{#if tier.sales_paused}
+					<Play class="h-4 w-4" />
+				{:else}
+					<Pause class="h-4 w-4" />
+				{/if}
+			</Button>
+		{/if}
 		<Button variant="ghost" size="icon" onclick={onEdit} aria-label="Edit {tier.name}">
 			<Edit class="h-4 w-4" />
 		</Button>
@@ -299,8 +353,8 @@
 <PricingCard
 	name={tier.name}
 	icon={Ticket}
-	price={priceDisplay()}
-	priceNote={priceTypeDisplay()}
+	price={priceDisplay}
+	priceNote={priceTypeDisplay}
 	{badges}
 	{meta}
 	{actions}
