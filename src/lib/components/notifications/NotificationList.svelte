@@ -72,9 +72,11 @@
 	// Mark all as read mutation
 	const markAllReadMutation = createMutation(() => ({
 		mutationFn: async () => {
-			return await notificationMarkAllRead({
+			const res = await notificationMarkAllRead({
 				headers: { Authorization: `Bearer ${authToken}` }
 			});
+			if (res.error) throw res.error;
+			return res.data;
 		},
 		onSuccess: () => {
 			// Invalidate all notification-related queries to trigger refetch

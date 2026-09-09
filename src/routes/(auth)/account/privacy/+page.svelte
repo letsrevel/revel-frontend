@@ -62,17 +62,20 @@
 	}));
 
 	// Mutation for deleting files
+	// The generated client resolves with `{ error }` on HTTP errors, so the
+	// mutationFn must throw it; with no local onError, the failure then reaches
+	// the global mutation handler (root layout), which toasts it.
 	const deleteMutation = createMutation(() => ({
 		mutationFn: async (fileId: string) => {
-			await questionnairefileDeleteFile({ path: { file_id: fileId } });
+			const res = await questionnairefileDeleteFile({ path: { file_id: fileId } });
+			if (res.error) throw res.error;
 			return fileId;
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['user-files'] });
 			queryClient.invalidateQueries({ queryKey: ['questionnaire-files'] });
-			deletingFileId = null;
 		},
-		onError: () => {
+		onSettled: () => {
 			deletingFileId = null;
 		}
 	}));

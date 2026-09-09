@@ -36,7 +36,13 @@ vi.mock('$lib/api/generated', () => ({
 				count: 2
 			}
 		})
-	)
+	),
+	notificationMarkAllRead: vi.fn(() => Promise.resolve({ data: {} }))
+}));
+
+// Mock toasts (asserted by the mark-all-read error test)
+vi.mock('svelte-sonner', () => ({
+	toast: { success: vi.fn(), error: vi.fn() }
 }));
 
 // Mock navigation
@@ -207,6 +213,42 @@ describe('NotificationDropdown', () => {
 	it('handles missing authToken gracefully', () => {
 		// Should still render but badge won't show
 		expect(() => renderWithQuery({ authToken: '' })).not.toThrow();
+	});
+
+	it('toasts an error and no success when mark all as read resolves with an HTTP error body', async () => {
+		// The generated client does not reject on HTTP errors — it resolves with
+		// `{ error }` — so the mutationFn must throw it for onError to fire.
+		const user = userEvent.setup();
+		const { notificationMarkAllRead } = await import('$lib/api/generated');
+		const { toast } = await import('svelte-sonner');
+
+		vi.mocked(notificationMarkAllRead).mockResolvedValueOnce({
+			data: undefined,
+			error: { detail: 'Nope' },
+			response: { ok: false, status: 400 }
+		} as never);
+
+		renderWithQuery();
+		await user.click(screen.getByRole('button', { name: /open notifications/i }));
+
+		// The floating-ui wrapper stays `visibility: hidden` in jsdom (no layout
+		// engine), which also empties accessible names — reveal it the way
+		// AttributionBreakdownSection.test.ts does before querying by role.
+		const content = await waitFor(() => {
+			const el = document.querySelector('[data-dropdown-menu-content]');
+			if (!el) throw new Error('the dropdown content never opened');
+			return el;
+		});
+		const floatingWrapper = content.parentElement;
+		if (floatingWrapper instanceof HTMLElement) {
+			floatingWrapper.style.visibility = 'visible';
+		}
+		await user.click(screen.getByRole('button', { name: /mark all as read/i }));
+
+		await waitFor(() => {
+			expect(toast.error).toHaveBeenCalled();
+		});
+		expect(toast.success).not.toHaveBeenCalled();
 	});
 
 	it('applies custom className', () => {

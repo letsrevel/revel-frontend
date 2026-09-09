@@ -224,6 +224,40 @@ describe('NotificationList', () => {
 		});
 	});
 
+	it('toasts an error and no success when mark all as read resolves with an HTTP error body', async () => {
+		// The generated client does not reject on HTTP errors — it resolves with
+		// `{ error }` — so the mutationFn must throw it for onError to fire.
+		const user = userEvent.setup();
+		const { toast } = await import('svelte-sonner');
+
+		vi.mocked(notificationListNotifications).mockResolvedValue(
+			listResult({
+				count: 3,
+				next: null,
+				previous: null,
+				results: mockNotifications
+			})
+		);
+		vi.mocked(notificationMarkAllRead).mockResolvedValueOnce({
+			data: undefined,
+			error: { detail: 'Nope' },
+			response: { ok: false, status: 400 }
+		} as never);
+
+		renderComponent({ authToken: 'test-token' });
+
+		await waitFor(() => {
+			expect(screen.getByText('Event Invitation')).toBeInTheDocument();
+		});
+
+		await user.click(screen.getByRole('button', { name: /mark all as read/i }));
+
+		await waitFor(() => {
+			expect(toast.error).toHaveBeenCalled();
+		});
+		expect(toast.success).not.toHaveBeenCalled();
+	});
+
 	it('renders in compact mode with limited items', async () => {
 		vi.mocked(notificationListNotifications).mockResolvedValue(
 			listResult({
