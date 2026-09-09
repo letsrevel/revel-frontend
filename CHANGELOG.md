@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.11.0] - 2026-09-09
+
+### Added
+
+- **Campaign attribution**: `utm_*` tags on a landing URL now travel through browsing and into checkout (event/organization/series cards, listing filters and pagination, and the embed loader all carry them), with zero storage on the visitor's device — and organizers get a "Sales by source" breakdown on the tickets admin page with per-campaign counts and click-to-filter rows.
+
+### Fixed
+
+- Failed saves are no longer silently swallowed as successes across the app: when the backend rejects a change, the ticket-tier editor now keeps the dialog open and shows the error (previously it closed as if saved), bookmark and notification read/unread toggles roll back instead of sticking, dietary preference/restriction edits, Telegram connect (the real reason now shows next to the code field), invitation-request cancellation, and questionnaire-file deletion all surface the failure instead of reporting success.
+
 ## [2.10.0] - 2026-09-08
 
 ### Added
