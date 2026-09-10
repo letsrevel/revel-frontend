@@ -143,6 +143,9 @@
 
 		isSubmitting = true;
 		errorMessage = null;
+		// A fresh attempt (possibly with a corrected email) must not inherit the
+		// previous refusal's account affordance — only this response decides it.
+		requiresAccount = false;
 
 		try {
 			const response = await eventpublicguestGuestRsvp({

@@ -132,6 +132,27 @@ describe('GuestRsvpDialog — guest-action error codes', () => {
 		).toBe(true);
 	});
 
+	it('drops the stale account affordance when a retry fails for a different reason', async () => {
+		mockRsvpError({
+			detail: 'An account with this email already exists.',
+			code: 'guest_account_exists'
+		});
+		renderDialog();
+		await fillAndSubmit();
+		await waitFor(() => {
+			expect(screen.getByRole('link', { name: 'create an account' })).toBeInTheDocument();
+		});
+
+		// Retry (say, with a corrected email) that fails differently: the
+		// account links no longer apply and must not linger.
+		mockRsvpError({ detail: 'This event is at capacity.' });
+		await fireEvent.click(screen.getByRole('button', { name: /submit rsvp/i }));
+		await waitFor(() => {
+			expect(screen.getByText('This event is at capacity.')).toBeInTheDocument();
+		});
+		expect(screen.queryByRole('link', { name: 'create an account' })).toBeNull();
+	});
+
 	it('degrades an unknown guest-action code to the verbatim detail with no account affordance', async () => {
 		mockRsvpError({ detail: 'A refusal this client does not know yet.', code: 'guest_new_rule' });
 		renderDialog();
