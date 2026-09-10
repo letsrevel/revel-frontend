@@ -2,6 +2,7 @@ import type {
 	ErrorDetail,
 	GuestActionErrorCode,
 	GuestActionErrorSchema,
+	RequestValidationErrorItem,
 	ResponseMessage,
 	ValidationErrorResponse
 } from '$lib/api/generated/types.gen';
@@ -22,10 +23,14 @@ import type {
  * - `{ errors: { field: [msg, …] } }` — `ValidationErrorResponse`, model-level
  *   validation. Values are `string | string[]` per the generated schema.
  * - `{ detail: [{ msg, loc, type }, …] }` — django-ninja's **request**-validation
- *   422. `detail` is a LIST, not a string, and it is *not* `ErrorDetail`. Any
- *   code doing `String(err.detail)` on one renders `[object Object]`; any code
- *   doing `err.detail.toLowerCase()` throws. 422 is systemically under-declared
- *   (backend #826), so it can arrive from an endpoint that does not declare it.
+ *   422, generated as `RequestValidationError`. `detail` is a LIST, not a string,
+ *   and it is *not* `ErrorDetail`. Any code doing `String(err.detail)` on one
+ *   renders `[object Object]`; any code doing `err.detail.toLowerCase()` throws.
+ *   Backend #826 now declares this 422 on every parameterised operation, so the
+ *   schema no longer hides it — but the runtime guard still earns its keep: an
+ *   operation with no path/query/body params declares no 422 at all, and the
+ *   four domain-422 routes declare an `anyOf` that must be probed before it is
+ *   read.
  *
  * A fourth, `{ message: string }` (`ResponseMessage`), is a genuine error body
  * on exactly two endpoints — `POST /events/claim-invitation/{token}` and
@@ -34,12 +39,17 @@ import type {
  * `undefined` at runtime, so it is probed last.
  */
 
-/** One entry of django-ninja's request-validation 422 `detail` list. */
-export interface RequestValidationItem {
-	msg: string;
-	loc?: (string | number)[];
-	type?: string;
-}
+/**
+ * One entry of django-ninja's request-validation 422 `detail` list.
+ *
+ * Derived from the generated `RequestValidationErrorItem` (backend #826) rather
+ * than hand-written, so a backend rename lands here as a compile error — same
+ * rule as `GuestActionErrorCode` below. `Partial` is deliberate and is NOT a
+ * disagreement with the schema: the guard below only verifies `msg`, so
+ * promising callers a required `loc`/`type` would make the narrowing a lie.
+ * Widen the guard first if a caller ever needs to read those.
+ */
+export type RequestValidationItem = Partial<RequestValidationErrorItem> & { msg: string };
 
 function asRecord(value: unknown): Record<string, unknown> | null {
 	return value && typeof value === 'object' && !Array.isArray(value)

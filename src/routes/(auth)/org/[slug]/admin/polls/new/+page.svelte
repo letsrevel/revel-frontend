@@ -215,12 +215,9 @@
 				}
 				return;
 			}
-			if (!res.data) {
-				saveError = res.response
-					? m['pollNewPage.saveError']({ status: res.response.status })
-					: m['pollNewPage.saveErrorNetwork']();
-				return;
-			}
+			// No `!res.data` guard: now that the client declares a concrete error type
+			// per operation (BE #955), `res` is a real discriminated union — past the
+			// `res.error` return, `res.data` is non-optional and the guard was `never`.
 			await goto(
 				resolve('/(auth)/org/[slug]/admin/polls/[id]', {
 					slug: data.organization.slug,
