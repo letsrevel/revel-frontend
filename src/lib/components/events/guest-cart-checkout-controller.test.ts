@@ -242,7 +242,7 @@ describe('createGuestCartCheckoutController — CTA-error toast suppression', ()
 		vi.clearAllMocks();
 	});
 
-	async function checkoutWithError(errorBody: unknown) {
+	async function checkoutWithError(errorBody: unknown): Promise<unknown> {
 		eventpublicguestGuestMultiTierCheckout.mockResolvedValue({
 			data: undefined,
 			error: errorBody,

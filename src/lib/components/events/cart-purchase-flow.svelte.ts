@@ -237,7 +237,10 @@ export function createCartPurchaseFlow(deps: CartPurchaseFlowDeps) {
 			onError: (e: unknown) => (cartPurchaseError = e)
 		};
 		// Sheet stays open with the inline error either way; the relevant
-		// controller's own toast fires too. The guest branch's `message`
+		// controller's own toast fires too — except the guest controller's
+		// CTA-flavored errors (GuestAccountRequiredError /
+		// GuestCartTooLargeError, issue #912), whose inline alert in the sheet
+		// is the only feedback. The guest branch's `message`
 		// response closes the sheet itself (`onEmailConfirmationPending`) before
 		// `submitCart` resolves, so the `ok`-guarded close below is a no-op then.
 		// Live truth: after a mid-page sign-in a re-built cart must check out
