@@ -9725,7 +9725,9 @@
 			}
 		],
 		"seatPickerDone": "Terminé",
-		"signedInCartCleared": "Connexion réussie — ton panier invité a été vidé."
+		"signedInCartCleared": "Connexion réussie — ton panier invité a été vidé.",
+		"guestCartTooLarge": "Cette commande est trop volumineuse pour une confirmation par e-mail en mode invité. Connecte-toi pour la finaliser en un seul achat, ou divise-la en achats plus petits.",
+		"splitPurchase": "Diviser ton achat"
 	},
 	"cartSheet": {
 		"title": "Paiement",

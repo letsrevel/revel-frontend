@@ -4,6 +4,7 @@ import {
 	extractApiErrorDetail,
 	extractValidationErrors,
 	isErrorDetail,
+	isGuestActionError,
 	isRequestValidationError,
 	isResponseMessage,
 	isValidationErrorResponse
@@ -57,6 +58,40 @@ describe('isRequestValidationError', () => {
 		expect(isRequestValidationError({ detail: [{ msg: 'Field required' }, { type: 'x' }] })).toBe(
 			false
 		);
+	});
+});
+
+describe('isGuestActionError', () => {
+	it('accepts both known guest-action codes with a readable detail', () => {
+		expect(
+			isGuestActionError({
+				detail: 'An account with this email already exists. Please log in.',
+				code: 'guest_account_exists'
+			})
+		).toBe(true);
+		expect(
+			isGuestActionError({
+				detail: 'Your cart is too large to confirm by email.',
+				code: 'guest_cart_too_large'
+			})
+		).toBe(true);
+	});
+
+	it('rejects a code the client does not know (forward-compat: degrade to the verbatim detail)', () => {
+		expect(isGuestActionError({ detail: 'Something new.', code: 'guest_new_refusal' })).toBe(false);
+	});
+
+	it('rejects a missing or blank detail — the narrowing promises a renderable string', () => {
+		expect(isGuestActionError({ code: 'guest_account_exists' })).toBe(false);
+		expect(isGuestActionError({ detail: '   ', code: 'guest_account_exists' })).toBe(false);
+	});
+
+	it('rejects the sibling 400 shapes and non-objects', () => {
+		expect(isGuestActionError({ detail: 'A plain domain refusal.' })).toBe(false);
+		expect(isGuestActionError({ detail: 'Join first.', next_step: 'become_member' })).toBe(false);
+		expect(isGuestActionError(null)).toBe(false);
+		expect(isGuestActionError(undefined)).toBe(false);
+		expect(isGuestActionError('guest_account_exists')).toBe(false);
 	});
 });
 

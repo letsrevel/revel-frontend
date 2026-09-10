@@ -78,3 +78,89 @@ describe('GuestRsvpDialog — invitation-link token header', () => {
 		expect(options.headers ?? {}).not.toHaveProperty('X-Event-Token');
 	});
 });
+
+// Backend #952 / issue #912: the guest_account_exists 400 carries a
+// machine-readable `code`; the dialog must offer the sign-in affordance (the
+// same one the next_step path renders) instead of a bare error line.
+describe('GuestRsvpDialog — guest-action error codes', () => {
+	beforeEach(async () => {
+		vi.clearAllMocks();
+		await new Promise((resolve) => setTimeout(resolve, 30));
+		document.body.style.pointerEvents = '';
+	});
+
+	function mockRsvpError(errorBody: unknown): void {
+		eventpublicguestGuestRsvp.mockResolvedValue({
+			data: undefined,
+			error: errorBody,
+			response: { ok: false, status: 400 }
+		});
+	}
+
+	it('offers sign-in with the entered email prefilled on guest_account_exists', async () => {
+		// The detail is deliberately NOT English-shaped: the code, never the
+		// text, must drive the affordance (the legacy getLocalizedError path
+		// only worked when the backend answered in English).
+		mockRsvpError({
+			detail: 'Ein Konto mit dieser E-Mail existiert bereits.',
+			code: 'guest_account_exists'
+		});
+		renderDialog();
+		await fillAndSubmit();
+
+		await waitFor(() => {
+			expect(
+				screen.getByText(
+					'An account with this email already exists. Please log in to RSVP/purchase tickets.'
+				)
+			).toBeInTheDocument();
+		});
+		// The requiresAccount block's own links (the footer "Log in" link is
+		// always present, so assert via the create-account link and the login
+		// href's returnUrl + prefilled email).
+		const createAccount = screen.getByRole('link', { name: 'create an account' });
+		expect(createAccount.getAttribute('href')).toContain('returnUrl=');
+		const loginLinks = screen
+			.getAllByRole('link', { name: 'Log in' })
+			.map((link) => link.getAttribute('href'));
+		expect(
+			loginLinks.some(
+				(href) =>
+					href?.includes('returnUrl=') &&
+					href?.includes(`email=${encodeURIComponent('guest@example.com')}`)
+			)
+		).toBe(true);
+	});
+
+	it('drops the stale account affordance when a retry fails for a different reason', async () => {
+		mockRsvpError({
+			detail: 'An account with this email already exists.',
+			code: 'guest_account_exists'
+		});
+		renderDialog();
+		await fillAndSubmit();
+		await waitFor(() => {
+			expect(screen.getByRole('link', { name: 'create an account' })).toBeInTheDocument();
+		});
+
+		// Retry (say, with a corrected email) that fails differently: the
+		// account links no longer apply and must not linger.
+		mockRsvpError({ detail: 'This event is at capacity.' });
+		await fireEvent.click(screen.getByRole('button', { name: /submit rsvp/i }));
+		await waitFor(() => {
+			expect(screen.getByText('This event is at capacity.')).toBeInTheDocument();
+		});
+		expect(screen.queryByRole('link', { name: 'create an account' })).toBeNull();
+	});
+
+	it('degrades an unknown guest-action code to the verbatim detail with no account affordance', async () => {
+		mockRsvpError({ detail: 'A refusal this client does not know yet.', code: 'guest_new_rule' });
+		renderDialog();
+		await fillAndSubmit();
+
+		await waitFor(() => {
+			expect(screen.getByText('A refusal this client does not know yet.')).toBeInTheDocument();
+		});
+		expect(screen.queryByRole('link', { name: 'create an account' })).toBeNull();
+	});
+});

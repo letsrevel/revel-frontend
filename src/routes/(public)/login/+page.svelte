@@ -51,8 +51,10 @@
 	// OIDC browser flow fails (BE PR #919). null for any non-OIDC/absent code.
 	const oidcError = $derived(oidcErrorMessage(page.url.searchParams.get('error')));
 
-	// Form state
-	let email = $state(form?.email || '');
+	// Form state. `?email=` seeds the field (a guest checkout/RSVP refused with
+	// guest_account_exists links here with the address that owns the account —
+	// issue #912); a failed action's echo wins over the URL seed.
+	let email = $state(form?.email || page.url.searchParams.get('email') || '');
 	let password = $state('');
 	let rememberMe = $state(form?.rememberMe || false);
 	let showPassword = $state(false);

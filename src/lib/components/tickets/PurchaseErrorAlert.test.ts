@@ -1,10 +1,14 @@
 import { render, screen } from '@testing-library/svelte';
-import { describe, it, expect } from 'vitest';
+import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi } from 'vitest';
 import PurchaseErrorAlert from './PurchaseErrorAlert.svelte';
 import type { EventUserEligibility } from '$lib/api/generated/types.gen';
 import type { TierSchemaWithId } from '$lib/types/tickets';
 import * as m from '$lib/paraglide/messages.js';
-import { GuestAccountRequiredError } from '../events/guest-cart-checkout-controller.svelte';
+import {
+	GuestAccountRequiredError,
+	GuestCartTooLargeError
+} from '../events/guest-cart-checkout-controller.svelte';
 
 const EVENT_ID = '11111111-1111-1111-1111-111111111111';
 
@@ -120,7 +124,7 @@ describe('PurchaseErrorAlert', () => {
 	// not a membership-tier gate, so it gets its own CTA pair.
 	describe('GuestAccountRequiredError', () => {
 		const accountRequiredError = new GuestAccountRequiredError('Please complete a questionnaire.', {
-			next_step: 'complete_questionnaire'
+			cause: { next_step: 'complete_questionnaire' }
 		});
 
 		it('renders login and create-account links instead of the membership CTA', () => {
@@ -137,19 +141,79 @@ describe('PurchaseErrorAlert', () => {
 			).toBeNull();
 		});
 
-		it('points the login/register links at the current path with a redirect param', () => {
+		// `returnUrl` is the param the login/register server actions actually read
+		// (`safeReturnUrl`) — the old `redirect` param was silently ignored and
+		// stranded the buyer on the dashboard after signing in (issue #912).
+		it('points the login/register links at the current path with a returnUrl param', () => {
 			renderAlert({ error: accountRequiredError, tier: ungatedTier });
 			const loginLink = screen.getByRole('link', { name: m['guestTicketDialog.logIn']() });
 			const registerLink = screen.getByRole('link', {
 				name: m['guestTicketDialog.createAnAccount']()
 			});
-			expect(loginLink).toHaveAttribute('href', `/login?redirect=${encodeURIComponent('/')}`);
-			expect(registerLink).toHaveAttribute('href', `/register?redirect=${encodeURIComponent('/')}`);
+			expect(loginLink).toHaveAttribute('href', `/login?returnUrl=${encodeURIComponent('/')}`);
+			expect(registerLink).toHaveAttribute(
+				'href',
+				`/register?returnUrl=${encodeURIComponent('/')}`
+			);
+		});
+
+		// Backend #952 / issue #912: the guest_account_exists refusal knows which
+		// email owns the account, so the sign-in form gets it prefilled.
+		it('prefills the sign-in link with the email the error carries', () => {
+			const withEmail = new GuestAccountRequiredError('An account with this email exists.', {
+				cause: { detail: 'An account with this email exists.', code: 'guest_account_exists' },
+				email: 'guest@example.com'
+			});
+			renderAlert({ error: withEmail, tier: ungatedTier });
+			const loginLink = screen.getByRole('link', { name: m['guestTicketDialog.logIn']() });
+			expect(loginLink).toHaveAttribute(
+				'href',
+				`/login?returnUrl=${encodeURIComponent('/')}&email=${encodeURIComponent('guest@example.com')}`
+			);
 		});
 
 		it('shows no account-required CTA for an unrelated purchase failure', () => {
 			renderAlert({ error: { detail: 'Sold out.' } });
 			expect(screen.queryByRole('link', { name: m['guestTicketDialog.logIn']() })).toBeNull();
+		});
+	});
+
+	// Issue #912: guest_cart_too_large — the emailed confirmation link cannot
+	// carry a cart this big. Two ways out, both CTAs: sign in (no link-size
+	// ceiling) or split the purchase (close the sheet, cart intact).
+	describe('GuestCartTooLargeError', () => {
+		const tooLargeError = new GuestCartTooLargeError(m['cart.guestCartTooLarge'](), {
+			cause: { detail: 'backend copy', code: 'guest_cart_too_large' },
+			email: 'guest@example.com'
+		});
+
+		it('renders the localized explanation with a prefilled log-in link and a split-purchase button', async () => {
+			const onSplitPurchase = vi.fn();
+			renderAlert({ error: tooLargeError, tier: ungatedTier, onSplitPurchase });
+			expect(screen.getByText(m['cart.guestCartTooLarge']())).toBeInTheDocument();
+			const loginLink = screen.getByRole('link', { name: m['guestTicketDialog.logIn']() });
+			expect(loginLink).toHaveAttribute(
+				'href',
+				`/login?returnUrl=${encodeURIComponent('/')}&email=${encodeURIComponent('guest@example.com')}`
+			);
+			const splitButton = screen.getByRole('button', { name: m['cart.splitPurchase']() });
+			await userEvent.click(splitButton);
+			expect(onSplitPurchase).toHaveBeenCalledTimes(1);
+		});
+
+		it('omits the split-purchase button when no handler is provided', () => {
+			renderAlert({ error: tooLargeError, tier: ungatedTier });
+			expect(screen.queryByRole('button', { name: m['cart.splitPurchase']() })).toBeNull();
+			expect(
+				screen.getByRole('link', { name: m['guestTicketDialog.logIn']() })
+			).toBeInTheDocument();
+		});
+
+		it('offers no create-account link — the account that helps here may already exist', () => {
+			renderAlert({ error: tooLargeError, tier: ungatedTier, onSplitPurchase: vi.fn() });
+			expect(
+				screen.queryByRole('link', { name: m['guestTicketDialog.createAnAccount']() })
+			).toBeNull();
 		});
 	});
 });

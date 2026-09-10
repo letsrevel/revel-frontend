@@ -9725,7 +9725,9 @@
 			}
 		],
 		"seatPickerDone": "Fertig",
-		"signedInCartCleared": "Du bist jetzt angemeldet — dein Gast-Warenkorb wurde geleert."
+		"signedInCartCleared": "Du bist jetzt angemeldet — dein Gast-Warenkorb wurde geleert.",
+		"guestCartTooLarge": "Diese Bestellung ist zu groß, um sie als Gast per E-Mail zu bestätigen. Melde dich an, um sie in einem Kauf abzuschließen, oder teile sie in kleinere Käufe auf.",
+		"splitPurchase": "Kauf aufteilen"
 	},
 	"cartSheet": {
 		"title": "Kasse",

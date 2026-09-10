@@ -20,6 +20,7 @@
 	import { guestRsvpSchema, type GuestRsvpData } from '$lib/schemas/guestAttendance';
 	import { eventpublicguestGuestRsvp } from '$lib/api';
 	import { handleGuestAttendanceError } from '$lib/utils/guestAttendance';
+	import { isGuestActionError } from '$lib/utils/api-error-detail';
 	import { authStore } from '$lib/stores/auth.svelte';
 
 	interface Props {
@@ -142,6 +143,9 @@
 
 		isSubmitting = true;
 		errorMessage = null;
+		// A fresh attempt (possibly with a corrected email) must not inherit the
+		// previous refusal's account affordance — only this response decides it.
+		requiresAccount = false;
 
 		try {
 			const response = await eventpublicguestGuestRsvp({
@@ -160,6 +164,17 @@
 				// The runtime error payload can carry eligibility fields (next_step, reason)
 				// that are not part of the declared ResponseMessage type, so narrow from unknown.
 				const err: unknown = response.error;
+
+				// Machine-readable code first (backend #952, issue #912): the email
+				// already belongs to a non-guest account. Keyed on `code`, never the
+				// translated detail — the legacy text-matching in getLocalizedError
+				// only ever worked when the backend answered in English. An unknown
+				// code falls through and degrades to the verbatim detail below.
+				if (isGuestActionError(err) && err.code === 'guest_account_exists') {
+					requiresAccount = true;
+					errorMessage = m['guest_attendance.account_exists']();
+					return;
+				}
 				const nextStep =
 					typeof err === 'object' && err !== null && 'next_step' in err ? err.next_step : undefined;
 				const detail =
@@ -222,6 +237,17 @@
 		const match = message.match(/^(.*)<a>(.*)<\/a>(.*)$/s);
 		if (!match) return { before: message, link: '', after: '' };
 		return { before: match[1], link: match[2], after: match[3] };
+	});
+
+	// The login/register server actions read `returnUrl` (`safeReturnUrl`) —
+	// the old `redirect` param was silently ignored and stranded the guest on
+	// the dashboard after signing in (issue #912). The entered email prefills
+	// the sign-in form (the account that refused the RSVP belongs to it).
+	const returnUrlSuffix = $derived(`?returnUrl=${encodeURIComponent(window.location.pathname)}`);
+	const loginHref = $derived.by(() => {
+		const email = formData.email.trim();
+		const emailSuffix = email ? `&email=${encodeURIComponent(email)}` : '';
+		return `${resolve('/(public)/login', {})}${returnUrlSuffix}${emailSuffix}`;
 	});
 </script>
 
@@ -390,17 +416,14 @@
 								{#if requiresAccount}
 									<p class="mt-2">
 										<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
-										<a
-											href={`${resolve('/(public)/login', {})}?redirect=${encodeURIComponent(window.location.pathname)}`}
-											class="font-medium underline hover:no-underline"
-										>
+										<a href={loginHref} class="font-medium underline hover:no-underline">
 											{m['guestRsvpDialog.logIn']()}
 										</a>
 										<!-- eslint-enable svelte/no-navigation-without-resolve -->
 										{m['guestRsvpDialog.or']()}
 										<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
 										<a
-											href={`${resolve('/(public)/register', {})}?redirect=${encodeURIComponent(window.location.pathname)}`}
+											href={`${resolve('/(public)/register', {})}${returnUrlSuffix}`}
 											class="font-medium underline hover:no-underline"
 										>
 											{m['guestRsvpDialog.createAnAccount']()}

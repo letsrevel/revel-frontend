@@ -18,7 +18,7 @@ import { createCheckoutMachinery } from './cart-checkout-machinery';
 import * as m from '$lib/paraglide/messages.js';
 import { toast } from 'svelte-sonner';
 import { checkoutError } from './checkout-error';
-import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
+import { extractApiErrorDetail, isGuestActionError } from '$lib/utils/api-error-detail';
 import { getEligibilityRefusalMessage } from '$lib/utils/eligibility';
 import { readAttributionFromCurrentUrl } from '$lib/utils/attribution';
 
@@ -32,14 +32,34 @@ export const GUEST_COMPATIBLE_STEPS: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * Thrown when a guest checkout is refused because the next required step
- * (e.g. `become_member`, `complete_questionnaire`) has no guest-compatible
- * path — the sheet must offer sign-in / create-account instead of retrying.
+ * Thrown when a guest checkout is refused because an account is needed —
+ * either the next required step (e.g. `become_member`,
+ * `complete_questionnaire`) has no guest-compatible path, or the entered
+ * email already belongs to a non-guest account (`guest_account_exists`,
+ * backend #952). The sheet must offer sign-in / create-account instead of
+ * retrying; `email` (when known) prefills the sign-in form.
  */
 export class GuestAccountRequiredError extends Error {
-	constructor(message: string, cause?: unknown) {
-		super(message, { cause });
+	readonly email?: string;
+	constructor(message: string, options?: { cause?: unknown; email?: string }) {
+		super(message, { cause: options?.cause });
 		this.name = 'GuestAccountRequiredError';
+		this.email = options?.email;
+	}
+}
+
+/**
+ * Thrown on the `guest_cart_too_large` 400 (backend #952): the non-online
+ * cart's confirmation JWT would exceed the emailed-link URL budget. Not a
+ * dead end — the sheet renders "log in" (authenticated checkout has no link
+ * ceiling) and "split your purchase" CTAs, keeping the cart intact.
+ */
+export class GuestCartTooLargeError extends Error {
+	readonly email?: string;
+	constructor(message: string, options?: { cause?: unknown; email?: string }) {
+		super(message, { cause: options?.cause });
+		this.name = 'GuestCartTooLargeError';
+		this.email = options?.email;
 	}
 }
 
@@ -47,9 +67,14 @@ export class GuestAccountRequiredError extends Error {
  * Pure mapping from a failed guest checkout response to a throwable Error.
  * Exported for unit testing; `mutationFn` is the only production caller. Any
  * side effect belonging to a branch (cache invalidation on 404) stays in the
- * mutation, not here.
+ * mutation, not here. `email` is the address the guest entered — carried on
+ * the account-flavored errors so the sign-in CTA can prefill it.
  */
-export function mapGuestCheckoutError(error: unknown, status: number | undefined): Error {
+export function mapGuestCheckoutError(
+	error: unknown,
+	status: number | undefined,
+	email?: string
+): Error {
 	if (status === 404) {
 		// Stale cart: a tier vanished or became invisible (spec §5).
 		return new Error(m['cart.staleCart'](), { cause: error });
@@ -64,6 +89,24 @@ export function mapGuestCheckoutError(error: unknown, status: number | undefined
 		});
 	}
 	if (status === 400) {
+		// Machine-readable guest-action codes (backend #952, issue #912) come
+		// FIRST — an unknown code falls through and degrades to the verbatim
+		// detail via checkoutError below.
+		if (isGuestActionError(error)) {
+			if (error.code === 'guest_account_exists') {
+				// The backend's detail is translated and says exactly this; the
+				// CTA affordance comes from the error type, not the text.
+				return new GuestAccountRequiredError(error.detail, { cause: error, email });
+			}
+			if (error.code === 'guest_cart_too_large') {
+				// Frontend copy on purpose (issue #912): the message names the two
+				// ways out, which the backend's detail does not.
+				return new GuestCartTooLargeError(m['cart.guestCartTooLarge'](), {
+					cause: error,
+					email
+				});
+			}
+		}
 		// The runtime error payload can carry eligibility fields (next_step)
 		// that are not part of the declared error type, so narrow from unknown.
 		const nextStep =
@@ -73,7 +116,7 @@ export function mapGuestCheckoutError(error: unknown, status: number | undefined
 		if (typeof nextStep === 'string' && !GUEST_COMPATIBLE_STEPS.has(nextStep)) {
 			return new GuestAccountRequiredError(
 				getEligibilityRefusalMessage(error) ?? m['cart.checkoutFailed'](),
-				error
+				{ cause: error, email }
 			);
 		}
 	}
@@ -200,12 +243,20 @@ export function createGuestCartCheckoutController(deps: GuestCartCheckoutDeps) {
 				if (status === 404) {
 					queryClient.invalidateQueries({ queryKey: ['event-status', eventId] });
 				}
-				throw mapGuestCheckoutError(response.error, status);
+				throw mapGuestCheckoutError(response.error, status, params.email);
 			}
 			return withCheckoutSessionUrl(response.data, fingerprint);
 		},
 		onSuccess: (response, params) => handleCheckoutSuccess(response, params.email),
 		onError: (error: Error) => {
+			// Errors the sheet renders with their own CTAs (sign-in /
+			// split-the-purchase) skip the generic toast: guests always check out
+			// through the sheet (`needsSheet` is unconditionally true for them),
+			// whose inline `PurchaseErrorAlert` IS the feedback — a simultaneous
+			// "Checkout failed" toast would contradict the actionable alert.
+			if (error instanceof GuestAccountRequiredError || error instanceof GuestCartTooLargeError) {
+				return;
+			}
 			toast.error(m['cart.checkoutFailed'](), { description: error.message, duration: 6000 });
 		}
 	}));
