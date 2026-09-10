@@ -1,5 +1,7 @@
 import type {
 	ErrorDetail,
+	GuestActionErrorCode,
+	GuestActionErrorSchema,
 	ResponseMessage,
 	ValidationErrorResponse
 } from '$lib/api/generated/types.gen';
@@ -56,6 +58,37 @@ function nonEmptyString(value: unknown): value is string {
 export function isErrorDetail(value: unknown): value is ErrorDetail {
 	const body = asRecord(value);
 	return body !== null && nonEmptyString(body.detail);
+}
+
+/**
+ * The values `GuestActionErrorSchema.code` may carry, typed against the
+ * generated union rather than written as bare strings, so a backend rename
+ * lands as a compile error here instead of as a silently never-matching
+ * predicate (same rule as `isSubscriptionActivationPending`).
+ */
+const GUEST_ACTION_ERROR_CODES: readonly GuestActionErrorCode[] = [
+	'guest_account_exists',
+	'guest_cart_too_large'
+];
+
+/**
+ * Is this one of the guest-flow 400s that carry a machine-readable `code`
+ * (backend #952 — `guest_account_exists` / `guest_cart_too_large`)?
+ *
+ * Keyed strictly on `code`: the sibling `detail` is translated and must never
+ * be matched on. A code this client does not know yet returns `false` on
+ * purpose, so a grown backend enum degrades to the verbatim `detail` instead
+ * of mis-narrowing.
+ */
+export function isGuestActionError(value: unknown): value is GuestActionErrorSchema {
+	const body = asRecord(value);
+	return (
+		body !== null &&
+		nonEmptyString(body.detail) &&
+		// Widen the known-codes list to compare against an unknown value — the
+		// value itself is never asserted (this module's no-casts rule).
+		(GUEST_ACTION_ERROR_CODES as readonly unknown[]).includes(body.code)
+	);
 }
 
 /**

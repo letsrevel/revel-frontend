@@ -9725,7 +9725,9 @@
 			}
 		],
 		"seatPickerDone": "Concluído",
-		"signedInCartCleared": "Iniciaste sessão — o teu carrinho de convidado foi limpo."
+		"signedInCartCleared": "Iniciaste sessão — o teu carrinho de convidado foi limpo.",
+		"guestCartTooLarge": "Este pedido é demasiado grande para ser confirmado por e-mail como convidado. Inicia sessão para o concluir numa única compra, ou divide-o em compras mais pequenas.",
+		"splitPurchase": "Dividir a tua compra"
 	},
 	"cartSheet": {
 		"title": "Pagamento",

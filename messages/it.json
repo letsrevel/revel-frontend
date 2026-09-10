@@ -9725,7 +9725,9 @@
 			}
 		],
 		"seatPickerDone": "Fatto",
-		"signedInCartCleared": "Hai eseguito l'accesso — il tuo carrello ospite è stato svuotato."
+		"signedInCartCleared": "Hai eseguito l'accesso — il tuo carrello ospite è stato svuotato.",
+		"guestCartTooLarge": "Questo ordine è troppo grande per essere confermato via email come ospite. Accedi per completarlo in un unico acquisto, oppure dividilo in acquisti più piccoli.",
+		"splitPurchase": "Dividi l'acquisto"
 	},
 	"cartSheet": {
 		"title": "Cassa",

@@ -4,6 +4,7 @@ import { QueryClient } from '@tanstack/svelte-query';
 import {
 	mapGuestCheckoutError,
 	GuestAccountRequiredError,
+	GuestCartTooLargeError,
 	GUEST_COMPATIBLE_STEPS,
 	type GuestCartCheckoutDeps,
 	createGuestCartCheckoutController
@@ -16,6 +17,48 @@ const eventpublicguestGuestMultiTierCheckout = vi.hoisted(() => vi.fn());
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	eventpublicguestGuestMultiTierCheckout
 }));
+
+const toastMock = vi.hoisted(() => ({
+	error: vi.fn(),
+	success: vi.fn(),
+	info: vi.fn()
+}));
+vi.mock('svelte-sonner', () => ({ toast: toastMock }));
+
+function makeDeps(overrides: Partial<GuestCartCheckoutDeps> = {}): GuestCartCheckoutDeps {
+	return {
+		eventId: 'event-1',
+		queryClient: new QueryClient({
+			defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
+		}),
+		onPurchaseComplete: vi.fn(),
+		onEmailConfirmationPending: vi.fn(),
+		...overrides
+	};
+}
+
+function makeParams(): GuestCartCheckoutParams {
+	return {
+		items: [],
+		email: 'guest@example.com',
+		first_name: 'Guest',
+		last_name: 'Example'
+	};
+}
+
+function renderController(
+	deps: GuestCartCheckoutDeps
+): Promise<ReturnType<typeof createGuestCartCheckoutController>> {
+	return new Promise((resolve) => {
+		render(QueryClientTestWrapper, {
+			props: {
+				client: deps.queryClient,
+				component: GuestCartCheckoutControllerTestHost,
+				componentProps: { deps, onReady: resolve }
+			}
+		});
+	});
+}
 
 describe('mapGuestCheckoutError', () => {
 	it('maps 404 to the stale-cart message, keeping the original error as cause', () => {
@@ -63,6 +106,42 @@ describe('mapGuestCheckoutError', () => {
 		}
 	);
 
+	// Backend #952: the two special guest 400s carry a machine-readable `code`
+	// (issue #912). The guard runs BEFORE the next_step narrowing.
+	it('maps a 400 guest_account_exists to GuestAccountRequiredError carrying the entered email', () => {
+		const refusal = {
+			detail: 'An account with this email already exists. Please log in.',
+			code: 'guest_account_exists'
+		};
+		const error = mapGuestCheckoutError(refusal, 400, 'guest@example.com');
+		expect(error).toBeInstanceOf(GuestAccountRequiredError);
+		expect(error.message).toBe('An account with this email already exists. Please log in.');
+		expect(error.cause).toBe(refusal);
+		expect((error as GuestAccountRequiredError).email).toBe('guest@example.com');
+	});
+
+	it('maps a 400 guest_cart_too_large to GuestCartTooLargeError with frontend-localized copy', () => {
+		const refusal = {
+			detail: 'Backend copy that must NOT be rendered for this code.',
+			code: 'guest_cart_too_large'
+		};
+		const error = mapGuestCheckoutError(refusal, 400, 'guest@example.com');
+		expect(error).toBeInstanceOf(GuestCartTooLargeError);
+		expect(error.message).toBe(
+			'This order is too large to confirm by email as a guest. Log in to complete it in one purchase, or split it into smaller purchases.'
+		);
+		expect(error.cause).toBe(refusal);
+		expect((error as GuestCartTooLargeError).email).toBe('guest@example.com');
+	});
+
+	it('degrades an unknown guest-action code to the verbatim detail (forward-compat)', () => {
+		const refusal = { detail: 'A refusal this client does not know yet.', code: 'guest_new_rule' };
+		const error = mapGuestCheckoutError(refusal, 400);
+		expect(error).not.toBeInstanceOf(GuestAccountRequiredError);
+		expect(error).not.toBeInstanceOf(GuestCartTooLargeError);
+		expect(error.message).toBe('A refusal this client does not know yet.');
+	});
+
 	it('falls back to checkoutError for a 400 without an eligibility-shaped body', () => {
 		const original = { detail: 'Discount code is invalid.' };
 		const error = mapGuestCheckoutError(original, 400);
@@ -85,41 +164,6 @@ describe('mapGuestCheckoutError', () => {
 // Backend #923: the guest multi-tier checkout claims an invitation-link token
 // sent via X-Event-Token before eligibility and tier-access checks run.
 describe('createGuestCartCheckoutController — invitation-link token header', () => {
-	function makeDeps(overrides: Partial<GuestCartCheckoutDeps> = {}): GuestCartCheckoutDeps {
-		return {
-			eventId: 'event-1',
-			queryClient: new QueryClient({
-				defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
-			}),
-			onPurchaseComplete: vi.fn(),
-			onEmailConfirmationPending: vi.fn(),
-			...overrides
-		};
-	}
-
-	function makeParams(): GuestCartCheckoutParams {
-		return {
-			items: [],
-			email: 'guest@example.com',
-			first_name: 'Guest',
-			last_name: 'Example'
-		};
-	}
-
-	function renderController(
-		deps: GuestCartCheckoutDeps
-	): Promise<ReturnType<typeof createGuestCartCheckoutController>> {
-		return new Promise((resolve) => {
-			render(QueryClientTestWrapper, {
-				props: {
-					client: deps.queryClient,
-					component: GuestCartCheckoutControllerTestHost,
-					componentProps: { deps, onReady: resolve }
-				}
-			});
-		});
-	}
-
 	beforeEach(() => {
 		vi.clearAllMocks();
 		eventpublicguestGuestMultiTierCheckout.mockResolvedValue({
@@ -187,5 +231,60 @@ describe('createGuestCartCheckoutController — invitation-link token header', (
 				expect.objectContaining({ body: expect.objectContaining({ attribution: null }) })
 			);
 		});
+	});
+});
+
+// Issue #912: errors the sheet renders with their own CTAs (log in / split the
+// purchase) must not ALSO fire the generic checkout-failed toast — the inline
+// alert is the feedback. Every other failure keeps the toast.
+describe('createGuestCartCheckoutController — CTA-error toast suppression', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
+	async function checkoutWithError(errorBody: unknown) {
+		eventpublicguestGuestMultiTierCheckout.mockResolvedValue({
+			data: undefined,
+			error: errorBody,
+			response: { ok: false, status: 400 }
+		});
+		const controller = await renderController(makeDeps());
+		return controller.checkoutCart(makeParams()).catch((e: unknown) => e);
+	}
+
+	it('does not toast a guest_account_exists refusal — the sheet renders the sign-in CTA', async () => {
+		const thrown = await checkoutWithError({
+			detail: 'An account with this email already exists.',
+			code: 'guest_account_exists'
+		});
+		expect(thrown).toBeInstanceOf(GuestAccountRequiredError);
+		expect((thrown as GuestAccountRequiredError).email).toBe('guest@example.com');
+		expect(toastMock.error).not.toHaveBeenCalled();
+	});
+
+	it('does not toast a guest_cart_too_large refusal — the sheet renders the log-in/split CTAs', async () => {
+		const thrown = await checkoutWithError({
+			detail: 'Cart too large.',
+			code: 'guest_cart_too_large'
+		});
+		expect(thrown).toBeInstanceOf(GuestCartTooLargeError);
+		expect(toastMock.error).not.toHaveBeenCalled();
+	});
+
+	it('does not toast the next_step account-required refusal either', async () => {
+		const thrown = await checkoutWithError({
+			allowed: false,
+			event_id: 'evt-1',
+			next_step: 'become_member',
+			reason: 'You must be a member to attend this event.'
+		});
+		expect(thrown).toBeInstanceOf(GuestAccountRequiredError);
+		expect(toastMock.error).not.toHaveBeenCalled();
+	});
+
+	it('still toasts an ordinary checkout failure', async () => {
+		const thrown = await checkoutWithError({ detail: 'Discount code is invalid.' });
+		expect(thrown).toBeInstanceOf(Error);
+		expect(toastMock.error).toHaveBeenCalledTimes(1);
 	});
 });

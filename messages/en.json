@@ -9725,7 +9725,9 @@
 			}
 		],
 		"seatPickerDone": "Done",
-		"signedInCartCleared": "You're signed in — your guest cart was cleared."
+		"signedInCartCleared": "You're signed in — your guest cart was cleared.",
+		"guestCartTooLarge": "This order is too large to confirm by email as a guest. Log in to complete it in one purchase, or split it into smaller purchases.",
+		"splitPurchase": "Split your purchase"
 	},
 	"cartSheet": {
 		"title": "Checkout",

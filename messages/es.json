@@ -9725,7 +9725,9 @@
 			}
 		],
 		"seatPickerDone": "Listo",
-		"signedInCartCleared": "Has iniciado sesión — tu carrito de invitado se ha vaciado."
+		"signedInCartCleared": "Has iniciado sesión — tu carrito de invitado se ha vaciado.",
+		"guestCartTooLarge": "Este pedido es demasiado grande para confirmarlo por correo electrónico como invitado. Inicia sesión para completarlo en una sola compra, o divídelo en compras más pequeñas.",
+		"splitPurchase": "Dividir tu compra"
 	},
 	"cartSheet": {
 		"title": "Pago",

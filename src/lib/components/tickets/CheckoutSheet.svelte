@@ -403,6 +403,7 @@
 				error={purchaseError}
 				tiers={cart.groups.map((group) => group.tier)}
 				{organizationSlug}
+				onSplitPurchase={() => (open = false)}
 			/>
 		</div>
 
@@ -475,7 +476,7 @@
 				<div class="border-t pt-3 text-center text-xs text-muted-foreground">
 					<p>
 						{orLoginParts.before}{#if orLoginParts.link}<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query cannot be expressed through resolve() --><a
-								href={`${resolve('/(public)/login', {})}?redirect=${encodeURIComponent(window.location.pathname)}`}
+								href={`${resolve('/(public)/login', {})}?returnUrl=${encodeURIComponent(window.location.pathname)}`}
 								class="text-primary hover:underline">{orLoginParts.link}</a
 							><!-- eslint-enable svelte/no-navigation-without-resolve -->{/if}{orLoginParts.after}
 					</p>
