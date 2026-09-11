@@ -16,7 +16,7 @@ const SAVE_URL = 'https://pay.google.com/gp/v/save/test-jwt';
 
 interface MockResult {
 	data?: { save_url: string };
-	error?: object;
+	error?: unknown;
 	response: { ok: boolean; status: number };
 }
 
@@ -27,10 +27,11 @@ function okResult(): MockResult {
 	};
 }
 
-function errorResult(status: number): MockResult {
+// hey-api's `error` IS the parsed body, which is where the 503 `code` lives.
+function errorResult(status: number, error: unknown = {}): MockResult {
 	return {
 		data: undefined,
-		error: {},
+		error,
 		response: { ok: false, status }
 	};
 }
@@ -121,8 +122,12 @@ describe('AddToGoogleWalletButton', () => {
 		expect(ticketwalletGoogleWalletSaveLink).not.toHaveBeenCalled();
 	});
 
-	it('shows the not-configured message on 503', async () => {
-		ticketwalletGoogleWalletSaveLink.mockResolvedValue(errorResult(503));
+	// The backend answers 503 twice over — an un-coded body when the deployment
+	// has no wallet credentials, and a coded one when pass generation failed.
+	it('shows the not-configured message on an un-coded 503', async () => {
+		ticketwalletGoogleWalletSaveLink.mockResolvedValue(
+			errorResult(503, { detail: 'Wallet is not configured' })
+		);
 		const user = userEvent.setup();
 		render(AddToGoogleWalletButton, { props: { id: 'ticket-1' } });
 
@@ -130,6 +135,22 @@ describe('AddToGoogleWalletButton', () => {
 
 		const alert = await screen.findByRole('alert');
 		expect(alert.textContent).toContain('Google Wallet is not configured');
+		expect(openSpy).not.toHaveBeenCalled();
+	});
+
+	it('shows the temporarily-unavailable message on a wallet_pass_unavailable 503', async () => {
+		ticketwalletGoogleWalletSaveLink.mockResolvedValue(
+			errorResult(503, { detail: 'Generator exploded', code: 'wallet_pass_unavailable' })
+		);
+		const user = userEvent.setup();
+		render(AddToGoogleWalletButton, { props: { id: 'ticket-1' } });
+
+		await user.click(screen.getByRole('button', { name: 'Add to Google Wallet' }));
+
+		const alert = await screen.findByRole('alert');
+		expect(alert.textContent).toContain('temporarily unavailable');
+		// The backend `detail` never reaches the alert, coded or not.
+		expect(alert.textContent).not.toContain('Generator exploded');
 		expect(openSpy).not.toHaveBeenCalled();
 	});
 

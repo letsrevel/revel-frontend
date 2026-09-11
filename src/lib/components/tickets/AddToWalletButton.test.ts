@@ -13,6 +13,7 @@ vi.mock('$lib/api/generated/sdk.gen', () => ({
 }));
 
 interface MockResult {
+	error?: unknown;
 	response: { ok: boolean; status: number; blob?: () => Promise<Blob> };
 }
 
@@ -26,8 +27,11 @@ function okResult(): MockResult {
 	};
 }
 
-function errorResult(status: number): MockResult {
-	return { response: { ok: false, status } };
+// hey-api's `error` IS the parsed body — it is populated from the error JSON
+// even on a `parseAs: 'stream'` call, which is what makes the 503 `code`
+// readable here at all.
+function errorResult(status: number, error: unknown = { detail: 'nope' }): MockResult {
+	return { error, response: { ok: false, status } };
 }
 
 describe('AddToWalletButton', () => {
@@ -134,8 +138,12 @@ describe('AddToWalletButton', () => {
 		expect(alert.textContent).toContain('Membership card not found');
 	});
 
-	it('shows the not-configured message on 503', async () => {
-		ticketwalletDownloadApplePass.mockResolvedValue(errorResult(503));
+	// The backend answers 503 twice over — an un-coded body when the deployment
+	// has no wallet credentials, and a coded one when signing/generation failed.
+	it('shows the not-configured message on an un-coded 503', async () => {
+		ticketwalletDownloadApplePass.mockResolvedValue(
+			errorResult(503, { detail: 'Wallet is not configured' })
+		);
 		const user = userEvent.setup();
 		render(AddToWalletButton, { props: { id: 'ticket-1', name: 'My Event' } });
 
@@ -143,6 +151,22 @@ describe('AddToWalletButton', () => {
 
 		const alert = await screen.findByRole('alert');
 		expect(alert.textContent).toContain('Apple Wallet is not configured');
+	});
+
+	it('shows the temporarily-unavailable message on a wallet_pass_unavailable 503', async () => {
+		ticketwalletDownloadApplePass.mockResolvedValue(
+			errorResult(503, { detail: 'Could not sign the pass', code: 'wallet_pass_unavailable' })
+		);
+		const user = userEvent.setup();
+		render(AddToWalletButton, { props: { id: 'ticket-1', name: 'My Event' } });
+
+		await user.click(screen.getByRole('button', { name: 'Add to Apple Wallet' }));
+
+		const alert = await screen.findByRole('alert');
+		expect(alert.textContent).toContain('temporarily unavailable');
+		// The backend `detail` is localized server-side and may carry internals —
+		// it never reaches the alert, coded or not.
+		expect(alert.textContent).not.toContain('Could not sign the pass');
 	});
 
 	it('shows the per-kind not-found message on 404', async () => {
