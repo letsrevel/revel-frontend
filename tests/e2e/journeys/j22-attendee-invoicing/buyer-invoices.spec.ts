@@ -10,7 +10,11 @@ import {
 } from '../../support/factories';
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
-import { completeStripeCheckout } from '../../support/stripe';
+import {
+	completeStripeCheckout,
+	expectWebhookEffect,
+	requireStripeWebhooks
+} from '../../support/stripe';
 
 // J22 (USER_JOURNEYS.md) — buyer-side attendee invoicing: a paid online
 // purchase with billing info generates an invoice that, once issued, the
@@ -27,6 +31,7 @@ test.describe('J22 buyer invoices @p2', () => {
 	test('invoiced purchase → issued invoice in /account/invoices → PDF', async ({ browser }) => {
 		// Stripe hosted checkout + webhook + invoice generation.
 		test.setTimeout(240_000);
+		requireStripeWebhooks();
 
 		await setOrgInvoicingMode('hybrid');
 		const [event, buyer] = await Promise.all([
@@ -53,7 +58,13 @@ test.describe('J22 buyer invoices @p2', () => {
 
 			// Hybrid mode leaves the generated invoice as a draft — wait for it and
 			// issue it as the org owner (API arrange; the UI journey is hybrid-flow).
-			await issueDraftInvoiceFor(buyer.email);
+			// The draft only exists because the checkout webhook recorded a payment,
+			// so this is the run's webhook checkpoint for this spec.
+			await expectWebhookEffect(
+				'the checkout webhook to generate the draft attendee invoice',
+				() => issueDraftInvoiceFor(buyer.email),
+				{ timeout: 120_000 }
+			);
 
 			// A fresh buyer has exactly one invoice — poll for its Issued table row.
 			const invoiceRow = page.getByRole('row').filter({ hasText: 'Issued' });

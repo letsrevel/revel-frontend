@@ -16,7 +16,7 @@ the built frontend.
 | Celery | inline/eager | Questionnaire auto-eval, exports, etc. complete synchronously |
 | Mailpit | `http://localhost:8025` | Captures all outbound email; override with `E2E_MAILPIT_URL` |
 | Keycloak | `http://localhost:8080` (realm `revel`, admin `admin`/`admin`) | OIDC login journeys; started by `make e2e-setup` via the backend compose overlay (backend PR #920). Specs self-skip when `/api/version` lists no `keycloak` provider. Override with `E2E_KEYCLOAK_URL` |
-| Stripe | `stripe listen` forwarding to the backend | Backend `.env` needs `CONNECTED_TEST_STRIPE_ID` **at bootstrap time**, or online checkout fails |
+| Stripe | `stripe listen` forwarding to the backend | `make run-stripe` in `revel-backend` (`stripe listen --forward-to localhost:8000/api/stripe/webhook`) — **not** started by `make e2e-setup`, it stays a manual step. Backend `.env` also needs `CONNECTED_TEST_STRIPE_ID` **at bootstrap time**, or online checkout fails.<br>Without the forwarder the 12 Stripe specs **fail** (never skip — see below), and since #919 they fail *fast*: the first wait to expire names the forwarder and the rest of the run aborts in milliseconds instead of burning 90–150s each. Measured cost of the old behaviour: 36.5m without the forwarder vs 12.2m with it |
 | Frontend | `http://localhost:5173` | Started by Playwright (`pnpm build && pnpm preview`) with `PUBLIC_API_URL=http://localhost:8000` |
 
 ## Running
@@ -59,4 +59,21 @@ pnpm test:e2e tests/e2e/regression # CSP/FOUC guards (no backend needed)
   semantics identify elements); `data-testid` only as a last resort.
 - **Email**: assert through `support/mailpit.ts` with a unique recipient; never
   "the latest message".
+- **Stripe webhooks fail, they never skip** (#919). Anything that can only
+  arrive through the `stripe listen` forwarder is awaited with
+  `expectWebhookEffect()` from `support/stripe.ts` (same `toPass` polling and
+  the same timeout as before), and tests whose arrange drives hosted checkout
+  open with `requireStripeWebhooks()`. `stripe listen` binds no local port, so
+  there is nothing to probe up front: the verdict is the forwarder's *effect*.
+  The first webhook-only wait that burns its whole budget with no delivery
+  anywhere in the run writes a `missing` marker and fails naming the forwarder;
+  every later Stripe test then aborts immediately with that same message and
+  the title of the test that discovered it. The first delivery writes a
+  `delivered` marker, after which the guard is inert for the rest of the run —
+  later failures surface their own assertion errors, untouched. The markers live
+  in the OS temp dir keyed by `E2E_RUN_ID` (planted by `support/global-setup.ts`)
+  because Playwright spawns a **fresh worker process after every failure**, so
+  the per-worker caching `support/skip.ts` uses would be discarded exactly when
+  it matters. Deliberately not a skip — the payment paths are the last coverage
+  we can afford to lose silently, and the healthy skip baseline stays **3**.
 - **Check-in**: use the QR scanner modal's manual-entry path (no camera in CI).

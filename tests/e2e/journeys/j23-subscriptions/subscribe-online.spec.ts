@@ -9,7 +9,11 @@ import {
 import { authenticateContext } from '../../support/session';
 import { membershipCard, membershipPath, planCard } from '../../support/membership-locators';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
-import { completeStripeCheckout } from '../../support/stripe';
+import {
+	completeStripeCheckout,
+	expectWebhookEffect,
+	requireStripeWebhooks
+} from '../../support/stripe';
 
 // J23.3 / J23.4 (USER_JOURNEYS.md) — the member-initiated hosted-checkout
 // journey: Subscribe → SubscribeDialog → checkout.stripe.com → pay → back on
@@ -95,6 +99,7 @@ test.describe('J23 hosted-checkout subscribe @p2', () => {
 	}) => {
 		// Stripe's hosted page + the webhook round trip don't fit the default budget.
 		test.setTimeout(240_000);
+		requireStripeWebhooks();
 
 		const { plan, user } = await arrangeOnlinePlan('SubOnline');
 
@@ -120,7 +125,13 @@ test.describe('J23 hosted-checkout subscribe @p2', () => {
 		await expect(confirming.or(welcome)).toBeVisible({ timeout: 30_000 });
 
 		// Activation arrives via the webhook, never the redirect — the card polls.
-		await expect(welcome).toBeVisible({ timeout: 120_000 });
+		await expectWebhookEffect(
+			'the subscription webhook to swap "Confirming…" for the Welcome card',
+			async () => {
+				await expect(welcome).toBeVisible({ timeout: 10_000 });
+			},
+			{ timeout: 120_000 }
+		);
 		await expect(page.getByText('Your subscription is active.')).toBeVisible();
 
 		// MUST-COVER: Stripe returned to the backend-built org-UUID membership
@@ -204,6 +215,7 @@ test.describe('J23 hosted-checkout subscribe @p2', () => {
 
 	test('abandon checkout → cancelled card → resume payment → active', async ({ browser }) => {
 		test.setTimeout(240_000);
+		requireStripeWebhooks();
 
 		const { plan, user } = await arrangeOnlinePlan('SubAbandon');
 
@@ -261,9 +273,15 @@ test.describe('J23 hosted-checkout subscribe @p2', () => {
 		await page.waitForURL(/checkout\.stripe\.com/, { timeout: 30_000 });
 		await completeStripeCheckout(page);
 
-		await expect(page.getByRole('heading', { name: 'Welcome, member!' })).toBeVisible({
-			timeout: 120_000
-		});
+		await expectWebhookEffect(
+			'the resumed subscription webhook to render the Welcome card',
+			async () => {
+				await expect(page.getByRole('heading', { name: 'Welcome, member!' })).toBeVisible({
+					timeout: 10_000
+				});
+			},
+			{ timeout: 120_000 }
+		);
 		expect(page.url()).not.toContain('membership_success');
 
 		await context.close();

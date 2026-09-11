@@ -8,7 +8,11 @@ import {
 } from '../../support/factories';
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
-import { completeStripeCheckout } from '../../support/stripe';
+import {
+	completeStripeCheckout,
+	expectWebhookEffect,
+	requireStripeWebhooks
+} from '../../support/stripe';
 import { waitForEmail } from '../../support/mailpit';
 
 // J22 (USER_JOURNEYS.md) — HYBRID attendee invoicing, organizer side: in
@@ -31,6 +35,7 @@ test.describe('J22 hybrid invoicing @p3', () => {
 		asOwner
 	}) => {
 		test.setTimeout(300_000);
+		requireStripeWebhooks();
 
 		await setOrgInvoicingMode('hybrid');
 		const [event, buyer] = await Promise.all([
@@ -62,11 +67,15 @@ test.describe('J22 hybrid invoicing @p3', () => {
 				.getByRole('row')
 				.filter({ hasText: buyer.email })
 				.filter({ hasText: 'Draft' });
-			await expect(async () => {
-				await gotoHydrated(asOwner, INVOICES_PATH);
-				await asOwner.getByPlaceholder('Search invoices...').fill(buyer.email);
-				await expect(draftRow).toBeVisible({ timeout: 8_000 });
-			}).toPass({ timeout: 120_000 });
+			await expectWebhookEffect(
+				"the draft invoice to appear on the organizer's Attendee Invoices page",
+				async () => {
+					await gotoHydrated(asOwner, INVOICES_PATH);
+					await asOwner.getByPlaceholder('Search invoices...').fill(buyer.email);
+					await expect(draftRow).toBeVisible({ timeout: 8_000 });
+				},
+				{ timeout: 120_000 }
+			);
 
 			// While it's a draft, the buyer sees NOTHING under /account/invoices —
 			// the dashboard endpoint serves issued invoices only.

@@ -8,7 +8,11 @@ import {
 } from '../../support/factories';
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
-import { completeStripeCheckout } from '../../support/stripe';
+import {
+	completeStripeCheckout,
+	expectWebhookEffect,
+	requireStripeWebhooks
+} from '../../support/stripe';
 
 // J26 (USER_JOURNEYS.md) — season pass, online flavor: hosted-Stripe purchase
 // of a pass (the held pass only materializes when the webhook lands), then
@@ -26,6 +30,7 @@ test.describe('J26 season pass online cancel @p3', () => {
 		asOwner
 	}) => {
 		test.setTimeout(300_000);
+		requireStripeWebhooks();
 
 		const series = await createEventSeries('owner', 'revel-events-collective');
 		const [eventA, eventB] = await Promise.all([
@@ -61,10 +66,14 @@ test.describe('J26 season pass online cancel @p3', () => {
 				.filter({ hasText: pass.name })
 				.filter({ hasText: /Active/ })
 				.first();
-			await expect(async () => {
-				await gotoHydrated(page, '/dashboard/passes');
-				await expect(activeCard).toBeVisible({ timeout: 5_000 });
-			}).toPass({ timeout: 90_000 });
+			await expectWebhookEffect(
+				'the webhook to create the Active pass on /dashboard/passes',
+				async () => {
+					await gotoHydrated(page, '/dashboard/passes');
+					await expect(activeCard).toBeVisible({ timeout: 5_000 });
+				},
+				{ timeout: 90_000 }
+			);
 
 			// Organizer cancels the held pass from the Holders dialog.
 			await gotoHydrated(asOwner, `/org/revel-events-collective/admin/event-series/${series.id}`);
