@@ -7,6 +7,7 @@
 	} from '$lib/api/generated/sdk.gen';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import { toFilenameSlug } from '$lib/utils/filename';
+	import { isWalletPassUnavailable } from './wallet-error';
 	import { Loader2 } from '@lucide/svelte';
 
 	/**
@@ -84,7 +85,12 @@
 				// below never surfaces raw error text (unlocalized, and may
 				// leak backend detail) — it logs and shows the generic message.
 				if (response.response?.status === 503) {
-					error = m['addToWallet.notConfigured']();
+					// Two different 503s share the status: the coded one is a
+					// transient signing/generation failure, the un-coded one
+					// means the deployment has no Apple Wallet credentials.
+					error = isWalletPassUnavailable(response.error)
+						? m['addToWallet.temporarilyUnavailable']()
+						: m['addToWallet.notConfigured']();
 				} else if (response.response?.status === 404) {
 					error = notFoundMessage();
 				} else {

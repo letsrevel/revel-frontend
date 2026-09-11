@@ -6,6 +6,7 @@
 		ticketwalletGoogleWalletSaveLink
 	} from '$lib/api/generated/sdk.gen';
 	import { getLocale } from '$lib/paraglide/runtime.js';
+	import { isWalletPassUnavailable } from './wallet-error';
 	import { Loader2 } from '@lucide/svelte';
 
 	/** Same union rationale as `AddToWalletButton`: memberships are slug-addressed. */
@@ -64,7 +65,12 @@
 				// below never surfaces raw error text (unlocalized, and may
 				// leak backend detail) — it logs and shows the generic message.
 				if (result.response?.status === 503) {
-					error = m['addToGoogleWallet.notConfigured']();
+					// Two different 503s share the status: the coded one is a
+					// transient pass-generation failure, the un-coded one means
+					// the deployment has no Google Wallet credentials.
+					error = isWalletPassUnavailable(result.error)
+						? m['addToGoogleWallet.temporarilyUnavailable']()
+						: m['addToGoogleWallet.notConfigured']();
 				} else if (result.response?.status === 404) {
 					error = notFoundMessage();
 				} else {
