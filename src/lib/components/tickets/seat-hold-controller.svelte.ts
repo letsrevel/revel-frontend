@@ -240,13 +240,28 @@ export class SeatHoldController {
 	 * foreign "held by someone else" seats. The counter is grown to match the
 	 * adopted selection instead (taps drive the counter, and so does a
 	 * restored selection). Holds beyond the max are left to expire server-side.
+	 *
+	 * `knownHeld` (#918) are seats the CONSUMER already knows the caller holds —
+	 * a cart group's `seatIds`, written by the picker moments before this
+	 * controller existed. UNIONED in, not overwritten: a warm snapshot is not a
+	 * fresh one (availability has no `staleTime` and the picker's post-tap
+	 * refetch is fire-and-forget), so the payload a freshly mounted controller
+	 * seeds from routinely predates the very hold it is seeding for. Without the
+	 * union it disowns seats the group still claims, `onDestroy` skips the
+	 * release, and they stay held server-side for the full TTL. Known ids go
+	 * first so `max` truncation can't be what splits controller and group apart.
+	 * Empty by default — every other consumer's behavior is unchanged.
 	 */
-	seedFromAvailability = (validSeatIds: Set<string>): void => {
+	seedFromAvailability = (validSeatIds: Set<string>, knownHeld: readonly string[] = []): void => {
 		this.#validSeatIds = validSeatIds;
 		const availability = this.availabilityQuery.data;
 		if (!availability) return;
 		const max = Math.max(1, this.#opts.getMaxQuantity());
-		const mine = (availability.my_holds ?? []).filter((id) => validSeatIds.has(id)).slice(0, max);
+		const known = knownHeld.filter((id) => validSeatIds.has(id));
+		const fromServer = (availability.my_holds ?? []).filter(
+			(id) => validSeatIds.has(id) && !known.includes(id)
+		);
+		const mine = [...known, ...fromServer].slice(0, max);
 		this.myHolds = mine;
 		this.holdExpiresAt = this.myHolds.length > 0 ? (availability.my_holds_expire_at ?? null) : null;
 		if (mine.length > this.#opts.getQuantity()) {

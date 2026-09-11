@@ -44,6 +44,15 @@
 	const tier = group.tier;
 	const isUserChoice = tier.seat_assignment_mode === 'user_choice';
 
+	// The seats this group ALREADY claims at mount (#918) — the picker's Done
+	// wrote them in the same flush that mounted this component. Captured once,
+	// deliberately, for the same reason `tier` is: it's the hand-off payload,
+	// not a value to track. Copied so a later `setSeatIds` can't retroactively
+	// change what the seed was told; fed to `seedFromAvailability` so a warm
+	// but PRE-hold availability snapshot can't make the controller disown them.
+	// svelte-ignore state_referenced_locally
+	const initialSeatIds: string[] = isUserChoice ? [...group.seatIds] : [];
+
 	// Declared ahead of `options` (explicit type annotation) so `getQuantity`
 	// can close over it without a circular type-inference error — it's only
 	// ever CALLED after the assignment below, never read synchronously.
@@ -136,23 +145,24 @@
 			// current holds keeps each group's adoption in its own lane.
 			const validIds = validSeatIdsFor(chart);
 			for (const id of registry.otherHolds(tier.id)) validIds.delete(id);
-			controller.seedFromAvailability(validIds);
+			controller.seedFromAvailability(validIds, initialSeatIds);
 			return;
 		}
 		controller.adoptServerHolds();
 	});
 
-	// Live sync: the controller's held seats ARE the group's seatIds. The
-	// ONLY other writer is the host's expiry sweep (which clears to []).
-	// Gated on `seeded` (shouldSyncSeatIds): on the very first reactive
-	// flush `controller.myHolds` is still `[]` (chart/availability are still
-	// in flight above), and `cart.setSeatIds(tier, [])` REMOVES the group —
-	// syncing before the seed/adopt effect's first pass would strip a group
-	// whose seats already exist server-side (the venue-overview hand-off)
-	// and unmount this very component before it gets the chance to adopt
-	// them. See cart-seat-sync.ts for the (unit-tested) gate itself.
+	// Live sync: the controller's held seats ARE the group's seatIds — but
+	// only ADDITIVELY. `cart.setSeatIds(tier, [])` REMOVES the group, and this
+	// effect must never be the writer that does so: before the first seed
+	// `myHolds` is still `[]` (chart/availability in flight), and after it the
+	// seed may itself have produced `[]` from a warm-but-pre-hold availability
+	// snapshot (#918) — either way, deleting here unmounts this very component
+	// and loses the group for good (no `#each` entry left to remount from).
+	// Emptying a group is owned by the two writers that do it explicitly: the
+	// seat picker and the host's expiry sweep. See cart-seat-sync.ts for the
+	// (unit-tested) gate itself.
 	$effect(() => {
-		if (!shouldSyncSeatIds(isUserChoice, seeded)) return;
+		if (!shouldSyncSeatIds(isUserChoice, seeded, controller.myHolds.length)) return;
 		cart.setSeatIds(tier, controller.myHolds);
 	});
 </script>
