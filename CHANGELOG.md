@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.12.1] - 2026-09-12
+
+### Fixed
+
+- The event-level "Max Tickets Per User" limit can be edited again: backspacing its last digit no longer refills the field with `1`, so the limit can be lowered or replaced by typing instead of only appended to (setting it to `5` previously meant typing the `5` and then deleting the leading `1`). The value settles when the field loses focus — an empty or zero entry falls back to the minimum of `1`, and a decimal or exponent keeps the number entered (`10.5` becomes `10`) instead of being truncated to `1`.
+
 ## [2.12.0] - 2026-09-12
 
 ### Changed
