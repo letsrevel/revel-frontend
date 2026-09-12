@@ -202,20 +202,32 @@
 	// under the caret, so the only possible edit was appending digits to it.
 	let maxTicketsInput = $state(formData.max_tickets_per_user?.toString() ?? '1');
 
-	function handleMaxTicketsInput(value: string) {
-		maxTicketsInput = value;
-		const num = parseInt(value.trim(), 10);
-		if (!isNaN(num) && num > 0) {
-			onUpdate({ max_tickets_per_user: num });
-		}
-		// Anything else (empty, "0", garbage) commits nothing: the last valid value stands
-		// until blur clamps the field.
+	// A committed limit is always a whole positive number. `type="number"` hands us the
+	// raw text of anything that parses as a floating-point literal, so "1.5" and "1e2"
+	// both arrive verbatim — `parseInt` would silently commit 1 for either.
+	function parseWholeTickets(raw: string): number | null {
+		const trimmed = raw.trim();
+		if (!/^\d+$/.test(trimmed)) return null;
+		const num = Number(trimmed);
+		return Number.isSafeInteger(num) && num > 0 ? num : null;
 	}
 
-	function handleMaxTicketsBlur() {
-		const num = parseInt(maxTicketsInput.trim(), 10);
-		const clamped = !isNaN(num) && num > 0 ? num : 1;
-		// Normalize the display too, so "05" / " 5 " settle to "5".
+	function handleMaxTicketsInput(value: string): void {
+		maxTicketsInput = value;
+		const num = parseWholeTickets(value);
+		if (num !== null) {
+			onUpdate({ max_tickets_per_user: num });
+		}
+		// Anything else (empty, "0", a half-typed decimal, garbage) commits nothing: the
+		// last valid value stands until blur settles the field.
+	}
+
+	function handleMaxTicketsBlur(): void {
+		// Settle whatever is left in the buffer by flooring the number the user actually
+		// entered ("05" -> 5, "10.5" -> 10, "1e2" -> 100) rather than truncating a prefix.
+		// Empty, zero, negative and unparseable values fall back to the minimum of 1.
+		const floored = Math.floor(Number(maxTicketsInput.trim()));
+		const clamped = Number.isSafeInteger(floored) && floored > 0 ? floored : 1;
 		maxTicketsInput = String(clamped);
 		onUpdate({ max_tickets_per_user: clamped });
 	}

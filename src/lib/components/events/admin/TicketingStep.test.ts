@@ -94,10 +94,11 @@ describe('TicketingStep — max tickets per user', () => {
 		renderStep(1);
 		const input = maxTicketsField();
 
-		// "0" is a legal keystroke on the way to "10".
+		// "0" is a legal keystroke on the way to "10", but it must not be committed.
 		await fireEvent.input(input, { target: { value: '' } });
 		await fireEvent.input(input, { target: { value: '0' } });
 		expect(input.value).toBe('0');
+		expect(onUpdate).not.toHaveBeenCalled();
 
 		await fireEvent.input(input, { target: { value: '10' } });
 		expect(input.value).toBe('10');
@@ -105,6 +106,46 @@ describe('TicketingStep — max tickets per user', () => {
 
 		await fireEvent.input(input, { target: { value: '0' } });
 		await fireEvent.blur(input);
+		expect(input.value).toBe('1');
+		expect(onUpdate).toHaveBeenLastCalledWith({ max_tickets_per_user: 1 });
+	});
+
+	it('never commits a truncated prefix of a decimal or exponent while typing', async () => {
+		renderStep(1);
+		const input = maxTicketsField();
+
+		// type=number hands the page "1.5" / "1e2" verbatim — both are valid
+		// floating-point literals — and parseInt would have committed 1 for either.
+		await fireEvent.input(input, { target: { value: '' } });
+		await fireEvent.input(input, { target: { value: '1.5' } });
+		expect(onUpdate).not.toHaveBeenCalled();
+
+		await fireEvent.input(input, { target: { value: '1e2' } });
+		expect(onUpdate).not.toHaveBeenCalled();
+	});
+
+	it('settles a decimal or exponent to the entered number on blur', async () => {
+		renderStep(1);
+		const input = maxTicketsField();
+
+		await fireEvent.input(input, { target: { value: '10.5' } });
+		await fireEvent.blur(input);
+		expect(input.value).toBe('10');
+		expect(onUpdate).toHaveBeenLastCalledWith({ max_tickets_per_user: 10 });
+
+		await fireEvent.input(input, { target: { value: '1e2' } });
+		await fireEvent.blur(input);
+		expect(input.value).toBe('100');
+		expect(onUpdate).toHaveBeenLastCalledWith({ max_tickets_per_user: 100 });
+	});
+
+	it('falls back to the minimum for a negative or unparseable entry on blur', async () => {
+		renderStep(5);
+		const input = maxTicketsField();
+
+		await fireEvent.input(input, { target: { value: '-5' } });
+		await fireEvent.blur(input);
+
 		expect(input.value).toBe('1');
 		expect(onUpdate).toHaveBeenLastCalledWith({ max_tickets_per_user: 1 });
 	});
