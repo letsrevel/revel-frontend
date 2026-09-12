@@ -31,6 +31,8 @@ vi.mock('$lib/api/generated/sdk.gen', () => ({
 const EVENT_ID = 'event-1';
 const SECTOR_ID = 'sector-1';
 const SEAT_ID = 'seat-1';
+const SEAT_ID_2 = 'seat-2';
+const SEAT_ID_3 = 'seat-3';
 
 function mockResult<T extends (...args: never[]) => unknown>(
 	op: T,
@@ -43,7 +45,8 @@ function mockResult<T extends (...args: never[]) => unknown>(
 	} as never);
 }
 
-function chart(): VenueChartSchema {
+/** A one-sector chart listing exactly `seatIds` as active, selectable seats. */
+function chart(seatIds: readonly string[] = [SEAT_ID]): VenueChartSchema {
 	return {
 		venue_id: 'venue-1',
 		venue_name: 'Test Hall',
@@ -53,7 +56,13 @@ function chart(): VenueChartSchema {
 				id: SECTOR_ID,
 				name: 'Stalls',
 				kind: 'seated',
-				seats: [{ id: SEAT_ID, label: 'A1', row_label: 'A', number: 1, is_active: true }]
+				seats: seatIds.map((id, index) => ({
+					id,
+					label: `A${index + 1}`,
+					row_label: 'A',
+					number: index + 1,
+					is_active: true
+				}))
 			}
 		]
 	} as unknown as VenueChartSchema;
@@ -87,9 +96,9 @@ function seatedTier(): TierSchemaWithId {
  * snapshot, exactly as the seat picker leaves it: both queries are warm, so a
  * freshly mounted controller gets them synchronously on its very first flush.
  */
-function mountGroup(snapshotHolds: string[], groupSeatIds: string[]) {
+function mountGroup(snapshotHolds: string[], groupSeatIds: string[], warmChart = chart()) {
 	const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-	client.setQueryData(['seating-chart', EVENT_ID], chart());
+	client.setQueryData(['seating-chart', EVENT_ID], warmChart);
 	client.setQueryData(['seating-availability', EVENT_ID], availability(snapshotHolds));
 
 	const cart = new EventCart({ remainingFor: () => undefined, eventRemaining: () => null });
@@ -190,6 +199,53 @@ describe('CartSeatGroupHolds', () => {
 		await settle();
 
 		expect(cart.groupFor(tier.id)?.seatIds).toEqual([SEAT_ID]);
+	});
+
+	// #918 review. `holdCount > 0` stops the live-sync effect DELETING a group;
+	// it does nothing about it SHRINKING one, and `cart.setSeatIds` REPLACES.
+	// A group claiming two seats mounts onto a warm `['seating-chart', eventId]`
+	// entry that lists only the first (a narrower/staler chart — the same shape
+	// the test above uses, one seat up). `validSeatIds` filters `seat-2` out of
+	// the seed's union AND out of every later `adoptServerHolds`, so the
+	// controller resolves `[seat-1]`, reports a hold count of 1, and the write
+	// used to drop `seat-2` from the buyer's cart with no visible symptom.
+	it('never shrinks a group when only some of its claimed seats resolve', async () => {
+		const narrowChart = chart([SEAT_ID]);
+		mockResult(eventpublicseatingGetChart, { data: narrowChart });
+		mockResult(eventpublicseatingGetAvailability, { data: availability([]) });
+
+		const { cart, tier, registry } = mountGroup([], [SEAT_ID, SEAT_ID_2], narrowChart);
+		await settle();
+
+		expect(cart.groupFor(tier.id)?.seatIds).toEqual([SEAT_ID, SEAT_ID_2]);
+		expect(cart.groupFor(tier.id)?.quantity).toBe(2);
+		// Not a vacuous pass: the seed really ran and really resolved the one
+		// seat it could, so what withheld the write is the gate — not a seed
+		// that never happened (which would leave `myHolds` empty).
+		expect(registry.get(tier.id)?.myHolds).toEqual([SEAT_ID]);
+	});
+
+	// The other direction of the same gate: once every claimed seat resolves,
+	// the live sync is still a live sync. Proves the partial-resolution term
+	// withholds writes rather than disabling them — here it lets an extra
+	// server-side hold the seed picked up reach the group.
+	it('still syncs once every claimed seat resolves', async () => {
+		const fullChart = chart([SEAT_ID, SEAT_ID_2, SEAT_ID_3]);
+		mockResult(eventpublicseatingGetChart, { data: fullChart });
+		mockResult(eventpublicseatingGetAvailability, {
+			data: availability([SEAT_ID, SEAT_ID_2, SEAT_ID_3])
+		});
+
+		const { cart, tier, registry } = mountGroup(
+			[SEAT_ID, SEAT_ID_2, SEAT_ID_3],
+			[SEAT_ID, SEAT_ID_2],
+			fullChart
+		);
+		await settle();
+
+		expect(registry.get(tier.id)?.myHolds).toEqual([SEAT_ID, SEAT_ID_2, SEAT_ID_3]);
+		expect(cart.groupFor(tier.id)?.seatIds).toEqual([SEAT_ID, SEAT_ID_2, SEAT_ID_3]);
+		expect(cart.groupFor(tier.id)?.quantity).toBe(3);
 	});
 
 	it('keeps the group and adopts the seat when the snapshot already reports the hold', async () => {
