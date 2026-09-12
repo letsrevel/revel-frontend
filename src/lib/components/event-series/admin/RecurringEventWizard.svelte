@@ -18,7 +18,12 @@
 	import { buildRecurringTemplateCreateData } from '$lib/components/events/admin/event-payload';
 	import RecurrencePicker from './RecurrencePicker.svelte';
 	import RecurrenceSummary from './RecurrenceSummary.svelte';
-	import { mutualExclusionGuard } from '$lib/utils/recurrence';
+	import {
+		mutualExclusionGuard,
+		GENERATION_WINDOW_MIN,
+		GENERATION_WINDOW_MAX
+	} from '$lib/utils/recurrence';
+	import { numericField } from '$lib/utils/numeric-input.svelte';
 	import { scrollToFirstInvalid } from '$lib/utils/scroll';
 	import { organizationadminrecurringeventsCreateRecurringEvent } from '$lib/api/generated/sdk.gen';
 	import type {
@@ -174,6 +179,15 @@
 	let autoPublish = $state(false);
 	let generationWindowWeeks = $state(8);
 	let advancedOpen = $state(false);
+
+	// Same field, same guard as the edit dialog: commit whole in-range weeks while
+	// typing, clamp on blur, so the input can actually be emptied (#924).
+	const windowField = numericField({
+		value: () => generationWindowWeeks,
+		commit: (weeks) => (generationWindowWeeks = weeks),
+		min: GENERATION_WINDOW_MIN,
+		max: GENERATION_WINDOW_MAX
+	});
 
 	// Auto-prefill series name from event name once the user hasn't customized it
 	let seriesNameTouched = $state(false);
@@ -659,15 +673,11 @@
 								<Input
 									id="generation-window"
 									type="number"
-									min={1}
-									max={52}
-									value={generationWindowWeeks}
-									oninput={(e) => {
-										const v = Number((e.target as HTMLInputElement).value);
-										if (Number.isFinite(v)) {
-											generationWindowWeeks = Math.max(1, Math.min(52, Math.floor(v)));
-										}
-									}}
+									min={GENERATION_WINDOW_MIN}
+									max={GENERATION_WINDOW_MAX}
+									value={windowField.value}
+									oninput={windowField.oninput}
+									onblur={windowField.onblur}
 									class="w-24"
 								/>
 								<span class="text-sm text-muted-foreground"
