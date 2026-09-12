@@ -224,7 +224,12 @@ test.describe('J6 seat selection @p2', () => {
 		await picker.getByRole('button', { name: 'Done', exact: true }).click();
 		await expect(picker).toBeHidden();
 
+		// Assert the group survived the hand-off BEFORE reaching for Buy: the bar
+		// is gated on `!cart.isEmpty`, so a group deleted by its own seat-hold
+		// host (#918) surfaced here as an unreadable "element not found" on the
+		// Buy button rather than as a cart assertion.
 		const summaryBar = page.getByTestId('cart-summary-bar');
+		await expect(summaryBar).toBeVisible({ timeout: 15_000 });
 		await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
 		await expect(page.getByText(/reserved/i)).toBeVisible({ timeout: 10_000 });
 

@@ -7,7 +7,11 @@ import {
 } from '../../support/factories';
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
-import { completeStripeCheckout } from '../../support/stripe';
+import {
+	completeStripeCheckout,
+	expectWebhookEffect,
+	requireStripeWebhooks
+} from '../../support/stripe';
 
 // J6.7 (USER_JOURNEYS.md) — attendee self-cancellation on an online ticket:
 // the cancel dialog quotes the refund from the tier's policy before anything
@@ -24,6 +28,7 @@ test.describe('J6 self-cancel @p2', () => {
 	test('refund preview → confirm → ticket cancelled with refund toast', async ({ browser }) => {
 		// Stripe hosted checkout + webhook + refund round-trips.
 		test.setTimeout(240_000);
+		requireStripeWebhooks();
 
 		const [event, buyer] = await Promise.all([
 			createTicketedEvent({ freeTier: false }),
@@ -54,10 +59,14 @@ test.describe('J6 self-cancel @p2', () => {
 			.filter({ hasText: event.name })
 			.filter({ hasText: /Active/i })
 			.first();
-		await expect(async () => {
-			await gotoHydrated(page, '/dashboard/tickets');
-			await expect(activeCard).toBeVisible({ timeout: 5_000 });
-		}).toPass({ timeout: 90_000 });
+		await expectWebhookEffect(
+			'the ticket to flip Active on /dashboard/tickets',
+			async () => {
+				await gotoHydrated(page, '/dashboard/tickets');
+				await expect(activeCard).toBeVisible({ timeout: 5_000 });
+			},
+			{ timeout: 90_000 }
+		);
 		await waitForClientAuth(page);
 
 		// Open the ticket modal → "Cancel ticket" (rendered only for active

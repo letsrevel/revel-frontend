@@ -12,7 +12,11 @@ import {
 import { authenticateContext } from '../../support/session';
 import { membershipCard } from '../../support/membership-locators';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
-import { completeStripeCheckout } from '../../support/stripe';
+import {
+	completeStripeCheckout,
+	expectWebhookEffect,
+	requireStripeWebhooks
+} from '../../support/stripe';
 
 // J23.5 (USER_JOURNEYS.md) — member SELF-SERVICE on a live Stripe subscription:
 // change plan (both directions), cancel (both modes) and the billing portal
@@ -142,16 +146,22 @@ async function subscribeAndPay(
 
 	// Activation arrives via the webhook, never the redirect. Each pass is a
 	// fresh navigation so the account queries refetch rather than serve cache.
-	await reloadUntil(
-		page,
-		async (card) => {
+	// Routed through expectWebhookEffect (#919) — same polling, but the first
+	// expiry in a run names the missing `stripe listen` forwarder instead of
+	// blaming the membership card.
+	await expectWebhookEffect(
+		'the subscription webhook to flip the membership card Active',
+		async () => {
+			await gotoHydrated(page, '/account/memberships');
+			await waitForClientAuth(page);
+			const card = orgCard(page);
 			await expect(card).toBeVisible({ timeout: 15_000 });
 			await expect(
 				card.getByTestId('membership-subscription-status').filter({ hasText: 'Active' })
 			).toBeVisible({ timeout: 10_000 });
 			await expect(card.getByText(plan.name)).toBeVisible({ timeout: 5_000 });
 		},
-		150_000
+		{ timeout: 150_000 }
 	);
 }
 
@@ -188,6 +198,7 @@ test.describe('J23 manage subscription @p2', () => {
 		// One hosted checkout plus three Stripe round trips on top (downgrade,
 		// cancel-at-period-end, and the uncancel that undoes it).
 		test.setTimeout(360_000);
+		requireStripeWebhooks();
 
 		const { user, orgId, standard, lite } = await arrangeTwoPlans('SubDowngrade');
 
@@ -282,6 +293,7 @@ test.describe('J23 manage subscription @p2', () => {
 		browser
 	}) => {
 		test.setTimeout(300_000);
+		requireStripeWebhooks();
 
 		const { user, orgId, standard, lite } = await arrangeTwoPlans('SubUpgrade');
 
@@ -369,6 +381,7 @@ test.describe('J23 manage subscription @p2', () => {
 		browser
 	}) => {
 		test.setTimeout(300_000);
+		requireStripeWebhooks();
 
 		const { user, orgId, standard } = await arrangeTwoPlans('SubPortal');
 

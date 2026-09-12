@@ -7,7 +7,11 @@ import {
 } from '../../support/factories';
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
-import { completeStripeCheckout } from '../../support/stripe';
+import {
+	completeStripeCheckout,
+	expectWebhookEffect,
+	requireStripeWebhooks
+} from '../../support/stripe';
 
 // Organizer refunds (FE #831 / BE #870) — refund and cancel are separate
 // operations: the refund dialog moves money and the ticket stays valid; the
@@ -52,6 +56,7 @@ test.describe('J10 organizer refunds @p2', () => {
 	}) => {
 		// Stripe hosted checkout + webhook round-trips.
 		test.setTimeout(240_000);
+		requireStripeWebhooks();
 
 		const { event, buyer } = await arrangePaidTicket(browser, 'RefundBuyer', '20.00');
 		const buyerName = `${buyer.firstName} ${buyer.lastName}`;
@@ -64,11 +69,15 @@ test.describe('J10 organizer refunds @p2', () => {
 			.filter({ hasText: /Active/ })
 			.filter({ visible: true })
 			.first();
-		await expect(async () => {
-			await gotoHydrated(page, `/org/${event.orgSlug}/admin/events/${event.id}/tickets`);
-			await waitForClientAuth(page);
-			await expect(activeRow).toBeVisible({ timeout: 5_000 });
-		}).toPass({ timeout: 120_000 });
+		await expectWebhookEffect(
+			"the paid ticket to appear Active on the event's admin tickets tab",
+			async () => {
+				await gotoHydrated(page, `/org/${event.orgSlug}/admin/events/${event.id}/tickets`);
+				await waitForClientAuth(page);
+				await expect(activeRow).toBeVisible({ timeout: 5_000 });
+			},
+			{ timeout: 120_000 }
+		);
 
 		// Refund €5 of €20 via the row's inline Refund action.
 		await activeRow.getByRole('button', { name: 'Refund payment' }).first().click();
@@ -111,6 +120,7 @@ test.describe('J10 organizer refunds @p2', () => {
 
 	test('cancel event with refund-all sweeps the paid ticket', async ({ asOwner, browser }) => {
 		test.setTimeout(240_000);
+		requireStripeWebhooks();
 
 		const { event, buyer } = await arrangePaidTicket(browser, 'SweepBuyer', '12.00');
 		const buyerName = `${buyer.firstName} ${buyer.lastName}`;
@@ -124,11 +134,15 @@ test.describe('J10 organizer refunds @p2', () => {
 			.filter({ hasText: /Active/ })
 			.filter({ visible: true })
 			.first();
-		await expect(async () => {
-			await gotoHydrated(page, `/org/${event.orgSlug}/admin/events/${event.id}/tickets`);
-			await waitForClientAuth(page);
-			await expect(activeRow).toBeVisible({ timeout: 5_000 });
-		}).toPass({ timeout: 120_000 });
+		await expectWebhookEffect(
+			"the paid ticket to appear Active on the event's admin tickets tab",
+			async () => {
+				await gotoHydrated(page, `/org/${event.orgSlug}/admin/events/${event.id}/tickets`);
+				await waitForClientAuth(page);
+				await expect(activeRow).toBeVisible({ timeout: 5_000 });
+			},
+			{ timeout: 120_000 }
+		);
 
 		// Cancel from the edit page with the refund sweep opted in.
 		await gotoHydrated(page, `/org/${event.orgSlug}/admin/events/${event.id}/edit`);

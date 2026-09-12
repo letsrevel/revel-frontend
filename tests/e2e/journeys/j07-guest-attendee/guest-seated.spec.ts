@@ -169,7 +169,12 @@ test.describe('J7 guest seated checkout @p2', () => {
 			await picker.getByRole('button', { name: 'Done', exact: true }).click();
 			await expect(picker).toBeHidden();
 
+			// Assert the group exists BEFORE reaching for Buy: the summary bar is
+			// gated on `!cart.isEmpty`, so a lost hand-off (#918) used to surface
+			// here as an unreadable "element not found" on the Buy button.
 			const summaryBar = page.getByTestId('cart-summary-bar');
+			await expect(summaryBar).toBeVisible({ timeout: 15_000 });
+			await expect(summaryBar).toContainText('1 ticket');
 			await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
 
 			// Checkout sheet: identity + this group's ticket-holder name
@@ -447,21 +452,21 @@ test.describe('J7 guest seated checkout @p2', () => {
 				await expect(seatButton).toHaveAttribute('aria-pressed', 'true', { timeout: 5_000 });
 			}).toPass({ timeout: 60_000 });
 
-			// Done, then let the seated group settle (its OWN `CartSeatGroupHolds`
-			// mounts fresh and seeds from a fresh chart/availability fetch) BEFORE
-			// adding the second tier — the summary bar's "1 ticket" is the signal
-			// that write has landed, so the two groups' cart writes don't race.
-			// Idempotent loop: under heavy parallel-worker load the settle can
-			// outrun a short fixed wait, and a dropped click would otherwise hang.
+			// Done hands the pick to the cart. This used to be a `toPass` loop that
+			// re-clicked Done "if the picker is still visible" — dead code on the
+			// failing path (#918), since Done unmounts the picker, so the guard was
+			// permanently false and the loop just spun to its timeout. The race it
+			// was aimed at was real but cart-side: the group's own
+			// `CartSeatGroupHolds` mounted, seeded from a still-PRE-hold
+			// availability snapshot, and wrote the resulting `[]` back over the
+			// group — deleting it. Fixed at the source (`cart-seat-sync.ts`), so
+			// this is a single click and a plain assertion again.
 			const summaryBar = page.getByTestId('cart-summary-bar');
-			await expect(async () => {
-				if (await summaryBar.getByText('1 ticket').isVisible()) return;
-				if (await picker.isVisible()) {
-					await picker.getByRole('button', { name: 'Done', exact: true }).click();
-				}
-				await expect(summaryBar.getByText('1 ticket')).toBeVisible({ timeout: 10_000 });
-			}).toPass({ timeout: 45_000 });
+			await picker.getByRole('button', { name: 'Done', exact: true }).click();
 			await expect(picker).toBeHidden();
+			// The seated group must SURVIVE its host's seed pass before the GA
+			// tier is added, so the two groups' cart writes don't race.
+			await expect(summaryBar.getByText('1 ticket')).toBeVisible({ timeout: 15_000 });
 
 			// Add the GA tier into the SAME cart.
 			const gaStepper = page.getByRole('group', { name: `Quantity for ${gaTier.name}` });

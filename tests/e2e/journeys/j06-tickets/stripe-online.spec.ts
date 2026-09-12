@@ -2,7 +2,11 @@ import { test, expect } from '../../support/fixtures';
 import { createTicketedEvent, createTicketTier, createVerifiedUser } from '../../support/factories';
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
-import { completeStripeCheckout } from '../../support/stripe';
+import {
+	completeStripeCheckout,
+	expectWebhookEffect,
+	requireStripeWebhooks
+} from '../../support/stripe';
 
 // J6.3 (USER_JOURNEYS.md) — online fixed-price ticket via Stripe HOSTED
 // checkout: purchase → redirect to checkout.stripe.com → the reserved ticket
@@ -21,8 +25,9 @@ import { completeStripeCheckout } from '../../support/stripe';
 // Requires the full Stripe test-mode setup from tests/e2e/README.md (backend
 // bootstrapped with CONNECTED_TEST_STRIPE_ID + `stripe listen` forwarder) —
 // without a running `stripe listen` forwarder the webhook never arrives and
-// the final ACTIVE poll times out; this is a known, environment-dependent
-// failure (same category as self-cancel.spec.ts), not a rewrite defect.
+// the final ACTIVE poll cannot pass; this is a known, environment-dependent
+// failure (same category as self-cancel.spec.ts), not a rewrite defect — since
+// #919 it fails naming the forwarder instead of timing out silently.
 //
 // Isolation: API-arranged event on the Stripe-connected Org Alpha with an
 // online tier, and a throwaway buyer (per-user ticket limits).
@@ -31,6 +36,7 @@ test.describe('J6 Stripe online checkout @p1', () => {
 	test('purchase → PENDING pre-payment → pay on Stripe → webhook → ACTIVE', async ({ browser }) => {
 		// Stripe's hosted page + webhook round-trip don't fit the default budget.
 		test.setTimeout(240_000);
+		requireStripeWebhooks();
 
 		const [event, user] = await Promise.all([
 			createTicketedEvent({ freeTier: false }),
@@ -94,10 +100,14 @@ test.describe('J6 Stripe online checkout @p1', () => {
 			.filter({ hasText: event.name })
 			.filter({ hasText: /Active/i })
 			.first();
-		await expect(async () => {
-			await gotoHydrated(page, '/dashboard/tickets');
-			await expect(activeCard).toBeVisible({ timeout: 5_000 });
-		}).toPass({ timeout: 90_000 });
+		await expectWebhookEffect(
+			'the ticket to flip Active on /dashboard/tickets',
+			async () => {
+				await gotoHydrated(page, '/dashboard/tickets');
+				await expect(activeCard).toBeVisible({ timeout: 5_000 });
+			},
+			{ timeout: 90_000 }
+		);
 
 		await context.close();
 	});

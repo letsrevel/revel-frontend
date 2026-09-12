@@ -44,6 +44,20 @@
 	const tier = group.tier;
 	const isUserChoice = tier.seat_assignment_mode === 'user_choice';
 
+	// The seats this group ALREADY claims at mount (#918), written in the same
+	// flush by whichever writer created the group: the picker's Done
+	// (`SeatPickerDialog.handleDone`) or the picker-free venue-overview
+	// hand-off (the event page's `handleSelectTier`, which adopts seats the
+	// overview map already holds). Captured once, deliberately, for the same
+	// reason `tier` is: it's the hand-off payload, not a value to track.
+	// Copied so a later `setSeatIds` can't retroactively change what the seed
+	// was told. Fed to `seedFromAvailability` so a warm but PRE-hold
+	// availability snapshot can't make the controller disown them, and
+	// compared against `myHolds` below so a PARTIAL resolution can't make the
+	// live sync write a shrunken list.
+	// svelte-ignore state_referenced_locally
+	const initialSeatIds: string[] = isUserChoice ? [...group.seatIds] : [];
+
 	// Declared ahead of `options` (explicit type annotation) so `getQuantity`
 	// can close over it without a circular type-inference error — it's only
 	// ever CALLED after the assignment below, never read synchronously.
@@ -136,23 +150,33 @@
 			// current holds keeps each group's adoption in its own lane.
 			const validIds = validSeatIdsFor(chart);
 			for (const id of registry.otherHolds(tier.id)) validIds.delete(id);
-			controller.seedFromAvailability(validIds);
+			controller.seedFromAvailability(validIds, initialSeatIds);
 			return;
 		}
 		controller.adoptServerHolds();
 	});
 
-	// Live sync: the controller's held seats ARE the group's seatIds. The
-	// ONLY other writer is the host's expiry sweep (which clears to []).
-	// Gated on `seeded` (shouldSyncSeatIds): on the very first reactive
-	// flush `controller.myHolds` is still `[]` (chart/availability are still
-	// in flight above), and `cart.setSeatIds(tier, [])` REMOVES the group —
-	// syncing before the seed/adopt effect's first pass would strip a group
-	// whose seats already exist server-side (the venue-overview hand-off)
-	// and unmount this very component before it gets the chance to adopt
-	// them. See cart-seat-sync.ts for the (unit-tested) gate itself.
+	// Live sync: the controller's held seats become the group's seatIds. NOT an
+	// additive writer — `cart.setSeatIds` REPLACES the list (and `[]` REMOVES
+	// the group) — so the gate's whole job is to withhold any write that would
+	// be worse than what the group already claims. `myHolds` can be empty
+	// (queries in flight, or a seed off a warm-but-pre-hold snapshot — #918)
+	// or PARTIAL (a claimed seat the warm chart doesn't list, so neither the
+	// seed's union nor any later adopt can resolve it — #918 review). Writing
+	// the first deletes the group and unmounts the only component that could
+	// have repaired it; writing the second drops a seat from the buyer's cart
+	// with no symptom at all. Shrinking and emptying belong to the writers
+	// that do it explicitly: the picker, the venue-overview hand-off, and the
+	// host's expiry sweep. See cart-seat-sync.ts for the (unit-tested) gate.
+	//
+	// `initialSeatIds` is a plain array, so the only reactive dependency this
+	// adds is `controller.myHolds` — which the effect already tracked. Reading
+	// `group.seatIds` here instead would make the effect depend on its own
+	// write and loop.
 	$effect(() => {
-		if (!shouldSyncSeatIds(isUserChoice, seeded)) return;
-		cart.setSeatIds(tier, controller.myHolds);
+		const held = controller.myHolds;
+		const unresolvedClaims = initialSeatIds.filter((id) => !held.includes(id)).length;
+		if (!shouldSyncSeatIds(isUserChoice, seeded, held.length, unresolvedClaims)) return;
+		cart.setSeatIds(tier, held);
 	});
 </script>

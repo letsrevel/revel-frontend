@@ -30,6 +30,8 @@ const REGRESSION_BROWSERS = [
 
 export default defineConfig({
 	testDir: './tests/e2e',
+	// Plants E2E_RUN_ID for the cross-worker Stripe webhook verdict (#919).
+	globalSetup: './tests/e2e/support/global-setup.ts',
 	fullyParallel: true,
 	forbidOnly: !!process.env.CI,
 	// One local retry. The client-auth rotation race that originally motivated
