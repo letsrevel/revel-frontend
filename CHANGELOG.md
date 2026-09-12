@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.12.0] - 2026-09-12
+
+### Changed
+
+- Guest checkout and RSVP refusals now explain what to do next instead of surfacing a bare error: a guest whose email already has an account gets sign-in / create-account buttons with that email prefilled, and a guest cart that is too large to email gets a "Log in" link plus a "Split your purchase" button that returns you to the cart with everything intact. Translated in all six languages.
+
+### Fixed
+
+- Seats picked on the seat map no longer disappear from the cart the moment you confirm the selection — the cart summary bar could vanish entirely, and the seats stayed held server-side until their hold expired, which could later resurface as a spurious "no capacity" error.
+- Apple Wallet and Google Wallet now tell a temporary pass-generation failure apart from a deployment that has no wallet credentials: the first says passes are temporarily unavailable and to try again later, instead of the misleading "not configured for this event".
+- Signing in from a guest checkout or RSVP error now returns you to the page you came from instead of stranding you on the dashboard.
+
 ## [2.11.0] - 2026-09-09
 
 ### Added
