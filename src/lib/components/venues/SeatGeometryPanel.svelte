@@ -12,6 +12,7 @@
 		type RowLayoutRecipe,
 		type RowOverride
 	} from './row-layout';
+	import { numericField } from '$lib/utils/numeric-input.svelte';
 
 	export interface RowOption {
 		rank: number;
@@ -76,19 +77,56 @@
 		updateRecipe({ stagger: checked ? 0.5 : 0 });
 	}
 
-	// Clamp is local (row-layout's own `clamp` is a persistence-boundary detail
-	// and stays unexported) — this is the equivalent guard at the input
-	// boundary, so a typed out-of-range value can never reach `recipe` even
-	// transiently (WCAG 3.3.1: prevention beats post-hoc error identification).
-	function clamp(value: number, min: number, max: number): number {
-		return Math.min(max, Math.max(min, value));
-	}
+	// An out-of-range typed value still never reaches `recipe` (WCAG 3.3.1:
+	// prevention beats post-hoc error identification) — but it is now kept out by
+	// NOT committing it, rather than by rewriting the field under the caret, and
+	// blur clamps whatever is left into range (#924). `type="number"` reports an
+	// empty value for a lone "-", so clamping per keystroke made a negative curve
+	// or shift awkward to type: the minus sign was replaced before its digits.
+	const curveField = numericField({
+		value: () => recipe.curve,
+		commit: (curve) => updateRecipe({ curve }, 'curve'),
+		min: CURVE_MIN,
+		max: CURVE_MAX,
+		decimal: true
+	});
 
-	function parseOptionalNumber(raw: string, min: number, max: number): number | undefined {
-		if (raw.trim() === '') return undefined;
-		const value = Number(raw);
-		return Number.isFinite(value) ? clamp(value, min, max) : undefined;
-	}
+	const staggerField = numericField({
+		value: () => recipe.stagger,
+		commit: (stagger) => updateRecipe({ stagger }, 'stagger'),
+		min: STAGGER_MIN,
+		max: STAGGER_MAX,
+		decimal: true
+	});
+
+	// Per-row overrides are genuinely clearable: an empty field means "this row
+	// doesn't override the recipe", which drops the entry entirely.
+	const overrideCurveField = numericField<number | null>({
+		value: () => selectedOverride?.curve ?? null,
+		commit: (curve) => writeOverride({ curve: curve ?? undefined }),
+		min: CURVE_MIN,
+		max: CURVE_MAX,
+		decimal: true,
+		emptyValue: null
+	});
+
+	const overrideDxField = numericField<number | null>({
+		value: () => selectedOverride?.dx ?? null,
+		commit: (dx) => writeOverride({ dx: dx ?? undefined }),
+		min: -ROW_SHIFT_LIMIT,
+		max: ROW_SHIFT_LIMIT,
+		decimal: true,
+		emptyValue: null
+	});
+
+	const overrideDyField = numericField<number | null>({
+		value: () => selectedOverride?.dy ?? null,
+		commit: (dy) => writeOverride({ dy: dy ?? undefined }),
+		min: -ROW_SHIFT_LIMIT,
+		max: ROW_SHIFT_LIMIT,
+		decimal: true,
+		emptyValue: null
+	});
 
 	function writeOverride(patch: Partial<Omit<RowOverride, 'row'>>) {
 		if (selectedRank === null) return;
@@ -175,12 +213,10 @@
 					min={CURVE_MIN}
 					max={CURVE_MAX}
 					step={CURVE_STEP}
-					value={recipe.curve}
+					value={curveField.value}
 					aria-describedby="geo-curve-help"
-					oninput={(e) => {
-						const parsed = parseOptionalNumber(e.currentTarget.value, CURVE_MIN, CURVE_MAX);
-						if (parsed !== undefined) updateRecipe({ curve: parsed }, 'curve');
-					}}
+					oninput={curveField.oninput}
+					onblur={curveField.onblur}
 					class="w-20 rounded-md border border-input bg-background px-3 py-2 text-sm"
 				/>
 			</div>
@@ -216,11 +252,9 @@
 						min={STAGGER_MIN}
 						max={STAGGER_MAX}
 						step="0.1"
-						value={recipe.stagger}
-						oninput={(e) => {
-							const parsed = parseOptionalNumber(e.currentTarget.value, STAGGER_MIN, STAGGER_MAX);
-							if (parsed !== undefined) updateRecipe({ stagger: parsed }, 'stagger');
-						}}
+						value={staggerField.value}
+						oninput={staggerField.oninput}
+						onblur={staggerField.onblur}
 						class="w-24 rounded-md border border-input bg-background px-3 py-2 text-sm"
 					/>
 				</div>
@@ -279,11 +313,9 @@
 						min={CURVE_MIN}
 						max={CURVE_MAX}
 						step={CURVE_STEP}
-						value={selectedOverride?.curve ?? ''}
-						oninput={(e) =>
-							writeOverride({
-								curve: parseOptionalNumber(e.currentTarget.value, CURVE_MIN, CURVE_MAX)
-							})}
+						value={overrideCurveField.value}
+						oninput={overrideCurveField.oninput}
+						onblur={overrideCurveField.onblur}
 						class="w-24 rounded-md border border-input bg-background px-3 py-2 text-sm"
 					/>
 				</div>
@@ -295,11 +327,9 @@
 						id="geo-row-dx"
 						type="number"
 						step="0.1"
-						value={selectedOverride?.dx ?? ''}
-						oninput={(e) =>
-							writeOverride({
-								dx: parseOptionalNumber(e.currentTarget.value, -ROW_SHIFT_LIMIT, ROW_SHIFT_LIMIT)
-							})}
+						value={overrideDxField.value}
+						oninput={overrideDxField.oninput}
+						onblur={overrideDxField.onblur}
 						class="w-24 rounded-md border border-input bg-background px-3 py-2 text-sm"
 					/>
 				</div>
@@ -311,11 +341,9 @@
 						id="geo-row-dy"
 						type="number"
 						step="0.1"
-						value={selectedOverride?.dy ?? ''}
-						oninput={(e) =>
-							writeOverride({
-								dy: parseOptionalNumber(e.currentTarget.value, -ROW_SHIFT_LIMIT, ROW_SHIFT_LIMIT)
-							})}
+						value={overrideDyField.value}
+						oninput={overrideDyField.oninput}
+						onblur={overrideDyField.onblur}
 						class="w-24 rounded-md border border-input bg-background px-3 py-2 text-sm"
 					/>
 				</div>

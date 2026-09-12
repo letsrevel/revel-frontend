@@ -40,6 +40,7 @@
 		type NudgePatch,
 		type SeatAdjustState
 	} from './seat-adjust-state.svelte';
+	import { numericField } from '$lib/utils/numeric-input.svelte';
 
 	interface Props {
 		adjust: SeatAdjustState;
@@ -76,21 +77,44 @@
 		onRemoveSeat
 	}: Props = $props();
 
-	function clamp(value: number, min: number, max: number): number {
-		return Math.min(max, Math.max(min, value));
-	}
-
 	/**
-	 * Guard at the input boundary (WCAG 3.3.1: prevention beats correction), so
-	 * an out-of-range typed value never reaches the recipe even transiently. An
-	 * emptied field reads as 0 — that IS the "no offset" value here, and the
-	 * nudge drops out of the recipe entirely.
+	 * An emptied field still reads as 0 — that IS the "no offset" value here, and
+	 * the nudge drops out of the recipe entirely — but it now settles to 0 on
+	 * BLUR rather than on the keystroke that empties it (#924). Writing 0 back per
+	 * keystroke made a negative offset untypable: `type="number"` reports an empty
+	 * `value` for a lone `-`, so the minus sign was replaced by a `0` under the
+	 * caret before the digits could follow. Out-of-range values are still kept out
+	 * of the recipe (WCAG 3.3.1 — prevention beats correction): they simply aren't
+	 * committed while typing, and blur clamps them into range.
 	 */
-	function readNumber(raw: string, min: number, max: number): number {
-		if (raw.trim() === '') return 0;
-		const value = Number(raw);
-		return Number.isFinite(value) ? clamp(value, min, max) : 0;
-	}
+	const dxField = numericField({
+		value: () => nudge?.dx ?? 0,
+		commit: (dx) => onNudgeChange({ dx }),
+		min: -ROW_SHIFT_LIMIT,
+		max: ROW_SHIFT_LIMIT,
+		decimal: true,
+		emptyValue: 0
+	});
+
+	const dyField = numericField({
+		value: () => nudge?.dy ?? 0,
+		commit: (dy) => onNudgeChange({ dy }),
+		min: -ROW_SHIFT_LIMIT,
+		max: ROW_SHIFT_LIMIT,
+		decimal: true,
+		emptyValue: 0
+	});
+
+	// Rotation is accepted over a full turn and normalized downstream, which is
+	// why these bounds are wider than the input's own min/max.
+	const rotField = numericField({
+		value: () => nudge?.rot ?? 0,
+		commit: (rot) => onNudgeChange({ rot }),
+		min: -360,
+		max: 360,
+		decimal: true,
+		emptyValue: 0
+	});
 
 	const INPUT_CLASS =
 		'h-9 w-16 rounded-md border border-input bg-background px-2 text-sm text-center';
@@ -137,11 +161,9 @@
 					step={NUDGE_STEP}
 					min={-ROW_SHIFT_LIMIT}
 					max={ROW_SHIFT_LIMIT}
-					value={nudge?.dx ?? 0}
-					oninput={(e) =>
-						onNudgeChange({
-							dx: readNumber(e.currentTarget.value, -ROW_SHIFT_LIMIT, ROW_SHIFT_LIMIT)
-						})}
+					value={dxField.value}
+					oninput={dxField.oninput}
+					onblur={dxField.onblur}
 					class={INPUT_CLASS}
 				/>
 				<input
@@ -151,11 +173,9 @@
 					step={NUDGE_STEP}
 					min={-ROW_SHIFT_LIMIT}
 					max={ROW_SHIFT_LIMIT}
-					value={nudge?.dy ?? 0}
-					oninput={(e) =>
-						onNudgeChange({
-							dy: readNumber(e.currentTarget.value, -ROW_SHIFT_LIMIT, ROW_SHIFT_LIMIT)
-						})}
+					value={dyField.value}
+					oninput={dyField.oninput}
+					onblur={dyField.onblur}
 					class={INPUT_CLASS}
 				/>
 				<input
@@ -165,9 +185,10 @@
 					step={ROTATION_STEP}
 					min={-180}
 					max={179}
-					value={nudge?.rot ?? 0}
+					value={rotField.value}
 					aria-describedby="adjust-rot-help"
-					oninput={(e) => onNudgeChange({ rot: readNumber(e.currentTarget.value, -360, 360) })}
+					oninput={rotField.oninput}
+					onblur={rotField.onblur}
 					class={INPUT_CLASS}
 				/>
 				<span id="adjust-rot-help" class="sr-only">{m['seatGridEditor.adjust.rotHint']()}</span>

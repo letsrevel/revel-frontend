@@ -15,6 +15,7 @@
 		type BoundaryKind
 	} from '$lib/types/recurrence';
 	import { inferBoundaryKind } from '$lib/utils/recurrence';
+	import { numericField } from '$lib/utils/numeric-input.svelte';
 	import { formatEventDate } from '$lib/utils/date';
 
 	interface Props {
@@ -84,24 +85,32 @@
 		patch({ weekdays: [...next].sort((a, b) => a - b) });
 	}
 
-	function handleIntervalInput(event: Event): void {
-		const value = Number((event.target as HTMLInputElement).value);
-		if (Number.isFinite(value) && value >= 1) {
-			patch({ interval: Math.floor(value) });
-		}
-	}
+	// All three numeric fields commit only in-range values while the user types and
+	// settle on blur (#924). Rewriting an out-of-range value on the keystroke that
+	// produced it turned a typed "0" into "1" and "40" into "31" under the caret;
+	// an interval left at "0" used to diverge from the rule with nothing to settle it.
+	const intervalField = numericField({
+		value: () => interval,
+		commit: (next) => patch({ interval: next }),
+		min: 1
+	});
 
-	function handleDayOfMonthInput(event: Event): void {
-		const raw = (event.target as HTMLInputElement).value;
-		if (raw === '') {
-			patch({ day_of_month: null });
-			return;
-		}
-		const value = Number(raw);
-		if (Number.isFinite(value)) {
-			patch({ day_of_month: Math.max(1, Math.min(31, Math.floor(value))) });
-		}
-	}
+	// `day_of_month` and `count` are genuinely clearable — empty means "not set" —
+	// so an empty field commits null straight away rather than waiting for blur.
+	const dayOfMonthField = numericField<number | null>({
+		value: () => rule.day_of_month ?? null,
+		commit: (day) => patch({ day_of_month: day }),
+		min: 1,
+		max: 31,
+		emptyValue: null
+	});
+
+	const countField = numericField<number | null>({
+		value: () => rule.count ?? null,
+		commit: (count) => patch({ count }),
+		min: 1,
+		emptyValue: null
+	});
 
 	function handleMonthlyTypeChange(value: MonthlyType): void {
 		if (value === monthlyType) return;
@@ -191,11 +200,6 @@
 
 	function handleUntilChange(value: string): void {
 		patch({ until: value || null });
-	}
-
-	function handleCountInput(event: Event): void {
-		const raw = (event.target as HTMLInputElement).value;
-		patch({ count: raw ? Math.max(1, Math.floor(Number(raw))) : null });
 	}
 
 	function frequencyLabel(f: Frequency): string {
@@ -323,8 +327,9 @@
 				id="recurrence-interval"
 				type="number"
 				min={1}
-				value={interval}
-				oninput={handleIntervalInput}
+				value={intervalField.value}
+				oninput={intervalField.oninput}
+				onblur={intervalField.onblur}
 				class="w-24"
 				aria-describedby={validationErrors.interval ? 'recurrence-interval-error' : undefined}
 			/>
@@ -426,8 +431,9 @@
 						type="number"
 						min={1}
 						max={31}
-						value={rule.day_of_month ?? ''}
-						oninput={handleDayOfMonthInput}
+						value={dayOfMonthField.value}
+						oninput={dayOfMonthField.oninput}
+						onblur={dayOfMonthField.onblur}
 						class="w-24"
 						aria-describedby={validationErrors.day_of_month ? 'recurrence-dom-error' : undefined}
 					/>
@@ -512,8 +518,9 @@
 					<Input
 						type="number"
 						min={1}
-						value={rule.count ?? ''}
-						oninput={handleCountInput}
+						value={countField.value}
+						oninput={countField.oninput}
+						onblur={countField.onblur}
 						class="sm:w-32"
 						aria-label={m['recurringEvents.picker.countLabel']()}
 					/>

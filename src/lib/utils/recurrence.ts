@@ -192,6 +192,14 @@ export function parseExdates(exdates: readonly string[] | null | undefined): Dat
 	return out.sort((a, b) => a.getTime() - b.getTime());
 }
 
+// --- generation window ------------------------------------------------------
+
+// How far ahead a series materializes events, in weeks. The wizard and the edit
+// dialog both expose this field; the bounds live here so the two copies can't
+// drift apart (they already had the same clamp inlined twice — see #924).
+export const GENERATION_WINDOW_MIN = 1;
+export const GENERATION_WINDOW_MAX = 52;
+
 // --- mutual-exclusion guard ------------------------------------------------
 
 export interface BoundaryGuardInput {

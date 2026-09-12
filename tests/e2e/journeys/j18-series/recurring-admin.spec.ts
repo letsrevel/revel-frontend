@@ -86,7 +86,24 @@ test.describe('J18 recurring series admin @p2', () => {
 		const seriesName = uniqueName('Series');
 		await page.locator('#series-name').fill(seriesName);
 		await page.getByRole('button', { name: 'Advanced' }).click();
-		await page.locator('#generation-window').fill('2');
+
+		// The window field must survive real keystrokes: clamping on every input
+		// event refilled it with "1" under the caret, so the value could only be
+		// appended to (#922 → #924). jsdom can't show this — the caret is the bug.
+		const windowField = page.locator('#generation-window');
+		await windowField.click();
+		await page.keyboard.press('End');
+		await page.keyboard.press('Backspace');
+		await expect(windowField).toHaveValue('');
+		await windowField.pressSequentially('12');
+		await expect(windowField).toHaveValue('12');
+		// Out of range is not rewritten mid-typing; blur settles it at the maximum.
+		await windowField.pressSequentially('9');
+		await expect(windowField).toHaveValue('129');
+		await windowField.blur();
+		await expect(windowField).toHaveValue('52');
+
+		await windowField.fill('2');
 
 		await expect(async () => {
 			if (!/\/admin\/event-series\/[0-9a-f]{8}/.test(page.url())) {

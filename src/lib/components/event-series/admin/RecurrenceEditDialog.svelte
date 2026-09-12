@@ -14,7 +14,12 @@
 		RecurrenceRuleUpdateSchema
 	} from '$lib/api/generated/types.gen';
 	import { invalidateSeries } from '$lib/queries/event-series';
-	import { mutualExclusionGuard } from '$lib/utils/recurrence';
+	import {
+		mutualExclusionGuard,
+		GENERATION_WINDOW_MIN,
+		GENERATION_WINDOW_MAX
+	} from '$lib/utils/recurrence';
+	import { numericField } from '$lib/utils/numeric-input.svelte';
 	import type { RecurrenceRuleCreate } from '$lib/types/recurrence';
 	import RecurrencePicker from './RecurrencePicker.svelte';
 
@@ -66,6 +71,15 @@
 	let validationErrors = $state<Record<string, string>>({});
 	let errorBanner = $state<string | null>(null);
 
+	// Clamping on every keystroke made the field impossible to edit: `Number('')`
+	// is 0, which clamped up to 1 and refilled the input under the caret (#924).
+	const windowField = numericField({
+		value: () => generationWindowWeeks,
+		commit: (weeks) => (generationWindowWeeks = weeks),
+		min: GENERATION_WINDOW_MIN,
+		max: GENERATION_WINDOW_MAX
+	});
+
 	// Re-seed every time the dialog opens. We always diff against the current
 	// `series` prop (the server-authoritative snapshot the dashboard holds) so
 	// concurrent edits don't leak across opens.
@@ -74,6 +88,9 @@
 		rule = ruleFromSeries();
 		autoPublish = series.auto_publish;
 		generationWindowWeeks = series.generation_window_weeks;
+		// Closing the dialog can unmount a focused input without firing blur, so
+		// drop any half-typed buffer rather than showing it over the fresh seed.
+		windowField.reset();
 		step = 'form';
 		validationErrors = {};
 		errorBanner = null;
@@ -81,14 +98,6 @@
 
 	function handleRecurrenceChange(next: Partial<RecurrenceRuleCreate>): void {
 		rule = next;
-	}
-
-	function handleWindowInput(event: Event): void {
-		const raw = (event.target as HTMLInputElement).value;
-		const n = Number(raw);
-		if (Number.isFinite(n)) {
-			generationWindowWeeks = Math.max(1, Math.min(52, Math.floor(n)));
-		}
 	}
 
 	// Dirty diff — field-level compare against the current server snapshot.
@@ -345,10 +354,11 @@
 						<Input
 							id="recurrence-edit-window"
 							type="number"
-							min={1}
-							max={52}
-							value={generationWindowWeeks}
-							oninput={handleWindowInput}
+							min={GENERATION_WINDOW_MIN}
+							max={GENERATION_WINDOW_MAX}
+							value={windowField.value}
+							oninput={windowField.oninput}
+							onblur={windowField.onblur}
 							disabled={updateMutation.isPending}
 							class="w-32"
 							data-testid="recurrence-edit-window"
