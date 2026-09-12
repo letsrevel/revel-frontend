@@ -1,6 +1,7 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 
 /**
@@ -98,7 +99,9 @@ export async function completeStripeCheckout(
  * -------------------------------------------------------------------------- */
 
 export const STRIPE_FORWARDER_MISSING_MESSAGE =
-	'Stripe webhook forwarder not detected. Run `make run-stripe` in `revel-backend` ' +
+	'No webhook-driven effect appeared anywhere in this run, across two independent ' +
+	'Stripe flows. The leading hypothesis is a missing webhook forwarder: run ' +
+	'`make run-stripe` in `revel-backend` ' +
 	'(`stripe listen --forward-to localhost:8000/api/stripe/webhook`) before this suite.';
 
 /**
@@ -120,19 +123,50 @@ export const STRIPE_FORWARDER_MISSING_MESSAGE =
  *               own assertion error on failure. There is no path from here back
  *               to a forwarder complaint, which is what makes a false "missing"
  *               verdict impossible once a single webhook has been seen.
- *   missing   — a webhook-only wait burned its whole budget and NOTHING had
- *               been delivered in this run yet. Later waits then abort
- *               immediately instead of each spending 90–150s on a webhook that
- *               is not coming.
- *   unknown   — nothing observed yet: wait, with the caller's normal timeout.
+ *   expired   — a webhook-only wait burned its whole budget with nothing
+ *               delivered anywhere in the run yet. ONE of these rules nothing
+ *               out (see below); it is filed as evidence and the caller's own
+ *               assertion error is rethrown untouched.
+ *   ruled out — CORROBORATION_THRESHOLD *distinct* webhook effects have expired
+ *               with no delivery. Later waits then abort immediately instead of
+ *               each spending 90–150s on a webhook that is not coming.
  *
- * A false "delivered" is impossible by construction — it is only written after
- * a real webhook-driven assertion passed. A false "missing" costs a red run its
- * detail, not its verdict: the marker is only written when a test was already
- * failing, and the message hedges (it names the first expired wait and says so)
- * rather than asserting a diagnosis. This is DELIBERATELY not a skip: the
- * Stripe paths stay failures, the documented skip baseline stays at 3.
+ * Why corroboration, and what it does NOT prove.
+ *
+ * `expectWebhookEffect` retries an arbitrary UI callback, so a single expiry is
+ * ambiguous by construction: a plain app regression on that surface looks
+ * exactly like a webhook that never arrived. Ruling out a whole run on one
+ * expiry meant a UI bug could abort 21 later tests under a forwarder diagnosis
+ * its assertion never established. The verdict therefore needs evidence from
+ * two DIFFERENT effects — keyed by `description`, so the same effect awaited by
+ * two specs (or the same test on retry) counts once, and the two records come
+ * from genuinely different surfaces (a ticket list vs a membership card vs an
+ * invoice table). A regression that takes out two unrelated surfaces at once is
+ * far less likely than one that takes out a single flow.
+ *
+ * This is corroboration, not proof, which is why the message offers the
+ * forwarder as the leading hypothesis rather than asserting it. Proof would
+ * need a webhook-SPECIFIC signal, and there is none reachable from here: the
+ * backend logs every verified inbound event in `StripeWebhookEvent`, but that
+ * table is exposed only through the Django admin (session auth, and the E2E
+ * seed creates no superuser) — no REST route reads it. A staff-only or
+ * debug-only "events seen since T" counter on the backend would let this guard
+ * observe the forwarder directly and drop the heuristic entirely.
+ *
+ * A false "delivered" remains impossible by construction — it is only written
+ * after a real webhook-driven assertion passed. A false "ruled out" costs a red
+ * run its detail, not its verdict: records are only filed when a test was
+ * already failing. This is DELIBERATELY not a skip: the Stripe paths stay
+ * failures, the documented skip baseline stays at 3.
  */
+
+/**
+ * How many DISTINCT webhook effects must expire, with nothing delivered, before
+ * the run is ruled out. Two is the cheapest number that stops a single UI
+ * regression from mis-diagnosing a run; the cost of raising it from one is a
+ * second full wait (~90–150s) against the ~24 minutes the guard saves.
+ */
+const CORROBORATION_THRESHOLD = 2;
 
 /**
  * The verdict lives in files, not in a module variable.
@@ -151,7 +185,8 @@ const VERDICT_DIR = join(
 	process.env.E2E_RUN_ID ?? `ppid-${process.ppid}`
 );
 const DELIVERED_MARKER = join(VERDICT_DIR, 'delivered');
-const MISSING_MARKER = join(VERDICT_DIR, 'missing');
+/** One file per distinct expired effect, named by a digest of its description. */
+const EXPIRY_DIR = join(VERDICT_DIR, 'expired');
 
 function readMarker(path: string): string | null {
 	try {
@@ -161,10 +196,20 @@ function readMarker(path: string): string | null {
 	}
 }
 
+/**
+ * Create a marker, never overwrite one.
+ *
+ * `wx` is what keeps the FIRST writer's diagnostic: parallel workers can reach
+ * the same marker, and the loser's `EEXIST` lands in the catch below, which is
+ * already best-effort. Nothing reads a marker expecting it to have been
+ * rewritten — `delivered` is only ever tested for existence, and each expiry
+ * file is keyed by its description so a second writer would only be restating
+ * the same effect.
+ */
 function writeMarker(path: string, body: string): void {
 	try {
-		mkdirSync(VERDICT_DIR, { recursive: true });
-		writeFileSync(path, body);
+		mkdirSync(dirname(path), { recursive: true });
+		writeFileSync(path, body, { flag: 'wx' });
 	} catch {
 		// Bookkeeping only: a verdict we cannot persist costs the next test
 		// another wait. It must never be the reason a test fails.
@@ -179,15 +224,78 @@ function currentTest(): string {
 	}
 }
 
-/** The first expired webhook wait of this run, or null while none has expired. */
-function ruledOutBy(): string | null {
-	if (existsSync(DELIVERED_MARKER)) return null;
-	return readMarker(MISSING_MARKER);
+/** File the expiry of one webhook effect, once per distinct description. */
+function recordExpiry(description: string): void {
+	const key = createHash('sha256').update(description).digest('hex').slice(0, 16);
+	writeMarker(join(EXPIRY_DIR, key), `${currentTest()} — waiting for ${description}`);
+}
+
+function modifiedAt(path: string): number {
+	try {
+		return statSync(path).mtimeMs;
+	} catch {
+		return 0;
+	}
+}
+
+/** Every distinct expired wait of this run, oldest first. */
+function expiredWaits(): string[] {
+	let entries: string[];
+	try {
+		entries = readdirSync(EXPIRY_DIR);
+	} catch {
+		// No directory yet: nothing has expired.
+		return [];
+	}
+	return entries
+		.map((name) => join(EXPIRY_DIR, name))
+		.sort((a, b) => modifiedAt(a) - modifiedAt(b))
+		.map(readMarker)
+		.filter((body): body is string => body !== null);
 }
 
 /**
- * Abort NOW when an earlier test in this run already burned a full webhook
- * budget without a single delivery.
+ * The corroborating expired waits once the run is ruled out, else null.
+ *
+ * A single delivery anywhere makes this permanently null — there is no path
+ * from a seen webhook back to a forwarder complaint.
+ */
+function ruledOutBy(): string[] | null {
+	if (existsSync(DELIVERED_MARKER)) return null;
+	const expired = expiredWaits();
+	return expired.length >= CORROBORATION_THRESHOLD ? expired : null;
+}
+
+function listWaits(waits: readonly string[]): string {
+	return waits.map((wait) => `  - ${wait}`).join('\n');
+}
+
+/**
+ * Leave the forwarder hypothesis on a test that expired without corroboration.
+ *
+ * The assertion error itself is rethrown untouched — it is the honest report
+ * when one wait has expired — so the hint rides along as a report annotation
+ * instead of rewriting the failure. Matters most when a single spec is run
+ * under `--grep`, where a second effect can never corroborate.
+ */
+function noteForwarderHypothesis(description: string): void {
+	try {
+		test.info().annotations.push({
+			type: 'stripe-webhook',
+			description:
+				`The wait for ${description} expired and no webhook-driven effect has been ` +
+				'seen anywhere in this run. If this is not an app regression, check that the ' +
+				'`stripe listen` forwarder is running (`make run-stripe` in `revel-backend`).'
+		});
+	} catch {
+		// Outside a running test there is no report to annotate. A hint we
+		// cannot attach must never be the reason a test fails.
+	}
+}
+
+/**
+ * Abort NOW when earlier tests in this run already burned full webhook budgets
+ * on two distinct effects without a single delivery.
  *
  * Call it as the first statement of any test whose ARRANGE spends minutes
  * driving hosted checkout before it can even reach a webhook-dependent
@@ -196,14 +304,14 @@ function ruledOutBy(): string | null {
  * wait cheaply do not need this call.
  */
 export function requireStripeWebhooks(): void {
-	const firstFailure = ruledOutBy();
-	if (firstFailure === null) return;
+	const corroboration = ruledOutBy();
+	if (corroboration === null) return;
 	throw new Error(
 		`${STRIPE_FORWARDER_MISSING_MESSAGE}\n\n` +
-			'No Stripe webhook was delivered anywhere in this run; the first wait to ' +
-			`expire was:\n  ${firstFailure}\n` +
-			'Aborting before the arrange rather than repeating that wait. If the ' +
-			'forwarder IS running, that first expiry is a real failure — fix it and re-run.'
+			`The ${corroboration.length} distinct waits that expired, oldest first:\n` +
+			`${listWaits(corroboration)}\n` +
+			'Aborting before the arrange rather than repeating those waits. If the ' +
+			'forwarder IS running, those expiries are real failures — fix them and re-run.'
 	);
 }
 
@@ -214,11 +322,12 @@ export function requireStripeWebhooks(): void {
  * Drop-in for the `await expect(async () => { … }).toPass({ timeout })` polling
  * loops that follow `completeStripeCheckout()`: same retry semantics, same
  * timeout budget, no behaviour change at all while webhooks are flowing. What
- * it adds is the run-wide verdict above — the first expiry names the forwarder,
- * the rest of the run stops paying for it.
+ * it adds is the run-wide verdict above — once two distinct effects have
+ * expired with nothing delivered, the rest of the run stops paying for them.
  *
- * `description` is what the webhook is expected to make happen, phrased for a
- * failure line, e.g. 'the ticket flips ACTIVE on /dashboard/tickets'.
+ * `description` identifies the effect, so pick one per surface and keep it
+ * stable: it is both the failure-line wording AND the corroboration key. Phrase
+ * it for a failure line, e.g. 'the ticket flips ACTIVE on /dashboard/tickets'.
  */
 export async function expectWebhookEffect(
 	description: string,
@@ -229,18 +338,28 @@ export async function expectWebhookEffect(
 	try {
 		await expect(assertion).toPass({ timeout: options.timeout });
 	} catch (error) {
-		if (!existsSync(DELIVERED_MARKER)) {
-			writeMarker(MISSING_MARKER, `${currentTest()} — waiting for ${description}`);
-			throw new Error(
-				`${STRIPE_FORWARDER_MISSING_MESSAGE}\n\n` +
-					`Waited ${options.timeout}ms for ${description}, which nothing but that ` +
-					'webhook can produce, and no webhook has been delivered anywhere in this ' +
-					'run. If the forwarder IS running, this is a real failure — the assertion ' +
-					`error follows.\n\n${error instanceof Error ? error.message : String(error)}`,
-				{ cause: error }
-			);
+		// A webhook was seen earlier: this failure is the caller's own, and the
+		// guard has nothing to add to it.
+		if (existsSync(DELIVERED_MARKER)) throw error;
+		recordExpiry(description);
+		const corroboration = ruledOutBy();
+		if (corroboration === null) {
+			// Uncorroborated. One expired UI wait cannot tell a missing forwarder
+			// apart from a regression on this surface, so the caller's assertion
+			// error is rethrown verbatim (Playwright keeps its locator detail) and
+			// the forwarder rides along as an annotated hypothesis.
+			noteForwarderHypothesis(description);
+			throw error;
 		}
-		throw error;
+		throw new Error(
+			`${STRIPE_FORWARDER_MISSING_MESSAGE}\n\n` +
+				`Waited ${options.timeout}ms for ${description}, which nothing but that ` +
+				`webhook can produce. The ${corroboration.length} distinct waits that have ` +
+				`expired in this run, oldest first:\n${listWaits(corroboration)}\n\n` +
+				'If the forwarder IS running, these are real failures — the assertion ' +
+				`error follows.\n\n${error instanceof Error ? error.message : String(error)}`,
+			{ cause: error }
+		);
 	}
 	if (!existsSync(DELIVERED_MARKER)) {
 		writeMarker(DELIVERED_MARKER, `${currentTest()} — ${description}`);
