@@ -195,22 +195,29 @@
 		reorderMutation.mutate(tierIds);
 	}
 
-	// Max tickets per user - stored as string for input, converted to number (default: 1)
+	// Max tickets per user - stored as string for input, converted to number (default: 1).
+	// The string is a free-text buffer while the field has focus: empty and "0" are legal
+	// mid-edit states, and clamping only happens on blur. Clamping on every keystroke made
+	// the value impossible to edit — backspacing the last digit refilled the field with "1"
+	// under the caret, so the only possible edit was appending digits to it.
 	let maxTicketsInput = $state(formData.max_tickets_per_user?.toString() ?? '1');
 
-	function handleMaxTicketsChange(value: string) {
+	function handleMaxTicketsInput(value: string) {
 		maxTicketsInput = value;
-		const trimmed = value.trim();
-		if (trimmed === '' || trimmed === '0') {
-			// Default to 1 if empty or 0
-			onUpdate({ max_tickets_per_user: 1 });
-			maxTicketsInput = '1';
-		} else {
-			const num = parseInt(trimmed, 10);
-			if (!isNaN(num) && num > 0) {
-				onUpdate({ max_tickets_per_user: num });
-			}
+		const num = parseInt(value.trim(), 10);
+		if (!isNaN(num) && num > 0) {
+			onUpdate({ max_tickets_per_user: num });
 		}
+		// Anything else (empty, "0", garbage) commits nothing: the last valid value stands
+		// until blur clamps the field.
+	}
+
+	function handleMaxTicketsBlur() {
+		const num = parseInt(maxTicketsInput.trim(), 10);
+		const clamped = !isNaN(num) && num > 0 ? num : 1;
+		// Normalize the display too, so "05" / " 5 " settle to "5".
+		maxTicketsInput = String(clamped);
+		onUpdate({ max_tickets_per_user: clamped });
 	}
 
 	function handleEditTier(tier: TicketTierDetailSchema) {
@@ -250,7 +257,8 @@
 					min="1"
 					placeholder={m['ticketingStep.maxTicketsPlaceholder']()}
 					value={maxTicketsInput}
-					oninput={(e) => handleMaxTicketsChange(e.currentTarget.value)}
+					oninput={(e) => handleMaxTicketsInput(e.currentTarget.value)}
+					onblur={handleMaxTicketsBlur}
 					class="max-w-xs"
 				/>
 				<div class="mt-2 flex items-start gap-2 text-sm text-muted-foreground">
