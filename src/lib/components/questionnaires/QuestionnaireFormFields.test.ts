@@ -103,8 +103,10 @@ describe('QuestionnaireFormFields — numeric fields', () => {
 		await fireEvent.input(input, { target: { value: '' } });
 		await fireEvent.blur(input);
 
+		// Releasing the buffer restores the display; an edit that settled back to
+		// the committed value writes nothing.
 		expect(input.value).toBe('50');
-		expect(handlers.onMinScoreChange).toHaveBeenLastCalledWith(50);
+		expect(handlers.onMinScoreChange).not.toHaveBeenCalled();
 	});
 
 	it('lets max attempts be cleared and retyped', async () => {

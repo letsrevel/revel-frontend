@@ -62,7 +62,7 @@ describe('RecurrenceEditDialog — generation window', () => {
 		vi.clearAllMocks();
 	});
 
-	function renderDialog(generationWindowWeeks = 8) {
+	function renderDialog(generationWindowWeeks = 8): HTMLInputElement {
 		render(QueryClientTestWrapper, {
 			props: {
 				client: queryClient,
@@ -76,7 +76,7 @@ describe('RecurrenceEditDialog — generation window', () => {
 				}
 			}
 		});
-		return screen.getByTestId('recurrence-edit-window') as HTMLInputElement;
+		return screen.getByLabelText(/how far ahead to schedule/i) as HTMLInputElement;
 	}
 
 	it('lets the field be cleared instead of refilling it with 1', async () => {

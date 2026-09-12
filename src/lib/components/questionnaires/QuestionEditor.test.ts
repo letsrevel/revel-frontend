@@ -61,8 +61,13 @@ describe('QuestionEditor — scoring weights', () => {
 
 		await fireEvent.input(input, { target: { value: '' } });
 		// "0." is not yet a number — it must not commit, and must not be rewritten.
+		// The buffer itself can't be asserted here: jsdom applies the number input's
+		// value-sanitization algorithm, and "0." is not a valid floating-point
+		// literal, so `input.value` reads back as "" whatever the component holds.
+		// What matters is that nothing was committed and nothing was written back.
 		await fireEvent.input(input, { target: { value: '0.' } });
 		expect(onUpdate).not.toHaveBeenCalled();
+		expect(input.value).not.toBe('2');
 
 		await fireEvent.input(input, { target: { value: '0.5' } });
 		expect(onUpdate).toHaveBeenLastCalledWith({ positiveWeight: 0.5 });
@@ -75,8 +80,10 @@ describe('QuestionEditor — scoring weights', () => {
 		await fireEvent.input(input, { target: { value: '' } });
 		await fireEvent.blur(input);
 
+		// The display comes back on its own when the buffer is released; an edit
+		// that changed nothing writes nothing.
 		expect(input.value).toBe('2');
-		expect(onUpdate).toHaveBeenLastCalledWith({ positiveWeight: 2 });
+		expect(onUpdate).not.toHaveBeenCalled();
 	});
 
 	it('clamps an out-of-range negative weight on blur', async () => {

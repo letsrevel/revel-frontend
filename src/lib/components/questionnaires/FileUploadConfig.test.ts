@@ -82,7 +82,9 @@ describe('FileUploadConfig — max number of files', () => {
 		await fireEvent.input(input, { target: { value: '' } });
 		await fireEvent.blur(input);
 
+		// Releasing the buffer restores the display on its own — nothing changed,
+		// so nothing is written back.
 		expect(input.value).toBe('4');
-		expect(onUpdate).toHaveBeenLastCalledWith({ maxFiles: 4 });
+		expect(onUpdate).not.toHaveBeenCalled();
 	});
 });

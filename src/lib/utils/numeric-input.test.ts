@@ -88,6 +88,13 @@ describe('settleNumber', () => {
 		expect(settleNumber('-', { min: 1, fallback: 7 })).toBe(7);
 	});
 
+	it('falls back for a whole number too large to be exact', () => {
+		// A bounded field is safe either way — the clamp pulls it to the maximum.
+		expect(settleNumber('99999999999999999999', { min: 1, max: 52, fallback: 7 })).toBe(52);
+		// An unbounded one has nothing to clamp against, so 1e20 must not commit.
+		expect(settleNumber('99999999999999999999', { min: 0, fallback: 7 })).toBe(7);
+	});
+
 	it('settles empty to null for a clearable field', () => {
 		expect(settleNumber('', { min: 1, fallback: null })).toBeNull();
 		expect(settleNumber('4', { min: 1, max: 31, fallback: null })).toBe(4);
@@ -164,7 +171,49 @@ describe('numericField', () => {
 		field.oninput(typed(''));
 		field.onblur();
 
+		// Releasing the buffer is enough to show 5 again, so there is nothing to
+		// write back — committing it anyway would mark a form dirty (or open an
+		// undo point) for an edit that changed nothing.
+		expect(field.value).toBe('5');
+		expect(commit).not.toHaveBeenCalled();
+	});
+
+	it('commits nothing on blur when the settled value is already committed', () => {
+		const { field, commit } = setup(5);
+
+		field.oninput(typed('05'));
 		expect(commit).toHaveBeenLastCalledWith(5);
+		commit.mockClear();
+
+		field.onblur();
+
+		expect(field.value).toBe('5'); // display still normalizes
+		expect(commit).not.toHaveBeenCalled();
+	});
+
+	it('treats an empty value from unparseable text as half-typed, not as a clear', () => {
+		const { field, commit } = setup(5, { emptyValue: null, min: -50 });
+
+		// A number input reports `value === ''` for a lone "-", with badInput set.
+		// Committing the clear there would wipe the value mid-way through "-1".
+		field.oninput({
+			currentTarget: { value: '', validity: { badInput: true } }
+		} as unknown as Event & { currentTarget: HTMLInputElement });
+
+		expect(commit).not.toHaveBeenCalled();
+	});
+
+	it('refuses an unbounded integer too large to be exact, on blur as well as while typing', () => {
+		const { field, commit } = setup(5, { min: 0, max: undefined });
+
+		field.oninput(typed('99999999999999999999'));
+		expect(commit).not.toHaveBeenCalled();
+
+		field.onblur();
+
+		// 1e20 would have sailed through the old blur path — `parseCommittableNumber`
+		// refuses it while typing, so the settle must refuse it too.
+		expect(commit).not.toHaveBeenCalled();
 		expect(field.value).toBe('5');
 	});
 

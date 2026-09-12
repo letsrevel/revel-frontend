@@ -77,5 +77,13 @@ export function settleNumber<F extends number | null>(
 	const value = Number(trimmed);
 	if (!Number.isFinite(value)) return options.fallback;
 
-	return clampNumber(options.decimal ? value : Math.floor(value), options);
+	const settled = clampNumber(options.decimal ? value : Math.floor(value), options);
+
+	// A bounded field is already safe — the clamp pulled it back to its maximum.
+	// An unbounded one is not: twenty typed digits reach `Number` as 1e20, which
+	// `parseCommittableNumber` refuses while typing, so blur must refuse it too
+	// rather than committing a value the backend can't round-trip.
+	if (!options.decimal && !Number.isSafeInteger(settled)) return options.fallback;
+
+	return settled;
 }

@@ -63,6 +63,7 @@
 
 	function selectFrequency(value: Frequency): void {
 		if (value === frequency) return;
+		dayOfMonthField.reset(); // cleared below — see handleMonthlyTypeChange
 		onChange({
 			...rule,
 			frequency: value,
@@ -114,6 +115,10 @@
 
 	function handleMonthlyTypeChange(value: MonthlyType): void {
 		if (value === monthlyType) return;
+		// The day-of-month input is about to be cleared and unmounted; any buffer
+		// held for it is stale. (Clicking this control blurs the input first, so
+		// this is insurance against an unmount that never fires blur, not a fix.)
+		dayOfMonthField.reset();
 		patch({
 			monthly_type: value,
 			day_of_month: undefined,
@@ -137,8 +142,10 @@
 		if (kind === selectedBoundary) return;
 		selectedBoundary = kind;
 		if (kind === 'none') {
+			countField.reset();
 			patch({ until: null, count: null });
 		} else if (kind === 'until') {
+			countField.reset();
 			patch({ count: null });
 		} else {
 			patch({ until: null });

@@ -8,7 +8,14 @@ import SeatGridConfig from './SeatGridConfig.svelte';
  * commit only in-range sizes while typing and normalize on blur.
  */
 describe('SeatGridConfig — grid size inputs', () => {
-	function renderConfig(rows = 5, columns = 8) {
+	function renderConfig(
+		rows = 5,
+		columns = 8
+	): ReturnType<typeof render> & {
+		onBeforeEdit: ReturnType<typeof vi.fn>;
+		rowsInput: HTMLInputElement;
+		columnsInput: HTMLInputElement;
+	} {
 		const onBeforeEdit = vi.fn();
 		const result = render(SeatGridConfig, {
 			props: {

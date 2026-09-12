@@ -79,8 +79,11 @@ export function numericField<T extends number | null = number>(
 				return;
 			}
 			// A clearable field commits the clear straight away: empty is a value
-			// there, and Enter-submitting a form fires no blur to settle it.
-			if (clearable && raw.trim() === '') {
+			// there, and Enter-submitting a form fires no blur to settle it. But a
+			// number input also reports an empty `value` for text it cannot parse —
+			// a lone "-" on the way to "-1" — and that is a half-typed state, not a
+			// clear. `badInput` is what tells the two apart.
+			if (clearable && raw.trim() === '' && !event.currentTarget.validity?.badInput) {
 				options.commit(null as T);
 			}
 			// Anything else commits nothing — the last valid value stands until blur.
@@ -91,18 +94,23 @@ export function numericField<T extends number | null = number>(
 			const raw = draft;
 			draft = null;
 
+			const current = options.value();
 			const fallback =
-				options.emptyValue !== undefined
-					? options.emptyValue
-					: (options.value() ?? options.min ?? 0);
-			options.commit(
-				settleNumber(raw, {
-					min: options.min,
-					max: options.max,
-					decimal: options.decimal,
-					fallback
-				}) as T
-			);
+				options.emptyValue !== undefined ? options.emptyValue : (current ?? options.min ?? 0);
+			const settled = settleNumber(raw, {
+				min: options.min,
+				max: options.max,
+				decimal: options.decimal,
+				fallback
+			});
+
+			// Releasing the buffer already re-renders the normalized display ("05" is
+			// now "5"), so a settle that lands on the value already committed has
+			// nothing to write back — and writing it anyway would open an undo point
+			// or mark a form dirty for an edit that changed nothing.
+			if (settled !== current) {
+				options.commit(settled as T);
+			}
 		},
 
 		reset(): void {
