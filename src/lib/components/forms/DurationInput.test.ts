@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, fireEvent } from '@testing-library/svelte';
 import { describe, it, expect } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import DurationInput from './DurationInput.svelte';
@@ -240,5 +240,56 @@ describe('DurationInput', () => {
 		// The asterisk is rendered inside the label wrapper
 		const label = screen.getByText('Validity').closest('label');
 		expect(label?.textContent).toContain('*');
+	});
+
+	// ─── min={1}: the value below the minimum must not be rewritten mid-typing ─
+	describe('with min={1}', () => {
+		function renderWithMin(value: number | null = 5) {
+			render(DurationInput, {
+				props: {
+					id: 'dur-min',
+					value,
+					storageUnit: 'days',
+					defaultUnit: 'days',
+					label: 'Validity',
+					min: 1
+				}
+			});
+			return screen.getByLabelText('Validity') as HTMLInputElement;
+		}
+
+		it('keeps a typed 0 in the field instead of rewriting it to the minimum', async () => {
+			const input = renderWithMin(5);
+
+			// "0" on the way to "10" used to become a "1" under the caret, so the
+			// field could only ever be appended to (#924). fireEvent drives the value
+			// directly because user-event re-sanitizes a number input's leading zero.
+			await fireEvent.input(input, { target: { value: '0' } });
+			expect(input.value).toBe('0');
+
+			await fireEvent.input(input, { target: { value: '10' } });
+			expect(input.value).toBe('10');
+		});
+
+		it('settles a below-minimum entry to the minimum on blur', async () => {
+			const user = userEvent.setup();
+			const input = renderWithMin(5);
+
+			await user.clear(input);
+			await user.type(input, '0');
+			await fireEvent.blur(input);
+
+			expect(input.value).toBe('1');
+		});
+
+		it('still commits an in-range value while typing', async () => {
+			const user = userEvent.setup();
+			const input = renderWithMin(5);
+
+			await user.clear(input);
+			await user.type(input, '14');
+
+			expect(input.value).toBe('14');
+		});
 	});
 });

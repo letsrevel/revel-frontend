@@ -20,6 +20,7 @@
 	import OptionEditor from './OptionEditor.svelte';
 	import FileUploadConfig from './FileUploadConfig.svelte';
 	import { SvelteSet } from 'svelte/reactivity';
+	import { numericField } from '$lib/utils/numeric-input.svelte';
 
 	// Conditional section type (shown when option is selected)
 	interface ConditionalSection {
@@ -86,6 +87,25 @@
 		isNested = false,
 		showLlmGuidelines = true
 	}: Props = $props();
+
+	// Scoring weights: fractional (step 0.1) and clamped on blur rather than per
+	// keystroke — `parseFloat('') || 0` used to snap an emptied field back to 0,
+	// so the value could only be appended to (#924).
+	const positiveWeightField = numericField({
+		value: () => question.positiveWeight,
+		commit: (weight) => onUpdate({ positiveWeight: weight }),
+		min: 0,
+		max: 100,
+		decimal: true
+	});
+
+	const negativeWeightField = numericField({
+		value: () => question.negativeWeight,
+		commit: (weight) => onUpdate({ negativeWeight: weight }),
+		min: 0,
+		max: 100,
+		decimal: true
+	});
 
 	// Collapsible sections state
 	let showAdvanced = $state(false);
@@ -603,9 +623,9 @@
 											<Input
 												id="positive-weight-{question.id}"
 												type="number"
-												value={question.positiveWeight}
-												oninput={(e) =>
-													onUpdate({ positiveWeight: parseFloat(e.currentTarget.value) || 0 })}
+												value={positiveWeightField.value}
+												oninput={positiveWeightField.oninput}
+												onblur={positiveWeightField.onblur}
 												min="0"
 												max="100"
 												step="0.1"
@@ -621,9 +641,9 @@
 											<Input
 												id="negative-weight-{question.id}"
 												type="number"
-												value={question.negativeWeight}
-												oninput={(e) =>
-													onUpdate({ negativeWeight: parseFloat(e.currentTarget.value) || 0 })}
+												value={negativeWeightField.value}
+												oninput={negativeWeightField.oninput}
+												onblur={negativeWeightField.onblur}
 												min="0"
 												max="100"
 												step="0.1"

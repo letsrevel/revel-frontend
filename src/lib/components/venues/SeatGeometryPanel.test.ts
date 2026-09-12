@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { render } from '@testing-library/svelte';
+import { render, fireEvent } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { defaultRowLayout } from './row-layout';
 import SeatGeometryPanel from './SeatGeometryPanel.svelte';
@@ -52,7 +52,7 @@ describe('SeatGeometryPanel', () => {
 		expect(exactInput.getAttribute('aria-describedby')).toBe('geo-curve-help');
 	});
 
-	it('clamps a typed out-of-range curve value instead of applying it verbatim', async () => {
+	it('clamps a typed out-of-range curve value on blur instead of applying it verbatim', async () => {
 		const user = userEvent.setup();
 		const { getByLabelText } = render(SeatGeometryPanel, {
 			recipe: defaultRowLayout(),
@@ -66,7 +66,37 @@ describe('SeatGeometryPanel', () => {
 		await user.clear(exactInput);
 		await user.type(exactInput, '999');
 
+		// Out of range never reaches the recipe — but it is kept out by committing
+		// nothing, not by rewriting the field under the caret (#924).
+		expect(slider.value).toBe('9');
+		expect(exactInput.value).toBe('999');
+
+		await fireEvent.blur(exactInput);
+
 		expect(slider.value).toBe('30');
+		expect(exactInput.value).toBe('30');
+	});
+
+	it('lets the exact curve field be emptied and retyped, including a negative', async () => {
+		const user = userEvent.setup();
+		const { getByLabelText } = render(SeatGeometryPanel, {
+			recipe: defaultRowLayout(),
+			rowOptions: [],
+			unsupported: false
+		});
+
+		const slider = getByLabelText('Curve') as HTMLInputElement;
+		const exactInput = getByLabelText('Exact curve value') as HTMLInputElement;
+
+		await user.clear(exactInput);
+		expect(exactInput.value).toBe('');
+
+		// A lone "-" reads as an empty value on a number input; clamping per
+		// keystroke used to replace it with a digit before the number could follow.
+		await user.type(exactInput, '-12');
+
+		expect(exactInput.value).toBe('-12');
+		expect(slider.value).toBe('-12');
 	});
 
 	// No `.test.svelte.ts` runes-in-test pattern exists in this project (grep

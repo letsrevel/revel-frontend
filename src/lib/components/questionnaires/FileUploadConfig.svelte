@@ -4,6 +4,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Select, SelectContent, SelectItem, SelectTrigger } from '$lib/components/ui/select';
+	import { numericField } from '$lib/utils/numeric-input.svelte';
 
 	// File type categories for file upload questions
 	const FILE_TYPE_CATEGORIES = [
@@ -64,6 +65,15 @@
 	}
 
 	const { questionId, allowedMimeTypes, maxFileSize, maxFiles, onUpdate }: Props = $props();
+
+	// Clamping per keystroke turned "12" into "10" the instant the 2 landed, and the
+	// `maxFiles || 1` display refilled an emptied field. Both now settle on blur (#924).
+	const maxFilesField = numericField({
+		value: () => maxFiles || 1,
+		commit: (files) => onUpdate({ maxFiles: files }),
+		min: 1,
+		max: 10
+	});
 </script>
 
 <div class="space-y-4">
@@ -139,11 +149,9 @@
 			<Input
 				id="maxfiles-{questionId}"
 				type="number"
-				value={maxFiles || 1}
-				oninput={(e) => {
-					const val = parseInt(e.currentTarget.value) || 1;
-					onUpdate({ maxFiles: Math.max(1, Math.min(10, val)) });
-				}}
+				value={maxFilesField.value}
+				oninput={maxFilesField.oninput}
+				onblur={maxFilesField.onblur}
 				min={1}
 				max={10}
 			/>

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { render } from '@testing-library/svelte';
+import { render, fireEvent } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import { SeatAdjustState } from './seat-adjust-state.svelte';
@@ -239,26 +239,62 @@ describe('SeatSelectionActions — the inline single-seat inspector', () => {
 		expect(onNudgeChange).toHaveBeenLastCalledWith({ rot: 90 });
 	});
 
-	it('clamps an out-of-range typed offset at the input boundary', async () => {
+	it('keeps an out-of-range typed offset out of the recipe, clamping it on blur', async () => {
 		const user = userEvent.setup();
 		const { onNudgeChange, getByLabelText } = harness({
 			adjust: activeAdjust(),
 			selectedLabel: 'B3'
 		});
-		await user.clear(getByLabelText('Move back (rows)'));
-		await user.type(getByLabelText('Move back (rows)'), '999');
+		const input = getByLabelText('Move back (rows)') as HTMLInputElement;
+		await user.clear(input);
+		await user.type(input, '999');
+
+		// 999 and 99 are both past the limit, so neither is committed — the recipe
+		// only ever saw the in-range "9". Rewriting the field per keystroke is what
+		// made it uneditable (#924).
+		expect(onNudgeChange).toHaveBeenLastCalledWith({ dy: 9 });
+		expect(input.value).toBe('999');
+
+		await fireEvent.blur(input);
 		expect(onNudgeChange).toHaveBeenLastCalledWith({ dy: 20 });
 	});
 
-	it('reads an emptied field as zero rather than NaN', async () => {
+	it('reads an emptied field as zero once it is blurred', async () => {
 		const user = userEvent.setup();
 		const { onNudgeChange, getByLabelText } = harness({
 			adjust: activeAdjust(),
 			selectedLabel: 'B3',
 			nudge: { dx: 3 }
 		});
-		await user.clear(getByLabelText('Move sideways (seats)'));
+		const input = getByLabelText('Move sideways (seats)') as HTMLInputElement;
+
+		// Empty is still "no offset" — it just isn't applied until the user leaves
+		// the field, so a value can be cleared and retyped.
+		await user.clear(input);
+		expect(input.value).toBe('');
+		expect(onNudgeChange).not.toHaveBeenCalled();
+
+		await fireEvent.blur(input);
 		expect(onNudgeChange).toHaveBeenLastCalledWith({ dx: 0 });
+	});
+
+	it('accepts a negative offset typed from scratch', async () => {
+		const user = userEvent.setup();
+		const { onNudgeChange, getByLabelText } = harness({
+			adjust: activeAdjust(),
+			selectedLabel: 'B3',
+			nudge: { dx: 3 }
+		});
+		const input = getByLabelText('Move sideways (seats)') as HTMLInputElement;
+
+		// A number input reports an empty value for a lone "-", which the old
+		// per-keystroke write-back turned into a 0 — wiping the sign before its
+		// digits could be typed.
+		await user.clear(input);
+		await user.type(input, '-2.5');
+
+		expect(input.value).toBe('-2.5');
+		expect(onNudgeChange).toHaveBeenLastCalledWith({ dx: -2.5 });
 	});
 
 	it('describes the rotation contract for screen readers without a visible caption', () => {

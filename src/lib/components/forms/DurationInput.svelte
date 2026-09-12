@@ -11,6 +11,7 @@
 		type StorageUnit,
 		type Unit
 	} from '$lib/utils/duration';
+	import { parseCommittableNumber, settleNumber } from '$lib/utils/numeric-input';
 
 	/**
 	 * DurationInput Component
@@ -75,6 +76,11 @@
 	let displayAmount = $state<number | ''>('');
 	let displayUnit = $state<Unit>(defaultUnit);
 
+	// Free-text buffer held only while the field is being edited (`null` the rest
+	// of the time). `displayAmount` stays the committed display, so the re-sync
+	// effect below never sees — or clobbers — a half-typed value.
+	let amountDraft = $state<string | null>(null);
+
 	$effect(() => {
 		// Read defaultUnit into a local const so Svelte tracks it as a reactive dependency.
 		const unit = defaultUnit;
@@ -102,24 +108,35 @@
 
 	function handleAmountInput(e: Event): void {
 		const raw = (e.currentTarget as HTMLInputElement).value;
-		if (raw === '') {
+		amountDraft = raw;
+
+		if (raw.trim() === '') {
+			// Empty is a real state here (the "no limit" chip shows the same thing),
+			// so it commits straight away rather than waiting for blur.
 			displayAmount = '';
 			emit('', displayUnit);
 			return;
 		}
-		const n = Number(raw);
-		if (!Number.isFinite(n)) {
-			displayAmount = '';
-			emit('', displayUnit);
-			return;
+
+		const parsed = parseCommittableNumber(raw, { min });
+		if (parsed !== null) {
+			displayAmount = parsed;
+			emit(parsed, displayUnit);
 		}
-		if (n < min) {
-			displayAmount = min;
-			emit(min, displayUnit);
-			return;
-		}
-		displayAmount = n;
-		emit(displayAmount, displayUnit);
+		// Below `min`, or half-typed: commit nothing and leave the buffer alone. A
+		// value rewritten to `min` on the keystroke that produced it could never be
+		// edited down — with min={1}, typing a 0 turned into a 1 under the caret (#924).
+	}
+
+	function handleAmountBlur(): void {
+		if (amountDraft === null) return; // never edited
+		const raw = amountDraft;
+		amountDraft = null;
+		if (raw.trim() === '') return; // already committed as empty
+
+		const settled = settleNumber(raw, { min, fallback: min });
+		displayAmount = settled;
+		emit(settled, displayUnit);
 	}
 
 	function handleUnitChange(next: string | undefined): void {
@@ -129,6 +146,7 @@
 	}
 
 	function handleChipClick(): void {
+		amountDraft = null;
 		displayAmount = '';
 		displayUnit = defaultUnit;
 		emit('', displayUnit);
@@ -182,8 +200,9 @@
 			id={inputId}
 			type="number"
 			class="w-28"
-			value={displayAmount}
+			value={amountDraft ?? displayAmount}
 			oninput={handleAmountInput}
+			onblur={handleAmountBlur}
 			min={String(min)}
 			step="1"
 			{disabled}

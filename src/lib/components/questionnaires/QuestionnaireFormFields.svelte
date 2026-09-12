@@ -13,6 +13,7 @@
 		CardTitle
 	} from '$lib/components/ui/card';
 	import type { QuestionnaireEvaluationMode } from '$lib/api/generated/types.gen';
+	import { numericField } from '$lib/utils/numeric-input.svelte';
 
 	interface Props {
 		name: string;
@@ -77,6 +78,23 @@
 		onCanRetakeAfterChange,
 		onMaxAttemptsChange
 	}: Props = $props();
+
+	// Both numeric fields commit only whole in-range values while the user types and
+	// clamp on blur, so the field can be emptied mid-edit. Committing `Number('')`
+	// per keystroke used to refill them with 0 under the caret (#924).
+	const minScoreField = numericField({
+		value: () => minScore,
+		commit: onMinScoreChange,
+		min: 0,
+		max: 100
+	});
+
+	// No maximum: 0 means "unlimited attempts".
+	const maxAttemptsField = numericField({
+		value: () => maxAttempts,
+		commit: onMaxAttemptsChange,
+		min: 0
+	});
 
 	// Questionnaire type labels
 	const questionnaireTypes = {
@@ -266,8 +284,9 @@
 				<Input
 					id="min-score"
 					type="number"
-					value={minScore}
-					oninput={(e) => onMinScoreChange(Number(e.currentTarget.value))}
+					value={minScoreField.value}
+					oninput={minScoreField.oninput}
+					onblur={minScoreField.onblur}
 					min="0"
 					max="100"
 					step="1"
@@ -490,8 +509,9 @@
 			<Input
 				id="max-attempts"
 				type="number"
-				value={maxAttempts}
-				oninput={(e) => onMaxAttemptsChange(Number(e.currentTarget.value))}
+				value={maxAttemptsField.value}
+				oninput={maxAttemptsField.oninput}
+				onblur={maxAttemptsField.onblur}
 				min="0"
 				step="1"
 				required

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, fireEvent } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import RecurrencePicker from './RecurrencePicker.svelte';
@@ -112,7 +112,7 @@ describe('RecurrencePicker — monthly sub-modes', () => {
 		expect(payload.day_of_month).toBeUndefined();
 	});
 
-	it('clamps day_of_month input to 1..31', async () => {
+	it('clamps day_of_month to 1..31 on blur, not on the keystroke', async () => {
 		const user = userEvent.setup();
 		const { onChange } = mount({
 			frequency: 'monthly',
@@ -122,9 +122,37 @@ describe('RecurrencePicker — monthly sub-modes', () => {
 		const input = screen.getByLabelText('Day of month') as HTMLInputElement;
 		await user.clear(input);
 		await user.type(input, '99');
-		// Every keystroke produces a patch; the final one should clamp to 31.
-		const last = onChange.mock.calls.at(-1)?.[0];
-		expect(last.day_of_month).toBe(31);
+
+		// An out-of-range value is kept out of the rule by NOT committing it —
+		// rewriting it to 31 under the caret is what made the field uneditable (#924).
+		expect(onChange.mock.calls.at(-1)?.[0].day_of_month).toBe(9);
+		expect(input.value).toBe('99');
+
+		// Blur settles it. (The displayed value then follows whatever the parent
+		// re-renders with; this harness holds `rule` fixed, so only the patch is
+		// meaningful here.)
+		await fireEvent.blur(input);
+
+		expect(onChange.mock.calls.at(-1)?.[0].day_of_month).toBe(31);
+	});
+
+	it('lets day_of_month be cleared and retyped', async () => {
+		const user = userEvent.setup();
+		const { onChange } = mount({
+			frequency: 'monthly',
+			interval: 1,
+			monthly_type: 'day',
+			day_of_month: 15
+		});
+		const input = screen.getByLabelText('Day of month') as HTMLInputElement;
+
+		await user.clear(input);
+		expect(input.value).toBe('');
+		expect(onChange.mock.calls.at(-1)?.[0].day_of_month).toBeNull();
+
+		await user.type(input, '3');
+		expect(input.value).toBe('3');
+		expect(onChange.mock.calls.at(-1)?.[0].day_of_month).toBe(3);
 	});
 });
 

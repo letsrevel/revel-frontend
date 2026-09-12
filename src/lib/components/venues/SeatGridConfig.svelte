@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { numericField } from '$lib/utils/numeric-input.svelte';
 
 	interface Props {
 		rows: number;
@@ -37,13 +38,30 @@
 	 *  digit ("300") explodes the synthetic lattice the editor bakes per cell. */
 	const MAX_GRID_SIZE = 30;
 
-	/** Typing through an empty field must not blank the grid size. */
-	function readSize(raw: string, fallback: number): number {
-		const value = Number(raw);
-		return Number.isFinite(value) && value >= 1
-			? Math.min(Math.floor(value), MAX_GRID_SIZE)
-			: fallback;
-	}
+	// Typing through an empty field must not blank the grid size, and an emptied
+	// field must not be left showing a size the grid doesn't have: only in-range
+	// sizes are committed while typing, and blur settles the rest (#924). The undo
+	// point is recorded from `commit`, so a keystroke that changes nothing (an
+	// empty field, a half-typed "3" of "30") no longer opens a history entry.
+	const rowsField = numericField({
+		value: () => rows,
+		commit: (next) => {
+			onBeforeEdit?.('grid-size');
+			rows = next;
+		},
+		min: 1,
+		max: MAX_GRID_SIZE
+	});
+
+	const columnsField = numericField({
+		value: () => columns,
+		commit: (next) => {
+			onBeforeEdit?.('grid-size');
+			columns = next;
+		},
+		min: 1,
+		max: MAX_GRID_SIZE
+	});
 </script>
 
 <!-- Grid Configuration -->
@@ -60,11 +78,9 @@
 				type="number"
 				min="1"
 				max={MAX_GRID_SIZE}
-				value={rows}
-				oninput={(e) => {
-					onBeforeEdit?.('grid-size');
-					rows = readSize(e.currentTarget.value, rows);
-				}}
+				value={rowsField.value}
+				oninput={rowsField.oninput}
+				onblur={rowsField.onblur}
 				class="w-20 rounded-md border border-input bg-background px-3 py-2 text-sm"
 			/>
 		</div>
@@ -78,11 +94,9 @@
 				type="number"
 				min="1"
 				max={MAX_GRID_SIZE}
-				value={columns}
-				oninput={(e) => {
-					onBeforeEdit?.('grid-size');
-					columns = readSize(e.currentTarget.value, columns);
-				}}
+				value={columnsField.value}
+				oninput={columnsField.oninput}
+				onblur={columnsField.onblur}
 				class="w-20 rounded-md border border-input bg-background px-3 py-2 text-sm"
 			/>
 		</div>
