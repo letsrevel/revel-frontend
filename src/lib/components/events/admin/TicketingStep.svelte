@@ -195,22 +195,41 @@
 		reorderMutation.mutate(tierIds);
 	}
 
-	// Max tickets per user - stored as string for input, converted to number (default: 1)
+	// Max tickets per user - stored as string for input, converted to number (default: 1).
+	// The string is a free-text buffer while the field has focus: empty and "0" are legal
+	// mid-edit states, and clamping only happens on blur. Clamping on every keystroke made
+	// the value impossible to edit — backspacing the last digit refilled the field with "1"
+	// under the caret, so the only possible edit was appending digits to it.
 	let maxTicketsInput = $state(formData.max_tickets_per_user?.toString() ?? '1');
 
-	function handleMaxTicketsChange(value: string) {
+	// A committed limit is always a whole positive number. `type="number"` hands us the
+	// raw text of anything that parses as a floating-point literal, so "1.5" and "1e2"
+	// both arrive verbatim — `parseInt` would silently commit 1 for either.
+	function parseWholeTickets(raw: string): number | null {
+		const trimmed = raw.trim();
+		if (!/^\d+$/.test(trimmed)) return null;
+		const num = Number(trimmed);
+		return Number.isSafeInteger(num) && num > 0 ? num : null;
+	}
+
+	function handleMaxTicketsInput(value: string): void {
 		maxTicketsInput = value;
-		const trimmed = value.trim();
-		if (trimmed === '' || trimmed === '0') {
-			// Default to 1 if empty or 0
-			onUpdate({ max_tickets_per_user: 1 });
-			maxTicketsInput = '1';
-		} else {
-			const num = parseInt(trimmed, 10);
-			if (!isNaN(num) && num > 0) {
-				onUpdate({ max_tickets_per_user: num });
-			}
+		const num = parseWholeTickets(value);
+		if (num !== null) {
+			onUpdate({ max_tickets_per_user: num });
 		}
+		// Anything else (empty, "0", a half-typed decimal, garbage) commits nothing: the
+		// last valid value stands until blur settles the field.
+	}
+
+	function handleMaxTicketsBlur(): void {
+		// Settle whatever is left in the buffer by flooring the number the user actually
+		// entered ("05" -> 5, "10.5" -> 10, "1e2" -> 100) rather than truncating a prefix.
+		// Empty, zero, negative and unparseable values fall back to the minimum of 1.
+		const floored = Math.floor(Number(maxTicketsInput.trim()));
+		const clamped = Number.isSafeInteger(floored) && floored > 0 ? floored : 1;
+		maxTicketsInput = String(clamped);
+		onUpdate({ max_tickets_per_user: clamped });
 	}
 
 	function handleEditTier(tier: TicketTierDetailSchema) {
@@ -250,7 +269,8 @@
 					min="1"
 					placeholder={m['ticketingStep.maxTicketsPlaceholder']()}
 					value={maxTicketsInput}
-					oninput={(e) => handleMaxTicketsChange(e.currentTarget.value)}
+					oninput={(e) => handleMaxTicketsInput(e.currentTarget.value)}
+					onblur={handleMaxTicketsBlur}
 					class="max-w-xs"
 				/>
 				<div class="mt-2 flex items-start gap-2 text-sm text-muted-foreground">
