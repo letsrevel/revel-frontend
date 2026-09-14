@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.12.2] - 2026-09-14
+
+### Fixed
+
+- Numeric fields across the app can be cleared and edited down again, the way the event ticket limit was in 2.12.1: backspacing the last digit of a questionnaire's minimum score or maximum attempts, a question's scoring weight, a file-upload limit, a recurring event's generation window or repeat interval, a seat grid's rows and columns, a seat nudge offset, a sector's curve and stagger, or a duration amount no longer refills the field with the minimum — so a value can be lowered or replaced by typing instead of only appended to. Each field now settles when it loses focus, clamping an out-of-range entry then instead of rewriting it mid-keystroke.
+- Negative seat-nudge offsets and sector geometry values can be entered at all: typing the leading `-` used to be turned into `0` before its digits could follow.
+- Editing a seat grid's rows or columns now creates a single undo point per change instead of one per keystroke.
+
 ## [2.12.1] - 2026-09-12
 
 ### Fixed
