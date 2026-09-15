@@ -12,6 +12,7 @@
 	import { Info } from '@lucide/svelte';
 	import GuestNameInputs from './GuestNameInputs.svelte';
 	import PwycInput from './PwycInput.svelte';
+	import CancellationPolicySummary from './CancellationPolicySummary.svelte';
 	import type { EventCart, CartGroup } from './cart.svelte';
 	import type { CartSeatHoldRegistry } from './cart-seat-registry.svelte';
 	import { cartTotalArgs, checkoutTotal } from './checkout-total';
@@ -258,4 +259,14 @@
 			</Alert>
 		{/if}
 	{/if}
+
+	<!-- Cancellation & refund terms (#931). The buyer agrees to these at
+	     purchase — the policy is snapshotted onto the ticket — so they have to
+	     be on screen before confirm. This card is already one per distinct
+	     tier (keyed by tier id in `CheckoutSheet`), so a summary here is
+	     exactly "one per tier in the cart", attached to what it describes.
+	     Self-silencing for free tiers and for tiers whose fields the API
+	     didn't send. It sits last so it never pushes the group's INPUTS
+	     (names/PWYC/zone) below the fold. -->
+	<CancellationPolicySummary tier={group.tier} />
 </div>
