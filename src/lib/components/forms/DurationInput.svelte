@@ -7,6 +7,7 @@
 	import {
 		ALLOWED_UNITS,
 		fromStorage,
+		toDisplay,
 		toStorage,
 		type StorageUnit,
 		type Unit
@@ -84,18 +85,32 @@
 	$effect(() => {
 		// Read defaultUnit into a local const so Svelte tracks it as a reactive dependency.
 		const unit = defaultUnit;
+		// While the field is being edited, whatever comes back in `value` is our own
+		// emit — possibly rewritten by the parent on the way (RefundPolicyEditor maps
+		// the empty value to 0). Re-picking the unit from it would silently
+		// reinterpret the number under the caret: clearing a "3 Days" bracket used to
+		// flip the picker to Hours, so the 7 typed next meant 7h, not 7 days (#935).
+		// The unit only ever changes on an explicit pick, a chip reset, or a value
+		// arriving from outside that the current unit can't express.
+		const editing = amountDraft !== null;
 		if (isEmpty || value === null) {
 			displayAmount = '';
-			displayUnit = unit;
+			if (!editing) displayUnit = unit;
 			return;
 		}
 		const current =
 			displayAmount === '' ? null : toStorage(Number(displayAmount), displayUnit, storageUnit);
-		if (current !== value) {
-			const next = fromStorage(value, storageUnit);
-			displayAmount = next.amount;
-			displayUnit = next.unit;
+		if (current === value) return;
+		if (editing) {
+			const amount = toDisplay(value, storageUnit, displayUnit);
+			if (amount !== null) {
+				displayAmount = amount;
+				return;
+			}
 		}
+		const next = fromStorage(value, storageUnit);
+		displayAmount = next.amount;
+		displayUnit = next.unit;
 	});
 
 	function emit(amount: number | '', unit: Unit): void {
