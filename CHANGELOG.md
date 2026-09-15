@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.12.3] - 2026-09-15
+
+### Fixed
+
+- Ticket cancellation and refund terms are shown again before you pay: each tier in the checkout sheet states whether the ticket is non-refundable, or its refund brackets, cancellation deadline, and any flat fee. Since the cart checkout rewrite these were only visible *after* purchase, so buyers agreed to a policy they had never seen. Free tiers and tiers with no policy set stay silent, as before.
+
 ## [2.12.2] - 2026-09-14
 
 ### Fixed
