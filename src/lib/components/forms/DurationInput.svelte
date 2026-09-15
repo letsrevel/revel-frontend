@@ -84,8 +84,8 @@
 	// nothing. `displayAmount` stays the committed display, so the re-sync effect
 	// below never reads the raw buffer — only `amountField.editing`.
 	const amountField = numericField<number | null>({
-		value: () => (displayAmount === '' ? null : displayAmount),
-		commit: (next) => {
+		value: (): number | null => (displayAmount === '' ? null : displayAmount),
+		commit: (next: number | null): void => {
 			displayAmount = next ?? '';
 			emit(displayAmount, displayUnit);
 		},
@@ -94,10 +94,10 @@
 		// commits without waiting for blur. Where the parent has none, an emptied
 		// field is a half-typed state that settles back to the committed value on
 		// blur, rather than a clear the parent would have to invent a number for.
-		get emptyValue() {
+		get emptyValue(): null | undefined {
 			return emptyValue !== undefined ? null : undefined;
 		},
-		get min() {
+		get min(): number {
 			return min;
 		}
 	});

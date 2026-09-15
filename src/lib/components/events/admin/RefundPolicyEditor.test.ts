@@ -10,9 +10,10 @@ import RefundPolicyEditor from './RefundPolicyEditor.svelte';
  * (hours) while the label still read Days.
  */
 describe('RefundPolicyEditor', () => {
-	const hoursInput = () => screen.getByLabelText('Time before event') as HTMLInputElement;
-	const unitTrigger = () => screen.getByLabelText('Time before event unit');
-	const summary = () => screen.getByRole('list').textContent?.trim();
+	const hoursInput = (): HTMLInputElement =>
+		screen.getByLabelText('Time before event') as HTMLInputElement;
+	const unitTrigger = (): HTMLElement => screen.getByLabelText('Time before event unit');
+	const summary = (): string | undefined => screen.getByRole('list').textContent?.trim();
 
 	it('seeds a fresh bracket as 3 days', async () => {
 		const user = userEvent.setup();
