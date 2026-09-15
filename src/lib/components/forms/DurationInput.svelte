@@ -79,7 +79,8 @@
 
 	// Free-text buffer held only while the field is being edited (`null` the rest
 	// of the time). `displayAmount` stays the committed display, so the re-sync
-	// effect below never sees — or clobbers — a half-typed value.
+	// effect below never reads — or clobbers — a half-typed value; it only tests
+	// the buffer against null, to tell an edit in progress from an outside change.
 	let amountDraft = $state<string | null>(null);
 
 	$effect(() => {
@@ -90,8 +91,10 @@
 		// the empty value to 0). Re-picking the unit from it would silently
 		// reinterpret the number under the caret: clearing a "3 Days" bracket used to
 		// flip the picker to Hours, so the 7 typed next meant 7h, not 7 days (#935).
-		// The unit only ever changes on an explicit pick, a chip reset, or a value
-		// arriving from outside that the current unit can't express.
+		// So mid-edit the unit is held, and changes only on an explicit pick, on a
+		// chip reset, or when the incoming value can't be expressed in it. Outside an
+		// edit the smart pick still runs, so a value arriving from the parent renders
+		// in its largest whole unit (168h → 1 week).
 		const editing = amountDraft !== null;
 		if (isEmpty || value === null) {
 			displayAmount = '';
