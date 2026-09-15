@@ -12,7 +12,7 @@
 		type StorageUnit,
 		type Unit
 	} from '$lib/utils/duration';
-	import { parseCommittableNumber, settleNumber } from '$lib/utils/numeric-input';
+	import { numericField } from '$lib/utils/numeric-input.svelte';
 
 	/**
 	 * DurationInput Component
@@ -77,11 +77,30 @@
 	let displayAmount = $state<number | ''>('');
 	let displayUnit = $state<Unit>(defaultUnit);
 
-	// Free-text buffer held only while the field is being edited (`null` the rest
-	// of the time). `displayAmount` stays the committed display, so the re-sync
-	// effect below never reads — or clobbers — a half-typed value; it only tests
-	// the buffer against null, to tell an edit in progress from an outside change.
-	let amountDraft = $state<string | null>(null);
+	// The amount field runs on the shared numeric-input helper, so it inherits the
+	// guards that belong to every numeric field: a half-typed entry is never
+	// rewritten under the caret, a `-` on its way to `-1` is not mistaken for a
+	// clear (`badInput`), and a blur that settles on the committed value writes
+	// nothing. `displayAmount` stays the committed display, so the re-sync effect
+	// below never reads the raw buffer — only `amountField.editing`.
+	const amountField = numericField<number | null>({
+		value: () => (displayAmount === '' ? null : displayAmount),
+		commit: (next) => {
+			displayAmount = next ?? '';
+			emit(displayAmount, displayUnit);
+		},
+		// Empty is a durable state only where the parent gave an empty sentinel (the
+		// "no limit" chip shows the same thing) — there it counts as a value and
+		// commits without waiting for blur. Where the parent has none, an emptied
+		// field is a half-typed state that settles back to the committed value on
+		// blur, rather than a clear the parent would have to invent a number for.
+		get emptyValue() {
+			return emptyValue !== undefined ? null : undefined;
+		},
+		get min() {
+			return min;
+		}
+	});
 
 	$effect(() => {
 		// Read defaultUnit into a local const so Svelte tracks it as a reactive dependency.
@@ -95,7 +114,7 @@
 		// chip reset, or when the incoming value can't be expressed in it. Outside an
 		// edit the smart pick still runs, so a value arriving from the parent renders
 		// in its largest whole unit (168h → 1 week).
-		const editing = amountDraft !== null;
+		const editing = amountField.editing;
 		if (isEmpty || value === null) {
 			displayAmount = '';
 			if (!editing) displayUnit = unit;
@@ -124,39 +143,6 @@
 		value = toStorage(Number(amount), unit, storageUnit);
 	}
 
-	function handleAmountInput(e: Event): void {
-		const raw = (e.currentTarget as HTMLInputElement).value;
-		amountDraft = raw;
-
-		if (raw.trim() === '') {
-			// Empty is a real state here (the "no limit" chip shows the same thing),
-			// so it commits straight away rather than waiting for blur.
-			displayAmount = '';
-			emit('', displayUnit);
-			return;
-		}
-
-		const parsed = parseCommittableNumber(raw, { min });
-		if (parsed !== null) {
-			displayAmount = parsed;
-			emit(parsed, displayUnit);
-		}
-		// Below `min`, or half-typed: commit nothing and leave the buffer alone. A
-		// value rewritten to `min` on the keystroke that produced it could never be
-		// edited down — with min={1}, typing a 0 turned into a 1 under the caret (#924).
-	}
-
-	function handleAmountBlur(): void {
-		if (amountDraft === null) return; // never edited
-		const raw = amountDraft;
-		amountDraft = null;
-		if (raw.trim() === '') return; // already committed as empty
-
-		const settled = settleNumber(raw, { min, fallback: min });
-		displayAmount = settled;
-		emit(settled, displayUnit);
-	}
-
 	function handleUnitChange(next: string | undefined): void {
 		if (!next) return;
 		displayUnit = next as Unit;
@@ -164,7 +150,7 @@
 	}
 
 	function handleChipClick(): void {
-		amountDraft = null;
+		amountField.reset();
 		displayAmount = '';
 		displayUnit = defaultUnit;
 		emit('', displayUnit);
@@ -218,9 +204,9 @@
 			id={inputId}
 			type="number"
 			class="w-28"
-			value={amountDraft ?? displayAmount}
-			oninput={handleAmountInput}
-			onblur={handleAmountBlur}
+			value={amountField.value}
+			oninput={amountField.oninput}
+			onblur={amountField.onblur}
 			min={String(min)}
 			step="1"
 			{disabled}

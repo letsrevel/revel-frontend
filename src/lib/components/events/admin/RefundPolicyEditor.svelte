@@ -31,13 +31,21 @@
 	// Internal editable form state. Keep numbers as strings so we don't fight
 	// HTML number inputs and so empty fields are well-defined.
 	type BracketDraft = {
+		/** Identity for the `{#each}` key. Rows carry editing state the user can see
+		 *  — a held unit, a half-typed amount — so keying by index would hand one
+		 *  bracket's in-progress edit to whichever bracket shifted into its slot. */
+		id: string;
 		hoursBeforeEvent: string;
 		refundPercentage: string;
 	};
 
+	let nextBracketId = 0;
+	const bracketId = (): string => `bracket-${nextBracketId++}`;
+
 	function bracketsFrom(p: RefundPolicy | null | undefined): BracketDraft[] {
 		if (!p?.tiers || p.tiers.length === 0) return [];
 		return p.tiers.map((t) => ({
+			id: bracketId(),
 			hoursBeforeEvent: String(t.hours_before_event ?? 0),
 			refundPercentage: String(t.refund_percentage ?? 0)
 		}));
@@ -70,7 +78,7 @@
 		if (!last) {
 			// Starting fresh: 3-day refund window with full refund. Multi-day so the
 			// picker renders as days and the next halving stays in days for one more step.
-			return { hoursBeforeEvent: '72', refundPercentage: '100' };
+			return { id: bracketId(), hoursBeforeEvent: '72', refundPercentage: '100' };
 		}
 		const lastHours = Number(last.hoursBeforeEvent);
 		if (!Number.isFinite(lastHours) || lastHours <= 0) {
@@ -90,6 +98,7 @@
 		const lastPct = Number(last.refundPercentage);
 		const nextPct = Math.max(0, Math.floor((Number.isFinite(lastPct) ? lastPct : 0) / 2));
 		return {
+			id: bracketId(),
 			hoursBeforeEvent: String(nextHours),
 			refundPercentage: String(nextPct)
 		};
@@ -116,7 +125,7 @@
 
 	function applyDefaultPolicy(): void {
 		if (disabled) return;
-		brackets = [{ hoursBeforeEvent: '0', refundPercentage: '100' }];
+		brackets = [{ id: bracketId(), hoursBeforeEvent: '0', refundPercentage: '100' }];
 		flatFee = '';
 		emit();
 	}
@@ -212,7 +221,7 @@
 		</div>
 	{:else}
 		<div class="space-y-2">
-			{#each brackets as bracket, i (i)}
+			{#each brackets as bracket, i (bracket.id)}
 				<div
 					class="grid grid-cols-[1fr_1fr_auto] items-end gap-2 rounded-md border border-border bg-background p-3"
 				>
@@ -316,7 +325,7 @@
 		<ul
 			class="space-y-1 rounded-md border border-border bg-muted/30 p-3 text-xs text-muted-foreground"
 		>
-			{#each brackets as b, i (i)}
+			{#each brackets as b (b.id)}
 				<li class="tabular-nums">
 					{m['refundPolicy.bracketSummary']({
 						hours: b.hoursBeforeEvent || '0',

@@ -311,6 +311,36 @@ describe('DurationInput', () => {
 		});
 	});
 
+	// ─── Guards inherited from the shared numericField helper ────────────────
+	describe('half-typed and no-op edits', () => {
+		it('treats an empty value from unparseable text as half-typed, not as a clear', async () => {
+			render(DurationInput, {
+				props: {
+					id: 'dur-bad-1',
+					value: 1440,
+					storageUnit: 'minutes',
+					defaultUnit: 'hours',
+					emptyValue: null,
+					emptyLabel: 'No limit',
+					label: 'Validity'
+				}
+			});
+			const input = screen.getByLabelText('Validity') as HTMLInputElement;
+			const chip = screen.getByRole('button', { name: 'No limit' });
+			expect(chip).toHaveAttribute('aria-pressed', 'false');
+
+			// A number input reports `value === ''` for a lone "-", with badInput set.
+			// Committing the clear there would wipe the value mid-way through "-1".
+			Object.defineProperty(input, 'validity', {
+				value: { badInput: true },
+				configurable: true
+			});
+			await fireEvent.input(input, { target: { value: '' } });
+
+			expect(chip).toHaveAttribute('aria-pressed', 'false');
+		});
+	});
+
 	// ─── min={1}: the value below the minimum must not be rewritten mid-typing ─
 	describe('with min={1}', () => {
 		function renderWithMin(value: number | null = 5) {
