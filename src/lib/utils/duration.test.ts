@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { toStorage, fromStorage, ALLOWED_UNITS } from './duration';
+import { toStorage, fromStorage, toDisplay, ALLOWED_UNITS } from './duration';
 
 describe('toStorage', () => {
 	it('converts days to days as-is', () => {
@@ -67,6 +67,26 @@ describe('fromStorage', () => {
 
 	it('handles zero', () => {
 		expect(fromStorage(0, 'hours')).toEqual({ amount: 0, unit: 'hours' });
+	});
+});
+
+describe('toDisplay', () => {
+	it('expresses a storage value in the requested unit', () => {
+		expect(toDisplay(168, 'hours', 'days')).toBe(7);
+	});
+
+	it('keeps zero representable in every unit', () => {
+		expect(toDisplay(0, 'hours', 'days')).toBe(0);
+		expect(toDisplay(0, 'minutes', 'years')).toBe(0);
+	});
+
+	it('returns null when the value is not whole in that unit', () => {
+		// 60h = 2.5 days
+		expect(toDisplay(60, 'hours', 'days')).toBeNull();
+	});
+
+	it('returns the value unchanged when unit equals storage unit', () => {
+		expect(toDisplay(90, 'minutes', 'minutes')).toBe(90);
 	});
 });
 

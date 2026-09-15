@@ -242,6 +242,105 @@ describe('DurationInput', () => {
 		expect(label?.textContent).toContain('*');
 	});
 
+	// ─── The unit must not be rewritten while the amount is being edited (#935) ─
+	describe('unit stability while editing', () => {
+		it('keeps the displayed unit when the amount is cleared', async () => {
+			const user = userEvent.setup();
+			render(DurationInput, {
+				props: {
+					id: 'dur-unit-1',
+					// 1440 minutes = 1 day, so the smart pick lands on days, not the
+					// `defaultUnit` of hours.
+					value: 1440,
+					storageUnit: 'minutes',
+					defaultUnit: 'hours',
+					emptyValue: null,
+					emptyLabel: 'No limit',
+					label: 'Validity'
+				}
+			});
+			const input = screen.getByLabelText('Validity') as HTMLInputElement;
+			expect(screen.getByLabelText('Validity unit')).toHaveTextContent('Days');
+
+			await user.clear(input);
+
+			expect(input.value).toBe('');
+			expect(screen.getByLabelText('Validity unit')).toHaveTextContent('Days');
+		});
+
+		it('re-interprets a retyped amount in the unit still on screen', async () => {
+			const user = userEvent.setup();
+			render(DurationInput, {
+				props: {
+					id: 'dur-unit-2',
+					value: 1440,
+					storageUnit: 'minutes',
+					defaultUnit: 'hours',
+					emptyValue: null,
+					emptyLabel: 'No limit',
+					label: 'Validity'
+				}
+			});
+			const input = screen.getByLabelText('Validity') as HTMLInputElement;
+
+			await user.clear(input);
+			await user.type(input, '3');
+
+			expect(input.value).toBe('3');
+			expect(screen.getByLabelText('Validity unit')).toHaveTextContent('Days');
+		});
+
+		it('still resets to the default unit when the chip clears the field', async () => {
+			const user = userEvent.setup();
+			render(DurationInput, {
+				props: {
+					id: 'dur-unit-3',
+					value: 1440,
+					storageUnit: 'minutes',
+					defaultUnit: 'hours',
+					emptyValue: null,
+					emptyLabel: 'No limit',
+					label: 'Validity'
+				}
+			});
+			expect(screen.getByLabelText('Validity unit')).toHaveTextContent('Days');
+
+			await user.click(screen.getByRole('button', { name: 'No limit' }));
+
+			expect(screen.getByLabelText('Validity unit')).toHaveTextContent('Hours');
+		});
+	});
+
+	// ─── Guards inherited from the shared numericField helper ────────────────
+	describe('half-typed and no-op edits', () => {
+		it('treats an empty value from unparseable text as half-typed, not as a clear', async () => {
+			render(DurationInput, {
+				props: {
+					id: 'dur-bad-1',
+					value: 1440,
+					storageUnit: 'minutes',
+					defaultUnit: 'hours',
+					emptyValue: null,
+					emptyLabel: 'No limit',
+					label: 'Validity'
+				}
+			});
+			const input = screen.getByLabelText('Validity') as HTMLInputElement;
+			const chip = screen.getByRole('button', { name: 'No limit' });
+			expect(chip).toHaveAttribute('aria-pressed', 'false');
+
+			// A number input reports `value === ''` for a lone "-", with badInput set.
+			// Committing the clear there would wipe the value mid-way through "-1".
+			Object.defineProperty(input, 'validity', {
+				value: { badInput: true },
+				configurable: true
+			});
+			await fireEvent.input(input, { target: { value: '' } });
+
+			expect(chip).toHaveAttribute('aria-pressed', 'false');
+		});
+	});
+
 	// ─── min={1}: the value below the minimum must not be rewritten mid-typing ─
 	describe('with min={1}', () => {
 		function renderWithMin(value: number | null = 5) {
