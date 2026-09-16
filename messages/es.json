@@ -6619,7 +6619,7 @@
 		"errorEmailInvalid": "Introduce una dirección de correo válida.",
 		"errorCodeInvalid": "Usa de 3 a 20 letras, números, guiones o guiones bajos.",
 		"errorNoteRequired": "Cuéntanos un poco sobre ti.",
-		"errorNoteTooLong": "Tu nota debe tener menos de 2000 caracteres.",
+		"errorNoteTooLong": "Tu nota puede tener como máximo 2000 caracteres.",
 		"alreadyReferrerTitle": "Ya estás en el programa de referidos",
 		"alreadyReferrerBody": "Tu código de referido y tus pagos están en tu cuenta.",
 		"alreadyReferrerCta": "Ir a los ajustes de referidos",

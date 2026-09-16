@@ -6619,7 +6619,7 @@
 		"errorEmailInvalid": "Enter a valid email address.",
 		"errorCodeInvalid": "Use 3 to 20 letters, numbers, hyphens or underscores.",
 		"errorNoteRequired": "Please tell us a little about yourself.",
-		"errorNoteTooLong": "Please keep your note under 2000 characters.",
+		"errorNoteTooLong": "Your note can be at most 2000 characters.",
 		"alreadyReferrerTitle": "You're already in the referral program",
 		"alreadyReferrerBody": "Your referral code and payouts live in your account.",
 		"alreadyReferrerCta": "Go to referral settings",

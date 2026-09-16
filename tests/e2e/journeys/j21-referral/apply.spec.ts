@@ -12,11 +12,16 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 // application, and the footer surfaces the entry point. A signed-in seeded
 // referrer's code renders verbatim (case preserved) on /account/referral.
 //
-// Each mutating scenario posts a UNIQUE email + code (backend enforces
-// uniqueness on both, and the endpoint is throttled 10/day/IP) so the spec
-// stays re-runnable without a reseed. `test.applicant@example.com` and
-// `test.blocked@example.com` are seeded fixtures for the two 409/202 special
-// cases and are never the *submitter's own* email elsewhere in this file.
+// Each mutating scenario posts a UNIQUE email + code (the backend enforces
+// uniqueness on both) so the spec stays re-runnable without a reseed.
+// `test.applicant@example.com` and `test.blocked@example.com` are seeded
+// fixtures for the two 409/202 special cases and are never the *submitter's
+// own* email elsewhere in this file.
+//
+// The endpoint is throttled 10/day/IP and this file spends 8 of those across
+// its two browser projects, which would be cutting it fine — except the E2E
+// backend runs with DISABLE_THROTTLING=True (revel-backend/.env, honoured by
+// common.throttling.DisableableThrottleMixin), so the limit is not live here.
 //
 // Deliberately NOT the suite-wide `uniqueEmail()` factory: this endpoint
 // normalizes for ban/dedup matching by stripping everything after `+` (see

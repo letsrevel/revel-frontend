@@ -123,7 +123,20 @@
 		const confirmEl = get('confirmPassword');
 		const termsEl = get('acceptTerms');
 
-		if (emailEl && emailEl.value !== email) email = emailEl.value;
+		if (referralInvite) {
+			// `readonly` stops KEYSTROKES, not scripts. A password manager or an
+			// autofill extension can write `.value` directly, which `bind:value`
+			// never sees and which this very function would then copy into
+			// `email` — registering under an address that does not match the
+			// invite, so the backend silently leaves the invite unused and the
+			// user sees no error. Put the invited address back instead of
+			// syncing away from it.
+			if (emailEl && emailEl.value !== referralInvite.email) {
+				emailEl.value = referralInvite.email;
+			}
+		} else if (emailEl && emailEl.value !== email) {
+			email = emailEl.value;
+		}
 		if (passwordEl && passwordEl.value !== password) password = passwordEl.value;
 		if (confirmEl && confirmEl.value !== confirmPassword) confirmPassword = confirmEl.value;
 		if (termsEl && termsEl.checked !== acceptTerms) acceptTerms = termsEl.checked;
@@ -259,7 +272,12 @@
 			<form
 				method="POST"
 				bind:this={formEl}
-				use:enhance={() => {
+				use:enhance={({ formData }) => {
+					// Last line of defence for the locked invite email: whatever ended
+					// up in the DOM, the invite's own address is what gets posted.
+					// Only the enhanced path can do this — see syncFormValues.
+					if (referralInvite) formData.set('email', referralInvite.email);
+
 					// Prevent duplicate submissions
 					if (isSubmitting) return;
 					isSubmitting = true;
@@ -295,7 +313,7 @@
 						id="email"
 						name="email"
 						type="email"
-						autocomplete="email"
+						autocomplete={referralInvite ? 'off' : 'email'}
 						required
 						readonly={!!referralInvite}
 						bind:value={email}

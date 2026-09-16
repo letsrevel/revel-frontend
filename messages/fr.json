@@ -6589,7 +6589,7 @@
 		"errorEmailInvalid": "Saisis une adresse e-mail valide.",
 		"errorCodeInvalid": "Utilise de 3 à 20 lettres, chiffres, tirets ou tirets bas.",
 		"errorNoteRequired": "Parle-nous un peu de toi.",
-		"errorNoteTooLong": "Ta note doit rester sous les 2000 caractères.",
+		"errorNoteTooLong": "Ta note doit comporter au maximum 2000 caractères.",
 		"alreadyReferrerTitle": "Tu fais déjà partie du programme de parrainage",
 		"alreadyReferrerBody": "Ton code de parrainage et tes versements sont dans ton compte.",
 		"alreadyReferrerCta": "Aller aux paramètres de parrainage",

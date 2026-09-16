@@ -666,8 +666,11 @@
 	     One quiet line for users who are NOT referrers yet — enrolled users
 	     already have the referral entries in the user menu and must not see
 	     both. Gated on the backend's `referral_applications` switch, which
-	     fails closed. -->
-	{#if features.referral_applications && !isReferrer}
+	     fails closed — and on `authStore.user` being loaded at all: it starts
+	     as null, so without that an enrolled referrer is shown the "apply"
+	     link for the length of the auth bootstrap and then has it taken away
+	     again. -->
+	{#if authStore.user && features.referral_applications && !isReferrer}
 		<div class="mt-12 border-t pt-8" id="referral-section">
 			<SectionHeader title={m['referralApply.accountTitle']()} />
 			<p class="mt-2 text-sm text-muted-foreground">{m['referralApply.accountBody']()}</p>

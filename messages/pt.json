@@ -6619,7 +6619,7 @@
 		"errorEmailInvalid": "Indica um endereço de e-mail válido.",
 		"errorCodeInvalid": "Usa de 3 a 20 letras, números, hífenes ou sublinhados.",
 		"errorNoteRequired": "Fala-nos um pouco de ti.",
-		"errorNoteTooLong": "A tua nota deve ter menos de 2000 carateres.",
+		"errorNoteTooLong": "A tua nota pode ter no máximo 2000 carateres.",
 		"alreadyReferrerTitle": "Já fazes parte do programa de indicações",
 		"alreadyReferrerBody": "O teu código de indicação e os teus pagamentos estão na tua conta.",
 		"alreadyReferrerCta": "Ir para as definições de indicações",

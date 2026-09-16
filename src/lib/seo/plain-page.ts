@@ -9,19 +9,25 @@ export function defaultOgImage(origin: string): string {
 	return `${origin}${OG_IMAGE_PATH}`;
 }
 
+/** The subset of `SeoConfig['og']` that `defaultOgImageMeta` fills in. */
+export type DefaultOgImageMeta = Pick<
+	SeoConfig['og'],
+	'image' | 'imageAlt' | 'imageWidth' | 'imageHeight' | 'imageType'
+>;
+
 /**
  * Full OG image metadata for the default (non-event/non-org) social card.
  * Dimensions are known and fixed for the static asset, so we advertise them to
  * let unfurlers render the preview without first fetching the image.
  */
-export function defaultOgImageMeta(origin: string) {
+export function defaultOgImageMeta(origin: string): DefaultOgImageMeta {
 	return {
 		image: defaultOgImage(origin),
 		imageAlt: DEFAULT_OG_IMAGE_ALT,
 		imageWidth: 1200,
 		imageHeight: 630,
 		imageType: 'image/png'
-	} as const;
+	};
 }
 
 /** Everything `plainPageSeo` needs from the request, computed once per build. */

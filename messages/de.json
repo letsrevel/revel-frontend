@@ -6619,7 +6619,7 @@
 		"errorEmailInvalid": "Gib eine gültige E-Mail-Adresse ein.",
 		"errorCodeInvalid": "Verwende 3 bis 20 Buchstaben, Zahlen, Bindestriche oder Unterstriche.",
 		"errorNoteRequired": "Erzähl uns bitte kurz etwas über dich.",
-		"errorNoteTooLong": "Bitte halte deine Notiz unter 2000 Zeichen.",
+		"errorNoteTooLong": "Deine Notiz darf höchstens 2000 Zeichen lang sein.",
 		"alreadyReferrerTitle": "Du bist schon im Empfehlungsprogramm",
 		"alreadyReferrerBody": "Deinen Empfehlungscode und deine Auszahlungen findest du in deinem Konto.",
 		"alreadyReferrerCta": "Zu den Empfehlungs-Einstellungen",
