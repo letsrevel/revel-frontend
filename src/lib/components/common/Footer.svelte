@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { env } from '$env/dynamic/public';
+	import { page } from '$app/state';
 	import { appStore } from '$lib/stores/app.svelte';
 	import { Bug, Info } from '@lucide/svelte';
 	import Github from '$lib/components/icons/brand/Github.svelte';
@@ -29,6 +30,11 @@
 	const FRONTEND_VERSION = env.PUBLIC_VERSION ? env.PUBLIC_VERSION.replace(/^v/, '') : 'dev';
 	const FRONTEND_REPO = 'https://github.com/letsrevel/revel-frontend';
 	const BACKEND_REPO = 'https://github.com/letsrevel/revel-backend';
+
+	// Referral-program applications are gated on a SiteSettings switch surfaced
+	// by `/version` (FE #938). The flag fails CLOSED, so a `/version` blip hides
+	// the link rather than pointing the footer at a route that 404s.
+	const showReferralApply = $derived(Boolean(page.data.features?.referral_applications));
 
 	// Get backend version and demo mode from store
 	const backendVersion = $derived(appStore.backendVersion || 'Loading...');
@@ -140,6 +146,14 @@
 						{m['footer.solutionClubs']()}
 					</a>
 					<!-- eslint-enable svelte/no-navigation-without-resolve -->
+					{#if showReferralApply}
+						<!-- Present but deliberately not prominent: last in the list, same
+						     treatment as its neighbours, no badge. Unlike them this is a
+						     real app route, so it resolve()s. -->
+						<a href={resolve('/(public)/referral/apply', {})} class={footerLinkClass}>
+							{m['footer.solutionReferral']()}
+						</a>
+					{/if}
 				</div>
 			</div>
 

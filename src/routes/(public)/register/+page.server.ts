@@ -1,7 +1,8 @@
 import { fail, redirect, isRedirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { registerSchema } from '$lib/schemas/auth';
-import { accountRegister } from '$lib/api/generated/sdk.gen';
+import { accountRegister, referralGetInvitation } from '$lib/api/generated/sdk.gen';
+import { isReferralInviteId } from '$lib/schemas/referral';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { getDemoMode, getSsoProviders } from '$lib/server/features';
 import { log } from '$lib/server/logger';
@@ -21,11 +22,45 @@ export const load: PageServerLoad = async ({ fetch, cookies, url, request }) => 
 
 	return {
 		referralCodeFromCookie: cookies.get('referral_code') || '',
+		referralInvite: await loadReferralInvite(fetch, url),
 		demo,
 		ssoProviders,
 		seo
 	};
 };
+
+/**
+ * `?referral_invite=<application_id>` — an approved referral-program invite
+ * that has not been used yet (FE #938, BE #987).
+ *
+ * Prefill ONLY. The invite id is never sent on registration: the backend
+ * enrolls by matching the verified email, which is why the email the endpoint
+ * returns is the one the form locks to. Anything that does not resolve to a
+ * live invite (typo, already-used id, expired flag, backend down) degrades
+ * SILENTLY to the ordinary registration form — a visitor who followed a stale
+ * link must still be able to sign up.
+ */
+async function loadReferralInvite(
+	fetch: typeof globalThis.fetch,
+	url: URL
+): Promise<{ email: string; code: string } | null> {
+	const inviteId = url.searchParams.get('referral_invite');
+	if (!isReferralInviteId(inviteId)) {
+		return null;
+	}
+	try {
+		const response = await referralGetInvitation({
+			path: { application_id: inviteId },
+			fetch
+		});
+		if (response.response?.status !== 200 || !response.data?.email) {
+			return null;
+		}
+		return { email: response.data.email, code: response.data.code };
+	} catch {
+		return null;
+	}
+}
 
 export const actions = {
 	default: async ({ request, fetch }) => {
@@ -35,10 +70,13 @@ export const actions = {
 			password: formData.get('password') as string,
 			confirmPassword: formData.get('confirmPassword') as string,
 			acceptTerms: formData.get('acceptTerms') === 'on',
-			referralCode:
-				((formData.get('referralCode') as string) || '')
-					.replace(/[^\p{L}\p{N}]/gu, '')
-					.toUpperCase() || undefined
+			// Trim only. Referral codes are matched case-INSENSITIVELY and stored
+			// as typed (BE #987), and `-`/`_` are legal characters — the old
+			// strip-and-uppercase turned a valid `test-partner` into
+			// `TESTPARTNER`, which matches nothing. The backend validates the
+			// rest; sending the code through untouched keeps this one normalizer
+			// from being the thing that breaks referral attribution.
+			referralCode: ((formData.get('referralCode') as string) || '').trim() || undefined
 		};
 
 		// Validate with Zod

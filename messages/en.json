@@ -2251,7 +2251,8 @@
 		"solutionSelfHosted": "Self-Hosted Platform",
 		"solutionPrivacy": "Privacy-Focused Events",
 		"solutionCommunity": "Community-First Platform",
-		"solutionClubs": "Club Membership Management"
+		"solutionClubs": "Club Membership Management",
+		"solutionReferral": "Referral Program"
 	},
 	"guest_attendance": {
 		"rsvp_title": "RSVP without an account",
@@ -5493,7 +5494,10 @@
 		"demoNudgeTitle": "This is a demo",
 		"demoNudgeBody": "You can explore Revel right away with a ready-made demo account — no sign-up needed.",
 		"demoNudgeUseAccount": "Use a demo account",
-		"demoNudgeRegisterAnyway": "Register anyway"
+		"demoNudgeRegisterAnyway": "Register anyway",
+		"referralInviteTitle": "You've been invited to the referral program",
+		"referralInviteBody": "Create your account with this email and your referral code {code} is activated right away.",
+		"referralInviteEmailLocked": "This address comes from your invitation and cannot be changed."
 	},
 	"requestInvitationButton": {
 		"mustBeLoggedIn": "You must be logged in to request an invitation",
@@ -6582,6 +6586,46 @@
 		"saved": "Saved!",
 		"error": "Something went wrong. Please try again.",
 		"forbidden": "You are not an active referrer."
+	},
+	"referralApply": {
+		"kicker": "Referral Program",
+		"title": "Become a Revel partner",
+		"subtitle": "Bring the communities you know to Revel and earn a share of what they sell.",
+		"howTitle": "How it works",
+		"howStep1": "Send us a short application.",
+		"howStep2": "We read every one by hand.",
+		"howStep3": "Approved partners get a referral code to share.",
+		"howStep4": "You earn a share of what the communities you bring sell.",
+		"formTitle": "Your application",
+		"emailLabel": "Email address",
+		"emailPlaceholder": "you@example.com",
+		"emailHelp": "We'll reply to this address. Use the one you sign in with.",
+		"codeLabel": "Desired referral code",
+		"codePlaceholder": "your-code",
+		"codeHelp": "3 to 20 characters: letters, numbers, hyphens and underscores. This is the code you will share.",
+		"noteLabel": "Tell us about yourself",
+		"notePlaceholder": "I organise a monthly meetup for…",
+		"noteHelp": "Who are you, and which communities would you bring to Revel?",
+		"noteCounter": "{used} of {max} characters",
+		"submit": "Send application",
+		"submitting": "Sending…",
+		"successTitle": "Application received",
+		"successBody": "Thanks! We review every application by hand and will be in touch by email.",
+		"errorTitle": "We couldn't send your application",
+		"errorPending": "You already have an application pending. We'll be in touch by email.",
+		"errorCodeTaken": "That referral code is already taken. Please pick another one.",
+		"errorThrottled": "Too many applications from this connection. Please try again tomorrow.",
+		"errorGeneric": "Something went wrong. Please try again.",
+		"errorEmailInvalid": "Enter a valid email address.",
+		"errorCodeInvalid": "Use 3 to 20 letters, numbers, hyphens or underscores.",
+		"errorNoteRequired": "Please tell us a little about yourself.",
+		"errorNoteTooLong": "Please keep your note under 2000 characters.",
+		"alreadyReferrerTitle": "You're already in the referral program",
+		"alreadyReferrerBody": "Your referral code and payouts live in your account.",
+		"alreadyReferrerCta": "Go to referral settings",
+		"accountTitle": "Referral Program",
+		"accountBody": "Bring communities to Revel and earn a share of what they sell.",
+		"accountCta": "Apply to the referral program"
 	},
 	"billing": {
 		"form": {

@@ -125,4 +125,42 @@ describe('buildSeo', () => {
 		});
 		expect(cfg.robots).toBe('noindex,follow');
 	});
+
+	it('referral-apply: emits noindex,follow, a matching canonical, a summary card, the default OG image and no JSON-LD', () => {
+		const cfg = buildSeo({
+			kind: 'referral-apply',
+			url: url('/referral/apply'),
+			lang: 'en'
+		});
+		expect(cfg.robots).toBe('noindex,follow');
+		expect(cfg.canonical).toBe('https://letsrevel.io/referral/apply');
+		expect(cfg.og.url).toBe(cfg.canonical);
+		expect(cfg.twitter.card).toBe('summary');
+		expect(cfg.og.image).toBe('https://letsrevel.io/og-image-v2.png');
+		expect(cfg.jsonLd).toEqual([]);
+	});
+
+	// Regression guard: `legal` and `auth`/`referral-apply` share the same
+	// `plainPageSeo` helper but must diverge on `robots` — `legal` pages are
+	// indexable and must carry NO `robots` key at all (not merely `undefined`),
+	// while `auth` and `referral-apply` are noindex,follow. The extraction that
+	// pulled `plainPageSeo` out of `build.ts` could easily have collapsed this
+	// distinction.
+	it('legal pages carry no robots key at all, unlike auth and referral-apply', () => {
+		const legalCfg = buildSeo({ kind: 'legal', url: url('/privacy'), lang: 'en', doc: 'privacy' });
+		expect('robots' in legalCfg).toBe(false);
+
+		const termsCfg = buildSeo({ kind: 'legal', url: url('/terms'), lang: 'en', doc: 'terms' });
+		expect('robots' in termsCfg).toBe(false);
+
+		const authCfg = buildSeo({ kind: 'auth', url: url('/login'), lang: 'en', page: 'login' });
+		expect(authCfg.robots).toBe('noindex,follow');
+
+		const referralCfg = buildSeo({
+			kind: 'referral-apply',
+			url: url('/referral/apply'),
+			lang: 'en'
+		});
+		expect(referralCfg.robots).toBe('noindex,follow');
+	});
 });

@@ -19,11 +19,23 @@ describe('resolveFeatures', () => {
 		expect(result.telegram).toBe(true);
 	});
 
+	it('defaults referral_applications to false (the one fail-CLOSED flag)', () => {
+		// Its surfaces 404 when the backend flag is off, so hiding them on a
+		// `/version` blip beats linking to a dead route. See features.ts.
+		expect(DEFAULT_FEATURES.referral_applications).toBe(false);
+		expect(resolveFeatures({}).referral_applications).toBe(false);
+	});
+
+	it('respects an explicit referral_applications: true', () => {
+		expect(resolveFeatures({ referral_applications: true }).referral_applications).toBe(true);
+	});
+
 	it('merges a full payload verbatim', () => {
 		const raw = {
 			organization_creation: false,
 			telegram: false,
-			llm_evaluation: false
+			llm_evaluation: false,
+			referral_applications: true
 		};
 		expect(resolveFeatures(raw)).toEqual(raw);
 	});

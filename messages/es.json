@@ -2251,7 +2251,8 @@
 		"solutionSelfHosted": "Plataforma autoalojada",
 		"solutionPrivacy": "Eventos centrados en la privacidad",
 		"solutionCommunity": "Plataforma centrada en la comunidad",
-		"solutionClubs": "Gestión de membresías para clubes"
+		"solutionClubs": "Gestión de membresías para clubes",
+		"solutionReferral": "Programa de referidos"
 	},
 	"guest_attendance": {
 		"rsvp_title": "Confirmación de asistencia sin cuenta",
@@ -5493,7 +5494,10 @@
 		"demoNudgeTitle": "Esto es una demo",
 		"demoNudgeBody": "Puedes explorar Revel ahora mismo con una cuenta de demostración ya lista, sin necesidad de registrarte.",
 		"demoNudgeUseAccount": "Usar una cuenta de demostración",
-		"demoNudgeRegisterAnyway": "Registrarme de todos modos"
+		"demoNudgeRegisterAnyway": "Registrarme de todos modos",
+		"referralInviteTitle": "Tienes una invitación al programa de referidos",
+		"referralInviteBody": "Crea tu cuenta con este correo y tu código de referido {code} se activa al instante.",
+		"referralInviteEmailLocked": "Esta dirección viene de tu invitación y no se puede cambiar."
 	},
 	"requestInvitationButton": {
 		"mustBeLoggedIn": "Debes haber iniciado sesión para solicitar una invitación",
@@ -6582,6 +6586,46 @@
 		"saved": "¡Guardado!",
 		"error": "Algo ha salido mal. Inténtalo de nuevo.",
 		"forbidden": "No tienes acceso activo al programa de referidos."
+	},
+	"referralApply": {
+		"kicker": "Programa de referidos",
+		"title": "Conviértete en partner de Revel",
+		"subtitle": "Trae a Revel las comunidades que conoces y gana una parte de lo que venden.",
+		"howTitle": "Cómo funciona",
+		"howStep1": "Envíanos una solicitud breve.",
+		"howStep2": "Las leemos todas, una por una.",
+		"howStep3": "Si aprobamos tu solicitud, recibes un código de referido para compartir.",
+		"howStep4": "Ganas una parte de lo que venden las comunidades que traes.",
+		"formTitle": "Tu solicitud",
+		"emailLabel": "Correo electrónico",
+		"emailPlaceholder": "tu@ejemplo.com",
+		"emailHelp": "Te responderemos a esta dirección. Usa la misma con la que inicias sesión.",
+		"codeLabel": "Código de referido deseado",
+		"codePlaceholder": "tu-codigo",
+		"codeHelp": "De 3 a 20 caracteres: letras, números, guiones y guiones bajos. Es el código que vas a compartir.",
+		"noteLabel": "Cuéntanos sobre ti",
+		"notePlaceholder": "Organizo un encuentro mensual para…",
+		"noteHelp": "¿Quién eres y qué comunidades traerías a Revel?",
+		"noteCounter": "{used} de {max} caracteres",
+		"submit": "Enviar solicitud",
+		"submitting": "Enviando…",
+		"successTitle": "Solicitud recibida",
+		"successBody": "¡Gracias! Revisamos cada solicitud una por una y te escribiremos por correo.",
+		"errorTitle": "No se ha podido enviar tu solicitud",
+		"errorPending": "Ya tienes una solicitud pendiente. Te escribiremos por correo.",
+		"errorCodeTaken": "Ese código de referido ya está en uso. Elige otro.",
+		"errorThrottled": "Demasiadas solicitudes desde esta conexión. Vuelve a intentarlo mañana.",
+		"errorGeneric": "Algo ha salido mal. Inténtalo de nuevo.",
+		"errorEmailInvalid": "Introduce una dirección de correo válida.",
+		"errorCodeInvalid": "Usa de 3 a 20 letras, números, guiones o guiones bajos.",
+		"errorNoteRequired": "Cuéntanos un poco sobre ti.",
+		"errorNoteTooLong": "Tu nota debe tener menos de 2000 caracteres.",
+		"alreadyReferrerTitle": "Ya estás en el programa de referidos",
+		"alreadyReferrerBody": "Tu código de referido y tus pagos están en tu cuenta.",
+		"alreadyReferrerCta": "Ir a los ajustes de referidos",
+		"accountTitle": "Programa de referidos",
+		"accountBody": "Trae comunidades a Revel y gana una parte de lo que venden.",
+		"accountCta": "Solicitar entrar en el programa de referidos"
 	},
 	"billing": {
 		"form": {

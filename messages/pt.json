@@ -2251,7 +2251,8 @@
 		"solutionSelfHosted": "Plataforma de alojamento próprio",
 		"solutionPrivacy": "Eventos focados na privacidade",
 		"solutionCommunity": "Plataforma centrada na comunidade",
-		"solutionClubs": "Gestão de membros para clubes"
+		"solutionClubs": "Gestão de membros para clubes",
+		"solutionReferral": "Programa de indicações"
 	},
 	"guest_attendance": {
 		"rsvp_title": "Confirmar presença sem conta",
@@ -5493,7 +5494,10 @@
 		"demoNudgeTitle": "Isto é uma demo",
 		"demoNudgeBody": "Podes explorar já o Revel com uma conta demo pronta a usar — sem precisares de te registares.",
 		"demoNudgeUseAccount": "Usar uma conta demo",
-		"demoNudgeRegisterAnyway": "Registar mesmo assim"
+		"demoNudgeRegisterAnyway": "Registar mesmo assim",
+		"referralInviteTitle": "Tens um convite para o programa de indicações",
+		"referralInviteBody": "Cria a tua conta com este e-mail e o teu código de indicação {code} fica ativo de imediato.",
+		"referralInviteEmailLocked": "Este endereço vem do teu convite e não pode ser alterado."
 	},
 	"requestInvitationButton": {
 		"mustBeLoggedIn": "Tens de ter sessão iniciada para pedir um convite",
@@ -6582,6 +6586,46 @@
 		"saved": "Guardado!",
 		"error": "Algo correu mal. Tenta novamente.",
 		"forbidden": "A tua conta não está ativa no programa de indicações."
+	},
+	"referralApply": {
+		"kicker": "Programa de indicações",
+		"title": "Faz parceria com o Revel",
+		"subtitle": "Traz para o Revel as comunidades que conheces e ganha uma parte do que elas vendem.",
+		"howTitle": "Como funciona",
+		"howStep1": "Envia-nos uma candidatura breve.",
+		"howStep2": "Lemos todas, uma a uma.",
+		"howStep3": "Se aprovarmos a tua candidatura, recebes um código de indicação para partilhar.",
+		"howStep4": "Ganhas uma parte do que vendem as comunidades que trazes.",
+		"formTitle": "A tua candidatura",
+		"emailLabel": "Endereço de e-mail",
+		"emailPlaceholder": "tu@exemplo.com",
+		"emailHelp": "Respondemos para este endereço. Usa aquele com que inicias sessão.",
+		"codeLabel": "Código de indicação pretendido",
+		"codePlaceholder": "o-teu-codigo",
+		"codeHelp": "De 3 a 20 carateres: letras, números, hífenes e sublinhados. É o código que vais partilhar.",
+		"noteLabel": "Fala-nos de ti",
+		"notePlaceholder": "Organizo um encontro mensal para…",
+		"noteHelp": "Quem és e que comunidades trarias para o Revel?",
+		"noteCounter": "{used} de {max} carateres",
+		"submit": "Enviar candidatura",
+		"submitting": "A enviar…",
+		"successTitle": "Candidatura recebida",
+		"successBody": "Agradecemos o teu interesse! Analisamos cada candidatura uma a uma e entramos em contacto por e-mail.",
+		"errorTitle": "Não foi possível enviar a tua candidatura",
+		"errorPending": "Já tens uma candidatura pendente. Entramos em contacto por e-mail.",
+		"errorCodeTaken": "Esse código de indicação já está a ser usado. Escolhe outro.",
+		"errorThrottled": "Demasiadas candidaturas a partir desta ligação. Tenta novamente amanhã.",
+		"errorGeneric": "Algo correu mal. Tenta novamente.",
+		"errorEmailInvalid": "Indica um endereço de e-mail válido.",
+		"errorCodeInvalid": "Usa de 3 a 20 letras, números, hífenes ou sublinhados.",
+		"errorNoteRequired": "Fala-nos um pouco de ti.",
+		"errorNoteTooLong": "A tua nota deve ter menos de 2000 carateres.",
+		"alreadyReferrerTitle": "Já fazes parte do programa de indicações",
+		"alreadyReferrerBody": "O teu código de indicação e os teus pagamentos estão na tua conta.",
+		"alreadyReferrerCta": "Ir para as definições de indicações",
+		"accountTitle": "Programa de indicações",
+		"accountBody": "Traz comunidades para o Revel e ganha uma parte do que elas vendem.",
+		"accountCta": "Candidatar-me ao programa de indicações"
 	},
 	"billing": {
 		"form": {

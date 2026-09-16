@@ -2251,7 +2251,8 @@
 		"solutionSelfHosted": "Self-Hosted Plattform",
 		"solutionPrivacy": "Datenschutz-fokussierte Events",
 		"solutionCommunity": "Community-First Plattform",
-		"solutionClubs": "Mitgliederverwaltung für Vereine"
+		"solutionClubs": "Mitgliederverwaltung für Vereine",
+		"solutionReferral": "Empfehlungsprogramm"
 	},
 	"guest_attendance": {
 		"rsvp_title": "RSVP ohne Konto",
@@ -5493,7 +5494,10 @@
 		"demoNudgeTitle": "Dies ist eine Demo",
 		"demoNudgeBody": "Du kannst Revel sofort mit einem vorbereiteten Demokonto erkunden — ganz ohne Registrierung.",
 		"demoNudgeUseAccount": "Demokonto verwenden",
-		"demoNudgeRegisterAnyway": "Trotzdem registrieren"
+		"demoNudgeRegisterAnyway": "Trotzdem registrieren",
+		"referralInviteTitle": "Du wurdest zum Empfehlungsprogramm eingeladen",
+		"referralInviteBody": "Erstelle dein Konto mit dieser E-Mail-Adresse und dein Empfehlungscode {code} wird sofort aktiviert.",
+		"referralInviteEmailLocked": "Diese Adresse stammt aus deiner Einladung und kann nicht geändert werden."
 	},
 	"requestInvitationButton": {
 		"mustBeLoggedIn": "Du musst angemeldet sein, um eine Einladung anzufordern",
@@ -6582,6 +6586,46 @@
 		"saved": "Gespeichert!",
 		"error": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
 		"forbidden": "Du bist kein aktiver Empfehler."
+	},
+	"referralApply": {
+		"kicker": "Empfehlungsprogramm",
+		"title": "Werde Revel-Partner*in",
+		"subtitle": "Bring die Communities, die du kennst, zu Revel und erhalte einen Anteil an ihren Verkäufen.",
+		"howTitle": "So funktioniert es",
+		"howStep1": "Schick uns eine kurze Bewerbung.",
+		"howStep2": "Wir lesen jede einzelne von Hand.",
+		"howStep3": "Angenommene Partner*innen bekommen einen Empfehlungscode zum Teilen.",
+		"howStep4": "Du erhältst einen Anteil an den Verkäufen der Communities, die du bringst.",
+		"formTitle": "Deine Bewerbung",
+		"emailLabel": "E-Mail-Adresse",
+		"emailPlaceholder": "deine@email.de",
+		"emailHelp": "Wir antworten an diese Adresse. Nimm die, mit der du dich anmeldest.",
+		"codeLabel": "Gewünschter Empfehlungscode",
+		"codePlaceholder": "dein-code",
+		"codeHelp": "3 bis 20 Zeichen: Buchstaben, Zahlen, Bindestriche und Unterstriche. Das ist der Code, den du teilst.",
+		"noteLabel": "Erzähl uns von dir",
+		"notePlaceholder": "Ich organisiere ein monatliches Treffen für…",
+		"noteHelp": "Wer bist du, und welche Communities würdest du zu Revel bringen?",
+		"noteCounter": "{used} von {max} Zeichen",
+		"submit": "Bewerbung senden",
+		"submitting": "Wird gesendet…",
+		"successTitle": "Bewerbung eingegangen",
+		"successBody": "Danke! Wir prüfen jede Bewerbung von Hand und melden uns per E-Mail.",
+		"errorTitle": "Deine Bewerbung konnte nicht gesendet werden",
+		"errorPending": "Du hast bereits eine offene Bewerbung. Wir melden uns per E-Mail.",
+		"errorCodeTaken": "Dieser Empfehlungscode ist schon vergeben. Bitte wähle einen anderen.",
+		"errorThrottled": "Zu viele Bewerbungen von dieser Verbindung. Bitte versuch es morgen noch einmal.",
+		"errorGeneric": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+		"errorEmailInvalid": "Gib eine gültige E-Mail-Adresse ein.",
+		"errorCodeInvalid": "Verwende 3 bis 20 Buchstaben, Zahlen, Bindestriche oder Unterstriche.",
+		"errorNoteRequired": "Erzähl uns bitte kurz etwas über dich.",
+		"errorNoteTooLong": "Bitte halte deine Notiz unter 2000 Zeichen.",
+		"alreadyReferrerTitle": "Du bist schon im Empfehlungsprogramm",
+		"alreadyReferrerBody": "Deinen Empfehlungscode und deine Auszahlungen findest du in deinem Konto.",
+		"alreadyReferrerCta": "Zu den Empfehlungs-Einstellungen",
+		"accountTitle": "Empfehlungsprogramm",
+		"accountBody": "Bring Communities zu Revel und erhalte einen Anteil an ihren Verkäufen.",
+		"accountCta": "Fürs Empfehlungsprogramm bewerben"
 	},
 	"billing": {
 		"form": {
