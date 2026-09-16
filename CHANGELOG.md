@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.12.4] - 2026-09-16
+
+### Fixed
+
+- Duration fields keep the unit you picked while you retype the amount: clearing the box no longer silently flips the picker back to hours, so a refund bracket set to *Days* and retyped as `7` saves 7 days, not 7 hours. The same flip affected the waitlist offer expiry, the questionnaire retake window, and a tier's cancellation deadline. Emptying a refund bracket's amount and clicking away now restores the value you had instead of saving a 0-hour bracket, and a half-typed negative number is no longer read as a cleared field.
+
 ## [2.12.3] - 2026-09-15
 
 ### Fixed
