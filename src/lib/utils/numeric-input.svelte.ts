@@ -18,6 +18,13 @@ export interface NumericFieldOptions<T extends number | null> extends NumericBou
 export interface NumericField {
 	/** Bind to the input's `value=`. */
 	readonly value: string;
+	/**
+	 * Whether an edit is in progress — the buffer is held, so `value` is the
+	 * user's raw text rather than the committed value. Read it where a companion
+	 * control must not be re-derived under the caret (DurationInput holds its unit
+	 * picker still while the amount is being retyped, #935).
+	 */
+	readonly editing: boolean;
 	oninput: (event: Event & { currentTarget: HTMLInputElement }) => void;
 	onblur: () => void;
 	/**
@@ -60,13 +67,19 @@ export function numericField<T extends number | null = number>(
 	// its own — no `$effect` re-sync racing the user's keystrokes.
 	let draft = $state<string | null>(null);
 
-	const clearable = options.emptyValue === null;
+	// Read through `options` rather than snapshotting: a caller may hand this in as
+	// a getter over a prop (DurationInput derives it from its own empty sentinel).
+	const clearable = (): boolean => options.emptyValue === null;
 
 	return {
 		get value(): string {
 			if (draft !== null) return draft;
 			const current = options.value();
 			return current === null || current === undefined ? '' : String(current);
+		},
+
+		get editing(): boolean {
+			return draft !== null;
 		},
 
 		oninput(event): void {
@@ -83,7 +96,7 @@ export function numericField<T extends number | null = number>(
 			// number input also reports an empty `value` for text it cannot parse —
 			// a lone "-" on the way to "-1" — and that is a half-typed state, not a
 			// clear. `badInput` is what tells the two apart.
-			if (clearable && raw.trim() === '' && !event.currentTarget.validity?.badInput) {
+			if (clearable() && raw.trim() === '' && !event.currentTarget.validity?.badInput) {
 				options.commit(null as T);
 			}
 			// Anything else commits nothing — the last valid value stands until blur.

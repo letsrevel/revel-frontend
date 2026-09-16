@@ -72,3 +72,17 @@ export function fromStorage(
 	}
 	return { amount: value, unit: storageUnit };
 }
+
+/**
+ * Express `value` (given in `storageUnit`) in `unit`, or `null` when it is not a
+ * whole number there (60 hours in days = 2.5 → null).
+ *
+ * Counterpart to `fromStorage` for the case where the unit is already decided —
+ * the user picked it, or it is the one currently on screen — instead of being
+ * chosen for them.
+ */
+export function toDisplay(value: number, storageUnit: StorageUnit, unit: Unit): number | null {
+	const minutes = value * STORAGE_FACTOR_MINUTES[storageUnit];
+	const f = FACTOR_MINUTES[unit];
+	return minutes % f === 0 ? minutes / f : null;
+}
