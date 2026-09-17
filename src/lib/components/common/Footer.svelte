@@ -203,16 +203,6 @@
 							{m['footer.github']()}
 						</a>
 					</li>
-					<li>
-						<a
-							href="https://forms.gle/7wAqQXqrWk3X6Ddu7"
-							target="_blank"
-							rel="noopener noreferrer"
-							class={footerLinkClass}
-						>
-							{m['footer.sendFeedback']()}
-						</a>
-					</li>
 				</ul>
 			</div>
 		</div>
@@ -305,8 +295,11 @@
 
 				<span class="text-background/45 dark:text-muted-foreground/50">|</span>
 
+				<!-- The issue tracker, not a form: bug reports belong where the code
+				     is, and `FRONTEND_REPO` is already the single source of truth
+				     for this repo's URL (the version tooltip links it too). -->
 				<a
-					href="https://forms.gle/c6ovKV92nMQEbR877"
+					href="{FRONTEND_REPO}/issues/new"
 					target="_blank"
 					rel="noopener noreferrer"
 					class="flex items-center gap-1.5 transition-colors hover:text-background dark:hover:text-foreground"
