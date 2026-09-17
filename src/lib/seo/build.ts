@@ -426,7 +426,7 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 			return plainPageSeo(plainCtx, {
 				title: 'Referral program | Revel',
 				description:
-					'Apply to the Revel referral program: bring communities to Revel and earn a share of what they sell.',
+					'Apply to the Revel referral program: bring organizers to Revel and earn 15% of what Revel makes from them, forever.',
 				robots: 'noindex,follow'
 			});
 		}
