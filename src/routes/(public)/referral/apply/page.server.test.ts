@@ -190,8 +190,8 @@ describe('referral apply action', () => {
 	});
 
 	describe('409 conflicts', () => {
-		it('"already taken" classifies as code_taken, with no form error', async () => {
-			respond(409, { detail: 'This referral code is already taken.' });
+		it('a code_taken code classifies as code_taken, with no form error', async () => {
+			respond(409, { detail: 'This referral code is already taken.', code: 'code_taken' });
 
 			const result = expectFailure(await actions.default(actionEvent(VALID_FIELDS)));
 
@@ -200,8 +200,11 @@ describe('referral apply action', () => {
 			expect(result.data.errors).not.toHaveProperty('form');
 		});
 
-		it('"pending application" classifies as a form error, with no code error', async () => {
-			respond(409, { detail: 'You already have a pending application.' });
+		it('a pending_application code classifies as a form error, with no code error', async () => {
+			respond(409, {
+				detail: 'You already have a pending application.',
+				code: 'pending_application'
+			});
 
 			const result = expectFailure(await actions.default(actionEvent(VALID_FIELDS)));
 
@@ -212,12 +215,12 @@ describe('referral apply action', () => {
 
 		// This branch matters: silently mislabelling an unrecognised conflict as
 		// "pending" (or as "code_taken") would tell the user something false
-		// about their application state. `classifyReferralConflict` falls back
-		// to `null` precisely so an unmatched detail degrades to a generic
-		// banner instead of guessing — pin that down explicitly, not just via
-		// "not code_taken".
-		it('an unrecognised 409 detail classifies as generic, explicitly not pending', async () => {
-			respond(409, { detail: 'Some new backend wording.' });
+		// about their application state. `readReferralConflict` falls back to
+		// `null` precisely so an unmatched (or absent) code degrades to a
+		// generic banner instead of guessing — pin that down explicitly, not
+		// just via "not code_taken".
+		it('an unrecognised 409 code classifies as generic, explicitly not pending', async () => {
+			respond(409, { detail: 'Some new backend wording.', code: 'some_new_code' });
 
 			const result = expectFailure(await actions.default(actionEvent(VALID_FIELDS)));
 
@@ -226,8 +229,11 @@ describe('referral apply action', () => {
 			expect(result.data.errors.form).not.toBe('pending');
 		});
 
-		it('classifies a non-English (Italian) "already taken" detail too', async () => {
-			respond(409, { detail: 'Questo codice referral è già in uso.' });
+		// This is the entire point of BE #987's follow-up: the code is the
+		// stable, locale-independent discriminator, so a translated `detail`
+		// must not stop the classification from working.
+		it('classifies a non-English (Italian) detail via its code_taken code', async () => {
+			respond(409, { detail: 'Questo codice referral è già in uso.', code: 'code_taken' });
 
 			const result = expectFailure(await actions.default(actionEvent(VALID_FIELDS)));
 

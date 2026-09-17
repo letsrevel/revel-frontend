@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
 	referralApplicationSchema,
 	trimApplicationInput,
-	classifyReferralConflict,
+	readReferralConflict,
 	isReferralInviteId
 } from './referral';
 
@@ -149,48 +149,82 @@ describe('trimApplicationInput', () => {
 	});
 });
 
-describe('classifyReferralConflict', () => {
-	const codeTaken: Record<string, string> = {
-		en: 'This referral code is already taken.',
-		it: 'Questo codice referral è già in uso.',
-		de: 'Dieser Empfehlungs-Code ist bereits vergeben.',
-		fr: 'Ce code de parrainage est déjà utilisé.',
-		es: 'Este código de referido ya está en uso.',
-		pt: 'Este código de indicação já está em uso.'
-	};
-
-	const pending: Record<string, string> = {
-		en: 'You already have a pending application.',
-		it: 'Hai già una candidatura in sospeso.',
-		de: 'Du hast bereits einen ausstehenden Antrag.',
-		fr: 'Tu as déjà une candidature en attente.',
-		es: 'Ya tienes una solicitud pendiente.',
-		pt: 'Já tens uma candidatura pendente.'
-	};
-
-	for (const [lang, detail] of Object.entries(codeTaken)) {
-		it(`classifies the real ${lang} "code already taken" backend message`, () => {
-			expect(classifyReferralConflict(detail)).toBe('code_taken');
-		});
-	}
-
-	for (const [lang, detail] of Object.entries(pending)) {
-		it(`classifies the real ${lang} "pending application" backend message`, () => {
-			expect(classifyReferralConflict(detail)).toBe('pending');
-		});
-	}
-
-	it('returns null for an unrelated message', () => {
-		expect(classifyReferralConflict('Referral applications are not open.')).toBeNull();
+describe('readReferralConflict', () => {
+	it('classifies a bare code_taken code', () => {
+		expect(readReferralConflict({ code: 'code_taken' })).toBe('code_taken');
 	});
 
-	it('returns null for an empty string', () => {
-		expect(classifyReferralConflict('')).toBeNull();
+	it('classifies a bare pending_application code as "pending"', () => {
+		expect(readReferralConflict({ code: 'pending_application' })).toBe('pending');
 	});
 
-	it('is case-insensitive', () => {
-		expect(classifyReferralConflict('THIS REFERRAL CODE IS ALREADY TAKEN.')).toBe('code_taken');
-		expect(classifyReferralConflict('YOU ALREADY HAVE A PENDING APPLICATION.')).toBe('pending');
+	it('classifies a realistic full "code taken" body off its code', () => {
+		expect(
+			readReferralConflict({ detail: 'This referral code is already taken.', code: 'code_taken' })
+		).toBe('code_taken');
+	});
+
+	it('classifies a realistic full "pending application" body off its code', () => {
+		expect(
+			readReferralConflict({
+				detail: 'You already have a pending application.',
+				code: 'pending_application'
+			})
+		).toBe('pending');
+	});
+
+	// This is the entire point of BE #987's follow-up: the code is the stable,
+	// locale-independent discriminator that replaced matching a fragment of
+	// each of the six `django.po` catalogs. A translated `detail` must not
+	// stop the classification from working.
+	it('classifies a non-English (Italian) "already taken" body via its code, not its detail', () => {
+		expect(
+			readReferralConflict({ detail: 'Questo codice referral è già in uso.', code: 'code_taken' })
+		).toBe('code_taken');
+	});
+
+	// Regression guard: `detail` must never be consulted. If it were, this
+	// contradictory body (wrong text, right code) would be misclassified.
+	it('follows the code even when detail says the opposite thing', () => {
+		expect(
+			readReferralConflict({
+				detail: 'You already have a pending application.',
+				code: 'code_taken'
+			})
+		).toBe('code_taken');
+	});
+
+	it('returns null for an admin-only code that cannot reach the public endpoint', () => {
+		expect(readReferralConflict({ code: 'already_decided' })).toBeNull();
+		expect(readReferralConflict({ code: 'blocked_email' })).toBeNull();
+	});
+
+	it('returns null for undefined', () => {
+		expect(readReferralConflict(undefined)).toBeNull();
+	});
+
+	it('returns null for null', () => {
+		expect(readReferralConflict(null)).toBeNull();
+	});
+
+	it('returns null for an empty object', () => {
+		expect(readReferralConflict({})).toBeNull();
+	});
+
+	it('returns null for a body with detail but no code', () => {
+		expect(readReferralConflict({ detail: 'something' })).toBeNull();
+	});
+
+	it('returns null for a bare string', () => {
+		expect(readReferralConflict('code_taken')).toBeNull();
+	});
+
+	it('returns null for a number', () => {
+		expect(readReferralConflict(42)).toBeNull();
+	});
+
+	it('returns null for a non-string code', () => {
+		expect(readReferralConflict({ code: 123 })).toBeNull();
 	});
 });
 

@@ -6,13 +6,12 @@ import { log } from '$lib/server/logger';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
 import {
-	classifyReferralConflict,
+	readReferralConflict,
 	referralApplicationSchema,
 	trimApplicationInput,
 	type ReferralApplicationInput,
 	type ReferralApplicationIssue
 } from '$lib/schemas/referral';
-import { extractErrorMessage } from '$lib/utils/errors';
 
 /**
  * Public referral-program application (FE #938, BE #987).
@@ -109,8 +108,8 @@ export const actions = {
 		}
 
 		if (status === 409) {
-			const conflict = classifyReferralConflict(extractErrorMessage(response.error, ''));
-			// Logged unclassified so a backend rewording shows up as a spike here
+			const conflict = readReferralConflict(response.error);
+			// Logged unclassified so an unrecognised code shows up as a spike here
 			// rather than only as vaguer copy for users.
 			log.info('referral_apply_conflict', { classified: conflict ?? 'unknown' });
 			const errors: ReferralApplyErrors =

@@ -50,54 +50,27 @@ export function trimApplicationInput(raw: {
 
 export type ReferralApplicationInput = z.infer<typeof referralApplicationSchema>;
 
-/** Which of the two 409s the backend returned, when we can tell them apart. */
+/** Which of the two 409s `POST /referral/apply` returned. */
 export type ReferralConflictKind = 'pending' | 'code_taken';
 
-/*
- * `POST /referral/apply` answers BOTH conflicts with a bare
- * `{"detail": "<message>"}` and HTTP 409 — there is no machine-readable
- * discriminator on this endpoint (unlike the account-deletion 409, which
- * carries `code: "referral_forfeiture_confirmation_required"`). The two cases
- * need different UI (one blames the code field and is recoverable, the other
- * is terminal for this email), so the text is all we have.
+/**
+ * Read the backend's machine-readable conflict code off an error body.
  *
- * The detail is `gettext`-translated per Accept-Language (BE #724) and our API
- * client forwards the UI locale, so matching only the English sentence would
- * go dead for five of six locales. Match a stable fragment of EACH catalog
- * translation instead — the same approach `tier-form-helpers.ts` takes for the
- * organizer billing error. Fragments are taken verbatim from
- * `revel-backend/src/locale/<lang>/LC_MESSAGES/django.po`.
+ * `POST /referral/apply` answers 404 and 409 with
+ * `{ detail, code }` (BE #987 follow-up, asked for by this issue): `detail` is
+ * translated per Accept-Language, `code` is stable. This used to match a
+ * fragment of each of the six `django.po` catalogs because the code did not
+ * exist yet — deleting that is the whole point of the backend change.
  *
- * Unmatched → `null`, and the page falls back to a generic message rather than
- * guessing. A backend rewording therefore degrades the copy; it never
- * mislabels the failure.
+ * Unknown or missing code → `null`, and the page falls back to a generic
+ * message rather than guessing. The public apply path only ever raises
+ * `pending_application` and `code_taken`; the other members of the backend's
+ * `ReferralApplicationErrorCode` union belong to the admin decision routes.
  */
-const CODE_TAKEN_FRAGMENTS = [
-	'already taken', // en: This referral code is already taken.
-	'già in uso', // it: Questo codice referral è già in uso.
-	'bereits vergeben', // de: Dieser Empfehlungs-Code ist bereits vergeben.
-	'déjà utilisé', // fr: Ce code de parrainage est déjà utilisé.
-	'ya está en uso', // es: Este código de referido ya está en uso.
-	'já está em uso' // pt: Este código de indicação já está em uso.
-];
-
-const PENDING_FRAGMENTS = [
-	'pending application', // en: You already have a pending application.
-	'in sospeso', // it: Hai già una candidatura in sospeso.
-	'ausstehenden antrag', // de: Du hast bereits einen ausstehenden Antrag.
-	'en attente', // fr: Tu as déjà une candidature en attente.
-	'solicitud pendiente', // es: Ya tienes una solicitud pendiente.
-	'candidatura pendente' // pt: Já tens uma candidatura pendente.
-];
-
-export function classifyReferralConflict(detail: string): ReferralConflictKind | null {
-	const lower = detail.toLowerCase();
-	if (CODE_TAKEN_FRAGMENTS.some((fragment) => lower.includes(fragment))) {
-		return 'code_taken';
-	}
-	if (PENDING_FRAGMENTS.some((fragment) => lower.includes(fragment))) {
-		return 'pending';
-	}
+export function readReferralConflict(error: unknown): ReferralConflictKind | null {
+	const code = (error as { code?: unknown } | null | undefined)?.code;
+	if (code === 'code_taken') return 'code_taken';
+	if (code === 'pending_application') return 'pending';
 	return null;
 }
 
