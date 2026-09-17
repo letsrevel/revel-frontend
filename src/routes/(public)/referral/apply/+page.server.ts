@@ -55,7 +55,7 @@ function applyFailure(status: number, failure: ReferralApplyFailure) {
 	return fail(status, failure);
 }
 
-export const load: PageServerLoad = async ({ fetch, url, request, locals }) => {
+export const load: PageServerLoad = async ({ fetch, url, request }) => {
 	const features = await getFeatures(fetch);
 	if (!features.referral_applications) {
 		// The same answer the backend gives while applications are closed. Not a
@@ -64,15 +64,10 @@ export const load: PageServerLoad = async ({ fetch, url, request, locals }) => {
 	}
 
 	const lang = resolveLang(request);
-	return {
-		// `locals.user` is the MINIMAL JWT-derived variant on most requests (the
-		// backend's access token carries no email claim), so the email prefill
-		// cannot happen here — the page fills it from the in-memory auth store
-		// once it hydrates. This boolean only tells the page whether to expect a
-		// user at all, so a guest never renders a "loading your details" state.
-		isAuthenticated: !!locals.user,
-		seo: buildSeo({ kind: 'referral-apply', url, lang })
-	};
+	// No email prefill here: `locals.user` is the MINIMAL JWT-derived variant on
+	// most requests (the backend's access token carries no email claim), so the
+	// page fills the field from the in-memory auth store once it hydrates.
+	return { seo: buildSeo({ kind: 'referral-apply', url, lang }) };
 };
 
 export const actions = {
@@ -123,6 +118,25 @@ export const actions = {
 					? { code: 'code_taken' }
 					: { form: conflict === 'pending' ? 'pending' : 'generic' };
 			return applyFailure(409, { errors, values });
+		}
+
+		if (status === 422) {
+			/*
+			 * Two different 422s share this status, and the body tells them apart:
+			 * ninja's own request validation answers with `detail` as a LIST of
+			 * per-field objects, while the service's `HttpError(422, …)` answers
+			 * with `detail` as a STRING. Our zod schema mirrors the backend's
+			 * field rules, so the string one is the single check only the backend
+			 * does — `sanitize_note` strips tags, and a note that is nothing BUT
+			 * tags reduces to empty. Blame the note for that, and fall back to the
+			 * generic banner for a schema mismatch we did not anticipate rather
+			 * than pointing the user at a field that may be fine.
+			 */
+			const detail = (response.error as { detail?: unknown } | undefined)?.detail;
+			return applyFailure(422, {
+				errors: typeof detail === 'string' ? { note: 'note_required' } : { form: 'generic' },
+				values
+			});
 		}
 
 		if (status === 429) {

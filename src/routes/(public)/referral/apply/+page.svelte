@@ -62,15 +62,20 @@
 	 * moment the auth store settles. Without this, focus silently falls to
 	 * <body> and nothing is announced — WCAG 4.1.3 / 2.4.3.
 	 *
-	 * The `document.body` guard is what keeps this from becoming a focus STEAL:
-	 * it is true both when nobody has focused anything yet and when the element
-	 * that had focus was inside the form we just removed (the browser resets
-	 * activeElement to body), and false when the visitor is off in the navbar
-	 * or the footer, where yanking focus would be the bug.
+	 * Only when the visitor had actually reached the form, though: `touchedForm`
+	 * is set by its `focusin`. An enrolled referrer who merely opens the page
+	 * gets the swap during hydration with focus still on <body>, and jumping
+	 * them past the header and the "How it works" list they were about to read
+	 * would be the more annoying bug. The `document.body` check then stops the
+	 * remaining case from becoming a focus STEAL: after Svelte removes the
+	 * focused field the browser resets activeElement to body, so this is true
+	 * for the form we just tore down and false if they have since moved on to
+	 * the navbar or the footer.
 	 */
 	let alreadyReferrerHeading = $state<HTMLHeadingElement | null>(null);
+	let touchedForm = false;
 	$effect(() => {
-		if (!isReferrer) return;
+		if (!isReferrer || !touchedForm) return;
 		if (document.activeElement && document.activeElement !== document.body) return;
 		alreadyReferrerHeading?.focus();
 	});
@@ -127,7 +132,7 @@
 	>
 		{#snippet decoration()}
 			<Sticker tint="purple" rotate={-3} class="text-sm">
-				<Gift class="mb-0.5 mr-1 inline h-4 w-4" />
+				<Gift class="mb-0.5 inline h-4 w-4" />
 			</Sticker>
 		{/snippet}
 	</PageHeader>
@@ -135,7 +140,7 @@
 	<section class="mt-8" aria-labelledby="referral-how">
 		<h2 id="referral-how" class="text-xl font-extrabold">{m['referralApply.howTitle']()}</h2>
 		<ol class="mt-4 space-y-3">
-			{#each steps as step, index (step)}
+			{#each steps as step, index (index)}
 				<li class="flex items-start gap-3">
 					<span
 						aria-hidden="true"
@@ -204,8 +209,11 @@
 				<form
 					method="POST"
 					class="mt-6 space-y-6"
-					use:enhance={() => {
-						if (isSubmitting) return;
+					onfocusin={() => (touchedForm = true)}
+					use:enhance={({ cancel }) => {
+						// `return` here would run SvelteKit's DEFAULT handler, not abort
+						// — only cancel() stops the submit.
+						if (isSubmitting) return cancel();
 						isSubmitting = true;
 						return async ({ update }) => {
 							isSubmitting = false;

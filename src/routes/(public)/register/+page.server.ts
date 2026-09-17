@@ -63,10 +63,22 @@ async function loadReferralInvite(
 }
 
 export const actions = {
-	default: async ({ request, fetch }) => {
+	default: async ({ request, fetch, url }) => {
 		const formData = await request.formData();
+		/*
+		 * The invite's email wins over whatever was posted, re-resolved from the
+		 * SAME query string the form was rendered with (the form has no `action`,
+		 * so `?referral_invite=` is still here). The page's `readonly` field and
+		 * its two client-side guards are UX: `readonly` stops keystrokes but not
+		 * scripts, and neither guard exists at all with JavaScript off or on a
+		 * hand-rolled POST. Deciding it here is what actually makes the lock a
+		 * lock. An invite that no longer resolves — consumed, flag switched off,
+		 * backend down — yields null and registration proceeds normally with the
+		 * submitted address rather than being blocked.
+		 */
+		const invite = await loadReferralInvite(fetch, url);
 		const data = {
-			email: formData.get('email') as string,
+			email: invite?.email ?? (formData.get('email') as string),
 			password: formData.get('password') as string,
 			confirmPassword: formData.get('confirmPassword') as string,
 			acceptTerms: formData.get('acceptTerms') === 'on',

@@ -23,6 +23,15 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 // backend runs with DISABLE_THROTTLING=True (revel-backend/.env, honoured by
 // common.throttling.DisableableThrottleMixin), so the limit is not live here.
 //
+// NOT covered here: the flag-OFF case (no footer link, /referral/apply 404s).
+// It needs SiteSettings.referral_applications_enabled toggled mid-suite, which
+// the seed cannot do; `src/lib/utils/features.test.ts` covers the frontend
+// half (the flag fails CLOSED). Related trap: `getFeatures` caches /version
+// for 5 minutes IN THE FRONTEND PROCESS. Reseeding while a frontend server is
+// already up can leave this whole file 404ing for up to 5 minutes on a stale
+// cached `referral_applications: false` — restart the frontend after a reseed,
+// not just the backend.
+//
 // Deliberately NOT the suite-wide `uniqueEmail()` factory: this endpoint
 // normalizes for ban/dedup matching by stripping everything after `+` (see
 // `accounts/utils/email_normalization.py`), so every `e2e+<label>-...@...`
