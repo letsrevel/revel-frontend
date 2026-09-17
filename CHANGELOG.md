@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.13.0] - 2026-09-17
+
+### Added
+
+- **Referral program applications**: a new public `/referral/apply` page where anyone can apply to become a referral partner — a short "how it works" explainer, a form for your email, the code you'd like, and an optional note, and clear outcomes for a code that's already taken, an application you've already filed, or too many attempts from one connection. It's reachable from *Solutions* in the footer and from a section on `/account/profile` for users who aren't referrers yet; people who already have a code are pointed at `/account/referral` instead. The page and both entry points only exist while the backend's referral-applications feature is switched on.
+- Registration links carrying a referral invite (`?referral_invite=…`) now name the code that invited you and prefill the invited email address, which stays fixed so the invite can't be lost by editing it. An invite link that no longer resolves quietly falls back to the ordinary registration form.
+
+### Fixed
+
+- Referral codes keep the capitalisation you typed and are matched case-insensitively. A code like `test-partner` is no longer rewritten to `TESTPARTNER` on registration — where it matched nothing — and iOS no longer capitalises the first letter as you type it.
+
 ## [2.12.4] - 2026-09-16
 
 ### Fixed
