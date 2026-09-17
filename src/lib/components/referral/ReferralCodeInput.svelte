@@ -37,7 +37,12 @@
 	});
 
 	async function validateCode() {
-		const code = codeInput.trim().toUpperCase();
+		// Trim only. Referral codes are matched case-INSENSITIVELY by the backend
+		// and STORED as typed (BE #987), so `Biagio-2026` must stay
+		// `Biagio-2026` — upper-casing it here made every code render back to
+		// its owner in a case they never chose, and stripped nothing legal
+		// either way.
+		const code = codeInput.trim();
 		if (!code) {
 			errorMessage = m['referral.enterCode']();
 			return;
@@ -133,7 +138,10 @@
 						bind:value={codeInput}
 						placeholder={m['referral.enterCode']()}
 						disabled={isProcessing || isValidating}
-						class="flex-1 uppercase"
+						autocapitalize="none"
+						autocorrect="off"
+						spellcheck={false}
+						class="flex-1"
 						aria-label={m['referral.haveReferralCode']()}
 						aria-invalid={errorMessage ? 'true' : undefined}
 						aria-describedby={errorMessage ? 'referral-error' : undefined}

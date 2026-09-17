@@ -9,7 +9,7 @@
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import AuthBandLayout from '$lib/components/auth/AuthBandLayout.svelte';
 	import SsoProviderButtons from '$lib/components/auth/SsoProviderButtons.svelte';
-	import { Eye, EyeOff, Loader2, Sparkles, ArrowRight } from '@lucide/svelte';
+	import { Eye, EyeOff, Gift, Loader2, Sparkles, ArrowRight } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { SeoHead } from '$lib/seo';
 
@@ -20,8 +20,17 @@
 
 	const { data, form }: Props = $props();
 
+	/*
+	 * Referral-program invite (FE #938): `?referral_invite=<id>` resolved
+	 * server-side to the invited email. The backend enrolls by matching the
+	 * verified email, so the field is LOCKED to it — editing it would silently
+	 * produce an ordinary account and leave the invite unused. A stale or
+	 * unknown id simply yields `null` here and the normal form renders.
+	 */
+	const referralInvite = $derived(data.referralInvite);
+
 	// Form state
-	let email = $state(form?.email || '');
+	let email = $state(form?.email || data.referralInvite?.email || '');
 	let password = $state('');
 	let confirmPassword = $state('');
 	let acceptTerms = $state(false);
@@ -114,7 +123,20 @@
 		const confirmEl = get('confirmPassword');
 		const termsEl = get('acceptTerms');
 
-		if (emailEl && emailEl.value !== email) email = emailEl.value;
+		if (referralInvite) {
+			// `readonly` stops KEYSTROKES, not scripts. A password manager or an
+			// autofill extension can write `.value` directly, which `bind:value`
+			// never sees and which this very function would then copy into
+			// `email` — registering under an address that does not match the
+			// invite, so the backend silently leaves the invite unused and the
+			// user sees no error. Put the invited address back instead of
+			// syncing away from it.
+			if (emailEl && emailEl.value !== referralInvite.email) {
+				emailEl.value = referralInvite.email;
+			}
+		} else if (emailEl && emailEl.value !== email) {
+			email = emailEl.value;
+		}
 		if (passwordEl && passwordEl.value !== password) password = passwordEl.value;
 		if (confirmEl && confirmEl.value !== confirmPassword) confirmPassword = confirmEl.value;
 		if (termsEl && termsEl.checked !== acceptTerms) acceptTerms = termsEl.checked;
@@ -224,6 +246,21 @@
 >
 	<Card>
 		<CardContent class="space-y-6 p-6 sm:p-8">
+			{#if referralInvite}
+				<!-- Poster-tinted invite banner: `bg-poster-purple text-poster-white`
+				     is the audited, mode-inert imagery pair already used by the demo
+				     nudge chip on this same page. -->
+				<div class="rounded-lg bg-poster-purple p-4 text-poster-white">
+					<p class="flex items-center gap-2 font-bold">
+						<Gift class="h-5 w-5 shrink-0" aria-hidden="true" />
+						{m['register.referralInviteTitle']()}
+					</p>
+					<p class="mt-2 text-sm">
+						{m['register.referralInviteBody']({ code: referralInvite.code })}
+					</p>
+				</div>
+			{/if}
+
 			<!-- Error Summary -->
 			{#if hasErrors && errors.form}
 				<div role="alert" class="rounded-md border border-destructive bg-destructive/10 p-4">
@@ -235,7 +272,12 @@
 			<form
 				method="POST"
 				bind:this={formEl}
-				use:enhance={() => {
+				use:enhance={({ formData }) => {
+					// Last line of defence for the locked invite email: whatever ended
+					// up in the DOM, the invite's own address is what gets posted.
+					// Only the enhanced path can do this — see syncFormValues.
+					if (referralInvite) formData.set('email', referralInvite.email);
+
 					// Prevent duplicate submissions
 					if (isSubmitting) return;
 					isSubmitting = true;
@@ -259,21 +301,40 @@
 					<label for="email" class="block text-sm font-medium">
 						{m['register.emailAddress']()}
 					</label>
+					<!-- `readonly`, never `disabled`: a disabled input submits no value,
+					     which would post an empty email and lose the invite entirely. The
+					     tinted background is the "locked" cue; the text stays full-strength
+					     rather than muted, because this is an address the reader has to
+					     check character by character.
+					     `aria-describedby` lists the hint BEFORE the error: screen readers
+					     read the ids in the order given, and the hint paragraph is the one
+					     that renders first in the DOM. -->
 					<input
 						id="email"
 						name="email"
 						type="email"
-						autocomplete="email"
+						autocomplete={referralInvite ? 'off' : 'email'}
 						required
+						readonly={!!referralInvite}
 						bind:value={email}
 						aria-invalid={!!errors.email}
-						aria-describedby={errors.email ? 'email-error' : undefined}
+						aria-describedby={[
+							referralInvite ? 'email-invite-hint' : null,
+							errors.email ? 'email-error' : null
+						]
+							.filter(Boolean)
+							.join(' ') || undefined}
 						disabled={isSubmitting}
-						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {errors.email
+						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground read-only:bg-muted focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {errors.email
 							? 'border-destructive'
 							: ''}"
 						placeholder={m['register.emailPlaceholder']()}
 					/>
+					{#if referralInvite}
+						<p id="email-invite-hint" class="text-sm text-muted-foreground">
+							{m['register.referralInviteEmailLocked']()}
+						</p>
+					{/if}
 					{#if errors.email}
 						<p id="email-error" class="text-sm text-destructive" role="alert">
 							{errors.email}

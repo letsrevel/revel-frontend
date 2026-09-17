@@ -2116,7 +2116,6 @@
 	"footer": {
 		"aboutTitle": "Revel",
 		"aboutDescription": "Plateforme open source de gestion d'événements et de billetterie axée sur la communauté.",
-		"sendFeedback": "Envoyer un retour",
 		"legalTitle": "Mentions légales",
 		"privacyPolicy": "Politique de confidentialité",
 		"termsOfService": "Conditions d'utilisation",
@@ -2137,7 +2136,8 @@
 		"solutionSelfHosted": "Plateforme auto-hébergée",
 		"solutionPrivacy": "Événements axés sur la confidentialité",
 		"solutionCommunity": "Plateforme axée sur la communauté",
-		"solutionClubs": "Gestion des adhésions pour clubs"
+		"solutionClubs": "Gestion des adhésions pour clubs",
+		"solutionReferral": "Programme de parrainage"
 	},
 	"guest_attendance": {
 		"rsvp_title": "S'inscrire sans compte",
@@ -5463,7 +5463,10 @@
 		"demoNudgeTitle": "Ceci est une démo",
 		"demoNudgeBody": "Vous pouvez explorer Revel immédiatement avec un compte de démonstration prêt à l'emploi, sans inscription.",
 		"demoNudgeUseAccount": "Utiliser un compte de démonstration",
-		"demoNudgeRegisterAnyway": "S'inscrire quand même"
+		"demoNudgeRegisterAnyway": "S'inscrire quand même",
+		"referralInviteTitle": "Tu as une invitation au programme de parrainage",
+		"referralInviteBody": "Crée ton compte avec cette adresse e-mail et ton code de parrainage {code} est activé tout de suite.",
+		"referralInviteEmailLocked": "Cette adresse vient de ton invitation et ne peut pas être modifiée."
 	},
 	"requestInvitationButton": {
 		"mustBeLoggedIn": "Tu dois te connecter pour demander une invitation",
@@ -6552,6 +6555,46 @@
 		"saved": "Enregistré !",
 		"error": "Une erreur s'est produite. Veuillez réessayer.",
 		"forbidden": "Tu n'es pas un parrain actif."
+	},
+	"referralApply": {
+		"kicker": "Programme de parrainage",
+		"title": "Deviens partenaire de Revel",
+		"subtitle": "Amène des équipes organisatrices sur Revel et touche 15 % de ce que Revel gagne grâce à elles — à vie.",
+		"howTitle": "Comment ça marche",
+		"howStep1": "Envoie-nous une courte demande.",
+		"howStep2": "Nous les lisons toutes, une par une.",
+		"howStep3": "Une fois ta demande retenue, tu reçois un code de parrainage à partager avec les équipes organisatrices de ton réseau.",
+		"howStep4": "Tu touches 15 % de ce que Revel gagne grâce à chaque équipe organisatrice qui s'inscrit avec ton code, tant qu'elle reste.",
+		"formTitle": "Ta demande",
+		"emailLabel": "Adresse e-mail",
+		"emailPlaceholder": "toi@exemple.com",
+		"emailHelp": "Nous répondrons à cette adresse. Utilise celle avec laquelle tu te connectes.",
+		"codeLabel": "Code de parrainage souhaité",
+		"codePlaceholder": "ton-code",
+		"codeHelp": "De 3 à 20 caractères : lettres, chiffres, tirets et tirets bas. C'est le code que tu partageras.",
+		"noteLabel": "Parle-nous de toi",
+		"notePlaceholder": "Je connais plusieurs équipes organisatrices à…",
+		"noteHelp": "Qui es-tu, et quelles équipes organisatrices amènerais-tu sur Revel ?",
+		"noteCounter": "{used} sur {max} caractères",
+		"submit": "Envoyer la demande",
+		"submitting": "Envoi en cours…",
+		"successTitle": "Demande reçue",
+		"successBody": "Merci ! Nous lisons chaque demande une par une et nous te répondrons par e-mail.",
+		"errorTitle": "Impossible d'envoyer ta demande",
+		"errorPending": "Tu as déjà une demande en attente. Nous te répondrons par e-mail.",
+		"errorCodeTaken": "Ce code de parrainage est déjà pris. Choisis-en un autre.",
+		"errorThrottled": "Trop de demandes depuis cette connexion. Réessaie demain.",
+		"errorGeneric": "Une erreur s'est produite. Réessaie.",
+		"errorEmailInvalid": "Saisis une adresse e-mail valide.",
+		"errorCodeInvalid": "Utilise de 3 à 20 lettres, chiffres, tirets ou tirets bas.",
+		"errorNoteRequired": "Parle-nous un peu de toi.",
+		"errorNoteTooLong": "Ta note doit comporter au maximum 2000 caractères.",
+		"alreadyReferrerTitle": "Tu fais déjà partie du programme de parrainage",
+		"alreadyReferrerBody": "Ton code de parrainage et tes versements sont dans ton compte.",
+		"alreadyReferrerCta": "Aller aux paramètres de parrainage",
+		"accountTitle": "Programme de parrainage",
+		"accountBody": "Amène des équipes organisatrices sur Revel et touche 15 % de ce que Revel gagne grâce à elles, à vie.",
+		"accountCta": "Postuler au programme de parrainage"
 	},
 	"billing": {
 		"form": {

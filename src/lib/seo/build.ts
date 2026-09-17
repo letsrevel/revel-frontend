@@ -5,16 +5,14 @@ import type {
 	EventSeriesRetrieveSchema
 } from '$lib/api/generated/types.gen';
 import { getBackendUrl } from '$lib/config/api';
-import {
-	LANGS,
-	OG_IMAGE_PATH,
-	OG_LOCALE,
-	OG_LOGO_PATH,
-	SITE_NAME,
-	TWITTER_SITE,
-	type Lang
-} from './constants';
+import { LANGS, OG_LOCALE, OG_LOGO_PATH, SITE_NAME, TWITTER_SITE, type Lang } from './constants';
 import type { SeoConfig } from './types';
+import {
+	defaultOgImage,
+	defaultOgImageMeta,
+	DEFAULT_OG_IMAGE_ALT,
+	plainPageSeo
+} from './plain-page';
 import { oembedDiscoveryUrl } from '$lib/embed/oembed';
 import { truncate, stripMarkup } from './text';
 import { sameUrlHreflang, landingPageHreflang } from './hreflang';
@@ -60,6 +58,7 @@ export type BuildSeoInput =
 			extraJsonLd?: object[];
 	  }
 	| { kind: 'legal'; url: URL; lang: Lang; doc: 'privacy' | 'terms' }
+	| { kind: 'referral-apply'; url: URL; lang: Lang }
 	| {
 			kind: 'auth';
 			url: URL;
@@ -112,25 +111,6 @@ function getSeriesImage(series: EventSeriesRetrieveSchema): string | undefined {
 	return first ? getBackendUrl(first) : undefined;
 }
 
-const DEFAULT_OG_IMAGE_ALT = 'Revel — Event Management for Communities';
-
-function defaultOgImage(origin: string): string {
-	return `${origin}${OG_IMAGE_PATH}`;
-}
-
-// Full OG image metadata for the default (non-event/non-org) social card.
-// Dimensions are known and fixed for the static asset, so we advertise them
-// to let unfurlers render the preview without first fetching the image.
-function defaultOgImageMeta(origin: string) {
-	return {
-		image: defaultOgImage(origin),
-		imageAlt: DEFAULT_OG_IMAGE_ALT,
-		imageWidth: 1200,
-		imageHeight: 630,
-		imageType: 'image/png'
-	} as const;
-}
-
 export function buildSeo(input: BuildSeoInput): SeoConfig {
 	const cfg = buildSeoConfig(input);
 	// og:logo is site-wide brand metadata (the square R mark), identical on
@@ -143,6 +123,8 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 	const canonical = input.url.toString();
 	const alts = alternateLocales(input.lang);
 	const ogLocale = OG_LOCALE[input.lang];
+	/** Shared by every `plainPageSeo` branch below. */
+	const plainCtx = { canonical, origin, ogLocale, alts };
 
 	switch (input.kind) {
 		case 'home': {
@@ -432,29 +414,21 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 				privacy: 'Privacy Policy | Revel',
 				terms: 'Terms of Service | Revel'
 			};
-			return {
-				title: titles[input.doc],
-				description: titles[input.doc],
-				canonical,
-				og: {
-					type: 'website',
-					title: titles[input.doc],
-					description: titles[input.doc],
-					url: canonical,
-					...defaultOgImageMeta(origin),
-					siteName: SITE_NAME,
-					locale: ogLocale,
-					localeAlternate: alts
-				},
-				twitter: {
-					card: 'summary',
-					title: titles[input.doc],
-					description: titles[input.doc],
-					site: TWITTER_SITE
-				},
-				hreflang: sameUrlHreflang(canonical),
-				jsonLd: []
-			};
+			const title = titles[input.doc];
+			return plainPageSeo(plainCtx, { title, description: title });
+		}
+
+		case 'referral-apply': {
+			// noindex on purpose: the page 404s the moment an admin switches the
+			// backend's `referral_applications` flag off, and an indexed URL that
+			// flips to 404 is the soft-404 signal `make audit-soft-404` exists to
+			// keep out of the index. `follow`, so its outgoing links still count.
+			return plainPageSeo(plainCtx, {
+				title: 'Referral program | Revel',
+				description:
+					'Apply to the Revel referral program: bring organizers to Revel and earn 15% of what Revel makes from them, forever.',
+				robots: 'noindex,follow'
+			});
 		}
 
 		case 'auth': {
@@ -465,31 +439,8 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 				verify: 'Verify your account | Revel',
 				unsubscribe: 'Unsubscribe | Revel'
 			};
-			const t = titles[input.page];
-			return {
-				title: t,
-				description: t,
-				canonical,
-				robots: 'noindex,follow',
-				og: {
-					type: 'website',
-					title: t,
-					description: t,
-					url: canonical,
-					...defaultOgImageMeta(origin),
-					siteName: SITE_NAME,
-					locale: ogLocale,
-					localeAlternate: alts
-				},
-				twitter: {
-					card: 'summary',
-					title: t,
-					description: t,
-					site: TWITTER_SITE
-				},
-				hreflang: sameUrlHreflang(canonical),
-				jsonLd: []
-			};
+			const title = titles[input.page];
+			return plainPageSeo(plainCtx, { title, description: title, robots: 'noindex,follow' });
 		}
 	}
 }

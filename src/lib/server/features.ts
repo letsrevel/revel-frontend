@@ -55,9 +55,13 @@ export function __resetFeaturesCache(): void {
 /**
  * Fetch `GET /version` (feature flags + demo mode), cached for ~5 minutes.
  * `/version` is anonymous and identical for every user, so a shared cache is
- * safe. Fail-open: any failure yields DEFAULT_FEATURES (never hide a
- * capability that is actually enabled) and `demo: false` (render the normal
- * UI rather than the demo variant).
+ * safe. Any failure yields DEFAULT_FEATURES and `demo: false` (render the
+ * normal UI rather than the demo variant). That is fail-OPEN for most flags —
+ * never hide a capability that is actually enabled — but not all of them:
+ * `referral_applications` defaults to `false` because its surfaces 404 when
+ * the flag is off, so the reasoning is inverted there. See
+ * `$lib/utils/features`. Only SUCCESSFUL reads are cached, so a blip does not
+ * stick for the TTL either way.
  */
 async function getVersionInfo(fetch: typeof globalThis.fetch): Promise<VersionInfo> {
 	if (cache && cache.expiry > Date.now()) {
