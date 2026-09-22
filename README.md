@@ -5,6 +5,10 @@
 [![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](./LICENSE)
 [![Discord](https://img.shields.io/badge/Discord-Join%20us-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/Rnwbzuvxvn)
 [![CI](https://github.com/letsrevel/revel-frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/letsrevel/revel-frontend/actions/workflows/ci.yml)
+[![SvelteKit](https://img.shields.io/badge/sveltekit-2-FF3E00.svg?logo=svelte&logoColor=white&style=for-the-badge)](https://svelte.dev/docs/kit)
+[![Svelte](https://img.shields.io/badge/svelte-5-FF3E00.svg?logo=svelte&logoColor=white&style=for-the-badge)](https://svelte.dev/docs/svelte)
+[![TypeScript](https://img.shields.io/badge/typescript-6_strict-3178C6.svg?logo=typescript&logoColor=white&style=for-the-badge)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/tailwind_css-3-38B2AC.svg?logo=tailwindcss&logoColor=white&style=for-the-badge)](https://v3.tailwindcss.com/)
 
 This repository is the SvelteKit web app: public event and organization pages, checkout, the organizer admin and the dashboards for attendees and members. It talks to the [backend API](https://github.com/letsrevel/revel-backend) through a TypeScript client generated from the backend's OpenAPI spec. For what Revel does, who it is for, the demo, fees and self-hosting, read the [main README](https://github.com/letsrevel/revel-backend#readme).
 
