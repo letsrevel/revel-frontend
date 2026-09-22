@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { tokenRefresh } from '$lib/api/generated';
@@ -28,6 +29,15 @@ import {
  * INTERNAL_API_URL. In containerized deployments where the browser-facing API
  * origin is unreachable from the frontend container, that makes sign-in appear
  * to succeed and then silently fall back to logged-out.
+ *
+ * A REJECTED refresh never deletes the cookies (#950). The rejection only
+ * proves that the cookie *this request* carried was stale — a concurrent
+ * request (another tab, an SSR refresh in hooks.server.ts) may already have
+ * rotated it, and a deletion arriving after that rotation's Set-Cookie would
+ * wipe the fresh refresh token and log the user out. Instead the 401 carries
+ * a fingerprint of the rejected token; once the client's heal retry confirms
+ * the rejection, it sends that fingerprint to DELETE, which clears the cookies
+ * only if the browser still holds that same dead token.
  */
 export const POST: RequestHandler = async ({ cookies, fetch }) => {
 	const refreshToken = cookies.get('refresh_token');
@@ -52,10 +62,12 @@ export const POST: RequestHandler = async ({ cookies, fetch }) => {
 
 		if (refreshError || !data || !data.access) {
 			console.error('[API /auth/refresh] Token refresh failed:', refreshError);
-			// Invalid or blacklisted refresh token, clear both cookies
-			cookies.delete('refresh_token', { path: '/', httpOnly: true, sameSite: 'lax' });
-			cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
-			throw error(401, 'Token refresh failed');
+			// Invalid or blacklisted refresh token. Leave the cookies alone: see the
+			// note above POST.
+			return json(
+				{ message: 'Token refresh failed', rejected: fingerprint(refreshToken) },
+				{ status: 401, headers: { 'Cache-Control': 'no-store, private' } }
+			);
 		}
 
 		// CRITICAL: Backend returns BOTH new access and refresh tokens
@@ -91,9 +103,8 @@ export const POST: RequestHandler = async ({ cookies, fetch }) => {
 		);
 	} catch (err) {
 		console.error('[API /auth/refresh] Error during token refresh:', err);
-		// Clear invalid tokens
-		cookies.delete('refresh_token', { path: '/', httpOnly: true, sameSite: 'lax' });
-		cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
+		// Don't clear the cookies: a transient failure says nothing about whether
+		// the refresh token is still valid.
 
 		// Re-throw if already an HttpError
 		if (err && typeof err === 'object' && 'status' in err) {
@@ -102,4 +113,35 @@ export const POST: RequestHandler = async ({ cookies, fetch }) => {
 
 		throw error(500, 'Internal server error during token refresh');
 	}
+};
+
+/**
+ * A one-way fingerprint of a refresh token, safe to hand to client JS: it
+ * identifies a token without revealing it.
+ */
+function fingerprint(token: string): string {
+	return createHash('sha256').update(token).digest('hex');
+}
+
+/**
+ * Clear the auth cookies after a refresh was definitively rejected — but only
+ * when the browser still holds the token that was rejected (`rejected` is the
+ * fingerprint from POST's 401). If another tab or request rotated the cookie in
+ * the meantime, the fresh token is left in place.
+ */
+export const DELETE: RequestHandler = async ({ cookies, request }) => {
+	const body: unknown = await request.json().catch(() => null);
+	const rejected =
+		body && typeof body === 'object' && 'rejected' in body && typeof body.rejected === 'string'
+			? body.rejected
+			: null;
+	const refreshToken = cookies.get('refresh_token');
+
+	if (rejected && refreshToken && fingerprint(refreshToken) === rejected) {
+		cookies.delete('refresh_token', { path: '/', httpOnly: true, sameSite: 'lax' });
+		cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
+		cookies.delete('remember_me', { path: '/' });
+		return json({ cleared: true });
+	}
+	return json({ cleared: false });
 };

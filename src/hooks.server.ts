@@ -93,12 +93,12 @@ function isAccessTokenExpired(decoded: { exp?: number } | null, skewSeconds = 30
  * Exchange the refresh token for a fresh access token, set the rotated cookies,
  * and populate `event.locals.user`. Returns true when a user was established.
  *
- * On a definitive rejection (the backend refuses the refresh token — expired or
- * revoked) the auth cookies are cleared so the request, and subsequent ones,
- * proceed anonymously. On a transient error (the refresh request throws, e.g.
- * the backend is briefly unreachable) the cookies are left intact so a later
- * request can retry; this request still proceeds anonymously (locals.user is
- * left unset). Either way a failed refresh never breaks public SSR loads.
+ * On a rejection the unusable access cookie is cleared but the refresh cookie
+ * is KEPT: the rejection only proves the cookie THIS request carried is stale,
+ * and deleting it could wipe a concurrent rotation's fresh token (#950). The
+ * client clears a genuinely dead one (DELETE /api/auth/refresh). A transient
+ * error leaves every cookie intact. Either way this request proceeds
+ * anonymously and a failed refresh never breaks public SSR loads.
  */
 async function refreshSession(
 	event: Parameters<Handle>[0]['event'],
@@ -117,8 +117,6 @@ async function refreshSession(
 		if (refreshError || !data || !data.access || !data.refresh) {
 			log.warning('token_refresh_failed', { error: refreshError });
 			event.cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
-			event.cookies.delete('refresh_token', { path: '/', httpOnly: true, sameSite: 'lax' });
-			event.cookies.delete('remember_me', { path: '/' });
 			return false;
 		}
 

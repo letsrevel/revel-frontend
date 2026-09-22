@@ -9,6 +9,7 @@ import { setLocale } from '$lib/paraglide/runtime.js';
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '$lib/schemas/profile';
 import { getImpersonationInfo, type ImpersonationInfo } from '$lib/utils/impersonation';
 import { decodeToken } from './jwt';
+import { requestTokenRefresh } from './auth-refresh';
 
 /**
  * Auth store using Svelte 5 Runes
@@ -312,29 +313,11 @@ class AuthStore {
 	 */
 	private async _performRefresh(): Promise<void> {
 		try {
-			// Call our server-side refresh endpoint
-			// The refresh token is in httpOnly cookie, so client can't access it directly
-			// The server endpoint will read the cookie and call the backend
-			let response = await fetch('/api/auth/refresh', {
-				method: 'POST',
-				credentials: 'include' // Include cookies
-			});
-
-			// Interrupted-rotation heal: a reload that lands while a previous
-			// page's refresh is still in flight can read the OLD (already
-			// rotated → blacklisted) cookie and 401 here, even though the
-			// rotation's Set-Cookie is about to (or just did) land in the
-			// browser. One delayed retry re-reads the CURRENT cookies and
-			// rescues that case instead of silently logging the user out.
-			if (response.status === 401) {
-				await new Promise((r) => {
-					setTimeout(r, 400);
-				});
-				response = await fetch('/api/auth/refresh', {
-					method: 'POST',
-					credentials: 'include'
-				});
-			}
+			// Call our server-side refresh endpoint (the refresh token is an
+			// httpOnly cookie the client can't read). It serialises refreshes
+			// across tabs, heals a lost rotation race with one delayed retry, and
+			// clears a cookie proven dead — see auth-refresh.ts (#950).
+			const response = await requestTokenRefresh();
 
 			if (!response.ok) {
 				console.error('[AUTH STORE] Token refresh failed with status:', response.status);
