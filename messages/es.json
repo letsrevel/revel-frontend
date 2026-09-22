@@ -2814,7 +2814,7 @@
 			"vatCheckboxHelp": "Aplica a organizaciones austriacas y organizaciones de la UE sin un número de IVA validado. En los demás casos aplica la inversión del sujeto pasivo — sin IVA añadido.",
 			"vatOnPlatformFee": "IVA sobre la comisión de la plataforma ({rate} %)",
 			"organizationReceives": "Tu organización recibe",
-			"perTicketSoldAt": "Por entrada vendida a {price}",
+			"perTicketSoldAt": "Por entrada vendida a {price} (pedido de una sola entrada)",
 			"totalFees": "Comisiones totales: {fees} ({percentage} % del precio de la entrada)",
 			"questionsAboutFees": "¿Tienes preguntas sobre las comisiones?",
 			"contactUs": "Contáctanos",
@@ -6267,10 +6267,10 @@
 		"seatingConfig.venueRequiredForSeats": "Selecciona un lugar para poder elegir el sector",
 		"netPayoutLabel": "Recibes:",
 		"netPayoutAmount": "~{amount}",
-		"netPayoutPerTicket": "por entrada",
-		"netPayoutPerTicketAtMin": "por entrada (al precio mínimo)",
+		"netPayoutPerTicket": "por entrada (pedido de una sola entrada)",
+		"netPayoutPerTicketAtMin": "por entrada (pedido de una sola entrada, al precio mínimo)",
 		"netPayoutInfoAria": "Acerca de esta estimación",
-		"netPayoutTooltip": "Es una estimación: las comisiones de las tarjetas varían según el país y el tipo de tarjeta (se asumen tarjetas europeas), y el IVA puede añadirse a la comisión de Revel según tu país de facturación y tu número de IVA (puede aplicarse la inversión del sujeto pasivo). Los importes exactos aparecen en tus facturas de comisiones."
+		"netPayoutTooltip": "Es una estimación: las comisiones de las tarjetas varían según el país y el tipo de tarjeta (se asumen tarjetas europeas), y el IVA puede añadirse a la comisión de Revel según tu país de facturación y tu número de IVA (puede aplicarse la inversión del sujeto pasivo). Los importes exactos aparecen en tus facturas de comisiones. Supone una sola entrada por pedido: la parte fija de las comisiones de la tarjeta y de la plataforma se cobra una vez por pedido, así que en pedidos de varias entradas recibes algo más por entrada."
 	},
 	"tierForm.seatingConfig.noVenueConfigured": "Para habilitar la asignación de asientos, configura un lugar para este evento en Información básica.",
 	"tierForm.seatingConfig.standingSector": "Sector de pie",

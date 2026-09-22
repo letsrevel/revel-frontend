@@ -2700,7 +2700,7 @@
 			"vatCheckboxHelp": "Concerne les organisations autrichiennes et les organisations de l'UE sans numéro de TVA validé. Sinon, l'autoliquidation s'applique — pas de TVA ajoutée.",
 			"vatOnPlatformFee": "TVA sur les frais de plateforme ({rate} %)",
 			"organizationReceives": "Ton organisation reçoit",
-			"perTicketSoldAt": "Par billet vendu à {price}",
+			"perTicketSoldAt": "Par billet vendu à {price} (commande d'un seul billet)",
 			"totalFees": "Frais totaux : {fees} ({percentage} % du prix du billet)",
 			"questionsAboutFees": "Des questions sur les frais ?",
 			"contactUs": "Contacte-nous",
@@ -6237,10 +6237,10 @@
 		"seatingConfig.venueRequiredForSeats": "Sélectionne un lieu pour activer la sélection de secteur",
 		"netPayoutLabel": "Tu reçois :",
 		"netPayoutAmount": "~{amount}",
-		"netPayoutPerTicket": "par billet",
-		"netPayoutPerTicketAtMin": "par billet (au prix minimum)",
+		"netPayoutPerTicket": "par billet (commande d'un seul billet)",
+		"netPayoutPerTicketAtMin": "par billet (commande d'un seul billet, au prix minimum)",
 		"netPayoutInfoAria": "À propos de cette estimation",
-		"netPayoutTooltip": "Il s'agit d'une estimation : les frais de carte varient selon le pays et le type de carte (cartes européennes supposées), et la TVA peut s'ajouter aux frais de plateforme de Revel selon ton pays de facturation et ton numéro de TVA (autoliquidation possible). Les montants exacts figurent sur tes factures de frais."
+		"netPayoutTooltip": "Il s'agit d'une estimation : les frais de carte varient selon le pays et le type de carte (cartes européennes supposées), et la TVA peut s'ajouter aux frais de plateforme de Revel selon ton pays de facturation et ton numéro de TVA (autoliquidation possible). Les montants exacts figurent sur tes factures de frais. Elle suppose un seul billet par commande : la part fixe des frais de carte et de plateforme est prélevée une fois par commande, donc pour une commande de plusieurs billets tu reçois un peu plus par billet."
 	},
 	"tierForm.seatingConfig.noVenueConfigured": "Pour activer l'attribution des places, configure un lieu pour cet événement dans les Informations de base.",
 	"tierForm.seatingConfig.standingSector": "Secteur debout",

@@ -2814,7 +2814,7 @@
 			"vatCheckboxHelp": "Vale per le organizzazioni austriache e le organizzazioni UE senza partita IVA convalidata. Negli altri casi si applica il reverse charge — nessuna IVA aggiunta.",
 			"vatOnPlatformFee": "IVA sulla commissione della piattaforma ({rate}%)",
 			"organizationReceives": "La tua organizzazione riceve",
-			"perTicketSoldAt": "Per biglietto venduto a {price}",
+			"perTicketSoldAt": "Per biglietto venduto a {price} (ordine di un solo biglietto)",
 			"totalFees": "Commissioni totali: {fees} ({percentage}% del prezzo del biglietto)",
 			"questionsAboutFees": "Domande sulle commissioni?",
 			"contactUs": "Contattaci",
@@ -6267,10 +6267,10 @@
 		"seatingConfig.venueRequiredForSeats": "Seleziona una sede per abilitare la selezione del settore",
 		"netPayoutLabel": "Ricevi:",
 		"netPayoutAmount": "~{amount}",
-		"netPayoutPerTicket": "per biglietto",
-		"netPayoutPerTicketAtMin": "per biglietto (al prezzo minimo)",
+		"netPayoutPerTicket": "per biglietto (ordine di un solo biglietto)",
+		"netPayoutPerTicketAtMin": "per biglietto (ordine di un solo biglietto, al prezzo minimo)",
 		"netPayoutInfoAria": "Informazioni su questa stima",
-		"netPayoutTooltip": "Si tratta di una stima: le commissioni delle carte variano in base al paese e al tipo di carta (si presumono carte europee) e l'IVA può essere aggiunta alla commissione di Revel a seconda del paese di fatturazione e della partita IVA (può applicarsi il reverse charge). Gli importi esatti compaiono nelle fatture delle commissioni."
+		"netPayoutTooltip": "Si tratta di una stima: le commissioni delle carte variano in base al paese e al tipo di carta (si presumono carte europee) e l'IVA può essere aggiunta alla commissione di Revel a seconda del paese di fatturazione e della partita IVA (può applicarsi il reverse charge). Gli importi esatti compaiono nelle fatture delle commissioni. La stima presuppone un solo biglietto per ordine: la parte fissa delle commissioni della carta e della piattaforma si paga una volta per ordine, quindi con ordini di più biglietti ricevi un po' di più per biglietto."
 	},
 	"tierForm.seatingConfig.noVenueConfigured": "Per abilitare l'assegnazione dei posti, configura un luogo per questo evento nelle Informazioni di base.",
 	"tierForm.seatingConfig.standingSector": "Settore in piedi",
