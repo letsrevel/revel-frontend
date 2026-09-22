@@ -26,7 +26,7 @@ const BASELINE = new Set<string>([]);
 const PAGES: PageCase[] = [
 	{ name: 'landing', path: '/' },
 	{ name: 'events list', path: '/events' },
-	{ name: 'event detail', path: '/events/revel-events-collective/summer-sunset-music-festival' },
+	{ name: 'event detail', path: '/events/revel-events-collective/sunset-music-festival' },
 	{ name: 'organizations', path: '/organizations' },
 	{ name: 'org profile', path: '/org/revel-events-collective' },
 	{ name: 'login', path: '/login' },

@@ -24,14 +24,14 @@ test.describe('J18 series page @p1', () => {
 
 		// The seeded series contains the May tech talk, linked to its detail page.
 		await expect(page.getByRole('heading', { name: 'Events in this Series' })).toBeVisible();
-		const eventLink = page.getByRole('link', { name: /Tech Talk May: Scaling Microservices/ });
+		const eventLink = page.getByRole('link', { name: /Tech Talk: Scaling Microservices/ });
 		await expect(eventLink.first()).toBeVisible();
 
 		// Click-through lands on the event detail page.
 		await eventLink.first().click();
-		await page.waitForURL(/\/events\/tech-innovators-network\/tech-talk-may-2025/);
+		await page.waitForURL(/\/events\/tech-innovators-network\/tech-talk-scaling-microservices/);
 		await expect(
-			page.getByRole('heading', { name: 'Tech Talk May: Scaling Microservices', level: 1 })
+			page.getByRole('heading', { name: 'Tech Talk: Scaling Microservices', level: 1 })
 		).toBeVisible();
 	});
 

@@ -33,14 +33,14 @@ test.describe('J3 dashboard facets @p1', () => {
 		const region = yourEvents(asBetaOwner);
 		// Org Beta's seeded events — including its DRAFT, which only admins see.
 		await expect(
-			region.getByRole('heading', { name: 'FutureStack 2025: AI & Web3 Conference' })
+			region.getByRole('heading', { name: 'FutureStack: AI & Web3 Conference' })
 		).toBeVisible();
 		await expect(
 			region.getByRole('heading', { name: 'Hands-on Workshop: Building with AI APIs' })
 		).toBeVisible();
 		// Org Alpha events never appear — diana has no relationship with them.
 		await expect(
-			region.getByRole('heading', { name: 'Summer Sunset Music Festival' })
+			region.getByRole('heading', { name: 'Sunset Music Festival' })
 		).toBeHidden();
 	});
 
@@ -70,7 +70,7 @@ test.describe('J3 dashboard facets @p1', () => {
 		const region = yourEvents(asMember);
 		// charlie's seeded RSVP-yes events…
 		await expect(
-			region.getByRole('heading', { name: 'Spring Community Potluck & Garden Party' })
+			region.getByRole('heading', { name: 'Community Potluck & Garden Party' })
 		).toBeVisible();
 		await expect(
 			region.getByRole('heading', { name: 'Contemporary Art Exhibition Opening' })
@@ -97,7 +97,7 @@ test.describe('J3 dashboard facets @p1', () => {
 		).toBeVisible();
 		// …while her RSVP-yes event is filtered out by the preset.
 		await expect(
-			region.getByRole('heading', { name: 'Spring Community Potluck & Garden Party' })
+			region.getByRole('heading', { name: 'Community Potluck & Garden Party' })
 		).toBeHidden();
 	});
 

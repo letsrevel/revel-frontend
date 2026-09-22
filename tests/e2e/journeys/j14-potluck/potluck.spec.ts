@@ -4,7 +4,7 @@ import { uniqueName } from '../../support/factories';
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 
-// J14 (USER_JOURNEYS.md) — potluck coordination on the seeded Spring
+// J14 (USER_JOURNEYS.md) — potluck coordination on the seeded
 // Community Potluck: the seeded items render with type labels and claim
 // states, an RSVP'd attendee adds their own item (auto-claimed), unclaims it
 // and claims it back; a non-attendee sees the RSVP gate.
@@ -15,7 +15,7 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 // RSVP-yes and stable — j05 owns hannah/ivan's RSVPs here and leaves them at
 // "No", which would strip their claim permission mid-run.
 
-const EVENT_PATH = '/events/revel-events-collective/spring-community-potluck';
+const EVENT_PATH = '/events/revel-events-collective/community-potluck';
 
 /** The potluck list is a collapsible disclosure — expand it if collapsed. */
 async function openPotluckSection(page: Page): Promise<void> {
