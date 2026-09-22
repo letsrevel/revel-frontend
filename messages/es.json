@@ -2800,7 +2800,7 @@
 		"pricingSelfHostingPrice": "Gratis",
 		"pricingOnlinePayments": "Pagos en línea alojados",
 		"pricingOnlinePaymentsPrice": "1,5 % + 0,25 €",
-		"pricingOnlinePaymentsDescription": "1,5 % + 0,25 € por entrada. Más las comisiones de Stripe: 1,5 % + 0,25 € (tarjetas EEE) o 2,5 % + 0,25 € (tarjetas del Reino Unido).",
+		"pricingOnlinePaymentsDescription": "1,5 % + 0,25 € por transacción. Más las comisiones de Stripe: 1,5 % + 0,25 € (tarjetas EEE) o 2,5 % + 0,25 € (tarjetas del Reino Unido).",
 		"ticketingFeature4": "Check-in con código QR y validación de entradas",
 		"feeCalculator": {
 			"title": "Calculadora de comisiones",
@@ -3360,7 +3360,7 @@
 				"percentLabel": "Comisión de la plataforma (porcentaje)",
 				"percentHelp": "Comisión porcentual aplicada a la venta de entradas",
 				"fixedLabel": "Comisión de la plataforma (fija)",
-				"fixedHelp": "Comisión fija por entrada vendida",
+				"fixedHelp": "Comisión fija por transacción",
 				"contactSupport": "Ponte en contacto con soporte para modificar las comisiones de la plataforma"
 			},
 			"branding": {
@@ -5397,6 +5397,7 @@
 		"navLabel": "Navegación de respuestas"
 	},
 	"questionnaireSubmissionPage": {
+		"requiredSr": "(obligatorio)",
 		"pageTitle": "{questionnaireName} - {eventName}",
 		"backToEvent": "Volver al evento",
 		"subtitle": "Completa este cuestionario para confirmar tu asistencia a {eventName}",
@@ -5832,7 +5833,7 @@
 		"feePercent": "Comisión de la plataforma (porcentaje)",
 		"percentFee": "Comisión porcentual aplicada a las ventas de entradas",
 		"feeFixed": "Comisión de la plataforma (fija)",
-		"fixedFee": "Comisión fija por entrada vendida",
+		"fixedFee": "Comisión fija por transacción",
 		"branding": "Identidad visual",
 		"square": "Cuadrado (400x400 px recomendado)",
 		"wide": "Ancho (1200x400 px recomendado)",
@@ -6160,8 +6161,6 @@
 		"limitReachedDetail": "Has alcanzado el límite de entradas para este nivel",
 		"soldOutDetail": "No quedan entradas disponibles",
 		"free": "Gratuito",
-		"pwyc": "Paga lo que puedas ({range})",
-		"pwycAny": "cualquiera",
 		"requiresMembership": "Requiere membresía: {tiers}",
 		"signInToCheck": "Inicia sesión para comprobar tu elegibilidad"
 	},

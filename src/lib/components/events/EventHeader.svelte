@@ -3,7 +3,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { EventDetailSchema } from '$lib/api/generated/types.gen';
 	import { formatEventDate, formatEventDateRange } from '$lib/utils/date';
-	import { getEventFallbackGradient, getEventCoverArt } from '$lib/utils/event';
+	import { cityPartsNotIn, getEventFallbackGradient, getEventCoverArt } from '$lib/utils/event';
 	import { asHttpUrl, getImageUrl } from '$lib/utils/url';
 	import { downloadRevelEventICalFile } from '$lib/utils/ical';
 	import { MapPin, Calendar, Share2, ExternalLink } from '@lucide/svelte';
@@ -44,10 +44,8 @@
 			? m['eventHeader.virtualEvent']()
 			: m['eventHeader.locationTbd']();
 		if (!event.city) return address || emptyLabel;
-		const cityCountry = event.city.country
-			? `${event.city.name}, ${event.city.country}`
-			: event.city.name;
-		return address ? `${address}, ${cityCountry}` : cityCountry;
+		// Skip city/country the free-text address already spells out.
+		return [address, ...cityPartsNotIn(address, event.city)].filter(Boolean).join(', ');
 	});
 
 	// Compute maps URL - prioritize event's URL, fall back to venue's URL

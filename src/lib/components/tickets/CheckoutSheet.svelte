@@ -407,7 +407,7 @@
 			/>
 		</div>
 
-		<DialogFooter class="flex-col gap-2">
+		<DialogFooter class="flex-col gap-2 sm:flex-col sm:space-x-0">
 			{#if guestError && !isProcessing}
 				<!-- Guest identity gate takes priority: without a usable email/name
 				     there is nothing to submit, regardless of the cart's own state. -->

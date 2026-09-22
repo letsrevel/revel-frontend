@@ -2800,7 +2800,7 @@
 		"pricingSelfHostingPrice": "Gratis",
 		"pricingOnlinePayments": "Pagamenti online via Revel",
 		"pricingOnlinePaymentsPrice": "1,5% + €0,25",
-		"pricingOnlinePaymentsDescription": "1,5% + €0,25 per biglietto. Più commissioni Stripe: 1,5% + €0,25 (carte SEE) o 2,5% + €0,25 (carte UK).",
+		"pricingOnlinePaymentsDescription": "1,5% + €0,25 per transazione. Più commissioni Stripe: 1,5% + €0,25 (carte SEE) o 2,5% + €0,25 (carte UK).",
 		"ticketingFeature4": "Check-in con codice QR e convalida biglietti",
 		"feeCalculator": {
 			"title": "Calcolatore Commissioni",
@@ -3360,7 +3360,7 @@
 				"percentLabel": "Commissione Piattaforma (Percentuale)",
 				"percentHelp": "Commissione percentuale applicata alle vendite di biglietti",
 				"fixedLabel": "Commissione Piattaforma (Fissa)",
-				"fixedHelp": "Commissione fissa per biglietto venduto",
+				"fixedHelp": "Commissione fissa per transazione",
 				"contactSupport": "Contatta il supporto per modificare le impostazioni delle commissioni"
 			},
 			"branding": {
@@ -5397,6 +5397,7 @@
 		"navLabel": "Navigazione delle risposte"
 	},
 	"questionnaireSubmissionPage": {
+		"requiredSr": "(obbligatorio)",
 		"pageTitle": "{questionnaireName} - {eventName}",
 		"backToEvent": "Torna all'Evento",
 		"subtitle": "Completa questo questionario per confermare la tua presenza a {eventName}",
@@ -5832,7 +5833,7 @@
 		"feePercent": "Commissione Piattaforma (Percentuale)",
 		"percentFee": "Commissione percentuale applicata alle vendite di biglietti",
 		"feeFixed": "Commissione Piattaforma (Fissa)",
-		"fixedFee": "Commissione fissa per biglietto venduto",
+		"fixedFee": "Commissione fissa per transazione",
 		"branding": "Branding",
 		"square": "Quadrato (400x400px consigliato)",
 		"wide": "Largo (1200x400px consigliato)",
@@ -6160,8 +6161,6 @@
 		"limitReachedDetail": "Hai raggiunto il limite di biglietti per questo livello",
 		"soldOutDetail": "Nessun biglietto disponibile",
 		"free": "Gratuito",
-		"pwyc": "Paga quanto puoi ({range})",
-		"pwycAny": "qualsiasi",
 		"requiresMembership": "Iscrizione richiesta: {tiers}",
 		"signInToCheck": "Accedi per verificare l'idoneità"
 	},

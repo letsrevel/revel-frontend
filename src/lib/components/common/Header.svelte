@@ -69,8 +69,9 @@
 				class="text-foreground transition-opacity hover:opacity-80"
 			>
 				<!-- "let's revel." lockup — its visible text is the link's
-				     accessible name (WCAG 2.5.3 Label in Name). -->
-				<RevelWordmark />
+				     accessible name (WCAG 2.5.3 Label in Name). Stepped down a
+				     size below `sm` so it fits beside the logged-in icon row. -->
+				<RevelWordmark class="text-xl sm:text-2xl" />
 			</a>
 
 			<!-- Desktop Navigation -->
@@ -95,7 +96,7 @@
 		</div>
 
 		<!-- Right side actions -->
-		<div class="flex items-center gap-4">
+		<div class="flex items-center gap-2 sm:gap-4">
 			<!-- Admin Button (Desktop, Authenticated) -->
 			{#if isAuthenticated}
 				<div class="hidden md:block">

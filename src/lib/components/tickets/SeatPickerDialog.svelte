@@ -200,7 +200,7 @@
 			/>
 		</div>
 
-		<DialogFooter class="flex-col gap-2">
+		<DialogFooter class="flex-col gap-2 sm:flex-col sm:space-x-0">
 			{#if estimatedTotal !== null}
 				<p class="flex w-full items-center justify-between border-t border-border pt-2 text-sm">
 					<span class="text-muted-foreground">{m['checkoutFooter.total']()}</span>

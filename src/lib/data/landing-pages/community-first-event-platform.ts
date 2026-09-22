@@ -99,7 +99,7 @@ export const communityFirstEventPlatformEN: LandingPageContent = {
 		{
 			question: 'Is Revel really free?',
 			answer:
-				'Yes for self-hosting (MIT licensed). Our hosted version charges a small fee only for paid ticket sales (1.5% + €0.25 per ticket). Free events and RSVP-only events have zero platform fees on either version.'
+				'Yes for self-hosting (MIT licensed). Our hosted version charges a small fee only for paid ticket sales (1.5% + €0.25 per transaction). Free events and RSVP-only events have zero platform fees on either version.'
 		},
 		{
 			question: 'What types of communities use Revel?',
@@ -217,7 +217,7 @@ export const communityFirstEventPlatformDE: LandingPageContent = {
 		{
 			question: 'Ist Revel wirklich kostenlos?',
 			answer:
-				'Ja für Selbst-Hosting (MIT-lizenziert). Unsere gehostete Version berechnet eine kleine Gebühr nur für bezahlte Ticket-Verkäufe (1,5% + 0,25€ pro Ticket). Gratis-Events und Nur-RSVP Events haben null Plattformgebühren in beiden Versionen.'
+				'Ja für Selbst-Hosting (MIT-lizenziert). Unsere gehostete Version berechnet eine kleine Gebühr nur für bezahlte Ticket-Verkäufe (1,5% + 0,25€ pro Transaktion). Gratis-Events und Nur-RSVP Events haben null Plattformgebühren in beiden Versionen.'
 		},
 		{
 			question: 'Welche Arten von Communities nutzen Revel?',
@@ -331,7 +331,7 @@ export const communityFirstEventPlatformIT: LandingPageContent = {
 		{
 			question: 'Revel è davvero gratuito?',
 			answer:
-				'Sì per self-hosting (licenza MIT). La nostra versione hosted addebita una piccola commissione solo per vendite biglietti a pagamento (1,5% + 0,25€ per biglietto). Eventi gratuiti e solo-RSVP hanno zero commissioni piattaforma in entrambe le versioni.'
+				'Sì per self-hosting (licenza MIT). La nostra versione hosted addebita una piccola commissione solo per vendite biglietti a pagamento (1,5% + 0,25€ per transazione). Eventi gratuiti e solo-RSVP hanno zero commissioni piattaforma in entrambe le versioni.'
 		},
 		{
 			question: 'Quali tipi di community usano Revel?',
@@ -450,7 +450,7 @@ export const communityFirstEventPlatformES: LandingPageContent = {
 		{
 			question: '¿Revel es realmente gratis?',
 			answer:
-				'Sí, para alojar tu propia instancia (licencia MIT). Nuestra versión alojada cobra una pequeña comisión solo por la venta de entradas de pago (1,5 % + 0,25 € por entrada). Los eventos gratuitos y los de solo confirmación de asistencia no tienen comisión de plataforma en ninguna de las dos versiones.'
+				'Sí, para alojar tu propia instancia (licencia MIT). Nuestra versión alojada cobra una pequeña comisión solo por la venta de entradas de pago (1,5 % + 0,25 € por transacción). Los eventos gratuitos y los de solo confirmación de asistencia no tienen comisión de plataforma en ninguna de las dos versiones.'
 		},
 		{
 			question: '¿Qué tipo de comunidades usan Revel?',
@@ -573,7 +573,7 @@ export const communityFirstEventPlatformPT: LandingPageContent = {
 		{
 			question: 'O Revel é mesmo gratuito?',
 			answer:
-				'Sim, para alojares a tua própria instância (licença MIT). A nossa versão alojada cobra uma pequena comissão apenas sobre a venda de bilhetes pagos (1,5 % + 0,25 € por bilhete). Eventos gratuitos e eventos só de confirmação de presença não têm qualquer comissão de plataforma em nenhuma das versões.'
+				'Sim, para alojares a tua própria instância (licença MIT). A nossa versão alojada cobra uma pequena comissão apenas sobre a venda de bilhetes pagos (1,5 % + 0,25 € por transação). Eventos gratuitos e eventos só de confirmação de presença não têm qualquer comissão de plataforma em nenhuma das versões.'
 		},
 		{
 			question: 'Que tipos de comunidades usam o Revel?',
@@ -691,7 +691,7 @@ export const communityFirstEventPlatformFR: LandingPageContent = {
 		{
 			question: 'Revel est-il vraiment gratuit ?',
 			answer:
-				"Oui pour l'auto-hébergement (licence MIT). Notre version hébergée ne facture qu'une petite commission sur les ventes de billets payants (1,5 % + 0,25 € par billet). Les événements gratuits et ceux en RSVP seul n'ont aucun frais de plateforme dans les deux versions."
+				"Oui pour l'auto-hébergement (licence MIT). Notre version hébergée ne facture qu'une petite commission sur les ventes de billets payants (1,5 % + 0,25 € par transaction). Les événements gratuits et ceux en RSVP seul n'ont aucun frais de plateforme dans les deux versions."
 		},
 		{
 			question: 'Quels types de communautés utilisent Revel ?',

@@ -29,7 +29,7 @@ export const PLATFORM_VAT_RATE_PERCENT = 20;
 export interface PlatformFeeInfo {
 	/** Percentage as a percent value (1.5 means 1.5%). */
 	percent: number;
-	/** Fixed part per ticket, in the tier's currency. */
+	/** Fixed part per transaction (charged once per checkout), in the tier's currency. */
 	fixed: number;
 	/**
 	 * VAT rate charged ON the platform fee (percent value; 0 when reverse

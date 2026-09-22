@@ -62,7 +62,14 @@ export const load: PageServerLoad = async ({ params, url, locals, fetch }) => {
 	]);
 
 	if (submissionsResult.error || !submissionsResult.data) {
-		log.error('questionnaire_submissions_load_failed', { id, error: submissionsResult.error });
+		const status = submissionsResult.response?.status ?? 500;
+		log.error('questionnaire_submissions_load_failed', {
+			id,
+			status,
+			error: submissionsResult.error
+		});
+		// A wrong/foreign questionnaire id is a missing page, not a server fault.
+		if (status === 404) throw error(404, 'Questionnaire not found');
 		throw error(500, 'Failed to load submissions');
 	}
 
