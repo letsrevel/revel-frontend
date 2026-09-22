@@ -6,7 +6,7 @@ This guide will help you set up the Revel Frontend development environment from 
 
 ### 1. Install Node.js
 
-You need Node.js 20 or higher. We recommend using **nvm** (Node Version Manager) for easy Node.js version management.
+You need Node.js 22.22.2 or higher. We recommend using **nvm** (Node Version Manager) for easy Node.js version management.
 
 #### Install nvm (if not already installed)
 
@@ -25,7 +25,7 @@ source ~/.bashrc  # or ~/.zshrc
 **Windows:**
 Use [nvm-windows](https://github.com/coreybutler/nvm-windows/releases)
 
-#### Install Node.js 20+ with nvm
+#### Install Node.js 22 with nvm
 
 ```bash
 nvm install 22
@@ -41,12 +41,12 @@ node --version  # Should show v22.x.x
 
 ### 2. Install pnpm
 
-pnpm is a fast, disk-space efficient package manager. This project requires pnpm 9+.
+pnpm is a fast, disk-space efficient package manager. This project requires pnpm 11+ (`packageManager` in `package.json` pins 11.6.0).
 
 #### Option 1: Install via npm (Recommended)
 
 ```bash
-npm install -g pnpm@9
+npm install -g pnpm@11
 ```
 
 #### Option 2: Install via standalone script
@@ -65,7 +65,7 @@ brew install pnpm
 
 ```bash
 corepack enable
-corepack prepare pnpm@9 --activate
+corepack prepare pnpm@11.6.0 --activate
 ```
 
 Verify installation:
@@ -85,9 +85,10 @@ cd revel-frontend
 
 ```bash
 pnpm install
+pnpm paraglide:compile
 ```
 
-This will install all dependencies listed in `package.json`.
+This installs the dependencies and compiles the i18n message bundle into `src/lib/paraglide/`. That directory is gitignored, and without it `pnpm dev` returns HTTP 500 and `pnpm check`/`pnpm build` fail. Run `pnpm paraglide:compile` again after pulling changes to `messages/*.json`.
 
 ---
 
@@ -146,7 +147,7 @@ The app will be available at `http://localhost:5173`.
 
 ## Environment Variables
 
-Create a `.env` file in the project root:
+Optionally, create a `.env` file in the project root (the defaults work for local development):
 
 ```bash
 cp .env.example .env
@@ -198,7 +199,7 @@ If all commands succeed, you're ready to start developing! 🎉
 
 **Solution:**
 
-1. Make sure you installed pnpm globally: `npm install -g pnpm@9`
+1. Make sure you installed pnpm globally: `npm install -g pnpm@11`
 2. Restart your terminal
 3. Verify with: `pnpm --version`
 
@@ -230,7 +231,7 @@ If all commands succeed, you're ready to start developing! 🎉
 
 **Solution:**
 
-1. Delete `node_modules` and lockfile: `rm -rf node_modules pnpm-lock.yaml`
+1. Delete `node_modules` (keep `pnpm-lock.yaml`): `rm -rf node_modules`
 2. Reinstall: `pnpm install`
 3. Clear SvelteKit cache: `rm -rf .svelte-kit`
 
@@ -238,9 +239,9 @@ If all commands succeed, you're ready to start developing! 🎉
 
 ## Next Steps
 
-- Read [CLAUDE.md](CLAUDE.md) for development guidelines
-- Read [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines
-- Explore the [backend user journeys](backend_context/USER_JOURNEY.md) to understand the system
+- Read [CLAUDE.md](../../CLAUDE.md) for development guidelines
+- Read [CONTRIBUTING.md](../../CONTRIBUTING.md) for contribution guidelines
+- Explore the [backend user journey guide](https://docs.letsrevel.io/guides/user-journey/) to understand the system
 - Start building! Check open issues for tasks to work on
 
 ---

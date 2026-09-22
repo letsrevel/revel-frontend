@@ -4,8 +4,8 @@ Thanks for your interest in contributing. This guide is intentionally short — 
 
 ## Prerequisites
 
-- Node.js 20+
-- pnpm 9+
+- Node.js 22.22.2+
+- pnpm 11+ (`packageManager` pins 11.6.0)
 - A running [revel-backend](https://github.com/letsrevel/revel-backend) (or access to a deployed one)
 
 ## Quickstart
@@ -14,6 +14,7 @@ Thanks for your interest in contributing. This guide is intentionally short — 
 git clone https://github.com/letsrevel/revel-frontend.git
 cd revel-frontend
 pnpm install
+pnpm paraglide:compile   # compiled i18n bundle is gitignored
 make dev
 ```
 
