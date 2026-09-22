@@ -234,11 +234,10 @@
 			<!-- Desktop Navigation -->
 			<nav class="hidden border-t md:block" aria-label={m['orgAdmin.layout.adminNavigation']()}>
 				<!-- The tab strip outgrew a 1200px viewport (it clipped `Settings`, and
-				     then `Embed`), leaving those pages reachable only by URL. Scroll it
-				     rather than hide it; the links stay tabbable either way. Items must
-				     not shrink/wrap (multi-word labels broke onto two lines at 1440px),
-				     so the overflow scrolls and the clipped last tab hints at more. -->
-				<ul class="flex gap-6 overflow-x-auto">
+				     then `Embed`), leaving those pages reachable only by URL. Wrap whole
+				     tabs onto a second row instead: a horizontal scroll hid them with no
+				     visible affordance. Labels themselves never break mid-label. -->
+				<ul class="flex flex-wrap gap-x-6">
 					{#each navItems as item (item.href)}
 						<li class="shrink-0">
 							<!-- eslint-disable svelte/no-navigation-without-resolve -- href is a ResolvedPathname produced by resolve() in the nav item list above -->
