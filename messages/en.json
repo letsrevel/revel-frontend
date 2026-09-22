@@ -2800,7 +2800,7 @@
 		"pricingSelfHostingPrice": "Free",
 		"pricingOnlinePayments": "Hosted online payments",
 		"pricingOnlinePaymentsPrice": "1.5% + €0.25",
-		"pricingOnlinePaymentsDescription": "1.5% + €0.25 per ticket. Plus Stripe fees: 1.5% + €0.25 (EEA cards) or 2.5% + €0.25 (UK cards).",
+		"pricingOnlinePaymentsDescription": "1.5% + €0.25 per transaction. Plus Stripe fees: 1.5% + €0.25 (EEA cards) or 2.5% + €0.25 (UK cards).",
 		"ticketingFeature4": "QR code check-in and ticket validation",
 		"feeCalculator": {
 			"title": "Fee Calculator",
@@ -3360,7 +3360,7 @@
 				"percentLabel": "Platform Fee (Percent)",
 				"percentHelp": "Percentage fee applied to ticket sales",
 				"fixedLabel": "Platform Fee (Fixed)",
-				"fixedHelp": "Fixed fee per ticket sold",
+				"fixedHelp": "Fixed fee per transaction",
 				"contactSupport": "Contact support to modify platform fee settings"
 			},
 			"branding": {
@@ -5397,6 +5397,7 @@
 		"navLabel": "Submission navigation"
 	},
 	"questionnaireSubmissionPage": {
+		"requiredSr": "(required)",
 		"pageTitle": "{questionnaireName} - {eventName}",
 		"backToEvent": "Back to Event",
 		"subtitle": "Complete this questionnaire to RSVP to {eventName}",
@@ -5832,7 +5833,7 @@
 		"feePercent": "Platform Fee (Percent)",
 		"percentFee": "Percentage fee applied to ticket sales",
 		"feeFixed": "Platform Fee (Fixed)",
-		"fixedFee": "Fixed fee per ticket sold",
+		"fixedFee": "Fixed fee per transaction",
 		"branding": "Branding",
 		"square": "Square (400x400px recommended)",
 		"wide": "Wide (1200x400px recommended)",
@@ -6160,8 +6161,6 @@
 		"limitReachedDetail": "You've reached your ticket limit for this tier",
 		"soldOutDetail": "No more tickets available",
 		"free": "Free",
-		"pwyc": "Pay What You Can ({range})",
-		"pwycAny": "any",
 		"requiresMembership": "Requires membership: {tiers}",
 		"signInToCheck": "Sign in to check eligibility"
 	},

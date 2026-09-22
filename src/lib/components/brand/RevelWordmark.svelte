@@ -24,7 +24,9 @@
 	//
 	// Size is inherited: `class` overrides the text-2xl default through
 	// tailwind-merge (and the mark is sized in `em`), so the same lockup scales
-	// from the header to poster type.
+	// from the header to poster type. `whitespace-nowrap`: the lockup is one
+	// unit and must never break between "let's" and "revel." (it did in the
+	// 390px logged-in header).
 	//
 	// The gradient is logotype colour, exempt from WCAG 1.4.3. The mark is
 	// decorative because the visible "let's revel." text is the accessible name
@@ -43,7 +45,10 @@
 </script>
 
 <span
-	class={cn('inline-flex items-center gap-2 text-2xl leading-none tracking-[0.06em]', className)}
+	class={cn(
+		'inline-flex items-center gap-2 whitespace-nowrap text-2xl leading-none tracking-[0.06em]',
+		className
+	)}
 >
 	{#if mark}
 		<RevelMark decorative gradient={!mono} class="h-[1.16em] w-auto" />

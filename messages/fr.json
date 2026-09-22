@@ -2686,7 +2686,7 @@
 		"pricingSelfHostingPrice": "Gratuit",
 		"pricingOnlinePayments": "Paiements en ligne hébergés",
 		"pricingOnlinePaymentsPrice": "1,5 % + 0,25 €",
-		"pricingOnlinePaymentsDescription": "1,5 % + 0,25 € par billet. Plus les frais Stripe : 1,5 % + 0,25 € (cartes EEE) ou 2,5 % + 0,25 € (cartes UK).",
+		"pricingOnlinePaymentsDescription": "1,5 % + 0,25 € par transaction. Plus les frais Stripe : 1,5 % + 0,25 € (cartes EEE) ou 2,5 % + 0,25 € (cartes UK).",
 		"ticketingFeature4": "Enregistrement par code QR et validation des billets",
 		"feeCalculator": {
 			"title": "Calculateur de frais",
@@ -3330,7 +3330,7 @@
 				"percentLabel": "Frais de plateforme (pourcentage)",
 				"percentHelp": "Frais en pourcentage appliqués aux ventes de billets",
 				"fixedLabel": "Frais de plateforme (fixe)",
-				"fixedHelp": "Frais fixes par billet vendu",
+				"fixedHelp": "Frais fixes par transaction",
 				"contactSupport": "Contacte l'assistance pour modifier les paramètres des frais de plateforme"
 			},
 			"branding": {
@@ -5367,6 +5367,7 @@
 		"navLabel": "Navigation des réponses"
 	},
 	"questionnaireSubmissionPage": {
+		"requiredSr": "(obligatoire)",
 		"pageTitle": "{questionnaireName} - {eventName}",
 		"backToEvent": "Retour à l'événement",
 		"subtitle": "Complète ce questionnaire pour confirmer ta présence à {eventName}",
@@ -5802,7 +5803,7 @@
 		"feePercent": "Frais de plateforme (pourcentage)",
 		"percentFee": "Frais en pourcentage appliqués aux ventes de billets",
 		"feeFixed": "Frais de plateforme (fixe)",
-		"fixedFee": "Frais fixes par billet vendu",
+		"fixedFee": "Frais fixes par transaction",
 		"branding": "Identité visuelle",
 		"square": "Carré (400x400px recommandé)",
 		"wide": "Large (1200x400px recommandé)",
@@ -6130,8 +6131,6 @@
 		"limitReachedDetail": "Tu as atteint ta limite de billets pour ce niveau",
 		"soldOutDetail": "Plus aucun billet disponible",
 		"free": "Gratuit",
-		"pwyc": "Paie ce que tu peux ({range})",
-		"pwycAny": "au choix",
 		"requiresMembership": "Adhésion requise : {tiers}",
 		"signInToCheck": "Se connecter pour vérifier l'éligibilité"
 	},

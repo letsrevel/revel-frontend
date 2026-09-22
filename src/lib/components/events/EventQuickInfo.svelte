@@ -8,6 +8,7 @@
 		isRSVPClosingSoon
 	} from '$lib/utils/date';
 	import { cn } from '$lib/utils/cn';
+	import { cityPartsNotIn } from '$lib/utils/event';
 	import {
 		Calendar,
 		MapPin,
@@ -61,13 +62,10 @@
 				primaryParts.push(event.venue.address);
 			}
 
-			// City/country goes on secondary line
+			// City/country goes on secondary line, minus whatever the venue's
+			// street address already spells out.
 			const city = event.venue.city || event.city;
-			const secondary = city
-				? city.country
-					? `${city.name}, ${city.country}`
-					: city.name
-				: undefined;
+			const secondary = cityPartsNotIn(event.venue.address, city).join(', ') || undefined;
 
 			return { primary: primaryParts.join(', '), secondary };
 		}
@@ -77,17 +75,15 @@
 			return { primary: locationAddress || m['eventQuickInfo.locationTbd']() };
 		}
 
-		const cityCountry = event.city.country
-			? `${event.city.name}, ${event.city.country}`
-			: event.city.name;
-
-		// If we have an address, it's primary and city is secondary
+		// If we have an address, it's primary and city is secondary (dropping any
+		// city/country the free-text address already contains)
 		if (locationAddress) {
-			return { primary: locationAddress, secondary: cityCountry };
+			const secondary = cityPartsNotIn(locationAddress, event.city).join(', ') || undefined;
+			return { primary: locationAddress, secondary };
 		}
 
 		// Just city/country on primary line
-		return { primary: cityCountry };
+		return { primary: cityPartsNotIn(null, event.city).join(', ') };
 	});
 
 	function formatEventTypeLabel(value: string): string {

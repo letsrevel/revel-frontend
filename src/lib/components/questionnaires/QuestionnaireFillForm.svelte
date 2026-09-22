@@ -460,9 +460,12 @@
 			{/if}
 			<div class="flex-1">
 				<Label class="text-base font-bold">
-					<MarkdownContent content={question.question} inline={true} />
+					<!-- `inline`: MarkdownContent renders a block <div>, which pushed the
+					     required asterisk onto its own line. -->
+					<MarkdownContent content={question.question} inline={true} class="inline" />
 					{#if question.is_mandatory}
-						<span class="text-destructive">*</span>
+						<span class="text-destructive" aria-hidden="true">*</span>
+						<span class="sr-only">{m['questionnaireSubmissionPage.requiredSr']()}</span>
 					{/if}
 				</Label>
 				{#if question.hint}
@@ -546,9 +549,12 @@
 			<div class="flex-1">
 				<!-- FileUploadQuestion renders its file input with id `file-upload-<questionId>` -->
 				<Label for="file-upload-{question.id}" class="text-base font-bold">
-					<MarkdownContent content={question.question} inline={true} />
+					<!-- `inline`: MarkdownContent renders a block <div>, which pushed the
+					     required asterisk onto its own line. -->
+					<MarkdownContent content={question.question} inline={true} class="inline" />
 					{#if question.is_mandatory}
-						<span class="text-destructive">*</span>
+						<span class="text-destructive" aria-hidden="true">*</span>
+						<span class="sr-only">{m['questionnaireSubmissionPage.requiredSr']()}</span>
 					{/if}
 				</Label>
 				{#if question.hint}
@@ -578,9 +584,12 @@
 			{/if}
 			<div class="flex-1">
 				<Label for={question.id} class="text-base font-bold">
-					<MarkdownContent content={question.question} inline={true} />
+					<!-- `inline`: MarkdownContent renders a block <div>, which pushed the
+					     required asterisk onto its own line. -->
+					<MarkdownContent content={question.question} inline={true} class="inline" />
 					{#if question.is_mandatory}
-						<span class="text-destructive">*</span>
+						<span class="text-destructive" aria-hidden="true">*</span>
+						<span class="sr-only">{m['questionnaireSubmissionPage.requiredSr']()}</span>
 					{/if}
 				</Label>
 				{#if question.hint}
@@ -621,6 +630,7 @@
 
 		<Textarea
 			id={question.id}
+			aria-required={question.is_mandatory}
 			value={freeTextAnswers.get(question.id) || ''}
 			oninput={(e) => handleFreeTextChange(question.id, e.currentTarget.value)}
 			placeholder={m['questionnaireSubmissionPage.textarea_placeholder']()}

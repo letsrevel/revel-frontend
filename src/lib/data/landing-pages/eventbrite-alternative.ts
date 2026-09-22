@@ -6,7 +6,7 @@ export const eventbriteAlternativeEN: LandingPageContent = {
 	meta: {
 		title: 'Eventbrite Alternative – Lower Fees, Full Control | Revel',
 		description:
-			'Open-source event ticketing with just 1.5% + €0.25 per ticket. Self-host for zero fees. Own your data. No platform lock-in. Hosted in Europe.',
+			'Open-source event ticketing with just 1.5% + €0.25 per transaction. Self-host for zero fees. Own your data. No platform lock-in. Hosted in Europe.',
 		keywords:
 			'eventbrite alternative, cheap event ticketing, low fee ticketing, event platform, ticketing software'
 	},
@@ -18,7 +18,7 @@ export const eventbriteAlternativeEN: LandingPageContent = {
 	intro: {
 		paragraphs: [
 			"Tired of Eventbrite taking 3.7% plus fees from every ticket sold? You're not alone. Event organizers everywhere are looking for alternatives that don't eat into their margins or lock them into a platform they can't control.",
-			'Revel is an open-source event management platform with simple, fair pricing: just 1.5% + €0.25 per paid ticket on our hosted version—or completely free if you self-host. Your ticket revenue goes to you, not to a corporation.',
+			'Revel is an open-source event management platform with simple, fair pricing: just 1.5% + €0.25 per transaction on our hosted version—or completely free if you self-host. Your ticket revenue goes to you, not to a corporation.',
 			'Built by community organizers in Europe, Revel gives you everything you need: ticketing, RSVPs, attendee management, check-in tools, and more. All while keeping your data yours and your costs predictable.'
 		]
 	},
@@ -27,7 +27,7 @@ export const eventbriteAlternativeEN: LandingPageContent = {
 			icon: 'euro',
 			title: 'Transparent, Low Fees',
 			description:
-				'Just 1.5% + €0.25 per paid ticket. Free events are always free. Self-host and pay nothing at all.'
+				'Just 1.5% + €0.25 per transaction. Free events are always free. Self-host and pay nothing at all.'
 		},
 		{
 			icon: 'server',
@@ -84,7 +84,7 @@ export const eventbriteAlternativeEN: LandingPageContent = {
 		{
 			question: 'How does Revel compare to Eventbrite pricing?',
 			answer:
-				"Eventbrite charges around 3.7% + fees per ticket, plus payment processing. Revel charges just 1.5% + €0.25 per paid ticket (plus Stripe's standard ~1.5% + €0.25). Free events and self-hosted deployments have zero platform fees."
+				"Eventbrite charges around 3.7% + fees per ticket, plus payment processing. Revel charges just 1.5% + €0.25 per transaction (plus Stripe's standard ~1.5% + €0.25). Free events and self-hosted deployments have zero platform fees."
 		},
 		{
 			question: 'Can I migrate my events from Eventbrite?',
@@ -115,7 +115,7 @@ export const eventbriteAlternativeDE: LandingPageContent = {
 	meta: {
 		title: 'Eventbrite-Alternative – Niedrige Gebühren, Volle Kontrolle | Revel',
 		description:
-			'Open-Source Event-Ticketing mit nur 1,5% + 0,25€ pro Ticket. Selbst hosten für null Gebühren. Eigene Daten. Kein Plattform-Lock-in. Gehostet in Europa.',
+			'Open-Source Event-Ticketing mit nur 1,5% + 0,25€ pro Transaktion. Selbst hosten für null Gebühren. Eigene Daten. Kein Plattform-Lock-in. Gehostet in Europa.',
 		keywords:
 			'eventbrite alternative, günstige ticketing plattform, event software, ticketing system, veranstaltungsmanagement'
 	},
@@ -127,7 +127,7 @@ export const eventbriteAlternativeDE: LandingPageContent = {
 	intro: {
 		paragraphs: [
 			'Frustriert von Eventbrite, das 3,7% plus Gebühren von jedem verkauften Ticket nimmt? Du bist nicht allein. Veranstalter*innen überall suchen nach Alternativen, die nicht ihre Margen auffressen oder sie an eine unkontrollierbare Plattform binden.',
-			'Revel ist eine Open-Source Event-Management-Plattform mit einfacher, fairer Preisgestaltung: nur 1,5% + 0,25€ pro bezahltem Ticket bei unserer gehosteten Version – oder komplett kostenlos bei Selbst-Hosting. Deine Ticketeinnahmen gehören dir, nicht einem Konzern.',
+			'Revel ist eine Open-Source Event-Management-Plattform mit einfacher, fairer Preisgestaltung: nur 1,5% + 0,25€ pro Transaktion bei unserer gehosteten Version – oder komplett kostenlos bei Selbst-Hosting. Deine Ticketeinnahmen gehören dir, nicht einem Konzern.',
 			'Entwickelt von Community-Organisator*innen in Europa, bietet Revel alles was du brauchst: Ticketing, RSVPs, Teilnehmer*innenverwaltung, Check-in-Tools und mehr. Alles während deine Daten dir gehören und deine Kosten planbar bleiben.'
 		]
 	},
@@ -136,7 +136,7 @@ export const eventbriteAlternativeDE: LandingPageContent = {
 			icon: 'euro',
 			title: 'Transparente, Niedrige Gebühren',
 			description:
-				'Nur 1,5% + 0,25€ pro bezahltem Ticket. Kostenlose Events sind immer kostenlos. Selbst hosten und gar nichts zahlen.'
+				'Nur 1,5% + 0,25€ pro Transaktion. Kostenlose Events sind immer kostenlos. Selbst hosten und gar nichts zahlen.'
 		},
 		{
 			icon: 'server',
@@ -197,7 +197,7 @@ export const eventbriteAlternativeDE: LandingPageContent = {
 		{
 			question: 'Wie vergleichen sich Revels Preise mit Eventbrite?',
 			answer:
-				'Eventbrite berechnet etwa 3,7% + Gebühren pro Ticket, plus Zahlungsabwicklung. Revel berechnet nur 1,5% + 0,25€ pro bezahltem Ticket (plus Stripes Standard ~1,5% + 0,25€). Kostenlose Events und selbst gehostete Deployments haben null Plattformgebühren.'
+				'Eventbrite berechnet etwa 3,7% + Gebühren pro Ticket, plus Zahlungsabwicklung. Revel berechnet nur 1,5% + 0,25€ pro Transaktion (plus Stripes Standard ~1,5% + 0,25€). Kostenlose Events und selbst gehostete Deployments haben null Plattformgebühren.'
 		},
 		{
 			question: 'Kann ich meine Events von Eventbrite migrieren?',
@@ -228,7 +228,7 @@ export const eventbriteAlternativeIT: LandingPageContent = {
 	meta: {
 		title: 'Alternativa a Eventbrite – Commissioni Basse, Controllo Totale | Revel',
 		description:
-			'Ticketing eventi open-source con solo 1,5% + 0,25€ per biglietto. Self-host gratis. I tuoi dati. Nessun lock-in. Hosting in Europa.',
+			'Ticketing eventi open-source con solo 1,5% + 0,25€ per transazione. Self-host gratis. I tuoi dati. Nessun lock-in. Hosting in Europa.',
 		keywords:
 			'alternativa eventbrite, ticketing eventi economico, piattaforma eventi, software ticketing, gestione eventi'
 	},
@@ -240,7 +240,7 @@ export const eventbriteAlternativeIT: LandingPageContent = {
 	intro: {
 		paragraphs: [
 			'Stanco di Eventbrite che prende il 3,7% più commissioni da ogni biglietto venduto? Non sei solo. Gli organizzatori di eventi ovunque cercano alternative che non erodano i loro margini o li vincolino a una piattaforma incontrollabile.',
-			'Revel è una piattaforma open-source per la gestione eventi con prezzi semplici e giusti: solo 1,5% + 0,25€ per biglietto a pagamento sulla nostra versione hosted—o completamente gratis se fai self-hosting. I ricavi dei tuoi biglietti vanno a te, non a una corporation.',
+			'Revel è una piattaforma open-source per la gestione eventi con prezzi semplici e giusti: solo 1,5% + 0,25€ per transazione sulla nostra versione hosted—o completamente gratis se fai self-hosting. I ricavi dei tuoi biglietti vanno a te, non a una corporation.',
 			'Sviluppato da persone che organizzano community in Europa, Revel ti dà tutto il necessario: ticketing, RSVP, gestione partecipanti, strumenti di check-in e altro. Il tutto mantenendo i tuoi dati tuoi e i costi prevedibili.'
 		]
 	},
@@ -249,7 +249,7 @@ export const eventbriteAlternativeIT: LandingPageContent = {
 			icon: 'euro',
 			title: 'Commissioni Trasparenti e Basse',
 			description:
-				'Solo 1,5% + 0,25€ per biglietto a pagamento. Eventi gratuiti sempre gratis. Self-host e non paghi nulla.'
+				'Solo 1,5% + 0,25€ per transazione. Eventi gratuiti sempre gratis. Self-host e non paghi nulla.'
 		},
 		{
 			icon: 'server',
@@ -306,7 +306,7 @@ export const eventbriteAlternativeIT: LandingPageContent = {
 		{
 			question: 'Come si confrontano i prezzi di Revel con Eventbrite?',
 			answer:
-				'Eventbrite addebita circa 3,7% + commissioni per biglietto, più elaborazione pagamenti. Revel addebita solo 1,5% + 0,25€ per biglietto a pagamento (più lo standard Stripe ~1,5% + 0,25€). Eventi gratuiti e deployment self-hosted hanno zero commissioni piattaforma.'
+				'Eventbrite addebita circa 3,7% + commissioni per biglietto, più elaborazione pagamenti. Revel addebita solo 1,5% + 0,25€ per transazione (più lo standard Stripe ~1,5% + 0,25€). Eventi gratuiti e deployment self-hosted hanno zero commissioni piattaforma.'
 		},
 		{
 			question: 'Posso migrare i miei eventi da Eventbrite?',
@@ -337,7 +337,7 @@ export const eventbriteAlternativeES: LandingPageContent = {
 	meta: {
 		title: 'Alternativa a Eventbrite – Comisiones bajas, control total | Revel',
 		description:
-			'Ticketing de eventos de código abierto con solo 1,5 % + 0,25 € por entrada. Auto-alójalo gratis. Tus datos son tuyos. Sin dependencia de plataforma. Alojado en Europa.',
+			'Ticketing de eventos de código abierto con solo 1,5 % + 0,25 € por transacción. Auto-alójalo gratis. Tus datos son tuyos. Sin dependencia de plataforma. Alojado en Europa.',
 		keywords:
 			'alternativa a eventbrite, venta de entradas online barata, plataforma de eventos, software de ticketing, gestión de eventos'
 	},
@@ -349,7 +349,7 @@ export const eventbriteAlternativeES: LandingPageContent = {
 	intro: {
 		paragraphs: [
 			'¿Te cansa que Eventbrite se lleve un 3,7 % más comisiones de cada entrada vendida? No es un caso aislado: en todas partes, quienes organizan eventos buscan alternativas que no reduzcan sus márgenes ni les encierren en una plataforma que no pueden controlar.',
-			'Revel es una plataforma de gestión de eventos de código abierto con precios simples y justos: solo 1,5 % + 0,25 € por entrada de pago en nuestra versión alojada, o completamente gratis si te lo auto-alojas. Los ingresos de tus entradas son para ti, no para una corporación.',
+			'Revel es una plataforma de gestión de eventos de código abierto con precios simples y justos: solo 1,5 % + 0,25 € por transacción en nuestra versión alojada, o completamente gratis si te lo auto-alojas. Los ingresos de tus entradas son para ti, no para una corporación.',
 			'Creada por personas organizadoras de comunidades en Europa, Revel te da todo lo que necesitas: venta de entradas, confirmaciones de asistencia, gestión de participantes, herramientas de acceso y mucho más. Todo ello manteniendo tus datos bajo tu control y tus costes predecibles.'
 		]
 	},
@@ -358,7 +358,7 @@ export const eventbriteAlternativeES: LandingPageContent = {
 			icon: 'euro',
 			title: 'Comisiones bajas y transparentes',
 			description:
-				'Solo 1,5 % + 0,25 € por entrada de pago. Los eventos gratuitos siempre son gratis. Auto-alójalo y no pagues nada en absoluto.'
+				'Solo 1,5 % + 0,25 € por transacción. Los eventos gratuitos siempre son gratis. Auto-alójalo y no pagues nada en absoluto.'
 		},
 		{
 			icon: 'server',
@@ -416,7 +416,7 @@ export const eventbriteAlternativeES: LandingPageContent = {
 		{
 			question: '¿Cómo se comparan los precios de Revel con los de Eventbrite?',
 			answer:
-				'Eventbrite cobra alrededor de un 3,7 % + comisiones por entrada, más el procesamiento de pagos. Revel cobra solo 1,5 % + 0,25 € por entrada de pago (más el estándar de Stripe de aproximadamente 1,5 % + 0,25 €). Los eventos gratuitos y los despliegues auto-alojados no tienen comisiones de plataforma.'
+				'Eventbrite cobra alrededor de un 3,7 % + comisiones por entrada, más el procesamiento de pagos. Revel cobra solo 1,5 % + 0,25 € por transacción (más el estándar de Stripe de aproximadamente 1,5 % + 0,25 €). Los eventos gratuitos y los despliegues auto-alojados no tienen comisiones de plataforma.'
 		},
 		{
 			question: '¿Puedo migrar mis eventos desde Eventbrite?',
@@ -447,7 +447,7 @@ export const eventbriteAlternativePT: LandingPageContent = {
 	meta: {
 		title: 'Alternativa ao Eventbrite – Taxas reduzidas, controlo total | Revel',
 		description:
-			'Bilhética de eventos open-source com apenas 1,5 % + 0,25 € por bilhete. Auto-hospeda gratuitamente. Os teus dados são teus. Sem dependência de plataforma. Alojado na Europa.',
+			'Bilhética de eventos open-source com apenas 1,5 % + 0,25 € por transação. Auto-hospeda gratuitamente. Os teus dados são teus. Sem dependência de plataforma. Alojado na Europa.',
 		keywords:
 			'alternativa ao eventbrite, venda de bilhetes online barata, plataforma de eventos, software de bilhética, gestão de eventos'
 	},
@@ -459,7 +459,7 @@ export const eventbriteAlternativePT: LandingPageContent = {
 	intro: {
 		paragraphs: [
 			'Custa-te ver o Eventbrite a ficar com 3,7 % mais taxas em cada bilhete vendido? Não é um caso isolado: por todo o lado, quem organiza eventos procura alternativas que não corroam as suas margens nem prendam ninguém a uma plataforma incontrolável.',
-			'A Revel é uma plataforma open-source de gestão de eventos com preços simples e justos: apenas 1,5 % + 0,25 € por bilhete pago na nossa versão alojada – ou totalmente gratuita se optares por auto-hospedar. As receitas dos teus bilhetes são para ti, não para uma corporação.',
+			'A Revel é uma plataforma open-source de gestão de eventos com preços simples e justos: apenas 1,5 % + 0,25 € por transação na nossa versão alojada – ou totalmente gratuita se optares por auto-hospedar. As receitas dos teus bilhetes são para ti, não para uma corporação.',
 			'Criada por pessoas que organizam comunidades na Europa, a Revel dá-te tudo o que precisas: bilhética, confirmações de presença, gestão de participantes, ferramentas de check-in e muito mais. Tudo isto mantendo os teus dados sob o teu controlo e os custos previsíveis.'
 		]
 	},
@@ -468,7 +468,7 @@ export const eventbriteAlternativePT: LandingPageContent = {
 			icon: 'euro',
 			title: 'Taxas baixas e transparentes',
 			description:
-				'Apenas 1,5 % + 0,25 € por bilhete pago. Os eventos gratuitos são sempre gratuitos. Auto-hospeda e não pagues nada.'
+				'Apenas 1,5 % + 0,25 € por transação. Os eventos gratuitos são sempre gratuitos. Auto-hospeda e não pagues nada.'
 		},
 		{
 			icon: 'server',
@@ -534,7 +534,7 @@ export const eventbriteAlternativePT: LandingPageContent = {
 		{
 			question: 'Como é que os preços da Revel se comparam aos do Eventbrite?',
 			answer:
-				'O Eventbrite cobra cerca de 3,7 % + taxas por bilhete, mais o processamento de pagamentos. A Revel cobra apenas 1,5 % + 0,25 € por bilhete pago (mais o padrão da Stripe de cerca de 1,5 % + 0,25 €). Eventos gratuitos e implementações auto-hospedadas não têm taxas de plataforma.'
+				'O Eventbrite cobra cerca de 3,7 % + taxas por bilhete, mais o processamento de pagamentos. A Revel cobra apenas 1,5 % + 0,25 € por transação (mais o padrão da Stripe de cerca de 1,5 % + 0,25 €). Eventos gratuitos e implementações auto-hospedadas não têm taxas de plataforma.'
 		},
 		{
 			question: 'Posso migrar os meus eventos do Eventbrite?',
@@ -565,7 +565,7 @@ export const eventbriteAlternativeFR: LandingPageContent = {
 	meta: {
 		title: 'Alternative à Eventbrite – Frais réduits, contrôle total | Revel',
 		description:
-			'Billetterie événementielle open source à seulement 1,5 % + 0,25 € par billet. Auto-hébergement sans aucuns frais. Tes données t’appartiennent. Aucun verrouillage de plateforme. Hébergé en Europe.',
+			'Billetterie événementielle open source à seulement 1,5 % + 0,25 € par transaction. Auto-hébergement sans aucuns frais. Tes données t’appartiennent. Aucun verrouillage de plateforme. Hébergé en Europe.',
 		keywords:
 			'alternative eventbrite, plateforme de billetterie pas chère, logiciel événementiel, système de billetterie, gestion d’événements'
 	},
@@ -577,7 +577,7 @@ export const eventbriteAlternativeFR: LandingPageContent = {
 	intro: {
 		paragraphs: [
 			'Frustré·e par Eventbrite, qui prélève 3,7 % plus des frais sur chaque billet vendu ? Tu n’es pas seul·e. Partout, les organisateur·rices cherchent des alternatives qui ne grignotent pas leurs marges et ne les enferment pas dans une plateforme incontrôlable.',
-			'Revel est une plateforme open source de gestion d’événements avec une tarification simple et équitable : seulement 1,5 % + 0,25 € par billet payant sur notre version hébergée – ou totalement gratuite en auto-hébergement. Tes recettes de billetterie t’appartiennent, pas à un grand groupe.',
+			'Revel est une plateforme open source de gestion d’événements avec une tarification simple et équitable : seulement 1,5 % + 0,25 € par transaction sur notre version hébergée – ou totalement gratuite en auto-hébergement. Tes recettes de billetterie t’appartiennent, pas à un grand groupe.',
 			'Conçue par des organisateur·rices de communautés en Europe, Revel offre tout ce dont tu as besoin : billetterie, RSVP, gestion des participant·es, outils de check-in et bien plus. Le tout en gardant tes données et des coûts prévisibles.'
 		]
 	},
@@ -586,7 +586,7 @@ export const eventbriteAlternativeFR: LandingPageContent = {
 			icon: 'euro',
 			title: 'Frais transparents et réduits',
 			description:
-				'Seulement 1,5 % + 0,25 € par billet payant. Les événements gratuits restent toujours gratuits. Auto-héberge et ne paie rien du tout.'
+				'Seulement 1,5 % + 0,25 € par transaction. Les événements gratuits restent toujours gratuits. Auto-héberge et ne paie rien du tout.'
 		},
 		{
 			icon: 'server',
@@ -647,7 +647,7 @@ export const eventbriteAlternativeFR: LandingPageContent = {
 		{
 			question: 'Comment les tarifs de Revel se comparent-ils à ceux d’Eventbrite ?',
 			answer:
-				'Eventbrite facture environ 3,7 % + des frais par billet, plus le traitement des paiements. Revel ne facture que 1,5 % + 0,25 € par billet payant (plus le standard Stripe d’environ 1,5 % + 0,25 €). Les événements gratuits et les déploiements auto-hébergés n’ont aucuns frais de plateforme.'
+				'Eventbrite facture environ 3,7 % + des frais par billet, plus le traitement des paiements. Revel ne facture que 1,5 % + 0,25 € par transaction (plus le standard Stripe d’environ 1,5 % + 0,25 €). Les événements gratuits et les déploiements auto-hébergés n’ont aucuns frais de plateforme.'
 		},
 		{
 			question: 'Puis-je migrer mes événements depuis Eventbrite ?',

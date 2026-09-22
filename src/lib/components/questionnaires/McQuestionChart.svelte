@@ -16,7 +16,6 @@
 
 	const { questionText, options }: Props = $props();
 
-	const maxCount = $derived(Math.max(...options.map((o) => o.count), 1));
 	const totalResponses = $derived(options.reduce((sum, o) => sum + o.count, 0));
 
 	function pct(count: number): string {
@@ -24,9 +23,11 @@
 		return `${Math.round((count / totalResponses) * 100)}%`;
 	}
 
+	// Bar length = share of all responses, the same figure the % label shows
+	// (scaling to the top answer drew a 30% answer as a 75%-wide bar).
 	function barWidth(count: number): string {
-		if (maxCount === 0) return '0%';
-		return `${(count / maxCount) * 100}%`;
+		if (totalResponses === 0) return '0%';
+		return `${(count / totalResponses) * 100}%`;
 	}
 
 	// Count-aware "{n} response(s)" — paraglide _one/_other isn't auto-selected
@@ -46,10 +47,7 @@
 				<div class="flex items-center justify-between text-sm">
 					<span class="flex items-center gap-1.5 truncate" title={option.option_text}>
 						{#if option.is_correct}
-							<Check
-								class="h-3.5 w-3.5 flex-shrink-0 text-green-600 dark:text-green-400"
-								aria-hidden="true"
-							/>
+							<Check class="h-3.5 w-3.5 flex-shrink-0 text-success" aria-hidden="true" />
 							<span class="sr-only">({m['questionnaireSummaryPage.correct']()})</span>
 						{/if}
 						<span class="truncate">{option.option_text}</span>
@@ -61,7 +59,7 @@
 				<div class="h-4 w-full overflow-hidden rounded bg-muted">
 					<div
 						class="h-full rounded transition-all {option.is_correct
-							? 'bg-green-500 dark:bg-green-600'
+							? 'bg-success'
 							: 'bg-primary/60'}"
 						style="width: {barWidth(option.count)}"
 						role="img"

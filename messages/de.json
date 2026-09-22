@@ -2800,7 +2800,7 @@
 		"pricingSelfHostingPrice": "Kostenlos",
 		"pricingOnlinePayments": "Gehostete Online-Zahlungen",
 		"pricingOnlinePaymentsPrice": "1,5% + 0,25€",
-		"pricingOnlinePaymentsDescription": "1,5% + 0,25€ pro Ticket. Plus Stripe-Gebühren: 1,5% + 0,25€ (EWR-Karten) oder 2,5% + 0,25€ (UK-Karten).",
+		"pricingOnlinePaymentsDescription": "1,5% + 0,25€ pro Transaktion. Plus Stripe-Gebühren: 1,5% + 0,25€ (EWR-Karten) oder 2,5% + 0,25€ (UK-Karten).",
 		"ticketingFeature4": "QR-Code-Check-in und Ticket-Validierung",
 		"feeCalculator": {
 			"title": "Gebührenrechner",
@@ -3360,7 +3360,7 @@
 				"percentLabel": "Plattformgebühr (Prozent)",
 				"percentHelp": "Prozentuale Gebühr auf Ticketverkäufe",
 				"fixedLabel": "Plattformgebühr (Fix)",
-				"fixedHelp": "Feste Gebühr pro verkauftem Ticket",
+				"fixedHelp": "Feste Gebühr pro Transaktion",
 				"contactSupport": "Wende dich an den Support, um die Plattformgebühren zu ändern"
 			},
 			"branding": {
@@ -5397,6 +5397,7 @@
 		"navLabel": "Navigation der Einreichungen"
 	},
 	"questionnaireSubmissionPage": {
+		"requiredSr": "(Pflichtfeld)",
 		"pageTitle": "{questionnaireName} - {eventName}",
 		"backToEvent": "Zurück zur Veranstaltung",
 		"subtitle": "Fülle diesen Fragebogen aus, um dich für {eventName} anzumelden",
@@ -5832,7 +5833,7 @@
 		"feePercent": "Plattformgebühr (Prozent)",
 		"percentFee": "Prozentuale Gebühr auf Ticketverkäufe",
 		"feeFixed": "Plattformgebühr (Fest)",
-		"fixedFee": "Feste Gebühr pro verkauftem Ticket",
+		"fixedFee": "Feste Gebühr pro Transaktion",
 		"branding": "Branding",
 		"square": "Quadratisch (400x400px empfohlen)",
 		"wide": "Breit (1200x400px empfohlen)",
@@ -6160,8 +6161,6 @@
 		"limitReachedDetail": "Du hast dein Ticketlimit für diese Stufe erreicht",
 		"soldOutDetail": "Keine Tickets mehr verfügbar",
 		"free": "Kostenlos",
-		"pwyc": "Zahle, was du kannst ({range})",
-		"pwycAny": "beliebig",
 		"requiresMembership": "Mitgliedschaft erforderlich: {tiers}",
 		"signInToCheck": "Anmelden, um die Berechtigung zu prüfen"
 	},

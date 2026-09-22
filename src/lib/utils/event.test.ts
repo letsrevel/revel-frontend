@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { isEventFull, getSpotsRemaining } from '$lib/utils/event';
-import type { EventInListSchema } from '$lib/api/generated/types.gen';
+import {
+	isEventFull,
+	getSpotsRemaining,
+	cityPartsNotIn,
+	formatEventLocation
+} from '$lib/utils/event';
+import type { EventDetailSchema, EventInListSchema } from '$lib/api/generated/types.gen';
 
 function makeEvent(overrides: Partial<EventInListSchema> = {}): EventInListSchema {
 	return {
@@ -60,5 +65,50 @@ describe('getSpotsRemaining', () => {
 
 	it('returns null when the attendee count is withheld', () => {
 		expect(getSpotsRemaining(makeEvent({ max_attendees: 50, attendee_count: null }))).toBeNull();
+	});
+});
+
+// Screenshot bug: "Stephansplatz 1, 1010 Vienna, Austria, Vienna, Austria" —
+// the free-text address already held the city and country.
+describe('cityPartsNotIn', () => {
+	const vienna = { name: 'Vienna', country: 'Austria' };
+
+	it('returns both parts when there is no address', () => {
+		expect(cityPartsNotIn(null, vienna)).toEqual(['Vienna', 'Austria']);
+	});
+
+	it('drops parts the address already contains, case-insensitively', () => {
+		expect(cityPartsNotIn('Stephansplatz 1, 1010 vienna, AUSTRIA', vienna)).toEqual([]);
+		expect(cityPartsNotIn('Stephansplatz 1, 1010 Vienna', vienna)).toEqual(['Austria']);
+	});
+
+	it('matches whole words only', () => {
+		expect(cityPartsNotIn('Viennastraße 4', vienna)).toEqual(['Vienna', 'Austria']);
+	});
+
+	it('skips a missing country', () => {
+		expect(cityPartsNotIn('Main St 1', { name: 'Vienna', country: null })).toEqual(['Vienna']);
+	});
+});
+
+describe('formatEventLocation', () => {
+	function detail(overrides: Partial<EventDetailSchema>): EventDetailSchema {
+		return { address: null, city: null, ...overrides } as EventDetailSchema;
+	}
+
+	it('does not repeat the city and country already in the address', () => {
+		const event = detail({
+			address: 'Stephansplatz 1, 1010 Vienna, Austria',
+			city: { name: 'Vienna', country: 'Austria' } as EventDetailSchema['city']
+		});
+		expect(formatEventLocation(event)).toBe('Stephansplatz 1, 1010 Vienna, Austria');
+	});
+
+	it('appends the city and country when the address lacks them', () => {
+		const event = detail({
+			address: 'Stephansplatz 1',
+			city: { name: 'Vienna', country: 'Austria' } as EventDetailSchema['city']
+		});
+		expect(formatEventLocation(event)).toBe('Stephansplatz 1, Vienna, Austria');
 	});
 });

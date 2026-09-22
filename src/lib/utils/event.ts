@@ -85,6 +85,24 @@ export function getEventFallbackGradient(eventId: string): string {
 }
 
 /**
+ * The city name and country that are NOT already spelled out in `text`
+ * (case-insensitive, whole words), in display order. Free-text addresses often
+ * carry the city and country already ("Stephansplatz 1, Vienna, Austria"), and
+ * appending the structured city on top rendered them twice.
+ */
+export function cityPartsNotIn(
+	text: string | null | undefined,
+	city: { name?: string | null; country?: string | null } | null | undefined
+): string[] {
+	const parts = [city?.name, city?.country].filter((part): part is string => !!part);
+	if (!text) return parts;
+	return parts.filter((part) => {
+		const escaped = part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+		return !new RegExp(`(^|[^\\p{L}\\p{N}])${escaped}($|[^\\p{L}\\p{N}])`, 'iu').test(text);
+	});
+}
+
+/**
  * Format event location from address and city fields
  * Note: Only EventDetailSchema has address and city fields.
  * EventInListSchema does not include location data.
@@ -103,7 +121,7 @@ export function formatEventLocation(event: EventDetailSchema): string | undefine
 
 	// Add city and country if available
 	if (event.city) {
-		const cityPart = [event.city.name, event.city.country].filter(Boolean).join(', ');
+		const cityPart = cityPartsNotIn(event.address, event.city).join(', ');
 		if (cityPart) {
 			parts.push(cityPart);
 		}

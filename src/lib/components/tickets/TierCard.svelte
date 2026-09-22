@@ -132,11 +132,13 @@
 	// Check if tier has ID (required for checkout)
 	const hasId = $derived(hasTierId(tier));
 
-	// Format price display
+	// Format price display. PWYC shows only the compact range at headline size;
+	// the "Pay What You Can" qualifier goes in the card's priceNote caption.
+	const isPwyc = $derived(tier.price_type === 'pwyc');
 	const priceDisplay = $derived.by(() => {
 		if (tier.payment_method === 'free') return m['tierCardAdmin.free']();
 
-		if (tier.price_type === 'pwyc') {
+		if (isPwyc) {
 			const price = typeof tier.price === 'string' ? parseFloat(tier.price) : tier.price;
 			const min = tier.pwyc_min
 				? typeof tier.pwyc_min === 'string'
@@ -149,9 +151,11 @@
 					: tier.pwyc_max
 				: null;
 
-			const maxDisplay = max ? `${tier.currency} ${max.toFixed(2)}` : m['tierCardAdmin.pwycAny']();
-			return m['tierCardAdmin.pwyc']({
-				range: `${tier.currency} ${min.toFixed(2)} - ${maxDisplay}`
+			return tierPriceDisplay(tier, {
+				isFree: false,
+				isPwyc: true,
+				minAmount: min,
+				maxAmount: max
 			});
 		}
 
@@ -455,6 +459,7 @@
 	name={tier.name}
 	icon={Ticket}
 	price={priceDisplay}
+	priceNote={isPwyc && tier.payment_method !== 'free' ? m['tickets.payWhatYouCan']() : undefined}
 	muted={tier.can_purchase === false}
 	{badges}
 	{meta}

@@ -2800,7 +2800,7 @@
 		"pricingSelfHostingPrice": "Grátis",
 		"pricingOnlinePayments": "Pagamentos online alojados",
 		"pricingOnlinePaymentsPrice": "1,5% + 0,25 €",
-		"pricingOnlinePaymentsDescription": "1,5% + 0,25 € por bilhete. Mais as taxas do Stripe: 1,5% + 0,25 € (cartões do EEE) ou 2,5% + 0,25 € (cartões do Reino Unido).",
+		"pricingOnlinePaymentsDescription": "1,5% + 0,25 € por transação. Mais as taxas do Stripe: 1,5% + 0,25 € (cartões do EEE) ou 2,5% + 0,25 € (cartões do Reino Unido).",
 		"ticketingFeature4": "Check-in com código QR e validação de bilhetes",
 		"feeCalculator": {
 			"title": "Calculadora de taxas",
@@ -3360,7 +3360,7 @@
 				"percentLabel": "Taxa da plataforma (percentagem)",
 				"percentHelp": "Taxa percentual aplicada às vendas de bilhetes",
 				"fixedLabel": "Taxa da plataforma (fixa)",
-				"fixedHelp": "Taxa fixa por bilhete vendido",
+				"fixedHelp": "Taxa fixa por transação",
 				"contactSupport": "Contacta o suporte para alterar as definições das taxas da plataforma"
 			},
 			"branding": {
@@ -5397,6 +5397,7 @@
 		"navLabel": "Navegação das respostas"
 	},
 	"questionnaireSubmissionPage": {
+		"requiredSr": "(obrigatório)",
 		"pageTitle": "{questionnaireName} - {eventName}",
 		"backToEvent": "Voltar ao evento",
 		"subtitle": "Preenche este questionário para confirmares a presença em {eventName}",
@@ -5832,7 +5833,7 @@
 		"feePercent": "Taxa da plataforma (percentagem)",
 		"percentFee": "Taxa percentual aplicada às vendas de bilhetes",
 		"feeFixed": "Taxa da plataforma (fixa)",
-		"fixedFee": "Taxa fixa por bilhete vendido",
+		"fixedFee": "Taxa fixa por transação",
 		"branding": "Identidade visual",
 		"square": "Quadrado (400x400px recomendado)",
 		"wide": "Largo (1200x400px recomendado)",
@@ -6160,8 +6161,6 @@
 		"limitReachedDetail": "Atingiste o limite de bilhetes para este tipo",
 		"soldOutDetail": "Não há mais bilhetes disponíveis",
 		"free": "Gratuito",
-		"pwyc": "Paga o que puderes ({range})",
-		"pwycAny": "livre",
 		"requiresMembership": "Requer adesão: {tiers}",
 		"signInToCheck": "Inicia sessão para verificar a elegibilidade"
 	},

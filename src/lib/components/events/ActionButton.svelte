@@ -85,7 +85,10 @@
 	});
 
 	const variant = $derived.by(() => {
-		if (!isAuthenticated) return 'secondary';
+		// A guest-checkout event offers the same action to anonymous visitors as to
+		// signed-in ones, so it gets the same filled CTA. Only the "log in first"
+		// detour stays secondary.
+		if (!isAuthenticated) return canAttendWithoutLogin ? 'primary' : 'secondary';
 
 		if (!userStatus) return 'primary';
 

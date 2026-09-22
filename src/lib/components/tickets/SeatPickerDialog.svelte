@@ -200,20 +200,22 @@
 			/>
 		</div>
 
-		<DialogFooter class="flex-col gap-2">
-			{#if estimatedTotal !== null}
-				<p class="flex w-full items-center justify-between border-t border-border pt-2 text-sm">
-					<span class="text-muted-foreground">{m['checkoutFooter.total']()}</span>
-					<span class="text-base font-bold">{formatMoney(estimatedTotal, tier.currency)}</span>
-				</p>
-			{/if}
-			<div class="flex w-full items-center justify-between gap-3">
+		<DialogFooter
+			class="flex-col gap-2 border-t border-border pt-3 sm:flex-row sm:items-center sm:justify-between sm:space-x-0"
+		>
+			<div class="flex w-full items-center justify-between gap-4 sm:w-auto sm:justify-start">
 				<span aria-live="polite" class="text-sm font-bold">
 					{transient.myHolds.length}
 					{m['ticketConfirmationDialog.seatsSelected']()}
 				</span>
-				<Button onclick={handleDone}>{m['cart.seatPickerDone']()}</Button>
+				{#if estimatedTotal !== null}
+					<p class="flex items-center gap-2 text-sm">
+						<span class="text-muted-foreground">{m['checkoutFooter.total']()}</span>
+						<span class="text-base font-bold">{formatMoney(estimatedTotal, tier.currency)}</span>
+					</p>
+				{/if}
 			</div>
+			<Button onclick={handleDone}>{m['cart.seatPickerDone']()}</Button>
 		</DialogFooter>
 	</DialogContent>
 </Dialog>
