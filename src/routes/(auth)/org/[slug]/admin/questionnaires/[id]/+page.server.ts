@@ -3,6 +3,7 @@ import { questionnaireGetOrgQuestionnaire } from '$lib/api/generated/sdk.gen';
 import type { PageServerLoad } from './$types';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { log } from '$lib/server/logger';
+import { loaderErrorStatus } from '$lib/server/load-errors';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
 	const user = locals.user;
@@ -19,8 +20,14 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		});
 
 		if (response.error) {
-			const errorMessage = extractErrorMessage(response.error, 'Questionnaire not found');
-			throw error(404, errorMessage);
+			const status = loaderErrorStatus(response.response?.status);
+			log.error('questionnaire_load_failed', {
+				questionnaireId: params.id,
+				status: response.response?.status,
+				error: response.error
+			});
+			const fallback = status === 404 ? 'Questionnaire not found' : 'Failed to load questionnaire';
+			throw error(status, extractErrorMessage(response.error, fallback));
 		}
 
 		const questionnaire = response.data;

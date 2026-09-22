@@ -6,6 +6,7 @@ import {
 	questionnaireGetOrgQuestionnaire
 } from '$lib/api/client';
 import { log } from '$lib/server/logger';
+import { loaderErrorStatus } from '$lib/server/load-errors';
 
 export const load: PageServerLoad = async ({ params, url, locals, fetch }) => {
 	const { slug, id } = params;
@@ -62,15 +63,15 @@ export const load: PageServerLoad = async ({ params, url, locals, fetch }) => {
 	]);
 
 	if (submissionsResult.error || !submissionsResult.data) {
-		const status = submissionsResult.response?.status ?? 500;
+		const backendStatus = submissionsResult.response?.status;
 		log.error('questionnaire_submissions_load_failed', {
 			id,
-			status,
+			status: backendStatus,
 			error: submissionsResult.error
 		});
 		// A wrong/foreign questionnaire id is a missing page, not a server fault.
-		if (status === 404) throw error(404, 'Questionnaire not found');
-		throw error(500, 'Failed to load submissions');
+		const status = loaderErrorStatus(backendStatus);
+		throw error(status, status === 404 ? 'Questionnaire not found' : 'Failed to load submissions');
 	}
 
 	const submissionsData = submissionsResult.data;

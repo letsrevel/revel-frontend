@@ -6,6 +6,7 @@ import {
 } from '$lib/api/generated/sdk.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { log } from '$lib/server/logger';
+import { loaderErrorStatus } from '$lib/server/load-errors';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, locals, parent, fetch }) => {
@@ -38,7 +39,7 @@ export const load: PageServerLoad = async ({ params, locals, parent, fetch }) =>
 		const status = pollRes.response?.status ?? 500;
 		log.error('poll_load_failed', { status, error: pollRes.error });
 		const message = extractErrorMessage(pollRes.error, 'Failed to load poll');
-		throw error(status === 404 ? 404 : status >= 500 ? 500 : 502, message);
+		throw error(loaderErrorStatus(status), message);
 	}
 	// The audience picker depends on these; surface a failure instead of
 	// silently rendering an empty event/tier list (mirrors new/+page.server.ts).
