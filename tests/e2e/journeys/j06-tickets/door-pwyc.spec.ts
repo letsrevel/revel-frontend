@@ -147,9 +147,9 @@ test.describe('J6 at-the-door & PWYC @p2', () => {
 		// the sheet's footer hint.
 		const amount = sheet.getByLabel('Payment Amount');
 		await amount.fill('2');
-		await expect(sheet.getByText(/Minimum amount is EUR 5\.00/).first()).toBeVisible();
+		await expect(sheet.getByText(/Minimum amount is €5\.00/).first()).toBeVisible();
 		await amount.fill('100');
-		await expect(sheet.getByText(/Maximum amount is EUR 50\.00/).first()).toBeVisible();
+		await expect(sheet.getByText(/Maximum amount is €50\.00/).first()).toBeVisible();
 
 		const success = await reserveTicket(page, 'Door PWYC', async (dialog) => {
 			await dialog.getByLabel('Payment Amount').fill('12.50');

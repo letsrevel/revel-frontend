@@ -3,6 +3,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
+	import { formatMoney } from '$lib/utils/format';
 
 	interface Props {
 		currency: string;
@@ -42,10 +43,10 @@
 		<Label for={amountId}>{m['ticketConfirmationDialog.paymentAmount']()}</Label>
 		<div class="text-xs text-muted-foreground">
 			{m['cartSheet.pwycRange']({
-				min: `${currency} ${minAmount.toFixed(2)}`,
+				min: formatMoney(minAmount, currency),
 				max:
 					maxAmount !== null
-						? `${currency} ${maxAmount.toFixed(2)}`
+						? formatMoney(maxAmount, currency)
 						: m['ticketConfirmationDialog.anyAmount']()
 			})}
 		</div>
@@ -92,7 +93,7 @@
 					}}
 					disabled={isProcessing}
 				>
-					{currency}{suggested.toFixed(2)}
+					{formatMoney(suggested, currency)}
 				</Button>
 			{/each}
 		</div>

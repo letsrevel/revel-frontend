@@ -12,6 +12,10 @@ import {
 	tierMaxSelectable,
 	tierPriceLabel
 } from './venue-overview';
+import { formatMoney, formatMoneyRange } from '$lib/utils/format';
+
+const eur = (amount: number): string => formatMoney(amount, 'EUR');
+const eurRange = (min: number, max: number): string => formatMoneyRange(min, max, 'EUR');
 
 // Pure logic behind the map-first overview (#679): sector→tier mapping (1:N
 // and no-tier cases), purchasability gates and defensive stage parsing.
@@ -134,10 +138,10 @@ describe('buildSectorOverview', () => {
 		expect(entries).toHaveLength(4);
 		const platea = byId.get('platea');
 		expect(platea?.options.map((o) => o.tier.id)).toEqual(['t-platea', 't-platea-ba']);
-		expect(platea?.options[0].priceDisplay).toBe('EUR 45.00');
+		expect(platea?.options[0].priceDisplay).toBe(eur(45));
 		expect(platea?.options[0].mode).toBe('user_choice');
 		// Honest range for the category-priced tier, straight from seat_pricing.
-		expect(platea?.options[1].priceDisplay).toBe('EUR 45.00 - EUR 80.00');
+		expect(platea?.options[1].priceDisplay).toBe(eurRange(45, 80));
 		expect(platea?.options[1].mode).toBe('best_available');
 
 		expect(byId.get('galleria')?.options.map((o) => o.tier.id)).toEqual(['t-galleria']);
@@ -264,9 +268,9 @@ describe('tierPriceLabel', () => {
 	it('renders free, PWYC bounds, and flat prices', () => {
 		expect(tierPriceLabel(tier({ payment_method: 'free' }))).toBe('Free');
 		expect(tierPriceLabel(tier({ price_type: 'pwyc', pwyc_min: '5.00', pwyc_max: '15.00' }))).toBe(
-			'EUR 5.00 - EUR 15.00'
+			eurRange(5, 15)
 		);
-		expect(tierPriceLabel(tier())).toBe('EUR 20.00');
+		expect(tierPriceLabel(tier())).toBe(eur(20));
 	});
 });
 
@@ -328,7 +332,7 @@ describe('switchTargetsFor', () => {
 		const targets = switchTargetsFor(entries, 'platea');
 		expect(targets.map((t) => t.sectorId)).toEqual(['galleria']);
 		expect(targets[0].label).toContain('Galleria');
-		expect(targets[0].lines[0]).toContain('EUR 20.00');
+		expect(targets[0].lines[0]).toContain(eur(20));
 	});
 
 	it('sectorTargetFrom carries tier names and prices in name AND overlay lines', () => {
@@ -348,7 +352,7 @@ describe('switchTargetsFor', () => {
 		const platea = entries.find((e) => e.sectorId === 'platea');
 		if (!platea) throw new Error('platea entry missing');
 		const target = sectorTargetFrom(platea);
-		expect(target.label).toContain('Platea, EUR 45.00');
+		expect(target.label).toContain(`Platea, ${eur(45)}`);
 		expect(target.label).toContain('Platea BA');
 		expect(target.lines).toHaveLength(2);
 	});

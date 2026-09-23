@@ -5,6 +5,7 @@
  */
 import * as m from '$lib/paraglide/messages.js';
 import type { TierSchemaWithId } from '$lib/types/tickets';
+import { formatMoney } from '$lib/utils/format';
 
 export type PwycValidationError = 'empty' | 'invalid' | 'below_min' | 'above_max';
 
@@ -71,11 +72,11 @@ export function pwycErrorMessage(
 			return m['ticketConfirmationDialog.errorValidNumber']();
 		case 'below_min':
 			return m['ticketConfirmationDialog.errorMinAmount']({
-				amount: `${currency} ${minAmount.toFixed(2)}`
+				amount: formatMoney(minAmount, currency)
 			});
 		case 'above_max':
 			return m['ticketConfirmationDialog.errorMaxAmount']({
-				amount: `${currency} ${maxAmount?.toFixed(2)}`
+				amount: formatMoney(maxAmount, currency)
 			});
 		default:
 			return m['ticketConfirmationDialog.errorInvalidAmount']();

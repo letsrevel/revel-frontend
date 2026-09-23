@@ -7,6 +7,7 @@ import {
 	questionnaireListSubmissions
 } from '$lib/api/client';
 import { log } from '$lib/server/logger';
+import { loaderErrorStatus } from '$lib/server/load-errors';
 import { backendMessage } from '$lib/utils/api-error-detail';
 
 // How many siblings to load for Next/Previous navigation. Covers the vast
@@ -62,12 +63,15 @@ export const load: PageServerLoad = async ({ params, url, locals, fetch }) => {
 	]);
 
 	if (submissionResult.error || !submissionResult.data) {
+		const backendStatus = submissionResult.response?.status;
 		log.error('submission_detail_load_failed', {
 			id,
 			submission_id,
+			status: backendStatus,
 			error: submissionResult.error
 		});
-		throw error(404, 'Submission not found');
+		const status = loaderErrorStatus(backendStatus);
+		throw error(status, status === 404 ? 'Submission not found' : 'Failed to load submission');
 	}
 
 	// Compute Previous/Next neighbors within the loaded, filtered, ordered set.

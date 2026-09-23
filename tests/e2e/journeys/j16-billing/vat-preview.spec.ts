@@ -132,7 +132,7 @@ test.describe('J16 VAT preview @p2', () => {
 		const preview = confirmDialog.locator('[aria-label="VAT Preview"]');
 		await expect(preview.getByText('VAT ID valid')).toBeVisible({ timeout: 30_000 });
 		await expect(preview.getByText('Total VAT')).toBeVisible();
-		// EUR 1.67 renders twice (line VAT column + Total VAT).
+		// €1.67 renders twice (line VAT column + Total VAT).
 		await expect(preview.getByText(VAT_AMOUNT).first()).toBeVisible();
 		await expect(preview.getByText(/reverse charge/i)).not.toBeVisible();
 

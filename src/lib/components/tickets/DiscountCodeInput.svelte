@@ -5,6 +5,7 @@
 	import { Tag, X, ChevronDown, Loader2 } from '@lucide/svelte';
 	import type { DiscountCodeValidationResponse } from '$lib/api/generated/types.gen';
 	import { eventpublicticketsValidateDiscount } from '$lib/api/generated/sdk.gen';
+	import { formatMoney } from '$lib/utils/format';
 
 	interface Props {
 		eventId: string;
@@ -56,7 +57,7 @@
 		if (discountResult.discount_type === 'percentage') {
 			return `-${discountResult.discount_value}%`;
 		}
-		return `-${currency} ${discountResult.discount_value}`;
+		return `-${formatMoney(discountResult.discount_value, currency)}`;
 	});
 
 	async function validateDiscountCode() {
@@ -138,15 +139,15 @@
 		<div class="space-y-3 border-t px-4 py-3">
 			{#if appliedDiscountCode && discountResult?.valid}
 				<!-- Applied discount display -->
-				<div class="rounded-md bg-emerald-50 p-3 dark:bg-emerald-950/30">
+				<div class="rounded-md bg-success/10 p-3">
 					<div class="flex items-center justify-between">
 						<div class="flex items-center gap-2">
-							<Tag class="h-4 w-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
-							<span class="font-mono font-semibold text-emerald-800 dark:text-emerald-300">
+							<Tag class="h-4 w-4 text-success" aria-hidden="true" />
+							<span class="font-mono font-semibold text-foreground">
 								{appliedDiscountCode}
 							</span>
 							<span
-								class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300"
+								class="rounded-full bg-success px-2 py-0.5 text-xs font-medium text-success-foreground"
 							>
 								{discountBadge}
 							</span>
@@ -155,7 +156,7 @@
 							type="button"
 							onclick={handleRemove}
 							disabled={isProcessing}
-							class="rounded-md p-1 text-emerald-600 hover:bg-emerald-100 dark:text-emerald-400 dark:hover:bg-emerald-900/50"
+							class="rounded-md p-1 text-foreground hover:bg-success/20"
 							aria-label={m['discountCodeInput.removeCode']()}
 						>
 							<X class="h-4 w-4" />
@@ -165,20 +166,17 @@
 					{#if discountedPrice !== null}
 						<div class="mt-2 text-sm">
 							<span class="text-muted-foreground line-through">
-								{currency}
-								{originalPrice.toFixed(2)}
+								{formatMoney(originalPrice, currency)}
 							</span>
-							<span class="ml-2 font-semibold text-emerald-800 dark:text-emerald-300">
-								{currency}
-								{discountedPrice.toFixed(2)}
+							<span class="ml-2 font-semibold text-foreground">
+								{formatMoney(discountedPrice, currency)}
 							</span>
 							<span class="text-muted-foreground"> {m['discountCodeInput.perTicket']()}</span>
 
 							{#if quantity > 1}
-								<p class="mt-1 font-medium text-emerald-800 dark:text-emerald-300">
+								<p class="mt-1 font-medium text-foreground">
 									{m['discountCodeInput.total']()}
-									{currency}
-									{(discountedPrice * quantity).toFixed(2)}
+									{formatMoney(discountedPrice * quantity, currency)}
 								</p>
 							{/if}
 						</div>

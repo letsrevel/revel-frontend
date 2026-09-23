@@ -6,10 +6,10 @@ import { test, expect } from '../../support/fixtures';
 
 test.describe('J1 guest views event details @p0', () => {
 	test('shows public content and ticket tiers for a ticketed event', async ({ page }) => {
-		await page.goto('/events/revel-events-collective/summer-sunset-music-festival');
+		await page.goto('/events/revel-events-collective/sunset-music-festival');
 
 		await expect(
-			page.getByRole('heading', { level: 1, name: 'Summer Sunset Music Festival' }).first()
+			page.getByRole('heading', { level: 1, name: 'Sunset Music Festival' }).first()
 		).toBeVisible();
 		await expect(
 			page.getByRole('link', { name: /Organized by Revel Events Collective/ })
@@ -23,7 +23,8 @@ test.describe('J1 guest views event details @p0', () => {
 		// Public tiers with price and a purchase CTA are visible to guests.
 		await expect(page.getByRole('heading', { name: 'Ticket Options' })).toBeVisible();
 		await expect(page.getByRole('heading', { name: 'Early Bird General Admission' })).toBeVisible();
-		await expect(page.getByText('USD 45.00')).toBeVisible();
+		// Locale-aware money (#949): en renders "$45.00", never "USD 45.00".
+		await expect(page.getByText('$45.00', { exact: true }).first()).toBeVisible();
 		expect(await page.getByRole('button', { name: 'Get Ticket' }).count()).toBeGreaterThan(0);
 
 		// The PRIVATE invited-only tier (wine-tasting style) must not leak; the
@@ -38,19 +39,23 @@ test.describe('J1 guest views event details @p0', () => {
 	});
 
 	test('shows the RSVP card with a sign-in gate for a free-RSVP event', async ({ page }) => {
-		await page.goto('/events/revel-events-collective/spring-community-potluck');
+		await page.goto('/events/revel-events-collective/community-potluck');
 
 		await expect(
-			page
-				.getByRole('heading', { level: 1, name: 'Spring Community Potluck & Garden Party' })
-				.first()
+			page.getByRole('heading', { level: 1, name: 'Community Potluck & Garden Party' }).first()
 		).toBeVisible();
 		await expect(page.getByRole('heading', { name: 'Will you attend?' })).toBeVisible();
 
 		// The sign-in link preserves the return URL back to this event.
 		const signIn = page.getByRole('link', { name: 'Sign in' }).first();
 		await expect(signIn).toBeVisible();
-		await expect(signIn).toHaveAttribute('href', /returnUrl=.*spring-community-potluck/);
+		await expect
+			.poll(async () => {
+				const href = (await signIn.getAttribute('href')) ?? '';
+				const returnUrl = new URL(href, 'http://localhost').searchParams.get('returnUrl') ?? '';
+				return new URL(returnUrl, 'http://localhost').pathname;
+			})
+			.toBe('/events/revel-events-collective/community-potluck');
 
 		// Potluck items are attendee-only — guests get no potluck signup list.
 		await expect(page.getByRole('button', { name: /I'll bring this/ })).toBeHidden();

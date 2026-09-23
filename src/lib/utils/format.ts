@@ -56,6 +56,21 @@ export function formatMoney(
 	}
 }
 
+/** Spaced en dash between the two ends of a money range. */
+export const MONEY_RANGE_SEPARATOR = ' \u2013 ';
+
+/**
+ * Format a min–max money range with {@link formatMoney} on both ends, e.g.
+ * "€20.00 – €45.00" (en) or "20,00 € – 45,00 €" (de).
+ */
+export function formatMoneyRange(
+	min: number | string | null | undefined,
+	max: number | string | null | undefined,
+	currency?: string | null
+): string {
+	return `${formatMoney(min, currency)}${MONEY_RANGE_SEPARATOR}${formatMoney(max, currency)}`;
+}
+
 /**
  * Format a 0..1 ratio as a locale-aware percentage (e.g. `0.0667` → "6.7%" in
  * en, "6,7 %" in de). Pinned to the UI language like the currency helpers so

@@ -3,6 +3,7 @@
 	 * z-40 keeps it under bits-ui dialog overlays (z-50). */
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
+	import { formatMoney } from '$lib/utils/format';
 	import { LoaderCircle } from '@lucide/svelte';
 	import OfferExpiryCountdown from '$lib/components/events/waitlist/OfferExpiryCountdown.svelte';
 
@@ -46,7 +47,7 @@
 				{#if isFree}
 					<span class="text-muted-foreground">· {m['cart.free']()}</span>
 				{:else if totalDisplay !== null}
-					<span class="text-muted-foreground">· {currency} {totalDisplay}</span>
+					<span class="text-muted-foreground">· {formatMoney(totalDisplay, currency)}</span>
 				{/if}
 			</p>
 			{#if onDiscountClick}

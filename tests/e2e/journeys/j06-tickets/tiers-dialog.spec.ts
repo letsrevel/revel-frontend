@@ -65,7 +65,7 @@ test.describe('J6 tiers dialog @p1', () => {
 
 		// Footer mirrors the summary bar: count · total.
 		await expect(dialog).toContainText('1 ticket');
-		await expect(dialog).toContainText('EUR 10.00');
+		await expect(dialog).toContainText('€10.00');
 
 		// Buy closes the dialog and hands off to the same offline checkout
 		// as CartSummaryBar (PENDING tickets + "reserved" toast, no Stripe).
@@ -101,7 +101,7 @@ test.describe('J6 tiers dialog @p1', () => {
 		const summaryBar = page.getByTestId('cart-summary-bar');
 		await expect(summaryBar).toBeVisible();
 		await expect(summaryBar).toContainText('1 ticket');
-		await expect(summaryBar).toContainText('EUR 10.00');
+		await expect(summaryBar).toContainText('€10.00');
 
 		await context.close();
 	});

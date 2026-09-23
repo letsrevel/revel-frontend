@@ -11,7 +11,7 @@ import { waitForClientAuth } from '../../support/navigation';
 // replaces the list with his ticket card). Hannah has no Beta membership.
 // All assertions are read-only.
 
-const FUTURESTACK = '/events/tech-innovators-network/futurestack-2025';
+const FUTURESTACK = '/events/tech-innovators-network/futurestack';
 const MEMBER_TIER = 'Member Discount';
 const PUBLIC_TIER = 'Standard - Full Access';
 

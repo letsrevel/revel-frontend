@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import { createRawSnippet } from 'svelte';
 import TicketTiersDialog from './TicketTiersDialog.svelte';
+import { formatMoney } from '$lib/utils/format';
 
 const content = createRawSnippet(() => ({ render: () => `<div>tier list here</div>` }));
 
@@ -39,13 +40,15 @@ describe('TicketTiersDialog', () => {
 	it('footer shows the ticket count and running total', () => {
 		renderDialog();
 		expect(screen.getByText(/2 tickets/)).toBeInTheDocument();
-		expect(screen.getByText(/EUR 20\.00/)).toBeInTheDocument();
+		expect(screen.getByText(`· ${formatMoney('20.00', 'EUR')}`)).toBeInTheDocument();
+		// Locale-aware money, never the hand-rolled "EUR 20.00" template (#949).
+		expect(screen.queryByText(/EUR 20\.00/)).not.toBeInTheDocument();
 	});
 
 	it('free carts show Free instead of a total', () => {
 		renderDialog({ isFree: true, totalDisplay: null, currency: null });
 		expect(screen.getByText(/Free/)).toBeInTheDocument();
-		expect(screen.queryByText(/EUR/)).not.toBeInTheDocument();
+		expect(screen.queryByText(/EUR|€/)).not.toBeInTheDocument();
 	});
 
 	it('buy closes the dialog and hands off to onCheckout', async () => {

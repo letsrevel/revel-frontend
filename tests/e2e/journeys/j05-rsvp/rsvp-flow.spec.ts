@@ -5,7 +5,7 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 import { uniqueName } from '../../support/factories';
 
 // J5.3–5.4 + J14.2/14.5 (USER_JOURNEYS.md) — the core RSVP loop on the seeded
-// Spring Community Potluck: RSVP YES → attendee experience (potluck signup)
+// Community Potluck: RSVP YES → attendee experience (potluck signup)
 // → add & claim an item → RSVP NO → the claimed item is auto-released.
 //
 // Isolation: desktop and mobile projects run concurrently, so each uses a
@@ -13,7 +13,7 @@ import { uniqueName } from '../../support/factories';
 // item — no contention on seeded rows, and crashed runs can't poison later
 // ones. The flow ends on RSVP NO, so it is re-runnable without reseeding.
 
-const EVENT_PATH = '/events/revel-events-collective/spring-community-potluck';
+const EVENT_PATH = '/events/revel-events-collective/community-potluck';
 
 /**
  * The RSVP card shows Yes/Maybe/No when the user has no answer yet, but a

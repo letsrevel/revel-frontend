@@ -2814,7 +2814,7 @@
 			"vatCheckboxHelp": "Aplica-se a organizações austríacas e organizações da UE sem um número de IVA validado. Nos restantes casos aplica-se a autoliquidação — sem IVA adicionado.",
 			"vatOnPlatformFee": "IVA sobre a taxa da plataforma ({rate}%)",
 			"organizationReceives": "A tua organização recebe",
-			"perTicketSoldAt": "Por bilhete vendido a {price}",
+			"perTicketSoldAt": "Por bilhete vendido a {price} (encomenda de um só bilhete)",
 			"totalFees": "Taxas totais: {fees} ({percentage}% do preço do bilhete)",
 			"questionsAboutFees": "Tens dúvidas sobre as taxas?",
 			"contactUs": "Contacta-nos",
@@ -6267,10 +6267,10 @@
 		"seatingConfig.venueRequiredForSeats": "Seleciona um local para ativar a seleção de setor",
 		"netPayoutLabel": "Recebes:",
 		"netPayoutAmount": "~{amount}",
-		"netPayoutPerTicket": "por bilhete",
-		"netPayoutPerTicketAtMin": "por bilhete (ao preço mínimo)",
+		"netPayoutPerTicket": "por bilhete (encomenda de um só bilhete)",
+		"netPayoutPerTicketAtMin": "por bilhete (encomenda de um só bilhete, ao preço mínimo)",
 		"netPayoutInfoAria": "Sobre esta estimativa",
-		"netPayoutTooltip": "Isto é uma estimativa: as taxas dos cartões variam consoante o país e o tipo de cartão (assumem-se cartões europeus) e o IVA pode ser adicionado à taxa da plataforma Revel consoante o teu país de faturação e o teu número de IVA (pode aplicar-se a autoliquidação). Os valores exatos constam das tuas faturas de taxas."
+		"netPayoutTooltip": "Isto é uma estimativa: as taxas dos cartões variam consoante o país e o tipo de cartão (assumem-se cartões europeus) e o IVA pode ser adicionado à taxa da plataforma Revel consoante o teu país de faturação e o teu número de IVA (pode aplicar-se a autoliquidação). Os valores exatos constam das tuas faturas de taxas. Pressupõe um só bilhete por encomenda: a parte fixa das taxas do cartão e da plataforma é cobrada uma vez por encomenda, por isso em encomendas com vários bilhetes recebes um pouco mais por bilhete."
 	},
 	"tierForm.seatingConfig.noVenueConfigured": "Para ativar a atribuição de lugares, configura um local para este evento em Informações básicas.",
 	"tierForm.seatingConfig.standingSector": "Setor em pé",

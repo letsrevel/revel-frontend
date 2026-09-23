@@ -17,6 +17,7 @@
 		Ticket
 	} from '@lucide/svelte';
 	import { formatDateTime } from '$lib/utils/date';
+	import { formatMoney, MONEY_RANGE_SEPARATOR } from '$lib/utils/format';
 
 	interface Props {
 		tier: TicketTierDetailSchema;
@@ -44,44 +45,6 @@
 		return PLATFORM_NAMES[provider] ?? provider;
 	}
 
-	const CURRENCY_SYMBOLS: Record<string, string> = {
-		AUD: 'A$',
-		BRL: 'R$',
-		CAD: 'C$',
-		CHF: 'CHF',
-		CNY: 'CN¥',
-		CZK: 'Kč',
-		DKK: 'kr',
-		EUR: '€',
-		GBP: '£',
-		HKD: 'HK$',
-		HUF: 'Ft',
-		IDR: 'Rp',
-		ILS: '₪',
-		INR: '₹',
-		ISK: 'kr',
-		JPY: '¥',
-		KRW: '₩',
-		MXN: 'MX$',
-		MYR: 'RM',
-		NOK: 'kr',
-		NZD: 'NZ$',
-		PHP: '₱',
-		PLN: 'zł',
-		RON: 'lei',
-		SEK: 'kr',
-		SGD: 'S$',
-		THB: '฿',
-		TRY: '₺',
-		USD: '$',
-		ZAR: 'R'
-	};
-
-	function formatPrice(amount: string | number, currency: string): string {
-		const symbol = CURRENCY_SYMBOLS[currency] || currency;
-		return `${symbol}${Number(amount).toFixed(2)}`;
-	}
-
 	function formatDate(dateString: string | null | undefined): string {
 		if (!dateString) return 'Not set';
 		return formatDateTime(dateString);
@@ -91,11 +54,11 @@
 		const currency = tier.currency || 'EUR';
 		if (tier.payment_method === 'free') return 'Free';
 		if (tier.price_type === 'pwyc') {
-			const min = formatPrice(tier.pwyc_min || 1, currency);
-			const max = tier.pwyc_max ? formatPrice(tier.pwyc_max, currency) : 'any amount';
-			return `${min} - ${max}`;
+			const min = formatMoney(tier.pwyc_min || 1, currency);
+			const max = tier.pwyc_max ? formatMoney(tier.pwyc_max, currency) : 'any amount';
+			return `${min}${MONEY_RANGE_SEPARATOR}${max}`;
 		}
-		return formatPrice(tier.price || 0, currency);
+		return formatMoney(tier.price || 0, currency);
 	});
 
 	const priceTypeDisplay = $derived.by(() => {

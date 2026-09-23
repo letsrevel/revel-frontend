@@ -2814,7 +2814,7 @@
 			"vatCheckboxHelp": "Gilt für österreichische Organisationen und EU-Organisationen ohne validierte UID. Andernfalls greift Reverse Charge — keine MwSt.",
 			"vatOnPlatformFee": "MwSt. auf die Plattformgebühr ({rate} %)",
 			"organizationReceives": "Deine Organisation erhält",
-			"perTicketSoldAt": "Pro verkauftem Ticket zu {price}",
+			"perTicketSoldAt": "Pro verkauftem Ticket zu {price} (Bestellung mit einem Ticket)",
 			"totalFees": "Gesamtgebühren: {fees} ({percentage}% des Ticketpreises)",
 			"questionsAboutFees": "Fragen zu Gebühren?",
 			"contactUs": "Kontaktiere uns",
@@ -6267,10 +6267,10 @@
 		"seatingConfig.venueRequiredForSeats": "Wähle einen Veranstaltungsort, um die Sektorauswahl zu aktivieren",
 		"netPayoutLabel": "Du erhältst:",
 		"netPayoutAmount": "~{amount}",
-		"netPayoutPerTicket": "pro Ticket",
-		"netPayoutPerTicketAtMin": "pro Ticket (beim Mindestpreis)",
+		"netPayoutPerTicket": "pro Ticket (Bestellung mit einem Ticket)",
+		"netPayoutPerTicketAtMin": "pro Ticket (Bestellung mit einem Ticket, beim Mindestpreis)",
 		"netPayoutInfoAria": "Über diese Schätzung",
-		"netPayoutTooltip": "Dies ist eine Schätzung: Kartengebühren variieren je nach Land und Kartentyp (angenommen werden europäische Karten), und je nach Rechnungsland und UID kann MwSt. auf die Revel-Plattformgebühr anfallen (ggf. Reverse Charge). Die genauen Beträge findest du auf deinen Gebührenrechnungen."
+		"netPayoutTooltip": "Dies ist eine Schätzung: Kartengebühren variieren je nach Land und Kartentyp (angenommen werden europäische Karten), und je nach Rechnungsland und UID kann MwSt. auf die Revel-Plattformgebühr anfallen (ggf. Reverse Charge). Die genauen Beträge findest du auf deinen Gebührenrechnungen. Sie geht von einem Ticket pro Bestellung aus: Der feste Anteil der Karten- und Plattformgebühren fällt einmal pro Bestellung an, bei Bestellungen mit mehreren Tickets erhältst du also etwas mehr pro Ticket."
 	},
 	"tierForm.seatingConfig.noVenueConfigured": "Um Sitzplatzzuweisung zu aktivieren, konfiguriere einen Veranstaltungsort in den Basisinformationen.",
 	"tierForm.seatingConfig.standingSector": "Stehplatz-Sektor",

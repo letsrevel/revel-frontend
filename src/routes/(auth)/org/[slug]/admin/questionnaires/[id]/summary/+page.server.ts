@@ -5,6 +5,7 @@ import {
 } from '$lib/api/generated/sdk.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { log } from '$lib/server/logger';
+import { loaderErrorStatus } from '$lib/server/load-errors';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, params, url }) => {
@@ -39,13 +40,24 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		]);
 
 		if (questionnaireRes.error) {
-			const msg = extractErrorMessage(questionnaireRes.error, 'Questionnaire not found');
-			throw error(404, msg);
+			const status = loaderErrorStatus(questionnaireRes.response?.status);
+			log.error('questionnaire_summary_load_failed', {
+				id,
+				status: questionnaireRes.response?.status,
+				error: questionnaireRes.error
+			});
+			const fallback = status === 404 ? 'Questionnaire not found' : 'Failed to load questionnaire';
+			throw error(status, extractErrorMessage(questionnaireRes.error, fallback));
 		}
 
 		if (summaryRes.error || !summaryRes.data) {
-			const msg = extractErrorMessage(summaryRes.error, 'Failed to load summary');
-			throw error(500, msg);
+			const status = loaderErrorStatus(summaryRes.response?.status);
+			log.error('questionnaire_summary_load_failed', {
+				id,
+				status: summaryRes.response?.status,
+				error: summaryRes.error
+			});
+			throw error(status, extractErrorMessage(summaryRes.error, 'Failed to load summary'));
 		}
 
 		if (!questionnaireRes.data) {

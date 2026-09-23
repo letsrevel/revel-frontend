@@ -6,8 +6,13 @@ import type {
 	VenueChartSchema
 } from '$lib/api/generated/types.gen';
 import SeatMap from './SeatMap.svelte';
-import { formatMoney } from '$lib/utils/format';
+import { formatMoney, formatMoneyRange } from '$lib/utils/format';
 import type { SeatView } from './seating-view';
+
+// Sector labels are built by venue-overview via formatMoney (#949).
+const EUR_10 = formatMoney(10, 'EUR');
+const EUR_20 = formatMoney(20, 'EUR');
+const EUR_20_45 = formatMoneyRange(20, 45, 'EUR');
 
 // SeatMap is a pure props component: the chart provides geometry, the seats
 // prop (from seating-view) provides statuses. Real compiled paraglide messages
@@ -270,7 +275,7 @@ describe('SeatMap', () => {
 
 		it('draws the same amber focus geometry on whole-sector targets', () => {
 			renderMap({
-				sectorTargets: [{ sectorId: 'sec-1', label: 'Stalls, EUR 10.00', lines: ['Stalls'] }],
+				sectorTargets: [{ sectorId: 'sec-1', label: `Stalls, ${EUR_10}`, lines: ['Stalls'] }],
 				interactive: false
 			});
 			const target = document.querySelector('[data-sector-target="sec-1"]');
@@ -386,8 +391,8 @@ describe('SeatMap', () => {
 		const targets = [
 			{
 				sectorId: 'sec-1',
-				label: 'Stalls: Front, EUR 20.00; Front Best, EUR 20.00 - EUR 45.00',
-				lines: ['Front · EUR 20.00', 'Front Best · EUR 20.00 - EUR 45.00']
+				label: `Stalls: Front, ${EUR_20}; Front Best, ${EUR_20_45}`,
+				lines: [`Front · ${EUR_20}`, `Front Best · ${EUR_20_45}`]
 			}
 		];
 
@@ -406,12 +411,12 @@ describe('SeatMap', () => {
 		it('renders a sold sector as a focusable button with tiers + prices in its name and overlay', () => {
 			renderOverview();
 			const sector = screen.getByRole('button', {
-				name: 'Stalls: Front, EUR 20.00; Front Best, EUR 20.00 - EUR 45.00'
+				name: `Stalls: Front, ${EUR_20}; Front Best, ${EUR_20_45}`
 			});
 			expect(sector).toHaveAttribute('tabindex', '0');
 			// Visible overlay repeats the tier/price info (never color alone).
-			expect(screen.getByText('Front · EUR 20.00')).toBeInTheDocument();
-			expect(screen.getByText('Front Best · EUR 20.00 - EUR 45.00')).toBeInTheDocument();
+			expect(screen.getByText(`Front · ${EUR_20}`)).toBeInTheDocument();
+			expect(screen.getByText(`Front Best · ${EUR_20_45}`)).toBeInTheDocument();
 			// No seat is individually interactive in overview mode.
 			expect(screen.queryByRole('button', { name: /Seat/ })).not.toBeInTheDocument();
 		});
@@ -459,7 +464,7 @@ describe('SeatMap', () => {
 				{ id: 'sec-3', name: 'Gallery', kind: 'seated', seats: [chartSeat('d1', { id: 'd1' })] }
 			]
 		};
-		const targets = [{ sectorId: 'sec-1', label: 'Stalls: Front, EUR 20.00', lines: [] }];
+		const targets = [{ sectorId: 'sec-1', label: `Stalls: Front, ${EUR_20}`, lines: [] }];
 		const gold45 = formatMoney('45.00', 'EUR');
 		const base20 = formatMoney('20.00', 'EUR');
 		const balconyPricing = {
@@ -666,11 +671,11 @@ describe('SeatMap', () => {
 				seats: [],
 				interactive: false,
 				sectorTargets: [
-					{ sectorId: 'sec-1', label: 'Stalls: Front, EUR 20.00', lines: ['Front · EUR 20.00'] }
+					{ sectorId: 'sec-1', label: `Stalls: Front, ${EUR_20}`, lines: [`Front · ${EUR_20}`] }
 				],
 				onSectorSelect
 			});
-			expect(screen.getByRole('button', { name: 'Stalls: Front, EUR 20.00' })).toBeInTheDocument();
+			expect(screen.getByRole('button', { name: `Stalls: Front, ${EUR_20}` })).toBeInTheDocument();
 		});
 
 		it('a floor-filtered chart with ONE ghost sector keeps the ghost treatment', () => {

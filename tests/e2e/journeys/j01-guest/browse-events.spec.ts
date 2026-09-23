@@ -56,7 +56,7 @@ test.describe('J1 guest browses events @p0', () => {
 		// Search is fuzzy (matches descriptions too) — assert it narrows the list
 		// and the obvious hit is present.
 		await expect(
-			eventCards(page).getByRole('heading', { name: 'Summer Sunset Music Festival' })
+			eventCards(page).getByRole('heading', { name: 'Sunset Music Festival' })
 		).toBeVisible({ timeout: 10_000 });
 		await expect(async () => {
 			expect(await eventCards(page).count()).toBeLessThan(before);

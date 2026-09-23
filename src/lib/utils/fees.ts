@@ -8,7 +8,7 @@
  * authoritative numbers are computed server-side at invoicing time.
  */
 
-/** Stripe EEA-card estimate: 1.5% + €0.25 per transaction. */
+/** Stripe EEA-card estimate: 1.5% + €0.25 per transaction (i.e. per order). */
 export const STRIPE_FEE_PERCENT = 1.5;
 export const STRIPE_FEE_FIXED = 0.25;
 
@@ -47,7 +47,12 @@ export interface NetPayoutEstimate {
 }
 
 /**
- * Estimate the organizer's net payout per ticket sold online.
+ * Estimate the organizer's net payout per ticket sold online, for a
+ * SINGLE-TICKET order — the worst case. Both fixed parts are per order, not per
+ * ticket: Stripe charges its fixed fee once per PaymentIntent and the backend
+ * charges the platform fixed fee once per checkout, so in an order of N tickets
+ * each ticket bears only 1/N of them. Callers must label the result as
+ * single-ticket (#948).
  * Returns null when the price is not a positive finite number.
  */
 export function estimateNetPayout(params: {

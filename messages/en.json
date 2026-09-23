@@ -2814,7 +2814,7 @@
 			"vatCheckboxHelp": "Applies to Austrian organizations and EU organizations without a validated VAT ID. Otherwise reverse charge applies — no VAT added.",
 			"vatOnPlatformFee": "VAT on platform fee ({rate}%)",
 			"organizationReceives": "Your organization receives",
-			"perTicketSoldAt": "Per ticket sold at {price}",
+			"perTicketSoldAt": "Per ticket sold at {price} (single-ticket order)",
 			"totalFees": "Total fees: {fees} ({percentage}% of ticket price)",
 			"questionsAboutFees": "Questions about fees?",
 			"contactUs": "Contact us",
@@ -6267,10 +6267,10 @@
 		"seatingConfig.venueRequiredForSeats": "Select a venue to enable sector selection",
 		"netPayoutLabel": "You get:",
 		"netPayoutAmount": "~{amount}",
-		"netPayoutPerTicket": "per ticket",
-		"netPayoutPerTicketAtMin": "per ticket (at the minimum price)",
+		"netPayoutPerTicket": "per ticket (single-ticket order)",
+		"netPayoutPerTicketAtMin": "per ticket (single-ticket order, at the minimum price)",
 		"netPayoutInfoAria": "About this estimate",
-		"netPayoutTooltip": "This is an estimate: card fees vary by card country and type (European cards assumed), and VAT may be added to Revel's platform fee depending on your billing country and VAT ID (reverse charge may apply). The exact amounts appear on your fee invoices."
+		"netPayoutTooltip": "This is an estimate: card fees vary by card country and type (European cards assumed), and VAT may be added to Revel's platform fee depending on your billing country and VAT ID (reverse charge may apply). The exact amounts appear on your fee invoices. It assumes one ticket per order: the fixed part of the card and platform fees is charged once per order, so on multi-ticket orders you get a little more per ticket."
 	},
 	"tierForm.seatingConfig.noVenueConfigured": "To enable seat assignment, configure a venue for this event in Basic Info.",
 	"tierForm.seatingConfig.standingSector": "Standing Sector",

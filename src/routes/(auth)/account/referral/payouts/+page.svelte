@@ -18,6 +18,7 @@
 		ReferralPayoutStatementSchema
 	} from '$lib/api/generated/types.gen';
 	import { formatDate } from '$lib/utils/date';
+	import { formatMoney } from '$lib/utils/format';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
@@ -106,11 +107,6 @@
 
 	function formatPeriod(start: string, end: string): string {
 		return `${formatDate(start)} – ${formatDate(end)}`;
-	}
-
-	function formatAmount(amount: string, currency: string): string {
-		const num = parseFloat(amount);
-		return `${currency.toUpperCase()} ${num.toFixed(2)}`;
 	}
 
 	/** Thin mapper: raw payout status -> StatusBadge tone. Each of the five
@@ -210,10 +206,10 @@
 								{formatPeriod(payout.period_start, payout.period_end)}
 							</td>
 							<td class="px-4 py-3 text-right font-mono text-sm">
-								{formatAmount(payout.payout_amount, payout.currency)}
+								{formatMoney(payout.payout_amount, payout.currency)}
 								{#if parseFloat(payout.rolled_over_amount) > 0}
 									<p class="mt-0.5 text-xs text-info" title={m['referral.rolledOverTooltip']()}>
-										{m['referral.rolledOverAmount']()}: {formatAmount(
+										{m['referral.rolledOverAmount']()}: {formatMoney(
 											payout.rolled_over_amount,
 											payout.currency
 										)}
@@ -315,25 +311,25 @@
 				<div class="flex justify-between">
 					<dt class="text-muted-foreground">{m['referral.netPlatformFees']()}</dt>
 					<dd class="font-mono">
-						{formatAmount(selectedPayout.net_platform_fees, selectedPayout.currency)}
+						{formatMoney(selectedPayout.net_platform_fees, selectedPayout.currency)}
 					</dd>
 				</div>
 				<div class="border-t pt-3"></div>
 				<div class="flex justify-between">
 					<dt class="text-muted-foreground">{m['referral.amountGross']()}</dt>
-					<dd class="font-mono">{formatAmount(statement.amount_gross, statement.currency)}</dd>
+					<dd class="font-mono">{formatMoney(statement.amount_gross, statement.currency)}</dd>
 				</div>
 				{#if parseFloat(statement.amount_vat) > 0}
 					<div class="flex justify-between">
 						<dt class="text-muted-foreground">
 							{m['referral.amountVat']()} ({statement.vat_rate}%)
 						</dt>
-						<dd class="font-mono">{formatAmount(statement.amount_vat, statement.currency)}</dd>
+						<dd class="font-mono">{formatMoney(statement.amount_vat, statement.currency)}</dd>
 					</div>
 				{/if}
 				<div class="flex justify-between font-semibold">
 					<dt>{m['referral.amountNet']()}</dt>
-					<dd class="font-mono">{formatAmount(statement.amount_net, statement.currency)}</dd>
+					<dd class="font-mono">{formatMoney(statement.amount_net, statement.currency)}</dd>
 				</div>
 				{#if statement.reverse_charge}
 					<div class="flex justify-between">

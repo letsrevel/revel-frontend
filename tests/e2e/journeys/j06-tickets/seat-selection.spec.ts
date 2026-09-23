@@ -188,7 +188,7 @@ test.describe('J6 seat selection @p2', () => {
 
 		// Price range on the tier card (min base 20.00 – max category 55.00),
 		// visible before the picker ever opens.
-		await expect(tierCardLocator(page, tier.name).getByText('EUR 20.00 - EUR 55.00')).toBeVisible();
+		await expect(tierCardLocator(page, tier.name).getByText('€20.00 – €55.00')).toBeVisible();
 
 		const picker = await openPicker(page, tier.name);
 
@@ -495,7 +495,7 @@ test.describe('J6 seat selection @p2', () => {
 		// how to price a flat tier, seat_pricing or not) shows it.
 		await picker.getByRole('button', { name: 'Done', exact: true }).click();
 		await expect(picker).toBeHidden();
-		await expect(page.getByTestId('cart-summary-bar')).toContainText('EUR 20.00');
+		await expect(page.getByTestId('cart-summary-bar')).toContainText('€20.00');
 
 		await context.close();
 	});
