@@ -12,6 +12,7 @@
  */
 import * as m from '$lib/paraglide/messages.js';
 import type { TicketTierSchema } from '$lib/api/generated/types.gen';
+import { formatMoney, formatMoneyRange, MONEY_RANGE_SEPARATOR } from '$lib/utils/format';
 
 export interface TierPriceDisplayFlags {
 	isFree: boolean;
@@ -25,9 +26,9 @@ export function tierPriceDisplay(tier: TicketTierSchema, flags: TierPriceDisplay
 	if (flags.isFree) return m['ticketConfirmationDialog.free']();
 	if (flags.isPwyc) {
 		const maxDisplay = flags.maxAmount
-			? `${tier.currency} ${flags.maxAmount.toFixed(2)}`
+			? formatMoney(flags.maxAmount, tier.currency)
 			: m['ticketConfirmationDialog.anyAmount']();
-		return `${tier.currency} ${flags.minAmount.toFixed(2)} - ${maxDisplay}`;
+		return `${formatMoney(flags.minAmount, tier.currency)}${MONEY_RANGE_SEPARATOR}${maxDisplay}`;
 	}
 	if (tier.seat_pricing) {
 		const prices = [
@@ -40,13 +41,12 @@ export function tierPriceDisplay(tier: TicketTierSchema, flags: TierPriceDisplay
 			const min = Math.min(...prices);
 			const max = Math.max(...prices);
 			if (min !== max) {
-				return `${tier.currency} ${min.toFixed(2)} - ${tier.currency} ${max.toFixed(2)}`;
+				return formatMoneyRange(min, max, tier.currency);
 			}
-			return `${tier.currency} ${min.toFixed(2)}`;
+			return formatMoney(min, tier.currency);
 		}
 	}
-	const price = typeof tier.price === 'string' ? parseFloat(tier.price) : tier.price;
-	return `${tier.currency} ${price.toFixed(2)}`;
+	return formatMoney(tier.price, tier.currency);
 }
 
 /** Purchase-dialog title by payment kind (free / reserve / PWYC / online). */

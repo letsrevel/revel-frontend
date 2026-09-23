@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { pwycBounds } from './pwyc-validation';
+import { pwycBounds, pwycErrorMessage } from './pwyc-validation';
+import { formatMoney } from '$lib/utils/format';
 
 describe('pwycBounds', () => {
 	it('falls back min to price when pwyc_min is absent', () => {
@@ -39,5 +40,20 @@ describe('pwycBounds', () => {
 			minAmount: 5,
 			maxAmount: null
 		});
+	});
+});
+
+describe('pwycErrorMessage', () => {
+	it('formats the bound with the locale-aware money formatter (#949)', () => {
+		const min = pwycErrorMessage('below_min', 'EUR', 5, 50);
+		expect(min).toBe(`Minimum amount is ${formatMoney(5, 'EUR')}`);
+		expect(min).toBe('Minimum amount is €5.00');
+		expect(pwycErrorMessage('above_max', 'EUR', 5, 50)).toBe(
+			`Maximum amount is ${formatMoney(50, 'EUR')}`
+		);
+	});
+
+	it('never falls back to the hand-rolled "EUR 5.00" template', () => {
+		expect(pwycErrorMessage('below_min', 'EUR', 5, null)).not.toMatch(/EUR 5\.00/);
 	});
 });

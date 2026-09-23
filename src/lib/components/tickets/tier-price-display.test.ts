@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import type { TicketTierSchema, TierSeatPricingSchema } from '$lib/api/generated/types.gen';
 import { tierPriceDisplay } from './tier-price-display';
+import { formatMoney, formatMoneyRange } from '$lib/utils/format';
+import * as m from '$lib/paraglide/messages.js';
+
+const eur = (amount: number): string => formatMoney(amount, 'EUR');
+const eurRange = (min: number, max: number): string => formatMoneyRange(min, max, 'EUR');
 
 function tier(overrides: Partial<TicketTierSchema> = {}): TicketTierSchema {
 	return {
@@ -30,17 +35,19 @@ const pricing: TierSeatPricingSchema = {
 
 describe('tierPriceDisplay', () => {
 	it('renders the flat price', () => {
-		expect(tierPriceDisplay(tier(), flat)).toBe('EUR 20.00');
+		expect(tierPriceDisplay(tier(), flat)).toBe(eur(20));
+		// en locale: symbol-first, never the "EUR 20.00" code template (#949)
+		expect(tierPriceDisplay(tier(), flat)).toBe('€20.00');
 	});
 
 	it('renders the PWYC range', () => {
 		expect(tierPriceDisplay(tier(), { ...flat, isPwyc: true, minAmount: 5, maxAmount: 15 })).toBe(
-			'EUR 5.00 - EUR 15.00'
+			eurRange(5, 15)
 		);
 	});
 
 	it('renders the category range for any category-priced tier (single pricing mechanism)', () => {
-		expect(tierPriceDisplay(tier({ seat_pricing: pricing }), flat)).toBe('EUR 20.00 - EUR 55.00');
+		expect(tierPriceDisplay(tier({ seat_pricing: pricing }), flat)).toBe(eurRange(20, 55));
 	});
 
 	it('ignores unavailable categories when computing the range', () => {
@@ -48,7 +55,7 @@ describe('tierPriceDisplay', () => {
 			...pricing,
 			categories: (pricing.categories ?? []).slice(1)
 		};
-		expect(tierPriceDisplay(tier({ seat_pricing: only }), flat)).toBe('EUR 20.00');
+		expect(tierPriceDisplay(tier({ seat_pricing: only }), flat)).toBe(eur(20));
 	});
 
 	it('excludes a null unpainted fallback (mapped best-available: no unpainted seat is buyable)', () => {
@@ -59,11 +66,17 @@ describe('tierPriceDisplay', () => {
 			],
 			unpainted: null
 		};
-		expect(tierPriceDisplay(tier({ seat_pricing: mapped }), flat)).toBe('EUR 45.00 - EUR 80.00');
+		expect(tierPriceDisplay(tier({ seat_pricing: mapped }), flat)).toBe(eurRange(45, 80));
+	});
+
+	it('renders an open-ended PWYC range with the "any amount" label', () => {
+		expect(tierPriceDisplay(tier(), { ...flat, isPwyc: true, minAmount: 5, maxAmount: null })).toBe(
+			`${eur(5)} \u2013 ${m['ticketConfirmationDialog.anyAmount']()}`
+		);
 	});
 
 	it('falls back to tier.price when seat_pricing is absent', () => {
-		expect(tierPriceDisplay(tier(), flat)).toBe('EUR 20.00');
-		expect(tierPriceDisplay(tier({ seat_pricing: null }), flat)).toBe('EUR 20.00');
+		expect(tierPriceDisplay(tier(), flat)).toBe(eur(20));
+		expect(tierPriceDisplay(tier({ seat_pricing: null }), flat)).toBe(eur(20));
 	});
 });

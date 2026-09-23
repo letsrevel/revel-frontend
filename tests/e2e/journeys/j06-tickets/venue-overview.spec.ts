@@ -77,10 +77,10 @@ test.describe('J6 map-first venue overview @p2', () => {
 			const openMap = page.getByRole('button', { name: 'View seating map', exact: true });
 			// Sector targets carry the selling tier(s) + price(s) in their names.
 			const galleriaSector = overview.getByRole('button', {
-				name: 'Galleria: Galleria, EUR 25.00'
+				name: 'Galleria: Galleria, €25.00'
 			});
 			const plateaSector = overview.getByRole('button', {
-				name: 'Platea: Platea, EUR 45.00; Platea — Best Available, EUR 45.00 - EUR 80.00'
+				name: 'Platea: Platea, €45.00; Platea — Best Available, €45.00 – €80.00'
 			});
 
 			// Open the overview from the Ticket Options entry point.
@@ -147,9 +147,9 @@ test.describe('J6 map-first venue overview @p2', () => {
 				await expect(chooser).toBeVisible({ timeout: 8_000 });
 			}).toPass({ timeout: 60_000 });
 
-			const flatOption = chooser.getByRole('button', { name: /^Platea EUR 45\.00/ });
+			const flatOption = chooser.getByRole('button', { name: /^Platea €45\.00/ });
 			const bestOption = chooser.getByRole('button', {
-				name: /^Platea — Best Available EUR 45\.00 - EUR 80\.00/
+				name: /^Platea — Best Available €45\.00 – €80\.00/
 			});
 			await expect(flatOption).toBeVisible();
 			await expect(flatOption).toContainText('Choose your own seats');
@@ -291,7 +291,7 @@ test.describe('J6 map-first venue overview @p2', () => {
 			// The best-available sector stays a whole-sector target; the
 			// user_choice sector renders its live seats instead of a target.
 			await expect(
-				overview.getByRole('button', { name: 'Assigned Balcony: Rear Best, EUR 30.00' })
+				overview.getByRole('button', { name: 'Assigned Balcony: Rear Best, €30.00' })
 			).toBeVisible({ timeout: 15_000 });
 			await expect(overview.getByRole('button', { name: /^Picker Stalls:/ })).toBeHidden();
 
@@ -331,7 +331,7 @@ test.describe('J6 map-first venue overview @p2', () => {
 				await expect(tierCard.getByText('2 seats · edit')).toBeVisible({ timeout: 8_000 });
 			}).toPass({ timeout: 30_000 });
 			await expect(summaryBar).toContainText('2 tickets');
-			await expect(summaryBar).toContainText('EUR 40.00');
+			await expect(summaryBar).toContainText('€40.00');
 
 			// Buy completes the purchase directly (no sheet — names aren't
 			// required and this is the only group).

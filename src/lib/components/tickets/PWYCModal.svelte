@@ -10,6 +10,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
+	import { formatMoney, MONEY_RANGE_SEPARATOR } from '$lib/utils/format';
 	import { DollarSign, AlertCircle } from '@lucide/svelte';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
@@ -72,6 +73,12 @@
 		return [minAmount, minAmount * 2, minAmount * 3];
 	});
 
+	const rangeDisplay = $derived(
+		`${formatMoney(minAmount, tier.currency)}${MONEY_RANGE_SEPARATOR}${
+			maxAmount !== null ? formatMoney(maxAmount, tier.currency) : m['pwycModal.anyAmount']()
+		}`
+	);
+
 	// Reset state when dialog opens/closes
 	$effect(() => {
 		if (!open) {
@@ -97,12 +104,12 @@
 		}
 
 		if (value < minAmount) {
-			error = m['pwycModal.errorMinAmount']({ amount: `${tier.currency}${minAmount.toFixed(2)}` });
+			error = m['pwycModal.errorMinAmount']({ amount: formatMoney(minAmount, tier.currency) });
 			return false;
 		}
 
 		if (maxAmount !== null && value > maxAmount) {
-			error = m['pwycModal.errorMaxAmount']({ amount: `${tier.currency}${maxAmount.toFixed(2)}` });
+			error = m['pwycModal.errorMaxAmount']({ amount: formatMoney(maxAmount, tier.currency) });
 			return false;
 		}
 
@@ -142,9 +149,7 @@
 					<MarkdownContent content={tier.description} class="mt-1 text-xs text-muted-foreground" />
 				{/if}
 				<div class="mt-2 text-xs text-muted-foreground">
-					{m['pwycModal.rangeLabel']()}: {tier.currency}{minAmount.toFixed(2)} - {maxAmount !== null
-						? `${tier.currency}${maxAmount.toFixed(2)}`
-						: m['pwycModal.anyAmount']()}
+					{m['pwycModal.rangeLabel']()}: {rangeDisplay}
 				</div>
 			</div>
 
@@ -195,7 +200,7 @@
 							}}
 							disabled={isProcessing}
 						>
-							{tier.currency}{suggested.toFixed(2)}
+							{formatMoney(suggested, tier.currency)}
 						</Button>
 					{/each}
 				</div>
@@ -204,16 +209,16 @@
 
 		<!-- Validation hint when button would be disabled -->
 		{#if !amountValidation.valid && !isProcessing}
-			<p class="text-center text-sm text-amber-600 dark:text-amber-500">
+			<p class="text-center text-sm text-highlight-foreground dark:text-highlight">
 				<AlertCircle class="mr-1 inline-block h-4 w-4" />
 				{#if amountValidation.error === 'empty'}
 					{m['pwycModal.hintEnterAmount']()}
 				{:else if amountValidation.error === 'invalid'}
 					{m['pwycModal.errorValidNumber']()}
 				{:else if amountValidation.error === 'below_min'}
-					{m['pwycModal.hintMinAmount']({ amount: `${tier.currency}${minAmount.toFixed(2)}` })}
+					{m['pwycModal.hintMinAmount']({ amount: formatMoney(minAmount, tier.currency) })}
 				{:else if amountValidation.error === 'above_max'}
-					{m['pwycModal.hintMaxAmount']({ amount: `${tier.currency}${maxAmount?.toFixed(2)}` })}
+					{m['pwycModal.hintMaxAmount']({ amount: formatMoney(maxAmount, tier.currency) })}
 				{/if}
 			</p>
 		{/if}

@@ -169,9 +169,9 @@ test.describe('J6 cart checkout sheet @p1', () => {
 		await amountInput.fill('2');
 		const inlineError = sheet.getByRole('alert');
 		const footerHint = sheet.locator('p:not([role="alert"])', {
-			hasText: 'Minimum amount is EUR 5.00'
+			hasText: 'Minimum amount is €5.00'
 		});
-		await expect(inlineError).toHaveText('Minimum amount is EUR 5.00');
+		await expect(inlineError).toHaveText('Minimum amount is €5.00');
 		await expect(footerHint).toBeVisible();
 		await expect(confirmButton).toBeDisabled();
 

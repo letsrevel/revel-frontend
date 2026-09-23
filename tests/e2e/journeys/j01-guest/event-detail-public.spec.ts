@@ -23,7 +23,8 @@ test.describe('J1 guest views event details @p0', () => {
 		// Public tiers with price and a purchase CTA are visible to guests.
 		await expect(page.getByRole('heading', { name: 'Ticket Options' })).toBeVisible();
 		await expect(page.getByRole('heading', { name: 'Early Bird General Admission' })).toBeVisible();
-		await expect(page.getByText('USD 45.00')).toBeVisible();
+		// Locale-aware money (#949): en renders "$45.00", never "USD 45.00".
+		await expect(page.getByText('$45.00', { exact: true }).first()).toBeVisible();
 		expect(await page.getByRole('button', { name: 'Get Ticket' }).count()).toBeGreaterThan(0);
 
 		// The PRIVATE invited-only tier (wine-tasting style) must not leak; the
@@ -41,9 +42,7 @@ test.describe('J1 guest views event details @p0', () => {
 		await page.goto('/events/revel-events-collective/community-potluck');
 
 		await expect(
-			page
-				.getByRole('heading', { level: 1, name: 'Community Potluck & Garden Party' })
-				.first()
+			page.getByRole('heading', { level: 1, name: 'Community Potluck & Garden Party' }).first()
 		).toBeVisible();
 		await expect(page.getByRole('heading', { name: 'Will you attend?' })).toBeVisible();
 

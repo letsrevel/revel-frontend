@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/svelte';
 import { describe, it, expect, vi } from 'vitest';
 import TierCard from './TierCard.svelte';
 import type { TierSchemaWithId } from '$lib/types/tickets';
+import { formatMoney, formatMoneyRange } from '$lib/utils/format';
 
 function makeTier(overrides: Partial<TierSchemaWithId> = {}): TierSchemaWithId {
 	return {
@@ -114,8 +115,8 @@ describe('TierCard — can_purchase=false for anonymous guests', () => {
 	});
 });
 
-// Screenshot bug: the PWYC headline rendered "Pay What You Can (EUR 8.00 -
-// EUR 30.00)" at price size and wrapped 2-3 lines. The headline is now just the
+// Screenshot bug: the PWYC headline rendered "Pay What You Can (€8.00 –
+// €30.00)" at price size and wrapped 2-3 lines. The headline is now just the
 // range; the qualifier moves to the smaller priceNote caption.
 describe('TierCard — PWYC headline', () => {
 	it('shows the compact range as the headline and the qualifier as a caption', () => {
@@ -128,14 +129,16 @@ describe('TierCard — PWYC headline', () => {
 				pwyc_max: '30.00'
 			})
 		);
-		expect(screen.getByText('EUR 8.00 - EUR 30.00')).toBeInTheDocument();
+		expect(screen.getByText(formatMoneyRange(8, 30, 'EUR'))).toBeInTheDocument();
 		expect(screen.getByText('Pay What You Can')).toBeInTheDocument();
 		expect(screen.queryByText(/Pay What You Can \(/)).toBeNull();
 	});
 
 	it('has no PWYC caption on a fixed-price tier', () => {
 		renderCard(makeTier({ payment_method: 'online', price: '18.00' }));
-		expect(screen.getByText('EUR 18.00')).toBeInTheDocument();
+		expect(screen.getByText(formatMoney(18, 'EUR'))).toBeInTheDocument();
+		// #949: locale-aware money, not the hand-rolled "EUR 18.00" template.
+		expect(screen.queryByText('EUR 18.00')).toBeNull();
 		expect(screen.queryByText('Pay What You Can')).toBeNull();
 	});
 });

@@ -85,11 +85,11 @@ test.describe('J6 cart quick-buy @p1', () => {
 		await addB.click();
 		await expect(stepperB.locator('span[aria-live="polite"]')).toHaveText('1');
 
-		// Summary bar: 3 tickets total, EUR 35.00 (2×10.00 + 1×15.00).
+		// Summary bar: 3 tickets total, €35.00 (2×10.00 + 1×15.00).
 		const summaryBar = page.getByTestId('cart-summary-bar');
 		await expect(summaryBar).toBeVisible();
 		await expect(summaryBar).toContainText('3 tickets');
-		await expect(summaryBar).toContainText('EUR 35.00');
+		await expect(summaryBar).toContainText('€35.00');
 
 		const buyButton = summaryBar.getByRole('button', { name: 'Buy', exact: true });
 		await buyButton.click();

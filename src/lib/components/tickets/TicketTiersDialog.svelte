@@ -14,6 +14,7 @@
 		DialogFooter
 	} from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
+	import { formatMoney } from '$lib/utils/format';
 	import { LoaderCircle } from '@lucide/svelte';
 	import type { Snippet } from 'svelte';
 
@@ -66,7 +67,7 @@
 				{#if isFree}
 					<span class="text-muted-foreground">· {m['cart.free']()}</span>
 				{:else if totalDisplay !== null}
-					<span class="text-muted-foreground">· {currency} {totalDisplay}</span>
+					<span class="text-muted-foreground">· {formatMoney(totalDisplay, currency)}</span>
 				{/if}
 			</p>
 			<Button onclick={handleBuy} disabled={isPending || count === 0} class="min-w-28">

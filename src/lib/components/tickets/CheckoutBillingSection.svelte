@@ -6,6 +6,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Checkbox } from '$lib/components/ui/checkbox';
+	import { formatMoney } from '$lib/utils/format';
 	import { Check, AlertCircle, Loader2, Receipt } from '@lucide/svelte';
 	import {
 		userbillingGetBillingProfile,
@@ -492,9 +493,15 @@
 											>{item.tier_name}
 											{#if item.ticket_count > 1}×{item.ticket_count}{/if}</span
 										>
-										<span class="text-right tabular-nums">{currency} {item.line_net}</span>
-										<span class="text-right tabular-nums">{currency} {item.line_vat}</span>
-										<span class="text-right tabular-nums">{currency} {item.line_gross}</span>
+										<span class="text-right tabular-nums"
+											>{formatMoney(item.line_net, currency)}</span
+										>
+										<span class="text-right tabular-nums"
+											>{formatMoney(item.line_vat, currency)}</span
+										>
+										<span class="text-right tabular-nums"
+											>{formatMoney(item.line_gross, currency)}</span
+										>
 									</div>
 								{/each}
 							</div>
@@ -504,15 +511,21 @@
 						<div class="space-y-1 border-t pt-2 text-sm">
 							<div class="flex justify-between">
 								<span class="text-muted-foreground">{m['checkout.billing.totalNet']()}</span>
-								<span class="tabular-nums">{vatPreview.currency} {vatPreview.total_net}</span>
+								<span class="tabular-nums"
+									>{formatMoney(vatPreview.total_net, vatPreview.currency)}</span
+								>
 							</div>
 							<div class="flex justify-between">
 								<span class="text-muted-foreground">{m['checkout.billing.totalVat']()}</span>
-								<span class="tabular-nums">{vatPreview.currency} {vatPreview.total_vat}</span>
+								<span class="tabular-nums"
+									>{formatMoney(vatPreview.total_vat, vatPreview.currency)}</span
+								>
 							</div>
 							<div class="flex justify-between font-semibold">
 								<span>{m['checkout.billing.totalGross']()}</span>
-								<span class="tabular-nums">{vatPreview.currency} {vatPreview.total_gross}</span>
+								<span class="tabular-nums"
+									>{formatMoney(vatPreview.total_gross, vatPreview.currency)}</span
+								>
 							</div>
 						</div>
 					{/if}
