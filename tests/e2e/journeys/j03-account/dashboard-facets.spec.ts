@@ -39,9 +39,7 @@ test.describe('J3 dashboard facets @p1', () => {
 			region.getByRole('heading', { name: 'Hands-on Workshop: Building with AI APIs' })
 		).toBeVisible();
 		// Org Alpha events never appear — diana has no relationship with them.
-		await expect(
-			region.getByRole('heading', { name: 'Sunset Music Festival' })
-		).toBeHidden();
+		await expect(region.getByRole('heading', { name: 'Sunset Music Festival' })).toBeHidden();
 	});
 
 	test('Attending shows RSVPs and held tickets, not mere memberships (charlie)', async ({
