@@ -49,7 +49,7 @@ describe('submission detail load — backend errors', () => {
 		[404, 404],
 		[403, 403],
 		[503, 500]
-	])('maps a backend %i to a SvelteKit %i', async (backend, expected) => {
+	])('maps a backend %i to a SvelteKit %i', async (backend: number, expected: number) => {
 		const result = { data: undefined, error: { detail: 'x' }, response: { status: backend } };
 		submission.mockResolvedValue(result as never);
 		detail.mockResolvedValue(result as never);

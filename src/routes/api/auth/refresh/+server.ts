@@ -53,7 +53,11 @@ export const POST: RequestHandler = async ({ cookies, fetch }) => {
 
 	try {
 		// Call backend to refresh the token
-		const { data, error: refreshError } = await tokenRefresh({
+		const {
+			data,
+			error: refreshError,
+			response
+		} = await tokenRefresh({
 			body: {
 				refresh: refreshToken
 			},
@@ -62,11 +66,19 @@ export const POST: RequestHandler = async ({ cookies, fetch }) => {
 
 		if (refreshError || !data || !data.access) {
 			console.error('[API /auth/refresh] Token refresh failed:', refreshError);
-			// Invalid or blacklisted refresh token. Leave the cookies alone: see the
-			// note above POST.
+			// Leave the cookies alone either way: see the note above POST.
+			if (response?.status === 401) {
+				// The backend rejected THIS token (invalid, expired or blacklisted).
+				return json(
+					{ message: 'Token refresh failed', rejected: fingerprint(refreshToken) },
+					{ status: 401, headers: { 'Cache-Control': 'no-store, private' } }
+				);
+			}
+			// Anything else (5xx, unexpected status) says nothing about the token:
+			// no fingerprint, so the client never clears a possibly valid cookie.
 			return json(
-				{ message: 'Token refresh failed', rejected: fingerprint(refreshToken) },
-				{ status: 401, headers: { 'Cache-Control': 'no-store, private' } }
+				{ message: 'Token refresh unavailable' },
+				{ status: 502, headers: { 'Cache-Control': 'no-store, private' } }
 			);
 		}
 

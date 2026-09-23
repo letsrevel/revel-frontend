@@ -49,7 +49,13 @@ test.describe('J1 guest views event details @p0', () => {
 		// The sign-in link preserves the return URL back to this event.
 		const signIn = page.getByRole('link', { name: 'Sign in' }).first();
 		await expect(signIn).toBeVisible();
-		await expect(signIn).toHaveAttribute('href', /returnUrl=.*community-potluck/);
+		await expect
+			.poll(async () => {
+				const href = (await signIn.getAttribute('href')) ?? '';
+				const returnUrl = new URL(href, 'http://localhost').searchParams.get('returnUrl') ?? '';
+				return new URL(returnUrl, 'http://localhost').pathname;
+			})
+			.toBe('/events/revel-events-collective/community-potluck');
 
 		// Potluck items are attendee-only — guests get no potluck signup list.
 		await expect(page.getByRole('button', { name: /I'll bring this/ })).toBeHidden();

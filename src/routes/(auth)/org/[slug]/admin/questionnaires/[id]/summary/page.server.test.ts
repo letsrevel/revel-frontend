@@ -48,7 +48,7 @@ describe('questionnaire summary load — backend errors', () => {
 		[404, 404],
 		[403, 403],
 		[503, 500]
-	])('maps a backend %i to a SvelteKit %i', async (backend, expected) => {
+	])('maps a backend %i to a SvelteKit %i', async (backend: number, expected: number) => {
 		detail.mockResolvedValue(failed(backend));
 		summary.mockResolvedValue(failed(backend));
 		expect(await loadStatus()).toBe(expected);

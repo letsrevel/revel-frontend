@@ -11,7 +11,7 @@ describe('loaderErrorStatus', () => {
 		[400, 502],
 		[401, 502],
 		[422, 502]
-	])('maps backend %s to %s', (backend, expected) => {
+	])('maps backend %s to %s', (backend: number | undefined, expected: number) => {
 		expect(loaderErrorStatus(backend)).toBe(expected);
 	});
 });

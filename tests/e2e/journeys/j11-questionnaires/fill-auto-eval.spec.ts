@@ -11,6 +11,10 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 // would make seeded personas single-shot.
 
 const EVENT_PATH = '/events/tech-innovators-network/futurestack';
+// The event page itself — NOT the questionnaire under it
+// (`…/futurestack/questionnaire/<id>`), which a bare /futurestack/ matched
+// before the submit redirect ever happened.
+const EVENT_URL = /\/events\/tech-innovators-network\/futurestack\/?(?:[?#]|$)/;
 const CORRECT = 'Yes, I agree to the Code of Conduct';
 const WRONG = 'No, I do not agree';
 
@@ -58,7 +62,7 @@ test.describe('J11 questionnaire fill & auto-evaluation @p1', () => {
 			await page.getByRole('radio', { name: CORRECT }).check();
 			await expect(page.getByRole('radio', { name: CORRECT })).toBeChecked();
 			await page.getByRole('button', { name: 'Submit Questionnaire' }).click();
-			await page.waitForURL(/futurestack/, { timeout: 8_000 });
+			await page.waitForURL(EVENT_URL, { timeout: 8_000 });
 		}).toPass({ timeout: 40_000 });
 
 		// Auto-evaluation completes just after the redirect renders, so reload
@@ -84,7 +88,7 @@ test.describe('J11 questionnaire fill & auto-evaluation @p1', () => {
 			await page.getByRole('radio', { name: WRONG }).check();
 			await expect(page.getByRole('radio', { name: WRONG })).toBeChecked();
 			await page.getByRole('button', { name: 'Submit Questionnaire' }).click();
-			await page.waitForURL(/futurestack/, { timeout: 8_000 });
+			await page.waitForURL(EVENT_URL, { timeout: 8_000 });
 		}).toPass({ timeout: 40_000 });
 
 		// Auto-evaluation rejects (fatal question answered wrong). The essential

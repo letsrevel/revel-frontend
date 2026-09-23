@@ -1,11 +1,11 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, type RenderResult } from '@testing-library/svelte';
 import { describe, it, expect } from 'vitest';
 import TierFormPricingSection from './TierFormPricingSection.svelte';
 import { formatMoney } from '$lib/utils/format';
 
 const platformFees = { percent: 1.5, fixed: 0.25, vatRate: 0 };
 
-function renderSection(priceType: 'fixed' | 'pwyc') {
+function renderSection(priceType: 'fixed' | 'pwyc'): RenderResult<typeof TierFormPricingSection> {
 	return render(TierFormPricingSection, {
 		props: {
 			priceType,
