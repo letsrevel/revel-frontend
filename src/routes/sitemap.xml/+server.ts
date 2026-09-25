@@ -4,6 +4,7 @@ import {
 	eventseriesListEventSeries
 } from '$lib/api';
 import type { RequestHandler } from './$types';
+import { log } from '$lib/server/logger';
 
 const PAGE_SIZE = 200;
 
@@ -31,7 +32,7 @@ export const GET: RequestHandler = async ({ fetch, url }) => {
 		orgCount = orgsResp.data?.count ?? 0;
 		seriesCount = seriesResp.data?.count ?? 0;
 	} catch (err) {
-		console.error('[sitemap] index count failed:', err);
+		log.error('sitemap_index_count_failed', { error: err });
 	}
 
 	const entries: string[] = [];

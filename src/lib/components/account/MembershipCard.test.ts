@@ -5,7 +5,7 @@ import { QueryClient } from '@tanstack/svelte-query';
 import MembershipCard from './MembershipCard.svelte';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 import type {
-	MesubscriptionsSubscribe99456B96Errors,
+	MesubscriptionsSubscribe96C42D29Errors,
 	MyMembershipSchema,
 	MySubscriptionSchema,
 	PublicPlanSchema
@@ -405,7 +405,7 @@ describe('MembershipCard', () => {
 	 *
 	 * #702 asked for `ResponseMessage {message}` here, but that would be a
 	 * fiction: since backend PR #824 the OpenAPI error declarations are honest,
-	 * and `MesubscriptionsSubscribe99456B96Errors` declares `ErrorDetail`
+	 * and `MesubscriptionsSubscribe96C42D29Errors` declares `ErrorDetail`
 	 * (`{ detail }`) for 400/404/502 — `{ message }` survives on exactly two
 	 * claim-invitation endpoints, of which this is neither. Mocking a shape the
 	 * backend cannot send would make the test prove something untrue. The typed
@@ -414,7 +414,7 @@ describe('MembershipCard', () => {
 	 */
 	it('toasts the backend detail when the resume fails and stays on the page', async () => {
 		const user = userEvent.setup();
-		const expiredSession: MesubscriptionsSubscribe99456B96Errors[400] = {
+		const expiredSession: MesubscriptionsSubscribe96C42D29Errors[400] = {
 			detail: 'That checkout session has expired.'
 		};
 		subscribeMock.mockResolvedValue({ data: undefined, error: expiredSession });

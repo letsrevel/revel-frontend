@@ -1,6 +1,7 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { potluckClaimPotluckItem, potluckUnclaimPotluckItem } from '$lib/api';
+import { throwIfUpstreamFailed } from '$lib/server/upstream';
 
 /**
  * POST /api/events/[event_id]/potluck/[item_id]/claim
@@ -11,24 +12,20 @@ export const POST: RequestHandler = async ({ params, locals, fetch }) => {
 		throw error(401, 'Unauthorized');
 	}
 
-	try {
-		const response = await potluckClaimPotluckItem({
-			path: { event_id: params.event_id, item_id: params.item_id },
-			headers: {
-				Authorization: `Bearer ${locals.user.accessToken}`
-			},
-			fetch
-		});
+	const result = await potluckClaimPotluckItem({
+		path: { event_id: params.event_id, item_id: params.item_id },
+		headers: {
+			Authorization: `Bearer ${locals.user.accessToken}`
+		},
+		fetch
+	});
+	throwIfUpstreamFailed('potluck_claim_failed', result, 'Failed to claim potluck item', {
+		request_id: locals.requestId,
+		event_id: params.event_id,
+		item_id: params.item_id
+	});
 
-		if (!response.data) {
-			throw error(500, 'Failed to claim potluck item');
-		}
-
-		return json(response.data);
-	} catch (err) {
-		console.error('Error claiming potluck item:', err);
-		throw error(500, 'Failed to claim potluck item');
-	}
+	return json(result.data);
 };
 
 /**
@@ -40,22 +37,18 @@ export const DELETE: RequestHandler = async ({ params, locals, fetch }) => {
 		throw error(401, 'Unauthorized');
 	}
 
-	try {
-		const response = await potluckUnclaimPotluckItem({
-			path: { event_id: params.event_id, item_id: params.item_id },
-			headers: {
-				Authorization: `Bearer ${locals.user.accessToken}`
-			},
-			fetch
-		});
+	const result = await potluckUnclaimPotluckItem({
+		path: { event_id: params.event_id, item_id: params.item_id },
+		headers: {
+			Authorization: `Bearer ${locals.user.accessToken}`
+		},
+		fetch
+	});
+	throwIfUpstreamFailed('potluck_unclaim_failed', result, 'Failed to unclaim potluck item', {
+		request_id: locals.requestId,
+		event_id: params.event_id,
+		item_id: params.item_id
+	});
 
-		if (!response.data) {
-			throw error(500, 'Failed to unclaim potluck item');
-		}
-
-		return json(response.data);
-	} catch (err) {
-		console.error('Error unclaiming potluck item:', err);
-		throw error(500, 'Failed to unclaim potluck item');
-	}
+	return json(result.data);
 };

@@ -75,6 +75,28 @@ describe('handleRequestLogging', () => {
 		expect(fields?.duration_ms).toBeGreaterThanOrEqual(0);
 	});
 
+	it.each([500, 502, 503])('logs request_finished at error level for a %i', async (status) => {
+		const response = new Response('boom', { status });
+		await invokeHandle(handleRequestLogging, fakeEvent(), response).promise;
+
+		expect(log.info).not.toHaveBeenCalled();
+		expect(log.error).toHaveBeenCalledTimes(1);
+		const [eventName, fields] = vi.mocked(log.error).mock.calls[0];
+		expect(eventName).toBe('request_finished');
+		expect(fields).toMatchObject({ status_code: status });
+	});
+
+	it.each([200, 401, 404, 499])('logs request_finished at info level for a %i', async (status) => {
+		const response = new Response(null, { status });
+		await invokeHandle(handleRequestLogging, fakeEvent(), response).promise;
+
+		expect(log.error).not.toHaveBeenCalled();
+		expect(log.info).toHaveBeenCalledWith(
+			'request_finished',
+			expect.objectContaining({ status_code: status })
+		);
+	});
+
 	it('records the HTTP request metric with the route id', async () => {
 		const event = fakeEvent();
 		await invokeHandle(handleRequestLogging, event, new Response('ok', { status: 200 })).promise;

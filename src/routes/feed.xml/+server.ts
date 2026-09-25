@@ -1,6 +1,7 @@
 import { eventpublicdiscoveryListEvents } from '$lib/api';
 import { getBackendUrl } from '$lib/config/api';
 import type { RequestHandler } from './$types';
+import { log } from '$lib/server/logger';
 
 /**
  * Escape XML special characters
@@ -141,7 +142,7 @@ ${events
 			}
 		});
 	} catch (error) {
-		console.error('Error generating RSS feed:', error);
+		log.error('rss_feed_failed', { error });
 
 		// Return empty feed on error
 		const emptyFeed = `<?xml version="1.0" encoding="UTF-8"?>

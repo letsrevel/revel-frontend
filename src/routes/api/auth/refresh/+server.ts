@@ -7,6 +7,7 @@ import {
 	getRefreshTokenCookieOptions,
 	getRememberMeCookieOptions
 } from '$lib/utils/cookies';
+import { log } from '$lib/server/logger';
 
 /**
  * Server-side API endpoint to refresh JWT access token
@@ -65,7 +66,10 @@ export const POST: RequestHandler = async ({ cookies, fetch }) => {
 		});
 
 		if (refreshError || !data || !data.access) {
-			console.error('[API /auth/refresh] Token refresh failed:', refreshError);
+			log.warning('auth_refresh_failed', {
+				upstream_status: response?.status,
+				upstream_error: refreshError
+			});
 			// Leave the cookies alone either way: see the note above POST.
 			if (response?.status === 401) {
 				// The backend rejected THIS token (invalid, expired or blacklisted).
@@ -90,7 +94,7 @@ export const POST: RequestHandler = async ({ cookies, fetch }) => {
 
 		// CRITICAL: Always update refresh token - backend rotates it on every refresh
 		if (!data.refresh) {
-			console.error('[API /auth/refresh] Backend did not return new refresh token!');
+			log.error('auth_refresh_missing_refresh_token');
 			throw error(500, 'Backend did not return new refresh token');
 		}
 
@@ -114,7 +118,7 @@ export const POST: RequestHandler = async ({ cookies, fetch }) => {
 			{ headers: { 'Cache-Control': 'no-store, private' } }
 		);
 	} catch (err) {
-		console.error('[API /auth/refresh] Error during token refresh:', err);
+		log.error('auth_refresh_error', { error: err });
 		// Don't clear the cookies: a transient failure says nothing about whether
 		// the refresh token is still valid.
 

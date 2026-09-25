@@ -1,6 +1,7 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { potluckListPotluckItems, potluckCreatePotluckItem } from '$lib/api';
+import { throwIfUpstreamFailed } from '$lib/server/upstream';
 
 /**
  * GET /api/events/[event_id]/potluck
@@ -11,24 +12,19 @@ export const GET: RequestHandler = async ({ params, locals, fetch }) => {
 		throw error(401, 'Unauthorized');
 	}
 
-	try {
-		const response = await potluckListPotluckItems({
-			path: { event_id: params.event_id },
-			headers: {
-				Authorization: `Bearer ${locals.user.accessToken}`
-			},
-			fetch
-		});
+	const result = await potluckListPotluckItems({
+		path: { event_id: params.event_id },
+		headers: {
+			Authorization: `Bearer ${locals.user.accessToken}`
+		},
+		fetch
+	});
+	throwIfUpstreamFailed('potluck_list_failed', result, 'Failed to fetch potluck items', {
+		request_id: locals.requestId,
+		event_id: params.event_id
+	});
 
-		if (!response.data) {
-			throw error(500, 'Failed to fetch potluck items');
-		}
-
-		return json(response.data);
-	} catch (err) {
-		console.error('Error fetching potluck items:', err);
-		throw error(500, 'Failed to fetch potluck items');
-	}
+	return json(result.data);
 };
 
 /**
@@ -40,31 +36,26 @@ export const POST: RequestHandler = async ({ request, params, locals, fetch }) =
 		throw error(401, 'Unauthorized');
 	}
 
-	try {
-		const body = await request.json();
+	const body = await request.json();
 
-		const response = await potluckCreatePotluckItem({
-			path: { event_id: params.event_id },
-			body: {
-				name: body.name,
-				item_type: body.item_type,
-				quantity: body.quantity || undefined,
-				note: body.note || undefined,
-				claim: body.claim ?? false
-			},
-			headers: {
-				Authorization: `Bearer ${locals.user.accessToken}`
-			},
-			fetch
-		});
+	const result = await potluckCreatePotluckItem({
+		path: { event_id: params.event_id },
+		body: {
+			name: body.name,
+			item_type: body.item_type,
+			quantity: body.quantity || undefined,
+			note: body.note || undefined,
+			claim: body.claim ?? false
+		},
+		headers: {
+			Authorization: `Bearer ${locals.user.accessToken}`
+		},
+		fetch
+	});
+	throwIfUpstreamFailed('potluck_create_failed', result, 'Failed to create potluck item', {
+		request_id: locals.requestId,
+		event_id: params.event_id
+	});
 
-		if (!response.data) {
-			throw error(500, 'Failed to create potluck item');
-		}
-
-		return json(response.data);
-	} catch (err) {
-		console.error('Error creating potluck item:', err);
-		throw error(500, 'Failed to create potluck item');
-	}
+	return json(result.data);
 };
