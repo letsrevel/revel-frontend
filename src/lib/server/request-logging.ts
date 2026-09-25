@@ -16,7 +16,8 @@ import { recordRequest, recordSsrError } from './metrics';
  * full request lifecycle. Generates a per-request UUID (`request_id`), forwarded
  * upstream as `X-Request-ID` by handleFetch and echoed on the response, so a
  * single request's frontend and backend log lines correlate in Loki. Emits one
- * `request_finished` line per request and records the HTTP metrics.
+ * `request_finished` line per request (at error level for 5xx) and records the
+ * HTTP metrics.
  *
  * `user_id` is read AFTER `resolve` because handleAuth (later in the sequence)
  * populates `locals.user` during it. Everything after `resolve` is wrapped so
@@ -47,7 +48,13 @@ export const handleRequestLogging: Handle = async ({ event, resolve }) => {
 			durationSeconds: durationMs / 1000
 		});
 
-		log.info('request_finished', {
+		// 5xx at error so a level filter (or alert) sees EVERY server fault —
+		// including deliberate `error(500)`s from loaders and `+server.ts`
+		// routes, which SvelteKit never routes through handleSsrError. 4xx stay
+		// at info: they are routine (auth, validation) or scanner 404s that
+		// handleSsrError already records as `ssr_client_error`.
+		const logFinished = response.status >= 500 ? log.error : log.info;
+		logFinished('request_finished', {
 			method: event.request.method,
 			path: event.url.pathname,
 			route_id: routeId,
