@@ -181,7 +181,7 @@
 			: m['orgAdmin.members.empty.staff.noSearch']()}
 	/>
 {:else}
-	<div class="grid gap-4 md:grid-cols-2">
+	<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 		{#each staff as staffMember (staffMember.user.email)}
 			<StaffCard
 				staff={staffMember}

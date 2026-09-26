@@ -7,7 +7,7 @@ import {
 } from '../../support/factories';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 
-// J10.4 (USER_JOURNEYS.md) — admin ticket management: list, search, sort,
+// J10.5 (USER_JOURNEYS.md) — admin ticket management: list, search, sort,
 // payment status updates (confirm → revert), admin cancel.
 //
 // Deviation from the spec's "seed (festival tickets)": tickets are arranged

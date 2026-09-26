@@ -13,7 +13,8 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 // /account/referral page sets — and that page redirects any user without a
 // referral code to /dashboard, so a throwaway can never reach it. It's not
 // reachable from settings, so this spec covers the settings billing fields
-// only; self-billing is exercised by the referrer-authenticated j21 suite.
+// only; the self-billing save + reload is covered as a seeded referrer in
+// `j21-referral/self-billing.spec.ts` (USER_JOURNEYS 21.4 / 3.7).
 
 test.describe('J03 billing profile @p2', () => {
 	test('creates the billing profile and it persists', async ({ browser }) => {

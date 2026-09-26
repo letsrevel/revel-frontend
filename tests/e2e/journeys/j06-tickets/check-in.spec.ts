@@ -6,7 +6,7 @@ import {
 } from '../../support/factories';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 
-// J6.6 (USER_JOURNEYS.md) — staff check-in via the QR scanner's MANUAL-ENTRY
+// J6.10 (USER_JOURNEYS.md) — staff check-in via the QR scanner's MANUAL-ENTRY
 // path (no camera in headless runs; the field is always available as the
 // camera fallback): enter the ticket code → attendee confirmation dialog →
 // Check In → ticket flips ACTIVE → CHECKED_IN in the admin list.

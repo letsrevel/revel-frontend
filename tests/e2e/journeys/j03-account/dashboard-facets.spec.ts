@@ -12,7 +12,7 @@ import { PERSONAS } from '../../support/personas';
 // arranged exception), with personas chosen so their facet sets stay stable
 // across full-suite runs:
 // - hannah/ivan are avoided for Attending — j05 rsvp-flow toggles their
-//   spring-potluck RSVP and deliberately leaves it at "No".
+//   community-potluck RSVP and deliberately leaves it at "No".
 // - Org Beta anchors Organizing — factories only ever create events on Org
 //   Alpha, so diana's owned set is exactly the seed.
 // - The list renders at most 6 cards (page_size 10, sliced to 6, ordered by

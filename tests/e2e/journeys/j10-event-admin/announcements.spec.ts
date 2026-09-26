@@ -10,7 +10,7 @@ import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 import { waitForEmail } from '../../support/mailpit';
 
-// J10.8 (USER_JOURNEYS.md) — announcements (org-level, event-targetable):
+// J10.11 (USER_JOURNEYS.md) — announcements (org-level, event-targetable):
 // draft → send → email delivered to the member; schedule → unschedule →
 // back to drafts. Recipient counts render post-send on the card.
 //

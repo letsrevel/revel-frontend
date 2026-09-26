@@ -9,7 +9,7 @@ import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 import { closeDialog } from '../../support/ui';
 
-// J8.2 (USER_JOURNEYS.md) — staff management: promote an existing member to
+// J8.5 (USER_JOURNEYS.md) — staff management: promote an existing member to
 // staff, edit their permissions, remove them from staff.
 //
 // Isolation: throwaway-owned org; the promoted member is a throwaway user
