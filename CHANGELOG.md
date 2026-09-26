@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.13.1] - 2026-09-26
+
+### Changed
+
+- Prices across ticketing and checkout are formatted consistently for your language: tier cards, seat-map and venue labels, cart totals, pay-what-you-can hints, discounts, the VAT preview and referral payouts all show amounts and ranges the same way, instead of a raw `EUR 12.50`.
+- Fee copy is corrected: the fixed platform fee is charged per transaction, not per ticket, and the tier form's net-payout estimate now says it assumes a single-ticket order.
+- Pay-what-you-can tiers lead with their price range, with "Pay What You Can" as the caption.
+- When guest checkout is available, logged-out visitors see "Get Tickets" as the primary button.
+- Org admin tabs wrap onto a second row instead of being cut off on narrow screens, and the seat picker and checkout footers lay out cleanly on phones.
+
+### Fixed
+
+- Having Revel open in several tabs no longer logs you out: two tabs refreshing the session at the same moment could wipe the freshly issued session cookie.
+- Potluck actions now tell you when you don't have permission instead of showing a generic failure, and deleting an item you can't delete no longer pretends to succeed.
+- Admin questionnaire and poll pages show the right error — "not found", "no access", or a temporary server problem — instead of reporting every failure as "not found".
+- Questionnaire answer-distribution bars reflect each answer's share of all responses.
+- Event addresses no longer repeat the city and country.
+- Required questionnaire fields are announced to screen readers.
+
 ## [2.13.0] - 2026-09-17
 
 ### Added
