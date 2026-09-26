@@ -61,6 +61,11 @@
 
 	const context = $derived(contextQuery.data);
 	const remaining = $derived(context ? parseFloat(context.remaining_refundable) : 0);
+	// Offline / at-the-door money was collected by the organizer, so a refund is
+	// only RECORDED here (BE #1011) — no payment moves; the copy must say so.
+	const isRecordedRefund = $derived(
+		context?.payment_method === 'offline' || context?.payment_method === 'at_the_door'
+	);
 
 	// Re-seed the form each time the dialog opens; prefill the refund amount
 	// with the policy suggestion when there is one, else the full remainder.
@@ -117,7 +122,9 @@
 		onSuccess: () => {
 			toast.success(m['adminCancelTicket.successTitle'](), {
 				description: alsoRefund
-					? m['adminCancelTicket.successWithRefund']({
+					? (isRecordedRefund
+							? m['adminCancelTicket.successWithRecordedRefund']
+							: m['adminCancelTicket.successWithRefund'])({
 							amount: formatMoney(refundAmountNum.toFixed(2), context?.currency)
 						})
 					: undefined,
@@ -187,10 +194,14 @@
 						/>
 						<div class="grid gap-1">
 							<Label for="cancel-also-refund" class="cursor-pointer font-medium">
-								{m['adminCancelTicket.refundSectionLabel']()}
+								{isRecordedRefund
+									? m['adminCancelTicket.recordedRefundSectionLabel']()
+									: m['adminCancelTicket.refundSectionLabel']()}
 							</Label>
 							<p class="text-xs text-muted-foreground">
-								{m['adminCancelTicket.refundHint']({
+								{(isRecordedRefund
+									? m['adminCancelTicket.recordedRefundHint']
+									: m['adminCancelTicket.refundHint'])({
 									max: formatMoney(context.remaining_refundable, context.currency)
 								})}
 							</p>
@@ -225,7 +236,9 @@
 						</div>
 					{:else}
 						<p class="text-xs text-muted-foreground">
-							{m['adminCancelTicket.noRefundNote']()}
+							{isRecordedRefund
+								? m['adminCancelTicket.recordedNoRefundNote']()
+								: m['adminCancelTicket.noRefundNote']()}
 						</p>
 					{/if}
 				</div>

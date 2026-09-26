@@ -13,7 +13,7 @@
 		canAdminCancelTicket,
 		canRefundTicketPayment,
 		canUnconfirmPayment,
-		getPaymentMethodLabel
+		getTicketPaymentLabel
 	} from '$lib/utils/ticket-helpers';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
@@ -190,7 +190,7 @@
 					<span class="text-muted-foreground">{m['eventTicketsAdmin.labelPayment']()}:</span>
 					<span class="flex items-center gap-1">
 						{@render paymentMethodIcon(ticket.tier?.payment_method || '')}
-						{getPaymentMethodLabel(ticket.tier?.payment_method || '')}
+						{getTicketPaymentLabel(ticket)}
 					</span>
 				</div>
 				<div class="flex items-center justify-between">

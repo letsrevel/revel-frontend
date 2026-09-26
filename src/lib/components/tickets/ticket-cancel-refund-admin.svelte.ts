@@ -13,29 +13,31 @@ interface Options {
 
 /**
  * Cancel + refund admin actions for the event tickets list (organizer
- * refunds, FE #831). Bundles the plain-confirm cancel flow (offline /
- * at-the-door / free), the refund-aware cancel dialog for online tickets,
- * and the money-only refund dialog into one cohesive unit.
+ * refunds, FE #831). Bundles the plain-confirm cancel flow (free tickets),
+ * the refund-aware cancel dialog for every paid method (online refunds via
+ * Stripe; offline / at-the-door refunds are recorded, FE #960), and the
+ * money-only refund dialog into one cohesive unit.
  *
  * Instantiate once at component init (it uses runes) and read/write via the
  * returned accessors. The dialogs stay in the page template, bound to this
  * state — same shape as `createTicketMemberAdmin`.
  */
 export function createTicketCancelRefundAdmin(opts: Options) {
-	// Plain confirm for offline/at-the-door/free tickets (behavior unchanged).
+	// Plain confirm for free tickets: nothing was paid, so nothing to refund.
 	let showCancelDialog = $state(false);
 	let ticketToCancel = $state<AdminTicketSchema | null>(null);
 
-	// Online tickets get the richer cancel dialog (optional refund alongside
-	// the cancellation).
-	let showOnlineCancelDialog = $state(false);
-	let ticketToCancelOnline = $state<AdminTicketSchema | null>(null);
+	// Paid tickets get the richer cancel dialog (optional refund alongside the
+	// cancellation). It asks the refund context what is refundable, so an
+	// unpaid offline reservation simply shows no refund section.
+	let showRefundCancelDialog = $state(false);
+	let ticketToCancelWithRefund = $state<AdminTicketSchema | null>(null);
 
 	// Refund payment dialog (money moves, ticket stays valid).
 	let showRefundDialog = $state(false);
 	let ticketToRefund = $state<AdminTicketSchema | null>(null);
 
-	// The non-online cancel path: no body, fired from the generic ConfirmDialog.
+	// The free-ticket cancel path: no body, fired from the generic ConfirmDialog.
 	const cancelTicketMutation = createMutation(() => ({
 		mutationFn: async (ticketId: string) => {
 			// Never send a literal "Bearer null" during the auth bootstrap window.
@@ -63,9 +65,9 @@ export function createTicketCancelRefundAdmin(opts: Options) {
 
 	/** Route a cancel request by payment method. */
 	function openCancel(ticket: AdminTicketSchema) {
-		if (ticket.tier?.payment_method === 'online') {
-			ticketToCancelOnline = ticket;
-			showOnlineCancelDialog = true;
+		if (ticket.tier?.payment_method !== 'free') {
+			ticketToCancelWithRefund = ticket;
+			showRefundCancelDialog = true;
 			return;
 		}
 		ticketToCancel = ticket;
@@ -83,9 +85,9 @@ export function createTicketCancelRefundAdmin(opts: Options) {
 		ticketToCancel = null;
 	}
 
-	function closeOnlineCancel() {
-		showOnlineCancelDialog = false;
-		ticketToCancelOnline = null;
+	function closeRefundCancel() {
+		showRefundCancelDialog = false;
+		ticketToCancelWithRefund = null;
 	}
 
 	function openRefund(ticket: AdminTicketSchema) {
@@ -105,11 +107,11 @@ export function createTicketCancelRefundAdmin(opts: Options) {
 		get ticketToCancel() {
 			return ticketToCancel;
 		},
-		get showOnlineCancelDialog() {
-			return showOnlineCancelDialog;
+		get showRefundCancelDialog() {
+			return showRefundCancelDialog;
 		},
-		get ticketToCancelOnline() {
-			return ticketToCancelOnline;
+		get ticketToCancelWithRefund() {
+			return ticketToCancelWithRefund;
 		},
 		get showRefundDialog() {
 			return showRefundDialog;
@@ -123,7 +125,7 @@ export function createTicketCancelRefundAdmin(opts: Options) {
 		openCancel,
 		submitCancel,
 		closeCancel,
-		closeOnlineCancel,
+		closeRefundCancel,
 		openRefund,
 		closeRefund
 	};

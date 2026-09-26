@@ -166,3 +166,30 @@ export function getPaymentMethodLabel(method: string): string {
 			return method;
 	}
 }
+
+/**
+ * Label for how a box-office ticket was sold (#959), or null when the sale
+ * source doesn't override the tier's payment method. A comp on an at-the-door
+ * tier must read "Comp", not "At the Door". Legacy rows carry a null
+ * `sale_source` ("not recorded") and keep the tier label — a 0.00 price alone
+ * can't tell a comp from a 100%-discounted checkout.
+ */
+export function saleSourceLabel(saleSource: string | null | undefined): string | null {
+	switch (saleSource) {
+		case 'box_office_comp':
+			return m['eventTicketsAdmin.saleSourceComp']();
+		case 'box_office_sale':
+			return m['eventTicketsAdmin.saleSourceDoorSale']();
+		default:
+			return null;
+	}
+}
+
+/** Payment label for a ticket row: the sale source when it says more, else the tier method. */
+export function getTicketPaymentLabel(
+	ticket: Pick<AdminTicketSchema, 'sale_source'> & { tier?: { payment_method?: string } | null }
+): string {
+	return (
+		saleSourceLabel(ticket.sale_source) ?? getPaymentMethodLabel(ticket.tier?.payment_method || '')
+	);
+}

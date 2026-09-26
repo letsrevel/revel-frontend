@@ -1,9 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import type { TicketTierDetailSchema, VenueChartSchema } from '$lib/api/generated/types.gen';
+import type {
+	AdminTicketSchema,
+	TicketTierDetailSchema,
+	VenueChartSchema
+} from '$lib/api/generated/types.gen';
 import {
 	BOX_OFFICE_PAYMENT_METHODS,
 	buildSellRequest,
+	doorSalePrice,
 	isSellableStatus,
+	recordedSaleAmount,
 	seatPriceCategoryId,
 	seatSectorId,
 	tiersForSeat
@@ -193,5 +199,42 @@ describe('tiersForSeat', () => {
 			categoryId: null
 		});
 		expect(result.map((t) => t.id)).toEqual(['t-premium', 't-standard']);
+	});
+});
+
+describe('doorSalePrice (#958)', () => {
+	const priced = { price: '20.00', category_prices: { 'cat-premium': '55.00' } };
+
+	it('quotes the category price for a seat painted with a priced category', () => {
+		expect(doorSalePrice(priced, 'cat-premium')).toBe('55.00');
+	});
+
+	it('returns null for a painted category the tier does not price (sale refused)', () => {
+		expect(doorSalePrice(priced, 'cat-standard')).toBeNull();
+	});
+
+	it('falls back to the tier price for an unpainted seat', () => {
+		expect(doorSalePrice(priced, null)).toBe('20.00');
+	});
+
+	it('uses the tier price when the tier has no category prices', () => {
+		expect(doorSalePrice({ price: '12.50', category_prices: {} }, 'cat-premium')).toBe('12.50');
+	});
+
+	it('stringifies a numeric category price', () => {
+		expect(doorSalePrice({ price: '20.00', category_prices: { c: 30 } }, 'c')).toBe('30');
+	});
+});
+
+describe('recordedSaleAmount (#958)', () => {
+	const tier = { price: '20.00' } as AdminTicketSchema['tier'];
+
+	it('echoes the stamped price_paid', () => {
+		expect(recordedSaleAmount({ price_paid: '55.00', tier })).toBe('55.00');
+		expect(recordedSaleAmount({ price_paid: '0.00', tier })).toBe('0.00');
+	});
+
+	it('falls back to the tier price when price_paid is null (flat tier)', () => {
+		expect(recordedSaleAmount({ price_paid: null, tier })).toBe('20.00');
 	});
 });
