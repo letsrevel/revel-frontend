@@ -84,5 +84,8 @@ pnpm test:e2e tests/e2e/regression # CSP/FOUC guards (no backend needed)
   Django admin, so a staff/debug read route is what a directly *observed*
   forwarder verdict would need. Deliberately not a skip — the payment paths are
   the last coverage we can afford to lose silently, and the healthy skip
-  baseline stays **3**.
+  baseline stays **6**, all on mobile-chrome: 3 desktop-only `isMobile` skips,
+  the 2 chromium-only single-use referral-invite tests, and the chromium-only
+  Stripe Connect onboarding test (each run creates a real Stripe test account).
+  `j22 invoicing-mode` adds a 7th only when live VIES is down.
 - **Check-in**: use the QR scanner modal's manual-entry path (no camera in CI).
