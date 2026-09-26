@@ -326,7 +326,7 @@
 		body={m['orgAdmin.members.empty.tiers.description']()}
 	/>
 {:else}
-	<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+	<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 		{#each tiers as tier, index (tier.id)}
 			{@const memberCount = members.filter((mb) => mb.tier?.id === tier.id).length}
 			<div class="rounded-lg border border-border bg-card p-4 shadow-sm">
