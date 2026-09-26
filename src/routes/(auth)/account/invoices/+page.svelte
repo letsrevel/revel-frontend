@@ -97,21 +97,34 @@
 	// ─── PDF Download ────────────────────────────────────────────────
 	type DownloadResult = Awaited<ReturnType<typeof dashboardDashboardInvoiceDownload<false>>>;
 
-	/** Fetch a signed PDF URL (invoice or credit note) and open it. */
+	/**
+	 * Fetch a signed PDF URL (invoice or credit note) and open it. The tab is
+	 * opened synchronously, inside the click's user activation, and navigated
+	 * once the URL arrives — a `window.open` after the await can be eaten by
+	 * popup blockers (Safari) when the endpoint is slow to generate the PDF.
+	 */
 	async function openSignedPdf(id: string, fetchUrl: () => Promise<DownloadResult>) {
 		downloadingId = id;
+		const tab = window.open('', '_blank');
+		if (tab) tab.opener = null;
 		try {
 			const response = await fetchUrl();
 			if (response.response?.status === 404) {
+				tab?.close();
 				toast.error(m['myInvoices.pdfNotReady']());
 				return;
 			}
 			if (response.error || !response.data) {
+				tab?.close();
 				toast.error(m['myInvoices.downloadError']());
 				return;
 			}
-			window.open(getBackendUrl(response.data.download_url), '_blank');
+			const url = getBackendUrl(response.data.download_url);
+			// Popup blocked outright: fall back to the current tab.
+			if (tab) tab.location.href = url;
+			else window.location.assign(url);
 		} catch {
+			tab?.close();
 			toast.error(m['myInvoices.downloadError']());
 		} finally {
 			downloadingId = null;
@@ -142,14 +155,17 @@
 	}
 
 	/** Thin mapper: invoice -> StatusBadge tone. `issued`/`cancelled` are the
-	 * only statuses the buyer list emits (drafts stay hidden); a CANCELLED
-	 * invoice here is one fully covered by credit notes (#961), and an issued
-	 * one with credit notes is partially credited. Anything else falls back to
-	 * neutral rather than guessing a tone for a future value. */
+	 * only statuses the buyer list emits (drafts stay hidden); an issued one
+	 * with credit notes is partially credited. A CANCELLED invoice here is one
+	 * fully covered by credit notes (#961) — settled, not an error, so it is
+	 * deliberately neutral rather than danger. Unknown future values also fall
+	 * back to neutral rather than guessing a tone. */
 	function statusTone(invoice: BuyerAttendeeInvoiceSchema): Tone {
 		switch (invoice.status) {
 			case 'issued':
 				return invoice.credit_notes.length > 0 ? 'warning' : 'info';
+			case 'cancelled':
+				return 'neutral';
 			default:
 				return 'neutral';
 		}

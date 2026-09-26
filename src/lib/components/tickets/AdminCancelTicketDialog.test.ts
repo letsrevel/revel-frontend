@@ -108,6 +108,8 @@ describe('AdminCancelTicketDialog', () => {
 		// so instead of silently offering a refundless cancel.
 		expect(await screen.findByText('Could not load the payment details.')).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
+		// …and the cancel stays blocked, so the refund option can't be skipped.
+		expect(screen.getByRole('button', { name: 'Cancel Ticket' })).toBeDisabled();
 	});
 
 	it('maps a 402 to the insufficient-balance copy and stays open', async () => {
