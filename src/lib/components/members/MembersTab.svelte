@@ -395,7 +395,7 @@
 			: m['orgAdmin.members.empty.members.noSearch']()}
 	/>
 {:else}
-	<div class="grid gap-4 md:grid-cols-2">
+	<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 		{#each members as member (member.user.email)}
 			{@const isStaff = member.user.id ? staffUserIds.has(member.user.id) : false}
 			{@const canManage =

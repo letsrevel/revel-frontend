@@ -3,7 +3,7 @@ import { createTicketedEvent, createVerifiedUser, inviteToEvent } from '../../su
 import { gotoHydrated } from '../../support/navigation';
 import { extractLink, waitForEmail } from '../../support/mailpit';
 
-// J15.2 (USER_JOURNEYS.md) — one-click unsubscribe: every notification email
+// J15.6 (USER_JOURNEYS.md) — one-click unsubscribe: every notification email
 // carries a tokened /unsubscribe link; following it (no auth) and saving
 // confirms the preference change. A fresh user defaults to in_app+email
 // channels, so an invitation notification emails them with the footer link.
