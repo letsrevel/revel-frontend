@@ -2058,7 +2058,9 @@
 		"filterBySource": "Filtra per origine",
 		"sourceDirect": "Acquisto diretto",
 		"sourcePass": "Abbonamento",
-		"checkInSuccessGeneric": "Ingresso registrato"
+		"checkInSuccessGeneric": "Ingresso registrato",
+		"saleSourceComp": "Omaggio",
+		"saleSourceDoorSale": "Vendita all'ingresso"
 	},
 	"eventTokenCard": {
 		"type": "Tipo:",
@@ -3084,7 +3086,11 @@
 		"noRefundNote": "Nessun rimborso verrà emesso ora. Puoi rimborsare il pagamento separatamente in qualsiasi momento.",
 		"successTitle": "Biglietto annullato",
 		"successWithRefund": "È stato avviato un rimborso di {amount}.",
-		"errorGeneric": "Impossibile annullare il biglietto."
+		"errorGeneric": "Impossibile annullare il biglietto.",
+		"recordedRefundSectionLabel": "Registra un rimborso",
+		"recordedRefundHint": "Restituisci tu il denaro alla persona partecipante: nessun pagamento viene mosso. Sono stati incassati fino a {max}.",
+		"recordedNoRefundNote": "Nessun rimborso verrà registrato. L'importo incassato resta nei tuoi ricavi.",
+		"successWithRecordedRefund": "È stato registrato un rimborso di {amount}."
 	},
 	"cancelTicket": {
 		"button": "Annulla biglietto",
@@ -4388,6 +4394,10 @@
 	"orgAdmin.seating.boxOffice.submit": "Emetti biglietto",
 	"orgAdmin.seating.boxOffice.resultHeading": "Biglietto emesso",
 	"orgAdmin.seating.boxOffice.resultDetail": "Posto {seat} — {recipient}",
+	"orgAdmin.seating.boxOffice.amountLabel": "Importo da incassare",
+	"orgAdmin.seating.boxOffice.amountComp": "Gratuito / omaggio — niente da incassare",
+	"orgAdmin.seating.boxOffice.amountUnpriced": "Questa tipologia non ha un prezzo per la categoria di questo posto, quindi non può essere venduto qui. Scegli un'altra tipologia o emetti un omaggio.",
+	"orgAdmin.seating.boxOffice.resultAmount": "Registrato: {amount}",
 	"orgAdmin.seating.boxOffice.sellSuccessToast": "Biglietto emesso sul posto {seat} per {recipient}",
 	"orgAdmin.seating.boxOffice.sellFailedToast": "Impossibile emettere il biglietto",
 	"reseatDialog.title": "Sposta posto",
@@ -6671,7 +6681,6 @@
 		"status": "Stato",
 		"actions": "Azioni",
 		"statusIssued": "Emessa",
-		"statusCancelled": "Annullata",
 		"detailTitle": "Dettagli Fattura",
 		"lineItems": "Voci",
 		"description": "Descrizione",
@@ -6698,7 +6707,11 @@
 		"close": "Chiudi",
 		"previous": "Precedente",
 		"next": "Successivo",
-		"lineDescription": "Descrizione"
+		"lineDescription": "Descrizione",
+		"creditNotes": "Note di credito",
+		"downloadCreditNote": "Scarica la nota di credito {number}",
+		"statusPartiallyCredited": "Parzialmente accreditata",
+		"statusCredited": "Annullata / accreditata"
 	},
 	"checkout": {
 		"billing": {

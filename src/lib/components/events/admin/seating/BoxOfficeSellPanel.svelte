@@ -20,6 +20,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { AlertCircle, LoaderCircle } from '@lucide/svelte';
 	import { getUserDisplayName } from '$lib/utils/user-display';
+	import { formatMoney } from '$lib/utils/format';
 	import { extractPurchaseErrorMessage } from '$lib/components/tickets/purchase-error';
 	import type { SeatView } from '$lib/components/tickets/seating-view';
 	import { seatViewsFrom, sectorGroupsFrom } from './seat-override-model';
@@ -28,7 +29,9 @@
 		BOX_OFFICE_PAYMENT_METHODS,
 		boxOfficePaymentMethodLabel,
 		buildSellRequest,
+		doorSalePrice,
 		isSellableStatus,
+		recordedSaleAmount,
 		seatPriceCategoryId,
 		seatSectorId,
 		tiersForSeat,
@@ -132,6 +135,32 @@
 		}
 	});
 
+	const selectedTier = $derived(availableTiers.find((tier) => tier.id === selectedTierId) ?? null);
+
+	const compLabel = $derived(
+		m['orgAdmin.seating.boxOffice.amountComp']?.() ?? 'Free / comp — nothing to collect'
+	);
+
+	/**
+	 * What door staff must collect for the current seat + tier (#958). The
+	 * backend records exactly this amount, so the drawer must match it.
+	 * `unpriced` = the tier doesn't price the seat's category (sale refused).
+	 */
+	const amountToCollect = $derived.by((): { text: string; unpriced: boolean } | null => {
+		if (!chart || !selectedSeatId || !selectedTier) return null;
+		if (paymentMethod === 'free') return { text: compLabel, unpriced: false };
+		const price = doorSalePrice(selectedTier, seatPriceCategoryId(chart, selectedSeatId));
+		if (price === null) {
+			return {
+				text:
+					m['orgAdmin.seating.boxOffice.amountUnpriced']?.() ??
+					"This tier doesn't price this seat's category, so it can't be sold here.",
+				unpriced: true
+			};
+		}
+		return { text: formatMoney(price, selectedTier.currency), unpriced: false };
+	});
+
 	const requestBody = $derived(
 		buildSellRequest({
 			seatId: selectedSeatId,
@@ -150,6 +179,13 @@
 	// Result reporting
 	let lastResult = $state<AdminTicketSchema | null>(null);
 	let resultEl = $state<HTMLDivElement | null>(null);
+
+	/** The amount the backend recorded for the last sale (#958). */
+	const lastResultAmount = $derived.by(() => {
+		if (!lastResult) return null;
+		if (lastResult.sale_source === 'box_office_comp') return compLabel;
+		return formatMoney(recordedSaleAmount(lastResult), lastResult.tier.currency);
+	});
 
 	const sellMutation = createMutation(() => ({
 		mutationFn: async (body: BoxOfficeSellRequest): Promise<AdminTicketSchema> => {
@@ -201,7 +237,8 @@
 
 	const submitDisabled = $derived.by(() => {
 		const pending = sellMutation.isPending;
-		return requestBody === null || pending || !accessToken;
+		// An unpriced seat would be refused server-side; a comp still goes through.
+		return requestBody === null || pending || !accessToken || !!amountToCollect?.unpriced;
 	});
 </script>
 
@@ -245,6 +282,12 @@
 						recipient: getUserDisplayName(lastResult.user)
 					}) ?? `Seat ${lastResult.seat?.label ?? ''} — ${getUserDisplayName(lastResult.user)}`}
 				</p>
+				{#if lastResultAmount}
+					<p class="mt-1 text-sm font-semibold" data-testid="box-office-result-amount">
+						{m['orgAdmin.seating.boxOffice.resultAmount']?.({ amount: lastResultAmount }) ??
+							`Recorded: ${lastResultAmount}`}
+					</p>
+				{/if}
 			</div>
 		{/if}
 
@@ -370,7 +413,24 @@
 				</div>
 			</fieldset>
 
-			<div class="flex justify-end">
+			<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+				<!-- Live so door staff hear the amount change as they pick seat/tier/method. -->
+				<div aria-live="polite" class="min-h-5">
+					{#if amountToCollect}
+						{#if amountToCollect.unpriced}
+							<p class="text-sm text-destructive" data-testid="box-office-amount">
+								{amountToCollect.text}
+							</p>
+						{:else}
+							<div data-testid="box-office-amount">
+								<p class="text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
+									{m['orgAdmin.seating.boxOffice.amountLabel']?.() ?? 'Amount to collect'}
+								</p>
+								<p class="text-lg font-bold">{amountToCollect.text}</p>
+							</div>
+						{/if}
+					{/if}
+				</div>
 				<Button type="submit" disabled={submitDisabled}>
 					{#if sellMutation.isPending}
 						<LoaderCircle class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />

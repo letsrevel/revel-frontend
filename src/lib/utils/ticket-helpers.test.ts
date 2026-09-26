@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getGuestNameIfDifferent } from './ticket-helpers';
+import { getGuestNameIfDifferent, getTicketPaymentLabel } from './ticket-helpers';
 
 interface TicketFixture {
 	guest_name: unknown;
@@ -39,5 +39,27 @@ describe('getGuestNameIfDifferent', () => {
 
 	it('returns the trimmed holder name', () => {
 		expect(getGuestNameIfDifferent(ticket('  Bob Bearer  '))).toBe('Bob Bearer');
+	});
+});
+
+describe('getTicketPaymentLabel (#959)', () => {
+	const doorTier = { payment_method: 'at_the_door' };
+
+	it('labels a box-office comp as Comp, not the tier method', () => {
+		expect(getTicketPaymentLabel({ sale_source: 'box_office_comp', tier: doorTier })).toBe('Comp');
+	});
+
+	it('labels a box-office sale as Door sale', () => {
+		expect(getTicketPaymentLabel({ sale_source: 'box_office_sale', tier: doorTier })).toBe(
+			'Door sale'
+		);
+	});
+
+	it('keeps the tier method for checkout, series-pass and unrecorded tickets', () => {
+		expect(getTicketPaymentLabel({ sale_source: 'checkout', tier: doorTier })).toBe('At the Door');
+		expect(getTicketPaymentLabel({ sale_source: 'series_pass', tier: doorTier })).toBe(
+			'At the Door'
+		);
+		expect(getTicketPaymentLabel({ sale_source: null, tier: doorTier })).toBe('At the Door');
 	});
 });

@@ -6,7 +6,11 @@
 	import { fade, scale } from 'svelte/transition';
 	import { getUserDisplayName } from '$lib/utils/user-display';
 	import { formatMoney, formatPrice } from '$lib/utils/format';
-	import { getGuestNameIfDifferent, getSeatDisplay } from '$lib/utils/ticket-helpers';
+	import {
+		getGuestNameIfDifferent,
+		getSeatDisplay,
+		saleSourceLabel
+	} from '$lib/utils/ticket-helpers';
 
 	interface TicketUser {
 		email?: string;
@@ -55,6 +59,8 @@
 		sector_name?: string;
 		price_paid?: string | null;
 		payment?: TicketPayment | null;
+		/** How the ticket was sold (AdminTicketSchema only; scan payloads omit it). */
+		sale_source?: string | null;
 	}
 
 	interface Props {
@@ -380,7 +386,8 @@
 							<span class="text-sm text-muted-foreground">{m['checkInDialog.paymentMethod']()}</span
 							>
 							<span class="font-medium">
-								{getPaymentMethodLabel(ticket.tier?.payment_method || '')}
+								{saleSourceLabel(ticket.sale_source) ??
+									getPaymentMethodLabel(ticket.tier?.payment_method || '')}
 							</span>
 						</div>
 					</div>

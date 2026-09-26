@@ -108,6 +108,8 @@ describe('AdminCancelTicketDialog', () => {
 		// so instead of silently offering a refundless cancel.
 		expect(await screen.findByText('Could not load the payment details.')).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
+		// …and the cancel stays blocked, so the refund option can't be skipped.
+		expect(screen.getByRole('button', { name: 'Cancel Ticket' })).toBeDisabled();
 	});
 
 	it('maps a 402 to the insufficient-balance copy and stays open', async () => {
@@ -127,5 +129,50 @@ describe('AdminCancelTicketDialog', () => {
 		).toBeInTheDocument();
 		expect(onCancelled).not.toHaveBeenCalled();
 		expect(onClose).not.toHaveBeenCalled();
+	});
+
+	it('offers a RECORDED partial refund for an offline ticket (#960)', async () => {
+		const user = userEvent.setup();
+		eventadminticketsTicketRefundContext.mockResolvedValue({
+			data: {
+				...CONTEXT,
+				payment_method: 'at_the_door',
+				policy_suggested_amount: null
+			},
+			error: undefined
+		});
+		eventadminticketsCancelTicket.mockResolvedValue({ data: { id: 'tick-1' }, error: undefined });
+		const { onCancelled } = renderDialog();
+		// The copy says the organizer returns the money — no payment is moved.
+		await user.click(await screen.findByLabelText('Record a refund'));
+		expect(screen.queryByLabelText('Also refund the attendee')).not.toBeInTheDocument();
+		expect(
+			screen.getByText(
+				'You return the money to the attendee yourself — no payment is moved. Up to €20.00 was collected.'
+			)
+		).toBeInTheDocument();
+		// Prefilled with the full collected amount; a partial amount is allowed.
+		const input = screen.getByLabelText('Refund amount');
+		expect(input).toHaveValue(20);
+		await user.clear(input);
+		await user.type(input, '7.5');
+		await user.click(screen.getByRole('button', { name: 'Cancel Ticket' }));
+		await waitFor(() => expect(onCancelled).toHaveBeenCalled());
+		expect(eventadminticketsCancelTicket).toHaveBeenCalledWith(
+			expect.objectContaining({ body: { refund_amount: '7.50' } })
+		);
+	});
+
+	it('explains that an offline cancel without a refund keeps the revenue', async () => {
+		eventadminticketsTicketRefundContext.mockResolvedValue({
+			data: { ...CONTEXT, payment_method: 'offline' },
+			error: undefined
+		});
+		renderDialog();
+		expect(
+			await screen.findByText(
+				'No refund will be recorded. The amount collected stays in your revenue.'
+			)
+		).toBeInTheDocument();
 	});
 });

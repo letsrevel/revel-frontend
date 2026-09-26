@@ -20,15 +20,17 @@
 		ChevronRight
 	} from '@lucide/svelte';
 	import {
+		dashboardDashboardCreditNoteDownload,
 		dashboardDashboardInvoices,
 		dashboardDashboardInvoiceDownload
 	} from '$lib/api/generated/sdk.gen';
-	import type { AttendeeInvoiceSchema } from '$lib/api/generated/types.gen';
+	import type { BuyerAttendeeInvoiceSchema } from '$lib/api/generated/types.gen';
 	import { formatDate } from '$lib/utils/date';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import InvoiceVatBreakdownTable from '$lib/components/financials/InvoiceVatBreakdownTable.svelte';
+	import BuyerCreditNotesList from '$lib/components/financials/BuyerCreditNotesList.svelte';
 	import type { Tone } from '$lib/components/common/tones';
 
 	const accessToken = $derived(authStore.accessToken);
@@ -77,10 +79,12 @@
 
 	// ─── Detail Dialog ───────────────────────────────────────────────
 	let dialogOpen = $state(false);
-	let selectedInvoice = $state<AttendeeInvoiceSchema | null>(null);
-	let isDownloading = $state(false);
+	let selectedInvoice = $state<BuyerAttendeeInvoiceSchema | null>(null);
+	/** Id of the invoice or credit note whose PDF is being fetched. */
+	let downloadingId = $state<string | null>(null);
+	const isDownloading = $derived(downloadingId !== null);
 
-	function openDetail(invoice: AttendeeInvoiceSchema) {
+	function openDetail(invoice: BuyerAttendeeInvoiceSchema) {
 		selectedInvoice = invoice;
 		dialogOpen = true;
 	}
@@ -91,27 +95,58 @@
 	}
 
 	// ─── PDF Download ────────────────────────────────────────────────
-	async function downloadPdf(invoiceId: string) {
-		isDownloading = true;
+	type DownloadResult = Awaited<ReturnType<typeof dashboardDashboardInvoiceDownload<false>>>;
+
+	/**
+	 * Fetch a signed PDF URL (invoice or credit note) and open it. The tab is
+	 * opened synchronously, inside the click's user activation, and navigated
+	 * once the URL arrives — a `window.open` after the await can be eaten by
+	 * popup blockers (Safari) when the endpoint is slow to generate the PDF.
+	 */
+	async function openSignedPdf(id: string, fetchUrl: () => Promise<DownloadResult>) {
+		downloadingId = id;
+		const tab = window.open('', '_blank');
+		if (tab) tab.opener = null;
 		try {
-			const response = await dashboardDashboardInvoiceDownload({
-				path: { invoice_id: invoiceId },
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
+			const response = await fetchUrl();
 			if (response.response?.status === 404) {
+				tab?.close();
 				toast.error(m['myInvoices.pdfNotReady']());
 				return;
 			}
 			if (response.error || !response.data) {
+				tab?.close();
 				toast.error(m['myInvoices.downloadError']());
 				return;
 			}
-			window.open(getBackendUrl(response.data.download_url), '_blank');
+			const url = getBackendUrl(response.data.download_url);
+			// Popup blocked outright: fall back to the current tab.
+			if (tab) tab.location.href = url;
+			else window.location.assign(url);
 		} catch {
+			tab?.close();
 			toast.error(m['myInvoices.downloadError']());
 		} finally {
-			isDownloading = false;
+			downloadingId = null;
 		}
+	}
+
+	function downloadPdf(invoiceId: string) {
+		return openSignedPdf(invoiceId, () =>
+			dashboardDashboardInvoiceDownload({
+				path: { invoice_id: invoiceId },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			})
+		);
+	}
+
+	function downloadCreditNote(creditNoteId: string) {
+		return openSignedPdf(creditNoteId, () =>
+			dashboardDashboardCreditNoteDownload({
+				path: { credit_note_id: creditNoteId },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			})
+		);
 	}
 
 	// ─── Helpers ─────────────────────────────────────────────────────
@@ -119,28 +154,33 @@
 		return formatMoney(amount, currency);
 	}
 
-	/** Thin mapper: raw invoice status -> StatusBadge tone. `issued`/`cancelled`
-	 * are the only statuses the backend emits today; anything else falls back to
-	 * neutral rather than guessing a tone for a future value. */
-	function statusTone(status: string): Tone {
-		switch (status) {
+	/** Thin mapper: invoice -> StatusBadge tone. `issued`/`cancelled` are the
+	 * only statuses the buyer list emits (drafts stay hidden); an issued one
+	 * with credit notes is partially credited. A CANCELLED invoice here is one
+	 * fully covered by credit notes (#961) — settled, not an error, so it is
+	 * deliberately neutral rather than danger. Unknown future values also fall
+	 * back to neutral rather than guessing a tone. */
+	function statusTone(invoice: BuyerAttendeeInvoiceSchema): Tone {
+		switch (invoice.status) {
 			case 'issued':
-				return 'info';
+				return invoice.credit_notes.length > 0 ? 'warning' : 'info';
 			case 'cancelled':
-				return 'danger';
+				return 'neutral';
 			default:
 				return 'neutral';
 		}
 	}
 
-	function statusLabel(status: string): string {
-		switch (status) {
+	function statusLabel(invoice: BuyerAttendeeInvoiceSchema): string {
+		switch (invoice.status) {
 			case 'issued':
-				return m['myInvoices.statusIssued']();
+				return invoice.credit_notes.length > 0
+					? m['myInvoices.statusPartiallyCredited']()
+					: m['myInvoices.statusIssued']();
 			case 'cancelled':
-				return m['myInvoices.statusCancelled']();
+				return m['myInvoices.statusCredited']();
 			default:
-				return status;
+				return invoice.status;
 		}
 	}
 </script>
@@ -245,11 +285,7 @@
 								{invoice.issued_at ? formatDate(invoice.issued_at) : formatDate(invoice.created_at)}
 							</td>
 							<td class="px-4 py-3">
-								<StatusBadge
-									tone={statusTone(invoice.status)}
-									label={statusLabel(invoice.status)}
-									size="sm"
-								/>
+								<StatusBadge tone={statusTone(invoice)} label={statusLabel(invoice)} size="sm" />
 							</td>
 							<td class="px-4 py-3 text-right font-mono">
 								{formatCurrency(invoice.total_gross, invoice.currency)}
@@ -332,8 +368,8 @@
 						<p class="text-lg font-semibold">{inv.invoice_number}</p>
 					</div>
 					<StatusBadge
-						tone={statusTone(inv.status)}
-						label={statusLabel(inv.status)}
+						tone={statusTone(inv)}
+						label={statusLabel(inv)}
 						size="sm"
 						class="mt-1 shrink-0"
 					/>
@@ -436,6 +472,15 @@
 					{/if}
 				</div>
 
+				{#if inv.credit_notes.length > 0}
+					<BuyerCreditNotesList
+						creditNotes={inv.credit_notes}
+						currency={inv.currency}
+						{downloadingId}
+						onDownload={downloadCreditNote}
+					/>
+				{/if}
+
 				<!-- Reverse charge -->
 				<div class="flex justify-between text-sm">
 					<span class="text-muted-foreground">{m['myInvoices.reverseCharge']()}</span>
@@ -475,7 +520,7 @@
 					disabled={isDownloading}
 					class="gap-2"
 				>
-					{#if isDownloading}
+					{#if downloadingId === selectedInvoice.id}
 						<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
 					{:else}
 						<Download class="h-4 w-4" aria-hidden="true" />

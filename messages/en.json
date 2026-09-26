@@ -2058,7 +2058,9 @@
 		"filterBySource": "Filter by source",
 		"sourceDirect": "Direct purchase",
 		"sourcePass": "Season pass",
-		"checkInSuccessGeneric": "Checked in"
+		"checkInSuccessGeneric": "Checked in",
+		"saleSourceComp": "Comp",
+		"saleSourceDoorSale": "Door sale"
 	},
 	"eventTokenCard": {
 		"type": "Type:",
@@ -3084,7 +3086,11 @@
 		"noRefundNote": "No refund will be issued now. You can refund the payment separately at any time.",
 		"successTitle": "Ticket cancelled",
 		"successWithRefund": "A refund of {amount} has been initiated.",
-		"errorGeneric": "Could not cancel the ticket."
+		"errorGeneric": "Could not cancel the ticket.",
+		"recordedRefundSectionLabel": "Record a refund",
+		"recordedRefundHint": "You return the money to the attendee yourself — no payment is moved. Up to {max} was collected.",
+		"recordedNoRefundNote": "No refund will be recorded. The amount collected stays in your revenue.",
+		"successWithRecordedRefund": "A refund of {amount} has been recorded."
 	},
 	"cancelTicket": {
 		"button": "Cancel ticket",
@@ -4388,6 +4394,10 @@
 	"orgAdmin.seating.boxOffice.submit": "Issue ticket",
 	"orgAdmin.seating.boxOffice.resultHeading": "Ticket issued",
 	"orgAdmin.seating.boxOffice.resultDetail": "Seat {seat} — {recipient}",
+	"orgAdmin.seating.boxOffice.amountLabel": "Amount to collect",
+	"orgAdmin.seating.boxOffice.amountComp": "Free / comp — nothing to collect",
+	"orgAdmin.seating.boxOffice.amountUnpriced": "This tier doesn't price this seat's category, so it can't be sold here. Pick another tier or issue a comp.",
+	"orgAdmin.seating.boxOffice.resultAmount": "Recorded: {amount}",
 	"orgAdmin.seating.boxOffice.sellSuccessToast": "Ticket issued on seat {seat} for {recipient}",
 	"orgAdmin.seating.boxOffice.sellFailedToast": "Failed to issue the ticket",
 	"reseatDialog.title": "Move seat",
@@ -6671,7 +6681,6 @@
 		"status": "Status",
 		"actions": "Actions",
 		"statusIssued": "Issued",
-		"statusCancelled": "Cancelled",
 		"detailTitle": "Invoice Details",
 		"lineItems": "Line Items",
 		"description": "Description",
@@ -6698,7 +6707,11 @@
 		"close": "Close",
 		"previous": "Previous",
 		"next": "Next",
-		"lineDescription": "Description"
+		"lineDescription": "Description",
+		"creditNotes": "Credit notes",
+		"downloadCreditNote": "Download credit note {number}",
+		"statusPartiallyCredited": "Partially credited",
+		"statusCredited": "Cancelled / credited"
 	},
 	"checkout": {
 		"billing": {

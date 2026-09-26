@@ -16,20 +16,19 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 //
 // 1. DOOR SALE: the owner picks a free seat painted with a price category,
 //    picks the seated tier, types a walk-up recipient (email get-or-create
-//    guest) and issues the ticket "At the door". The panel reports the issued
-//    seat + recipient and the seat re-renders SOLD. The ticket then appears on
+//    guest) and issues the ticket "At the door". Before issuing, the panel shows
+//    door staff the amount to collect (the seat's CATEGORY price, #958); after,
+//    it echoes the recorded amount with the issued seat + recipient, and the
+//    seat re-renders SOLD. The ticket then appears on
 //    Manage Tickets as ACTIVE with the seat readback, and the amount recorded
 //    for the sale is the seat's CATEGORY price (backend stamps price_paid on a
 //    category-priced door sale, spec §5.8) — read back both on the row and in
-//    the check-in dialog door staff see.
+//    the check-in dialog door staff see. Its payment reads "Door sale" (the
+//    ticket's sale_source, #959), not the tier's "At the Door".
 //
-// 2. COMP: same flow with "Comp (free)" — the ticket is ACTIVE and its
-//    recorded amount is 0 (rendered "Free"), never the tier/category price.
-//
-// The panel itself shows no "amount to collect" before the sale (see the
-// backend docstring on box_office.sell, which says the door UI must display
-// it) — so the amount is asserted where the UI does surface it: the ticket
-// row's price column and the check-in dialog's Price row.
+// 2. COMP: same flow with "Comp (free)" — the panel quotes nothing to collect,
+//    the ticket is ACTIVE, its recorded amount is 0 (rendered "Free"), never
+//    the tier/category price, and its payment reads "Comp" (#959).
 //
 // Isolation: own event on Org Alpha (owner persona / asOwner) at its own
 // createCategoryPricedVenue (row A painted with a fresh category, row B
@@ -37,6 +36,7 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 // for the painted category, so a row-A door sale must record 55.00.
 
 const CATEGORY_PRICE = '€55.00';
+const COMP_AMOUNT = 'Free / comp — nothing to collect';
 
 /**
  * One ticket's container: the desktop table row, or the mobile card (both
@@ -99,6 +99,8 @@ async function sell(
 		firstName: string;
 		lastName: string;
 		payment: 'At the door' | 'Comp (free)';
+		/** What the panel must quote as the amount to collect. */
+		expectedAmount: string;
 	}
 ): Promise<void> {
 	const seat = page.getByRole('radio', { name: `Seat ${opts.seat}`, exact: true });
@@ -115,6 +117,9 @@ async function sell(
 	await page.getByLabel('First name (optional)').fill(opts.firstName);
 	await page.getByLabel('Last name (optional)').fill(opts.lastName);
 	await page.getByRole('radio', { name: opts.payment }).check();
+
+	// Door staff see the amount to collect before issuing (#958).
+	await expect(page.getByTestId('box-office-amount')).toContainText(opts.expectedAmount);
 
 	await page.getByRole('button', { name: 'Issue ticket' }).click();
 }
@@ -145,7 +150,8 @@ test.describe('J10 box office door sale & comp @p2', () => {
 			email: uniqueEmail('walkup'),
 			firstName: 'Door',
 			lastName: doorLast,
-			payment: 'At the door'
+			payment: 'At the door',
+			expectedAmount: CATEGORY_PRICE
 		});
 
 		// Result box names the seat and the (freshly created guest) recipient.
@@ -153,22 +159,29 @@ test.describe('J10 box office door sale & comp @p2', () => {
 			timeout: 15_000
 		});
 		await expect(page.getByText(`Seat A1 — Door ${doorLast}`)).toBeVisible();
+		await expect(page.getByTestId('box-office-result-amount')).toHaveText(
+			`Recorded: ${CATEGORY_PRICE}`
+		);
 		// Availability refetched: the seat is no longer sellable.
 		await expect(page.getByRole('radio', { name: 'Seat A1, sold' })).toBeDisabled({
 			timeout: 15_000
 		});
 
 		// --- Comp on seat A2 (same painted category) -----------------------
-		const compLast = surname('Comped');
+		const compLast = surname('Gratis');
 		await sell(page, {
 			seat: 'A2',
 			tierName,
-			email: uniqueEmail('comped'),
-			firstName: 'Comp',
+			email: uniqueEmail('gratis'),
+			firstName: 'Guest',
 			lastName: compLast,
-			payment: 'Comp (free)'
+			payment: 'Comp (free)',
+			expectedAmount: COMP_AMOUNT
 		});
-		await expect(page.getByText(`Seat A2 — Comp ${compLast}`)).toBeVisible({ timeout: 15_000 });
+		await expect(page.getByText(`Seat A2 — Guest ${compLast}`)).toBeVisible({ timeout: 15_000 });
+		await expect(page.getByTestId('box-office-result-amount')).toHaveText(
+			`Recorded: ${COMP_AMOUNT}`
+		);
 		await expect(page.getByRole('radio', { name: 'Seat A2, sold' })).toBeDisabled({
 			timeout: 15_000
 		});
@@ -184,15 +197,17 @@ test.describe('J10 box office door sale & comp @p2', () => {
 		await expect(doorRow).toContainText('Active');
 		await expect(doorRow).toContainText('Row A • Seat 1');
 		await expect(doorRow).toContainText(CATEGORY_PRICE);
+		await expect(doorRow).toContainText('Door sale');
 		// The comp recipient is filtered out by the name search.
-		await expect(page.getByText(`Comp ${compLast}`).filter({ visible: true })).toHaveCount(0);
+		await expect(page.getByText(`Guest ${compLast}`).filter({ visible: true })).toHaveCount(0);
 
 		await doorRow.getByRole('button', { name: 'Check In', exact: true }).click();
 		const doorDialog = page.getByRole('dialog', { name: 'Check In Attendee' });
 		await expect(doorDialog).toBeVisible({ timeout: 10_000 });
 		await expect(doorDialog).toContainText('Row A • Seat 1');
 		await expect(doorDialog).toContainText(CATEGORY_PRICE);
-		await expect(doorDialog).toContainText('At the Door');
+		await expect(doorDialog).toContainText('Door sale');
+		await expect(doorDialog).not.toContainText('At the Door');
 		await doorDialog.getByRole('button', { name: 'Cancel' }).click();
 		await expect(doorDialog).toBeHidden();
 
@@ -200,7 +215,7 @@ test.describe('J10 box office door sale & comp @p2', () => {
 		await openTicketsFilteredBy(page, event, compLast);
 		const compRow = page
 			.locator(TICKET_ROW)
-			.filter({ hasText: `Comp ${compLast}` })
+			.filter({ hasText: `Guest ${compLast}` })
 			.filter({ visible: true })
 			.first();
 		await expect(compRow).toBeVisible({ timeout: 15_000 });
@@ -208,6 +223,8 @@ test.describe('J10 box office door sale & comp @p2', () => {
 		await expect(compRow).toContainText('Row A • Seat 2');
 		await expect(compRow).toContainText('Free');
 		await expect(compRow).not.toContainText(CATEGORY_PRICE);
+		await expect(compRow).toContainText('Comp');
+		await expect(compRow).not.toContainText('At the Door');
 
 		await compRow.getByRole('button', { name: 'Check In', exact: true }).click();
 		const compDialog = page.getByRole('dialog', { name: 'Check In Attendee' });
@@ -215,5 +232,7 @@ test.describe('J10 box office door sale & comp @p2', () => {
 		await expect(compDialog).toContainText('Row A • Seat 2');
 		await expect(compDialog).toContainText('Free');
 		await expect(compDialog).not.toContainText(CATEGORY_PRICE);
+		await expect(compDialog).toContainText('Comp');
+		await expect(compDialog).not.toContainText('At the Door');
 	});
 });

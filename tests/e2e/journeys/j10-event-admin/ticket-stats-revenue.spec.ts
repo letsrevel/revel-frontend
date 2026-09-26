@@ -22,12 +22,10 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 // as sold once staff confirm the payment — two are confirmed via API, the third
 // through the row's Confirm Payment action, which must refresh the card live.
 //
-// Offline refunds: the backend tracks them (POST …/mark-refunded, or cancel
-// with `refund_amount`), but the admin Cancel Ticket dialog only offers its
-// refund section when the refund-context endpoint reports something
-// refundable, and `build_refund_context` hard-codes 0 for non-ONLINE tiers —
-// so there is no UI path to record an offline refund today. The refund is
-// therefore ARRANGED via API; the journey under test is the figures.
+// Offline refunds: the admin Cancel Ticket dialog offers a RECORDED refund on
+// a confirmed offline ticket (BE #1011 / FE #960) — the organizer returns the
+// money themselves, no payment moves. A partial €5 of the €20 collected is
+// recorded through that dialog, and the figures must pick it up.
 //
 // Money figures asserted are the VAT-independent ones (Gross, Refunds): Net /
 // Net taxable / VAT depend on the org's VAT setup. The org is a throwaway, so
@@ -55,19 +53,6 @@ function figure(card: Locator, label: string): Locator {
 async function confirmPayment(owner: ThrowawayUser, eventId: string, ticketId: string) {
 	const api = await ApiClient.login(owner.email, owner.password);
 	await api.post(`/api/event-admin/${eventId}/tickets/${ticketId}/confirm-payment`);
-}
-
-/** Record a manual (offline) refund, which also cancels the ticket. */
-async function markRefunded(
-	owner: ThrowawayUser,
-	eventId: string,
-	ticketId: string,
-	amount: string
-) {
-	const api = await ApiClient.login(owner.email, owner.password);
-	await api.post(`/api/event-admin/${eventId}/tickets/${ticketId}/mark-refunded`, {
-		refund_amount: amount
-	});
 }
 
 test.describe('J10 per-event revenue stats @p2', () => {
@@ -139,10 +124,28 @@ test.describe('J10 per-event revenue stats @p2', () => {
 			await expect(figure(revenueCard(page), 'Gross')).toHaveText('€60.00', { timeout: 15_000 });
 			await expect(revenueCard(page).getByText('Sold: 3', { exact: true })).toBeVisible();
 
-			// A partial manual refund on one offline ticket (arranged via API — the
-			// admin Cancel dialog offers no refund for offline tickets, see header).
-			// The aggregate keeps the sale and tracks the refund on top of it.
-			await markRefunded(org.owner, event.id, tickets[0].id, '5.00');
+			// A partial manual refund on one offline ticket, recorded through the
+			// Cancel Ticket dialog. The aggregate keeps the sale and tracks the
+			// refund on top of it.
+			const refundRow = page
+				.locator('tr, article, li, div')
+				.filter({ hasText: names[0] })
+				.filter({ hasNot: page.getByText(names[1]) })
+				.filter({ hasNot: page.getByText(names[2]) })
+				.filter({ has: page.getByRole('button', { name: 'Cancel Ticket' }) })
+				.filter({ visible: true })
+				.first();
+			await refundRow.getByRole('button', { name: 'Cancel Ticket' }).first().click();
+			const cancelDialog = page.getByRole('dialog', { name: 'Cancel Ticket' });
+			await cancelDialog.getByLabel('Record a refund').click();
+			await expect(
+				cancelDialog.getByText(/You return the money to the attendee yourself/)
+			).toBeVisible();
+			const amount = cancelDialog.getByLabel('Refund amount');
+			await expect(amount).toHaveValue(PRICE);
+			await amount.fill('5.00');
+			await cancelDialog.getByRole('button', { name: 'Cancel Ticket' }).click();
+			await expect(cancelDialog).toBeHidden({ timeout: 15_000 });
 			await expect(async () => {
 				await gotoHydrated(page, ticketsPath);
 				await expect(figure(revenueCard(page), 'Refunds')).toHaveText('€5.00', {

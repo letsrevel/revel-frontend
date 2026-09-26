@@ -522,7 +522,7 @@
 	onClose={closeConfirmPaymentDialog}
 />
 
-<!-- Cancel Confirmation Dialog (offline/at-the-door/free) -->
+<!-- Cancel Confirmation Dialog (free tickets: nothing to refund) -->
 <ConfirmDialog
 	isOpen={cancelRefund.showCancelDialog}
 	title={m['eventTicketsAdmin.cancelTicketTitle']()}
@@ -605,14 +605,15 @@
 	/>
 {/if}
 
-<!-- Cancel online ticket Dialog (optional refund alongside cancellation) -->
-{#if cancelRefund.ticketToCancelOnline?.id}
+<!-- Cancel paid ticket Dialog (optional refund alongside cancellation: a Stripe
+     refund online, a recorded one for offline / at-the-door, #960) -->
+{#if cancelRefund.ticketToCancelWithRefund?.id}
 	<AdminCancelTicketDialog
-		open={cancelRefund.showOnlineCancelDialog}
-		ticketId={cancelRefund.ticketToCancelOnline.id}
+		open={cancelRefund.showRefundCancelDialog}
+		ticketId={cancelRefund.ticketToCancelWithRefund.id}
 		eventId={data.event.id}
 		accessToken={authStore.accessToken}
-		onClose={cancelRefund.closeOnlineCancel}
+		onClose={cancelRefund.closeRefundCancel}
 		onCancelled={() => invalidateAll()}
 	/>
 {/if}

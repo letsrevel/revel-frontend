@@ -1,3 +1,4 @@
+import type { Browser } from '@playwright/test';
 import { test, expect, type Page } from '../../support/fixtures';
 import { ApiClient } from '../../support/api';
 import {
@@ -34,9 +35,10 @@ import {
 // path (#865): each refund gets its OWN credit note for its own amount, and
 // the invoice stays Issued until the second one completes the credit.
 //
-// There is no buyer-facing credit-note UI: the buyer dashboard exposes
-// issued invoices only (GET /api/dashboard/invoices filters status=ISSUED),
-// so the buyer-side assertion is the credit-note email.
+// Buyer side (#961): /account/invoices keeps the invoice through both
+// refunds — "Partially credited" after the first, "Cancelled / credited" once
+// fully credited (it used to vanish) — and its detail dialog lists each credit
+// note with its own PDF download. The credit-note emails are asserted too.
 
 const ORG_SLUG = 'revel-events-collective';
 const INVOICES_PATH = `/org/${ORG_SLUG}/admin/billing/attendee-invoices`;
@@ -75,6 +77,52 @@ async function refundBuyerTicket(
 		amount,
 		reason: 'E2E credit note'
 	});
+}
+
+/**
+ * The buyer's own invoices page: the invoice row carries `status`, and its
+ * detail dialog lists `creditNotes` credit notes, each downloadable.
+ */
+async function expectBuyerInvoice(
+	browser: Browser,
+	buyer: ThrowawayUser,
+	invoiceNumber: string,
+	status: string,
+	creditNotes: string[]
+): Promise<void> {
+	const context = await browser.newContext();
+	await authenticateContext(context, buyer);
+	try {
+		const page = await context.newPage();
+		await gotoHydrated(page, '/account/invoices');
+		await waitForClientAuth(page);
+		const row = page.getByRole('row').filter({ hasText: invoiceNumber });
+		await expect(row.getByTestId('status-badge')).toHaveText(status, { timeout: 15_000 });
+
+		await row.getByRole('button', { name: invoiceNumber, exact: true }).click();
+		const dialog = page.getByRole('dialog', { name: 'Invoice Details' });
+		const list = dialog.getByTestId('buyer-credit-notes');
+		await expect(list.getByRole('listitem')).toHaveCount(creditNotes.length);
+		for (const number of creditNotes) await expect(list).toContainText(number);
+
+		// Each credit note downloads through the buyer-scoped endpoint.
+		const download = page.waitForResponse(
+			(res) => res.url().includes('/api/dashboard/credit-notes/') && res.status() === 200
+		);
+		const popup = page.waitForEvent('popup');
+		// Keyboard activation: on mobile the dialog body scrolls inside a
+		// transformed overlay and a pointer click's hit-test lands on the
+		// content above the button (same workaround as box-office-sell.spec.ts).
+		const downloadButton = dialog.getByRole('button', {
+			name: `Download credit note ${creditNotes[0]}`
+		});
+		await downloadButton.focus();
+		await downloadButton.press('Enter');
+		await download;
+		await (await popup).close();
+	} finally {
+		await context.close();
+	}
 }
 
 /** Credit-note rows for this buyer, scoped through the page's search box. */
@@ -169,6 +217,11 @@ test.describe('J22 credit notes @p2', () => {
 		const firstEmail = await waitForEmail({ to: buyer.email, subject: firstNumber }, 60_000);
 		expect(firstEmail.Subject).toBe(`Credit Note ${firstNumber} — ${event.name}`);
 
+		// …and sees it on their own invoices page, invoice partially credited.
+		await expectBuyerInvoice(browser, buyer, invoice.invoice_number, 'Partially credited', [
+			firstNumber
+		]);
+
 		// ── Refund #2: the remaining €6 ─────────────────────────────────
 		await refundBuyerTicket(api, event.id, buyer, '6.00');
 
@@ -191,5 +244,12 @@ test.describe('J22 credit notes @p2', () => {
 
 		const secondEmail = await waitForEmail({ to: buyer.email, subject: secondNumber }, 60_000);
 		expect(secondEmail.Subject).toBe(`Credit Note ${secondNumber} — ${event.name}`);
+
+		// The fully credited invoice stays on the buyer's page (it used to
+		// vanish), with both credit notes.
+		await expectBuyerInvoice(browser, buyer, invoice.invoice_number, 'Cancelled / credited', [
+			firstNumber,
+			secondNumber
+		]);
 	});
 });

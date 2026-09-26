@@ -16,6 +16,7 @@
  *   KILLED seat is rejected (400); a foreign live hold is rejected (409).
  */
 import type {
+	AdminTicketSchema,
 	BoxOfficeSellRequest,
 	TicketTierDetailSchema,
 	VenueChartSchema
@@ -155,4 +156,36 @@ export function tiersForSeat(
 	if (!opts) return seated;
 	const matched = seated.filter((tier) => tierMatchesSeat(tier, opts.sectorId, opts.categoryId));
 	return matched.length > 0 ? matched : seated;
+}
+
+/**
+ * The amount door staff must collect for a seat on a tier (#958), mirroring the
+ * backend's single price authority (`resolve_seat_price`):
+ *
+ * - seat painted with a category the tier prices → that category price;
+ * - seat painted with a category the tier does NOT price (non-empty map) →
+ *   null: the backend refuses the sale, so there is no amount to quote;
+ * - unpainted seat, or a tier without category prices → `tier.price`.
+ *
+ * A comp is not priced here — the caller shows the comp label instead.
+ */
+export function doorSalePrice(
+	tier: Pick<TicketTierDetailSchema, 'price' | 'category_prices'>,
+	categoryId: string | null
+): string | null {
+	const priced = tier.category_prices ?? {};
+	if (categoryId !== null && Object.keys(priced).length > 0) {
+		const price = priced[categoryId];
+		return price === undefined || price === null ? null : String(price);
+	}
+	return tier.price ?? null;
+}
+
+/**
+ * The amount recorded on a box-office ticket (#958): `price_paid` when the
+ * backend stamped one (comps and category-priced door sales), else the flat
+ * tier price it deliberately leaves unstamped.
+ */
+export function recordedSaleAmount(ticket: Pick<AdminTicketSchema, 'price_paid' | 'tier'>): string {
+	return ticket.price_paid ?? ticket.tier.price;
 }

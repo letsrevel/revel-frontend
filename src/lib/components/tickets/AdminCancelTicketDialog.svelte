@@ -61,6 +61,11 @@
 
 	const context = $derived(contextQuery.data);
 	const remaining = $derived(context ? parseFloat(context.remaining_refundable) : 0);
+	// Offline / at-the-door money was collected by the organizer, so a refund is
+	// only RECORDED here (BE #1011) — no payment moves; the copy must say so.
+	const isRecordedRefund = $derived(
+		context?.payment_method === 'offline' || context?.payment_method === 'at_the_door'
+	);
 
 	// Re-seed the form each time the dialog opens; prefill the refund amount
 	// with the policy suggestion when there is one, else the full remainder.
@@ -117,7 +122,9 @@
 		onSuccess: () => {
 			toast.success(m['adminCancelTicket.successTitle'](), {
 				description: alsoRefund
-					? m['adminCancelTicket.successWithRefund']({
+					? (isRecordedRefund
+							? m['adminCancelTicket.successWithRecordedRefund']
+							: m['adminCancelTicket.successWithRefund'])({
 							amount: formatMoney(refundAmountNum.toFixed(2), context?.currency)
 						})
 					: undefined,
@@ -132,9 +139,18 @@
 		}
 	}));
 
+	// Hold the cancel until the refund context has loaded: cancelling first
+	// would skip the refund option the organizer hasn't seen yet (and a paid
+	// offline ticket's cancel-without-refund keeps the money in revenue). On a
+	// load failure the dialog offers Retry instead.
+	const contextReady = $derived(!!context);
+	const submitDisabled = $derived(
+		cancelMutation.isPending || !accessToken || !refundValid || !contextReady
+	);
+
 	function submit(): void {
 		// Never send a literal "Bearer null" during the auth bootstrap window.
-		if (cancelMutation.isPending || !accessToken || !refundValid) return;
+		if (submitDisabled) return;
 		errorMessage = null;
 		cancelMutation.mutate();
 	}
@@ -187,10 +203,14 @@
 						/>
 						<div class="grid gap-1">
 							<Label for="cancel-also-refund" class="cursor-pointer font-medium">
-								{m['adminCancelTicket.refundSectionLabel']()}
+								{isRecordedRefund
+									? m['adminCancelTicket.recordedRefundSectionLabel']()
+									: m['adminCancelTicket.refundSectionLabel']()}
 							</Label>
 							<p class="text-xs text-muted-foreground">
-								{m['adminCancelTicket.refundHint']({
+								{(isRecordedRefund
+									? m['adminCancelTicket.recordedRefundHint']
+									: m['adminCancelTicket.refundHint'])({
 									max: formatMoney(context.remaining_refundable, context.currency)
 								})}
 							</p>
@@ -225,7 +245,9 @@
 						</div>
 					{:else}
 						<p class="text-xs text-muted-foreground">
-							{m['adminCancelTicket.noRefundNote']()}
+							{isRecordedRefund
+								? m['adminCancelTicket.recordedNoRefundNote']()
+								: m['adminCancelTicket.noRefundNote']()}
 						</p>
 					{/if}
 				</div>
@@ -243,11 +265,7 @@
 			<Button variant="outline" onclick={handleClose} disabled={cancelMutation.isPending}>
 				{m['eventTicketsAdmin.cancelTicketKeep']()}
 			</Button>
-			<Button
-				variant="destructive"
-				onclick={submit}
-				disabled={cancelMutation.isPending || !accessToken || !refundValid}
-			>
+			<Button variant="destructive" onclick={submit} disabled={submitDisabled}>
 				{#if cancelMutation.isPending}
 					<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
 				{/if}

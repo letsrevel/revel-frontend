@@ -2058,7 +2058,9 @@
 		"filterBySource": "Nach Herkunft filtern",
 		"sourceDirect": "Direktkauf",
 		"sourcePass": "Saisonpass",
-		"checkInSuccessGeneric": "Eingecheckt"
+		"checkInSuccessGeneric": "Eingecheckt",
+		"saleSourceComp": "Freikarte",
+		"saleSourceDoorSale": "Abendkasse"
 	},
 	"eventTokenCard": {
 		"type": "Typ:",
@@ -3084,7 +3086,11 @@
 		"noRefundNote": "Es wird jetzt keine Rückerstattung ausgestellt. Du kannst die Zahlung jederzeit separat erstatten.",
 		"successTitle": "Ticket storniert",
 		"successWithRefund": "Eine Rückerstattung von {amount} wurde veranlasst.",
-		"errorGeneric": "Das Ticket konnte nicht storniert werden."
+		"errorGeneric": "Das Ticket konnte nicht storniert werden.",
+		"recordedRefundSectionLabel": "Rückerstattung erfassen",
+		"recordedRefundHint": "Du gibst das Geld selbst an die teilnehmende Person zurück — es wird keine Zahlung ausgelöst. Kassiert wurden bis zu {max}.",
+		"recordedNoRefundNote": "Es wird keine Rückerstattung erfasst. Der kassierte Betrag bleibt in deinen Einnahmen.",
+		"successWithRecordedRefund": "Eine Rückerstattung von {amount} wurde erfasst."
 	},
 	"cancelTicket": {
 		"button": "Ticket stornieren",
@@ -4388,6 +4394,10 @@
 	"orgAdmin.seating.boxOffice.submit": "Ticket ausstellen",
 	"orgAdmin.seating.boxOffice.resultHeading": "Ticket ausgestellt",
 	"orgAdmin.seating.boxOffice.resultDetail": "Sitzplatz {seat} – {recipient}",
+	"orgAdmin.seating.boxOffice.amountLabel": "Zu kassierender Betrag",
+	"orgAdmin.seating.boxOffice.amountComp": "Kostenlos / Freikarte — nichts zu kassieren",
+	"orgAdmin.seating.boxOffice.amountUnpriced": "Diese Ticketstufe hat keinen Preis für die Kategorie dieses Platzes, daher kann er hier nicht verkauft werden. Wähle eine andere Stufe oder stelle eine Freikarte aus.",
+	"orgAdmin.seating.boxOffice.resultAmount": "Erfasst: {amount}",
 	"orgAdmin.seating.boxOffice.sellSuccessToast": "Ticket für Sitzplatz {seat} für {recipient} ausgestellt",
 	"orgAdmin.seating.boxOffice.sellFailedToast": "Ticket konnte nicht ausgestellt werden",
 	"reseatDialog.title": "Sitzplatz ändern",
@@ -6671,7 +6681,6 @@
 		"status": "Status",
 		"actions": "Aktionen",
 		"statusIssued": "Ausgestellt",
-		"statusCancelled": "Storniert",
 		"detailTitle": "Rechnungsdetails",
 		"lineItems": "Positionen",
 		"description": "Beschreibung",
@@ -6698,7 +6707,11 @@
 		"close": "Schließen",
 		"previous": "Zurück",
 		"next": "Weiter",
-		"lineDescription": "Beschreibung"
+		"lineDescription": "Beschreibung",
+		"creditNotes": "Gutschriften",
+		"downloadCreditNote": "Gutschrift {number} herunterladen",
+		"statusPartiallyCredited": "Teilweise gutgeschrieben",
+		"statusCredited": "Storniert / gutgeschrieben"
 	},
 	"checkout": {
 		"billing": {
