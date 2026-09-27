@@ -102,7 +102,8 @@ export const privacyFocusedEventsEN: LandingPageContent = {
 		},
 		{
 			question: 'Can I keep all the data on my own servers?',
-			answer: 'Yes. Self-host Revel under the MIT license and your data lives wherever you put it.'
+			answer:
+				'Yes. Self-host Revel under the MIT license and everything Revel stores lives in your own database, wherever you run it. Data only leaves it when you switch on an outside service, like Stripe for online payments.'
 		}
 	],
 	relatedPages: ['self-hosted-event-platform', 'queer-event-management']
@@ -216,7 +217,7 @@ export const privacyFocusedEventsDE: LandingPageContent = {
 		{
 			question: 'Kann ich alle Daten auf meinen eigenen Servern behalten?',
 			answer:
-				'Ja. Hoste Revel selbst unter der MIT-Lizenz, und deine Daten liegen genau dort, wo du sie haben willst.'
+				'Ja. Hoste Revel selbst unter der MIT-Lizenz, und alles, was Revel speichert, liegt in deiner eigenen Datenbank, wo auch immer du sie betreibst. Daten verlassen sie nur, wenn du einen externen Dienst einschaltest, etwa Stripe für Online-Zahlungen.'
 		}
 	],
 	relatedPages: ['self-hosted-event-platform', 'queer-event-management']
@@ -325,7 +326,8 @@ export const privacyFocusedEventsIT: LandingPageContent = {
 		},
 		{
 			question: 'Posso tenere tutti i dati sui miei server?',
-			answer: 'Sì. Fai self-hosting di Revel con licenza MIT e i tuoi dati stanno dove decidi tu.'
+			answer:
+				'Sì. Fai self-hosting di Revel con licenza MIT e tutto ciò che Revel salva resta nel tuo database, ovunque tu lo faccia girare. I dati escono solo se attivi un servizio esterno, come Stripe per i pagamenti online.'
 		}
 	],
 	relatedPages: ['self-hosted-event-platform', 'queer-event-management']
@@ -438,7 +440,8 @@ export const privacyFocusedEventsFR: LandingPageContent = {
 		},
 		{
 			question: 'Puis-je garder toutes les données sur mes propres serveurs ?',
-			answer: 'Oui. Auto-héberge Revel sous licence MIT et tes données restent là où tu les mets.'
+			answer:
+				'Oui. Auto-héberge Revel sous licence MIT et tout ce que Revel enregistre reste dans ta propre base de données, où que tu la fasses tourner. Les données n’en sortent que si tu actives un service externe, comme Stripe pour les paiements en ligne.'
 		}
 	],
 	relatedPages: ['self-hosted-event-platform', 'queer-event-management']
@@ -547,7 +550,8 @@ export const privacyFocusedEventsES: LandingPageContent = {
 		},
 		{
 			question: '¿Puedo tener todos los datos en mis propios servidores?',
-			answer: 'Sí. Autoaloja Revel con licencia MIT y tus datos estarán donde tú los pongas.'
+			answer:
+				'Sí. Autoaloja Revel con licencia MIT y todo lo que Revel guarda vive en tu propia base de datos, donde tú la ejecutes. Los datos solo salen de ahí si activas un servicio externo, como Stripe para los pagos en línea.'
 		}
 	],
 	relatedPages: ['self-hosted-event-platform', 'queer-event-management']
@@ -660,7 +664,8 @@ export const privacyFocusedEventsPT: LandingPageContent = {
 		},
 		{
 			question: 'Posso manter todos os dados nos meus próprios servidores?',
-			answer: 'Sim. Autoaloja a Revel com a licença MIT e os teus dados ficam onde os puseres.'
+			answer:
+				'Sim. Autoaloja a Revel com a licença MIT e tudo o que a Revel guarda fica na tua própria base de dados, onde quer que a corras. Os dados só saem de lá se ativares um serviço externo, como a Stripe para pagamentos online.'
 		}
 	],
 	relatedPages: ['self-hosted-event-platform', 'queer-event-management']

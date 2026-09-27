@@ -83,7 +83,7 @@ export const kinkEventTicketingEN: LandingPageContent = {
 		{
 			question: 'How does attendee vetting work?',
 			answer:
-				'You write a questionnaire with the questions that matter to you: experience, references, agreement to your consent policy. People fill it in before they can get a ticket. Multiple-choice answers can score automatically, free-text answers you review yourself, and you approve or reject each submission.'
+				'You write a questionnaire with the questions that matter to you: experience, references, agreement to your consent policy. People fill it in before they can get a ticket. You choose how submissions are handled: review each one yourself, let passing multiple-choice answers through automatically, or score them automatically and still check each one before anyone gets in.'
 		},
 		{
 			question: 'Can I keep the address secret until someone is confirmed?',
@@ -198,7 +198,7 @@ export const kinkEventTicketingDE: LandingPageContent = {
 		{
 			question: 'Wie funktioniert das Screening der Teilnehmer*innen?',
 			answer:
-				'Du schreibst einen Fragebogen mit den Fragen, die dir wichtig sind: Erfahrung, Referenzen, Zustimmung zu deiner Konsens-Policy. Die Leute füllen ihn aus, bevor sie ein Ticket bekommen können. Multiple-Choice-Antworten können automatisch bewertet werden, Freitextantworten prüfst du selbst, und du nimmst jede Einreichung an oder lehnst sie ab.'
+				'Du schreibst einen Fragebogen mit den Fragen, die dir wichtig sind: Erfahrung, Referenzen, Zustimmung zu deiner Konsens-Policy. Die Leute füllen ihn aus, bevor sie ein Ticket bekommen können. Du entscheidest, wie Einreichungen behandelt werden: jede selbst prüfen, bestandene Multiple-Choice-Antworten automatisch durchlassen oder automatisch bewerten und trotzdem jede prüfen, bevor jemand reinkommt.'
 		},
 		{
 			question: 'Kann ich die Adresse geheim halten, bis jemand bestätigt ist?',
@@ -308,7 +308,7 @@ export const kinkEventTicketingIT: LandingPageContent = {
 		{
 			question: 'Come funziona la valutazione di chi partecipa?',
 			answer:
-				'Scrivi un questionario con le domande che contano per te: esperienza, referenze, adesione alla tua policy sul consenso. Le persone lo compilano prima di poter ricevere un biglietto. Le risposte a scelta multipla possono ricevere un punteggio automatico, quelle a testo libero le valuti tu, e approvi o rifiuti ogni risposta inviata.'
+				'Scrivi un questionario con le domande che contano per te: esperienza, referenze, adesione alla tua policy sul consenso. Le persone lo compilano prima di poter ricevere un biglietto. Scegli tu come gestire le risposte: valutarle una per una, far passare in automatico chi supera le domande a scelta multipla, oppure assegnare un punteggio automatico e controllarle comunque tutte prima di far entrare qualcuno.'
 		},
 		{
 			question: "Posso tenere segreto l'indirizzo finché una persona non riceve la conferma?",
@@ -423,7 +423,7 @@ export const kinkEventTicketingFR: LandingPageContent = {
 		{
 			question: 'Comment fonctionne le filtrage des participant·es ?',
 			answer:
-				'Tu rédiges un questionnaire avec les questions qui comptent pour toi : expérience, références, adhésion à ta politique de consentement. Les personnes le remplissent avant de pouvoir obtenir un billet. Les réponses à choix multiples peuvent être notées automatiquement, tu examines toi-même les réponses libres, et tu acceptes ou refuses chaque candidature.'
+				'Tu rédiges un questionnaire avec les questions qui comptent pour toi : expérience, références, adhésion à ta politique de consentement. Les personnes le remplissent avant de pouvoir obtenir un billet. Tu choisis comment traiter les candidatures : les examiner une par une, laisser passer automatiquement les réponses à choix multiples réussies, ou les noter automatiquement et quand même vérifier chacune avant que quiconque n’entre.'
 		},
 		{
 			question: "Puis-je garder l'adresse secrète jusqu'à ce qu'une personne soit confirmée ?",
@@ -533,7 +533,7 @@ export const kinkEventTicketingES: LandingPageContent = {
 		{
 			question: '¿Cómo funciona la selección de participantes?',
 			answer:
-				'Escribes un cuestionario con las preguntas que te importan: experiencia, referencias, aceptación de tu política de consentimiento. La gente lo rellena antes de poder conseguir una entrada. Las respuestas de opción múltiple pueden puntuarse automáticamente, las de texto libre las revisas tú, y apruebas o rechazas cada solicitud.'
+				'Escribes un cuestionario con las preguntas que te importan: experiencia, referencias, aceptación de tu política de consentimiento. La gente lo rellena antes de poder conseguir una entrada. Tú decides cómo se gestionan las solicitudes: revisar cada una, dejar pasar automáticamente las respuestas de opción múltiple que aprueban, o puntuarlas automáticamente y revisar igualmente cada una antes de que nadie entre.'
 		},
 		{
 			question: '¿Puedo mantener la dirección en secreto hasta que se confirme la asistencia?',
@@ -647,7 +647,7 @@ export const kinkEventTicketingPT: LandingPageContent = {
 		{
 			question: 'Como funciona a seleção de participantes?',
 			answer:
-				'Escreves um questionário com as perguntas que te importam: experiência, referências, aceitação da tua política de consentimento. As pessoas preenchem-no antes de poderem obter um bilhete. As respostas de escolha múltipla podem ser pontuadas automaticamente, as de texto livre revês tu, e aprovas ou rejeitas cada candidatura.'
+				'Escreves um questionário com as perguntas que te importam: experiência, referências, aceitação da tua política de consentimento. As pessoas preenchem-no antes de poderem obter um bilhete. Tu decides como tratar as candidaturas: rever cada uma, deixar passar automaticamente as respostas de escolha múltipla aprovadas, ou pontuá-las automaticamente e ainda assim verificar cada uma antes de alguém entrar.'
 		},
 		{
 			question: 'Posso manter a morada secreta até a pessoa estar confirmada?',

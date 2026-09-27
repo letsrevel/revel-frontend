@@ -94,7 +94,7 @@ export const clubMembershipManagementEN: LandingPageContent = {
 		{
 			question: 'How do members pay their membership?',
 			answer:
-				'Each tier can have monthly, annual or lifetime plans. Online plans are paid through Stripe and renew automatically. If your club collects cash or bank transfers, set up an offline plan and record the payments yourself in the dashboard, at no cost.'
+				'Each tier can have monthly, annual or lifetime plans. Monthly and annual plans can be paid online through Stripe and renew automatically. For cash, bank transfers or a one-off lifetime fee, set up an offline plan and record the payments yourself in the dashboard, at no cost.'
 		},
 		{
 			question: 'Is there a physical membership card?',
@@ -210,7 +210,7 @@ export const clubMembershipManagementDE: LandingPageContent = {
 		{
 			question: 'Wie bezahlen Mitglieder ihre Mitgliedschaft?',
 			answer:
-				'Jede Stufe kann Monats-, Jahres- oder lebenslange Pläne haben. Online-Pläne werden über Stripe bezahlt und verlängern sich automatisch. Wenn dein Verein bar oder per Überweisung kassiert, richtest du einen Offline-Plan ein und erfasst die Zahlungen selbst im Dashboard, kostenlos.'
+				'Jede Stufe kann Monats-, Jahres- oder lebenslange Pläne haben. Monats- und Jahrespläne können online über Stripe bezahlt werden und verlängern sich automatisch. Für Bargeld, Überweisungen oder eine einmalige Zahlung für eine lebenslange Mitgliedschaft richtest du einen Offline-Plan ein und erfasst die Zahlungen selbst im Dashboard, kostenlos.'
 		},
 		{
 			question: 'Gibt es eine physische Mitgliedskarte?',
@@ -326,7 +326,7 @@ export const clubMembershipManagementIT: LandingPageContent = {
 		{
 			question: "Come pagano l'abbonamento i membri?",
 			answer:
-				'Ogni livello può avere piani mensili, annuali o a vita. I piani online si pagano tramite Stripe e si rinnovano in automatico. Se il tuo club incassa in contanti o con bonifico, crea un piano offline e registra tu i pagamenti dalla dashboard, senza costi.'
+				'Ogni livello può avere piani mensili, annuali o a vita. I piani mensili e annuali si possono pagare online tramite Stripe e si rinnovano in automatico. Per contanti, bonifici o un pagamento unico per un piano a vita, crea un piano offline e registra tu i pagamenti dalla dashboard, senza costi.'
 		},
 		{
 			question: 'Esiste una tessera fisica?',
@@ -442,7 +442,7 @@ export const clubMembershipManagementFR: LandingPageContent = {
 		{
 			question: 'Comment les membres paient-ils leur adhésion ?',
 			answer:
-				'Chaque niveau peut proposer des formules mensuelles, annuelles ou à vie. Les formules en ligne se paient via Stripe et se renouvellent automatiquement. Si ton club encaisse en espèces ou par virement, crée une formule hors ligne et enregistre toi-même les paiements dans le tableau de bord, sans frais.'
+				'Chaque niveau peut proposer des formules mensuelles, annuelles ou à vie. Les formules mensuelles et annuelles peuvent se payer en ligne via Stripe et se renouvellent automatiquement. Pour les espèces, les virements ou un paiement unique pour une adhésion à vie, crée une formule hors ligne et enregistre toi-même les paiements dans le tableau de bord, sans frais.'
 		},
 		{
 			question: 'Y a-t-il une carte de membre physique ?',
@@ -558,7 +558,7 @@ export const clubMembershipManagementES: LandingPageContent = {
 		{
 			question: '¿Cómo pagan los miembros su membresía?',
 			answer:
-				'Cada nivel puede tener planes mensuales, anuales o vitalicios. Los planes en línea se pagan a través de Stripe y se renuevan automáticamente. Si tu club cobra en efectivo o por transferencia bancaria, crea un plan offline y registra tú los pagos en el panel, sin coste.'
+				'Cada nivel puede tener planes mensuales, anuales o vitalicios. Los planes mensuales y anuales pueden pagarse en línea a través de Stripe y se renuevan automáticamente. Para efectivo, transferencias o un pago único por una membresía vitalicia, crea un plan offline y registra tú los pagos en el panel, sin coste.'
 		},
 		{
 			question: '¿Hay un carnet de miembro físico?',
@@ -678,7 +678,7 @@ export const clubMembershipManagementPT: LandingPageContent = {
 		{
 			question: 'Como é que os membros pagam a adesão?',
 			answer:
-				'Cada escalão pode ter planos mensais, anuais ou vitalícios. Os planos online são pagos através da Stripe e renovam-se automaticamente. Se o teu clube recebe em dinheiro ou por transferência bancária, cria um plano offline e regista tu os pagamentos no painel, sem custos.'
+				'Cada escalão pode ter planos mensais, anuais ou vitalícios. Os planos mensais e anuais podem ser pagos online através da Stripe e renovam-se automaticamente. Para dinheiro, transferências ou um pagamento único por uma adesão vitalícia, cria um plano offline e regista tu os pagamentos no painel, sem custos.'
 		},
 		{
 			question: 'Existe um cartão de membro físico?',

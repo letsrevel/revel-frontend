@@ -89,7 +89,7 @@ export const queerEventManagementEN: LandingPageContent = {
 		{
 			question: 'Can I screen who attends my events?',
 			answer:
-				'Yes. Attach a questionnaire to an event and people answer it before they can get a ticket or RSVP. Multiple-choice questions score automatically, free-text answers you read yourself, and you approve or reject each submission.'
+				'Yes. Attach a questionnaire to an event and people answer it before they can get a ticket or RSVP. You choose how submissions are handled: review each one yourself, let passing multiple-choice answers through automatically, or score them automatically and still check each one before anyone gets in.'
 		},
 		{
 			question: "Who can see who's attending?",
@@ -203,7 +203,7 @@ export const queerEventManagementDE: LandingPageContent = {
 		{
 			question: 'Kann ich prüfen, wer zu meinen Events kommt?',
 			answer:
-				'Ja. Häng einen Fragebogen an ein Event, und die Leute beantworten ihn, bevor sie ein Ticket bekommen oder per RSVP zusagen können. Multiple-Choice-Fragen werden automatisch bewertet, Freitextantworten liest du selbst, und du nimmst jede Einreichung an oder lehnst sie ab.'
+				'Ja. Häng einen Fragebogen an ein Event, und die Leute beantworten ihn, bevor sie ein Ticket bekommen oder per RSVP zusagen können. Du entscheidest, wie Einreichungen behandelt werden: jede selbst prüfen, bestandene Multiple-Choice-Antworten automatisch durchlassen oder automatisch bewerten und trotzdem jede prüfen, bevor jemand reinkommt.'
 		},
 		{
 			question: 'Wer kann sehen, wer kommt?',
@@ -313,7 +313,7 @@ export const queerEventManagementIT: LandingPageContent = {
 		{
 			question: 'Posso selezionare chi partecipa ai miei eventi?',
 			answer:
-				'Sì. Collega un questionario a un evento e le persone rispondono prima di poter ottenere un biglietto o fare RSVP. Le domande a scelta multipla ricevono un punteggio automatico, le risposte libere le leggi tu, e approvi o rifiuti ogni risposta.'
+				'Sì. Collega un questionario a un evento e le persone rispondono prima di poter ottenere un biglietto o fare RSVP. Scegli tu come gestire le risposte: valutarle una per una, far passare in automatico chi supera le domande a scelta multipla, oppure assegnare un punteggio automatico e controllarle comunque tutte prima di far entrare qualcuno.'
 		},
 		{
 			question: 'Chi può vedere chi partecipa?',
@@ -427,7 +427,7 @@ export const queerEventManagementFR: LandingPageContent = {
 		{
 			question: 'Puis-je filtrer qui participe à mes événements ?',
 			answer:
-				'Oui. Associe un questionnaire à un événement : les personnes y répondent avant de pouvoir obtenir un billet ou confirmer leur présence. Les questions à choix multiples sont notées automatiquement, tu lis toi-même les réponses libres, et tu approuves ou refuses chaque soumission.'
+				'Oui. Associe un questionnaire à un événement : les personnes y répondent avant de pouvoir obtenir un billet ou confirmer leur présence. Tu choisis comment traiter les soumissions : les examiner une par une, laisser passer automatiquement les réponses à choix multiples réussies, ou les noter automatiquement et quand même vérifier chacune avant que quiconque n’entre.'
 		},
 		{
 			question: 'Qui peut voir qui participe ?',
@@ -541,7 +541,7 @@ export const queerEventManagementES: LandingPageContent = {
 		{
 			question: '¿Puedo filtrar quién asiste a mis eventos?',
 			answer:
-				'Sí. Añade un cuestionario a un evento y la gente lo responde antes de poder conseguir una entrada o confirmar asistencia. Las preguntas de opción múltiple se puntúan solas, las respuestas de texto libre las lees tú, y apruebas o rechazas cada envío.'
+				'Sí. Añade un cuestionario a un evento y la gente lo responde antes de poder conseguir una entrada o confirmar asistencia. Tú decides cómo se gestionan los envíos: revisar cada uno, dejar pasar automáticamente las respuestas de opción múltiple que aprueban, o puntuarlas automáticamente y revisar igualmente cada una antes de que nadie entre.'
 		},
 		{
 			question: '¿Quién puede ver quién asiste?',
@@ -659,7 +659,7 @@ export const queerEventManagementPT: LandingPageContent = {
 		{
 			question: 'Posso escolher quem vai aos meus eventos?',
 			answer:
-				'Sim. Associa um questionário a um evento e as pessoas respondem antes de poderem obter bilhete ou confirmar presença. As perguntas de escolha múltipla são pontuadas automaticamente, as respostas de texto livre lês tu, e aprovas ou rejeitas cada submissão.'
+				'Sim. Associa um questionário a um evento e as pessoas respondem antes de poderem obter bilhete ou confirmar presença. Tu decides como tratar as submissões: rever cada uma, deixar passar automaticamente as respostas de escolha múltipla aprovadas, ou pontuá-las automaticamente e ainda assim verificar cada uma antes de alguém entrar.'
 		},
 		{
 			question: 'Quem consegue ver quem vai?',
