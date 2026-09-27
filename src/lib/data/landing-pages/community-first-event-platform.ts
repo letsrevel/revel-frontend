@@ -4,76 +4,75 @@ export const communityFirstEventPlatformEN: LandingPageContent = {
 	slug: 'community-first-event-platform',
 	locale: 'en',
 	meta: {
-		title: 'Community-First Event Platform – Beyond Ticketing | Revel',
+		title: 'Community-First Event Platform, More Than Ticketing | Revel',
 		description:
-			'Build lasting communities, not just events. Organizations, membership tiers, potluck coordination, and more. Self-host for free or use our hosted version.',
+			'For groups that meet again and again. Organizations, memberships, recurring event series, potluck boards, polls and announcements. Free for free events, and open source.',
 		keywords:
-			'community event platform, membership management, organization events, potluck coordination, community building, meetup alternative'
+			'community event platform, meetup alternative, recurring events, membership management, potluck coordination, community building'
 	},
 	hero: {
-		headline: 'Build Communities, Not Just Events',
+		headline: 'Build a Community, Not Just a Guest List',
 		subheadline:
-			'Organizations, memberships, and unique tools like potluck coordination. Revel helps you foster lasting community connections.'
+			'Organizations, memberships, recurring events and potluck boards for groups whose people keep coming back.'
 	},
 	intro: {
 		paragraphs: [
-			'Most event platforms treat every gathering as a one-off transaction. But real communities need more than that—they need structure, continuity, and tools that support ongoing relationships.',
-			'Revel is built for communities first. Create organizations with membership tiers, assign roles and permissions, and use features like our unique potluck coordination system to make events more collaborative and less work for organizers.',
-			"Whether you're running a book club, hobby group, professional network, or maker space, Revel gives you the infrastructure to grow from casual meetups into a thriving community—without expensive subscriptions or platform lock-in."
+			"Most event tools treat every gathering as a one-off sale. Communities don't work like that. The same faces show up month after month, someone always brings the folding chairs, and the group chat is doing a job it was never meant to do.",
+			'Revel gives your group a proper home. Create an organization, set up a recurring series, and let people follow you so they hear about the next event. Use a potluck board to sort out who brings what, a poll to settle the date, and announcements by email, in the app or on Telegram.',
+			"Book clubs, running groups, makerspaces, supper clubs, queer collectives: if your people keep coming back, Revel was built for you. And it's free for free events."
 		]
 	},
 	features: [
 		{
 			icon: 'users',
-			title: 'Organization Structure',
+			title: 'Organizations and Roles',
 			description:
-				'Create community hubs with membership tiers, not just event listings. Owner, staff, and member roles with granular permissions.'
+				'A home for your group, with staff roles and detailed permissions, so the right people can edit events, check guests in or send announcements.'
 		},
 		{
 			icon: 'clipboard',
-			title: 'Potluck Coordination',
+			title: 'Potluck Boards',
 			description:
-				'Built-in system for coordinating who brings what. Handle dietary restrictions, quantities, and item management—no more messy spreadsheets.'
+				"Suggest what's needed, let guests claim items, and see at a glance whether anyone is bringing plates. Food, drinks, supplies or an extra pair of hands."
 		},
 		{
-			icon: 'shield',
-			title: 'Member-Only Events',
+			icon: 'globe',
+			title: 'Recurring Series',
 			description:
-				'Restrict events to members, specific tiers, or keep them public. Build exclusive spaces for your community.'
+				'Set up a weekly or monthly event once and Revel creates the dates. People can follow a series to hear when new ones go up.'
 		},
 		{
-			icon: 'ticket',
-			title: 'Integrated Ticketing',
+			icon: 'heart',
+			title: 'Memberships',
 			description:
-				'Free events, paid tickets, RSVP-only, or hybrid. Handle everything from casual meetups to professional conferences.'
+				'Free or paid membership tiers, members-only events, and membership cards in Apple Wallet or Google Wallet.'
+		},
+		{
+			icon: 'check',
+			title: 'Polls and Announcements',
+			description:
+				'Ask the group, then tell the group. Announcements go out by email, in the app or on Telegram, right away or at a time you pick.'
 		},
 		{
 			icon: 'eye',
 			title: 'No Ads, Ever',
-			description:
-				'Your community deserves better than being shown ads. Self-host for free or use our ad-free hosted version.'
-		},
-		{
-			icon: 'code',
-			title: 'Open Source (MIT)',
-			description:
-				'Free to use, modify, and deploy. No vendor lock-in. Run on your own servers with complete control.'
+			description: 'Your members see your events, not advertising. No trackers either.'
 		}
 	],
 	benefits: {
-		title: 'Why Community Organizers Choose Revel',
+		title: 'Why Community Organizers Pick Revel',
 		items: [
-			'Build lasting membership structures, not just event-by-event lists',
-			'Coordinate potlucks and shared responsibilities effortlessly',
-			'No expensive subscriptions like Meetup ($540/year)',
-			'Ad-free experience for your members',
-			'Member-only events for building exclusive communities',
-			'Self-host for complete control and zero platform fees'
+			'Events, members and announcements in one place instead of five apps',
+			'Recurring series take the busywork out of weekly meetups',
+			'Potluck boards put an end to four bowls of hummus and zero forks',
+			'No subscription: free events and RSVPs cost nothing',
+			'Members-only events for when the group needs its own space',
+			'Open source, so you can self-host whenever you want'
 		]
 	},
 	cta: {
-		title: 'Ready to Build Your Community?',
-		description: 'See Revel in action or deploy it yourself. No credit card required.',
+		title: 'Ready to Give Your Community a Home?',
+		description: 'Look around the demo, or run it yourself. No credit card needed.',
 		buttons: [
 			{ text: 'Try the Live Demo', href: 'https://demo.letsrevel.io', variant: 'primary' },
 			{ text: 'Self-Host (GitHub)', href: 'https://github.com/letsrevel', variant: 'secondary' },
@@ -82,29 +81,29 @@ export const communityFirstEventPlatformEN: LandingPageContent = {
 	},
 	faq: [
 		{
-			question: 'How is this different from Meetup?',
+			question: 'How is Revel different from Meetup?',
 			answer:
-				'Meetup charges $540/year and shows ads to your members. Revel is free to self-host and ad-free on our hosted version. We also integrate full ticketing capabilities and unique features like potluck coordination that Meetup lacks.'
+				'Meetup charges organizers a subscription. On Revel, free events and RSVPs cost nothing and your members never see ads. You also get ticketing, memberships and potluck boards in the same place, and you can self-host the whole thing.'
 		},
 		{
-			question: 'What is potluck coordination?',
+			question: "What's a potluck board?",
 			answer:
-				"It's a built-in system that lets attendees coordinate who brings what to events. Handle dietary restrictions, quantity management, and item assignments—no more messy spreadsheets or external tools. It's great for potlucks, equipment sharing, volunteer coordination, and more."
+				"A shared list for an event. You suggest what's needed, guests claim what they'll bring, and anyone can add something. Items can be food, drinks, supplies, helping hands and more, so it works just as well for workdays and gear swaps as for dinners."
 		},
 		{
-			question: 'Can I create member-only events?',
+			question: 'Can I run members-only events?',
 			answer:
-				'Yes. You can create organizations with membership tiers and restrict events to members only, specific membership levels, or keep them public. You have complete control over visibility and access.'
+				'Yes. Create an organization with membership tiers and make an event members only, or keep it public. You can also reserve specific ticket tiers for specific membership tiers.'
 		},
 		{
 			question: 'Is Revel really free?',
 			answer:
-				'Yes for self-hosting (MIT licensed). Our hosted version charges a small fee only for paid ticket sales (1.5% + €0.25 per transaction). Free events and RSVP-only events have zero platform fees on either version.'
+				'Free events and RSVPs are free on our hosted version. Paid tickets and online membership payments carry a fee of 1.5% + €0.25 per transaction. Self-hosting is free under the MIT license.'
 		},
 		{
-			question: 'What types of communities use Revel?',
+			question: 'What kinds of communities use Revel?',
 			answer:
-				"Book clubs, running groups, maker spaces, professional networks, hobby communities, special interest groups, and more. Any community that wants more than just basic event listings benefits from Revel's organization and membership features."
+				'Book clubs, running groups, makerspaces, supper clubs, professional networks, hobby groups and queer collectives. Any group that wants more than a list of events gets a lot out of organizations, series and memberships.'
 		}
 	],
 	relatedPages: [
@@ -118,80 +117,79 @@ export const communityFirstEventPlatformDE: LandingPageContent = {
 	slug: 'community-first-event-platform',
 	locale: 'de',
 	meta: {
-		title: 'Community-First Event-Plattform – Mehr als Ticketing | Revel',
+		title: 'Community-Event-Plattform: mehr als Ticketing | Revel',
 		description:
-			'Baue dauerhafte Communities, nicht nur Events. Organisationen, Mitgliedschaftsstufen, Potluck-Koordination und mehr. Selbst hosten oder gehostete Version nutzen.',
+			'Für Gruppen, die sich immer wieder treffen. Organisationen, Mitgliedschaften, wiederkehrende Veranstaltungsreihen, Potluck-Listen, Umfragen und Ankündigungen. Gratis für kostenlose Events, und Open Source.',
 		keywords:
-			'community event plattform, mitgliederverwaltung, organisation events, potluck koordination, community aufbau, meetup alternative'
+			'community event plattform, meetup alternative, wiederkehrende events, veranstaltungsreihen, mitgliederverwaltung, potluck organisieren, community aufbauen'
 	},
 	hero: {
-		headline: 'Baue Communities, Nicht Nur Events',
+		headline: 'Bau eine Community auf, nicht nur eine Gästeliste',
 		subheadline:
-			'Organisationen, Mitgliedschaften und einzigartige Tools wie Potluck-Koordination. Revel hilft dir, dauerhafte Community-Verbindungen aufzubauen.'
+			'Organisationen, Mitgliedschaften, wiederkehrende Events und Potluck-Listen für Gruppen, deren Leute immer wiederkommen.'
 	},
 	intro: {
 		paragraphs: [
-			'Die meisten Event-Plattformen behandeln jedes Treffen als einmalige Transaktion. Aber echte Communities brauchen mehr—sie brauchen Struktur, Kontinuität und Tools, die fortlaufende Beziehungen unterstützen.',
-			'Revel ist zuerst für Communities gebaut. Erstelle Organisationen mit Mitgliedschaftsstufen, weise Rollen und Berechtigungen zu und nutze Features wie unser einzigartiges Potluck-Koordinationssystem, um Events kollaborativer zu machen und Organisator*innen Arbeit abzunehmen.',
-			'Egal ob du einen Buchclub, eine Hobbygruppe, ein professionelles Netzwerk oder einen Makerspace leitest, Revel gibt dir die Infrastruktur, um von lockeren Meetups zu einer florierenden Community zu wachsen—ohne teure Abos oder Plattform-Lock-in.'
+			'Die meisten Event-Tools behandeln jedes Treffen wie einen einmaligen Verkauf. So funktionieren Communities aber nicht. Monat für Monat tauchen dieselben Gesichter auf, irgendwer bringt immer die Klappstühle mit, und der Gruppenchat erledigt einen Job, für den er nie gedacht war.',
+			'Revel gibt deiner Gruppe ein richtiges Zuhause. Erstelle eine Organisation, richte eine Veranstaltungsreihe ein und lass Leute dir folgen, damit sie vom nächsten Event erfahren. Mit einer Potluck-Liste klärt ihr, wer was mitbringt, mit einer Umfrage findet ihr den Termin, und Ankündigungen verschickst du per E-Mail, in der App oder über Telegram.',
+			'Buchclubs, Laufgruppen, Makerspaces, Supper Clubs, queere Kollektive: Wenn deine Leute immer wiederkommen, ist Revel für dich gemacht. Und für kostenlose Events ist es gratis.'
 		]
 	},
 	features: [
 		{
 			icon: 'users',
-			title: 'Organisationsstruktur',
+			title: 'Organisationen und Rollen',
 			description:
-				'Erstelle Community-Hubs mit Mitgliedschaftsstufen, nicht nur Event-Listings. Owner-, Staff- und Member-Rollen mit granularen Berechtigungen.'
+				'Ein Zuhause für deine Gruppe, mit Team-Rollen und fein abgestuften Berechtigungen, damit die richtigen Leute Events bearbeiten, Gäste einchecken oder Ankündigungen verschicken können.'
 		},
 		{
 			icon: 'clipboard',
-			title: 'Potluck-Koordination',
+			title: 'Potluck-Listen',
 			description:
-				'Integriertes System zur Koordination, wer was mitbringt. Verwalte Ernährungseinschränkungen, Mengen und Items—keine chaotischen Spreadsheets mehr.'
+				'Schlag vor, was gebraucht wird, lass Gäste Sachen übernehmen und sieh auf einen Blick, ob überhaupt jemand Teller mitbringt. Essen, Getränke, Material oder ein zusätzliches Paar Hände.'
 		},
 		{
-			icon: 'shield',
-			title: 'Nur-Mitglieder Events',
+			icon: 'globe',
+			title: 'Veranstaltungsreihen',
 			description:
-				'Beschränke Events auf Mitglieder, spezifische Stufen oder halte sie öffentlich. Baue exklusive Räume für deine Community.'
+				'Richte ein wöchentliches oder monatliches Event einmal ein, und Revel legt die Termine an. Wer einer Reihe folgt, erfährt, wenn neue Termine online gehen.'
 		},
 		{
-			icon: 'ticket',
-			title: 'Integriertes Ticketing',
+			icon: 'heart',
+			title: 'Mitgliedschaften',
 			description:
-				'Gratis-Events, bezahlte Tickets, nur RSVP oder hybrid. Verwalte alles von lockeren Meetups bis zu professionellen Konferenzen.'
+				'Kostenlose oder bezahlte Mitgliedschaftsstufen, Events nur für Mitglieder und Mitgliedskarten in Apple Wallet oder Google Wallet.'
+		},
+		{
+			icon: 'check',
+			title: 'Umfragen und Ankündigungen',
+			description:
+				'Frag die Gruppe, dann sag der Gruppe Bescheid. Ankündigungen gehen per E-Mail, in der App oder über Telegram raus, sofort oder zu einem Zeitpunkt deiner Wahl.'
 		},
 		{
 			icon: 'eye',
 			title: 'Niemals Werbung',
-			description:
-				'Deine Community verdient besser als Werbung zu sehen. Selbst hosten gratis oder nutze unsere werbefreie gehostete Version.'
-		},
-		{
-			icon: 'code',
-			title: 'Open Source (MIT)',
-			description:
-				'Kostenlos zu nutzen, modifizieren und deployen. Kein Vendor Lock-in. Betreibe auf eigenen Servern mit vollständiger Kontrolle.'
+			description: 'Deine Mitglieder sehen deine Events, keine Werbung. Und auch keine Tracker.'
 		}
 	],
 	benefits: {
-		title: 'Warum Community-Organisator*innen Revel Wählen',
+		title: 'Warum Community-Organisator*innen Revel wählen',
 		items: [
-			'Baue dauerhafte Mitgliedschaftsstrukturen, nicht nur Event-Listen',
-			'Koordiniere Potlucks und geteilte Verantwortlichkeiten mühelos',
-			'Keine teuren Abos wie Meetup (540€/Jahr)',
-			'Werbefreie Erfahrung für deine Mitglieder',
-			'Nur-Mitglieder Events zum Aufbau exklusiver Communities',
-			'Selbst hosten für komplette Kontrolle und null Plattformgebühren'
+			'Events, Mitglieder und Ankündigungen an einem Ort statt in fünf Apps',
+			'Veranstaltungsreihen nehmen dir den Kleinkram bei wöchentlichen Treffen ab',
+			'Potluck-Listen machen Schluss mit vier Schüsseln Hummus und null Gabeln',
+			'Kein Abo: Kostenlose Events und RSVPs kosten nichts',
+			'Events nur für Mitglieder, wenn die Gruppe einen eigenen Raum braucht',
+			'Open Source, du kannst Revel also jederzeit selbst hosten'
 		]
 	},
 	cta: {
-		title: 'Bereit, Deine Community Aufzubauen?',
-		description: 'Sieh Revel in Aktion oder deploye es selbst. Keine Kreditkarte erforderlich.',
+		title: 'Bereit, deiner Community ein Zuhause zu geben?',
+		description: 'Schau dich in der Demo um oder betreibe Revel selbst. Keine Kreditkarte nötig.',
 		buttons: [
-			{ text: 'Live Demo Testen', href: 'https://demo.letsrevel.io', variant: 'primary' },
+			{ text: 'Live-Demo ausprobieren', href: 'https://demo.letsrevel.io', variant: 'primary' },
 			{
-				text: 'Selbst Hosten (GitHub)',
+				text: 'Selbst hosten (GitHub)',
 				href: 'https://github.com/letsrevel',
 				variant: 'secondary'
 			},
@@ -200,29 +198,29 @@ export const communityFirstEventPlatformDE: LandingPageContent = {
 	},
 	faq: [
 		{
-			question: 'Wie unterscheidet sich das von Meetup?',
+			question: 'Was unterscheidet Revel von Meetup?',
 			answer:
-				'Meetup kostet 540€/Jahr und zeigt deinen Mitgliedern Werbung. Revel ist kostenlos zum Selbst-Hosten und werbefrei in unserer gehosteten Version. Wir integrieren auch vollständige Ticketing-Funktionen und einzigartige Features wie Potluck-Koordination, die Meetup fehlen.'
+				'Meetup verlangt von Veranstalter*innen ein Abo. Bei Revel kosten kostenlose Events und RSVPs nichts, und deine Mitglieder sehen nie Werbung. Außerdem bekommst du Ticketing, Mitgliedschaften und Potluck-Listen an einem Ort, und du kannst das Ganze selbst hosten.'
 		},
 		{
-			question: 'Was ist Potluck-Koordination?',
+			question: 'Was ist eine Potluck-Liste?',
 			answer:
-				'Es ist ein integriertes System, mit dem Teilnehmer*innen koordinieren können, wer was zu Events mitbringt. Verwalte Ernährungseinschränkungen, Mengen-Management und Item-Zuweisungen—keine chaotischen Spreadsheets oder externe Tools mehr. Es ist großartig für Potlucks, Equipment-Sharing, Freiwilligen-Koordination und mehr.'
+				'Eine gemeinsame Liste für ein Event. Du schlägst vor, was gebraucht wird, Gäste tragen ein, was sie mitbringen, und alle können etwas ergänzen. Das können Essen, Getränke, Material, helfende Hände und mehr sein, deshalb funktioniert es für Arbeitseinsätze und Tauschbörsen genauso gut wie für Abendessen.'
 		},
 		{
-			question: 'Kann ich Nur-Mitglieder Events erstellen?',
+			question: 'Kann ich Events nur für Mitglieder anbieten?',
 			answer:
-				'Ja. Du kannst Organisationen mit Mitgliedschaftsstufen erstellen und Events auf nur Mitglieder, spezifische Stufen beschränken oder sie öffentlich halten. Du hast vollständige Kontrolle über Sichtbarkeit und Zugang.'
+				'Ja. Erstelle eine Organisation mit Mitgliedschaftsstufen und mach ein Event nur für Mitglieder zugänglich, oder lass es öffentlich. Du kannst auch bestimmte Ticketstufen für bestimmte Mitgliedschaftsstufen reservieren.'
 		},
 		{
 			question: 'Ist Revel wirklich kostenlos?',
 			answer:
-				'Ja für Selbst-Hosting (MIT-lizenziert). Unsere gehostete Version berechnet eine kleine Gebühr nur für bezahlte Ticket-Verkäufe (1,5% + 0,25€ pro Transaktion). Gratis-Events und Nur-RSVP Events haben null Plattformgebühren in beiden Versionen.'
+				'Kostenlose Events und RSVPs sind in unserer gehosteten Version gratis. Für bezahlte Tickets und Online-Zahlungen von Mitgliedschaften fällt eine Gebühr von 1,5% + 0,25€ pro Transaktion an. Selbst hosten ist unter der MIT-Lizenz kostenlos.'
 		},
 		{
-			question: 'Welche Arten von Communities nutzen Revel?',
+			question: 'Welche Communities nutzen Revel?',
 			answer:
-				'Buchclubs, Laufgruppen, Makerspaces, professionelle Netzwerke, Hobby-Communities, Spezialinteressengruppen und mehr. Jede Community, die mehr als nur einfache Event-Listings will, profitiert von Revels Organisations- und Mitgliedschafts-Features.'
+				'Buchclubs, Laufgruppen, Makerspaces, Supper Clubs, berufliche Netzwerke, Hobbygruppen und queere Kollektive. Jede Gruppe, die mehr will als eine Liste von Events, hat viel von Organisationen, Reihen und Mitgliedschaften.'
 		}
 	],
 	relatedPages: [
@@ -236,107 +234,107 @@ export const communityFirstEventPlatformIT: LandingPageContent = {
 	slug: 'community-first-event-platform',
 	locale: 'it',
 	meta: {
-		title: 'Piattaforma Eventi Community-First – Oltre il Ticketing | Revel',
+		title: 'Piattaforma per eventi di community, oltre il ticketing | Revel',
 		description:
-			'Costruisci community durature, non solo eventi. Organizzazioni, livelli membership, coordinamento potluck e altro. Self-host gratis o usa la versione hosted.',
+			'Per i gruppi che si ritrovano ancora e ancora. Organizzazioni, membership, serie di eventi ricorrenti, bacheche potluck, sondaggi e annunci. Gratis per gli eventi gratuiti, e open source.',
 		keywords:
-			'piattaforma eventi community, gestione membri, eventi organizzazione, coordinamento potluck, costruzione community, alternativa meetup'
+			'piattaforma eventi community, alternativa a meetup, eventi ricorrenti, gestione membri, gestione associazione, organizzare un potluck, creare una community'
 	},
 	hero: {
-		headline: 'Costruisci Community, Non Solo Eventi',
+		headline: 'Costruisci una community, non solo una lista di invitati',
 		subheadline:
-			'Organizzazioni, membership e strumenti unici come il coordinamento potluck. Revel ti aiuta a creare connessioni community durature.'
+			'Organizzazioni, membership, eventi ricorrenti e bacheche potluck per i gruppi in cui le persone continuano a tornare.'
 	},
 	intro: {
 		paragraphs: [
-			'La maggior parte delle piattaforme eventi tratta ogni incontro come transazione singola. Ma le vere community hanno bisogno di più—struttura, continuità e strumenti che supportano relazioni continuative.',
-			'Revel è costruito prima di tutto per le community. Crea organizzazioni con livelli membership, assegna ruoli e permessi, e usa funzionalità come il nostro sistema unico di coordinamento potluck per rendere gli eventi più collaborativi e meno lavoro per chi organizza.',
-			"Che tu gestisca un club del libro, gruppo hobby, network professionale o makerspace, Revel ti dà l'infrastruttura per crescere da meetup casuali a community fiorenti—senza abbonamenti costosi o lock-in della piattaforma."
+			"La maggior parte degli strumenti per eventi tratta ogni incontro come una vendita isolata. Le community non funzionano così. Mese dopo mese si rivedono le stesse facce, c'è sempre qualcuno che porta le sedie pieghevoli, e la chat di gruppo fa un lavoro per cui non è mai stata pensata.",
+			"Revel dà al tuo gruppo una vera casa. Crea un'organizzazione, imposta una serie ricorrente e lascia che le persone ti seguano, così sapranno del prossimo evento. Usa una bacheca potluck per decidere chi porta cosa, un sondaggio per fissare la data, e gli annunci via email, nell'app o su Telegram.",
+			'Club del libro, gruppi di corsa, makerspace, supper club, collettivi queer: se le tue persone continuano a tornare, Revel è fatto per te. Ed è gratis per gli eventi gratuiti.'
 		]
 	},
 	features: [
 		{
 			icon: 'users',
-			title: 'Struttura Organizzazione',
+			title: 'Organizzazioni e ruoli',
 			description:
-				'Crea hub community con livelli membership, non solo listing eventi. Ruoli owner, staff e member con permessi granulari.'
+				'Una casa per il tuo gruppo, con ruoli per lo staff e permessi dettagliati, così le persone giuste possono modificare gli eventi, fare il check-in degli ospiti o inviare annunci.'
 		},
 		{
 			icon: 'clipboard',
-			title: 'Coordinamento Potluck',
+			title: 'Bacheche potluck',
 			description:
-				'Sistema integrato per coordinare chi porta cosa. Gestisci restrizioni dietetiche, quantità e item—basta con spreadsheet caotici.'
+				"Suggerisci cosa serve, lascia che gli ospiti si prenotino le cose da portare e vedi a colpo d'occhio se qualcuno porta i piatti. Cibo, bevande, materiale o un paio di mani in più."
 		},
 		{
-			icon: 'shield',
-			title: 'Eventi Solo-Membri',
+			icon: 'globe',
+			title: 'Serie ricorrenti',
 			description:
-				'Limita eventi a membri, livelli specifici o mantienili pubblici. Costruisci spazi esclusivi per la tua community.'
+				'Imposta una volta sola un evento settimanale o mensile e Revel crea le date. Chi segue una serie viene avvisato quando ne escono di nuove.'
 		},
 		{
-			icon: 'ticket',
-			title: 'Ticketing Integrato',
+			icon: 'heart',
+			title: 'Membership',
 			description:
-				'Eventi gratis, biglietti a pagamento, solo RSVP o ibrido. Gestisci tutto dai meetup casuali alle conferenze professionali.'
+				'Livelli di membership gratuiti o a pagamento, eventi riservati ai membri e tessere di membership in Apple Wallet o Google Wallet.'
+		},
+		{
+			icon: 'check',
+			title: 'Sondaggi e annunci',
+			description:
+				"Chiedi al gruppo, poi avvisa il gruppo. Gli annunci partono via email, nell'app o su Telegram, subito o all'ora che scegli tu."
 		},
 		{
 			icon: 'eye',
-			title: 'Mai Pubblicità',
-			description:
-				'La tua community merita meglio che vedere pubblicità. Self-host gratis o usa la nostra versione hosted senza pubblicità.'
-		},
-		{
-			icon: 'code',
-			title: 'Open Source (MIT)',
-			description:
-				'Gratuito da usare, modificare e deployare. Nessun vendor lock-in. Esegui sui tuoi server con controllo completo.'
+			title: 'Niente pubblicità, mai',
+			description: 'I tuoi membri vedono i tuoi eventi, non la pubblicità. E nemmeno tracker.'
 		}
 	],
 	benefits: {
-		title: 'Perché Gli Organizzatori Community Scelgono Revel',
+		title: 'Perché chi organizza community sceglie Revel',
 		items: [
-			'Costruisci strutture membership durature, non solo liste evento-per-evento',
-			'Coordina potluck e responsabilità condivise senza sforzo',
-			'Nessun abbonamento costoso come Meetup (540€/anno)',
-			'Esperienza senza pubblicità per i tuoi membri',
-			'Eventi solo-membri per costruire community esclusive',
-			'Self-host per controllo completo e zero commissioni piattaforma'
+			'Eventi, membri e annunci in un unico posto invece che in cinque app',
+			'Le serie ricorrenti ti tolgono il lavoro noioso dei meetup settimanali',
+			'Le bacheche potluck mettono fine a quattro ciotole di hummus e zero forchette',
+			'Nessun abbonamento: eventi gratuiti e RSVP non costano nulla',
+			'Eventi riservati ai membri, per quando il gruppo ha bisogno di uno spazio tutto suo',
+			'Open source, quindi puoi fare self-hosting quando vuoi'
 		]
 	},
 	cta: {
-		title: 'Pronto a Costruire La Tua Community?',
-		description: 'Vedi Revel in azione o deployalo tu stesso. Nessuna carta di credito richiesta.',
+		title: 'Vuoi dare una casa alla tua community?',
+		description:
+			"Dai un'occhiata alla demo, oppure gestiscilo in autonomia. Nessuna carta di credito richiesta.",
 		buttons: [
-			{ text: 'Prova la Demo Live', href: 'https://demo.letsrevel.io', variant: 'primary' },
-			{ text: 'Self-Host (GitHub)', href: 'https://github.com/letsrevel', variant: 'secondary' },
+			{ text: 'Prova la demo live', href: 'https://demo.letsrevel.io', variant: 'primary' },
+			{ text: 'Self-host (GitHub)', href: 'https://github.com/letsrevel', variant: 'secondary' },
 			{ text: 'Contattaci', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
 		]
 	},
 	faq: [
 		{
-			question: 'Come si differenzia da Meetup?',
+			question: 'In cosa Revel è diverso da Meetup?',
 			answer:
-				'Meetup costa 540€/anno e mostra pubblicità ai tuoi membri. Revel è gratuito per self-host e senza pubblicità nella nostra versione hosted. Integriamo anche funzionalità ticketing complete e feature uniche come coordinamento potluck che Meetup non ha.'
+				'Meetup fa pagare un abbonamento a chi organizza. Su Revel gli eventi gratuiti e gli RSVP non costano nulla e i tuoi membri non vedono mai pubblicità. In più hai biglietteria, membership e bacheche potluck nello stesso posto, e puoi ospitare tutto sul tuo server.'
 		},
 		{
-			question: "Cos'è il coordinamento potluck?",
+			question: "Cos'è una bacheca potluck?",
 			answer:
-				'È un sistema integrato che permette alle persone partecipanti di coordinare chi porta cosa agli eventi. Gestisci restrizioni dietetiche, gestione quantità e assegnazioni item—niente più spreadsheet caotici o strumenti esterni. È ottimo per potluck, condivisione equipment, coordinamento volontari e altro.'
+				'Una lista condivisa per un evento. Tu suggerisci cosa serve, gli ospiti si prenotano quello che porteranno e chiunque può aggiungere qualcosa. Si può trattare di cibo, bevande, materiale, mani in più e altro ancora, quindi funziona per giornate di lavoro e scambi di attrezzatura tanto quanto per le cene.'
 		},
 		{
-			question: 'Posso creare eventi solo-membri?',
+			question: 'Posso organizzare eventi solo per i membri?',
 			answer:
-				'Sì. Puoi creare organizzazioni con livelli membership e limitare eventi a solo membri, livelli specifici o mantenerli pubblici. Hai controllo completo su visibilità e accesso.'
+				"Sì. Crea un'organizzazione con livelli di membership e rendi un evento riservato ai membri, oppure lascialo pubblico. Puoi anche riservare specifici livelli di biglietto a specifici livelli di membership."
 		},
 		{
 			question: 'Revel è davvero gratuito?',
 			answer:
-				'Sì per self-hosting (licenza MIT). La nostra versione hosted addebita una piccola commissione solo per vendite biglietti a pagamento (1,5% + 0,25€ per transazione). Eventi gratuiti e solo-RSVP hanno zero commissioni piattaforma in entrambe le versioni.'
+				'Eventi gratuiti e RSVP sono gratis sulla nostra versione hosted. I biglietti a pagamento e i pagamenti online delle membership hanno una commissione di 1,5% + €0,25 per transazione. Il self-hosting è gratuito con licenza MIT.'
 		},
 		{
-			question: 'Quali tipi di community usano Revel?',
+			question: 'Che tipo di community usano Revel?',
 			answer:
-				'Club del libro, gruppi running, makerspace, network professionali, community hobby, gruppi interesse speciale e altro. Qualsiasi community che vuole più dei semplici listing eventi beneficia delle funzionalità organizzazione e membership di Revel.'
+				'Club del libro, gruppi di corsa, makerspace, supper club, network professionali, gruppi di hobby e collettivi queer. Ogni gruppo che vuole più di una semplice lista di eventi trova molto di utile in organizzazioni, serie e membership.'
 		}
 	],
 	relatedPages: [
@@ -350,81 +348,79 @@ export const communityFirstEventPlatformES: LandingPageContent = {
 	slug: 'community-first-event-platform',
 	locale: 'es',
 	meta: {
-		title: 'Plataforma de Eventos Centrada en la Comunidad – Más Allá de las Entradas | Revel',
+		title: 'Plataforma de eventos para comunidades, más que venta de entradas | Revel',
 		description:
-			'Construye comunidades duraderas, no solo eventos. Organizaciones, niveles de membresía, coordinación de comidas compartidas y más. Aloja tu propia instancia gratis o usa nuestra versión alojada.',
+			'Para grupos que se reúnen una y otra vez. Organizaciones, membresías, series de eventos recurrentes, tablones de aportaciones, encuestas y anuncios. Gratis para eventos gratuitos, y de código abierto.',
 		keywords:
-			'plataforma de eventos para comunidades, gestión de membresías, eventos para organizaciones, coordinación de comida compartida, crear comunidad, alternativa a meetup'
+			'plataforma de eventos para comunidades, alternativa a meetup, eventos recurrentes, gestión de socios, gestión de membresías, organizar comida compartida, crear comunidad'
 	},
 	hero: {
-		headline: 'Construye Comunidades, No Solo Eventos',
+		headline: 'Crea una comunidad, no solo una lista de asistencia',
 		subheadline:
-			'Organizaciones, membresías y herramientas únicas como la coordinación de comidas compartidas. Revel te ayuda a fomentar conexiones comunitarias duraderas.'
+			'Organizaciones, membresías, eventos recurrentes y tablones de aportaciones para grupos cuya gente siempre vuelve.'
 	},
 	intro: {
 		paragraphs: [
-			'La mayoría de las plataformas de eventos tratan cada encuentro como una transacción puntual. Pero las comunidades reales necesitan más: estructura, continuidad y herramientas que sostengan relaciones duraderas.',
-			'Revel está pensado ante todo para comunidades. Crea organizaciones con niveles de membresía, asigna roles y permisos, y usa funciones como nuestro sistema único de coordinación de comidas compartidas para que los eventos sean más colaborativos y supongan menos trabajo para quien organiza.',
-			'Ya dirijas un club de lectura, un grupo de aficiones, una red profesional o un espacio maker, Revel te da la infraestructura para pasar de quedadas informales a una comunidad próspera, sin suscripciones caras ni dependencia de una sola plataforma.'
+			'La mayoría de las herramientas de eventos tratan cada encuentro como una venta puntual. Las comunidades no funcionan así. Las mismas caras aparecen mes tras mes, siempre hay alguien que trae las sillas plegables y el chat del grupo hace un trabajo para el que nunca se pensó.',
+			'Revel le da a tu grupo un hogar de verdad. Crea una organización, configura una serie recurrente y deja que la gente te siga para enterarse del próximo evento. Usa un tablón de aportaciones para organizar quién trae qué, una encuesta para decidir la fecha y anuncios por correo electrónico, en la app o por Telegram.',
+			'Clubes de lectura, grupos de running, espacios maker, supper clubs, colectivos queer: si tu gente siempre vuelve, Revel está hecho para ti. Y es gratis para eventos gratuitos.'
 		]
 	},
 	features: [
 		{
 			icon: 'users',
-			title: 'Estructura de Organización',
+			title: 'Organizaciones y roles',
 			description:
-				'Crea espacios comunitarios con niveles de membresía, no solo listados de eventos. Roles de propietario, equipo y miembro con permisos detallados.'
+				'Un hogar para tu grupo, con roles de equipo y permisos detallados, para que las personas adecuadas puedan editar eventos, hacer el check-in de la gente o enviar anuncios.'
 		},
 		{
 			icon: 'clipboard',
-			title: 'Coordinación de Comidas Compartidas',
+			title: 'Tablones de aportaciones',
 			description:
-				'Sistema integrado para coordinar quién trae qué. Gestiona restricciones alimentarias, cantidades y artículos, sin más hojas de cálculo caóticas.'
+				'Propón lo que hace falta, deja que la gente se apunte a traer cosas y comprueba de un vistazo si alguien trae platos. Comida, bebida, material o un par de manos extra.'
 		},
 		{
-			icon: 'shield',
-			title: 'Eventos Solo Para Miembros',
+			icon: 'globe',
+			title: 'Series recurrentes',
 			description:
-				'Restringe eventos a miembros, a niveles concretos o mantenlos públicos. Crea espacios exclusivos para tu comunidad.'
+				'Configura una sola vez un evento semanal o mensual y Revel crea las fechas. La gente puede seguir una serie para enterarse cuando se publican fechas nuevas.'
 		},
 		{
-			icon: 'ticket',
-			title: 'Venta de Entradas Integrada',
+			icon: 'heart',
+			title: 'Membresías',
 			description:
-				'Eventos gratuitos, entradas de pago, solo confirmación de asistencia o formato híbrido. Gestiona desde quedadas informales hasta conferencias profesionales.'
+				'Niveles de membresía gratuitos o de pago, eventos solo para miembros y carnés de miembro en Apple Wallet o Google Wallet.'
+		},
+		{
+			icon: 'check',
+			title: 'Encuestas y anuncios',
+			description:
+				'Pregunta al grupo y luego cuéntaselo al grupo. Los anuncios salen por correo electrónico, en la app o por Telegram, al momento o a la hora que elijas.'
 		},
 		{
 			icon: 'eye',
-			title: 'Nunca Publicidad',
-			description:
-				'Tu comunidad merece algo mejor que ver anuncios. Aloja tu propia instancia gratis o usa nuestra versión alojada sin publicidad.'
-		},
-		{
-			icon: 'code',
-			title: 'Código Abierto (MIT)',
-			description:
-				'Libre de usar, modificar y desplegar. Sin dependencia de proveedor. Ejecútalo en tus propios servidores con control total.'
+			title: 'Sin anuncios, nunca',
+			description: 'Tus miembros ven tus eventos, no publicidad. Y tampoco hay rastreadores.'
 		}
 	],
 	benefits: {
-		title: 'Por Qué Quienes Organizan Comunidades Eligen Revel',
+		title: 'Por qué quienes organizan comunidades eligen Revel',
 		items: [
-			'Construye estructuras de membresía duraderas, no solo listas de eventos sueltos',
-			'Coordina comidas compartidas y responsabilidades conjuntas sin esfuerzo',
-			'Sin suscripciones caras como Meetup (540 €/año)',
-			'Experiencia sin publicidad para tus miembros',
-			'Eventos solo para miembros con los que construir comunidades exclusivas',
-			'Aloja tu propia instancia para control total y cero comisiones de plataforma'
+			'Eventos, miembros y anuncios en un solo sitio en lugar de en cinco apps',
+			'Las series recurrentes te quitan el trabajo pesado de las quedadas semanales',
+			'Los tablones de aportaciones acaban con cuatro cuencos de hummus y cero tenedores',
+			'Sin suscripción: los eventos gratuitos y las confirmaciones de asistencia no cuestan nada',
+			'Eventos solo para miembros para cuando el grupo necesita su propio espacio',
+			'Código abierto, así que puedes alojarlo tú cuando quieras'
 		]
 	},
 	cta: {
-		title: '¿Lista para Construir tu Comunidad?',
-		description:
-			'Descubre Revel en acción o despliégalo por tu cuenta. No se requiere tarjeta de crédito.',
+		title: '¿Quieres darle un hogar a tu comunidad?',
+		description: 'Echa un vistazo a la demo o instálalo por tu cuenta. Sin tarjeta de crédito.',
 		buttons: [
-			{ text: 'Probar la Demo en Vivo', href: 'https://demo.letsrevel.io', variant: 'primary' },
+			{ text: 'Probar la demo en vivo', href: 'https://demo.letsrevel.io', variant: 'primary' },
 			{
-				text: 'Alojar tu Instancia (GitHub)',
+				text: 'Alojar tu instancia (GitHub)',
 				href: 'https://github.com/letsrevel',
 				variant: 'secondary'
 			},
@@ -433,29 +429,29 @@ export const communityFirstEventPlatformES: LandingPageContent = {
 	},
 	faq: [
 		{
-			question: '¿En qué se diferencia de Meetup?',
+			question: '¿En qué se diferencia Revel de Meetup?',
 			answer:
-				'Meetup cuesta 540 €/año y muestra publicidad a quienes están en tu comunidad. Revel es gratuito para alojar tu propia instancia y no tiene publicidad en la versión alojada. Además integramos venta de entradas completa y funciones únicas como la coordinación de comidas compartidas que Meetup no ofrece.'
+				'Meetup cobra una suscripción a quienes organizan. En Revel, los eventos gratuitos y las confirmaciones de asistencia no cuestan nada y tus miembros nunca ven anuncios. Además tienes venta de entradas, membresías y tablones de aportaciones en el mismo sitio, y puedes alojarlo todo tú.'
 		},
 		{
-			question: '¿Qué es la coordinación de comidas compartidas?',
+			question: '¿Qué es un tablón de aportaciones?',
 			answer:
-				'Es un sistema integrado que permite a quienes asisten coordinar quién trae qué a los eventos. Gestiona restricciones alimentarias, control de cantidades y asignación de artículos, sin más hojas de cálculo caóticas ni herramientas externas. Es ideal para comidas compartidas, préstamo de material, coordinación de voluntariado y mucho más.'
+				'Una lista compartida para un evento. Tú propones lo que hace falta, la gente se apunta a lo que va a traer y cualquiera puede añadir algo. Puede ser comida, bebida, material, manos que ayuden y más, así que funciona igual de bien para jornadas de trabajo e intercambios de material que para cenas.'
 		},
 		{
-			question: '¿Puedo crear eventos solo para miembros?',
+			question: '¿Puedo hacer eventos solo para miembros?',
 			answer:
-				'Sí. Puedes crear organizaciones con niveles de membresía y restringir eventos solo a miembros, a niveles concretos, o mantenerlos públicos. Tienes control total sobre la visibilidad y el acceso.'
+				'Sí. Crea una organización con niveles de membresía y haz que un evento sea solo para miembros, o déjalo público. También puedes reservar tipos de entrada concretos para niveles de membresía concretos.'
 		},
 		{
 			question: '¿Revel es realmente gratis?',
 			answer:
-				'Sí, para alojar tu propia instancia (licencia MIT). Nuestra versión alojada cobra una pequeña comisión solo por la venta de entradas de pago (1,5 % + 0,25 € por transacción). Los eventos gratuitos y los de solo confirmación de asistencia no tienen comisión de plataforma en ninguna de las dos versiones.'
+				'Los eventos gratuitos y las confirmaciones de asistencia son gratis en nuestra versión alojada. Las entradas de pago y los pagos de membresías en línea tienen una comisión de 1,5 % + 0,25 € por transacción. Alojarlo tú es gratis bajo la licencia MIT.'
 		},
 		{
 			question: '¿Qué tipo de comunidades usan Revel?',
 			answer:
-				'Clubes de lectura, grupos de running, espacios maker, redes profesionales, comunidades de aficiones, grupos de interés especial y mucho más. Cualquier comunidad que quiera algo más que simples listados de eventos se beneficia de las funciones de organización y membresía de Revel.'
+				'Clubes de lectura, grupos de running, espacios maker, supper clubs, redes profesionales, grupos de aficiones y colectivos queer. Cualquier grupo que quiera algo más que una lista de eventos sacará mucho partido de las organizaciones, las series y las membresías.'
 		}
 	],
 	relatedPages: [
@@ -469,85 +465,84 @@ export const communityFirstEventPlatformPT: LandingPageContent = {
 	slug: 'community-first-event-platform',
 	locale: 'pt',
 	meta: {
-		title: 'Plataforma de Eventos Centrada na Comunidade – Para Além da Venda de Bilhetes | Revel',
+		title: 'Plataforma de eventos para comunidades, mais do que bilhética | Revel',
 		description:
-			'Cria comunidades duradouras, não só eventos. Organizações, níveis de adesão, coordenação de refeições partilhadas e muito mais. Aloja a tua própria instância gratuitamente ou usa a versão alojada.',
+			'Para grupos que se encontram vezes sem conta. Organizações, adesões, séries de eventos recorrentes, quadros de contribuições, sondagens e anúncios. Gratuito para eventos gratuitos, e de código aberto.',
 		keywords:
-			'plataforma de eventos para comunidades, gestão de membros, eventos para organizações, coordenação de refeições partilhadas, criar comunidade, alternativa ao meetup'
+			'plataforma de eventos para comunidades, alternativa ao meetup, eventos recorrentes, gestão de membros, gestão de sócios, organizar refeição partilhada, criar comunidade'
 	},
 	hero: {
-		headline: 'Cria Comunidades, Não Só Eventos',
+		headline: 'Cria uma comunidade, não só uma lista de presenças',
 		subheadline:
-			'Organizações, adesões e ferramentas únicas como a coordenação de refeições partilhadas. O Revel ajuda-te a criar ligações comunitárias duradouras.'
+			'Organizações, adesões, eventos recorrentes e quadros de contribuições para grupos onde as pessoas voltam sempre.'
 	},
 	intro: {
 		paragraphs: [
-			'A maioria das plataformas de eventos trata cada encontro como uma transação isolada. Mas as comunidades verdadeiras precisam de mais: estrutura, continuidade e ferramentas que sustentem relações duradouras.',
-			'O Revel foi pensado antes de mais para comunidades. Cria organizações com níveis de adesão, atribui funções e permissões, e usa funcionalidades como o nosso sistema único de coordenação de refeições partilhadas para tornar os eventos mais colaborativos e representarem menos trabalho para quem organiza.',
-			'Quer geras um clube de leitura, um grupo de passatempos, uma rede profissional ou um espaço maker, o Revel dá-te a infraestrutura para passares de encontros informais a uma comunidade próspera, sem subscrições caras nem dependência de uma única plataforma.'
+			'A maioria das ferramentas de eventos trata cada encontro como uma venda avulsa. As comunidades não funcionam assim. As mesmas caras aparecem mês após mês, há sempre alguém que traz as cadeiras dobráveis, e o chat do grupo faz um trabalho para o qual nunca foi pensado.',
+			'O Revel dá ao teu grupo uma casa a sério. Cria uma organização, configura uma série recorrente e deixa que as pessoas te sigam para saberem do próximo evento. Usa um quadro de contribuições para combinar quem traz o quê, uma sondagem para decidir a data, e anúncios por e-mail, na app ou no Telegram.',
+			'Clubes de leitura, grupos de corrida, espaços maker, supper clubs, coletivos queer: se a tua gente volta sempre, o Revel foi feito para ti. E é gratuito para eventos gratuitos.'
 		]
 	},
 	features: [
 		{
 			icon: 'users',
-			title: 'Estrutura de Organização',
+			title: 'Organizações e funções',
 			description:
-				'Cria espaços comunitários com níveis de adesão, não apenas listagens de eventos. Funções de proprietário, equipa e membro com permissões granulares.'
+				'Uma casa para o teu grupo, com funções de equipa e permissões detalhadas, para que as pessoas certas possam editar eventos, fazer o check-in de quem chega ou enviar anúncios.'
 		},
 		{
 			icon: 'clipboard',
-			title: 'Coordenação de Refeições Partilhadas',
+			title: 'Quadros de contribuições',
 			description:
-				'Sistema integrado para coordenar quem traz o quê. Gere restrições alimentares, quantidades e itens — chega de folhas de cálculo caóticas.'
+				'Sugere o que é preciso, deixa as pessoas reservarem itens e vê num relance se alguém vai trazer pratos. Comida, bebidas, material ou um par de mãos extra.'
 		},
 		{
-			icon: 'shield',
-			title: 'Eventos Só Para Membros',
+			icon: 'globe',
+			title: 'Séries recorrentes',
 			description:
-				'Restringe eventos a membros, a níveis específicos, ou mantém-nos públicos. Cria espaços exclusivos para a tua comunidade.'
+				'Configura uma única vez um evento semanal ou mensal e o Revel cria as datas. As pessoas podem seguir uma série para saberem quando saem datas novas.'
 		},
 		{
-			icon: 'ticket',
-			title: 'Bilhética Integrada',
+			icon: 'heart',
+			title: 'Adesões',
 			description:
-				'Eventos gratuitos, bilhetes pagos, apenas confirmação de presença, ou formato híbrido. Trata de tudo, de encontros informais a conferências profissionais.'
+				'Níveis de adesão gratuitos ou pagos, eventos só para membros e cartões de membro na Apple Wallet ou na Google Wallet.'
+		},
+		{
+			icon: 'check',
+			title: 'Sondagens e anúncios',
+			description:
+				'Pergunta ao grupo e depois avisa o grupo. Os anúncios saem por e-mail, na app ou no Telegram, de imediato ou à hora que escolheres.'
 		},
 		{
 			icon: 'eye',
-			title: 'Nunca Publicidade',
+			title: 'Publicidade, nunca',
 			description:
-				'A tua comunidade merece melhor do que ver anúncios. Aloja a tua própria instância gratuitamente ou usa a nossa versão alojada sem publicidade.'
-		},
-		{
-			icon: 'code',
-			title: 'Código Aberto (MIT)',
-			description:
-				'Livre para usar, modificar e implementar. Sem dependência de fornecedor. Corre nos teus próprios servidores com controlo total.'
+				'Os teus membros veem os teus eventos, não publicidade. E também não há rastreadores.'
 		}
 	],
 	benefits: {
-		title: 'Porque É Que Quem Organiza Comunidades Escolhe o Revel',
+		title: 'Porque é que quem organiza comunidades escolhe o Revel',
 		items: [
-			'Constrói estruturas de adesão duradouras, não apenas listas de eventos avulsos',
-			'Coordena refeições partilhadas e responsabilidades conjuntas sem esforço',
-			'Sem subscrições caras como o Meetup (540 €/ano)',
-			'Experiência sem publicidade para os teus membros',
-			'Eventos só para membros para construir comunidades exclusivas',
-			'Aloja a tua própria instância para controlo total e zero comissões de plataforma'
+			'Eventos, membros e anúncios num só sítio, em vez de cinco apps',
+			'As séries recorrentes tiram-te o trabalho chato dos encontros semanais',
+			'Os quadros de contribuições acabam com quatro taças de húmus e zero garfos',
+			'Sem subscrição: eventos gratuitos e confirmações de presença não custam nada',
+			'Eventos só para membros, para quando o grupo precisa do seu próprio espaço',
+			'Código aberto, por isso podes alojá-lo tu quando quiseres'
 		]
 	},
 	cta: {
-		title: 'Queres Construir a Tua Comunidade?',
-		description:
-			'Vê o Revel em ação ou implementa-o por tua conta. Não é necessário cartão de crédito.',
+		title: 'Queres dar uma casa à tua comunidade?',
+		description: 'Explora a demo ou aloja o Revel tu mesmo. Não é preciso cartão de crédito.',
 		buttons: [
 			{
-				text: 'Experimentar a Demo em Direto',
+				text: 'Experimentar a demo em direto',
 				href: 'https://demo.letsrevel.io',
 				variant: 'primary'
 			},
 			{
-				text: 'Alojar a Tua Própria Instância (GitHub)',
+				text: 'Alojar a tua própria instância (GitHub)',
 				href: 'https://github.com/letsrevel',
 				variant: 'secondary'
 			},
@@ -556,29 +551,29 @@ export const communityFirstEventPlatformPT: LandingPageContent = {
 	},
 	faq: [
 		{
-			question: 'Em que é que isto é diferente do Meetup?',
+			question: 'Em que é que o Revel é diferente do Meetup?',
 			answer:
-				'O Meetup custa 540 €/ano e mostra publicidade a quem está na tua comunidade. O Revel é gratuito para alojares a tua própria instância e sem publicidade na versão alojada. Também integramos bilhética completa e funcionalidades únicas como a coordenação de refeições partilhadas, que o Meetup não tem.'
+				'O Meetup cobra uma subscrição a quem organiza. No Revel, eventos gratuitos e confirmações de presença não custam nada e os teus membros nunca veem publicidade. Tens também bilhética, adesões e quadros de contribuições no mesmo sítio, e podes alojar tudo tu.'
 		},
 		{
-			question: 'O que é a coordenação de refeições partilhadas?',
+			question: 'O que é um quadro de contribuições?',
 			answer:
-				'É um sistema integrado que permite a quem participa coordenar quem traz o quê aos eventos. Gere restrições alimentares, gestão de quantidades e atribuição de itens — chega de folhas de cálculo caóticas ou ferramentas externas. É ótimo para refeições partilhadas, partilha de equipamento, coordenação de voluntariado e muito mais.'
+				'Uma lista partilhada para um evento. Sugeres o que é preciso, as pessoas reservam o que vão trazer e qualquer pessoa pode acrescentar algo. Pode ser comida, bebidas, material, mãos para ajudar e mais, por isso funciona tão bem para dias de trabalho e trocas de material como para jantares.'
 		},
 		{
-			question: 'Posso criar eventos só para membros?',
+			question: 'Posso fazer eventos só para membros?',
 			answer:
-				'Sim. Podes criar organizações com níveis de adesão e restringir eventos apenas a membros, a níveis específicos, ou mantê-los públicos. Tens controlo total sobre a visibilidade e o acesso.'
+				'Sim. Cria uma organização com níveis de adesão e torna um evento exclusivo para membros, ou mantém-no público. Também podes reservar tipos de bilhete específicos para níveis de adesão específicos.'
 		},
 		{
 			question: 'O Revel é mesmo gratuito?',
 			answer:
-				'Sim, para alojares a tua própria instância (licença MIT). A nossa versão alojada cobra uma pequena comissão apenas sobre a venda de bilhetes pagos (1,5 % + 0,25 € por transação). Eventos gratuitos e eventos só de confirmação de presença não têm qualquer comissão de plataforma em nenhuma das versões.'
+				'Eventos gratuitos e confirmações de presença são grátis na nossa versão alojada. Bilhetes pagos e pagamentos de adesões online têm uma taxa de 1,5 % + 0,25 € por transação. Alojar a tua própria instância é gratuito com a licença MIT.'
 		},
 		{
 			question: 'Que tipos de comunidades usam o Revel?',
 			answer:
-				'Clubes de leitura, grupos de corrida, espaços maker, redes profissionais, comunidades de passatempos, grupos de interesse especial e muito mais. Qualquer comunidade que queira mais do que simples listagens de eventos beneficia das funcionalidades de organização e adesão do Revel.'
+				'Clubes de leitura, grupos de corrida, espaços maker, supper clubs, redes profissionais, grupos de passatempos e coletivos queer. Qualquer grupo que queira mais do que uma lista de eventos tira muito partido das organizações, das séries e das adesões.'
 		}
 	],
 	relatedPages: [
@@ -592,80 +587,79 @@ export const communityFirstEventPlatformFR: LandingPageContent = {
 	slug: 'community-first-event-platform',
 	locale: 'fr',
 	meta: {
-		title: "Plateforme d'événements axée communauté – Bien plus que la billetterie | Revel",
+		title: "Plateforme d'événements communautaire, bien plus que la billetterie | Revel",
 		description:
-			"Crée des communautés durables, pas seulement des événements. Organisations, niveaux d'adhésion, coordination de repas partagés et bien plus. Héberge toi-même ou utilise la version hébergée.",
+			"Pour les groupes qui se retrouvent encore et encore. Organisations, adhésions, séries d'événements récurrents, tableaux de repas partagé, sondages et annonces. Gratuit pour les événements gratuits, et open source.",
 		keywords:
-			"plateforme événementielle communautaire, gestion des membres, organisation d'événements, coordination repas partagé, création de communauté, alternative à meetup"
+			'plateforme événementielle communautaire, alternative à meetup, événements récurrents, gestion des membres, gestion des adhésions, organiser un repas partagé, animer une communauté'
 	},
 	hero: {
-		headline: 'Crée des communautés, pas seulement des événements',
+		headline: 'Crée une communauté, pas juste une liste de noms',
 		subheadline:
-			"Organisations, adhésions et outils uniques comme la coordination de repas partagés. Revel t'aide à tisser des liens communautaires durables."
+			"Organisations, adhésions, événements récurrents et tableaux de repas partagé pour les groupes où l'on revient encore et encore."
 	},
 	intro: {
 		paragraphs: [
-			"La plupart des plateformes événementielles traitent chaque rencontre comme une transaction isolée. Mais les vraies communautés ont besoin de plus : de structure, de continuité et d'outils qui soutiennent des relations dans la durée.",
-			"Revel est pensé d'abord pour les communautés. Crée des organisations avec des niveaux d'adhésion, attribue des rôles et des permissions, et profite de fonctionnalités comme notre système unique de coordination de repas partagés pour rendre tes événements plus collaboratifs et moins de travail pour les organisateur·rices.",
-			"Que tu animes un club de lecture, un groupe de loisirs, un réseau professionnel ou un fablab, Revel te donne l'infrastructure pour passer de simples rencontres informelles à une communauté florissante, sans abonnements coûteux ni enfermement propriétaire."
+			"La plupart des outils événementiels traitent chaque rencontre comme une vente ponctuelle. Les communautés ne fonctionnent pas comme ça. Les mêmes têtes reviennent mois après mois, il y a toujours quelqu'un pour apporter les chaises pliantes, et le groupe de discussion fait un travail pour lequel il n'a jamais été conçu.",
+			"Revel offre un vrai chez-soi à ton groupe. Crée une organisation, mets en place une série récurrente et laisse les gens te suivre pour qu'ils soient au courant du prochain événement. Utilise un tableau de repas partagé pour savoir qui apporte quoi, un sondage pour fixer la date, et des annonces par e-mail, dans l'appli ou sur Telegram.",
+			"Clubs de lecture, groupes de course, fablabs, supper clubs, collectifs queer : si tes membres reviennent encore et encore, Revel est fait pour toi. Et c'est gratuit pour les événements gratuits."
 		]
 	},
 	features: [
 		{
 			icon: 'users',
-			title: 'Structure organisationnelle',
+			title: 'Organisations et rôles',
 			description:
-				"Crée des espaces communautaires avec des niveaux d'adhésion, pas seulement des listes d'événements. Rôles Owner, Staff et Member avec des permissions granulaires."
+				"Un chez-soi pour ton groupe, avec des rôles d'équipe et des permissions détaillées, pour que les bonnes personnes puissent modifier les événements, enregistrer les arrivées ou envoyer des annonces."
 		},
 		{
 			icon: 'clipboard',
-			title: 'Coordination de repas partagés',
+			title: 'Tableaux de repas partagé',
 			description:
-				'Système intégré pour coordonner qui apporte quoi. Gère les restrictions alimentaires, les quantités et les articles : fini les tableurs chaotiques.'
+				"Indique ce qu'il faut, laisse les gens réserver ce qu'ils apportent et vois d'un coup d'œil si quelqu'un pense aux assiettes. Nourriture, boissons, matériel ou un coup de main en plus."
 		},
 		{
-			icon: 'shield',
-			title: 'Événements réservés aux membres',
+			icon: 'globe',
+			title: 'Séries récurrentes',
 			description:
-				'Réserve tes événements aux membres, à des niveaux précis, ou garde-les publics. Crée des espaces exclusifs pour ta communauté.'
+				'Configure une seule fois un événement hebdomadaire ou mensuel, et Revel crée les dates. Les gens peuvent suivre une série pour savoir quand de nouvelles dates sont publiées.'
 		},
 		{
-			icon: 'ticket',
-			title: 'Billetterie intégrée',
+			icon: 'heart',
+			title: 'Adhésions',
 			description:
-				'Événements gratuits, billets payants, RSVP seul ou formule hybride. Gère tout, des rencontres informelles aux conférences professionnelles.'
+				"Niveaux d'adhésion gratuits ou payants, événements réservés aux membres et cartes de membre dans Apple Wallet ou Google Wallet."
+		},
+		{
+			icon: 'check',
+			title: 'Sondages et annonces',
+			description:
+				"Demande au groupe, puis informe le groupe. Les annonces partent par e-mail, dans l'appli ou sur Telegram, tout de suite ou au moment que tu choisis."
 		},
 		{
 			icon: 'eye',
 			title: 'Jamais de publicité',
-			description:
-				'Ta communauté mérite mieux que de voir des publicités. Héberge gratuitement toi-même ou utilise notre version hébergée sans publicité.'
-		},
-		{
-			icon: 'code',
-			title: 'Open source (MIT)',
-			description:
-				"Libre d'utilisation, de modification et de déploiement. Aucun enfermement propriétaire. Fais-le tourner sur tes propres serveurs avec un contrôle total."
+			description: 'Tes membres voient tes événements, pas de la pub. Et aucun traqueur non plus.'
 		}
 	],
 	benefits: {
-		title: 'Pourquoi les organisateur·rices de communautés choisissent Revel',
+		title: 'Pourquoi les personnes qui animent des communautés choisissent Revel',
 		items: [
-			"Construis des structures d'adhésion durables, pas seulement des listes d'événements",
-			'Coordonne les repas partagés et les responsabilités collectives sans effort',
-			"Pas d'abonnements coûteux comme Meetup (540 €/an)",
-			'Une expérience sans publicité pour tes membres',
-			'Des événements réservés aux membres pour bâtir des communautés exclusives',
-			'Héberge toi-même pour un contrôle total et zéro frais de plateforme'
+			'Événements, membres et annonces au même endroit, au lieu de cinq applis',
+			"Les séries récurrentes t'épargnent les tâches répétitives des rencontres hebdomadaires",
+			'Avec les tableaux de repas partagé, fini les quatre bols de houmous et zéro fourchette',
+			"Pas d'abonnement : les événements gratuits et les RSVP ne coûtent rien",
+			'Des événements réservés aux membres, pour quand le groupe a besoin de son propre espace',
+			"Open source, donc tu peux l'auto-héberger quand tu veux"
 		]
 	},
 	cta: {
-		title: 'Prêt à bâtir ta communauté ?',
-		description: 'Découvre Revel en action ou déploie-le toi-même. Aucune carte bancaire requise.',
+		title: "Envie d'offrir un chez-soi à ta communauté ?",
+		description: 'Fais un tour sur la démo, ou héberge-le toi-même. Aucune carte bancaire requise.',
 		buttons: [
 			{ text: 'Tester la démo live', href: 'https://demo.letsrevel.io', variant: 'primary' },
 			{
-				text: 'Héberger soi-même (GitHub)',
+				text: 'Auto-héberger (GitHub)',
 				href: 'https://github.com/letsrevel',
 				variant: 'secondary'
 			},
@@ -674,29 +668,29 @@ export const communityFirstEventPlatformFR: LandingPageContent = {
 	},
 	faq: [
 		{
-			question: 'En quoi est-ce différent de Meetup ?',
+			question: 'En quoi Revel est-il différent de Meetup ?',
 			answer:
-				"Meetup coûte 540 €/an et affiche des publicités à tes membres. Revel est gratuit en auto-hébergement et sans publicité dans sa version hébergée. Nous intégrons aussi une billetterie complète et des fonctionnalités uniques comme la coordination de repas partagés, que Meetup n'offre pas."
+				'Meetup fait payer un abonnement aux personnes qui organisent. Sur Revel, les événements gratuits et les RSVP ne coûtent rien, et tes membres ne voient jamais de publicité. Tu as aussi la billetterie, les adhésions et les tableaux de repas partagé au même endroit, et tu peux tout auto-héberger.'
 		},
 		{
-			question: "Qu'est-ce que la coordination de repas partagés ?",
+			question: "Qu'est-ce qu'un tableau de repas partagé ?",
 			answer:
-				"C'est un système intégré qui permet aux participant·es de coordonner qui apporte quoi à tes événements. Gère les restrictions alimentaires, les quantités et l'attribution des articles : fini les tableurs chaotiques ou les outils externes. C'est idéal pour les repas partagés, le partage de matériel, la coordination des bénévoles et bien plus."
+				"Une liste commune pour un événement. Tu indiques ce qu'il faut, les gens réservent ce qu'ils vont apporter, et tout le monde peut ajouter quelque chose. Ça peut être de la nourriture, des boissons, du matériel, des coups de main et plus encore, donc ça marche aussi bien pour les journées de chantier et les échanges de matériel que pour les dîners."
 		},
 		{
-			question: 'Puis-je créer des événements réservés aux membres ?',
+			question: 'Puis-je organiser des événements réservés aux membres ?',
 			answer:
-				"Oui. Tu peux créer des organisations avec des niveaux d'adhésion et réserver tes événements aux seuls membres, à des niveaux précis, ou les garder publics. Tu as un contrôle total sur la visibilité et l'accès."
+				"Oui. Crée une organisation avec des niveaux d'adhésion et réserve un événement aux membres, ou garde-le public. Tu peux aussi réserver certains types de billets à certains niveaux d'adhésion."
 		},
 		{
 			question: 'Revel est-il vraiment gratuit ?',
 			answer:
-				"Oui pour l'auto-hébergement (licence MIT). Notre version hébergée ne facture qu'une petite commission sur les ventes de billets payants (1,5 % + 0,25 € par transaction). Les événements gratuits et ceux en RSVP seul n'ont aucun frais de plateforme dans les deux versions."
+				"Les événements gratuits et les RSVP sont gratuits sur notre version hébergée. Les billets payants et les paiements d'adhésion en ligne sont soumis à des frais de 1,5 % + 0,25 € par transaction. L'auto-hébergement est gratuit sous licence MIT."
 		},
 		{
 			question: 'Quels types de communautés utilisent Revel ?',
 			answer:
-				"Clubs de lecture, groupes de course, fablabs, réseaux professionnels, communautés de loisirs, groupes d'intérêt spécialisés et bien plus. Toute communauté qui veut plus que de simples listes d'événements profite des fonctionnalités d'organisation et d'adhésion de Revel."
+				"Clubs de lecture, groupes de course, fablabs, supper clubs, réseaux professionnels, groupes de loisirs et collectifs queer. Tout groupe qui veut plus qu'une liste d'événements tire beaucoup des organisations, des séries et des adhésions."
 		}
 	],
 	relatedPages: [

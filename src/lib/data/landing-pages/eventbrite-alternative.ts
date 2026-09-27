@@ -4,102 +4,112 @@ export const eventbriteAlternativeEN: LandingPageContent = {
 	slug: 'eventbrite-alternative',
 	locale: 'en',
 	meta: {
-		title: 'Eventbrite Alternative – Lower Fees, Full Control | Revel',
+		title: 'Eventbrite Alternative with Lower Fees and No Lock-In | Revel',
 		description:
-			'Open-source event ticketing with just 1.5% + €0.25 per transaction. Self-host for zero fees. Own your data. No platform lock-in. Hosted in Europe.',
+			'Revel is an open-source Eventbrite alternative. 1.5% + €0.25 per transaction, free events stay free, and you can import your Eventbrite events in a few clicks. Or self-host it.',
 		keywords:
-			'eventbrite alternative, cheap event ticketing, low fee ticketing, event platform, ticketing software'
+			'eventbrite alternative, import from eventbrite, low fee ticketing, cheap event ticketing, open source ticketing, event platform'
 	},
 	hero: {
-		headline: 'Stop Losing Money to Platform Fees',
+		headline: 'Keep More of Every Ticket',
 		subheadline:
-			'Revel is the open-source Eventbrite alternative with transparent pricing and full data ownership.'
+			'Revel is the open-source Eventbrite alternative. Simple fees, payouts straight to your own Stripe account, and your events come with you.'
 	},
 	intro: {
 		paragraphs: [
-			"Tired of Eventbrite taking 3.7% plus fees from every ticket sold? You're not alone. Event organizers everywhere are looking for alternatives that don't eat into their margins or lock them into a platform they can't control.",
-			'Revel is an open-source event management platform with simple, fair pricing: just 1.5% + €0.25 per transaction on our hosted version—or completely free if you self-host. Your ticket revenue goes to you, not to a corporation.',
-			'Built by community organizers in Europe, Revel gives you everything you need: ticketing, RSVPs, attendee management, check-in tools, and more. All while keeping your data yours and your costs predictable.'
+			"Switching ticketing platforms sounds like a weekend lost to copy and paste. It isn't. Connect your Eventbrite account and Revel pulls in your upcoming events as drafts, ticket types included: prices, quantities and sales windows. Check them over, connect Stripe, publish.",
+			"The pricing fits in a sentence. Free events and RSVPs cost nothing. For paid tickets we take 1.5% + €0.25 per transaction, once per checkout rather than per ticket, plus Stripe's usual processing fee. The money goes straight into your own Stripe account, so you're never waiting on us for a payout. Selling at the door or by bank transfer? No platform fee on those either.",
+			"Revel is open source under the MIT license. If you'd rather run it on your own server, you can, and then there's no platform fee at all."
 		]
 	},
 	features: [
 		{
 			icon: 'euro',
-			title: 'Transparent, Low Fees',
+			title: 'Fees You Can Explain',
 			description:
-				'Just 1.5% + €0.25 per transaction. Free events are always free. Self-host and pay nothing at all.'
+				'1.5% + €0.25 per transaction on paid tickets, charged once per checkout. Free events, RSVPs and offline sales cost nothing.'
 		},
 		{
-			icon: 'server',
-			title: 'Self-Host Option',
+			icon: 'globe',
+			title: 'Bring Your Eventbrite Events',
 			description:
-				'Deploy Revel on your own infrastructure with Docker. Zero platform fees, complete control, MIT licensed.'
+				'Connect your account and import upcoming events as drafts, with venue and ticket types carried over. You can also push Revel events to Eventbrite while you switch.'
 		},
 		{
 			icon: 'ticket',
-			title: 'Full Ticketing Suite',
+			title: 'Proper Ticketing',
 			description:
-				'Multiple ticket tiers, batch purchases, QR code check-in, Apple Wallet integration, and Stripe-powered payments.'
+				'Multiple tiers, pay-what-you-can pricing, discount codes, waitlists, reserved seating, and guest checkout without an account.'
 		},
 		{
-			icon: 'shield',
-			title: 'Your Data, Your Rules',
+			icon: 'check',
+			title: 'Easy Door Check-In',
 			description:
-				'No third-party trackers. No data selling. Full GDPR compliance. Hosted on European infrastructure.'
+				'Scan QR codes from any phone browser. Attendees get their ticket in Apple Wallet, Google Wallet or as a PDF.'
 		},
 		{
-			icon: 'users',
-			title: 'Community Tools',
+			icon: 'clipboard',
+			title: 'Invoices and VAT Sorted',
 			description:
-				'Organizations, memberships, roles and permissions. Build lasting communities, not just one-off events.'
+				'Automatic invoices for buyers, VAT IDs checked against VIES, credit notes for refunds, and a revenue report for your accountant.'
 		},
 		{
 			icon: 'code',
 			title: 'Open Source (MIT)',
 			description:
-				'Fully transparent codebase. Audit it, modify it, contribute to it. No vendor lock-in, ever.'
+				"Read the code, run it on your own server, change what you need. Your events aren't at the mercy of someone else's next price change."
 		}
 	],
 	benefits: {
-		title: 'Why Organizers Choose Revel',
+		title: 'Why Organizers Switch',
 		items: [
-			'Keep more of your ticket revenue with fees up to 60% lower than Eventbrite',
-			'Direct Stripe payouts—no waiting for platform disbursements',
-			'Export your attendee data anytime, in standard formats',
-			'No risk of platform policy changes shutting down your events',
-			'European hosting with full GDPR compliance',
-			'Active development by a community that listens'
+			'Payouts land directly in your own Stripe account',
+			'Import upcoming events and ticket types from Eventbrite instead of retyping them',
+			'Tickets sold on Eventbrite show up on the linked tier, so running both for a while stays manageable',
+			'Export your attendee list to Excel whenever you want',
+			'No ads and no trackers on your event pages',
+			'Available in English, German, Italian, French, Spanish and Portuguese'
 		]
 	},
 	cta: {
 		title: 'Ready to Switch?',
-		description: 'See Revel in action or deploy it yourself. No credit card required.',
+		description:
+			'Look around the demo, or create your organization and import your first event. No credit card needed.',
 		buttons: [
 			{ text: 'Try the Live Demo', href: 'https://demo.letsrevel.io', variant: 'primary' },
-			{ text: 'Self-Host (GitHub)', href: 'https://github.com/letsrevel', variant: 'secondary' },
+			{ text: 'Create Your Organization', href: '/register', variant: 'secondary' },
 			{ text: 'Contact Us', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
 		]
 	},
 	faq: [
 		{
-			question: 'How does Revel compare to Eventbrite pricing?',
+			question: "How does Revel's pricing compare to Eventbrite?",
 			answer:
-				"Eventbrite charges around 3.7% + fees per ticket, plus payment processing. Revel charges just 1.5% + €0.25 per transaction (plus Stripe's standard ~1.5% + €0.25). Free events and self-hosted deployments have zero platform fees."
+				"On our hosted version you pay 1.5% + €0.25 per transaction on paid tickets, plus Stripe's processing fee. The fixed part is charged once per checkout, so someone buying four tickets doesn't cost you four times €0.25. Free events, RSVPs and tickets paid offline carry no platform fee at all. Put that next to what Eventbrite charges in your country, and keep in mind that self-hosting Revel removes our fee entirely."
 		},
 		{
-			question: 'Can I migrate my events from Eventbrite?',
+			question: 'Can I move my events over from Eventbrite?',
 			answer:
-				'Yes. Revel makes it easy to recreate your events with our intuitive event builder. You can export your attendee lists from Eventbrite as CSV and use them to invite your existing community to your new Revel events.'
+				"Yes. Connect your Eventbrite account in your organization's admin area and pick the upcoming events you want. Each one arrives as a draft with its description, dates, venue and ticket types. Paid tiers stay paused until your Stripe account is connected, so nothing goes on sale by accident. Attendees and past orders stay on Eventbrite, since Revel doesn't import them."
+		},
+		{
+			question: 'Can I keep selling on Eventbrite while I switch?',
+			answer:
+				'Yes. You can push a Revel event and its ticket tiers to Eventbrite, publish it there, and pause individual tiers whenever you like. Tickets sold on Eventbrite come back as external sales on the matching tier, so you see the whole picture in one place.'
+		},
+		{
+			question: 'Do my attendees need an account?',
+			answer:
+				"Not if you don't want them to. Turn on guest checkout for an event and people can get their tickets with just an email address."
 		},
 		{
 			question: 'Is Revel really free to self-host?',
 			answer:
-				"Absolutely. Revel is MIT licensed, which means you can run it on your own servers without paying us anything. You only pay for your own infrastructure and Stripe's payment processing fees."
+				"Yes. It's MIT licensed, so you can run it on your own server without paying us anything. You cover your hosting and, if you sell tickets online, Stripe's fees. A small server with 2 vCPUs and 4 GB of RAM is enough to start."
 		},
 		{
-			question: 'Where is Revel hosted?',
-			answer:
-				'Our hosted version runs on European infrastructure, ensuring GDPR compliance and data sovereignty. If you self-host, you choose where your data lives.'
+			question: 'Where does the hosted version run?',
+			answer: 'On servers in Europe. If you self-host, you decide where your data lives.'
 		}
 	],
 	relatedPages: [
@@ -113,106 +123,113 @@ export const eventbriteAlternativeDE: LandingPageContent = {
 	slug: 'eventbrite-alternative',
 	locale: 'de',
 	meta: {
-		title: 'Eventbrite-Alternative – Niedrige Gebühren, Volle Kontrolle | Revel',
+		title: 'Eventbrite-Alternative mit niedrigen Gebühren und ohne Lock-in | Revel',
 		description:
-			'Open-Source Event-Ticketing mit nur 1,5% + 0,25€ pro Transaktion. Selbst hosten für null Gebühren. Eigene Daten. Kein Plattform-Lock-in. Gehostet in Europa.',
+			'Revel ist eine Open-Source-Alternative zu Eventbrite. 1,5% + 0,25€ pro Transaktion, kostenlose Events bleiben kostenlos, und deine Eventbrite-Events importierst du mit wenigen Klicks. Oder du hostest Revel selbst.',
 		keywords:
-			'eventbrite alternative, günstige ticketing plattform, event software, ticketing system, veranstaltungsmanagement'
+			'eventbrite alternative, eventbrite-alternative, von eventbrite importieren, ticketing niedrige gebühren, günstiges event ticketing, open source ticketing, ticketverkauf veranstaltung, eventplattform'
 	},
 	hero: {
-		headline: 'Schluss mit hohen Plattformgebühren',
+		headline: 'Behalte mehr von jedem Ticket',
 		subheadline:
-			'Revel ist die Open-Source Eventbrite-Alternative mit transparenten Preisen und voller Datenkontrolle.'
+			'Revel ist die Open-Source-Alternative zu Eventbrite. Einfache Gebühren, Auszahlungen direkt auf dein eigenes Stripe-Konto, und deine Events ziehen einfach mit um.'
 	},
 	intro: {
 		paragraphs: [
-			'Frustriert von Eventbrite, das 3,7% plus Gebühren von jedem verkauften Ticket nimmt? Du bist nicht allein. Veranstalter*innen überall suchen nach Alternativen, die nicht ihre Margen auffressen oder sie an eine unkontrollierbare Plattform binden.',
-			'Revel ist eine Open-Source Event-Management-Plattform mit einfacher, fairer Preisgestaltung: nur 1,5% + 0,25€ pro Transaktion bei unserer gehosteten Version – oder komplett kostenlos bei Selbst-Hosting. Deine Ticketeinnahmen gehören dir, nicht einem Konzern.',
-			'Entwickelt von Community-Organisator*innen in Europa, bietet Revel alles was du brauchst: Ticketing, RSVPs, Teilnehmer*innenverwaltung, Check-in-Tools und mehr. Alles während deine Daten dir gehören und deine Kosten planbar bleiben.'
+			'Die Ticketing-Plattform zu wechseln klingt nach einem Wochenende voller Copy-and-paste. Ist es aber nicht. Verbinde dein Eventbrite-Konto, und Revel holt deine anstehenden Events als Entwürfe rüber, samt Ticketkategorien: Preise, Kontingente und Verkaufszeiträume. Kurz drüberschauen, Stripe verbinden, veröffentlichen.',
+			'Die Preise passen in einen Satz. Kostenlose Events und RSVPs kosten nichts. Für bezahlte Tickets nehmen wir 1,5% + 0,25€ pro Transaktion, einmal pro Bestellung statt pro Ticket, plus die üblichen Stripe-Gebühren. Das Geld landet direkt auf deinem eigenen Stripe-Konto, du wartest also nie auf eine Auszahlung von uns. Du verkaufst an der Abendkasse oder per Überweisung? Auch dafür fällt keine Plattformgebühr an.',
+			'Revel ist Open Source unter der MIT-Lizenz. Wenn du es lieber auf deinem eigenen Server betreibst, geht das auch, und dann gibt es überhaupt keine Plattformgebühr.'
 		]
 	},
 	features: [
 		{
 			icon: 'euro',
-			title: 'Transparente, Niedrige Gebühren',
+			title: 'Gebühren, die du erklären kannst',
 			description:
-				'Nur 1,5% + 0,25€ pro Transaktion. Kostenlose Events sind immer kostenlos. Selbst hosten und gar nichts zahlen.'
+				'1,5% + 0,25€ pro Transaktion bei bezahlten Tickets, einmal pro Bestellung berechnet. Kostenlose Events, RSVPs und Offline-Verkäufe kosten nichts.'
 		},
 		{
-			icon: 'server',
-			title: 'Selbst-Hosting Option',
+			icon: 'globe',
+			title: 'Nimm deine Eventbrite-Events mit',
 			description:
-				'Revel mit Docker auf eigener Infrastruktur betreiben. Null Plattformgebühren, volle Kontrolle, MIT-lizenziert.'
+				'Verbinde dein Konto und importiere anstehende Events als Entwürfe, inklusive Veranstaltungsort und Ticketkategorien. Während des Umstiegs kannst du Revel-Events auch zu Eventbrite übertragen.'
 		},
 		{
 			icon: 'ticket',
-			title: 'Vollständige Ticketing-Suite',
+			title: 'Richtiges Ticketing',
 			description:
-				'Mehrere Ticket-Stufen, Sammelkäufe, QR-Code Check-in, Apple Wallet Integration und Stripe-basierte Zahlungen.'
+				'Mehrere Ticketkategorien, Preise nach dem Prinzip „Zahl, was du kannst“, Rabattcodes, Wartelisten, feste Sitzplätze und Gast-Checkout ohne Konto.'
 		},
 		{
-			icon: 'shield',
-			title: 'Deine Daten, Deine Regeln',
+			icon: 'check',
+			title: 'Entspannter Check-in am Einlass',
 			description:
-				'Keine Drittanbieter-Tracker. Kein Datenverkauf. Volle DSGVO-Konformität. Auf europäischer Infrastruktur gehostet.'
+				'QR-Codes mit jedem Handy-Browser scannen. Teilnehmer*innen bekommen ihr Ticket in Apple Wallet, Google Wallet oder als PDF.'
 		},
 		{
-			icon: 'users',
-			title: 'Community-Tools',
+			icon: 'clipboard',
+			title: 'Rechnungen und Umsatzsteuer erledigt',
 			description:
-				'Organisationen, Mitgliedschaften, Rollen und Berechtigungen. Baue nachhaltige Communities, nicht nur einzelne Events.'
+				'Automatische Rechnungen für Käufer*innen, USt-IdNr. per VIES geprüft, Gutschriften bei Erstattungen und ein Umsatzbericht für deine Buchhaltung.'
 		},
 		{
 			icon: 'code',
 			title: 'Open Source (MIT)',
 			description:
-				'Vollständig transparenter Code. Prüfe ihn, modifiziere ihn, trage bei. Kein Vendor Lock-in, niemals.'
+				'Lies den Code, betreib ihn auf deinem eigenen Server, ändere, was du brauchst. Deine Events sind nicht der nächsten Preiserhöhung von jemand anderem ausgeliefert.'
 		}
 	],
 	benefits: {
-		title: 'Warum Veranstalter*innen Revel Wählen',
+		title: 'Warum Veranstalter*innen wechseln',
 		items: [
-			'Behalte mehr von deinen Ticketeinnahmen mit bis zu 60% niedrigeren Gebühren als Eventbrite',
-			'Direkte Stripe-Auszahlungen – kein Warten auf Plattform-Auszahlungen',
-			'Exportiere deine Teilnehmer*innendaten jederzeit in Standardformaten',
-			'Kein Risiko, dass Plattform-Richtlinienänderungen deine Events lahmlegen',
-			'Europäisches Hosting mit voller DSGVO-Konformität',
-			'Aktive Entwicklung von einer Community, die zuhört'
+			'Auszahlungen landen direkt auf deinem eigenen Stripe-Konto',
+			'Anstehende Events und Ticketkategorien aus Eventbrite importieren, statt alles abzutippen',
+			'Auf Eventbrite verkaufte Tickets erscheinen bei der verknüpften Ticketkategorie, so bleibt es überschaubar, wenn du eine Weile beides parallel nutzt',
+			'Exportiere deine Teilnehmer*innenliste jederzeit nach Excel',
+			'Keine Werbung und keine Tracker auf deinen Eventseiten',
+			'Verfügbar auf Englisch, Deutsch, Italienisch, Französisch, Spanisch und Portugiesisch'
 		]
 	},
 	cta: {
 		title: 'Bereit zum Wechseln?',
-		description: 'Sieh Revel in Aktion oder betreibe es selbst. Keine Kreditkarte erforderlich.',
+		description:
+			'Schau dich in der Demo um oder erstelle deine Organisation und importiere dein erstes Event. Keine Kreditkarte nötig.',
 		buttons: [
-			{ text: 'Live-Demo Testen', href: 'https://demo.letsrevel.io', variant: 'primary' },
-			{
-				text: 'Selbst Hosten (GitHub)',
-				href: 'https://github.com/letsrevel',
-				variant: 'secondary'
-			},
+			{ text: 'Live-Demo ausprobieren', href: 'https://demo.letsrevel.io', variant: 'primary' },
+			{ text: 'Organisation erstellen', href: '/register', variant: 'secondary' },
 			{ text: 'Kontakt', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
 		]
 	},
 	faq: [
 		{
-			question: 'Wie vergleichen sich Revels Preise mit Eventbrite?',
+			question: 'Wie schneiden Revels Preise im Vergleich zu Eventbrite ab?',
 			answer:
-				'Eventbrite berechnet etwa 3,7% + Gebühren pro Ticket, plus Zahlungsabwicklung. Revel berechnet nur 1,5% + 0,25€ pro Transaktion (plus Stripes Standard ~1,5% + 0,25€). Kostenlose Events und selbst gehostete Deployments haben null Plattformgebühren.'
+				'In unserer gehosteten Version zahlst du 1,5% + 0,25€ pro Transaktion bei bezahlten Tickets, plus die Stripe-Gebühren. Der feste Anteil wird einmal pro Bestellung berechnet: Wer vier Tickets kauft, kostet dich also nicht viermal 0,25€. Für kostenlose Events, RSVPs und offline bezahlte Tickets fällt gar keine Plattformgebühr an. Vergleich das mit dem, was Eventbrite in deinem Land verlangt, und denk daran, dass unsere Gebühr komplett wegfällt, wenn du Revel selbst hostest.'
 		},
 		{
-			question: 'Kann ich meine Events von Eventbrite migrieren?',
+			question: 'Kann ich meine Events von Eventbrite rüberholen?',
 			answer:
-				'Ja. Mit Revel kannst du deine Events ganz einfach mit unserem intuitiven Event-Builder neu erstellen. Du kannst deine Teilnehmer*innenlisten von Eventbrite als CSV exportieren und sie nutzen, um deine bestehende Community zu deinen neuen Revel-Events einzuladen.'
+				'Ja. Verbinde dein Eventbrite-Konto im Adminbereich deiner Organisation und wähle die anstehenden Events aus, die du übernehmen willst. Jedes kommt als Entwurf an, mit Beschreibung, Terminen, Veranstaltungsort und Ticketkategorien. Bezahlte Kategorien bleiben pausiert, bis dein Stripe-Konto verbunden ist, damit nichts aus Versehen in den Verkauf geht. Teilnehmer*innen und vergangene Bestellungen bleiben auf Eventbrite, denn Revel importiert sie nicht.'
 		},
 		{
-			question: 'Ist Revel wirklich kostenlos zum Selbst-Hosten?',
+			question: 'Kann ich während des Wechsels weiter auf Eventbrite verkaufen?',
 			answer:
-				'Absolut. Revel ist MIT-lizenziert, was bedeutet, dass du es auf eigenen Servern betreiben kannst, ohne uns etwas zu zahlen. Du zahlst nur für deine eigene Infrastruktur und Stripes Zahlungsgebühren.'
+				'Ja. Du kannst ein Revel-Event samt Ticketkategorien zu Eventbrite übertragen, es dort veröffentlichen und einzelne Kategorien pausieren, wann immer du willst. Auf Eventbrite verkaufte Tickets kommen als externe Verkäufe bei der passenden Kategorie zurück, so hast du alles an einem Ort im Blick.'
 		},
 		{
-			question: 'Wo wird Revel gehostet?',
+			question: 'Brauchen meine Teilnehmer*innen ein Konto?',
 			answer:
-				'Unsere gehostete Version läuft auf europäischer Infrastruktur und gewährleistet DSGVO-Konformität und Datensouveränität. Beim Selbst-Hosting entscheidest du, wo deine Daten liegen.'
+				'Nicht, wenn du das nicht willst. Aktiviere für ein Event den Gast-Checkout, dann bekommen Leute ihre Tickets allein mit ihrer E-Mail-Adresse.'
+		},
+		{
+			question: 'Ist Revel beim Selbst-Hosten wirklich kostenlos?',
+			answer:
+				'Ja. Revel steht unter der MIT-Lizenz, du kannst es also auf deinem eigenen Server betreiben, ohne uns etwas zu zahlen. Du trägst die Hosting-Kosten und, wenn du online Tickets verkaufst, die Stripe-Gebühren. Für den Anfang reicht ein kleiner Server mit 2 vCPUs und 4 GB RAM.'
+		},
+		{
+			question: 'Wo läuft die gehostete Version?',
+			answer:
+				'Auf Servern in Europa. Wenn du selbst hostest, entscheidest du, wo deine Daten liegen.'
 		}
 	],
 	relatedPages: [
@@ -226,102 +243,112 @@ export const eventbriteAlternativeIT: LandingPageContent = {
 	slug: 'eventbrite-alternative',
 	locale: 'it',
 	meta: {
-		title: 'Alternativa a Eventbrite – Commissioni Basse, Controllo Totale | Revel',
+		title: 'Alternativa a Eventbrite con commissioni basse e nessun vincolo | Revel',
 		description:
-			'Ticketing eventi open-source con solo 1,5% + 0,25€ per transazione. Self-host gratis. I tuoi dati. Nessun lock-in. Hosting in Europa.',
+			"Revel è un'alternativa open source a Eventbrite. 1,5% + €0,25 per transazione, gli eventi gratuiti restano gratuiti e importi i tuoi eventi Eventbrite in pochi clic. Oppure lo installi sul tuo server.",
 		keywords:
-			'alternativa eventbrite, ticketing eventi economico, piattaforma eventi, software ticketing, gestione eventi'
+			'alternativa eventbrite, alternativa a eventbrite, importare eventi da eventbrite, biglietteria online commissioni basse, vendita biglietti eventi economica, biglietteria open source, piattaforma eventi'
 	},
 	hero: {
-		headline: 'Smetti di Perdere Soldi in Commissioni',
+		headline: 'Tieni per te di più su ogni biglietto',
 		subheadline:
-			"Revel è l'alternativa open-source a Eventbrite con prezzi trasparenti e proprietà totale dei dati."
+			"Revel è l'alternativa open source a Eventbrite. Commissioni semplici, incassi direttamente sul tuo account Stripe, e i tuoi eventi vengono con te."
 	},
 	intro: {
 		paragraphs: [
-			'Stanco di Eventbrite che prende il 3,7% più commissioni da ogni biglietto venduto? Non sei solo. Gli organizzatori di eventi ovunque cercano alternative che non erodano i loro margini o li vincolino a una piattaforma incontrollabile.',
-			'Revel è una piattaforma open-source per la gestione eventi con prezzi semplici e giusti: solo 1,5% + 0,25€ per transazione sulla nostra versione hosted—o completamente gratis se fai self-hosting. I ricavi dei tuoi biglietti vanno a te, non a una corporation.',
-			'Sviluppato da persone che organizzano community in Europa, Revel ti dà tutto il necessario: ticketing, RSVP, gestione partecipanti, strumenti di check-in e altro. Il tutto mantenendo i tuoi dati tuoi e i costi prevedibili.'
+			'Cambiare piattaforma di biglietteria sembra un weekend perso a fare copia e incolla. Non lo è. Collega il tuo account Eventbrite e Revel importa i tuoi prossimi eventi come bozze, tipi di biglietto compresi: prezzi, quantità e periodi di vendita. Dai una controllata, collega Stripe, pubblica.',
+			"I prezzi stanno in una frase. Eventi gratuiti e RSVP non costano nulla. Sui biglietti a pagamento prendiamo l'1,5% + €0,25 per transazione, una volta per acquisto e non per biglietto, più la normale commissione di Stripe. I soldi arrivano direttamente sul tuo account Stripe, quindi non aspetti mai un nostro versamento. Vendi all'ingresso o con bonifico? Anche lì nessuna commissione di piattaforma.",
+			'Revel è open source con licenza MIT. Se preferisci farlo girare sul tuo server puoi farlo, e a quel punto non c’è nessuna commissione di piattaforma.'
 		]
 	},
 	features: [
 		{
 			icon: 'euro',
-			title: 'Commissioni Trasparenti e Basse',
+			title: 'Commissioni che sai spiegare',
 			description:
-				'Solo 1,5% + 0,25€ per transazione. Eventi gratuiti sempre gratis. Self-host e non paghi nulla.'
+				'1,5% + €0,25 per transazione sui biglietti a pagamento, addebitati una volta per acquisto. Eventi gratuiti, RSVP e vendite offline non costano nulla.'
 		},
 		{
-			icon: 'server',
-			title: 'Opzione Self-Host',
+			icon: 'globe',
+			title: 'Porta con te i tuoi eventi Eventbrite',
 			description:
-				'Installa Revel sulla tua infrastruttura con Docker. Zero commissioni piattaforma, controllo totale, licenza MIT.'
+				'Collega il tuo account e importa i prossimi eventi come bozze, con luogo e tipi di biglietto già inclusi. Mentre fai il passaggio puoi anche pubblicare gli eventi Revel su Eventbrite.'
 		},
 		{
 			icon: 'ticket',
-			title: 'Suite Ticketing Completa',
+			title: 'Una biglietteria come si deve',
 			description:
-				'Più livelli di biglietti, acquisti multipli, check-in con QR code, integrazione Apple Wallet e pagamenti via Stripe.'
+				'Più tipi di biglietto, prezzi a offerta libera, codici sconto, liste d’attesa, posti assegnati e acquisto come ospite senza account.'
 		},
 		{
-			icon: 'shield',
-			title: 'I Tuoi Dati, Le Tue Regole',
+			icon: 'check',
+			title: "Check-in facile all'ingresso",
 			description:
-				'Nessun tracker di terze parti. Nessuna vendita dati. Piena conformità GDPR. Hosting su infrastruttura europea.'
+				'Scansiona i QR code da qualsiasi browser del telefono. Le persone partecipanti ricevono il biglietto su Apple Wallet, Google Wallet o in PDF.'
 		},
 		{
-			icon: 'users',
-			title: 'Strumenti Community',
+			icon: 'clipboard',
+			title: 'Fatture e IVA sistemate',
 			description:
-				'Organizzazioni, membership, ruoli e permessi. Costruisci community durature, non solo eventi singoli.'
+				'Fatture automatiche per chi acquista, partite IVA verificate tramite VIES, note di credito per i rimborsi e un report dei ricavi per chi ti tiene la contabilità.'
 		},
 		{
 			icon: 'code',
-			title: 'Open Source (MIT)',
+			title: 'Open source (MIT)',
 			description:
-				'Codice completamente trasparente. Esaminalo, modificalo, contribuisci. Nessun vendor lock-in, mai.'
+				'Leggi il codice, fallo girare sul tuo server, cambia quello che ti serve. I tuoi eventi non sono in balia del prossimo aumento di prezzo deciso da qualcun altro.'
 		}
 	],
 	benefits: {
-		title: 'Perché gli Organizzatori Scelgono Revel',
+		title: 'Perché chi organizza eventi cambia',
 		items: [
-			'Tieni più ricavi dei biglietti con commissioni fino al 60% inferiori a Eventbrite',
-			'Pagamenti Stripe diretti—niente attese per i versamenti della piattaforma',
-			'Esporta i dati delle persone partecipanti quando vuoi, in formati standard',
-			'Nessun rischio che cambiamenti di policy blocchino i tuoi eventi',
-			'Hosting europeo con piena conformità GDPR',
-			'Sviluppo attivo da una community che ascolta'
+			'Gli incassi arrivano direttamente sul tuo account Stripe',
+			'Importa prossimi eventi e tipi di biglietto da Eventbrite invece di riscriverli a mano',
+			'I biglietti venduti su Eventbrite compaiono nel tipo di biglietto collegato, così usare entrambe le piattaforme per un po’ resta gestibile',
+			'Esporta la lista delle persone partecipanti in Excel quando vuoi',
+			'Niente pubblicità e niente tracker sulle pagine dei tuoi eventi',
+			'Disponibile in inglese, tedesco, italiano, francese, spagnolo e portoghese'
 		]
 	},
 	cta: {
-		title: 'Pronto a Cambiare?',
-		description: 'Vedi Revel in azione o installalo tu stesso. Nessuna carta di credito richiesta.',
+		title: 'È ora di cambiare?',
+		description:
+			'Dai un’occhiata alla demo, oppure crea la tua organizzazione e importa il tuo primo evento. Nessuna carta di credito richiesta.',
 		buttons: [
-			{ text: 'Prova la Demo', href: 'https://demo.letsrevel.io', variant: 'primary' },
-			{ text: 'Self-Host (GitHub)', href: 'https://github.com/letsrevel', variant: 'secondary' },
+			{ text: 'Prova la demo live', href: 'https://demo.letsrevel.io', variant: 'primary' },
+			{ text: 'Crea la tua organizzazione', href: '/register', variant: 'secondary' },
 			{ text: 'Contattaci', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
 		]
 	},
 	faq: [
 		{
-			question: 'Come si confrontano i prezzi di Revel con Eventbrite?',
+			question: 'Come si confrontano i prezzi di Revel con quelli di Eventbrite?',
 			answer:
-				'Eventbrite addebita circa 3,7% + commissioni per biglietto, più elaborazione pagamenti. Revel addebita solo 1,5% + 0,25€ per transazione (più lo standard Stripe ~1,5% + 0,25€). Eventi gratuiti e deployment self-hosted hanno zero commissioni piattaforma.'
+				"Sulla versione hosted paghi l'1,5% + €0,25 per transazione sui biglietti a pagamento, più la commissione di Stripe. La parte fissa viene addebitata una volta per acquisto, quindi chi compra quattro biglietti non ti costa quattro volte 0,25€. Eventi gratuiti, RSVP e biglietti pagati offline non hanno nessuna commissione di piattaforma. Mettilo a confronto con quello che Eventbrite chiede nel tuo paese, e ricorda che se installi Revel sul tuo server la nostra commissione sparisce del tutto."
 		},
 		{
-			question: 'Posso migrare i miei eventi da Eventbrite?',
+			question: 'Posso spostare i miei eventi da Eventbrite?',
 			answer:
-				'Sì. Con Revel puoi ricreare facilmente i tuoi eventi con il nostro intuitivo builder. Puoi esportare le liste partecipanti da Eventbrite come CSV e usarle per invitare la tua community esistente ai tuoi nuovi eventi Revel.'
+				"Sì. Collega il tuo account Eventbrite nell'area di amministrazione della tua organizzazione e scegli i prossimi eventi che ti interessano. Ognuno arriva come bozza, con descrizione, date, luogo e tipi di biglietto. I biglietti a pagamento restano in pausa finché non colleghi il tuo account Stripe, così niente finisce in vendita per sbaglio. Le persone partecipanti e gli ordini passati restano su Eventbrite, perché Revel non li importa."
 		},
 		{
-			question: 'Revel è davvero gratis per il self-hosting?',
+			question: 'Posso continuare a vendere su Eventbrite mentre faccio il passaggio?',
 			answer:
-				'Assolutamente. Revel è licenziato MIT, il che significa che puoi eseguirlo sui tuoi server senza pagarci nulla. Paghi solo la tua infrastruttura e le commissioni di elaborazione pagamenti di Stripe.'
+				'Sì. Puoi pubblicare un evento Revel e i suoi tipi di biglietto su Eventbrite, metterlo online lì e sospendere i singoli tipi di biglietto quando vuoi. I biglietti venduti su Eventbrite tornano come vendite esterne nel tipo di biglietto corrispondente, così hai il quadro completo in un unico posto.'
 		},
 		{
-			question: 'Dove è hostato Revel?',
+			question: 'Le persone che partecipano devono avere un account?',
 			answer:
-				'La nostra versione hosted gira su infrastruttura europea, garantendo conformità GDPR e sovranità dei dati. Se fai self-host, scegli tu dove risiedono i tuoi dati.'
+				"Non se non vuoi. Attiva l'acquisto come ospite per un evento e le persone possono prendere i biglietti solo con un indirizzo email."
+		},
+		{
+			question: 'Revel è davvero gratis se lo installo sul mio server?',
+			answer:
+				"Sì. Ha licenza MIT, quindi puoi farlo girare sul tuo server senza pagarci nulla. Tu copri l'hosting e, se vendi biglietti online, le commissioni di Stripe. Per iniziare basta un piccolo server con 2 vCPU e 4 GB di RAM."
+		},
+		{
+			question: 'Dove gira la versione hosted?',
+			answer: 'Su server in Europa. Se lo installi tu, decidi tu dove stanno i tuoi dati.'
 		}
 	],
 	relatedPages: [
@@ -335,80 +362,80 @@ export const eventbriteAlternativeES: LandingPageContent = {
 	slug: 'eventbrite-alternative',
 	locale: 'es',
 	meta: {
-		title: 'Alternativa a Eventbrite – Comisiones bajas, control total | Revel',
+		title: 'Alternativa a Eventbrite con comisiones bajas y sin ataduras | Revel',
 		description:
-			'Ticketing de eventos de código abierto con solo 1,5 % + 0,25 € por transacción. Auto-alójalo gratis. Tus datos son tuyos. Sin dependencia de plataforma. Alojado en Europa.',
+			'Revel es una alternativa de código abierto a Eventbrite. 1,5 % + 0,25 € por transacción, los eventos gratuitos siguen siendo gratis y puedes importar tus eventos de Eventbrite en unos pocos clics. O alojarlo en tu propio servidor.',
 		keywords:
-			'alternativa a eventbrite, venta de entradas online barata, plataforma de eventos, software de ticketing, gestión de eventos'
+			'alternativa a eventbrite, eventbrite alternative, importar eventos de eventbrite, venta de entradas comisiones bajas, venta de entradas barata, ticketing de código abierto, plataforma de eventos'
 	},
 	hero: {
-		headline: 'Deja de perder dinero en comisiones de plataforma',
+		headline: 'Quédate con más de cada entrada',
 		subheadline:
-			'Revel es la alternativa de código abierto a Eventbrite, con precios transparentes y control total de tus datos.'
+			'Revel es la alternativa de código abierto a Eventbrite. Comisiones sencillas, cobros directos en tu propia cuenta de Stripe, y tus eventos se vienen contigo.'
 	},
 	intro: {
 		paragraphs: [
-			'¿Te cansa que Eventbrite se lleve un 3,7 % más comisiones de cada entrada vendida? No es un caso aislado: en todas partes, quienes organizan eventos buscan alternativas que no reduzcan sus márgenes ni les encierren en una plataforma que no pueden controlar.',
-			'Revel es una plataforma de gestión de eventos de código abierto con precios simples y justos: solo 1,5 % + 0,25 € por transacción en nuestra versión alojada, o completamente gratis si te lo auto-alojas. Los ingresos de tus entradas son para ti, no para una corporación.',
-			'Creada por personas organizadoras de comunidades en Europa, Revel te da todo lo que necesitas: venta de entradas, confirmaciones de asistencia, gestión de participantes, herramientas de acceso y mucho más. Todo ello manteniendo tus datos bajo tu control y tus costes predecibles.'
+			'Cambiar de plataforma de venta de entradas suena a un fin de semana perdido copiando y pegando. Pues no. Conecta tu cuenta de Eventbrite y Revel trae tus próximos eventos como borradores, con los tipos de entrada incluidos: precios, cantidades y periodos de venta. Échales un vistazo, conecta Stripe y publica.',
+			'Los precios caben en una frase. Los eventos gratuitos y las confirmaciones de asistencia no cuestan nada. En las entradas de pago cobramos 1,5 % + 0,25 € por transacción, una vez por compra y no por entrada, más la comisión habitual de Stripe. El dinero va directo a tu propia cuenta de Stripe, así que nunca tienes que esperar a que te paguemos. ¿Vendes en taquilla o por transferencia bancaria? Ahí tampoco hay comisión de plataforma.',
+			'Revel es de código abierto con licencia MIT. Si prefieres ejecutarlo en tu propio servidor, puedes hacerlo, y entonces no hay ninguna comisión de plataforma.'
 		]
 	},
 	features: [
 		{
 			icon: 'euro',
-			title: 'Comisiones bajas y transparentes',
+			title: 'Comisiones que puedes explicar',
 			description:
-				'Solo 1,5 % + 0,25 € por transacción. Los eventos gratuitos siempre son gratis. Auto-alójalo y no pagues nada en absoluto.'
+				'1,5 % + 0,25 € por transacción en entradas de pago, cobrado una vez por compra. Los eventos gratuitos, las confirmaciones de asistencia y las ventas offline no cuestan nada.'
 		},
 		{
-			icon: 'server',
-			title: 'Opción de auto-alojamiento',
+			icon: 'globe',
+			title: 'Tráete tus eventos de Eventbrite',
 			description:
-				'Despliega Revel en tu propia infraestructura con Docker. Cero comisiones de plataforma, control total, licencia MIT.'
+				'Conecta tu cuenta e importa tus próximos eventos como borradores, con el lugar y los tipos de entrada incluidos. Mientras haces el cambio, también puedes publicar eventos de Revel en Eventbrite.'
 		},
 		{
 			icon: 'ticket',
-			title: 'Suite de ticketing completa',
+			title: 'Venta de entradas en serio',
 			description:
-				'Varias categorías de entradas, compras por lotes, acceso con código QR, integración con Apple Wallet y pagos con Stripe.'
+				'Varios tipos de entrada, precio libre (paga lo que puedas), códigos de descuento, listas de espera, asientos numerados y compra sin necesidad de cuenta.'
 		},
 		{
-			icon: 'shield',
-			title: 'Tus datos, tus reglas',
+			icon: 'check',
+			title: 'Control de acceso sin complicaciones',
 			description:
-				'Sin rastreadores de terceros. Sin venta de datos. Cumplimiento total del RGPD. Alojado en infraestructura europea.'
+				'Escanea códigos QR desde el navegador de cualquier móvil. Las personas asistentes reciben su entrada en Apple Wallet, Google Wallet o en PDF.'
 		},
 		{
-			icon: 'users',
-			title: 'Herramientas para comunidades',
+			icon: 'clipboard',
+			title: 'Facturas e IVA resueltos',
 			description:
-				'Organizaciones, membresías, roles y permisos. Construye comunidades duraderas, no solo eventos puntuales.'
+				'Facturas automáticas para quien compra, NIF-IVA comprobados en VIES, notas de crédito para los reembolsos y un informe de ingresos para tu gestoría.'
 		},
 		{
 			icon: 'code',
 			title: 'Código abierto (MIT)',
 			description:
-				'Código completamente transparente. Audítalo, modifícalo, contribuye. Sin dependencia de proveedor, nunca.'
+				'Lee el código, ejecútalo en tu propio servidor y cambia lo que necesites. Tus eventos no quedan a merced de la próxima subida de precios de otros.'
 		}
 	],
 	benefits: {
-		title: 'Por qué quienes organizan eligen Revel',
+		title: 'Por qué quienes organizan eventos se cambian',
 		items: [
-			'Conserva más ingresos de tus entradas con comisiones hasta un 60 % más bajas que Eventbrite',
-			'Pagos directos vía Stripe, sin esperar a los desembolsos de la plataforma',
-			'Exporta los datos de las personas participantes cuando quieras, en formatos estándar',
-			'Sin riesgo de que un cambio de políticas de la plataforma paralice tus eventos',
-			'Alojamiento europeo con cumplimiento total del RGPD',
-			'Desarrollo activo por parte de una comunidad que escucha'
+			'Los cobros llegan directamente a tu propia cuenta de Stripe',
+			'Importa tus próximos eventos y tipos de entrada desde Eventbrite en lugar de volver a escribirlos',
+			'Las entradas vendidas en Eventbrite aparecen en el tipo de entrada vinculado, así que usar ambas plataformas durante un tiempo sigue siendo manejable',
+			'Exporta la lista de personas asistentes a Excel cuando quieras',
+			'Sin anuncios ni rastreadores en las páginas de tus eventos',
+			'Disponible en inglés, alemán, italiano, francés, español y portugués'
 		]
 	},
 	cta: {
 		title: '¿Hora de cambiar?',
 		description:
-			'Descubre Revel en acción o despliégalo por tu cuenta. No hace falta tarjeta de crédito.',
+			'Echa un vistazo a la demo, o crea tu organización e importa tu primer evento. No hace falta tarjeta de crédito.',
 		buttons: [
 			{ text: 'Probar la demo en vivo', href: 'https://demo.letsrevel.io', variant: 'primary' },
-			{ text: 'Auto-alojar (GitHub)', href: 'https://github.com/letsrevel', variant: 'secondary' },
+			{ text: 'Crear tu organización', href: '/register', variant: 'secondary' },
 			{ text: 'Contáctanos', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
 		]
 	},
@@ -416,22 +443,31 @@ export const eventbriteAlternativeES: LandingPageContent = {
 		{
 			question: '¿Cómo se comparan los precios de Revel con los de Eventbrite?',
 			answer:
-				'Eventbrite cobra alrededor de un 3,7 % + comisiones por entrada, más el procesamiento de pagos. Revel cobra solo 1,5 % + 0,25 € por transacción (más el estándar de Stripe de aproximadamente 1,5 % + 0,25 €). Los eventos gratuitos y los despliegues auto-alojados no tienen comisiones de plataforma.'
+				'En nuestra versión alojada pagas 1,5 % + 0,25 € por transacción en las entradas de pago, más la comisión de Stripe. La parte fija se cobra una vez por compra, así que si alguien compra cuatro entradas no te cuesta cuatro veces 0,25 €. Los eventos gratuitos, las confirmaciones de asistencia y las entradas pagadas offline no tienen ninguna comisión de plataforma. Compáralo con lo que cobra Eventbrite en tu país, y ten en cuenta que si alojas Revel por tu cuenta, nuestra comisión desaparece por completo.'
 		},
 		{
-			question: '¿Puedo migrar mis eventos desde Eventbrite?',
+			question: '¿Puedo traer mis eventos desde Eventbrite?',
 			answer:
-				'Sí. Revel facilita recrear tus eventos con nuestro intuitivo creador de eventos. Puedes exportar tus listas de participantes de Eventbrite como CSV y usarlas para invitar a tu comunidad existente a tus nuevos eventos en Revel.'
+				'Sí. Conecta tu cuenta de Eventbrite en el área de administración de tu organización y elige los próximos eventos que quieras. Cada uno llega como borrador, con su descripción, fechas, lugar y tipos de entrada. Los tipos de entrada de pago quedan en pausa hasta que conectes tu cuenta de Stripe, para que nada salga a la venta por error. Las personas asistentes y los pedidos anteriores se quedan en Eventbrite, porque Revel no los importa.'
 		},
 		{
-			question: '¿Es Revel realmente gratis para auto-alojar?',
+			question: '¿Puedo seguir vendiendo en Eventbrite mientras me cambio?',
 			answer:
-				'Por supuesto. Revel tiene licencia MIT, lo que significa que puedes ejecutarlo en tus propios servidores sin pagarnos nada. Solo pagas tu propia infraestructura y las comisiones de procesamiento de pagos de Stripe.'
+				'Sí. Puedes enviar un evento de Revel y sus tipos de entrada a Eventbrite, publicarlo allí y pausar tipos de entrada concretos cuando quieras. Las entradas vendidas en Eventbrite vuelven como ventas externas en el tipo de entrada correspondiente, así que lo ves todo en un solo sitio.'
 		},
 		{
-			question: '¿Dónde está alojado Revel?',
+			question: '¿Las personas asistentes necesitan una cuenta?',
 			answer:
-				'Nuestra versión alojada funciona sobre infraestructura europea, lo que garantiza el cumplimiento del RGPD y la soberanía de los datos. Si te auto-alojas, tú decides dónde viven tus datos.'
+				'No, si no quieres. Activa la compra sin cuenta en un evento y cualquiera podrá conseguir su entrada solo con una dirección de correo electrónico.'
+		},
+		{
+			question: '¿De verdad es gratis alojar Revel por tu cuenta?',
+			answer:
+				'Sí. Tiene licencia MIT, así que puedes ejecutarlo en tu propio servidor sin pagarnos nada. Tú cubres el alojamiento y, si vendes entradas online, las comisiones de Stripe. Para empezar basta con un servidor pequeño con 2 vCPU y 4 GB de RAM.'
+		},
+		{
+			question: '¿Dónde funciona la versión alojada?',
+			answer: 'En servidores en Europa. Si lo alojas tú, decides dónde viven tus datos.'
 		}
 	],
 	relatedPages: [
@@ -445,88 +481,84 @@ export const eventbriteAlternativePT: LandingPageContent = {
 	slug: 'eventbrite-alternative',
 	locale: 'pt',
 	meta: {
-		title: 'Alternativa ao Eventbrite – Taxas reduzidas, controlo total | Revel',
+		title: 'Alternativa ao Eventbrite com taxas baixas e sem amarras | Revel',
 		description:
-			'Bilhética de eventos open-source com apenas 1,5 % + 0,25 € por transação. Auto-hospeda gratuitamente. Os teus dados são teus. Sem dependência de plataforma. Alojado na Europa.',
+			'A Revel é uma alternativa open-source ao Eventbrite. 1,5 % + 0,25 € por transação, os eventos gratuitos continuam gratuitos e podes importar os teus eventos do Eventbrite em poucos cliques. Ou alojá-la no teu próprio servidor.',
 		keywords:
-			'alternativa ao eventbrite, venda de bilhetes online barata, plataforma de eventos, software de bilhética, gestão de eventos'
+			'alternativa ao eventbrite, eventbrite alternative, importar eventos do eventbrite, bilhética com taxas baixas, venda de bilhetes barata, bilhética open source, plataforma de eventos'
 	},
 	hero: {
-		headline: 'Para de perder dinheiro em taxas de plataforma',
+		headline: 'Fica com mais de cada bilhete',
 		subheadline:
-			'A Revel é a alternativa open-source ao Eventbrite, com preços transparentes e controlo total dos teus dados.'
+			'A Revel é a alternativa open-source ao Eventbrite. Taxas simples, pagamentos diretamente na tua própria conta Stripe, e os teus eventos vêm contigo.'
 	},
 	intro: {
 		paragraphs: [
-			'Custa-te ver o Eventbrite a ficar com 3,7 % mais taxas em cada bilhete vendido? Não é um caso isolado: por todo o lado, quem organiza eventos procura alternativas que não corroam as suas margens nem prendam ninguém a uma plataforma incontrolável.',
-			'A Revel é uma plataforma open-source de gestão de eventos com preços simples e justos: apenas 1,5 % + 0,25 € por transação na nossa versão alojada – ou totalmente gratuita se optares por auto-hospedar. As receitas dos teus bilhetes são para ti, não para uma corporação.',
-			'Criada por pessoas que organizam comunidades na Europa, a Revel dá-te tudo o que precisas: bilhética, confirmações de presença, gestão de participantes, ferramentas de check-in e muito mais. Tudo isto mantendo os teus dados sob o teu controlo e os custos previsíveis.'
+			'Mudar de plataforma de bilhética parece um fim de semana perdido a copiar e colar. Não é. Liga a tua conta do Eventbrite e a Revel traz os teus próximos eventos como rascunhos, com os tipos de bilhete incluídos: preços, quantidades e períodos de venda. Dá-lhes uma vista de olhos, liga o Stripe e publica.',
+			'Os preços cabem numa frase. Eventos gratuitos e confirmações de presença não custam nada. Nos bilhetes pagos cobramos 1,5 % + 0,25 € por transação, uma vez por compra e não por bilhete, mais a taxa habitual da Stripe. O dinheiro vai diretamente para a tua própria conta Stripe, por isso nunca ficas à espera de um pagamento nosso. Vendes à porta ou por transferência bancária? Aí também não há taxa de plataforma.',
+			'A Revel é open-source com licença MIT. Se preferires corrê-la no teu próprio servidor, podes, e aí não há taxa de plataforma nenhuma.'
 		]
 	},
 	features: [
 		{
 			icon: 'euro',
-			title: 'Taxas baixas e transparentes',
+			title: 'Taxas que consegues explicar',
 			description:
-				'Apenas 1,5 % + 0,25 € por transação. Os eventos gratuitos são sempre gratuitos. Auto-hospeda e não pagues nada.'
+				'1,5 % + 0,25 € por transação nos bilhetes pagos, cobrado uma vez por compra. Eventos gratuitos, confirmações de presença e vendas offline não custam nada.'
 		},
 		{
-			icon: 'server',
-			title: 'Opção de auto-hospedagem',
+			icon: 'globe',
+			title: 'Traz os teus eventos do Eventbrite',
 			description:
-				'Instala a Revel na tua própria infraestrutura com Docker. Zero taxas de plataforma, controlo total, licença MIT.'
+				'Liga a tua conta e importa os próximos eventos como rascunhos, com o local e os tipos de bilhete incluídos. Enquanto fazes a mudança, também podes enviar eventos da Revel para o Eventbrite.'
 		},
 		{
 			icon: 'ticket',
-			title: 'Suite de bilhética completa',
+			title: 'Bilhética a sério',
 			description:
-				'Vários tipos de bilhete, compras em lote, check-in por código QR, integração com a Apple Wallet e pagamentos via Stripe.'
+				'Vários tipos de bilhete, preço livre (paga o que puderes), códigos de desconto, listas de espera, lugares marcados e compra sem conta.'
 		},
 		{
-			icon: 'shield',
-			title: 'Os teus dados, as tuas regras',
+			icon: 'check',
+			title: 'Check-in à porta sem complicações',
 			description:
-				'Sem rastreadores de terceiros. Sem venda de dados. Total conformidade com o RGPD. Alojado em infraestrutura europeia.'
+				'Lê códigos QR a partir do browser de qualquer telemóvel. As pessoas participantes recebem o bilhete na Apple Wallet, na Google Wallet ou em PDF.'
 		},
 		{
-			icon: 'users',
-			title: 'Ferramentas para comunidades',
+			icon: 'clipboard',
+			title: 'Faturas e IVA tratados',
 			description:
-				'Organizações, associações, funções e permissões. Constrói comunidades duradouras, não apenas eventos pontuais.'
+				'Faturas automáticas para quem compra, números de IVA verificados no VIES, notas de crédito para os reembolsos e um relatório de receitas para a tua contabilidade.'
 		},
 		{
 			icon: 'code',
 			title: 'Código aberto (MIT)',
 			description:
-				'Código totalmente transparente. Audita-o, modifica-o, contribui. Sem dependência de fornecedor, nunca.'
+				'Lê o código, corre-o no teu próprio servidor, muda o que precisares. Os teus eventos não ficam à mercê do próximo aumento de preços de outra pessoa.'
 		}
 	],
 	benefits: {
-		title: 'Porque é que quem organiza escolhe a Revel',
+		title: 'Porque é que quem organiza eventos muda',
 		items: [
-			'Fica com mais receitas dos teus bilhetes, com taxas até 60 % mais baixas do que o Eventbrite',
-			'Pagamentos diretos via Stripe – sem esperar pelos desembolsos da plataforma',
-			'Exporta os dados das pessoas participantes quando quiseres, em formatos padrão',
-			'Sem risco de mudanças nas políticas da plataforma paralisarem os teus eventos',
-			'Alojamento europeu com total conformidade com o RGPD',
-			'Desenvolvimento ativo por uma comunidade que ouve'
+			'Os pagamentos chegam diretamente à tua própria conta Stripe',
+			'Importa os próximos eventos e tipos de bilhete do Eventbrite em vez de os escreveres de novo',
+			'Os bilhetes vendidos no Eventbrite aparecem no tipo de bilhete associado, por isso usar as duas plataformas durante algum tempo continua a ser fácil de gerir',
+			'Exporta a lista de pessoas participantes para Excel sempre que quiseres',
+			'Sem anúncios e sem rastreadores nas páginas dos teus eventos',
+			'Disponível em inglês, alemão, italiano, francês, espanhol e português'
 		]
 	},
 	cta: {
 		title: 'Hora de mudar?',
 		description:
-			'Descobre a Revel em ação ou aloja-a por tua conta. Não é preciso cartão de crédito.',
+			'Explora a demo, ou cria a tua organização e importa o teu primeiro evento. Não é preciso cartão de crédito.',
 		buttons: [
 			{
 				text: 'Experimentar a demo ao vivo',
 				href: 'https://demo.letsrevel.io',
 				variant: 'primary'
 			},
-			{
-				text: 'Auto-hospedar (GitHub)',
-				href: 'https://github.com/letsrevel',
-				variant: 'secondary'
-			},
+			{ text: 'Criar a tua organização', href: '/register', variant: 'secondary' },
 			{ text: 'Contacta-nos', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
 		]
 	},
@@ -534,22 +566,32 @@ export const eventbriteAlternativePT: LandingPageContent = {
 		{
 			question: 'Como é que os preços da Revel se comparam aos do Eventbrite?',
 			answer:
-				'O Eventbrite cobra cerca de 3,7 % + taxas por bilhete, mais o processamento de pagamentos. A Revel cobra apenas 1,5 % + 0,25 € por transação (mais o padrão da Stripe de cerca de 1,5 % + 0,25 €). Eventos gratuitos e implementações auto-hospedadas não têm taxas de plataforma.'
+				'Na nossa versão alojada pagas 1,5 % + 0,25 € por transação nos bilhetes pagos, mais a taxa da Stripe. A parte fixa é cobrada uma vez por compra, por isso alguém que compre quatro bilhetes não te custa quatro vezes 0,25 €. Eventos gratuitos, confirmações de presença e bilhetes pagos offline não têm qualquer taxa de plataforma. Compara isto com o que o Eventbrite cobra no teu país, e lembra-te de que, se alojares a Revel por tua conta, a nossa taxa desaparece por completo.'
 		},
 		{
-			question: 'Posso migrar os meus eventos do Eventbrite?',
+			question: 'Posso trazer os meus eventos do Eventbrite?',
 			answer:
-				'Sim. A Revel facilita a recriação dos teus eventos com o nosso criador de eventos intuitivo. Podes exportar as tuas listas de participantes do Eventbrite em CSV e usá-las para convidar a tua comunidade existente para os teus novos eventos na Revel.'
+				'Sim. Liga a tua conta do Eventbrite na área de administração da tua organização e escolhe os próximos eventos que queres. Cada um chega como rascunho, com descrição, datas, local e tipos de bilhete. Os tipos de bilhete pagos ficam em pausa até ligares a tua conta Stripe, para que nada fique à venda por engano. As pessoas participantes e as encomendas anteriores ficam no Eventbrite, porque a Revel não as importa.'
 		},
 		{
-			question: 'A Revel é mesmo gratuita para auto-hospedar?',
+			question: 'Posso continuar a vender no Eventbrite enquanto faço a mudança?',
 			answer:
-				'Sem dúvida. A Revel tem licença MIT, o que significa que podes executá-la nos teus próprios servidores sem nos pagar nada. Só pagas a tua própria infraestrutura e as taxas de processamento de pagamentos da Stripe.'
+				'Sim. Podes enviar um evento da Revel e os seus tipos de bilhete para o Eventbrite, publicá-lo lá e pausar tipos de bilhete individuais sempre que quiseres. Os bilhetes vendidos no Eventbrite voltam como vendas externas no tipo de bilhete correspondente, por isso vês tudo num só lugar.'
 		},
 		{
-			question: 'Onde é que a Revel está alojada?',
+			question: 'As pessoas participantes precisam de uma conta?',
 			answer:
-				'A nossa versão alojada funciona em infraestrutura europeia, garantindo conformidade com o RGPD e soberania de dados. Se optares por auto-hospedar, és tu que decides onde ficam os teus dados.'
+				'Não, se não quiseres. Ativa a compra sem conta num evento e as pessoas podem obter os bilhetes só com um endereço de email.'
+		},
+		{
+			question: 'Alojar a Revel por conta própria é mesmo gratuito?',
+			answer:
+				'Sim. Tem licença MIT, por isso podes corrê-la no teu próprio servidor sem nos pagar nada. Tu pagas o alojamento e, se venderes bilhetes online, as taxas da Stripe. Para começar, chega um servidor pequeno com 2 vCPU e 4 GB de RAM.'
+		},
+		{
+			question: 'Onde corre a versão alojada?',
+			answer:
+				'Em servidores na Europa. Se alojares por tua conta, és tu que decides onde ficam os teus dados.'
 		}
 	],
 	relatedPages: [
@@ -563,106 +605,113 @@ export const eventbriteAlternativeFR: LandingPageContent = {
 	slug: 'eventbrite-alternative',
 	locale: 'fr',
 	meta: {
-		title: 'Alternative à Eventbrite – Frais réduits, contrôle total | Revel',
+		title: 'Alternative à Eventbrite avec des frais bas et sans engagement | Revel',
 		description:
-			'Billetterie événementielle open source à seulement 1,5 % + 0,25 € par transaction. Auto-hébergement sans aucuns frais. Tes données t’appartiennent. Aucun verrouillage de plateforme. Hébergé en Europe.',
+			'Revel est une alternative open source à Eventbrite. 1,5 % + 0,25 € par transaction, les événements gratuits restent gratuits et tu importes tes événements Eventbrite en quelques clics. Ou tu l’héberges toi-même.',
 		keywords:
-			'alternative eventbrite, plateforme de billetterie pas chère, logiciel événementiel, système de billetterie, gestion d’événements'
+			'alternative eventbrite, alternative à eventbrite, importer depuis eventbrite, billetterie frais réduits, billetterie pas chère, billetterie open source, plateforme événementielle'
 	},
 	hero: {
-		headline: 'Fini les frais de plateforme exorbitants',
+		headline: 'Garde une plus grande part de chaque billet',
 		subheadline:
-			'Revel est l’alternative open source à Eventbrite, avec une tarification transparente et un contrôle total sur tes données.'
+			'Revel est l’alternative open source à Eventbrite. Des frais simples, des versements directement sur ton propre compte Stripe, et tes événements te suivent.'
 	},
 	intro: {
 		paragraphs: [
-			'Frustré·e par Eventbrite, qui prélève 3,7 % plus des frais sur chaque billet vendu ? Tu n’es pas seul·e. Partout, les organisateur·rices cherchent des alternatives qui ne grignotent pas leurs marges et ne les enferment pas dans une plateforme incontrôlable.',
-			'Revel est une plateforme open source de gestion d’événements avec une tarification simple et équitable : seulement 1,5 % + 0,25 € par transaction sur notre version hébergée – ou totalement gratuite en auto-hébergement. Tes recettes de billetterie t’appartiennent, pas à un grand groupe.',
-			'Conçue par des organisateur·rices de communautés en Europe, Revel offre tout ce dont tu as besoin : billetterie, RSVP, gestion des participant·es, outils de check-in et bien plus. Le tout en gardant tes données et des coûts prévisibles.'
+			'Changer de plateforme de billetterie, ça ressemble à un week-end perdu en copier-coller. En fait, non. Connecte ton compte Eventbrite et Revel récupère tes événements à venir sous forme de brouillons, catégories de billets comprises : prix, quantités et périodes de vente. Tu vérifies, tu connectes Stripe, tu publies.',
+			'Les tarifs tiennent en une phrase. Les événements gratuits et les RSVP ne coûtent rien. Pour les billets payants, on prend 1,5 % + 0,25 € par transaction, une fois par commande et non par billet, plus les frais habituels de Stripe. L’argent arrive directement sur ton propre compte Stripe, tu n’attends donc jamais un versement de notre part. Tu vends à l’entrée ou par virement ? Pas de frais de plateforme là-dessus non plus.',
+			'Revel est open source sous licence MIT. Si tu préfères le faire tourner sur ton propre serveur, c’est possible, et il n’y a alors plus aucuns frais de plateforme.'
 		]
 	},
 	features: [
 		{
 			icon: 'euro',
-			title: 'Frais transparents et réduits',
+			title: 'Des frais faciles à expliquer',
 			description:
-				'Seulement 1,5 % + 0,25 € par transaction. Les événements gratuits restent toujours gratuits. Auto-héberge et ne paie rien du tout.'
+				'1,5 % + 0,25 € par transaction sur les billets payants, prélevés une fois par commande. Les événements gratuits, les RSVP et les ventes hors ligne ne coûtent rien.'
 		},
 		{
-			icon: 'server',
-			title: 'Option d’auto-hébergement',
+			icon: 'globe',
+			title: 'Emmène tes événements Eventbrite',
 			description:
-				'Fais tourner Revel avec Docker sur ta propre infrastructure. Aucuns frais de plateforme, contrôle total, sous licence MIT.'
+				'Connecte ton compte et importe tes événements à venir sous forme de brouillons, avec le lieu et les catégories de billets. Pendant la transition, tu peux aussi publier des événements Revel sur Eventbrite.'
 		},
 		{
 			icon: 'ticket',
-			title: 'Suite de billetterie complète',
+			title: 'Une vraie billetterie',
 			description:
-				'Plusieurs catégories de billets, achats groupés, check-in par QR code, intégration Apple Wallet et paiements via Stripe.'
+				'Plusieurs catégories de billets, prix libre, codes de réduction, listes d’attente, places numérotées et achat sans compte.'
 		},
 		{
-			icon: 'shield',
-			title: 'Tes données, tes règles',
+			icon: 'check',
+			title: 'Un contrôle à l’entrée tout simple',
 			description:
-				'Aucun traqueur tiers. Aucune revente de données. Conformité totale au RGPD. Hébergé sur une infrastructure européenne.'
+				'Scanne les QR codes depuis le navigateur de n’importe quel téléphone. Les participant·es reçoivent leur billet dans Apple Wallet, Google Wallet ou en PDF.'
 		},
 		{
-			icon: 'users',
-			title: 'Outils communautaires',
+			icon: 'clipboard',
+			title: 'Factures et TVA, c’est réglé',
 			description:
-				'Organisations, adhésions, rôles et permissions. Construis des communautés durables, pas seulement des événements isolés.'
+				'Factures automatiques pour les personnes qui achètent, numéros de TVA vérifiés via VIES, avoirs pour les remboursements et un rapport de recettes pour ta comptabilité.'
 		},
 		{
 			icon: 'code',
 			title: 'Open source (MIT)',
 			description:
-				'Un code entièrement transparent. Inspecte-le, modifie-le, contribue. Aucun verrouillage fournisseur, jamais.'
+				'Lis le code, fais-le tourner sur ton propre serveur, modifie ce dont tu as besoin. Tes événements ne sont pas à la merci de la prochaine hausse de prix décidée par quelqu’un d’autre.'
 		}
 	],
 	benefits: {
-		title: 'Pourquoi les organisateur·rices choisissent Revel',
+		title: 'Pourquoi les organisateur·rices changent',
 		items: [
-			'Garde une plus grande part de tes recettes de billetterie avec des frais jusqu’à 60 % inférieurs à ceux d’Eventbrite',
-			'Versements Stripe directs – plus besoin d’attendre les paiements de la plateforme',
-			'Exporte les données de tes participant·es à tout moment dans des formats standards',
-			'Aucun risque que des changements de règles de la plateforme paralysent tes événements',
-			'Hébergement européen avec conformité totale au RGPD',
-			'Un développement actif mené par une communauté à l’écoute'
+			'Les versements arrivent directement sur ton propre compte Stripe',
+			'Importe tes événements à venir et tes catégories de billets depuis Eventbrite au lieu de tout ressaisir',
+			'Les billets vendus sur Eventbrite apparaissent dans la catégorie liée, donc utiliser les deux plateformes pendant un temps reste gérable',
+			'Exporte ta liste de participant·es vers Excel quand tu veux',
+			'Ni publicité ni traqueurs sur les pages de tes événements',
+			'Disponible en anglais, allemand, italien, français, espagnol et portugais'
 		]
 	},
 	cta: {
 		title: 'Prêt·e à changer ?',
-		description: 'Découvre Revel en action ou héberge-le toi-même. Aucune carte bancaire requise.',
+		description:
+			'Fais un tour sur la démo, ou crée ton organisation et importe ton premier événement. Aucune carte bancaire requise.',
 		buttons: [
 			{ text: 'Tester la démo en direct', href: 'https://demo.letsrevel.io', variant: 'primary' },
-			{
-				text: 'Auto-héberger (GitHub)',
-				href: 'https://github.com/letsrevel',
-				variant: 'secondary'
-			},
-			{ text: 'Contact', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
+			{ text: 'Créer ton organisation', href: '/register', variant: 'secondary' },
+			{ text: 'Nous contacter', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
 		]
 	},
 	faq: [
 		{
 			question: 'Comment les tarifs de Revel se comparent-ils à ceux d’Eventbrite ?',
 			answer:
-				'Eventbrite facture environ 3,7 % + des frais par billet, plus le traitement des paiements. Revel ne facture que 1,5 % + 0,25 € par transaction (plus le standard Stripe d’environ 1,5 % + 0,25 €). Les événements gratuits et les déploiements auto-hébergés n’ont aucuns frais de plateforme.'
+				'Sur notre version hébergée, tu paies 1,5 % + 0,25 € par transaction sur les billets payants, plus les frais de Stripe. La partie fixe est prélevée une fois par commande : une personne qui achète quatre billets ne te coûte donc pas quatre fois 0,25 €. Les événements gratuits, les RSVP et les billets payés hors ligne n’ont aucuns frais de plateforme. Compare avec ce qu’Eventbrite facture dans ton pays, et garde en tête qu’en auto-hébergeant Revel, nos frais disparaissent complètement.'
 		},
 		{
-			question: 'Puis-je migrer mes événements depuis Eventbrite ?',
+			question: 'Puis-je transférer mes événements depuis Eventbrite ?',
 			answer:
-				'Oui. Avec Revel, tu peux facilement recréer tes événements grâce à notre éditeur d’événements intuitif. Tu peux exporter tes listes de participant·es depuis Eventbrite au format CSV et les utiliser pour inviter ta communauté existante à tes nouveaux événements Revel.'
+				'Oui. Connecte ton compte Eventbrite dans l’espace d’administration de ton organisation et choisis les événements à venir que tu veux récupérer. Chacun arrive en brouillon, avec sa description, ses dates, son lieu et ses catégories de billets. Les catégories payantes restent en pause tant que ton compte Stripe n’est pas connecté, pour que rien ne soit mis en vente par erreur. Les participant·es et les commandes passées restent sur Eventbrite, car Revel ne les importe pas.'
 		},
 		{
-			question: 'Revel est-il vraiment gratuit en auto-hébergement ?',
+			question: 'Puis-je continuer à vendre sur Eventbrite pendant la transition ?',
 			answer:
-				'Absolument. Revel est sous licence MIT, ce qui signifie que tu peux le faire tourner sur tes propres serveurs sans nous payer quoi que ce soit. Tu ne paies que ta propre infrastructure et les frais de paiement de Stripe.'
+				'Oui. Tu peux envoyer un événement Revel et ses catégories de billets vers Eventbrite, l’y publier et mettre en pause certaines catégories quand tu veux. Les billets vendus sur Eventbrite reviennent comme ventes externes dans la catégorie correspondante, pour que tu aies une vue d’ensemble au même endroit.'
 		},
 		{
-			question: 'Où Revel est-il hébergé ?',
+			question: 'Faut-il un compte pour participer ?',
 			answer:
-				'Notre version hébergée fonctionne sur une infrastructure européenne, garantissant la conformité au RGPD et la souveraineté des données. En auto-hébergement, c’est toi qui décides où se trouvent tes données.'
+				'Pas si tu ne le souhaites pas. Active l’achat sans compte pour un événement et les gens peuvent obtenir leurs billets avec une simple adresse e-mail.'
+		},
+		{
+			question: 'L’auto-hébergement de Revel est-il vraiment gratuit ?',
+			answer:
+				'Oui. Revel est sous licence MIT, tu peux donc le faire tourner sur ton propre serveur sans rien nous payer. Tu prends en charge ton hébergement et, si tu vends des billets en ligne, les frais de Stripe. Un petit serveur avec 2 vCPU et 4 Go de RAM suffit pour démarrer.'
+		},
+		{
+			question: 'Où tourne la version hébergée ?',
+			answer:
+				'Sur des serveurs en Europe. En auto-hébergement, c’est toi qui décides où se trouvent tes données.'
 		}
 	],
 	relatedPages: [
