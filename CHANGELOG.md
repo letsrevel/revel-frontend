@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.14.1] - 2026-09-27
+
+### Changed
+- SEO landing pages (Eventbrite alternative, self-hosted, privacy, queer, kink, community and club pages) rewritten in all six languages to match what Revel actually does today: the Eventbrite page now describes the real event and ticket-tier import instead of a CSV attendee import that never existed, claims that weren't true (consent management, Stripe required for self-hosting, potluck dietary handling, auto-approval rules, competitor price figures) are gone, and shipped features like reserved seating, guest checkout, discount codes, waitlists, invoices and VAT, guest-list and address visibility, recurring series and lifetime membership plans are now covered.
+
 ## [2.14.0] - 2026-09-27
 
 ### Added
