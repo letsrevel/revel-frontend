@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.14.0] - 2026-09-27
+
+### Added
+
+- **Credit notes for buyers**: `/account/invoices` lists every credit note issued against an invoice, and each one has its own PDF download.
+- Organizers can record a full or partial refund when cancelling a paid offline or at-the-door ticket. The dialog makes clear they return the money themselves and no payment is moved; the refund counts in the event's revenue figures.
+- The box-office sell panel shows door staff the amount to collect for the chosen seat and tier (the seat's category price where the tier prices it), and confirms the recorded amount once the ticket is issued.
+
+### Changed
+
+- Box-office tickets show how they were sold: comps read "Comp" and door sales read "Door sale" in Manage Tickets and the check-in dialog, instead of the tier's "At the Door".
+- Invoices that were only partly refunded are marked "Partially credited" on the buyer's invoices page.
+
+### Fixed
+
+- Fully refunded invoices no longer disappear from the buyer's invoices page; they stay listed as "Cancelled / credited".
+- A box-office sale on a seat whose price category the tier doesn't price is flagged before submitting, instead of failing after "Issue ticket".
+- Cancelling a paid ticket waits until its refund details have loaded, so the refund option can't be skipped by cancelling too early.
+- Invoice PDF downloads no longer get blocked as pop-ups when the PDF takes a moment to generate.
+- Long names no longer push the org admin Members, Staff, Requests, and Tiers grids wider than the screen on phones.
+
 ## [2.13.1] - 2026-09-26
 
 ### Changed
