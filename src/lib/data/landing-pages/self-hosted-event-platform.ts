@@ -4,76 +4,76 @@ export const selfHostedEventPlatformEN: LandingPageContent = {
 	slug: 'self-hosted-event-platform',
 	locale: 'en',
 	meta: {
-		title: 'Self-Hosted Event Management – Open Source & Free | Revel',
+		title: 'Self-Hosted Event Management, Open Source and Free | Revel',
 		description:
-			'MIT-licensed event platform you can deploy on your own servers. Zero fees, full control, Docker-ready. Ticketing, RSVPs, member management.',
+			'Run Revel on your own server under the MIT license. Ticketing, RSVPs, memberships, screening questionnaires and QR check-in with no platform fee. Docker Compose setup.',
 		keywords:
 			'self hosted event management, open source ticketing, self hosted eventbrite, event management software, docker event platform'
 	},
 	hero: {
-		headline: 'Your Events, Your Servers, Zero Fees',
+		headline: 'Your Events, Your Server, No Platform Fee',
 		subheadline:
-			'MIT-licensed event management you can deploy anywhere. Full ticketing, RSVPs, and community tools—completely under your control.'
+			'Revel is MIT-licensed event software you can run yourself. The same code as our hosted version, on hardware you control.'
 	},
 	intro: {
 		paragraphs: [
-			"Why pay monthly SaaS fees and trust a corporation with your community's data? Revel is open-source event management software you can deploy on your own infrastructure in minutes.",
-			'Built with modern technologies—Django, PostgreSQL, Redis, and Docker—Revel is production-ready and battle-tested. Full ticketing with Stripe integration, RSVPs, member management, attendee screening, QR check-in, and more. All the features of commercial platforms, without the recurring costs or data concerns.',
-			'MIT licensed means you can use it, modify it, and deploy it however you want. No vendor lock-in. No surprise pricing changes. No platform deciding what events you can run. Your infrastructure, your rules.'
+			"Some organizers want their community's data on a machine they control. Others just don't want to hand over a cut of every ticket. Either way, Revel is open source and you can run it yourself.",
+			'The whole stack ships as Docker Compose: Django, PostgreSQL with PostGIS, Redis, Celery, and Caddy taking care of HTTPS. A setup script walks you through the configuration, and a small server with 2 vCPUs and 4 GB of RAM is enough to get going.',
+			"Everything beyond the core is optional. Plug in Stripe when you want to sell tickets online, SMTP for email, Apple and Google Wallet credentials for passes, an OpenID Connect provider for single sign-on, or Telegram for notifications. Leave out what you don't need."
 		]
 	},
 	features: [
 		{
 			icon: 'server',
-			title: 'Docker-Ready Deployment',
+			title: 'Docker Compose Setup',
 			description:
-				'Get running in minutes with Docker Compose. PostgreSQL, Redis, Celery—all configured and ready to go.'
+				'One compose file for the whole stack and a setup wizard that asks the right questions. You need a Linux server, two hostnames and ports 80 and 443.'
 		},
 		{
 			icon: 'euro',
-			title: 'Zero Platform Fees',
+			title: 'No Platform Fee',
 			description:
-				"No per-ticket fees, no monthly costs. You only pay for your own infrastructure and Stripe's payment processing."
+				"Our 1.5% + €0.25 only applies on the hosted version. On your own server you pay for hosting and, if you sell online, Stripe's processing fee."
 		},
 		{
 			icon: 'code',
 			title: 'MIT Licensed',
 			description:
-				"Use it commercially, modify it, contribute back—or don't. No restrictions, no copyleft requirements."
+				'Use it commercially, fork it, change it. The backend, the frontend and the deployment setup are all public.'
 		},
 		{
 			icon: 'lock',
-			title: 'Complete Data Control',
+			title: 'Your Data Stays Home',
 			description:
-				'Your data never leaves your servers. Full GDPR compliance because you control everything.'
+				'Attendee lists, questionnaire answers and payment records live in your own database. You decide where it runs and who can reach it.'
 		},
 		{
 			icon: 'ticket',
-			title: 'Full Feature Set',
+			title: 'The Full Feature Set',
 			description:
-				'Ticketing, RSVPs, organizations, memberships, questionnaires, QR check-in, potluck coordination, and more.'
+				'Ticketing with reserved seating, RSVPs, memberships, series passes, screening questionnaires, potluck boards and QR check-in.'
 		},
 		{
 			icon: 'globe',
-			title: 'Modern API',
+			title: 'Documented REST API',
 			description:
-				'REST API with OpenAPI documentation. Build custom frontends, integrations, or mobile apps.'
+				'OpenAPI docs come built in, so you can script against your instance or build your own tools on top.'
 		}
 	],
 	benefits: {
-		title: 'Why Self-Host Revel',
+		title: 'Why Run It Yourself',
 		items: [
-			'Eliminate recurring SaaS costs—pay only for your infrastructure',
-			'Complete data sovereignty and privacy',
-			'No risk of platform policy changes or price increases',
-			'Customize and extend the codebase for your needs',
-			'Deploy in any region for data compliance',
-			'Active community and development'
+			'No fee to us on any ticket or transaction',
+			'Pick the country and the provider your data lives with',
+			'Optional services stay off until you configure them',
+			'Change the code to fit how your community works',
+			'Single sign-on with Google or any OpenID Connect provider, such as Keycloak',
+			'Issues and development happen in the open on GitHub'
 		]
 	},
 	cta: {
-		title: 'Deploy in Minutes',
-		description: 'Check out the code, read the docs, or try the hosted demo first.',
+		title: 'Spin Up Your Own Instance',
+		description: 'Grab the code and the deployment guide, or look around the hosted demo first.',
 		buttons: [
 			{ text: 'View on GitHub', href: 'https://github.com/letsrevel', variant: 'primary' },
 			{ text: 'Try the Demo', href: 'https://demo.letsrevel.io', variant: 'secondary' },
@@ -82,24 +82,29 @@ export const selfHostedEventPlatformEN: LandingPageContent = {
 	},
 	faq: [
 		{
-			question: 'What are the system requirements?',
+			question: 'What do I need to run Revel?',
 			answer:
-				"Revel runs anywhere Docker runs. Minimum recommended: 2 CPU cores, 4GB RAM, 20GB storage. For production with many events, we recommend 4+ cores and 8GB+ RAM. You'll also need PostgreSQL (with PostGIS), Redis, and a Stripe account for payments."
+				'A Linux x86-64 server, a domain with two hostnames pointing at it, and ports 80 and 443 open. The slim setup runs on 2 vCPUs and 4 GB of RAM, which costs around €20 a month at most hosting providers. Larger communities can move up to the full setup.'
 		},
 		{
-			question: 'How long does deployment take?',
+			question: 'Do I need a Stripe account?',
 			answer:
-				'With Docker Compose, you can have a working instance in under 10 minutes. The repository includes complete deployment configurations and documentation.'
+				'Only if you want to take payments online. Free events, RSVPs, and tickets paid offline or at the door all work without it.'
 		},
 		{
-			question: 'Can I still get support if I self-host?',
+			question: 'How is it different from your hosted version?',
 			answer:
-				'Yes. We offer community support through GitHub issues. For organizations needing guaranteed response times or custom development, contact us about professional support options.'
+				"It's the same code. On the hosted version we run the servers, the updates and the backups, and take 1.5% + €0.25 on online payments. When you self-host, all of that is yours to handle, including setting up optional services like email, wallet passes or the Eventbrite integration with your own credentials."
 		},
 		{
-			question: "What's the difference between self-hosted and your hosted version?",
+			question: 'Which languages does it support?',
 			answer:
-				'Functionally identical. Our hosted version adds convenience (we manage infrastructure, updates, backups) in exchange for a small per-ticket fee. Self-hosted is free but you manage everything yourself.'
+				'The interface comes in English, German, Italian, French, Spanish and Portuguese, and each person picks their own.'
+		},
+		{
+			question: 'Can I get help if I self-host?',
+			answer:
+				"Open an issue on GitHub and we'll take a look. If you need something more hands-on, get in touch and we'll talk it through."
 		}
 	],
 	relatedPages: ['eventbrite-alternative', 'privacy-focused-events']
@@ -109,102 +114,108 @@ export const selfHostedEventPlatformDE: LandingPageContent = {
 	slug: 'self-hosted-event-platform',
 	locale: 'de',
 	meta: {
-		title: 'Selbst Gehostetes Event-Management – Open Source & Kostenlos | Revel',
+		title: 'Event-Management selbst hosten: Open Source und kostenlos | Revel',
 		description:
-			'MIT-lizenzierte Event-Plattform zum Betrieb auf eigenen Servern. Null Gebühren, volle Kontrolle, Docker-ready. Ticketing, RSVPs, Mitgliederverwaltung.',
+			'Betreibe Revel unter MIT-Lizenz auf deinem eigenen Server. Ticketing, RSVPs, Mitgliedschaften, Screening-Fragebögen und QR-Check-in ohne Plattformgebühr. Setup mit Docker Compose.',
 		keywords:
-			'selbst gehostetes event management, open source ticketing, self hosted eventbrite, event management software, docker event plattform'
+			'event management selbst hosten, open source ticketing, event software selbst gehostet, self hosted eventbrite, eventbrite alternative, veranstaltungssoftware docker'
 	},
 	hero: {
-		headline: 'Deine Events, Deine Server, Null Gebühren',
+		headline: 'Deine Events, dein Server, keine Plattformgebühr',
 		subheadline:
-			'MIT-lizenziertes Event-Management zum überall Betreiben. Vollständiges Ticketing, RSVPs und Community-Tools – komplett unter deiner Kontrolle.'
+			'Revel ist MIT-lizenzierte Event-Software, die du selbst betreiben kannst. Derselbe Code wie in unserer gehosteten Version, auf Hardware, die du kontrollierst.'
 	},
 	intro: {
 		paragraphs: [
-			'Warum monatliche SaaS-Gebühren zahlen und einem Konzern die Daten deiner Community anvertrauen? Revel ist Open-Source Event-Management-Software, die du in Minuten auf eigener Infrastruktur betreiben kannst.',
-			'Entwickelt mit modernen Technologien – Django, PostgreSQL, Redis und Docker – ist Revel produktionsreif und praxiserprobt. Vollständiges Ticketing mit Stripe-Integration, RSVPs, Mitgliederverwaltung, Teilnehmer*innen-Screening, QR-Check-in und mehr. Alle Funktionen kommerzieller Plattformen, ohne wiederkehrende Kosten oder Datenbedenken.',
-			'MIT-lizenziert bedeutet, du kannst es nutzen, modifizieren und betreiben wie du willst. Kein Vendor Lock-in. Keine überraschenden Preisänderungen. Keine Plattform, die entscheidet, welche Events du veranstalten kannst. Deine Infrastruktur, deine Regeln.'
+			'Manche Veranstalter*innen wollen die Daten ihrer Community auf einem Rechner haben, den sie selbst kontrollieren. Andere wollen einfach nicht bei jedem Ticket einen Anteil abgeben. So oder so: Revel ist Open Source, und du kannst es selbst betreiben.',
+			'Der komplette Stack kommt als Docker Compose: Django, PostgreSQL mit PostGIS, Redis, Celery und Caddy, das sich um HTTPS kümmert. Ein Setup-Skript führt dich durch die Konfiguration, und für den Anfang reicht ein kleiner Server mit 2 vCPUs und 4 GB RAM.',
+			'Alles jenseits des Kerns ist optional. Binde Stripe ein, wenn du Tickets online verkaufen willst, SMTP für E-Mails, Zugangsdaten für Apple und Google Wallet für Wallet-Pässe, einen OpenID-Connect-Anbieter für Single Sign-on oder Telegram für Benachrichtigungen. Was du nicht brauchst, lässt du einfach weg.'
 		]
 	},
 	features: [
 		{
 			icon: 'server',
-			title: 'Docker-Ready Deployment',
+			title: 'Setup mit Docker Compose',
 			description:
-				'In Minuten mit Docker Compose starten. PostgreSQL, Redis, Celery – alles konfiguriert und einsatzbereit.'
+				'Eine Compose-Datei für den ganzen Stack und ein Einrichtungsassistent, der die richtigen Fragen stellt. Du brauchst einen Linux-Server, zwei Hostnamen und die Ports 80 und 443.'
 		},
 		{
 			icon: 'euro',
-			title: 'Null Plattformgebühren',
+			title: 'Keine Plattformgebühr',
 			description:
-				'Keine Pro-Ticket-Gebühren, keine monatlichen Kosten. Du zahlst nur für deine eigene Infrastruktur und Stripes Zahlungsabwicklung.'
+				'Unsere 1,5% + 0,25€ fallen nur in der gehosteten Version an. Auf deinem eigenen Server zahlst du fürs Hosting und, wenn du online verkaufst, die Transaktionsgebühr von Stripe.'
 		},
 		{
 			icon: 'code',
-			title: 'MIT Lizenziert',
+			title: 'MIT-Lizenz',
 			description:
-				'Kommerziell nutzen, modifizieren, zurück beitragen – oder nicht. Keine Einschränkungen, keine Copyleft-Anforderungen.'
+				'Nutze es kommerziell, forke es, verändere es. Backend, Frontend und das Deployment-Setup sind alle öffentlich.'
 		},
 		{
 			icon: 'lock',
-			title: 'Vollständige Datenkontrolle',
+			title: 'Deine Daten bleiben zu Hause',
 			description:
-				'Deine Daten verlassen niemals deine Server. Volle DSGVO-Konformität, weil du alles kontrollierst.'
+				'Teilnehmer*innenlisten, Antworten auf Fragebögen und Zahlungsdaten liegen in deiner eigenen Datenbank. Du entscheidest, wo sie läuft und wer darauf zugreifen kann.'
 		},
 		{
 			icon: 'ticket',
-			title: 'Vollständiger Funktionsumfang',
+			title: 'Der volle Funktionsumfang',
 			description:
-				'Ticketing, RSVPs, Organisationen, Mitgliedschaften, Fragebögen, QR-Check-in, Potluck-Koordination und mehr.'
+				'Ticketing mit Sitzplatzreservierung, RSVPs, Mitgliedschaften, Serien-Pässe, Screening-Fragebögen, Potluck-Listen und QR-Check-in.'
 		},
 		{
 			icon: 'globe',
-			title: 'Moderne API',
+			title: 'Dokumentierte REST-API',
 			description:
-				'REST API mit OpenAPI-Dokumentation. Baue eigene Frontends, Integrationen oder Mobile Apps.'
+				'Die OpenAPI-Doku ist direkt eingebaut. So kannst du deine Instanz per Skript steuern oder eigene Tools darauf aufbauen.'
 		}
 	],
 	benefits: {
-		title: 'Warum Revel Selbst Hosten',
+		title: 'Warum selbst betreiben',
 		items: [
-			'Wiederkehrende SaaS-Kosten eliminieren – zahle nur für deine Infrastruktur',
-			'Vollständige Datensouveränität und Privatsphäre',
-			'Kein Risiko von Plattform-Richtlinienänderungen oder Preiserhöhungen',
-			'Codebase für deine Bedürfnisse anpassen und erweitern',
-			'In jeder Region für Daten-Compliance betreiben',
-			'Aktive Community und Entwicklung'
+			'Keine Gebühr an uns, bei keinem Ticket und keiner Transaktion',
+			'Du wählst das Land und den Anbieter, bei dem deine Daten liegen',
+			'Optionale Dienste bleiben aus, bis du sie konfigurierst',
+			'Passe den Code an die Arbeitsweise deiner Community an',
+			'Single Sign-on mit Google oder jedem OpenID-Connect-Anbieter, zum Beispiel Keycloak',
+			'Issues und Entwicklung laufen öffentlich auf GitHub'
 		]
 	},
 	cta: {
-		title: 'In Minuten Betreiben',
-		description: 'Code ansehen, Doku lesen oder erst die gehostete Demo testen.',
+		title: 'Starte deine eigene Instanz',
+		description:
+			'Hol dir den Code und die Deployment-Anleitung oder schau dich zuerst in der gehosteten Demo um.',
 		buttons: [
-			{ text: 'Auf GitHub Ansehen', href: 'https://github.com/letsrevel', variant: 'primary' },
-			{ text: 'Demo Testen', href: 'https://demo.letsrevel.io', variant: 'secondary' },
-			{ text: 'Kontakt', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
+			{ text: 'Auf GitHub ansehen', href: 'https://github.com/letsrevel', variant: 'primary' },
+			{ text: 'Demo ausprobieren', href: 'https://demo.letsrevel.io', variant: 'secondary' },
+			{ text: 'Kontakt aufnehmen', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
 		]
 	},
 	faq: [
 		{
-			question: 'Was sind die Systemanforderungen?',
+			question: 'Was brauche ich, um Revel zu betreiben?',
 			answer:
-				'Revel läuft überall wo Docker läuft. Minimum empfohlen: 2 CPU-Kerne, 4GB RAM, 20GB Speicher. Für Produktion mit vielen Events empfehlen wir 4+ Kerne und 8GB+ RAM. Du brauchst außerdem PostgreSQL (mit PostGIS), Redis und ein Stripe-Konto für Zahlungen.'
+				'Einen Linux-Server (x86-64), eine Domain mit zwei Hostnamen, die darauf zeigen, und offene Ports 80 und 443. Das schlanke Setup läuft mit 2 vCPUs und 4 GB RAM, das kostet bei den meisten Hostern rund 20 € im Monat. Größere Communitys können auf das volle Setup umsteigen.'
 		},
 		{
-			question: 'Wie lange dauert das Deployment?',
+			question: 'Brauche ich ein Stripe-Konto?',
 			answer:
-				'Mit Docker Compose kannst du in unter 10 Minuten eine funktionierende Instanz haben. Das Repository enthält vollständige Deployment-Konfigurationen und Dokumentation.'
+				'Nur wenn du Zahlungen online annehmen willst. Kostenlose Events, RSVPs und Tickets, die offline oder am Einlass bezahlt werden, funktionieren alle ohne.'
 		},
 		{
-			question: 'Kann ich trotzdem Support bekommen beim Selbst-Hosten?',
+			question: 'Was ist anders als bei eurer gehosteten Version?',
 			answer:
-				'Ja. Wir bieten Community-Support über GitHub Issues. Für Organisationen, die garantierte Reaktionszeiten oder individuelle Entwicklung brauchen, kontaktiere uns für professionelle Support-Optionen.'
+				'Es ist derselbe Code. In der gehosteten Version kümmern wir uns um Server, Updates und Backups und nehmen 1,5% + 0,25€ auf Online-Zahlungen. Wenn du selbst hostest, liegt all das bei dir, auch die Einrichtung optionaler Dienste wie E-Mail, Wallet-Pässe oder die Eventbrite-Integration mit deinen eigenen Zugangsdaten.'
 		},
 		{
-			question: 'Was ist der Unterschied zwischen selbst gehostet und eurer gehosteten Version?',
+			question: 'Welche Sprachen werden unterstützt?',
 			answer:
-				'Funktional identisch. Unsere gehostete Version bietet Komfort (wir verwalten Infrastruktur, Updates, Backups) im Austausch für eine kleine Pro-Ticket-Gebühr. Selbst gehostet ist kostenlos, aber du verwaltest alles selbst.'
+				'Die Oberfläche gibt es auf Englisch, Deutsch, Italienisch, Französisch, Spanisch und Portugiesisch, und jede Person wählt ihre eigene.'
+		},
+		{
+			question: 'Bekomme ich Hilfe, wenn ich selbst hoste?',
+			answer:
+				'Eröffne ein Issue auf GitHub, und wir schauen es uns an. Wenn du mehr direkte Unterstützung brauchst, melde dich bei uns, dann besprechen wir das.'
 		}
 	],
 	relatedPages: ['eventbrite-alternative', 'privacy-focused-events']
@@ -214,102 +225,108 @@ export const selfHostedEventPlatformES: LandingPageContent = {
 	slug: 'self-hosted-event-platform',
 	locale: 'es',
 	meta: {
-		title: 'Gestión de Eventos Autoalojada – Código Abierto y Gratis | Revel',
+		title: 'Gestión de eventos autoalojada, de código abierto y gratis | Revel',
 		description:
-			'Plataforma de eventos con licencia MIT que puedes instalar en tus propios servidores. Cero comisiones, control total, lista para Docker. Entradas, RSVP, gestión de socios.',
+			'Instala Revel en tu propio servidor con licencia MIT. Venta de entradas, RSVP, membresías, cuestionarios de selección y check-in con QR sin comisión de plataforma. Instalación con Docker Compose.',
 		keywords:
-			'gestión de eventos open source, alternativa a eventbrite, software de entradas gratis, plataforma de eventos autoalojada, docker eventos'
+			'gestión de eventos autoalojada, software de eventos open source, venta de entradas open source, alternativa a eventbrite, self hosted eventbrite, plataforma de eventos docker'
 	},
 	hero: {
-		headline: 'Tus Eventos, Tus Servidores, Cero Comisiones',
+		headline: 'Tus eventos, tu servidor, sin comisión de plataforma',
 		subheadline:
-			'Gestión de eventos con licencia MIT que puedes instalar donde quieras. Entradas completas, RSVP y herramientas de comunidad, completamente bajo tu control.'
+			'Revel es un software de eventos con licencia MIT que puedes instalar por tu cuenta. El mismo código que nuestra versión alojada, en un hardware que controlas tú.'
 	},
 	intro: {
 		paragraphs: [
-			'¿Por qué pagar cuotas mensuales de SaaS y confiar los datos de tu comunidad a una corporación? Revel es un software de gestión de eventos de código abierto que puedes instalar en tu propia infraestructura en minutos.',
-			'Construido con tecnologías modernas (Django, PostgreSQL, Redis y Docker), Revel está listo para producción y probado en el mundo real. Entradas completas con integración de Stripe, RSVP, gestión de socios, selección de participantes, check-in por QR y mucho más. Todas las funciones de las plataformas comerciales, sin costes recurrentes ni preocupaciones sobre los datos.',
-			'Licencia MIT significa que puedes usarlo, modificarlo e instalarlo como quieras. Sin dependencia de proveedor. Sin cambios de precio sorpresa. Ninguna plataforma decide qué eventos puedes organizar. Tu infraestructura, tus reglas.'
+			'Hay quienes organizan eventos y quieren los datos de su comunidad en una máquina que controlan. Otras personas simplemente no quieren ceder una parte de cada entrada. En cualquier caso, Revel es de código abierto y puedes instalarlo por tu cuenta.',
+			'Todo el stack viene como Docker Compose: Django, PostgreSQL con PostGIS, Redis, Celery y Caddy, que se encarga del HTTPS. Un script de instalación te guía por la configuración, y para empezar basta con un servidor pequeño de 2 vCPU y 4 GB de RAM.',
+			'Todo lo que va más allá del núcleo es opcional. Conecta Stripe cuando quieras vender entradas online, SMTP para el correo, credenciales de Apple Wallet y Google Wallet para los pases, un proveedor de OpenID Connect para el inicio de sesión único o Telegram para las notificaciones. Lo que no necesites, déjalo fuera.'
 		]
 	},
 	features: [
 		{
 			icon: 'server',
-			title: 'Despliegue Listo para Docker',
+			title: 'Instalación con Docker Compose',
 			description:
-				'Ponlo en marcha en minutos con Docker Compose. PostgreSQL, Redis, Celery: todo configurado y listo.'
+				'Un solo archivo compose para todo el stack y un asistente de configuración que hace las preguntas adecuadas. Necesitas un servidor Linux, dos nombres de host y los puertos 80 y 443.'
 		},
 		{
 			icon: 'euro',
-			title: 'Cero Comisiones de Plataforma',
+			title: 'Sin comisión de plataforma',
 			description:
-				'Sin comisiones por entrada, sin costes mensuales. Solo pagas tu propia infraestructura y el procesamiento de pagos de Stripe.'
+				'Nuestro 1,5 % + 0,25 € solo se aplica en la versión alojada. En tu propio servidor pagas el alojamiento y, si vendes online, la comisión de procesamiento de Stripe.'
 		},
 		{
 			icon: 'code',
 			title: 'Licencia MIT',
 			description:
-				'Úsalo comercialmente, modifícalo, contribuye de vuelta... o no. Sin restricciones, sin obligaciones copyleft.'
+				'Úsalo con fines comerciales, haz un fork, modifícalo. El backend, el frontend y la configuración de despliegue son públicos.'
 		},
 		{
 			icon: 'lock',
-			title: 'Control Total de los Datos',
+			title: 'Tus datos se quedan en casa',
 			description:
-				'Tus datos nunca salen de tus servidores. Cumplimiento total del RGPD porque tú lo controlas todo.'
+				'Las listas de asistentes, las respuestas a los cuestionarios y los registros de pago se guardan en tu propia base de datos. Tú decides dónde se ejecuta y quién puede acceder.'
 		},
 		{
 			icon: 'ticket',
-			title: 'Todas las Funciones Incluidas',
+			title: 'Todas las funciones',
 			description:
-				'Entradas, RSVP, organizaciones, membresías, cuestionarios, check-in por QR, coordinación de comidas compartidas y mucho más.'
+				'Venta de entradas con asientos numerados, RSVP, membresías, pases de serie, cuestionarios de selección, tablones de aportaciones y check-in con QR.'
 		},
 		{
 			icon: 'globe',
-			title: 'API Moderna',
+			title: 'API REST documentada',
 			description:
-				'API REST con documentación OpenAPI. Crea tus propios frontends, integraciones o apps móviles.'
+				'La documentación OpenAPI viene integrada, así que puedes automatizar tu instancia con scripts o crear tus propias herramientas encima.'
 		}
 	],
 	benefits: {
-		title: 'Por Qué Autoalojar Revel',
+		title: 'Por qué instalarlo por tu cuenta',
 		items: [
-			'Elimina los costes recurrentes de SaaS: paga solo tu infraestructura',
-			'Soberanía y privacidad total de los datos',
-			'Sin riesgo de cambios de política o subidas de precio de la plataforma',
-			'Personaliza y amplía el código según tus necesidades',
-			'Instala en cualquier región para cumplir con la normativa de datos',
-			'Comunidad y desarrollo activos'
+			'Ninguna comisión para nosotros en ninguna entrada ni transacción',
+			'Elige el país y el proveedor donde viven tus datos',
+			'Los servicios opcionales quedan desactivados hasta que los configures',
+			'Adapta el código a cómo funciona tu comunidad',
+			'Inicio de sesión único con Google o cualquier proveedor de OpenID Connect, como Keycloak',
+			'Las incidencias y el desarrollo se llevan en abierto en GitHub'
 		]
 	},
 	cta: {
-		title: 'En Marcha en Minutos',
-		description: 'Consulta el código, lee la documentación o prueba primero la demo alojada.',
+		title: 'Monta tu propia instancia',
+		description:
+			'Descarga el código y la guía de despliegue, o echa antes un vistazo a la demo alojada.',
 		buttons: [
 			{ text: 'Ver en GitHub', href: 'https://github.com/letsrevel', variant: 'primary' },
-			{ text: 'Probar la Demo', href: 'https://demo.letsrevel.io', variant: 'secondary' },
+			{ text: 'Probar la demo', href: 'https://demo.letsrevel.io', variant: 'secondary' },
 			{ text: 'Contáctanos', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
 		]
 	},
 	faq: [
 		{
-			question: '¿Cuáles son los requisitos del sistema?',
+			question: '¿Qué necesito para ejecutar Revel?',
 			answer:
-				'Revel funciona en cualquier sitio donde funcione Docker. Mínimo recomendado: 2 núcleos de CPU, 4GB de RAM, 20GB de almacenamiento. Para producción con muchos eventos, recomendamos 4+ núcleos y 8GB+ de RAM. También necesitarás PostgreSQL (con PostGIS), Redis y una cuenta de Stripe para los pagos.'
+				'Un servidor Linux x86-64, un dominio con dos nombres de host que apunten a él y los puertos 80 y 443 abiertos. La configuración ligera funciona con 2 vCPU y 4 GB de RAM, lo que cuesta unos 20 € al mes en la mayoría de proveedores de hosting. Las comunidades más grandes pueden pasar a la configuración completa.'
 		},
 		{
-			question: '¿Cuánto tarda el despliegue?',
+			question: '¿Necesito una cuenta de Stripe?',
 			answer:
-				'Con Docker Compose puedes tener una instancia funcionando en menos de 10 minutos. El repositorio incluye configuraciones de despliegue completas y documentación.'
+				'Solo si quieres cobrar pagos online. Los eventos gratuitos, los RSVP y las entradas pagadas fuera de línea o en la puerta funcionan sin ella.'
 		},
 		{
-			question: '¿Puedo seguir teniendo soporte si me autoalojo?',
+			question: '¿En qué se diferencia de vuestra versión alojada?',
 			answer:
-				'Sí. Ofrecemos soporte comunitario a través de GitHub issues. Para organizaciones que necesiten tiempos de respuesta garantizados o desarrollo a medida, contáctanos para conocer las opciones de soporte profesional.'
+				'Es el mismo código. En la versión alojada nos encargamos de los servidores, las actualizaciones y las copias de seguridad, y cobramos 1,5 % + 0,25 € por los pagos online. Si lo alojas por tu cuenta, todo eso queda en tus manos, incluida la configuración de servicios opcionales como el correo, los pases para wallet o la integración con Eventbrite con tus propias credenciales.'
 		},
 		{
-			question: '¿Cuál es la diferencia entre autoalojado y vuestra versión alojada?',
+			question: '¿Qué idiomas admite?',
 			answer:
-				'Funcionalmente idénticas. Nuestra versión alojada añade comodidad (gestionamos infraestructura, actualizaciones, copias de seguridad) a cambio de una pequeña comisión por entrada. Autoalojado es gratis, pero gestionas todo tú.'
+				'La interfaz está disponible en inglés, alemán, italiano, francés, español y portugués, y cada persona elige el suyo.'
+		},
+		{
+			question: '¿Puedo recibir ayuda si lo alojo por mi cuenta?',
+			answer:
+				'Abre una incidencia en GitHub y le echamos un vistazo. Si necesitas un acompañamiento más cercano, escríbenos y lo hablamos.'
 		}
 	],
 	relatedPages: ['eventbrite-alternative', 'privacy-focused-events']
@@ -319,102 +336,108 @@ export const selfHostedEventPlatformPT: LandingPageContent = {
 	slug: 'self-hosted-event-platform',
 	locale: 'pt',
 	meta: {
-		title: 'Gestão de Eventos Autoalojada – Código Aberto e Gratuita | Revel',
+		title: 'Gestão de eventos autoalojada, open source e gratuita | Revel',
 		description:
-			'Plataforma de eventos com licença MIT que podes instalar nos teus próprios servidores. Zero comissões, controlo total, pronta para Docker. Bilhetes, RSVP, gestão de membros.',
+			'Instala o Revel no teu próprio servidor com licença MIT. Bilhética, RSVP, adesões, questionários de seleção e check-in por QR sem comissão de plataforma. Instalação com Docker Compose.',
 		keywords:
-			'gestão de eventos open source, alternativa ao eventbrite, software de bilhetes gratuito, plataforma de eventos autoalojada, docker eventos'
+			'gestão de eventos autoalojada, software de eventos open source, bilhética open source, alternativa ao eventbrite, self hosted eventbrite, plataforma de eventos docker'
 	},
 	hero: {
-		headline: 'Os Teus Eventos, os Teus Servidores, Zero Comissões',
+		headline: 'Os teus eventos, o teu servidor, sem comissão de plataforma',
 		subheadline:
-			'Gestão de eventos com licença MIT que podes instalar em qualquer lugar. Bilhética completa, RSVP e ferramentas de comunidade — totalmente sob o teu controlo.'
+			'O Revel é um software de eventos com licença MIT que podes instalar por conta própria. O mesmo código da nossa versão alojada, em hardware que controlas.'
 	},
 	intro: {
 		paragraphs: [
-			'Porquê pagar mensalidades de SaaS e confiar os dados da tua comunidade a uma corporação? O Revel é um software de gestão de eventos de código aberto que podes instalar na tua própria infraestrutura em minutos.',
-			'Construído com tecnologias modernas — Django, PostgreSQL, Redis e Docker — o Revel está pronto para produção e testado em condições reais. Bilhética completa com integração Stripe, RSVP, gestão de membros, seleção de participantes, check-in por QR e muito mais. Todas as funcionalidades das plataformas comerciais, sem custos recorrentes nem preocupações com os dados.',
-			'Licença MIT significa que podes usá-lo, modificá-lo e instalá-lo como quiseres. Sem dependência de fornecedor. Sem alterações de preço surpresa. Nenhuma plataforma decide que eventos podes organizar. A tua infraestrutura, as tuas regras.'
+			'Há quem organize eventos e queira os dados da sua comunidade numa máquina que controla. Outras pessoas simplesmente não querem ceder uma fatia de cada bilhete. Seja como for, o Revel é open source e podes instalá-lo por conta própria.',
+			'Todo o stack vem em Docker Compose: Django, PostgreSQL com PostGIS, Redis, Celery e o Caddy, que trata do HTTPS. Um script de instalação guia-te pela configuração, e para começar basta um servidor pequeno com 2 vCPU e 4 GB de RAM.',
+			'Tudo o que vai além do núcleo é opcional. Liga o Stripe quando quiseres vender bilhetes online, SMTP para o email, credenciais do Apple Wallet e do Google Wallet para os passes, um fornecedor OpenID Connect para o início de sessão único ou o Telegram para as notificações. O que não precisares, deixa de fora.'
 		]
 	},
 	features: [
 		{
 			icon: 'server',
-			title: 'Implementação Pronta para Docker',
+			title: 'Instalação com Docker Compose',
 			description:
-				'Fica operacional em minutos com o Docker Compose. PostgreSQL, Redis, Celery — tudo configurado e pronto a usar.'
+				'Um único ficheiro compose para todo o stack e um assistente de configuração que faz as perguntas certas. Precisas de um servidor Linux, dois nomes de host e as portas 80 e 443.'
 		},
 		{
 			icon: 'euro',
-			title: 'Zero Comissões de Plataforma',
+			title: 'Sem comissão de plataforma',
 			description:
-				'Sem comissões por bilhete, sem custos mensais. Só pagas a tua própria infraestrutura e o processamento de pagamentos do Stripe.'
+				'A nossa comissão de 1,5 % + 0,25 € só se aplica na versão alojada. No teu próprio servidor pagas o alojamento e, se venderes online, a taxa de processamento do Stripe.'
 		},
 		{
 			icon: 'code',
 			title: 'Licença MIT',
 			description:
-				'Usa-o comercialmente, modifica-o, contribui de volta — ou não. Sem restrições, sem obrigações copyleft.'
+				'Usa-o comercialmente, faz um fork, altera-o. O backend, o frontend e a configuração de implementação são todos públicos.'
 		},
 		{
 			icon: 'lock',
-			title: 'Controlo Total dos Dados',
+			title: 'Os teus dados ficam em casa',
 			description:
-				'Os teus dados nunca saem dos teus servidores. Conformidade total com o RGPD porque controlas tudo.'
+				'Listas de participantes, respostas aos questionários e registos de pagamento ficam na tua própria base de dados. Tu decides onde ela corre e quem lhe pode aceder.'
 		},
 		{
 			icon: 'ticket',
-			title: 'Conjunto Completo de Funcionalidades',
+			title: 'Todas as funcionalidades',
 			description:
-				'Bilhética, RSVP, organizações, associações, questionários, check-in por QR, coordenação de refeições partilhadas e muito mais.'
+				'Bilhética com lugares marcados, RSVP, adesões, passes de série, questionários de seleção, quadros de contribuições e check-in por QR.'
 		},
 		{
 			icon: 'globe',
-			title: 'API Moderna',
+			title: 'API REST documentada',
 			description:
-				'API REST com documentação OpenAPI. Cria os teus próprios frontends, integrações ou aplicações móveis.'
+				'A documentação OpenAPI vem incluída, por isso podes automatizar a tua instância com scripts ou criar as tuas próprias ferramentas por cima.'
 		}
 	],
 	benefits: {
-		title: 'Porquê Autoalojar o Revel',
+		title: 'Porquê instalar por conta própria',
 		items: [
-			'Elimina os custos recorrentes de SaaS — paga apenas a tua infraestrutura',
-			'Soberania e privacidade total dos dados',
-			'Sem risco de alterações de política ou aumentos de preço da plataforma',
-			'Personaliza e estende o código conforme as tuas necessidades',
-			'Instala em qualquer região para conformidade de dados',
-			'Comunidade e desenvolvimento ativos'
+			'Nenhuma comissão para nós em nenhum bilhete ou transação',
+			'Escolhe o país e o fornecedor onde vivem os teus dados',
+			'Os serviços opcionais ficam desligados até os configurares',
+			'Adapta o código à forma como a tua comunidade funciona',
+			'Início de sessão único com Google ou qualquer fornecedor OpenID Connect, como o Keycloak',
+			'Os issues e o desenvolvimento acontecem às claras no GitHub'
 		]
 	},
 	cta: {
-		title: 'Operacional em Minutos',
-		description: 'Consulta o código, lê a documentação ou experimenta primeiro a demo alojada.',
+		title: 'Põe a tua própria instância a funcionar',
+		description:
+			'Descarrega o código e o guia de implementação, ou dá primeiro uma volta pela demo alojada.',
 		buttons: [
 			{ text: 'Ver no GitHub', href: 'https://github.com/letsrevel', variant: 'primary' },
-			{ text: 'Experimentar a Demo', href: 'https://demo.letsrevel.io', variant: 'secondary' },
+			{ text: 'Experimentar a demo', href: 'https://demo.letsrevel.io', variant: 'secondary' },
 			{ text: 'Contacta-nos', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
 		]
 	},
 	faq: [
 		{
-			question: 'Quais são os requisitos do sistema?',
+			question: 'De que preciso para correr o Revel?',
 			answer:
-				'O Revel funciona em qualquer lugar onde o Docker funcione. Mínimo recomendado: 2 núcleos de CPU, 4GB de RAM, 20GB de armazenamento. Para produção com muitos eventos, recomendamos 4+ núcleos e 8GB+ de RAM. Também vais precisar de PostgreSQL (com PostGIS), Redis e uma conta Stripe para os pagamentos.'
+				'Um servidor Linux x86-64, um domínio com dois nomes de host a apontar para ele e as portas 80 e 443 abertas. A configuração leve corre com 2 vCPU e 4 GB de RAM, o que custa cerca de 20 € por mês na maioria dos fornecedores de alojamento. Comunidades maiores podem passar para a configuração completa.'
 		},
 		{
-			question: 'Quanto tempo demora a implementação?',
+			question: 'Preciso de uma conta Stripe?',
 			answer:
-				'Com o Docker Compose, podes ter uma instância a funcionar em menos de 10 minutos. O repositório inclui configurações de implementação completas e documentação.'
+				'Só se quiseres receber pagamentos online. Eventos gratuitos, RSVP e bilhetes pagos offline ou à entrada funcionam todos sem ela.'
 		},
 		{
-			question: 'Posso continuar a ter suporte se me autoalojar?',
+			question: 'Qual é a diferença em relação à vossa versão alojada?',
 			answer:
-				'Sim. Oferecemos suporte da comunidade através de issues no GitHub. Para organizações que precisem de tempos de resposta garantidos ou desenvolvimento personalizado, contacta-nos sobre as opções de suporte profissional.'
+				'É o mesmo código. Na versão alojada tratamos nós dos servidores, das atualizações e das cópias de segurança, e ficamos com 1,5 % + 0,25 € nos pagamentos online. Quando alojas por conta própria, tudo isso fica a teu cargo, incluindo configurar serviços opcionais como o email, os passes para wallet ou a integração com o Eventbrite com as tuas próprias credenciais.'
 		},
 		{
-			question: 'Qual é a diferença entre autoalojado e a vossa versão alojada?',
+			question: 'Que idiomas suporta?',
 			answer:
-				'Funcionalmente idênticas. A nossa versão alojada acrescenta comodidade (gerimos a infraestrutura, atualizações, cópias de segurança) em troca de uma pequena comissão por bilhete. Autoalojado é gratuito, mas geres tudo tu.'
+				'A interface está disponível em inglês, alemão, italiano, francês, espanhol e português, e cada pessoa escolhe o seu.'
+		},
+		{
+			question: 'Posso ter ajuda se alojar por conta própria?',
+			answer:
+				'Abre um issue no GitHub e nós damos uma vista de olhos. Se precisares de um apoio mais próximo, fala connosco e conversamos sobre isso.'
 		}
 	],
 	relatedPages: ['eventbrite-alternative', 'privacy-focused-events']
@@ -424,102 +447,108 @@ export const selfHostedEventPlatformIT: LandingPageContent = {
 	slug: 'self-hosted-event-platform',
 	locale: 'it',
 	meta: {
-		title: 'Gestione Eventi Self-Hosted – Open Source & Gratis | Revel',
+		title: 'Gestione eventi self-hosted, open source e gratis | Revel',
 		description:
-			'Piattaforma eventi MIT che puoi installare sui tuoi server. Zero commissioni, controllo totale, Docker-ready. Ticketing, RSVP, gestione membri.',
+			'Installa Revel sul tuo server con licenza MIT. Biglietteria, RSVP, iscrizioni, questionari di screening e check-in QR senza commissioni di piattaforma. Setup con Docker Compose.',
 		keywords:
-			'gestione eventi self hosted, ticketing open source, self hosted eventbrite, software gestione eventi, piattaforma eventi docker'
+			'gestione eventi self hosted, biglietteria open source, software eventi open source, alternativa a eventbrite, self hosted eventbrite, piattaforma eventi docker'
 	},
 	hero: {
-		headline: 'I Tuoi Eventi, I Tuoi Server, Zero Commissioni',
+		headline: 'I tuoi eventi, il tuo server, zero commissioni',
 		subheadline:
-			'Gestione eventi MIT che puoi installare ovunque. Ticketing completo, RSVP e strumenti community—completamente sotto il tuo controllo.'
+			'Revel è un software per eventi con licenza MIT che puoi gestire in autonomia. Lo stesso codice della nostra versione hosted, su hardware che controlli tu.'
 	},
 	intro: {
 		paragraphs: [
-			'Perché pagare commissioni SaaS mensili e affidare i dati della tua community a una corporation? Revel è software open-source per la gestione eventi che puoi installare sulla tua infrastruttura in pochi minuti.',
-			'Costruito con tecnologie moderne—Django, PostgreSQL, Redis e Docker—Revel è pronto per la produzione e testato sul campo. Ticketing completo con integrazione Stripe, RSVP, gestione membri, screening partecipanti, check-in QR e altro. Tutte le funzionalità delle piattaforme commerciali, senza costi ricorrenti o preoccupazioni sui dati.',
-			'Licenza MIT significa che puoi usarlo, modificarlo e installarlo come vuoi. Nessun vendor lock-in. Nessun cambio prezzi a sorpresa. Nessuna piattaforma che decide quali eventi puoi organizzare. La tua infrastruttura, le tue regole.'
+			"C'è chi organizza eventi e vuole i dati della propria community su una macchina che controlla. E c'è chi semplicemente non vuole cedere una fetta di ogni biglietto. In entrambi i casi, Revel è open source e puoi installarlo in autonomia.",
+			"L'intero stack arriva come Docker Compose: Django, PostgreSQL con PostGIS, Redis, Celery e Caddy, che si occupa dell'HTTPS. Uno script di setup ti guida nella configurazione, e per iniziare basta un piccolo server con 2 vCPU e 4 GB di RAM.",
+			'Tutto ciò che va oltre il nucleo è opzionale. Collega Stripe quando vuoi vendere biglietti online, SMTP per le email, le credenziali di Apple Wallet e Google Wallet per i pass, un provider OpenID Connect per il single sign-on o Telegram per le notifiche. Quello che non ti serve, lo lasci fuori.'
 		]
 	},
 	features: [
 		{
 			icon: 'server',
-			title: 'Deployment Docker-Ready',
+			title: 'Setup con Docker Compose',
 			description:
-				'Parti in minuti con Docker Compose. PostgreSQL, Redis, Celery—tutto configurato e pronto.'
+				"Un solo file compose per l'intero stack e una procedura guidata che fa le domande giuste. Ti servono un server Linux, due hostname e le porte 80 e 443."
 		},
 		{
 			icon: 'euro',
-			title: 'Zero Commissioni Piattaforma',
+			title: 'Zero commissioni di piattaforma',
 			description:
-				"Nessuna commissione per biglietto, nessun costo mensile. Paghi solo la tua infrastruttura e l'elaborazione pagamenti di Stripe."
+				"Il nostro 1,5% + €0,25 si applica solo alla versione hosted. Sul tuo server paghi l'hosting e, se vendi online, la commissione di elaborazione di Stripe."
 		},
 		{
 			icon: 'code',
 			title: 'Licenza MIT',
 			description:
-				'Usalo commercialmente, modificalo, contribuisci—o no. Nessuna restrizione, nessun requisito copyleft.'
+				'Usalo per scopi commerciali, fanne un fork, modificalo. Backend, frontend e configurazione di deployment sono tutti pubblici.'
 		},
 		{
 			icon: 'lock',
-			title: 'Controllo Dati Completo',
+			title: 'I tuoi dati restano a casa',
 			description:
-				'I tuoi dati non lasciano mai i tuoi server. Piena conformità GDPR perché controlli tutto.'
+				'Liste delle persone partecipanti, risposte ai questionari e dati dei pagamenti stanno nel tuo database. Decidi tu dove gira e chi può accedervi.'
 		},
 		{
 			icon: 'ticket',
-			title: 'Set Funzionalità Completo',
+			title: 'Tutte le funzionalità',
 			description:
-				'Ticketing, RSVP, organizzazioni, membership, questionari, check-in QR, coordinamento potluck e altro.'
+				'Biglietteria con posti assegnati, RSVP, iscrizioni, pass di serie, questionari di screening, bacheche potluck e check-in QR.'
 		},
 		{
 			icon: 'globe',
-			title: 'API Moderna',
+			title: 'API REST documentata',
 			description:
-				'REST API con documentazione OpenAPI. Costruisci frontend personalizzati, integrazioni o app mobile.'
+				'La documentazione OpenAPI è integrata, così puoi automatizzare la tua istanza con degli script o costruirci sopra i tuoi strumenti.'
 		}
 	],
 	benefits: {
-		title: 'Perché Fare Self-Host di Revel',
+		title: 'Perché gestirlo in autonomia',
 		items: [
-			'Elimina i costi SaaS ricorrenti—paga solo la tua infrastruttura',
-			'Completa sovranità e privacy dei dati',
-			'Nessun rischio di cambi policy o aumenti prezzi della piattaforma',
-			'Personalizza ed estendi il codice per le tue esigenze',
-			'Installa in qualsiasi regione per conformità dati',
-			'Community e sviluppo attivi'
+			'Nessuna commissione per noi su biglietti o transazioni',
+			'Scegli il paese e il provider che ospitano i tuoi dati',
+			'I servizi opzionali restano spenti finché non li configuri',
+			'Adatta il codice al modo in cui funziona la tua community',
+			'Single sign-on con Google o qualsiasi provider OpenID Connect, come Keycloak',
+			'Segnalazioni e sviluppo avvengono alla luce del sole su GitHub'
 		]
 	},
 	cta: {
-		title: 'Installa in Pochi Minuti',
-		description: 'Guarda il codice, leggi la documentazione o prova prima la demo hosted.',
+		title: 'Avvia la tua istanza',
+		description:
+			"Prendi il codice e la guida al deployment, oppure dai prima un'occhiata alla demo hosted.",
 		buttons: [
 			{ text: 'Vedi su GitHub', href: 'https://github.com/letsrevel', variant: 'primary' },
-			{ text: 'Prova la Demo', href: 'https://demo.letsrevel.io', variant: 'secondary' },
+			{ text: 'Prova la demo', href: 'https://demo.letsrevel.io', variant: 'secondary' },
 			{ text: 'Contattaci', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
 		]
 	},
 	faq: [
 		{
-			question: 'Quali sono i requisiti di sistema?',
+			question: 'Cosa mi serve per far girare Revel?',
 			answer:
-				'Revel gira ovunque giri Docker. Minimo raccomandato: 2 core CPU, 4GB RAM, 20GB storage. Per produzione con molti eventi, raccomandiamo 4+ core e 8GB+ RAM. Serviranno anche PostgreSQL (con PostGIS), Redis e un account Stripe per i pagamenti.'
+				'Un server Linux x86-64, un dominio con due hostname che puntano al server e le porte 80 e 443 aperte. Il setup leggero gira con 2 vCPU e 4 GB di RAM, che presso la maggior parte dei provider costa circa 20 € al mese. Le community più grandi possono passare al setup completo.'
 		},
 		{
-			question: 'Quanto tempo richiede il deployment?',
+			question: 'Mi serve un account Stripe?',
 			answer:
-				"Con Docker Compose puoi avere un'istanza funzionante in meno di 10 minuti. Il repository include configurazioni di deployment complete e documentazione."
+				"Solo se vuoi ricevere pagamenti online. Eventi gratuiti, RSVP e biglietti pagati offline o all'ingresso funzionano tutti anche senza."
 		},
 		{
-			question: 'Posso comunque avere supporto se faccio self-host?',
+			question: 'In cosa è diverso dalla vostra versione hosted?',
 			answer:
-				'Sì. Offriamo supporto community tramite GitHub issues. Per organizzazioni che necessitano tempi di risposta garantiti o sviluppo personalizzato, contattaci per opzioni di supporto professionale.'
+				"È lo stesso codice. Nella versione hosted gestiamo noi server, aggiornamenti e backup, e tratteniamo 1,5% + €0,25 sui pagamenti online. Se fai self-hosting, tutto questo spetta a te, compresa la configurazione dei servizi opzionali come email, pass per il wallet o l'integrazione con Eventbrite, con le tue credenziali."
 		},
 		{
-			question: 'Qual è la differenza tra self-hosted e la vostra versione hosted?',
+			question: 'Quali lingue supporta?',
 			answer:
-				'Funzionalmente identiche. La nostra versione hosted aggiunge comodità (gestiamo infrastruttura, aggiornamenti, backup) in cambio di una piccola commissione per biglietto. Self-hosted è gratis ma gestisci tutto tu.'
+				"L'interfaccia è disponibile in inglese, tedesco, italiano, francese, spagnolo e portoghese, e ogni persona sceglie la propria."
+		},
+		{
+			question: 'Posso avere aiuto se faccio self-hosting?',
+			answer:
+				"Apri una issue su GitHub e ci diamo un'occhiata. Se ti serve un supporto più diretto, scrivici e ne parliamo."
 		}
 	],
 	relatedPages: ['eventbrite-alternative', 'privacy-focused-events']
@@ -529,102 +558,108 @@ export const selfHostedEventPlatformFR: LandingPageContent = {
 	slug: 'self-hosted-event-platform',
 	locale: 'fr',
 	meta: {
-		title: 'Gestion d’événements auto-hébergée – Open Source et gratuite | Revel',
+		title: 'Gestion d’événements auto-hébergée, open source et gratuite | Revel',
 		description:
-			'Plateforme événementielle sous licence MIT à héberger sur tes propres serveurs. Zéro commission, contrôle total, prête pour Docker. Billetterie, RSVP, gestion des membres.',
+			'Fais tourner Revel sur ton propre serveur sous licence MIT. Billetterie, RSVP, adhésions, questionnaires de sélection et check-in par QR code, sans commission de plateforme. Installation avec Docker Compose.',
 		keywords:
-			'gestion d’événements auto-hébergée, billetterie open source, alternative eventbrite auto-hébergée, logiciel de gestion d’événements, plateforme événementielle docker'
+			'gestion d’événements auto-hébergée, billetterie open source, logiciel événementiel open source, alternative eventbrite, self hosted eventbrite, plateforme événementielle docker'
 	},
 	hero: {
-		headline: 'Tes événements, tes serveurs, zéro commission',
+		headline: 'Tes événements, ton serveur, zéro commission',
 		subheadline:
-			'Gestion d’événements sous licence MIT à déployer partout. Billetterie complète, RSVP et outils communautaires – entièrement sous ton contrôle.'
+			'Revel est un logiciel événementiel sous licence MIT que tu peux héberger toi-même. Le même code que notre version hébergée, sur du matériel que tu contrôles.'
 	},
 	intro: {
 		paragraphs: [
-			'Pourquoi payer des abonnements SaaS mensuels et confier les données de ta communauté à une multinationale ? Revel est un logiciel de gestion d’événements open source que tu peux faire tourner en quelques minutes sur ta propre infrastructure.',
-			'Conçu avec des technologies modernes – Django, PostgreSQL, Redis et Docker – Revel est prêt pour la production et éprouvé sur le terrain. Billetterie complète avec intégration Stripe, RSVP, gestion des membres, sélection des participant·es, check-in par QR code et bien plus. Toutes les fonctionnalités des plateformes commerciales, sans coûts récurrents ni inquiétudes sur tes données.',
-			'La licence MIT signifie que tu peux l’utiliser, le modifier et l’exploiter comme tu veux. Aucun verrouillage propriétaire. Aucune hausse de tarif surprise. Aucune plateforme qui décide quels événements tu as le droit d’organiser. Ton infrastructure, tes règles.'
+			'Certaines personnes qui organisent des événements veulent garder les données de leur communauté sur une machine qu’elles contrôlent. D’autres ne veulent tout simplement pas céder une part de chaque billet. Dans les deux cas, Revel est open source et tu peux l’héberger toi-même.',
+			'Toute la stack est livrée en Docker Compose : Django, PostgreSQL avec PostGIS, Redis, Celery, et Caddy qui s’occupe du HTTPS. Un script d’installation te guide dans la configuration, et un petit serveur avec 2 vCPU et 4 Go de RAM suffit pour démarrer.',
+			'Tout ce qui dépasse le cœur est optionnel. Branche Stripe quand tu veux vendre des billets en ligne, SMTP pour les e-mails, des identifiants Apple Wallet et Google Wallet pour les passes, un fournisseur OpenID Connect pour l’authentification unique, ou Telegram pour les notifications. Laisse de côté ce dont tu n’as pas besoin.'
 		]
 	},
 	features: [
 		{
 			icon: 'server',
-			title: 'Déploiement prêt pour Docker',
+			title: 'Installation avec Docker Compose',
 			description:
-				'Lance-toi en quelques minutes avec Docker Compose. PostgreSQL, Redis, Celery – tout est configuré et prêt à l’emploi.'
+				'Un seul fichier compose pour toute la stack et un assistant de configuration qui pose les bonnes questions. Il te faut un serveur Linux, deux noms d’hôte et les ports 80 et 443.'
 		},
 		{
 			icon: 'euro',
 			title: 'Zéro commission de plateforme',
 			description:
-				'Aucuns frais par billet, aucun coût mensuel. Tu ne paies que ta propre infrastructure et le traitement des paiements par Stripe.'
+				'Nos 1,5 % + 0,25 € ne s’appliquent qu’à la version hébergée. Sur ton propre serveur, tu paies l’hébergement et, si tu vends en ligne, les frais de traitement de Stripe.'
 		},
 		{
 			icon: 'code',
 			title: 'Sous licence MIT',
 			description:
-				'Utilise-le à des fins commerciales, modifie-le, contribue en retour – ou pas. Aucune restriction, aucune obligation copyleft.'
+				'Utilise-le à des fins commerciales, forke-le, modifie-le. Le backend, le frontend et la configuration de déploiement sont tous publics.'
 		},
 		{
 			icon: 'lock',
-			title: 'Contrôle total des données',
+			title: 'Tes données restent chez toi',
 			description:
-				'Tes données ne quittent jamais tes serveurs. Conformité RGPD totale, parce que c’est toi qui contrôles tout.'
+				'Listes de participant·es, réponses aux questionnaires et données de paiement sont stockées dans ta propre base de données. C’est toi qui décides où elle tourne et qui peut y accéder.'
 		},
 		{
 			icon: 'ticket',
-			title: 'Toutes les fonctionnalités incluses',
+			title: 'Toutes les fonctionnalités',
 			description:
-				'Billetterie, RSVP, organisations, adhésions, questionnaires, check-in par QR code, coordination des repas partagés et plus encore.'
+				'Billetterie avec placement numéroté, RSVP, adhésions, pass de série, questionnaires de sélection, tableaux de repas partagé et check-in par QR code.'
 		},
 		{
 			icon: 'globe',
-			title: 'API moderne',
+			title: 'API REST documentée',
 			description:
-				'API REST avec documentation OpenAPI. Crée tes propres interfaces, intégrations ou applications mobiles.'
+				'La documentation OpenAPI est intégrée : tu peux piloter ton instance par script ou construire tes propres outils par-dessus.'
 		}
 	],
 	benefits: {
-		title: 'Pourquoi auto-héberger Revel',
+		title: 'Pourquoi l’héberger toi-même',
 		items: [
-			'Élimine les coûts SaaS récurrents – ne paie que ton infrastructure',
-			'Souveraineté et confidentialité totales sur tes données',
-			'Aucun risque de changement de politique de plateforme ni de hausse de tarifs',
-			'Adapte et étends le code source selon tes besoins',
-			'Héberge dans n’importe quelle région pour la conformité des données',
-			'Une communauté et un développement actifs'
+			'Aucune commission pour nous, sur aucun billet ni aucune transaction',
+			'Choisis le pays et l’hébergeur où vivent tes données',
+			'Les services optionnels restent désactivés tant que tu ne les configures pas',
+			'Adapte le code au fonctionnement de ta communauté',
+			'Authentification unique avec Google ou n’importe quel fournisseur OpenID Connect, comme Keycloak',
+			'Les issues et le développement se font publiquement sur GitHub'
 		]
 	},
 	cta: {
-		title: 'En ligne en quelques minutes',
-		description: 'Consulte le code, lis la doc, ou teste d’abord la démo hébergée.',
+		title: 'Lance ta propre instance',
+		description:
+			'Récupère le code et le guide de déploiement, ou fais d’abord un tour sur la démo hébergée.',
 		buttons: [
 			{ text: 'Voir sur GitHub', href: 'https://github.com/letsrevel', variant: 'primary' },
-			{ text: 'Tester la démo', href: 'https://demo.letsrevel.io', variant: 'secondary' },
+			{ text: 'Essayer la démo', href: 'https://demo.letsrevel.io', variant: 'secondary' },
 			{ text: 'Nous contacter', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
 		]
 	},
 	faq: [
 		{
-			question: 'Quelle est la configuration requise ?',
+			question: 'De quoi ai-je besoin pour faire tourner Revel ?',
 			answer:
-				'Revel tourne partout où Docker fonctionne. Minimum recommandé : 2 cœurs CPU, 4 Go de RAM, 20 Go de stockage. Pour une production avec beaucoup d’événements, nous recommandons 4 cœurs ou plus et 8 Go de RAM ou plus. Il te faut aussi PostgreSQL (avec PostGIS), Redis et un compte Stripe pour les paiements.'
+				'Un serveur Linux x86-64, un domaine avec deux noms d’hôte qui pointent vers lui, et les ports 80 et 443 ouverts. La configuration légère tourne sur 2 vCPU et 4 Go de RAM, ce qui coûte environ 20 € par mois chez la plupart des hébergeurs. Les communautés plus grandes peuvent passer à la configuration complète.'
 		},
 		{
-			question: 'Combien de temps prend le déploiement ?',
+			question: 'Ai-je besoin d’un compte Stripe ?',
 			answer:
-				'Avec Docker Compose, tu peux avoir une instance fonctionnelle en moins de 10 minutes. Le dépôt contient des configurations de déploiement et une documentation complètes.'
+				'Seulement si tu veux encaisser des paiements en ligne. Les événements gratuits, les RSVP et les billets payés hors ligne ou à l’entrée fonctionnent tous sans.'
 		},
 		{
-			question: 'Puis-je quand même obtenir du support en auto-hébergement ?',
+			question: 'Qu’est-ce qui change par rapport à votre version hébergée ?',
 			answer:
-				'Oui. Nous proposons un support communautaire via les issues GitHub. Pour les organisations qui ont besoin de délais de réponse garantis ou de développements sur mesure, contacte-nous pour découvrir nos options de support professionnel.'
+				'C’est le même code. Sur la version hébergée, nous gérons les serveurs, les mises à jour et les sauvegardes, et nous prenons 1,5 % + 0,25 € sur les paiements en ligne. En auto-hébergement, tout ça est à ta charge, y compris la configuration des services optionnels comme l’e-mail, les passes Wallet ou l’intégration Eventbrite avec tes propres identifiants.'
 		},
 		{
-			question: 'Quelle est la différence entre l’auto-hébergement et votre version hébergée ?',
+			question: 'Quelles langues sont disponibles ?',
 			answer:
-				'Les fonctionnalités sont identiques. Notre version hébergée offre le confort (nous gérons l’infrastructure, les mises à jour, les sauvegardes) en échange d’une petite commission par billet. L’auto-hébergement est gratuit, mais c’est toi qui gères tout.'
+				'L’interface existe en anglais, allemand, italien, français, espagnol et portugais, et chaque personne choisit la sienne.'
+		},
+		{
+			question: 'Puis-je obtenir de l’aide en auto-hébergement ?',
+			answer:
+				'Ouvre une issue sur GitHub et nous y jetterons un œil. Si tu as besoin d’un accompagnement plus poussé, contacte-nous et on en parle.'
 		}
 	],
 	relatedPages: ['eventbrite-alternative', 'privacy-focused-events']

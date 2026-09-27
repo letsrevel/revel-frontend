@@ -8,7 +8,7 @@ test.describe('J01 legal & marketing pages @p2', () => {
 	const pages = [
 		{ path: '/legal/privacy', heading: 'Privacy Policy' },
 		{ path: '/legal/terms', heading: 'Terms of Service' },
-		{ path: '/privacy-focused-events', heading: 'Event Management That Respects Privacy' }
+		{ path: '/privacy-focused-events', heading: 'Events Without the Surveillance' }
 	];
 
 	for (const { path, heading } of pages) {

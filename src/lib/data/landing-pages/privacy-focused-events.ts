@@ -4,76 +4,75 @@ export const privacyFocusedEventsEN: LandingPageContent = {
 	slug: 'privacy-focused-events',
 	locale: 'en',
 	meta: {
-		title: 'Privacy-First Event Platform – GDPR Compliant | Revel',
+		title: 'Privacy-First Event Platform, Built for GDPR | Revel',
 		description:
-			'Event management that respects privacy. No data harvesting, no third-party trackers. European hosting, full GDPR compliance. Open source.',
+			'Event management without trackers or ads. Only essential cookies, data export and account deletion built in, hosted in Europe, and open source so you can check.',
 		keywords:
 			'gdpr event platform, privacy focused events, european event software, data protection events, private event management'
 	},
 	hero: {
-		headline: 'Event Management That Respects Privacy',
+		headline: 'Events Without the Surveillance',
 		subheadline:
-			'No data harvesting. No third-party trackers. European hosting with full GDPR compliance.'
+			'No ads, no analytics trackers, no selling your guest list. Just the tools you need to run your events.'
 	},
 	intro: {
 		paragraphs: [
-			"Most event platforms harvest your attendee data for advertising, share it with third parties, and bury the details in lengthy privacy policies. If you care about your community's privacy—or simply need to comply with GDPR—you need a different approach.",
-			"Revel is open-source event management built with privacy as a core principle, not an afterthought. We don't track users across the web. We don't sell data. We don't even have the business model that would incentivize us to do so.",
-			'Hosted on European infrastructure with full GDPR compliance, or self-host for complete control. Your attendee data stays yours, and your community can trust that their information is handled responsibly.'
+			'Plenty of event platforms make part of their money from what they know about your attendees. That is why their pages come loaded with tracking pixels and their privacy policies go on for pages.',
+			"Revel doesn't work that way. There's no analytics script on the site, only essential cookies, and even the fonts come from our own servers. We earn money from a small fee on paid tickets, not from data, so there's nothing to gain by collecting more.",
+			"The code is open source, so you don't have to take our word for any of this. And if you want the data on your own hardware, you can self-host."
 		]
 	},
 	features: [
 		{
 			icon: 'shield',
-			title: 'No Third-Party Trackers',
+			title: 'No Tracking Scripts',
 			description:
-				"No Google Analytics, no Facebook pixels, no advertising SDKs. We don't track your attendees across the web."
+				'No Google Analytics, no ad pixels, no third-party SDKs following your attendees around the web.'
 		},
 		{
-			icon: 'globe',
-			title: 'European Hosting',
+			icon: 'eye',
+			title: 'You Decide What Guests See',
 			description:
-				'Our hosted version runs on European infrastructure, ensuring your data stays under EU jurisdiction and GDPR protection.'
+				'Choose per event whether the guest list, the headcount and the address are visible, and to whom. Attendees can also hide themselves from lists.'
 		},
 		{
 			icon: 'lock',
-			title: 'Data Minimization',
+			title: 'Ask Only What You Need',
 			description:
-				"We collect only what's needed to run events. No building profiles, no behavioral analysis, no data monetization."
-		},
-		{
-			icon: 'server',
-			title: 'Self-Host Option',
-			description:
-				'For maximum control, deploy Revel on your own infrastructure. Your data never touches our servers.'
-		},
-		{
-			icon: 'code',
-			title: 'Transparent Codebase',
-			description:
-				'Open source means you can audit exactly how your data is handled. No hidden tracking, no surprises.'
+				'Pronouns, a profile photo or questionnaire answers are only requested when your event actually calls for them.'
 		},
 		{
 			icon: 'check',
-			title: 'GDPR by Design',
+			title: 'Export and Delete, Built In',
 			description:
-				'Data export, deletion requests, consent management—privacy compliance is built into the platform.'
+				'Anyone can download their personal data or delete their account from their own settings. No emails to a support inbox.'
+		},
+		{
+			icon: 'globe',
+			title: 'Hosted in Europe',
+			description: 'Our hosted version runs on European servers, under EU data protection law.'
+		},
+		{
+			icon: 'code',
+			title: 'Open Source and Self-Hostable',
+			description:
+				'Read exactly how data is handled, or run Revel on your own server so it never leaves your hands.'
 		}
 	],
 	benefits: {
-		title: 'Privacy as a Feature, Not a Checkbox',
+		title: 'Privacy You Can Explain to Your Community',
 		items: [
-			'Full GDPR compliance for European organizers and attendees',
-			'No data selling or sharing with advertisers',
-			'Transparent, auditable open-source codebase',
-			'European hosting with data sovereignty',
-			'Self-host option for complete control',
-			'Clear, honest privacy practices you can explain to your community'
+			'No advertising business, so no reason to collect more than we need',
+			'Only essential cookies',
+			'Guest list and address visibility set per event',
+			'Two-factor authentication for every account',
+			'Data export and account deletion without a support ticket',
+			'Self-hosting for when the data has to stay on your own servers'
 		]
 	},
 	cta: {
-		title: 'Events Without Surveillance',
-		description: 'See how Revel handles data or deploy it yourself for complete control.',
+		title: 'Run Events Your Attendees Can Trust',
+		description: 'Look around the demo, or read the code for yourself.',
 		buttons: [
 			{ text: 'Try the Live Demo', href: 'https://demo.letsrevel.io', variant: 'primary' },
 			{ text: 'Self-Host (GitHub)', href: 'https://github.com/letsrevel', variant: 'secondary' },
@@ -82,24 +81,29 @@ export const privacyFocusedEventsEN: LandingPageContent = {
 	},
 	faq: [
 		{
-			question: 'How is Revel GDPR compliant?',
+			question: 'Does Revel help with GDPR?',
 			answer:
-				'We practice data minimization, provide data export and deletion tools, obtain proper consent, and host on European infrastructure. As open source, you can audit our data practices directly in the code.'
+				"It was designed with it in mind. We collect what's needed to run events, attendees can export or delete their data on their own, and the hosted version runs in Europe. You're still responsible for what you ask your attendees, but Revel makes it easy to keep that to a minimum."
 		},
 		{
 			question: 'Do you sell attendee data?',
 			answer:
-				'No. We have no advertising business model. Our revenue comes from a small per-ticket fee on paid events (for hosted customers). We have no incentive to monetize your data.'
+				'No. On the hosted version we earn a fee on paid online transactions (1.5% + €0.25). There is no ad business and there are no data deals.'
 		},
 		{
-			question: 'What data do you collect?',
+			question: 'What data does Revel collect?',
 			answer:
-				"Only what's necessary: account information, event details, ticket purchases, and attendee lists. We don't track browsing behavior, build advertising profiles, or collect data beyond what you explicitly provide."
+				"Your account details, the events you organize or attend, tickets and payments, and whatever an organizer asks in a questionnaire. We don't track browsing across other sites and we don't build ad profiles."
 		},
 		{
-			question: 'Can I get complete data control?',
+			question: 'Are any third parties involved?',
 			answer:
-				'Yes. Self-host Revel on your own infrastructure and your data never touches our servers. The platform is MIT licensed and free to deploy.'
+				"Only where they're needed. Stripe processes card payments, a venue map loads from the map provider when an event shows one, and Apple or Google are involved when someone adds a pass to their wallet. There are no analytics or advertising services."
+		},
+		{
+			question: 'Can I keep all the data on my own servers?',
+			answer:
+				'Yes. Self-host Revel under the MIT license and everything Revel stores lives in your own database, wherever you run it. Data only leaves it when you switch on an outside service, like Stripe for online payments.'
 		}
 	],
 	relatedPages: ['self-hosted-event-platform', 'queer-event-management']
@@ -109,80 +113,80 @@ export const privacyFocusedEventsDE: LandingPageContent = {
 	slug: 'privacy-focused-events',
 	locale: 'de',
 	meta: {
-		title: 'Datenschutzorientierte Event-Plattform – DSGVO-Konform | Revel',
+		title: 'Event-Plattform mit Datenschutz zuerst, gebaut für die DSGVO | Revel',
 		description:
-			'Event-Management, das Privatsphäre respektiert. Keine Datensammlung, keine Drittanbieter-Tracker. Europäisches Hosting, volle DSGVO-Konformität. Open Source.',
+			'Event-Management ohne Tracker und Werbung. Nur notwendige Cookies, Datenexport und Kontolöschung eingebaut, Hosting in Europa und Open Source, damit du es selbst prüfen kannst.',
 		keywords:
-			'dsgvo event plattform, datenschutz events, europäische event software, datenschutz veranstaltungen, private event verwaltung'
+			'dsgvo event plattform, datenschutz events, datenschutzfreundliche veranstaltungsplattform, europäische event software, ticketing ohne tracking, private event verwaltung'
 	},
 	hero: {
-		headline: 'Event-Management, Das Privatsphäre Respektiert',
+		headline: 'Events ohne Überwachung',
 		subheadline:
-			'Keine Datensammlung. Keine Drittanbieter-Tracker. Europäisches Hosting mit voller DSGVO-Konformität.'
+			'Keine Werbung, keine Analyse-Tracker, kein Verkauf deiner Gästeliste. Nur die Werkzeuge, die du für deine Events brauchst.'
 	},
 	intro: {
 		paragraphs: [
-			'Die meisten Event-Plattformen sammeln deine Teilnehmer*innendaten für Werbung, teilen sie mit Dritten und verstecken die Details in langen Datenschutzerklärungen. Wenn dir die Privatsphäre deiner Community wichtig ist – oder du einfach die DSGVO einhalten musst – brauchst du einen anderen Ansatz.',
-			'Revel ist Open-Source Event-Management, das mit Datenschutz als Kernprinzip entwickelt wurde, nicht als Nachgedanke. Wir tracken keine Nutzer*innen durchs Web. Wir verkaufen keine Daten. Wir haben nicht mal ein Geschäftsmodell, das uns dazu anreizen würde.',
-			'Nutze die gehostete Version auf europäischer Infrastruktur mit voller DSGVO-Konformität oder hoste Revel selbst für komplette Kontrolle. Deine Teilnehmer*innendaten bleiben deine, und deine Community kann darauf vertrauen, dass ihre Informationen verantwortungsvoll behandelt werden.'
+			'Viele Event-Plattformen verdienen einen Teil ihres Geldes mit dem, was sie über deine Teilnehmer*innen wissen. Deshalb stecken ihre Seiten voller Tracking-Pixel und ihre Datenschutzerklärungen ziehen sich über viele Seiten.',
+			'Bei Revel läuft das anders. Auf der Seite gibt es kein Analyse-Skript, nur notwendige Cookies, und selbst die Schriften kommen von unseren eigenen Servern. Wir verdienen an einer kleinen Gebühr auf bezahlte Tickets, nicht an Daten. Mehr zu sammeln bringt uns also nichts.',
+			'Der Code ist Open Source, du musst uns also nichts davon einfach glauben. Und wenn du die Daten auf deiner eigenen Hardware haben willst, kannst du Revel selbst hosten.'
 		]
 	},
 	features: [
 		{
 			icon: 'shield',
-			title: 'Keine Drittanbieter-Tracker',
+			title: 'Keine Tracking-Skripte',
 			description:
-				'Kein Google Analytics, keine Facebook-Pixel, keine Werbe-SDKs. Wir tracken deine Teilnehmer*innen nicht durchs Web.'
+				'Kein Google Analytics, keine Werbe-Pixel, keine Drittanbieter-SDKs, die deinen Teilnehmer*innen durchs Netz folgen.'
 		},
 		{
-			icon: 'globe',
-			title: 'Europäisches Hosting',
+			icon: 'eye',
+			title: 'Du entscheidest, was Gäste sehen',
 			description:
-				'Unsere gehostete Version läuft auf europäischer Infrastruktur und stellt sicher, dass deine Daten unter EU-Rechtsprechung und DSGVO-Schutz bleiben.'
+				'Leg pro Event fest, ob Gästeliste, Gästezahl und Adresse sichtbar sind, und für wen. Teilnehmer*innen können sich außerdem selbst aus Listen ausblenden.'
 		},
 		{
 			icon: 'lock',
-			title: 'Datenminimierung',
+			title: 'Frag nur, was du brauchst',
 			description:
-				'Wir sammeln nur was für Events nötig ist. Kein Profil-Building, keine Verhaltensanalyse, keine Datenmonetarisierung.'
-		},
-		{
-			icon: 'server',
-			title: 'Selbst-Hosting Option',
-			description:
-				'Für maximale Kontrolle Revel auf eigener Infrastruktur betreiben. Deine Daten berühren niemals unsere Server.'
-		},
-		{
-			icon: 'code',
-			title: 'Transparenter Code',
-			description:
-				'Open Source bedeutet, du kannst genau prüfen, wie deine Daten behandelt werden. Kein verstecktes Tracking, keine Überraschungen.'
+				'Pronomen, ein Profilfoto oder Antworten auf einen Fragebogen werden nur abgefragt, wenn dein Event sie wirklich braucht.'
 		},
 		{
 			icon: 'check',
-			title: 'DSGVO by Design',
+			title: 'Export und Löschung eingebaut',
 			description:
-				'Datenexport, Löschanfragen, Einwilligungsverwaltung – Datenschutz-Compliance ist in die Plattform eingebaut.'
+				'Alle können ihre persönlichen Daten herunterladen oder ihr Konto direkt in den eigenen Einstellungen löschen. Keine E-Mails an ein Support-Postfach.'
+		},
+		{
+			icon: 'globe',
+			title: 'Gehostet in Europa',
+			description:
+				'Unsere gehostete Version läuft auf europäischen Servern, unter EU-Datenschutzrecht.'
+		},
+		{
+			icon: 'code',
+			title: 'Open Source und selbst hostbar',
+			description:
+				'Lies genau nach, wie mit Daten umgegangen wird, oder betreib Revel auf deinem eigenen Server, damit die Daten nie deine Hände verlassen.'
 		}
 	],
 	benefits: {
-		title: 'Datenschutz als Feature, Nicht als Checkbox',
+		title: 'Datenschutz, den du deiner Community erklären kannst',
 		items: [
-			'Volle DSGVO-Konformität für europäische Veranstalter*innen und Teilnehmer*innen',
-			'Kein Datenverkauf oder Teilen mit Werbetreibenden',
-			'Transparenter, prüfbarer Open-Source-Code',
-			'Europäisches Hosting mit Datensouveränität',
-			'Selbst-Hosting Option für komplette Kontrolle',
-			'Klare, ehrliche Datenschutzpraktiken, die du deiner Community erklären kannst'
+			'Kein Werbegeschäft, also kein Grund, mehr zu sammeln als nötig',
+			'Nur notwendige Cookies',
+			'Sichtbarkeit von Gästeliste und Adresse pro Event einstellbar',
+			'Zwei-Faktor-Authentifizierung für jedes Konto',
+			'Datenexport und Kontolöschung ohne Support-Ticket',
+			'Selbst-Hosting, wenn die Daten auf deinen eigenen Servern bleiben müssen'
 		]
 	},
 	cta: {
-		title: 'Events Ohne Überwachung',
-		description: 'Sieh wie Revel mit Daten umgeht oder betreibe es selbst für komplette Kontrolle.',
+		title: 'Events, denen deine Teilnehmer*innen vertrauen können',
+		description: 'Schau dich in der Demo um oder lies den Code selbst.',
 		buttons: [
-			{ text: 'Live-Demo Testen', href: 'https://demo.letsrevel.io', variant: 'primary' },
+			{ text: 'Live-Demo ausprobieren', href: 'https://demo.letsrevel.io', variant: 'primary' },
 			{
-				text: 'Selbst Hosten (GitHub)',
+				text: 'Selbst hosten (GitHub)',
 				href: 'https://github.com/letsrevel',
 				variant: 'secondary'
 			},
@@ -191,24 +195,29 @@ export const privacyFocusedEventsDE: LandingPageContent = {
 	},
 	faq: [
 		{
-			question: 'Wie ist Revel DSGVO-konform?',
+			question: 'Hilft Revel bei der DSGVO?',
 			answer:
-				'Wir praktizieren Datenminimierung, bieten Datenexport- und Löschtools, holen ordnungsgemäße Einwilligung ein und hosten auf europäischer Infrastruktur. Als Open Source kannst du unsere Datenpraktiken direkt im Code prüfen.'
+				'Revel wurde mit der DSGVO im Blick entwickelt. Wir erheben, was nötig ist, um Events durchzuführen, Teilnehmer*innen können ihre Daten selbst exportieren oder löschen, und die gehostete Version läuft in Europa. Für das, was du deine Teilnehmer*innen fragst, bist du weiterhin selbst verantwortlich, aber Revel macht es leicht, das auf ein Minimum zu beschränken.'
 		},
 		{
 			question: 'Verkauft ihr Teilnehmer*innendaten?',
 			answer:
-				'Nein. Wir haben kein Werbe-Geschäftsmodell. Unsere Einnahmen kommen von einer kleinen Pro-Ticket-Gebühr bei bezahlten Events (für gehostete Kunden). Wir haben keinen Anreiz, deine Daten zu monetarisieren.'
+				'Nein. Bei der gehosteten Version verdienen wir an einer Gebühr auf bezahlte Online-Transaktionen (1,5% + 0,25€). Es gibt kein Werbegeschäft und keine Datendeals.'
 		},
 		{
-			question: 'Welche Daten sammelt ihr?',
+			question: 'Welche Daten erhebt Revel?',
 			answer:
-				'Nur das Notwendige: Account-Informationen, Event-Details, Ticket-Käufe und Teilnehmer*innenlisten. Wir tracken kein Browsing-Verhalten, erstellen keine Werbeprofile oder sammeln Daten über das hinaus, was du explizit angibst.'
+				'Deine Kontodaten, die Events, die du organisierst oder besuchst, Tickets und Zahlungen sowie alles, was Veranstalter*innen in einem Fragebogen abfragen. Wir verfolgen dein Surfverhalten nicht über andere Websites hinweg und erstellen keine Werbeprofile.'
 		},
 		{
-			question: 'Kann ich komplette Datenkontrolle bekommen?',
+			question: 'Sind Dritte beteiligt?',
 			answer:
-				'Ja. Hoste Revel selbst auf eigener Infrastruktur und deine Daten berühren niemals unsere Server. Die Plattform ist MIT-lizenziert und kostenlos zu betreiben.'
+				'Nur wo es nötig ist. Stripe wickelt Kartenzahlungen ab, eine Karte des Veranstaltungsorts wird vom Kartenanbieter geladen, wenn ein Event eine anzeigt, und Apple oder Google sind beteiligt, wenn jemand einen Pass zum Wallet hinzufügt. Analyse- oder Werbedienste gibt es keine.'
+		},
+		{
+			question: 'Kann ich alle Daten auf meinen eigenen Servern behalten?',
+			answer:
+				'Ja. Hoste Revel selbst unter der MIT-Lizenz, und alles, was Revel speichert, liegt in deiner eigenen Datenbank, wo auch immer du sie betreibst. Daten verlassen sie nur, wenn du einen externen Dienst einschaltest, etwa Stripe für Online-Zahlungen.'
 		}
 	],
 	relatedPages: ['self-hosted-event-platform', 'queer-event-management']
@@ -218,102 +227,107 @@ export const privacyFocusedEventsIT: LandingPageContent = {
 	slug: 'privacy-focused-events',
 	locale: 'it',
 	meta: {
-		title: 'Piattaforma Eventi Privacy-First – Conforme GDPR | Revel',
+		title: 'Piattaforma eventi che mette la privacy al primo posto, pensata per il GDPR | Revel',
 		description:
-			'Gestione eventi che rispetta la privacy. Nessuna raccolta dati, nessun tracker terze parti. Hosting europeo, piena conformità GDPR. Open source.',
+			'Gestione eventi senza tracker né pubblicità. Solo cookie essenziali, export dei dati e cancellazione dell’account integrati, hosting in Europa e codice open source, così puoi verificare di persona.',
 		keywords:
-			'piattaforma eventi gdpr, eventi privacy, software eventi europeo, protezione dati eventi, gestione eventi privati'
+			'piattaforma eventi gdpr, eventi privacy, gestione eventi senza tracciamento, software eventi europeo, protezione dati eventi, biglietteria senza tracker'
 	},
 	hero: {
-		headline: 'Gestione Eventi Che Rispetta la Privacy',
+		headline: 'Eventi senza sorveglianza',
 		subheadline:
-			'Nessuna raccolta dati. Nessun tracker terze parti. Hosting europeo con piena conformità GDPR.'
+			'Niente pubblicità, niente tracker di analytics, nessuna vendita della tua lista ospiti. Solo gli strumenti che ti servono per organizzare i tuoi eventi.'
 	},
 	intro: {
 		paragraphs: [
-			'La maggior parte delle piattaforme eventi raccoglie i dati delle persone partecipanti per la pubblicità, li condivide con terze parti e nasconde i dettagli in lunghe policy sulla privacy. Se ti importa della privacy della tua community—o semplicemente devi conformarti al GDPR—hai bisogno di un approccio diverso.',
-			'Revel è gestione eventi open-source costruita con la privacy come principio fondamentale, non come ripensamento. Non tracciamo le persone sul web. Non vendiamo dati. Non abbiamo nemmeno un modello di business che ci incentiverebbe a farlo.',
-			'Hostato su infrastruttura europea con piena conformità GDPR, o fai self-host per controllo completo. I dati dei tuoi partecipanti restano tuoi, e la tua community può fidarsi che le loro informazioni sono gestite responsabilmente.'
+			'Molte piattaforme per eventi guadagnano in parte da quello che sanno sulle persone che partecipano. Per questo le loro pagine sono piene di pixel di tracciamento e le loro informative sulla privacy non finiscono mai.',
+			"Revel non funziona così. Sul sito non c'è nessuno script di analytics, solo cookie essenziali, e persino i font arrivano dai nostri server. Guadagniamo con una piccola commissione sui biglietti a pagamento, non con i dati, quindi raccoglierne di più non ci porterebbe nulla.",
+			'Il codice è open source, quindi non devi fidarti sulla parola. E se vuoi tenere i dati sul tuo hardware, puoi fare self-hosting.'
 		]
 	},
 	features: [
 		{
 			icon: 'shield',
-			title: 'Nessun Tracker Terze Parti',
+			title: 'Nessuno script di tracciamento',
 			description:
-				'Niente Google Analytics, niente pixel Facebook, niente SDK pubblicitari. Non tracciamo i tuoi partecipanti sul web.'
+				'Niente Google Analytics, niente pixel pubblicitari, nessun SDK di terze parti che segue le persone partecipanti in giro per il web.'
 		},
 		{
-			icon: 'globe',
-			title: 'Hosting Europeo',
+			icon: 'eye',
+			title: 'Decidi tu cosa vedono gli ospiti',
 			description:
-				'La nostra versione hosted gira su infrastruttura europea, assicurando che i tuoi dati restino sotto giurisdizione UE e protezione GDPR.'
+				"Scegli per ogni evento se la lista ospiti, il numero di partecipanti e l'indirizzo sono visibili, e a chi. Chi partecipa può anche nascondersi dalle liste."
 		},
 		{
 			icon: 'lock',
-			title: 'Minimizzazione Dati',
+			title: 'Chiedi solo quello che ti serve',
 			description:
-				'Raccogliamo solo il necessario per gestire eventi. Nessun profiling, nessuna analisi comportamentale, nessuna monetizzazione dati.'
-		},
-		{
-			icon: 'server',
-			title: 'Opzione Self-Host',
-			description:
-				'Per massimo controllo, installa Revel sulla tua infrastruttura. I tuoi dati non toccano mai i nostri server.'
-		},
-		{
-			icon: 'code',
-			title: 'Codice Trasparente',
-			description:
-				'Open source significa che puoi verificare esattamente come vengono gestiti i tuoi dati. Nessun tracking nascosto, nessuna sorpresa.'
+				'Pronomi, foto profilo o risposte a un questionario vengono richiesti solo quando il tuo evento ne ha davvero bisogno.'
 		},
 		{
 			icon: 'check',
-			title: 'GDPR by Design',
+			title: 'Export e cancellazione integrati',
 			description:
-				'Export dati, richieste cancellazione, gestione consenso—la conformità privacy è integrata nella piattaforma.'
+				"Chiunque può scaricare i propri dati personali o cancellare l'account dalle proprie impostazioni. Nessuna email a una casella di supporto."
+		},
+		{
+			icon: 'globe',
+			title: 'Hosting in Europa',
+			description:
+				'La nostra versione hosted gira su server europei, sotto la normativa UE sulla protezione dei dati.'
+		},
+		{
+			icon: 'code',
+			title: 'Open source e self-hostable',
+			description:
+				'Leggi esattamente come vengono trattati i dati, oppure fai girare Revel sul tuo server, così i dati non escono mai dalle tue mani.'
 		}
 	],
 	benefits: {
-		title: 'Privacy Come Funzionalità, Non Come Checkbox',
+		title: 'Una privacy che puoi spiegare alla tua community',
 		items: [
-			'Piena conformità GDPR per organizzatori e partecipanti europei',
-			'Nessuna vendita o condivisione dati con inserzionisti',
-			'Codice open-source trasparente e verificabile',
-			'Hosting europeo con sovranità dei dati',
-			'Opzione self-host per controllo completo',
-			'Pratiche privacy chiare e oneste che puoi spiegare alla tua community'
+			'Nessun business pubblicitario, quindi nessun motivo di raccogliere più del necessario',
+			'Solo cookie essenziali',
+			'Visibilità di lista ospiti e indirizzo impostabile per ogni evento',
+			'Autenticazione a due fattori per ogni account',
+			'Export dei dati e cancellazione dell’account senza aprire un ticket',
+			'Self-hosting per quando i dati devono restare sui tuoi server'
 		]
 	},
 	cta: {
-		title: 'Eventi Senza Sorveglianza',
-		description: 'Scopri come Revel gestisce i dati o installalo tu stesso per controllo completo.',
+		title: 'Eventi di cui le persone partecipanti possono fidarsi',
+		description: 'Dai un’occhiata alla demo, oppure leggi il codice con i tuoi occhi.',
 		buttons: [
-			{ text: 'Prova la Demo', href: 'https://demo.letsrevel.io', variant: 'primary' },
-			{ text: 'Self-Host (GitHub)', href: 'https://github.com/letsrevel', variant: 'secondary' },
+			{ text: 'Prova la demo live', href: 'https://demo.letsrevel.io', variant: 'primary' },
+			{ text: 'Self-host (GitHub)', href: 'https://github.com/letsrevel', variant: 'secondary' },
 			{ text: 'Contattaci', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
 		]
 	},
 	faq: [
 		{
-			question: 'Come è Revel conforme al GDPR?',
+			question: 'Revel aiuta con il GDPR?',
 			answer:
-				'Pratichiamo minimizzazione dati, forniamo strumenti di export e cancellazione dati, otteniamo consenso appropriato e hostiamo su infrastruttura europea. Come open source, puoi verificare le nostre pratiche dati direttamente nel codice.'
+				'È stato progettato tenendolo presente. Raccogliamo quello che serve per gestire gli eventi, chi partecipa può esportare o cancellare i propri dati in autonomia, e la versione hosted gira in Europa. Resti tu responsabile di quello che chiedi alle persone partecipanti, ma Revel ti rende facile ridurlo al minimo.'
 		},
 		{
 			question: 'Vendete i dati delle persone partecipanti?',
 			answer:
-				'No. Non abbiamo un modello di business pubblicitario. I nostri ricavi vengono da una piccola commissione per biglietto su eventi a pagamento (per clienti hosted). Non abbiamo incentivo a monetizzare i tuoi dati.'
+				'No. Sulla versione hosted guadagniamo con una commissione sulle transazioni online a pagamento (1,5% + €0,25). Non c’è nessun business pubblicitario e nessun accordo sui dati.'
 		},
 		{
-			question: 'Quali dati raccogliete?',
+			question: 'Quali dati raccoglie Revel?',
 			answer:
-				'Solo il necessario: informazioni account, dettagli eventi, acquisti biglietti e liste partecipanti. Non tracciamo comportamento di navigazione, non costruiamo profili pubblicitari, non raccogliamo dati oltre quello che fornisci esplicitamente.'
+				'I dati del tuo account, gli eventi che organizzi o a cui partecipi, biglietti e pagamenti, e quello che chi organizza chiede in un questionario. Non tracciamo la tua navigazione su altri siti e non costruiamo profili pubblicitari.'
 		},
 		{
-			question: 'Posso avere controllo completo sui dati?',
+			question: 'Sono coinvolte terze parti?',
 			answer:
-				'Sì. Fai self-host di Revel sulla tua infrastruttura e i tuoi dati non toccano mai i nostri server. La piattaforma è licenziata MIT e gratuita da installare.'
+				'Solo dove servono. Stripe elabora i pagamenti con carta, la mappa del luogo viene caricata dal fornitore della mappa quando un evento ne mostra una, e Apple o Google entrano in gioco quando qualcuno aggiunge un pass al proprio wallet. Non ci sono servizi di analytics né pubblicitari.'
+		},
+		{
+			question: 'Posso tenere tutti i dati sui miei server?',
+			answer:
+				'Sì. Fai self-hosting di Revel con licenza MIT e tutto ciò che Revel salva resta nel tuo database, ovunque tu lo faccia girare. I dati escono solo se attivi un servizio esterno, come Stripe per i pagamenti online.'
 		}
 	],
 	relatedPages: ['self-hosted-event-platform', 'queer-event-management']
@@ -323,79 +337,78 @@ export const privacyFocusedEventsFR: LandingPageContent = {
 	slug: 'privacy-focused-events',
 	locale: 'fr',
 	meta: {
-		title: 'Plateforme événementielle respectueuse de la vie privée – Conforme RGPD | Revel',
+		title: 'Plateforme événementielle respectueuse de la vie privée, pensée pour le RGPD | Revel',
 		description:
-			'Une gestion événementielle qui respecte la vie privée. Aucune collecte de données, aucun traqueur tiers. Hébergement européen, pleine conformité RGPD. Open source.',
+			"Une gestion d'événements sans traqueurs ni publicité. Uniquement des cookies essentiels, export des données et suppression du compte intégrés, hébergement en Europe et code open source pour que tu puisses vérifier.",
 		keywords:
-			'plateforme événementielle rgpd, événements respect vie privée, logiciel événementiel européen, gestion événements confidentialité, billetterie sans tracking, protection données personnelles'
+			'plateforme événementielle rgpd, événements respect vie privée, billetterie sans tracking, logiciel événementiel européen, protection données personnelles événements, gestion événements privés'
 	},
 	hero: {
-		headline: 'Une gestion événementielle qui respecte ta vie privée',
+		headline: 'Des événements sans surveillance',
 		subheadline:
-			'Aucune collecte de données. Aucun traqueur tiers. Hébergement européen en pleine conformité RGPD.'
+			'Pas de pub, pas de traqueurs analytiques, pas de revente de ta liste de personnes invitées. Juste les outils dont tu as besoin pour organiser tes événements.'
 	},
 	intro: {
 		paragraphs: [
-			'La plupart des plateformes événementielles collectent les données de tes participant·es à des fins publicitaires, les partagent avec des tiers et cachent les détails dans de longues politiques de confidentialité. Si la vie privée de ta communauté te tient à cœur – ou si tu dois simplement respecter le RGPD – il te faut une autre approche.',
-			"Revel est une solution de gestion événementielle open source, conçue avec la protection de la vie privée comme principe fondamental, et non comme une réflexion après coup. Nous ne traquons pas les utilisateur·ices à travers le web. Nous ne vendons pas de données. Nous n'avons même pas de modèle économique qui nous y inciterait.",
-			'Hébergée sur une infrastructure européenne en pleine conformité RGPD, ou auto-hébergée pour un contrôle total. Les données de tes participant·es restent les tiennes, et ta communauté peut avoir confiance dans le fait que ses informations sont traitées de façon responsable.'
+			"Beaucoup de plateformes événementielles tirent une partie de leurs revenus de ce qu'elles savent sur les personnes qui participent. C'est pour ça que leurs pages sont bourrées de pixels de suivi et que leurs politiques de confidentialité s'étalent sur des pages entières.",
+			"Revel ne fonctionne pas comme ça. Le site n'a aucun script d'analyse, uniquement des cookies essentiels, et même les polices viennent de nos propres serveurs. On gagne de l'argent grâce à une petite commission sur les billets payants, pas grâce aux données, donc collecter plus ne nous apporterait rien.",
+			"Le code est open source, tu n'as donc pas à nous croire sur parole. Et si tu veux garder les données sur ton propre matériel, tu peux auto-héberger Revel."
 		]
 	},
 	features: [
 		{
 			icon: 'shield',
-			title: 'Aucun traqueur tiers',
+			title: 'Aucun script de suivi',
 			description:
-				'Pas de Google Analytics, pas de pixel Facebook, pas de SDK publicitaire. Nous ne traquons pas tes participant·es à travers le web.'
+				'Pas de Google Analytics, pas de pixels publicitaires, pas de SDK tiers qui suivent tes participant·es partout sur le web.'
 		},
 		{
-			icon: 'globe',
-			title: 'Hébergement européen',
+			icon: 'eye',
+			title: 'Tu décides ce que voient les personnes invitées',
 			description:
-				"Notre version hébergée tourne sur une infrastructure européenne, garantissant que tes données restent sous juridiction de l'UE et sous la protection du RGPD."
+				"Choisis pour chaque événement si la liste des personnes invitées, leur nombre et l'adresse sont visibles, et pour qui. Les participant·es peuvent aussi se masquer des listes."
 		},
 		{
 			icon: 'lock',
-			title: 'Minimisation des données',
+			title: 'Ne demande que le nécessaire',
 			description:
-				'Nous ne collectons que ce qui est nécessaire aux événements. Aucun profilage, aucune analyse comportementale, aucune monétisation des données.'
-		},
-		{
-			icon: 'server',
-			title: 'Option d’auto-hébergement',
-			description:
-				'Pour un contrôle maximal, fais tourner Revel sur ta propre infrastructure. Tes données ne touchent jamais nos serveurs.'
-		},
-		{
-			icon: 'code',
-			title: 'Code transparent',
-			description:
-				"L'open source signifie que tu peux vérifier exactement comment tes données sont traitées. Aucun tracking caché, aucune surprise."
+				'Les pronoms, une photo de profil ou des réponses à un questionnaire ne sont demandés que si ton événement en a vraiment besoin.'
 		},
 		{
 			icon: 'check',
-			title: 'RGPD by design',
+			title: 'Export et suppression intégrés',
 			description:
-				'Export de données, demandes de suppression, gestion du consentement – la conformité à la vie privée est intégrée à la plateforme.'
+				"Chaque personne peut télécharger ses données personnelles ou supprimer son compte depuis ses propres paramètres. Pas besoin d'écrire au support."
+		},
+		{
+			icon: 'globe',
+			title: 'Hébergé en Europe',
+			description:
+				'Notre version hébergée tourne sur des serveurs européens, sous le droit européen de la protection des données.'
+		},
+		{
+			icon: 'code',
+			title: 'Open source et auto-hébergeable',
+			description:
+				'Lis exactement comment les données sont traitées, ou fais tourner Revel sur ton propre serveur pour qu’elles ne sortent jamais de tes mains.'
 		}
 	],
 	benefits: {
-		title: 'La confidentialité comme fonctionnalité, pas comme simple case à cocher',
+		title: 'Une confidentialité que tu peux expliquer à ta communauté',
 		items: [
-			'Pleine conformité RGPD pour les organisateur·ices et participant·es européen·nes',
-			'Aucune vente ni partage de données avec des annonceurs',
-			'Code open source transparent et auditable',
-			'Hébergement européen avec souveraineté des données',
-			"Option d'auto-hébergement pour un contrôle total",
-			'Des pratiques de confidentialité claires et honnêtes que tu peux expliquer à ta communauté'
+			'Aucune activité publicitaire, donc aucune raison de collecter plus que nécessaire',
+			'Uniquement des cookies essentiels',
+			"Visibilité de la liste des personnes invitées et de l'adresse réglable pour chaque événement",
+			'Authentification à deux facteurs pour chaque compte',
+			'Export des données et suppression du compte sans ticket au support',
+			"L'auto-hébergement quand les données doivent rester sur tes propres serveurs"
 		]
 	},
 	cta: {
-		title: 'Des événements sans surveillance',
-		description:
-			'Découvre comment Revel traite les données, ou fais-le tourner toi-même pour un contrôle total.',
+		title: 'Des événements dignes de la confiance de tes participant·es',
+		description: 'Fais un tour dans la démo, ou lis le code par toi-même.',
 		buttons: [
-			{ text: 'Tester la démo live', href: 'https://demo.letsrevel.io', variant: 'primary' },
+			{ text: 'Essayer la démo live', href: 'https://demo.letsrevel.io', variant: 'primary' },
 			{
 				text: 'Auto-héberger (GitHub)',
 				href: 'https://github.com/letsrevel',
@@ -406,129 +419,139 @@ export const privacyFocusedEventsFR: LandingPageContent = {
 	},
 	faq: [
 		{
-			question: 'En quoi Revel est-il conforme au RGPD ?',
+			question: 'Revel aide-t-il pour le RGPD ?',
 			answer:
-				"Nous appliquons la minimisation des données, proposons des outils d'export et de suppression, recueillons un consentement en bonne et due forme et hébergeons sur une infrastructure européenne. Comme c'est open source, tu peux vérifier nos pratiques de traitement des données directement dans le code."
+				"Il a été conçu dans cet esprit. On collecte ce qui est nécessaire pour faire tourner les événements, les participant·es peuvent exporter ou supprimer leurs données en autonomie, et la version hébergée tourne en Europe. Tu restes responsable de ce que tu demandes à tes participant·es, mais Revel t'aide à garder ça au strict minimum."
 		},
 		{
 			question: 'Vendez-vous les données des participant·es ?',
 			answer:
-				"Non. Nous n'avons aucun modèle économique publicitaire. Nos revenus proviennent d'une petite commission par billet sur les événements payants (pour les client·es de la version hébergée). Nous n'avons aucun intérêt à monétiser tes données."
+				"Non. Sur la version hébergée, on touche une commission sur les transactions en ligne payantes (1,5 % + 0,25 €). Il n'y a aucune activité publicitaire et aucun accord de revente de données."
 		},
 		{
-			question: 'Quelles données collectez-vous ?',
+			question: 'Quelles données Revel collecte-t-il ?',
 			answer:
-				'Uniquement le nécessaire : informations de compte, détails des événements, achats de billets et listes de participant·es. Nous ne traquons aucun comportement de navigation, ne créons aucun profil publicitaire et ne collectons rien au-delà de ce que tu fournis explicitement.'
+				"Les informations de ton compte, les événements que tu organises ou auxquels tu participes, les billets et les paiements, et tout ce que l'équipe organisatrice demande dans un questionnaire. On ne suit pas ta navigation sur d'autres sites et on ne crée pas de profils publicitaires."
 		},
 		{
-			question: 'Puis-je obtenir un contrôle total sur mes données ?',
+			question: 'Des tiers interviennent-ils ?',
 			answer:
-				'Oui. Auto-héberge Revel sur ta propre infrastructure et tes données ne toucheront jamais nos serveurs. La plateforme est sous licence MIT et gratuite à exploiter.'
+				"Seulement quand c'est nécessaire. Stripe traite les paiements par carte, la carte du lieu est chargée depuis le fournisseur de cartes quand un événement en affiche une, et Apple ou Google interviennent quand quelqu'un ajoute un pass à son wallet. Il n'y a aucun service d'analyse ni de publicité."
+		},
+		{
+			question: 'Puis-je garder toutes les données sur mes propres serveurs ?',
+			answer:
+				'Oui. Auto-héberge Revel sous licence MIT et tout ce que Revel enregistre reste dans ta propre base de données, où que tu la fasses tourner. Les données n’en sortent que si tu actives un service externe, comme Stripe pour les paiements en ligne.'
 		}
 	],
 	relatedPages: ['self-hosted-event-platform', 'queer-event-management']
 };
+
 export const privacyFocusedEventsES: LandingPageContent = {
 	slug: 'privacy-focused-events',
 	locale: 'es',
 	meta: {
-		title: 'Plataforma de Eventos Centrada en la Privacidad – Conforme con el RGPD | Revel',
+		title: 'Plataforma de eventos que prioriza la privacidad, pensada para el RGPD | Revel',
 		description:
-			'Gestión de eventos que respeta la privacidad. Sin recopilación de datos, sin rastreadores de terceros. Alojamiento europeo, pleno cumplimiento del RGPD. Código abierto.',
+			'Gestión de eventos sin rastreadores ni anuncios. Solo cookies esenciales, exportación de datos y eliminación de cuenta integradas, alojamiento en Europa y código abierto para que puedas comprobarlo.',
 		keywords:
-			'plataforma de eventos rgpd, gestión de eventos privados, software de eventos europeo, entradas sin rastreadores, protección de datos en eventos'
+			'plataforma de eventos rgpd, eventos con privacidad, gestión de eventos sin rastreo, software de eventos europeo, protección de datos en eventos, venta de entradas sin rastreadores'
 	},
 	hero: {
-		headline: 'Gestión de Eventos Que Respeta Tu Privacidad',
+		headline: 'Eventos sin vigilancia',
 		subheadline:
-			'Sin recopilación de datos. Sin rastreadores de terceros. Alojamiento europeo con pleno cumplimiento del RGPD.'
+			'Sin anuncios, sin rastreadores de analítica, sin vender tu lista de personas invitadas. Solo las herramientas que necesitas para organizar tus eventos.'
 	},
 	intro: {
 		paragraphs: [
-			'La mayoría de las plataformas de eventos recopilan los datos de las personas asistentes para publicidad, los comparten con terceros y esconden los detalles en larguísimas políticas de privacidad. Si te importa la privacidad de tu comunidad —o simplemente necesitas cumplir con el RGPD— necesitas un enfoque diferente.',
-			'Revel es una gestión de eventos de código abierto construida con la privacidad como principio fundamental, no como añadido posterior. No rastreamos a nadie por la web. No vendemos datos. Ni siquiera tenemos el modelo de negocio que nos incentivaría a hacerlo.',
-			'Alojado en infraestructura europea con pleno cumplimiento del RGPD, o autoalojado para un control total. Los datos de quienes asisten siguen siendo tuyos, y tu comunidad puede confiar en que su información se trata de forma responsable.'
+			'Muchas plataformas de eventos ganan parte de su dinero con lo que saben de las personas asistentes. Por eso sus páginas vienen cargadas de píxeles de seguimiento y sus políticas de privacidad ocupan páginas y páginas.',
+			'Revel no funciona así. En el sitio no hay ningún script de analítica, solo cookies esenciales, e incluso las fuentes se sirven desde nuestros propios servidores. Ganamos dinero con una pequeña comisión sobre las entradas de pago, no con datos, así que no ganamos nada recopilando más.',
+			'El código es abierto, así que no tienes que fiarte de nuestra palabra. Y si quieres tener los datos en tu propio hardware, puedes autoalojarlo.'
 		]
 	},
 	features: [
 		{
 			icon: 'shield',
-			title: 'Sin Rastreadores de Terceros',
+			title: 'Sin scripts de rastreo',
 			description:
-				'Nada de Google Analytics, nada de píxeles de Facebook, nada de SDK publicitarios. No rastreamos a tus asistentes por la web.'
+				'Nada de Google Analytics, nada de píxeles publicitarios, nada de SDK de terceros persiguiendo a tus asistentes por toda la web.'
 		},
 		{
-			icon: 'globe',
-			title: 'Alojamiento Europeo',
+			icon: 'eye',
+			title: 'Tú decides qué ve tu gente',
 			description:
-				'Nuestra versión alojada funciona sobre infraestructura europea, garantizando que tus datos permanezcan bajo jurisdicción de la UE y protección del RGPD.'
+				'Elige en cada evento si la lista de personas invitadas, el número de asistentes y la dirección son visibles, y para quién. Las personas asistentes también pueden ocultarse de las listas.'
 		},
 		{
 			icon: 'lock',
-			title: 'Minimización de Datos',
+			title: 'Pide solo lo que necesitas',
 			description:
-				'Solo recopilamos lo necesario para gestionar eventos. Sin perfiles, sin análisis de comportamiento, sin monetización de datos.'
-		},
-		{
-			icon: 'server',
-			title: 'Opción de Autoalojamiento',
-			description:
-				'Para un control máximo, despliega Revel en tu propia infraestructura. Tus datos nunca tocan nuestros servidores.'
-		},
-		{
-			icon: 'code',
-			title: 'Código Transparente',
-			description:
-				'Ser código abierto significa que puedes auditar exactamente cómo se tratan tus datos. Sin rastreo oculto, sin sorpresas.'
+				'Los pronombres, una foto de perfil o las respuestas a un cuestionario solo se piden cuando tu evento de verdad los necesita.'
 		},
 		{
 			icon: 'check',
-			title: 'RGPD desde el Diseño',
+			title: 'Exportar y eliminar, integrado',
 			description:
-				'Exportación de datos, solicitudes de eliminación, gestión del consentimiento: el cumplimiento de la privacidad está integrado en la plataforma.'
+				'Cualquiera puede descargar sus datos personales o eliminar su cuenta desde sus propios ajustes. Sin correos a un buzón de soporte.'
+		},
+		{
+			icon: 'globe',
+			title: 'Alojado en Europa',
+			description:
+				'Nuestra versión alojada funciona en servidores europeos, bajo la legislación de protección de datos de la UE.'
+		},
+		{
+			icon: 'code',
+			title: 'Código abierto y autoalojable',
+			description:
+				'Lee exactamente cómo se tratan los datos, o ejecuta Revel en tu propio servidor para que nunca salgan de tus manos.'
 		}
 	],
 	benefits: {
-		title: 'La Privacidad Como Característica, No Como Casilla',
+		title: 'Una privacidad que puedes explicar a tu comunidad',
 		items: [
-			'Pleno cumplimiento del RGPD para quienes organizan y asisten a eventos en Europa',
-			'Sin venta ni cesión de datos a anunciantes',
-			'Código abierto transparente y auditable',
-			'Alojamiento europeo con soberanía de los datos',
-			'Opción de autoalojamiento para un control total',
-			'Prácticas de privacidad claras y honestas que puedes explicar a tu comunidad'
+			'Sin negocio publicitario, así que sin motivos para recopilar más de lo necesario',
+			'Solo cookies esenciales',
+			'Visibilidad de la lista de personas invitadas y de la dirección configurable en cada evento',
+			'Autenticación en dos pasos para todas las cuentas',
+			'Exportación de datos y eliminación de cuenta sin abrir un ticket de soporte',
+			'Autoalojamiento para cuando los datos tienen que quedarse en tus propios servidores'
 		]
 	},
 	cta: {
-		title: 'Eventos Sin Vigilancia',
-		description:
-			'Descubre cómo trata Revel los datos, o despliégalo por tu cuenta para un control total.',
+		title: 'Organiza eventos en los que tus asistentes puedan confiar',
+		description: 'Echa un vistazo a la demo, o lee el código por tu cuenta.',
 		buttons: [
-			{ text: 'Probar la Demo en Vivo', href: 'https://demo.letsrevel.io', variant: 'primary' },
+			{ text: 'Probar la demo en vivo', href: 'https://demo.letsrevel.io', variant: 'primary' },
 			{ text: 'Autoalojar (GitHub)', href: 'https://github.com/letsrevel', variant: 'secondary' },
 			{ text: 'Contáctanos', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
 		]
 	},
 	faq: [
 		{
-			question: '¿Cómo cumple Revel con el RGPD?',
+			question: '¿Revel ayuda con el RGPD?',
 			answer:
-				'Practicamos la minimización de datos, ofrecemos herramientas de exportación y eliminación de datos, obtenemos el consentimiento adecuado y alojamos en infraestructura europea. Al ser código abierto, puedes auditar directamente en el código cómo tratamos los datos.'
+				'Se diseñó teniéndolo en cuenta. Recopilamos lo necesario para gestionar eventos, las personas asistentes pueden exportar o eliminar sus datos por su cuenta y la versión alojada funciona en Europa. Tú sigues siendo responsable de lo que preguntas a tus asistentes, pero Revel te pone fácil reducirlo al mínimo.'
 		},
 		{
-			question: '¿Vendéis los datos de quienes asisten?',
+			question: '¿Vendéis los datos de las personas asistentes?',
 			answer:
-				'No. No tenemos ningún modelo de negocio publicitario. Nuestros ingresos provienen de una pequeña comisión por entrada en eventos de pago (para clientes con alojamiento gestionado). No tenemos ningún incentivo para monetizar tus datos.'
+				'No. En la versión alojada cobramos una comisión sobre las transacciones online de pago (1,5 % + 0,25 €). No hay negocio publicitario ni acuerdos con datos.'
 		},
 		{
-			question: '¿Qué datos recopiláis?',
+			question: '¿Qué datos recopila Revel?',
 			answer:
-				'Solo lo necesario: información de la cuenta, detalles del evento, compras de entradas y listas de asistentes. No rastreamos el comportamiento de navegación, no creamos perfiles publicitarios ni recopilamos datos más allá de lo que proporcionas explícitamente.'
+				'Los datos de tu cuenta, los eventos que organizas o a los que asistes, entradas y pagos, y lo que quien organiza pregunte en un cuestionario. No rastreamos tu navegación por otros sitios ni creamos perfiles publicitarios.'
 		},
 		{
-			question: '¿Puedo tener control total sobre mis datos?',
+			question: '¿Intervienen terceros?',
 			answer:
-				'Sí. Autoaloja Revel en tu propia infraestructura y tus datos nunca tocarán nuestros servidores. La plataforma tiene licencia MIT y es gratuita de desplegar.'
+				'Solo cuando hace falta. Stripe procesa los pagos con tarjeta, el mapa del lugar se carga desde el proveedor de mapas cuando un evento muestra uno, y Apple o Google intervienen cuando alguien añade un pase a su wallet. No hay servicios de analítica ni de publicidad.'
+		},
+		{
+			question: '¿Puedo tener todos los datos en mis propios servidores?',
+			answer:
+				'Sí. Autoaloja Revel con licencia MIT y todo lo que Revel guarda vive en tu propia base de datos, donde tú la ejecutes. Los datos solo salen de ahí si activas un servicio externo, como Stripe para los pagos en línea.'
 		}
 	],
 	relatedPages: ['self-hosted-event-platform', 'queer-event-management']
@@ -538,106 +561,111 @@ export const privacyFocusedEventsPT: LandingPageContent = {
 	slug: 'privacy-focused-events',
 	locale: 'pt',
 	meta: {
-		title: 'Plataforma de Eventos Focada na Privacidade – Conforme com o RGPD | Revel',
+		title: 'Plataforma de eventos com a privacidade em primeiro lugar, feita para o RGPD | Revel',
 		description:
-			'Gestão de eventos que respeita a privacidade. Sem recolha de dados, sem rastreadores de terceiros. Alojamento europeu, total conformidade com o RGPD. Código aberto.',
+			'Gestão de eventos sem rastreadores nem anúncios. Só cookies essenciais, exportação de dados e eliminação de conta integradas, alojamento na Europa e código aberto para poderes confirmar.',
 		keywords:
-			'plataforma de eventos rgpd, gestão de eventos privados, software de eventos europeu, bilhetes sem rastreadores, proteção de dados em eventos'
+			'plataforma de eventos rgpd, eventos com privacidade, gestão de eventos sem rastreio, software de eventos europeu, proteção de dados em eventos, bilheteira sem rastreadores'
 	},
 	hero: {
-		headline: 'Gestão de Eventos Que Respeita a Tua Privacidade',
+		headline: 'Eventos sem vigilância',
 		subheadline:
-			'Sem recolha de dados. Sem rastreadores de terceiros. Alojamento europeu com total conformidade com o RGPD.'
+			'Sem anúncios, sem rastreadores de analítica, sem venda da tua lista de participantes. Só as ferramentas de que precisas para organizar os teus eventos.'
 	},
 	intro: {
 		paragraphs: [
-			'A maioria das plataformas de eventos recolhe os dados de quem participa para fins publicitários, partilha-os com terceiros e esconde os detalhes em longas políticas de privacidade. Se te importas com a privacidade da tua comunidade — ou simplesmente precisas de cumprir o RGPD — precisas de uma abordagem diferente.',
-			'A Revel é uma gestão de eventos de código aberto construída com a privacidade como princípio fundamental, não como um acrescento. Não rastreamos ninguém pela web. Não vendemos dados. Nem sequer temos o modelo de negócio que nos incentivaria a isso.',
-			'Alojada em infraestrutura europeia com total conformidade com o RGPD, ou autoalojada para controlo completo. Os dados de quem participa continuam a ser teus, e a tua comunidade pode confiar que a sua informação é tratada de forma responsável.'
+			'Muitas plataformas de eventos ganham parte do seu dinheiro com o que sabem sobre as pessoas participantes. É por isso que as páginas delas vêm cheias de píxeis de rastreio e as políticas de privacidade se estendem por páginas e páginas.',
+			'A Revel não funciona assim. Não há nenhum script de analítica no site, só cookies essenciais, e até os tipos de letra vêm dos nossos próprios servidores. Ganhamos dinheiro com uma pequena comissão sobre bilhetes pagos, não com dados, por isso não temos nada a ganhar em recolher mais.',
+			'O código é aberto, por isso não precisas de acreditar na nossa palavra. E se quiseres os dados no teu próprio hardware, podes autoalojar.'
 		]
 	},
 	features: [
 		{
 			icon: 'shield',
-			title: 'Sem Rastreadores de Terceiros',
+			title: 'Sem scripts de rastreio',
 			description:
-				'Sem Google Analytics, sem pixels do Facebook, sem SDKs publicitários. Não rastreamos os teus participantes pela web.'
+				'Sem Google Analytics, sem píxeis de publicidade, sem SDKs de terceiros a seguir as pessoas participantes pela web fora.'
 		},
 		{
-			icon: 'globe',
-			title: 'Alojamento Europeu',
+			icon: 'eye',
+			title: 'Tu decides o que as pessoas convidadas veem',
 			description:
-				'A nossa versão alojada funciona em infraestrutura europeia, garantindo que os teus dados ficam sob jurisdição da UE e proteção do RGPD.'
+				'Escolhe em cada evento se a lista de participantes, o número de participantes e a morada ficam visíveis, e para quem. Quem participa também se pode esconder das listas.'
 		},
 		{
 			icon: 'lock',
-			title: 'Minimização de Dados',
+			title: 'Pede só o que precisas',
 			description:
-				'Recolhemos apenas o necessário para gerir eventos. Sem criação de perfis, sem análise comportamental, sem monetização de dados.'
-		},
-		{
-			icon: 'server',
-			title: 'Opção de Autoalojamento',
-			description:
-				'Para controlo máximo, instala a Revel na tua própria infraestrutura. Os teus dados nunca tocam nos nossos servidores.'
-		},
-		{
-			icon: 'code',
-			title: 'Código Transparente',
-			description:
-				'Ser código aberto significa que podes auditar exatamente como os teus dados são tratados. Sem rastreio escondido, sem surpresas.'
+				'Pronomes, uma foto de perfil ou respostas a um questionário só são pedidos quando o teu evento precisa mesmo deles.'
 		},
 		{
 			icon: 'check',
-			title: 'RGPD desde a Conceção',
+			title: 'Exportar e eliminar, já integrado',
 			description:
-				'Exportação de dados, pedidos de eliminação, gestão de consentimento — a conformidade com a privacidade está integrada na plataforma.'
+				'Qualquer pessoa pode descarregar os seus dados pessoais ou eliminar a conta nas próprias definições. Sem emails para uma caixa de suporte.'
+		},
+		{
+			icon: 'globe',
+			title: 'Alojado na Europa',
+			description:
+				'A nossa versão alojada corre em servidores europeus, sob a legislação de proteção de dados da UE.'
+		},
+		{
+			icon: 'code',
+			title: 'Código aberto e autoalojável',
+			description:
+				'Lê exatamente como os dados são tratados, ou corre a Revel no teu próprio servidor para que nunca saiam das tuas mãos.'
 		}
 	],
 	benefits: {
-		title: 'A Privacidade Como Funcionalidade, Não Uma Formalidade',
+		title: 'Uma privacidade que consegues explicar à tua comunidade',
 		items: [
-			'Total conformidade com o RGPD para quem organiza e participa em eventos na Europa',
-			'Sem venda nem partilha de dados com anunciantes',
-			'Código aberto transparente e auditável',
-			'Alojamento europeu com soberania de dados',
-			'Opção de autoalojamento para controlo total',
-			'Práticas de privacidade claras e honestas que podes explicar à tua comunidade'
+			'Sem negócio de publicidade, logo sem razões para recolher mais do que precisamos',
+			'Só cookies essenciais',
+			'Visibilidade da lista de participantes e da morada definida por evento',
+			'Autenticação de dois fatores para todas as contas',
+			'Exportação de dados e eliminação de conta sem abrir um pedido de suporte',
+			'Autoalojamento para quando os dados têm de ficar nos teus próprios servidores'
 		]
 	},
 	cta: {
-		title: 'Eventos Sem Vigilância',
-		description: 'Vê como a Revel trata os dados, ou instala-a por tua conta para controlo total.',
+		title: 'Organiza eventos em que as pessoas participantes podem confiar',
+		description: 'Dá uma volta pela demo, ou lê o código por ti.',
 		buttons: [
 			{
-				text: 'Experimentar a Demo ao Vivo',
+				text: 'Experimentar a demo ao vivo',
 				href: 'https://demo.letsrevel.io',
 				variant: 'primary'
 			},
 			{ text: 'Autoalojar (GitHub)', href: 'https://github.com/letsrevel', variant: 'secondary' },
-			{ text: 'Contactar-nos', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
+			{ text: 'Contacta-nos', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
 		]
 	},
 	faq: [
 		{
-			question: 'Como é que a Revel cumpre o RGPD?',
+			question: 'A Revel ajuda com o RGPD?',
 			answer:
-				'Praticamos a minimização de dados, disponibilizamos ferramentas de exportação e eliminação de dados, obtemos o consentimento adequado e alojamos em infraestrutura europeia. Sendo código aberto, podes auditar as nossas práticas de dados diretamente no código.'
+				'Foi pensada com isso em mente. Recolhemos o necessário para gerir eventos, quem participa pode exportar ou eliminar os seus dados de forma autónoma, e a versão alojada corre na Europa. Continuas a ser responsável pelo que perguntas às pessoas participantes, mas a Revel facilita reduzir isso ao mínimo.'
 		},
 		{
 			question: 'Vendem os dados das pessoas participantes?',
 			answer:
-				'Não. Não temos qualquer modelo de negócio publicitário. As nossas receitas vêm de uma pequena comissão por bilhete em eventos pagos (para clientes com alojamento gerido). Não temos incentivo para monetizar os teus dados.'
+				'Não. Na versão alojada cobramos uma comissão sobre transações online pagas (1,5 % + 0,25 €). Não há negócio de publicidade nem acordos com dados.'
 		},
 		{
-			question: 'Que dados recolhem?',
+			question: 'Que dados recolhe a Revel?',
 			answer:
-				'Apenas o necessário: informação da conta, detalhes do evento, compras de bilhetes e listas de participantes. Não rastreamos o comportamento de navegação, não construímos perfis publicitários nem recolhemos dados além do que forneces explicitamente.'
+				'Os dados da tua conta, os eventos que organizas ou em que participas, bilhetes e pagamentos, e o que quem organiza perguntar num questionário. Não seguimos a tua navegação noutros sites nem criamos perfis de publicidade.'
 		},
 		{
-			question: 'Posso ter controlo total sobre os meus dados?',
+			question: 'Há terceiros envolvidos?',
 			answer:
-				'Sim. Autoaloja a Revel na tua própria infraestrutura e os teus dados nunca tocarão nos nossos servidores. A plataforma tem licença MIT e é gratuita para instalar.'
+				'Só quando é preciso. A Stripe processa os pagamentos com cartão, o mapa do local é carregado a partir do fornecedor de mapas quando um evento mostra um, e a Apple ou a Google entram em cena quando alguém adiciona um passe à sua wallet. Não há serviços de analítica nem de publicidade.'
+		},
+		{
+			question: 'Posso manter todos os dados nos meus próprios servidores?',
+			answer:
+				'Sim. Autoaloja a Revel com a licença MIT e tudo o que a Revel guarda fica na tua própria base de dados, onde quer que a corras. Os dados só saem de lá se ativares um serviço externo, como a Stripe para pagamentos online.'
 		}
 	],
 	relatedPages: ['self-hosted-event-platform', 'queer-event-management']
