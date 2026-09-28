@@ -22,8 +22,10 @@
 		ChevronRight,
 		Pencil,
 		X,
-		AlertCircle
+		AlertCircle,
+		DoorOpen
 	} from '@lucide/svelte';
+	import { tierEntryWindow } from './tier-entry-window';
 	import { formatMoney } from '$lib/utils/format';
 	import { detectWalletPlatform } from '$lib/utils/platform';
 	import { onMount } from 'svelte';
@@ -38,6 +40,8 @@
 		eventName: string;
 		eventDate?: string;
 		eventLocation?: string;
+		/** The event's IANA timezone, for the tier's own entry window (#945). */
+		timezone?: string | null;
 		onResumePayment?: (paymentId: string) => void;
 		isResumingPayment?: boolean;
 		onCancelReservation?: (paymentId: string) => void;
@@ -54,6 +58,7 @@
 		eventName,
 		eventDate,
 		eventLocation,
+		timezone,
 		onResumePayment,
 		isResumingPayment = false,
 		onCancelReservation,
@@ -230,6 +235,8 @@
 		return parts.length > 0 ? parts.join(' • ') : null;
 	});
 
+	const entryWindow = $derived(tierEntryWindow(ticket?.tier, timezone));
+
 	// Check if ticket has any seat info to display
 	const hasSeatInfo = $derived(
 		!!(
@@ -388,7 +395,7 @@
 				</div>
 
 				<!-- Ticket Holder & Seat Info -->
-				{#if ticket.guest_name || canRenameHolder || hasSeatInfo || pricePaidDisplay}
+				{#if ticket.guest_name || canRenameHolder || hasSeatInfo || pricePaidDisplay || entryWindow}
 					<dl class="space-y-2 rounded-lg border border-border bg-muted/30 p-4 text-sm">
 						{#if ticket.guest_name || canRenameHolder}
 							<div class="flex items-center gap-2">
@@ -422,6 +429,13 @@
 								<dt class="sr-only">{m['myTicketModal.seat']()}</dt>
 								<Armchair class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
 								<dd>{seatInfo}</dd>
+							</div>
+						{/if}
+						{#if entryWindow}
+							<div class="flex items-center gap-2">
+								<dt class="sr-only">{m['tierCheckIn.sectionTitle']()}</dt>
+								<DoorOpen class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+								<dd>{m['tierCheckIn.entryWindow']({ window: entryWindow })}</dd>
 							</div>
 						{/if}
 						{#if pricePaidDisplay}

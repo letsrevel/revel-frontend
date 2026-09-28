@@ -33,7 +33,9 @@ const LABELS: Record<string, () => string> = {
 	pwyc_min: () => m['tierForm.field.pwyc_min'](),
 	pwyc_max: () => m['tierForm.field.pwyc_max'](),
 	price_type: () => m['tierForm.field.price_type'](),
-	payment_method: () => m['tierForm.field.payment_method']()
+	payment_method: () => m['tierForm.field.payment_method'](),
+	check_in_opens_offset: () => m['tierForm.field.check_in_opens_offset'](),
+	check_in_closes_offset: () => m['tierForm.field.check_in_closes_offset']()
 };
 
 export function tierFieldLabel(field: string): string {

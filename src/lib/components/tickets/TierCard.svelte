@@ -10,11 +10,12 @@
 	import { Button } from '$lib/components/ui/button';
 	import PricingCard from '$lib/components/common/PricingCard.svelte';
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
-	import { Ticket, Clock, Users, AlertCircle, Check } from '@lucide/svelte';
+	import { Ticket, Clock, Users, AlertCircle, Check, DoorOpen } from '@lucide/svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import { formatDate } from '$lib/utils/date';
 	import type { JoinBlock } from './cart.svelte';
 	import TierQuantityStepper from './TierQuantityStepper.svelte';
+	import { tierEntryWindow } from './tier-entry-window';
 
 	interface Props {
 		tier: TierSchemaWithId;
@@ -163,6 +164,9 @@
 		// range; flat tiers keep their single price — see tier-price-display.ts.
 		return tierPriceDisplay(tier, { isFree: false, isPwyc: false, minAmount: 0, maxAmount: null });
 	});
+
+	// The tier's own entry window (#945) — only when it differs from the event's.
+	const entryWindow = $derived(tierEntryWindow(tier, timezone));
 
 	// Check if sales are active
 	const salesStatus = $derived.by(() => {
@@ -319,6 +323,12 @@
 {/snippet}
 
 {#snippet meta()}
+	{#if entryWindow}
+		<p class="flex items-center gap-1.5 text-sm text-muted-foreground">
+			<DoorOpen class="h-4 w-4 shrink-0" aria-hidden="true" />
+			{m['tierCheckIn.entryWindow']({ window: entryWindow })}
+		</p>
+	{/if}
 	{#if !salesStatus.active}
 		<p class="flex items-center gap-1.5 text-sm text-muted-foreground">
 			<Clock class="h-4 w-4 shrink-0" aria-hidden="true" />

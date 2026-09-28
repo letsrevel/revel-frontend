@@ -6461,7 +6461,9 @@
 		"pwyc_min": "Mindestpreis",
 		"pwyc_max": "Maximalpreis",
 		"price_type": "Preistyp",
-		"payment_method": "Zahlungsmethode"
+		"payment_method": "Zahlungsmethode",
+		"check_in_opens_offset": "Check-in öffnet",
+		"check_in_closes_offset": "Check-in schließt"
 	},
 	"tickets.vatBreakdown": "MwSt-Aufschlüsselung",
 	"tickets.vatNet": "Netto",
@@ -9824,5 +9826,52 @@
 				}
 			}
 		]
+	},
+	"tierCheckIn": {
+		"sectionTitle": "Check-in-Zeitraum",
+		"sectionHelp": "Optional. Gib dieser Ticketkategorie eigene Einlasszeiten, z. B. früheren Einlass für VIPs oder ein Ticket, das nur an einem Tag gilt.",
+		"opensLabel": "Check-in öffnet",
+		"closesLabel": "Check-in schließt",
+		"defaultsHint": "Standardmäßig gilt der Check-in-Zeitraum des Events",
+		"clearOpens": "Check-in-Beginn entfernen",
+		"clearCloses": "Check-in-Ende entfernen",
+		"atStart": "Zum Eventbeginn",
+		"before": "{duration} vor Eventbeginn",
+		"after": "{duration} nach Eventbeginn",
+		"days": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} Tag",
+					"countPlural=*": "{count} Tage"
+				}
+			}
+		],
+		"hours": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} Stunde",
+					"countPlural=*": "{count} Stunden"
+				}
+			}
+		],
+		"minutes": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} Minute",
+					"countPlural=*": "{count} Minuten"
+				}
+			}
+		],
+		"outOfRange": "Muss innerhalb von 364 Tagen ab Eventbeginn liegen.",
+		"needsEventStart": "Lege zuerst die Startzeit des Events fest.",
+		"emptyWindow": "Mit diesen Zeiten würde der Check-in schließen, bevor er öffnet. Tickets dieser Kategorie könnten dann nie eingecheckt werden. Passe die Zeiten oder den Check-in-Zeitraum des Events an.",
+		"relativeNote": "Wird relativ zum Eventbeginn gespeichert und verschiebt sich mit, wenn du das Event verlegst oder duplizierst.",
+		"entryWindow": "Einlass: {window}"
 	}
 }

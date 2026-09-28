@@ -6461,7 +6461,9 @@
 		"pwyc_min": "Precio mínimo",
 		"pwyc_max": "Precio máximo",
 		"price_type": "Tipo de precio",
-		"payment_method": "Método de pago"
+		"payment_method": "Método de pago",
+		"check_in_opens_offset": "Apertura del check-in",
+		"check_in_closes_offset": "Cierre del check-in"
 	},
 	"tickets.vatBreakdown": "Desglose de IVA",
 	"tickets.vatNet": "Neto",
@@ -9824,5 +9826,52 @@
 				}
 			}
 		]
+	},
+	"tierCheckIn": {
+		"sectionTitle": "Ventana de check-in",
+		"sectionHelp": "Opcional. Dale a este tipo de entrada su propio horario de acceso, por ejemplo acceso anticipado para VIP o una entrada válida solo un día.",
+		"opensLabel": "Apertura del check-in",
+		"closesLabel": "Cierre del check-in",
+		"defaultsHint": "Por defecto, la ventana de check-in del evento",
+		"clearOpens": "Borrar la hora de apertura del check-in",
+		"clearCloses": "Borrar la hora de cierre del check-in",
+		"atStart": "Al inicio del evento",
+		"before": "{duration} antes del inicio del evento",
+		"after": "{duration} después del inicio del evento",
+		"days": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} día",
+					"countPlural=*": "{count} días"
+				}
+			}
+		],
+		"hours": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} hora",
+					"countPlural=*": "{count} horas"
+				}
+			}
+		],
+		"minutes": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} minuto",
+					"countPlural=*": "{count} minutos"
+				}
+			}
+		],
+		"outOfRange": "Debe estar dentro de los 364 días desde el inicio del evento.",
+		"needsEventStart": "Primero define la hora de inicio del evento.",
+		"emptyWindow": "Con estos horarios, el check-in cerraría antes de abrir, así que las entradas de este tipo nunca podrían validarse. Ajusta los horarios o la ventana de check-in del evento.",
+		"relativeNote": "Se guarda en relación con el inicio del evento, así que la ventana se mueve con él si lo reprogramas o lo duplicas.",
+		"entryWindow": "Acceso: {window}"
 	}
 }

@@ -6461,7 +6461,9 @@
 		"pwyc_min": "Preço mínimo",
 		"pwyc_max": "Preço máximo",
 		"price_type": "Tipo de preço",
-		"payment_method": "Método de pagamento"
+		"payment_method": "Método de pagamento",
+		"check_in_opens_offset": "Abertura do check-in",
+		"check_in_closes_offset": "Fecho do check-in"
 	},
 	"tickets.vatBreakdown": "Detalhe do IVA",
 	"tickets.vatNet": "Líquido",
@@ -9824,5 +9826,52 @@
 				}
 			}
 		]
+	},
+	"tierCheckIn": {
+		"sectionTitle": "Janela de check-in",
+		"sectionHelp": "Opcional. Dá a este tipo de bilhete o seu próprio horário de entrada, por exemplo entrada antecipada para VIP ou um bilhete válido só num dia.",
+		"opensLabel": "Abertura do check-in",
+		"closesLabel": "Fecho do check-in",
+		"defaultsHint": "Por omissão, a janela de check-in do evento",
+		"clearOpens": "Limpar a hora de abertura do check-in",
+		"clearCloses": "Limpar a hora de fecho do check-in",
+		"atStart": "No início do evento",
+		"before": "{duration} antes do início do evento",
+		"after": "{duration} depois do início do evento",
+		"days": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} dia",
+					"countPlural=*": "{count} dias"
+				}
+			}
+		],
+		"hours": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} hora",
+					"countPlural=*": "{count} horas"
+				}
+			}
+		],
+		"minutes": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} minuto",
+					"countPlural=*": "{count} minutos"
+				}
+			}
+		],
+		"outOfRange": "Tem de estar dentro de 364 dias a partir do início do evento.",
+		"needsEventStart": "Define primeiro a hora de início do evento.",
+		"emptyWindow": "Com estes horários, o check-in fecharia antes de abrir, por isso os bilhetes deste tipo nunca poderiam ser validados. Ajusta os horários ou a janela de check-in do evento.",
+		"relativeNote": "Guardada em relação ao início do evento, por isso a janela acompanha o evento se o reagendares ou duplicares.",
+		"entryWindow": "Entrada: {window}"
 	}
 }

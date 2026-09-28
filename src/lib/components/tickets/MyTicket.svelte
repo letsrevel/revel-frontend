@@ -5,17 +5,29 @@
 	import TicketStatusBadge from './TicketStatusBadge.svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import TicketPdfDownloadButton from './TicketPdfDownloadButton.svelte';
-	import { Ticket, Calendar, MapPin, User, Armchair, Banknote, AlertCircle } from '@lucide/svelte';
+	import {
+		Ticket,
+		Calendar,
+		MapPin,
+		User,
+		Armchair,
+		Banknote,
+		AlertCircle,
+		DoorOpen
+	} from '@lucide/svelte';
 	import { formatDateTime } from '$lib/utils/date';
 	import { formatMoney } from '$lib/utils/format';
 	import QRCode from 'qrcode';
 	import { onMount } from 'svelte';
+	import { tierEntryWindow } from './tier-entry-window';
 
 	interface Props {
 		ticket: EventTicketSchemaActual;
 		eventName: string;
 		eventDate?: string;
 		eventLocation?: string;
+		/** The event's IANA timezone, for the tier's own entry window (#945). */
+		timezone?: string | null;
 		onResumePayment?: () => void;
 		isResumingPayment?: boolean;
 		/** Total number of tickets the user has */
@@ -29,11 +41,14 @@
 		eventName,
 		eventDate,
 		eventLocation,
+		timezone,
 		onResumePayment,
 		isResumingPayment = false,
 		totalTickets = 1,
 		onViewAllTickets
 	}: Props = $props();
+
+	const entryWindow = $derived(tierEntryWindow(ticket.tier, timezone));
 
 	let qrCodeDataUrl = $state<string | null>(null);
 	let isGenerating = $state(false);
@@ -167,7 +182,7 @@
 		</div>
 
 		<!-- Ticket Holder & Seat Info -->
-		{#if ticket.guest_name || hasSeatInfo || pricePaidDisplay}
+		{#if ticket.guest_name || hasSeatInfo || pricePaidDisplay || entryWindow}
 			<ul class="space-y-2 rounded-lg border border-border bg-muted/30 p-4 text-sm">
 				{#if ticket.guest_name}
 					<li class="flex items-center gap-2">
@@ -181,6 +196,12 @@
 						<span class="sr-only">{m['myTicket.seat']()}</span>
 						<Armchair class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
 						<span>{seatInfo}</span>
+					</li>
+				{/if}
+				{#if entryWindow}
+					<li class="flex items-center gap-2">
+						<DoorOpen class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+						<span>{m['tierCheckIn.entryWindow']({ window: entryWindow })}</span>
 					</li>
 				{/if}
 				{#if pricePaidDisplay}

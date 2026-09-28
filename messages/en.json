@@ -6461,7 +6461,9 @@
 		"pwyc_min": "Minimum price",
 		"pwyc_max": "Maximum price",
 		"price_type": "Price type",
-		"payment_method": "Payment method"
+		"payment_method": "Payment method",
+		"check_in_opens_offset": "Check-in opens",
+		"check_in_closes_offset": "Check-in closes"
 	},
 	"tickets.vatBreakdown": "VAT Breakdown",
 	"tickets.vatNet": "Net",
@@ -9824,5 +9826,52 @@
 				}
 			}
 		]
+	},
+	"tierCheckIn": {
+		"sectionTitle": "Check-in window",
+		"sectionHelp": "Optional. Give this tier its own entry times, e.g. early entry for VIPs or a ticket that's only valid on one day.",
+		"opensLabel": "Check-in opens",
+		"closesLabel": "Check-in closes",
+		"defaultsHint": "Defaults to the event's check-in window",
+		"clearOpens": "Clear check-in opening time",
+		"clearCloses": "Clear check-in closing time",
+		"atStart": "At event start",
+		"before": "{duration} before event start",
+		"after": "{duration} after event start",
+		"days": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} day",
+					"countPlural=*": "{count} days"
+				}
+			}
+		],
+		"hours": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} hour",
+					"countPlural=*": "{count} hours"
+				}
+			}
+		],
+		"minutes": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} minute",
+					"countPlural=*": "{count} minutes"
+				}
+			}
+		],
+		"outOfRange": "Must be within 364 days of the event start.",
+		"needsEventStart": "Set the event's start time first.",
+		"emptyWindow": "With these times, check-in would close before it opens, so this tier's tickets could never be checked in. Adjust the times or the event's check-in window.",
+		"relativeNote": "Stored relative to the event start, so the window moves with the event if you reschedule or duplicate it.",
+		"entryWindow": "Entry: {window}"
 	}
 }
