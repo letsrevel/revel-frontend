@@ -21,6 +21,12 @@ vi.mock('$app/navigation', () => ({
 	goto: vi.fn()
 }));
 
+// `$app/state`'s real `page.url` is a static placeholder outside a SvelteKit
+// navigation; pin it to an event URL so the login prompt's returnUrl is testable.
+vi.mock('$app/state', () => ({
+	page: { url: new URL('http://localhost/events/test-org/test-event?et=abc') }
+}));
+
 import { eventpublicattendanceRsvpEvent } from '$lib/api/generated/sdk.gen';
 
 // Minimal event object for branches that need `event` (ineligibility message)
@@ -59,6 +65,24 @@ describe('EventRSVP', () => {
 		// The container div renders, but with no interactive RSVP content
 		expect(container.textContent?.trim()).toBe('');
 		expect(container.querySelector('button')).toBeNull();
+	});
+
+	it('points the guest login prompt back at the current event URL (#914)', () => {
+		renderRSVP({
+			eventId: 'event-123',
+			eventName: 'Test Event',
+			userStatus: null,
+			isAuthenticated: false,
+			requiresTicket: false,
+			event: { ...mockEvent, can_attend_without_login: false }
+		});
+
+		// Derived from the request URL (not `window`), so the SSR-rendered link
+		// carries it too; the login action only reads `returnUrl`.
+		expect(screen.getByRole('link')).toHaveAttribute(
+			'href',
+			`/login?returnUrl=${encodeURIComponent('/events/test-org/test-event?et=abc')}`
+		);
 	});
 
 	it('does not render for ticket-required events', () => {

@@ -17,7 +17,7 @@
 	import ConfirmDialog from '../common/ConfirmDialog.svelte';
 	import IneligibilityMessage from './IneligibilityMessage.svelte';
 	import { Check, AlertCircle } from '@lucide/svelte';
-	import { browser } from '$app/environment';
+	import { page } from '$app/state';
 	import { invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
 
@@ -428,8 +428,10 @@
 		!isAuthenticated && event && !event.can_attend_without_login
 	);
 
-	// Get current pathname for redirect (SSR-safe)
-	const currentPath = $derived(browser ? window.location.pathname + window.location.search : '');
+	// Post-login return target. Read from the request URL rather than `window`
+	// so the server-rendered link already carries it (an empty returnUrl makes
+	// safeReturnUrl fall back to /dashboard for pre-hydration clicks).
+	const currentPath = $derived(page.url.pathname + page.url.search);
 </script>
 
 <!--
