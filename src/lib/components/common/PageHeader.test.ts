@@ -167,4 +167,14 @@ describe('PageHeader', () => {
 		render(PageHeader, { props: { title: 'Hey', volume: 'poster', decoration: snip('New!') } });
 		expect(screen.getByText('New!').closest('[aria-hidden="true"]')).not.toBeNull();
 	});
+
+	it('spreads titleAttrs onto the h1, not the header', () => {
+		render(PageHeader, {
+			props: { title: 'Connect an app', titleAttrs: { id: 'consent-title', tabindex: -1 } }
+		});
+		const h1 = screen.getByRole('heading', { level: 1 });
+		expect(h1.id).toBe('consent-title');
+		expect(h1.getAttribute('tabindex')).toBe('-1');
+		expect(h1.closest('header')?.getAttribute('tabindex')).toBeNull();
+	});
 });
