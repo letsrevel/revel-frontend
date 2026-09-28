@@ -88,7 +88,7 @@
 	function handleDialogChange(open: boolean) {
 		// If trying to open and not authenticated, redirect to login
 		if (open && !isAuthenticated) {
-			window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+			window.location.href = `/login?returnUrl=${encodeURIComponent(window.location.pathname + window.location.search)}`;
 			return;
 		}
 

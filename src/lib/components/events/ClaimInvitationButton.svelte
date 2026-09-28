@@ -30,7 +30,7 @@
 			// Redirect to login with return URL
 			const currentUrl = window.location.pathname + window.location.search;
 			// eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() validates the route id; the appended query string cannot be expressed through resolve()
-			goto(`${resolve('/(public)/login', {})}?redirect=${encodeURIComponent(currentUrl)}`);
+			goto(`${resolve('/(public)/login', {})}?returnUrl=${encodeURIComponent(currentUrl)}`);
 			return;
 		}
 

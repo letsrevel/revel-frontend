@@ -11,6 +11,7 @@ import {
 	eventpublicdetailsGetEvent,
 	eventadminticketsListTicketTiers
 } from '$lib/api/generated/sdk.gen';
+import { loginRedirectPath } from '$lib/server/auth-guard';
 import type {
 	EventInvitationListSchema,
 	EventInvitationRequestInternalSchema,
@@ -32,7 +33,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 	const accessToken = cookies.get('access_token');
 
 	if (!accessToken) {
-		throw redirect(302, `/login?redirect=${encodeURIComponent(url.pathname)}`);
+		throw redirect(302, loginRedirectPath(url));
 	}
 
 	// Load event to verify ownership

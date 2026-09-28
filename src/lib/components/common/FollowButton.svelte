@@ -182,7 +182,7 @@
 
 	function handleFollowClick() {
 		if (!isAuthenticated) {
-			window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+			window.location.href = `/login?returnUrl=${encodeURIComponent(window.location.pathname + window.location.search)}`;
 			return;
 		}
 		followMutation.mutate();

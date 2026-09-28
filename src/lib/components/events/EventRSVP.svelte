@@ -429,7 +429,7 @@
 	);
 
 	// Get current pathname for redirect (SSR-safe)
-	const currentPathname = $derived(browser ? window.location.pathname : '');
+	const currentPath = $derived(browser ? window.location.pathname + window.location.search : '');
 </script>
 
 <!--
@@ -532,7 +532,7 @@
 				<h3 class="text-sm font-semibold">{m['eventRSVP.willYouAttend']()}</h3>
 				<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
 				<a
-					href={`${resolve('/(public)/login', {})}?redirect=${encodeURIComponent(currentPathname)}`}
+					href={`${resolve('/(public)/login', {})}?returnUrl=${encodeURIComponent(currentPath)}`}
 					class="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-3 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
 				>
 					{m['eventRSVP.loginToRSVP']()}

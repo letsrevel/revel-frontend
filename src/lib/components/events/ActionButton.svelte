@@ -117,7 +117,7 @@
 	function handleClick(): void {
 		if (!isAuthenticated && !canAttendWithoutLogin) {
 			// Redirect to login with return URL
-			window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+			window.location.href = `/login?returnUrl=${encodeURIComponent(window.location.pathname + window.location.search)}`;
 			return;
 		}
 
