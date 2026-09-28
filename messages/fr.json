@@ -6431,7 +6431,9 @@
 		"pwyc_min": "Prix minimum",
 		"pwyc_max": "Prix maximum",
 		"price_type": "Type de prix",
-		"payment_method": "Mode de paiement"
+		"payment_method": "Mode de paiement",
+		"check_in_opens_offset": "Ouverture de l'enregistrement",
+		"check_in_closes_offset": "Fermeture de l'enregistrement"
 	},
 	"tickets.vatBreakdown": "Détail de la TVA",
 	"tickets.vatNet": "Net",
@@ -9824,5 +9826,52 @@
 				}
 			}
 		]
+	},
+	"tierCheckIn": {
+		"sectionTitle": "Créneau d'enregistrement",
+		"sectionHelp": "Facultatif. Donne à ce tarif ses propres horaires d'entrée, par exemple une entrée anticipée pour les VIP ou un billet valable un seul jour.",
+		"opensLabel": "Ouverture de l'enregistrement",
+		"closesLabel": "Fermeture de l'enregistrement",
+		"defaultsHint": "Par défaut, le créneau d'enregistrement de l'événement",
+		"clearOpens": "Effacer l'heure d'ouverture de l'enregistrement",
+		"clearCloses": "Effacer l'heure de fermeture de l'enregistrement",
+		"atStart": "Au début de l'événement",
+		"before": "{duration} avant le début de l'événement",
+		"after": "{duration} après le début de l'événement",
+		"days": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} jour",
+					"countPlural=*": "{count} jours"
+				}
+			}
+		],
+		"hours": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} heure",
+					"countPlural=*": "{count} heures"
+				}
+			}
+		],
+		"minutes": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} minute",
+					"countPlural=*": "{count} minutes"
+				}
+			}
+		],
+		"outOfRange": "Doit se situer à moins de 364 jours du début de l'événement.",
+		"needsEventStart": "Définis d'abord l'heure de début de l'événement.",
+		"emptyWindow": "Avec ces horaires, l'enregistrement fermerait avant d'ouvrir : les billets de ce tarif ne pourraient jamais être validés. Ajuste les horaires ou le créneau d'enregistrement de l'événement.",
+		"relativeNote": "Enregistré par rapport au début de l'événement : le créneau suit l'événement si tu le reprogrammes ou le dupliques.",
+		"entryWindow": "Entrée : {window}"
 	}
 }

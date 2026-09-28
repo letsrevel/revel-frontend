@@ -24,6 +24,11 @@
 	interface EventFormData {
 		max_tickets_per_user?: number | null;
 		venue_id?: string | null;
+		// `datetime-local` values; tier check-in offsets are relative to `start` (#945).
+		start?: string;
+		end?: string | null;
+		check_in_starts_at?: string | null;
+		check_in_ends_at?: string | null;
 	}
 
 	// Shape of a validation error item returned by the backend (loc/msg pairs).
@@ -382,6 +387,12 @@
 		{platformFees}
 		{membershipTiers}
 		eventVenueId={formData.venue_id || null}
+		eventContext={{
+			start: formData.start ?? '',
+			end: formData.end,
+			checkInStart: formData.check_in_starts_at,
+			checkInEnd: formData.check_in_ends_at
+		}}
 		onClose={handleCloseTierForm}
 	/>
 {/if}

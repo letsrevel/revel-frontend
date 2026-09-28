@@ -29,6 +29,13 @@
 	import TierFormPricingSection from './TierFormPricingSection.svelte';
 	import TierFormAvailabilitySection from './TierFormAvailabilitySection.svelte';
 	import TierFormSeatingSection from './TierFormSeatingSection.svelte';
+	import TierFormCheckInSection from './TierFormCheckInSection.svelte';
+	import {
+		checkInOffsetsPayload,
+		checkInPicksValid,
+		initialCheckInPicks,
+		type TierCheckInEventContext
+	} from './check-in-offset';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { extractErrorMessage, extractFieldErrors, markSilent } from '$lib/utils/errors';
 	import { tierFieldLabel } from './tier-field-labels';
@@ -57,6 +64,8 @@
 		platformFees?: PlatformFeeInfo | null;
 		membershipTiers?: MembershipTierSchema[];
 		eventVenueId?: string | null; // Pre-fill venue from event
+		/** The event form's start/end/check-in window the tier offsets are relative to. */
+		eventContext?: TierCheckInEventContext;
 		onClose: () => void;
 	}
 
@@ -68,6 +77,7 @@
 		platformFees = null,
 		membershipTiers = [],
 		eventVenueId = null,
+		eventContext = { start: '' },
 		onClose
 	}: Props = $props();
 
@@ -96,6 +106,8 @@
 	let salesStartAt = $state(toDatetimeLocal(tier?.sales_start_at));
 	let salesEndAt = $state(toDatetimeLocal(tier?.sales_end_at));
 	let salesPaused = $state(tier?.sales_paused ?? false);
+	// Per-tier check-in window (#945): picked times ↔ offsets from event start.
+	const checkInPicks = $state(initialCheckInPicks(eventContext.start, tier));
 	// Unambiguous textual readbacks for the native datetime inputs; '' when the
 	// value is empty or unparseable, so each hint is gated on the rendered text.
 	const salesStartReadback = $derived(formatDateTimeReadback(salesStartAt));
@@ -376,6 +388,7 @@
 			sales_start_at: salesStartAt ? toTimezoneAwareISO(salesStartAt) : null,
 			sales_end_at: salesEndAt ? toTimezoneAwareISO(salesEndAt) : null,
 			sales_paused: salesPaused,
+			...checkInOffsetsPayload(eventContext.start, checkInPicks, tier),
 			visibility,
 			purchasable_by: purchasableBy,
 			restricted_to_membership_tiers_ids:
@@ -636,6 +649,13 @@
 				{isPending}
 			/>
 
+			<TierFormCheckInSection
+				bind:opensAt={checkInPicks.opensAt}
+				bind:closesAt={checkInPicks.closesAt}
+				{eventContext}
+				{isPending}
+			/>
+
 			<TierFormSeatingSection
 				bind:seatAssignmentMode
 				bind:maxTicketsPerUser
@@ -676,6 +696,7 @@
 						disabled={isPending ||
 							!name.trim() ||
 							!sectorValid ||
+							!checkInPicksValid(eventContext.start, checkInPicks) ||
 							(paymentMethod !== 'free' && allowUserCancellation && !refundPolicyValid)}
 					>
 						{isPending

@@ -142,3 +142,22 @@ describe('TierCard — PWYC headline', () => {
 		expect(screen.queryByText('Pay What You Can')).toBeNull();
 	});
 });
+
+// #945: a tier with its own check-in offsets shows the backend-resolved entry
+// window; a tier that follows the event's window shows nothing extra.
+describe('TierCard — per-tier entry window', () => {
+	const resolved = {
+		effective_check_in_opens_at: '2026-10-11T08:00:00Z',
+		effective_check_in_closes_at: '2026-10-11T20:00:00Z'
+	};
+
+	it('shows the entry window when the tier sets an offset', () => {
+		renderCard(makeTier({ ...resolved, check_in_opens_offset: 'P0DT12H00M00S' }));
+		expect(screen.getByText(/^Entry: /)).toBeInTheDocument();
+	});
+
+	it('shows nothing when the tier follows the event window', () => {
+		renderCard(makeTier({ ...resolved }));
+		expect(screen.queryByText(/^Entry: /)).toBeNull();
+	});
+});

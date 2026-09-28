@@ -497,6 +497,7 @@
 							eventName={event.name}
 							eventDate={event.start ? formatEventDate(event.start, event.timezone) : undefined}
 							eventLocation={formatEventLocation(event)}
+							timezone={event.timezone}
 							onResumePayment={handleResumePaymentFromSidebar}
 							isResumingPayment={resumePaymentMutation.isPending}
 							totalTickets={userTickets.length}

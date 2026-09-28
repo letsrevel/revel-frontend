@@ -6461,7 +6461,9 @@
 		"pwyc_min": "Prezzo minimo",
 		"pwyc_max": "Prezzo massimo",
 		"price_type": "Tipo di prezzo",
-		"payment_method": "Metodo di pagamento"
+		"payment_method": "Metodo di pagamento",
+		"check_in_opens_offset": "Apertura check-in",
+		"check_in_closes_offset": "Chiusura check-in"
 	},
 	"tickets.vatBreakdown": "Dettaglio IVA",
 	"tickets.vatNet": "Netto",
@@ -9824,5 +9826,52 @@
 				}
 			}
 		]
+	},
+	"tierCheckIn": {
+		"sectionTitle": "Finestra di check-in",
+		"sectionHelp": "Facoltativo. Dai a questa tipologia orari di ingresso propri, ad esempio ingresso anticipato per i VIP o un biglietto valido per un solo giorno.",
+		"opensLabel": "Apertura check-in",
+		"closesLabel": "Chiusura check-in",
+		"defaultsHint": "Se vuoto, usa la finestra di check-in dell'evento",
+		"clearOpens": "Cancella l'orario di apertura del check-in",
+		"clearCloses": "Cancella l'orario di chiusura del check-in",
+		"atStart": "All'inizio dell'evento",
+		"before": "{duration} prima dell'inizio dell'evento",
+		"after": "{duration} dopo l'inizio dell'evento",
+		"days": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} giorno",
+					"countPlural=*": "{count} giorni"
+				}
+			}
+		],
+		"hours": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} ora",
+					"countPlural=*": "{count} ore"
+				}
+			}
+		],
+		"minutes": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} minuto",
+					"countPlural=*": "{count} minuti"
+				}
+			}
+		],
+		"outOfRange": "Deve essere entro 364 giorni dall'inizio dell'evento.",
+		"needsEventStart": "Imposta prima l'orario di inizio dell'evento.",
+		"emptyWindow": "Con questi orari il check-in chiuderebbe prima di aprire, quindi i biglietti di questa tipologia non potrebbero mai essere validati. Modifica gli orari o la finestra di check-in dell'evento.",
+		"relativeNote": "Salvata in relazione all'inizio dell'evento: se lo riprogrammi o lo duplichi, la finestra si sposta con lui.",
+		"entryWindow": "Ingresso: {window}"
 	}
 }
