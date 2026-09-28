@@ -3273,6 +3273,12 @@
 			"consent_required": "The authorization screen expired.",
 			"interaction_required": "This request needs your approval, but the app asked Revel not to show a screen.",
 			"generic": "This app's request couldn't be completed."
+		},
+		"scopes": {
+			"group_identity": "Sign in and profile",
+			"group_me": "Your account",
+			"group_org": "Your organizations",
+			"moneyMarker": "Includes payments and refunds"
 		}
 	},
 	"orgAdmin": {

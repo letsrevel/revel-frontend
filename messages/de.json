@@ -3273,6 +3273,12 @@
 			"consent_required": "Die Freigabeseite ist abgelaufen.",
 			"interaction_required": "Diese Anfrage braucht deine Freigabe, aber die App hat Revel gebeten, keine Seite anzuzeigen.",
 			"generic": "Die Anfrage dieser App konnte nicht abgeschlossen werden."
+		},
+		"scopes": {
+			"group_identity": "Anmeldung und Profil",
+			"group_me": "Dein Konto",
+			"group_org": "Deine Organisationen",
+			"moneyMarker": "Umfasst Zahlungen und Rückerstattungen"
 		}
 	},
 	"orgAdmin": {

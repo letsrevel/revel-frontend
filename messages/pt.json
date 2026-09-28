@@ -3273,6 +3273,12 @@
 			"consent_required": "O ecrã de autorização expirou.",
 			"interaction_required": "Este pedido precisa da tua aprovação, mas a app pediu ao Revel para não mostrar nenhum ecrã.",
 			"generic": "Não foi possível concluir o pedido desta app."
+		},
+		"scopes": {
+			"group_identity": "Início de sessão e perfil",
+			"group_me": "A tua conta",
+			"group_org": "As tuas organizações",
+			"moneyMarker": "Inclui pagamentos e reembolsos"
 		}
 	},
 	"orgAdmin": {

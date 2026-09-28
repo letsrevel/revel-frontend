@@ -3243,6 +3243,12 @@
 			"consent_required": "L'écran d'autorisation a expiré.",
 			"interaction_required": "Cette demande a besoin de ton accord, mais l'appli a demandé à Revel de n'afficher aucun écran.",
 			"generic": "La demande de cette appli n'a pas pu aboutir."
+		},
+		"scopes": {
+			"group_identity": "Connexion et profil",
+			"group_me": "Ton compte",
+			"group_org": "Tes organisations",
+			"moneyMarker": "Inclut les paiements et les remboursements"
 		}
 	},
 	"orgAdmin": {

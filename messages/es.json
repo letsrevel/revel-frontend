@@ -3273,6 +3273,12 @@
 			"consent_required": "La pantalla de autorización ha caducado.",
 			"interaction_required": "Esta solicitud necesita tu aprobación, pero la app le ha pedido a Revel que no muestre ninguna pantalla.",
 			"generic": "No se ha podido completar la solicitud de esta app."
+		},
+		"scopes": {
+			"group_identity": "Inicio de sesión y perfil",
+			"group_me": "Tu cuenta",
+			"group_org": "Tus organizaciones",
+			"moneyMarker": "Incluye pagos y reembolsos"
 		}
 	},
 	"orgAdmin": {

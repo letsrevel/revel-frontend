@@ -3273,6 +3273,12 @@
 			"consent_required": "La schermata di autorizzazione è scaduta.",
 			"interaction_required": "Questa richiesta ha bisogno della tua approvazione, ma l'app ha chiesto a Revel di non mostrare alcuna schermata.",
 			"generic": "Non è stato possibile completare la richiesta di questa app."
+		},
+		"scopes": {
+			"group_identity": "Accesso e profilo",
+			"group_me": "Il tuo account",
+			"group_org": "Le tue organizzazioni",
+			"moneyMarker": "Include pagamenti e rimborsi"
 		}
 	},
 	"orgAdmin": {
