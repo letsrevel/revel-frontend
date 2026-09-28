@@ -3279,6 +3279,28 @@
 			"group_me": "A tua conta",
 			"group_org": "As tuas organizações",
 			"moneyMarker": "Inclui pagamentos e reembolsos"
+		},
+		"consent": {
+			"kicker": "Ligar uma app",
+			"title": "Ligar {name}",
+			"unverifiedTitle": "O Revel não analisou esta app.",
+			"unverifiedBody": "Continua só se confiares nela.",
+			"verified": "Verificada",
+			"asksTo": "Esta app pede para:",
+			"noScopes": "Esta app não pede nenhuma permissão.",
+			"homepage": "Site",
+			"privacyPolicy": "Política de privacidade",
+			"sentTo": "Ao continuar, vamos levar-te para {host}.",
+			"signedInAs": "Sessão iniciada como {name} ({email}).",
+			"switchAccount": "Não és tu? Mudar de conta",
+			"allow": "Permitir",
+			"deny": "Recusar",
+			"checking": "A verificar o pedido…",
+			"redirecting": "A redirecionar para {host}…",
+			"expiredNotice": "O ecrã expirou. Revê o pedido novamente.",
+			"retry": "Tentar novamente",
+			"backToRevel": "Voltar ao Revel",
+			"errorFallbackHeadline": "Algo correu mal ao verificar este pedido."
 		}
 	},
 	"orgAdmin": {

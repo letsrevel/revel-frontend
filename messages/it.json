@@ -3279,6 +3279,28 @@
 			"group_me": "Il tuo account",
 			"group_org": "Le tue organizzazioni",
 			"moneyMarker": "Include pagamenti e rimborsi"
+		},
+		"consent": {
+			"kicker": "Collega un'app",
+			"title": "Collega {name}",
+			"unverifiedTitle": "Revel non ha verificato questa app.",
+			"unverifiedBody": "Continua solo se ti fidi.",
+			"verified": "Verificata",
+			"asksTo": "Questa app chiede di:",
+			"noScopes": "Questa app non chiede alcun permesso.",
+			"homepage": "Sito web",
+			"privacyPolicy": "Informativa sulla privacy",
+			"sentTo": "Se continui, ti porteremo su {host}.",
+			"signedInAs": "Accesso effettuato come {name} ({email}).",
+			"switchAccount": "Non sei tu? Cambia account",
+			"allow": "Consenti",
+			"deny": "Rifiuta",
+			"checking": "Controllo della richiesta…",
+			"redirecting": "Reindirizzamento a {host}…",
+			"expiredNotice": "La schermata è scaduta. Controlla di nuovo la richiesta.",
+			"retry": "Riprova",
+			"backToRevel": "Torna a Revel",
+			"errorFallbackHeadline": "Qualcosa è andato storto durante il controllo di questa richiesta."
 		}
 	},
 	"orgAdmin": {

@@ -3279,6 +3279,28 @@
 			"group_me": "Dein Konto",
 			"group_org": "Deine Organisationen",
 			"moneyMarker": "Umfasst Zahlungen und Rückerstattungen"
+		},
+		"consent": {
+			"kicker": "App verbinden",
+			"title": "{name} verbinden",
+			"unverifiedTitle": "Revel hat diese App nicht geprüft.",
+			"unverifiedBody": "Mach nur weiter, wenn du ihr vertraust.",
+			"verified": "Verifiziert",
+			"asksTo": "Diese App möchte:",
+			"noScopes": "Diese App fragt keine Berechtigungen an.",
+			"homepage": "Webseite",
+			"privacyPolicy": "Datenschutzerklärung",
+			"sentTo": "Wenn du fortfährst, wirst du zu {host} weitergeleitet.",
+			"signedInAs": "Angemeldet als {name} ({email}).",
+			"switchAccount": "Nicht du? Konto wechseln",
+			"allow": "Erlauben",
+			"deny": "Ablehnen",
+			"checking": "Anfrage wird geprüft…",
+			"redirecting": "Weiterleitung zu {host}…",
+			"expiredNotice": "Die Seite ist abgelaufen. Bitte prüfe die Anfrage noch einmal.",
+			"retry": "Erneut versuchen",
+			"backToRevel": "Zurück zu Revel",
+			"errorFallbackHeadline": "Beim Prüfen dieser Anfrage ist etwas schiefgelaufen."
 		}
 	},
 	"orgAdmin": {

@@ -3279,6 +3279,28 @@
 			"group_me": "Tu cuenta",
 			"group_org": "Tus organizaciones",
 			"moneyMarker": "Incluye pagos y reembolsos"
+		},
+		"consent": {
+			"kicker": "Conectar una app",
+			"title": "Conectar {name}",
+			"unverifiedTitle": "Revel no ha revisado esta app.",
+			"unverifiedBody": "Continúa solo si confías en ella.",
+			"verified": "Verificada",
+			"asksTo": "Esta app pide:",
+			"noScopes": "Esta app no pide ningún permiso.",
+			"homepage": "Sitio web",
+			"privacyPolicy": "Política de privacidad",
+			"sentTo": "Cuando continúes, te enviaremos a {host}.",
+			"signedInAs": "Sesión iniciada como {name} ({email}).",
+			"switchAccount": "¿No eres tú? Cambiar de cuenta",
+			"allow": "Permitir",
+			"deny": "Denegar",
+			"checking": "Comprobando la solicitud…",
+			"redirecting": "Redirigiendo a {host}…",
+			"expiredNotice": "La pantalla ha caducado. Revisa la solicitud de nuevo.",
+			"retry": "Reintentar",
+			"backToRevel": "Volver a Revel",
+			"errorFallbackHeadline": "Algo ha fallado al comprobar esta solicitud."
 		}
 	},
 	"orgAdmin": {
