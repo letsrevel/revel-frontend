@@ -12,7 +12,8 @@ import {
 	isNotFound,
 	oauthKeys,
 	scopesQuery,
-	statusOf
+	statusOf,
+	throwOAuthError
 } from './oauth';
 
 beforeEach(() => listScopesMock.mockReset());
@@ -39,13 +40,49 @@ describe('scopesQuery', () => {
 		]);
 	});
 
-	it('throws the backend error body on failure', async () => {
+	it('maps a 404 onto the NotFoundError sentinel', async () => {
 		listScopesMock.mockResolvedValue({
 			data: undefined,
 			error: { detail: 'Not found.' },
 			response: { status: 404 }
 		});
 		await expect(scopesQuery().queryFn()).rejects.toBeInstanceOf(NotFoundError);
+	});
+});
+
+describe('throwOAuthError', () => {
+	it.each([
+		[403, EmailUnverifiedError],
+		[404, NotFoundError],
+		[422, NotFoundError]
+	])('maps status %i onto its sentinel', (status, Sentinel) => {
+		expect(() =>
+			throwOAuthError({ error: { detail: 'x' }, response: { status } as Response })
+		).toThrow(Sentinel);
+	});
+
+	it('throws a 400 validation body as-is so field errors survive', async () => {
+		listScopesMock.mockResolvedValue({
+			data: undefined,
+			error: { errors: { name: ['required'] } },
+			response: { status: 400 }
+		});
+		await expect(scopesQuery().queryFn()).rejects.toEqual({ errors: { name: ['required'] } });
+	});
+
+	it('throws a 409 detail body as-is', async () => {
+		listScopesMock.mockResolvedValue({
+			data: undefined,
+			error: { detail: 'You have reached the maximum number of apps.' },
+			response: { status: 409 }
+		});
+		await expect(scopesQuery().queryFn()).rejects.toEqual({
+			detail: 'You have reached the maximum number of apps.'
+		});
+	});
+
+	it('throws an Error only when there is no body at all', () => {
+		expect(() => throwOAuthError({ error: undefined })).toThrow(Error);
 	});
 });
 

@@ -57,15 +57,16 @@ export function statusOf(res: { response?: Response }): number | undefined {
 
 /**
  * Map a failed hey-api result onto the shared sentinels BY STATUS (never by
- * the localized `detail` text), or rethrow the backend body as-is.
+ * the localized `detail` text). Every other failure throws the backend body
+ * AS-IS (e.g. a 400 `{ errors }` or a 409 `{ detail }`), unwrapped, so callers
+ * can read its fields off the thrown value; an `Error` is created only when
+ * there is no body at all.
  */
 export function throwOAuthError(res: { error: unknown; response?: Response }): never {
 	const status = statusOf(res);
 	if (status === 403) throw new EmailUnverifiedError();
 	if (status === 404 || status === 422) throw new NotFoundError();
-	throw res.error instanceof Error
-		? res.error
-		: new Error(JSON.stringify(res.error ?? 'request failed'));
+	throw res.error ?? new Error('request failed');
 }
 
 /** The whole scope vocabulary with translated labels; a language switch reloads the app, so it never goes stale. */
