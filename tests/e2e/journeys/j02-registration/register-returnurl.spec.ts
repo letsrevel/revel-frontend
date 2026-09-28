@@ -30,7 +30,7 @@ test.describe('J2 registration honors returnUrl @p1', () => {
 
 		const message = await waitForEmail({ to: email });
 		const link = extractLink(message, /token=/);
-		expect(link).toContain('returnUrl=');
+		expect(link).toContain('returnUrl=%2Faccount%2Fmemberships');
 
 		await page.goto(link);
 		await page.waitForURL(/\/account\/memberships/);

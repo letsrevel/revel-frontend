@@ -56,4 +56,9 @@ describe('/logout', () => {
 			expect(location).toBe('/?logged_out=true');
 		}
 	);
+
+	it('falls back to home for a tab-smuggled protocol-relative returnUrl (/\\t//evil)', async () => {
+		const { location } = await loadRedirect('?returnUrl=%2F%09%2F%2Fevil');
+		expect(location).toBe('/?logged_out=true');
+	});
 });

@@ -20,6 +20,13 @@ describe('safeReturnUrl', () => {
 		expect(safeReturnUrl('/\\evil.com')).toBe('/dashboard');
 	});
 
+	it('rejects whitespace and C0/C1 control characters anywhere', () => {
+		// The URL parser strips tab/newline, so `/\t//evil` would resolve to https://evil/.
+		expect(safeReturnUrl('/\t//evil')).toBe('/dashboard');
+		expect(safeReturnUrl('/\n//evil')).toBe('/dashboard');
+		expect(safeReturnUrl('/\u0085//evil')).toBe('/dashboard');
+	});
+
 	it('rejects non-path schemes and non-relative values', () => {
 		expect(safeReturnUrl('javascript:alert(1)')).toBe('/dashboard');
 		expect(safeReturnUrl('dashboard')).toBe('/dashboard');
@@ -69,7 +76,7 @@ describe('registrationReturnUrl', () => {
 		expect(registrationReturnUrl('/a\u007fb')).toBeNull();
 		expect(registrationReturnUrl('/a\u0085b')).toBeNull();
 		expect(registrationReturnUrl('/' + 'x'.repeat(2048))).toBeNull(); // 2049 chars
-		expect(registrationReturnUrl('/' + 'x'.repeat(2047))).toHaveLength(2048);
+		expect(registrationReturnUrl('/' + 'x'.repeat(2047))).toBe('/' + 'x'.repeat(2047));
 	});
 });
 

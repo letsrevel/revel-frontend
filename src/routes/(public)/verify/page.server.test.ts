@@ -74,6 +74,10 @@ describe('/verify redirect target', () => {
 		}
 	);
 
+	it('falls back for a tab-smuggled protocol-relative returnUrl (/\\t//evil)', async () => {
+		expect(await loadRedirect('?token=t&returnUrl=%2F%09%2F%2Fevil')).toBe('/account/profile');
+	});
+
 	it('does not redirect when verification fails', async () => {
 		mockedVerify.mockResolvedValue({
 			data: undefined,
