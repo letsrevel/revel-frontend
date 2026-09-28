@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
 	MAX_OFFSET_MINUTES,
 	checkInOffsetPayload,
+	checkInOffsetsPayload,
+	initialCheckInPicks,
 	checkInPickError,
 	formatIsoDuration,
 	isOffsetInRange,
@@ -199,5 +201,18 @@ describe('checkInOffsetPayload', () => {
 	it('keeps the stored value when the event start is unknown', () => {
 		expect(checkInOffsetPayload('', '2026-10-10T19:00', 'PT2H')).toBe('PT2H');
 		expect(checkInOffsetPayload('', '2026-10-10T19:00', null)).toBeNull();
+	});
+
+	it('does not wipe a stored offset when an unknown start left the picker empty', () => {
+		// initialCheckInPicks can't seed a picker without a start, so it renders ''.
+		expect(initialCheckInPicks('', { check_in_opens_offset: 'PT2H' }).opensAt).toBe('');
+		expect(checkInOffsetPayload('', '', 'PT2H')).toBe('PT2H');
+		expect(
+			checkInOffsetsPayload(
+				'',
+				{ opensAt: '', closesAt: '' },
+				{ check_in_opens_offset: '-PT1H', check_in_closes_offset: null }
+			)
+		).toEqual({ check_in_opens_offset: '-PT1H', check_in_closes_offset: null });
 	});
 });

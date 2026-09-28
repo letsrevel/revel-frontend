@@ -170,9 +170,10 @@ export function checkInPickError(
 /**
  * The value to send for one offset field.
  *
+ * - event start unknown → the stored value untouched. Checked FIRST: without a
+ *   start the pickers can't be seeded from the stored offset, so they render
+ *   empty — and an empty pick must not be read as "cleared" and wipe it;
  * - picker cleared → `null` (fall back to the event's check-in window);
- * - event start unknown → the stored value untouched, so an existing offset is
- *   never silently dropped when the form can't resolve it;
  * - unchanged to the minute → the stored string verbatim, so a sub-minute
  *   offset set through the API isn't rounded by an unrelated edit.
  */
@@ -181,6 +182,7 @@ export function checkInOffsetPayload(
 	pickedLocal: string,
 	stored: string | null | undefined
 ): string | null {
+	if (wallClockMinutes(eventStartLocal) === null) return stored ?? null;
 	if (!pickedLocal) return null;
 	const offset = offsetFromPicked(eventStartLocal, pickedLocal);
 	if (offset === null) return stored ?? null;
