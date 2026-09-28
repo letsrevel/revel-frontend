@@ -53,9 +53,9 @@
 							href={application.homepage_url}
 							target="_blank"
 							rel="noopener noreferrer"
-							class="text-primary underline-offset-4 hover:underline"
+							class="text-primary underline underline-offset-4"
 						>
-							{m['oauth.consent.homepage']()}: {homepageHost}
+							{m['oauth.consent.homepageLink']({ host: homepageHost })}
 						</a>
 					{/if}
 					{#if privacyHost}
@@ -63,9 +63,9 @@
 							href={application.privacy_policy_url}
 							target="_blank"
 							rel="noopener noreferrer"
-							class="text-primary underline-offset-4 hover:underline"
+							class="text-primary underline underline-offset-4"
 						>
-							{m['oauth.consent.privacyPolicy']()}: {privacyHost}
+							{m['oauth.consent.privacyLink']({ host: privacyHost })}
 						</a>
 					{/if}
 				</div>
@@ -77,7 +77,7 @@
 	{#if !application.verified}
 		<Alert variant="warning">
 			<ShieldAlert class="h-4 w-4" aria-hidden="true" />
-			<AlertTitle>{m['oauth.consent.unverifiedTitle']()}</AlertTitle>
+			<AlertTitle level={2}>{m['oauth.consent.unverifiedTitle']()}</AlertTitle>
 			<AlertDescription>{m['oauth.consent.unverifiedBody']()}</AlertDescription>
 		</Alert>
 	{/if}

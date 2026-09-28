@@ -23,7 +23,7 @@
 		<span>{scope.label}</span>
 		{#if involvesMoney(scope.name)}
 			<Banknote class="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-			<span class="sr-only">{m['oauth.scopes.moneyMarker']()}</span>
+			<span class="sr-only">({m['oauth.scopes.moneyMarker']()})</span>
 		{/if}
 	</li>
 {/snippet}
@@ -39,7 +39,7 @@
 					>
 						{groupHeading(group.group)}
 					</h2>
-					<ul class="mt-2 space-y-1.5">
+					<ul role="list" class="mt-2 space-y-1.5">
 						{#each group.rows as scope (scope.name)}
 							{@render row(scope)}
 						{/each}
@@ -48,7 +48,7 @@
 			{/each}
 		</div>
 	{:else}
-		<ul class={cn('space-y-1.5', className)}>
+		<ul role="list" class={cn('space-y-1.5', className)}>
 			{#each scopes as scope (scope.name)}
 				{@render row(scope)}
 			{/each}

@@ -61,7 +61,9 @@ describe('/oauth/authorize page', () => {
 		expect(describeMock).toHaveBeenCalledWith(SEARCH);
 		expect(screen.getAllByRole('alert')).toHaveLength(1);
 		expect(screen.getAllByRole('listitem')).toHaveLength(2);
+		// The unverified warning is itself an h2 (it outranks the scope groups).
 		expect(screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent?.trim())).toEqual([
+			'Revel has not reviewed this app.',
 			'Sign in and profile',
 			'Your organizations'
 		]);
@@ -77,6 +79,28 @@ describe('/oauth/authorize page', () => {
 		await waitFor(() =>
 			expect(document.activeElement).toBe(screen.getByRole('heading', { level: 1 }))
 		);
+	});
+
+	it('has one polite live region from first render that announces the redirect', async () => {
+		let resolveDescribe: (v: unknown) => void = () => undefined;
+		describeMock.mockReturnValue(new Promise((r) => (resolveDescribe = r)));
+		const { container } = render(Page);
+		const live = screen.getByTestId('consent-live-region');
+		expect(live).toHaveAttribute('aria-live', 'polite');
+		expect(container.querySelectorAll('[aria-live]')).toHaveLength(1);
+		await waitFor(() => expect(live).toHaveTextContent('Checking the request…'));
+		resolveDescribe({ kind: 'redirect', redirectTo: 'https://acme.example/cb?code=1' });
+		await waitFor(() => expect(live).toHaveTextContent('Redirecting to acme.example…'));
+		expect(screen.getByTestId('consent-live-region')).toBe(live);
+		expect(container.querySelectorAll('[aria-live]')).toHaveLength(1);
+	});
+
+	it('the error header is a single h1 with no duplicate kicker', async () => {
+		describeMock.mockResolvedValue({ kind: 'failure' });
+		const { container } = render(Page);
+		await screen.findByRole('button', { name: 'Try again' });
+		expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+		expect(container.textContent?.match(/Connect an app/g)).toHaveLength(1);
 	});
 
 	it('follows redirect_to immediately without a screen', async () => {
@@ -126,15 +150,24 @@ describe('/oauth/authorize page', () => {
 		);
 	});
 
-	it('Allow posts the ticket and follows redirect_to; buttons disable while submitting', async () => {
+	it('Allow posts the ticket and follows redirect_to; buttons aria-disable while submitting', async () => {
 		describeMock.mockResolvedValue({ kind: 'describe', data: description() });
 		let resolveDecision: (v: unknown) => void = () => undefined;
 		decideMock.mockReturnValue(new Promise((r) => (resolveDecision = r)));
 		render(Page);
-		await userEvent.click(await screen.findByRole('button', { name: 'Allow' }));
+		const allowButton = await screen.findByRole('button', { name: 'Allow' });
+		await userEvent.click(allowButton);
 		expect(decideMock).toHaveBeenCalledWith(SEARCH, { allow: true, consent_ticket: 'ticket-1' });
-		expect(screen.getByRole('button', { name: 'Allow' })).toBeDisabled();
-		expect(screen.getByRole('button', { name: 'Deny' })).toBeDisabled();
+		// aria-disabled, never native disabled: focus must stay on the button.
+		expect(allowButton).toHaveAttribute('aria-disabled', 'true');
+		expect(screen.getByRole('button', { name: 'Deny' })).toHaveAttribute('aria-disabled', 'true');
+		expect(allowButton).not.toBeDisabled();
+		expect(document.activeElement).toBe(allowButton);
+		expect(screen.getByTestId('consent-live-region')).toHaveTextContent('Sending…');
+		await userEvent.click(allowButton);
+		await userEvent.click(screen.getByRole('button', { name: 'Deny' }));
+		expect(decideMock).toHaveBeenCalledTimes(1);
+		expect(document.activeElement).not.toBe(document.body);
 		resolveDecision({ kind: 'redirect', redirectTo: 'https://acme.example/cb?code=1&state=xyz' });
 		await waitFor(() =>
 			expect(navigateMock).toHaveBeenCalledWith('https://acme.example/cb?code=1&state=xyz')
@@ -164,10 +197,13 @@ describe('/oauth/authorize page', () => {
 		render(Page);
 		await userEvent.click(await screen.findByRole('button', { name: 'Allow' }));
 		await waitFor(() => expect(describeMock).toHaveBeenCalledTimes(2));
-		const notice = await screen.findByText('The screen expired. Please review the request again.');
-		expect(notice.closest('[aria-live="polite"]')).not.toBeNull();
+		const live = screen.getByTestId('consent-live-region');
+		await waitFor(() =>
+			expect(live).toHaveTextContent('The screen expired. Please review the request again.')
+		);
+		expect(live.closest('[aria-live="polite"]')).not.toBeNull();
 		expect(screen.getAllByRole('alert')).toHaveLength(1);
-		expect(screen.getByRole('button', { name: 'Allow' })).toBeEnabled();
+		expect(screen.getByRole('button', { name: 'Allow' })).not.toHaveAttribute('aria-disabled');
 		expect(navigateMock).not.toHaveBeenCalled();
 	});
 

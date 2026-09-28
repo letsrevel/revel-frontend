@@ -38,18 +38,30 @@ describe('ScopeList grouped', () => {
 	});
 });
 
+describe('ScopeList list semantics', () => {
+	it.each(['grouped', 'compact'] as const)(
+		'%s: every ul carries an explicit role="list" (WebKit drops it under list-style: none)',
+		(variant) => {
+			const { container } = render(ScopeList, { props: { scopes: SCOPES, variant } });
+			const lists = container.querySelectorAll('ul');
+			expect(lists.length).toBeGreaterThan(0);
+			lists.forEach((ul) => expect(ul).toHaveAttribute('role', 'list'));
+		}
+	);
+});
+
 describe('ScopeList compact', () => {
 	it('renders a single list in the given order with no headings', () => {
 		render(ScopeList, { props: { scopes: SCOPES, variant: 'compact' } });
 		expect(screen.queryAllByRole('heading')).toHaveLength(0);
 		expect(screen.getAllByRole('list')).toHaveLength(1);
-		// The label and the sr-only marker keep a whitespace separator so AT
-		// never reads "refundsIncludes"; collapse it before comparing.
+		// The sr-only marker is parenthesised so AT pauses between it and the
+		// label; collapse whitespace before comparing.
 		const texts = screen
 			.getAllByRole('listitem')
 			.map((li) => li.textContent?.replace(/\s+/g, ' ').trim());
 		expect(texts).toEqual([
-			'Manage tickets and refunds Includes payments and refunds',
+			'Manage tickets and refunds (Includes payments and refunds)',
 			'Sign you in',
 			'See your profile'
 		]);

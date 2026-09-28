@@ -25,6 +25,9 @@ describe('ConsentAppCard', () => {
 			props: { application: app(), scopes: SCOPES, redirectUri: 'https://acme.example/cb' }
 		});
 		expect(screen.getByRole('alert')).toHaveTextContent('Revel has not reviewed this app.');
+		expect(
+			screen.getByRole('heading', { level: 2, name: 'Revel has not reviewed this app.' })
+		).toHaveAttribute('aria-level', '2');
 		expect(screen.queryByTestId('status-badge')).toBeNull();
 	});
 
@@ -51,7 +54,7 @@ describe('ConsentAppCard', () => {
 		const site = screen.getByRole('link', { name: /Website/ });
 		expect(site).toHaveAttribute('href', 'https://acme.example');
 		expect(site).toHaveAttribute('rel', 'noopener noreferrer');
-		expect(site).toHaveTextContent('acme.example');
+		expect(site).toHaveTextContent('Website: acme.example');
 		expect(screen.queryByRole('link', { name: /Privacy policy/ })).toBeNull();
 	});
 

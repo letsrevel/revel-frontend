@@ -121,13 +121,17 @@
 		fail(result, () => void decide(body));
 	}
 
+	// While a decision is in flight the buttons are aria-disabled, not
+	// natively disabled (that would blur the focused button to <body>), so
+	// the handlers themselves must refuse a second submission.
 	function allow() {
-		if (!consent) return;
+		if (!consent || status === 'submitting') return;
 		expiredNotice = false;
 		void decide({ allow: true, consent_ticket: consent.consent_ticket });
 	}
 
 	function deny() {
+		if (status === 'submitting') return;
 		expiredNotice = false;
 		void decide({ allow: false });
 	}
@@ -135,6 +139,16 @@
 	onMount(() => {
 		search = window.location.search;
 		void describe();
+	});
+
+	// The page's ONE polite live region: it exists from first render (outside
+	// the status chain) so every state change below is actually announced.
+	const liveMessage = $derived.by(() => {
+		if (status === 'loading') return m['oauth.consent.checking']();
+		if (status === 'submitting') return m['oauth.consent.sending']();
+		if (status === 'redirecting') return m['oauth.consent.redirecting']({ host: redirectHost });
+		if (status === 'consent' && expiredNotice) return m['oauth.consent.expiredNotice']();
+		return '';
 	});
 
 	const pageTitle = $derived(
@@ -149,21 +163,19 @@
 </svelte:head>
 
 <div class="container mx-auto max-w-lg space-y-6 px-4 py-8">
+	<p class="sr-only" aria-live="polite" data-testid="consent-live-region">{liveMessage}</p>
+
 	{#if status === 'loading'}
-		<p class="flex items-center gap-2 text-muted-foreground">
-			<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
+		<p class="flex items-center gap-2 text-muted-foreground" aria-hidden="true">
+			<Loader2 class="h-4 w-4 animate-spin" />
 			{m['oauth.consent.checking']()}
 		</p>
 	{:else if status === 'redirecting'}
-		<p class="text-muted-foreground" aria-live="polite">
+		<p class="text-muted-foreground" aria-hidden="true">
 			{m['oauth.consent.redirecting']({ host: redirectHost })}
 		</p>
 	{:else if status === 'error' && error}
-		<PageHeader
-			volume="celebration"
-			kicker={m['oauth.consent.kicker']()}
-			title={m['oauth.consent.kicker']()}
-		/>
+		<PageHeader volume="celebration" title={m['oauth.consent.kicker']()} />
 		<ConsentError headline={error.headline} detail={error.detail} onRetry={error.retry} />
 	{:else if consent}
 		<PageHeader
@@ -187,7 +199,7 @@
 				<a
 					href={switchAccountHref}
 					data-sveltekit-reload
-					class="ml-1 text-primary underline-offset-4 hover:underline"
+					class="ml-1 text-primary underline underline-offset-4"
 				>
 					{m['oauth.consent.switchAccount']()}
 				</a>
@@ -195,20 +207,28 @@
 			</p>
 		{/if}
 
-		<p class="text-sm text-muted-foreground" aria-live="polite">
-			{#if expiredNotice}{m['oauth.consent.expiredNotice']()}{/if}
-		</p>
+		{#if expiredNotice}
+			<!-- Visual copy only; the live region above carries it to AT. -->
+			<p class="text-sm text-muted-foreground" aria-hidden="true">
+				{m['oauth.consent.expiredNotice']()}
+			</p>
+		{/if}
 
 		<div class="flex flex-col gap-2 sm:flex-row">
-			<Button type="button" onclick={allow} disabled={status === 'submitting'} class="sm:flex-1">
+			<Button
+				type="button"
+				onclick={allow}
+				aria-disabled={status === 'submitting' ? 'true' : undefined}
+				class="aria-disabled:pointer-events-none aria-disabled:opacity-50 sm:flex-1"
+			>
 				{m['oauth.consent.allow']()}
 			</Button>
 			<Button
 				type="button"
 				variant="outline"
 				onclick={deny}
-				disabled={status === 'submitting'}
-				class="sm:flex-1"
+				aria-disabled={status === 'submitting' ? 'true' : undefined}
+				class="aria-disabled:pointer-events-none aria-disabled:opacity-50 sm:flex-1"
 			>
 				{m['oauth.consent.deny']()}
 			</Button>
