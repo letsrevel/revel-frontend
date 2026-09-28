@@ -227,7 +227,7 @@
 				{#if config.showLoginButton}
 					<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
 					<a
-						href={`${resolve('/(public)/login', {})}?redirect=${encodeURIComponent($page.url.pathname)}`}
+						href={`${resolve('/(public)/login', {})}?returnUrl=${encodeURIComponent($page.url.pathname + $page.url.search)}`}
 						class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-6 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						<Lock class="h-4 w-4" aria-hidden="true" />

@@ -62,8 +62,9 @@
 
 	function handleClaim() {
 		if (!isAuthenticated) {
+			const returnUrl = encodeURIComponent(`/join/event/${tokenId}`);
 			// eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() validates the route id; the appended query string cannot be expressed through resolve()
-			goto(`${resolve('/(public)/login', {})}?redirect=/join/event/${tokenId}`);
+			goto(`${resolve('/(public)/login', {})}?returnUrl=${returnUrl}`);
 			return;
 		}
 

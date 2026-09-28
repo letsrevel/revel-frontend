@@ -6,8 +6,9 @@ import {
 } from '$lib/api/client';
 import { log } from '$lib/server/logger';
 import { throwIfTransientUpstream } from '$lib/server/upstream';
+import { loginRedirectPath } from '$lib/server/auth-guard';
 
-export const load: PageServerLoad = async ({ params, locals }) => {
+export const load: PageServerLoad = async ({ params, locals, url }) => {
 	const { org_slug, event_slug, id: questionnaireId } = params;
 
 	// Prepare headers with authentication if user is logged in
@@ -38,10 +39,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 	// Check authentication - questionnaire submission requires auth
 	if (!locals.user) {
-		throw redirect(
-			302,
-			`/login?redirect=${encodeURIComponent(`/events/${org_slug}/${event_slug}/questionnaire/${questionnaireId}`)}`
-		);
+		throw redirect(302, loginRedirectPath(url));
 	}
 
 	// Fetch the questionnaire
