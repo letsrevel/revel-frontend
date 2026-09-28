@@ -3260,6 +3260,21 @@
 		"description": "Sieh und verwalte deine Veranstaltungsbenachrichtigungen und Updates",
 		"settingsButton": "Einstellungen"
 	},
+	"oauth": {
+		"error": {
+			"invalid_request": "Die Anfrage dieser App ist ungültig.",
+			"unauthorized_client": "Diese App darf diese Anfrage nicht stellen.",
+			"unsupported_response_type": "Diese App hat eine Anmeldemethode angefragt, die Revel nicht unterstützt.",
+			"invalid_scope": "Diese App hat Berechtigungen angefragt, die sie nicht anfragen darf.",
+			"invalid_target": "Diese App hat Zugriff auf einen Dienst angefragt, den Revel nicht kennt.",
+			"server_error": "Bei uns ist etwas schiefgelaufen.",
+			"temporarily_unavailable": "Revel ist vorübergehend nicht erreichbar. Bitte versuche es gleich noch einmal.",
+			"invalid_client": "Revel kennt diese App nicht.",
+			"consent_required": "Die Freigabeseite ist abgelaufen.",
+			"interaction_required": "Diese Anfrage braucht deine Freigabe, aber die App hat Revel gebeten, keine Seite anzuzeigen.",
+			"generic": "Die Anfrage dieser App konnte nicht abgeschlossen werden."
+		}
+	},
 	"orgAdmin": {
 		"layout": {
 			"toggleMenu": "Navigationsmenü umschalten",

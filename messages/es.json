@@ -3260,6 +3260,21 @@
 		"description": "Consulta y gestiona tus notificaciones y actualizaciones de eventos",
 		"settingsButton": "Ajustes"
 	},
+	"oauth": {
+		"error": {
+			"invalid_request": "La solicitud de esta app no es válida.",
+			"unauthorized_client": "Esta app no tiene permiso para hacer esta solicitud.",
+			"unsupported_response_type": "Esta app ha pedido un método de inicio de sesión que Revel no admite.",
+			"invalid_scope": "Esta app ha pedido permisos que no puede solicitar.",
+			"invalid_target": "Esta app ha pedido acceso a un servicio que Revel no reconoce.",
+			"server_error": "Algo ha fallado por nuestra parte.",
+			"temporarily_unavailable": "Revel no está disponible temporalmente. Inténtalo de nuevo en un momento.",
+			"invalid_client": "Revel no reconoce esta app.",
+			"consent_required": "La pantalla de autorización ha caducado.",
+			"interaction_required": "Esta solicitud necesita tu aprobación, pero la app le ha pedido a Revel que no muestre ninguna pantalla.",
+			"generic": "No se ha podido completar la solicitud de esta app."
+		}
+	},
 	"orgAdmin": {
 		"layout": {
 			"toggleMenu": "Mostrar u ocultar el menú de navegación",

@@ -3230,6 +3230,21 @@
 		"description": "Consulte et gère tes notifications et mises à jour d'événements",
 		"settingsButton": "Paramètres"
 	},
+	"oauth": {
+		"error": {
+			"invalid_request": "La demande de cette appli n'est pas valide.",
+			"unauthorized_client": "Cette appli n'est pas autorisée à faire cette demande.",
+			"unsupported_response_type": "Cette appli a demandé une méthode de connexion que Revel ne prend pas en charge.",
+			"invalid_scope": "Cette appli a demandé des autorisations qu'elle ne peut pas demander.",
+			"invalid_target": "Cette appli a demandé l'accès à un service que Revel ne reconnaît pas.",
+			"server_error": "Un problème est survenu de notre côté.",
+			"temporarily_unavailable": "Revel est temporairement indisponible. Réessaie dans un instant.",
+			"invalid_client": "Revel ne reconnaît pas cette appli.",
+			"consent_required": "L'écran d'autorisation a expiré.",
+			"interaction_required": "Cette demande a besoin de ton accord, mais l'appli a demandé à Revel de n'afficher aucun écran.",
+			"generic": "La demande de cette appli n'a pas pu aboutir."
+		}
+	},
 	"orgAdmin": {
 		"layout": {
 			"toggleMenu": "Afficher/masquer le menu de navigation",

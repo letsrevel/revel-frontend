@@ -3260,6 +3260,21 @@
 		"description": "View and manage your event notifications and updates",
 		"settingsButton": "Settings"
 	},
+	"oauth": {
+		"error": {
+			"invalid_request": "This app's request is invalid.",
+			"unauthorized_client": "This app isn't allowed to make this request.",
+			"unsupported_response_type": "This app asked for a sign-in method Revel doesn't support.",
+			"invalid_scope": "This app asked for permissions it can't request.",
+			"invalid_target": "This app asked for access to a service Revel doesn't recognize.",
+			"server_error": "Something went wrong on our side.",
+			"temporarily_unavailable": "Revel is temporarily unavailable. Please try again in a moment.",
+			"invalid_client": "Revel doesn't recognize this app.",
+			"consent_required": "The authorization screen expired.",
+			"interaction_required": "This request needs your approval, but the app asked Revel not to show a screen.",
+			"generic": "This app's request couldn't be completed."
+		}
+	},
 	"orgAdmin": {
 		"layout": {
 			"toggleMenu": "Toggle navigation menu",
