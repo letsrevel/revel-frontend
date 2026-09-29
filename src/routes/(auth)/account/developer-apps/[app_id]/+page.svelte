@@ -148,13 +148,15 @@
 
 	const remove = createMutation(() => ({
 		...deleteApp(),
-		onSuccess: async () => {
+		// `id` is the mutation variable: after `goto` this component is destroyed and reading
+		// the `appId` derived would warn (derived_inert) even though the value is still right.
+		onSuccess: async (_data, id) => {
 			const name = app.data?.name ?? '';
 			// Only the list: refetching this detail now would flash the not-found state.
 			await queryClient.invalidateQueries({ queryKey: oauthKeys.apps, exact: true });
 			toast.success(m['oauth.developer.danger.deleted']({ name }));
 			await goto(listHref);
-			queryClient.removeQueries({ queryKey: oauthKeys.app(appId) });
+			queryClient.removeQueries({ queryKey: oauthKeys.app(id) });
 		},
 		onError: actionFailed
 	}));

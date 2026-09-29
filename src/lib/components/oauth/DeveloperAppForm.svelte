@@ -212,7 +212,9 @@
 
 	<RedirectUriList
 		value={values.redirect_uris}
-		onChange={(next) => (values.redirect_uris = next)}
+		onChange={(next) => {
+			values.redirect_uris = next;
+		}}
 		errors={uriErrors}
 		clientType={values.client_type}
 		disabled={submitting}
