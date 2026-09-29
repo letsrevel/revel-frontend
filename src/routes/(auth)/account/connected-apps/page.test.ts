@@ -198,4 +198,49 @@ describe('Connected apps page', () => {
 		await waitFor(() => expect(revokeMock).toHaveBeenCalledWith({ path: { client_id: 'cid-b' } }));
 		await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
 	});
+
+	it('overlapping removals keep BOTH rows disabled until each one settles', async () => {
+		// The list keeps both apps so each row's state is observable after it settles.
+		listConnectionsMock.mockResolvedValue(
+			ok([connection('Acme', 'cid-a'), connection('Beta', 'cid-b')])
+		);
+		const resolvers: Record<string, (value: unknown) => void> = {};
+		revokeMock.mockImplementation(
+			({ path }: { path: { client_id: string } }) =>
+				new Promise((resolve) => {
+					resolvers[path.client_id] = resolve;
+				})
+		);
+		const done = { data: undefined, error: undefined, response: { status: 204 } };
+		renderPage();
+
+		const removeA = await screen.findByRole('button', { name: 'Remove Acme' });
+		const removeB = screen.getByRole('button', { name: 'Remove Beta' });
+		await userEvent.click(removeA);
+		await userEvent.click(
+			within(await screen.findByRole('dialog')).getByRole('button', { name: 'Disconnect' })
+		);
+		await waitFor(() => expect(revokeMock).toHaveBeenCalledWith({ path: { client_id: 'cid-a' } }));
+		await userEvent.click(
+			within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancel' })
+		);
+		await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+		await userEvent.click(removeB);
+		await userEvent.click(
+			within(await screen.findByRole('dialog')).getByRole('button', { name: 'Disconnect' })
+		);
+		await waitFor(() => expect(revokeMock).toHaveBeenCalledWith({ path: { client_id: 'cid-b' } }));
+
+		// B being the latest mutation must not re-enable A.
+		expect(removeA).toBeDisabled();
+		expect(removeB).toBeDisabled();
+
+		resolvers['cid-a']?.(done);
+		await waitFor(() => expect(removeA).toBeEnabled());
+		expect(removeB).toBeDisabled();
+
+		resolvers['cid-b']?.(done);
+		await waitFor(() => expect(removeB).toBeEnabled());
+		expect(revokeMock).toHaveBeenCalledTimes(2);
+	});
 });
