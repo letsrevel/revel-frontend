@@ -921,6 +921,10 @@
 		"claimMembership": "Riscatta iscrizione"
 	},
 	"common": {
+		"copy": "Copia",
+		"copyNamed": "Copia {label}",
+		"copied": "Copiato negli appunti.",
+		"copyFailed": "Impossibile copiare. Seleziona il testo e copialo tu.",
 		"statuses_enabled": "Abilitato",
 		"statuses_disabled": "Disabilitato",
 		"statuses_loading": "Caricamento...",

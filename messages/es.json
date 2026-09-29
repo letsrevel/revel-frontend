@@ -921,6 +921,10 @@
 		"claimMembership": "Reclamar membresía"
 	},
 	"common": {
+		"copy": "Copiar",
+		"copyNamed": "Copiar {label}",
+		"copied": "Copiado al portapapeles.",
+		"copyFailed": "No se pudo copiar. Selecciona el texto y cópialo tú.",
 		"statuses_enabled": "Activado",
 		"statuses_disabled": "Desactivado",
 		"statuses_loading": "Cargando...",

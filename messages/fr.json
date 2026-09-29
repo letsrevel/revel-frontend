@@ -807,6 +807,10 @@
 		"claimMembership": "Récupérer l'adhésion"
 	},
 	"common": {
+		"copy": "Copier",
+		"copyNamed": "Copier {label}",
+		"copied": "Copié dans ton presse-papiers.",
+		"copyFailed": "Impossible de copier. Sélectionne le texte et copie-le toi-même.",
 		"statuses_enabled": "Activé",
 		"statuses_disabled": "Désactivé",
 		"statuses_loading": "Chargement...",

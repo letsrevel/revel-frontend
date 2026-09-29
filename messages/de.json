@@ -921,6 +921,10 @@
 		"claimMembership": "Mitgliedschaft einlösen"
 	},
 	"common": {
+		"copy": "Kopieren",
+		"copyNamed": "{label} kopieren",
+		"copied": "In die Zwischenablage kopiert.",
+		"copyFailed": "Kopieren hat nicht geklappt. Markiere den Text und kopiere ihn selbst.",
 		"statuses_enabled": "Aktiviert",
 		"statuses_disabled": "Deaktiviert",
 		"statuses_loading": "Lädt...",

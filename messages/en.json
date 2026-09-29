@@ -921,6 +921,10 @@
 		"claimMembership": "Claim Membership"
 	},
 	"common": {
+		"copy": "Copy",
+		"copyNamed": "Copy {label}",
+		"copied": "Copied to your clipboard.",
+		"copyFailed": "Couldn't copy. Select the text and copy it yourself.",
 		"statuses_enabled": "Enabled",
 		"statuses_disabled": "Disabled",
 		"statuses_loading": "Loading...",
