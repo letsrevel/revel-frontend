@@ -1,6 +1,6 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import type { Page } from '@playwright/test';
-import { API_URL, ApiClient, fetchWithRetry } from './api';
+import { API_URL, ApiClient } from './api';
 import { uniqueName } from './factories';
 
 /** Loopback http is legal for a PUBLIC client; port 47123 is outside the browsers' restricted-port list. */
@@ -130,7 +130,9 @@ export async function exchangeCode(p: {
 		client_id: p.clientId,
 		code_verifier: p.verifier
 	});
-	const response = await fetchWithRetry(`${API_URL}/o/token`, {
+	// Plain fetch, never fetchWithRetry: the code is single-use, so a retry after
+	// the backend consumed it would mask the real failure behind `invalid_grant`.
+	const response = await fetch(`${API_URL}/o/token`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
 		body: body.toString()

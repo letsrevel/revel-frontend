@@ -43,7 +43,7 @@ test.describe('J28 developer apps @p1', () => {
 		}
 	});
 
-	test('register → client ID + badges → deactivate → delete → empty again', async ({
+	test('register → client ID + badges → listed → deactivate → delete → empty again', async ({
 		browser,
 		isMobile
 	}) => {
@@ -70,7 +70,11 @@ test.describe('J28 developer apps @p1', () => {
 				});
 			}).toPass({ timeout: 15_000 });
 			await expect(page.getByRole('menuitem', { name: 'Developer apps' })).toBeVisible();
-			await page.keyboard.press('Escape');
+			// The dropdown has no Escape handler: its toggle is what closes it.
+			const toggle = page.getByRole('button', { name: 'User menu' });
+			await toggle.click();
+			await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+			await expect(page.getByRole('menuitem', { name: 'Developer apps' })).toBeHidden();
 		}
 
 		// 1. Empty list.
@@ -91,6 +95,20 @@ test.describe('J28 developer apps @p1', () => {
 		const badges = page.getByTestId('status-badge');
 		await expect(badges.filter({ hasText: /^\s*Public\s*$/ })).toBeVisible();
 		await expect(badges.filter({ hasText: /^\s*Active\s*$/ })).toBeVisible();
+
+		// 3b. Listed on the index (cache invalidated by the create), and the card opens the detail.
+		await page.goto('/account/developer-apps');
+		const listed = page.getByRole('article', { name, exact: true });
+		await expect(listed).toBeVisible();
+		const cardBadges = listed.getByTestId('status-badge');
+		await expect(cardBadges.filter({ hasText: /^\s*Public\s*$/ })).toBeVisible();
+		await expect(cardBadges.filter({ hasText: /^\s*Active\s*$/ })).toBeVisible();
+		await expect(listed).toContainText('Used by 0 people');
+		await expect(listed).toContainText('Never used');
+		await expect(page.getByText(EMPTY)).toHaveCount(0);
+		await listed.getByRole('link', { name, exact: true }).click();
+		await page.waitForURL(new RegExp(`/account/developer-apps/${appId}$`));
+		await expect(page.getByRole('textbox', { name: 'Client ID' })).not.toHaveValue('');
 
 		// 4. Deactivate.
 		await page.getByRole('button', { name: 'Deactivate' }).click();

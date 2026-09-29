@@ -40,11 +40,18 @@ test.describe('J28 consent errors @p1', () => {
 
 		const headline = page.getByTestId('consent-error-headline');
 		await expect(headline).toBeVisible();
-		await expect(headline).not.toHaveText(/^\s*$/);
+		// The non-retryable 400 branch, not the network/5xx fallback. oauthlib reports an
+		// unknown client as `invalid_request` (InvalidClientIdError), not `invalid_client`;
+		// its description (rendered as the detail) pins that the client id was the cause.
+		await expect(headline).toHaveText("This app's request is invalid.");
+		await expect(page.getByText('Invalid client_id parameter value.')).toBeVisible();
+		await expect(page.getByRole('button', { name: 'Try again' })).toHaveCount(0);
 		await expect(page.getByRole('button', { name: 'Allow' })).toHaveCount(0);
 		expect(new URL(page.url()).pathname).toBe('/oauth/authorize');
 
-		// Observe a real 2 s window: a late client-side redirect would resolve this.
+		// Observe a real 2 s window on purpose (not waitForTimeout): a negative
+		// assertion needs a window, and two independent detectors watch it. A late
+		// client-side redirect resolves waitForURL; an aborted one still hits the route.
 		await expect(page.waitForURL(`${OAUTH_CALLBACK}**`, { timeout: 2_000 })).rejects.toThrow();
 		expect(callbackHits).toEqual([]);
 		expect(new URL(page.url()).pathname).toBe('/oauth/authorize');
