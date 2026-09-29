@@ -101,8 +101,7 @@ describe('scopesQuery', () => {
 describe('throwOAuthError', () => {
 	it.each([
 		[403, EmailUnverifiedError],
-		[404, NotFoundError],
-		[422, NotFoundError]
+		[404, NotFoundError]
 	])('maps status %i onto its sentinel', (status, Sentinel) => {
 		expect(() =>
 			throwOAuthError({ error: { detail: 'x' }, response: { status } as Response })
@@ -129,8 +128,31 @@ describe('throwOAuthError', () => {
 		});
 	});
 
+	it('throws a 422 body-validation error as-is, never as NotFoundError', () => {
+		const body = { detail: [{ loc: ['body', 'payload', 'name'], msg: 'too long' }] };
+		let err: unknown;
+		try {
+			throwOAuthError({ error: body, response: { status: 422 } as Response });
+		} catch (e) {
+			err = e;
+		}
+		expect(err).not.toBeInstanceOf(NotFoundError);
+		expect(err).toEqual({ detail: [{ loc: ['body', 'payload', 'name'], msg: 'too long' }] });
+		expect((err as { __status?: number }).__status).toBe(422);
+	});
+
 	it('throws an Error only when there is no body at all', () => {
 		expect(() => throwOAuthError({ error: undefined })).toThrow(Error);
+	});
+
+	it('throws an Error when the body is not an object', () => {
+		let err: unknown;
+		try {
+			throwOAuthError({ error: 'Bad Gateway', response: { status: 502 } as Response });
+		} catch (e) {
+			err = e;
+		}
+		expect(err).toBeInstanceOf(Error);
 	});
 });
 
@@ -314,6 +336,25 @@ describe('apps builders', () => {
 		expect((err as { __status?: number }).__status).toBe(400);
 	});
 
+	it('createApp throws a 422 body-validation error as-is with its status', async () => {
+		const body = { detail: [{ loc: ['body', 'payload', 'name'], msg: 'too long' }] };
+		createAppMock.mockResolvedValue({ data: undefined, error: body, response: { status: 422 } });
+		const err = await createApp()
+			.mutationFn({
+				name: 'A'.repeat(300),
+				description: '',
+				client_type: 'public',
+				redirect_uris: ['https://a.example/cb'],
+				allowed_scopes: [],
+				homepage_url: '',
+				privacy_policy_url: ''
+			})
+			.catch((e: unknown) => e);
+		expect(err).not.toBeInstanceOf(NotFoundError);
+		expect(err).toEqual({ detail: [{ loc: ['body', 'payload', 'name'], msg: 'too long' }] });
+		expect((err as { __status?: number }).__status).toBe(422);
+	});
+
 	it('updateApp PATCHes only the given body; setAppActive picks the endpoint; deleteApp resolves void; uploadLogo sends multipart', async () => {
 		updateAppMock.mockResolvedValue({ data: app, error: undefined, response: { status: 200 } });
 		await updateApp().mutationFn({ id: 'app-1', body: { description: 'x' } });
@@ -333,6 +374,8 @@ describe('apps builders', () => {
 		await expect(setAppActive().mutationFn({ id: 'app-1', active: true })).resolves.toMatchObject({
 			is_active: true
 		});
+		expect(deactivateMock).toHaveBeenCalledWith({ path: { app_id: 'app-1' } });
+		expect(activateMock).toHaveBeenCalledWith({ path: { app_id: 'app-1' } });
 		deleteAppMock.mockResolvedValue({
 			data: undefined,
 			error: undefined,

@@ -31,7 +31,8 @@ import type {
  * `createQuery(() => scopesQuery())`.
  *
  * PR 2 adds `connectionsQuery` / `revokeConnection`; PR 3 adds the apps
- * queries and mutations plus `fieldErrorsFrom`. Keep every mutationFn
+ * queries and mutations (the form-side `fieldErrorsFrom` lives in
+ * `$lib/utils/oauth-app-form.ts`). Keep every mutationFn
  * throwing `res.error` (never swallow it) and never write a secret-bearing
  * response into any cache.
  */
@@ -53,7 +54,11 @@ export class EmailUnverifiedError extends Error {
 	}
 }
 
-/** Sentinel for a 404 (unknown/foreign app, or the provider is switched off) and a 422 (non-UUID id). */
+/**
+ * Sentinel for a 404 (unknown/foreign app, or the provider is switched off).
+ * A 422 maps here ONLY on the app detail read (`appQuery`), where it means a
+ * non-UUID path id; everywhere else a 422 is a body-validation error.
+ */
 export class NotFoundError extends Error {
 	readonly kind = 'not_found';
 	constructor() {
@@ -88,8 +93,10 @@ export function withStatus<T extends object>(body: T, status: number | undefined
 
 /**
  * Map a failed hey-api result onto the shared sentinels BY STATUS (never by
- * the localized `detail` text). Every other failure throws the backend body
- * AS-IS (e.g. a 400 `{ errors }` or a 409 `{ detail }`), unwrapped, so callers
+ * the localized `detail` text): 403 -> `EmailUnverifiedError`, 404 ->
+ * `NotFoundError`. Every other failure throws the backend body AS-IS (e.g. a
+ * 400 `{ errors }`, a 409 `{ detail }`, or django-ninja's 422 pydantic
+ * `{ detail: [{ loc, msg }] }` for an invalid request body), unwrapped, so callers
  * can read its fields off the thrown value, with the status attached as a
  * non-enumerable `__status` (see `withStatus`); an `Error` is created only
  * when there is no object body at all.
@@ -97,7 +104,7 @@ export function withStatus<T extends object>(body: T, status: number | undefined
 export function throwOAuthError(res: { error: unknown; response?: Response }): never {
 	const status = statusOf(res);
 	if (status === 403) throw new EmailUnverifiedError();
-	if (status === 404 || status === 422) throw new NotFoundError();
+	if (status === 404) throw new NotFoundError();
 	if (typeof res.error === 'object' && res.error !== null) throw withStatus(res.error, status);
 	throw new Error('request failed');
 }
@@ -157,6 +164,8 @@ export function appQuery(id: string) {
 		queryKey: oauthKeys.app(id),
 		queryFn: async (): Promise<OAuthAppSchema> => {
 			const res = await getApp({ path: { app_id: id } });
+			// A non-UUID id is a 422 from the path validator; for this read it means not found.
+			if (statusOf(res) === 422) throw new NotFoundError();
 			if (res.error || !res.data) throwOAuthError(res);
 			return res.data;
 		}
