@@ -4,7 +4,6 @@
 	import type { AuthorizeAppSchema, AuthorizeScopeSchema } from '$lib/api/generated/types.gen';
 	import { Alert, AlertDescription, AlertTitle } from '$lib/components/ui/alert';
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
-	import { isHttpUrl } from '$lib/utils/navigate-to';
 	import AppLogo from './AppLogo.svelte';
 	import ScopeList from './ScopeList.svelte';
 
@@ -17,9 +16,9 @@
 
 	/** Host of an http(s) URL, or null when it is empty, another scheme or unparseable. */
 	function hostOf(url: string): string | null {
-		if (!url || !isHttpUrl(url) || !/^https?:/i.test(url)) return null;
 		try {
-			return new URL(url).host;
+			const parsed = new URL(url);
+			return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? parsed.host : null;
 		} catch {
 			return null;
 		}

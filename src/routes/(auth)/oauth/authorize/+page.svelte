@@ -64,7 +64,14 @@
 	function follow(redirectTo: string) {
 		redirectHost = hostOf(redirectTo);
 		status = 'redirecting';
-		navigateTo(redirectTo);
+		try {
+			navigateTo(redirectTo);
+		} catch {
+			// navigateTo refuses non-http(s) targets; never leave the page stuck on "Redirecting".
+			error = { headline: m['oauth.consent.errorFallbackHeadline'](), detail: null, retry: null };
+			status = 'error';
+			void focusError();
+		}
 	}
 
 	function toLogin() {
@@ -113,6 +120,10 @@
 				consent = fresh.data;
 				expiredNotice = true;
 				status = 'consent';
+				// Reached from the error card's Retry, focus fell to <body> when the
+				// card unmounted: put it back on the title. Otherwise leave it be.
+				await tick();
+				if (document.activeElement === document.body) void focusTitle();
 				return;
 			}
 			return fail(fresh, () => void describe());

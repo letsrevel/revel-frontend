@@ -1,14 +1,27 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-// Mock the auth store the client interceptor reads, so requests go out at once.
-vi.mock('$lib/stores/auth.svelte', () => ({
-	authStore: {
+// Mutable mock of the auth store the client interceptor reads, so requests go
+// out at once. A failed refresh clears the token, exactly like the real store:
+// the 401 interceptor then returns the original 401 instead of retrying.
+const authMock = vi.hoisted(() => {
+	const store: {
+		accessToken: string | null;
+		isAuthenticated: boolean;
+		waitForAuthReady: () => Promise<void>;
+		refreshAccessToken: () => Promise<void>;
+	} = {
 		accessToken: 'tok',
 		isAuthenticated: true,
-		waitForAuthReady: vi.fn().mockResolvedValue(undefined),
-		refreshAccessToken: vi.fn().mockResolvedValue(undefined)
-	}
-}));
+		waitForAuthReady: () => Promise.resolve(),
+		refreshAccessToken: () => {
+			store.accessToken = null;
+			store.isAuthenticated = false;
+			return Promise.resolve();
+		}
+	};
+	return store;
+});
+vi.mock('$lib/stores/auth.svelte', () => ({ authStore: authMock }));
 
 import { client } from '$lib/api/client';
 import { decideAuthorization, describeAuthorization } from './oauth-authorize';
@@ -26,8 +39,16 @@ function jsonResponse(status: number, body: unknown): Response {
 let fetchMock: ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
+	authMock.accessToken = 'tok';
+	authMock.isAuthenticated = true;
 	fetchMock = vi.fn();
 	client.setConfig({ fetch: fetchMock as unknown as typeof fetch });
+	// Any fallback to the global fetch (e.g. an interceptor retry) hits the mock, never a socket.
+	vi.stubGlobal('fetch', fetchMock);
+});
+
+afterEach(() => {
+	vi.unstubAllGlobals();
 });
 
 function requestedUrl(): URL {
@@ -76,6 +97,13 @@ describe('describeAuthorization', () => {
 		});
 	});
 
+	it('returns failure for a 200 body that is neither a redirect nor a consent description', async () => {
+		fetchMock.mockResolvedValueOnce(jsonResponse(200, {}));
+		expect(await describeAuthorization(SEARCH)).toEqual({ kind: 'failure' });
+		fetchMock.mockResolvedValueOnce(jsonResponse(200, { redirect_to: 123 }));
+		expect(await describeAuthorization(SEARCH)).toEqual({ kind: 'failure' });
+	});
+
 	it('returns error with code and detail for a 400 body', async () => {
 		fetchMock.mockResolvedValue(
 			jsonResponse(400, { detail: 'Bad scope.', error: 'invalid_scope' })
@@ -90,6 +118,8 @@ describe('describeAuthorization', () => {
 	it('returns unauthenticated for a 401 and failure for anything else', async () => {
 		fetchMock.mockResolvedValueOnce(jsonResponse(401, { detail: 'Unauthorized' }));
 		expect(await describeAuthorization(SEARCH)).toEqual({ kind: 'unauthenticated' });
+		// The refresh failed, so the interceptor returned the original 401: no retry.
+		expect(fetchMock).toHaveBeenCalledTimes(1);
 		fetchMock.mockResolvedValueOnce(jsonResponse(404, { detail: 'Not found.' }));
 		expect(await describeAuthorization(SEARCH)).toEqual({ kind: 'failure' });
 		fetchMock.mockRejectedValueOnce(new TypeError('network'));

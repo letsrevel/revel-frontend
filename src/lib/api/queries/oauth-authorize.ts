@@ -38,15 +38,26 @@ function isRedirect(body: SuccessBody): body is AuthorizeRedirectResponse {
 	return 'redirect_to' in body && typeof body.redirect_to === 'string';
 }
 
+/** Minimal shape check: a describe body carries a ticket and an application object. */
+function isDescribe(body: SuccessBody): body is AuthorizeDescribeResponse {
+	const b = body as Partial<Record<keyof AuthorizeDescribeResponse, unknown>>;
+	return (
+		typeof b.consent_ticket === 'string' &&
+		typeof b.application === 'object' &&
+		b.application !== null
+	);
+}
+
 function classify(res: {
 	data?: SuccessBody;
 	error?: unknown;
 	response?: Response;
 }): AuthorizeResult {
 	if (res.data) {
-		return isRedirect(res.data)
-			? { kind: 'redirect', redirectTo: res.data.redirect_to }
-			: { kind: 'describe', data: res.data };
+		if (isRedirect(res.data)) return { kind: 'redirect', redirectTo: res.data.redirect_to };
+		if (isDescribe(res.data)) return { kind: 'describe', data: res.data };
+		// A 200 that is neither shape is a contract violation: retryable failure.
+		return { kind: 'failure' };
 	}
 	const status = res.response?.status;
 	if (status === 401) return { kind: 'unauthenticated' };

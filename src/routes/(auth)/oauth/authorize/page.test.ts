@@ -239,4 +239,37 @@ describe('/oauth/authorize page', () => {
 			expect(navigateMock).toHaveBeenCalledWith('https://acme.example/cb?code=2')
 		);
 	});
+
+	it('a non-http redirect_to lands on the error card instead of staying on Redirecting', async () => {
+		describeMock.mockResolvedValue({ kind: 'redirect', redirectTo: 'javascript:alert(1)' });
+		navigateMock.mockImplementation((url: string) => {
+			if (!/^https?:/.test(url)) throw new Error('refused');
+		});
+		render(Page);
+		expect(await screen.findByTestId('consent-error-headline')).toHaveTextContent(
+			'Something went wrong'
+		);
+		expect(navigateMock).toHaveBeenCalledWith('javascript:alert(1)');
+		expect(screen.queryByText(/Redirecting/)).toBeNull();
+		expect(screen.queryByRole('button', { name: 'Try again' })).toBeNull();
+	});
+
+	it('a Retry that ends in a fresh consent screen puts focus back on the title', async () => {
+		describeMock
+			.mockResolvedValueOnce({ kind: 'describe', data: description() })
+			.mockResolvedValueOnce({
+				kind: 'describe',
+				data: description({ consent_ticket: 'ticket-2' })
+			});
+		decideMock
+			.mockResolvedValueOnce({ kind: 'failure' })
+			.mockResolvedValueOnce({ kind: 'error', code: 'consent_required', detail: 'Expired.' });
+		render(Page);
+		await userEvent.click(await screen.findByRole('button', { name: 'Allow' }));
+		await userEvent.click(await screen.findByRole('button', { name: 'Try again' }));
+		await screen.findByRole('button', { name: 'Allow' });
+		await waitFor(() =>
+			expect(document.activeElement).toBe(screen.getByRole('heading', { level: 1 }))
+		);
+	});
 });
