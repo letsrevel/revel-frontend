@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, waitFor } from '@testing-library/svelte';
+import { tick } from 'svelte';
 import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import DeveloperAppForm from './DeveloperAppForm.svelte';
@@ -124,6 +125,28 @@ describe('DeveloperAppForm create', () => {
 		const uri = screen.getByRole('textbox', { name: 'Redirect URI 1' });
 		expect(uri).toHaveAttribute('aria-invalid', 'true');
 		expect(uri).toHaveAccessibleDescription('Already used');
+	});
+
+	it('focuses the first flagged control when a submit comes back with server field errors', async () => {
+		const props = { mode: 'create' as const, vocabulary: VOCAB, onSubmit: vi.fn() };
+		const { rerender } = render(DeveloperAppForm, { props: { ...props, submitting: true } });
+		const submitButton = screen.getByRole('button', { name: /Saving/ });
+		submitButton.focus();
+		await rerender({ ...props, submitting: false, fieldErrors: { name: 'Taken' } });
+		const name = screen.getByRole('textbox', { name: 'Name' });
+		await waitFor(() => expect(name).toHaveFocus());
+
+		// The same rejection object never steals focus again on a later render.
+		const uri = screen.getByRole('textbox', { name: 'Redirect URI 1' });
+		uri.focus();
+		const same = { name: 'Taken' };
+		await rerender({ ...props, submitting: false, fieldErrors: same });
+		await waitFor(() => expect(name).toHaveFocus());
+		uri.focus();
+		await rerender({ ...props, submitting: true, fieldErrors: same });
+		await rerender({ ...props, submitting: false, fieldErrors: same });
+		await tick();
+		expect(uri).toHaveFocus();
 	});
 
 	it('enforces org:read when another org scope is checked', async () => {

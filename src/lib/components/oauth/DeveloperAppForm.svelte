@@ -94,6 +94,18 @@
 		target?.focus();
 	}
 
+	// A server rejection that only carries field errors renders no alert and re-enables the
+	// submit button under the user's focus: move them to the first flagged control instead.
+	// Keyed on the object the page hands down, so each new rejection announces exactly once.
+	let announcedFieldErrors: Record<string, string> | null = null;
+	$effect(() => {
+		const current = fieldErrors;
+		const busy = submitting;
+		if (busy || current === announcedFieldErrors || Object.keys(current).length === 0) return;
+		announcedFieldErrors = current;
+		void focusFirstError();
+	});
+
 	async function submit(event: SubmitEvent) {
 		event.preventDefault();
 		const parsed = validate(values.client_type);

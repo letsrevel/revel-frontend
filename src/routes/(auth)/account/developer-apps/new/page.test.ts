@@ -189,6 +189,17 @@ describe('Register developer app page', () => {
 		expect(gotoMock).not.toHaveBeenCalled();
 	});
 
+	it('400 with only a name error → focus lands on the Name input', async () => {
+		sdk.oauthappCreateApp.mockResolvedValue(failed(400, { errors: { name: ['Taken'] } }));
+		renderPage();
+		await fillAndSubmit();
+		const name = screen.getByRole('textbox', { name: 'Name' });
+		// The request has settled once the submit button is back.
+		expect(await screen.findByRole('button', { name: 'Register app' })).toBeEnabled();
+		expect(name).toHaveAccessibleDescription('Taken');
+		await waitFor(() => expect(document.activeElement).toBe(name));
+	});
+
 	it('403 on create → the verify-email callout', async () => {
 		sdk.oauthappCreateApp.mockResolvedValue(failed(403));
 		renderPage();
