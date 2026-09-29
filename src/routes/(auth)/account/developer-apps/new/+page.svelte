@@ -42,8 +42,8 @@
 			formError = null;
 		},
 		onSuccess: async (created) => {
-			await queryClient.invalidateQueries({ queryKey: oauthKeys.apps });
 			if (created.client_secret) {
+				// Capture the secret before any await, so an unmount mid-refresh cannot lose it.
 				secret = {
 					clientId: created.client_id,
 					clientSecret: created.client_secret,
@@ -52,8 +52,10 @@
 				// Detach the observer: the settled mutation's `data` carries the secret, and
 				// with no observer left `gcTime: 0` drops it from the mutation cache.
 				mutation.reset();
+				await queryClient.invalidateQueries({ queryKey: oauthKeys.apps });
 				await focusReveal();
 			} else {
+				await queryClient.invalidateQueries({ queryKey: oauthKeys.apps });
 				toast.success(m['oauth.developer.created']({ name: created.name }));
 				await goto(resolve('/(auth)/account/developer-apps/[app_id]', { app_id: created.id }));
 			}

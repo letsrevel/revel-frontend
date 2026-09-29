@@ -146,6 +146,9 @@ describe('Register developer app page', () => {
 		expect(screen.queryByRole('button', { name: 'Register app' })).toBeNull();
 		expect(gotoMock).not.toHaveBeenCalled();
 
+		// A pending mutation keeps rescheduling GC, so an empty mutation cache proves the
+		// create settled (and its secret-bearing state was dropped) before we look.
+		await waitFor(() => expect(queryClient.getMutationCache().getAll()).toHaveLength(0));
 		await waitFor(() => {
 			expect(JSON.stringify(queryClient.getQueryCache().getAll())).not.toContain(SECRET);
 			expect(
@@ -174,10 +177,15 @@ describe('Register developer app page', () => {
 	});
 
 	it('400 field errors land under the matching redirect URI row', async () => {
-		sdk.oauthappCreateApp.mockResolvedValue(failed(400, { errors: { redirect_uris: ['Bad'] } }));
+		sdk.oauthappCreateApp.mockResolvedValue(
+			failed(400, { errors: { 'redirect_uris.0': ['Bad'] } })
+		);
 		renderPage();
 		await fillAndSubmit();
 		expect(await screen.findByText('Bad')).toBeInTheDocument();
+		const row = screen.getByRole('textbox', { name: 'Redirect URI 1' });
+		expect(row).toHaveAccessibleDescription('Bad');
+		expect(row).toHaveAttribute('aria-invalid', 'true');
 		expect(gotoMock).not.toHaveBeenCalled();
 	});
 
