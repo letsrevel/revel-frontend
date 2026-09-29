@@ -12,6 +12,7 @@
 	import { Eye, EyeOff, Gift, Loader2, Sparkles, ArrowRight } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { SeoHead } from '$lib/seo';
+	import { withReturnUrl } from '$lib/utils/safe-redirect';
 
 	interface Props {
 		data: PageData;
@@ -43,6 +44,11 @@
 		page.url.searchParams.get('ref') || data.referralCodeFromCookie || ''
 	);
 	let referralCode = $state('');
+
+	// Both "log in" links keep the return target (see login/+page.svelte).
+	const loginHref = $derived(
+		withReturnUrl(resolve('/(public)/login', {}), page.url.searchParams.get('returnUrl'))
+	);
 
 	// Password validation - calculated directly to avoid cross-component binding timing issues
 	// that can occur in some browsers (e.g., Brave on mobile) with $bindable + $effect patterns
@@ -216,14 +222,16 @@
 				</p>
 			</div>
 			<div class="space-y-3">
+				<!-- eslint-disable svelte/no-navigation-without-resolve -- href is resolve() output; withReturnUrl only appends the ?returnUrl= query -->
 				<a
 					bind:this={nudgeCta}
-					href={resolve('/(public)/login', {})}
+					href={loginHref}
 					class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
 					<span>{m['register.demoNudgeUseAccount']()}</span>
 					<ArrowRight class="h-4 w-4" aria-hidden="true" />
 				</a>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 				<button
 					bind:this={nudgeDismiss}
 					type="button"
@@ -524,11 +532,10 @@
 	<!-- Login Link -->
 	<div class="text-center text-sm">
 		<span class="text-muted-foreground">{m['register.alreadyHaveAccount']()}</span>
-		<a
-			href={resolve('/(public)/login', {})}
-			class="ml-1 text-primary underline-offset-4 hover:underline"
-		>
+		<!-- eslint-disable svelte/no-navigation-without-resolve -- href is resolve() output; withReturnUrl only appends the ?returnUrl= query -->
+		<a href={loginHref} class="ml-1 text-primary underline-offset-4 hover:underline">
 			{m['auth.login']()}
 		</a>
+		<!-- eslint-enable svelte/no-navigation-without-resolve -->
 	</div>
 </AuthBandLayout>

@@ -7,6 +7,7 @@ import { claimPendingTokens, setClaimFlashCookie } from '$lib/server/token-claim
 import { log } from '$lib/server/logger';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
+import { safeReturnUrl } from '$lib/utils/safe-redirect';
 
 export const load: PageServerLoad = async ({ url, request, fetch, cookies }) => {
 	const lang = resolveLang(request);
@@ -56,8 +57,11 @@ export const load: PageServerLoad = async ({ url, request, fetch, cookies }) => 
 				setClaimFlashCookie(cookies, claimResults);
 			}
 
-			// Redirect to profile page after successful verification so user can complete their profile
-			throw redirect(303, '/account/profile');
+			// Back to where the user started when the verification link carries a
+			// returnUrl (registration with `?returnUrl=`, BE #1023); the profile
+			// page otherwise, so a new user can complete their profile. The link
+			// is attacker-craftable, so the value goes through safeReturnUrl.
+			throw redirect(303, safeReturnUrl(url.searchParams.get('returnUrl'), '/account/profile'));
 		}
 
 		// If response was not ok, handle the error

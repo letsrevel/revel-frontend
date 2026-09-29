@@ -56,9 +56,12 @@ export async function fillRegistrationForm(
 	page: Page,
 	email: string,
 	password: string,
-	{ expectSubmittable = true }: { expectSubmittable?: boolean } = {}
+	{
+		expectSubmittable = true,
+		startAt = '/register'
+	}: { expectSubmittable?: boolean; startAt?: string } = {}
 ): Promise<void> {
-	await gotoHydrated(page, '/register');
+	await gotoHydrated(page, startAt);
 	await revealRegistrationForm(page);
 
 	const emailInput = page.getByLabel('Email address');

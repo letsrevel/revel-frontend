@@ -67,6 +67,17 @@ async function expectLoggedOutChrome(page: Page, isMobile: boolean): Promise<voi
 	}
 }
 
+// Target for the switch-account round trip: a public page whose loader
+// ignores unknown params, so the query surviving proves the whole returnUrl
+// (path AND query) was carried through /logout and /login.
+const SWITCH_TARGET = '/events?tab=upcoming';
+
+async function expectNoAuthCookies(page: Page): Promise<void> {
+	const names = (await page.context().cookies()).map((c) => c.name);
+	expect(names).not.toContain('access_token');
+	expect(names).not.toContain('refresh_token');
+}
+
 async function logout(page: Page, isMobile: boolean): Promise<void> {
 	if (isMobile) {
 		await openMobileNav(page);
@@ -131,6 +142,51 @@ test.describe('J3 login & logout @p0', () => {
 		await page.goto('/');
 		await expectLoggedOutChrome(page, isMobile);
 	});
+
+	// `/logout?returnUrl=` is the "switch account" exit of the OAuth consent
+	// page: sign out, sign in as someone else, land back where you were. The
+	// plain no-returnUrl logout is already covered by the test above.
+	test('logout with returnUrl → login carrying it → back on the target', async ({
+		page,
+		isMobile
+	}) => {
+		await uiLogin(page, 'member');
+
+		const response = await page.goto(`/logout?returnUrl=${encodeURIComponent(SWITCH_TARGET)}`);
+		const redirected = response?.request().redirectedFrom() ?? null;
+		expect(redirected, 'no redirect happened from /logout').not.toBeNull();
+		expect((await redirected?.response())?.status()).toBe(303);
+		await expect(page).toHaveURL(/\/login\?returnUrl=%2Fevents%3Ftab%3Dupcoming$/);
+
+		// Really logged out: the auth cookies are gone and the page renders the
+		// sign-in surface (the demo-account picker on demo backends) with the
+		// logged-out chrome.
+		await expectNoAuthCookies(page);
+		await expect(
+			page.getByLabel('Email address').or(page.getByLabel('Select Test Account'))
+		).toBeVisible();
+		await expectLoggedOutChrome(page, isMobile);
+
+		await uiLogin(page, 'member', {
+			// Same URL the redirect landed on; uiLogin re-enters it hydrated.
+			startAt: `/login?returnUrl=${encodeURIComponent(SWITCH_TARGET)}`,
+			landsOn: /\/events\?tab=upcoming$/
+		});
+		await expect(page).toHaveURL(/\/events\?tab=upcoming$/);
+		await expectAuthenticatedChrome(page, isMobile);
+	});
+
+	for (const unsafe of ['https://evil.example/x', '//evil.example']) {
+		test(`logout with an unsafe returnUrl (${unsafe}) falls back to home`, async ({ page }) => {
+			await uiLogin(page, 'member');
+
+			await page.goto(`/logout?returnUrl=${encodeURIComponent(unsafe)}`);
+			await expect(page).toHaveURL(/\/\?logged_out=true$/);
+			expect(page.url()).not.toContain('evil');
+			expect(new URL(page.url()).pathname).toBe('/');
+			await expectNoAuthCookies(page);
+		});
+	}
 
 	// The `(auth)` route-group guard (hooks.server.ts `handleAuthGuard`). This is
 	// the path every subscription notification CTA now takes: the backend points

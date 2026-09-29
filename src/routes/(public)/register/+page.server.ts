@@ -4,6 +4,7 @@ import { registerSchema } from '$lib/schemas/auth';
 import { accountRegister, referralGetInvitation } from '$lib/api/generated/sdk.gen';
 import { isReferralInviteId } from '$lib/schemas/referral';
 import { extractErrorMessage } from '$lib/utils/errors';
+import { registrationReturnUrl } from '$lib/utils/safe-redirect';
 import { getDemoMode, getSsoProviders } from '$lib/server/features';
 import { log } from '$lib/server/logger';
 import { buildSeo } from '$lib/seo';
@@ -77,6 +78,12 @@ export const actions = {
 		 * submitted address rather than being blocked.
 		 */
 		const invite = await loadReferralInvite(fetch, url);
+		// Where to send the user after they verify their email (spec: PR 0).
+		// The form has no `action`, so the page's own `?returnUrl=` is still
+		// in `url`. Validated here AND by the backend (422 on anything it
+		// dislikes, which would sink the registration) — so only a value that
+		// passes both rules is forwarded; anything else is silently dropped.
+		const returnUrl = registrationReturnUrl(url.searchParams.get('returnUrl'));
 		const data = {
 			email: invite?.email ?? (formData.get('email') as string),
 			password: formData.get('password') as string,
@@ -111,7 +118,8 @@ export const actions = {
 					password1: validation.data.password,
 					password2: validation.data.confirmPassword,
 					accept_toc_and_privacy: validation.data.acceptTerms,
-					...(data.referralCode ? { referral_code: data.referralCode } : {})
+					...(data.referralCode ? { referral_code: data.referralCode } : {}),
+					...(returnUrl ? { return_url: returnUrl } : {})
 				},
 				fetch
 			});
@@ -126,10 +134,9 @@ export const actions = {
 			if (response.response?.ok && response.data) {
 				log.debug('register_redirecting_to_check_email');
 				// Success - redirect to check-email page
-				throw redirect(
-					303,
-					`/register/check-email?email=${encodeURIComponent(validation.data.email)}`
-				);
+				const checkEmailQuery = `email=${encodeURIComponent(validation.data.email)}`;
+				const returnUrlQuery = returnUrl ? `&returnUrl=${encodeURIComponent(returnUrl)}` : '';
+				throw redirect(303, `/register/check-email?${checkEmailQuery}${returnUrlQuery}`);
 			}
 
 			// If response was not ok, handle the error

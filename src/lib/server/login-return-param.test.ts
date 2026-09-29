@@ -14,23 +14,30 @@ import { describe, it, expect } from 'vitest';
  * immediately before the query string.
  */
 
-// `/login?redirect=` and `resolve('/(public)/login', {})}?redirect=`
-const LOGIN_WITH_REDIRECT_PARAM = /\/login(?:['"`],\s*\{\}\)\})?\?redirect=/;
+// `/login?redirect=`, `/register?redirect=`, and the resolve() spellings of both.
+const AUTH_ROUTE_WITH_REDIRECT_PARAM = /\/(?:login|register)(?:['"`],\s*\{\}\)\})?\?redirect=/;
 
 const sources = import.meta.glob<string>(
 	['/src/**/*.svelte', '/src/**/*.ts', '!/src/lib/api/generated/**', '!/src/**/*.test.ts'],
 	{ query: '?raw', import: 'default', eager: true }
 );
 
-describe('login links carry ?returnUrl=, never ?redirect=', () => {
+describe('login and register links carry ?returnUrl=, never ?redirect=', () => {
 	it('the pattern catches both the raw and the resolve() spelling', () => {
-		expect(LOGIN_WITH_REDIRECT_PARAM.test('`/login?redirect=${x}`')).toBe(true);
+		expect(AUTH_ROUTE_WITH_REDIRECT_PARAM.test('`/login?redirect=${x}`')).toBe(true);
 		expect(
-			LOGIN_WITH_REDIRECT_PARAM.test("`${resolve('/(public)/login', {})}?redirect=${x}`")
+			AUTH_ROUTE_WITH_REDIRECT_PARAM.test("`${resolve('/(public)/login', {})}?redirect=${x}`")
 		).toBe(true);
-		expect(LOGIN_WITH_REDIRECT_PARAM.test('`/login?returnUrl=${x}`')).toBe(false);
+		expect(AUTH_ROUTE_WITH_REDIRECT_PARAM.test('`/login?returnUrl=${x}`')).toBe(false);
+		expect(AUTH_ROUTE_WITH_REDIRECT_PARAM.test('`/register?redirect=${x}`')).toBe(true);
 		expect(
-			LOGIN_WITH_REDIRECT_PARAM.test("`${resolve('/(auth)/account/settings', {})}?redirect=${x}`")
+			AUTH_ROUTE_WITH_REDIRECT_PARAM.test("`${resolve('/(public)/register', {})}?redirect=${x}`")
+		).toBe(true);
+		expect(AUTH_ROUTE_WITH_REDIRECT_PARAM.test('`/register?returnUrl=${x}`')).toBe(false);
+		expect(
+			AUTH_ROUTE_WITH_REDIRECT_PARAM.test(
+				"`${resolve('/(auth)/account/settings', {})}?redirect=${x}`"
+			)
 		).toBe(false);
 	});
 
@@ -39,9 +46,9 @@ describe('login links carry ?returnUrl=, never ?redirect=', () => {
 		expect(Object.keys(sources).length).toBeGreaterThan(100);
 	});
 
-	it('no source file sends ?redirect= to /login', () => {
+	it('no source file sends ?redirect= to /login or /register', () => {
 		const offenders = Object.entries(sources)
-			.filter(([, content]) => LOGIN_WITH_REDIRECT_PARAM.test(content))
+			.filter(([, content]) => AUTH_ROUTE_WITH_REDIRECT_PARAM.test(content))
 			.map(([file]) => file);
 		expect(offenders).toEqual([]);
 	});
