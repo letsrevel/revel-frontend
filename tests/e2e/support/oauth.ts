@@ -80,24 +80,41 @@ export function authorizeUrl(p: {
 }
 
 /**
- * Catch the browser being sent to the client's redirect URI. Nothing listens
- * on that port, so the route is fulfilled locally; the promise resolves with
- * the URL the browser navigated to (code/state or error in its query).
- * Register BEFORE triggering the navigation.
+ * Intercept the client's redirect URI. Nothing listens on that port, so the
+ * route is fulfilled locally. Awaits the route registration (so it is live
+ * before the click), and `landed` resolves with the callback URL (code/state
+ * or error in its query) only after the browser has finished navigating to
+ * it, so an immediate `page.goto` cannot abort it (net::ERR_ABORTED).
+ * Call BEFORE triggering the navigation.
+ *
+ * The route stays registered for the page's lifetime. A page reused across
+ * several authorizations calls this again: any earlier handler for the same
+ * pattern is dropped first, so each call owns a fresh promise.
  */
-export function awaitCallback(page: Page, redirectUri = OAUTH_CALLBACK): Promise<URL> {
-	return new Promise<URL>((resolve, reject) => {
-		page
-			.route(`${redirectUri}*`, async (route) => {
-				resolve(new URL(route.request().url()));
-				await route.fulfill({
-					status: 200,
-					contentType: 'text/html',
-					body: '<html><body>callback</body></html>'
-				});
-			})
-			.catch(reject);
+export async function awaitCallback(
+	page: Page,
+	redirectUri = OAUTH_CALLBACK
+): Promise<{ landed: Promise<URL> }> {
+	const pattern = `${redirectUri}*`;
+	let resolveUrl!: (u: URL) => void;
+	const hit = new Promise<URL>((r) => (resolveUrl = r));
+	await page.unroute(pattern);
+	await page.route(pattern, async (route) => {
+		resolveUrl(new URL(route.request().url()));
+		await route.fulfill({
+			status: 200,
+			contentType: 'text/html',
+			body: '<html><body>callback</body></html>'
+		});
 	});
+	const landed = (async () => {
+		const url = await hit;
+		await page.waitForURL(`${redirectUri}**`);
+		return url;
+	})();
+	// Keep an unhandled rejection from surfacing if a spec never awaits `landed`.
+	landed.catch(() => undefined);
+	return { landed };
 }
 
 export async function exchangeCode(p: {

@@ -10,7 +10,6 @@ import {
 	deleteApp,
 	exchangeCode,
 	newState,
-	OAUTH_CALLBACK,
 	pkcePair,
 	registerPublicApp,
 	type RegisteredApp
@@ -67,14 +66,13 @@ test.describe('J28 consent flow @p0', () => {
 		await expect(deny).toBeVisible();
 
 		// 2. Allow → the browser is sent to the client's callback with code + state.
-		const callback = awaitCallback(page);
+		// `landed` resolves once the callback navigation has finished, so the
+		// next goto cannot abort it.
+		const { landed } = await awaitCallback(page);
 		await allow.click();
-		const landed = await callback;
-		// The route resolves before its fulfill commits; let the navigation land
-		// so the next goto does not abort it (net::ERR_ABORTED).
-		await page.waitForURL(`${OAUTH_CALLBACK}**`);
-		expect(landed.searchParams.get('state')).toBe(state);
-		const code = landed.searchParams.get('code');
+		const callback = await landed;
+		expect(callback.searchParams.get('state')).toBe(state);
+		const code = callback.searchParams.get('code');
 		expect(code).toBeTruthy();
 
 		// 3. The app exchanges the code (PKCE) and calls the API as the user.
@@ -86,10 +84,10 @@ test.describe('J28 consent flow @p0', () => {
 		expect(((await me.json()) as { email: string }).email).toBe(PERSONAS.user.email);
 
 		// 4. The identical request again: prior grant → straight to the callback, no screen.
-		const again = awaitCallback(page);
+		// Second awaitCallback on the same page: it replaces the first handler.
+		const { landed: again } = await awaitCallback(page);
 		await page.goto(url);
 		expect((await again).searchParams.get('code')).toBeTruthy();
-		await page.waitForURL(`${OAUTH_CALLBACK}**`);
 
 		// 5. Connected apps lists it; Remove → confirm → gone.
 		await page.goto('/account/connected-apps');
