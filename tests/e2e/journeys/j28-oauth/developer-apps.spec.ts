@@ -1,4 +1,4 @@
-import type { Locator, Page } from '@playwright/test';
+import type { BrowserContext, Locator, Page } from '@playwright/test';
 import { test, expect } from '../../support/fixtures';
 import { ApiClient } from '../../support/api';
 import { createVerifiedUser, uniqueName, type ThrowawayUser } from '../../support/factories';
@@ -21,17 +21,21 @@ function confirmDialog(page: Page, title: string): Locator {
 test.describe('J28 developer apps @p1', () => {
 	let dev: ThrowawayUser | undefined;
 	let appId: string | undefined;
+	let context: BrowserContext | undefined;
 
 	test.beforeEach(async () => {
+		context = undefined;
+		dev = undefined;
+		appId = undefined;
 		test.skip(
 			!(await featureEnabled('oauth_provider')),
 			'OAuth provider is switched off on this backend'
 		);
 		dev = await createVerifiedUser('OAuthDevUi');
-		appId = undefined;
 	});
 
 	test.afterEach(async () => {
+		await context?.close();
 		// Best-effort: the happy path already deleted it through the UI.
 		if (dev && appId) {
 			const api = await ApiClient.login(dev.email, dev.password).catch(() => undefined);
@@ -44,6 +48,7 @@ test.describe('J28 developer apps @p1', () => {
 		isMobile
 	}) => {
 		const page = await pageAs(browser, dev as ThrowawayUser);
+		context = page.context();
 		const name = uniqueName('DevUiApp');
 
 		// Both entries are reachable from the account menu.
@@ -54,8 +59,8 @@ test.describe('J28 developer apps @p1', () => {
 				await page.getByRole('button', { name: 'Toggle navigation menu' }).click();
 				await expect(drawer).toBeInViewport({ timeout: 1_000 });
 			}).toPass({ timeout: 15_000 });
-			await expect(drawer.getByRole('link', { name: 'Connected apps' })).toBeAttached();
-			await expect(drawer.getByRole('link', { name: 'Developer apps' })).toBeAttached();
+			await expect(drawer.getByRole('link', { name: 'Connected apps' })).toBeVisible();
+			await expect(drawer.getByRole('link', { name: 'Developer apps' })).toBeVisible();
 			await drawer.getByRole('button', { name: 'Close menu' }).click();
 		} else {
 			await expect(async () => {
@@ -104,6 +109,5 @@ test.describe('J28 developer apps @p1', () => {
 		await page.waitForURL(/\/account\/developer-apps$/);
 		await expect(page.getByText(EMPTY)).toBeVisible();
 		appId = undefined;
-		await page.context().close();
 	});
 });

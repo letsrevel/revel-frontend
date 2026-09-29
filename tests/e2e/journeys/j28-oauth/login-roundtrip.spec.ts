@@ -1,5 +1,6 @@
+import type { BrowserContext } from '@playwright/test';
 import { test, expect } from '../../support/fixtures';
-import { ApiClient } from '../../support/api';
+import { API_URL, ApiClient } from '../../support/api';
 import { createVerifiedUser } from '../../support/factories';
 import { uiLogin } from '../../support/session';
 import { featureEnabled } from '../../support/skip';
@@ -18,10 +19,14 @@ import {
 // signing in.
 
 test.describe('J28 login round trip @p1', () => {
-	let api: ApiClient;
-	let app: RegisteredApp;
+	let api: ApiClient | undefined;
+	let app: RegisteredApp | undefined;
+	let context: BrowserContext | undefined;
 
 	test.beforeEach(async () => {
+		api = undefined;
+		app = undefined;
+		context = undefined;
 		test.skip(
 			!(await featureEnabled('oauth_provider')),
 			'OAuth provider is switched off on this backend'
@@ -32,16 +37,19 @@ test.describe('J28 login round trip @p1', () => {
 	});
 
 	test.afterEach(async () => {
+		await context?.close();
 		if (api && app) await deleteApp(api, app.id);
 	});
 
 	test('signed out → login with returnUrl → back on the identical request', async ({ browser }) => {
-		const context = await browser.newContext();
+		context = await browser.newContext();
 		const page = await context.newPage();
 		const url = authorizeUrl({
-			clientId: app.client_id,
+			clientId: (app as RegisteredApp).client_id,
 			state: newState(),
-			challenge: pkcePair().challenge
+			challenge: pkcePair().challenge,
+			// Sent twice on purpose: a round trip that collapses multi-valued params must show.
+			resource: [API_URL, API_URL]
 		});
 
 		await page.goto(url);
@@ -50,7 +58,7 @@ test.describe('J28 login round trip @p1', () => {
 
 		await uiLogin(page, 'user2', { startAt: page.url(), landsOn: /\/oauth\/authorize\?/ });
 		expect(new URL(page.url()).search).toBe(new URL(url, 'http://x').search);
+		expect(new URL(page.url()).searchParams.getAll('resource')).toEqual([API_URL, API_URL]);
 		await expect(page.getByRole('button', { name: 'Allow' })).toBeVisible();
-		await context.close();
 	});
 });
