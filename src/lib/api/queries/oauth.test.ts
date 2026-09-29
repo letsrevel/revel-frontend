@@ -1,22 +1,32 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const listScopesMock = vi.hoisted(() => vi.fn());
+const listConnectionsMock = vi.hoisted(() => vi.fn());
+const revokeMock = vi.hoisted(() => vi.fn());
 vi.mock('$lib/api/generated/sdk.gen', () => ({
-	oauthscopeListScopes: listScopesMock
+	oauthscopeListScopes: listScopesMock,
+	oauthconnectionListConnections: listConnectionsMock,
+	oauthconnectionRevoke: revokeMock
 }));
 
 import {
 	EmailUnverifiedError,
 	NotFoundError,
+	connectionsQuery,
 	isEmailUnverified,
 	isNotFound,
 	oauthKeys,
+	revokeConnection,
 	scopesQuery,
 	statusOf,
 	throwOAuthError
 } from './oauth';
 
-beforeEach(() => listScopesMock.mockReset());
+beforeEach(() => {
+	listScopesMock.mockReset();
+	listConnectionsMock.mockReset();
+	revokeMock.mockReset();
+});
 
 describe('oauthKeys', () => {
 	it('nests app(id) under apps so invalidating apps covers every detail', () => {
@@ -97,5 +107,59 @@ describe('error classes', () => {
 	it('statusOf reads the response status when present', () => {
 		expect(statusOf({ response: { status: 403 } as Response })).toBe(403);
 		expect(statusOf({})).toBeUndefined();
+	});
+});
+
+describe('connectionsQuery', () => {
+	it('returns the list and uses the connections key', async () => {
+		const row = {
+			client_id: 'cid',
+			application: {
+				name: 'A',
+				description: '',
+				logo_url: null,
+				verified: false,
+				registration_source: 'dcr',
+				homepage_url: '',
+				privacy_policy_url: ''
+			},
+			scopes: ['openid'],
+			first_authorized_at: '2026-09-01T10:00:00Z',
+			last_used_at: '2026-09-02T10:00:00Z'
+		};
+		listConnectionsMock.mockResolvedValue({
+			data: [row],
+			error: undefined,
+			response: { status: 200 }
+		});
+		const opts = connectionsQuery();
+		expect(opts.queryKey).toEqual(oauthKeys.connections);
+		await expect(opts.queryFn()).resolves.toEqual([row]);
+	});
+
+	it('maps a 404 (provider off) onto NotFoundError', async () => {
+		listConnectionsMock.mockResolvedValue({
+			data: undefined,
+			error: { detail: 'Not found.' },
+			response: { status: 404 }
+		});
+		await expect(connectionsQuery().queryFn()).rejects.toBeInstanceOf(NotFoundError);
+	});
+});
+
+describe('revokeConnection', () => {
+	it('DELETEs by client_id and resolves to void on 204', async () => {
+		revokeMock.mockResolvedValue({ data: undefined, error: undefined, response: { status: 204 } });
+		await expect(revokeConnection().mutationFn('cid-1')).resolves.toBeUndefined();
+		expect(revokeMock).toHaveBeenCalledWith({ path: { client_id: 'cid-1' } });
+	});
+
+	it('throws the backend body as-is on failure', async () => {
+		revokeMock.mockResolvedValue({
+			data: undefined,
+			error: { detail: 'Not found.' },
+			response: { status: 404 }
+		});
+		await expect(revokeConnection().mutationFn('gone')).rejects.toBeInstanceOf(NotFoundError);
 	});
 });

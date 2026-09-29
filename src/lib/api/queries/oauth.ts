@@ -1,5 +1,9 @@
-import { oauthscopeListScopes as listScopes } from '$lib/api/generated/sdk.gen';
-import type { AuthorizeScopeSchema } from '$lib/api/generated/types.gen';
+import {
+	oauthconnectionListConnections as listConnections,
+	oauthconnectionRevoke as revoke,
+	oauthscopeListScopes as listScopes
+} from '$lib/api/generated/sdk.gen';
+import type { AuthorizeScopeSchema, OAuthConnectionSchema } from '$lib/api/generated/types.gen';
 
 /**
  * Query keys and option builders for the OAuth provider surfaces (#953).
@@ -79,5 +83,31 @@ export function scopesQuery() {
 			return res.data;
 		},
 		staleTime: Infinity
+	};
+}
+
+/** The apps the user has authorized, most recently used first. */
+export function connectionsQuery() {
+	return {
+		queryKey: oauthKeys.connections,
+		queryFn: async (): Promise<OAuthConnectionSchema[]> => {
+			const res = await listConnections();
+			if (res.error || !res.data) throwOAuthError(res);
+			return res.data;
+		}
+	};
+}
+
+/**
+ * Disconnect an app: the backend revokes every token, ID token and pending
+ * code the user granted it, so the next authorization shows consent again.
+ * Callers invalidate `oauthKeys.connections` in their `onSuccess`.
+ */
+export function revokeConnection() {
+	return {
+		mutationFn: async (clientId: string): Promise<void> => {
+			const res = await revoke({ path: { client_id: clientId } });
+			if (res.error) throwOAuthError(res);
+		}
 	};
 }
