@@ -3260,6 +3260,50 @@
 		"description": "Visualizza e gestisci le notifiche degli eventi e gli aggiornamenti",
 		"settingsButton": "Impostazioni"
 	},
+	"oauth": {
+		"error": {
+			"invalid_request": "La richiesta di questa app non è valida.",
+			"unauthorized_client": "Questa app non è autorizzata a fare questa richiesta.",
+			"unsupported_response_type": "Questa app ha chiesto un metodo di accesso che Revel non supporta.",
+			"invalid_scope": "Questa app ha chiesto permessi che non può richiedere.",
+			"invalid_target": "Questa app ha chiesto l'accesso a un servizio che Revel non riconosce.",
+			"server_error": "Qualcosa è andato storto da parte nostra.",
+			"temporarily_unavailable": "Revel è temporaneamente non disponibile. Riprova tra un momento.",
+			"invalid_client": "Revel non riconosce questa app.",
+			"consent_required": "La schermata di autorizzazione è scaduta.",
+			"interaction_required": "Questa richiesta ha bisogno della tua approvazione, ma l'app ha chiesto a Revel di non mostrare alcuna schermata.",
+			"generic": "Non è stato possibile completare la richiesta di questa app."
+		},
+		"scopes": {
+			"group_identity": "Accesso e profilo",
+			"group_me": "Il tuo account",
+			"group_org": "Le tue organizzazioni",
+			"moneyMarker": "Include pagamenti e rimborsi"
+		},
+		"consent": {
+			"kicker": "Collega un'app",
+			"title": "Collega {name}",
+			"unverifiedTitle": "Revel non ha verificato questa app.",
+			"unverifiedBody": "Continua solo se ti fidi.",
+			"verified": "Verificata",
+			"asksTo": "Questa app chiede di:",
+			"noScopes": "Questa app non chiede alcun permesso.",
+			"homepageLink": "Sito web: {host}",
+			"privacyLink": "Informativa sulla privacy: {host}",
+			"sentTo": "Se continui, ti porteremo su {host}.",
+			"signedInAs": "Accesso effettuato come {name} ({email}).",
+			"switchAccount": "Non sei tu? Cambia account",
+			"allow": "Consenti",
+			"deny": "Rifiuta",
+			"checking": "Controllo della richiesta…",
+			"sending": "Invio in corso…",
+			"redirecting": "Reindirizzamento a {host}…",
+			"expiredNotice": "La schermata è scaduta. Controlla di nuovo la richiesta.",
+			"retry": "Riprova",
+			"backToRevel": "Torna a Revel",
+			"errorFallbackHeadline": "Qualcosa è andato storto durante il controllo di questa richiesta."
+		}
+	},
 	"orgAdmin": {
 		"layout": {
 			"toggleMenu": "Attiva/disattiva menu di navigazione",

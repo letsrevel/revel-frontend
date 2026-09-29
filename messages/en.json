@@ -3260,6 +3260,50 @@
 		"description": "View and manage your event notifications and updates",
 		"settingsButton": "Settings"
 	},
+	"oauth": {
+		"error": {
+			"invalid_request": "This app's request is invalid.",
+			"unauthorized_client": "This app isn't allowed to make this request.",
+			"unsupported_response_type": "This app asked for a sign-in method Revel doesn't support.",
+			"invalid_scope": "This app asked for permissions it can't request.",
+			"invalid_target": "This app asked for access to a service Revel doesn't recognize.",
+			"server_error": "Something went wrong on our side.",
+			"temporarily_unavailable": "Revel is temporarily unavailable. Please try again in a moment.",
+			"invalid_client": "Revel doesn't recognize this app.",
+			"consent_required": "The authorization screen expired.",
+			"interaction_required": "This request needs your approval, but the app asked Revel not to show a screen.",
+			"generic": "This app's request couldn't be completed."
+		},
+		"scopes": {
+			"group_identity": "Sign in and profile",
+			"group_me": "Your account",
+			"group_org": "Your organizations",
+			"moneyMarker": "Includes payments and refunds"
+		},
+		"consent": {
+			"kicker": "Connect an app",
+			"title": "Connect {name}",
+			"unverifiedTitle": "Revel has not reviewed this app.",
+			"unverifiedBody": "Only continue if you trust it.",
+			"verified": "Verified",
+			"asksTo": "This app is asking to:",
+			"noScopes": "This app is not asking for any permissions.",
+			"homepageLink": "Website: {host}",
+			"privacyLink": "Privacy policy: {host}",
+			"sentTo": "After you continue, you'll be sent to {host}.",
+			"signedInAs": "Signed in as {name} ({email}).",
+			"switchAccount": "Not you? Switch account",
+			"allow": "Allow",
+			"deny": "Deny",
+			"checking": "Checking the request…",
+			"sending": "Sending…",
+			"redirecting": "Redirecting to {host}…",
+			"expiredNotice": "The screen expired. Please review the request again.",
+			"retry": "Try again",
+			"backToRevel": "Back to Revel",
+			"errorFallbackHeadline": "Something went wrong while checking this request."
+		}
+	},
 	"orgAdmin": {
 		"layout": {
 			"toggleMenu": "Toggle navigation menu",

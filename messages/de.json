@@ -3260,6 +3260,50 @@
 		"description": "Sieh und verwalte deine Veranstaltungsbenachrichtigungen und Updates",
 		"settingsButton": "Einstellungen"
 	},
+	"oauth": {
+		"error": {
+			"invalid_request": "Die Anfrage dieser App ist ungültig.",
+			"unauthorized_client": "Diese App darf diese Anfrage nicht stellen.",
+			"unsupported_response_type": "Diese App hat eine Anmeldemethode angefragt, die Revel nicht unterstützt.",
+			"invalid_scope": "Diese App hat Berechtigungen angefragt, die sie nicht anfragen darf.",
+			"invalid_target": "Diese App hat Zugriff auf einen Dienst angefragt, den Revel nicht kennt.",
+			"server_error": "Bei uns ist etwas schiefgelaufen.",
+			"temporarily_unavailable": "Revel ist vorübergehend nicht erreichbar. Bitte versuche es gleich noch einmal.",
+			"invalid_client": "Revel kennt diese App nicht.",
+			"consent_required": "Die Freigabeseite ist abgelaufen.",
+			"interaction_required": "Diese Anfrage braucht deine Freigabe, aber die App hat Revel gebeten, keine Seite anzuzeigen.",
+			"generic": "Die Anfrage dieser App konnte nicht abgeschlossen werden."
+		},
+		"scopes": {
+			"group_identity": "Anmeldung und Profil",
+			"group_me": "Dein Konto",
+			"group_org": "Deine Organisationen",
+			"moneyMarker": "Umfasst Zahlungen und Rückerstattungen"
+		},
+		"consent": {
+			"kicker": "App verbinden",
+			"title": "{name} verbinden",
+			"unverifiedTitle": "Revel hat diese App nicht geprüft.",
+			"unverifiedBody": "Mach nur weiter, wenn du ihr vertraust.",
+			"verified": "Verifiziert",
+			"asksTo": "Diese App möchte:",
+			"noScopes": "Diese App fragt keine Berechtigungen an.",
+			"homepageLink": "Webseite: {host}",
+			"privacyLink": "Datenschutzerklärung: {host}",
+			"sentTo": "Wenn du fortfährst, wirst du zu {host} weitergeleitet.",
+			"signedInAs": "Angemeldet als {name} ({email}).",
+			"switchAccount": "Nicht du? Konto wechseln",
+			"allow": "Erlauben",
+			"deny": "Ablehnen",
+			"checking": "Anfrage wird geprüft…",
+			"sending": "Wird gesendet…",
+			"redirecting": "Weiterleitung zu {host}…",
+			"expiredNotice": "Die Seite ist abgelaufen. Bitte prüfe die Anfrage noch einmal.",
+			"retry": "Erneut versuchen",
+			"backToRevel": "Zurück zu Revel",
+			"errorFallbackHeadline": "Beim Prüfen dieser Anfrage ist etwas schiefgelaufen."
+		}
+	},
 	"orgAdmin": {
 		"layout": {
 			"toggleMenu": "Navigationsmenü umschalten",

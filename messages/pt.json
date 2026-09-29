@@ -3260,6 +3260,50 @@
 		"description": "Vê e gere as tuas notificações e atualizações de eventos",
 		"settingsButton": "Definições"
 	},
+	"oauth": {
+		"error": {
+			"invalid_request": "O pedido desta app é inválido.",
+			"unauthorized_client": "Esta app não tem permissão para fazer este pedido.",
+			"unsupported_response_type": "Esta app pediu um método de início de sessão que o Revel não suporta.",
+			"invalid_scope": "Esta app pediu permissões que não pode solicitar.",
+			"invalid_target": "Esta app pediu acesso a um serviço que o Revel não reconhece.",
+			"server_error": "Algo correu mal do nosso lado.",
+			"temporarily_unavailable": "O Revel está temporariamente indisponível. Tenta novamente daqui a pouco.",
+			"invalid_client": "O Revel não reconhece esta app.",
+			"consent_required": "O ecrã de autorização expirou.",
+			"interaction_required": "Este pedido precisa da tua aprovação, mas a app pediu ao Revel para não mostrar nenhum ecrã.",
+			"generic": "Não foi possível concluir o pedido desta app."
+		},
+		"scopes": {
+			"group_identity": "Início de sessão e perfil",
+			"group_me": "A tua conta",
+			"group_org": "As tuas organizações",
+			"moneyMarker": "Inclui pagamentos e reembolsos"
+		},
+		"consent": {
+			"kicker": "Ligar uma app",
+			"title": "Ligar {name}",
+			"unverifiedTitle": "O Revel não analisou esta app.",
+			"unverifiedBody": "Continua só se confiares nela.",
+			"verified": "Verificada",
+			"asksTo": "Esta app pede para:",
+			"noScopes": "Esta app não pede nenhuma permissão.",
+			"homepageLink": "Site: {host}",
+			"privacyLink": "Política de privacidade: {host}",
+			"sentTo": "Ao continuar, vamos levar-te para {host}.",
+			"signedInAs": "Sessão iniciada como {name} ({email}).",
+			"switchAccount": "Não és tu? Mudar de conta",
+			"allow": "Permitir",
+			"deny": "Recusar",
+			"checking": "A verificar o pedido…",
+			"sending": "A enviar…",
+			"redirecting": "A redirecionar para {host}…",
+			"expiredNotice": "O ecrã expirou. Revê o pedido novamente.",
+			"retry": "Tentar novamente",
+			"backToRevel": "Voltar ao Revel",
+			"errorFallbackHeadline": "Algo correu mal ao verificar este pedido."
+		}
+	},
 	"orgAdmin": {
 		"layout": {
 			"toggleMenu": "Alternar menu de navegação",

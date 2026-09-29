@@ -3230,6 +3230,50 @@
 		"description": "Consulte et gère tes notifications et mises à jour d'événements",
 		"settingsButton": "Paramètres"
 	},
+	"oauth": {
+		"error": {
+			"invalid_request": "La demande de cette appli n'est pas valide.",
+			"unauthorized_client": "Cette appli n'est pas autorisée à faire cette demande.",
+			"unsupported_response_type": "Cette appli a demandé une méthode de connexion que Revel ne prend pas en charge.",
+			"invalid_scope": "Cette appli a demandé des autorisations qu'elle ne peut pas demander.",
+			"invalid_target": "Cette appli a demandé l'accès à un service que Revel ne reconnaît pas.",
+			"server_error": "Un problème est survenu de notre côté.",
+			"temporarily_unavailable": "Revel est temporairement indisponible. Réessaie dans un instant.",
+			"invalid_client": "Revel ne reconnaît pas cette appli.",
+			"consent_required": "L'écran d'autorisation a expiré.",
+			"interaction_required": "Cette demande a besoin de ton accord, mais l'appli a demandé à Revel de n'afficher aucun écran.",
+			"generic": "La demande de cette appli n'a pas pu aboutir."
+		},
+		"scopes": {
+			"group_identity": "Connexion et profil",
+			"group_me": "Ton compte",
+			"group_org": "Tes organisations",
+			"moneyMarker": "Inclut les paiements et les remboursements"
+		},
+		"consent": {
+			"kicker": "Connecter une appli",
+			"title": "Connecter {name}",
+			"unverifiedTitle": "Revel n'a pas vérifié cette appli.",
+			"unverifiedBody": "Ne continue que si tu lui fais confiance.",
+			"verified": "Vérifiée",
+			"asksTo": "Cette appli demande à :",
+			"noScopes": "Cette appli ne demande aucune autorisation.",
+			"homepageLink": "Site web : {host}",
+			"privacyLink": "Politique de confidentialité : {host}",
+			"sentTo": "Si tu continues, nous t'enverrons vers {host}.",
+			"signedInAs": "Compte connecté : {name} ({email}).",
+			"switchAccount": "Ce n'est pas toi ? Changer de compte",
+			"allow": "Autoriser",
+			"deny": "Refuser",
+			"checking": "Vérification de la demande…",
+			"sending": "Envoi en cours…",
+			"redirecting": "Redirection vers {host}…",
+			"expiredNotice": "L'écran a expiré. Vérifie à nouveau la demande.",
+			"retry": "Réessayer",
+			"backToRevel": "Retour à Revel",
+			"errorFallbackHeadline": "Un problème est survenu lors de la vérification de cette demande."
+		}
+	},
 	"orgAdmin": {
 		"layout": {
 			"toggleMenu": "Afficher/masquer le menu de navigation",
