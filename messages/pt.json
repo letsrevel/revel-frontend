@@ -921,6 +921,10 @@
 		"claimMembership": "Resgatar adesão"
 	},
 	"common": {
+		"copy": "Copiar",
+		"copyNamed": "Copiar {label}",
+		"copied": "Copiado para a área de transferência.",
+		"copyFailed": "Não foi possível copiar. Seleciona o texto e copia-o tu.",
 		"statuses_enabled": "Ativado",
 		"statuses_disabled": "Desativado",
 		"statuses_loading": "A carregar...",
@@ -3259,6 +3263,169 @@
 		"title": "Notificações",
 		"description": "Vê e gere as tuas notificações e atualizações de eventos",
 		"settingsButton": "Definições"
+	},
+	"oauth": {
+		"error": {
+			"invalid_request": "O pedido desta app é inválido.",
+			"unauthorized_client": "Esta app não tem permissão para fazer este pedido.",
+			"unsupported_response_type": "Esta app pediu um método de início de sessão que o Revel não suporta.",
+			"invalid_scope": "Esta app pediu permissões que não pode solicitar.",
+			"invalid_target": "Esta app pediu acesso a um serviço que o Revel não reconhece.",
+			"server_error": "Algo correu mal do nosso lado.",
+			"temporarily_unavailable": "O Revel está temporariamente indisponível. Tenta novamente daqui a pouco.",
+			"invalid_client": "O Revel não reconhece esta app.",
+			"consent_required": "O ecrã de autorização expirou.",
+			"interaction_required": "Este pedido precisa da tua aprovação, mas a app pediu ao Revel para não mostrar nenhum ecrã.",
+			"generic": "Não foi possível concluir o pedido desta app."
+		},
+		"scopes": {
+			"group_identity": "Início de sessão e perfil",
+			"group_me": "A tua conta",
+			"group_org": "As tuas organizações",
+			"moneyMarker": "Inclui pagamentos e reembolsos"
+		},
+		"consent": {
+			"kicker": "Ligar uma app",
+			"title": "Ligar {name}",
+			"unverifiedTitle": "O Revel não analisou esta app.",
+			"unverifiedBody": "Continua só se confiares nela.",
+			"verified": "Verificada",
+			"asksTo": "Esta app pede para:",
+			"noScopes": "Esta app não pede nenhuma permissão.",
+			"homepageLink": "Site: {host}",
+			"privacyLink": "Política de privacidade: {host}",
+			"sentTo": "Ao continuar, vamos levar-te para {host}.",
+			"signedInAs": "Sessão iniciada como {name} ({email}).",
+			"switchAccount": "Não és tu? Mudar de conta",
+			"allow": "Permitir",
+			"deny": "Recusar",
+			"checking": "A verificar o pedido…",
+			"sending": "A enviar…",
+			"redirecting": "A redirecionar para {host}…",
+			"expiredNotice": "O ecrã expirou. Revê o pedido novamente.",
+			"retry": "Tentar novamente",
+			"backToRevel": "Voltar ao Revel",
+			"errorFallbackHeadline": "Algo correu mal ao verificar este pedido."
+		},
+		"connections": {
+			"title": "Apps ligadas",
+			"section": "Apps com acesso à tua conta",
+			"loadError": "Não conseguimos carregar as tuas apps ligadas.",
+			"emptyTitle": "Não há nenhuma app ligada à tua conta.",
+			"emptyBody": "Quando permitires que uma app use a tua conta, ela aparece aqui.",
+			"connectedOn": "Ligada a {date}",
+			"lastUsed": "Última utilização: {date}",
+			"remove": "Remover",
+			"removeNamed": "Remover {name}",
+			"confirmTitle": "Desligar {name}?",
+			"confirmMessage": "Perde o acesso imediatamente. Se a voltares a ligar, vais ter de a aprovar outra vez.",
+			"confirmAction": "Desligar",
+			"removed": "A app {name} foi desligada.",
+			"removeError": "Não conseguimos desligar esta app. Tenta novamente.",
+			"emailNote": "Alterar o teu endereço de email desliga todas as apps."
+		},
+		"developer": {
+			"title": "Apps de desenvolvimento",
+			"newApp": "Nova app",
+			"section": "As tuas apps",
+			"emptyTitle": "Ainda não registaste nenhuma app.",
+			"emptyBody": "Regista uma app para que possa ligar-se ao Revel em nome das pessoas que a usam.",
+			"loadError": "Não foi possível carregar as tuas apps.",
+			"usedBy": {
+				"one": "Usada por {count} pessoa",
+				"other": "Usada por {count} pessoas"
+			},
+			"lastUsed": "Última utilização: {date}",
+			"neverUsed": "Nunca usada",
+			"typePublic": "Pública",
+			"typeConfidential": "Confidencial",
+			"active": "Ativa",
+			"inactive": "Inativa",
+			"verifyEmailTitle": "Verifica o teu endereço de email para registar apps",
+			"verifyEmailBody": "As apps que registas são mostradas a outras pessoas, por isso precisamos de saber que és mesmo tu.",
+			"verifyEmailCta": "Ir para o teu perfil",
+			"form": {
+				"name": "Nome",
+				"description": "Descrição",
+				"descriptionCount": "{count} / {max}",
+				"clientType": "Tipo de app",
+				"public": "Pública",
+				"publicHelp": "Apps de browser, móveis e CLI. Usa PKCE e não tem segredo.",
+				"confidential": "Confidencial",
+				"confidentialHelp": "Apps de servidor capazes de guardar um segredo.",
+				"redirectUris": "URIs de redirecionamento",
+				"redirectUriHint": "https, ou http em localhost, 127.0.0.1 ou [::1] para apps públicas.",
+				"addUri": "Adicionar outro URI",
+				"removeUri": "Remover URI {n}",
+				"uriLabel": "URI de redirecionamento {n}",
+				"scopes": "Permissões que a app pode pedir",
+				"orgReadNote": "Cada scope de organização precisa também de org:read.",
+				"homepage": "URL do site",
+				"privacy": "URL da política de privacidade",
+				"create": "Registar app",
+				"save": "Guardar alterações",
+				"saving": "A guardar…"
+			},
+			"createTitle": "Registar uma nova app",
+			"secret": {
+				"title": "Guarda o teu segredo de cliente",
+				"body": "Não o vais voltar a ver. Guarda-o num sítio seguro.",
+				"clientId": "ID de cliente",
+				"clientSecret": "Segredo de cliente",
+				"done": "Já o guardei"
+			},
+			"created": "A app {name} foi registada.",
+			"saved": "Alterações guardadas.",
+			"notFoundTitle": "Esta app não existe ou não é tua.",
+			"notFoundBody": "Pode ter sido eliminada.",
+			"backToList": "Voltar às tuas apps",
+			"logo": {
+				"title": "Logótipo",
+				"help": "Mostrado no ecrã de consentimento. Quadrado, PNG ou JPEG, até 5 MB.",
+				"uploaded": "Logótipo atualizado.",
+				"error": "Não foi possível carregar o logótipo."
+			},
+			"danger": {
+				"title": "Zona de perigo",
+				"rotate": "Renovar segredo",
+				"rotateTitle": "Renovar o segredo de cliente?",
+				"rotateMessage": "O segredo antigo deixa de funcionar imediatamente. Atualiza a tua app antes do próximo pedido de token.",
+				"deactivate": "Desativar",
+				"deactivateTitle": "Desativar {name}?",
+				"deactivateMessage": "Todas as pessoas que usam esta app são desligadas imediatamente.",
+				"activate": "Ativar",
+				"activateTitle": "Ativar {name}?",
+				"activateMessage": "Será preciso autorizá-la novamente.",
+				"delete": "Eliminar app",
+				"deleteTitle": "Eliminar {name}?",
+				"deleteMessage": "Isto remove a app e todos os tokens que lhe foram emitidos. Não pode ser anulado.",
+				"deleted": "A app {name} foi eliminada."
+			},
+			"scopeRemoval": {
+				"title": "Remover permissões?",
+				"message": "Remover um scope termina a sessão de todas as pessoas cujo token o contém: {scopes}",
+				"confirm": "Remover e guardar"
+			},
+			"actionError": "Algo correu mal. Tenta novamente.",
+			"validation": {
+				"nameRequired": "Dá um nome à app.",
+				"nameTooLong": "O nome pode ter no máximo 255 caracteres.",
+				"descriptionTooLong": "A descrição pode ter no máximo 2000 caracteres.",
+				"uriInvalid": "Introduz um URL completo, como https://example.com/callback.",
+				"uriFragment": "Os URI de redirecionamento não podem conter um fragmento #.",
+				"uriScheme": "Usa https. As apps públicas também podem usar http em localhost.",
+				"uriSchemeConfidential": "As apps confidenciais têm de usar https.",
+				"urisMin": "Adiciona pelo menos um URI de redirecionamento.",
+				"urisMax": "Podes adicionar até 10 URIs de redirecionamento.",
+				"urisDuplicate": "Este URI de redirecionamento aparece duas vezes.",
+				"orgReadRequired": "Cada scope de organização precisa também de org:read.",
+				"urlInvalid": "Introduz um URL completo, como https://example.com."
+			},
+			"errors": {
+				"limit": "Atingiste o limite de apps por conta.",
+				"generic": "Algo correu mal. Verifica o formulário e tenta novamente."
+			}
+		}
 	},
 	"orgAdmin": {
 		"layout": {
@@ -6334,7 +6501,9 @@
 		"myOrganizations": "As minhas organizações",
 		"adminDashboard": "Painel de administração",
 		"invoices": "As minhas faturas",
-		"memberships": "Adesões"
+		"memberships": "Adesões",
+		"connectedApps": "Apps ligadas",
+		"developerApps": "Apps de desenvolvimento"
 	},
 	"userMenu.createOrganization": "Criar organização",
 	"venueSelector": {

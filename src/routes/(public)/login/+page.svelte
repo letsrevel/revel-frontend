@@ -19,6 +19,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { SeoHead } from '$lib/seo';
 	import { oidcErrorMessage } from '$lib/utils/oidc-errors';
+	import { withReturnUrl } from '$lib/utils/safe-redirect';
 
 	interface Props {
 		data: PageData;
@@ -46,6 +47,12 @@
 		const returnUrl = page.url.searchParams.get('returnUrl');
 		return returnUrl ? `&returnUrl=${encodeURIComponent(returnUrl)}` : '';
 	});
+
+	// "Create account" keeps the return target: a user who was sent to
+	// /login?returnUrl=… and registers instead must come back the same way.
+	const registerHref = $derived(
+		withReturnUrl(resolve('/(public)/register', {}), page.url.searchParams.get('returnUrl'))
+	);
 
 	// The backend appends ?error=oidc_<code> to the login redirect when the
 	// OIDC browser flow fails (BE PR #919). null for any non-OIDC/absent code.
@@ -448,12 +455,11 @@
 	{#if !requires2FA}
 		<div class="text-center text-sm">
 			<span class="text-muted-foreground">{m['login.dontHaveAccount']()}</span>
-			<a
-				href={resolve('/(public)/register', {})}
-				class="ml-1 text-primary underline-offset-4 hover:underline"
-			>
+			<!-- eslint-disable svelte/no-navigation-without-resolve -- href is resolve() output; withReturnUrl only appends the ?returnUrl= query -->
+			<a href={registerHref} class="ml-1 text-primary underline-offset-4 hover:underline">
 				{m['login.createAccount']()}
 			</a>
+			<!-- eslint-enable svelte/no-navigation-without-resolve -->
 		</div>
 	{/if}
 </AuthBandLayout>

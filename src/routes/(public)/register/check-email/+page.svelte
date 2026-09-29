@@ -5,8 +5,18 @@
 	import { Mail, Loader2, AlertTriangle } from '@lucide/svelte';
 	import { accountResendVerificationEmail } from '$lib/api/generated/sdk.gen';
 	import AuthBandLayout from '$lib/components/auth/AuthBandLayout.svelte';
+	import { registrationReturnUrl, withReturnUrl } from '$lib/utils/safe-redirect';
 
 	const email = $derived($page.url.searchParams.get('email') || '');
+	// The register action appends `&returnUrl=` here so the user who verifies
+	// on another device can still come back through "Back to login".
+	const loginHref = $derived(
+		withReturnUrl(resolve('/(public)/login', {}), $page.url.searchParams.get('returnUrl'))
+	);
+	// Re-sent verification links carry the same target the register action sent
+	// (#978). Dropped silently when unsafe/too long, exactly as on register:
+	// the backend 422s a bad `return_url`, which would fail the resend itself.
+	const returnUrl = $derived(registrationReturnUrl($page.url.searchParams.get('returnUrl')));
 	let isResending = $state(false);
 	let resendSuccess = $state(false);
 	let resendError = $state('');
@@ -33,7 +43,8 @@
 		try {
 			const response = await accountResendVerificationEmail({
 				body: {
-					email
+					email,
+					...(returnUrl ? { return_url: returnUrl } : {})
 				}
 			});
 
@@ -139,11 +150,10 @@
 
 	<!-- Back to Login -->
 	<div class="text-center text-sm">
-		<a
-			href={resolve('/(public)/login', {})}
-			class="text-primary underline-offset-4 hover:underline"
-		>
+		<!-- eslint-disable svelte/no-navigation-without-resolve -- href is resolve() output; withReturnUrl only appends the ?returnUrl= query -->
+		<a href={loginHref} class="text-primary underline-offset-4 hover:underline">
 			{m['checkEmailPage.backToLogin']()}
 		</a>
+		<!-- eslint-enable svelte/no-navigation-without-resolve -->
 	</div>
 </AuthBandLayout>

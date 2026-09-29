@@ -921,6 +921,10 @@
 		"claimMembership": "Mitgliedschaft einlösen"
 	},
 	"common": {
+		"copy": "Kopieren",
+		"copyNamed": "{label} kopieren",
+		"copied": "In die Zwischenablage kopiert.",
+		"copyFailed": "Kopieren hat nicht geklappt. Markiere den Text und kopiere ihn selbst.",
 		"statuses_enabled": "Aktiviert",
 		"statuses_disabled": "Deaktiviert",
 		"statuses_loading": "Lädt...",
@@ -3259,6 +3263,169 @@
 		"title": "Benachrichtigungen",
 		"description": "Sieh und verwalte deine Veranstaltungsbenachrichtigungen und Updates",
 		"settingsButton": "Einstellungen"
+	},
+	"oauth": {
+		"error": {
+			"invalid_request": "Die Anfrage dieser App ist ungültig.",
+			"unauthorized_client": "Diese App darf diese Anfrage nicht stellen.",
+			"unsupported_response_type": "Diese App hat eine Anmeldemethode angefragt, die Revel nicht unterstützt.",
+			"invalid_scope": "Diese App hat Berechtigungen angefragt, die sie nicht anfragen darf.",
+			"invalid_target": "Diese App hat Zugriff auf einen Dienst angefragt, den Revel nicht kennt.",
+			"server_error": "Bei uns ist etwas schiefgelaufen.",
+			"temporarily_unavailable": "Revel ist vorübergehend nicht erreichbar. Bitte versuche es gleich noch einmal.",
+			"invalid_client": "Revel kennt diese App nicht.",
+			"consent_required": "Die Freigabeseite ist abgelaufen.",
+			"interaction_required": "Diese Anfrage braucht deine Freigabe, aber die App hat Revel gebeten, keine Seite anzuzeigen.",
+			"generic": "Die Anfrage dieser App konnte nicht abgeschlossen werden."
+		},
+		"scopes": {
+			"group_identity": "Anmeldung und Profil",
+			"group_me": "Dein Konto",
+			"group_org": "Deine Organisationen",
+			"moneyMarker": "Umfasst Zahlungen und Rückerstattungen"
+		},
+		"consent": {
+			"kicker": "App verbinden",
+			"title": "{name} verbinden",
+			"unverifiedTitle": "Revel hat diese App nicht geprüft.",
+			"unverifiedBody": "Mach nur weiter, wenn du ihr vertraust.",
+			"verified": "Verifiziert",
+			"asksTo": "Diese App möchte:",
+			"noScopes": "Diese App fragt keine Berechtigungen an.",
+			"homepageLink": "Webseite: {host}",
+			"privacyLink": "Datenschutzerklärung: {host}",
+			"sentTo": "Wenn du fortfährst, wirst du zu {host} weitergeleitet.",
+			"signedInAs": "Angemeldet als {name} ({email}).",
+			"switchAccount": "Nicht du? Konto wechseln",
+			"allow": "Erlauben",
+			"deny": "Ablehnen",
+			"checking": "Anfrage wird geprüft…",
+			"sending": "Wird gesendet…",
+			"redirecting": "Weiterleitung zu {host}…",
+			"expiredNotice": "Die Seite ist abgelaufen. Bitte prüfe die Anfrage noch einmal.",
+			"retry": "Erneut versuchen",
+			"backToRevel": "Zurück zu Revel",
+			"errorFallbackHeadline": "Beim Prüfen dieser Anfrage ist etwas schiefgelaufen."
+		},
+		"connections": {
+			"title": "Verbundene Apps",
+			"section": "Apps mit Zugriff auf dein Konto",
+			"loadError": "Wir konnten deine verbundenen Apps nicht laden.",
+			"emptyTitle": "Mit deinem Konto sind keine Apps verbunden.",
+			"emptyBody": "Wenn du einer App erlaubst, dein Konto zu nutzen, erscheint sie hier.",
+			"connectedOn": "Verbunden am {date}",
+			"lastUsed": "Zuletzt verwendet am {date}",
+			"remove": "Entfernen",
+			"removeNamed": "{name} entfernen",
+			"confirmTitle": "{name} trennen?",
+			"confirmMessage": "Die App verliert sofort den Zugriff. Wenn du sie wieder verbindest, musst du sie erneut genehmigen.",
+			"confirmAction": "Trennen",
+			"removed": "{name} wurde getrennt.",
+			"removeError": "Wir konnten diese App nicht trennen. Bitte versuche es noch einmal.",
+			"emailNote": "Wenn du deine E-Mail-Adresse änderst, werden alle Apps getrennt."
+		},
+		"developer": {
+			"title": "Developer-Apps",
+			"newApp": "Neue App",
+			"section": "Deine Apps",
+			"emptyTitle": "Du hast noch keine Apps registriert.",
+			"emptyBody": "Registriere eine App, damit sie sich im Namen ihrer Nutzer*innen mit Revel verbinden kann.",
+			"loadError": "Wir konnten deine Apps nicht laden.",
+			"usedBy": {
+				"one": "Von {count} Person genutzt",
+				"other": "Von {count} Personen genutzt"
+			},
+			"lastUsed": "Zuletzt genutzt: {date}",
+			"neverUsed": "Noch nie genutzt",
+			"typePublic": "Öffentlich",
+			"typeConfidential": "Vertraulich",
+			"active": "Aktiv",
+			"inactive": "Inaktiv",
+			"verifyEmailTitle": "Bestätige deine E-Mail-Adresse, um Apps zu registrieren",
+			"verifyEmailBody": "Apps, die du registrierst, werden anderen Personen angezeigt. Deshalb müssen wir wissen, dass du es wirklich bist.",
+			"verifyEmailCta": "Zu deinem Profil",
+			"form": {
+				"name": "Name",
+				"description": "Beschreibung",
+				"descriptionCount": "{count} / {max}",
+				"clientType": "App-Typ",
+				"public": "Öffentlich",
+				"publicHelp": "Browser-, Mobil- und CLI-Apps. Nutzt PKCE und hat kein Secret.",
+				"confidential": "Vertraulich",
+				"confidentialHelp": "Server-Apps, die ein Secret geheim halten können.",
+				"redirectUris": "Weiterleitungs-URIs",
+				"redirectUriHint": "https, bei öffentlichen Apps auch http auf localhost, 127.0.0.1 oder [::1].",
+				"addUri": "Weitere URI hinzufügen",
+				"removeUri": "URI {n} entfernen",
+				"uriLabel": "Weiterleitungs-URI {n}",
+				"scopes": "Berechtigungen, die die App anfordern darf",
+				"orgReadNote": "Jeder Organisations-Scope braucht auch org:read.",
+				"homepage": "Website-URL",
+				"privacy": "URL der Datenschutzerklärung",
+				"create": "App registrieren",
+				"save": "Änderungen speichern",
+				"saving": "Wird gespeichert…"
+			},
+			"createTitle": "Neue App registrieren",
+			"secret": {
+				"title": "Speichere dein Client-Secret",
+				"body": "Du wirst es nicht noch einmal sehen. Bewahre es an einem sicheren Ort auf.",
+				"clientId": "Client-ID",
+				"clientSecret": "Client-Secret",
+				"done": "Ich habe es gespeichert"
+			},
+			"created": "{name} wurde registriert.",
+			"saved": "Änderungen gespeichert.",
+			"notFoundTitle": "Diese App existiert nicht oder gehört nicht dir.",
+			"notFoundBody": "Vielleicht wurde sie gelöscht.",
+			"backToList": "Zurück zu deinen Apps",
+			"logo": {
+				"title": "Logo",
+				"help": "Wird auf dem Zustimmungsbildschirm angezeigt. Quadratisch, PNG oder JPEG, bis zu 5 MB.",
+				"uploaded": "Logo aktualisiert.",
+				"error": "Wir konnten das Logo nicht hochladen."
+			},
+			"danger": {
+				"title": "Gefahrenzone",
+				"rotate": "Secret erneuern",
+				"rotateTitle": "Client-Secret erneuern?",
+				"rotateMessage": "Das alte Secret funktioniert sofort nicht mehr. Aktualisiere deine App vor ihrer nächsten Token-Anfrage.",
+				"deactivate": "Deaktivieren",
+				"deactivateTitle": "{name} deaktivieren?",
+				"deactivateMessage": "Alle Nutzer*innen dieser App werden sofort getrennt.",
+				"activate": "Aktivieren",
+				"activateTitle": "{name} aktivieren?",
+				"activateMessage": "Nutzer*innen müssen sie erneut autorisieren.",
+				"delete": "App löschen",
+				"deleteTitle": "{name} löschen?",
+				"deleteMessage": "Damit werden die App und alle für sie ausgestellten Tokens entfernt. Das kann nicht rückgängig gemacht werden.",
+				"deleted": "{name} wurde gelöscht."
+			},
+			"scopeRemoval": {
+				"title": "Berechtigungen entfernen?",
+				"message": "Wenn du einen Scope entfernst, werden alle Nutzer*innen abgemeldet, deren Token ihn enthält: {scopes}",
+				"confirm": "Entfernen und speichern"
+			},
+			"actionError": "Etwas ist schiefgelaufen. Bitte versuch es noch einmal.",
+			"validation": {
+				"nameRequired": "Gib der App einen Namen.",
+				"nameTooLong": "Der Name darf höchstens 255 Zeichen lang sein.",
+				"descriptionTooLong": "Die Beschreibung darf höchstens 2000 Zeichen lang sein.",
+				"uriInvalid": "Gib eine vollständige URL ein, z. B. https://example.com/callback.",
+				"uriFragment": "Weiterleitungs-URIs dürfen kein #-Fragment enthalten.",
+				"uriScheme": "Verwende https. Öffentliche Apps dürfen auf localhost auch http nutzen.",
+				"uriSchemeConfidential": "Vertrauliche Apps müssen https verwenden.",
+				"urisMin": "Füge mindestens eine Weiterleitungs-URI hinzu.",
+				"urisMax": "Du kannst bis zu 10 Weiterleitungs-URIs hinzufügen.",
+				"urisDuplicate": "Diese Weiterleitungs-URI steht doppelt in der Liste.",
+				"orgReadRequired": "Jeder Organisations-Scope braucht auch org:read.",
+				"urlInvalid": "Gib eine vollständige URL ein, z. B. https://example.com."
+			},
+			"errors": {
+				"limit": "Du hast das Limit an Apps pro Konto erreicht.",
+				"generic": "Etwas ist schiefgelaufen. Bitte überprüfe das Formular und versuch es noch einmal."
+			}
+		}
 	},
 	"orgAdmin": {
 		"layout": {
@@ -6334,7 +6501,9 @@
 		"myOrganizations": "Meine Organisationen",
 		"adminDashboard": "Admin-Dashboard",
 		"invoices": "Meine Rechnungen",
-		"memberships": "Mitgliedschaften"
+		"memberships": "Mitgliedschaften",
+		"connectedApps": "Verbundene Apps",
+		"developerApps": "Developer-Apps"
 	},
 	"userMenu.createOrganization": "Organisation erstellen",
 	"venueSelector": {

@@ -17,7 +17,9 @@
 		Gift,
 		FileText,
 		Receipt,
-		CreditCard
+		CreditCard,
+		Plug,
+		CodeXml
 	} from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
@@ -128,7 +130,22 @@
 			href: resolve('/(auth)/account/memberships', {}),
 			label: m['userMenu.memberships'](),
 			icon: CreditCard
-		}
+		},
+		// Flag-gated (fail-closed): the route 404s without the provider.
+		...(features.oauth_provider
+			? [
+					{
+						href: resolve('/(auth)/account/connected-apps', {}),
+						label: m['userMenu.connectedApps'](),
+						icon: Plug
+					},
+					{
+						href: resolve('/(auth)/account/developer-apps', {}),
+						label: m['userMenu.developerApps'](),
+						icon: CodeXml
+					}
+				]
+			: [])
 	]);
 
 	function handleLogout() {

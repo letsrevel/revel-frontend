@@ -82,3 +82,12 @@ export async function ssoProvider(key: string): Promise<{ key: string; name: str
 export const BACKEND_DOWN_MESSAGE =
 	`No backend at ${API_URL} — start it with \`make run\` (revel-backend) after ` +
 	'`make bootstrap`, see tests/e2e/README.md';
+
+/**
+ * Whether `/api/version` reports `features.<flag>: true`. Journeys for
+ * flag-gated surfaces (referral applications, the OAuth provider) self-skip
+ * with this instead of each carrying a private copy of the probe.
+ */
+export async function featureEnabled(flag: string): Promise<boolean> {
+	return (await versionInfo())?.features?.[flag] === true;
+}

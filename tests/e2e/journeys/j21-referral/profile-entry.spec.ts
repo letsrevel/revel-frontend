@@ -1,8 +1,8 @@
 import { test, expect } from '../../support/fixtures';
-import { API_URL, fetchWithRetry } from '../../support/api';
 import { createVerifiedUser } from '../../support/factories';
 import { pageAs } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
+import { featureEnabled } from '../../support/skip';
 
 // J21.8 (USER_JOURNEYS.md) — the signed-in entry point to the public
 // referral-program application (FE #939): /account/profile shows a
@@ -20,16 +20,10 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 const REFERRER = { email: 'test.referrer@example.com', password: 'password123' };
 const CTA = 'Apply to the referral program';
 
-async function referralApplicationsEnabled(): Promise<boolean> {
-	const response = await fetchWithRetry(`${API_URL}/api/version`);
-	const body = (await response.json()) as { features?: { referral_applications?: boolean } };
-	return body.features?.referral_applications === true;
-}
-
 test.describe('J21 referral program: profile entry point @p2', () => {
 	test.beforeEach(async () => {
 		test.skip(
-			!(await referralApplicationsEnabled()),
+			!(await featureEnabled('referral_applications')),
 			'referral applications are switched off on this backend'
 		);
 	});

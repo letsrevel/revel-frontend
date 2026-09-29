@@ -26,6 +26,13 @@
 		 */
 		subtitleAttrs?: Omit<HTMLAttributes<HTMLParagraphElement>, 'children' | 'class'>;
 		/**
+		 * Extra attributes for the H1 — the documented way to make the title a
+		 * focus target (`{ id, tabindex: -1 }`) for pages that move focus after
+		 * an async load (the OAuth consent screen). `class` is excluded for the
+		 * same reason as `subtitleAttrs`: the volume classes are the contract.
+		 */
+		titleAttrs?: Omit<HTMLAttributes<HTMLHeadingElement>, 'children' | 'class'>;
+		/**
 		 * 'celebration' = display scale (public/user surfaces); 'studio' =
 		 * admin/dense; 'poster' = celebration one notch louder, for the handful
 		 * of hero screens that carry a color-block band (uplift prototype).
@@ -62,6 +69,7 @@
 		kicker,
 		subtitle,
 		subtitleAttrs,
+		titleAttrs,
 		volume = 'studio',
 		onBand = false,
 		actions,
@@ -88,6 +96,7 @@
 		{/if}
 		<div class="flex flex-wrap items-center gap-x-3 gap-y-1">
 			<h1
+				{...titleAttrs}
 				class={cn(
 					'mt-1',
 					volume === 'poster' && 'text-4xl font-black leading-[1.08] sm:text-5xl',

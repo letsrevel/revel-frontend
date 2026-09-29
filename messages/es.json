@@ -921,6 +921,10 @@
 		"claimMembership": "Reclamar membresía"
 	},
 	"common": {
+		"copy": "Copiar",
+		"copyNamed": "Copiar {label}",
+		"copied": "Copiado al portapapeles.",
+		"copyFailed": "No se pudo copiar. Selecciona el texto y cópialo tú.",
 		"statuses_enabled": "Activado",
 		"statuses_disabled": "Desactivado",
 		"statuses_loading": "Cargando...",
@@ -3259,6 +3263,169 @@
 		"title": "Notificaciones",
 		"description": "Consulta y gestiona tus notificaciones y actualizaciones de eventos",
 		"settingsButton": "Ajustes"
+	},
+	"oauth": {
+		"error": {
+			"invalid_request": "La solicitud de esta app no es válida.",
+			"unauthorized_client": "Esta app no tiene permiso para hacer esta solicitud.",
+			"unsupported_response_type": "Esta app ha pedido un método de inicio de sesión que Revel no admite.",
+			"invalid_scope": "Esta app ha pedido permisos que no puede solicitar.",
+			"invalid_target": "Esta app ha pedido acceso a un servicio que Revel no reconoce.",
+			"server_error": "Algo ha fallado por nuestra parte.",
+			"temporarily_unavailable": "Revel no está disponible temporalmente. Inténtalo de nuevo en un momento.",
+			"invalid_client": "Revel no reconoce esta app.",
+			"consent_required": "La pantalla de autorización ha caducado.",
+			"interaction_required": "Esta solicitud necesita tu aprobación, pero la app le ha pedido a Revel que no muestre ninguna pantalla.",
+			"generic": "No se ha podido completar la solicitud de esta app."
+		},
+		"scopes": {
+			"group_identity": "Inicio de sesión y perfil",
+			"group_me": "Tu cuenta",
+			"group_org": "Tus organizaciones",
+			"moneyMarker": "Incluye pagos y reembolsos"
+		},
+		"consent": {
+			"kicker": "Conectar una app",
+			"title": "Conectar {name}",
+			"unverifiedTitle": "Revel no ha revisado esta app.",
+			"unverifiedBody": "Continúa solo si confías en ella.",
+			"verified": "Verificada",
+			"asksTo": "Esta app pide:",
+			"noScopes": "Esta app no pide ningún permiso.",
+			"homepageLink": "Sitio web: {host}",
+			"privacyLink": "Política de privacidad: {host}",
+			"sentTo": "Cuando continúes, te enviaremos a {host}.",
+			"signedInAs": "Sesión iniciada como {name} ({email}).",
+			"switchAccount": "¿No eres tú? Cambiar de cuenta",
+			"allow": "Permitir",
+			"deny": "Denegar",
+			"checking": "Comprobando la solicitud…",
+			"sending": "Enviando…",
+			"redirecting": "Redirigiendo a {host}…",
+			"expiredNotice": "La pantalla ha caducado. Revisa la solicitud de nuevo.",
+			"retry": "Reintentar",
+			"backToRevel": "Volver a Revel",
+			"errorFallbackHeadline": "Algo ha fallado al comprobar esta solicitud."
+		},
+		"connections": {
+			"title": "Apps conectadas",
+			"section": "Apps con acceso a tu cuenta",
+			"loadError": "No hemos podido cargar tus apps conectadas.",
+			"emptyTitle": "No hay ninguna app conectada a tu cuenta.",
+			"emptyBody": "Cuando permitas que una app use tu cuenta, aparecerá aquí.",
+			"connectedOn": "Conectada el {date}",
+			"lastUsed": "Último uso: {date}",
+			"remove": "Quitar",
+			"removeNamed": "Quitar {name}",
+			"confirmTitle": "¿Desconectar {name}?",
+			"confirmMessage": "Pierde el acceso de inmediato. Si vuelves a conectarla, tendrás que aprobarla otra vez.",
+			"confirmAction": "Desconectar",
+			"removed": "Se ha desconectado {name}.",
+			"removeError": "No hemos podido desconectar esta app. Inténtalo de nuevo.",
+			"emailNote": "Si cambias tu dirección de correo electrónico, se desconectan todas las apps."
+		},
+		"developer": {
+			"title": "Apps de desarrollo",
+			"newApp": "Nueva app",
+			"section": "Tus apps",
+			"emptyTitle": "No has registrado ninguna app.",
+			"emptyBody": "Registra una app para que pueda conectarse a Revel en nombre de las personas que la usan.",
+			"loadError": "No hemos podido cargar tus apps.",
+			"usedBy": {
+				"one": "La usa {count} persona",
+				"other": "La usan {count} personas"
+			},
+			"lastUsed": "Último uso: {date}",
+			"neverUsed": "Nunca usada",
+			"typePublic": "Pública",
+			"typeConfidential": "Confidencial",
+			"active": "Activa",
+			"inactive": "Inactiva",
+			"verifyEmailTitle": "Verifica tu dirección de correo electrónico para registrar apps",
+			"verifyEmailBody": "Las apps que registras se muestran a otras personas, así que necesitamos saber que eres tú de verdad.",
+			"verifyEmailCta": "Ir a tu perfil",
+			"form": {
+				"name": "Nombre",
+				"description": "Descripción",
+				"descriptionCount": "{count} / {max}",
+				"clientType": "Tipo de app",
+				"public": "Pública",
+				"publicHelp": "Apps de navegador, móviles y CLI. Usa PKCE y no tiene secreto.",
+				"confidential": "Confidencial",
+				"confidentialHelp": "Apps de servidor que pueden guardar un secreto.",
+				"redirectUris": "URI de redirección",
+				"redirectUriHint": "https, o http en localhost, 127.0.0.1 o [::1] para las apps públicas.",
+				"addUri": "Añadir otra URI",
+				"removeUri": "Eliminar URI {n}",
+				"uriLabel": "URI de redirección {n}",
+				"scopes": "Permisos que la app puede solicitar",
+				"orgReadNote": "Cada scope de organización necesita también org:read.",
+				"homepage": "URL del sitio web",
+				"privacy": "URL de la política de privacidad",
+				"create": "Registrar app",
+				"save": "Guardar cambios",
+				"saving": "Guardando…"
+			},
+			"createTitle": "Registrar una nueva app",
+			"secret": {
+				"title": "Guarda tu secreto de cliente",
+				"body": "No volverás a verlo. Guárdalo en un lugar seguro.",
+				"clientId": "ID de cliente",
+				"clientSecret": "Secreto de cliente",
+				"done": "Ya lo he guardado"
+			},
+			"created": "La app {name} se ha registrado.",
+			"saved": "Cambios guardados.",
+			"notFoundTitle": "Esta app no existe o no es tuya.",
+			"notFoundBody": "Puede que se haya eliminado.",
+			"backToList": "Volver a tus apps",
+			"logo": {
+				"title": "Logotipo",
+				"help": "Se muestra en la pantalla de consentimiento. Cuadrado, PNG o JPEG, hasta 5 MB.",
+				"uploaded": "Logotipo actualizado.",
+				"error": "No hemos podido subir el logotipo."
+			},
+			"danger": {
+				"title": "Zona de peligro",
+				"rotate": "Rotar secreto",
+				"rotateTitle": "¿Rotar el secreto de cliente?",
+				"rotateMessage": "El secreto anterior deja de funcionar de inmediato. Actualiza tu app antes de su próxima solicitud de token.",
+				"deactivate": "Desactivar",
+				"deactivateTitle": "¿Desactivar {name}?",
+				"deactivateMessage": "Todas las personas que usan esta app se desconectan de inmediato.",
+				"activate": "Activar",
+				"activateTitle": "¿Activar {name}?",
+				"activateMessage": "Habrá que volver a autorizarla.",
+				"delete": "Eliminar app",
+				"deleteTitle": "¿Eliminar {name}?",
+				"deleteMessage": "Esto elimina la app y todos los tokens que se le emitieron. No se puede deshacer.",
+				"deleted": "La app {name} se ha eliminado."
+			},
+			"scopeRemoval": {
+				"title": "¿Quitar permisos?",
+				"message": "Quitar un scope cierra la sesión de todas las personas cuyo token lo contiene: {scopes}",
+				"confirm": "Quitar y guardar"
+			},
+			"actionError": "Algo ha salido mal. Inténtalo de nuevo.",
+			"validation": {
+				"nameRequired": "Ponle un nombre a la app.",
+				"nameTooLong": "El nombre puede tener como máximo 255 caracteres.",
+				"descriptionTooLong": "La descripción puede tener como máximo 2000 caracteres.",
+				"uriInvalid": "Introduce una URL completa, como https://example.com/callback.",
+				"uriFragment": "Las URI de redirección no pueden contener un fragmento #.",
+				"uriScheme": "Usa https. Las apps públicas también pueden usar http en localhost.",
+				"uriSchemeConfidential": "Las apps confidenciales deben usar https.",
+				"urisMin": "Añade al menos una URI de redirección.",
+				"urisMax": "Puedes añadir hasta 10 URI de redirección.",
+				"urisDuplicate": "Esta URI de redirección aparece dos veces.",
+				"orgReadRequired": "Cada scope de organización necesita también org:read.",
+				"urlInvalid": "Introduce una URL completa, como https://example.com."
+			},
+			"errors": {
+				"limit": "Has alcanzado el límite de apps por cuenta.",
+				"generic": "Algo ha salido mal. Revisa el formulario e inténtalo de nuevo."
+			}
+		}
 	},
 	"orgAdmin": {
 		"layout": {
@@ -6334,7 +6501,9 @@
 		"myOrganizations": "Mis organizaciones",
 		"adminDashboard": "Panel de administración",
 		"invoices": "Mis facturas",
-		"memberships": "Membresías"
+		"memberships": "Membresías",
+		"connectedApps": "Apps conectadas",
+		"developerApps": "Apps de desarrollo"
 	},
 	"userMenu.createOrganization": "Crear organización",
 	"venueSelector": {

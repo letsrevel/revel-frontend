@@ -921,6 +921,10 @@
 		"claimMembership": "Claim Membership"
 	},
 	"common": {
+		"copy": "Copy",
+		"copyNamed": "Copy {label}",
+		"copied": "Copied to your clipboard.",
+		"copyFailed": "Couldn't copy. Select the text and copy it yourself.",
 		"statuses_enabled": "Enabled",
 		"statuses_disabled": "Disabled",
 		"statuses_loading": "Loading...",
@@ -3259,6 +3263,169 @@
 		"title": "Notifications",
 		"description": "View and manage your event notifications and updates",
 		"settingsButton": "Settings"
+	},
+	"oauth": {
+		"error": {
+			"invalid_request": "This app's request is invalid.",
+			"unauthorized_client": "This app isn't allowed to make this request.",
+			"unsupported_response_type": "This app asked for a sign-in method Revel doesn't support.",
+			"invalid_scope": "This app asked for permissions it can't request.",
+			"invalid_target": "This app asked for access to a service Revel doesn't recognize.",
+			"server_error": "Something went wrong on our side.",
+			"temporarily_unavailable": "Revel is temporarily unavailable. Please try again in a moment.",
+			"invalid_client": "Revel doesn't recognize this app.",
+			"consent_required": "The authorization screen expired.",
+			"interaction_required": "This request needs your approval, but the app asked Revel not to show a screen.",
+			"generic": "This app's request couldn't be completed."
+		},
+		"scopes": {
+			"group_identity": "Sign in and profile",
+			"group_me": "Your account",
+			"group_org": "Your organizations",
+			"moneyMarker": "Includes payments and refunds"
+		},
+		"consent": {
+			"kicker": "Connect an app",
+			"title": "Connect {name}",
+			"unverifiedTitle": "Revel has not reviewed this app.",
+			"unverifiedBody": "Only continue if you trust it.",
+			"verified": "Verified",
+			"asksTo": "This app is asking to:",
+			"noScopes": "This app is not asking for any permissions.",
+			"homepageLink": "Website: {host}",
+			"privacyLink": "Privacy policy: {host}",
+			"sentTo": "After you continue, you'll be sent to {host}.",
+			"signedInAs": "Signed in as {name} ({email}).",
+			"switchAccount": "Not you? Switch account",
+			"allow": "Allow",
+			"deny": "Deny",
+			"checking": "Checking the request…",
+			"sending": "Sending…",
+			"redirecting": "Redirecting to {host}…",
+			"expiredNotice": "The screen expired. Please review the request again.",
+			"retry": "Try again",
+			"backToRevel": "Back to Revel",
+			"errorFallbackHeadline": "Something went wrong while checking this request."
+		},
+		"connections": {
+			"title": "Connected apps",
+			"section": "Apps with access to your account",
+			"loadError": "We couldn't load your connected apps.",
+			"emptyTitle": "No apps are connected to your account.",
+			"emptyBody": "When you allow an app to use your account, it shows up here.",
+			"connectedOn": "Connected {date}",
+			"lastUsed": "Last used {date}",
+			"remove": "Remove",
+			"removeNamed": "Remove {name}",
+			"confirmTitle": "Disconnect {name}?",
+			"confirmMessage": "It loses access immediately. If you connect it again you'll be asked to approve it again.",
+			"confirmAction": "Disconnect",
+			"removed": "{name} was disconnected.",
+			"removeError": "We couldn't disconnect this app. Please try again.",
+			"emailNote": "Changing your email address disconnects every app."
+		},
+		"developer": {
+			"title": "Developer apps",
+			"newApp": "New app",
+			"section": "Your apps",
+			"emptyTitle": "You haven't registered any apps.",
+			"emptyBody": "Register an app to let it connect to Revel on behalf of its users.",
+			"loadError": "We couldn't load your apps.",
+			"usedBy": {
+				"one": "Used by {count} person",
+				"other": "Used by {count} people"
+			},
+			"lastUsed": "Last used {date}",
+			"neverUsed": "Never used",
+			"typePublic": "Public",
+			"typeConfidential": "Confidential",
+			"active": "Active",
+			"inactive": "Inactive",
+			"verifyEmailTitle": "Verify your email address to register apps",
+			"verifyEmailBody": "Apps you register are shown to other people, so we need to know it's really you.",
+			"verifyEmailCta": "Go to your profile",
+			"form": {
+				"name": "Name",
+				"description": "Description",
+				"descriptionCount": "{count} / {max}",
+				"clientType": "App type",
+				"public": "Public",
+				"publicHelp": "Browser, mobile and CLI apps. Uses PKCE and has no secret.",
+				"confidential": "Confidential",
+				"confidentialHelp": "Server apps that can keep a secret.",
+				"redirectUris": "Redirect URIs",
+				"redirectUriHint": "https, or http on localhost, 127.0.0.1 or [::1] for public apps.",
+				"addUri": "Add another URI",
+				"removeUri": "Remove URI {n}",
+				"uriLabel": "Redirect URI {n}",
+				"scopes": "Permissions the app may request",
+				"orgReadNote": "Every organizer scope needs org:read as well.",
+				"homepage": "Website URL",
+				"privacy": "Privacy policy URL",
+				"create": "Register app",
+				"save": "Save changes",
+				"saving": "Saving…"
+			},
+			"createTitle": "Register a new app",
+			"secret": {
+				"title": "Save your client secret",
+				"body": "You won't see this again. Store it somewhere safe.",
+				"clientId": "Client ID",
+				"clientSecret": "Client secret",
+				"done": "I've saved it"
+			},
+			"created": "{name} was registered.",
+			"saved": "Changes saved.",
+			"notFoundTitle": "This app doesn't exist or isn't yours.",
+			"notFoundBody": "It may have been deleted.",
+			"backToList": "Back to your apps",
+			"logo": {
+				"title": "Logo",
+				"help": "Shown on the consent screen. Square, PNG or JPEG, up to 5 MB.",
+				"uploaded": "Logo updated.",
+				"error": "We couldn't upload the logo."
+			},
+			"danger": {
+				"title": "Danger zone",
+				"rotate": "Rotate secret",
+				"rotateTitle": "Rotate the client secret?",
+				"rotateMessage": "The old secret stops working immediately. Update your app before its next token request.",
+				"deactivate": "Deactivate",
+				"deactivateTitle": "Deactivate {name}?",
+				"deactivateMessage": "Every user of this app is disconnected immediately.",
+				"activate": "Activate",
+				"activateTitle": "Activate {name}?",
+				"activateMessage": "Users will have to authorize it again.",
+				"delete": "Delete app",
+				"deleteTitle": "Delete {name}?",
+				"deleteMessage": "This removes the app and every token it was issued. This can't be undone.",
+				"deleted": "{name} was deleted."
+			},
+			"scopeRemoval": {
+				"title": "Remove permissions?",
+				"message": "Removing a scope signs out every user whose token holds it: {scopes}",
+				"confirm": "Remove and save"
+			},
+			"actionError": "Something went wrong. Please try again.",
+			"validation": {
+				"nameRequired": "Give the app a name.",
+				"nameTooLong": "Keep the name under 255 characters.",
+				"descriptionTooLong": "Keep the description under 2000 characters.",
+				"uriInvalid": "Enter a full URL, like https://example.com/callback.",
+				"uriFragment": "Redirect URIs can't contain a # fragment.",
+				"uriScheme": "Use https. Public apps may also use http on localhost.",
+				"uriSchemeConfidential": "Confidential apps must use https.",
+				"urisMin": "Add at least one redirect URI.",
+				"urisMax": "You can add up to 10 redirect URIs.",
+				"urisDuplicate": "This redirect URI is listed twice.",
+				"orgReadRequired": "Every organizer scope needs org:read as well.",
+				"urlInvalid": "Enter a full URL, like https://example.com."
+			},
+			"errors": {
+				"limit": "You've reached the limit of apps per account.",
+				"generic": "Something went wrong. Please check the form and try again."
+			}
+		}
 	},
 	"orgAdmin": {
 		"layout": {
@@ -6334,7 +6501,9 @@
 		"myOrganizations": "My Organizations",
 		"adminDashboard": "Admin Dashboard",
 		"invoices": "My Invoices",
-		"memberships": "Memberships"
+		"memberships": "Memberships",
+		"connectedApps": "Connected apps",
+		"developerApps": "Developer apps"
 	},
 	"userMenu.createOrganization": "Create Organization",
 	"venueSelector": {
