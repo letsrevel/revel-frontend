@@ -1,5 +1,9 @@
-import { oauthscopeListScopes as listScopes } from '$lib/api/generated/sdk.gen';
-import type { AuthorizeScopeSchema } from '$lib/api/generated/types.gen';
+import {
+	oauthconnectionListConnections as listConnections,
+	oauthconnectionRevoke as revoke,
+	oauthscopeListScopes as listScopes
+} from '$lib/api/generated/sdk.gen';
+import type { AuthorizeScopeSchema, OAuthConnectionSchema } from '$lib/api/generated/types.gen';
 
 /**
  * Query keys and option builders for the OAuth provider surfaces (#953).
@@ -7,7 +11,8 @@ import type { AuthorizeScopeSchema } from '$lib/api/generated/types.gen';
  * Unlike `waitlist-offers.ts`, builders take no token getter and no
  * QueryClient: the request interceptor in `$lib/api/client` injects the
  * bearer after `waitForAuthReady()`, and invalidation happens in the caller's
- * `onSuccess`. Builders return plain option objects; callers wrap them:
+ * mutation callbacks (`onSettled` where a failure can still change the list).
+ * Builders return plain option objects; callers wrap them:
  * `createQuery(() => scopesQuery())`.
  *
  * PR 2 adds `connectionsQuery` / `revokeConnection`; PR 3 adds the apps
@@ -79,5 +84,33 @@ export function scopesQuery() {
 			return res.data;
 		},
 		staleTime: Infinity
+	};
+}
+
+/** The apps the user has authorized, most recently used first. */
+export function connectionsQuery() {
+	return {
+		queryKey: oauthKeys.connections,
+		queryFn: async (): Promise<OAuthConnectionSchema[]> => {
+			const res = await listConnections();
+			if (res.error || !res.data) throwOAuthError(res);
+			return res.data;
+		}
+	};
+}
+
+/**
+ * Disconnect an app: the backend revokes every token, ID token and pending
+ * code the user granted it, so the next authorization shows consent again.
+ * Callers invalidate `oauthKeys.connections` in `onSettled`, not `onSuccess`:
+ * a 404 means the app is already disconnected, so the list must refresh on
+ * failure too or the stale card lingers.
+ */
+export function revokeConnection() {
+	return {
+		mutationFn: async (clientId: string): Promise<void> => {
+			const res = await revoke({ path: { client_id: clientId } });
+			if (res.error) throwOAuthError(res);
+		}
 	};
 }

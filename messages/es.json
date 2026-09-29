@@ -3302,6 +3302,23 @@
 			"retry": "Reintentar",
 			"backToRevel": "Volver a Revel",
 			"errorFallbackHeadline": "Algo ha fallado al comprobar esta solicitud."
+		},
+		"connections": {
+			"title": "Apps conectadas",
+			"section": "Apps con acceso a tu cuenta",
+			"loadError": "No hemos podido cargar tus apps conectadas.",
+			"emptyTitle": "No hay ninguna app conectada a tu cuenta.",
+			"emptyBody": "Cuando permitas que una app use tu cuenta, aparecerá aquí.",
+			"connectedOn": "Conectada el {date}",
+			"lastUsed": "Último uso: {date}",
+			"remove": "Quitar",
+			"removeNamed": "Quitar {name}",
+			"confirmTitle": "¿Desconectar {name}?",
+			"confirmMessage": "Pierde el acceso de inmediato. Si vuelves a conectarla, tendrás que aprobarla otra vez.",
+			"confirmAction": "Desconectar",
+			"removed": "Se ha desconectado {name}.",
+			"removeError": "No hemos podido desconectar esta app. Inténtalo de nuevo.",
+			"emailNote": "Si cambias tu dirección de correo electrónico, se desconectan todas las apps."
 		}
 	},
 	"orgAdmin": {
@@ -6378,7 +6395,8 @@
 		"myOrganizations": "Mis organizaciones",
 		"adminDashboard": "Panel de administración",
 		"invoices": "Mis facturas",
-		"memberships": "Membresías"
+		"memberships": "Membresías",
+		"connectedApps": "Apps conectadas"
 	},
 	"userMenu.createOrganization": "Crear organización",
 	"venueSelector": {

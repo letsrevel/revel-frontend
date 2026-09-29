@@ -3272,6 +3272,23 @@
 			"retry": "Réessayer",
 			"backToRevel": "Retour à Revel",
 			"errorFallbackHeadline": "Un problème est survenu lors de la vérification de cette demande."
+		},
+		"connections": {
+			"title": "Applis connectées",
+			"section": "Applis ayant accès à ton compte",
+			"loadError": "Nous n'avons pas pu charger tes applis connectées.",
+			"emptyTitle": "Aucune appli n'est connectée à ton compte.",
+			"emptyBody": "Quand tu autorises une appli à utiliser ton compte, elle apparaît ici.",
+			"connectedOn": "Connectée le {date}",
+			"lastUsed": "Dernière utilisation : {date}",
+			"remove": "Retirer",
+			"removeNamed": "Retirer {name}",
+			"confirmTitle": "Déconnecter {name} ?",
+			"confirmMessage": "Elle perd l'accès immédiatement. Si tu la reconnectes, tu devras l'approuver de nouveau.",
+			"confirmAction": "Déconnecter",
+			"removed": "L'appli {name} a été déconnectée.",
+			"removeError": "Nous n'avons pas pu déconnecter cette appli. Réessaie.",
+			"emailNote": "Changer ton adresse e-mail déconnecte toutes les applis."
 		}
 	},
 	"orgAdmin": {
@@ -6348,7 +6365,8 @@
 		"myOrganizations": "Mes organisations",
 		"adminDashboard": "Tableau de bord admin",
 		"invoices": "Mes factures",
-		"memberships": "Adhésions"
+		"memberships": "Adhésions",
+		"connectedApps": "Applis connectées"
 	},
 	"userMenu.createOrganization": "Créer une organisation",
 	"venueSelector": {

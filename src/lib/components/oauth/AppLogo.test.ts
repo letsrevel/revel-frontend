@@ -34,4 +34,17 @@ describe('AppLogo', () => {
 		render(AppLogo, { props: { name: '   ', logoUrl: null } });
 		expect(screen.getByText('?')).toBeInTheDocument();
 	});
+
+	it('retries a new logo URL after an earlier one failed', async () => {
+		const { container, rerender } = render(AppLogo, {
+			props: { name: 'Acme', logoUrl: 'https://api.example/expired.png' }
+		});
+		await fireEvent.error(container.querySelector('img') as HTMLImageElement);
+		expect(container.querySelector('img')).toBeNull();
+
+		await rerender({ name: 'Acme', logoUrl: 'https://api.example/fresh.png' });
+		const img = container.querySelector('img') as HTMLImageElement;
+		expect(img).not.toBeNull();
+		expect(img.src).toBe('https://api.example/fresh.png');
+	});
 });
