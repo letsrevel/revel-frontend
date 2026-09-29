@@ -149,4 +149,53 @@ describe('Connected apps page', () => {
 		expect(screen.getByRole('article', { name: 'Acme' })).toBeInTheDocument();
 		expect(screen.queryByRole('dialog')).toBeNull();
 	});
+	it('a failed DELETE refetches the list so an already-gone app disappears', async () => {
+		listConnectionsMock
+			.mockResolvedValueOnce(ok([connection('Acme', 'cid-a')]))
+			.mockResolvedValue(ok([]));
+		revokeMock.mockResolvedValue(notFound);
+		renderPage();
+		await userEvent.click(await screen.findByRole('button', { name: 'Remove Acme' }));
+		await userEvent.click(
+			within(await screen.findByRole('dialog')).getByRole('button', { name: 'Disconnect' })
+		);
+		await waitFor(() => expect(toastMock.error).toHaveBeenCalled());
+		expect(await screen.findByText('No apps are connected to your account.')).toBeInTheDocument();
+	});
+
+	it("settling app A does not close app B's dialog opened meanwhile", async () => {
+		listConnectionsMock.mockResolvedValue(
+			ok([connection('Acme', 'cid-a'), connection('Beta', 'cid-b')])
+		);
+		let resolveA: ((value: unknown) => void) | undefined;
+		revokeMock.mockImplementationOnce(
+			() =>
+				new Promise((resolve) => {
+					resolveA = resolve;
+				})
+		);
+		renderPage();
+		await userEvent.click(await screen.findByRole('button', { name: 'Remove Acme' }));
+		await userEvent.click(
+			within(await screen.findByRole('dialog')).getByRole('button', { name: 'Disconnect' })
+		);
+		await waitFor(() => expect(revokeMock).toHaveBeenCalledWith({ path: { client_id: 'cid-a' } }));
+		await userEvent.click(
+			within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancel' })
+		);
+		await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+		await userEvent.click(screen.getByRole('button', { name: 'Remove Beta' }));
+		expect(await screen.findByRole('dialog')).toHaveTextContent('Disconnect Beta?');
+
+		resolveA?.({ data: undefined, error: undefined, response: { status: 204 } });
+		await waitFor(() => expect(toastMock.success).toHaveBeenCalledWith('Acme was disconnected.'));
+		expect(screen.getByRole('dialog')).toHaveTextContent('Disconnect Beta?');
+
+		revokeMock.mockResolvedValue({ data: undefined, error: undefined, response: { status: 204 } });
+		await userEvent.click(
+			within(screen.getByRole('dialog')).getByRole('button', { name: 'Disconnect' })
+		);
+		await waitFor(() => expect(revokeMock).toHaveBeenCalledWith({ path: { client_id: 'cid-b' } }));
+		await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+	});
 });

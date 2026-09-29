@@ -3288,7 +3288,7 @@
 			"remove": "Retirer",
 			"removeNamed": "Retirer {name}",
 			"confirmTitle": "Déconnecter {name} ?",
-			"confirmMessage": "Elle perd l'accès immédiatement. Si tu la connectes à nouveau, tu devras l'approuver de nouveau.",
+			"confirmMessage": "Elle perd l'accès immédiatement. Si tu la reconnectes, tu devras l'approuver de nouveau.",
 			"confirmAction": "Déconnecter",
 			"removed": "L'appli {name} a été déconnectée.",
 			"removeError": "Nous n'avons pas pu déconnecter cette appli. Réessaie.",

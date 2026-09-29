@@ -42,23 +42,28 @@
 
 	const removal = createMutation(() => ({
 		...revokeConnection(),
-		onSuccess: async (_data, clientId) => {
+		onSuccess: (_data, clientId) => {
 			const name = rows.find((row) => row.client_id === clientId)?.application.name ?? '';
-			await queryClient.invalidateQueries({ queryKey: oauthKeys.connections });
 			toast.success(m['oauth.connections.removed']({ name }));
 		},
 		onError: () => {
 			toast.error(m['oauth.connections.removeError']());
 		},
-		onSettled: () => {
-			pending = null;
+		onSettled: async (_data, _error, clientId) => {
+			// Only close the dialog for the app that settled: the user may have
+			// cancelled and opened another app's dialog while this one was in flight.
+			if (pending?.client_id === clientId) pending = null;
+			// Resync after success AND failure: a 404 means the app is already gone.
+			await queryClient.invalidateQueries({ queryKey: oauthKeys.connections });
 		}
 	}));
 
 	// ConfirmDialog does not close itself on confirm: it stays open (driven by
-	// `pending`) until the request settles, so guard against a double submit.
+	// `pending`) until the request settles, so guard against a double submit of
+	// the same app (another app's dialog may still confirm meanwhile).
 	function confirmRemoval() {
-		if (!pending || removal.isPending) return;
+		if (!pending) return;
+		if (removal.isPending && removal.variables === pending.client_id) return;
 		removal.mutate(pending.client_id);
 	}
 </script>
@@ -93,7 +98,7 @@
 					<ConnectionCard
 						{connection}
 						vocabulary={vocab}
-						removing={removal.isPending && pending?.client_id === connection.client_id}
+						removing={removal.isPending && removal.variables === connection.client_id}
 						onRemove={(target) => (pending = target)}
 					/>
 				{/each}

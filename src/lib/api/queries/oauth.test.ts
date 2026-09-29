@@ -214,7 +214,7 @@ describe('revokeConnection', () => {
 		expect(revokeMock).toHaveBeenCalledWith({ path: { client_id: 'cid-1' } });
 	});
 
-	it('throws the backend body as-is on failure', async () => {
+	it('maps a 404 onto NotFoundError', async () => {
 		revokeMock.mockResolvedValue({
 			data: undefined,
 			error: { detail: 'Not found.' },
