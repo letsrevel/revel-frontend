@@ -10,6 +10,12 @@ import type { AuthorizationErrorResponse } from '$lib/api/generated/types.gen';
  * `access_denied` and `login_required` never arrive as a 400 body (a denial
  * is a redirect back to the app), which is why they are absent.
  *
+ * `interaction_required` is the exception kept on purpose: the backend only
+ * emits it as a redirect back to the app (`prompt=none` with consent still
+ * needed, `authorize_service._error_redirect`), which the page follows without
+ * rendering, so today it never reaches this map. It stays as a defensive
+ * headline in case a future backend path answers it as a 400 body instead.
+ *
  * Modelled on `oidc-errors.ts`: message FUNCTIONS in a map, called at render.
  */
 export type OAuthErrorCode =

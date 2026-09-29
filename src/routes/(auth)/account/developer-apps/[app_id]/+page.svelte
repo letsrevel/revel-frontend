@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { tick } from 'svelte';
+	import { tick, untrack } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
@@ -57,8 +57,13 @@
 	const app = createQuery(() => ({ ...appQuery(appId), enabled: !storeUnverified }));
 	const scopes = createQuery(() => ({ ...scopesQuery(), enabled: !storeUnverified }));
 
-	/** The rotated secret lives here only; never in a query or mutation cache. */
-	let secret = $state<{ clientId: string; clientSecret: string } | null>(null);
+	/**
+	 * The rotated secret lives here only; never in a query or mutation cache. Tagged
+	 * with the app it belongs to: SvelteKit reuses this component across `app_id`s,
+	 * so a secret must never render on (or outlive a move to) another app's page.
+	 */
+	let secret = $state<{ appId: string; clientId: string; clientSecret: string } | null>(null);
+	const revealed = $derived(secret && secret.appId === appId ? secret : null);
 	let fieldErrors = $state<Record<string, string>>({});
 	let formError = $state<string | null>(null);
 	let logoError = $state<string | null>(null);
@@ -67,6 +72,19 @@
 	let dialogHost = $state<HTMLDivElement | null>(null);
 	/** Where focus returns when a dialog closes. */
 	let dialogTrigger: HTMLElement | null = null;
+
+	// Per-app local state resets when the route moves to another app id (before the DOM
+	// updates, so nothing from the previous app flashes). Only `appId` is tracked.
+	$effect.pre(() => {
+		const id = appId;
+		untrack(() => {
+			if (secret && secret.appId !== id) secret = null;
+			fieldErrors = {};
+			formError = null;
+			logoError = null;
+			pending = null;
+		});
+	});
 
 	function refresh() {
 		// `app(id)` is nested under `apps`, so this refetches the list AND this detail.
@@ -108,12 +126,12 @@
 
 	const rotate = createMutation(() => ({
 		...rotateSecret(),
-		onSuccess: async (rotated) => {
+		onSuccess: async (rotated, id) => {
 			if (rotated.client_secret) {
 				// Copy and detach BEFORE any await: an unmount mid-refetch must not lose a
 				// just-issued secret, and with no observer left `gcTime: 0` drops the
 				// settled mutation (whose `data` carries the secret) from the cache.
-				secret = { clientId: rotated.client_id, clientSecret: rotated.client_secret };
+				secret = { appId: id, clientId: rotated.client_id, clientSecret: rotated.client_secret };
 				rotate.reset();
 				await focusReveal();
 			}
@@ -294,94 +312,98 @@
 
 	<PageHeader kicker={m['oauth.developer.title']()} {title} class="break-words" />
 
-	{#if unverified}
-		<EmailUnverifiedCallout />
-	{:else if notFound}
-		<EmptyState
-			icon={SearchX}
-			level={2}
-			title={m['oauth.developer.notFoundTitle']()}
-			body={m['oauth.developer.notFoundBody']()}
-		>
-			{#snippet action()}
-				<Button href={listHref} variant="outline">{m['oauth.developer.backToList']()}</Button>
-			{/snippet}
-		</EmptyState>
-	{:else if failed}
-		<p role="alert" class="text-sm text-destructive">{m['oauth.developer.actionError']()}</p>
-	{:else if loading}
-		<div role="status">
-			<Loader2 class="h-5 w-5 animate-spin" aria-hidden="true" />
-			<span class="sr-only">{m['common.loading']()}</span>
-		</div>
-	{:else if app.data && scopes.data}
-		{@const current = app.data}
-		<div class="space-y-3">
-			<div class="flex flex-wrap items-center gap-2">
-				<StatusBadge
-					tone="neutral"
-					label={current.client_type === 'public'
-						? m['oauth.developer.typePublic']()
-						: m['oauth.developer.typeConfidential']()}
-				/>
-				<StatusBadge
-					tone={current.is_active ? 'success' : 'neutral'}
-					label={current.is_active
-						? m['oauth.developer.active']()
-						: m['oauth.developer.inactive']()}
-				/>
-				{#if current.verified}
-					<StatusBadge tone="success" label={m['oauth.consent.verified']()} />
-				{/if}
-			</div>
-			<div>
-				<!-- Visual caption only: the field and its copy button are named by `label`. -->
-				<p class="mb-1 text-sm font-bold" aria-hidden="true">
-					{m['oauth.developer.secret.clientId']()}
-				</p>
-				<CopyField
-					id="developer-app-client-id"
-					value={current.client_id}
-					label={m['oauth.developer.secret.clientId']()}
-				/>
-			</div>
-		</div>
-
-		{#if secret}
+	{#key appId}
+		<!-- Outside the state chain below: the secret is shown exactly once, so a refetch
+		     that fails (or any other state flip) after a rotate must never unmount it. -->
+		{#if revealed}
 			<div bind:this={revealEl} class="[&_h2]:outline-none">
 				<SecretReveal
-					clientId={secret.clientId}
-					clientSecret={secret.clientSecret}
+					clientId={revealed.clientId}
+					clientSecret={revealed.clientSecret}
 					onDone={() => (secret = null)}
 				/>
 			</div>
 		{/if}
 
-		<DeveloperAppForm
-			mode="edit"
-			initial={valuesFromApp(current)}
-			vocabulary={scopes.data}
-			submitting={update.isPending}
-			{formError}
-			{fieldErrors}
-			onSubmit={submit}
-		/>
+		{#if unverified}
+			<EmailUnverifiedCallout />
+		{:else if notFound}
+			<EmptyState
+				icon={SearchX}
+				level={2}
+				title={m['oauth.developer.notFoundTitle']()}
+				body={m['oauth.developer.notFoundBody']()}
+			>
+				{#snippet action()}
+					<Button href={listHref} variant="outline">{m['oauth.developer.backToList']()}</Button>
+				{/snippet}
+			</EmptyState>
+		{:else if failed}
+			<p role="alert" class="text-sm text-destructive">{m['oauth.developer.actionError']()}</p>
+		{:else if loading}
+			<div role="status">
+				<Loader2 class="h-5 w-5 animate-spin" aria-hidden="true" />
+				<span class="sr-only">{m['common.loading']()}</span>
+			</div>
+		{:else if app.data && scopes.data}
+			{@const current = app.data}
+			<div class="space-y-3">
+				<div class="flex flex-wrap items-center gap-2">
+					<StatusBadge
+						tone="neutral"
+						label={current.client_type === 'public'
+							? m['oauth.developer.typePublic']()
+							: m['oauth.developer.typeConfidential']()}
+					/>
+					<StatusBadge
+						tone={current.is_active ? 'success' : 'neutral'}
+						label={current.is_active
+							? m['oauth.developer.active']()
+							: m['oauth.developer.inactive']()}
+					/>
+					{#if current.verified}
+						<StatusBadge tone="success" label={m['oauth.consent.verified']()} />
+					{/if}
+				</div>
+				<div>
+					<!-- Visual caption only: the field and its copy button are named by `label`. -->
+					<p class="mb-1 text-sm font-bold" aria-hidden="true">
+						{m['oauth.developer.secret.clientId']()}
+					</p>
+					<CopyField
+						id="developer-app-client-id"
+						value={current.client_id}
+						label={m['oauth.developer.secret.clientId']()}
+					/>
+				</div>
+			</div>
 
-		<DeveloperAppLogo
-			app={current}
-			uploading={logo.isPending}
-			error={logoError}
-			onUpload={(file) => logo.mutate({ id: appId, file })}
-		/>
+			<DeveloperAppForm
+				mode="edit"
+				initial={valuesFromApp(current)}
+				vocabulary={scopes.data}
+				submitting={update.isPending}
+				{formError}
+				{fieldErrors}
+				onSubmit={submit}
+			/>
 
-		<DeveloperAppDangerZone
-			app={current}
-			{busy}
-			onRotate={() => openDialog({ kind: 'rotate' })}
-			onToggleActive={() => openDialog({ kind: 'toggle', active: !current.is_active })}
-			onDelete={() => openDialog({ kind: 'delete' })}
-		/>
-	{/if}
+			<DeveloperAppLogo
+				app={current}
+				uploading={logo.isPending}
+				error={logoError}
+				onUpload={(file) => logo.mutate({ id: appId, file })}
+			/>
+
+			<DeveloperAppDangerZone
+				app={current}
+				{busy}
+				onRotate={() => openDialog({ kind: 'rotate' })}
+				onToggleActive={() => openDialog({ kind: 'toggle', active: !current.is_active })}
+				onDelete={() => openDialog({ kind: 'delete' })}
+			/>
+		{/if}
+	{/key}
 </div>
 
 <div bind:this={dialogHost}>

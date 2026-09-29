@@ -113,8 +113,9 @@
 		const result = await decideAuthorization(search, body);
 		if (result.kind === 'error' && isConsentExpired(result.code)) {
 			// The 5-minute ticket lapsed: fetch a fresh screen and say so, without
-			// moving focus or adding another live region (the warning alert is
-			// the only role="alert" on this page).
+			// moving focus or adding a live region: the page's single polite live
+			// region announces `expiredNotice` (see `liveMessage`), and the visible
+			// notice below is aria-hidden so it is not read twice.
 			const fresh = await describeAuthorization(search);
 			if (fresh.kind === 'describe') {
 				consent = fresh.data;

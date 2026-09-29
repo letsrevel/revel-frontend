@@ -27,6 +27,9 @@ export function isLoopbackHost(hostname: string): boolean {
 
 /** Mirrors `OAuthApplication.clean()`: https everywhere, http only on loopback for public clients, no fragment. */
 export function redirectUriError(uri: string, clientType: ClientType): string | null {
+	// `new URL` percent-encodes inner whitespace instead of throwing, but the backend
+	// stores the URIs space-joined and splits on whitespace, so one URI would become two.
+	if (/\s/.test(uri)) return m['oauth.developer.validation.uriInvalid']();
 	let url: URL;
 	try {
 		url = new URL(uri);

@@ -5,6 +5,7 @@
 	import { afterNavigate } from '$app/navigation';
 	import { ModeWatcher } from 'mode-watcher';
 	import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
+	import { shouldRetry } from '$lib/api/query-retry';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { appStore } from '$lib/stores/app.svelte';
 	import { Toaster, toast } from 'svelte-sonner';
@@ -43,18 +44,8 @@
 		defaultOptions: {
 			queries: {
 				staleTime: 60 * 1000, // 1 minute
-				retry: (failureCount, error) => {
-					// Don't retry on 401 (unauthorized) - these need user action, not retries
-					if (error && typeof error === 'object' && 'status' in error && error.status === 401) {
-						return false;
-					}
-					// Don't retry on 403 (forbidden) - permission errors won't resolve by retrying
-					if (error && typeof error === 'object' && 'status' in error && error.status === 403) {
-						return false;
-					}
-					// Retry other errors up to 2 times
-					return failureCount < 2;
-				},
+				// 401/403/404 fail fast (see shouldRetry); anything else retries up to twice.
+				retry: shouldRetry,
 				refetchOnWindowFocus: false // Prevent automatic refetches that could trigger auth loops
 			},
 			mutations: {

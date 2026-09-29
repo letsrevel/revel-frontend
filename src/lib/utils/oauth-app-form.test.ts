@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import * as m from '$lib/paraglide/messages.js';
 import type { OAuthAppSchema } from '$lib/api/generated/types.gen';
 import {
 	appFormSchema,
@@ -60,6 +61,29 @@ describe('redirectUriError', () => {
 		expect(redirectUriError('ftp://acme.example/cb', 'public')).toBeTruthy();
 		expect(redirectUriError('not a url', 'public')).toBeTruthy();
 		expect(redirectUriError('', 'public')).toBeTruthy();
+	});
+
+	it('rejects inner whitespace, which new URL would silently percent-encode', () => {
+		const invalid = m['oauth.developer.validation.uriInvalid']();
+		expect(() => new URL('https://example.com/cb one')).not.toThrow();
+		expect(redirectUriError('https://example.com/cb one', 'public')).toBe(invalid);
+		expect(redirectUriError('https://example.com/cb\tone', 'confidential')).toBe(invalid);
+		expect(redirectUriError('https://example.com/cb\nhttps://evil.example/cb', 'public')).toBe(
+			invalid
+		);
+	});
+
+	it('the schema still trims outer whitespace before validating each URI', () => {
+		const inner = appFormSchema('public').safeParse({
+			...base,
+			redirect_uris: ['https://example.com/cb one']
+		});
+		expect(inner.success).toBe(false);
+		const outer = appFormSchema('public').safeParse({
+			...base,
+			redirect_uris: ['  https://acme.example/cb  ']
+		});
+		expect(outer.success).toBe(true);
 	});
 });
 

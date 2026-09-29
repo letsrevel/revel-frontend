@@ -46,9 +46,14 @@ export const oauthKeys = {
 	app: (id: string) => ['oauth', 'apps', id] as const
 };
 
-/** Sentinel for a 403 on the developer-apps routes: the user's email is not verified. */
+/**
+ * Sentinel for a 403 on the developer-apps routes: the user's email is not verified.
+ * `status` lets the global query `retry` predicate (`shouldRetry`) fail it fast;
+ * the `is*` guards below still discriminate on `kind`/class, never on `status`.
+ */
 export class EmailUnverifiedError extends Error {
 	readonly kind = 'email_unverified';
+	readonly status = 403 as const;
 	constructor() {
 		super('email_unverified');
 		this.name = 'EmailUnverifiedError';
@@ -62,6 +67,8 @@ export class EmailUnverifiedError extends Error {
  */
 export class NotFoundError extends Error {
 	readonly kind = 'not_found';
+	/** Read by `shouldRetry` so a missing app is reported at once, not after the retry backoff. */
+	readonly status = 404 as const;
 	constructor() {
 		super('not_found');
 		this.name = 'NotFoundError';
@@ -177,9 +184,12 @@ export function appQuery(id: string) {
 
 /**
  * The create response carries the plaintext `client_secret` ONCE. `gcTime: 0`
- * drops it from the MutationCache the moment the mutation settles; the caller
- * keeps it in component state and invalidates `oauthKeys.apps`. Never
- * `setQueryData` with this response.
+ * removes the settled mutation (whose `data` holds the secret) from the
+ * MutationCache only once no observer is attached: while the page's
+ * `createMutation` observer lives, the mutation stays cached. That is why the
+ * callers copy the secret into component state and then call `mutation.reset()`
+ * (detaching it so `gcTime: 0` can drop it); do not remove those `reset()` calls.
+ * Callers invalidate `oauthKeys.apps`. Never `setQueryData` with this response.
  */
 export function createApp() {
 	return {

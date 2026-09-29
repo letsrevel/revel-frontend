@@ -27,6 +27,7 @@ vi.mock('$lib/api/generated/sdk.gen', () => ({
 	oauthappUploadLogo: uploadLogoMock
 }));
 
+import { shouldRetry } from '$lib/api/query-retry';
 import {
 	EmailUnverifiedError,
 	NotFoundError,
@@ -162,6 +163,16 @@ describe('error classes', () => {
 		expect(isEmailUnverified(new Error('Email verification required.'))).toBe(false);
 		expect(isNotFound(new NotFoundError())).toBe(true);
 		expect(isNotFound({ kind: 'not_found' })).toBe(false);
+	});
+
+	it('expose their HTTP status so the global retry predicate fails them fast', () => {
+		expect(new EmailUnverifiedError().status).toBe(403);
+		expect(new NotFoundError().status).toBe(404);
+		expect(shouldRetry(0, new EmailUnverifiedError())).toBe(false);
+		expect(shouldRetry(0, new NotFoundError())).toBe(false);
+		// `status` is not the discriminator: a bare object with it is not a sentinel.
+		expect(isNotFound({ status: 404 })).toBe(false);
+		expect(isEmailUnverified({ status: 403 })).toBe(false);
 	});
 
 	it('statusOf reads the response status when present', () => {

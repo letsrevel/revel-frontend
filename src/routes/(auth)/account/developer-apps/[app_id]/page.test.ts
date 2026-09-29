@@ -30,13 +30,16 @@ const gotoMock = vi.hoisted(() => vi.fn());
 vi.mock('$lib/api/generated/sdk.gen', () => sdk);
 vi.mock('$lib/stores/auth.svelte', () => authMock);
 vi.mock('$app/navigation', () => ({ goto: gotoMock }));
-vi.mock('$app/state', () => ({
-	page: {
+// Reactive: SvelteKit reuses this page across `app_id`s, and one test moves it.
+const pageMock = vi.hoisted(() => ({ page: null as unknown as { params: { app_id: string } } }));
+vi.mock('$app/state', async () => {
+	const { createMockPage } = await import('$lib/test-utils/mock-page-state.svelte');
+	pageMock.page = createMockPage({
 		params: { app_id: 'app-1' },
-		url: new URL('http://localhost/account/developer-apps/app-1'),
-		data: {}
-	}
-}));
+		url: new URL('http://localhost/account/developer-apps/app-1')
+	}) as { params: { app_id: string } };
+	return { page: pageMock.page };
+});
 vi.mock('svelte-sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('$lib/components/common/ImageCropperModal.svelte', async () => ({
 	default: (await import('$lib/components/forms/__mocks__/CropperModalStub.svelte')).default
@@ -92,6 +95,7 @@ describe('Developer app detail page', () => {
 		sdk.oauthappGetApp.mockResolvedValue(ok(app()));
 		sdk.oauthappUpdateApp.mockResolvedValue(ok(app()));
 		authMock.authStore.user = { email_verified: true };
+		pageMock.page.params.app_id = 'app-1';
 	});
 
 	function renderPage() {
@@ -228,6 +232,46 @@ describe('Developer app detail page', () => {
 
 		await user.click(screen.getByRole('button', { name: "I've saved it" }));
 		expect(screen.queryByDisplayValue(SECRET)).toBeNull();
+	});
+
+	async function rotateNow(user: ReturnType<typeof userEvent.setup>) {
+		await user.click(screen.getByRole('button', { name: 'Rotate secret' }));
+		await user.click(
+			within(await screen.findByRole('dialog')).getByRole('button', { name: 'Rotate secret' })
+		);
+		await screen.findByDisplayValue(SECRET);
+	}
+
+	it('a failed refetch after a rotate never hides the one-time secret', async () => {
+		sdk.oauthappRotateSecret.mockResolvedValue(ok({ ...app(), client_secret: SECRET }));
+		renderPage();
+		const user = await ready();
+		// The rotate's own `refresh()` refetch fails (e.g. a network blip).
+		sdk.oauthappGetApp.mockResolvedValue(failed(500));
+		await rotateNow(user);
+
+		expect(await screen.findByText('Something went wrong. Please try again.')).toBeInTheDocument();
+		expect(screen.getByDisplayValue(SECRET)).toBeInTheDocument();
+		expect(
+			screen.getByRole('heading', { level: 2, name: 'Save your client secret' })
+		).toBeVisible();
+	});
+
+	it('moving to another app id drops the previous app’s secret and form', async () => {
+		sdk.oauthappRotateSecret.mockResolvedValue(ok({ ...app(), client_secret: SECRET }));
+		renderPage();
+		const user = await ready();
+		await rotateNow(user);
+
+		sdk.oauthappGetApp.mockResolvedValue(
+			ok(app({ id: 'app-2', client_id: 'cid-2', name: 'Other', description: 'Second app' }))
+		);
+		pageMock.page.params.app_id = 'app-2';
+
+		expect(await screen.findByDisplayValue('Second app')).toBeInTheDocument();
+		expect(screen.queryByDisplayValue(SECRET)).toBeNull();
+		expect(screen.queryByRole('heading', { name: 'Save your client secret' })).toBeNull();
+		expect(sdk.oauthappGetApp).toHaveBeenLastCalledWith({ path: { app_id: 'app-2' } });
 	});
 
 	it('403 on rotate → the verify-email callout', async () => {
