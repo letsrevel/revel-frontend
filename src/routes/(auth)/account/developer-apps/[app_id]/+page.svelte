@@ -142,12 +142,20 @@
 	}));
 
 	// The backend 403s the whole surface for an unverified email; the store may lag behind.
-	const unverified = $derived(
-		storeUnverified ||
-			isEmailUnverified(app.error) ||
-			isEmailUnverified(scopes.error) ||
-			isEmailUnverified(update.error)
-	);
+	// Any action can be the first to hit that 403. Every error is read up front (no
+	// short-circuit), matching the tracking rule for `loading`/`failed` below.
+	const unverified = $derived.by(() => {
+		const errors = [
+			app.error,
+			scopes.error,
+			update.error,
+			rotate.error,
+			active.error,
+			remove.error,
+			logo.error
+		];
+		return storeUnverified || errors.some(isEmailUnverified);
+	});
 	// Read BOTH flags every time: a query result only notifies about props it has seen
 	// read, so a short-circuited `a || b` would leave `b` untracked and stale forever.
 	const loading = $derived.by(() => {

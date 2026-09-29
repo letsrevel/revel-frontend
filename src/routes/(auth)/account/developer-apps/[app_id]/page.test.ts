@@ -230,6 +230,20 @@ describe('Developer app detail page', () => {
 		expect(screen.queryByDisplayValue(SECRET)).toBeNull();
 	});
 
+	it('403 on rotate → the verify-email callout', async () => {
+		sdk.oauthappRotateSecret.mockResolvedValue(failed(403));
+		renderPage();
+		const user = await ready();
+		await user.click(screen.getByRole('button', { name: 'Rotate secret' }));
+		await user.click(
+			within(await screen.findByRole('dialog')).getByRole('button', { name: 'Rotate secret' })
+		);
+		expect(
+			await screen.findByText('Verify your email address to register apps')
+		).toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: 'Save changes' })).toBeNull();
+	});
+
 	it('a public app has no Rotate action', async () => {
 		sdk.oauthappGetApp.mockResolvedValue(ok(app({ client_type: 'public' })));
 		renderPage();
