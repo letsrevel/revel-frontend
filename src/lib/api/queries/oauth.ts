@@ -11,7 +11,8 @@ import type { AuthorizeScopeSchema, OAuthConnectionSchema } from '$lib/api/gener
  * Unlike `waitlist-offers.ts`, builders take no token getter and no
  * QueryClient: the request interceptor in `$lib/api/client` injects the
  * bearer after `waitForAuthReady()`, and invalidation happens in the caller's
- * `onSuccess`. Builders return plain option objects; callers wrap them:
+ * mutation callbacks (`onSettled` where a failure can still change the list).
+ * Builders return plain option objects; callers wrap them:
  * `createQuery(() => scopesQuery())`.
  *
  * PR 2 adds `connectionsQuery` / `revokeConnection`; PR 3 adds the apps
@@ -101,7 +102,9 @@ export function connectionsQuery() {
 /**
  * Disconnect an app: the backend revokes every token, ID token and pending
  * code the user granted it, so the next authorization shows consent again.
- * Callers invalidate `oauthKeys.connections` in their `onSuccess`.
+ * Callers invalidate `oauthKeys.connections` in `onSettled`, not `onSuccess`:
+ * a 404 means the app is already disconnected, so the list must refresh on
+ * failure too or the stale card lingers.
  */
 export function revokeConnection() {
 	return {

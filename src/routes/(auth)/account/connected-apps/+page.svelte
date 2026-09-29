@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { toast } from 'svelte-sonner';
+	import { SvelteSet } from 'svelte/reactivity';
 	import { Loader2, Plug } from '@lucide/svelte';
 	import type { OAuthConnectionSchema } from '$lib/api/generated/types.gen';
 	import {
@@ -39,6 +40,10 @@
 	const vocab = $derived(vocabulary.data ?? []);
 
 	let pending = $state<OAuthConnectionSchema | null>(null);
+	// One shared mutation serves every row, and `removal.variables` only holds
+	// the LATEST call: track every in-flight client id so overlapping removals
+	// keep each row disabled (and double-submit-guarded) until it settles.
+	const inFlight = new SvelteSet<string>();
 
 	const removal = createMutation(() => ({
 		...revokeConnection(),
@@ -53,8 +58,13 @@
 			// Only close the dialog for the app that settled: the user may have
 			// cancelled and opened another app's dialog while this one was in flight.
 			if (pending?.client_id === clientId) pending = null;
-			// Resync after success AND failure: a 404 means the app is already gone.
-			await queryClient.invalidateQueries({ queryKey: oauthKeys.connections });
+			try {
+				// Resync after success AND failure: a 404 means the app is already gone.
+				await queryClient.invalidateQueries({ queryKey: oauthKeys.connections });
+			} finally {
+				// Release after the refetch so a removed card never flashes re-enabled.
+				inFlight.delete(clientId);
+			}
 		}
 	}));
 
@@ -63,8 +73,10 @@
 	// the same app (another app's dialog may still confirm meanwhile).
 	function confirmRemoval() {
 		if (!pending) return;
-		if (removal.isPending && removal.variables === pending.client_id) return;
-		removal.mutate(pending.client_id);
+		const clientId = pending.client_id;
+		if (inFlight.has(clientId)) return;
+		inFlight.add(clientId);
+		removal.mutate(clientId);
 	}
 </script>
 
@@ -98,7 +110,7 @@
 					<ConnectionCard
 						{connection}
 						vocabulary={vocab}
-						removing={removal.isPending && removal.variables === connection.client_id}
+						removing={inFlight.has(connection.client_id)}
 						onRemove={(target) => (pending = target)}
 					/>
 				{/each}
