@@ -1,9 +1,25 @@
 import {
+	oauthappActivate as activate,
+	oauthappCreateApp as createAppRequest,
+	oauthappDeactivate as deactivate,
+	oauthappDeleteApp as deleteAppRequest,
+	oauthappGetApp as getApp,
+	oauthappListApps as listApps,
+	oauthappRotateSecret as rotateSecretRequest,
+	oauthappUpdateApp as updateAppRequest,
+	oauthappUploadLogo as uploadLogoRequest,
 	oauthconnectionListConnections as listConnections,
 	oauthconnectionRevoke as revoke,
 	oauthscopeListScopes as listScopes
 } from '$lib/api/generated/sdk.gen';
-import type { AuthorizeScopeSchema, OAuthConnectionSchema } from '$lib/api/generated/types.gen';
+import type {
+	AuthorizeScopeSchema,
+	OAuthAppCreatedSchema,
+	OAuthAppCreatePayload,
+	OAuthAppSchema,
+	OAuthAppUpdatePayload,
+	OAuthConnectionSchema
+} from '$lib/api/generated/types.gen';
 
 /**
  * Query keys and option builders for the OAuth provider surfaces (#953).
@@ -59,18 +75,31 @@ export function statusOf(res: { response?: Response }): number | undefined {
 	return res.response?.status;
 }
 
+/** Attach the HTTP status to a thrown plain body without touching its enumerable keys. */
+export function withStatus<T extends object>(body: T, status: number | undefined): T {
+	if (status !== undefined)
+		Object.defineProperty(body, '__status', {
+			value: status,
+			enumerable: false,
+			configurable: true
+		});
+	return body;
+}
+
 /**
  * Map a failed hey-api result onto the shared sentinels BY STATUS (never by
  * the localized `detail` text). Every other failure throws the backend body
  * AS-IS (e.g. a 400 `{ errors }` or a 409 `{ detail }`), unwrapped, so callers
- * can read its fields off the thrown value; an `Error` is created only when
- * there is no body at all.
+ * can read its fields off the thrown value, with the status attached as a
+ * non-enumerable `__status` (see `withStatus`); an `Error` is created only
+ * when there is no object body at all.
  */
 export function throwOAuthError(res: { error: unknown; response?: Response }): never {
 	const status = statusOf(res);
 	if (status === 403) throw new EmailUnverifiedError();
 	if (status === 404 || status === 422) throw new NotFoundError();
-	throw res.error ?? new Error('request failed');
+	if (typeof res.error === 'object' && res.error !== null) throw withStatus(res.error, status);
+	throw new Error('request failed');
 }
 
 /** The whole scope vocabulary with translated labels; a language switch reloads the app, so it never goes stale. */
@@ -108,6 +137,110 @@ export function revokeConnection() {
 		mutationFn: async (clientId: string): Promise<void> => {
 			const res = await revoke({ path: { client_id: clientId } });
 			if (res.error) throwOAuthError(res);
+		}
+	};
+}
+
+export function appsQuery() {
+	return {
+		queryKey: oauthKeys.apps,
+		queryFn: async (): Promise<OAuthAppSchema[]> => {
+			const res = await listApps();
+			if (res.error || !res.data) throwOAuthError(res);
+			return res.data;
+		}
+	};
+}
+
+export function appQuery(id: string) {
+	return {
+		queryKey: oauthKeys.app(id),
+		queryFn: async (): Promise<OAuthAppSchema> => {
+			const res = await getApp({ path: { app_id: id } });
+			if (res.error || !res.data) throwOAuthError(res);
+			return res.data;
+		}
+	};
+}
+
+/**
+ * The create response carries the plaintext `client_secret` ONCE. `gcTime: 0`
+ * drops it from the MutationCache the moment the mutation settles; the caller
+ * keeps it in component state and invalidates `oauthKeys.apps`. Never
+ * `setQueryData` with this response.
+ */
+export function createApp() {
+	return {
+		mutationFn: async (body: OAuthAppCreatePayload): Promise<OAuthAppCreatedSchema> => {
+			const res = await createAppRequest({ body });
+			if (res.error || !res.data) throwOAuthError(res);
+			return res.data;
+		},
+		gcTime: 0 as const
+	};
+}
+
+export function updateApp() {
+	return {
+		mutationFn: async ({
+			id,
+			body
+		}: {
+			id: string;
+			body: OAuthAppUpdatePayload;
+		}): Promise<OAuthAppSchema> => {
+			const res = await updateAppRequest({ path: { app_id: id }, body });
+			if (res.error || !res.data) throwOAuthError(res);
+			return res.data;
+		}
+	};
+}
+
+export function deleteApp() {
+	return {
+		mutationFn: async (id: string): Promise<void> => {
+			const res = await deleteAppRequest({ path: { app_id: id } });
+			if (res.error) throwOAuthError(res);
+		}
+	};
+}
+
+/** Same one-time-secret contract as `createApp`. */
+export function rotateSecret() {
+	return {
+		mutationFn: async (id: string): Promise<OAuthAppCreatedSchema> => {
+			const res = await rotateSecretRequest({ path: { app_id: id } });
+			if (res.error || !res.data) throwOAuthError(res);
+			return res.data;
+		},
+		gcTime: 0 as const
+	};
+}
+
+export function setAppActive() {
+	return {
+		mutationFn: async ({
+			id,
+			active
+		}: {
+			id: string;
+			active: boolean;
+		}): Promise<OAuthAppSchema> => {
+			const res = active
+				? await activate({ path: { app_id: id } })
+				: await deactivate({ path: { app_id: id } });
+			if (res.error || !res.data) throwOAuthError(res);
+			return res.data;
+		}
+	};
+}
+
+export function uploadLogo() {
+	return {
+		mutationFn: async ({ id, file }: { id: string; file: File }): Promise<OAuthAppSchema> => {
+			const res = await uploadLogoRequest({ path: { app_id: id }, body: { logo: file } });
+			if (res.error || !res.data) throwOAuthError(res);
+			return res.data;
 		}
 	};
 }
