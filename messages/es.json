@@ -3325,6 +3325,88 @@
 			"emailNote": "Si cambias tu dirección de correo electrónico, se desconectan todas las apps."
 		},
 		"developer": {
+			"title": "Apps de desarrollo",
+			"newApp": "Nueva app",
+			"section": "Tus apps",
+			"emptyTitle": "No has registrado ninguna app.",
+			"emptyBody": "Registra una app para que pueda conectarse a Revel en nombre de las personas que la usan.",
+			"loadError": "No hemos podido cargar tus apps.",
+			"usedBy": {
+				"one": "La usa {count} persona",
+				"other": "La usan {count} personas"
+			},
+			"lastUsed": "Último uso: {date}",
+			"neverUsed": "Nunca usada",
+			"typePublic": "Pública",
+			"typeConfidential": "Confidencial",
+			"active": "Activa",
+			"inactive": "Inactiva",
+			"verifyEmailTitle": "Verifica tu dirección de correo electrónico para registrar apps",
+			"verifyEmailBody": "Las apps que registras se muestran a otras personas, así que necesitamos saber que eres tú de verdad.",
+			"verifyEmailCta": "Ir a tu perfil",
+			"form": {
+				"name": "Nombre",
+				"description": "Descripción",
+				"descriptionCount": "{count} / {max}",
+				"clientType": "Tipo de app",
+				"public": "Pública",
+				"publicHelp": "Apps de navegador, móviles y CLI. Usa PKCE y no tiene secreto.",
+				"confidential": "Confidencial",
+				"confidentialHelp": "Apps de servidor que pueden guardar un secreto.",
+				"redirectUris": "URI de redirección",
+				"redirectUriHint": "https, o http en localhost, 127.0.0.1 o [::1] para las apps públicas.",
+				"addUri": "Añadir otra URI",
+				"removeUri": "Eliminar URI {n}",
+				"uriLabel": "URI de redirección {n}",
+				"scopes": "Permisos que la app puede solicitar",
+				"orgReadNote": "Cada scope de organización necesita también org:read.",
+				"homepage": "URL del sitio web",
+				"privacy": "URL de la política de privacidad",
+				"create": "Registrar app",
+				"save": "Guardar cambios",
+				"saving": "Guardando…"
+			},
+			"createTitle": "Registrar una nueva app",
+			"secret": {
+				"title": "Guarda tu secreto de cliente",
+				"body": "No volverás a verlo. Guárdalo en un lugar seguro.",
+				"clientId": "ID de cliente",
+				"clientSecret": "Secreto de cliente",
+				"done": "Ya lo he guardado"
+			},
+			"created": "La app {name} se ha registrado.",
+			"saved": "Cambios guardados.",
+			"notFoundTitle": "Esta app no existe o no es tuya.",
+			"notFoundBody": "Puede que se haya eliminado.",
+			"backToList": "Volver a tus apps",
+			"logo": {
+				"title": "Logotipo",
+				"help": "Se muestra en la pantalla de consentimiento. Cuadrado, PNG o JPEG, hasta 5 MB.",
+				"uploaded": "Logotipo actualizado.",
+				"error": "No hemos podido subir el logotipo."
+			},
+			"danger": {
+				"title": "Zona de peligro",
+				"rotate": "Rotar secreto",
+				"rotateTitle": "¿Rotar el secreto de cliente?",
+				"rotateMessage": "El secreto anterior deja de funcionar de inmediato. Actualiza tu app antes de su próxima solicitud de token.",
+				"deactivate": "Desactivar",
+				"deactivateTitle": "¿Desactivar {name}?",
+				"deactivateMessage": "Todas las personas que usan esta app se desconectan de inmediato.",
+				"activate": "Activar",
+				"activateTitle": "¿Activar {name}?",
+				"activateMessage": "Habrá que volver a autorizarla.",
+				"delete": "Eliminar app",
+				"deleteTitle": "¿Eliminar {name}?",
+				"deleteMessage": "Esto elimina la app y todos los tokens que se le emitieron. No se puede deshacer.",
+				"deleted": "La app {name} se ha eliminado."
+			},
+			"scopeRemoval": {
+				"title": "¿Quitar permisos?",
+				"message": "Quitar un scope cierra la sesión de todas las personas cuyo token lo contiene: {scopes}",
+				"confirm": "Quitar y guardar"
+			},
+			"actionError": "Algo ha salido mal. Inténtalo de nuevo.",
 			"validation": {
 				"nameRequired": "Ponle un nombre a la app.",
 				"nameTooLong": "El nombre puede tener como máximo 255 caracteres.",
@@ -6420,7 +6502,8 @@
 		"adminDashboard": "Panel de administración",
 		"invoices": "Mis facturas",
 		"memberships": "Membresías",
-		"connectedApps": "Apps conectadas"
+		"connectedApps": "Apps conectadas",
+		"developerApps": "Apps de desarrollo"
 	},
 	"userMenu.createOrganization": "Crear organización",
 	"venueSelector": {

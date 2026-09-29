@@ -3295,6 +3295,88 @@
 			"emailNote": "Changer ton adresse e-mail déconnecte toutes les applis."
 		},
 		"developer": {
+			"title": "Applis de développement",
+			"newApp": "Nouvelle appli",
+			"section": "Tes applis",
+			"emptyTitle": "Tu n'as enregistré aucune appli.",
+			"emptyBody": "Enregistre une appli pour qu'elle puisse se connecter à Revel au nom des personnes qui l'utilisent.",
+			"loadError": "Impossible de charger tes applis.",
+			"usedBy": {
+				"one": "Utilisée par {count} personne",
+				"other": "Utilisée par {count} personnes"
+			},
+			"lastUsed": "Dernière utilisation : {date}",
+			"neverUsed": "Jamais utilisée",
+			"typePublic": "Publique",
+			"typeConfidential": "Confidentielle",
+			"active": "Activée",
+			"inactive": "Désactivée",
+			"verifyEmailTitle": "Vérifie ton adresse e-mail pour enregistrer des applis",
+			"verifyEmailBody": "Les applis que tu enregistres sont visibles par d'autres personnes, alors nous devons nous assurer qu'il s'agit bien de toi.",
+			"verifyEmailCta": "Aller à ton profil",
+			"form": {
+				"name": "Nom",
+				"description": "Description",
+				"descriptionCount": "{count} / {max}",
+				"clientType": "Type d'appli",
+				"public": "Publique",
+				"publicHelp": "Applis navigateur, mobiles et CLI. Utilise PKCE et n'a pas de secret.",
+				"confidential": "Confidentielle",
+				"confidentialHelp": "Applis serveur capables de garder un secret.",
+				"redirectUris": "URI de redirection",
+				"redirectUriHint": "https, ou http sur localhost, 127.0.0.1 ou [::1] pour les applis publiques.",
+				"addUri": "Ajouter une autre URI",
+				"removeUri": "Supprimer l'URI {n}",
+				"uriLabel": "URI de redirection {n}",
+				"scopes": "Autorisations que l'appli peut demander",
+				"orgReadNote": "Chaque scope d'organisation nécessite aussi org:read.",
+				"homepage": "URL du site web",
+				"privacy": "URL de la politique de confidentialité",
+				"create": "Enregistrer l'appli",
+				"save": "Enregistrer les modifications",
+				"saving": "Enregistrement…"
+			},
+			"createTitle": "Enregistrer une nouvelle appli",
+			"secret": {
+				"title": "Conserve ton secret client",
+				"body": "Tu ne le reverras plus. Garde-le en lieu sûr.",
+				"clientId": "ID client",
+				"clientSecret": "Secret client",
+				"done": "Je l'ai conservé"
+			},
+			"created": "L'appli {name} a été enregistrée.",
+			"saved": "Modifications enregistrées.",
+			"notFoundTitle": "Cette appli n'existe pas ou ne t'appartient pas.",
+			"notFoundBody": "Elle a peut-être été supprimée.",
+			"backToList": "Retour à tes applis",
+			"logo": {
+				"title": "Logo",
+				"help": "Affiché sur l'écran de consentement. Carré, PNG ou JPEG, 5 Mo maximum.",
+				"uploaded": "Logo mis à jour.",
+				"error": "Impossible de téléverser le logo."
+			},
+			"danger": {
+				"title": "Zone de danger",
+				"rotate": "Renouveler le secret",
+				"rotateTitle": "Renouveler le secret client ?",
+				"rotateMessage": "L'ancien secret cesse de fonctionner immédiatement. Mets à jour ton appli avant sa prochaine demande de jeton.",
+				"deactivate": "Désactiver",
+				"deactivateTitle": "Désactiver {name} ?",
+				"deactivateMessage": "Toutes les personnes qui utilisent cette appli sont déconnectées immédiatement.",
+				"activate": "Activer",
+				"activateTitle": "Activer {name} ?",
+				"activateMessage": "Il faudra l'autoriser à nouveau.",
+				"delete": "Supprimer l'appli",
+				"deleteTitle": "Supprimer {name} ?",
+				"deleteMessage": "L'appli et tous les jetons qui lui ont été émis seront supprimés. Cette action est irréversible.",
+				"deleted": "L'appli {name} a été supprimée."
+			},
+			"scopeRemoval": {
+				"title": "Retirer des autorisations ?",
+				"message": "Retirer un scope déconnecte toutes les personnes dont le jeton le contient : {scopes}",
+				"confirm": "Retirer et enregistrer"
+			},
+			"actionError": "Un problème est survenu. Réessaie.",
 			"validation": {
 				"nameRequired": "Donne un nom à l'appli.",
 				"nameTooLong": "Le nom ne peut pas dépasser 255 caractères.",
@@ -6390,7 +6472,8 @@
 		"adminDashboard": "Tableau de bord admin",
 		"invoices": "Mes factures",
 		"memberships": "Adhésions",
-		"connectedApps": "Applis connectées"
+		"connectedApps": "Applis connectées",
+		"developerApps": "Applis de développement"
 	},
 	"userMenu.createOrganization": "Créer une organisation",
 	"venueSelector": {

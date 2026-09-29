@@ -3325,6 +3325,88 @@
 			"emailNote": "Alterar o teu endereço de email desliga todas as apps."
 		},
 		"developer": {
+			"title": "Apps de desenvolvimento",
+			"newApp": "Nova app",
+			"section": "As tuas apps",
+			"emptyTitle": "Ainda não registaste nenhuma app.",
+			"emptyBody": "Regista uma app para que possa ligar-se ao Revel em nome das pessoas que a usam.",
+			"loadError": "Não foi possível carregar as tuas apps.",
+			"usedBy": {
+				"one": "Usada por {count} pessoa",
+				"other": "Usada por {count} pessoas"
+			},
+			"lastUsed": "Última utilização: {date}",
+			"neverUsed": "Nunca usada",
+			"typePublic": "Pública",
+			"typeConfidential": "Confidencial",
+			"active": "Ativa",
+			"inactive": "Inativa",
+			"verifyEmailTitle": "Verifica o teu endereço de email para registar apps",
+			"verifyEmailBody": "As apps que registas são mostradas a outras pessoas, por isso precisamos de saber que és mesmo tu.",
+			"verifyEmailCta": "Ir para o teu perfil",
+			"form": {
+				"name": "Nome",
+				"description": "Descrição",
+				"descriptionCount": "{count} / {max}",
+				"clientType": "Tipo de app",
+				"public": "Pública",
+				"publicHelp": "Apps de browser, móveis e CLI. Usa PKCE e não tem segredo.",
+				"confidential": "Confidencial",
+				"confidentialHelp": "Apps de servidor capazes de guardar um segredo.",
+				"redirectUris": "URIs de redirecionamento",
+				"redirectUriHint": "https, ou http em localhost, 127.0.0.1 ou [::1] para apps públicas.",
+				"addUri": "Adicionar outro URI",
+				"removeUri": "Remover URI {n}",
+				"uriLabel": "URI de redirecionamento {n}",
+				"scopes": "Permissões que a app pode pedir",
+				"orgReadNote": "Cada scope de organização precisa também de org:read.",
+				"homepage": "URL do site",
+				"privacy": "URL da política de privacidade",
+				"create": "Registar app",
+				"save": "Guardar alterações",
+				"saving": "A guardar…"
+			},
+			"createTitle": "Registar uma nova app",
+			"secret": {
+				"title": "Guarda o teu segredo de cliente",
+				"body": "Não o vais voltar a ver. Guarda-o num sítio seguro.",
+				"clientId": "ID de cliente",
+				"clientSecret": "Segredo de cliente",
+				"done": "Já o guardei"
+			},
+			"created": "A app {name} foi registada.",
+			"saved": "Alterações guardadas.",
+			"notFoundTitle": "Esta app não existe ou não é tua.",
+			"notFoundBody": "Pode ter sido eliminada.",
+			"backToList": "Voltar às tuas apps",
+			"logo": {
+				"title": "Logótipo",
+				"help": "Mostrado no ecrã de consentimento. Quadrado, PNG ou JPEG, até 5 MB.",
+				"uploaded": "Logótipo atualizado.",
+				"error": "Não foi possível carregar o logótipo."
+			},
+			"danger": {
+				"title": "Zona de perigo",
+				"rotate": "Renovar segredo",
+				"rotateTitle": "Renovar o segredo de cliente?",
+				"rotateMessage": "O segredo antigo deixa de funcionar imediatamente. Atualiza a tua app antes do próximo pedido de token.",
+				"deactivate": "Desativar",
+				"deactivateTitle": "Desativar {name}?",
+				"deactivateMessage": "Todas as pessoas que usam esta app são desligadas imediatamente.",
+				"activate": "Ativar",
+				"activateTitle": "Ativar {name}?",
+				"activateMessage": "Será preciso autorizá-la novamente.",
+				"delete": "Eliminar app",
+				"deleteTitle": "Eliminar {name}?",
+				"deleteMessage": "Isto remove a app e todos os tokens que lhe foram emitidos. Não pode ser anulado.",
+				"deleted": "A app {name} foi eliminada."
+			},
+			"scopeRemoval": {
+				"title": "Remover permissões?",
+				"message": "Remover um scope termina a sessão de todas as pessoas cujo token o contém: {scopes}",
+				"confirm": "Remover e guardar"
+			},
+			"actionError": "Algo correu mal. Tenta novamente.",
 			"validation": {
 				"nameRequired": "Dá um nome à app.",
 				"nameTooLong": "O nome pode ter no máximo 255 caracteres.",
@@ -6420,7 +6502,8 @@
 		"adminDashboard": "Painel de administração",
 		"invoices": "As minhas faturas",
 		"memberships": "Adesões",
-		"connectedApps": "Apps ligadas"
+		"connectedApps": "Apps ligadas",
+		"developerApps": "Apps de desenvolvimento"
 	},
 	"userMenu.createOrganization": "Criar organização",
 	"venueSelector": {
