@@ -40,10 +40,10 @@ test.describe('J28 consent errors @p1', () => {
 
 		const headline = page.getByTestId('consent-error-headline');
 		await expect(headline).toBeVisible();
-		// The non-retryable 400 branch, not the network/5xx fallback. oauthlib reports an
-		// unknown client as `invalid_request` (InvalidClientIdError), not `invalid_client`;
-		// its description (rendered as the detail) pins that the client id was the cause.
-		await expect(headline).toHaveText("This app's request is invalid.");
+		// The non-retryable 400 branch, not the network/5xx fallback. The backend maps
+		// oauthlib's InvalidClientIdError to `invalid_client` (revel-backend#1025); its
+		// description (rendered as the detail) pins that the client id was the cause.
+		await expect(headline).toHaveText("Revel doesn't recognize this app.");
 		await expect(page.getByText('Invalid client_id parameter value.')).toBeVisible();
 		await expect(page.getByRole('button', { name: 'Try again' })).toHaveCount(0);
 		await expect(page.getByRole('button', { name: 'Allow' })).toHaveCount(0);
