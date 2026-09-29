@@ -117,12 +117,28 @@ export async function awaitCallback(
 	return { landed };
 }
 
-export async function exchangeCode(p: {
+export interface TokenResponse {
+	access_token: string;
+	token_type: string;
+	scope?: string;
+}
+
+interface TokenRequest {
 	code: string;
 	verifier: string;
 	clientId: string;
 	redirectUri?: string;
-}): Promise<{ access_token: string; token_type: string; scope?: string }> {
+	/** A confidential client authenticates with its secret as a form field (`client_secret_post`). */
+	clientSecret?: string;
+}
+
+/**
+ * One raw POST /o/token, for specs that assert on a refusal (status + the
+ * RFC 6749 `error` code). `exchangeCode` is the happy-path wrapper.
+ */
+export async function requestToken(
+	p: TokenRequest
+): Promise<{ status: number; body: Record<string, unknown> }> {
 	const body = new URLSearchParams({
 		grant_type: 'authorization_code',
 		code: p.code,
@@ -130,6 +146,7 @@ export async function exchangeCode(p: {
 		client_id: p.clientId,
 		code_verifier: p.verifier
 	});
+	if (p.clientSecret !== undefined) body.set('client_secret', p.clientSecret);
 	// Plain fetch, never fetchWithRetry: the code is single-use, so a retry after
 	// the backend consumed it would mask the real failure behind `invalid_grant`.
 	const response = await fetch(`${API_URL}/o/token`, {
@@ -138,8 +155,52 @@ export async function exchangeCode(p: {
 		body: body.toString()
 	});
 	const text = await response.text();
-	if (!response.ok) throw new Error(`POST /o/token ${response.status}: ${text.slice(0, 300)}`);
-	return JSON.parse(text) as { access_token: string; token_type: string; scope?: string };
+	let parsed: Record<string, unknown>;
+	try {
+		parsed = JSON.parse(text) as Record<string, unknown>;
+	} catch {
+		parsed = { raw: text.slice(0, 300) };
+	}
+	return { status: response.status, body: parsed };
+}
+
+export async function exchangeCode(p: TokenRequest): Promise<TokenResponse> {
+	const { status, body } = await requestToken(p);
+	if (status !== 200) {
+		throw new Error(`POST /o/token ${status}: ${JSON.stringify(body).slice(0, 300)}`);
+	}
+	return body as unknown as TokenResponse;
+}
+
+/**
+ * Drive one authorization to the client's callback and return the code.
+ * Handles both outcomes of a request the user may already have granted: the
+ * consent screen (click Allow) or auto-approval straight to the callback.
+ * `prompted` says which one happened, for specs that pin it.
+ */
+export async function authorizeForCode(
+	page: Page,
+	url: string,
+	redirectUri = OAUTH_CALLBACK
+): Promise<{ code: string; state: string | null; prompted: boolean }> {
+	const { landed } = await awaitCallback(page, redirectUri);
+	await page.goto(url);
+	const allow = page.getByRole('button', { name: 'Allow' });
+	const screen = allow.waitFor({ state: 'visible' }).then(() => 'screen' as const);
+	// Whichever loses the race is abandoned; keep its rejection (context close) quiet.
+	screen.catch(() => undefined);
+	const first = await Promise.race([landed.then(() => 'callback' as const), screen]);
+	if (first === 'screen') await allow.click();
+	const callback = await landed;
+	const code = callback.searchParams.get('code');
+	if (!code) throw new Error(`Callback carried no code: ${callback.toString()}`);
+	return { code, state: callback.searchParams.get('state'), prompted: first === 'screen' };
+}
+
+/** Client IDs the API caller (as resource owner) has connected, per GET /api/oauth/connections/. */
+export async function connectedClientIds(api: ApiClient): Promise<string[]> {
+	const rows = await api.get<{ client_id: string }[]>('/api/oauth/connections/');
+	return rows.map((r) => r.client_id);
 }
 
 export const newState = (): string => randomUUID();
