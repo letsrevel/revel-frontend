@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.15.0] - 2026-09-29
+
+### Added
+
+- **Sign in with Revel (OAuth apps)**: third-party apps can ask to act on your Revel account, shown only when the backend has the OAuth provider switched on.
+  - A consent page at `/oauth/authorize` shows the app, whether it is verified, and the permissions it wants (payment-related ones are marked), with Allow, Deny and a "Switch account" link. Signed-out users sign in and come straight back to the same request.
+  - `/account/connected-apps` lists the apps you have authorized, with their permissions and dates, and lets you remove any of them.
+  - `/account/developer-apps` lets developers register their own apps (public or confidential), view and rotate a client secret that is shown only once, edit details and permissions, upload a logo, deactivate and delete apps.
+- Organizers can give a ticket tier its own check-in window ("Check-in opens" / "Check-in closes"), stored relative to the event start so it survives rescheduling, duplication and recurring series. Tiers without one follow the event's check-in window, and a warning appears if the resulting window is empty.
+- Tier cards and ticket details show an "Entry: …" window in the event's timezone when the tier has its own check-in window.
+
+### Fixed
+
+- Signing in from a Follow, Request invitation, Contact, RSVP, claim-invitation or join link, or from an error page, now returns you to the page you started on (including its query string) instead of the dashboard.
+- Resending the verification email from `/register/check-email` keeps the page you were heading to, so the new link still lands there.
+
 ## [2.14.1] - 2026-09-27
 
 ### Changed
