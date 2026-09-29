@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
+	import { tick, untrack } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { Loader2 } from '@lucide/svelte';
 	import type { AuthorizeScopeSchema } from '$lib/api/generated/types.gen';
@@ -13,8 +13,7 @@
 		appFormSchema,
 		DESCRIPTION_MAX,
 		NAME_MAX,
-		type AppFormValues,
-		type ClientType
+		type AppFormValues
 	} from '$lib/utils/oauth-app-form';
 	import RedirectUriList from './RedirectUriList.svelte';
 	import ScopeCheckboxes from './ScopeCheckboxes.svelte';
@@ -62,7 +61,10 @@
 	);
 	// Client-side Zod issues, keyed like the server's field errors ('redirect_uris.0', 'allowed_scopes', …).
 	let clientErrors = $state<Record<string, string>>({});
+	// Server keys that match no slot below are not rendered here: `fieldErrorsFrom` already
+	// routes unknown keys to its `form` message, which the page passes in as `formError`.
 	const errors = $derived({ ...clientErrors, ...fieldErrors });
+	let formEl = $state<HTMLFormElement | null>(null);
 	const uriErrors = $derived(
 		Object.fromEntries(
 			Object.entries(errors)
@@ -71,25 +73,46 @@
 		) as Record<number, string>
 	);
 
-	function submit(event: SubmitEvent) {
-		event.preventDefault();
-		const parsed = appFormSchema(values.client_type).safeParse(values);
+	function validate(clientType: AppFormValues['client_type']) {
+		const parsed = appFormSchema(clientType).safeParse(values);
+		const next: Record<string, string> = {};
 		if (!parsed.success) {
-			const next: Record<string, string> = {};
 			for (const issue of parsed.error.issues) next[issue.path.join('.')] ??= issue.message;
-			clientErrors = next;
+		}
+		clientErrors = next;
+		return parsed;
+	}
+
+	/** Moves focus to the first invalid control so a failed submit is never silent. */
+	async function focusFirstError() {
+		await tick();
+		const target =
+			formEl?.querySelector<HTMLElement>('[aria-invalid="true"]') ??
+			// The scope error lives on the group, not a control: land on its first checkbox,
+			// whose fieldset is described by the error.
+			(errors.allowed_scopes ? formEl?.querySelector<HTMLElement>('[role="checkbox"]') : null);
+		target?.focus();
+	}
+
+	async function submit(event: SubmitEvent) {
+		event.preventDefault();
+		const parsed = validate(values.client_type);
+		if (!parsed.success) {
+			await focusFirstError();
 			return;
 		}
-		clientErrors = {};
 		onSubmit(parsed.data);
 	}
 
 	function setClientType(next: string) {
-		values.client_type = next as ClientType;
+		if (next !== 'public' && next !== 'confidential') return;
+		values.client_type = next;
+		// URI rules depend on the client type: never leave errors that contradict the new one.
+		if (Object.keys(clientErrors).length > 0) validate(next);
 	}
 </script>
 
-<form class="space-y-6" onsubmit={submit} novalidate>
+<form bind:this={formEl} class="space-y-6" onsubmit={submit} novalidate>
 	{#if formError}
 		<Alert variant="destructive">
 			<AlertDescription>{formError}</AlertDescription>
@@ -136,8 +159,15 @@
 
 	{#if mode === 'create'}
 		<fieldset class="space-y-3">
-			<legend class="text-sm font-bold">{m['oauth.developer.form.clientType']()}</legend>
-			<RadioGroup value={values.client_type} onValueChange={setClientType}>
+			<legend id="{uid}-type-legend" class="text-sm font-bold">
+				{m['oauth.developer.form.clientType']()}
+			</legend>
+			<RadioGroup
+				value={values.client_type}
+				onValueChange={setClientType}
+				aria-labelledby="{uid}-type-legend"
+				disabled={submitting}
+			>
 				<div class="flex items-start gap-2">
 					<RadioGroupItem
 						value="public"
