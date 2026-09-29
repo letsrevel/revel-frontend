@@ -59,9 +59,11 @@ function interceptedForm(to: string): string {
  * Poll until an email to `to` (optionally with `subject` as a substring)
  * arrives; resolves with the full message (HTML + text bodies). Matches both
  * the raw recipient and the backend's intercepted (safe-rewritten) form.
+ * `excludeIds` skips messages already seen (e.g. to wait for a RE-sent email
+ * without wiping the shared mailbox); the newest remaining match wins.
  */
 export async function waitForEmail(
-	{ to, subject }: { to: string; subject?: string },
+	{ to, subject, excludeIds = [] }: { to: string; subject?: string; excludeIds?: string[] },
 	timeoutMs = 20_000
 ): Promise<MailpitMessage> {
 	const deadline = Date.now() + timeoutMs;
@@ -69,7 +71,7 @@ export async function waitForEmail(
 	const queries = [`to:"${to}"${subjectPart}`, `to:"+${interceptedForm(to)}@"${subjectPart}`];
 	for (;;) {
 		for (const query of queries) {
-			const [match] = await search(query);
+			const match = (await search(query)).find((msg) => !excludeIds.includes(msg.ID));
 			if (match) {
 				return await mailpit<MailpitMessage>(`/message/${match.ID}`);
 			}
