@@ -3336,7 +3336,7 @@
 				"urisMin": "Füge mindestens eine Weiterleitungs-URI hinzu.",
 				"urisMax": "Du kannst bis zu 10 Weiterleitungs-URIs hinzufügen.",
 				"urisDuplicate": "Diese Weiterleitungs-URI steht doppelt in der Liste.",
-				"orgReadRequired": "Jeder Veranstalter-Scope braucht zusätzlich org:read.",
+				"orgReadRequired": "Jeder Organisations-Scope braucht auch org:read.",
 				"urlInvalid": "Gib eine vollständige URL ein, z. B. https://example.com."
 			},
 			"errors": {

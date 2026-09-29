@@ -3306,7 +3306,7 @@
 				"urisMin": "Ajoute au moins une URI de redirection.",
 				"urisMax": "Tu peux ajouter jusqu'à 10 URI de redirection.",
 				"urisDuplicate": "Cette URI de redirection apparaît deux fois.",
-				"orgReadRequired": "Chaque scope organisateur nécessite aussi org:read.",
+				"orgReadRequired": "Chaque scope d'organisation nécessite aussi org:read.",
 				"urlInvalid": "Saisis une URL complète, par exemple https://example.com."
 			},
 			"errors": {

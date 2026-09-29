@@ -37,9 +37,7 @@ export function redirectUriError(uri: string, clientType: ClientType): string | 
 	if (url.protocol === 'https:') return null;
 	if (url.protocol === 'http:') {
 		if (clientType !== 'public') return m['oauth.developer.validation.uriSchemeConfidential']();
-		return isLoopbackHost(url.hostname) || isLoopbackHost(url.host.replace(/:\d+$/, ''))
-			? null
-			: m['oauth.developer.validation.uriScheme']();
+		return isLoopbackHost(url.hostname) ? null : m['oauth.developer.validation.uriScheme']();
 	}
 	return clientType === 'public'
 		? m['oauth.developer.validation.uriScheme']()
@@ -143,6 +141,20 @@ export function removedScopes(initial: readonly string[], next: readonly string[
 	return initial.filter((scope) => !keep.has(scope));
 }
 
+/** Fields the developer-app form can render an error under; `redirect_uris.N` targets one row. */
+const FORM_FIELD =
+	/^(name|description|redirect_uris(\.\d+)?|allowed_scopes|homepage_url|privacy_policy_url)$/;
+
+/**
+ * Dotted error path -> form field key, or `null` when the form has nowhere to
+ * show it (`__all__`, `_`, a bare `payload` model error, unknown keys), so the
+ * caller routes it to the form-level message instead of dropping it.
+ */
+function formFieldKey(path: string): string | null {
+	const key = path.startsWith('payload.') ? path.slice('payload.'.length) : path;
+	return FORM_FIELD.test(key) ? key : null;
+}
+
 /**
  * Backend error body → form state. 400 `{errors}` and 422 `{detail: [...]}`
  * go through `extractFieldErrors`; `__all__`/unknown keys and everything else
@@ -160,22 +172,19 @@ export function fieldErrorsFrom(error: unknown): {
 			? (error as { __status?: number }).__status
 			: undefined;
 	if (status === 409) return { fields, form: m['oauth.developer.errors.limit']() };
-	for (const { field, messages } of extractFieldErrors(error)) {
-		const key = field.split('.').pop() ?? field;
-		const message = messages[0] ?? '';
-		if (key === '__all__' || key === '_') form = message;
-		else fields[key] = message;
-	}
+	const place = (path: string, message: string) => {
+		const key = formFieldKey(path);
+		if (key) fields[key] ??= message;
+		else form ??= message;
+	};
+	for (const { field, messages } of extractFieldErrors(error)) place(field, messages[0] ?? '');
 	// A string-valued `{errors: {name: 'Too long'}}` is not an array; extractFieldErrors skips it.
 	const raw =
 		(typeof error === 'object' && error !== null
 			? (error as { errors?: Record<string, unknown> }).errors
 			: undefined) ?? {};
 	for (const [key, value] of Object.entries(raw)) {
-		if (typeof value === 'string') {
-			if (key === '__all__') form = value;
-			else fields[key] ??= value;
-		}
+		if (typeof value === 'string') place(key, value);
 	}
 	if (!form && Object.keys(fields).length === 0) form = m['oauth.developer.errors.generic']();
 	return { fields, form };

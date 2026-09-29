@@ -3334,9 +3334,9 @@
 				"uriScheme": "Usa https. As apps públicas também podem usar http em localhost.",
 				"uriSchemeConfidential": "As apps confidenciais têm de usar https.",
 				"urisMin": "Adiciona pelo menos um URI de redirecionamento.",
-				"urisMax": "Podes adicionar até 10 URI de redirecionamento.",
+				"urisMax": "Podes adicionar até 10 URIs de redirecionamento.",
 				"urisDuplicate": "Este URI de redirecionamento aparece duas vezes.",
-				"orgReadRequired": "Cada scope de organizador precisa também de org:read.",
+				"orgReadRequired": "Cada scope de organização precisa também de org:read.",
 				"urlInvalid": "Introduz um URL completo, como https://example.com."
 			},
 			"errors": {

@@ -50,6 +50,7 @@ describe('redirectUriError', () => {
 		expect(redirectUriError('https://acme.example/cb', 'confidential')).toBeNull();
 		expect(redirectUriError('http://127.0.0.1:47123/cb', 'public')).toBeNull();
 		expect(redirectUriError('http://localhost:3000/cb', 'public')).toBeNull();
+		expect(redirectUriError('http://[::1]:3000/cb', 'public')).toBeNull();
 		expect(redirectUriError('http://127.0.0.1:47123/cb', 'confidential')).toBeTruthy();
 	});
 
@@ -165,6 +166,24 @@ describe('fieldErrorsFrom', () => {
 			fields: { description: 'too long' },
 			form: null
 		});
+	});
+
+	it('keeps indexed 422 paths so a redirect URI row can show its error', () => {
+		expect(
+			fieldErrorsFrom({
+				detail: [{ loc: ['body', 'payload', 'redirect_uris', 1], msg: 'bad uri' }]
+			})
+		).toEqual({ fields: { 'redirect_uris.1': 'bad uri' }, form: null });
+	});
+
+	it('routes payload-root and unknown keys to the form so nothing disappears', () => {
+		expect(fieldErrorsFrom({ detail: [{ loc: ['body', 'payload'], msg: 'model error' }] })).toEqual(
+			{
+				fields: {},
+				form: 'model error'
+			}
+		);
+		expect(fieldErrorsFrom({ errors: { weird: ['x'] } })).toEqual({ fields: {}, form: 'x' });
 	});
 
 	it('maps a 409 onto the limit copy and anything else onto the generic copy', () => {
