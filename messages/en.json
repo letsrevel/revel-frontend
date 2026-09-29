@@ -3323,6 +3323,26 @@
 			"removed": "{name} was disconnected.",
 			"removeError": "We couldn't disconnect this app. Please try again.",
 			"emailNote": "Changing your email address disconnects every app."
+		},
+		"developer": {
+			"validation": {
+				"nameRequired": "Give the app a name.",
+				"nameTooLong": "Keep the name under 255 characters.",
+				"descriptionTooLong": "Keep the description under 2000 characters.",
+				"uriInvalid": "Enter a full URL, like https://example.com/callback.",
+				"uriFragment": "Redirect URIs can't contain a # fragment.",
+				"uriScheme": "Use https. Public apps may also use http on localhost.",
+				"uriSchemeConfidential": "Confidential apps must use https.",
+				"urisMin": "Add at least one redirect URI.",
+				"urisMax": "You can add up to 10 redirect URIs.",
+				"urisDuplicate": "This redirect URI is listed twice.",
+				"orgReadRequired": "Every organizer scope needs org:read as well.",
+				"urlInvalid": "Enter a full URL, like https://example.com."
+			},
+			"errors": {
+				"limit": "You've reached the limit of apps per account.",
+				"generic": "Something went wrong. Please check the form and try again."
+			}
 		}
 	},
 	"orgAdmin": {

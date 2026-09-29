@@ -3323,6 +3323,26 @@
 			"removed": "L'app {name} è stata scollegata.",
 			"removeError": "Impossibile scollegare questa app. Riprova.",
 			"emailNote": "Se cambi il tuo indirizzo email, tutte le app vengono scollegate."
+		},
+		"developer": {
+			"validation": {
+				"nameRequired": "Dai un nome all'app.",
+				"nameTooLong": "Il nome può avere al massimo 255 caratteri.",
+				"descriptionTooLong": "La descrizione può avere al massimo 2000 caratteri.",
+				"uriInvalid": "Inserisci un URL completo, per esempio https://example.com/callback.",
+				"uriFragment": "Gli URI di reindirizzamento non possono contenere un frammento #.",
+				"uriScheme": "Usa https. Le app pubbliche possono usare http anche su localhost.",
+				"uriSchemeConfidential": "Le app confidenziali devono usare https.",
+				"urisMin": "Aggiungi almeno un URI di reindirizzamento.",
+				"urisMax": "Puoi aggiungere fino a 10 URI di reindirizzamento.",
+				"urisDuplicate": "Questo URI di reindirizzamento compare due volte.",
+				"orgReadRequired": "Ogni scope da organizzatore richiede anche org:read.",
+				"urlInvalid": "Inserisci un URL completo, per esempio https://example.com."
+			},
+			"errors": {
+				"limit": "Hai raggiunto il limite di app per account.",
+				"generic": "Qualcosa è andato storto. Controlla il modulo e riprova."
+			}
 		}
 	},
 	"orgAdmin": {

@@ -3323,6 +3323,26 @@
 			"removed": "A app {name} foi desligada.",
 			"removeError": "Não conseguimos desligar esta app. Tenta novamente.",
 			"emailNote": "Alterar o teu endereço de email desliga todas as apps."
+		},
+		"developer": {
+			"validation": {
+				"nameRequired": "Dá um nome à app.",
+				"nameTooLong": "O nome pode ter no máximo 255 caracteres.",
+				"descriptionTooLong": "A descrição pode ter no máximo 2000 caracteres.",
+				"uriInvalid": "Introduz um URL completo, como https://example.com/callback.",
+				"uriFragment": "Os URI de redirecionamento não podem conter um fragmento #.",
+				"uriScheme": "Usa https. As apps públicas também podem usar http em localhost.",
+				"uriSchemeConfidential": "As apps confidenciais têm de usar https.",
+				"urisMin": "Adiciona pelo menos um URI de redirecionamento.",
+				"urisMax": "Podes adicionar até 10 URI de redirecionamento.",
+				"urisDuplicate": "Este URI de redirecionamento aparece duas vezes.",
+				"orgReadRequired": "Cada scope de organizador precisa também de org:read.",
+				"urlInvalid": "Introduz um URL completo, como https://example.com."
+			},
+			"errors": {
+				"limit": "Atingiste o limite de apps por conta.",
+				"generic": "Algo correu mal. Verifica o formulário e tenta novamente."
+			}
 		}
 	},
 	"orgAdmin": {
