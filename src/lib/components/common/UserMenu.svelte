@@ -18,7 +18,8 @@
 		FileText,
 		Receipt,
 		CreditCard,
-		Plug
+		Plug,
+		CodeXml
 	} from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
@@ -137,6 +138,11 @@
 						href: resolve('/(auth)/account/connected-apps', {}),
 						label: m['userMenu.connectedApps'](),
 						icon: Plug
+					},
+					{
+						href: resolve('/(auth)/account/developer-apps', {}),
+						label: m['userMenu.developerApps'](),
+						icon: CodeXml
 					}
 				]
 			: [])
