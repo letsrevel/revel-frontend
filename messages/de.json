@@ -3302,6 +3302,23 @@
 			"retry": "Erneut versuchen",
 			"backToRevel": "Zurück zu Revel",
 			"errorFallbackHeadline": "Beim Prüfen dieser Anfrage ist etwas schiefgelaufen."
+		},
+		"connections": {
+			"title": "Verbundene Apps",
+			"section": "Apps mit Zugriff auf dein Konto",
+			"loadError": "Wir konnten deine verbundenen Apps nicht laden.",
+			"emptyTitle": "Mit deinem Konto sind keine Apps verbunden.",
+			"emptyBody": "Wenn du einer App erlaubst, dein Konto zu nutzen, erscheint sie hier.",
+			"connectedOn": "Verbunden am {date}",
+			"lastUsed": "Zuletzt verwendet am {date}",
+			"remove": "Entfernen",
+			"removeNamed": "{name} entfernen",
+			"confirmTitle": "{name} trennen?",
+			"confirmMessage": "Die App verliert sofort den Zugriff. Wenn du sie wieder verbindest, musst du sie erneut genehmigen.",
+			"confirmAction": "Trennen",
+			"removed": "{name} wurde getrennt.",
+			"removeError": "Wir konnten diese App nicht trennen. Bitte versuche es noch einmal.",
+			"emailNote": "Wenn du deine E-Mail-Adresse änderst, werden alle Apps getrennt."
 		}
 	},
 	"orgAdmin": {
@@ -6378,7 +6395,8 @@
 		"myOrganizations": "Meine Organisationen",
 		"adminDashboard": "Admin-Dashboard",
 		"invoices": "Meine Rechnungen",
-		"memberships": "Mitgliedschaften"
+		"memberships": "Mitgliedschaften",
+		"connectedApps": "Verbundene Apps"
 	},
 	"userMenu.createOrganization": "Organisation erstellen",
 	"venueSelector": {

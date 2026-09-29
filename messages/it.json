@@ -3302,6 +3302,23 @@
 			"retry": "Riprova",
 			"backToRevel": "Torna a Revel",
 			"errorFallbackHeadline": "Qualcosa è andato storto durante il controllo di questa richiesta."
+		},
+		"connections": {
+			"title": "App collegate",
+			"section": "App con accesso al tuo account",
+			"loadError": "Impossibile caricare le tue app collegate.",
+			"emptyTitle": "Nessuna app è collegata al tuo account.",
+			"emptyBody": "Quando consenti a un'app di usare il tuo account, la trovi qui.",
+			"connectedOn": "Collegata il {date}",
+			"lastUsed": "Ultimo utilizzo: {date}",
+			"remove": "Rimuovi",
+			"removeNamed": "Rimuovi {name}",
+			"confirmTitle": "Scollegare {name}?",
+			"confirmMessage": "Perde l'accesso immediatamente. Se la colleghi di nuovo, dovrai approvarla un'altra volta.",
+			"confirmAction": "Scollega",
+			"removed": "L'app {name} è stata scollegata.",
+			"removeError": "Impossibile scollegare questa app. Riprova.",
+			"emailNote": "Se cambi il tuo indirizzo email, tutte le app vengono scollegate."
 		}
 	},
 	"orgAdmin": {
@@ -6378,7 +6395,8 @@
 		"myOrganizations": "Le Mie Organizzazioni",
 		"adminDashboard": "Dashboard Admin",
 		"invoices": "Le Mie Fatture",
-		"memberships": "Iscrizioni"
+		"memberships": "Iscrizioni",
+		"connectedApps": "App collegate"
 	},
 	"userMenu.createOrganization": "Crea Organizzazione",
 	"venueSelector": {

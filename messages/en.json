@@ -3302,6 +3302,23 @@
 			"retry": "Try again",
 			"backToRevel": "Back to Revel",
 			"errorFallbackHeadline": "Something went wrong while checking this request."
+		},
+		"connections": {
+			"title": "Connected apps",
+			"section": "Apps with access to your account",
+			"loadError": "We couldn't load your connected apps.",
+			"emptyTitle": "No apps are connected to your account.",
+			"emptyBody": "When you allow an app to use your account, it shows up here.",
+			"connectedOn": "Connected {date}",
+			"lastUsed": "Last used {date}",
+			"remove": "Remove",
+			"removeNamed": "Remove {name}",
+			"confirmTitle": "Disconnect {name}?",
+			"confirmMessage": "It loses access immediately. If you connect it again you'll be asked to approve it again.",
+			"confirmAction": "Disconnect",
+			"removed": "{name} was disconnected.",
+			"removeError": "We couldn't disconnect this app. Please try again.",
+			"emailNote": "Changing your email address disconnects every app."
 		}
 	},
 	"orgAdmin": {
@@ -6378,7 +6395,8 @@
 		"myOrganizations": "My Organizations",
 		"adminDashboard": "Admin Dashboard",
 		"invoices": "My Invoices",
-		"memberships": "Memberships"
+		"memberships": "Memberships",
+		"connectedApps": "Connected apps"
 	},
 	"userMenu.createOrganization": "Create Organization",
 	"venueSelector": {
