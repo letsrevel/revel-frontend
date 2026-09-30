@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - After saving notification settings, the Save button no longer stays enabled, and a second save no longer resends unchanged settings.
 - Changes made while notification settings are still saving are no longer overwritten when the save finishes.
 - The heart on the Following button no longer disappears when you hover over it.
+- Event, organization, series, listing and other single-URL pages, and the sitemaps that list them, no longer tell search engines that language versions exist when they don't. Only the translated landing pages list language alternates.
 
 ## [2.15.0] - 2026-09-29
 
