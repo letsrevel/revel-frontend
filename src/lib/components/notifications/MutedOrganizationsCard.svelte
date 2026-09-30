@@ -113,13 +113,15 @@
 					{:else}
 						<span class="font-bold text-muted-foreground">{label}</span>
 					{/if}
+					<!-- One unmute at a time: every row shows the disabled state while any
+					     is in flight, so a click on another row is never a silent no-op. -->
 					<Button
 						type="button"
 						variant="outline"
 						size="sm"
 						class="w-full aria-disabled:pointer-events-none aria-disabled:opacity-50 sm:w-auto"
 						aria-label={m['announcementMute.unmuteNamed']({ name: label })}
-						aria-disabled={pendingId === org.id}
+						aria-disabled={pendingId !== null}
 						onclick={() => {
 							if (pendingId === null) unmuteMutation.mutate(org);
 						}}

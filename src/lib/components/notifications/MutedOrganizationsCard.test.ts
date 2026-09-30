@@ -103,6 +103,40 @@ describe('MutedOrganizationsCard (#984)', () => {
 		expect(organizationGetOrganizationById).toHaveBeenCalledTimes(2);
 	});
 
+	it('disables every row while one unmute is in flight, so no click is a silent no-op', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationGetOrganizationById).mockImplementation((async ({
+			path
+		}: {
+			path: { organization_id: string };
+		}) => ({
+			data: {
+				id: path.organization_id,
+				name: `Org ${path.organization_id}`,
+				slug: path.organization_id
+			}
+		})) as never);
+		let settle: ((value: unknown) => void) | undefined;
+		vi.mocked(notificationpreferenceUnmuteOrganization).mockReturnValue(
+			new Promise((resolve) => {
+				settle = resolve;
+			}) as never
+		);
+		renderCard(['o1', 'o2']);
+		const first = await screen.findByRole('button', { name: 'Unmute announcements from Org o1' });
+		const second = screen.getByRole('button', { name: 'Unmute announcements from Org o2' });
+		expect(second).toHaveAttribute('aria-disabled', 'false');
+
+		await user.click(first);
+		expect(first).toHaveAttribute('aria-disabled', 'true');
+		expect(second).toHaveAttribute('aria-disabled', 'true');
+		await user.click(second);
+		expect(notificationpreferenceUnmuteOrganization).toHaveBeenCalledOnce();
+
+		settle?.({ data: prefs(['o2']) });
+		await waitFor(() => expect(second).toHaveAttribute('aria-disabled', 'false'));
+	});
+
 	it('unmutes an organization and drops it from the list', async () => {
 		const user = userEvent.setup();
 		renderCard(['o1']);
