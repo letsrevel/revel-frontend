@@ -22,14 +22,6 @@ function priorityFor(start: string): string {
 	return '0.6';
 }
 
-function sameUrlAlternates(loc: string): string {
-	return (
-		['en', 'de', 'it', 'fr', 'es', 'pt']
-			.map((l) => `<xhtml:link rel="alternate" hreflang="${l}" href="${escapeXml(loc)}"/>`)
-			.join('') + `<xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(loc)}"/>`
-	);
-}
-
 function imageEntry(rel: string | null | undefined, title: string): string {
 	if (!rel) return '';
 	return `<image:image>
@@ -59,7 +51,6 @@ export const GET: RequestHandler = async ({ params, fetch, url }) => {
 		const img = imageEntry(event.cover_art ?? event.logo, event.name);
 		return `<url>
   <loc>${escapeXml(loc)}</loc>
-  ${sameUrlAlternates(loc)}
   <lastmod>${lastmod}</lastmod>
   <changefreq>weekly</changefreq>
   <priority>${priorityFor(event.start)}</priority>
@@ -69,7 +60,6 @@ export const GET: RequestHandler = async ({ params, fetch, url }) => {
 
 	const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 ${urls.join('\n')}
 </urlset>`;

@@ -1,6 +1,5 @@
 // src/lib/seo/plain-page.ts
 import { OG_IMAGE_PATH, SITE_NAME, TWITTER_SITE } from './constants';
-import { sameUrlHreflang } from './hreflang';
 import type { Robots, SeoConfig } from './types';
 
 export const DEFAULT_OG_IMAGE_ALT = 'Revel — Event Management for Communities';
@@ -40,7 +39,7 @@ export interface PlainPageContext {
 
 /**
  * Text-only pages (legal, auth, referral-apply) share one shape: default OG
- * image, summary card, self-referencing hreflang, no JSON-LD. Kept in ONE
+ * image, summary card, no hreflang (single-URL page, #994), no JSON-LD. Kept in ONE
  * place so it cannot drift per branch, and so the next one costs three lines.
  */
 export function plainPageSeo(
@@ -71,7 +70,7 @@ export function plainPageSeo(
 			description,
 			site: TWITTER_SITE
 		},
-		hreflang: sameUrlHreflang(ctx.canonical),
+		hreflang: [],
 		jsonLd: []
 	};
 }
