@@ -31,6 +31,7 @@
 	import ClaimMembershipButton from '$lib/components/organizations/ClaimMembershipButton.svelte';
 	import OrgMembershipInline from '$lib/components/account/OrgMembershipInline.svelte';
 	import FollowButton from '$lib/components/common/FollowButton.svelte';
+	import AnnouncementMuteButton from '$lib/components/organization/AnnouncementMuteButton.svelte';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
@@ -382,6 +383,8 @@
 						isAuthenticated={data.isAuthenticated}
 						variant="outline"
 					/>
+
+					<AnnouncementMuteButton {organization} />
 
 					<!-- Contact Organizer Button -->
 					{#if organization.contact_method && organization.contact_method !== 'none'}

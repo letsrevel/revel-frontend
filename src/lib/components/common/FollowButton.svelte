@@ -2,11 +2,9 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import {
-		organizationGetFollowStatus,
 		organizationFollowOrganization,
 		organizationUnfollowOrganization,
 		organizationUpdateOrganizationFollow,
-		eventseriesGetFollowStatus,
 		eventseriesFollowEventSeries,
 		eventseriesUnfollowEventSeries,
 		eventseriesUpdateEventSeriesFollow
@@ -16,6 +14,8 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { toast } from 'svelte-sonner';
+	import { followStatusQueryOptions } from '$lib/queries/follow-status';
+	import { notificationPreferencesKey } from '$lib/queries/announcement-mute';
 
 	interface Props {
 		entityType: 'organization' | 'event-series';
@@ -41,35 +41,20 @@
 	// Query key for this entity's follow status (include auth state so it refetches on login)
 	const queryKey = $derived(['follow-status', entityType, entityId, !!accessToken]);
 
-	// Fetch follow status - include accessToken in key so it refetches when auth state changes
+	// Fetch follow status (shared with the org page's announcement-mute button)
 	const followStatusQuery = createQuery(() => ({
-		queryKey: ['follow-status', entityType, entityId, !!accessToken],
-		queryFn: async () => {
-			if (!accessToken) return { is_following: false, follow: null };
-
-			if (entityType === 'organization') {
-				const response = await organizationGetFollowStatus({
-					path: { slug: entityId },
-					headers: { Authorization: `Bearer ${accessToken}` }
-				});
-				if (response.error) {
-					// 404 means not following - this is expected
-					return { is_following: false, follow: null };
-				}
-				return response.data;
-			} else {
-				const response = await eventseriesGetFollowStatus({
-					path: { series_id: entityId },
-					headers: { Authorization: `Bearer ${accessToken}` }
-				});
-				if (response.error) {
-					return { is_following: false, follow: null };
-				}
-				return response.data;
-			}
-		},
+		...followStatusQueryOptions(entityType, entityId, accessToken),
 		enabled: isAuthenticated && !!accessToken
 	}));
+
+	// `notify_announcements` is a view of the per-org announcement mute (#984),
+	// so any follow write can change the viewer's muted_organization_ids.
+	function invalidateFollowViews() {
+		queryClient.invalidateQueries({ queryKey });
+		if (entityType === 'organization') {
+			queryClient.invalidateQueries({ queryKey: notificationPreferencesKey });
+		}
+	}
 
 	// Derived state - use .data directly without $ prefix
 	const isFollowing = $derived(followStatusQuery.data?.is_following ?? false);
@@ -105,7 +90,7 @@
 			}
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey });
+			invalidateFollowViews();
 			toast.success(m['follow.followSuccess']({ name: entityName }));
 		},
 		onError: () => {
@@ -135,7 +120,7 @@
 			}
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey });
+			invalidateFollowViews();
 			toast.success(m['follow.unfollowSuccess']({ name: entityName }));
 		},
 		onError: () => {
@@ -167,7 +152,7 @@
 			}
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey });
+			invalidateFollowViews();
 			toast.success(m['follow.preferencesUpdated']());
 		},
 		onError: () => {
@@ -209,14 +194,19 @@
 				<Button
 					{...props}
 					variant="outline"
-					class="gap-2 {className}"
+					class="group gap-2 {className}"
 					disabled={isLoading}
 					aria-label={m['follow.following']()}
 				>
 					{#if isLoading}
 						<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
 					{:else}
-						<Heart class="h-4 w-4 fill-current text-red-500" aria-hidden="true" />
+						<!-- The outline button hovers to bg-accent, so the heart flips to
+						     accent-foreground there instead of vanishing (accent on accent). -->
+						<Heart
+							class="h-4 w-4 fill-current text-accent group-hover:text-accent-foreground"
+							aria-hidden="true"
+						/>
 					{/if}
 					{m['follow.following']()}
 					<ChevronDown class="h-4 w-4" aria-hidden="true" />

@@ -10057,5 +10057,20 @@
 		"emptyWindow": "Avec ces horaires, l'enregistrement fermerait avant d'ouvrir : les billets de ce tarif ne pourraient jamais être validés. Ajuste les horaires ou le créneau d'enregistrement de l'événement.",
 		"relativeNote": "Enregistré par rapport au début de l'événement : le créneau suit l'événement si tu le reprogrammes ou le dupliques.",
 		"entryWindow": "Entrée : {window}"
+	},
+	"announcementMute": {
+		"mute": "Mettre les annonces en sourdine",
+		"unmute": "Réactiver les annonces",
+		"unmuteShort": "Réactiver",
+		"unmuteNamed": "Réactiver les annonces de {name}",
+		"mutedToast": "Les annonces de {name} sont en sourdine. Les billets, reçus et annulations d'événements te parviendront toujours.",
+		"unmutedToast": "Tu recevras à nouveau les annonces de {name}.",
+		"updateError": "Impossible de mettre à jour tes paramètres d'annonces. Réessaie.",
+		"settingsTitle": "Organisations en sourdine",
+		"settingsDescription": "Mettre une organisation en sourdine bloque ses annonces sur tous les canaux. Tu peux toujours les lire sur sa page. Les billets, reçus et annulations d'événements te parviennent toujours.",
+		"emptyTitle": "Aucune organisation en sourdine",
+		"emptyBody": "Pour mettre les annonces d'une organisation en sourdine, utilise le bouton sur sa page.",
+		"unknownOrganization": "Cette organisation n'est plus disponible",
+		"loading": "Chargement…"
 	}
 }

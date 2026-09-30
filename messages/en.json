@@ -10057,5 +10057,20 @@
 		"emptyWindow": "With these times, check-in would close before it opens, so this tier's tickets could never be checked in. Adjust the times or the event's check-in window.",
 		"relativeNote": "Stored relative to the event start, so the window moves with the event if you reschedule or duplicate it.",
 		"entryWindow": "Entry: {window}"
+	},
+	"announcementMute": {
+		"mute": "Mute announcements",
+		"unmute": "Unmute announcements",
+		"unmuteShort": "Unmute",
+		"unmuteNamed": "Unmute announcements from {name}",
+		"mutedToast": "Announcements from {name} are muted. Tickets, receipts and event cancellations still reach you.",
+		"unmutedToast": "You'll get announcements from {name} again.",
+		"updateError": "Couldn't update your announcement settings. Please try again.",
+		"settingsTitle": "Muted organizations",
+		"settingsDescription": "Muting an organization stops its announcements on every channel. You can still read them on its page. Tickets, receipts and event cancellations always reach you.",
+		"emptyTitle": "No muted organizations",
+		"emptyBody": "To mute an organization's announcements, use the button on its page.",
+		"unknownOrganization": "Organization no longer available",
+		"loading": "Loading…"
 	}
 }

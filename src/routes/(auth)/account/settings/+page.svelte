@@ -4,7 +4,10 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
-	import { NotificationPreferencesForm } from '$lib/components/notifications';
+	import {
+		NotificationPreferencesForm,
+		MutedOrganizationsCard
+	} from '$lib/components/notifications';
 	import { BillingProfileForm } from '$lib/components/billing';
 	import CityAutocomplete from '$lib/components/forms/CityAutocomplete.svelte';
 	import AttendeeVisibilitySelect from '$lib/components/profile/AttendeeVisibilitySelect.svelte';
@@ -151,10 +154,18 @@
 			<BillingProfileForm authToken={authStore.accessToken} />
 		</div>
 
-		<!-- Notification Settings -->
-		<NotificationPreferencesForm
-			preferences={data.notificationPreferences ?? null}
+		<!-- Notification Settings. Keyed: the form seeds its draft from the prop
+		     once, so fresh page data remounts it rather than being ignored. -->
+		{#key data.notificationPreferences}
+			<NotificationPreferencesForm
+				preferences={data.notificationPreferences ?? null}
+				authToken={authStore.accessToken}
+			/>
+		{/key}
+
+		<MutedOrganizationsCard
 			authToken={authStore.accessToken}
+			initialPreferences={data.notificationPreferences ?? null}
 		/>
 	{:else}
 		<div role="alert" class="rounded-md border border-destructive bg-destructive/10 p-4">

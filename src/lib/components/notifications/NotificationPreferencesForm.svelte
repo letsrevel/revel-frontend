@@ -6,6 +6,7 @@
 		notificationpreferenceUnsubscribe,
 		telegramGetLinkStatus
 	} from '$lib/api';
+	import { untrack } from 'svelte';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { toast } from 'svelte-sonner';
 	import { Button } from '$lib/components/ui/button';
@@ -79,29 +80,68 @@
 		retry: 1
 	}));
 
-	// Local state - initialize from preferences prop
-	let silenceAll = $state(preferences?.silence_all_notifications ?? false);
-	let eventReminders = $state(preferences?.event_reminders_enabled ?? true);
-	let enabledChannels = $state<Array<'in_app' | 'email' | 'telegram'>>(
-		preferences?.enabled_channels ?? ['in_app', 'email']
-	);
-	let digestFrequency = $state<string>(preferences?.digest_frequency ?? 'immediate');
-	let digestSendTime = $state<string>(toHHMM(preferences?.digest_send_time ?? '09:00'));
+	type Channel = 'in_app' | 'email' | 'telegram';
+	interface Draft {
+		silence: boolean;
+		reminders: boolean;
+		channels: Channel[];
+		frequency: string;
+		sendTime: string;
+		typeSettings: Record<string, NotificationTypeSettings>;
+	}
+
+	function toDraft(prefs: NotificationPreferenceSchema | null): Draft {
+		return {
+			silence: prefs?.silence_all_notifications ?? false,
+			reminders: prefs?.event_reminders_enabled ?? true,
+			channels: prefs?.enabled_channels ?? ['in_app', 'email'],
+			frequency: prefs?.digest_frequency ?? 'immediate',
+			sendTime: toHHMM(prefs?.digest_send_time ?? '09:00'),
+			typeSettings: prefs?.notification_type_settings ?? {}
+		};
+	}
+
+	// The saved state the draft is diffed against. Seeded from the prop ONCE
+	// (untrack: the form owns it from here); a caller that swaps in different
+	// preferences remounts the form with {#key} instead of the old prop-sync
+	// $effect (#985). A successful save moves the baseline to the server's
+	// answer, so the next save diffs against what is actually stored.
+	// $state.raw: the baseline is only ever replaced, never mutated in place.
+	const initialDraft = toDraft(untrack(() => preferences));
+	let baseline = $state.raw<Draft>(initialDraft);
+
+	// Editable draft. Arrays/objects are copied so edits (the per-type settings
+	// child mutates through its binding) can never leak into the baseline.
+	let silenceAll = $state(initialDraft.silence);
+	let eventReminders = $state(initialDraft.reminders);
+	let enabledChannels = $state<Channel[]>([...initialDraft.channels]);
+	let digestFrequency = $state<string>(initialDraft.frequency);
+	let digestSendTime = $state<string>(initialDraft.sendTime);
 	let notificationTypeSettings = $state<Record<string, NotificationTypeSettings>>(
-		preferences?.notification_type_settings ?? {}
+		structuredClone(initialDraft.typeSettings)
 	);
 
-	// Sync local state when preferences prop changes
-	$effect(() => {
-		if (preferences) {
-			silenceAll = preferences.silence_all_notifications ?? false;
-			eventReminders = preferences.event_reminders_enabled ?? true;
-			enabledChannels = preferences.enabled_channels ?? ['in_app', 'email'];
-			digestFrequency = preferences.digest_frequency ?? 'immediate';
-			digestSendTime = toHHMM(preferences.digest_send_time ?? '09:00');
-			notificationTypeSettings = preferences.notification_type_settings ?? {};
-		}
-	});
+	// Serialised current draft: lets a save tell whether the user kept editing
+	// while it was in flight.
+	function draftSignature(): string {
+		return JSON.stringify([
+			silenceAll,
+			eventReminders,
+			enabledChannels,
+			digestFrequency,
+			digestSendTime,
+			notificationTypeSettings
+		]);
+	}
+
+	function loadDraft(draft: Draft) {
+		silenceAll = draft.silence;
+		eventReminders = draft.reminders;
+		enabledChannels = [...draft.channels];
+		digestFrequency = draft.frequency;
+		digestSendTime = draft.sendTime;
+		notificationTypeSettings = structuredClone(draft.typeSettings);
+	}
 
 	// Derived state
 	const isFormDisabled = $derived(disabled || silenceAll);
@@ -140,6 +180,8 @@
 		}: {
 			payload: UpdateNotificationPreferenceSchema;
 			token?: string;
+			/** draftSignature() at submit time */
+			submittedDraft: string;
 		}) => {
 			// Use different endpoint based on mode
 			if (token) {
@@ -175,8 +217,13 @@
 				return response.data;
 			}
 		},
-		onSuccess: (data, { token }) => {
+		onSuccess: (data, { token, submittedDraft }) => {
 			if (!isUnsubscribeMode) {
+				baseline = toDraft(data as NotificationPreferenceSchema);
+				// Adopt the server's normalised values only if the user didn't edit
+				// while the request was in flight; otherwise keep their edits, which
+				// now diff against the new baseline.
+				if (draftSignature() === submittedDraft) loadDraft(baseline);
 				queryClient.invalidateQueries({ queryKey: ['notification-preferences'] });
 				// Unsubscribe mode skips the toast: its page swaps to a success
 				// screen, and both at once doubled the announcement.
@@ -195,7 +242,7 @@
 	}));
 
 	// Channel toggle handlers
-	function toggleChannel(channel: 'in_app' | 'email' | 'telegram') {
+	function toggleChannel(channel: Channel) {
 		if (enabledChannels.includes(channel)) {
 			enabledChannels = enabledChannels.filter((c) => c !== channel);
 		} else {
@@ -203,7 +250,7 @@
 		}
 	}
 
-	function isChannelEnabled(channel: 'in_app' | 'email' | 'telegram'): boolean {
+	function isChannelEnabled(channel: Channel): boolean {
 		return enabledChannels.includes(channel);
 	}
 
@@ -215,14 +262,7 @@
 	// never per-type settings.
 	function buildPayload(): UpdateNotificationPreferenceSchema {
 		const payload: UpdateNotificationPreferenceSchema = {};
-		const ref = {
-			silence: preferences?.silence_all_notifications ?? false,
-			reminders: preferences?.event_reminders_enabled ?? true,
-			channels: preferences?.enabled_channels ?? ['in_app', 'email'],
-			frequency: preferences?.digest_frequency ?? 'immediate',
-			sendTime: toHHMM(preferences?.digest_send_time ?? '09:00'),
-			typeSettings: preferences?.notification_type_settings ?? {}
-		};
+		const ref = baseline;
 		const channelsChanged =
 			JSON.stringify([...enabledChannels].sort()) !== JSON.stringify([...ref.channels].sort());
 
@@ -260,19 +300,14 @@
 
 		updateMutation.mutate({
 			payload: buildPayload(),
-			token: isUnsubscribeMode ? unsubscribeToken : undefined
+			token: isUnsubscribeMode ? unsubscribeToken : undefined,
+			submittedDraft: draftSignature()
 		});
 	}
 
-	// Reset handler
+	// Reset handler: back to the last saved state
 	function handleReset() {
-		// Reset to preferences if available, otherwise to defaults
-		silenceAll = preferences?.silence_all_notifications ?? false;
-		eventReminders = preferences?.event_reminders_enabled ?? true;
-		enabledChannels = preferences?.enabled_channels ?? ['in_app', 'email'];
-		digestFrequency = preferences?.digest_frequency ?? 'immediate';
-		digestSendTime = toHHMM(preferences?.digest_send_time ?? '09:00');
-		notificationTypeSettings = preferences?.notification_type_settings ?? {};
+		loadDraft(baseline);
 	}
 </script>
 

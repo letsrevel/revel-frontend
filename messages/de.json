@@ -10057,5 +10057,20 @@
 		"emptyWindow": "Mit diesen Zeiten würde der Check-in schließen, bevor er öffnet. Tickets dieser Kategorie könnten dann nie eingecheckt werden. Passe die Zeiten oder den Check-in-Zeitraum des Events an.",
 		"relativeNote": "Wird relativ zum Eventbeginn gespeichert und verschiebt sich mit, wenn du das Event verlegst oder duplizierst.",
 		"entryWindow": "Einlass: {window}"
+	},
+	"announcementMute": {
+		"mute": "Ankündigungen stummschalten",
+		"unmute": "Ankündigungen wieder aktivieren",
+		"unmuteShort": "Wieder aktivieren",
+		"unmuteNamed": "Wieder aktivieren: Ankündigungen von {name}",
+		"mutedToast": "Ankündigungen von {name} sind stummgeschaltet. Tickets, Belege und Veranstaltungsabsagen erreichen dich weiterhin.",
+		"unmutedToast": "Du bekommst wieder Ankündigungen von {name}.",
+		"updateError": "Deine Ankündigungseinstellungen konnten nicht gespeichert werden. Bitte versuche es noch einmal.",
+		"settingsTitle": "Stummgeschaltete Organisationen",
+		"settingsDescription": "Wenn du eine Organisation stummschaltest, bekommst du ihre Ankündigungen auf keinem Kanal mehr. Auf ihrer Seite kannst du sie weiterhin lesen. Tickets, Belege und Veranstaltungsabsagen erreichen dich immer.",
+		"emptyTitle": "Keine stummgeschalteten Organisationen",
+		"emptyBody": "Um die Ankündigungen einer Organisation stummzuschalten, nutze den Button auf ihrer Seite.",
+		"unknownOrganization": "Organisation nicht mehr verfügbar",
+		"loading": "Wird geladen…"
 	}
 }
