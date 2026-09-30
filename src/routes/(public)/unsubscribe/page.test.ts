@@ -109,9 +109,10 @@ describe('unsubscribe page (#982)', () => {
 		await user.click(screen.getByRole('button', { name: /stop these emails/i }));
 
 		expect(oneclickunsubscribeOneClick).toHaveBeenCalledWith({ query: { token: 'tok' } });
-		const message = await screen.findByText(/won't get these emails anymore/i);
+		expect(await screen.findByText(/won't get these emails anymore/i)).toBeInTheDocument();
 		// Focus follows the swap (the clicked button is gone); no auto-redirect.
-		await waitFor(() => expect(message.closest('[tabindex="-1"]')).toHaveFocus());
+		const heading = screen.getByRole('heading', { level: 1, name: /preferences updated/i });
+		await waitFor(() => expect(heading).toHaveFocus());
 		expect(screen.getByRole('link', { name: /go to homepage/i })).toHaveAttribute('href', '/');
 	});
 

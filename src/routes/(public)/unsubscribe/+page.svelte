@@ -58,7 +58,12 @@
 	async function finish(result: Outcome) {
 		outcome = result;
 		await tick();
-		successRegion?.focus();
+		// Focus the confirmation's h1 (EmptyState owns it, so no ref prop) so
+		// screen readers announce a real heading, not an unnamed container.
+		const heading = successRegion?.querySelector<HTMLElement>('h1');
+		heading?.setAttribute('tabindex', '-1');
+		heading?.classList.add('focus:outline-none');
+		heading?.focus();
 	}
 
 	async function showRejected() {
@@ -98,7 +103,7 @@
 	{#if outcome}
 		<!-- Success message: the EmptyState DISPLAY variant (level 1), whose
 		     only heading is the page h1. -->
-		<div bind:this={successRegion} tabindex="-1" class="focus:outline-none">
+		<div bind:this={successRegion}>
 			<EmptyState
 				level={1}
 				tone="success"
@@ -123,7 +128,7 @@
 			<h1
 				bind:this={invalidHeading}
 				tabindex="-1"
-				class="text-2xl font-extrabold text-destructive focus:outline-none"
+				class="text-3xl font-black leading-[1.12] text-destructive focus:outline-none sm:text-4xl"
 			>
 				{m['unsubscribePage.invalidTokenTitle']()}
 			</h1>
