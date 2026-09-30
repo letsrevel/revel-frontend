@@ -18,6 +18,7 @@ the built frontend.
 | Keycloak | `http://localhost:8080` (realm `revel`, admin `admin`/`admin`) | OIDC login journeys; started by `make e2e-setup` via the backend compose overlay (backend PR #920). Specs self-skip when `/api/version` lists no `keycloak` provider. Override with `E2E_KEYCLOAK_URL` |
 | OAuth provider | backend `.env`: `OIDC_SIGNING_KEY_PATH` + `OAUTH_ISSUER=http://localhost:8000` | The `j28-oauth` journeys (14 tests across both projects) self-skip when `/api/version` reports `features.oauth_provider: false`. `OAUTH_ISSUER` must equal `API_URL` exactly (`localhost`, not `127.0.0.1`), or tokens are bound to another resource and a repeat request is not auto-approved as a prior grant |
 | Stripe | `stripe listen` forwarding to the backend | `make run-stripe` in `revel-backend` (`stripe listen --forward-to localhost:8000/api/stripe/webhook`) — **not** started by `make e2e-setup`, it stays a manual step. Backend `.env` also needs `CONNECTED_TEST_STRIPE_ID` **at bootstrap time**, or online checkout fails.<br>Without the forwarder the 12 Stripe specs **fail** (never skip — see below), and since #919 they fail *fast*: once two distinct webhook waits expire with nothing delivered, the rest of the run aborts in milliseconds instead of burning 90–150s each. Measured cost of the old behaviour: 36.5m without the forwarder vs 12.2m with it |
+| Email webhook | backend `EMAIL_WEBHOOK_SECRET=e2e-webhook-secret` | Set on the E2E daemon by `make e2e-setup` (backend `E2E_GUNICORN`, revel-backend#1045). `suppressed-address.spec.ts` posts fake provider events with it. With no secret (older backend), the webhook 404s and the spec self-skips (+4 skips over both projects). A *different* secret (401) fails loudly |
 | Frontend | `http://localhost:5173` | Started by Playwright (`pnpm build && pnpm preview`) with `PUBLIC_API_URL=http://localhost:8000` |
 
 ## Running
@@ -56,6 +57,23 @@ pnpm test:e2e tests/e2e/regression # CSP/FOUC guards (no backend needed)
 - **Unique names**: anything a test creates uses `uniqueName()`/`uniqueEmail()`
   so parallel workers and repeated runs never collide. Tests don't clean up —
   the reset command above restores determinism.
+- **Suppressing an address? Use `isolatedEmail()`**: email suppression
+  (provider bounce/complaint webhook, invitation opt-out) is keyed by the
+  normalized address, and normalization strips `+tags`. Suppressing any
+  `uniqueEmail()` address (`e2e+…@example.com`) suppresses `e2e@example.com`,
+  which is every E2E mailbox. Other suites' mail then silently stops, and the
+  row survives reseeds. `isolatedEmail()` has no `+tag`. If it happens anyway,
+  delete the `EmailSuppression` row for `e2e@example.com` in the backend shell.
+- **Suppression specs need the webhook secret**: the E2E daemon accepts
+  provider events on `/api/email-events/brevo` with the fixed secret
+  `e2e-webhook-secret` (`EMAIL_WEBHOOK_SECRET` in the backend's `E2E_GUNICORN`,
+  revel-backend#1045). If a backend lacks it (404), `suppressed-address.spec.ts`
+  skips. A different secret (401) fails.
+- **Invitation-cap spec assumes the default cap**: `invitation-cap.spec.ts`
+  sends 201 new addresses to trip `PENDING_INVITATION_DAILY_CAP` (default 200,
+  per organization per UTC day, counted in Redis, which survives reseeds).
+  The E2E backend must not override it. Each run uses a fresh organization, so
+  it has its own budget.
 - **Selectors**: `getByRole`/`getByLabel` first (the app is WCAG AA —
   semantics identify elements); `data-testid` only as a last resort.
 - **Email**: assert through `support/mailpit.ts` with a unique recipient; never
@@ -89,4 +107,6 @@ pnpm test:e2e tests/e2e/regression # CSP/FOUC guards (no backend needed)
   the 2 chromium-only single-use referral-invite tests, and the chromium-only
   Stripe Connect onboarding test (each run creates a real Stripe test account).
   `j22 invoicing-mode` adds a 7th only when live VIES is down.
+  `j15 suppressed-address` adds 4 (2 tests × 2 projects) only on a backend
+  older than revel-backend#1045, which lacks the email webhook secret.
 - **Check-in**: use the QR scanner modal's manual-entry path (no camera in CI).
