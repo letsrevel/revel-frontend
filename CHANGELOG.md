@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.16.0] - 2026-09-30
+
+### Added
+
+- **Mute an organization's announcements**: any signed-in member or attendee can mute an organization's announcements from its page. It stops them on every channel, and they stay readable on the page. Followers use the announcements toggle in their follow menu, which is the same setting.
+  - A "Muted organizations" list in `/account/settings` shows everything you have muted and lets you unmute each one.
+- **Undeliverable address banner**: when Revel has stopped emailing your address after a bounce, an invalid or blocked address, or a spam complaint, a banner explains why and since when. It says tickets and receipts are still in the app and offers "Change email address" and "Contact support". It appears across the app (dismissible for the session) and in account settings.
+- The unsubscribe page offers a one-click "Stop these emails" for the kind of email the link came from. For organization announcements it mutes just that organization.
+- People invited to an event without a Revel account can stop invitation emails from the link in the invitation, with a single confirmation button.
+
+### Changed
+
+- Unsubscribing from an email now turns off email only. In-app notifications stay on, "silence everything" stays off, and the page lists the mail that always arrives (tickets, receipts, payment and refund notices, legal and platform notices).
+- After saving unsubscribe preferences, the page shows the confirmation with a "Go home" link instead of redirecting to the homepage after 3 seconds.
+- When inviting people to an event would go over the organization's daily limit of invitations to people without an account, the invite dialog shows the reason and keeps every address, so you can trim the list and retry. The dialog also stops you from sending more than 500 addresses at once.
+
+### Fixed
+
+- Expired or invalid unsubscribe links now show the "Invalid or Expired Link" page, with a way to log in and manage preferences, as soon as they open instead of failing when you save.
+- Turning email back on in notification settings now restores email for every notification type, instead of leaving types switched off by an earlier unsubscribe.
+- After saving notification settings, the Save button no longer stays enabled, and a second save no longer resends unchanged settings.
+- Changes made while notification settings are still saving are no longer overwritten when the save finishes.
+- The heart on the Following button no longer disappears when you hover over it.
+
 ## [2.15.0] - 2026-09-29
 
 ### Added
