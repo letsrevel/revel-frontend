@@ -15,7 +15,7 @@ import {
 } from './plain-page';
 import { oembedDiscoveryUrl } from '$lib/embed/oembed';
 import { truncate, stripMarkup } from './text';
-import { sameUrlHreflang, landingPageHreflang } from './hreflang';
+import { landingPageHreflang } from './hreflang';
 import {
 	generateEventJsonLd,
 	generateOrganizationJsonLd,
@@ -157,7 +157,7 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 					imageAlt: DEFAULT_OG_IMAGE_ALT,
 					site: TWITTER_SITE
 				},
-				hreflang: sameUrlHreflang(canonical),
+				hreflang: [],
 				jsonLd: [generateWebSiteJsonLd(origin)]
 			};
 		}
@@ -188,7 +188,7 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 					imageAlt: DEFAULT_OG_IMAGE_ALT,
 					site: TWITTER_SITE
 				},
-				hreflang: sameUrlHreflang(canonical),
+				hreflang: [],
 				jsonLd: [
 					generateBreadcrumbJsonLd([
 						{ name: 'Home', url: origin },
@@ -236,7 +236,7 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 					imageAlt: DEFAULT_OG_IMAGE_ALT,
 					site: TWITTER_SITE
 				},
-				hreflang: sameUrlHreflang(canonical),
+				hreflang: [],
 				jsonLd: ld
 			};
 		}
@@ -273,7 +273,7 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 					imageAlt: image ? event.name : undefined,
 					site: TWITTER_SITE
 				},
-				hreflang: sameUrlHreflang(canonical),
+				hreflang: [],
 				jsonLd: [
 					generateEventJsonLd(event, canonical),
 					generateBreadcrumbJsonLd([
@@ -317,7 +317,7 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 					imageAlt: image ? org.name : undefined,
 					site: TWITTER_SITE
 				},
-				hreflang: sameUrlHreflang(canonical),
+				hreflang: [],
 				jsonLd: [
 					generateOrganizationJsonLd(org, canonical),
 					generateBreadcrumbJsonLd([
@@ -361,7 +361,7 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 					imageAlt: image ? `${series.name} | ${series.organization.name}` : undefined,
 					site: TWITTER_SITE
 				},
-				hreflang: sameUrlHreflang(canonical),
+				hreflang: [],
 				jsonLd: [
 					generateSeriesJsonLd(series, canonical),
 					generateBreadcrumbJsonLd([

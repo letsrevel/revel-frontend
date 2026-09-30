@@ -26,21 +26,12 @@ const fakeEvent = {
 } as unknown as EventDetailSchema;
 
 describe('buildSeo', () => {
-	it('home: emits WebSite + Org JSON-LD and same-URL hreflang', () => {
+	it('home: emits WebSite + Org JSON-LD and no hreflang (single-URL page)', () => {
 		const cfg = buildSeo({ kind: 'home', url: url('/'), lang: 'en' });
 		expect(cfg.canonical).toBe('https://letsrevel.io/');
 		expect(cfg.og.locale).toBe('en_US');
 		expect(cfg.og.localeAlternate).toEqual(['de_DE', 'it_IT', 'fr_FR', 'es_ES', 'pt_PT']);
-		expect(cfg.hreflang.map((h) => h.lang)).toEqual([
-			'en',
-			'de',
-			'it',
-			'fr',
-			'es',
-			'pt',
-			'x-default'
-		]);
-		expect(cfg.hreflang.every((h) => h.href === 'https://letsrevel.io/')).toBe(true);
+		expect(cfg.hreflang).toEqual([]);
 		expect(cfg.jsonLd.some((j) => (j as Record<string, unknown>)['@type'] === 'WebSite')).toBe(
 			true
 		);
@@ -55,6 +46,26 @@ describe('buildSeo', () => {
 		expect(cfg.og.logo).toBe('https://letsrevel.io/og-logo-v1.png');
 		// Social previews truncate og:description around ~125 chars (#624).
 		expect(cfg.og.description.length).toBeLessThanOrEqual(125);
+	});
+
+	// #994: only landing pages have per-locale URLs. Pages served at ONE URL (UI chrome
+	// localized by cookie, content untranslated) must not claim language alternates.
+	it.each([
+		['events-listing', { kind: 'events-listing', url: url('/events'), lang: 'de' }],
+		['orgs-listing', { kind: 'orgs-listing', url: url('/organizations'), lang: 'it' }],
+		['legal', { kind: 'legal', url: url('/legal/privacy'), lang: 'fr', doc: 'privacy' }],
+		[
+			'event',
+			{
+				kind: 'event',
+				url: url('/events/acme/my-event'),
+				lang: 'es',
+				event: fakeEvent,
+				indexable: true
+			}
+		]
+	] as const)('%s: emits no hreflang', (_kind, input) => {
+		expect(buildSeo(input).hreflang).toEqual([]);
 	});
 
 	it('event indexable: includes Event + Breadcrumb JSON-LD; no robots tag', () => {
