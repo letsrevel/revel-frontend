@@ -84,6 +84,20 @@ export async function waitForEmail(
 }
 
 /**
+ * IDs of every email to `to` currently in the mailbox (raw or intercepted
+ * recipient form), for "nothing new arrived" assertions. Pair it with a
+ * positive control (a sibling email that DID arrive) instead of a bare sleep,
+ * so the absence is observed after the backend had its chance to send.
+ */
+export async function listEmailIds({ to }: { to: string }): Promise<string[]> {
+	const results = await Promise.all([
+		search(`to:"${to}"`),
+		search(`to:"+${interceptedForm(to)}@"`)
+	]);
+	return [...new Set(results.flat().map((msg) => msg.ID))];
+}
+
+/**
  * Extract the first link in the message (HTML preferred, text fallback) whose
  * URL matches `pattern` — e.g. /\/verify\?/ for the verification link.
  */

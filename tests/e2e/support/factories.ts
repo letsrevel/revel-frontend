@@ -29,6 +29,18 @@ export function uniqueEmail(label: string): string {
 	return `e2e+${label.toLowerCase()}-${RUN_ID}-${sequence}@example.com`;
 }
 
+/**
+ * Unique mailbox with NO `+tag`, for flows that suppress the address
+ * (provider bounce/complaint, invitation opt-out). The backend keys email
+ * suppression by the normalized address and strips `+tags`, so suppressing a
+ * `uniqueEmail()` address (`e2e+…@example.com`) would suppress `e2e@example.com`,
+ * i.e. every E2E address, and silently stop mail for all other suites.
+ */
+export function isolatedEmail(label: string): string {
+	sequence += 1;
+	return `e2e-${label.toLowerCase()}-${RUN_ID}-${sequence}@example.com`;
+}
+
 export interface ThrowawayUser {
 	email: string;
 	password: string;
@@ -42,8 +54,11 @@ export interface ThrowawayUser {
  * questionnaire attempts) or destroy their account, where reusing a seeded
  * persona would make the spec non-re-runnable.
  */
-export async function createVerifiedUser(label: string): Promise<ThrowawayUser> {
-	const email = uniqueEmail(label);
+export async function createVerifiedUser(
+	label: string,
+	options: { email?: string } = {}
+): Promise<ThrowawayUser> {
+	const email = options.email ?? uniqueEmail(label);
 	const password = 'E2e-test-Pass!123';
 	const firstName = 'E2E';
 	const lastName = label;

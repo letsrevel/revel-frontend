@@ -56,6 +56,17 @@ pnpm test:e2e tests/e2e/regression # CSP/FOUC guards (no backend needed)
 - **Unique names**: anything a test creates uses `uniqueName()`/`uniqueEmail()`
   so parallel workers and repeated runs never collide. Tests don't clean up —
   the reset command above restores determinism.
+- **Suppressing an address? Use `isolatedEmail()`**: email suppression
+  (provider bounce/complaint webhook, invitation opt-out) is keyed by the
+  normalized address, and normalization strips `+tags`. Suppressing any
+  `uniqueEmail()` address (`e2e+…@example.com`) suppresses `e2e@example.com`,
+  which is every E2E mailbox. Other suites' mail then silently stops, and the
+  row survives reseeds. `isolatedEmail()` has no `+tag`. If it happens anyway,
+  delete the `EmailSuppression` row for `e2e@example.com` in the backend shell.
+- **Suppression specs need the webhook secret**: the E2E backend accepts
+  provider events on `/api/email-events/brevo` with the fixed secret
+  `e2e-webhook-secret` (revel-backend#1045, `EMAIL_WEBHOOK_SECRET`). Without
+  it, `suppressed-address.spec.ts` skips.
 - **Selectors**: `getByRole`/`getByLabel` first (the app is WCAG AA —
   semantics identify elements); `data-testid` only as a last resort.
 - **Email**: assert through `support/mailpit.ts` with a unique recipient; never
