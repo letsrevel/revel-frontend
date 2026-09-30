@@ -15,7 +15,7 @@ import {
 } from '$lib/api/generated/sdk.gen';
 import {
 	applyMuteResult,
-	mutedOrganizationsQueryOptions,
+	organizationByIdQueryOptions,
 	notificationPreferencesKey,
 	setOrganizationMuted
 } from './announcement-mute';
@@ -65,10 +65,10 @@ describe('applyMuteResult', () => {
 	});
 });
 
-describe('mutedOrganizationsQueryOptions', () => {
+describe('organizationByIdQueryOptions', () => {
 	beforeEach(() => vi.clearAllMocks());
 
-	it('resolves names and keeps unresolvable organizations as nameless rows', async () => {
+	it('resolves a name, and a nameless row for an organization that no longer resolves', async () => {
 		vi.mocked(organizationGetOrganizationById).mockImplementation((async ({
 			path
 		}: {
@@ -79,17 +79,19 @@ describe('mutedOrganizationsQueryOptions', () => {
 				: { error: { detail: 'Not found' } }) as never);
 
 		const client = new QueryClient();
-		const result = await client.fetchQuery(mutedOrganizationsQueryOptions(['o1', 'gone'], 'tok'));
-		expect(result).toEqual([
-			{ id: 'o1', name: 'Acme', slug: 'acme' },
-			{ id: 'gone', name: null, slug: null }
-		]);
+		expect(await client.fetchQuery(organizationByIdQueryOptions('o1', 'tok'))).toEqual({
+			id: 'o1',
+			name: 'Acme',
+			slug: 'acme'
+		});
+		expect(await client.fetchQuery(organizationByIdQueryOptions('gone', 'tok'))).toEqual({
+			id: 'gone',
+			name: null,
+			slug: null
+		});
 	});
 
-	it('keys on the sorted ID set', () => {
-		expect(mutedOrganizationsQueryOptions(['b', 'a'], null).queryKey).toEqual([
-			'muted-organizations',
-			['a', 'b']
-		]);
+	it('keys per organization, so rows cache independently', () => {
+		expect(organizationByIdQueryOptions('o1', null).queryKey).toEqual(['organization-by-id', 'o1']);
 	});
 });

@@ -73,6 +73,36 @@ describe('MutedOrganizationsCard (#984)', () => {
 		).toBeInTheDocument();
 	});
 
+	it('keeps the other rows resolved (no refetch, no Loading…) after an unmute', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationGetOrganizationById).mockImplementation((async ({
+			path
+		}: {
+			path: { organization_id: string };
+		}) => ({
+			data: {
+				id: path.organization_id,
+				name: `Org ${path.organization_id}`,
+				slug: path.organization_id
+			}
+		})) as never);
+		renderCard(['o1', 'o2']);
+		vi.mocked(notificationpreferenceUnmuteOrganization).mockResolvedValue({
+			data: prefs(['o2'])
+		} as never);
+
+		await screen.findByRole('link', { name: 'Org o2' });
+		expect(organizationGetOrganizationById).toHaveBeenCalledTimes(2);
+
+		await user.click(screen.getByRole('button', { name: 'Unmute announcements from Org o1' }));
+		await waitFor(() =>
+			expect(screen.queryByRole('link', { name: 'Org o1' })).not.toBeInTheDocument()
+		);
+		expect(screen.getByRole('link', { name: 'Org o2' })).toBeInTheDocument();
+		expect(screen.queryByText('Loading…')).not.toBeInTheDocument();
+		expect(organizationGetOrganizationById).toHaveBeenCalledTimes(2);
+	});
+
 	it('unmutes an organization and drops it from the list', async () => {
 		const user = userEvent.setup();
 		renderCard(['o1']);

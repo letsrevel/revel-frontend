@@ -66,29 +66,27 @@ export interface MutedOrganization {
 }
 
 /**
- * Names for the muted IDs. The preferences only carry IDs, so each one is
- * resolved through the public by-ID endpoint; the list stays usable (unmute
- * still works) for any organization that no longer resolves.
+ * Name for one muted ID. The preferences only carry IDs, so each is resolved
+ * through the public by-ID endpoint, one cached query per organization: an
+ * unmute removes a row without refetching (or blanking) the others. Resolves
+ * to a nameless row, never an error, for an organization that no longer
+ * resolves, so the list keeps its unmute action.
  */
-export function mutedOrganizationsQueryOptions(ids: readonly string[], accessToken: string | null) {
+export function organizationByIdQueryOptions(id: string, accessToken: string | null) {
 	return queryOptions({
-		queryKey: ['muted-organizations', [...ids].sort()],
-		queryFn: (): Promise<MutedOrganization[]> =>
-			Promise.all(
-				ids.map(async (id): Promise<MutedOrganization> => {
-					try {
-						const res = await organizationGetOrganizationById({
-							path: { organization_id: id },
-							headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined
-						});
-						if (res.error || !res.data) return { id, name: null, slug: null };
-						return { id, name: res.data.name, slug: res.data.slug };
-					} catch {
-						return { id, name: null, slug: null };
-					}
-				})
-			),
-		enabled: ids.length > 0,
+		queryKey: ['organization-by-id', id],
+		queryFn: async (): Promise<MutedOrganization> => {
+			try {
+				const res = await organizationGetOrganizationById({
+					path: { organization_id: id },
+					headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined
+				});
+				if (res.error || !res.data) return { id, name: null, slug: null };
+				return { id, name: res.data.name, slug: res.data.slug };
+			} catch {
+				return { id, name: null, slug: null };
+			}
+		},
 		staleTime: 5 * 60 * 1000
 	});
 }

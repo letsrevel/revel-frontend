@@ -1,7 +1,12 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { resolve } from '$app/paths';
-	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
+	import {
+		createMutation,
+		createQueries,
+		createQuery,
+		useQueryClient
+	} from '@tanstack/svelte-query';
 	import { toast } from 'svelte-sonner';
 	import { BellOff, Loader2 } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -10,7 +15,7 @@
 	import type { NotificationPreferenceSchema } from '$lib/api/generated/types.gen';
 	import {
 		applyMuteResult,
-		mutedOrganizationsQueryOptions,
+		organizationByIdQueryOptions,
 		notificationPreferencesQueryOptions,
 		setOrganizationMuted,
 		type MutedOrganization
@@ -36,14 +41,17 @@
 	}));
 
 	const mutedIds = $derived(preferencesQuery.data?.muted_organization_ids ?? []);
-	const organizationsQuery = createQuery(() => mutedOrganizationsQueryOptions(mutedIds, authToken));
+	const organizationQueries = createQueries(() => ({
+		queries: mutedIds.map((id) => organizationByIdQueryOptions(id, authToken))
+	}));
 
 	// IDs first (instant from the preferences), names filled in once resolved.
-	const rows = $derived<MutedOrganization[]>(
-		mutedIds.map(
-			(id) =>
-				organizationsQuery.data?.find((org) => org.id === id) ?? { id, name: null, slug: null }
-		)
+	const rows = $derived(
+		mutedIds.map((id, index) => {
+			const query = organizationQueries[index];
+			const org: MutedOrganization = query?.data ?? { id, name: null, slug: null };
+			return { ...org, loading: !query?.data && !!query?.isPending };
+		})
 	);
 
 	let pendingId = $state<string | null>(null);
@@ -91,7 +99,7 @@
 			{#each rows as org (org.id)}
 				{@const label =
 					org.name ??
-					(organizationsQuery.isPending
+					(org.loading
 						? m['announcementMute.loading']()
 						: m['announcementMute.unknownOrganization']())}
 				<li class="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
