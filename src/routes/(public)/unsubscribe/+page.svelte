@@ -3,89 +3,232 @@
 	import type { PageData } from './$types';
 	import { NotificationPreferencesForm } from '$lib/components/notifications';
 	import type { NotificationPreferenceSchema } from '$lib/api/generated/types.gen';
-	import { goto } from '$app/navigation';
+	import { oneclickunsubscribeOneClick } from '$lib/api';
 	import { resolve } from '$app/paths';
-	import { Bell } from '@lucide/svelte';
+	import { tick } from 'svelte';
+	import { toast } from 'svelte-sonner';
+	import { Bell, MailX, ShieldCheck, Loader2 } from '@lucide/svelte';
 	import { SeoHead } from '$lib/seo';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
+	import ToneTile from '$lib/components/common/ToneTile.svelte';
+	import { Button } from '$lib/components/ui/button';
 
 	const { data }: { data: PageData } = $props();
 
-	// Default preferences for unsubscribe page:
-	// - Silence all notifications: checked
-	// - Event reminders: unchecked
-	// - Channels: only in-app
+	// Default for the unsubscribe form (#982): stop ordinary email, keep in-app.
+	// Silence stays OFF and no per-type settings are sent. Tickets, receipts,
+	// payment/refund and legal/platform notices can't be opted out of anyway
+	// (BE #1030), so "silence everything" only ever hid useful in-app notices.
 	const defaultPreferences: NotificationPreferenceSchema = {
-		silence_all_notifications: true,
-		event_reminders_enabled: false,
+		silence_all_notifications: false,
+		event_reminders_enabled: true,
 		enabled_channels: ['in_app'],
 		digest_frequency: 'immediate',
 		digest_send_time: '09:00',
-		notification_type_settings: {}
+		notification_type_settings: {},
+		muted_organization_ids: []
 	};
 
-	let success = $state(false);
+	// Statuses the one-click endpoint uses for a link it won't honour.
+	const INVALID_TOKEN_STATUSES = new Set([400, 401, 404]);
 
-	function handleSuccess() {
-		success = true;
-		// Redirect to homepage after 3 seconds
-		setTimeout(() => {
-			goto(resolve('/(public)', {}));
-		}, 3000);
+	type Outcome = 'preferences' | 'stopped' | 'optedOut';
+
+	let outcome = $state<Outcome | null>(null);
+	// The backend rejected a token that decoded fine (revoked, email changed,
+	// expired between load and submit).
+	let rejected = $state(false);
+	let oneClickPending = $state(false);
+	let invalidHeading = $state<HTMLHeadingElement | null>(null);
+	let successRegion = $state<HTMLDivElement | null>(null);
+
+	const tokenInfo = $derived(data.tokenInfo);
+	const validToken = $derived(tokenInfo.status === 'valid' && !rejected ? tokenInfo : null);
+	const isOrgAnnouncement = $derived(
+		validToken?.kind === 'unsubscribe' &&
+			validToken.notificationType === 'org_announcement' &&
+			!!validToken.organizationId
+	);
+	const settingsReturnUrl = encodeURIComponent(resolve('/(auth)/account/settings', {}));
+
+	// The clicked control disappears with the swap, so move focus to the
+	// confirmation. No auto-redirect: a timed navigation cut screen-reader users
+	// off mid-message (WCAG 2.2.1); the "Go home" link is on request instead.
+	async function finish(result: Outcome) {
+		outcome = result;
+		await tick();
+		successRegion?.focus();
+	}
+
+	async function showRejected() {
+		rejected = true;
+		await tick();
+		// The page swapped under the user's click; move focus to the explanation.
+		invalidHeading?.focus();
+	}
+
+	async function oneClick(result: Outcome) {
+		if (!data.token || oneClickPending) return;
+		oneClickPending = true;
+		try {
+			// No auth, no body: the endpoint reads only the query token and ignores
+			// the RFC 8058 form body.
+			const res = await oneclickunsubscribeOneClick({ query: { token: data.token } });
+			if (res.error) {
+				if (INVALID_TOKEN_STATUSES.has(res.response?.status ?? 0)) {
+					await showRejected();
+				} else {
+					toast.error(m['unsubscribePage.oneClickFailed']());
+				}
+				return;
+			}
+			await finish(result);
+		} catch {
+			toast.error(m['unsubscribePage.oneClickFailed']());
+		} finally {
+			oneClickPending = false;
+		}
 	}
 </script>
 
 <SeoHead config={data.seo} />
 
 <div class="container mx-auto max-w-2xl px-4 py-8">
-	{#if !data.token}
-		<!-- Invalid or missing token -->
+	{#if outcome}
+		<!-- Success message: the EmptyState DISPLAY variant (level 1), whose
+		     only heading is the page h1. -->
+		<div bind:this={successRegion} tabindex="-1" class="focus:outline-none">
+			<EmptyState
+				level={1}
+				tone="success"
+				icon={Bell}
+				title={m['unsubscribePage.successTitle']()}
+				body={outcome === 'optedOut' && tokenInfo.status === 'valid'
+					? m['unsubscribePage.optOutSuccessDescription']({ email: tokenInfo.email })
+					: outcome === 'stopped'
+						? m['unsubscribePage.quickStopSuccessDescription']()
+						: m['unsubscribePage.successDescription']()}
+			>
+				{#snippet action()}
+					<Button href={resolve('/(public)', {})} variant="outline">
+						{m['unsubscribePage.goHome']()}
+					</Button>
+				{/snippet}
+			</EmptyState>
+		</div>
+	{:else if !validToken}
+		<!-- Missing, malformed, expired, or rejected by the backend -->
 		<div class="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center">
-			<h1 class="text-2xl font-extrabold text-destructive">
+			<h1
+				bind:this={invalidHeading}
+				tabindex="-1"
+				class="text-2xl font-extrabold text-destructive focus:outline-none"
+			>
 				{m['unsubscribePage.invalidTokenTitle']()}
 			</h1>
 			<p class="mt-2 text-muted-foreground">
 				{m['unsubscribePage.invalidTokenDescription']()}
 			</p>
-			<a
-				href={resolve('/(public)', {})}
-				class="mt-4 inline-block rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-			>
-				{m['unsubscribePage.goHome']()}
-			</a>
+			<div class="mt-4 flex flex-col items-center justify-center gap-3 sm:flex-row">
+				<Button
+					href={`${resolve('/(public)/login', {})}?returnUrl=${settingsReturnUrl}`}
+					class="w-full sm:w-auto"
+				>
+					{m['unsubscribePage.loginToManage']()}
+				</Button>
+				<Button href={resolve('/(public)', {})} variant="outline" class="w-full sm:w-auto">
+					{m['unsubscribePage.goHome']()}
+				</Button>
+			</div>
 		</div>
-	{:else if success}
-		<!-- Success message: the EmptyState DISPLAY variant (level 1). This block
-		     used to be hand-composed precisely because the primitive capped at
-		     h2/h3 and the page's only heading has to be an h1; level 1 lifts that
-		     cap, so the chip recipe, display scale and spacing now come from the
-		     primitive instead of being re-typed here. Success tone is still the
-		     right one for "preferences saved". -->
-		<EmptyState
-			level={1}
-			tone="success"
-			icon={Bell}
-			title={m['unsubscribePage.successTitle']()}
-			body={m['unsubscribePage.successDescription']()}
+	{:else if validToken.kind === 'email_opt_out'}
+		<!-- Invitation opt-out for an address without a Revel account -->
+		<PageHeader
+			title={m['unsubscribePage.optOutTitle']()}
+			subtitle={m['unsubscribePage.optOutDescription']({ email: validToken.email })}
+			volume="celebration"
+			class="mb-8"
 		/>
-		<p class="mt-4 text-center text-sm text-muted-foreground">
-			{m['unsubscribePage.redirecting']()}
-		</p>
+		<div class="rounded-lg border bg-card p-6 text-card-foreground shadow-sm">
+			<Button
+				type="button"
+				onclick={() => oneClick('optedOut')}
+				disabled={oneClickPending}
+				class="w-full sm:w-auto"
+			>
+				{#if oneClickPending}
+					<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+				{/if}
+				{m['unsubscribePage.optOutButton']()}
+			</Button>
+		</div>
 	{:else}
 		<!-- Unsubscribe form -->
 		<PageHeader
 			title={m['unsubscribePage.title']()}
 			subtitle={m['unsubscribePage.subtitle']()}
 			volume="celebration"
-			class="mb-8"
+			class="mb-6"
 		/>
+
+		<div class="mb-6 flex items-start gap-3 rounded-lg border bg-card p-4 text-card-foreground">
+			<ToneTile icon={ShieldCheck} tone="info" size="sm" />
+			<div class="space-y-1">
+				<h2 class="font-bold">
+					{m['unsubscribePage.mandatoryNoticeTitle']()}
+				</h2>
+				<p class="text-sm text-muted-foreground">
+					{m['unsubscribePage.mandatoryNotice']()}
+				</p>
+			</div>
+		</div>
+
+		{#if validToken.notificationType}
+			<!-- Scoped shortcut: stop only the kind of email this link came from -->
+			<section
+				class="mb-6 rounded-lg border bg-card p-6 text-card-foreground shadow-sm"
+				aria-labelledby="unsubscribe-quick-stop-title"
+			>
+				<div class="flex items-start gap-3">
+					<ToneTile icon={MailX} tone="brand" size="sm" />
+					<div class="flex-1 space-y-1">
+						<h2 id="unsubscribe-quick-stop-title" class="font-bold">
+							{m['unsubscribePage.quickStopTitle']()}
+						</h2>
+						<p class="text-sm text-muted-foreground">
+							{isOrgAnnouncement
+								? m['unsubscribePage.quickStopOrgDescription']()
+								: m['unsubscribePage.quickStopDescription']()}
+						</p>
+					</div>
+				</div>
+				<div class="mt-4 flex sm:justify-end">
+					<Button
+						type="button"
+						onclick={() => oneClick('stopped')}
+						disabled={oneClickPending}
+						class="w-full sm:w-auto"
+					>
+						{#if oneClickPending}
+							<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+						{/if}
+						{isOrgAnnouncement
+							? m['unsubscribePage.quickStopOrgButton']()
+							: m['unsubscribePage.quickStopButton']()}
+					</Button>
+				</div>
+			</section>
+
+			<h2 class="mb-4 text-xl font-extrabold">{m['unsubscribePage.customizeHeading']()}</h2>
+		{/if}
 
 		<div class="rounded-lg border bg-card p-6 text-card-foreground shadow-sm">
 			<NotificationPreferencesForm
 				preferences={defaultPreferences}
-				unsubscribeToken={data.token}
-				onSave={handleSuccess}
+				unsubscribeToken={data.token ?? undefined}
+				onSave={() => void finish('preferences')}
+				onInvalidToken={showRejected}
 			/>
 		</div>
 	{/if}

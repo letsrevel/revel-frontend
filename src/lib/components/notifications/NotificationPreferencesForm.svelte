@@ -37,9 +37,18 @@
 		disabled?: boolean;
 		authToken?: string;
 		unsubscribeToken?: string; // Token for unsubscribe mode (unauthenticated)
+		/** Unsubscribe mode: the backend rejected the link (expired, revoked, stale email). */
+		onInvalidToken?: () => void;
 	}
 
-	const { preferences, onSave, disabled = false, authToken, unsubscribeToken }: Props = $props();
+	const {
+		preferences,
+		onSave,
+		disabled = false,
+		authToken,
+		unsubscribeToken,
+		onInvalidToken
+	}: Props = $props();
 
 	// Determine if we're in unsubscribe mode
 	const isUnsubscribeMode = $derived(!!unsubscribeToken);
@@ -94,38 +103,12 @@
 	});
 
 	// Derived state
-	const hasChanges = $derived.by(() => {
-		// Default values to compare against if preferences is null
-		const defaultSilenceAll = false;
-		const defaultEventReminders = true;
-		const defaultEnabledChannels = ['in_app', 'email'];
-		const defaultDigestFrequency = 'immediate';
-		const defaultDigestSendTime = '09:00';
-		const defaultNotificationTypeSettings = {};
-
-		// Compare against preferences if available, otherwise against defaults
-		const refSilenceAll = preferences?.silence_all_notifications ?? defaultSilenceAll;
-		const refEventReminders = preferences?.event_reminders_enabled ?? defaultEventReminders;
-		const refEnabledChannels = preferences?.enabled_channels ?? defaultEnabledChannels;
-		const refDigestFrequency = preferences?.digest_frequency ?? defaultDigestFrequency;
-		const refDigestSendTime = toHHMM(preferences?.digest_send_time ?? defaultDigestSendTime);
-		const refNotificationTypeSettings =
-			preferences?.notification_type_settings ?? defaultNotificationTypeSettings;
-
-		return (
-			silenceAll !== refSilenceAll ||
-			eventReminders !== refEventReminders ||
-			JSON.stringify([...enabledChannels].sort()) !==
-				JSON.stringify([...refEnabledChannels].sort()) ||
-			digestFrequency !== refDigestFrequency ||
-			digestSendTime !== refDigestSendTime ||
-			JSON.stringify(notificationTypeSettings) !== JSON.stringify(refNotificationTypeSettings)
-		);
-	});
-
 	const isFormDisabled = $derived(disabled || silenceAll);
 	const showTimePicker = $derived(digestFrequency === 'daily' || digestFrequency === 'weekly');
 	const isTelegramConnected = $derived(telegramStatusQuery.data?.connected ?? false);
+	// Something to save iff the change-only payload is non-empty (authenticated
+	// mode; unsubscribe mode always submits).
+	const hasChanges = $derived(Object.keys(buildPayload()).length > 0);
 
 	// Validation
 	const validationError = $derived.by(() => {
@@ -138,50 +121,16 @@
 		return null;
 	});
 
+	// Statuses the unsubscribe endpoint uses for a link it won't honour: 400
+	// (expired, malformed, or the account's email changed since it was issued),
+	// 401 (revoked), 404 (account gone). The page swaps to its invalid-link state.
+	const INVALID_TOKEN_STATUSES = new Set([400, 401, 404]);
+
+	class InvalidUnsubscribeTokenError extends Error {}
+
 	// Update preferences mutation
 	const updateMutation = createMutation(() => ({
-		mutationFn: async (data: {
-			silence_all_notifications?: boolean;
-			event_reminders_enabled?: boolean;
-			enabled_channels?: Array<'in_app' | 'email' | 'telegram'>;
-			digest_frequency?: string;
-			digest_send_time?: string;
-			notification_type_settings?: Record<string, NotificationTypeSettings>;
-		}) => {
-			// In unsubscribe mode, send all fields explicitly (even false values)
-			// In authenticated mode, only send fields that are explicitly set (PATCH requirement)
-			const payload: UpdateNotificationPreferenceSchema = {};
-
-			if (isUnsubscribeMode) {
-				// Send all fields explicitly in unsubscribe mode
-				payload.silence_all_notifications = data.silence_all_notifications ?? false;
-				payload.event_reminders_enabled = data.event_reminders_enabled ?? false;
-				payload.enabled_channels = data.enabled_channels ?? [];
-				payload.digest_frequency = data.digest_frequency ?? 'immediate';
-				payload.digest_send_time = data.digest_send_time ?? '09:00';
-				payload.notification_type_settings = data.notification_type_settings ?? {};
-			} else {
-				// Only send changed fields in authenticated mode
-				if (data.silence_all_notifications !== undefined) {
-					payload.silence_all_notifications = data.silence_all_notifications;
-				}
-				if (data.event_reminders_enabled !== undefined) {
-					payload.event_reminders_enabled = data.event_reminders_enabled;
-				}
-				if (data.enabled_channels !== undefined) {
-					payload.enabled_channels = data.enabled_channels;
-				}
-				if (data.digest_frequency !== undefined) {
-					payload.digest_frequency = data.digest_frequency;
-				}
-				if (data.digest_send_time !== undefined) {
-					payload.digest_send_time = data.digest_send_time;
-				}
-				if (data.notification_type_settings !== undefined) {
-					payload.notification_type_settings = data.notification_type_settings;
-				}
-			}
-
+		mutationFn: async (payload: UpdateNotificationPreferenceSchema) => {
 			// Use different endpoint based on mode
 			if (isUnsubscribeMode && unsubscribeToken) {
 				// Unsubscribe mode: use unsubscribe endpoint with token
@@ -192,9 +141,12 @@
 					}
 				});
 
-				// Check for errors in response
 				if (response.error) {
-					throw new Error(extractErrorMessage(response.error));
+					const message = extractErrorMessage(response.error);
+					if (INVALID_TOKEN_STATUSES.has(response.response?.status ?? 0)) {
+						throw new InvalidUnsubscribeTokenError(message);
+					}
+					throw new Error(message);
 				}
 
 				return response.data;
@@ -221,6 +173,10 @@
 			onSave?.(data as NotificationPreferenceSchema);
 		},
 		onError: (error: Error) => {
+			if (error instanceof InvalidUnsubscribeTokenError && onInvalidToken) {
+				onInvalidToken();
+				return;
+			}
 			toast.error(m['notificationPreferences.saveFailed']({ error: error.message }));
 			console.error('Failed to update notification preferences:', error);
 		}
@@ -239,6 +195,50 @@
 		return enabledChannels.includes(channel);
 	}
 
+	// Build the request body. Only changed fields go out: re-sending
+	// notification_type_settings unchanged re-pinned stale per-type channels and
+	// kept email off after it was switched back on (#982). The unsubscribe
+	// endpoint gets the global switches (silence + channels) always, since its
+	// "reference" is a page default rather than the user's real settings, and
+	// never per-type settings.
+	function buildPayload(): UpdateNotificationPreferenceSchema {
+		const payload: UpdateNotificationPreferenceSchema = {};
+		const ref = {
+			silence: preferences?.silence_all_notifications ?? false,
+			reminders: preferences?.event_reminders_enabled ?? true,
+			channels: preferences?.enabled_channels ?? ['in_app', 'email'],
+			frequency: preferences?.digest_frequency ?? 'immediate',
+			sendTime: toHHMM(preferences?.digest_send_time ?? '09:00'),
+			typeSettings: preferences?.notification_type_settings ?? {}
+		};
+		const channelsChanged =
+			JSON.stringify([...enabledChannels].sort()) !== JSON.stringify([...ref.channels].sort());
+
+		if (isUnsubscribeMode || silenceAll !== ref.silence) {
+			payload.silence_all_notifications = silenceAll;
+		}
+		if (isUnsubscribeMode || channelsChanged) {
+			payload.enabled_channels = enabledChannels;
+		}
+		if (eventReminders !== ref.reminders) {
+			payload.event_reminders_enabled = eventReminders;
+		}
+		if (isUnsubscribeMode) return payload;
+
+		if (digestFrequency !== ref.frequency) {
+			payload.digest_frequency = digestFrequency;
+		}
+		// The time only matters for daily/weekly; send it when it changed or when
+		// switching into a schedule that uses it.
+		if (showTimePicker && (digestSendTime !== ref.sendTime || digestFrequency !== ref.frequency)) {
+			payload.digest_send_time = digestSendTime;
+		}
+		if (JSON.stringify(notificationTypeSettings) !== JSON.stringify(ref.typeSettings)) {
+			payload.notification_type_settings = notificationTypeSettings;
+		}
+		return payload;
+	}
+
 	// Save handler
 	function handleSave() {
 		if (validationError) {
@@ -246,15 +246,7 @@
 			return;
 		}
 
-		updateMutation.mutate({
-			silence_all_notifications: silenceAll,
-			event_reminders_enabled: eventReminders,
-			enabled_channels: enabledChannels,
-			digest_frequency: digestFrequency,
-			digest_send_time: showTimePicker ? digestSendTime : undefined,
-			notification_type_settings:
-				Object.keys(notificationTypeSettings).length > 0 ? notificationTypeSettings : undefined
-		});
+		updateMutation.mutate(buildPayload());
 	}
 
 	// Reset handler
