@@ -1743,7 +1743,9 @@
 		"deleteTokenUsesText": "{count} people already registered using this link",
 		"deleteTokenWarning": "Those registrations will remain valid. Only new attempts will fail.",
 		"deleteTokenButton": "Delete Link",
-		"deleteTokenUnnamed": "Unnamed Link"
+		"deleteTokenUnnamed": "Unnamed Link",
+		"tooManyEmails": "You can invite up to {max} addresses at once. You've entered {count}.",
+		"createFailed": "Couldn't send the invitations. Please try again."
 	},
 	"eventNewPage": {
 		"pageTitle": "Create Event",
@@ -10072,5 +10074,14 @@
 		"emptyBody": "To mute an organization's announcements, use the button on its page.",
 		"unknownOrganization": "Organization no longer available",
 		"loading": "Loading…"
+	},
+	"emailSuppression": {
+		"undeliverableTitle": "Emails to this address can't be delivered.",
+		"complaintTitle": "This address marked one of our emails as spam.",
+		"body": "Since {date} we've stopped emailing it. Your tickets and receipts are still in the app. To get emails again, change your email address or ask support to lift the block.",
+		"changeEmail": "Change email address",
+		"contactSupport": "Contact support",
+		"dismiss": "Dismiss",
+		"supportSubject": "Email delivery to my account"
 	}
 }

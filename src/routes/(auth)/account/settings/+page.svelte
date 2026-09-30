@@ -6,7 +6,8 @@
 	import type { PageData } from './$types';
 	import {
 		NotificationPreferencesForm,
-		MutedOrganizationsCard
+		MutedOrganizationsCard,
+		EmailSuppressionBanner
 	} from '$lib/components/notifications';
 	import { BillingProfileForm } from '$lib/components/billing';
 	import CityAutocomplete from '$lib/components/forms/CityAutocomplete.svelte';
@@ -102,6 +103,14 @@
 	{/if}
 
 	{#if authStore.accessToken}
+		<!-- Suppressed address (#987). The global layout copy steps aside here. -->
+		{#if data.notificationPreferences?.email_suppression}
+			<EmailSuppressionBanner
+				suppression={data.notificationPreferences.email_suppression}
+				class="mb-8"
+			/>
+		{/if}
+
 		<!-- General Preferences -->
 		<div class="mb-8 rounded-lg border bg-card p-6">
 			<SectionHeader title={m['accountSettingsPage.general.title']()} class="mb-4" />

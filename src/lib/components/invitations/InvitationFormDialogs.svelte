@@ -41,6 +41,14 @@
 	let invitationMessage = $state('');
 	let emailTags = $state<string[]>([]);
 	let createTierIds = $state<string[]>([]);
+	// Backend refusal shown inside the dialog (e.g. the org's daily invitation
+	// budget, #987). The dialog stays open with every address kept, so the
+	// organizer can trim the list and retry: the request is all-or-nothing.
+	let createError = $state<string | null>(null);
+
+	// The endpoint takes at most 500 addresses per request (422 beyond that).
+	const MAX_INVITE_EMAILS = 500;
+	const tooManyEmails = $derived(emailTags.length > MAX_INVITE_EMAILS);
 
 	// Edit invitation state
 	let showEditDialog = $state(false);
@@ -77,9 +85,13 @@
 		invitationMessage = '';
 		emailTags = [];
 		createTierIds = [];
+		createError = null;
 	}
 
 	export function openCreate() {
+		// The draft survives a close (so a trimmed retry keeps its addresses),
+		// but a refusal from an earlier attempt must not greet the next open.
+		createError = null;
 		showCreateDialog = true;
 	}
 
@@ -147,7 +159,13 @@
 </script>
 
 <!-- Create Invitation Dialog -->
-<Dialog.Root open={showCreateDialog} onOpenChange={(open) => (showCreateDialog = open)}>
+<Dialog.Root
+	open={showCreateDialog}
+	onOpenChange={(open) => {
+		showCreateDialog = open;
+		if (!open) createError = null;
+	}}
+>
 	<Dialog.Content class="flex max-h-[90dvh] flex-col sm:max-w-[600px]">
 		<Dialog.Header>
 			<Dialog.Title>{m['eventInvitationsAdmin.createInvitations']()}</Dialog.Title>
@@ -159,8 +177,26 @@
 		<form
 			method="POST"
 			action="?/createInvitations"
-			use:enhance={() => {
-				return async ({ update }) => {
+			use:enhance={({ cancel }) => {
+				if (tooManyEmails) {
+					cancel();
+					return;
+				}
+				createError = null;
+				return async ({ result, update }) => {
+					if (result.type === 'failure') {
+						const errors = (result.data as { errors?: { form?: unknown } } | undefined)?.errors;
+						createError =
+							typeof errors?.form === 'string'
+								? errors.form
+								: m['eventInvitationsAdmin.createFailed']();
+						return;
+					}
+					if (result.type === 'error') {
+						// Thrown action / network failure: same rule, keep the draft.
+						createError = m['eventInvitationsAdmin.createFailed']();
+						return;
+					}
 					await update();
 					resetCreateForm();
 					showCreateDialog = false;
@@ -181,6 +217,15 @@
 					placeholder={m['eventInvitationsAdmin.emailPlaceholder']()}
 					onTagsChange={handleEmailTagsChange}
 				/>
+
+				{#if tooManyEmails}
+					<p class="text-sm font-medium text-destructive" role="alert">
+						{m['eventInvitationsAdmin.tooManyEmails']({
+							max: MAX_INVITE_EMAILS,
+							count: emailTags.length
+						})}
+					</p>
+				{/if}
 
 				<!-- Custom message -->
 				<div>
@@ -208,11 +253,25 @@
 				{@render tierCheckboxes(createTierIds, (ids) => (createTierIds = ids))}
 			</div>
 
+			{#if createError}
+				<!-- Audited "error panel copy on a /10 tint (card/dialog)" recipe -->
+				<div role="alert" class="rounded-md border border-destructive/50 bg-destructive/10 p-3">
+					<p class="text-sm font-medium text-destructive">{createError}</p>
+				</div>
+			{/if}
+
 			<Dialog.Footer>
-				<Button type="button" variant="outline" onclick={() => (showCreateDialog = false)}>
+				<Button
+					type="button"
+					variant="outline"
+					onclick={() => {
+						showCreateDialog = false;
+						createError = null;
+					}}
+				>
 					{m['eventInvitationsAdmin.cancel']()}
 				</Button>
-				<Button type="submit">
+				<Button type="submit" disabled={tooManyEmails}>
 					<Mail class="mr-2 h-4 w-4" aria-hidden="true" />
 					{m['eventInvitationsAdmin.sendInvitations']()}
 				</Button>

@@ -1743,7 +1743,9 @@
 		"deleteTokenUsesText": "{count} persone si sono già iscritte usando questo link",
 		"deleteTokenWarning": "Quelle iscrizioni resteranno valide. Solo i nuovi tentativi falliranno.",
 		"deleteTokenButton": "Elimina link",
-		"deleteTokenUnnamed": "Link senza nome"
+		"deleteTokenUnnamed": "Link senza nome",
+		"tooManyEmails": "Puoi invitare fino a {max} indirizzi alla volta. Ne hai inseriti {count}.",
+		"createFailed": "Non è stato possibile inviare gli inviti. Riprova."
 	},
 	"eventNewPage": {
 		"pageTitle": "Crea Evento",
@@ -10072,5 +10074,14 @@
 		"emptyBody": "Per silenziare gli annunci di un'organizzazione, usa il pulsante sulla sua pagina.",
 		"unknownOrganization": "Organizzazione non più disponibile",
 		"loading": "Caricamento…"
+	},
+	"emailSuppression": {
+		"undeliverableTitle": "Le email a questo indirizzo non possono essere recapitate.",
+		"complaintTitle": "Questo indirizzo ha segnalato una delle nostre email come spam.",
+		"body": "Dal {date} non inviamo più email a questo indirizzo. I tuoi biglietti e le tue ricevute restano disponibili nell'app. Per ricevere di nuovo email, cambia indirizzo email o chiedi al supporto di rimuovere il blocco.",
+		"changeEmail": "Cambia indirizzo email",
+		"contactSupport": "Contatta il supporto",
+		"dismiss": "Nascondi",
+		"supportSubject": "Recapito email al mio account"
 	}
 }

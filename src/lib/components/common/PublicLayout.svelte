@@ -1,4 +1,5 @@
 <script lang="ts">
+	import GlobalEmailSuppressionBanner from '$lib/components/notifications/GlobalEmailSuppressionBanner.svelte';
 	import Header from './Header.svelte';
 	import Footer from './Footer.svelte';
 
@@ -11,6 +12,7 @@
 
 <div class="flex min-h-screen flex-col">
 	<Header />
+	<GlobalEmailSuppressionBanner />
 
 	<main id="main-content" class="flex-1">
 		{@render children?.()}
