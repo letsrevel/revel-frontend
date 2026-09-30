@@ -84,8 +84,9 @@ export async function waitForEmail(
 }
 
 /**
- * IDs of every email to `to` currently in the mailbox (raw or intercepted
- * recipient form), for "nothing new arrived" assertions. Pair it with a
+ * IDs of the emails to `to` currently in the mailbox (raw or intercepted
+ * recipient form; newest 20 per form, like every search here), for "nothing
+ * new arrived" assertions on a unique address. Pair it with a
  * positive control (a sibling email that DID arrive) instead of a bare sleep,
  * so the absence is observed after the backend had its chance to send.
  */

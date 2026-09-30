@@ -3,7 +3,7 @@ import { createOrganization, createTicketedEvent } from '../../support/factories
 import { ApiClient } from '../../support/api';
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
-import type { Locator } from '@playwright/test';
+import type { BrowserContext, Locator } from '@playwright/test';
 
 // J10.7 / J12.2 (USER_JOURNEYS.md) — invitation cap: invitations to addresses
 // without an account are limited per organization per UTC day
@@ -32,11 +32,19 @@ async function pasteInto(input: Locator, emails: string[]): Promise<void> {
 }
 
 test.describe('J10 invitation cap @p2', () => {
+	// Contexts are created by hand (a throwaway user, not a persona fixture);
+	// close them even when an assertion fails.
+	const openContexts: BrowserContext[] = [];
+	test.afterEach(async () => {
+		await Promise.all(openContexts.splice(0).map((context) => context.close()));
+	});
+
 	test('over the daily cap: refused whole, draft kept; over 500: blocked', async ({ browser }) => {
 		test.setTimeout(120_000);
 		const org = await createOrganization();
 		const event = await createTicketedEvent({ owner: org.owner, orgSlug: org.slug });
 		const context = await browser.newContext();
+		openContexts.push(context);
 		await authenticateContext(context, org.owner);
 		const page = await context.newPage();
 

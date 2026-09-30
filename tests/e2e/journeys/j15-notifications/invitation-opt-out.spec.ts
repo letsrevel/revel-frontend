@@ -11,8 +11,10 @@ import { extractLink, listEmailIds, waitForEmail } from '../../support/mailpit';
 // Afterwards a new invitation to that address is still CREATED (it converts on
 // registration as usual), only its email is skipped.
 //
-// Isolation: never-registered unique addresses; a control address in the same
-// invite request proves the backend sent mail before we assert the absence.
+// Isolation: never-registered unique addresses. The absence is asserted only
+// after a control invitation, sent in a SEPARATE, LATER request, was delivered:
+// the opted-out address's request had completed and its mail job was queued
+// ahead of the control's, so a leaked email would already have landed.
 
 test.describe('J15 invitation opt-out @p2', () => {
 	test('an invitee without an account stops invitation emails', async ({ page }) => {
@@ -40,11 +42,11 @@ test.describe('J15 invitation opt-out @p2', () => {
 			page.getByText(`We won't send invitation emails to ${optedOut} anymore.`)
 		).toBeVisible();
 
-		// Invite both to another event: the control gets mail, the opted-out
-		// address gets none, but its pending invitation still exists.
-		await owner.post(`/api/event-admin/${second.id}/invitations`, {
-			emails: [optedOut, control]
-		});
+		// Invite the opted-out address to another event, THEN a control in a
+		// separate request: the control gets mail, the opted-out address gets
+		// none, but its pending invitation still exists.
+		await owner.post(`/api/event-admin/${second.id}/invitations`, { emails: [optedOut] });
+		await owner.post(`/api/event-admin/${second.id}/invitations`, { emails: [control] });
 		await waitForEmail({ to: control, subject: "You're invited" });
 		expect(await listEmailIds({ to: optedOut })).toEqual([message.ID]);
 

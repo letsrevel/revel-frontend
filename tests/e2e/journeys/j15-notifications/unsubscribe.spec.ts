@@ -64,11 +64,10 @@ test.describe('J15 unsubscribe @p2', () => {
 
 		const api = await ApiClient.login(user.email, user.password);
 		const prefs = await api.get<Preferences>('/api/notification-preferences');
-		// Email stays on globally; only the invitation type loses it.
+		// Email stays on globally; only the invitation type loses it (the backend
+		// pins that type to the remaining channels, here just in-app).
 		expect(prefs.enabled_channels).toContain('email');
-		expect(prefs.notification_type_settings.invitation_received?.channels ?? []).not.toContain(
-			'email'
-		);
+		expect(prefs.notification_type_settings.invitation_received?.channels).toEqual(['in_app']);
 	});
 
 	test('a malformed link shows the invalid-link state with a login way out', async ({ page }) => {
@@ -94,16 +93,31 @@ test.describe('J15 unsubscribe @p2', () => {
 
 		// Re-enable email in account settings.
 		const context = await browser.newContext();
-		await authenticateContext(context, user);
-		const settings = await context.newPage();
-		await gotoHydrated(settings, '/account/settings');
-		await waitForClientAuth(settings);
-		const email = settings.getByRole('checkbox', { name: 'Email', exact: true });
-		await expect(email).not.toBeChecked();
-		await email.click();
-		await settings.getByRole('button', { name: 'Save Changes' }).last().click();
-		await expect(settings.getByText('Notification preferences updated successfully')).toBeVisible();
-		await context.close();
+		try {
+			await authenticateContext(context, user);
+			const settings = await context.newPage();
+			await gotoHydrated(settings, '/account/settings');
+			await waitForClientAuth(settings);
+			const email = settings.getByRole('checkbox', { name: 'Email', exact: true });
+			await expect(email).not.toBeChecked();
+			await email.click();
+			// Other settings cards have their own "Save Changes"; scope to the
+			// notification form: the innermost block holding its "Master Controls"
+			// heading and a Save button. Fail loudly if that ever stops being unique.
+			const form = settings
+				.locator('div')
+				.filter({ has: settings.getByRole('heading', { name: 'Master Controls' }) })
+				.filter({ has: settings.getByRole('button', { name: 'Save Changes' }) })
+				.last();
+			const save = form.getByRole('button', { name: 'Save Changes' });
+			await expect(save).toHaveCount(1);
+			await save.click();
+			await expect(
+				settings.getByText('Notification preferences updated successfully')
+			).toBeVisible();
+		} finally {
+			await context.close();
+		}
 
 		// A new invitation emails them again, without ticking any per-type box.
 		const nextEvent = await createTicketedEvent({ freeTier: false });

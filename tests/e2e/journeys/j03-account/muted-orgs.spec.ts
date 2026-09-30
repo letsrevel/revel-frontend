@@ -2,6 +2,7 @@ import { test, expect } from '../../support/fixtures';
 import { createOrganization, createVerifiedUser } from '../../support/factories';
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
+import type { BrowserContext } from '@playwright/test';
 
 // J3.9 / J15.3 (USER_JOURNEYS.md) — announcement mute: any signed-in user
 // (members and attendees, not only followers) can mute an organization's
@@ -13,12 +14,20 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 // Isolation: a fresh public org and a throwaway user (mutes are per user).
 
 test.describe('J03 muted organizations @p2', () => {
+	// Contexts are created by hand (a throwaway user, not a persona fixture);
+	// close them even when an assertion fails.
+	const openContexts: BrowserContext[] = [];
+	test.afterEach(async () => {
+		await Promise.all(openContexts.splice(0).map((context) => context.close()));
+	});
+
 	test('mute from the org page, see it in settings, unmute there', async ({ browser }) => {
 		const [org, user] = await Promise.all([
 			createOrganization({ publicVisibility: true }),
 			createVerifiedUser('Muter')
 		]);
 		const context = await browser.newContext();
+		openContexts.push(context);
 		await authenticateContext(context, user);
 		const page = await context.newPage();
 
@@ -45,6 +54,7 @@ test.describe('J03 muted organizations @p2', () => {
 			createVerifiedUser('MuteFollower')
 		]);
 		const context = await browser.newContext();
+		openContexts.push(context);
 		await authenticateContext(context, user);
 		const page = await context.newPage();
 
