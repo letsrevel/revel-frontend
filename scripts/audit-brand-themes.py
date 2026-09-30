@@ -271,6 +271,9 @@ COMPOSITED_PAIRS = [
     # so the panels can be relocated without re-deriving anything.
     ("destructive-text", 0.9, "destructive", 0.10, "background", 4.5, BOTH, "dimmed error detail on an error panel (page)"),
     ("destructive-text", 0.9, "destructive", 0.10, "card", 4.5, BOTH, "dimmed error detail on an error panel (card/dialog)"),
+    # Invalid-link panels (unsubscribe page) keep their explanation on
+    # --muted-foreground over the same /10 tint, directly on the page.
+    ("muted-foreground", 1, "destructive", 0.10, "background", 4.5, BOTH, "muted copy on an error panel (page)"),
     # StripeConnect's status icon: the same aria-hidden AlertCircle renders in a
     # warning-tone card too, which is the tightest surface destructive lands on.
     # Icon, so the 1.4.11 non-text floor applies — but audited so that the day

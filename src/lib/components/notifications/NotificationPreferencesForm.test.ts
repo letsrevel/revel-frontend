@@ -207,10 +207,12 @@ describe('NotificationPreferencesForm', () => {
 
 		// Wait for mutation to complete
 		await waitFor(() => {
+			// Settings mode: no unsubscribe token accompanies the result
 			expect(mockOnSave).toHaveBeenCalledWith(
 				expect.objectContaining({
 					event_reminders_enabled: false
-				})
+				}),
+				undefined
 			);
 		});
 	});
@@ -302,7 +304,7 @@ describe('NotificationPreferencesForm', () => {
 		expect(screen.getByText(/please enter a valid time/i)).toBeInTheDocument();
 	});
 
-	it('sends the digest time as "HH:MM" even when seeded with seconds (#889)', async () => {
+	it('does not re-send an unchanged digest time seeded with seconds (#889, #982)', async () => {
 		const user = userEvent.setup();
 
 		const { notificationpreferenceUpdatePreferences } = await import('$lib/api');
@@ -317,16 +319,161 @@ describe('NotificationPreferencesForm', () => {
 			authToken: 'test-token'
 		});
 
-		// Make an unrelated change so Save enables, then save
+		// "HH:MM:SS" normalises to the same "HH:MM" value, so it isn't a change
 		await user.click(screen.getByRole('checkbox', { name: /event reminders/i }));
 		await user.click(screen.getByRole('button', { name: /save changes/i }));
 
 		await waitFor(() => {
 			expect(notificationpreferenceUpdatePreferences).toHaveBeenCalledWith(
-				expect.objectContaining({
-					body: expect.objectContaining({ digest_send_time: '09:00' })
-				})
+				expect.objectContaining({ body: { event_reminders_enabled: false } })
 			);
+		});
+	});
+
+	it('sends only the changed fields, never stale per-type settings (#982)', async () => {
+		const user = userEvent.setup();
+
+		const { notificationpreferenceUpdatePreferences } = await import('$lib/api');
+		vi.mocked(notificationpreferenceUpdatePreferences).mockResolvedValue({
+			data: mockPreferences,
+			error: undefined,
+			response: {} as Response
+		});
+
+		renderForm({
+			preferences: {
+				...mockPreferences,
+				enabled_channels: ['in_app'],
+				notification_type_settings: {
+					ticket_created: { enabled: true, channels: ['in_app'] }
+				}
+			},
+			authToken: 'test-token'
+		});
+
+		// Turn email back on
+		await user.click(screen.getByRole('checkbox', { name: /^email$/i }));
+		await user.click(screen.getByRole('button', { name: /save changes/i }));
+
+		await waitFor(() => {
+			expect(notificationpreferenceUpdatePreferences).toHaveBeenCalledWith(
+				expect.objectContaining({ body: { enabled_channels: ['in_app', 'email'] } })
+			);
+		});
+	});
+
+	describe('unsubscribe mode', () => {
+		const unsubscribeDefaults: NotificationPreferenceSchema = {
+			silence_all_notifications: false,
+			event_reminders_enabled: true,
+			enabled_channels: ['in_app'],
+			digest_frequency: 'immediate',
+			digest_send_time: '09:00',
+			notification_type_settings: {},
+			muted_organization_ids: []
+		};
+
+		it('submits only the global switches by default (#982)', async () => {
+			const user = userEvent.setup();
+			const { notificationpreferenceUnsubscribe } = await import('$lib/api');
+			vi.mocked(notificationpreferenceUnsubscribe).mockResolvedValue({
+				data: { message: 'ok' },
+				error: undefined,
+				response: {} as Response
+			});
+
+			renderForm({ preferences: unsubscribeDefaults, unsubscribeToken: 'tok' });
+			await user.click(screen.getByRole('button', { name: /save changes/i }));
+
+			await waitFor(() => {
+				expect(notificationpreferenceUnsubscribe).toHaveBeenCalledWith({
+					body: {
+						token: 'tok',
+						preferences: { silence_all_notifications: false, enabled_channels: ['in_app'] }
+					}
+				});
+			});
+		});
+
+		it('leaves success feedback to the page (no toast)', async () => {
+			const user = userEvent.setup();
+			const onSave = vi.fn();
+			const { notificationpreferenceUnsubscribe } = await import('$lib/api');
+			const { toast } = await import('svelte-sonner');
+			vi.mocked(notificationpreferenceUnsubscribe).mockResolvedValue({
+				data: { message: 'ok' },
+				error: undefined,
+				response: {} as Response
+			});
+
+			renderForm({ preferences: unsubscribeDefaults, unsubscribeToken: 'tok', onSave });
+			await user.click(screen.getByRole('button', { name: /save changes/i }));
+
+			await waitFor(() => expect(onSave).toHaveBeenCalled());
+			expect(toast.success).not.toHaveBeenCalled();
+		});
+
+		it('includes event reminders only when the user changes them', async () => {
+			const user = userEvent.setup();
+			const { notificationpreferenceUnsubscribe } = await import('$lib/api');
+			vi.mocked(notificationpreferenceUnsubscribe).mockResolvedValue({
+				data: { message: 'ok' },
+				error: undefined,
+				response: {} as Response
+			});
+
+			renderForm({ preferences: unsubscribeDefaults, unsubscribeToken: 'tok' });
+			await user.click(screen.getByRole('checkbox', { name: /event reminders/i }));
+			await user.click(screen.getByRole('button', { name: /save changes/i }));
+
+			await waitFor(() => {
+				expect(notificationpreferenceUnsubscribe).toHaveBeenCalledWith({
+					body: {
+						token: 'tok',
+						preferences: {
+							silence_all_notifications: false,
+							enabled_channels: ['in_app'],
+							event_reminders_enabled: false
+						}
+					}
+				});
+			});
+		});
+
+		it('hands a rejected link to onInvalidToken instead of toasting', async () => {
+			const user = userEvent.setup();
+			const onInvalidToken = vi.fn();
+			const { notificationpreferenceUnsubscribe } = await import('$lib/api');
+			const { toast } = await import('svelte-sonner');
+			vi.mocked(notificationpreferenceUnsubscribe).mockResolvedValue({
+				data: undefined,
+				error: { detail: 'This unsubscribe link is no longer valid.' },
+				response: { status: 400 } as Response
+			} as never);
+
+			renderForm({ preferences: unsubscribeDefaults, unsubscribeToken: 'tok', onInvalidToken });
+			await user.click(screen.getByRole('button', { name: /save changes/i }));
+
+			await waitFor(() => expect(onInvalidToken).toHaveBeenCalledOnce());
+			expect(toast.error).not.toHaveBeenCalled();
+		});
+
+		it('still toasts other failures', async () => {
+			const user = userEvent.setup();
+			const onInvalidToken = vi.fn();
+			const { notificationpreferenceUnsubscribe } = await import('$lib/api');
+			const { toast } = await import('svelte-sonner');
+			vi.mocked(notificationpreferenceUnsubscribe).mockResolvedValue({
+				data: undefined,
+				error: { detail: 'Boom' },
+				response: { status: 500 } as Response
+			} as never);
+
+			renderForm({ preferences: unsubscribeDefaults, unsubscribeToken: 'tok', onInvalidToken });
+			await user.click(screen.getByRole('button', { name: /save changes/i }));
+
+			await waitFor(() => expect(toast.error).toHaveBeenCalled());
+			expect(onInvalidToken).not.toHaveBeenCalled();
 		});
 	});
 
