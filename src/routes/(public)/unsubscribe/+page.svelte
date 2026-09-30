@@ -35,14 +35,18 @@
 
 	type Outcome = 'preferences' | 'stopped' | 'optedOut';
 
-	let outcome = $state<Outcome | null>(null);
+	// Both results are keyed by the token they belong to, so a client-side
+	// navigation to another ?token= starts clean instead of inheriting them.
+	let finished = $state<{ token: string | null; outcome: Outcome } | null>(null);
 	// The backend rejected a token that decoded fine (revoked, email changed,
 	// expired between load and submit).
-	let rejected = $state(false);
+	let rejectedToken = $state<string | null>(null);
 	let oneClickPending = $state(false);
 	let invalidHeading = $state<HTMLHeadingElement | null>(null);
 	let successRegion = $state<HTMLDivElement | null>(null);
 
+	const outcome = $derived(finished?.token === data.token ? finished.outcome : null);
+	const rejected = $derived(rejectedToken !== null && rejectedToken === data.token);
 	const tokenInfo = $derived(data.tokenInfo);
 	const validToken = $derived(tokenInfo.status === 'valid' && !rejected ? tokenInfo : null);
 	const isOrgAnnouncement = $derived(
@@ -56,7 +60,7 @@
 	// confirmation. No auto-redirect: a timed navigation cut screen-reader users
 	// off mid-message (WCAG 2.2.1); the "Go home" link is on request instead.
 	async function finish(result: Outcome) {
-		outcome = result;
+		finished = { token: data.token, outcome: result };
 		await tick();
 		// Focus the confirmation's h1 (EmptyState owns it, so no ref prop) so
 		// screen readers announce a real heading, not an unnamed container.
@@ -67,7 +71,7 @@
 	}
 
 	async function showRejected() {
-		rejected = true;
+		rejectedToken = data.token;
 		await tick();
 		// The page swapped under the user's click; move focus to the explanation.
 		invalidHeading?.focus();
@@ -100,6 +104,12 @@
 <SeoHead config={data.seo} />
 
 <div class="container mx-auto max-w-2xl px-4 py-8">
+	<!-- Always mounted so the change is announced. The one-click buttons stay
+	     focusable while pending (aria-disabled, guarded in oneClick) instead of
+	     `disabled`, which would drop keyboard focus mid-request. -->
+	<p class="sr-only" role="status">
+		{oneClickPending ? m['unsubscribePage.processing']() : ''}
+	</p>
 	{#if outcome}
 		<!-- Success message: the EmptyState DISPLAY variant (level 1), whose
 		     only heading is the page h1. -->
@@ -159,11 +169,11 @@
 			<Button
 				type="button"
 				onclick={() => oneClick('optedOut')}
-				disabled={oneClickPending}
-				class="w-full sm:w-auto"
+				aria-disabled={oneClickPending}
+				class="w-full aria-disabled:pointer-events-none aria-disabled:opacity-50 sm:w-auto"
 			>
 				{#if oneClickPending}
-					<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+					<Loader2 class="animate-spin" aria-hidden="true" />
 				{/if}
 				{m['unsubscribePage.optOutButton']()}
 			</Button>
@@ -212,11 +222,11 @@
 					<Button
 						type="button"
 						onclick={() => oneClick('stopped')}
-						disabled={oneClickPending}
-						class="w-full sm:w-auto"
+						aria-disabled={oneClickPending}
+						class="w-full aria-disabled:pointer-events-none aria-disabled:opacity-50 sm:w-auto"
 					>
 						{#if oneClickPending}
-							<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+							<Loader2 class="animate-spin" aria-hidden="true" />
 						{/if}
 						{isOrgAnnouncement
 							? m['unsubscribePage.quickStopOrgButton']()

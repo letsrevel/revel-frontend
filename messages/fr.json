@@ -6473,7 +6473,8 @@
 		"optOutDescription": "Ne plus envoyer d'e-mails d'invitation des équipes organisatrices Revel à {email} ?",
 		"optOutButton": "Arrêter les e-mails d'invitation",
 		"optOutSuccessDescription": "Nous n'enverrons plus d'e-mails d'invitation à {email}.",
-		"oneClickFailed": "Ça n'a pas fonctionné. Réessaie."
+		"oneClickFailed": "Ça n'a pas fonctionné. Réessaie.",
+		"processing": "Traitement en cours…"
 	},
 	"userMenu": {
 		"userMenu": "Menu du compte",

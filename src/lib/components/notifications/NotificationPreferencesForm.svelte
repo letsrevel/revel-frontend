@@ -106,6 +106,7 @@
 	const isFormDisabled = $derived(disabled || silenceAll);
 	const showTimePicker = $derived(digestFrequency === 'daily' || digestFrequency === 'weekly');
 	const isTelegramConnected = $derived(telegramStatusQuery.data?.connected ?? false);
+
 	// Something to save iff the change-only payload is non-empty (authenticated
 	// mode; unsubscribe mode always submits).
 	const hasChanges = $derived(Object.keys(buildPayload()).length > 0);
@@ -168,8 +169,10 @@
 		onSuccess: (data) => {
 			if (!isUnsubscribeMode) {
 				queryClient.invalidateQueries({ queryKey: ['notification-preferences'] });
+				// Unsubscribe mode skips the toast: its page swaps to a success
+				// screen, and both at once doubled the announcement.
+				toast.success(m['notificationPreferences.saveSuccess']());
 			}
-			toast.success(m['notificationPreferences.saveSuccess']());
 			onSave?.(data as NotificationPreferenceSchema);
 		},
 		onError: (error: Error) => {
@@ -557,7 +560,7 @@
 			class="w-full sm:w-auto"
 		>
 			{#if updateMutation.isPending}
-				<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+				<Loader2 class="animate-spin" aria-hidden="true" />
 				{m['notificationPreferences.saving']()}
 			{:else}
 				{m['notificationPreferences.saveChanges']()}

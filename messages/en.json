@@ -6503,7 +6503,8 @@
 		"optOutDescription": "Stop invitation emails from Revel organizers to {email}?",
 		"optOutButton": "Stop invitation emails",
 		"optOutSuccessDescription": "We won't send invitation emails to {email} anymore.",
-		"oneClickFailed": "We couldn't process that. Please try again."
+		"oneClickFailed": "We couldn't process that. Please try again.",
+		"processing": "Working on it…"
 	},
 	"userMenu": {
 		"userMenu": "User menu",

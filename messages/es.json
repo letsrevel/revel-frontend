@@ -6503,7 +6503,8 @@
 		"optOutDescription": "¿Dejar de enviar correos de invitación de quienes organizan en Revel a {email}?",
 		"optOutButton": "Dejar de recibir invitaciones",
 		"optOutSuccessDescription": "Ya no enviaremos correos de invitación a {email}.",
-		"oneClickFailed": "No se ha podido completar. Inténtalo de nuevo."
+		"oneClickFailed": "No se ha podido completar. Inténtalo de nuevo.",
+		"processing": "Procesando…"
 	},
 	"userMenu": {
 		"userMenu": "Menú de la cuenta",

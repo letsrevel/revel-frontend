@@ -6503,7 +6503,8 @@
 		"optOutDescription": "Keine Einladungs-E-Mails von Revel-Veranstalter*innen mehr an {email} senden?",
 		"optOutButton": "Einladungs-E-Mails stoppen",
 		"optOutSuccessDescription": "Wir senden keine Einladungs-E-Mails mehr an {email}.",
-		"oneClickFailed": "Das hat nicht geklappt. Bitte versuche es noch einmal."
+		"oneClickFailed": "Das hat nicht geklappt. Bitte versuche es noch einmal.",
+		"processing": "Wird bearbeitet…"
 	},
 	"userMenu": {
 		"userMenu": "Kontomenü",

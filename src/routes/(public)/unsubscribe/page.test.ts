@@ -116,6 +116,60 @@ describe('unsubscribe page (#982)', () => {
 		expect(screen.getByRole('link', { name: /go to homepage/i })).toHaveAttribute('href', '/');
 	});
 
+	it('keeps the pending button focusable and announces the request', async () => {
+		const user = userEvent.setup();
+		const { oneclickunsubscribeOneClick } = await import('$lib/api');
+		let settle: ((value: unknown) => void) | undefined;
+		vi.mocked(oneclickunsubscribeOneClick).mockReturnValue(
+			new Promise((resolve) => {
+				settle = resolve;
+			}) as never
+		);
+
+		renderPage(accountToken('event_reminder'));
+		const button = screen.getByRole('button', { name: /stop these emails/i });
+		await user.click(button);
+
+		expect(button).toHaveAttribute('aria-disabled', 'true');
+		expect(button).not.toBeDisabled();
+		expect(screen.getByRole('status')).toHaveTextContent(/working on it/i);
+
+		// A second activation while pending is ignored
+		await user.click(button);
+		expect(oneclickunsubscribeOneClick).toHaveBeenCalledOnce();
+
+		settle?.({ data: { message: 'ok' }, error: undefined, response: { status: 200 } });
+		expect(await screen.findByText(/won't get these emails anymore/i)).toBeInTheDocument();
+	});
+
+	it('starts clean when navigating to a different token', async () => {
+		const user = userEvent.setup();
+		const { oneclickunsubscribeOneClick } = await import('$lib/api');
+		vi.mocked(oneclickunsubscribeOneClick).mockResolvedValue({
+			data: undefined,
+			error: { detail: 'Token has expired.' },
+			response: { status: 400 } as Response
+		} as never);
+
+		const client = new QueryClient();
+		const { rerender } = render(QueryClientTestWrapper, {
+			props: {
+				client,
+				component: UnsubscribePage,
+				componentProps: { data: { token: 'old', tokenInfo: accountToken('event_reminder'), seo } }
+			}
+		});
+		await user.click(screen.getByRole('button', { name: /stop these emails/i }));
+		await screen.findByRole('heading', { level: 1, name: /invalid or expired link/i });
+
+		await rerender({
+			client,
+			component: UnsubscribePage,
+			componentProps: { data: { token: 'new', tokenInfo: accountToken('event_reminder'), seo } }
+		});
+		expect(screen.getByRole('button', { name: /stop these emails/i })).toBeInTheDocument();
+	});
+
 	it('words the one-click stop as an org mute for organization announcements', () => {
 		renderPage(accountToken('org_announcement', 'org-1'));
 		expect(screen.getByRole('button', { name: /stop these announcements/i })).toBeInTheDocument();

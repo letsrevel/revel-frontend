@@ -393,6 +393,24 @@ describe('NotificationPreferencesForm', () => {
 			});
 		});
 
+		it('leaves success feedback to the page (no toast)', async () => {
+			const user = userEvent.setup();
+			const onSave = vi.fn();
+			const { notificationpreferenceUnsubscribe } = await import('$lib/api');
+			const { toast } = await import('svelte-sonner');
+			vi.mocked(notificationpreferenceUnsubscribe).mockResolvedValue({
+				data: { message: 'ok' },
+				error: undefined,
+				response: {} as Response
+			});
+
+			renderForm({ preferences: unsubscribeDefaults, unsubscribeToken: 'tok', onSave });
+			await user.click(screen.getByRole('button', { name: /save changes/i }));
+
+			await waitFor(() => expect(onSave).toHaveBeenCalled());
+			expect(toast.success).not.toHaveBeenCalled();
+		});
+
 		it('includes event reminders only when the user changes them', async () => {
 			const user = userEvent.setup();
 			const { notificationpreferenceUnsubscribe } = await import('$lib/api');
