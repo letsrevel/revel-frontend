@@ -1743,7 +1743,9 @@
 		"deleteTokenUsesText": "{count} pessoas já se inscreveram através deste link",
 		"deleteTokenWarning": "Essas inscrições vão continuar válidas. Só as novas tentativas vão falhar.",
 		"deleteTokenButton": "Eliminar link",
-		"deleteTokenUnnamed": "Link sem nome"
+		"deleteTokenUnnamed": "Link sem nome",
+		"tooManyEmails": "Podes convidar até {max} endereços de cada vez. Introduziste {count}.",
+		"createFailed": "Não foi possível enviar os convites. Tenta novamente."
 	},
 	"eventNewPage": {
 		"pageTitle": "Criar evento",
@@ -10072,5 +10074,14 @@
 		"emptyBody": "Para silenciar os anúncios de uma organização, usa o botão na página dela.",
 		"unknownOrganization": "Organização já não disponível",
 		"loading": "A carregar…"
+	},
+	"emailSuppression": {
+		"undeliverableTitle": "Os e-mails para este endereço não podem ser entregues.",
+		"complaintTitle": "Este endereço marcou um dos nossos e-mails como spam.",
+		"body": "Desde {date} deixámos de enviar e-mails para este endereço. Os teus bilhetes e recibos continuam disponíveis na aplicação. Para voltares a receber e-mails, altera o teu endereço de e-mail ou pede ao suporte que remova o bloqueio.",
+		"changeEmail": "Alterar endereço de e-mail",
+		"contactSupport": "Contactar o suporte",
+		"dismiss": "Ocultar",
+		"supportSubject": "Entrega de e-mails na minha conta"
 	}
 }

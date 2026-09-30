@@ -397,8 +397,15 @@ export const actions: Actions = {
 			});
 
 			if (response.error) {
-				const errorMessage = extractErrorMessage(response.error, 'Failed to update invitation');
-				return fail(500, { errors: { form: errorMessage } });
+				// Same endpoint as createInvitations, so the same translated 400s
+				// (e.g. the org's daily invitation budget, #987) reach the organizer.
+				const errorMessage =
+					backendMessage(response.error) ??
+					extractErrorMessage(response.error, 'Failed to update invitation');
+				const status = response.response?.status;
+				return fail(status && status >= 400 && status < 500 ? status : 500, {
+					errors: { form: errorMessage }
+				});
 			}
 
 			return { success: true, action: 'updated' };
@@ -443,8 +450,15 @@ export const actions: Actions = {
 			});
 
 			if (response.error) {
-				const errorMessage = extractErrorMessage(response.error, 'Failed to update invitations');
-				return fail(500, { errors: { form: errorMessage } });
+				// Same endpoint as createInvitations, so the same translated 400s
+				// (e.g. the org's daily invitation budget, #987) reach the organizer.
+				const errorMessage =
+					backendMessage(response.error) ??
+					extractErrorMessage(response.error, 'Failed to update invitations');
+				const status = response.response?.status;
+				return fail(status && status >= 400 && status < 500 ? status : 500, {
+					errors: { form: errorMessage }
+				});
 			}
 
 			return { success: true, action: 'bulk_updated', count: emails.length };

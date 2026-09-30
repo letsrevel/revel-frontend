@@ -1743,7 +1743,9 @@
 		"deleteTokenUsesText": "{count} Personen haben sich bereits über diesen Link registriert",
 		"deleteTokenWarning": "Diese Registrierungen bleiben gültig. Nur neue Versuche schlagen fehl.",
 		"deleteTokenButton": "Link löschen",
-		"deleteTokenUnnamed": "Unbenannter Link"
+		"deleteTokenUnnamed": "Unbenannter Link",
+		"tooManyEmails": "Du kannst bis zu {max} Adressen auf einmal einladen. Du hast {count} eingegeben.",
+		"createFailed": "Die Einladungen konnten nicht gesendet werden. Bitte versuche es noch einmal."
 	},
 	"eventNewPage": {
 		"pageTitle": "Veranstaltung erstellen",
@@ -10072,5 +10074,14 @@
 		"emptyBody": "Um die Ankündigungen einer Organisation stummzuschalten, nutze den Button auf ihrer Seite.",
 		"unknownOrganization": "Organisation nicht mehr verfügbar",
 		"loading": "Wird geladen…"
+	},
+	"emailSuppression": {
+		"undeliverableTitle": "E-Mails an diese Adresse können nicht zugestellt werden.",
+		"complaintTitle": "Diese Adresse hat eine unserer E-Mails als Spam markiert.",
+		"body": "Seit {date} senden wir keine E-Mails mehr an diese Adresse. Deine Tickets und Belege findest du weiterhin in der App. Um wieder E-Mails zu bekommen, ändere deine E-Mail-Adresse oder bitte den Support, die Sperre aufzuheben.",
+		"changeEmail": "E-Mail-Adresse ändern",
+		"contactSupport": "Support kontaktieren",
+		"dismiss": "Ausblenden",
+		"supportSubject": "E-Mail-Zustellung an mein Konto"
 	}
 }

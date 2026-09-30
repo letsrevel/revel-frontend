@@ -27,7 +27,8 @@
 		digest_frequency: 'immediate',
 		digest_send_time: '09:00',
 		notification_type_settings: {},
-		muted_organization_ids: []
+		muted_organization_ids: [],
+		email_suppression: null
 	};
 
 	// Statuses the one-click endpoint uses for a link it won't honour.

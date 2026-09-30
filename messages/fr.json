@@ -1629,7 +1629,9 @@
 		"deleteTokenUsesText": "{count} personnes se sont déjà inscrites grâce à ce lien",
 		"deleteTokenWarning": "Ces inscriptions resteront valides. Seules les nouvelles tentatives échoueront.",
 		"deleteTokenButton": "Supprimer le lien",
-		"deleteTokenUnnamed": "Lien sans nom"
+		"deleteTokenUnnamed": "Lien sans nom",
+		"tooManyEmails": "Tu peux inviter jusqu'à {max} adresses à la fois. Tu en as saisi {count}.",
+		"createFailed": "Impossible d'envoyer les invitations. Réessaie."
 	},
 	"eventNewPage": {
 		"pageTitle": "Créer un événement",
@@ -10072,5 +10074,14 @@
 		"emptyBody": "Pour mettre les annonces d'une organisation en sourdine, utilise le bouton sur sa page.",
 		"unknownOrganization": "Cette organisation n'est plus disponible",
 		"loading": "Chargement…"
+	},
+	"emailSuppression": {
+		"undeliverableTitle": "Les e-mails vers cette adresse ne peuvent pas être distribués.",
+		"complaintTitle": "Cette adresse a signalé l'un de nos e-mails comme spam.",
+		"body": "Depuis le {date}, nous n'envoyons plus d'e-mails à cette adresse. Tes billets et reçus restent disponibles dans l'application. Pour recevoir à nouveau des e-mails, change ton adresse e-mail ou demande au support de lever le blocage.",
+		"changeEmail": "Changer d'adresse e-mail",
+		"contactSupport": "Contacter le support",
+		"dismiss": "Masquer",
+		"supportSubject": "Distribution des e-mails sur mon compte"
 	}
 }

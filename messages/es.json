@@ -1743,7 +1743,9 @@
 		"deleteTokenUsesText": "{count} personas ya se han inscrito con este enlace",
 		"deleteTokenWarning": "Esas inscripciones seguirán siendo válidas. Solo fallarán los nuevos intentos.",
 		"deleteTokenButton": "Eliminar enlace",
-		"deleteTokenUnnamed": "Enlace sin nombre"
+		"deleteTokenUnnamed": "Enlace sin nombre",
+		"tooManyEmails": "Puedes invitar hasta {max} direcciones a la vez. Has introducido {count}.",
+		"createFailed": "No se han podido enviar las invitaciones. Inténtalo de nuevo."
 	},
 	"eventNewPage": {
 		"pageTitle": "Crear evento",
@@ -10072,5 +10074,14 @@
 		"emptyBody": "Para silenciar los anuncios de una organización, usa el botón de su página.",
 		"unknownOrganization": "Organización ya no disponible",
 		"loading": "Cargando…"
+	},
+	"emailSuppression": {
+		"undeliverableTitle": "Los correos a esta dirección no se pueden entregar.",
+		"complaintTitle": "Esta dirección marcó uno de nuestros correos como spam.",
+		"body": "Desde el {date} hemos dejado de enviar correos a esta dirección. Tus entradas y recibos siguen disponibles en la aplicación. Para volver a recibir correos, cambia tu dirección de correo o pide al soporte que retire el bloqueo.",
+		"changeEmail": "Cambiar dirección de correo",
+		"contactSupport": "Contactar con soporte",
+		"dismiss": "Ocultar",
+		"supportSubject": "Entrega de correos a mi cuenta"
 	}
 }
