@@ -207,10 +207,12 @@ describe('NotificationPreferencesForm', () => {
 
 		// Wait for mutation to complete
 		await waitFor(() => {
+			// Settings mode: no unsubscribe token accompanies the result
 			expect(mockOnSave).toHaveBeenCalledWith(
 				expect.objectContaining({
 					event_reminders_enabled: false
-				})
+				}),
+				undefined
 			);
 		});
 	});

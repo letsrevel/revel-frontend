@@ -41,10 +41,12 @@
 	// The backend rejected a token that decoded fine (revoked, email changed,
 	// expired between load and submit).
 	let rejectedToken = $state<string | null>(null);
-	let oneClickPending = $state(false);
+	// The token whose one-click request is in flight (null when idle).
+	let pendingToken = $state<string | null>(null);
 	let invalidHeading = $state<HTMLHeadingElement | null>(null);
 	let successRegion = $state<HTMLDivElement | null>(null);
 
+	const oneClickPending = $derived(pendingToken !== null && pendingToken === data.token);
 	const outcome = $derived(finished?.token === data.token ? finished.outcome : null);
 	const rejected = $derived(rejectedToken !== null && rejectedToken === data.token);
 	const tokenInfo = $derived(data.tokenInfo);
@@ -59,8 +61,12 @@
 	// The clicked control disappears with the swap, so move focus to the
 	// confirmation. No auto-redirect: a timed navigation cut screen-reader users
 	// off mid-message (WCAG 2.2.1); the "Go home" link is on request instead.
-	async function finish(result: Outcome) {
-		finished = { token: data.token, outcome: result };
+	//
+	// Every result carries the token it was submitted with; if the page has since
+	// moved to another link, the result is dropped rather than applied to it.
+	async function finish(result: Outcome, submittedToken: string | undefined) {
+		if (!submittedToken || submittedToken !== data.token) return;
+		finished = { token: submittedToken, outcome: result };
 		await tick();
 		// Focus the confirmation's h1 (EmptyState owns it, so no ref prop) so
 		// screen readers announce a real heading, not an unnamed container.
@@ -70,33 +76,35 @@
 		heading?.focus();
 	}
 
-	async function showRejected() {
-		rejectedToken = data.token;
+	async function showRejected(submittedToken: string) {
+		if (submittedToken !== data.token) return;
+		rejectedToken = submittedToken;
 		await tick();
 		// The page swapped under the user's click; move focus to the explanation.
 		invalidHeading?.focus();
 	}
 
 	async function oneClick(result: Outcome) {
-		if (!data.token || oneClickPending) return;
-		oneClickPending = true;
+		const token = data.token;
+		if (!token || oneClickPending) return;
+		pendingToken = token;
 		try {
 			// No auth, no body: the endpoint reads only the query token and ignores
 			// the RFC 8058 form body.
-			const res = await oneclickunsubscribeOneClick({ query: { token: data.token } });
+			const res = await oneclickunsubscribeOneClick({ query: { token } });
 			if (res.error) {
 				if (INVALID_TOKEN_STATUSES.has(res.response?.status ?? 0)) {
-					await showRejected();
-				} else {
+					await showRejected(token);
+				} else if (token === data.token) {
 					toast.error(m['unsubscribePage.oneClickFailed']());
 				}
 				return;
 			}
-			await finish(result);
+			await finish(result, token);
 		} catch {
-			toast.error(m['unsubscribePage.oneClickFailed']());
+			if (token === data.token) toast.error(m['unsubscribePage.oneClickFailed']());
 		} finally {
-			oneClickPending = false;
+			if (pendingToken === token) pendingToken = null;
 		}
 	}
 </script>
@@ -239,12 +247,17 @@
 		{/if}
 
 		<div class="rounded-lg border bg-card p-6 text-card-foreground shadow-sm">
-			<NotificationPreferencesForm
-				preferences={defaultPreferences}
-				unsubscribeToken={data.token ?? undefined}
-				onSave={() => void finish('preferences')}
-				onInvalidToken={showRejected}
-			/>
+			<!-- Keyed so each link gets a fresh form (its own draft and pending state);
+			     a request still in flight for the previous link is ignored by
+			     finish/showRejected. -->
+			{#key data.token}
+				<NotificationPreferencesForm
+					preferences={defaultPreferences}
+					unsubscribeToken={data.token ?? undefined}
+					onSave={(_prefs, submittedToken) => void finish('preferences', submittedToken)}
+					onInvalidToken={showRejected}
+				/>
+			{/key}
 		</div>
 	{/if}
 </div>

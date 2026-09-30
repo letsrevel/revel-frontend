@@ -33,12 +33,13 @@
 
 	interface Props {
 		preferences: NotificationPreferenceSchema | null;
-		onSave?: (preferences?: NotificationPreferenceSchema) => void;
+		/** Unsubscribe mode passes the token the request was submitted with. */
+		onSave?: (preferences?: NotificationPreferenceSchema, submittedToken?: string) => void;
 		disabled?: boolean;
 		authToken?: string;
 		unsubscribeToken?: string; // Token for unsubscribe mode (unauthenticated)
 		/** Unsubscribe mode: the backend rejected the link (expired, revoked, stale email). */
-		onInvalidToken?: () => void;
+		onInvalidToken?: (submittedToken: string) => void;
 	}
 
 	const {
@@ -131,13 +132,21 @@
 
 	// Update preferences mutation
 	const updateMutation = createMutation(() => ({
-		mutationFn: async (payload: UpdateNotificationPreferenceSchema) => {
+		// `token` is captured at submit time: the page can swap to another link
+		// while this request is in flight, and must tell whose result this is.
+		mutationFn: async ({
+			payload,
+			token
+		}: {
+			payload: UpdateNotificationPreferenceSchema;
+			token?: string;
+		}) => {
 			// Use different endpoint based on mode
-			if (isUnsubscribeMode && unsubscribeToken) {
+			if (token) {
 				// Unsubscribe mode: use unsubscribe endpoint with token
 				const response = await notificationpreferenceUnsubscribe({
 					body: {
-						token: unsubscribeToken,
+						token,
 						preferences: payload
 					}
 				});
@@ -166,18 +175,18 @@
 				return response.data;
 			}
 		},
-		onSuccess: (data) => {
+		onSuccess: (data, { token }) => {
 			if (!isUnsubscribeMode) {
 				queryClient.invalidateQueries({ queryKey: ['notification-preferences'] });
 				// Unsubscribe mode skips the toast: its page swaps to a success
 				// screen, and both at once doubled the announcement.
 				toast.success(m['notificationPreferences.saveSuccess']());
 			}
-			onSave?.(data as NotificationPreferenceSchema);
+			onSave?.(data as NotificationPreferenceSchema, token);
 		},
-		onError: (error: Error) => {
-			if (error instanceof InvalidUnsubscribeTokenError && onInvalidToken) {
-				onInvalidToken();
+		onError: (error: Error, { token }) => {
+			if (error instanceof InvalidUnsubscribeTokenError && onInvalidToken && token) {
+				onInvalidToken(token);
 				return;
 			}
 			toast.error(m['notificationPreferences.saveFailed']({ error: error.message }));
@@ -249,7 +258,10 @@
 			return;
 		}
 
-		updateMutation.mutate(buildPayload());
+		updateMutation.mutate({
+			payload: buildPayload(),
+			token: isUnsubscribeMode ? unsubscribeToken : undefined
+		});
 	}
 
 	// Reset handler

@@ -170,6 +170,94 @@ describe('unsubscribe page (#982)', () => {
 		expect(screen.getByRole('button', { name: /stop these emails/i })).toBeInTheDocument();
 	});
 
+	describe('superseded requests (token A in flight, page moves to token B)', () => {
+		function deferred() {
+			let settle: ((value: unknown) => void) | undefined;
+			const promise = new Promise((resolve) => {
+				settle = resolve;
+			});
+			return { promise, settle: (value: unknown) => settle?.(value) };
+		}
+
+		async function renderThenSwitch(start: () => Promise<void>) {
+			const client = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
+			const props = (token: string) => ({
+				client,
+				component: UnsubscribePage,
+				componentProps: { data: { token, tokenInfo: accountToken('event_reminder'), seo } }
+			});
+			const { rerender } = render(QueryClientTestWrapper, { props: props('A') });
+			await start();
+			await rerender(props('B'));
+		}
+
+		it.each([
+			[
+				'a one-click success',
+				{ data: { message: 'ok' }, error: undefined, response: { status: 200 } }
+			],
+			[
+				'a one-click rejection',
+				{ data: undefined, error: { detail: 'x' }, response: { status: 400 } }
+			]
+		])('ignores %s that arrives for the previous token', async (_label, result) => {
+			const user = userEvent.setup();
+			const { oneclickunsubscribeOneClick } = await import('$lib/api');
+			const pending = deferred();
+			vi.mocked(oneclickunsubscribeOneClick).mockReturnValue(pending.promise as never);
+
+			await renderThenSwitch(() =>
+				user.click(screen.getByRole('button', { name: /stop these emails/i }))
+			);
+			expect(oneclickunsubscribeOneClick).toHaveBeenCalledWith({ query: { token: 'A' } });
+
+			// B is not blocked by A's in-flight request
+			const button = screen.getByRole('button', { name: /stop these emails/i });
+			expect(button).not.toHaveAttribute('aria-disabled', 'true');
+
+			pending.settle(result);
+			await new Promise((r) => setTimeout(r, 0));
+
+			expect(screen.queryByText(/won't get these emails anymore/i)).not.toBeInTheDocument();
+			expect(
+				screen.queryByRole('heading', { name: /invalid or expired link/i })
+			).not.toBeInTheDocument();
+			expect(screen.getByRole('button', { name: /stop these emails/i })).toBeInTheDocument();
+		});
+
+		it.each([
+			[
+				'a form-save success',
+				{ data: { message: 'ok' }, error: undefined, response: { status: 200 } }
+			],
+			[
+				'a form-save rejection',
+				{ data: undefined, error: { detail: 'x' }, response: { status: 400 } }
+			]
+		])('ignores %s that arrives for the previous token', async (_label, result) => {
+			const user = userEvent.setup();
+			const { notificationpreferenceUnsubscribe } = await import('$lib/api');
+			const pending = deferred();
+			vi.mocked(notificationpreferenceUnsubscribe).mockReturnValue(pending.promise as never);
+
+			await renderThenSwitch(() =>
+				user.click(screen.getByRole('button', { name: /save changes/i }))
+			);
+			expect(notificationpreferenceUnsubscribe).toHaveBeenCalledWith(
+				expect.objectContaining({ body: expect.objectContaining({ token: 'A' }) })
+			);
+
+			pending.settle(result);
+			await new Promise((r) => setTimeout(r, 0));
+
+			expect(screen.queryByText(/preferences have been updated/i)).not.toBeInTheDocument();
+			expect(
+				screen.queryByRole('heading', { name: /invalid or expired link/i })
+			).not.toBeInTheDocument();
+			expect(screen.getByRole('button', { name: /save changes/i })).toBeInTheDocument();
+		});
+	});
+
 	it('words the one-click stop as an org mute for organization announcements', () => {
 		renderPage(accountToken('org_announcement', 'org-1'));
 		expect(screen.getByRole('button', { name: /stop these announcements/i })).toBeInTheDocument();
