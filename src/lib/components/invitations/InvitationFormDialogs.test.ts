@@ -72,6 +72,35 @@ describe('InvitationFormDialogs create dialog (#987)', () => {
 		expect(screen.getByRole('dialog')).toBeInTheDocument();
 	});
 
+	it('keeps the draft on a thrown/network error too', async () => {
+		renderDialogs();
+		await addEmails(['a@example.com']);
+		const after = submits.at(-1)?.({ cancel: vi.fn() });
+		const update = vi.fn();
+		await after?.({ result: { type: 'error', error: new Error('boom') }, update });
+		expect(await screen.findByRole('alert')).toHaveTextContent(/couldn't send the invitations/i);
+		expect(update).not.toHaveBeenCalled();
+		expect(screen.getByText('a@example.com')).toBeInTheDocument();
+	});
+
+	it('does not show an earlier refusal when the dialog is reopened', async () => {
+		const { component } = renderDialogs();
+		await addEmails(['a@example.com']);
+		const after = submits.at(-1)?.({ cancel: vi.fn() });
+		await after?.({
+			result: { type: 'failure', status: 400, data: { errors: { form: 'Daily limit.' } } },
+			update: vi.fn()
+		});
+		expect(await screen.findByRole('alert')).toHaveTextContent('Daily limit.');
+
+		await userEvent.setup().click(screen.getByRole('button', { name: /cancel/i }));
+		await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+		flushSync(() => (component as unknown as { openCreate: () => void }).openCreate());
+
+		expect(await screen.findByText('a@example.com')).toBeInTheDocument(); // draft kept
+		expect(screen.queryByRole('alert')).not.toBeInTheDocument(); // stale error gone
+	});
+
 	it('blocks sending more than 500 addresses (the endpoint 422s beyond that)', async () => {
 		renderDialogs();
 		const input = await screen.findByRole('combobox', { name: /email/i });

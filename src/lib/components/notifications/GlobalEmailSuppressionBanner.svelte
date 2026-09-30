@@ -19,15 +19,15 @@
 	const suppression = $derived(
 		accessToken ? (preferencesQuery.data?.email_suppression ?? null) : null
 	);
-	const dismissKey = $derived(
-		suppression ? `email-suppression-dismissed:${suppression.reason}:${suppression.since}` : null
-	);
+	const dismissKey = $derived(suppression ? `${suppression.reason}:${suppression.since}` : null);
+
+	const DISMISS_STORAGE_KEY = 'email-suppression-dismissed';
 
 	let dismissedKey = $state<string | null>(readDismissed());
 
 	function readDismissed(): string | null {
 		try {
-			return sessionStorage.getItem('email-suppression-dismissed');
+			return sessionStorage.getItem(DISMISS_STORAGE_KEY);
 		} catch {
 			return null;
 		}
@@ -37,13 +37,13 @@
 		if (!dismissKey) return;
 		dismissedKey = dismissKey;
 		try {
-			sessionStorage.setItem('email-suppression-dismissed', dismissKey);
+			sessionStorage.setItem(DISMISS_STORAGE_KEY, dismissKey);
 		} catch {
 			// Storage unavailable (private mode, blocked): dismissal lasts for this page.
 		}
 	}
 
-	const onSettingsPage = $derived(page.url.pathname.endsWith('/account/settings'));
+	const onSettingsPage = $derived(/\/account\/settings\/?$/.test(page.url.pathname));
 	const visible = $derived(!!suppression && !onSettingsPage && dismissedKey !== dismissKey);
 </script>
 

@@ -54,12 +54,15 @@ describe('GlobalEmailSuppressionBanner (#987)', () => {
 		expect(screen.queryByRole('region')).not.toBeInTheDocument();
 	});
 
-	it('steps aside on account settings, which renders its own copy', async () => {
-		pageState.url = new URL('http://localhost/account/settings');
-		renderBanner({ email_suppression: suppressed });
-		await new Promise((r) => setTimeout(r, 0));
-		expect(screen.queryByRole('region')).not.toBeInTheDocument();
-	});
+	it.each(['/account/settings', '/account/settings/', '/de/account/settings'])(
+		'steps aside on account settings (%s), which renders its own copy',
+		async (path) => {
+			pageState.url = new URL(`http://localhost${path}`);
+			renderBanner({ email_suppression: suppressed });
+			await new Promise((r) => setTimeout(r, 0));
+			expect(screen.queryByRole('region')).not.toBeInTheDocument();
+		}
+	);
 
 	it('stays dismissed for the session, but returns for a new suppression', async () => {
 		const first = renderBanner({ email_suppression: suppressed });

@@ -276,6 +276,9 @@ COMPOSITED_PAIRS = [
     # so the panels can be relocated without re-deriving anything.
     ("destructive-text", 0.9, "destructive", 0.10, "background", 4.5, BOTH, "dimmed error detail on an error panel (page)"),
     ("destructive-text", 0.9, "destructive", 0.10, "card", 4.5, BOTH, "dimmed error detail on an error panel (card/dialog)"),
+    # EmailSuppressionBanner focus rings (links + dismiss) on the amber warning
+    # tint over the page (#987). Non-text: 3:1.
+    ("ring", 1, "highlight", 0.20, "background", 3.0, BOTH, "focus ring on the warning banner tint"),
     # Invalid-link panels (unsubscribe page) keep their explanation on
     # --muted-foreground over the same /10 tint, directly on the page.
     ("muted-foreground", 1, "destructive", 0.10, "background", 4.5, BOTH, "muted copy on an error panel (page)"),

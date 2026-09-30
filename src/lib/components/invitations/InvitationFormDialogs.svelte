@@ -89,6 +89,9 @@
 	}
 
 	export function openCreate() {
+		// The draft survives a close (so a trimmed retry keeps its addresses),
+		// but a refusal from an earlier attempt must not greet the next open.
+		createError = null;
 		showCreateDialog = true;
 	}
 
@@ -156,7 +159,13 @@
 </script>
 
 <!-- Create Invitation Dialog -->
-<Dialog.Root open={showCreateDialog} onOpenChange={(open) => (showCreateDialog = open)}>
+<Dialog.Root
+	open={showCreateDialog}
+	onOpenChange={(open) => {
+		showCreateDialog = open;
+		if (!open) createError = null;
+	}}
+>
 	<Dialog.Content class="flex max-h-[90dvh] flex-col sm:max-w-[600px]">
 		<Dialog.Header>
 			<Dialog.Title>{m['eventInvitationsAdmin.createInvitations']()}</Dialog.Title>
@@ -181,6 +190,11 @@
 							typeof errors?.form === 'string'
 								? errors.form
 								: m['eventInvitationsAdmin.createFailed']();
+						return;
+					}
+					if (result.type === 'error') {
+						// Thrown action / network failure: same rule, keep the draft.
+						createError = m['eventInvitationsAdmin.createFailed']();
 						return;
 					}
 					await update();
@@ -247,7 +261,14 @@
 			{/if}
 
 			<Dialog.Footer>
-				<Button type="button" variant="outline" onclick={() => (showCreateDialog = false)}>
+				<Button
+					type="button"
+					variant="outline"
+					onclick={() => {
+						showCreateDialog = false;
+						createError = null;
+					}}
+				>
 					{m['eventInvitationsAdmin.cancel']()}
 				</Button>
 				<Button type="submit" disabled={tooManyEmails}>
