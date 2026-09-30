@@ -26,8 +26,13 @@ export function followStatusQueryOptions(
 				entityType === 'organization'
 					? await organizationGetFollowStatus({ path: { slug: entityId }, headers })
 					: await eventseriesGetFollowStatus({ path: { series_id: entityId }, headers });
-			// 404 means "not following", which is expected
-			if (response.error) return { is_following: false, follow: null };
+			if (response.error) {
+				// 404 means "not following", which is expected. Anything else is a
+				// real failure: throw, so consumers (the announcement-mute button
+				// hides for followers) don't mistake an outage for "not following".
+				if (response.response?.status === 404) return { is_following: false, follow: null };
+				throw response.error;
+			}
 			return response.data;
 		},
 		enabled: !!accessToken

@@ -97,6 +97,77 @@ describe('AnnouncementMuteButton (#984)', () => {
 		expect(notificationpreferenceGetPreferences).not.toHaveBeenCalled();
 	});
 
+	it('stays hidden when the follow status fails to load', async () => {
+		vi.mocked(notificationpreferenceGetPreferences).mockResolvedValue({
+			data: { muted_organization_ids: [] }
+		} as never);
+		vi.mocked(organizationGetFollowStatus).mockResolvedValue({
+			error: { detail: 'boom' },
+			response: { status: 500 }
+		} as never);
+		render(QueryClientTestWrapper, {
+			props: {
+				client: new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+				component: AnnouncementMuteButton,
+				componentProps: { organization }
+			}
+		});
+		await waitFor(() => expect(organizationGetFollowStatus).toHaveBeenCalled());
+		await new Promise((r) => setTimeout(r, 0));
+		expect(screen.queryByRole('button')).not.toBeInTheDocument();
+	});
+
+	it('tolerates preferences without muted_organization_ids (older backend)', async () => {
+		vi.mocked(notificationpreferenceGetPreferences).mockResolvedValue({ data: {} } as never);
+		vi.mocked(organizationGetFollowStatus).mockResolvedValue({
+			data: { is_following: false, follow: null }
+		} as never);
+		render(QueryClientTestWrapper, {
+			props: {
+				client: new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+				component: AnnouncementMuteButton,
+				componentProps: { organization }
+			}
+		});
+		expect(await screen.findByRole('button', { name: 'Mute announcements' })).toBeInTheDocument();
+	});
+
+	it('marks itself disabled while pending and names the org it was clicked for', async () => {
+		const user = userEvent.setup();
+		vi.mocked(notificationpreferenceGetPreferences).mockResolvedValue({
+			data: { muted_organization_ids: [] }
+		} as never);
+		vi.mocked(organizationGetFollowStatus).mockResolvedValue({
+			data: { is_following: false, follow: null }
+		} as never);
+		let settle: ((value: unknown) => void) | undefined;
+		vi.mocked(notificationpreferenceMuteOrganization).mockReturnValue(
+			new Promise((resolve) => {
+				settle = resolve;
+			}) as never
+		);
+		const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+		const { rerender } = render(QueryClientTestWrapper, {
+			props: { client, component: AnnouncementMuteButton, componentProps: { organization } }
+		});
+
+		const button = await screen.findByRole('button', { name: 'Mute announcements' });
+		await user.click(button);
+		expect(button).toHaveAttribute('aria-disabled', 'true');
+		expect(button.className).toContain('aria-disabled:opacity-50');
+
+		// Client-side navigation to another org page while the request is in flight
+		await rerender({
+			client,
+			component: AnnouncementMuteButton,
+			componentProps: { organization: { id: 'org-2', slug: 'other', name: 'Other' } }
+		});
+		settle?.({ data: { muted_organization_ids: ['org-1'] } });
+		await waitFor(() =>
+			expect(toast.success).toHaveBeenCalledWith(expect.stringContaining('Acme'))
+		);
+	});
+
 	it('reports a failed write', async () => {
 		const user = userEvent.setup();
 		setup();

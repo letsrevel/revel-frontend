@@ -194,14 +194,19 @@
 				<Button
 					{...props}
 					variant="outline"
-					class="gap-2 {className}"
+					class="group gap-2 {className}"
 					disabled={isLoading}
 					aria-label={m['follow.following']()}
 				>
 					{#if isLoading}
 						<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
 					{:else}
-						<Heart class="h-4 w-4 fill-current text-accent" aria-hidden="true" />
+						<!-- The outline button hovers to bg-accent, so the heart flips to
+						     accent-foreground there instead of vanishing (accent on accent). -->
+						<Heart
+							class="h-4 w-4 fill-current text-accent group-hover:text-accent-foreground"
+							aria-hidden="true"
+						/>
 					{/if}
 					{m['follow.following']()}
 					<ChevronDown class="h-4 w-4" aria-hidden="true" />

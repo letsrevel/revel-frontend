@@ -109,7 +109,7 @@
 						type="button"
 						variant="outline"
 						size="sm"
-						class="w-full sm:w-auto"
+						class="w-full aria-disabled:pointer-events-none aria-disabled:opacity-50 sm:w-auto"
 						aria-label={m['announcementMute.unmuteNamed']({ name: label })}
 						aria-disabled={pendingId === org.id}
 						onclick={() => {

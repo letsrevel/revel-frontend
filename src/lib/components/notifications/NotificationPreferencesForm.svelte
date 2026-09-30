@@ -121,6 +121,19 @@
 		structuredClone(initialDraft.typeSettings)
 	);
 
+	// Serialised current draft: lets a save tell whether the user kept editing
+	// while it was in flight.
+	function draftSignature(): string {
+		return JSON.stringify([
+			silenceAll,
+			eventReminders,
+			enabledChannels,
+			digestFrequency,
+			digestSendTime,
+			notificationTypeSettings
+		]);
+	}
+
 	function loadDraft(draft: Draft) {
 		silenceAll = draft.silence;
 		eventReminders = draft.reminders;
@@ -167,6 +180,8 @@
 		}: {
 			payload: UpdateNotificationPreferenceSchema;
 			token?: string;
+			/** draftSignature() at submit time */
+			submittedDraft: string;
 		}) => {
 			// Use different endpoint based on mode
 			if (token) {
@@ -202,10 +217,13 @@
 				return response.data;
 			}
 		},
-		onSuccess: (data, { token }) => {
+		onSuccess: (data, { token, submittedDraft }) => {
 			if (!isUnsubscribeMode) {
 				baseline = toDraft(data as NotificationPreferenceSchema);
-				loadDraft(baseline);
+				// Adopt the server's normalised values only if the user didn't edit
+				// while the request was in flight; otherwise keep their edits, which
+				// now diff against the new baseline.
+				if (draftSignature() === submittedDraft) loadDraft(baseline);
 				queryClient.invalidateQueries({ queryKey: ['notification-preferences'] });
 				// Unsubscribe mode skips the toast: its page swaps to a success
 				// screen, and both at once doubled the announcement.
@@ -282,7 +300,8 @@
 
 		updateMutation.mutate({
 			payload: buildPayload(),
-			token: isUnsubscribeMode ? unsubscribeToken : undefined
+			token: isUnsubscribeMode ? unsubscribeToken : undefined,
+			submittedDraft: draftSignature()
 		});
 	}
 

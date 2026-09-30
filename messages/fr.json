@@ -10070,7 +10070,7 @@
 		"settingsDescription": "Mettre une organisation en sourdine bloque ses annonces sur tous les canaux. Tu peux toujours les lire sur sa page. Les billets, reçus et annulations d'événements te parviennent toujours.",
 		"emptyTitle": "Aucune organisation en sourdine",
 		"emptyBody": "Pour mettre les annonces d'une organisation en sourdine, utilise le bouton sur sa page.",
-		"unknownOrganization": "Organisation plus disponible",
+		"unknownOrganization": "Cette organisation n'est plus disponible",
 		"loading": "Chargement…"
 	}
 }

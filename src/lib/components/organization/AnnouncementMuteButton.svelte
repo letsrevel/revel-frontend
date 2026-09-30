@@ -4,6 +4,7 @@
 	import { toast } from 'svelte-sonner';
 	import { Bell, BellOff, Loader2 } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
+	import { cn } from '$lib/utils';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import type { OrganizationRetrieveSchema } from '$lib/api/generated/types.gen';
 	import { followStatusQueryOptions } from '$lib/queries/follow-status';
@@ -35,7 +36,8 @@
 	);
 
 	const isMuted = $derived(
-		preferencesQuery.data?.muted_organization_ids.includes(organization.id) ?? false
+		// `?? []`: tolerate a backend that predates the field (deploy order).
+		(preferencesQuery.data?.muted_organization_ids ?? []).includes(organization.id)
 	);
 	// Rendered only once both answers are in, so the button never flashes the
 	// wrong label or appears for a follower and then vanishes.
@@ -47,13 +49,16 @@
 	);
 
 	const muteMutation = createMutation(() => ({
-		mutationFn: (muted: boolean) => setOrganizationMuted(organization.id, muted, accessToken),
-		onSuccess: (prefs, muted) => {
+		// The org is captured at click time: a client-side navigation to another
+		// org page mid-request must not change whose name the toast shows.
+		mutationFn: ({ id, muted }: { id: string; name: string; muted: boolean }) =>
+			setOrganizationMuted(id, muted, accessToken),
+		onSuccess: (prefs, { name, muted }) => {
 			applyMuteResult(queryClient, prefs);
 			toast.success(
 				muted
-					? m['announcementMute.mutedToast']({ name: organization.name })
-					: m['announcementMute.unmutedToast']({ name: organization.name })
+					? m['announcementMute.mutedToast']({ name })
+					: m['announcementMute.unmutedToast']({ name })
 			);
 		},
 		onError: () => {
@@ -66,10 +71,11 @@
 	<Button
 		type="button"
 		variant="outline"
-		class={className}
+		class={cn('aria-disabled:pointer-events-none aria-disabled:opacity-50', className)}
 		aria-disabled={muteMutation.isPending}
 		onclick={() => {
-			if (!muteMutation.isPending) muteMutation.mutate(!isMuted);
+			if (!muteMutation.isPending)
+				muteMutation.mutate({ id: organization.id, name: organization.name, muted: !isMuted });
 		}}
 	>
 		{#if muteMutation.isPending}
