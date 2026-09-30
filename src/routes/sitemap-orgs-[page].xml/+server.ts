@@ -14,14 +14,6 @@ function escapeXml(s: string): string {
 		.replace(/'/g, '&apos;');
 }
 
-function alts(loc: string): string {
-	return (
-		['en', 'de', 'it', 'fr', 'es', 'pt']
-			.map((l) => `<xhtml:link rel="alternate" hreflang="${l}" href="${escapeXml(loc)}"/>`)
-			.join('') + `<xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(loc)}"/>`
-	);
-}
-
 function img(rel: string | null | undefined, title: string): string {
 	if (!rel) return '';
 	return `<image:image><image:loc>${escapeXml(getBackendUrl(rel))}</image:loc><image:title>${escapeXml(title)}</image:title></image:image>`;
@@ -46,7 +38,6 @@ export const GET: RequestHandler = async ({ params, fetch, url }) => {
 			.split('T')[0];
 		return `<url>
   <loc>${escapeXml(loc)}</loc>
-  ${alts(loc)}
   <lastmod>${lastmod}</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.7</priority>
@@ -56,7 +47,6 @@ export const GET: RequestHandler = async ({ params, fetch, url }) => {
 
 	const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 ${urls.join('\n')}
 </urlset>`;

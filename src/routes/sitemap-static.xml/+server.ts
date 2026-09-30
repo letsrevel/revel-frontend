@@ -39,14 +39,6 @@ function escapeXml(s: string): string {
 		.replace(/'/g, '&apos;');
 }
 
-function sameUrlAlternates(loc: string): string {
-	return (
-		LANGS.map((l) => `<xhtml:link rel="alternate" hreflang="${l}" href="${escapeXml(loc)}"/>`).join(
-			''
-		) + `<xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(loc)}"/>`
-	);
-}
-
 function landingAlternates(origin: string, slug: string): string {
 	return (
 		LANGS.map(
@@ -65,7 +57,6 @@ export const GET: RequestHandler = async ({ url }) => {
 		const loc = `${baseUrl}${s.path}`;
 		lines.push(`<url>
   <loc>${escapeXml(loc)}</loc>
-  ${sameUrlAlternates(loc)}
   <changefreq>${s.changefreq}</changefreq>
   <priority>${s.priority}</priority>
 </url>`);
