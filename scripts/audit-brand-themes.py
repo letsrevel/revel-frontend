@@ -157,6 +157,9 @@ TEXT_PAIRS = [  # (fg, bg, min_ratio, note)
     ("success", "background", 4.5, "success as body text on page"),
     ("info", "background", 3.0, "info as icon/accent on page"),
     ("info", "card", 3.0, "info as icon/accent on card"),
+    # FollowButton's filled heart (outline button: page or card behind it).
+    ("accent", "background", 3.0, "accent heart icon on page"),
+    ("accent", "card", 3.0, "accent heart icon on card"),
     ("primary", "background", 3.0, "primary as text-primary/link on page"),
     ("primary", "card", 3.0, "primary on card"),
     ("ring", "background", 3.0, "focus ring visibility"),

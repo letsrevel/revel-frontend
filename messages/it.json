@@ -10057,5 +10057,20 @@
 		"emptyWindow": "Con questi orari il check-in chiuderebbe prima di aprire, quindi i biglietti di questa tipologia non potrebbero mai essere validati. Modifica gli orari o la finestra di check-in dell'evento.",
 		"relativeNote": "Salvata in relazione all'inizio dell'evento: se lo riprogrammi o lo duplichi, la finestra si sposta con lui.",
 		"entryWindow": "Ingresso: {window}"
+	},
+	"announcementMute": {
+		"mute": "Silenzia gli annunci",
+		"unmute": "Riattiva gli annunci",
+		"unmuteShort": "Riattiva",
+		"unmuteNamed": "Riattiva gli annunci di {name}",
+		"mutedToast": "Gli annunci di {name} sono silenziati. Biglietti, ricevute e cancellazioni di eventi ti arriveranno comunque.",
+		"unmutedToast": "Riceverai di nuovo gli annunci di {name}.",
+		"updateError": "Non è stato possibile aggiornare le impostazioni degli annunci. Riprova.",
+		"settingsTitle": "Organizzazioni silenziate",
+		"settingsDescription": "Silenziare un'organizzazione blocca i suoi annunci su tutti i canali. Puoi comunque leggerli sulla sua pagina. Biglietti, ricevute e cancellazioni di eventi ti arrivano sempre.",
+		"emptyTitle": "Nessuna organizzazione silenziata",
+		"emptyBody": "Per silenziare gli annunci di un'organizzazione, usa il pulsante sulla sua pagina.",
+		"unknownOrganization": "Organizzazione non più disponibile",
+		"loading": "Caricamento…"
 	}
 }

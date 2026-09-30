@@ -10057,5 +10057,20 @@
 		"emptyWindow": "Con estos horarios, el check-in cerraría antes de abrir, así que las entradas de este tipo nunca podrían validarse. Ajusta los horarios o la ventana de check-in del evento.",
 		"relativeNote": "Se guarda en relación con el inicio del evento, así que la ventana se mueve con él si lo reprogramas o lo duplicas.",
 		"entryWindow": "Acceso: {window}"
+	},
+	"announcementMute": {
+		"mute": "Silenciar anuncios",
+		"unmute": "Reactivar anuncios",
+		"unmuteShort": "Reactivar",
+		"unmuteNamed": "Reactivar anuncios de {name}",
+		"mutedToast": "Los anuncios de {name} están silenciados. Las entradas, los recibos y las cancelaciones de eventos te seguirán llegando.",
+		"unmutedToast": "Volverás a recibir anuncios de {name}.",
+		"updateError": "No se han podido actualizar tus ajustes de anuncios. Inténtalo de nuevo.",
+		"settingsTitle": "Organizaciones silenciadas",
+		"settingsDescription": "Silenciar una organización detiene sus anuncios en todos los canales. Puedes seguir leyéndolos en su página. Las entradas, los recibos y las cancelaciones de eventos siempre te llegan.",
+		"emptyTitle": "No hay organizaciones silenciadas",
+		"emptyBody": "Para silenciar los anuncios de una organización, usa el botón de su página.",
+		"unknownOrganization": "Organización ya no disponible",
+		"loading": "Cargando…"
 	}
 }

@@ -362,6 +362,48 @@ describe('NotificationPreferencesForm', () => {
 		});
 	});
 
+	describe('saved baseline (#985)', () => {
+		it('diffs the next save against what the server stored, not the initial prop', async () => {
+			const user = userEvent.setup();
+			const { notificationpreferenceUpdatePreferences } = await import('$lib/api');
+			vi.mocked(notificationpreferenceUpdatePreferences).mockResolvedValue({
+				data: { ...mockPreferences, enabled_channels: ['in_app'] },
+				error: undefined,
+				response: {} as Response
+			});
+
+			renderForm({ preferences: mockPreferences, authToken: 'test-token' });
+			const email = screen.getByRole('checkbox', { name: /^email$/i });
+			const save = screen.getByRole('button', { name: /save changes/i });
+
+			await user.click(email); // email off
+			await user.click(save);
+			await waitFor(() => expect(notificationpreferenceUpdatePreferences).toHaveBeenCalledOnce());
+
+			// Saved: nothing left to save, even though the prop still has email on
+			await waitFor(() => expect(save).toBeDisabled());
+
+			await user.click(email); // email back on: a change relative to the SAVED state
+			await user.click(save);
+			await waitFor(() =>
+				expect(notificationpreferenceUpdatePreferences).toHaveBeenLastCalledWith(
+					expect.objectContaining({ body: { enabled_channels: ['in_app', 'email'] } })
+				)
+			);
+		});
+
+		it('cancel returns to the last saved state', async () => {
+			const user = userEvent.setup();
+			renderForm({ preferences: mockPreferences, authToken: 'test-token' });
+			const reminders = screen.getByRole('checkbox', { name: /event reminders/i });
+
+			await user.click(reminders);
+			expect(reminders).not.toBeChecked();
+			await user.click(screen.getByRole('button', { name: /cancel/i }));
+			expect(reminders).toBeChecked();
+		});
+	});
+
 	describe('unsubscribe mode', () => {
 		const unsubscribeDefaults: NotificationPreferenceSchema = {
 			silence_all_notifications: false,
