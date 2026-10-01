@@ -27,7 +27,7 @@ Specialized subagents live in `.claude/agents/` (component-creator, route-creato
 
 **CRITICAL:** Always use feature branches and Pull Requests. **NEVER commit directly to `main`**.
 
-- **Always ask user for confirmation before committing** — show `git status`, draft the commit message, wait for approval.
+- **On any branch other than `main`, commit and push freely** — no approval needed (decided 2026-10-01, superseding the earlier "always ask before committing" rule). Never commit or push to `main`.
 - Branch naming: `feature/issue-number-description`, `fix/issue-number-description`, `refactor/…`, `docs/…`, `test/…`, `chore/…`.
 - Conventional commits: `feat:`, `fix:`, `docs:`, `style:`, `refactor:`, `test:`, `chore:` (optionally scoped, e.g. `feat(scope):`).
 - Always end commits with:
