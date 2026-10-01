@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.17.0] - 2026-10-01
+
+### Added
+
+- Notification settings list "Organization setup tips" (occasional reminders when your organization is still private, has a forgotten draft, or has gone quiet) with a readable name and description, so you can turn them off. Unsubscribe links from these emails offer a one-click stop for setup tips only.
+
+### Changed
+
+- Pages become interactive much sooner on slow phones: each page now loads only the translations it uses instead of every message in every language. On mobile, the menu and language picker no longer ignore taps for several seconds after the page appears.
+
 ## [2.16.0] - 2026-09-30
 
 ### Added
