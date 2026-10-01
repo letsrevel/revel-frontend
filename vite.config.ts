@@ -1,11 +1,12 @@
 import { existsSync } from 'node:fs';
-import { resolve, sep } from 'node:path';
+import { resolve } from 'node:path';
 import { sveltekit } from '@sveltejs/kit/vite';
-import type { Plugin } from 'vite';
+import { normalizePath, type Plugin } from 'vite';
 import { defineConfig } from 'vitest/config';
 
-const PARAGLIDE_DEV_DIR = resolve('src/lib/paraglide');
-const PARAGLIDE_BUILD_DIR = resolve('.paraglide-build');
+// Vite module IDs always use `/`, even on Windows — normalize before comparing.
+const PARAGLIDE_DEV_DIR = normalizePath(resolve('src/lib/paraglide'));
+const PARAGLIDE_BUILD_DIR = normalizePath(resolve('.paraglide-build'));
 
 /**
  * Production builds read Paraglide from `.paraglide-build` (`message-modules`,
@@ -15,19 +16,29 @@ const PARAGLIDE_BUILD_DIR = resolve('.paraglide-build');
  * scripts/compile-i18n.js.
  */
 function paraglideBuildOutput(): Plugin {
+	let redirected = 0;
 	return {
 		name: 'revel:paraglide-build-output',
 		apply: 'build',
 		enforce: 'pre',
 		buildStart() {
+			redirected = 0;
 			if (!existsSync(PARAGLIDE_BUILD_DIR)) {
 				this.error('.paraglide-build is missing — run `node scripts/compile-i18n.js --build`');
 			}
 		},
 		async resolveId(source, importer, options) {
 			const resolved = await this.resolve(source, importer, { ...options, skipSelf: true });
-			if (!resolved?.id.startsWith(PARAGLIDE_DEV_DIR + sep)) return null;
+			if (!resolved?.id.startsWith(PARAGLIDE_DEV_DIR + '/')) return null;
+			redirected++;
 			return { ...resolved, id: PARAGLIDE_BUILD_DIR + resolved.id.slice(PARAGLIDE_DEV_DIR.length) };
+		},
+		buildEnd(error) {
+			// A redirect that silently stops matching still builds green — just
+			// with the untree-shaken bundle again. Fail loudly instead.
+			if (!error && redirected === 0) {
+				this.error('no $lib/paraglide imports were redirected to .paraglide-build');
+			}
 		}
 	};
 }
