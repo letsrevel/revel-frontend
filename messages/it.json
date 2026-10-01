@@ -365,7 +365,9 @@
 		"saving": "Salvataggio...",
 		"cancel": "Annulla",
 		"saveSuccess": "Preferenze notifiche aggiornate con successo",
-		"saveFailed": "Impossibile aggiornare le preferenze: {error}"
+		"saveFailed": "Impossibile aggiornare le preferenze: {error}",
+		"typeOrgSetupNudge": "Consigli per configurare l’organizzazione",
+		"typeOrgSetupNudgeDescription": "Promemoria occasionali quando la tua organizzazione è ancora privata, ha una bozza dimenticata o è diventata silenziosa. Al massimo uno ogni due settimane."
 	},
 	"notificationList": {
 		"ariaLabel": "Notifiche",
@@ -6499,6 +6501,7 @@
 		"quickStopOrgDescription": "Ferma solo le email di annunci di questa organizzazione. Continuerai a ricevere quelle delle altre organizzazioni.",
 		"quickStopButton": "Ferma queste email",
 		"quickStopOrgButton": "Ferma questi annunci",
+		"quickStopOrgSetupNudgeDescription": "Disattiva le email solo per i consigli di configurazione dell’organizzazione. Tutto il resto resta com’è.",
 		"quickStopSuccessDescription": "Fatto. Non riceverai più queste email.",
 		"customizeHeading": "Oppure regola le tue notifiche",
 		"optOutTitle": "Ferma le email di invito",

@@ -551,6 +551,51 @@ describe('NotificationPreferencesForm', () => {
 		});
 	});
 
+	it('labels org setup nudges and saves turning them off (#996)', async () => {
+		const user = userEvent.setup();
+
+		const {
+			notificationpreferenceGetAvailableNotificationTypes,
+			notificationpreferenceUpdatePreferences
+		} = await import('$lib/api');
+		vi.mocked(notificationpreferenceGetAvailableNotificationTypes).mockResolvedValueOnce({
+			data: ['org_setup_nudge'],
+			error: undefined,
+			response: {} as Response
+		} as never);
+		vi.mocked(notificationpreferenceUpdatePreferences).mockResolvedValue({
+			data: mockPreferences,
+			error: undefined,
+			response: {} as Response
+		});
+
+		renderForm({ preferences: mockPreferences, authToken: 'test-token' });
+
+		await user.click(screen.getByRole('button', { name: /advanced settings/i }));
+		expect(await screen.findByText('Organization setup tips')).toBeInTheDocument();
+		expect(screen.getByText(/at most one every two weeks/i)).toBeInTheDocument();
+		expect(screen.queryByText(/org setup nudge/i)).not.toBeInTheDocument();
+
+		const toggle = screen.getByRole('checkbox', {
+			name: /enable organization setup tips notifications/i
+		});
+		expect(toggle).toBeChecked();
+		await user.click(toggle);
+		await user.click(screen.getByRole('button', { name: /save changes/i }));
+
+		await waitFor(() => {
+			expect(notificationpreferenceUpdatePreferences).toHaveBeenCalledWith(
+				expect.objectContaining({
+					body: expect.objectContaining({
+						notification_type_settings: expect.objectContaining({
+							org_setup_nudge: expect.objectContaining({ enabled: false })
+						})
+					})
+				})
+			);
+		});
+	});
+
 	it('handles null preferences gracefully', () => {
 		renderForm({
 			preferences: null,

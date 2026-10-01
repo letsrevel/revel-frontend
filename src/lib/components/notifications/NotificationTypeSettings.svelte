@@ -9,6 +9,11 @@
 	import { Separator } from '$lib/components/ui/separator';
 	import { Loader2, Bell, Mail, MessageSquare, ChevronDown, Settings } from '@lucide/svelte';
 	import type { NotificationTypeSettings, NotificationType } from '$lib/api/generated/types.gen.js';
+	import {
+		getNotificationTypeDescription,
+		getNotificationTypeLabel,
+		hasNotificationTypeLabel
+	} from './notificationTypeLabels';
 
 	interface Props {
 		notificationTypeSettings: Record<string, NotificationTypeSettings>;
@@ -176,6 +181,8 @@
 				{#each availableTypes as notificationType, index (notificationType)}
 					{@const settings = getNotificationTypeSettings(notificationType)}
 					{@const isCustom = hasCustomSettings(notificationType)}
+					{@const typeLabel = getNotificationTypeLabel(notificationType)}
+					{@const typeDescription = getNotificationTypeDescription(notificationType)}
 					<div class="space-y-3">
 						{#if index > 0}
 							<Separator />
@@ -187,9 +194,11 @@
 								<div class="flex flex-wrap items-center gap-2">
 									<Label
 										for="type-{notificationType}-enabled"
-										class="text-base font-medium capitalize"
+										class="text-base font-medium {hasNotificationTypeLabel(notificationType)
+											? ''
+											: 'capitalize'}"
 									>
-										{notificationType.replace(/_/g, ' ')}
+										{typeLabel}
 									</Label>
 									{#if !isCustom}
 										<span
@@ -205,6 +214,9 @@
 										</span>
 									{/if}
 								</div>
+								{#if typeDescription}
+									<p class="text-sm text-muted-foreground">{typeDescription}</p>
+								{/if}
 								<p class="text-xs text-muted-foreground">
 									{#if settings.enabled}
 										{#if settings.channels.length === 0}
@@ -235,7 +247,7 @@
 										disabled={isFormDisabled}
 										class="h-8 px-2 text-xs"
 										aria-label={m['notificationPreferences.resetAriaLabel']({
-											type: notificationType
+											type: typeLabel
 										})}
 									>
 										{m['notificationPreferences.resetButton']()}
@@ -249,7 +261,7 @@
 									}}
 									disabled={isFormDisabled}
 									aria-label={m['notificationPreferences.enableAriaLabel']({
-										type: notificationType
+										type: typeLabel
 									})}
 								/>
 							</div>

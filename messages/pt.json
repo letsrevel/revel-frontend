@@ -365,7 +365,9 @@
 		"saving": "A guardar...",
 		"cancel": "Cancelar",
 		"saveSuccess": "Preferências de notificação atualizadas com sucesso",
-		"saveFailed": "Não foi possível atualizar as preferências: {error}"
+		"saveFailed": "Não foi possível atualizar as preferências: {error}",
+		"typeOrgSetupNudge": "Dicas para configurar a tua organização",
+		"typeOrgSetupNudgeDescription": "Lembretes ocasionais quando a tua organização ainda é privada, tem um rascunho esquecido ou ficou inativa. No máximo um a cada duas semanas."
 	},
 	"notificationList": {
 		"ariaLabel": "Notificações",
@@ -6499,6 +6501,7 @@
 		"quickStopOrgDescription": "Deixa de receber apenas os e-mails de anúncios desta organização. Continuarás a receber os de outras organizações.",
 		"quickStopButton": "Parar estes e-mails",
 		"quickStopOrgButton": "Parar estes anúncios",
+		"quickStopOrgSetupNudgeDescription": "Desativa o e-mail apenas para as dicas de configuração da tua organização. Tudo o resto fica como está.",
 		"quickStopSuccessDescription": "Feito. Já não vais receber estes e-mails.",
 		"customizeHeading": "Ou ajusta as tuas notificações",
 		"optOutTitle": "Parar e-mails de convite",

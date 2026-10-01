@@ -264,6 +264,13 @@ describe('unsubscribe page (#982)', () => {
 		expect(screen.getByText(/from this organization only/i)).toBeInTheDocument();
 	});
 
+	it('names organization setup tips in the one-click stop for setup nudges (#996)', () => {
+		renderPage(accountToken('org_setup_nudge'));
+		expect(screen.getByText(/email for organization setup tips only/i)).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: /stop these emails/i })).toBeInTheDocument();
+		expect(screen.queryByText(/this kind of notification only/i)).not.toBeInTheDocument();
+	});
+
 	it('confirms an invitation opt-out for an address without an account', async () => {
 		const user = userEvent.setup();
 		const { oneclickunsubscribeOneClick, notificationpreferenceUnsubscribe } =
