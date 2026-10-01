@@ -49,6 +49,8 @@ vite.config.ts.timestamp-*
 
 # Paraglide (auto-generated i18n runtime)
 src/lib/paraglide/
+# Tree-shakeable production variant (`pnpm build`; see scripts/compile-i18n.js)
+.paraglide-build/
 
 # Inlang plugin cache (auto-generated)
 project.inlang/cache/

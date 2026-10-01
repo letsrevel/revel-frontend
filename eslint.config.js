@@ -88,6 +88,7 @@ export default [
 			'.claude/**',
 			'src/lib/api/generated/**',
 			'src/lib/paraglide/**',
+			'.paraglide-build/**',
 			'*.config.js',
 			'*.config.ts',
 			// Transient Playwright output (gitignored); the HTML report ships

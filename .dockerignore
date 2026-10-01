@@ -5,6 +5,7 @@ node_modules
 # Build outputs
 .svelte-kit
 build
+.paraglide-build
 dist
 
 # Development files
