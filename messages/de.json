@@ -365,7 +365,9 @@
 		"saving": "Speichern...",
 		"cancel": "Abbrechen",
 		"saveSuccess": "Benachrichtigungseinstellungen erfolgreich aktualisiert",
-		"saveFailed": "Fehler beim Aktualisieren der Einstellungen: {error}"
+		"saveFailed": "Fehler beim Aktualisieren der Einstellungen: {error}",
+		"typeOrgSetupNudge": "Tipps zur Einrichtung deiner Organisation",
+		"typeOrgSetupNudgeDescription": "Gelegentliche Erinnerungen, wenn deine Organisation noch privat ist, einen vergessenen Entwurf hat oder still geworden ist. Höchstens eine alle zwei Wochen."
 	},
 	"notificationList": {
 		"ariaLabel": "Benachrichtigungen",
@@ -6499,6 +6501,7 @@
 		"quickStopOrgDescription": "Stoppe nur die Ankündigungs-E-Mails dieser Organisation. Von anderen Organisationen hörst du weiterhin.",
 		"quickStopButton": "Diese E-Mails stoppen",
 		"quickStopOrgButton": "Diese Ankündigungen stoppen",
+		"quickStopOrgSetupNudgeDescription": "Schalte E-Mails nur für Tipps zur Einrichtung deiner Organisation ab. Alles andere bleibt, wie es ist.",
 		"quickStopSuccessDescription": "Erledigt. Du bekommst diese E-Mails nicht mehr.",
 		"customizeHeading": "Oder passe deine Benachrichtigungen an",
 		"optOutTitle": "Einladungs-E-Mails stoppen",

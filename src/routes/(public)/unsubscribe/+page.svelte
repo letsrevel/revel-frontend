@@ -223,7 +223,9 @@
 						<p class="text-sm text-muted-foreground">
 							{isOrgAnnouncement
 								? m['unsubscribePage.quickStopOrgDescription']()
-								: m['unsubscribePage.quickStopDescription']()}
+								: validToken.notificationType === 'org_setup_nudge'
+									? m['unsubscribePage.quickStopOrgSetupNudgeDescription']()
+									: m['unsubscribePage.quickStopDescription']()}
 						</p>
 					</div>
 				</div>

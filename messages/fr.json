@@ -3227,7 +3227,9 @@
 		"saving": "Enregistrement...",
 		"cancel": "Annuler",
 		"saveSuccess": "Préférences de notification mises à jour avec succès",
-		"saveFailed": "Échec de la mise à jour des préférences : {error}"
+		"saveFailed": "Échec de la mise à jour des préférences : {error}",
+		"typeOrgSetupNudge": "Conseils pour configurer ton organisation",
+		"typeOrgSetupNudgeDescription": "Des rappels occasionnels quand ton organisation est encore privée, a un brouillon oublié ou ne publie plus rien. Au maximum un toutes les deux semaines."
 	},
 	"notificationsPage": {
 		"pageTitle": "Notifications",
@@ -6469,6 +6471,7 @@
 		"quickStopOrgDescription": "Arrête uniquement les e-mails d'annonce de cette organisation. Tu continueras à recevoir ceux des autres organisations.",
 		"quickStopButton": "Arrêter ces e-mails",
 		"quickStopOrgButton": "Arrêter ces annonces",
+		"quickStopOrgSetupNudgeDescription": "Désactive les e-mails uniquement pour les conseils de configuration de ton organisation. Tout le reste ne change pas.",
 		"quickStopSuccessDescription": "C’est fait. Tu ne recevras plus ces e-mails.",
 		"customizeHeading": "Ou ajuste tes notifications",
 		"optOutTitle": "Arrêter les e-mails d'invitation",

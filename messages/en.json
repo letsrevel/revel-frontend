@@ -365,7 +365,9 @@
 		"saving": "Saving...",
 		"cancel": "Cancel",
 		"saveSuccess": "Notification preferences updated successfully",
-		"saveFailed": "Failed to update preferences: {error}"
+		"saveFailed": "Failed to update preferences: {error}",
+		"typeOrgSetupNudge": "Organization setup tips",
+		"typeOrgSetupNudgeDescription": "Occasional reminders when your organization is still private, has a forgotten draft, or has gone quiet. At most one every two weeks."
 	},
 	"notificationList": {
 		"ariaLabel": "Notifications",
@@ -6499,6 +6501,7 @@
 		"quickStopOrgDescription": "Stop announcement emails from this organization only. You'll still hear from other organizations.",
 		"quickStopButton": "Stop these emails",
 		"quickStopOrgButton": "Stop these announcements",
+		"quickStopOrgSetupNudgeDescription": "Turn off email for organization setup tips only. Everything else stays as it is.",
 		"quickStopSuccessDescription": "Done. You won't get these emails anymore.",
 		"customizeHeading": "Or adjust your notifications",
 		"optOutTitle": "Stop invitation emails",
