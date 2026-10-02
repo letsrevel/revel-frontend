@@ -319,8 +319,10 @@ describe('NotificationItem', () => {
 		])('follows action_url for %s', async (_who, actionUrl, expected) => {
 			const notification = createMockNotification({
 				notification_type: 'fiscal_document_skipped',
+				// The real FiscalDocumentSkippedContext: no slug, event or frontend_url.
 				context: {
-					organization_slug: 'compliance-be',
+					organization_id: 'org-1',
+					is_owner: _who === 'owner',
 					document_count: 1,
 					action_url: actionUrl
 				}
@@ -331,8 +333,27 @@ describe('NotificationItem', () => {
 
 			await user.click(screen.getByRole('button', { name: /New Event Invitation/i }));
 
-			// Not the org page the organization_slug fallback would pick.
+			// Without action_url this fell through to the notifications page.
 			expect(goto).toHaveBeenCalledWith(expected);
+		});
+
+		it('keeps frontend_url ahead of action_url (org_setup_nudge sends both)', async () => {
+			const notification = createMockNotification({
+				notification_type: 'org_setup_nudge',
+				context: {
+					frontend_url: 'https://revel.test/org/acme/admin',
+					action_url: 'https://revel.test/org/acme/admin/events'
+				}
+			});
+			const { goto } = await import('$app/navigation');
+			vi.mocked(goto).mockClear();
+
+			renderItem({ notification, authToken: mockAuthToken });
+
+			await user.click(screen.getByRole('button', { name: /New Event Invitation/i }));
+
+			expect(goto).toHaveBeenCalledWith('/org/acme/admin');
+			expect(goto).not.toHaveBeenCalledWith('/org/acme/admin/events');
 		});
 	});
 
