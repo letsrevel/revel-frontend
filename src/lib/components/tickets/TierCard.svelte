@@ -366,17 +366,6 @@
 		<Button disabled class="w-full sm:w-auto">{m['tierCardAdmin.salesPaused']()}</Button>
 	{:else if !availabilityStatus.available}
 		<Button disabled class="w-full sm:w-auto">{m['tierCardAdmin.soldOut']()}</Button>
-	{:else if onlineUnavailable}
-		<Button disabled class="w-full sm:w-auto" aria-describedby="{uid}-online-unavailable">
-			{m['compliance.checkout.notAvailableOnline']()}
-		</Button>
-		<p
-			id="{uid}-online-unavailable"
-			class="max-w-[250px] text-xs text-muted-foreground sm:text-right"
-			data-testid="tier-online-unavailable"
-		>
-			{m['compliance.checkout.fallback']()}
-		</p>
 	{:else if !membershipRestriction.allowed}
 		<!-- User doesn't have required membership tier -->
 		<Button disabled class="w-full sm:w-auto">
@@ -412,6 +401,19 @@
 						: m['tierCardAdmin.notAvailable']()}
 			</p>
 		{/if}
+		<!-- Country rules (#1001): after the sign-in / membership / eligibility
+	     branches, so a buyer who couldn't buy anyway still sees why. -->
+	{:else if onlineUnavailable && canTransact}
+		<Button disabled class="w-full sm:w-auto" aria-describedby="{uid}-online-unavailable">
+			{m['compliance.checkout.notAvailableOnline']()}
+		</Button>
+		<p
+			id="{uid}-online-unavailable"
+			class="max-w-[250px] text-xs text-muted-foreground sm:text-right"
+			data-testid="tier-online-unavailable"
+		>
+			{m['compliance.checkout.fallback']()}
+		</p>
 	{:else if pickSeats && (canClaim || canCheckout || canReserve)}
 		<!-- Seat picker entry point (#853 PR 3): the button stays visible (and
 		     re-openable to edit an existing pick) even when a currency/payment

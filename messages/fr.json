@@ -10122,7 +10122,8 @@
 			"hu": "NAV Online Számla",
 			"ro": "RO e-Factura",
 			"es": "Verifactu",
-			"generic": "le système national de facturation électronique"
+			"generic": "le système national de facturation électronique",
+			"businessGeneric": "le système national de facturation électronique"
 		},
 		"thisCountry": "ce pays",
 		"tier": {

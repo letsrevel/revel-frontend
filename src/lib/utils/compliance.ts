@@ -91,12 +91,24 @@ export function invoicingSystemName(code: string): string {
 			return m['compliance.system.ro']();
 		case 'ES':
 			return m['compliance.system.es']();
+		default:
+			return m['compliance.system.generic']();
+	}
+}
+
+/**
+ * The e-invoicing network named in the business-buyer notice. Kept apart from
+ * `invoicingSystemName`, whose PT values carry the preposition the blocked
+ * template needs ("pelo …"); here the template supplies its own.
+ */
+export function businessInvoicingSystemName(code: string): string {
+	switch (code.toUpperCase()) {
 		case 'BE':
 			return 'Peppol';
 		case 'PL':
 			return 'KSeF';
 		default:
-			return m['compliance.system.generic']();
+			return m['compliance.system.businessGeneric']();
 	}
 }
 
@@ -122,7 +134,10 @@ export function invoicingNotice(
 		const text =
 			compliance.country === 'PL'
 				? m['compliance.invoicing.businessBuyersAll']()
-				: m['compliance.invoicing.businessBuyers']({ country, system });
+				: m['compliance.invoicing.businessBuyers']({
+						country,
+						system: businessInvoicingSystemName(compliance.country)
+					});
 		return { kind: 'business', text };
 	}
 	if (hasUpcomingInvoicingBlock(compliance)) {
