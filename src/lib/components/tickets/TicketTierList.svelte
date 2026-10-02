@@ -98,7 +98,11 @@
 	const hasTiers = $derived(visibleTiers.length > 0);
 
 	// Check if any tier uses online payment
-	const hasOnlinePayment = $derived(visibleTiers.some((tier) => tier.payment_method === 'online'));
+	// Demo test-card hint only when a card checkout is actually on offer (#1001).
+	const hasOnlinePayment = $derived(
+		compliance?.online_payment !== 'blocked' &&
+			visibleTiers.some((tier) => tier.payment_method === 'online')
+	);
 
 	// Check if user is not eligible
 	const shouldShowEligibility = $derived.by(() => {

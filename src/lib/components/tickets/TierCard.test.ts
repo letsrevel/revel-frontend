@@ -209,3 +209,19 @@ describe('TierCard — country rules', () => {
 		expect(screen.queryByTestId('tier-reservation-note')).toBeNull();
 	});
 });
+
+describe('TierCard — country rules precede sign-in', () => {
+	it('tells a logged-out visitor a blocked card tier is not available online', () => {
+		render(TierCard, {
+			props: {
+				tier: makeTier({ payment_method: 'online', price: '20.00' }),
+				isAuthenticated: false,
+				canAttendWithoutLogin: false,
+				onSelectTier: vi.fn(),
+				onlineBlocked: true
+			}
+		});
+		expect(screen.getByRole('button', { name: 'Not available online' })).toBeDisabled();
+		expect(screen.queryByRole('link', { name: /sign in/i })).toBeNull();
+	});
+});

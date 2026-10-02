@@ -377,6 +377,20 @@
 				{membershipRestriction.reason}
 			</p>
 		{/if}
+		<!-- Country rules (#1001): after paused/sold-out/membership, but BEFORE
+	     sign-in: signing in can't make a blocked card tier purchasable, so the
+	     honest answer comes first, for every visitor. -->
+	{:else if onlineUnavailable}
+		<Button disabled class="w-full sm:w-auto" aria-describedby="{uid}-online-unavailable">
+			{m['compliance.checkout.notAvailableOnline']()}
+		</Button>
+		<p
+			id="{uid}-online-unavailable"
+			class="max-w-[250px] text-xs text-muted-foreground sm:text-right"
+			data-testid="tier-online-unavailable"
+		>
+			{m['compliance.checkout.fallback']()}
+		</p>
 	{:else if !isAuthenticated && !canAttendWithoutLogin}
 		<Button href="/login" variant="outline" class="w-full sm:w-auto"
 			>{m['tierCardAdmin.signInToGetTicket']()}</Button
@@ -401,19 +415,6 @@
 						: m['tierCardAdmin.notAvailable']()}
 			</p>
 		{/if}
-		<!-- Country rules (#1001): after the sign-in / membership / eligibility
-	     branches, so a buyer who couldn't buy anyway still sees why. -->
-	{:else if onlineUnavailable && canTransact}
-		<Button disabled class="w-full sm:w-auto" aria-describedby="{uid}-online-unavailable">
-			{m['compliance.checkout.notAvailableOnline']()}
-		</Button>
-		<p
-			id="{uid}-online-unavailable"
-			class="max-w-[250px] text-xs text-muted-foreground sm:text-right"
-			data-testid="tier-online-unavailable"
-		>
-			{m['compliance.checkout.fallback']()}
-		</p>
 	{:else if pickSeats && (canClaim || canCheckout || canReserve)}
 		<!-- Seat picker entry point (#853 PR 3): the button stays visible (and
 		     re-openable to edit an existing pick) even when a currency/payment
