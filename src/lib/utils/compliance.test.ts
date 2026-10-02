@@ -7,7 +7,8 @@ import {
 	isReservationOnly,
 	noticesFor,
 	onlinePaymentBlockedText,
-	restrictionBullets
+	restrictionBullets,
+	tierIsPriced
 } from './compliance';
 
 function org(overrides: Partial<OrganizationComplianceSchema> = {}): OrganizationComplianceSchema {
@@ -136,5 +137,22 @@ describe('event-level helpers', () => {
 		expect(isReservationOnly('IT')).toBe(true);
 		expect(isReservationOnly('')).toBe(false);
 		expect(isReservationOnly(undefined)).toBe(false);
+	});
+});
+
+describe('tierIsPriced', () => {
+	it('matches the backend tier_is_paid rule', () => {
+		expect(tierIsPriced({ price: '10.00', price_type: 'fixed' })).toBe(true);
+		expect(tierIsPriced({ price: '0.00', price_type: 'pwyc' })).toBe(true);
+		expect(tierIsPriced({ price: '0.00', price_type: 'fixed' })).toBe(false);
+		expect(
+			tierIsPriced({
+				price: '0.00',
+				seat_pricing: { categories: [{ price: '0.00' }, { price: '12.50' }] }
+			})
+		).toBe(true);
+		expect(tierIsPriced({ price: '0.00', seat_pricing: { categories: [], unpainted: null } })).toBe(
+			false
+		);
 	});
 });

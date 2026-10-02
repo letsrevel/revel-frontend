@@ -174,3 +174,28 @@ export function onlinePaymentBlockedText(venueCountry: string): string {
 export function isReservationOnly(venueCountry: string | undefined): boolean {
 	return venueCountry === 'IT';
 }
+
+/** The pricing fields of a public tier that decide whether it charges anything. */
+interface PricedTierFields {
+	price?: string | number | null;
+	price_type?: string;
+	seat_pricing?: {
+		categories?: Array<{ price?: string | null }>;
+		unpainted?: string | null;
+	} | null;
+}
+
+/**
+ * Mirrors the backend's `tier_is_paid`: PWYC, a positive flat price, or any
+ * positive category price. A free-priced offline tier (e.g. the auto-created
+ * "General Admission" at 0.00) is not a sale and gets no reservation copy.
+ */
+export function tierIsPriced(tier: PricedTierFields): boolean {
+	if (tier.price_type === 'pwyc') return true;
+	if (Number(tier.price ?? 0) > 0) return true;
+	const categoryPrices = [
+		...(tier.seat_pricing?.categories ?? []).map((c) => c.price),
+		tier.seat_pricing?.unpainted
+	];
+	return categoryPrices.some((price) => Number(price ?? 0) > 0);
+}

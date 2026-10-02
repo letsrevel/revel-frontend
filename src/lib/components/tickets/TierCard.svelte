@@ -17,6 +17,7 @@
 	import TierQuantityStepper from './TierQuantityStepper.svelte';
 	import { tierEntryWindow } from './tier-entry-window';
 	import ComplianceCallout from '$lib/components/compliance/ComplianceCallout.svelte';
+	import { tierIsPriced } from '$lib/utils/compliance';
 
 	interface Props {
 		tier: TierSchemaWithId;
@@ -91,7 +92,9 @@
 	const onlineUnavailable = $derived(onlineBlocked && tier.payment_method === 'online');
 	// The reservation copy belongs to tiers paid to the organizer directly.
 	const showReservationNote = $derived(
-		reservationOnly && (tier.payment_method === 'offline' || tier.payment_method === 'at_the_door')
+		reservationOnly &&
+			(tier.payment_method === 'offline' || tier.payment_method === 'at_the_door') &&
+			tierIsPriced(tier)
 	);
 
 	// A buyer who can transact — authenticated, or a guest the event allows to

@@ -70,6 +70,11 @@ export const PERSONAS = {
 		'testMember',
 		'test.member@example.com',
 		'Eligibility-matrix org member, invited to its private test event'
+	),
+	compliance: persona(
+		'compliance',
+		'test.compliance@example.com',
+		'Owns the per-country compliance-* orgs (Journey 29, create_compliance_fixtures)'
 	)
 } as const satisfies Record<string, Persona>;
 
