@@ -69,6 +69,9 @@
 <Dialog {open} onOpenChange={(v) => !saving && onOpenChange(v)}>
 	<DialogContent
 		class="max-h-[90vh] overflow-y-auto"
+		escapeKeydownBehavior={saving ? 'ignore' : 'close'}
+		interactOutsideBehavior={saving ? 'ignore' : 'close'}
+		showCloseButton={!saving}
 		onOpenAutoFocus={reset}
 		onCloseAutoFocus={(e) => {
 			e.preventDefault();

@@ -63,12 +63,19 @@ test.describe('J29.9 invoices to issue yourself @p2', () => {
 			'Resolving is not undoable; one project owns the row.'
 		);
 		await openList(page, 'compliance-pl');
-		await page.getByRole('button', { name: 'All', exact: true }).click();
-		const row = page.getByTestId('skipped-document-row').filter({ hasText: 'NL123456789B01' });
+		const rows = page.getByTestId('skipped-document-row');
+		await expect(rows.or(page.getByText('Nothing to issue yourself.')).first()).toBeVisible({
+			timeout: 15_000
+		});
+		// Fresh seed: the row is still in "To issue" and leaves the view once
+		// resolved, so focus falls back to the heading. On a rerun it's already
+		// issued: edit it from "All", and focus returns to the row's action.
+		const freshSeed = (await rows.count()) > 0;
+		if (!freshSeed) await page.getByRole('button', { name: 'All', exact: true }).click();
+		const row = rows.filter({ hasText: 'NL123456789B01' });
 		await expect(row).toBeVisible({ timeout: 15_000 });
 
-		const action = row.getByRole('button', { name: /Mark as issued|Edit reference/ });
-		await action.click();
+		await row.getByRole('button', { name: /Mark as issued|Edit reference/ }).click();
 		const dialog = page.getByRole('dialog', { name: 'Mark as issued' });
 		const input = dialog.getByLabel('Document number in your system');
 
@@ -81,10 +88,17 @@ test.describe('J29.9 invoices to issue yourself @p2', () => {
 		await input.fill(reference);
 		await dialog.getByRole('button', { name: 'Save' }).click();
 		await expect(dialog).not.toBeVisible();
+
+		if (freshSeed) {
+			await expect(row).toHaveCount(0);
+			await expect(page.getByRole('heading', { name: TITLE, level: 1 })).toBeFocused();
+			await page.getByRole('button', { name: 'Issued', exact: true }).click();
+		}
 		await expect(row).toContainText('Issued');
 		await expect(row).toContainText(`Ref. ${reference}`);
-		// Focus comes back to the row's action.
-		await expect(row.getByRole('button', { name: /Edit reference/ })).toBeFocused();
+		if (!freshSeed) {
+			await expect(row.getByRole('button', { name: /Edit reference/ })).toBeFocused();
+		}
 	});
 
 	test('ticket list flags the skipped sale and filters on it', async ({ asCompliance: page }) => {

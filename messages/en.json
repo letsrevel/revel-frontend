@@ -10112,7 +10112,8 @@
 			"upcomingEs": "From 1 January 2027, Revel will stop issuing attendee invoices for organizations in Spain, because of the new Verifactu rules. Until then, everything works as usual. Plan to issue invoices from Verifactu-compliant software by that date.",
 			"businessBuyers": "Invoices to customers with a {country} VAT ID must be sent as e-invoices through {system}. Revel won't create those. Issue them from your e-invoicing software. Invoices to everyone else work as usual.",
 			"businessBuyersAll": "Invoices to business customers must be issued through KSeF. Revel won't create those. Issue them from your e-invoicing software. Invoices to consumers work as usual.",
-			"draftNotIssuable": "This invoice can't be issued from Revel anymore. Issue it from your own invoicing software."
+			"draftNotIssuable": "This invoice can't be issued from Revel anymore. Issue it from your own invoicing software.",
+			"cannotIssue": "Can't be issued"
 		},
 		"system": {
 			"hr": "the Tax Administration's fiscalization system",
@@ -10178,7 +10179,7 @@
 			"viewTickets": "View tickets",
 			"deletedEvent": "Deleted event",
 			"buyerVatId": "VAT ID {vatId}",
-			"resolveDescription": "Issue this document from your own system, then enter its number there.",
+			"resolveDescription": "Issue this document from your own system, then enter its number here.",
 			"save": "Save",
 			"saved": "Marked as issued",
 			"saveFailed": "Couldn't save the document number.",

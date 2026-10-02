@@ -96,6 +96,11 @@
 						},
 						headers: { Authorization: `Bearer ${accessToken}` }
 					});
+					// Out-of-range page (rows resolved elsewhere): the API answers 404,
+					// so go back to the first page instead of stranding the view.
+					if (response.response?.status === 404 && currentPage > 1) {
+						queueMicrotask(() => (currentPage = 1));
+					}
 					if (response.error || !response.data)
 						throw new Error(m['compliance.skipped.loadFailed']());
 					return response.data;
@@ -121,12 +126,21 @@
 	async function saveReference(reference: string): Promise<void> {
 		const doc = resolving;
 		if (!doc) return;
-		const response = await organizationadminvatResolveSkippedFiscalDocument({
-			path: { slug, document_id: doc.id },
-			body: { external_reference: reference },
-			headers: { Authorization: `Bearer ${accessToken}` }
-		});
+		let response;
+		try {
+			response = await organizationadminvatResolveSkippedFiscalDocument({
+				path: { slug, document_id: doc.id },
+				body: { external_reference: reference },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+		} catch {
+			throw new Error(resolveErrorMessage(undefined));
+		}
 		if (response.error || !response.data) throw new Error(resolveErrorMessage(response.error));
+		// The last row of a later page leaves the "To issue" view: step back,
+		// or the refetch asks for a page that no longer exists.
+		const rowsHere = documentsQuery?.data?.results.length ?? 0;
+		if (statusFilter === 'open' && rowsHere === 1 && currentPage > 1) currentPage -= 1;
 		// Refetch before the dialog closes, so focus lands on the list as it now is.
 		await queryClient.invalidateQueries({ queryKey: ['skipped-fiscal-documents', slug] });
 		toast.success(m['compliance.skipped.saved']());
@@ -161,11 +175,10 @@
 			<ArrowLeft class="h-5 w-5" />
 		</a>
 		<PageHeader
-			id="{uid}-heading"
-			tabindex={-1}
+			titleAttrs={{ id: `${uid}-heading`, tabindex: -1 }}
 			title={m['compliance.skipped.title']()}
 			subtitle={m['compliance.skipped.intro']()}
-			class="flex-1 focus:outline-none"
+			class="flex-1"
 		/>
 	</div>
 

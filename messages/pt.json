@@ -10112,7 +10112,8 @@
 			"upcomingEs": "A partir de 1 de janeiro de 2027, a Revel deixará de emitir faturas aos participantes para organizações em Espanha, devido às novas regras Verifactu. Até lá, tudo funciona como habitualmente. Prepara-te para emitir faturas com software compatível com Verifactu até essa data.",
 			"businessBuyers": "As faturas a clientes com número de IVA deste país ({country}) têm de ser enviadas como faturas eletrónicas através do {system}. A Revel não as cria. Emite-as no teu software de faturação eletrónica. As faturas a todos os outros funcionam como habitualmente.",
 			"businessBuyersAll": "As faturas a clientes empresariais têm de ser emitidas através do KSeF. A Revel não as cria. Emite-as no teu software de faturação eletrónica. As faturas a particulares funcionam como habitualmente.",
-			"draftNotIssuable": "Esta fatura já não pode ser emitida pela Revel. Emite-a no teu próprio software de faturação."
+			"draftNotIssuable": "Esta fatura já não pode ser emitida pela Revel. Emite-a no teu próprio software de faturação.",
+			"cannotIssue": "Não pode ser emitida"
 		},
 		"system": {
 			"hr": "pelo sistema de fiscalização da Administração Tributária",

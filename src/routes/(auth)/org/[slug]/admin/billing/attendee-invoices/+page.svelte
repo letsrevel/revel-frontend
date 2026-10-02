@@ -181,7 +181,14 @@
 					toast.success(m['orgAdmin.billing.attendeeInvoices.issued']());
 				},
 				onError: (error: Error) => {
-					if (!issueRefusal) toast.error(error.message);
+					if (!issueRefusal) {
+						toast.error(error.message);
+						return;
+					}
+					// The rules changed after the list loaded: refetch so the draft
+					// shows as blocked (issue_blocked_reason) everywhere.
+					queryClient.invalidateQueries({ queryKey: ['attendee-invoices', slug] });
+					queryClient.invalidateQueries({ queryKey: ['attendee-invoice-detail', slug] });
 				}
 			}))
 		: null;
@@ -367,10 +374,20 @@
 								<div class="text-xs text-muted-foreground">{invoice.buyer_email}</div>
 							</td>
 							<td class="px-4 py-3">
-								<StatusBadge
-									tone={statusTone(invoice.status)}
-									label={statusLabel(invoice.status)}
-								/>
+								<div class="flex flex-wrap items-center gap-1">
+									<StatusBadge
+										tone={statusTone(invoice.status)}
+										label={statusLabel(invoice.status)}
+									/>
+									{#if invoice.status === 'draft' && invoice.issue_blocked_reason}
+										<StatusBadge
+											tone="warning"
+											size="sm"
+											label={m['compliance.invoicing.cannotIssue']()}
+											data-testid="issue-blocked-badge"
+										/>
+									{/if}
+								</div>
 							</td>
 							<td class="px-4 py-3 text-right font-mono"
 								>{formatCurrency(invoice.total_gross, invoice.currency)}</td

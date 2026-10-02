@@ -97,7 +97,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 	// Sales whose attendee invoice Revel skipped under a country policy (#1008);
 	// how staff, who can't see the owner-only list, find them.
 	const invoiceSkipped = z
-		.enum(['true', 'false'])
+		.enum(['true'])
 		.optional()
 		.catch(undefined)
 		.parse(url.searchParams.get('invoice_skipped') || undefined);
@@ -163,7 +163,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 				utm_source: utmSource,
 				utm_campaign: utmCampaign,
 				source,
-				...(invoiceSkipped ? { invoice_skipped: invoiceSkipped === 'true' } : {}),
+				...(invoiceSkipped ? { invoice_skipped: true } : {}),
 				search,
 				order_by: orderBy,
 				page,

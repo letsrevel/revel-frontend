@@ -10112,7 +10112,8 @@
 			"upcomingEs": "A partir del 1 de enero de 2027, Revel dejará de emitir facturas a asistentes para organizaciones en España, por la nueva normativa Verifactu. Hasta entonces, todo funciona con normalidad. Prepárate para emitir las facturas con un software compatible con Verifactu antes de esa fecha.",
 			"businessBuyers": "Las facturas a clientes con NIF-IVA de {country} deben enviarse como factura electrónica a través de {system}. Revel no las crea. Emítelas desde tu software de facturación electrónica. Las facturas al resto funcionan con normalidad.",
 			"businessBuyersAll": "Las facturas a clientes empresariales deben emitirse a través de KSeF. Revel no las crea. Emítelas desde tu software de facturación electrónica. Las facturas a particulares funcionan con normalidad.",
-			"draftNotIssuable": "Esta factura ya no se puede emitir desde Revel. Emítela desde tu propio software de facturación."
+			"draftNotIssuable": "Esta factura ya no se puede emitir desde Revel. Emítela desde tu propio software de facturación.",
+			"cannotIssue": "No se puede emitir"
 		},
 		"system": {
 			"hr": "el sistema de fiscalización de la Administración tributaria",

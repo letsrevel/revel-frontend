@@ -10112,7 +10112,8 @@
 			"upcomingEs": "À partir du 1er janvier 2027, Revel n'émettra plus de factures aux participant·es pour les organisations en Espagne, en raison des nouvelles règles Verifactu. D'ici là, tout fonctionne comme d'habitude. Prévois d'émettre tes factures avec un logiciel conforme à Verifactu d'ici cette date.",
 			"businessBuyers": "Les factures aux client·es ayant un numéro de TVA de ce pays ({country}) doivent être envoyées en facture électronique via {system}. Revel ne les crée pas. Émets-les depuis ton logiciel de facturation électronique. Les factures à tous les autres fonctionnent comme d'habitude.",
 			"businessBuyersAll": "Les factures aux client·es professionnel·les doivent être émises via KSeF. Revel ne les crée pas. Émets-les depuis ton logiciel de facturation électronique. Les factures aux particuliers fonctionnent comme d'habitude.",
-			"draftNotIssuable": "Cette facture ne peut plus être émise depuis Revel. Émets-la depuis ton propre logiciel de facturation."
+			"draftNotIssuable": "Cette facture ne peut plus être émise depuis Revel. Émets-la depuis ton propre logiciel de facturation.",
+			"cannotIssue": "Impossible à émettre"
 		},
 		"system": {
 			"hr": "le système de fiscalisation de l'administration fiscale",
@@ -10152,8 +10153,8 @@
 			"kindInvoice": "Facture",
 			"kindCreditNote": "Avoir",
 			"statusOpen": "À émettre",
-			"statusDone": "Émise",
-			"markIssued": "Marquer comme émise",
+			"statusDone": "Document émis",
+			"markIssued": "Marquer le document comme émis",
 			"editReference": "Modifier le numéro",
 			"referenceLabel": "Numéro du document dans ton système",
 			"referenceHint": "Tu pourras le modifier plus tard.",
@@ -10180,7 +10181,7 @@
 			"buyerVatId": "N° TVA {vatId}",
 			"resolveDescription": "Émets ce document depuis ton propre système, puis saisis ici son numéro.",
 			"save": "Enregistrer",
-			"saved": "Marquée comme émise",
+			"saved": "Document marqué comme émis",
 			"saveFailed": "Impossible d'enregistrer le numéro du document.",
 			"loadFailed": "Impossible de charger les factures à émettre toi-même.",
 			"referenceRequired": "Saisis le numéro du document."
