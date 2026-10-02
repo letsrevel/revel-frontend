@@ -450,9 +450,7 @@
 		{platformFees}
 		{membershipTiers}
 		eventVenueId={formData.venue_id || null}
-		{compliance}
-		{complianceStatus}
-		onRetryCompliance={() => complianceQuery.refetch()}
+		rules={{ compliance, status: complianceStatus, onRetry: () => complianceQuery.refetch() }}
 		eventContext={{
 			start: formData.start ?? '',
 			end: formData.end,

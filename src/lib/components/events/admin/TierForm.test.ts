@@ -46,7 +46,10 @@ const pausedOnlineTier = {
 	purchasable_by: 'public'
 } as TicketTierDetailSchema;
 
-function renderForm(tier: TicketTierDetailSchema | null = pausedOnlineTier) {
+function renderForm(
+	tier: TicketTierDetailSchema | null = pausedOnlineTier,
+	extraProps: Record<string, unknown> = {}
+) {
 	const onClose = vi.fn();
 	// Mirrors the app QueryClient: a default mutations.onError (the global
 	// "Action failed" toast in +layout.svelte) that skips errors marked
@@ -68,7 +71,8 @@ function renderForm(tier: TicketTierDetailSchema | null = pausedOnlineTier) {
 				eventId: 'evt-1',
 				organizationSlug: 'acme',
 				organizationStripeConnected: false,
-				onClose
+				onClose,
+				...extraProps
 			}
 		}
 	});
@@ -143,5 +147,35 @@ describe('TierForm API error surfacing', () => {
 			expect(screen.getByText('You must connect to Stripe first.')).toBeInTheDocument()
 		);
 		expect(onClose).not.toHaveBeenCalled();
+	});
+});
+
+// #1001: with the event's country rules still loading (or failed), a card tier
+// can't be vouched for — its save waits; a known-blocked legacy card tier still
+// saves (rename / pause are allowed, Journey 29.3).
+describe('TierForm — country rules gate', () => {
+	beforeEach(() => vi.clearAllMocks());
+
+	it('holds the save of a card tier while the rules are loading', () => {
+		renderForm(pausedOnlineTier, { rules: { compliance: null, status: 'loading' } });
+		const save = screen.getByRole('button', { name: 'Save Changes' });
+		expect(save).toBeDisabled();
+		expect(save).toHaveAccessibleDescription(/Checking this event's country rules/);
+	});
+
+	it('lets a known-blocked legacy card tier save (rename / pause)', () => {
+		renderForm(pausedOnlineTier, {
+			rules: {
+				compliance: {
+					venue_country: 'IT',
+					online_payment: 'blocked',
+					offline_payment: 'allowed',
+					attendee_invoicing: 'allowed',
+					notices: []
+				},
+				status: 'ready'
+			}
+		});
+		expect(screen.getByRole('button', { name: 'Save Changes' })).toBeEnabled();
 	});
 });

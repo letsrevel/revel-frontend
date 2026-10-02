@@ -17,8 +17,7 @@
 		VenueDetailSchema,
 		VenueChartSchema,
 		SeatAssignmentMode,
-		RefundPolicy,
-		EventComplianceSchema
+		RefundPolicy
 	} from '$lib/api/generated/types.gen';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
@@ -54,7 +53,7 @@
 		retainedSectorIdForMode
 	} from './tier-seating-payload';
 	import { Undo2 } from '@lucide/svelte';
-	import type { ComplianceStatus } from '$lib/utils/compliance';
+	import type { EventRules } from '$lib/utils/compliance';
 	import { formatDateTimeReadback } from '$lib/utils/date';
 	import type { PlatformFeeInfo } from '$lib/utils/fees';
 
@@ -69,11 +68,8 @@
 		eventVenueId?: string | null; // Pre-fill venue from event
 		/** The event form's start/end/check-in window the tier offsets are relative to. */
 		eventContext?: TierCheckInEventContext;
-		/** The event's country rules (#1001); null until loaded. */
-		compliance?: EventComplianceSchema | null;
-		/** Whether `compliance` has loaded; card payment stays off until it has. */
-		complianceStatus?: ComplianceStatus;
-		onRetryCompliance?: () => void;
+		/** The event's country rules (#1001) and whether they've loaded (fails closed). */
+		rules?: EventRules;
 		onClose: () => void;
 	}
 
@@ -86,9 +82,7 @@
 		membershipTiers = [],
 		eventVenueId = null,
 		eventContext = { start: '' },
-		compliance = null,
-		complianceStatus = 'ready',
-		onRetryCompliance,
+		rules = { compliance: null, status: 'ready' },
 		onClose
 	}: Props = $props();
 
@@ -324,8 +318,7 @@
 	// "Action failed" toast from duplicating that panel (the RefundTicketDialog
 	// convention); the body is thrown unwrapped so extractFieldErrors still
 	// sees the pydantic detail array.
-	// HTTP status of the last save: a 422 with a plain `detail` (not field
-	// errors) is a country-rule refusal (#1001), which gets the location hint.
+	// Last save's HTTP status: a plain-detail 422 is a country-rule refusal (#1001).
 	let saveStatus = $state<number | undefined>(undefined);
 
 	const tierCreateMutation = createMutation(() => ({
@@ -376,8 +369,12 @@
 		}
 	}));
 
+	// Card + unknown rules: hold the save. Known-blocked legacy card tiers still save (J29.3).
+	const onlineSaveHeld = $derived(rules.status !== 'ready' && paymentMethod === 'online');
+
 	function handleSubmit(e: Event) {
 		e.preventDefault();
+		if (onlineSaveHeld) return;
 
 		// Determine the price value based on payment method and price type
 		// Normalize all decimal values to ensure dots (not commas) as decimal separator
@@ -522,9 +519,9 @@
 				bind:paymentMethod
 				{isPending}
 				{organizationStripeConnected}
-				{compliance}
-				{complianceStatus}
-				{onRetryCompliance}
+				compliance={rules.compliance}
+				complianceStatus={rules.status}
+				onRetryCompliance={rules.onRetry}
 			/>
 
 			<!-- Price Settings (if not free) -->
@@ -690,10 +687,12 @@
 					<Button
 						type="submit"
 						disabled={isPending ||
+							onlineSaveHeld ||
 							!name.trim() ||
 							!sectorValid ||
 							!checkInPicksValid(eventContext.start, checkInPicks) ||
 							(paymentMethod !== 'free' && allowUserCancellation && !refundPolicyValid)}
+						aria-describedby={onlineSaveHeld ? 'tier-online-blocked' : undefined}
 					>
 						{isPending
 							? m['tierForm.saving']()

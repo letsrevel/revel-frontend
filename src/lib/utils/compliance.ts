@@ -18,6 +18,13 @@ import type {
 /** Load state of an event's `compliance`; anything but `ready` fails closed. */
 export type ComplianceStatus = 'loading' | 'error' | 'ready';
 
+/** An event's rules as the tier editor consumes them: data, load state, retry. */
+export interface EventRules {
+	compliance: EventComplianceSchema | null;
+	status: ComplianceStatus;
+	onRetry?: () => void;
+}
+
 /** EU member states: the only countries Revel checks rules for. */
 export const EU_COUNTRY_CODES: ReadonlySet<string> = new Set([
 	'AT',
