@@ -10140,7 +10140,8 @@
 		"checkout": {
 			"fallback": "Questo biglietto non si può acquistare online. Contatta l'organizzazione per sapere come pagare.",
 			"notAvailableOnline": "Non disponibile online",
-			"reservation": "Paghi direttamente l'organizzazione. Il tuo biglietto Revel è una prenotazione; il titolo d'accesso fiscale te lo dà l'organizzazione."
+			"reservation": "Paghi direttamente l'organizzazione. Il tuo biglietto Revel è una prenotazione; il titolo d'accesso fiscale te lo dà l'organizzazione.",
+			"passFallback": "Questo pass non si può acquistare online. Contatta l'organizzazione per sapere come pagare."
 		},
 		"ticket": {
 			"linesTitle": "Dettagli del biglietto"

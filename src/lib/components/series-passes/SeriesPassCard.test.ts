@@ -41,6 +41,7 @@ function mockQuote(quote: Partial<SeriesPassQuoteSchema> = {}) {
 			currency: 'EUR',
 			purchasable: true,
 			reason: null,
+			compliance: { online_payment: 'allowed' },
 			...quote
 		},
 		error: undefined,
@@ -122,6 +123,47 @@ describe('SeriesPassCard', () => {
 		renderCard(makePass({ payment_method: 'offline' }));
 		await waitFor(() => {
 			expect(screen.getByText(/pay at the venue/i)).toBeInTheDocument();
+		});
+	});
+
+	// #1005: the checkout gate's decision, read off the quote.
+	describe('country rules', () => {
+		it('shows a disabled "Not available online" with its reason when blocked', async () => {
+			mockQuote({ compliance: { online_payment: 'blocked' } });
+			renderCard(makePass());
+			const button = await screen.findByRole('button', { name: 'Not available online' });
+			expect(button).toBeDisabled();
+			expect(button).toHaveAccessibleDescription(
+				"This pass can't be bought online. Contact the organizer to find out how to pay."
+			);
+			expect(screen.queryByRole('button', { name: 'Get season pass' })).toBeNull();
+			expect(screen.queryByRole('dialog')).toBeNull();
+		});
+
+		it('comes before the sign-in redirect for anonymous visitors', async () => {
+			mockQuote({ compliance: { online_payment: 'blocked' } });
+			renderCard(makePass(), false);
+			expect(await screen.findByRole('button', { name: 'Not available online' })).toBeDisabled();
+		});
+
+		it('defers to the not-purchasable reason (sold out, sales window)', async () => {
+			mockQuote({
+				purchasable: false,
+				reason: 'Sold out',
+				compliance: { online_payment: 'blocked' }
+			});
+			renderCard(makePass());
+			expect(await screen.findByText('Sold out')).toBeInTheDocument();
+			expect(screen.queryByRole('button', { name: 'Not available online' })).toBeNull();
+		});
+
+		it('keeps the regular call to action when allowed', async () => {
+			mockQuote({ compliance: { online_payment: 'allowed' } });
+			renderCard(makePass());
+			await waitFor(() =>
+				expect(screen.getByRole('button', { name: 'Get season pass' })).toBeEnabled()
+			);
+			expect(screen.queryByRole('button', { name: 'Not available online' })).toBeNull();
 		});
 	});
 });

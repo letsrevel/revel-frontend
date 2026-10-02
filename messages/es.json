@@ -10140,7 +10140,8 @@
 		"checkout": {
 			"fallback": "Esta entrada no se puede comprar online. Contacta con la organización para saber cómo pagar.",
 			"notAvailableOnline": "No disponible online",
-			"reservation": "Pagarás directamente a la organización. Tu entrada de Revel es una reserva; la organización te entrega la entrada fiscal."
+			"reservation": "Pagarás directamente a la organización. Tu entrada de Revel es una reserva; la organización te entrega la entrada fiscal.",
+			"passFallback": "Este pase no se puede comprar online. Contacta con la organización para saber cómo pagar."
 		},
 		"ticket": {
 			"linesTitle": "Detalles de la entrada"

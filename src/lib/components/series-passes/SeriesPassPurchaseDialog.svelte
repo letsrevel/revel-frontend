@@ -72,7 +72,7 @@
 				body: { attribution: readAttributionFromCurrentUrl() }
 			});
 			if (response.response?.status === 422) {
-				refusal = extractErrorMessage(response.error, m['compliance.checkout.fallback']());
+				refusal = extractErrorMessage(response.error, m['compliance.checkout.passFallback']());
 				throw new Error(refusal);
 			}
 			if (response.error || !response.data) {
