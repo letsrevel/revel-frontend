@@ -10122,7 +10122,7 @@
 			"blockedEsNc": "A Revel não emite faturas aos participantes para organizações em Espanha, incluindo Navarra. Navarra está a introduzir as suas próprias regras sobre software de faturação (NaTicket), e a Revel não está ligada a elas. Emite as faturas a partir do teu próprio software de faturação."
 		},
 		"system": {
-			"hr": "pelo sistema de fiscalização da Administração Tributária",
+			"hr": "pelo sistema de fiscalização da Administração Fiscal",
 			"si": "pela verificação de faturas da FURS",
 			"gr": "pelo myDATA",
 			"pt": "por software de faturação certificado",
@@ -10134,7 +10134,7 @@
 		},
 		"thisCountry": "este país",
 		"tier": {
-			"onlineBlockedIt": "Os pagamentos online com cartão não estão disponíveis para eventos em Itália. A lei italiana exige que os bilhetes pagos vendidos online sejam emitidos por um sistema de bilheteira aprovado pela Agenzia delle Entrate, e a Revel ainda não está aprovada. Podes continuar a vender bilhetes pagos com pagamento à entrada ou por transferência bancária e confirmar os pagamentos no teu painel. O bilhete fiscal (titolo d'accesso) tens de ser tu a emiti-lo.",
+			"onlineBlockedIt": "Os pagamentos online com cartão não estão disponíveis para eventos em Itália. A lei italiana exige que os bilhetes pagos vendidos online sejam emitidos por um sistema de bilhética aprovado pela Agenzia delle Entrate, e a Revel ainda não está aprovada. Podes continuar a vender bilhetes pagos com pagamento à entrada ou por transferência bancária e confirmar os pagamentos no teu painel. O bilhete fiscal (titolo d'accesso) tens de ser tu a emiti-lo.",
 			"onlineBlocked": "Os pagamentos online com cartão não estão disponíveis para eventos neste país ({country}) devido às regras fiscais locais. Podes continuar a vender bilhetes pagos com pagamento à entrada ou por transferência bancária.",
 			"onlineUnavailableSuffix": "(não disponível para este evento)",
 			"legacyOnlineBanner": "Este tipo de bilhete usa pagamento online com cartão, que não está disponível para eventos neste país ({country}). Muda para pagamento à entrada ou por transferência bancária para continuar a vender.",
