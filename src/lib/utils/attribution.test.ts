@@ -8,6 +8,7 @@ import {
 	tagLandingCtaHref
 } from './attribution';
 import { registrationReturnUrl, safeReturnUrl } from './safe-redirect';
+import { landingPages } from '$lib/data/landing-pages';
 
 describe('sanitizeUtmValue', () => {
 	it.each([
@@ -155,6 +156,20 @@ describe('landing CTA tags (#1002)', () => {
 		expect(registrationReturnUrl(returnUrl)).toBe(tagged);
 	});
 
+	it('carries an inbound campaign verbatim instead of the landing defaults (#880 rule)', () => {
+		const current = new URL(
+			'http://x/eventbrite-alternative?utm_source=instagram&utm_campaign=spring&utm_medium=bad%20value'
+		);
+		expect(landingCreateOrgPath('eventbrite-alternative', 'hero', current)).toBe(
+			'/create-org?utm_source=instagram&utm_campaign=spring'
+		);
+	});
+
+	it('ignores inbound tags without a valid utm_source', () => {
+		const current = new URL('http://x/?utm_campaign=spring');
+		expect(landingCreateOrgPath('eventbrite-alternative', 'hero', current)).toBe(tagged);
+	});
+
 	it('tags /create-org directly', () => {
 		expect(tagLandingCtaHref('/create-org', 'eventbrite-alternative', 'hero')).toBe(tagged);
 	});
@@ -162,6 +177,16 @@ describe('landing CTA tags (#1002)', () => {
 	it('leaves every other href alone', () => {
 		for (const href of ['https://demo.letsrevel.io', 'mailto:contact@letsrevel.io', '/events']) {
 			expect(tagLandingCtaHref(href, 'home', 'hero')).toBe(href);
+		}
+	});
+});
+
+describe('landing slugs as utm_campaign (#1002)', () => {
+	it('every landing slug survives the sanitiser, so no campaign is silently dropped', () => {
+		for (const pages of Object.values(landingPages)) {
+			for (const page of Object.values(pages)) {
+				expect(sanitizeUtmValue(page.slug)).toBe(page.slug);
+			}
 		}
 	});
 });

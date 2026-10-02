@@ -8,6 +8,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { cn } from '$lib/utils';
 	import { tagLandingCtaHref } from '$lib/utils/attribution';
+	import { page } from '$app/state';
 	import * as m from '$lib/paraglide/messages.js';
 	import ToneTile from '$lib/components/common/ToneTile.svelte';
 	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
@@ -182,7 +183,7 @@
 								? 'secondary'
 								: 'outline'}
 					<Button
-						href={tagLandingCtaHref(button.href, content.slug, 'hero')}
+						href={tagLandingCtaHref(button.href, content.slug, 'hero', page.url)}
 						{variant}
 						size="lg"
 						class={ctaButtonClass(button.variant)}
@@ -388,7 +389,7 @@
 		<div class="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
 			{#each content.cta.buttons as button (button.text)}
 				<Button
-					href={tagLandingCtaHref(button.href, content.slug, 'close')}
+					href={tagLandingCtaHref(button.href, content.slug, 'close', page.url)}
 					variant={button.variant === 'primary'
 						? 'default'
 						: button.variant === 'secondary'

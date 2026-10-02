@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import * as m from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import RevelMark from '$lib/components/brand/RevelMark.svelte';
@@ -18,9 +19,8 @@
 
 	// Sign-up continues to the tagged create-org page, so the new org is
 	// attributed to this CTA (#1002).
-	const registerHref = withReturnUrl(
-		resolve('/(public)/register', {}),
-		landingCreateOrgPath('home', 'hero')
+	const registerHref = $derived(
+		withReturnUrl(resolve('/(public)/register', {}), landingCreateOrgPath('home', 'hero', page.url))
 	);
 
 	/**
