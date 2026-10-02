@@ -10133,7 +10133,7 @@
 			"legacyOnlineBanner": "Questa tipologia usa il pagamento online con carta, che non è disponibile per gli eventi in {country}. Passa al pagamento all'ingresso o tramite bonifico per continuare a vendere.",
 			"changePaymentMethod": "Cambia metodo di pagamento",
 			"locationHint": "Le regole per i pagamenti online dipendono dal luogo in cui si svolge l'evento.",
-			"checking": "Stiamo verificando le regole del paese per questo evento… I pagamenti con carta saranno disponibili appena caricate.",
+			"checking": "Stiamo verificando le regole del paese per questo evento… I pagamenti con carta restano disattivati finché la verifica non è completa.",
 			"checkFailed": "Non siamo riusciti a verificare le regole del paese per questo evento, quindi per ora i pagamenti con carta restano disattivati. Riprova o scegli un altro metodo di pagamento.",
 			"retry": "Riprova"
 		},

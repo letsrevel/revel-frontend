@@ -10133,7 +10133,7 @@
 			"legacyOnlineBanner": "This tier uses online card payment, which isn't available for events in {country}. Switch it to payment at the door or bank transfer to keep selling.",
 			"changePaymentMethod": "Change payment method",
 			"locationHint": "Rules for online payments depend on where the event takes place.",
-			"checking": "Checking this event's country rules… Card payments are available once they've loaded.",
+			"checking": "Checking this event's country rules… Card payments stay off until the check is complete.",
 			"checkFailed": "We couldn't check this event's country rules, so card payments stay off for now. Try again, or pick another payment method.",
 			"retry": "Try again"
 		},

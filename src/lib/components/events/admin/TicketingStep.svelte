@@ -109,8 +109,16 @@
 		refetchOnMount: 'always' as const
 	}));
 	const compliance = $derived(complianceQuery.data ?? null);
+	// An in-flight fetch counts as loading even with cached data: after a venue
+	// change, the cached "allowed" may be stale until the refetch lands.
 	const complianceStatus = $derived<ComplianceStatus>(
-		complianceQuery.isSuccess ? 'ready' : complianceQuery.isError ? 'error' : 'loading'
+		complianceQuery.isFetching
+			? 'loading'
+			: complianceQuery.isSuccess
+				? 'ready'
+				: complianceQuery.isError
+					? 'error'
+					: 'loading'
 	);
 	const onlineBlocked = $derived(compliance?.online_payment === 'blocked');
 
