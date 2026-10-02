@@ -10148,7 +10148,7 @@
 			"linesTitle": "Dettagli del biglietto"
 		},
 		"skipped": {
-			"title": "Fatture da emettere in proprio",
+			"title": "Documenti da emettere in proprio",
 			"intro": "Per legge queste fatture e note di credito devono passare da un sistema nazionale di fatturazione elettronica o di fiscalizzazione, quindi Revel non le ha emesse. Emettile dal tuo sistema e poi segnale come emesse.",
 			"kindInvoice": "Fattura",
 			"kindCreditNote": "Nota di credito",
@@ -10173,7 +10173,7 @@
 			"filterKind": "Tipo di documento",
 			"filterKindAll": "Tutti i documenti",
 			"searchPlaceholder": "Cerca acquirente, partita IVA o evento",
-			"searchLabel": "Cerca nelle fatture da emettere in proprio",
+			"searchLabel": "Cerca nei documenti da emettere in proprio",
 			"reference": "Rif. {reference}",
 			"correctsInvoice": "Rettifica {number}",
 			"viewTickets": "Vedi i biglietti",
@@ -10183,7 +10183,7 @@
 			"save": "Salva",
 			"saved": "Segnata come emessa",
 			"saveFailed": "Impossibile salvare il numero del documento.",
-			"loadFailed": "Impossibile caricare le fatture da emettere in proprio.",
+			"loadFailed": "Impossibile caricare i documenti da emettere in proprio.",
 			"referenceRequired": "Inserisci il numero del documento."
 		}
 	}

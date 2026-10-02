@@ -2,13 +2,13 @@ import { test, expect, type Page } from '../../support/fixtures';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 import { fixtureEvent } from './helpers';
 
-// J29.9 (USER_JOURNEYS.md) — invoices Revel skipped under a country policy
+// J29.9 (USER_JOURNEYS.md) — invoices and credit notes Revel skipped under a country policy
 // (#1008). compliance-be and compliance-pl each have one skipped B2B invoice.
 // compliance-be stays read-only. The resolve spec runs on compliance-pl, in
 // one project only: the API has no "unresolve", so it can't put the row back
 // (a reseed reopens it). It works from either state, so reruns pass.
 
-const TITLE = 'Invoices to issue yourself';
+const TITLE = 'Documents to issue yourself';
 
 async function openList(page: Page, orgSlug: string): Promise<void> {
 	await gotoHydrated(page, `/org/${orgSlug}/admin/billing/skipped-documents`);
@@ -18,7 +18,7 @@ async function openList(page: Page, orgSlug: string): Promise<void> {
 	});
 }
 
-test.describe('J29.9 invoices to issue yourself @p2', () => {
+test.describe('J29.9 documents to issue yourself @p2', () => {
 	test('billing links to the list, which shows the Belgian B2B sale', async ({
 		asCompliance: page
 	}) => {
@@ -50,10 +50,12 @@ test.describe('J29.9 invoices to issue yourself @p2', () => {
 		const rows = page.getByTestId('skipped-document-row');
 		await expect(rows).toHaveCount(1, { timeout: 15_000 });
 		await page
-			.getByRole('searchbox', { name: 'Search invoices to issue yourself' })
+			.getByRole('searchbox', { name: 'Search documents to issue yourself' })
 			.fill('nomatch');
 		await expect(page.getByText('No documents match these filters.')).toBeVisible();
-		await page.getByRole('searchbox', { name: 'Search invoices to issue yourself' }).fill('BE0123');
+		await page
+			.getByRole('searchbox', { name: 'Search documents to issue yourself' })
+			.fill('BE0123');
 		await expect(rows).toHaveCount(1);
 	});
 

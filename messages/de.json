@@ -10148,7 +10148,7 @@
 			"linesTitle": "Ticketangaben"
 		},
 		"skipped": {
-			"title": "Selbst auszustellende Rechnungen",
+			"title": "Selbst auszustellende Dokumente",
 			"intro": "Laut Gesetz müssen diese Rechnungen und Gutschriften über ein staatliches E-Rechnungs- oder Fiskalsystem laufen, daher hat Revel sie nicht ausgestellt. Stelle sie in deinem eigenen System aus und markiere sie dann als ausgestellt.",
 			"kindInvoice": "Rechnung",
 			"kindCreditNote": "Gutschrift",
@@ -10173,7 +10173,7 @@
 			"filterKind": "Belegart",
 			"filterKindAll": "Alle Belege",
 			"searchPlaceholder": "Käufer*in, USt-IdNr. oder Veranstaltung suchen",
-			"searchLabel": "Selbst auszustellende Rechnungen durchsuchen",
+			"searchLabel": "Selbst auszustellende Dokumente durchsuchen",
 			"reference": "Nr. {reference}",
 			"correctsInvoice": "Korrigiert {number}",
 			"viewTickets": "Tickets ansehen",
@@ -10183,7 +10183,7 @@
 			"save": "Speichern",
 			"saved": "Als ausgestellt markiert",
 			"saveFailed": "Die Belegnummer konnte nicht gespeichert werden.",
-			"loadFailed": "Die selbst auszustellenden Rechnungen konnten nicht geladen werden.",
+			"loadFailed": "Die selbst auszustellenden Dokumente konnten nicht geladen werden.",
 			"referenceRequired": "Gib die Belegnummer ein."
 		}
 	}

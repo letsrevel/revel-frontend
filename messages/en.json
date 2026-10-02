@@ -10148,7 +10148,7 @@
 			"linesTitle": "Ticket details"
 		},
 		"skipped": {
-			"title": "Invoices to issue yourself",
+			"title": "Documents to issue yourself",
 			"intro": "The law requires these invoices and credit notes to go through a national e-invoicing or fiscalization system, so Revel didn't issue them. Issue each one from your own system, then mark it as issued.",
 			"kindInvoice": "Invoice",
 			"kindCreditNote": "Credit note",
@@ -10173,7 +10173,7 @@
 			"filterKind": "Document type",
 			"filterKindAll": "All documents",
 			"searchPlaceholder": "Search buyer, VAT ID or event",
-			"searchLabel": "Search invoices to issue yourself",
+			"searchLabel": "Search documents to issue yourself",
 			"reference": "Ref. {reference}",
 			"correctsInvoice": "Corrects {number}",
 			"viewTickets": "View tickets",
@@ -10183,7 +10183,7 @@
 			"save": "Save",
 			"saved": "Marked as issued",
 			"saveFailed": "Couldn't save the document number.",
-			"loadFailed": "Couldn't load the invoices to issue yourself.",
+			"loadFailed": "Couldn't load the documents to issue yourself.",
 			"referenceRequired": "Enter the document number."
 		}
 	}

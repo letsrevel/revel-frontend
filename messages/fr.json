@@ -10148,7 +10148,7 @@
 			"linesTitle": "Détails du billet"
 		},
 		"skipped": {
-			"title": "Factures à émettre toi-même",
+			"title": "Documents à émettre toi-même",
 			"intro": "La loi impose que ces factures et avoirs passent par un système national de facturation électronique ou de fiscalisation, Revel ne les a donc pas émis. Émets-les depuis ton propre système, puis marque-les comme émis.",
 			"kindInvoice": "Facture",
 			"kindCreditNote": "Avoir",
@@ -10173,7 +10173,7 @@
 			"filterKind": "Type de document",
 			"filterKindAll": "Tous les documents",
 			"searchPlaceholder": "Rechercher un acheteur, un n° de TVA ou un événement",
-			"searchLabel": "Rechercher dans les factures à émettre toi-même",
+			"searchLabel": "Rechercher dans les documents à émettre toi-même",
 			"reference": "Réf. {reference}",
 			"correctsInvoice": "Corrige {number}",
 			"viewTickets": "Voir les billets",
@@ -10183,7 +10183,7 @@
 			"save": "Enregistrer",
 			"saved": "Document marqué comme émis",
 			"saveFailed": "Impossible d'enregistrer le numéro du document.",
-			"loadFailed": "Impossible de charger les factures à émettre toi-même.",
+			"loadFailed": "Impossible de charger les documents à émettre toi-même.",
 			"referenceRequired": "Saisis le numéro du document."
 		}
 	}

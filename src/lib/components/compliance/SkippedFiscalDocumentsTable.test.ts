@@ -42,7 +42,7 @@ describe('SkippedFiscalDocumentsTable', () => {
 		render(SkippedFiscalDocumentsTable, {
 			props: { documents: [doc()], orgSlug: 'compliance-be', onResolve: vi.fn() }
 		});
-		expect(screen.getByRole('table', { name: 'Invoices to issue yourself' })).toBeInTheDocument();
+		expect(screen.getByRole('table', { name: 'Documents to issue yourself' })).toBeInTheDocument();
 		expect(screen.getByText('To issue')).toBeInTheDocument();
 		expect(screen.getByText('VAT ID BE0123456789')).toBeInTheDocument();
 		expect(screen.getByText('Belgium')).toBeInTheDocument();

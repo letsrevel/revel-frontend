@@ -10148,7 +10148,7 @@
 			"linesTitle": "Detalles de la entrada"
 		},
 		"skipped": {
-			"title": "Facturas que debes emitir tú",
+			"title": "Documentos que debes emitir tú",
 			"intro": "La ley exige que estas facturas y notas de crédito pasen por un sistema nacional de facturación electrónica o de fiscalización, así que Revel no las ha emitido. Emítelas desde tu propio sistema y márcalas como emitidas.",
 			"kindInvoice": "Factura",
 			"kindCreditNote": "Nota de crédito",
@@ -10173,7 +10173,7 @@
 			"filterKind": "Tipo de documento",
 			"filterKindAll": "Todos los documentos",
 			"searchPlaceholder": "Buscar comprador, NIF-IVA o evento",
-			"searchLabel": "Buscar en las facturas que debes emitir tú",
+			"searchLabel": "Buscar en los documentos que debes emitir tú",
 			"reference": "Ref. {reference}",
 			"correctsInvoice": "Rectifica {number}",
 			"viewTickets": "Ver entradas",
@@ -10183,7 +10183,7 @@
 			"save": "Guardar",
 			"saved": "Marcada como emitida",
 			"saveFailed": "No se ha podido guardar el número del documento.",
-			"loadFailed": "No se han podido cargar las facturas que debes emitir tú.",
+			"loadFailed": "No se han podido cargar los documentos que debes emitir tú.",
 			"referenceRequired": "Introduce el número del documento."
 		}
 	}
