@@ -58,6 +58,65 @@ export function withUtmParams(href: string, currentUrl: URL): string {
 }
 
 /**
+ * Campaign query for one of our OWN landing CTAs (#1002), tagged so organic/SEO
+ * sign-ups can be told apart from "direct" ones: `revel / landing / <campaign> /
+ * <placement>`. `campaign` is the landing slug (`home` for the homepage); locale
+ * variants of a page share it. `placement` names the CTA (`hero`, `close`).
+ *
+ * An inbound campaign wins, as in the embed (#880): when `currentUrl` already
+ * carries a valid `utm_source` (someone arrived from an external campaign), its
+ * tags are carried verbatim instead, so the org is credited to that campaign
+ * rather than to our own landing page.
+ */
+export function landingAttributionQuery(
+	campaign: string,
+	placement: string,
+	currentUrl?: URL
+): string {
+	const inbound = currentUrl ? readAttributionFromUrl(currentUrl) : null;
+	if (inbound?.utm_source) {
+		const params = new URLSearchParams();
+		for (const key of UTM_KEYS) {
+			const value = inbound[key];
+			if (value) params.set(key, value);
+		}
+		return params.toString();
+	}
+	return new URLSearchParams({
+		utm_source: 'revel',
+		utm_medium: 'landing',
+		utm_campaign: campaign,
+		utm_content: placement
+	}).toString();
+}
+
+/** The tagged create-org path for a landing CTA; relative, ready to be a `returnUrl`. */
+export function landingCreateOrgPath(
+	campaign: string,
+	placement: string,
+	currentUrl?: URL
+): string {
+	return `/create-org?${landingAttributionQuery(campaign, placement, currentUrl)}`;
+}
+
+/**
+ * Tag a landing-page CTA href (#1002). `/register` keeps the tags through sign-up
+ * by sending the user on to the tagged create-org page via `?returnUrl=`;
+ * `/create-org` gets the tags directly. Any other href is returned untouched.
+ */
+export function tagLandingCtaHref(
+	href: string,
+	campaign: string,
+	placement: string,
+	currentUrl?: URL
+): string {
+	const target = landingCreateOrgPath(campaign, placement, currentUrl);
+	if (href === '/register') return `/register?returnUrl=${encodeURIComponent(target)}`;
+	if (href === '/create-org') return target;
+	return href;
+}
+
+/**
  * Short "source · campaign" line for an admin ticket row (#880 follow-up).
  * Falls back to "medium · content" when neither source nor campaign is
  * present; `null` when the ticket carries no attribution at all (renders

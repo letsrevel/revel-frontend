@@ -10,11 +10,16 @@ describe('HeroPanel', () => {
 		expect(h1).toHaveAccessibleName(m['home.poster.heroAria']());
 	});
 
-	it('shows register CTA when logged out', () => {
+	it('shows a register CTA that continues to the tagged create-org page (#1002)', () => {
 		render(HeroPanel, { props: { isAuthenticated: false } });
 		expect(
 			screen.getByRole('link', { name: m['home.poster.heroStartOrganizing']() })
-		).toHaveAttribute('href', '/register');
+		).toHaveAttribute(
+			'href',
+			`/register?returnUrl=${encodeURIComponent(
+				'/create-org?utm_source=revel&utm_medium=landing&utm_campaign=home&utm_content=hero'
+			)}`
+		);
 		expect(screen.getByText(m['home.alreadyHaveAccount']())).toBeInTheDocument();
 	});
 

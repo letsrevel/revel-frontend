@@ -26,7 +26,7 @@ describe('ClosePanel', () => {
 		const { unmount } = render(ClosePanel, { props: { canCreateOrg: true } });
 		expect(
 			screen.getByRole('link', { name: m['home.poster.closeCreateOrg']() }).getAttribute('href')
-		).toMatch(/\/create-org$/);
+		).toBe('/create-org?utm_source=revel&utm_medium=landing&utm_campaign=home&utm_content=close');
 		unmount();
 
 		render(ClosePanel, { props: { canCreateOrg: false } });

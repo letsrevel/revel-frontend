@@ -1,11 +1,14 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import * as m from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import RevelMark from '$lib/components/brand/RevelMark.svelte';
 	import PosterPanel from './PosterPanel.svelte';
 	import PosterSticker from './PosterSticker.svelte';
 	import RotatingNoun from './RotatingNoun.svelte';
+	import { landingCreateOrgPath } from '$lib/utils/attribution';
+	import { withReturnUrl } from '$lib/utils/safe-redirect';
 
 	interface Props {
 		isAuthenticated: boolean;
@@ -13,6 +16,12 @@
 		demoBookingUrl?: string | null;
 	}
 	const { isAuthenticated, demoBookingUrl = null }: Props = $props();
+
+	// Sign-up continues to the tagged create-org page, so the new org is
+	// attributed to this CTA (#1002).
+	const registerHref = $derived(
+		withReturnUrl(resolve('/(public)/register', {}), landingCreateOrgPath('home', 'hero', page.url))
+	);
 
 	/**
 	 * Inclusive rotating-vowel kicker for locales whose welcome adjective
@@ -117,12 +126,14 @@
 						{m['nav.browseEvents']()}
 					</a>
 				{:else}
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() output; withReturnUrl only appends the ?returnUrl= query -->
 					<a
-						href={resolve('/(public)/register', {})}
+						href={registerHref}
 						class="rounded-full bg-[hsl(var(--poster-ink))] px-7 py-3.5 font-bold text-[hsl(var(--poster-white))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
 					>
 						{m['home.poster.heroStartOrganizing']()}
 					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
 					<!-- Ink-tinted fill, not white: white bold 16px over a white/0.16 wash
 				     measures 4.14:1 on the purple end and 3.86:1 on the crimson end,
 				     below AA. Darkening the fill instead takes it to 7.19/6.32.

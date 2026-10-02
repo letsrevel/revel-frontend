@@ -3,11 +3,14 @@ import { organizationCreateSchema } from '$lib/schemas/organization';
 import { organizationCreateOrganization } from '$lib/api/generated/sdk.gen';
 import type { PageServerLoad } from './$types';
 import { extractErrorMessage } from '$lib/utils/errors';
+import { readAttributionFromUrl } from '$lib/utils/attribution';
+import { loginRedirectPath } from '$lib/server/auth-guard';
 
-export const load: PageServerLoad = async ({ locals, parent }) => {
-	// Require authentication
+export const load: PageServerLoad = async ({ locals, parent, url }) => {
+	// Require authentication. Keep the query string so campaign tags (#1002)
+	// survive the login round trip.
 	if (!locals.user) {
-		throw redirect(303, '/login?returnUrl=/create-org');
+		throw redirect(303, loginRedirectPath(url));
 	}
 
 	// Hide create-org when the capability is disabled on this instance.
@@ -23,10 +26,11 @@ export const load: PageServerLoad = async ({ locals, parent }) => {
 };
 
 export const actions: Actions = {
-	default: async ({ request, locals, cookies }) => {
-		// Require authentication
+	default: async ({ request, locals, cookies, url }) => {
+		// Require authentication. Keep the query string: a tagged landing link
+		// (`?utm_…`, #1002) must still be tagged after the login round trip.
 		if (!locals.user) {
-			throw redirect(303, '/login?returnUrl=/create-org');
+			throw redirect(303, loginRedirectPath(url));
 		}
 
 		const formData = await request.formData();
@@ -61,6 +65,10 @@ export const actions: Actions = {
 			});
 		}
 
+		// Campaign tags ride in the page URL only (#1002): the form has no
+		// `action`, so it posts back to the URL it was rendered at, `?utm_…` and all.
+		const attribution = readAttributionFromUrl(url);
+
 		try {
 			// Create organization via API
 			const {
@@ -76,7 +84,8 @@ export const actions: Actions = {
 					contact_email: result.data.contact_email,
 					city_id: result.data.city_id ? parseInt(result.data.city_id) : undefined,
 					address: result.data.address || undefined,
-					description: result.data.description || undefined
+					description: result.data.description || undefined,
+					...(attribution ? { attribution } : {})
 				}
 			});
 
