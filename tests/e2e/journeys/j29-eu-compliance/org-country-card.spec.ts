@@ -1,9 +1,16 @@
 import { test, expect } from '../../support/fixtures';
-import { NOTICE_TEXT, openBilling } from './helpers';
+import { NOTICE_TEXT, complianceApi, openBilling } from './helpers';
 
-// Spain's invoicing block starts on 2027-01-01 (server clock): before it the
-// card warns ahead, after it the bullet says invoices are unavailable.
-const SPAIN_BLOCKED = Date.now() >= Date.UTC(2027, 0, 1);
+// Spain's invoicing block starts on 2027-01-01 on the SERVER clock (Europe/
+// Vienna, so an hour before UTC midnight): rows whose bullet depends on it read
+// the org's current state from the API instead of the runner's clock.
+async function invoicingBlocked(org: string): Promise<boolean> {
+	const api = await complianceApi();
+	const detail = await api.get<{ compliance: { attendee_invoicing: string } }>(
+		`/api/organization-admin/${org}`
+	);
+	return detail.compliance.attendee_invoicing === 'blocked';
+}
 
 // J29.1 (USER_JOURNEYS.md) — the "Country rules" card in org settings →
 // Billing, one row per seeded compliance-* org. Read-only.
@@ -12,7 +19,10 @@ interface CardCase {
 	org: string;
 	/** Text the card body must show. */
 	body: RegExp;
-	bullets: string[];
+	/** Fixed bullets, or chosen by whether the server says invoicing is blocked. */
+	bullets: string[] | ((blocked: boolean) => string[]);
+	/** Regional orgs (#1010): the card must never mention Verifactu. */
+	noVerifactu?: boolean;
 	notices: Array<keyof typeof NOTICE_TEXT>;
 	docs: string;
 }
@@ -51,8 +61,8 @@ const CASES: CardCase[] = [
 	{
 		org: 'compliance-es',
 		body: /set up for Spain\. Some features work differently here/,
-		bullets: [
-			SPAIN_BLOCKED
+		bullets: (blocked) => [
+			blocked
 				? 'Attendee invoices: not available in Spain.'
 				: 'Attendee invoices: available until 31 December 2026.'
 		],
@@ -64,8 +74,23 @@ const CASES: CardCase[] = [
 		org: 'compliance-es-pv',
 		body: /set up for Spain\. Some features work differently here/,
 		bullets: ['Attendee invoices: not available in the Basque Country.'],
+		noVerifactu: true,
 		notices: [],
 		docs: 'https://docs.letsrevel.io/compliance/eu/es/#basque-country-ticketbai'
+	},
+	{
+		// Navarre (#1010): Spain's 2027 date, NaTicket copy, never Verifactu.
+		// Its heads-up is an attendee_invoicing notice, shown by the modes, not here.
+		org: 'compliance-es-nc',
+		body: /set up for Spain\. Some features work differently here/,
+		bullets: (blocked) => [
+			blocked
+				? 'Attendee invoices: not available in Navarre.'
+				: 'Attendee invoices: available until 31 December 2026.'
+		],
+		noVerifactu: true,
+		notices: [],
+		docs: 'https://docs.letsrevel.io/compliance/eu/es/#navarre'
 	},
 	{
 		org: 'compliance-at',
@@ -105,8 +130,11 @@ test.describe('J29.1 country rules card @p2', () => {
 			await expect(card.getByRole('heading', { name: 'Country rules' })).toBeVisible();
 			await expect(card).toContainText(c.body);
 
+			const bullets =
+				typeof c.bullets === 'function' ? c.bullets(await invoicingBlocked(c.org)) : c.bullets;
 			const items = card.getByRole('listitem');
-			await expect(items).toHaveText(c.bullets);
+			await expect(items).toHaveText(bullets);
+			if (c.noVerifactu) await expect(card).not.toContainText(/veri\*?factu/i);
 
 			for (const key of c.notices) {
 				const notice = card.getByTestId(`compliance-notice-${key}`);

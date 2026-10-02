@@ -3,14 +3,40 @@ import { ApiError } from '../../support/api';
 import { complianceApi, fixtureEvent, openBilling, openTicketing } from './helpers';
 
 // J29.2 (USER_JOURNEYS.md) — attendee invoicing modes under country rules, on
-// the seeded compliance-* orgs. Read-only: the one write (forcing `auto` on
-// Croatia) is refused by the backend, so nothing needs restoring.
+// the seeded compliance-* orgs. Read-only: the only writes force `auto` where
+// the backend refuses it (422); each one still resets to `none` afterwards, so
+// a regression that accepted it can't leak into other specs.
 
 const HR_DETAIL =
 	"Revel can't issue invoices to your attendees in Croatia. The law there requires invoices to go through the Tax Administration's fiscalization system, and Revel isn't connected to it yet. Please issue invoices from your own invoicing software.";
 
 const ES_PV_DETAIL =
 	"Revel can't issue invoices to your attendees in the Basque Country. The law there requires invoices to go through TicketBAI (Batuz in Bizkaia), and Revel isn't connected to it. Please issue invoices from your own TicketBAI-compliant invoicing software.";
+
+const ES_NC_DETAIL =
+	"Revel doesn't issue invoices to attendees for organizers in Spain, Navarre included. Navarre is bringing in its own invoicing-software rules (NaTicket), and Revel isn't connected to them. Please issue invoices from your own invoicing software.";
+
+const ES_NC_UPCOMING_NOTICE =
+	"From 1 January 2027, Revel stops issuing attendee invoices for organizers in Spain, Navarre included. Navarre is bringing in its own invoicing-software rules (NaTicket), and Revel won't be connected to them. If you use attendee invoicing, set up your own invoicing software before then.";
+
+/** Forcing `auto` is refused with `detail`; resets to `none` either way. */
+async function expectRefused(
+	api: Awaited<ReturnType<typeof complianceApi>>,
+	org: string,
+	detail: string
+): Promise<void> {
+	try {
+		const refused = await api
+			.patch(`/api/organization-admin/${org}/invoicing`, { mode: 'auto' })
+			.then(() => null)
+			.catch((err: unknown) => err);
+		expect(refused).toBeInstanceOf(ApiError);
+		expect((refused as ApiError).status).toBe(422);
+		expect(JSON.parse((refused as ApiError).body).detail).toBe(detail);
+	} finally {
+		await api.patch(`/api/organization-admin/${org}/invoicing`, { mode: 'none' });
+	}
+}
 
 const HR_FISCAL_NOTICE =
 	"Revel can't issue your attendee invoices. In Croatia, invoices to consumers must be fiscalized in real time with the Tax Administration (Porezna uprava).";
@@ -142,13 +168,44 @@ test.describe('J29.2 attendee invoicing modes @p2', () => {
 
 		// The backend refuses a forced mode with the same TicketBAI copy.
 		const api = await complianceApi();
-		const refused = await api
-			.patch('/api/organization-admin/compliance-es-pv/invoicing', { mode: 'auto' })
-			.then(() => null)
-			.catch((err: unknown) => err);
-		expect(refused).toBeInstanceOf(ApiError);
-		expect((refused as ApiError).status).toBe(422);
-		expect(JSON.parse((refused as ApiError).body).detail).toBe(ES_PV_DETAIL);
+		await expectRefused(api, 'compliance-es-pv', ES_PV_DETAIL);
+	});
+
+	test('Navarre: NaTicket, never Verifactu, on whichever side of 2027 the server is (#1010)', async ({
+		asCompliance: page
+	}) => {
+		// Read from the API like Spain: the flip is on the server clock.
+		const api = await complianceApi();
+		const org = await api.get<{ compliance: { attendee_invoicing: string; region: string } }>(
+			'/api/organization-admin/compliance-es-nc'
+		);
+		expect(org.compliance.region).toBe('ES-NC');
+		await openBilling(page, 'compliance-es-nc');
+		const banner = page.getByTestId('invoicing-compliance-notice');
+		const notice = page.getByTestId('compliance-notice-es_nc_naticket');
+		await expect(page.getByTestId('compliance-notice-es_verifactu')).toHaveCount(0);
+		await expect(page.getByText(/veri\*?factu/i)).toHaveCount(0);
+
+		if (org.compliance.attendee_invoicing === 'allowed') {
+			await expect(notice).toHaveCount(1);
+			await expect(notice).toHaveAttribute('role', 'status');
+			await expect(notice).toHaveAttribute('data-tone', 'warning');
+			await expect(notice).toHaveText(ES_NC_UPCOMING_NOTICE);
+			await expect(banner).toHaveCount(0);
+			await expect(page.getByRole('radio', { name: 'Manual Review' })).toBeEnabled();
+			await expect(page.getByRole('radio', { name: 'Automatic' })).toBeEnabled();
+		} else {
+			// Once the block is in force, the heads-up goes away.
+			await expect(notice).toHaveCount(0);
+			await expect(banner).toHaveText(ES_NC_DETAIL);
+			await expect(banner).toHaveAttribute('data-tone', 'blocked');
+			for (const label of ['Manual Review', 'Automatic']) {
+				const radio = page.getByRole('radio', { name: label });
+				await expect(radio).toBeDisabled();
+				await expect(radio).toHaveAccessibleDescription(ES_NC_DETAIL);
+			}
+			await expectRefused(api, 'compliance-es-nc', ES_NC_DETAIL);
+		}
 	});
 
 	test('an org with no invoicing rule shows no invoicing notice', async ({
