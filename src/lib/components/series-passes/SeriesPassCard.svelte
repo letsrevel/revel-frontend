@@ -99,7 +99,7 @@
 			<HandCoins class="h-3.5 w-3.5" aria-hidden="true" />
 			{m['seriesPass.payOffline']()}
 		</p>
-	{:else if pass.payment_method === 'online'}
+	{:else if pass.payment_method === 'online' && !onlineUnavailable}
 		<p class="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
 			<CreditCard class="h-3.5 w-3.5" aria-hidden="true" />
 			{m['seriesPass.payOnline']()}
