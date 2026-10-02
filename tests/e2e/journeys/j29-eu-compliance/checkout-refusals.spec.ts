@@ -1,6 +1,12 @@
 import { test, expect } from '../../support/fixtures';
 import { API_URL, ApiClient, ApiError } from '../../support/api';
-import { createVerifiedUser, uniqueEmail } from '../../support/factories';
+import {
+	createEventSeries,
+	createSeriesPass,
+	createTicketedEvent,
+	createVerifiedUser,
+	uniqueEmail
+} from '../../support/factories';
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 import { ITALY_ONLINE_DETAIL, complianceApi, fixtureEvent, fixtureTiers } from './helpers';
@@ -78,7 +84,9 @@ test.describe('J29.4 checkout refusals @p2', () => {
 		expect(mine.results).toHaveLength(0);
 	});
 
-	test('the season pass checkout is refused inline in the purchase dialog', async ({ browser }) => {
+	test('the season pass shows "Not available online" up front; checkout still 422s', async ({
+		browser
+	}) => {
 		const owner = await complianceApi();
 		const series = await owner.get<{ id: string }>('/api/event-series/compliance-it/it-season');
 		const passes = await owner.get<Array<{ id: string; name: string }>>(
@@ -87,6 +95,14 @@ test.describe('J29.4 checkout refusals @p2', () => {
 		const pass = passes.find((p) => p.name === 'IT Season Pass');
 		if (!pass) throw new Error('fixture pass "IT Season Pass" is missing — reseed the backend');
 
+		// J26.2: the quote carries the checkout gate's decision.
+		const quote = await owner.get<{ purchasable: boolean; compliance: { online_payment: string } }>(
+			`/api/series-passes/${pass.id}/quote`
+		);
+		expect(quote.compliance.online_payment).toBe('blocked');
+		expect(quote.purchasable).toBe(true); // by design: compliance is read separately
+
+		// The fallback still holds if checkout is attempted anyway.
 		const buyer = await createVerifiedUser('ItalyPass');
 		const api = await ApiClient.login(buyer.email, buyer.password);
 		await expectRefused(api.post(`/api/series-passes/${pass.id}/checkout`, {}));
@@ -100,18 +116,67 @@ test.describe('J29.4 checkout refusals @p2', () => {
 			await expect(page.getByRole('heading', { name: 'IT Season Pass' })).toBeVisible({
 				timeout: 15_000
 			});
-			await page.getByRole('button', { name: 'Get season pass' }).click();
-			const dialog = page.getByRole('dialog', { name: /IT Season Pass/ });
-			await expect(dialog).toBeVisible();
-			const pay = dialog.getByRole('button', { name: 'Continue to payment' });
-			await pay.click();
+			const unavailable = page.getByRole('button', { name: 'Not available online' });
+			await expect(unavailable).toBeDisabled({ timeout: 15_000 });
+			await expect(unavailable).toHaveAccessibleDescription(
+				"This pass can't be bought online. Contact the organizer to find out how to pay."
+			);
+			await expect(page.getByRole('button', { name: 'Get season pass' })).toHaveCount(0);
+		} finally {
+			await context.close();
+		}
+	});
 
-			const refusal = dialog.getByRole('alert');
-			await expect(refusal).toHaveText(ITALY_ONLINE_DETAIL, { timeout: 15_000 });
-			// Not a dead end: the button stays usable (a retry re-asks the API)
-			// and carries the reason as its description.
-			await expect(pay).toBeEnabled();
-			await expect(pay).toHaveAccessibleDescription(ITALY_ONLINE_DETAIL);
+	test('the same kind of pass switched to offline reads allowed and checks out', async ({
+		browser
+	}) => {
+		test.setTimeout(120_000);
+		// Own series in compliance-it (events held in Italy), so the switch never
+		// touches the shared it-season fixture.
+		const series = await createEventSeries('compliance', 'compliance-it');
+		const [a, b] = await Promise.all([
+			createTicketedEvent({
+				owner: 'compliance',
+				orgSlug: 'compliance-it',
+				event: { event_series_id: series.id }
+			}),
+			createTicketedEvent({
+				owner: 'compliance',
+				orgSlug: 'compliance-it',
+				event: { event_series_id: series.id }
+			})
+		]);
+		const pass = await createSeriesPass('compliance', series.id, {
+			price: '20.00',
+			payment_method: 'online',
+			tier_links: [a, b].map((e) => ({ event_id: e.id, tier_id: e.freeTierId ?? '' }))
+		});
+		const owner = await complianceApi();
+		const quoteOf = () =>
+			owner.get<{ compliance: { online_payment: string } }>(`/api/series-passes/${pass.id}/quote`);
+		expect((await quoteOf()).compliance.online_payment).toBe('blocked');
+
+		await owner.patch(`/api/event-series-admin/${series.id}/passes/${pass.id}`, {
+			payment_method: 'offline'
+		});
+		expect((await quoteOf()).compliance.online_payment).toBe('allowed');
+
+		const buyer = await createVerifiedUser('ItalyOfflinePass');
+		const context = await browser.newContext();
+		await authenticateContext(context, buyer);
+		const page = await context.newPage();
+		try {
+			await gotoHydrated(page, series.path);
+			await waitForClientAuth(page);
+			await expect(page.getByRole('heading', { name: pass.name })).toBeVisible({
+				timeout: 15_000
+			});
+			await expect(page.getByRole('button', { name: 'Not available online' })).toHaveCount(0);
+			await page.getByRole('button', { name: 'Get season pass' }).click();
+			const dialog = page.getByRole('dialog', { name: new RegExp(pass.name) });
+			await expect(dialog).toBeVisible();
+			await dialog.getByRole('button', { name: 'Reserve pass' }).click();
+			await expect(page).toHaveURL(/\/dashboard\/passes/, { timeout: 15_000 });
 		} finally {
 			await context.close();
 		}

@@ -10140,7 +10140,8 @@
 		"checkout": {
 			"fallback": "This ticket can't be bought online. Contact the organizer to find out how to pay.",
 			"notAvailableOnline": "Not available online",
-			"reservation": "You'll pay the organizer directly. Your Revel ticket is a reservation; the organizer gives you the fiscal ticket."
+			"reservation": "You'll pay the organizer directly. Your Revel ticket is a reservation; the organizer gives you the fiscal ticket.",
+			"passFallback": "This pass can't be bought online. Contact the organizer to find out how to pay."
 		},
 		"ticket": {
 			"linesTitle": "Ticket details"

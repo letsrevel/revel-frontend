@@ -20,6 +20,7 @@
 	const { pass, seriesId, isAuthenticated }: Props = $props();
 
 	let showPurchaseDialog = $state(false);
+	const uid = $props.id();
 
 	// Live pro-rata quote (public endpoint, works for anonymous users too).
 	const quoteQuery = createQuery(() => ({
@@ -48,6 +49,10 @@
 			? formatPrice(quote.price, quote.currency, m['seriesPass.free']())
 			: formatPrice(pass.price, pass.currency, m['seriesPass.free']())
 	);
+
+	// Country rules (#1005): the checkout gate's decision for this pass. A blocked
+	// pass still reports `purchasable: true` by design, so it's read separately.
+	const onlineUnavailable = $derived(quote?.compliance?.online_payment === 'blocked');
 
 	const isButtonDisabled = $derived.by(() => {
 		const loading = quoteQuery.isLoading;
@@ -112,6 +117,19 @@
 				{quote.reason}
 			</p>
 		{/if}
+	{:else if onlineUnavailable}
+		<!-- Before the sign-in redirect below: signing in can't make a blocked pass
+		     purchasable. The dialog's inline 422 stays the fallback (stale quote). -->
+		<Button class="w-full" disabled aria-describedby="{uid}-online-unavailable">
+			{m['compliance.checkout.notAvailableOnline']()}
+		</Button>
+		<p
+			id="{uid}-online-unavailable"
+			class="mt-2 text-center text-xs text-muted-foreground"
+			data-testid="pass-online-unavailable"
+		>
+			{m['compliance.checkout.passFallback']()}
+		</p>
 	{:else}
 		<Button class="w-full" onclick={handleBuyClick} disabled={isButtonDisabled}>
 			{m['seriesPass.buyButton']()}

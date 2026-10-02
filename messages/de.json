@@ -10140,7 +10140,8 @@
 		"checkout": {
 			"fallback": "Dieses Ticket kann nicht online gekauft werden. Wende dich an die Veranstaltenden, um zu erfahren, wie du bezahlen kannst.",
 			"notAvailableOnline": "Nicht online erhältlich",
-			"reservation": "Du bezahlst direkt bei den Veranstaltenden. Dein Revel-Ticket ist eine Reservierung; das fiskalische Ticket bekommst du von den Veranstaltenden."
+			"reservation": "Du bezahlst direkt bei den Veranstaltenden. Dein Revel-Ticket ist eine Reservierung; das fiskalische Ticket bekommst du von den Veranstaltenden.",
+			"passFallback": "Dieser Pass kann nicht online gekauft werden. Wende dich an die Veranstaltenden, um zu erfahren, wie du bezahlen kannst."
 		},
 		"ticket": {
 			"linesTitle": "Ticketangaben"
