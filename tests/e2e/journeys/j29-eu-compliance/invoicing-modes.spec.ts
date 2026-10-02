@@ -9,6 +9,9 @@ import { complianceApi, fixtureEvent, openBilling, openTicketing } from './helpe
 const HR_DETAIL =
 	"Revel can't issue invoices to your attendees in Croatia. The law there requires invoices to go through the Tax Administration's fiscalization system, and Revel isn't connected to it yet. Please issue invoices from your own invoicing software.";
 
+const ES_PV_DETAIL =
+	"Revel can't issue invoices to your attendees in the Basque Country. The law there requires invoices to go through TicketBAI (Batuz in Bizkaia), and Revel isn't connected to it. Please issue invoices from your own TicketBAI-compliant invoicing software.";
+
 const HR_FISCAL_NOTICE =
 	"Revel can't issue your attendee invoices. In Croatia, invoices to consumers must be fiscalized in real time with the Tax Administration (Porezna uprava).";
 
@@ -105,8 +108,13 @@ test.describe('J29.2 attendee invoicing modes @p2', () => {
 		await openBilling(page, 'compliance-es');
 		const banner = page.getByTestId('invoicing-compliance-notice');
 		if (org.compliance.attendee_invoicing === 'allowed') {
-			await expect(banner).toContainText('From 1 January 2027');
-			await expect(banner).toHaveAttribute('data-tone', 'warning');
+			// The heads-up is the API's es_verifactu notice (#1087), shown once,
+			// next to the modes; the client's own copy stays out of the way.
+			const notice = page.getByTestId('compliance-notice-es_verifactu');
+			await expect(notice).toHaveCount(1);
+			await expect(notice).toHaveAttribute('role', 'status');
+			await expect(notice).toHaveAttribute('data-tone', 'warning');
+			await expect(banner).toHaveCount(0);
 			await expect(page.getByRole('radio', { name: 'Manual Review' })).toBeEnabled();
 			await expect(page.getByRole('radio', { name: 'Automatic' })).toBeEnabled();
 		} else {
@@ -115,6 +123,32 @@ test.describe('J29.2 attendee invoicing modes @p2', () => {
 			await expect(page.getByRole('radio', { name: 'Manual Review' })).toBeDisabled();
 			await expect(page.getByRole('radio', { name: 'Automatic' })).toBeDisabled();
 		}
+	});
+
+	test('Basque Country: blocked now under TicketBAI, with no Verifactu heads-up (#1010)', async ({
+		asCompliance: page
+	}) => {
+		await openBilling(page, 'compliance-es-pv');
+		const banner = page.getByTestId('invoicing-compliance-notice');
+		await expect(banner).toHaveText(ES_PV_DETAIL);
+		await expect(banner).toHaveAttribute('data-tone', 'blocked');
+		await expect(banner).not.toContainText('Verifactu');
+		await expect(page.getByTestId('compliance-notice-es_verifactu')).toHaveCount(0);
+		for (const label of ['Manual Review', 'Automatic']) {
+			const radio = page.getByRole('radio', { name: label });
+			await expect(radio).toBeDisabled();
+			await expect(radio).toHaveAccessibleDescription(ES_PV_DETAIL);
+		}
+
+		// The backend refuses a forced mode with the same TicketBAI copy.
+		const api = await complianceApi();
+		const refused = await api
+			.patch('/api/organization-admin/compliance-es-pv/invoicing', { mode: 'auto' })
+			.then(() => null)
+			.catch((err: unknown) => err);
+		expect(refused).toBeInstanceOf(ApiError);
+		expect((refused as ApiError).status).toBe(422);
+		expect(JSON.parse((refused as ApiError).body).detail).toBe(ES_PV_DETAIL);
 	});
 
 	test('an org with no invoicing rule shows no invoicing notice', async ({

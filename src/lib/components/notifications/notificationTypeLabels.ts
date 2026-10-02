@@ -15,6 +15,11 @@ const NOTIFICATION_TYPE_COPY: Partial<Record<NotificationType, NotificationTypeC
 	org_setup_nudge: {
 		label: () => m['notificationPreferences.typeOrgSetupNudge'](),
 		description: () => m['notificationPreferences.typeOrgSetupNudgeDescription']()
+	},
+	// Daily digest to owners and manage_tickets staff (#1008, BE #1073).
+	fiscal_document_skipped: {
+		label: () => m['notificationPreferences.typeFiscalDocumentSkipped'](),
+		description: () => m['notificationPreferences.typeFiscalDocumentSkippedDescription']()
 	}
 };
 

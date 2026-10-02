@@ -367,7 +367,9 @@
 		"saveSuccess": "Preferências de notificação atualizadas com sucesso",
 		"saveFailed": "Não foi possível atualizar as preferências: {error}",
 		"typeOrgSetupNudge": "Dicas para configurar a tua organização",
-		"typeOrgSetupNudgeDescription": "Lembretes ocasionais quando a tua organização ainda é privada, tem um rascunho esquecido ou ficou inativa. No máximo um a cada duas semanas."
+		"typeOrgSetupNudgeDescription": "Lembretes ocasionais quando a tua organização ainda é privada, tem um rascunho esquecido ou ficou inativa. No máximo um a cada duas semanas.",
+		"typeFiscalDocumentSkipped": "Documentos a emitir por ti",
+		"typeFiscalDocumentSkippedDescription": "Um resumo diário das faturas e notas de crédito que a lei não permitiu à Revel emitir, para as emitires no teu próprio sistema."
 	},
 	"notificationList": {
 		"ariaLabel": "Notificações",
@@ -10105,7 +10107,9 @@
 			"invoicingBusinessBuyers": "Faturas a empresas registadas neste país ({country}): emite-as no teu próprio software de faturação eletrónica.",
 			"invoicingBusinessBuyersAll": "Faturas a empresas: emite-as no teu próprio software de faturação eletrónica.",
 			"onlinePaymentBlocked": "Pagamentos online com cartão: não disponíveis para eventos neste país ({country}). Os pagamentos à entrada e por transferência bancária funcionam como habitualmente.",
-			"offlinePaymentBlocked": "Pagamentos à entrada e por transferência bancária: não disponíveis para eventos neste país ({country})."
+			"offlinePaymentBlocked": "Pagamentos à entrada e por transferência bancária: não disponíveis para eventos neste país ({country}).",
+			"invoicingBlockedEsPv": "Faturas aos participantes: não disponíveis no País Basco.",
+			"invoicingBlockedEsNc": "Faturas aos participantes: não disponíveis em Navarra."
 		},
 		"invoicing": {
 			"blocked": "A Revel não pode emitir faturas aos teus participantes neste país ({country}). A lei exige que as faturas passem {system}, e a Revel ainda não está ligada a esse sistema. Emite as faturas no teu próprio software de faturação.",
@@ -10113,7 +10117,9 @@
 			"businessBuyers": "As faturas a clientes com número de IVA deste país ({country}) têm de ser enviadas como faturas eletrónicas através do {system}. A Revel não as cria. Emite-as no teu software de faturação eletrónica. As faturas a todos os outros funcionam como habitualmente.",
 			"businessBuyersAll": "As faturas a clientes empresariais têm de ser emitidas através do KSeF. A Revel não as cria. Emite-as no teu software de faturação eletrónica. As faturas a particulares funcionam como habitualmente.",
 			"draftNotIssuable": "Esta fatura já não pode ser emitida pela Revel. Emite-a no teu próprio software de faturação.",
-			"cannotIssue": "Não pode ser emitida"
+			"cannotIssue": "Não pode ser emitida",
+			"blockedEsPv": "A Revel não pode emitir faturas aos teus participantes no País Basco. Aí a lei exige que as faturas passem pelo TicketBAI (Batuz na Biscaia), e a Revel não está ligada a ele. Emite as faturas a partir do teu próprio software de faturação compatível com TicketBAI.",
+			"blockedEsNc": "A Revel não emite faturas aos participantes para organizações em Espanha, incluindo Navarra. Navarra está a introduzir as suas próprias regras sobre software de faturação (NaTicket), e a Revel não está ligada a elas. Emite as faturas a partir do teu próprio software de faturação."
 		},
 		"system": {
 			"hr": "pelo sistema de fiscalização da Administração Tributária",

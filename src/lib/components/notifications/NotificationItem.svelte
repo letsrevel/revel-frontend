@@ -208,6 +208,12 @@
 			return toRelativePath(context.frontend_url);
 		}
 
+		// fiscal_document_skipped (#1008, BE #1073): the owner's skipped-documents
+		// list, or for staff the event ticket list filtered on invoice_skipped.
+		if (context.action_url && typeof context.action_url === 'string') {
+			return toRelativePath(context.action_url);
+		}
+
 		// Check for submission_url (questionnaire notifications) - prioritize this for admin actions
 		if (context.submission_url && typeof context.submission_url === 'string') {
 			return toRelativePath(context.submission_url);
