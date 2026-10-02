@@ -170,6 +170,17 @@ describe('unplacedNotices', () => {
 		expect(unplacedNotices(notices).map((n) => n.key)).toEqual(['c']);
 		expect(unplacedNotices(undefined)).toEqual([]);
 	});
+
+	it('keeps attendee_invoicing notices for the tier editor (#1007)', () => {
+		// Billing places them next to the mode selector; the event's tier editor
+		// has no dedicated spot, so it shows them as general notices.
+		const notices = [
+			{ key: 'si_furs', applies_to: 'attendee_invoicing' as const, message: 'FURS' },
+			{ key: 'b', applies_to: 'ticket_sales' as const, message: 'b' }
+		];
+		expect(unplacedNotices(notices).map((n) => n.key)).toEqual(['si_furs']);
+		expect(noticesFor(notices, 'attendee_invoicing').map((n) => n.key)).toEqual(['si_furs']);
+	});
 });
 
 describe('withoutBlockedOnlineTiers', () => {
