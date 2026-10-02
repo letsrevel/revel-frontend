@@ -51,6 +51,9 @@
 
 	const checkoutMutation = createMutation(() => ({
 		mutationFn: async (): Promise<SeriesPassCheckoutResponseSchema> => {
+			// Retrying is allowed (the organizer may have moved the event); the
+			// alert stays until the next answer replaces or clears it.
+			refusal = null;
 			// Retry after a partial failure: only the session step needs to run
 			// again. A 404 means the reservation expired — reserve afresh below.
 			if (reservationId) {
@@ -180,7 +183,7 @@
 			</Button>
 			<Button
 				onclick={() => checkoutMutation.mutate()}
-				disabled={checkoutMutation.isPending || !!refusal}
+				disabled={checkoutMutation.isPending}
 				aria-describedby={refusal ? 'series-pass-refusal' : undefined}
 			>
 				{checkoutMutation.isPending ? m['seriesPass.processing']() : confirmLabel}

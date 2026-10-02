@@ -108,7 +108,9 @@ test.describe('J29.4 checkout refusals @p2', () => {
 
 			const refusal = dialog.getByRole('alert');
 			await expect(refusal).toHaveText(ITALY_ONLINE_DETAIL, { timeout: 15_000 });
-			await expect(pay).toBeDisabled();
+			// Not a dead end: the button stays usable (a retry re-asks the API)
+			// and carries the reason as its description.
+			await expect(pay).toBeEnabled();
 			await expect(pay).toHaveAccessibleDescription(ITALY_ONLINE_DETAIL);
 		} finally {
 			await context.close();

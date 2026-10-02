@@ -76,6 +76,7 @@
 			class="inline-flex items-center gap-1 font-medium text-primary underline underline-offset-2"
 		>
 			{m['compliance.card.learnMore']()}
+			<span class="sr-only">{m['compliance.card.opensInNewTab']()}</span>
 			<ExternalLink class="h-3 w-3" aria-hidden="true" />
 		</a>
 		<!-- eslint-enable svelte/no-navigation-without-resolve -->

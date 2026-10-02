@@ -341,13 +341,12 @@
 					country: countryName(venueCountry) || m['compliance.thisCountry']()
 				})}
 			</p>
-			<Button
-				variant="outline"
-				size="sm"
-				onclick={onEdit}
-				aria-label={m['compliance.tier.changePaymentMethodFor']({ name: tier.name })}
-			>
+			<!-- The tier name rides along as sr-only text AFTER the visible label, so the
+			     accessible name always starts with the visible words (WCAG 2.5.3) in
+			     every locale. -->
+			<Button variant="outline" size="sm" onclick={onEdit}>
 				{m['compliance.tier.changePaymentMethod']()}
+				<span class="sr-only">({tier.name})</span>
 			</Button>
 		</ComplianceCallout>
 	{/if}

@@ -40,7 +40,7 @@ test.describe('J29.3 tier editor in Italy @p2', () => {
 		await openTicketing(page, event);
 
 		const banner = page.getByTestId('tier-online-blocked-banner').filter({
-			has: page.getByRole('button', { name: 'Change payment method for Card (legacy)' })
+			has: page.getByRole('button', { name: 'Change payment method (Card (legacy))' })
 		});
 		await expect(banner).toContainText(
 			"This tier uses online card payment, which isn't available for events in Italy."
@@ -48,7 +48,7 @@ test.describe('J29.3 tier editor in Italy @p2', () => {
 		// Offline tiers carry no banner: only the two online fixtures do.
 		await expect(page.getByTestId('tier-online-blocked-banner')).toHaveCount(2);
 
-		await banner.getByRole('button', { name: 'Change payment method for Card (legacy)' }).click();
+		await banner.getByRole('button', { name: 'Change payment method (Card (legacy))' }).click();
 		await expect(tierForm(page)).toBeVisible();
 		await expectOnlineBlocked(page);
 		await page.keyboard.press('Escape');

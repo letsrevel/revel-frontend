@@ -407,6 +407,8 @@
 				value={invoicingMode}
 				onValueChange={(value) => {
 					if (value) invoicingMode = value;
+					// A new pick makes the last refusal stale.
+					setInvoicingModeMutation?.reset();
 				}}
 			>
 				<div class="space-y-3">

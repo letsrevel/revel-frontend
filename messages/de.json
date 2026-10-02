@@ -10096,7 +10096,8 @@
 			"bodyOutOfScope": "Revel prüft Steuerregeln derzeit nur für EU-Länder. Außerhalb der EU bist du selbst dafür verantwortlich, dass deine Ticketverkäufe den lokalen Regeln entsprechen.",
 			"footnote": "Revel ermittelt dein Land anhand deiner USt-IdNr. oder, falls du keine hast, anhand deiner Stadt.",
 			"learnMore": "Mehr erfahren",
-			"noticesTitle": "Gut zu wissen"
+			"noticesTitle": "Gut zu wissen",
+			"opensInNewTab": "(öffnet in einem neuen Tab)"
 		},
 		"bullet": {
 			"invoicingBlocked": "Rechnungen an Teilnehmende: in {country} nicht verfügbar.",
@@ -10130,7 +10131,6 @@
 			"onlineUnavailableSuffix": "(für diese Veranstaltung nicht verfügbar)",
 			"legacyOnlineBanner": "Diese Kategorie nutzt Online-Kartenzahlung, die für Veranstaltungen in {country} nicht verfügbar ist. Stelle sie auf Zahlung an der Abendkasse oder per Überweisung um, um weiter zu verkaufen.",
 			"changePaymentMethod": "Zahlungsart ändern",
-			"changePaymentMethodFor": "Zahlungsart für {name} ändern",
 			"locationHint": "Die Regeln für Online-Zahlungen hängen davon ab, wo die Veranstaltung stattfindet."
 		},
 		"checkout": {

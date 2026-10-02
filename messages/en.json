@@ -10096,7 +10096,8 @@
 			"bodyOutOfScope": "Revel currently only checks tax rules for EU countries. Outside the EU, you are responsible for making sure your ticket sales follow local rules.",
 			"footnote": "Revel works out your country from your VAT ID or, if you don't have one, from your city.",
 			"learnMore": "Learn more",
-			"noticesTitle": "Good to know"
+			"noticesTitle": "Good to know",
+			"opensInNewTab": "(opens in a new tab)"
 		},
 		"bullet": {
 			"invoicingBlocked": "Attendee invoices: not available in {country}.",
@@ -10130,7 +10131,6 @@
 			"onlineUnavailableSuffix": "(not available for this event)",
 			"legacyOnlineBanner": "This tier uses online card payment, which isn't available for events in {country}. Switch it to payment at the door or bank transfer to keep selling.",
 			"changePaymentMethod": "Change payment method",
-			"changePaymentMethodFor": "Change payment method for {name}",
 			"locationHint": "Rules for online payments depend on where the event takes place."
 		},
 		"checkout": {

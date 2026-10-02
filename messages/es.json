@@ -10096,7 +10096,8 @@
 			"bodyOutOfScope": "Por ahora, Revel solo comprueba la normativa fiscal de los países de la UE. Fuera de la UE, eres responsable de que la venta de entradas cumpla las normas locales.",
 			"footnote": "Revel deduce tu país a partir de tu NIF-IVA o, si no tienes, de tu ciudad.",
 			"learnMore": "Más información",
-			"noticesTitle": "Conviene saber"
+			"noticesTitle": "Conviene saber",
+			"opensInNewTab": "(se abre en una pestaña nueva)"
 		},
 		"bullet": {
 			"invoicingBlocked": "Facturas a asistentes: no disponibles en {country}.",
@@ -10130,7 +10131,6 @@
 			"onlineUnavailableSuffix": "(no disponible para este evento)",
 			"legacyOnlineBanner": "Este tipo de entrada usa el pago online con tarjeta, que no está disponible para eventos en {country}. Cámbialo a pago en la puerta o por transferencia para seguir vendiendo.",
 			"changePaymentMethod": "Cambiar método de pago",
-			"changePaymentMethodFor": "Cambiar método de pago de {name}",
 			"locationHint": "Las normas para los pagos online dependen de dónde se celebre el evento."
 		},
 		"checkout": {

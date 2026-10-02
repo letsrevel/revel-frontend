@@ -10096,7 +10096,8 @@
 			"bodyOutOfScope": "Pour l'instant, Revel ne vérifie les règles fiscales que pour les pays de l'UE. Hors de l'UE, c'est à toi de t'assurer que tes ventes de billets respectent les règles locales.",
 			"footnote": "Revel déduit ton pays de ton numéro de TVA ou, si tu n'en as pas, de ta ville.",
 			"learnMore": "En savoir plus",
-			"noticesTitle": "Bon à savoir"
+			"noticesTitle": "Bon à savoir",
+			"opensInNewTab": "(s'ouvre dans un nouvel onglet)"
 		},
 		"bullet": {
 			"invoicingBlocked": "Factures aux participant·es : non disponibles en {country}.",
@@ -10130,7 +10131,6 @@
 			"onlineUnavailableSuffix": "(non disponible pour cet événement)",
 			"legacyOnlineBanner": "Ce tarif utilise le paiement en ligne par carte, qui n'est pas disponible pour les événements en {country}. Passe au paiement à l'entrée ou par virement pour continuer à vendre.",
 			"changePaymentMethod": "Changer le mode de paiement",
-			"changePaymentMethodFor": "Changer le mode de paiement de {name}",
 			"locationHint": "Les règles des paiements en ligne dépendent du lieu de l'événement."
 		},
 		"checkout": {

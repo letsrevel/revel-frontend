@@ -508,7 +508,9 @@
 		<MarkdownContent content={tier.description} class="text-sm text-muted-foreground" />
 	{/if}
 	{#if showReservationNote}
-		<ComplianceCallout testId="tier-reservation-note">
+		<!-- One per priced tier: a static note, not a live region, so a page of
+		     tiers doesn't announce the same sentence once per card. -->
+		<ComplianceCallout testId="tier-reservation-note" role="note">
 			<p>{m['compliance.checkout.reservation']()}</p>
 		</ComplianceCallout>
 	{/if}
