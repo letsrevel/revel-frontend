@@ -62,10 +62,10 @@ describe('<SeoHead>', () => {
 		expect(document.head.querySelector('meta[property="og:logo"]')).toBeNull();
 		document.head.innerHTML = '';
 		render(SeoHead, {
-			config: { ...cfg, og: { ...cfg.og, logo: 'https://letsrevel.io/og-logo-v1.png' } }
+			config: { ...cfg, og: { ...cfg.og, logo: 'https://letsrevel.io/og-logo-v2.png' } }
 		});
 		const logo = document.head.querySelector('meta[property="og:logo"]');
-		expect(logo?.getAttribute('content')).toBe('https://letsrevel.io/og-logo-v1.png');
+		expect(logo?.getAttribute('content')).toBe('https://letsrevel.io/og-logo-v2.png');
 	});
 
 	it('renders one <script type="application/ld+json"> per JSON-LD block', () => {

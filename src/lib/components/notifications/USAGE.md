@@ -126,7 +126,7 @@ This directory contains a complete notification system with the following compon
   <div class="container flex h-16 items-center justify-between px-4">
     <!-- Logo -->
     <a href="/" class="flex items-center gap-2 font-bold text-xl">
-      <img src="/logo.svg" alt="Revel" class="h-8 w-8" />
+      <img src="/logo-v2.svg" alt="Revel" class="h-8 w-8" />
       <span class="hidden sm:inline">Revel</span>
     </a>
 
