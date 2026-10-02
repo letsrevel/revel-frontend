@@ -9,7 +9,8 @@ import {
 	onlinePaymentBlockedText,
 	restrictionBullets,
 	tierIsPriced,
-	unplacedNotices
+	unplacedNotices,
+	withoutBlockedOnlineTiers
 } from './compliance';
 
 function org(overrides: Partial<OrganizationComplianceSchema> = {}): OrganizationComplianceSchema {
@@ -168,5 +169,40 @@ describe('unplacedNotices', () => {
 		];
 		expect(unplacedNotices(notices).map((n) => n.key)).toEqual(['c']);
 		expect(unplacedNotices(undefined)).toEqual([]);
+	});
+});
+
+describe('withoutBlockedOnlineTiers', () => {
+	const tiers = [
+		{ id: 'card', payment_method: 'online' },
+		{ id: 'door', payment_method: 'at_the_door' },
+		{ id: 'bank', payment_method: 'offline' },
+		{ id: 'free', payment_method: 'free' }
+	];
+
+	it('drops online tiers when card payment is blocked, keeping every other method', () => {
+		expect(
+			withoutBlockedOnlineTiers(tiers, { online_payment: 'blocked' }).map((t) => t.id)
+		).toEqual(['door', 'bank', 'free']);
+	});
+
+	it('leaves the list untouched when card payment is allowed', () => {
+		expect(withoutBlockedOnlineTiers(tiers, { online_payment: 'allowed' })).toBe(tiers);
+	});
+
+	it('leaves the list untouched when compliance is absent (older backend)', () => {
+		expect(withoutBlockedOnlineTiers(tiers, undefined)).toBe(tiers);
+		expect(withoutBlockedOnlineTiers(tiers, null)).toBe(tiers);
+	});
+
+	// The event page's seat-selection handoff (`handleSelectTier`) asks the same
+	// question for the one tier a buyer picked on the map: an empty result means
+	// "don't add it to the cart, don't hold seats for it".
+	it('answers the single-tier handoff question', () => {
+		const card = [{ id: 'card', payment_method: 'online' }];
+		const door = [{ id: 'door', payment_method: 'at_the_door' }];
+		expect(withoutBlockedOnlineTiers(card, { online_payment: 'blocked' })).toHaveLength(0);
+		expect(withoutBlockedOnlineTiers(door, { online_payment: 'blocked' })).toHaveLength(1);
+		expect(withoutBlockedOnlineTiers(card, { online_payment: 'allowed' })).toHaveLength(1);
 	});
 });

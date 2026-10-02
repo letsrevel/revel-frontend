@@ -10132,7 +10132,10 @@
 			"onlineUnavailableSuffix": "(no disponible para este evento)",
 			"legacyOnlineBanner": "Este tipo de entrada usa el pago online con tarjeta, que no está disponible para eventos en {country}. Cámbialo a pago en la puerta o por transferencia para seguir vendiendo.",
 			"changePaymentMethod": "Cambiar método de pago",
-			"locationHint": "Las normas para los pagos online dependen de dónde se celebre el evento."
+			"locationHint": "Las normas para los pagos online dependen de dónde se celebre el evento.",
+			"checking": "Comprobando las normas del país para este evento… Los pagos con tarjeta estarán disponibles en cuanto se carguen.",
+			"checkFailed": "No hemos podido comprobar las normas del país para este evento, así que los pagos con tarjeta siguen desactivados por ahora. Vuelve a intentarlo o elige otro método de pago.",
+			"retry": "Reintentar"
 		},
 		"checkout": {
 			"fallback": "Esta entrada no se puede comprar online. Contacta con la organización para saber cómo pagar.",

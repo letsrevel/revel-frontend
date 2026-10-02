@@ -10132,7 +10132,10 @@
 			"onlineUnavailableSuffix": "(non disponible pour cet événement)",
 			"legacyOnlineBanner": "Ce tarif utilise le paiement en ligne par carte, qui n'est pas disponible pour les événements dans ce pays ({country}). Passe au paiement à l'entrée ou par virement pour continuer à vendre.",
 			"changePaymentMethod": "Changer le mode de paiement",
-			"locationHint": "Les règles des paiements en ligne dépendent du lieu de l'événement."
+			"locationHint": "Les règles des paiements en ligne dépendent du lieu de l'événement.",
+			"checking": "Vérification des règles du pays pour cet événement… Les paiements par carte seront disponibles une fois qu'elles auront chargé.",
+			"checkFailed": "Nous n'avons pas pu vérifier les règles du pays pour cet événement, les paiements par carte restent donc désactivés pour l'instant. Réessaie ou choisis un autre mode de paiement.",
+			"retry": "Réessayer"
 		},
 		"checkout": {
 			"fallback": "Ce billet ne peut pas être acheté en ligne. Contacte l'organisation pour savoir comment payer.",

@@ -54,6 +54,7 @@
 		retainedSectorIdForMode
 	} from './tier-seating-payload';
 	import { Undo2 } from '@lucide/svelte';
+	import type { ComplianceStatus } from '$lib/utils/compliance';
 	import { formatDateTimeReadback } from '$lib/utils/date';
 	import type { PlatformFeeInfo } from '$lib/utils/fees';
 
@@ -68,8 +69,11 @@
 		eventVenueId?: string | null; // Pre-fill venue from event
 		/** The event form's start/end/check-in window the tier offsets are relative to. */
 		eventContext?: TierCheckInEventContext;
-		/** The event's country rules (#1001); null while loading or unknown. */
+		/** The event's country rules (#1001); null until loaded. */
 		compliance?: EventComplianceSchema | null;
+		/** Whether `compliance` has loaded; card payment stays off until it has. */
+		complianceStatus?: ComplianceStatus;
+		onRetryCompliance?: () => void;
 		onClose: () => void;
 	}
 
@@ -83,6 +87,8 @@
 		eventVenueId = null,
 		eventContext = { start: '' },
 		compliance = null,
+		complianceStatus = 'ready',
+		onRetryCompliance,
 		onClose
 	}: Props = $props();
 
@@ -517,6 +523,8 @@
 				{isPending}
 				{organizationStripeConnected}
 				{compliance}
+				{complianceStatus}
+				{onRetryCompliance}
 			/>
 
 			<!-- Price Settings (if not free) -->

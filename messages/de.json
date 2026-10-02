@@ -10132,7 +10132,10 @@
 			"onlineUnavailableSuffix": "(für diese Veranstaltung nicht verfügbar)",
 			"legacyOnlineBanner": "Diese Kategorie nutzt Online-Kartenzahlung, die für Veranstaltungen in {country} nicht verfügbar ist. Stelle sie auf Zahlung an der Abendkasse oder per Überweisung um, um weiter zu verkaufen.",
 			"changePaymentMethod": "Zahlungsart ändern",
-			"locationHint": "Die Regeln für Online-Zahlungen hängen davon ab, wo die Veranstaltung stattfindet."
+			"locationHint": "Die Regeln für Online-Zahlungen hängen davon ab, wo die Veranstaltung stattfindet.",
+			"checking": "Die Länderregeln für diese Veranstaltung werden geprüft … Kartenzahlungen sind verfügbar, sobald sie geladen sind.",
+			"checkFailed": "Wir konnten die Länderregeln für diese Veranstaltung nicht prüfen, daher bleiben Kartenzahlungen vorerst deaktiviert. Versuche es erneut oder wähle eine andere Zahlungsart.",
+			"retry": "Erneut versuchen"
 		},
 		"checkout": {
 			"fallback": "Dieses Ticket kann nicht online gekauft werden. Wende dich an die Veranstaltenden, um zu erfahren, wie du bezahlen kannst.",

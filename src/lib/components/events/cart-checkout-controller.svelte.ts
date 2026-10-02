@@ -161,10 +161,10 @@ export function createCartCheckoutController(deps: CartCheckoutDeps) {
 		},
 		onSuccess: handleCheckoutSuccess,
 		onError: (error: Error) => {
-			if (error instanceof CheckoutRefusedError) {
-				toast.error(error.message, { duration: 8000 });
-				return;
-			}
+			// A country-rule refusal (422) is rendered inline as the sheet's
+			// role="alert" on every path (the direct "Buy" opens the sheet for
+			// it), so a toast on top would only announce it twice.
+			if (error instanceof CheckoutRefusedError) return;
 			toast.error(m['cart.checkoutFailed'](), { description: error.message, duration: 6000 });
 		}
 	}));

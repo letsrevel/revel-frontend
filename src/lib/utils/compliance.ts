@@ -15,6 +15,9 @@ import type {
 	OrganizationComplianceSchema
 } from '$lib/api/generated/types.gen';
 
+/** Load state of an event's `compliance`; anything but `ready` fails closed. */
+export type ComplianceStatus = 'loading' | 'error' | 'ready';
+
 /** EU member states: the only countries Revel checks rules for. */
 export const EU_COUNTRY_CODES: ReadonlySet<string> = new Set([
 	'AT',

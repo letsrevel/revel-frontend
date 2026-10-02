@@ -20,7 +20,7 @@
 	import type { PlatformFeeInfo } from '$lib/utils/fees';
 	import { toast } from 'svelte-sonner';
 	import { extractErrorMessage } from '$lib/utils/errors';
-	import { noticesFor, unplacedNotices } from '$lib/utils/compliance';
+	import { noticesFor, unplacedNotices, type ComplianceStatus } from '$lib/utils/compliance';
 	import ComplianceNotices from '$lib/components/compliance/ComplianceNotices.svelte';
 
 	// Form state fields this step reads/writes. The parent passes a wider event
@@ -97,16 +97,21 @@
 	// The event's country rules (#1001). Read from the event detail, not the org:
 	// it follows where the event is held (an AT org's event in Italy is blocked
 	// even though the org card says allowed). Refetched on mount so a venue
-	// change saved on the details tab is reflected here.
+	// change saved on the details tab is reflected here. Fails CLOSED: until it
+	// has loaded, the tier editor treats card payment as unavailable.
 	const complianceQuery = createQuery(() => ({
 		queryKey: ['event-admin', eventId, 'compliance'],
 		queryFn: async () => {
 			const response = await eventpublicdetailsGetEvent({ path: { event_id: eventId } });
-			return response.data?.compliance ?? null;
+			if (response.error || !response.data) throw new Error('Failed to load event compliance');
+			return response.data.compliance;
 		},
 		refetchOnMount: 'always' as const
 	}));
 	const compliance = $derived(complianceQuery.data ?? null);
+	const complianceStatus = $derived<ComplianceStatus>(
+		complianceQuery.isSuccess ? 'ready' : complianceQuery.isError ? 'error' : 'loading'
+	);
 	const onlineBlocked = $derived(compliance?.online_payment === 'blocked');
 
 	// One-click Revel kill switch from the card. The tier PUT is a partial
@@ -438,6 +443,8 @@
 		{membershipTiers}
 		eventVenueId={formData.venue_id || null}
 		{compliance}
+		{complianceStatus}
+		onRetryCompliance={() => complianceQuery.refetch()}
 		eventContext={{
 			start: formData.start ?? '',
 			end: formData.end,

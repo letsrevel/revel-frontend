@@ -34,9 +34,9 @@ export function checkoutRefusedError(error: unknown): CheckoutRefusedError {
 }
 
 /**
- * A sale the rules refuse outright. Its message is the whole story (no generic
- * "Checkout failed" title in front of it): callers toast `message` as the title
- * and the checkout sheet shows it inline as a `role="alert"`.
+ * A sale the rules refuse outright. Its message is the whole story: the checkout
+ * sheet shows it inline as a `role="alert"` (the direct "Buy" path opens the
+ * sheet for it), and the controllers skip their generic "Checkout failed" toast.
  */
 export class CheckoutRefusedError extends Error {
 	constructor(message: string, options?: ErrorOptions) {

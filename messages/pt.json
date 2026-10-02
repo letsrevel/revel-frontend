@@ -10132,7 +10132,10 @@
 			"onlineUnavailableSuffix": "(não disponível para este evento)",
 			"legacyOnlineBanner": "Este tipo de bilhete usa pagamento online com cartão, que não está disponível para eventos neste país ({country}). Muda para pagamento à entrada ou por transferência bancária para continuar a vender.",
 			"changePaymentMethod": "Alterar método de pagamento",
-			"locationHint": "As regras para pagamentos online dependem do local onde o evento se realiza."
+			"locationHint": "As regras para pagamentos online dependem do local onde o evento se realiza.",
+			"checking": "A verificar as regras do país para este evento… Os pagamentos com cartão ficam disponíveis assim que carregarem.",
+			"checkFailed": "Não conseguimos verificar as regras do país para este evento, por isso os pagamentos com cartão ficam desativados por agora. Tenta novamente ou escolhe outro método de pagamento.",
+			"retry": "Tentar novamente"
 		},
 		"checkout": {
 			"fallback": "Este bilhete não pode ser comprado online. Contacta a organização para saberes como pagar.",
