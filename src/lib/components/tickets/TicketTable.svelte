@@ -257,6 +257,15 @@
 								amount={ticket.payment?.refund_amount}
 								currency={ticket.payment?.currency}
 							/>
+							{#if ticket.invoice_skipped}
+								<StatusBadge
+									tone="warning"
+									size="sm"
+									label={m['compliance.skipped.ticketBadge']()}
+									data-testid="invoice-skipped-badge"
+									class="w-fit whitespace-nowrap"
+								/>
+							{/if}
 						</div>
 					</td>
 					<td class="whitespace-nowrap px-4 py-3 text-sm text-muted-foreground">

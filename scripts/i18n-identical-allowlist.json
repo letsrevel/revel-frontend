@@ -205,7 +205,8 @@
 		"myDATA",
 		"NAV Online Számla",
 		"RO e-Factura",
-		"Verifactu"
+		"Verifactu",
+		"Document"
 	],
 	"it": [
 		"${price}",
@@ -343,7 +344,8 @@
 		"myDATA",
 		"NAV Online Számla",
 		"RO e-Factura",
-		"Verifactu"
+		"Verifactu",
+		"Ref. {reference}"
 	],
 	"pt": [
 		"${price}",
@@ -401,6 +403,7 @@
 		"{seriesName}",
 		"{start} – {end}",
 		"~{amount}",
-		"→"
+		"→",
+		"Ref. {reference}"
 	]
 }
