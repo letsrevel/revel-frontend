@@ -10134,7 +10134,7 @@
 		},
 		"thisCountry": "este país",
 		"tier": {
-			"onlineBlockedIt": "Los pagos online con tarjeta no están disponibles para eventos en Italia. La ley italiana exige que las entradas de pago vendidas online las emita un sistema de venta de entradas aprobado por la Agenzia delle Entrate, y Revel aún no está aprobado. Puedes seguir vendiendo entradas de pago con pago en la puerta o por transferencia, y confirmar los pagos desde tu panel. La entrada fiscal (titolo d'accesso) tienes que emitirla tú.",
+			"onlineBlockedIt": "Los pagos online con tarjeta no están disponibles para eventos en Italia. La ley italiana exige que las entradas de pago vendidas online las emita un sistema automatizado de venta de entradas aprobado por la Agenzia delle Entrate, y Revel aún no está aprobado. Puedes seguir vendiendo entradas de pago con pago en la puerta o por transferencia, y confirmar los pagos desde tu panel. La entrada fiscal (titolo d'accesso) tienes que emitirla tú.",
 			"onlineBlocked": "Los pagos online con tarjeta no están disponibles para eventos en {country} por la normativa fiscal local. Puedes seguir vendiendo entradas de pago con pago en la puerta o por transferencia.",
 			"onlineUnavailableSuffix": "(no disponible para este evento)",
 			"legacyOnlineBanner": "Este tipo de entrada usa el pago online con tarjeta, que no está disponible para eventos en {country}. Cámbialo a pago en la puerta o por transferencia para seguir vendiendo.",
