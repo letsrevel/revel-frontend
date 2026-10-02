@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { normalizePath, type Plugin } from 'vite';
 import { defineConfig } from 'vitest/config';
+import { splitBarrels } from './scripts/vite-plugin-split-barrels.ts';
 
 // Vite module IDs always use `/`, even on Windows — normalize before comparing.
 const PARAGLIDE_DEV_DIR = normalizePath(resolve('src/lib/paraglide'));
@@ -51,7 +52,12 @@ function paraglideBuildOutput(): Plugin {
 const viteResolve = process.env.VITEST ? { conditions: ['browser', 'svelte'] } : undefined;
 
 export default defineConfig({
-	plugins: [paraglideBuildOutput(), sveltekit()],
+	plugins: [
+		paraglideBuildOutput(),
+		// Vitest only — see the plugin for why the barrels are split.
+		...(process.env.VITEST ? [splitBarrels()] : []),
+		sveltekit()
+	],
 	build: {
 		// Skip gzip-size reporting: it adds build time and hundreds of log lines in CI
 		reportCompressedSize: false
@@ -60,7 +66,17 @@ export default defineConfig({
 		include: ['src/**/*.{test,spec}.{js,ts}'],
 		environment: 'jsdom',
 		globals: true,
-		setupFiles: ['./vitest.setup.ts']
+		setupFiles: ['./vitest.setup.ts'],
+		// Load the compiled Paraglide output with Node's own loader, once per
+		// worker, instead of re-evaluating its ~25 MB of locale modules in every
+		// test file's isolated graph (that alone was ~3s per component test).
+		// Consequence: `vi.mock('$lib/paraglide/runtime.js')` still reaches code
+		// that imports the runtime directly (date.ts), but NOT the compiled
+		// messages, which import it natively. To drive message locale in a
+		// test, use the runtime's `overwriteGetLocale` and restore it after
+		// (see utils/subscriptions.locale.test.ts) — the runtime instance is
+		// shared by every test file in the worker.
+		server: { deps: { external: [/\/src\/lib\/paraglide\//] } }
 	},
 	resolve: viteResolve,
 	// Playwright's webServer starts `vite preview` and waits on port 5173; the

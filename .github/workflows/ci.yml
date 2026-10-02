@@ -64,10 +64,16 @@ jobs:
       - name: Audit image alt text
         run: pnpm audit:images
 
-  # Unit tests (vitest)
-  test:
-    name: Unit Tests
+  # Unit tests (vitest), split across runners. Vitest's --shard divides test
+  # files evenly by count; `strategy.job-total` keeps the split in step with
+  # the matrix size.
+  test-shard:
+    name: Unit Tests (shard ${{ matrix.shard }}/${{ strategy.job-total }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -89,8 +95,20 @@ jobs:
       - name: Compile translations
         run: pnpm paraglide:compile
 
-      - name: Run unit tests
-        run: pnpm test
+      - name: Run unit tests (shard ${{ matrix.shard }})
+        run: pnpm test --shard=${{ matrix.shard }}/${{ strategy.job-total }}
+
+  # The branch ruleset requires a check named "Unit Tests"; matrix jobs report
+  # under per-shard names, so this job carries the required name and fails
+  # unless every shard passed (a skipped or cancelled shard counts as failure).
+  test:
+    name: Unit Tests
+    needs: test-shard
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every shard to pass
+        run: test "${{ needs.test-shard.result }}" = success
 
   # Test translations
   i18n:
