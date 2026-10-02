@@ -68,6 +68,19 @@ const CASES: CardCase[] = [
 		docs: 'https://docs.letsrevel.io/compliance/eu/es/#basque-country-ticketbai'
 	},
 	{
+		// Navarre (#1010): Spain's 2027 date, NaTicket copy, never Verifactu.
+		// Its heads-up is an attendee_invoicing notice, shown by the modes, not here.
+		org: 'compliance-es-nc',
+		body: /set up for Spain\. Some features work differently here/,
+		bullets: [
+			SPAIN_BLOCKED
+				? 'Attendee invoices: not available in Navarre.'
+				: 'Attendee invoices: available until 31 December 2026.'
+		],
+		notices: [],
+		docs: 'https://docs.letsrevel.io/compliance/eu/es/#navarre'
+	},
+	{
 		org: 'compliance-at',
 		body: /set up for Austria\. All Revel features are available\./,
 		bullets: [],
