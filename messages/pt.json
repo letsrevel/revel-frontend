@@ -367,7 +367,9 @@
 		"saveSuccess": "Preferências de notificação atualizadas com sucesso",
 		"saveFailed": "Não foi possível atualizar as preferências: {error}",
 		"typeOrgSetupNudge": "Dicas para configurar a tua organização",
-		"typeOrgSetupNudgeDescription": "Lembretes ocasionais quando a tua organização ainda é privada, tem um rascunho esquecido ou ficou inativa. No máximo um a cada duas semanas."
+		"typeOrgSetupNudgeDescription": "Lembretes ocasionais quando a tua organização ainda é privada, tem um rascunho esquecido ou ficou inativa. No máximo um a cada duas semanas.",
+		"typeFiscalDocumentSkipped": "Documentos a emitir por ti",
+		"typeFiscalDocumentSkippedDescription": "Um resumo diário das faturas e notas de crédito que a lei não permitiu à Revel emitir, para as emitires no teu próprio sistema."
 	},
 	"notificationList": {
 		"ariaLabel": "Notificações",

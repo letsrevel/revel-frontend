@@ -367,7 +367,9 @@
 		"saveSuccess": "Notification preferences updated successfully",
 		"saveFailed": "Failed to update preferences: {error}",
 		"typeOrgSetupNudge": "Organization setup tips",
-		"typeOrgSetupNudgeDescription": "Occasional reminders when your organization is still private, has a forgotten draft, or has gone quiet. At most one every two weeks."
+		"typeOrgSetupNudgeDescription": "Occasional reminders when your organization is still private, has a forgotten draft, or has gone quiet. At most one every two weeks.",
+		"typeFiscalDocumentSkipped": "Documents to issue yourself",
+		"typeFiscalDocumentSkippedDescription": "A daily summary of the invoices and credit notes the law kept Revel from issuing, so you can issue them from your own system."
 	},
 	"notificationList": {
 		"ariaLabel": "Notifications",

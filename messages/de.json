@@ -367,7 +367,9 @@
 		"saveSuccess": "Benachrichtigungseinstellungen erfolgreich aktualisiert",
 		"saveFailed": "Fehler beim Aktualisieren der Einstellungen: {error}",
 		"typeOrgSetupNudge": "Tipps zur Einrichtung deiner Organisation",
-		"typeOrgSetupNudgeDescription": "Gelegentliche Erinnerungen, wenn deine Organisation noch privat ist, einen vergessenen Entwurf hat oder still geworden ist. Höchstens eine alle zwei Wochen."
+		"typeOrgSetupNudgeDescription": "Gelegentliche Erinnerungen, wenn deine Organisation noch privat ist, einen vergessenen Entwurf hat oder still geworden ist. Höchstens eine alle zwei Wochen.",
+		"typeFiscalDocumentSkipped": "Selbst auszustellende Dokumente",
+		"typeFiscalDocumentSkippedDescription": "Eine tägliche Übersicht der Rechnungen und Gutschriften, die Revel aus rechtlichen Gründen nicht ausstellen konnte, damit du sie mit deinem eigenen System ausstellst."
 	},
 	"notificationList": {
 		"ariaLabel": "Benachrichtigungen",

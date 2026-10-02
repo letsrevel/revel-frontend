@@ -304,6 +304,38 @@ describe('NotificationItem', () => {
 		});
 	});
 
+	describe('fiscal_document_skipped digest (#1008)', () => {
+		it.each([
+			[
+				'owner',
+				'https://revel.test/org/compliance-be/admin/billing/skipped-documents',
+				'/org/compliance-be/admin/billing/skipped-documents'
+			],
+			[
+				'staff',
+				'https://revel.test/org/compliance-be/admin/events/ev-1/tickets?invoice_skipped=true',
+				'/org/compliance-be/admin/events/ev-1/tickets?invoice_skipped=true'
+			]
+		])('follows action_url for %s', async (_who, actionUrl, expected) => {
+			const notification = createMockNotification({
+				notification_type: 'fiscal_document_skipped',
+				context: {
+					organization_slug: 'compliance-be',
+					document_count: 1,
+					action_url: actionUrl
+				}
+			});
+			const { goto } = await import('$app/navigation');
+
+			renderItem({ notification, authToken: mockAuthToken });
+
+			await user.click(screen.getByRole('button', { name: /New Event Invitation/i }));
+
+			// Not the org page the organization_slug fallback would pick.
+			expect(goto).toHaveBeenCalledWith(expected);
+		});
+	});
+
 	it('navigates to the notifications page when context has no URL', async () => {
 		const notification = createMockNotification({
 			context: {} // No URL-related keys

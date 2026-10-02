@@ -3229,7 +3229,9 @@
 		"saveSuccess": "Préférences de notification mises à jour avec succès",
 		"saveFailed": "Échec de la mise à jour des préférences : {error}",
 		"typeOrgSetupNudge": "Conseils pour configurer ton organisation",
-		"typeOrgSetupNudgeDescription": "Des rappels occasionnels quand ton organisation est encore privée, a un brouillon oublié ou ne publie plus rien. Au maximum un toutes les deux semaines."
+		"typeOrgSetupNudgeDescription": "Des rappels occasionnels quand ton organisation est encore privée, a un brouillon oublié ou ne publie plus rien. Au maximum un toutes les deux semaines.",
+		"typeFiscalDocumentSkipped": "Documents à émettre toi-même",
+		"typeFiscalDocumentSkippedDescription": "Un récapitulatif quotidien des factures et avoirs que la loi n'a pas permis à Revel d'émettre, pour que tu les émettes depuis ton propre système."
 	},
 	"notificationsPage": {
 		"pageTitle": "Notifications",

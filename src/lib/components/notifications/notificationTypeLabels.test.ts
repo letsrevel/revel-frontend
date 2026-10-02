@@ -14,6 +14,12 @@ describe('notificationTypeLabels (#996)', () => {
 		);
 	});
 
+	it('translates fiscal_document_skipped (#1008)', () => {
+		expect(hasNotificationTypeLabel('fiscal_document_skipped')).toBe(true);
+		expect(getNotificationTypeLabel('fiscal_document_skipped')).toBe('Documents to issue yourself');
+		expect(getNotificationTypeDescription('fiscal_document_skipped')).toMatch(/daily summary/i);
+	});
+
 	it('falls back to the raw name for unmapped types', () => {
 		expect(hasNotificationTypeLabel('event_reminder')).toBe(false);
 		expect(getNotificationTypeLabel('event_reminder')).toBe('event reminder');
