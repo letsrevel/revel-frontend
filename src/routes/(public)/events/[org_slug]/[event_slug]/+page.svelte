@@ -23,6 +23,7 @@
 	import MyTicket from '$lib/components/tickets/MyTicket.svelte';
 	import EventPurchaseDialogs from '$lib/components/events/EventPurchaseDialogs.svelte';
 	import { eventHasSeatingMap } from '$lib/components/events/venue-overview';
+	import { withoutBlockedOnlineTiers } from '$lib/utils/compliance';
 	import EventConfirmationBanners from '$lib/components/events/EventConfirmationBanners.svelte';
 	import { createCheckoutController } from '$lib/components/events/event-checkout-controller.svelte';
 	import { consumePostRedirectParams } from '$lib/components/events/post-redirect-params';
@@ -161,7 +162,10 @@
 	let pickSeatsTier = $state<TierSchemaWithId | null>(null);
 
 	// Map-first entry point (#679): only when a purchasable tier sells a venue sector.
-	const hasSeatingMap = $derived(eventHasSeatingMap(ticketTiers, tierRemainingTickets));
+	// The seat map offers only what the tier cards do: no online tiers where the
+	// event's country rules block card payment (#1001).
+	const mapTiers = $derived(withoutBlockedOnlineTiers(ticketTiers, event.compliance));
+	const hasSeatingMap = $derived(eventHasSeatingMap(mapTiers, tierRemainingTickets));
 
 	function openMyTicketModal() {
 		showMyTicketModal = true;
@@ -196,6 +200,7 @@
 	// `user_choice` seats adopt straight into a group, unheld opens the picker,
 	// everything else starts the group at quantity 1 and scrolls to it.
 	function handleSelectTier(tier: TierSchemaWithId, heldSeatIds?: string[]): void {
+		if (withoutBlockedOnlineTiers([tier], event.compliance).length === 0) return;
 		if (tier.seat_assignment_mode === 'user_choice') {
 			if (heldSeatIds) {
 				cart.setSeatIds(tier, heldSeatIds);
@@ -389,6 +394,7 @@
 		cart={canUseCart ? cart : undefined}
 		quickBuyDisabled={purchaseFlow.isProcessing}
 		{eventRemaining}
+		compliance={event.compliance}
 		onPickSeats={canUseCart
 			? (tier) => {
 					pickSeatsTier = tier;
@@ -682,7 +688,7 @@
 <!-- Purchase-dialog cluster (MyTicketModal, GuestRsvpDialog, VenueOverviewDialog) -->
 <EventPurchaseDialogs
 	{event}
-	{ticketTiers}
+	ticketTiers={mapTiers}
 	{tierRemainingTickets}
 	isAuthenticated={data.isAuthenticated}
 	{hasSeatingMap}

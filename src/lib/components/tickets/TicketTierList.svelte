@@ -4,11 +4,13 @@
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import type { UserEventStatus } from '$lib/utils/eligibility';
 	import type {
+		EventComplianceSchema,
 		EventTokenSchema,
 		MembershipTierSchema,
 		TierRemainingTicketsSchema
 	} from '$lib/api/generated/types.gen';
 	import { isEligibility } from '$lib/utils/eligibility';
+	import { isReservationOnly } from '$lib/utils/compliance';
 	import type { EventCart } from './cart.svelte';
 	import { quickBuyEligible } from './cart.svelte';
 	import TierCard from './TierCard.svelte';
@@ -54,6 +56,8 @@
 		/** Heading anchor id — the list mounts twice since the tiers dialog
 		 * (page body + dialog), so each mount needs its own id. */
 		headingId?: string;
+		/** The event's country rules (#1001): hides the card option when blocked. */
+		compliance?: EventComplianceSchema | null;
 	}
 
 	const {
@@ -77,7 +81,8 @@
 		onSelectTier,
 		onViewSeatingMap,
 		onPickSeats,
-		headingId = 'ticket-tiers'
+		headingId = 'ticket-tiers',
+		compliance = null
 	}: Props = $props();
 
 	/**
@@ -93,7 +98,11 @@
 	const hasTiers = $derived(visibleTiers.length > 0);
 
 	// Check if any tier uses online payment
-	const hasOnlinePayment = $derived(visibleTiers.some((tier) => tier.payment_method === 'online'));
+	// Demo test-card hint only when a card checkout is actually on offer (#1001).
+	const hasOnlinePayment = $derived(
+		compliance?.online_payment !== 'blocked' &&
+			visibleTiers.some((tier) => tier.payment_method === 'online')
+	);
 
 	// Check if user is not eligible
 	const shouldShowEligibility = $derived.by(() => {
@@ -180,6 +189,8 @@
 					tierRemainingInfo={getTierRemainingInfo(tier.id)}
 					{timezone}
 					{capacityDisclosed}
+					onlineBlocked={compliance?.online_payment === 'blocked'}
+					reservationOnly={isReservationOnly(compliance?.venue_country)}
 					quickBuy={cart && quickBuyEligible(tier)
 						? {
 								quantity: cart.quantityFor(tier.id),

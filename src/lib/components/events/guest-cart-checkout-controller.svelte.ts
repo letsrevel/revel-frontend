@@ -17,7 +17,7 @@ import type { GuestCartCheckoutParams } from '../tickets/cart-payload';
 import { createCheckoutMachinery } from './cart-checkout-machinery';
 import * as m from '$lib/paraglide/messages.js';
 import { toast } from 'svelte-sonner';
-import { checkoutError } from './checkout-error';
+import { CheckoutRefusedError, checkoutError, checkoutRefusedError } from './checkout-error';
 import { extractApiErrorDetail, isGuestActionError } from '$lib/utils/api-error-detail';
 import { getEligibilityRefusalMessage } from '$lib/utils/eligibility';
 import { readAttributionFromCurrentUrl } from '$lib/utils/attribution';
@@ -87,6 +87,10 @@ export function mapGuestCheckoutError(
 		return new Error(extractApiErrorDetail(error) ?? m['cart.saleWindowClosed'](), {
 			cause: error
 		});
+	}
+	if (status === 422) {
+		// Country rules refuse the sale (#1001): the translated detail, verbatim.
+		return checkoutRefusedError(error);
 	}
 	if (status === 400) {
 		// Machine-readable guest-action codes (backend #952, issue #912) come
@@ -257,6 +261,10 @@ export function createGuestCartCheckoutController(deps: GuestCartCheckoutDeps) {
 			if (error instanceof GuestAccountRequiredError || error instanceof GuestCartTooLargeError) {
 				return;
 			}
+			// A country-rule refusal (422) is rendered inline as the sheet's
+			// role="alert" on every path (the direct "Buy" opens the sheet for
+			// it), so a toast on top would only announce it twice.
+			if (error instanceof CheckoutRefusedError) return;
 			toast.error(m['cart.checkoutFailed'](), { description: error.message, duration: 6000 });
 		}
 	}));

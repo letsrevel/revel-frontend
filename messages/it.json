@@ -10086,5 +10086,64 @@
 		"contactSupport": "Contatta il supporto",
 		"dismiss": "Nascondi",
 		"supportSubject": "Recapito email al mio account"
+	},
+	"compliance": {
+		"card": {
+			"title": "Regole del paese",
+			"bodyAllowed": "La tua organizzazione è configurata per questo paese: {country}. Tutte le funzioni di Revel sono disponibili.",
+			"bodyRestricted": "La tua organizzazione è configurata per questo paese: {country}. Alcune funzioni funzionano diversamente a causa delle norme fiscali locali:",
+			"bodyUnknown": "Non sappiamo ancora in quale paese si trova la tua organizzazione. Aggiungi la tua partita IVA o la città, così possiamo applicare le regole locali corrette.",
+			"bodyOutOfScope": "Al momento Revel verifica le norme fiscali solo per i paesi dell'UE. Fuori dall'UE, sei tu responsabile di far sì che la vendita dei biglietti rispetti le regole locali.",
+			"footnote": "Revel ricava il tuo paese dalla partita IVA o, se non ne hai una, dalla tua città.",
+			"learnMore": "Scopri di più",
+			"noticesTitle": "Buono a sapersi",
+			"opensInNewTab": "(si apre in una nuova scheda)"
+		},
+		"bullet": {
+			"invoicingBlocked": "Fatture ai partecipanti: non disponibili in {country}.",
+			"invoicingUpcomingEs": "Fatture ai partecipanti: disponibili fino al 31 dicembre 2026.",
+			"invoicingBusinessBuyers": "Fatture alle aziende con sede in questo paese ({country}): emettile con il tuo software di fatturazione elettronica.",
+			"invoicingBusinessBuyersAll": "Fatture alle aziende: emettile con il tuo software di fatturazione elettronica.",
+			"onlinePaymentBlocked": "Pagamenti online con carta: non disponibili per eventi in {country}. I pagamenti all'ingresso e con bonifico funzionano come sempre.",
+			"offlinePaymentBlocked": "Pagamenti all'ingresso e con bonifico: non disponibili per eventi in {country}."
+		},
+		"invoicing": {
+			"blocked": "Revel non può emettere fatture ai tuoi partecipanti in {country}. La legge locale richiede che le fatture passino per {system}, e Revel non è ancora collegato. Emetti le fatture con il tuo software di fatturazione.",
+			"upcomingEs": "Dal 1° gennaio 2027 Revel smetterà di emettere fatture ai partecipanti per le organizzazioni in Spagna, a causa delle nuove regole Verifactu. Fino ad allora tutto funziona come sempre. Organizzati per emettere le fatture con un software conforme a Verifactu entro quella data.",
+			"businessBuyers": "Le fatture ai clienti con partita IVA di questo paese ({country}) vanno inviate come fatture elettroniche tramite {system}. Revel non le crea. Emettile con il tuo software di fatturazione elettronica. Le fatture a tutti gli altri funzionano come sempre.",
+			"businessBuyersAll": "Le fatture ai clienti business vanno emesse tramite KSeF. Revel non le crea. Emettile con il tuo software di fatturazione elettronica. Le fatture ai privati funzionano come sempre.",
+			"draftNotIssuable": "Questa fattura non può più essere emessa da Revel. Emettila con il tuo software di fatturazione."
+		},
+		"system": {
+			"hr": "il sistema di fiscalizzazione dell'Amministrazione fiscale",
+			"si": "la verifica delle fatture della FURS",
+			"gr": "myDATA",
+			"pt": "un software di fatturazione certificato",
+			"hu": "NAV Online Számla",
+			"ro": "RO e-Factura",
+			"es": "Verifactu",
+			"generic": "il sistema nazionale di fatturazione elettronica",
+			"businessGeneric": "il sistema nazionale di fatturazione elettronica"
+		},
+		"thisCountry": "questo paese",
+		"tier": {
+			"onlineBlockedIt": "I pagamenti online con carta non sono disponibili per gli eventi in Italia. La legge italiana richiede che i biglietti a pagamento venduti online siano emessi da un sistema di biglietteria approvato dall'Agenzia delle Entrate, e Revel non è ancora approvato. Puoi comunque vendere biglietti a pagamento con pagamento all'ingresso o tramite bonifico, e confermare i pagamenti dalla tua dashboard. Il titolo d'accesso fiscale devi emetterlo tu.",
+			"onlineBlocked": "I pagamenti online con carta non sono disponibili per gli eventi in {country} a causa delle norme fiscali locali. Puoi comunque vendere biglietti a pagamento con pagamento all'ingresso o tramite bonifico.",
+			"onlineUnavailableSuffix": "(non disponibile per questo evento)",
+			"legacyOnlineBanner": "Questa tipologia usa il pagamento online con carta, che non è disponibile per gli eventi in {country}. Passa al pagamento all'ingresso o tramite bonifico per continuare a vendere.",
+			"changePaymentMethod": "Cambia metodo di pagamento",
+			"locationHint": "Le regole per i pagamenti online dipendono dal luogo in cui si svolge l'evento.",
+			"checking": "Stiamo verificando le regole del paese per questo evento… I pagamenti con carta restano disattivati finché la verifica non è completa.",
+			"checkFailed": "Non siamo riusciti a verificare le regole del paese per questo evento, quindi per ora i pagamenti con carta restano disattivati. Riprova o scegli un altro metodo di pagamento.",
+			"retry": "Riprova"
+		},
+		"checkout": {
+			"fallback": "Questo biglietto non si può acquistare online. Contatta l'organizzazione per sapere come pagare.",
+			"notAvailableOnline": "Non disponibile online",
+			"reservation": "Paghi direttamente l'organizzazione. Il tuo biglietto Revel è una prenotazione; il titolo d'accesso fiscale te lo dà l'organizzazione."
+		},
+		"ticket": {
+			"linesTitle": "Dettagli del biglietto"
+		}
 	}
 }

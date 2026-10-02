@@ -28,6 +28,7 @@ import * as cartBaHolds from '../tickets/cart-ba-holds';
 import { createCartCheckoutController } from './cart-checkout-controller.svelte';
 import { createGuestCartCheckoutController } from './guest-cart-checkout-controller.svelte';
 import { createLiveAuth } from './live-auth.svelte';
+import { CheckoutRefusedError } from './checkout-error';
 
 export interface CartPurchaseFlowDeps {
 	event: EventDetailSchema;
@@ -218,9 +219,16 @@ export function createCartPurchaseFlow(deps: CartPurchaseFlowDeps) {
 		}
 		// '' / null keep the fingerprint byte-identical to PR 1's `{ items }`.
 		const params = buildCartCheckoutParams(buildCartCheckoutItems(), '', null);
-		// onError omitted: the controller's own toast surfaces the failure.
+		// Other failures: the controller's own toast surfaces them. A sale the
+		// country rules refuse (422, #1001) is shown like a sheet submission: the
+		// sheet opens with the backend's reason as its inline role="alert".
 		await cartBaHolds.submitCart(params, cartSubmitDeps, {
-			onHoldFailure: (message) => toast.error(message)
+			onHoldFailure: (message) => toast.error(message),
+			onError: (e) => {
+				if (!(e instanceof CheckoutRefusedError)) return;
+				showCheckoutSheet = true;
+				cartPurchaseError = e;
+			}
 		});
 	}
 

@@ -10086,5 +10086,64 @@
 		"contactSupport": "Contact support",
 		"dismiss": "Dismiss",
 		"supportSubject": "Email delivery to my account"
+	},
+	"compliance": {
+		"card": {
+			"title": "Country rules",
+			"bodyAllowed": "Your organization is set up for {country}. All Revel features are available.",
+			"bodyRestricted": "Your organization is set up for {country}. Some features work differently here because of local tax rules:",
+			"bodyUnknown": "We don't know which country your organization is in yet. Add your VAT ID or city so we can apply the right local rules.",
+			"bodyOutOfScope": "Revel currently only checks tax rules for EU countries. Outside the EU, you are responsible for making sure your ticket sales follow local rules.",
+			"footnote": "Revel works out your country from your VAT ID or, if you don't have one, from your city.",
+			"learnMore": "Learn more",
+			"noticesTitle": "Good to know",
+			"opensInNewTab": "(opens in a new tab)"
+		},
+		"bullet": {
+			"invoicingBlocked": "Attendee invoices: not available in {country}.",
+			"invoicingUpcomingEs": "Attendee invoices: available until 31 December 2026.",
+			"invoicingBusinessBuyers": "Invoices to {country} businesses: issue them from your own e-invoicing software.",
+			"invoicingBusinessBuyersAll": "Invoices to businesses: issue them from your own e-invoicing software.",
+			"onlinePaymentBlocked": "Online card payments: not available for events in {country}. Payments at the door and by bank transfer work as usual.",
+			"offlinePaymentBlocked": "Payments at the door and by bank transfer: not available for events in {country}."
+		},
+		"invoicing": {
+			"blocked": "Revel can't issue invoices to your attendees in {country}. The law there requires invoices to go through {system}, and Revel isn't connected to it yet. Please issue invoices from your own invoicing software.",
+			"upcomingEs": "From 1 January 2027, Revel will stop issuing attendee invoices for organizations in Spain, because of the new Verifactu rules. Until then, everything works as usual. Plan to issue invoices from Verifactu-compliant software by that date.",
+			"businessBuyers": "Invoices to customers with a {country} VAT ID must be sent as e-invoices through {system}. Revel won't create those. Issue them from your e-invoicing software. Invoices to everyone else work as usual.",
+			"businessBuyersAll": "Invoices to business customers must be issued through KSeF. Revel won't create those. Issue them from your e-invoicing software. Invoices to consumers work as usual.",
+			"draftNotIssuable": "This invoice can't be issued from Revel anymore. Issue it from your own invoicing software."
+		},
+		"system": {
+			"hr": "the Tax Administration's fiscalization system",
+			"si": "FURS invoice verification",
+			"gr": "myDATA",
+			"pt": "certified invoicing software",
+			"hu": "NAV Online Számla",
+			"ro": "RO e-Factura",
+			"es": "Verifactu",
+			"generic": "the national e-invoicing system",
+			"businessGeneric": "the national e-invoicing system"
+		},
+		"thisCountry": "this country",
+		"tier": {
+			"onlineBlockedIt": "Online card payments aren't available for events in Italy. Italian law requires paid tickets sold online to be issued by a ticketing system approved by the Agenzia delle Entrate, and Revel isn't approved yet. You can still sell paid tickets with payment at the door or by bank transfer, and confirm payments from your dashboard. You must issue the fiscal ticket (titolo d'accesso) yourself.",
+			"onlineBlocked": "Online card payments aren't available for events in {country} because of local tax rules. You can still sell paid tickets with payment at the door or by bank transfer.",
+			"onlineUnavailableSuffix": "(not available for this event)",
+			"legacyOnlineBanner": "This tier uses online card payment, which isn't available for events in {country}. Switch it to payment at the door or bank transfer to keep selling.",
+			"changePaymentMethod": "Change payment method",
+			"locationHint": "Rules for online payments depend on where the event takes place.",
+			"checking": "Checking this event's country rules… Card payments stay off until the check is complete.",
+			"checkFailed": "We couldn't check this event's country rules, so card payments stay off for now. Try again, or pick another payment method.",
+			"retry": "Try again"
+		},
+		"checkout": {
+			"fallback": "This ticket can't be bought online. Contact the organizer to find out how to pay.",
+			"notAvailableOnline": "Not available online",
+			"reservation": "You'll pay the organizer directly. Your Revel ticket is a reservation; the organizer gives you the fiscal ticket."
+		},
+		"ticket": {
+			"linesTitle": "Ticket details"
+		}
 	}
 }

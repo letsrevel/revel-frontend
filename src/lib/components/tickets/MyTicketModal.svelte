@@ -11,6 +11,7 @@
 	import CancelTicketDialog from './CancelTicketDialog.svelte';
 	import RenameTicketHolderDialog from './RenameTicketHolderDialog.svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
+	import TicketComplianceLines from './TicketComplianceLines.svelte';
 	import {
 		Ticket,
 		Calendar,
@@ -623,6 +624,11 @@
 					{#if ticket.status === 'pending'}
 						<PendingDownloadsNotice class="mt-2" />
 					{/if}
+				{/if}
+
+				<!-- What the PDF / wallet passes print (#1001): organizer, ticket no., price… -->
+				{#if ticket.compliance_lines?.length}
+					<TicketComplianceLines lines={ticket.compliance_lines} />
 				{/if}
 
 				<!-- Checked In Info. bg-info/10 + text-info mirrors ToneTile's audited

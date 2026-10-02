@@ -93,8 +93,11 @@ test.describe('J22 invoicing mode @p2', () => {
 			await page.getByRole('radio', { name: 'Automatic' }).click();
 			await saveMode(page).click();
 
-			// The backend's 422 names every missing prerequisite; the toast relays it.
-			await expect(page.getByText(/VAT ID must be validated via VIES/)).toBeVisible({
+			// The backend's 422 names every missing prerequisite; the inline alert
+			// under the radios relays it (#1001 moved it out of a toast).
+			await expect(
+				page.getByTestId('invoicing-mode-error').getByText(/VAT ID must be validated via VIES/)
+			).toBeVisible({
 				timeout: 15_000
 			});
 			await expect(page.getByText('Invoicing mode updated')).toHaveCount(0);

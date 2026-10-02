@@ -16,6 +16,8 @@
 	import type { JoinBlock } from './cart.svelte';
 	import TierQuantityStepper from './TierQuantityStepper.svelte';
 	import { tierEntryWindow } from './tier-entry-window';
+	import ComplianceCallout from '$lib/components/compliance/ComplianceCallout.svelte';
+	import { tierIsPriced } from '$lib/utils/compliance';
 
 	interface Props {
 		tier: TierSchemaWithId;
@@ -62,6 +64,11 @@
 			onPick: () => void;
 		};
 		onSelectTier: (tier: TierSchemaWithId) => void;
+		/** `event.compliance.online_payment === 'blocked'` (#1001): card checkout
+		 * would be refused, so an online tier can't be bought here. */
+		onlineBlocked?: boolean;
+		/** Priced tickets are reservations (events held in Italy, #1069). */
+		reservationOnly?: boolean;
 	}
 
 	const {
@@ -76,8 +83,19 @@
 		capacityDisclosed = true,
 		quickBuy,
 		pickSeats,
-		onSelectTier
+		onSelectTier,
+		onlineBlocked = false,
+		reservationOnly = false
 	}: Props = $props();
+
+	const uid = $props.id();
+	const onlineUnavailable = $derived(onlineBlocked && tier.payment_method === 'online');
+	// The reservation copy belongs to tiers paid to the organizer directly.
+	const showReservationNote = $derived(
+		reservationOnly &&
+			(tier.payment_method === 'offline' || tier.payment_method === 'at_the_door') &&
+			tierIsPriced(tier)
+	);
 
 	// A buyer who can transact — authenticated, or a guest the event allows to
 	// attend without an account (#853 Task 5). With the widened cart mount
@@ -359,6 +377,20 @@
 				{membershipRestriction.reason}
 			</p>
 		{/if}
+		<!-- Country rules (#1001): after paused/sold-out/membership, but BEFORE
+	     sign-in: signing in can't make a blocked card tier purchasable, so the
+	     honest answer comes first, for every visitor. -->
+	{:else if onlineUnavailable}
+		<Button disabled class="w-full sm:w-auto" aria-describedby="{uid}-online-unavailable">
+			{m['compliance.checkout.notAvailableOnline']()}
+		</Button>
+		<p
+			id="{uid}-online-unavailable"
+			class="max-w-[250px] text-xs text-muted-foreground sm:text-right"
+			data-testid="tier-online-unavailable"
+		>
+			{m['compliance.checkout.fallback']()}
+		</p>
 	{:else if !isAuthenticated && !canAttendWithoutLogin}
 		<Button href="/login" variant="outline" class="w-full sm:w-auto"
 			>{m['tierCardAdmin.signInToGetTicket']()}</Button
@@ -477,5 +509,12 @@
 >
 	{#if tier.description}
 		<MarkdownContent content={tier.description} class="text-sm text-muted-foreground" />
+	{/if}
+	{#if showReservationNote}
+		<!-- One per priced tier: a static note, not a live region, so a page of
+		     tiers doesn't announce the same sentence once per card. -->
+		<ComplianceCallout testId="tier-reservation-note" role="note">
+			<p>{m['compliance.checkout.reservation']()}</p>
+		</ComplianceCallout>
 	{/if}
 </PricingCard>

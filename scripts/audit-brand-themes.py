@@ -247,6 +247,12 @@ COMPOSITED_PAIRS = [
     ("foreground", 1, "destructive", 0.10, "card", 4.5, BOTH, "DietarySummary restriction cell"),
     ("foreground", 1, "highlight", 0.10, "card", 4.5, BOTH, "DietarySummary / EventActionSidebar note"),
     ("foreground", 1, "highlight", 0.20, "card", 4.5, BOTH, "create-org already-owner notice body"),
+    # ComplianceCallout (#1001): body copy is text-foreground on the soft tint, on
+    # cards (billing, tier cards) and dialogs/pages (tier editor, ticket modal).
+    ("foreground", 1, "info", 0.10, "card", 4.5, BOTH, "ComplianceCallout info on card"),
+    ("foreground", 1, "info", 0.10, "background", 4.5, BOTH, "ComplianceCallout info on dialog/page"),
+    ("foreground", 1, "highlight", 0.20, "background", 4.5, BOTH, "ComplianceCallout warning on page"),
+    ("foreground", 1, "destructive", 0.10, "background", 4.5, BOTH, "ComplianceCallout blocked on dialog/page"),
     ("highlight-foreground", 1, "highlight", 0.10, "card", 4.5, ("light",), "EventDetails highlight cell"),
     ("highlight", 1, "highlight", 0.10, "card", 4.5, ("dark",), "EventDetails highlight cell"),
     # Selected-option fills: the label stays --foreground, the BORDER carries the

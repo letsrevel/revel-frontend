@@ -30,6 +30,7 @@
 	import TierFormAvailabilitySection from './TierFormAvailabilitySection.svelte';
 	import TierFormSeatingSection from './TierFormSeatingSection.svelte';
 	import TierFormCheckInSection from './TierFormCheckInSection.svelte';
+	import TierFormPaymentMethodSection from './TierFormPaymentMethodSection.svelte';
 	import {
 		checkInOffsetsPayload,
 		checkInPicksValid,
@@ -52,6 +53,7 @@
 		retainedSectorIdForMode
 	} from './tier-seating-payload';
 	import { Undo2 } from '@lucide/svelte';
+	import type { EventRules } from '$lib/utils/compliance';
 	import { formatDateTimeReadback } from '$lib/utils/date';
 	import type { PlatformFeeInfo } from '$lib/utils/fees';
 
@@ -66,6 +68,8 @@
 		eventVenueId?: string | null; // Pre-fill venue from event
 		/** The event form's start/end/check-in window the tier offsets are relative to. */
 		eventContext?: TierCheckInEventContext;
+		/** The event's country rules (#1001) and whether they've loaded (fails closed). */
+		rules?: EventRules;
 		onClose: () => void;
 	}
 
@@ -78,6 +82,7 @@
 		membershipTiers = [],
 		eventVenueId = null,
 		eventContext = { start: '' },
+		rules = { compliance: null, status: 'ready' },
 		onClose
 	}: Props = $props();
 
@@ -313,12 +318,16 @@
 	// "Action failed" toast from duplicating that panel (the RefundTicketDialog
 	// convention); the body is thrown unwrapped so extractFieldErrors still
 	// sees the pydantic detail array.
+	// Last save's HTTP status: a plain-detail 422 is a country-rule refusal (#1001).
+	let saveStatus = $state<number | undefined>(undefined);
+
 	const tierCreateMutation = createMutation(() => ({
 		mutationFn: async (data: TicketTierCreateSchema) => {
 			const res = await eventadminticketsCreateTicketTier({
 				path: { event_id: eventId },
 				body: data
 			});
+			saveStatus = res.response?.status;
 			if (res.error) throw markSilent(res.error);
 			return res.data;
 		},
@@ -335,6 +344,7 @@
 				path: { event_id: eventId, tier_id: tier.id },
 				body: data
 			});
+			saveStatus = res.response?.status;
 			if (res.error) throw markSilent(res.error);
 			return res.data;
 		},
@@ -359,8 +369,12 @@
 		}
 	}));
 
+	// Card + unknown rules: hold the save. Known-blocked legacy card tiers still save (J29.3).
+	const onlineSaveHeld = $derived(rules.status !== 'ready' && paymentMethod === 'online');
+
 	function handleSubmit(e: Event) {
 		e.preventDefault();
+		if (onlineSaveHeld) return;
 
 		// Determine the price value based on payment method and price type
 		// Normalize all decimal values to ensure dots (not commas) as decimal separator
@@ -501,35 +515,14 @@
 				/>
 			</div>
 
-			<!-- Payment Method -->
-			<div>
-				<Label for="payment-method">{m['tierForm.paymentMethod']()}</Label>
-				<select
-					id="payment-method"
-					bind:value={paymentMethod}
-					disabled={isPending}
-					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-				>
-					<option value="free">{m['tierForm.free']()}</option>
-					<option value="offline">{m['tierForm.offline']()}</option>
-					<option value="at_the_door">{m['tierForm.atTheDoor']()}</option>
-					<option value="online" disabled={!organizationStripeConnected}>
-						{m['tierForm.onlineStripe']()}
-						{!organizationStripeConnected ? m['tierForm.notConnectedSuffix']() : ''}
-					</option>
-				</select>
-				<p class="mt-1 text-xs text-muted-foreground">
-					{#if paymentMethod === 'free'}
-						{m['tierForm.paymentHelpFree']()}
-					{:else if paymentMethod === 'offline'}
-						{m['tierForm.paymentHelpOffline']()}
-					{:else if paymentMethod === 'at_the_door'}
-						{m['tierForm.paymentHelpAtTheDoor']()}
-					{:else if paymentMethod === 'online'}
-						{m['tierForm.paymentHelpOnline']()}
-					{/if}
-				</p>
-			</div>
+			<TierFormPaymentMethodSection
+				bind:paymentMethod
+				{isPending}
+				{organizationStripeConnected}
+				compliance={rules.compliance}
+				complianceStatus={rules.status}
+				onRetryCompliance={rules.onRetry}
+			/>
 
 			<!-- Price Settings (if not free) -->
 			{#if paymentMethod !== 'free'}
@@ -694,10 +687,12 @@
 					<Button
 						type="submit"
 						disabled={isPending ||
+							onlineSaveHeld ||
 							!name.trim() ||
 							!sectorValid ||
 							!checkInPicksValid(eventContext.start, checkInPicks) ||
 							(paymentMethod !== 'free' && allowUserCancellation && !refundPolicyValid)}
+						aria-describedby={onlineSaveHeld ? 'tier-online-blocked' : undefined}
 					>
 						{isPending
 							? m['tierForm.saving']()
@@ -733,6 +728,9 @@
 						</ul>
 					{:else}
 						<p class="mt-1 text-sm text-destructive/90">{errorMsg}</p>
+						{#if saveStatus === 422 && paymentMethod === 'online' && !isBillingError}
+							<p class="mt-1 text-sm text-destructive/90">{m['compliance.tier.locationHint']()}</p>
+						{/if}
 					{/if}
 
 					{#if isBillingError}

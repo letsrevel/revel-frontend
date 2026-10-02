@@ -31,6 +31,7 @@ interface PersonaFixtures {
 	asBetaMember: Page;
 	asTestAdmin: Page;
 	asTestMember: Page;
+	asCompliance: Page;
 }
 
 function personaFixture(name: PersonaName) {
@@ -62,7 +63,8 @@ export const test = base.extend<PersonaFixtures & { _backendGuard: void }>({
 	asBetaOwner: personaFixture('betaOwner'),
 	asBetaMember: personaFixture('betaMember'),
 	asTestAdmin: personaFixture('testAdmin'),
-	asTestMember: personaFixture('testMember')
+	asTestMember: personaFixture('testMember'),
+	asCompliance: personaFixture('compliance')
 });
 
 export { expect, PERSONAS };

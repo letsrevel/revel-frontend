@@ -48,6 +48,7 @@
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import InvoiceVatBreakdownTable from '$lib/components/financials/InvoiceVatBreakdownTable.svelte';
 	import type { Tone } from '$lib/components/common/tones';
+	import InvoiceNotIssuableAlert from '$lib/components/compliance/InvoiceNotIssuableAlert.svelte';
 
 	interface Props {
 		data: LayoutData;
@@ -77,6 +78,8 @@
 	let selectedInvoiceId = $state<string | null>(null);
 	let isEditing = $state(false);
 	let showIssueDialog = $state(false);
+	// 422 on issue = country rules refuse it (#1001); shown inline in the dialog.
+	let issueRefusal = $state<string | null>(null);
 	let showDeleteDialog = $state(false);
 	let actionInvoiceId = $state<string | null>(null);
 	let editBuyerName = $state('');
@@ -155,11 +158,16 @@
 	const issueMutation = browser
 		? createMutation(() => ({
 				mutationFn: async (invoiceId: string) => {
+					issueRefusal = null;
 					const response = await organizationadminvatIssueAttendeeInvoice({
 						path: { slug, invoice_id: invoiceId },
 						headers
 					});
-					if (response.error) throw new Error(extractErrorMessage(response.error, errMsg()));
+					if (response.error) {
+						const message = extractErrorMessage(response.error, errMsg());
+						if (response.response?.status === 422) issueRefusal = message;
+						throw new Error(message);
+					}
 					if (!response.data) throw new Error(errMsg());
 					return response.data;
 				},
@@ -173,7 +181,9 @@
 						});
 					toast.success(m['orgAdmin.billing.attendeeInvoices.issued']());
 				},
-				onError: (error: Error) => toast.error(error.message)
+				onError: (error: Error) => {
+					if (!issueRefusal) toast.error(error.message);
+				}
 			}))
 		: null;
 	const deleteMutation = browser
@@ -253,6 +263,7 @@
 	}
 	function openAction(invoiceId: string, type: 'issue' | 'delete') {
 		actionInvoiceId = invoiceId;
+		issueRefusal = null;
 		if (type === 'issue') showIssueDialog = true;
 		else showDeleteDialog = true;
 	}
@@ -692,7 +703,8 @@
 	buttonLabel: string,
 	onConfirm: () => void,
 	isPending: boolean,
-	variant: 'default' | 'destructive'
+	variant: 'default' | 'destructive',
+	refusal: string | null = null
 )}
 	<Dialog {open} {onOpenChange}>
 		<DialogContent class="max-h-[90vh] overflow-y-auto">
@@ -700,6 +712,7 @@
 				<DialogTitle>{title}</DialogTitle>
 				<DialogDescription>{description}</DialogDescription>
 			</DialogHeader>
+			{#if refusal}<InvoiceNotIssuableAlert detail={refusal} />{/if}
 			<DialogFooter>
 				<Button variant="outline" onclick={() => onOpenChange(false)}>{m['common.cancel']()}</Button
 				>
@@ -720,7 +733,8 @@
 	m['orgAdmin.billing.attendeeInvoices.issueConfirmButton'](),
 	() => actionInvoiceId && issueMutation?.mutate(actionInvoiceId),
 	issueMutation?.isPending ?? false,
-	'default'
+	'default',
+	issueRefusal
 )}
 
 {@render confirmDialog(

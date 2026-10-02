@@ -46,6 +46,9 @@
 	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import type { Tone } from '$lib/components/common/tones';
+	import CountryRulesCard from '$lib/components/compliance/CountryRulesCard.svelte';
+	import ComplianceCallout from '$lib/components/compliance/ComplianceCallout.svelte';
+	import { invoicingNotice } from '$lib/utils/compliance';
 
 	interface Props {
 		data: LayoutData;
@@ -283,11 +286,17 @@
 					queryClient.invalidateQueries({ queryKey: ['billing-info', slug] });
 					toast.success(m['orgAdmin.billing.invoicingMode.saved']());
 				},
-				onError: (error: Error) => {
-					toast.error(error.message);
-				}
+				// No toast: the inline role="alert" under the radios is the feedback,
+				// and a toast on top would announce the same refusal twice. The local
+				// handler also stands in for the global "Action failed" toast.
+				onError: () => undefined
 			}))
 		: null;
+
+	// ─── Country compliance (#1001) ────────────────────────────────
+	const compliance = $derived(billingQuery?.data?.compliance);
+	const invoicingBlocked = $derived(compliance?.attendee_invoicing === 'blocked');
+	const invoicingComplianceNotice = $derived(compliance ? invoicingNotice(compliance) : null);
 
 	// ─── VAT Validation Status ──────────────────────────────────────
 	type VatStatusType = 'not-set' | 'validated' | 'pending';
@@ -381,10 +390,26 @@
 				{m['orgAdmin.billing.invoicingMode.description']()}
 			</p>
 
+			{#if invoicingComplianceNotice}
+				<ComplianceCallout
+					id="invoicing-compliance-notice"
+					testId="invoicing-compliance-notice"
+					tone={invoicingComplianceNotice.kind === 'blocked'
+						? 'blocked'
+						: invoicingComplianceNotice.kind === 'upcoming'
+							? 'warning'
+							: 'info'}
+				>
+					<p>{invoicingComplianceNotice.text}</p>
+				</ComplianceCallout>
+			{/if}
+
 			<RadioGroup.Root
 				value={invoicingMode}
 				onValueChange={(value) => {
 					if (value) invoicingMode = value;
+					// A new pick makes the last refusal stale.
+					setInvoicingModeMutation?.reset();
 				}}
 			>
 				<div class="space-y-3">
@@ -400,7 +425,13 @@
 						</div>
 					</div>
 					<div class="flex items-start space-x-3">
-						<RadioGroup.Item value="hybrid" id="invoicing-hybrid" class="mt-0.5" />
+						<RadioGroup.Item
+							value="hybrid"
+							id="invoicing-hybrid"
+							class="mt-0.5"
+							disabled={invoicingBlocked}
+							aria-describedby={invoicingBlocked ? 'invoicing-compliance-notice' : undefined}
+						/>
 						<div>
 							<Label for="invoicing-hybrid" class="font-medium">
 								{m['orgAdmin.billing.invoicingMode.hybrid']()}
@@ -411,7 +442,13 @@
 						</div>
 					</div>
 					<div class="flex items-start space-x-3">
-						<RadioGroup.Item value="auto" id="invoicing-auto" class="mt-0.5" />
+						<RadioGroup.Item
+							value="auto"
+							id="invoicing-auto"
+							class="mt-0.5"
+							disabled={invoicingBlocked}
+							aria-describedby={invoicingBlocked ? 'invoicing-compliance-notice' : undefined}
+						/>
 						<div>
 							<Label for="invoicing-auto" class="font-medium">
 								{m['orgAdmin.billing.invoicingMode.auto']()}
@@ -423,6 +460,19 @@
 					</div>
 				</div>
 			</RadioGroup.Root>
+
+			{#if setInvoicingModeMutation?.error}
+				<!-- A refused mode change (422, country rules) names the reason; keep it
+				     on the page, not only in a toast that disappears. -->
+				<div
+					class="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-foreground"
+					role="alert"
+					data-testid="invoicing-mode-error"
+				>
+					<AlertCircle class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+					<p>{setInvoicingModeMutation.error.message}</p>
+				</div>
+			{/if}
 
 			<div class="flex justify-end">
 				<Button
@@ -634,6 +684,10 @@
 				</div>
 			</form>
 		</section>
+
+		{#if compliance}
+			<CountryRulesCard {compliance} />
+		{/if}
 	{/if}
 </div>
 

@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { getEligibilityRefusalMessage } from '$lib/utils/eligibility';
 import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 
@@ -17,4 +18,29 @@ export function checkoutError(error: unknown, fallback: string): Error {
 	const refusal = getEligibilityRefusalMessage(error);
 	if (refusal) return new Error(refusal, { cause: error });
 	return new Error(extractApiErrorDetail(error) ?? fallback, { cause: error });
+}
+
+/**
+ * A checkout refused at 422 (#1001: country rules, e.g. online card payment for
+ * an event held in Italy). The backend's `detail` is already translated and
+ * names the country, so it wins; the generic "can't be bought online" copy is
+ * only for a 422 that carries no readable detail.
+ */
+export function checkoutRefusedError(error: unknown): CheckoutRefusedError {
+	return new CheckoutRefusedError(
+		extractApiErrorDetail(error) ?? m['compliance.checkout.fallback'](),
+		{ cause: error }
+	);
+}
+
+/**
+ * A sale the rules refuse outright. Its message is the whole story: the checkout
+ * sheet shows it inline as a `role="alert"` (the direct "Buy" path opens the
+ * sheet for it), and the controllers skip their generic "Checkout failed" toast.
+ */
+export class CheckoutRefusedError extends Error {
+	constructor(message: string, options?: ErrorOptions) {
+		super(message, options);
+		this.name = 'CheckoutRefusedError';
+	}
 }

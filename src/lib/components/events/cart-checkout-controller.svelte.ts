@@ -22,7 +22,7 @@ import type {
 import { createCheckoutMachinery } from './cart-checkout-machinery';
 import * as m from '$lib/paraglide/messages.js';
 import { toast } from 'svelte-sonner';
-import { checkoutError } from './checkout-error';
+import { CheckoutRefusedError, checkoutError, checkoutRefusedError } from './checkout-error';
 import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 import { readAttributionFromCurrentUrl } from '$lib/utils/attribution';
 
@@ -154,12 +154,17 @@ export function createCartCheckoutController(deps: CartCheckoutDeps) {
 						cause: response.error
 					});
 				}
+				if (status === 422) throw checkoutRefusedError(response.error);
 				throw checkoutError(response.error, m['cart.checkoutFailed']());
 			}
 			return withCheckoutSessionUrl(response.data, fingerprint);
 		},
 		onSuccess: handleCheckoutSuccess,
 		onError: (error: Error) => {
+			// A country-rule refusal (422) is rendered inline as the sheet's
+			// role="alert" on every path (the direct "Buy" opens the sheet for
+			// it), so a toast on top would only announce it twice.
+			if (error instanceof CheckoutRefusedError) return;
 			toast.error(m['cart.checkoutFailed'](), { description: error.message, duration: 6000 });
 		}
 	}));

@@ -9,6 +9,7 @@ import {
 	type GuestCartCheckoutDeps,
 	createGuestCartCheckoutController
 } from './guest-cart-checkout-controller.svelte';
+import { CheckoutRefusedError } from './checkout-error';
 import GuestCartCheckoutControllerTestHost from './GuestCartCheckoutControllerTestHost.svelte';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 import type { GuestCartCheckoutParams } from '../tickets/cart-payload';
@@ -149,10 +150,23 @@ describe('mapGuestCheckoutError', () => {
 		expect(error.message).toBe('Discount code is invalid.');
 	});
 
-	it('falls back to checkoutError for an unmapped status (e.g. 422 or undefined)', () => {
+	it('falls back to checkoutError for an unmapped status (undefined)', () => {
 		const original = { detail: 'Something else went wrong.' };
-		expect(mapGuestCheckoutError(original, 422).message).toBe('Something else went wrong.');
 		expect(mapGuestCheckoutError(original, undefined).message).toBe('Something else went wrong.');
+	});
+
+	it('maps a 422 (country rules, #1001) to a refusal carrying the backend detail', () => {
+		const error = mapGuestCheckoutError({ detail: 'Not in Italy.' }, 422);
+		expect(error).toBeInstanceOf(CheckoutRefusedError);
+		expect(error.message).toBe('Not in Italy.');
+	});
+
+	it('uses the generic "can\'t be bought online" copy for a 422 without a detail', () => {
+		const error = mapGuestCheckoutError({}, 422);
+		expect(error).toBeInstanceOf(CheckoutRefusedError);
+		expect(error.message).toBe(
+			"This ticket can't be bought online. Contact the organizer to find out how to pay."
+		);
 	});
 
 	it('falls back to the generic checkout-failed copy when nothing readable is present', () => {
