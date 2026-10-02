@@ -10134,7 +10134,7 @@
 		},
 		"thisCountry": "ce pays",
 		"tier": {
-			"onlineBlockedIt": "Les paiements en ligne par carte ne sont pas disponibles pour les événements en Italie. La loi italienne impose que les billets payants vendus en ligne soient émis par un système de billetterie agréé par l'Agenzia delle Entrate, et Revel n'est pas encore agréé. Tu peux toujours vendre des billets payants avec paiement à l'entrée ou par virement, et confirmer les paiements depuis ton tableau de bord. C'est à toi d'émettre le billet fiscal (titolo d'accesso).",
+			"onlineBlockedIt": "Les paiements en ligne par carte ne sont pas disponibles pour les événements en Italie. La loi italienne impose que les billets payants vendus en ligne soient émis par un système de billetterie agréé par l'Agenzia delle Entrate, et Revel n'est pas encore agréé. Tu peux toujours vendre des billets payants avec paiement à l'entrée ou par virement, et confirmer les paiements depuis ton tableau de bord. C'est à toi d'émettre le titre d'accès fiscal (titolo d'accesso).",
 			"onlineBlocked": "Les paiements en ligne par carte ne sont pas disponibles pour les événements dans ce pays ({country}) à cause des règles fiscales locales. Tu peux toujours vendre des billets payants avec paiement à l'entrée ou par virement.",
 			"onlineUnavailableSuffix": "(non disponible pour cet événement)",
 			"legacyOnlineBanner": "Ce tarif utilise le paiement en ligne par carte, qui n'est pas disponible pour les événements dans ce pays ({country}). Passe au paiement à l'entrée ou par virement pour continuer à vendre.",
@@ -10147,7 +10147,7 @@
 		"checkout": {
 			"fallback": "Ce billet ne peut pas être acheté en ligne. Contacte l'organisation pour savoir comment payer.",
 			"notAvailableOnline": "Non disponible en ligne",
-			"reservation": "Tu paies directement l'organisation. Ton billet Revel est une réservation ; c'est l'organisation qui te remet le billet fiscal.",
+			"reservation": "Tu paies directement l'organisation. Ton billet Revel est une réservation ; c'est l'organisation qui te remet le titre d'accès fiscal.",
 			"passFallback": "Ce pass ne peut pas être acheté en ligne. Contacte l'organisation pour savoir comment payer."
 		},
 		"ticket": {

@@ -409,7 +409,7 @@ export const eventbriteAlternativeES: LandingPageContent = {
 			icon: 'clipboard',
 			title: 'Facturas e IVA resueltos',
 			description:
-				'Facturas automáticas para quien compra, NIF-IVA comprobados en VIES, notas de crédito para los reembolsos y un informe de ingresos para tu gestoría.'
+				'Facturas automáticas para quien compra, NIF-IVA comprobados en VIES, facturas rectificativas para los reembolsos y un informe de ingresos para tu gestoría.'
 		},
 		{
 			icon: 'code',

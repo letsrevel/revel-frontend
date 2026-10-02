@@ -66,7 +66,10 @@ const DOCS_BASE = 'https://docs.letsrevel.io/compliance';
 export function countryName(code: string): string {
 	if (!code) return '';
 	try {
-		const names = new Intl.DisplayNames([getLocale()], { type: 'region' });
+		// The `pt` catalog is European Portuguese; bare `pt` resolves to Brazilian
+		// names in Intl ("Romênia", "Polônia"), so ask for pt-PT explicitly.
+		const locale = getLocale() === 'pt' ? 'pt-PT' : getLocale();
+		const names = new Intl.DisplayNames([locale], { type: 'region' });
 		return names.of(code.toUpperCase()) ?? code;
 	} catch {
 		return code;
