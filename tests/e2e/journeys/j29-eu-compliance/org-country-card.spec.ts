@@ -1,6 +1,10 @@
 import { test, expect } from '../../support/fixtures';
 import { NOTICE_TEXT, openBilling } from './helpers';
 
+// Spain's invoicing block starts on 2027-01-01 (server clock): before it the
+// card warns ahead, after it the bullet says invoices are unavailable.
+const SPAIN_BLOCKED = Date.now() >= Date.UTC(2027, 0, 1);
+
 // J29.1 (USER_JOURNEYS.md) — the "Country rules" card in org settings →
 // Billing, one row per seeded compliance-* org. Read-only.
 
@@ -45,10 +49,13 @@ const CASES: CardCase[] = [
 		docs: 'https://docs.letsrevel.io/compliance/eu/pl/'
 	},
 	{
-		// Before 2027-01-01 the API reads `allowed`; the card warns ahead.
 		org: 'compliance-es',
 		body: /set up for Spain\. Some features work differently here/,
-		bullets: ['Attendee invoices: available until 31 December 2026.'],
+		bullets: [
+			SPAIN_BLOCKED
+				? 'Attendee invoices: not available in Spain.'
+				: 'Attendee invoices: available until 31 December 2026.'
+		],
 		notices: [],
 		docs: 'https://docs.letsrevel.io/compliance/eu/es/'
 	},

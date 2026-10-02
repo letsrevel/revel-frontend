@@ -61,15 +61,29 @@ test.describe('J29.2 attendee invoicing modes @p2', () => {
 		await expect(page.getByRole('radio', { name: 'Automatic' })).toBeEnabled();
 	});
 
-	test('Spain: the 2027 Verifactu warning shows while modes still work', async ({
+	test('Spain: the Verifactu warning before 2027, the block after', async ({
 		asCompliance: page
 	}) => {
+		// The flip happens on the server clock (2027-01-01), so the expected state
+		// is read from the API rather than hard-coded: this spec stays valid on
+		// both sides of the date.
+		const api = await complianceApi();
+		const org = await api.get<{ compliance: { attendee_invoicing: string } }>(
+			'/api/organization-admin/compliance-es'
+		);
 		await openBilling(page, 'compliance-es');
 		const banner = page.getByTestId('invoicing-compliance-notice');
-		await expect(banner).toContainText('From 1 January 2027');
-		await expect(banner).toHaveAttribute('data-tone', 'warning');
-		await expect(page.getByRole('radio', { name: 'Manual Review' })).toBeEnabled();
-		await expect(page.getByRole('radio', { name: 'Automatic' })).toBeEnabled();
+		if (org.compliance.attendee_invoicing === 'allowed') {
+			await expect(banner).toContainText('From 1 January 2027');
+			await expect(banner).toHaveAttribute('data-tone', 'warning');
+			await expect(page.getByRole('radio', { name: 'Manual Review' })).toBeEnabled();
+			await expect(page.getByRole('radio', { name: 'Automatic' })).toBeEnabled();
+		} else {
+			await expect(banner).toContainText('Verifactu');
+			await expect(banner).toHaveAttribute('data-tone', 'blocked');
+			await expect(page.getByRole('radio', { name: 'Manual Review' })).toBeDisabled();
+			await expect(page.getByRole('radio', { name: 'Automatic' })).toBeDisabled();
+		}
 	});
 
 	test('an org with no invoicing rule shows no invoicing notice', async ({
