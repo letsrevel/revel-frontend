@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.18.0] - 2026-10-02
+
+### Added
+
+- **EU country rules**: organizations see the rules that apply to their country, and the app enforces them where you sell and invoice.
+  - A "Country rules" card in billing settings names your country and lists its restrictions and notices, with a link to the country docs page.
+  - Invoicing modes the country does not allow (e.g. Croatia, Portugal, Romania, Slovenia, Greece, Hungary) are disabled with the reason next to them. Belgium (Peppol), Poland (KSeF) and Spain (Verifactu) get advance notices. Fiscal-system notices (Croatia, Slovenia, Greece, Hungary) appear beside the attendee-invoicing mode selector.
+  - The Basque Country (TicketBAI) and Navarre (NaTicket) get their own wording and docs links instead of the Spain copy.
+  - In the tier editor, online card payment is disabled up front where the event's country blocks it (e.g. Italy), and existing online tiers there show a banner with a "Change payment method" action.
+  - On the event page, tiers and series passes that cannot be paid online show a disabled "Not available online" button with an explanation before you start checkout. Priced offline and door tiers in Italy show reservation copy.
+  - Tickets show country-specific fiscal details in the ticket view.
+  - When checkout, issuing an invoice, resuming a tier or changing invoicing mode is refused under a country rule, the reason is shown inline.
+- **Documents to issue yourself**: a new billing page (`/org/[slug]/admin/billing/skipped-documents`, owners only) lists the attendee invoices and credit notes Revel skipped under a country policy. You can filter and search them and mark each one as issued with the document number from your own system.
+  - Ticket lists show an "Invoice to issue yourself" badge on those sales and have an "Invoice skipped by Revel" filter.
+  - Attendee invoice drafts that can no longer be issued show the reason and a "Can't be issued" badge, and their Issue button is disabled.
+  - A "Documents to issue yourself" daily summary appears in notification settings, where you can mute it. Its in-app notification opens the documents page for owners and the filtered ticket list for staff.
+
+### Changed
+
+- The logo, favicon, app icons and social sharing images now use the designer's official artwork. The wordmark in share images shows the correct apostrophe in "let’s".
+- Landing page sign-up buttons carry campaign tags through registration, and organizations created from a campaign link are attributed to that campaign. Guests sent to log in from organization creation come back to the same link with its tags.
+
+### Fixed
+
+- Country names in Portuguese use European Portuguese spellings (e.g. "Roménia" instead of "Romênia").
+- Spanish, Italian, French and Portuguese wording of the compliance and invoicing copy reviewed. Spanish now uses "factura rectificativa" for credit notes and "NIF-IVA" for VAT ID throughout.
+
 ## [2.17.0] - 2026-10-01
 
 ### Added
