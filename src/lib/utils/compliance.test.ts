@@ -6,6 +6,7 @@ import {
 	invoicingNotice,
 	isReservationOnly,
 	noticesFor,
+	noticeTone,
 	onlinePaymentBlockedText,
 	restrictionBullets,
 	tierIsPriced,
@@ -213,6 +214,15 @@ describe('regional rules (#1010)', () => {
 	it("leaves Navarre's pre-2027 heads-up to the API notice", () => {
 		const nc = org({ country: 'ES', region: 'ES-NC' });
 		expect(invoicingNotice(nc)).toBeNull();
+		// The realistic shape: the API sends es_nc_naticket, shown as a warning.
+		const naticket = {
+			key: 'es_nc_naticket',
+			applies_to: 'attendee_invoicing' as const,
+			message: 'NaTicket'
+		};
+		expect(invoicingNotice({ ...nc, notices: [naticket] })).toBeNull();
+		expect(noticeTone(naticket)).toBe('warning');
+		expect(noticeTone({ ...naticket, key: 'hr_fiscalization' })).toBe('info');
 		expect(restrictionBullets(nc)).toEqual([
 			'Attendee invoices: available until 31 December 2026.'
 		]);

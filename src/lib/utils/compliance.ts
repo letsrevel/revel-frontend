@@ -148,6 +148,15 @@ export function hasUpcomingInvoicingBlock(compliance: OrganizationComplianceSche
 }
 
 /**
+ * Tone of an API notice: the upcoming-block heads-ups announce a restriction,
+ * so they keep the warning tone the client banner had; every other notice is
+ * information. Keyed on `key`, never on the text.
+ */
+export function noticeTone(notice: ComplianceNoticeSchema): 'info' | 'warning' {
+	return UPCOMING_BLOCK_NOTICE_KEYS.has(notice.key) ? 'warning' : 'info';
+}
+
+/**
  * Whether the API sends the heads-up itself as an `attendee_invoicing` notice
  * (rendered next to the mode selector). Then the client copy, which names
  * Verifactu, must not repeat it, and for Navarre it would be wrong.

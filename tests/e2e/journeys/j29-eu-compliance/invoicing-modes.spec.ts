@@ -113,6 +113,7 @@ test.describe('J29.2 attendee invoicing modes @p2', () => {
 			const notice = page.getByTestId('compliance-notice-es_verifactu');
 			await expect(notice).toHaveCount(1);
 			await expect(notice).toHaveAttribute('role', 'status');
+			await expect(notice).toHaveAttribute('data-tone', 'warning');
 			await expect(banner).toHaveCount(0);
 			await expect(page.getByRole('radio', { name: 'Manual Review' })).toBeEnabled();
 			await expect(page.getByRole('radio', { name: 'Automatic' })).toBeEnabled();
