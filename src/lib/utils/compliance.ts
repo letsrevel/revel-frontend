@@ -77,9 +77,21 @@ export function isEuCountry(code: string): boolean {
 	return EU_COUNTRY_CODES.has(code.toUpperCase());
 }
 
+/**
+ * Subdivisions with their own invoicing rules (#1010), keyed by the API's
+ * ISO 3166-2 `region`: the Basque Country (TicketBAI, blocked now) and Navarre
+ * (NaTicket, outside Verifactu). The anchor points at their section of the
+ * country page.
+ */
+const REGION_DOCS_ANCHOR: Record<string, string> = {
+	'ES-PV': '#basque-country-ticketbai',
+	'ES-NC': '#navarre'
+};
+
 /** The per-country docs page, or the section index when the country is unknown / non-EU. */
-export function complianceDocsUrl(code: string): string {
-	if (code && isEuCountry(code)) return `${DOCS_BASE}/eu/${code.toLowerCase()}/`;
+export function complianceDocsUrl(code: string, region = ''): string {
+	const anchor = REGION_DOCS_ANCHOR[region.toUpperCase()] ?? '';
+	if (code && isEuCountry(code)) return `${DOCS_BASE}/eu/${code.toLowerCase()}/${anchor}`;
 	if (code) return `${DOCS_BASE}/`;
 	return `${DOCS_BASE}/eu/`;
 }
@@ -122,13 +134,49 @@ export function businessInvoicingSystemName(code: string): string {
 	}
 }
 
+/** API keys of Spain's pre-2027 heads-up notice (#1087), Navarre's included (#1010). */
+const UPCOMING_BLOCK_NOTICE_KEYS: ReadonlySet<string> = new Set(['es_verifactu', 'es_nc_naticket']);
+
 /**
  * Spain's invoicing block starts on 1 January 2027. The API reads `allowed`
  * until then and doesn't expose the date, so the warning is keyed on the
- * country while the capability is still `allowed`.
+ * country while the capability is still `allowed`. The Basque Country is
+ * blocked already, so it never reads `allowed` here.
  */
 export function hasUpcomingInvoicingBlock(compliance: OrganizationComplianceSchema): boolean {
 	return compliance.country === 'ES' && compliance.attendee_invoicing === 'allowed';
+}
+
+/**
+ * Whether the API sends the heads-up itself as an `attendee_invoicing` notice
+ * (rendered next to the mode selector). Then the client copy, which names
+ * Verifactu, must not repeat it, and for Navarre it would be wrong.
+ */
+function apiSendsUpcomingNotice(compliance: OrganizationComplianceSchema): boolean {
+	return (compliance.notices ?? []).some((n) => UPCOMING_BLOCK_NOTICE_KEYS.has(n.key));
+}
+
+/** Region-specific blocked copy (#1010), else null for the country template. */
+function regionBlockedText(region: string): string | null {
+	switch (region.toUpperCase()) {
+		case 'ES-PV':
+			return m['compliance.invoicing.blockedEsPv']();
+		case 'ES-NC':
+			return m['compliance.invoicing.blockedEsNc']();
+		default:
+			return null;
+	}
+}
+
+function regionBlockedBullet(region: string): string | null {
+	switch (region.toUpperCase()) {
+		case 'ES-PV':
+			return m['compliance.bullet.invoicingBlockedEsPv']();
+		case 'ES-NC':
+			return m['compliance.bullet.invoicingBlockedEsNc']();
+		default:
+			return null;
+	}
 }
 
 /** Copy for the invoicing-mode section, or null when invoicing works normally. */
@@ -138,7 +186,10 @@ export function invoicingNotice(
 	const country = countryName(compliance.country);
 	const system = invoicingSystemName(compliance.country);
 	if (compliance.attendee_invoicing === 'blocked') {
-		return { kind: 'blocked', text: m['compliance.invoicing.blocked']({ country, system }) };
+		const text =
+			regionBlockedText(compliance.region ?? '') ??
+			m['compliance.invoicing.blocked']({ country, system });
+		return { kind: 'blocked', text };
 	}
 	if (compliance.attendee_invoicing === 'blocked_for_business_buyers') {
 		const text =
@@ -150,7 +201,13 @@ export function invoicingNotice(
 					});
 		return { kind: 'business', text };
 	}
-	if (hasUpcomingInvoicingBlock(compliance)) {
+	// Only when the API doesn't send its own notice (an older backend), and
+	// never for Navarre: this copy names Verifactu, which doesn't apply there.
+	if (
+		hasUpcomingInvoicingBlock(compliance) &&
+		!apiSendsUpcomingNotice(compliance) &&
+		(compliance.region ?? '') === ''
+	) {
 		return { kind: 'upcoming', text: m['compliance.invoicing.upcomingEs']() };
 	}
 	return null;
@@ -161,7 +218,10 @@ export function restrictionBullets(compliance: OrganizationComplianceSchema): st
 	const country = countryName(compliance.country);
 	const bullets: string[] = [];
 	if (compliance.attendee_invoicing === 'blocked') {
-		bullets.push(m['compliance.bullet.invoicingBlocked']({ country }));
+		bullets.push(
+			regionBlockedBullet(compliance.region ?? '') ??
+				m['compliance.bullet.invoicingBlocked']({ country })
+		);
 	} else if (compliance.attendee_invoicing === 'blocked_for_business_buyers') {
 		bullets.push(
 			compliance.country === 'PL'

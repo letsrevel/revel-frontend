@@ -10107,7 +10107,9 @@
 			"invoicingBusinessBuyers": "Factures aux entreprises immatriculées dans ce pays ({country}) : émets-les depuis ton propre logiciel de facturation électronique.",
 			"invoicingBusinessBuyersAll": "Factures aux entreprises : émets-les depuis ton propre logiciel de facturation électronique.",
 			"onlinePaymentBlocked": "Paiements en ligne par carte : non disponibles pour les événements dans ce pays ({country}). Les paiements à l'entrée et par virement fonctionnent comme d'habitude.",
-			"offlinePaymentBlocked": "Paiements à l'entrée et par virement : non disponibles pour les événements dans ce pays ({country})."
+			"offlinePaymentBlocked": "Paiements à l'entrée et par virement : non disponibles pour les événements dans ce pays ({country}).",
+			"invoicingBlockedEsPv": "Factures aux participant·es : non disponibles au Pays basque.",
+			"invoicingBlockedEsNc": "Factures aux participant·es : non disponibles en Navarre."
 		},
 		"invoicing": {
 			"blocked": "Revel ne peut pas émettre de factures à tes participant·es dans ce pays ({country}). La loi y impose que les factures passent par {system}, et Revel n'y est pas encore connecté. Émets tes factures depuis ton propre logiciel de facturation.",
@@ -10115,7 +10117,9 @@
 			"businessBuyers": "Les factures aux client·es ayant un numéro de TVA de ce pays ({country}) doivent être envoyées en facture électronique via {system}. Revel ne les crée pas. Émets-les depuis ton logiciel de facturation électronique. Les factures à tous les autres fonctionnent comme d'habitude.",
 			"businessBuyersAll": "Les factures aux client·es professionnel·les doivent être émises via KSeF. Revel ne les crée pas. Émets-les depuis ton logiciel de facturation électronique. Les factures aux particuliers fonctionnent comme d'habitude.",
 			"draftNotIssuable": "Cette facture ne peut plus être émise depuis Revel. Émets-la depuis ton propre logiciel de facturation.",
-			"cannotIssue": "Impossible à émettre"
+			"cannotIssue": "Impossible à émettre",
+			"blockedEsPv": "Revel ne peut pas émettre de factures à tes participant·es au Pays basque. La loi y impose que les factures passent par TicketBAI (Batuz en Biscaye), et Revel n'y est pas connecté. Émets tes factures depuis ton propre logiciel de facturation conforme à TicketBAI.",
+			"blockedEsNc": "Revel n'émet pas de factures aux participant·es pour les organisations établies en Espagne, Navarre comprise. La Navarre met en place ses propres règles sur les logiciels de facturation (NaTicket), et Revel n'y est pas connecté. Émets tes factures depuis ton propre logiciel de facturation."
 		},
 		"system": {
 			"hr": "le système de fiscalisation de l'administration fiscale",

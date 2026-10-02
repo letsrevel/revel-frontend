@@ -10107,7 +10107,9 @@
 			"invoicingBusinessBuyers": "Invoices to {country} businesses: issue them from your own e-invoicing software.",
 			"invoicingBusinessBuyersAll": "Invoices to businesses: issue them from your own e-invoicing software.",
 			"onlinePaymentBlocked": "Online card payments: not available for events in {country}. Payments at the door and by bank transfer work as usual.",
-			"offlinePaymentBlocked": "Payments at the door and by bank transfer: not available for events in {country}."
+			"offlinePaymentBlocked": "Payments at the door and by bank transfer: not available for events in {country}.",
+			"invoicingBlockedEsPv": "Attendee invoices: not available in the Basque Country.",
+			"invoicingBlockedEsNc": "Attendee invoices: not available in Navarre."
 		},
 		"invoicing": {
 			"blocked": "Revel can't issue invoices to your attendees in {country}. The law there requires invoices to go through {system}, and Revel isn't connected to it yet. Please issue invoices from your own invoicing software.",
@@ -10115,7 +10117,9 @@
 			"businessBuyers": "Invoices to customers with a {country} VAT ID must be sent as e-invoices through {system}. Revel won't create those. Issue them from your e-invoicing software. Invoices to everyone else work as usual.",
 			"businessBuyersAll": "Invoices to business customers must be issued through KSeF. Revel won't create those. Issue them from your e-invoicing software. Invoices to consumers work as usual.",
 			"draftNotIssuable": "This invoice can't be issued from Revel anymore. Issue it from your own invoicing software.",
-			"cannotIssue": "Can't be issued"
+			"cannotIssue": "Can't be issued",
+			"blockedEsPv": "Revel can't issue invoices to your attendees in the Basque Country. The law there requires invoices to go through TicketBAI (Batuz in Bizkaia), and Revel isn't connected to it. Please issue invoices from your own TicketBAI-compliant invoicing software.",
+			"blockedEsNc": "Revel doesn't issue invoices to attendees for organizers in Spain, Navarre included. Navarre is bringing in its own invoicing-software rules (NaTicket), and Revel isn't connected to them. Please issue invoices from your own invoicing software."
 		},
 		"system": {
 			"hr": "the Tax Administration's fiscalization system",

@@ -8,6 +8,7 @@ function compliance(
 ): OrganizationComplianceSchema {
 	return {
 		country: 'DE',
+		region: '',
 		attendee_invoicing: 'allowed',
 		online_payment: 'allowed',
 		offline_payment: 'allowed',

@@ -16,6 +16,7 @@ import {
 function org(overrides: Partial<OrganizationComplianceSchema> = {}): OrganizationComplianceSchema {
 	return {
 		country: 'DE',
+		region: '',
 		attendee_invoicing: 'allowed',
 		online_payment: 'allowed',
 		offline_payment: 'allowed',
@@ -180,6 +181,55 @@ describe('unplacedNotices', () => {
 		];
 		expect(unplacedNotices(notices).map((n) => n.key)).toEqual(['si_furs']);
 		expect(noticesFor(notices, 'attendee_invoicing').map((n) => n.key)).toEqual(['si_furs']);
+	});
+});
+
+describe('regional rules (#1010)', () => {
+	it('names the Basque Country and TicketBAI, never Spain or Verifactu', () => {
+		const pv = org({ country: 'ES', region: 'ES-PV', attendee_invoicing: 'blocked' });
+		const notice = invoicingNotice(pv);
+		expect(notice?.kind).toBe('blocked');
+		expect(notice?.text).toContain('Basque Country');
+		expect(notice?.text).toContain('TicketBAI');
+		expect(notice?.text).not.toMatch(/Spain|Verifactu/);
+		expect(restrictionBullets(pv)).toEqual([
+			'Attendee invoices: not available in the Basque Country.'
+		]);
+		expect(complianceDocsUrl('ES', 'ES-PV')).toBe(
+			'https://docs.letsrevel.io/compliance/eu/es/#basque-country-ticketbai'
+		);
+	});
+
+	it('names NaTicket for Navarre once blocked', () => {
+		const nc = org({ country: 'ES', region: 'ES-NC', attendee_invoicing: 'blocked' });
+		expect(invoicingNotice(nc)?.text).toContain('NaTicket');
+		expect(invoicingNotice(nc)?.text).not.toContain('Verifactu');
+		expect(restrictionBullets(nc)).toEqual(['Attendee invoices: not available in Navarre.']);
+		expect(complianceDocsUrl('ES', 'ES-NC')).toBe(
+			'https://docs.letsrevel.io/compliance/eu/es/#navarre'
+		);
+	});
+
+	it("leaves Navarre's pre-2027 heads-up to the API notice", () => {
+		const nc = org({ country: 'ES', region: 'ES-NC' });
+		expect(invoicingNotice(nc)).toBeNull();
+		expect(restrictionBullets(nc)).toEqual([
+			'Attendee invoices: available until 31 December 2026.'
+		]);
+	});
+
+	it("doesn't repeat Spain's heads-up when the API sends es_verifactu", () => {
+		const withNotice = org({
+			country: 'ES',
+			notices: [{ key: 'es_verifactu', applies_to: 'attendee_invoicing', message: 'From 2027…' }]
+		});
+		expect(invoicingNotice(withNotice)).toBeNull();
+		// An older backend without the notice still gets the client copy.
+		expect(invoicingNotice(org({ country: 'ES' }))?.kind).toBe('upcoming');
+	});
+
+	it('keeps the plain docs URL without a region', () => {
+		expect(complianceDocsUrl('ES')).toBe('https://docs.letsrevel.io/compliance/eu/es/');
 	});
 });
 

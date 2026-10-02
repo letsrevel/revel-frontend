@@ -10107,7 +10107,9 @@
 			"invoicingBusinessBuyers": "Fatture alle aziende con sede in questo paese ({country}): emettile con il tuo software di fatturazione elettronica.",
 			"invoicingBusinessBuyersAll": "Fatture alle aziende: emettile con il tuo software di fatturazione elettronica.",
 			"onlinePaymentBlocked": "Pagamenti online con carta: non disponibili per eventi in {country}. I pagamenti all'ingresso e con bonifico funzionano come sempre.",
-			"offlinePaymentBlocked": "Pagamenti all'ingresso e con bonifico: non disponibili per eventi in {country}."
+			"offlinePaymentBlocked": "Pagamenti all'ingresso e con bonifico: non disponibili per eventi in {country}.",
+			"invoicingBlockedEsPv": "Fatture ai partecipanti: non disponibili nei Paesi Baschi.",
+			"invoicingBlockedEsNc": "Fatture ai partecipanti: non disponibili in Navarra."
 		},
 		"invoicing": {
 			"blocked": "Revel non può emettere fatture ai tuoi partecipanti in {country}. La legge locale richiede che le fatture passino per {system}, e Revel non è ancora collegato. Emetti le fatture con il tuo software di fatturazione.",
@@ -10115,7 +10117,9 @@
 			"businessBuyers": "Le fatture ai clienti con partita IVA di questo paese ({country}) vanno inviate come fatture elettroniche tramite {system}. Revel non le crea. Emettile con il tuo software di fatturazione elettronica. Le fatture a tutti gli altri funzionano come sempre.",
 			"businessBuyersAll": "Le fatture ai clienti business vanno emesse tramite KSeF. Revel non le crea. Emettile con il tuo software di fatturazione elettronica. Le fatture ai privati funzionano come sempre.",
 			"draftNotIssuable": "Questa fattura non può più essere emessa da Revel. Emettila con il tuo software di fatturazione.",
-			"cannotIssue": "Non emettibile"
+			"cannotIssue": "Non emettibile",
+			"blockedEsPv": "Revel non può emettere fatture ai tuoi partecipanti nei Paesi Baschi. Lì la legge richiede che le fatture passino da TicketBAI (Batuz in Biscaglia), e Revel non è collegato. Emetti le fatture con il tuo software di fatturazione conforme a TicketBAI.",
+			"blockedEsNc": "Revel non emette fatture ai partecipanti per gli organizzatori in Spagna, Navarra compresa. La Navarra sta introducendo regole proprie sui software di fatturazione (NaTicket), e Revel non è collegato. Emetti le fatture con il tuo software di fatturazione."
 		},
 		"system": {
 			"hr": "il sistema di fiscalizzazione dell'Amministrazione fiscale",

@@ -60,6 +60,14 @@ const CASES: CardCase[] = [
 		docs: 'https://docs.letsrevel.io/compliance/eu/es/'
 	},
 	{
+		// Basque Country (#1010): blocked now under TicketBAI, never "Spain".
+		org: 'compliance-es-pv',
+		body: /set up for Spain\. Some features work differently here/,
+		bullets: ['Attendee invoices: not available in the Basque Country.'],
+		notices: [],
+		docs: 'https://docs.letsrevel.io/compliance/eu/es/#basque-country-ticketbai'
+	},
+	{
 		org: 'compliance-at',
 		body: /set up for Austria\. All Revel features are available\./,
 		bullets: [],

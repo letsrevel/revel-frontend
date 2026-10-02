@@ -69,7 +69,7 @@
 		{m['compliance.card.footnote']()}
 		<!-- eslint-disable svelte/no-navigation-without-resolve -- external docs URL, not an app route -->
 		<a
-			href={complianceDocsUrl(compliance.country)}
+			href={complianceDocsUrl(compliance.country, compliance.region ?? '')}
 			target="_blank"
 			rel="noopener noreferrer"
 			class="inline-flex items-center gap-1 font-medium text-primary underline underline-offset-2"
