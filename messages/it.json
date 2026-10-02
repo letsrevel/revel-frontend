@@ -10090,8 +10090,8 @@
 	"compliance": {
 		"card": {
 			"title": "Regole del paese",
-			"bodyAllowed": "La tua organizzazione è configurata per {country}. Tutte le funzioni di Revel sono disponibili.",
-			"bodyRestricted": "La tua organizzazione è configurata per {country}. Alcune funzioni funzionano diversamente a causa delle norme fiscali locali:",
+			"bodyAllowed": "La tua organizzazione è configurata per questo paese: {country}. Tutte le funzioni di Revel sono disponibili.",
+			"bodyRestricted": "La tua organizzazione è configurata per questo paese: {country}. Alcune funzioni funzionano diversamente a causa delle norme fiscali locali:",
 			"bodyUnknown": "Non sappiamo ancora in quale paese si trova la tua organizzazione. Aggiungi la tua partita IVA o la città, così possiamo applicare le regole locali corrette.",
 			"bodyOutOfScope": "Al momento Revel verifica le norme fiscali solo per i paesi dell'UE. Fuori dall'UE, sei tu responsabile di far sì che la vendita dei biglietti rispetti le regole locali.",
 			"footnote": "Revel ricava il tuo paese dalla partita IVA o, se non ne hai una, dalla tua città.",
@@ -10102,7 +10102,7 @@
 		"bullet": {
 			"invoicingBlocked": "Fatture ai partecipanti: non disponibili in {country}.",
 			"invoicingUpcomingEs": "Fatture ai partecipanti: disponibili fino al 31 dicembre 2026.",
-			"invoicingBusinessBuyers": "Fatture alle aziende di {country}: emettile con il tuo software di fatturazione elettronica.",
+			"invoicingBusinessBuyers": "Fatture alle aziende con sede in questo paese ({country}): emettile con il tuo software di fatturazione elettronica.",
 			"invoicingBusinessBuyersAll": "Fatture alle aziende: emettile con il tuo software di fatturazione elettronica.",
 			"onlinePaymentBlocked": "Pagamenti online con carta: non disponibili per eventi in {country}. I pagamenti all'ingresso e con bonifico funzionano come sempre.",
 			"offlinePaymentBlocked": "Pagamenti all'ingresso e con bonifico: non disponibili per eventi in {country}."
@@ -10110,7 +10110,7 @@
 		"invoicing": {
 			"blocked": "Revel non può emettere fatture ai tuoi partecipanti in {country}. La legge locale richiede che le fatture passino per {system}, e Revel non è ancora collegato. Emetti le fatture con il tuo software di fatturazione.",
 			"upcomingEs": "Dal 1° gennaio 2027 Revel smetterà di emettere fatture ai partecipanti per le organizzazioni in Spagna, a causa delle nuove regole Verifactu. Fino ad allora tutto funziona come sempre. Organizzati per emettere le fatture con un software conforme a Verifactu entro quella data.",
-			"businessBuyers": "Le fatture ai clienti con partita IVA di {country} vanno inviate come fatture elettroniche tramite {system}. Revel non le crea. Emettile con il tuo software di fatturazione elettronica. Le fatture a tutti gli altri funzionano come sempre.",
+			"businessBuyers": "Le fatture ai clienti con partita IVA di questo paese ({country}) vanno inviate come fatture elettroniche tramite {system}. Revel non le crea. Emettile con il tuo software di fatturazione elettronica. Le fatture a tutti gli altri funzionano come sempre.",
 			"businessBuyersAll": "Le fatture ai clienti business vanno emesse tramite KSeF. Revel non le crea. Emettile con il tuo software di fatturazione elettronica. Le fatture ai privati funzionano come sempre.",
 			"draftNotIssuable": "Questa fattura non può più essere emessa da Revel. Emettila con il tuo software di fatturazione."
 		},

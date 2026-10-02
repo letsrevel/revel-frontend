@@ -20,7 +20,7 @@
 	import type { PlatformFeeInfo } from '$lib/utils/fees';
 	import { toast } from 'svelte-sonner';
 	import { extractErrorMessage } from '$lib/utils/errors';
-	import { noticesFor } from '$lib/utils/compliance';
+	import { noticesFor, unplacedNotices } from '$lib/utils/compliance';
 	import ComplianceNotices from '$lib/components/compliance/ComplianceNotices.svelte';
 
 	// Form state fields this step reads/writes. The parent passes a wider event
@@ -266,6 +266,8 @@
 	}
 
 	function handleEditTier(tier: TicketTierDetailSchema) {
+		// Following the banner to fix the tier makes the last refusal stale.
+		pauseError = null;
 		editingTier = tier;
 		showTierForm = true;
 	}
@@ -322,7 +324,13 @@
 		<p class="mb-4 text-sm text-muted-foreground">
 			{m['ticketingStep.createDifferentTiers']()}
 		</p>
-		<ComplianceNotices notices={noticesFor(compliance?.notices, 'ticket_sales')} />
+		<!-- Sales rules, plus any topic without a dedicated spot (never dropped). -->
+		<ComplianceNotices
+			notices={[
+				...noticesFor(compliance?.notices, 'ticket_sales'),
+				...unplacedNotices(compliance?.notices)
+			]}
+		/>
 	</div>
 
 	{#if pauseError}
@@ -397,6 +405,7 @@
 	<button
 		type="button"
 		onclick={() => {
+			pauseError = null;
 			editingTier = null;
 			showTierForm = true;
 		}}

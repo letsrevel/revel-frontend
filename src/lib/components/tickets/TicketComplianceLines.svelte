@@ -37,7 +37,7 @@
 			class="grid grid-cols-1 gap-x-4 gap-y-2 rounded-lg border border-border bg-muted/30 p-4 text-sm sm:grid-cols-2"
 			data-testid="ticket-compliance-lines"
 		>
-			{#each lines as line (line.key)}
+			{#each lines as line, i (`${line.key}-${i}`)}
 				<div
 					class={FACT_KEYS.has(line.key) ? 'min-w-0' : 'min-w-0 sm:col-span-2'}
 					data-key={line.key}

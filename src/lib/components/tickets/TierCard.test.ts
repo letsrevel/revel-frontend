@@ -161,3 +161,51 @@ describe('TierCard — per-tier entry window', () => {
 		expect(screen.queryByText(/^Entry: /)).toBeNull();
 	});
 });
+
+// EU compliance (#1001): event-level country rules.
+describe('TierCard — country rules', () => {
+	function renderWithRules(
+		tier: TierSchemaWithId,
+		rules: { onlineBlocked?: boolean; reservationOnly?: boolean }
+	) {
+		render(TierCard, {
+			props: { tier, isAuthenticated: true, onSelectTier: vi.fn(), ...rules }
+		});
+	}
+
+	it('offers no checkout for an online tier when card payment is blocked, and says why', () => {
+		renderWithRules(makeTier({ payment_method: 'online', price: '20.00' }), {
+			onlineBlocked: true
+		});
+		const button = screen.getByRole('button', { name: 'Not available online' });
+		expect(button).toBeDisabled();
+		expect(button).toHaveAccessibleDescription(
+			"This ticket can't be bought online. Contact the organizer to find out how to pay."
+		);
+		expect(screen.queryByRole('button', { name: /buy ticket/i })).toBeNull();
+	});
+
+	it('leaves offline tiers purchasable when card payment is blocked', () => {
+		renderWithRules(makeTier({ payment_method: 'offline', price: '15.00' }), {
+			onlineBlocked: true
+		});
+		expect(screen.queryByRole('button', { name: 'Not available online' })).toBeNull();
+		expect(screen.getByRole('button', { name: /reserve ticket/i })).toBeEnabled();
+	});
+
+	it('marks priced direct-payment tiers as reservations, as a static note', () => {
+		renderWithRules(makeTier({ payment_method: 'at_the_door', price: '10.00' }), {
+			reservationOnly: true
+		});
+		const note = screen.getByTestId('tier-reservation-note');
+		expect(note).toHaveAttribute('role', 'note');
+		expect(note).toHaveTextContent(/Your Revel ticket is a reservation/);
+	});
+
+	it('gives free-priced offline tiers and free tiers no reservation note', () => {
+		renderWithRules(makeTier({ payment_method: 'offline', price: '0.00' }), {
+			reservationOnly: true
+		});
+		expect(screen.queryByTestId('tier-reservation-note')).toBeNull();
+	});
+});

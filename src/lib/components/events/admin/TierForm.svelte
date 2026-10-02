@@ -318,12 +318,17 @@
 	// "Action failed" toast from duplicating that panel (the RefundTicketDialog
 	// convention); the body is thrown unwrapped so extractFieldErrors still
 	// sees the pydantic detail array.
+	// HTTP status of the last save: a 422 with a plain `detail` (not field
+	// errors) is a country-rule refusal (#1001), which gets the location hint.
+	let saveStatus = $state<number | undefined>(undefined);
+
 	const tierCreateMutation = createMutation(() => ({
 		mutationFn: async (data: TicketTierCreateSchema) => {
 			const res = await eventadminticketsCreateTicketTier({
 				path: { event_id: eventId },
 				body: data
 			});
+			saveStatus = res.response?.status;
 			if (res.error) throw markSilent(res.error);
 			return res.data;
 		},
@@ -340,6 +345,7 @@
 				path: { event_id: eventId, tier_id: tier.id },
 				body: data
 			});
+			saveStatus = res.response?.status;
 			if (res.error) throw markSilent(res.error);
 			return res.data;
 		},
@@ -715,7 +721,7 @@
 						</ul>
 					{:else}
 						<p class="mt-1 text-sm text-destructive/90">{errorMsg}</p>
-						{#if paymentMethod === 'online' && !isBillingError}
+						{#if saveStatus === 422 && paymentMethod === 'online' && !isBillingError}
 							<p class="mt-1 text-sm text-destructive/90">{m['compliance.tier.locationHint']()}</p>
 						{/if}
 					{/if}

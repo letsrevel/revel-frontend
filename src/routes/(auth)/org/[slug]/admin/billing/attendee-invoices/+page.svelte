@@ -158,6 +158,7 @@
 	const issueMutation = browser
 		? createMutation(() => ({
 				mutationFn: async (invoiceId: string) => {
+					issueRefusal = null;
 					const response = await organizationadminvatIssueAttendeeInvoice({
 						path: { slug, invoice_id: invoiceId },
 						headers

@@ -10090,8 +10090,8 @@
 	"compliance": {
 		"card": {
 			"title": "Regras do país",
-			"bodyAllowed": "A tua organização está configurada para {country}. Todas as funcionalidades da Revel estão disponíveis.",
-			"bodyRestricted": "A tua organização está configurada para {country}. Algumas funcionalidades funcionam de forma diferente devido às regras fiscais locais:",
+			"bodyAllowed": "A tua organização está configurada para o país: {country}. Todas as funcionalidades da Revel estão disponíveis.",
+			"bodyRestricted": "A tua organização está configurada para o país: {country}. Algumas funcionalidades funcionam de forma diferente devido às regras fiscais locais:",
 			"bodyUnknown": "Ainda não sabemos em que país está a tua organização. Adiciona o teu número de IVA ou a tua cidade para aplicarmos as regras locais certas.",
 			"bodyOutOfScope": "De momento, a Revel só verifica as regras fiscais dos países da UE. Fora da UE, és responsável por garantir que a venda de bilhetes cumpre as regras locais.",
 			"footnote": "A Revel deduz o teu país a partir do teu número de IVA ou, se não tiveres, da tua cidade.",
@@ -10100,17 +10100,17 @@
 			"opensInNewTab": "(abre num novo separador)"
 		},
 		"bullet": {
-			"invoicingBlocked": "Faturas aos participantes: não disponíveis em {country}.",
+			"invoicingBlocked": "Faturas aos participantes: não disponíveis neste país ({country}).",
 			"invoicingUpcomingEs": "Faturas aos participantes: disponíveis até 31 de dezembro de 2026.",
-			"invoicingBusinessBuyers": "Faturas a empresas de {country}: emite-as no teu próprio software de faturação eletrónica.",
+			"invoicingBusinessBuyers": "Faturas a empresas registadas neste país ({country}): emite-as no teu próprio software de faturação eletrónica.",
 			"invoicingBusinessBuyersAll": "Faturas a empresas: emite-as no teu próprio software de faturação eletrónica.",
-			"onlinePaymentBlocked": "Pagamentos online com cartão: não disponíveis para eventos em {country}. Os pagamentos à entrada e por transferência bancária funcionam como habitualmente.",
-			"offlinePaymentBlocked": "Pagamentos à entrada e por transferência bancária: não disponíveis para eventos em {country}."
+			"onlinePaymentBlocked": "Pagamentos online com cartão: não disponíveis para eventos neste país ({country}). Os pagamentos à entrada e por transferência bancária funcionam como habitualmente.",
+			"offlinePaymentBlocked": "Pagamentos à entrada e por transferência bancária: não disponíveis para eventos neste país ({country})."
 		},
 		"invoicing": {
-			"blocked": "A Revel não pode emitir faturas aos teus participantes em {country}. A lei exige que as faturas passem {system}, e a Revel ainda não está ligada a esse sistema. Emite as faturas no teu próprio software de faturação.",
+			"blocked": "A Revel não pode emitir faturas aos teus participantes neste país ({country}). A lei exige que as faturas passem {system}, e a Revel ainda não está ligada a esse sistema. Emite as faturas no teu próprio software de faturação.",
 			"upcomingEs": "A partir de 1 de janeiro de 2027, a Revel deixará de emitir faturas aos participantes para organizações em Espanha, devido às novas regras Verifactu. Até lá, tudo funciona como habitualmente. Prepara-te para emitir faturas com software compatível com Verifactu até essa data.",
-			"businessBuyers": "As faturas a clientes com número de IVA de {country} têm de ser enviadas como faturas eletrónicas através de {system}. A Revel não as cria. Emite-as no teu software de faturação eletrónica. As faturas a todos os outros funcionam como habitualmente.",
+			"businessBuyers": "As faturas a clientes com número de IVA deste país ({country}) têm de ser enviadas como faturas eletrónicas através de {system}. A Revel não as cria. Emite-as no teu software de faturação eletrónica. As faturas a todos os outros funcionam como habitualmente.",
 			"businessBuyersAll": "As faturas a clientes empresariais têm de ser emitidas através do KSeF. A Revel não as cria. Emite-as no teu software de faturação eletrónica. As faturas a particulares funcionam como habitualmente.",
 			"draftNotIssuable": "Esta fatura já não pode ser emitida pela Revel. Emite-a no teu próprio software de faturação."
 		},
@@ -10127,9 +10127,9 @@
 		"thisCountry": "este país",
 		"tier": {
 			"onlineBlockedIt": "Os pagamentos online com cartão não estão disponíveis para eventos em Itália. A lei italiana exige que os bilhetes pagos vendidos online sejam emitidos por um sistema de bilheteira aprovado pela Agenzia delle Entrate, e a Revel ainda não está aprovada. Podes continuar a vender bilhetes pagos com pagamento à entrada ou por transferência bancária e confirmar os pagamentos no teu painel. O bilhete fiscal (titolo d'accesso) tens de ser tu a emiti-lo.",
-			"onlineBlocked": "Os pagamentos online com cartão não estão disponíveis para eventos em {country} devido às regras fiscais locais. Podes continuar a vender bilhetes pagos com pagamento à entrada ou por transferência bancária.",
+			"onlineBlocked": "Os pagamentos online com cartão não estão disponíveis para eventos neste país ({country}) devido às regras fiscais locais. Podes continuar a vender bilhetes pagos com pagamento à entrada ou por transferência bancária.",
 			"onlineUnavailableSuffix": "(não disponível para este evento)",
-			"legacyOnlineBanner": "Este tipo de bilhete usa pagamento online com cartão, que não está disponível para eventos em {country}. Muda para pagamento à entrada ou por transferência bancária para continuar a vender.",
+			"legacyOnlineBanner": "Este tipo de bilhete usa pagamento online com cartão, que não está disponível para eventos neste país ({country}). Muda para pagamento à entrada ou por transferência bancária para continuar a vender.",
 			"changePaymentMethod": "Alterar método de pagamento",
 			"locationHint": "As regras para pagamentos online dependem do local onde o evento se realiza."
 		},

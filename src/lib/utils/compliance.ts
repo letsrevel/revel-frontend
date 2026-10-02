@@ -10,6 +10,7 @@ import * as m from '$lib/paraglide/messages.js';
 import { getLocale } from '$lib/paraglide/runtime.js';
 import type {
 	ComplianceNoticeSchema,
+	EventComplianceSchema,
 	NoticeTopic,
 	OrganizationComplianceSchema
 } from '$lib/api/generated/types.gen';
@@ -198,4 +199,34 @@ export function tierIsPriced(tier: PricedTierFields): boolean {
 		tier.seat_pricing?.unpainted
 	];
 	return categoryPrices.some((price) => Number(price ?? 0) > 0);
+}
+
+/**
+ * Tiers a buyer may start a purchase on under the event's country rules: online
+ * tiers drop out when `online_payment` is blocked (the API would 422). Feeds the
+ * map-first entry point (#679), which must offer exactly what the tier cards do
+ * — picking a sector there places real seat holds.
+ */
+export function withoutBlockedOnlineTiers<T extends { payment_method?: string }>(
+	tiers: T[],
+	compliance: Pick<EventComplianceSchema, 'online_payment'> | null | undefined
+): T[] {
+	if (compliance?.online_payment !== 'blocked') return tiers;
+	return tiers.filter((tier) => tier.payment_method !== 'online');
+}
+
+const PLACED_TOPICS: ReadonlySet<string> = new Set<NoticeTopic>([
+	'offline_payment',
+	'ticket_sales'
+]);
+
+/**
+ * Notices whose `applies_to` this UI has no dedicated place for (a topic the
+ * backend added later). The contract says never to drop one: callers show them
+ * as general notices.
+ */
+export function unplacedNotices(
+	notices: readonly ComplianceNoticeSchema[] | undefined
+): ComplianceNoticeSchema[] {
+	return (notices ?? []).filter((notice) => !PLACED_TOPICS.has(notice.applies_to));
 }

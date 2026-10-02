@@ -8,7 +8,8 @@ import {
 	noticesFor,
 	onlinePaymentBlockedText,
 	restrictionBullets,
-	tierIsPriced
+	tierIsPriced,
+	unplacedNotices
 } from './compliance';
 
 function org(overrides: Partial<OrganizationComplianceSchema> = {}): OrganizationComplianceSchema {
@@ -154,5 +155,18 @@ describe('tierIsPriced', () => {
 		expect(tierIsPriced({ price: '0.00', seat_pricing: { categories: [], unpainted: null } })).toBe(
 			false
 		);
+	});
+});
+
+describe('unplacedNotices', () => {
+	it('keeps only topics without a dedicated place', () => {
+		const notices = [
+			{ key: 'a', applies_to: 'offline_payment' as const, message: 'a' },
+			{ key: 'b', applies_to: 'ticket_sales' as const, message: 'b' },
+			// A topic a newer backend may send; the generated type doesn't know it yet.
+			{ key: 'c', applies_to: 'invoicing' as unknown as 'ticket_sales', message: 'c' }
+		];
+		expect(unplacedNotices(notices).map((n) => n.key)).toEqual(['c']);
+		expect(unplacedNotices(undefined)).toEqual([]);
 	});
 });

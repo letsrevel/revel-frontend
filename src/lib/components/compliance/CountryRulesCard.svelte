@@ -31,7 +31,6 @@
 
 <section
 	class="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm"
-	aria-labelledby="country-rules-title"
 	data-testid="country-rules-card"
 	data-country={compliance.country}
 >

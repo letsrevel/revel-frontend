@@ -17,7 +17,7 @@ import type { GuestCartCheckoutParams } from '../tickets/cart-payload';
 import { createCheckoutMachinery } from './cart-checkout-machinery';
 import * as m from '$lib/paraglide/messages.js';
 import { toast } from 'svelte-sonner';
-import { checkoutError, checkoutRefusedError } from './checkout-error';
+import { CheckoutRefusedError, checkoutError, checkoutRefusedError } from './checkout-error';
 import { extractApiErrorDetail, isGuestActionError } from '$lib/utils/api-error-detail';
 import { getEligibilityRefusalMessage } from '$lib/utils/eligibility';
 import { readAttributionFromCurrentUrl } from '$lib/utils/attribution';
@@ -259,6 +259,10 @@ export function createGuestCartCheckoutController(deps: GuestCartCheckoutDeps) {
 			// whose inline `PurchaseErrorAlert` IS the feedback — a simultaneous
 			// "Checkout failed" toast would contradict the actionable alert.
 			if (error instanceof GuestAccountRequiredError || error instanceof GuestCartTooLargeError) {
+				return;
+			}
+			if (error instanceof CheckoutRefusedError) {
+				toast.error(error.message, { duration: 8000 });
 				return;
 			}
 			toast.error(m['cart.checkoutFailed'](), { description: error.message, duration: 6000 });

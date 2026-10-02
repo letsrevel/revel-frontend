@@ -17,7 +17,8 @@
 
 {#if notices.length > 0}
 	<div class={className ?? 'space-y-2'}>
-		{#each notices as notice (notice.key)}
+		<!-- Index in the key: a duplicate `key` from the API must not crash the list. -->
+		{#each notices as notice, i (`${notice.key}-${i}`)}
 			<ComplianceCallout testId="compliance-notice-{notice.key}">
 				<p>{notice.message}</p>
 			</ComplianceCallout>

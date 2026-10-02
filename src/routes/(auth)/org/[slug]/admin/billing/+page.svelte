@@ -286,9 +286,10 @@
 					queryClient.invalidateQueries({ queryKey: ['billing-info', slug] });
 					toast.success(m['orgAdmin.billing.invoicingMode.saved']());
 				},
-				onError: (error: Error) => {
-					toast.error(error.message);
-				}
+				// No toast: the inline role="alert" under the radios is the feedback,
+				// and a toast on top would announce the same refusal twice. The local
+				// handler also stands in for the global "Action failed" toast.
+				onError: () => undefined
 			}))
 		: null;
 

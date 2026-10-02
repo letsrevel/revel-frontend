@@ -22,7 +22,7 @@ import type {
 import { createCheckoutMachinery } from './cart-checkout-machinery';
 import * as m from '$lib/paraglide/messages.js';
 import { toast } from 'svelte-sonner';
-import { checkoutError, checkoutRefusedError } from './checkout-error';
+import { CheckoutRefusedError, checkoutError, checkoutRefusedError } from './checkout-error';
 import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 import { readAttributionFromCurrentUrl } from '$lib/utils/attribution';
 
@@ -161,6 +161,10 @@ export function createCartCheckoutController(deps: CartCheckoutDeps) {
 		},
 		onSuccess: handleCheckoutSuccess,
 		onError: (error: Error) => {
+			if (error instanceof CheckoutRefusedError) {
+				toast.error(error.message, { duration: 8000 });
+				return;
+			}
 			toast.error(m['cart.checkoutFailed'](), { description: error.message, duration: 6000 });
 		}
 	}));

@@ -26,8 +26,21 @@ export function checkoutError(error: unknown, fallback: string): Error {
  * names the country, so it wins; the generic "can't be bought online" copy is
  * only for a 422 that carries no readable detail.
  */
-export function checkoutRefusedError(error: unknown): Error {
-	return new Error(extractApiErrorDetail(error) ?? m['compliance.checkout.fallback'](), {
-		cause: error
-	});
+export function checkoutRefusedError(error: unknown): CheckoutRefusedError {
+	return new CheckoutRefusedError(
+		extractApiErrorDetail(error) ?? m['compliance.checkout.fallback'](),
+		{ cause: error }
+	);
+}
+
+/**
+ * A sale the rules refuse outright. Its message is the whole story (no generic
+ * "Checkout failed" title in front of it): callers toast `message` as the title
+ * and the checkout sheet shows it inline as a `role="alert"`.
+ */
+export class CheckoutRefusedError extends Error {
+	constructor(message: string, options?: ErrorOptions) {
+		super(message, options);
+		this.name = 'CheckoutRefusedError';
+	}
 }
