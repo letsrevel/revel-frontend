@@ -20,5 +20,5 @@ export const TWITTER_SITE = '@letsrevel';
 // caches by URL, so replacing the bytes in place is invisible to them.
 // When the artwork changes: add a new file with a bumped suffix, point the
 // constant at it, and keep the old file for already-scraped pages (#623).
-export const OG_IMAGE_PATH = '/og-image-v2.png';
-export const OG_LOGO_PATH = '/og-logo-v1.png';
+export const OG_IMAGE_PATH = '/og-image-v3.png';
+export const OG_LOGO_PATH = '/og-logo-v2.png';

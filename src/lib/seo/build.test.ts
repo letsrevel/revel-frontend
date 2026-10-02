@@ -42,8 +42,8 @@ describe('buildSeo', () => {
 		const cfg = buildSeo({ kind: 'home', url: url('/'), lang: 'en' });
 		// Versioned URLs: the assets are immutable-cached and scrapers key
 		// their caches by URL, so the path must change with the artwork (#623).
-		expect(cfg.og.image).toBe('https://letsrevel.io/og-image-v2.png');
-		expect(cfg.og.logo).toBe('https://letsrevel.io/og-logo-v1.png');
+		expect(cfg.og.image).toBe('https://letsrevel.io/og-image-v3.png');
+		expect(cfg.og.logo).toBe('https://letsrevel.io/og-logo-v2.png');
 		// Social previews truncate og:description around ~125 chars (#624).
 		expect(cfg.og.description.length).toBeLessThanOrEqual(125);
 	});
@@ -82,7 +82,7 @@ describe('buildSeo', () => {
 		const types = cfg.jsonLd.map((j) => (j as Record<string, unknown>)['@type']);
 		expect(types).toContain('Event');
 		expect(types).toContain('BreadcrumbList');
-		expect(cfg.og.logo).toBe('https://letsrevel.io/og-logo-v1.png');
+		expect(cfg.og.logo).toBe('https://letsrevel.io/og-logo-v2.png');
 	});
 
 	it('event: strips markdown from the description (meta, og and twitter)', () => {
@@ -147,7 +147,7 @@ describe('buildSeo', () => {
 		expect(cfg.canonical).toBe('https://letsrevel.io/referral/apply');
 		expect(cfg.og.url).toBe(cfg.canonical);
 		expect(cfg.twitter.card).toBe('summary');
-		expect(cfg.og.image).toBe('https://letsrevel.io/og-image-v2.png');
+		expect(cfg.og.image).toBe('https://letsrevel.io/og-image-v3.png');
 		expect(cfg.jsonLd).toEqual([]);
 	});
 

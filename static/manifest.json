@@ -9,13 +9,13 @@
 	"orientation": "portrait-primary",
 	"icons": [
 		{
-			"src": "/logo.svg",
+			"src": "/logo-v2.svg",
 			"sizes": "512x512",
 			"type": "image/svg+xml",
 			"purpose": "any maskable"
 		},
 		{
-			"src": "/favicon.png",
+			"src": "/favicon-v2.png",
 			"sizes": "32x32",
 			"type": "image/png",
 			"purpose": "any"
@@ -30,7 +30,7 @@
 			"url": "/events",
 			"icons": [
 				{
-					"src": "/logo.svg",
+					"src": "/logo-v2.svg",
 					"sizes": "512x512"
 				}
 			]
@@ -42,7 +42,7 @@
 			"url": "/dashboard",
 			"icons": [
 				{
-					"src": "/logo.svg",
+					"src": "/logo-v2.svg",
 					"sizes": "512x512"
 				}
 			]

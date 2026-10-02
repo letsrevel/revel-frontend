@@ -78,7 +78,7 @@ export const GET: RequestHandler = async ({ fetch, url }) => {
     <ttl>60</ttl>
     <atom:link href="${baseUrl}/feed.xml" rel="self" type="application/rss+xml"/>
     <image>
-      <url>${baseUrl}/favicon.png</url>
+      <url>${baseUrl}/favicon-v2.png</url>
       <title>Revel</title>
       <link>${baseUrl}</link>
     </image>
