@@ -94,6 +94,13 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 		.optional()
 		.catch(undefined)
 		.parse(url.searchParams.get('source') || undefined);
+	// Sales whose attendee invoice Revel skipped under a country policy (#1008);
+	// how staff, who can't see the owner-only list, find them.
+	const invoiceSkipped = z
+		.enum(['true'])
+		.optional()
+		.catch(undefined)
+		.parse(url.searchParams.get('invoice_skipped') || undefined);
 	const search = url.searchParams.get('search') || undefined;
 	// Exact-match passthrough filters (#880). Sanitised so junk never reaches the
 	// query; the values come from breakdown-row links we build ourselves anyway.
@@ -156,6 +163,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 				utm_source: utmSource,
 				utm_campaign: utmCampaign,
 				source,
+				...(invoiceSkipped ? { invoice_skipped: true } : {}),
 				search,
 				order_by: orderBy,
 				page,
@@ -193,6 +201,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 			status,
 			paymentMethod,
 			source,
+			invoiceSkipped,
 			search,
 			orderBy,
 			utmSource,

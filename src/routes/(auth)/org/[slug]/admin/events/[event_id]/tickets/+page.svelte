@@ -53,6 +53,7 @@
 	let selectedStatus = $state<string | null>(data.filters.status || null);
 	let selectedPaymentMethod = $state<string | null>(data.filters.paymentMethod || null);
 	let selectedSource = $state<string | null>(data.filters.source || null);
+	let invoiceSkippedOnly = $state(data.filters.invoiceSkipped === 'true');
 
 	// Sort state (server-side, persisted in the URL)
 	let selectedOrderBy = $state<TicketOrderBy | undefined>(data.filters.orderBy ?? undefined);
@@ -200,6 +201,7 @@
 		if (selectedStatus) params.set('status', selectedStatus);
 		if (selectedPaymentMethod) params.set('payment_method', selectedPaymentMethod);
 		if (selectedSource) params.set('source', selectedSource);
+		if (invoiceSkippedOnly) params.set('invoice_skipped', 'true');
 		if (selectedOrderBy) params.set('order_by', selectedOrderBy);
 		// Reset to page 1 when filters change
 		params.set('page', '1');
@@ -245,6 +247,11 @@
 	 */
 	function setSourceFilter(source: string | null) {
 		selectedSource = source;
+		applyFilters();
+	}
+
+	function setInvoiceSkippedFilter(only: boolean) {
+		invoiceSkippedOnly = only;
 		applyFilters();
 	}
 
@@ -405,11 +412,13 @@
 		{selectedStatus}
 		{selectedPaymentMethod}
 		{selectedSource}
+		{invoiceSkippedOnly}
 		{selectedOrderBy}
 		onSearch={handleSearch}
 		onStatusFilter={setStatusFilter}
 		onPaymentMethodFilter={setPaymentMethodFilter}
 		onSourceFilter={setSourceFilter}
+		onInvoiceSkippedFilter={setInvoiceSkippedFilter}
 		onSort={setOrderBy}
 	/>
 
@@ -430,6 +439,7 @@
 				selectedStatus ||
 				selectedPaymentMethod ||
 				selectedSource ||
+				invoiceSkippedOnly ||
 				!!data.filters.utmSource ||
 				!!data.filters.utmCampaign
 					? m['eventTicketsAdmin.noTicketsFiltered']()

@@ -12,7 +12,6 @@
 		ChevronLeft,
 		ChevronRight,
 		Download,
-		Edit3,
 		FileText,
 		Loader2,
 		Search,
@@ -24,7 +23,6 @@
 		DialogContent,
 		DialogHeader,
 		DialogTitle,
-		DialogDescription,
 		DialogFooter
 	} from '$lib/components/ui/dialog';
 	import { browser } from '$app/environment';
@@ -48,7 +46,8 @@
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import InvoiceVatBreakdownTable from '$lib/components/financials/InvoiceVatBreakdownTable.svelte';
 	import type { Tone } from '$lib/components/common/tones';
-	import InvoiceNotIssuableAlert from '$lib/components/compliance/InvoiceNotIssuableAlert.svelte';
+	import InvoiceConfirmDialog from '$lib/components/financials/InvoiceConfirmDialog.svelte';
+	import AttendeeInvoiceDraftActions from '$lib/components/financials/AttendeeInvoiceDraftActions.svelte';
 
 	interface Props {
 		data: LayoutData;
@@ -182,7 +181,14 @@
 					toast.success(m['orgAdmin.billing.attendeeInvoices.issued']());
 				},
 				onError: (error: Error) => {
-					if (!issueRefusal) toast.error(error.message);
+					if (!issueRefusal) {
+						toast.error(error.message);
+						return;
+					}
+					// The rules changed after the list loaded: refetch so the draft
+					// shows as blocked (issue_blocked_reason) everywhere.
+					queryClient.invalidateQueries({ queryKey: ['attendee-invoices', slug] });
+					queryClient.invalidateQueries({ queryKey: ['attendee-invoice-detail', slug] });
 				}
 			}))
 		: null;
@@ -290,6 +296,15 @@
 		/>
 	</div>
 
+	<!-- Sales whose invoice the country rules kept Revel from issuing (#1008). -->
+	<a
+		href={resolve('/(auth)/org/[slug]/admin/billing/skipped-documents', { slug })}
+		class="inline-flex items-center gap-2 text-sm font-medium text-primary underline underline-offset-2 hover:text-foreground"
+	>
+		<FileText class="h-4 w-4" aria-hidden="true" />
+		{m['compliance.skipped.title']()}
+	</a>
+
 	<div class="relative max-w-sm">
 		<Search
 			class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
@@ -359,10 +374,20 @@
 								<div class="text-xs text-muted-foreground">{invoice.buyer_email}</div>
 							</td>
 							<td class="px-4 py-3">
-								<StatusBadge
-									tone={statusTone(invoice.status)}
-									label={statusLabel(invoice.status)}
-								/>
+								<div class="flex flex-wrap items-center gap-1">
+									<StatusBadge
+										tone={statusTone(invoice.status)}
+										label={statusLabel(invoice.status)}
+									/>
+									{#if invoice.status === 'draft' && invoice.issue_blocked_reason}
+										<StatusBadge
+											tone="warning"
+											size="sm"
+											label={m['compliance.invoicing.cannotIssue']()}
+											data-testid="issue-blocked-badge"
+										/>
+									{/if}
+								</div>
 							</td>
 							<td class="px-4 py-3 text-right font-mono"
 								>{formatCurrency(invoice.total_gross, invoice.currency)}</td
@@ -373,14 +398,26 @@
 							<td class="px-4 py-3 text-center">
 								<div class="flex items-center justify-center gap-1">
 									{#if invoice.status === 'draft'}
+										<!-- Blocked by the country rules (#1008): Issue stays visible but
+										     disabled, described by the backend's reason. -->
+										{#if invoice.issue_blocked_reason}
+											<span id="issue-blocked-{invoice.id}" class="sr-only"
+												>{invoice.issue_blocked_reason}</span
+											>
+										{/if}
 										<Button
 											variant="ghost"
 											size="sm"
+											disabled={!!invoice.issue_blocked_reason}
 											onclick={(e) => {
 												e.stopPropagation();
 												openAction(invoice.id, 'issue');
 											}}
 											aria-label={m['orgAdmin.billing.attendeeInvoices.issue']()}
+											aria-describedby={invoice.issue_blocked_reason
+												? `issue-blocked-${invoice.id}`
+												: undefined}
+											title={invoice.issue_blocked_reason || undefined}
 										>
 											<Send class="h-4 w-4" />
 										</Button>
@@ -653,25 +690,12 @@
 
 					<div class="flex flex-col gap-2">
 						{#if inv.status === 'draft'}
-							<Button variant="outline" class="w-full" onclick={() => startEdit(inv)}>
-								<Edit3 class="mr-2 h-4 w-4" aria-hidden="true" />{m[
-									'orgAdmin.billing.attendeeInvoices.edit'
-								]()}
-							</Button>
-							<Button class="w-full" onclick={() => openAction(inv.id, 'issue')}>
-								<Send class="mr-2 h-4 w-4" aria-hidden="true" />{m[
-									'orgAdmin.billing.attendeeInvoices.issue'
-								]()}
-							</Button>
-							<Button
-								variant="destructive"
-								class="w-full"
-								onclick={() => openAction(inv.id, 'delete')}
-							>
-								<Trash2 class="mr-2 h-4 w-4" aria-hidden="true" />{m[
-									'orgAdmin.billing.attendeeInvoices.deleteInvoice'
-								]()}
-							</Button>
+							<AttendeeInvoiceDraftActions
+								blockedReason={inv.issue_blocked_reason}
+								onEdit={() => startEdit(inv)}
+								onIssue={() => openAction(inv.id, 'issue')}
+								onDelete={() => openAction(inv.id, 'delete')}
+							/>
 						{:else}
 							<Button
 								class="w-full"
@@ -695,55 +719,25 @@
 	</DialogContent>
 </Dialog>
 
-{#snippet confirmDialog(
-	open: boolean,
-	onOpenChange: (v: boolean) => void,
-	title: string,
-	description: string,
-	buttonLabel: string,
-	onConfirm: () => void,
-	isPending: boolean,
-	variant: 'default' | 'destructive',
-	refusal: string | null = null
-)}
-	<Dialog {open} {onOpenChange}>
-		<DialogContent class="max-h-[90vh] overflow-y-auto">
-			<DialogHeader>
-				<DialogTitle>{title}</DialogTitle>
-				<DialogDescription>{description}</DialogDescription>
-			</DialogHeader>
-			{#if refusal}<InvoiceNotIssuableAlert detail={refusal} />{/if}
-			<DialogFooter>
-				<Button variant="outline" onclick={() => onOpenChange(false)}>{m['common.cancel']()}</Button
-				>
-				<Button {variant} onclick={onConfirm} disabled={isPending}>
-					{#if isPending}<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />{/if}
-					{buttonLabel}
-				</Button>
-			</DialogFooter>
-		</DialogContent>
-	</Dialog>
-{/snippet}
+<InvoiceConfirmDialog
+	open={showIssueDialog}
+	onOpenChange={(open) => (showIssueDialog = open)}
+	title={m['orgAdmin.billing.attendeeInvoices.issueConfirmTitle']()}
+	description={m['orgAdmin.billing.attendeeInvoices.issueConfirmDescription']()}
+	buttonLabel={m['orgAdmin.billing.attendeeInvoices.issueConfirmButton']()}
+	onConfirm={() => actionInvoiceId && issueMutation?.mutate(actionInvoiceId)}
+	isPending={issueMutation?.isPending ?? false}
+	variant="default"
+	refusal={issueRefusal}
+/>
 
-{@render confirmDialog(
-	showIssueDialog,
-	(open) => (showIssueDialog = open),
-	m['orgAdmin.billing.attendeeInvoices.issueConfirmTitle'](),
-	m['orgAdmin.billing.attendeeInvoices.issueConfirmDescription'](),
-	m['orgAdmin.billing.attendeeInvoices.issueConfirmButton'](),
-	() => actionInvoiceId && issueMutation?.mutate(actionInvoiceId),
-	issueMutation?.isPending ?? false,
-	'default',
-	issueRefusal
-)}
-
-{@render confirmDialog(
-	showDeleteDialog,
-	(open) => (showDeleteDialog = open),
-	m['orgAdmin.billing.attendeeInvoices.deleteConfirmTitle'](),
-	m['orgAdmin.billing.attendeeInvoices.deleteConfirmDescription'](),
-	m['orgAdmin.billing.attendeeInvoices.deleteConfirmButton'](),
-	() => actionInvoiceId && deleteMutation?.mutate(actionInvoiceId),
-	deleteMutation?.isPending ?? false,
-	'destructive'
-)}
+<InvoiceConfirmDialog
+	open={showDeleteDialog}
+	onOpenChange={(open) => (showDeleteDialog = open)}
+	title={m['orgAdmin.billing.attendeeInvoices.deleteConfirmTitle']()}
+	description={m['orgAdmin.billing.attendeeInvoices.deleteConfirmDescription']()}
+	buttonLabel={m['orgAdmin.billing.attendeeInvoices.deleteConfirmButton']()}
+	onConfirm={() => actionInvoiceId && deleteMutation?.mutate(actionInvoiceId)}
+	isPending={deleteMutation?.isPending ?? false}
+	variant="destructive"
+/>

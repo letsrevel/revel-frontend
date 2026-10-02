@@ -1,6 +1,6 @@
 import { test, expect } from '../../support/fixtures';
 import { ApiError } from '../../support/api';
-import { complianceApi, openBilling } from './helpers';
+import { complianceApi, fixtureEvent, openBilling, openTicketing } from './helpers';
 
 // J29.2 (USER_JOURNEYS.md) — attendee invoicing modes under country rules, on
 // the seeded compliance-* orgs. Read-only: the one write (forcing `auto` on
@@ -8,6 +8,9 @@ import { complianceApi, openBilling } from './helpers';
 
 const HR_DETAIL =
 	"Revel can't issue invoices to your attendees in Croatia. The law there requires invoices to go through the Tax Administration's fiscalization system, and Revel isn't connected to it yet. Please issue invoices from your own invoicing software.";
+
+const HR_FISCAL_NOTICE =
+	"Revel can't issue your attendee invoices. In Croatia, invoices to consumers must be fiscalized in real time with the Tax Administration (Porezna uprava).";
 
 test.describe('J29.2 attendee invoicing modes @p2', () => {
 	test('Croatia: Manual Review and Automatic are disabled and explained', async ({
@@ -28,6 +31,34 @@ test.describe('J29.2 attendee invoicing modes @p2', () => {
 			// Every disabled control names its reason (WCAG 1.3.1 / 3.3.2).
 			await expect(radio).toHaveAccessibleDescription(HR_DETAIL);
 		}
+	});
+
+	test('Croatia: the fiscalization notice sits next to the modes (#1007)', async ({
+		asCompliance: page
+	}) => {
+		await openBilling(page, 'compliance-hr');
+		const notice = page.getByTestId('compliance-notice-hr_fiscalization');
+		// Once on the page: next to the selector, not repeated in the country card.
+		await expect(notice).toHaveCount(1);
+		await expect(notice).toHaveAttribute('role', 'status');
+		await expect(notice).toContainText(HR_FISCAL_NOTICE);
+		const section = page
+			.locator('section')
+			.filter({ has: page.getByRole('radio', { name: 'Disabled' }) });
+		await expect(section.getByTestId('compliance-notice-hr_fiscalization')).toBeVisible();
+		// A notice never disables anything; the block already does (J29.2).
+		await expect(page.getByRole('radio', { name: 'Disabled' })).toBeEnabled();
+		await expect(page.getByRole('radio', { name: 'Automatic' })).toBeDisabled();
+	});
+
+	test("Croatia: the event's tier editor carries the same notice", async ({
+		asCompliance: page
+	}) => {
+		const event = await fixtureEvent('compliance-hr', 'hr-concert');
+		await openTicketing(page, event);
+		await expect(page.getByTestId('compliance-notice-hr_fiscalization')).toContainText(
+			HR_FISCAL_NOTICE
+		);
 	});
 
 	test('Croatia: forcing auto through the API is refused with the same text', async () => {

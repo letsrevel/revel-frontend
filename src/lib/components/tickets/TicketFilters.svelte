@@ -8,11 +8,14 @@
 		selectedStatus: string | null;
 		selectedPaymentMethod: string | null;
 		selectedSource?: string | null;
+		/** Only sales whose attendee invoice Revel skipped (#1008). */
+		invoiceSkippedOnly?: boolean;
 		selectedOrderBy?: TicketOrderBy;
 		onSearch: (value: string) => void;
 		onStatusFilter: (status: string | null) => void;
 		onPaymentMethodFilter: (method: string | null) => void;
 		onSourceFilter?: (source: string | null) => void;
+		onInvoiceSkippedFilter?: (only: boolean) => void;
 		onSort?: (orderBy: TicketOrderBy | undefined) => void;
 	}
 
@@ -21,11 +24,13 @@
 		selectedStatus,
 		selectedPaymentMethod,
 		selectedSource = null,
+		invoiceSkippedOnly = false,
 		selectedOrderBy,
 		onSearch,
 		onStatusFilter,
 		onPaymentMethodFilter,
 		onSourceFilter,
+		onInvoiceSkippedFilter,
 		onSort
 	}: Props = $props();
 
@@ -232,5 +237,17 @@
 				</button>
 			</div>
 		</div>
+	{/if}
+
+	{#if onInvoiceSkippedFilter}
+		<label class="flex w-fit cursor-pointer items-center gap-2 text-sm font-medium">
+			<input
+				type="checkbox"
+				checked={invoiceSkippedOnly}
+				onchange={(e) => onInvoiceSkippedFilter(e.currentTarget.checked)}
+				class="h-4 w-4 rounded border-input accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+			/>
+			{m['compliance.skipped.ticketFilter']()}
+		</label>
 	{/if}
 </div>

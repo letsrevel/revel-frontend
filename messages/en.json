@@ -10112,7 +10112,8 @@
 			"upcomingEs": "From 1 January 2027, Revel will stop issuing attendee invoices for organizations in Spain, because of the new Verifactu rules. Until then, everything works as usual. Plan to issue invoices from Verifactu-compliant software by that date.",
 			"businessBuyers": "Invoices to customers with a {country} VAT ID must be sent as e-invoices through {system}. Revel won't create those. Issue them from your e-invoicing software. Invoices to everyone else work as usual.",
 			"businessBuyersAll": "Invoices to business customers must be issued through KSeF. Revel won't create those. Issue them from your e-invoicing software. Invoices to consumers work as usual.",
-			"draftNotIssuable": "This invoice can't be issued from Revel anymore. Issue it from your own invoicing software."
+			"draftNotIssuable": "This invoice can't be issued from Revel anymore. Issue it from your own invoicing software.",
+			"cannotIssue": "Can't be issued"
 		},
 		"system": {
 			"hr": "the Tax Administration's fiscalization system",
@@ -10145,6 +10146,45 @@
 		},
 		"ticket": {
 			"linesTitle": "Ticket details"
+		},
+		"skipped": {
+			"title": "Documents to issue yourself",
+			"intro": "The law requires these invoices and credit notes to go through a national e-invoicing or fiscalization system, so Revel didn't issue them. Issue each one from your own system, then mark it as issued.",
+			"kindInvoice": "Invoice",
+			"kindCreditNote": "Credit note",
+			"statusOpen": "To issue",
+			"statusDone": "Issued",
+			"markIssued": "Mark as issued",
+			"editReference": "Edit reference",
+			"referenceLabel": "Document number in your system",
+			"referenceHint": "You can change it later.",
+			"ticketBadge": "Invoice to issue yourself",
+			"ticketFilter": "Invoice skipped by Revel",
+			"empty": "Nothing to issue yourself.",
+			"emptyFiltered": "No documents match these filters.",
+			"colDate": "Date",
+			"colDocument": "Document",
+			"colEvent": "Event",
+			"colBuyer": "Buyer",
+			"colGross": "Gross",
+			"colStatus": "Status",
+			"filterStatus": "Status",
+			"filterAll": "All",
+			"filterKind": "Document type",
+			"filterKindAll": "All documents",
+			"searchPlaceholder": "Search buyer, VAT ID or event",
+			"searchLabel": "Search documents to issue yourself",
+			"reference": "Ref. {reference}",
+			"correctsInvoice": "Corrects {number}",
+			"viewTickets": "View tickets",
+			"deletedEvent": "Deleted event",
+			"buyerVatId": "VAT ID {vatId}",
+			"resolveDescription": "Issue this document from your own system, then enter its number here.",
+			"save": "Save",
+			"saved": "Marked as issued",
+			"saveFailed": "Couldn't save the document number.",
+			"loadFailed": "Couldn't load the documents to issue yourself.",
+			"referenceRequired": "Enter the document number."
 		}
 	}
 }

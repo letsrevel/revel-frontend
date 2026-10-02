@@ -10112,7 +10112,8 @@
 			"upcomingEs": "A partir del 1 de enero de 2027, Revel dejará de emitir facturas a asistentes para organizaciones en España, por la nueva normativa Verifactu. Hasta entonces, todo funciona con normalidad. Prepárate para emitir las facturas con un software compatible con Verifactu antes de esa fecha.",
 			"businessBuyers": "Las facturas a clientes con NIF-IVA de {country} deben enviarse como factura electrónica a través de {system}. Revel no las crea. Emítelas desde tu software de facturación electrónica. Las facturas al resto funcionan con normalidad.",
 			"businessBuyersAll": "Las facturas a clientes empresariales deben emitirse a través de KSeF. Revel no las crea. Emítelas desde tu software de facturación electrónica. Las facturas a particulares funcionan con normalidad.",
-			"draftNotIssuable": "Esta factura ya no se puede emitir desde Revel. Emítela desde tu propio software de facturación."
+			"draftNotIssuable": "Esta factura ya no se puede emitir desde Revel. Emítela desde tu propio software de facturación.",
+			"cannotIssue": "No se puede emitir"
 		},
 		"system": {
 			"hr": "el sistema de fiscalización de la Administración tributaria",
@@ -10145,6 +10146,45 @@
 		},
 		"ticket": {
 			"linesTitle": "Detalles de la entrada"
+		},
+		"skipped": {
+			"title": "Documentos que debes emitir tú",
+			"intro": "La ley exige que estas facturas y notas de crédito pasen por un sistema nacional de facturación electrónica o de fiscalización, así que Revel no las ha emitido. Emítelas desde tu propio sistema y márcalas como emitidas.",
+			"kindInvoice": "Factura",
+			"kindCreditNote": "Nota de crédito",
+			"statusOpen": "Pendiente",
+			"statusDone": "Emitida",
+			"markIssued": "Marcar como emitida",
+			"editReference": "Editar número",
+			"referenceLabel": "Número del documento en tu sistema",
+			"referenceHint": "Puedes cambiarlo más adelante.",
+			"ticketBadge": "Factura a emitir por ti",
+			"ticketFilter": "Factura no emitida por Revel",
+			"empty": "No hay nada que emitir.",
+			"emptyFiltered": "Ningún documento coincide con estos filtros.",
+			"colDate": "Fecha",
+			"colDocument": "Documento",
+			"colEvent": "Evento",
+			"colBuyer": "Comprador",
+			"colGross": "Bruto",
+			"colStatus": "Estado",
+			"filterStatus": "Estado",
+			"filterAll": "Todos",
+			"filterKind": "Tipo de documento",
+			"filterKindAll": "Todos los documentos",
+			"searchPlaceholder": "Buscar comprador, NIF-IVA o evento",
+			"searchLabel": "Buscar en los documentos que debes emitir tú",
+			"reference": "Ref. {reference}",
+			"correctsInvoice": "Rectifica {number}",
+			"viewTickets": "Ver entradas",
+			"deletedEvent": "Evento eliminado",
+			"buyerVatId": "NIF-IVA {vatId}",
+			"resolveDescription": "Emite este documento desde tu propio sistema y luego introduce aquí su número.",
+			"save": "Guardar",
+			"saved": "Marcada como emitida",
+			"saveFailed": "No se ha podido guardar el número del documento.",
+			"loadFailed": "No se han podido cargar los documentos que debes emitir tú.",
+			"referenceRequired": "Introduce el número del documento."
 		}
 	}
 }

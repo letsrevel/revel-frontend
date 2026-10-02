@@ -10112,7 +10112,8 @@
 			"upcomingEs": "Ab dem 1. Januar 2027 stellt Revel wegen der neuen Verifactu-Regeln keine Rechnungen an Teilnehmende mehr für Organisationen in Spanien aus. Bis dahin funktioniert alles wie gewohnt. Plane, bis zu diesem Datum Rechnungen über eine Verifactu-konforme Software auszustellen.",
 			"businessBuyers": "Rechnungen an Kund*innen mit einer USt-IdNr. aus {country} müssen als E-Rechnung über {system} verschickt werden. Revel erstellt diese nicht. Stelle sie über deine E-Rechnungssoftware aus. Rechnungen an alle anderen funktionieren wie gewohnt.",
 			"businessBuyersAll": "Rechnungen an Geschäftskund*innen müssen über KSeF ausgestellt werden. Revel erstellt diese nicht. Stelle sie über deine E-Rechnungssoftware aus. Rechnungen an Privatpersonen funktionieren wie gewohnt.",
-			"draftNotIssuable": "Diese Rechnung kann nicht mehr über Revel ausgestellt werden. Stelle sie über deine eigene Rechnungssoftware aus."
+			"draftNotIssuable": "Diese Rechnung kann nicht mehr über Revel ausgestellt werden. Stelle sie über deine eigene Rechnungssoftware aus.",
+			"cannotIssue": "Nicht ausstellbar"
 		},
 		"system": {
 			"hr": "das Fiskalisierungssystem der Steuerverwaltung",
@@ -10145,6 +10146,45 @@
 		},
 		"ticket": {
 			"linesTitle": "Ticketangaben"
+		},
+		"skipped": {
+			"title": "Selbst auszustellende Dokumente",
+			"intro": "Laut Gesetz müssen diese Rechnungen und Gutschriften über ein staatliches E-Rechnungs- oder Fiskalsystem laufen, daher hat Revel sie nicht ausgestellt. Stelle sie in deinem eigenen System aus und markiere sie dann als ausgestellt.",
+			"kindInvoice": "Rechnung",
+			"kindCreditNote": "Gutschrift",
+			"statusOpen": "Offen",
+			"statusDone": "Ausgestellt",
+			"markIssued": "Als ausgestellt markieren",
+			"editReference": "Nummer bearbeiten",
+			"referenceLabel": "Belegnummer in deinem System",
+			"referenceHint": "Du kannst sie später ändern.",
+			"ticketBadge": "Rechnung selbst ausstellen",
+			"ticketFilter": "Rechnung von Revel übersprungen",
+			"empty": "Nichts selbst auszustellen.",
+			"emptyFiltered": "Keine Belege passen zu diesen Filtern.",
+			"colDate": "Datum",
+			"colDocument": "Beleg",
+			"colEvent": "Veranstaltung",
+			"colBuyer": "Käufer*in",
+			"colGross": "Brutto",
+			"colStatus": "Status",
+			"filterStatus": "Status",
+			"filterAll": "Alle",
+			"filterKind": "Belegart",
+			"filterKindAll": "Alle Belege",
+			"searchPlaceholder": "Käufer*in, USt-IdNr. oder Veranstaltung suchen",
+			"searchLabel": "Selbst auszustellende Dokumente durchsuchen",
+			"reference": "Nr. {reference}",
+			"correctsInvoice": "Korrigiert {number}",
+			"viewTickets": "Tickets ansehen",
+			"deletedEvent": "Gelöschte Veranstaltung",
+			"buyerVatId": "USt-IdNr. {vatId}",
+			"resolveDescription": "Stelle diesen Beleg in deinem eigenen System aus und trage dann hier seine Nummer ein.",
+			"save": "Speichern",
+			"saved": "Als ausgestellt markiert",
+			"saveFailed": "Die Belegnummer konnte nicht gespeichert werden.",
+			"loadFailed": "Die selbst auszustellenden Dokumente konnten nicht geladen werden.",
+			"referenceRequired": "Gib die Belegnummer ein."
 		}
 	}
 }

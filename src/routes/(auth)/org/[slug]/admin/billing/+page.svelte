@@ -10,6 +10,7 @@
 		AlertCircle,
 		Check,
 		CircleDot,
+		FileCheck2,
 		FileText,
 		Loader2,
 		Receipt,
@@ -47,8 +48,9 @@
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import type { Tone } from '$lib/components/common/tones';
 	import CountryRulesCard from '$lib/components/compliance/CountryRulesCard.svelte';
+	import ComplianceNotices from '$lib/components/compliance/ComplianceNotices.svelte';
 	import ComplianceCallout from '$lib/components/compliance/ComplianceCallout.svelte';
-	import { invoicingNotice } from '$lib/utils/compliance';
+	import { invoicingNotice, noticesFor } from '$lib/utils/compliance';
 
 	interface Props {
 		data: LayoutData;
@@ -297,6 +299,15 @@
 	const compliance = $derived(billingQuery?.data?.compliance);
 	const invoicingBlocked = $derived(compliance?.attendee_invoicing === 'blocked');
 	const invoicingComplianceNotice = $derived(compliance ? invoicingNotice(compliance) : null);
+	// Fiscal-system notices (#1007) sit next to the mode selector; the country
+	// card below shows every other notice, so none appears twice on the page.
+	const invoicingNotices = $derived(noticesFor(compliance?.notices, 'attendee_invoicing'));
+	const cardCompliance = $derived(
+		compliance && {
+			...compliance,
+			notices: compliance.notices.filter((n) => n.applies_to !== 'attendee_invoicing')
+		}
+	);
 
 	// ─── VAT Validation Status ──────────────────────────────────────
 	type VatStatusType = 'not-set' | 'validated' | 'pending';
@@ -360,6 +371,13 @@
 			<Receipt class="h-4 w-4" aria-hidden="true" />
 			{m['orgAdmin.billing.attendeeCreditNotes.title']()}
 		</a>
+		<a
+			href={resolve('/(auth)/org/[slug]/admin/billing/skipped-documents', { slug: slug })}
+			class="inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
+		>
+			<FileCheck2 class="h-4 w-4" aria-hidden="true" />
+			{m['compliance.skipped.title']()}
+		</a>
 	</div>
 
 	{#if billingQuery?.isLoading}
@@ -403,6 +421,7 @@
 					<p>{invoicingComplianceNotice.text}</p>
 				</ComplianceCallout>
 			{/if}
+			<ComplianceNotices notices={invoicingNotices} />
 
 			<RadioGroup.Root
 				value={invoicingMode}
@@ -685,8 +704,8 @@
 			</form>
 		</section>
 
-		{#if compliance}
-			<CountryRulesCard {compliance} />
+		{#if cardCompliance}
+			<CountryRulesCard compliance={cardCompliance} />
 		{/if}
 	{/if}
 </div>

@@ -74,7 +74,7 @@ test.describe('J9 permission gating @p2', () => {
 		await expect(nav.getByRole('link', { name: 'Financials' })).toBeHidden();
 
 		// Direct URLs to owner-only pages render the 403 error page.
-		for (const path of ['financials', 'billing', 'billing/invoices']) {
+		for (const path of ['financials', 'billing', 'billing/invoices', 'billing/skipped-documents']) {
 			await page.goto(`/org/${org.slug}/admin/${path}`);
 			await expect(page.getByRole('heading', { name: 'Access Denied' })).toBeVisible();
 		}
