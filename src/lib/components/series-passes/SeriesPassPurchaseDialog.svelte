@@ -24,6 +24,7 @@
 	import { toast } from 'svelte-sonner';
 	import { extractErrorMessage } from '$lib/utils/errors';
 	import { readAttributionFromCurrentUrl } from '$lib/utils/attribution';
+	import { AlertCircle } from '@lucide/svelte';
 
 	interface Props {
 		pass: SeriesPassSchema;
@@ -35,6 +36,10 @@
 	const { pass, quote, seriesId, onClose }: Props = $props();
 
 	const queryClient = useQueryClient();
+
+	// A checkout the country rules refuse (422, #1001), shown inline: the
+	// backend's translated reason, or the generic copy if it sent none.
+	let refusal = $state<string | null>(null);
 
 	const isFree = $derived(pass.payment_method === 'free' || parseFloat(quote.price) === 0);
 	const isOnline = $derived(pass.payment_method === 'online' && !isFree);
@@ -63,6 +68,10 @@
 				path: { pass_id: pass.id ?? '' },
 				body: { attribution: readAttributionFromCurrentUrl() }
 			});
+			if (response.response?.status === 422) {
+				refusal = extractErrorMessage(response.error, m['compliance.checkout.fallback']());
+				throw new Error(refusal);
+			}
 			if (response.error || !response.data) {
 				throw new Error(extractErrorMessage(response.error, m['seriesPass.checkoutFailed']()));
 			}
@@ -109,6 +118,7 @@
 				toast.error(m['seriesPass.paymentStartFailed']());
 				return;
 			}
+			if (refusal) return;
 			toast.error(error instanceof Error ? error.message : m['seriesPass.checkoutFailed']());
 		}
 	}));
@@ -150,13 +160,29 @@
 			{#if !isFree && !isOnline}
 				<p class="text-sm text-muted-foreground">{m['seriesPass.offlineNote']()}</p>
 			{/if}
+
+			{#if refusal}
+				<div
+					class="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-foreground"
+					id="series-pass-refusal"
+					role="alert"
+					data-testid="series-pass-checkout-refused"
+				>
+					<AlertCircle class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+					<p>{refusal}</p>
+				</div>
+			{/if}
 		</div>
 
 		<DialogFooter class="gap-2 sm:gap-0">
 			<Button variant="outline" onclick={onClose} disabled={checkoutMutation.isPending}>
 				{m['seriesPass.cancelButton']()}
 			</Button>
-			<Button onclick={() => checkoutMutation.mutate()} disabled={checkoutMutation.isPending}>
+			<Button
+				onclick={() => checkoutMutation.mutate()}
+				disabled={checkoutMutation.isPending || !!refusal}
+				aria-describedby={refusal ? 'series-pass-refusal' : undefined}
+			>
 				{checkoutMutation.isPending ? m['seriesPass.processing']() : confirmLabel}
 			</Button>
 		</DialogFooter>

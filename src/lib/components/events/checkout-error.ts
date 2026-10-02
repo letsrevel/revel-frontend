@@ -1,3 +1,4 @@
+import * as m from '$lib/paraglide/messages.js';
 import { getEligibilityRefusalMessage } from '$lib/utils/eligibility';
 import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 
@@ -17,4 +18,16 @@ export function checkoutError(error: unknown, fallback: string): Error {
 	const refusal = getEligibilityRefusalMessage(error);
 	if (refusal) return new Error(refusal, { cause: error });
 	return new Error(extractApiErrorDetail(error) ?? fallback, { cause: error });
+}
+
+/**
+ * A checkout refused at 422 (#1001: country rules, e.g. online card payment for
+ * an event held in Italy). The backend's `detail` is already translated and
+ * names the country, so it wins; the generic "can't be bought online" copy is
+ * only for a 422 that carries no readable detail.
+ */
+export function checkoutRefusedError(error: unknown): Error {
+	return new Error(extractApiErrorDetail(error) ?? m['compliance.checkout.fallback'](), {
+		cause: error
+	});
 }

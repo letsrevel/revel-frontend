@@ -389,6 +389,7 @@
 		cart={canUseCart ? cart : undefined}
 		quickBuyDisabled={purchaseFlow.isProcessing}
 		{eventRemaining}
+		compliance={event.compliance}
 		onPickSeats={canUseCart
 			? (tier) => {
 					pickSeatsTier = tier;

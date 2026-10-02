@@ -4,11 +4,13 @@
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import type { UserEventStatus } from '$lib/utils/eligibility';
 	import type {
+		EventComplianceSchema,
 		EventTokenSchema,
 		MembershipTierSchema,
 		TierRemainingTicketsSchema
 	} from '$lib/api/generated/types.gen';
 	import { isEligibility } from '$lib/utils/eligibility';
+	import { isReservationOnly } from '$lib/utils/compliance';
 	import type { EventCart } from './cart.svelte';
 	import { quickBuyEligible } from './cart.svelte';
 	import TierCard from './TierCard.svelte';
@@ -54,6 +56,8 @@
 		/** Heading anchor id — the list mounts twice since the tiers dialog
 		 * (page body + dialog), so each mount needs its own id. */
 		headingId?: string;
+		/** The event's country rules (#1001): hides the card option when blocked. */
+		compliance?: EventComplianceSchema | null;
 	}
 
 	const {
@@ -77,7 +81,8 @@
 		onSelectTier,
 		onViewSeatingMap,
 		onPickSeats,
-		headingId = 'ticket-tiers'
+		headingId = 'ticket-tiers',
+		compliance = null
 	}: Props = $props();
 
 	/**
@@ -180,6 +185,8 @@
 					tierRemainingInfo={getTierRemainingInfo(tier.id)}
 					{timezone}
 					{capacityDisclosed}
+					onlineBlocked={compliance?.online_payment === 'blocked'}
+					reservationOnly={isReservationOnly(compliance?.venue_country)}
 					quickBuy={cart && quickBuyEligible(tier)
 						? {
 								quantity: cart.quantityFor(tier.id),

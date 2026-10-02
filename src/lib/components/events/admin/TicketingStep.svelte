@@ -5,6 +5,7 @@
 		eventadminticketsListTicketTiers,
 		eventadminticketsReorderTicketTiers,
 		eventadminticketsUpdateTicketTier,
+		eventpublicdetailsGetEvent,
 		organizationadminmembersListMembershipTiers
 	} from '$lib/api/generated/sdk.gen';
 	import type { TicketTierDetailSchema } from '$lib/api/generated/types.gen';
@@ -18,6 +19,9 @@
 	import { reorderByIds, swapAndCollectIds } from '$lib/utils/reorder';
 	import type { PlatformFeeInfo } from '$lib/utils/fees';
 	import { toast } from 'svelte-sonner';
+	import { extractErrorMessage } from '$lib/utils/errors';
+	import { noticesFor } from '$lib/utils/compliance';
+	import ComplianceNotices from '$lib/components/compliance/ComplianceNotices.svelte';
 
 	// Form state fields this step reads/writes. The parent passes a wider event
 	// form object; only these fields are used here.
@@ -90,6 +94,21 @@
 
 	const queryClient = useQueryClient();
 
+	// The event's country rules (#1001). Read from the event detail, not the org:
+	// it follows where the event is held (an AT org's event in Italy is blocked
+	// even though the org card says allowed). Refetched on mount so a venue
+	// change saved on the details tab is reflected here.
+	const complianceQuery = createQuery(() => ({
+		queryKey: ['event-admin', eventId, 'compliance'],
+		queryFn: async () => {
+			const response = await eventpublicdetailsGetEvent({ path: { event_id: eventId } });
+			return response.data?.compliance ?? null;
+		},
+		refetchOnMount: 'always' as const
+	}));
+	const compliance = $derived(complianceQuery.data ?? null);
+	const onlineBlocked = $derived(compliance?.online_payment === 'blocked');
+
 	// One-click Revel kill switch from the card. The tier PUT is a partial
 	// update, so `sales_paused` alone is the whole body. One mutation for every
 	// card, so every pause button waits while any pause is in flight.
@@ -101,6 +120,14 @@
 			});
 			if (res.error) throw res.error;
 			return res.data;
+		},
+		// Resuming a tier the country rules block answers 422 (#1001): keep the
+		// backend's reason on the page next to the tiers, not in a fleeting toast.
+		onError: (error: unknown) => {
+			pauseError = extractErrorMessage(error, m['ticketingStep.genericError']());
+		},
+		onSuccess: () => {
+			pauseError = null;
 		},
 		onSettled: () => {
 			queryClient.invalidateQueries({ queryKey: ['event-admin', eventId, 'ticket-tiers'] });
@@ -114,6 +141,7 @@
 		return () => pauseMutation.mutate({ tierId, salesPaused: !tier.sales_paused });
 	}
 
+	let pauseError = $state<string | null>(null);
 	let editingTier = $state<TicketTierDetailSchema | null>(null);
 	let showTierForm = $state(false);
 
@@ -294,7 +322,18 @@
 		<p class="mb-4 text-sm text-muted-foreground">
 			{m['ticketingStep.createDifferentTiers']()}
 		</p>
+		<ComplianceNotices notices={noticesFor(compliance?.notices, 'ticket_sales')} />
 	</div>
+
+	{#if pauseError}
+		<div
+			class="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-foreground"
+			role="alert"
+			data-testid="tier-pause-error"
+		>
+			{pauseError}
+		</div>
+	{/if}
 
 	{#if tiersQuery.isLoading}
 		<div class="flex items-center justify-center py-12">
@@ -331,6 +370,8 @@
 			{#each tiers as tier, index (tier.id)}
 				<TierCard
 					{tier}
+					{onlineBlocked}
+					venueCountry={compliance?.venue_country ?? ''}
 					onEdit={() => handleEditTier(tier)}
 					onTogglePause={togglePauseFor(tier)}
 					pausePending={pauseMutation.isPending}
@@ -387,6 +428,7 @@
 		{platformFees}
 		{membershipTiers}
 		eventVenueId={formData.venue_id || null}
+		{compliance}
 		eventContext={{
 			start: formData.start ?? '',
 			end: formData.end,

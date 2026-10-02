@@ -18,6 +18,8 @@
 	} from '@lucide/svelte';
 	import { formatDateTime } from '$lib/utils/date';
 	import { formatMoney, MONEY_RANGE_SEPARATOR } from '$lib/utils/format';
+	import ComplianceCallout from '$lib/components/compliance/ComplianceCallout.svelte';
+	import { countryName } from '$lib/utils/compliance';
 
 	interface Props {
 		tier: TicketTierDetailSchema;
@@ -27,6 +29,10 @@
 		/** Flip `sales_paused` without opening the form; absent = no button. */
 		onTogglePause?: () => void;
 		pausePending?: boolean;
+		/** `event.compliance.online_payment === 'blocked'` (#1001). */
+		onlineBlocked?: boolean;
+		/** `event.compliance.venue_country`, for the banner copy. */
+		venueCountry?: string;
 	}
 
 	const {
@@ -35,8 +41,14 @@
 		onMoveUp,
 		onMoveDown,
 		onTogglePause,
-		pausePending = false
+		pausePending = false,
+		onlineBlocked = false,
+		venueCountry = ''
 	}: Props = $props();
+
+	// A tier created before the country gate (or switched to card while the
+	// venue was elsewhere) can't sell anymore: say so and offer the way out.
+	const showOnlineBlockedBanner = $derived(onlineBlocked && tier.payment_method === 'online');
 
 	// Platform names live on the org-level connection list, not on the tier;
 	// the key is stable and there is one platform today.
@@ -322,6 +334,23 @@
 	{meta}
 	{actions}
 >
+	{#if showOnlineBlockedBanner}
+		<ComplianceCallout tone="blocked" testId="tier-online-blocked-banner">
+			<p>
+				{m['compliance.tier.legacyOnlineBanner']({
+					country: countryName(venueCountry) || m['compliance.thisCountry']()
+				})}
+			</p>
+			<Button
+				variant="outline"
+				size="sm"
+				onclick={onEdit}
+				aria-label={m['compliance.tier.changePaymentMethodFor']({ name: tier.name })}
+			>
+				{m['compliance.tier.changePaymentMethod']()}
+			</Button>
+		</ComplianceCallout>
+	{/if}
 	{#if tier.description}
 		<MarkdownContent content={tier.description} class="text-sm text-muted-foreground" />
 	{/if}

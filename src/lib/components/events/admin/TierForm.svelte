@@ -17,7 +17,8 @@
 		VenueDetailSchema,
 		VenueChartSchema,
 		SeatAssignmentMode,
-		RefundPolicy
+		RefundPolicy,
+		EventComplianceSchema
 	} from '$lib/api/generated/types.gen';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
@@ -30,6 +31,7 @@
 	import TierFormAvailabilitySection from './TierFormAvailabilitySection.svelte';
 	import TierFormSeatingSection from './TierFormSeatingSection.svelte';
 	import TierFormCheckInSection from './TierFormCheckInSection.svelte';
+	import TierFormPaymentMethodSection from './TierFormPaymentMethodSection.svelte';
 	import {
 		checkInOffsetsPayload,
 		checkInPicksValid,
@@ -66,6 +68,8 @@
 		eventVenueId?: string | null; // Pre-fill venue from event
 		/** The event form's start/end/check-in window the tier offsets are relative to. */
 		eventContext?: TierCheckInEventContext;
+		/** The event's country rules (#1001); null while loading or unknown. */
+		compliance?: EventComplianceSchema | null;
 		onClose: () => void;
 	}
 
@@ -78,6 +82,7 @@
 		membershipTiers = [],
 		eventVenueId = null,
 		eventContext = { start: '' },
+		compliance = null,
 		onClose
 	}: Props = $props();
 
@@ -501,35 +506,12 @@
 				/>
 			</div>
 
-			<!-- Payment Method -->
-			<div>
-				<Label for="payment-method">{m['tierForm.paymentMethod']()}</Label>
-				<select
-					id="payment-method"
-					bind:value={paymentMethod}
-					disabled={isPending}
-					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-				>
-					<option value="free">{m['tierForm.free']()}</option>
-					<option value="offline">{m['tierForm.offline']()}</option>
-					<option value="at_the_door">{m['tierForm.atTheDoor']()}</option>
-					<option value="online" disabled={!organizationStripeConnected}>
-						{m['tierForm.onlineStripe']()}
-						{!organizationStripeConnected ? m['tierForm.notConnectedSuffix']() : ''}
-					</option>
-				</select>
-				<p class="mt-1 text-xs text-muted-foreground">
-					{#if paymentMethod === 'free'}
-						{m['tierForm.paymentHelpFree']()}
-					{:else if paymentMethod === 'offline'}
-						{m['tierForm.paymentHelpOffline']()}
-					{:else if paymentMethod === 'at_the_door'}
-						{m['tierForm.paymentHelpAtTheDoor']()}
-					{:else if paymentMethod === 'online'}
-						{m['tierForm.paymentHelpOnline']()}
-					{/if}
-				</p>
-			</div>
+			<TierFormPaymentMethodSection
+				bind:paymentMethod
+				{isPending}
+				{organizationStripeConnected}
+				{compliance}
+			/>
 
 			<!-- Price Settings (if not free) -->
 			{#if paymentMethod !== 'free'}
@@ -733,6 +715,9 @@
 						</ul>
 					{:else}
 						<p class="mt-1 text-sm text-destructive/90">{errorMsg}</p>
+						{#if paymentMethod === 'online' && !isBillingError}
+							<p class="mt-1 text-sm text-destructive/90">{m['compliance.tier.locationHint']()}</p>
+						{/if}
 					{/if}
 
 					{#if isBillingError}
