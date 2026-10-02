@@ -58,6 +58,35 @@ export function withUtmParams(href: string, currentUrl: URL): string {
 }
 
 /**
+ * The create-org path one of our OWN landing CTAs sends people to (#1002), tagged
+ * so organic/SEO sign-ups can be told apart from "direct" ones: `revel / landing /
+ * <campaign> / <placement>`. `campaign` is the landing slug (`home` for the
+ * homepage); locale variants of a page share it. `placement` names the CTA
+ * (`hero`, `close`). Relative path, ready to be a `returnUrl`.
+ */
+export function landingCreateOrgPath(campaign: string, placement: string): string {
+	const params = new URLSearchParams({
+		utm_source: 'revel',
+		utm_medium: 'landing',
+		utm_campaign: campaign,
+		utm_content: placement
+	});
+	return `/create-org?${params}`;
+}
+
+/**
+ * Tag a landing-page CTA href (#1002). `/register` keeps the tags through sign-up
+ * by sending the user on to the tagged create-org page via `?returnUrl=`;
+ * `/create-org` gets the tags directly. Any other href is returned untouched.
+ */
+export function tagLandingCtaHref(href: string, campaign: string, placement: string): string {
+	const target = landingCreateOrgPath(campaign, placement);
+	if (href === '/register') return `/register?returnUrl=${encodeURIComponent(target)}`;
+	if (href === '/create-org') return target;
+	return href;
+}
+
+/**
  * Short "source · campaign" line for an admin ticket row (#880 follow-up).
  * Falls back to "medium · content" when neither source nor campaign is
  * present; `null` when the ticket carries no attribution at all (renders

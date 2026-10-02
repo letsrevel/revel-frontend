@@ -3,8 +3,11 @@ import {
 	sanitizeUtmValue,
 	readAttributionFromUrl,
 	withUtmParams,
-	formatTicketAttributionLine
+	formatTicketAttributionLine,
+	landingCreateOrgPath,
+	tagLandingCtaHref
 } from './attribution';
+import { registrationReturnUrl, safeReturnUrl } from './safe-redirect';
 
 describe('sanitizeUtmValue', () => {
 	it.each([
@@ -116,5 +119,49 @@ describe('formatTicketAttributionLine', () => {
 				utm_content: 'story'
 			})
 		).toBe('instagram');
+	});
+});
+
+describe('landing CTA tags (#1002)', () => {
+	const tagged =
+		'/create-org?utm_source=revel&utm_medium=landing&utm_campaign=eventbrite-alternative&utm_content=hero';
+
+	it('builds the tagged create-org path', () => {
+		expect(landingCreateOrgPath('eventbrite-alternative', 'hero')).toBe(tagged);
+	});
+
+	it('round-trips through readAttributionFromUrl unchanged', () => {
+		expect(
+			readAttributionFromUrl(new URL(landingCreateOrgPath('home', 'close'), 'http://x'))
+		).toEqual({
+			utm_source: 'revel',
+			utm_medium: 'landing',
+			utm_campaign: 'home',
+			utm_content: 'close'
+		});
+	});
+
+	it('sends /register on to the tagged create-org page via an encoded returnUrl', () => {
+		const href = tagLandingCtaHref('/register', 'eventbrite-alternative', 'hero');
+		const url = new URL(href, 'http://x');
+		expect(url.pathname).toBe('/register');
+		// One param only: the tags must not leak out as siblings of returnUrl.
+		expect([...url.searchParams.keys()]).toEqual(['returnUrl']);
+		const returnUrl = url.searchParams.get('returnUrl');
+		expect(returnUrl).toBe(tagged);
+		// Accepted by both the redirect guard and the registration allow-list,
+		// so it survives register → verify email → /create-org.
+		expect(safeReturnUrl(returnUrl)).toBe(tagged);
+		expect(registrationReturnUrl(returnUrl)).toBe(tagged);
+	});
+
+	it('tags /create-org directly', () => {
+		expect(tagLandingCtaHref('/create-org', 'eventbrite-alternative', 'hero')).toBe(tagged);
+	});
+
+	it('leaves every other href alone', () => {
+		for (const href of ['https://demo.letsrevel.io', 'mailto:contact@letsrevel.io', '/events']) {
+			expect(tagLandingCtaHref(href, 'home', 'hero')).toBe(href);
+		}
 	});
 });
