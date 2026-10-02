@@ -52,7 +52,7 @@
 		{#if refusal}<InvoiceNotIssuableAlert detail={refusal} />{/if}
 		<DialogFooter>
 			<Button variant="outline" onclick={() => onOpenChange(false)}>{m['common.cancel']()}</Button>
-			<Button {variant} onclick={onConfirm} disabled={isPending}>
+			<Button {variant} onclick={onConfirm} disabled={isPending || !!refusal}>
 				{#if isPending}<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />{/if}
 				{buttonLabel}
 			</Button>

@@ -32,6 +32,9 @@ describe('InvoiceConfirmDialog', () => {
 		});
 		const alert = await screen.findByRole('alert');
 		expect(alert).toHaveTextContent("Revel can't issue invoices to your attendees in Croatia.");
+		// The refused request can't be sent again; Cancel stays available.
+		expect(screen.getByRole('button', { name: 'Yes, Issue' })).toBeDisabled();
+		expect(screen.getByRole('button', { name: 'Cancel' })).toBeEnabled();
 	});
 
 	it('disables the action while pending', async () => {
