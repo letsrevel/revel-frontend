@@ -458,12 +458,9 @@ export const handleError = handleSsrError;
  */
 export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
 	const internalApiUrl = env.INTERNAL_API_URL;
-	if (!request.url.startsWith(API_BASE_URL)) {
-		return fetch(request);
-	}
-	// Node can't decode zstd; see lib/api/encoding.ts.
-	applyServerAcceptEncoding(request);
-	if (!internalApiUrl) {
+	const isApi = request.url.startsWith(API_BASE_URL);
+	if (isApi) applyServerAcceptEncoding(request); // Node can't decode zstd
+	if (!internalApiUrl || !isApi) {
 		return fetch(request);
 	}
 
