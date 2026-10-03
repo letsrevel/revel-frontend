@@ -7,6 +7,8 @@ import type { ResolvedRequestOptions } from './generated/client';
 import { authStore } from '$lib/stores/auth.svelte';
 import { API_BASE_URL } from '$lib/config/api';
 import { getLocale } from '$lib/paraglide/runtime.js';
+import { browser } from '$app/environment';
+import { applyServerAcceptEncoding, retryUndecodable } from './encoding';
 
 // Configure the client base settings
 generatedClient.setConfig({
@@ -72,8 +74,18 @@ generatedClient.interceptors.request.use(async (request, _options) => {
 		// Locale resolution unavailable (early SSR edge) — browser default applies.
 	}
 
+	// Server only (browsers forbid setting it): never advertise zstd, Node can't decode it.
+	if (!browser) {
+		applyServerAcceptEncoding(request);
+	}
+
 	return request;
 });
+
+// Server only: re-request once uncompressed if an undecodable (zstd) body slips through.
+generatedClient.interceptors.response.use(async (response, request) =>
+	browser ? response : retryUndecodable(response, request)
+);
 
 /**
  * Response interceptor to handle 401 errors and refresh token automatically

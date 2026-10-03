@@ -4,6 +4,7 @@ import {
 	userpreferencesGetGeneralPreferences
 } from '$lib/api/generated';
 import { log } from '$lib/server/logger';
+import { plainOrNull } from '$lib/utils/plain-data';
 
 export const load: PageServerLoad = async ({ cookies }) => {
 	const accessToken = cookies.get('access_token');
@@ -30,8 +31,8 @@ export const load: PageServerLoad = async ({ cookies }) => {
 		]);
 
 		return {
-			notificationPreferences: notificationData.data,
-			generalPreferences: generalData.data
+			notificationPreferences: plainOrNull(notificationData.data),
+			generalPreferences: plainOrNull(generalData.data)
 		};
 	} catch (error) {
 		log.error('preferences_fetch_failed', { error });
