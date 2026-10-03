@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.18.1] - 2026-10-03
+
+### Fixed
+
+- Account pages (`/account/profile`, `/account/settings`, `/account/security`) no longer fail with a server error for some users. Server-rendered pages now always receive API responses in a format they can read, and if an unreadable response still arrives they retry it once instead of crashing.
+
 ## [2.18.0] - 2026-10-02
 
 ### Added
