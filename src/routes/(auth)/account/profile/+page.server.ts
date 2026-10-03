@@ -8,6 +8,7 @@ import {
 import { profileUpdateSchema } from '$lib/schemas/profile';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { log } from '$lib/server/logger';
+import { plainOrNull } from '$lib/utils/plain-data';
 
 export const load: PageServerLoad = async ({ cookies }) => {
 	const accessToken = cookies.get('access_token');
@@ -44,8 +45,8 @@ export const load: PageServerLoad = async ({ cookies }) => {
 	}).catch(() => ({ data: undefined }));
 
 	return {
-		user: user ?? null,
-		generalPreferences: generalPreferences ?? null
+		user: plainOrNull(user),
+		generalPreferences: plainOrNull(generalPreferences)
 	};
 };
 

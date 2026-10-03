@@ -11,6 +11,7 @@ import { z } from 'zod';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { emailChangeRequestSchema } from '$lib/schemas/auth';
 import { log } from '$lib/server/logger';
+import { plainOrNull } from '$lib/utils/plain-data';
 
 /**
  * Load current user's 2FA status
@@ -37,7 +38,7 @@ export const load: PageServerLoad = async ({ cookies, depends }) => {
 
 		return {
 			totpActive: data?.totp_active || false,
-			user: data
+			user: plainOrNull(data)
 		};
 	} catch (error) {
 		log.error('security_user_fetch_failed', { error });
