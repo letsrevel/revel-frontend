@@ -35,6 +35,13 @@ auditConfig:
     # Only affects `deno install` of esbuild — we install via pnpm/Node, and esbuild
     # is a build-time (dev) tool that is not shipped. Not applicable.
     - GHSA-gv7w-rqvm-qjhr
+    # braces <=3.0.3: stack exhaustion on deeply nested brace patterns. NO patched
+    # release exists on npm (latest is 3.0.3; the advisory lists no first_patched_version),
+    # so a scoped override cannot fix it. Reached only via tailwind-variants>tailwindcss
+    # (chokidar/micromatch/fast-glob), i.e. build-time content globbing over patterns
+    # from our own tailwind config, never attacker-controlled input at runtime.
+    # Drop this entry and add a 'braces@<3.0.4' override once a fixed braces ships.
+    - GHSA-vfj7-8cjw-p6xm
 
 # ── Version overrides ────────────────────────────────────────────────────────────
 # Pre-existing pins (kept) plus the security remediation of 2026-06: each transitive
