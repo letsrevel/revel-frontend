@@ -6,7 +6,8 @@ vi.mock('$lib/api/generated/sdk.gen', () => ({
 }));
 vi.mock('$lib/server/features', () => ({
 	getDemoMode: vi.fn().mockResolvedValue(false),
-	getSsoProviders: vi.fn().mockResolvedValue([])
+	getSsoProviders: vi.fn().mockResolvedValue([]),
+	getTurnstileSiteKey: vi.fn().mockResolvedValue(null)
 }));
 vi.mock('$lib/server/logger', () => ({
 	log: { debug: vi.fn(), warning: vi.fn(), error: vi.fn() }
@@ -91,5 +92,46 @@ describe('register action and returnUrl', () => {
 		const body = mockedRegister.mock.calls[0]?.[0]?.body as Record<string, unknown>;
 		expect(body).not.toHaveProperty('return_url');
 		expect(redirect.location).toBe('/register/check-email?email=new%40example.com');
+	});
+});
+
+describe('register action and Turnstile', () => {
+	function argsWithToken(token: string | null) {
+		const args = actionArgs('');
+		const form = new FormData();
+		form.set('email', 'new@example.com');
+		form.set('password', PASSWORD);
+		form.set('confirmPassword', PASSWORD);
+		form.set('acceptTerms', 'on');
+		if (token !== null) form.set('turnstileToken', token);
+		return { ...args, request: new Request(args.url, { method: 'POST', body: form }) } as typeof args;
+	}
+
+	it('forwards the widget token as turnstile_token', async () => {
+		await actions.default(argsWithToken('tok-123')).catch(() => undefined);
+		expect(mockedRegister).toHaveBeenCalledWith(
+			expect.objectContaining({ body: expect.objectContaining({ turnstile_token: 'tok-123' }) })
+		);
+	});
+
+	it('omits turnstile_token when the form has none', async () => {
+		await actions.default(argsWithToken(null)).catch(() => undefined);
+		const body = mockedRegister.mock.calls[0]?.[0]?.body as Record<string, unknown>;
+		expect(body).not.toHaveProperty('turnstile_token');
+	});
+
+	it('shows a backend Turnstile rejection as a form-level error', async () => {
+		mockedRegister.mockResolvedValue({
+			data: undefined,
+			error: { detail: 'Bot verification failed. Please try again.' },
+			response: { ok: false, status: 400 }
+		} as never);
+		const result = (await actions.default(argsWithToken('stale'))) as {
+			status: number;
+			data: { errors: Record<string, string> };
+		};
+		expect(result.status).toBe(400);
+		expect(result.data.errors.form).toContain('Bot verification failed');
+		expect(result.data.errors).not.toHaveProperty('email');
 	});
 });

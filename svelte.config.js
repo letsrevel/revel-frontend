@@ -54,7 +54,7 @@ const config = {
 						mode: 'auto',
 						directives: {
 							'default-src': ['self'],
-							'script-src': ['self'],
+							'script-src': ['self', 'https://challenges.cloudflare.com'],
 							'style-src': ['self', 'unsafe-inline'], // Svelte transitions create inline <style>
 							// The runtime API origin is appended to img-src/media-src/connect-src
 							// in hooks.server.ts (handleCsp) — see #396.
@@ -79,7 +79,9 @@ const config = {
 								'https://goo.gl',
 								'https://yandex.com',
 								'https://yandex.ru',
-								'https://map.baidu.com'
+								'https://map.baidu.com',
+								// Cloudflare Turnstile widget (register page)
+								'https://challenges.cloudflare.com'
 							],
 							'manifest-src': ['self'],
 							'base-uri': ['self'],
