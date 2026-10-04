@@ -30,7 +30,7 @@ function parseDemoBookingUrl(raw: unknown): string | null {
 }
 
 function parseTurnstileSiteKey(raw: unknown): string | null {
-	return typeof raw === 'string' && raw.length > 0 ? raw : null;
+	return typeof raw === 'string' && raw.trim().length > 0 ? raw.trim() : null;
 }
 
 const TTL_MS = 5 * 60 * 1000;
@@ -131,8 +131,9 @@ export async function getDemoBookingUrl(fetch: typeof globalThis.fetch): Promise
 /**
  * Cloudflare Turnstile site key from `/version` (cached). Null when the
  * backend has bot protection off — the register page then renders no widget.
- * A failed read also yields null; the backend still enforces the check, so
- * the visitor gets its "Bot verification failed" message and can retry.
+ * A failed read also yields null (not cached); the backend still enforces the
+ * check, so the submit fails and the register page re-runs its load to pick
+ * the key up for the retry.
  */
 export async function getTurnstileSiteKey(fetch: typeof globalThis.fetch): Promise<string | null> {
 	return (await getVersionInfo(fetch)).turnstileSiteKey;

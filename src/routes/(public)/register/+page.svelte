@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import type { ActionData, PageData } from './$types';
@@ -305,6 +306,10 @@
 						// this page needs a fresh one for the retry.
 						if (result.type !== 'redirect') turnstile?.reset();
 						await update();
+						// No widget because the site key couldn't be read at load time:
+						// enhance doesn't re-run load on failure, so do it here, or every
+						// retry in this tab would be rejected until a full reload.
+						if (result.type === 'failure' && !data.turnstileSiteKey) await invalidateAll();
 					};
 				}}
 				class="space-y-6"

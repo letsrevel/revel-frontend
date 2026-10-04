@@ -246,6 +246,14 @@ describe('getTurnstileSiteKey', () => {
 		expect(await getTurnstileSiteKey(fakeFetch)).toBeNull();
 	});
 
+	it('is null for a whitespace-only key', async () => {
+		mockedApiApiVersion.mockResolvedValue({
+			data: { version: '1.0.0', features: DEFAULT_FEATURES, turnstile_site_key: '   ' },
+			error: undefined
+		} as never);
+		expect(await getTurnstileSiteKey(fakeFetch)).toBeNull();
+	});
+
 	it('is null when the call throws', async () => {
 		mockedApiApiVersion.mockRejectedValue(new Error('boom'));
 		expect(await getTurnstileSiteKey(fakeFetch)).toBeNull();
