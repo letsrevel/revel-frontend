@@ -10,6 +10,7 @@ import {
 	getDemoMode,
 	getSsoProviders,
 	getDemoBookingUrl,
+	getTurnstileSiteKey,
 	__resetFeaturesCache
 } from './features';
 import { DEFAULT_FEATURES } from '$lib/utils/features';
@@ -217,5 +218,36 @@ describe('getDemoBookingUrl', () => {
 		await getFeatures(fakeFetch);
 		await getDemoBookingUrl(fakeFetch);
 		expect(mockedApiApiVersion).toHaveBeenCalledTimes(1);
+	});
+});
+
+describe('getTurnstileSiteKey', () => {
+	it('returns the site key from the /version payload', async () => {
+		mockedApiApiVersion.mockResolvedValue({
+			data: { version: '1.0.0', features: DEFAULT_FEATURES, turnstile_site_key: '0x4AAAAAAA' },
+			error: undefined
+		} as never);
+		expect(await getTurnstileSiteKey(fakeFetch)).toBe('0x4AAAAAAA');
+	});
+
+	it('is null when the backend has Turnstile disabled', async () => {
+		mockedApiApiVersion.mockResolvedValue({
+			data: { version: '1.0.0', features: DEFAULT_FEATURES, turnstile_site_key: null },
+			error: undefined
+		} as never);
+		expect(await getTurnstileSiteKey(fakeFetch)).toBeNull();
+	});
+
+	it('is null when the field is absent or not a non-empty string', async () => {
+		mockedApiApiVersion.mockResolvedValue({
+			data: { version: '1.0.0', features: DEFAULT_FEATURES, turnstile_site_key: '' },
+			error: undefined
+		} as never);
+		expect(await getTurnstileSiteKey(fakeFetch)).toBeNull();
+	});
+
+	it('is null when the call throws', async () => {
+		mockedApiApiVersion.mockRejectedValue(new Error('boom'));
+		expect(await getTurnstileSiteKey(fakeFetch)).toBeNull();
 	});
 });
