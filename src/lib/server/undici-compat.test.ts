@@ -22,7 +22,8 @@ const [major, minor, patch] = (
 
 describe("jsdom's undici", () => {
 	it('is a release whose global dispatcher keeps built-in fetch headers (>=8.11.2)', () => {
-		const fixed = major > 8 || (major === 8 && (minor > 11 || (minor === 11 && patch >= 2)));
+		// A new major fails on purpose: re-verify header handling (see ponytail above).
+		const fixed = major === 8 && (minor > 11 || (minor === 11 && patch >= 2));
 		expect(fixed).toBe(true);
 	});
 });
