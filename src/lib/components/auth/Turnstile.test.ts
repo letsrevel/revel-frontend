@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { render } from '@testing-library/svelte';
+import { render, screen } from '@testing-library/svelte';
 import Turnstile from './Turnstile.svelte';
 
 afterEach(() => {
+	vi.useRealTimers();
 	delete (window as { turnstile?: unknown }).turnstile;
 	document.head.querySelectorAll('script[data-turnstile]').forEach((s) => s.remove());
 });
@@ -39,5 +40,41 @@ describe('Turnstile', () => {
 		await vi.waitFor(() => expect(window.turnstile?.render).toHaveBeenCalled());
 		cb?.('tok-123');
 		await vi.waitFor(() => expect(tokenInput(container).value).toBe('tok-123'));
+	});
+
+	it('shows an inline error and drops the script tag when the script fails to load', async () => {
+		render(Turnstile, { props: { siteKey: 'site-key' } });
+		const script = document.head.querySelector('script[data-turnstile]') as HTMLScriptElement;
+		script.dispatchEvent(new Event('error'));
+		expect(await screen.findByRole('alert')).toBeTruthy();
+		expect(document.head.querySelector('script[data-turnstile]')).toBeNull();
+	});
+
+	it('gives up after the load timeout instead of polling forever', async () => {
+		vi.useFakeTimers();
+		render(Turnstile, { props: { siteKey: 'site-key' } });
+		await vi.advanceTimersByTimeAsync(15_000);
+		expect(screen.getByRole('alert')).toBeTruthy();
+		expect(vi.getTimerCount()).toBe(0);
+	});
+
+	it('shows the inline error when render throws', async () => {
+		window.turnstile = {
+			render: vi.fn(() => {
+				throw new Error('bad sitekey');
+			}),
+			reset: vi.fn(),
+			remove: vi.fn()
+		};
+		render(Turnstile, { props: { siteKey: 'site-key' } });
+		expect(await screen.findByRole('alert')).toBeTruthy();
+	});
+
+	it('clears its timers on unmount', () => {
+		vi.useFakeTimers();
+		const { unmount } = render(Turnstile, { props: { siteKey: 'site-key' } });
+		expect(vi.getTimerCount()).toBeGreaterThan(0);
+		unmount();
+		expect(vi.getTimerCount()).toBe(0);
 	});
 });

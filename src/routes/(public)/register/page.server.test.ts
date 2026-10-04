@@ -104,7 +104,10 @@ describe('register action and Turnstile', () => {
 		form.set('confirmPassword', PASSWORD);
 		form.set('acceptTerms', 'on');
 		if (token !== null) form.set('turnstileToken', token);
-		return { ...args, request: new Request(args.url, { method: 'POST', body: form }) } as typeof args;
+		return {
+			...args,
+			request: new Request(args.url, { method: 'POST', body: form })
+		} as typeof args;
 	}
 
 	it('forwards the widget token as turnstile_token', async () => {

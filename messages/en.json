@@ -5656,6 +5656,7 @@
 		"noQuestionnairesYet": "No questionnaires yet"
 	},
 	"register": {
+		"turnstileUnavailable": "The anti-bot check couldn't load. If you use an ad or script blocker, allow challenges.cloudflare.com and reload the page.",
 		"title": "Create Account - Revel",
 		"metaDescription": "Create your Revel account to start organizing and attending community events",
 		"createAccount": "Create your account",
