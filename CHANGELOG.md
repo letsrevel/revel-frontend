@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.18.2] - 2026-10-04
+
+### Fixed
+
+- Signing in no longer fails with "Invalid response from server", and account pages (`/account/profile`, `/account/settings`, `/account/security`) no longer fail with a server error. Server-rendered pages could intermittently receive API responses they couldn't read, caused by a faulty network library version; the library is now pinned to a fixed release.
+
 ## [2.18.1] - 2026-10-03
 
 ### Fixed
