@@ -36,6 +36,19 @@
 	// the link rather than pointing the footer at a route that 404s.
 	const showReferralApply = $derived(Boolean(page.data.features?.referral_applications));
 
+	// Self-hosters that only run their own ticketing get marketing links that
+	// don't apply to them (Eventbrite alternative, queer/kink/clubs, referral),
+	// which can confuse buyers — so PUBLIC_HIDE_SOLUTIONS_FOOTER drops the whole
+	// Solutions column (#944). Read at RUNTIME via $env/dynamic/public, like
+	// PUBLIC_API_URL, so one prebuilt image serves both audiences: a container
+	// restart is enough, no rebuild or fork (see #396).
+	//
+	// Strict `=== 'true'` after trim/lowercase: an operator writing `TRUE ` or
+	// `True` in a compose file means the same thing, but anything else (unset,
+	// empty, `1`, `yes`) keeps the column — the flag fails toward the default
+	// rather than silently stripping links from the hosted app.
+	const hideSolutions = $derived(env.PUBLIC_HIDE_SOLUTIONS_FOOTER?.trim().toLowerCase() === 'true');
+
 	// Get backend version and demo mode from store
 	const backendVersion = $derived(appStore.backendVersion || 'Loading...');
 	const isDemoMode = $derived(appStore.isDemoMode);
@@ -106,56 +119,63 @@
 			<RevelWordmark />
 		</a>
 
-		<div class="grid grid-cols-2 gap-8 md:grid-cols-4">
-			<!-- Solutions - spans 2 columns on md+ -->
-			<div class="col-span-2">
-				<h3 class="mb-4 text-lg font-extrabold">{m['footer.solutionsTitle']()}</h3>
-				<div class="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
-					<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
-					<a href="{landingPagePrefix}/eventbrite-alternative" class={footerLinkClass}>
-						{m['footer.solutionEventbrite']()}
-					</a>
-					<!-- eslint-enable svelte/no-navigation-without-resolve -->
-					<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
-					<a href="{landingPagePrefix}/privacy-focused-events" class={footerLinkClass}>
-						{m['footer.solutionPrivacy']()}
-					</a>
-					<!-- eslint-enable svelte/no-navigation-without-resolve -->
-					<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
-					<a href="{landingPagePrefix}/self-hosted-event-platform" class={footerLinkClass}>
-						{m['footer.solutionSelfHosted']()}
-					</a>
-					<!-- eslint-enable svelte/no-navigation-without-resolve -->
-					<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
-					<a href="{landingPagePrefix}/community-first-event-platform" class={footerLinkClass}>
-						{m['footer.solutionCommunity']()}
-					</a>
-					<!-- eslint-enable svelte/no-navigation-without-resolve -->
-					<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
-					<a href="{landingPagePrefix}/queer-event-management" class={footerLinkClass}>
-						{m['footer.solutionQueer']()}
-					</a>
-					<!-- eslint-enable svelte/no-navigation-without-resolve -->
-					<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
-					<a href="{landingPagePrefix}/kink-event-ticketing" class={footerLinkClass}>
-						{m['footer.solutionKink']()}
-					</a>
-					<!-- eslint-enable svelte/no-navigation-without-resolve -->
-					<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
-					<a href="{landingPagePrefix}/club-membership-management" class={footerLinkClass}>
-						{m['footer.solutionClubs']()}
-					</a>
-					<!-- eslint-enable svelte/no-navigation-without-resolve -->
-					{#if showReferralApply}
-						<!-- Present but deliberately not prominent: last in the list, same
+		<!-- Solutions spans 2 of the 4 md+ tracks, so dropping it would leave
+		     Legal + Resources in tracks 1-2 with a ragged empty right half.
+		     Collapsing to 2 tracks when hidden lets the remaining columns fill
+		     the row. Mobile is `grid-cols-2` either way, and Legal + Resources
+		     alone are already a balanced 2-up. -->
+		<div class="grid grid-cols-2 gap-8 {hideSolutions ? 'md:grid-cols-2' : 'md:grid-cols-4'}">
+			<!-- Solutions -->
+			{#if !hideSolutions}
+				<div class="col-span-2">
+					<h3 class="mb-4 text-lg font-extrabold">{m['footer.solutionsTitle']()}</h3>
+					<div class="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+						<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
+						<a href="{landingPagePrefix}/eventbrite-alternative" class={footerLinkClass}>
+							{m['footer.solutionEventbrite']()}
+						</a>
+						<!-- eslint-enable svelte/no-navigation-without-resolve -->
+						<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
+						<a href="{landingPagePrefix}/privacy-focused-events" class={footerLinkClass}>
+							{m['footer.solutionPrivacy']()}
+						</a>
+						<!-- eslint-enable svelte/no-navigation-without-resolve -->
+						<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
+						<a href="{landingPagePrefix}/self-hosted-event-platform" class={footerLinkClass}>
+							{m['footer.solutionSelfHosted']()}
+						</a>
+						<!-- eslint-enable svelte/no-navigation-without-resolve -->
+						<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
+						<a href="{landingPagePrefix}/community-first-event-platform" class={footerLinkClass}>
+							{m['footer.solutionCommunity']()}
+						</a>
+						<!-- eslint-enable svelte/no-navigation-without-resolve -->
+						<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
+						<a href="{landingPagePrefix}/queer-event-management" class={footerLinkClass}>
+							{m['footer.solutionQueer']()}
+						</a>
+						<!-- eslint-enable svelte/no-navigation-without-resolve -->
+						<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
+						<a href="{landingPagePrefix}/kink-event-ticketing" class={footerLinkClass}>
+							{m['footer.solutionKink']()}
+						</a>
+						<!-- eslint-enable svelte/no-navigation-without-resolve -->
+						<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
+						<a href="{landingPagePrefix}/club-membership-management" class={footerLinkClass}>
+							{m['footer.solutionClubs']()}
+						</a>
+						<!-- eslint-enable svelte/no-navigation-without-resolve -->
+						{#if showReferralApply}
+							<!-- Present but deliberately not prominent: last in the list, same
 						     treatment as its neighbours, no badge. Unlike them this is a
 						     real app route, so it resolve()s. -->
-						<a href={resolve('/(public)/referral/apply', {})} class={footerLinkClass}>
-							{m['footer.solutionReferral']()}
-						</a>
-					{/if}
+							<a href={resolve('/(public)/referral/apply', {})} class={footerLinkClass}>
+								{m['footer.solutionReferral']()}
+							</a>
+						{/if}
+					</div>
 				</div>
-			</div>
+			{/if}
 
 			<!-- Legal Links -->
 			<div>

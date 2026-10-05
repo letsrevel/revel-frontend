@@ -161,6 +161,14 @@ BACKEND_URL=http://localhost:8000
 NODE_ENV=development
 ```
 
+Self-hosters that only run their own ticketing can also drop the footer's
+"Solutions" marketing column by uncommenting this (leave it off locally to see
+the default layout):
+
+```env
+# PUBLIC_HIDE_SOLUTIONS_FOOTER=true
+```
+
 ---
 
 ## Verify Everything Works
