@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.20.0] - 2026-10-05
+
+### Added
+- **Hide the footer's Solutions column on self-hosted instances**: set `PUBLIC_HIDE_SOLUTIONS_FOOTER=true` to drop the Solutions marketing links (including the referral link) from the footer, read at runtime so no rebuild is needed; the remaining columns fill the row. Unset by default, so the hosted app is unchanged.
+
 ## [2.19.0] - 2026-10-05
 
 ### Added
