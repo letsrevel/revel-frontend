@@ -29,6 +29,10 @@ function parseDemoBookingUrl(raw: unknown): string | null {
 	return typeof raw === 'string' && /^https?:\/\//.test(raw) ? raw : null;
 }
 
+function parseTurnstileSiteKey(raw: unknown): string | null {
+	return typeof raw === 'string' && raw.trim().length > 0 ? raw.trim() : null;
+}
+
 const TTL_MS = 5 * 60 * 1000;
 
 interface VersionInfo {
@@ -36,13 +40,15 @@ interface VersionInfo {
 	demo: boolean;
 	ssoProviders: SsoProviderSchema[];
 	demoBookingUrl: string | null;
+	turnstileSiteKey: string | null;
 }
 
 const FALLBACK: VersionInfo = {
 	features: DEFAULT_FEATURES,
 	demo: false,
 	ssoProviders: [],
-	demoBookingUrl: null
+	demoBookingUrl: null,
+	turnstileSiteKey: null
 };
 
 let cache: { value: VersionInfo; expiry: number } | null = null;
@@ -77,7 +83,8 @@ async function getVersionInfo(fetch: typeof globalThis.fetch): Promise<VersionIn
 			features: resolveFeatures(data.features),
 			demo: data.demo ?? false,
 			ssoProviders: parseSsoProviders(data.sso_providers),
-			demoBookingUrl: parseDemoBookingUrl(data.demo_booking_url)
+			demoBookingUrl: parseDemoBookingUrl(data.demo_booking_url),
+			turnstileSiteKey: parseTurnstileSiteKey(data.turnstile_site_key)
 		};
 		cache = { value, expiry: Date.now() + TTL_MS };
 		return value;
@@ -119,4 +126,15 @@ export async function getSsoProviders(
  */
 export async function getDemoBookingUrl(fetch: typeof globalThis.fetch): Promise<string | null> {
 	return (await getVersionInfo(fetch)).demoBookingUrl;
+}
+
+/**
+ * Cloudflare Turnstile site key from `/version` (cached). Null when the
+ * backend has bot protection off — the register page then renders no widget.
+ * A failed read also yields null (not cached); the backend still enforces the
+ * check, so the submit fails and the register page re-runs its load to pick
+ * the key up for the retry.
+ */
+export async function getTurnstileSiteKey(fetch: typeof globalThis.fetch): Promise<string | null> {
+	return (await getVersionInfo(fetch)).turnstileSiteKey;
 }

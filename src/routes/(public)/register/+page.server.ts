@@ -5,7 +5,7 @@ import { accountRegister, referralGetInvitation } from '$lib/api/generated/sdk.g
 import { isReferralInviteId } from '$lib/schemas/referral';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { registrationReturnUrl } from '$lib/utils/safe-redirect';
-import { getDemoMode, getSsoProviders } from '$lib/server/features';
+import { getDemoMode, getSsoProviders, getTurnstileSiteKey } from '$lib/server/features';
 import { log } from '$lib/server/logger';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
@@ -17,6 +17,7 @@ export const load: PageServerLoad = async ({ fetch, cookies, url, request }) => 
 	// SSR render — no hydration-time swap. Non-demo backends see no overlay.
 	const demo = await getDemoMode(fetch);
 	const ssoProviders = await getSsoProviders(fetch);
+	const turnstileSiteKey = await getTurnstileSiteKey(fetch);
 
 	const lang = resolveLang(request);
 	const seo = buildSeo({ kind: 'auth', url, lang, page: 'register' });
@@ -26,6 +27,7 @@ export const load: PageServerLoad = async ({ fetch, cookies, url, request }) => 
 		referralInvite: await loadReferralInvite(fetch, url),
 		demo,
 		ssoProviders,
+		turnstileSiteKey,
 		seo
 	};
 };
@@ -84,6 +86,9 @@ export const actions = {
 		// dislikes, which would sink the registration) — so only a value that
 		// passes both rules is forwarded; anything else is silently dropped.
 		const returnUrl = registrationReturnUrl(url.searchParams.get('returnUrl'));
+		// Single-use Cloudflare Turnstile token from the widget (absent when the
+		// backend has bot protection off). The backend verifies it.
+		const turnstileToken = ((formData.get('turnstileToken') as string) || '').trim() || undefined;
 		const data = {
 			email: invite?.email ?? (formData.get('email') as string),
 			password: formData.get('password') as string,
@@ -119,7 +124,8 @@ export const actions = {
 					password2: validation.data.confirmPassword,
 					accept_toc_and_privacy: validation.data.acceptTerms,
 					...(data.referralCode ? { referral_code: data.referralCode } : {}),
-					...(returnUrl ? { return_url: returnUrl } : {})
+					...(returnUrl ? { return_url: returnUrl } : {}),
+					...(turnstileToken ? { turnstile_token: turnstileToken } : {})
 				},
 				fetch
 			});

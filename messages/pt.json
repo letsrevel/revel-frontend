@@ -5656,6 +5656,7 @@
 		"noQuestionnairesYet": "Ainda não há questionários"
 	},
 	"register": {
+		"turnstileUnavailable": "Não foi possível carregar a verificação anti-bot. Se usas um bloqueador de anúncios ou scripts, permite challenges.cloudflare.com e recarrega a página.",
 		"title": "Criar conta - Revel",
 		"metaDescription": "Cria a tua conta Revel para começares a organizar e participar em eventos da comunidade",
 		"createAccount": "Cria a tua conta",

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import type { ActionData, PageData } from './$types';
@@ -9,6 +10,7 @@
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import AuthBandLayout from '$lib/components/auth/AuthBandLayout.svelte';
 	import SsoProviderButtons from '$lib/components/auth/SsoProviderButtons.svelte';
+	import Turnstile from '$lib/components/auth/Turnstile.svelte';
 	import { Eye, EyeOff, Gift, Loader2, Sparkles, ArrowRight } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { SeoHead } from '$lib/seo';
@@ -38,6 +40,7 @@
 	let showPassword = $state(false);
 	let showConfirmPassword = $state(false);
 	let isSubmitting = $state(false);
+	let turnstile = $state<ReturnType<typeof Turnstile> | null>(null);
 
 	// Referral code: URL param takes priority, then cookie fallback
 	const initialReferralCode = $derived(
@@ -296,10 +299,17 @@
 						isSubmitting = false;
 					}, 30_000);
 
-					return async ({ update }) => {
+					return async ({ result, update }) => {
 						clearTimeout(safetyTimeout);
 						isSubmitting = false;
+						// Turnstile tokens are single-use: any outcome that keeps us on
+						// this page needs a fresh one for the retry.
+						if (result.type !== 'redirect') turnstile?.reset();
 						await update();
+						// No widget because the site key couldn't be read at load time:
+						// enhance doesn't re-run load on failure, so do it here, or every
+						// retry in this tab would be rejected until a full reload.
+						if (result.type === 'failure' && !data.turnstileSiteKey) await invalidateAll();
 					};
 				}}
 				class="space-y-6"
@@ -504,6 +514,10 @@
 				<!-- Hidden referral code input for form submission -->
 				{#if referralCode}
 					<input type="hidden" name="referralCode" value={referralCode} />
+				{/if}
+
+				{#if data.turnstileSiteKey}
+					<Turnstile bind:this={turnstile} siteKey={data.turnstileSiteKey} />
 				{/if}
 
 				<!-- Submit Button -->
