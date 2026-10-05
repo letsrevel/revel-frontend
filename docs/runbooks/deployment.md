@@ -50,14 +50,33 @@ docker run -p 3000:3000 \
 
 ### Environment Variables
 
-| Variable         | Description                                       | Default                 | Required |
-| ---------------- | ------------------------------------------------- | ----------------------- | -------- |
-| `PUBLIC_API_URL` | Backend API base URL (runtime)                    | `http://localhost:8000` | Yes      |
-| `PUBLIC_VERSION` | Frontend version displayed in footer (build-time) | `dev`                   | No       |
-| `ORIGIN`         | SvelteKit origin for CSRF protection (runtime)    | `http://localhost:3000` | Yes      |
-| `PORT`           | Server port                                       | `3000`                  | No       |
-| `HOST`           | Server host                                       | `0.0.0.0`               | No       |
-| `NODE_ENV`       | Node environment                                  | `production`            | No       |
+| Variable                     | Description                                                               | Default                 | Required |
+| ---------------------------- | ------------------------------------------------------------------------- | ----------------------- | -------- |
+| `PUBLIC_API_URL`             | Backend API base URL (runtime)                                            | `http://localhost:8000` | Yes      |
+| `PUBLIC_VERSION`             | Frontend version displayed in footer (build-time)                         | `dev`                   | No       |
+| `PUBLIC_HIDE_SOLUTIONS_FOOTER` | Hide the footer's "Solutions" marketing column (runtime); `true` to hide | unset (shown)           | No       |
+| `ORIGIN`                     | SvelteKit origin for CSRF protection (runtime)                            | `http://localhost:3000` | Yes      |
+| `PORT`                       | Server port                                                               | `3000`                  | No       |
+| `HOST`                       | Server host                                                               | `0.0.0.0`               | No       |
+| `NODE_ENV`                   | Node environment                                                          | `production`            | No       |
+
+#### Hiding the footer's Solutions column
+
+Self-hosted instances that only run their own ticketing get marketing links
+(Eventbrite alternative, queer/kink/clubs, referral) that don't apply to them
+and can confuse buyers. Set `PUBLIC_HIDE_SOLUTIONS_FOOTER=true` to drop the whole
+Solutions column; the Legal and Resources columns reflow to fill the footer.
+
+Like `PUBLIC_API_URL`, this is read at **runtime** via `$env/dynamic/public`, so
+one prebuilt image serves both audiences — set it when you run the container and
+restart.
+
+```bash
+docker run -p 3000:3000 \
+  -e PUBLIC_API_URL=https://api.revel.example.com \
+  -e PUBLIC_HIDE_SOLUTIONS_FOOTER=true \
+  revel-frontend:latest
+```
 
 ## CI/CD Pipeline
 
