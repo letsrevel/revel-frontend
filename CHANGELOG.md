@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.19.0] - 2026-10-05
+
+### Added
+- **Bot check on registration (Cloudflare Turnstile)**: `/register` shows a Turnstile widget whenever the backend publishes `turnstile_site_key` on `/version`, and sends its token with the signup; nothing changes while the backend has Turnstile off
+  - The widget resets after a failed submit (tokens are single-use), and the page re-reads the site key if it couldn't be loaded the first time
+  - If an ad or script blocker stops the widget from loading, the page explains how to allow `challenges.cloudflare.com` instead of failing silently
+  - CSP allows `https://challenges.cloudflare.com` in `script-src` and `frame-src`
+
 ## [2.18.2] - 2026-10-04
 
 ### Fixed
