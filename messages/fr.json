@@ -3231,7 +3231,15 @@
 		"typeOrgSetupNudge": "Conseils pour configurer ton organisation",
 		"typeOrgSetupNudgeDescription": "Des rappels occasionnels quand ton organisation est encore privée, a un brouillon oublié ou ne publie plus rien. Au maximum un toutes les deux semaines.",
 		"typeFiscalDocumentSkipped": "Documents à émettre toi-même",
-		"typeFiscalDocumentSkippedDescription": "Un récapitulatif quotidien des factures et avoirs que la loi n'a pas permis à Revel d'émettre, pour que tu les émettes depuis ton propre système."
+		"typeFiscalDocumentSkippedDescription": "Un récapitulatif quotidien des factures et avoirs que la loi n'a pas permis à Revel d'émettre, pour que tu les émettes depuis ton propre système.",
+		"mandatoryNoticeTitle": "Certains e-mails arrivent toujours",
+		"mandatoryNotice": "Tes propres billets, reçus, avis de paiement et de remboursement, avis d'abonnement ainsi que les avis juridiques et de plateforme importants te parviennent quand même, quel que soit ton choix ici.",
+		"silenceAllMandatoryHint": "Tes propres billets, reçus et avis de compte arrivent quand même.",
+		"alwaysOn": "Toujours actif",
+		"alwaysOnDescription": "Envoyé quel que soit ton choix ici, car cela concerne ton propre achat ou ton compte.",
+		"staffAlertTypeNote": "Tes propres billets arrivent toujours. Ce réglage ne contrôle que les alertes que tu reçois en tant qu'organisateur.",
+		"staffWarningTitle": "Tu risques de manquer des réservations et des demandes",
+		"staffWarning": "Tu es propriétaire ou membre de l'équipe d'une organisation. Avec ces réglages, tu risques de ne pas être prévenu des nouveaux billets, annulations et remboursements, RSVP, réponses aux questionnaires ou demandes d'adhésion et d'invitation."
 	},
 	"notificationsPage": {
 		"pageTitle": "Notifications",

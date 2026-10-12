@@ -369,7 +369,15 @@
 		"typeOrgSetupNudge": "Dicas para configurar a tua organização",
 		"typeOrgSetupNudgeDescription": "Lembretes ocasionais quando a tua organização ainda é privada, tem um rascunho esquecido ou ficou inativa. No máximo um a cada duas semanas.",
 		"typeFiscalDocumentSkipped": "Documentos a emitir por ti",
-		"typeFiscalDocumentSkippedDescription": "Um resumo diário das faturas e notas de crédito que a lei não permitiu à Revel emitir, para as emitires no teu próprio sistema."
+		"typeFiscalDocumentSkippedDescription": "Um resumo diário das faturas e notas de crédito que a lei não permitiu à Revel emitir, para as emitires no teu próprio sistema.",
+		"mandatoryNoticeTitle": "Alguns e-mails chegam sempre",
+		"mandatoryNotice": "Os teus próprios bilhetes, recibos, avisos de pagamento e reembolso, avisos de subscrição e avisos legais e da plataforma importantes continuam a chegar, seja qual for a tua escolha aqui.",
+		"silenceAllMandatoryHint": "Os teus próprios bilhetes, recibos e avisos da conta continuam a chegar.",
+		"alwaysOn": "Sempre ativo",
+		"alwaysOnDescription": "É enviado seja qual for a tua escolha aqui, porque diz respeito à tua própria compra ou conta.",
+		"staffAlertTypeNote": "Os teus próprios bilhetes chegam sempre. Esta definição só controla os alertas que recebes como organizador.",
+		"staffWarningTitle": "Podes perder reservas e pedidos",
+		"staffWarning": "És proprietário ou membro da equipa de uma organização. Com estas definições, podes não saber de novos bilhetes, cancelamentos e reembolsos, RSVP, questionários submetidos ou pedidos de adesão e de convite."
 	},
 	"notificationList": {
 		"ariaLabel": "Notificações",
