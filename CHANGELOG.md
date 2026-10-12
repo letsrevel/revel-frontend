@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.21.0] - 2026-10-12
+
+### Added
+- **Notification settings now say which emails can't be turned off**: account settings shows the "Some emails always arrive" notice (previously only on the unsubscribe page), with a short reminder under silence-all.
+- **Warning for organizers and staff who switch off booking alerts**: owners and staff of an organization see a non-blocking warning when silence-all, an empty channel list, or disabling a transactional alert (new tickets, cancellations and refunds, RSVPs, questionnaire submissions, membership and invitation requests) means they may miss bookings and pending reviews. Saving is still allowed.
+
+### Changed
+- Per-type notification settings no longer offer a toggle that can't take effect: receipts and notices about your own purchase or account (payments, ticket confirmations, cancellations and refunds, subscription notices, bans, system announcements) are marked "Always on". The ticket toggles stay for organizers and staff, where they control organizer alerts only.
+
 ## [2.20.0] - 2026-10-05
 
 ### Added
