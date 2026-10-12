@@ -103,6 +103,8 @@
 				query: { owner: true, staff: true, member: false, page_size: 1 },
 				headers: { Authorization: `Bearer ${authToken}` }
 			});
+			// Throw so TanStack retries a failed lookup instead of caching "not staff"
+			if (result.error) throw new Error(extractErrorMessage(result.error));
 			return (result.data?.count ?? 0) > 0;
 		},
 		enabled: !!authToken && !isUnsubscribeMode,

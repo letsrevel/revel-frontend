@@ -377,7 +377,7 @@
 		"alwaysOnDescription": "Wird unabhängig von deiner Auswahl gesendet, weil es um deinen eigenen Kauf oder dein Konto geht.",
 		"staffAlertTypeNote": "Deine eigenen Tickets kommen immer an. Diese Einstellung steuert nur die Benachrichtigungen, die du als Veranstalter*in erhältst.",
 		"staffWarningTitle": "Du könntest Buchungen und Anfragen verpassen",
-		"staffWarning": "Du bist Inhaber*in oder Teammitglied einer Organisation. Mit diesen Einstellungen erfährst du möglicherweise nichts von neuen Tickets, Stornierungen und Erstattungen, Zusagen, Fragebogen-Einsendungen sowie Mitgliedschafts- und Einladungsanfragen. Du kannst trotzdem speichern."
+		"staffWarning": "Du bist Inhaber*in oder Teammitglied einer Organisation. Mit diesen Einstellungen erfährst du möglicherweise nichts von neuen Tickets, Stornierungen und Erstattungen, Zusagen, Fragebogen-Einsendungen sowie Mitgliedschafts- und Einladungsanfragen."
 	},
 	"notificationList": {
 		"ariaLabel": "Benachrichtigungen",

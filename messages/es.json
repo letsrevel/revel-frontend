@@ -377,7 +377,7 @@
 		"alwaysOnDescription": "Se envía elijas lo que elijas aquí, porque trata de tu propia compra o de tu cuenta.",
 		"staffAlertTypeNote": "Tus propias entradas siempre llegan. Este ajuste solo controla los avisos que recibes como organizador.",
 		"staffWarningTitle": "Podrías perderte reservas y solicitudes",
-		"staffWarning": "Eres propietario o parte del equipo de una organización. Con estos ajustes puede que no te enteres de nuevas entradas, cancelaciones y reembolsos, RSVP, cuestionarios enviados o solicitudes de membresía e invitación. Aun así, puedes guardar."
+		"staffWarning": "Eres propietario o parte del equipo de una organización. Con estos ajustes puede que no te enteres de nuevas entradas, cancelaciones y reembolsos, RSVP, cuestionarios enviados o solicitudes de membresía e invitación."
 	},
 	"notificationList": {
 		"ariaLabel": "Notificaciones",

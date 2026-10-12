@@ -377,7 +377,7 @@
 		"alwaysOnDescription": "É enviado seja qual for a tua escolha aqui, porque diz respeito à tua própria compra ou conta.",
 		"staffAlertTypeNote": "Os teus próprios bilhetes chegam sempre. Esta definição só controla os alertas que recebes como organizador.",
 		"staffWarningTitle": "Podes perder reservas e pedidos",
-		"staffWarning": "És proprietário ou membro da equipa de uma organização. Com estas definições, podes não saber de novos bilhetes, cancelamentos e reembolsos, RSVP, questionários submetidos ou pedidos de adesão e de convite. Podes guardar na mesma."
+		"staffWarning": "És proprietário ou membro da equipa de uma organização. Com estas definições, podes não saber de novos bilhetes, cancelamentos e reembolsos, RSVP, questionários submetidos ou pedidos de adesão e de convite."
 	},
 	"notificationList": {
 		"ariaLabel": "Notificações",

@@ -377,7 +377,7 @@
 		"alwaysOnDescription": "Viene inviata qualunque cosa tu scelga qui, perché riguarda il tuo acquisto o il tuo account.",
 		"staffAlertTypeNote": "I tuoi biglietti arrivano sempre. Questa impostazione controlla solo gli avvisi che ricevi come organizzatore.",
 		"staffWarningTitle": "Potresti perdere prenotazioni e richieste",
-		"staffWarning": "Sei proprietario o staff di un'organizzazione. Con queste impostazioni potresti non sapere di nuovi biglietti, annullamenti e rimborsi, RSVP, questionari inviati o richieste di iscrizione e di invito. Puoi comunque salvare."
+		"staffWarning": "Sei proprietario o staff di un'organizzazione. Con queste impostazioni potresti non sapere di nuovi biglietti, annullamenti e rimborsi, RSVP, questionari inviati o richieste di iscrizione e di invito."
 	},
 	"notificationList": {
 		"ariaLabel": "Notifiche",

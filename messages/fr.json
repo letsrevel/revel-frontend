@@ -3239,7 +3239,7 @@
 		"alwaysOnDescription": "Envoyé quel que soit ton choix ici, car cela concerne ton propre achat ou ton compte.",
 		"staffAlertTypeNote": "Tes propres billets arrivent toujours. Ce réglage ne contrôle que les alertes que tu reçois en tant qu'organisateur.",
 		"staffWarningTitle": "Tu risques de manquer des réservations et des demandes",
-		"staffWarning": "Tu es propriétaire ou membre de l'équipe d'une organisation. Avec ces réglages, tu risques de ne pas être prévenu des nouveaux billets, annulations et remboursements, RSVP, réponses aux questionnaires ou demandes d'adhésion et d'invitation. Tu peux quand même enregistrer."
+		"staffWarning": "Tu es propriétaire ou membre de l'équipe d'une organisation. Avec ces réglages, tu risques de ne pas être prévenu des nouveaux billets, annulations et remboursements, RSVP, réponses aux questionnaires ou demandes d'adhésion et d'invitation."
 	},
 	"notificationsPage": {
 		"pageTitle": "Notifications",

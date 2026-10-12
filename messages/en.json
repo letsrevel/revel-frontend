@@ -377,7 +377,7 @@
 		"alwaysOnDescription": "Sent whatever you choose here, because it is about your own purchase or account.",
 		"staffAlertTypeNote": "Your own tickets always arrive. This setting only controls the alerts you get as an organizer.",
 		"staffWarningTitle": "You may miss bookings and requests",
-		"staffWarning": "You are an owner or staff member of an organization. With these settings you may not hear about new tickets, cancellations and refunds, RSVPs, questionnaire submissions, or membership and invitation requests. You can still save."
+		"staffWarning": "You are an owner or staff member of an organization. With these settings you may not hear about new tickets, cancellations and refunds, RSVPs, questionnaire submissions, or membership and invitation requests."
 	},
 	"notificationList": {
 		"ariaLabel": "Notifications",
