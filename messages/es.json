@@ -369,7 +369,15 @@
 		"typeOrgSetupNudge": "Consejos para configurar tu organización",
 		"typeOrgSetupNudgeDescription": "Recordatorios ocasionales cuando tu organización sigue siendo privada, tiene un borrador olvidado o lleva tiempo sin actividad. Como máximo uno cada dos semanas.",
 		"typeFiscalDocumentSkipped": "Documentos que debes emitir tú",
-		"typeFiscalDocumentSkippedDescription": "Un resumen diario de las facturas y facturas rectificativas que, por ley, Revel no ha podido emitir, para que las emitas desde tu propio sistema."
+		"typeFiscalDocumentSkippedDescription": "Un resumen diario de las facturas y facturas rectificativas que, por ley, Revel no ha podido emitir, para que las emitas desde tu propio sistema.",
+		"mandatoryNoticeTitle": "Algunos correos llegan siempre",
+		"mandatoryNotice": "Tus propias entradas, recibos, avisos de pago y reembolso, avisos de suscripción y los avisos legales y de la plataforma importantes te seguirán llegando, elijas lo que elijas aquí.",
+		"silenceAllMandatoryHint": "Tus propias entradas, recibos y avisos de cuenta siguen llegando.",
+		"alwaysOn": "Siempre activo",
+		"alwaysOnDescription": "Se envía elijas lo que elijas aquí, porque trata de tu propia compra o de tu cuenta.",
+		"staffAlertTypeNote": "Tus propias entradas siempre llegan. Este ajuste solo controla los avisos que recibes como organizador.",
+		"staffWarningTitle": "Podrías perderte reservas y solicitudes",
+		"staffWarning": "Eres propietario o parte del equipo de una organización. Con estos ajustes puede que no te enteres de nuevas entradas, cancelaciones y reembolsos, RSVP, cuestionarios enviados o solicitudes de membresía e invitación. Aun así, puedes guardar."
 	},
 	"notificationList": {
 		"ariaLabel": "Notificaciones",

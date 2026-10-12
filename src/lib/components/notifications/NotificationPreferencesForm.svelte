@@ -4,7 +4,8 @@
 	import {
 		notificationpreferenceUpdatePreferences,
 		notificationpreferenceUnsubscribe,
-		telegramGetLinkStatus
+		telegramGetLinkStatus,
+		dashboardDashboardOrganizations
 	} from '$lib/api';
 	import { untrack } from 'svelte';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
@@ -16,13 +17,24 @@
 	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import { Input } from '$lib/components/ui/input';
 	import { Separator } from '$lib/components/ui/separator';
-	import { Loader2, Bell, BellOff, Mail, MessageSquare, Clock } from '@lucide/svelte';
+	import {
+		Loader2,
+		Bell,
+		BellOff,
+		Mail,
+		MessageSquare,
+		Clock,
+		ShieldCheck,
+		TriangleAlert
+	} from '@lucide/svelte';
+	import ToneTile from '$lib/components/common/ToneTile.svelte';
 	import NotificationTypeSettingsForm from './NotificationTypeSettings.svelte';
 	import type {
 		NotificationPreferenceSchema,
 		NotificationTypeSettings,
 		UpdateNotificationPreferenceSchema
 	} from '$lib/api/generated/types.gen.js';
+	import { disablesStaffAlerts } from './mandatoryNotifications';
 	import { backendMessage } from '$lib/utils/api-error-detail';
 
 	// Extract a human-readable message from an unknown API error shape.
@@ -79,6 +91,25 @@
 		staleTime: 5 * 60 * 1000, // Cache for 5 minutes
 		retry: 1
 	}));
+
+	// Owner or staff of at least one organization? Drives the "you may miss
+	// bookings" warning and whether the ticket_* per-type toggles (which control
+	// staff alerts only) are shown. The backend ORs owner/staff; member is off so
+	// plain members don't count. Unknown (loading/error) counts as not staff.
+	const staffQuery = createQuery(() => ({
+		queryKey: ['notification-prefs', 'is-org-staff'],
+		queryFn: async () => {
+			const result = await dashboardDashboardOrganizations({
+				query: { owner: true, staff: true, member: false, page_size: 1 },
+				headers: { Authorization: `Bearer ${authToken}` }
+			});
+			return (result.data?.count ?? 0) > 0;
+		},
+		enabled: !!authToken && !isUnsubscribeMode,
+		staleTime: 5 * 60 * 1000,
+		retry: 1
+	}));
+	const isOrgStaff = $derived(staffQuery.data === true);
 
 	type Channel = 'in_app' | 'email' | 'telegram';
 	interface Draft {
@@ -147,6 +178,12 @@
 	const isFormDisabled = $derived(disabled || silenceAll);
 	const showTimePicker = $derived(digestFrequency === 'daily' || digestFrequency === 'weekly');
 	const isTelegramConnected = $derived(telegramStatusQuery.data?.connected ?? false);
+
+	// Non-blocking: staff may opt out, but should know what they'd stop hearing.
+	const showStaffWarning = $derived(
+		isOrgStaff &&
+			(silenceAll || enabledChannels.length === 0 || disablesStaffAlerts(notificationTypeSettings))
+	);
 
 	// Something to save iff the change-only payload is non-empty (authenticated
 	// mode; unsubscribe mode always submits).
@@ -312,6 +349,41 @@
 </script>
 
 <div class="space-y-6">
+	{#if !isUnsubscribeMode}
+		<section
+			class="flex items-start gap-3 rounded-lg border bg-card p-4 text-card-foreground"
+			aria-labelledby="mandatory-notice-title"
+		>
+			<ToneTile icon={ShieldCheck} tone="info" size="sm" />
+			<div class="space-y-1">
+				<h2 id="mandatory-notice-title" class="font-bold">
+					{m['notificationPreferences.mandatoryNoticeTitle']()}
+				</h2>
+				<p class="text-sm text-muted-foreground">
+					{m['notificationPreferences.mandatoryNotice']()}
+				</p>
+			</div>
+		</section>
+
+		<!-- Always mounted so assistive tech announces the warning when it appears -->
+		<div role="status" aria-live="polite">
+			{#if showStaffWarning}
+				<div
+					class="flex items-start gap-3 rounded-lg border bg-card p-4 text-card-foreground"
+					data-testid="staff-alerts-warning"
+				>
+					<ToneTile icon={TriangleAlert} tone="warning" size="sm" />
+					<div class="space-y-1">
+						<p class="font-bold">{m['notificationPreferences.staffWarningTitle']()}</p>
+						<p class="text-sm text-muted-foreground">
+							{m['notificationPreferences.staffWarning']()}
+						</p>
+					</div>
+				</div>
+			{/if}
+		</div>
+	{/if}
+
 	<!-- Master Controls Section -->
 	<Card.Root>
 		<Card.Header>
@@ -336,6 +408,9 @@
 					>
 					<p class="text-sm text-muted-foreground">
 						{m['notificationPreferences.silenceAllDescription']()}
+						{#if !isUnsubscribeMode}
+							{m['notificationPreferences.silenceAllMandatoryHint']()}
+						{/if}
 					</p>
 				</div>
 				<Checkbox
@@ -582,6 +657,7 @@
 			{enabledChannels}
 			{isFormDisabled}
 			{isTelegramConnected}
+			{isOrgStaff}
 			{authToken}
 		/>
 	{/if}

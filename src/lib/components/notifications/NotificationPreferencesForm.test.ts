@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
 import NotificationPreferencesForm from './NotificationPreferencesForm.svelte';
+import * as api from '$lib/api';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 import type { NotificationPreferenceSchema } from '$lib/api/generated/types.gen.js';
 
@@ -11,7 +12,8 @@ vi.mock('$lib/api', () => ({
 	notificationpreferenceUpdatePreferences: vi.fn(),
 	notificationpreferenceUnsubscribe: vi.fn(),
 	telegramGetLinkStatus: vi.fn().mockResolvedValue({ data: { connected: false } }),
-	notificationpreferenceGetAvailableNotificationTypes: vi.fn().mockResolvedValue({ data: [] })
+	notificationpreferenceGetAvailableNotificationTypes: vi.fn().mockResolvedValue({ data: [] }),
+	dashboardDashboardOrganizations: vi.fn().mockResolvedValue({ data: { count: 0, results: [] } })
 }));
 
 // Mock svelte-sonner
@@ -605,5 +607,62 @@ describe('NotificationPreferencesForm', () => {
 		// Should render with default values
 		expect(screen.getByText('Master Controls')).toBeInTheDocument();
 		expect(screen.getByRole('checkbox', { name: /silence all notifications/i })).not.toBeChecked();
+	});
+	describe('mandatory notices and staff warning', () => {
+		function mockStaff(isStaff: boolean) {
+			vi.mocked(api.dashboardDashboardOrganizations).mockResolvedValue({
+				data: { count: isStaff ? 1 : 0, results: [] }
+			} as never);
+		}
+
+		it('explains that some emails always arrive in authenticated mode', () => {
+			renderForm({ preferences: mockPreferences, authToken: 'test-token' });
+			expect(screen.getByText('Some emails always arrive')).toBeInTheDocument();
+		});
+
+		it('does not show the staff warning to non-staff, even when silencing everything', async () => {
+			mockStaff(false);
+			const user = userEvent.setup();
+			renderForm({ preferences: mockPreferences, authToken: 'test-token' });
+			await user.click(screen.getByRole('checkbox', { name: /silence all notifications/i }));
+			await waitFor(() => expect(api.dashboardDashboardOrganizations).toHaveBeenCalled());
+			expect(screen.queryByTestId('staff-alerts-warning')).not.toBeInTheDocument();
+		});
+
+		it('warns org staff (non-blocking, in a live region) when they silence everything', async () => {
+			mockStaff(true);
+			const user = userEvent.setup();
+			renderForm({ preferences: mockPreferences, authToken: 'test-token' });
+			// Wait for the staff lookup to resolve before toggling
+			await waitFor(() => expect(api.dashboardDashboardOrganizations).toHaveBeenCalled());
+			expect(screen.queryByTestId('staff-alerts-warning')).not.toBeInTheDocument();
+
+			await user.click(screen.getByRole('checkbox', { name: /silence all notifications/i }));
+
+			const warning = await screen.findByTestId('staff-alerts-warning');
+			expect(warning).toBeInTheDocument();
+			expect(warning.closest('[aria-live="polite"]')).toHaveAttribute('role', 'status');
+			// Non-blocking: saving is still possible
+			expect(screen.getByRole('button', { name: /save changes/i })).toBeEnabled();
+		});
+
+		it('warns org staff when a transactional alert type is disabled', async () => {
+			mockStaff(true);
+			renderForm({
+				preferences: {
+					...mockPreferences,
+					notification_type_settings: { questionnaire_submitted: { enabled: false, channels: [] } }
+				},
+				authToken: 'test-token'
+			});
+			expect(await screen.findByTestId('staff-alerts-warning')).toBeInTheDocument();
+		});
+
+		it('does not warn org staff while their alerts are left on', async () => {
+			mockStaff(true);
+			renderForm({ preferences: mockPreferences, authToken: 'test-token' });
+			await waitFor(() => expect(api.dashboardDashboardOrganizations).toHaveBeenCalled());
+			expect(screen.queryByTestId('staff-alerts-warning')).not.toBeInTheDocument();
+		});
 	});
 });

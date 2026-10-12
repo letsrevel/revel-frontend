@@ -9,6 +9,7 @@
 	import { Separator } from '$lib/components/ui/separator';
 	import { Loader2, Bell, Mail, MessageSquare, ChevronDown, Settings } from '@lucide/svelte';
 	import type { NotificationTypeSettings, NotificationType } from '$lib/api/generated/types.gen.js';
+	import { isMandatoryType, isStaffSharedMandatoryType } from './mandatoryNotifications';
 	import {
 		getNotificationTypeDescription,
 		getNotificationTypeLabel,
@@ -20,6 +21,8 @@
 		enabledChannels: Array<'in_app' | 'email' | 'telegram'>;
 		isFormDisabled: boolean;
 		isTelegramConnected: boolean;
+		/** Owner/staff of an org: ticket_* toggles then control their staff alerts. */
+		isOrgStaff?: boolean;
 		authToken?: string;
 	}
 
@@ -28,6 +31,7 @@
 		enabledChannels,
 		isFormDisabled,
 		isTelegramConnected,
+		isOrgStaff = false,
 		authToken
 	}: Props = $props();
 
@@ -183,6 +187,12 @@
 					{@const isCustom = hasCustomSettings(notificationType)}
 					{@const typeLabel = getNotificationTypeLabel(notificationType)}
 					{@const typeDescription = getNotificationTypeDescription(notificationType)}
+					<!-- Mandatory types ignore these settings for the user's own receipts. The
+					     ticket_* ones still drive staff alerts, so staff keep the controls. -->
+					{@const alwaysOn =
+						isMandatoryType(notificationType) &&
+						!(isOrgStaff && isStaffSharedMandatoryType(notificationType))}
+					{@const staffOnlyControl = isMandatoryType(notificationType) && !alwaysOn}
 					<div class="space-y-3">
 						{#if index > 0}
 							<Separator />
@@ -200,7 +210,13 @@
 									>
 										{typeLabel}
 									</Label>
-									{#if !isCustom}
+									{#if alwaysOn}
+										<span
+											class="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground"
+										>
+											{m['notificationPreferences.alwaysOn']()}
+										</span>
+									{:else if !isCustom}
 										<span
 											class="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground"
 										>
@@ -217,58 +233,71 @@
 								{#if typeDescription}
 									<p class="text-sm text-muted-foreground">{typeDescription}</p>
 								{/if}
-								<p class="text-xs text-muted-foreground">
-									{#if settings.enabled}
-										{#if settings.channels.length === 0}
-											<strong>{m['notificationPreferences.enabled']()}</strong> •
-											<span class="text-destructive"
-												>{m['notificationPreferences.noChannels']()}</span
-											>
-										{:else}
-											<strong>{m['notificationPreferences.enabled']()}</strong> • {settings.channels
-												.map((c) => c.replace('_', '-'))
-												.join(', ')}
-										{/if}
-									{:else}
-										<strong class="text-destructive"
-											>{m['notificationPreferences.disabled']()}</strong
-										>
-										• {m['notificationPreferences.disabled']()}
+								{#if alwaysOn}
+									<p class="text-xs text-muted-foreground">
+										{m['notificationPreferences.alwaysOnDescription']()}
+									</p>
+								{:else}
+									{#if staffOnlyControl}
+										<p class="text-xs text-muted-foreground">
+											{m['notificationPreferences.staffAlertTypeNote']()}
+										</p>
 									{/if}
-								</p>
+									<p class="text-xs text-muted-foreground">
+										{#if settings.enabled}
+											{#if settings.channels.length === 0}
+												<strong>{m['notificationPreferences.enabled']()}</strong> •
+												<span class="text-destructive"
+													>{m['notificationPreferences.noChannels']()}</span
+												>
+											{:else}
+												<strong>{m['notificationPreferences.enabled']()}</strong> • {settings.channels
+													.map((c) => c.replace('_', '-'))
+													.join(', ')}
+											{/if}
+										{:else}
+											<strong class="text-destructive"
+												>{m['notificationPreferences.disabled']()}</strong
+											>
+											• {m['notificationPreferences.disabled']()}
+										{/if}
+									</p>
+								{/if}
 							</div>
-							<div class="flex items-center gap-2">
-								{#if isCustom}
-									<Button
-										type="button"
-										variant="ghost"
-										size="sm"
-										onclick={() => resetNotificationTypeToDefault(notificationType)}
+							{#if !alwaysOn}
+								<div class="flex items-center gap-2">
+									{#if isCustom}
+										<Button
+											type="button"
+											variant="ghost"
+											size="sm"
+											onclick={() => resetNotificationTypeToDefault(notificationType)}
+											disabled={isFormDisabled}
+											class="h-8 px-2 text-xs"
+											aria-label={m['notificationPreferences.resetAriaLabel']({
+												type: typeLabel
+											})}
+										>
+											{m['notificationPreferences.resetButton']()}
+										</Button>
+									{/if}
+									<Checkbox
+										id="type-{notificationType}-enabled"
+										checked={settings.enabled}
+										onCheckedChange={(checked) => {
+											updateNotificationTypeEnabled(notificationType, checked === true);
+										}}
 										disabled={isFormDisabled}
-										class="h-8 px-2 text-xs"
-										aria-label={m['notificationPreferences.resetAriaLabel']({
+										aria-label={m['notificationPreferences.enableAriaLabel']({
 											type: typeLabel
 										})}
-									>
-										{m['notificationPreferences.resetButton']()}
-									</Button>
-								{/if}
-								<Checkbox
-									id="type-{notificationType}-enabled"
-									checked={settings.enabled}
-									onCheckedChange={(checked) => {
-										updateNotificationTypeEnabled(notificationType, checked === true);
-									}}
-									disabled={isFormDisabled}
-									aria-label={m['notificationPreferences.enableAriaLabel']({
-										type: typeLabel
-									})}
-								/>
-							</div>
+									/>
+								</div>
+							{/if}
 						</div>
 
 						<!-- Channel selection for this notification type -->
-						{#if settings.enabled}
+						{#if !alwaysOn && settings.enabled}
 							<div class="ml-6 space-y-2">
 								<Label class="text-sm font-medium">
 									{m['notificationPreferences.channels']()}

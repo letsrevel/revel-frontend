@@ -369,7 +369,15 @@
 		"typeOrgSetupNudge": "Organization setup tips",
 		"typeOrgSetupNudgeDescription": "Occasional reminders when your organization is still private, has a forgotten draft, or has gone quiet. At most one every two weeks.",
 		"typeFiscalDocumentSkipped": "Documents to issue yourself",
-		"typeFiscalDocumentSkippedDescription": "A daily summary of the invoices and credit notes the law kept Revel from issuing, so you can issue them from your own system."
+		"typeFiscalDocumentSkippedDescription": "A daily summary of the invoices and credit notes the law kept Revel from issuing, so you can issue them from your own system.",
+		"mandatoryNoticeTitle": "Some emails always arrive",
+		"mandatoryNotice": "Your own tickets, receipts, payment and refund notices, subscription notices, and important legal and platform notices still reach you, whatever you choose here.",
+		"silenceAllMandatoryHint": "Your own tickets, receipts and account notices still arrive.",
+		"alwaysOn": "Always on",
+		"alwaysOnDescription": "Sent whatever you choose here, because it is about your own purchase or account.",
+		"staffAlertTypeNote": "Your own tickets always arrive. This setting only controls the alerts you get as an organizer.",
+		"staffWarningTitle": "You may miss bookings and requests",
+		"staffWarning": "You are an owner or staff member of an organization. With these settings you may not hear about new tickets, cancellations and refunds, RSVPs, questionnaire submissions, or membership and invitation requests. You can still save."
 	},
 	"notificationList": {
 		"ariaLabel": "Notifications",
