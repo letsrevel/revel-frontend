@@ -9,7 +9,7 @@
 	import { Separator } from '$lib/components/ui/separator';
 	import { Loader2, Bell, Mail, MessageSquare, ChevronDown, Settings } from '@lucide/svelte';
 	import type { NotificationTypeSettings, NotificationType } from '$lib/api/generated/types.gen.js';
-	import { isMandatoryType, isStaffSharedMandatoryType } from './mandatoryNotifications';
+	import { isMandatoryType } from './mandatoryNotifications';
 	import {
 		getNotificationTypeDescription,
 		getNotificationTypeLabel,
@@ -21,8 +21,6 @@
 		enabledChannels: Array<'in_app' | 'email' | 'telegram'>;
 		isFormDisabled: boolean;
 		isTelegramConnected: boolean;
-		/** Owner/staff of an org: ticket_* toggles then control their staff alerts. */
-		isOrgStaff?: boolean;
 		authToken?: string;
 	}
 
@@ -31,7 +29,6 @@
 		enabledChannels,
 		isFormDisabled,
 		isTelegramConnected,
-		isOrgStaff = false,
 		authToken
 	}: Props = $props();
 
@@ -187,12 +184,8 @@
 					{@const isCustom = hasCustomSettings(notificationType)}
 					{@const typeLabel = getNotificationTypeLabel(notificationType)}
 					{@const typeDescription = getNotificationTypeDescription(notificationType)}
-					<!-- Mandatory types ignore these settings for the user's own receipts. The
-					     ticket_* ones still drive staff alerts, so staff keep the controls. -->
-					{@const alwaysOn =
-						isMandatoryType(notificationType) &&
-						!(isOrgStaff && isStaffSharedMandatoryType(notificationType))}
-					{@const staffOnlyControl = isMandatoryType(notificationType) && !alwaysOn}
+					<!-- Mandatory types ignore these settings: they are the user's own receipts. -->
+					{@const alwaysOn = isMandatoryType(notificationType)}
 					<div class="space-y-3">
 						{#if index > 0}
 							<Separator />
@@ -238,11 +231,6 @@
 										{m['notificationPreferences.alwaysOnDescription']()}
 									</p>
 								{:else}
-									{#if staffOnlyControl}
-										<p class="text-xs text-muted-foreground">
-											{m['notificationPreferences.staffAlertTypeNote']()}
-										</p>
-									{/if}
 									<p class="text-xs text-muted-foreground">
 										{#if settings.enabled}
 											{#if settings.channels.length === 0}

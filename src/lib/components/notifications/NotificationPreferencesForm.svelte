@@ -659,7 +659,6 @@
 			{enabledChannels}
 			{isFormDisabled}
 			{isTelegramConnected}
-			{isOrgStaff}
 			{authToken}
 		/>
 	{/if}

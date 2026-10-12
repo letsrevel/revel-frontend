@@ -12,6 +12,27 @@ interface NotificationTypeCopy {
  * it with CSS), so this map can grow one type at a time.
  */
 const NOTIFICATION_TYPE_COPY: Partial<Record<NotificationType, NotificationTypeCopy>> = {
+	// Organizer alerts for ticket and series-pass activity (BE #1127 / #1130).
+	staff_ticket_created: {
+		label: () => m['notificationPreferences.typeStaffTicketCreated'](),
+		description: () => m['notificationPreferences.typeStaffTicketCreatedDescription']()
+	},
+	staff_ticket_cancelled: {
+		label: () => m['notificationPreferences.typeStaffTicketCancelled'](),
+		description: () => m['notificationPreferences.typeStaffTicketCancelledDescription']()
+	},
+	staff_ticket_refunded: {
+		label: () => m['notificationPreferences.typeStaffTicketRefunded'](),
+		description: () => m['notificationPreferences.typeStaffTicketRefundedDescription']()
+	},
+	staff_series_pass_purchased: {
+		label: () => m['notificationPreferences.typeStaffSeriesPassPurchased'](),
+		description: () => m['notificationPreferences.typeStaffSeriesPassPurchasedDescription']()
+	},
+	staff_series_pass_cancelled: {
+		label: () => m['notificationPreferences.typeStaffSeriesPassCancelled'](),
+		description: () => m['notificationPreferences.typeStaffSeriesPassCancelledDescription']()
+	},
 	org_setup_nudge: {
 		label: () => m['notificationPreferences.typeOrgSetupNudge'](),
 		description: () => m['notificationPreferences.typeOrgSetupNudgeDescription']()

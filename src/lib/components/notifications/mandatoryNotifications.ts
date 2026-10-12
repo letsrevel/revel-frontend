@@ -20,21 +20,14 @@ const MANDATORY_TYPES: ReadonlySet<string> = new Set<NotificationType>([
 ]);
 
 /**
- * Staff alerts for ticket sales, cancellations and refunds reuse the `ticket_*`
- * types. For org owners/staff they are NOT mandatory: silence-all, channels and
- * per-type settings all apply to them.
+ * Transactional alerts an owner/staff member would miss by switching them off.
+ * The `staff_*` types are separate from the holder-only `ticket_*` /
+ * `series_pass_*` types (BE #1127 / #1130) and are never mandatory.
  */
-const STAFF_SHARED_TYPES: ReadonlySet<string> = new Set<NotificationType>([
-	'ticket_created',
-	'ticket_cancelled',
-	'ticket_refunded'
-]);
-
-/** Transactional alerts an owner/staff member would miss by switching them off. */
 const STAFF_TRANSACTIONAL_TYPES: readonly NotificationType[] = [
-	'ticket_created',
-	'ticket_cancelled',
-	'ticket_refunded',
+	'staff_ticket_created',
+	'staff_ticket_cancelled',
+	'staff_ticket_refunded',
 	'rsvp_confirmation',
 	'rsvp_updated',
 	'rsvp_cancelled',
@@ -42,17 +35,12 @@ const STAFF_TRANSACTIONAL_TYPES: readonly NotificationType[] = [
 	'invitation_request_created',
 	'membership_request_created',
 	'whitelist_request_created',
-	'series_pass_purchased',
-	'series_pass_cancelled'
+	'staff_series_pass_purchased',
+	'staff_series_pass_cancelled'
 ];
 
 export function isMandatoryType(type: string): boolean {
 	return MANDATORY_TYPES.has(type);
-}
-
-/** Mandatory for the user's own purchase, yet also a preference-driven alert for org staff. */
-export function isStaffSharedMandatoryType(type: string): boolean {
-	return STAFF_SHARED_TYPES.has(type);
 }
 
 /** Whether the per-type settings switch off at least one staff transactional alert. */
