@@ -3,7 +3,7 @@
 	import { Calculator } from '@lucide/svelte';
 	import PosterPanel from './PosterPanel.svelte';
 	import PosterSticker from './PosterSticker.svelte';
-	import { formatMoney } from '$lib/utils/format';
+	import { formatMoney, formatPercentValue } from '$lib/utils/format';
 	import { type PlatformFeeConfig } from '$lib/utils/fees';
 
 	interface Props {
@@ -39,7 +39,7 @@
 			<p class="leading-relaxed">
 				{m['home.poster.pricingBodyQuestion']()}
 				<span class="font-semibold"
-					>{feeConfig.platformFeePercent + feeConfig.stripeFeePercent}% + {formatMoney(
+					>{formatPercentValue(feeConfig.platformFeePercent + feeConfig.stripeFeePercent)}% + {formatMoney(
 						feeConfig.platformFeeFixed + feeConfig.stripeFeeFixed,
 						'EUR'
 					)}</span

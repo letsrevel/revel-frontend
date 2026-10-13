@@ -191,11 +191,13 @@
 					percentage: feePercentage
 				})}</span
 			>
-			<span class="block text-xs text-muted-foreground">
-				{m['tierForm.recommendedPrice']({
-					amount: formatMoney(recommendedPrice ?? 0, currency)
-				})}
-			</span>
+			{#if recommendedPrice !== null}
+				<span class="block text-xs text-muted-foreground">
+					{m['tierForm.recommendedPrice']({
+						amount: formatMoney(recommendedPrice, currency)
+					})}
+				</span>
+			{/if}
 			<span class="block text-xs text-muted-foreground">
 				{m['learnMore.feeCalculator.creditCardFees']()}: {formatMoney(
 					breakdown.stripeFee,
