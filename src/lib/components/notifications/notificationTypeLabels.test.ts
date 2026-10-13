@@ -20,6 +20,18 @@ describe('notificationTypeLabels (#996)', () => {
 		expect(getNotificationTypeDescription('fiscal_document_skipped')).toMatch(/daily summary/i);
 	});
 
+	it.each([
+		['staff_ticket_created', 'Ticket sold'],
+		['staff_ticket_cancelled', 'Ticket cancelled'],
+		['staff_ticket_refunded', 'Ticket refunded'],
+		['staff_series_pass_purchased', 'Series pass sold'],
+		['staff_series_pass_cancelled', 'Series pass cancelled']
+	])('translates %s (BE #1130)', (type, label) => {
+		expect(hasNotificationTypeLabel(type)).toBe(true);
+		expect(getNotificationTypeLabel(type)).toBe(label);
+		expect(getNotificationTypeDescription(type)).toBeTruthy();
+	});
+
 	it('falls back to the raw name for unmapped types', () => {
 		expect(hasNotificationTypeLabel('event_reminder')).toBe(false);
 		expect(getNotificationTypeLabel('event_reminder')).toBe('event reminder');

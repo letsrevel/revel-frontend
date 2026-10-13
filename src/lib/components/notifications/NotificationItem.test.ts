@@ -357,6 +357,63 @@ describe('NotificationItem', () => {
 		});
 	});
 
+	describe('staff_* organizer alerts (BE #1127 / #1130)', () => {
+		it.each(['staff_ticket_created', 'staff_ticket_cancelled', 'staff_ticket_refunded'])(
+			'%s follows the event link from its context',
+			async (type) => {
+				const notification = createMockNotification({
+					notification_type: type as NotificationSchema['notification_type'],
+					context: {
+						event_id: 'ev-1',
+						event_url: 'https://revel.test/events/ev-1',
+						organization_id: 'org-1',
+						ticket_holder_name: 'Holder',
+						ticket_holder_email: 'holder@example.com'
+					}
+				});
+				const { goto } = await import('$app/navigation');
+				vi.mocked(goto).mockClear();
+
+				renderItem({ notification, authToken: mockAuthToken });
+				await user.click(screen.getByRole('button', { name: /New Event Invitation/i }));
+
+				expect(goto).toHaveBeenCalledWith('/events/ev-1');
+			}
+		);
+
+		it.each(['staff_series_pass_purchased', 'staff_series_pass_cancelled'])(
+			'%s renders and falls back to the notifications page (no URL in its context)',
+			async (type) => {
+				const notification = createMockNotification({
+					notification_type: type as NotificationSchema['notification_type'],
+					context: {
+						pass_id: 'p-1',
+						series_id: 's-1',
+						organization_id: 'org-1',
+						holder_name: 'Holder',
+						holder_email: 'holder@example.com'
+					}
+				});
+				const { goto } = await import('$app/navigation');
+				vi.mocked(goto).mockClear();
+
+				renderItem({ notification, authToken: mockAuthToken });
+				await user.click(screen.getByRole('button', { name: /New Event Invitation/i }));
+
+				expect(goto).toHaveBeenCalledWith(expect.stringContaining('/account/notifications'));
+			}
+		);
+
+		it('renders a notification type this client does not know yet', () => {
+			const notification = createMockNotification({
+				notification_type: 'staff_brand_new_type' as NotificationSchema['notification_type'],
+				context: {}
+			});
+			renderItem({ notification, authToken: mockAuthToken });
+			expect(screen.getByRole('button', { name: /New Event Invitation/i })).toBeInTheDocument();
+		});
+	});
+
 	it('navigates to the notifications page when context has no URL', async () => {
 		const notification = createMockNotification({
 			context: {} // No URL-related keys
