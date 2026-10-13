@@ -3,11 +3,15 @@
 	import { Calculator } from '@lucide/svelte';
 	import PosterPanel from './PosterPanel.svelte';
 	import PosterSticker from './PosterSticker.svelte';
+	import { formatMoney } from '$lib/utils/format';
+	import { type PlatformFeeConfig } from '$lib/utils/fees';
 
 	interface Props {
 		onOpenCalculator: () => void;
+		/** Rates from `GET /version`; every field is a validated non-negative number. */
+		feeConfig: PlatformFeeConfig;
 	}
-	const { onOpenCalculator }: Props = $props();
+	const { onOpenCalculator, feeConfig }: Props = $props();
 </script>
 
 <!-- Every text layer here is full-opacity ink on amber (~10:1). Dimming the small
@@ -34,7 +38,12 @@
 			     no whitespace between the span and the message call. -->
 			<p class="leading-relaxed">
 				{m['home.poster.pricingBodyQuestion']()}
-				<span class="font-semibold">3% + €0.50</span>{m['home.poster.pricingBodyRest']()}
+				<span class="font-semibold"
+					>{feeConfig.platformFeePercent + feeConfig.stripeFeePercent}% + {formatMoney(
+						feeConfig.platformFeeFixed + feeConfig.stripeFeeFixed,
+						'EUR'
+					)}</span
+				>{m['home.poster.pricingBodyRest']()}
 			</p>
 			<p class="mt-2 font-semibold leading-relaxed">{m['home.poster.pricingSelfManage']()}</p>
 			<button

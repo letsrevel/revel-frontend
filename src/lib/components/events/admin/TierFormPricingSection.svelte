@@ -9,7 +9,7 @@
 		TooltipTrigger
 	} from '$lib/components/ui/tooltip';
 	import { Info } from '@lucide/svelte';
-	import { estimateNetPayout, type PlatformFeeInfo } from '$lib/utils/fees';
+	import { estimateNetPayout, type PlatformFeeConfig, type PlatformFeeInfo } from '$lib/utils/fees';
 	import { formatMoney } from '$lib/utils/format';
 	import { SUPPORTED_CURRENCIES, normalizeDecimalInput } from './tier-form-helpers';
 
@@ -23,6 +23,7 @@
 		isPending: boolean;
 		/** Org platform-fee terms; null hides the net-payout preview. */
 		platformFees?: PlatformFeeInfo | null;
+		feeConfig: PlatformFeeConfig;
 		/** True only for online (Stripe) tiers — the preview is meaningless otherwise. */
 		showNetPayout?: boolean;
 	}
@@ -36,23 +37,49 @@
 		currencySymbol,
 		isPending,
 		platformFees = null,
+		feeConfig,
 		showNetPayout = false
 	}: Props = $props();
 
 	// "You get: ~X" preview for online tiers — PWYC previews at the minimum
 	// price (that is what the price field stores for PWYC anyway).
-	const netPayout = $derived.by(() => {
+	const ticketPrice = $derived(
+		parseFloat(normalizeDecimalInput(priceType === 'fixed' ? price : pwycMin))
+	);
+	const recommendedPrice = $derived.by(() => {
 		if (!showNetPayout || !platformFees) return null;
-		const effectivePrice = parseFloat(
-			normalizeDecimalInput(priceType === 'fixed' ? price : pwycMin)
+		if (!Number.isFinite(ticketPrice) || ticketPrice <= 0) return null;
+
+		const vatMultiplier = 1 + platformFees.vatRate / 100;
+		const denominator =
+			1 - feeConfig.stripeFeePercent / 100 - (platformFees.percent / 100) * vatMultiplier;
+		if (denominator <= 0) return null;
+
+		return (
+			(ticketPrice + feeConfig.stripeFeeFixed + platformFees.fixed * vatMultiplier) / denominator
 		);
+	});
+	const breakdown = $derived.by(() => {
+		if (!showNetPayout || !platformFees || !Number.isFinite(ticketPrice) || ticketPrice <= 0) {
+			return null;
+		}
 		return estimateNetPayout({
-			price: effectivePrice,
+			price: ticketPrice,
 			platformFeePercent: platformFees.percent,
 			platformFeeFixed: platformFees.fixed,
-			platformFeeVatRate: platformFees.vatRate
+			platformFeeVatRate: platformFees.vatRate,
+			stripeFeePercent: feeConfig.stripeFeePercent,
+			stripeFeeFixed: feeConfig.stripeFeeFixed
 		});
 	});
+	const totalFees = $derived(
+		breakdown ? breakdown.stripeFee + breakdown.platformFee + breakdown.platformFeeVat : 0
+	);
+	const feePercentage = $derived(
+		breakdown && breakdown.net + totalFees > 0
+			? ((totalFees / (breakdown.net + totalFees)) * 100).toFixed(1)
+			: '0.0'
+	);
 </script>
 
 <div>
@@ -154,17 +181,42 @@
 
 <!-- Net payout preview: online tiers only, and only when the org's fee terms
      are known. The tooltip explains why it is approximate. -->
-{#if netPayout}
+
+{#if breakdown}
 	<div class="flex items-center gap-2 rounded-lg border bg-muted/30 px-4 py-3">
 		<p class="text-sm">
-			<span class="font-medium">{m['tierForm.netPayoutLabel']()}</span>
-			<span class="font-bold">
-				{m['tierForm.netPayoutAmount']({ amount: formatMoney(netPayout.net, currency) })}
+			<span class="font-medium"
+				>{m['learnMore.feeCalculator.totalFees']({
+					fees: formatMoney(totalFees, currency),
+					percentage: feePercentage
+				})}</span
+			>
+			<span class="block text-xs text-muted-foreground">
+				{m['tierForm.recommendedPrice']({
+					amount: formatMoney(recommendedPrice ?? 0, currency)
+				})}
 			</span>
-			<span class="text-muted-foreground">
-				{priceType === 'pwyc'
-					? m['tierForm.netPayoutPerTicketAtMin']()
-					: m['tierForm.netPayoutPerTicket']()}
+			<span class="block text-xs text-muted-foreground">
+				{m['learnMore.feeCalculator.creditCardFees']()}: {formatMoney(
+					breakdown.stripeFee,
+					currency
+				)} ·
+				{m['learnMore.feeCalculator.platformFee']()}: {formatMoney(
+					breakdown.platformFee + breakdown.platformFeeVat,
+					currency
+				)}
+			</span>
+			<span class="block font-bold">
+				{m['learnMore.feeCalculator.organizationReceives']()}: {m['tierForm.netPayoutAmount']({
+					amount: formatMoney(breakdown.net, currency)
+				})}
+			</span>
+			<span class="font-bold">
+				<span class="text-muted-foreground">
+					{priceType === 'pwyc'
+						? m['tierForm.netPayoutPerTicketAtMin']()
+						: m['tierForm.netPayoutPerTicket']()}
+				</span>
 			</span>
 		</p>
 		<TooltipProvider>

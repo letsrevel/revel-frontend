@@ -17,7 +17,7 @@
 	import TierForm from './TierForm.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { reorderByIds, swapAndCollectIds } from '$lib/utils/reorder';
-	import type { PlatformFeeInfo } from '$lib/utils/fees';
+	import type { PlatformFeeConfig, PlatformFeeInfo } from '$lib/utils/fees';
 	import { toast } from 'svelte-sonner';
 	import { extractErrorMessage } from '$lib/utils/errors';
 	import { noticesFor, unplacedNotices, type ComplianceStatus } from '$lib/utils/compliance';
@@ -47,6 +47,7 @@
 		organizationStripeConnected: boolean;
 		/** Org platform-fee terms for the tier net-payout preview (null hides it). */
 		platformFees?: PlatformFeeInfo | null;
+		feeConfig: PlatformFeeConfig;
 		formData: EventFormData;
 		onUpdate: (updates: Partial<EventFormData>) => void;
 		onBack: () => void;
@@ -60,6 +61,7 @@
 		organizationSlug,
 		organizationStripeConnected,
 		platformFees = null,
+		feeConfig,
 		formData,
 		onUpdate,
 		onBack,
@@ -448,6 +450,7 @@
 		{organizationSlug}
 		{organizationStripeConnected}
 		{platformFees}
+		{feeConfig}
 		{membershipTiers}
 		eventVenueId={formData.venue_id || null}
 		rules={{ compliance, status: complianceStatus, onRetry: () => complianceQuery.refetch() }}

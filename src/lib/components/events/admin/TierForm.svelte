@@ -55,7 +55,7 @@
 	import { Undo2 } from '@lucide/svelte';
 	import type { EventRules } from '$lib/utils/compliance';
 	import { formatDateTimeReadback } from '$lib/utils/date';
-	import type { PlatformFeeInfo } from '$lib/utils/fees';
+	import type { PlatformFeeConfig, PlatformFeeInfo } from '$lib/utils/fees';
 
 	interface Props {
 		tier: TicketTierDetailSchema | null; // null = create new
@@ -64,6 +64,7 @@
 		organizationStripeConnected: boolean;
 		/** Org platform-fee terms for the net-payout preview (null hides it). */
 		platformFees?: PlatformFeeInfo | null;
+		feeConfig: PlatformFeeConfig;
 		membershipTiers?: MembershipTierSchema[];
 		eventVenueId?: string | null; // Pre-fill venue from event
 		/** The event form's start/end/check-in window the tier offsets are relative to. */
@@ -79,6 +80,7 @@
 		organizationSlug,
 		organizationStripeConnected,
 		platformFees = null,
+		feeConfig,
 		membershipTiers = [],
 		eventVenueId = null,
 		eventContext = { start: '' },
@@ -535,6 +537,7 @@
 					{currencySymbol}
 					{isPending}
 					{platformFees}
+					{feeConfig}
 					showNetPayout={paymentMethod === 'online'}
 				/>
 			{/if}

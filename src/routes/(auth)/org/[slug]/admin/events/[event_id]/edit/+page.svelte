@@ -444,6 +444,7 @@
 		{#key event.id}
 			<EventEditor
 				{organization}
+				feeConfig={data.feeConfig}
 				existingEvent={event}
 				userCity={data.userCity}
 				orgCity={data.orgCity}

@@ -1,18 +1,15 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
-	import {
-		DEFAULT_PLATFORM_FEE_PERCENT,
-		DEFAULT_PLATFORM_FEE_FIXED,
-		PLATFORM_VAT_RATE_PERCENT,
-		estimateNetPayout
-	} from '$lib/utils/fees';
-	import { formatMoney } from '$lib/utils/format';
+	import { estimateNetPayout, type PlatformFeeConfig } from '$lib/utils/fees';
+	import { formatMoney, formatPercentValue } from '$lib/utils/format';
 
 	interface Props {
 		open: boolean;
+		/** Rates from `GET /version`; every field is a validated non-negative number. */
+		feeConfig: PlatformFeeConfig;
 	}
-	let { open = $bindable() }: Props = $props();
+	let { open = $bindable(), feeConfig }: Props = $props();
 
 	let ticketPrice = $state(20);
 	// Whether Revel charges VAT on top of its platform fee (Austrian orgs and
@@ -28,14 +25,17 @@
 			: 0
 	);
 
-	// Stripe fee estimate assumes EEA cards (higher for UK cards, see Stripe
-	// pricing); platform fee is Revel's standard 1.5% + €0.25.
+	// Stripe fee mirrors published EEA-card pricing (higher for UK cards, see
+	// Stripe pricing); the platform fee is Revel's standard rate. Both come from
+	// the backend so a deployment can change them without a frontend release.
 	const breakdown = $derived(
 		estimateNetPayout({
 			price: safeTicketPrice,
-			platformFeePercent: DEFAULT_PLATFORM_FEE_PERCENT,
-			platformFeeFixed: DEFAULT_PLATFORM_FEE_FIXED,
-			platformFeeVatRate: vatOnPlatformFee ? PLATFORM_VAT_RATE_PERCENT : 0
+			platformFeePercent: feeConfig.platformFeePercent,
+			platformFeeFixed: feeConfig.platformFeeFixed,
+			platformFeeVatRate: vatOnPlatformFee ? feeConfig.vatRate : 0,
+			stripeFeePercent: feeConfig.stripeFeePercent,
+			stripeFeeFixed: feeConfig.stripeFeeFixed
 		})
 	);
 	const stripeFee = $derived(breakdown?.stripeFee ?? 0);
@@ -89,7 +89,10 @@
 						</span>
 					</div>
 					<p class="mt-1 text-xs text-muted-foreground">
-						{m['learnMore.feeCalculator.creditCardFeesDescription']()}
+						{m['learnMore.feeCalculator.creditCardFeesDescription']({
+							percent: formatPercentValue(feeConfig.stripeFeePercent),
+							fixed: formatPercentValue(feeConfig.stripeFeeFixed)
+						})}
 						<a
 							href="https://stripe.com/en-at/pricing"
 							target="_blank"
@@ -113,7 +116,7 @@
 						<div class="mt-2 flex items-center justify-between border-t pt-2">
 							<span class="text-sm">
 								{m['learnMore.feeCalculator.vatOnPlatformFee']({
-									rate: PLATFORM_VAT_RATE_PERCENT
+									rate: feeConfig.vatRate
 								})}
 							</span>
 							<span class="font-bold text-primary">
@@ -122,7 +125,10 @@
 						</div>
 					{/if}
 					<p class="mt-1 text-xs text-muted-foreground">
-						{m['learnMore.feeCalculator.platformFeeDescription']()}
+						{m['learnMore.feeCalculator.platformFeeDescription']({
+							percent: formatPercentValue(feeConfig.platformFeePercent),
+							fixed: formatPercentValue(feeConfig.platformFeeFixed)
+						})}
 					</p>
 				</div>
 
@@ -137,7 +143,7 @@
 						/>
 						<span class="text-sm font-medium">
 							{m['learnMore.feeCalculator.vatCheckboxLabel']({
-								rate: PLATFORM_VAT_RATE_PERCENT
+								rate: feeConfig.vatRate
 							})}
 						</span>
 					</label>

@@ -83,3 +83,18 @@ export function formatPercent(ratio: number | null | undefined, maximumFractionD
 		maximumFractionDigits
 	}).format(safe);
 }
+
+/**
+ * Format a percent *value* — 1.5 becomes "1.5" / "1,5" — for prose that already
+ * carries its own `%` sign or spacing per locale (e.g. fee descriptions). Do not
+ * use {@link formatPercent} here: it would double the % and assume a 0..1 ratio.
+ */
+export function formatPercentValue(
+	value: number | null | undefined,
+	maximumFractionDigits = 2
+): string {
+	const safe = Number.isFinite(value) ? (value as number) : 0;
+	return new Intl.NumberFormat(getDateLocale(), {
+		maximumFractionDigits
+	}).format(safe);
+}

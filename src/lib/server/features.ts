@@ -2,6 +2,14 @@ import { z } from 'zod';
 import { apiApiVersion } from '$lib/api/generated/sdk.gen';
 import type { SsoProviderSchema } from '$lib/api/generated/types.gen';
 import { resolveFeatures, DEFAULT_FEATURES, type Features } from '$lib/utils/features';
+import {
+	DEFAULT_PLATFORM_FEE_PERCENT,
+	DEFAULT_PLATFORM_FEE_FIXED,
+	STRIPE_FEE_PERCENT,
+	STRIPE_FEE_FIXED,
+	DEFAULT_PLATFORM_VAT_RATE_PERCENT,
+	type PlatformFeeConfig
+} from '$lib/utils/fees';
 
 /*
  * Runtime guard for the provider list: entries feed the OIDC start URL and the
@@ -33,6 +41,42 @@ function parseTurnstileSiteKey(raw: unknown): string | null {
 	return typeof raw === 'string' && raw.trim().length > 0 ? raw.trim() : null;
 }
 
+/*
+ * Fee rates from `/version`, for the public landing-page calculator. The backend
+ * serialises these as strings (Django Decimal), so parse them rather than
+ * casting — a malformed value must degrade to the static default instead of
+ * poisoning the arithmetic with NaN. Every field falls back independently, so a
+ * partial payload still supplies the rates it does carry.
+ */
+const feeNumberSchema = z.number().finite().nonnegative();
+
+const DEFAULT_FEE_CONFIG: PlatformFeeConfig = {
+	stripeFeePercent: STRIPE_FEE_PERCENT,
+	stripeFeeFixed: STRIPE_FEE_FIXED,
+	platformFeePercent: DEFAULT_PLATFORM_FEE_PERCENT,
+	platformFeeFixed: DEFAULT_PLATFORM_FEE_FIXED,
+	vatRate: DEFAULT_PLATFORM_VAT_RATE_PERCENT
+};
+
+function parseFeeRates(raw: unknown): PlatformFeeConfig {
+	if (typeof raw !== 'object' || raw === null) return DEFAULT_FEE_CONFIG;
+	const record = raw as Record<string, unknown>;
+	// The wire values are strings; Number('') is 0, so require non-empty first.
+	const num = (value: unknown): number | undefined => {
+		const parsed = typeof value === 'string' && value.trim() !== '' ? Number(value) : value;
+		const check = feeNumberSchema.safeParse(parsed);
+		return check.success ? check.data : undefined;
+	};
+	return {
+		stripeFeePercent: num(record.stripe_fee_percent) ?? DEFAULT_FEE_CONFIG.stripeFeePercent,
+		stripeFeeFixed: num(record.stripe_fee_fixed) ?? DEFAULT_FEE_CONFIG.stripeFeeFixed,
+		platformFeePercent:
+			num(record.default_platform_fee_percent) ?? DEFAULT_FEE_CONFIG.platformFeePercent,
+		platformFeeFixed: num(record.default_platform_fee_fixed) ?? DEFAULT_FEE_CONFIG.platformFeeFixed,
+		vatRate: num(record.vat_rate) ?? DEFAULT_FEE_CONFIG.vatRate
+	};
+}
+
 const TTL_MS = 5 * 60 * 1000;
 
 interface VersionInfo {
@@ -41,6 +85,7 @@ interface VersionInfo {
 	ssoProviders: SsoProviderSchema[];
 	demoBookingUrl: string | null;
 	turnstileSiteKey: string | null;
+	fees: PlatformFeeConfig;
 }
 
 const FALLBACK: VersionInfo = {
@@ -48,7 +93,8 @@ const FALLBACK: VersionInfo = {
 	demo: false,
 	ssoProviders: [],
 	demoBookingUrl: null,
-	turnstileSiteKey: null
+	turnstileSiteKey: null,
+	fees: DEFAULT_FEE_CONFIG
 };
 
 let cache: { value: VersionInfo; expiry: number } | null = null;
@@ -84,7 +130,8 @@ async function getVersionInfo(fetch: typeof globalThis.fetch): Promise<VersionIn
 			demo: data.demo ?? false,
 			ssoProviders: parseSsoProviders(data.sso_providers),
 			demoBookingUrl: parseDemoBookingUrl(data.demo_booking_url),
-			turnstileSiteKey: parseTurnstileSiteKey(data.turnstile_site_key)
+			turnstileSiteKey: parseTurnstileSiteKey(data.turnstile_site_key),
+			fees: parseFeeRates(data.fees)
 		};
 		cache = { value, expiry: Date.now() + TTL_MS };
 		return value;
@@ -137,4 +184,19 @@ export async function getDemoBookingUrl(fetch: typeof globalThis.fetch): Promise
  */
 export async function getTurnstileSiteKey(fetch: typeof globalThis.fetch): Promise<string | null> {
 	return (await getVersionInfo(fetch)).turnstileSiteKey;
+}
+
+/**
+ * Fee rates for the public landing-page calculator (cached, fail-safe to the
+ * static defaults). These are ESTIMATES, not settlement figures: the Stripe pair
+ * mirrors published card pricing that varies by card country/type, and the VAT
+ * rate is the platform's domestic rate — real charges are computed server-side
+ * per organization at invoicing time, where reverse charge may zero the VAT.
+ * Falls back per-field, so a partial or malformed payload still supplies the
+ * rates it does carry rather than blanking the whole calculator.
+ */
+export async function getPlatformFeeConfig(
+	fetch: typeof globalThis.fetch
+): Promise<PlatformFeeConfig> {
+	return (await getVersionInfo(fetch)).fees;
 }

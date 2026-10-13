@@ -32,7 +32,7 @@
 <SeoHead config={data.seo} />
 
 <HeroPanel {isAuthenticated} demoBookingUrl={data.demoBookingUrl} />
-<PricingPanel onOpenCalculator={() => (showFeeCalculator = true)} />
+<PricingPanel onOpenCalculator={() => (showFeeCalculator = true)} feeConfig={data.feeConfig} />
 <VenuesPanel />
 <ClubsPanel />
 <CommunitiesPanel />
@@ -40,4 +40,4 @@
 <OpenSourcePanel />
 <ClosePanel {canCreateOrg} demoBookingUrl={data.demoBookingUrl} />
 
-<FeeCalculatorModal bind:open={showFeeCalculator} />
+<FeeCalculatorModal bind:open={showFeeCalculator} feeConfig={data.feeConfig} />

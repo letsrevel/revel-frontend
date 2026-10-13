@@ -7,6 +7,7 @@ import {
 	dashboardDashboardEventSeries
 } from '$lib/api';
 import { log } from '$lib/server/logger';
+import { getPlatformFeeConfig } from '$lib/server/features';
 
 export const load: PageServerLoad = async ({ parent, params, locals, fetch }) => {
 	const parentData = await parent();
@@ -93,6 +94,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch }) =>
 	}
 
 	return {
+		feeConfig: await getPlatformFeeConfig(fetch),
 		event,
 		userCity,
 		orgCity: organization.city || null,
