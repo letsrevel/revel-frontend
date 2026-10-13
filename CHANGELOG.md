@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.22.0] - 2026-10-13
+
+### Changed
+- **Organizer alerts for tickets and series passes have their own settings**: owners and staff now see separate "Ticket sold", "Ticket cancelled", "Ticket refunded", "Series pass sold" and "Series pass cancelled" entries in per-type notification settings, with descriptions in all six languages. These are optional and can be switched off independently of your own purchases.
+  - Your own ticket confirmations, cancellations and refunds are "Always on" for everyone, organizers and staff included; the old note saying those toggles only control organizer alerts is gone
+  - The "you may miss bookings" warning for organizers now follows the new organizer alert types
+  - Requires backend v2.22.0 or later
+
 ## [2.21.0] - 2026-10-12
 
 ### Added
