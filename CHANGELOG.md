@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.22.1] - 2026-10-16
+
+### Fixed
+- The "let's revel" wordmark in social preview (OG) images and the email logo now uses a typographic apostrophe instead of an opening quote
+
 ## [2.22.0] - 2026-10-13
 
 ### Changed
