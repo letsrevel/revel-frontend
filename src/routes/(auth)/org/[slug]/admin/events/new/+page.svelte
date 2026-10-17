@@ -31,6 +31,7 @@
 	<div class="rounded-lg border bg-card text-card-foreground shadow-sm">
 		<EventEditor
 			{organization}
+			feeConfig={data.feeConfig}
 			userCity={data.userCity}
 			orgCity={data.orgCity}
 			eventSeries={data.eventSeries}

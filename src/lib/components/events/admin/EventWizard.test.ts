@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/svelte';
 import { describe, it, expect, vi } from 'vitest';
 import EventWizard from './EventWizard.svelte';
 import type { OrganizationRetrieveSchema } from '$lib/api/generated/types.gen';
+import type { PlatformFeeConfig } from '$lib/utils/fees';
 
 // Mock TanStack Query
 vi.mock('@tanstack/svelte-query', () => ({
@@ -45,11 +46,20 @@ const mockOrganization: OrganizationRetrieveSchema = {
 	is_stripe_connected: false
 };
 
+const mockFeeConfig: PlatformFeeConfig = {
+	platformFeePercent: 1.5,
+	platformFeeFixed: 0.25,
+	stripeFeePercent: 1.5,
+	stripeFeeFixed: 0.25,
+	vatRate: 20
+};
+
 describe('EventWizard', () => {
 	it('renders Step 1 initially', () => {
 		render(EventWizard, {
 			props: {
-				organization: mockOrganization
+				organization: mockOrganization,
+				feeConfig: mockFeeConfig
 			}
 		});
 
@@ -60,7 +70,8 @@ describe('EventWizard', () => {
 	it('displays step indicators', () => {
 		render(EventWizard, {
 			props: {
-				organization: mockOrganization
+				organization: mockOrganization,
+				feeConfig: mockFeeConfig
 			}
 		});
 
@@ -77,6 +88,7 @@ describe('EventWizard', () => {
 		render(EventWizard, {
 			props: {
 				organization: mockOrganization,
+				feeConfig: mockFeeConfig,
 				existingEvent: {
 					id: 'event-123',
 					name: 'Test Event',

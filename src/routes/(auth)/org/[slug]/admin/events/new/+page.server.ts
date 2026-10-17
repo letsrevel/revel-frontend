@@ -3,6 +3,7 @@ import { error } from '@sveltejs/kit';
 import type { CitySchema } from '$lib/api/generated/types.gen';
 import { userpreferencesGetGeneralPreferences, dashboardDashboardEventSeries } from '$lib/api';
 import { log } from '$lib/server/logger';
+import { getPlatformFeeConfig } from '$lib/server/features';
 
 export const load: PageServerLoad = async ({ parent, locals, fetch, url }) => {
 	const parentData = await parent();
@@ -59,6 +60,7 @@ export const load: PageServerLoad = async ({ parent, locals, fetch, url }) => {
 	const initialEventSeriesId = url.searchParams.get('event_series_id');
 
 	return {
+		feeConfig: await getPlatformFeeConfig(fetch),
 		userCity,
 		orgCity: organization.city || null,
 		eventSeries,

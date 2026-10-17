@@ -36,7 +36,7 @@
 		type ScheduleRow
 	} from './schedule-rows';
 	import TicketingStep from './TicketingStep.svelte';
-	import { platformFeeInfoFrom } from '$lib/utils/fees';
+	import { platformFeeInfoFrom, type PlatformFeeConfig } from '$lib/utils/fees';
 	import SaveBar from './SaveBar.svelte';
 	import ListingsStep from './listings/ListingsStep.svelte';
 	import * as Tabs from '$lib/components/ui/tabs';
@@ -45,6 +45,7 @@
 
 	interface Props {
 		organization: OrganizationRetrieveSchema;
+		feeConfig: PlatformFeeConfig;
 		existingEvent?: EventDetailSchema;
 		userCity?: CitySchema | null;
 		orgCity?: CitySchema | null;
@@ -65,6 +66,7 @@
 
 	const {
 		organization,
+		feeConfig,
 		existingEvent,
 		userCity,
 		orgCity,
@@ -635,6 +637,7 @@
 							organizationSlug={organization.slug}
 							organizationStripeConnected={organization.is_stripe_connected}
 							platformFees={platformFeeInfoFrom(organization)}
+							{feeConfig}
 							{formData}
 							onUpdate={updateFormData}
 							onBack={() => handleTabChange('details')}
