@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.22.3] - 2026-10-21
+
+### Security
+- The image now actually runs Node 22.23.4: the base image is pinned to `node:22.23.4-slim`, because the floating `node:22-slim` tag still resolved to 22.23.3 and v2.22.2 shipped without the updated root store that distrusts the compromised eMudhra intermediate CAs.
+
 ## [2.22.2] - 2026-10-21
 
 ### Security
