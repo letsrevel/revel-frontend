@@ -3,7 +3,9 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 1: Builder - Install dependencies and build the application
 # ─────────────────────────────────────────────────────────────────────────────
-FROM node:22-slim AS builder
+# Pinned to 22.23.4 (root store NSS 3.131.1, eMudhra distrust): 22-slim still pointed at
+# 22.23.3 on 2026-10-21. Go back to node:22-slim once it has moved past 22.23.4.
+FROM node:22.23.4-slim AS builder
 
 # Enable corepack for pnpm
 RUN corepack enable
@@ -41,7 +43,7 @@ RUN pnpm build
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 2: Runtime - Minimal production image
 # ─────────────────────────────────────────────────────────────────────────────
-FROM node:22-slim AS runtime
+FROM node:22.23.4-slim AS runtime
 
 # Create non-root user
 RUN useradd --create-home --system --shell /bin/bash appuser
