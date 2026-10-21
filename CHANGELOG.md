@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.22.2] - 2026-10-21
+
+### Security
+- The image is rebuilt on Node 22.23.4, whose updated root store distrusts the eMudhra intermediate CAs compromised in October 2026, for the frontend server's outbound HTTPS calls.
+
 ## [2.22.1] - 2026-10-16
 
 ### Fixed
