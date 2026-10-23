@@ -418,9 +418,6 @@ frontend was started without `PLATFORM_HOSTS`. Judge the skip count, not just th
 preview server reused through `reuseExistingServer` must itself have been started with the variables
 above. See [`tests/e2e/README.md`](../tests/e2e/README.md) for the full environment contract.
 
-> The `j30-custom-domains` specs and their README row live on the
-> `feature/1056-tenant-e2e` branch and may not be on yours yet.
-
 ## Known limits and follow-ups
 
 - **No per-tenant SSO.** The OIDC callback is pinned to the platform host, so SSO buttons are hidden
