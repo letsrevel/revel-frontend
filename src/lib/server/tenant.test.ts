@@ -147,6 +147,22 @@ describe('resolveTenant cache', () => {
 		expect(fetch).toHaveBeenCalledTimes(502);
 	});
 
+	it('a flood of unknown hosts never evicts a cached tenant', async () => {
+		const fetch = vi.fn(async (req: Request) =>
+			new URL(req.url).pathname.endsWith('/acme.example.com')
+				? json(org())
+				: new Response('', { status: 404 })
+		);
+		await resolveTenant('acme.example.com', fetch as unknown as typeof globalThis.fetch);
+		for (let i = 0; i < 600; i++)
+			await resolveTenant(`junk${i}.example.com`, fetch as unknown as typeof globalThis.fetch);
+		const calls = fetch.mock.calls.length;
+		expect(
+			(await resolveTenant('acme.example.com', fetch as unknown as typeof globalThis.fetch)).status
+		).toBe('found');
+		expect(fetch.mock.calls.length).toBe(calls); // served from the positive cache
+	});
+
 	it('rejects implausible hostnames without calling upstream', async () => {
 		const fetch = vi.fn();
 		expect((await resolveTenant('a/b', fetch)).status).toBe('unknown');
