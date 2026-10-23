@@ -56,6 +56,7 @@ export const load: PageServerLoad = async ({ params, url, fetch }) => {
 	return {
 		orgSlug: org_slug,
 		organization,
+		brandTheme: organization?.brand_theme ?? null,
 		events,
 		prices: await loadEmbedPrices(fetch, events)
 	};

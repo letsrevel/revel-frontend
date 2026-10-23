@@ -51,11 +51,16 @@ const resolved = resolveTailwindConfig(tailwindConfig).theme as unknown as {
 // the jsdom environment, so a path relative to cwd is the portable choice.)
 const appCss = readFileSync(resolve(process.cwd(), 'src/app.css'), 'utf8');
 
-/** Slice out a rule body by brace-matching from its selector. */
+/**
+ * Slice out a rule body by brace-matching from its selector. The selector must
+ * start a line and be followed by `{` or `,` (a selector list), so a mention of
+ * `.dark` inside a comment can't be mistaken for the rule.
+ */
 function ruleBody(selector: string): string {
-	const start = appCss.indexOf(selector);
-	if (start === -1) throw new Error(`no \`${selector}\` rule in app.css`);
-	const open = appCss.indexOf('{', start);
+	const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	const match = new RegExp(`^\\s*${escaped}\\s*[{,]`, 'm').exec(appCss);
+	if (!match) throw new Error(`no \`${selector}\` rule in app.css`);
+	const open = appCss.indexOf('{', match.index);
 	let depth = 0;
 	for (let i = open; i < appCss.length; i++) {
 		if (appCss[i] === '{') depth++;
