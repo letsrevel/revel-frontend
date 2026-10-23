@@ -106,9 +106,14 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 					? input.series.organization
 					: null
 	);
+	// On its own custom domain the org page lives at `/`; `/org/{slug}` is an alias.
+	const ownRoot = input.kind === 'org' && !!input.tenant && input.tenant.id === input.org.id;
+	const path = ownRoot ? '/' : input.url.pathname;
 	const canonical = domainOrigin
-		? `${domainOrigin}${input.url.pathname}${input.url.search}`
-		: input.url.toString();
+		? `${domainOrigin}${path}${input.url.search}`
+		: ownRoot
+			? `${origin}/`
+			: input.url.toString();
 	const alts = alternateLocales(input.lang);
 	const ogLocale = OG_LOCALE[input.lang];
 	const tenant = input.tenant ?? null;

@@ -117,6 +117,13 @@ describe('buildSeo on a tenant host', () => {
 		noRevel(cfg);
 	});
 
+	it('org page: /org/{slug} on its own domain canonicalizes to the root', () => {
+		const cfg = buildSeo({ kind: 'org', url: tenantUrl('/org/acme'), lang: 'en', org, tenant });
+		expect(cfg.canonical).toBe('https://events.acme.test/');
+		const root = buildSeo({ kind: 'org', url: tenantUrl('/'), lang: 'en', org, tenant });
+		expect(root.canonical).toBe('https://events.acme.test/');
+	});
+
 	it('org page: no breadcrumb trail (it is the root), only the Organization block', () => {
 		const cfg = buildSeo({ kind: 'org', url: tenantUrl('/'), lang: 'en', org, tenant });
 		expect(cfg.jsonLd.map((j) => (j as Record<string, unknown>)['@type'])).toEqual([
