@@ -13,6 +13,11 @@ import { env } from '$env/dynamic/private';
  * entry in {@link SEGMENT_RULES}; a unit test walks the real route list and
  * fails when a new segment has no decision. An unknown segment falls through
  * to "redirect home", never to "allow".
+ *
+ * Hook order (hooks.server.ts): `handleTenant` (resolves `locals.tenant`) runs
+ * first, then `handleTenantRouting` (this module) before anything else touches
+ * the request. On platform hosts it only post-processes the response (see
+ * {@link capCanonicalRedirectCache}).
  */
 
 export type TenantRouteDecision =
@@ -21,12 +26,23 @@ export type TenantRouteDecision =
 /**
  * - `open`      any subpath is allowed on a tenant host
  * - `org`       `/org/{tenant}/…` (never `/admin`); legacy `/org/{uuid}/membership`
- * - `events`    `/events/{tenant}/…`, `/events/confirm-action`, legacy UUID routes
+ * - `events`    bare `/events` (the tenant's own list; its loader forces the
+ *               organization filter), `/events/{tenant}/…`, `/events/confirm-action`,
+ *               and the exact legacy UUID route shapes (see {@link tenantRouteDecision})
+ * - `account`   open, except the platform/OAuth settings pages in
+ *               {@link PLATFORM_ACCOUNT_PAGES}, which go to the platform origin
  * - `embed`     `/embed/{tenant}…`
  * - `platform`  platform-only: 302 to the same path on the platform origin
  * - `home`      not part of a tenant site: 302 to `/`
  */
-export type SegmentRule = 'open' | 'org' | 'events' | 'embed' | 'platform' | 'home';
+export type SegmentRule = 'open' | 'org' | 'events' | 'account' | 'embed' | 'platform' | 'home';
+
+/** `/account/*` pages that are platform/OAuth settings, not part of a tenant site. */
+export const PLATFORM_ACCOUNT_PAGES: readonly string[] = [
+	'referral',
+	'developer-apps',
+	'connected-apps'
+];
 
 const LOCALIZED_LANDING_PREFIXES = ['de', 'es', 'fr', 'it', 'pt'] as const;
 
@@ -52,7 +68,7 @@ export const SEGMENT_RULES: Readonly<Record<string, SegmentRule>> = {
 	register: 'open',
 	'password-reset': 'open',
 	verify: 'open',
-	account: 'open',
+	account: 'account',
 	dashboard: 'open',
 	legal: 'open',
 	unsubscribe: 'open',
@@ -157,17 +173,35 @@ export function tenantRouteDecision(input: TenantRouteInput): TenantRouteDecisio
 			return platformRedirect(input);
 		case 'embed':
 			return second === tenant ? ALLOW : HOME;
+		case 'account':
+			return second !== undefined && PLATFORM_ACCOUNT_PAGES.includes(second)
+				? platformRedirect(input)
+				: ALLOW;
 		case 'org':
 			if (third === 'admin') return platformRedirect(input);
 			if (second === tenant) return ALLOW;
-			// Legacy /org/{uuid}/membership redirects to the slug URL, which is re-checked.
-			if (second !== undefined && UUID_RE.test(second) && third === 'membership') return ALLOW;
+			// Legacy /org/{uuid}/membership (exactly) redirects to the slug URL, which is re-checked.
+			if (
+				segments.length === 3 &&
+				second !== undefined &&
+				UUID_RE.test(second) &&
+				third === 'membership'
+			)
+				return ALLOW;
 			return HOME;
 		case 'events':
+			// Bare /events is the tenant's own event list: its loader forces the organization filter.
+			if (second === undefined) return ALLOW;
 			if (second === 'confirm-action' && third === undefined) return ALLOW;
 			if (second === tenant) return ALLOW;
-			// Legacy UUID routes redirect to slug URLs, which are re-checked.
-			if (second !== undefined && UUID_RE.test(second)) return ALLOW;
+			// Legacy UUID routes redirect to slug URLs, which are re-checked. Only the
+			// exact shapes of the real routes: /events/{uuid} (events/[id]),
+			// /events/{uuid}/{uuid} and /events/{uuid}/series/{uuid}.
+			if (UUID_RE.test(second)) {
+				if (segments.length === 2) return ALLOW;
+				if (segments.length === 3 && UUID_RE.test(third)) return ALLOW;
+				if (segments.length === 4 && third === 'series' && UUID_RE.test(segments[3])) return ALLOW;
+			}
 			return HOME;
 		default:
 			return HOME;
@@ -192,10 +226,49 @@ export function platformOrigin(): string | null {
 	return null;
 }
 
-/** Applies {@link tenantRouteDecision} on tenant hosts. Must run right after `handleTenant`. */
+/** How long browsers may cache a canonical redirect to a custom domain (seconds). */
+const CANONICAL_REDIRECT_MAX_AGE = 3600;
+
+/**
+ * The canonical org redirect is a 301 (product decision), which browsers cache
+ * indefinitely: an org that drops or changes its custom domain would stay
+ * redirected. When a 301 points at another origin and the response sets no
+ * cache policy of its own, cap the cache at an hour. SvelteKit's redirect
+ * responses have mutable headers; if a response ever does not (e.g. one built
+ * by `Response.redirect()`), a copy is returned instead.
+ */
+export function capCanonicalRedirectCache(response: Response, requestUrl: URL): Response {
+	if (response.status !== 301 || response.headers.has('cache-control')) return response;
+	const location = response.headers.get('location');
+	if (!location || !/^https?:\/\//i.test(location)) return response;
+	try {
+		if (new URL(location).origin === requestUrl.origin) return response;
+	} catch {
+		return response;
+	}
+	const value = `public, max-age=${CANONICAL_REDIRECT_MAX_AGE}`;
+	try {
+		response.headers.set('cache-control', value);
+		return response;
+	} catch {
+		const headers = new Headers(response.headers);
+		headers.set('cache-control', value);
+		return new Response(response.body, {
+			status: response.status,
+			statusText: response.statusText,
+			headers
+		});
+	}
+}
+
+/**
+ * Applies {@link tenantRouteDecision} on tenant hosts. Must run right after
+ * `handleTenant`. On platform hosts it passes requests through, capping the
+ * cache of canonical redirects to custom domains.
+ */
 export const handleTenantRouting: Handle = async ({ event, resolve }) => {
 	const tenant = event.locals.tenant;
-	if (!tenant) return resolve(event);
+	if (!tenant) return capCanonicalRedirectCache(await resolve(event), event.url);
 
 	const decision = tenantRouteDecision({
 		pathname: event.url.pathname,

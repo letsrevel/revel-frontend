@@ -13,7 +13,7 @@ import {
 	plainPageSeo
 } from './plain-page';
 import { oembedDiscoveryUrl } from '$lib/embed/oembed';
-import { orgOrigin } from '$lib/utils/org-links';
+import { orgOrigin, type LinkContext } from '$lib/utils/org-links';
 import { siteName, tenantIconUrl, withSiteName, type SeoTenant } from './tenant';
 import { truncate, stripMarkup } from './text';
 import { getEventImage, getOrgImage, getSeriesImage } from './images';
@@ -74,7 +74,14 @@ type BuildSeoVariant =
  * (`twitter:site`, `og:logo`, the Revel root breadcrumb) and re-roots the
  * breadcrumbs at the org home (#1057).
  */
-export type BuildSeoInput = BuildSeoVariant & { tenant?: SeoTenant | null };
+export type BuildSeoInput = BuildSeoVariant & {
+	tenant?: SeoTenant | null;
+	/**
+	 * Tenant-mode link context (`serverLinkContext(locals)`). Without it org-scoped
+	 * pages canonicalise on the platform URL, never on a custom domain.
+	 */
+	linkContext?: LinkContext;
+};
 
 function alternateLocales(lang: Lang): string[] {
 	return LANGS.filter((l) => l !== lang).map((l) => OG_LOCALE[l]);
@@ -104,7 +111,8 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 				? input.org
 				: input.kind === 'series'
 					? input.series.organization
-					: null
+					: null,
+		input.linkContext
 	);
 	// On its own custom domain the org page lives at `/`; `/org/{slug}` is an alias.
 	const ownRoot = input.kind === 'org' && !!input.tenant && input.tenant.id === input.org.id;
@@ -124,7 +132,10 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 	const site = siteName(tenant);
 	/** Breadcrumb root: the org home on a tenant host, Revel's home otherwise. */
 	const rootCrumb = tenant
-		? { name: tenant.name, url: `${domainOrigin ?? orgOrigin(tenant) ?? origin}/` }
+		? {
+				name: tenant.name,
+				url: `${domainOrigin ?? orgOrigin(tenant, input.linkContext) ?? origin}/`
+			}
 		: { name: 'Home', url: origin };
 
 	switch (input.kind) {

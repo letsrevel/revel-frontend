@@ -2,8 +2,21 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const getById = vi.hoisted(() => vi.fn());
 vi.mock('$lib/api', () => ({ organizationGetOrganizationCustomDomain: getById }));
+const mockEnv = vi.hoisted(() => ({ env: {} as Record<string, string | undefined> }));
+vi.mock('$env/dynamic/private', () => mockEnv);
 
-import { canonicalTenantRedirect, canonicalTenantUrl, tenantReturnUrl } from './tenant-canonical';
+import {
+	canonicalTenantRedirect,
+	canonicalTenantUrl,
+	serverLinkContext,
+	tenantReturnUrl
+} from './tenant-canonical';
+
+// Tenant mode is ON only when PLATFORM_HOSTS is set (#1056).
+beforeEach(() => {
+	mockEnv.env.PLATFORM_HOSTS = 'app.example.com';
+	mockEnv.env.PLATFORM_ORIGIN = undefined;
+});
 
 const locals = (tenant: unknown = null) => ({ tenant }) as unknown as App.Locals;
 const url = (s: string) => new URL(s);
@@ -36,6 +49,34 @@ describe('canonicalTenantUrl', () => {
 		).toBeNull();
 	});
 
+	it('is null while tenant mode is off (no PLATFORM_HOSTS)', () => {
+		mockEnv.env.PLATFORM_HOSTS = undefined;
+		expect(
+			canonicalTenantUrl(
+				locals(),
+				{ custom_domain: 'events.example.org' },
+				url('https://app.example.com/org/acme')
+			)
+		).toBeNull();
+	});
+
+	it('is null when the custom domain equals the request host (misconfiguration guard)', () => {
+		expect(
+			canonicalTenantUrl(
+				locals(),
+				{ custom_domain: 'app.example.com' },
+				url('https://app.example.com/org/acme')
+			)
+		).toBeNull();
+		expect(
+			canonicalTenantUrl(
+				locals(),
+				{ custom_domain: 'APP.example.com' },
+				url('https://app.example.com/org/acme?x=1')
+			)
+		).toBeNull();
+	});
+
 	it('refuses a domain that is not a bare hostname', () => {
 		const u = url('https://app.example.com/org/acme');
 		for (const bad of ['evil.com/path', 'a@evil.com', 'evil.com:8080', '//evil.com', 'a b.com']) {
@@ -59,6 +100,17 @@ describe('canonicalTenantRedirect', () => {
 				location: 'https://events.example.org/org/acme?ot=t'
 			});
 		}
+	});
+
+	it('does not redirect while tenant mode is off', () => {
+		mockEnv.env.PLATFORM_HOSTS = undefined;
+		expect(() =>
+			canonicalTenantRedirect(
+				locals(),
+				{ custom_domain: 'events.example.org' },
+				url('https://app.example.com/org/acme')
+			)
+		).not.toThrow();
 	});
 
 	it('returns normally when there is nothing to do', () => {
@@ -114,8 +166,39 @@ describe('tenantReturnUrl (Stripe return hop)', () => {
 		expect(await tenantReturnUrl(locals(), ORG, ret, f)).toBeNull();
 	});
 
+	it('never hops (or looks up) while tenant mode is off', async () => {
+		mockEnv.env.PLATFORM_HOSTS = undefined;
+		getById.mockResolvedValue({ data: { custom_domain: 'events.example.org' } });
+		expect(await tenantReturnUrl(locals(), ORG, ret, f)).toBeNull();
+		expect(getById).not.toHaveBeenCalled();
+	});
+
+	it('never hops to the request host itself', async () => {
+		getById.mockResolvedValue({ data: { custom_domain: 'app.example.com' } });
+		expect(await tenantReturnUrl(locals(), ORG, ret, f)).toBeNull();
+	});
+
 	it('never hops (or even looks up) on a tenant host, so the tenant route resolves itself', async () => {
 		expect(await tenantReturnUrl(locals({ slug: 'acme' }), ORG, ret, f)).toBeNull();
 		expect(getById).not.toHaveBeenCalled();
+	});
+});
+
+describe('serverLinkContext', () => {
+	it('mirrors the client page data: mode switch, tenant and platform origin', () => {
+		expect(serverLinkContext(locals())).toEqual({
+			tenant: null,
+			customDomains: { enabled: true, platformOrigin: 'https://app.example.com' }
+		});
+		const tenant = { slug: 'acme' };
+		expect(serverLinkContext(locals(tenant)).tenant).toBe(tenant);
+	});
+
+	it('is disabled without PLATFORM_HOSTS', () => {
+		mockEnv.env.PLATFORM_HOSTS = undefined;
+		expect(serverLinkContext(locals())).toEqual({
+			tenant: null,
+			customDomains: { enabled: false, platformOrigin: null }
+		});
 	});
 });

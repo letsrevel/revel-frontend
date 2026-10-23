@@ -26,15 +26,22 @@ describe('customDomainOrigin', () => {
 	it('honours an http template with a port', async () => {
 		const { customDomainOrigin, orgHref, orgOrigin } = await load('http://{hostname}:5173');
 		expect(customDomainOrigin('tenant.localhost')).toBe('http://tenant.localhost:5173');
-		expect(orgOrigin({ custom_domain: 'tenant.localhost' })).toBe('http://tenant.localhost:5173');
-		expect(orgHref({ custom_domain: 'tenant.localhost' }, '/org/x?a=1')).toBe(
+		const ctx = { tenant: null, customDomains: { enabled: true, platformOrigin: null } };
+		expect(orgOrigin({ custom_domain: 'tenant.localhost' }, ctx)).toBe(
+			'http://tenant.localhost:5173'
+		);
+		expect(orgHref({ custom_domain: 'tenant.localhost' }, '/org/x?a=1', ctx)).toBe(
 			'http://tenant.localhost:5173/org/x?a=1'
 		);
 	});
 
 	it('compares hostnames, not origins, for the already-on-domain check', async () => {
 		const { orgHref } = await load('http://{hostname}:5173');
-		expect(orgHref({ custom_domain: 'paid.localhost' }, '/org/x', 'paid.localhost')).toBe('/org/x');
+		const ctx = {
+			tenant: { custom_domain: 'paid.localhost' },
+			customDomains: { enabled: true, platformOrigin: null }
+		};
+		expect(orgHref({ custom_domain: 'paid.localhost' }, '/org/x', ctx)).toBe('/org/x');
 	});
 
 	it('returns null for malformed hostnames', async () => {

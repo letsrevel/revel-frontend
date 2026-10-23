@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { orgHref, tenantDomainFrom } from '$lib/utils/org-links';
+	import { orgHref } from '$lib/utils/org-links';
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
@@ -35,6 +35,10 @@
 	// the current URL has no utm_* (so authed/dashboard usage is unaffected);
 	// an explicit `href` prop (the embed grid's absolute tagged links) always
 	// wins untouched.
+	// With tenant mode on, `cardHref` can be ABSOLUTE: an org with a custom domain
+	// links to `https://{custom_domain}{path}`, and on a tenant host an org without
+	// one links to the platform origin (a relative link would bounce to `/`).
+	// Otherwise it is the resolve()d relative path.
 	const cardHref = $derived(
 		href ??
 			withUtmParams(
@@ -44,7 +48,7 @@
 						org_slug: series.organization.slug,
 						series_slug: series.slug
 					}),
-					tenantDomainFrom(page.data)
+					page.data
 				),
 				page.url
 			)

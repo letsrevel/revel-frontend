@@ -11,7 +11,8 @@ vi.mock('$app/state', () => ({
 	page: {
 		get url() {
 			return new URL(window.location.href);
-		}
+		},
+		data: { tenant: null, customDomains: { enabled: true, platformOrigin: null } }
 	}
 }));
 
