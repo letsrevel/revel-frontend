@@ -9,6 +9,7 @@
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { CheckCircle2, Filter, ChevronLeft, ChevronRight, Loader2 } from '@lucide/svelte';
 	import { page } from '$app/state';
+	import { tenantOrgFilter } from '$lib/utils/tenant-filter';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { createDebouncedState } from '$lib/utils';
@@ -46,6 +47,9 @@
 	// Debounce search input
 	const debouncedSearch = createDebouncedState(() => searchQuery, 300);
 
+	// On a tenant host every "my" call is scoped to the tenant org (#1056).
+	const orgFilter = $derived(tenantOrgFilter(page.data));
+
 	// Fetch RSVPs with filters
 	const rsvpsQuery = createQuery(() => ({
 		queryKey: [
@@ -53,7 +57,8 @@
 			selectedStatuses,
 			debouncedSearch.value,
 			includePast,
-			currentPage
+			currentPage,
+			orgFilter
 		] as const,
 		queryFn: async () => {
 			if (!accessToken) return { results: [], count: 0 };
@@ -61,6 +66,7 @@
 			const response = await dashboardDashboardRsvps({
 				headers: { Authorization: `Bearer ${accessToken}` },
 				query: {
+					...orgFilter,
 					status: selectedStatuses.length ? selectedStatuses : undefined,
 					search: debouncedSearch.value || undefined,
 					include_past: includePast,
