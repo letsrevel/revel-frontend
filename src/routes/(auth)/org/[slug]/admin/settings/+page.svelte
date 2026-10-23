@@ -9,6 +9,7 @@
 	import OrgImageUploader from '$lib/components/organization/OrgImageUploader.svelte';
 	import OrgTagManager from '$lib/components/organization/OrgTagManager.svelte';
 	import OrgContactEmailModal from '$lib/components/organization/OrgContactEmailModal.svelte';
+	import BrandColorsCard from '$lib/components/organization/brand/BrandColorsCard.svelte';
 	import StripeConnect from '$lib/components/organization/StripeConnect.svelte';
 	import OrgSubscriptionPolicySection from '$lib/components/organization/OrgSubscriptionPolicySection.svelte';
 	import type { CitySchema, RevenueReportCadence } from '$lib/api/generated';
@@ -260,6 +261,9 @@
 		{accessToken}
 		onRegisterSave={(fn) => (saveImageChanges = fn)}
 	/>
+
+	<!-- Brand colors: own client-side save, not part of the form action below -->
+	<BrandColorsCard organization={data.organization} />
 
 	<form
 		method="POST"

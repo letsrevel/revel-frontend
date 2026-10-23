@@ -3,6 +3,7 @@
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { afterNavigate } from '$app/navigation';
+	import { page } from '$app/state';
 	import { ModeWatcher } from 'mode-watcher';
 	import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
 	import { shouldRetry } from '$lib/api/query-retry';
@@ -13,6 +14,7 @@
 	import { hasAnonymousHolds, releaseAnonymousHolds } from '$lib/utils/seat-holds';
 	import DemoBanner from '$lib/components/common/DemoBanner.svelte';
 	import ImpersonationBanner from '$lib/components/common/ImpersonationBanner.svelte';
+	import OrgBrandStyle from '$lib/components/brand/OrgBrandStyle.svelte';
 	import MaintenanceBanner from '$lib/components/common/MaintenanceBanner.svelte';
 	import type { LayoutData } from './$types';
 	import * as m from '$lib/paraglide/messages.js';
@@ -278,6 +280,11 @@
 		<meta name="msvalidate.01" content={data.siteVerification.bing} />
 	{/if}
 </svelte:head>
+
+<!-- Outside the embed branch: embed documents and the app shell both get org colors.
+	On a custom domain (tenant mode, #1055) the whole site is the org's, so its theme
+	applies on every page; an org-scoped page's own theme still wins. -->
+<OrgBrandStyle theme={page.data.brandTheme ?? page.data.tenant?.brand_theme ?? null} />
 
 {#if data.embed}
 	<!--

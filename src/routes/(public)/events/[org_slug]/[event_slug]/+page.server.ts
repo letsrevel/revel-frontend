@@ -254,6 +254,7 @@ export const load: PageServerLoad = async ({
 		const returnData = {
 			seo,
 			event,
+			brandTheme: event.organization.brand_theme ?? null,
 			userStatus,
 			potluckItems,
 			userPermissions,

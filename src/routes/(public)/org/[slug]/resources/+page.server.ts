@@ -39,6 +39,7 @@ export const load: PageServerLoad = async ({ params, fetch, locals }) => {
 
 	return {
 		organization: organizationResponse.data,
+		brandTheme: organizationResponse.data?.brand_theme ?? null,
 		resources: resourcesResponse.data?.results || []
 	};
 };
