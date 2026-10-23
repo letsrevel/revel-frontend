@@ -5,6 +5,7 @@ import { getImpersonationInfo } from '$lib/utils/impersonation';
 import { getFeatures } from '$lib/server/features';
 import { DEFAULT_FEATURES } from '$lib/utils/features';
 import { isEmbedPath } from '$lib/embed/constants';
+import { platformOrigin } from '$lib/server/tenant-routing';
 
 /**
  * Root layout server load function
@@ -51,6 +52,8 @@ export const load: LayoutServerLoad = async ({ cookies, locals, fetch, url }) =>
 			},
 			features: DEFAULT_FEATURES,
 			tenant: locals.tenant ?? null,
+			// Tenant chrome links back to the platform (#1056); only needed on a tenant host.
+			platformOrigin: locals.tenant ? platformOrigin() : null,
 			siteVerification: { google: '', bing: '' }
 		};
 	}
@@ -86,6 +89,7 @@ export const load: LayoutServerLoad = async ({ cookies, locals, fetch, url }) =>
 		},
 		features,
 		tenant: locals.tenant ?? null,
+		platformOrigin: locals.tenant ? platformOrigin() : null,
 		siteVerification: {
 			google: publicEnv.PUBLIC_GOOGLE_SITE_VERIFICATION ?? '',
 			bing: publicEnv.PUBLIC_BING_SITE_VERIFICATION ?? ''

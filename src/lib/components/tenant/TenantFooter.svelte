@@ -1,14 +1,15 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import type { TenantOrganizationSchema } from '$lib/api/generated/types.gen';
-	import { PLATFORM_URL } from '$lib/config/platform';
 	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
 		tenant: TenantOrganizationSchema;
+		/** Platform origin from PLATFORM_ORIGIN / PLATFORM_HOSTS; null renders plain text. */
+		platformOrigin?: string | null;
 	}
 
-	const { tenant }: Props = $props();
+	const { tenant, platformOrigin = null }: Props = $props();
 
 	const year = new Date().getFullYear();
 	const linkClass =
@@ -22,9 +23,13 @@
 		<p>{m['tenantChrome.copyright']({ year, name: tenant.name })}</p>
 		<div class="flex flex-wrap items-center gap-x-2">
 			<span>{m['tenantChrome.poweredBy']()}</span>
-			<!-- eslint-disable svelte/no-navigation-without-resolve -- external link to the platform site -->
-			<a href={PLATFORM_URL} class="font-semibold {linkClass}">Revel</a>
-			<!-- eslint-enable svelte/no-navigation-without-resolve -->
+			{#if platformOrigin}
+				<!-- eslint-disable svelte/no-navigation-without-resolve -- external link to the platform site -->
+				<a href={platformOrigin} class="font-semibold {linkClass}">Revel</a>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
+			{:else}
+				<span class="font-semibold">Revel</span>
+			{/if}
 			<span aria-hidden="true">·</span>
 			<nav aria-label={m['tenantChrome.legalNavigation']()} class="flex items-center gap-2">
 				<a href={resolve('/(public)/legal/privacy', {})} class={linkClass}>

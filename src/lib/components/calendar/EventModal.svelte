@@ -2,6 +2,7 @@
 	import { orgHref, tenantDomainFrom } from '$lib/utils/org-links';
 	import type { EventInListSchema, EventDetailSchema } from '$lib/api/generated/types.gen';
 	import { goto } from '$app/navigation';
+	import { navigateTo } from '$lib/utils/navigate-to';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
@@ -27,13 +28,19 @@
 
 	const { event, open, onClose }: Props = $props();
 
+	// SvelteKit's goto() rejects cross-origin URLs, and orgHref() returns an
+	// absolute https://{custom_domain} URL for orgs with a custom domain (#1056).
+	function openHref(href: string) {
+		/* eslint-disable-next-line svelte/no-navigation-without-resolve -- relative hrefs come from resolve() inside orgHref() */
+		if (href.startsWith('/')) goto(href);
+		else navigateTo(href);
+	}
+
 	function handleViewDetails() {
 		if (event) {
 			const slug = event.organization?.slug || '';
 
-			// orgHref() wraps resolve(); custom-domain targets are absolute (#1056).
-			/* eslint-disable svelte/no-navigation-without-resolve */
-			goto(
+			openHref(
 				orgHref(
 					event.organization,
 					resolve('/(public)/events/[org_slug]/[event_slug]', {
@@ -43,22 +50,18 @@
 					tenantDomainFrom(page.data)
 				)
 			);
-			/* eslint-enable svelte/no-navigation-without-resolve */
 		}
 	}
 
 	function handleViewOrganization() {
 		if (event?.organization) {
-			// orgHref() wraps resolve(); custom-domain targets are absolute (#1056).
-			/* eslint-disable svelte/no-navigation-without-resolve */
-			goto(
+			openHref(
 				orgHref(
 					event.organization,
 					resolve('/(public)/org/[slug]', { slug: event.organization.slug }),
 					tenantDomainFrom(page.data)
 				)
 			);
-			/* eslint-enable svelte/no-navigation-without-resolve */
 		}
 	}
 
