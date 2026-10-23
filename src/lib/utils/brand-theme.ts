@@ -94,7 +94,8 @@ function modeDeclarations(colors: BrandModeColors): string | null {
 
 /**
  * Stylesheet text overriding the brand tokens on `<html>` for both modes, or
- * null when there is nothing (valid) to apply.
+ * null when there is nothing (valid) to apply. Also re-points the mode-inert
+ * `--poster-band` ribbon (org/event/series headers) at the org's light primary.
  *
  * Scoped to the document root, not a page wrapper, on purpose: dialogs,
  * popovers, sheets and toasts portal to `<body>`, so tokens set on a wrapper
@@ -109,5 +110,9 @@ export function buildBrandThemeCss(theme: BrandThemeInput | null | undefined): s
 	const light = modeDeclarations(theme.light);
 	const dark = modeDeclarations(theme.dark);
 	if (!light || !dark) return null;
-	return `:root:not(.dark){${light}}:root.dark{${dark}}`;
+	// The org-page ribbon is mode-inert (imagery rule), so it takes the LIGHT
+	// primary in both modes: the one guaranteed >= 4.5:1 against the white
+	// sticker chip that sits on it. modeDeclarations already validated it.
+	const band = `--poster-band:${hexToHslTriplet(theme.light.primary)}`;
+	return `:root:not(.dark){${light};${band}}:root.dark{${dark};${band}}`;
 }

@@ -198,11 +198,11 @@
 		for any org without a logo, not an edge case.
 		Note: always the ORGANIZATION logo/initial, never the event's.
 	-->
-	<div class="bg-poster-purple">
+	<div class="bg-poster-band">
 		<div class="relative mx-auto max-w-[1920px] px-6 pb-6 md:px-8">
 			<a
 				href={resolve('/(public)/org/[slug]', { slug: event.organization.slug })}
-				class="group -mt-8 inline-flex -rotate-1 items-center gap-3 rounded-[1.25rem] bg-poster-white p-3 shadow-poster-lg transition-transform hover:rotate-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-purple"
+				class="group -mt-8 inline-flex -rotate-1 items-center gap-3 rounded-[1.25rem] bg-poster-white p-3 shadow-poster-lg transition-transform hover:rotate-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-band"
 			>
 				{#if event.organization.logo}
 					{@const org = event.organization}
@@ -220,7 +220,7 @@
 				{/if}
 
 				<div class="flex flex-col pr-2">
-					<span class="text-xs font-extrabold uppercase tracking-[0.12em] text-poster-purple">
+					<span class="text-xs font-extrabold uppercase tracking-[0.12em] text-poster-band">
 						{m['eventHeader.organizedBy']()}
 					</span>
 					<span class="font-extrabold text-poster-ink">

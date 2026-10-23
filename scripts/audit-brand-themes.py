@@ -174,6 +174,7 @@ TEXT_PAIRS = [  # (fg, bg, min_ratio, note)
     ("poster-white", "poster-ink", 4.5, "poster open source panel body"),
     ("poster-white", "poster-purple", 4.5, "poster close panel body"),
     ("poster-purple", "poster-white", 4.5, "sticker text on white sticker"),
+    ("poster-band", "poster-white", 4.5, "org ribbon kicker on the white sticker chip"),
     ("poster-crimson-deep", "poster-white", 4.5, "sticker text on white sticker"),
     ("poster-ink", "poster-lavender", 4.5, "identity tile: ink icon on lavender"),
     ("poster-ink", "poster-lavender", 4.5, "poster clubs panel body"),

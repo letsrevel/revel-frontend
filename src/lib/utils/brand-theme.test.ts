@@ -39,6 +39,13 @@ describe('buildBrandThemeCss', () => {
 		expect(css).toContain(':root.dark{');
 	});
 
+	it('points the mode-inert ribbon at the LIGHT primary in both modes', () => {
+		const css = buildBrandThemeCss(valid) ?? '';
+		const band = `--poster-band:${hexToHslTriplet(valid.light.primary)}`;
+		expect(css.split(band)).toHaveLength(3);
+		expect(css).not.toContain(`--poster-band:${hexToHslTriplet(valid.dark.primary)}`);
+	});
+
 	it('emits accent tokens when an accent is set', () => {
 		const css =
 			buildBrandThemeCss({

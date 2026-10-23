@@ -218,7 +218,7 @@
 		here rather than delegated to `brand/LogoChip`: LogoChip renders NOTHING
 		without a logo (it is pure ornament), and this mark is not ornament.
 	-->
-	<div class="bg-poster-purple">
+	<div class="bg-poster-band">
 		<div class="container mx-auto px-6 pb-6 md:px-8">
 			<div
 				class="-mt-8 inline-block -rotate-1 rounded-[1.25rem] bg-poster-white p-3 shadow-poster-lg"

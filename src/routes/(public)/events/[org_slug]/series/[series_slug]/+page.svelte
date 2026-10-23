@@ -104,7 +104,7 @@
 		series keeps its mark in the header block below, and this ribbon answers
 		"who is putting this on".
 	-->
-	<div class="bg-poster-purple">
+	<div class="bg-poster-band">
 		<!-- `container`, not the event header's `max-w-[1920px]`: that page's cover
 		     is capped at 1920 so its ribbon matches it, whereas this cover is
 		     edge-to-edge and the body below is a container — so the strip lines up
@@ -112,7 +112,7 @@
 		<div class="container relative mx-auto px-6 pb-6 md:px-8">
 			<a
 				href={resolve('/(public)/org/[slug]', { slug: series.organization.slug })}
-				class="group -mt-8 inline-flex -rotate-1 items-center gap-3 rounded-[1.25rem] bg-poster-white p-3 shadow-poster-lg transition-transform hover:rotate-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-purple"
+				class="group -mt-8 inline-flex -rotate-1 items-center gap-3 rounded-[1.25rem] bg-poster-white p-3 shadow-poster-lg transition-transform hover:rotate-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-band"
 			>
 				{#if orgLogoUrl}
 					<img
@@ -129,7 +129,7 @@
 				{/if}
 
 				<div class="flex flex-col pr-2">
-					<span class="text-xs font-extrabold uppercase tracking-[0.12em] text-poster-purple">
+					<span class="text-xs font-extrabold uppercase tracking-[0.12em] text-poster-band">
 						{m['eventHeader.organizedBy']()}
 					</span>
 					<span class="font-extrabold text-poster-ink">
