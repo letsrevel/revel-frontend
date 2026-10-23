@@ -64,4 +64,11 @@ describe('rewriteHeadForTenant (against the real app.html)', () => {
 		expect(out).toContain('/favicon-v2.png');
 		expect(out).toContain('/apple-touch-icon-v2.png');
 	});
+
+	it('keeps replacement patterns in the org name literal', () => {
+		const out = rewriteHeadForTenant(shell, { ...tenant, name: "Rock$'n$`Roll$&" });
+		expect(out).toContain('title="Rock$\'n$`Roll$&amp; Events Feed"');
+		// No copy of the surrounding document was spliced in.
+		expect(out.match(/<head>/g)).toHaveLength(1);
+	});
 });

@@ -43,19 +43,22 @@ export function rewriteHeadForTenant(html: string, tenant: SeoTenant): string {
 			placed = true;
 			return `<link rel="icon" href="${href}" />\n\t\t`;
 		});
-		out = out.replace(APPLE_ICON_RE, `<link rel="apple-touch-icon" href="${href}" />`);
+		out = out.replace(APPLE_ICON_RE, () => `<link rel="apple-touch-icon" href="${href}" />`);
 	}
 
+	// Function replacers throughout: a string replacement would expand `$'`,
+	// `$&` and friends inside org-controlled values (e.g. the org name).
 	out = out.replace(
 		THEME_COLOR_RE,
-		`<meta name="theme-color" content="${escapeAttr(themeColor(tenant))}" />`
+		() => `<meta name="theme-color" content="${escapeAttr(themeColor(tenant))}" />`
 	);
-	out = out.replace(MANIFEST_RE, `<link rel="manifest" href="${TENANT_MANIFEST_PATH}" />`);
+	out = out.replace(MANIFEST_RE, () => `<link rel="manifest" href="${TENANT_MANIFEST_PATH}" />`);
 	out = out.replace(
 		FEED_RE,
-		`<link rel="alternate" type="application/rss+xml" title="${escapeAttr(
-			`${siteName(tenant)} Events Feed`
-		)}" href="/feed.xml" />`
+		() =>
+			`<link rel="alternate" type="application/rss+xml" title="${escapeAttr(
+				`${siteName(tenant)} Events Feed`
+			)}" href="/feed.xml" />`
 	);
 	// /opensearch.xml is a platform-wide search description: 404 on tenant hosts.
 	// Its app.html comment stays: SvelteKit counts comments across

@@ -1,4 +1,4 @@
-import { error, isHttpError } from '@sveltejs/kit';
+import { error, isHttpError, isRedirect, redirect } from '@sveltejs/kit';
 import { serverLinkContext } from '$lib/server/tenant-canonical';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
@@ -73,6 +73,13 @@ export const load: PageServerLoad = async ({
 		}
 
 		const event = eventResponse.data;
+
+		// On a tenant host this route must not render: it would show any org's
+		// event under this domain's chrome. Hand off to the slug URL, which the
+		// tenant routing hook re-checks (another org's slug goes to `/`).
+		if (locals.tenant) {
+			redirect(303, `/events/${event.organization.slug}/${event.slug}${url.search}`);
+		}
 
 		// Compute SEO and soft-404 for past/cancelled events
 		const lang = resolveLang(request);
@@ -281,7 +288,7 @@ export const load: PageServerLoad = async ({
 		};
 	} catch (err) {
 		// Re-throw SvelteKit errors (e.g. our own throw error() calls above)
-		if (isHttpError(err)) throw err;
+		if (isHttpError(err) || isRedirect(err)) throw err;
 
 		// Handle different error types
 		if (typeof err === 'object' && err !== null && 'status' in err) {
