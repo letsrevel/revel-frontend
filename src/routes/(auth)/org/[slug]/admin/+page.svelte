@@ -17,6 +17,7 @@
 		MapPin,
 		Megaphone,
 		Plug,
+		Globe,
 		Plus,
 		Repeat,
 		ScanLine,
@@ -187,7 +188,19 @@
 							description: m['orgAdmin.dashboard.quickActions.integrations.description'](),
 							icon: Plug,
 							href: resolve('/(auth)/org/[slug]/admin/integrations', { slug: organization.slug })
-						}
+						},
+						...(organization.custom_domain_enabled
+							? [
+									{
+										title: m['orgAdmin.dashboard.quickActions.customDomain.title'](),
+										description: m['orgAdmin.dashboard.quickActions.customDomain.description'](),
+										icon: Globe,
+										href: resolve('/(auth)/org/[slug]/admin/custom-domain', {
+											slug: organization.slug
+										})
+									}
+								]
+							: [])
 					]
 				: []),
 			{
