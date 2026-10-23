@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { OrganizationRetrieveSchema } from '$lib/api/generated/types.gen';
+	import type { OrganizationInListSchema } from '$lib/api/generated/types.gen';
 	import { Building2, X } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import { organizationListOrganizations } from '$lib/api';
@@ -15,7 +15,7 @@
 
 	let searchQuery = $state('');
 	let isSearching = $state(false);
-	let searchResults = $state<OrganizationRetrieveSchema[]>([]);
+	let searchResults = $state<OrganizationInListSchema[]>([]);
 	let isDropdownOpen = $state(false);
 	let debounceTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -65,7 +65,7 @@
 		}, 300);
 	}
 
-	function handleSelectOrganization(org: OrganizationRetrieveSchema): void {
+	function handleSelectOrganization(org: OrganizationInListSchema): void {
 		onChangeOrganization({ id: org.id, name: org.name, slug: org.slug });
 		searchQuery = '';
 		searchResults = [];

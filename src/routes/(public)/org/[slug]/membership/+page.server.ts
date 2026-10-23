@@ -120,6 +120,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 		return {
 			seo,
 			organization,
+			brandTheme: organization.brand_theme ?? null,
 			tiers,
 			isMember,
 			membershipTier,

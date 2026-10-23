@@ -2,7 +2,7 @@
 	import { orgHref, tenantDomainFrom } from '$lib/utils/org-links';
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
-	import type { OrganizationRetrieveSchema } from '$lib/api/generated/types.gen';
+	import type { OrganizationInListSchema } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
 	import { getImageUrl } from '$lib/utils/url';
 	import { stripMarkdown } from '$lib/seo';
@@ -12,7 +12,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
-		organization: OrganizationRetrieveSchema;
+		organization: OrganizationInListSchema;
 		variant?: 'compact' | 'standard';
 		class?: string;
 	}
