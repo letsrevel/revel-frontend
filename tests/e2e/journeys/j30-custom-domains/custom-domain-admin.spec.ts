@@ -108,7 +108,7 @@ test.describe('J30 custom domain admin page @p1', () => {
 			const pending = page.getByTestId('state-pending');
 			await expect(pending).toBeVisible();
 			await expect(page.getByTestId('domain-hostname')).toHaveText(hostname);
-			await expect(page.getByTestId('status-badge')).toHaveText('Waiting for DNS');
+			await expect(pending.getByTestId('status-badge')).toHaveText('Waiting for DNS');
 			// Either DNS records (backend has a CNAME target) or the platform-team note.
 			await expect(
 				page.getByTestId('dns-record').first().or(page.getByTestId('pending-platform-team'))
@@ -158,7 +158,9 @@ test.describe('J30 custom domain admin page @p1', () => {
 
 			await expect(page.getByTestId('state-active')).toBeVisible();
 			await expect(page.getByTestId('domain-hostname')).toHaveText('tenant.localhost');
-			await expect(page.getByTestId('status-badge')).toHaveText('Active');
+			await expect(page.getByTestId('state-active').getByTestId('status-badge')).toHaveText(
+				'Active'
+			);
 			await expect(page.getByText(/Verified on /)).toBeVisible();
 			await expect(page.getByLabel('Domain name')).toHaveCount(0);
 			await expect(page.getByRole('button', { name: 'Connect domain' })).toHaveCount(0);

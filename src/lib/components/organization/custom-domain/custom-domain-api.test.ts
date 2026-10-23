@@ -76,6 +76,19 @@ describe('adapter error mapping', () => {
 		expect((single as CustomDomainApiError).fieldErrors).toEqual(['single']);
 	});
 
+	it('request: model-level __all__ errors land on the hostname field too', async () => {
+		vi.mocked(organizationadmincustomdomainRequestCustomDomain).mockResolvedValue(
+			result({
+				error: { errors: { __all__: ['IP addresses are not allowed; use a domain name.'] } },
+				status: 400
+			})
+		);
+		const err = await requestCustomDomain('acme', '127.0.0.1').catch((e: unknown) => e);
+		expect((err as CustomDomainApiError).fieldErrors).toEqual([
+			'IP addresses are not allowed; use a domain name.'
+		]);
+	});
+
 	it('request: 409 and 502 carry the detail, not field errors', async () => {
 		vi.mocked(organizationadmincustomdomainRequestCustomDomain).mockResolvedValue(
 			result({ error: { detail: 'In use' }, status: 409 })

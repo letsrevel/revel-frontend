@@ -45,14 +45,23 @@ function detailOf(error: unknown): string | null {
 	return null;
 }
 
-function hostnameErrorsOf(error: unknown): string[] {
-	if (!error || typeof error !== 'object' || !('errors' in error)) return [];
-	const errors = (error as { errors: unknown }).errors;
-	if (!errors || typeof errors !== 'object' || !('hostname' in errors)) return [];
-	const value = (errors as { hostname: unknown }).hostname;
+function messagesOf(value: unknown): string[] {
 	if (typeof value === 'string') return [value];
 	if (Array.isArray(value)) return value.filter((v): v is string => typeof v === 'string');
 	return [];
+}
+
+/**
+ * Field errors for the hostname input. The form has one field, so model-level
+ * (`__all__`) validation errors belong to it too; older backends raised the
+ * hostname checks there.
+ */
+function hostnameErrorsOf(error: unknown): string[] {
+	if (!error || typeof error !== 'object' || !('errors' in error)) return [];
+	const errors = (error as { errors: unknown }).errors;
+	if (!errors || typeof errors !== 'object') return [];
+	const keyed = errors as Record<string, unknown>;
+	return [...messagesOf(keyed.hostname), ...messagesOf(keyed.__all__)];
 }
 
 function toError(error: unknown, status: number | undefined): CustomDomainApiError {
