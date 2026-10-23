@@ -24,6 +24,15 @@ describe('/login/confirm-email forwards to /verify', () => {
 		expect(await loadRedirect('')).toBe('/verify');
 	});
 
+	it('forwards return_host (#1070) for /verify to validate', async () => {
+		expect(await loadRedirect('?token=abc&return_host=events.acme.org')).toBe(
+			'/verify?token=abc&return_host=events.acme.org'
+		);
+		expect(await loadRedirect('?token=abc&return_host=evil.com%2Fx')).toBe(
+			'/verify?token=abc&return_host=evil.com%2Fx'
+		);
+	});
+
 	it('forwards returnUrl once-encoded', async () => {
 		const target = '/oauth/authorize?client_id=x&resource=a&resource=b';
 		expect(await loadRedirect(`?token=abc&returnUrl=${encodeURIComponent(target)}`)).toBe(

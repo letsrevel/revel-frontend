@@ -10259,5 +10259,6 @@
 		"legalNavigation": "Informação legal",
 		"privacy": "Privacidade",
 		"terms": "Termos"
-	}
+	},
+	"tenantReturn.continueTo": "Continuar para {name}"
 }

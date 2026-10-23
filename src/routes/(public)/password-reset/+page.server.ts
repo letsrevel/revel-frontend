@@ -13,7 +13,7 @@ export const load: PageServerLoad = ({ url, request, locals }) => {
 };
 
 export const actions: Actions = {
-	resetRequest: async ({ request }) => {
+	resetRequest: async ({ request, fetch }) => {
 		const formData = await request.formData();
 		const email = formData.get('email') as string;
 
@@ -39,7 +39,9 @@ export const actions: Actions = {
 			await accountResetPasswordRequest({
 				body: {
 					email: result.data.email
-				}
+				},
+				// event.fetch so handleFetch forwards the tenant Origin (#1070)
+				fetch
 			});
 
 			// Always return success to prevent user enumeration

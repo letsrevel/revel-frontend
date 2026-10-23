@@ -6,7 +6,7 @@ import { env } from '$env/dynamic/private';
 import { i18nHandle } from '$lib/i18n';
 import { tokenRefresh } from '$lib/api/generated';
 import { API_BASE_URL } from '$lib/config/api';
-import { applyServerAcceptEncoding } from '$lib/api/encoding';
+import { prepareApiRequest } from '$lib/server/tenant-fetch';
 import { appendCspApiOrigin, relaxCspFrameAncestors } from '$lib/server/csp';
 import { ROOT_ATTRIBUTES_PLACEHOLDER, rootAttributesFor } from '$lib/server/embed';
 import { isEmbedPath } from '$lib/embed/constants';
@@ -458,8 +458,7 @@ export const handleError = handleSsrError;
  */
 export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
 	const internalApiUrl = env.INTERNAL_API_URL;
-	const isApi = request.url.startsWith(API_BASE_URL);
-	if (isApi) applyServerAcceptEncoding(request); // Node can't decode zstd
+	const isApi = prepareApiRequest(event, request);
 	if (!internalApiUrl || !isApi) {
 		return fetch(request);
 	}

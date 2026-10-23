@@ -68,7 +68,7 @@ export const actions: Actions = {
 		}
 	},
 
-	requestDeletion: async ({ cookies }) => {
+	requestDeletion: async ({ cookies, fetch }) => {
 		const accessToken = cookies.get('access_token');
 
 		if (!accessToken) {
@@ -84,7 +84,9 @@ export const actions: Actions = {
 			await accountDeleteAccountRequest({
 				headers: {
 					Authorization: `Bearer ${accessToken}`
-				}
+				},
+				// event.fetch so handleFetch forwards the tenant Origin (#1070)
+				fetch
 			});
 
 			return {

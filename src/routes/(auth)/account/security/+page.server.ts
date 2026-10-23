@@ -232,7 +232,7 @@ export const actions: Actions = {
 	 * silent globally-banned no-op — we treat that as success because the BE
 	 * deliberately doesn't distinguish, to avoid signalling ban presence).
 	 */
-	requestEmailChange: async ({ request, cookies }) => {
+	requestEmailChange: async ({ request, cookies, fetch }) => {
 		const accessToken = cookies.get('access_token');
 
 		if (!accessToken) {
@@ -262,7 +262,9 @@ export const actions: Actions = {
 				headers: {
 					Authorization: `Bearer ${accessToken}`,
 					'Accept-Language': 'en'
-				}
+				},
+				// event.fetch so handleFetch forwards the tenant Origin (#1070)
+				fetch
 			});
 
 			if (response.response?.ok) {

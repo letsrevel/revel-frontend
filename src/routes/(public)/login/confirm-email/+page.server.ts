@@ -18,8 +18,14 @@ export const load: PageServerLoad = async ({ url }) => {
 	if (token) {
 		const returnUrl = url.searchParams.get('returnUrl');
 		const returnUrlQuery = returnUrl ? `&returnUrl=${encodeURIComponent(returnUrl)}` : '';
+		// `return_host` (#1070) is forwarded untouched; /verify validates it.
+		const returnHost = url.searchParams.get('return_host');
+		const returnHostQuery = returnHost ? `&return_host=${encodeURIComponent(returnHost)}` : '';
 		// Redirect to the verify page with the token
-		throw redirect(303, `/verify?token=${encodeURIComponent(token)}${returnUrlQuery}`);
+		throw redirect(
+			303,
+			`/verify?token=${encodeURIComponent(token)}${returnUrlQuery}${returnHostQuery}`
+		);
 	}
 
 	// No token, redirect to verify page which will show error

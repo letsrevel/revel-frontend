@@ -5,6 +5,7 @@ import { getAccessTokenCookieOptions, getRefreshTokenCookieOptions } from '$lib/
 import { extractErrorMessage } from '$lib/utils/errors';
 import { claimPendingTokens, setClaimFlashCookie } from '$lib/server/token-claim';
 import { log } from '$lib/server/logger';
+import { resolveReturnHost } from '$lib/server/tenant-canonical';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
 import { safeReturnUrl } from '$lib/utils/safe-redirect';
@@ -56,6 +57,12 @@ export const load: PageServerLoad = async ({ url, request, fetch, cookies, local
 				const claimResults = await claimPendingTokens(cookies, access, fetch);
 				setClaimFlashCookie(cookies, claimResults);
 			}
+
+			// Registered on a custom domain (#1070): send them back to its login.
+			// The session cookies are host-only on the platform, so the tenant
+			// can't be "authenticated" yet. Token-free, query-free target.
+			const returnOrigin = await resolveReturnHost(url.searchParams.get('return_host'), fetch);
+			if (returnOrigin) throw redirect(303, `${returnOrigin}/login`);
 
 			// Back to where the user started when the verification link carries a
 			// returnUrl (registration with `?returnUrl=`, BE #1023); the profile
