@@ -11,11 +11,14 @@ vi.mock('$lib/api/generated/sdk.gen', async (importOriginal) => ({
 
 // `$app/stores`'s real `page` reflects nothing outside a SvelteKit navigation,
 // so a minimal store-shaped stand-in serves the URL each test sets.
-const pageState = vi.hoisted(() => ({ url: new URL('http://localhost/register/check-email') }));
+const pageState = vi.hoisted(() => ({
+	url: new URL('http://localhost/register/check-email'),
+	data: {} as { tenant?: { name: string } | null }
+}));
 vi.mock('$app/stores', () => ({
 	page: {
-		subscribe(fn: (v: { url: URL }) => void) {
-			fn({ url: pageState.url });
+		subscribe(fn: (v: { url: URL; data: typeof pageState.data }) => void) {
+			fn({ url: pageState.url, data: pageState.data });
 			return () => {
 				// no-op: the URL never changes after render
 			};
@@ -60,5 +63,22 @@ describe('check-email resend keeps the returnUrl (#978)', () => {
 		);
 		expect(body).toEqual({ email: 'a@example.com' });
 		expect(body).not.toHaveProperty('return_url');
+	});
+});
+
+describe('check-email page title names the site (#1059)', () => {
+	it('uses the org name on a tenant host', () => {
+		pageState.url = new URL('http://localhost/register/check-email?email=a%40example.com');
+		pageState.data = { tenant: { name: 'Acme Club' } };
+		render(Page);
+		expect(document.title).toBe('Check Your Email - Acme Club');
+		expect(document.title).not.toContain('{brand}');
+	});
+
+	it('says Revel on the platform host', () => {
+		pageState.url = new URL('http://localhost/register/check-email?email=a%40example.com');
+		pageState.data = { tenant: null };
+		render(Page);
+		expect(document.title).toBe('Check Your Email - Revel');
 	});
 });

@@ -2,6 +2,7 @@
 	import { orgHref } from '$lib/utils/org-links';
 	import { tenantOrgFilter } from '$lib/utils/tenant-filter';
 	import * as m from '$lib/paraglide/messages.js';
+	import { brandName } from '$lib/seo/tenant';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import {
@@ -202,7 +203,7 @@
 </script>
 
 <svelte:head>
-	<title>{m['dashboard.following.title']()} - Revel</title>
+	<title>{m['dashboard.following.title']()} - {brandName(page.data.tenant)}</title>
 </svelte:head>
 
 <!-- Celebration band + floating tab card (uplift) — twin of the invitations

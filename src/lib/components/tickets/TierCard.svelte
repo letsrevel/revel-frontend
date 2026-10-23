@@ -1,5 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { page } from '$app/state';
+	import { brandName } from '$lib/seo/tenant';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import type {
 		MembershipTierSchema,
@@ -514,7 +516,7 @@
 		<!-- One per priced tier: a static note, not a live region, so a page of
 		     tiers doesn't announce the same sentence once per card. -->
 		<ComplianceCallout testId="tier-reservation-note" role="note">
-			<p>{m['compliance.checkout.reservation']()}</p>
+			<p>{m['compliance.checkout.reservation']({ brand: brandName(page.data.tenant) })}</p>
 		</ComplianceCallout>
 	{/if}
 </PricingCard>

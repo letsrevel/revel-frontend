@@ -3,6 +3,7 @@
 	import { setLocale } from '$lib/paraglide/runtime.js';
 	import { enhance, applyAction } from '$app/forms';
 	import { page } from '$app/stores';
+	import { brandName } from '$lib/seo/tenant';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import type { PageData, ActionData } from './$types';
@@ -180,7 +181,7 @@
 </script>
 
 <svelte:head>
-	<title>{m['profilePage.pageTitle']()}</title>
+	<title>{m['profilePage.pageTitle']({ brand: brandName($page.data.tenant) })}</title>
 	<meta name="description" content={m['profilePage.pageDescription']()} />
 </svelte:head>
 

@@ -2,6 +2,7 @@
 	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
+	import { brandName } from '$lib/seo/tenant';
 	import { Mail, Loader2, AlertTriangle } from '@lucide/svelte';
 	import { accountResendVerificationEmail } from '$lib/api/generated/sdk.gen';
 	import AuthBandLayout from '$lib/components/auth/AuthBandLayout.svelte';
@@ -65,7 +66,7 @@
 </script>
 
 <svelte:head>
-	<title>{m['checkEmailPage.title']()}</title>
+	<title>{m['checkEmailPage.title']({ brand: brandName($page.data.tenant) })}</title>
 	<meta name="description" content="Verify your email to complete registration" />
 </svelte:head>
 

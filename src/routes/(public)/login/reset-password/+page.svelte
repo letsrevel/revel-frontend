@@ -36,7 +36,7 @@
 
 <svelte:head>
 	<title>{withSiteName('Set New Password', appPage.data.tenant, ' - ')}</title>
-	<meta name="description" content="Set a new password for your Revel account" />
+	<meta name="description" content={m['resetPasswordPage.metaDescription']()} />
 </svelte:head>
 
 <!-- Colour-block band + floating card (uplift). Shell only. -->

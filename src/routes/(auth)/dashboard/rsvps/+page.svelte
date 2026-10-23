@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { brandName } from '$lib/seo/tenant';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { dashboardDashboardRsvps } from '$lib/api/generated/sdk.gen';
@@ -124,7 +125,7 @@
 </script>
 
 <svelte:head>
-	<title>{m['dashboard.rsvps.title']()} - Revel</title>
+	<title>{m['dashboard.rsvps.title']()} - {brandName(page.data.tenant)}</title>
 	<meta name="description" content={m['dashboard.rsvps.description']()} />
 </svelte:head>
 

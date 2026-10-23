@@ -62,3 +62,13 @@ export function tenantShareImage(tenant?: SeoTenant | null): string | undefined 
 		absolute(tenant?.cover_art_social_url) ?? absolute(tenant?.cover_art) ?? absolute(tenant?.logo)
 	);
 }
+
+/**
+ * The `{brand}` value for attendee-path i18n strings (#1059): the org name on a
+ * tenant host, "Revel" elsewhere. Same choice as `siteName`, named for what the
+ * message parameter means. Strings about the Revel *account*, privacy or legal
+ * entity deliberately do not take it and keep a literal "Revel".
+ */
+export function brandName(tenant?: SeoTenant | null): string {
+	return siteName(tenant);
+}

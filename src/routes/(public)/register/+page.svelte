@@ -15,6 +15,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { SeoHead } from '$lib/seo';
 	import { withReturnUrl } from '$lib/utils/safe-redirect';
+	import { brandName } from '$lib/seo/tenant';
 
 	interface Props {
 		data: PageData;
@@ -22,6 +23,7 @@
 	}
 
 	const { data, form }: Props = $props();
+	const brand = $derived(brandName(page.data.tenant));
 
 	/*
 	 * Referral-program invite (FE #938): `?referral_invite=<id>` resolved
@@ -221,7 +223,7 @@
 					{m['register.demoNudgeTitle']()}
 				</h2>
 				<p id="demo-nudge-body" class="text-sm text-muted-foreground">
-					{m['register.demoNudgeBody']()}
+					{m['register.demoNudgeBody']({ brand })}
 				</p>
 			</div>
 			<div class="space-y-3">
@@ -253,7 +255,7 @@
 <AuthBandLayout
 	kicker={m['register.kicker']()}
 	title={m['register.createAccount']()}
-	subtitle={m['register.joinRevel']()}
+	subtitle={m['register.joinRevel']({ brand })}
 >
 	<Card>
 		<CardContent class="space-y-6 p-6 sm:p-8">
