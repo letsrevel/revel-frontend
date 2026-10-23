@@ -59,6 +59,10 @@ export default defineConfig({
 		...JOURNEY_BROWSERS.map(({ name, device }) => ({
 			name,
 			testDir: './tests/e2e/journeys',
+			// Custom-domain (tenant) journeys run on desktop Chromium only: they
+			// need `*.localhost` host resolution (Chromium resolves it natively;
+			// see tests/e2e/README.md) and assert desktop header chrome.
+			testIgnore: name === 'mobile-chrome' ? ['**/j30-custom-domains/**'] : undefined,
 			use: { ...device }
 		})),
 		...REGRESSION_BROWSERS.map(({ name, device }) => ({
@@ -77,7 +81,13 @@ export default defineConfig({
 		timeout: 300_000,
 		reuseExistingServer: !process.env.CI,
 		env: {
-			PUBLIC_API_URL: process.env.PUBLIC_API_URL ?? 'http://localhost:8000'
+			PUBLIC_API_URL: process.env.PUBLIC_API_URL ?? 'http://localhost:8000',
+			// Tenant mode (j30-custom-domains): any host outside this list is a
+			// tenant candidate resolved via /api/organizations/by-domain. `localhost`
+			// is always a platform host, so every other spec (all on localhost:5173)
+			// behaves exactly as without tenant mode.
+			PLATFORM_HOSTS: process.env.PLATFORM_HOSTS ?? 'localhost',
+			PLATFORM_ORIGIN: process.env.PLATFORM_ORIGIN ?? 'http://localhost:5173'
 		}
 	}
 });

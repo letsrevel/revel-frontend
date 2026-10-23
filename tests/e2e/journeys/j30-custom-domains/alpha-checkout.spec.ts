@@ -1,0 +1,107 @@
+import type { Browser } from '@playwright/test';
+import { test, expect } from '../../support/fixtures';
+import { createTicketedEvent, createTicketTier, createVerifiedUser } from '../../support/factories';
+import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
+import {
+	completeStripeCheckout,
+	expectWebhookEffect,
+	requireStripeWebhooks
+} from '../../support/stripe';
+import {
+	ALPHA_HOST,
+	ALPHA_ORIGIN,
+	tenantPage,
+	tenantUnavailableReason
+} from '../../support/tenant';
+
+// Custom domains (#1056) — paid checkout on `alpha.localhost`, the Stripe-connected
+// Org Alpha served as a tenant. Mirrors j06 stripe-online: stepper → Buy → sheet →
+// Pay Now → hosted Stripe Checkout. Reaching checkout.stripe.com needs the connected
+// account (CONNECTED_TEST_STRIPE_ID at bootstrap, tests/e2e/README.md); the
+// payment-and-return test additionally needs the `stripe listen` forwarder and,
+// like every Stripe spec, FAILS (never skips) without it.
+
+test.describe('J30 paid checkout on a tenant host @p1', () => {
+	// eslint-disable-next-line no-empty-pattern
+	test.beforeEach(async ({}, testInfo) => {
+		const reason = await tenantUnavailableReason(ALPHA_HOST, { needsTenantMode: true });
+		testInfo.skip(reason !== null, reason ?? '');
+	});
+
+	/** Arrange a paid Org Alpha event + buyer, then drive the UI on alpha.localhost to Stripe. */
+	async function startCheckoutOnAlphaHost(browser: Browser) {
+		const [event, buyer] = await Promise.all([
+			createTicketedEvent({ freeTier: false }),
+			createVerifiedUser('AlphaBuyer')
+		]);
+		await createTicketTier(event.id, { name: 'Online Entry' });
+
+		const page = await tenantPage(browser, ALPHA_ORIGIN, buyer);
+		await gotoHydrated(page, event.path);
+		await waitForClientAuth(page);
+		expect(new URL(page.url()).host).toBe(new URL(ALPHA_ORIGIN).host);
+
+		const stepper = page.getByRole('group', { name: 'Quantity for Online Entry' });
+		await expect(stepper).toBeVisible({ timeout: 15_000 });
+		const summaryBar = page.getByTestId('cart-summary-bar');
+		const sheet = page.getByRole('dialog', { name: 'Checkout' });
+		const payNow = sheet.getByRole('button', { name: 'Pay Now', exact: true });
+		// Same idempotent loop as j06 stripe-online: clicks during rerenders are
+		// occasionally dropped, so retry from whatever state the UI is in.
+		await expect(async () => {
+			if (page.url().includes('checkout.stripe.com')) return;
+			if (!(await sheet.isVisible())) {
+				if ((await stepper.locator('span[aria-live="polite"]').textContent()) === '0') {
+					await stepper.getByRole('button', { name: 'Add one Online Entry' }).click();
+				}
+				await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+				await expect(sheet).toBeVisible({ timeout: 8_000 });
+			}
+			await sheet.getByLabel('Name for ticket 1').fill('E2E Tenant Buyer');
+			await payNow.click();
+			await page.waitForURL(/checkout\.stripe\.com/, { timeout: 15_000 });
+		}).toPass({ timeout: 90_000 });
+
+		return { page, event };
+	}
+
+	test('buying a paid ticket on the custom domain reaches Stripe Checkout', async ({ browser }) => {
+		test.setTimeout(180_000);
+		requireStripeWebhooks();
+
+		const { page } = await startCheckoutOnAlphaHost(browser);
+		await expect(page).toHaveURL(/^https:\/\/checkout\.stripe\.com\//);
+
+		await page.context().close();
+	});
+
+	// Stripe success/cancel URLs are built from the platform's base URL until
+	// backend #1153 makes them tenant-aware, so today the buyer lands back on the
+	// platform host (which then canonical-redirects to https://alpha.localhost).
+	// Un-fixme once #1153 ships: the return must be alpha.localhost:5173, not
+	// localhost:5173, and the ticket must activate.
+	test.fixme('paying returns the buyer to the tenant host (backend #1153)', async ({ browser }) => {
+		test.setTimeout(240_000);
+		requireStripeWebhooks();
+
+		const { page, event } = await startCheckoutOnAlphaHost(browser);
+		await completeStripeCheckout(page);
+
+		await expect(page).toHaveURL(new RegExp(`^${ALPHA_ORIGIN}/`));
+		const activeCard = page
+			.locator('article, li, div')
+			.filter({ hasText: event.name })
+			.filter({ hasText: /Active/i })
+			.first();
+		await expectWebhookEffect(
+			'the ticket to flip Active on /dashboard/tickets (tenant host)',
+			async () => {
+				await gotoHydrated(page, '/dashboard/tickets');
+				await expect(activeCard).toBeVisible({ timeout: 5_000 });
+			},
+			{ timeout: 90_000 }
+		);
+
+		await page.context().close();
+	});
+});
