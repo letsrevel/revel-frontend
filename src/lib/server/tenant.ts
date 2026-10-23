@@ -1,6 +1,7 @@
 import type { Handle } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
-import { API_BASE_URL } from '$lib/config/api';
+import { organizationGetOrganizationByDomain } from '$lib/api/generated/sdk.gen';
+import type { TenantOrganizationSchema } from '$lib/api/generated/types.gen';
 import { log } from '$lib/server/logger';
 
 /**
@@ -15,25 +16,7 @@ import { log } from '$lib/server/logger';
  * Deploy-safe: tenant mode is OFF until `PLATFORM_HOSTS` is set.
  */
 
-// TODO(#1055): replace with generated TenantOrganizationSchema after regen
-export interface TenantOrganization {
-	id: string;
-	slug: string;
-	name: string;
-	logo_thumbnail_url: string | null;
-	logo_url: string | null;
-	cover_art_thumbnail_url: string | null;
-	cover_art_social_url: string | null;
-	description: string | null;
-	brand_primary_color: string | null;
-	brand_accent_color: string | null;
-	// TODO(#1055): generated BrandTheme type (not in this branch's client yet)
-	brand_theme: Record<string, unknown> | null;
-	custom_domain: string | null;
-	has_membership_plans: boolean;
-	has_resources: boolean;
-	accept_membership_requests: boolean;
-}
+export type TenantOrganization = TenantOrganizationSchema;
 
 export type TenantResolution =
 	| { status: 'found'; tenant: TenantOrganization }
@@ -114,24 +97,20 @@ function remember(host: string, result: TenantResolution, ttl: number): void {
 	}
 }
 
-/**
- * The ONE call to the by-domain endpoint.
- * TODO(#1055): switch to the generated SDK function after regen.
- */
+/** The ONE call to the by-domain endpoint (`fetch` is `event.fetch`, so handleFetch forwards client IP and request id). */
 async function fetchTenant(
 	host: string,
 	fetch: typeof globalThis.fetch
 ): Promise<TenantResolution> {
 	try {
-		const res = await fetch(
-			`${API_BASE_URL}/api/organizations/by-domain/${encodeURIComponent(host)}`,
-			{ headers: { accept: 'application/json' }, signal: AbortSignal.timeout(LOOKUP_TIMEOUT_MS) }
-		);
-		if (res.status === 404) return { status: 'unknown' };
-		if (!res.ok) return { status: 'unavailable' };
-		const tenant = (await res.json()) as TenantOrganization;
-		if (!tenant || typeof tenant.id !== 'string') return { status: 'unavailable' };
-		return { status: 'found', tenant };
+		const res = await organizationGetOrganizationByDomain({
+			fetch,
+			path: { hostname: host },
+			signal: AbortSignal.timeout(LOOKUP_TIMEOUT_MS)
+		});
+		if (res.response?.status === 404) return { status: 'unknown' };
+		if (res.error !== undefined || !res.data?.id) return { status: 'unavailable' };
+		return { status: 'found', tenant: res.data };
 	} catch {
 		return { status: 'unavailable' };
 	}

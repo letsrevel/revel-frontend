@@ -17,22 +17,21 @@ const org = (slug = 'acme'): TenantOrganization => ({
 	id: `id-${slug}`,
 	slug,
 	name: slug,
+	description: null,
+	logo: null,
+	cover_art: null,
 	logo_thumbnail_url: null,
-	logo_url: null,
 	cover_art_thumbnail_url: null,
 	cover_art_social_url: null,
-	description: null,
-	brand_primary_color: null,
-	brand_accent_color: null,
-	brand_theme: null,
 	custom_domain: `${slug}.example.com`,
 	has_membership_plans: false,
 	has_resources: false,
 	accept_membership_requests: false
 });
 
+// The generated client parses by content-type, so the fake must declare JSON.
 const json = (body: unknown, status = 200): Response =>
-	new Response(JSON.stringify(body), { status });
+	new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
 
 beforeEach(() => {
 	mockEnv.env.PLATFORM_HOSTS = 'letsrevel.io, App.LetsRevel.io';
@@ -83,9 +82,10 @@ describe('resolveTenant cache', () => {
 		expect(r1).toEqual({ status: 'found', tenant: org() });
 		await resolveTenant('ACME.example.com:443', fetch);
 		expect(fetch).toHaveBeenCalledTimes(1);
-		expect(fetch.mock.calls[0][0]).toBe(
-			'http://api.test/api/organizations/by-domain/acme.example.com'
-		);
+		// The generated client hands fetch a Request, not a URL string.
+		expect((fetch.mock.calls[0] as unknown[])[0]).toMatchObject({
+			url: 'http://api.test/api/organizations/by-domain/acme.example.com'
+		});
 
 		vi.advanceTimersByTime(59_000);
 		await resolveTenant('acme.example.com', fetch);
@@ -130,6 +130,8 @@ describe('resolveTenant cache', () => {
 		);
 		const a = resolveTenant('acme.example.com', fetch);
 		const b = resolveTenant('acme.example.com', fetch);
+		// The SDK reaches fetch after its own async request setup.
+		await vi.waitFor(() => expect(fetch).toHaveBeenCalled());
 		release(json(org()));
 		expect(await a).toEqual(await b);
 		expect(fetch).toHaveBeenCalledTimes(1);
