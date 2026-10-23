@@ -99,7 +99,8 @@ def parse_tokens(body):
 
 
 # The live theme: :root (light) and .dark blocks.
-for sel, mode in ((r":root", "light"), (r"\.dark", "dark")):
+# `:root, .theme-light` is one rule (forced-light preview panels, #1054).
+for sel, mode in ((r":root(?:\s*,\s*\.theme-light)?", "light"), (r"\.dark", "dark")):
     for m in re.finditer(sel + r"\s*\{([^}]+)\}", CSS):
         toks = parse_tokens(m.group(1))
         if toks:

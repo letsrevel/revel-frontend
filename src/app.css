@@ -27,7 +27,10 @@
  *     safety); never encode meaning by color alone in components.
  */
 @layer base {
-	:root {
+	/* `.theme-light` re-applies the light tokens to a subtree inside dark mode
+	   (the brand-color preview shows both modes at once, #1054). */
+	:root,
+	.theme-light {
 		--background: 268 60% 96%; /* whisper lavender paper */
 		--foreground: 173 40% 8%; /* ink */
 		--card: 0 0% 100%;
