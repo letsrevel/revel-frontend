@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Audit the brand theme tokens: WCAG contrast + colorblind confusability.
 
-Parses the live theme (:root + .dark in src/app.css) and, if present, any
+Parses the live theme (`:root, .theme-light` + .dark in src/app.css) and, if present, any
 [data-brand=...] evaluation blocks. Checks the standard shadcn token pairs
 against WCAG AA and simulates protanopia/deuteranopia/tritanopia to flag
 hue-only distinctions between semantic colors (primary / accent /
@@ -99,11 +99,18 @@ def parse_tokens(body):
 
 
 # The live theme: :root (light) and .dark blocks.
-for sel, mode in ((r":root", "light"), (r"\.dark", "dark")):
+# `:root, .theme-light` is one rule (forced-light preview panels, #1054).
+for sel, mode in ((r":root(?:\s*,\s*\.theme-light)?", "light"), (r"\.dark", "dark")):
     for m in re.finditer(sel + r"\s*\{([^}]+)\}", CSS):
         toks = parse_tokens(m.group(1))
         if toks:
             themes.setdefault(("default", mode), {}).update(toks)
+
+# Fail loudly if a selector edit stops a theme block from parsing: a silently
+# empty theme would audit nothing and still report 0 failures (#783 spirit).
+for mode in ("light", "dark"):
+    if len(themes.get(("default", mode), {})) < 10:
+        sys.exit(f"audit: the default {mode} theme block in app.css did not parse; check its selector")
 
 # Optional evaluation themes ([data-brand=...] blocks), if the file has any.
 for m in re.finditer(r"\[data-brand='(\w+)'\](\.dark)?\s*(?:body\s*)?\{([^}]+)\}", CSS):
