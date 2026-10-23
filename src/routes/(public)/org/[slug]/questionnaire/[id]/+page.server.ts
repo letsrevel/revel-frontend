@@ -1,5 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { error, redirect } from '@sveltejs/kit';
+import { canonicalTenantRedirect } from '$lib/server/tenant-canonical';
 import {
 	organizationGetOrganization,
 	memembershipquestionnaireGetMembershipQuestionnaire
@@ -7,7 +8,7 @@ import {
 import { log } from '$lib/server/logger';
 import { throwIfTransientUpstream } from '$lib/server/upstream';
 
-export const load: PageServerLoad = async ({ params, locals, fetch }) => {
+export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 	const { slug, id: questionnaireId } = params;
 
 	// Auth is optional for the org lookup — a private org is still 404 for guests,
@@ -32,6 +33,8 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 		throwIfTransientUpstream(orgResponse);
 		throw error(404, 'Organization not found');
 	}
+
+	canonicalTenantRedirect(locals, organization, url);
 
 	// The membership questionnaire endpoint is authenticated; bounce guests to login
 	// and bring them straight back here afterwards.

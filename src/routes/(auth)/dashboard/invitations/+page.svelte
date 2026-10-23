@@ -12,6 +12,7 @@
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { Mail, Send, Loader2, Filter } from '@lucide/svelte';
 	import { page } from '$app/state';
+	import { tenantOrgFilter } from '$lib/utils/tenant-filter';
 	import { goto } from '$app/navigation';
 
 	const accessToken = $derived(authStore.accessToken);
@@ -52,6 +53,9 @@
 		}, 300);
 	});
 
+	// On a tenant host every "my" call is scoped to the tenant org (#1056).
+	const orgFilter = $derived(tenantOrgFilter(page.data));
+
 	// Fetch invitations
 	// NOTE: Include !!accessToken in queryKey to ensure TanStack Query refetches when auth state changes
 	// This fixes a bug where navigating to this page client-side would show empty data
@@ -62,7 +66,8 @@
 			invitationsDebounced,
 			includePastInvitations,
 			showAcceptedInvitations,
-			currentPage
+			currentPage,
+			orgFilter
 		] as const,
 		queryFn: async () => {
 			if (!accessToken) return { results: [], count: 0 };
@@ -70,6 +75,7 @@
 			const response = await dashboardDashboardInvitations({
 				headers: { Authorization: `Bearer ${accessToken}` },
 				query: {
+					...orgFilter,
 					search: invitationsDebounced || undefined,
 					include_past: includePastInvitations,
 					exclude_accepted: !showAcceptedInvitations,
@@ -91,7 +97,8 @@
 			!!accessToken,
 			requestsDebounced,
 			requestsStatus,
-			currentPage
+			currentPage,
+			orgFilter
 		] as const,
 		queryFn: async () => {
 			if (!accessToken) return { results: [], count: 0 };
@@ -99,6 +106,7 @@
 			const response = await dashboardDashboardInvitationRequests({
 				headers: { Authorization: `Bearer ${accessToken}` },
 				query: {
+					...orgFilter,
 					search: requestsDebounced || undefined,
 					status: requestsStatus || undefined,
 					page: currentPage,

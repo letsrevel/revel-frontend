@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { orgHref } from '$lib/utils/org-links';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
@@ -37,6 +38,9 @@
 	const accessToken = $derived(authStore.accessToken);
 	const permissions = $derived(authStore.permissions);
 	const features = $derived($page.data.features);
+	// On an organization's custom domain the menu carries no org-admin or
+	// create-organization entries: those live on the platform.
+	const isTenant = $derived(!!$page.data.tenant);
 
 	// Fetch user's organizations (where they are owner or staff)
 	const organizationsQuery = createQuery(() => ({
@@ -55,13 +59,16 @@
 
 			return response.data?.results || [];
 		},
-		enabled: !!accessToken && !!user, // Only fetch if both token AND user exist
+		enabled: !!accessToken && !!user && !isTenant, // Needs token AND user; never on a tenant host (platform org admin lives elsewhere)
 		retry: false, // Don't retry this query - if it fails, user needs to re-authenticate
 		staleTime: 5 * 60 * 1000 // 5 minutes - organizations don't change frequently
 	}));
 
-	const userOrganizations = $derived(organizationsQuery.data || []);
-	const isReferrer = $derived(!!user?.referral_code);
+	const userOrganizations = $derived(isTenant ? [] : organizationsQuery.data || []);
+	const isReferrer = $derived(!isTenant && !!user?.referral_code);
+	const canCreateOrganization = $derived(
+		!isTenant && !ownsOrganization() && !!features.organization_creation
+	);
 
 	// Helper to check if user has admin permissions for an organization
 	function hasAdminPermissions(orgId: string): boolean {
@@ -241,7 +248,7 @@
 		{/if}
 
 		<!-- Organizations Section (Mobile) -->
-		{#if userOrganizations.length > 0 || (!ownsOrganization() && features.organization_creation)}
+		{#if userOrganizations.length > 0 || canCreateOrganization}
 			<div class="space-y-2 border-t pt-4">
 				{#if userOrganizations.length > 0}
 					<div
@@ -253,11 +260,13 @@
 					</div>
 					{#each userOrganizations as org (org.id)}
 						<div class="space-y-1">
+							<!-- eslint-disable svelte/no-navigation-without-resolve -- orgHref() wraps resolve(); custom-domain links are absolute (#1056) -->
 							<a
-								href={resolve('/(public)/org/[slug]', { slug: org.slug })}
+								href={orgHref(org, resolve('/(public)/org/[slug]', { slug: org.slug }), $page.data)}
 								class="flex items-center gap-3 rounded-md px-4 py-2 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
 								onclick={handleItemClick}
 							>
+								<!-- eslint-enable svelte/no-navigation-without-resolve -->
 								<Building2 class="h-5 w-5" aria-hidden="true" />
 								<span class="flex-1 truncate">{org.name}</span>
 							</a>
@@ -276,7 +285,7 @@
 				{/if}
 
 				<!-- Create Organization Link (if user doesn't own one and creation is enabled) -->
-				{#if !ownsOrganization() && features.organization_creation}
+				{#if canCreateOrganization}
 					<a
 						href={resolve('/(auth)/create-org', {})}
 						class="flex items-center gap-3 rounded-md px-4 py-3 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
@@ -382,7 +391,7 @@
 				{/if}
 
 				<!-- Organizations Section -->
-				{#if userOrganizations.length > 0 || (!ownsOrganization() && features.organization_creation)}
+				{#if userOrganizations.length > 0 || canCreateOrganization}
 					<div class="border-t">
 						<div class="p-1">
 							{#if userOrganizations.length > 0}
@@ -393,12 +402,18 @@
 								</div>
 								{#each userOrganizations as org (org.id)}
 									<div class="space-y-1">
+										<!-- eslint-disable svelte/no-navigation-without-resolve -- orgHref() wraps resolve(); custom-domain links are absolute (#1056) -->
 										<a
-											href={resolve('/(public)/org/[slug]', { slug: org.slug })}
+											href={orgHref(
+												org,
+												resolve('/(public)/org/[slug]', { slug: org.slug }),
+												$page.data
+											)}
 											class="flex items-center gap-2 rounded-sm px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
 											onclick={handleItemClick}
 											role="menuitem"
 										>
+											<!-- eslint-enable svelte/no-navigation-without-resolve -->
 											<Building2 class="h-4 w-4" aria-hidden="true" />
 											<span class="flex-1 truncate">{org.name}</span>
 										</a>
@@ -418,7 +433,7 @@
 							{/if}
 
 							<!-- Create Organization Link (if user doesn't own one and creation is enabled) -->
-							{#if !ownsOrganization() && features.organization_creation}
+							{#if canCreateOrganization}
 								<a
 									href={resolve('/(auth)/create-org', {})}
 									class="flex items-center gap-2 rounded-sm px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"

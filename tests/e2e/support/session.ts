@@ -13,15 +13,19 @@ import { revealLoginForm } from './auth-forms';
  * Prefer the persona fixtures (`asOwner`, …); use this directly when a spec
  * needs to pick the persona dynamically (e.g. a different user per project so
  * parallel desktop/mobile runs don't mutate the same seeded state).
+ *
+ * Cookies are host-only, so a session planted for `localhost` never reaches a
+ * custom-domain (tenant) host such as `tenant.localhost`: pass that host as
+ * `host` to authenticate a context for it instead (j30-custom-domains).
  */
 
 const APP_HOST = 'localhost';
 
-function authCookie(name: string, value: string) {
+function authCookie(name: string, value: string, domain: string) {
 	return {
 		name,
 		value,
-		domain: APP_HOST,
+		domain,
 		path: '/',
 		expires: Math.round(Date.now() / 1000) + 60 * 60 * 24 * 7,
 		httpOnly: true,
@@ -37,15 +41,16 @@ export interface Credentials {
 
 export async function authenticateContext(
 	context: BrowserContext,
-	who: PersonaName | Credentials
+	who: PersonaName | Credentials,
+	host: string = APP_HOST
 ): Promise<void> {
 	const persona = typeof who === 'string' ? PERSONAS[who] : who;
 	const { access, refresh } = await obtainTokenPair(persona.email, persona.password);
 	await context.addCookies([
-		authCookie('access_token', access),
-		authCookie('refresh_token', refresh),
+		authCookie('access_token', access, host),
+		authCookie('refresh_token', refresh, host),
 		// 'true' → hooks.server.ts refreshes with persistent cookie options.
-		authCookie('remember_me', 'true')
+		authCookie('remember_me', 'true', host)
 	]);
 }
 

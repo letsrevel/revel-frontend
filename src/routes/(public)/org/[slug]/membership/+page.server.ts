@@ -1,4 +1,5 @@
-import { error, isHttpError } from '@sveltejs/kit';
+import { error, isHttpError, isRedirect } from '@sveltejs/kit';
+import { canonicalTenantRedirect, serverLinkContext } from '$lib/server/tenant-canonical';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
 import {
@@ -51,6 +52,8 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 
 		const organization = orgResponse.data;
 
+		canonicalTenantRedirect(locals, organization, url);
+
 		// Non-fatal: an org with no reachable tier listing still gets a page that
 		// says so, rather than a 500 on a public URL people may have shared.
 		const tiers = await (async (): Promise<PublicMembershipTierSchema[]> => {
@@ -100,7 +103,13 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 		// are per-visit, and each would otherwise mint a distinct canonical URL
 		// for the same page.
 		const canonicalUrl = new URL(url.pathname, url.origin);
-		const orgSeo = buildSeo({ kind: 'org', url: canonicalUrl, lang, org: organization });
+		const orgSeo = buildSeo({
+			kind: 'org',
+			url: canonicalUrl,
+			lang,
+			org: organization,
+			linkContext: serverLinkContext(locals)
+		});
 		// The org SEO carries the right image, locale alternates and JSON-LD; only
 		// the wording has to say what THIS page is. Overridden here rather than by
 		// adding a `kind` to `buildSeo`, so the membership route owns its own copy.
@@ -127,7 +136,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 			isAuthenticated: !!locals.user
 		};
 	} catch (err) {
-		if (isHttpError(err)) throw err;
+		if (isHttpError(err) || isRedirect(err)) throw err;
 
 		if (typeof err === 'object' && err !== null && 'status' in err) {
 			const status = (err as { status: number }).status;

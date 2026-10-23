@@ -1,10 +1,11 @@
 import { organizationListResources, organizationGetOrganization } from '$lib/api/generated/sdk.gen';
 import { error } from '@sveltejs/kit';
+import { canonicalTenantRedirect } from '$lib/server/tenant-canonical';
 import type { PageServerLoad } from './$types';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { throwIfTransientUpstream } from '$lib/server/upstream';
 
-export const load: PageServerLoad = async ({ params, fetch, locals }) => {
+export const load: PageServerLoad = async ({ params, fetch, locals, url }) => {
 	// Prepare headers with authentication if user is logged in
 	const headers: HeadersInit = {};
 	if (locals.user?.accessToken) {
@@ -23,6 +24,8 @@ export const load: PageServerLoad = async ({ params, fetch, locals }) => {
 		const errorMessage = extractErrorMessage(organizationResponse.error, 'Organization not found');
 		throw error(404, errorMessage);
 	}
+
+	if (organizationResponse.data) canonicalTenantRedirect(locals, organizationResponse.data, url);
 
 	// Fetch resources for this organization (pass auth to see restricted resources)
 	const resourcesResponse = await organizationListResources({

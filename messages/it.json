@@ -10247,5 +10247,16 @@
 			"loadFailed": "Impossibile caricare i documenti da emettere in proprio.",
 			"referenceRequired": "Inserisci il numero del documento."
 		}
+	},
+	"tenantChrome": {
+		"mainNavigation": "Navigazione dell'organizzazione",
+		"events": "Eventi",
+		"membership": "Iscrizione",
+		"resources": "Risorse",
+		"copyright": "© {year} {name}",
+		"poweredBy": "Realizzato con",
+		"legalNavigation": "Note legali",
+		"privacy": "Privacy",
+		"terms": "Termini"
 	}
 }

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { orgHref } from '$lib/utils/org-links';
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import type { OrganizationInListSchema } from '$lib/api/generated/types.gen';
@@ -79,8 +80,19 @@
 
 	// Carry campaign tags across public surfaces (#880): identical output when
 	// the current URL has no utm_* (so authed/dashboard usage is unaffected).
+	// With tenant mode on, `cardHref` can be ABSOLUTE: an org with a custom domain
+	// links to `https://{custom_domain}{path}`, and on a tenant host an org without
+	// one links to the platform origin (a relative link would bounce to `/`).
+	// Otherwise it is the resolve()d relative path.
 	const cardHref = $derived(
-		withUtmParams(resolve('/(public)/org/[slug]', { slug: organization.slug }), page.url)
+		withUtmParams(
+			orgHref(
+				organization,
+				resolve('/(public)/org/[slug]', { slug: organization.slug }),
+				page.data
+			),
+			page.url
+		)
 	);
 
 	// Image container classes based on variant

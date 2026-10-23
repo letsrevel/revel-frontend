@@ -1,6 +1,7 @@
 {
 	"_comment": "English values that are legitimately identical in a given locale (brand names, format strings, loanwords). Every other identical-to-English value is treated as untranslated and fails `make i18n-untranslated`. Add an entry ONLY when the target language really uses the English word.",
 	"de": [
+		"© {year} {name}",
 		"${price}",
 		"(1-100)",
 		"(Optional)",
@@ -95,6 +96,7 @@
 		"Verifactu"
 	],
 	"fr": [
+		"© {year} {name}",
 		"${price}",
 		"(1-100)",
 		"(max {max})",
@@ -209,6 +211,7 @@
 		"Document"
 	],
 	"it": [
+		"© {year} {name}",
 		"${price}",
 		"(1-100)",
 		"(max {max})",
@@ -286,6 +289,7 @@
 		"Verifactu"
 	],
 	"es": [
+		"© {year} {name}",
 		"${price}",
 		"(1-100)",
 		"({amount})",
@@ -348,6 +352,7 @@
 		"Ref. {reference}"
 	],
 	"pt": [
+		"© {year} {name}",
 		"${price}",
 		"(1-100)",
 		"({amount})",

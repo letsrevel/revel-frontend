@@ -44,7 +44,7 @@ export function readAttributionFromCurrentUrl(): TicketAttribution | null {
  * Carry the current page's campaign tags onto an internal href (the public-surface
  * "UTM carry", spec §4). Returns `href` untouched when the current URL has no tags;
  * never overwrites a `utm_*` key the href already carries. Accepts path-absolute
- * and `?`-only hrefs; always returns a path-relative href (path + search + hash).
+ * and `?`-only hrefs; returns a path-relative href (path + search + hash) for same-origin hrefs and a full URL for cross-origin ones.
  */
 export function withUtmParams(href: string, currentUrl: URL): string {
 	const tags = readAttributionFromUrl(currentUrl);
@@ -54,6 +54,8 @@ export function withUtmParams(href: string, currentUrl: URL): string {
 		const value = tags[key];
 		if (value !== undefined && !url.searchParams.has(key)) url.searchParams.set(key, value);
 	}
+	// Cross-origin hrefs (an org's custom domain, #1056) keep their origin.
+	if (url.origin !== currentUrl.origin) return url.toString();
 	return url.pathname + url.search + url.hash;
 }
 

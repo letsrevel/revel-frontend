@@ -10247,5 +10247,16 @@
 			"loadFailed": "Couldn't load the documents to issue yourself.",
 			"referenceRequired": "Enter the document number."
 		}
+	},
+	"tenantChrome": {
+		"mainNavigation": "Organization navigation",
+		"events": "Events",
+		"membership": "Membership",
+		"resources": "Resources",
+		"copyright": "© {year} {name}",
+		"poweredBy": "Powered by",
+		"legalNavigation": "Legal",
+		"privacy": "Privacy",
+		"terms": "Terms"
 	}
 }

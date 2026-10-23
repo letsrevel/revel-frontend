@@ -8,7 +8,8 @@ import {
 	permissionMyPermissions,
 	seriespassListSeriesPasses
 } from '$lib/api';
-import { error as svelteKitError } from '@sveltejs/kit';
+import { error as svelteKitError, isRedirect } from '@sveltejs/kit';
+import { canonicalTenantRedirect, serverLinkContext } from '$lib/server/tenant-canonical';
 import { throwIfTransientUpstream } from '$lib/server/upstream';
 import type { OrganizationPermissionsSchema } from '$lib/api/generated/types.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
@@ -46,6 +47,8 @@ export const load: PageServerLoad = async ({ params, url, fetch, locals, request
 		}
 
 		const series = seriesResponse.data;
+
+		canonicalTenantRedirect(locals, series.organization, url);
 
 		// Events, passes, and permissions only depend on the series id — fetch
 		// them in parallel to avoid stacking round trips on this SSR page.
@@ -112,7 +115,13 @@ export const load: PageServerLoad = async ({ params, url, fetch, locals, request
 		}
 
 		const lang = resolveLang(request);
-		const seo = buildSeo({ kind: 'series', url, lang, series });
+		const seo = buildSeo({
+			kind: 'series',
+			url,
+			lang,
+			series,
+			linkContext: serverLinkContext(locals)
+		});
 
 		return {
 			seo,
@@ -128,6 +137,8 @@ export const load: PageServerLoad = async ({ params, url, fetch, locals, request
 			isAuthenticated: !!locals.user
 		};
 	} catch (err) {
+		if (isRedirect(err)) throw err;
+
 		log.error('event_series_load_error', {
 			error: err,
 			orgSlug: org_slug,

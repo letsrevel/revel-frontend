@@ -5,6 +5,8 @@ import { getImpersonationInfo } from '$lib/utils/impersonation';
 import { getFeatures } from '$lib/server/features';
 import { DEFAULT_FEATURES } from '$lib/utils/features';
 import { isEmbedPath } from '$lib/embed/constants';
+import { tenantModeEnabled } from '$lib/server/tenant';
+import { platformOrigin } from '$lib/server/tenant-routing';
 
 /**
  * Root layout server load function
@@ -34,6 +36,15 @@ import { isEmbedPath } from '$lib/embed/constants';
  * sessions have no refresh cookie).
  */
 export const load: LayoutServerLoad = async ({ cookies, locals, fetch, url }) => {
+	// Tenant-mode switch for client-side link building (#1056). Private env is not
+	// readable in the browser, so the server tells the link helpers whether
+	// custom-domain links are on and where the platform lives (tenant chrome
+	// links back to it; other orgs' pages are linked there).
+	const customDomains = (): { enabled: boolean; platformOrigin: string | null } => {
+		const enabled = tenantModeEnabled();
+		return { enabled, platformOrigin: enabled ? platformOrigin() : null };
+	};
+
 	// Embed documents (#689) are anonymous, framed, read-only renderings. They
 	// take none of the app shell — no auth bootstrap, no feature flags, no
 	// site-verification tags — so short-circuit before any of that work,
@@ -51,6 +62,7 @@ export const load: LayoutServerLoad = async ({ cookies, locals, fetch, url }) =>
 			},
 			features: DEFAULT_FEATURES,
 			tenant: locals.tenant ?? null,
+			customDomains: customDomains(),
 			siteVerification: { google: '', bing: '' }
 		};
 	}
@@ -86,6 +98,7 @@ export const load: LayoutServerLoad = async ({ cookies, locals, fetch, url }) =>
 		},
 		features,
 		tenant: locals.tenant ?? null,
+		customDomains: customDomains(),
 		siteVerification: {
 			google: publicEnv.PUBLIC_GOOGLE_SITE_VERIFICATION ?? '',
 			bing: publicEnv.PUBLIC_BING_SITE_VERIFICATION ?? ''
