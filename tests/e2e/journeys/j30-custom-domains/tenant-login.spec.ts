@@ -1,3 +1,5 @@
+import { PERSONAS } from '../../support/personas';
+import { revealLoginForm } from '../../support/auth-forms';
 import { test, expect } from '../../support/fixtures';
 import { uiLogin } from '../../support/session';
 import { gotoHydrated } from '../../support/navigation';
@@ -32,20 +34,25 @@ test.describe('J30 tenant login @p1', () => {
 		// platform). Only meaningful when the backend has a provider: confirm the
 		// platform login does show it, so absence here is not vacuous.
 		const keycloak = await ssoProvider('keycloak');
+		// In demo mode the full form (and any SSO buttons) sits behind "Show login
+		// form", so reveal it on both hosts or the absence check is vacuous.
 		await gotoHydrated(page, '/login');
-		await expect(
-			page.getByLabel('Email address').or(page.getByLabel('Select Test Account'))
-		).toBeVisible();
+		await revealLoginForm(page);
+		await expect(page.getByLabel('Email address')).toBeVisible();
 		await expect(page.getByRole('link', { name: /Continue with/ })).toHaveCount(0);
 		if (keycloak) {
 			const platform = await browser.newPage();
 			await gotoHydrated(platform, `${FRONTEND_ORIGIN}/login`);
+			await revealLoginForm(platform);
 			await expect(platform.getByRole('link', { name: /Continue with/ }).first()).toBeVisible();
 			await platform.close();
 		}
 
 		// Sign in as the tenant org's owner; lands on the dashboard of the SAME host.
-		await uiLogin(page, 'tenantOwner', { startAt: `${TENANT_ORIGIN}/login` });
+		// Credentials, not the persona name: in demo mode a persona name goes through
+		// the test-account picker, which only lists the platform demo personas.
+		const { email, password } = PERSONAS.tenantOwner;
+		await uiLogin(page, { email, password }, { startAt: `${TENANT_ORIGIN}/login` });
 		expect(new URL(page.url()).host).toBe(new URL(TENANT_ORIGIN).host);
 		await expect(page).toHaveURL(/\/dashboard(\/|$|\?)/);
 
