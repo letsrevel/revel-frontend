@@ -34,6 +34,8 @@ describe('normalizeHostname', () => {
 		['  Events.Example.COM ', 'events.example.com'],
 		['https://events.example.com', 'events.example.com'],
 		['HTTP://events.example.com/', 'events.example.com'],
+		['https://events.example.com/tickets?x=1#top', 'events.example.com'],
+		['events.example.com/', 'events.example.com'],
 		['events.example.com//', 'events.example.com'],
 		['', '']
 	])('%j -> %j', (input, expected) => {

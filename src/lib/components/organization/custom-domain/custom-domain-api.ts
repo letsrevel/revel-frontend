@@ -75,7 +75,7 @@ export function normalizeHostname(input: string): string {
 		.trim()
 		.toLowerCase()
 		.replace(/^[a-z][a-z0-9+.-]*:\/\//, '')
-		.replace(/\/+$/, '');
+		.replace(/[/?#].*$/, '');
 }
 
 /** The latest non-removed domain, or null when the org has none. */
