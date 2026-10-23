@@ -9,9 +9,9 @@ import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
 import { safeReturnUrl } from '$lib/utils/safe-redirect';
 
-export const load: PageServerLoad = async ({ url, request, fetch, cookies }) => {
+export const load: PageServerLoad = async ({ url, request, fetch, cookies, locals }) => {
 	const lang = resolveLang(request);
-	const seo = buildSeo({ kind: 'auth', url, lang, page: 'verify' });
+	const seo = buildSeo({ kind: 'auth', url, lang, page: 'verify', tenant: locals.tenant });
 	const token = url.searchParams.get('token');
 
 	if (!token) {

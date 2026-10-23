@@ -115,7 +115,7 @@ export const load: PageServerLoad = async ({ params, url, fetch, locals, request
 		}
 
 		const lang = resolveLang(request);
-		const seo = buildSeo({ kind: 'series', url, lang, series });
+		const seo = buildSeo({ kind: 'series', url, lang, series, tenant: locals.tenant });
 
 		return {
 			seo,

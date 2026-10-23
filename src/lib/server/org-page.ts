@@ -156,7 +156,7 @@ export async function loadOrgPage({ locals, fetch, url, request }: OrgPageEvent,
 		}
 
 		const lang = resolveLang(request);
-		const seo = buildSeo({ kind: 'org', url, lang, org: organization });
+		const seo = buildSeo({ kind: 'org', url, lang, org: organization, tenant: locals.tenant });
 
 		return {
 			seo,

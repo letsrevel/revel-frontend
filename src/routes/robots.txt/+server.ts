@@ -1,4 +1,5 @@
 import type { RequestHandler } from './$types';
+import { orgOrigin } from '$lib/utils/org-links';
 
 /**
  * Generate robots.txt dynamically
@@ -37,10 +38,45 @@ Disallow: /*?viewMode=
 Disallow: /*?page=
 Disallow: /*&page=`;
 
+// A tenant host (#1057) serves one org: the platform-only paths (org creation,
+// org admin) are not part of it and must not be advertised in its robots.txt.
+const PLATFORM_ONLY_RULES = new Set([
+	'Disallow: /create-org',
+	'Disallow: /org/*/admin',
+	'Disallow: /org/*/admin/'
+]);
+const TENANT_DISALLOW_RULES = DISALLOW_RULES.split('\n')
+	.filter((rule) => !PLATFORM_ONLY_RULES.has(rule))
+	.join('\n');
+
 // SEO-tool crawlers that hammer small sites; keep them restricted and slow.
 const SLOW_BOTS = ['AhrefsBot', 'SemrushBot', 'MJ12bot'];
 
-export const GET: RequestHandler = async ({ url }) => {
+export const GET: RequestHandler = async ({ url, locals }) => {
+	const tenant = locals.tenant ?? null;
+	if (tenant) {
+		const tenantBase = orgOrigin(tenant) ?? url.origin;
+		const slowGroups = SLOW_BOTS.map(
+			(bot) => `User-agent: ${bot}
+${TENANT_DISALLOW_RULES}
+Crawl-delay: 10`
+		).join('\n\n');
+		const body = `User-agent: *
+Allow: /
+${TENANT_DISALLOW_RULES}
+
+${slowGroups}
+
+Sitemap: ${tenantBase}/sitemap.xml
+`;
+		return new Response(body, {
+			headers: {
+				'Content-Type': 'text/plain; charset=utf-8',
+				'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400'
+			}
+		});
+	}
+
 	const baseUrl = url.origin;
 
 	const slowBotGroups = SLOW_BOTS.map(

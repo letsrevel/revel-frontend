@@ -5,6 +5,7 @@ import {
 } from '$lib/api';
 import type { RequestHandler } from './$types';
 import { log } from '$lib/server/logger';
+import { orgOrigin } from '$lib/utils/org-links';
 
 const PAGE_SIZE = 200;
 
@@ -12,24 +13,30 @@ function pages(total: number): number {
 	return Math.max(1, Math.ceil(total / PAGE_SIZE));
 }
 
-export const GET: RequestHandler = async ({ fetch, url }) => {
-	const baseUrl = url.origin;
+export const GET: RequestHandler = async ({ fetch, url, locals }) => {
+	const tenant = locals.tenant ?? null;
+	// Tenant host: only this org's pages, all on the tenant origin (#1057). The
+	// backend filters events and series by `organization` (the org's UUID).
+	const baseUrl = tenant ? (orgOrigin(tenant) ?? url.origin) : url.origin;
 	const lastmod = new Date().toISOString().split('T')[0];
 
 	let eventCount = 0;
 	let orgCount = 0;
 	let seriesCount = 0;
 	try {
+		const scope = tenant ? { organization: tenant.id } : {};
 		const [eventsResp, orgsResp, seriesResp] = await Promise.all([
 			eventpublicdiscoveryListEvents({
 				fetch,
-				query: { page: 1, page_size: 1, include_past: false }
+				query: { page: 1, page_size: 1, include_past: false, ...scope }
 			}),
-			organizationListOrganizations({ fetch, query: { page: 1, page_size: 1 } }),
-			eventseriesListEventSeries({ fetch, query: { page: 1, page_size: 1 } })
+			tenant
+				? Promise.resolve(null)
+				: organizationListOrganizations({ fetch, query: { page: 1, page_size: 1 } }),
+			eventseriesListEventSeries({ fetch, query: { page: 1, page_size: 1, ...scope } })
 		]);
 		eventCount = eventsResp.data?.count ?? 0;
-		orgCount = orgsResp.data?.count ?? 0;
+		orgCount = orgsResp?.data?.count ?? 0;
 		seriesCount = seriesResp.data?.count ?? 0;
 	} catch (err) {
 		log.error('sitemap_index_count_failed', { error: err });
@@ -44,7 +51,7 @@ export const GET: RequestHandler = async ({ fetch, url }) => {
 			`<sitemap><loc>${baseUrl}/sitemap-events-${i}.xml</loc><lastmod>${lastmod}</lastmod></sitemap>`
 		);
 	}
-	for (let i = 1; i <= pages(orgCount); i++) {
+	for (let i = 1; !tenant && i <= pages(orgCount); i++) {
 		entries.push(
 			`<sitemap><loc>${baseUrl}/sitemap-orgs-${i}.xml</loc><lastmod>${lastmod}</lastmod></sitemap>`
 		);

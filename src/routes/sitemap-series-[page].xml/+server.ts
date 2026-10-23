@@ -1,6 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { eventseriesListEventSeries } from '$lib/api';
 import { getBackendUrl } from '$lib/config/api';
+import { orgOrigin } from '$lib/utils/org-links';
 import type { RequestHandler } from './$types';
 
 const PAGE_SIZE = 200;
@@ -19,12 +20,16 @@ function img(rel: string | null | undefined, title: string): string {
 	return `<image:image><image:loc>${escapeXml(getBackendUrl(rel))}</image:loc><image:title>${escapeXml(title)}</image:title></image:image>`;
 }
 
-export const GET: RequestHandler = async ({ params, fetch, url }) => {
+export const GET: RequestHandler = async ({ params, fetch, url, locals }) => {
+	const tenant = locals.tenant ?? null;
 	const page = parseInt(params.page, 10);
 	if (!Number.isInteger(page) || page < 1) throw error(404, 'Invalid sitemap page');
 
-	const baseUrl = url.origin;
-	const resp = await eventseriesListEventSeries({ fetch, query: { page, page_size: PAGE_SIZE } });
+	const baseUrl = tenant ? (orgOrigin(tenant) ?? url.origin) : url.origin;
+	const resp = await eventseriesListEventSeries({
+		fetch,
+		query: { page, page_size: PAGE_SIZE, ...(tenant ? { organization: tenant.id } : {}) }
+	});
 	const series = resp.data?.results ?? [];
 	if (series.length === 0 && page > 1) throw error(404, 'No series on this page');
 

@@ -16,7 +16,8 @@ describe('GET /sitemap-orgs-[page].xml (#994)', () => {
 		const response = await GET({
 			params: { page: '1' },
 			fetch,
-			url: new URL('https://letsrevel.io/sitemap-orgs-1.xml')
+			url: new URL('https://letsrevel.io/sitemap-orgs-1.xml'),
+			locals: { tenant: null }
 		} as unknown as Parameters<typeof GET>[0]);
 		const body = await response.text();
 		expect(body).toContain('<loc>https://letsrevel.io/');

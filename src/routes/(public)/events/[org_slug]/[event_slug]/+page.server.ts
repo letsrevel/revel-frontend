@@ -85,7 +85,7 @@ export const load: PageServerLoad = async ({
 		if (!indexable) {
 			setHeaders({ 'X-Robots-Tag': 'noindex,follow' });
 		}
-		const seo = buildSeo({ kind: 'event', url, lang, event, indexable });
+		const seo = buildSeo({ kind: 'event', url, lang, event, indexable, tenant: locals.tenant });
 
 		// If user is authenticated, fetch their status
 		let userStatus: UserEventStatus | null = null;
