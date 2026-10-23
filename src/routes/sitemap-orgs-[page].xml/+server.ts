@@ -19,7 +19,9 @@ function img(rel: string | null | undefined, title: string): string {
 	return `<image:image><image:loc>${escapeXml(getBackendUrl(rel))}</image:loc><image:title>${escapeXml(title)}</image:title></image:image>`;
 }
 
-export const GET: RequestHandler = async ({ params, fetch, url }) => {
+export const GET: RequestHandler = async ({ params, fetch, url, locals }) => {
+	// Other organizations are not part of a tenant site (#1057); its own page is in sitemap-static.xml.
+	if (locals.tenant) throw error(404, 'Not found');
 	const page = parseInt(params.page, 10);
 	if (!Number.isInteger(page) || page < 1) throw error(404, 'Invalid sitemap page');
 

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { page as appPage } from '$app/state';
+	import { withSiteName } from '$lib/seo/tenant';
 	import ConfirmationResult from '$lib/components/events/ConfirmationResult.svelte';
 	import type { PageData } from './$types';
 
@@ -6,7 +8,7 @@
 </script>
 
 <svelte:head>
-	<title>Confirm Action - Revel</title>
+	<title>{withSiteName('Confirm Action', appPage.data.tenant, ' - ')}</title>
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 

@@ -47,7 +47,9 @@
 	<meta name="twitter:card" content={config.twitter.card} />
 	<meta name="twitter:title" content={config.twitter.title} />
 	<meta name="twitter:description" content={config.twitter.description} />
-	<meta name="twitter:site" content={config.twitter.site} />
+	{#if config.twitter.site}
+		<meta name="twitter:site" content={config.twitter.site} />
+	{/if}
 	{#if config.twitter.image}
 		<meta name="twitter:image" content={config.twitter.image} />
 		{#if config.twitter.imageAlt}

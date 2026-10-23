@@ -4,3 +4,5 @@ export type { SeoConfig, Robots } from './types';
 export { buildSeo, type BuildSeoInput, type SeoPageSlug } from './build';
 export { default as SeoHead } from './SeoHead.svelte';
 export { stripMarkdown, stripMarkup } from './text';
+export { siteName, withSiteName, themeColor, tenantIconUrl, REVEL_THEME_COLOR } from './tenant';
+export type { SeoTenant } from './tenant';

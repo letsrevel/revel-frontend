@@ -78,7 +78,7 @@ export const SEGMENT_RULES: Readonly<Record<string, SegmentRule>> = {
 	auth: 'open', // OIDC callback; the provider buttons are hidden elsewhere
 	_app: 'open',
 	'.well-known': 'open',
-	// SEO / asset endpoints (tenant-aware output is #1057)
+	// SEO / asset endpoints (tenant-aware since #1057)
 	'robots.txt': 'open',
 	'feed.xml': 'open',
 	'opensearch.xml': 'open',

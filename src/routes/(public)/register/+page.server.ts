@@ -10,7 +10,7 @@ import { log } from '$lib/server/logger';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
 
-export const load: PageServerLoad = async ({ fetch, cookies, url, request }) => {
+export const load: PageServerLoad = async ({ fetch, cookies, url, request, locals }) => {
 	// On demo backends the registration form is still reachable, but gated behind
 	// a nudge overlay pushing the ready-made demo accounts (#600). Deciding this
 	// server-side (getDemoMode is cached and fail-open) keeps the overlay in the
@@ -20,7 +20,7 @@ export const load: PageServerLoad = async ({ fetch, cookies, url, request }) => 
 	const turnstileSiteKey = await getTurnstileSiteKey(fetch);
 
 	const lang = resolveLang(request);
-	const seo = buildSeo({ kind: 'auth', url, lang, page: 'register' });
+	const seo = buildSeo({ kind: 'auth', url, lang, page: 'register', tenant: locals.tenant });
 
 	return {
 		referralCodeFromCookie: cookies.get('referral_code') || '',

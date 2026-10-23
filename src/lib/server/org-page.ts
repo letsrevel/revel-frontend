@@ -161,6 +161,7 @@ export async function loadOrgPage({ locals, fetch, url, request }: OrgPageEvent,
 			url,
 			lang,
 			org: organization,
+			tenant: locals.tenant,
 			linkContext: serverLinkContext(locals)
 		});
 

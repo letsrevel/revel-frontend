@@ -1,6 +1,9 @@
 import { eventpublicdiscoveryListEvents } from '$lib/api';
 import { getBackendUrl } from '$lib/config/api';
 import type { RequestHandler } from './$types';
+import { orgOrigin } from '$lib/utils/org-links';
+import { serverLinkContext } from '$lib/server/tenant-canonical';
+import { siteName, tenantIconUrl } from '$lib/seo/tenant';
 import { log } from '$lib/server/logger';
 
 /**
@@ -45,8 +48,48 @@ function formatRfc822Date(dateStr: string): string {
  * - Third-party calendar integrations
  * - Google News (if applicable)
  */
-export const GET: RequestHandler = async ({ fetch, url }) => {
-	const baseUrl = url.origin;
+export const GET: RequestHandler = async ({ fetch, url, locals }) => {
+	const tenant = locals.tenant ?? null;
+	// Tenant host (#1057): the feed is the org's own, on the tenant origin, and
+	// says nothing about Revel (no Revel title, editor or webmaster address).
+	const baseUrl = tenant
+		? (orgOrigin(tenant, serverLinkContext(locals)) ?? url.origin)
+		: url.origin;
+	const channelTitle = tenant ? `${siteName(tenant)} - Upcoming Events` : 'Revel - Upcoming Events';
+	const channelLink = tenant ? `${baseUrl}/` : `${baseUrl}/events`;
+	const channelDescription = tenant
+		? stripHtml(tenant.description) || `Upcoming events from ${tenant.name}.`
+		: 'Discover community events on Revel - concerts, workshops, meetups, and more.';
+	const tenantIcon = tenantIconUrl(tenant);
+	// Each entry is one fully indented line of the channel header.
+	const channelExtras = (
+		tenant
+			? tenantIcon
+				? [
+						'    <image>',
+						`      <url>${escapeXml(tenantIcon)}</url>`,
+						`      <title>${escapeXml(tenant.name)}</title>`,
+						`      <link>${baseUrl}/</link>`,
+						'    </image>'
+					]
+				: []
+			: [
+					'    <image>',
+					`      <url>${baseUrl}/favicon-v2.png</url>`,
+					'      <title>Revel</title>',
+					`      <link>${baseUrl}</link>`,
+					'    </image>',
+					'    <generator>Revel Event Platform</generator>',
+					'    <docs>https://www.rssboard.org/rss-specification</docs>',
+					'    <managingEditor>contact@letsrevel.io (Revel Team)</managingEditor>',
+					'    <webMaster>contact@letsrevel.io (Revel Team)</webMaster>'
+				]
+	)
+		.map(
+			(line) => `${line}
+`
+		)
+		.join('');
 
 	try {
 		// Fetch upcoming public events
@@ -55,7 +98,8 @@ export const GET: RequestHandler = async ({ fetch, url }) => {
 			query: {
 				page: 1,
 				page_size: 50, // Latest 50 events for the feed
-				include_past: false
+				include_past: false,
+				...(tenant ? { organization: tenant.id } : {})
 			}
 		});
 
@@ -69,24 +113,15 @@ export const GET: RequestHandler = async ({ fetch, url }) => {
      xmlns:media="http://search.yahoo.com/mrss/"
      xmlns:dc="http://purl.org/dc/elements/1.1/">
   <channel>
-    <title>Revel - Upcoming Events</title>
-    <link>${baseUrl}/events</link>
-    <description>Discover community events on Revel - concerts, workshops, meetups, and more.</description>
+    <title>${escapeXml(channelTitle)}</title>
+    <link>${channelLink}</link>
+    <description>${escapeXml(channelDescription)}</description>
     <language>en</language>
     <lastBuildDate>${now}</lastBuildDate>
     <pubDate>${now}</pubDate>
     <ttl>60</ttl>
     <atom:link href="${baseUrl}/feed.xml" rel="self" type="application/rss+xml"/>
-    <image>
-      <url>${baseUrl}/favicon-v2.png</url>
-      <title>Revel</title>
-      <link>${baseUrl}</link>
-    </image>
-    <generator>Revel Event Platform</generator>
-    <docs>https://www.rssboard.org/rss-specification</docs>
-    <managingEditor>contact@letsrevel.io (Revel Team)</managingEditor>
-    <webMaster>contact@letsrevel.io (Revel Team)</webMaster>
-    <category>Events</category>
+${channelExtras}    <category>Events</category>
     <category>Community</category>
 ${events
 	.map((event) => {
@@ -148,9 +183,9 @@ ${events
 		const emptyFeed = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Revel - Upcoming Events</title>
-    <link>${baseUrl}/events</link>
-    <description>Discover community events on Revel.</description>
+    <title>${escapeXml(channelTitle)}</title>
+    <link>${channelLink}</link>
+    <description>${escapeXml(tenant ? channelDescription : 'Discover community events on Revel.')}</description>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
     <atom:link href="${baseUrl}/feed.xml" rel="self" type="application/rss+xml"/>
   </channel>

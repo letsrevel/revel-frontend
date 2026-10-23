@@ -10,9 +10,9 @@ import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
 import { safeReturnUrl } from '$lib/utils/safe-redirect';
 
-export const load: PageServerLoad = async ({ url, request, fetch }) => {
+export const load: PageServerLoad = async ({ url, request, fetch, locals }) => {
 	const lang = resolveLang(request);
-	const seo = buildSeo({ kind: 'auth', url, lang, page: 'login' });
+	const seo = buildSeo({ kind: 'auth', url, lang, page: 'login', tenant: locals.tenant });
 	// SSR the correct login variant: on demo backends the page shows a
 	// demo-account dropdown instead of the email/password form. Deciding this
 	// client-side (appStore fetching /version after mount) visibly SWAPPED the

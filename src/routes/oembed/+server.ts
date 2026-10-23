@@ -8,7 +8,7 @@ import {
 	type OembedTarget
 } from '$lib/embed/oembed';
 import { EMBED_CACHE_CONTROL } from '$lib/embed/constants';
-import { SITE_NAME } from '$lib/seo/constants';
+import { siteName } from '$lib/seo/tenant';
 import {
 	eventpublicdetailsGetEventBySlugs,
 	eventseriesGetEventSeriesBySlugs,
@@ -79,7 +79,7 @@ async function describeTarget(
  * Implemented as a `+server.ts` route for the same reason `feed.xml` is: it is
  * a public, cacheable, non-HTML representation of content we already render.
  */
-export const GET: RequestHandler = async ({ url, fetch, setHeaders }) => {
+export const GET: RequestHandler = async ({ url, fetch, setHeaders, locals }) => {
 	const rawTargetUrl = url.searchParams.get('url');
 	if (!rawTargetUrl) {
 		error(400, 'Missing required "url" parameter');
@@ -100,6 +100,11 @@ export const GET: RequestHandler = async ({ url, fetch, setHeaders }) => {
 
 	const target = resolveOembedTarget(targetUrl, url.origin);
 	if (!target) {
+		error(404, 'Unsupported URL');
+	}
+	// A tenant host (#1057) embeds only its own organization's pages: another
+	// org's `/embed/{slug}` is not served there, so its URL is unsupported.
+	if (locals.tenant && target.orgSlug !== locals.tenant.slug) {
 		error(404, 'Unsupported URL');
 	}
 
@@ -128,7 +133,7 @@ export const GET: RequestHandler = async ({ url, fetch, setHeaders }) => {
 	return json({
 		version: '1.0',
 		type: 'rich',
-		provider_name: SITE_NAME,
+		provider_name: siteName(locals.tenant),
 		provider_url: url.origin,
 		title: resource.title,
 		author_name: resource.authorName,

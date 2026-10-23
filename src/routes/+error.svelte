@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { page as appPage } from '$app/state';
+	import { withSiteName } from '$lib/seo/tenant';
 	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
@@ -149,7 +151,7 @@
 </script>
 
 <svelte:head>
-	<title>{config.title()} - Revel</title>
+	<title>{withSiteName(config.title(), appPage.data.tenant, ' - ')}</title>
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 

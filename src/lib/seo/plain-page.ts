@@ -1,5 +1,6 @@
 // src/lib/seo/plain-page.ts
-import { OG_IMAGE_PATH, SITE_NAME, TWITTER_SITE } from './constants';
+import { OG_IMAGE_PATH, TWITTER_SITE } from './constants';
+import { siteName, tenantShareImage, type SeoTenant } from './tenant';
 import type { Robots, SeoConfig } from './types';
 
 export const DEFAULT_OG_IMAGE_ALT = 'Revel — Event Management for Communities';
@@ -29,12 +30,20 @@ export function defaultOgImageMeta(origin: string): DefaultOgImageMeta {
 	};
 }
 
+/** OG image block for a tenant host's plain pages: the org image when it has one. */
+function tenantImageMeta(tenant: SeoTenant): DefaultOgImageMeta {
+	const image = tenantShareImage(tenant);
+	return image ? { image, imageAlt: tenant.name } : {};
+}
+
 /** Everything `plainPageSeo` needs from the request, computed once per build. */
 export interface PlainPageContext {
 	canonical: string;
 	origin: string;
 	ogLocale: string;
 	alts: string[];
+	/** Organization served on this custom-domain host (#1057); absent on the platform. */
+	tenant?: SeoTenant | null;
 }
 
 /**
@@ -59,8 +68,10 @@ export function plainPageSeo(
 			title,
 			description,
 			url: ctx.canonical,
-			...defaultOgImageMeta(ctx.origin),
-			siteName: SITE_NAME,
+			// On a tenant host the fixed Revel card is the wrong brand: use the org's
+			// own image, or none at all.
+			...(ctx.tenant ? tenantImageMeta(ctx.tenant) : defaultOgImageMeta(ctx.origin)),
+			siteName: siteName(ctx.tenant),
 			locale: ctx.ogLocale,
 			localeAlternate: ctx.alts
 		},
@@ -68,7 +79,7 @@ export function plainPageSeo(
 			card: 'summary',
 			title,
 			description,
-			site: TWITTER_SITE
+			...(ctx.tenant ? {} : { site: TWITTER_SITE })
 		},
 		hreflang: [],
 		jsonLd: []

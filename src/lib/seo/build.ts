@@ -4,8 +4,7 @@ import type {
 	OrganizationRetrieveSchema,
 	EventSeriesRetrieveSchema
 } from '$lib/api/generated/types.gen';
-import { getBackendUrl } from '$lib/config/api';
-import { LANGS, OG_LOCALE, OG_LOGO_PATH, SITE_NAME, TWITTER_SITE, type Lang } from './constants';
+import { LANGS, OG_LOCALE, OG_LOGO_PATH, TWITTER_SITE, type Lang } from './constants';
 import type { SeoConfig } from './types';
 import {
 	defaultOgImage,
@@ -15,7 +14,9 @@ import {
 } from './plain-page';
 import { oembedDiscoveryUrl } from '$lib/embed/oembed';
 import { orgOrigin, type LinkContext } from '$lib/utils/org-links';
+import { siteName, tenantIconUrl, withSiteName, type SeoTenant } from './tenant';
 import { truncate, stripMarkup } from './text';
+import { getEventImage, getOrgImage, getSeriesImage } from './images';
 import { landingPageHreflang } from './hreflang';
 import {
 	generateEventJsonLd,
@@ -35,14 +36,6 @@ export type SeoPageSlug =
 	| 'privacy-focused-events'
 	| 'community-first-event-platform'
 	| 'club-membership-management';
-
-export type BuildSeoInput = BuildSeoVariant & {
-	/**
-	 * Tenant-mode link context (`serverLinkContext(locals)`). Without it org-scoped
-	 * pages canonicalise on the platform URL, never on a custom domain.
-	 */
-	linkContext?: LinkContext;
-};
 
 type BuildSeoVariant =
 	| { kind: 'home'; url: URL; lang: Lang }
@@ -75,55 +68,34 @@ type BuildSeoVariant =
 			page: 'login' | 'register' | 'password-reset' | 'verify' | 'unsubscribe';
 	  };
 
+/**
+ * `tenant` is the organization served on this custom-domain host (null/absent on
+ * the platform). It switches the site name, drops the Revel-only metadata
+ * (`twitter:site`, `og:logo`, the Revel root breadcrumb) and re-roots the
+ * breadcrumbs at the org home (#1057).
+ */
+export type BuildSeoInput = BuildSeoVariant & {
+	tenant?: SeoTenant | null;
+	/**
+	 * Tenant-mode link context (`serverLinkContext(locals)`). Without it org-scoped
+	 * pages canonicalise on the platform URL, never on a custom domain.
+	 */
+	linkContext?: LinkContext;
+};
+
 function alternateLocales(lang: Lang): string[] {
 	return LANGS.filter((l) => l !== lang).map((l) => OG_LOCALE[l]);
-}
-
-function getEventImage(event: EventDetailSchema): string | undefined {
-	const e = event as unknown as {
-		cover_art_social_url?: string;
-		event_series?: { cover_art_social_url?: string };
-		organization?: { cover_art_social_url?: string };
-	};
-	const candidates = [
-		e.cover_art_social_url,
-		event.cover_art,
-		e.event_series?.cover_art_social_url,
-		event.event_series?.cover_art,
-		e.organization?.cover_art_social_url,
-		event.organization.cover_art,
-		event.logo,
-		event.organization.logo
-	];
-	const first = candidates.find((c) => c != null);
-	return first ? getBackendUrl(first) : undefined;
-}
-
-function getOrgImage(org: OrganizationRetrieveSchema): string | undefined {
-	const o = org as unknown as { cover_art_social_url?: string };
-	const first = o.cover_art_social_url || org.cover_art || org.logo;
-	return first ? getBackendUrl(first) : undefined;
-}
-
-function getSeriesImage(series: EventSeriesRetrieveSchema): string | undefined {
-	const s = series as unknown as {
-		cover_art_social_url?: string;
-		organization?: { cover_art_social_url?: string };
-	};
-	const first =
-		s.cover_art_social_url ||
-		series.cover_art ||
-		s.organization?.cover_art_social_url ||
-		series.organization.cover_art ||
-		series.logo ||
-		series.organization.logo;
-	return first ? getBackendUrl(first) : undefined;
 }
 
 export function buildSeo(input: BuildSeoInput): SeoConfig {
 	const cfg = buildSeoConfig(input);
 	// og:logo is site-wide brand metadata (the square R mark), identical on
-	// every page regardless of which og:image the page uses.
+	// every page regardless of which og:image the page uses. On a tenant host the
+	// brand is the org, so it is the org logo or nothing, never Revel's mark.
+	if (input.tenant) {
+		const logo = tenantIconUrl(input.tenant);
+		return { ...cfg, og: { ...cfg.og, ...(logo ? { logo } : {}) } };
+	}
 	return { ...cfg, og: { ...cfg.og, logo: `${input.url.origin}${OG_LOGO_PATH}` } };
 }
 
@@ -142,13 +114,29 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 					: null,
 		input.linkContext
 	);
+	// On its own custom domain the org page lives at `/`; `/org/{slug}` is an alias.
+	const ownRoot = input.kind === 'org' && !!input.tenant && input.tenant.id === input.org.id;
+	const path = ownRoot ? '/' : input.url.pathname;
 	const canonical = domainOrigin
-		? `${domainOrigin}${input.url.pathname}${input.url.search}`
-		: input.url.toString();
+		? `${domainOrigin}${path}${input.url.search}`
+		: ownRoot
+			? `${origin}/`
+			: input.url.toString();
 	const alts = alternateLocales(input.lang);
 	const ogLocale = OG_LOCALE[input.lang];
+	const tenant = input.tenant ?? null;
 	/** Shared by every `plainPageSeo` branch below. */
-	const plainCtx = { canonical, origin, ogLocale, alts };
+	const plainCtx = { canonical, origin, ogLocale, alts, tenant };
+	/** `twitter:site` is Revel's handle: never advertised on a tenant host. */
+	const twitterSite = tenant ? {} : { site: TWITTER_SITE };
+	const site = siteName(tenant);
+	/** Breadcrumb root: the org home on a tenant host, Revel's home otherwise. */
+	const rootCrumb = tenant
+		? {
+				name: tenant.name,
+				url: `${domainOrigin ?? orgOrigin(tenant, input.linkContext) ?? origin}/`
+			}
+		: { name: 'Home', url: origin };
 
 	switch (input.kind) {
 		case 'home': {
@@ -169,7 +157,7 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 					description: ogDescription,
 					url: canonical,
 					...defaultOgImageMeta(origin),
-					siteName: SITE_NAME,
+					siteName: site,
 					locale: ogLocale,
 					localeAlternate: alts
 				},
@@ -179,7 +167,7 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 					description: 'Discover community events and create unforgettable experiences',
 					image: defaultOgImage(origin),
 					imageAlt: DEFAULT_OG_IMAGE_ALT,
-					site: TWITTER_SITE
+					...twitterSite
 				},
 				hreflang: [],
 				jsonLd: [generateWebSiteJsonLd(origin)]
@@ -187,7 +175,7 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 		}
 
 		case 'events-listing': {
-			const title = 'Browse Events | Revel';
+			const title = withSiteName('Browse Events', tenant);
 			const description =
 				'Discover community events happening near you. Find concerts, workshops, meetups, and more on Revel.';
 			return {
@@ -200,7 +188,7 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 					description,
 					url: canonical,
 					...defaultOgImageMeta(origin),
-					siteName: SITE_NAME,
+					siteName: site,
 					locale: ogLocale,
 					localeAlternate: alts
 				},
@@ -210,7 +198,7 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 					description: 'Discover community events near you',
 					image: defaultOgImage(origin),
 					imageAlt: DEFAULT_OG_IMAGE_ALT,
-					site: TWITTER_SITE
+					...twitterSite
 				},
 				hreflang: [],
 				jsonLd: [
@@ -223,7 +211,7 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 		}
 
 		case 'orgs-listing': {
-			const title = 'Discover Organizations | Revel';
+			const title = withSiteName('Discover Organizations', tenant);
 			const description =
 				'Browse and discover community organizations on Revel. Find event organizers, communities, and groups creating amazing experiences.';
 			// Shorter variant for social previews (~125-char budget, #624).
@@ -248,7 +236,7 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 					description: ogDescription,
 					url: canonical,
 					...defaultOgImageMeta(origin),
-					siteName: SITE_NAME,
+					siteName: site,
 					locale: ogLocale,
 					localeAlternate: alts
 				},
@@ -258,7 +246,7 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 					description: 'Browse community organizations near you',
 					image: defaultOgImage(origin),
 					imageAlt: DEFAULT_OG_IMAGE_ALT,
-					site: TWITTER_SITE
+					...twitterSite
 				},
 				hreflang: [],
 				jsonLd: ld
@@ -270,7 +258,7 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 			const desc = stripMarkup(event.description);
 			const truncated = truncate(desc, 155);
 			const image = getEventImage(event);
-			const title = `${event.name} | Revel`;
+			const title = withSiteName(event.name, tenant);
 			const description = truncated || `Join ${event.name} organized by ${event.organization.name}`;
 			return {
 				title,
@@ -285,7 +273,7 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 					url: canonical,
 					image,
 					imageAlt: image ? event.name : undefined,
-					siteName: SITE_NAME,
+					siteName: site,
 					locale: ogLocale,
 					localeAlternate: alts
 				},
@@ -295,20 +283,24 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 					description: truncate(desc, 200) || `Join ${event.name}`,
 					image,
 					imageAlt: image ? event.name : undefined,
-					site: TWITTER_SITE
+					...twitterSite
 				},
 				hreflang: [],
 				jsonLd: [
 					generateEventJsonLd(event, canonical),
-					generateBreadcrumbJsonLd([
-						{ name: 'Home', url: origin },
-						{ name: 'Events', url: `${origin}/events` },
-						{
-							name: event.organization.name,
-							url: `${domainOrigin ?? origin}/org/${event.organization.slug}`
-						},
-						{ name: event.name, url: canonical }
-					])
+					generateBreadcrumbJsonLd(
+						tenant
+							? [rootCrumb, { name: event.name, url: canonical }]
+							: [
+									{ name: 'Home', url: origin },
+									{ name: 'Events', url: `${origin}/events` },
+									{
+										name: event.organization.name,
+										url: `${domainOrigin ?? origin}/org/${event.organization.slug}`
+									},
+									{ name: event.name, url: canonical }
+								]
+					)
 				]
 			};
 		}
@@ -318,13 +310,22 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 			const desc = stripMarkup(org.description);
 			const truncated = truncate(desc, 155);
 			const image = getOrgImage(org);
-			const title = `${org.name} | Revel`;
-			const description = truncated || `${org.name} on Revel - Community events and experiences`;
+			// The org page is the site itself: just the org name on a tenant host.
+			const title = tenant ? org.name : `${org.name} | Revel`;
+			const description =
+				truncated ||
+				(tenant
+					? `${org.name} - Community events and experiences`
+					: `${org.name} on Revel - Community events and experiences`);
 			return {
 				title,
 				description,
 				canonical,
-				oembed: oembedDiscoveryUrl(input.url),
+				// The tenant root `/` renders the org page but is not an oEmbed target
+				// path; point discovery at the org's own `/org/{slug}` URL.
+				oembed: oembedDiscoveryUrl(
+					tenant && input.url.pathname === '/' ? new URL(`/org/${org.slug}`, input.url) : input.url
+				),
 				og: {
 					type: 'profile',
 					title: org.name,
@@ -332,26 +333,31 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 					url: canonical,
 					image,
 					imageAlt: image ? org.name : undefined,
-					siteName: SITE_NAME,
+					siteName: site,
 					locale: ogLocale,
 					localeAlternate: alts
 				},
 				twitter: {
 					card: 'summary_large_image',
 					title: org.name,
-					description: truncate(desc, 200) || `${org.name} on Revel`,
+					description: truncate(desc, 200) || (tenant ? org.name : `${org.name} on Revel`),
 					image,
 					imageAlt: image ? org.name : undefined,
-					site: TWITTER_SITE
+					...twitterSite
 				},
 				hreflang: [],
 				jsonLd: [
 					generateOrganizationJsonLd(org, canonical),
-					generateBreadcrumbJsonLd([
-						{ name: 'Home', url: origin },
-						{ name: 'Organizations', url: `${origin}/organizations` },
-						{ name: org.name, url: canonical }
-					])
+					// The org page IS the tenant's root: a one-crumb trail adds nothing.
+					...(tenant
+						? []
+						: [
+								generateBreadcrumbJsonLd([
+									{ name: 'Home', url: origin },
+									{ name: 'Organizations', url: `${origin}/organizations` },
+									{ name: org.name, url: canonical }
+								])
+							])
 				]
 			};
 		}
@@ -361,7 +367,9 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 			const desc = stripMarkup(series.description);
 			const truncated = truncate(desc, 155);
 			const image = getSeriesImage(series);
-			const title = `${series.name} | ${series.organization.name} | Revel`;
+			const title = tenant
+				? withSiteName(series.name, tenant)
+				: `${series.name} | ${series.organization.name} | Revel`;
 			const description =
 				truncated || `${series.name} - Event series by ${series.organization.name}`;
 			return {
@@ -376,7 +384,7 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 					url: canonical,
 					image,
 					imageAlt: image ? `${series.name} | ${series.organization.name}` : undefined,
-					siteName: SITE_NAME,
+					siteName: site,
 					locale: ogLocale,
 					localeAlternate: alts
 				},
@@ -386,19 +394,23 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 					description: truncate(desc, 200) || description,
 					image,
 					imageAlt: image ? `${series.name} | ${series.organization.name}` : undefined,
-					site: TWITTER_SITE
+					...twitterSite
 				},
 				hreflang: [],
 				jsonLd: [
 					generateSeriesJsonLd(series, canonical),
-					generateBreadcrumbJsonLd([
-						{ name: 'Home', url: origin },
-						{
-							name: series.organization.name,
-							url: `${domainOrigin ?? origin}/org/${series.organization.slug}`
-						},
-						{ name: series.name, url: canonical }
-					])
+					generateBreadcrumbJsonLd(
+						tenant
+							? [rootCrumb, { name: series.name, url: canonical }]
+							: [
+									{ name: 'Home', url: origin },
+									{
+										name: series.organization.name,
+										url: `${domainOrigin ?? origin}/org/${series.organization.slug}`
+									},
+									{ name: series.name, url: canonical }
+								]
+					)
 				]
 			};
 		}
@@ -416,7 +428,7 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 					description,
 					url: canonical,
 					...defaultOgImageMeta(origin),
-					siteName: SITE_NAME,
+					siteName: site,
 					locale: ogLocale,
 					localeAlternate: alts
 				},
@@ -426,7 +438,7 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 					description,
 					image: defaultOgImage(origin),
 					imageAlt: DEFAULT_OG_IMAGE_ALT,
-					site: TWITTER_SITE
+					...twitterSite
 				},
 				hreflang: landingPageHreflang(origin, input.slug),
 				jsonLd: [
@@ -441,8 +453,8 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 
 		case 'legal': {
 			const titles: Record<typeof input.doc, string> = {
-				privacy: 'Privacy Policy | Revel',
-				terms: 'Terms of Service | Revel'
+				privacy: withSiteName('Privacy Policy', tenant),
+				terms: withSiteName('Terms of Service', tenant)
 			};
 			const title = titles[input.doc];
 			return plainPageSeo(plainCtx, { title, description: title });
@@ -454,7 +466,7 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 			// flips to 404 is the soft-404 signal `make audit-soft-404` exists to
 			// keep out of the index. `follow`, so its outgoing links still count.
 			return plainPageSeo(plainCtx, {
-				title: 'Referral program | Revel',
+				title: withSiteName('Referral program', tenant),
 				description:
 					'Apply to the Revel referral program: bring organizers to Revel and earn 15% of what Revel makes from them, forever.',
 				robots: 'noindex,follow'
@@ -463,11 +475,11 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 
 		case 'auth': {
 			const titles: Record<typeof input.page, string> = {
-				login: 'Log in | Revel',
-				register: 'Create your account | Revel',
-				'password-reset': 'Reset your password | Revel',
-				verify: 'Verify your account | Revel',
-				unsubscribe: 'Unsubscribe | Revel'
+				login: withSiteName('Log in', tenant),
+				register: withSiteName('Create your account', tenant),
+				'password-reset': withSiteName('Reset your password', tenant),
+				verify: withSiteName('Verify your account', tenant),
+				unsubscribe: withSiteName('Unsubscribe', tenant)
 			};
 			const title = titles[input.page];
 			return plainPageSeo(plainCtx, { title, description: title, robots: 'noindex,follow' });

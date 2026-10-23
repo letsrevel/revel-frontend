@@ -6,9 +6,9 @@ import { log } from '$lib/server/logger';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
 
-export const load: PageServerLoad = ({ url, request }) => {
+export const load: PageServerLoad = ({ url, request, locals }) => {
 	const lang = resolveLang(request);
-	const seo = buildSeo({ kind: 'auth', url, lang, page: 'password-reset' });
+	const seo = buildSeo({ kind: 'auth', url, lang, page: 'password-reset', tenant: locals.tenant });
 	return { seo };
 };
 

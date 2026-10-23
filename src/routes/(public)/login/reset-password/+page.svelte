@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { page as appPage } from '$app/state';
+	import { withSiteName } from '$lib/seo/tenant';
 	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { enhance } from '$app/forms';
@@ -33,7 +35,7 @@
 </script>
 
 <svelte:head>
-	<title>Set New Password - Revel</title>
+	<title>{withSiteName('Set New Password', appPage.data.tenant, ' - ')}</title>
 	<meta name="description" content="Set a new password for your Revel account" />
 </svelte:head>
 

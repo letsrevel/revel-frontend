@@ -4,7 +4,8 @@ import { GET } from './+server';
 
 async function fetchRobots(): Promise<string> {
 	const response = await GET({
-		url: new URL('https://letsrevel.io/robots.txt')
+		url: new URL('https://letsrevel.io/robots.txt'),
+		locals: { tenant: null }
 	} as unknown as Parameters<typeof GET>[0]);
 	return response.text();
 }

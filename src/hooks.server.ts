@@ -20,6 +20,7 @@ import {
 import { log } from '$lib/server/logger';
 import { handleTenant } from '$lib/server/tenant';
 import { handleTenantRouting } from '$lib/server/tenant-routing';
+import { handleTenantHead } from '$lib/server/tenant-head';
 import { startMetricsServer } from '$lib/server/metrics';
 import { handleRequestLogging, handleSsrError } from '$lib/server/request-logging';
 
@@ -425,6 +426,7 @@ export const handle = sequence(
 	handleTenantRouting,
 	handleTokenCapture,
 	handleEmbedShell,
+	handleTenantHead,
 	i18nHandle(),
 	handleAuth,
 	handleAuthGuard,

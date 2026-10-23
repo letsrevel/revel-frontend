@@ -91,6 +91,7 @@ export const load: PageServerLoad = async ({
 			lang,
 			event,
 			indexable,
+			tenant: locals.tenant,
 			linkContext: serverLinkContext(locals)
 		});
 

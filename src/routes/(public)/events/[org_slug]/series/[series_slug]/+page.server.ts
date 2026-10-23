@@ -120,6 +120,7 @@ export const load: PageServerLoad = async ({ params, url, fetch, locals, request
 			url,
 			lang,
 			series,
+			tenant: locals.tenant,
 			linkContext: serverLinkContext(locals)
 		});
 

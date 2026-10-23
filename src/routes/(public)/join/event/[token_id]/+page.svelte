@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { page as appPage } from '$app/state';
+	import { withSiteName } from '$lib/seo/tenant';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
@@ -103,7 +105,7 @@
 </script>
 
 <svelte:head>
-	<title>{pageTitle} - Revel</title>
+	<title>{withSiteName(pageTitle, appPage.data.tenant, ' - ')}</title>
 	{#if token}
 		<meta
 			name="description"
