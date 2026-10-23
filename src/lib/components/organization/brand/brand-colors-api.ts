@@ -5,9 +5,9 @@
  */
 import {
 	organizationadmincoreBrandThemePreview,
-	organizationadmincoreUpdateOrganization
+	organizationadmincoreUpdateBranding
 } from '$lib/api/generated/sdk.gen';
-import type { BrandTheme, Visibility } from '$lib/api/generated/types.gen';
+import type { BrandTheme, OrganizationBrandingResponse } from '$lib/api/generated/types.gen';
 
 /** A 400 (or other API failure) whose `detail` can be shown next to a field. */
 export class BrandColorsApiError extends Error {
@@ -30,41 +30,48 @@ export class BrandColorsApiError extends Error {
 	}
 }
 
+/** Preview 400s carry `{"detail": "<translated string>"}`. */
 function detailOf(error: unknown): string | null {
 	if (error && typeof error === 'object' && 'detail' in error) {
 		const detail = (error as { detail: unknown }).detail;
 		if (typeof detail === 'string') return detail;
-		if (Array.isArray(detail)) {
-			const msgs = detail
-				.map((d) => (d && typeof d === 'object' && 'msg' in d ? String(d.msg) : null))
-				.filter((s): s is string => Boolean(s));
-			if (msgs.length) return msgs.join(' ');
-		}
 	}
 	return null;
 }
 
-function fieldErrorsOf(error: unknown): Partial<Record<'primary' | 'accent', string>> {
+/**
+ * Save 422s: `{"detail": [{"type": "invalid_hex_color", "loc": ["body", "payload",
+ * "primary_color"], "msg": "<translated>"}]}`. Keyed by the last `loc` segment;
+ * the message is shown as-is and never inspected. Anything else yields no field
+ * errors, so the caller falls back to its generic toast.
+ */
+function fieldErrorsOf(
+	error: unknown,
+	status: number | undefined
+): Partial<Record<'primary' | 'accent', string>> {
 	const out: Partial<Record<'primary' | 'accent', string>> = {};
-	if (!error || typeof error !== 'object' || !('errors' in error)) return out;
-	const errors = (error as { errors: unknown }).errors;
-	if (!errors || typeof errors !== 'object') return out;
-	const read = (key: string): string | undefined => {
-		const value = (errors as Record<string, unknown>)[key];
-		if (typeof value === 'string') return value;
-		if (Array.isArray(value)) return value.map(String).join(' ') || undefined;
-		return undefined;
-	};
-	const primary = read('brand_primary_color');
-	const accent = read('brand_accent_color');
-	if (primary) out.primary = primary;
-	if (accent) out.accent = accent;
+	if (status !== 422 || !error || typeof error !== 'object' || !('detail' in error)) return out;
+	const detail = (error as { detail: unknown }).detail;
+	if (!Array.isArray(detail)) return out;
+	for (const item of detail) {
+		if (!item || typeof item !== 'object') continue;
+		const { type, loc, msg } = item as { type?: unknown; loc?: unknown; msg?: unknown };
+		if (type === 'extra_forbidden' || typeof msg !== 'string' || !Array.isArray(loc)) continue;
+		const key = loc[loc.length - 1];
+		if (key === 'primary_color') out.primary = msg;
+		else if (key === 'accent_color') out.accent = msg;
+	}
 	return out;
 }
 
 function toError(error: unknown, status: number | undefined): BrandColorsApiError {
 	const detail = detailOf(error);
-	return new BrandColorsApiError(detail ?? 'Request failed', detail, status, fieldErrorsOf(error));
+	return new BrandColorsApiError(
+		detail ?? 'Request failed',
+		detail,
+		status,
+		fieldErrorsOf(error, status)
+	);
 }
 
 /** Server-resolved per-mode theme for the given colors; null when no primary. */
@@ -85,19 +92,19 @@ export async function previewBrandTheme(
 	return res.data ?? null;
 }
 
-/** Persist both colors (null clears), echoing the org's current visibility. Throws `BrandColorsApiError` on failure. */
+/**
+ * Persist both colors (null clears; never ""). Resolves with the saved branding
+ * and the server-resolved theme. Throws `BrandColorsApiError` on failure.
+ */
 export async function saveBrandColors(
 	slug: string,
 	primary: string | null,
-	accent: string | null,
-	visibility: Visibility
-): Promise<void> {
-	const res = await organizationadmincoreUpdateOrganization({
+	accent: string | null
+): Promise<OrganizationBrandingResponse> {
+	const res = await organizationadmincoreUpdateBranding({
 		path: { slug },
-		// `visibility` is the one required field on OrganizationEditSchema; echoing the
-		// current value changes nothing. Every other field is left unset, so the
-		// server's exclude_unset update leaves it alone.
-		body: { visibility, brand_primary_color: primary, brand_accent_color: accent }
+		body: { primary_color: primary, accent_color: accent }
 	});
-	if (res.error !== undefined) throw toError(res.error, res.response?.status);
+	if (res.error !== undefined || !res.data) throw toError(res.error, res.response?.status);
+	return res.data;
 }

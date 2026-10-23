@@ -23,10 +23,7 @@
 	 * hexes and paints whatever per-mode theme comes back.
 	 */
 	interface Props {
-		organization: Pick<
-			OrganizationAdminDetailSchema,
-			'slug' | 'visibility' | 'brand_primary_color' | 'brand_accent_color' | 'brand_theme'
-		>;
+		organization: Pick<OrganizationAdminDetailSchema, 'slug' | 'branding' | 'brand_theme'>;
 	}
 
 	const { organization }: Props = $props();
@@ -48,8 +45,8 @@
 	// belong to the user; `invalidateAll()` after a save must not clobber them.
 	const { slug, initialPrimary, initialAccent, initialTheme } = untrack(() => ({
 		slug: organization.slug,
-		initialPrimary: normalizeHex(organization.brand_primary_color ?? ''),
-		initialAccent: normalizeHex(organization.brand_accent_color ?? ''),
+		initialPrimary: normalizeHex(organization.branding?.primary_color ?? ''),
+		initialAccent: normalizeHex(organization.branding?.accent_color ?? ''),
 		initialTheme: organization.brand_theme ?? null
 	}));
 
@@ -105,12 +102,11 @@
 		return undefined;
 	}
 
-	/** Save 400s name their field (`errors`); a bare `detail` is shown on the primary field. */
+	/** Save 422s name their field via `loc`; anything else falls back to a toast. */
 	function toSaveErrors(error: unknown): Partial<Record<Field, string>> | null {
 		if (!(error instanceof BrandColorsApiError)) return null;
 		if (Object.keys(error.fieldErrors).length > 0) return error.fieldErrors;
-		// Unkeyed detail: shown on the primary field (never inferred from localized text).
-		return error.detail ? { primary: error.detail } : null;
+		return null;
 	}
 
 	// ---- live preview (debounced, stale requests aborted) ----------------------
@@ -162,10 +158,14 @@
 	const saveMutation = createMutation(() => ({
 		// Must throw on failure so TanStack routes it to onError.
 		mutationFn: ({ primary, accent }: { primary: string | null; accent: string | null }) =>
-			saveBrandColors(slug, primary, accent, organization.visibility),
-		onSuccess: async (_data, { primary, accent }) => {
-			savedPrimary = primary;
-			savedAccent = accent;
+			saveBrandColors(slug, primary, accent),
+		onSuccess: async (saved, { primary }) => {
+			// The response is authoritative: baseline and on-screen theme follow it.
+			savedPrimary = normalizeHex(saved.branding.primary_color ?? '');
+			savedAccent = normalizeHex(saved.branding.accent_color ?? '');
+			theme = saved.brand_theme ?? null;
+			themeFor = { primary: savedPrimary, accent: savedAccent };
+			lastKey = `${savedPrimary ?? ''}|${savedAccent ?? ''}`;
 			saveErrors = {};
 			toast.success(
 				primary === null

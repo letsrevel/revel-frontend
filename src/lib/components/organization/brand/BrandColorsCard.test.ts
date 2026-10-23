@@ -44,15 +44,10 @@ const PURPLE_THEME: BrandTheme = {
 	dark: { primary: '#A667E5', primary_foreground: '#000000', accent: null, accent_foreground: null }
 };
 
-type Org = Pick<OrganizationAdminDetailSchema, 'slug' | 'visibility'> &
-	Partial<
-		Pick<
-			OrganizationAdminDetailSchema,
-			'brand_primary_color' | 'brand_accent_color' | 'brand_theme'
-		>
-	>;
+type Org = Pick<OrganizationAdminDetailSchema, 'slug' | 'branding'> &
+	Partial<Pick<OrganizationAdminDetailSchema, 'brand_theme'>>;
 
-function setup(organization: Org = { slug: 'acme', visibility: 'public' }) {
+function setup(organization: Org = { slug: 'acme', branding: {} }) {
 	const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
 	render(QueryClientTestWrapper, {
 		props: {
@@ -79,7 +74,7 @@ describe('BrandColorsCard (#1054)', () => {
 		vi.useFakeTimers();
 		vi.clearAllMocks();
 		vi.mocked(previewBrandTheme).mockResolvedValue(PURPLE_THEME);
-		vi.mocked(saveBrandColors).mockResolvedValue(undefined);
+		vi.mocked(saveBrandColors).mockResolvedValue({ branding: {}, brand_theme: null });
 	});
 	afterEach(() => {
 		vi.useRealTimers();
@@ -140,9 +135,7 @@ describe('BrandColorsCard (#1054)', () => {
 		);
 		setup({
 			slug: 'acme',
-			visibility: 'public',
-			brand_primary_color: '#FFFF00',
-			brand_accent_color: '#00FF00',
+			branding: { primary_color: '#FFFF00', accent_color: '#00FF00' },
 			brand_theme: YELLOW_THEME
 		});
 		const light = screen.getByTestId('brand-swatches-light');
@@ -163,9 +156,7 @@ describe('BrandColorsCard (#1054)', () => {
 	it('says in text when the server adjusted a color, and when it did not', () => {
 		setup({
 			slug: 'acme',
-			visibility: 'public',
-			brand_primary_color: '#FFFF00',
-			brand_accent_color: '#00FF00',
+			branding: { primary_color: '#FFFF00', accent_color: '#00FF00' },
 			brand_theme: YELLOW_THEME
 		});
 		const light = screen.getByTestId('brand-swatches-light');
@@ -181,8 +172,7 @@ describe('BrandColorsCard (#1054)', () => {
 		);
 		setup({
 			slug: 'acme',
-			visibility: 'public',
-			brand_primary_color: '#8C3CDD',
+			branding: { primary_color: '#8C3CDD' },
 			brand_theme: PURPLE_THEME
 		});
 		await fireEvent.input(primaryPicker(), { target: { value: '#123456' } });
@@ -199,16 +189,14 @@ describe('BrandColorsCard (#1054)', () => {
 		await user.type(primaryText(), '#112233');
 		await flushDebounce();
 		await user.click(saveButton());
-		await waitFor(() =>
-			expect(saveBrandColors).toHaveBeenCalledWith('acme', '#112233', null, 'public')
-		);
+		await waitFor(() => expect(saveBrandColors).toHaveBeenCalledWith('acme', '#112233', null));
 		await waitFor(() => expect(invalidateAll).toHaveBeenCalled());
 		expect(toast.success).toHaveBeenCalledWith('Brand colors saved.');
 	});
 
 	it('maps save-time field errors next to the offending field', async () => {
 		vi.mocked(saveBrandColors).mockRejectedValue(
-			new BrandColorsApiError('x', null, 400, { accent: 'Accent is not a valid hex color.' })
+			new BrandColorsApiError('x', null, 422, { accent: 'Accent is not a valid hex color.' })
 		);
 		const user = setup();
 		await user.type(primaryText(), '#112233');
@@ -226,13 +214,11 @@ describe('BrandColorsCard (#1054)', () => {
 	it('reset sends nulls for both colors', async () => {
 		const user = setup({
 			slug: 'acme',
-			visibility: 'public',
-			brand_primary_color: '#8C3CDD',
-			brand_accent_color: '#E6332A',
+			branding: { primary_color: '#8C3CDD', accent_color: '#E6332A' },
 			brand_theme: PURPLE_THEME
 		});
 		await user.click(screen.getByRole('button', { name: 'Reset to Revel defaults' }));
-		await waitFor(() => expect(saveBrandColors).toHaveBeenCalledWith('acme', null, null, 'public'));
+		await waitFor(() => expect(saveBrandColors).toHaveBeenCalledWith('acme', null, null));
 		expect(primaryText().value).toBe('');
 	});
 });
