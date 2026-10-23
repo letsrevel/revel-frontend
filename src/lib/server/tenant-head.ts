@@ -29,8 +29,6 @@ const THEME_COLOR_RE = /<meta name="theme-color"[^>]*>/;
 const MANIFEST_RE = /<link rel="manifest"[^>]*>/;
 const FEED_RE = /<link rel="alternate" type="application\/rss\+xml"[^>]*>/;
 const OPENSEARCH_RE = /[ \t]*<link\s+rel="search"[^>]*>\s*/;
-// The comment that introduces each of the two links above; it would dangle once they are gone.
-const OPENSEARCH_COMMENT_RE = /[ \t]*<!-- OpenSearch for browser search integration -->\s*/;
 
 /** Rewrites the Revel-branded head tags of the shell for `tenant`. */
 export function rewriteHeadForTenant(html: string, tenant: SeoTenant): string {
@@ -60,7 +58,9 @@ export function rewriteHeadForTenant(html: string, tenant: SeoTenant): string {
 		)}" href="/feed.xml" />`
 	);
 	// /opensearch.xml is a platform-wide search description: 404 on tenant hosts.
-	out = out.replace(OPENSEARCH_COMMENT_RE, '').replace(OPENSEARCH_RE, '');
+	// Its app.html comment stays: SvelteKit counts comments across
+	// transformPageChunk and warns ("can break hydration") when one disappears.
+	out = out.replace(OPENSEARCH_RE, '');
 	return out;
 }
 

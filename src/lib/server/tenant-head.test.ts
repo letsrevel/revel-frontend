@@ -44,7 +44,9 @@ describe('rewriteHeadForTenant (against the real app.html)', () => {
 		expect(out).toContain('<meta name="theme-color" content="#8C3CDD" />');
 		expect(out).toContain(`<link rel="manifest" href="${TENANT_MANIFEST_PATH}" />`);
 		expect(out).toContain('title="Acme &quot;Club&quot; Events Feed"');
-		expect(out).not.toContain('opensearch');
+		expect(out).not.toContain('opensearch.xml');
+		// Comments are never removed (SvelteKit's hydration-safety check counts them).
+		expect((out.match(/<!--/g) ?? []).length).toBe((shell.match(/<!--/g) ?? []).length);
 		expect(out).not.toContain('logo-v2.svg');
 		expect(out).not.toContain('Revel Events Feed');
 	});
