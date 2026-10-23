@@ -1,3 +1,5 @@
+import type { HoldResponseSchema } from '$lib/api/generated/types.gen';
+
 /**
  * Guest seat-hold session token (#1072).
  *
@@ -61,15 +63,14 @@ export function clearGuestHoldToken(): void {
 }
 
 /**
- * Pull `guest_hold_token` out of a hold response body (200 or 409) and store it.
- * Narrow guard: the field is not in the generated types until the client is
- * regenerated from backend #1180.
- * TODO(#1072): use generated HoldResponseSchema.guest_hold_token after regen
+ * Pull `guest_hold_token` (`HoldResponseSchema`, backend #1180) out of a hold
+ * response body and store it. The body comes from a cloned raw response in the
+ * client interceptor (200 or 409, where the error body carries it too), so it
+ * is `unknown` until checked at runtime.
  */
 export function rememberGuestHoldTokenFrom(body: unknown): void {
-	if (typeof body !== 'object' || body === null) return;
-	if (!('guest_hold_token' in body)) return;
-	const value = (body as { guest_hold_token: unknown }).guest_hold_token;
+	if (typeof body !== 'object' || body === null || !('guest_hold_token' in body)) return;
+	const value = (body as Pick<HoldResponseSchema, 'guest_hold_token'>).guest_hold_token;
 	if (typeof value === 'string') rememberGuestHoldToken(value);
 }
 
