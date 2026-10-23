@@ -1,7 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 
-/** A DNS-ish hostname; refuses anything that could turn the redirect into another origin. */
-const HOSTNAME_RE = /^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$/i;
+import { organizationGetOrganizationById } from '$lib/api';
+import { customDomainOrigin } from '$lib/utils/org-links';
 
 /**
  * Where a page of `org` canonically lives: its custom domain, or null when the
@@ -13,9 +13,10 @@ export function canonicalTenantUrl(
 	url: URL
 ): string | null {
 	if (locals.tenant) return null;
-	const domain = org.custom_domain?.trim();
-	if (!domain || !HOSTNAME_RE.test(domain)) return null;
-	return `https://${domain.toLowerCase()}${url.pathname}${url.search}`;
+	// customDomainOrigin validates the hostname, so the redirect can't leave the template's origin.
+	const origin = customDomainOrigin(org.custom_domain);
+	if (!origin) return null;
+	return `${origin}${url.pathname}${url.search}`;
 }
 
 /**
@@ -32,4 +33,32 @@ export function canonicalTenantRedirect(
 ): void {
 	const target = canonicalTenantUrl(locals, org, url);
 	if (target) redirect(301, target);
+}
+
+/**
+ * Stripe-return hop (#1056; backend #1167 keeps Stripe success/cancel URLs on
+ * the platform's UUID routes). On the platform host, when the org has a custom
+ * domain, send the buyer to the SAME UUID path on that domain: their session
+ * cookies are host-only and live there, so a private event or membership
+ * resolves with their auth, and the tenant's own UUID route then 303s to the
+ * slug page with the query string (payment_success, ...) intact. Null on
+ * tenant hosts, for orgs without a domain, and on any lookup failure (the
+ * caller's existing flow takes over).
+ */
+export async function tenantReturnUrl(
+	locals: App.Locals,
+	orgId: string,
+	url: URL,
+	fetch: typeof globalThis.fetch
+): Promise<string | null> {
+	if (locals.tenant) return null;
+	try {
+		const { data } = await organizationGetOrganizationById({
+			fetch,
+			path: { organization_id: orgId }
+		});
+		return data ? canonicalTenantUrl(locals, data, url) : null;
+	} catch {
+		return null;
+	}
 }

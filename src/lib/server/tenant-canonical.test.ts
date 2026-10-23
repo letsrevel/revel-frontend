@@ -1,5 +1,9 @@
-import { describe, it, expect } from 'vitest';
-import { canonicalTenantRedirect, canonicalTenantUrl } from './tenant-canonical';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+const getById = vi.hoisted(() => vi.fn());
+vi.mock('$lib/api', () => ({ organizationGetOrganizationById: getById }));
+
+import { canonicalTenantRedirect, canonicalTenantUrl, tenantReturnUrl } from './tenant-canonical';
 
 const locals = (tenant: unknown = null) => ({ tenant }) as unknown as App.Locals;
 const url = (s: string) => new URL(s);
@@ -63,5 +67,57 @@ describe('canonicalTenantRedirect', () => {
 		expect(() =>
 			canonicalTenantRedirect(locals({ slug: 'a' }), { custom_domain: 'x.example.org' }, u)
 		).not.toThrow();
+	});
+});
+
+describe('canonicalTenantUrl with a URL template', () => {
+	it('uses PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE', async () => {
+		vi.resetModules();
+		vi.doMock('$app/environment', () => ({ browser: false }));
+		vi.doMock('$env/dynamic/public', () => ({
+			env: { PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE: 'http://{hostname}:5173' }
+		}));
+		const mod = await import('./tenant-canonical');
+		expect(
+			mod.canonicalTenantUrl(
+				locals(),
+				{ custom_domain: 'tenant.localhost' },
+				url('http://localhost:5173/org/x?a=1')
+			)
+		).toBe('http://tenant.localhost:5173/org/x?a=1');
+	});
+});
+
+describe('tenantReturnUrl (Stripe return hop)', () => {
+	const ORG = '0b8f6c1e-3a2d-4c5b-9e7f-1a2b3c4d5e6f';
+	const ret = url(
+		`https://app.example.com/events/${ORG}/1c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e5f?payment_success=true`
+	);
+	const f = vi.fn() as unknown as typeof fetch;
+
+	beforeEach(() => getById.mockReset());
+
+	it('sends a custom-domain org to the same UUID path on its domain', async () => {
+		getById.mockResolvedValue({ data: { slug: 'acme', custom_domain: 'events.example.org' } });
+		expect(await tenantReturnUrl(locals(), ORG, ret, f)).toBe(
+			`https://events.example.org${ret.pathname}?payment_success=true`
+		);
+		expect(getById).toHaveBeenCalledWith(
+			expect.objectContaining({ path: { organization_id: ORG } })
+		);
+	});
+
+	it('is null for an org without a domain, on a lookup miss, or on an error', async () => {
+		getById.mockResolvedValueOnce({ data: { slug: 'acme', custom_domain: null } });
+		expect(await tenantReturnUrl(locals(), ORG, ret, f)).toBeNull();
+		getById.mockResolvedValueOnce({ data: undefined, error: { detail: 'nope' } });
+		expect(await tenantReturnUrl(locals(), ORG, ret, f)).toBeNull();
+		getById.mockRejectedValueOnce(new Error('down'));
+		expect(await tenantReturnUrl(locals(), ORG, ret, f)).toBeNull();
+	});
+
+	it('never hops (or even looks up) on a tenant host, so the tenant route resolves itself', async () => {
+		expect(await tenantReturnUrl(locals({ slug: 'acme' }), ORG, ret, f)).toBeNull();
+		expect(getById).not.toHaveBeenCalled();
 	});
 });

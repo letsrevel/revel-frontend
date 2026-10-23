@@ -255,8 +255,8 @@
 		Both were tried: a `bg-secondary/55` wash under a `bg-secondary` band lands
 		within 5 points of lightness of it in light mode, so the band stops reading
 		as a colour BLOCK and the page becomes one flat field. The event page can
-		afford the wash because its band is the mode-inert poster-purple ribbon,
-		which is dark enough that the step is unmissable. Here the separation has
+		afford the wash because its band is the mode-inert `--poster-band` ribbon
+		(Hearty Purple, or an org primary kept >= 4.5:1 vs white), dark enough that the step is unmissable. Here the separation has
 		to come from the band itself, and the float comes from the cards:
 		`shadow-poster` over paper, overlapping the cut.
 	-->

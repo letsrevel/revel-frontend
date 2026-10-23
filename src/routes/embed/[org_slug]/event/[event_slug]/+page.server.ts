@@ -40,5 +40,5 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 		}
 	}
 
-	return { event, priceFrom };
+	return { event, priceFrom, brandTheme: event.organization.brand_theme ?? null };
 };
