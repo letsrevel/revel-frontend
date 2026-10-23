@@ -1,6 +1,6 @@
 import { test, expect } from '../../support/fixtures';
+import { hexToHslTriplet } from '../../../../src/lib/utils/brand-theme';
 import {
-	TENANT_BRAND_PRIMARY,
 	TENANT_HOST,
 	TENANT_ORIGIN,
 	fetchTenantOrg,
@@ -63,18 +63,25 @@ test.describe('J30 tenant home @p1', () => {
 		await page.context().close();
 	});
 
-	// The tenant payload's `brand_theme` is applied app-wide by a separate branch
-	// (the `<style data-org-brand>` override). Un-fixme once it lands here.
-	test.fixme('applies the org brand primary via <style data-org-brand>', async ({ browser }) => {
-		const page = await tenantPage(browser, TENANT_ORIGIN);
-		await gotoHydrated(page, '/');
+	// The tenant payload's `brand_theme` applies app-wide on the custom domain
+	// (#1055): the `<style data-org-brand>` override sets --primary to the
+	// server-adjusted light primary, so compare the computed token, not the CSS
+	// text (the FE writes HSL triplets, and the server may darken the entered hex).
+	test('applies the org brand primary on every page', async ({ browser }) => {
+		const org = await fetchTenantOrg(TENANT_HOST);
+		const lightPrimary = org?.brand_theme?.light.primary;
+		expect(lightPrimary, 'seeded tenant-test-org carries a brand_theme').toBeTruthy();
+		const expected = hexToHslTriplet(lightPrimary ?? '');
 
-		const style = page.locator('style[data-org-brand]');
-		await expect(style).toHaveCount(1);
-		// Seeded branding: primary #B0306A (hex or its HSL form, depending on the override).
-		const css = (await style.textContent()) ?? '';
-		expect(css.toLowerCase()).toContain('--primary');
-		expect(css.toLowerCase()).toContain(TENANT_BRAND_PRIMARY.toLowerCase().replace('#', ''));
+		const page = await tenantPage(browser, TENANT_ORIGIN);
+		for (const path of ['/', '/login', '/legal/privacy']) {
+			await gotoHydrated(page, path);
+			await expect(page.locator('style[data-org-brand]')).toHaveCount(1);
+			const primary = await page.evaluate(() =>
+				getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()
+			);
+			expect(primary, path).toBe(expected);
+		}
 
 		await page.context().close();
 	});

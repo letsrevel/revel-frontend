@@ -34,7 +34,6 @@ export const TENANT_RSVP_EVENT_PATH = `/events/${TENANT_ORG_SLUG}/tenant-rsvp-ev
 /** Seeded: +31 days, tier "Free Ticket" (FREE, qty 100). */
 export const TENANT_FREE_EVENT_PATH = `/events/${TENANT_ORG_SLUG}/tenant-free-ticket-event`;
 /** Seeded branding of `tenant-test-org`. */
-export const TENANT_BRAND_PRIMARY = '#B0306A';
 
 export const PAID_HOST = 'paid.localhost';
 export const PAID_ORG_SLUG = 'tenant-paid-org';
@@ -59,6 +58,8 @@ export interface TenantOrgInfo {
 	has_membership_plans?: boolean;
 	accept_membership_requests?: boolean;
 	has_resources?: boolean;
+	/** Server-adjusted per-mode colors (`#RRGGBB`), null when the org has no branding. */
+	brand_theme?: { light: { primary: string }; dark: { primary: string } } | null;
 }
 
 /** `GET /api/organizations/by-domain/{hostname}`; null on 404 or any failure. */

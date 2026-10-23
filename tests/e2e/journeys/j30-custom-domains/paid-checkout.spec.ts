@@ -73,19 +73,22 @@ test.describe('J30 paid checkout on a tenant host @p1', () => {
 		await page.context().close();
 	});
 
-	// Stripe success/cancel URLs are built from the platform's base URL until
-	// backend #1153 makes them tenant-aware, so today the buyer lands back on the
-	// platform host (which then canonical-redirects to paid.localhost).
-	// Un-fixme once #1153 ships: the return must be paid.localhost:5173, not
-	// localhost:5173, and the ticket must activate.
-	test.fixme('paying returns the buyer to the tenant host (backend #1153)', async ({ browser }) => {
+	// Stripe success/cancel URLs stay on the PLATFORM's opaque UUID routes
+	// (backend #1167: no organizer-chosen hostnames reach Stripe, and checkout
+	// idempotency needs byte-identical params). The return hops platform UUID
+	// route → same UUID path on paid.localhost (where the buyer's host-only
+	// session lives) → the slug event page, query string intact.
+	test('paying returns the buyer to the tenant host with payment_success', async ({ browser }) => {
 		test.setTimeout(240_000);
 		requireStripeWebhooks();
 
 		const { page } = await startCheckoutOnPaidHost(browser);
 		await completeStripeCheckout(page);
 
-		await expect(page).toHaveURL(new RegExp(`^${PAID_ORIGIN}/`));
+		await expect(page).toHaveURL(
+			new RegExp(`^${PAID_ORIGIN}${PAID_EVENT_PATH}\\?(.*&)?payment_success=true`),
+			{ timeout: 30_000 }
+		);
 		const activeCard = page
 			.locator('article, li, div')
 			.filter({ hasText: /Standard Ticket|Tenant Paid/i })
