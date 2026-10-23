@@ -2,6 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { normalizeCustomDomain, orgHref, orgOrigin, tenantDomainFrom } from './org-links';
 
 describe('orgHref', () => {
+	it('turns SSR page-relative resolve() output into a root-relative path', () => {
+		const org = { custom_domain: 'acme.example.com' };
+		expect(orgHref(org, './events/acme/party')).toBe('https://acme.example.com/events/acme/party');
+		expect(orgHref(org, '../../org/acme?x=1')).toBe('https://acme.example.com/org/acme?x=1');
+		expect(orgHref(org, '.')).toBe('https://acme.example.com/');
+	});
+
 	it('returns the relative path without a custom domain', () => {
 		expect(orgHref({ custom_domain: null }, '/org/acme')).toBe('/org/acme');
 		expect(orgHref({}, '/org/acme')).toBe('/org/acme');

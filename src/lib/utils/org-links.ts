@@ -47,7 +47,18 @@ export function orgHref(
 	const host = normalizeCustomDomain(org?.custom_domain);
 	if (!host) return path;
 	if (normalizeCustomDomain(currentTenantDomain) === host) return path;
-	return `https://${host}${path}`;
+	return `https://${host}${rootRelative(path)}`;
+}
+
+/**
+ * During SSR SvelteKit's `resolve()` returns PAGE-relative paths (`./events/x`,
+ * `../../org/x`) because `paths.relative` defaults to true. Prefixing one with
+ * an origin would yield `https://host./events/x`. The app has no base path, so
+ * dropping the leading `./` / `../` segments gives the root-relative path.
+ */
+function rootRelative(path: string): string {
+	const stripped = path.replace(/^(?:\.{1,2}(?:\/|$))+/, '');
+	return stripped.startsWith('/') ? stripped : `/${stripped}`;
 }
 
 /** The current tenant's custom domain from root layout data (`page.data`). */
