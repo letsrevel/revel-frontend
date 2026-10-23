@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { orgHref } from '$lib/utils/org-links';
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import OrganizationCardSkeleton from '$lib/components/common/OrganizationCardSkeleton.svelte';
 	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
@@ -158,10 +160,12 @@
 					</div>
 
 					<div class="flex shrink-0 gap-2">
+						<!-- eslint-disable svelte/no-navigation-without-resolve -- orgHref() wraps resolve(); custom-domain links are absolute (#1056) -->
 						<a
-							href={resolve('/(public)/org/[slug]', { slug: org.slug })}
+							href={orgHref(org, resolve('/(public)/org/[slug]', { slug: org.slug }), page.data)}
 							class="flex-1 rounded-md border px-4 py-2 text-center text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground sm:flex-none"
 						>
+							<!-- eslint-enable svelte/no-navigation-without-resolve -->
 							{m['dashboard.viewProfile']()}
 						</a>
 						{#if hasAdminPermissions(permissions, org.id)}

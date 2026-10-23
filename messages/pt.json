@@ -10306,5 +10306,16 @@
 			"loadFailed": "Não foi possível carregar os documentos a emitir por ti.",
 			"referenceRequired": "Indica o número do documento."
 		}
+	},
+	"tenantChrome": {
+		"mainNavigation": "Navegação da organização",
+		"events": "Eventos",
+		"membership": "Adesão",
+		"resources": "Recursos",
+		"copyright": "© {year} {name}",
+		"poweredBy": "Distribuído por",
+		"legalNavigation": "Informação legal",
+		"privacy": "Privacidade",
+		"terms": "Termos"
 	}
 }

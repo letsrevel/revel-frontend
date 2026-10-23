@@ -83,6 +83,14 @@ ENV PUBLIC_VERSION=${PUBLIC_VERSION}
 #                     off while unset. Any other host is resolved as an organization
 #                     custom domain; unknown hosts get 404. localhost/127.0.0.1/::1
 #                     are always platform.)
+#   - PLATFORM_ORIGIN (optional; where platform-only paths such as /org/*/admin are sent
+#                     from a tenant host, e.g. https://app.example.com. Defaults to
+#                     https:// + the first PLATFORM_HOSTS entry.)
+#   - PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE (optional, runtime, also used client-side; how an
+#                     org's custom domain becomes an absolute URL. Must start with
+#                     http:// or https:// and contain {hostname}. Default
+#                     https://{hostname}; dev/E2E: http://{hostname}:5173. Keep in sync with
+#                     the backend's CUSTOM_DOMAIN_URL_TEMPLATE. Invalid = default.)
 
 # Switch to non-root user
 USER appuser

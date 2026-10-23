@@ -10306,5 +10306,16 @@
 			"loadFailed": "Die selbst auszustellenden Dokumente konnten nicht geladen werden.",
 			"referenceRequired": "Gib die Belegnummer ein."
 		}
+	},
+	"tenantChrome": {
+		"mainNavigation": "Navigation der Organisation",
+		"events": "Veranstaltungen",
+		"membership": "Mitgliedschaft",
+		"resources": "Ressourcen",
+		"copyright": "© {year} {name}",
+		"poweredBy": "Bereitgestellt von",
+		"legalNavigation": "Rechtliches",
+		"privacy": "Datenschutz",
+		"terms": "Nutzungsbedingungen"
 	}
 }

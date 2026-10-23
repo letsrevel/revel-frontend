@@ -31,6 +31,9 @@ declare global {
 			brandTheme?: BrandThemeInput | null;
 			// Root layout: the custom-domain org on tenant hosts, else null (#1055).
 			tenant?: TenantOrganization | null;
+			// Tenant-mode switch for the link helpers (#1056): `enabled` mirrors server-side
+			// `PLATFORM_HOSTS`; `platformOrigin` is where non-tenant orgs and platform tools live.
+			customDomains?: { enabled: boolean; platformOrigin: string | null };
 		}
 		// interface PageState {}
 		// interface Platform {}

@@ -19,6 +19,7 @@ import {
 } from '$lib/utils/cookies';
 import { log } from '$lib/server/logger';
 import { handleTenant } from '$lib/server/tenant';
+import { handleTenantRouting } from '$lib/server/tenant-routing';
 import { startMetricsServer } from '$lib/server/metrics';
 import { handleRequestLogging, handleSsrError } from '$lib/server/request-logging';
 
@@ -416,10 +417,12 @@ const handleAuthGuard: Handle = async ({ event, resolve }) => {
  * whole chain. handleTenant is SECOND: it must run before anything that sets
  * cookies, reads the host or renders (a stray host gets a bare 404/503, never
  * the app shell), yet inside logging so those rejections are still timed/logged.
+ * handleTenantRouting is THIRD (see tenant-routing.ts for what it does and why).
  */
 export const handle = sequence(
 	handleRequestLogging,
 	handleTenant,
+	handleTenantRouting,
 	handleTokenCapture,
 	handleEmbedShell,
 	i18nHandle(),

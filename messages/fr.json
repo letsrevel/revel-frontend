@@ -10306,5 +10306,16 @@
 			"loadFailed": "Impossible de charger les documents à émettre toi-même.",
 			"referenceRequired": "Saisis le numéro du document."
 		}
+	},
+	"tenantChrome": {
+		"mainNavigation": "Navigation de l'organisation",
+		"events": "Événements",
+		"membership": "Adhésion",
+		"resources": "Ressources",
+		"copyright": "© {year} {name}",
+		"poweredBy": "Propulsé par",
+		"legalNavigation": "Mentions légales",
+		"privacy": "Confidentialité",
+		"terms": "Conditions"
 	}
 }

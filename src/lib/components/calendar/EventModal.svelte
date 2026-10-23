@@ -1,7 +1,10 @@
 <script lang="ts">
+	import { orgHref } from '$lib/utils/org-links';
 	import type { EventInListSchema, EventDetailSchema } from '$lib/api/generated/types.gen';
 	import { goto } from '$app/navigation';
+	import { navigateTo } from '$lib/utils/navigate-to';
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { Calendar, MapPin, Building2 } from '@lucide/svelte';
@@ -25,21 +28,40 @@
 
 	const { event, open, onClose }: Props = $props();
 
+	// SvelteKit's goto() rejects cross-origin URLs, and orgHref() returns an
+	// absolute https://{custom_domain} URL for orgs with a custom domain (#1056).
+	function openHref(href: string) {
+		/* eslint-disable-next-line svelte/no-navigation-without-resolve -- relative hrefs come from resolve() inside orgHref() */
+		if (href.startsWith('/')) goto(href);
+		else navigateTo(href);
+	}
+
 	function handleViewDetails() {
 		if (event) {
 			const slug = event.organization?.slug || '';
-			goto(
-				resolve('/(public)/events/[org_slug]/[event_slug]', {
-					org_slug: slug,
-					event_slug: event.slug
-				})
+
+			openHref(
+				orgHref(
+					event.organization,
+					resolve('/(public)/events/[org_slug]/[event_slug]', {
+						org_slug: slug,
+						event_slug: event.slug
+					}),
+					page.data
+				)
 			);
 		}
 	}
 
 	function handleViewOrganization() {
 		if (event?.organization) {
-			goto(resolve('/(public)/org/[slug]', { slug: event.organization.slug }));
+			openHref(
+				orgHref(
+					event.organization,
+					resolve('/(public)/org/[slug]', { slug: event.organization.slug }),
+					page.data
+				)
+			);
 		}
 	}
 
