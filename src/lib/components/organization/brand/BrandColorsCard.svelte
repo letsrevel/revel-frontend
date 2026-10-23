@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { createMutation } from '@tanstack/svelte-query';
-	import { invalidateAll } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
 	import { Heart, Loader2, Palette } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
@@ -29,6 +28,8 @@
 	const { organization }: Props = $props();
 
 	const PREVIEW_DEBOUNCE_MS = 250;
+	// Only the native picker's resting value when no color is set: `<input
+	// type="color">` requires a concrete #rrggbb and can't read a CSS token.
 	const FALLBACK_PICKER_HEX = '#8c3cdd';
 
 	type Field = 'primary' | 'accent';
@@ -42,7 +43,7 @@
 	const isBlank = (raw: string): boolean => raw.trim() === '';
 
 	// Deliberate one-time capture: the drafts seed from the saved values and then
-	// belong to the user; `invalidateAll()` after a save must not clobber them.
+	// belong to the user; a save updates the baseline from its own response.
 	const { slug, initialPrimary, initialAccent, initialTheme } = untrack(() => ({
 		slug: organization.slug,
 		initialPrimary: normalizeHex(organization.branding?.primary_color ?? ''),
@@ -134,7 +135,9 @@
 			themeFor = { primary, accent };
 		} catch (error) {
 			if (current.signal.aborted) return;
-			// Keep the last good theme on screen; surface the detail next to the field.
+			// Keep the last good theme on screen and show the detail. Forget the key
+			// so re-entering the same value retries (e.g. after a network blip).
+			lastKey = '';
 			previewError = error instanceof BrandColorsApiError ? error.detail : null;
 		} finally {
 			if (controller === current) previewPending = false;
@@ -172,10 +175,12 @@
 					? m['orgAdmin.settings.brandColors.resetDone']()
 					: m['orgAdmin.settings.brandColors.saved']()
 			);
-			await invalidateAll();
+			// No invalidateAll(): the response above is authoritative, and
+			// re-running the page load would re-sync the settings page's own
+			// form from `data` and silently drop its unsaved edits.
 		},
 		// A local onError REPLACES the global "Action failed" toast: field-level
-		// 400 details render inline; anything else gets one toast.
+		// 422 details render inline; anything else gets one toast.
 		onError: (error: unknown) => {
 			const fieldErrors = toSaveErrors(error);
 			if (fieldErrors) saveErrors = fieldErrors;

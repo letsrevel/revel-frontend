@@ -28,7 +28,10 @@
  */
 @layer base {
 	/* `.theme-light` re-applies the light tokens to a subtree inside dark mode
-	   (the brand-color preview shows both modes at once, #1054). */
+	   (the brand-color preview shows both modes at once, #1054). It re-scopes
+	   the custom properties only: a `dark:` utility inside it still resolves
+	   dark while an ancestor carries `.dark`, so keep `dark:` variants out of
+	   anything rendered in the preview panel (Button and Badge have none). */
 	:root,
 	.theme-light {
 		--background: 268 60% 96%; /* whisper lavender paper */

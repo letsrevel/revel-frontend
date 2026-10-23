@@ -184,14 +184,34 @@ describe('BrandColorsCard (#1054)', () => {
 		expect(screen.getByTestId('brand-swatches-dark')).toHaveTextContent('#A667E5');
 	});
 
-	it('saves both colors and refreshes page data', async () => {
+	it('retries the same value after a failed preview', async () => {
+		vi.mocked(previewBrandTheme).mockRejectedValueOnce(new Error('network down'));
+		setup();
+		await fireEvent.input(primaryPicker(), { target: { value: '#123456' } });
+		await flushDebounce();
+		expect(previewBrandTheme).toHaveBeenCalledTimes(1);
+
+		await fireEvent.input(primaryPicker(), { target: { value: '#654321' } });
+		await fireEvent.input(primaryPicker(), { target: { value: '#123456' } });
+		await flushDebounce();
+		expect(previewBrandTheme).toHaveBeenCalledTimes(2);
+		expect(previewBrandTheme).toHaveBeenLastCalledWith(
+			'acme',
+			'#123456',
+			null,
+			expect.any(AbortSignal)
+		);
+	});
+
+	it('saves both colors without reloading page data', async () => {
 		const user = setup();
 		await user.type(primaryText(), '#112233');
 		await flushDebounce();
 		await user.click(saveButton());
 		await waitFor(() => expect(saveBrandColors).toHaveBeenCalledWith('acme', '#112233', null));
-		await waitFor(() => expect(invalidateAll).toHaveBeenCalled());
-		expect(toast.success).toHaveBeenCalledWith('Brand colors saved.');
+		await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Brand colors saved.'));
+		// A page reload would re-sync (and wipe) the settings form's unsaved edits.
+		expect(invalidateAll).not.toHaveBeenCalled();
 	});
 
 	it('maps save-time field errors next to the offending field', async () => {

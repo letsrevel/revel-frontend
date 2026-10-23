@@ -9,11 +9,11 @@ import {
 } from '$lib/api/generated/sdk.gen';
 import type { BrandTheme, OrganizationBrandingResponse } from '$lib/api/generated/types.gen';
 
-/** A 400 (or other API failure) whose `detail` can be shown next to a field. */
+/** A failed preview or save; `detail` / `fieldErrors` carry what can be shown inline. */
 export class BrandColorsApiError extends Error {
 	readonly detail: string | null;
 	readonly status: number | undefined;
-	/** Save-time 400s: `{"errors": {"brand_primary_color": ["..."]}}`, keyed by form field. */
+	/** Save-time 422s: `{"detail": [{"loc": [..., "primary_color"], "msg"}]}`, keyed by `loc[-1]`. */
 	readonly fieldErrors: Partial<Record<'primary' | 'accent', string>>;
 
 	constructor(
