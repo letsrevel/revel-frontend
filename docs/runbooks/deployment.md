@@ -60,6 +60,7 @@ docker run -p 3000:3000 \
 | `PROTOCOL_HEADER`            | Header carrying the public scheme, e.g. `x-forwarded-proto` (pair with `HOST_HEADER`) | unset | No |
 | `PLATFORM_HOSTS`             | Comma-separated platform hostnames (no ports). Unset = tenant mode off; any other host is resolved as an organization custom domain (unknown: 404). `localhost`/`127.0.0.1`/`::1` are always platform | unset | No |
 | `PLATFORM_ORIGIN`            | Origin (`https://app.example.com`) that platform-only paths (`/org/*/admin`, `/create-org`, `/oauth/*`, `/impersonate`) are redirected to from a tenant host. Defaults to `https://` + the first `PLATFORM_HOSTS` entry | derived | No |
+| `PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE` | URL template for absolute custom-domain links, 301s and SEO canonicals; must start with `http://`/`https://` and contain `{hostname}` (invalid values fall back to the default, logged once). Public runtime env (read client-side too). Keep in sync with the backend's `CUSTOM_DOMAIN_URL_TEMPLATE`; dev/E2E use `http://{hostname}:5173` | `https://{hostname}` | No |
 | `PORT`                       | Server port                                                               | `3000`                  | No       |
 | `HOST`                       | Server host                                                               | `0.0.0.0`               | No       |
 | `NODE_ENV`                   | Node environment                                                          | `production`            | No       |

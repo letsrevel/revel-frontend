@@ -2,11 +2,46 @@
  * Links to an organization's attendee pages (#1056).
  *
  * An organization with an active custom domain is served at
- * `https://{custom_domain}`. Wherever such an org is linked from the platform
+ * its custom-domain origin (`https://{custom_domain}` by default, see {@link customDomainOrigin}). Wherever such an org is linked from the platform
  * (or from another tenant), link straight to that origin so there is no
  * redirect hop through the platform's 301. Admin routes stay on the platform and
  * must NOT go through `orgHref`.
  */
+
+import { browser } from '$app/environment';
+import { env } from '$env/dynamic/public';
+
+const DEFAULT_TEMPLATE = 'https://{hostname}';
+let warnedInvalidTemplate = false;
+
+/**
+ * The URL template for custom-domain origins: `PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE`
+ * (runtime public env, so it works client-side too). Must start with `http://`
+ * or `https://` and contain `{hostname}`; anything else falls back to
+ * `https://{hostname}` (logged once, server-side only). Mirrors the backend's
+ * `CUSTOM_DOMAIN_URL_TEMPLATE`; dev/E2E use `http://{hostname}:5173`.
+ */
+function customDomainTemplate(): string {
+	const raw = env.PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE?.trim();
+	if (!raw) return DEFAULT_TEMPLATE;
+	if (/^https?:\/\//i.test(raw) && raw.includes('{hostname}')) return raw;
+	if (!warnedInvalidTemplate && !browser) {
+		warnedInvalidTemplate = true;
+		console.warn(
+			`[org-links] Invalid PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE; using ${DEFAULT_TEMPLATE}`
+		);
+	}
+	return DEFAULT_TEMPLATE;
+}
+
+/**
+ * Origin (no trailing slash) a custom domain is served at, per the configured
+ * template, or `null` when `hostname` is absent or malformed.
+ */
+export function customDomainOrigin(hostname: string | null | undefined): string | null {
+	const host = normalizeCustomDomain(hostname);
+	return host ? customDomainTemplate().replaceAll('{hostname}', host).replace(/\/+$/, '') : null;
+}
 
 /** Minimal shape every generated org schema carrying a domain satisfies. */
 export interface OrgWithDomain {
@@ -26,10 +61,9 @@ export function normalizeCustomDomain(domain: string | null | undefined): string
 	return HOSTNAME_RE.test(host) ? host : null;
 }
 
-/** `https://{custom_domain}` for an org with a valid domain, otherwise `null`. */
+/** Custom-domain origin for an org with a valid domain, otherwise `null`. */
 export function orgOrigin(org: OrgWithDomain | null | undefined): string | null {
-	const host = normalizeCustomDomain(org?.custom_domain);
-	return host ? `https://${host}` : null;
+	return customDomainOrigin(org?.custom_domain);
 }
 
 /**
@@ -46,8 +80,9 @@ export function orgHref(
 ): string {
 	const host = normalizeCustomDomain(org?.custom_domain);
 	if (!host) return path;
+	// Compare hostnames, not origins: the template may add a port or scheme.
 	if (normalizeCustomDomain(currentTenantDomain) === host) return path;
-	return `https://${host}${rootRelative(path)}`;
+	return `${customDomainOrigin(host)}${rootRelative(path)}`;
 }
 
 /**
