@@ -15,8 +15,8 @@ import {
 //
 // Redirect assertions use raw HTTP (`hostRequest`: Host header, no redirect
 // following) so status + Location are checked verbatim and no navigation ever
-// leaves the host under test. Only the
-// `/events` → `/` case is also driven through a real browser navigation.
+// leaves the host under test. `/events` is the exception: on a tenant host it
+// is the org's own event list, driven through a real browser navigation.
 
 test.describe('J30 tenant route scoping @p1', () => {
 	// eslint-disable-next-line no-empty-pattern
@@ -25,7 +25,7 @@ test.describe('J30 tenant route scoping @p1', () => {
 		testInfo.skip(reason !== null, reason ?? '');
 	});
 
-	for (const path of ['/events', '/organizations', `/org/${PAID_ORG_SLUG}`]) {
+	for (const path of ['/organizations', `/org/${PAID_ORG_SLUG}`, '/referral']) {
 		test(`${path} on the tenant host redirects to /`, async () => {
 			const response = await hostRequest(TENANT_HOST, path);
 			expect(response.status).toBe(302);
@@ -33,14 +33,20 @@ test.describe('J30 tenant route scoping @p1', () => {
 		});
 	}
 
-	test('platform discovery in a real browser ends at the tenant root', async ({ browser }) => {
+	test('/events on the tenant host lists only the tenant org events', async ({ browser }) => {
 		const page = await tenantPage(browser, TENANT_ORIGIN);
 		await page.goto('/events');
-		await expect(page).toHaveURL(`${TENANT_ORIGIN}/`);
+		await expect(page).toHaveURL(`${TENANT_ORIGIN}/events`);
+		const links = page.locator('a[href*="/events/"]');
+		await expect(links.first()).toBeVisible({ timeout: 15_000 });
+		const hrefs = await links.evaluateAll((as) => as.map((a) => a.getAttribute('href') ?? ''));
+		for (const href of hrefs.filter((h) => /\/events\/[^/?]+\/[^/?]+/.test(h))) {
+			expect(href, 'event links stay on the tenant org').toContain(`/events/${TENANT_ORG_SLUG}/`);
+		}
 		await page.context().close();
 	});
 
-	for (const path of [`/org/${TENANT_ORG_SLUG}/admin`, '/create-org']) {
+	for (const path of [`/org/${TENANT_ORG_SLUG}/admin`, '/create-org', '/account/developer-apps']) {
 		test(`${path} on the tenant host redirects to the platform origin`, async () => {
 			const response = await hostRequest(TENANT_HOST, `${path}?x=1`);
 			expect(response.status).toBe(302);
