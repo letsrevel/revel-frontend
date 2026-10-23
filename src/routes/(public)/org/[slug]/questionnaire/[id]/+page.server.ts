@@ -76,6 +76,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 			logo: organization.logo ?? null,
 			logo_thumbnail_url: organization.logo_thumbnail_url ?? null
 		},
+		brandTheme: organization.brand_theme ?? null,
 		questionnaire
 	};
 };

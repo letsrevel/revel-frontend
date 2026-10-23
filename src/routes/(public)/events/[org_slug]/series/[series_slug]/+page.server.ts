@@ -117,6 +117,7 @@ export const load: PageServerLoad = async ({ params, url, fetch, locals, request
 		return {
 			seo,
 			series,
+			brandTheme: series.organization.brand_theme ?? null,
 			seriesPasses: passesResponse.data || [],
 			events: eventsResponse.data?.results || [],
 			totalCount: eventsResponse.data?.count || 0,
