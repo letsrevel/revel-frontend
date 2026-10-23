@@ -5,6 +5,7 @@ import { getAccessTokenCookieOptions, getRefreshTokenCookieOptions } from '$lib/
 import { extractErrorMessage } from '$lib/utils/errors';
 import { claimPendingTokens, setClaimFlashCookie } from '$lib/server/token-claim';
 import { log } from '$lib/server/logger';
+import { resolveReturnTarget } from '$lib/server/tenant-canonical';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
 import { safeReturnUrl } from '$lib/utils/safe-redirect';
@@ -56,6 +57,14 @@ export const load: PageServerLoad = async ({ url, request, fetch, cookies, local
 				const claimResults = await claimPendingTokens(cookies, access, fetch);
 				setClaimFlashCookie(cookies, claimResults);
 			}
+
+			// Registered on a custom domain (#1070): offer the way back with an
+			// explicit button, never an automatic redirect. An org owner can make
+			// Revel send genuine emails to any address with their tenant Origin, so
+			// auto-forwarding would hand the reader to an owner-controlled domain
+			// without them choosing to go there. Token-free, query-free target.
+			const returnTo = await resolveReturnTarget(url.searchParams.get('return_host'), fetch);
+			if (returnTo) return { seo, success: true, error: null, returnTo };
 
 			// Back to where the user started when the verification link carries a
 			// returnUrl (registration with `?returnUrl=`, BE #1023); the profile

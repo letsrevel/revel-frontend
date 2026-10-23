@@ -2,6 +2,7 @@ import { fail, type Actions } from '@sveltejs/kit';
 import { passwordResetSchema } from '$lib/schemas/auth';
 import { accountResetPassword } from '$lib/api/generated';
 import { log } from '$lib/server/logger';
+import { resolveReturnTarget } from '$lib/server/tenant-canonical';
 
 /** Read the HTTP status from an error shaped like `{ response: { status } }`. */
 function getResponseStatus(error: unknown): unknown {
@@ -44,7 +45,7 @@ function firstString(value: unknown): string | undefined {
 }
 
 export const actions: Actions = {
-	resetPassword: async ({ request }) => {
+	resetPassword: async ({ request, fetch }) => {
 		const formData = await request.formData();
 		const password = formData.get('password') as string;
 		const confirmPassword = formData.get('confirmPassword') as string;
@@ -80,8 +81,11 @@ export const actions: Actions = {
 				}
 			});
 
+			// Started on a custom domain (#1070): the page offers a way back to its
+			// login. Re-validated here; the form field is untrusted input.
 			return {
-				success: true
+				success: true,
+				returnTo: await resolveReturnTarget(formData.get('return_host')?.toString(), fetch)
 			};
 		} catch (error) {
 			log.error('password_reset_error', { error });

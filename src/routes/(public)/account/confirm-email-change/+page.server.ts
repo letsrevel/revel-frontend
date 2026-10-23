@@ -4,6 +4,7 @@ import { emailChangeConfirmSchema } from '$lib/schemas/auth';
 import { getAccessTokenCookieOptions, getRefreshTokenCookieOptions } from '$lib/utils/cookies';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { log } from '$lib/server/logger';
+import { resolveReturnTarget } from '$lib/server/tenant-canonical';
 
 export const actions: Actions = {
 	confirmEmailChange: async ({ request, cookies, fetch }) => {
@@ -38,8 +39,13 @@ export const actions: Actions = {
 
 				const newEmail = response.data.user?.email ?? '';
 
+				// Started on a custom domain (#1070): its login is the way back (the
+				// tenant host holds no session). Re-validated here.
+				const returnTo = await resolveReturnTarget(formData.get('return_host')?.toString(), fetch);
+
 				return {
 					success: true,
+					returnTo,
 					new_email: newEmail,
 					user: response.data.user,
 					access_token: tokens?.access ?? null

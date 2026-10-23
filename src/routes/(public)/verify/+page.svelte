@@ -42,9 +42,25 @@
 	chip={statusChip}
 	title={data.success ? m['verifyPage.emailVerified']() : m['verifyPage.verificationFailed']()}
 	subtitle={data.success
-		? m['verifyPage.successRedirect']()
+		? 'returnTo' in data && data.returnTo
+			? m['verifyPage.successContinue']({ name: data.returnTo.name })
+			: m['verifyPage.successRedirect']()
 		: `${data.error || m['verifyPage.couldNotVerify']()} ${m['verifyPage.linkExpiredOrInvalid']()}`}
 >
+	{#if data.success && 'returnTo' in data && data.returnTo}
+		<div class="rounded-lg border-2 border-border bg-card p-6 shadow-poster">
+			<div class="flex justify-center">
+				<!-- eslint-disable svelte/no-navigation-without-resolve -- validated custom-domain origin (#1070) -->
+				<a
+					href="{data.returnTo.origin}/login"
+					class="inline-flex h-10 w-full items-center justify-center rounded-md bg-primary px-6 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 sm:w-auto"
+				>
+					{m['tenantReturn.continueTo']({ name: data.returnTo.name })}
+				</a>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
+			</div>
+		</div>
+	{/if}
 	{#if !data.success}
 		<div class="rounded-lg border-2 border-border bg-card p-6 shadow-poster">
 			<div class="flex flex-col gap-3 sm:flex-row sm:justify-center">

@@ -9357,6 +9357,7 @@
 	"organizationsListPage.nextPageUnavailable": "Pagina successiva (non disponibile)",
 	"passwordResetPage.emailPlaceholder": "tu@esempio.com",
 	"verifyPage.successRedirect": "Il tuo account è stato verificato con successo. Ti reindirizziamo al tuo profilo...",
+	"verifyPage.successContinue": "Il tuo account è stato verificato. Continua su {name} per accedere.",
 	"verifyPage.couldNotVerify": "Non siamo riusciti a verificare il tuo indirizzo email.",
 	"verifyPage.linkExpiredOrInvalid": "Il link di verifica potrebbe essere scaduto o non valido.",
 	"verifyPage.createNewAccount": "Crea un nuovo account",
@@ -10318,5 +10319,6 @@
 		"legalNavigation": "Note legali",
 		"privacy": "Privacy",
 		"terms": "Termini"
-	}
+	},
+	"tenantReturn.continueTo": "Continua su {name}"
 }
