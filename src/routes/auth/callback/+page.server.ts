@@ -1,7 +1,7 @@
 import { redirect, isRedirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { authOidcExchange } from '$lib/api/client';
-import { establishSession } from '$lib/server/session';
+import { establishSession, sessionRememberMe } from '$lib/server/session';
 import { safeReturnUrl } from '$lib/utils/safe-redirect';
 import { log } from '$lib/server/logger';
 
@@ -15,7 +15,7 @@ import { log } from '$lib/server/logger';
  * TOTP is skipped for IdP logins (the IdP's MFA is trusted), so the exchange
  * always returns a full pair. IdP logins default to persistent (remember-me).
  */
-export const load: PageServerLoad = async ({ url, cookies, fetch }) => {
+export const load: PageServerLoad = async ({ url, cookies, fetch, locals }) => {
 	const token = url.searchParams.get('token');
 	if (!token) {
 		throw redirect(303, '/login?error=oidc_state');
@@ -29,7 +29,12 @@ export const load: PageServerLoad = async ({ url, cookies, fetch }) => {
 			throw redirect(303, '/login?error=oidc_state');
 		}
 
-		await establishSession(cookies, { access: data.access, refresh: data.refresh }, true, fetch);
+		await establishSession(
+			cookies,
+			{ access: data.access, refresh: data.refresh },
+			sessionRememberMe(true, locals),
+			fetch
+		);
 
 		throw redirect(303, safeReturnUrl(data.return_url));
 	} catch (err) {

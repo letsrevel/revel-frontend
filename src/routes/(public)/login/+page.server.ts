@@ -3,7 +3,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { loginSchema, otpSchema } from '$lib/schemas/auth';
 import { authObtainToken, authObtainTokenWithOtp } from '$lib/api/client';
 import { extractErrorMessage } from '$lib/utils/errors';
-import { establishSession } from '$lib/server/session';
+import { establishSession, sessionRememberMe } from '$lib/server/session';
 import { getDemoMode, getSsoProviders } from '$lib/server/features';
 import { log } from '$lib/server/logger';
 import { buildSeo } from '$lib/seo';
@@ -24,7 +24,7 @@ export const load: PageServerLoad = async ({ url, request, fetch, locals }) => {
 
 export const actions = {
 	// Standard email/password login
-	login: async ({ request, fetch, cookies, url }) => {
+	login: async ({ request, fetch, cookies, url, locals }) => {
 		const formData = await request.formData();
 		const data = {
 			email: formData.get('email') as string,
@@ -68,7 +68,12 @@ export const actions = {
 			// Success - check if we have tokens
 			if (response.response?.ok && response.data && 'access' in response.data) {
 				const { access, refresh } = response.data;
-				await establishSession(cookies, { access, refresh }, data.rememberMe, fetch);
+				await establishSession(
+					cookies,
+					{ access, refresh },
+					sessionRememberMe(data.rememberMe, locals),
+					fetch
+				);
 
 				// Redirect to returnUrl (same-origin only) or dashboard
 				const returnUrl = safeReturnUrl(url.searchParams.get('returnUrl'));
@@ -108,7 +113,7 @@ export const actions = {
 	},
 
 	// 2FA verification
-	verify2FA: async ({ request, fetch, cookies, url }) => {
+	verify2FA: async ({ request, fetch, cookies, url, locals }) => {
 		const formData = await request.formData();
 		const data = {
 			code: formData.get('code') as string,
@@ -141,7 +146,12 @@ export const actions = {
 			// Success - check if we have tokens
 			if (response.response?.ok && response.data) {
 				const { access, refresh } = response.data;
-				await establishSession(cookies, { access, refresh }, data.rememberMe, fetch);
+				await establishSession(
+					cookies,
+					{ access, refresh },
+					sessionRememberMe(data.rememberMe, locals),
+					fetch
+				);
 
 				// Redirect to returnUrl (same-origin only) or dashboard
 				const returnUrl = safeReturnUrl(url.searchParams.get('returnUrl'));

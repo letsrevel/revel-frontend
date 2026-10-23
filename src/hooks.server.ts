@@ -18,6 +18,7 @@ import {
 	getRememberMeCookieOptions
 } from '$lib/utils/cookies';
 import { log } from '$lib/server/logger';
+import { sessionRememberMe } from '$lib/server/session';
 import { handleTenant } from '$lib/server/tenant';
 import { handleTenantRouting } from '$lib/server/tenant-routing';
 import { handleTenantHead } from '$lib/server/tenant-head';
@@ -99,7 +100,7 @@ async function refreshSession(
 	event: Parameters<Handle>[0]['event'],
 	refreshToken: string
 ): Promise<boolean> {
-	const rememberMe = event.cookies.get('remember_me') === 'true';
+	const rememberMe = sessionRememberMe(event.cookies.get('remember_me') === 'true', event.locals);
 
 	try {
 		// `event.fetch` (not the global) so `handleFetch` below rewrites this call

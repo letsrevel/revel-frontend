@@ -13,31 +13,36 @@ const mockedTokenRefresh = vi.mocked(tokenRefresh);
 interface FakeCookies {
 	cookies: Cookies;
 	jar: Map<string, string>;
+	options: Map<string, Record<string, unknown>>;
 	deleted: string[];
 }
 
 /** A cookie jar that records writes so assertions can read them back. */
 function fakeCookies(initial: Record<string, string> = {}): FakeCookies {
 	const jar = new Map<string, string>(Object.entries(initial));
+	const options = new Map<string, Record<string, unknown>>();
 	const deleted: string[] = [];
 	const cookies = {
 		get: vi.fn((name: string) => jar.get(name)),
-		set: vi.fn((name: string, value: string) => {
+		set: vi.fn((name: string, value: string, opts?: Record<string, unknown>) => {
 			jar.set(name, value);
+			options.set(name, opts ?? {});
 		}),
 		delete: vi.fn((name: string) => {
 			jar.delete(name);
 			deleted.push(name);
 		})
 	} as unknown as Cookies;
-	return { cookies, jar, deleted };
+	return { cookies, jar, options, deleted };
 }
 
 /** The request-scoped fetch SvelteKit hands the handler; `handleFetch` wraps it. */
 const requestFetch = vi.fn() as unknown as typeof fetch;
 
-function postArgs(cookies: Cookies): Parameters<typeof POST>[0] {
-	return { cookies, fetch: requestFetch } as unknown as Parameters<typeof POST>[0];
+function postArgs(cookies: Cookies, tenant?: unknown): Parameters<typeof POST>[0] {
+	return { cookies, fetch: requestFetch, locals: { tenant } } as unknown as Parameters<
+		typeof POST
+	>[0];
 }
 
 /** Run POST and return the HTTP status, whether it resolved or threw. */
@@ -86,6 +91,38 @@ describe('POST /api/auth/refresh', () => {
 		expect(jar.get('access_token')).toBe('new-access');
 		expect(jar.get('refresh_token')).toBe('new-refresh');
 		expect(body).not.toHaveProperty('refresh');
+	});
+
+	it('keeps a persistent refresh cookie on the platform host when remember_me is set', async () => {
+		mockedTokenRefresh.mockResolvedValue({
+			data: { access: 'new-access', refresh: 'new-refresh' },
+			error: undefined
+		} as never);
+
+		const { cookies, jar, options } = fakeCookies({
+			refresh_token: 'old-refresh',
+			remember_me: 'true'
+		});
+		await POST(postArgs(cookies));
+
+		expect(options.get('refresh_token')?.maxAge).toBe(60 * 60 * 24 * 30);
+		expect(jar.get('remember_me')).toBe('true');
+	});
+
+	it('downgrades a persistent session to a session cookie on a tenant host', async () => {
+		mockedTokenRefresh.mockResolvedValue({
+			data: { access: 'new-access', refresh: 'new-refresh' },
+			error: undefined
+		} as never);
+
+		const { cookies, jar, options } = fakeCookies({
+			refresh_token: 'old-refresh',
+			remember_me: 'true'
+		});
+		await POST(postArgs(cookies, { slug: 'acme' }));
+
+		expect(options.get('refresh_token')?.maxAge).toBeUndefined();
+		expect(jar.get('remember_me')).toBe('false');
 	});
 
 	it('401s without calling the backend when there is no refresh cookie', async () => {
