@@ -38,8 +38,23 @@
 	const pageSize = $derived(data.pageSize);
 	const error = $derived(data.error);
 
+	// On a tenant host the list is the tenant's own events: the loader forces the
+	// organization filter, so the filter is dropped from the UI state (#1056).
+	const isTenant = $derived(!!data.tenant);
+	const tenantId = $derived(data.tenant?.id);
+
 	// Parse current filters from URL
-	const currentFilters = $derived(parseFilters($page.url.searchParams));
+	const currentFilters = $derived.by(() => {
+		const parsed = parseFilters($page.url.searchParams);
+		return isTenant
+			? {
+					...parsed,
+					organizationId: undefined,
+					organizationName: undefined,
+					organizationSlug: undefined
+				}
+			: parsed;
+	});
 
 	// View mode (list or calendar)
 	const viewMode = $derived<'list' | 'calendar'>(
@@ -68,7 +83,7 @@
 					year: calendarParams.year,
 					// Apply filters
 					city_id: currentFilters.cityId,
-					organization: currentFilters.organizationId,
+					organization: tenantId ?? currentFilters.organizationId,
 					event_type: currentFilters.eventType,
 					visibility: currentFilters.visibility,
 					tags: currentFilters.tags,
@@ -271,6 +286,7 @@
 							filters={currentFilters}
 							onUpdateFilters={handleUpdateFilters}
 							onClearFilters={handleClearFilters}
+							hideOrganization={isTenant}
 						/>
 					</div>
 				</div>
@@ -474,6 +490,7 @@
 		onUpdateFilters={handleUpdateFilters}
 		onClearFilters={handleClearFilters}
 		onClose={handleCloseMobileFilters}
+		hideOrganization={isTenant}
 	/>
 
 	<!-- Event Modal (for calendar clicks) -->

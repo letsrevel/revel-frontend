@@ -10,6 +10,7 @@ import {
 	isPlatformHost,
 	normalizeHost,
 	resolveTenant,
+	tenantModeEnabled,
 	type TenantOrganization
 } from './tenant';
 
@@ -65,6 +66,16 @@ describe('platform host detection', () => {
 		expect(isPlatformHost('acme.example.com')).toBe(true);
 		mockEnv.env.PLATFORM_HOSTS = ' , ';
 		expect(isPlatformHost('acme.example.com')).toBe(true);
+	});
+
+	it('tenantModeEnabled is true only with at least one platform host', () => {
+		expect(tenantModeEnabled()).toBe(true);
+		mockEnv.env.PLATFORM_HOSTS = undefined;
+		expect(tenantModeEnabled()).toBe(false);
+		mockEnv.env.PLATFORM_HOSTS = ' , ';
+		expect(tenantModeEnabled()).toBe(false);
+		mockEnv.env.PLATFORM_HOSTS = 'letsrevel.io';
+		expect(tenantModeEnabled()).toBe(true);
 	});
 
 	it('normalizes hosts', () => {
@@ -145,6 +156,22 @@ describe('resolveTenant cache', () => {
 		expect(fetch).toHaveBeenCalledTimes(501);
 		await resolveTenant('h0.example.com', fetch); // oldest evicted
 		expect(fetch).toHaveBeenCalledTimes(502);
+	});
+
+	it('a flood of unknown hosts never evicts a cached tenant', async () => {
+		const fetch = vi.fn(async (req: Request) =>
+			new URL(req.url).pathname.endsWith('/acme.example.com')
+				? json(org())
+				: new Response('', { status: 404 })
+		);
+		await resolveTenant('acme.example.com', fetch as unknown as typeof globalThis.fetch);
+		for (let i = 0; i < 600; i++)
+			await resolveTenant(`junk${i}.example.com`, fetch as unknown as typeof globalThis.fetch);
+		const calls = fetch.mock.calls.length;
+		expect(
+			(await resolveTenant('acme.example.com', fetch as unknown as typeof globalThis.fetch)).status
+		).toBe('found');
+		expect(fetch.mock.calls.length).toBe(calls); // served from the positive cache
 	});
 
 	it('rejects implausible hostnames without calling upstream', async () => {

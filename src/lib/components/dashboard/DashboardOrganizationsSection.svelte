@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { orgHref, tenantDomainFrom } from '$lib/utils/org-links';
+	import { orgHref } from '$lib/utils/org-links';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import OrganizationCardSkeleton from '$lib/components/common/OrganizationCardSkeleton.svelte';
@@ -162,11 +162,7 @@
 					<div class="flex shrink-0 gap-2">
 						<!-- eslint-disable svelte/no-navigation-without-resolve -- orgHref() wraps resolve(); custom-domain links are absolute (#1056) -->
 						<a
-							href={orgHref(
-								org,
-								resolve('/(public)/org/[slug]', { slug: org.slug }),
-								tenantDomainFrom(page.data)
-							)}
+							href={orgHref(org, resolve('/(public)/org/[slug]', { slug: org.slug }), page.data)}
 							class="flex-1 rounded-md border px-4 py-2 text-center text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground sm:flex-none"
 						>
 							<!-- eslint-enable svelte/no-navigation-without-resolve -->

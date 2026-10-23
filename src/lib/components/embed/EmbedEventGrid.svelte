@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import { orgOrigin } from '$lib/utils/org-links';
 	import * as m from '$lib/paraglide/messages.js';
 	import EventCard from '$lib/components/events/EventCard.svelte';
@@ -39,7 +40,7 @@
 					class="h-full"
 					priceFrom={prices[event.id] ?? null}
 					href={buildEmbedLink(
-						orgOrigin(event.organization) ?? links.origin,
+						orgOrigin(event.organization, page.data) ?? links.origin,
 						eventPath(event.organization.slug, event.slug),
 						links
 					)}

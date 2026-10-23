@@ -29,7 +29,7 @@
 	});
 
 	// Links out target the org's custom domain when it has one (#1056).
-	const orgLinkOrigin = $derived(orgOrigin(data.event.organization) ?? links.origin);
+	const orgLinkOrigin = $derived(orgOrigin(data.event.organization, data) ?? links.origin);
 	const eventHref = $derived(
 		buildEmbedLink(orgLinkOrigin, eventPath(data.event.organization.slug, data.event.slug), links)
 	);

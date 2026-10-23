@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { orgHref, tenantDomainFrom } from '$lib/utils/org-links';
+	import { orgHref } from '$lib/utils/org-links';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
@@ -59,7 +59,7 @@
 
 			return response.data?.results || [];
 		},
-		enabled: !!accessToken && !!user && !isTenant, // Only fetch if both token AND user exist
+		enabled: !!accessToken && !!user && !isTenant, // Needs token AND user; never on a tenant host (platform org admin lives elsewhere)
 		retry: false, // Don't retry this query - if it fails, user needs to re-authenticate
 		staleTime: 5 * 60 * 1000 // 5 minutes - organizations don't change frequently
 	}));
@@ -262,11 +262,7 @@
 						<div class="space-y-1">
 							<!-- eslint-disable svelte/no-navigation-without-resolve -- orgHref() wraps resolve(); custom-domain links are absolute (#1056) -->
 							<a
-								href={orgHref(
-									org,
-									resolve('/(public)/org/[slug]', { slug: org.slug }),
-									tenantDomainFrom($page.data)
-								)}
+								href={orgHref(org, resolve('/(public)/org/[slug]', { slug: org.slug }), $page.data)}
 								class="flex items-center gap-3 rounded-md px-4 py-2 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
 								onclick={handleItemClick}
 							>
@@ -411,7 +407,7 @@
 											href={orgHref(
 												org,
 												resolve('/(public)/org/[slug]', { slug: org.slug }),
-												tenantDomainFrom($page.data)
+												$page.data
 											)}
 											class="flex items-center gap-2 rounded-sm px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
 											onclick={handleItemClick}
