@@ -5,6 +5,7 @@
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
 	import { CheckCircle2, XCircle, Loader2 } from '@lucide/svelte';
 	import { eventpublicdiscoveryConfirmGuestAction } from '$lib/api';
+	import { clearGuestHoldToken } from '$lib/utils/guest-hold';
 	import { handleGuestAttendanceError } from '$lib/utils/guestAttendance';
 	import { summarizeConfirmedTickets, type TierBreakdownEntry } from './confirmation-tickets';
 
@@ -58,6 +59,9 @@
 			if (!data) {
 				throw new Error('No data returned from confirmation');
 			}
+
+			// The guest's holds were consumed by this confirmation (#1072).
+			clearGuestHoldToken();
 
 			// Determine if this is an RSVP or ticket based on response shape
 			// RSVP has 'status' field with values "yes" | "no" | "maybe"
