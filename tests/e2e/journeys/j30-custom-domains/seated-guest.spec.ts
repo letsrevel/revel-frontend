@@ -45,10 +45,27 @@ async function holdFirstFreeSeat(page: Page): Promise<string> {
 		await expect(picker).toBeVisible({ timeout: 8_000 });
 	}).toPass({ timeout: 60_000 });
 
-	const seats = picker.locator('button[aria-pressed="false"]:not([disabled])');
-	await expect(seats.first()).toBeVisible({ timeout: 15_000 });
-	const name = (await seats.first().getAttribute('aria-label')) ?? '';
-	expect(name).toMatch(/^Seat [ABC][1-6]/);
+	// A free seat's accessible name is exactly "Seat B2"; held or taken seats
+	// carry a suffix (", held by someone else"), and the picker has other
+	// toggle buttons, so match seats by exact name rather than by state.
+	await expect(picker.getByRole('button', { name: /^Seat [ABC][1-6](,|$)/ }).first()).toBeVisible({
+		timeout: 15_000
+	});
+	let name = '';
+	for (const row of ['A', 'B', 'C']) {
+		for (let n = 1; n <= 6 && !name; n++) {
+			const candidate = picker.getByRole('button', { name: `Seat ${row}${n}`, exact: true });
+			if (
+				(await candidate.count()) === 1 &&
+				(await candidate.isEnabled()) &&
+				(await candidate.getAttribute('aria-pressed')) !== 'true'
+			) {
+				name = `Seat ${row}${n}`;
+			}
+		}
+		if (name) break;
+	}
+	expect(name, 'a free seat on the seeded map').not.toBe('');
 
 	const seat = picker.getByRole('button', { name, exact: true });
 	await expect(async () => {
