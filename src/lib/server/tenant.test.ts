@@ -10,6 +10,7 @@ import {
 	isPlatformHost,
 	normalizeHost,
 	resolveTenant,
+	tenantModeEnabled,
 	type TenantOrganization
 } from './tenant';
 
@@ -65,6 +66,16 @@ describe('platform host detection', () => {
 		expect(isPlatformHost('acme.example.com')).toBe(true);
 		mockEnv.env.PLATFORM_HOSTS = ' , ';
 		expect(isPlatformHost('acme.example.com')).toBe(true);
+	});
+
+	it('tenantModeEnabled is true only with at least one platform host', () => {
+		expect(tenantModeEnabled()).toBe(true);
+		mockEnv.env.PLATFORM_HOSTS = undefined;
+		expect(tenantModeEnabled()).toBe(false);
+		mockEnv.env.PLATFORM_HOSTS = ' , ';
+		expect(tenantModeEnabled()).toBe(false);
+		mockEnv.env.PLATFORM_HOSTS = 'letsrevel.io';
+		expect(tenantModeEnabled()).toBe(true);
 	});
 
 	it('normalizes hosts', () => {

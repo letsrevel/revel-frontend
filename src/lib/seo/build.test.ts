@@ -185,10 +185,30 @@ describe('buildSeo', () => {
 			url: url('/events/acme/my-event?x=1'),
 			lang: 'en',
 			event,
-			indexable: true
+			indexable: true,
+			linkContext: { tenant: null, customDomains: { enabled: true, platformOrigin: null } }
 		});
 		expect(cfg.canonical).toBe('https://events.example.com/events/acme/my-event?x=1');
 		expect(cfg.og.url).toBe(cfg.canonical);
+	});
+
+	it('event: canonical ignores the custom domain while tenant mode is off or no context is given', () => {
+		const event = {
+			...fakeEvent,
+			organization: { ...fakeEvent.organization, custom_domain: 'events.example.com' }
+		} as unknown as EventDetailSchema;
+		const base = {
+			kind: 'event' as const,
+			url: url('/events/acme/my-event'),
+			lang: 'en' as const,
+			event,
+			indexable: true
+		};
+		const off = { tenant: null, customDomains: { enabled: false, platformOrigin: null } };
+		expect(buildSeo({ ...base, linkContext: off }).canonical).toBe(
+			'https://letsrevel.io/events/acme/my-event'
+		);
+		expect(buildSeo(base).canonical).toBe('https://letsrevel.io/events/acme/my-event');
 	});
 
 	it('event: canonical stays on the request origin without a custom domain', () => {

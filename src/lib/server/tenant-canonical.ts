@@ -1,21 +1,35 @@
 import { redirect } from '@sveltejs/kit';
 
 import { organizationGetOrganizationCustomDomain } from '$lib/api';
-import { customDomainOrigin } from '$lib/utils/org-links';
+import { customDomainOrigin, type LinkContext } from '$lib/utils/org-links';
+import { tenantModeEnabled } from '$lib/server/tenant';
+import { platformOrigin } from '$lib/server/tenant-routing';
+
+/** The link context for server code (SEO canonicals): same shape as the client's `page.data`. */
+export function serverLinkContext(locals: App.Locals): LinkContext {
+	const enabled = tenantModeEnabled();
+	return {
+		tenant: locals.tenant ?? null,
+		customDomains: { enabled, platformOrigin: enabled ? platformOrigin() : null }
+	};
+}
 
 /**
- * Where a page of `org` canonically lives: its custom domain, or null when the
- * org has none (or we're already serving a tenant host).
+ * Where a page of `org` canonically lives: its custom domain, or null when
+ * tenant mode is off, the org has none, we're already serving a tenant host, or
+ * the domain equals the request host (a `custom_domain` misconfigured to a
+ * platform host would otherwise 301 to itself).
  */
 export function canonicalTenantUrl(
 	locals: App.Locals,
 	org: { custom_domain?: string | null },
 	url: URL
 ): string | null {
-	if (locals.tenant) return null;
+	if (locals.tenant || !tenantModeEnabled()) return null;
 	// customDomainOrigin validates the hostname, so the redirect can't leave the template's origin.
 	const origin = customDomainOrigin(org.custom_domain);
 	if (!origin) return null;
+	if (new URL(origin).host === url.host) return null;
 	return `${origin}${url.pathname}${url.search}`;
 }
 
@@ -53,7 +67,7 @@ export async function tenantReturnUrl(
 	url: URL,
 	fetch: typeof globalThis.fetch
 ): Promise<string | null> {
-	if (locals.tenant) return null;
+	if (locals.tenant || !tenantModeEnabled()) return null;
 	try {
 		const { data } = await organizationGetOrganizationCustomDomain({
 			fetch,

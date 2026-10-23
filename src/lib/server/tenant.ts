@@ -62,6 +62,16 @@ function platformHosts(): Set<string> {
 	return parsedHosts;
 }
 
+/**
+ * Tenant mode is ON only when `PLATFORM_HOSTS` names at least one host. Every
+ * custom-domain behavior (canonical redirects, rewritten links, route scoping)
+ * is gated on this: a deploy that shares a backend with a tenant-mode deploy
+ * but does not serve the custom domains must not redirect or link to them.
+ */
+export function tenantModeEnabled(): boolean {
+	return platformHosts().size > 0;
+}
+
 /** True when the host belongs to the platform itself (not a tenant candidate). */
 export function isPlatformHost(rawHost: string): boolean {
 	const hosts = platformHosts();

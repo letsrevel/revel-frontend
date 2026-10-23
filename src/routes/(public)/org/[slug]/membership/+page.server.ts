@@ -1,5 +1,5 @@
 import { error, isHttpError, isRedirect } from '@sveltejs/kit';
-import { canonicalTenantRedirect } from '$lib/server/tenant-canonical';
+import { canonicalTenantRedirect, serverLinkContext } from '$lib/server/tenant-canonical';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
 import {
@@ -103,7 +103,13 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 		// are per-visit, and each would otherwise mint a distinct canonical URL
 		// for the same page.
 		const canonicalUrl = new URL(url.pathname, url.origin);
-		const orgSeo = buildSeo({ kind: 'org', url: canonicalUrl, lang, org: organization });
+		const orgSeo = buildSeo({
+			kind: 'org',
+			url: canonicalUrl,
+			lang,
+			org: organization,
+			linkContext: serverLinkContext(locals)
+		});
 		// The org SEO carries the right image, locale alternates and JSON-LD; only
 		// the wording has to say what THIS page is. Overridden here rather than by
 		// adding a `kind` to `buildSeo`, so the membership route owns its own copy.
