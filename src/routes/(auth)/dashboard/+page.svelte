@@ -46,6 +46,8 @@
 		Bookmark
 	} from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
+	import { page as appPage } from '$app/state';
+	import { brandName } from '$lib/seo/tenant';
 
 	const user = $derived(authStore.user);
 	const accessToken = $derived(authStore.accessToken);
@@ -309,7 +311,7 @@
 </script>
 
 <svelte:head>
-	<title>{m['userMenu.dashboard']()} - Revel</title>
+	<title>{m['userMenu.dashboard']()} - {brandName(appPage.data.tenant)}</title>
 	<meta name="description" content={m['dashboard.pageSubtitle']()} />
 </svelte:head>
 

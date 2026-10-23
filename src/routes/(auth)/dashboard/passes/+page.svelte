@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { brandName } from '$lib/seo/tenant';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { seriespassListMySeriesPasses } from '$lib/api';
@@ -52,7 +53,7 @@
 </script>
 
 <svelte:head>
-	<title>{m['seriesPass.myPassesTitle']()} - Revel</title>
+	<title>{m['seriesPass.myPassesTitle']()} - {brandName(page.data.tenant)}</title>
 	<meta name="description" content={m['seriesPass.myPassesDescription']()} />
 </svelte:head>
 

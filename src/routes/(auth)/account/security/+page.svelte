@@ -1,5 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { page as appPage } from '$app/state';
+	import { brandName } from '$lib/seo/tenant';
 	import { enhance, applyAction } from '$app/forms';
 	import { invalidate } from '$app/navigation';
 	import {
@@ -165,7 +167,7 @@
 </script>
 
 <svelte:head>
-	<title>{m['accountSecurityPage.pageTitle']()} - Revel</title>
+	<title>{m['accountSecurityPage.pageTitle']()} - {brandName(appPage.data.tenant)}</title>
 </svelte:head>
 
 <div class="container mx-auto max-w-4xl px-4 py-8">

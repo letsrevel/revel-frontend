@@ -2,6 +2,7 @@
 	import { enhance, applyAction } from '$app/forms';
 	import { page } from '$app/stores';
 	import { invalidateAll } from '$app/navigation';
+	import { brandName } from '$lib/seo/tenant';
 	import { resolve } from '$app/paths';
 	import { AlertTriangle, CheckCircle, Loader2, Mail } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
@@ -16,6 +17,7 @@
 
 	const { form }: Props = $props();
 
+	const brand = $derived(brandName($page.data.tenant));
 	const token = $derived($page.url.searchParams.get('token') ?? '');
 	const success = $derived(form?.success === true);
 	const newEmail = $derived(form?.new_email ?? '');
@@ -116,7 +118,7 @@
 		width="lg"
 		chip={confirmChip}
 		title={m['confirmEmailChange.confirm_heading']()}
-		subtitle={m['confirmEmailChange.confirm_intro']()}
+		subtitle={m['confirmEmailChange.confirm_intro']({ brand })}
 	>
 		<!-- Warning box: highlight/20 + border are decorative; title/body stay
 		     on foreground/muted-foreground, both already-audited pairs. -->
@@ -140,7 +142,7 @@
 					<ul class="space-y-1 text-sm text-muted-foreground">
 						<li class="flex gap-2">
 							<span aria-hidden="true">•</span>
-							<span>{m['confirmEmailChange.confirm_warningBullet1']()}</span>
+							<span>{m['confirmEmailChange.confirm_warningBullet1']({ brand })}</span>
 						</li>
 						<li class="flex gap-2">
 							<span aria-hidden="true">•</span>
