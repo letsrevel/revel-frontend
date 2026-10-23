@@ -1,4 +1,5 @@
-import { error, isHttpError } from '@sveltejs/kit';
+import { error, isHttpError, isRedirect } from '@sveltejs/kit';
+import { canonicalTenantRedirect } from '$lib/server/tenant-canonical';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
 import {
@@ -50,6 +51,8 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 		}
 
 		const organization = orgResponse.data;
+
+		canonicalTenantRedirect(locals, organization, url);
 
 		// Non-fatal: an org with no reachable tier listing still gets a page that
 		// says so, rather than a 500 on a public URL people may have shared.
@@ -126,7 +129,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 			isAuthenticated: !!locals.user
 		};
 	} catch (err) {
-		if (isHttpError(err)) throw err;
+		if (isHttpError(err) || isRedirect(err)) throw err;
 
 		if (typeof err === 'object' && err !== null && 'status' in err) {
 			const status = (err as { status: number }).status;

@@ -19,6 +19,7 @@ import {
 } from '$lib/utils/cookies';
 import { log } from '$lib/server/logger';
 import { handleTenant } from '$lib/server/tenant';
+import { handleTenantRouting } from '$lib/server/tenant-routing';
 import { startMetricsServer } from '$lib/server/metrics';
 import { handleRequestLogging, handleSsrError } from '$lib/server/request-logging';
 
@@ -420,6 +421,7 @@ const handleAuthGuard: Handle = async ({ event, resolve }) => {
 export const handle = sequence(
 	handleRequestLogging,
 	handleTenant,
+	handleTenantRouting,
 	handleTokenCapture,
 	handleEmbedShell,
 	i18nHandle(),

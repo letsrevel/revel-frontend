@@ -83,6 +83,9 @@ ENV PUBLIC_VERSION=${PUBLIC_VERSION}
 #                     off while unset. Any other host is resolved as an organization
 #                     custom domain; unknown hosts get 404. localhost/127.0.0.1/::1
 #                     are always platform.)
+#   - PLATFORM_ORIGIN (optional; where platform-only paths such as /org/*/admin are sent
+#                     from a tenant host, e.g. https://app.example.com. Defaults to
+#                     https:// + the first PLATFORM_HOSTS entry.)
 
 # Switch to non-root user
 USER appuser
