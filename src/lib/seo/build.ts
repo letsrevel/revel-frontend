@@ -14,6 +14,7 @@ import {
 	plainPageSeo
 } from './plain-page';
 import { oembedDiscoveryUrl } from '$lib/embed/oembed';
+import { orgOrigin } from '$lib/utils/org-links';
 import { truncate, stripMarkup } from './text';
 import { landingPageHreflang } from './hreflang';
 import {
@@ -120,7 +121,21 @@ export function buildSeo(input: BuildSeoInput): SeoConfig {
 
 function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 	const origin = input.url.origin;
-	const canonical = input.url.toString();
+	// Org-scoped pages whose org has an active custom domain are canonical on that
+	// domain (#1056): the platform URL 301s there anyway, and a tenant host must not
+	// canonicalise to itself over http in dev or behind a proxy.
+	const domainOrigin = orgOrigin(
+		input.kind === 'event'
+			? input.event.organization
+			: input.kind === 'org'
+				? input.org
+				: input.kind === 'series'
+					? input.series.organization
+					: null
+	);
+	const canonical = domainOrigin
+		? `${domainOrigin}${input.url.pathname}${input.url.search}`
+		: input.url.toString();
 	const alts = alternateLocales(input.lang);
 	const ogLocale = OG_LOCALE[input.lang];
 	/** Shared by every `plainPageSeo` branch below. */
@@ -279,7 +294,10 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 					generateBreadcrumbJsonLd([
 						{ name: 'Home', url: origin },
 						{ name: 'Events', url: `${origin}/events` },
-						{ name: event.organization.name, url: `${origin}/org/${event.organization.slug}` },
+						{
+							name: event.organization.name,
+							url: `${domainOrigin ?? origin}/org/${event.organization.slug}`
+						},
 						{ name: event.name, url: canonical }
 					])
 				]
@@ -366,7 +384,10 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 					generateSeriesJsonLd(series, canonical),
 					generateBreadcrumbJsonLd([
 						{ name: 'Home', url: origin },
-						{ name: series.organization.name, url: `${origin}/org/${series.organization.slug}` },
+						{
+							name: series.organization.name,
+							url: `${domainOrigin ?? origin}/org/${series.organization.slug}`
+						},
 						{ name: series.name, url: canonical }
 					])
 				]

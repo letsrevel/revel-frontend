@@ -1,7 +1,9 @@
 <script lang="ts">
+	import { orgHref, tenantDomainFrom } from '$lib/utils/org-links';
 	import type { EventInListSchema, EventDetailSchema } from '$lib/api/generated/types.gen';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { Calendar, MapPin, Building2 } from '@lucide/svelte';
@@ -28,18 +30,35 @@
 	function handleViewDetails() {
 		if (event) {
 			const slug = event.organization?.slug || '';
+
+			// orgHref() wraps resolve(); custom-domain targets are absolute (#1056).
+			/* eslint-disable svelte/no-navigation-without-resolve */
 			goto(
-				resolve('/(public)/events/[org_slug]/[event_slug]', {
-					org_slug: slug,
-					event_slug: event.slug
-				})
+				orgHref(
+					event.organization,
+					resolve('/(public)/events/[org_slug]/[event_slug]', {
+						org_slug: slug,
+						event_slug: event.slug
+					}),
+					tenantDomainFrom(page.data)
+				)
 			);
+			/* eslint-enable svelte/no-navigation-without-resolve */
 		}
 	}
 
 	function handleViewOrganization() {
 		if (event?.organization) {
-			goto(resolve('/(public)/org/[slug]', { slug: event.organization.slug }));
+			// orgHref() wraps resolve(); custom-domain targets are absolute (#1056).
+			/* eslint-disable svelte/no-navigation-without-resolve */
+			goto(
+				orgHref(
+					event.organization,
+					resolve('/(public)/org/[slug]', { slug: event.organization.slug }),
+					tenantDomainFrom(page.data)
+				)
+			);
+			/* eslint-enable svelte/no-navigation-without-resolve */
 		}
 	}
 

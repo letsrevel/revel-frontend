@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { orgOrigin } from '$lib/utils/org-links';
 	import { page } from '$app/state';
 	import EmbedHeader from '$lib/components/embed/EmbedHeader.svelte';
 	import EmbedFooter from '$lib/components/embed/EmbedFooter.svelte';
@@ -35,8 +36,13 @@
 			data.series.organization.logo
 	);
 
+	// Links out target the org's custom domain when it has one (#1056).
 	const seriesHref = $derived(
-		buildEmbedLink(links.origin, seriesPath(data.series.organization.slug, data.series.slug), links)
+		buildEmbedLink(
+			orgOrigin(data.series.organization) ?? links.origin,
+			seriesPath(data.series.organization.slug, data.series.slug),
+			links
+		)
 	);
 </script>
 

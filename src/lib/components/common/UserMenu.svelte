@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { orgHref, tenantDomainFrom } from '$lib/utils/org-links';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
@@ -253,11 +254,17 @@
 					</div>
 					{#each userOrganizations as org (org.id)}
 						<div class="space-y-1">
+							<!-- eslint-disable svelte/no-navigation-without-resolve -- orgHref() wraps resolve(); custom-domain links are absolute (#1056) -->
 							<a
-								href={resolve('/(public)/org/[slug]', { slug: org.slug })}
+								href={orgHref(
+									org,
+									resolve('/(public)/org/[slug]', { slug: org.slug }),
+									tenantDomainFrom($page.data)
+								)}
 								class="flex items-center gap-3 rounded-md px-4 py-2 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
 								onclick={handleItemClick}
 							>
+								<!-- eslint-enable svelte/no-navigation-without-resolve -->
 								<Building2 class="h-5 w-5" aria-hidden="true" />
 								<span class="flex-1 truncate">{org.name}</span>
 							</a>
@@ -393,12 +400,18 @@
 								</div>
 								{#each userOrganizations as org (org.id)}
 									<div class="space-y-1">
+										<!-- eslint-disable svelte/no-navigation-without-resolve -- orgHref() wraps resolve(); custom-domain links are absolute (#1056) -->
 										<a
-											href={resolve('/(public)/org/[slug]', { slug: org.slug })}
+											href={orgHref(
+												org,
+												resolve('/(public)/org/[slug]', { slug: org.slug }),
+												tenantDomainFrom($page.data)
+											)}
 											class="flex items-center gap-2 rounded-sm px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
 											onclick={handleItemClick}
 											role="menuitem"
 										>
+											<!-- eslint-enable svelte/no-navigation-without-resolve -->
 											<Building2 class="h-4 w-4" aria-hidden="true" />
 											<span class="flex-1 truncate">{org.name}</span>
 										</a>

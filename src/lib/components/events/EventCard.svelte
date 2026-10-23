@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { orgHref, tenantDomainFrom } from '$lib/utils/org-links';
 	import { resolve } from '$app/paths';
 	import type { EventInListSchema } from '$lib/api/generated/types.gen';
 	import type { UserEventStatus } from './types';
@@ -98,10 +99,14 @@
 	const cardHref = $derived(
 		href ??
 			withUtmParams(
-				resolve('/(public)/events/[org_slug]/[event_slug]', {
-					org_slug: event.organization.slug,
-					event_slug: event.slug
-				}),
+				orgHref(
+					event.organization,
+					resolve('/(public)/events/[org_slug]/[event_slug]', {
+						org_slug: event.organization.slug,
+						event_slug: event.slug
+					}),
+					tenantDomainFrom(page.data)
+				),
 				page.url
 			)
 	);

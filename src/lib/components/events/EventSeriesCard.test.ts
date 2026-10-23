@@ -145,6 +145,22 @@ describe('EventSeriesCard', () => {
 		expect(link).toHaveAttribute('href', '/events/tech-community/series/tech-talk-series');
 	});
 
+	it('links to the org custom domain when it has one (#1056)', () => {
+		render(EventSeriesCard, {
+			props: {
+				series: {
+					...mockEventSeries,
+					organization: { ...mockEventSeries.organization, custom_domain: 'Events.Example.com' }
+				}
+			}
+		});
+
+		expect(screen.getByLabelText(/tech talk series/i)).toHaveAttribute(
+			'href',
+			'https://events.example.com/events/tech-community/series/tech-talk-series'
+		);
+	});
+
 	it('carries the current URL utm tags onto its default href', async () => {
 		window.history.replaceState({}, '', '/org/acme?utm_source=newsletter&utm_campaign=sept');
 

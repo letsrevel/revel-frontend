@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { orgOrigin } from '$lib/utils/org-links';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/state';
 	import EmbedHeader from '$lib/components/embed/EmbedHeader.svelte';
@@ -28,7 +29,14 @@
 		override: data.utmOverride
 	});
 
-	const orgHref = $derived(buildEmbedLink(links.origin, organizationPath(data.orgSlug), links));
+	// Links out target the org's custom domain when it has one (#1056).
+	const orgHref = $derived(
+		buildEmbedLink(
+			orgOrigin(data.organization) ?? links.origin,
+			organizationPath(data.orgSlug),
+			links
+		)
+	);
 
 	// The organization's display identity rides along on the events. With none,
 	// there is no name or logo to show, so the header is skipped rather than

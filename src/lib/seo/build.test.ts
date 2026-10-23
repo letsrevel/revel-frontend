@@ -174,4 +174,46 @@ describe('buildSeo', () => {
 		});
 		expect(referralCfg.robots).toBe('noindex,follow');
 	});
+
+	it('event: canonical and og:url use the org custom domain (#1056)', () => {
+		const event = {
+			...fakeEvent,
+			organization: { ...fakeEvent.organization, custom_domain: 'events.example.com' }
+		} as unknown as EventDetailSchema;
+		const cfg = buildSeo({
+			kind: 'event',
+			url: url('/events/acme/my-event?x=1'),
+			lang: 'en',
+			event,
+			indexable: true
+		});
+		expect(cfg.canonical).toBe('https://events.example.com/events/acme/my-event?x=1');
+		expect(cfg.og.url).toBe(cfg.canonical);
+	});
+
+	it('event: canonical stays on the request origin without a custom domain', () => {
+		const cfg = buildSeo({
+			kind: 'event',
+			url: url('/events/acme/my-event'),
+			lang: 'en',
+			event: fakeEvent,
+			indexable: true
+		});
+		expect(cfg.canonical).toBe('https://letsrevel.io/events/acme/my-event');
+	});
+
+	it('ignores a malformed custom domain', () => {
+		const event = {
+			...fakeEvent,
+			organization: { ...fakeEvent.organization, custom_domain: 'evil.com/x' }
+		} as unknown as EventDetailSchema;
+		const cfg = buildSeo({
+			kind: 'event',
+			url: url('/events/acme/my-event'),
+			lang: 'en',
+			event,
+			indexable: true
+		});
+		expect(cfg.canonical).toBe('https://letsrevel.io/events/acme/my-event');
+	});
 });
