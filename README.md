@@ -56,7 +56,7 @@ More detail, including backend setup and troubleshooting: [`docs/runbooks/setup.
 - Public pages render on the server; dashboards are hybrid; a few client-only pages (the membership scanner, the seat designer) disable SSR.
 - The access token is kept in memory on the client, never in `localStorage`; the refresh token is an httpOnly cookie.
 
-Rendering, the auth flow, the SEO landing pages and accessibility targets are described in [`docs/overview.md`](docs/overview.md).
+Rendering, the auth flow, the SEO landing pages and accessibility targets are described in [`docs/overview.md`](docs/overview.md). Serving organizations on their own domains is covered in [`docs/tenant-mode.md`](docs/tenant-mode.md), and embeds in [`docs/embeds.md`](docs/embeds.md).
 
 ## Testing
 
