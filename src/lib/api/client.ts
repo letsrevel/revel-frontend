@@ -9,6 +9,7 @@ import { API_BASE_URL } from '$lib/config/api';
 import { getLocale } from '$lib/paraglide/runtime.js';
 import { browser } from '$app/environment';
 import { applyServerAcceptEncoding, retryUndecodable } from './encoding';
+import { applyGuestHoldHeader, captureGuestHoldToken } from '$lib/utils/guest-hold';
 
 // Configure the client base settings
 generatedClient.setConfig({
@@ -64,6 +65,10 @@ generatedClient.interceptors.request.use(async (request, _options) => {
 		request.headers.set('Authorization', `Bearer ${token}`);
 	}
 
+	// Guest seat-hold session (#1072): anonymous callers only, listed endpoints
+	// only. Custom domains can't use the API-host cookie.
+	applyGuestHoldHeader(request, !token);
+
 	// The backend localizes error/validation messages per Accept-Language
 	// (BE #724). Without this the browser's OWN language preference decides,
 	// which can disagree with the UI language the user picked in the app —
@@ -86,6 +91,12 @@ generatedClient.interceptors.request.use(async (request, _options) => {
 generatedClient.interceptors.response.use(async (response, request) =>
 	browser ? response : retryUndecodable(response, request)
 );
+
+// Remember `guest_hold_token` from hold / best-available responses, 409s included.
+generatedClient.interceptors.response.use(async (response, request) => {
+	if (browser) await captureGuestHoldToken(response, request);
+	return response;
+});
 
 /**
  * Response interceptor to handle 401 errors and refresh token automatically
