@@ -5,6 +5,7 @@ import {
 	hasAnonymousHolds,
 	releaseAnonymousHolds
 } from './seat-holds';
+import { clearGuestHoldToken, getGuestHoldToken, rememberGuestHoldToken } from './guest-hold';
 
 vi.mock('$lib/config/api', () => ({
 	API_BASE_URL: 'http://api.test'
@@ -20,6 +21,7 @@ function storedIds(): string[] {
 describe('anonymous seat-hold registry', () => {
 	beforeEach(() => {
 		window.sessionStorage.clear();
+		clearGuestHoldToken();
 	});
 
 	afterEach(() => {
@@ -61,6 +63,20 @@ describe('anonymous seat-hold registry', () => {
 			vi.stubGlobal('fetch', fetchMock);
 			await releaseAnonymousHolds();
 			expect(fetchMock).not.toHaveBeenCalled();
+		});
+
+		it('sends X-Guest-Hold when a token is stored, then clears it', async () => {
+			const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 200 }));
+			vi.stubGlobal('fetch', fetchMock);
+			rememberGuestHoldToken('tok-1');
+			recordAnonymousHold('event-1');
+
+			await releaseAnonymousHolds();
+
+			const request = fetchMock.mock.calls[0][0] as Request;
+			expect(request.headers.get('X-Guest-Hold')).toBe('tok-1');
+			expect(request.headers.get('Authorization')).toBeNull();
+			expect(getGuestHoldToken()).toBeNull();
 		});
 
 		it('issues a cookie-authenticated DELETE per event, with NO Authorization header', async () => {
