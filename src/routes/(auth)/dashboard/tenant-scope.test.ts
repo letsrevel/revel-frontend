@@ -6,6 +6,7 @@ import RsvpsPage from './rsvps/+page.svelte';
 import PassesPage from './passes/+page.svelte';
 import TicketsPage from './tickets/+page.svelte';
 import InvitationsPage from './invitations/+page.svelte';
+import FollowingPage from './following/+page.svelte';
 
 // Tenant-scoped "my" dashboards (#1056): on a custom domain every call carries
 // `organization: tenant.id`; on the platform host the param is absent.
@@ -15,6 +16,7 @@ const mocks = vi.hoisted(() => ({
 	tickets: vi.fn(),
 	passes: vi.fn(),
 	invitations: vi.fn(),
+	following: vi.fn(),
 	pageData: { value: {} as Record<string, unknown> }
 }));
 
@@ -23,7 +25,8 @@ vi.mock('$lib/api/generated/sdk.gen', async (orig) => ({
 	dashboardDashboardRsvps: mocks.rsvps,
 	dashboardDashboardTickets: mocks.tickets,
 	dashboardDashboardInvitations: mocks.invitations,
-	seriespassListMySeriesPasses: mocks.passes
+	seriespassListMySeriesPasses: mocks.passes,
+	followingListFollowedOrganizations: mocks.following
 }));
 vi.mock('$lib/api', async (orig) => ({
 	...(await orig<Record<string, unknown>>()),
@@ -55,13 +58,15 @@ describe.each([
 	['rsvps', RsvpsPage, () => mocks.rsvps],
 	['passes', PassesPage, () => mocks.passes],
 	['tickets', TicketsPage, () => mocks.tickets],
-	['invitations', InvitationsPage, () => mocks.invitations]
+	['invitations', InvitationsPage, () => mocks.invitations],
+	['following', FollowingPage, () => mocks.following]
 ] as const)('dashboard %s tenant scoping', (_name, Page, getMock) => {
 	beforeEach(() => {
 		mocks.rsvps.mockReset().mockResolvedValue(EMPTY);
 		mocks.tickets.mockReset().mockResolvedValue(EMPTY);
 		mocks.passes.mockReset().mockResolvedValue(EMPTY);
 		mocks.invitations.mockReset().mockResolvedValue(EMPTY);
+		mocks.following.mockReset().mockResolvedValue(EMPTY);
 	});
 
 	it('passes the tenant organization on a tenant host', async () => {
