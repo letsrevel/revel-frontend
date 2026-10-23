@@ -181,15 +181,16 @@
 	</div>
 
 	<!--
-		Poster ribbon (uplift prototype). A solid brand-purple color block under
+		Poster ribbon (uplift prototype). A solid `--poster-band` color block under
 		the cover, carrying the organization chip as a tilted white sticker — the
 		landing's move, applied to the app's most public page. The ribbon and the
 		chip are mode-INERT by the imagery rule (they are a poster panel, not a
-		surface); every pair on them is hand-verified against the fixed values,
-		since a poster-palette pair is invisible to scripts/audit-brand-themes.py
-		(numbers are the audit script's own, for the HSL tokens):
+		surface). `--poster-band` defaults to Hearty Purple; a branded org (#1053)
+		replaces it with its light-mode primary, which the backend guarantees is
+		>= 4.5:1 against white, so the kicker stays AA. Default-theme numbers,
+		printed by scripts/audit-brand-themes.py:
 		  ink on white                   → 17.40:1
-		  Hearty Purple #8C3CDD on white →  5.52:1 (the text-xs kicker clears AA)
+		  poster-band (default) on white →  5.52:1 (the text-xs kicker clears AA)
 		  white on crimson-DEEP          →  4.59:1 (the logo-less initial tile)
 		The initial tile's gradient ends on `crimson-deep`, not raw
 		`poster-crimson`: white on raw Light Crimson is 4.33:1, which fails AA
@@ -198,11 +199,11 @@
 		for any org without a logo, not an edge case.
 		Note: always the ORGANIZATION logo/initial, never the event's.
 	-->
-	<div class="bg-poster-purple">
+	<div class="bg-poster-band">
 		<div class="relative mx-auto max-w-[1920px] px-6 pb-6 md:px-8">
 			<a
 				href={resolve('/(public)/org/[slug]', { slug: event.organization.slug })}
-				class="group -mt-8 inline-flex -rotate-1 items-center gap-3 rounded-[1.25rem] bg-poster-white p-3 shadow-poster-lg transition-transform hover:rotate-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-purple"
+				class="group -mt-8 inline-flex -rotate-1 items-center gap-3 rounded-[1.25rem] bg-poster-white p-3 shadow-poster-lg transition-transform hover:rotate-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-band"
 			>
 				{#if event.organization.logo}
 					{@const org = event.organization}
@@ -220,7 +221,7 @@
 				{/if}
 
 				<div class="flex flex-col pr-2">
-					<span class="text-xs font-extrabold uppercase tracking-[0.12em] text-poster-purple">
+					<span class="text-xs font-extrabold uppercase tracking-[0.12em] text-poster-band">
 						{m['eventHeader.organizedBy']()}
 					</span>
 					<span class="font-extrabold text-poster-ink">

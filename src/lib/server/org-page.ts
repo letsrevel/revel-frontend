@@ -161,6 +161,7 @@ export async function loadOrgPage({ locals, fetch, url, request }: OrgPageEvent,
 		return {
 			seo,
 			organization,
+			brandTheme: organization.brand_theme ?? null,
 			resources,
 			membershipPlans,
 			canEdit,

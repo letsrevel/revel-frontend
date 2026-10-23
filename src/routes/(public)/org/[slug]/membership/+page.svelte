@@ -16,7 +16,7 @@
 <!-- Plain `--background` under `MembershipSection`'s own colour block: a
      `bg-secondary` wash sits 5 points of lightness from a `bg-secondary` block
      in light mode, which would flatten the block into the page. The tinted wash
-     is reserved for the pages whose header is the mode-inert poster-purple
+     is reserved for the pages whose header is the mode-inert `--poster-band`
      ribbon (event, org profile, series). Tier cards float on their own
      `shadow-poster`. -->
 <div class="min-h-screen">
