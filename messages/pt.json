@@ -9357,6 +9357,7 @@
 	"organizationsListPage.nextPageUnavailable": "Página seguinte (indisponível)",
 	"passwordResetPage.emailPlaceholder": "tu@exemplo.com",
 	"verifyPage.successRedirect": "A tua conta foi verificada com sucesso. A redirecionar-te para o teu perfil...",
+	"verifyPage.successContinue": "A tua conta foi verificada. Continua para {name} para iniciares sessão lá.",
 	"verifyPage.couldNotVerify": "Não foi possível verificar o teu endereço de e-mail.",
 	"verifyPage.linkExpiredOrInvalid": "O link de verificação pode ter expirado ou ser inválido.",
 	"verifyPage.createNewAccount": "Criar nova conta",

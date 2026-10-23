@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const resolveReturnHost = vi.hoisted(() => vi.fn());
-vi.mock('$lib/server/tenant-canonical', () => ({ resolveReturnHost }));
+const resolveReturnTarget = vi.hoisted(() => vi.fn());
+vi.mock('$lib/server/tenant-canonical', () => ({ resolveReturnTarget }));
 vi.mock('$lib/api/generated/sdk.gen', () => ({ accountVerifyEmail: vi.fn() }));
 vi.mock('$lib/utils/cookies', () => ({
 	getAccessTokenCookieOptions: () => ({ path: '/' }),
@@ -44,7 +44,7 @@ async function outcome(search: string): Promise<string | object> {
 }
 
 beforeEach(() => {
-	resolveReturnHost.mockReset();
+	resolveReturnTarget.mockReset();
 	mockedVerify.mockReset();
 	mockedVerify.mockResolvedValue({
 		data: { user: { id: 'u' }, token: { access: 'acc', refresh: 'ref' } },
@@ -54,15 +54,19 @@ beforeEach(() => {
 });
 
 describe('/verify return_host (#1070)', () => {
-	it('redirects to exactly {origin}/login, with no token or query', async () => {
-		resolveReturnHost.mockResolvedValue('https://events.acme.org');
-		const target = await outcome('?token=SECRET&returnUrl=%2Fx&return_host=events.acme.org');
-		expect(target).toBe('https://events.acme.org/login');
-		expect(resolveReturnHost).toHaveBeenCalledWith('events.acme.org', fetchFn);
+	it('offers a Continue button target instead of redirecting (no token, no query)', async () => {
+		const returnTo = { origin: 'https://events.acme.org', name: 'Acme' };
+		resolveReturnTarget.mockResolvedValue(returnTo);
+		const result = await outcome('?token=SECRET&returnUrl=%2Fx&return_host=events.acme.org');
+		// Never an automatic redirect to an owner-controlled domain.
+		expect(typeof result).toBe('object');
+		expect(result).toMatchObject({ success: true, returnTo });
+		expect(JSON.stringify(result)).not.toContain('SECRET');
+		expect(resolveReturnTarget).toHaveBeenCalledWith('events.acme.org', fetchFn);
 	});
 
 	it('keeps today behavior for an invalid return_host', async () => {
-		resolveReturnHost.mockResolvedValue(null);
+		resolveReturnTarget.mockResolvedValue(null);
 		expect(await outcome('?token=t&return_host=evil.com%2Fx')).toBe('/account/profile');
 		expect(await outcome('?token=t&returnUrl=%2Fx&return_host=a%40b')).toBe('/x');
 	});
@@ -73,10 +77,10 @@ describe('/verify return_host (#1070)', () => {
 			error: { detail: 'expired' },
 			response: { ok: false, status: 400 }
 		} as never);
-		resolveReturnHost.mockResolvedValue('https://events.acme.org');
+		resolveReturnTarget.mockResolvedValue('https://events.acme.org');
 		expect(await outcome('?token=t&return_host=events.acme.org')).toMatchObject({
 			success: false
 		});
-		expect(resolveReturnHost).not.toHaveBeenCalled();
+		expect(resolveReturnTarget).not.toHaveBeenCalled();
 	});
 });

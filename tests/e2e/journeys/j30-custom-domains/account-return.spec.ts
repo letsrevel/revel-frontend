@@ -127,7 +127,7 @@ test.describe('J30 account emails return to the custom domain @p1', () => {
 		}
 	});
 
-	test('registering on the tenant host verifies on the platform, then lands on the tenant login', async ({
+	test('registering on the tenant host verifies on the platform, then offers the way back', async ({
 		browser
 	}) => {
 		const email = uniqueEmail('TenantRegister');
@@ -145,8 +145,13 @@ test.describe('J30 account emails return to the custom domain @p1', () => {
 		expect(link.host).toBe(new URL(FRONTEND_ORIGIN).host);
 		expect(link.searchParams.get('return_host')).toBe(TENANT_HOST);
 
-		// Verifying happens on the platform; the browser then goes back to the tenant.
+		// Verifying happens on the platform. The way back is an explicit button,
+		// never an automatic redirect to the (owner-controlled) custom domain.
 		await page.goto(link.toString());
+		const cont = page.getByRole('link', { name: /^Continue to / });
+		await expect(cont).toHaveAttribute('href', `${TENANT_ORIGIN}/login`);
+		expect(new URL(page.url()).host).toBe(new URL(FRONTEND_ORIGIN).host);
+		await cont.click();
 		await page.waitForURL(`${TENANT_ORIGIN}/login`);
 
 		await page.context().close();

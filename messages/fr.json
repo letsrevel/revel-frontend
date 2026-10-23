@@ -9327,6 +9327,7 @@
 	"organizationsListPage.nextPageUnavailable": "Page suivante (indisponible)",
 	"passwordResetPage.emailPlaceholder": "toi@exemple.com",
 	"verifyPage.successRedirect": "Ton compte a été vérifié avec succès. Redirection vers ton profil...",
+	"verifyPage.successContinue": "Ton compte a été vérifié. Continue vers {name} pour t'y connecter.",
 	"verifyPage.couldNotVerify": "Nous n'avons pas pu vérifier ton adresse e-mail.",
 	"verifyPage.linkExpiredOrInvalid": "Le lien de vérification a peut-être expiré ou n'est pas valide.",
 	"verifyPage.createNewAccount": "Créer un nouveau compte",
