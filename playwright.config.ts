@@ -87,7 +87,11 @@ export default defineConfig({
 			// is always a platform host, so every other spec (all on localhost:5173)
 			// behaves exactly as without tenant mode.
 			PLATFORM_HOSTS: process.env.PLATFORM_HOSTS ?? 'localhost',
-			PLATFORM_ORIGIN: process.env.PLATFORM_ORIGIN ?? 'http://localhost:5173'
+			PLATFORM_ORIGIN: process.env.PLATFORM_ORIGIN ?? 'http://localhost:5173',
+			// Platform links and canonical 301s to a custom domain must land on the
+			// host this server actually serves (dev/E2E: http, port 5173).
+			PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE:
+				process.env.PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE ?? 'http://{hostname}:5173'
 		}
 	}
 });

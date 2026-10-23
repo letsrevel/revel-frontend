@@ -1,6 +1,6 @@
 import { test, expect } from '../../support/fixtures';
 import {
-	ALPHA_ORG_SLUG,
+	PAID_ORG_SLUG,
 	FRONTEND_ORIGIN,
 	TENANT_CANONICAL_ORIGIN,
 	TENANT_HOST,
@@ -15,7 +15,7 @@ import {
 //
 // Redirect assertions use raw HTTP (`hostRequest`: Host header, no redirect
 // following) so status + Location are checked verbatim and no navigation ever
-// leaves for `https://tenant.localhost` (which has no listener). Only the
+// leaves the host under test. Only the
 // `/events` → `/` case is also driven through a real browser navigation.
 
 test.describe('J30 tenant route scoping @p1', () => {
@@ -25,7 +25,7 @@ test.describe('J30 tenant route scoping @p1', () => {
 		testInfo.skip(reason !== null, reason ?? '');
 	});
 
-	for (const path of ['/events', '/organizations', `/org/${ALPHA_ORG_SLUG}`]) {
+	for (const path of ['/events', '/organizations', `/org/${PAID_ORG_SLUG}`]) {
 		test(`${path} on the tenant host redirects to /`, async () => {
 			const response = await hostRequest(TENANT_HOST, path);
 			expect(response.status).toBe(302);
@@ -66,6 +66,7 @@ test.describe('J30 canonical redirect from the platform @p1', () => {
 	test('the platform 301s an org page to its custom domain, keeping the query', async () => {
 		const response = await hostRequest(null, `/org/${TENANT_ORG_SLUG}?payment_success=1`);
 		expect(response.status).toBe(301);
+		// Origin comes from PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE (http://{hostname}:5173 in e2e).
 		expect(response.location).toBe(
 			`${TENANT_CANONICAL_ORIGIN}/org/${TENANT_ORG_SLUG}?payment_success=1`
 		);

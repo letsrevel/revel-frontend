@@ -1,6 +1,6 @@
 import type { Browser } from '@playwright/test';
 import { test, expect } from '../../support/fixtures';
-import { createTicketedEvent, createTicketTier, createVerifiedUser } from '../../support/factories';
+import { createVerifiedUser } from '../../support/factories';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 import {
 	completeStripeCheckout,
@@ -8,14 +8,16 @@ import {
 	requireStripeWebhooks
 } from '../../support/stripe';
 import {
-	ALPHA_HOST,
-	ALPHA_ORIGIN,
+	PAID_EVENT_PATH,
+	PAID_HOST,
+	PAID_ORIGIN,
 	tenantPage,
 	tenantUnavailableReason
 } from '../../support/tenant';
 
-// Custom domains (#1056) — paid checkout on `alpha.localhost`, the Stripe-connected
-// Org Alpha served as a tenant. Mirrors j06 stripe-online: stepper → Buy → sheet →
+// Custom domains (#1056) — paid checkout on `paid.localhost`: the seeded
+// `tenant-paid-event` (tier "Standard Ticket", ONLINE, 10.00 EUR) of
+// `tenant-paid-org`, which uses the platform Stripe account. Mirrors j06 stripe-online: stepper → Buy → sheet →
 // Pay Now → hosted Stripe Checkout. Reaching checkout.stripe.com needs the connected
 // account (CONNECTED_TEST_STRIPE_ID at bootstrap, tests/e2e/README.md); the
 // payment-and-return test additionally needs the `stripe listen` forwarder and,
@@ -24,24 +26,20 @@ import {
 test.describe('J30 paid checkout on a tenant host @p1', () => {
 	// eslint-disable-next-line no-empty-pattern
 	test.beforeEach(async ({}, testInfo) => {
-		const reason = await tenantUnavailableReason(ALPHA_HOST, { needsTenantMode: true });
+		const reason = await tenantUnavailableReason(PAID_HOST, { needsTenantMode: true });
 		testInfo.skip(reason !== null, reason ?? '');
 	});
 
-	/** Arrange a paid Org Alpha event + buyer, then drive the UI on alpha.localhost to Stripe. */
-	async function startCheckoutOnAlphaHost(browser: Browser) {
-		const [event, buyer] = await Promise.all([
-			createTicketedEvent({ freeTier: false }),
-			createVerifiedUser('AlphaBuyer')
-		]);
-		await createTicketTier(event.id, { name: 'Online Entry' });
+	/** Throwaway buyer, then drive the UI on paid.localhost to Stripe. */
+	async function startCheckoutOnPaidHost(browser: Browser) {
+		const buyer = await createVerifiedUser('PaidTenantBuyer');
 
-		const page = await tenantPage(browser, ALPHA_ORIGIN, buyer);
-		await gotoHydrated(page, event.path);
+		const page = await tenantPage(browser, PAID_ORIGIN, buyer);
+		await gotoHydrated(page, PAID_EVENT_PATH);
 		await waitForClientAuth(page);
-		expect(new URL(page.url()).host).toBe(new URL(ALPHA_ORIGIN).host);
+		expect(new URL(page.url()).host).toBe(new URL(PAID_ORIGIN).host);
 
-		const stepper = page.getByRole('group', { name: 'Quantity for Online Entry' });
+		const stepper = page.getByRole('group', { name: 'Quantity for Standard Ticket' });
 		await expect(stepper).toBeVisible({ timeout: 15_000 });
 		const summaryBar = page.getByTestId('cart-summary-bar');
 		const sheet = page.getByRole('dialog', { name: 'Checkout' });
@@ -52,7 +50,7 @@ test.describe('J30 paid checkout on a tenant host @p1', () => {
 			if (page.url().includes('checkout.stripe.com')) return;
 			if (!(await sheet.isVisible())) {
 				if ((await stepper.locator('span[aria-live="polite"]').textContent()) === '0') {
-					await stepper.getByRole('button', { name: 'Add one Online Entry' }).click();
+					await stepper.getByRole('button', { name: 'Add one Standard Ticket' }).click();
 				}
 				await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
 				await expect(sheet).toBeVisible({ timeout: 8_000 });
@@ -62,14 +60,14 @@ test.describe('J30 paid checkout on a tenant host @p1', () => {
 			await page.waitForURL(/checkout\.stripe\.com/, { timeout: 15_000 });
 		}).toPass({ timeout: 90_000 });
 
-		return { page, event };
+		return { page };
 	}
 
 	test('buying a paid ticket on the custom domain reaches Stripe Checkout', async ({ browser }) => {
 		test.setTimeout(180_000);
 		requireStripeWebhooks();
 
-		const { page } = await startCheckoutOnAlphaHost(browser);
+		const { page } = await startCheckoutOnPaidHost(browser);
 		await expect(page).toHaveURL(/^https:\/\/checkout\.stripe\.com\//);
 
 		await page.context().close();
@@ -77,20 +75,20 @@ test.describe('J30 paid checkout on a tenant host @p1', () => {
 
 	// Stripe success/cancel URLs are built from the platform's base URL until
 	// backend #1153 makes them tenant-aware, so today the buyer lands back on the
-	// platform host (which then canonical-redirects to https://alpha.localhost).
-	// Un-fixme once #1153 ships: the return must be alpha.localhost:5173, not
+	// platform host (which then canonical-redirects to paid.localhost).
+	// Un-fixme once #1153 ships: the return must be paid.localhost:5173, not
 	// localhost:5173, and the ticket must activate.
 	test.fixme('paying returns the buyer to the tenant host (backend #1153)', async ({ browser }) => {
 		test.setTimeout(240_000);
 		requireStripeWebhooks();
 
-		const { page, event } = await startCheckoutOnAlphaHost(browser);
+		const { page } = await startCheckoutOnPaidHost(browser);
 		await completeStripeCheckout(page);
 
-		await expect(page).toHaveURL(new RegExp(`^${ALPHA_ORIGIN}/`));
+		await expect(page).toHaveURL(new RegExp(`^${PAID_ORIGIN}/`));
 		const activeCard = page
 			.locator('article, li, div')
-			.filter({ hasText: event.name })
+			.filter({ hasText: /Standard Ticket|Tenant Paid/i })
 			.filter({ hasText: /Active/i })
 			.first();
 		await expectWebhookEffect(

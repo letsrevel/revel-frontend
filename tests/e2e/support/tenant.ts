@@ -7,10 +7,15 @@ import type { PersonaName } from './personas';
 /**
  * Custom-domain (tenant) helpers for j30-custom-domains.
  *
- * Backend: DEBUG-only seeds from `bootstrap_test_events` (revel-backend #1161)
- * map `tenant.localhost` to `eligibility-test-org` and `alpha.localhost` to
- * `revel-events-collective`, and allow those two origins through dynamic CORS.
- * Frontend: tenant mode needs `PLATFORM_HOSTS` (playwright.config.ts sets it).
+ * Backend: DEBUG-only seeds from `bootstrap_test_events` create two dedicated
+ * tenant fixtures, both owned by `tenant.owner@example.com`: `tenant-test-org`
+ * (domain `tenant.localhost`, events `tenant-rsvp-event` and
+ * `tenant-free-ticket-event`) and `tenant-paid-org` (domain `paid.localhost`,
+ * event `tenant-paid-event`, platform Stripe account). Both origins are allowed
+ * through dynamic CORS. The shared fixtures carry no domains.
+ * Frontend: tenant mode needs `PLATFORM_HOSTS`, and platform links / 301s land on
+ * the served tenant host via `PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE` (both set by
+ * playwright.config.ts).
  *
  * Chromium resolves `*.localhost` to loopback natively, so the browser reaches
  * `http://tenant.localhost:5173` with no host mapping. Node's resolver is not
@@ -22,16 +27,28 @@ export const FRONTEND_PORT = 5173;
 export const FRONTEND_ORIGIN = `http://localhost:${FRONTEND_PORT}`;
 
 export const TENANT_HOST = 'tenant.localhost';
-export const TENANT_ORG_SLUG = 'eligibility-test-org';
+export const TENANT_ORG_SLUG = 'tenant-test-org';
 export const TENANT_ORIGIN = `http://${TENANT_HOST}:${FRONTEND_PORT}`;
+/** Seeded: +30 days, RSVP-only, no tiers. */
+export const TENANT_RSVP_EVENT_PATH = `/events/${TENANT_ORG_SLUG}/tenant-rsvp-event`;
+/** Seeded: +31 days, tier "Free Ticket" (FREE, qty 100). */
+export const TENANT_FREE_EVENT_PATH = `/events/${TENANT_ORG_SLUG}/tenant-free-ticket-event`;
+/** Seeded branding of `tenant-test-org`. */
+export const TENANT_BRAND_PRIMARY = '#B0306A';
 
-export const ALPHA_HOST = 'alpha.localhost';
-export const ALPHA_ORG_SLUG = 'revel-events-collective';
-export const ALPHA_ORIGIN = `http://${ALPHA_HOST}:${FRONTEND_PORT}`;
+export const PAID_HOST = 'paid.localhost';
+export const PAID_ORG_SLUG = 'tenant-paid-org';
+export const PAID_ORIGIN = `http://${PAID_HOST}:${FRONTEND_PORT}`;
+/** Seeded: +32 days, tier "Standard Ticket" (ONLINE, 10.00 EUR, qty 100). */
+export const PAID_EVENT_PATH = `/events/${PAID_ORG_SLUG}/tenant-paid-event`;
 
-/** What the app builds for platform links to a custom domain: https, no port. */
-export const TENANT_CANONICAL_ORIGIN = `https://${TENANT_HOST}`;
-export const ALPHA_CANONICAL_ORIGIN = `https://${ALPHA_HOST}`;
+/**
+ * What the app builds for platform links to a custom domain. The e2e web server
+ * sets `PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE=http://{hostname}:5173`, so these equal
+ * the served origins (and following a link works).
+ */
+export const TENANT_CANONICAL_ORIGIN = TENANT_ORIGIN;
+export const PAID_CANONICAL_ORIGIN = PAID_ORIGIN;
 
 /** The subset of `TenantOrganizationSchema` the specs read. */
 export interface TenantOrgInfo {
@@ -104,7 +121,7 @@ const probes = new Map<string, Promise<string | null>>();
 /**
  * Why tenant specs cannot run (null when they can). Cached per worker.
  *
- * - the backend must resolve `hostname` (backend #1161 + its DEBUG seed);
+ * - the backend must resolve `hostname` (backend #1161 + its DEBUG tenant fixtures);
  * - when `needsTenantMode`, the frontend must also be serving it as a tenant
  *   (i.e. started with `PLATFORM_HOSTS`; a reused server without it renders the
  *   platform landing page on `tenant.localhost`).

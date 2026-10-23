@@ -1,5 +1,6 @@
 import { test, expect } from '../../support/fixtures';
 import {
+	TENANT_BRAND_PRIMARY,
 	TENANT_HOST,
 	TENANT_ORIGIN,
 	fetchTenantOrg,
@@ -58,6 +59,22 @@ test.describe('J30 tenant home @p1', () => {
 			'href',
 			/\/legal\/terms$/
 		);
+
+		await page.context().close();
+	});
+
+	// The tenant payload's `brand_theme` is applied app-wide by a separate branch
+	// (the `<style data-org-brand>` override). Un-fixme once it lands here.
+	test.fixme('applies the org brand primary via <style data-org-brand>', async ({ browser }) => {
+		const page = await tenantPage(browser, TENANT_ORIGIN);
+		await gotoHydrated(page, '/');
+
+		const style = page.locator('style[data-org-brand]');
+		await expect(style).toHaveCount(1);
+		// Seeded branding: primary #B0306A (hex or its HSL form, depending on the override).
+		const css = (await style.textContent()) ?? '';
+		expect(css.toLowerCase()).toContain('--primary');
+		expect(css.toLowerCase()).toContain(TENANT_BRAND_PRIMARY.toLowerCase().replace('#', ''));
 
 		await page.context().close();
 	});

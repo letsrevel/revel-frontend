@@ -45,7 +45,7 @@ test.describe('J30 tenant login @p1', () => {
 		}
 
 		// Sign in as the tenant org's owner; lands on the dashboard of the SAME host.
-		await uiLogin(page, 'testAdmin', { startAt: `${TENANT_ORIGIN}/login` });
+		await uiLogin(page, 'tenantOwner', { startAt: `${TENANT_ORIGIN}/login` });
 		expect(new URL(page.url()).host).toBe(new URL(TENANT_ORIGIN).host);
 		await expect(page).toHaveURL(/\/dashboard(\/|$|\?)/);
 

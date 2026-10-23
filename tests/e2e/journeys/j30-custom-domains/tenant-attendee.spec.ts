@@ -1,21 +1,19 @@
 import { test, expect } from '../../support/fixtures';
-import { createTicketedEvent, createVerifiedUser } from '../../support/factories';
+import { createVerifiedUser } from '../../support/factories';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 import {
 	TENANT_HOST,
-	TENANT_ORG_SLUG,
+	TENANT_RSVP_EVENT_PATH,
 	TENANT_ORIGIN,
 	tenantPage,
 	tenantUnavailableReason
 } from '../../support/tenant';
 
-// Custom domains (#1056) — an attendee RSVPs to an event of the tenant org,
-// end to end on `tenant.localhost` (the free flow every org supports).
+// Custom domains (#1056) — an attendee RSVPs to the seeded RSVP-only event of
+// the tenant org (`tenant-rsvp-event`), end to end on `tenant.localhost`.
 //
-// Arrange via API: a fresh no-ticket public event in the tenant org (owner
-// test.admin) and a throwaway verified attendee, so the spec is re-runnable and
-// independent of the seeded eligibility events' clocks. The attendee's session
-// is planted for the tenant host (cookies are host-only); the event page is then
+// Arrange via API: a throwaway verified attendee, so the spec is re-runnable
+// against the one shared seeded event. The attendee's session is planted for the tenant host (cookies are host-only); the event page is then
 // driven entirely through the UI on that host.
 
 test.describe('J30 attendee flow on a tenant host @p1', () => {
@@ -26,23 +24,15 @@ test.describe('J30 attendee flow on a tenant host @p1', () => {
 	});
 
 	test('RSVP yes to a tenant event on the custom domain', async ({ browser }) => {
-		const [event, attendee] = await Promise.all([
-			createTicketedEvent({
-				owner: 'testAdmin',
-				orgSlug: TENANT_ORG_SLUG,
-				freeTier: false,
-				event: { requires_ticket: false }
-			}),
-			createVerifiedUser('TenantAttendee')
-		]);
+		const attendee = await createVerifiedUser('TenantAttendee');
 
 		const page = await tenantPage(browser, TENANT_ORIGIN, attendee);
-		await gotoHydrated(page, event.path);
+		await gotoHydrated(page, TENANT_RSVP_EVENT_PATH);
 		await waitForClientAuth(page);
 		expect(new URL(page.url()).host).toBe(new URL(TENANT_ORIGIN).host);
 
 		// Tenant chrome, not the platform's, around the event page.
-		await expect(page.getByRole('heading', { name: event.name }).first()).toBeVisible();
+		await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
 		await expect(page.getByRole('contentinfo')).toContainText('Powered by');
 
 		await page.getByRole('button', { name: /^RSVP Yes/ }).click();
