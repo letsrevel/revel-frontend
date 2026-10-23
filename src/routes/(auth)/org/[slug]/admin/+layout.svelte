@@ -91,7 +91,18 @@
 							slug: data.organization.slug
 						}),
 						label: m['orgAdmin.nav.integrations']()
-					}
+					},
+					// Platform-superuser switch; owner-only on the backend as well.
+					...(data.organization.custom_domain_enabled
+						? [
+								{
+									href: resolve('/(auth)/org/[slug]/admin/custom-domain', {
+										slug: data.organization.slug
+									}),
+									label: m['orgAdmin.nav.customDomain']()
+								}
+							]
+						: [])
 				]
 			: []),
 		{
