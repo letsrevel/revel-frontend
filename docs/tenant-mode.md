@@ -357,6 +357,17 @@ user who is signed in to the platform has to sign in again on a custom domain, a
 is by design: it keeps one organization's site from reading another's session. It is also why the
 Stripe return hop above sends the buyer back to the domain they paid from.
 
+A host-only cookie is only as safe as the domain it is bound to, and the organization owner controls
+that domain's DNS. If they repoint it at a server of their own, every returning browser sends its
+session cookies there, and a refresh token is platform-wide and skips TOTP. So on a tenant host the
+frontend never persists the session: the refresh cookie is a session cookie (no `maxAge`),
+`remember_me` is always `false`, and the login page hides the "remember me" checkbox. The same rule
+applies on every path that writes the cookie: login, 2FA, OIDC, email verification and the refresh
+endpoint (`sessionRememberMe` in `src/lib/server/session.ts`). This only shortens the window.
+Revocation is the backend's job: refresh tokens minted on a custom domain carry that host, and stop
+working as soon as the domain is no longer active (removed, failed, moved, or the kill switch is
+off).
+
 ## Environment variables
 
 Set these on the frontend container. The first two are read by adapter-node, the rest by the app

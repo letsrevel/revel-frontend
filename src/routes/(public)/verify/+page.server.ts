@@ -5,6 +5,7 @@ import { getAccessTokenCookieOptions, getRefreshTokenCookieOptions } from '$lib/
 import { extractErrorMessage } from '$lib/utils/errors';
 import { claimPendingTokens, setClaimFlashCookie } from '$lib/server/token-claim';
 import { log } from '$lib/server/logger';
+import { sessionRememberMe } from '$lib/server/session';
 import { resolveReturnTarget } from '$lib/server/tenant-canonical';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
@@ -48,7 +49,11 @@ export const load: PageServerLoad = async ({ url, request, fetch, cookies, local
 			}
 
 			if (refresh) {
-				cookies.set('refresh_token', refresh, getRefreshTokenCookieOptions());
+				cookies.set(
+					'refresh_token',
+					refresh,
+					getRefreshTokenCookieOptions(sessionRememberMe(true, locals))
+				);
 			}
 
 			// Attempt to claim any pending invitation tokens

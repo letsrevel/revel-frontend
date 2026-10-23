@@ -63,6 +63,8 @@
 	// issue #912); a failed action's echo wins over the URL seed.
 	let email = $state(form?.email || page.url.searchParams.get('email') || '');
 	let password = $state('');
+	// Tenant (custom-domain) hosts never persist the session, so no remember-me.
+	const isTenant = $derived(!!page.data.tenant);
 	let rememberMe = $state(form?.rememberMe || false);
 	let showPassword = $state(false);
 	let isSubmitting = $state(false);
@@ -350,18 +352,20 @@
 							{/if}
 						</div>
 
-						<!-- Remember Me Checkbox -->
-						<div class="flex items-center gap-2">
-							<input
-								id="rememberMe"
-								name="rememberMe"
-								type="checkbox"
-								bind:checked={rememberMe}
-								disabled={isSubmitting}
-								class="h-4 w-4 rounded border-input text-primary transition-colors focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-							/>
-							<label for="rememberMe" class="text-sm"> {m['login.rememberMe']()} </label>
-						</div>
+						<!-- Remember Me Checkbox (hidden on tenant hosts: session-only there) -->
+						{#if !isTenant}
+							<div class="flex items-center gap-2">
+								<input
+									id="rememberMe"
+									name="rememberMe"
+									type="checkbox"
+									bind:checked={rememberMe}
+									disabled={isSubmitting}
+									class="h-4 w-4 rounded border-input text-primary transition-colors focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+								/>
+								<label for="rememberMe" class="text-sm"> {m['login.rememberMe']()} </label>
+							</div>
+						{/if}
 
 						<!-- Submit Button -->
 						<button
