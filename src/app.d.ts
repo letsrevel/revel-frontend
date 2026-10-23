@@ -2,6 +2,7 @@
 // for information about these interfaces
 /// <reference types="@sveltejs/kit" />
 import type { RevelUserSchema } from '$lib/api';
+import type { TenantOrganization } from '$lib/server/tenant';
 import '@testing-library/jest-dom/vitest';
 
 declare global {
@@ -20,6 +21,9 @@ declare global {
 			// forwarded upstream as X-Request-ID so frontend and backend log lines
 			// for the same request line up in Loki.
 			requestId?: string;
+			// Organization served on this custom domain (tenant mode, #1055); null on
+			// platform hosts. Set by handleTenant.
+			tenant?: TenantOrganization | null;
 		}
 		// interface PageData {}
 		// interface PageState {}

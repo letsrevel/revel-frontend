@@ -55,7 +55,10 @@ docker run -p 3000:3000 \
 | `PUBLIC_API_URL`             | Backend API base URL (runtime)                                            | `http://localhost:8000` | Yes      |
 | `PUBLIC_VERSION`             | Frontend version displayed in footer (build-time)                         | `dev`                   | No       |
 | `PUBLIC_HIDE_SOLUTIONS_FOOTER` | Hide the footer's "Solutions" marketing column (runtime); `true` to hide | unset (shown)           | No       |
-| `ORIGIN`                     | SvelteKit origin for CSRF protection (runtime)                            | `http://localhost:3000` | Yes      |
+| `ORIGIN`                     | SvelteKit origin for CSRF protection (runtime). Single-host deploys; omit for multi-host (use the two headers below) | `http://localhost:3000` | Single-host |
+| `HOST_HEADER`                | Header carrying the public host, e.g. `x-forwarded-host` (multi-host/tenant deploys; replaces `ORIGIN`) | unset | No |
+| `PROTOCOL_HEADER`            | Header carrying the public scheme, e.g. `x-forwarded-proto` (pair with `HOST_HEADER`) | unset | No |
+| `PLATFORM_HOSTS`             | Comma-separated platform hostnames (no ports). Unset = tenant mode off; any other host is resolved as an organization custom domain (unknown: 404). `localhost`/`127.0.0.1`/`::1` are always platform | unset | No |
 | `PORT`                       | Server port                                                               | `3000`                  | No       |
 | `HOST`                       | Server host                                                               | `0.0.0.0`               | No       |
 | `NODE_ENV`                   | Node environment                                                          | `production`            | No       |
