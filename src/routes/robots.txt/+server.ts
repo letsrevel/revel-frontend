@@ -1,5 +1,6 @@
 import type { RequestHandler } from './$types';
 import { orgOrigin } from '$lib/utils/org-links';
+import { serverLinkContext } from '$lib/server/tenant-canonical';
 
 /**
  * Generate robots.txt dynamically
@@ -55,7 +56,7 @@ const SLOW_BOTS = ['AhrefsBot', 'SemrushBot', 'MJ12bot'];
 export const GET: RequestHandler = async ({ url, locals }) => {
 	const tenant = locals.tenant ?? null;
 	if (tenant) {
-		const tenantBase = orgOrigin(tenant) ?? url.origin;
+		const tenantBase = orgOrigin(tenant, serverLinkContext(locals)) ?? url.origin;
 		const slowGroups = SLOW_BOTS.map(
 			(bot) => `User-agent: ${bot}
 ${TENANT_DISALLOW_RULES}

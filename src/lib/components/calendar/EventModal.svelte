@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { orgHref, tenantDomainFrom } from '$lib/utils/org-links';
+	import { orgHref } from '$lib/utils/org-links';
 	import type { EventInListSchema, EventDetailSchema } from '$lib/api/generated/types.gen';
 	import { goto } from '$app/navigation';
 	import { navigateTo } from '$lib/utils/navigate-to';
@@ -47,7 +47,7 @@
 						org_slug: slug,
 						event_slug: event.slug
 					}),
-					tenantDomainFrom(page.data)
+					page.data
 				)
 			);
 		}
@@ -59,7 +59,7 @@
 				orgHref(
 					event.organization,
 					resolve('/(public)/org/[slug]', { slug: event.organization.slug }),
-					tenantDomainFrom(page.data)
+					page.data
 				)
 			);
 		}

@@ -1,5 +1,5 @@
 import { error, isHttpError, isRedirect } from '@sveltejs/kit';
-import { canonicalTenantRedirect } from '$lib/server/tenant-canonical';
+import { canonicalTenantRedirect, serverLinkContext } from '$lib/server/tenant-canonical';
 import { buildSeo, withSiteName } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
 import {
@@ -108,7 +108,8 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 			url: canonicalUrl,
 			lang,
 			org: organization,
-			tenant: locals.tenant
+			tenant: locals.tenant,
+			linkContext: serverLinkContext(locals)
 		});
 		// The org SEO carries the right image, locale alternates and JSON-LD; only
 		// the wording has to say what THIS page is. Overridden here rather than by

@@ -20,6 +20,8 @@
 		onUpdateFilters: (updates: Partial<FilterState>) => void;
 		onClearFilters: () => void;
 		onClose: () => void;
+		/** Tenant host: the list is already scoped to one organization (#1056). */
+		hideOrganization?: boolean;
 		class?: string;
 	}
 
@@ -30,6 +32,7 @@
 		onUpdateFilters,
 		onClearFilters,
 		onClose,
+		hideOrganization = false,
 		class: className
 	}: Props = $props();
 
@@ -286,14 +289,16 @@
 				<!-- Divider -->
 				<div class="border-t" role="separator"></div>
 
-				<!-- Organization Filter -->
-				<OrganizationFilter
-					{selectedOrganization}
-					onChangeOrganization={handleChangeOrganization}
-				/>
+				{#if !hideOrganization}
+					<!-- Organization Filter -->
+					<OrganizationFilter
+						{selectedOrganization}
+						onChangeOrganization={handleChangeOrganization}
+					/>
 
-				<!-- Divider -->
-				<div class="border-t" role="separator"></div>
+					<!-- Divider -->
+					<div class="border-t" role="separator"></div>
+				{/if}
 
 				<!-- Event Type Filter -->
 				<EventTypeFilter eventType={filters.eventType} onChangeEventType={handleChangeEventType} />

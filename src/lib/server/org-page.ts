@@ -10,7 +10,7 @@ import {
 } from '$lib/api';
 import { log } from '$lib/server/logger';
 import { throwIfTransientUpstream } from '$lib/server/upstream';
-import { canonicalTenantRedirect } from '$lib/server/tenant-canonical';
+import { canonicalTenantRedirect, serverLinkContext } from '$lib/server/tenant-canonical';
 import type {
 	OrganizationPermissionsSchema,
 	OrganizationTokenSchema,
@@ -156,7 +156,14 @@ export async function loadOrgPage({ locals, fetch, url, request }: OrgPageEvent,
 		}
 
 		const lang = resolveLang(request);
-		const seo = buildSeo({ kind: 'org', url, lang, org: organization, tenant: locals.tenant });
+		const seo = buildSeo({
+			kind: 'org',
+			url,
+			lang,
+			org: organization,
+			tenant: locals.tenant,
+			linkContext: serverLinkContext(locals)
+		});
 
 		return {
 			seo,

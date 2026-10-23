@@ -2,6 +2,7 @@ import { eventpublicdiscoveryListEvents } from '$lib/api';
 import { getBackendUrl } from '$lib/config/api';
 import type { RequestHandler } from './$types';
 import { orgOrigin } from '$lib/utils/org-links';
+import { serverLinkContext } from '$lib/server/tenant-canonical';
 import { siteName, tenantIconUrl } from '$lib/seo/tenant';
 import { log } from '$lib/server/logger';
 
@@ -51,7 +52,9 @@ export const GET: RequestHandler = async ({ fetch, url, locals }) => {
 	const tenant = locals.tenant ?? null;
 	// Tenant host (#1057): the feed is the org's own, on the tenant origin, and
 	// says nothing about Revel (no Revel title, editor or webmaster address).
-	const baseUrl = tenant ? (orgOrigin(tenant) ?? url.origin) : url.origin;
+	const baseUrl = tenant
+		? (orgOrigin(tenant, serverLinkContext(locals)) ?? url.origin)
+		: url.origin;
 	const channelTitle = tenant ? `${siteName(tenant)} - Upcoming Events` : 'Revel - Upcoming Events';
 	const channelLink = tenant ? `${baseUrl}/` : `${baseUrl}/events`;
 	const channelDescription = tenant

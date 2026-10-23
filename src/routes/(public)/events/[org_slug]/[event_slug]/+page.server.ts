@@ -1,5 +1,5 @@
 import { error, isHttpError, isRedirect } from '@sveltejs/kit';
-import { canonicalTenantRedirect } from '$lib/server/tenant-canonical';
+import { canonicalTenantRedirect, serverLinkContext } from '$lib/server/tenant-canonical';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
 import { log } from '$lib/server/logger';
@@ -85,7 +85,15 @@ export const load: PageServerLoad = async ({
 		if (!indexable) {
 			setHeaders({ 'X-Robots-Tag': 'noindex,follow' });
 		}
-		const seo = buildSeo({ kind: 'event', url, lang, event, indexable, tenant: locals.tenant });
+		const seo = buildSeo({
+			kind: 'event',
+			url,
+			lang,
+			event,
+			indexable,
+			tenant: locals.tenant,
+			linkContext: serverLinkContext(locals)
+		});
 
 		// If user is authenticated, fetch their status
 		let userStatus: UserEventStatus | null = null;

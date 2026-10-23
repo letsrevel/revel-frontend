@@ -2,6 +2,7 @@ import { error } from '@sveltejs/kit';
 import { eventseriesListEventSeries } from '$lib/api';
 import { getBackendUrl } from '$lib/config/api';
 import { orgOrigin } from '$lib/utils/org-links';
+import { serverLinkContext } from '$lib/server/tenant-canonical';
 import type { RequestHandler } from './$types';
 
 const PAGE_SIZE = 200;
@@ -25,7 +26,9 @@ export const GET: RequestHandler = async ({ params, fetch, url, locals }) => {
 	const page = parseInt(params.page, 10);
 	if (!Number.isInteger(page) || page < 1) throw error(404, 'Invalid sitemap page');
 
-	const baseUrl = tenant ? (orgOrigin(tenant) ?? url.origin) : url.origin;
+	const baseUrl = tenant
+		? (orgOrigin(tenant, serverLinkContext(locals)) ?? url.origin)
+		: url.origin;
 	const resp = await eventseriesListEventSeries({
 		fetch,
 		query: { page, page_size: PAGE_SIZE, ...(tenant ? { organization: tenant.id } : {}) }

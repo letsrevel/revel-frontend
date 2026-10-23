@@ -6,6 +6,7 @@ import {
 import type { RequestHandler } from './$types';
 import { log } from '$lib/server/logger';
 import { orgOrigin } from '$lib/utils/org-links';
+import { serverLinkContext } from '$lib/server/tenant-canonical';
 
 const PAGE_SIZE = 200;
 
@@ -17,7 +18,9 @@ export const GET: RequestHandler = async ({ fetch, url, locals }) => {
 	const tenant = locals.tenant ?? null;
 	// Tenant host: only this org's pages, all on the tenant origin (#1057). The
 	// backend filters events and series by `organization` (the org's UUID).
-	const baseUrl = tenant ? (orgOrigin(tenant) ?? url.origin) : url.origin;
+	const baseUrl = tenant
+		? (orgOrigin(tenant, serverLinkContext(locals)) ?? url.origin)
+		: url.origin;
 	const lastmod = new Date().toISOString().split('T')[0];
 
 	let eventCount = 0;

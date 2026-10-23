@@ -1,4 +1,5 @@
 import { orgOrigin } from '$lib/utils/org-links';
+import { serverLinkContext } from '$lib/server/tenant-canonical';
 import type { RequestHandler } from './$types';
 
 const STATIC = [
@@ -68,7 +69,7 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 	// Tenant host: the org page (served at `/`) is the only static entry. No
 	// marketing, landing, auth or platform pages (#1057).
 	if (locals.tenant) {
-		const loc = `${orgOrigin(locals.tenant) ?? url.origin}/`;
+		const loc = `${orgOrigin(locals.tenant, serverLinkContext(locals)) ?? url.origin}/`;
 		return urlset([
 			`<url>\n  <loc>${escapeXml(loc)}</loc>\n  <changefreq>daily</changefreq>\n  <priority>1.0</priority>\n</url>`
 		]);
