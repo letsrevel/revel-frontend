@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { orgHref } from '$lib/utils/org-links';
+	import { tenantOrgFilter } from '$lib/utils/tenant-filter';
 	import * as m from '$lib/paraglide/messages.js';
 	import { brandName } from '$lib/seo/tenant';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -33,10 +34,12 @@
 	// Pagination
 	const currentPage = $derived(Number(page.url.searchParams.get('page') || '1'));
 	const pageSize = 12;
+	// On a custom domain only the tenant org (and its series) are listed (#1056).
+	const orgFilter = $derived(tenantOrgFilter(page.data));
 
 	// Fetch followed organizations
 	const orgsQuery = createQuery(() => ({
-		queryKey: ['followed-organizations', currentPage] as const,
+		queryKey: ['followed-organizations', currentPage, orgFilter] as const,
 		queryFn: async () => {
 			if (!accessToken) return { results: [], count: 0 };
 
@@ -44,7 +47,8 @@
 				headers: { Authorization: `Bearer ${accessToken}` },
 				query: {
 					page: currentPage,
-					page_size: pageSize
+					page_size: pageSize,
+					...orgFilter
 				}
 			});
 
@@ -55,7 +59,7 @@
 
 	// Fetch followed event series
 	const seriesQuery = createQuery(() => ({
-		queryKey: ['followed-event-series', currentPage] as const,
+		queryKey: ['followed-event-series', currentPage, orgFilter] as const,
 		queryFn: async () => {
 			if (!accessToken) return { results: [], count: 0 };
 
@@ -63,7 +67,8 @@
 				headers: { Authorization: `Bearer ${accessToken}` },
 				query: {
 					page: currentPage,
-					page_size: pageSize
+					page_size: pageSize,
+					...orgFilter
 				}
 			});
 
