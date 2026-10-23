@@ -226,8 +226,13 @@ export function platformOrigin(): string | null {
 	return null;
 }
 
-/** How long browsers may cache a canonical redirect to a custom domain (seconds). */
-const CANONICAL_REDIRECT_MAX_AGE = 3600;
+/**
+ * How long browsers may cache a canonical redirect to a custom domain (seconds).
+ * Short on purpose: the platform admin's kill switch, a removed domain or a
+ * failed certificate must stop the redirect within minutes, and a cached 301
+ * outlives all of those.
+ */
+const CANONICAL_REDIRECT_MAX_AGE = 300;
 
 /**
  * The canonical org redirect is a 301 (product decision), which browsers cache
