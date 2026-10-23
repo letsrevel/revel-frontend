@@ -407,10 +407,10 @@ describe('capCanonicalRedirectCache (B)', () => {
 	const redirectTo = (location: string, status = 301, headers: Record<string, string> = {}) =>
 		new Response(null, { status, headers: { location, ...headers } });
 
-	it('caps a 301 to another origin at an hour', () => {
+	it('marks a 301 to another origin no-store', () => {
 		const res = capCanonicalRedirectCache(redirectTo('https://events.example.org/org/acme'), req);
 		expect(res.status).toBe(301);
-		expect(res.headers.get('cache-control')).toBe('public, max-age=300');
+		expect(res.headers.get('cache-control')).toBe('no-store');
 		expect(res.headers.get('location')).toBe('https://events.example.org/org/acme');
 	});
 
@@ -425,7 +425,7 @@ describe('capCanonicalRedirectCache (B)', () => {
 		const res = capCanonicalRedirectCache(original, req);
 		expect(res.status).toBe(301);
 		expect(res.headers.get('location')).toBe('https://events.example.org/x');
-		expect(res.headers.get('cache-control')).toBe('public, max-age=300');
+		expect(res.headers.get('cache-control')).toBe('no-store');
 	});
 
 	it('leaves an existing cache-control alone', () => {
@@ -453,6 +453,6 @@ describe('capCanonicalRedirectCache (B)', () => {
 			event: { locals: { tenant: null }, url: req },
 			resolve
 		} as unknown as Parameters<typeof handleTenantRouting>[0]);
-		expect(res.headers.get('cache-control')).toBe('public, max-age=300');
+		expect(res.headers.get('cache-control')).toBe('no-store');
 	});
 });

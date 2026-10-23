@@ -194,7 +194,8 @@ export function tenantRouteDecision(input: TenantRouteInput): TenantRouteDecisio
 			if (second === undefined) return ALLOW;
 			if (second === 'confirm-action' && third === undefined) return ALLOW;
 			if (second === tenant) return ALLOW;
-			// Legacy UUID routes redirect to slug URLs, which are re-checked. Only the
+			// Legacy UUID routes redirect to slug URLs, which are re-checked (events/[id]
+			// renders on the platform but 303s to its slug URL on a tenant host). Only the
 			// exact shapes of the real routes: /events/{uuid} (events/[id]),
 			// /events/{uuid}/{uuid} and /events/{uuid}/series/{uuid}.
 			if (UUID_RE.test(second)) {
@@ -227,18 +228,14 @@ export function platformOrigin(): string | null {
 }
 
 /**
- * How long browsers may cache a canonical redirect to a custom domain (seconds).
- * Short on purpose: the platform admin's kill switch, a removed domain or a
- * failed certificate must stop the redirect within minutes, and a cached 301
- * outlives all of those.
- */
-const CANONICAL_REDIRECT_MAX_AGE = 300;
-
-/**
  * The canonical org redirect is a 301 (product decision), which browsers cache
  * indefinitely: an org that drops or changes its custom domain would stay
  * redirected. When a 301 points at another origin and the response sets no
- * cache policy of its own, cap the cache at an hour. SvelteKit's redirect
+ * cache policy of its own, mark it `no-store`: the platform admin's kill
+ * switch, a removed domain or a failed certificate must stop the redirect at
+ * once, and the redirect can depend on the caller's session (members-only
+ * orgs) and carry refreshed session cookies, so neither a shared cache nor
+ * the browser may reuse it after a logout or account switch. SvelteKit's redirect
  * responses have mutable headers; if a response ever does not (e.g. one built
  * by `Response.redirect()`), a copy is returned instead.
  */
@@ -251,7 +248,7 @@ export function capCanonicalRedirectCache(response: Response, requestUrl: URL): 
 	} catch {
 		return response;
 	}
-	const value = `public, max-age=${CANONICAL_REDIRECT_MAX_AGE}`;
+	const value = 'no-store';
 	try {
 		response.headers.set('cache-control', value);
 		return response;

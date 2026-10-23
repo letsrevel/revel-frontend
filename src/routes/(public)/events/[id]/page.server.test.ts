@@ -45,11 +45,11 @@ function ok<T>(data: T): { data: T; error: undefined } {
 
 /** Minimal stand-in for the SvelteKit load event this loader actually reads. */
 function loadEvent(
-	options: { search?: string; cookieToken?: string | null } = {}
+	options: { search?: string; cookieToken?: string | null; tenant?: { id: string } } = {}
 ): Parameters<typeof load>[0] {
 	return {
 		params: { id: 'event-1' },
-		locals: { user: null },
+		locals: { user: null, tenant: options.tenant ?? null },
 		fetch: globalThis.fetch,
 		url: new URL(`https://letsrevel.io/events/event-1${options.search ?? ''}`),
 		request: new Request(`https://letsrevel.io/events/event-1${options.search ?? ''}`),
@@ -164,5 +164,29 @@ describe('event [id] loader — invitation-link token', () => {
 		);
 		const result = await load(loadEvent({ cookieToken: 'tok-other' }));
 		expect(result.eventTokenDetails).toBeNull();
+	});
+});
+
+// On a custom domain this route must not render another org's event under the
+// tenant's chrome: it hands off to the slug URL, which the tenant routing hook
+// re-checks (another org's slug goes to `/`, the tenant's own lands canonically).
+describe('event [id] loader — tenant host', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		getEvent.mockResolvedValue(ok(EVENT) as never);
+		listResources.mockResolvedValue(ok({ results: [] }) as never);
+		listTiers.mockResolvedValue(ok([]) as never);
+	});
+
+	it('303s to the slug URL, keeping the query, instead of rendering', async () => {
+		await expect(
+			load(loadEvent({ search: '?et=tok-1', tenant: { id: 'other-org' } }))
+		).rejects.toMatchObject({ status: 303, location: '/events/test-org/test-event?et=tok-1' });
+		expect(listTiers).not.toHaveBeenCalled();
+	});
+
+	it('still renders on the platform host', async () => {
+		const data = await load(loadEvent());
+		expect(data).toMatchObject({ event: expect.objectContaining({ id: 'event-1' }) });
 	});
 });

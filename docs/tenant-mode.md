@@ -81,7 +81,7 @@ post-processes the response (see [Canonical redirects](#canonical-redirects-from
 | `/events` (bare)                                                                 | Allowed; the list is forced to the tenant organization (see note below)   |
 | `/events/{tenant slug}/...`                                                      | Allowed                                                                   |
 | `/events/confirm-action`                                                         | Allowed                                                                   |
-| `/events/{uuid}`, `/events/{uuid}/{uuid}`, `/events/{uuid}/series/{uuid}`        | Allowed (legacy UUID routes redirect to slug URLs, which are re-checked). Any other shape under a UUID goes to `/` |
+| `/events/{uuid}`, `/events/{uuid}/{uuid}`, `/events/{uuid}/series/{uuid}`        | Allowed (legacy UUID routes redirect to slug URLs, which are re-checked; `events/[id]` renders on the platform but 303s to the slug URL on a tenant host). Any other shape under a UUID goes to `/` |
 | `/embed/{tenant slug}...`                                                        | Allowed                                                                   |
 | `login`, `logout`, `register`, `password-reset`, `verify`                        | Allowed                                                                   |
 | `account` (except the three platform pages below), `dashboard`, `legal`, `unsubscribe`, `join` | Allowed                                                      |
@@ -156,12 +156,14 @@ https://app.example.com/events/acme/summer-party?ot=abc
 - **Never to itself.** `canonicalTenantUrl` returns nothing when the target host equals the
   request's own host. A `custom_domain` that is misconfigured to a platform host would otherwise
   301 to itself forever.
-- **Cache cap.** A 301 is cached by browsers indefinitely, so an organization that later drops or
+- **No cache.** A 301 is cached by browsers indefinitely, so an organization that later drops or
   changes its domain would keep redirecting returning visitors. `capCanonicalRedirectCache`
   (`src/lib/server/tenant-routing.ts`, run by `handleTenantRouting` on platform hosts) adds
-  `Cache-Control: public, max-age=3600` to a 301 that points at another origin and sets no cache
-  policy of its own. Same-origin redirects and responses that already carry `Cache-Control` are
-  left alone.
+  `Cache-Control: no-store` to a 301 that points at another origin and sets no cache policy of its
+  own. The kill switch then acts at once, and a redirect that depends on the caller's session (a
+  members-only org 404s for anonymous visitors) and can carry refreshed session cookies is never
+  reused after a logout or account switch. Same-origin redirects and responses that already carry
+  `Cache-Control` are left alone.
 - The functions in `tenant-canonical.ts` are `canonicalTenantUrl` (pure target computation),
   `canonicalTenantRedirect` (throws the 301), `tenantReturnUrl` (Stripe hop, below) and
   `serverLinkContext` (builds a link context from `locals` for server code such as SEO canonicals).
