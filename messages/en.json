@@ -9733,6 +9733,7 @@
 	"customDomain.pending.step2": "Add the DNS records below. Copy each name and value exactly as shown.",
 	"customDomain.pending.step3": "Come back here. This page refreshes on its own, or press \"Check now\".",
 	"customDomain.pending.timing": "DNS changes can take anywhere from a few minutes to a few hours to spread across the internet. You can leave this page and come back later.",
+	"customDomain.pending.platformTeam": "The Revel team will finish connecting this domain for you. This page updates on its own once it is active, so you can leave it and come back later.",
 	"customDomain.records.heading": "DNS records to add",
 	"customDomain.records.recordHeading": "Record {number} of {total} ({type})",
 	"customDomain.records.type": "Type",

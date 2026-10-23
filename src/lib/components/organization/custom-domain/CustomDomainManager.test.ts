@@ -108,6 +108,25 @@ describe('CustomDomainManager (#1058)', () => {
 		expect(toast.success).toHaveBeenCalled();
 	});
 
+	it('pending without DNS details: shows the platform-team note instead of the steps', async () => {
+		vi.mocked(getCustomDomain).mockResolvedValue({
+			...PENDING,
+			verification_records: [],
+			cname_target: null
+		});
+		setup();
+		await settle();
+
+		expect(screen.getByTestId('pending-platform-team')).toHaveTextContent(
+			'The Revel team will finish connecting this domain'
+		);
+		expect(screen.queryByText(/Add the DNS records below/)).not.toBeInTheDocument();
+		expect(screen.queryAllByTestId('dns-record')).toHaveLength(0);
+		expect(screen.queryByLabelText('Address to point to')).not.toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'Check now' })).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'Remove domain' })).toBeInTheDocument();
+	});
+
 	it('pending: sync errors appear in a callout, not an alert', async () => {
 		vi.mocked(getCustomDomain).mockResolvedValue({
 			...PENDING,

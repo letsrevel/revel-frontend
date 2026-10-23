@@ -49,6 +49,11 @@
 	}));
 
 	const domain = $derived(domainQuery.data ?? null);
+	// Without a DNS provider integration (self-hosted, local dev) a pending domain carries
+	// no records and no target: a platform administrator activates it instead.
+	const hasDnsDetails = $derived(
+		!!domain && (domain.verification_records.length > 0 || !!domain.cname_target)
+	);
 
 	let showChangeForm = $state(false);
 	let removeOpen = $state(false);
@@ -185,35 +190,41 @@
 			{:else}
 				<!-- State 2: pending -->
 				<div class="space-y-4">
-					<p class="text-sm">{m['customDomain.pending.intro']()}</p>
-					<ol class="list-decimal space-y-1.5 pl-5 text-sm">
-						<li>{m['customDomain.pending.step1']()}</li>
-						<li>{m['customDomain.pending.step2']()}</li>
-						<li>{m['customDomain.pending.step3']()}</li>
-					</ol>
+					{#if !hasDnsDetails}
+						<p class="rounded-md bg-muted p-4 text-sm" data-testid="pending-platform-team">
+							{m['customDomain.pending.platformTeam']()}
+						</p>
+					{:else}
+						<p class="text-sm">{m['customDomain.pending.intro']()}</p>
+						<ol class="list-decimal space-y-1.5 pl-5 text-sm">
+							<li>{m['customDomain.pending.step1']()}</li>
+							<li>{m['customDomain.pending.step2']()}</li>
+							<li>{m['customDomain.pending.step3']()}</li>
+						</ol>
 
-					{#if domain.verification_records.length > 0}
-						<div class="space-y-3">
-							<h3 class="font-bold">{m['customDomain.records.heading']()}</h3>
-							<DnsRecordsList records={domain.verification_records} />
-						</div>
+						{#if domain.verification_records.length > 0}
+							<div class="space-y-3">
+								<h3 class="font-bold">{m['customDomain.records.heading']()}</h3>
+								<DnsRecordsList records={domain.verification_records} />
+							</div>
+						{/if}
+
+						{#if domain.cname_target}
+							<div class="space-y-2">
+								<h3 class="font-bold">{m['customDomain.cname.heading']()}</h3>
+								<p class="text-sm text-muted-foreground">
+									{m['customDomain.cname.body']({ hostname: domain.hostname })}
+								</p>
+								<CopyField
+									id="custom-domain-cname-target"
+									value={domain.cname_target}
+									label={m['customDomain.cname.label']()}
+								/>
+							</div>
+						{/if}
+
+						<p class="text-sm text-muted-foreground">{m['customDomain.pending.timing']()}</p>
 					{/if}
-
-					{#if domain.cname_target}
-						<div class="space-y-2">
-							<h3 class="font-bold">{m['customDomain.cname.heading']()}</h3>
-							<p class="text-sm text-muted-foreground">
-								{m['customDomain.cname.body']({ hostname: domain.hostname })}
-							</p>
-							<CopyField
-								id="custom-domain-cname-target"
-								value={domain.cname_target}
-								label={m['customDomain.cname.label']()}
-							/>
-						</div>
-					{/if}
-
-					<p class="text-sm text-muted-foreground">{m['customDomain.pending.timing']()}</p>
 				</div>
 			{/if}
 
