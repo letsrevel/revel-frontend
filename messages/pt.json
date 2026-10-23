@@ -10251,10 +10251,10 @@
 	"tenantChrome": {
 		"mainNavigation": "Navegação da organização",
 		"events": "Eventos",
-		"membership": "Associação",
+		"membership": "Adesão",
 		"resources": "Recursos",
 		"copyright": "© {year} {name}",
-		"poweredBy": "Com tecnologia de",
+		"poweredBy": "Distribuído por",
 		"legalNavigation": "Informação legal",
 		"privacy": "Privacidade",
 		"terms": "Termos"

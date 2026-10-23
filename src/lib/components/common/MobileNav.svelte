@@ -84,7 +84,7 @@
 			<span role="heading" aria-level="2" class="text-lg font-semibold">{m['nav.menu']()}</span>
 			<button
 				type="button"
-				class="rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+				class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring"
 				onclick={onClose}
 				aria-label={m['nav.closeMenu']()}
 			>
