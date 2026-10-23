@@ -9357,6 +9357,7 @@
 	"organizationsListPage.nextPageUnavailable": "Next page (unavailable)",
 	"passwordResetPage.emailPlaceholder": "you@example.com",
 	"verifyPage.successRedirect": "Your account has been successfully verified. Redirecting you to your profile...",
+	"verifyPage.successContinue": "Your account has been verified. Continue to {name} and sign in there.",
 	"verifyPage.couldNotVerify": "We could not verify your email address.",
 	"verifyPage.linkExpiredOrInvalid": "The verification link may have expired or is invalid.",
 	"verifyPage.createNewAccount": "Create new account",
@@ -10318,5 +10319,6 @@
 		"legalNavigation": "Legal",
 		"privacy": "Privacy",
 		"terms": "Terms"
-	}
+	},
+	"tenantReturn.continueTo": "Continue to {name}"
 }

@@ -137,9 +137,15 @@
 						: m['unsubscribePage.successDescription']()}
 			>
 				{#snippet action()}
-					<Button href={resolve('/(public)', {})} variant="outline">
-						{m['unsubscribePage.goHome']()}
-					</Button>
+					{#if data.returnTo}
+						<Button href="{data.returnTo.origin}/">
+							{m['tenantReturn.continueTo']({ name: data.returnTo.name })}
+						</Button>
+					{:else}
+						<Button href={resolve('/(public)', {})} variant="outline">
+							{m['unsubscribePage.goHome']()}
+						</Button>
+					{/if}
 				{/snippet}
 			</EmptyState>
 		</div>

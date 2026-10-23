@@ -19,6 +19,9 @@
 
 	const brand = $derived(brandName($page.data.tenant));
 	const token = $derived($page.url.searchParams.get('token') ?? '');
+	// Forwarded to the action, which re-validates it (#1070).
+	const returnHost = $derived($page.url.searchParams.get('return_host') ?? '');
+	const returnTo = $derived(form?.returnTo ?? null);
 	const success = $derived(form?.success === true);
 	const newEmail = $derived(form?.new_email ?? '');
 	const errors = $derived((form?.errors ?? {}) as Record<string, string>);
@@ -89,12 +92,25 @@
 		})} {m['confirmEmailChange.success_signoutNotice']()}"
 	>
 		<div class="rounded-lg border-2 border-border bg-card p-6 text-center shadow-poster">
-			<a
-				href={resolve('/(auth)/account/profile', {})}
-				class="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-			>
-				{m['confirmEmailChange.success_cta']()}
-			</a>
+			{#if returnTo}
+				<!-- Started on a custom domain (#1070): back to ITS login (the tenant
+				     host holds no session). Re-validated server-side; no token. -->
+				<!-- eslint-disable svelte/no-navigation-without-resolve -- external custom-domain origin validated server-side -->
+				<a
+					href="{returnTo.origin}/login"
+					class="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+				>
+					{m['tenantReturn.continueTo']({ name: returnTo.name })}
+				</a>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
+			{:else}
+				<a
+					href={resolve('/(auth)/account/profile', {})}
+					class="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+				>
+					{m['confirmEmailChange.success_cta']()}
+				</a>
+			{/if}
 		</div>
 	</AuthBandLayout>
 {:else if !token}
@@ -203,6 +219,9 @@
 			class="space-y-4"
 		>
 			<input type="hidden" name="token" value={token} />
+			{#if returnHost}
+				<input type="hidden" name="return_host" value={returnHost} />
+			{/if}
 
 			<div class="flex gap-3">
 				<a

@@ -2,6 +2,7 @@ import { fail, type Actions } from '@sveltejs/kit';
 import { accountDeletionConfirmSchema } from '$lib/schemas/auth';
 import { accountDeleteAccountConfirm } from '$lib/api/generated';
 import { log } from '$lib/server/logger';
+import { resolveReturnTarget } from '$lib/server/tenant-canonical';
 
 /** Read the HTTP status from an error shaped like `{ response: { status } }`. */
 function getResponseStatus(error: unknown): unknown {
@@ -44,7 +45,7 @@ function firstString(value: unknown): string | undefined {
 }
 
 export const actions: Actions = {
-	confirmDeletion: async ({ request, cookies }) => {
+	confirmDeletion: async ({ request, cookies, fetch }) => {
 		const formData = await request.formData();
 		const token = formData.get('token') as string;
 
@@ -77,8 +78,11 @@ export const actions: Actions = {
 			cookies.delete('refresh_token', { path: '/' });
 			cookies.delete('remember_me', { path: '/' });
 
+			// Started on a custom domain (#1070): offer the way back to its root
+			// (the account is gone, so no login/dashboard). Re-validated here.
 			return {
-				success: true
+				success: true,
+				returnTo: await resolveReturnTarget(formData.get('return_host')?.toString(), fetch)
 			};
 		} catch (error) {
 			log.error('account_deletion_confirm_error', { error });

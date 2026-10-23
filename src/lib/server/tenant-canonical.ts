@@ -2,7 +2,12 @@ import { redirect } from '@sveltejs/kit';
 
 import { organizationGetOrganizationCustomDomain } from '$lib/api';
 import { customDomainOrigin, type LinkContext } from '$lib/utils/org-links';
-import { tenantModeEnabled } from '$lib/server/tenant';
+import {
+	isPlatformHost,
+	normalizeHost,
+	resolveTenant,
+	tenantModeEnabled
+} from '$lib/server/tenant';
 import { platformOrigin } from '$lib/server/tenant-routing';
 
 /** The link context for server code (SEO canonicals): same shape as the client's `page.data`. */
@@ -77,4 +82,47 @@ export async function tenantReturnUrl(
 	} catch {
 		return null;
 	}
+}
+
+/** Where to send a user back to after a platform-hosted account flow (#1070). */
+export interface ReturnTarget {
+	/** Custom-domain origin, no trailing slash. Append a path; never a token or query. */
+	origin: string;
+	/** The organization's display name, for "Continue to {name}". */
+	name: string;
+}
+
+// A bare DNS name only: no scheme, path, userinfo, port, query or whitespace.
+const BARE_HOSTNAME = /^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$/i;
+
+/**
+ * Validate a `return_host` query value (appended by the backend to the account
+ * emails' PLATFORM links when the request came from a custom domain, BE #1156).
+ *
+ * The link is attacker-craftable, so this is an allowlist, never an open
+ * redirect: tenant mode must be on, the value must be a bare hostname, it must
+ * not be a platform host, and it must resolve to an ACTIVE tenant. Anything
+ * else (including a failed lookup) is null and the caller keeps its platform
+ * flow. The origin comes from the configured URL template, not from the input.
+ */
+export async function resolveReturnTarget(
+	rawHost: string | null | undefined,
+	fetch: typeof globalThis.fetch
+): Promise<ReturnTarget | null> {
+	if (!rawHost || !tenantModeEnabled()) return null;
+	if (!BARE_HOSTNAME.test(rawHost)) return null;
+	const host = normalizeHost(rawHost);
+	if (isPlatformHost(host)) return null;
+	const result = await resolveTenant(host, fetch);
+	if (result.status !== 'found') return null;
+	const origin = customDomainOrigin(host);
+	return origin ? { origin, name: result.tenant.name } : null;
+}
+
+/** {@link resolveReturnTarget}, origin only. */
+export async function resolveReturnHost(
+	rawHost: string | null | undefined,
+	fetch: typeof globalThis.fetch
+): Promise<string | null> {
+	return (await resolveReturnTarget(rawHost, fetch))?.origin ?? null;
 }
