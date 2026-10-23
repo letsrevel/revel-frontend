@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { canonicalTenantRedirect, canonicalTenantUrl } from './tenant-canonical';
 
 const locals = (tenant: unknown = null) => ({ tenant }) as unknown as App.Locals;
@@ -63,5 +63,23 @@ describe('canonicalTenantRedirect', () => {
 		expect(() =>
 			canonicalTenantRedirect(locals({ slug: 'a' }), { custom_domain: 'x.example.org' }, u)
 		).not.toThrow();
+	});
+});
+
+describe('canonicalTenantUrl with a URL template', () => {
+	it('uses PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE', async () => {
+		vi.resetModules();
+		vi.doMock('$app/environment', () => ({ browser: false }));
+		vi.doMock('$env/dynamic/public', () => ({
+			env: { PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE: 'http://{hostname}:5173' }
+		}));
+		const mod = await import('./tenant-canonical');
+		expect(
+			mod.canonicalTenantUrl(
+				locals(),
+				{ custom_domain: 'tenant.localhost' },
+				url('http://localhost:5173/org/x?a=1')
+			)
+		).toBe('http://tenant.localhost:5173/org/x?a=1');
 	});
 });
