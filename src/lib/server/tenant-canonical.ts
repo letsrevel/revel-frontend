@@ -1,6 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 
-import { organizationGetOrganizationById } from '$lib/api';
+import { organizationGetOrganizationCustomDomain } from '$lib/api';
 import { customDomainOrigin } from '$lib/utils/org-links';
 
 /**
@@ -42,8 +42,10 @@ export function canonicalTenantRedirect(
  * cookies are host-only and live there, so a private event or membership
  * resolves with their auth, and the tenant's own UUID route then 303s to the
  * slug page with the query string (payment_success, ...) intact. Null on
- * tenant hosts, for orgs without a domain, and on any lookup failure (the
- * caller's existing flow takes over).
+ * tenant hosts, for orgs without an active domain (404), and on any lookup
+ * failure (the caller's existing flow takes over). Uses the dedicated public
+ * custom-domain endpoint: the org retrieve 404s anonymously for private and
+ * members-only orgs, and the buyer has no platform session here.
  */
 export async function tenantReturnUrl(
 	locals: App.Locals,
@@ -53,7 +55,7 @@ export async function tenantReturnUrl(
 ): Promise<string | null> {
 	if (locals.tenant) return null;
 	try {
-		const { data } = await organizationGetOrganizationById({
+		const { data } = await organizationGetOrganizationCustomDomain({
 			fetch,
 			path: { organization_id: orgId }
 		});

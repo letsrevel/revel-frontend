@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const getById = vi.hoisted(() => vi.fn());
-vi.mock('$lib/api', () => ({ organizationGetOrganizationById: getById }));
+vi.mock('$lib/api', () => ({ organizationGetOrganizationCustomDomain: getById }));
 
 import { canonicalTenantRedirect, canonicalTenantUrl, tenantReturnUrl } from './tenant-canonical';
 
@@ -98,7 +98,7 @@ describe('tenantReturnUrl (Stripe return hop)', () => {
 	beforeEach(() => getById.mockReset());
 
 	it('sends a custom-domain org to the same UUID path on its domain', async () => {
-		getById.mockResolvedValue({ data: { slug: 'acme', custom_domain: 'events.example.org' } });
+		getById.mockResolvedValue({ data: { custom_domain: 'events.example.org' } });
 		expect(await tenantReturnUrl(locals(), ORG, ret, f)).toBe(
 			`https://events.example.org${ret.pathname}?payment_success=true`
 		);
@@ -107,9 +107,7 @@ describe('tenantReturnUrl (Stripe return hop)', () => {
 		);
 	});
 
-	it('is null for an org without a domain, on a lookup miss, or on an error', async () => {
-		getById.mockResolvedValueOnce({ data: { slug: 'acme', custom_domain: null } });
-		expect(await tenantReturnUrl(locals(), ORG, ret, f)).toBeNull();
+	it('is null when the org has no active domain (404) or on an error', async () => {
 		getById.mockResolvedValueOnce({ data: undefined, error: { detail: 'nope' } });
 		expect(await tenantReturnUrl(locals(), ORG, ret, f)).toBeNull();
 		getById.mockRejectedValueOnce(new Error('down'));
