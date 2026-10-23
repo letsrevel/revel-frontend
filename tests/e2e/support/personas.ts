@@ -74,7 +74,7 @@ export const PERSONAS = {
 	tenantOwner: persona(
 		'tenantOwner',
 		'tenant.owner@example.com',
-		'Owns the custom-domain fixtures tenant-test-org (tenant.localhost) and tenant-paid-org (paid.localhost)'
+		'Owns the custom-domain fixtures (j30): tenant-test-org (tenant.localhost), tenant-paid-org (paid.localhost) and domain-setup-org (custom domains enabled, no domain yet)'
 	),
 	compliance: persona(
 		'compliance',
