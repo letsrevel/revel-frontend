@@ -10,6 +10,7 @@
 	import { NotificationDropdown } from '$lib/components/notifications';
 	import type { TenantOrganizationSchema } from '$lib/api/generated/types.gen';
 	import { getImageUrl } from '$lib/utils/url';
+	import { rootRelative } from '$lib/utils/org-links';
 	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
@@ -51,7 +52,9 @@
 	]);
 
 	function isActive(href: string): boolean {
-		return href === '/' ? currentPath === '/' : currentPath.startsWith(href);
+		// SSR resolve() returns page-relative hrefs (`./`), so compare root-relative paths.
+		const path = rootRelative(href);
+		return path === '/' ? currentPath === '/' : currentPath.startsWith(path);
 	}
 
 	function closeMobileMenu() {

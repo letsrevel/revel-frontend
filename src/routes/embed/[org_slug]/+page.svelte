@@ -32,7 +32,7 @@
 	// Links out target the org's custom domain when it has one (#1056).
 	const orgHref = $derived(
 		buildEmbedLink(
-			orgOrigin(data.organization) ?? links.origin,
+			orgOrigin(data.organization, data) ?? links.origin,
 			organizationPath(data.orgSlug),
 			links
 		)

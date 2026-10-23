@@ -46,6 +46,21 @@ export function customDomainOrigin(hostname: string | null | undefined): string 
 /** Minimal shape every generated org schema carrying a domain satisfies. */
 export interface OrgWithDomain {
 	custom_domain?: string | null;
+	slug?: string;
+}
+
+/**
+ * What the link helpers need to know about the current request. Root layout
+ * data (`page.data`) satisfies it structurally, so call sites pass `page.data`;
+ * server code builds one with `serverLinkContext(locals)`. `customDomains` is
+ * the tenant-mode switch: when it is missing or `enabled: false`, nothing is
+ * rewritten (a deploy that does not serve the custom domains must never link
+ * to them).
+ */
+export interface LinkContext {
+	/** The custom-domain org on a tenant host, else null. */
+	tenant?: OrgWithDomain | null;
+	customDomains?: { enabled: boolean; platformOrigin: string | null } | null;
 }
 
 // Dot-separated DNS labels: letters, digits, hyphen inside a label; at least
@@ -61,28 +76,50 @@ export function normalizeCustomDomain(domain: string | null | undefined): string
 	return HOSTNAME_RE.test(host) ? host : null;
 }
 
-/** Custom-domain origin for an org with a valid domain, otherwise `null`. */
-export function orgOrigin(org: OrgWithDomain | null | undefined): string | null {
+/**
+ * Custom-domain origin for an org with a valid domain, otherwise `null`.
+ * Always `null` while tenant mode is off.
+ */
+export function orgOrigin(
+	org: OrgWithDomain | null | undefined,
+	ctx?: LinkContext | null
+): string | null {
+	if (!ctx?.customDomains?.enabled) return null;
 	return customDomainOrigin(org?.custom_domain);
 }
 
 /**
- * `path` for the org's attendee pages: the plain relative path when the org has
- * no (valid) custom domain or we're already on it, else `https://{domain}{path}`.
+ * `path` for the org's attendee pages, depending on where we are:
  *
- * @param path                 Absolute app path (optionally with query/hash), e.g. `/events/acme/party`.
- * @param currentTenantDomain  `page.data.tenant?.custom_domain` (null on the platform host).
+ * - tenant mode off: always the plain relative path;
+ * - org has a (valid) custom domain, we are not on it: `https://{domain}{path}`;
+ * - org has none and we are on a tenant host (a ticket or calendar item from
+ *   another org): `{platformOrigin}{path}`, because a relative link would be
+ *   scoped back to `/` by the tenant host (relative when the platform origin is
+ *   unknown);
+ * - otherwise (already on that domain, or on the platform): relative.
+ *
+ * @param path  Absolute app path (optionally with query/hash), e.g. `/events/acme/party`.
+ * @param ctx   `page.data` (or a context built server-side).
  */
 export function orgHref(
 	org: OrgWithDomain | null | undefined,
 	path: string,
-	currentTenantDomain?: string | null
+	ctx?: LinkContext | null
 ): string {
+	const domains = ctx?.customDomains;
+	if (!domains?.enabled) return path;
+	const current = normalizeCustomDomain(ctx?.tenant?.custom_domain);
 	const host = normalizeCustomDomain(org?.custom_domain);
-	if (!host) return path;
-	// Compare hostnames, not origins: the template may add a port or scheme.
-	if (normalizeCustomDomain(currentTenantDomain) === host) return path;
-	return `${customDomainOrigin(host)}${rootRelative(path)}`;
+	if (host) {
+		// Compare hostnames, not origins: the template may add a port or scheme.
+		if (current === host) return path;
+		return `${customDomainOrigin(host)}${rootRelative(path)}`;
+	}
+	if (!current) return path;
+	// On a tenant host. The tenant's own org stays relative even if its payload lacks a domain.
+	if (org?.slug && org.slug === ctx?.tenant?.slug) return path;
+	return domains.platformOrigin ? `${domains.platformOrigin}${rootRelative(path)}` : path;
 }
 
 /**
@@ -91,13 +128,7 @@ export function orgHref(
  * an origin would yield `https://host./events/x`. The app has no base path, so
  * dropping the leading `./` / `../` segments gives the root-relative path.
  */
-function rootRelative(path: string): string {
+export function rootRelative(path: string): string {
 	const stripped = path.replace(/^(?:\.{1,2}(?:\/|$))+/, '');
 	return stripped.startsWith('/') ? stripped : `/${stripped}`;
-}
-
-/** The current tenant's custom domain from root layout data (`page.data`). */
-export function tenantDomainFrom(data: unknown): string | null {
-	const tenant = (data as { tenant?: OrgWithDomain | null } | null | undefined)?.tenant;
-	return tenant?.custom_domain ?? null;
 }

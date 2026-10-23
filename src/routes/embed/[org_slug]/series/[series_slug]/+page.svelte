@@ -39,7 +39,7 @@
 	// Links out target the org's custom domain when it has one (#1056).
 	const seriesHref = $derived(
 		buildEmbedLink(
-			orgOrigin(data.series.organization) ?? links.origin,
+			orgOrigin(data.series.organization, data) ?? links.origin,
 			seriesPath(data.series.organization.slug, data.series.slug),
 			links
 		)

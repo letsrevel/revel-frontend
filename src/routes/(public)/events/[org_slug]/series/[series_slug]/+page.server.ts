@@ -9,7 +9,7 @@ import {
 	seriespassListSeriesPasses
 } from '$lib/api';
 import { error as svelteKitError, isRedirect } from '@sveltejs/kit';
-import { canonicalTenantRedirect } from '$lib/server/tenant-canonical';
+import { canonicalTenantRedirect, serverLinkContext } from '$lib/server/tenant-canonical';
 import { throwIfTransientUpstream } from '$lib/server/upstream';
 import type { OrganizationPermissionsSchema } from '$lib/api/generated/types.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
@@ -115,7 +115,13 @@ export const load: PageServerLoad = async ({ params, url, fetch, locals, request
 		}
 
 		const lang = resolveLang(request);
-		const seo = buildSeo({ kind: 'series', url, lang, series });
+		const seo = buildSeo({
+			kind: 'series',
+			url,
+			lang,
+			series,
+			linkContext: serverLinkContext(locals)
+		});
 
 		return {
 			seo,

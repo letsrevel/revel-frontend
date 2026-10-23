@@ -62,6 +62,16 @@ function platformHosts(): Set<string> {
 	return parsedHosts;
 }
 
+/**
+ * Tenant mode is ON only when `PLATFORM_HOSTS` names at least one host. Every
+ * custom-domain behavior (canonical redirects, rewritten links, route scoping)
+ * is gated on this: a deploy that shares a backend with a tenant-mode deploy
+ * but does not serve the custom domains must not redirect or link to them.
+ */
+export function tenantModeEnabled(): boolean {
+	return platformHosts().size > 0;
+}
+
 /** True when the host belongs to the platform itself (not a tenant candidate). */
 export function isPlatformHost(rawHost: string): boolean {
 	const hosts = platformHosts();
@@ -75,25 +85,31 @@ interface CacheEntry {
 	expiry: number;
 }
 
+// Found tenants and unknown hosts live in SEPARATE maps, each with its own cap:
+// a flood of random Host headers can churn the negative map but can never evict
+// a real tenant from the positive one.
 const cache = new Map<string, CacheEntry>();
+const negativeCache = new Map<string, CacheEntry>();
 const inFlight = new Map<string, Promise<TenantResolution>>();
 let lastUnavailableLog = 0;
 
 /** Test-only: clear cache, in-flight lookups and log throttle. */
 export function __resetTenantCache(): void {
 	cache.clear();
+	negativeCache.clear();
 	inFlight.clear();
 	lastUnavailableLog = 0;
 	parsedFrom = undefined;
 }
 
 function remember(host: string, result: TenantResolution, ttl: number): void {
-	cache.delete(host); // re-insert so Map order tracks age
-	cache.set(host, { result, expiry: Date.now() + ttl });
-	while (cache.size > MAX_CACHE_ENTRIES) {
-		const oldest = cache.keys().next().value;
+	const map = result.status === 'found' ? cache : negativeCache;
+	map.delete(host); // re-insert so Map order tracks age
+	map.set(host, { result, expiry: Date.now() + ttl });
+	while (map.size > MAX_CACHE_ENTRIES) {
+		const oldest = map.keys().next().value;
 		if (oldest === undefined) break;
-		cache.delete(oldest);
+		map.delete(oldest);
 	}
 }
 
@@ -129,10 +145,11 @@ export async function resolveTenant(
 	// Anything that isn't a plausible DNS name can't be a registered domain.
 	if (!/^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$/.test(host)) return { status: 'unknown' };
 
-	const hit = cache.get(host);
-	if (hit) {
+	for (const map of [cache, negativeCache]) {
+		const hit = map.get(host);
+		if (!hit) continue;
 		if (hit.expiry > Date.now()) return hit.result;
-		cache.delete(host);
+		map.delete(host);
 	}
 
 	const pending = inFlight.get(host);

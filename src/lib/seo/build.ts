@@ -14,7 +14,7 @@ import {
 	plainPageSeo
 } from './plain-page';
 import { oembedDiscoveryUrl } from '$lib/embed/oembed';
-import { orgOrigin } from '$lib/utils/org-links';
+import { orgOrigin, type LinkContext } from '$lib/utils/org-links';
 import { truncate, stripMarkup } from './text';
 import { landingPageHreflang } from './hreflang';
 import {
@@ -36,7 +36,15 @@ export type SeoPageSlug =
 	| 'community-first-event-platform'
 	| 'club-membership-management';
 
-export type BuildSeoInput =
+export type BuildSeoInput = BuildSeoVariant & {
+	/**
+	 * Tenant-mode link context (`serverLinkContext(locals)`). Without it org-scoped
+	 * pages canonicalise on the platform URL, never on a custom domain.
+	 */
+	linkContext?: LinkContext;
+};
+
+type BuildSeoVariant =
 	| { kind: 'home'; url: URL; lang: Lang }
 	| { kind: 'events-listing'; url: URL; lang: Lang }
 	| { kind: 'orgs-listing'; url: URL; lang: Lang; items?: ListItem[] }
@@ -131,7 +139,8 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 				? input.org
 				: input.kind === 'series'
 					? input.series.organization
-					: null
+					: null,
+		input.linkContext
 	);
 	const canonical = domainOrigin
 		? `${domainOrigin}${input.url.pathname}${input.url.search}`

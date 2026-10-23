@@ -29,7 +29,7 @@
 	</main>
 
 	{#if tenant}
-		<TenantFooter {tenant} platformOrigin={$page.data.platformOrigin ?? null} />
+		<TenantFooter {tenant} platformOrigin={$page.data.customDomains?.platformOrigin ?? null} />
 	{:else}
 		<Footer />
 	{/if}

@@ -13,6 +13,11 @@ import type { PageServerLoad } from './$types';
  * reach the landing page unchanged. Any failure sends the buyer to `/` —
  * never an error page on the way back from a payment. The org UUID segment
  * is parity-only; the event payload embeds the org slug.
+ *
+ * First step, tenant mode on: when the org has a custom domain, this platform
+ * request 303s to the SAME path on that domain (the buyer's host-only session
+ * cookies live there); the tenant host then runs this load again and does the
+ * slug redirect above.
  */
 export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 	// Custom-domain org: continue on its domain, where the buyer's session lives.

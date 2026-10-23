@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { orgHref, tenantDomainFrom } from '$lib/utils/org-links';
+	import { orgHref } from '$lib/utils/org-links';
 	import * as m from '$lib/paraglide/messages.js';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
@@ -295,7 +295,7 @@
 										href={orgHref(
 											org,
 											resolve('/(public)/org/[slug]', { slug: org.slug }),
-											tenantDomainFrom(page.data)
+											page.data
 										)}
 										class="block truncate font-bold hover:text-primary hover:underline"
 									>
@@ -437,7 +437,7 @@
 												org_slug: series.organization.slug,
 												series_slug: series.slug
 											}),
-											tenantDomainFrom(page.data)
+											page.data
 										)}
 										class="block truncate font-bold hover:text-primary hover:underline"
 									>
@@ -449,7 +449,7 @@
 										href={orgHref(
 											series.organization,
 											resolve('/(public)/org/[slug]', { slug: series.organization.slug }),
-											tenantDomainFrom(page.data)
+											page.data
 										)}
 										class="truncate text-sm text-muted-foreground hover:underline"
 									>

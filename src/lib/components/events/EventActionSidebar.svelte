@@ -28,6 +28,7 @@
 	import EligibilityStatusDisplay from './EligibilityStatusDisplay.svelte';
 	import { Check, Ticket, CalendarDays, MessageSquare, Ban } from '@lucide/svelte';
 	import ToneTile from '$lib/components/common/ToneTile.svelte';
+	import { page } from '$app/state';
 	import { downloadRevelEventICalFile } from '$lib/utils/ical';
 	import EventManageSection from './EventManageSection.svelte';
 
@@ -247,7 +248,7 @@
 	 * Download iCal file for this event
 	 */
 	function handleDownloadCalendar() {
-		downloadRevelEventICalFile(event);
+		downloadRevelEventICalFile(event, page.data);
 	}
 
 	/**
