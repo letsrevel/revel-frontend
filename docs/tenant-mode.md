@@ -11,6 +11,12 @@ or similar) are backend and operator concerns, covered in the operator docs
 deployment variables are also listed in [`runbooks/deployment.md`](runbooks/deployment.md).
 
 Tenant mode is off until `PLATFORM_HOSTS` is set, so deploying this code changes nothing by itself.
+With `PLATFORM_HOSTS` unset nothing redirects and no link is rewritten, even if the backend returns a
+`custom_domain` for an organization. That matters for a deployment that shares a backend with a
+tenant-mode deployment but does not serve the custom domains itself: it must never send visitors to
+a domain it does not answer for. The switch is `tenantModeEnabled()` in `src/lib/server/tenant.ts`
+(true when `PLATFORM_HOSTS` names at least one host). Canonical redirects, the Stripe return hop,
+link rewriting and route scoping all follow it.
 
 ## How a request becomes a tenant
 
@@ -51,7 +57,10 @@ resolves to an organization.
 | Unknown host (negative)  | 15 s  |
 | Upstream failure         | not cached |
 
-The cache holds at most 500 hosts and evicts the oldest first. Concurrent first requests for the
+Found organizations and unknown hosts live in two separate maps, each capped at 500 entries
+(`MAX_CACHE_ENTRIES`) and each evicting its oldest entry first. A flood of requests with random
+`Host` headers can therefore churn the unknown-host map but can never push a real tenant out of the
+found map. Concurrent first requests for the
 same host share one backend call. The 503 path logs a `tenant_lookup_unavailable` warning at most once
 every 10 seconds. After an organization changes or removes its domain, expect up to 60 s (found)
 or 15 s (unknown) before every replica agrees.
@@ -61,19 +70,22 @@ or 15 s (unknown) before every replica agrees.
 Implemented in `src/lib/server/tenant-routing.ts`, applied by `handleTenantRouting` right after
 `handleTenant`. A tenant host serves one organization, so platform pages must not render there.
 The decision is a pure function, `tenantRouteDecision`, driven by a rule per top-level path
-segment. Redirects are `302` with `Cache-Control: no-store`.
+segment. Redirects are `302` with `Cache-Control: no-store`. On a platform host the same hook only
+post-processes the response (see [Canonical redirects](#canonical-redirects-from-the-platform)).
 
 | Path (first segment)                                                             | On a tenant host                                                          |
 | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
 | `/` (empty path)                                                                 | Allowed (renders the organization page)                                   |
 | `/org/{tenant slug}/...` (not `/admin`)                                          | Allowed                                                                   |
-| `/org/{uuid}/membership`                                                         | Allowed (legacy Stripe return route; the slug page is re-checked after its redirect) |
+| `/org/{uuid}/membership` (exactly)                                               | Allowed (legacy Stripe return route; the slug page is re-checked after its redirect) |
+| `/events` (bare)                                                                 | Allowed; the list is forced to the tenant organization (see note below)   |
 | `/events/{tenant slug}/...`                                                      | Allowed                                                                   |
 | `/events/confirm-action`                                                         | Allowed                                                                   |
-| `/events/{uuid}/...`                                                             | Allowed (legacy UUID routes redirect to slug URLs, which are re-checked)  |
+| `/events/{uuid}`, `/events/{uuid}/{uuid}`, `/events/{uuid}/series/{uuid}`        | Allowed (legacy UUID routes redirect to slug URLs, which are re-checked). Any other shape under a UUID goes to `/` |
 | `/embed/{tenant slug}...`                                                        | Allowed                                                                   |
 | `login`, `logout`, `register`, `password-reset`, `verify`                        | Allowed                                                                   |
-| `account`, `dashboard`, `legal`, `unsubscribe`, `join`                           | Allowed                                                                   |
+| `account` (except the three platform pages below), `dashboard`, `legal`, `unsubscribe`, `join` | Allowed                                                      |
+| `/account/referral...`, `/account/developer-apps...`, `/account/connected-apps...` | 302 to the same path and query on the platform origin                   |
 | `api`, `auth`, `_app`, `.well-known`                                             | Allowed                                                                   |
 | `robots.txt`, `feed.xml`, `opensearch.xml`, `oembed`                             | Allowed (each handler is tenant-aware, see [SEO](#seo-on-tenant-hosts))   |
 | Anything starting with `sitemap`, `favicon` or `manifest`                        | Allowed                                                                   |
@@ -87,8 +99,17 @@ segment. Redirects are `302` with `Cache-Control: no-store`.
 
 Notes on the table:
 
-- `/events` itself (the discovery list) has no tenant slug in it, so it goes to `/`.
-  `/events/confirm-action` is the one slugless exception.
+- **`/events` on a tenant host** is the tenant's own event list. The loader in
+  `src/routes/(public)/events/+page.server.ts` sets the organization filter to `locals.tenant.id`,
+  overriding any `organization` query parameter, and the page hides the organization filter and
+  the organization name on cards (`hideOrganization`). `/events/confirm-action` is the one slugless
+  exception besides the bare list.
+- **UUID shapes are exact.** `/org/{uuid}/membership`, `/events/{uuid}`, `/events/{uuid}/{uuid}` and
+  `/events/{uuid}/series/{uuid}` are the real legacy Stripe-return routes. Extra segments after
+  them, or a UUID in any other position, fall through to `/`.
+- The `account` rule is open except for the pages in `PLATFORM_ACCOUNT_PAGES` (`referral`,
+  `developer-apps`, `connected-apps`): those are platform and OAuth settings, so they redirect to
+  the platform. Only the top-level `/referral` page (a different route) goes to `/`.
 - The platform origin is `PLATFORM_ORIGIN`, else `https://` plus the first `PLATFORM_HOSTS`
   entry (see [Environment variables](#environment-variables)). When neither yields a valid
   `http(s)` URL, platform redirects fall back to `/`.
@@ -98,9 +119,6 @@ Notes on the table:
 - **The route-walk test.** `src/lib/server/tenant-routing.test.ts` walks `src/routes` and fails when
   a top-level route segment has no entry in `SEGMENT_RULES` or `PREFIX_RULES`. Adding a route means
   adding its rule in the same change.
-- `/account/developer-apps` and `/account/connected-apps` are platform and OAuth settings, but the
-  `account` rule is `open`, so they are reachable on tenant hosts today. See
-  [Known limits](#known-limits-and-follow-ups).
 
 ## `/` renders the organization page
 
@@ -118,7 +136,8 @@ at the root URL.
 ## Canonical redirects from the platform
 
 Implemented in `src/lib/server/tenant-canonical.ts`. When an organization has an active custom
-domain, its attendee pages on the platform host answer with a `301` to the same path on the domain:
+domain, its attendee pages on the platform host answer with a `301` to the same path on the domain.
+This only happens while tenant mode is on (`PLATFORM_HOSTS` set):
 
 ```
 https://app.example.com/events/acme/summer-party?ot=abc
@@ -134,6 +153,18 @@ https://app.example.com/events/acme/summer-party?ot=abc
   domain.
 - The target origin comes from `customDomainOrigin`, which validates the domain as a bare hostname
   and applies `PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE`, so a bad value cannot redirect off that origin.
+- **Never to itself.** `canonicalTenantUrl` returns nothing when the target host equals the
+  request's own host. A `custom_domain` that is misconfigured to a platform host would otherwise
+  301 to itself forever.
+- **Cache cap.** A 301 is cached by browsers indefinitely, so an organization that later drops or
+  changes its domain would keep redirecting returning visitors. `capCanonicalRedirectCache`
+  (`src/lib/server/tenant-routing.ts`, run by `handleTenantRouting` on platform hosts) adds
+  `Cache-Control: public, max-age=3600` to a 301 that points at another origin and sets no cache
+  policy of its own. Same-origin redirects and responses that already carry `Cache-Control` are
+  left alone.
+- The functions in `tenant-canonical.ts` are `canonicalTenantUrl` (pure target computation),
+  `canonicalTenantRedirect` (throws the 301), `tenantReturnUrl` (Stripe hop, below) and
+  `serverLinkContext` (builds a link context from `locals` for server code such as SEO canonicals).
 
 ### The Stripe return flow
 
@@ -143,7 +174,7 @@ reach Stripe (`/events/{org_uuid}/{event_uuid}`, `/events/{org_uuid}/series/{ser
 comes back to the platform host, where their session cookie does not exist. The UUID routes handle
 that:
 
-1. The platform UUID route calls `tenantReturnUrl`, which asks the public
+1. The platform UUID route calls `tenantReturnUrl` (a no-op when tenant mode is off), which asks the public
    `GET /api/organizations/{organization_id}/custom-domain` endpoint for the organization's domain.
    That endpoint is used instead of the organization retrieve because the retrieve returns 404
    anonymously for private and members-only organizations, and the buyer has no platform session.
@@ -159,15 +190,30 @@ an error page on the way back from a payment.
 
 ## Links to custom domains
 
-`src/lib/utils/org-links.ts`:
+`src/lib/utils/org-links.ts`. The link helpers take a **link context** (`LinkContext`): an object with
+`tenant` and `customDomains`. The root layout returns both, so client code passes `page.data`
+directly, and server code builds one with `serverLinkContext(locals)`. `customDomains` is
+`{ enabled, platformOrigin }`, computed in `src/routes/+layout.server.ts`: `enabled` is
+`tenantModeEnabled()`, and `platformOrigin` is the resolved platform origin when enabled, else `null`.
 
 | Function                          | Does                                                                                         |
 | --------------------------------- | -------------------------------------------------------------------------------------------- |
 | `customDomainOrigin(hostname)`    | Origin for a domain from `PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE`, or `null` if the hostname is absent or malformed |
-| `orgOrigin(org)`                  | `customDomainOrigin(org.custom_domain)`                                                      |
-| `orgHref(org, path, currentTenantDomain)` | `https://{domain}{path}`, or the plain path when the org has no valid domain or we are already on it |
+| `orgOrigin(org, ctx)`             | The org's custom-domain origin, or `null` when tenant mode is off (`ctx.customDomains.enabled` is not true) or the org has no valid domain |
+| `orgHref(org, path, ctx)`         | The link for `path` on the org's attendee pages, by the rules below                          |
 | `normalizeCustomDomain(domain)`   | Lowercased, validated hostname (dot-separated DNS labels, at least one dot) or `null`        |
-| `tenantDomainFrom(page.data)`     | The current tenant's domain from layout data, to pass as `currentTenantDomain`              |
+
+`orgHref` rules, first match wins:
+
+- **A. Tenant mode off** (no context, or `enabled` is false): the plain path. Nothing is rewritten.
+- **B. The org has a valid custom domain:** the plain path when we are already on that domain
+  (hostnames are compared, not origins, since the template may add a port), otherwise
+  `https://{domain}{path}`.
+- **C. The org has no domain and we are on a tenant host** (for example a ticket or calendar item
+  from another organization): `{platformOrigin}{path}`, because a relative link would be scoped back
+  to `/` by the tenant host. The tenant's own organization stays relative, and so does everything
+  when the platform origin is unknown.
+- **D. Otherwise** (on the platform, org without a domain): the plain path.
 
 Use `orgHref` for every link to an organization's attendee pages (event, series, org, membership).
 Do not use it for admin routes, which stay on the platform. Where it is used: event, series and
@@ -181,8 +227,8 @@ slashes are removed.
 
 **SSR-relative paths.** During SSR, SvelteKit's `resolve()` returns page-relative paths such as
 `./events/x` or `../../org/x` (the `paths.relative` default). Prefixing an origin to one would give
-`https://host./events/x`. `orgHref` strips the leading `./` and `../` segments to get a root-relative
-path first. The app has no base path, so this is safe.
+`https://host./events/x`. `rootRelative` strips the leading `./` and `../` segments to get a
+root-relative path first. The app has no base path, so this is safe.
 
 ## Tenant chrome
 
@@ -195,7 +241,8 @@ header and footer. The platform path is unchanged.
   Resources (only when the org has resources). Theme switcher, language switcher, Login and Sign up
   (or the account menu when signed in), and a mobile drawer that reuses `MobileNav`.
 - **Footer:** "© {year} {organization}", then "Powered by Revel · Privacy · Terms". "Revel" links to
-  the platform origin from layout data (`platformOrigin`), or is plain text if none is configured.
+  `customDomains.platformOrigin` from layout data (passed down by `PublicLayout` and `AuthLayout`),
+  or is plain text if none is configured.
   Privacy and Terms point at the app's own `/legal/*` pages.
 - **Account menu:** `UserMenu.svelte` detects the tenant and drops the organization admin entries,
   "create organization" and the referral entry, and skips fetching the user's organizations. Those
@@ -321,8 +368,9 @@ lacks them (the container `HEALTHCHECK` on `localhost:3000`) falls back to the `
 scheme falls back to `https`. This app does not configure SvelteKit's `csrf` option, so the
 same-origin check follows the real host.
 
-`PLATFORM_ORIGIN` is only used for redirects from tenant hosts to platform-only paths and for the
-"Powered by Revel" link. `PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE` must match the backend's
+`PLATFORM_ORIGIN` (or its fallback) is the platform origin exposed as `customDomains.platformOrigin`.
+It is used for redirects from tenant hosts to platform-only paths, for the "Powered by Revel" link,
+and for links from a tenant host to organizations that have no custom domain. `PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE` must match the backend's
 `CUSTOM_DOMAIN_URL_TEMPLATE`. If they differ, links and canonicals generated by the two sides
 disagree. Terminate TLS for the platform and for custom domains at your proxy, and forward the
 original host in `X-Forwarded-Host` and the scheme in `X-Forwarded-Proto`.
@@ -384,8 +432,6 @@ above. See [`tests/e2e/README.md`](../tests/e2e/README.md) for the full environm
 - **PWA icons.** The manifest lists the backend's 150x150 logo thumbnail and the full logo with
   `sizes: any`. Installability checks want 192px and 512px icons, which would need backend-generated
   sizes.
-- **Platform settings reachable on tenant hosts.** `/account/developer-apps` and
-  `/account/connected-apps` are OAuth and platform settings, but the `account` rule allows them.
 - **Remaining "Revel" copy.** Nine messages and the dashboard and account page titles take
   `{brand}`. Copy about the account and the legal entity intentionally still says Revel. Platform-only
   pages (admin, landing, referral, developer apps) are not parameterized; several still have a

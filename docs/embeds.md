@@ -62,15 +62,16 @@ iframe and loader `src` point at the **platform origin** (`/embed/{org_slug}...`
 
 What changes is where the embed links out:
 
-- Links to events, the series and the organization page use `orgOrigin(org)`, so they open on
+- Links to events, the series and the organization page use `orgOrigin(org, page.data)`, so they open on
   `https://{custom_domain}` (shaped by `PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE`) instead of the
   platform. This covers the event cards in the list, the header and "more" links, and the single
-  event and series surfaces. Without a custom domain they use the origin the embed is served from.
+  event and series surfaces. Without a custom domain, or while tenant mode is off (`PLATFORM_HOSTS`
+  unset), they use the origin the embed is served from.
   UTM attribution is appended exactly as before.
 - The "Powered by Revel" link goes to `/` on the origin the embed is served from, with the same
   attribution.
 - **Embeds never canonical-redirect.** The 301 to the custom domain that org, event and series pages
-  get on the platform is not applied to `/embed/*`, because these are iframed on third-party sites.
+  get on the platform (when tenant mode is on) is not applied to `/embed/*`, because these are iframed on third-party sites.
   `/embed/{org_slug}` on the platform keeps answering 200.
 - On a tenant host only that organization's `/embed/{slug}` is served; another organization's embed
   is a 302 to `/`. `/oembed` on a tenant host returns 404 for another organization's URL.
