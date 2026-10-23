@@ -37,6 +37,9 @@
 	const accessToken = $derived(authStore.accessToken);
 	const permissions = $derived(authStore.permissions);
 	const features = $derived($page.data.features);
+	// On an organization's custom domain the menu carries no org-admin or
+	// create-organization entries: those live on the platform.
+	const isTenant = $derived(!!$page.data.tenant);
 
 	// Fetch user's organizations (where they are owner or staff)
 	const organizationsQuery = createQuery(() => ({
@@ -55,13 +58,16 @@
 
 			return response.data?.results || [];
 		},
-		enabled: !!accessToken && !!user, // Only fetch if both token AND user exist
+		enabled: !!accessToken && !!user && !isTenant, // Only fetch if both token AND user exist
 		retry: false, // Don't retry this query - if it fails, user needs to re-authenticate
 		staleTime: 5 * 60 * 1000 // 5 minutes - organizations don't change frequently
 	}));
 
-	const userOrganizations = $derived(organizationsQuery.data || []);
-	const isReferrer = $derived(!!user?.referral_code);
+	const userOrganizations = $derived(isTenant ? [] : organizationsQuery.data || []);
+	const isReferrer = $derived(!isTenant && !!user?.referral_code);
+	const canCreateOrganization = $derived(
+		!isTenant && !ownsOrganization() && !!features.organization_creation
+	);
 
 	// Helper to check if user has admin permissions for an organization
 	function hasAdminPermissions(orgId: string): boolean {
@@ -241,7 +247,7 @@
 		{/if}
 
 		<!-- Organizations Section (Mobile) -->
-		{#if userOrganizations.length > 0 || (!ownsOrganization() && features.organization_creation)}
+		{#if userOrganizations.length > 0 || canCreateOrganization}
 			<div class="space-y-2 border-t pt-4">
 				{#if userOrganizations.length > 0}
 					<div
@@ -276,7 +282,7 @@
 				{/if}
 
 				<!-- Create Organization Link (if user doesn't own one and creation is enabled) -->
-				{#if !ownsOrganization() && features.organization_creation}
+				{#if canCreateOrganization}
 					<a
 						href={resolve('/(auth)/create-org', {})}
 						class="flex items-center gap-3 rounded-md px-4 py-3 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
@@ -382,7 +388,7 @@
 				{/if}
 
 				<!-- Organizations Section -->
-				{#if userOrganizations.length > 0 || (!ownsOrganization() && features.organization_creation)}
+				{#if userOrganizations.length > 0 || canCreateOrganization}
 					<div class="border-t">
 						<div class="p-1">
 							{#if userOrganizations.length > 0}
@@ -418,7 +424,7 @@
 							{/if}
 
 							<!-- Create Organization Link (if user doesn't own one and creation is enabled) -->
-							{#if !ownsOrganization() && features.organization_creation}
+							{#if canCreateOrganization}
 								<a
 									href={resolve('/(auth)/create-org', {})}
 									class="flex items-center gap-2 rounded-sm px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
