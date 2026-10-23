@@ -8,6 +8,8 @@
  * - Other calendar applications
  */
 
+import { orgOrigin } from '$lib/utils/org-links';
+
 interface ICalEvent {
 	title: string;
 	description?: string;
@@ -167,6 +169,7 @@ export function generateICalFromRevelEvent(event: {
 	organization?: {
 		slug: string;
 		name: string;
+		custom_domain?: string | null;
 		email?: string | null;
 	};
 }): string {
@@ -174,9 +177,10 @@ export function generateICalFromRevelEvent(event: {
 	const location = event.venue_name || event.location || undefined;
 
 	// Create full URL to event using correct format: /events/org-slug/event-slug
+	// An org with a custom domain is linked on its own origin (#1056).
 	const eventUrl =
 		typeof window !== 'undefined' && event.organization?.slug
-			? `${window.location.origin}/events/${event.organization.slug}/${event.slug}`
+			? `${orgOrigin(event.organization) ?? window.location.origin}/events/${event.organization.slug}/${event.slug}`
 			: undefined;
 
 	return generateICalFile(

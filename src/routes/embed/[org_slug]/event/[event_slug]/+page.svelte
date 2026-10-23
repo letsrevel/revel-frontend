@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { orgOrigin } from '$lib/utils/org-links';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/state';
 	import EventCard from '$lib/components/events/EventCard.svelte';
@@ -27,11 +28,13 @@
 		override: data.utmOverride
 	});
 
+	// Links out target the org's custom domain when it has one (#1056).
+	const orgLinkOrigin = $derived(orgOrigin(data.event.organization) ?? links.origin);
 	const eventHref = $derived(
-		buildEmbedLink(links.origin, eventPath(data.event.organization.slug, data.event.slug), links)
+		buildEmbedLink(orgLinkOrigin, eventPath(data.event.organization.slug, data.event.slug), links)
 	);
 	const orgHref = $derived(
-		buildEmbedLink(links.origin, organizationPath(data.event.organization.slug), links)
+		buildEmbedLink(orgLinkOrigin, organizationPath(data.event.organization.slug), links)
 	);
 
 	const ctaLabel = $derived(

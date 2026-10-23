@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { orgHref, tenantDomainFrom } from '$lib/utils/org-links';
 	import * as m from '$lib/paraglide/messages.js';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
@@ -289,10 +290,16 @@
 									</div>
 								{/if}
 								<div class="min-w-0 flex-1">
+									<!-- eslint-disable svelte/no-navigation-without-resolve -- orgHref() wraps resolve(); custom-domain links are absolute (#1056) -->
 									<a
-										href={resolve('/(public)/org/[slug]', { slug: org.slug })}
+										href={orgHref(
+											org,
+											resolve('/(public)/org/[slug]', { slug: org.slug }),
+											tenantDomainFrom(page.data)
+										)}
 										class="block truncate font-bold hover:text-primary hover:underline"
 									>
+										<!-- eslint-enable svelte/no-navigation-without-resolve -->
 										{org.name}
 									</a>
 								</div>
@@ -422,19 +429,31 @@
 									</div>
 								{/if}
 								<div class="min-w-0 flex-1">
+									<!-- eslint-disable svelte/no-navigation-without-resolve -- orgHref() wraps resolve(); custom-domain links are absolute (#1056) -->
 									<a
-										href={resolve('/(public)/events/[org_slug]/series/[series_slug]', {
-											org_slug: series.organization.slug,
-											series_slug: series.slug
-										})}
+										href={orgHref(
+											series.organization,
+											resolve('/(public)/events/[org_slug]/series/[series_slug]', {
+												org_slug: series.organization.slug,
+												series_slug: series.slug
+											}),
+											tenantDomainFrom(page.data)
+										)}
 										class="block truncate font-bold hover:text-primary hover:underline"
 									>
+										<!-- eslint-enable svelte/no-navigation-without-resolve -->
 										{series.name}
 									</a>
+									<!-- eslint-disable svelte/no-navigation-without-resolve -- orgHref() wraps resolve(); custom-domain links are absolute (#1056) -->
 									<a
-										href={resolve('/(public)/org/[slug]', { slug: series.organization.slug })}
+										href={orgHref(
+											series.organization,
+											resolve('/(public)/org/[slug]', { slug: series.organization.slug }),
+											tenantDomainFrom(page.data)
+										)}
 										class="truncate text-sm text-muted-foreground hover:underline"
 									>
+										<!-- eslint-enable svelte/no-navigation-without-resolve -->
 										{series.organization.name}
 									</a>
 								</div>

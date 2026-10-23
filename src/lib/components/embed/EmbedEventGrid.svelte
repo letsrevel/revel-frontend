@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { orgOrigin } from '$lib/utils/org-links';
 	import * as m from '$lib/paraglide/messages.js';
 	import EventCard from '$lib/components/events/EventCard.svelte';
 	import type { EventInListSchema } from '$lib/api/generated/types.gen';
@@ -37,7 +38,11 @@
 					target="_blank"
 					class="h-full"
 					priceFrom={prices[event.id] ?? null}
-					href={buildEmbedLink(links.origin, eventPath(event.organization.slug, event.slug), links)}
+					href={buildEmbedLink(
+						orgOrigin(event.organization) ?? links.origin,
+						eventPath(event.organization.slug, event.slug),
+						links
+					)}
 				/>
 			</li>
 		{/each}

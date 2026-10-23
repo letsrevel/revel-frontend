@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { orgHref, tenantDomainFrom } from '$lib/utils/org-links';
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
@@ -37,10 +38,14 @@
 	const cardHref = $derived(
 		href ??
 			withUtmParams(
-				resolve('/(public)/events/[org_slug]/series/[series_slug]', {
-					org_slug: series.organization.slug,
-					series_slug: series.slug
-				}),
+				orgHref(
+					series.organization,
+					resolve('/(public)/events/[org_slug]/series/[series_slug]', {
+						org_slug: series.organization.slug,
+						series_slug: series.slug
+					}),
+					tenantDomainFrom(page.data)
+				),
 				page.url
 			)
 	);

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { orgHref, tenantDomainFrom } from '$lib/utils/org-links';
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import type { OrganizationRetrieveSchema } from '$lib/api/generated/types.gen';
@@ -80,7 +81,14 @@
 	// Carry campaign tags across public surfaces (#880): identical output when
 	// the current URL has no utm_* (so authed/dashboard usage is unaffected).
 	const cardHref = $derived(
-		withUtmParams(resolve('/(public)/org/[slug]', { slug: organization.slug }), page.url)
+		withUtmParams(
+			orgHref(
+				organization,
+				resolve('/(public)/org/[slug]', { slug: organization.slug }),
+				tenantDomainFrom(page.data)
+			),
+			page.url
+		)
 	);
 
 	// Image container classes based on variant
