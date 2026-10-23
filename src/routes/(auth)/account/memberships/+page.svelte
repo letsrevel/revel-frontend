@@ -7,6 +7,8 @@
 	} from '$lib/api/generated/sdk.gen';
 	import type { MyMembershipSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { page } from '$app/state';
+	import { tenantOrgFilter } from '$lib/utils/tenant-filter';
 	import MembershipCard from '$lib/components/account/MembershipCard.svelte';
 	import RejoinCard from '$lib/components/account/RejoinCard.svelte';
 	import ApplicationsSection from '$lib/components/account/applications/ApplicationsSection.svelte';
@@ -19,6 +21,8 @@
 	import { Loader2, Users } from '@lucide/svelte';
 
 	const accessToken = $derived(authStore.accessToken);
+	// On a tenant host every "my" call is scoped to the tenant org (#1056).
+	const orgFilter = $derived(tenantOrgFilter(page.data));
 
 	const membershipsQuery = createQuery(() => ({
 		// The exported constant, not a literal: `settleSubscriptionCaches` seeds
@@ -28,7 +32,7 @@
 		queryKey: MY_MEMBERSHIPS_KEY,
 		queryFn: async () => {
 			const res = await mesubscriptionsListMyMemberships({
-				query: { page_size: 50 },
+				query: { ...orgFilter, page_size: 50 },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (res.error) throw new Error('Failed to load memberships');
@@ -45,7 +49,7 @@
 		queryKey: MY_SUBSCRIPTIONS_KEY,
 		queryFn: async () => {
 			const res = await mesubscriptionsListMySubscriptions({
-				query: { page_size: 50 },
+				query: { ...orgFilter, page_size: 50 },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (res.error) throw new Error('Failed to load subscriptions');
