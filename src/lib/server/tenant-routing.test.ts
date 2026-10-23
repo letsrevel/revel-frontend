@@ -5,7 +5,9 @@ vi.mock('$env/dynamic/private', () => mockEnv);
 
 import {
 	SEGMENT_RULES,
+	capCanonicalRedirectCache,
 	handleTenantRouting,
+	PLATFORM_ACCOUNT_PAGES,
 	platformOrigin,
 	ruleForSegment,
 	tenantRouteDecision
@@ -70,6 +72,8 @@ describe('tenantRouteDecision', () => {
 		`/events/${UUID_A}`,
 		`/events/${UUID_A}/${UUID_B}`,
 		`/events/${UUID_A}/series/${UUID_B}`,
+		'/events', // the tenant's own list; its loader forces the organization filter
+		'/events/',
 		'/embed/acme',
 		'/embed/acme/event/party',
 		'/embed/acme/series/regulars',
@@ -81,6 +85,8 @@ describe('tenantRouteDecision', () => {
 		'/password-reset',
 		'/verify',
 		'/account/profile',
+		'/account/settings',
+		'/account/memberships',
 		'/account/confirm-deletion',
 		'/dashboard',
 		'/dashboard/tickets',
@@ -107,6 +113,10 @@ describe('tenantRouteDecision', () => {
 		expect(decide(path)).toEqual(ALLOW);
 	});
 
+	it('allows /events with any query (the loader overrides the organization filter)', () => {
+		expect(decide('/events', '?organization=other&organization_slug=other')).toEqual(ALLOW);
+	});
+
 	it('platform-only paths redirect to the platform origin, keeping path and query', () => {
 		expect(decide('/org/acme/admin')).toEqual(platform('/org/acme/admin'));
 		expect(decide('/org/acme/admin/events/x/edit', '?a=1')).toEqual(
@@ -120,6 +130,20 @@ describe('tenantRouteDecision', () => {
 		expect(decide('/impersonate', '?token=t')).toEqual(platform('/impersonate?token=t'));
 	});
 
+	it.each(PLATFORM_ACCOUNT_PAGES)('/account/%s goes to the platform', (page) => {
+		expect(decide(`/account/${page}`)).toEqual(platform(`/account/${page}`));
+		expect(decide(`/account/${page}/x`, '?a=1')).toEqual(platform(`/account/${page}/x?a=1`));
+		expect(decide(`/account/${page}`, '', null)).toEqual(HOME);
+	});
+
+	it('the platform account pages are exactly the three real route directories', () => {
+		expect([...PLATFORM_ACCOUNT_PAGES].sort()).toEqual([
+			'connected-apps',
+			'developer-apps',
+			'referral'
+		]);
+	});
+
 	it('trims a trailing slash on the platform origin and falls home without one', () => {
 		expect(decide('/create-org', '', 'https://app.example.com/')).toEqual(platform('/create-org'));
 		expect(decide('/create-org', '', null)).toEqual(HOME);
@@ -127,11 +151,20 @@ describe('tenantRouteDecision', () => {
 	});
 
 	const home = [
-		'/events',
-		'/events/',
 		'/events/other-org/party',
 		'/events/other-org/series/x',
 		'/events/not-a-uuid',
+		// UUID-looking second segment, but not one of the real UUID route shapes
+		`/events/${UUID_A}/other-org-slug`,
+		`/events/${UUID_A}/${UUID_B}/extra`,
+		`/events/${UUID_A}/series`,
+		`/events/${UUID_A}/series/${UUID_B}/extra`,
+		`/events/${UUID_A}/series/not-a-uuid`,
+		`/events/${UUID_A}/${UUID_B}/questionnaire/x`,
+		`/events/${UUID_A.toUpperCase()}`,
+		`/org/${UUID_A}`,
+		`/org/${UUID_A}/resources`,
+		`/org/${UUID_A}/membership/extra`,
 		'/org',
 		'/org/other',
 		'/org/other/membership',
@@ -178,7 +211,8 @@ describe('tenantRouteDecision', () => {
 	it('tolerates doubled and trailing slashes without allowing look-alikes', () => {
 		expect(decide('//org/acme')).toEqual(ALLOW);
 		expect(decide('/org//other')).toEqual(HOME);
-		expect(decide('/events//')).toEqual(HOME);
+		expect(decide('/events//')).toEqual(ALLOW); // bare /events
+		expect(decide('/events//other-org/x')).toEqual(HOME);
 	});
 
 	it('never produces an off-site location', () => {
@@ -244,6 +278,33 @@ describe('route coverage', () => {
 			const path = routeToPath(f);
 			expect(decide(path), path).toEqual(platform(path));
 		}
+	});
+
+	it('routes every real platform/OAuth account page to the platform', () => {
+		const pages = files.filter((f) =>
+			PLATFORM_ACCOUNT_PAGES.some((p) => f.includes(`/account/${p}/`))
+		);
+		expect(pages.length).toBeGreaterThanOrEqual(3);
+		for (const f of pages) {
+			const path = routeToPath(f);
+			expect(decide(path), path).toEqual(platform(path));
+		}
+		// Every other account page stays on the tenant host.
+		const rest = files.filter(
+			(f) =>
+				/\/account\//.test(f) && !PLATFORM_ACCOUNT_PAGES.some((p) => f.includes(`/account/${p}/`))
+		);
+		expect(rest.length).toBeGreaterThan(5);
+		for (const f of rest) expect(decide(routeToPath(f)), f).toEqual(ALLOW);
+	});
+
+	it('allows legacy UUID routes only in their exact shapes', () => {
+		const uuid = files.filter((f) => /\[\w+=uuid\]/.test(f));
+		expect(uuid.length).toBe(3);
+		for (const f of uuid) expect(decide(routeToPath(f)), f).toEqual(ALLOW);
+		// /events/[id] only matches a UUID here; any other single segment is a slug and is re-checked.
+		expect(decide(`/events/${UUID_A}`)).toEqual(ALLOW);
+		expect(decide('/events/other-org')).toEqual(HOME);
 	});
 
 	it('redirects every marketing and localized landing route to /', () => {
@@ -324,10 +385,74 @@ describe('handleTenantRouting', () => {
 		expect(res.headers.get('location')).toBe('https://platform.example.net/create-org');
 	});
 
-	it('redirects other pages to the tenant root', async () => {
+	it('serves bare /events on a tenant host', async () => {
 		const { res, resolve } = await run({ slug: 'acme' }, 'https://acme.example.org/events?q=1');
+		expect(resolve).toHaveBeenCalledTimes(1);
+		expect(res.status).toBe(200);
+	});
+
+	it('redirects other pages to the tenant root', async () => {
+		const { res, resolve } = await run(
+			{ slug: 'acme' },
+			'https://acme.example.org/organizations?q=1'
+		);
 		expect(resolve).not.toHaveBeenCalled();
 		expect(res.status).toBe(302);
 		expect(res.headers.get('location')).toBe('/');
+	});
+});
+
+describe('capCanonicalRedirectCache (B)', () => {
+	const req = new URL('https://app.example.com/org/acme');
+	const redirectTo = (location: string, status = 301, headers: Record<string, string> = {}) =>
+		new Response(null, { status, headers: { location, ...headers } });
+
+	it('caps a 301 to another origin at an hour', () => {
+		const res = capCanonicalRedirectCache(redirectTo('https://events.example.org/org/acme'), req);
+		expect(res.status).toBe(301);
+		expect(res.headers.get('cache-control')).toBe('public, max-age=3600');
+		expect(res.headers.get('location')).toBe('https://events.example.org/org/acme');
+	});
+
+	it('mutates in place when headers are mutable', () => {
+		const original = redirectTo('https://events.example.org/x');
+		expect(capCanonicalRedirectCache(original, req)).toBe(original);
+	});
+
+	it('copies the response when headers are immutable (Response.redirect)', () => {
+		const original = Response.redirect('https://events.example.org/x', 301);
+		expect(() => original.headers.set('x', 'y')).toThrow();
+		const res = capCanonicalRedirectCache(original, req);
+		expect(res.status).toBe(301);
+		expect(res.headers.get('location')).toBe('https://events.example.org/x');
+		expect(res.headers.get('cache-control')).toBe('public, max-age=3600');
+	});
+
+	it('leaves an existing cache-control alone', () => {
+		const res = capCanonicalRedirectCache(
+			redirectTo('https://events.example.org/x', 301, { 'cache-control': 'no-store' }),
+			req
+		);
+		expect(res.headers.get('cache-control')).toBe('no-store');
+	});
+
+	it.each([
+		['a same-origin 301', 301, 'https://app.example.com/other'],
+		['a relative 301', 301, '/other'],
+		['a 302', 302, 'https://events.example.org/x'],
+		['a 303', 303, 'https://events.example.org/x']
+	])('does not touch %s', (_name, status, location) => {
+		const res = capCanonicalRedirectCache(redirectTo(location, status), req);
+		expect(res.headers.has('cache-control')).toBe(false);
+	});
+
+	it('is applied to platform-host responses by handleTenantRouting', async () => {
+		mockEnv.env.PLATFORM_HOSTS = 'app.example.com';
+		const resolve = vi.fn(async () => redirectTo('https://events.example.org/org/acme'));
+		const res = await handleTenantRouting({
+			event: { locals: { tenant: null }, url: req },
+			resolve
+		} as unknown as Parameters<typeof handleTenantRouting>[0]);
+		expect(res.headers.get('cache-control')).toBe('public, max-age=3600');
 	});
 });
