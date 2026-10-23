@@ -1,7 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 
-/** A DNS-ish hostname; refuses anything that could turn the redirect into another origin. */
-const HOSTNAME_RE = /^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$/i;
+import { customDomainOrigin } from '$lib/utils/org-links';
 
 /**
  * Where a page of `org` canonically lives: its custom domain, or null when the
@@ -13,9 +12,10 @@ export function canonicalTenantUrl(
 	url: URL
 ): string | null {
 	if (locals.tenant) return null;
-	const domain = org.custom_domain?.trim();
-	if (!domain || !HOSTNAME_RE.test(domain)) return null;
-	return `https://${domain.toLowerCase()}${url.pathname}${url.search}`;
+	// customDomainOrigin validates the hostname, so the redirect can't leave the template's origin.
+	const origin = customDomainOrigin(org.custom_domain);
+	if (!origin) return null;
+	return `${origin}${url.pathname}${url.search}`;
 }
 
 /**
