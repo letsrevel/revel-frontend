@@ -8,14 +8,18 @@
 	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { ClipboardList, Loader2 } from '@lucide/svelte';
+	import { page } from '$app/state';
+	import { tenantOrgFilter } from '$lib/utils/tenant-filter';
 
 	const accessToken = $derived(authStore.accessToken);
+	// On a tenant host every "my" call is scoped to the tenant org (#1056).
+	const orgFilter = $derived(tenantOrgFilter(page.data));
 
 	const applicationsQuery = createQuery(() => ({
 		queryKey: ['me', 'applications'],
 		queryFn: async () => {
 			const res = await memembershipapplicationsListApplications({
-				query: { page_size: 50 },
+				query: { ...orgFilter, page_size: 50 },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (res.error) throw new Error('Failed to load applications');
