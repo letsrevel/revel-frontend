@@ -198,14 +198,14 @@
 
 	<!--
 		Poster ribbon (uplift, spec §9) — the event page's move, applied to the
-		other public identity page. A solid brand-purple colour block under the
-		cover, with the organization's own logo promoted OUT of the header row
+		other public identity page. A solid `--poster-band` block (Hearty Purple,
+		or a branded org's primary) under the cover, with the org's logo promoted OUT of the header row
 		and onto it as a tilted white sticker straddling the cut. The logo used
 		to be a 64px thumbnail beside the title; here it is the page's identity
 		mark, which is what an org profile is for.
 
 		Ribbon and sticker are mode-INERT by the imagery rule (a poster panel is
-		not a surface). No copy sits on the purple itself — the only text here is
+		not a surface). No copy sits on the band itself — the only text here is
 		the initial tile's letter, measured against the fixed values rather than
 		per-mode. The pair is registered in scripts/audit-brand-themes.py;
 		number pasted from its output:

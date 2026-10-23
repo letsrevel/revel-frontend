@@ -85,16 +85,18 @@
 	<!--
 		Poster ribbon (uplift, spec §9) — the event detail page's move, mirrored
 		here because a series is the same kind of object: someone else's thing,
-		put on by an organization. A solid brand-purple colour block under the
+		put on by an organization. A solid `--poster-band` colour block under the
 		cover carrying the org as a tilted white sticker, with `LogoChip` — the
 		landing hero's mark-and-hearts chip — pinned to the far end.
 
 		Ribbon, strip and chip are mode-INERT by the imagery rule (a poster panel
-		is not a surface), so every pair on them is measured against the fixed
-		values rather than per-mode. All three are registered in
-		scripts/audit-brand-themes.py; numbers pasted from its output:
+		is not a surface), so every pair on them is measured once, not per mode.
+		`--poster-band` defaults to Hearty Purple; a branded org (#1053) swaps in
+		its light-mode primary, which the backend keeps >= 4.5:1 against white.
+		All three are registered in scripts/audit-brand-themes.py; default-theme
+		numbers pasted from its output:
 		  ink on white                   → 17.40:1
-		  Hearty Purple #8C3CDD on white →  5.52:1 (the text-xs kicker clears AA)
+		  poster-band (default) on white →  5.52:1 (the text-xs kicker clears AA)
 		  white on crimson-DEEP          →  4.59:1 (the logo-less initial tile)
 		The initial tile's gradient ends on `crimson-deep`, not raw
 		`poster-crimson`: white on raw Light Crimson is 4.33:1, which fails AA

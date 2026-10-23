@@ -84,7 +84,7 @@
 	     merged questionnaire page's arrangement. A `bg-secondary` wash under a
 	     `bg-secondary` band sits 5 points of lightness from it and the block stops
 	     reading as a block; the tinted wash is reserved for pages whose header is
-	     the mode-inert poster-purple ribbon (event, org profile, series). The
+	     the mode-inert `--poster-band` ribbon (event, org profile, series). The
 	     float is the resource cards' `shadow-poster`. -->
 	<div class="flex-1">
 		<div class="container mx-auto -mt-8 space-y-6 px-6 pb-8 md:px-8 lg:pb-12">
