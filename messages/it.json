@@ -3567,6 +3567,7 @@
 				"previewLight": "Modalità chiara",
 				"previewDark": "Modalità scura",
 				"previewUpdating": "Aggiornamento dell'anteprima...",
+				"previewFailed": "Impossibile aggiornare l'anteprima. Controlla la connessione e riprova.",
 				"previewDefaults": "Nessun colore impostato: vengono mostrati i colori predefiniti di Revel.",
 				"previewPrimaryButton": "Pulsante primario",
 				"previewLink": "Un link",

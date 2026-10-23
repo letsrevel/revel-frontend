@@ -190,6 +190,8 @@ describe('BrandColorsCard (#1054)', () => {
 		await fireEvent.input(primaryPicker(), { target: { value: '#123456' } });
 		await flushDebounce();
 		expect(previewBrandTheme).toHaveBeenCalledTimes(1);
+		// No server detail on a network failure: a generic message is shown.
+		expect(await screen.findByRole('status')).toHaveTextContent(/couldn't update the preview/i);
 
 		await fireEvent.input(primaryPicker(), { target: { value: '#654321' } });
 		await fireEvent.input(primaryPicker(), { target: { value: '#123456' } });
@@ -239,6 +241,39 @@ describe('BrandColorsCard (#1054)', () => {
 		});
 		await user.click(screen.getByRole('button', { name: 'Reset to Revel defaults' }));
 		await waitFor(() => expect(saveBrandColors).toHaveBeenCalledWith('acme', null, null));
-		expect(primaryText().value).toBe('');
+		await waitFor(() => expect(primaryText().value).toBe(''));
+	});
+
+	it('keeps the inputs when a reset fails', async () => {
+		vi.mocked(saveBrandColors).mockRejectedValue(new Error('network down'));
+		const user = setup({
+			slug: 'acme',
+			branding: { primary_color: '#8C3CDD', accent_color: null },
+			brand_theme: PURPLE_THEME
+		});
+		await user.click(screen.getByRole('button', { name: 'Reset to Revel defaults' }));
+		await waitFor(() => expect(toast.error).toHaveBeenCalled());
+		expect(primaryText().value).toBe('#8C3CDD');
+	});
+
+	it('previews a saved primary that arrived without a theme', async () => {
+		setup({ slug: 'acme', branding: { primary_color: '#8C3CDD', accent_color: null } });
+		await flushDebounce();
+		expect(previewBrandTheme).toHaveBeenCalledWith(
+			'acme',
+			'#8C3CDD',
+			null,
+			expect.any(AbortSignal)
+		);
+	});
+
+	it('does not re-preview saved colors that already came with a theme', async () => {
+		setup({
+			slug: 'acme',
+			branding: { primary_color: '#8C3CDD', accent_color: null },
+			brand_theme: PURPLE_THEME
+		});
+		await flushDebounce();
+		expect(previewBrandTheme).not.toHaveBeenCalled();
 	});
 });

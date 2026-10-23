@@ -3567,6 +3567,7 @@
 				"previewLight": "Light mode",
 				"previewDark": "Dark mode",
 				"previewUpdating": "Updating preview...",
+				"previewFailed": "Couldn't update the preview. Check your connection and try again.",
 				"previewDefaults": "No colors set: showing the Revel defaults.",
 				"previewPrimaryButton": "Primary button",
 				"previewLink": "A link",

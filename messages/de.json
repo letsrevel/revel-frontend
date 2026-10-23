@@ -3567,6 +3567,7 @@
 				"previewLight": "Heller Modus",
 				"previewDark": "Dunkler Modus",
 				"previewUpdating": "Vorschau wird aktualisiert...",
+				"previewFailed": "Die Vorschau konnte nicht aktualisiert werden. Prüfe deine Verbindung und versuche es erneut.",
 				"previewDefaults": "Keine Farben festgelegt: Es werden die Revel-Standardfarben angezeigt.",
 				"previewPrimaryButton": "Primärer Button",
 				"previewLink": "Ein Link",

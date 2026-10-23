@@ -3567,6 +3567,7 @@
 				"previewLight": "Modo claro",
 				"previewDark": "Modo oscuro",
 				"previewUpdating": "Actualizando la vista previa...",
+				"previewFailed": "No se pudo actualizar la vista previa. Revisa tu conexión e inténtalo de nuevo.",
 				"previewDefaults": "Sin colores definidos: se muestran los colores predeterminados de Revel.",
 				"previewPrimaryButton": "Botón principal",
 				"previewLink": "Un enlace",

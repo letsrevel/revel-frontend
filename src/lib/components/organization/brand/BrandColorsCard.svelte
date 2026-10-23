@@ -28,9 +28,11 @@
 	const { organization }: Props = $props();
 
 	const PREVIEW_DEBOUNCE_MS = 250;
-	// Only the native picker's resting value when no color is set: `<input
-	// type="color">` requires a concrete #rrggbb and can't read a CSS token.
-	const FALLBACK_PICKER_HEX = '#8c3cdd';
+	// The native picker's resting value when no color is set: `<input
+	// type="color">` requires a concrete #rrggbb and can't read a CSS token, so
+	// use neutral black rather than duplicating a palette hex from app.css.
+	const FALLBACK_PICKER_HEX = '#000000';
+	const HEX_PLACEHOLDER = '#RRGGBB'; // i18n-ignore (format token, not prose)
 
 	type Field = 'primary' | 'accent';
 
@@ -113,7 +115,9 @@
 	// ---- live preview (debounced, stale requests aborted) ----------------------
 
 	let controller: AbortController | null = null;
-	let lastKey = `${initialPrimary ?? ''}|${initialAccent ?? ''}`;
+	// A saved primary with no theme yet (field absent) still needs a preview, so
+	// only treat the saved colors as "already previewed" when a theme came along.
+	let lastKey = initialTheme ? `${initialPrimary ?? ''}|${initialAccent ?? ''}` : '';
 
 	async function runPreview(primary: string | null, accent: string | null, key: string) {
 		controller?.abort();
@@ -138,7 +142,9 @@
 			// Keep the last good theme on screen and show the detail. Forget the key
 			// so re-entering the same value retries (e.g. after a network blip).
 			lastKey = '';
-			previewError = error instanceof BrandColorsApiError ? error.detail : null;
+			previewError =
+				(error instanceof BrandColorsApiError ? error.detail : null) ??
+				m['orgAdmin.settings.brandColors.previewFailed']();
 		} finally {
 			if (controller === current) previewPending = false;
 		}
@@ -163,13 +169,22 @@
 		mutationFn: ({ primary, accent }: { primary: string | null; accent: string | null }) =>
 			saveBrandColors(slug, primary, accent),
 		onSuccess: async (saved, { primary }) => {
+			// A preview still in flight must not overwrite the saved theme below.
+			controller?.abort();
 			// The response is authoritative: baseline and on-screen theme follow it.
 			savedPrimary = normalizeHex(saved.branding.primary_color ?? '');
 			savedAccent = normalizeHex(saved.branding.accent_color ?? '');
 			theme = saved.brand_theme ?? null;
 			themeFor = { primary: savedPrimary, accent: savedAccent };
-			lastKey = `${savedPrimary ?? ''}|${savedAccent ?? ''}`;
+			lastKey = theme ? `${savedPrimary ?? ''}|${savedAccent ?? ''}` : '';
 			saveErrors = {};
+			if (primary === null) {
+				// Reset: clear the inputs only once the server has dropped the colors.
+				primaryDraft = '';
+				accentDraft = '';
+				primaryTouched = false;
+				accentTouched = false;
+			}
 			toast.success(
 				primary === null
 					? m['orgAdmin.settings.brandColors.resetDone']()
@@ -209,10 +224,6 @@
 
 	function handleReset() {
 		if (saving) return;
-		primaryDraft = '';
-		accentDraft = '';
-		primaryTouched = false;
-		accentTouched = false;
 		saveErrors = {};
 		saveMutation.mutate({ primary: null, accent: null });
 	}
@@ -249,7 +260,7 @@
 						id="brand-primary-hex"
 						type="text"
 						class="font-mono uppercase"
-						placeholder="#8C3CDD"
+						placeholder={HEX_PLACEHOLDER}
 						maxlength={7}
 						autocomplete="off"
 						spellcheck={false}
@@ -287,7 +298,7 @@
 						id="brand-accent-hex"
 						type="text"
 						class="font-mono uppercase"
-						placeholder="#E6332A"
+						placeholder={HEX_PLACEHOLDER}
 						maxlength={7}
 						autocomplete="off"
 						spellcheck={false}
