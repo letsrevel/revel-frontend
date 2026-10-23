@@ -3,7 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
-import type { BrandThemeInput } from '$lib/utils/brand-theme';
+import type { BrandTheme, OrganizationAdminDetailSchema } from '$lib/api/generated/types.gen';
 
 vi.mock('$lib/api/client', () => ({ client: {} }));
 vi.mock('$app/navigation', () => ({ invalidateAll: vi.fn().mockResolvedValue(undefined) }));
@@ -20,7 +20,7 @@ import { toast } from 'svelte-sonner';
 import { invalidateAll } from '$app/navigation';
 
 // Golden vectors from the backend contract: the server shifts yellow for contrast.
-const YELLOW_THEME: BrandThemeInput = {
+const YELLOW_THEME: BrandTheme = {
 	light: {
 		primary: '#707000',
 		primary_foreground: '#FFFFFF',
@@ -34,7 +34,7 @@ const YELLOW_THEME: BrandThemeInput = {
 		accent_foreground: '#000000'
 	}
 };
-const PURPLE_THEME: BrandThemeInput = {
+const PURPLE_THEME: BrandTheme = {
 	light: {
 		primary: '#8C3CDD',
 		primary_foreground: '#FFFFFF',
@@ -44,14 +44,15 @@ const PURPLE_THEME: BrandThemeInput = {
 	dark: { primary: '#A667E5', primary_foreground: '#000000', accent: null, accent_foreground: null }
 };
 
-type Org = {
-	slug: string;
-	brand_primary_color?: string | null;
-	brand_accent_color?: string | null;
-	brand_theme?: BrandThemeInput | null;
-};
+type Org = Pick<OrganizationAdminDetailSchema, 'slug' | 'visibility'> &
+	Partial<
+		Pick<
+			OrganizationAdminDetailSchema,
+			'brand_primary_color' | 'brand_accent_color' | 'brand_theme'
+		>
+	>;
 
-function setup(organization: Org = { slug: 'acme' }) {
+function setup(organization: Org = { slug: 'acme', visibility: 'public' }) {
 	const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
 	render(QueryClientTestWrapper, {
 		props: {
@@ -133,12 +134,13 @@ describe('BrandColorsCard (#1054)', () => {
 	});
 
 	it('keeps the last good theme on screen while a request is pending', async () => {
-		let resolve: ((t: BrandThemeInput) => void) | undefined;
+		let resolve: ((t: BrandTheme) => void) | undefined;
 		vi.mocked(previewBrandTheme).mockReturnValue(
-			new Promise<BrandThemeInput | null>((r) => (resolve = r))
+			new Promise<BrandTheme | null>((r) => (resolve = r))
 		);
 		setup({
 			slug: 'acme',
+			visibility: 'public',
 			brand_primary_color: '#FFFF00',
 			brand_accent_color: '#00FF00',
 			brand_theme: YELLOW_THEME
@@ -161,6 +163,7 @@ describe('BrandColorsCard (#1054)', () => {
 	it('says in text when the server adjusted a color, and when it did not', () => {
 		setup({
 			slug: 'acme',
+			visibility: 'public',
 			brand_primary_color: '#FFFF00',
 			brand_accent_color: '#00FF00',
 			brand_theme: YELLOW_THEME
@@ -172,20 +175,22 @@ describe('BrandColorsCard (#1054)', () => {
 		expect(dark).toHaveTextContent('Used as entered');
 	});
 
-	it('shows the 400 detail from the preview inline and keeps the old theme', async () => {
+	it('shows a preview 400 detail as one polite message and keeps the old theme', async () => {
 		vi.mocked(previewBrandTheme).mockRejectedValue(
 			new BrandColorsApiError('x', 'Primary color is not a valid hex color.', 400)
 		);
 		setup({
 			slug: 'acme',
+			visibility: 'public',
 			brand_primary_color: '#8C3CDD',
 			brand_theme: PURPLE_THEME
 		});
 		await fireEvent.input(primaryPicker(), { target: { value: '#123456' } });
 		await flushDebounce();
-		expect(await screen.findByRole('alert')).toHaveTextContent(
-			'Primary color is not a valid hex color.'
-		);
+		const status = await screen.findByRole('status');
+		expect(status).toHaveTextContent('Primary color is not a valid hex color.');
+		expect(status).toHaveAttribute('aria-live', 'polite');
+		expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 		expect(screen.getByTestId('brand-swatches-dark')).toHaveTextContent('#A667E5');
 	});
 
@@ -194,7 +199,9 @@ describe('BrandColorsCard (#1054)', () => {
 		await user.type(primaryText(), '#112233');
 		await flushDebounce();
 		await user.click(saveButton());
-		await waitFor(() => expect(saveBrandColors).toHaveBeenCalledWith('acme', '#112233', null));
+		await waitFor(() =>
+			expect(saveBrandColors).toHaveBeenCalledWith('acme', '#112233', null, 'public')
+		);
 		await waitFor(() => expect(invalidateAll).toHaveBeenCalled());
 		expect(toast.success).toHaveBeenCalledWith('Brand colors saved.');
 	});
@@ -219,12 +226,13 @@ describe('BrandColorsCard (#1054)', () => {
 	it('reset sends nulls for both colors', async () => {
 		const user = setup({
 			slug: 'acme',
+			visibility: 'public',
 			brand_primary_color: '#8C3CDD',
 			brand_accent_color: '#E6332A',
 			brand_theme: PURPLE_THEME
 		});
 		await user.click(screen.getByRole('button', { name: 'Reset to Revel defaults' }));
-		await waitFor(() => expect(saveBrandColors).toHaveBeenCalledWith('acme', null, null));
+		await waitFor(() => expect(saveBrandColors).toHaveBeenCalledWith('acme', null, null, 'public'));
 		expect(primaryText().value).toBe('');
 	});
 });

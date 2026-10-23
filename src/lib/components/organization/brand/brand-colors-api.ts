@@ -1,19 +1,13 @@
 /**
- * API adapter for the org brand-color settings (#1054).
- *
- * TODO(#1054): switch to generated SDK fns after regen. The backend contract
- * (brand_primary_color / brand_accent_color on OrganizationEditSchema and
- * GET .../brand-theme-preview) is not in the generated client yet. Until
- * `pnpm generate:api` picks it up, both calls go through the shared generated
- * `client` (so auth headers, Accept-Language and the 401 refresh interceptor
- * still apply) and are typed against `BrandThemeInput`. After regen, replace the
- * bodies with `organizationadmincoreUpdateOrganization` and the new preview SDK
- * function; nothing outside this file needs to change.
- *
- * The server owns all contrast math. This module never adjusts a color.
+ * API adapter for the org brand-color settings (#1054): the only place the card
+ * touches the generated SDK. The server owns all contrast math; nothing here
+ * adjusts a color.
  */
-import { client } from '$lib/api/client';
-import type { BrandThemeInput } from '$lib/utils/brand-theme';
+import {
+	organizationadmincoreBrandThemePreview,
+	organizationadmincoreUpdateOrganization
+} from '$lib/api/generated/sdk.gen';
+import type { BrandTheme, Visibility } from '$lib/api/generated/types.gen';
 
 /** A 400 (or other API failure) whose `detail` can be shown next to a field. */
 export class BrandColorsApiError extends Error {
@@ -73,41 +67,37 @@ function toError(error: unknown, status: number | undefined): BrandColorsApiErro
 	return new BrandColorsApiError(detail ?? 'Request failed', detail, status, fieldErrorsOf(error));
 }
 
-const SECURITY = [{ key: 'ScopedJWTAuth', scheme: 'bearer', type: 'http' }] as const;
-
 /** Server-resolved per-mode theme for the given colors; null when no primary. */
 export async function previewBrandTheme(
 	slug: string,
 	primary: string | null,
 	accent: string | null,
 	signal?: AbortSignal
-): Promise<BrandThemeInput | null> {
+): Promise<BrandTheme | null> {
 	if (!primary) return null;
-	const query: Record<string, string> = { primary };
-	if (accent) query.accent = accent;
-	const result = await client.get({
-		url: '/api/organization-admin/{slug}/brand-theme-preview',
+	const res = await organizationadmincoreBrandThemePreview({
 		path: { slug },
-		query,
-		signal,
-		security: [...SECURITY]
+		query: { primary, accent },
+		signal
 	});
-	if (result.error !== undefined) throw toError(result.error, result.response?.status);
-	return (result.data as BrandThemeInput | null | undefined) ?? null;
+	// hey-api's `error` IS the parsed response body.
+	if (res.error !== undefined) throw toError(res.error, res.response?.status);
+	return res.data ?? null;
 }
 
-/** Persist both colors (null clears). Throws `BrandColorsApiError` on failure. */
+/** Persist both colors (null clears), echoing the org's current visibility. Throws `BrandColorsApiError` on failure. */
 export async function saveBrandColors(
 	slug: string,
 	primary: string | null,
-	accent: string | null
+	accent: string | null,
+	visibility: Visibility
 ): Promise<void> {
-	const result = await client.put({
-		url: '/api/organization-admin/{slug}',
+	const res = await organizationadmincoreUpdateOrganization({
 		path: { slug },
-		body: { brand_primary_color: primary, brand_accent_color: accent },
-		headers: { 'Content-Type': 'application/json' },
-		security: [...SECURITY]
+		// `visibility` is the one required field on OrganizationEditSchema; echoing the
+		// current value changes nothing. Every other field is left unset, so the
+		// server's exclude_unset update leaves it alone.
+		body: { visibility, brand_primary_color: primary, brand_accent_color: accent }
 	});
-	if (result.error !== undefined) throw toError(result.error, result.response?.status);
+	if (res.error !== undefined) throw toError(res.error, res.response?.status);
 }

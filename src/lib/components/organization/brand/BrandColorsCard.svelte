@@ -11,7 +11,8 @@
 	import { Label } from '$lib/components/ui/label';
 	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import { cn } from '$lib/utils';
-	import { hexToHslTriplet, type BrandThemeInput } from '$lib/utils/brand-theme';
+	import type { BrandTheme, OrganizationAdminDetailSchema } from '$lib/api/generated/types.gen';
+	import { hexToHslTriplet } from '$lib/utils/brand-theme';
 	import { BrandColorsApiError, previewBrandTheme, saveBrandColors } from './brand-colors-api';
 
 	/**
@@ -22,12 +23,10 @@
 	 * hexes and paints whatever per-mode theme comes back.
 	 */
 	interface Props {
-		organization: {
-			slug: string;
-			brand_primary_color?: string | null;
-			brand_accent_color?: string | null;
-			brand_theme?: BrandThemeInput | null;
-		};
+		organization: Pick<
+			OrganizationAdminDetailSchema,
+			'slug' | 'visibility' | 'brand_primary_color' | 'brand_accent_color' | 'brand_theme'
+		>;
 	}
 
 	const { organization }: Props = $props();
@@ -36,7 +35,6 @@
 	const FALLBACK_PICKER_HEX = '#8c3cdd';
 
 	type Field = 'primary' | 'accent';
-	type FieldError = { field: Field; detail: string };
 
 	/** `#RRGGBB` (the `#` optional, any case) -> `#RRGGBB` upper-case, else null. */
 	function normalizeHex(raw: string): string | null {
@@ -64,9 +62,10 @@
 	let accentTouched = $state(false);
 
 	// The theme on screen: the last GOOD server answer, kept while a request is in flight.
-	let theme = $state<BrandThemeInput | null>(initialTheme);
+	let theme = $state<BrandTheme | null>(initialTheme);
 	let previewPending = $state(false);
-	let previewError = $state<FieldError | null>(null);
+	// A preview 400 is unexpected (hex is validated before the call): one message, not per field.
+	let previewError = $state<string | null>(null);
 	let saveErrors = $state<Partial<Record<Field, string>>>({});
 	// The entered colors the on-screen theme was resolved for (the swatches' "Entered" side).
 	let themeFor = $state<{ primary: string | null; accent: string | null }>({
@@ -103,22 +102,15 @@
 
 	function serverErrorFor(field: Field): string | undefined {
 		if (saveErrors[field]) return saveErrors[field];
-		if (previewError?.field === field) return previewError.detail;
 		return undefined;
 	}
 
-	/** The API's `detail` is one string; attribute it to the field it names. */
-	function toFieldError(error: unknown): FieldError | null {
-		if (!(error instanceof BrandColorsApiError) || !error.detail) return null;
-		return { field: /accent/i.test(error.detail) ? 'accent' : 'primary', detail: error.detail };
-	}
-
-	/** Save 400s name their field (`errors`); a bare `detail` is attributed by text. */
+	/** Save 400s name their field (`errors`); a bare `detail` is shown on the primary field. */
 	function toSaveErrors(error: unknown): Partial<Record<Field, string>> | null {
 		if (!(error instanceof BrandColorsApiError)) return null;
 		if (Object.keys(error.fieldErrors).length > 0) return error.fieldErrors;
-		const single = toFieldError(error);
-		return single ? { [single.field]: single.detail } : null;
+		// Unkeyed detail: shown on the primary field (never inferred from localized text).
+		return error.detail ? { primary: error.detail } : null;
 	}
 
 	// ---- live preview (debounced, stale requests aborted) ----------------------
@@ -147,7 +139,7 @@
 		} catch (error) {
 			if (current.signal.aborted) return;
 			// Keep the last good theme on screen; surface the detail next to the field.
-			previewError = toFieldError(error);
+			previewError = error instanceof BrandColorsApiError ? error.detail : null;
 		} finally {
 			if (controller === current) previewPending = false;
 		}
@@ -170,7 +162,7 @@
 	const saveMutation = createMutation(() => ({
 		// Must throw on failure so TanStack routes it to onError.
 		mutationFn: ({ primary, accent }: { primary: string | null; accent: string | null }) =>
-			saveBrandColors(slug, primary, accent),
+			saveBrandColors(slug, primary, accent, organization.visibility),
 		onSuccess: async (_data, { primary, accent }) => {
 			savedPrimary = primary;
 			savedAccent = accent;
@@ -318,7 +310,11 @@
 		<div class="space-y-3" aria-busy={previewPending}>
 			<div class="flex flex-wrap items-center justify-between gap-2">
 				<h3 class="text-sm font-bold">{m['orgAdmin.settings.brandColors.previewHeading']()}</h3>
-				{#if previewPending}
+				{#if previewError}
+					<p class="text-sm text-destructive" role="status" aria-live="polite">
+						{previewError}
+					</p>
+				{:else if previewPending}
 					<p class="flex items-center gap-1.5 text-xs text-muted-foreground">
 						<Loader2 class="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
 						{m['orgAdmin.settings.brandColors.previewUpdating']()}
