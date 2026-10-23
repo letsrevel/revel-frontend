@@ -18,6 +18,7 @@ import {
 	getRememberMeCookieOptions
 } from '$lib/utils/cookies';
 import { log } from '$lib/server/logger';
+import { handleTenant } from '$lib/server/tenant';
 import { startMetricsServer } from '$lib/server/metrics';
 import { handleRequestLogging, handleSsrError } from '$lib/server/request-logging';
 
@@ -26,16 +27,7 @@ import { handleRequestLogging, handleSsrError } from '$lib/server/request-loggin
 // custom collectors used by the request-logging and error hooks.
 startMetricsServer();
 
-/**
- * Server-side hooks for authentication and internationalization
- *
- * This hook:
- * - Decodes the access token to populate event.locals.user
- * - Refreshes expired access tokens using the refresh token (for cold starts)
- * - Validates token structure
- * - Clears invalid tokens
- * - Detects and sets user language preference
- */
+/** Server-side hooks: tenant host, auth (JWT decode/refresh), i18n, CSP, caching. */
 
 /**
  * Zod schema for the JWT claims we rely on. Every field is optional because the
@@ -421,10 +413,13 @@ const handleAuthGuard: Handle = async ({ event, resolve }) => {
 /**
  * Combine request logging, token capture, authentication, i18n, and preload
  * optimization hooks. handleRequestLogging is FIRST so it wraps and times the
- * whole chain.
+ * whole chain. handleTenant is SECOND: it must run before anything that sets
+ * cookies, reads the host or renders (a stray host gets a bare 404/503, never
+ * the app shell), yet inside logging so those rejections are still timed/logged.
  */
 export const handle = sequence(
 	handleRequestLogging,
+	handleTenant,
 	handleTokenCapture,
 	handleEmbedShell,
 	i18nHandle(),

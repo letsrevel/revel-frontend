@@ -50,6 +50,7 @@ export const load: LayoutServerLoad = async ({ cookies, locals, fetch, url }) =>
 				impersonated: false
 			},
 			features: DEFAULT_FEATURES,
+			tenant: locals.tenant ?? null,
 			siteVerification: { google: '', bing: '' }
 		};
 	}
@@ -84,6 +85,7 @@ export const load: LayoutServerLoad = async ({ cookies, locals, fetch, url }) =>
 			impersonated
 		},
 		features,
+		tenant: locals.tenant ?? null,
 		siteVerification: {
 			google: publicEnv.PUBLIC_GOOGLE_SITE_VERIFICATION ?? '',
 			bing: publicEnv.PUBLIC_BING_SITE_VERIFICATION ?? ''

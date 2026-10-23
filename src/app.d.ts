@@ -2,6 +2,7 @@
 // for information about these interfaces
 /// <reference types="@sveltejs/kit" />
 import type { RevelUserSchema } from '$lib/api';
+import type { TenantOrganization } from '$lib/server/tenant';
 import type { BrandThemeInput } from '$lib/utils/brand-theme';
 import '@testing-library/jest-dom/vitest';
 
@@ -21,10 +22,15 @@ declare global {
 			// forwarded upstream as X-Request-ID so frontend and backend log lines
 			// for the same request line up in Loki.
 			requestId?: string;
+			// Organization served on this custom domain (tenant mode, #1055); null on
+			// platform hosts. Set by handleTenant.
+			tenant?: TenantOrganization | null;
 		}
 		interface PageData {
 			// Organization brand colors (#1053); loaders return `organization.brand_theme ?? null`.
 			brandTheme?: BrandThemeInput | null;
+			// Root layout: the custom-domain org on tenant hosts, else null (#1055).
+			tenant?: TenantOrganization | null;
 		}
 		// interface PageState {}
 		// interface Platform {}

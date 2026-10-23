@@ -28,7 +28,7 @@ COPY . .
 # single prebuilt image can target any deployment (see #396):
 #   - PUBLIC_API_URL via $env/dynamic/public
 #   - PUBLIC_VERSION via $env/dynamic/public (set on the runtime stage below)
-#   - ORIGIN by adapter-node
+#   - ORIGIN / HOST_HEADER / PROTOCOL_HEADER by adapter-node (see below)
 
 # Compile Paraglide i18n translations
 # Generates runtime files from messages/*.json (en, de, it)
@@ -71,7 +71,18 @@ ENV PUBLIC_VERSION=${PUBLIC_VERSION}
 # backend; it is read at runtime via $env/dynamic/public, so the same image
 # works for any deployment. Falls back to http://localhost:8000 if unset.
 #   - PUBLIC_API_URL  (e.g. https://api.example.com)
-#   - ORIGIN          (public origin of this frontend, required by adapter-node)
+#   - HOST_HEADER=x-forwarded-host and PROTOCOL_HEADER=x-forwarded-proto
+#                     (multi-host / tenant deploys: adapter-node derives the origin
+#                     from the proxy headers per request, so CSRF checks, url.origin
+#                     and form actions follow the real host. A request missing the
+#                     headers, e.g. the localhost HEALTHCHECK, falls back to the Host
+#                     header and https.)
+#   - ORIGIN          (single-host deploys only: pins the public origin. Do NOT set it
+#                     together with the two headers above; it would win.)
+#   - PLATFORM_HOSTS  (comma-separated platform hostnames, no ports. Tenant mode is
+#                     off while unset. Any other host is resolved as an organization
+#                     custom domain; unknown hosts get 404. localhost/127.0.0.1/::1
+#                     are always platform.)
 
 # Switch to non-root user
 USER appuser
