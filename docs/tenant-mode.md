@@ -156,13 +156,14 @@ https://app.example.com/events/acme/summer-party?ot=abc
 - **Never to itself.** `canonicalTenantUrl` returns nothing when the target host equals the
   request's own host. A `custom_domain` that is misconfigured to a platform host would otherwise
   301 to itself forever.
-- **Cache cap.** A 301 is cached by browsers indefinitely, so an organization that later drops or
+- **No cache.** A 301 is cached by browsers indefinitely, so an organization that later drops or
   changes its domain would keep redirecting returning visitors. `capCanonicalRedirectCache`
   (`src/lib/server/tenant-routing.ts`, run by `handleTenantRouting` on platform hosts) adds
-  `Cache-Control: private, max-age=300` to a 301 that points at another origin and sets no cache
-  policy of its own. `private`, because the redirect depends on the caller's session (a members-only
-  org 404s for anonymous visitors) and can carry refreshed session cookies. Same-origin redirects and responses that already carry `Cache-Control` are
-  left alone.
+  `Cache-Control: no-store` to a 301 that points at another origin and sets no cache policy of its
+  own. The kill switch then acts at once, and a redirect that depends on the caller's session (a
+  members-only org 404s for anonymous visitors) and can carry refreshed session cookies is never
+  reused after a logout or account switch. Same-origin redirects and responses that already carry
+  `Cache-Control` are left alone.
 - The functions in `tenant-canonical.ts` are `canonicalTenantUrl` (pure target computation),
   `canonicalTenantRedirect` (throws the 301), `tenantReturnUrl` (Stripe hop, below) and
   `serverLinkContext` (builds a link context from `locals` for server code such as SEO canonicals).
