@@ -2,6 +2,7 @@
 // for information about these interfaces
 /// <reference types="@sveltejs/kit" />
 import type { RevelUserSchema } from '$lib/api';
+import type { BrandThemeInput } from '$lib/utils/brand-theme';
 import '@testing-library/jest-dom/vitest';
 
 declare global {
@@ -21,7 +22,10 @@ declare global {
 			// for the same request line up in Loki.
 			requestId?: string;
 		}
-		// interface PageData {}
+		interface PageData {
+			// Organization brand colors (#1053); loaders return `organization.brand_theme ?? null`.
+			brandTheme?: BrandThemeInput | null;
+		}
 		// interface PageState {}
 		// interface Platform {}
 	}
