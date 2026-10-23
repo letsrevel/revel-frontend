@@ -1,5 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 
+import { organizationGetOrganizationById } from '$lib/api';
 import { customDomainOrigin } from '$lib/utils/org-links';
 
 /**
@@ -32,4 +33,32 @@ export function canonicalTenantRedirect(
 ): void {
 	const target = canonicalTenantUrl(locals, org, url);
 	if (target) redirect(301, target);
+}
+
+/**
+ * Stripe-return hop (#1056; backend #1167 keeps Stripe success/cancel URLs on
+ * the platform's UUID routes). On the platform host, when the org has a custom
+ * domain, send the buyer to the SAME UUID path on that domain: their session
+ * cookies are host-only and live there, so a private event or membership
+ * resolves with their auth, and the tenant's own UUID route then 303s to the
+ * slug page with the query string (payment_success, ...) intact. Null on
+ * tenant hosts, for orgs without a domain, and on any lookup failure (the
+ * caller's existing flow takes over).
+ */
+export async function tenantReturnUrl(
+	locals: App.Locals,
+	orgId: string,
+	url: URL,
+	fetch: typeof globalThis.fetch
+): Promise<string | null> {
+	if (locals.tenant) return null;
+	try {
+		const { data } = await organizationGetOrganizationById({
+			fetch,
+			path: { organization_id: orgId }
+		});
+		return data ? canonicalTenantUrl(locals, data, url) : null;
+	} catch {
+		return null;
+	}
 }

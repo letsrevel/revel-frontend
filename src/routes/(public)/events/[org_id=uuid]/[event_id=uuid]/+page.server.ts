@@ -1,6 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import { eventpublicdetailsGetEvent } from '$lib/api';
 import { log } from '$lib/server/logger';
+import { tenantReturnUrl } from '$lib/server/tenant-canonical';
 import type { PageServerLoad } from './$types';
 
 /**
@@ -14,6 +15,10 @@ import type { PageServerLoad } from './$types';
  * is parity-only; the event payload embeds the org slug.
  */
 export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
+	// Custom-domain org: continue on its domain, where the buyer's session lives.
+	const tenantHop = await tenantReturnUrl(locals, params.org_id, url, fetch);
+	if (tenantHop) redirect(303, tenantHop);
+
 	const headers: HeadersInit = {};
 	if (locals.user?.accessToken) {
 		headers['Authorization'] = `Bearer ${locals.user.accessToken}`;
