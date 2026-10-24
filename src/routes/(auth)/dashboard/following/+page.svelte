@@ -36,6 +36,7 @@
 	const pageSize = 12;
 	// On a custom domain only the tenant org (and its series) are listed (#1056).
 	const orgFilter = $derived(tenantOrgFilter(page.data));
+	const tenant = $derived(page.data.tenant);
 
 	// Fetch followed organizations
 	const orgsQuery = createQuery(() => ({
@@ -266,13 +267,21 @@
 				</div>
 			{:else if organizations.length === 0}
 				{#snippet discoverOrganizationsAction()}
-					<Button href="/organizations" variant="default">
-						{m['dashboard.following.discoverOrganizations']()}
-					</Button>
+					{#if tenant}
+						<Button href={resolve('/', {})} variant="default">
+							{m['dashboard.following.visitOrg']({ org: tenant.name })}
+						</Button>
+					{:else}
+						<Button href="/organizations" variant="default">
+							{m['dashboard.following.discoverOrganizations']()}
+						</Button>
+					{/if}
 				{/snippet}
 				<EmptyState
 					icon={Building2}
-					title={m['dashboard.following.noOrganizations']()}
+					title={tenant
+						? m['dashboard.following.notFollowingOrg']({ org: tenant.name })
+						: m['dashboard.following.noOrganizations']()}
 					action={discoverOrganizationsAction}
 					level={3}
 				/>

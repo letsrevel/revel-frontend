@@ -370,6 +370,12 @@ Revocation is the backend's job: refresh tokens minted on a custom domain carry 
 working as soon as the domain is no longer active (removed, failed, moved, or the kill switch is
 off).
 
+**No session handoff to the platform, on purpose.** Org admin lives on the platform, so an owner
+who signed in on the custom domain signs in once more there; the dashboard says so next to its Admin
+links. Do not "fix" that with a handoff token: a token exchange that starts from the tenant origin
+would let whoever controls the domain's DNS turn stolen tenant sessions into platform sessions that
+outlive the domain.
+
 ## Environment variables
 
 Set these on the frontend container. The first two are read by adapter-node, the rest by the app

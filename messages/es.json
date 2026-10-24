@@ -1032,10 +1032,12 @@
 		"createEventButton": "Crear evento",
 		"myOrganizationsButton": "Mis organizaciones",
 		"adminButton": "Admin",
+		"platformAdminHint": "Se abre en Revel. Inicia sesión allí una vez.",
 		"viewProfile": "Ver perfil",
 		"sections": {
 			"yourEvents": "Tus eventos",
 			"discoverEvents": "Descubrir eventos",
+			"upcomingEvents": "Próximos eventos",
 			"myOrganizations": "Mis organizaciones"
 		},
 		"filters": {
@@ -1059,6 +1061,9 @@
 			"noEventsFiltered": "Ajusta el filtro para ver más eventos",
 			"noEventsAvailable": "No hay eventos disponibles",
 			"noEventsHint": "¡Vuelve pronto para ver los próximos eventos en tu zona!",
+			"noUpcomingEvents": "No hay próximos eventos",
+			"noUpcomingEventsHint": "{org} no tiene próximos eventos por ahora. ¡Vuelve pronto!",
+			"seePastEvents": "Ver eventos pasados",
 			"noOrganizations": "Todavía no hay organizaciones",
 			"noOrganizationsHint": "Las organizaciones te ayudan a gestionar eventos y construir tu comunidad."
 		},
@@ -1141,8 +1146,10 @@
 			"organizations": "Organizaciones",
 			"eventSeries": "Series de eventos",
 			"noOrganizations": "Todavía no sigues ninguna organización",
+			"notFollowingOrg": "Todavía no sigues a {org}",
 			"noEventSeries": "Todavía no sigues ninguna serie de eventos",
 			"discoverOrganizations": "Descubrir organizaciones",
+			"visitOrg": "Visitar {org}",
 			"discoverEventSeries": "Explorar eventos",
 			"searchPlaceholder": "Buscar...",
 			"showing": "Mostrando {count} de {total}",

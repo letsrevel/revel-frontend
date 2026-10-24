@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import { EventCard } from '$lib/components/events';
 	import EventCardSkeleton from '$lib/components/common/EventCardSkeleton.svelte';
 	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
@@ -13,6 +14,10 @@
 		isLoading: boolean;
 	}
 	let { upcomingEvents, isLoading }: Props = $props();
+
+	// On a custom domain the dashboard only lists the tenant org's events, so the
+	// platform-discovery copy ("in your area") does not apply.
+	const tenant = $derived(page.data.tenant);
 </script>
 
 {#snippet seeAllAction()}
@@ -25,6 +30,17 @@
 	</a>
 {/snippet}
 
+{#snippet pastEventsAction()}
+	<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve('/') plus a fragment; resolve() cannot express hashes -->
+	<a
+		href={`${resolve('/', {})}#events-heading`}
+		class="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+	>
+		<!-- eslint-enable svelte/no-navigation-without-resolve -->
+		{m['dashboard.emptyStates.seePastEvents']()}
+	</a>
+{/snippet}
+
 <!-- Upcoming Events Section. This can be the FIRST block below the dashboard's
      -mt-12 band pull-up (brand-new user: no activity cards, no "Your Events"
      section). It carries its own bg-card/border-2/shadow-poster wrapper so
@@ -33,7 +49,9 @@
 <section aria-labelledby="upcoming-events-heading">
 	<div class="mb-4 rounded-lg border-2 border-border bg-card p-4 shadow-poster sm:p-6">
 		<SectionHeader
-			title={m['dashboard.sections.discoverEvents']()}
+			title={tenant
+				? m['dashboard.sections.upcomingEvents']()
+				: m['dashboard.sections.discoverEvents']()}
 			volume="celebration"
 			id="upcoming-events-heading"
 			actions={upcomingEvents.length > 0 ? seeAllAction : undefined}
@@ -50,8 +68,13 @@
 		<!-- Empty State -->
 		<EmptyState
 			icon={Calendar}
-			title={m['dashboard.emptyStates.noEventsAvailable']()}
-			body={m['dashboard.emptyStates.noEventsHint']()}
+			title={tenant
+				? m['dashboard.emptyStates.noUpcomingEvents']()
+				: m['dashboard.emptyStates.noEventsAvailable']()}
+			body={tenant
+				? m['dashboard.emptyStates.noUpcomingEventsHint']({ org: tenant.name })
+				: m['dashboard.emptyStates.noEventsHint']()}
+			action={tenant ? pastEventsAction : undefined}
 			tone="neutral"
 		/>
 	{:else}

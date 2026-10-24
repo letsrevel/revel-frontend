@@ -35,6 +35,12 @@
 	const visibleOrganizations = $derived(
 		showAll ? organizations : organizations.slice(0, COLLAPSED_COUNT)
 	);
+
+	// A tenant host with no org for this user: the empty state is a platform pitch
+	// ("organizations help you manage events") that makes no sense there. Most
+	// visitors there are attendees, so the section also waits for the list
+	// instead of flashing a skeleton that then disappears.
+	const hideSection = $derived(!!page.data.tenant && (isLoading || organizations.length === 0));
 </script>
 
 {#snippet discoverEventsAction()}
@@ -48,152 +54,162 @@
 {/snippet}
 
 <!-- My Organizations Section -->
-<section id="organizations-section" aria-labelledby="organizations-heading">
-	<div class="mb-4">
-		<SectionHeader
-			title={m['dashboard.sections.myOrganizations']()}
-			volume="celebration"
-			id="organizations-heading"
-		/>
-	</div>
-
-	{#if isLoading}
-		<div class="space-y-3">
-			{#each Array(3) as _, i (i)}
-				<OrganizationCardSkeleton />
-			{/each}
+{#if !hideSection}
+	<section id="organizations-section" aria-labelledby="organizations-heading">
+		<div class="mb-4">
+			<SectionHeader
+				title={m['dashboard.sections.myOrganizations']()}
+				volume="celebration"
+				id="organizations-heading"
+			/>
 		</div>
-	{:else if organizations.length === 0}
-		<!-- Empty State -->
-		<EmptyState
-			icon={Building2}
-			title={m['dashboard.emptyStates.noOrganizations']()}
-			body={m['dashboard.emptyStates.noOrganizationsHint']()}
-			action={discoverEventsAction}
-		/>
-	{:else}
-		<!-- Organization Cards -->
-		<div id="dashboard-organizations-list" class="space-y-3">
-			{#each visibleOrganizations as org (org.id)}
-				{@const descriptionText = org.description ? stripMarkdown(org.description) : ''}
-				<div
-					class="flex flex-col gap-4 rounded-lg border-2 bg-card p-4 shadow-poster transition-shadow hover:shadow-poster-lg sm:flex-row sm:items-center"
-				>
-					<div class="flex min-w-0 flex-1 items-center gap-4">
-						{#if org.logo}
-							<img
-								src={getImageUrl(org.logo_thumbnail_url || org.logo)}
-								alt=""
-								class="h-16 w-16 shrink-0 rounded-full border-2 object-cover"
-							/>
-						{:else}
-							<div
-								class="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary/10"
-							>
-								<Building2 class="h-8 w-8 text-primary" aria-hidden="true" />
-							</div>
-						{/if}
 
-						<div class="min-w-0 flex-1">
-							<div class="flex items-center gap-2">
-								<h3 class="font-bold">{org.name}</h3>
-								<!-- Owner Badge -->
-								{#if isOwner(permissions, org.id)}
-									<StatusBadge
-										tone="brand"
-										label={m['dashboardPage.ownerBadge']()}
-										icon={Crown}
-										size="sm"
-										srLabel={m['dashboardPage.ownerBadgeLabel']()}
-									/>
-								{:else if isStaff(permissions, org.id)}
-									<!-- Staff Badge -->
-									<StatusBadge
-										tone="info"
-										label={m['dashboardPage.staffBadge']()}
-										icon={Shield}
-										size="sm"
-										srLabel={m['dashboardPage.staffBadgeLabel']()}
-									/>
-								{/if}
-							</div>
-
-							{#if descriptionText}
-								<p class="line-clamp-1 text-sm text-muted-foreground">
-									{descriptionText}
-								</p>
+		{#if isLoading}
+			<div class="space-y-3">
+				{#each Array(3) as _, i (i)}
+					<OrganizationCardSkeleton />
+				{/each}
+			</div>
+		{:else if organizations.length === 0}
+			<!-- Empty State -->
+			<EmptyState
+				icon={Building2}
+				title={m['dashboard.emptyStates.noOrganizations']()}
+				body={m['dashboard.emptyStates.noOrganizationsHint']()}
+				action={discoverEventsAction}
+			/>
+		{:else}
+			<!-- Organization Cards -->
+			<div id="dashboard-organizations-list" class="space-y-3">
+				{#each visibleOrganizations as org (org.id)}
+					{@const descriptionText = org.description ? stripMarkdown(org.description) : ''}
+					<div
+						class="flex flex-col gap-4 rounded-lg border-2 bg-card p-4 shadow-poster transition-shadow hover:shadow-poster-lg sm:flex-row sm:items-center"
+					>
+						<div class="flex min-w-0 flex-1 items-center gap-4">
+							{#if org.logo}
+								<img
+									src={getImageUrl(org.logo_thumbnail_url || org.logo)}
+									alt=""
+									class="h-16 w-16 shrink-0 rounded-full border-2 object-cover"
+								/>
+							{:else}
+								<div
+									class="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary/10"
+								>
+									<Building2 class="h-8 w-8 text-primary" aria-hidden="true" />
+								</div>
 							{/if}
 
-							<!-- Membership Badges -->
-							{#if getMembershipStatus(permissions, org.id) || getMembershipTier(permissions, org.id)}
-								{@const membershipStatus = getMembershipStatus(permissions, org.id)}
-								{@const membershipTier = getMembershipTier(permissions, org.id)}
-								<div class="mt-2 flex flex-wrap items-center gap-2">
-									<!-- Status Badge -->
-									{#if membershipStatus}
+							<div class="min-w-0 flex-1">
+								<div class="flex items-center gap-2">
+									<h3 class="font-bold">{org.name}</h3>
+									<!-- Owner Badge -->
+									{#if isOwner(permissions, org.id)}
 										<StatusBadge
-											tone={statusTones[membershipStatus]}
-											label={m[`memberStatus.${membershipStatus}`]()}
-											icon={Check}
+											tone="brand"
+											label={m['dashboardPage.ownerBadge']()}
+											icon={Crown}
 											size="sm"
-											srLabel={m['dashboardPage.membershipStatusLabel']({
-												status: m[`memberStatus.${membershipStatus}`]()
-											})}
+											srLabel={m['dashboardPage.ownerBadgeLabel']()}
 										/>
-									{/if}
-
-									<!-- Tier Badge -->
-									{#if membershipTier}
+									{:else if isStaff(permissions, org.id)}
+										<!-- Staff Badge -->
 										<StatusBadge
 											tone="info"
-											label={membershipTier.name}
-											icon={Award}
+											label={m['dashboardPage.staffBadge']()}
+											icon={Shield}
 											size="sm"
-											srLabel={m['dashboardPage.membershipTierLabel']({
-												tier: membershipTier.name
-											})}
+											srLabel={m['dashboardPage.staffBadgeLabel']()}
 										/>
 									{/if}
 								</div>
+
+								{#if page.data.tenant && hasAdminPermissions(permissions, org.id)}
+									<!-- Admin opens on the platform (separate session, no handoff token by design). -->
+									<p id="platform-admin-hint-{org.id}" class="text-xs text-muted-foreground">
+										{m['dashboard.platformAdminHint']()}
+									</p>
+								{/if}
+
+								{#if descriptionText}
+									<p class="line-clamp-1 text-sm text-muted-foreground">
+										{descriptionText}
+									</p>
+								{/if}
+
+								<!-- Membership Badges -->
+								{#if getMembershipStatus(permissions, org.id) || getMembershipTier(permissions, org.id)}
+									{@const membershipStatus = getMembershipStatus(permissions, org.id)}
+									{@const membershipTier = getMembershipTier(permissions, org.id)}
+									<div class="mt-2 flex flex-wrap items-center gap-2">
+										<!-- Status Badge -->
+										{#if membershipStatus}
+											<StatusBadge
+												tone={statusTones[membershipStatus]}
+												label={m[`memberStatus.${membershipStatus}`]()}
+												icon={Check}
+												size="sm"
+												srLabel={m['dashboardPage.membershipStatusLabel']({
+													status: m[`memberStatus.${membershipStatus}`]()
+												})}
+											/>
+										{/if}
+
+										<!-- Tier Badge -->
+										{#if membershipTier}
+											<StatusBadge
+												tone="info"
+												label={membershipTier.name}
+												icon={Award}
+												size="sm"
+												srLabel={m['dashboardPage.membershipTierLabel']({
+													tier: membershipTier.name
+												})}
+											/>
+										{/if}
+									</div>
+								{/if}
+							</div>
+						</div>
+
+						<div class="flex shrink-0 gap-2">
+							<!-- eslint-disable svelte/no-navigation-without-resolve -- orgHref() wraps resolve(); custom-domain links are absolute (#1056) -->
+							<a
+								href={orgHref(org, resolve('/(public)/org/[slug]', { slug: org.slug }), page.data)}
+								class="flex-1 rounded-md border px-4 py-2 text-center text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground sm:flex-none"
+							>
+								<!-- eslint-enable svelte/no-navigation-without-resolve -->
+								{m['dashboard.viewProfile']()}
+							</a>
+							{#if hasAdminPermissions(permissions, org.id)}
+								<a
+									href={resolve('/(auth)/org/[slug]/admin', { slug: org.slug })}
+									aria-describedby={page.data.tenant ? `platform-admin-hint-${org.id}` : undefined}
+									class="inline-flex flex-1 items-center justify-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:flex-none"
+								>
+									<Shield class="h-4 w-4" aria-hidden="true" />
+									<span>{m['dashboard.adminButton']()}</span>
+								</a>
 							{/if}
 						</div>
 					</div>
+				{/each}
+			</div>
 
-					<div class="flex shrink-0 gap-2">
-						<!-- eslint-disable svelte/no-navigation-without-resolve -- orgHref() wraps resolve(); custom-domain links are absolute (#1056) -->
-						<a
-							href={orgHref(org, resolve('/(public)/org/[slug]', { slug: org.slug }), page.data)}
-							class="flex-1 rounded-md border px-4 py-2 text-center text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground sm:flex-none"
-						>
-							<!-- eslint-enable svelte/no-navigation-without-resolve -->
-							{m['dashboard.viewProfile']()}
-						</a>
-						{#if hasAdminPermissions(permissions, org.id)}
-							<a
-								href={resolve('/(auth)/org/[slug]/admin', { slug: org.slug })}
-								class="inline-flex flex-1 items-center justify-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:flex-none"
-							>
-								<Shield class="h-4 w-4" aria-hidden="true" />
-								<span>{m['dashboard.adminButton']()}</span>
-							</a>
-						{/if}
-					</div>
-				</div>
-			{/each}
-		</div>
-
-		{#if organizations.length > COLLAPSED_COUNT}
-			<button
-				type="button"
-				onclick={() => (showAll = !showAll)}
-				aria-expanded={showAll}
-				aria-controls="dashboard-organizations-list"
-				class="mt-3 w-full rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
-			>
-				{showAll
-					? m['dashboard.showFewerOrganizations']()
-					: m['dashboard.seeAllOrganizations']({ count: organizations.length })}
-			</button>
+			{#if organizations.length > COLLAPSED_COUNT}
+				<button
+					type="button"
+					onclick={() => (showAll = !showAll)}
+					aria-expanded={showAll}
+					aria-controls="dashboard-organizations-list"
+					class="mt-3 w-full rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+				>
+					{showAll
+						? m['dashboard.showFewerOrganizations']()
+						: m['dashboard.seeAllOrganizations']({ count: organizations.length })}
+				</button>
+			{/if}
 		{/if}
-	{/if}
-</section>
+	</section>
+{/if}
