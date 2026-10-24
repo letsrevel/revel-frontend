@@ -89,7 +89,7 @@ post-processes the response (see [Canonical redirects](#canonical-redirects-from
 | `/account/referral...`, `/account/developer-apps...`, `/account/connected-apps...` | 302 to the same path and query on the platform origin                   |
 | `api`, `auth`, `_app`, `.well-known`                                             | Allowed                                                                   |
 | `robots.txt`, `feed.xml`, `opensearch.xml`, `oembed`                             | Allowed (each handler is tenant-aware, see [SEO](#seo-on-tenant-hosts))   |
-| Anything starting with `sitemap`, `favicon` or `manifest`                        | Allowed                                                                   |
+| `sitemap.xml`, `sitemap-static.xml`, `sitemap-{events,series,orgs}-N.xml`, `favicon[-x].{png,ico,svg}`, `manifest.{json,webmanifest}` (anchored patterns, so a lookalike such as `/manifesto` is not matched) | Allowed |
 | `/org/{any}/admin...`                                                            | 302 to the same path and query on the platform origin                     |
 | `create-org`, `oauth`, `impersonate`                                             | 302 to the same path and query on the platform origin                     |
 | `/org/{other slug}`, `/events/{other slug}`, `/embed/{other slug}`               | 302 to `/`                                                                |
@@ -311,6 +311,11 @@ On a tenant host the site is the organization. The helpers are in `src/lib/seo/t
 | `/opensearch.xml`      | 404 (it describes the platform-wide search)                                                           |
 | `/oembed`              | Another organization's URL gives 404; `provider_name` is the org                                      |
 
+On the platform, the events, series and orgs sitemaps leave out organizations with an active
+custom domain: their pages belong in that domain's own sitemap above (the sitemaps protocol only
+accepts URLs on the sitemap's host, and the platform URL 301s there anyway). The platform RSS feed
+does list them, with the canonical custom-domain link.
+
 `handleTenantHead` is tested against the real `src/app.html`, so changing the shell's head tags
 without updating the patterns fails a test.
 
@@ -362,13 +367,14 @@ Stripe return hop above sends the buyer back to the domain they paid from.
 A host-only cookie is only as safe as the domain it is bound to, and the organization owner controls
 that domain's DNS. If they repoint it at a server of their own, every returning browser sends its
 session cookies there, and a refresh token is platform-wide and skips TOTP. So on a tenant host the
-frontend never persists the session: the refresh cookie is a session cookie (no `maxAge`),
-`remember_me` is always `false`, and the login page hides the "remember me" checkbox. The same rule
-applies on every path that writes the cookie: login, 2FA, OIDC, email verification and the refresh
-endpoint (`sessionRememberMe` in `src/lib/server/session.ts`). This only shortens the window.
-Revocation is the backend's job: refresh tokens minted on a custom domain carry that host, and stop
-working as soon as the domain is no longer active (removed, failed, moved, or the kill switch is
-off).
+REFRESH cookie is never persisted: it is a session cookie (no `maxAge`), `remember_me` is always
+`false`, and the login page hides the "remember me" checkbox. The access cookie keeps its usual
+1 h `maxAge`, exactly as on the platform. The same rule
+applies on every path that writes the refresh cookie: login, 2FA, OIDC, email verification and the
+refresh endpoint (`sessionRememberMe` in `src/lib/server/session.ts`). This only shortens the
+window. Revocation and binding are the backend's job (BE #1186): refresh tokens minted on a custom
+domain carry that host, and stop working as soon as the domain is no longer active (removed, failed,
+moved, or the kill switch is off).
 
 **No session handoff to the platform, on purpose.** Org admin lives on the platform, so an owner
 who signed in on the custom domain signs in once more there; the dashboard says so next to its Admin

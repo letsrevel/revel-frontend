@@ -1,6 +1,8 @@
 import { error } from '@sveltejs/kit';
 import { organizationListOrganizations } from '$lib/api';
 import { getBackendUrl } from '$lib/config/api';
+import { orgOrigin } from '$lib/utils/org-links';
+import { serverLinkContext } from '$lib/server/tenant-canonical';
 import type { RequestHandler } from './$types';
 
 const PAGE_SIZE = 200;
@@ -33,19 +35,29 @@ export const GET: RequestHandler = async ({ params, fetch, url, locals }) => {
 	const orgs = resp.data?.results ?? [];
 	if (orgs.length === 0 && page > 1) throw error(404, 'No orgs on this page');
 
-	const urls = orgs.map((o) => {
-		const loc = `${baseUrl}/org/${o.slug}`;
-		const lastmod = (o.updated_at ? new Date(o.updated_at) : new Date())
-			.toISOString()
-			.split('T')[0];
-		return `<url>
+	// A custom-domain org's pages belong in that domain's own (org-scoped) sitemap:
+	// the sitemaps protocol only accepts URLs on the sitemap's own host, and the
+	// platform URL 301s there anyway. Entries on this host keep `baseUrl`.
+	const ctx = serverLinkContext(locals);
+	const onThisHost = (org: { slug: string; custom_domain?: string | null }): boolean => {
+		const origin = orgOrigin(org, ctx);
+		return origin === null || origin === baseUrl;
+	};
+	const urls = orgs
+		.filter((o) => onThisHost(o))
+		.map((o) => {
+			const loc = `${baseUrl}/org/${o.slug}`;
+			const lastmod = (o.updated_at ? new Date(o.updated_at) : new Date())
+				.toISOString()
+				.split('T')[0];
+			return `<url>
   <loc>${escapeXml(loc)}</loc>
   <lastmod>${lastmod}</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.7</priority>
   ${img(o.logo ?? o.cover_art, o.name)}
 </url>`;
-	});
+		});
 
 	const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"

@@ -31,19 +31,10 @@ export function withSiteName(title: string, tenant?: SeoTenant | null, separator
 	return `${title}${separator}${siteName(tenant)}`;
 }
 
-/**
- * Optional per-mode brand colors a later backend change adds to the tenant
- * payload. Not in the generated type yet, so it is read through a structural
- * optional type and validated, never trusted.
- */
-interface TenantBrandTheme {
-	brand_theme?: { light?: { primary?: unknown } | null } | null;
-}
-
 /** `<meta name="theme-color">` / manifest `theme_color` for a request. */
 export function themeColor(tenant?: SeoTenant | null): string {
 	if (!tenant) return REVEL_THEME_COLOR;
-	const primary = (tenant as SeoTenant & TenantBrandTheme).brand_theme?.light?.primary;
+	const primary = tenant.brand_theme?.light?.primary;
 	return typeof primary === 'string' && HEX_COLOR_RE.test(primary) ? primary : REVEL_THEME_COLOR;
 }
 

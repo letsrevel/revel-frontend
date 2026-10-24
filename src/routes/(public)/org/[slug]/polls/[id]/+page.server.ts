@@ -45,6 +45,12 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 		throw error(500, 'Failed to load poll');
 	}
 
+	// On a tenant host a poll of another organization must not render under this
+	// domain's chrome (the route only checks the slug, the id is org-agnostic).
+	if (locals.tenant && res.data.organization_id !== locals.tenant.id) {
+		throw error(404, 'Poll not found');
+	}
+
 	return {
 		poll: res.data,
 		forbidden: false as const,

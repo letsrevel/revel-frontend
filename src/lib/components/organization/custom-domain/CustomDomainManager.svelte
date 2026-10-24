@@ -16,6 +16,7 @@
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import CopyField from '$lib/components/common/CopyField.svelte';
 	import { formatDateTime } from '$lib/utils/date';
+	import { customDomainOrigin } from '$lib/utils/org-links';
 	import HostnameForm from './HostnameForm.svelte';
 	import DnsRecordsList from './DnsRecordsList.svelte';
 	import DnsOnlyNote from './DnsOnlyNote.svelte';
@@ -181,17 +182,25 @@
 			{#if domain.status === 'active'}
 				<!-- State 3: active -->
 				<p class="text-sm">{m['customDomain.active.intro']()}</p>
+				{@const liveUrl = customDomainOrigin(domain.hostname)}
 				<p>
-					<a
-						href={`https://${domain.hostname}`}
-						target="_blank"
-						rel="noopener noreferrer"
-						class="inline-flex items-center gap-1.5 break-all text-sm font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-					>
-						{`https://${domain.hostname}`}
-						<ExternalLink class="h-4 w-4 shrink-0" aria-hidden="true" />
-						<span class="sr-only">{m['customDomain.opensInNewTab']()}</span>
-					</a>
+					{#if liveUrl}
+						<!-- External custom-domain origin built by customDomainOrigin(), not an app route. -->
+						<!-- eslint-disable svelte/no-navigation-without-resolve -->
+						<a
+							href={liveUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="inline-flex items-center gap-1.5 break-all text-sm font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+						>
+							{liveUrl}
+							<ExternalLink class="h-4 w-4 shrink-0" aria-hidden="true" />
+							<span class="sr-only">{m['customDomain.opensInNewTab']()}</span>
+						</a>
+						<!-- eslint-enable svelte/no-navigation-without-resolve -->
+					{:else}
+						<span class="break-all text-sm font-semibold">{domain.hostname}</span>
+					{/if}
 				</p>
 				{#if domain.verified_at}
 					<p class="text-sm text-muted-foreground">

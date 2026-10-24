@@ -106,12 +106,28 @@ describe('tenantRouteDecision', () => {
 		'/feed.xml',
 		'/opensearch.xml',
 		'/oembed',
+		'/sitemap-static.xml',
+		'/sitemap-series-12.xml',
+		'/sitemap-orgs-3.xml',
 		'/favicon.png',
-		'/manifest.json'
+		'/favicon-v2.png',
+		'/favicon.ico',
+		'/manifest.json',
+		'/manifest.webmanifest'
 	];
 	it.each(allowed)('allows %s', (path) => {
 		expect(decide(path)).toEqual(ALLOW);
 	});
+
+	// Matching is anchored, not by prefix: a future top-level route that merely
+	// starts with `sitemap`, `favicon` or `manifest` must fail closed to HOME.
+	it.each(['/manifesto', '/sitemapx', '/sitemap-foo.xml', '/faviconography', '/manifest.json.bak'])(
+		'does not treat the lookalike %s as an open asset',
+		(path) => {
+			expect(ruleForSegment(path.slice(1))).toBeUndefined();
+			expect(decide(path)).toEqual(HOME);
+		}
+	);
 
 	it('allows /events with any query (the loader overrides the organization filter)', () => {
 		expect(decide('/events', '?organization=other&organization_slug=other')).toEqual(ALLOW);

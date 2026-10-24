@@ -1,5 +1,8 @@
 // Tenant-aware SEO/XML endpoints (#1057): each surface on a tenant host and on the platform.
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
+const mockEnv = vi.hoisted(() => ({ env: {} as Record<string, string | undefined> }));
+vi.mock('$env/dynamic/private', () => mockEnv);
 
 const listEvents = vi.fn();
 const listSeries = vi.fn();
@@ -225,5 +228,85 @@ describe('oembed', () => {
 		const target = encodeURIComponent(`${P}/org/acme`);
 		const json = await (await call(oembed, onPlatform(`/oembed?url=${target}&format=json`))).json();
 		expect(json.provider_name).toBe('Revel');
+	});
+});
+
+describe('platform SEO links to custom-domain orgs', () => {
+	const withDomain = {
+		...evt,
+		organization: { slug: 'acme', name: 'Acme Club', custom_domain: 'events.acme.test' }
+	};
+	const plain = { ...evt, slug: 'other', organization: { slug: 'beta', name: 'Beta' } };
+
+	beforeEach(() => {
+		mockEnv.env.PLATFORM_HOSTS = 'letsrevel.io';
+		listEvents.mockReset().mockResolvedValue({ data: { count: 2, results: [withDomain, plain] } });
+		listSeries.mockReset().mockResolvedValue({
+			data: {
+				count: 2,
+				results: [
+					{ slug: 'monthly', name: 'Monthly', organization: withDomain.organization },
+					{ slug: 'weekly', name: 'Weekly', organization: plain.organization }
+				]
+			}
+		});
+		listOrgs.mockReset().mockResolvedValue({
+			data: {
+				count: 2,
+				results: [
+					{ slug: 'acme', name: 'Acme', custom_domain: 'events.acme.test' },
+					{ slug: 'beta', name: 'Beta' }
+				]
+			}
+		});
+	});
+
+	afterEach(() => {
+		mockEnv.env.PLATFORM_HOSTS = undefined;
+	});
+
+	it('events sitemap: a custom-domain org is left to its own sitemap', async () => {
+		const body = await (
+			await call(sitemapEvents, onPlatform('/sitemap-events-1.xml', { params: { page: '1' } }))
+		).text();
+		expect(body).not.toContain('/events/acme/party');
+		expect(body).toContain(`<loc>${P}/events/beta/other</loc>`);
+	});
+
+	it('series sitemap', async () => {
+		const body = await (
+			await call(sitemapSeries, onPlatform('/sitemap-series-1.xml', { params: { page: '1' } }))
+		).text();
+		expect(body).not.toContain('/events/acme/series/monthly');
+		expect(body).toContain(`<loc>${P}/events/beta/series/weekly</loc>`);
+	});
+
+	it('orgs sitemap', async () => {
+		const body = await (
+			await call(sitemapOrgs, onPlatform('/sitemap-orgs-1.xml', { params: { page: '1' } }))
+		).text();
+		expect(body).not.toContain('/org/acme<');
+		expect(body).toContain(`<loc>${P}/org/beta</loc>`);
+	});
+
+	it('feed', async () => {
+		const body = await (await call(feed, onPlatform('/feed.xml'))).text();
+		expect(body).toContain(`<link>${T}/events/acme/party</link>`);
+		expect(body).toContain(`<link>${P}/events/beta/other</link>`);
+	});
+
+	it('tenant mode off: nothing points at a custom domain', async () => {
+		mockEnv.env.PLATFORM_HOSTS = undefined;
+		const ev = await (
+			await call(sitemapEvents, onPlatform('/sitemap-events-1.xml', { params: { page: '1' } }))
+		).text();
+		expect(ev).toContain(`<loc>${P}/events/acme/party</loc>`);
+		expect(ev).not.toContain(T);
+		const fd = await (await call(feed, onPlatform('/feed.xml'))).text();
+		expect(fd).not.toContain(T);
+		const orgs = await (
+			await call(sitemapOrgs, onPlatform('/sitemap-orgs-1.xml', { params: { page: '1' } }))
+		).text();
+		expect(orgs).toContain(`<loc>${P}/org/acme</loc>`);
 	});
 });

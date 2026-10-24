@@ -53,20 +53,30 @@ export const GET: RequestHandler = async ({ params, fetch, url, locals }) => {
 	const events = resp.data?.results ?? [];
 	if (events.length === 0 && page > 1) throw error(404, 'No events on this page');
 
-	const urls = events.map((event) => {
-		const loc = `${baseUrl}/events/${event.organization.slug}/${event.slug}`;
-		const lastmod = (event.updated_at ? new Date(event.updated_at) : new Date())
-			.toISOString()
-			.split('T')[0];
-		const img = imageEntry(event.cover_art ?? event.logo, event.name);
-		return `<url>
+	// A custom-domain org's pages belong in that domain's own (org-scoped) sitemap:
+	// the sitemaps protocol only accepts URLs on the sitemap's own host, and the
+	// platform URL 301s there anyway. Entries on this host keep `baseUrl`.
+	const ctx = serverLinkContext(locals);
+	const onThisHost = (org: { slug: string; custom_domain?: string | null }): boolean => {
+		const origin = orgOrigin(org, ctx);
+		return origin === null || origin === baseUrl;
+	};
+	const urls = events
+		.filter((event) => onThisHost(event.organization))
+		.map((event) => {
+			const loc = `${baseUrl}/events/${event.organization.slug}/${event.slug}`;
+			const lastmod = (event.updated_at ? new Date(event.updated_at) : new Date())
+				.toISOString()
+				.split('T')[0];
+			const img = imageEntry(event.cover_art ?? event.logo, event.name);
+			return `<url>
   <loc>${escapeXml(loc)}</loc>
   <lastmod>${lastmod}</lastmod>
   <changefreq>weekly</changefreq>
   <priority>${priorityFor(event.start)}</priority>
   ${img}
 </url>`;
-	});
+		});
 
 	const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"

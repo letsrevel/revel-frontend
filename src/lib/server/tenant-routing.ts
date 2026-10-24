@@ -94,20 +94,30 @@ export const SEGMENT_RULES: Readonly<Record<string, SegmentRule>> = {
 	...Object.fromEntries(LOCALIZED_LANDING_PREFIXES.map((p) => [p, 'home' as const]))
 };
 
-/** Segments matched by prefix (`sitemap.xml`, `sitemap-events-1.xml`, `favicon.png`, `manifest.json`). */
-export const PREFIX_RULES: Readonly<Record<string, SegmentRule>> = {
-	sitemap: 'open',
-	favicon: 'open',
-	manifest: 'open'
-};
+/**
+ * Segment families matched by an ANCHORED pattern (the sitemap files carry a
+ * page number, the favicon/manifest files an extension). Anchored on purpose:
+ * a bare `startsWith` would silently treat a future `/manifesto` or
+ * `/sitemapx` route as open on tenant hosts. Anything not matched here or in
+ * {@link SEGMENT_RULES} falls to the fail-closed HOME rule.
+ */
+export const PATTERN_RULES: ReadonlyArray<readonly [RegExp, SegmentRule]> = [
+	// sitemap.xml, sitemap-static.xml, sitemap-{events,series,orgs}-{N}.xml
+	// (`[page]` is the literal route directory name under src/routes).
+	[/^sitemap(?:-static|-(?:events|series|orgs)-(?:\d+|\[page\]))?\.xml$/, 'open'],
+	// favicon.png, favicon-v2.png, favicon.ico, favicon.svg
+	[/^favicon(?:-[a-z0-9]+)?\.(?:png|ico|svg)$/, 'open'],
+	// manifest.json (static), manifest.webmanifest (tenant-aware route)
+	[/^manifest\.(?:json|webmanifest)$/, 'open']
+];
 
 export function ruleForSegment(segment: string): SegmentRule | undefined {
 	const exact = Object.prototype.hasOwnProperty.call(SEGMENT_RULES, segment)
 		? SEGMENT_RULES[segment]
 		: undefined;
 	if (exact) return exact;
-	for (const [prefix, rule] of Object.entries(PREFIX_RULES)) {
-		if (segment.startsWith(prefix)) return rule;
+	for (const [pattern, rule] of PATTERN_RULES) {
+		if (pattern.test(segment)) return rule;
 	}
 	return undefined;
 }

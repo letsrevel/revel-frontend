@@ -56,6 +56,7 @@ export const GET: RequestHandler = async ({ fetch, url, locals }) => {
 		? (orgOrigin(tenant, serverLinkContext(locals)) ?? url.origin)
 		: url.origin;
 	const channelTitle = tenant ? `${siteName(tenant)} - Upcoming Events` : 'Revel - Upcoming Events';
+	const linkCtx = serverLinkContext(locals);
 	const channelLink = tenant ? `${baseUrl}/` : `${baseUrl}/events`;
 	const channelDescription = tenant
 		? stripHtml(tenant.description) || `Upcoming events from ${tenant.name}.`
@@ -125,7 +126,8 @@ ${channelExtras}    <category>Events</category>
     <category>Community</category>
 ${events
 	.map((event) => {
-		const eventUrl = `${baseUrl}/events/${event.organization.slug}/${event.slug}`;
+		// An org with an active custom domain is canonical there; the platform URL 301s to it.
+		const eventUrl = `${orgOrigin(event.organization, linkCtx) ?? baseUrl}/events/${event.organization.slug}/${event.slug}`;
 		const description =
 			stripHtml(event.description) || `Join ${event.name} organized by ${event.organization.name}`;
 		const truncatedDescription =
