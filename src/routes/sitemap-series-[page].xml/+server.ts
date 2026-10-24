@@ -36,21 +36,29 @@ export const GET: RequestHandler = async ({ params, fetch, url, locals }) => {
 	const series = resp.data?.results ?? [];
 	if (series.length === 0 && page > 1) throw error(404, 'No series on this page');
 
+	// A custom-domain org's pages belong in that domain's own (org-scoped) sitemap:
+	// the sitemaps protocol only accepts URLs on the sitemap's own host, and the
+	// platform URL 301s there anyway. Entries on this host keep `baseUrl`.
 	const ctx = serverLinkContext(locals);
-	const urls = series.map((s) => {
-		// An org with an active custom domain is canonical there; the platform URL 301s to it.
-		const loc = `${orgOrigin(s.organization, ctx) ?? baseUrl}/events/${s.organization.slug}/series/${s.slug}`;
-		const lastmod = (s.updated_at ? new Date(s.updated_at) : new Date())
-			.toISOString()
-			.split('T')[0];
-		return `<url>
+	const onThisHost = (org: { slug: string; custom_domain?: string | null }): boolean => {
+		const origin = orgOrigin(org, ctx);
+		return origin === null || origin === baseUrl;
+	};
+	const urls = series
+		.filter((s) => onThisHost(s.organization))
+		.map((s) => {
+			const loc = `${baseUrl}/events/${s.organization.slug}/series/${s.slug}`;
+			const lastmod = (s.updated_at ? new Date(s.updated_at) : new Date())
+				.toISOString()
+				.split('T')[0];
+			return `<url>
   <loc>${escapeXml(loc)}</loc>
   <lastmod>${lastmod}</lastmod>
   <changefreq>weekly</changefreq>
   <priority>0.6</priority>
   ${img(s.cover_art ?? s.logo, s.name)}
 </url>`;
-	});
+		});
 
 	const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"

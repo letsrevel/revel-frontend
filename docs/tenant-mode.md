@@ -89,7 +89,7 @@ post-processes the response (see [Canonical redirects](#canonical-redirects-from
 | `/account/referral...`, `/account/developer-apps...`, `/account/connected-apps...` | 302 to the same path and query on the platform origin                   |
 | `api`, `auth`, `_app`, `.well-known`                                             | Allowed                                                                   |
 | `robots.txt`, `feed.xml`, `opensearch.xml`, `oembed`                             | Allowed (each handler is tenant-aware, see [SEO](#seo-on-tenant-hosts))   |
-| Anything starting with `sitemap`, `favicon` or `manifest`                        | Allowed                                                                   |
+| `sitemap.xml`, `sitemap-static.xml`, `sitemap-{events,series,orgs}-N.xml`, `favicon[-x].{png,ico,svg}`, `manifest.{json,webmanifest}` (anchored patterns, so a lookalike such as `/manifesto` is not matched) | Allowed |
 | `/org/{any}/admin...`                                                            | 302 to the same path and query on the platform origin                     |
 | `create-org`, `oauth`, `impersonate`                                             | 302 to the same path and query on the platform origin                     |
 | `/org/{other slug}`, `/events/{other slug}`, `/embed/{other slug}`               | 302 to `/`                                                                |
@@ -310,6 +310,11 @@ On a tenant host the site is the organization. The helpers are in `src/lib/seo/t
 | `/feed.xml`            | The org's upcoming events, titled `{Org} - Upcoming Events`, on the tenant origin                     |
 | `/opensearch.xml`      | 404 (it describes the platform-wide search)                                                           |
 | `/oembed`              | Another organization's URL gives 404; `provider_name` is the org                                      |
+
+On the platform, the events, series and orgs sitemaps leave out organizations with an active
+custom domain: their pages belong in that domain's own sitemap above (the sitemaps protocol only
+accepts URLs on the sitemap's host, and the platform URL 301s there anyway). The platform RSS feed
+does list them, with the canonical custom-domain link.
 
 `handleTenantHead` is tested against the real `src/app.html`, so changing the shell's head tags
 without updating the patterns fails a test.

@@ -155,9 +155,6 @@ export function downloadEventICalFile(event: ICalEvent, eventId?: string, filena
 }
 
 /**
- * Generate an iCal file from a Revel event schema
- */
-/**
  * Absolute URL for an org page, following the link rules (A/B/C): the org's
  * custom domain when it has one, the platform origin for an org without one
  * viewed from a tenant host (rule C), else the current origin.
@@ -171,6 +168,9 @@ function orgLink(
 	return /^https?:\/\//i.test(href) ? href : `${window.location.origin}${href}`;
 }
 
+/**
+ * Generate an iCal file from a Revel event schema
+ */
 export function generateICalFromRevelEvent(
 	event: {
 		id: string;

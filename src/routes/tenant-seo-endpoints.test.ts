@@ -265,11 +265,11 @@ describe('platform SEO links to custom-domain orgs', () => {
 		mockEnv.env.PLATFORM_HOSTS = undefined;
 	});
 
-	it('events sitemap: custom-domain org on its origin, others on the platform', async () => {
+	it('events sitemap: a custom-domain org is left to its own sitemap', async () => {
 		const body = await (
 			await call(sitemapEvents, onPlatform('/sitemap-events-1.xml', { params: { page: '1' } }))
 		).text();
-		expect(body).toContain(`<loc>${T}/events/acme/party</loc>`);
+		expect(body).not.toContain('/events/acme/party');
 		expect(body).toContain(`<loc>${P}/events/beta/other</loc>`);
 	});
 
@@ -277,7 +277,7 @@ describe('platform SEO links to custom-domain orgs', () => {
 		const body = await (
 			await call(sitemapSeries, onPlatform('/sitemap-series-1.xml', { params: { page: '1' } }))
 		).text();
-		expect(body).toContain(`<loc>${T}/events/acme/series/monthly</loc>`);
+		expect(body).not.toContain('/events/acme/series/monthly');
 		expect(body).toContain(`<loc>${P}/events/beta/series/weekly</loc>`);
 	});
 
@@ -285,7 +285,7 @@ describe('platform SEO links to custom-domain orgs', () => {
 		const body = await (
 			await call(sitemapOrgs, onPlatform('/sitemap-orgs-1.xml', { params: { page: '1' } }))
 		).text();
-		expect(body).toContain(`<loc>${T}/org/acme</loc>`);
+		expect(body).not.toContain('/org/acme<');
 		expect(body).toContain(`<loc>${P}/org/beta</loc>`);
 	});
 
