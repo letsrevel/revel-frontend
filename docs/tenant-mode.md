@@ -400,8 +400,9 @@ disagree. Terminate TLS for the platform and for custom domains at your proxy, a
 original host in `X-Forwarded-Host` and the scheme in `X-Forwarded-Proto`.
 
 **Which hosts go in `PLATFORM_HOSTS`.** Only the hosts the frontend itself serves as the platform.
-Any other host that reaches the frontend is looked up as a custom domain, and an unknown one gets a
-404. A host your proxy redirects before it reaches the frontend (a `www.` alias) does not need to be
+Any other host that reaches the frontend (except the loopback names, which are always the platform)
+is treated as a custom domain: a well-formed DNS name is looked up, and an unknown or malformed one
+gets a 404 (see [How a request becomes a tenant](#how-a-request-becomes-a-tenant)). A host your proxy redirects before it reaches the frontend (a `www.` alias) does not need to be
 listed, and neither does the API host. The Revel deployments use `letsrevel.io` in production and
 `beta.letsrevel.io` on beta.
 
