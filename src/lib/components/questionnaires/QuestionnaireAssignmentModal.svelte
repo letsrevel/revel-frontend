@@ -18,6 +18,7 @@
 	} from '$lib/api/generated';
 	import { invalidateAll } from '$app/navigation';
 	import { SvelteSet } from 'svelte/reactivity';
+	import { stripMarkup } from '$lib/seo';
 
 	interface Props {
 		open: boolean;
@@ -407,6 +408,7 @@
 					{:else}
 						<div class="space-y-2">
 							{#each filteredSeries as series (series.id)}
+								{@const descriptionText = stripMarkup(series.description)}
 								<button
 									type="button"
 									onclick={() => toggleSeries(series.id)}
@@ -436,9 +438,9 @@
 												{m['questionnaireAssignmentModal.seriesBadge']()}
 											</Badge>
 										</div>
-										{#if series.description}
+										{#if descriptionText}
 											<p class="mt-1 line-clamp-2 text-sm text-muted-foreground">
-												{series.description}
+												{descriptionText}
 											</p>
 										{/if}
 									</div>

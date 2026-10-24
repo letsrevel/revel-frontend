@@ -97,6 +97,24 @@ describe('EventSeriesCard', () => {
 		).toBeInTheDocument();
 	});
 
+	// Descriptions are markdown (#1093 editor); the card shows plain text.
+	it('shows a markdown description as plain text', () => {
+		render(EventSeriesCard, {
+			props: {
+				series: {
+					...mockEventSeries,
+					description: '# Seasonal Gatherings\n\nCelebrating **the seasons** together'
+				},
+				variant: 'standard'
+			}
+		});
+
+		expect(
+			screen.getByText('Seasonal Gatherings Celebrating the seasons together')
+		).toBeInTheDocument();
+		expect(screen.queryByText(/[#*]/)).not.toBeInTheDocument();
+	});
+
 	it('does not display description in compact variant', () => {
 		render(EventSeriesCard, {
 			props: {
