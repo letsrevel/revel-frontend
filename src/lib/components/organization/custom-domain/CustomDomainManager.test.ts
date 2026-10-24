@@ -108,6 +108,67 @@ describe('CustomDomainManager (#1058)', () => {
 		expect(toast.success).toHaveBeenCalled();
 	});
 
+	describe('Cloudflare DNS-only guidance and CNAME target', () => {
+		const WITH_CNAME: CustomDomain = {
+			...PENDING,
+			verification_records: [
+				...PENDING.verification_records,
+				{ type: 'cname', name: 'events.example.com', value: 'customers.revel.example' }
+			]
+		};
+
+		it('states DNS only in bold up front and on the CNAME card, without the duplicate section', async () => {
+			vi.mocked(getCustomDomain).mockResolvedValue(WITH_CNAME);
+			setup();
+			await settle();
+
+			const upFront = screen.getByTestId('cloudflare-dns-only');
+			expect(upFront).toHaveTextContent(/set the CNAME record to "DNS only" \(grey cloud\)/);
+			expect(upFront).toHaveTextContent(/Do not proxy it \(orange cloud\), now or later/);
+			expect(upFront.querySelector('strong')).not.toBeNull();
+
+			const cards = screen.getAllByTestId('dns-record');
+			expect(cards).toHaveLength(3);
+			const warning = within(cards[2]).getByTestId('cname-cloudflare-warning');
+			expect(warning.querySelector('strong')).toHaveTextContent(
+				/set this record to "DNS only" \(grey cloud\)\. Do not proxy it, now or later/
+			);
+			expect(within(cards[0]).queryByTestId('cname-cloudflare-warning')).not.toBeInTheDocument();
+
+			expect(
+				screen.queryByRole('heading', { name: 'Point your domain to Revel' })
+			).not.toBeInTheDocument();
+			expect(screen.queryByLabelText('Address to point to')).not.toBeInTheDocument();
+		});
+
+		it('puts the target/value hint on the CNAME card, linked to the value field', async () => {
+			vi.mocked(getCustomDomain).mockResolvedValue(WITH_CNAME);
+			setup();
+			await settle();
+
+			const card = screen.getAllByTestId('dns-record')[2];
+			const hint = within(card).getByTestId('cname-value-hint');
+			expect(hint).toHaveTextContent(
+				'If your provider asks for a "target" or "value", this is it.'
+			);
+			expect(within(card).getByLabelText('Record 3 (cname) value')).toHaveAccessibleDescription(
+				/this is it/
+			);
+		});
+
+		it('falls back to the standalone section when the records have no CNAME', async () => {
+			vi.mocked(getCustomDomain).mockResolvedValue(PENDING);
+			setup();
+			await settle();
+
+			expect(
+				screen.getByRole('heading', { name: 'Point your domain to Revel' })
+			).toBeInTheDocument();
+			expect(screen.getByLabelText('Address to point to')).toHaveValue('customers.revel.example');
+			expect(screen.queryByTestId('cname-cloudflare-warning')).not.toBeInTheDocument();
+		});
+	});
+
 	it('pending without DNS details: shows the platform-team note instead of the steps', async () => {
 		vi.mocked(getCustomDomain).mockResolvedValue({
 			...PENDING,
