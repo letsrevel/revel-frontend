@@ -6364,6 +6364,8 @@
 		"salesPaused": "Sales paused",
 		"overEventCapacity": "Over event capacity",
 		"overEventCapacityNote": "Event capped at {capacity}: at most {capacity} can sell",
+		"remainingEventCap": "{available} of {total} remaining (event cap)",
+		"remainingEventCapUnlimited": "{available} remaining (event cap)",
 		"pauseSales": "Pause sales",
 		"resumeSales": "Resume sales",
 		"pauseSalesFor": "Pause sales for {name}",
