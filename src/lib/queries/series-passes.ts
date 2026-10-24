@@ -1,4 +1,5 @@
 import type { QueryClient } from '@tanstack/svelte-query';
+import type { TenantOrgFilter } from '$lib/utils/tenant-filter';
 
 // Canonical query-key vocabulary for series passes (buyer + organizer surfaces).
 //
@@ -23,9 +24,12 @@ export const seriesPassQueryKeys = {
 
 	// Buyer: my held passes (paginated).
 	minePrefix: ['series-passes', 'mine'] as const,
-	mine: (page: number) => ['series-passes', 'mine', { page }] as const,
+	// `org` is the tenant org filter (#1056): `{}` on the platform host, so tenant
+	// and platform caches never share a key. Both stay under `minePrefix`.
+	mine: (page: number, org: TenantOrgFilter = {}) =>
+		['series-passes', 'mine', { page, ...org }] as const,
 	// Buyer: the full set, for collapsing pass-derived tickets into their pass.
-	mineAll: ['series-passes', 'mine', 'all'] as const,
+	mineAll: (org: TenantOrgFilter = {}) => ['series-passes', 'mine', 'all', org] as const,
 
 	// Organizer: passes configured on a series (admin schema, includes coverage).
 	adminList: (seriesId: SeriesId) => ['series-passes', 'admin', seriesId] as const,

@@ -6,7 +6,7 @@ import { env } from '$env/dynamic/private';
 import { i18nHandle } from '$lib/i18n';
 import { tokenRefresh } from '$lib/api/generated';
 import { API_BASE_URL } from '$lib/config/api';
-import { applyServerAcceptEncoding } from '$lib/api/encoding';
+import { prepareApiRequest } from '$lib/server/tenant-fetch';
 import { appendCspApiOrigin, relaxCspFrameAncestors } from '$lib/server/csp';
 import { ROOT_ATTRIBUTES_PLACEHOLDER, rootAttributesFor } from '$lib/server/embed';
 import { isEmbedPath } from '$lib/embed/constants';
@@ -18,6 +18,10 @@ import {
 	getRememberMeCookieOptions
 } from '$lib/utils/cookies';
 import { log } from '$lib/server/logger';
+import { sessionRememberMe } from '$lib/server/session';
+import { handleTenant } from '$lib/server/tenant';
+import { handleTenantRouting } from '$lib/server/tenant-routing';
+import { handleTenantHead } from '$lib/server/tenant-head';
 import { startMetricsServer } from '$lib/server/metrics';
 import { handleRequestLogging, handleSsrError } from '$lib/server/request-logging';
 
@@ -26,16 +30,7 @@ import { handleRequestLogging, handleSsrError } from '$lib/server/request-loggin
 // custom collectors used by the request-logging and error hooks.
 startMetricsServer();
 
-/**
- * Server-side hooks for authentication and internationalization
- *
- * This hook:
- * - Decodes the access token to populate event.locals.user
- * - Refreshes expired access tokens using the refresh token (for cold starts)
- * - Validates token structure
- * - Clears invalid tokens
- * - Detects and sets user language preference
- */
+/** Server-side hooks: tenant host, auth (JWT decode/refresh), i18n, CSP, caching. */
 
 /**
  * Zod schema for the JWT claims we rely on. Every field is optional because the
@@ -105,7 +100,7 @@ async function refreshSession(
 	event: Parameters<Handle>[0]['event'],
 	refreshToken: string
 ): Promise<boolean> {
-	const rememberMe = event.cookies.get('remember_me') === 'true';
+	const rememberMe = sessionRememberMe(event.cookies.get('remember_me') === 'true', event.locals);
 
 	try {
 		// `event.fetch` (not the global) so `handleFetch` below rewrites this call
@@ -421,12 +416,18 @@ const handleAuthGuard: Handle = async ({ event, resolve }) => {
 /**
  * Combine request logging, token capture, authentication, i18n, and preload
  * optimization hooks. handleRequestLogging is FIRST so it wraps and times the
- * whole chain.
+ * whole chain. handleTenant is SECOND: it must run before anything that sets
+ * cookies, reads the host or renders (a stray host gets a bare 404/503, never
+ * the app shell), yet inside logging so those rejections are still timed/logged.
+ * handleTenantRouting is THIRD (see tenant-routing.ts for what it does and why).
  */
 export const handle = sequence(
 	handleRequestLogging,
+	handleTenant,
+	handleTenantRouting,
 	handleTokenCapture,
 	handleEmbedShell,
+	handleTenantHead,
 	i18nHandle(),
 	handleAuth,
 	handleAuthGuard,
@@ -458,25 +459,23 @@ export const handleError = handleSsrError;
  */
 export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
 	const internalApiUrl = env.INTERNAL_API_URL;
-	const isApi = request.url.startsWith(API_BASE_URL);
-	if (isApi) applyServerAcceptEncoding(request); // Node can't decode zstd
+	const isApi = prepareApiRequest(event, request);
 	if (!internalApiUrl || !isApi) {
 		return fetch(request);
 	}
 
-	// Buffer the body instead of re-wrapping the Request directly:
-	// `new Request(url, request)` turns the body into a stream, which undici
-	// sends with `Transfer-Encoding: chunked` and no Content-Length. Django's
-	// WSGI layer reads `CONTENT_LENGTH or 0` bytes, so every POST/PATCH body
-	// arrived empty (422 "Field required" on login/register). The public path
-	// never hit this because Caddy/Cloudflare buffer the request and restore
-	// Content-Length; the direct internal path talks to gunicorn unbuffered.
+	// Buffer the body instead of re-wrapping the Request: `new Request(url, request)`
+	// streams it (chunked, no Content-Length), Django's WSGI layer then reads 0 bytes
+	// and every POST/PATCH arrived empty (422 on login/register). The public path
+	// never hit this: Caddy/Cloudflare restore Content-Length; gunicorn here is direct.
 	const body =
 		request.method === 'GET' || request.method === 'HEAD' ? undefined : await request.arrayBuffer();
 	const rewritten = new Request(internalApiUrl + request.url.slice(API_BASE_URL.length), {
 		method: request.method,
 		headers: request.headers,
-		body
+		body,
+		// Without the caller's signal the 3 s tenant-lookup timeout never fires in prod.
+		signal: request.signal
 	});
 	// The visitor's request is always HTTPS in production; without this header
 	// Django's SECURE_SSL_REDIRECT 301s internal plain-HTTP calls to

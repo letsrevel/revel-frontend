@@ -28,7 +28,7 @@ COPY . .
 # single prebuilt image can target any deployment (see #396):
 #   - PUBLIC_API_URL via $env/dynamic/public
 #   - PUBLIC_VERSION via $env/dynamic/public (set on the runtime stage below)
-#   - ORIGIN by adapter-node
+#   - ORIGIN / HOST_HEADER / PROTOCOL_HEADER by adapter-node (see below)
 
 # Compile Paraglide i18n translations
 # Generates runtime files from messages/*.json (en, de, it)
@@ -71,7 +71,26 @@ ENV PUBLIC_VERSION=${PUBLIC_VERSION}
 # backend; it is read at runtime via $env/dynamic/public, so the same image
 # works for any deployment. Falls back to http://localhost:8000 if unset.
 #   - PUBLIC_API_URL  (e.g. https://api.example.com)
-#   - ORIGIN          (public origin of this frontend, required by adapter-node)
+#   - HOST_HEADER=x-forwarded-host and PROTOCOL_HEADER=x-forwarded-proto
+#                     (multi-host / tenant deploys: adapter-node derives the origin
+#                     from the proxy headers per request, so CSRF checks, url.origin
+#                     and form actions follow the real host. A request missing the
+#                     headers, e.g. the localhost HEALTHCHECK, falls back to the Host
+#                     header and https.)
+#   - ORIGIN          (single-host deploys only: pins the public origin. Do NOT set it
+#                     together with the two headers above; it would win.)
+#   - PLATFORM_HOSTS  (comma-separated platform hostnames, no ports. Tenant mode is
+#                     off while unset. Any other host is resolved as an organization
+#                     custom domain; unknown hosts get 404. localhost/127.0.0.1/::1
+#                     are always platform.)
+#   - PLATFORM_ORIGIN (optional; where platform-only paths such as /org/*/admin are sent
+#                     from a tenant host, e.g. https://app.example.com. Defaults to
+#                     https:// + the first PLATFORM_HOSTS entry.)
+#   - PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE (optional, runtime, also used client-side; how an
+#                     org's custom domain becomes an absolute URL. Must start with
+#                     http:// or https:// and contain {hostname}. Default
+#                     https://{hostname}; dev/E2E: http://{hostname}:5173. Keep in sync with
+#                     the backend's CUSTOM_DOMAIN_URL_TEMPLATE. Invalid = default.)
 
 # Switch to non-root user
 USER appuser

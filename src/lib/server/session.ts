@@ -6,6 +6,16 @@ import {
 } from '$lib/utils/cookies';
 import { claimPendingTokens, setClaimFlashCookie } from '$lib/server/token-claim';
 
+/**
+ * Whether the session may outlive the browser. On a tenant (custom-domain)
+ * host it never may: the org owner controls that domain's DNS and could
+ * repoint it to receive the host-only refresh cookie of returning visitors,
+ * so the refresh cookie stays session-only whatever "remember me" says.
+ */
+export function sessionRememberMe(rememberMe: boolean, locals: { tenant?: unknown }): boolean {
+	return rememberMe && !locals.tenant;
+}
+
 export interface SessionTokens {
 	access: string;
 	refresh: string;

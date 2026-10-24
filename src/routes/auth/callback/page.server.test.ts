@@ -3,7 +3,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 vi.mock('$lib/api/client', () => ({
 	authOidcExchange: vi.fn()
 }));
-vi.mock('$lib/server/session', () => ({
+vi.mock('$lib/server/session', async (importOriginal) => ({
+	...(await importOriginal<typeof import('$lib/server/session')>()),
 	establishSession: vi.fn().mockResolvedValue(undefined)
 }));
 vi.mock('$lib/server/logger', () => ({
@@ -16,8 +17,9 @@ import { load } from './+page.server';
 
 const mockedExchange = vi.mocked(authOidcExchange);
 
-function loadArgs(search: string) {
+function loadArgs(search: string, tenant?: unknown) {
 	return {
+		locals: { tenant },
 		url: new URL(`http://localhost:5173/auth/callback${search}`),
 		cookies: { set: vi.fn(), get: vi.fn(), delete: vi.fn() },
 		fetch: vi.fn()
@@ -25,9 +27,12 @@ function loadArgs(search: string) {
 }
 
 /** Run load and return the thrown redirect. */
-async function loadRedirect(search: string): Promise<{ status: number; location: string }> {
+async function loadRedirect(
+	search: string,
+	tenant?: unknown
+): Promise<{ status: number; location: string }> {
 	try {
-		await load(loadArgs(search));
+		await load(loadArgs(search, tenant));
 	} catch (err) {
 		const redirect = err as { status?: number; location?: string };
 		if (typeof redirect.status === 'number' && typeof redirect.location === 'string') {
@@ -82,6 +87,23 @@ describe('/auth/callback load', () => {
 			expect.anything()
 		);
 		expect(redirect).toEqual({ status: 303, location: '/events' });
+	});
+
+	it('never persists the session on a tenant host', async () => {
+		mockedExchange.mockResolvedValue({
+			data: { username: 'u', access: 'acc', refresh: 'ref', return_url: '/events' },
+			error: undefined,
+			response: { ok: true, status: 200 }
+		} as never);
+
+		await loadRedirect('?token=good', { slug: 'acme' });
+
+		expect(establishSession).toHaveBeenCalledWith(
+			expect.anything(),
+			{ access: 'acc', refresh: 'ref' },
+			false,
+			expect.anything()
+		);
 	});
 
 	it('sanitizes a non-relative return_url through safeReturnUrl', async () => {

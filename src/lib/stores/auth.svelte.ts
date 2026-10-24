@@ -10,6 +10,8 @@ import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '$lib/schemas/profil
 import { getImpersonationInfo, type ImpersonationInfo } from '$lib/utils/impersonation';
 import { decodeToken } from './jwt';
 import { requestTokenRefresh } from './auth-refresh';
+import { clearGuestHoldToken } from '$lib/utils/guest-hold';
+import { hasAnonymousHolds } from '$lib/utils/seat-holds';
 
 /**
  * Auth store using Svelte 5 Runes
@@ -194,6 +196,7 @@ class AuthStore {
 
 			// Store access token in memory
 			this._accessToken = data.access;
+			this.dropGuestHoldTokenUnlessReleasing();
 
 			// Fetch user data and permissions
 			await this.fetchUserData();
@@ -201,6 +204,15 @@ class AuthStore {
 		} finally {
 			this._isLoading = false;
 		}
+	}
+
+	/**
+	 * A guest-hold token (#1072) is meaningless once signed in. If anonymous
+	 * holds are still recorded, `releaseAnonymousHolds()` (which runs right
+	 * after sign-in and needs the token to release them) clears it instead.
+	 */
+	private dropGuestHoldTokenUnlessReleasing(): void {
+		if (!hasAnonymousHolds()) clearGuestHoldToken();
 	}
 
 	/**
@@ -224,6 +236,7 @@ class AuthStore {
 
 			// Store access token in memory
 			this._accessToken = data.access;
+			this.dropGuestHoldTokenUnlessReleasing();
 
 			// Fetch user data and permissions
 			await this.fetchUserData();
@@ -251,6 +264,7 @@ class AuthStore {
 		this._user = null;
 		this._accessToken = null;
 		this._permissions = null;
+		clearGuestHoldToken();
 
 		// Release any request waiting on the bootstrap gate: the session is
 		// gone, so gated requests should proceed and surface their real 401s.

@@ -27,7 +27,8 @@ function loadArgs(search: string) {
 		url: new URL(`http://localhost:5173/verify${search}`),
 		request: new Request(`http://localhost:5173/verify${search}`),
 		cookies: { set: vi.fn(), get: vi.fn(), delete: vi.fn() },
-		fetch: vi.fn()
+		fetch: vi.fn(),
+		locals: { tenant: null }
 	} as unknown as Parameters<typeof load>[0];
 }
 

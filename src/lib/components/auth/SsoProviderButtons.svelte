@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { SsoProviderSchema } from '$lib/api/generated/types.gen';
+	import { page } from '$app/state';
 	import { API_BASE_URL } from '$lib/config/api';
 	import * as m from '$lib/paraglide/messages.js';
 
@@ -11,13 +12,18 @@
 
 	let { providers, returnUrl = null }: Props = $props();
 
+	// The OIDC callback is pinned to the platform host, so SSO is not offered on an
+	// organization's custom domain (#1056). Hiding the whole block also drops the
+	// "or" divider.
+	const onTenantHost = $derived(!!page.data?.tenant);
+
 	function startUrl(key: string): string {
 		const base = `${API_BASE_URL}/api/auth/oidc/${encodeURIComponent(key)}/start`;
 		return returnUrl ? `${base}?return_url=${encodeURIComponent(returnUrl)}` : base;
 	}
 </script>
 
-{#if providers.length > 0}
+{#if providers.length > 0 && !onTenantHost}
 	<div class="space-y-3">
 		<div class="flex items-center gap-3">
 			<div class="h-px flex-1 bg-border" aria-hidden="true"></div>

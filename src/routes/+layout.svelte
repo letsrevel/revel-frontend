@@ -281,8 +281,10 @@
 	{/if}
 </svelte:head>
 
-<!-- Outside the embed branch: embed documents and the app shell both get org colors. -->
-<OrgBrandStyle theme={page.data.brandTheme} />
+<!-- Outside the embed branch: embed documents and the app shell both get org colors.
+	On a custom domain (tenant mode, #1055) the whole site is the org's, so its theme
+	applies on every page; an org-scoped page's own theme still wins. -->
+<OrgBrandStyle theme={page.data.brandTheme ?? page.data.tenant?.brand_theme ?? null} />
 
 {#if data.embed}
 	<!--

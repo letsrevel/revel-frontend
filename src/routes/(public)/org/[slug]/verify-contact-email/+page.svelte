@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { page as appPage } from '$app/state';
+	import { withSiteName } from '$lib/seo/tenant';
 	import type { PageData } from './$types';
 	import { CheckCircle, XCircle, Loader2 } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
@@ -14,9 +16,13 @@
 
 <svelte:head>
 	<title>
-		{data.success
-			? m['orgVerifyContactEmail.successTitle']()
-			: m['orgVerifyContactEmail.failureTitle']()} - Revel
+		{withSiteName(
+			data.success
+				? m['orgVerifyContactEmail.successTitle']()
+				: m['orgVerifyContactEmail.failureTitle'](),
+			appPage.data.tenant,
+			' - '
+		)}
 	</title>
 	<meta name="description" content={m['orgVerifyContactEmail.pageDescription']()} />
 </svelte:head>

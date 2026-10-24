@@ -5,9 +5,9 @@ import { error } from '@sveltejs/kit';
 import { log } from '$lib/server/logger';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ url, request, fetch }) => {
+export const load: PageServerLoad = async ({ url, request, fetch, locals }) => {
 	const lang = resolveLang(request);
-	const seo = buildSeo({ kind: 'legal', url, lang, doc: 'terms' });
+	const seo = buildSeo({ kind: 'legal', url, lang, doc: 'terms', tenant: locals.tenant });
 
 	try {
 		const legal = await apiApiLegal({ fetch });

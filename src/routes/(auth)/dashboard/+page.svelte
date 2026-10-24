@@ -31,6 +31,7 @@
 	} from '$lib/components/dashboard/dashboard-permissions';
 	import { parseCalendarParams, getCurrentPeriod } from '$lib/utils/calendar';
 	import { page } from '$app/stores';
+	import { tenantOrgFilter } from '$lib/utils/tenant-filter';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import type { EventInListSchema } from '$lib/api/generated/types.gen';
@@ -46,6 +47,8 @@
 		Bookmark
 	} from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
+	import { page as appPage } from '$app/state';
+	import { brandName } from '$lib/seo/tenant';
 
 	const user = $derived(authStore.user);
 	const accessToken = $derived(authStore.accessToken);
@@ -68,15 +71,19 @@
 	const calendarParams = $derived(parseCalendarParams($page.url.searchParams));
 	let selectedEvent = $state<EventInListSchema | null>(null);
 
+	// On a tenant host every "my" call is scoped to the tenant org (#1056).
+	const orgFilter = $derived(tenantOrgFilter($page.data));
+
 	// Check if there are ANY events (with default "All" filter) to determine section visibility
 	const hasAnyEventsQuery = createQuery(() => ({
-		queryKey: ['dashboard-has-events'],
+		queryKey: ['dashboard-has-events', orgFilter],
 		queryFn: async () => {
 			if (!accessToken) return false;
 
 			const response = await dashboardDashboardEvents({
 				headers: { Authorization: `Bearer ${accessToken}` },
 				query: {
+					...orgFilter,
 					...filterPresets[0].filters, // Use "All" filter
 					page_size: 1 // Only need to know if at least 1 exists
 				}
@@ -89,13 +96,14 @@
 
 	// Fetch "Your Events" with active filters
 	const yourEventsQuery = createQuery(() => ({
-		queryKey: ['dashboard-your-events', yourEventsFilters, ticketType],
+		queryKey: ['dashboard-your-events', yourEventsFilters, ticketType, orgFilter],
 		queryFn: async () => {
 			if (!accessToken) return [];
 
 			const response = await dashboardDashboardEvents({
 				headers: { Authorization: `Bearer ${accessToken}` },
 				query: {
+					...orgFilter,
 					...yourEventsFilters,
 					requires_ticket:
 						ticketType === 'ticketed' ? true : ticketType === 'free' ? false : undefined,
@@ -117,7 +125,8 @@
 			calendarParams.month,
 			calendarParams.week,
 			yourEventsFilters,
-			ticketType
+			ticketType,
+			orgFilter
 		],
 		queryFn: async () => {
 			if (!accessToken) return [];
@@ -125,6 +134,7 @@
 			const result = await dashboardDashboardCalendar({
 				headers: { Authorization: `Bearer ${accessToken}` },
 				query: {
+					...orgFilter,
 					week: calendarParams.view === 'week' ? calendarParams.week : undefined,
 					month: calendarParams.view === 'month' ? calendarParams.month : undefined,
 					year: calendarParams.year,
@@ -146,13 +156,14 @@
 
 	// Fetch user's organizations (owner/staff/member)
 	const organizationsQuery = createQuery(() => ({
-		queryKey: ['dashboard-organizations'],
+		queryKey: ['dashboard-organizations', orgFilter],
 		queryFn: async () => {
 			if (!accessToken) return [];
 
 			const response = await dashboardDashboardOrganizations({
 				headers: { Authorization: `Bearer ${accessToken}` },
 				query: {
+					...orgFilter,
 					owner: true,
 					staff: true,
 					member: true,
@@ -167,10 +178,11 @@
 
 	// Fetch upcoming public events (from general endpoint)
 	const upcomingEventsQuery = createQuery(() => ({
-		queryKey: ['upcoming-events'],
+		queryKey: ['upcoming-events', orgFilter],
 		queryFn: async () => {
 			const response = await eventpublicdiscoveryListEvents({
 				query: {
+					...orgFilter,
 					page_size: 6
 				}
 			});
@@ -182,13 +194,14 @@
 
 	// Fetch active tickets count
 	const activeTicketsQuery = createQuery(() => ({
-		queryKey: ['dashboard-active-tickets-count'],
+		queryKey: ['dashboard-active-tickets-count', orgFilter],
 		queryFn: async () => {
 			if (!accessToken) return 0;
 
 			const response = await dashboardDashboardTickets({
 				headers: { Authorization: `Bearer ${accessToken}` },
 				query: {
+					...orgFilter,
 					status: 'active' as const,
 					page_size: 1
 				}
@@ -201,13 +214,14 @@
 
 	// Fetch pending invitations count
 	const pendingInvitationsQuery = createQuery(() => ({
-		queryKey: ['dashboard-pending-invitations-count'],
+		queryKey: ['dashboard-pending-invitations-count', orgFilter],
 		queryFn: async () => {
 			if (!accessToken) return 0;
 
 			const response = await dashboardDashboardInvitations({
 				headers: { Authorization: `Bearer ${accessToken}` },
 				query: {
+					...orgFilter,
 					include_past: false,
 					page_size: 1
 				}
@@ -221,13 +235,14 @@
 	// Fetch upcoming RSVPs count (Going + Maybe — a tentative RSVP is the one
 	// users are most likely to forget, so it must be surfaced too).
 	const upcomingRsvpsQuery = createQuery(() => ({
-		queryKey: ['dashboard-upcoming-rsvps-count'],
+		queryKey: ['dashboard-upcoming-rsvps-count', orgFilter],
 		queryFn: async () => {
 			if (!accessToken) return 0;
 
 			const response = await dashboardDashboardRsvps({
 				headers: { Authorization: `Bearer ${accessToken}` },
 				query: {
+					...orgFilter,
 					status: ['yes', 'maybe'],
 					include_past: false,
 					page_size: 1
@@ -254,6 +269,14 @@
 	const canOrganizeEvents = $derived(() => userCanOrganizeEvents(permissions));
 	const hasAdminPermissions = (orgId: string) => userHasAdminPermissions(permissions, orgId);
 	const ownsOrganization = () => userOwnsOrganization(permissions);
+
+	// Tenant host: org admin lives on the platform and the session is separate. No
+	// handoff token on purpose: a tenant-origin token exchange would let whoever
+	// controls the tenant domain's DNS turn stolen tenant sessions into platform
+	// sessions that outlive the domain. So the user signs in there once; say so.
+	const adminOrgCount = $derived(organizations.filter((org) => hasAdminPermissions(org.id)).length);
+	const showPlatformAdminHint = $derived(!!appPage.data.tenant && adminOrgCount === 1);
+	const platformAdminHintId = $derived(showPlatformAdminHint ? 'platform-admin-hint' : undefined);
 
 	// The quick-action chips sit on the SATURATED welcome band, which sets
 	// `text-secondary-foreground` on everything inside it. A chip painted
@@ -309,7 +332,7 @@
 </script>
 
 <svelte:head>
-	<title>{m['userMenu.dashboard']()} - Revel</title>
+	<title>{m['userMenu.dashboard']()} - {brandName(appPage.data.tenant)}</title>
 	<meta name="description" content={m['dashboard.pageSubtitle']()} />
 </svelte:head>
 
@@ -339,6 +362,7 @@
 						slug: organizations.find((org) => hasAdminPermissions(org.id))?.slug ?? ''
 					})}
 					class={secondaryAction}
+					aria-describedby={platformAdminHintId}
 				>
 					<Calendar class="h-4 w-4" aria-hidden="true" />
 					<span>{m['dashboard.createEventButton']()}</span>
@@ -371,6 +395,7 @@
 					slug: organizations.find((org) => hasAdminPermissions(org.id))?.slug ?? ''
 				})}
 				class={secondaryAction}
+				aria-describedby={platformAdminHintId}
 			>
 				<Shield class="h-4 w-4" aria-hidden="true" />
 				<span>{m['dashboard.adminButton']()}</span>
@@ -387,6 +412,13 @@
 				<PlusCircle class="h-4 w-4" aria-hidden="true" />
 				<span>{m['dashboard.createOrganizationButton']()}</span>
 			</a>
+		{/if}
+
+		{#if showPlatformAdminHint}
+			<!-- Sits on the band: inherits its audited foreground (muted-foreground is not audited here). -->
+			<p id="platform-admin-hint" class="basis-full text-xs">
+				{m['dashboard.platformAdminHint']()}
+			</p>
 		{/if}
 	{/snippet}
 	<section class="bg-secondary text-secondary-foreground">

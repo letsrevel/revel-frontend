@@ -1,3 +1,4 @@
+import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
 /**
@@ -6,7 +7,12 @@ import type { RequestHandler } from './$types';
  * https://developer.mozilla.org/en-US/docs/Web/OpenSearch
  * https://github.com/dewitt/opensearch
  */
-export const GET: RequestHandler = async ({ url }) => {
+export const GET: RequestHandler = async ({ url, locals }) => {
+	// Tenant host (#1057): this description searches the platform-wide event
+	// directory (`/events?search=`), which a tenant host does not serve, and an
+	// org-scoped variant would need an org search page that does not exist. 404.
+	if (locals.tenant) error(404, 'Not found');
+
 	const baseUrl = url.origin;
 
 	const openSearchXml = `<?xml version="1.0" encoding="UTF-8"?>

@@ -4,7 +4,8 @@ import { GET } from './+server';
 
 async function fetchSitemap(): Promise<string> {
 	const response = await GET({
-		url: new URL('https://letsrevel.io/sitemap-static.xml')
+		url: new URL('https://letsrevel.io/sitemap-static.xml'),
+		locals: { tenant: null }
 	} as unknown as Parameters<typeof GET>[0]);
 	return response.text();
 }

@@ -5,6 +5,7 @@
 	import { formatEventDate, formatEventDateRange } from '$lib/utils/date';
 	import { cityPartsNotIn, getEventFallbackGradient, getEventCoverArt } from '$lib/utils/event';
 	import { asHttpUrl, getImageUrl } from '$lib/utils/url';
+	import { page } from '$app/state';
 	import { downloadRevelEventICalFile } from '$lib/utils/ical';
 	import { MapPin, Calendar, Share2, ExternalLink } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
@@ -75,7 +76,7 @@
 
 	// Download iCal file for this event
 	function handleDownloadCalendar(): void {
-		downloadRevelEventICalFile(event);
+		downloadRevelEventICalFile(event, page.data);
 	}
 </script>
 

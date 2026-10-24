@@ -71,6 +71,11 @@ export const PERSONAS = {
 		'test.member@example.com',
 		'Eligibility-matrix org member, invited to its private test event'
 	),
+	tenantOwner: persona(
+		'tenantOwner',
+		'tenant.owner@example.com',
+		'Owns the custom-domain fixtures (j30): tenant-test-org (tenant.localhost), tenant-paid-org (paid.localhost) and domain-setup-org (custom domains enabled, no domain yet)'
+	),
 	compliance: persona(
 		'compliance',
 		'test.compliance@example.com',

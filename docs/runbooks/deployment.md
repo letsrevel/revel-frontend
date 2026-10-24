@@ -14,7 +14,7 @@ This document describes how to deploy the Revel Frontend application using Docke
 
 ```bash
 # Build the Docker image.
-# NOTE: PUBLIC_API_URL and ORIGIN are read at RUNTIME (issue #396), not baked
+# NOTE: PUBLIC_API_URL, ORIGIN and the tenant-mode variables are read at RUNTIME (issue #396), not baked
 # into the bundle — set them when you run the container (see below). The same
 # image therefore works against any backend. Only PUBLIC_VERSION (shown in the
 # footer) is embedded at build time.
@@ -46,6 +46,17 @@ docker run -p 3000:3000 \
   -e ORIGIN=https://revel.example.com \
   -e NODE_ENV=production \
   revel-frontend:latest
+
+# Multi-host (organization custom domains): no ORIGIN, derive it per request
+docker run -p 3000:3000 \
+  -e PUBLIC_API_URL=https://api.revel.example.com \
+  -e HOST_HEADER=x-forwarded-host \
+  -e PROTOCOL_HEADER=x-forwarded-proto \
+  -e PLATFORM_HOSTS=revel.example.com \
+  -e PLATFORM_ORIGIN=https://revel.example.com \
+  -e PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE='https://{hostname}' \
+  -e NODE_ENV=production \
+  revel-frontend:latest
 ```
 
 ### Environment Variables
@@ -55,10 +66,21 @@ docker run -p 3000:3000 \
 | `PUBLIC_API_URL`             | Backend API base URL (runtime)                                            | `http://localhost:8000` | Yes      |
 | `PUBLIC_VERSION`             | Frontend version displayed in footer (build-time)                         | `dev`                   | No       |
 | `PUBLIC_HIDE_SOLUTIONS_FOOTER` | Hide the footer's "Solutions" marketing column (runtime); `true` to hide | unset (shown)           | No       |
-| `ORIGIN`                     | SvelteKit origin for CSRF protection (runtime)                            | `http://localhost:3000` | Yes      |
+| `ORIGIN`                     | Pins the public origin used for the CSRF same-origin check, `url.origin` and form actions (runtime). **Single-host deploys only.** When set it wins over the two headers below, so leave it unset for multi-host | unset (origin derived from the request) | Single-host |
+| `HOST_HEADER`                | Header carrying the public host, e.g. `x-forwarded-host`. Multi-host (custom domains) deploys; replaces `ORIGIN` | unset | Multi-host |
+| `PROTOCOL_HEADER`            | Header carrying the public scheme, e.g. `x-forwarded-proto`. Pair with `HOST_HEADER`; the scheme is `https` when the header is absent | unset | Multi-host |
+| `PLATFORM_HOSTS`             | Comma-separated platform hostnames, no ports, case-insensitive. Unset turns tenant mode off: no custom-domain redirect, link rewrite or route scoping happens, even if the backend returns a `custom_domain`. Any other host is resolved as an organization custom domain (unknown: 404; backend down: 503). `localhost`, `127.0.0.1` and `::1` are always platform | unset | Multi-host |
+| `PLATFORM_ORIGIN`            | Origin (`https://app.example.com`) that platform-only paths (`/org/*/admin`, `/create-org`, `/oauth/*`, `/impersonate`) are redirected to from a tenant host, and that "Powered by Revel" and links to organizations without a custom domain (from a tenant host) point to. Shared with the client as `customDomains.platformOrigin` | `https://` + first `PLATFORM_HOSTS` entry | No |
+| `PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE` | URL template for absolute custom-domain links, 301s and SEO canonicals. Must start with `http://` or `https://` and contain `{hostname}`; invalid values fall back to the default and log once. Public runtime env (read in the browser too). Keep in sync with the backend's `CUSTOM_DOMAIN_URL_TEMPLATE`; dev/E2E use `http://{hostname}:5173` | `https://{hostname}` | No |
 | `PORT`                       | Server port                                                               | `3000`                  | No       |
 | `HOST`                       | Server host                                                               | `0.0.0.0`               | No       |
 | `NODE_ENV`                   | Node environment                                                          | `production`            | No       |
+
+`ORIGIN` has no default. Left unset, adapter-node builds the origin from the `Host` header and
+assumes `https`. A plain-HTTP single-host setup therefore needs `ORIGIN=http://...`.
+
+Custom domains, DNS and TLS are covered in [`../tenant-mode.md`](../tenant-mode.md) (frontend
+behavior) and the backend operator docs.
 
 #### Hiding the footer's Solutions column
 
@@ -177,6 +199,31 @@ services:
       retries: 3
 ```
 
+#### Multi-host variant (custom domains)
+
+Use this when organizations are served on their own domains. Do **not** set `ORIGIN`: it would win
+and pin every host to the platform. The reverse proxy in front must send the original host and
+scheme in `X-Forwarded-Host` and `X-Forwarded-Proto` (and overwrite any values from the client).
+
+```yaml
+services:
+  frontend:
+    image: ghcr.io/letsrevel/revel-frontend:latest
+    ports:
+      - '3000:3000'
+    environment:
+      - PUBLIC_API_URL=https://api.revel.example.com
+      - HOST_HEADER=x-forwarded-host
+      - PROTOCOL_HEADER=x-forwarded-proto
+      - PLATFORM_HOSTS=revel.example.com
+      - PLATFORM_ORIGIN=https://revel.example.com
+      - PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE=https://{hostname}
+    restart: unless-stopped
+```
+
+The health check above keeps working: `localhost` is always a platform host, and a request without
+the forwarded headers falls back to the `Host` header.
+
 ### Kubernetes Example
 
 ```yaml
@@ -230,6 +277,28 @@ spec:
   type: LoadBalancer
 ```
 
+For the multi-host variant, replace the `ORIGIN` entry in `env` with:
+
+```yaml
+- name: HOST_HEADER
+  value: 'x-forwarded-host'
+- name: PROTOCOL_HEADER
+  value: 'x-forwarded-proto'
+- name: PLATFORM_HOSTS
+  value: 'revel.example.com'
+- name: PLATFORM_ORIGIN
+  value: 'https://revel.example.com'
+- name: PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE
+  value: 'https://{hostname}'
+```
+
+Your ingress must forward `X-Forwarded-Host` and `X-Forwarded-Proto` and route custom-domain hostnames
+to this service.
+
+What the proxy has to do for custom domains (overwrite the forwarded headers, an on-demand TLS
+catch-all, per-site HSTS, the CNAME target, Turnstile hostnames) is in
+[Reverse proxy and TLS](../tenant-mode.md#reverse-proxy-and-tls).
+
 ## Health Checks
 
 The Docker image includes a built-in health check that pings the root endpoint:
@@ -253,7 +322,10 @@ docker inspect --format='{{json .State.Health}}' <container_id>
 ### Runtime Issues
 
 - **API Connection Errors:** Verify `PUBLIC_API_URL` is correct and accessible
-- **CORS Issues:** Ensure backend allows requests from your `ORIGIN`
+- **CORS Issues:** Ensure backend allows requests from your public origin (`ORIGIN`, or each custom domain in multi-host mode)
+- **Form posts fail with 403 on a custom domain:** `ORIGIN` is set (it pins one host). Unset it and use `HOST_HEADER`/`PROTOCOL_HEADER`
+- **404 "Not found" on a domain:** it is not in `PLATFORM_HOSTS` and the backend does not know it as an organization's custom domain
+- **503 on a domain:** the by-domain lookup to the backend failed; check `PUBLIC_API_URL`/`INTERNAL_API_URL` reachability
 - **Port Conflicts:** Change `PORT` environment variable if 3000 is in use
 
 ### Logs

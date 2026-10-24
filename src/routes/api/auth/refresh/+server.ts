@@ -8,6 +8,7 @@ import {
 	getRememberMeCookieOptions
 } from '$lib/utils/cookies';
 import { log } from '$lib/server/logger';
+import { sessionRememberMe } from '$lib/server/session';
 
 /**
  * Server-side API endpoint to refresh JWT access token
@@ -40,10 +41,10 @@ import { log } from '$lib/server/logger';
  * the rejection, it sends that fingerprint to DELETE, which clears the cookies
  * only if the browser still holds that same dead token.
  */
-export const POST: RequestHandler = async ({ cookies, fetch }) => {
+export const POST: RequestHandler = async ({ cookies, fetch, locals }) => {
 	const refreshToken = cookies.get('refresh_token');
 	// Read the "remember me" preference to preserve cookie behavior
-	const rememberMe = cookies.get('remember_me') === 'true';
+	const rememberMe = sessionRememberMe(cookies.get('remember_me') === 'true', locals);
 
 	// No refresh token available
 	if (!refreshToken) {

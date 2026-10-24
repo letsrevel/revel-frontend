@@ -8,6 +8,8 @@
  * - Other calendar applications
  */
 
+import { orgHref, type LinkContext } from '$lib/utils/org-links';
+
 interface ICalEvent {
 	title: string;
 	description?: string;
@@ -153,30 +155,49 @@ export function downloadEventICalFile(event: ICalEvent, eventId?: string, filena
 }
 
 /**
+ * Absolute URL for an org page, following the link rules (A/B/C): the org's
+ * custom domain when it has one, the platform origin for an org without one
+ * viewed from a tenant host (rule C), else the current origin.
+ */
+function orgLink(
+	org: { slug: string; custom_domain?: string | null },
+	path: string,
+	ctx?: LinkContext
+): string {
+	const href = orgHref(org, path, ctx);
+	return /^https?:\/\//i.test(href) ? href : `${window.location.origin}${href}`;
+}
+
+/**
  * Generate an iCal file from a Revel event schema
  */
-export function generateICalFromRevelEvent(event: {
-	id: string;
-	slug: string;
-	name: string;
-	description?: string | null;
-	start: string;
-	end: string;
-	location?: string | null;
-	venue_name?: string | null;
-	organization?: {
+export function generateICalFromRevelEvent(
+	event: {
+		id: string;
 		slug: string;
 		name: string;
-		email?: string | null;
-	};
-}): string {
+		description?: string | null;
+		start: string;
+		end: string;
+		location?: string | null;
+		venue_name?: string | null;
+		organization?: {
+			slug: string;
+			name: string;
+			custom_domain?: string | null;
+			email?: string | null;
+		};
+	},
+	ctx?: LinkContext
+): string {
 	// Format location
 	const location = event.venue_name || event.location || undefined;
 
 	// Create full URL to event using correct format: /events/org-slug/event-slug
+	// An org with a custom domain is linked on its own origin when tenant mode is on (#1056).
 	const eventUrl =
 		typeof window !== 'undefined' && event.organization?.slug
-			? `${window.location.origin}/events/${event.organization.slug}/${event.slug}`
+			? orgLink(event.organization, `/events/${event.organization.slug}/${event.slug}`, ctx)
 			: undefined;
 
 	return generateICalFile(
@@ -197,22 +218,26 @@ export function generateICalFromRevelEvent(event: {
 /**
  * Download an iCal file for a Revel event
  */
-export function downloadRevelEventICalFile(event: {
-	id: string;
-	slug: string;
-	name: string;
-	description?: string | null;
-	start: string;
-	end: string;
-	location?: string | null;
-	venue_name?: string | null;
-	organization?: {
+export function downloadRevelEventICalFile(
+	event: {
+		id: string;
 		slug: string;
 		name: string;
-		email?: string | null;
-	};
-}): void {
-	const icalContent = generateICalFromRevelEvent(event);
+		description?: string | null;
+		start: string;
+		end: string;
+		location?: string | null;
+		venue_name?: string | null;
+		organization?: {
+			slug: string;
+			name: string;
+			custom_domain?: string | null;
+			email?: string | null;
+		};
+	},
+	ctx?: LinkContext
+): void {
+	const icalContent = generateICalFromRevelEvent(event, ctx);
 	const filename = event.name.replace(/[^a-z0-9]/gi, '-').toLowerCase();
 	downloadICalFile(icalContent, filename);
 }

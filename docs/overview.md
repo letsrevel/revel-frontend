@@ -20,6 +20,12 @@ How the web app is put together. For setup, see the [README](../README.md) and
 5. TOTP two-factor login and OpenID Connect sign-in (Google, Keycloak, Authentik and others, as
    configured on the backend) are supported.
 
+## Custom domains (tenant mode)
+
+An organization can be served on its own domain, with its own header and footer, brand colors and
+SEO, while the platform keeps the discovery and marketing pages. How hosts resolve, which routes are
+allowed, the env vars and local setup are in [`tenant-mode.md`](tenant-mode.md).
+
 ## SEO landing pages
 
 Multi-language landing pages for specific audiences. Every page ships in six locales: `/{slug}`
