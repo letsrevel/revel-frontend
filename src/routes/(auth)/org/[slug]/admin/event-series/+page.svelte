@@ -11,6 +11,7 @@
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import ToneTile from '$lib/components/common/ToneTile.svelte';
+	import { stripMarkup } from '$lib/seo';
 
 	const { data }: { data: PageData } = $props();
 
@@ -163,7 +164,7 @@
 						<!-- Description -->
 						{#if series.description}
 							<p class="line-clamp-2 text-sm text-muted-foreground">
-								{series.description}
+								{stripMarkup(series.description)}
 							</p>
 						{/if}
 

@@ -1,5 +1,6 @@
 import type { EventSeriesRetrieveSchema } from '$lib/api/generated/types.gen';
 import { getBackendUrl } from '$lib/config/api';
+import { stripMarkup } from '../text';
 
 export interface SeriesJsonLd {
 	'@context': 'https://schema.org';
@@ -11,15 +12,6 @@ export interface SeriesJsonLd {
 	image?: string[];
 }
 
-function stripHtml(html: string | null | undefined): string {
-	if (!html) return '';
-	return html
-		.replace(/<[^>]*>/g, '')
-		.replace(/&nbsp;/g, ' ')
-		.replace(/\s+/g, ' ')
-		.trim();
-}
-
 export function generateSeriesJsonLd(
 	series: EventSeriesRetrieveSchema,
 	seriesUrl: string
@@ -28,7 +20,7 @@ export function generateSeriesJsonLd(
 		'@context': 'https://schema.org',
 		'@type': 'EventSeries',
 		name: series.name,
-		description: stripHtml(series.description) || undefined,
+		description: stripMarkup(series.description) || undefined,
 		url: seriesUrl,
 		organizer: { '@type': 'Organization', name: series.organization.name }
 	};

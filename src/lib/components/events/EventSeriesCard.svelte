@@ -9,6 +9,7 @@
 	import { withUtmParams } from '$lib/utils/attribution';
 	import { Calendar, Tag, Users } from '@lucide/svelte';
 	import { getPosterFallbackGradient } from '$lib/utils/fallback-gradient';
+	import { stripMarkup } from '$lib/seo';
 
 	interface Props {
 		series: EventSeriesRetrieveSchema;
@@ -81,14 +82,17 @@
 	// organization and its events fall back to the same visual family.
 	const fallbackGradient = $derived(getPosterFallbackGradient(series.id));
 
+	// Descriptions are markdown; a card shows (and announces) the plain text.
+	const descriptionText = $derived(stripMarkup(series.description));
+
 	// Accessible card label for screen readers
 	const accessibleLabel = $derived.by(() => {
 		const parts = [
 			series.name,
 			m['eventSeriesCard.byOrganization']({ name: series.organization.name })
 		];
-		if (series.description) {
-			parts.push(series.description);
+		if (descriptionText) {
+			parts.push(descriptionText);
 		}
 		return parts.join(', ');
 	});
@@ -220,9 +224,9 @@
 		{#if variant === 'standard'}
 			<div class="flex flex-col gap-2 border-t pt-3">
 				<!-- Description -->
-				{#if series.description}
+				{#if descriptionText}
 					<p class="line-clamp-2 text-sm text-muted-foreground">
-						{series.description}
+						{descriptionText}
 					</p>
 				{/if}
 

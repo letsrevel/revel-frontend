@@ -18,6 +18,7 @@
 	} from '$lib/api/generated';
 	import { invalidateAll } from '$app/navigation';
 	import { SvelteSet } from 'svelte/reactivity';
+	import { stripMarkup } from '$lib/seo';
 
 	interface Props {
 		open: boolean;
@@ -438,7 +439,7 @@
 										</div>
 										{#if series.description}
 											<p class="mt-1 line-clamp-2 text-sm text-muted-foreground">
-												{series.description}
+												{stripMarkup(series.description)}
 											</p>
 										{/if}
 									</div>

@@ -6,6 +6,7 @@
 	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import type { MinimalEventSeriesSchema } from '$lib/api/generated/types.gen';
 	import * as m from '$lib/paraglide/messages.js';
+	import { stripMarkup } from '$lib/seo';
 
 	interface Props {
 		series: MinimalEventSeriesSchema;
@@ -30,6 +31,9 @@
 			page.url
 		)
 	);
+
+	// Markdown as plain text: rendered markdown links would nest inside the card's <a>.
+	const descriptionText = $derived(stripMarkup(series.description));
 </script>
 
 <section
@@ -49,9 +53,9 @@
 		class="block p-4 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 	>
 		<div class="font-bold">{series.name}</div>
-		{#if series.description}
+		{#if descriptionText}
 			<p class="mt-1 text-sm text-muted-foreground">
-				{series.description}
+				{descriptionText}
 			</p>
 		{/if}
 	</a>
