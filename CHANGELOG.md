@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.24.0] - 2026-10-24
+
+### Added
+- **Custom domains (white-label)**: an organization can serve its public site on its own domain, for example `events.example.org`
+  - On the custom domain the organization page is the home page, the header and footer carry its name and logo, its brand colors apply everywhere, and a small "Powered by Revel" footer stays; platform discovery pages and other organizations are not reachable there
+  - Attendee flows work end to end on the domain: sign in and sign up, RSVPs, tickets and paid checkout (the Stripe return lands back on the domain), guest seat holds, memberships, and a dashboard and account area scoped to that organization
+  - Links to an organization with a custom domain point at it, and old Revel URLs of its pages redirect there; organization admin and platform tools open on Revel, with a hint that signing in there is needed once
+  - Page titles, social previews, the web app manifest, favicon, theme color, sitemaps, `robots.txt` and the RSS feed use the organization's identity, and attendee-facing copy says the organization's name instead of "Revel"
+  - **Custom domain** settings in the organization admin for owners (when enabled for the organization): connect a hostname, see the DNS records to add with copy buttons and clear "DNS only" guidance for Cloudflare, open the detected DNS provider's settings or help page, follow the live status, check again, or remove the domain
+  - Account emails (verification, password reset, email change, account deletion, unsubscribe) stay on Revel and offer a "Continue to {organization}" button back to the domain
+  - Off until configured: self-hosters enable it with `PLATFORM_HOSTS` and the multi-host settings (`HOST_HEADER`, `PROTOCOL_HEADER`, `PLATFORM_ORIGIN`, `PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE`, no `ORIGIN`), documented in `docs/tenant-mode.md`; requires backend 2.24.0 or later
+
+### Fixed
+- Server-side requests to the backend over `INTERNAL_API_URL` now honour their timeouts, so a slow backend no longer stalls page loads for minutes.
+
+### Security
+- Sign-ins on a custom domain last only until the browser closes ("Remember me" is not offered there), and the backend ends those sessions when the domain is removed, fails, moves or is switched off.
+- Links back from account emails to a custom domain never carry the email's token, not even in the `Referer` header.
+
+
 ## [2.23.0] - 2026-10-24
 
 ### Added
