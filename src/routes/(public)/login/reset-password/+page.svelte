@@ -79,6 +79,7 @@
 					<!-- eslint-disable svelte/no-navigation-without-resolve -- external custom-domain origin validated server-side -->
 					<a
 						href="{returnTo.origin}/login"
+						rel="noreferrer"
 						class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					>
 						{m['tenantReturn.continueTo']({ name: returnTo.name })}
