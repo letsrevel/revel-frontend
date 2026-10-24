@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.25.0] - 2026-10-25
+
+### Added
+- Ticket tiers warn organizers when their quantity exceeds the event's capacity (the smaller of the attendee limit and the venue capacity): the tier form shows a note under the quantity field, and the admin tier card shows an "Over event capacity" badge that updates live as the capacity or venue changes; saving is never blocked
+- Admin tier cards show availability against the event cap when it applies, for example "30 of 40 remaining (event cap)"; appears once the backend is on a release newer than 2.24.0
+- Event series settings use the same Markdown editor as events, and series tags autocomplete from existing tags
+
+### Changed
+- **Organization admin dashboard**: redesigned around what's coming up next
+  - A "Next up" panel highlights the next event (or the one happening right now, including multi-day events) with its date, attendance against capacity, and quick links to check-in, the guest list, editing, and the public page
+  - A "Needs attention" list counts pending membership requests, upcoming drafts, and missing billing details for owners, each linking to where it's fixed
+  - A compact "Coming up" agenda lists the next events with date, time, venue, and attendance or status
+- **Admin navigation sidebar**: the admin tab strip is replaced by a sidebar grouped into Events, People, Content, and Organization; it collapses to an icon rail with tooltips and remembers the choice; on phones the same groups open from a menu button
+- Organization owners always see **Custom domain** in the admin; when the feature isn't enabled for their organization, the page explains it's available on request and offers a button to email the Revel team, instead of a "not found" page; the email button appears once the backend (newer than 2.24.0) publishes a support address
+
+### Fixed
+- Event series descriptions written in Markdown now render with their formatting on the admin series page and the series embed, and show as clean plain text (no stray `#` or `**`) on series cards, the admin series list, the event page's series link, questionnaire assignment, and search-engine metadata
+- The "Past Event" badge on faded past event cards is readable again: only the cover image is dimmed now, not the whole card
+
 ## [2.24.0] - 2026-10-24
 
 ### Added
