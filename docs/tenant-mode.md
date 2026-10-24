@@ -7,8 +7,9 @@ platform's discovery or marketing pages show up.
 
 This page describes what the frontend does. Domain registration, DNS and TLS (Cloudflare for SaaS
 or similar) are backend and operator concerns, covered in the operator docs
-([letsrevel/revel-backend#1166](https://github.com/letsrevel/revel-backend/issues/1166)). The
-deployment variables are also listed in [`runbooks/deployment.md`](runbooks/deployment.md).
+([letsrevel/revel-backend#1166](https://github.com/letsrevel/revel-backend/issues/1166)). What the
+proxy in front of the frontend must do is summarized in [Reverse proxy and TLS](#reverse-proxy-and-tls)
+below. The deployment variables are also listed in [`runbooks/deployment.md`](runbooks/deployment.md).
 
 Tenant mode is off until `PLATFORM_HOSTS` is set, so deploying this code changes nothing by itself.
 With `PLATFORM_HOSTS` unset nothing redirects and no link is rewritten, even if the backend returns a
@@ -377,7 +378,7 @@ at runtime.
 | --- | --- | --- | --- | --- |
 | `HOST_HEADER` | private (adapter-node) | unset | `x-forwarded-host` | unset (Vite and the preview server use the `Host` header) |
 | `PROTOCOL_HEADER` | private (adapter-node) | unset | `x-forwarded-proto` | unset |
-| `PLATFORM_HOSTS` | private | unset (tenant mode off) | `app.example.com,www.example.com` | `localhost` |
+| `PLATFORM_HOSTS` | private | unset (tenant mode off) | `app.example.com` | `localhost` |
 | `PLATFORM_ORIGIN` | private | `https://` + first `PLATFORM_HOSTS` entry | `https://app.example.com` | `http://localhost:5173` |
 | `PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE` | public (also read in the browser) | `https://{hostname}` | `https://{hostname}` | `http://{hostname}:5173` |
 | `ORIGIN` | private (adapter-node) | unset | `https://app.example.com`, **single-host only** | unset |
@@ -397,8 +398,52 @@ and for links from a tenant host to organizations that have no custom domain. `P
 disagree. Terminate TLS for the platform and for custom domains at your proxy, and forward the
 original host in `X-Forwarded-Host` and the scheme in `X-Forwarded-Proto`.
 
+**Which hosts go in `PLATFORM_HOSTS`.** Only the hosts the frontend itself serves as the platform.
+Any other host that reaches the frontend is looked up as a custom domain, and an unknown one gets a
+404. A host your proxy redirects before it reaches the frontend (a `www.` alias) does not need to be
+listed, and neither does the API host. The Revel deployments use `letsrevel.io` in production and
+`beta.letsrevel.io` on beta.
+
 See [`runbooks/deployment.md`](runbooks/deployment.md) for single-host and multi-host compose and
 Kubernetes examples.
+
+## Reverse proxy and TLS
+
+The frontend only reads the forwarded host and scheme, so most of serving custom domains happens in
+the proxy. This is how the reference deployment does it (Caddy behind Cloudflare,
+[letsrevel/infra#67](https://github.com/letsrevel/infra/issues/67)). Another setup needs the same
+properties.
+
+- **Forwarded headers are overwritten, never passed through.** Every frontend upstream sets
+  `X-Forwarded-Host` to the request's own host and `X-Forwarded-Proto` to `https`. In Caddy that
+  is `header_up X-Forwarded-Host {host}` and `header_up X-Forwarded-Proto https`. They live in one
+  shared snippet that both the platform site and the custom-domain site import, so the two cannot
+  drift apart. Caddy trusts Cloudflare's ranges as proxies and would otherwise forward a
+  client-sent `X-Forwarded-Host` unchanged. The frontend survives a spoofed host (it only changes
+  which organization is shown), but SvelteKit's same-origin check on form actions is only as good
+  as that header.
+- **One catch-all site for custom domains.** It only receives hostnames that no named site claims.
+  Its certificates are issued on demand (Let's Encrypt, HTTP-01 only, because the TLS-ALPN challenge
+  cannot pass through Cloudflare's proxy). Before issuing one, Caddy asks the backend
+  (`GET /api/tls/ask?domain=<host>`), which answers 200 only for an active domain of an
+  organization with custom domains enabled. Nobody can make the server request certificates for
+  arbitrary names. The zone's SSL mode stays Full (strict).
+- **HSTS differs per site.** The platform keeps `max-age=31536000; includeSubDomains; preload`.
+  The custom-domain site sends `max-age=86400` with neither, because those domains are not ours.
+- **CNAME target and fallback origin.** Organizations point a CNAME at the backend's
+  `CUSTOM_DOMAIN_CNAME_TARGET`: `customers.letsrevel.io` in production, `customers-beta.letsrevel.io`
+  on beta. That name is the zone's Cloudflare for SaaS fallback origin, and a request for the name
+  itself redirects to the platform. Cloudflare allows one fallback origin per zone, so production
+  and beta cannot both serve custom domains at the same time.
+- **The customer's CNAME stays DNS only.** If the organization's DNS is at Cloudflare, the record
+  must be "DNS only" (grey cloud) for good. A proxied record makes public DNS answer with
+  Cloudflare's IPs instead of the CNAME, and validation fails.
+- **Turnstile.** Each custom domain has to be added to the Turnstile widget's hostname list by hand
+  for now. Otherwise the widget, and so sign-up, fails on that domain.
+- **Protected media.** The media CORS header echoes what the backend allows (its dynamic CORS
+  accepts active custom domains) instead of a fixed platform origin, so file downloads work on
+  custom domains too.
+- **No buffering.** As on the platform, SSR responses stream: the proxy must not buffer them.
 
 ## Local development and E2E
 
