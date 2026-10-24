@@ -112,7 +112,12 @@ describe('CustomDomainManager (#1058)', () => {
 		it('names the detected DNS host and links its help page in a new tab', async () => {
 			vi.mocked(getCustomDomain).mockResolvedValue({
 				...PENDING,
-				dns_provider: { name: 'Cloudflare', help_url: 'https://developers.cloudflare.com/dns/' }
+				dns_provider: {
+					key: 'cloudflare',
+					name: 'Cloudflare',
+					help_url: 'https://developers.cloudflare.com/dns/',
+					dashboard_url: null
+				}
 			});
 			setup();
 			await settle();
@@ -127,6 +132,50 @@ describe('CustomDomainManager (#1058)', () => {
 			expect(link).toHaveAttribute('rel', 'noopener noreferrer');
 		});
 
+		it('with a dashboard link: opens the DNS settings first, the help page second', async () => {
+			vi.mocked(getCustomDomain).mockResolvedValue({
+				...PENDING,
+				dns_provider: {
+					key: 'cloudflare',
+					name: 'Cloudflare',
+					help_url: 'https://developers.cloudflare.com/dns/',
+					dashboard_url: 'https://dash.cloudflare.com/?to=/:account/example.com/dns/records'
+				}
+			});
+			setup();
+			await settle();
+
+			const links = within(screen.getByTestId('dns-provider')).getAllByRole('link');
+			expect(links).toHaveLength(2);
+			expect(links[0]).toHaveAccessibleName(/Open your DNS settings at Cloudflare/);
+			expect(links[0]).toHaveAttribute(
+				'href',
+				'https://dash.cloudflare.com/?to=/:account/example.com/dns/records'
+			);
+			expect(links[0]).toHaveAttribute('target', '_blank');
+			expect(links[0]).toHaveAttribute('rel', 'noopener noreferrer');
+			expect(links[1]).toHaveAccessibleName(/How to add DNS records/);
+			expect(links[1]).toHaveAttribute('href', 'https://developers.cloudflare.com/dns/');
+		});
+
+		it('ignores a non-https dashboard link and keeps the single help link', async () => {
+			vi.mocked(getCustomDomain).mockResolvedValue({
+				...PENDING,
+				dns_provider: {
+					key: 'cloudflare',
+					name: 'Cloudflare',
+					help_url: 'https://developers.cloudflare.com/dns/',
+					dashboard_url: 'javascript:alert(1)'
+				}
+			});
+			setup();
+			await settle();
+
+			const links = within(screen.getByTestId('dns-provider')).getAllByRole('link');
+			expect(links).toHaveLength(1);
+			expect(links[0]).toHaveAccessibleName(/How to add DNS records at Cloudflare/);
+		});
+
 		it('renders nothing without a provider, or with a non-https help page', async () => {
 			vi.mocked(getCustomDomain).mockResolvedValue({ ...PENDING, dns_provider: null });
 			setup();
@@ -136,7 +185,12 @@ describe('CustomDomainManager (#1058)', () => {
 
 			vi.mocked(getCustomDomain).mockResolvedValue({
 				...PENDING,
-				dns_provider: { name: 'Evil', help_url: 'javascript:alert(1)' }
+				dns_provider: {
+					key: 'evil',
+					name: 'Evil',
+					help_url: 'javascript:alert(1)',
+					dashboard_url: null
+				}
 			});
 			setup();
 			await settle();
@@ -179,7 +233,12 @@ describe('CustomDomainManager (#1058)', () => {
 		it('Cloudflare: one assertive line on the CNAME card, and step 1 names Cloudflare', async () => {
 			vi.mocked(getCustomDomain).mockResolvedValue({
 				...WITH_CNAME,
-				dns_provider: { name: 'Cloudflare', help_url: 'https://developers.cloudflare.com/dns/' }
+				dns_provider: {
+					key: 'cloudflare',
+					name: 'Cloudflare',
+					help_url: 'https://developers.cloudflare.com/dns/',
+					dashboard_url: null
+				}
 			});
 			setup();
 			await settle();
@@ -198,7 +257,12 @@ describe('CustomDomainManager (#1058)', () => {
 		it('another known DNS host: no Cloudflare line at all, and step 1 names the host', async () => {
 			vi.mocked(getCustomDomain).mockResolvedValue({
 				...WITH_CNAME,
-				dns_provider: { name: 'Gandi', help_url: 'https://docs.gandi.net/en/domain_names/' }
+				dns_provider: {
+					key: 'gandi',
+					name: 'Gandi',
+					help_url: 'https://docs.gandi.net/en/domain_names/',
+					dashboard_url: null
+				}
 			});
 			setup();
 			await settle();

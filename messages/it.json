@@ -9756,6 +9756,8 @@
 	"customDomain.cname.label": "Indirizzo a cui puntare",
 	"customDomain.dnsProvider.hostedAt": "Il tuo DNS è gestito da {name}.",
 	"customDomain.dnsProvider.helpLink": "Come aggiungere record DNS su {name}",
+	"customDomain.dnsProvider.dashboardLink": "Apri le impostazioni DNS su {name}",
+	"customDomain.dnsProvider.helpLinkShort": "Come aggiungere record DNS",
 	"customDomain.records.cloudflareNote": "Se il tuo DNS è su Cloudflare, imposta questo record su \"DNS only\" (nuvola grigia). Non attivare il proxy, né ora né in seguito.",
 	"customDomain.records.cloudflareKnown": "Il tuo DNS è su Cloudflare: imposta questo record su \"DNS only\" (nuvola grigia). Non attivare il proxy, né ora né in seguito.",
 	"customDomain.records.cnameHint": "Se il tuo provider chiede una \"destinazione\" o un \"valore\", è questo.",

@@ -9756,6 +9756,8 @@
 	"customDomain.cname.label": "Adresse, auf die verwiesen wird",
 	"customDomain.dnsProvider.hostedAt": "Dein DNS wird bei {name} gehostet.",
 	"customDomain.dnsProvider.helpLink": "So fügst du DNS-Einträge bei {name} hinzu",
+	"customDomain.dnsProvider.dashboardLink": "DNS-Einstellungen bei {name} öffnen",
+	"customDomain.dnsProvider.helpLinkShort": "So fügst du DNS-Einträge hinzu",
 	"customDomain.records.cloudflareNote": "Wenn dein DNS bei Cloudflare liegt, stelle diesen Eintrag auf „DNS only“ (graue Wolke). Aktiviere den Proxy nicht, weder jetzt noch später.",
 	"customDomain.records.cloudflareKnown": "Dein DNS liegt bei Cloudflare: Stelle diesen Eintrag auf „DNS only“ (graue Wolke). Aktiviere den Proxy nicht, weder jetzt noch später.",
 	"customDomain.records.cnameHint": "Fragt dein Anbieter nach einem „Ziel“ oder „Wert“, ist es dieser.",
