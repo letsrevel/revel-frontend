@@ -270,6 +270,14 @@
 	const hasAdminPermissions = (orgId: string) => userHasAdminPermissions(permissions, orgId);
 	const ownsOrganization = () => userOwnsOrganization(permissions);
 
+	// Tenant host: org admin lives on the platform and the session is separate. No
+	// handoff token on purpose: a tenant-origin token exchange would let whoever
+	// controls the tenant domain's DNS turn stolen tenant sessions into platform
+	// sessions that outlive the domain. So the user signs in there once; say so.
+	const adminOrgCount = $derived(organizations.filter((org) => hasAdminPermissions(org.id)).length);
+	const showPlatformAdminHint = $derived(!!appPage.data.tenant && adminOrgCount === 1);
+	const platformAdminHintId = $derived(showPlatformAdminHint ? 'platform-admin-hint' : undefined);
+
 	// The quick-action chips sit on the SATURATED welcome band, which sets
 	// `text-secondary-foreground` on everything inside it. A chip painted
 	// `bg-card` would inherit that and end up with the band's text colour on a
@@ -354,6 +362,7 @@
 						slug: organizations.find((org) => hasAdminPermissions(org.id))?.slug ?? ''
 					})}
 					class={secondaryAction}
+					aria-describedby={platformAdminHintId}
 				>
 					<Calendar class="h-4 w-4" aria-hidden="true" />
 					<span>{m['dashboard.createEventButton']()}</span>
@@ -386,6 +395,7 @@
 					slug: organizations.find((org) => hasAdminPermissions(org.id))?.slug ?? ''
 				})}
 				class={secondaryAction}
+				aria-describedby={platformAdminHintId}
 			>
 				<Shield class="h-4 w-4" aria-hidden="true" />
 				<span>{m['dashboard.adminButton']()}</span>
@@ -402,6 +412,13 @@
 				<PlusCircle class="h-4 w-4" aria-hidden="true" />
 				<span>{m['dashboard.createOrganizationButton']()}</span>
 			</a>
+		{/if}
+
+		{#if showPlatformAdminHint}
+			<!-- Sits on the band: inherits its audited foreground (muted-foreground is not audited here). -->
+			<p id="platform-admin-hint" class="basis-full text-xs">
+				{m['dashboard.platformAdminHint']()}
+			</p>
 		{/if}
 	{/snippet}
 	<section class="bg-secondary text-secondary-foreground">
