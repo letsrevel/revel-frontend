@@ -17,10 +17,10 @@ export type CustomDomain = CustomDomainSchema;
 
 /**
  * Whether the detected DNS host is Cloudflare, which proxies new records by
- * default. Matched on the backend provider table's display name ("Cloudflare").
+ * default. Matched on the backend provider's stable `key`, not its label.
  */
-export function isCloudflare(provider: { name: string }): boolean {
-	return provider.name.trim().toLowerCase() === 'cloudflare';
+export function isCloudflare(provider: { key: string }): boolean {
+	return provider.key === 'cloudflare';
 }
 
 /** A failed custom-domain call; `fieldErrors` / `detail` carry what can be shown. */

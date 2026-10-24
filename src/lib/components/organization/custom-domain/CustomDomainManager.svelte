@@ -63,6 +63,13 @@
 			? domain.dns_provider
 			: null
 	);
+	// A link straight to this domain's DNS records at the host (only some hosts
+	// have one); same https-only rule.
+	const dnsDashboardUrl = $derived(
+		dnsProvider?.dashboard_url && /^https:\/\//i.test(dnsProvider.dashboard_url)
+			? dnsProvider.dashboard_url
+			: null
+	);
 
 	// The CNAME already shows as a record card; the standalone section is only a fallback.
 	const hasCnameRecord = $derived(
@@ -220,22 +227,40 @@
 							<li>{m['customDomain.pending.step3']()}</li>
 						</ol>
 						{#if dnsProvider}
-							<p class="text-sm" data-testid="dns-provider">
-								{m['customDomain.dnsProvider.hostedAt']({ name: dnsProvider.name })}
-								<!-- External https help page from the backend's provider table, checked above. -->
+							<div class="space-y-1.5 text-sm" data-testid="dns-provider">
+								<p>{m['customDomain.dnsProvider.hostedAt']({ name: dnsProvider.name })}</p>
+								<!-- External https links from the backend's provider table, checked above. -->
 								<!-- eslint-disable svelte/no-navigation-without-resolve -->
-								<a
-									href={dnsProvider.help_url}
-									target="_blank"
-									rel="noopener noreferrer"
-									class="inline-flex items-center gap-1 font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-								>
-									{m['customDomain.dnsProvider.helpLink']({ name: dnsProvider.name })}
-									<ExternalLink class="h-4 w-4 shrink-0" aria-hidden="true" />
-									<span class="sr-only">{m['customDomain.opensInNewTab']()}</span>
-								</a>
+								<p class="flex flex-wrap gap-x-4 gap-y-1">
+									{#if dnsDashboardUrl}
+										<a
+											href={dnsDashboardUrl}
+											target="_blank"
+											rel="noopener noreferrer"
+											class="inline-flex items-center gap-1 font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+										>
+											{m['customDomain.dnsProvider.dashboardLink']({ name: dnsProvider.name })}
+											<ExternalLink class="h-4 w-4 shrink-0" aria-hidden="true" />
+											<span class="sr-only">{m['customDomain.opensInNewTab']()}</span>
+										</a>
+									{/if}
+									<a
+										href={dnsProvider.help_url}
+										target="_blank"
+										rel="noopener noreferrer"
+										class={dnsDashboardUrl
+											? 'inline-flex items-center gap-1 text-muted-foreground underline underline-offset-4 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+											: 'inline-flex items-center gap-1 font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'}
+									>
+										{dnsDashboardUrl
+											? m['customDomain.dnsProvider.helpLinkShort']()
+											: m['customDomain.dnsProvider.helpLink']({ name: dnsProvider.name })}
+										<ExternalLink class="h-4 w-4 shrink-0" aria-hidden="true" />
+										<span class="sr-only">{m['customDomain.opensInNewTab']()}</span>
+									</a>
+								</p>
 								<!-- eslint-enable svelte/no-navigation-without-resolve -->
-							</p>
+							</div>
 						{/if}
 
 						{#if domain.verification_records.length > 0}

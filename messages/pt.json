@@ -9756,6 +9756,8 @@
 	"customDomain.cname.label": "Endereço para onde apontar",
 	"customDomain.dnsProvider.hostedAt": "O teu DNS está alojado em {name}.",
 	"customDomain.dnsProvider.helpLink": "Como adicionar registos DNS em {name}",
+	"customDomain.dnsProvider.dashboardLink": "Abrir as tuas definições de DNS em {name}",
+	"customDomain.dnsProvider.helpLinkShort": "Como adicionar registos DNS",
 	"customDomain.records.cloudflareNote": "Se o teu DNS está na Cloudflare, define este registo como \"DNS only\" (nuvem cinzenta). Não atives o proxy, nem agora nem mais tarde.",
 	"customDomain.records.cloudflareKnown": "O teu DNS está na Cloudflare: define este registo como \"DNS only\" (nuvem cinzenta). Não atives o proxy, nem agora nem mais tarde.",
 	"customDomain.records.cnameHint": "Se o teu fornecedor pedir um \"destino\" ou um \"valor\", é este.",
