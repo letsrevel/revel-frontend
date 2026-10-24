@@ -42,6 +42,15 @@ export const PAID_ORIGIN = `http://${PAID_HOST}:${FRONTEND_PORT}`;
 export const PAID_EVENT_PATH = `/events/${PAID_ORG_SLUG}/tenant-paid-event`;
 
 /**
+ * Seeded only for the session-revocation spec: it flips this org's
+ * `custom_domain_enabled` kill switch, which would take every other spec's
+ * tenant host down with it while it is off.
+ */
+export const REVOKE_HOST = 'revoke.localhost';
+export const REVOKE_ORG_SLUG = 'tenant-revoke-org';
+export const REVOKE_ORIGIN = `http://${REVOKE_HOST}:${FRONTEND_PORT}`;
+
+/**
  * What the app builds for platform links to a custom domain. The e2e web server
  * sets `PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE=http://{hostname}:5173`, so these equal
  * the served origins (and following a link works).
