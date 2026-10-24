@@ -9746,6 +9746,8 @@
 	"customDomain.cname.heading": "Verweise deine Domain auf Revel",
 	"customDomain.cname.body": "Lege für {hostname} einen CNAME-Eintrag an, der auf die Adresse unten zeigt. Fragt dein Anbieter nach einem \"Ziel\" oder \"Wert\", ist es diese Adresse.",
 	"customDomain.cname.label": "Adresse, auf die verwiesen wird",
+	"customDomain.dnsProvider.hostedAt": "Dein DNS wird bei {name} gehostet.",
+	"customDomain.dnsProvider.helpLink": "So fügst du DNS-Einträge bei {name} hinzu",
 	"customDomain.pending.cloudflareNote": "Wenn dein DNS bei Cloudflare liegt, stelle den CNAME-Eintrag auf „DNS only“ (graue Wolke). Aktiviere den Proxy nicht (orange Wolke), weder jetzt noch später.",
 	"customDomain.records.cloudflareNote": "Wenn dein DNS bei Cloudflare liegt, stelle diesen Eintrag auf „DNS only“ (graue Wolke). Aktiviere den Proxy nicht, weder jetzt noch später.",
 	"customDomain.records.cnameHint": "Fragt dein Anbieter nach einem „Ziel“ oder „Wert“, ist es dieser.",

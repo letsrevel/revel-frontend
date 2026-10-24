@@ -1,4 +1,4 @@
-import { render, screen, waitFor, act, within } from '@testing-library/svelte';
+import { render, screen, waitFor, act, within, cleanup } from '@testing-library/svelte';
 import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
@@ -106,6 +106,42 @@ describe('CustomDomainManager (#1058)', () => {
 		);
 		expect(writeText).toHaveBeenCalledWith('token-abc');
 		expect(toast.success).toHaveBeenCalled();
+	});
+
+	describe('DNS provider deep link', () => {
+		it('names the detected DNS host and links its help page in a new tab', async () => {
+			vi.mocked(getCustomDomain).mockResolvedValue({
+				...PENDING,
+				dns_provider: { name: 'Cloudflare', help_url: 'https://developers.cloudflare.com/dns/' }
+			});
+			setup();
+			await settle();
+
+			const provider = screen.getByTestId('dns-provider');
+			expect(provider).toHaveTextContent('Your DNS is hosted at Cloudflare.');
+			const link = within(provider).getByRole('link', {
+				name: /How to add DNS records at Cloudflare/
+			});
+			expect(link).toHaveAttribute('href', 'https://developers.cloudflare.com/dns/');
+			expect(link).toHaveAttribute('target', '_blank');
+			expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+		});
+
+		it('renders nothing without a provider, or with a non-https help page', async () => {
+			vi.mocked(getCustomDomain).mockResolvedValue({ ...PENDING, dns_provider: null });
+			setup();
+			await settle();
+			expect(screen.queryByTestId('dns-provider')).not.toBeInTheDocument();
+			cleanup();
+
+			vi.mocked(getCustomDomain).mockResolvedValue({
+				...PENDING,
+				dns_provider: { name: 'Evil', help_url: 'javascript:alert(1)' }
+			});
+			setup();
+			await settle();
+			expect(screen.queryByTestId('dns-provider')).not.toBeInTheDocument();
+		});
 	});
 
 	describe('Cloudflare DNS-only guidance and CNAME target', () => {

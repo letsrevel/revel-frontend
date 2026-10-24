@@ -9746,6 +9746,8 @@
 	"customDomain.cname.heading": "Aponta o teu domínio para a Revel",
 	"customDomain.cname.body": "Cria um registo CNAME para {hostname} que aponte para o endereço abaixo. Se o teu fornecedor pedir um \"destino\" ou um \"valor\", é este.",
 	"customDomain.cname.label": "Endereço para onde apontar",
+	"customDomain.dnsProvider.hostedAt": "O teu DNS está alojado em {name}.",
+	"customDomain.dnsProvider.helpLink": "Como adicionar registos DNS em {name}",
 	"customDomain.pending.cloudflareNote": "Se o teu DNS está na Cloudflare, define o registo CNAME como \"DNS only\" (nuvem cinzenta). Não atives o proxy (nuvem laranja), nem agora nem mais tarde.",
 	"customDomain.records.cloudflareNote": "Se o teu DNS está na Cloudflare, define este registo como \"DNS only\" (nuvem cinzenta). Não atives o proxy, nem agora nem mais tarde.",
 	"customDomain.records.cnameHint": "Se o teu fornecedor pedir um \"destino\" ou um \"valor\", é este.",

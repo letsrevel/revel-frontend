@@ -55,6 +55,14 @@
 		!!domain && (domain.verification_records.length > 0 || !!domain.cname_target)
 	);
 
+	// DNS host detected from the NS records (pending domains only). Only an
+	// https help page is linked; anything else renders nothing.
+	const dnsProvider = $derived(
+		domain?.dns_provider && /^https:\/\//i.test(domain.dns_provider.help_url)
+			? domain.dns_provider
+			: null
+	);
+
 	// The CNAME already shows as a record card; the standalone section is only a fallback.
 	const hasCnameRecord = $derived(
 		!!domain && domain.verification_records.some((r) => r.type.toUpperCase() === 'CNAME')
@@ -206,6 +214,24 @@
 							<li>{m['customDomain.pending.step2']()}</li>
 							<li>{m['customDomain.pending.step3']()}</li>
 						</ol>
+						{#if dnsProvider}
+							<p class="text-sm" data-testid="dns-provider">
+								{m['customDomain.dnsProvider.hostedAt']({ name: dnsProvider.name })}
+								<!-- External https help page from the backend's provider table, checked above. -->
+								<!-- eslint-disable svelte/no-navigation-without-resolve -->
+								<a
+									href={dnsProvider.help_url}
+									target="_blank"
+									rel="noopener noreferrer"
+									class="inline-flex items-center gap-1 font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+								>
+									{m['customDomain.dnsProvider.helpLink']({ name: dnsProvider.name })}
+									<ExternalLink class="h-4 w-4 shrink-0" aria-hidden="true" />
+									<span class="sr-only">{m['customDomain.opensInNewTab']()}</span>
+								</a>
+								<!-- eslint-enable svelte/no-navigation-without-resolve -->
+							</p>
+						{/if}
 						<p
 							class="flex items-start gap-2 rounded-md border border-info/40 bg-info/10 p-3 text-sm"
 							data-testid="cloudflare-dns-only"
