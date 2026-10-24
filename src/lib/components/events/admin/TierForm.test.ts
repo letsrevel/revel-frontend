@@ -179,3 +179,19 @@ describe('TierForm — country rules gate', () => {
 		expect(screen.getByRole('button', { name: 'Save Changes' })).toBeEnabled();
 	});
 });
+
+describe('TierForm event-capacity warning', () => {
+	const tierOf40 = { ...pausedOnlineTier, total_quantity: 40 } as TicketTierDetailSchema;
+
+	it('forwards eventCapacity to the availability section and warns when exceeded', () => {
+		renderForm(tierOf40, { eventCapacity: 30 });
+
+		expect(screen.getByTestId('tier-capacity-warning')).toBeInTheDocument();
+	});
+
+	it('does not warn without an event capacity', () => {
+		renderForm(tierOf40);
+
+		expect(screen.queryByTestId('tier-capacity-warning')).not.toBeInTheDocument();
+	});
+});

@@ -663,6 +663,7 @@
 			organizationSlug={organization.slug}
 			organizationStripeConnected={organization.is_stripe_connected}
 			{formData}
+			venueCapacity={selectedVenue?.capacity ?? null}
 			onUpdate={updateFormData}
 			onBack={() => {
 				currentStep = 2;

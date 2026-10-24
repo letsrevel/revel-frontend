@@ -6362,6 +6362,8 @@
 	},
 	"tierCard": {
 		"salesPaused": "Verkauf pausiert",
+		"overEventCapacity": "Über der Veranstaltungskapazität",
+		"overEventCapacityNote": "Veranstaltung auf {capacity} begrenzt: höchstens {capacity} können verkauft werden",
 		"pauseSales": "Verkauf pausieren",
 		"resumeSales": "Verkauf fortsetzen",
 		"pauseSalesFor": "Verkauf für {name} pausieren",
@@ -6437,6 +6439,7 @@
 		"paymentInstructionsHelp": "Hinweise, die den Teilnehmer*innen nach der Reservierung angezeigt werden",
 		"totalTickets": "Verfügbare Tickets insgesamt",
 		"unlimitedTickets": "Leer lassen für unbegrenzte Tickets",
+		"overEventCapacity": "Diese Veranstaltung ist auf {capacity} Teilnehmer*innen begrenzt. Diese Ticketstufe kann höchstens {capacity} Tickets verkaufen, obwohl ihre Menge {quantity} beträgt.",
 		"salesStart": "Verkaufsstart",
 		"salesEnd": "Verkaufsende",
 		"visibility": "Sichtbarkeit *",
