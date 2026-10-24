@@ -221,6 +221,8 @@ BOTH = ("light", "dark")
 # checked), and only token-valued colors — one-off `bg-[hsl(...)]` literals that
 # do not resolve to a token cannot be audited from app.css alone.
 COMPOSITED_PAIRS = [
+    # Admin sidebar / mobile drawer active item (`bg-primary/10 text-primary`, 14px text).
+    ("primary", 1, "primary", 0.10, "background", 4.5, BOTH, "admin sidebar/drawer active item"),
     # ToneTile (common/ToneTile.svelte) — soft icon tiles. Icons: 3:1 floor.
     ("primary", 1, "primary", 0.10, "background", 3.0, BOTH, "ToneTile brand on page"),
     ("primary", 1, "primary", 0.10, "card", 3.0, BOTH, "ToneTile brand on card"),

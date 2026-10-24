@@ -25,6 +25,12 @@ describe('buildDashboardModel', () => {
 		expect(m.isHappeningNow).toBe(true);
 	});
 
+	it('treats a multi-day event that started days ago as happening now', () => {
+		const m = buildDashboardModel([ev('festival', -72, 24)], NOW);
+		expect(m.nextEvent?.id).toBe('festival');
+		expect(m.isHappeningNow).toBe(true);
+	});
+
 	it('is not happening now for a future event', () => {
 		const m = buildDashboardModel([ev('later', 5, 8)], NOW);
 		expect(m.isHappeningNow).toBe(false);
@@ -57,19 +63,6 @@ describe('buildDashboardModel', () => {
 		const m = buildDashboardModel(events, NOW);
 		expect(m.upcoming).toHaveLength(6);
 		expect(m.upcoming[0].id).toBe('e1');
-	});
-
-	it('counts live drafts only', () => {
-		const m = buildDashboardModel(
-			[
-				ev('d1', 1, 2, { status: 'draft' }),
-				ev('d2', 3, 4, { status: 'draft' }),
-				ev('old', -5, -4, { status: 'draft' }),
-				ev('o', 5, 6)
-			],
-			NOW
-		);
-		expect(m.draftCount).toBe(2);
 	});
 
 	it('returns an empty model for no events', () => {

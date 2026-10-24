@@ -255,6 +255,17 @@ describe('getSupportEmail', () => {
 		} as never);
 		expect(await getSupportEmail(fakeFetch)).toBeNull();
 	});
+
+	it.each(['a@b.co,c.d', 'a@b.co;c@d.co', 'a@b.co#frag', 'a@b.co&cc=x.y', 'a@b.co/path'])(
+		'rejects %s',
+		async (value) => {
+			mockedApiApiVersion.mockResolvedValue({
+				data: { version: '1.0.0', features: DEFAULT_FEATURES, support_email: value },
+				error: undefined
+			} as never);
+			expect(await getSupportEmail(fakeFetch)).toBeNull();
+		}
+	);
 });
 
 describe('getTurnstileSiteKey', () => {

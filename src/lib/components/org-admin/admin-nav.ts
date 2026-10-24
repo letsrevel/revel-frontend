@@ -51,8 +51,9 @@ export interface AdminNavOptions {
 }
 
 /**
- * Single source of truth for the org admin navigation (desktop sidebar, mobile
- * drawer and layout breadcrumbs).
+ * Single source of truth for the org admin navigation items shared by the
+ * desktop sidebar and the mobile drawer. The layout's breadcrumbs are built
+ * separately from the current route.
  */
 export function buildAdminNav(opts: AdminNavOptions): AdminNav {
 	const slug = opts.orgSlug;

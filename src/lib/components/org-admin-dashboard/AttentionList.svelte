@@ -7,7 +7,7 @@
 	interface Props {
 		pendingRequestCount: number | null;
 		billingNeedsAttention: boolean;
-		draftCount: number;
+		draftCount: number | null;
 		orgSlug: string;
 		isOwner: boolean;
 	}
@@ -43,7 +43,7 @@
 				href: resolve('/(auth)/org/[slug]/admin/billing', { slug: orgSlug })
 			});
 		}
-		if (draftCount > 0) {
+		if (draftCount !== null && draftCount > 0) {
 			list.push({
 				id: 'drafts',
 				count: draftCount,

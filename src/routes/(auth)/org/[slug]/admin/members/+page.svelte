@@ -179,7 +179,7 @@
 			<!-- Gated on `check_in_attendees`, not `canManageMembers`: an owner or a
 			     roster manager without door duty should not be handed a scanner.
 			     A steward holding ONLY `check_in_attendees` never reaches this page
-			     (the load 403s them) — their way in is the admin quick-actions tile. -->
+			     (the load 403s them) — their way in is the "Verify members" item in the admin sidebar / mobile drawer. -->
 			<Button
 				href={resolve('/(auth)/org/[slug]/admin/members/verify', { slug: organization.slug })}
 				variant="outline"

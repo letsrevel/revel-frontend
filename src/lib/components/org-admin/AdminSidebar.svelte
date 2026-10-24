@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { PanelLeftClose, PanelLeftOpen } from '@lucide/svelte';
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
@@ -19,16 +20,27 @@
 
 	const uid = $props.id();
 	const navId = `admin-sidebar-nav-${uid}`;
+	const toggleId = `admin-sidebar-toggle-${uid}`;
 	const activeHref = $derived(activeNavHref(nav, pathname));
 	const initial = $derived(orgName.trim().charAt(0).toUpperCase());
 	const toggleLabel = $derived(
 		collapsed ? m['orgAdmin.layout.expandSidebar']() : m['orgAdmin.layout.collapseSidebar']()
 	);
 
+	// The toggle is rendered from two different {#if collapsed} branches (with and without the
+	// tooltip trigger), so the focused button is replaced on every toggle. Put focus back.
+	async function handleToggle(): Promise<void> {
+		onToggle();
+		await tick();
+		document.getElementById(toggleId)?.focus();
+	}
+
 	function linkClass(active: boolean): string {
 		return cn(
 			'relative flex items-center gap-3 rounded-md text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
 			collapsed ? 'h-10 justify-center px-0' : 'px-3 py-2',
+			// Active: text-primary on primary/10 over --background, audited in
+			// scripts/audit-brand-themes.py: 5.29:1 light, 5.93:1 dark (needs 4.5).
 			active
 				? 'bg-primary/10 font-bold text-primary'
 				: 'text-muted-foreground hover:bg-muted hover:text-foreground'
@@ -134,8 +146,9 @@
 			{#snippet toggleButton(triggerProps: Record<string, unknown> = {})}
 				<button
 					{...triggerProps}
+					id={toggleId}
 					type="button"
-					onclick={onToggle}
+					onclick={handleToggle}
 					aria-expanded={!collapsed}
 					aria-controls={navId}
 					class={cn(

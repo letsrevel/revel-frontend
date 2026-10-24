@@ -95,8 +95,8 @@
 	a top bar with a hamburger opens a drawer rendering the same grouped nav model.
 
 	Nothing here sticks vertically except the sidebar, which sits below the
-	global header and never changes the vertical offset of page content, so the
-	chrome still scrolls away with the page (the old org-name bar + tab strip ate
+	global header and takes no vertical space above the content, so it stays
+	pinned while the page scrolls (the old org-name bar + tab strip ate
 	a third of a laptop screen in tools like the sector seat editor, reported
 	2026-08-13).
 
@@ -164,7 +164,7 @@
 								{#if i === 0}
 									<Home class="h-3.5 w-3.5 text-muted-foreground/70" aria-hidden="true" />
 								{/if}
-								<!-- eslint-disable svelte/no-navigation-without-resolve -- href is a ResolvedPathname produced by resolve() in the nav item list above -->
+								<!-- eslint-disable svelte/no-navigation-without-resolve -- href is a ResolvedPathname produced by resolve() in the breadcrumbs array above -->
 								<a
 									href={crumb.href}
 									onclick={closeMobileMenu}
@@ -249,7 +249,7 @@
 							{#if i === 0}
 								<Home class="h-3.5 w-3.5 text-muted-foreground/70" aria-hidden="true" />
 							{/if}
-							<!-- eslint-disable svelte/no-navigation-without-resolve -- href is a ResolvedPathname produced by resolve() in the nav item list above -->
+							<!-- eslint-disable svelte/no-navigation-without-resolve -- href is a ResolvedPathname produced by resolve() in the breadcrumbs array above -->
 							<a
 								href={crumb.href}
 								class="text-muted-foreground/80 transition-colors hover:text-foreground"

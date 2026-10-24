@@ -13,8 +13,6 @@ export interface DashboardModel {
 	isHappeningNow: boolean;
 	/** Live events after `nextEvent`, capped. Cancelled ones stay (they show a badge). */
 	upcoming: EventInListSchema[];
-	/** Live events still in draft. */
-	draftCount: number;
 }
 
 export function buildDashboardModel(events: EventInListSchema[], now: Date): DashboardModel {
@@ -25,8 +23,7 @@ export function buildDashboardModel(events: EventInListSchema[], now: Date): Das
 	const isHappeningNow =
 		nextEvent !== null && new Date(nextEvent.start) <= now && now < new Date(nextEvent.end);
 	const upcoming = live.filter((e) => e !== nextEvent).slice(0, UPCOMING_LIMIT);
-	const draftCount = live.filter((e) => e.status === 'draft').length;
-	return { live, nextEvent, isHappeningNow, upcoming, draftCount };
+	return { live, nextEvent, isHappeningNow, upcoming };
 }
 
 type BillingFields = Pick<

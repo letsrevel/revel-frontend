@@ -91,7 +91,7 @@
 			<AttentionList
 				pendingRequestCount={data.pendingRequestCount}
 				billingNeedsAttention={billingNeedsAttention(organization)}
-				draftCount={model.draftCount}
+				draftCount={data.draftCount}
 				orgSlug={organization.slug}
 				isOwner={data.isOwner}
 			/>

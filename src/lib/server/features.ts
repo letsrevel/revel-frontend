@@ -35,7 +35,8 @@ function parseDemoBookingUrl(raw: unknown): string | null {
  * to a generic "contact us" without a link).
  */
 function parseSupportEmail(raw: unknown): string | null {
-	return typeof raw === 'string' && /^[^\s@:?]+@[^\s@:?]+\.[^\s@:?]+$/.test(raw.trim())
+	return typeof raw === 'string' &&
+		/^[A-Za-z0-9._+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/.test(raw.trim())
 		? raw.trim()
 		: null;
 }
