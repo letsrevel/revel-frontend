@@ -1,6 +1,6 @@
 {
 	"name": "revel-frontend",
-	"version": "2.22.3",
+	"version": "2.23.0",
 	"private": true,
 	"type": "module",
 	"scripts": {
@@ -92,7 +92,7 @@
 		"svelte-sonner": "^1.2.1",
 		"tailwind-merge": "^3.7.0",
 		"tailwind-variants": "^3.3.1",
-		"zod": "^4.6.5"
+		"zod": "^4.6.6"
 	},
 	"engines": {
 		"node": ">=22.22.2",

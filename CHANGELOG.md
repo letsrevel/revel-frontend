@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.23.0] - 2026-10-24
+
+### Added
+- **Organization brand colors**: organizations can theme their pages with their own primary and accent colors
+  - Organization, event, series, membership, questionnaire and resources pages, plus the `/embed/*` documents, use the organization's colors in light and dark mode, including dialogs, popovers and toasts; the poster ribbon follows the brand primary
+  - A **Brand colors** section in the organization admin settings with color pickers, a live light/dark preview that shows when a color was adjusted for readability, and a reset to Revel defaults
+  - Saving brand colors requires backend 2.23.0 or later
+
+### Security
+- DOMPurify, which sanitizes rendered Markdown, is upgraded to 3.4.17 to patch newly published sanitizer bypasses; `zod` and the server-side `undici` are upgraded to patch denial-of-service vulnerabilities.
+
 ## [2.22.3] - 2026-10-21
 
 ### Security
