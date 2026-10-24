@@ -295,6 +295,10 @@ For the multi-host variant, replace the `ORIGIN` entry in `env` with:
 Your ingress must forward `X-Forwarded-Host` and `X-Forwarded-Proto` and route custom-domain hostnames
 to this service.
 
+What the proxy has to do for custom domains (overwrite the forwarded headers, an on-demand TLS
+catch-all, per-site HSTS, the CNAME target, Turnstile hostnames) is in
+[Reverse proxy and TLS](../tenant-mode.md#reverse-proxy-and-tls).
+
 ## Health Checks
 
 The Docker image includes a built-in health check that pings the root endpoint:
