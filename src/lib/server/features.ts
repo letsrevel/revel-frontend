@@ -29,6 +29,17 @@ function parseDemoBookingUrl(raw: unknown): string | null {
 	return typeof raw === 'string' && /^https?:\/\//.test(raw) ? raw : null;
 }
 
+/*
+ * The support address renders as a mailto: href, so accept only a plain
+ * address — anything else degrades to "no address" (the copy then falls back
+ * to a generic "contact us" without a link).
+ */
+function parseSupportEmail(raw: unknown): string | null {
+	return typeof raw === 'string' && /^[^\s@:?]+@[^\s@:?]+\.[^\s@:?]+$/.test(raw.trim())
+		? raw.trim()
+		: null;
+}
+
 function parseTurnstileSiteKey(raw: unknown): string | null {
 	return typeof raw === 'string' && raw.trim().length > 0 ? raw.trim() : null;
 }
@@ -40,6 +51,7 @@ interface VersionInfo {
 	demo: boolean;
 	ssoProviders: SsoProviderSchema[];
 	demoBookingUrl: string | null;
+	supportEmail: string | null;
 	turnstileSiteKey: string | null;
 }
 
@@ -48,6 +60,7 @@ const FALLBACK: VersionInfo = {
 	demo: false,
 	ssoProviders: [],
 	demoBookingUrl: null,
+	supportEmail: null,
 	turnstileSiteKey: null
 };
 
@@ -84,6 +97,7 @@ async function getVersionInfo(fetch: typeof globalThis.fetch): Promise<VersionIn
 			demo: data.demo ?? false,
 			ssoProviders: parseSsoProviders(data.sso_providers),
 			demoBookingUrl: parseDemoBookingUrl(data.demo_booking_url),
+			supportEmail: parseSupportEmail(data.support_email),
 			turnstileSiteKey: parseTurnstileSiteKey(data.turnstile_site_key)
 		};
 		cache = { value, expiry: Date.now() + TTL_MS };
@@ -126,6 +140,15 @@ export async function getSsoProviders(
  */
 export async function getDemoBookingUrl(fetch: typeof globalThis.fetch): Promise<string | null> {
 	return (await getVersionInfo(fetch)).demoBookingUrl;
+}
+
+/**
+ * Customer support address from `/version` (cached). Fail-CLOSED: any failure
+ * or unset/invalid address yields null — callers then render generic
+ * "contact us" copy rather than a dead mailto link.
+ */
+export async function getSupportEmail(fetch: typeof globalThis.fetch): Promise<string | null> {
+	return (await getVersionInfo(fetch)).supportEmail;
 }
 
 /**

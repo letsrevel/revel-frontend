@@ -53,7 +53,6 @@
 			orgSlug: data.organization.slug,
 			isOwner: data.isOwner,
 			canVerifyMembers,
-			customDomainEnabled: !!data.organization.custom_domain_enabled,
 			billingWarning: billingNeedsAttention(data.organization)
 		})
 	);

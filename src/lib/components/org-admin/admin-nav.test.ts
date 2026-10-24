@@ -5,7 +5,6 @@ const base = {
 	orgSlug: 'acme',
 	isOwner: false,
 	canVerifyMembers: false,
-	customDomainEnabled: false,
 	billingWarning: false
 };
 const ids = (o: Partial<typeof base>) =>
@@ -20,11 +19,10 @@ describe('buildAdminNav', () => {
 		expect(result).toContain('events');
 	});
 
-	it('shows owner items, and custom domain only when enabled', () => {
-		expect(ids({ isOwner: true })).toEqual(expect.arrayContaining(['billing', 'financials']));
-		expect(ids({ isOwner: true })).not.toContain('custom-domain');
-		expect(ids({ isOwner: true, customDomainEnabled: true })).toContain('custom-domain');
-		expect(ids({ isOwner: false, customDomainEnabled: true })).not.toContain('custom-domain');
+	it('shows owner items, including custom domain whatever the platform switch says', () => {
+		expect(ids({ isOwner: true })).toEqual(
+			expect.arrayContaining(['billing', 'financials', 'integrations', 'custom-domain'])
+		);
 	});
 
 	it('shows verify members only when allowed', () => {
@@ -45,6 +43,7 @@ describe('buildAdminNav', () => {
 		const nav = buildAdminNav({ ...base, isOwner: true });
 		expect(nav.groups.map((g) => g.id)).toEqual(['events', 'people', 'content', 'organization']);
 		expect(nav.dashboard.href).toBe('/org/acme/admin');
+		expect(nav.groups.find((g) => g.id === 'organization')?.items[0].id).toBe('settings');
 	});
 });
 

@@ -47,7 +47,6 @@ export interface AdminNavOptions {
 	orgSlug: string;
 	isOwner: boolean;
 	canVerifyMembers: boolean;
-	customDomainEnabled: boolean;
 	billingWarning: boolean;
 }
 
@@ -57,7 +56,7 @@ export interface AdminNavOptions {
  */
 export function buildAdminNav(opts: AdminNavOptions): AdminNav {
 	const slug = opts.orgSlug;
-	const { isOwner, canVerifyMembers, customDomainEnabled, billingWarning } = opts;
+	const { isOwner, canVerifyMembers, billingWarning } = opts;
 
 	const dashboard: NavItem = {
 		id: 'dashboard',
@@ -163,6 +162,12 @@ export function buildAdminNav(opts: AdminNavOptions): AdminNav {
 			label: m['orgAdmin.dashboard.tools.groups.organization'](),
 			items: [
 				{
+					id: 'settings',
+					label: m['orgAdmin.nav.settings'](),
+					icon: Settings,
+					href: resolve('/(auth)/org/[slug]/admin/settings', { slug })
+				},
+				{
 					id: 'venues',
 					label: m['orgAdmin.nav.venues'](),
 					icon: MapPin,
@@ -173,12 +178,6 @@ export function buildAdminNav(opts: AdminNavOptions): AdminNav {
 					label: m['orgAdmin.nav.embed'](),
 					icon: Code,
 					href: resolve('/(auth)/org/[slug]/admin/embed', { slug })
-				},
-				{
-					id: 'settings',
-					label: m['orgAdmin.nav.settings'](),
-					icon: Settings,
-					href: resolve('/(auth)/org/[slug]/admin/settings', { slug })
 				},
 				...(isOwner
 					? [
@@ -201,17 +200,14 @@ export function buildAdminNav(opts: AdminNavOptions): AdminNav {
 								icon: Plug,
 								href: resolve('/(auth)/org/[slug]/admin/integrations', { slug })
 							},
-							// Platform-superuser switch; owner-only on the backend as well.
-							...(customDomainEnabled
-								? [
-										{
-											id: 'custom-domain',
-											label: m['orgAdmin.nav.customDomain'](),
-											icon: Globe,
-											href: resolve('/(auth)/org/[slug]/admin/custom-domain', { slug })
-										}
-									]
-								: [])
+							// Shown to every owner: when the platform switch is off the page
+							// explains how to request it instead of 404ing.
+							{
+								id: 'custom-domain',
+								label: m['orgAdmin.nav.customDomain'](),
+								icon: Globe,
+								href: resolve('/(auth)/org/[slug]/admin/custom-domain', { slug })
+							}
 						]
 					: [])
 			]

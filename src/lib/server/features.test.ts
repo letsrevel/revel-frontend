@@ -10,6 +10,7 @@ import {
 	getDemoMode,
 	getSsoProviders,
 	getDemoBookingUrl,
+	getSupportEmail,
 	getTurnstileSiteKey,
 	__resetFeaturesCache
 } from './features';
@@ -218,6 +219,41 @@ describe('getDemoBookingUrl', () => {
 		await getFeatures(fakeFetch);
 		await getDemoBookingUrl(fakeFetch);
 		expect(mockedApiApiVersion).toHaveBeenCalledTimes(1);
+	});
+});
+
+describe('getSupportEmail', () => {
+	it('returns the address from the /version payload', async () => {
+		mockedApiApiVersion.mockResolvedValue({
+			data: { version: '1.0.0', features: DEFAULT_FEATURES, support_email: 'help@example.com' },
+			error: undefined
+		} as never);
+		expect(await getSupportEmail(fakeFetch)).toBe('help@example.com');
+	});
+
+	it('fails CLOSED to null when the call throws', async () => {
+		mockedApiApiVersion.mockRejectedValue(new Error('network'));
+		expect(await getSupportEmail(fakeFetch)).toBeNull();
+	});
+
+	it('fails CLOSED to null when the field is absent or null', async () => {
+		mockedApiApiVersion.mockResolvedValue({
+			data: { version: '1.0.0', features: DEFAULT_FEATURES, support_email: null },
+			error: undefined
+		} as never);
+		expect(await getSupportEmail(fakeFetch)).toBeNull();
+	});
+
+	it('rejects values that are not a plain address (they feed a mailto: href)', async () => {
+		mockedApiApiVersion.mockResolvedValue({
+			data: {
+				version: '1.0.0',
+				features: DEFAULT_FEATURES,
+				support_email: 'help@example.com?bcc=evil@example.com'
+			},
+			error: undefined
+		} as never);
+		expect(await getSupportEmail(fakeFetch)).toBeNull();
 	});
 });
 
