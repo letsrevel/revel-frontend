@@ -111,8 +111,11 @@ test.describe('J30 tenant session revocation @p1', () => {
 		await expect(fresh).toHaveURL(/\/dashboard(\/|$|\?)/);
 
 		// Off and straight back on, without presenting the session in between.
-		await setKillSwitch(browser, orgId, false);
-		await setKillSwitch(browser, orgId, true);
+		try {
+			await setKillSwitch(browser, orgId, false);
+		} finally {
+			await setKillSwitch(browser, orgId, true);
+		}
 
 		// The old access token stays valid until it expires (by design); simulate
 		// that, so the next request has to refresh: refused, back to the tenant login.
