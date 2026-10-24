@@ -1,13 +1,16 @@
 <script lang="ts">
-	import { Info } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import CopyField from '$lib/components/common/CopyField.svelte';
+	import type { DnsProviderSchema } from '$lib/api/generated/types.gen';
 	import type { CustomDomain } from './custom-domain-api';
+	import DnsOnlyNote from './DnsOnlyNote.svelte';
 
 	interface Props {
 		records: CustomDomain['verification_records'];
+		/** The detected DNS host, or null when unknown; picks the DNS-only wording. */
+		provider?: DnsProviderSchema | null;
 	}
-	const { records }: Props = $props();
+	const { records, provider = null }: Props = $props();
 
 	const isCname = (type: string): boolean => type.toUpperCase() === 'CNAME';
 </script>
@@ -74,13 +77,9 @@
 				</div>
 			</dl>
 			{#if isCname(record.type)}
-				<p
-					class="mt-3 flex items-start gap-2 rounded-md border border-info/40 bg-info/10 p-3 text-sm"
-					data-testid="cname-cloudflare-warning"
-				>
-					<Info class="mt-0.5 h-4 w-4 shrink-0 text-info" aria-hidden="true" />
-					<strong>{m['customDomain.records.cloudflareNote']()}</strong>
-				</p>
+				<div class="mt-3">
+					<DnsOnlyNote {provider} />
+				</div>
 			{/if}
 		</li>
 	{/each}
