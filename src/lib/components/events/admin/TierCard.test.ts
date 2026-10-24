@@ -77,6 +77,11 @@ describe('TierCard quantity line under an event cap', () => {
 		expect(screen.getByText('27 remaining (event cap)')).toBeInTheDocument();
 	});
 
+	it('treats an omitted total_quantity as unlimited', () => {
+		renderListed({ total_quantity: undefined, total_available: 27, capped_by_event: true });
+		expect(screen.getByText('27 remaining (event cap)')).toBeInTheDocument();
+	});
+
 	it('keeps the plain figures when the event cap does not bind', () => {
 		renderListed({ total_available: 12, capped_by_event: false });
 		expect(screen.getByText('12 of 40 remaining')).toBeInTheDocument();
