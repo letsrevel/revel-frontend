@@ -6362,6 +6362,8 @@
 	},
 	"tierCard": {
 		"salesPaused": "Sales paused",
+		"overEventCapacity": "Over event capacity",
+		"overEventCapacityNote": "Event capped at {capacity}: at most {capacity} can sell",
 		"pauseSales": "Pause sales",
 		"resumeSales": "Resume sales",
 		"pauseSalesFor": "Pause sales for {name}",
@@ -6437,6 +6439,7 @@
 		"paymentInstructionsHelp": "Instructions shown to attendees after reserving their ticket",
 		"totalTickets": "Total Tickets Available",
 		"unlimitedTickets": "Leave empty for unlimited tickets",
+		"overEventCapacity": "This event is capped at {capacity} attendees. This tier can sell at most {capacity} tickets, even though its quantity is {quantity}.",
 		"salesStart": "Sales Start",
 		"salesEnd": "Sales End",
 		"visibility": "Visibility *",

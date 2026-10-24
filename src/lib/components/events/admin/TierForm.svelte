@@ -66,6 +66,7 @@
 		platformFees?: PlatformFeeInfo | null;
 		membershipTiers?: MembershipTierSchema[];
 		eventVenueId?: string | null; // Pre-fill venue from event
+		eventCapacity?: number | null; // Effective event cap (null = uncapped)
 		/** The event form's start/end/check-in window the tier offsets are relative to. */
 		eventContext?: TierCheckInEventContext;
 		/** The event's country rules (#1001) and whether they've loaded (fails closed). */
@@ -81,13 +82,13 @@
 		platformFees = null,
 		membershipTiers = [],
 		eventVenueId = null,
+		eventCapacity = null,
 		eventContext = { start: '' },
 		rules = { compliance: null, status: 'ready' },
 		onClose
 	}: Props = $props();
 
 	const accessToken = $derived(authStore.accessToken);
-
 	const queryClient = useQueryClient();
 
 	// Form state
@@ -639,6 +640,7 @@
 				bind:restrictedToMembershipTiersIds
 				{membershipTiers}
 				bind:salesPaused
+				{eventCapacity}
 				{isPending}
 			/>
 
