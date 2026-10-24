@@ -142,7 +142,6 @@
 			'hover:-translate-y-1 hover:shadow-poster-lg focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
 			variant === 'compact' && 'flex flex-row md:flex-col',
 			variant === 'standard' && 'flex flex-col',
-			isPast && 'opacity-75',
 			className
 		)
 	);
@@ -208,7 +207,10 @@
 	{/if}
 
 	<!-- Cover Image -->
-	<EventCoverImage {event} {userStatus} class={imageContainerClasses} />
+	<!-- Past events fade the artwork only, never the card: opacity on the card
+	     blended every text colour toward the page and failed AA (#1094). The
+	     "Past Event" badge carries the meaning in text. -->
+	<EventCoverImage {event} {userStatus} faded={isPast} class={imageContainerClasses} />
 
 	<!-- Card Content -->
 	<div
