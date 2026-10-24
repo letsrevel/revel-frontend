@@ -18,6 +18,7 @@
 	import { formatDateTime } from '$lib/utils/date';
 	import HostnameForm from './HostnameForm.svelte';
 	import DnsRecordsList from './DnsRecordsList.svelte';
+	import DnsOnlyNote from './DnsOnlyNote.svelte';
 	import {
 		CustomDomainApiError,
 		PENDING_POLL_MS,
@@ -210,7 +211,11 @@
 					{:else}
 						<p class="text-sm">{m['customDomain.pending.intro']()}</p>
 						<ol class="list-decimal space-y-1.5 pl-5 text-sm">
-							<li>{m['customDomain.pending.step1']()}</li>
+							<li>
+								{domain.dns_provider
+									? m['customDomain.pending.step1Provider']({ provider: domain.dns_provider.name })
+									: m['customDomain.pending.step1']()}
+							</li>
 							<li>{m['customDomain.pending.step2']()}</li>
 							<li>{m['customDomain.pending.step3']()}</li>
 						</ol>
@@ -232,18 +237,14 @@
 								<!-- eslint-enable svelte/no-navigation-without-resolve -->
 							</p>
 						{/if}
-						<p
-							class="flex items-start gap-2 rounded-md border border-info/40 bg-info/10 p-3 text-sm"
-							data-testid="cloudflare-dns-only"
-						>
-							<Info class="mt-0.5 h-4 w-4 shrink-0 text-info" aria-hidden="true" />
-							<strong>{m['customDomain.pending.cloudflareNote']()}</strong>
-						</p>
 
 						{#if domain.verification_records.length > 0}
 							<div class="space-y-3">
 								<h3 class="font-bold">{m['customDomain.records.heading']()}</h3>
-								<DnsRecordsList records={domain.verification_records} />
+								<DnsRecordsList
+									records={domain.verification_records}
+									provider={domain.dns_provider ?? null}
+								/>
 							</div>
 						{/if}
 
@@ -258,6 +259,7 @@
 									value={domain.cname_target}
 									label={m['customDomain.cname.label']()}
 								/>
+								<DnsOnlyNote provider={domain.dns_provider ?? null} />
 							</div>
 						{/if}
 

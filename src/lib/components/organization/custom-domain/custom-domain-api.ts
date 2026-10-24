@@ -15,6 +15,14 @@ import type { Tone } from '$lib/components/common/tones';
 
 export type CustomDomain = CustomDomainSchema;
 
+/**
+ * Whether the detected DNS host is Cloudflare, which proxies new records by
+ * default. Matched on the backend provider table's display name ("Cloudflare").
+ */
+export function isCloudflare(provider: { name: string }): boolean {
+	return provider.name.trim().toLowerCase() === 'cloudflare';
+}
+
 /** A failed custom-domain call; `fieldErrors` / `detail` carry what can be shown. */
 export class CustomDomainApiError extends Error {
 	readonly status: number | undefined;

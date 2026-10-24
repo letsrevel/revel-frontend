@@ -153,28 +153,59 @@ describe('CustomDomainManager (#1058)', () => {
 			]
 		};
 
-		it('states DNS only in bold up front and on the CNAME card, without the duplicate section', async () => {
-			vi.mocked(getCustomDomain).mockResolvedValue(WITH_CNAME);
+		it('unknown DNS host: the conditional Cloudflare line, once, on the CNAME card only', async () => {
+			vi.mocked(getCustomDomain).mockResolvedValue({ ...WITH_CNAME, dns_provider: null });
 			setup();
 			await settle();
 
-			const upFront = screen.getByTestId('cloudflare-dns-only');
-			expect(upFront).toHaveTextContent(/set the CNAME record to "DNS only" \(grey cloud\)/);
-			expect(upFront).toHaveTextContent(/Do not proxy it \(orange cloud\), now or later/);
-			expect(upFront.querySelector('strong')).not.toBeNull();
-
+			expect(screen.getAllByTestId('cname-cloudflare-warning')).toHaveLength(1);
 			const cards = screen.getAllByTestId('dns-record');
 			expect(cards).toHaveLength(3);
 			const warning = within(cards[2]).getByTestId('cname-cloudflare-warning');
 			expect(warning.querySelector('strong')).toHaveTextContent(
-				/set this record to "DNS only" \(grey cloud\)\. Do not proxy it, now or later/
+				'If your DNS is at Cloudflare, set this record to "DNS only" (grey cloud). Do not proxy it, now or later.'
 			);
 			expect(within(cards[0]).queryByTestId('cname-cloudflare-warning')).not.toBeInTheDocument();
+			expect(
+				screen.getByText(/Sign in to the company where you bought your domain/)
+			).toBeInTheDocument();
 
 			expect(
 				screen.queryByRole('heading', { name: 'Point your domain to Revel' })
 			).not.toBeInTheDocument();
 			expect(screen.queryByLabelText('Address to point to')).not.toBeInTheDocument();
+		});
+
+		it('Cloudflare: one assertive line on the CNAME card, and step 1 names Cloudflare', async () => {
+			vi.mocked(getCustomDomain).mockResolvedValue({
+				...WITH_CNAME,
+				dns_provider: { name: 'Cloudflare', help_url: 'https://developers.cloudflare.com/dns/' }
+			});
+			setup();
+			await settle();
+
+			const warnings = screen.getAllByTestId('cname-cloudflare-warning');
+			expect(warnings).toHaveLength(1);
+			expect(
+				within(screen.getAllByTestId('dns-record')[2]).getByTestId('cname-cloudflare-warning')
+			).toBe(warnings[0]);
+			expect(warnings[0].querySelector('strong')).toHaveTextContent(
+				'Your DNS is at Cloudflare: set this record to "DNS only" (grey cloud). Do not proxy it, now or later.'
+			);
+			expect(screen.getByText('Sign in to Cloudflare.')).toBeInTheDocument();
+		});
+
+		it('another known DNS host: no Cloudflare line at all, and step 1 names the host', async () => {
+			vi.mocked(getCustomDomain).mockResolvedValue({
+				...WITH_CNAME,
+				dns_provider: { name: 'Gandi', help_url: 'https://docs.gandi.net/en/domain_names/' }
+			});
+			setup();
+			await settle();
+
+			expect(screen.queryByTestId('cname-cloudflare-warning')).not.toBeInTheDocument();
+			expect(screen.queryByText(/Cloudflare/)).not.toBeInTheDocument();
+			expect(screen.getByText('Sign in to Gandi.')).toBeInTheDocument();
 		});
 
 		it('puts the target/value hint on the CNAME card, linked to the value field', async () => {
@@ -201,7 +232,8 @@ describe('CustomDomainManager (#1058)', () => {
 				screen.getByRole('heading', { name: 'Point your domain to Revel' })
 			).toBeInTheDocument();
 			expect(screen.getByLabelText('Address to point to')).toHaveValue('customers.revel.example');
-			expect(screen.queryByTestId('cname-cloudflare-warning')).not.toBeInTheDocument();
+			// The fallback CNAME section carries the DNS-only line itself now (no up-front note).
+			expect(screen.getAllByTestId('cname-cloudflare-warning')).toHaveLength(1);
 		});
 	});
 
