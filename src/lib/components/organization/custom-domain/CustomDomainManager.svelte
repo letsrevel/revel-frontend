@@ -55,6 +55,11 @@
 		!!domain && (domain.verification_records.length > 0 || !!domain.cname_target)
 	);
 
+	// The CNAME already shows as a record card; the standalone section is only a fallback.
+	const hasCnameRecord = $derived(
+		!!domain && domain.verification_records.some((r) => r.type.toUpperCase() === 'CNAME')
+	);
+
 	let showChangeForm = $state(false);
 	let removeOpen = $state(false);
 	let actionError = $state<string | null>(null);
@@ -201,6 +206,13 @@
 							<li>{m['customDomain.pending.step2']()}</li>
 							<li>{m['customDomain.pending.step3']()}</li>
 						</ol>
+						<p
+							class="flex items-start gap-2 rounded-md border border-info/40 bg-info/10 p-3 text-sm"
+							data-testid="cloudflare-dns-only"
+						>
+							<Info class="mt-0.5 h-4 w-4 shrink-0 text-info" aria-hidden="true" />
+							<strong>{m['customDomain.pending.cloudflareNote']()}</strong>
+						</p>
 
 						{#if domain.verification_records.length > 0}
 							<div class="space-y-3">
@@ -209,7 +221,7 @@
 							</div>
 						{/if}
 
-						{#if domain.cname_target}
+						{#if domain.cname_target && !hasCnameRecord}
 							<div class="space-y-2">
 								<h3 class="font-bold">{m['customDomain.cname.heading']()}</h3>
 								<p class="text-sm text-muted-foreground">
