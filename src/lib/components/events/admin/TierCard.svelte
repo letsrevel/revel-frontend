@@ -20,6 +20,7 @@
 	import { formatMoney, MONEY_RANGE_SEPARATOR } from '$lib/utils/format';
 	import ComplianceCallout from '$lib/components/compliance/ComplianceCallout.svelte';
 	import { countryName } from '$lib/utils/compliance';
+	import { exceedsEventCapacity } from './event-capacity';
 
 	interface Props {
 		tier: TicketTierDetailSchema;
@@ -33,6 +34,8 @@
 		onlineBlocked?: boolean;
 		/** `event.compliance.venue_country`, for the banner copy. */
 		venueCountry?: string;
+		/** Effective event capacity (null = uncapped); flags a quantity above it. */
+		eventCapacity?: number | null;
 	}
 
 	const {
@@ -43,8 +46,11 @@
 		onTogglePause,
 		pausePending = false,
 		onlineBlocked = false,
-		venueCountry = ''
+		venueCountry = '',
+		eventCapacity = null
 	}: Props = $props();
+
+	const overCapacity = $derived(exceedsEventCapacity(tier.total_quantity, eventCapacity));
 
 	// A tier created before the country gate (or switched to card while the
 	// venue was elsewhere) can't sell anymore: say so and offer the way out.
@@ -147,6 +153,9 @@
 	{#if tier.sales_paused}
 		<StatusBadge tone="warning" size="sm" label={m['tierCard.salesPaused']()} />
 	{/if}
+	{#if overCapacity}
+		<StatusBadge tone="warning" size="sm" label={m['tierCard.overEventCapacity']()} />
+	{/if}
 {/snippet}
 
 {#snippet meta()}
@@ -177,6 +186,14 @@
 		<div>
 			<dt class="text-muted-foreground">{m['tierCard.quantity']()}</dt>
 			<dd class="font-bold">{quantityDisplay}</dd>
+			{#if overCapacity}
+				<p
+					class="mt-0.5 text-xs text-highlight-foreground dark:text-highlight"
+					data-testid="tier-over-capacity"
+				>
+					{m['tierCard.overEventCapacityNote']({ capacity: String(eventCapacity) })}
+				</p>
+			{/if}
 		</div>
 
 		<!-- Sold elsewhere (per connected platform, from external_sales) -->

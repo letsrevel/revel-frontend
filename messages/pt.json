@@ -6362,6 +6362,8 @@
 	},
 	"tierCard": {
 		"salesPaused": "Vendas em pausa",
+		"overEventCapacity": "Acima da lotação do evento",
+		"overEventCapacityNote": "Evento limitado a {capacity}: podem ser vendidos no máximo {capacity}",
 		"pauseSales": "Pausar vendas",
 		"resumeSales": "Retomar vendas",
 		"pauseSalesFor": "Pausar vendas de {name}",
@@ -6437,6 +6439,7 @@
 		"paymentInstructionsHelp": "Instruções mostradas às pessoas participantes depois de reservarem o bilhete",
 		"totalTickets": "Total de bilhetes disponíveis",
 		"unlimitedTickets": "Deixa vazio para bilhetes ilimitados",
+		"overEventCapacity": "Este evento tem uma lotação máxima de {capacity} participantes. Este tipo de bilhete pode vender no máximo {capacity} bilhetes, embora a sua quantidade seja {quantity}.",
 		"salesStart": "Início das vendas",
 		"salesEnd": "Fim das vendas",
 		"visibility": "Visibilidade *",

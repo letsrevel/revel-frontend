@@ -636,6 +636,7 @@
 							organizationStripeConnected={organization.is_stripe_connected}
 							platformFees={platformFeeInfoFrom(organization)}
 							{formData}
+							venueCapacity={selectedVenue?.capacity ?? null}
 							onUpdate={updateFormData}
 							onBack={() => handleTabChange('details')}
 							onNext={() => handleSave(true)}

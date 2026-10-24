@@ -15,6 +15,7 @@
 	import { Info, Ticket } from '@lucide/svelte';
 	import TierCard from './TierCard.svelte';
 	import TierForm from './TierForm.svelte';
+	import { effectiveEventCapacity } from './event-capacity';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { reorderByIds, swapAndCollectIds } from '$lib/utils/reorder';
 	import type { PlatformFeeInfo } from '$lib/utils/fees';
@@ -27,6 +28,7 @@
 	// form object; only these fields are used here.
 	interface EventFormData {
 		max_tickets_per_user?: number | null;
+		max_attendees?: number;
 		venue_id?: string | null;
 		// `datetime-local` values; tier check-in offsets are relative to `start` (#945).
 		start?: string;
@@ -53,6 +55,8 @@
 		onNext: () => void;
 		/** When true (default), renders nav buttons at bottom. When false, parent handles save. */
 		standalone?: boolean;
+		/** Capacity of the selected venue; the effective event cap is min(max_attendees, this). */
+		venueCapacity?: number | null;
 	}
 
 	const {
@@ -64,8 +68,12 @@
 		onUpdate,
 		onBack,
 		onNext,
-		standalone = true
+		standalone = true,
+		venueCapacity = null
 	}: Props = $props();
+
+	// Uses the (possibly unsaved) form state so lowering max_attendees flags tiers immediately.
+	const eventCapacity = $derived(effectiveEventCapacity(formData.max_attendees, venueCapacity));
 
 	const accessToken = $derived(authStore.accessToken);
 
@@ -391,6 +399,7 @@
 			{#each tiers as tier, index (tier.id)}
 				<TierCard
 					{tier}
+					{eventCapacity}
 					{onlineBlocked}
 					venueCountry={compliance?.venue_country ?? ''}
 					onEdit={() => handleEditTier(tier)}
@@ -450,6 +459,7 @@
 		{platformFees}
 		{membershipTiers}
 		eventVenueId={formData.venue_id || null}
+		{eventCapacity}
 		rules={{ compliance, status: complianceStatus, onRetry: () => complianceQuery.refetch() }}
 		eventContext={{
 			start: formData.start ?? '',
