@@ -1,4 +1,5 @@
 <script lang="ts">
+	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import { orgOrigin } from '$lib/utils/org-links';
 	import { page } from '$app/state';
 	import EmbedHeader from '$lib/components/embed/EmbedHeader.svelte';
@@ -60,9 +61,9 @@
 	/>
 
 	{#if data.series.description}
-		<p class="border-b border-border px-4 py-3 text-sm text-muted-foreground">
-			{data.series.description}
-		</p>
+		<div class="border-b border-border px-4 py-3">
+			<MarkdownContent content={data.series.description} class="text-muted-foreground" />
+		</div>
 	{/if}
 
 	<EmbedEventGrid

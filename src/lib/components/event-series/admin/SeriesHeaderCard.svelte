@@ -1,4 +1,5 @@
 <script lang="ts">
+	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import {
 		Pause,
@@ -98,7 +99,7 @@
 	</div>
 
 	{#if series.description}
-		<p class="mt-2 text-sm text-muted-foreground">{series.description}</p>
+		<MarkdownContent content={series.description} class="mt-2 text-muted-foreground" />
 	{/if}
 
 	<p class="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
