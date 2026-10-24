@@ -20,7 +20,10 @@ function makeTier(totalQuantity: number | null): TicketTierDetailSchema {
 	} as TicketTierDetailSchema;
 }
 
-function renderCard(totalQuantity: number | null, eventCapacity: number | null) {
+function renderCard(
+	totalQuantity: number | null,
+	eventCapacity: number | null
+): ReturnType<typeof render> {
 	return render(TierCard, {
 		props: { tier: makeTier(totalQuantity), onEdit: vi.fn(), eventCapacity }
 	});

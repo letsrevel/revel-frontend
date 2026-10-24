@@ -42,11 +42,10 @@
 		isPending
 	}: Props = $props();
 
-	// Empty = unlimited, which is fine on a capped event: only a concrete quantity can exceed it.
-	const overCapacity = $derived(
-		String(totalQuantity ?? '').trim() !== '' &&
-			exceedsEventCapacity(Number(totalQuantity), eventCapacity)
-	);
+	// Parsed exactly as TierForm saves it (`parseInt`), so the warning describes
+	// the value that will be stored. Empty = unlimited (NaN), which never warns.
+	const parsedQuantity = $derived(parseInt(String(totalQuantity ?? '')));
+	const overCapacity = $derived(exceedsEventCapacity(parsedQuantity, eventCapacity));
 </script>
 
 <!-- Total Quantity -->
@@ -76,7 +75,7 @@
 			<span>
 				{m['tierForm.overEventCapacity']({
 					capacity: String(eventCapacity),
-					quantity: String(totalQuantity)
+					quantity: String(parsedQuantity)
 				})}
 			</span>
 		</p>

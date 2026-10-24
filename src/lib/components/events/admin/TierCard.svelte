@@ -185,15 +185,18 @@
 		<!-- Quantity -->
 		<div>
 			<dt class="text-muted-foreground">{m['tierCard.quantity']()}</dt>
-			<dd class="font-bold">{quantityDisplay}</dd>
-			{#if overCapacity}
-				<p
-					class="mt-0.5 text-xs text-highlight-foreground dark:text-highlight"
-					data-testid="tier-over-capacity"
-				>
-					{m['tierCard.overEventCapacityNote']({ capacity: String(eventCapacity) })}
-				</p>
-			{/if}
+			<dd class="font-bold">
+				{quantityDisplay}
+				<!-- Inside the <dd>: a <dl> group may only hold dt/dd. -->
+				{#if overCapacity}
+					<span
+						class="mt-0.5 block text-xs font-normal text-highlight-foreground dark:text-highlight"
+						data-testid="tier-over-capacity"
+					>
+						{m['tierCard.overEventCapacityNote']({ capacity: String(eventCapacity) })}
+					</span>
+				{/if}
+			</dd>
 		</div>
 
 		<!-- Sold elsewhere (per connected platform, from external_sales) -->
