@@ -3460,6 +3460,8 @@
 	"orgAdmin": {
 		"layout": {
 			"toggleMenu": "Mostrar u ocultar el menú de navegación",
+			"collapseSidebar": "Contraer barra lateral",
+			"expandSidebar": "Expandir barra lateral",
 			"adminBadge": "Admin",
 			"ownerBadge": "Titular",
 			"staffBadge": "Staff",

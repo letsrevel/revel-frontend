@@ -3460,6 +3460,8 @@
 	"orgAdmin": {
 		"layout": {
 			"toggleMenu": "Navigationsmenü umschalten",
+			"collapseSidebar": "Seitenleiste einklappen",
+			"expandSidebar": "Seitenleiste ausklappen",
 			"adminBadge": "Admin",
 			"ownerBadge": "Eigentümer*in",
 			"staffBadge": "Mitarbeiter*in",

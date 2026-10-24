@@ -3430,6 +3430,8 @@
 	"orgAdmin": {
 		"layout": {
 			"toggleMenu": "Afficher/masquer le menu de navigation",
+			"collapseSidebar": "Réduire la barre latérale",
+			"expandSidebar": "Développer la barre latérale",
 			"adminBadge": "Admin",
 			"ownerBadge": "Propriétaire",
 			"staffBadge": "Équipe",

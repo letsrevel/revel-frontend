@@ -49,7 +49,9 @@ test.describe('J3 create organization @p1', () => {
 		const orgName = uniqueName('Org');
 		await submitName(orgName);
 		await page.waitForURL(/\/org\/[^/]+\/admin\/settings/, { timeout: 30_000 });
-		await expect(page.getByText(orgName).first()).toBeVisible();
+		// The admin chrome names the org twice (desktop sidebar, mobile top bar),
+		// each hidden at the other breakpoint — so match the copy that is showing.
+		await expect(page.getByText(orgName).filter({ visible: true }).first()).toBeVisible();
 
 		// One org per owner: the form is replaced by the already-owner guard.
 		await gotoHydrated(page, '/create-org');

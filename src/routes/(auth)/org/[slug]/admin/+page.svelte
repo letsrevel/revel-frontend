@@ -12,25 +12,15 @@
 	import NextEventPanel from '$lib/components/org-admin-dashboard/NextEventPanel.svelte';
 	import AttentionList from '$lib/components/org-admin-dashboard/AttentionList.svelte';
 	import UpcomingEventsList from '$lib/components/org-admin-dashboard/UpcomingEventsList.svelte';
-	import AdminToolsIndex from '$lib/components/org-admin-dashboard/AdminToolsIndex.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { organizationadminmembersListMembershipTiers } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { canPerformAction } from '$lib/utils/permissions';
 	import { billingNeedsAttention, buildDashboardModel } from './dashboard-model';
 
 	const { data }: { data: PageData } = $props();
 
 	const organization = $derived($page.data.organization);
 	const canCreateEvent = $derived(data.canCreateEvent);
-
-	// Door verification is `check_in_attendees`, which the admin layout does not
-	// pre-extract (it only lifts the two event-authoring flags), so derive it from
-	// the permissions payload the layout already returns. This keeps the door
-	// steward's only entry point to the verify page visible.
-	const canVerifyMembers = $derived(
-		data.isOwner || canPerformAction(data.permissions, organization.id, 'check_in_attendees')
-	);
 
 	// Computed once per load: the page is a snapshot, not a ticking clock.
 	const model = $derived(buildDashboardModel(data.dashboardEvents, new Date()));
@@ -85,17 +75,9 @@
 			</Button>
 		{/if}
 	{/snippet}
-	{#snippet toolsIndex()}
-		<AdminToolsIndex
-			orgSlug={organization.slug}
-			isOwner={data.isOwner}
-			{canVerifyMembers}
-			customDomainEnabled={!!organization.custom_domain_enabled}
-		/>
-	{/snippet}
 	<PageHeader title={m['orgAdmin.nav.dashboard']()} volume="studio" actions={headerActions} />
 
-	<div class="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:grid-rows-[auto_1fr]">
+	<div class="grid items-start gap-8 xl:grid-cols-[minmax(0,1fr)_22rem] xl:grid-rows-[auto_1fr]">
 		<NextEventPanel
 			event={model.nextEvent}
 			isHappeningNow={model.isHappeningNow}
@@ -103,9 +85,9 @@
 			{canCreateEvent}
 			onCreateEvent={createEvent}
 		/>
-		<!-- Side column: spans both left-hand rows on lg so it never inherits the
+		<!-- Side column: spans both left-hand rows on xl so it never inherits the
 		     hero's row height (which left a dead gap under a short attention list). -->
-		<div class="space-y-8 lg:row-span-2">
+		<div class="space-y-8 xl:row-span-2">
 			<AttentionList
 				pendingRequestCount={data.pendingRequestCount}
 				billingNeedsAttention={billingNeedsAttention(organization)}
@@ -113,18 +95,8 @@
 				orgSlug={organization.slug}
 				isOwner={data.isOwner}
 			/>
-			<!-- lg+: tools fill the side column. Below lg they render after "Coming
-			     up" instead (the copy below), because on a phone the next events
-			     matter more and the full nav is one tap away. display:none keeps the
-			     hidden copy out of the accessibility tree and the tab order. -->
-			<div class="hidden lg:block">
-				{@render toolsIndex()}
-			</div>
 		</div>
 		<UpcomingEventsList events={model.upcoming} orgSlug={organization.slug} />
-		<div class="lg:hidden">
-			{@render toolsIndex()}
-		</div>
 	</div>
 
 	<!-- Permissions Notice (for staff members) -->
