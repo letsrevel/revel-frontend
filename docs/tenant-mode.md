@@ -346,8 +346,9 @@ They were left alone instead of adding a parameter nobody passes.
 On a custom domain the attendee's own lists show only that organization. `tenantOrgFilter()`
 (`src/lib/utils/tenant-filter.ts`) returns `{ organization: tenant.id }` on a tenant host and `{}`
 on the platform, and it is spread into the query of every "my" call: dashboard events, calendar,
-organizations, tickets, RSVPs, invitations and invitation requests, series passes, memberships,
-subscriptions and membership applications (backend #1154's optional `organization` parameter). The
+organizations, followed organizations and event series, tickets, RSVPs, invitations and invitation
+requests, series passes, memberships, subscriptions and membership applications (backend #1154's
+optional `organization` parameter). The
 filter is part of each dashboard query key, so tenant and platform results never share a cache entry.
 
 ## Sessions and cookies
@@ -489,8 +490,6 @@ above. See [`tests/e2e/README.md`](../tests/e2e/README.md) for the full environm
 
 - **No per-tenant SSO.** The OIDC callback is pinned to the platform host, so SSO buttons are hidden
   on custom domains. Email and password login still works. Per-tenant OIDC is not supported.
-- **Followed organizations are not scoped.** `/dashboard/following` still lists every organization
-  and series the user follows, because the following endpoints take no `organization` filter.
 - **PWA icons.** The manifest lists the backend's 150x150 logo thumbnail and the full logo with
   `sizes: any`. Installability checks want 192px and 512px icons, which would need backend-generated
   sizes.
