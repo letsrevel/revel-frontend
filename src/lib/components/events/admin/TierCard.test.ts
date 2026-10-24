@@ -57,3 +57,34 @@ describe('TierCard event-capacity flag', () => {
 		expect(screen.queryByTestId('tier-over-capacity')).not.toBeInTheDocument();
 	});
 });
+
+// The admin listing clamps `total_available` by the event's remaining capacity
+// and flags it with `capped_by_event` (backend #1209).
+describe('TierCard quantity line under an event cap', () => {
+	function renderListed(overrides: Partial<TicketTierDetailSchema>): ReturnType<typeof render> {
+		return render(TierCard, {
+			props: { tier: { ...makeTier(40), ...overrides }, onEdit: vi.fn() }
+		});
+	}
+
+	it('labels a clamped figure as the event cap', () => {
+		renderListed({ total_available: 30, capped_by_event: true });
+		expect(screen.getByText('30 of 40 remaining (event cap)')).toBeInTheDocument();
+	});
+
+	it('shows the event-capped figure for an unlimited tier', () => {
+		renderListed({ total_quantity: null, total_available: 27, capped_by_event: true });
+		expect(screen.getByText('27 remaining (event cap)')).toBeInTheDocument();
+	});
+
+	it('treats an omitted total_quantity as unlimited', () => {
+		renderListed({ total_quantity: undefined, total_available: 27, capped_by_event: true });
+		expect(screen.getByText('27 remaining (event cap)')).toBeInTheDocument();
+	});
+
+	it('keeps the plain figures when the event cap does not bind', () => {
+		renderListed({ total_available: 12, capped_by_event: false });
+		expect(screen.getByText('12 of 40 remaining')).toBeInTheDocument();
+		expect(screen.queryByText(/event cap\)/)).not.toBeInTheDocument();
+	});
+});

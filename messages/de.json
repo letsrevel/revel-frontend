@@ -6364,6 +6364,8 @@
 		"salesPaused": "Verkauf pausiert",
 		"overEventCapacity": "Über der Veranstaltungskapazität",
 		"overEventCapacityNote": "Veranstaltung auf {capacity} begrenzt: höchstens {capacity} können verkauft werden",
+		"remainingEventCap": "{available} von {total} verfügbar (Veranstaltungskapazität)",
+		"remainingEventCapUnlimited": "{available} verfügbar (Veranstaltungskapazität)",
 		"pauseSales": "Verkauf pausieren",
 		"resumeSales": "Verkauf fortsetzen",
 		"pauseSalesFor": "Verkauf für {name} pausieren",
