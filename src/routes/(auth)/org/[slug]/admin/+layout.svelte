@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { billingNeedsAttention } from './dashboard-model';
 	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
@@ -72,15 +73,7 @@
 					{
 						href: resolve('/(auth)/org/[slug]/admin/billing', { slug: data.organization.slug }),
 						label: m['orgAdmin.nav.billing'](),
-						badge:
-							data.organization.is_stripe_connected &&
-							(parseFloat(data.organization.platform_fee_percent) > 0 ||
-								parseFloat(data.organization.platform_fee_fixed) > 0) &&
-							(!data.organization.vat_country_code ||
-								!data.organization.billing_address ||
-								!data.organization.billing_name)
-								? 'warning'
-								: undefined
+						badge: billingNeedsAttention(data.organization) ? 'warning' : undefined
 					},
 					{
 						href: resolve('/(auth)/org/[slug]/admin/financials', { slug: data.organization.slug }),

@@ -3489,6 +3489,59 @@
 			"pageDescription": "Gestiona tu organización, tus eventos y los miembros de tu equipo desde aquí.",
 			"metaDescription": "Panel de administración de {orgName}",
 			"quickActionsHeading": "Acciones rápidas",
+			"nextUp": {
+				"label": "Próximo evento",
+				"happeningNow": "En curso ahora",
+				"going": "{count} de {max} asisten",
+				"goingNoCap": "{count} asisten",
+				"checkIn": "Registrar la entrada de invitados",
+				"guestList": "Lista de invitados",
+				"edit": "Editar evento",
+				"viewPage": "Ver página pública",
+				"emptyTitle": "No hay eventos próximos",
+				"emptyDescription": "Crea tu próximo evento y aparecerá aquí con su número de asistentes."
+			},
+			"attention": {
+				"heading": "Requiere tu atención",
+				"membershipRequests": [
+					{
+						"declarations": ["input count", "local countPlural = count: plural"],
+						"selectors": ["countPlural"],
+						"match": {
+							"countPlural=one": "{count} solicitud de membresía en espera",
+							"countPlural=*": "{count} solicitudes de membresía en espera"
+						}
+					}
+				],
+				"review": "Revisar",
+				"billing": "Tus datos de facturación están incompletos",
+				"fix": "Completar",
+				"drafts": [
+					{
+						"declarations": ["input count", "local countPlural = count: plural"],
+						"selectors": ["countPlural"],
+						"match": {
+							"countPlural=one": "{count} evento próximo sigue en borrador",
+							"countPlural=*": "{count} eventos próximos siguen en borrador"
+						}
+					}
+				],
+				"open": "Abrir eventos",
+				"allClear": "Ahora mismo nada requiere tu atención."
+			},
+			"comingUp": {
+				"heading": "Próximamente",
+				"allEvents": "Todos los eventos"
+			},
+			"tools": {
+				"heading": "Todas las herramientas",
+				"groups": {
+					"events": "Eventos y ventas",
+					"people": "Personas",
+					"content": "Contenido",
+					"organization": "Organización"
+				}
+			},
 			"createEventButton": "Crear evento",
 			"organizationDetailsHeading": "Detalles de la organización",
 			"aboutHeading": "Sobre {orgName}",

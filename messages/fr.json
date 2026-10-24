@@ -3459,6 +3459,59 @@
 			"pageDescription": "Gère ton organisation, tes événements et les membres de ton équipe depuis ici.",
 			"metaDescription": "Tableau de bord admin pour {orgName}",
 			"quickActionsHeading": "Actions rapides",
+			"nextUp": {
+				"label": "Prochain événement",
+				"happeningNow": "En cours",
+				"going": "{count} sur {max} participent",
+				"goingNoCap": "{count} participent",
+				"checkIn": "Enregistrer les invités",
+				"guestList": "Liste des invités",
+				"edit": "Modifier l'événement",
+				"viewPage": "Voir la page publique",
+				"emptyTitle": "Aucun événement à venir",
+				"emptyDescription": "Crée ton prochain événement et il apparaîtra ici avec son nombre de participants."
+			},
+			"attention": {
+				"heading": "À regarder de ton côté",
+				"membershipRequests": [
+					{
+						"declarations": ["input count", "local countPlural = count: plural"],
+						"selectors": ["countPlural"],
+						"match": {
+							"countPlural=one": "{count} demande d'adhésion en attente",
+							"countPlural=*": "{count} demandes d'adhésion en attente"
+						}
+					}
+				],
+				"review": "Examiner",
+				"billing": "Tes informations de facturation sont incomplètes",
+				"fix": "Compléter",
+				"drafts": [
+					{
+						"declarations": ["input count", "local countPlural = count: plural"],
+						"selectors": ["countPlural"],
+						"match": {
+							"countPlural=one": "{count} événement à venir est encore un brouillon",
+							"countPlural=*": "{count} événements à venir sont encore des brouillons"
+						}
+					}
+				],
+				"open": "Ouvrir les événements",
+				"allClear": "Rien ne demande ton attention pour le moment."
+			},
+			"comingUp": {
+				"heading": "À venir",
+				"allEvents": "Tous les événements"
+			},
+			"tools": {
+				"heading": "Tous les outils",
+				"groups": {
+					"events": "Événements et ventes",
+					"people": "Personnes",
+					"content": "Contenu",
+					"organization": "Organisation"
+				}
+			},
 			"createEventButton": "Créer un événement",
 			"organizationDetailsHeading": "Détails de l'organisation",
 			"aboutHeading": "À propos de {orgName}",

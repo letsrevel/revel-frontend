@@ -3,42 +3,21 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import type { ResolvedPathname } from '$app/types';
-	import type { Component } from 'svelte';
 	import type { PageData } from './$types';
-	import {
-		Ban,
-		BarChart3,
-		Calendar,
-		ClipboardList,
-		CreditCard,
-		FileText,
-		FolderOpen,
-		MapPin,
-		Megaphone,
-		Plug,
-		Globe,
-		Plus,
-		Repeat,
-		ScanLine,
-		Settings,
-		Tag,
-		Ticket,
-		Users,
-		Wallet
-	} from '@lucide/svelte';
-	import { OrganizationDescription } from '$lib/components/organizations';
+	import { FileText, Megaphone, Plus } from '@lucide/svelte';
 	import AnnouncementModal from '$lib/components/announcements/AnnouncementModal.svelte';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
-	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import ToneTile from '$lib/components/common/ToneTile.svelte';
-	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
-	import type { PosterTint } from '$lib/components/common/tones';
-	import { assignQuickActionTints } from './quick-action-tints';
+	import { Button } from '$lib/components/ui/button';
+	import NextEventPanel from '$lib/components/org-admin-dashboard/NextEventPanel.svelte';
+	import AttentionList from '$lib/components/org-admin-dashboard/AttentionList.svelte';
+	import UpcomingEventsList from '$lib/components/org-admin-dashboard/UpcomingEventsList.svelte';
+	import AdminToolsIndex from '$lib/components/org-admin-dashboard/AdminToolsIndex.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { organizationadminmembersListMembershipTiers } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { canPerformAction } from '$lib/utils/permissions';
+	import { billingNeedsAttention, buildDashboardModel } from './dashboard-model';
 
 	const { data }: { data: PageData } = $props();
 
@@ -47,10 +26,14 @@
 
 	// Door verification is `check_in_attendees`, which the admin layout does not
 	// pre-extract (it only lifts the two event-authoring flags), so derive it from
-	// the permissions payload the layout already returns.
+	// the permissions payload the layout already returns. This keeps the door
+	// steward's only entry point to the verify page visible.
 	const canVerifyMembers = $derived(
 		data.isOwner || canPerformAction(data.permissions, organization.id, 'check_in_attendees')
 	);
+
+	// Computed once per load: the page is a snapshot, not a ticking clock.
+	const model = $derived(buildDashboardModel(data.dashboardEvents, new Date()));
 
 	// State for announcement modal
 	let announcementModalOpen = $state(false);
@@ -75,157 +58,6 @@
 
 	const tiersList = $derived(tiersQuery.data ?? []);
 
-	interface QuickAction {
-		title: string;
-		description: string;
-		icon: Component;
-		href: ResolvedPathname;
-		tint: PosterTint;
-		badge?: string;
-	}
-
-	// Quick action cards (derived to properly track organization reactivity).
-	// Kept in sync with the admin nav in +layout.svelte: same destinations, same
-	// owner-gating for the financial surfaces (financials + billing). Every
-	// tile is pure destination identity — navigating to Blacklist or
-	// Financials isn't itself danger/success, the Ban/Wallet icons + labels
-	// already carry that meaning — so all 16 go through the shared `tint`
-	// cycle (assignQuickActionTints) rather than ToneTile's semantic `tone`.
-	const quickActions: QuickAction[] = $derived.by((): QuickAction[] => {
-		const base: Omit<QuickAction, 'tint'>[] = [
-			{
-				title: m['orgAdmin.dashboard.quickActions.events.title'](),
-				description: m['orgAdmin.dashboard.quickActions.events.description'](),
-				icon: Calendar,
-				href: resolve('/(auth)/org/[slug]/admin/events', { slug: organization.slug })
-			},
-			{
-				title: m['orgAdmin.dashboard.quickActions.eventSeries.title'](),
-				description: m['orgAdmin.dashboard.quickActions.eventSeries.description'](),
-				icon: Repeat,
-				href: resolve('/(auth)/org/[slug]/admin/event-series', { slug: organization.slug })
-			},
-			{
-				title: m['orgAdmin.dashboard.quickActions.tickets.title'](),
-				description: m['orgAdmin.dashboard.quickActions.tickets.description'](),
-				icon: Ticket,
-				href: resolve('/(auth)/org/[slug]/admin/tickets', { slug: organization.slug })
-			},
-			{
-				title: m['orgAdmin.dashboard.quickActions.discountCodes.title'](),
-				description: m['orgAdmin.dashboard.quickActions.discountCodes.description'](),
-				icon: Tag,
-				href: resolve('/(auth)/org/[slug]/admin/discount-codes', { slug: organization.slug })
-			},
-			{
-				title: m['orgAdmin.dashboard.quickActions.members.title'](),
-				description: m['orgAdmin.dashboard.quickActions.members.description'](),
-				icon: Users,
-				href: resolve('/(auth)/org/[slug]/admin/members', { slug: organization.slug })
-			},
-			// Gated on `check_in_attendees`, the same permission the backend's verify
-			// endpoint requires. This is the ONLY entry point for a door steward who
-			// holds nothing else — the Members page itself 403s them.
-			...(canVerifyMembers
-				? [
-						{
-							title: m['orgAdmin.dashboard.quickActions.verifyMembers.title'](),
-							description: m['orgAdmin.dashboard.quickActions.verifyMembers.description'](),
-							icon: ScanLine,
-							href: resolve('/(auth)/org/[slug]/admin/members/verify', {
-								slug: organization.slug
-							})
-						}
-					]
-				: []),
-			{
-				title: m['orgAdmin.dashboard.quickActions.polls.title'](),
-				description: m['orgAdmin.dashboard.quickActions.polls.description'](),
-				icon: BarChart3,
-				href: resolve('/(auth)/org/[slug]/admin/polls', { slug: organization.slug })
-			},
-			{
-				title: m['orgAdmin.dashboard.quickActions.questionnaires.title'](),
-				description: m['orgAdmin.dashboard.quickActions.questionnaires.description'](),
-				icon: ClipboardList,
-				href: resolve('/(auth)/org/[slug]/admin/questionnaires', { slug: organization.slug })
-			},
-			{
-				title: m['orgAdmin.dashboard.quickActions.resources.title'](),
-				description: m['orgAdmin.dashboard.quickActions.resources.description'](),
-				icon: FolderOpen,
-				href: resolve('/(auth)/org/[slug]/admin/resources', { slug: organization.slug })
-			},
-			{
-				title: m['orgAdmin.dashboard.quickActions.venues.title'](),
-				description: m['orgAdmin.dashboard.quickActions.venues.description'](),
-				icon: MapPin,
-				href: resolve('/(auth)/org/[slug]/admin/venues', { slug: organization.slug })
-			},
-			{
-				title: m['orgAdmin.dashboard.quickActions.blacklist.title'](),
-				description: m['orgAdmin.dashboard.quickActions.blacklist.description'](),
-				icon: Ban,
-				href: resolve('/(auth)/org/[slug]/admin/blacklist', { slug: organization.slug })
-			},
-			// Owner-only financial surfaces (mirrors the nav's isOwner gating)
-			...(data.isOwner
-				? [
-						{
-							title: m['orgAdmin.dashboard.quickActions.billing.title'](),
-							description: m['orgAdmin.dashboard.quickActions.billing.description'](),
-							icon: CreditCard,
-							href: resolve('/(auth)/org/[slug]/admin/billing', { slug: organization.slug })
-						},
-						{
-							title: m['orgAdmin.dashboard.quickActions.financials.title'](),
-							description: m['orgAdmin.dashboard.quickActions.financials.description'](),
-							icon: Wallet,
-							href: resolve('/(auth)/org/[slug]/admin/financials', { slug: organization.slug })
-						},
-						{
-							title: m['orgAdmin.dashboard.quickActions.integrations.title'](),
-							description: m['orgAdmin.dashboard.quickActions.integrations.description'](),
-							icon: Plug,
-							href: resolve('/(auth)/org/[slug]/admin/integrations', { slug: organization.slug })
-						},
-						...(organization.custom_domain_enabled
-							? [
-									{
-										title: m['orgAdmin.dashboard.quickActions.customDomain.title'](),
-										description: m['orgAdmin.dashboard.quickActions.customDomain.description'](),
-										icon: Globe,
-										href: resolve('/(auth)/org/[slug]/admin/custom-domain', {
-											slug: organization.slug
-										})
-									}
-								]
-							: [])
-					]
-				: []),
-			{
-				title: m['announcements.title'](),
-				description: m['announcements.pageDescription'](),
-				icon: Megaphone,
-				href: resolve('/(auth)/org/[slug]/admin/announcements', { slug: organization.slug })
-			},
-			{
-				title: m['orgAdmin.dashboard.quickActions.settings.title'](),
-				description: m['orgAdmin.dashboard.quickActions.settings.description'](),
-				icon: Settings,
-				href: resolve('/(auth)/org/[slug]/admin/settings', { slug: organization.slug })
-			}
-		];
-		return assignQuickActionTints(base);
-	});
-
-	function navigateTo(href: ResolvedPathname, disabled = false) {
-		if (!disabled) {
-			// eslint-disable-next-line svelte/no-navigation-without-resolve -- href is a ResolvedPathname produced by resolve() in the quickActions[] list above
-			goto(href);
-		}
-	}
-
 	function createEvent() {
 		goto(resolve('/(auth)/org/[slug]/admin/events/new', { slug: organization.slug }));
 	}
@@ -240,149 +72,58 @@
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
-<div class="space-y-6 px-4 md:px-0">
-	<PageHeader
-		title={m['orgAdmin.dashboard.pageTitle']({ orgName: organization.name })}
-		subtitle={m['orgAdmin.dashboard.pageDescription']()}
-		volume="studio"
-	/>
-
-	<!-- Quick Actions Section -->
-	<div class="space-y-4">
-		{#snippet quickActionsHeaderActions()}
-			<button
-				type="button"
-				onclick={() => (announcementModalOpen = true)}
-				class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-			>
-				<Megaphone class="h-4 w-4" aria-hidden="true" />
-				{m['announcements.new']()}
-			</button>
-			{#if canCreateEvent}
-				<button
-					type="button"
-					onclick={createEvent}
-					class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-				>
-					<Plus class="h-4 w-4" aria-hidden="true" />
-					{m['orgAdmin.dashboard.createEventButton']()}
-				</button>
-			{/if}
-		{/snippet}
-		<SectionHeader
-			title={m['orgAdmin.dashboard.quickActionsHeading']()}
-			actions={quickActionsHeaderActions}
+<div class="space-y-8 px-4 md:px-0">
+	{#snippet headerActions()}
+		<Button variant="outline" onclick={() => (announcementModalOpen = true)}>
+			<Megaphone aria-hidden="true" />
+			{m['announcements.new']()}
+		</Button>
+		{#if canCreateEvent}
+			<Button onclick={createEvent}>
+				<Plus aria-hidden="true" />
+				{m['orgAdmin.dashboard.createEventButton']()}
+			</Button>
+		{/if}
+	{/snippet}
+	{#snippet toolsIndex()}
+		<AdminToolsIndex
+			orgSlug={organization.slug}
+			isOwner={data.isOwner}
+			{canVerifyMembers}
+			customDomainEnabled={!!organization.custom_domain_enabled}
 		/>
+	{/snippet}
+	<PageHeader title={m['orgAdmin.nav.dashboard']()} volume="studio" actions={headerActions} />
 
-		<!-- Action Cards Grid -->
-		<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-			{#each quickActions as action (action.href)}
-				{@const Icon = action.icon}
-				{@const isDisabled = !!action.badge}
-				<!-- No transition class here on purpose: the only animatable hover change
-				     is the shadow, and the focus ring is itself a box-shadow — any
-				     transition covering it would fade the ring in instead of showing it
-				     at once. The shadow swap snaps instead. -->
-				<button
-					type="button"
-					onclick={() => navigateTo(action.href, isDisabled)}
-					disabled={isDisabled}
-					class="group relative rounded-lg border border-border bg-card p-6 text-left shadow-sm hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-				>
-					<!-- Coming Soon Badge -->
-					{#if action.badge}
-						<span
-							class="absolute right-3 top-3 rounded-md bg-muted px-2 py-1 text-xs font-medium text-muted-foreground"
-						>
-							{action.badge}
-						</span>
-					{/if}
-
-					<!-- Every tile is pure destination identity -> tint, not tone (see quickActions above) -->
-					<ToneTile tint={action.tint} icon={Icon} size="lg" class="mb-4" />
-
-					<!-- Content -->
-					<div class="space-y-1">
-						<h3 class="font-bold">{action.title}</h3>
-						<p class="text-sm text-muted-foreground">{action.description}</p>
-					</div>
-
-					<!-- Hover Indicator (only for enabled cards) -->
-					{#if !isDisabled}
-						<div
-							class="absolute inset-0 rounded-lg opacity-0 ring-2 ring-primary transition-opacity group-hover:opacity-100"
-							aria-hidden="true"
-						></div>
-					{/if}
-				</button>
-			{/each}
+	<div class="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:grid-rows-[auto_1fr]">
+		<NextEventPanel
+			event={model.nextEvent}
+			isHappeningNow={model.isHappeningNow}
+			orgSlug={organization.slug}
+			{canCreateEvent}
+			onCreateEvent={createEvent}
+		/>
+		<!-- Side column: spans both left-hand rows on lg so it never inherits the
+		     hero's row height (which left a dead gap under a short attention list). -->
+		<div class="space-y-8 lg:row-span-2">
+			<AttentionList
+				pendingRequestCount={data.pendingRequestCount}
+				billingNeedsAttention={billingNeedsAttention(organization)}
+				draftCount={model.draftCount}
+				orgSlug={organization.slug}
+				isOwner={data.isOwner}
+			/>
+			<!-- lg+: tools fill the side column. Below lg they render after "Coming
+			     up" instead (the copy below), because on a phone the next events
+			     matter more and the full nav is one tap away. display:none keeps the
+			     hidden copy out of the accessibility tree and the tab order. -->
+			<div class="hidden lg:block">
+				{@render toolsIndex()}
+			</div>
 		</div>
-	</div>
-
-	<!-- Organization Info Section -->
-	<div class="space-y-4">
-		<SectionHeader title={m['orgAdmin.dashboard.organizationDetailsHeading']()} />
-
-		<div class="rounded-lg border border-border bg-card p-6 shadow-sm">
-			<dl class="grid gap-4 md:grid-cols-2">
-				<!-- Organization Name -->
-				<div>
-					<dt class="text-sm font-medium text-muted-foreground">
-						{m['orgAdmin.dashboard.orgDetails.orgName']()}
-					</dt>
-					<dd class="mt-1 text-base font-semibold">{organization.name}</dd>
-				</div>
-
-				<!-- Slug -->
-				<div>
-					<dt class="text-sm font-medium text-muted-foreground">
-						{m['orgAdmin.dashboard.orgDetails.urlSlug']()}
-					</dt>
-					<dd class="mt-1 font-mono text-sm">{organization.slug}</dd>
-				</div>
-
-				<!-- Location -->
-				{#if organization.city}
-					<div>
-						<dt class="text-sm font-medium text-muted-foreground">
-							{m['orgAdmin.dashboard.orgDetails.location']()}
-						</dt>
-						<dd class="mt-1 text-base">
-							{organization.city.name}, {organization.city.country}
-						</dd>
-					</div>
-				{/if}
-
-				<!-- Your Role -->
-				<div>
-					<dt class="text-sm font-medium text-muted-foreground">
-						{m['orgAdmin.dashboard.orgDetails.yourRole']()}
-					</dt>
-					<dd class="mt-1">
-						{#if data.isOwner}
-							<StatusBadge tone="brand" label={m['orgAdmin.layout.ownerBadge']()} />
-						{:else if data.isStaff}
-							<StatusBadge tone="neutral" label={m['orgAdmin.layout.staffBadge']()} />
-						{/if}
-					</dd>
-				</div>
-			</dl>
-
-			<!-- Description -->
-			{#if organization.description}
-				<div class="mt-6 border-t pt-4">
-					<h3 class="text-sm font-medium text-muted-foreground">
-						{m['orgAdmin.dashboard.aboutHeading']({ orgName: organization.name })}
-					</h3>
-					<div class="mt-2">
-						<OrganizationDescription
-							description={organization.description}
-							organizationName={organization.name}
-							showCard={false}
-						/>
-					</div>
-				</div>
-			{/if}
+		<UpcomingEventsList events={model.upcoming} orgSlug={organization.slug} />
+		<div class="lg:hidden">
+			{@render toolsIndex()}
 		</div>
 	</div>
 

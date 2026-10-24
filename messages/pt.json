@@ -3489,6 +3489,59 @@
 			"pageDescription": "Gere a tua organização, os eventos e a equipa a partir daqui.",
 			"metaDescription": "Painel de administração de {orgName}",
 			"quickActionsHeading": "Ações rápidas",
+			"nextUp": {
+				"label": "Próximo evento",
+				"happeningNow": "A decorrer agora",
+				"going": "{count} de {max} vão",
+				"goingNoCap": "{count} vão",
+				"checkIn": "Fazer check-in dos convidados",
+				"guestList": "Lista de convidados",
+				"edit": "Editar evento",
+				"viewPage": "Ver página pública",
+				"emptyTitle": "Sem eventos futuros",
+				"emptyDescription": "Cria o teu próximo evento e ele aparece aqui com o número de participantes."
+			},
+			"attention": {
+				"heading": "Precisa da tua atenção",
+				"membershipRequests": [
+					{
+						"declarations": ["input count", "local countPlural = count: plural"],
+						"selectors": ["countPlural"],
+						"match": {
+							"countPlural=one": "{count} pedido de adesão em espera",
+							"countPlural=*": "{count} pedidos de adesão em espera"
+						}
+					}
+				],
+				"review": "Rever",
+				"billing": "Os teus dados de faturação estão incompletos",
+				"fix": "Completar",
+				"drafts": [
+					{
+						"declarations": ["input count", "local countPlural = count: plural"],
+						"selectors": ["countPlural"],
+						"match": {
+							"countPlural=one": "{count} evento futuro ainda é um rascunho",
+							"countPlural=*": "{count} eventos futuros ainda são rascunhos"
+						}
+					}
+				],
+				"open": "Abrir eventos",
+				"allClear": "Neste momento nada precisa da tua atenção."
+			},
+			"comingUp": {
+				"heading": "A seguir",
+				"allEvents": "Todos os eventos"
+			},
+			"tools": {
+				"heading": "Todas as ferramentas",
+				"groups": {
+					"events": "Eventos e vendas",
+					"people": "Pessoas",
+					"content": "Conteúdo",
+					"organization": "Organização"
+				}
+			},
 			"createEventButton": "Criar evento",
 			"organizationDetailsHeading": "Detalhes da organização",
 			"aboutHeading": "Sobre {orgName}",

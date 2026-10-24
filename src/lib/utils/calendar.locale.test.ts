@@ -7,7 +7,9 @@ import {
 	formatMonthYear,
 	formatWeekRange,
 	formatCalendarDate,
-	formatWeekdayShort
+	formatWeekdayShort,
+	getDateSlabParts,
+	formatAgendaDate
 } from './calendar';
 
 describe('calendar formatting follows the app UI locale (#508)', () => {
@@ -57,5 +59,26 @@ describe('formatWeekdayShort (#510)', () => {
 		getLocale.mockReturnValue('fr');
 		// French Monday short form is "lun." in most ICU versions
 		expect(formatWeekdayShort(monday)).toMatch(/lun/i);
+	});
+});
+
+describe('dashboard date helpers', () => {
+	it('getDateSlabParts splits a date in the event timezone', () => {
+		getLocale.mockReturnValue('en');
+		// 23:30 UTC on Oct 31 is already Nov 1 in Rome.
+		const parts = getDateSlabParts('2026-10-31T23:30:00Z', 'Europe/Rome');
+		expect(parts).toEqual({ weekday: 'Sun', day: '1', month: 'November' });
+	});
+
+	it('getDateSlabParts localizes the month name', () => {
+		getLocale.mockReturnValue('de');
+		expect(getDateSlabParts('2026-01-15T12:00:00Z', 'UTC').month).toBe('Januar');
+	});
+
+	it('formatAgendaDate uses a textual month', () => {
+		getLocale.mockReturnValue('en');
+		expect(formatAgendaDate('2026-10-30T12:00:00Z', 'UTC')).toBe('Fri, Oct 30');
+		getLocale.mockReturnValue('fr');
+		expect(formatAgendaDate('2026-01-15T12:00:00Z', 'UTC')).toMatch(/janv/);
 	});
 });
