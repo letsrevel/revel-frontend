@@ -4,6 +4,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 
+const publicEnv = vi.hoisted(() => ({ env: {} as Record<string, string | undefined> }));
+vi.mock('$env/dynamic/public', () => publicEnv);
 vi.mock('$lib/api/client', () => ({ client: {} }));
 vi.mock('svelte-sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('./custom-domain-api', async (importOriginal) => ({
@@ -345,6 +347,20 @@ describe('CustomDomainManager (#1058)', () => {
 		expect(screen.getByText(/redirect to your domain/)).toBeInTheDocument();
 		expect(screen.queryByRole('button', { name: 'Check now' })).not.toBeInTheDocument();
 		expect(screen.queryAllByTestId('dns-record')).toHaveLength(0);
+	});
+
+	it('active: the live link honours PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE', async () => {
+		publicEnv.env.PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE = 'http://{hostname}:5173';
+		try {
+			vi.mocked(getCustomDomain).mockResolvedValue(ACTIVE);
+			setup();
+			await settle();
+
+			const link = screen.getByRole('link', { name: /events\.example\.com:5173/ });
+			expect(link).toHaveAttribute('href', 'http://events.example.com:5173');
+		} finally {
+			delete publicEnv.env.PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE;
+		}
 	});
 
 	it('failed: shows the errors and offers Check now and a different hostname', async () => {

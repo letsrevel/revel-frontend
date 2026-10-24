@@ -1,6 +1,8 @@
 import { error } from '@sveltejs/kit';
 import { organizationListOrganizations } from '$lib/api';
 import { getBackendUrl } from '$lib/config/api';
+import { orgOrigin } from '$lib/utils/org-links';
+import { serverLinkContext } from '$lib/server/tenant-canonical';
 import type { RequestHandler } from './$types';
 
 const PAGE_SIZE = 200;
@@ -33,8 +35,10 @@ export const GET: RequestHandler = async ({ params, fetch, url, locals }) => {
 	const orgs = resp.data?.results ?? [];
 	if (orgs.length === 0 && page > 1) throw error(404, 'No orgs on this page');
 
+	const ctx = serverLinkContext(locals);
 	const urls = orgs.map((o) => {
-		const loc = `${baseUrl}/org/${o.slug}`;
+		// An org with an active custom domain is canonical there; the platform URL 301s to it.
+		const loc = `${orgOrigin(o, ctx) ?? baseUrl}/org/${o.slug}`;
 		const lastmod = (o.updated_at ? new Date(o.updated_at) : new Date())
 			.toISOString()
 			.split('T')[0];

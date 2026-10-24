@@ -8,7 +8,7 @@
  * - Other calendar applications
  */
 
-import { orgOrigin, type LinkContext } from '$lib/utils/org-links';
+import { orgHref, type LinkContext } from '$lib/utils/org-links';
 
 interface ICalEvent {
 	title: string;
@@ -157,6 +157,20 @@ export function downloadEventICalFile(event: ICalEvent, eventId?: string, filena
 /**
  * Generate an iCal file from a Revel event schema
  */
+/**
+ * Absolute URL for an org page, following the link rules (A/B/C): the org's
+ * custom domain when it has one, the platform origin for an org without one
+ * viewed from a tenant host (rule C), else the current origin.
+ */
+function orgLink(
+	org: { slug: string; custom_domain?: string | null },
+	path: string,
+	ctx?: LinkContext
+): string {
+	const href = orgHref(org, path, ctx);
+	return /^https?:\/\//i.test(href) ? href : `${window.location.origin}${href}`;
+}
+
 export function generateICalFromRevelEvent(
 	event: {
 		id: string;
@@ -183,7 +197,7 @@ export function generateICalFromRevelEvent(
 	// An org with a custom domain is linked on its own origin when tenant mode is on (#1056).
 	const eventUrl =
 		typeof window !== 'undefined' && event.organization?.slug
-			? `${orgOrigin(event.organization, ctx) ?? window.location.origin}/events/${event.organization.slug}/${event.slug}`
+			? orgLink(event.organization, `/events/${event.organization.slug}/${event.slug}`, ctx)
 			: undefined;
 
 	return generateICalFile(

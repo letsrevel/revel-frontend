@@ -53,8 +53,10 @@ export const GET: RequestHandler = async ({ params, fetch, url, locals }) => {
 	const events = resp.data?.results ?? [];
 	if (events.length === 0 && page > 1) throw error(404, 'No events on this page');
 
+	const ctx = serverLinkContext(locals);
 	const urls = events.map((event) => {
-		const loc = `${baseUrl}/events/${event.organization.slug}/${event.slug}`;
+		// An org with an active custom domain is canonical there; the platform URL 301s to it.
+		const loc = `${orgOrigin(event.organization, ctx) ?? baseUrl}/events/${event.organization.slug}/${event.slug}`;
 		const lastmod = (event.updated_at ? new Date(event.updated_at) : new Date())
 			.toISOString()
 			.split('T')[0];

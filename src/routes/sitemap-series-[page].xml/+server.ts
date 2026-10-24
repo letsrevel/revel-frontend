@@ -36,8 +36,10 @@ export const GET: RequestHandler = async ({ params, fetch, url, locals }) => {
 	const series = resp.data?.results ?? [];
 	if (series.length === 0 && page > 1) throw error(404, 'No series on this page');
 
+	const ctx = serverLinkContext(locals);
 	const urls = series.map((s) => {
-		const loc = `${baseUrl}/events/${s.organization.slug}/series/${s.slug}`;
+		// An org with an active custom domain is canonical there; the platform URL 301s to it.
+		const loc = `${orgOrigin(s.organization, ctx) ?? baseUrl}/events/${s.organization.slug}/series/${s.slug}`;
 		const lastmod = (s.updated_at ? new Date(s.updated_at) : new Date())
 			.toISOString()
 			.split('T')[0];

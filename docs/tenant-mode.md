@@ -362,13 +362,14 @@ Stripe return hop above sends the buyer back to the domain they paid from.
 A host-only cookie is only as safe as the domain it is bound to, and the organization owner controls
 that domain's DNS. If they repoint it at a server of their own, every returning browser sends its
 session cookies there, and a refresh token is platform-wide and skips TOTP. So on a tenant host the
-frontend never persists the session: the refresh cookie is a session cookie (no `maxAge`),
-`remember_me` is always `false`, and the login page hides the "remember me" checkbox. The same rule
-applies on every path that writes the cookie: login, 2FA, OIDC, email verification and the refresh
-endpoint (`sessionRememberMe` in `src/lib/server/session.ts`). This only shortens the window.
-Revocation is the backend's job: refresh tokens minted on a custom domain carry that host, and stop
-working as soon as the domain is no longer active (removed, failed, moved, or the kill switch is
-off).
+REFRESH cookie is never persisted: it is a session cookie (no `maxAge`), `remember_me` is always
+`false`, and the login page hides the "remember me" checkbox. The access cookie keeps its usual
+1 h `maxAge`, exactly as on the platform. The same rule
+applies on every path that writes the refresh cookie: login, 2FA, OIDC, email verification and the
+refresh endpoint (`sessionRememberMe` in `src/lib/server/session.ts`). This only shortens the
+window. Revocation and binding are the backend's job (BE #1186): refresh tokens minted on a custom
+domain carry that host, and stop working as soon as the domain is no longer active (removed, failed,
+moved, or the kill switch is off).
 
 **No session handoff to the platform, on purpose.** Org admin lives on the platform, so an owner
 who signed in on the custom domain signs in once more there; the dashboard says so next to its Admin
