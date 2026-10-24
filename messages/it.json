@@ -3460,6 +3460,8 @@
 	"orgAdmin": {
 		"layout": {
 			"toggleMenu": "Attiva/disattiva menu di navigazione",
+			"collapseSidebar": "Comprimi barra laterale",
+			"expandSidebar": "Espandi barra laterale",
 			"adminBadge": "Admin",
 			"ownerBadge": "Proprietario",
 			"staffBadge": "Staff",
@@ -3489,6 +3491,59 @@
 			"pageDescription": "Gestisci la tua organizzazione, eventi e membri del team da qui.",
 			"metaDescription": "Dashboard admin per {orgName}",
 			"quickActionsHeading": "Azioni Rapide",
+			"nextUp": {
+				"label": "Prossimo evento",
+				"happeningNow": "In corso adesso",
+				"going": "{count} su {max} partecipano",
+				"goingNoCap": "{count} partecipano",
+				"checkIn": "Fai il check-in degli ospiti",
+				"guestList": "Lista ospiti",
+				"edit": "Modifica evento",
+				"viewPage": "Vedi pagina pubblica",
+				"emptyTitle": "Nessun evento in programma",
+				"emptyDescription": "Crea il tuo prossimo evento e comparirà qui con il numero di partecipanti."
+			},
+			"attention": {
+				"heading": "Richiede la tua attenzione",
+				"membershipRequests": [
+					{
+						"declarations": ["input count", "local countPlural = count: plural"],
+						"selectors": ["countPlural"],
+						"match": {
+							"countPlural=one": "{count} richiesta di iscrizione in attesa",
+							"countPlural=*": "{count} richieste di iscrizione in attesa"
+						}
+					}
+				],
+				"review": "Controlla",
+				"billing": "I tuoi dati di fatturazione sono incompleti",
+				"fix": "Completa",
+				"drafts": [
+					{
+						"declarations": ["input count", "local countPlural = count: plural"],
+						"selectors": ["countPlural"],
+						"match": {
+							"countPlural=one": "{count} evento in programma è ancora una bozza",
+							"countPlural=*": "{count} eventi in programma sono ancora bozze"
+						}
+					}
+				],
+				"open": "Apri eventi",
+				"allClear": "Al momento niente richiede la tua attenzione."
+			},
+			"comingUp": {
+				"heading": "In arrivo",
+				"allEvents": "Tutti gli eventi"
+			},
+			"tools": {
+				"heading": "Tutti gli strumenti",
+				"groups": {
+					"events": "Eventi e vendite",
+					"people": "Persone",
+					"content": "Contenuti",
+					"organization": "Organizzazione"
+				}
+			},
 			"createEventButton": "Crea Evento",
 			"organizationDetailsHeading": "Dettagli Organizzazione",
 			"aboutHeading": "Informazioni su {orgName}",
@@ -9722,6 +9777,11 @@
 	"customDomain.pageTitle": "Dominio personalizzato - {organizationName}",
 	"customDomain.title": "Dominio personalizzato",
 	"customDomain.subtitle": "Fai trovare i tuoi eventi al pubblico sul tuo indirizzo web, invece che su quello di Revel.",
+	"customDomain.unavailable.heading": "I domini personalizzati non sono attivi per la tua organizzazione",
+	"customDomain.unavailable.body": "Attiviamo i domini personalizzati su richiesta, per ogni organizzazione. Scrivici un'email e lo configuriamo insieme.",
+	"customDomain.unavailable.bodyNoEmail": "Attiviamo i domini personalizzati su richiesta, per ogni organizzazione. Contatta il team di Revel per richiederlo.",
+	"customDomain.unavailable.contact": "Scrivi a {email}",
+	"customDomain.unavailable.emailSubject": "Richiesta dominio personalizzato per {organizationName}",
 	"customDomain.loading": "Caricamento del dominio personalizzato",
 	"customDomain.loadError": "Non siamo riusciti a caricare il tuo dominio personalizzato. Riprova tra un attimo.",
 	"customDomain.retry": "Riprova",

@@ -169,7 +169,7 @@ test.describe('J30 custom domain admin page @p1', () => {
 		}
 	});
 
-	test('an organization without the feature gets not-found and no nav entry', async ({
+	test('an organization without the feature sees how to request it, not the manager', async ({
 		browser
 	}) => {
 		test.skip(!(await orgExists(GATED_SLUG)), `${GATED_SLUG} is not seeded`);
@@ -181,12 +181,22 @@ test.describe('J30 custom domain admin page @p1', () => {
 			await uiLogin(page, { email: admin.email, password: admin.password });
 
 			await gotoHydrated(page, `/org/${GATED_SLUG}/admin/custom-domain`);
-			await expect(page.getByRole('heading', { name: 'Page Not Found' })).toBeVisible();
+			await expect(
+				page.getByRole('heading', { name: "Custom domains aren't turned on for your organization" })
+			).toBeVisible();
+			// The manager (and its owner-only API calls) never mounts.
+			await expect(page.getByLabel('Domain name')).toHaveCount(0);
+			// When the backend publishes a support address, the request is a mailto link.
+			const contact = page.getByRole('link', { name: /^Email / });
+			if ((await contact.count()) > 0) {
+				await expect(contact).toHaveAttribute('href', /^mailto:[^?]+\?subject=/);
+			}
 
-			// The admin dashboard itself loads, but offers no Custom domain entry.
+			// The owner's nav still offers the entry, so the feature is discoverable.
 			await gotoHydrated(page, `/org/${GATED_SLUG}/admin`);
-			await expect(page.getByRole('link', { name: 'Announcements' }).first()).toBeVisible();
-			await expect(page.getByRole('link', { name: 'Custom domain' })).toHaveCount(0);
+			await expect(
+				page.getByRole('link', { name: 'Custom domain' }).filter({ visible: true }).first()
+			).toBeVisible();
 		} finally {
 			await context.close();
 		}

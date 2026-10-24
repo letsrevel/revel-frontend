@@ -3,7 +3,7 @@ import type { LayoutServerLoad } from './$types';
 import { organizationadmincoreGetOrganization, permissionMyPermissions } from '$lib/api';
 import { log } from '$lib/server/logger';
 
-export const load: LayoutServerLoad = async ({ locals, params, fetch }) => {
+export const load: LayoutServerLoad = async ({ locals, params, fetch, cookies }) => {
 	const user = locals.user;
 
 	// Ensure user is authenticated
@@ -79,7 +79,10 @@ export const load: LayoutServerLoad = async ({ locals, params, fetch }) => {
 			canCreateEvent,
 			canEditEventSeries,
 			canManageRecurring,
-			permissions
+			permissions,
+			// Persisted by the sidebar toggle; read server-side so SSR renders the
+			// right width on first paint (no layout shift).
+			sidebarCollapsed: cookies.get('revel_admin_sidebar') === 'collapsed'
 		};
 	} catch (err) {
 		// Handle API errors

@@ -3460,6 +3460,8 @@
 	"orgAdmin": {
 		"layout": {
 			"toggleMenu": "Toggle navigation menu",
+			"collapseSidebar": "Collapse sidebar",
+			"expandSidebar": "Expand sidebar",
 			"adminBadge": "Admin",
 			"ownerBadge": "Owner",
 			"staffBadge": "Staff",
@@ -3489,6 +3491,59 @@
 			"pageDescription": "Manage your organization, events, and team members from here.",
 			"metaDescription": "Admin dashboard for {orgName}",
 			"quickActionsHeading": "Quick Actions",
+			"nextUp": {
+				"label": "Next event",
+				"happeningNow": "Happening now",
+				"going": "{count} of {max} going",
+				"goingNoCap": "{count} going",
+				"checkIn": "Check in guests",
+				"guestList": "Guest list",
+				"edit": "Edit event",
+				"viewPage": "View public page",
+				"emptyTitle": "No upcoming events",
+				"emptyDescription": "Create your next event and it shows up here with its guest count."
+			},
+			"attention": {
+				"heading": "Needs your attention",
+				"membershipRequests": [
+					{
+						"declarations": ["input count", "local countPlural = count: plural"],
+						"selectors": ["countPlural"],
+						"match": {
+							"countPlural=one": "{count} membership request is waiting",
+							"countPlural=*": "{count} membership requests are waiting"
+						}
+					}
+				],
+				"review": "Review",
+				"billing": "Your billing details are incomplete",
+				"fix": "Complete",
+				"drafts": [
+					{
+						"declarations": ["input count", "local countPlural = count: plural"],
+						"selectors": ["countPlural"],
+						"match": {
+							"countPlural=one": "{count} upcoming event is still a draft",
+							"countPlural=*": "{count} upcoming events are still drafts"
+						}
+					}
+				],
+				"open": "Open events",
+				"allClear": "Nothing needs your attention right now."
+			},
+			"comingUp": {
+				"heading": "Coming up",
+				"allEvents": "All events"
+			},
+			"tools": {
+				"heading": "All tools",
+				"groups": {
+					"events": "Events and sales",
+					"people": "People",
+					"content": "Content",
+					"organization": "Organization"
+				}
+			},
 			"createEventButton": "Create Event",
 			"organizationDetailsHeading": "Organization Details",
 			"aboutHeading": "About {orgName}",
@@ -9722,6 +9777,11 @@
 	"customDomain.pageTitle": "Custom domain - {organizationName}",
 	"customDomain.title": "Custom domain",
 	"customDomain.subtitle": "Let attendees find your events on your own web address instead of the Revel one.",
+	"customDomain.unavailable.heading": "Custom domains aren't turned on for your organization",
+	"customDomain.unavailable.body": "We turn custom domains on for each organization on request. Send us an email and we'll set it up with you.",
+	"customDomain.unavailable.bodyNoEmail": "We turn custom domains on for each organization on request. Get in touch with the Revel team to ask for it.",
+	"customDomain.unavailable.contact": "Email {email}",
+	"customDomain.unavailable.emailSubject": "Custom domain request for {organizationName}",
 	"customDomain.loading": "Loading your custom domain",
 	"customDomain.loadError": "We couldn't load your custom domain. Try again in a moment.",
 	"customDomain.retry": "Try again",
