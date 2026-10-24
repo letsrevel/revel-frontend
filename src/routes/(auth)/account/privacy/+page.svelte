@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { page } from '$app/state';
+	import { brandName } from '$lib/seo/tenant';
 	import * as m from '$lib/paraglide/messages.js';
 	import { enhance } from '$app/forms';
 	import type { ActionData } from './$types';
@@ -121,7 +123,7 @@
 </script>
 
 <svelte:head>
-	<title>{m['accountPrivacyPage.pageTitle']()}</title>
+	<title>{m['accountPrivacyPage.pageTitle']({ brand: brandName(page.data.tenant) })}</title>
 	<meta name="description" content={m['accountPrivacyPage.pageDescription']()} />
 </svelte:head>
 

@@ -138,7 +138,7 @@
 			>
 				{#snippet action()}
 					{#if data.returnTo}
-						<Button href="{data.returnTo.origin}/">
+						<Button href="{data.returnTo.origin}/" rel="noreferrer">
 							{m['tenantReturn.continueTo']({ name: data.returnTo.name })}
 						</Button>
 					{:else}

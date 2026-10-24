@@ -55,7 +55,7 @@
 		"eventTypeExplanation": "Der Veranstaltungstyp bestimmt, wer teilnahmeberechtigt ist (Zusage oder Ticket), unabhängig davon, wer sie sehen kann."
 	},
 	"accountDeletion": {
-		"title": "Kontolöschung bestätigen - Revel",
+		"title": "Kontolöschung bestätigen - {brand}",
 		"metaDescription": "Bestätige die endgültige Löschung deines Revel-Kontos",
 		"successHeading": "Konto gelöscht",
 		"successSubheading": "Dein Konto wurde endgültig gelöscht",
@@ -81,7 +81,7 @@
 		"warningImmediate": "Diese Aktion erfolgt sofort und kann nicht rückgängig gemacht werden"
 	},
 	"accountPrivacyPage": {
-		"pageTitle": "Datenschutz & Daten - Revel",
+		"pageTitle": "Datenschutz & Daten - {brand}",
 		"pageDescription": "Verwalte deine Datenschutzeinstellungen und Daten auf Revel",
 		"title": "Datenschutz & Daten",
 		"subtitle": "Verwalte deine Datenschutzeinstellungen und nimm deine Datenrechte wahr",

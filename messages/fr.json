@@ -25,7 +25,7 @@
 		"eventTypeExplanation": "Le type d'événement détermine qui est autorisé à participer (RSVP ou obtenir des billets), indépendamment de qui peut le voir."
 	},
 	"accountDeletion": {
-		"title": "Confirmer la suppression du compte - Revel",
+		"title": "Confirmer la suppression du compte - {brand}",
 		"metaDescription": "Confirme la suppression définitive de ton compte Revel",
 		"successHeading": "Compte supprimé",
 		"successSubheading": "Ton compte a été définitivement supprimé",
@@ -51,7 +51,7 @@
 		"warningImmediate": "Cette action est immédiate et ne peut pas être annulée"
 	},
 	"accountPrivacyPage": {
-		"pageTitle": "Confidentialité et données - Revel",
+		"pageTitle": "Confidentialité et données - {brand}",
 		"pageDescription": "Gère tes paramètres de confidentialité et tes données sur Revel",
 		"title": "Confidentialité et données",
 		"subtitle": "Gère tes paramètres de confidentialité et exerce tes droits sur tes données",

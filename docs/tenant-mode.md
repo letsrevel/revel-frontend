@@ -500,10 +500,11 @@ above. See [`tests/e2e/README.md`](../tests/e2e/README.md) for the full environm
 - **PWA icons.** The manifest lists the backend's 150x150 logo thumbnail and the full logo with
   `sizes: any`. Installability checks want 192px and 512px icons, which would need backend-generated
   sizes.
-- **Remaining "Revel" copy.** Nine messages and the dashboard and account page titles take
-  `{brand}`. Copy about the account and the legal entity intentionally still says Revel. Platform-only
-  pages (admin, landing, referral, developer apps) are not parameterized; several still have a
-  literal "- Revel" title, for example the referral pages, and the unused keys mentioned above stay as
-  they are.
+- **Remaining "Revel" copy.** Nine messages and every page title a custom domain can reach
+  (dashboard and account pages, including Privacy & Data and the account-deletion confirmation)
+  take `{brand}`. Copy about the account and the legal entity intentionally still says Revel.
+  Platform-only pages (admin, landing, referral, developer apps) are not parameterized; several still
+  have a literal "- Revel" title, for example the referral pages, which redirect to the platform from
+  a custom domain anyway. Unused keys with a "- Revel" suffix stay as they are.
 - **Cache lag.** Domain changes take up to 60 s to be seen by each frontend replica (see the cache
   table above).
