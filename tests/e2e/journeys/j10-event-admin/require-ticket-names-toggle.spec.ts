@@ -4,8 +4,8 @@ import { createTicketedEvent } from '../../support/factories';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 
 // J10 (#753) — the organizer toggle for `require_ticket_names`. The flag
-// defaults to ON and the event editor exposes it in the Ticketing section for
-// ticketed events only. The round-trip (off → save → reload → still off) is
+// defaults to ON and the event editor exposes it in the Attendance section of the
+// Details tab for ticketed events only. The round-trip (off → save → reload → still off) is
 // what proves the editor both SENDS the flag on save and re-hydrates it from
 // the API afterwards — a write-only or read-only half would still look right
 // on screen immediately after the click.

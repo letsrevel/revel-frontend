@@ -43,10 +43,17 @@ export type EditorTab = 'details' | 'ticketing' | 'listings';
  */
 export function buildNavTabs(
 	active: EditorTab,
-	labels: Record<EditorTab, string>
-): { value: EditorTab; label: string; current: boolean }[] {
+	labels: Record<EditorTab, string>,
+	detailsHasError = false
+): { value: EditorTab; label: string; current: boolean; hasError: boolean }[] {
 	const order: EditorTab[] = ['details', 'ticketing', 'listings'];
 	return order
 		.filter((value) => active !== 'details' || value !== 'details')
-		.map((value) => ({ value, label: labels[value], current: value === active }));
+		.map((value) => ({
+			value,
+			label: labels[value],
+			current: value === active,
+			// Details carries an error dot when a save from another tab was blocked there.
+			hasError: value === 'details' && detailsHasError
+		}));
 }

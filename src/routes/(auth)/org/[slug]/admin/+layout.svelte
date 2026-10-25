@@ -101,8 +101,8 @@
 	2026-08-13).
 
 	`--admin-sticky-top` stays published as a static navbar-only offset for
-	pages that keep their own independent sticky sub-toolbar (SaveBar's top
-	bar, the blacklist/members tab strips).
+	pages that keep their own independent sticky elements (the event editor's
+	rail and section scroll-margins, the blacklist/members tab strips).
 -->
 <div class="min-h-screen bg-background" style="--admin-sticky-top: 4rem">
 	<!-- Mobile top bar -->

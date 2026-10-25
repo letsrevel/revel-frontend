@@ -273,7 +273,7 @@
 
 <div class={cn('space-y-2', className)}>
 	{#if label}
-		<label for={inputId} class="block text-sm font-medium text-gray-900 dark:text-gray-100">
+		<label for={inputId} class="block text-sm font-medium text-foreground">
 			{label}
 			{#if required}
 				<span class="text-destructive" aria-label={m['imageUploader.required']()}>*</span>
@@ -285,7 +285,7 @@
 		<!-- Image Preview -->
 		<div
 			class={cn(
-				'relative overflow-hidden rounded-lg border-2 border-gray-300 dark:border-gray-600',
+				'relative overflow-hidden rounded-lg border-2 border-input',
 				!compact && 'mx-auto',
 				aspectRatio === 'square' && 'aspect-square',
 				aspectRatio === 'square' && !compact && 'max-w-xs',
@@ -314,7 +314,7 @@
 			{#if value}
 				<div class="absolute bottom-0 left-0 right-0 bg-black/70 p-2 text-xs text-white">
 					<p class="truncate">{value.name}</p>
-					<p class="text-gray-300">{formatFileSize(value.size)}</p>
+					<p class="text-white/80">{formatFileSize(value.size)}</p>
 				</div>
 			{/if}
 		</div>
@@ -334,11 +334,11 @@
 			class={cn(
 				'flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors',
 				compact ? 'p-3 text-center' : 'p-8',
-				'hover:border-primary hover:bg-gray-50 dark:hover:bg-gray-800/50',
+				'hover:border-primary hover:bg-muted/50',
 				'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
 				isDragging && 'border-primary bg-primary/5',
-				error ? 'border-destructive' : 'border-gray-300 dark:border-gray-600',
-				disabled && 'cursor-not-allowed opacity-50 hover:border-gray-300 hover:bg-transparent'
+				error ? 'border-destructive' : 'border-input',
+				disabled && 'cursor-not-allowed opacity-50 hover:border-input hover:bg-transparent'
 			)}
 		>
 			<Upload
@@ -349,7 +349,7 @@
 				aria-hidden="true"
 			/>
 
-			<p class="mb-1 text-sm font-medium text-gray-900 dark:text-gray-100">
+			<p class="mb-1 text-sm font-medium text-foreground">
 				{#if isDragging}
 					{m['imageUploader.dropImageHere']()}
 				{:else}

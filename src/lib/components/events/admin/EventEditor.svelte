@@ -38,6 +38,7 @@
 	import SaveBar from './SaveBar.svelte';
 	import EventGlance from './editor/EventGlance.svelte';
 	import EditorShell from './editor/EditorShell.svelte';
+	import { applyVenue } from './editor/venue-selection';
 	import EditorSectionNav from './editor/EditorSectionNav.svelte';
 	import { buildEditorSections, buildNavTabs } from './editor/sections';
 	import { buildDirtySnapshot, type DirtySnapshotInput } from './editor/dirty-snapshot';
@@ -157,11 +158,8 @@
 	const showTabs = $derived(isEditMode && !!formData.requires_ticket);
 	let tabsEl = $state<HTMLDivElement | null>(null);
 
-	// Create-mode prefill from the `initialStart` / `initialEventSeriesId`
-	// props (ExdatesChipList chip action on the recurring-series dashboard).
-	// Gated to first-mount + create-mode so we never clobber user edits or
-	// an existingEvent's loaded values; the `hasSeededFromPrefill` latch
-	// keeps the effect idempotent across reactivity ticks.
+	// Create-mode prefill from `initialStart` / `initialEventSeriesId` (recurring-series
+	// dashboard). First-mount + create-mode only; the latch keeps it idempotent.
 	let hasSeededFromPrefill = $state(false);
 	$effect(() => {
 		if (existingEvent) return;
@@ -183,17 +181,14 @@
 	// Scroll to tabs when arriving with initialTab from another page
 	$effect(() => {
 		if (initialTab && tabsEl) {
-			// Use tick to ensure DOM is rendered
 			requestAnimationFrame(() => {
 				tabsEl?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 			});
 		}
 	});
 
-	// Fetch resources and questionnaires for existing events. Gated on the
-	// access token: on cold hydration these fired before the token refresh
-	// completed and got 401s; the token is reactive, so the effect re-runs
-	// once it lands.
+	// Fetch resources and questionnaires for existing events. Gated on the access
+	// token (cold hydration got 401s before the refresh landed); re-runs once it does.
 	$effect(() => {
 		if (existingEvent?.id && authStore.accessToken) {
 			eventpublicdetailsListResources({
@@ -237,21 +232,8 @@
 
 	function handleVenueSelect(venue: VenueDetailSchema | null): void {
 		selectedVenue = venue;
-		if (venue) {
-			if (venue.city) {
-				selectedCity = venue.city;
-				formData = {
-					...formData,
-					venue_id: venue.id,
-					city_id: venue.city.id,
-					address: venue.address || null
-				};
-			} else {
-				formData = { ...formData, venue_id: venue.id, address: venue.address || null };
-			}
-		} else {
-			formData = { ...formData, venue_id: null };
-		}
+		if (venue?.city) selectedCity = venue.city;
+		formData = applyVenue(formData, venue);
 	}
 
 	// Image uploads
@@ -297,7 +279,15 @@
 	});
 	// Rail / chip-row entries for the sibling tabs. On Details they follow the
 	// section links (Ticketing, Listings); elsewhere the full set shows where you are.
-	const navTabs = $derived<NavTab[]>(showTabs ? buildNavTabs(activeTab, TAB_LABELS()) : []);
+	const navTabs = $derived<NavTab[]>(
+		showTabs
+			? buildNavTabs(
+					activeTab,
+					TAB_LABELS(),
+					Object.keys(validationErrors).length > 0 || (scheduleAttempted && !scheduleValid)
+				)
+			: []
+	);
 	function handleNavTab(value: string): void {
 		void goToTab(value as 'details' | 'ticketing' | 'listings');
 	}
@@ -397,9 +387,19 @@
 		void handleCreateEvent();
 	}
 
+	function gotoEditPage(id: string): Promise<void> {
+		return goto(
+			resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', {
+				slug: organization.slug,
+				event_id: id
+			})
+		);
+	}
+
 	// --- Creation flow: Step 1 submit ---
 
 	async function handleCreateEvent(): Promise<void> {
+		if (eventId) return gotoEditPage(eventId); // already created: never POST twice
 		if (!validateEssentials()) {
 			errorMessage = m['eventWizard.error_fixValidation']();
 			toast.error(m['eventEditor.validationErrorToast']());
@@ -422,15 +422,9 @@
 			eventId = result.id;
 			baseline = captureState();
 			toast.success(m['eventWizard.eventCreatedSuccess']());
-			// Hand over to the full editor on its own page (tabs, status, top of page)
-			// rather than re-rendering in place, which left the viewport mid-form.
+			// Hand over to the full editor on its own page (top of page, tabs, status).
 			invalidateEventQueries(result.id);
-			await goto(
-				resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', {
-					slug: organization.slug,
-					event_id: result.id
-				})
-			);
+			await gotoEditPage(result.id);
 		} catch (error) {
 			console.error('Create event error:', error);
 		} finally {
@@ -454,6 +448,9 @@
 		if (!validateEssentials() || !validateDetails()) {
 			errorMessage = m['eventWizard.error_fixValidation']();
 			toast.error(m['eventEditor.validationErrorToast']());
+			// Name / city live in Details; Save is also reachable from Ticketing.
+			if (showTabs) handleTabChange('details');
+			await tick();
 			scrollToFirstInvalid();
 			return;
 		}
@@ -464,6 +461,7 @@
 			if (showTabs) handleTabChange('details');
 			errorMessage = m['eventScheduleAdmin.incompleteError']();
 			toast.error(m['eventScheduleAdmin.incompleteError']());
+			await tick();
 			scrollToFirstInvalid();
 			return;
 		}
