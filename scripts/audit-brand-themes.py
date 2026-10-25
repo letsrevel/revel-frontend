@@ -274,6 +274,12 @@ COMPOSITED_PAIRS = [
     # selection, so the 3:1 non-text floor is the one that matters.
     ("primary", 1, "primary", 0.10, "card", 3.0, BOTH, "QuestionnaireFillForm/PollVoteForm selected border"),
     ("foreground", 1, "primary", 0.10, "card", 4.5, BOTH, "QuestionnaireFillForm/PollVoteForm selected label"),
+    # RadioTileGroup checked tile (`bg-primary/5` over the section card): title is
+    # --foreground, description --muted-foreground (event editor, #1106).
+    ("foreground", 1, "primary", 0.05, "card", 4.5, BOTH, "RadioTileGroup checked tile title"),
+    ("muted-foreground", 1, "primary", 0.05, "card", 4.5, BOTH, "RadioTileGroup checked tile description"),
+    # EditorSectionNav current chip (`bg-primary/10` over the page, --foreground text).
+    ("foreground", 1, "primary", 0.10, "background", 4.5, BOTH, "EditorSectionNav current chip label"),
     ("foreground", 1, "success", 0.10, "background", 4.5, BOTH, "RSVPButtons / EventRSVP unselected tint"),
     ("foreground", 1, "destructive", 0.10, "background", 4.5, BOTH, "RSVPButtons / EventRSVP unselected tint"),
     # Impersonation banner (bg on an opaque --background shell, not on scrolled

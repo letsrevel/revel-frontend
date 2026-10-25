@@ -113,8 +113,6 @@
 		onUpdateImages
 	}: Props = $props();
 
-	// Unambiguous textual readbacks for the native datetime inputs; '' when the
-	// value is empty or unparseable, so each hint is gated on the rendered text.
 	// Modal state for questionnaire assignment
 	let isQuestionnaireModalOpen = $state(false);
 

@@ -188,7 +188,7 @@
 		<label
 			id="{inputId}-label"
 			for={editor && !sourceMode ? undefined : inputId}
-			class="block text-sm font-medium text-gray-900 dark:text-gray-100"
+			class="block text-sm font-medium text-foreground"
 		>
 			{label}
 			{#if required}<span class="text-destructive" aria-label={m['markdownEditor.required']()}
@@ -238,11 +238,11 @@
 			aria-describedby={error ? `${inputId}-error` : undefined}
 			class={cn(
 				'w-full resize-y rounded-md border-2 px-3 py-2 text-sm',
-				'bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100',
+				'bg-background text-foreground',
 				'placeholder:text-muted-foreground',
 				'focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
 				'disabled:cursor-not-allowed disabled:opacity-50',
-				error ? 'border-destructive' : 'border-gray-300 dark:border-gray-600'
+				error ? 'border-destructive' : 'border-input'
 			)}></textarea>
 		{#if sourceMode && editor}
 			<button
@@ -281,6 +281,8 @@
 						fill
 						{placeholder}
 						{disabled}
+						{error}
+						{required}
 						label={label || m['markdownEditor.expandedTitle']()}
 						id="{inputId}-expanded"
 						class="mx-auto h-full w-full max-w-3xl [&>label]:sr-only"

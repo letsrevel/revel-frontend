@@ -131,7 +131,7 @@
 		];
 	});
 
-	// Link button is at index commands.length; source is last.
+	// Link button is at index commands.length; then source, then the expand button (last).
 	const linkIndex = $derived(commands.length);
 	const sourceIndex = $derived(commands.length + EXTRA_BUTTONS - 1);
 	const expandIndex = $derived(sourceIndex + 1);
@@ -192,7 +192,7 @@
 			title={cmd.label}
 			onclick={cmd.run}
 			onfocus={() => (focusIndex = i)}
-			class="rounded p-1.5 transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:opacity-50 aria-pressed:bg-primary/15"
+			class="rounded p-1.5 transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:opacity-50 aria-pressed:bg-primary/15"
 		>
 			<cmd.icon class="h-4 w-4" aria-hidden="true" />
 		</button>
@@ -206,7 +206,7 @@
 		title={m['markdownEditor.insertLink']()}
 		onclick={onInsertLink}
 		onfocus={() => (focusIndex = linkIndex)}
-		class="rounded p-1.5 hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:opacity-50"
+		class="rounded p-1.5 hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:opacity-50"
 	>
 		<LinkIcon class="h-4 w-4" aria-hidden="true" />
 	</button>
@@ -219,7 +219,7 @@
 		title={m['markdownEditor.viewSource']()}
 		onclick={onToggleSource}
 		onfocus={() => (focusIndex = sourceIndex)}
-		class="ml-auto rounded p-1.5 hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:opacity-50"
+		class="ml-auto rounded p-1.5 hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:opacity-50"
 	>
 		<SquareCode class="h-4 w-4" aria-hidden="true" />
 	</button>
@@ -233,7 +233,7 @@
 			title={m['markdownEditor.expand']()}
 			onclick={onExpand}
 			onfocus={() => (focusIndex = expandIndex)}
-			class="rounded p-1.5 hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:opacity-50"
+			class="rounded p-1.5 hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:opacity-50"
 		>
 			<Maximize2 class="h-4 w-4" aria-hidden="true" />
 		</button>

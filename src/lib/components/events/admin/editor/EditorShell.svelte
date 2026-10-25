@@ -60,15 +60,18 @@
 		{@render main()}
 	</div>
 	<aside
-		class="hidden space-y-6 xl:sticky xl:block xl:self-start"
+		class="hidden xl:sticky xl:flex xl:max-h-[calc(100dvh-var(--admin-sticky-top)-3rem)] xl:flex-col xl:self-start"
 		style="top: calc(var(--admin-sticky-top) + 1.5rem)"
 	>
-		{@render glance()}
-		{#if showNav}
-			<EditorSectionNav {sections} variant="list" tabs={navTabs} onTab={onNavTab} />
-		{/if}
+		<!-- Glance + nav scroll when the viewport is short; the save block below never leaves the screen. -->
+		<div class="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-contain p-1">
+			{@render glance()}
+			{#if showNav}
+				<EditorSectionNav {sections} variant="list" tabs={navTabs} onTab={onNavTab} />
+			{/if}
+		</div>
 		{#if railSave}
-			<div class="border-t border-border pt-4">
+			<div class="mt-6 shrink-0 border-t border-border pt-4">
 				<SaveBar
 					variant="rail"
 					mode={saveMode}

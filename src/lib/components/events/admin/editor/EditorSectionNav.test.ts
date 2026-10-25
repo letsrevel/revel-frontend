@@ -44,3 +44,62 @@ describe('EditorSectionNav tab entries', () => {
 		expect(screen.queryByRole('separator')).toBeNull();
 	});
 });
+
+describe('EditorSectionNav scroll-spy click lock', () => {
+	it('keeps the clicked section active until the user scrolls by hand', async () => {
+		const els = ['a', 'b'].map((id) => {
+			const el = document.createElement('div');
+			el.id = id;
+			el.tabIndex = -1;
+			el.scrollIntoView = vi.fn();
+			document.body.appendChild(el);
+			return el;
+		});
+		// Pretend the page is scrollable and already at the bottom, with both sections
+		// below the 30% line: the at-bottom rule would pick "b".
+		Object.defineProperty(document.documentElement, 'scrollHeight', {
+			value: 5000,
+			configurable: true
+		});
+		window.scrollY = 5000 - window.innerHeight;
+		els.forEach((el) => (el.getBoundingClientRect = () => ({ top: 9999 }) as DOMRect));
+
+		render(EditorSectionNav, {
+			sections: [
+				{ id: 'a', label: 'Alpha' },
+				{ id: 'b', label: 'Beta' }
+			],
+			variant: 'list'
+		});
+		expect(screen.getByRole('link', { name: 'Beta' })).toHaveAttribute('aria-current', 'location');
+
+		await userEvent.click(screen.getByRole('link', { name: 'Alpha' }));
+		window.dispatchEvent(new Event('scroll'));
+		await new Promise((r) => requestAnimationFrame(() => r(null)));
+		expect(screen.getByRole('link', { name: 'Alpha' })).toHaveAttribute('aria-current', 'location');
+
+		window.dispatchEvent(new Event('wheel'));
+		await new Promise((r) => requestAnimationFrame(() => r(null)));
+		expect(screen.getByRole('link', { name: 'Beta' })).toHaveAttribute('aria-current', 'location');
+
+		els.forEach((el) => el.remove());
+	});
+});
+
+describe('EditorSectionNav tab error dot', () => {
+	it('flags a tab with validation errors for assistive tech', () => {
+		render(EditorSectionNav, {
+			sections: [],
+			variant: 'list',
+			tabs: [
+				{ value: 'details', label: 'Details', hasError: true },
+				{ value: 'ticketing', label: 'Ticketing', current: true }
+			]
+		});
+		const details = screen.getByRole('button', { name: /Details/ });
+		expect(details.querySelector('.bg-destructive')).not.toBeNull();
+		expect(
+			screen.getByRole('button', { name: /Ticketing/ }).querySelector('.bg-destructive')
+		).toBeNull();
+	});
+});
