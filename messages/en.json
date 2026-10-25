@@ -2150,6 +2150,8 @@
 		"tabDetails": "Event Details",
 		"tabTicketing": "Ticketing",
 		"tabListings": "Listings",
+		"nextStepTicketing": "Next: set up ticket tiers and prices",
+		"goToTicketing": "Go to ticketing",
 		"editEvent": "Edit Event",
 		"ticketing": "Ticketing",
 		"validationErrorToast": "Please fix the highlighted errors before saving.",

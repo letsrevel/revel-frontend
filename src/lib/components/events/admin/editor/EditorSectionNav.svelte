@@ -4,20 +4,32 @@
 		label: string;
 		hasError?: boolean;
 	}
+
+	/** A sibling page (tab) of the editor, rendered as a button after the section links. */
+	export interface NavTab {
+		value: string;
+		label: string;
+		/** The tab currently shown; marked `aria-current="page"` and not a "goes elsewhere" link. */
+		current?: boolean;
+	}
 </script>
 
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { cn } from '$lib/utils/cn';
+	import { ChevronRight } from '@lucide/svelte';
 
 	interface Props {
 		sections: NavSection[];
 		/** `list`: vertical list (rail). `chips`: horizontally scrolling row (< xl). */
 		variant: 'list' | 'chips';
+		/** Other editor tabs (ticketed events). Selecting one calls `onTab`. */
+		tabs?: NavTab[];
+		onTab?: (value: string) => void;
 		class?: string;
 	}
 
-	const { sections, variant, class: className }: Props = $props();
+	const { sections, variant, tabs = [], onTab, class: className }: Props = $props();
 
 	let activeId = $state<string | null>(null);
 
@@ -102,5 +114,35 @@
 				</a>
 			</li>
 		{/each}
+		{#if tabs.length > 0}
+			{#if sections.length > 0}
+				<li
+					role="separator"
+					class={variant === 'chips'
+						? 'my-1 w-px shrink-0 self-stretch bg-border'
+						: 'my-2 border-t border-border'}
+				></li>
+			{/if}
+			{#each tabs as tab (tab.value)}
+				<li class={variant === 'chips' ? 'shrink-0' : undefined}>
+					<button
+						type="button"
+						aria-current={tab.current ? 'page' : undefined}
+						onclick={() => onTab?.(tab.value)}
+						class={cn(
+							'inline-flex items-center gap-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+							variant === 'chips'
+								? 'whitespace-nowrap rounded-full border border-input bg-background px-3 py-1.5 hover:bg-accent hover:text-accent-foreground aria-[current=page]:border-primary aria-[current=page]:bg-primary/10'
+								: 'w-full justify-between rounded-md px-2 py-1.5 text-left text-muted-foreground hover:bg-accent hover:text-accent-foreground aria-[current=page]:bg-muted aria-[current=page]:font-semibold aria-[current=page]:text-foreground'
+						)}
+					>
+						{tab.label}
+						{#if !tab.current}
+							<ChevronRight class="h-4 w-4 shrink-0" aria-hidden="true" />
+						{/if}
+					</button>
+				</li>
+			{/each}
+		{/if}
 	</ul>
 </nav>

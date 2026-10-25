@@ -2015,6 +2015,8 @@
 		"tabDetails": "Détails de l'événement",
 		"tabTicketing": "Billetterie",
 		"tabListings": "Annonces externes",
+		"nextStepTicketing": "Étape suivante : configurer les types de billets et les tarifs",
+		"goToTicketing": "Aller à la billetterie",
 		"editEvent": "Modifier l'événement",
 		"ticketing": "Billetterie",
 		"validationErrorToast": "Corrige les erreurs signalées avant d'enregistrer.",

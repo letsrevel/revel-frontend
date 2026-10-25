@@ -32,3 +32,21 @@ export function buildEditorSections(
 		{ id: 'section-extras', label: m['eventEditor.sectionExtras']() }
 	];
 }
+
+export type EditorTab = 'details' | 'ticketing' | 'listings';
+
+/**
+ * Rail / chip-row entries for the sibling tabs of a ticketed event. On Details
+ * they are just the other two (they follow the section links); on any other tab
+ * all three show, with the active one flagged, so you can see where you are and
+ * get back.
+ */
+export function buildNavTabs(
+	active: EditorTab,
+	labels: Record<EditorTab, string>
+): { value: EditorTab; label: string; current: boolean }[] {
+	const order: EditorTab[] = ['details', 'ticketing', 'listings'];
+	return order
+		.filter((value) => active !== 'details' || value !== 'details')
+		.map((value) => ({ value, label: labels[value], current: value === active }));
+}

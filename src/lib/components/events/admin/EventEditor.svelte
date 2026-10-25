@@ -38,12 +38,16 @@
 	import SaveBar from './SaveBar.svelte';
 	import EventGlance from './editor/EventGlance.svelte';
 	import EditorShell from './editor/EditorShell.svelte';
-	import { buildEditorSections } from './editor/sections';
+	import EditorSectionNav from './editor/EditorSectionNav.svelte';
+	import { buildEditorSections, buildNavTabs } from './editor/sections';
 	import { buildDirtySnapshot, type DirtySnapshotInput } from './editor/dirty-snapshot';
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import ListingsStep from './listings/ListingsStep.svelte';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import { toast } from 'svelte-sonner';
+	import EditorTabList from './editor/EditorTabList.svelte';
+	import NextStepCard from './editor/NextStepCard.svelte';
+	import type { NavTab } from './editor/EditorSectionNav.svelte';
 	import { scrollToFirstInvalid } from '$lib/utils/scroll';
 
 	interface Props {
@@ -148,7 +152,6 @@
 	const scheduleValid = $derived(scheduleRowsValid(scheduleRows));
 
 	// Editor state (after formData so derived can reference it)
-	let eventCreated = $state(false);
 	let activeTab = $state<'details' | 'ticketing' | 'listings'>(initialTab ?? 'details');
 	const isEditMode = $derived(!!existingEvent);
 	const showTabs = $derived(isEditMode && !!formData.requires_ticket);
@@ -287,6 +290,18 @@
 	const sections = $derived(
 		buildEditorSections(validationErrors, scheduleAttempted && !scheduleValid)
 	);
+	const TAB_LABELS = () => ({
+		details: m['eventEditor.tabDetails'](),
+		ticketing: m['eventEditor.tabTicketing'](),
+		listings: m['eventEditor.tabListings']()
+	});
+	// Rail / chip-row entries for the sibling tabs. On Details they follow the
+	// section links (Ticketing, Listings); elsewhere the full set shows where you are.
+	const navTabs = $derived<NavTab[]>(showTabs ? buildNavTabs(activeTab, TAB_LABELS()) : []);
+	function handleNavTab(value: string): void {
+		void goToTab(value as 'details' | 'ticketing' | 'listings');
+	}
+
 	// Save lives on Details and Ticketing (event-level ticket settings); Listings saves its own rows.
 	const showSave = $derived(!showTabs || activeTab !== 'listings');
 
@@ -345,7 +360,7 @@
 		}
 		if (!formData.start) {
 			errors.start = m['eventWizard.error_startRequired']();
-		} else if (!isEditMode && !eventCreated) {
+		} else if (!isEditMode) {
 			// Future-start is only enforced at creation. When editing an existing
 			// event, the start may legitimately be in the past (e.g. organisers
 			// updating venue/details after the event has begun); the backend
@@ -405,14 +420,32 @@
 
 			const result = await createEventMutation.mutateAsync(createData);
 			eventId = result.id;
-			eventCreated = true;
 			baseline = captureState();
 			toast.success(m['eventWizard.eventCreatedSuccess']());
+			// Hand over to the full editor on its own page (tabs, status, top of page)
+			// rather than re-rendering in place, which left the viewport mid-form.
+			invalidateEventQueries(result.id);
+			await goto(
+				resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', {
+					slug: organization.slug,
+					event_id: result.id
+				})
+			);
 		} catch (error) {
 			console.error('Create event error:', error);
 		} finally {
 			isSaving = false;
 		}
+	}
+
+	function invalidateEventQueries(id: string): void {
+		queryClient.invalidateQueries({ queryKey: ['events'] });
+		queryClient.invalidateQueries({ queryKey: ['event', id] });
+		// Keep the dashboard truthful after create/update (prefix match covers
+		// the parameterised "Your Events" / calendar keys).
+		queryClient.invalidateQueries({ queryKey: ['dashboard-your-events'] });
+		queryClient.invalidateQueries({ queryKey: ['dashboard-has-events'] });
+		queryClient.invalidateQueries({ queryKey: ['dashboard-calendar'] });
 	}
 
 	// --- Unified save function ---
@@ -474,14 +507,7 @@
 			});
 			await saveSchedule(eventId);
 
-			// Invalidate queries
-			queryClient.invalidateQueries({ queryKey: ['events'] });
-			queryClient.invalidateQueries({ queryKey: ['event', eventId] });
-			// Keep the dashboard truthful after create/update (prefix match covers
-			// the parameterised "Your Events" / calendar keys).
-			queryClient.invalidateQueries({ queryKey: ['dashboard-your-events'] });
-			queryClient.invalidateQueries({ queryKey: ['dashboard-has-events'] });
-			queryClient.invalidateQueries({ queryKey: ['dashboard-calendar'] });
+			invalidateEventQueries(eventId);
 
 			baseline = captureState();
 			scheduleAttempted = false;
@@ -489,14 +515,6 @@
 
 			if (andExit) {
 				goto(resolve('/(auth)/org/[slug]/admin/events', { slug: organization.slug }));
-			} else if (!isEditMode) {
-				// Creation flow: redirect to edit page so user gets tabs & status management
-				goto(
-					resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', {
-						slug: organization.slug,
-						event_id: eventId
-					})
-				);
 			}
 		} catch (error) {
 			console.error('Save error:', error);
@@ -520,6 +538,16 @@
 	};
 
 	// --- Tab URL sync ---
+
+	/** Switch tab and bring the tab bar into view (rail entries / next-step card). */
+	async function goToTab(value: 'details' | 'ticketing' | 'listings'): Promise<void> {
+		handleTabChange(value);
+		// Wait for the new panel to render before measuring.
+		await tick();
+		// Instant, not smooth: the new panel keeps loading and shifting height, which
+		// cancels an in-flight smooth scroll (and this is a context switch, not a nudge).
+		tabsEl?.scrollIntoView({ behavior: 'auto', block: 'start' });
+	}
 
 	function handleTabChange(value: string): void {
 		activeTab = value as 'details' | 'ticketing' | 'listings';
@@ -556,7 +584,7 @@
 		{validationErrors}
 		{mode}
 		{isEditMode}
-		ticketingLocked={isEditMode || eventCreated}
+		ticketingLocked={isEditMode}
 		onUpdate={updateFormData}
 		onUpdateImages={updateImages}
 		{eventId}
@@ -581,6 +609,9 @@
 
 {#snippet detailsMain()}
 	{@render sectionsView('edit')}
+	{#if showTabs}
+		<NextStepCard onGo={() => void goToTab('ticketing')} />
+	{/if}
 {/snippet}
 
 {#snippet ticketingMain()}
@@ -621,7 +652,7 @@
 		</div>
 	{/if}
 
-	{#if !isEditMode && !eventCreated}
+	{#if !isEditMode}
 		<!-- CREATION MODE: essentials with their own form (and create button) first -->
 		<EditorShell
 			main={createMain}
@@ -637,13 +668,9 @@
 		<SaveBar variant="bar" mode="create" formId={CREATE_FORM_ID} class="xl:hidden" {isSaving} />
 	{:else if showTabs}
 		<!-- Tabs (only for ticketed events in edit mode) -->
-		<div bind:this={tabsEl}></div>
+		<div bind:this={tabsEl} class="scroll-mt-[var(--admin-sticky-top)]"></div>
 		<Tabs.Root value={activeTab} onValueChange={handleTabChange}>
-			<Tabs.List class="mb-6 [justify-content:flex-start]">
-				<Tabs.Trigger value="details">{m['eventEditor.tabDetails']()}</Tabs.Trigger>
-				<Tabs.Trigger value="ticketing">{m['eventEditor.tabTicketing']()}</Tabs.Trigger>
-				<Tabs.Trigger value="listings">{m['eventEditor.tabListings']()}</Tabs.Trigger>
-			</Tabs.List>
+			<EditorTabList />
 
 			<Tabs.Content value="details">
 				<EditorShell
@@ -651,6 +678,8 @@
 					{glance}
 					{sections}
 					showNav={true}
+					{navTabs}
+					onNavTab={handleNavTab}
 					railSave={true}
 					{isSaving}
 					{isDirty}
@@ -663,8 +692,10 @@
 				<EditorShell
 					main={ticketingMain}
 					{glance}
-					{sections}
-					showNav={false}
+					sections={[]}
+					showNav={true}
+					{navTabs}
+					onNavTab={handleNavTab}
 					railSave={true}
 					{isSaving}
 					{isDirty}
@@ -673,6 +704,13 @@
 				/>
 			</Tabs.Content>
 			<Tabs.Content value="listings">
+				<EditorSectionNav
+					sections={[]}
+					variant="chips"
+					tabs={navTabs}
+					onTab={handleNavTab}
+					class="mb-6"
+				/>
 				{#if eventId && existingEvent}
 					<ListingsStep
 						{eventId}
@@ -698,7 +736,7 @@
 		/>
 	{/if}
 
-	{#if (isEditMode || eventCreated) && showSave}
+	{#if isEditMode && showSave}
 		<SaveBar
 			variant="bar"
 			class="xl:hidden"
