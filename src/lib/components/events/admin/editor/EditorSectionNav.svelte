@@ -35,27 +35,47 @@
 		activeId = id;
 	}
 
-	// Scroll-spy: the active section is the first (document order) one that
-	// intersects a band near the top of the viewport.
+	// Scroll-spy: the active section is the last one (document order) whose top
+	// has crossed 30% of the viewport, falling back to the first section; at the
+	// bottom of the page the last section wins even if it is too short to cross.
+	// (An IntersectionObserver band left the highlight stale whenever no section
+	// crossed it, e.g. at scroll 0 where Basics still sits below the band.)
 	$effect(() => {
-		if (typeof IntersectionObserver === 'undefined') return;
 		const ids = sections.map((s) => s.id);
-		const visible: Record<string, boolean> = {};
-		const observer = new IntersectionObserver(
-			(entries) => {
-				for (const entry of entries) {
-					visible[entry.target.id] = entry.isIntersecting;
-				}
-				const first = ids.find((id) => visible[id]);
-				if (first) activeId = first;
-			},
-			{ rootMargin: '-15% 0px -70% 0px' }
-		);
-		for (const id of ids) {
-			const el = document.getElementById(id);
-			if (el) observer.observe(el);
+		let frame = 0;
+
+		function update(): void {
+			frame = 0;
+			const elements = ids
+				.map((id) => document.getElementById(id))
+				.filter((el): el is HTMLElement => el !== null);
+			if (elements.length === 0) return;
+			const atBottom =
+				window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+			if (atBottom) {
+				activeId = elements[elements.length - 1].id;
+				return;
+			}
+			const threshold = window.innerHeight * 0.3;
+			let current = elements[0].id;
+			for (const el of elements) {
+				if (el.getBoundingClientRect().top <= threshold) current = el.id;
+			}
+			activeId = current;
 		}
-		return () => observer.disconnect();
+
+		function schedule(): void {
+			if (!frame) frame = requestAnimationFrame(update);
+		}
+
+		update();
+		window.addEventListener('scroll', schedule, { passive: true });
+		window.addEventListener('resize', schedule);
+		return () => {
+			if (frame) cancelAnimationFrame(frame);
+			window.removeEventListener('scroll', schedule);
+			window.removeEventListener('resize', schedule);
+		};
 	});
 </script>
 
