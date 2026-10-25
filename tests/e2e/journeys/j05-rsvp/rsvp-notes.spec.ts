@@ -173,12 +173,12 @@ test.describe('J5 RSVP notes @p2', () => {
 		const page = asOwner;
 		await gotoHydrated(page, `/org/${event.orgSlug}/admin/events/${event.id}/edit`);
 		await waitForClientAuth(page);
-		await expect(page.getByRole('heading', { name: 'Edit Event', level: 1 })).toBeVisible();
+		await expect(page.getByRole('heading', { name: event.name, level: 1 })).toBeVisible();
 
 		const toggle = page.getByLabel('Accept a note with RSVPs');
 		await expect(toggle).not.toBeChecked();
 		await toggle.check();
-		// Two SaveBars render (top + bottom of the editor) — take the first.
+		// One save surface renders per viewport (xl rail or bottom bar); .first() is a harmless guard.
 		await page.getByRole('button', { name: 'Save', exact: true }).first().click();
 		await expect(page.getByText('Event updated successfully!')).toBeVisible({ timeout: 20_000 });
 

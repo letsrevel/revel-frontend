@@ -9308,6 +9308,7 @@
 	"eventEditPage.statusDraft": "Bozza",
 	"eventEditPage.statusPublished": "Pubblicato",
 	"eventEditPage.statusClosed": "Chiuso",
+	"eventEditPage.statusCancelled": "Annullato",
 	"eventEditPage.updateDetailsFor": "Aggiorna i dettagli per:",
 	"eventInvitationsAdmin.headTitle": "Gestisci gli inviti - {eventName}",
 	"eventInvitationsAdmin.headDescription": "Gestisci gli inviti per {eventName}",

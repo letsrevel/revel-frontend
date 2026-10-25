@@ -53,6 +53,7 @@
 			case 'open':
 				return 'success';
 			case 'closed':
+			case 'cancelled':
 				return 'danger';
 			case 'draft':
 			default:
@@ -67,7 +68,9 @@
 				? m['eventEditPage.statusPublished']()
 				: currentStatus === 'closed'
 					? m['eventEditPage.statusClosed']()
-					: currentStatus
+					: currentStatus === 'cancelled'
+						? m['eventEditPage.statusCancelled']()
+						: currentStatus
 	);
 
 	// Update event status mutation

@@ -117,7 +117,7 @@ test.describe('J10 stats, schedule & resources @p2', () => {
 		await page.getByRole('button', { name: new RegExp(resourceName) }).click();
 		await expect(page.getByText('1 resource attached')).toBeVisible();
 
-		// Persist through the SaveBar (two render — top + bottom of the editor).
+		// Persist through the SaveBar (one save surface renders per viewport).
 		await page.getByRole('button', { name: 'Save', exact: true }).first().click();
 		await expect(page.getByText('Event updated successfully!')).toBeVisible({ timeout: 20_000 });
 

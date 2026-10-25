@@ -36,9 +36,15 @@ describe('AccessSection', () => {
 		expect(onUpdate).toHaveBeenCalledWith({ visibility: 'staff-only' });
 	});
 
-	it('create mode offers the ticketing checkbox and hides admission/guest settings', () => {
-		render(AccessSection, { props: { ...baseProps, mode: 'create', ticketingLocked: false } });
-		expect(screen.getByRole('checkbox', { name: /Requires Ticket/i })).toBeInTheDocument();
+	it('create mode offers RSVP/Tickets radio tiles and hides admission/guest settings', async () => {
+		const onUpdate = vi.fn();
+		render(AccessSection, {
+			props: { ...baseProps, onUpdate, mode: 'create', ticketingLocked: false }
+		});
+		expect(screen.queryByRole('checkbox', { name: /Requires Ticket/i })).not.toBeInTheDocument();
+		expect(screen.getByRole('radio', { name: /^RSVP/ })).toBeChecked();
+		await fireEvent.click(screen.getByRole('radio', { name: /^Tickets/ }));
+		expect(onUpdate).toHaveBeenCalledWith({ requires_ticket: true });
 		expect(screen.queryByLabelText(/without logging in|guest/i)).not.toBeInTheDocument();
 	});
 

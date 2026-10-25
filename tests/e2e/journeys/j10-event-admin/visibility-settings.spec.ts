@@ -32,7 +32,7 @@ test.describe('J10 visibility settings @p2', () => {
 		const page = asOwner;
 		await gotoHydrated(page, `/org/${event.orgSlug}/admin/events/${event.id}/edit`);
 		await waitForClientAuth(page);
-		await expect(page.getByRole('heading', { name: 'Edit Event', level: 1 })).toBeVisible();
+		await expect(page.getByRole('heading', { name: event.name, level: 1 })).toBeVisible();
 
 		// --- Round 1: switch to address mode, set a non-public address
 		// visibility, and opt into pronoun distribution. ---
