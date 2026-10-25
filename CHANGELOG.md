@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.26.0] - 2026-10-25
+
+### Added
+- **Brand film on the landing page**: the "One line" film (1:35, English and German) now has its own panel right after the hero, with a "Watch the film (1:35)" link in the hero that jumps to it
+  - Nothing loads until the visitor presses play, and the video streams from Revel's own storage with no third-party player, scripts or cookies
+  - German visitors get the German cut; other languages get the English one with a translated note saying so; English and German captions can be turned on in the player
+- Event descriptions can be edited full-screen: a toolbar button in the description editor opens a near-full-screen dialog, and the text stays in sync with the form
+- The "Part of a series" card on an event page shows the series logo, renders the series description with its formatting, and has a "View series" link
+
+### Changed
+- **Event create and edit pages redesigned** in the style of the admin dashboard
+  - The page title is the event's name with its status badge, and the Details, Ticketing and Listings tabs sit directly under it instead of halfway down the page
+  - Details is split into seven always-open sections (Basics, Date & time, Location, Access, Attendance, On the event page, Extras); visibility and event type are picked from compact tiles, and the logo and cover art sit side by side
+  - On wide screens a side rail shows a live summary of the event (date, name, time and place, who can see and attend it), an "On this page" list that tracks your scroll and flags sections with errors, and the only Save buttons, with an unsaved-changes indicator; on smaller screens the summary sits on top, sections become a chip row, and saving is a single sticky bar
+  - Creating an event asks RSVP or Tickets up front and shows only the basics, date and access, then opens the new event's edit page at the top; ticketed events end Details with a link to set up tiers and prices
+  - A cancelled event's status badge is now translated
+- Series and event cover art is shown uncropped at 16:9 over a blurred copy of itself, instead of being cut into a thin band on wide screens; on an event page with a cover, the title, date and location move into the strip below the art
+- When the cart is free, the cart bar and the tickets dialog say "Claim" instead of "Buy", matching the checkout
+
+### Fixed
+- Logo and cover previews show again when editing a series' settings
+- Several controls (language switcher, footer links, calendar buttons, user menu, notifications bell, privacy setting, the film's play button) now have screen-reader names that include their visible text, so voice-control users can activate them by saying what they see
+
 ## [2.25.0] - 2026-10-25
 
 ### Added
