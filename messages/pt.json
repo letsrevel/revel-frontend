@@ -1428,7 +1428,20 @@
 		"nextStep": {
 			"request_whitelist": "É necessária verificação para aceder a esta organização",
 			"wait_for_whitelist_approval": "O teu pedido de verificação está em análise",
-			"upgrade_membership": "Consulta as opções de adesão da organização para ver que níveis podes obter."
+			"upgrade_membership": "Consulta as opções de adesão da organização para ver que níveis podes obter.",
+			"rsvp": "Podes confirmar a tua presença neste evento",
+			"purchase_ticket": "Garante o teu bilhete para participar neste evento",
+			"complete_questionnaire": "Preenche o questionário obrigatório para participar",
+			"wait_for_questionnaire_evaluation": "O teu questionário está em revisão",
+			"wait_to_retake_questionnaire": "Em breve poderás refazer o questionário",
+			"request_invitation": "Pede um convite para participar neste evento privado",
+			"wait_for_invitation_approval": "O teu pedido de convite aguarda aprovação",
+			"become_member": "Adere à organização para participar neste evento exclusivo para membros",
+			"join_waitlist": "Este evento está esgotado, mas podes entrar na lista de espera",
+			"wait_for_open_spot": "Estás na lista de espera deste evento",
+			"wait_for_event_to_open": "Volta quando as inscrições abrirem",
+			"complete_profile": "Completa o teu perfil para participar neste evento",
+			"fallback": "Verifica o teu estado de elegibilidade"
 		},
 		"reason": {
 			"sales_paused": "A venda de bilhetes está em pausa neste momento. Volta em breve.",
@@ -1450,11 +1463,86 @@
 		"questionnairesFailed": "{count} questionário não aprovado",
 		"questionnairesFailedPlural": "{count} questionários não aprovados",
 		"canRetry": "Podes tentar novamente {date}",
-		"availableOn": "Disponível {date}"
+		"availableOn": "Disponível {date}",
+		"actionButton": {
+			"rsvp": "Confirmar presença",
+			"purchase_ticket": "Comprar bilhetes",
+			"complete_questionnaire": "Preencher questionário",
+			"wait_for_questionnaire_evaluation": "Em revisão",
+			"wait_to_retake_questionnaire": "Nova tentativa em breve",
+			"request_invitation": "Pedir convite",
+			"wait_for_invitation_approval": "Aprovação pendente",
+			"become_member": "Aderir à organização",
+			"join_waitlist": "Entrar na lista de espera",
+			"wait_for_open_spot": "Estás na lista de espera",
+			"wait_for_event_to_open": "Avisa-me",
+			"request_whitelist": "Pedir verificação",
+			"wait_for_whitelist_approval": "Verificação pendente",
+			"complete_profile": "Completar perfil",
+			"fallback": "Ver detalhes"
+		},
+		"explanation": {
+			"eligible": "Podes participar neste evento",
+			"notEligible": "Neste momento não podes participar neste evento"
+		},
+		"rsvpStatus": {
+			"yes": "Vais participar",
+			"maybe": "Talvez participes",
+			"no": "Não vais participar",
+			"unknown": "Estado de presença desconhecido"
+		},
+		"ticketStatus": {
+			"active": "Tens um bilhete",
+			"cancelled": "Bilhete cancelado",
+			"checked_in": "Check-in feito",
+			"pending": "Bilhete pendente",
+			"none": "Sem bilhetes"
+		},
+		"tickets": {
+			"allCheckedIn": "{count} bilhetes com check-in feito",
+			"allPending": "{count} bilhetes pendentes",
+			"somePending": "{count} bilhetes ({pending} pendentes)",
+			"total": "{count} bilhetes"
+		},
+		"profileField": {
+			"profile_picture": "Foto de perfil",
+			"pronouns": "Pronomes",
+			"name": "Nome de exibição"
+		}
 	},
 	"eligibilityStatusDisplay": {
 		"available": "Disponível",
-		"missingProfileFields": "Adiciona o seguinte ao teu perfil:"
+		"missingProfileFields": "Adiciona o seguinte ao teu perfil:",
+		"questionnairesRequired": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} questionário necessário",
+					"countPlural=*": "{count} questionários necessários"
+				}
+			}
+		],
+		"questionnairesPendingReview": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} questionário pendente de revisão",
+					"countPlural=*": "{count} questionários pendentes de revisão"
+				}
+			}
+		],
+		"questionnairesFailed": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} questionário não aprovado",
+					"countPlural=*": "{count} questionários não aprovados"
+				}
+			}
+		]
 	},
 	"errorPage": {
 		"defaultMessage": "Ocorreu um erro",
@@ -1578,7 +1666,8 @@
 		"membersOnly": "Apenas membros",
 		"private": "Apenas por convite",
 		"public": "Público",
-		"unlisted": "Não listado"
+		"unlisted": "Não listado",
+		"attendeesOnly": "Apenas participantes"
 	},
 	"eventCard": {
 		"viewDetails": "Ver detalhes do evento",
@@ -2532,7 +2621,9 @@
 		"waitlist_error": "Não foi possível entrar na lista de espera. Tenta novamente.",
 		"leave": "Sair",
 		"confirmLeaveWaitlist": "Queres mesmo sair da lista de espera?",
-		"leaveWaitlist_error": "Não foi possível sair da lista de espera. Tenta novamente."
+		"leaveWaitlist_error": "Não foi possível sair da lista de espera. Tenta novamente.",
+		"thisEvent": "este evento",
+		"continue": "Continuar"
 	},
 	"ineligibilityActionButton.waitlist_error": "Não foi possível entrar na lista de espera. Tenta novamente.",
 	"ineligibilityMessage": {

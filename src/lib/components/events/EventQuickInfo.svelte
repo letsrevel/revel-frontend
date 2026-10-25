@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { formatEventTypeLabel, formatVisibilityLabel } from '$lib/utils/event-labels';
 	import type { EventDetailSchema } from '$lib/api/generated/types.gen';
 	import {
 		formatDateTime,
@@ -86,21 +87,6 @@
 		return { primary: cityPartsNotIn(null, event.city).join(', ') };
 	});
 
-	function formatEventTypeLabel(value: string): string {
-		switch (value) {
-			case 'public':
-				return m['eventQuickInfo.publicEvent']();
-			case 'private':
-				return m['eventQuickInfo.privateEvent']();
-			case 'members-only':
-				return m['eventQuickInfo.membersOnly']();
-			case 'staff-only':
-				return m['eventQuickInfo.staffOnly']();
-			default:
-				return m['eventQuickInfo.event']();
-		}
-	}
-
 	const eventTypeDisplay = $derived(formatEventTypeLabel((event.event_type as string) || 'public'));
 
 	const eventTypeIcon = $derived.by(() => {
@@ -116,21 +102,6 @@
 				return Globe;
 		}
 	});
-
-	function formatVisibilityLabel(value: string): string {
-		switch (value) {
-			case 'public':
-				return m['eventBadges.public']();
-			case 'private':
-				return m['eventBadges.private']();
-			case 'members-only':
-				return m['eventBadges.membersOnly']();
-			case 'staff-only':
-				return m['eventQuickInfo.staffOnly']();
-			default:
-				return value.replace(/-/g, ' ');
-		}
-	}
 
 	// Show visibility only when it differs from event_type
 	const visibilityMismatch = $derived.by(() => {
