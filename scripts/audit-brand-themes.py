@@ -180,6 +180,9 @@ TEXT_PAIRS = [  # (fg, bg, min_ratio, note)
     ("poster-white", "poster-crimson-deep", 4.5, "poster venues panel body"),
     ("poster-white", "poster-ink", 4.5, "poster open source panel body"),
     ("poster-white", "poster-purple", 4.5, "poster close panel body"),
+    ("poster-white", "poster-aubergine", 4.5, "poster film panel title / note"),
+    ("poster-lavender", "poster-aubergine", 4.5, "poster film panel kicker"),
+    ("poster-white", "poster-aubergine", 3.0, "film frame focus ring on the panel"),
     ("poster-purple", "poster-white", 4.5, "sticker text on white sticker"),
     # Default value only: a branded org overrides --poster-band at runtime with its
     # light primary, which the backend (revel-backend #1149) keeps >= 4.5:1 vs white.

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { tick } from 'svelte';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import { Play } from '@lucide/svelte';
 	import PosterPanel from './PosterPanel.svelte';
@@ -24,53 +25,58 @@
 
 	// Nothing is fetched until this click (`preload="none"`), so the landing
 	// page stays free of third-party requests for visitors who never press play.
-	function play(): void {
+	async function play(): Promise<void> {
 		if (!video) return;
 		started = true;
-		// Called inside the click handler so the user gesture still counts and
-		// the browser allows playback with sound.
-		void video.play().catch(() => {
+		// Called synchronously inside the click handler so the user gesture
+		// still counts and the browser allows playback with sound.
+		const playing = video.play().catch(() => {
 			// Leave the native controls up so the visitor can retry.
 		});
-		video.focus();
+		// The button unmounts on this click; move focus to the video once its
+		// controls are rendered (a <video> without controls is not focusable),
+		// otherwise keyboard focus would fall back to <body>.
+		await tick();
+		video?.focus();
+		await playing;
 	}
 </script>
 
 <!-- Aubergine is the film's own backdrop: the frame dissolves into the panel.
-     Text pairs on #26113D: white 17.1:1, lavender kicker 5.6:1. The next panel
-     (Pricing) is amber, hence cut-amber. -->
-<PosterPanel bgClass="bg-[hsl(var(--poster-aubergine))]" cutToClass="cut-amber">
+     Pairs on it (scripts/audit-brand-themes.py): white 17.10:1, lavender
+     kicker 5.59:1. The next panel (Pricing) is amber, hence cut-amber. -->
+<PosterPanel bgClass="bg-poster-aubergine" cutToClass="cut-amber">
 	<div id="film" class="scroll-mt-24">
 		<div
-			class="flex flex-col gap-4 text-[hsl(var(--poster-white))] md:flex-row md:items-end md:justify-between md:gap-10"
+			class="flex flex-col gap-4 text-poster-white md:flex-row md:items-end md:justify-between md:gap-10"
 		>
 			<div>
-				<p
-					class="text-sm font-extrabold uppercase tracking-[0.12em] text-[hsl(var(--poster-lavender))]"
-				>
+				<p class="text-sm font-extrabold uppercase tracking-[0.12em] text-poster-lavender">
 					{m['home.poster.filmLabel']()}
 				</p>
 				<h2 class="mt-2 text-3xl font-black leading-[1.15] sm:text-4xl">
 					{m['home.poster.filmTitle']()}
 				</h2>
 			</div>
-			<div class="max-w-sm leading-relaxed md:pb-1">
-				<p>{m['home.poster.filmBody']()}</p>
-				{#if showEnglishNote}
-					<p class="mt-2 text-sm">{m['home.poster.filmEnglishNote']()}</p>
-				{/if}
-			</div>
+			{#if showEnglishNote}
+				<p class="max-w-sm text-sm leading-relaxed md:pb-1">
+					{m['home.poster.filmEnglishNote']()}
+				</p>
+			{/if}
 		</div>
 
 		<!-- At rest the frame leans like a poster sticker; pressing play
-		     straightens it so the film itself is never watched askew. -->
+		     straightens it so the film itself is never watched askew.
+		     overflow-hidden would clip the video's own focus outline, so the
+		     frame draws the ring itself while the video has keyboard focus
+		     (poster-white on aubergine, 17.10:1). -->
 		<div
-			class="film-frame relative mt-8 aspect-video overflow-hidden rounded-[1.25rem] bg-[hsl(var(--poster-aubergine))] shadow-[0_24px_60px_hsl(0_0%_0%/0.45)] ring-1 ring-inset ring-[hsl(var(--poster-white)/0.12)]"
+			class="film-frame relative mt-8 aspect-video overflow-hidden rounded-[1.25rem] bg-poster-aubergine shadow-[0_24px_60px_hsl(0_0%_0%/0.45)] ring-1 ring-inset ring-poster-white/[0.12] has-[video:focus-visible]:ring-2 has-[video:focus-visible]:ring-poster-white"
 			class:started
 		>
 			<video
 				bind:this={video}
-				class="h-full w-full"
+				class="h-full w-full focus-visible:outline-none"
 				{src}
 				{poster}
 				preload="none"
@@ -94,7 +100,7 @@
 					class="group absolute inset-0 flex items-end justify-start p-2.5 focus-visible:outline-none sm:p-6"
 				>
 					<span
-						class="flex items-center gap-2 rounded-full bg-[hsl(var(--poster-white))] py-1.5 pl-1.5 pr-3.5 text-sm font-bold text-[hsl(var(--poster-ink))] shadow-[0_8px_24px_hsl(0_0%_0%/0.35)] transition-transform group-hover:scale-[1.03] group-focus-visible:outline group-focus-visible:outline-2 group-focus-visible:outline-offset-4 group-focus-visible:outline-white motion-reduce:transition-none sm:gap-3 sm:py-2 sm:pl-2 sm:pr-5 sm:pr-6 sm:text-base"
+						class="flex items-center gap-2 rounded-full bg-poster-white py-1.5 pl-1.5 pr-3.5 text-sm font-bold text-poster-ink shadow-[0_8px_24px_hsl(0_0%_0%/0.35)] transition-transform group-hover:scale-[1.03] group-focus-visible:outline group-focus-visible:outline-2 group-focus-visible:outline-offset-4 group-focus-visible:outline-white motion-reduce:transition-none sm:gap-3 sm:py-2 sm:pl-2 sm:pr-6 sm:text-base"
 					>
 						<span
 							class="grid size-9 place-items-center rounded-full bg-[linear-gradient(135deg,var(--logo-from),var(--logo-to))] sm:size-14"
