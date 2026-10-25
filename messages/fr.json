@@ -1293,7 +1293,20 @@
 		"nextStep": {
 			"request_whitelist": "Une vérification est requise pour accéder à cette organisation",
 			"wait_for_whitelist_approval": "Ta demande de vérification est en cours d'examen",
-			"upgrade_membership": "Consulte les options d'adhésion de l'organisation pour voir quels niveaux tu peux obtenir."
+			"upgrade_membership": "Consulte les options d'adhésion de l'organisation pour voir quels niveaux tu peux obtenir.",
+			"rsvp": "Tu peux confirmer ta participation à cet événement",
+			"purchase_ticket": "Prends ton billet pour participer à cet événement",
+			"complete_questionnaire": "Remplis le questionnaire requis pour participer",
+			"wait_for_questionnaire_evaluation": "Ton questionnaire est en cours d'examen",
+			"wait_to_retake_questionnaire": "Tu pourras bientôt repasser le questionnaire",
+			"request_invitation": "Demande une invitation pour participer à cet événement privé",
+			"wait_for_invitation_approval": "Ta demande d'invitation est en attente d'approbation",
+			"become_member": "Rejoins l'organisation pour participer à cet événement réservé aux membres",
+			"join_waitlist": "Cet événement est complet, mais tu peux rejoindre la liste d'attente",
+			"wait_for_open_spot": "Tu es sur la liste d'attente pour cet événement",
+			"wait_for_event_to_open": "Reviens quand les inscriptions ouvriront",
+			"complete_profile": "Complète ton profil pour participer à cet événement",
+			"fallback": "Vérifie ton statut d'éligibilité"
 		},
 		"reason": {
 			"sales_paused": "La vente des billets est en pause pour le moment. Revenez bientôt.",
@@ -1315,11 +1328,86 @@
 		"questionnairesFailed": "{count} questionnaire échoué",
 		"questionnairesFailedPlural": "{count} questionnaires échoués",
 		"canRetry": "Tu peux réessayer {date}",
-		"availableOn": "Disponible {date}"
+		"availableOn": "Disponible {date}",
+		"actionButton": {
+			"rsvp": "Participer",
+			"purchase_ticket": "Acheter des billets",
+			"complete_questionnaire": "Remplir le questionnaire",
+			"wait_for_questionnaire_evaluation": "En cours d'examen",
+			"wait_to_retake_questionnaire": "Nouvel essai bientôt possible",
+			"request_invitation": "Demander une invitation",
+			"wait_for_invitation_approval": "Approbation en attente",
+			"become_member": "Rejoindre l'organisation",
+			"join_waitlist": "Rejoindre la liste d'attente",
+			"wait_for_open_spot": "Tu es sur la liste d'attente",
+			"wait_for_event_to_open": "Me prévenir",
+			"request_whitelist": "Demander la vérification",
+			"wait_for_whitelist_approval": "Vérification en attente",
+			"complete_profile": "Compléter le profil",
+			"fallback": "Voir les détails"
+		},
+		"explanation": {
+			"eligible": "Tu peux participer à cet événement",
+			"notEligible": "Tu ne peux pas participer à cet événement pour le moment"
+		},
+		"rsvpStatus": {
+			"yes": "Tu participes",
+			"maybe": "Tu participes peut-être",
+			"no": "Tu ne participes pas",
+			"unknown": "Statut de participation inconnu"
+		},
+		"ticketStatus": {
+			"active": "Tu as un billet",
+			"cancelled": "Billet annulé",
+			"checked_in": "Check-in effectué",
+			"pending": "Billet en attente",
+			"none": "Aucun billet"
+		},
+		"tickets": {
+			"allCheckedIn": "{count} billets avec check-in effectué",
+			"allPending": "{count} billets en attente",
+			"somePending": "{count} billets ({pending} en attente)",
+			"total": "{count} billets"
+		},
+		"profileField": {
+			"profile_picture": "Photo de profil",
+			"pronouns": "Pronoms",
+			"name": "Nom affiché"
+		}
 	},
 	"eligibilityStatusDisplay": {
 		"available": "Disponible",
-		"missingProfileFields": "Ajoute les éléments suivants à ton profil :"
+		"missingProfileFields": "Ajoute les éléments suivants à ton profil :",
+		"questionnairesRequired": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} questionnaire requis",
+					"countPlural=*": "{count} questionnaires requis"
+				}
+			}
+		],
+		"questionnairesPendingReview": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} questionnaire en attente d'examen",
+					"countPlural=*": "{count} questionnaires en attente d'examen"
+				}
+			}
+		],
+		"questionnairesFailed": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} questionnaire échoué",
+					"countPlural=*": "{count} questionnaires échoués"
+				}
+			}
+		]
 	},
 	"errorPage": {
 		"defaultMessage": "Une erreur est survenue",
@@ -1443,7 +1531,8 @@
 		"membersOnly": "Membres uniquement",
 		"private": "Sur invitation uniquement",
 		"public": "Public",
-		"unlisted": "Non répertorié"
+		"unlisted": "Non répertorié",
+		"attendeesOnly": "Participants uniquement"
 	},
 	"eventCard": {
 		"viewDetails": "Voir les détails de l'événement",
@@ -2397,7 +2486,9 @@
 		"waitlist_error": "Impossible de rejoindre la liste d'attente. Réessaie.",
 		"leave": "Quitter",
 		"confirmLeaveWaitlist": "Veux-tu vraiment quitter la liste d'attente ?",
-		"leaveWaitlist_error": "Impossible de quitter la liste d'attente. Réessaie."
+		"leaveWaitlist_error": "Impossible de quitter la liste d'attente. Réessaie.",
+		"thisEvent": "cet événement",
+		"continue": "Continuer"
 	},
 	"ineligibilityActionButton.waitlist_error": "Impossible de rejoindre la liste d'attente. Réessaie.",
 	"ineligibilityMessage": {

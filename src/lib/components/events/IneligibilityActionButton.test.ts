@@ -84,9 +84,11 @@ describe('IneligibilityActionButton claim button gating', () => {
 		expect(screen.getByRole('button', { name: getActionButtonText(nextStep) })).toBeInTheDocument();
 	});
 
-	it('shows the Complete Profile CTA, not the claim button, once the invitation is held', () => {
+	it('shows the complete-profile CTA, not the claim button, once the invitation is held', () => {
 		setup('complete_profile', token);
-		expect(screen.getByRole('button', { name: 'Complete Profile' })).toBeEnabled();
+		expect(
+			screen.getByRole('button', { name: m['eligibility.actionButton.complete_profile']() })
+		).toBeEnabled();
 		expect(screen.queryByRole('button', { name: claimName() })).not.toBeInTheDocument();
 	});
 
@@ -137,7 +139,9 @@ describe('IneligibilityActionButton complete_profile navigation', () => {
 		const user = userEvent.setup();
 		setup('complete_profile', token);
 
-		await user.click(screen.getByRole('button', { name: 'Complete Profile' }));
+		await user.click(
+			screen.getByRole('button', { name: m['eligibility.actionButton.complete_profile']() })
+		);
 
 		expect(assigned).toBe(`/account/profile?redirect=${encodeURIComponent('/events/acme/gala')}`);
 	});

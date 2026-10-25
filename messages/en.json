@@ -1426,9 +1426,22 @@
 		"eligible": "You're eligible to RSVP",
 		"ineligible": "You're not eligible yet",
 		"nextStep": {
-			"request_whitelist": "Verification is required to access this organization",
-			"wait_for_whitelist_approval": "Your verification request is pending review",
-			"upgrade_membership": "Check the organization's membership options to see which tiers you can get."
+			"request_whitelist": "Additional verification is required to access this organization",
+			"wait_for_whitelist_approval": "Your verification request is pending approval",
+			"upgrade_membership": "Check the organization's membership options to see which tiers you can get.",
+			"rsvp": "You're eligible to RSVP for this event",
+			"purchase_ticket": "Get your ticket to attend this event",
+			"complete_questionnaire": "Complete the required questionnaire to attend",
+			"wait_for_questionnaire_evaluation": "Your questionnaire submission is under review",
+			"wait_to_retake_questionnaire": "You can retake the questionnaire soon",
+			"request_invitation": "Request an invitation to attend this private event",
+			"wait_for_invitation_approval": "Your invitation request is pending approval",
+			"become_member": "Join the organization to attend this members-only event",
+			"join_waitlist": "This event is full, but you can join the waitlist",
+			"wait_for_open_spot": "You're on the waitlist for this event",
+			"wait_for_event_to_open": "Check back when registration opens",
+			"complete_profile": "Complete your profile to attend this event",
+			"fallback": "Check your eligibility status"
 		},
 		"reason": {
 			"sales_paused": "Ticket sales are paused right now. Check back soon.",
@@ -1450,11 +1463,86 @@
 		"questionnairesFailed": "{count} questionnaire failed",
 		"questionnairesFailedPlural": "{count} questionnaires failed",
 		"canRetry": "You can retry {date}",
-		"availableOn": "Available {date}"
+		"availableOn": "Available {date}",
+		"actionButton": {
+			"rsvp": "RSVP",
+			"purchase_ticket": "Buy Tickets",
+			"complete_questionnaire": "Complete Questionnaire",
+			"wait_for_questionnaire_evaluation": "Pending Review",
+			"wait_to_retake_questionnaire": "Retry Available Soon",
+			"request_invitation": "Request Invitation",
+			"wait_for_invitation_approval": "Pending Approval",
+			"become_member": "Join Organization",
+			"join_waitlist": "Join Waitlist",
+			"wait_for_open_spot": "You're on the Waitlist",
+			"wait_for_event_to_open": "Notify Me",
+			"request_whitelist": "Request Verification",
+			"wait_for_whitelist_approval": "Verification Pending",
+			"complete_profile": "Complete Profile",
+			"fallback": "View Details"
+		},
+		"explanation": {
+			"eligible": "You're eligible to attend this event",
+			"notEligible": "You are not currently eligible to attend this event"
+		},
+		"rsvpStatus": {
+			"yes": "You're attending",
+			"maybe": "You might attend",
+			"no": "You're not attending",
+			"unknown": "RSVP status unknown"
+		},
+		"ticketStatus": {
+			"active": "You have a ticket",
+			"cancelled": "Ticket canceled",
+			"checked_in": "Checked in",
+			"pending": "Ticket pending",
+			"none": "No tickets"
+		},
+		"tickets": {
+			"allCheckedIn": "{count} tickets checked in",
+			"allPending": "{count} tickets pending",
+			"somePending": "{count} tickets ({pending} pending)",
+			"total": "{count} tickets"
+		},
+		"profileField": {
+			"profile_picture": "Profile picture",
+			"pronouns": "Pronouns",
+			"name": "Display name"
+		}
 	},
 	"eligibilityStatusDisplay": {
 		"available": "Available",
-		"missingProfileFields": "Please add the following to your profile:"
+		"missingProfileFields": "Please add the following to your profile:",
+		"questionnairesRequired": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} questionnaire required",
+					"countPlural=*": "{count} questionnaires required"
+				}
+			}
+		],
+		"questionnairesPendingReview": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} questionnaire pending review",
+					"countPlural=*": "{count} questionnaires pending review"
+				}
+			}
+		],
+		"questionnairesFailed": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} questionnaire failed",
+					"countPlural=*": "{count} questionnaires failed"
+				}
+			}
+		]
 	},
 	"errorPage": {
 		"defaultMessage": "An error occurred",
@@ -1578,7 +1666,8 @@
 		"membersOnly": "Members Only",
 		"private": "Invitation only",
 		"public": "Public",
-		"unlisted": "Unlisted"
+		"unlisted": "Unlisted",
+		"attendeesOnly": "Attendees only"
 	},
 	"eventCard": {
 		"viewDetails": "View event details",
@@ -2532,7 +2621,9 @@
 		"waitlist_error": "Failed to join waitlist. Please try again.",
 		"leave": "Leave",
 		"confirmLeaveWaitlist": "Are you sure you want to leave the waitlist?",
-		"leaveWaitlist_error": "Failed to leave waitlist. Please try again."
+		"leaveWaitlist_error": "Failed to leave waitlist. Please try again.",
+		"thisEvent": "this event",
+		"continue": "Continue"
 	},
 	"ineligibilityActionButton.waitlist_error": "Failed to join waitlist. Please try again.",
 	"ineligibilityMessage": {

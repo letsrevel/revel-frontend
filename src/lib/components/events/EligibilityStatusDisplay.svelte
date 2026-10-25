@@ -186,9 +186,9 @@
 				<div class="mt-2 flex items-center gap-2 text-sm">
 					<ClipboardList class="h-4 w-4" aria-hidden="true" />
 					<p>
-						{eligibility.questionnaires_missing.length}
-						{eligibility.questionnaires_missing.length === 1 ? 'questionnaire' : 'questionnaires'}
-						required
+						{m['eligibilityStatusDisplay.questionnairesRequired']({
+							count: eligibility.questionnaires_missing.length
+						})}
 					</p>
 				</div>
 			{/if}
@@ -198,10 +198,9 @@
 				<div class="mt-2 flex items-start gap-2 text-sm text-muted-foreground">
 					<Clock class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
 					<span>
-						{eligibility.questionnaires_pending_review.length} questionnaire{eligibility
-							.questionnaires_pending_review.length === 1
-							? ''
-							: 's'} pending review
+						{m['eligibilityStatusDisplay.questionnairesPendingReview']({
+							count: eligibility.questionnaires_pending_review.length
+						})}
 					</span>
 				</div>
 			{/if}
@@ -211,13 +210,14 @@
 				<div class="mt-2 flex items-center gap-2 text-sm text-destructive">
 					<XCircle class="h-4 w-4" aria-hidden="true" />
 					<p>
-						{eligibility.questionnaires_failed.length}
-						{eligibility.questionnaires_failed.length === 1 ? 'questionnaire' : 'questionnaires'} failed
+						{m['eligibilityStatusDisplay.questionnairesFailed']({
+							count: eligibility.questionnaires_failed.length
+						})}
 					</p>
 				</div>
 				{#if retryText}
 					<div class="mt-2 text-sm text-muted-foreground">
-						You can retry {retryText}
+						{m['eligibility.canRetry']({ date: retryText })}
 					</div>
 				{/if}
 			{/if}

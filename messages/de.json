@@ -1428,7 +1428,20 @@
 		"nextStep": {
 			"request_whitelist": "Eine Verifizierung ist erforderlich, um auf diese Organisation zuzugreifen",
 			"wait_for_whitelist_approval": "Deine Verifizierungsanfrage wird geprüft",
-			"upgrade_membership": "Sieh dir die Mitgliedschaftsoptionen der Organisation an, um zu erfahren, welche Stufen du erhalten kannst."
+			"upgrade_membership": "Sieh dir die Mitgliedschaftsoptionen der Organisation an, um zu erfahren, welche Stufen du erhalten kannst.",
+			"rsvp": "Du kannst dich für dieses Event anmelden",
+			"purchase_ticket": "Hol dir dein Ticket, um an diesem Event teilzunehmen",
+			"complete_questionnaire": "Fülle den erforderlichen Fragebogen aus, um teilzunehmen",
+			"wait_for_questionnaire_evaluation": "Dein Fragebogen wird gerade geprüft",
+			"wait_to_retake_questionnaire": "Du kannst den Fragebogen bald erneut ausfüllen",
+			"request_invitation": "Frage eine Einladung an, um an diesem privaten Event teilzunehmen",
+			"wait_for_invitation_approval": "Deine Einladungsanfrage wartet auf Genehmigung",
+			"become_member": "Tritt der Organisation bei, um an diesem Event für Mitglieder teilzunehmen",
+			"join_waitlist": "Dieses Event ist ausgebucht, aber du kannst dich auf die Warteliste setzen",
+			"wait_for_open_spot": "Du stehst auf der Warteliste für dieses Event",
+			"wait_for_event_to_open": "Schau wieder vorbei, wenn die Anmeldung öffnet",
+			"complete_profile": "Vervollständige dein Profil, um an diesem Event teilzunehmen",
+			"fallback": "Prüfe deinen Teilnahmestatus"
 		},
 		"reason": {
 			"sales_paused": "Der Ticketverkauf ist gerade pausiert. Schau bald wieder vorbei.",
@@ -1450,11 +1463,86 @@
 		"questionnairesFailed": "{count} Fragebogen nicht bestanden",
 		"questionnairesFailedPlural": "{count} Fragebögen nicht bestanden",
 		"canRetry": "Du kannst es {date} erneut versuchen",
-		"availableOn": "Verfügbar {date}"
+		"availableOn": "Verfügbar {date}",
+		"actionButton": {
+			"rsvp": "RSVP",
+			"purchase_ticket": "Tickets kaufen",
+			"complete_questionnaire": "Fragebogen ausfüllen",
+			"wait_for_questionnaire_evaluation": "Wird geprüft",
+			"wait_to_retake_questionnaire": "Bald wieder möglich",
+			"request_invitation": "Einladung anfragen",
+			"wait_for_invitation_approval": "Genehmigung ausstehend",
+			"become_member": "Organisation beitreten",
+			"join_waitlist": "Auf die Warteliste",
+			"wait_for_open_spot": "Du bist auf der Warteliste",
+			"wait_for_event_to_open": "Benachrichtige mich",
+			"request_whitelist": "Verifizierung anfragen",
+			"wait_for_whitelist_approval": "Verifizierung ausstehend",
+			"complete_profile": "Profil vervollständigen",
+			"fallback": "Details ansehen"
+		},
+		"explanation": {
+			"eligible": "Du kannst an diesem Event teilnehmen",
+			"notEligible": "Du kannst derzeit nicht an diesem Event teilnehmen"
+		},
+		"rsvpStatus": {
+			"yes": "Du nimmst teil",
+			"maybe": "Du nimmst vielleicht teil",
+			"no": "Du nimmst nicht teil",
+			"unknown": "RSVP-Status unbekannt"
+		},
+		"ticketStatus": {
+			"active": "Du hast ein Ticket",
+			"cancelled": "Ticket storniert",
+			"checked_in": "Eingecheckt",
+			"pending": "Ticket ausstehend",
+			"none": "Keine Tickets"
+		},
+		"tickets": {
+			"allCheckedIn": "{count} Tickets eingecheckt",
+			"allPending": "{count} Tickets ausstehend",
+			"somePending": "{count} Tickets ({pending} ausstehend)",
+			"total": "{count} Tickets"
+		},
+		"profileField": {
+			"profile_picture": "Profilbild",
+			"pronouns": "Pronomen",
+			"name": "Anzeigename"
+		}
 	},
 	"eligibilityStatusDisplay": {
 		"available": "Verfügbar",
-		"missingProfileFields": "Bitte füge folgendes zu deinem Profil hinzu:"
+		"missingProfileFields": "Bitte füge Folgendes zu deinem Profil hinzu:",
+		"questionnairesRequired": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} Fragebogen erforderlich",
+					"countPlural=*": "{count} Fragebögen erforderlich"
+				}
+			}
+		],
+		"questionnairesPendingReview": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} Fragebogen wartet auf Prüfung",
+					"countPlural=*": "{count} Fragebögen warten auf Prüfung"
+				}
+			}
+		],
+		"questionnairesFailed": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} Fragebogen nicht bestanden",
+					"countPlural=*": "{count} Fragebögen nicht bestanden"
+				}
+			}
+		]
 	},
 	"errorPage": {
 		"defaultMessage": "Ein Fehler ist aufgetreten",
@@ -1578,7 +1666,8 @@
 		"membersOnly": "Nur Mitglieder",
 		"private": "Nur mit Einladung",
 		"public": "Öffentlich",
-		"unlisted": "Nicht gelistet"
+		"unlisted": "Nicht gelistet",
+		"attendeesOnly": "Nur Teilnehmer*innen"
 	},
 	"eventCard": {
 		"viewDetails": "Veranstaltungsdetails anzeigen",
@@ -2532,7 +2621,9 @@
 		"waitlist_error": "Fehler beim Beitritt zur Warteliste. Bitte versuche es erneut.",
 		"leave": "Verlassen",
 		"confirmLeaveWaitlist": "Möchtest du die Warteliste wirklich verlassen?",
-		"leaveWaitlist_error": "Fehler beim Verlassen der Warteliste. Bitte versuche es erneut."
+		"leaveWaitlist_error": "Fehler beim Verlassen der Warteliste. Bitte versuche es erneut.",
+		"thisEvent": "dieses Event",
+		"continue": "Weiter"
 	},
 	"ineligibilityActionButton.waitlist_error": "Fehler beim Beitritt zur Warteliste. Bitte versuche es erneut.",
 	"ineligibilityMessage": {

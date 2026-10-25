@@ -337,7 +337,7 @@
 			? m['ineligibilityActionButton.requestSent']()
 			: nextStep
 				? getActionButtonText(nextStep)
-				: 'Continue'
+				: m['ineligibilityActionButton.continue']()
 	);
 	const buttonVariant = $derived(nextStep ? getButtonVariant(nextStep) : 'outline');
 	const isButtonDisabled = $derived(
@@ -372,7 +372,7 @@
 	{:else if nextStep === 'request_invitation'}
 		<RequestInvitationButton
 			{eventId}
-			eventName={eventName || 'this event'}
+			eventName={eventName || m['ineligibilityActionButton.thisEvent']()}
 			{isAuthenticated}
 			hasAlreadyRequested={false}
 			onSuccess={onInvitationRequestSuccess}
