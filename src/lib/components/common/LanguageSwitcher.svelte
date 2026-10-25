@@ -116,12 +116,15 @@
 		type="button"
 		onclick={() => (isOpen = !isOpen)}
 		class="flex items-center justify-center rounded-md px-2.5 py-2 text-sm font-semibold lowercase tracking-wide transition-colors hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
-		aria-label={m['languageSwitcher.selectLanguage']({ name: currentLanguage.name })}
 		aria-expanded={isOpen}
 		aria-haspopup="true"
 		title={currentLanguage.name}
 	>
-		{currentLanguage.code}
+		<!-- Name comes from content (WCAG 2.5.3): the visible code is decorative to AT. -->
+		<span aria-hidden="true">{currentLanguage.code}</span>
+		<span class="sr-only"
+			>{m['languageSwitcher.selectLanguage']({ name: currentLanguage.name })}</span
+		>
 	</button>
 
 	<!-- Dropdown Menu -->

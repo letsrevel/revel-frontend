@@ -316,17 +316,19 @@
 			onclick={() => (dropdownOpen = !dropdownOpen)}
 			aria-expanded={dropdownOpen}
 			aria-haspopup="true"
-			aria-label={m['userMenu.userMenu']()}
 		>
-			<UserAvatar
-				profilePictureUrl={user?.profile_picture_url}
-				thumbnailUrl={user?.profile_picture_thumbnail_url}
-				{displayName}
-				firstName={user?.first_name}
-				lastName={user?.last_name}
-				size="sm"
-			/>
-			<span class="hidden text-sm font-medium lg:block">{displayName}</span>
+			<span class="sr-only">{m['userMenu.userMenu']()}</span>
+			<span class="flex items-center gap-2" aria-hidden="true">
+				<UserAvatar
+					profilePictureUrl={user?.profile_picture_url}
+					thumbnailUrl={user?.profile_picture_thumbnail_url}
+					{displayName}
+					firstName={user?.first_name}
+					lastName={user?.last_name}
+					size="sm"
+				/>
+				<span class="hidden text-sm font-medium lg:block">{displayName}</span>
+			</span>
 		</button>
 
 		{#if dropdownOpen}

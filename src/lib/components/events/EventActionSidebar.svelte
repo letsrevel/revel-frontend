@@ -532,7 +532,6 @@
 					type="button"
 					onclick={handleDownloadCalendar}
 					class="w-full cursor-pointer rounded-md border border-input bg-background px-4 py-2 text-sm font-bold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-					aria-label={m['eventActionSidebar.downloadCalendarAriaLabel']()}
 				>
 					<span class="flex items-center justify-center gap-2">
 						<CalendarDays class="h-4 w-4" aria-hidden="true" />
@@ -603,7 +602,6 @@
 				type="button"
 				onclick={handleDownloadCalendar}
 				class="w-full cursor-pointer rounded-md border border-input bg-background px-4 py-2 text-sm font-bold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-				aria-label={m['eventActionSidebar.downloadCalendarAriaLabel']()}
 			>
 				<span class="flex items-center justify-center gap-2">
 					<CalendarDays class="h-4 w-4" aria-hidden="true" />

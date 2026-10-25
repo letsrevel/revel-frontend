@@ -117,9 +117,11 @@
 						: 'focus-visible:ring-offset-poster-ink/50'
 				)}
 				title={m['eventHeader.downloadCalendarEventTitle']()}
-				aria-label={m['eventHeader.downloadCalendarEventFor']({ name: event.name })}
 			>
 				<Calendar class="h-5 w-5 shrink-0" aria-hidden="true" />
+				<span class="sr-only"
+					>{m['eventHeader.downloadCalendarEventFor']({ name: event.name })}</span
+				>
 				<time datetime={event.start} class="group-hover:underline">{dateRange}</time>
 				{#if event.is_open_ended}
 					<span class={cn('ml-1 text-sm', !onBand && 'opacity-90')}
