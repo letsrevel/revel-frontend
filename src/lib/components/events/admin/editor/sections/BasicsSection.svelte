@@ -95,6 +95,7 @@
 		<EditorSubGroup title={m['detailsStep.media']()}>
 			<DetailsStepMediaSection
 				bare
+				compact
 				logo={formData.logo}
 				coverArt={formData.cover_art}
 				organizationLogo={formData.organization_logo}

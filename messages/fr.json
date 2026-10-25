@@ -9278,6 +9278,7 @@
 	"eventEditPage.statusDraft": "Brouillon",
 	"eventEditPage.statusPublished": "Publié",
 	"eventEditPage.statusClosed": "Fermé",
+	"eventEditPage.statusCancelled": "Annulé",
 	"eventEditPage.updateDetailsFor": "Mettre à jour les détails de :",
 	"eventInvitationsAdmin.headTitle": "Gérer les invitations - {eventName}",
 	"eventInvitationsAdmin.headDescription": "Gère les invitations pour {eventName}",

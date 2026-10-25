@@ -9308,6 +9308,7 @@
 	"eventEditPage.statusDraft": "Entwurf",
 	"eventEditPage.statusPublished": "Veröffentlicht",
 	"eventEditPage.statusClosed": "Geschlossen",
+	"eventEditPage.statusCancelled": "Abgesagt",
 	"eventEditPage.updateDetailsFor": "Details aktualisieren für:",
 	"eventInvitationsAdmin.headTitle": "Einladungen verwalten - {eventName}",
 	"eventInvitationsAdmin.headDescription": "Einladungen für {eventName} verwalten",

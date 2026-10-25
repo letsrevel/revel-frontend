@@ -15,6 +15,8 @@
 		onToggle?: () => void;
 		/** Render only the body, with no accordion chrome (the event editor shows every section expanded). */
 		bare?: boolean;
+		/** Side-by-side dense layout with small previews (event editor only; the wizards keep the roomy default). */
+		compact?: boolean;
 		onUpdateImages: (data: {
 			logo?: File | null;
 			coverArt?: File | null;
@@ -33,6 +35,7 @@
 			/* noop */
 		},
 		bare = false,
+		compact = false,
 		onUpdateImages
 	}: Props = $props();
 
@@ -83,13 +86,13 @@
 	}
 </script>
 
-{#snippet body()}
-	<!-- Logo Upload -->
+{#snippet logoUploader()}
 	<ImageUploader
 		bind:value={logoFile}
 		preview={logoUrl}
 		label={m['detailsStep.eventLogo']()}
 		aspectRatio="square"
+		{compact}
 		accept="image/jpeg,image/png,image/webp"
 		maxSize={5 * 1024 * 1024}
 		crop
@@ -101,16 +104,15 @@
 			else handleRemoveLogo();
 		}}
 	/>
-	<p class="-mt-4 text-xs text-muted-foreground">
-		{m['detailsStep.logoHint']()}
-	</p>
+{/snippet}
 
-	<!-- Cover Art Upload -->
+{#snippet coverUploader()}
 	<ImageUploader
 		bind:value={coverArtFile}
 		preview={coverArtUrl}
 		label={m['detailsStep.coverArt']()}
 		aspectRatio="wide"
+		{compact}
 		accept="image/jpeg,image/png,image/webp"
 		maxSize={5 * 1024 * 1024}
 		crop
@@ -121,9 +123,40 @@
 			else handleRemoveCoverArt();
 		}}
 	/>
-	<p class="-mt-4 text-xs text-muted-foreground">
-		{m['detailsStep.coverArtHint']()}
-	</p>
+{/snippet}
+
+{#snippet body()}
+	{#if compact}
+		<!-- Logo and cover side by side. The hints run full width underneath,
+		     each led by its uploader's name: inside the 8rem logo column the
+		     logo hint wrapped to ~9 lines. -->
+		<div class="space-y-3">
+			<div class="grid gap-4 sm:grid-cols-[8rem_minmax(0,1fr)]">
+				{@render logoUploader()}
+				{@render coverUploader()}
+			</div>
+			<div class="space-y-1 text-xs text-muted-foreground">
+				<p>
+					<span class="font-semibold text-foreground">{m['detailsStep.eventLogo']()}:</span>
+					{m['detailsStep.logoHint']()}
+				</p>
+				<p>
+					<span class="font-semibold text-foreground">{m['detailsStep.coverArt']()}:</span>
+					{m['detailsStep.coverArtHint']()}
+				</p>
+			</div>
+		</div>
+	{:else}
+		{@render logoUploader()}
+		<p class="-mt-4 text-xs text-muted-foreground">
+			{m['detailsStep.logoHint']()}
+		</p>
+
+		{@render coverUploader()}
+		<p class="-mt-4 text-xs text-muted-foreground">
+			{m['detailsStep.coverArtHint']()}
+		</p>
+	{/if}
 {/snippet}
 
 {#if bare}

@@ -43,6 +43,8 @@
 		class?: string;
 		/** Aspect ratio for preview: 'square' or 'wide' (default: 'wide') */
 		aspectRatio?: 'square' | 'wide';
+		/** Dense layout for tight slots: smaller preview (square fills its slot, wide is 16:9 capped at 10rem) and upload area */
+		compact?: boolean;
 		/** Callback fired when file is selected */
 		onFileSelect?: (file: File | null) => void;
 		/** Route selected files through the cropper before emitting */
@@ -67,6 +69,7 @@
 		error,
 		class: className,
 		aspectRatio = 'wide',
+		compact = false,
 		onFileSelect,
 		crop = false,
 		cropAspectRatio = 1,
@@ -281,16 +284,20 @@
 	{#if previewUrl}
 		<!-- Image Preview -->
 		<div
-			class="relative mx-auto overflow-hidden rounded-lg border-2 border-gray-300 dark:border-gray-600"
-			class:aspect-square={aspectRatio === 'square'}
-			class:max-w-xs={aspectRatio === 'square'}
-			class:max-w-2xl={aspectRatio === 'wide'}
+			class={cn(
+				'relative overflow-hidden rounded-lg border-2 border-gray-300 dark:border-gray-600',
+				!compact && 'mx-auto',
+				aspectRatio === 'square' && 'aspect-square',
+				aspectRatio === 'square' && !compact && 'max-w-xs',
+				aspectRatio === 'square' && compact && 'w-full max-w-32',
+				aspectRatio === 'wide' && !compact && 'max-w-2xl',
+				aspectRatio === 'wide' && compact && 'aspect-video max-h-40 w-full'
+			)}
 		>
 			<img
 				src={previewUrl}
 				alt={m['imageUploader.preview']()}
-				class="h-full w-full object-cover"
-				class:h-48={aspectRatio === 'wide'}
+				class={cn('h-full w-full object-cover', aspectRatio === 'wide' && !compact && 'h-48')}
 			/>
 
 			{#if !disabled}
@@ -325,7 +332,8 @@
 			aria-label={m['imageUploader.uploadImage']()}
 			aria-describedby={error ? `${inputId}-error` : `${inputId}-hint`}
 			class={cn(
-				'flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 transition-colors',
+				'flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors',
+				compact ? 'p-3 text-center' : 'p-8',
 				'hover:border-primary hover:bg-gray-50 dark:hover:bg-gray-800/50',
 				'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
 				isDragging && 'border-primary bg-primary/5',
@@ -334,7 +342,10 @@
 			)}
 		>
 			<Upload
-				class={cn('mb-4 h-12 w-12', isDragging ? 'text-primary' : 'text-muted-foreground')}
+				class={cn(
+					compact ? 'mb-2 h-6 w-6' : 'mb-4 h-12 w-12',
+					isDragging ? 'text-primary' : 'text-muted-foreground'
+				)}
 				aria-hidden="true"
 			/>
 

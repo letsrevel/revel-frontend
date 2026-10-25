@@ -16,12 +16,12 @@ test.describe('J10 edit & duplicate @p2', () => {
 		const page = asOwner;
 		await gotoHydrated(page, `/org/${event.orgSlug}/admin/events/${event.id}/edit`);
 		await waitForClientAuth(page);
-		await expect(page.getByRole('heading', { name: 'Edit Event', level: 1 })).toBeVisible();
+		await expect(page.getByRole('heading', { name: event.name, level: 1 })).toBeVisible();
 
 		// Edit: rename and Save (SaveBar keeps you on the page).
 		const newName = uniqueName('Renamed');
 		await page.locator('#event-name').fill(newName);
-		// Two SaveBars render (top + bottom of the editor) — take the first.
+		// One save surface renders per viewport (xl rail or bottom bar); .first() is a harmless guard.
 		await page.getByRole('button', { name: 'Save', exact: true }).first().click();
 		await expect(page.getByText('Event updated successfully!')).toBeVisible({ timeout: 20_000 });
 		// The rename survives a fresh load.
