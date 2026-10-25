@@ -524,6 +524,19 @@ export function formatTimeOfDay(dateString: string, timeZone?: string): string {
 }
 
 /**
+ * Weekday + textual month + day, no time ("Sun, Jul 26" / "So., 26. Juli").
+ * Pairs with `formatTimeOfDay` where date and time sit on separate lines.
+ */
+export function formatEventDayLabel(dateString: string, timeZone?: string): string {
+	return getFormatter(getDateLocale(), {
+		weekday: 'short',
+		month: 'short',
+		day: 'numeric',
+		...tzOpt(timeZone)
+	}).format(new Date(dateString));
+}
+
+/**
  * Format a date for display in admin pages and lists
  * Uses locale-aware formatting with medium date and short time
  * @param date ISO 8601 date-time string, or an already-parsed Date (lets

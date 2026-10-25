@@ -5,7 +5,7 @@
 	import { formatDateTimeReadback } from '$lib/utils/date';
 	import { Calendar, Eye, Users, Ticket } from '@lucide/svelte';
 	import EssentialsStepSlugEditor from './EssentialsStepSlugEditor.svelte';
-	import { summarizeAccess, capitalizeFirst } from './editor/access-summary';
+	import AccessExplanation from './editor/sections/AccessExplanation.svelte';
 
 	interface Props {
 		formData: Partial<EventCreateSchema> & { requires_ticket?: boolean; venue_id?: string | null };
@@ -51,11 +51,6 @@
 		e.preventDefault();
 		onSubmit();
 	}
-
-	/** Explanation for the current visibility + event_type combination. */
-	const combinationExplanation = $derived(
-		summarizeAccess(formData.visibility, formData.event_type)
-	);
 </script>
 
 {#snippet fields()}
@@ -400,49 +395,7 @@
 		</div>
 
 		<!-- Dynamic explanation based on selected combination -->
-		<div class="rounded-md border border-info/40 bg-info/10 p-4" role="status" aria-live="polite">
-			<div class="flex items-start gap-3">
-				<div class="flex-shrink-0">
-					<svg
-						class="h-5 w-5 text-info"
-						fill="none"
-						stroke="currentColor"
-						viewBox="0 0 24 24"
-						aria-hidden="true"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-						/>
-					</svg>
-				</div>
-				<div class="flex-1">
-					<h4 class="text-sm font-medium text-info">
-						{m['essentialsStep.withTheseSettings']()}
-					</h4>
-					<div class="mt-2 space-y-1 text-sm text-foreground">
-						<p>
-							<strong>{m['essentialsStep.whoCanView']()}</strong>
-							{combinationExplanation.viewDescription}
-						</p>
-						<p>
-							<strong>{m['essentialsStep.whoCanAttend']()}</strong>
-							{m['essentialsStep.whoCanAttendValue']({
-								who: capitalizeFirst(combinationExplanation.whoCanAttend)
-							})}
-						</p>
-						{#if combinationExplanation.showJoinOrgHint}
-							<p class="mt-2 rounded-md bg-info/15 px-2 py-1.5 text-xs">
-								💡 <strong>{m['essentialsStep.tip']()}</strong>
-								{m['essentialsStep.joinOrgHint']()}
-							</p>
-						{/if}
-					</div>
-				</div>
-			</div>
-		</div>
+		<AccessExplanation visibility={formData.visibility} eventType={formData.event_type} />
 	</div>
 
 	<!-- Requires Ticket -->

@@ -25,8 +25,8 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import EssentialsStep from './EssentialsStep.svelte';
 	import DetailsSections from './editor/DetailsSections.svelte';
+	import type { EditorFormData, EditorMode, EditorUpdate, ImageUpdate } from './editor/types';
 	import {
 		sessionsToRows,
 		rowsToSessions,
@@ -90,25 +90,7 @@
 	let initialTags = $state<string[]>(existingEvent?.tags || []);
 
 	// Form data state (must be declared before derived state that references it)
-	let formData = $state<
-		Partial<EventCreateSchema> & {
-			id?: string;
-			tags?: string[];
-			logo?: string;
-			cover_art?: string;
-			organization_logo?: string;
-			organization_cover_art?: string;
-			requires_ticket?: boolean;
-			venue_id?: string | null;
-			location_maps_url?: string | null;
-			location_maps_embed?: string | null;
-			seats_held?: number;
-			waitlist_time_window?: string | null;
-			waitlist_batch_size?: number | null;
-			waitlist_cutoff_date?: string | null;
-			waitlist_lottery_mode?: boolean | null;
-		}
-	>({
+	let formData = $state<EditorFormData>({
 		id: existingEvent?.id,
 		seats_held: existingEvent?.seats_held ?? 0,
 		name: existingEvent?.name || '',
@@ -299,8 +281,12 @@
 		baseline !== null && buildDirtySnapshot(captureState()) !== buildDirtySnapshot(baseline)
 	);
 
-	// Section anchors for the nav (Phase 1: the existing blocks).
-	const sections = $derived(buildEditorSections(validationErrors, !!eventId));
+	// Section anchors for the nav; an incomplete schedule row (flagged by a failed
+	// save) marks Date & time.
+	let scheduleAttempted = $state(false);
+	const sections = $derived(
+		buildEditorSections(validationErrors, scheduleAttempted && !scheduleValid)
+	);
 	// Save lives on Details and Ticketing (event-level ticket settings); Listings saves its own rows.
 	const showSave = $derived(!showTabs || activeTab !== 'listings');
 
@@ -389,6 +375,13 @@
 		return Object.keys(errors).length === 0;
 	}
 
+	const CREATE_FORM_ID = 'create-event-form';
+
+	function handleCreateSubmit(e: SubmitEvent): void {
+		e.preventDefault();
+		void handleCreateEvent();
+	}
+
 	// --- Creation flow: Step 1 submit ---
 
 	async function handleCreateEvent(): Promise<void> {
@@ -433,6 +426,7 @@
 		}
 
 		if (!scheduleValid) {
+			scheduleAttempted = true;
 			// ScheduleEditor lives in the Details tab — surface it before scrolling.
 			if (showTabs) handleTabChange('details');
 			errorMessage = m['eventScheduleAdmin.incompleteError']();
@@ -490,6 +484,7 @@
 			queryClient.invalidateQueries({ queryKey: ['dashboard-calendar'] });
 
 			baseline = captureState();
+			scheduleAttempted = false;
 			toast.success(m['eventWizard.eventUpdatedSuccess']());
 
 			if (andExit) {
@@ -513,32 +508,16 @@
 
 	// --- Form data update helpers ---
 
-	function updateFormData(
-		updates: Partial<EventCreateSchema> & {
-			tags?: string[];
-			logo?: string;
-			cover_art?: string;
-			organization_logo?: string;
-			organization_cover_art?: string;
-			venue_id?: string | null;
-			location_maps_url?: string | null;
-			location_maps_embed?: string | null;
-		}
-	): void {
+	const updateFormData: EditorUpdate = (updates) => {
 		formData = { ...formData, ...updates };
-	}
+	};
 
-	function updateImages(data: {
-		logo?: File | null;
-		coverArt?: File | null;
-		deleteLogo?: boolean;
-		deleteCoverArt?: boolean;
-	}): void {
+	const updateImages: ImageUpdate = (data) => {
 		if (data.logo !== undefined) logoFile = data.logo;
 		if (data.coverArt !== undefined) coverArtFile = data.coverArt;
 		if (data.deleteLogo !== undefined) deleteLogo = data.deleteLogo;
 		if (data.deleteCoverArt !== undefined) deleteCoverArt = data.deleteCoverArt;
-	}
+	};
 
 	// --- Tab URL sync ---
 
@@ -571,47 +550,37 @@
 	/>
 {/snippet}
 
-{#snippet detailsMain()}
+{#snippet sectionsView(mode: EditorMode)}
 	<DetailsSections
-		essentialsProps={{
-			formData,
-			validationErrors,
-			isEditMode,
-			onUpdate: updateFormData,
-			onSubmit: () => handleSave(false),
-			isSaving,
-			standalone: false,
-			eventId: existingEvent?.id ?? eventId ?? undefined,
-			eventSlug: existingEvent?.slug,
-			organizationSlug: organization.slug
-		}}
-		detailsProps={{
-			formData,
-			eventSeries,
-			questionnaires: assignedQuestionnaires,
-			eventId,
-			organizationId: organization.id,
-			organizationSlug: organization.slug,
-			accessToken: authStore.accessToken ?? undefined,
-			selectedCity,
-			selectedVenue,
-			validationErrors,
-			isEditMode,
-			effectiveVatCountry: existingEvent?.effective_vat_country || '',
-			vatCountryMismatch: existingEvent?.vat_country_mismatch || false,
-			onCitySelect: handleCitySelect,
-			onVenueSelect: handleVenueSelect,
-			onUpdate: updateFormData,
-			onUpdateImages: updateImages
-		}}
+		{formData}
+		{validationErrors}
+		{mode}
+		{isEditMode}
+		ticketingLocked={isEditMode || eventCreated}
+		onUpdate={updateFormData}
+		onUpdateImages={updateImages}
 		{eventId}
+		eventSlug={existingEvent?.slug}
+		organizationId={organization.id}
 		organizationSlug={organization.slug}
+		accessToken={authStore.accessToken ?? undefined}
+		{eventSeries}
+		questionnaires={assignedQuestionnaires}
+		{selectedCity}
+		{selectedVenue}
+		onCitySelect={handleCitySelect}
+		onVenueSelect={handleVenueSelect}
+		effectiveVatCountry={existingEvent?.effective_vat_country || ''}
+		vatCountryMismatch={existingEvent?.vat_country_mismatch || false}
 		{selectedResourceIds}
 		onResourcesChange={(ids) => (selectedResourceIds = ids)}
 		bind:scheduleRows
-		eventStart={formData.start ?? ''}
 		disabled={isSaving}
 	/>
+{/snippet}
+
+{#snippet detailsMain()}
+	{@render sectionsView('edit')}
 {/snippet}
 
 {#snippet ticketingMain()}
@@ -632,18 +601,11 @@
 {/snippet}
 
 {#snippet createMain()}
-	<div class="max-w-3xl">
-		<EssentialsStep
-			{formData}
-			{validationErrors}
-			isEditMode={false}
-			onUpdate={updateFormData}
-			onSubmit={handleCreateEvent}
-			{isSaving}
-			standalone={true}
-			organizationSlug={organization.slug}
-		/>
-	</div>
+	<!-- Same section components as the editor, gated to the pre-creation fields. The
+	     Create button lives in the rail (xl) / bottom bar and submits this form by id. -->
+	<form id={CREATE_FORM_ID} onsubmit={handleCreateSubmit} novalidate>
+		{@render sectionsView('create')}
+	</form>
 {/snippet}
 
 <div class="space-y-6">
@@ -666,12 +628,13 @@
 			{glance}
 			{sections}
 			showNav={false}
-			railSave={false}
+			railSave={true}
+			saveMode="create"
+			formId={CREATE_FORM_ID}
 			{isSaving}
 			{isDirty}
-			onSave={() => handleSave(false)}
-			onSaveAndExit={() => handleSave(true)}
 		/>
+		<SaveBar variant="bar" mode="create" formId={CREATE_FORM_ID} class="xl:hidden" {isSaving} />
 	{:else if showTabs}
 		<!-- Tabs (only for ticketed events in edit mode) -->
 		<div bind:this={tabsEl}></div>

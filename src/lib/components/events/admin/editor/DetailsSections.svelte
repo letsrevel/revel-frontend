@@ -1,84 +1,142 @@
 <script lang="ts">
-	import * as m from '$lib/paraglide/messages.js';
-	import type { ComponentProps } from 'svelte';
-	import EssentialsStep from '../EssentialsStep.svelte';
-	import DetailsStep from '../DetailsStep.svelte';
-	import EventResources from '../EventResources.svelte';
-	import ScheduleEditor from '../ScheduleEditor.svelte';
+	import type {
+		CitySchema,
+		EventSeriesRetrieveSchema,
+		VenueDetailSchema
+	} from '$lib/api/generated/types.gen';
+	import type { OrganizationQuestionnaireInListSchema } from '$lib/api/generated';
 	import type { ScheduleRow } from '../schedule-rows';
+	import BasicsSection from './sections/BasicsSection.svelte';
+	import WhenSection from './sections/WhenSection.svelte';
+	import WhereSection from './sections/WhereSection.svelte';
+	import AccessSection from './sections/AccessSection.svelte';
+	import AttendanceSection from './sections/AttendanceSection.svelte';
+	import EventPageSection from './sections/EventPageSection.svelte';
+	import ExtrasSection from './sections/ExtrasSection.svelte';
+	import type { EditorFormData, EditorMode, EditorUpdate, ImageUpdate } from './types';
 
 	interface Props {
-		essentialsProps: ComponentProps<typeof EssentialsStep>;
-		detailsProps: ComponentProps<typeof DetailsStep>;
-		/** Resources + schedule only exist once the event does. */
+		formData: EditorFormData;
+		validationErrors: Record<string, string>;
+		/**
+		 * `create` renders only Basics (name), Date & time (start/end) and Access
+		 * (visibility, type, ticketing choice) — the same section components, gated.
+		 */
+		mode: EditorMode;
+		isEditMode: boolean;
+		/** Ticketing mode can no longer change (the event exists). */
+		ticketingLocked: boolean;
+		onUpdate: EditorUpdate;
+		onUpdateImages: ImageUpdate;
 		eventId: string | null;
+		eventSlug?: string;
+		organizationId: string;
 		organizationSlug: string;
+		accessToken?: string;
+		eventSeries: EventSeriesRetrieveSchema[];
+		questionnaires: OrganizationQuestionnaireInListSchema[];
+		selectedCity: CitySchema | null;
+		selectedVenue: VenueDetailSchema | null;
+		onCitySelect: (city: CitySchema | null) => void;
+		onVenueSelect: (venue: VenueDetailSchema | null) => void;
+		effectiveVatCountry?: string;
+		vatCountryMismatch?: boolean;
 		selectedResourceIds: string[];
 		onResourcesChange: (ids: string[]) => void;
 		scheduleRows: ScheduleRow[];
-		eventStart: string;
 		disabled: boolean;
 	}
 
 	let {
-		essentialsProps,
-		detailsProps,
+		formData,
+		validationErrors,
+		mode,
+		isEditMode,
+		ticketingLocked,
+		onUpdate,
+		onUpdateImages,
 		eventId,
+		eventSlug,
+		organizationId,
 		organizationSlug,
+		accessToken,
+		eventSeries,
+		questionnaires,
+		selectedCity,
+		selectedVenue,
+		onCitySelect,
+		onVenueSelect,
+		effectiveVatCountry = '',
+		vatCountryMismatch = false,
 		selectedResourceIds,
 		onResourcesChange,
 		scheduleRows = $bindable(),
-		eventStart,
 		disabled
 	}: Props = $props();
-
-	// scroll-mt clears the sticky site header when a nav link jumps here;
-	// tabindex=-1 + focus:outline-none lets the nav move focus into the section.
-	const sectionClass = 'scroll-mt-[calc(var(--admin-sticky-top)+1rem)] focus:outline-none';
-	const cardClass = `${sectionClass} rounded-lg border border-border bg-card p-4 md:p-6`;
 </script>
 
-<div class="max-w-3xl space-y-6">
-	<section
-		id="section-basics"
-		tabindex="-1"
-		aria-label={m['eventEditor.sectionBasics']()}
-		class={cardClass}
-	>
-		<EssentialsStep {...essentialsProps} />
-	</section>
+<!-- Always-expanded sections, in the order of the organizer's questions:
+     what is it, when, where, who can come, how many, what the page shows, extras. -->
+<div class="space-y-8">
+	<BasicsSection
+		{formData}
+		{validationErrors}
+		{mode}
+		{onUpdate}
+		{onUpdateImages}
+		eventId={eventId ?? undefined}
+		{eventSlug}
+		{organizationSlug}
+	/>
 
-	<section
-		id="section-details"
-		tabindex="-1"
-		aria-label={m['eventEditor.sectionDetails']()}
-		class={sectionClass}
-	>
-		<DetailsStep {...detailsProps} />
-	</section>
+	<WhenSection
+		{formData}
+		{validationErrors}
+		{mode}
+		{onUpdate}
+		{eventId}
+		bind:scheduleRows
+		{disabled}
+	/>
 
-	{#if eventId}
-		<section
-			id="section-resources"
-			tabindex="-1"
-			aria-label={m['eventEditor.sectionResources']()}
-			class={cardClass}
-		>
-			<EventResources
-				{organizationSlug}
-				{eventId}
-				{selectedResourceIds}
-				onSelectionChange={onResourcesChange}
-			/>
-		</section>
+	{#if mode === 'edit'}
+		<WhereSection
+			{formData}
+			{validationErrors}
+			{organizationSlug}
+			{selectedCity}
+			{selectedVenue}
+			{onCitySelect}
+			{onVenueSelect}
+			{onUpdate}
+			{effectiveVatCountry}
+			{vatCountryMismatch}
+		/>
+	{/if}
 
-		<section
-			id="section-schedule"
-			tabindex="-1"
-			aria-label={m['eventEditor.sectionSchedule']()}
-			class={cardClass}
-		>
-			<ScheduleEditor bind:rows={scheduleRows} {eventStart} {disabled} />
-		</section>
+	<AccessSection
+		{formData}
+		{mode}
+		{ticketingLocked}
+		{onUpdate}
+		{questionnaires}
+		{eventId}
+		{organizationId}
+		{organizationSlug}
+		{accessToken}
+	/>
+
+	{#if mode === 'edit'}
+		<AttendanceSection {formData} {selectedVenue} {isEditMode} {onUpdate} />
+		<EventPageSection {formData} {onUpdate} />
+		<ExtrasSection
+			{formData}
+			{eventSeries}
+			{onUpdate}
+			{eventId}
+			{organizationSlug}
+			{selectedResourceIds}
+			{onResourcesChange}
+		/>
 	{/if}
 </div>

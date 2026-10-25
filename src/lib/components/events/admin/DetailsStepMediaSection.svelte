@@ -10,8 +10,11 @@
 		coverArt?: string;
 		organizationLogo?: string;
 		organizationCoverArt?: string;
-		isOpen: boolean;
-		onToggle: () => void;
+		/** Accordion state; ignored when `bare` (the section is always expanded). */
+		isOpen?: boolean;
+		onToggle?: () => void;
+		/** Render only the body, with no accordion chrome (the event editor shows every section expanded). */
+		bare?: boolean;
 		onUpdateImages: (data: {
 			logo?: File | null;
 			coverArt?: File | null;
@@ -25,8 +28,11 @@
 		coverArt,
 		organizationLogo,
 		organizationCoverArt,
-		isOpen,
-		onToggle,
+		isOpen = false,
+		onToggle = () => {
+			/* noop */
+		},
+		bare = false,
 		onUpdateImages
 	}: Props = $props();
 
@@ -77,67 +83,77 @@
 	}
 </script>
 
-<!-- Media Section -->
-<div class="overflow-hidden rounded-lg border border-border">
-	<button
-		type="button"
-		onclick={onToggle}
-		class="flex w-full items-center justify-between bg-muted/50 p-4 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-		aria-expanded={isOpen}
-	>
-		<div class="flex items-center gap-2 font-semibold">
-			<Image class="h-5 w-5" aria-hidden="true" />
-			{m['detailsStep.media']()}
-		</div>
+{#snippet body()}
+	<!-- Logo Upload -->
+	<ImageUploader
+		bind:value={logoFile}
+		preview={logoUrl}
+		label={m['detailsStep.eventLogo']()}
+		aspectRatio="square"
+		accept="image/jpeg,image/png,image/webp"
+		maxSize={5 * 1024 * 1024}
+		crop
+		cropAspectRatio={LOGO_ASPECT_RATIO}
+		cropShape="rect"
+		cropOutputFormat="image/png"
+		onFileSelect={(file) => {
+			if (file) handleLogoFileSelect(file);
+			else handleRemoveLogo();
+		}}
+	/>
+	<p class="-mt-4 text-xs text-muted-foreground">
+		{m['detailsStep.logoHint']()}
+	</p>
+
+	<!-- Cover Art Upload -->
+	<ImageUploader
+		bind:value={coverArtFile}
+		preview={coverArtUrl}
+		label={m['detailsStep.coverArt']()}
+		aspectRatio="wide"
+		accept="image/jpeg,image/png,image/webp"
+		maxSize={5 * 1024 * 1024}
+		crop
+		cropAspectRatio={COVER_ASPECT_RATIO}
+		cropShape="rect"
+		onFileSelect={(file) => {
+			if (file) handleCoverArtFileSelect(file);
+			else handleRemoveCoverArt();
+		}}
+	/>
+	<p class="-mt-4 text-xs text-muted-foreground">
+		{m['detailsStep.coverArtHint']()}
+	</p>
+{/snippet}
+
+{#if bare}
+	<div class="space-y-6">
+		{@render body()}
+	</div>
+{:else}
+	<!-- Media Section -->
+	<div class="overflow-hidden rounded-lg border border-border">
+		<button
+			type="button"
+			onclick={onToggle}
+			class="flex w-full items-center justify-between bg-muted/50 p-4 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+			aria-expanded={isOpen}
+		>
+			<div class="flex items-center gap-2 font-semibold">
+				<Image class="h-5 w-5" aria-hidden="true" />
+				{m['detailsStep.media']()}
+			</div>
+			{#if isOpen}
+				<ChevronDown class="h-5 w-5" aria-hidden="true" />
+			{:else}
+				<ChevronRight class="h-5 w-5" aria-hidden="true" />
+			{/if}
+		</button>
+
 		{#if isOpen}
-			<ChevronDown class="h-5 w-5" aria-hidden="true" />
-		{:else}
-			<ChevronRight class="h-5 w-5" aria-hidden="true" />
+			<div class="space-y-6 p-4">
+				{@render body()}
+			</div>
 		{/if}
-	</button>
-
-	{#if isOpen}
-		<div class="space-y-6 p-4">
-			<!-- Logo Upload -->
-			<ImageUploader
-				bind:value={logoFile}
-				preview={logoUrl}
-				label={m['detailsStep.eventLogo']()}
-				aspectRatio="square"
-				accept="image/jpeg,image/png,image/webp"
-				maxSize={5 * 1024 * 1024}
-				crop
-				cropAspectRatio={LOGO_ASPECT_RATIO}
-				cropShape="rect"
-				cropOutputFormat="image/png"
-				onFileSelect={(file) => {
-					if (file) handleLogoFileSelect(file);
-					else handleRemoveLogo();
-				}}
-			/>
-			<p class="-mt-4 text-xs text-muted-foreground">
-				{m['detailsStep.logoHint']()}
-			</p>
-
-			<!-- Cover Art Upload -->
-			<ImageUploader
-				bind:value={coverArtFile}
-				preview={coverArtUrl}
-				label={m['detailsStep.coverArt']()}
-				aspectRatio="wide"
-				accept="image/jpeg,image/png,image/webp"
-				maxSize={5 * 1024 * 1024}
-				crop
-				cropAspectRatio={COVER_ASPECT_RATIO}
-				cropShape="rect"
-				onFileSelect={(file) => {
-					if (file) handleCoverArtFileSelect(file);
-					else handleRemoveCoverArt();
-				}}
-			/>
-			<p class="-mt-4 text-xs text-muted-foreground">
-				{m['detailsStep.coverArtHint']()}
-			</p>
-		</div>
-	{/if}
-</div>
+	</div>
+{/if}

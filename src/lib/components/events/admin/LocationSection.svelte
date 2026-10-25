@@ -38,6 +38,8 @@
 		onUpdate: (data: Record<string, unknown>) => void;
 		onCitySelect: (city: CitySchema | null) => void;
 		onVenueSelect: (venue: VenueDetailSchema | null) => void;
+		/** Inside an editor section card: no own border/padding and no duplicate title. */
+		embedded?: boolean;
 	}
 
 	const {
@@ -48,6 +50,7 @@
 		validationErrors,
 		onUpdate,
 		onCitySelect,
+		embedded = false,
 		onVenueSelect
 	}: Props = $props();
 
@@ -170,13 +173,15 @@
 	}
 </script>
 
-<div class="space-y-4 rounded-lg border border-border p-4">
-	<!-- Section Header -->
+<div class={embedded ? 'space-y-4' : 'space-y-4 rounded-lg border border-border p-4'}>
+	<!-- Section Header (embedded: the editor section supplies the title) -->
 	<div class="flex items-center justify-between">
-		<h3 class="flex items-center gap-2 font-semibold">
-			<MapPin class="h-5 w-5" aria-hidden="true" />
-			{m['locationSection.title']()}
-		</h3>
+		{#if !embedded}
+			<h3 class="flex items-center gap-2 font-semibold">
+				<MapPin class="h-5 w-5" aria-hidden="true" />
+				{m['locationSection.title']()}
+			</h3>
+		{/if}
 		{#if locationMode !== 'none'}
 			<button
 				type="button"

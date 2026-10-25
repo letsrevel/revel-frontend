@@ -2,30 +2,33 @@ import * as m from '$lib/paraglide/messages.js';
 import type { NavSection } from './EditorSectionNav.svelte';
 
 /**
- * Anchors for the section nav. Phase 1 mirrors the existing blocks; resources
- * and schedule only exist once the event does. Validation errors surface as a
- * marker on the section that owns the offending field.
+ * Anchors for the section nav, in page order. A section is marked as having
+ * errors when `validationErrors` holds a key for a field that lives in it;
+ * an invalid schedule row surfaces on Date & time.
  */
 export function buildEditorSections(
 	validationErrors: Record<string, string>,
-	hasEvent: boolean
+	scheduleInvalid = false
 ): NavSection[] {
 	return [
 		{
 			id: 'section-basics',
 			label: m['eventEditor.sectionBasics'](),
-			hasError: !!(validationErrors.name || validationErrors.start || validationErrors.end)
+			hasError: !!validationErrors.name
 		},
 		{
-			id: 'section-details',
-			label: m['eventEditor.sectionDetails'](),
+			id: 'section-when',
+			label: m['eventEditor.sectionWhen'](),
+			hasError: !!(validationErrors.start || validationErrors.end) || scheduleInvalid
+		},
+		{
+			id: 'section-where',
+			label: m['eventEditor.sectionWhere'](),
 			hasError: !!validationErrors.city_id
 		},
-		...(hasEvent
-			? [
-					{ id: 'section-resources', label: m['eventEditor.sectionResources']() },
-					{ id: 'section-schedule', label: m['eventEditor.sectionSchedule']() }
-				]
-			: [])
+		{ id: 'section-access', label: m['eventEditor.sectionAccess']() },
+		{ id: 'section-attendance', label: m['eventEditor.sectionAttendance']() },
+		{ id: 'section-page', label: m['eventEditor.sectionPage']() },
+		{ id: 'section-extras', label: m['eventEditor.sectionExtras']() }
 	];
 }

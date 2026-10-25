@@ -3,8 +3,8 @@
 	import { Clock, MapPin } from '@lucide/svelte';
 	import { toISOString } from '$lib/utils/datetime';
 	import {
-		formatEventDate,
-		formatEventDateRange,
+		formatEventDayLabel,
+		formatTimeOfDay,
 		formatEventDateForScreenReader
 	} from '$lib/utils/date';
 	import { getDateSlabParts } from '$lib/utils/calendar';
@@ -43,10 +43,17 @@
 
 	const slab = $derived(startValid && startIso ? getDateSlabParts(startIso) : null);
 	const srDate = $derived(startValid && startIso ? formatEventDateForScreenReader(startIso) : '');
-	const when = $derived.by((): string => {
+	// Date and time sit on separate lines so a narrow rail never wraps mid-phrase:
+	// "Sun, Jul 26" over "7:00 PM – 11:00 PM" (same day) or
+	// "7:00 PM – Mon, Jul 27, 1:00 AM" (multi-day).
+	const whenDate = $derived(startValid && startIso ? formatEventDayLabel(startIso) : '');
+	const whenTime = $derived.by((): string => {
 		if (!startValid || !startIso) return '';
-		if (endValid && endIso) return formatEventDateRange(startIso, endIso, undefined, false);
-		return formatEventDate(startIso, undefined, false);
+		const startTime = formatTimeOfDay(startIso);
+		if (!endValid || !endIso) return startTime;
+		const endTime = formatTimeOfDay(endIso);
+		if (formatEventDayLabel(endIso) === whenDate) return `${startTime} – ${endTime}`;
+		return `${startTime} – ${formatEventDayLabel(endIso)}, ${endTime}`;
 	});
 	const where = $derived(venueName || cityName || '');
 	const access = $derived(summarizeAccess(visibility, eventType));
@@ -82,7 +89,11 @@
 			<ul class="mt-2 space-y-1 text-sm text-muted-foreground">
 				<li class="flex items-start gap-1.5">
 					<Clock class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-					<span>{when || m['eventEditor.glanceNoDate']()}</span>
+					{#if whenDate}
+						<span><span class="block">{whenDate}</span><span class="block">{whenTime}</span></span>
+					{:else}
+						<span>{m['eventEditor.glanceNoDate']()}</span>
+					{/if}
 				</li>
 				<li class="flex items-start gap-1.5">
 					<MapPin class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />

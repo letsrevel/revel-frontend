@@ -32,7 +32,6 @@ test.describe('J10 require ticket names toggle @p2', () => {
 		await waitForClientAuth(page);
 		await expect(page.getByRole('heading', { name: 'Edit Event', level: 1 })).toBeVisible();
 
-		await page.getByRole('button', { name: 'Advanced' }).click();
 		const toggle = page.getByLabel('Require ticket holder names');
 		await expect(toggle).toBeChecked();
 
@@ -41,7 +40,6 @@ test.describe('J10 require ticket names toggle @p2', () => {
 
 		await gotoHydrated(page, `/org/${event.orgSlug}/admin/events/${event.id}/edit`);
 		await waitForClientAuth(page);
-		await page.getByRole('button', { name: 'Advanced' }).click();
 		await expect(page.getByLabel('Require ticket holder names')).not.toBeChecked();
 	});
 });
