@@ -9486,6 +9486,9 @@
 		"incompleteError": "Chaque session du programme nécessite un titre et un horaire de début."
 	},
 	"markdownEditor.exitSource": "Retour à l'éditeur",
+	"markdownEditor.expand": "Ouvrir l'éditeur plein écran",
+	"markdownEditor.expandedTitle": "Modifier le texte",
+	"markdownEditor.done": "Terminé",
 	"markdownEditor.linkDialogTitle": "Insérer un lien",
 	"markdownEditor.linkUrlLabel": "URL",
 	"markdownEditor.linkTextLabel": "Texte du lien",

@@ -13,7 +13,8 @@
 		Quote,
 		Code,
 		SquareCode,
-		FileCode2
+		FileCode2,
+		Maximize2
 	} from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
@@ -22,8 +23,10 @@
 		disabled?: boolean;
 		onToggleSource: () => void;
 		onInsertLink: () => void;
+		/** When provided, a trailing "open full-screen editor" button is shown. */
+		onExpand?: () => void;
 	}
-	const { editor, disabled = false, onToggleSource, onInsertLink }: Props = $props();
+	const { editor, disabled = false, onToggleSource, onInsertLink, onExpand }: Props = $props();
 
 	type Cmd = {
 		key: string;
@@ -131,6 +134,7 @@
 	// Link button is at index commands.length; source is last.
 	const linkIndex = $derived(commands.length);
 	const sourceIndex = $derived(commands.length + EXTRA_BUTTONS - 1);
+	const expandIndex = $derived(sourceIndex + 1);
 
 	// Functions
 	function getButtons(): HTMLButtonElement[] {
@@ -219,4 +223,19 @@
 	>
 		<SquareCode class="h-4 w-4" aria-hidden="true" />
 	</button>
+
+	{#if onExpand}
+		<button
+			type="button"
+			tabindex={expandIndex === focusIndex ? 0 : -1}
+			{disabled}
+			aria-label={m['markdownEditor.expand']()}
+			title={m['markdownEditor.expand']()}
+			onclick={onExpand}
+			onfocus={() => (focusIndex = expandIndex)}
+			class="rounded p-1.5 hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:opacity-50"
+		>
+			<Maximize2 class="h-4 w-4" aria-hidden="true" />
+		</button>
+	{/if}
 </div>

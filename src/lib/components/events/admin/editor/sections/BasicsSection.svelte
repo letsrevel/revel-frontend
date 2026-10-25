@@ -88,6 +88,7 @@
 			label={m['detailsStep.description']()}
 			placeholder={m['detailsStep.descriptionPlaceholder']()}
 			rows={8}
+			expandable
 			onValueChange={handleDescriptionChange}
 		/>
 

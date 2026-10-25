@@ -1,5 +1,6 @@
-import { render, screen, waitFor } from '@testing-library/svelte';
-import { describe, it, expect, vi } from 'vitest';
+import { render, screen, waitFor, within } from '@testing-library/svelte';
+import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi, beforeAll } from 'vitest';
 
 // $env/dynamic/public is a SvelteKit virtual module not available in jsdom.
 // Mock it so the $lib/utils barrel → $lib/config/api import chain doesn't fail.
@@ -61,5 +62,50 @@ describe('MarkdownEditor (contract)', () => {
 
 		// The guard should prevent onValueChange from firing for this parent-driven change.
 		expect(onValueChange).not.toHaveBeenCalledWith('parent-updated');
+	});
+});
+
+describe('MarkdownEditor expandable dialog', () => {
+	// jsdom lacks layout APIs ProseMirror needs when focusing/scrolling the caret.
+	beforeAll(() => {
+		const empty = { length: 0, item: () => null, [Symbol.iterator]: [][Symbol.iterator] };
+		const rect = { top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0, x: 0, y: 0 };
+		Range.prototype.getClientRects = () => empty as unknown as DOMRectList;
+		Range.prototype.getBoundingClientRect = () => rect as DOMRect;
+	});
+
+	async function waitForToolbar(): Promise<void> {
+		await screen.findByRole('toolbar');
+	}
+
+	it('does not render the expand button by default', async () => {
+		render(MarkdownEditor, { props: { value: '', id: 'd', label: 'Description' } });
+		await waitForToolbar();
+		expect(screen.queryByRole('button', { name: /full-screen/i })).not.toBeInTheDocument();
+	});
+
+	it('opens a named dialog, syncs edits to the parent and closes with Done', async () => {
+		const user = userEvent.setup();
+		const onValueChange = vi.fn();
+		render(MarkdownEditor, {
+			props: { value: 'start', id: 'd', label: 'Description', expandable: true, onValueChange }
+		});
+		await waitForToolbar();
+		await user.click(screen.getByRole('button', { name: /full-screen/i }));
+
+		const dialog = await screen.findByRole('dialog', { name: 'Description' });
+		expect(dialog).toBeInTheDocument();
+
+		// Switch the dialog's editor to source mode (textarea) to type deterministically.
+		const sourceBtns = await within(dialog).findAllByRole('button', { name: /markdown source/i });
+		await user.click(sourceBtns[0]);
+		await waitFor(() => expect(dialog.querySelector('textarea')).not.toBeNull());
+		const ta = dialog.querySelector('textarea') as HTMLTextAreaElement;
+		await user.clear(ta);
+		await user.type(ta, 'edited in dialog');
+		await waitFor(() => expect(onValueChange).toHaveBeenLastCalledWith('edited in dialog'));
+
+		await user.click(within(dialog).getByRole('button', { name: 'Done' }));
+		await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 	});
 });
