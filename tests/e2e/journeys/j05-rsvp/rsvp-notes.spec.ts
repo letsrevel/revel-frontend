@@ -175,11 +175,7 @@ test.describe('J5 RSVP notes @p2', () => {
 		await waitForClientAuth(page);
 		await expect(page.getByRole('heading', { name: 'Edit Event', level: 1 })).toBeVisible();
 
-		// The toggle lives in the collapsible "RSVP Options" section.
 		const toggle = page.getByLabel('Accept a note with RSVPs');
-		if (!(await toggle.isVisible())) {
-			await page.getByRole('button', { name: 'RSVP Options' }).click();
-		}
 		await expect(toggle).not.toBeChecked();
 		await toggle.check();
 		// Two SaveBars render (top + bottom of the editor) — take the first.
@@ -190,9 +186,6 @@ test.describe('J5 RSVP notes @p2', () => {
 		await gotoHydrated(page, `/org/${event.orgSlug}/admin/events/${event.id}/edit`);
 		await waitForClientAuth(page);
 		const reloadedToggle = page.getByLabel('Accept a note with RSVPs');
-		if (!(await reloadedToggle.isVisible())) {
-			await page.getByRole('button', { name: 'RSVP Options' }).click();
-		}
 		await expect(reloadedToggle).toBeChecked({ timeout: 15_000 });
 	});
 

@@ -93,11 +93,7 @@ test.describe('J11 questionnaire builder @p1', () => {
 
 		// ---- Attach to the event from the event editor's Admission & Screening.
 		await gotoHydrated(page, `/org/${org.slug}/admin/events/${event.id}/edit`);
-		const admissionToggle = page.getByRole('button', { name: 'Admission & Screening' });
-		await expect(admissionToggle).toBeVisible();
-		if ((await admissionToggle.getAttribute('aria-expanded')) !== 'true') {
-			await admissionToggle.click();
-		}
+		// The section is always expanded; no disclosure to open.
 		await page.getByRole('button', { name: 'Assign Questionnaires' }).click();
 		const dialog = page.getByRole('dialog', { name: 'Assign Questionnaires to Event' });
 		await expect(dialog).toBeVisible();

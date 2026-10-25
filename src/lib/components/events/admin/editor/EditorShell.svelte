@@ -13,8 +13,11 @@
 		railSave: boolean;
 		isSaving: boolean;
 		isDirty: boolean;
-		onSave: () => void;
-		onSaveAndExit: () => void;
+		onSave?: () => void;
+		onSaveAndExit?: () => void;
+		/** `create`: the rail shows Cancel / Create Event, submitting the form named by `formId`. */
+		saveMode?: 'edit' | 'create';
+		formId?: string;
 	}
 
 	const {
@@ -26,7 +29,9 @@
 		isSaving,
 		isDirty,
 		onSave,
-		onSaveAndExit
+		onSaveAndExit,
+		saveMode = 'edit',
+		formId
 	}: Props = $props();
 </script>
 
@@ -34,8 +39,9 @@
      The rail is an <aside> AFTER main in DOM (supplementary content). Below xl
      the glance card renders at the top of the main column and the section nav
      becomes a chip row; the rail is display:none there, so nothing is read twice. -->
-<div class="grid gap-8 xl:grid-cols-[minmax(0,1fr)_18rem]">
-	<div class="min-w-0 space-y-6">
+<div class="grid gap-8 xl:grid-cols-[minmax(0,48rem)_18rem]">
+	<!-- flex + gap (not space-y): a display:none sibling must not leave a margin behind it -->
+	<div class="flex min-w-0 flex-col gap-6 pb-4 xl:pb-0">
 		{#if showNav}
 			<EditorSectionNav {sections} variant="chips" class="xl:hidden" />
 		{/if}
@@ -52,7 +58,15 @@
 		{/if}
 		{#if railSave}
 			<div class="border-t border-border pt-4">
-				<SaveBar variant="rail" {isSaving} {isDirty} {onSave} {onSaveAndExit} />
+				<SaveBar
+					variant="rail"
+					mode={saveMode}
+					{formId}
+					{isSaving}
+					{isDirty}
+					{onSave}
+					{onSaveAndExit}
+				/>
 			</div>
 		{/if}
 	</aside>
