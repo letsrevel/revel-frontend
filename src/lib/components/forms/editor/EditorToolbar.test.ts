@@ -67,3 +67,20 @@ describe('EditorToolbar', () => {
 		expect(document.activeElement).toBe(buttons[buttons.length - 1]);
 	});
 });
+
+describe('EditorToolbar expand button', () => {
+	it('renders only when onExpand is provided and calls it', async () => {
+		const user = userEvent.setup();
+		const onExpand = vi.fn();
+		const { unmount } = render(EditorToolbar, {
+			props: { editor, onToggleSource: vi.fn(), onInsertLink: vi.fn() }
+		});
+		expect(screen.queryByRole('button', { name: /full-screen/i })).not.toBeInTheDocument();
+		unmount();
+		render(EditorToolbar, {
+			props: { editor, onToggleSource: vi.fn(), onInsertLink: vi.fn(), onExpand }
+		});
+		await user.click(screen.getByRole('button', { name: /full-screen/i }));
+		expect(onExpand).toHaveBeenCalledOnce();
+	});
+});
