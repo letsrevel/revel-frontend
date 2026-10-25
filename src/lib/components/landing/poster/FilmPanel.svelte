@@ -96,10 +96,11 @@
 				<button
 					type="button"
 					onclick={play}
-					aria-label={m['home.poster.filmPlayAria']()}
 					class="group absolute inset-0 flex items-end justify-start p-2.5 focus-visible:outline-none sm:p-6"
 				>
+					<span class="sr-only">{m['home.poster.filmPlayAria']()}</span>
 					<span
+						aria-hidden="true"
 						class="flex items-center gap-2 rounded-full bg-poster-white py-1.5 pl-1.5 pr-3.5 text-sm font-bold text-poster-ink shadow-[0_8px_24px_hsl(0_0%_0%/0.35)] transition-transform group-hover:scale-[1.03] group-focus-visible:outline group-focus-visible:outline-2 group-focus-visible:outline-offset-4 group-focus-visible:outline-white motion-reduce:transition-none sm:gap-3 sm:py-2 sm:pl-2 sm:pr-6 sm:text-base"
 					>
 						<span

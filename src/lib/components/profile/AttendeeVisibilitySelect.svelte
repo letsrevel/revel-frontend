@@ -51,7 +51,7 @@
 			}
 		}}
 	>
-		<SelectTrigger aria-label={m['notificationPreferences.privacySettings']()}>
+		<SelectTrigger aria-label="{m['notificationPreferences.privacySettings']()}: {selectedLabel}">
 			{selectedLabel}
 		</SelectTrigger>
 		<SelectContent>

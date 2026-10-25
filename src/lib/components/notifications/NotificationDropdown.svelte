@@ -62,13 +62,8 @@
 <DropdownMenu.Root bind:open={isOpen}>
 	<DropdownMenu.Trigger>
 		{#snippet child({ props })}
-			<Button
-				{...props}
-				variant="ghost"
-				size="icon"
-				class="relative h-10 w-10"
-				aria-label={m['notificationDropdown.openNotifications']()}
-			>
+			<Button {...props} variant="ghost" size="icon" class="relative h-10 w-10">
+				<span class="sr-only">{m['notificationDropdown.openNotifications']()}</span>
 				<Bell class="h-5 w-5" aria-hidden="true" />
 				<NotificationBadge {authToken} {pollingInterval} />
 			</Button>
