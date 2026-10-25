@@ -139,8 +139,11 @@
 		{/each}
 		{#if tabs.length > 0}
 			{#if sections.length > 0}
+				<!-- Purely visual: a role="separator" child would break the list's
+				     listitem-only content model, so hide it from AT instead. -->
 				<li
-					role="separator"
+					aria-hidden="true"
+					data-testid="nav-divider"
 					class={variant === 'chips'
 						? 'my-1 w-px shrink-0 self-stretch bg-border'
 						: 'my-2 border-t border-border'}
