@@ -3,6 +3,7 @@
 	import { page } from '$app/state';
 	import * as m from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
+	import { Play } from '@lucide/svelte';
 	import RevelMark from '$lib/components/brand/RevelMark.svelte';
 	import PosterPanel from './PosterPanel.svelte';
 	import PosterSticker from './PosterSticker.svelte';
@@ -57,7 +58,7 @@
 
 <PosterPanel
 	bgClass="bg-[linear-gradient(160deg,hsl(var(--poster-crimson-deep))_0%,hsl(var(--poster-purple))_75%)]"
-	cutToClass="cut-amber"
+	cutToClass="cut-aubergine"
 >
 	<!-- This wrapper is the positioning context for the R sticker. Without it the
 	     sticker anchors to PosterPanel's full-bleed <section> and pins to the
@@ -162,6 +163,14 @@
 					</a>
 				{/if}
 			</div>
+			<!-- Jumps to the film panel right below; full-opacity white for AA. -->
+			<a
+				href="#film"
+				class="mt-5 inline-flex items-center gap-2 font-bold text-[hsl(var(--poster-white))] underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+			>
+				<Play class="size-4 fill-current" aria-hidden="true" />
+				{m['home.poster.filmHeroLink']()}
+			</a>
 			{#if !isAuthenticated}
 				<div class="mt-4">
 					<!-- Full opacity: small text on the gradient needs the whole 4.5:1. -->

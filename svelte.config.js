@@ -59,7 +59,8 @@ const config = {
 							// The runtime API origin is appended to img-src/media-src/connect-src
 							// in hooks.server.ts (handleCsp) — see #396.
 							'img-src': ['self', 'data:', 'blob:'],
-							'media-src': ['self', 'blob:'],
+							// public.letsrevel.io: the R2 bucket serving the landing brand film.
+							'media-src': ['self', 'blob:', 'https://public.letsrevel.io'],
 							'font-src': ['self', 'data:'],
 							'connect-src': ['self', 'https://api.github.com'],
 							'frame-src': [

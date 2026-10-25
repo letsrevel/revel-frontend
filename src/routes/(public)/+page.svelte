@@ -8,6 +8,7 @@
 	import { FeeCalculatorModal } from '$lib/components/landing';
 	import {
 		HeroPanel,
+		FilmPanel,
 		PricingPanel,
 		CommunitiesPanel,
 		VenuesPanel,
@@ -37,6 +38,7 @@
 	<SeoHead config={data.seo} />
 
 	<HeroPanel {isAuthenticated} demoBookingUrl={data.demoBookingUrl} />
+	<FilmPanel />
 	<PricingPanel onOpenCalculator={() => (showFeeCalculator = true)} />
 	<VenuesPanel />
 	<ClubsPanel />
