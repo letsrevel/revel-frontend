@@ -28,14 +28,12 @@
 	/>
 
 	<!-- Event Editor Component -->
-	<div class="rounded-lg border bg-card text-card-foreground shadow-sm">
-		<EventEditor
-			{organization}
-			userCity={data.userCity}
-			orgCity={data.orgCity}
-			eventSeries={data.eventSeries}
-			initialStart={data.initialStart}
-			initialEventSeriesId={data.initialEventSeriesId}
-		/>
-	</div>
+	<EventEditor
+		{organization}
+		userCity={data.userCity}
+		orgCity={data.orgCity}
+		eventSeries={data.eventSeries}
+		initialStart={data.initialStart}
+		initialEventSeriesId={data.initialEventSeriesId}
+	/>
 </div>

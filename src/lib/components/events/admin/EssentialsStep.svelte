@@ -5,6 +5,7 @@
 	import { formatDateTimeReadback } from '$lib/utils/date';
 	import { Calendar, Eye, Users, Ticket } from '@lucide/svelte';
 	import EssentialsStepSlugEditor from './EssentialsStepSlugEditor.svelte';
+	import { summarizeAccess, capitalizeFirst } from './editor/access-summary';
 
 	interface Props {
 		formData: Partial<EventCreateSchema> & { requires_ticket?: boolean; venue_id?: string | null };
@@ -51,49 +52,10 @@
 		onSubmit();
 	}
 
-	/**
-	 * Get explanation for current visibility + event_type combination
-	 */
-	const combinationExplanation = $derived.by(() => {
-		const visibility = formData.visibility || 'public';
-		const eventType = (formData.event_type as string) || 'public';
-
-		// Define who can see
-		const whoCanSee =
-			visibility === 'public'
-				? m['essentialsStep.whoCanSee_everyone']()
-				: visibility === 'unlisted'
-					? m['essentialsStep.whoCanSee_directLink']()
-					: visibility === 'members-only'
-						? m['essentialsStep.whoCanSee_members']()
-						: visibility === 'staff-only'
-							? m['essentialsStep.whoCanSee_staff']()
-							: m['essentialsStep.whoCanSee_invited'](); // private
-
-		// Define who can attend
-		const whoCanAttend =
-			eventType === 'public'
-				? m['essentialsStep.whoCanAttend_anyone']()
-				: eventType === 'members-only'
-					? m['essentialsStep.whoCanAttend_members']()
-					: m['essentialsStep.whoCanAttend_invited'](); // private
-
-		// Special case: public visibility + members-only type → join org CTA
-		const showJoinOrgHint = visibility === 'public' && eventType === 'members-only';
-
-		// Build the full "who can view" sentence
-		const viewDescription =
-			visibility === 'unlisted'
-				? m['essentialsStep.viewDescription_unlisted']()
-				: m['essentialsStep.viewDescription_default']({ who: whoCanSee });
-
-		return {
-			whoCanSee,
-			viewDescription,
-			whoCanAttend,
-			showJoinOrgHint
-		};
-	});
+	/** Explanation for the current visibility + event_type combination. */
+	const combinationExplanation = $derived(
+		summarizeAccess(formData.visibility, formData.event_type)
+	);
 </script>
 
 {#snippet fields()}
@@ -468,9 +430,7 @@
 						<p>
 							<strong>{m['essentialsStep.whoCanAttend']()}</strong>
 							{m['essentialsStep.whoCanAttendValue']({
-								who:
-									combinationExplanation.whoCanAttend.charAt(0).toUpperCase() +
-									combinationExplanation.whoCanAttend.slice(1)
+								who: capitalizeFirst(combinationExplanation.whoCanAttend)
 							})}
 						</p>
 						{#if combinationExplanation.showJoinOrgHint}
