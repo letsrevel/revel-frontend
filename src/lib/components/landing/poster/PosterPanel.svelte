@@ -17,7 +17,8 @@
 			| 'cut-paper'
 			| 'cut-ink'
 			| 'cut-purple'
-			| 'cut-lavender';
+			| 'cut-lavender'
+			| 'cut-aubergine';
 		cutDirection?: 'right' | 'left';
 		children: Snippet;
 	}

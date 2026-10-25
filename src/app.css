@@ -119,6 +119,9 @@
 		--poster-amber: 38 94% 59%; /* Amber #F9B233 */
 		--poster-ink: 173 40% 8%; /* Ink #0D1E1C */
 		--poster-paper: 268 44% 95%; /* lavender paper panel */
+		/* The brand film's own backdrop (#26113D, sampled from the render), so the
+		   landing film panel and the video frame read as one surface. */
+		--poster-aubergine: 269 56% 15%;
 		--poster-white: 0 0% 100%;
 		/* The org-scoped page ribbon (org profile, event, series). Same value as
 		   --poster-purple by default and mode-inert like it; an organization's
@@ -216,6 +219,9 @@
 }
 .cut-lavender {
 	--cut-color: hsl(var(--poster-lavender));
+}
+.cut-aubergine {
+	--cut-color: hsl(var(--poster-aubergine));
 }
 
 @layer base {
