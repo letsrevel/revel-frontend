@@ -117,10 +117,10 @@
 		"who is putting this on".
 	-->
 	<div class="bg-poster-band">
-		<!-- `container`, not the event header's `max-w-[1920px]`: that page's cover
-		     is capped at 1920 so its ribbon matches it, whereas this cover is
-		     edge-to-edge and the body below is a container — so the strip lines up
-		     with the h1 it introduces. -->
+		<!-- `container`, not the event header's `max-w-[1920px]` (which that page
+		     keeps for its title block): this cover band is edge-to-edge and the
+		     body below is a container, so the strip lines up with the h1 it
+		     introduces. -->
 		<div class="container relative mx-auto px-6 pb-6 md:px-8">
 			<a
 				href={resolve('/(public)/org/[slug]', { slug: series.organization.slug })}

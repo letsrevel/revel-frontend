@@ -81,8 +81,9 @@
 </script>
 
 {#snippet titleBlock(onBand: boolean)}
-	<!-- On the band the type is solid white: a branded org's band is only
-	     guaranteed >= 4.5:1 against WHITE, which white/90 could undercut. -->
+	<!-- On the band every text/icon layer is solid white (no white/90, no
+	     opacity-*): a branded org's band is only guaranteed >= 4.5:1 against
+	     WHITE, which any alpha could undercut. -->
 	<div class="max-w-4xl">
 		<!-- Kicker: who is putting this on. The organization badge below the
 		     cover repeats it as a link; up here it is the eyebrow that gives
@@ -109,14 +110,21 @@
 			<button
 				type="button"
 				onclick={handleDownloadCalendar}
-				class="group flex items-center gap-2 transition-colors hover:text-poster-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-ink/50"
+				class={cn(
+					'group flex items-center gap-2 transition-colors hover:text-poster-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2',
+					onBand
+						? 'focus-visible:ring-offset-poster-band'
+						: 'focus-visible:ring-offset-poster-ink/50'
+				)}
 				title={m['eventHeader.downloadCalendarEventTitle']()}
 				aria-label={m['eventHeader.downloadCalendarEventFor']({ name: event.name })}
 			>
 				<Calendar class="h-5 w-5 shrink-0" aria-hidden="true" />
 				<time datetime={event.start} class="group-hover:underline">{dateRange}</time>
 				{#if event.is_open_ended}
-					<span class="ml-1 text-sm opacity-90">· {m['eventDetails.openEnded']()}</span>
+					<span class={cn('ml-1 text-sm', !onBand && 'opacity-90')}
+						>· {m['eventDetails.openEnded']()}</span
+					>
 				{/if}
 			</button>
 
@@ -127,12 +135,20 @@
 					href={mapsUrl}
 					target="_blank"
 					rel="noopener noreferrer"
-					class="group flex items-center gap-2 transition-colors hover:text-poster-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-ink/50"
+					class={cn(
+						'group flex items-center gap-2 transition-colors hover:text-poster-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2',
+						onBand
+							? 'focus-visible:ring-offset-poster-band'
+							: 'focus-visible:ring-offset-poster-ink/50'
+					)}
 					aria-label="{locationDisplay} - {m['eventQuickInfo.openInMaps']()}"
 				>
 					<MapPin class="h-5 w-5 shrink-0" aria-hidden="true" />
 					<span class="group-hover:underline">{locationDisplay}</span>
-					<ExternalLink class="h-4 w-4 opacity-70 group-hover:opacity-100" aria-hidden="true" />
+					<ExternalLink
+						class={cn('h-4 w-4', !onBand && 'opacity-70 group-hover:opacity-100')}
+						aria-hidden="true"
+					/>
 				</a>
 				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 			{:else}
@@ -145,12 +161,20 @@
 	</div>
 {/snippet}
 
-{#snippet shareButton()}
-	<!-- Share Button (Desktop) -->
+{#snippet shareButton(overArt: boolean)}
+	<!-- Share Button (Desktop). Over raw cover art there is no scrim, so the
+	     button carries its own ink backing: white on ink@60 composited over the
+	     worst case (pure white art) is still >= 3:1 for the icon. Over the
+	     fallback gradient's ink scrim the lighter white/20 chip is enough. -->
 	<button
 		type="button"
 		onclick={handleShare}
-		class="absolute right-6 top-6 hidden rounded-full bg-poster-white/20 p-3 backdrop-blur-sm transition-colors hover:bg-poster-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-ink/50 md:block"
+		class={cn(
+			'absolute right-6 top-6 hidden rounded-full p-3 backdrop-blur-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-ink/50 md:block',
+			overArt
+				? 'bg-poster-ink/60 hover:bg-poster-ink/70'
+				: 'bg-poster-white/20 hover:bg-poster-white/30'
+		)}
 		aria-label={m['eventHeader.shareEvent']()}
 	>
 		<Share2 class="h-5 w-5 text-poster-white" aria-hidden="true" />
@@ -164,7 +188,8 @@
 		     object-cover sliced a wide viewport down to ~5:1, and the title overlay
 		     then sat on what was left. Past max-w-5xl the sides are filled by a
 		     blurred copy of the same art; the title block moves into the ribbon
-		     below so it never covers the art. `overflow-hidden` keeps the blur
+		     below so it doesn't sit on the art (only the org sticker's pull-up
+		     straddles the bottom edge, as before). `overflow-hidden` keeps the blur
 		     from bleeding into the ribbon. -->
 		<div class="relative w-full overflow-hidden">
 			<img
@@ -180,14 +205,14 @@
 				class="relative mx-auto aspect-video w-full max-w-5xl object-cover"
 				loading="eager"
 			/>
-			{@render shareButton()}
+			{@render shareButton(true)}
 		</div>
 	{:else}
 		<div class="relative mx-auto h-64 w-full max-w-[1920px] md:h-96">
 			<!-- Fallback cover. The direction utility was missing here, so the colour
 			     stops painted nothing and the hero rendered on bare background;
-			     restored alongside the poster ramp. The scrim now matches the
-			     cover-image branch, and the type block sits in the bottom third
+			     restored alongside the poster ramp. This scrim applies to the
+			     no-cover fallback only (with a cover the type moves to the ribbon), and the type block sits in the bottom third
 			     where `from-poster-ink/85` applies. Hand-computed against the
 			     LIGHTEST stop in the ramp (lavender, 68% L), because a composited
 			     alpha is invisible to scripts/audit-brand-themes.py:
@@ -202,7 +227,7 @@
 			<!-- Header Content Overlay -->
 			<div class="absolute inset-0 flex flex-col justify-end p-6 pb-12 md:p-8">
 				{@render titleBlock(false)}
-				{@render shareButton()}
+				{@render shareButton(false)}
 			</div>
 		</div>
 	{/if}

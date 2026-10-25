@@ -3,7 +3,7 @@
 	 * the sidebar CTA opens this instead of scrolling to `#ticket-tiers`. The
 	 * body hosts the SAME `TicketTierList` render the page shows inline (passed
 	 * as a snippet — one source of truth, shared cart), and the footer mirrors
-	 * `CartSummaryBar` (count · total + Buy). Buy closes the dialog first so the
+	 * `CartSummaryBar` (count · total + Buy/Claim). Buy closes the dialog first so the
 	 * checkout sheet never stacks on top of it. */
 	import * as m from '$lib/paraglide/messages.js';
 	import {

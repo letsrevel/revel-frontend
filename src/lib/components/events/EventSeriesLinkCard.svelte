@@ -35,8 +35,15 @@
 	);
 
 	// The series' own mark only — the organization already has its card above.
-	const logoUrl = $derived(getImageUrl(series.logo_thumbnail_url || series.logo));
-	let logoError = $state(false);
+	// Thumbnail first, full-size logo if the thumbnail fails to load. Failures
+	// are remembered per URL, so a different series starts clean.
+	const logoCandidates = $derived(
+		[series.logo_thumbnail_url, series.logo]
+			.map((path) => getImageUrl(path))
+			.filter((url): url is string => !!url)
+	);
+	let failedLogoUrls = $state<string[]>([]);
+	const logoUrl = $derived(logoCandidates.find((url) => !failedLogoUrls.includes(url)) ?? null);
 </script>
 
 <!--
@@ -59,13 +66,13 @@
 			href={seriesHref}
 			class="flex items-center gap-3 rounded-md font-bold hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 		>
-			{#if logoUrl && !logoError}
+			{#if logoUrl}
 				<img
 					src={logoUrl}
 					alt=""
 					class="h-12 w-12 shrink-0 rounded-md object-cover"
 					loading="lazy"
-					onerror={() => (logoError = true)}
+					onerror={() => (failedLogoUrls = [...failedLogoUrls, logoUrl])}
 				/>
 			{/if}
 			<span>{series.name}</span>

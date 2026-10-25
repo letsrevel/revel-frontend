@@ -1,5 +1,6 @@
 <script lang="ts">
-	/** Sticky cart summary (#853): count + running total + one Buy button.
+	/** Sticky cart summary (#853): count + running total + one Buy button
+	 * (reads Claim when the cart is free).
 	 * z-40 keeps it under bits-ui dialog overlays (z-50). */
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
