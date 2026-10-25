@@ -25,7 +25,7 @@ describe('EditorSectionNav tab entries', () => {
 		});
 		await userEvent.click(screen.getByRole('button', { name: 'Ticketing' }));
 		expect(onTab).toHaveBeenCalledWith('ticketing');
-		expect(screen.getByRole('separator')).toBeInTheDocument();
+		expect(screen.getByTestId('nav-divider')).toBeInTheDocument();
 	});
 
 	it('marks the current tab with aria-current=page', () => {
@@ -41,7 +41,7 @@ describe('EditorSectionNav tab entries', () => {
 			'aria-current',
 			'page'
 		);
-		expect(screen.queryByRole('separator')).toBeNull();
+		expect(screen.queryByTestId('nav-divider')).toBeNull();
 	});
 });
 
