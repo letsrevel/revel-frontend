@@ -121,7 +121,7 @@ test.describe('J30 seated guest checkout on a tenant host @p1', () => {
 
 		const summaryBar = page.getByTestId('cart-summary-bar');
 		await expect(summaryBar).toBeVisible({ timeout: 15_000 });
-		await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+		await summaryBar.getByRole('button', { name: /^(Buy|Claim)$/ }).click();
 
 		const email = uniqueEmail('TenantSeatedGuest');
 		const sheet = page.getByRole('dialog', { name: 'Checkout' });
@@ -173,7 +173,7 @@ test.describe('J30 seated guest checkout on a tenant host @p1', () => {
 
 		const summaryBar = page.getByTestId('cart-summary-bar');
 		await expect(summaryBar).toBeVisible({ timeout: 15_000 });
-		await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+		await summaryBar.getByRole('button', { name: /^(Buy|Claim)$/ }).click();
 
 		const email = uniqueEmail('TenantPaidSeatedGuest');
 		const sheet = page.getByRole('dialog', { name: 'Checkout' });

@@ -9,6 +9,7 @@
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import DetailsStepTagsInput from '$lib/components/events/admin/DetailsStepTagsInput.svelte';
 	import { COVER_ASPECT_RATIO, LOGO_ASPECT_RATIO } from '$lib/utils/image-crop';
+	import { getImageUrl } from '$lib/utils/url';
 	import { Loader2, Settings as SettingsIcon } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import {
@@ -87,8 +88,9 @@
 	}));
 
 	const publicSeries = $derived(publicSeriesQuery.data);
-	const logoUrl = $derived(publicSeries?.logo ?? null);
-	const coverArtUrl = $derived(publicSeries?.cover_art ?? null);
+	// Media fields are backend-relative paths; resolve them like every other preview.
+	const logoUrl = $derived(getImageUrl(publicSeries?.logo) ?? null);
+	const coverArtUrl = $derived(getImageUrl(publicSeries?.cover_art) ?? null);
 	const tags = $derived(publicSeries?.tags ?? []);
 
 	// --- Mutations ---

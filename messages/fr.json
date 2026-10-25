@@ -1470,6 +1470,7 @@
 		"visibilityNote": "Visibilité : {visibility}",
 		"tags_heading": "Tags",
 		"series_heading": "Fait partie d'une série",
+		"series_viewSeries": "Voir la série",
 		"invitation_heading": "Détails de l'invitation",
 		"payment_successTitle": "Paiement réussi !",
 		"payment_successMessage": "Ton billet a été confirmé. Consulte ton e-mail pour les détails.",

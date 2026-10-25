@@ -91,7 +91,7 @@ test.describe('J6 cart quick-buy @p1', () => {
 		await expect(summaryBar).toContainText('3 tickets');
 		await expect(summaryBar).toContainText('€35.00');
 
-		const buyButton = summaryBar.getByRole('button', { name: 'Buy', exact: true });
+		const buyButton = summaryBar.getByRole('button', { name: /^(Buy|Claim)$/ });
 		await buyButton.click();
 
 		// "Reserved" toast — offline creates PENDING tickets directly (no
@@ -145,7 +145,7 @@ test.describe('J6 cart quick-buy @p1', () => {
 		// First purchase: one ticket.
 		await addButton.click();
 		await expect(stepper.locator('span[aria-live="polite"]')).toHaveText('1');
-		await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+		await summaryBar.getByRole('button', { name: /^(Buy|Claim)$/ }).click();
 		await expect(page.getByText(/reserved/i)).toBeVisible({ timeout: 10_000 });
 		await expect(modal).toBeVisible({ timeout: 8_000 });
 		// A single ticket has no summary badge (that only appears once there are
@@ -165,7 +165,7 @@ test.describe('J6 cart quick-buy @p1', () => {
 		// end to end (not just that the section is visible).
 		await addButton.click();
 		await expect(stepper.locator('span[aria-live="polite"]')).toHaveText('1');
-		await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+		await summaryBar.getByRole('button', { name: /^(Buy|Claim)$/ }).click();
 		await expect(page.getByText(/reserved/i)).toBeVisible({ timeout: 10_000 });
 
 		// My-ticket modal now lists both tickets combined.

@@ -64,7 +64,7 @@ test.describe('J6 cart checkout sheet @p1', () => {
 		await expect(stepper.locator('span[aria-live="polite"]')).toHaveText('2');
 
 		const summaryBar = page.getByTestId('cart-summary-bar');
-		await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+		await summaryBar.getByRole('button', { name: /^(Buy|Claim)$/ }).click();
 
 		// Checkout sheet opens instead of a direct checkout — this cart needs
 		// per-ticket holder names.
@@ -151,7 +151,7 @@ test.describe('J6 cart checkout sheet @p1', () => {
 		await expect(flatStepper.locator('span[aria-live="polite"]')).toHaveText('1');
 
 		const summaryBar = page.getByTestId('cart-summary-bar');
-		await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+		await summaryBar.getByRole('button', { name: /^(Buy|Claim)$/ }).click();
 
 		const sheet = page.getByRole('dialog', { name: 'Checkout' });
 		await expect(sheet).toBeVisible();
@@ -251,7 +251,7 @@ test.describe('J6 cart checkout sheet @p1', () => {
 		await expect(pwycStepper.locator('span[aria-live="polite"]')).toHaveText('1');
 
 		const summaryBar = page.getByTestId('cart-summary-bar');
-		await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+		await summaryBar.getByRole('button', { name: /^(Buy|Claim)$/ }).click();
 
 		const sheet = page.getByRole('dialog', { name: 'Checkout' });
 		await expect(sheet).toBeVisible();

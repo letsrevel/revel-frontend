@@ -52,7 +52,7 @@ test.describe('J30 paid checkout on a tenant host @p1', () => {
 				if ((await stepper.locator('span[aria-live="polite"]').textContent()) === '0') {
 					await stepper.getByRole('button', { name: 'Add one Standard Ticket' }).click();
 				}
-				await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+				await summaryBar.getByRole('button', { name: /^(Buy|Claim)$/ }).click();
 				await expect(sheet).toBeVisible({ timeout: 8_000 });
 			}
 			await sheet.getByLabel('Name for ticket 1').fill('E2E Tenant Buyer');

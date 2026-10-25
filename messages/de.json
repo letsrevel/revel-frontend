@@ -1605,6 +1605,7 @@
 		"visibilityNote": "Sichtbarkeit: {visibility}",
 		"tags_heading": "Tags",
 		"series_heading": "Teil einer Serie",
+		"series_viewSeries": "Serie ansehen",
 		"invitation_heading": "Einladungsdetails",
 		"payment_successTitle": "Zahlung erfolgreich!",
 		"payment_successMessage": "Dein Ticket wurde bestätigt. Überprüfe deine E-Mails für Details.",

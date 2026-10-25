@@ -54,31 +54,41 @@
 	<!-- Hero Section with Cover Art -->
 	<section class="relative w-full overflow-hidden">
 		<!-- Cover Image or Gradient -->
-		<div class="relative h-48 w-full md:h-64 lg:h-80">
-			{#if coverUrl}
+		{#if coverUrl}
+			<!-- Cover art is uploaded (and cropped) at 16:9, so it is shown at 16:9 —
+			     uncropped, as in the editor preview. A fixed-height band with
+			     object-cover sliced a wide desktop viewport down to ~6:1 and cut the
+			     art's top and bottom off. Past max-w-5xl the sides are filled by a
+			     blurred copy of the same art, so the band still spans the page. -->
+			<div class="relative w-full">
+				<img
+					src={coverUrl}
+					alt=""
+					aria-hidden="true"
+					class="absolute inset-0 h-full w-full scale-110 object-cover blur-2xl"
+				/>
+				<div class="absolute inset-0 bg-poster-ink/30"></div>
 				<img
 					src={coverUrl}
 					alt={m['eventSeriesDetailPage.coverImageAlt']({ seriesName: series.name })}
-					class="h-full w-full object-cover"
+					class="relative mx-auto aspect-video w-full max-w-5xl object-cover"
 				/>
-				<!-- Gradient overlay -->
-				<div
-					class="absolute inset-0 bg-gradient-to-b from-transparent via-poster-ink/20 to-poster-ink/60"
-				></div>
-			{:else}
+			</div>
+		{:else}
+			<div class="relative h-48 w-full md:h-64 lg:h-80">
 				<!-- Fallback gradient -->
 				<div class="h-full w-full bg-gradient-to-br {fallbackGradient}"></div>
 				<div class="absolute inset-0 bg-gradient-to-b from-poster-ink/10 to-poster-ink/60"></div>
-			{/if}
-
-			<!-- Series badge. The one Sticker on this page (celebration volume caps
-			     them at one per viewport-height): a fixed-palette white sticker reads
-			     identically over any cover art, in either theme. -->
-			<div class="absolute right-4 top-4">
-				<Sticker tint="purple" rotate={-3} class="text-sm">
-					{m['eventSeriesDetailPage.badge_eventSeries']()}
-				</Sticker>
 			</div>
+		{/if}
+
+		<!-- Series badge. The one Sticker on this page (celebration volume caps
+		     them at one per viewport-height): a fixed-palette white sticker reads
+		     identically over any cover art, in either theme. -->
+		<div class="absolute right-4 top-4">
+			<Sticker tint="purple" rotate={-3} class="text-sm">
+				{m['eventSeriesDetailPage.badge_eventSeries']()}
+			</Sticker>
 		</div>
 	</section>
 
@@ -107,14 +117,14 @@
 		"who is putting this on".
 	-->
 	<div class="bg-poster-band">
-		<!-- `container`, not the event header's `max-w-[1920px]`: that page's cover
-		     is capped at 1920 so its ribbon matches it, whereas this cover is
-		     edge-to-edge and the body below is a container — so the strip lines up
-		     with the h1 it introduces. -->
+		<!-- `container`, not the event header's `max-w-[1920px]` (which that page
+		     keeps for its title block): this cover band is edge-to-edge and the
+		     body below is a container, so the strip lines up with the h1 it
+		     introduces. -->
 		<div class="container relative mx-auto px-6 pb-6 md:px-8">
 			<a
 				href={resolve('/(public)/org/[slug]', { slug: series.organization.slug })}
-				class="group -mt-8 inline-flex -rotate-1 items-center gap-3 rounded-[1.25rem] bg-poster-white p-3 shadow-poster-lg transition-transform hover:rotate-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-band"
+				class="group -mt-4 inline-flex -rotate-1 items-center gap-3 rounded-[1.25rem] bg-poster-white p-3 shadow-poster-lg transition-transform hover:rotate-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-band md:-mt-8"
 			>
 				{#if orgLogoUrl}
 					<img

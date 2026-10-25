@@ -92,7 +92,7 @@ async function claimBestAvailable(
 	await expect(stepper.locator('span[aria-live="polite"]')).toHaveText(String(quantity));
 
 	const summaryBar = page.getByTestId('cart-summary-bar');
-	await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+	await summaryBar.getByRole('button', { name: /^(Buy|Claim)$/ }).click();
 
 	const sheet = page.getByRole('dialog', { name: 'Checkout' });
 	await expect(sheet).toBeVisible();
@@ -248,7 +248,7 @@ test.describe('J19 best available @p2', () => {
 			await expect(stepper.locator('span[aria-live="polite"]')).toHaveText('1');
 
 			const summaryBar = page.getByTestId('cart-summary-bar');
-			await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+			await summaryBar.getByRole('button', { name: /^(Buy|Claim)$/ }).click();
 
 			const sheet = page.getByRole('dialog', { name: 'Checkout' });
 			await expect(sheet).toBeVisible();
