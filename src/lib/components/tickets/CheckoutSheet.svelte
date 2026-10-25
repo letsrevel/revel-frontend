@@ -38,6 +38,7 @@
 	import { cartTotal, cartTotalArgs, vatPreviewItems } from './checkout-total';
 	import { pwycBounds, pwycErrorMessage, validatePwycAmount } from './pwyc-validation';
 	import { confirmBlocked, sheetValidationError } from './checkout-sheet-validation';
+	import { soleHolderPrefill } from './purchase-items';
 	import { formatMoney } from '$lib/utils/format';
 	import type {
 		BuyerBillingInfoSchema,
@@ -73,6 +74,9 @@
 		 * the guest identity block/gating is skipped entirely — defensive, not
 		 * expected to happen once the page passes it through. */
 		identity?: GuestIdentity;
+		/** Authenticated buyer's real name — pre-fills the holder name of a
+		 * single-ticket cart. Guests' comes from `identity` instead. */
+		buyerName?: string;
 	}
 
 	let {
@@ -89,8 +93,28 @@
 		onConfirm,
 		chart = null,
 		registry,
-		identity
+		identity,
+		buyerName = ''
 	}: Props = $props();
+
+	// Single-ticket cart: pre-fill its holder name with the buyer's (profile
+	// name, or a guest's identity names as they type them above). The current
+	// value is read untracked so clearing the field doesn't instantly refill
+	// it; soleHolderPrefill never overwrites what the buyer typed.
+	let lastPrefill = '';
+	$effect(() => {
+		if (!open || !requireTicketNames || cart.totalCount !== 1) return;
+		const group = cart.groups[0];
+		const name = isAuthenticated
+			? buyerName.trim()
+			: `${identity?.firstName ?? ''} ${identity?.lastName ?? ''}`.trim();
+		untrack(() => {
+			const next = soleHolderPrefill(group.guestNames[0] ?? '', lastPrefill, name);
+			if (next === null) return;
+			cart.setGuestName(group.tier.id, 0, next);
+			lastPrefill = next;
+		});
+	});
 
 	// Discount: sheet-local input/results. Only the APPLIED code string
 	// travels back up (via onConfirm) — the cart itself has no discount field.

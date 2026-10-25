@@ -44,3 +44,18 @@ export function buildPurchaseTicketItems(opts: PurchaseItemsOptions): TicketPurc
 		return ticket;
 	});
 }
+
+/**
+ * Pre-fill for the sole holder-name input of a single-ticket cart: that holder
+ * is almost always the buyer. Returns the name to write, or null to leave the
+ * field alone — it only overwrites an empty field or a value it wrote itself
+ * (`lastPrefill`), so anything the buyer typed sticks.
+ */
+export function soleHolderPrefill(
+	current: string,
+	lastPrefill: string,
+	buyerName: string
+): string | null {
+	if (current !== '' && current !== lastPrefill) return null;
+	return current === buyerName ? null : buyerName;
+}
