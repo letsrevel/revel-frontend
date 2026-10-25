@@ -667,6 +667,7 @@
 		chart={seatHoldRegistry.chart}
 		registry={seatHoldRegistry}
 		identity={purchaseFlow.isAuthenticated ? undefined : purchaseFlow.guestIdentity}
+		buyerName={ticketHolderDefaultName}
 	/>
 {/if}
 
