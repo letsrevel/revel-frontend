@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import SaveBar from '../SaveBar.svelte';
-	import EditorSectionNav, { type NavSection } from './EditorSectionNav.svelte';
+	import EditorSectionNav, { type NavSection, type NavTab } from './EditorSectionNav.svelte';
 
 	interface Props {
 		main: Snippet;
@@ -9,6 +9,9 @@
 		glance: Snippet;
 		sections: NavSection[];
 		showNav: boolean;
+		/** Sibling editor tabs shown in the nav after the section links. */
+		navTabs?: NavTab[];
+		onNavTab?: (value: string) => void;
 		/** Render the save buttons at the foot of the rail (xl). */
 		railSave: boolean;
 		isSaving: boolean;
@@ -25,6 +28,8 @@
 		glance,
 		sections,
 		showNav,
+		navTabs = [],
+		onNavTab,
 		railSave,
 		isSaving,
 		isDirty,
@@ -43,7 +48,13 @@
 	<!-- flex + gap (not space-y): a display:none sibling must not leave a margin behind it -->
 	<div class="flex min-w-0 flex-col gap-6 pb-4 xl:pb-0">
 		{#if showNav}
-			<EditorSectionNav {sections} variant="chips" class="xl:hidden" />
+			<EditorSectionNav
+				{sections}
+				variant="chips"
+				tabs={navTabs}
+				onTab={onNavTab}
+				class="xl:hidden"
+			/>
 		{/if}
 		<div class="xl:hidden">{@render glance()}</div>
 		{@render main()}
@@ -54,7 +65,7 @@
 	>
 		{@render glance()}
 		{#if showNav}
-			<EditorSectionNav {sections} variant="list" />
+			<EditorSectionNav {sections} variant="list" tabs={navTabs} onTab={onNavTab} />
 		{/if}
 		{#if railSave}
 			<div class="border-t border-border pt-4">

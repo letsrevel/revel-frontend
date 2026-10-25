@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/svelte';
 import { describe, it, expect, vi } from 'vitest';
 import AccessSection from './AccessSection.svelte';
-import { buildEditorSections } from '../sections';
+import { buildEditorSections, buildNavTabs } from '../sections';
 
 const baseProps = {
 	formData: {
@@ -76,5 +76,17 @@ describe('buildEditorSections', () => {
 		expect(byId({}, true)['section-when']).toBe(true);
 		expect(byId({ city_id: 'x' })['section-where']).toBe(true);
 		expect(byId({ city_id: 'x' })['section-basics']).toBe(false);
+	});
+});
+
+describe('buildNavTabs', () => {
+	const labels = { details: 'D', ticketing: 'T', listings: 'L' };
+	it('lists only ticketing and listings on the details tab', () => {
+		expect(buildNavTabs('details', labels).map((t) => t.value)).toEqual(['ticketing', 'listings']);
+	});
+	it('lists all three elsewhere, flagging the active one', () => {
+		const tabs = buildNavTabs('listings', labels);
+		expect(tabs.map((t) => t.value)).toEqual(['details', 'ticketing', 'listings']);
+		expect(tabs.filter((t) => t.current).map((t) => t.value)).toEqual(['listings']);
 	});
 });

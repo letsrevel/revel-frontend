@@ -2150,6 +2150,8 @@
 		"tabDetails": "Detalhes do evento",
 		"tabTicketing": "Bilhética",
 		"tabListings": "Publicações",
+		"nextStepTicketing": "Próximo passo: configurar os tipos de bilhete e os preços",
+		"goToTicketing": "Ir para a bilheteira",
 		"editEvent": "Editar evento",
 		"ticketing": "Bilhética",
 		"validationErrorToast": "Corrige os erros assinalados antes de guardar.",

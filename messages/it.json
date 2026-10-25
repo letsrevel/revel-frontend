@@ -2150,6 +2150,8 @@
 		"tabDetails": "Dettagli Evento",
 		"tabTicketing": "Biglietteria",
 		"tabListings": "Annunci esterni",
+		"nextStepTicketing": "Prossimo passo: configura le tipologie di biglietto e i prezzi",
+		"goToTicketing": "Vai alla biglietteria",
 		"editEvent": "Modifica Evento",
 		"ticketing": "Biglietteria",
 		"validationErrorToast": "Correggi gli errori evidenziati prima di salvare.",

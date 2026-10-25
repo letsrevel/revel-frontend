@@ -2150,6 +2150,8 @@
 		"tabDetails": "Detalles del evento",
 		"tabTicketing": "Entradas",
 		"tabListings": "Publicaciones",
+		"nextStepTicketing": "Siguiente: configura los tipos de entrada y los precios",
+		"goToTicketing": "Ir a la venta de entradas",
 		"editEvent": "Editar evento",
 		"ticketing": "Entradas",
 		"validationErrorToast": "Corrige los errores señalados antes de guardar.",
