@@ -74,7 +74,7 @@
 				{#if isPending}
 					<LoaderCircle class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
 				{/if}
-				{m['cart.buy']()}
+				{isFree ? m['cartSheet.claim']() : m['cart.buy']()}
 			</Button>
 		</DialogFooter>
 	</DialogContent>

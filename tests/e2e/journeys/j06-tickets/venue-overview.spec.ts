@@ -335,7 +335,7 @@ test.describe('J6 map-first venue overview @p2', () => {
 
 			// Buy completes the purchase directly (no sheet — names aren't
 			// required and this is the only group).
-			await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+			await summaryBar.getByRole('button', { name: /^(Buy|Claim)$/ }).click();
 			await expect(page.getByText(/reserved/i)).toBeVisible({ timeout: 10_000 });
 
 			// Two tickets (carousel), each carrying one of the tapped Row A seats
@@ -636,7 +636,7 @@ test.describe('J6 map-first venue overview @p2', () => {
 
 			// Buy proves the server-side hold is genuinely still alive — a wiped
 			// hold would fail the purchase instead of completing it.
-			await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+			await summaryBar.getByRole('button', { name: /^(Buy|Claim)$/ }).click();
 			await expect(page.getByText(/reserved/i)).toBeVisible({ timeout: 10_000 });
 		} finally {
 			await context.close();

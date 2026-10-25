@@ -69,7 +69,7 @@ test.describe('J6 tiers dialog @p1', () => {
 
 		// Buy closes the dialog and hands off to the same offline checkout
 		// as CartSummaryBar (PENDING tickets + "reserved" toast, no Stripe).
-		await dialog.getByRole('button', { name: 'Buy', exact: true }).click();
+		await dialog.getByRole('button', { name: /^(Buy|Claim)$/ }).click();
 		await expect(dialog).toBeHidden();
 		await expect(page.getByText(/reserved/i)).toBeVisible({ timeout: 10_000 });
 		await expect(page.getByRole('dialog', { name: 'Your Ticket', exact: true })).toBeVisible({

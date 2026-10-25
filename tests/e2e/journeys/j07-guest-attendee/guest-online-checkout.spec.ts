@@ -65,7 +65,7 @@ test.describe('J7 guest online checkout @p2', () => {
 		await expect(async () => {
 			if (page.url().includes('checkout.stripe.com')) return;
 			if (!(await sheet.isVisible())) {
-				await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+				await summaryBar.getByRole('button', { name: /^(Buy|Claim)$/ }).click();
 				await expect(sheet).toBeVisible({ timeout: 8_000 });
 			}
 			// Guest-only cart-wide notice: redirected to Stripe for online payment.
@@ -124,7 +124,7 @@ test.describe('J7 guest online checkout @p2', () => {
 		await expect(async () => {
 			if (page.url().includes('checkout.stripe.com')) return;
 			if (!(await sheet.isVisible())) {
-				await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+				await summaryBar.getByRole('button', { name: /^(Buy|Claim)$/ }).click();
 				await expect(sheet).toBeVisible({ timeout: 8_000 });
 			}
 			await sheet.getByLabel('Email address').fill(email);

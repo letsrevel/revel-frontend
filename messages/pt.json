@@ -1605,6 +1605,7 @@
 		"visibilityNote": "Visibilidade: {visibility}",
 		"tags_heading": "Etiquetas",
 		"series_heading": "Parte de uma série",
+		"series_viewSeries": "Ver a série",
 		"invitation_heading": "Detalhes do convite",
 		"payment_successTitle": "Pagamento efetuado com sucesso!",
 		"payment_successMessage": "O teu bilhete foi confirmado. Consulta o teu e-mail para mais detalhes.",

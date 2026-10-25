@@ -175,7 +175,7 @@ test.describe('J7 guest seated checkout @p2', () => {
 			const summaryBar = page.getByTestId('cart-summary-bar');
 			await expect(summaryBar).toBeVisible({ timeout: 15_000 });
 			await expect(summaryBar).toContainText('1 ticket');
-			await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+			await summaryBar.getByRole('button', { name: /^(Buy|Claim)$/ }).click();
 
 			// Checkout sheet: identity + this group's ticket-holder name
 			// (require_ticket_names defaults true). Free tier → the confirm label
@@ -326,7 +326,7 @@ test.describe('J7 guest seated checkout @p2', () => {
 		await expect(stepper.locator('span[aria-live="polite"]')).toHaveText('1');
 
 		const summaryBar = page.getByTestId('cart-summary-bar');
-		await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+		await summaryBar.getByRole('button', { name: /^(Buy|Claim)$/ }).click();
 
 		const sheet = page.getByRole('dialog', { name: 'Checkout' });
 		await expect(sheet).toBeVisible();
@@ -476,7 +476,7 @@ test.describe('J7 guest seated checkout @p2', () => {
 
 			// Both groups now in the SAME cart.
 			await expect(summaryBar.getByText('2 tickets')).toBeVisible({ timeout: 10_000 });
-			await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+			await summaryBar.getByRole('button', { name: /^(Buy|Claim)$/ }).click();
 
 			// Sheet: both groups present, names off, email only.
 			const sheet = page.getByRole('dialog', { name: 'Checkout' });
