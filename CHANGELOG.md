@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.26.2] - 2026-10-26
+
+### Fixed
+- The eligibility card on event pages is now fully translated: the step messages (for example "Complete the required questionnaire to attend"), the action buttons (such as "Complete Profile") and the questionnaire counts no longer show up in English when the app is set to another language
+- An unlisted event's visibility now shows a translated label instead of the raw value "unlisted"
+
 ## [2.26.1] - 2026-10-25
 
 ### Fixed
