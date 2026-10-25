@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.26.1] - 2026-10-25
+
+### Fixed
+- When an event asks for a name on every ticket and you're getting just one, the name field in checkout is now filled in with your name (your profile name, or the name you typed as a guest); you can still change it
+- Invitation links no longer trap you on "Claim Invitation": after claiming, if the event still needs something from you (for example a profile picture), you now see that step, such as "Complete Profile", instead of being asked to claim again and again
+
 ## [2.26.0] - 2026-10-25
 
 ### Added
