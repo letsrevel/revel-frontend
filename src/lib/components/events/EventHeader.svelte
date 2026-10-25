@@ -80,21 +80,110 @@
 	}
 </script>
 
+{#snippet titleBlock(onBand: boolean)}
+	<!-- On the band the type is solid white: a branded org's band is only
+	     guaranteed >= 4.5:1 against WHITE, which white/90 could undercut. -->
+	<div class="max-w-4xl">
+		<!-- Kicker: who is putting this on. The organization badge below the
+		     cover repeats it as a link; up here it is the eyebrow that gives
+		     the display title something to sit on. -->
+		{#if !onBand}
+			<p class="mb-1 text-sm font-extrabold uppercase tracking-[0.12em] text-poster-white/90">
+				{event.organization.name}
+			</p>
+		{/if}
+
+		<!-- Event Name -->
+		<h1 class="mb-3 text-3xl font-black leading-[1.12] text-poster-white sm:text-4xl lg:text-5xl">
+			{event.name}
+		</h1>
+
+		<!-- Metadata Row -->
+		<div
+			class={cn(
+				'flex flex-col gap-2 text-sm md:text-base',
+				onBand ? 'text-poster-white' : 'text-poster-white/90'
+			)}
+		>
+			<!-- Date (clickable to download iCal) -->
+			<button
+				type="button"
+				onclick={handleDownloadCalendar}
+				class="group flex items-center gap-2 transition-colors hover:text-poster-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-ink/50"
+				title={m['eventHeader.downloadCalendarEventTitle']()}
+				aria-label={m['eventHeader.downloadCalendarEventFor']({ name: event.name })}
+			>
+				<Calendar class="h-5 w-5 shrink-0" aria-hidden="true" />
+				<time datetime={event.start} class="group-hover:underline">{dateRange}</time>
+				{#if event.is_open_ended}
+					<span class="ml-1 text-sm opacity-90">· {m['eventDetails.openEnded']()}</span>
+				{/if}
+			</button>
+
+			<!-- Location -->
+			{#if mapsUrl}
+				<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
+				<a
+					href={mapsUrl}
+					target="_blank"
+					rel="noopener noreferrer"
+					class="group flex items-center gap-2 transition-colors hover:text-poster-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-ink/50"
+					aria-label="{locationDisplay} - {m['eventQuickInfo.openInMaps']()}"
+				>
+					<MapPin class="h-5 w-5 shrink-0" aria-hidden="true" />
+					<span class="group-hover:underline">{locationDisplay}</span>
+					<ExternalLink class="h-4 w-4 opacity-70 group-hover:opacity-100" aria-hidden="true" />
+				</a>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
+			{:else}
+				<div class="flex items-center gap-2">
+					<MapPin class="h-5 w-5 shrink-0" aria-hidden="true" />
+					<span>{locationDisplay}</span>
+				</div>
+			{/if}
+		</div>
+	</div>
+{/snippet}
+
+{#snippet shareButton()}
+	<!-- Share Button (Desktop) -->
+	<button
+		type="button"
+		onclick={handleShare}
+		class="absolute right-6 top-6 hidden rounded-full bg-poster-white/20 p-3 backdrop-blur-sm transition-colors hover:bg-poster-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-ink/50 md:block"
+		aria-label={m['eventHeader.shareEvent']()}
+	>
+		<Share2 class="h-5 w-5 text-poster-white" aria-hidden="true" />
+	</button>
+{/snippet}
+
 <header class={cn('relative w-full overflow-hidden', className)}>
-	<!-- Cover Image or Gradient -->
-	<div class="relative mx-auto h-64 w-full max-w-[1920px] md:h-96">
-		{#if coverImageUrl}
+	{#if coverImageUrl}
+		<!-- Cover art is uploaded (and cropped) at 16:9, so it is shown at 16:9 —
+		     uncropped, as in the editor preview. The old fixed-height band with
+		     object-cover sliced a wide viewport down to ~5:1, and the title overlay
+		     then sat on what was left. Past max-w-5xl the sides are filled by a
+		     blurred copy of the same art; the title block moves into the ribbon
+		     below so it never covers the art. `overflow-hidden` keeps the blur
+		     from bleeding into the ribbon. -->
+		<div class="relative w-full overflow-hidden">
+			<img
+				src={coverImageUrl}
+				alt=""
+				aria-hidden="true"
+				class="absolute inset-0 h-full w-full scale-110 object-cover blur-2xl"
+			/>
+			<div class="absolute inset-0 bg-poster-ink/30"></div>
 			<img
 				src={coverImageUrl}
 				alt={m['eventHeader.coverImageAlt']({ name: event.name })}
-				class="h-full w-full object-cover object-center"
+				class="relative mx-auto aspect-video w-full max-w-5xl object-cover"
 				loading="eager"
 			/>
-			<!-- Gradient overlay for text contrast -->
-			<div
-				class="absolute inset-0 bg-gradient-to-t from-poster-ink/85 via-poster-ink/45 to-transparent"
-			></div>
-		{:else}
+			{@render shareButton()}
+		</div>
+	{:else}
+		<div class="relative mx-auto h-64 w-full max-w-[1920px] md:h-96">
 			<!-- Fallback cover. The direction utility was missing here, so the colour
 			     stops painted nothing and the hero rendered on bare background;
 			     restored alongside the poster ramp. The scrim now matches the
@@ -109,77 +198,14 @@
 			<div
 				class="absolute inset-0 bg-gradient-to-t from-poster-ink/85 via-poster-ink/45 to-poster-ink/20"
 			></div>
-		{/if}
 
-		<!-- Header Content Overlay -->
-		<div class="absolute inset-0 flex flex-col justify-end p-6 pb-12 md:p-8">
-			<div class="max-w-4xl">
-				<!-- Kicker: who is putting this on. The organization badge below the
-				     cover repeats it as a link; up here it is the eyebrow that gives
-				     the display title something to sit on. -->
-				<p class="mb-1 text-sm font-extrabold uppercase tracking-[0.12em] text-poster-white/90">
-					{event.organization.name}
-				</p>
-
-				<!-- Event Name -->
-				<h1
-					class="mb-3 text-3xl font-black leading-[1.12] text-poster-white sm:text-4xl lg:text-5xl"
-				>
-					{event.name}
-				</h1>
-
-				<!-- Metadata Row -->
-				<div class="flex flex-col gap-2 text-sm text-poster-white/90 md:text-base">
-					<!-- Date (clickable to download iCal) -->
-					<button
-						type="button"
-						onclick={handleDownloadCalendar}
-						class="group flex items-center gap-2 transition-colors hover:text-poster-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-ink/50"
-						title={m['eventHeader.downloadCalendarEventTitle']()}
-						aria-label={m['eventHeader.downloadCalendarEventFor']({ name: event.name })}
-					>
-						<Calendar class="h-5 w-5 shrink-0" aria-hidden="true" />
-						<time datetime={event.start} class="group-hover:underline">{dateRange}</time>
-						{#if event.is_open_ended}
-							<span class="ml-1 text-sm opacity-90">· {m['eventDetails.openEnded']()}</span>
-						{/if}
-					</button>
-
-					<!-- Location -->
-					{#if mapsUrl}
-						<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
-						<a
-							href={mapsUrl}
-							target="_blank"
-							rel="noopener noreferrer"
-							class="group flex items-center gap-2 transition-colors hover:text-poster-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-ink/50"
-							aria-label="{locationDisplay} - {m['eventQuickInfo.openInMaps']()}"
-						>
-							<MapPin class="h-5 w-5 shrink-0" aria-hidden="true" />
-							<span class="group-hover:underline">{locationDisplay}</span>
-							<ExternalLink class="h-4 w-4 opacity-70 group-hover:opacity-100" aria-hidden="true" />
-						</a>
-						<!-- eslint-enable svelte/no-navigation-without-resolve -->
-					{:else}
-						<div class="flex items-center gap-2">
-							<MapPin class="h-5 w-5 shrink-0" aria-hidden="true" />
-							<span>{locationDisplay}</span>
-						</div>
-					{/if}
-				</div>
+			<!-- Header Content Overlay -->
+			<div class="absolute inset-0 flex flex-col justify-end p-6 pb-12 md:p-8">
+				{@render titleBlock(false)}
+				{@render shareButton()}
 			</div>
-
-			<!-- Share Button (Desktop) -->
-			<button
-				type="button"
-				onclick={handleShare}
-				class="absolute right-6 top-6 hidden rounded-full bg-poster-white/20 p-3 backdrop-blur-sm transition-colors hover:bg-poster-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-ink/50 md:block"
-				aria-label={m['eventHeader.shareEvent']()}
-			>
-				<Share2 class="h-5 w-5 text-poster-white" aria-hidden="true" />
-			</button>
 		</div>
-	</div>
+	{/if}
 
 	<!--
 		Poster ribbon (uplift prototype). A solid `--poster-band` color block under
@@ -204,7 +230,7 @@
 		<div class="relative mx-auto max-w-[1920px] px-6 pb-6 md:px-8">
 			<a
 				href={resolve('/(public)/org/[slug]', { slug: event.organization.slug })}
-				class="group -mt-8 inline-flex -rotate-1 items-center gap-3 rounded-[1.25rem] bg-poster-white p-3 shadow-poster-lg transition-transform hover:rotate-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-band"
+				class="group -mt-4 inline-flex -rotate-1 items-center gap-3 rounded-[1.25rem] bg-poster-white p-3 shadow-poster-lg transition-transform hover:rotate-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-band md:-mt-8"
 			>
 				{#if event.organization.logo}
 					{@const org = event.organization}
@@ -230,6 +256,14 @@
 					</span>
 				</div>
 			</a>
+			{#if coverImageUrl}
+				<!-- White on --poster-band: 5.52:1 default; a branded org's band is
+				     backend-guaranteed >= 4.5:1 against white (see above). -->
+				<!-- No kicker here: the sticker right above already names the org. -->
+				<div class="mt-4">
+					{@render titleBlock(true)}
+				</div>
+			{/if}
 		</div>
 	</div>
 </header>
