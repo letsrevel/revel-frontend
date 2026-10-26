@@ -3,8 +3,10 @@
 	import { appStore } from '$lib/stores/app.svelte';
 	import { format } from 'date-fns';
 	import { Bug, Info, AlertTriangle, AlertCircle, AlertOctagon, X } from '@lucide/svelte';
+	import { linkify } from '$lib/utils/linkify';
 
 	const banner = $derived(appStore.banner);
+	const messageSegments = $derived(banner ? linkify(banner.message) : []);
 
 	// Compute a hash-like key from the banner message for sessionStorage dismissal
 	const dismissKey = $derived(banner ? `maintenance-banner-${hashString(banner.message)}` : '');
@@ -98,7 +100,22 @@
 					aria-hidden="true"
 				/>
 				<div class="flex-1 text-sm">
-					<p class="font-semibold">{banner.message}</p>
+					<p class="break-words font-semibold">
+						{#each messageSegments as segment, i (i)}
+							{#if segment.type === 'link'}
+								<!-- External http(s) URL from linkify(), not an app route. -->
+								<!-- eslint-disable svelte/no-navigation-without-resolve -->
+								<a
+									href={segment.value}
+									target="_blank"
+									rel="noopener noreferrer"
+									class="underline underline-offset-2 hover:no-underline focus:outline-none focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-current"
+									>{segment.value}<span class="sr-only"> ({m['common.opensInNewTab']()})</span></a
+								>
+								<!-- eslint-enable svelte/no-navigation-without-resolve -->
+							{:else}{segment.value}{/if}
+						{/each}
+					</p>
 					{#if banner.scheduled_at || banner.ends_at}
 						<p class="mt-1 text-xs opacity-90">
 							{#if banner.scheduled_at}

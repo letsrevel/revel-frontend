@@ -57,9 +57,7 @@
 								{/if}
 								{#if rsvp.membership}
 									<Badge variant="secondary" class="text-xs">
-										{rsvp.membership.tier?.name
-											? m['memberBadge.tierName']({ tier: rsvp.membership.tier.name })
-											: m['memberBadge.member']()}
+										{rsvp.membership.tier?.name || m['memberBadge.member']()}
 									</Badge>
 								{/if}
 							</div>

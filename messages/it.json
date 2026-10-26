@@ -3112,8 +3112,7 @@
 		"subscriptionCancelledOnMatch": "Se questa voce corrisponde a un account con un abbonamento di iscrizione a questa organizzazione — ora oppure quando verrà collegata al suo account in seguito — quell'abbonamento viene disdetto e la fatturazione ricorrente si interrompe. Nessun rimborso viene emesso automaticamente."
 	},
 	"memberBadge": {
-		"member": "Membro",
-		"tierName": "Membro {tier}"
+		"member": "Membro"
 	},
 	"memberCard": {
 		"makeStaff": "Rendi Staff",
