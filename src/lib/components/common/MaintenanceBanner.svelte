@@ -95,7 +95,7 @@
 					class="mt-0.5 h-5 w-5 flex-shrink-0 {config.iconClasses} md:mt-0"
 					aria-hidden="true"
 				/>
-				<div class="flex-1 text-sm">
+				<div class="min-w-0 flex-1 text-sm">
 					<p class="break-words font-semibold">
 						{#each messageSegments as segment, i (i)}
 							{#if segment.type === 'link'}
