@@ -13,7 +13,7 @@
 This repository is the SvelteKit web app: public event and organization pages, checkout, the organizer admin and the dashboards for attendees and members. It talks to the [backend API](https://github.com/letsrevel/revel-backend) through a TypeScript client generated from the backend's OpenAPI spec. For what Revel does, who it is for, the demo, fees and self-hosting, read the [main README](https://github.com/letsrevel/revel-backend#readme).
 
 <p align="center">
-  <img src="docs/images/mobile.png" alt="Revel on a phone: home, event detail and discovery" width="800"/>
+  <img src="docs/images/2026-10/mobile.png" alt="Revel on a phone: home, event detail and discovery" width="800"/>
 </p>
 
 ## Local development
