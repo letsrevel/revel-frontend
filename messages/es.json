@@ -3112,8 +3112,7 @@
 		"subscriptionCancelledOnMatch": "Si esta entrada coincide con una cuenta que tiene una suscripción de membresía con esta organización —ya sea ahora o cuando se vincule a su cuenta más adelante—, esa suscripción se cancela y la facturación recurrente se detiene. No se emite ningún reembolso automáticamente."
 	},
 	"memberBadge": {
-		"member": "Miembro",
-		"tierName": "Miembro {tier}"
+		"member": "Miembro"
 	},
 	"memberCard": {
 		"makeStaff": "Añadir como staff",

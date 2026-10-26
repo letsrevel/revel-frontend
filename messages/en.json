@@ -3112,8 +3112,7 @@
 		"subscriptionCancelledOnMatch": "If this entry matches an account with a membership subscription to this organization — now, or when it links to their account later — that subscription is cancelled and recurring billing stops. No refund is issued automatically."
 	},
 	"memberBadge": {
-		"member": "Member",
-		"tierName": "{tier} Member"
+		"member": "Member"
 	},
 	"memberCard": {
 		"makeStaff": "Make Staff",

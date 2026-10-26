@@ -3112,8 +3112,7 @@
 		"subscriptionCancelledOnMatch": "Se esta entrada corresponder a uma conta com uma subscrição de adesão a esta organização — agora, ou quando vier a ser associada a essa conta mais tarde — essa subscrição é cancelada e a faturação recorrente para. Não é emitido nenhum reembolso automaticamente."
 	},
 	"memberBadge": {
-		"member": "Membro",
-		"tierName": "Membro {tier}"
+		"member": "Membro"
 	},
 	"memberCard": {
 		"makeStaff": "Adicionar ao staff",

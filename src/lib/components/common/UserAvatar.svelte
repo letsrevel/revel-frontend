@@ -128,7 +128,7 @@
 			type="button"
 			onclick={handleClick}
 			class={cn(
-				'rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+				'shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
 				'cursor-pointer transition-opacity hover:opacity-80'
 			)}
 			aria-label={m['userAvatar.viewProfilePicture']({ displayName })}
@@ -136,20 +136,20 @@
 			<img
 				src={fullPictureUrl}
 				alt={altText}
-				class={cn('rounded-full object-cover', sizeClasses[size], className)}
+				class={cn('shrink-0 rounded-full object-cover', sizeClasses[size], className)}
 			/>
 		</button>
 	{:else}
 		<img
 			src={fullPictureUrl}
 			alt={altText}
-			class={cn('rounded-full object-cover', sizeClasses[size], className)}
+			class={cn('shrink-0 rounded-full object-cover', sizeClasses[size], className)}
 		/>
 	{/if}
 {:else}
 	<div
 		class={cn(
-			'flex items-center justify-center rounded-full bg-primary font-semibold text-primary-foreground',
+			'flex shrink-0 items-center justify-center rounded-full bg-primary font-semibold text-primary-foreground',
 			sizeClasses[size],
 			className
 		)}

@@ -3112,8 +3112,7 @@
 		"subscriptionCancelledOnMatch": "Falls dieser Eintrag zu einem Konto mit einem Mitgliedschafts-Abonnement bei dieser Organisation passt – jetzt oder wenn er später mit dem Konto verknüpft wird –, wird dieses Abonnement gekündigt und die wiederkehrende Abrechnung endet. Es wird keine Erstattung automatisch ausgelöst."
 	},
 	"memberBadge": {
-		"member": "Mitglied",
-		"tierName": "{tier}-Mitglied"
+		"member": "Mitglied"
 	},
 	"memberCard": {
 		"makeStaff": "Zum Personal machen",

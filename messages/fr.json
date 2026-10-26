@@ -2977,8 +2977,7 @@
 		"subscriptionCancelledOnMatch": "Si cette entrée correspond à un compte ayant un abonnement d'adhésion auprès de cette organisation — maintenant ou lors de la liaison ultérieure avec son compte —, cet abonnement est annulé et la facturation récurrente s'arrête. Aucun remboursement n'est effectué automatiquement."
 	},
 	"memberBadge": {
-		"member": "Membre",
-		"tierName": "Membre {tier}"
+		"member": "Membre"
 	},
 	"memberCard": {
 		"makeStaff": "Ajouter à l'équipe",

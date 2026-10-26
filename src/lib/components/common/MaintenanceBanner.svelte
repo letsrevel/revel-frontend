@@ -1,10 +1,12 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { appStore } from '$lib/stores/app.svelte';
-	import { format } from 'date-fns';
+	import { formatDateTime } from '$lib/utils/date';
 	import { Bug, Info, AlertTriangle, AlertCircle, AlertOctagon, X } from '@lucide/svelte';
+	import { linkify } from '$lib/utils/linkify';
 
 	const banner = $derived(appStore.banner);
+	const messageSegments = $derived(banner ? linkify(banner.message) : []);
 
 	// Compute a hash-like key from the banner message for sessionStorage dismissal
 	const dismissKey = $derived(banner ? `maintenance-banner-${hashString(banner.message)}` : '');
@@ -39,10 +41,6 @@
 			hash |= 0;
 		}
 		return Math.abs(hash).toString(36);
-	}
-
-	function formatTime(iso: string): string {
-		return format(new Date(iso), 'MMM d, yyyy HH:mm');
 	}
 
 	// Severity → tone: debug/neutral, info/info, warning/highlight, error/danger
@@ -97,14 +95,29 @@
 					class="mt-0.5 h-5 w-5 flex-shrink-0 {config.iconClasses} md:mt-0"
 					aria-hidden="true"
 				/>
-				<div class="flex-1 text-sm">
-					<p class="font-semibold">{banner.message}</p>
+				<div class="min-w-0 flex-1 text-sm">
+					<p class="break-words font-semibold">
+						{#each messageSegments as segment, i (i)}
+							{#if segment.type === 'link'}
+								<!-- External http(s) URL from linkify(), not an app route. -->
+								<!-- eslint-disable svelte/no-navigation-without-resolve -->
+								<a
+									href={segment.value}
+									target="_blank"
+									rel="noopener noreferrer"
+									class="underline underline-offset-2 hover:no-underline focus:outline-none focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-current"
+									>{segment.value}<span class="sr-only"> ({m['common.opensInNewTab']()})</span></a
+								>
+								<!-- eslint-enable svelte/no-navigation-without-resolve -->
+							{:else}{segment.value}{/if}
+						{/each}
+					</p>
 					{#if banner.scheduled_at || banner.ends_at}
 						<p class="mt-1 text-xs opacity-90">
 							{#if banner.scheduled_at}
 								<span
 									>{m['maintenanceBanner.scheduled']({
-										time: formatTime(banner.scheduled_at)
+										time: formatDateTime(banner.scheduled_at)
 									})}</span
 								>
 							{/if}
@@ -112,7 +125,8 @@
 								<span class="mx-1">&middot;</span>
 							{/if}
 							{#if banner.ends_at}
-								<span>{m['maintenanceBanner.until']({ time: formatTime(banner.ends_at) })}</span>
+								<span>{m['maintenanceBanner.until']({ time: formatDateTime(banner.ends_at) })}</span
+								>
 							{/if}
 						</p>
 					{/if}
