@@ -179,8 +179,19 @@
 									<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
 										<span class="font-medium">{guestName}</span>
 									</div>
-									<div class="text-sm text-muted-foreground">
-										{m['ticketTable.purchasedBy']({ name: getUserDisplayName(ticket.user) })}
+									<div
+										class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground"
+									>
+										<span
+											>{m['ticketTable.purchasedBy']({
+												name: getUserDisplayName(ticket.user)
+											})}</span
+										>
+										{#if ticket.membership}
+											<Badge variant="secondary" class="text-xs">
+												{ticket.membership.tier?.name || m['memberBadge.member']()}
+											</Badge>
+										{/if}
 									</div>
 								{:else}
 									<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -190,9 +201,7 @@
 										{/if}
 										{#if ticket.membership}
 											<Badge variant="secondary" class="text-xs">
-												{ticket.membership.tier?.name
-													? m['memberBadge.tierName']({ tier: ticket.membership.tier.name })
-													: m['memberBadge.member']()}
+												{ticket.membership.tier?.name || m['memberBadge.member']()}
 											</Badge>
 										{/if}
 									</div>
