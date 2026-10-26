@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { appStore } from '$lib/stores/app.svelte';
-	import { format } from 'date-fns';
+	import { formatDateTime } from '$lib/utils/date';
 	import { Bug, Info, AlertTriangle, AlertCircle, AlertOctagon, X } from '@lucide/svelte';
 	import { linkify } from '$lib/utils/linkify';
 
@@ -41,10 +41,6 @@
 			hash |= 0;
 		}
 		return Math.abs(hash).toString(36);
-	}
-
-	function formatTime(iso: string): string {
-		return format(new Date(iso), 'MMM d, yyyy HH:mm');
 	}
 
 	// Severity → tone: debug/neutral, info/info, warning/highlight, error/danger
@@ -121,7 +117,7 @@
 							{#if banner.scheduled_at}
 								<span
 									>{m['maintenanceBanner.scheduled']({
-										time: formatTime(banner.scheduled_at)
+										time: formatDateTime(banner.scheduled_at)
 									})}</span
 								>
 							{/if}
@@ -129,7 +125,8 @@
 								<span class="mx-1">&middot;</span>
 							{/if}
 							{#if banner.ends_at}
-								<span>{m['maintenanceBanner.until']({ time: formatTime(banner.ends_at) })}</span>
+								<span>{m['maintenanceBanner.until']({ time: formatDateTime(banner.ends_at) })}</span
+								>
 							{/if}
 						</p>
 					{/if}
