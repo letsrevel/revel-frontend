@@ -31,9 +31,12 @@ Bump level requested (may be empty): $ARGUMENTS
 
 5. **Cut the branch:** `git checkout -b release/vX.Y.Z` off the up-to-date `main`.
 
-6. **Bump:** `pnpm version --no-git-tag-version <part>` (writes `package.json`; supports
-   `major`, unlike the `make bump-version`/`bump-minor` targets). This does not create a tag
-   or commit. Never hand-edit the version.
+6. **Bump:** `pnpm version --no-git-tag-version --no-git-checks <part>` (writes `package.json`;
+   supports `major`, unlike the `make bump-version`/`bump-minor` targets). This does not create
+   a tag or commit. Never hand-edit the version. `--no-git-checks` is required: step 2 has
+   already edited `CHANGELOG.md`, and pnpm refuses to bump a dirty tree
+   (`ERR_PNPM_UNCLEAN_WORKING_TREE`) even with `--no-git-tag-version`. Confirm
+   `package.json` shows the new version before continuing.
 
 7. **Promote the CHANGELOG:** rename `## [Unreleased]` to `## [X.Y.Z] - <today's date, YYYY-MM-DD>`
    and insert a fresh empty `## [Unreleased]` above it (preserve the link/section order

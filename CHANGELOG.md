@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.26.4] - 2026-10-26
+
+### Changed
+- Membership badges on the event tickets and attendees lists show just the tier name (for example "General membership" instead of "General membership Member"); members without a tier still show "Member".
+- Links in the site-wide announcement banner are now clickable and open in a new tab.
+- The announcement banner's "Scheduled" and "Until" times follow the app language instead of always using English month names.
+
+### Fixed
+- On the event tickets list, a ticket whose holder name differs from the buyer's now shows the buyer's membership badge next to "Purchased by…", so it is clear why "Make member" isn't offered for a buyer who is already a member.
+- Profile pictures no longer get squashed into ovals next to long text, such as an email address on the mobile tickets list.
+- Long links in the announcement banner wrap on small screens instead of running off the edge.
+
 ## [2.26.3] - 2026-10-26
 
 ### Changed
