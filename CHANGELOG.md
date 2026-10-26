@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.26.3] - 2026-10-26
+
+### Changed
+- New free ticket tiers start with "Allow attendees to cancel their tickets" switched on. The default follows the payment method until the organizer touches the toggle, so paid tiers still start with it off.
+- Cancelling a free ticket no longer talks about refunds: the dialog explains that the spot is released for someone else and shows only the cancellation deadline, if one is set.
+
+### Fixed
+- Organizers can now let attendees cancel free tickets. The tier form shows the cancellation toggle and deadline for free tiers (only the refund policy stays hidden), so free tickets no longer stay stuck counting toward attendance.
+
 ## [2.26.2] - 2026-10-26
 
 ### Fixed
