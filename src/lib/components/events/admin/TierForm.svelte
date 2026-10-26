@@ -24,12 +24,11 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
-	import { DurationInput } from '$lib/components/forms';
-	import RefundPolicyEditor from './RefundPolicyEditor.svelte';
 	import TierFormPricingSection from './TierFormPricingSection.svelte';
 	import TierFormAvailabilitySection from './TierFormAvailabilitySection.svelte';
 	import TierFormSeatingSection from './TierFormSeatingSection.svelte';
 	import TierFormCheckInSection from './TierFormCheckInSection.svelte';
+	import TierFormCancellationSection from './TierFormCancellationSection.svelte';
 	import TierFormPaymentMethodSection from './TierFormPaymentMethodSection.svelte';
 	import {
 		checkInOffsetsPayload,
@@ -52,7 +51,6 @@
 		buildTierSeatingFields,
 		retainedSectorIdForMode
 	} from './tier-seating-payload';
-	import { Undo2 } from '@lucide/svelte';
 	import type { EventRules } from '$lib/utils/compliance';
 	import { formatDateTimeReadback } from '$lib/utils/date';
 	import type { PlatformFeeInfo } from '$lib/utils/fees';
@@ -144,10 +142,13 @@
 	let refundPolicy = $state<RefundPolicy | null>(tier?.refund_policy ?? null);
 	let refundPolicyValid = $state(true);
 
-	// Switching to a free tier removes the entire refund policy — backend ignores it.
+	// New tiers: until the organizer touches the checkbox, the default follows the
+	// payment method (free -> on, paid -> off) so a paid tier never silently
+	// inherits "on" with no refund policy. Editing keeps the stored value.
+	let cancellationTouched = $state(false);
 	$effect(() => {
-		if (paymentMethod === 'free' && allowUserCancellation) {
-			allowUserCancellation = false;
+		if (!tier && !cancellationTouched) {
+			allowUserCancellation = paymentMethod === 'free';
 		}
 	});
 
@@ -427,10 +428,11 @@
 			// Per-mode venue/sector nulling mirrors server validation
 			// (see tier-seating-payload.ts).
 			...buildTierSeatingFields(seatAssignmentMode, venueId, sectorId),
-			// Cancellation & refund policy (only meaningful for paid tiers)
-			allow_user_cancellation: paymentMethod === 'free' ? false : allowUserCancellation,
+			// Cancellation applies to every payment method; the refund policy is
+			// meaningless for free tiers, so it is only sent for paid ones.
+			allow_user_cancellation: allowUserCancellation,
 			cancellation_deadline_hours:
-				paymentMethod !== 'free' && allowUserCancellation && cancellationDeadlineHours !== null
+				allowUserCancellation && cancellationDeadlineHours !== null
 					? cancellationDeadlineHours
 					: null,
 			refund_policy: paymentMethod !== 'free' && allowUserCancellation ? refundPolicy : null
@@ -578,54 +580,16 @@
 				</div>
 			{/if}
 
-			<!-- Cancellation & Refunds (only for paid tiers) -->
-			{#if paymentMethod !== 'free'}
-				<div class="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
-					<div class="flex items-center gap-2 text-sm font-medium">
-						<Undo2 class="h-4 w-4 text-primary" aria-hidden="true" />
-						{m['refundPolicy.sectionTitle']()}
-					</div>
-
-					<label class="flex cursor-pointer items-start gap-2">
-						<input
-							type="checkbox"
-							bind:checked={allowUserCancellation}
-							disabled={isPending}
-							class="mt-0.5 h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-primary"
-						/>
-						<div>
-							<span class="text-sm font-medium">
-								{m['refundPolicy.allowCancellationLabel']()}
-							</span>
-							<p class="text-xs text-muted-foreground">
-								{m['refundPolicy.allowCancellationHelp']()}
-							</p>
-						</div>
-					</label>
-
-					{#if allowUserCancellation}
-						<DurationInput
-							id="cancellation-deadline-hours"
-							label={m['refundPolicy.deadlineLabel']()}
-							helpText={m['refundPolicy.deadlineHelp']()}
-							bind:value={cancellationDeadlineHours}
-							storageUnit="hours"
-							defaultUnit="days"
-							emptyValue={null}
-							emptyLabel={m['refundPolicy.deadlineNoLimit']()}
-							disabled={isPending}
-						/>
-
-						<RefundPolicyEditor
-							value={refundPolicy}
-							disabled={isPending}
-							{currencySymbol}
-							onChange={(next) => (refundPolicy = next)}
-							onValidityChange={(valid) => (refundPolicyValid = valid)}
-						/>
-					{/if}
-				</div>
-			{/if}
+			<TierFormCancellationSection
+				{paymentMethod}
+				bind:allowUserCancellation
+				bind:cancellationDeadlineHours
+				bind:refundPolicy
+				{currencySymbol}
+				{isPending}
+				onToggle={() => (cancellationTouched = true)}
+				onValidityChange={(valid) => (refundPolicyValid = valid)}
+			/>
 
 			<TierFormAvailabilitySection
 				bind:totalQuantity
