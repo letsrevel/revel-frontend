@@ -41,6 +41,24 @@ describe('linkify', () => {
 		]);
 	});
 
+	it.each([
+		['[https://x.io/docs]', '[', ']'],
+		['{https://x.io/docs}', '{', '}'],
+		['see https://x.io/docs].', 'see ', '].']
+	])('leaves an unmatched closing bracket out of the link in %s', (input, before, after) => {
+		expect(linkify(input)).toEqual([
+			{ type: 'text', value: before },
+			{ type: 'link', value: 'https://x.io/docs' },
+			{ type: 'text', value: after }
+		]);
+	});
+
+	it('keeps balanced square brackets, e.g. an IPv6 host', () => {
+		expect(linkify('http://[::1]:8000/path')).toEqual([
+			{ type: 'link', value: 'http://[::1]:8000/path' }
+		]);
+	});
+
 	it('does not link non-http schemes', () => {
 		expect(linkify('javascript:alert(1) and ftp://x.io')).toEqual([
 			{ type: 'text', value: 'javascript:alert(1) and ftp://x.io' }

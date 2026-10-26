@@ -1,14 +1,21 @@
 export type LinkifySegment = { type: 'text'; value: string } | { type: 'link'; value: string };
 
 // http(s) URLs up to the next whitespace. Trailing sentence punctuation and an
-// unbalanced closing bracket are trimmed off below, so "see https://x.io." or
-// "(https://x.io)" link only the URL itself.
+// unbalanced closing bracket are trimmed off below, so "see https://x.io.",
+// "(https://x.io)" or "[https://x.io]" link only the URL itself.
 const URL_PATTERN = /https?:\/\/[^\s<>"]+/g;
 const TRAILING_PUNCTUATION = /[.,;:!?'"]+$/;
+const BRACKET_PAIRS: Record<string, string> = { ')': '(', ']': '[', '}': '{' };
+
+function hasUnbalancedClosingBracket(url: string): boolean {
+	const close = url.at(-1);
+	const open = close ? BRACKET_PAIRS[close] : undefined;
+	return open !== undefined && count(url, open) < count(url, close as string);
+}
 
 function trimUrl(raw: string): string {
 	let url = raw.replace(TRAILING_PUNCTUATION, '');
-	while (url.endsWith(')') && count(url, '(') < count(url, ')')) {
+	while (hasUnbalancedClosingBracket(url)) {
 		url = url.slice(0, -1).replace(TRAILING_PUNCTUATION, '');
 	}
 	return url;
