@@ -39,7 +39,8 @@
 	let modalError = $state<string | null>(null);
 
 	const connect = createMutation(() => ({
-		mutationFn: (email: string) => requestStripeOnboardingLink(orgSlug, email, accessToken),
+		mutationFn: (email: string) =>
+			requestStripeOnboardingLink(orgSlug, email, accessToken, 'welcome'),
 		onSuccess: (url: string) => {
 			window.location.href = url;
 		},
@@ -51,6 +52,11 @@
 	function openModal(): void {
 		modalError = null;
 		showModal = true;
+	}
+
+	/** Lets a parent (e.g. an expired-link notice) reopen the Stripe email modal. */
+	export function openStripeModal(): void {
+		openModal();
 	}
 
 	function closeModal(): void {

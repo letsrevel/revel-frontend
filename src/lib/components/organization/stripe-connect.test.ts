@@ -19,8 +19,16 @@ describe('requestStripeOnboardingLink', () => {
 		expect(call).toHaveBeenCalledWith({
 			path: { slug: 'acme' },
 			headers: { Authorization: 'Bearer tok' },
-			body: { email: 'a@b.test' }
+			body: { email: 'a@b.test', return_to: 'settings' }
 		});
+	});
+
+	it('forwards return_to welcome', async () => {
+		call.mockResolvedValue({ data: { onboarding_url: 'u' } } as never);
+		await requestStripeOnboardingLink('acme', 'a@b.test', 'tok', 'welcome');
+		expect(call).toHaveBeenCalledWith(
+			expect.objectContaining({ body: { email: 'a@b.test', return_to: 'welcome' } })
+		);
 	});
 
 	it('throws the extracted detail on error', async () => {

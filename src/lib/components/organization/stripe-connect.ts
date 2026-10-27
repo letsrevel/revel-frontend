@@ -1,5 +1,6 @@
 import * as m from '$lib/paraglide/messages.js';
 import { organizationadmincoreStripeConnect } from '$lib/api/generated/sdk.gen';
+import type { StripeReturnTo } from '$lib/api/generated/types.gen';
 import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 
 /**
@@ -9,12 +10,13 @@ import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 export async function requestStripeOnboardingLink(
 	slug: string,
 	email: string,
-	accessToken: string
+	accessToken: string,
+	returnTo: StripeReturnTo = 'settings'
 ): Promise<string> {
 	const response = await organizationadmincoreStripeConnect({
 		path: { slug },
 		headers: { Authorization: `Bearer ${accessToken}` },
-		body: { email }
+		body: { email, return_to: returnTo }
 	});
 
 	if (response.error) {

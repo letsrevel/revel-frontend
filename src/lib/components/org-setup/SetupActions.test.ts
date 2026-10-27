@@ -184,7 +184,7 @@ describe('SetupActions', () => {
 			expect(organizationadmincoreStripeConnect).toHaveBeenCalledWith({
 				path: { slug: 'acme' },
 				headers: { Authorization: 'Bearer tok' },
-				body: { email: 'owner@acme.test' }
+				body: { email: 'owner@acme.test', return_to: 'welcome' }
 			});
 		});
 
