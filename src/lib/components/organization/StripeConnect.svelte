@@ -28,6 +28,8 @@
 		stripeAccountEmail: string | null;
 		accessToken: string;
 		billingInfoMissing?: boolean;
+		/** Launchpad URL; offered after the Stripe return while setup is incomplete. */
+		continueSetupHref?: string | null;
 	}
 
 	const {
@@ -37,7 +39,8 @@
 		stripeAccountId,
 		stripeAccountEmail,
 		accessToken,
-		billingInfoMissing = false
+		billingInfoMissing = false,
+		continueSetupHref = null
 	}: Props = $props();
 
 	// Derived: Is Stripe connected (has account ID)
@@ -239,6 +242,16 @@
 			<div>
 				<p class="font-medium">{m['stripeConnect.welcomeBack']()}</p>
 				<p class="text-sm text-muted-foreground">{m['stripeConnect.verifyingAccount']()}</p>
+				{#if continueSetupHref}
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- href is resolve()d server-side in the settings load -->
+					<a
+						href={continueSetupHref}
+						class="mt-2 inline-flex min-h-11 items-center rounded-md text-sm font-medium text-primary underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					>
+						{m['orgSetup.stripe.continueSetup']()}
+					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
+				{/if}
 			</div>
 		</div>
 	{/if}

@@ -10549,6 +10549,7 @@
 	"orgSetup.stripe.cta": "Stripe verbinden",
 	"orgSetup.stripe.finishCta": "Stripe-Einrichtung abschließen",
 	"orgSetup.stripe.done": "Stripe ist verbunden. Bezahlte Tickets sind bereit.",
+	"orgSetup.stripe.continueSetup": "Einrichtung fortsetzen",
 	"orgSetup.visibility.title": "Die Seite deiner Organisation ist versteckt",
 	"orgSetup.visibility.body": "Im Moment können nur du und dein Team sie sehen. Mach sie öffentlich, wenn Besucher*innen dich finden und dir folgen sollen.",
 	"orgSetup.visibility.cta": "Seite öffentlich machen",

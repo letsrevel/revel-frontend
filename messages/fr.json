@@ -10549,6 +10549,7 @@
 	"orgSetup.stripe.cta": "Connecter Stripe",
 	"orgSetup.stripe.finishCta": "Terminer la configuration de Stripe",
 	"orgSetup.stripe.done": "Stripe est connecté. Les billets payants sont prêts.",
+	"orgSetup.stripe.continueSetup": "Continue la configuration",
 	"orgSetup.visibility.title": "La page de ton organisation est masquée",
 	"orgSetup.visibility.body": "Pour l'instant, seuls toi et ton équipe pouvez la voir. Rends-la publique quand tu veux qu'on puisse te trouver et te suivre.",
 	"orgSetup.visibility.cta": "Rendre la page publique",

@@ -10549,6 +10549,7 @@
 	"orgSetup.stripe.cta": "Connect Stripe",
 	"orgSetup.stripe.finishCta": "Finish Stripe setup",
 	"orgSetup.stripe.done": "Stripe connected. Paid tickets are ready.",
+	"orgSetup.stripe.continueSetup": "Continue setup",
 	"orgSetup.visibility.title": "Your organization page is hidden",
 	"orgSetup.visibility.body": "Right now only you and your staff can see it. Make it public when you're ready for people to find and follow you.",
 	"orgSetup.visibility.cta": "Make page public",
