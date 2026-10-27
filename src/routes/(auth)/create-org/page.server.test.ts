@@ -49,6 +49,14 @@ beforeEach(() => {
 	} as never);
 });
 
+describe('create-org success redirect', () => {
+	it('lands the new owner on the launchpad', async () => {
+		const redirect = await thrownRedirect(() => actions.default(actionArgs('')));
+
+		expect(redirect).toEqual({ status: 303, location: '/org/acme-collective/admin/welcome' });
+	});
+});
+
 describe('create-org attribution (#1002)', () => {
 	it('sends the sanitised utm tags from the page URL as attribution', async () => {
 		await thrownRedirect(() =>

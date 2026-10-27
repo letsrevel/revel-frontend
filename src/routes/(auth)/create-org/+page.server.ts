@@ -91,8 +91,8 @@ export const actions: Actions = {
 
 			// Check for success (201 Created or 200 OK)
 			if (response?.ok && orgData) {
-				// Success - redirect to organization admin settings
-				throw redirect(303, `/org/${orgData.slug}/admin/settings`);
+				// Success - redirect to organization launchpad
+				throw redirect(303, `/org/${orgData.slug}/admin/welcome`);
 			}
 
 			// Handle errors. The status lives on the Response, never on the parsed
