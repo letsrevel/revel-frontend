@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { Check, Circle } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
 	import SetupActions from './SetupActions.svelte';
 	import VisibilityStrip from './VisibilityStrip.svelte';
-	import type { SetupProgress } from '$lib/utils/org-setup-progress';
+	import { shouldShowSetupCard, type SetupProgress } from '$lib/utils/org-setup-progress';
 	import type { Visibility } from '$lib/api/generated/types.gen';
 
 	interface Props {
@@ -23,6 +23,8 @@
 
 	// SSR renders the card shown; the stored preference is applied after mount.
 	let hidden = $state(false);
+	let showButton = $state<HTMLElement | null>(null);
+	let hideButton = $state<HTMLElement | null>(null);
 
 	onMount(() => {
 		try {
@@ -32,7 +34,7 @@
 		}
 	});
 
-	function setHidden(next: boolean): void {
+	async function setHidden(next: boolean): Promise<void> {
 		hidden = next;
 		try {
 			if (next) localStorage.setItem(storageKey, '1');
@@ -40,6 +42,9 @@
 		} catch {
 			// Preference lasts for this session only.
 		}
+		// The clicked button unmounts; move focus to its counterpart.
+		await tick();
+		(next ? showButton : hideButton)?.focus();
 	}
 
 	const headline = $derived(
@@ -65,13 +70,19 @@
 	]);
 </script>
 
-{#if !progress.allDone}
+{#if shouldShowSetupCard(progress)}
 	{#if hidden}
 		<div
 			class="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-card px-4 py-2 text-sm text-muted-foreground"
 		>
 			<p>{m['orgSetup.card.hidden']()}</p>
-			<Button variant="ghost" size="sm" class="min-h-[44px]" onclick={() => setHidden(false)}>
+			<Button
+				bind:ref={showButton}
+				variant="ghost"
+				size="sm"
+				class="min-h-[44px]"
+				onclick={() => setHidden(false)}
+			>
 				{m['orgSetup.card.show']()}
 			</Button>
 		</div>
@@ -88,7 +99,13 @@
 					</p>
 					<h2 id="org-setup-card-title" class="mt-1 text-lg font-bold">{headline}</h2>
 				</div>
-				<Button variant="ghost" size="sm" class="min-h-[44px]" onclick={() => setHidden(true)}>
+				<Button
+					bind:ref={hideButton}
+					variant="ghost"
+					size="sm"
+					class="min-h-[44px]"
+					onclick={() => setHidden(true)}
+				>
 					{m['orgSetup.card.hide']()}
 				</Button>
 			</div>
@@ -99,6 +116,10 @@
 				aria-valuenow={progress.doneCount}
 				aria-valuemin={0}
 				aria-valuemax={progress.total}
+				aria-valuetext={m['orgSetup.card.progressValue']({
+					done: progress.doneCount,
+					total: progress.total
+				})}
 				class="h-2 overflow-hidden rounded-full bg-muted"
 			>
 				<div
@@ -116,9 +137,9 @@
 							<Circle class="h-4 w-4 shrink-0" aria-hidden="true" />
 						{/if}
 						<span>{step.label}</span>
-						<span class="sr-only">
-							{step.done ? m['orgSetup.steps.done']() : m['orgSetup.steps.toDo']()}
-						</span>
+						<span class="sr-only"
+							>, {step.done ? m['orgSetup.steps.done']() : m['orgSetup.steps.toDo']()}</span
+						>
 					</li>
 				{/each}
 			</ul>

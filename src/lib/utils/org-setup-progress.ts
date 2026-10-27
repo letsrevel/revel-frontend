@@ -26,6 +26,11 @@ export function isPageHidden(visibility: Visibility): boolean {
 	return HIDDEN_VISIBILITY.has(visibility);
 }
 
+/** The setup card is a launch aid: it retires once the first event is published. */
+export function shouldShowSetupCard(progress: SetupProgress): boolean {
+	return progress.event !== 'published';
+}
+
 /**
  * Derives the org onboarding checklist. `null` counts mean "unknown" and are
  * treated as zero. The org itself counts as the first completed step.
@@ -41,8 +46,14 @@ export function buildSetupProgress(
 	const eventCount = counts.eventCount ?? 0;
 	const publishedCount = counts.publishedCount ?? 0;
 
+	// A 'draft' with no reviewable draft (cancelled-only org, or the draft lookup
+	// failed) can't be continued, so it is presented as 'none'.
 	const event: EventSetupState =
-		publishedCount > 0 ? 'published' : eventCount > 0 ? 'draft' : 'none';
+		publishedCount > 0
+			? 'published'
+			: eventCount > 0 && counts.latestDraft !== null
+				? 'draft'
+				: 'none';
 	const stripe: StripeSetupState = !org.stripe_account_id
 		? 'none'
 		: !org.stripe_charges_enabled

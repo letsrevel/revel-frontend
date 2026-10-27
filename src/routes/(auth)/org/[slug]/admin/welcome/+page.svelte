@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { page } from '$app/stores';
 	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -16,8 +15,8 @@
 
 	const { data }: Props = $props();
 
-	// Prefer the live layout data so the page updates after invalidateAll().
-	const organization = $derived($page.data.organization ?? data.organization);
+	// Layout data is merged into `data`, so it refreshes after invalidateAll().
+	const organization = $derived(data.organization);
 	const progress = $derived(buildSetupProgress(organization, data.setupCounts));
 	const accessToken = $derived(authStore.accessToken ?? '');
 

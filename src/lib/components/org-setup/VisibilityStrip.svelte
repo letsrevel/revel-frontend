@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { invalidateAll } from '$app/navigation';
+	import { tick } from 'svelte';
 	import { createMutation } from '@tanstack/svelte-query';
 	import { CheckCircle2, EyeOff } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
@@ -21,6 +22,8 @@
 	/** Set only after a successful flip in this session; holds the value to undo to. */
 	let flippedFrom = $state<Visibility | null>(null);
 	let errorMessage = $state<string | null>(null);
+	let undoButton = $state<HTMLElement | null>(null);
+	let publicButton = $state<HTMLElement | null>(null);
 
 	const publicPath = $derived(resolve('/(public)/org/[slug]', { slug: orgSlug }));
 	const publicUrl = $derived(
@@ -50,6 +53,9 @@
 			return;
 		}
 		flippedFrom = previous;
+		// The Make public button unmounts; hand focus to Undo so it isn't lost to <body>.
+		await tick();
+		undoButton?.focus();
 		await invalidateAll();
 	}
 
@@ -65,33 +71,41 @@
 		}
 		flippedFrom = null;
 		await invalidateAll();
+		// Undo unmounts; the hidden strip (and its Make public button) is back.
+		await tick();
+		publicButton?.focus();
 	}
 
 	const hidden = $derived(isPageHidden(visibility));
 	const compact = $derived(density === 'compact');
 </script>
 
-{#if flippedFrom !== null}
-	<div
-		role="status"
-		class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-success bg-card p-4"
-	>
-		<p class="flex items-center gap-2 text-sm font-semibold">
-			<CheckCircle2 class="h-5 w-5 shrink-0 text-success" aria-hidden="true" />
-			<span class="break-all">
-				{m['orgSetup.visibility.done']({ url: publicUrl })}
-			</span>
-		</p>
-		<Button
-			type="button"
-			variant="outline"
-			class="min-h-[44px]"
-			disabled={update.isPending}
-			onclick={undo}
+<!-- Always mounted: a live region must exist before its content changes to be announced. -->
+<div role="status" aria-live="polite">
+	{#if flippedFrom !== null}
+		<div
+			class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-success bg-card p-4"
 		>
-			{m['orgSetup.visibility.undo']()}
-		</Button>
-	</div>
+			<p class="flex items-center gap-2 text-sm font-semibold">
+				<CheckCircle2 class="h-5 w-5 shrink-0 text-success" aria-hidden="true" />
+				<span class="break-all">
+					{m['orgSetup.visibility.done']({ url: publicUrl })}
+				</span>
+			</p>
+			<Button
+				bind:ref={undoButton}
+				type="button"
+				variant="outline"
+				class="min-h-[44px]"
+				disabled={update.isPending}
+				onclick={undo}
+			>
+				{m['orgSetup.visibility.undo']()}
+			</Button>
+		</div>
+	{/if}
+</div>
+{#if flippedFrom !== null}
 	{#if errorMessage}
 		<p role="alert" class="mt-2 text-sm text-destructive">{errorMessage}</p>
 	{/if}
@@ -114,6 +128,7 @@
 			</div>
 		</div>
 		<Button
+			bind:ref={publicButton}
 			type="button"
 			class="min-h-[44px] shrink-0"
 			disabled={update.isPending}

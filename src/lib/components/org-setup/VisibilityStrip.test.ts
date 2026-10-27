@@ -43,12 +43,33 @@ describe('VisibilityStrip', () => {
 		const user = userEvent.setup();
 		setup('private');
 		await user.click(screen.getByRole('button', { name: 'Make page public' }));
-		await waitFor(() => expect(screen.getByRole('status')).toBeTruthy());
+		await waitFor(() => expect(screen.getByRole('status').textContent).toContain('/org/acme'));
 		const arg = vi.mocked(organizationadmincoreUpdateOrganization).mock.calls[0][0];
 		expect(arg.path).toEqual({ slug: 'acme' });
 		expect(arg.body).toEqual({ visibility: 'public' });
 		expect(invalidateAll).toHaveBeenCalled();
 		expect(screen.getByRole('status').textContent).toContain('/org/acme');
+	});
+
+	it('keeps one live region mounted from the start, empty until the flip succeeds', () => {
+		setup('private');
+		const region = screen.getByRole('status');
+		expect(region.getAttribute('aria-live')).toBe('polite');
+		expect(region.textContent?.trim()).toBe('');
+	});
+
+	it('moves focus to Undo after Make public, and back to Make public after Undo', async () => {
+		vi.mocked(organizationadmincoreUpdateOrganization).mockResolvedValue({ data: {} } as never);
+		const user = userEvent.setup();
+		setup('private');
+		await user.click(screen.getByRole('button', { name: 'Make page public' }));
+		await waitFor(() =>
+			expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Undo' }))
+		);
+		await user.click(screen.getByRole('button', { name: 'Undo' }));
+		await waitFor(() =>
+			expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Make page public' }))
+		);
 	});
 
 	it('error shows alert and re-enables button', async () => {
@@ -66,7 +87,7 @@ describe('VisibilityStrip', () => {
 				(screen.getByRole('button', { name: 'Make page public' }) as HTMLButtonElement).disabled
 			).toBe(false)
 		);
-		expect(screen.queryByRole('status')).toBeNull();
+		expect(screen.getByRole('status').textContent?.trim()).toBe('');
 	});
 
 	it('undo sends the previous visibility', async () => {
@@ -80,6 +101,6 @@ describe('VisibilityStrip', () => {
 		expect(vi.mocked(organizationadmincoreUpdateOrganization).mock.calls[1][0].body).toEqual({
 			visibility: 'private'
 		});
-		await waitFor(() => expect(screen.queryByRole('status')).toBeNull());
+		await waitFor(() => expect(screen.getByRole('status').textContent?.trim()).toBe(''));
 	});
 });

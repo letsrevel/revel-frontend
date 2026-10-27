@@ -51,7 +51,9 @@ test.describe('J8 org onboarding launchpad @p1', () => {
 		// Dashboard setup card: created + public = 2 of 5, no event saved yet.
 		await gotoHydrated(page, `/org/${slug}/admin`);
 		await expect(page.getByText('Get set up · 2 of 5 done')).toBeVisible({ timeout: 15_000 });
-		await expect(page.getByText('Create your first event').first()).toBeVisible();
+		await expect(
+			page.getByTestId('org-setup-card').getByRole('heading', { name: 'Create your first event' })
+		).toBeVisible();
 
 		await context.close();
 	});

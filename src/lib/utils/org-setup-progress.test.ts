@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { OrganizationAdminDetailSchema } from '$lib/api/generated/types.gen';
-import { buildSetupProgress, isPageHidden, type SetupCounts } from './org-setup-progress';
+import {
+	buildSetupProgress,
+	isPageHidden,
+	shouldShowSetupCard,
+	type SetupCounts
+} from './org-setup-progress';
 
 type OrgSetupFields = Pick<
 	OrganizationAdminDetailSchema,
@@ -53,6 +58,12 @@ describe('buildSetupProgress', () => {
 		expect(p.doneCount).toBe(2);
 	});
 
+	it('presents events without a reviewable draft (cancelled-only, failed lookup) as none', () => {
+		const p = buildSetupProgress(org(), { eventCount: 2, publishedCount: 0, latestDraft: null });
+		expect(p.event).toBe('none');
+		expect(p.doneCount).toBe(1);
+	});
+
 	it('reports a published event as published and counts it twice', () => {
 		const p = buildSetupProgress(org(), { eventCount: 1, publishedCount: 1, latestDraft: null });
 		expect(p.event).toBe('published');
@@ -103,5 +114,20 @@ describe('isPageHidden', () => {
 		expect(isPageHidden('staff-only')).toBe(true);
 		expect(isPageHidden('public')).toBe(false);
 		expect(isPageHidden('members-only')).toBe(false);
+	});
+});
+
+describe('shouldShowSetupCard', () => {
+	it('hides once an event is published, even with Stripe and visibility outstanding', () => {
+		const p = buildSetupProgress(org(), { eventCount: 1, publishedCount: 1, latestDraft: null });
+		expect(p.allDone).toBe(false);
+		expect(shouldShowSetupCard(p)).toBe(false);
+	});
+
+	it('shows for none and draft', () => {
+		expect(shouldShowSetupCard(buildSetupProgress(org(), NONE))).toBe(true);
+		const draft = { id: 'e', name: 'X' };
+		const p = buildSetupProgress(org(), { eventCount: 1, publishedCount: 0, latestDraft: draft });
+		expect(shouldShowSetupCard(p)).toBe(true);
 	});
 });

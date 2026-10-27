@@ -7,8 +7,7 @@ import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelt
 import type { SetupProgress } from '$lib/utils/org-setup-progress';
 
 vi.mock('$lib/api/generated/sdk.gen', () => ({
-	organizationadmincoreUpdateOrganization: vi.fn(),
-	stripeConnectStripeConnect: vi.fn()
+	organizationadmincoreUpdateOrganization: vi.fn()
 }));
 vi.mock('$app/navigation', () => ({
 	invalidateAll: vi.fn().mockResolvedValue(undefined),
@@ -62,12 +61,27 @@ describe('SetupCard', () => {
 
 	it('picks the headline from progress', () => {
 		setup({ ...fresh, event: 'draft', latestDraft: { id: 'e', name: 'X' } });
-		expect(screen.getByRole('heading', { name: 'One click from going live' })).toBeTruthy();
+		expect(screen.getByRole('heading', { name: 'Your draft is ready to publish' })).toBeTruthy();
 	});
 
-	it('renders nothing when all done', () => {
-		const { container } = setup({ ...fresh, allDone: true, doneCount: 5 });
+	it('renders nothing once an event is published, even with Stripe and visibility outstanding', () => {
+		const { container } = setup({ ...fresh, event: 'published', doneCount: 3 });
+		expect(screen.queryByTestId('org-setup-card')).toBeNull();
 		expect(container.textContent?.trim()).toBe('');
+	});
+
+	it('renders for a draft event', () => {
+		setup({ ...fresh, event: 'draft', latestDraft: { id: 'e', name: 'X' }, doneCount: 2 });
+		expect(screen.getByTestId('org-setup-card')).toBeTruthy();
+	});
+
+	it('progressbar exposes the readable value and steps read with a separator', () => {
+		setup();
+		expect(screen.getByRole('progressbar').getAttribute('aria-valuetext')).toBe('1 of 5 done');
+		const created = screen.getByText('Organization created').closest('li');
+		expect(created?.textContent?.replace(/\s+/g, ' ').trim()).toMatch(
+			/^Organization created ?, Done$/
+		);
 	});
 
 	it('hide collapses and persists', async () => {
@@ -77,8 +91,10 @@ describe('SetupCard', () => {
 		await user.click(screen.getByRole('button', { name: 'Hide setup' }));
 		expect(screen.getByText('Setup hidden.')).toBeTruthy();
 		expect(spy).toHaveBeenCalledWith(KEY, '1');
+		expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Show it again' }));
 		await user.click(screen.getByRole('button', { name: 'Show it again' }));
 		expect(screen.getByText('Get set up · 1 of 5 done')).toBeTruthy();
+		expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Hide setup' }));
 	});
 
 	it('remount with stored flag is collapsed', async () => {

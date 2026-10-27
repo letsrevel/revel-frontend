@@ -10,7 +10,8 @@
 	import { Textarea } from '$lib/components/ui/textarea';
 	import CityAutocomplete from '$lib/components/forms/CityAutocomplete.svelte';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
-	import { AlertCircle, Building2, CheckCircle, Loader2, Mail } from '@lucide/svelte';
+	import { slugPreview } from '$lib/utils/slug-preview';
+	import { AlertCircle, Building2, CheckCircle, ChevronDown, Loader2, Mail } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { PageData, ActionData } from './$types';
 	import type { CitySchema } from '$lib/api/generated';
@@ -57,16 +58,9 @@
 	const errors = $derived((form?.errors || {}) as Record<string, string>);
 
 	// Server errors on collapsed fields must not stay hidden.
-	const hasOptionalError = $derived(Boolean(errors.address || errors.description));
-
-	// Display-only preview of the public URL; the backend owns the real slug.
-	function slugPreview(value: string): string {
-		const slug = value
-			.toLowerCase()
-			.replace(/[^a-z0-9]+/g, '-')
-			.replace(/^-+|-+$/g, '');
-		return slug || 'your-org';
-	}
+	const hasOptionalError = $derived(
+		Boolean(errors.address || errors.description || errors.city_id)
+	);
 
 	const urlPreview = $derived(`${page.url.host}/org/${slugPreview(name)}`);
 
@@ -271,11 +265,15 @@
 					</div>
 
 					<!-- Optional details: still part of the form, so collapsed inputs post too. -->
-					<details open={hasOptionalError} class="rounded-md border bg-background">
+					<details open={hasOptionalError} class="group rounded-md border bg-background">
 						<summary
-							class="flex min-h-[44px] cursor-pointer items-center px-4 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+							class="flex min-h-[44px] cursor-pointer items-center justify-between gap-2 px-4 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 						>
 							{m['orgCreate.form.optionalDetails']()}
+							<ChevronDown
+								class="h-4 w-4 shrink-0 transition-transform group-open:rotate-180"
+								aria-hidden="true"
+							/>
 						</summary>
 						<div class="space-y-6 border-t p-4">
 							<!-- City -->
@@ -338,7 +336,7 @@
 
 					<!-- Submit Error -->
 					{#if errors.form}
-						<div class="rounded-md border border-destructive/50 bg-destructive/10 p-4">
+						<div role="alert" class="rounded-md border border-destructive/50 bg-destructive/10 p-4">
 							<div class="flex gap-3">
 								<AlertCircle class="h-5 w-5 flex-shrink-0 text-destructive" aria-hidden="true" />
 								<div>
@@ -360,11 +358,11 @@
 							variant="outline"
 							onclick={() => goto(resolve('/(auth)/dashboard', {}))}
 							disabled={isSubmitting}
-							class="flex-1"
+							class="min-h-[44px] flex-1"
 						>
 							{m['common.actions_cancel']()}
 						</Button>
-						<Button type="submit" disabled={isSubmitting} class="flex-1">
+						<Button type="submit" disabled={isSubmitting} class="min-h-[44px] flex-1">
 							{#if isSubmitting}
 								<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
 								{m['orgCreate.form.creating']()}

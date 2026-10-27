@@ -21,10 +21,6 @@
 	const { orgSlug, progress, defaultStripeEmail, accessToken, density = 'full' }: Props = $props();
 
 	const full = $derived(density === 'full');
-	// A 'draft' without a known latest draft can't be reviewed; present it as 'none'.
-	const eventView = $derived(
-		progress.event === 'draft' && !progress.latestDraft ? 'none' : progress.event
-	);
 
 	const newEventHref = $derived(resolve('/(auth)/org/[slug]/admin/events/new', { slug: orgSlug }));
 	const draftEditHref = $derived(
@@ -68,12 +64,13 @@
 <div class="grid gap-4 md:grid-cols-2">
 	<!-- Event box -->
 	<section
-		class="relative flex flex-col gap-3 rounded-2xl border bg-card p-5 {eventView === 'published'
+		class="relative flex flex-col gap-3 rounded-2xl border bg-card p-5 {progress.event ===
+		'published'
 			? 'border-success'
 			: 'border-border'}"
 		aria-labelledby="setup-event-title"
 	>
-		{#if full && eventView === 'none'}
+		{#if full && progress.event === 'none'}
 			<span
 				class="absolute -top-3 left-4 rounded-full bg-primary px-3 py-0.5 text-xs font-extrabold uppercase tracking-[0.12em] text-primary-foreground"
 			>
@@ -82,27 +79,27 @@
 		{/if}
 		<div class="flex items-start gap-3">
 			<ToneTile
-				tone={eventView === 'published' ? 'success' : 'brand'}
-				icon={eventView === 'published' ? CheckCircle2 : CalendarPlus}
+				tone={progress.event === 'published' ? 'success' : 'brand'}
+				icon={progress.event === 'published' ? CheckCircle2 : CalendarPlus}
 			/>
 			<div class="min-w-0">
 				<h3 id="setup-event-title" class="font-bold">
-					{#if eventView === 'published'}
+					{#if progress.event === 'published'}
 						{m['orgSetup.event.doneTitle']()}
-					{:else if eventView === 'draft' && progress.latestDraft}
+					{:else if progress.event === 'draft' && progress.latestDraft}
 						{m['orgSetup.event.publishTitle']({ name: progress.latestDraft.name })}
 					{:else}
 						{m['orgSetup.event.title']()}
 					{/if}
 				</h3>
-				{#if eventView === 'none'}
+				{#if progress.event === 'none'}
 					<p class="mt-1 text-sm text-muted-foreground">{m['orgSetup.event.body']()}</p>
 				{/if}
 			</div>
 		</div>
 
-		{#if eventView !== 'published'}
-			{#if full && eventView === 'none'}
+		{#if progress.event !== 'published'}
+			{#if full && progress.event === 'none'}
 				<ul class="space-y-1 text-sm text-muted-foreground">
 					<li class="flex items-center gap-2">
 						<Sparkles class="h-4 w-4 shrink-0" aria-hidden="true" />
@@ -115,10 +112,10 @@
 				</ul>
 			{/if}
 			<Button
-				href={eventView === 'draft' ? draftEditHref : newEventHref}
+				href={progress.event === 'draft' ? draftEditHref : newEventHref}
 				class="mt-auto min-h-[44px]"
 			>
-				{eventView === 'draft' ? m['orgSetup.event.publishCta']() : m['orgSetup.event.cta']()}
+				{progress.event === 'draft' ? m['orgSetup.event.publishCta']() : m['orgSetup.event.cta']()}
 			</Button>
 		{/if}
 	</section>

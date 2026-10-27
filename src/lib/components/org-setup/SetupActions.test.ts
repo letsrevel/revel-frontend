@@ -101,15 +101,6 @@ describe('SetupActions', () => {
 		expect(screen.queryByText('Free RSVPs work right away')).toBeNull();
 	});
 
-	it('draft without a known latestDraft falls back to the create presentation', () => {
-		setup(progress('draft', 'none', null));
-		expect(screen.getByRole('heading', { name: 'Create your first event' })).toBeTruthy();
-		expect(screen.queryByRole('link', { name: /Review and publish/ })).toBeNull();
-		expect(screen.getByRole('link', { name: /Create event/ }).getAttribute('href')).toBe(
-			'/org/acme/admin/events/new'
-		);
-	});
-
 	describe('stripe confirm', () => {
 		const originalLocation = window.location;
 		let hrefSet: string | null;
