@@ -10564,5 +10564,21 @@
 	"orgSetup.welcome.laterLogo": "ajoute un logo",
 	"orgSetup.welcome.laterTeam": "invite ton équipe",
 	"orgSetup.welcome.laterDescription": "écris une description",
-	"orgSetup.welcome.skip": "Passer au tableau de bord"
+	"orgSetup.welcome.skip": "Passer au tableau de bord",
+	"orgSetup.card.kicker": "Mise en route · {done} sur {total} terminées",
+	"orgSetup.card.headline.start": "Lançons ton premier événement",
+	"orgSetup.card.headline.publish": "À un clic de la mise en ligne",
+	"orgSetup.card.headline.payments": "Prêt pour les billets payants ?",
+	"orgSetup.card.headline.visibility": "Dernière étape : rends ta page publique",
+	"orgSetup.card.progress": "Progression de la mise en route",
+	"orgSetup.card.hide": "Masquer la mise en route",
+	"orgSetup.card.hidden": "Mise en route masquée.",
+	"orgSetup.card.show": "L'afficher de nouveau",
+	"orgSetup.steps.created": "Organisation créée",
+	"orgSetup.steps.public": "Page publique",
+	"orgSetup.steps.event": "Premier événement créé",
+	"orgSetup.steps.published": "Premier événement publié",
+	"orgSetup.steps.stripe": "Stripe connecté",
+	"orgSetup.steps.done": "Fait",
+	"orgSetup.steps.toDo": "À faire"
 }

@@ -10564,5 +10564,21 @@
 	"orgSetup.welcome.laterLogo": "añade un logo",
 	"orgSetup.welcome.laterTeam": "invita a tu equipo",
 	"orgSetup.welcome.laterDescription": "escribe una descripción",
-	"orgSetup.welcome.skip": "Ir al panel"
+	"orgSetup.welcome.skip": "Ir al panel",
+	"orgSetup.card.kicker": "Puesta en marcha · {done} de {total} hechos",
+	"orgSetup.card.headline.start": "Publiquemos tu primer evento",
+	"orgSetup.card.headline.publish": "A un clic de salir en directo",
+	"orgSetup.card.headline.payments": "¿Listo para vender entradas de pago?",
+	"orgSetup.card.headline.visibility": "Último paso: haz pública tu página",
+	"orgSetup.card.progress": "Progreso de la puesta en marcha",
+	"orgSetup.card.hide": "Ocultar puesta en marcha",
+	"orgSetup.card.hidden": "Puesta en marcha oculta.",
+	"orgSetup.card.show": "Mostrar de nuevo",
+	"orgSetup.steps.created": "Organización creada",
+	"orgSetup.steps.public": "Página pública",
+	"orgSetup.steps.event": "Primer evento creado",
+	"orgSetup.steps.published": "Primer evento publicado",
+	"orgSetup.steps.stripe": "Stripe conectado",
+	"orgSetup.steps.done": "Hecho",
+	"orgSetup.steps.toDo": "Pendiente"
 }

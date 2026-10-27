@@ -10564,5 +10564,21 @@
 	"orgSetup.welcome.laterLogo": "add a logo",
 	"orgSetup.welcome.laterTeam": "invite your team",
 	"orgSetup.welcome.laterDescription": "write a description",
-	"orgSetup.welcome.skip": "Skip to dashboard"
+	"orgSetup.welcome.skip": "Skip to dashboard",
+	"orgSetup.card.kicker": "Get set up · {done} of {total} done",
+	"orgSetup.card.headline.start": "Let's get your first event out",
+	"orgSetup.card.headline.publish": "One click from going live",
+	"orgSetup.card.headline.payments": "Ready for paid tickets?",
+	"orgSetup.card.headline.visibility": "Last step: make your page public",
+	"orgSetup.card.progress": "Setup progress",
+	"orgSetup.card.hide": "Hide setup",
+	"orgSetup.card.hidden": "Setup hidden.",
+	"orgSetup.card.show": "Show it again",
+	"orgSetup.steps.created": "Organization created",
+	"orgSetup.steps.public": "Page is public",
+	"orgSetup.steps.event": "First event created",
+	"orgSetup.steps.published": "First event published",
+	"orgSetup.steps.stripe": "Stripe connected",
+	"orgSetup.steps.done": "Done",
+	"orgSetup.steps.toDo": "To do"
 }

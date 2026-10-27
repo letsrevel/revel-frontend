@@ -10564,5 +10564,21 @@
 	"orgSetup.welcome.laterLogo": "Logo hinzufügen",
 	"orgSetup.welcome.laterTeam": "Team einladen",
 	"orgSetup.welcome.laterDescription": "Beschreibung schreiben",
-	"orgSetup.welcome.skip": "Zum Dashboard springen"
+	"orgSetup.welcome.skip": "Zum Dashboard springen",
+	"orgSetup.card.kicker": "Einrichtung · {done} von {total} erledigt",
+	"orgSetup.card.headline.start": "Bringen wir dein erstes Event raus",
+	"orgSetup.card.headline.publish": "Ein Klick bis zur Veröffentlichung",
+	"orgSetup.card.headline.payments": "Bereit für bezahlte Tickets?",
+	"orgSetup.card.headline.visibility": "Letzter Schritt: Mach deine Seite öffentlich",
+	"orgSetup.card.progress": "Fortschritt der Einrichtung",
+	"orgSetup.card.hide": "Einrichtung ausblenden",
+	"orgSetup.card.hidden": "Einrichtung ausgeblendet.",
+	"orgSetup.card.show": "Wieder anzeigen",
+	"orgSetup.steps.created": "Organisation erstellt",
+	"orgSetup.steps.public": "Seite ist öffentlich",
+	"orgSetup.steps.event": "Erstes Event erstellt",
+	"orgSetup.steps.published": "Erstes Event veröffentlicht",
+	"orgSetup.steps.stripe": "Stripe verbunden",
+	"orgSetup.steps.done": "Erledigt",
+	"orgSetup.steps.toDo": "Offen"
 }
