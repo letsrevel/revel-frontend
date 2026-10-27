@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.27.0] - 2026-10-27
+
+### Added
+- **Organization launchpad**: right after creating an organization, owners land on `/org/[slug]/admin/welcome` instead of the settings page.
+  - "Create your first event" and "Get paid for tickets" (Stripe) are shown side by side, with the event as the first step.
+  - A notice explains that a new organization page is visible only to you and your staff, with one-click "Make page public" and Undo.
+  - After Stripe onboarding, owners come back to the launchpad with a confirmation. An expired Stripe link offers to pick up where they left off.
+- **Setup card on the admin dashboard**: owners see their progress through five steps (organization created, page visibility, first event, first event published, ready for online payments). The card can be hidden, and it disappears once the first event is published.
+- After connecting Stripe, organizations that are missing their billing name, address or VAT country are prompted to add tax details for online payments. Free events and pay-at-the-door tickets don't need them, and nothing is blocked.
+- The settings page shows a "Continue setup" link after returning from Stripe when setup isn't finished.
+
+### Changed
+- Creating an organization now asks only for a name and contact email; city, address and description are optional and tucked away. The form previews your public page address as you type and replaces the confirmation dialog with an inline note that the name can't be changed later.
+
 ## [2.26.4] - 2026-10-26
 
 ### Changed
