@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { OrganizationAdminDetailSchema } from '$lib/api/generated/types.gen';
-import { buildSetupProgress, type SetupCounts } from './setup-progress';
+import { buildSetupProgress, type SetupCounts } from './org-setup-progress';
 
 type OrgSetupFields = Pick<
 	OrganizationAdminDetailSchema,

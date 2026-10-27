@@ -1,6 +1,6 @@
 import { eventpublicdiscoveryListEvents } from '$lib/api/generated/sdk.gen';
 import { log } from '$lib/server/logger';
-import type { SetupCounts } from '../../routes/(auth)/org/[slug]/admin/setup-progress';
+import type { SetupCounts } from '$lib/utils/org-setup-progress';
 
 type ListQuery = NonNullable<
 	NonNullable<Parameters<typeof eventpublicdiscoveryListEvents>[0]>['query']
