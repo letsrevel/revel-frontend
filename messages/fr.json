@@ -4997,6 +4997,7 @@
 	"orgCreate.form.namePlaceholder": "Saisis le nom de ton organisation",
 	"orgCreate.form.optionalDetails": "Ajouter la ville et la description maintenant (facultatif)",
 	"orgCreate.form.urlPreview": "Ta page publique : {url}",
+	"orgCreate.form.urlPreviewPending": "L'adresse de ta page publique sera définie lors de la création de l'organisation.",
 	"orgCreate.form.slugPlaceholder": "ton-organisation",
 	"orgCreate.form.nameLocked": "Choisis bien : le nom ne pourra pas être modifié plus tard.",
 	"orgCreate.pageDescription": "Crée ton organisation pour commencer à organiser des événements",

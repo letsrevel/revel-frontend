@@ -62,8 +62,10 @@
 		Boolean(errors.address || errors.description || errors.city_id)
 	);
 
+	const trimmedName = $derived(name.trim());
+	const slug = $derived(slugPreview(trimmedName));
 	const urlPreview = $derived(
-		`${page.url.host}/org/${slugPreview(name, m['orgCreate.form.slugPlaceholder']())}`
+		`${page.url.host}/org/${slug ?? m['orgCreate.form.slugPlaceholder']()}`
 	);
 
 	function handleCitySelect(city: CitySchema | null) {
@@ -215,7 +217,13 @@
 							</p>
 						{/if}
 						<p id="name-url-preview" class="break-all text-xs text-muted-foreground">
-							{m['orgCreate.form.urlPreview']({ url: urlPreview })}
+							{#if !trimmedName}
+								{m['orgCreate.form.urlPreview']({ url: urlPreview })}
+							{:else if !slug}
+								{m['orgCreate.form.urlPreviewPending']()}
+							{:else}
+								{m['orgCreate.form.urlPreview']({ url: urlPreview })}
+							{/if}
 						</p>
 						<p id="name-locked" class="text-xs font-medium text-foreground">
 							{m['orgCreate.form.nameLocked']()}
