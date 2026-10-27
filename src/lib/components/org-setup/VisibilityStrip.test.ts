@@ -70,15 +70,27 @@ describe('VisibilityStrip', () => {
 		expect(region.contains(screen.getByRole('button', { name: 'Undo' }))).toBe(false);
 	});
 
-	it('visible success line is aria-hidden so it is not read twice; Undo stays accessible', async () => {
+	it('success line: lead is aria-hidden (status region carries the sentence); URL is a real link without protocol', async () => {
 		vi.mocked(organizationadmincoreUpdateOrganization).mockResolvedValue({ data: {} } as never);
 		const user = userEvent.setup();
 		const { container } = setup('private');
 		await user.click(screen.getByRole('button', { name: 'Make page public' }));
 		await waitFor(() => expect(screen.getByRole('button', { name: 'Undo' })).toBeTruthy());
-		const hiddenLine = container.querySelector('p[aria-hidden="true"]');
-		expect(hiddenLine?.textContent).toContain('/org/acme');
+		const link = container.querySelector('a') as HTMLAnchorElement;
+		expect(link.getAttribute('href')).toBe(`${window.location.origin}/org/acme`);
+		expect(link.textContent).toBe(`${window.location.host}/org/acme`);
+		expect(link.closest('[aria-hidden="true"]')).toBeNull();
+		expect(container.querySelector('span[aria-hidden="true"]')?.textContent).toContain(
+			'Your page is public:'
+		);
 		expect(screen.getByRole('button', { name: 'Undo' }).closest('[aria-hidden="true"]')).toBeNull();
+	});
+
+	it('Make page public is an outline button (secondary to Create event)', () => {
+		setup('private');
+		const btn = screen.getByRole('button', { name: 'Make page public' });
+		expect(btn.className).toContain('border-input');
+		expect(btn.className).not.toContain('bg-primary ');
 	});
 
 	it('moves focus to Undo after Make public, and back to Make public after Undo', async () => {

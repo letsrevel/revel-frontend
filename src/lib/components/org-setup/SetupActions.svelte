@@ -67,10 +67,9 @@
 <div class="grid gap-4 md:grid-cols-2">
 	<!-- Event box -->
 	<section
-		class="relative flex flex-col gap-3 rounded-2xl border bg-card p-5 {progress.event ===
-		'published'
-			? 'border-success'
-			: 'border-border'}"
+		class="relative flex flex-col gap-3 rounded-2xl bg-card p-5 {progress.event === 'published'
+			? 'border border-success'
+			: 'border-2 border-primary'}"
 		aria-labelledby="setup-event-title"
 	>
 		{#if full && progress.event === 'none'}
@@ -97,6 +96,8 @@
 				</h3>
 				{#if progress.event === 'none'}
 					<p class="mt-1 text-sm text-muted-foreground">{m['orgSetup.event.body']()}</p>
+				{:else if progress.event === 'draft'}
+					<p class="mt-1 text-sm text-muted-foreground">{m['orgSetup.event.publishBody']()}</p>
 				{/if}
 			</div>
 		</div>

@@ -29,6 +29,8 @@
 	const publicUrl = $derived(
 		(typeof window === 'undefined' ? '' : window.location.origin) + publicPath
 	);
+	/** Visible link text: the URL without its protocol. */
+	const displayUrl = $derived(publicUrl.replace(/^https?:\/\//, ''));
 
 	const update = createMutation(() => ({
 		mutationFn: async (next: Visibility) => {
@@ -84,10 +86,17 @@
 	<div
 		class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-success bg-card p-4"
 	>
-		<p aria-hidden="true" class="flex items-center gap-2 text-sm font-semibold">
+		<p class="flex items-center gap-2 text-sm font-semibold">
 			<CheckCircle2 class="h-5 w-5 shrink-0 text-success" aria-hidden="true" />
 			<span class="break-all">
-				{m['orgSetup.visibility.done']({ url: publicUrl })}
+				<span aria-hidden="true">{m['orgSetup.visibility.doneLead']()}</span>
+				<!-- eslint-disable svelte/no-navigation-without-resolve -- absolute URL: origin + resolve()d path -->
+				<a
+					href={publicUrl}
+					class="rounded-sm underline underline-offset-2 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					>{displayUrl}</a
+				>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 			</span>
 		</p>
 		<Button
@@ -125,6 +134,7 @@
 		<Button
 			bind:ref={publicButton}
 			type="button"
+			variant="outline"
 			class="min-h-[44px] shrink-0"
 			disabled={update.isPending}
 			onclick={makePublic}

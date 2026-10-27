@@ -15,14 +15,23 @@
 		visibility: Visibility;
 		defaultStripeEmail: string;
 		accessToken: string;
+		/** Whether the user collapsed the card; bindable so the page can react. */
+		hidden?: boolean;
 	}
 
-	const { orgId, orgSlug, progress, visibility, defaultStripeEmail, accessToken }: Props = $props();
+	let {
+		orgId,
+		orgSlug,
+		progress,
+		visibility,
+		defaultStripeEmail,
+		accessToken,
+		hidden = $bindable(false)
+	}: Props = $props();
 
 	const storageKey = $derived(`revel:org-setup-hidden:${orgId}`);
 
 	// SSR renders the card shown; the stored preference is applied after mount.
-	let hidden = $state(false);
 	let showButton = $state<HTMLElement | null>(null);
 	let hideButton = $state<HTMLElement | null>(null);
 
@@ -128,9 +137,13 @@
 				></div>
 			</div>
 
-			<ul class="grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2 lg:grid-cols-5">
+			<ul class="flex flex-wrap gap-x-6 gap-y-2 text-sm">
 				{#each steps as step (step.id)}
-					<li class="flex items-center gap-2 py-1 {step.done ? '' : 'text-muted-foreground'}">
+					<li
+						class="flex items-center gap-2 whitespace-nowrap py-1 {step.done
+							? ''
+							: 'text-muted-foreground'}"
+					>
 						{#if step.done}
 							<Check class="h-4 w-4 shrink-0 text-success" aria-hidden="true" />
 						{:else}

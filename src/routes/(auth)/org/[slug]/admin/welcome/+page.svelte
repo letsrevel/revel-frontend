@@ -20,6 +20,14 @@
 	const progress = $derived(buildSetupProgress(organization, data.setupCounts));
 	const accessToken = $derived(authStore.accessToken ?? '');
 
+	const headline = $derived(
+		progress.event === 'none'
+			? m['orgSetup.welcome.title']()
+			: progress.event === 'draft'
+				? m['orgSetup.welcome.titleDraft']()
+				: m['orgSetup.welcome.titlePublished']()
+	);
+
 	const linkClass =
 		'inline-flex min-h-[44px] items-center underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm';
 </script>
@@ -47,8 +55,10 @@
 				volume="poster"
 				onBand
 				kicker={m['orgSetup.welcome.kicker']()}
-				title={m['orgSetup.welcome.title']()}
-				subtitle={m['orgSetup.welcome.subtitle']()}
+				title={headline}
+				subtitle={progress.event === 'none'
+					? m['orgSetup.welcome.subtitle']()
+					: m['orgSetup.welcome.subtitleNext']()}
 				class="text-center sm:flex-col sm:items-center"
 			/>
 		</div>
@@ -74,23 +84,31 @@
 		<div
 			class="mt-6 flex flex-col items-center gap-2 text-center text-sm text-muted-foreground sm:flex-row sm:justify-between sm:text-left"
 		>
-			<p class="flex flex-wrap items-center justify-center gap-x-2 sm:justify-start">
+			<div class="flex flex-wrap items-center justify-center gap-x-2 sm:justify-start">
 				<span>{m['orgSetup.welcome.later']()}</span>
-				<a
-					href={resolve('/(auth)/org/[slug]/admin/settings', { slug: organization.slug })}
-					class={linkClass}>{m['orgSetup.welcome.laterLogo']()}</a
+				<ul
+					class="flex flex-wrap justify-center gap-x-3 gap-y-1 sm:justify-start [&>li+li]:before:mr-3 [&>li+li]:before:content-['·']"
 				>
-				<span aria-hidden="true">·</span>
-				<a
-					href={resolve('/(auth)/org/[slug]/admin/members', { slug: organization.slug })}
-					class={linkClass}>{m['orgSetup.welcome.laterTeam']()}</a
-				>
-				<span aria-hidden="true">·</span>
-				<a
-					href={resolve('/(auth)/org/[slug]/admin/settings', { slug: organization.slug })}
-					class={linkClass}>{m['orgSetup.welcome.laterDescription']()}</a
-				>
-			</p>
+					<li>
+						<a
+							href={resolve('/(auth)/org/[slug]/admin/settings', { slug: organization.slug })}
+							class={linkClass}>{m['orgSetup.welcome.laterLogo']()}</a
+						>
+					</li>
+					<li>
+						<a
+							href={resolve('/(auth)/org/[slug]/admin/members', { slug: organization.slug })}
+							class={linkClass}>{m['orgSetup.welcome.laterTeam']()}</a
+						>
+					</li>
+					<li>
+						<a
+							href={resolve('/(auth)/org/[slug]/admin/settings', { slug: organization.slug })}
+							class={linkClass}>{m['orgSetup.welcome.laterDescription']()}</a
+						>
+					</li>
+				</ul>
+			</div>
 			<a
 				href={resolve('/(auth)/org/[slug]/admin', { slug: organization.slug })}
 				class="{linkClass} font-medium text-foreground"

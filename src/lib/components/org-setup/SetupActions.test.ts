@@ -58,6 +58,41 @@ describe('SetupActions', () => {
 		);
 	});
 
+	it('event draft: shows publish body', () => {
+		setup(progress('draft', 'none', { id: 'ev-1', name: 'Launch Party' }));
+		expect(
+			screen.getByText(
+				'Only you can see drafts. Publishing puts it on your page with a link to share.'
+			)
+		).toBeTruthy();
+	});
+
+	it('event box is primary-bordered until published, neutral stripe box', () => {
+		const { unmount } = render(QueryClientTestWrapper, {
+			props: {
+				client: new QueryClient(),
+				component: SetupActions,
+				componentProps: {
+					orgSlug: 'acme',
+					progress: progress('none', 'none'),
+					defaultStripeEmail: '',
+					accessToken: 't',
+					density: 'compact'
+				}
+			}
+		});
+		const box = (id: string) => document.querySelector(`section[aria-labelledby="${id}"]`);
+		expect(box('setup-event-title')?.className).toContain('border-2 border-primary');
+		expect(box('setup-stripe-title')?.className).toContain('border-border');
+		unmount();
+		setup(progress('draft', 'none', { id: 'e', name: 'x' }));
+		expect(box('setup-event-title')?.className).toContain('border-primary');
+		document.body.innerHTML = '';
+		setup(progress('published', 'none'));
+		expect(box('setup-event-title')?.className).toContain('border-success');
+		expect(box('setup-event-title')?.className).not.toContain('border-primary');
+	});
+
 	it('event published: done state without link', () => {
 		setup(progress('published', 'none'));
 		expect(screen.getByText('Your first event is live')).toBeTruthy();
