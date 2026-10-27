@@ -80,32 +80,27 @@
 	const compact = $derived(density === 'compact');
 </script>
 
-<!-- Always mounted: a live region must exist before its content changes to be announced. -->
-<div role="status" aria-live="polite">
-	{#if flippedFrom !== null}
-		<div
-			class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-success bg-card p-4"
-		>
-			<p class="flex items-center gap-2 text-sm font-semibold">
-				<CheckCircle2 class="h-5 w-5 shrink-0 text-success" aria-hidden="true" />
-				<span class="break-all">
-					{m['orgSetup.visibility.done']({ url: publicUrl })}
-				</span>
-			</p>
-			<Button
-				bind:ref={undoButton}
-				type="button"
-				variant="outline"
-				class="min-h-[44px]"
-				disabled={update.isPending}
-				onclick={undo}
-			>
-				{m['orgSetup.visibility.undo']()}
-			</Button>
-		</div>
-	{/if}
-</div>
 {#if flippedFrom !== null}
+	<div
+		class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-success bg-card p-4"
+	>
+		<p aria-hidden="true" class="flex items-center gap-2 text-sm font-semibold">
+			<CheckCircle2 class="h-5 w-5 shrink-0 text-success" aria-hidden="true" />
+			<span class="break-all">
+				{m['orgSetup.visibility.done']({ url: publicUrl })}
+			</span>
+		</p>
+		<Button
+			bind:ref={undoButton}
+			type="button"
+			variant="outline"
+			class="min-h-[44px]"
+			disabled={update.isPending}
+			onclick={undo}
+		>
+			{m['orgSetup.visibility.undo']()}
+		</Button>
+	</div>
 	{#if errorMessage}
 		<p role="alert" class="mt-2 text-sm text-destructive">{errorMessage}</p>
 	{/if}
@@ -141,3 +136,13 @@
 		<p role="alert" class="mt-2 text-sm text-destructive">{errorMessage}</p>
 	{/if}
 {/if}
+
+<!--
+	Always mounted: a live region must exist before its content changes to be announced.
+	Kept LAST so its space-y margin (the parent section's gap) lands on an absolutely
+	positioned sr-only node and never on the visible blocks above it.
+	Carries only the success sentence (Undo is not announced with it).
+-->
+<p role="status" aria-live="polite" class="sr-only">
+	{flippedFrom !== null ? m['orgSetup.visibility.done']({ url: publicUrl }) : ''}
+</p>

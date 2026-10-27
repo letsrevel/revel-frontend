@@ -58,6 +58,29 @@ describe('VisibilityStrip', () => {
 		expect(region.textContent?.trim()).toBe('');
 	});
 
+	it('status region is a visually hidden polite live region carrying only the success sentence', async () => {
+		vi.mocked(organizationadmincoreUpdateOrganization).mockResolvedValue({ data: {} } as never);
+		const user = userEvent.setup();
+		setup('private');
+		const region = screen.getByRole('status');
+		expect(region.classList.contains('sr-only')).toBe(true);
+		await user.click(screen.getByRole('button', { name: 'Make page public' }));
+		await waitFor(() => expect(region.textContent).toContain('/org/acme'));
+		expect(region.textContent).not.toContain('Undo');
+		expect(region.contains(screen.getByRole('button', { name: 'Undo' }))).toBe(false);
+	});
+
+	it('visible success line is aria-hidden so it is not read twice; Undo stays accessible', async () => {
+		vi.mocked(organizationadmincoreUpdateOrganization).mockResolvedValue({ data: {} } as never);
+		const user = userEvent.setup();
+		const { container } = setup('private');
+		await user.click(screen.getByRole('button', { name: 'Make page public' }));
+		await waitFor(() => expect(screen.getByRole('button', { name: 'Undo' })).toBeTruthy());
+		const hiddenLine = container.querySelector('p[aria-hidden="true"]');
+		expect(hiddenLine?.textContent).toContain('/org/acme');
+		expect(screen.getByRole('button', { name: 'Undo' }).closest('[aria-hidden="true"]')).toBeNull();
+	});
+
 	it('moves focus to Undo after Make public, and back to Make public after Undo', async () => {
 		vi.mocked(organizationadmincoreUpdateOrganization).mockResolvedValue({ data: {} } as never);
 		const user = userEvent.setup();
@@ -88,6 +111,7 @@ describe('VisibilityStrip', () => {
 			).toBe(false)
 		);
 		expect(screen.getByRole('status').textContent?.trim()).toBe('');
+		expect(screen.getByRole('alert').textContent).toContain("Couldn't update visibility");
 	});
 
 	it('undo sends the previous visibility', async () => {
