@@ -59,11 +59,7 @@
 	const headline = $derived(
 		progress.event === 'none'
 			? m['orgSetup.card.headline.start']()
-			: progress.event === 'draft'
-				? m['orgSetup.card.headline.publish']()
-				: progress.stripe !== 'ready'
-					? m['orgSetup.card.headline.payments']()
-					: m['orgSetup.card.headline.visibility']()
+			: m['orgSetup.card.headline.publish']()
 	);
 
 	const steps = $derived([

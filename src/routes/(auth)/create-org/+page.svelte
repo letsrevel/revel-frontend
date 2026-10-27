@@ -62,7 +62,9 @@
 		Boolean(errors.address || errors.description || errors.city_id)
 	);
 
-	const urlPreview = $derived(`${page.url.host}/org/${slugPreview(name)}`);
+	const urlPreview = $derived(
+		`${page.url.host}/org/${slugPreview(name, m['orgCreate.form.slugPlaceholder']())}`
+	);
 
 	function handleCitySelect(city: CitySchema | null) {
 		selectedCity = city;
