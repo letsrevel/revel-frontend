@@ -62,7 +62,7 @@
 			justConnected = true;
 			// Remove the query parameter from URL
 			const cleanUrl = window.location.pathname;
-			window.history.replaceState({}, '', cleanUrl);
+			window.history.replaceState(window.history.state, '', cleanUrl);
 
 			// Auto-verify account after returning from Stripe
 			setTimeout(() => {

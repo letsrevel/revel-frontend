@@ -49,7 +49,11 @@
 		params.delete('stripe_success');
 		params.delete('stripe_refresh');
 		const query = params.toString();
-		window.history.replaceState({}, '', window.location.pathname + (query ? `?${query}` : ''));
+		window.history.replaceState(
+			window.history.state,
+			'',
+			window.location.pathname + (query ? `?${query}` : '')
+		);
 
 		if (refresh) {
 			notice = 'expired';
