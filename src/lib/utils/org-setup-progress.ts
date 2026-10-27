@@ -6,7 +6,7 @@ export interface SetupCounts {
 	latestDraft: { id: string; name: string } | null;
 }
 
-export type StripeSetupState = 'none' | 'incomplete' | 'ready';
+export type StripeSetupState = 'none' | 'incomplete' | 'needs-billing' | 'ready';
 export type EventSetupState = 'none' | 'draft' | 'published';
 
 export interface SetupProgress {
@@ -17,6 +17,29 @@ export interface SetupProgress {
 	doneCount: number;
 	total: 5;
 	allDone: boolean;
+}
+
+type BillingFields = Pick<
+	OrganizationAdminDetailSchema,
+	| 'is_stripe_connected'
+	| 'platform_fee_percent'
+	| 'platform_fee_fixed'
+	| 'vat_country_code'
+	| 'billing_address'
+	| 'billing_name'
+>;
+
+/**
+ * True when the org takes payments with a platform fee but has not filled in the
+ * billing identity the invoices need. Shared by the admin nav badge and the
+ * dashboard attention list so the two cannot drift.
+ */
+export function billingNeedsAttention(org: BillingFields): boolean {
+	return (
+		!!org.is_stripe_connected &&
+		(parseFloat(org.platform_fee_percent) > 0 || parseFloat(org.platform_fee_fixed) > 0) &&
+		(!org.vat_country_code || !org.billing_address || !org.billing_name)
+	);
 }
 
 const HIDDEN_VISIBILITY: ReadonlySet<Visibility> = new Set<Visibility>(['private', 'staff-only']);
@@ -39,7 +62,8 @@ export function buildSetupProgress(
 	org: Pick<
 		OrganizationAdminDetailSchema,
 		'visibility' | 'stripe_account_id' | 'stripe_charges_enabled'
-	>,
+	> &
+		BillingFields,
 	counts: SetupCounts
 ): SetupProgress {
 	const pageHidden = isPageHidden(org.visibility);
@@ -58,7 +82,9 @@ export function buildSetupProgress(
 		? 'none'
 		: !org.stripe_charges_enabled
 			? 'incomplete'
-			: 'ready';
+			: billingNeedsAttention(org)
+				? 'needs-billing'
+				: 'ready';
 
 	const doneCount =
 		1 +

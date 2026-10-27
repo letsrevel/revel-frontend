@@ -16,8 +16,8 @@
 	import { organizationadminmembersListMembershipTiers } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import SetupCard from '$lib/components/org-setup/SetupCard.svelte';
-	import { buildSetupProgress } from '$lib/utils/org-setup-progress';
-	import { billingNeedsAttention, buildDashboardModel } from './dashboard-model';
+	import { billingNeedsAttention, buildSetupProgress } from '$lib/utils/org-setup-progress';
+	import { buildDashboardModel } from './dashboard-model';
 
 	const { data }: { data: PageData } = $props();
 

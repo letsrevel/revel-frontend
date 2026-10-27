@@ -10549,6 +10549,9 @@
 	"orgSetup.stripe.cta": "Conectar Stripe",
 	"orgSetup.stripe.finishCta": "Terminar la configuración de Stripe",
 	"orgSetup.stripe.done": "Stripe conectado. Las entradas de pago están listas.",
+	"orgSetup.stripe.billingTitle": "Añade los datos fiscales para los pagos en línea",
+	"orgSetup.stripe.billingBody": "Revel factura su comisión por las ventas de entradas en línea, por lo que necesitamos el nombre de facturación, la dirección y el país del IVA antes de poner a la venta entradas de pago. Los eventos gratuitos y las entradas que se pagan en la puerta no lo necesitan.",
+	"orgSetup.stripe.billingCta": "Añadir datos fiscales",
 	"orgSetup.stripe.continueSetup": "Continuar la configuración",
 	"orgSetup.visibility.title": "La página de tu organización está oculta",
 	"orgSetup.visibility.body": "Ahora mismo solo tú y tu equipo podéis verla. Hazla pública cuando quieras que la gente te encuentre y te siga.",
@@ -10580,7 +10583,7 @@
 	"orgSetup.steps.public": "Visibilidad de la página definida",
 	"orgSetup.steps.event": "Primer evento creado",
 	"orgSetup.steps.published": "Primer evento publicado",
-	"orgSetup.steps.stripe": "Stripe conectado",
+	"orgSetup.steps.stripe": "Listo para pagos en línea",
 	"orgSetup.steps.done": "Hecho",
 	"orgSetup.steps.toDo": "Pendiente"
 }

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { OrganizationAdminDetailSchema } from '$lib/api/generated/types.gen';
 import {
+	billingNeedsAttention,
 	buildSetupProgress,
 	isPageHidden,
 	shouldShowSetupCard,
@@ -9,7 +10,15 @@ import {
 
 type OrgSetupFields = Pick<
 	OrganizationAdminDetailSchema,
-	'visibility' | 'stripe_account_id' | 'stripe_charges_enabled'
+	| 'visibility'
+	| 'stripe_account_id'
+	| 'stripe_charges_enabled'
+	| 'is_stripe_connected'
+	| 'platform_fee_percent'
+	| 'platform_fee_fixed'
+	| 'vat_country_code'
+	| 'billing_address'
+	| 'billing_name'
 >;
 
 const NONE: SetupCounts = { eventCount: 0, publishedCount: 0, latestDraft: null };
@@ -19,6 +28,12 @@ function org(overrides: Partial<OrgSetupFields> = {}): OrgSetupFields {
 		visibility: 'private',
 		stripe_account_id: null,
 		stripe_charges_enabled: false,
+		is_stripe_connected: false,
+		platform_fee_percent: '0',
+		platform_fee_fixed: '0',
+		vat_country_code: 'IT',
+		billing_address: 'Via Roma 1',
+		billing_name: 'Acme',
 		...overrides
 	} as OrgSetupFields;
 }
@@ -129,5 +144,78 @@ describe('shouldShowSetupCard', () => {
 		const draft = { id: 'e', name: 'X' };
 		const p = buildSetupProgress(org(), { eventCount: 1, publishedCount: 0, latestDraft: draft });
 		expect(shouldShowSetupCard(p)).toBe(true);
+	});
+});
+
+describe('buildSetupProgress tax details', () => {
+	const connected = {
+		stripe_account_id: 'acct_1',
+		stripe_charges_enabled: true,
+		is_stripe_connected: true
+	};
+	it('needs-billing when charges enabled, fees apply and billing_name is missing', () => {
+		const p = buildSetupProgress(
+			org({ ...connected, platform_fee_percent: '2.5', billing_name: '' }),
+			NONE
+		);
+		expect(p.stripe).toBe('needs-billing');
+		expect(p.doneCount).toBe(1);
+	});
+	it('never needs-billing without a Stripe account', () => {
+		const p = buildSetupProgress(
+			org({ platform_fee_percent: '2.5', billing_name: '', billing_address: '' }),
+			NONE
+		);
+		expect(p.stripe).toBe('none');
+	});
+	it('ready when there are no platform fees', () => {
+		expect(buildSetupProgress(org({ ...connected, billing_name: '' }), NONE).stripe).toBe('ready');
+	});
+	it('ready when billing is complete', () => {
+		expect(
+			buildSetupProgress(org({ ...connected, platform_fee_percent: '2.5' }), NONE).stripe
+		).toBe('ready');
+	});
+});
+
+describe('billingNeedsAttention', () => {
+	const base = {
+		is_stripe_connected: true,
+		platform_fee_percent: '2.5',
+		platform_fee_fixed: '0',
+		vat_country_code: 'IT',
+		billing_address: 'Via Roma 1',
+		billing_name: 'Acme'
+	};
+	it('is false when details are complete', () => {
+		expect(billingNeedsAttention(base)).toBe(false);
+	});
+	it('is true when a field is missing', () => {
+		expect(billingNeedsAttention({ ...base, billing_name: '' })).toBe(true);
+		expect(billingNeedsAttention({ ...base, vat_country_code: '' })).toBe(true);
+		expect(billingNeedsAttention({ ...base, billing_address: '' })).toBe(true);
+	});
+	it('is false without stripe or without fees', () => {
+		expect(billingNeedsAttention({ ...base, billing_name: '', is_stripe_connected: false })).toBe(
+			false
+		);
+		expect(
+			billingNeedsAttention({
+				...base,
+				billing_name: '',
+				platform_fee_percent: '0',
+				platform_fee_fixed: '0.00'
+			})
+		).toBe(false);
+	});
+	it('is true with only a fixed fee', () => {
+		expect(
+			billingNeedsAttention({
+				...base,
+				billing_name: '',
+				platform_fee_percent: '0',
+				platform_fee_fixed: '0.30'
+			})
+		).toBe(true);
 	});
 });

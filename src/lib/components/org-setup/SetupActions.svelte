@@ -32,6 +32,9 @@
 			: newEventHref
 	);
 
+	const billingHref = $derived(resolve('/(auth)/org/[slug]/admin/billing', { slug: orgSlug }));
+	const needsBilling = $derived(progress.stripe === 'needs-billing');
+
 	let showModal = $state(false);
 	let modalError = $state<string | null>(null);
 
@@ -133,14 +136,26 @@
 				icon={progress.stripe === 'ready' ? CheckCircle2 : CreditCard}
 			/>
 			<div class="min-w-0">
-				<h3 id="setup-stripe-title" class="font-bold">{m['orgSetup.stripe.title']()}</h3>
+				<h3 id="setup-stripe-title" class="font-bold">
+					{needsBilling ? m['orgSetup.stripe.billingTitle']() : m['orgSetup.stripe.title']()}
+				</h3>
 				<p class="mt-1 text-sm text-muted-foreground">
-					{progress.stripe === 'ready' ? m['orgSetup.stripe.done']() : m['orgSetup.stripe.body']()}
+					{#if progress.stripe === 'ready'}
+						{m['orgSetup.stripe.done']()}
+					{:else if needsBilling}
+						{m['orgSetup.stripe.billingBody']()}
+					{:else}
+						{m['orgSetup.stripe.body']()}
+					{/if}
 				</p>
 			</div>
 		</div>
 
-		{#if progress.stripe !== 'ready'}
+		{#if needsBilling}
+			<Button href={billingHref} variant="outline" class="mt-auto min-h-[44px]">
+				{m['orgSetup.stripe.billingCta']()}
+			</Button>
+		{:else if progress.stripe !== 'ready'}
 			{#if full}
 				<p class="flex items-center gap-2 text-sm text-muted-foreground">
 					<Clock class="h-4 w-4 shrink-0" aria-hidden="true" />

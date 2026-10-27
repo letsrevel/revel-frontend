@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { billingNeedsAttention } from './dashboard-model';
+	import { billingNeedsAttention } from '$lib/utils/org-setup-progress';
 	import { buildAdminNav, activeNavHref } from '$lib/components/org-admin/admin-nav';
 	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';

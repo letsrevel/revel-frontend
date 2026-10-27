@@ -10549,6 +10549,9 @@
 	"orgSetup.stripe.cta": "Stripe verbinden",
 	"orgSetup.stripe.finishCta": "Stripe-Einrichtung abschließen",
 	"orgSetup.stripe.done": "Stripe ist verbunden. Bezahlte Tickets sind bereit.",
+	"orgSetup.stripe.billingTitle": "Steuerangaben für Online-Zahlungen ergänzen",
+	"orgSetup.stripe.billingBody": "Revel stellt seine Gebühr für Online-Ticketverkäufe in Rechnung. Deshalb brauchen wir Rechnungsname, Adresse und USt-Land, bevor bezahlte Tickets in den Verkauf gehen können. Kostenlose Events und Tickets mit Zahlung vor Ort brauchen das nicht.",
+	"orgSetup.stripe.billingCta": "Steuerangaben ergänzen",
 	"orgSetup.stripe.continueSetup": "Einrichtung fortsetzen",
 	"orgSetup.visibility.title": "Die Seite deiner Organisation ist versteckt",
 	"orgSetup.visibility.body": "Im Moment können nur du und dein Team sie sehen. Mach sie öffentlich, wenn Besucher*innen dich finden und dir folgen sollen.",
@@ -10580,7 +10583,7 @@
 	"orgSetup.steps.public": "Sichtbarkeit der Seite festgelegt",
 	"orgSetup.steps.event": "Erstes Event erstellt",
 	"orgSetup.steps.published": "Erstes Event veröffentlicht",
-	"orgSetup.steps.stripe": "Stripe verbunden",
+	"orgSetup.steps.stripe": "Bereit für Online-Zahlungen",
 	"orgSetup.steps.done": "Erledigt",
 	"orgSetup.steps.toDo": "Offen"
 }

@@ -10549,6 +10549,9 @@
 	"orgSetup.stripe.cta": "Ligar o Stripe",
 	"orgSetup.stripe.finishCta": "Concluir a configuração do Stripe",
 	"orgSetup.stripe.done": "Stripe ligado. Os bilhetes pagos estão prontos.",
+	"orgSetup.stripe.billingTitle": "Adiciona os dados fiscais para pagamentos online",
+	"orgSetup.stripe.billingBody": "A Revel fatura a sua comissão nas vendas de bilhetes online, por isso precisamos do nome de faturação, da morada e do país do IVA antes de pôr à venda bilhetes pagos. Os eventos gratuitos e os bilhetes pagos à porta não precisam disto.",
+	"orgSetup.stripe.billingCta": "Adicionar dados fiscais",
 	"orgSetup.stripe.continueSetup": "Continuar a configuração",
 	"orgSetup.visibility.title": "A página da tua organização está oculta",
 	"orgSetup.visibility.body": "Neste momento só tu e a tua equipa podem vê-la. Torna-a pública quando quiseres que as pessoas te encontrem e te sigam.",
@@ -10580,7 +10583,7 @@
 	"orgSetup.steps.public": "Visibilidade da página definida",
 	"orgSetup.steps.event": "Primeiro evento criado",
 	"orgSetup.steps.published": "Primeiro evento publicado",
-	"orgSetup.steps.stripe": "Stripe ligado",
+	"orgSetup.steps.stripe": "Pronto para pagamentos online",
 	"orgSetup.steps.done": "Concluído",
 	"orgSetup.steps.toDo": "Por fazer"
 }

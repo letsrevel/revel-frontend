@@ -10549,6 +10549,9 @@
 	"orgSetup.stripe.cta": "Connect Stripe",
 	"orgSetup.stripe.finishCta": "Finish Stripe setup",
 	"orgSetup.stripe.done": "Stripe connected. Paid tickets are ready.",
+	"orgSetup.stripe.billingTitle": "Add tax details for online payments",
+	"orgSetup.stripe.billingBody": "Revel invoices its fee on online ticket sales, so we need your billing name, address and VAT country before paid tickets can go on sale. Free events and pay-at-the-door tickets don't need this.",
+	"orgSetup.stripe.billingCta": "Add tax details",
 	"orgSetup.stripe.continueSetup": "Continue setup",
 	"orgSetup.visibility.title": "Your organization page is hidden",
 	"orgSetup.visibility.body": "Right now only you and your staff can see it. Make it public when you're ready for people to find and follow you.",
@@ -10580,7 +10583,7 @@
 	"orgSetup.steps.public": "Page visibility set",
 	"orgSetup.steps.event": "First event created",
 	"orgSetup.steps.published": "First event published",
-	"orgSetup.steps.stripe": "Stripe connected",
+	"orgSetup.steps.stripe": "Ready for online payments",
 	"orgSetup.steps.done": "Done",
 	"orgSetup.steps.toDo": "To do"
 }

@@ -90,6 +90,16 @@ describe('SetupActions', () => {
 		expect(screen.queryByRole('button', { name: /Stripe/ })).toBeNull();
 	});
 
+	it('stripe needs-billing: tax details heading and link, no Stripe button', () => {
+		setup(progress('none', 'needs-billing'));
+		expect(
+			screen.getByRole('heading', { name: 'Add tax details for online payments' })
+		).toBeTruthy();
+		const link = screen.getByRole('link', { name: 'Add tax details' });
+		expect(link.getAttribute('href')).toBe('/org/acme/admin/billing');
+		expect(screen.queryByRole('button', { name: /Stripe/ })).toBeNull();
+	});
+
 	it('full shows Start here, compact omits it', () => {
 		setup(progress('none', 'none'), 'full');
 		expect(screen.getByText('Start here')).toBeTruthy();
