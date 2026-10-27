@@ -10556,5 +10556,15 @@
 	"orgSetup.visibility.cta": "Tornar a página pública",
 	"orgSetup.visibility.done": "A tua página é pública em {url}",
 	"orgSetup.visibility.undo": "Anular",
-	"orgSetup.visibility.error": "Não foi possível atualizar a visibilidade. Tenta novamente."
+	"orgSetup.visibility.error": "Não foi possível atualizar a visibilidade. Tenta novamente.",
+	"orgSetup.welcome.pageTitle": "{name} · Primeiros passos",
+	"orgSetup.welcome.sticker": "{name} foi criada",
+	"orgSetup.welcome.kicker": "Passo 2 de 2",
+	"orgSetup.welcome.title": "Agora coloca algo no calendário",
+	"orgSetup.welcome.subtitle": "Começa pelo evento. Os pagamentos podem vir depois.",
+	"orgSetup.welcome.later": "Mais tarde:",
+	"orgSetup.welcome.laterLogo": "adiciona um logo",
+	"orgSetup.welcome.laterTeam": "convida a tua equipa",
+	"orgSetup.welcome.laterDescription": "escreve uma descrição",
+	"orgSetup.welcome.skip": "Ir para o painel"
 }

@@ -10556,5 +10556,15 @@
 	"orgSetup.visibility.cta": "Seite öffentlich machen",
 	"orgSetup.visibility.done": "Deine Seite ist öffentlich unter {url}",
 	"orgSetup.visibility.undo": "Rückgängig",
-	"orgSetup.visibility.error": "Die Sichtbarkeit konnte nicht geändert werden. Bitte versuche es erneut."
+	"orgSetup.visibility.error": "Die Sichtbarkeit konnte nicht geändert werden. Bitte versuche es erneut.",
+	"orgSetup.welcome.pageTitle": "{name} · Los geht's",
+	"orgSetup.welcome.sticker": "{name} ist erstellt",
+	"orgSetup.welcome.kicker": "Schritt 2 von 2",
+	"orgSetup.welcome.title": "Jetzt kommt etwas in den Kalender",
+	"orgSetup.welcome.subtitle": "Fang mit dem Event an. Zahlungen kannst du danach einrichten.",
+	"orgSetup.welcome.later": "Später:",
+	"orgSetup.welcome.laterLogo": "Logo hinzufügen",
+	"orgSetup.welcome.laterTeam": "Team einladen",
+	"orgSetup.welcome.laterDescription": "Beschreibung schreiben",
+	"orgSetup.welcome.skip": "Zum Dashboard springen"
 }

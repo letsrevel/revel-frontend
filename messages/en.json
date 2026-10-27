@@ -10556,5 +10556,15 @@
 	"orgSetup.visibility.cta": "Make page public",
 	"orgSetup.visibility.done": "Your page is public at {url}",
 	"orgSetup.visibility.undo": "Undo",
-	"orgSetup.visibility.error": "Couldn't update visibility. Please try again."
+	"orgSetup.visibility.error": "Couldn't update visibility. Please try again.",
+	"orgSetup.welcome.pageTitle": "{name} · Get started",
+	"orgSetup.welcome.sticker": "{name} is created",
+	"orgSetup.welcome.kicker": "Step 2 of 2",
+	"orgSetup.welcome.title": "Now put something on the calendar",
+	"orgSetup.welcome.subtitle": "Start with the event. Payments can follow.",
+	"orgSetup.welcome.later": "Later:",
+	"orgSetup.welcome.laterLogo": "add a logo",
+	"orgSetup.welcome.laterTeam": "invite your team",
+	"orgSetup.welcome.laterDescription": "write a description",
+	"orgSetup.welcome.skip": "Skip to dashboard"
 }

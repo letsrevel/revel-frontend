@@ -10556,5 +10556,15 @@
 	"orgSetup.visibility.cta": "Rendi pubblica la pagina",
 	"orgSetup.visibility.done": "La tua pagina è pubblica su {url}",
 	"orgSetup.visibility.undo": "Annulla",
-	"orgSetup.visibility.error": "Impossibile aggiornare la visibilità. Riprova."
+	"orgSetup.visibility.error": "Impossibile aggiornare la visibilità. Riprova.",
+	"orgSetup.welcome.pageTitle": "{name} · Per iniziare",
+	"orgSetup.welcome.sticker": "{name} è stata creata",
+	"orgSetup.welcome.kicker": "Passo 2 di 2",
+	"orgSetup.welcome.title": "Ora metti qualcosa in calendario",
+	"orgSetup.welcome.subtitle": "Parti dall'evento. I pagamenti possono venire dopo.",
+	"orgSetup.welcome.later": "Più tardi:",
+	"orgSetup.welcome.laterLogo": "aggiungi un logo",
+	"orgSetup.welcome.laterTeam": "invita il tuo team",
+	"orgSetup.welcome.laterDescription": "scrivi una descrizione",
+	"orgSetup.welcome.skip": "Vai alla dashboard"
 }

@@ -10556,5 +10556,15 @@
 	"orgSetup.visibility.cta": "Rendre la page publique",
 	"orgSetup.visibility.done": "Ta page est publique à l'adresse {url}",
 	"orgSetup.visibility.undo": "Annuler",
-	"orgSetup.visibility.error": "Impossible de modifier la visibilité. Réessaie."
+	"orgSetup.visibility.error": "Impossible de modifier la visibilité. Réessaie.",
+	"orgSetup.welcome.pageTitle": "{name} · Pour commencer",
+	"orgSetup.welcome.sticker": "{name} est créée",
+	"orgSetup.welcome.kicker": "Étape 2 sur 2",
+	"orgSetup.welcome.title": "Maintenant, mets quelque chose au calendrier",
+	"orgSetup.welcome.subtitle": "Commence par l'événement. Les paiements peuvent venir ensuite.",
+	"orgSetup.welcome.later": "Plus tard :",
+	"orgSetup.welcome.laterLogo": "ajoute un logo",
+	"orgSetup.welcome.laterTeam": "invite ton équipe",
+	"orgSetup.welcome.laterDescription": "écris une description",
+	"orgSetup.welcome.skip": "Passer au tableau de bord"
 }
