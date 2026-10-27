@@ -14,12 +14,9 @@
 	} from '@lucide/svelte';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
-	import {
-		organizationadmincoreStripeConnect,
-		organizationadmincoreStripeAccountVerify
-	} from '$lib/api/generated/sdk.gen';
+	import { organizationadmincoreStripeAccountVerify } from '$lib/api/generated/sdk.gen';
 	import StripeConnectModal from './StripeConnectModal.svelte';
-	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
+	import { requestStripeOnboardingLink } from './stripe-connect';
 	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import type { Tone } from '$lib/components/common/tones';
 
@@ -95,25 +92,11 @@
 	// Mutation to get Stripe onboarding link - only create on client
 	const connectMutation = browser
 		? createMutation(() => ({
-				mutationFn: async (email: string) => {
-					const response = await organizationadmincoreStripeConnect({
-						path: { slug: organizationSlug },
-						headers: { Authorization: `Bearer ${accessToken}` },
-						body: { email }
-					});
-
-					if (response.error) {
-						const errorMsg =
-							extractApiErrorDetail(response.error) ?? m['stripeConnect.failedToCreateLink']();
-						throw new Error(errorMsg);
-					}
-
-					if (!response.data) throw new Error(m['stripeConnect.failedToCreateLink']());
-					return response.data;
-				},
-				onSuccess: (data) => {
+				mutationFn: (email: string) =>
+					requestStripeOnboardingLink(organizationSlug, email, accessToken),
+				onSuccess: (onboardingUrl) => {
 					// Redirect to Stripe onboarding
-					window.location.href = data.onboarding_url;
+					window.location.href = onboardingUrl;
 				},
 				onError: (error) => {
 					modalError = error.message;

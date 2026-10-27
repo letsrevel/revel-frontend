@@ -10535,5 +10535,26 @@
 		"privacy": "Privacy",
 		"terms": "Terms"
 	},
-	"tenantReturn.continueTo": "Continue to {name}"
+	"tenantReturn.continueTo": "Continue to {name}",
+	"orgSetup.event.title": "Create your first event",
+	"orgSetup.event.body": "A name, a date and a place. Save it as a draft and polish it before anyone sees it.",
+	"orgSetup.event.startHere": "Start here",
+	"orgSetup.event.freeWorks": "Free RSVPs work right away",
+	"orgSetup.event.duration": "Takes about 3 minutes",
+	"orgSetup.event.cta": "Create event",
+	"orgSetup.event.publishTitle": "Publish “{name}”",
+	"orgSetup.event.publishCta": "Review and publish",
+	"orgSetup.event.doneTitle": "Your first event is live",
+	"orgSetup.stripe.title": "Get paid for tickets",
+	"orgSetup.stripe.body": "Connect a Stripe account so ticket money lands in your bank. Only needed for paid events.",
+	"orgSetup.stripe.duration": "About 5 to 10 minutes on Stripe",
+	"orgSetup.stripe.cta": "Connect Stripe",
+	"orgSetup.stripe.finishCta": "Finish Stripe setup",
+	"orgSetup.stripe.done": "Stripe connected. Paid tickets are ready.",
+	"orgSetup.visibility.title": "Your organization page is hidden",
+	"orgSetup.visibility.body": "Right now only you and your staff can see it. Make it public when you're ready for people to find and follow you.",
+	"orgSetup.visibility.cta": "Make page public",
+	"orgSetup.visibility.done": "Your page is public at {url}",
+	"orgSetup.visibility.undo": "Undo",
+	"orgSetup.visibility.error": "Couldn't update visibility. Please try again."
 }

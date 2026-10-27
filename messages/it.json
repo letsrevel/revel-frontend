@@ -10535,5 +10535,26 @@
 		"privacy": "Privacy",
 		"terms": "Termini"
 	},
-	"tenantReturn.continueTo": "Continua su {name}"
+	"tenantReturn.continueTo": "Continua su {name}",
+	"orgSetup.event.title": "Crea il tuo primo evento",
+	"orgSetup.event.body": "Un nome, una data e un luogo. Salvalo come bozza e rifiniscilo prima che qualcuno lo veda.",
+	"orgSetup.event.startHere": "Inizia da qui",
+	"orgSetup.event.freeWorks": "Le iscrizioni gratuite funzionano subito",
+	"orgSetup.event.duration": "Ci vogliono circa 3 minuti",
+	"orgSetup.event.cta": "Crea evento",
+	"orgSetup.event.publishTitle": "Pubblica «{name}»",
+	"orgSetup.event.publishCta": "Controlla e pubblica",
+	"orgSetup.event.doneTitle": "Il tuo primo evento è online",
+	"orgSetup.stripe.title": "Incassa i biglietti",
+	"orgSetup.stripe.body": "Collega un account Stripe così gli incassi dei biglietti arrivano sul tuo conto. Serve solo per gli eventi a pagamento.",
+	"orgSetup.stripe.duration": "Circa 5-10 minuti su Stripe",
+	"orgSetup.stripe.cta": "Collega Stripe",
+	"orgSetup.stripe.finishCta": "Completa la configurazione di Stripe",
+	"orgSetup.stripe.done": "Stripe collegato. I biglietti a pagamento sono pronti.",
+	"orgSetup.visibility.title": "La pagina della tua organizzazione è nascosta",
+	"orgSetup.visibility.body": "Per ora solo tu e il tuo staff potete vederla. Rendila pubblica quando vuoi che le persone ti trovino e ti seguano.",
+	"orgSetup.visibility.cta": "Rendi pubblica la pagina",
+	"orgSetup.visibility.done": "La tua pagina è pubblica su {url}",
+	"orgSetup.visibility.undo": "Annulla",
+	"orgSetup.visibility.error": "Impossibile aggiornare la visibilità. Riprova."
 }

@@ -10535,5 +10535,26 @@
 		"privacy": "Privacidade",
 		"terms": "Termos"
 	},
-	"tenantReturn.continueTo": "Continuar para {name}"
+	"tenantReturn.continueTo": "Continuar para {name}",
+	"orgSetup.event.title": "Cria o teu primeiro evento",
+	"orgSetup.event.body": "Um nome, uma data e um local. Guarda como rascunho e aperfeiçoa antes de alguém ver.",
+	"orgSetup.event.startHere": "Começa aqui",
+	"orgSetup.event.freeWorks": "As inscrições gratuitas funcionam logo",
+	"orgSetup.event.duration": "Demora cerca de 3 minutos",
+	"orgSetup.event.cta": "Criar evento",
+	"orgSetup.event.publishTitle": "Publicar «{name}»",
+	"orgSetup.event.publishCta": "Rever e publicar",
+	"orgSetup.event.doneTitle": "O teu primeiro evento está no ar",
+	"orgSetup.stripe.title": "Recebe pelos bilhetes",
+	"orgSetup.stripe.body": "Liga uma conta Stripe para que o dinheiro dos bilhetes chegue ao teu banco. Só é preciso para eventos pagos.",
+	"orgSetup.stripe.duration": "Cerca de 5 a 10 minutos no Stripe",
+	"orgSetup.stripe.cta": "Ligar o Stripe",
+	"orgSetup.stripe.finishCta": "Concluir a configuração do Stripe",
+	"orgSetup.stripe.done": "Stripe ligado. Os bilhetes pagos estão prontos.",
+	"orgSetup.visibility.title": "A página da tua organização está oculta",
+	"orgSetup.visibility.body": "Neste momento só tu e a tua equipa podem vê-la. Torna-a pública quando quiseres que as pessoas te encontrem e te sigam.",
+	"orgSetup.visibility.cta": "Tornar a página pública",
+	"orgSetup.visibility.done": "A tua página é pública em {url}",
+	"orgSetup.visibility.undo": "Anular",
+	"orgSetup.visibility.error": "Não foi possível atualizar a visibilidade. Tenta novamente."
 }

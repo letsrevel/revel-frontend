@@ -10535,5 +10535,26 @@
 		"privacy": "Confidentialité",
 		"terms": "Conditions"
 	},
-	"tenantReturn.continueTo": "Continuer vers {name}"
+	"tenantReturn.continueTo": "Continuer vers {name}",
+	"orgSetup.event.title": "Crée ton premier événement",
+	"orgSetup.event.body": "Un nom, une date et un lieu. Enregistre-le en brouillon et peaufine-le avant que quiconque le voie.",
+	"orgSetup.event.startHere": "Commence ici",
+	"orgSetup.event.freeWorks": "Les inscriptions gratuites fonctionnent tout de suite",
+	"orgSetup.event.duration": "Environ 3 minutes",
+	"orgSetup.event.cta": "Créer l'événement",
+	"orgSetup.event.publishTitle": "Publier « {name} »",
+	"orgSetup.event.publishCta": "Vérifier et publier",
+	"orgSetup.event.doneTitle": "Ton premier événement est en ligne",
+	"orgSetup.stripe.title": "Encaisse tes billets",
+	"orgSetup.stripe.body": "Connecte un compte Stripe pour que l'argent des billets arrive sur ton compte bancaire. Nécessaire uniquement pour les événements payants.",
+	"orgSetup.stripe.duration": "Environ 5 à 10 minutes sur Stripe",
+	"orgSetup.stripe.cta": "Connecter Stripe",
+	"orgSetup.stripe.finishCta": "Terminer la configuration de Stripe",
+	"orgSetup.stripe.done": "Stripe est connecté. Les billets payants sont prêts.",
+	"orgSetup.visibility.title": "La page de ton organisation est masquée",
+	"orgSetup.visibility.body": "Pour l'instant, seuls toi et ton équipe pouvez la voir. Rends-la publique quand tu veux qu'on puisse te trouver et te suivre.",
+	"orgSetup.visibility.cta": "Rendre la page publique",
+	"orgSetup.visibility.done": "Ta page est publique à l'adresse {url}",
+	"orgSetup.visibility.undo": "Annuler",
+	"orgSetup.visibility.error": "Impossible de modifier la visibilité. Réessaie."
 }

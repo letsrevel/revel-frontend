@@ -10535,5 +10535,26 @@
 		"privacy": "Datenschutz",
 		"terms": "Nutzungsbedingungen"
 	},
-	"tenantReturn.continueTo": "Weiter zu {name}"
+	"tenantReturn.continueTo": "Weiter zu {name}",
+	"orgSetup.event.title": "Erstelle dein erstes Event",
+	"orgSetup.event.body": "Ein Name, ein Datum und ein Ort. Speichere es als Entwurf und feile daran, bevor es jemand sieht.",
+	"orgSetup.event.startHere": "Hier starten",
+	"orgSetup.event.freeWorks": "Kostenlose Anmeldungen funktionieren sofort",
+	"orgSetup.event.duration": "Dauert etwa 3 Minuten",
+	"orgSetup.event.cta": "Event erstellen",
+	"orgSetup.event.publishTitle": "„{name}“ veröffentlichen",
+	"orgSetup.event.publishCta": "Prüfen und veröffentlichen",
+	"orgSetup.event.doneTitle": "Dein erstes Event ist live",
+	"orgSetup.stripe.title": "Lass dir Tickets auszahlen",
+	"orgSetup.stripe.body": "Verbinde ein Stripe-Konto, damit das Ticketgeld auf deinem Bankkonto landet. Nur für kostenpflichtige Events nötig.",
+	"orgSetup.stripe.duration": "Etwa 5 bis 10 Minuten bei Stripe",
+	"orgSetup.stripe.cta": "Stripe verbinden",
+	"orgSetup.stripe.finishCta": "Stripe-Einrichtung abschließen",
+	"orgSetup.stripe.done": "Stripe ist verbunden. Bezahlte Tickets sind bereit.",
+	"orgSetup.visibility.title": "Die Seite deiner Organisation ist versteckt",
+	"orgSetup.visibility.body": "Im Moment können nur du und dein Team sie sehen. Mach sie öffentlich, wenn Besucher*innen dich finden und dir folgen sollen.",
+	"orgSetup.visibility.cta": "Seite öffentlich machen",
+	"orgSetup.visibility.done": "Deine Seite ist öffentlich unter {url}",
+	"orgSetup.visibility.undo": "Rückgängig",
+	"orgSetup.visibility.error": "Die Sichtbarkeit konnte nicht geändert werden. Bitte versuche es erneut."
 }
