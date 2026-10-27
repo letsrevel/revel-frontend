@@ -10583,7 +10583,7 @@
 	"orgSetup.steps.public": "Visibilità della pagina impostata",
 	"orgSetup.steps.event": "Primo evento creato",
 	"orgSetup.steps.published": "Primo evento pubblicato",
-	"orgSetup.steps.stripe": "Pronto per i pagamenti online",
+	"orgSetup.steps.stripe": "Pagamenti online attivi",
 	"orgSetup.steps.done": "Fatto",
 	"orgSetup.steps.toDo": "Da fare"
 }
