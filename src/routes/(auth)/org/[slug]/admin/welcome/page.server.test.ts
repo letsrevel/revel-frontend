@@ -8,11 +8,11 @@ const counts = vi.mocked(loadSetupCounts);
 
 type LoadArg = Parameters<typeof load>[0];
 
-function run(isOwner: boolean) {
+function run(isOwner: boolean, user: { accessToken?: string } | null = { accessToken: 'tok' }) {
 	const event = {
 		fetch: vi.fn(),
 		params: { slug: 'acme' },
-		locals: { user: { accessToken: 'tok' } },
+		locals: { user },
 		parent: async () => ({ isOwner, organization: { id: 'org-id', slug: 'acme' } })
 	} as unknown as LoadArg;
 	return load(event);
@@ -35,6 +35,12 @@ describe('welcome launchpad loader', () => {
 			status: 303,
 			location: '/org/acme/admin'
 		});
+		expect(counts).not.toHaveBeenCalled();
+	});
+
+	it('throws 401 when the access token is missing', async () => {
+		await expect(run(true, null)).rejects.toMatchObject({ status: 401 });
+		await expect(run(true, {})).rejects.toMatchObject({ status: 401 });
 		expect(counts).not.toHaveBeenCalled();
 	});
 });

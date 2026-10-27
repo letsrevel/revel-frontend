@@ -30,13 +30,17 @@
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
-<!-- Celebration band, same recipe as create-org: `bg-secondary` at full strength
-     is an audit-enforced pair in both modes and PageHeader's `onBand` keeps the
-     kicker/subtitle AA on it. The body is pulled up with -mt-12 onto an OPAQUE
-     `bg-card` shell (pull-up opacity rule), never onto translucent blocks. -->
-<div class="min-h-[calc(100vh-4rem)] bg-background">
-	<section class="bg-secondary text-secondary-foreground">
-		<div class="container mx-auto max-w-3xl px-4 pb-20 pt-10 text-center sm:pt-14">
+<!-- Celebration band inside the admin shell (the layout supplies the container,
+     sidebar and <main>): a rounded `bg-secondary` panel, an audit-enforced pair
+     in both modes, with PageHeader's `onBand` keeping the kicker/subtitle AA on
+     it. The body is pulled up with -mt-12 onto an OPAQUE `bg-card` shell
+     (pull-up opacity rule), inset from the panel's sides so it overlaps the
+     bottom edge inside the rounded corners, never onto translucent blocks. -->
+<div class="px-4 md:px-0">
+	<section
+		class="rounded-lg bg-secondary px-4 pb-20 pt-10 text-center text-secondary-foreground sm:pt-14"
+	>
+		<div class="mx-auto max-w-3xl">
 			<Sticker rotate={-2} class="mb-5 text-base">
 				{m['orgSetup.welcome.sticker']({ name: organization.name })}
 			</Sticker>
@@ -51,7 +55,7 @@
 		</div>
 	</section>
 
-	<div class="container mx-auto -mt-12 max-w-3xl px-4 pb-16">
+	<div class="mx-auto -mt-12 max-w-3xl px-3 pb-8 sm:px-6">
 		<div class="space-y-4 rounded-2xl border-2 bg-card p-4 shadow-poster md:p-6">
 			<SetupActions
 				orgSlug={organization.slug}
