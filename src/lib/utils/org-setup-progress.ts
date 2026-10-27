@@ -1,4 +1,4 @@
-import type { OrganizationAdminDetailSchema } from '$lib/api/generated/types.gen';
+import type { OrganizationAdminDetailSchema, Visibility } from '$lib/api/generated/types.gen';
 
 export interface SetupCounts {
 	eventCount: number | null;
@@ -19,7 +19,12 @@ export interface SetupProgress {
 	allDone: boolean;
 }
 
-const HIDDEN_VISIBILITY = new Set(['private', 'staff-only']);
+const HIDDEN_VISIBILITY: ReadonlySet<Visibility> = new Set<Visibility>(['private', 'staff-only']);
+
+/** True when the org page is not publicly reachable (members-only/unlisted are deliberate). */
+export function isPageHidden(visibility: Visibility): boolean {
+	return HIDDEN_VISIBILITY.has(visibility);
+}
 
 /**
  * Derives the org onboarding checklist. `null` counts mean "unknown" and are
@@ -32,7 +37,7 @@ export function buildSetupProgress(
 	>,
 	counts: SetupCounts
 ): SetupProgress {
-	const pageHidden = HIDDEN_VISIBILITY.has(org.visibility);
+	const pageHidden = isPageHidden(org.visibility);
 	const eventCount = counts.eventCount ?? 0;
 	const publishedCount = counts.publishedCount ?? 0;
 

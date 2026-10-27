@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { OrganizationAdminDetailSchema } from '$lib/api/generated/types.gen';
-import { buildSetupProgress, type SetupCounts } from './org-setup-progress';
+import { buildSetupProgress, isPageHidden, type SetupCounts } from './org-setup-progress';
 
 type OrgSetupFields = Pick<
 	OrganizationAdminDetailSchema,
@@ -94,5 +94,14 @@ describe('buildSetupProgress', () => {
 		});
 		expect(p.event).toBe('none');
 		expect(p.doneCount).toBe(1);
+	});
+});
+
+describe('isPageHidden', () => {
+	it('is true only for private and staff-only', () => {
+		expect(isPageHidden('private')).toBe(true);
+		expect(isPageHidden('staff-only')).toBe(true);
+		expect(isPageHidden('public')).toBe(false);
+		expect(isPageHidden('members-only')).toBe(false);
 	});
 });

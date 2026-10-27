@@ -6,6 +6,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
 	import { organizationadmincoreUpdateOrganization } from '$lib/api/generated/sdk.gen';
+	import { isPageHidden } from '$lib/utils/org-setup-progress';
 	import type { Visibility } from '$lib/api/generated/types.gen';
 
 	interface Props {
@@ -16,9 +17,6 @@
 	}
 
 	const { orgSlug, visibility, accessToken, density = 'full' }: Props = $props();
-
-	// Mirrors the backend's hidden set; members-only/unlisted are deliberate choices.
-	const HIDDEN: ReadonlySet<Visibility> = new Set<Visibility>(['private', 'staff-only']);
 
 	/** Set only after a successful flip in this session; holds the value to undo to. */
 	let flippedFrom = $state<Visibility | null>(null);
@@ -69,7 +67,7 @@
 		await invalidateAll();
 	}
 
-	const hidden = $derived(HIDDEN.has(visibility));
+	const hidden = $derived(isPageHidden(visibility));
 	const compact = $derived(density === 'compact');
 </script>
 

@@ -1,6 +1,6 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, waitFor } from '@testing-library/svelte';
 import { userEvent } from '@testing-library/user-event';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
 import SetupActions from './SetupActions.svelte';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
@@ -101,14 +101,66 @@ describe('SetupActions', () => {
 		expect(screen.queryByText('Free RSVPs work right away')).toBeNull();
 	});
 
-	it('stripe confirm requests the link via the helper', async () => {
-		vi.mocked(organizationadmincoreStripeConnect).mockResolvedValue({
-			data: { onboarding_url: 'https://stripe.test/x' }
-		} as never);
-		const user = userEvent.setup();
-		setup(progress('none', 'none'));
-		await user.click(screen.getByRole('button', { name: 'Connect Stripe' }));
-		const email = screen.getByLabelText(/email/i) as HTMLInputElement;
-		expect(email.value).toBe('owner@acme.test');
+	it('draft without a known latestDraft falls back to the create presentation', () => {
+		setup(progress('draft', 'none', null));
+		expect(screen.getByRole('heading', { name: 'Create your first event' })).toBeTruthy();
+		expect(screen.queryByRole('link', { name: /Review and publish/ })).toBeNull();
+		expect(screen.getByRole('link', { name: /Create event/ }).getAttribute('href')).toBe(
+			'/org/acme/admin/events/new'
+		);
+	});
+
+	describe('stripe confirm', () => {
+		const originalLocation = window.location;
+		let hrefSet: string | null;
+
+		beforeEach(() => {
+			hrefSet = null;
+			const fake = {};
+			Object.defineProperty(fake, 'href', {
+				get: () => 'http://localhost/',
+				set: (v: string) => {
+					hrefSet = v;
+				}
+			});
+			Object.defineProperty(window, 'location', { value: fake, configurable: true });
+		});
+
+		afterEach(() => {
+			Object.defineProperty(window, 'location', { value: originalLocation, configurable: true });
+		});
+
+		async function openAndConfirm(user: ReturnType<typeof userEvent.setup>) {
+			await user.click(screen.getByRole('button', { name: 'Connect Stripe' }));
+			const email = screen.getByLabelText(/email/i) as HTMLInputElement;
+			expect(email.value).toBe('owner@acme.test');
+			await user.click(screen.getByRole('button', { name: 'Connect to Stripe' }));
+		}
+
+		it('requests the link via the helper and redirects to the onboarding url', async () => {
+			vi.mocked(organizationadmincoreStripeConnect).mockResolvedValue({
+				data: { onboarding_url: 'https://stripe.test/x' }
+			} as never);
+			const user = userEvent.setup();
+			setup(progress('none', 'none'));
+			await openAndConfirm(user);
+			await waitFor(() => expect(hrefSet).toBe('https://stripe.test/x'));
+			expect(organizationadmincoreStripeConnect).toHaveBeenCalledWith({
+				path: { slug: 'acme' },
+				headers: { Authorization: 'Bearer tok' },
+				body: { email: 'owner@acme.test' }
+			});
+		});
+
+		it('shows the error in the modal and does not redirect on failure', async () => {
+			vi.mocked(organizationadmincoreStripeConnect).mockResolvedValue({
+				error: { detail: 'Stripe is unavailable' }
+			} as never);
+			const user = userEvent.setup();
+			setup(progress('none', 'none'));
+			await openAndConfirm(user);
+			expect(await screen.findByText('Stripe is unavailable')).toBeTruthy();
+			expect(hrefSet).toBeNull();
+		});
 	});
 });
