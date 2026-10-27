@@ -1,7 +1,4 @@
-import type {
-	EventInListSchema,
-	OrganizationAdminDetailSchema
-} from '$lib/api/generated/types.gen';
+import type { EventInListSchema } from '$lib/api/generated/types.gen';
 
 export const UPCOMING_LIMIT = 6;
 
@@ -24,27 +21,4 @@ export function buildDashboardModel(events: EventInListSchema[], now: Date): Das
 		nextEvent !== null && new Date(nextEvent.start) <= now && now < new Date(nextEvent.end);
 	const upcoming = live.filter((e) => e !== nextEvent).slice(0, UPCOMING_LIMIT);
 	return { live, nextEvent, isHappeningNow, upcoming };
-}
-
-type BillingFields = Pick<
-	OrganizationAdminDetailSchema,
-	| 'is_stripe_connected'
-	| 'platform_fee_percent'
-	| 'platform_fee_fixed'
-	| 'vat_country_code'
-	| 'billing_address'
-	| 'billing_name'
->;
-
-/**
- * True when the org takes payments with a platform fee but has not filled in the
- * billing identity the invoices need. Shared by the admin nav badge and the
- * dashboard attention list so the two cannot drift.
- */
-export function billingNeedsAttention(org: BillingFields): boolean {
-	return (
-		!!org.is_stripe_connected &&
-		(parseFloat(org.platform_fee_percent) > 0 || parseFloat(org.platform_fee_fixed) > 0) &&
-		(!org.vat_country_code || !org.billing_address || !org.billing_name)
-	);
 }

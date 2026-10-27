@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { enhance, applyAction } from '$app/forms';
+	import { page } from '$app/state';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
@@ -9,7 +10,8 @@
 	import { Textarea } from '$lib/components/ui/textarea';
 	import CityAutocomplete from '$lib/components/forms/CityAutocomplete.svelte';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
-	import { AlertCircle, Building2, CheckCircle, Loader2, Mail } from '@lucide/svelte';
+	import { slugPreview } from '$lib/utils/slug-preview';
+	import { AlertCircle, Building2, CheckCircle, ChevronDown, Loader2, Mail } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { PageData, ActionData } from './$types';
 	import type { CitySchema } from '$lib/api/generated';
@@ -52,26 +54,19 @@
 
 	// Form state
 	let isSubmitting = $state(false);
-	let showConfirmDialog = $state(false);
-	let formElement = $state<HTMLFormElement>();
 
 	const errors = $derived((form?.errors || {}) as Record<string, string>);
 
-	function showConfirmation(e: Event) {
-		e.preventDefault();
-		showConfirmDialog = true;
-	}
+	// Server errors on collapsed fields must not stay hidden.
+	const hasOptionalError = $derived(
+		Boolean(errors.address || errors.description || errors.city_id)
+	);
 
-	function confirmCreate() {
-		showConfirmDialog = false;
-		if (formElement) {
-			formElement.requestSubmit();
-		}
-	}
-
-	function cancelConfirm() {
-		showConfirmDialog = false;
-	}
+	const trimmedName = $derived(name.trim());
+	const slug = $derived(slugPreview(trimmedName));
+	const urlPreview = $derived(
+		`${page.url.host}/org/${slug ?? m['orgCreate.form.slugPlaceholder']()}`
+	);
 
 	function handleCitySelect(city: CitySchema | null) {
 		selectedCity = city;
@@ -114,9 +109,6 @@
 				subtitle={m['orgCreate.subtitle']()}
 				class="text-center sm:flex-col sm:items-center"
 			/>
-			<p class="mt-2 text-sm">
-				{m['createOrgPage.customizeHint']()}
-			</p>
 		</div>
 	</section>
 
@@ -191,7 +183,6 @@
 			<!-- Creation Form -->
 			<div class="rounded-lg border-2 bg-card p-6 shadow-poster md:p-8">
 				<form
-					bind:this={formElement}
 					method="POST"
 					use:enhance={() => {
 						isSubmitting = true;
@@ -213,7 +204,9 @@
 							type="text"
 							bind:value={name}
 							aria-invalid={errors.name ? 'true' : undefined}
-							aria-describedby={errors.name ? 'name-error' : undefined}
+							aria-describedby={errors.name
+								? 'name-error name-url-preview name-locked name-hint'
+								: 'name-url-preview name-locked name-hint'}
 							placeholder={m['orgCreate.form.namePlaceholder']()}
 							maxlength={150}
 							required
@@ -223,7 +216,19 @@
 								{errors.name}
 							</p>
 						{/if}
-						<p class="text-xs text-muted-foreground">
+						<p id="name-url-preview" class="break-all text-xs text-muted-foreground">
+							{#if !trimmedName}
+								{m['orgCreate.form.urlPreview']({ url: urlPreview })}
+							{:else if !slug}
+								{m['orgCreate.form.urlPreviewPending']()}
+							{:else}
+								{m['orgCreate.form.urlPreview']({ url: urlPreview })}
+							{/if}
+						</p>
+						<p id="name-locked" class="text-xs font-medium text-foreground">
+							{m['orgCreate.form.nameLocked']()}
+						</p>
+						<p id="name-hint" class="text-xs text-muted-foreground">
 							{m['orgCreate.form.nameHint']()}
 						</p>
 					</div>
@@ -269,65 +274,79 @@
 						{/if}
 					</div>
 
-					<!-- City -->
-					<div>
-						<CityAutocomplete
-							value={selectedCity}
-							onSelect={handleCitySelect}
-							label={m['orgCreate.form.city']()}
-							description=""
-						/>
-						<input type="hidden" name="city_id" value={selectedCity?.id || ''} />
-					</div>
+					<!-- Optional details: still part of the form, so collapsed inputs post too. -->
+					<details open={hasOptionalError} class="group rounded-md border bg-background">
+						<summary
+							class="flex min-h-[44px] cursor-pointer items-center justify-between gap-2 px-4 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+						>
+							{m['orgCreate.form.optionalDetails']()}
+							<ChevronDown
+								class="h-4 w-4 shrink-0 transition-transform group-open:rotate-180"
+								aria-hidden="true"
+							/>
+						</summary>
+						<div class="space-y-6 border-t p-4">
+							<!-- City -->
+							<div>
+								<CityAutocomplete
+									value={selectedCity}
+									onSelect={handleCitySelect}
+									label={m['orgCreate.form.city']()}
+									description=""
+								/>
+								<input type="hidden" name="city_id" value={selectedCity?.id || ''} />
+							</div>
 
-					<!-- Address -->
-					<div class="space-y-2">
-						<Label for="address">
-							{m['orgCreate.form.address']()}
-						</Label>
-						<Input
-							id="address"
-							name="address"
-							type="text"
-							bind:value={address}
-							aria-invalid={errors.address ? 'true' : undefined}
-							aria-describedby={errors.address ? 'address-error' : undefined}
-							placeholder={m['orgCreate.form.addressPlaceholder']()}
-						/>
-						{#if errors.address}
-							<p id="address-error" class="text-sm text-destructive">
-								{errors.address}
-							</p>
-						{/if}
-					</div>
+							<!-- Address -->
+							<div class="space-y-2">
+								<Label for="address">
+									{m['orgCreate.form.address']()}
+								</Label>
+								<Input
+									id="address"
+									name="address"
+									type="text"
+									bind:value={address}
+									aria-invalid={errors.address ? 'true' : undefined}
+									aria-describedby={errors.address ? 'address-error' : undefined}
+									placeholder={m['orgCreate.form.addressPlaceholder']()}
+								/>
+								{#if errors.address}
+									<p id="address-error" class="text-sm text-destructive">
+										{errors.address}
+									</p>
+								{/if}
+							</div>
 
-					<!-- Description -->
-					<div class="space-y-2">
-						<Label for="description">
-							{m['orgCreate.form.description']()}
-						</Label>
-						<Textarea
-							id="description"
-							name="description"
-							bind:value={description}
-							aria-invalid={errors.description ? 'true' : undefined}
-							aria-describedby={errors.description ? 'description-error' : undefined}
-							placeholder={m['orgCreate.form.descriptionPlaceholder']()}
-							rows={4}
-						/>
-						{#if errors.description}
-							<p id="description-error" class="text-sm text-destructive">
-								{errors.description}
-							</p>
-						{/if}
-						<p class="text-xs text-muted-foreground">
-							{m['orgCreate.form.descriptionHint']()}
-						</p>
-					</div>
+							<!-- Description -->
+							<div class="space-y-2">
+								<Label for="description">
+									{m['orgCreate.form.description']()}
+								</Label>
+								<Textarea
+									id="description"
+									name="description"
+									bind:value={description}
+									aria-invalid={errors.description ? 'true' : undefined}
+									aria-describedby={errors.description ? 'description-error' : undefined}
+									placeholder={m['orgCreate.form.descriptionPlaceholder']()}
+									rows={4}
+								/>
+								{#if errors.description}
+									<p id="description-error" class="text-sm text-destructive">
+										{errors.description}
+									</p>
+								{/if}
+								<p class="text-xs text-muted-foreground">
+									{m['orgCreate.form.descriptionHint']()}
+								</p>
+							</div>
+						</div>
+					</details>
 
 					<!-- Submit Error -->
 					{#if errors.form}
-						<div class="rounded-md border border-destructive/50 bg-destructive/10 p-4">
+						<div role="alert" class="rounded-md border border-destructive/50 bg-destructive/10 p-4">
 							<div class="flex gap-3">
 								<AlertCircle class="h-5 w-5 flex-shrink-0 text-destructive" aria-hidden="true" />
 								<div>
@@ -349,11 +368,11 @@
 							variant="outline"
 							onclick={() => goto(resolve('/(auth)/dashboard', {}))}
 							disabled={isSubmitting}
-							class="flex-1"
+							class="min-h-[44px] flex-1"
 						>
 							{m['common.actions_cancel']()}
 						</Button>
-						<Button type="button" onclick={showConfirmation} disabled={isSubmitting} class="flex-1">
+						<Button type="submit" disabled={isSubmitting} class="min-h-[44px] flex-1">
 							{#if isSubmitting}
 								<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
 								{m['orgCreate.form.creating']()}
@@ -368,39 +387,6 @@
 		{/if}
 	</div>
 </div>
-
-<!-- Confirmation Dialog -->
-{#if showConfirmDialog}
-	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-		<div class="w-full max-w-md rounded-lg border-2 bg-card p-6 shadow-poster-lg">
-			<div class="mb-4 flex justify-center">
-				<div class="rounded-full bg-highlight p-3 text-highlight-foreground">
-					<AlertCircle class="h-6 w-6" aria-hidden="true" />
-				</div>
-			</div>
-			<h3 class="mb-2 text-center text-lg font-bold">
-				{m['orgCreate.confirm.title']()}
-			</h3>
-			<p class="mb-1 text-center text-sm text-muted-foreground">
-				{m['orgCreate.confirm.message']()}
-			</p>
-			<p class="mb-6 text-center text-sm font-medium">
-				<strong>"{name}"</strong>
-			</p>
-			<p class="mb-6 text-center text-sm text-destructive">
-				{m['orgCreate.confirm.warning']()}
-			</p>
-			<div class="flex gap-3">
-				<Button type="button" variant="outline" onclick={cancelConfirm} class="flex-1">
-					{m['common.actions_cancel']()}
-				</Button>
-				<Button type="button" onclick={confirmCreate} class="flex-1">
-					{m['orgCreate.confirm.create']()}
-				</Button>
-			</div>
-		</div>
-	</div>
-{/if}
 
 <style>
 	:global(.required::after) {

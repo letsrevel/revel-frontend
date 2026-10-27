@@ -11,14 +11,17 @@ import type {
 } from '$lib/api/generated/types.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { log } from '$lib/server/logger';
+import { resolve } from '$app/paths';
+import { loadSetupCounts } from '$lib/server/org-setup';
+import { buildSetupProgress } from '$lib/utils/org-setup-progress';
 
 /**
  * Load organization data for the settings page
  * The organization is fetched by the parent layout, so we just
  * pass it through with proper typing
  */
-export const load: PageServerLoad = async ({ parent, cookies, fetch }) => {
-	const { organization } = await parent();
+export const load: PageServerLoad = async ({ parent, cookies, fetch, url }) => {
+	const { organization, isOwner } = await parent();
 
 	if (!organization) {
 		throw error(404, 'Organization not found');
@@ -49,9 +52,20 @@ export const load: PageServerLoad = async ({ parent, cookies, fetch }) => {
 		);
 	}
 
+	// Only when an owner is returning from Stripe: offer a way back to the launchpad
+	// while setup is incomplete. Skipped otherwise to avoid four extra API calls.
+	let continueSetupHref: string | null = null;
+	if (isOwner && accessToken && url.searchParams.get('stripe_success') === 'true') {
+		const counts = await loadSetupCounts({ orgId: organization.id, accessToken, fetch });
+		if (!buildSetupProgress(organization, counts).allDone) {
+			continueSetupHref = resolve('/(auth)/org/[slug]/admin/welcome', { slug: organization.slug });
+		}
+	}
+
 	return {
 		organization,
-		membershipQuestionnaires
+		membershipQuestionnaires,
+		continueSetupHref
 	};
 };
 

@@ -5,7 +5,7 @@ import { gotoHydrated } from '../../support/navigation';
 
 // J3.6 (USER_JOURNEYS.md) — create an organization through the form: a name
 // slugifying to a reserved token is rejected with the backend's message, a
-// valid name lands the new owner on the org admin settings page, and a
+// valid name lands the new owner on the org launchpad, and a
 // revisit shows the one-org-per-owner guard.
 //
 // Isolation: throwaway verified user — every seeded owner persona already
@@ -22,20 +22,13 @@ test.describe('J3 create organization @p1', () => {
 		const page = await context.newPage();
 
 		await gotoHydrated(page, '/create-org');
-		await expect(page.getByRole('heading', { name: 'Create Your Organization' })).toBeVisible();
+		await expect(page.getByRole('heading', { name: 'Name your organization' })).toBeVisible();
 
-		// The primary button opens a custom confirmation overlay (no dialog
-		// role); it closes itself before submitting, so each attempt sees
-		// exactly one 'Create Organization' button at a time.
+		// Two visible fields and a plain submit: no confirmation step.
 		async function submitName(name: string): Promise<void> {
 			await page.locator('#name').fill(name);
 			await page.locator('#contact_email').fill(user.email);
 			await page.getByRole('button', { name: 'Create Organization' }).click();
-			await expect(page.getByText('Confirm Organization Creation')).toBeVisible();
-			await page
-				.locator('div.fixed.inset-0')
-				.getByRole('button', { name: 'Create Organization' })
-				.click();
 		}
 
 		// "dashboard" is a reserved slug token — backend 400 surfaces verbatim.
@@ -45,13 +38,11 @@ test.describe('J3 create organization @p1', () => {
 		});
 		await expect(page.getByText(/reserved word: "dashboard"/)).toBeVisible();
 
-		// A valid name creates the org and redirects to its admin settings.
+		// A valid name creates the org and lands the owner on the launchpad.
 		const orgName = uniqueName('Org');
 		await submitName(orgName);
-		await page.waitForURL(/\/org\/[^/]+\/admin\/settings/, { timeout: 30_000 });
-		// The admin chrome names the org twice (desktop sidebar, mobile top bar),
-		// each hidden at the other breakpoint — so match the copy that is showing.
-		await expect(page.getByText(orgName).filter({ visible: true }).first()).toBeVisible();
+		await page.waitForURL(/\/org\/[^/]+\/admin\/welcome$/, { timeout: 30_000 });
+		await expect(page.getByRole('heading', { name: 'Create your first event' })).toBeVisible();
 
 		// One org per owner: the form is replaced by the already-owner guard.
 		await gotoHydrated(page, '/create-org');

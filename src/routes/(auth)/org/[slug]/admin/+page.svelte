@@ -15,7 +15,13 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import { organizationadminmembersListMembershipTiers } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { billingNeedsAttention, buildDashboardModel } from './dashboard-model';
+	import SetupCard from '$lib/components/org-setup/SetupCard.svelte';
+	import {
+		billingNeedsAttention,
+		buildSetupProgress,
+		shouldShowSetupCard
+	} from '$lib/utils/org-setup-progress';
+	import { buildDashboardModel } from './dashboard-model';
 
 	const { data }: { data: PageData } = $props();
 
@@ -24,6 +30,22 @@
 
 	// Computed once per load: the page is a snapshot, not a ticking clock.
 	const model = $derived(buildDashboardModel(data.dashboardEvents, new Date()));
+
+	// Derived from the layout org so the card updates after invalidateAll().
+	const setupProgress = $derived(
+		data.setupCounts ? buildSetupProgress(organization, data.setupCounts) : null
+	);
+
+	// Mirrors the card's collapsed state (bound below) so the page can restore
+	// the empty next-event panel when the user hides the card.
+	let setupCardHidden = $state(false);
+	// The card's "create your first event" box already carries that CTA.
+	const setupCardCoversEmptyPanel = $derived(
+		setupProgress !== null &&
+			shouldShowSetupCard(setupProgress) &&
+			!setupCardHidden &&
+			setupProgress.event === 'none'
+	);
 
 	// State for announcement modal
 	let announcementModalOpen = $state(false);
@@ -77,14 +99,28 @@
 	{/snippet}
 	<PageHeader title={m['orgAdmin.nav.dashboard']()} volume="studio" actions={headerActions} />
 
-	<div class="grid items-start gap-8 xl:grid-cols-[minmax(0,1fr)_22rem] xl:grid-rows-[auto_1fr]">
-		<NextEventPanel
-			event={model.nextEvent}
-			isHappeningNow={model.isHappeningNow}
+	{#if setupProgress}
+		<SetupCard
+			orgId={organization.id}
 			orgSlug={organization.slug}
-			{canCreateEvent}
-			onCreateEvent={createEvent}
+			progress={setupProgress}
+			visibility={organization.visibility}
+			defaultStripeEmail={organization.contact_email ?? ''}
+			accessToken={accessToken ?? ''}
+			bind:hidden={setupCardHidden}
 		/>
+	{/if}
+
+	<div class="grid items-start gap-8 xl:grid-cols-[minmax(0,1fr)_22rem] xl:grid-rows-[auto_1fr]">
+		{#if !(setupCardCoversEmptyPanel && !model.nextEvent)}
+			<NextEventPanel
+				event={model.nextEvent}
+				isHappeningNow={model.isHappeningNow}
+				orgSlug={organization.slug}
+				{canCreateEvent}
+				onCreateEvent={createEvent}
+			/>
+		{/if}
 		<!-- Side column: spans both left-hand rows on xl so it never inherits the
 		     hero's row height (which left a dead gap under a short attention list). -->
 		<div class="space-y-8 xl:row-span-2">

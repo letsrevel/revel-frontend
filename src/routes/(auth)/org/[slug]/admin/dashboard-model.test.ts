@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { EventInListSchema } from '$lib/api/generated/types.gen';
-import { billingNeedsAttention, buildDashboardModel } from './dashboard-model';
+import { buildDashboardModel } from './dashboard-model';
 
 const NOW = new Date('2026-10-24T20:00:00Z');
 const h = (hours: number): string => new Date(NOW.getTime() + hours * 3600_000).toISOString();
@@ -70,47 +70,5 @@ describe('buildDashboardModel', () => {
 		expect(m.nextEvent).toBeNull();
 		expect(m.isHappeningNow).toBe(false);
 		expect(m.upcoming).toEqual([]);
-	});
-});
-
-describe('billingNeedsAttention', () => {
-	const base = {
-		is_stripe_connected: true,
-		platform_fee_percent: '2.5',
-		platform_fee_fixed: '0',
-		vat_country_code: 'IT',
-		billing_address: 'Via Roma 1',
-		billing_name: 'Acme'
-	};
-	it('is false when details are complete', () => {
-		expect(billingNeedsAttention(base)).toBe(false);
-	});
-	it('is true when a field is missing', () => {
-		expect(billingNeedsAttention({ ...base, billing_name: '' })).toBe(true);
-		expect(billingNeedsAttention({ ...base, vat_country_code: '' })).toBe(true);
-		expect(billingNeedsAttention({ ...base, billing_address: '' })).toBe(true);
-	});
-	it('is false without stripe or without fees', () => {
-		expect(billingNeedsAttention({ ...base, billing_name: '', is_stripe_connected: false })).toBe(
-			false
-		);
-		expect(
-			billingNeedsAttention({
-				...base,
-				billing_name: '',
-				platform_fee_percent: '0',
-				platform_fee_fixed: '0.00'
-			})
-		).toBe(false);
-	});
-	it('is true with only a fixed fee', () => {
-		expect(
-			billingNeedsAttention({
-				...base,
-				billing_name: '',
-				platform_fee_percent: '0',
-				platform_fee_fixed: '0.30'
-			})
-		).toBe(true);
 	});
 });

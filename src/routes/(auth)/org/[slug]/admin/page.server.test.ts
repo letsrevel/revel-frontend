@@ -4,11 +4,13 @@ import {
 	eventpublicdiscoveryListEvents,
 	organizationadminmembershiprequestsListMembershipRequests
 } from '$lib/api/generated/sdk.gen';
+import { loadSetupCounts } from '$lib/server/org-setup';
 
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	eventpublicdiscoveryListEvents: vi.fn(),
 	organizationadminmembershiprequestsListMembershipRequests: vi.fn()
 }));
+vi.mock('$lib/server/org-setup', () => ({ loadSetupCounts: vi.fn() }));
 vi.mock('$lib/server/logger', () => ({ log: { error: vi.fn() } }));
 
 const listEvents = vi.mocked(eventpublicdiscoveryListEvents);
@@ -19,12 +21,12 @@ type Result = Awaited<ReturnType<typeof load>>;
 
 const ev = (id: string) => ({ id });
 
-function run(): Promise<Result> {
+function run(isOwner = true): Promise<Result> {
 	const event = {
 		fetch: vi.fn(),
 		params: { slug: 'org' },
 		locals: { user: { accessToken: 'tok' } },
-		parent: async () => ({ organization: { id: 'org-id', slug: 'org' } })
+		parent: async () => ({ isOwner, organization: { id: 'org-id', slug: 'org' } })
 	} as unknown as LoadArg;
 	return load(event) as Promise<Result>;
 }
@@ -48,7 +50,12 @@ function mockEvents(handlers: {
 	}) as unknown as typeof eventpublicdiscoveryListEvents);
 }
 
+const setupCountsMock = vi.mocked(loadSetupCounts);
+const COUNTS = { eventCount: 0, publishedCount: 0, latestDraft: null };
+
 beforeEach(() => {
+	setupCountsMock.mockReset();
+	setupCountsMock.mockResolvedValue(COUNTS);
 	listEvents.mockReset();
 	listRequests.mockReset();
 	listRequests.mockResolvedValue({ data: { count: 3 }, error: undefined } as never);
@@ -97,5 +104,21 @@ describe('admin dashboard loader', () => {
 		const res = await run();
 		expect(res.draftCount).toBeNull();
 		expect(res.dashboardEvents.map((e) => e.id)).toEqual(['a']);
+	});
+
+	it('loads setup counts for owners', async () => {
+		mockEvents({ live: { results: [] }, upcoming: { results: [] }, drafts: { count: 0 } });
+		const res = await run(true);
+		expect(res.setupCounts).toEqual(COUNTS);
+		expect(setupCountsMock).toHaveBeenCalledWith(
+			expect.objectContaining({ orgId: 'org-id', accessToken: 'tok' })
+		);
+	});
+
+	it('skips setup counts for staff', async () => {
+		mockEvents({ live: { results: [] }, upcoming: { results: [] }, drafts: { count: 0 } });
+		const res = await run(false);
+		expect(res.setupCounts).toBeNull();
+		expect(setupCountsMock).not.toHaveBeenCalled();
 	});
 });
