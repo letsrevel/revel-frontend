@@ -163,6 +163,8 @@ describe('SetupActions', () => {
 		});
 
 		afterEach(() => {
+			// The modal is still open when a test ends; bits-ui restores this on a delay.
+			document.body.style.pointerEvents = '';
 			Object.defineProperty(window, 'location', { value: originalLocation, configurable: true });
 		});
 

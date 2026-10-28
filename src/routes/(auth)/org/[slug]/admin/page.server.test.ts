@@ -10,7 +10,10 @@ vi.mock('$lib/api/generated/sdk.gen', () => ({
 	eventpublicdiscoveryListEvents: vi.fn(),
 	organizationadminmembershiprequestsListMembershipRequests: vi.fn()
 }));
-vi.mock('$lib/server/org-setup', () => ({ loadSetupCounts: vi.fn(), loadHasPublishedEvent: vi.fn() }));
+vi.mock('$lib/server/org-setup', () => ({
+	loadSetupCounts: vi.fn(),
+	loadHasPublishedEvent: vi.fn()
+}));
 vi.mock('$lib/server/logger', () => ({ log: { error: vi.fn() } }));
 
 const listEvents = vi.mocked(eventpublicdiscoveryListEvents);

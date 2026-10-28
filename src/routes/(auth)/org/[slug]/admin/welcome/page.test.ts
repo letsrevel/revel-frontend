@@ -107,6 +107,9 @@ describe('Stripe return params', () => {
 		expect(window.location.search).toBe('');
 		await user.click(screen.getByRole('button', { name: 'Continue Stripe setup' }));
 		expect(await screen.findByRole('button', { name: 'Connect to Stripe' })).toBeTruthy();
+		// The dialog is modal now: close it before touching the page behind it.
+		await user.keyboard('{Escape}');
+		await waitFor(() => expect(document.body.style.pointerEvents).not.toBe('none'));
 		await user.click(screen.getByRole('button', { name: 'Dismiss notice' }));
 		await waitFor(() => expect(screen.queryByTestId('stripe-return-notice')).toBeNull());
 	});
