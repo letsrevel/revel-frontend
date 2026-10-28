@@ -106,6 +106,25 @@ describe('SetupCard', () => {
 		expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Hide setup' }));
 	});
 
+	it('show it again is busy and single-shot while the data reloads', async () => {
+		const user = userEvent.setup();
+		let finish: () => void = () => undefined;
+		vi.mocked(invalidateAll).mockClear();
+		vi.mocked(invalidateAll).mockImplementationOnce(
+			() => new Promise<void>((resolve) => (finish = resolve))
+		);
+		setup(null, { hidden: true });
+		const show = screen.getByRole('button', { name: 'Show it again' });
+		await user.click(show);
+		expect(show).toBeDisabled();
+		expect(show).toHaveAttribute('aria-busy', 'true');
+		await user.click(show);
+		expect(invalidateAll).toHaveBeenCalledTimes(1);
+		finish();
+		// Props stay null here (no server reload); the collapsed line just goes away.
+		await vi.waitFor(() => expect(screen.queryByText('Setup hidden.')).toBeNull());
+	});
+
 	it('server-hidden render (no progress, hidden=true) is the collapsed line', () => {
 		setup(null, { hidden: true });
 		expect(screen.getByText('Setup hidden.')).toBeTruthy();

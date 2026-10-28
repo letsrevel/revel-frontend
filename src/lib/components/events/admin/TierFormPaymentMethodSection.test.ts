@@ -74,7 +74,7 @@ describe('TierFormPaymentMethodSection — country rules', () => {
 });
 
 describe('TierFormPaymentMethodSection - Stripe gate', () => {
-	const connectProps = { organizationSlug: 'acme', eventId: 'e1' };
+	const connectProps = { organizationSlug: 'acme', eventId: 'e1', isOwner: true };
 
 	it('keeps Online selectable when the org is not connected', () => {
 		const select = renderSection({ organizationStripeConnected: false, ...connectProps });
@@ -123,5 +123,41 @@ describe('TierFormPaymentMethodSection - Stripe gate', () => {
 		renderSection({ organizationStripeConnected: true, paymentMethod: 'online', ...connectProps });
 		expect(screen.queryByTestId('tier-stripe-gate')).toBeNull();
 		expect(screen.queryByTestId('tier-billing-gate')).toBeNull();
+	});
+});
+
+describe('TierFormPaymentMethodSection - Stripe gate, wiring and non-owners', () => {
+	const base = { organizationSlug: 'acme', eventId: 'e1', paymentMethod: 'online' };
+
+	it('points the select at the gate and promises the tier will wait', () => {
+		const select = renderSection({ organizationStripeConnected: false, isOwner: true, ...base });
+		expect(select).toHaveAccessibleDescription(/Online payments need Stripe/);
+		expect(screen.getByTestId('tier-stripe-gate').id).toBe('tier-stripe-gate');
+		expect(screen.getByTestId('tier-stripe-gate')).toHaveTextContent(
+			'Your tier will be waiting here when you come back.'
+		);
+	});
+
+	it('not connected, staff: no Connect button, asks the owner; door fallback stays', () => {
+		renderSection({ organizationStripeConnected: false, isOwner: false, ...base });
+		expect(screen.queryByRole('button', { name: 'Connect Stripe' })).toBeNull();
+		expect(screen.getByTestId('tier-stripe-gate')).toHaveTextContent(
+			'Ask the organization owner to connect Stripe.'
+		);
+		expect(screen.getByRole('button', { name: 'Take payment at the door instead' })).toBeTruthy();
+	});
+
+	it('needs billing, staff: no billing link, asks the owner', () => {
+		const select = renderSection({
+			organizationStripeConnected: true,
+			billingNeedsAttention: true,
+			isOwner: false,
+			...base
+		});
+		expect(screen.queryByRole('link', { name: 'Add tax details' })).toBeNull();
+		expect(screen.getByTestId('tier-billing-gate')).toHaveTextContent(
+			'Ask the organization owner to add tax details for online payments.'
+		);
+		expect(select).toHaveAccessibleDescription(/Add tax details for online payments/);
 	});
 });

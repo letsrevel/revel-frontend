@@ -32,7 +32,6 @@
 	import EssentialsStep from './EssentialsStep.svelte';
 	import DetailsStep from './DetailsStep.svelte';
 	import EventResources from './EventResources.svelte';
-	import type { StripeSetupState } from '$lib/utils/org-setup-progress';
 	import TicketingStep from './TicketingStep.svelte';
 	import { Save } from '@lucide/svelte';
 
@@ -42,18 +41,9 @@
 		userCity?: CitySchema | null;
 		orgCity?: CitySchema | null;
 		eventSeries?: EventSeriesRetrieveSchema[];
-		/** Online-payment readiness, computed by the page from the admin org schema. */
-		onlinePaymentSetup?: StripeSetupState;
 	}
 
-	const {
-		organization,
-		existingEvent,
-		userCity,
-		orgCity,
-		eventSeries = [],
-		onlinePaymentSetup = 'ready'
-	}: Props = $props();
+	const { organization, existingEvent, userCity, orgCity, eventSeries = [] }: Props = $props();
 
 	const queryClient = useQueryClient();
 
@@ -672,8 +662,6 @@
 			eventId={eventIdValue}
 			organizationSlug={organization.slug}
 			organizationStripeConnected={organization.is_stripe_connected}
-			billingNeedsAttention={onlinePaymentSetup === 'needs-billing'}
-			stripeEmail={organization.contact_email ?? ''}
 			{formData}
 			venueCapacity={selectedVenue?.capacity ?? null}
 			onUpdate={updateFormData}

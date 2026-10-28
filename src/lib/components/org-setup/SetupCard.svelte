@@ -35,14 +35,23 @@
 	let showButton = $state<HTMLElement | null>(null);
 	let hideButton = $state<HTMLElement | null>(null);
 
+	// "Show it again" waits on the server reloading the counts.
+	let showing = $state(false);
+
 	async function setHidden(next: boolean): Promise<void> {
+		if (showing) return;
 		writeSetupHiddenCookie(orgId, next);
 		if (next) {
 			hidden = true;
 		} else {
-			// The server skipped the counts while hidden: reload them before expanding.
-			await invalidateAll();
-			hidden = false;
+			showing = true;
+			try {
+				// The server skipped the counts while hidden: reload them before expanding.
+				await invalidateAll();
+				hidden = false;
+			} finally {
+				showing = false;
+			}
 		}
 		// The clicked button unmounts; move focus to its counterpart.
 		await tick();
@@ -83,6 +92,8 @@
 				variant="ghost"
 				size="sm"
 				class="min-h-[44px]"
+				disabled={showing}
+				aria-busy={showing}
 				onclick={() => setHidden(false)}
 			>
 				{m['orgSetup.card.show']()}

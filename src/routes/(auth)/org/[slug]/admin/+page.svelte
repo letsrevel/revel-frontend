@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
@@ -38,8 +37,10 @@
 	);
 
 	// Mirrors the card's collapsed state (bound below) so the page can restore
-	// the empty next-event panel when the user hides the card.
-	let setupCardHidden = $state(untrack(() => data.setupHidden));
+	// the empty next-event panel when the user hides the card. A writable
+	// $derived: it follows the server value across client-side org switches and
+	// still takes the card's local hide/show in between.
+	let setupCardHidden = $derived(data.setupHidden);
 	// The card's "create your first event" box already carries that CTA.
 	const setupCardCoversEmptyPanel = $derived(
 		setupProgress !== null &&

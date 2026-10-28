@@ -35,7 +35,7 @@ vi.mock('$lib/components/events/admin/editor/PublishShareCard.svelte', async () 
 	default: (await import('$lib/test-utils/StubComponent.svelte')).default
 }));
 
-function setup() {
+function setup(isOwner = true) {
 	return render(QueryClientTestWrapper, {
 		props: {
 			client: new QueryClient(),
@@ -43,7 +43,7 @@ function setup() {
 			componentProps: {
 				data: {
 					event: { id: 'e1', name: 'Party', status: 'draft', slug: 'party' },
-					isOwner: true
+					isOwner
 				}
 			}
 		}
@@ -88,6 +88,18 @@ describe('Stripe return params on the event edit page', () => {
 		expect(organizationadmincoreStripeAccountVerify).not.toHaveBeenCalled();
 		expect(window.location.search).toBe('?tab=ticketing');
 	});
+
+	it.each(['stripe_success', 'stripe_refresh'])(
+		'staff (not owner): %s only strips the params, no verify, no notice',
+		async (param) => {
+			window.history.replaceState({}, '', `${url}?tab=ticketing&${param}=true`);
+			setup(false);
+			await Promise.resolve();
+			expect(organizationadmincoreStripeAccountVerify).not.toHaveBeenCalled();
+			expect(screen.queryByTestId('stripe-return-notice')).toBeNull();
+			expect(window.location.search).toBe('?tab=ticketing');
+		}
+	);
 
 	it('no params: no notice', () => {
 		window.history.replaceState({}, '', `${url}?tab=ticketing`);

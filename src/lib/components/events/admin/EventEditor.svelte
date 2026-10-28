@@ -620,6 +620,7 @@
 			organizationStripeConnected={organization.is_stripe_connected}
 			billingNeedsAttention={onlinePaymentSetup === 'needs-billing'}
 			stripeEmail={organization.contact_email ?? ''}
+			{isOwner}
 			platformFees={platformFeeInfoFrom(organization)}
 			{formData}
 			venueCapacity={selectedVenue?.capacity ?? null}

@@ -41,7 +41,7 @@
 	} from '$lib/components/org-setup/StripeReturnNotice.svelte';
 	import EventStripeConnect from '$lib/components/events/admin/editor/EventStripeConnect.svelte';
 	import PublishShareCard from '$lib/components/events/admin/editor/PublishShareCard.svelte';
-	import { orgHref, rootRelative } from '$lib/utils/org-links';
+	import { eventPublicLinks } from '$lib/utils/event-links';
 	import type { Tone } from '$lib/components/common/tones';
 
 	const { data }: { data: PageData } = $props();
@@ -58,7 +58,7 @@
 	const queryClient = useQueryClient();
 
 	// Current status
-	const currentStatus = $derived(event.status as string);
+	const currentStatus = $derived(event.status);
 	const statusTone = $derived.by((): Tone => {
 		switch (currentStatus) {
 			case 'open':
@@ -89,14 +89,18 @@
 	// /welcome page; tab=ticketing and any other params are kept.
 	let stripeNotice = $state<StripeNotice | null>(null);
 	let showStripeModal = $state(false);
+	// The publish flow lands here with ?published=1: show the share card once.
+	let justPublished = $state(false);
 
 	onMount(() => {
 		const params = new SvelteURLSearchParams(window.location.search);
 		const success = params.get('stripe_success') === 'true';
 		const refresh = params.get('stripe_refresh') === 'true';
-		if (!success && !refresh) return;
+		justPublished = params.get('published') === '1';
+		if (!success && !refresh && !justPublished) return;
 		params.delete('stripe_success');
 		params.delete('stripe_refresh');
+		params.delete('published');
 		const query = params.toString();
 		window.history.replaceState(
 			window.history.state,
@@ -104,6 +108,9 @@
 			window.location.pathname + (query ? `?${query}` : '')
 		);
 
+		// Stripe onboarding and its verification are owner-only: staff just get the
+		// params stripped.
+		if (!data.isOwner || (!success && !refresh)) return;
 		if (refresh) {
 			stripeNotice = 'expired';
 			return;
@@ -148,8 +155,15 @@
 
 			return response.data;
 		},
-		onSuccess: () => {
+		onSuccess: (_event, status) => {
 			queryClient.invalidateQueries({ queryKey: ['events'] });
+			if (status === 'open' && currentStatus === 'draft') {
+				// Publishing: reload onto ?published=1 so the share card shows once.
+				const url = new URL(window.location.href);
+				url.searchParams.set('published', '1');
+				window.location.assign(url.toString());
+				return;
+			}
 			// Reload the page to get updated event data
 			window.location.reload();
 		},
@@ -195,20 +209,8 @@
 		}
 	}
 
-	// Public event page: relative href for the preview link, absolute URL to share.
-	const publicHref = $derived(
-		orgHref(
-			organization,
-			resolve('/(public)/events/[org_slug]/[event_slug]', {
-				org_slug: organization.slug,
-				event_slug: event.slug
-			}),
-			$page.data
-		)
-	);
-	const publicUrl = $derived(
-		/^https?:\/\//i.test(publicHref) ? publicHref : `${$page.url.origin}${rootRelative(publicHref)}`
-	);
+	// Platform-relative preview link; absolute (custom-domain aware) URL to share.
+	const links = $derived(eventPublicLinks(organization, event.slug, $page.data, $page.url.origin));
 
 	/**
 	 * Close event (open → closed)
@@ -461,14 +463,16 @@
 		defaultEmail={organization.contact_email ?? ''}
 	/>
 
-	<PublishShareCard
-		status={currentStatus}
-		eventName={event.name}
-		eventUrl={publicUrl}
-		previewHref={publicHref}
-		onPublish={publishEvent}
-		publishing={updateStatusMutation.isPending}
-	/>
+	{#if currentStatus === 'draft' || (currentStatus === 'open' && justPublished)}
+		<PublishShareCard
+			status={currentStatus}
+			eventName={event.name}
+			eventUrl={links.shareUrl}
+			previewHref={links.previewHref}
+			onPublish={publishEvent}
+			publishing={updateStatusMutation.isPending}
+		/>
+	{/if}
 
 	<!-- Event Editor Component. Keyed by event id: EventEditor snapshots
 	     existingEvent (incl. the id it saves to) into $state once, so a

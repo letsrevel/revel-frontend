@@ -4,6 +4,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Button } from '$lib/components/ui/button';
 	import { resolve } from '$app/paths';
+	import { stripeGateFor } from './tier-draft';
 	import EventStripeConnect from './editor/EventStripeConnect.svelte';
 	import ComplianceCallout from '$lib/components/compliance/ComplianceCallout.svelte';
 	import ComplianceNotices from '$lib/components/compliance/ComplianceNotices.svelte';
@@ -25,6 +26,10 @@
 		organizationSlug?: string;
 		eventId?: string;
 		stripeEmail?: string;
+		/** Only the org owner can connect Stripe or edit billing details. */
+		isOwner?: boolean;
+		/** Runs right before the redirect to Stripe (stash the tier being built). */
+		onBeforeStripeConnect?: () => void;
 		/**
 		 * The event's `compliance` (#1001), never the org's: it accounts for where
 		 * the event is held, so it matches the 422 the API would answer.
@@ -46,6 +51,8 @@
 		organizationSlug = '',
 		eventId = '',
 		stripeEmail = '',
+		isOwner = false,
+		onBeforeStripeConnect,
 		compliance = null,
 		complianceStatus = 'ready',
 		onRetryCompliance
@@ -58,8 +65,15 @@
 	const offlineNotices = $derived(noticesFor(compliance?.notices, 'offline_payment'));
 
 	let showStripeModal = $state(false);
-	const showStripeGate = $derived(paymentMethod === 'online' && !onlineUnavailable);
-	const canConnect = $derived(!!organizationSlug && !!eventId);
+	const gate = $derived(
+		stripeGateFor(
+			paymentMethod,
+			onlineUnavailable,
+			organizationStripeConnected,
+			billingNeedsAttention
+		)
+	);
+	const canConnect = $derived(isOwner && !!organizationSlug && !!eventId);
 	const billingHref = $derived(
 		organizationSlug ? resolve('/(auth)/org/[slug]/admin/billing', { slug: organizationSlug }) : '#'
 	);
@@ -74,7 +88,11 @@
 			id="payment-method"
 			bind:value={paymentMethod}
 			disabled={isPending}
-			aria-describedby={onlineUnavailable ? 'tier-online-blocked' : undefined}
+			aria-describedby={onlineUnavailable
+				? 'tier-online-blocked'
+				: gate
+					? 'tier-stripe-gate'
+					: undefined}
 			class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 		>
 			<option value="free">{m['tierForm.free']()}</option>
@@ -119,8 +137,9 @@
 		</ComplianceCallout>
 	{/if}
 
-	{#if showStripeGate && !organizationStripeConnected}
+	{#if gate === 'connect'}
 		<div
+			id="tier-stripe-gate"
 			role="group"
 			aria-labelledby="tier-stripe-gate-title"
 			data-testid="tier-stripe-gate"
@@ -130,6 +149,11 @@
 				{m['tierForm.stripeGate.title']()}
 			</p>
 			<p class="text-muted-foreground">{m['tierForm.stripeGate.body']()}</p>
+			{#if canConnect}
+				<p class="text-muted-foreground">{m['tierForm.stripeGate.waiting']()}</p>
+			{:else}
+				<p class="font-medium text-foreground">{m['tierForm.stripeGate.askOwner']()}</p>
+			{/if}
 			<div class="flex flex-col gap-2 sm:flex-row">
 				{#if canConnect}
 					<Button
@@ -152,8 +176,9 @@
 				</Button>
 			</div>
 		</div>
-	{:else if showStripeGate && billingNeedsAttention}
+	{:else if gate === 'billing'}
 		<div
+			id="tier-stripe-gate"
 			role="group"
 			aria-labelledby="tier-billing-gate-title"
 			data-testid="tier-billing-gate"
@@ -163,9 +188,13 @@
 				{m['orgSetup.stripe.billingTitle']()}
 			</p>
 			<p class="text-muted-foreground">{m['orgSetup.stripe.billingBody']()}</p>
-			<Button href={billingHref} class="min-h-[44px]">
-				{m['orgSetup.stripe.billingCta']()}
-			</Button>
+			{#if isOwner}
+				<Button href={billingHref} class="min-h-[44px]">
+					{m['orgSetup.stripe.billingCta']()}
+				</Button>
+			{:else}
+				<p class="font-medium text-foreground">{m['tierForm.stripeGate.askOwnerBilling']()}</p>
+			{/if}
 		</div>
 	{/if}
 
@@ -175,6 +204,7 @@
 			orgSlug={organizationSlug}
 			{eventId}
 			defaultEmail={stripeEmail}
+			beforeRedirect={onBeforeStripeConnect}
 		/>
 	{/if}
 

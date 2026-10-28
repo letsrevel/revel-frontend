@@ -4,9 +4,10 @@
 	import CopyField from '$lib/components/common/CopyField.svelte';
 	import { CheckCircle, Eye, X, MessageCircle, Send, Mail } from '@lucide/svelte';
 	import { cn } from '$lib/utils';
+	import type { EventStatus } from '$lib/api/generated/types.gen';
 
 	interface Props {
-		status: string;
+		status: EventStatus;
 		eventName: string;
 		/** Absolute public URL of the event. */
 		eventUrl: string;
@@ -98,35 +99,20 @@
 		<CopyField value={eventUrl} label={m['eventEditor.publishCard.linkLabel']()} />
 		<!-- eslint-disable svelte/no-navigation-without-resolve -- external share URLs -->
 		<div class="flex flex-wrap gap-2">
-			<a
-				href={whatsappHref}
-				target="_blank"
-				rel="noopener noreferrer"
-				class={shareClass}
-				aria-label={m['eventEditor.publishCard.shareWhatsapp']()}
-			>
+			<a href={whatsappHref} target="_blank" rel="noopener noreferrer" class={shareClass}>
 				<MessageCircle class="h-4 w-4" aria-hidden="true" />
-				{m['eventEditor.publishCard.shareWhatsAppLabel']()}
+				<span class="sr-only">{m['eventEditor.publishCard.shareSrPrefix']()}</span>
+				<span>{m['eventEditor.publishCard.shareWhatsAppLabel']()}</span>
 			</a>
-			<a
-				href={telegramHref}
-				target="_blank"
-				rel="noopener noreferrer"
-				class={shareClass}
-				aria-label={m['eventEditor.publishCard.shareTelegram']()}
-			>
+			<a href={telegramHref} target="_blank" rel="noopener noreferrer" class={shareClass}>
 				<Send class="h-4 w-4" aria-hidden="true" />
-				{m['eventEditor.publishCard.shareTelegramLabel']()}
+				<span class="sr-only">{m['eventEditor.publishCard.shareSrPrefix']()}</span>
+				<span>{m['eventEditor.publishCard.shareTelegramLabel']()}</span>
 			</a>
-			<a
-				href={emailHref}
-				target="_blank"
-				rel="noopener noreferrer"
-				class={shareClass}
-				aria-label={m['eventEditor.publishCard.shareEmail']()}
-			>
+			<a href={emailHref} class={shareClass}>
 				<Mail class="h-4 w-4" aria-hidden="true" />
-				{m['eventEditor.publishCard.shareEmailLabel']()}
+				<span class="sr-only">{m['eventEditor.publishCard.shareSrPrefix']()}</span>
+				<span>{m['eventEditor.publishCard.shareEmailLabel']()}</span>
 			</a>
 		</div>
 		<!-- eslint-enable svelte/no-navigation-without-resolve -->

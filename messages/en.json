@@ -10602,14 +10602,15 @@
 	"eventEditor.publishCard.liveTitle": "It's live. Now tell people.",
 	"eventEditor.publishCard.liveBody": "Share the link wherever your people are.",
 	"eventEditor.publishCard.linkLabel": "Event link",
-	"eventEditor.publishCard.shareWhatsapp": "Share on WhatsApp",
-	"eventEditor.publishCard.shareTelegram": "Share on Telegram",
-	"eventEditor.publishCard.shareEmail": "Share by email",
 	"eventEditor.publishCard.shareWhatsAppLabel": "WhatsApp",
 	"eventEditor.publishCard.shareTelegramLabel": "Telegram",
 	"eventEditor.publishCard.shareEmailLabel": "Email",
 	"eventEditor.publishCard.dismiss": "Dismiss",
 	"tierForm.stripeGate.title": "Online payments need Stripe",
 	"tierForm.stripeGate.body": "Connect a Stripe account so ticket money lands in your bank. You'll come back to this event afterwards.",
-	"tierForm.stripeGate.atTheDoor": "Take payment at the door instead"
+	"tierForm.stripeGate.atTheDoor": "Take payment at the door instead",
+	"eventEditor.publishCard.shareSrPrefix": "Share via",
+	"tierForm.stripeGate.waiting": "Your tier will be waiting here when you come back.",
+	"tierForm.stripeGate.askOwner": "Ask the organization owner to connect Stripe.",
+	"tierForm.stripeGate.askOwnerBilling": "Ask the organization owner to add tax details for online payments."
 }

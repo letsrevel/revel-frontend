@@ -8,9 +8,11 @@
 		orgSlug: string;
 		eventId: string;
 		defaultEmail?: string;
+		/** Runs just before the redirect to Stripe (e.g. stash unsaved work). */
+		beforeRedirect?: () => void;
 	}
 
-	let { show = $bindable(), orgSlug, eventId, defaultEmail = '' }: Props = $props();
+	let { show = $bindable(), orgSlug, eventId, defaultEmail = '', beforeRedirect }: Props = $props();
 
 	let isLoading = $state(false);
 	let error = $state<string | null>(null);
@@ -25,13 +27,15 @@
 		error = null;
 		try {
 			// Stripe sends the owner back to this event's ticketing tab.
-			window.location.href = await requestStripeOnboardingLink(
+			const url = await requestStripeOnboardingLink(
 				orgSlug,
 				email,
 				authStore.accessToken ?? '',
 				'event',
 				eventId
 			);
+			beforeRedirect?.();
+			window.location.href = url;
 		} catch (e) {
 			error = e instanceof Error ? e.message : String(e);
 			isLoading = false;
