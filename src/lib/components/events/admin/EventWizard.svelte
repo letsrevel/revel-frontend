@@ -32,10 +32,7 @@
 	import EssentialsStep from './EssentialsStep.svelte';
 	import DetailsStep from './DetailsStep.svelte';
 	import EventResources from './EventResources.svelte';
-	import { billingNeedsAttention } from '$lib/utils/org-setup-progress';
-	// Admin routes supply the admin org schema at runtime (billing fields included);
-	// the prop is typed as the public one. Missing fields read as no attention needed.
-	type BillingOrg = Parameters<typeof billingNeedsAttention>[0];
+	import type { StripeSetupState } from '$lib/utils/org-setup-progress';
 	import TicketingStep from './TicketingStep.svelte';
 	import { Save } from '@lucide/svelte';
 
@@ -45,9 +42,18 @@
 		userCity?: CitySchema | null;
 		orgCity?: CitySchema | null;
 		eventSeries?: EventSeriesRetrieveSchema[];
+		/** Online-payment readiness, computed by the page from the admin org schema. */
+		onlinePaymentSetup?: StripeSetupState;
 	}
 
-	const { organization, existingEvent, userCity, orgCity, eventSeries = [] }: Props = $props();
+	const {
+		organization,
+		existingEvent,
+		userCity,
+		orgCity,
+		eventSeries = [],
+		onlinePaymentSetup = 'ready'
+	}: Props = $props();
 
 	const queryClient = useQueryClient();
 
@@ -666,7 +672,7 @@
 			eventId={eventIdValue}
 			organizationSlug={organization.slug}
 			organizationStripeConnected={organization.is_stripe_connected}
-			billingNeedsAttention={billingNeedsAttention(organization as unknown as BillingOrg)}
+			billingNeedsAttention={onlinePaymentSetup === 'needs-billing'}
 			stripeEmail={organization.contact_email ?? ''}
 			{formData}
 			venueCapacity={selectedVenue?.capacity ?? null}

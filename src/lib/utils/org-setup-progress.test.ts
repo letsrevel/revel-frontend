@@ -5,6 +5,7 @@ import {
 	buildSetupProgress,
 	isPageHidden,
 	shouldShowSetupCard,
+	stripeSetupState,
 	type SetupCounts
 } from './org-setup-progress';
 
@@ -217,5 +218,24 @@ describe('billingNeedsAttention', () => {
 				platform_fee_fixed: '0.30'
 			})
 		).toBe(true);
+	});
+});
+
+describe('stripeSetupState', () => {
+	const base = {
+		stripe_account_id: 'acct_1',
+		stripe_charges_enabled: true,
+		is_stripe_connected: true,
+		platform_fee_percent: '2.5',
+		platform_fee_fixed: '0',
+		vat_country_code: 'IT',
+		billing_address: 'Via Roma 1',
+		billing_name: 'Acme'
+	};
+	it('walks none -> incomplete -> needs-billing -> ready', () => {
+		expect(stripeSetupState({ ...base, stripe_account_id: null })).toBe('none');
+		expect(stripeSetupState({ ...base, stripe_charges_enabled: false })).toBe('incomplete');
+		expect(stripeSetupState({ ...base, billing_name: '' })).toBe('needs-billing');
+		expect(stripeSetupState(base)).toBe('ready');
 	});
 });

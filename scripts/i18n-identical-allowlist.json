@@ -93,7 +93,8 @@
 		"myDATA",
 		"NAV Online Számla",
 		"RO e-Factura",
-		"Verifactu"
+		"Verifactu",
+		"WhatsApp"
 	],
 	"fr": [
 		"© {year} {name}",
@@ -208,7 +209,8 @@
 		"NAV Online Számla",
 		"RO e-Factura",
 		"Verifactu",
-		"Document"
+		"Document",
+		"WhatsApp"
 	],
 	"it": [
 		"© {year} {name}",
@@ -286,7 +288,8 @@
 		"myDATA",
 		"NAV Online Számla",
 		"RO e-Factura",
-		"Verifactu"
+		"Verifactu",
+		"WhatsApp"
 	],
 	"es": [
 		"© {year} {name}",
@@ -349,7 +352,8 @@
 		"NAV Online Számla",
 		"RO e-Factura",
 		"Verifactu",
-		"Ref. {reference}"
+		"Ref. {reference}",
+		"WhatsApp"
 	],
 	"pt": [
 		"© {year} {name}",
@@ -409,6 +413,8 @@
 		"{start} – {end}",
 		"~{amount}",
 		"→",
-		"Ref. {reference}"
+		"Ref. {reference}",
+		"WhatsApp",
+		"Email"
 	]
 }

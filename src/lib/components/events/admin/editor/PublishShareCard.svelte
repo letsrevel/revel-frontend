@@ -106,7 +106,7 @@
 				aria-label={m['eventEditor.publishCard.shareWhatsapp']()}
 			>
 				<MessageCircle class="h-4 w-4" aria-hidden="true" />
-				WhatsApp
+				{m['eventEditor.publishCard.shareWhatsAppLabel']()}
 			</a>
 			<a
 				href={telegramHref}
@@ -116,7 +116,7 @@
 				aria-label={m['eventEditor.publishCard.shareTelegram']()}
 			>
 				<Send class="h-4 w-4" aria-hidden="true" />
-				Telegram
+				{m['eventEditor.publishCard.shareTelegramLabel']()}
 			</a>
 			<a
 				href={emailHref}
@@ -126,7 +126,7 @@
 				aria-label={m['eventEditor.publishCard.shareEmail']()}
 			>
 				<Mail class="h-4 w-4" aria-hidden="true" />
-				Email
+				{m['eventEditor.publishCard.shareEmailLabel']()}
 			</a>
 		</div>
 		<!-- eslint-enable svelte/no-navigation-without-resolve -->

@@ -42,6 +42,16 @@ export function billingNeedsAttention(org: BillingFields): boolean {
 	);
 }
 
+/** Where the org stands on taking online payments: none -> incomplete -> needs-billing -> ready. */
+export function stripeSetupState(
+	org: Pick<OrganizationAdminDetailSchema, 'stripe_account_id' | 'stripe_charges_enabled'> &
+		BillingFields
+): StripeSetupState {
+	if (!org.stripe_account_id) return 'none';
+	if (!org.stripe_charges_enabled) return 'incomplete';
+	return billingNeedsAttention(org) ? 'needs-billing' : 'ready';
+}
+
 const HIDDEN_VISIBILITY: ReadonlySet<Visibility> = new Set<Visibility>(['private', 'staff-only']);
 
 /** True when the org page is not publicly reachable (members-only/unlisted are deliberate). */
@@ -78,13 +88,7 @@ export function buildSetupProgress(
 			: eventCount > 0 && counts.latestDraft !== null
 				? 'draft'
 				: 'none';
-	const stripe: StripeSetupState = !org.stripe_account_id
-		? 'none'
-		: !org.stripe_charges_enabled
-			? 'incomplete'
-			: billingNeedsAttention(org)
-				? 'needs-billing'
-				: 'ready';
+	const stripe = stripeSetupState(org);
 
 	const doneCount =
 		1 +
