@@ -28,7 +28,8 @@ export interface SeoConfig {
 		description: string;
 		image?: string;
 		imageAlt?: string;
-		site: string;
+		/** Revel's handle; omitted on tenant hosts (#1057). */
+		site?: string;
 	};
 	hreflang: Array<{ lang: Lang | typeof import('./constants').X_DEFAULT; href: string }>;
 	jsonLd: object[];

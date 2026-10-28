@@ -4,9 +4,11 @@ import { emailChangeConfirmSchema } from '$lib/schemas/auth';
 import { getAccessTokenCookieOptions, getRefreshTokenCookieOptions } from '$lib/utils/cookies';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { log } from '$lib/server/logger';
+import { sessionRememberMe } from '$lib/server/session';
+import { resolveReturnTarget } from '$lib/server/tenant-canonical';
 
 export const actions: Actions = {
-	confirmEmailChange: async ({ request, cookies, fetch }) => {
+	confirmEmailChange: async ({ request, cookies, fetch, locals }) => {
 		const formData = await request.formData();
 		const validation = emailChangeConfirmSchema.safeParse({
 			token: formData.get('token')
@@ -28,7 +30,7 @@ export const actions: Actions = {
 				// Honour the user's existing remember_me preference so a session-only
 				// login doesn't get silently upgraded to a 30-day persistent cookie
 				// after they confirm an email change. Defaults to false if absent.
-				const rememberMe = cookies.get('remember_me') === 'true';
+				const rememberMe = sessionRememberMe(cookies.get('remember_me') === 'true', locals);
 				if (tokens?.access) {
 					cookies.set('access_token', tokens.access, getAccessTokenCookieOptions(rememberMe));
 				}
@@ -38,8 +40,13 @@ export const actions: Actions = {
 
 				const newEmail = response.data.user?.email ?? '';
 
+				// Started on a custom domain (#1070): its login is the way back (the
+				// tenant host holds no session). Re-validated here.
+				const returnTo = await resolveReturnTarget(formData.get('return_host')?.toString(), fetch);
+
 				return {
 					success: true,
+					returnTo,
 					new_email: newEmail,
 					user: response.data.user,
 					access_token: tokens?.access ?? null

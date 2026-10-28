@@ -1,3 +1,5 @@
+import { orgOrigin } from '$lib/utils/org-links';
+import { serverLinkContext } from '$lib/server/tenant-canonical';
 import type { RequestHandler } from './$types';
 
 const STATIC = [
@@ -49,7 +51,30 @@ function landingAlternates(origin: string, slug: string): string {
 	);
 }
 
-export const GET: RequestHandler = async ({ url }) => {
+function urlset(lines: string[]): Response {
+	const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+${lines.join('\n')}
+</urlset>`;
+	return new Response(xml, {
+		headers: {
+			'Content-Type': 'application/xml; charset=utf-8',
+			'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800'
+		}
+	});
+}
+
+export const GET: RequestHandler = async ({ url, locals }) => {
+	// Tenant host: the org page (served at `/`) is the only static entry. No
+	// marketing, landing, auth or platform pages (#1057).
+	if (locals.tenant) {
+		const loc = `${orgOrigin(locals.tenant, serverLinkContext(locals)) ?? url.origin}/`;
+		return urlset([
+			`<url>\n  <loc>${escapeXml(loc)}</loc>\n  <changefreq>daily</changefreq>\n  <priority>1.0</priority>\n</url>`
+		]);
+	}
+
 	const baseUrl = url.origin;
 	const lines: string[] = [];
 

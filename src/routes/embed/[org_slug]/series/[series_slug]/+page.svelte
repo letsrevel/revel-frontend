@@ -1,4 +1,6 @@
 <script lang="ts">
+	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
+	import { orgOrigin } from '$lib/utils/org-links';
 	import { page } from '$app/state';
 	import EmbedHeader from '$lib/components/embed/EmbedHeader.svelte';
 	import EmbedFooter from '$lib/components/embed/EmbedFooter.svelte';
@@ -35,8 +37,13 @@
 			data.series.organization.logo
 	);
 
+	// Links out target the org's custom domain when it has one (#1056).
 	const seriesHref = $derived(
-		buildEmbedLink(links.origin, seriesPath(data.series.organization.slug, data.series.slug), links)
+		buildEmbedLink(
+			orgOrigin(data.series.organization, data) ?? links.origin,
+			seriesPath(data.series.organization.slug, data.series.slug),
+			links
+		)
 	);
 </script>
 
@@ -54,9 +61,9 @@
 	/>
 
 	{#if data.series.description}
-		<p class="border-b border-border px-4 py-3 text-sm text-muted-foreground">
-			{data.series.description}
-		</p>
+		<div class="border-b border-border px-4 py-3">
+			<MarkdownContent content={data.series.description} class="text-muted-foreground" />
+		</div>
 	{/if}
 
 	<EmbedEventGrid

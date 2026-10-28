@@ -55,7 +55,7 @@
 		"eventTypeExplanation": "Der Veranstaltungstyp bestimmt, wer teilnahmeberechtigt ist (Zusage oder Ticket), unabhängig davon, wer sie sehen kann."
 	},
 	"accountDeletion": {
-		"title": "Kontolöschung bestätigen - Revel",
+		"title": "Kontolöschung bestätigen - {brand}",
 		"metaDescription": "Bestätige die endgültige Löschung deines Revel-Kontos",
 		"successHeading": "Konto gelöscht",
 		"successSubheading": "Dein Konto wurde endgültig gelöscht",
@@ -81,7 +81,7 @@
 		"warningImmediate": "Diese Aktion erfolgt sofort und kann nicht rückgängig gemacht werden"
 	},
 	"accountPrivacyPage": {
-		"pageTitle": "Datenschutz & Daten - Revel",
+		"pageTitle": "Datenschutz & Daten - {brand}",
 		"pageDescription": "Verwalte deine Datenschutzeinstellungen und Daten auf Revel",
 		"title": "Datenschutz & Daten",
 		"subtitle": "Verwalte deine Datenschutzeinstellungen und nimm deine Datenrechte wahr",
@@ -249,10 +249,10 @@
 		"invalidLink_body": "Dieser Bestätigungslink fehlt oder ist ungültig. Starte die E-Mail-Änderung erneut über deine Kontoeinstellungen.",
 		"invalidLink_cta": "Zu den Sicherheitseinstellungen",
 		"confirm_heading": "Bestätige deine neue E-Mail-Adresse",
-		"confirm_intro": "Du legst diese Adresse gleich als deine Anmeldeadresse für Revel fest.",
+		"confirm_intro": "Du legst diese Adresse gleich als deine Anmeldeadresse für {brand} fest.",
 		"confirm_warningTitle": "Du wirst auf allen anderen Geräten abgemeldet",
 		"confirm_warningBody": "Die Bestätigung ändert einen zentralen Teil deiner Identität, daher werden alle anderen Sitzungen ungültig. Auf diesem Gerät bleibst du angemeldet.",
-		"confirm_warningBullet1": "Offene Revel-Tabs auf anderen Geräten müssen sich neu anmelden.",
+		"confirm_warningBullet1": "Offene Tabs von {brand} auf anderen Geräten müssen sich neu anmelden.",
 		"confirm_warningBullet2": "Verwende deine neue E-Mail-Adresse mit dem gleichen Passwort, um dich anderswo anzumelden.",
 		"confirm_cancel": "Abbrechen",
 		"confirm_submit": "Änderung bestätigen",
@@ -269,7 +269,7 @@
 	},
 	"accountSettingsPage": {
 		"pageTitle": "Einstellungen",
-		"pageDescription": "Verwalte deine Revel-Einstellungen und Präferenzen",
+		"pageDescription": "Verwalte deine Einstellungen und Präferenzen bei {brand}",
 		"title": "Einstellungen",
 		"subtitle": "Verwalte deine Präferenzen und Benachrichtigungseinstellungen",
 		"successMessage": "Einstellungen erfolgreich aktualisiert",
@@ -898,7 +898,7 @@
 		"week_of": "Woche vom"
 	},
 	"checkEmailPage": {
-		"title": "Überprüfe deine E-Mails - Revel",
+		"title": "Überprüfe deine E-Mails - {brand}",
 		"checkYourEmail": "Überprüfe deine E-Mails",
 		"verificationLink": "Wir haben einen Verifizierungslink an folgende Adresse gesendet:",
 		"clickLink": "Klicke auf den Link in der E-Mail, um dein Konto zu verifizieren und die Registrierung abzuschließen.",
@@ -1032,10 +1032,12 @@
 		"createEventButton": "Veranstaltung erstellen",
 		"myOrganizationsButton": "Meine Organisationen",
 		"adminButton": "Admin",
+		"platformAdminHint": "Öffnet sich auf Revel. Melde dich dort einmal an.",
 		"viewProfile": "Profil ansehen",
 		"sections": {
 			"yourEvents": "Deine Veranstaltungen",
 			"discoverEvents": "Veranstaltungen entdecken",
+			"upcomingEvents": "Kommende Veranstaltungen",
 			"myOrganizations": "Meine Organisationen"
 		},
 		"filters": {
@@ -1059,6 +1061,9 @@
 			"noEventsFiltered": "Versuche, deinen Filter anzupassen, um mehr Veranstaltungen zu sehen",
 			"noEventsAvailable": "Keine Veranstaltungen verfügbar",
 			"noEventsHint": "Schau bald wieder vorbei für kommende Veranstaltungen in deiner Nähe!",
+			"noUpcomingEvents": "Keine kommenden Veranstaltungen",
+			"noUpcomingEventsHint": "{org} hat gerade keine kommenden Veranstaltungen. Schau bald wieder vorbei!",
+			"seePastEvents": "Vergangene Veranstaltungen ansehen",
 			"noOrganizations": "Noch keine Organisationen",
 			"noOrganizationsHint": "Organisationen helfen dir, Veranstaltungen zu verwalten und deine Community aufzubauen."
 		},
@@ -1141,8 +1146,10 @@
 			"organizations": "Organisationen",
 			"eventSeries": "Eventreihen",
 			"noOrganizations": "Du folgst noch keinen Organisationen",
+			"notFollowingOrg": "Du folgst {org} noch nicht",
 			"noEventSeries": "Du folgst noch keinen Eventreihen",
 			"discoverOrganizations": "Organisationen entdecken",
+			"visitOrg": "{org} besuchen",
 			"discoverEventSeries": "Events durchsuchen",
 			"searchPlaceholder": "Suchen...",
 			"showing": "Zeige {count} von {total}",
@@ -1421,7 +1428,20 @@
 		"nextStep": {
 			"request_whitelist": "Eine Verifizierung ist erforderlich, um auf diese Organisation zuzugreifen",
 			"wait_for_whitelist_approval": "Deine Verifizierungsanfrage wird geprüft",
-			"upgrade_membership": "Sieh dir die Mitgliedschaftsoptionen der Organisation an, um zu erfahren, welche Stufen du erhalten kannst."
+			"upgrade_membership": "Sieh dir die Mitgliedschaftsoptionen der Organisation an, um zu erfahren, welche Stufen du erhalten kannst.",
+			"rsvp": "Du kannst dich für dieses Event anmelden",
+			"purchase_ticket": "Hol dir dein Ticket, um an diesem Event teilzunehmen",
+			"complete_questionnaire": "Fülle den erforderlichen Fragebogen aus, um teilzunehmen",
+			"wait_for_questionnaire_evaluation": "Dein Fragebogen wird gerade geprüft",
+			"wait_to_retake_questionnaire": "Du kannst den Fragebogen bald erneut ausfüllen",
+			"request_invitation": "Frage eine Einladung an, um an diesem privaten Event teilzunehmen",
+			"wait_for_invitation_approval": "Deine Einladungsanfrage wartet auf Genehmigung",
+			"become_member": "Tritt der Organisation bei, um an diesem Event für Mitglieder teilzunehmen",
+			"join_waitlist": "Dieses Event ist ausgebucht, aber du kannst dich auf die Warteliste setzen",
+			"wait_for_open_spot": "Du stehst auf der Warteliste für dieses Event",
+			"wait_for_event_to_open": "Schau wieder vorbei, wenn die Anmeldung öffnet",
+			"complete_profile": "Vervollständige dein Profil, um an diesem Event teilzunehmen",
+			"fallback": "Prüfe deinen Teilnahmestatus"
 		},
 		"reason": {
 			"sales_paused": "Der Ticketverkauf ist gerade pausiert. Schau bald wieder vorbei.",
@@ -1443,11 +1463,86 @@
 		"questionnairesFailed": "{count} Fragebogen nicht bestanden",
 		"questionnairesFailedPlural": "{count} Fragebögen nicht bestanden",
 		"canRetry": "Du kannst es {date} erneut versuchen",
-		"availableOn": "Verfügbar {date}"
+		"availableOn": "Verfügbar {date}",
+		"actionButton": {
+			"rsvp": "RSVP",
+			"purchase_ticket": "Tickets kaufen",
+			"complete_questionnaire": "Fragebogen ausfüllen",
+			"wait_for_questionnaire_evaluation": "Wird geprüft",
+			"wait_to_retake_questionnaire": "Bald wieder möglich",
+			"request_invitation": "Einladung anfragen",
+			"wait_for_invitation_approval": "Genehmigung ausstehend",
+			"become_member": "Organisation beitreten",
+			"join_waitlist": "Auf die Warteliste",
+			"wait_for_open_spot": "Du bist auf der Warteliste",
+			"wait_for_event_to_open": "Benachrichtige mich",
+			"request_whitelist": "Verifizierung anfragen",
+			"wait_for_whitelist_approval": "Verifizierung ausstehend",
+			"complete_profile": "Profil vervollständigen",
+			"fallback": "Details ansehen"
+		},
+		"explanation": {
+			"eligible": "Du kannst an diesem Event teilnehmen",
+			"notEligible": "Du kannst derzeit nicht an diesem Event teilnehmen"
+		},
+		"rsvpStatus": {
+			"yes": "Du nimmst teil",
+			"maybe": "Du nimmst vielleicht teil",
+			"no": "Du nimmst nicht teil",
+			"unknown": "RSVP-Status unbekannt"
+		},
+		"ticketStatus": {
+			"active": "Du hast ein Ticket",
+			"cancelled": "Ticket storniert",
+			"checked_in": "Eingecheckt",
+			"pending": "Ticket ausstehend",
+			"none": "Keine Tickets"
+		},
+		"tickets": {
+			"allCheckedIn": "{count} Tickets eingecheckt",
+			"allPending": "{count} Tickets ausstehend",
+			"somePending": "{count} Tickets ({pending} ausstehend)",
+			"total": "{count} Tickets"
+		},
+		"profileField": {
+			"profile_picture": "Profilbild",
+			"pronouns": "Pronomen",
+			"name": "Anzeigename"
+		}
 	},
 	"eligibilityStatusDisplay": {
 		"available": "Verfügbar",
-		"missingProfileFields": "Bitte füge folgendes zu deinem Profil hinzu:"
+		"missingProfileFields": "Bitte füge Folgendes zu deinem Profil hinzu:",
+		"questionnairesRequired": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} Fragebogen erforderlich",
+					"countPlural=*": "{count} Fragebögen erforderlich"
+				}
+			}
+		],
+		"questionnairesPendingReview": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} Fragebogen wartet auf Prüfung",
+					"countPlural=*": "{count} Fragebögen warten auf Prüfung"
+				}
+			}
+		],
+		"questionnairesFailed": [
+			{
+				"declarations": ["input count", "local countPlural = count: plural"],
+				"selectors": ["countPlural"],
+				"match": {
+					"countPlural=one": "{count} Fragebogen nicht bestanden",
+					"countPlural=*": "{count} Fragebögen nicht bestanden"
+				}
+			}
+		]
 	},
 	"errorPage": {
 		"defaultMessage": "Ein Fehler ist aufgetreten",
@@ -1571,7 +1666,8 @@
 		"membersOnly": "Nur Mitglieder",
 		"private": "Nur mit Einladung",
 		"public": "Öffentlich",
-		"unlisted": "Nicht gelistet"
+		"unlisted": "Nicht gelistet",
+		"attendeesOnly": "Nur Teilnehmer*innen"
 	},
 	"eventCard": {
 		"viewDetails": "Veranstaltungsdetails anzeigen",
@@ -1598,6 +1694,7 @@
 		"visibilityNote": "Sichtbarkeit: {visibility}",
 		"tags_heading": "Tags",
 		"series_heading": "Teil einer Serie",
+		"series_viewSeries": "Serie ansehen",
 		"invitation_heading": "Einladungsdetails",
 		"payment_successTitle": "Zahlung erfolgreich!",
 		"payment_successMessage": "Dein Ticket wurde bestätigt. Überprüfe deine E-Mails für Details.",
@@ -2142,9 +2239,41 @@
 		"tabDetails": "Event-Details",
 		"tabTicketing": "Ticketing",
 		"tabListings": "Einträge",
+		"nextStepTicketing": "Als Nächstes: Ticketstufen und Preise einrichten",
+		"goToTicketing": "Zum Ticketing",
 		"editEvent": "Event bearbeiten",
 		"ticketing": "Ticketing",
-		"validationErrorToast": "Bitte behebe die markierten Fehler, bevor du speicherst."
+		"validationErrorToast": "Bitte behebe die markierten Fehler, bevor du speicherst.",
+		"sectionBasics": "Grundlagen",
+		"sectionWhen": "Datum & Uhrzeit",
+		"sectionWhere": "Ort",
+		"sectionAccess": "Zugang",
+		"sectionAttendance": "Teilnahme",
+		"sectionPage": "Auf der Event-Seite",
+		"sectionExtras": "Weiteres",
+		"subtitleBasics": "Name, Beschreibung und Bilder.",
+		"subtitleWhen": "Wann das Event läuft, dazu Check-in und Ablauf.",
+		"subtitleWhere": "Wo es stattfindet und welche Steuerregeln daraus folgen.",
+		"subtitleAccess": "Wer das Event sehen und teilnehmen kann und wie man hineinkommt.",
+		"subtitleAttendance": "RSVP-Frist, Kapazität und Warteliste.",
+		"subtitlePage": "Was die öffentliche Seite über die Teilnahme zeigt.",
+		"subtitleExtras": "Tags, Serie und angehängte Ressourcen.",
+		"subCheckIn": "Check-in-Zeitfenster",
+		"subGuestAttendance": "Gastteilnahme",
+		"ticketingModeTickets": "Teilnehmende erhalten oder kaufen Tickets.",
+		"ticketingModeRsvp": "Teilnehmende sagen per einfacher Zusage (RSVP) zu.",
+		"navLabel": "Auf dieser Seite",
+		"navHasErrors": "enthält Fehler",
+		"glanceLabel": "Event-Übersicht",
+		"glanceNamePlaceholder": "Unbenanntes Event",
+		"glanceNoDate": "Datum nicht festgelegt",
+		"glanceNoLocation": "Ort nicht festgelegt",
+		"glanceVisibleTo": "Sichtbar für: {who}",
+		"glanceCanAttend": "Wer teilnehmen kann: {who}",
+		"glanceTickets": "Tickets",
+		"glanceRsvp": "Zusage (RSVP)",
+		"unsavedChanges": "Ungespeicherte Änderungen",
+		"allSaved": "Alle Änderungen gespeichert"
 	},
 	"eventsAdminPage": {
 		"title": "Veranstaltungen - Revel",
@@ -2429,6 +2558,13 @@
 			"osSticker": "nachprüfbar ✓",
 			"osBody": "Jede Zeile Code ist öffentlich. Lass es auf unseren Servern laufen oder auf deinen. So oder so gehört die Plattform der Community und nicht umgekehrt.",
 			"osCta": "Auf GitHub einen Stern geben",
+			"filmLabel": "Der Film",
+			"filmTitle": "Revel in unter 100 Sekunden.",
+			"filmEnglishNote": "Der Film ist auf Englisch, mit englischen Untertiteln.",
+			"filmPlay": "Film abspielen",
+			"filmPlayAria": "Film abspielen, 1 Minute 35 Sekunden",
+			"filmHeroLink": "Film ansehen (1:35)",
+			"filmVideoLabel": "Revel-Film: One Line",
 			"closeTagline": "Dein Publikum hat mehr verdient als hohe Gebühren und ein Datenprofil.",
 			"closeCreateOrg": "Organisation erstellen",
 			"closeTryDemo": "Demo ausprobieren",
@@ -2485,7 +2621,9 @@
 		"waitlist_error": "Fehler beim Beitritt zur Warteliste. Bitte versuche es erneut.",
 		"leave": "Verlassen",
 		"confirmLeaveWaitlist": "Möchtest du die Warteliste wirklich verlassen?",
-		"leaveWaitlist_error": "Fehler beim Verlassen der Warteliste. Bitte versuche es erneut."
+		"leaveWaitlist_error": "Fehler beim Verlassen der Warteliste. Bitte versuche es erneut.",
+		"thisEvent": "dieses Event",
+		"continue": "Weiter"
 	},
 	"ineligibilityActionButton.waitlist_error": "Fehler beim Beitritt zur Warteliste. Bitte versuche es erneut.",
 	"ineligibilityMessage": {
@@ -2974,8 +3112,7 @@
 		"subscriptionCancelledOnMatch": "Falls dieser Eintrag zu einem Konto mit einem Mitgliedschafts-Abonnement bei dieser Organisation passt – jetzt oder wenn er später mit dem Konto verknüpft wird –, wird dieses Abonnement gekündigt und die wiederkehrende Abrechnung endet. Es wird keine Erstattung automatisch ausgelöst."
 	},
 	"memberBadge": {
-		"member": "Mitglied",
-		"tierName": "{tier}-Mitglied"
+		"member": "Mitglied"
 	},
 	"memberCard": {
 		"makeStaff": "Zum Personal machen",
@@ -3124,11 +3261,11 @@
 		"cancelling": "Storniere…",
 		"dialogTitle": "Ticket stornieren",
 		"dialogDescription": "Prüfe die Rückerstattung, bevor du bestätigst.",
+		"dialogDescriptionFree": "Mit der Stornierung gibst du deinen Platz frei, damit jemand anderes teilnehmen kann.",
 		"loadingPreview": "Rückerstattung wird berechnet…",
 		"loadingError": "Stornierungsdetails konnten nicht geladen werden. Bitte erneut versuchen.",
 		"retry": "Erneut versuchen",
 		"refundLabel": "Du erhältst",
-		"refundFreeTicket": "Dieses Ticket ist kostenlos — keine Rückerstattung möglich.",
 		"refundFlatFeeNote": "Eine Bearbeitungsgebühr von {fee} wurde abgezogen.",
 		"refundCurrentWindowLabel": "Aktuelle Rückerstattung: {pct}% bis {deadline}",
 		"refundNoRefundShort": "Keine Rückerstattung",
@@ -3148,7 +3285,6 @@
 		"paymentMethodOnline": "Wird automatisch auf dein ursprüngliches Zahlungsmittel zurückerstattet. Es kann einige Werktage dauern.",
 		"paymentMethodOffline": "Kontaktiere die Veranstalter*innen wegen der Rückerstattung — dieses Ticket wurde offline bezahlt.",
 		"paymentMethodAtTheDoor": "Keine Belastung zu erstatten — die Zahlung war noch nicht eingezogen.",
-		"paymentMethodFree": "Dieses Ticket ist kostenlos.",
 		"successTitle": "Ticket storniert",
 		"successWithRefund": "Deine Rückerstattung von {amount} ist auf dem Weg.",
 		"successPendingRefund": "Deine Rückerstattung von {amount} wird bearbeitet.",
@@ -3189,8 +3325,10 @@
 	},
 	"refundPolicy": {
 		"sectionTitle": "Stornierung & Rückerstattung",
+		"sectionTitleFree": "Stornierung",
 		"allowCancellationLabel": "Teilnehmer*innen erlauben, Tickets zu stornieren",
 		"allowCancellationHelp": "Lässt Ticketinhaber*innen selbst stornieren und (sofern möglich) eine Rückerstattung über Stripe erhalten.",
+		"allowCancellationHelpFree": "Ermöglicht es Ticketinhaber*innen, ihr Ticket zu stornieren und den Platz für andere freizugeben.",
 		"deadlineLabel": "Stornierungsfrist vor Veranstaltung",
 		"deadlineHelp": "Stornierungen schließen diese Zeitspanne vor Veranstaltungsbeginn. Leer lassen für keine globale Frist.",
 		"deadlineNoLimit": "Keine Frist",
@@ -3453,6 +3591,8 @@
 	"orgAdmin": {
 		"layout": {
 			"toggleMenu": "Navigationsmenü umschalten",
+			"collapseSidebar": "Seitenleiste einklappen",
+			"expandSidebar": "Seitenleiste ausklappen",
 			"adminBadge": "Admin",
 			"ownerBadge": "Eigentümer*in",
 			"staffBadge": "Mitarbeiter*in",
@@ -3482,6 +3622,59 @@
 			"pageDescription": "Verwalte deine Organisation, Veranstaltungen und Teammitglieder von hier aus.",
 			"metaDescription": "Admin-Dashboard für {orgName}",
 			"quickActionsHeading": "Schnellaktionen",
+			"nextUp": {
+				"label": "Nächste Veranstaltung",
+				"happeningNow": "Läuft gerade",
+				"going": "{count} von {max} sagen zu",
+				"goingNoCap": "{count} sagen zu",
+				"checkIn": "Gäste einchecken",
+				"guestList": "Gästeliste",
+				"edit": "Veranstaltung bearbeiten",
+				"viewPage": "Öffentliche Seite ansehen",
+				"emptyTitle": "Keine anstehenden Veranstaltungen",
+				"emptyDescription": "Erstelle deine nächste Veranstaltung und sie erscheint hier mit der Anzahl der Gäste."
+			},
+			"attention": {
+				"heading": "Braucht deine Aufmerksamkeit",
+				"membershipRequests": [
+					{
+						"declarations": ["input count", "local countPlural = count: plural"],
+						"selectors": ["countPlural"],
+						"match": {
+							"countPlural=one": "{count} Mitgliedschaftsanfrage wartet",
+							"countPlural=*": "{count} Mitgliedschaftsanfragen warten"
+						}
+					}
+				],
+				"review": "Prüfen",
+				"billing": "Deine Rechnungsangaben sind unvollständig",
+				"fix": "Vervollständigen",
+				"drafts": [
+					{
+						"declarations": ["input count", "local countPlural = count: plural"],
+						"selectors": ["countPlural"],
+						"match": {
+							"countPlural=one": "{count} anstehende Veranstaltung ist noch ein Entwurf",
+							"countPlural=*": "{count} anstehende Veranstaltungen sind noch Entwürfe"
+						}
+					}
+				],
+				"open": "Veranstaltungen öffnen",
+				"allClear": "Im Moment braucht nichts deine Aufmerksamkeit."
+			},
+			"comingUp": {
+				"heading": "Demnächst",
+				"allEvents": "Alle Veranstaltungen"
+			},
+			"tools": {
+				"heading": "Alle Werkzeuge",
+				"groups": {
+					"events": "Veranstaltungen und Verkauf",
+					"people": "Menschen",
+					"content": "Inhalte",
+					"organization": "Organisation"
+				}
+			},
 			"createEventButton": "Veranstaltung erstellen",
 			"organizationDetailsHeading": "Organisationsdetails",
 			"aboutHeading": "Über {orgName}",
@@ -3550,6 +3743,43 @@
 				"orgNameHelp": "Wende dich an den Support, um deinen Organisationsnamen zu ändern",
 				"urlSlugLabel": "URL-Slug",
 				"urlSlugHelp": "Wende dich an den Support, um deinen URL-Slug zu ändern"
+			},
+			"brandColors": {
+				"heading": "Markenfarben",
+				"description": "Gib deinen öffentlichen Seiten und Veranstaltungen ein eigenes Aussehen. Besucher*innen sehen diese Farben auf den Seiten deiner Organisation und deiner Veranstaltungen.",
+				"primaryLabel": "Primärfarbe",
+				"primaryPicker": "Auswahl der Primärfarbe",
+				"primaryHelp": "Wird für Buttons, Links und Hervorhebungen verwendet. Format: #RRGGBB.",
+				"accentLabel": "Akzentfarbe (optional)",
+				"accentPicker": "Auswahl der Akzentfarbe",
+				"accentHelp": "Wird für kleine Akzente wie das Herz beim Folgen verwendet. Format: #RRGGBB.",
+				"accentNeedsPrimary": "Lege zuerst eine Primärfarbe fest: Eine Akzentfarbe braucht eine.",
+				"invalidHex": "Gib eine Farbe als #RRGGBB ein, zum Beispiel #8C3CDD.",
+				"adjustNote": "Die Farben können im hellen und im dunklen Modus leicht angepasst werden, damit der Text lesbar bleibt.",
+				"previewHeading": "Vorschau",
+				"previewLight": "Heller Modus",
+				"previewDark": "Dunkler Modus",
+				"previewUpdating": "Vorschau wird aktualisiert...",
+				"previewFailed": "Die Vorschau konnte nicht aktualisiert werden. Prüfe deine Verbindung und versuche es erneut.",
+				"previewDefaults": "Keine Farben festgelegt: Es werden die Revel-Standardfarben angezeigt.",
+				"previewPrimaryButton": "Primärer Button",
+				"previewLink": "Ein Link",
+				"previewBadge": "Etikett",
+				"previewAccentButton": "Akzent",
+				"previewFollow": "Folgen",
+				"save": "Farben speichern",
+				"saving": "Wird gespeichert...",
+				"reset": "Auf Revel-Standardfarben zurücksetzen",
+				"saved": "Markenfarben gespeichert.",
+				"resetDone": "Markenfarben auf die Revel-Standardfarben zurückgesetzt.",
+				"saveError": "Die Markenfarben konnten nicht gespeichert werden. Bitte versuche es erneut.",
+				"swatchPrimary": "Primär",
+				"swatchAccent": "Akzent",
+				"swatchEntered": "Eingegeben",
+				"swatchResult": "Ergebnis",
+				"adjustedLight": "Für die Lesbarkeit im hellen Modus angepasst",
+				"adjustedDark": "Für die Lesbarkeit im dunklen Modus angepasst",
+				"asEntered": "Wie eingegeben verwendet"
 			},
 			"platformFees": {
 				"heading": "Plattformgebühren",
@@ -4773,14 +5003,10 @@
 		"error_updateFailed": "Token konnte nicht aktualisiert werden",
 		"error_deleteFailed": "Link konnte nicht gelöscht werden"
 	},
-	"orgCreate.kicker": "Neue Organisation",
+	"orgCreate.kicker": "Schritt 1 von 2",
 	"orgCreate.alreadyOwner": "Du besitzt bereits eine Organisation",
 	"orgCreate.alreadyOwnerDescription": "Jede*r Benutzer*in kann nur eine Organisation besitzen. Du kannst deine bestehende Organisation über das Dashboard verwalten.",
 	"orgCreate.backToDashboard": "Zurück zum Dashboard",
-	"orgCreate.confirm.create": "Organisation erstellen",
-	"orgCreate.confirm.message": "Du erstellst:",
-	"orgCreate.confirm.title": "Erstellung der Organisation bestätigen",
-	"orgCreate.confirm.warning": "⚠️ Der Name der Organisation kann nach der Erstellung nicht mehr geändert werden.",
 	"orgCreate.emailNotVerified": "E-Mail-Verifizierung erforderlich",
 	"orgCreate.emailNotVerifiedDescription": "Du musst deine E-Mail-Adresse verifizieren, bevor du eine Organisation erstellen kannst. Bitte überprüfe deinen Posteingang auf die Bestätigungs-E-Mail.",
 	"orgCreate.form.address": "Adresse (Optional)",
@@ -4799,10 +5025,15 @@
 	"orgCreate.form.name": "Organisationsname",
 	"orgCreate.form.nameHint": "Dieser Name wird allen Nutzer*innen angezeigt, die Events durchsuchen.",
 	"orgCreate.form.namePlaceholder": "Gib den Namen deiner Organisation ein",
+	"orgCreate.form.optionalDetails": "Stadt und Beschreibung jetzt hinzufügen (optional)",
+	"orgCreate.form.urlPreview": "Deine öffentliche Seite: {url}",
+	"orgCreate.form.urlPreviewPending": "Deine öffentliche Seitenadresse wird beim Erstellen der Organisation festgelegt.",
+	"orgCreate.form.slugPlaceholder": "deine-organisation",
+	"orgCreate.form.nameLocked": "Wähle sorgfältig: Der Name kann später nicht geändert werden.",
 	"orgCreate.pageDescription": "Erstelle deine Organisation, um mit der Veranstaltung von Events zu beginnen",
 	"orgCreate.pageTitle": "Organisation erstellen",
-	"orgCreate.subtitle": "Beginne deine Reise als Veranstalter*in, indem du deine Organisation erstellst.",
-	"orgCreate.title": "Organisation erstellen",
+	"orgCreate.subtitle": "Zwei Felder und du bist drin. Logo, Adresse und Beschreibung können warten, bis du sie brauchst.",
+	"orgCreate.title": "Gib deiner Organisation einen Namen",
 	"orgCreate.verifyEmail": "Zum Profil",
 	"orgResourcesPage": {
 		"pageTitle": "Ressourcen - {organizationName}",
@@ -5677,7 +5908,7 @@
 		"title": "Konto erstellen - Revel",
 		"metaDescription": "Erstelle dein Revel-Konto, um Community-Events zu organisieren und daran teilzunehmen",
 		"createAccount": "Konto erstellen",
-		"joinRevel": "Tritt Revel bei, um Events zu entdecken und zu organisieren",
+		"joinRevel": "Tritt {brand} bei, um Events zu entdecken und zu organisieren",
 		"emailAddress": "E-Mail-Adresse",
 		"emailPlaceholder": "deine@email.de",
 		"password": "Passwort",
@@ -5693,7 +5924,7 @@
 		"creatingAccount": "Konto wird erstellt...",
 		"alreadyHaveAccount": "Hast du bereits ein Konto?",
 		"demoNudgeTitle": "Dies ist eine Demo",
-		"demoNudgeBody": "Du kannst Revel sofort mit einem vorbereiteten Demokonto erkunden — ganz ohne Registrierung.",
+		"demoNudgeBody": "Du kannst {brand} sofort mit einem vorbereiteten Demokonto erkunden — ganz ohne Registrierung.",
 		"demoNudgeUseAccount": "Demokonto verwenden",
 		"demoNudgeRegisterAnyway": "Trotzdem registrieren",
 		"referralInviteTitle": "Du wurdest zum Empfehlungsprogramm eingeladen",
@@ -6318,6 +6549,10 @@
 	},
 	"tierCard": {
 		"salesPaused": "Verkauf pausiert",
+		"overEventCapacity": "Über der Veranstaltungskapazität",
+		"overEventCapacityNote": "Veranstaltung auf {capacity} begrenzt: höchstens {capacity} können verkauft werden",
+		"remainingEventCap": "{available} von {total} verfügbar (Veranstaltungskapazität)",
+		"remainingEventCapUnlimited": "{available} verfügbar (Veranstaltungskapazität)",
 		"pauseSales": "Verkauf pausieren",
 		"resumeSales": "Verkauf fortsetzen",
 		"pauseSalesFor": "Verkauf für {name} pausieren",
@@ -6394,6 +6629,7 @@
 		"paymentInstructionsHelp": "Hinweise, die den Teilnehmer*innen nach der Reservierung angezeigt werden",
 		"totalTickets": "Verfügbare Tickets insgesamt",
 		"unlimitedTickets": "Leer lassen für unbegrenzte Tickets",
+		"overEventCapacity": "Diese Veranstaltung ist auf {capacity} Teilnehmer*innen begrenzt. Diese Ticketstufe kann höchstens {capacity} Tickets verkaufen, obwohl ihre Menge {quantity} beträgt.",
 		"salesStart": "Verkaufsstart",
 		"salesEnd": "Verkaufsende",
 		"visibility": "Sichtbarkeit *",
@@ -6513,7 +6749,7 @@
 		"successTitle": "Einstellungen aktualisiert",
 		"successDescription": "Deine Benachrichtigungseinstellungen wurden aktualisiert.",
 		"title": "Von Benachrichtigungen abmelden",
-		"subtitle": "Wähle aus, worüber du weiterhin informiert werden möchtest. Standardmäßig stoppen wir normale E-Mails und behalten deine Benachrichtigungen in Revel.",
+		"subtitle": "Wähle aus, worüber du weiterhin informiert werden möchtest. Standardmäßig stoppen wir normale E-Mails und behalten deine Benachrichtigungen in {brand}.",
 		"loginToManage": "Anmelden und Einstellungen verwalten",
 		"mandatoryNoticeTitle": "Manche E-Mails kommen immer an",
 		"mandatoryNotice": "Tickets, Belege, Zahlungs- und Erstattungsbenachrichtigungen sowie wichtige rechtliche und Plattform-Hinweise erreichen dich weiterhin per E-Mail, egal was du hier auswählst.",
@@ -9044,7 +9280,7 @@
 	"accountPrivacyPage.exportEmailNote": "Wir senden dir per E-Mail einen Download-Link, sobald dein Datenexport bereit ist. Das dauert in der Regel ein paar Minuten.",
 	"accountPrivacyPage.dangerZoneDescription": "Sobald du dein Konto löschst, gibt es kein Zurück. Alle deine Daten werden dauerhaft entfernt und können nicht wiederhergestellt werden.",
 	"accountPrivacyPage.modal_confirmationEmailNote": "Diese Aktion kann nicht rückgängig gemacht werden. Wir senden dir eine Bestätigungs-E-Mail, um diese Anfrage zu überprüfen.",
-	"profilePage.pageTitle": "Profil - Revel",
+	"profilePage.pageTitle": "Profil - {brand}",
 	"profilePage.pageDescription": "Verwalte dein Revel-Profil",
 	"profilePage.updatedSuccess": "Profil erfolgreich aktualisiert",
 	"profilePage.preferredNamePlaceholder": "Wie sollen wir dich nennen?",
@@ -9057,7 +9293,6 @@
 	"referralPayoutsPage.previous": "Zurück",
 	"referralPayoutsPage.next": "Weiter",
 	"referralPayoutsPage.pageIndicator": "Seite {page}",
-	"createOrgPage.customizeHint": "Nach der Erstellung kannst du auf der Einstellungsseite weitere Details hinzufügen, Bilder hochladen und deine Organisation anpassen.",
 	"dashboardPage.ownerBadge": "Inhaber*in",
 	"dashboardPage.ownerBadgeLabel": "Du bist der*die Inhaber*in",
 	"dashboardPage.staffBadge": "Team",
@@ -9167,6 +9402,7 @@
 	"eventEditPage.statusDraft": "Entwurf",
 	"eventEditPage.statusPublished": "Veröffentlicht",
 	"eventEditPage.statusClosed": "Geschlossen",
+	"eventEditPage.statusCancelled": "Abgesagt",
 	"eventEditPage.updateDetailsFor": "Details aktualisieren für:",
 	"eventInvitationsAdmin.headTitle": "Einladungen verwalten - {eventName}",
 	"eventInvitationsAdmin.headDescription": "Einladungen für {eventName} verwalten",
@@ -9294,6 +9530,7 @@
 	"joinOrgPage.toast_joinedAsStaff": "Du bist jetzt Teammitglied von {organizationName}!",
 	"joinOrgPage.toast_joinedAsMember": "Du bist jetzt Mitglied von {organizationName}!",
 	"joinOrgPage.toast_claimError": "Einladung konnte nicht eingelöst werden. Der Token ist möglicherweise abgelaufen oder ungültig.",
+	"resetPasswordPage.metaDescription": "Lege ein neues Passwort für dein Revel-Konto fest",
 	"resetPasswordPage.heading": "Neues Passwort festlegen",
 	"resetPasswordPage.headingSuccess": "Passwort erfolgreich zurückgesetzt",
 	"resetPasswordPage.subtitle": "Gib ein sicheres Passwort für dein Konto ein",
@@ -9320,6 +9557,7 @@
 	"organizationsListPage.nextPageUnavailable": "Nächste Seite (nicht verfügbar)",
 	"passwordResetPage.emailPlaceholder": "du@beispiel.com",
 	"verifyPage.successRedirect": "Dein Konto wurde erfolgreich verifiziert. Du wirst zu deinem Profil weitergeleitet...",
+	"verifyPage.successContinue": "Dein Konto wurde verifiziert. Weiter zu {name}, um dich dort anzumelden.",
 	"verifyPage.couldNotVerify": "Wir konnten deine E-Mail-Adresse nicht verifizieren.",
 	"verifyPage.linkExpiredOrInvalid": "Der Verifizierungslink ist möglicherweise abgelaufen oder ungültig.",
 	"verifyPage.createNewAccount": "Neues Konto erstellen",
@@ -9340,6 +9578,9 @@
 	"invitationLinksTab.linkDeleted": "Einladungslink erfolgreich gelöscht!",
 	"invitationLinksTab.deleteFailed": "Einladungslink konnte nicht gelöscht werden",
 	"markdownEditor.exitSource": "Zurück zum Editor",
+	"markdownEditor.expand": "Vollbild-Editor öffnen",
+	"markdownEditor.expandedTitle": "Text bearbeiten",
+	"markdownEditor.done": "Fertig",
 	"markdownEditor.linkDialogTitle": "Link einfügen",
 	"markdownEditor.linkUrlLabel": "URL",
 	"markdownEditor.linkTextLabel": "Linktext",
@@ -9666,6 +9907,78 @@
 		"staffNote": "Für dich gelten diese Einstellungen nie: Organisator*innen und Team sehen immer alles."
 	},
 	"orgAdmin.nav.embed": "Einbetten",
+	"orgAdmin.nav.customDomain": "Eigene Domain",
+	"orgAdmin.dashboard.quickActions.customDomain.title": "Eigene Domain",
+	"orgAdmin.dashboard.quickActions.customDomain.description": "Zeige deine Events unter deiner eigenen Webadresse",
+	"customDomain.pageTitle": "Eigene Domain - {organizationName}",
+	"customDomain.title": "Eigene Domain",
+	"customDomain.subtitle": "Lass Teilnehmer*innen deine Events unter deiner eigenen Webadresse finden statt unter der von Revel.",
+	"customDomain.unavailable.heading": "Eigene Domains sind für deine Organisation noch nicht aktiviert",
+	"customDomain.unavailable.body": "Wir aktivieren eigene Domains auf Anfrage für jede Organisation einzeln. Schreib uns eine E-Mail, dann richten wir es gemeinsam mit dir ein.",
+	"customDomain.unavailable.bodyNoEmail": "Wir aktivieren eigene Domains auf Anfrage für jede Organisation einzeln. Wende dich an das Revel-Team, um sie anzufragen.",
+	"customDomain.unavailable.contact": "E-Mail an {email}",
+	"customDomain.unavailable.emailSubject": "Anfrage für eine eigene Domain: {organizationName}",
+	"customDomain.loading": "Deine Domain wird geladen",
+	"customDomain.loadError": "Wir konnten deine Domain nicht laden. Versuche es gleich noch einmal.",
+	"customDomain.retry": "Erneut versuchen",
+	"customDomain.actionError": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+	"customDomain.opensInNewTab": "(öffnet in neuem Tab)",
+	"customDomain.none.heading": "Nutze deine eigene Domain",
+	"customDomain.none.intro": "Teilnehmer*innen sehen deine Events unter einer Webadresse, die dir gehört, z. B. events.deinname.de, statt unter der von Revel.",
+	"customDomain.none.benefitLinks": "Die Links zu deinen Events und deiner Organisation verwenden deine Domain.",
+	"customDomain.none.benefitDns": "Du legst ein paar DNS-Einträge bei dem Unternehmen an, bei dem du die Domain gekauft hast. Wir zeigen dir genau, welche.",
+	"customDomain.none.benefitPowered": "Revel betreibt die Plattform weiterhin im Hintergrund, und auf deinen Seiten steht eine kleine Fußzeile \"Powered by Revel\".",
+	"customDomain.form.label": "Domainname",
+	"customDomain.form.help": "Nutze eine Subdomain, die dir gehört, z. B. events.deinname.de. Ohne https:// und ohne Pfad.",
+	"customDomain.form.required": "Gib den Domainnamen ein, den du verwenden möchtest.",
+	"customDomain.form.submit": "Domain verbinden",
+	"customDomain.form.submitting": "Wird verbunden...",
+	"customDomain.form.genericError": "Wir konnten diese Domain nicht verbinden. Bitte versuche es erneut.",
+	"customDomain.domain.label": "Deine Domain",
+	"customDomain.status.pending": "Wartet auf DNS",
+	"customDomain.status.active": "Aktiv",
+	"customDomain.status.failed": "Braucht Aufmerksamkeit",
+	"customDomain.pending.intro": "Deine Domain ist noch nicht live. Folge diesen Schritten, danach prüft Revel sie automatisch.",
+	"customDomain.pending.step1": "Melde dich bei dem Unternehmen an, bei dem du die Domain gekauft hast (Domain-Registrar oder DNS-Anbieter).",
+	"customDomain.pending.step1Provider": "Melde dich bei {provider} an.",
+	"customDomain.pending.step2": "Füge die DNS-Einträge unten hinzu. Kopiere Name und Wert jeweils genau so, wie angezeigt.",
+	"customDomain.pending.step3": "Komm hierher zurück. Diese Seite aktualisiert sich selbst, oder klicke auf \"Jetzt prüfen\".",
+	"customDomain.pending.timing": "DNS-Änderungen brauchen zwischen wenigen Minuten und einigen Stunden, bis sie im Internet überall ankommen. Du kannst die Seite verlassen und später wiederkommen.",
+	"customDomain.pending.platformTeam": "Das Revel-Team schließt die Verbindung dieser Domain für dich ab. Diese Seite aktualisiert sich von selbst, sobald die Domain aktiv ist. Du kannst sie verlassen und später wiederkommen.",
+	"customDomain.records.heading": "DNS-Einträge zum Hinzufügen",
+	"customDomain.records.recordHeading": "Eintrag {number} von {total} ({type})",
+	"customDomain.records.type": "Typ",
+	"customDomain.records.name": "Name",
+	"customDomain.records.value": "Wert",
+	"customDomain.records.nameLabel": "Eintrag {number} ({type}): Name",
+	"customDomain.records.valueLabel": "Eintrag {number} ({type}): Wert",
+	"customDomain.cname.heading": "Verweise deine Domain auf Revel",
+	"customDomain.cname.body": "Lege für {hostname} einen CNAME-Eintrag an, der auf die Adresse unten zeigt. Fragt dein Anbieter nach einem \"Ziel\" oder \"Wert\", ist es diese Adresse.",
+	"customDomain.cname.label": "Adresse, auf die verwiesen wird",
+	"customDomain.dnsProvider.hostedAt": "Dein DNS wird bei {name} gehostet.",
+	"customDomain.dnsProvider.helpLink": "So fügst du DNS-Einträge bei {name} hinzu",
+	"customDomain.dnsProvider.dashboardLink": "DNS-Einstellungen bei {name} öffnen",
+	"customDomain.dnsProvider.helpLinkShort": "So fügst du DNS-Einträge hinzu",
+	"customDomain.records.cloudflareNote": "Wenn dein DNS bei Cloudflare liegt, stelle diesen Eintrag auf „DNS only“ (graue Wolke). Aktiviere den Proxy nicht, weder jetzt noch später.",
+	"customDomain.records.cloudflareKnown": "Dein DNS liegt bei Cloudflare: Stelle diesen Eintrag auf „DNS only“ (graue Wolke). Aktiviere den Proxy nicht, weder jetzt noch später.",
+	"customDomain.records.cnameHint": "Fragt dein Anbieter nach einem „Ziel“ oder „Wert“, ist es dieser.",
+	"customDomain.errors.heading": "Letzte Prüfung durch Revel",
+	"customDomain.checkNow": "Jetzt prüfen",
+	"customDomain.checking": "Wird geprüft...",
+	"customDomain.active.intro": "Deine Domain ist live. Teilnehmer*innen sehen deine Events jetzt hier.",
+	"customDomain.active.verifiedAt": "Bestätigt am {date}",
+	"customDomain.active.changedHeading": "Was sich ändert",
+	"customDomain.active.changedLinks": "Neue Links zu deinen Events und deiner Organisation verwenden deine Domain.",
+	"customDomain.active.changedRedirect": "Alte Revel-Links funktionieren weiter und leiten auf deine Domain um.",
+	"customDomain.failed.intro": "Wir konnten diese Domain nicht bestätigen. Prüfe, ob die DNS-Einträge genau wie angezeigt gesetzt sind, oder verbinde eine andere Domain.",
+	"customDomain.failed.differentHostname": "Andere Domain verwenden",
+	"customDomain.failed.submit": "Neue Domain verbinden",
+	"customDomain.remove.button": "Domain entfernen",
+	"customDomain.remove.title": "Diese Domain entfernen?",
+	"customDomain.remove.body": "Links zu deinen Events und deiner Organisation verwenden wieder die Revel-Adresse. Alte Links auf {hostname} funktionieren nicht mehr. Du kannst jederzeit wieder eine Domain verbinden.",
+	"customDomain.remove.cancel": "Abbrechen",
+	"customDomain.remove.confirm": "Domain entfernen",
+	"customDomain.remove.removing": "Wird entfernt...",
 	"orgAdmin.nav.integrations": "Integrationen",
 	"orgAdmin.dashboard.quickActions.integrations.title": "Integrationen",
 	"orgAdmin.dashboard.quickActions.integrations.description": "Deine Events auf anderen Plattformen anbieten",
@@ -10166,7 +10479,7 @@
 		"checkout": {
 			"fallback": "Dieses Ticket kann nicht online gekauft werden. Wende dich an die Veranstaltenden, um zu erfahren, wie du bezahlen kannst.",
 			"notAvailableOnline": "Nicht online erhältlich",
-			"reservation": "Du bezahlst direkt bei den Veranstaltenden. Dein Revel-Ticket ist eine Reservierung; das fiskalische Ticket bekommst du von den Veranstaltenden.",
+			"reservation": "Du bezahlst direkt bei den Veranstaltenden. Dein Ticket bei {brand} ist eine Reservierung; das fiskalische Ticket bekommst du von den Veranstaltenden.",
 			"passFallback": "Dieser Pass kann nicht online gekauft werden. Wende dich an die Veranstaltenden, um zu erfahren, wie du bezahlen kannst."
 		},
 		"ticket": {
@@ -10211,5 +10524,77 @@
 			"loadFailed": "Die selbst auszustellenden Dokumente konnten nicht geladen werden.",
 			"referenceRequired": "Gib die Belegnummer ein."
 		}
-	}
+	},
+	"tenantChrome": {
+		"mainNavigation": "Navigation der Organisation",
+		"events": "Veranstaltungen",
+		"membership": "Mitgliedschaft",
+		"resources": "Ressourcen",
+		"copyright": "© {year} {name}",
+		"poweredBy": "Bereitgestellt von",
+		"legalNavigation": "Rechtliches",
+		"privacy": "Datenschutz",
+		"terms": "Nutzungsbedingungen"
+	},
+	"tenantReturn.continueTo": "Weiter zu {name}",
+	"orgSetup.event.title": "Erstelle dein erstes Event",
+	"orgSetup.event.body": "Ein Name, ein Datum und ein Ort. Speichere es als Entwurf und feile daran, bevor es jemand sieht.",
+	"orgSetup.event.startHere": "Hier starten",
+	"orgSetup.event.freeWorks": "Kostenlose Anmeldungen funktionieren sofort",
+	"orgSetup.event.duration": "Dauert etwa 3 Minuten",
+	"orgSetup.event.cta": "Event erstellen",
+	"orgSetup.event.publishTitle": "„{name}“ veröffentlichen",
+	"orgSetup.event.publishCta": "Prüfen und veröffentlichen",
+	"orgSetup.event.publishBody": "Nur du siehst Entwürfe. Mit dem Veröffentlichen erscheint das Event auf deiner Seite, mit einem Link zum Teilen.",
+	"orgSetup.event.doneTitle": "Dein erstes Event ist live",
+	"orgSetup.stripe.title": "Lass dir Tickets auszahlen",
+	"orgSetup.stripe.body": "Verbinde ein Stripe-Konto, damit das Ticketgeld auf deinem Bankkonto landet. Nur für kostenpflichtige Events nötig.",
+	"orgSetup.stripe.duration": "Etwa 5 bis 10 Minuten bei Stripe",
+	"orgSetup.stripe.cta": "Stripe verbinden",
+	"orgSetup.stripe.finishCta": "Stripe-Einrichtung abschließen",
+	"orgSetup.stripe.done": "Stripe ist verbunden. Bezahlte Tickets sind bereit.",
+	"orgSetup.stripe.billingTitle": "Steuerangaben für Online-Zahlungen ergänzen",
+	"orgSetup.stripe.billingBody": "Revel stellt seine Gebühr für Online-Ticketverkäufe in Rechnung. Deshalb brauchen wir Rechnungsname, Adresse und USt-Land, bevor bezahlte Tickets in den Verkauf gehen können. Kostenlose Events und Tickets mit Zahlung vor Ort brauchen das nicht.",
+	"orgSetup.stripe.billingCta": "Steuerangaben ergänzen",
+	"orgSetup.stripe.continueSetup": "Einrichtung fortsetzen",
+	"orgSetup.visibility.title": "Die Seite deiner Organisation ist versteckt",
+	"orgSetup.visibility.body": "Im Moment können nur du und dein Team sie sehen. Mach sie öffentlich, wenn Besucher*innen dich finden und dir folgen sollen.",
+	"orgSetup.visibility.cta": "Seite öffentlich machen",
+	"orgSetup.visibility.done": "Deine Seite ist öffentlich unter {url}",
+	"orgSetup.visibility.doneLead": "Deine Seite ist öffentlich:",
+	"orgSetup.visibility.undo": "Rückgängig",
+	"orgSetup.visibility.error": "Die Sichtbarkeit konnte nicht geändert werden. Bitte versuche es erneut.",
+	"orgSetup.welcome.pageTitle": "{name} · Los geht's",
+	"orgSetup.welcome.sticker": "{name} ist erstellt",
+	"orgSetup.welcome.kicker": "Schritt 2 von 2",
+	"orgSetup.welcome.title": "Jetzt kommt etwas in den Kalender",
+	"orgSetup.welcome.titleDraft": "Dein erstes Event wartet",
+	"orgSetup.welcome.titlePublished": "Dein erstes Event ist live",
+	"orgSetup.welcome.subtitle": "Fang mit dem Event an. Zahlungen kannst du danach einrichten.",
+	"orgSetup.welcome.subtitleNext": "Schließe die letzten Schritte ab, wann du bereit bist.",
+	"orgSetup.welcome.later": "Später:",
+	"orgSetup.welcome.laterLogo": "Logo hinzufügen",
+	"orgSetup.welcome.laterTeam": "Team einladen",
+	"orgSetup.welcome.laterDescription": "Beschreibung schreiben",
+	"orgSetup.welcome.skip": "Zum Dashboard springen",
+	"orgSetup.welcome.stripeConnected": "Stripe ist verbunden.",
+	"orgSetup.welcome.stripeNeedsDetails": "Stripe braucht noch ein paar Angaben. Die Einrichtung lässt sich dort fortsetzen, wo sie unterbrochen wurde.",
+	"orgSetup.welcome.stripeExpired": "Der Link zur Stripe-Einrichtung ist abgelaufen. Starte die Einrichtung neu, um dort weiterzumachen, wo sie unterbrochen wurde.",
+	"orgSetup.welcome.stripeContinue": "Stripe-Einrichtung fortsetzen",
+	"orgSetup.welcome.stripeDismiss": "Hinweis schließen",
+	"orgSetup.card.kicker": "Einrichtung · {done} von {total} erledigt",
+	"orgSetup.card.headline.start": "Bringen wir dein erstes Event raus",
+	"orgSetup.card.headline.publish": "Dein Entwurf ist bereit zur Veröffentlichung",
+	"orgSetup.card.progress": "Fortschritt der Einrichtung",
+	"orgSetup.card.progressValue": "{done} von {total} erledigt",
+	"orgSetup.card.hide": "Einrichtung ausblenden",
+	"orgSetup.card.hidden": "Einrichtung ausgeblendet.",
+	"orgSetup.card.show": "Wieder anzeigen",
+	"orgSetup.steps.created": "Organisation erstellt",
+	"orgSetup.steps.public": "Sichtbarkeit der Seite festgelegt",
+	"orgSetup.steps.event": "Erstes Event erstellt",
+	"orgSetup.steps.published": "Erstes Event veröffentlicht",
+	"orgSetup.steps.stripe": "Bereit für Online-Zahlungen",
+	"orgSetup.steps.done": "Erledigt",
+	"orgSetup.steps.toDo": "Offen"
 }

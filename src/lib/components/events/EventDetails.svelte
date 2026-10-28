@@ -6,6 +6,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
+	import { formatEventTypeLabel, formatVisibilityLabel } from '$lib/utils/event-labels';
 	import EventTimezoneNote from './EventTimezoneNote.svelte';
 
 	interface Props {
@@ -64,21 +65,6 @@
 		if (held <= 0) return null;
 		return m['orgAdmin.waitlist.offer.seatsHeldHint']({ count: held });
 	});
-
-	function formatVisibilityLabel(value: string): string {
-		switch (value) {
-			case 'public':
-				return m['eventBadges.public']();
-			case 'private':
-				return m['eventBadges.private']();
-			case 'members-only':
-				return m['eventBadges.membersOnly']();
-			case 'staff-only':
-				return m['eventQuickInfo.staffOnly']();
-			default:
-				return value.replace(/-/g, ' ');
-		}
-	}
 
 	// Show visibility when it differs from event_type
 	const visibilityMismatch = $derived.by(() => {
@@ -235,8 +221,8 @@
 					<div class="text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
 						{m['eventDetails.eventType_label']()}
 					</div>
-					<div class="mt-1 font-bold capitalize">
-						{event.event_type.replace('-', ' ')}
+					<div class="mt-1 font-bold">
+						{formatEventTypeLabel(event.event_type)}
 					</div>
 					{#if visibilityMismatch}
 						<div class="mt-1 flex items-center gap-1 text-sm text-muted-foreground">

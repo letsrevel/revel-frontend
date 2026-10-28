@@ -11,7 +11,8 @@ vi.mock('$app/state', () => ({
 	page: {
 		get url() {
 			return new URL(window.location.href);
-		}
+		},
+		data: { tenant: null, customDomains: { enabled: true, platformOrigin: null } }
 	}
 }));
 
@@ -96,6 +97,24 @@ describe('EventSeriesCard', () => {
 		).toBeInTheDocument();
 	});
 
+	// Descriptions are markdown (#1093 editor); the card shows plain text.
+	it('shows a markdown description as plain text', () => {
+		render(EventSeriesCard, {
+			props: {
+				series: {
+					...mockEventSeries,
+					description: '# Seasonal Gatherings\n\nCelebrating **the seasons** together'
+				},
+				variant: 'standard'
+			}
+		});
+
+		expect(
+			screen.getByText('Seasonal Gatherings Celebrating the seasons together')
+		).toBeInTheDocument();
+		expect(screen.queryByText(/[#*]/)).not.toBeInTheDocument();
+	});
+
 	it('does not display description in compact variant', () => {
 		render(EventSeriesCard, {
 			props: {
@@ -143,6 +162,22 @@ describe('EventSeriesCard', () => {
 
 		const link = screen.getByLabelText(/tech talk series/i);
 		expect(link).toHaveAttribute('href', '/events/tech-community/series/tech-talk-series');
+	});
+
+	it('links to the org custom domain when it has one (#1056)', () => {
+		render(EventSeriesCard, {
+			props: {
+				series: {
+					...mockEventSeries,
+					organization: { ...mockEventSeries.organization, custom_domain: 'Events.Example.com' }
+				}
+			}
+		});
+
+		expect(screen.getByLabelText(/tech talk series/i)).toHaveAttribute(
+			'href',
+			'https://events.example.com/events/tech-community/series/tech-talk-series'
+		);
 	});
 
 	it('carries the current URL utm tags onto its default href', async () => {

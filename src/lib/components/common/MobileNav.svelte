@@ -10,9 +10,11 @@
 		navItems: Array<{ href: string; label: string }>;
 		isAuthenticated: boolean;
 		onClose: () => void;
+		/** Optional id so a toggle button can reference the drawer via aria-controls. */
+		id?: string;
 	}
 
-	let { open = $bindable(false), navItems, isAuthenticated, onClose }: Props = $props();
+	let { open = $bindable(false), navItems, isAuthenticated, onClose, id }: Props = $props();
 
 	const currentPath = $derived($page.url.pathname);
 
@@ -71,6 +73,7 @@
 	class="fixed right-0 top-0 z-50 h-full w-full max-w-sm transform border-l bg-background shadow-lg transition-transform duration-300 ease-in-out md:hidden {open
 		? 'translate-x-0'
 		: 'translate-x-full'}"
+	{id}
 	role="dialog"
 	aria-modal="true"
 	aria-label={m['nav.mobileNavigation']()}
@@ -81,7 +84,7 @@
 			<span role="heading" aria-level="2" class="text-lg font-semibold">{m['nav.menu']()}</span>
 			<button
 				type="button"
-				class="rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+				class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring"
 				onclick={onClose}
 				aria-label={m['nav.closeMenu']()}
 			>

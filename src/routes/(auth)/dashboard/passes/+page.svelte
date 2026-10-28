@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { brandName } from '$lib/seo/tenant';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { seriespassListMySeriesPasses } from '$lib/api';
@@ -9,6 +10,7 @@
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { Ticket, ChevronLeft, ChevronRight, Loader2 } from '@lucide/svelte';
 	import { page } from '$app/state';
+	import { tenantOrgFilter } from '$lib/utils/tenant-filter';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 
@@ -18,12 +20,15 @@
 	const currentPage = $derived(Math.max(1, Number(page.url.searchParams.get('page') || '1') || 1));
 	const PAGE_SIZE = 12;
 
+	// On a tenant host every "my" call is scoped to the tenant org (#1056).
+	const orgFilter = $derived(tenantOrgFilter(page.data));
+
 	const passesQuery = createQuery(() => ({
-		queryKey: seriesPassQueryKeys.mine(currentPage),
+		queryKey: seriesPassQueryKeys.mine(currentPage, orgFilter),
 		queryFn: async () => {
 			const response = await seriespassListMySeriesPasses({
 				headers: { Authorization: `Bearer ${accessToken}` },
-				query: { page: currentPage, page_size: PAGE_SIZE }
+				query: { ...orgFilter, page: currentPage, page_size: PAGE_SIZE }
 			});
 			if (response.error || !response.data) {
 				throw new Error('Failed to load passes');
@@ -52,7 +57,7 @@
 </script>
 
 <svelte:head>
-	<title>{m['seriesPass.myPassesTitle']()} - Revel</title>
+	<title>{m['seriesPass.myPassesTitle']()} - {brandName(page.data.tenant)}</title>
 	<meta name="description" content={m['seriesPass.myPassesDescription']()} />
 </svelte:head>
 

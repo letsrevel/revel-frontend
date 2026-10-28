@@ -23,14 +23,18 @@ const seo = buildSeo({
 	page: 'unsubscribe'
 });
 
-function renderPage(tokenInfo: UnsubscribeTokenInfo, token: string | null = 'tok'): void {
+function renderPage(
+	tokenInfo: UnsubscribeTokenInfo,
+	token: string | null = 'tok',
+	returnTo: { origin: string; name: string } | null = null
+): void {
 	render(QueryClientTestWrapper, {
 		props: {
 			client: new QueryClient({
 				defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
 			}),
 			component: UnsubscribePage,
-			componentProps: { data: { token, tokenInfo, seo } }
+			componentProps: { data: { token, tokenInfo, seo, returnTo } }
 		}
 	});
 }
@@ -114,6 +118,26 @@ describe('unsubscribe page (#982)', () => {
 		const heading = screen.getByRole('heading', { level: 1, name: /preferences updated/i });
 		await waitFor(() => expect(heading).toHaveFocus());
 		expect(screen.getByRole('link', { name: /go to homepage/i })).toHaveAttribute('href', '/');
+	});
+
+	it('links the success state back to the custom domain root (#1070), with no token', async () => {
+		const user = userEvent.setup();
+		const { oneclickunsubscribeOneClick } = await import('$lib/api');
+		vi.mocked(oneclickunsubscribeOneClick).mockResolvedValue({
+			data: { message: 'You have been unsubscribed.' },
+			error: undefined,
+			response: { status: 200 } as Response
+		} as never);
+
+		renderPage(accountToken('event_reminder'), 'tok', {
+			origin: 'https://events.acme.org',
+			name: 'Acme'
+		});
+		await user.click(screen.getByRole('button', { name: /stop these emails/i }));
+
+		const link = await screen.findByRole('link', { name: /continue to acme/i });
+		expect(link).toHaveAttribute('href', 'https://events.acme.org/');
+		expect(screen.queryByRole('link', { name: /go to homepage/i })).not.toBeInTheDocument();
 	});
 
 	it('keeps the pending button focusable and announces the request', async () => {

@@ -2,13 +2,15 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { NotificationList } from '$lib/components/notifications';
 	import * as m from '$lib/paraglide/messages.js';
+	import { page as appPage } from '$app/state';
+	import { brandName } from '$lib/seo/tenant';
 	import { Button } from '$lib/components/ui/button';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import { Settings } from '@lucide/svelte';
 </script>
 
 <svelte:head>
-	<title>{m['notificationsPage.pageTitle']()} - Revel</title>
+	<title>{m['notificationsPage.pageTitle']()} - {brandName(appPage.data.tenant)}</title>
 	<meta name="description" content={m['notificationsPage.pageDescription']()} />
 </svelte:head>
 

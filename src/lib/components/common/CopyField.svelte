@@ -11,10 +11,12 @@
 		/** Already-translated; names the input and the button ("Copy {label}"). */
 		label: string;
 		id?: string;
+		/** id of an element describing the value (help text). */
+		describedBy?: string;
 		mono?: boolean;
 		class?: string;
 	}
-	const { value, label, id, mono = true, class: className = '' }: Props = $props();
+	const { value, label, id, describedBy, mono = true, class: className = '' }: Props = $props();
 
 	const inputId = $derived(id ?? `copy-${label.replace(/\W+/g, '-').toLowerCase()}`);
 	let copied = $state(false);
@@ -40,6 +42,7 @@
 		readonly
 		{value}
 		aria-label={label}
+		aria-describedby={describedBy}
 		class={cn('text-xs', mono && 'font-mono')}
 		onfocus={(e) => (e.currentTarget as HTMLInputElement).select()}
 	/>

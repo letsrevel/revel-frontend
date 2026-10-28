@@ -7,7 +7,7 @@ vi.mock('$lib/server/token-claim', () => ({
 }));
 
 import { claimPendingTokens, setClaimFlashCookie } from '$lib/server/token-claim';
-import { establishSession } from './session';
+import { establishSession, sessionRememberMe } from './session';
 
 function fakeCookies() {
 	const jar = new Map<string, { value: string; options: Record<string, unknown> }>();
@@ -57,5 +57,18 @@ describe('establishSession', () => {
 
 		expect(claimPendingTokens).toHaveBeenCalledWith(cookies, 'acc-token', fakeFetch);
 		expect(setClaimFlashCookie).toHaveBeenCalledWith(cookies, results);
+	});
+});
+
+describe('sessionRememberMe', () => {
+	it('keeps the choice on the platform host', () => {
+		expect(sessionRememberMe(true, {})).toBe(true);
+		expect(sessionRememberMe(true, { tenant: null })).toBe(true);
+		expect(sessionRememberMe(false, {})).toBe(false);
+	});
+
+	it('is always false on a tenant host', () => {
+		expect(sessionRememberMe(true, { tenant: { slug: 'acme' } })).toBe(false);
+		expect(sessionRememberMe(false, { tenant: { slug: 'acme' } })).toBe(false);
 	});
 });

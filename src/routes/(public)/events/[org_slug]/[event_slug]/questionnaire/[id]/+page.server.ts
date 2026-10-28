@@ -1,5 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { error, redirect } from '@sveltejs/kit';
+import { canonicalTenantRedirect } from '$lib/server/tenant-canonical';
 import {
 	eventpublicdetailsGetEventBySlugs,
 	eventpublicattendanceGetQuestionnaire
@@ -36,6 +37,8 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
 		throwIfTransientUpstream(eventResponse);
 		throw error(404, 'Event not found');
 	}
+
+	canonicalTenantRedirect(locals, event.organization, url);
 
 	// Check authentication - questionnaire submission requires auth
 	if (!locals.user) {
@@ -75,6 +78,7 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
 				logo_thumbnail_url: event.organization.logo_thumbnail_url ?? null
 			}
 		},
+		brandTheme: event.organization.brand_theme ?? null,
 		questionnaire
 	};
 };

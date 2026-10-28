@@ -4,8 +4,11 @@
 	import type { Editor } from '@tiptap/core';
 	import * as m from '$lib/paraglide/messages.js';
 	import { cn } from '$lib/utils/cn';
+	import MarkdownEditor from './MarkdownEditor.svelte';
 	import EditorToolbar from './editor/EditorToolbar.svelte';
 	import LinkDialog from './editor/LinkDialog.svelte';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import { Button } from '$lib/components/ui/button';
 
 	interface Props {
 		value?: string;
@@ -17,6 +20,10 @@
 		disabled?: boolean;
 		error?: string;
 		class?: string;
+		/** Show a toolbar button that opens a near-full-screen editing dialog. */
+		expandable?: boolean;
+		/** Internal: stretch to the parent's height and focus on mount (full-screen dialog). */
+		fill?: boolean;
 		onValueChange?: (value: string) => void;
 	}
 
@@ -30,6 +37,8 @@
 		disabled = false,
 		error,
 		class: className,
+		expandable = false,
+		fill = false,
 		onValueChange
 	}: Props = $props();
 
@@ -38,6 +47,7 @@
 	let element = $state<HTMLDivElement | undefined>();
 	let sourceMode = $state(false);
 	let linkOpen = $state(false);
+	let expandedOpen = $state(false);
 	let linkInitial = $state({ url: '', text: '' });
 	// Echo-loop guard: track the markdown we last emitted so external value
 	// changes (≠ our own output) re-sync the editor, but our own edits don't.
@@ -120,6 +130,7 @@
 					// Suppress the update event so mounting doesn't mark pristine forms dirty
 					e.commands.setContent(value, { contentType: 'markdown', emitUpdate: false });
 					lastEmitted = value;
+					if (fill) e.commands.focus('end');
 					// Apply dynamic height via CSSOM (CSP-safe; inline style= attr is blocked by nonce policy)
 					if (element) {
 						element.style.setProperty('--editor-min-h', `${rows * 1.5}rem`);
@@ -172,12 +183,12 @@
 	});
 </script>
 
-<div class={cn('space-y-2', className)}>
+<div class={cn('space-y-2', fill && 'flex h-full flex-col gap-2 space-y-0', className)}>
 	{#if label}
 		<label
 			id="{inputId}-label"
 			for={editor && !sourceMode ? undefined : inputId}
-			class="block text-sm font-medium text-gray-900 dark:text-gray-100"
+			class="block text-sm font-medium text-foreground"
 		>
 			{label}
 			{#if required}<span class="text-destructive" aria-label={m['markdownEditor.required']()}
@@ -192,6 +203,7 @@
 			{disabled}
 			onToggleSource={() => (sourceMode = true)}
 			onInsertLink={openLink}
+			onExpand={expandable ? () => (expandedOpen = true) : undefined}
 		/>
 	{/if}
 
@@ -204,6 +216,7 @@
 				'markdown-editor-surface prose prose-sm max-w-none rounded-md border-2 px-3 py-2 dark:prose-invert',
 				'focus-within:border-primary focus-within:ring-2 focus-within:ring-primary',
 				error ? 'border-destructive' : 'border-border',
+				fill && 'min-h-0 flex-1 overflow-y-auto [&_.ProseMirror]:min-h-full',
 				disabled && 'cursor-not-allowed opacity-50'
 			)}
 			class:hidden={!editor || sourceMode}
@@ -225,11 +238,11 @@
 			aria-describedby={error ? `${inputId}-error` : undefined}
 			class={cn(
 				'w-full resize-y rounded-md border-2 px-3 py-2 text-sm',
-				'bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100',
+				'bg-background text-foreground',
 				'placeholder:text-muted-foreground',
 				'focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
 				'disabled:cursor-not-allowed disabled:opacity-50',
-				error ? 'border-destructive' : 'border-gray-300 dark:border-gray-600'
+				error ? 'border-destructive' : 'border-input'
 			)}></textarea>
 		{#if sourceMode && editor}
 			<button
@@ -244,6 +257,40 @@
 
 	{#if error}
 		<p id="{inputId}-error" class="text-sm text-destructive" role="alert">{error}</p>
+	{/if}
+
+	{#if expandable}
+		<Dialog.Root bind:open={expandedOpen}>
+			<Dialog.Content
+				showCloseButton={false}
+				class="flex h-[calc(100dvh-1.5rem)] w-[calc(100vw-1.5rem)] max-w-none flex-col gap-0 overflow-hidden p-0 sm:h-[calc(100dvh-4rem)] sm:w-[calc(100vw-4rem)]"
+			>
+				<div class="flex items-center justify-between gap-3 border-b px-4 py-3 sm:px-6">
+					<Dialog.Title class="min-w-0 truncate text-lg font-bold">
+						{label || m['markdownEditor.expandedTitle']()}
+					</Dialog.Title>
+					<Dialog.Close>
+						{#snippet child({ props })}
+							<Button {...props} type="button">{m['markdownEditor.done']()}</Button>
+						{/snippet}
+					</Dialog.Close>
+				</div>
+				<div class="min-h-0 flex-1 px-4 py-4 sm:px-6">
+					<MarkdownEditor
+						bind:value
+						fill
+						{placeholder}
+						{disabled}
+						{error}
+						{required}
+						label={label || m['markdownEditor.expandedTitle']()}
+						id="{inputId}-expanded"
+						class="mx-auto h-full w-full max-w-3xl [&>label]:sr-only"
+						{onValueChange}
+					/>
+				</div>
+			</Dialog.Content>
+		</Dialog.Root>
 	{/if}
 
 	{#if editor}

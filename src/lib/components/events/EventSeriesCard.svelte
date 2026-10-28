@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { orgHref } from '$lib/utils/org-links';
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
@@ -8,6 +9,7 @@
 	import { withUtmParams } from '$lib/utils/attribution';
 	import { Calendar, Tag, Users } from '@lucide/svelte';
 	import { getPosterFallbackGradient } from '$lib/utils/fallback-gradient';
+	import { stripMarkup } from '$lib/seo';
 
 	interface Props {
 		series: EventSeriesRetrieveSchema;
@@ -34,13 +36,21 @@
 	// the current URL has no utm_* (so authed/dashboard usage is unaffected);
 	// an explicit `href` prop (the embed grid's absolute tagged links) always
 	// wins untouched.
+	// With tenant mode on, `cardHref` can be ABSOLUTE: an org with a custom domain
+	// links to `https://{custom_domain}{path}`, and on a tenant host an org without
+	// one links to the platform origin (a relative link would bounce to `/`).
+	// Otherwise it is the resolve()d relative path.
 	const cardHref = $derived(
 		href ??
 			withUtmParams(
-				resolve('/(public)/events/[org_slug]/series/[series_slug]', {
-					org_slug: series.organization.slug,
-					series_slug: series.slug
-				}),
+				orgHref(
+					series.organization,
+					resolve('/(public)/events/[org_slug]/series/[series_slug]', {
+						org_slug: series.organization.slug,
+						series_slug: series.slug
+					}),
+					page.data
+				),
 				page.url
 			)
 	);
@@ -72,14 +82,17 @@
 	// organization and its events fall back to the same visual family.
 	const fallbackGradient = $derived(getPosterFallbackGradient(series.id));
 
+	// Descriptions are markdown; a card shows (and announces) the plain text.
+	const descriptionText = $derived(stripMarkup(series.description));
+
 	// Accessible card label for screen readers
 	const accessibleLabel = $derived.by(() => {
 		const parts = [
 			series.name,
 			m['eventSeriesCard.byOrganization']({ name: series.organization.name })
 		];
-		if (series.description) {
-			parts.push(series.description);
+		if (descriptionText) {
+			parts.push(descriptionText);
 		}
 		return parts.join(', ');
 	});
@@ -211,9 +224,9 @@
 		{#if variant === 'standard'}
 			<div class="flex flex-col gap-2 border-t pt-3">
 				<!-- Description -->
-				{#if series.description}
+				{#if descriptionText}
 					<p class="line-clamp-2 text-sm text-muted-foreground">
-						{series.description}
+						{descriptionText}
 					</p>
 				{/if}
 

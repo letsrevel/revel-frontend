@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildPurchaseTicketItems, defaultGuestName } from './purchase-items';
+import { buildPurchaseTicketItems, defaultGuestName, soleHolderPrefill } from './purchase-items';
 
 const base = {
 	guestNames: ['Alice A', 'Bob B'],
@@ -91,5 +91,23 @@ describe('defaultGuestName', () => {
 
 	it('falls back to a non-empty placeholder without a profile name', () => {
 		expect(defaultGuestName('   ').length).toBeGreaterThan(0);
+	});
+});
+
+describe('soleHolderPrefill', () => {
+	it('fills an empty field with the buyer name', () => {
+		expect(soleHolderPrefill('', '', 'Ada Lovelace')).toBe('Ada Lovelace');
+	});
+
+	it('follows the buyer name while the field still holds its own prefill', () => {
+		expect(soleHolderPrefill('Ada', 'Ada', 'Ada Lovelace')).toBe('Ada Lovelace');
+	});
+
+	it('never overwrites a name the buyer typed', () => {
+		expect(soleHolderPrefill('Grace Hopper', 'Ada Lovelace', 'Ada Lovelace')).toBeNull();
+	});
+
+	it('is a no-op when the field already holds the buyer name', () => {
+		expect(soleHolderPrefill('Ada Lovelace', 'Ada Lovelace', 'Ada Lovelace')).toBeNull();
 	});
 });

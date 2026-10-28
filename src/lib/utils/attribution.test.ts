@@ -190,3 +190,13 @@ describe('landing slugs as utm_campaign (#1002)', () => {
 		}
 	});
 });
+
+describe('withUtmParams cross-origin (#1056)', () => {
+	it('keeps the origin of an absolute custom-domain href', () => {
+		const out = withUtmParams(
+			'https://owls.example.com/org/night-owls',
+			new URL('https://letsrevel.io/events?utm_source=news')
+		);
+		expect(out).toBe('https://owls.example.com/org/night-owls?utm_source=news');
+	});
+});

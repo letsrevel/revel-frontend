@@ -54,47 +54,59 @@
 	<!-- Hero Section with Cover Art -->
 	<section class="relative w-full overflow-hidden">
 		<!-- Cover Image or Gradient -->
-		<div class="relative h-48 w-full md:h-64 lg:h-80">
-			{#if coverUrl}
+		{#if coverUrl}
+			<!-- Cover art is uploaded (and cropped) at 16:9, so it is shown at 16:9 —
+			     uncropped, as in the editor preview. A fixed-height band with
+			     object-cover sliced a wide desktop viewport down to ~6:1 and cut the
+			     art's top and bottom off. Past max-w-5xl the sides are filled by a
+			     blurred copy of the same art, so the band still spans the page. -->
+			<div class="relative w-full">
+				<img
+					src={coverUrl}
+					alt=""
+					aria-hidden="true"
+					class="absolute inset-0 h-full w-full scale-110 object-cover blur-2xl"
+				/>
+				<div class="absolute inset-0 bg-poster-ink/30"></div>
 				<img
 					src={coverUrl}
 					alt={m['eventSeriesDetailPage.coverImageAlt']({ seriesName: series.name })}
-					class="h-full w-full object-cover"
+					class="relative mx-auto aspect-video w-full max-w-5xl object-cover"
 				/>
-				<!-- Gradient overlay -->
-				<div
-					class="absolute inset-0 bg-gradient-to-b from-transparent via-poster-ink/20 to-poster-ink/60"
-				></div>
-			{:else}
+			</div>
+		{:else}
+			<div class="relative h-48 w-full md:h-64 lg:h-80">
 				<!-- Fallback gradient -->
 				<div class="h-full w-full bg-gradient-to-br {fallbackGradient}"></div>
 				<div class="absolute inset-0 bg-gradient-to-b from-poster-ink/10 to-poster-ink/60"></div>
-			{/if}
-
-			<!-- Series badge. The one Sticker on this page (celebration volume caps
-			     them at one per viewport-height): a fixed-palette white sticker reads
-			     identically over any cover art, in either theme. -->
-			<div class="absolute right-4 top-4">
-				<Sticker tint="purple" rotate={-3} class="text-sm">
-					{m['eventSeriesDetailPage.badge_eventSeries']()}
-				</Sticker>
 			</div>
+		{/if}
+
+		<!-- Series badge. The one Sticker on this page (celebration volume caps
+		     them at one per viewport-height): a fixed-palette white sticker reads
+		     identically over any cover art, in either theme. -->
+		<div class="absolute right-4 top-4">
+			<Sticker tint="purple" rotate={-3} class="text-sm">
+				{m['eventSeriesDetailPage.badge_eventSeries']()}
+			</Sticker>
 		</div>
 	</section>
 
 	<!--
 		Poster ribbon (uplift, spec §9) — the event detail page's move, mirrored
 		here because a series is the same kind of object: someone else's thing,
-		put on by an organization. A solid brand-purple colour block under the
+		put on by an organization. A solid `--poster-band` colour block under the
 		cover carrying the org as a tilted white sticker, with `LogoChip` — the
 		landing hero's mark-and-hearts chip — pinned to the far end.
 
 		Ribbon, strip and chip are mode-INERT by the imagery rule (a poster panel
-		is not a surface), so every pair on them is measured against the fixed
-		values rather than per-mode. All three are registered in
-		scripts/audit-brand-themes.py; numbers pasted from its output:
+		is not a surface), so every pair on them is measured once, not per mode.
+		`--poster-band` defaults to Hearty Purple; a branded org (#1053) swaps in
+		its light-mode primary, which the backend keeps >= 4.5:1 against white.
+		All three are registered in scripts/audit-brand-themes.py; default-theme
+		numbers pasted from its output:
 		  ink on white                   → 17.40:1
-		  Hearty Purple #8C3CDD on white →  5.52:1 (the text-xs kicker clears AA)
+		  poster-band (default) on white →  5.52:1 (the text-xs kicker clears AA)
 		  white on crimson-DEEP          →  4.59:1 (the logo-less initial tile)
 		The initial tile's gradient ends on `crimson-deep`, not raw
 		`poster-crimson`: white on raw Light Crimson is 4.33:1, which fails AA
@@ -104,15 +116,15 @@
 		series keeps its mark in the header block below, and this ribbon answers
 		"who is putting this on".
 	-->
-	<div class="bg-poster-purple">
-		<!-- `container`, not the event header's `max-w-[1920px]`: that page's cover
-		     is capped at 1920 so its ribbon matches it, whereas this cover is
-		     edge-to-edge and the body below is a container — so the strip lines up
-		     with the h1 it introduces. -->
+	<div class="bg-poster-band">
+		<!-- `container`, not the event header's `max-w-[1920px]` (which that page
+		     keeps for its title block): this cover band is edge-to-edge and the
+		     body below is a container, so the strip lines up with the h1 it
+		     introduces. -->
 		<div class="container relative mx-auto px-6 pb-6 md:px-8">
 			<a
 				href={resolve('/(public)/org/[slug]', { slug: series.organization.slug })}
-				class="group -mt-8 inline-flex -rotate-1 items-center gap-3 rounded-[1.25rem] bg-poster-white p-3 shadow-poster-lg transition-transform hover:rotate-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-purple"
+				class="group -mt-4 inline-flex -rotate-1 items-center gap-3 rounded-[1.25rem] bg-poster-white p-3 shadow-poster-lg transition-transform hover:rotate-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-poster-white focus-visible:ring-offset-2 focus-visible:ring-offset-poster-band md:-mt-8"
 			>
 				{#if orgLogoUrl}
 					<img
@@ -129,7 +141,7 @@
 				{/if}
 
 				<div class="flex flex-col pr-2">
-					<span class="text-xs font-extrabold uppercase tracking-[0.12em] text-poster-purple">
+					<span class="text-xs font-extrabold uppercase tracking-[0.12em] text-poster-band">
 						{m['eventHeader.organizedBy']()}
 					</span>
 					<span class="font-extrabold text-poster-ink">

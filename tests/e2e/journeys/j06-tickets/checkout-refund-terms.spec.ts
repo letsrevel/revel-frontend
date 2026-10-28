@@ -82,7 +82,7 @@ test.describe('J6 refund terms before purchase @p1', () => {
 
 		await page
 			.getByTestId('cart-summary-bar')
-			.getByRole('button', { name: 'Buy', exact: true })
+			.getByRole('button', { name: /^(Buy|Claim)$/ })
 			.click();
 		const sheet = page.getByRole('dialog', { name: 'Checkout' });
 		await expect(sheet).toBeVisible();

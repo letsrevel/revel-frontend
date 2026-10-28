@@ -179,3 +179,72 @@ describe('TierForm — country rules gate', () => {
 		expect(screen.getByRole('button', { name: 'Save Changes' })).toBeEnabled();
 	});
 });
+
+describe('TierForm event-capacity warning', () => {
+	const tierOf40 = { ...pausedOnlineTier, total_quantity: 40 } as TicketTierDetailSchema;
+
+	it('forwards eventCapacity to the availability section and warns when exceeded', () => {
+		renderForm(tierOf40, { eventCapacity: 30 });
+
+		expect(screen.getByTestId('tier-capacity-warning')).toBeInTheDocument();
+	});
+
+	it('does not warn without an event capacity', () => {
+		renderForm(tierOf40);
+
+		expect(screen.queryByTestId('tier-capacity-warning')).not.toBeInTheDocument();
+	});
+});
+
+describe('TierForm cancellation defaults', () => {
+	beforeEach(() => {
+		vi.mocked(eventadminticketsCreateTicketTier).mockResolvedValue(
+			ok(pausedOnlineTier) as unknown as CreateResult
+		);
+		vi.mocked(eventadminticketsUpdateTicketTier).mockResolvedValue(
+			ok(pausedOnlineTier) as unknown as UpdateResult
+		);
+	});
+
+	const TOGGLE = /Allow attendees to cancel their tickets/;
+
+	it('defaults the toggle ON for a new free tier', () => {
+		renderForm(null);
+		expect(screen.getByLabelText(TOGGLE)).toBeChecked();
+	});
+
+	it('flips an untouched default OFF when a new tier becomes paid', async () => {
+		const user = userEvent.setup();
+		renderForm(null);
+		await user.selectOptions(screen.getByLabelText(/Payment Method/), 'offline');
+		await waitFor(() => expect(screen.getByLabelText(TOGGLE)).not.toBeChecked());
+	});
+
+	it('keeps the organizer choice once the toggle was touched', async () => {
+		const user = userEvent.setup();
+		renderForm(null);
+		await user.click(screen.getByLabelText(TOGGLE)); // off
+		await user.selectOptions(screen.getByLabelText(/Payment Method/), 'offline');
+		await user.selectOptions(screen.getByLabelText(/Payment Method/), 'free');
+		expect(screen.getByLabelText(TOGGLE)).not.toBeChecked();
+	});
+
+	it('submits cancellation fields for an existing free tier, without a refund policy', async () => {
+		const user = userEvent.setup();
+		renderForm({
+			...pausedOnlineTier,
+			payment_method: 'free',
+			allow_user_cancellation: true,
+			cancellation_deadline_hours: 24,
+			refund_policy: null
+		} as TicketTierDetailSchema);
+		await user.click(screen.getByRole('button', { name: 'Save Changes' }));
+		await waitFor(() => expect(eventadminticketsUpdateTicketTier).toHaveBeenCalled());
+		const body = vi.mocked(eventadminticketsUpdateTicketTier).mock.calls[0][0].body;
+		expect(body).toMatchObject({
+			allow_user_cancellation: true,
+			cancellation_deadline_hours: 24,
+			refund_policy: null
+		});
+	});
+});

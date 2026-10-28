@@ -20,6 +20,7 @@
 	import { formatMoney, MONEY_RANGE_SEPARATOR } from '$lib/utils/format';
 	import ComplianceCallout from '$lib/components/compliance/ComplianceCallout.svelte';
 	import { countryName } from '$lib/utils/compliance';
+	import { exceedsEventCapacity } from './event-capacity';
 
 	interface Props {
 		tier: TicketTierDetailSchema;
@@ -33,6 +34,8 @@
 		onlineBlocked?: boolean;
 		/** `event.compliance.venue_country`, for the banner copy. */
 		venueCountry?: string;
+		/** Effective event capacity (null = uncapped); flags a quantity above it. */
+		eventCapacity?: number | null;
 	}
 
 	const {
@@ -43,8 +46,11 @@
 		onTogglePause,
 		pausePending = false,
 		onlineBlocked = false,
-		venueCountry = ''
+		venueCountry = '',
+		eventCapacity = null
 	}: Props = $props();
+
+	const overCapacity = $derived(exceedsEventCapacity(tier.total_quantity, eventCapacity));
 
 	// A tier created before the country gate (or switched to card while the
 	// venue was elsewhere) can't sell anymore: say so and offer the way out.
@@ -79,13 +85,23 @@
 	});
 
 	const quantityDisplay = $derived.by(() => {
-		if (tier.total_quantity === null) return 'Unlimited';
 		// `?? 0` is safe here and only here: this is a staff-only admin surface, and
 		// organization owners/staff bypass `visibility_settings` entirely (#825), so
 		// `total_available` is never withheld from this reader. On any guest-facing
 		// surface the same expression would render a hidden count as zero.
-		const available = tier.total_available ?? 0;
-		return `${available} of ${tier.total_quantity} remaining`;
+		const available = String(tier.total_available ?? 0);
+		// `total_quantity` is optional in the schema: missing means unlimited, like null.
+		const total = tier.total_quantity ?? null;
+		// The admin listing clamps `total_available` by the event's remaining
+		// capacity and says so via `capped_by_event` (backend #1209). Create/update
+		// responses always report false, so this only shows on listed tiers.
+		if (tier.capped_by_event) {
+			return total === null
+				? m['tierCard.remainingEventCapUnlimited']({ available })
+				: m['tierCard.remainingEventCap']({ available, total: String(total) });
+		}
+		if (total === null) return 'Unlimited';
+		return `${available} of ${total} remaining`;
 	});
 
 	const paymentMethodDisplay = $derived.by(() => {
@@ -147,6 +163,9 @@
 	{#if tier.sales_paused}
 		<StatusBadge tone="warning" size="sm" label={m['tierCard.salesPaused']()} />
 	{/if}
+	{#if overCapacity}
+		<StatusBadge tone="warning" size="sm" label={m['tierCard.overEventCapacity']()} />
+	{/if}
 {/snippet}
 
 {#snippet meta()}
@@ -176,7 +195,18 @@
 		<!-- Quantity -->
 		<div>
 			<dt class="text-muted-foreground">{m['tierCard.quantity']()}</dt>
-			<dd class="font-bold">{quantityDisplay}</dd>
+			<dd class="font-bold">
+				{quantityDisplay}
+				<!-- Inside the <dd>: a <dl> group may only hold dt/dd. -->
+				{#if overCapacity}
+					<span
+						class="mt-0.5 block text-xs font-normal text-highlight-foreground dark:text-highlight"
+						data-testid="tier-over-capacity"
+					>
+						{m['tierCard.overEventCapacityNote']({ capacity: String(eventCapacity) })}
+					</span>
+				{/if}
+			</dd>
 		</div>
 
 		<!-- Sold elsewhere (per connected platform, from external_sales) -->

@@ -1,6 +1,8 @@
 import { error } from '@sveltejs/kit';
 import { eventpublicdiscoveryListEvents } from '$lib/api';
 import { getBackendUrl } from '$lib/config/api';
+import { orgOrigin } from '$lib/utils/org-links';
+import { serverLinkContext } from '$lib/server/tenant-canonical';
 import type { RequestHandler } from './$types';
 
 const PAGE_SIZE = 200;
@@ -30,33 +32,51 @@ function imageEntry(rel: string | null | undefined, title: string): string {
 </image:image>`;
 }
 
-export const GET: RequestHandler = async ({ params, fetch, url }) => {
+export const GET: RequestHandler = async ({ params, fetch, url, locals }) => {
+	const tenant = locals.tenant ?? null;
 	const page = parseInt(params.page, 10);
 	if (!Number.isInteger(page) || page < 1) throw error(404, 'Invalid sitemap page');
 
-	const baseUrl = url.origin;
+	const baseUrl = tenant
+		? (orgOrigin(tenant, serverLinkContext(locals)) ?? url.origin)
+		: url.origin;
 	const resp = await eventpublicdiscoveryListEvents({
 		fetch,
-		query: { page, page_size: PAGE_SIZE, include_past: false }
+		query: {
+			page,
+			page_size: PAGE_SIZE,
+			include_past: false,
+			...(tenant ? { organization: tenant.id } : {})
+		}
 	});
 
 	const events = resp.data?.results ?? [];
 	if (events.length === 0 && page > 1) throw error(404, 'No events on this page');
 
-	const urls = events.map((event) => {
-		const loc = `${baseUrl}/events/${event.organization.slug}/${event.slug}`;
-		const lastmod = (event.updated_at ? new Date(event.updated_at) : new Date())
-			.toISOString()
-			.split('T')[0];
-		const img = imageEntry(event.cover_art ?? event.logo, event.name);
-		return `<url>
+	// A custom-domain org's pages belong in that domain's own (org-scoped) sitemap:
+	// the sitemaps protocol only accepts URLs on the sitemap's own host, and the
+	// platform URL 301s there anyway. Entries on this host keep `baseUrl`.
+	const ctx = serverLinkContext(locals);
+	const onThisHost = (org: { slug: string; custom_domain?: string | null }): boolean => {
+		const origin = orgOrigin(org, ctx);
+		return origin === null || origin === baseUrl;
+	};
+	const urls = events
+		.filter((event) => onThisHost(event.organization))
+		.map((event) => {
+			const loc = `${baseUrl}/events/${event.organization.slug}/${event.slug}`;
+			const lastmod = (event.updated_at ? new Date(event.updated_at) : new Date())
+				.toISOString()
+				.split('T')[0];
+			const img = imageEntry(event.cover_art ?? event.logo, event.name);
+			return `<url>
   <loc>${escapeXml(loc)}</loc>
   <lastmod>${lastmod}</lastmod>
   <changefreq>weekly</changefreq>
   <priority>${priorityFor(event.start)}</priority>
   ${img}
 </url>`;
-	});
+		});
 
 	const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"

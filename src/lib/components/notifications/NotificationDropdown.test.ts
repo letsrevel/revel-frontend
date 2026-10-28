@@ -206,8 +206,9 @@ describe('NotificationDropdown', () => {
 		renderWithQuery();
 		const button = screen.getByRole('button', { name: /open notifications/i });
 
-		// Button should have proper aria-label
-		expect(button).toHaveAttribute('aria-label');
+		// Name comes from content (WCAG 2.5.3), not an aria-label
+		expect(button).not.toHaveAttribute('aria-label');
+		expect(button).toHaveTextContent(/open notifications/i);
 	});
 
 	it('handles missing authToken gracefully', () => {

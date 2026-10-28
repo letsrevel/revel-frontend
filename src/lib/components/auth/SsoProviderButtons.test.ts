@@ -1,6 +1,20 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import SsoProviderButtons from './SsoProviderButtons.svelte';
+
+const { pageData } = vi.hoisted(() => ({ pageData: { tenant: null as unknown } }));
+
+vi.mock('$app/state', () => ({
+	page: {
+		get data() {
+			return pageData;
+		}
+	}
+}));
+
+beforeEach(() => {
+	pageData.tenant = null;
+});
 
 const providers = [
 	{ key: 'google', name: 'Google' },
@@ -44,5 +58,13 @@ describe('SsoProviderButtons', () => {
 		expect(google.querySelector('[data-testid="sso-icon-google"]')).toBeTruthy();
 		expect(github.querySelector('[data-testid="sso-icon-github"]')).toBeTruthy();
 		expect(keycloak.querySelector('svg')).toBeNull();
+	});
+
+	it('renders nothing, divider included, on a tenant host', () => {
+		pageData.tenant = { id: 'org-1' };
+		const { container } = render(SsoProviderButtons, { props: { providers } });
+		expect(screen.queryByRole('link')).toBeNull();
+		expect(screen.queryByText('or')).toBeNull();
+		expect(container.querySelector('.bg-border')).toBeNull();
 	});
 });

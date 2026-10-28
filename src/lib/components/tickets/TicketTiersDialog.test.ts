@@ -51,6 +51,12 @@ describe('TicketTiersDialog', () => {
 		expect(screen.queryByText(/EUR|€/)).not.toBeInTheDocument();
 	});
 
+	it('free carts say Claim, not Buy', () => {
+		renderDialog({ isFree: true, totalDisplay: null, currency: null });
+		expect(screen.getByRole('button', { name: 'Claim' })).toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: 'Buy' })).not.toBeInTheDocument();
+	});
+
 	it('buy closes the dialog and hands off to onCheckout', async () => {
 		const user = userEvent.setup();
 		const { onCheckout } = renderDialog();

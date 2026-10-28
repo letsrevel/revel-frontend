@@ -247,10 +247,10 @@
 								target="_blank"
 								rel="noopener noreferrer"
 								class="flex items-center gap-1.5 transition-colors hover:text-background dark:hover:text-foreground"
-								aria-label="{m['footer.frontend']()} repository on GitHub"
 							>
 								<Github class="h-3.5 w-3.5" aria-hidden="true" />
 								<span>FE v{FRONTEND_VERSION}</span>
+								<span class="sr-only">{m['footer.frontend']()} repository on GitHub</span>
 								<Info
 									class="h-3 w-3 text-background/50 dark:text-muted-foreground/70"
 									aria-hidden="true"
@@ -287,10 +287,10 @@
 								target="_blank"
 								rel="noopener noreferrer"
 								class="flex items-center gap-1.5 transition-colors hover:text-background dark:hover:text-foreground"
-								aria-label="{m['footer.backend']()} repository on GitHub"
 							>
 								<Github class="h-3.5 w-3.5" aria-hidden="true" />
 								<span>BE v{backendVersion}{isDemoMode ? ' (demo)' : ''}</span>
+								<span class="sr-only">{m['footer.backend']()} repository on GitHub</span>
 								<Info
 									class="h-3 w-3 text-background/50 dark:text-muted-foreground/70"
 									aria-hidden="true"

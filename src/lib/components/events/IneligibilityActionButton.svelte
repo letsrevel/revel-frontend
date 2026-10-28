@@ -69,6 +69,19 @@
 	const isAuthenticated = $derived(!!authStore.accessToken);
 	const queryClient = useQueryClient();
 
+	// Claiming only helps while the invitation gate is what blocks the user.
+	// The backend checks invitations before membership, profile, questionnaire
+	// and availability, so any later next_step means the user already holds an
+	// invitation (or the event needs none). Offering the claim then loops: it
+	// succeeds, the page reloads with the pending_event_token cookie still set,
+	// and the claim button comes back instead of the step that actually blocks.
+	const showClaimButton = $derived(
+		!!eventTokenDetails?.grants_invitation &&
+			(!nextStep ||
+				nextStep === 'request_invitation' ||
+				nextStep === 'wait_for_invitation_approval')
+	);
+
 	let isLoading = $state(false);
 	let isLeavingWaitlist = $state(false);
 	let showSuccess = $state(false);
@@ -324,7 +337,7 @@
 			? m['ineligibilityActionButton.requestSent']()
 			: nextStep
 				? getActionButtonText(nextStep)
-				: 'Continue'
+				: m['ineligibilityActionButton.continue']()
 	);
 	const buttonVariant = $derived(nextStep ? getButtonVariant(nextStep) : 'outline');
 	const isButtonDisabled = $derived(
@@ -348,8 +361,8 @@
   />
 -->
 <div class={cn('space-y-2', className)}>
-	<!-- Use ClaimInvitationButton if token is present and grants invitation (highest priority) -->
-	{#if eventTokenDetails && eventTokenDetails.grants_invitation}
+	<!-- Use ClaimInvitationButton while the invitation gate is the blocker (see showClaimButton) -->
+	{#if showClaimButton && eventTokenDetails}
 		<ClaimInvitationButton
 			tokenId={eventTokenDetails.id || ''}
 			tokenDetails={eventTokenDetails}
@@ -359,7 +372,7 @@
 	{:else if nextStep === 'request_invitation'}
 		<RequestInvitationButton
 			{eventId}
-			eventName={eventName || 'this event'}
+			eventName={eventName || m['ineligibilityActionButton.thisEvent']()}
 			{isAuthenticated}
 			hasAlreadyRequested={false}
 			onSuccess={onInvitationRequestSuccess}

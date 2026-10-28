@@ -58,6 +58,11 @@
 		 * The h1 never carried a colour class, so it already inherits.
 		 */
 		onBand?: boolean;
+		/**
+		 * Inline content beside the title at every volume (e.g. a StatusBadge).
+		 * Unlike `decoration` it is NOT aria-hidden, so it may carry real text.
+		 */
+		titleAddon?: Snippet;
 		/** Right-aligned on sm+, wraps under the title on mobile. */
 		actions?: Snippet;
 		/** Celebration-only decorative slot (e.g. a brand Sticker). Ignored in studio. */
@@ -73,6 +78,7 @@
 		volume = 'studio',
 		onBand = false,
 		actions,
+		titleAddon,
 		decoration,
 		class: className = '',
 		...restProps
@@ -106,6 +112,7 @@
 			>
 				{title}
 			</h1>
+			{#if titleAddon}{@render titleAddon()}{/if}
 			{#if decoration && volume !== 'studio'}
 				<span aria-hidden="true">{@render decoration()}</span>
 			{/if}

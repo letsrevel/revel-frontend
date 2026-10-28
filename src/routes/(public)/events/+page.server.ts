@@ -31,7 +31,10 @@ export const load: PageServerLoad = async ({ request, url, fetch, locals }) => {
 
 	// Parse filter parameters
 	const cityId = url.searchParams.get('city_id');
-	const organization = url.searchParams.get('organization') || undefined;
+	// On a tenant host this list IS the tenant's events (#1056): the organization
+	// filter is forced to the tenant, overriding any `organization` /
+	// `organization_slug` in the query (the loader never reads the slug param).
+	const organization = locals.tenant?.id ?? (url.searchParams.get('organization') || undefined);
 	const eventType = pickAllowed(url.searchParams.get('event_type'), EVENT_TYPES);
 	const visibility = pickAllowed(url.searchParams.get('visibility'), VISIBILITIES);
 	const tagsParam = url.searchParams.get('tags');

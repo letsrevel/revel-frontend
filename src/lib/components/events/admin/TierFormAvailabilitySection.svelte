@@ -2,6 +2,8 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
+	import { TriangleAlert } from '@lucide/svelte';
+	import { exceedsEventCapacity } from './event-capacity';
 	import type { MembershipTierSchema } from '$lib/api/generated/types.gen';
 
 	interface Props {
@@ -18,6 +20,8 @@
 		membershipTiers: MembershipTierSchema[];
 		/** Organizer kill switch: hides the tier from checkout until resumed, sales window untouched. */
 		salesPaused: boolean;
+		/** Effective event capacity (null = uncapped). */
+		eventCapacity?: number | null;
 		isPending: boolean;
 	}
 
@@ -34,8 +38,14 @@
 		restrictedToMembershipTiersIds = $bindable(),
 		membershipTiers,
 		salesPaused = $bindable(),
+		eventCapacity = null,
 		isPending
 	}: Props = $props();
+
+	// Parsed exactly as TierForm saves it (`parseInt`), so the warning describes
+	// the value that will be stored. Empty = unlimited (NaN), which never warns.
+	const parsedQuantity = $derived(parseInt(String(totalQuantity ?? '')));
+	const overCapacity = $derived(exceedsEventCapacity(parsedQuantity, eventCapacity));
 </script>
 
 <!-- Total Quantity -->
@@ -48,8 +58,28 @@
 		bind:value={totalQuantity}
 		placeholder={m['tierForm.unlimitedPlaceholder']()}
 		disabled={isPending}
+		aria-describedby={overCapacity
+			? 'total-quantity-hint total-quantity-capacity-warning'
+			: 'total-quantity-hint'}
 	/>
-	<p class="mt-1 text-xs text-muted-foreground">{m['tierForm.unlimitedTickets']()}</p>
+	<p id="total-quantity-hint" class="mt-1 text-xs text-muted-foreground">
+		{m['tierForm.unlimitedTickets']()}
+	</p>
+	{#if overCapacity}
+		<p
+			id="total-quantity-capacity-warning"
+			class="mt-1 flex items-start gap-1.5 text-xs text-highlight-foreground dark:text-highlight"
+			data-testid="tier-capacity-warning"
+		>
+			<TriangleAlert class="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+			<span>
+				{m['tierForm.overEventCapacity']({
+					capacity: String(eventCapacity),
+					quantity: String(parsedQuantity)
+				})}
+			</span>
+		</p>
+	{/if}
 </div>
 
 <!-- Pause sales (kill switch, independent of the sales window) -->

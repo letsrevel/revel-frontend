@@ -69,7 +69,7 @@ test.describe('J12 guest invitation-link claim @p1', () => {
 		await expect(async () => {
 			if (await emailSent.isVisible()) return;
 			if (!(await sheet.isVisible())) {
-				await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+				await summaryBar.getByRole('button', { name: /^(Buy|Claim)$/ }).click();
 				await expect(sheet).toBeVisible({ timeout: 8_000 });
 			}
 			await sheet.getByLabel('Email address').fill(email);

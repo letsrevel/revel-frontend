@@ -201,8 +201,6 @@
 				return hasRefund ? m['cancelTicket.paymentMethodOffline']() : null;
 			case 'at_the_door':
 				return m['cancelTicket.paymentMethodAtTheDoor']();
-			case 'free':
-				return m['cancelTicket.paymentMethodFree']();
 			default:
 				return null;
 		}
@@ -254,6 +252,8 @@
 			lastExpiredWindow !== null
 	);
 
+	const isFreeTicket = $derived(preview?.payment_method === 'free');
+
 	function handleClose(): void {
 		if (cancelMutation.isPending) return;
 		open = false;
@@ -271,7 +271,11 @@
 				<X class="h-5 w-5 text-destructive" aria-hidden="true" />
 				{m['cancelTicket.dialogTitle']()}
 			</DialogTitle>
-			<DialogDescription>{m['cancelTicket.dialogDescription']()}</DialogDescription>
+			<DialogDescription>
+				{isFreeTicket
+					? m['cancelTicket.dialogDescriptionFree']()
+					: m['cancelTicket.dialogDescription']()}
+			</DialogDescription>
 		</DialogHeader>
 
 		{#if isLoadingPreview && !preview}
@@ -299,57 +303,57 @@
 			</DialogFooter>
 		{:else if preview}
 			<div class="space-y-4">
-				<!-- Refund summary card -->
-				<div class="rounded-lg border border-border bg-muted/30 p-4" data-testid="refund-summary">
-					<div class="text-xs uppercase tracking-wide text-muted-foreground">
-						{m['cancelTicket.refundLabel']()}
-					</div>
-					<div class="mt-1 flex items-baseline gap-2">
-						{#if refundAmountNum > 0}
-							<span class="text-3xl font-bold text-foreground">
-								{formatPrice(preview.refund_amount, preview.currency, '')}
-							</span>
-						{:else if preview.payment_method === 'free'}
-							<span class="text-base text-muted-foreground">
-								{m['cancelTicket.refundFreeTicket']()}
-							</span>
-						{:else}
-							<span class="text-3xl font-bold text-foreground">
-								{m['cancelTicket.refundNoRefundShort']()}
-							</span>
+				<!-- Refund summary card (free tickets: deadline only, no refund talk) -->
+				{#if !isFreeTicket || preview.deadline}
+					<div class="rounded-lg border border-border bg-muted/30 p-4" data-testid="refund-summary">
+						{#if !isFreeTicket}
+							<div class="text-xs uppercase tracking-wide text-muted-foreground">
+								{m['cancelTicket.refundLabel']()}
+							</div>
+							<div class="mt-1 flex items-baseline gap-2">
+								{#if refundAmountNum > 0}
+									<span class="text-3xl font-bold text-foreground">
+										{formatPrice(preview.refund_amount, preview.currency, '')}
+									</span>
+								{:else}
+									<span class="text-3xl font-bold text-foreground">
+										{m['cancelTicket.refundNoRefundShort']()}
+									</span>
+								{/if}
+							</div>
+
+							{#if flatFeeNum > 0 && refundAmountNum > 0}
+								<p class="mt-2 text-xs text-muted-foreground">
+									{m['cancelTicket.refundFlatFeeNote']({
+										fee: formatPrice(preview.flat_fee, preview.currency, '')
+									})}
+								</p>
+							{/if}
+
+							{#if showExpiredWindowNote && lastExpiredWindow}
+								<p class="mt-2 text-xs text-muted-foreground">
+									{m['cancelTicket.refundExpiredWindow']({
+										pct: lastExpiredWindow.refund_percentage,
+										deadline: formatDeadline(lastExpiredWindow.effective_until)
+									})}
+								</p>
+							{/if}
+						{/if}
+
+						{#if preview.deadline}
+							<p class="text-xs text-muted-foreground" class:mt-3={!isFreeTicket}>
+								<span class="font-medium">{m['cancelTicket.deadlineLabel']()}:</span>
+								{formatDeadline(preview.deadline)}
+							</p>
+						{/if}
+
+						{#if !isFreeTicket && paymentMethodNote(preview.payment_method, refundAmountNum > 0)}
+							<p class="mt-3 text-xs text-muted-foreground">
+								{paymentMethodNote(preview.payment_method, refundAmountNum > 0)}
+							</p>
 						{/if}
 					</div>
-
-					{#if flatFeeNum > 0 && refundAmountNum > 0}
-						<p class="mt-2 text-xs text-muted-foreground">
-							{m['cancelTicket.refundFlatFeeNote']({
-								fee: formatPrice(preview.flat_fee, preview.currency, '')
-							})}
-						</p>
-					{/if}
-
-					{#if showExpiredWindowNote && lastExpiredWindow}
-						<p class="mt-2 text-xs text-muted-foreground">
-							{m['cancelTicket.refundExpiredWindow']({
-								pct: lastExpiredWindow.refund_percentage,
-								deadline: formatDeadline(lastExpiredWindow.effective_until)
-							})}
-						</p>
-					{/if}
-
-					{#if preview.deadline}
-						<p class="mt-3 text-xs text-muted-foreground">
-							<span class="font-medium">{m['cancelTicket.deadlineLabel']()}:</span>
-							{formatDeadline(preview.deadline)}
-						</p>
-					{/if}
-
-					{#if paymentMethodNote(preview.payment_method, refundAmountNum > 0)}
-						<p class="mt-3 text-xs text-muted-foreground">
-							{paymentMethodNote(preview.payment_method, refundAmountNum > 0)}
-						</p>
-					{/if}
-				</div>
+				{/if}
 
 				<!-- Upcoming refund windows -->
 				{#if upcomingWindows.length > 0}

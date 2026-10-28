@@ -65,7 +65,11 @@ test.describe('J9 permission gating @p2', () => {
 		// The staff member reaches the admin area…
 		await gotoHydrated(page, `/org/${org.slug}/admin`);
 		await waitForClientAuth(page);
-		await expect(page.getByText('Staff', { exact: true }).first()).toBeVisible();
+		// The role badge renders twice (desktop sidebar, mobile top bar), each
+		// hidden at the other breakpoint — so match the copy that is showing.
+		await expect(
+			page.getByText('Staff', { exact: true }).filter({ visible: true }).first()
+		).toBeVisible();
 
 		// …but the owner-only nav items aren't offered.
 		const nav = await openAdminNav(page);

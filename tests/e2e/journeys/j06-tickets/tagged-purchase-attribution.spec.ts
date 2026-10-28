@@ -106,7 +106,7 @@ test.describe('J6 tagged purchase attribution @p1', () => {
 		const sheet = page.getByRole('dialog', { name: 'Checkout' });
 		await expect(async () => {
 			if (await sheet.isVisible()) return;
-			await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+			await summaryBar.getByRole('button', { name: /^(Buy|Claim)$/ }).click();
 			await expect(sheet).toBeVisible({ timeout: 8_000 });
 		}).toPass({ timeout: 30_000 });
 		await sheet.getByLabel('Name for ticket 1').fill('E2E Attribution Buyer');

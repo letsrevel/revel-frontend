@@ -25,10 +25,8 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import EssentialsStep from './EssentialsStep.svelte';
-	import DetailsStep from './DetailsStep.svelte';
-	import EventResources from './EventResources.svelte';
-	import ScheduleEditor from './ScheduleEditor.svelte';
+	import DetailsSections from './editor/DetailsSections.svelte';
+	import type { EditorFormData, EditorMode, EditorUpdate, ImageUpdate } from './editor/types';
 	import {
 		sessionsToRows,
 		rowsToSessions,
@@ -38,9 +36,19 @@
 	import TicketingStep from './TicketingStep.svelte';
 	import { platformFeeInfoFrom, type PlatformFeeConfig } from '$lib/utils/fees';
 	import SaveBar from './SaveBar.svelte';
+	import EventGlance from './editor/EventGlance.svelte';
+	import EditorShell from './editor/EditorShell.svelte';
+	import { applyVenue } from './editor/venue-selection';
+	import EditorSectionNav from './editor/EditorSectionNav.svelte';
+	import { buildEditorSections, buildNavTabs } from './editor/sections';
+	import { buildDirtySnapshot, type DirtySnapshotInput } from './editor/dirty-snapshot';
+	import { onMount, tick } from 'svelte';
 	import ListingsStep from './listings/ListingsStep.svelte';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import { toast } from 'svelte-sonner';
+	import EditorTabList from './editor/EditorTabList.svelte';
+	import NextStepCard from './editor/NextStepCard.svelte';
+	import type { NavTab } from './editor/EditorSectionNav.svelte';
 	import { scrollToFirstInvalid } from '$lib/utils/scroll';
 
 	interface Props {
@@ -89,25 +97,7 @@
 	let initialTags = $state<string[]>(existingEvent?.tags || []);
 
 	// Form data state (must be declared before derived state that references it)
-	let formData = $state<
-		Partial<EventCreateSchema> & {
-			id?: string;
-			tags?: string[];
-			logo?: string;
-			cover_art?: string;
-			organization_logo?: string;
-			organization_cover_art?: string;
-			requires_ticket?: boolean;
-			venue_id?: string | null;
-			location_maps_url?: string | null;
-			location_maps_embed?: string | null;
-			seats_held?: number;
-			waitlist_time_window?: string | null;
-			waitlist_batch_size?: number | null;
-			waitlist_cutoff_date?: string | null;
-			waitlist_lottery_mode?: boolean | null;
-		}
-	>({
+	let formData = $state<EditorFormData>({
 		id: existingEvent?.id,
 		seats_held: existingEvent?.seats_held ?? 0,
 		name: existingEvent?.name || '',
@@ -165,17 +155,13 @@
 	const scheduleValid = $derived(scheduleRowsValid(scheduleRows));
 
 	// Editor state (after formData so derived can reference it)
-	let eventCreated = $state(false);
 	let activeTab = $state<'details' | 'ticketing' | 'listings'>(initialTab ?? 'details');
 	const isEditMode = $derived(!!existingEvent);
 	const showTabs = $derived(isEditMode && !!formData.requires_ticket);
 	let tabsEl = $state<HTMLDivElement | null>(null);
 
-	// Create-mode prefill from the `initialStart` / `initialEventSeriesId`
-	// props (ExdatesChipList chip action on the recurring-series dashboard).
-	// Gated to first-mount + create-mode so we never clobber user edits or
-	// an existingEvent's loaded values; the `hasSeededFromPrefill` latch
-	// keeps the effect idempotent across reactivity ticks.
+	// Create-mode prefill from `initialStart` / `initialEventSeriesId` (recurring-series
+	// dashboard). First-mount + create-mode only; the latch keeps it idempotent.
 	let hasSeededFromPrefill = $state(false);
 	$effect(() => {
 		if (existingEvent) return;
@@ -197,17 +183,14 @@
 	// Scroll to tabs when arriving with initialTab from another page
 	$effect(() => {
 		if (initialTab && tabsEl) {
-			// Use tick to ensure DOM is rendered
 			requestAnimationFrame(() => {
 				tabsEl?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 			});
 		}
 	});
 
-	// Fetch resources and questionnaires for existing events. Gated on the
-	// access token: on cold hydration these fired before the token refresh
-	// completed and got 401s; the token is reactive, so the effect re-runs
-	// once it lands.
+	// Fetch resources and questionnaires for existing events. Gated on the access
+	// token (cold hydration got 401s before the refresh landed); re-runs once it does.
 	$effect(() => {
 		if (existingEvent?.id && authStore.accessToken) {
 			eventpublicdetailsListResources({
@@ -219,6 +202,9 @@
 						.filter((id): id is string => id != null);
 					selectedResourceIds = resourceIds;
 					initialResourceIds = [...resourceIds];
+					// The async resource load is not a user edit: fold it into the
+					// baseline so it never reads as unsaved changes.
+					if (baseline) baseline = { ...baseline, resourceIds: [...resourceIds] };
 				}
 			});
 
@@ -248,21 +234,8 @@
 
 	function handleVenueSelect(venue: VenueDetailSchema | null): void {
 		selectedVenue = venue;
-		if (venue) {
-			if (venue.city) {
-				selectedCity = venue.city;
-				formData = {
-					...formData,
-					venue_id: venue.id,
-					city_id: venue.city.id,
-					address: venue.address || null
-				};
-			} else {
-				formData = { ...formData, venue_id: venue.id, address: venue.address || null };
-			}
-		} else {
-			formData = { ...formData, venue_id: null };
-		}
+		if (venue?.city) selectedCity = venue.city;
+		formData = applyVenue(formData, venue);
 	}
 
 	// Image uploads
@@ -273,6 +246,56 @@
 
 	// Validation errors
 	let validationErrors = $state<Record<string, string>>({});
+
+	// --- Unsaved-changes tracking ---
+	function captureState(): DirtySnapshotInput {
+		return {
+			formData: $state.snapshot(formData),
+			scheduleRows: $state.snapshot(scheduleRows),
+			resourceIds: [...selectedResourceIds],
+			logoFile,
+			coverArtFile,
+			deleteLogo,
+			deleteCoverArt
+		};
+	}
+	// Last-saved (or as-loaded) state; null until mount.
+	let baseline = $state.raw<DirtySnapshotInput | null>(null);
+	onMount(() => {
+		baseline = captureState();
+	});
+	const isDirty = $derived(
+		baseline !== null && buildDirtySnapshot(captureState()) !== buildDirtySnapshot(baseline)
+	);
+
+	// Section anchors for the nav; an incomplete schedule row (flagged by a failed
+	// save) marks Date & time.
+	let scheduleAttempted = $state(false);
+	const sections = $derived(
+		buildEditorSections(validationErrors, scheduleAttempted && !scheduleValid)
+	);
+	const TAB_LABELS = () => ({
+		details: m['eventEditor.tabDetails'](),
+		ticketing: m['eventEditor.tabTicketing'](),
+		listings: m['eventEditor.tabListings']()
+	});
+	// Rail / chip-row entries for the sibling tabs. On Details they follow the
+	// section links (Ticketing, Listings); elsewhere the full set shows where you are.
+	const navTabs = $derived<NavTab[]>(
+		showTabs
+			? buildNavTabs(
+					activeTab,
+					TAB_LABELS(),
+					Object.keys(validationErrors).length > 0 || (scheduleAttempted && !scheduleValid)
+				)
+			: []
+	);
+	function handleNavTab(value: string): void {
+		void goToTab(value as 'details' | 'ticketing' | 'listings');
+	}
+
+	// Save lives on Details and Ticketing (event-level ticket settings); Listings saves its own rows.
+	const showSave = $derived(!showTabs || activeTab !== 'listings');
 
 	// --- Mutations ---
 
@@ -329,7 +352,7 @@
 		}
 		if (!formData.start) {
 			errors.start = m['eventWizard.error_startRequired']();
-		} else if (!isEditMode && !eventCreated) {
+		} else if (!isEditMode) {
 			// Future-start is only enforced at creation. When editing an existing
 			// event, the start may legitimately be in the past (e.g. organisers
 			// updating venue/details after the event has begun); the backend
@@ -359,9 +382,26 @@
 		return Object.keys(errors).length === 0;
 	}
 
+	const CREATE_FORM_ID = 'create-event-form';
+
+	function handleCreateSubmit(e: SubmitEvent): void {
+		e.preventDefault();
+		void handleCreateEvent();
+	}
+
+	function gotoEditPage(id: string): Promise<void> {
+		return goto(
+			resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', {
+				slug: organization.slug,
+				event_id: id
+			})
+		);
+	}
+
 	// --- Creation flow: Step 1 submit ---
 
 	async function handleCreateEvent(): Promise<void> {
+		if (eventId) return gotoEditPage(eventId); // already created: never POST twice
 		if (!validateEssentials()) {
 			errorMessage = m['eventWizard.error_fixValidation']();
 			toast.error(m['eventEditor.validationErrorToast']());
@@ -382,13 +422,26 @@
 
 			const result = await createEventMutation.mutateAsync(createData);
 			eventId = result.id;
-			eventCreated = true;
+			baseline = captureState();
 			toast.success(m['eventWizard.eventCreatedSuccess']());
+			// Hand over to the full editor on its own page (top of page, tabs, status).
+			invalidateEventQueries(result.id);
+			await gotoEditPage(result.id);
 		} catch (error) {
 			console.error('Create event error:', error);
 		} finally {
 			isSaving = false;
 		}
+	}
+
+	function invalidateEventQueries(id: string): void {
+		queryClient.invalidateQueries({ queryKey: ['events'] });
+		queryClient.invalidateQueries({ queryKey: ['event', id] });
+		// Keep the dashboard truthful after create/update (prefix match covers
+		// the parameterised "Your Events" / calendar keys).
+		queryClient.invalidateQueries({ queryKey: ['dashboard-your-events'] });
+		queryClient.invalidateQueries({ queryKey: ['dashboard-has-events'] });
+		queryClient.invalidateQueries({ queryKey: ['dashboard-calendar'] });
 	}
 
 	// --- Unified save function ---
@@ -397,15 +450,20 @@
 		if (!validateEssentials() || !validateDetails()) {
 			errorMessage = m['eventWizard.error_fixValidation']();
 			toast.error(m['eventEditor.validationErrorToast']());
+			// Name / city live in Details; Save is also reachable from Ticketing.
+			if (showTabs) handleTabChange('details');
+			await tick();
 			scrollToFirstInvalid();
 			return;
 		}
 
 		if (!scheduleValid) {
+			scheduleAttempted = true;
 			// ScheduleEditor lives in the Details tab — surface it before scrolling.
 			if (showTabs) handleTabChange('details');
 			errorMessage = m['eventScheduleAdmin.incompleteError']();
 			toast.error(m['eventScheduleAdmin.incompleteError']());
+			await tick();
 			scrollToFirstInvalid();
 			return;
 		}
@@ -449,27 +507,14 @@
 			});
 			await saveSchedule(eventId);
 
-			// Invalidate queries
-			queryClient.invalidateQueries({ queryKey: ['events'] });
-			queryClient.invalidateQueries({ queryKey: ['event', eventId] });
-			// Keep the dashboard truthful after create/update (prefix match covers
-			// the parameterised "Your Events" / calendar keys).
-			queryClient.invalidateQueries({ queryKey: ['dashboard-your-events'] });
-			queryClient.invalidateQueries({ queryKey: ['dashboard-has-events'] });
-			queryClient.invalidateQueries({ queryKey: ['dashboard-calendar'] });
+			invalidateEventQueries(eventId);
 
+			baseline = captureState();
+			scheduleAttempted = false;
 			toast.success(m['eventWizard.eventUpdatedSuccess']());
 
 			if (andExit) {
 				goto(resolve('/(auth)/org/[slug]/admin/events', { slug: organization.slug }));
-			} else if (!isEditMode) {
-				// Creation flow: redirect to edit page so user gets tabs & status management
-				goto(
-					resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', {
-						slug: organization.slug,
-						event_id: eventId
-					})
-				);
 			}
 		} catch (error) {
 			console.error('Save error:', error);
@@ -481,34 +526,28 @@
 
 	// --- Form data update helpers ---
 
-	function updateFormData(
-		updates: Partial<EventCreateSchema> & {
-			tags?: string[];
-			logo?: string;
-			cover_art?: string;
-			organization_logo?: string;
-			organization_cover_art?: string;
-			venue_id?: string | null;
-			location_maps_url?: string | null;
-			location_maps_embed?: string | null;
-		}
-	): void {
+	const updateFormData: EditorUpdate = (updates) => {
 		formData = { ...formData, ...updates };
-	}
+	};
 
-	function updateImages(data: {
-		logo?: File | null;
-		coverArt?: File | null;
-		deleteLogo?: boolean;
-		deleteCoverArt?: boolean;
-	}): void {
+	const updateImages: ImageUpdate = (data) => {
 		if (data.logo !== undefined) logoFile = data.logo;
 		if (data.coverArt !== undefined) coverArtFile = data.coverArt;
 		if (data.deleteLogo !== undefined) deleteLogo = data.deleteLogo;
 		if (data.deleteCoverArt !== undefined) deleteCoverArt = data.deleteCoverArt;
-	}
+	};
 
 	// --- Tab URL sync ---
+
+	/** Switch tab and bring the tab bar into view (rail entries / next-step card). */
+	async function goToTab(value: 'details' | 'ticketing' | 'listings'): Promise<void> {
+		handleTabChange(value);
+		// Wait for the new panel to render before measuring.
+		await tick();
+		// Instant, not smooth: the new panel keeps loading and shifting height, which
+		// cancels an in-flight smooth scroll (and this is a context switch, not a nudge).
+		tabsEl?.scrollIntoView({ behavior: 'auto', block: 'start' });
+	}
 
 	function handleTabChange(value: string): void {
 		activeTab = value as 'details' | 'ticketing' | 'listings';
@@ -525,7 +564,82 @@
 	}
 </script>
 
-<div class="mx-auto max-w-4xl space-y-6 p-4 md:p-6">
+{#snippet glance()}
+	<EventGlance
+		name={formData.name}
+		start={formData.start}
+		end={formData.end}
+		isOpenEnded={formData.is_open_ended ?? false}
+		venueName={selectedVenue?.name}
+		cityName={selectedCity?.name}
+		visibility={formData.visibility}
+		eventType={formData.event_type}
+		requiresTicket={formData.requires_ticket ?? false}
+	/>
+{/snippet}
+
+{#snippet sectionsView(mode: EditorMode)}
+	<DetailsSections
+		{formData}
+		{validationErrors}
+		{mode}
+		{isEditMode}
+		ticketingLocked={isEditMode}
+		onUpdate={updateFormData}
+		onUpdateImages={updateImages}
+		{eventId}
+		eventSlug={existingEvent?.slug}
+		organizationId={organization.id}
+		organizationSlug={organization.slug}
+		accessToken={authStore.accessToken ?? undefined}
+		{eventSeries}
+		questionnaires={assignedQuestionnaires}
+		{selectedCity}
+		{selectedVenue}
+		onCitySelect={handleCitySelect}
+		onVenueSelect={handleVenueSelect}
+		effectiveVatCountry={existingEvent?.effective_vat_country || ''}
+		vatCountryMismatch={existingEvent?.vat_country_mismatch || false}
+		{selectedResourceIds}
+		onResourcesChange={(ids) => (selectedResourceIds = ids)}
+		bind:scheduleRows
+		disabled={isSaving}
+	/>
+{/snippet}
+
+{#snippet detailsMain()}
+	{@render sectionsView('edit')}
+	{#if showTabs}
+		<NextStepCard onGo={() => void goToTab('ticketing')} />
+	{/if}
+{/snippet}
+
+{#snippet ticketingMain()}
+	{#if eventId}
+		<TicketingStep
+			{eventId}
+			organizationSlug={organization.slug}
+			organizationStripeConnected={organization.is_stripe_connected}
+			platformFees={platformFeeInfoFrom(organization)}
+			{formData}
+			venueCapacity={selectedVenue?.capacity ?? null}
+			onUpdate={updateFormData}
+			onBack={() => handleTabChange('details')}
+			onNext={() => handleSave(true)}
+			standalone={false}
+		/>
+	{/if}
+{/snippet}
+
+{#snippet createMain()}
+	<!-- Same section components as the editor, gated to the pre-creation fields. The
+	     Create button lives in the rail (xl) / bottom bar and submits this form by id. -->
+	<form id={CREATE_FORM_ID} onsubmit={handleCreateSubmit} novalidate>
+		{@render sectionsView('create')}
+	</form>
+{/snippet}
+
+<div class="space-y-6">
 	<!-- Error message -->
 	{#if errorMessage}
 		<div
@@ -538,137 +652,98 @@
 		</div>
 	{/if}
 
-	<!-- CREATION MODE: Show essentials with own form first -->
-	{#if !isEditMode && !eventCreated}
-		<EssentialsStep
-			{formData}
-			{validationErrors}
-			isEditMode={false}
-			onUpdate={updateFormData}
-			onSubmit={handleCreateEvent}
+	{#if !isEditMode}
+		<!-- CREATION MODE: essentials with their own form (and create button) first -->
+		<EditorShell
+			main={createMain}
+			{glance}
+			{sections}
+			showNav={false}
+			railSave={true}
+			saveMode="create"
+			formId={CREATE_FORM_ID}
 			{isSaving}
-			standalone={true}
-			organizationSlug={organization.slug}
+			{isDirty}
 		/>
-	{:else}
-		<!-- EDIT MODE or POST-CREATION: Save bars + all sections -->
-		<SaveBar
-			{isSaving}
-			onSave={() => handleSave(false)}
-			onSaveAndExit={() => handleSave(true)}
-			position="top"
-		/>
-
-		<!-- Essentials (always visible, no own form) -->
-		<EssentialsStep
-			{formData}
-			{validationErrors}
-			{isEditMode}
-			onUpdate={updateFormData}
-			onSubmit={() => handleSave(false)}
-			{isSaving}
-			standalone={false}
-			eventId={existingEvent?.id ?? eventId ?? undefined}
-			eventSlug={existingEvent?.slug}
-			organizationSlug={organization.slug}
-		/>
-
-		{#snippet detailsSection()}
-			<DetailsStep
-				{formData}
-				{eventSeries}
-				questionnaires={assignedQuestionnaires}
-				{eventId}
-				organizationId={organization.id}
-				organizationSlug={organization.slug}
-				accessToken={authStore.accessToken ?? undefined}
-				{selectedCity}
-				{selectedVenue}
-				{validationErrors}
-				{isEditMode}
-				effectiveVatCountry={existingEvent?.effective_vat_country || ''}
-				vatCountryMismatch={existingEvent?.vat_country_mismatch || false}
-				onCitySelect={handleCitySelect}
-				onVenueSelect={handleVenueSelect}
-				onUpdate={updateFormData}
-				onUpdateImages={updateImages}
-			/>
-
-			{#if eventId}
-				<EventResources
-					organizationSlug={organization.slug}
-					{eventId}
-					{selectedResourceIds}
-					onSelectionChange={(ids) => (selectedResourceIds = ids)}
-				/>
-
-				<ScheduleEditor
-					bind:rows={scheduleRows}
-					eventStart={formData.start ?? ''}
-					disabled={isSaving}
-				/>
-			{/if}
-		{/snippet}
-
+		<SaveBar variant="bar" mode="create" formId={CREATE_FORM_ID} class="xl:hidden" {isSaving} />
+	{:else if showTabs}
 		<!-- Tabs (only for ticketed events in edit mode) -->
-		{#if showTabs}
-			<div bind:this={tabsEl}></div>
-			<Tabs.Root value={activeTab} onValueChange={handleTabChange}>
-				<Tabs.List class="w-full">
-					<Tabs.Trigger value="details" class="flex-1">
-						{m['eventEditor.tabDetails']()}
-					</Tabs.Trigger>
-					<Tabs.Trigger value="ticketing" class="flex-1">
-						{m['eventEditor.tabTicketing']()}
-					</Tabs.Trigger>
-					<Tabs.Trigger value="listings" class="flex-1">
-						{m['eventEditor.tabListings']()}
-					</Tabs.Trigger>
-				</Tabs.List>
+		<div bind:this={tabsEl} class="scroll-mt-[var(--admin-sticky-top)]"></div>
+		<Tabs.Root value={activeTab} onValueChange={handleTabChange}>
+			<EditorTabList />
 
-				<Tabs.Content value="details" class="mt-6 space-y-6">
-					{@render detailsSection()}
-				</Tabs.Content>
+			<Tabs.Content value="details">
+				<EditorShell
+					main={detailsMain}
+					{glance}
+					{sections}
+					showNav={true}
+					{navTabs}
+					onNavTab={handleNavTab}
+					railSave={true}
+					{isSaving}
+					{isDirty}
+					onSave={() => handleSave(false)}
+					onSaveAndExit={() => handleSave(true)}
+				/>
+			</Tabs.Content>
 
-				<Tabs.Content value="ticketing" class="mt-6">
-					{#if eventId}
-						<TicketingStep
-							{eventId}
-							organizationSlug={organization.slug}
-							organizationStripeConnected={organization.is_stripe_connected}
-							platformFees={platformFeeInfoFrom(organization)}
-							{feeConfig}
-							{formData}
-							onUpdate={updateFormData}
-							onBack={() => handleTabChange('details')}
-							onNext={() => handleSave(true)}
-							standalone={false}
-						/>
-					{/if}
-				</Tabs.Content>
-				<Tabs.Content value="listings" class="mt-6">
-					{#if eventId && existingEvent}
-						<ListingsStep
-							{eventId}
-							organizationSlug={organization.slug}
-							event={existingEvent}
-							{isOwner}
-						/>
-					{/if}
-				</Tabs.Content>
-			</Tabs.Root>
-		{:else}
-			<!-- Non-ticketed: Details + Resources directly -->
-			<div class="space-y-6">
-				{@render detailsSection()}
-			</div>
-		{/if}
-
-		<SaveBar
+			<Tabs.Content value="ticketing">
+				<EditorShell
+					main={ticketingMain}
+					{glance}
+					sections={[]}
+					showNav={true}
+					{navTabs}
+					onNavTab={handleNavTab}
+					railSave={true}
+					{isSaving}
+					{isDirty}
+					onSave={() => handleSave(false)}
+					onSaveAndExit={() => handleSave(true)}
+				/>
+			</Tabs.Content>
+			<Tabs.Content value="listings">
+				<EditorSectionNav
+					sections={[]}
+					variant="chips"
+					tabs={navTabs}
+					onTab={handleNavTab}
+					class="mb-6"
+				/>
+				{#if eventId && existingEvent}
+					<ListingsStep
+						{eventId}
+						organizationSlug={organization.slug}
+						event={existingEvent}
+						{isOwner}
+					/>
+				{/if}
+			</Tabs.Content>
+		</Tabs.Root>
+	{:else}
+		<!-- Non-ticketed: Details + Resources directly -->
+		<EditorShell
+			main={detailsMain}
+			{glance}
+			{sections}
+			showNav={true}
+			railSave={true}
 			{isSaving}
+			{isDirty}
 			onSave={() => handleSave(false)}
 			onSaveAndExit={() => handleSave(true)}
-			position="bottom"
+		/>
+	{/if}
+
+	{#if isEditMode && showSave}
+		<SaveBar
+			variant="bar"
+			class="xl:hidden"
+			{isSaving}
+			{isDirty}
+			onSave={() => handleSave(false)}
+			onSaveAndExit={() => handleSave(true)}
 		/>
 	{/if}
 </div>

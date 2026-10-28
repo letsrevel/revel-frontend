@@ -1,4 +1,4 @@
-import type { Locator, Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { test, expect } from '../../support/fixtures';
 import { createTicketedEvent } from '../../support/factories';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
@@ -14,15 +14,9 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 // resets address_visibility/show_pronoun_distribution back to their
 // defaults. That mutual non-clobbering is what this spec protects.
 
-async function ensureExpanded(toggle: Locator): Promise<void> {
-	if ((await toggle.getAttribute('aria-expanded')) !== 'true') {
-		await toggle.click();
-	}
-}
-
 async function saveAndWait(page: Page): Promise<void> {
-	// Two SaveBars render (top + bottom of the editor) — take the first.
-	await page.getByRole('button', { name: 'Save', exact: true }).first().click();
+	// One save surface renders per viewport (rail on xl, bottom bar below).
+	await page.getByRole('button', { name: 'Save', exact: true }).click();
 	await expect(page.getByText('Event updated successfully!')).toBeVisible({ timeout: 20_000 });
 }
 
@@ -38,7 +32,7 @@ test.describe('J10 visibility settings @p2', () => {
 		const page = asOwner;
 		await gotoHydrated(page, `/org/${event.orgSlug}/admin/events/${event.id}/edit`);
 		await waitForClientAuth(page);
-		await expect(page.getByRole('heading', { name: 'Edit Event', level: 1 })).toBeVisible();
+		await expect(page.getByRole('heading', { name: event.name, level: 1 })).toBeVisible();
 
 		// --- Round 1: switch to address mode, set a non-public address
 		// visibility, and opt into pronoun distribution. ---
@@ -49,7 +43,6 @@ test.describe('J10 visibility settings @p2', () => {
 		await page.locator('#location-address').fill('123 Test Street');
 		await page.locator('#location-address-visibility').selectOption('members-only');
 
-		await page.getByRole('button', { name: 'Advanced' }).click();
 		await page.getByLabel('Public pronoun distribution').check();
 
 		await saveAndWait(page);
@@ -57,13 +50,11 @@ test.describe('J10 visibility settings @p2', () => {
 		await gotoHydrated(page, `/org/${event.orgSlug}/admin/events/${event.id}/edit`);
 		await waitForClientAuth(page);
 		await expect(page.locator('#location-address-visibility')).toHaveValue('members-only');
-		await page.getByRole('button', { name: 'Advanced' }).click();
 		await expect(page.getByLabel('Public pronoun distribution')).toBeChecked();
 
 		// --- Round 2: flip an UNRELATED phase-1 toggle (uncheck "Show
 		// capacity"). The address visibility and pronoun opt-in from round 1
 		// must survive this save untouched. ---
-		await ensureExpanded(page.getByTestId('visibility-section-toggle'));
 		await page.getByTestId('visibility-show-capacity').uncheck();
 
 		await saveAndWait(page);
@@ -71,9 +62,7 @@ test.describe('J10 visibility settings @p2', () => {
 		await gotoHydrated(page, `/org/${event.orgSlug}/admin/events/${event.id}/edit`);
 		await waitForClientAuth(page);
 		await expect(page.locator('#location-address-visibility')).toHaveValue('members-only');
-		await page.getByRole('button', { name: 'Advanced' }).click();
 		await expect(page.getByLabel('Public pronoun distribution')).toBeChecked();
-		await ensureExpanded(page.getByTestId('visibility-section-toggle'));
 		await expect(page.getByTestId('visibility-show-capacity')).not.toBeChecked();
 
 		// --- Round 3: the converse — changing address visibility again must
@@ -85,9 +74,7 @@ test.describe('J10 visibility settings @p2', () => {
 		await gotoHydrated(page, `/org/${event.orgSlug}/admin/events/${event.id}/edit`);
 		await waitForClientAuth(page);
 		await expect(page.locator('#location-address-visibility')).toHaveValue('attendees-only');
-		await ensureExpanded(page.getByTestId('visibility-section-toggle'));
 		await expect(page.getByTestId('visibility-show-capacity')).not.toBeChecked();
-		await page.getByRole('button', { name: 'Advanced' }).click();
 		await expect(page.getByLabel('Public pronoun distribution')).toBeChecked();
 	});
 });

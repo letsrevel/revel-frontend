@@ -2,6 +2,8 @@
 	import { resolve } from '$app/paths';
 	import { formatMoney } from '$lib/utils/format';
 	import * as m from '$lib/paraglide/messages.js';
+	import { page as appPage } from '$app/state';
+	import { brandName } from '$lib/seo/tenant';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { toast } from 'svelte-sonner';
@@ -186,7 +188,7 @@
 </script>
 
 <svelte:head>
-	<title>{m['myInvoices.pageTitle']()} - Revel</title>
+	<title>{m['myInvoices.pageTitle']()} - {brandName(appPage.data.tenant)}</title>
 </svelte:head>
 
 <div class="container mx-auto max-w-4xl px-4 py-8">

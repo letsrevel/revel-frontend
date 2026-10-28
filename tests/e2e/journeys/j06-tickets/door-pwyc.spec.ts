@@ -66,7 +66,7 @@ async function reserveTicket(
 	await expect(async () => {
 		if (await success.isVisible()) return;
 		if (!(await sheet.isVisible())) {
-			await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+			await summaryBar.getByRole('button', { name: /^(Buy|Claim)$/ }).click();
 			await expect(sheet).toBeVisible({ timeout: 8_000 });
 		}
 		// Names are required by default (these events never set
@@ -138,7 +138,7 @@ test.describe('J6 at-the-door & PWYC @p2', () => {
 				await stepper.getByRole('button', { name: 'Add one Door PWYC' }).click();
 			}
 			const summaryBar = page.getByTestId('cart-summary-bar');
-			await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+			await summaryBar.getByRole('button', { name: /^(Buy|Claim)$/ }).click();
 			await expect(sheet).toBeVisible({ timeout: 8_000 });
 		}).toPass({ timeout: 30_000 });
 

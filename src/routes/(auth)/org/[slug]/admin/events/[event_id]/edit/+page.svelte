@@ -29,6 +29,8 @@
 	} from '@lucide/svelte';
 	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
+	import PageHeader from '$lib/components/common/PageHeader.svelte';
+	import { Button } from '$lib/components/ui/button';
 	import type { Tone } from '$lib/components/common/tones';
 
 	const { data }: { data: PageData } = $props();
@@ -51,12 +53,25 @@
 			case 'open':
 				return 'success';
 			case 'closed':
+			case 'cancelled':
 				return 'danger';
 			case 'draft':
 			default:
 				return 'neutral';
 		}
 	});
+
+	const statusLabel = $derived(
+		currentStatus === 'draft'
+			? m['eventEditPage.statusDraft']()
+			: currentStatus === 'open'
+				? m['eventEditPage.statusPublished']()
+				: currentStatus === 'closed'
+					? m['eventEditPage.statusClosed']()
+					: currentStatus === 'cancelled'
+						? m['eventEditPage.statusCancelled']()
+						: currentStatus
+	);
 
 	// Update event status mutation
 	const updateStatusMutation = createMutation(() => ({
@@ -234,226 +249,155 @@
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
+{#snippet lifecycleButton(
+	onclick: () => void,
+	label: string,
+	tooltip: string,
+	Icon: typeof CheckCircle,
+	variant: 'default' | 'outline' | 'destructive',
+	disabled: boolean
+)}
+	<Tooltip.Root>
+		<Tooltip.Trigger>
+			{#snippet child({ props })}
+				<Button {...props} {variant} {onclick} {disabled}>
+					<Icon aria-hidden="true" />
+					{label}
+				</Button>
+			{/snippet}
+		</Tooltip.Trigger>
+		<Tooltip.Content>{tooltip}</Tooltip.Content>
+	</Tooltip.Root>
+{/snippet}
+
 <div class="space-y-6">
-	<!-- Header Section with Status Badge and Actions -->
-	<div>
-		<div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-			<div>
-				<div class="flex items-center gap-3">
-					<h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">
-						{m['eventEditPage.heading']()}
-					</h1>
-					<StatusBadge
-						tone={statusTone}
-						label={currentStatus === 'draft'
-							? m['eventEditPage.statusDraft']()
-							: currentStatus === 'open'
-								? m['eventEditPage.statusPublished']()
-								: currentStatus === 'closed'
-									? m['eventEditPage.statusClosed']()
-									: currentStatus}
-					/>
-				</div>
-				<p class="mt-1 text-sm text-muted-foreground">
-					{m['eventEditPage.updateDetailsFor']()}
-					<span class="font-semibold">{event.name}</span>
-				</p>
-			</div>
-
-			<!-- Action Buttons -->
+	<PageHeader kicker={m['orgAdmin.nav.events']()} title={event.name}>
+		{#snippet titleAddon()}
+			<StatusBadge tone={statusTone} label={statusLabel} />
+		{/snippet}
+		{#snippet actions()}
 			<Tooltip.Provider delayDuration={300}>
-				<div class="flex flex-wrap items-center gap-2">
-					{#if currentStatus === 'draft'}
-						<!-- Publish action -->
-						<Tooltip.Root>
-							<Tooltip.Trigger>
-								{#snippet child({ props })}
-									<button
-										{...props}
-										type="button"
-										onclick={publishEvent}
-										disabled={updateStatusMutation.isPending}
-										class="inline-flex items-center gap-2 rounded-md bg-success px-3 py-2 text-sm font-medium text-success-foreground transition-colors hover:bg-success/90 disabled:cursor-not-allowed disabled:opacity-50"
-									>
-										<CheckCircle class="h-4 w-4" aria-hidden="true" />
-										{m['eventEditPage.publishButton']()}
-									</button>
-								{/snippet}
-							</Tooltip.Trigger>
-							<Tooltip.Content>{m['eventEditPage.tooltips.publish']()}</Tooltip.Content>
-						</Tooltip.Root>
-					{:else if currentStatus === 'open'}
-						<!-- Close action -->
-						<Tooltip.Root>
-							<Tooltip.Trigger>
-								{#snippet child({ props })}
-									<button
-										{...props}
-										type="button"
-										onclick={closeEvent}
-										disabled={updateStatusMutation.isPending}
-										class="inline-flex items-center gap-2 rounded-md bg-highlight px-3 py-2 text-sm font-medium text-highlight-foreground transition-colors hover:bg-highlight/90 disabled:cursor-not-allowed disabled:opacity-50"
-									>
-										<XCircle class="h-4 w-4" aria-hidden="true" />
-										{m['eventEditPage.closeButton']()}
-									</button>
-								{/snippet}
-							</Tooltip.Trigger>
-							<Tooltip.Content>{m['eventEditPage.tooltips.close']()}</Tooltip.Content>
-						</Tooltip.Root>
-						<!-- Mark as Draft -->
-						<Tooltip.Root>
-							<Tooltip.Trigger>
-								{#snippet child({ props })}
-									<button
-										{...props}
-										type="button"
-										onclick={markAsDraft}
-										disabled={updateStatusMutation.isPending}
-										class="inline-flex items-center gap-2 rounded-md bg-secondary px-3 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80 disabled:cursor-not-allowed disabled:opacity-50"
-									>
-										<FileEdit class="h-4 w-4" aria-hidden="true" />
-										{m['eventEditPage.draftButton']()}
-									</button>
-								{/snippet}
-							</Tooltip.Trigger>
-							<Tooltip.Content>{m['eventEditPage.tooltips.draft']()}</Tooltip.Content>
-						</Tooltip.Root>
-					{:else if currentStatus === 'closed'}
-						<!-- Reopen action -->
-						<Tooltip.Root>
-							<Tooltip.Trigger>
-								{#snippet child({ props })}
-									<button
-										{...props}
-										type="button"
-										onclick={reopenEvent}
-										disabled={updateStatusMutation.isPending}
-										class="inline-flex items-center gap-2 rounded-md bg-success px-3 py-2 text-sm font-medium text-success-foreground transition-colors hover:bg-success/90 disabled:cursor-not-allowed disabled:opacity-50"
-									>
-										<CheckCircle class="h-4 w-4" aria-hidden="true" />
-										{m['eventEditPage.reopenButton']()}
-									</button>
-								{/snippet}
-							</Tooltip.Trigger>
-							<Tooltip.Content>{m['eventEditPage.tooltips.reopen']()}</Tooltip.Content>
-						</Tooltip.Root>
-						<!-- Mark as Draft -->
-						<Tooltip.Root>
-							<Tooltip.Trigger>
-								{#snippet child({ props })}
-									<button
-										{...props}
-										type="button"
-										onclick={markAsDraft}
-										disabled={updateStatusMutation.isPending}
-										class="inline-flex items-center gap-2 rounded-md bg-secondary px-3 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80 disabled:cursor-not-allowed disabled:opacity-50"
-									>
-										<FileEdit class="h-4 w-4" aria-hidden="true" />
-										{m['eventEditPage.draftButton']()}
-									</button>
-								{/snippet}
-							</Tooltip.Trigger>
-							<Tooltip.Content>{m['eventEditPage.tooltips.draft']()}</Tooltip.Content>
-						</Tooltip.Root>
-					{/if}
+				{#if currentStatus === 'draft'}
+					{@render lifecycleButton(
+						publishEvent,
+						m['eventEditPage.publishButton'](),
+						m['eventEditPage.tooltips.publish'](),
+						CheckCircle,
+						'default',
+						updateStatusMutation.isPending
+					)}
+				{:else if currentStatus === 'open'}
+					{@render lifecycleButton(
+						closeEvent,
+						m['eventEditPage.closeButton'](),
+						m['eventEditPage.tooltips.close'](),
+						XCircle,
+						'outline',
+						updateStatusMutation.isPending
+					)}
+					{@render lifecycleButton(
+						markAsDraft,
+						m['eventEditPage.draftButton'](),
+						m['eventEditPage.tooltips.draft'](),
+						FileEdit,
+						'outline',
+						updateStatusMutation.isPending
+					)}
+				{:else if currentStatus === 'closed'}
+					{@render lifecycleButton(
+						reopenEvent,
+						m['eventEditPage.reopenButton'](),
+						m['eventEditPage.tooltips.reopen'](),
+						CheckCircle,
+						'default',
+						updateStatusMutation.isPending
+					)}
+					{@render lifecycleButton(
+						markAsDraft,
+						m['eventEditPage.draftButton'](),
+						m['eventEditPage.tooltips.draft'](),
+						FileEdit,
+						'outline',
+						updateStatusMutation.isPending
+					)}
+				{/if}
 
-					<!-- Retry refunds (cancelled events with refundable online payments left) -->
-					{#if currentStatus === 'cancelled' && hasRefundableTickets}
-						<Tooltip.Root>
-							<Tooltip.Trigger>
-								{#snippet child({ props })}
-									<button
-										{...props}
-										type="button"
-										onclick={cancelEvent}
-										class="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
-									>
-										<RotateCcw class="h-4 w-4" aria-hidden="true" />
-										{m['cancelEvent.retryButton']()}
-									</button>
-								{/snippet}
-							</Tooltip.Trigger>
-							<Tooltip.Content>{m['cancelEvent.retryDescription']()}</Tooltip.Content>
-						</Tooltip.Root>
-					{/if}
+				<!-- Retry refunds (cancelled events with refundable online payments left) -->
+				{#if currentStatus === 'cancelled' && hasRefundableTickets}
+					{@render lifecycleButton(
+						cancelEvent,
+						m['cancelEvent.retryButton'](),
+						m['cancelEvent.retryDescription'](),
+						RotateCcw,
+						'default',
+						false
+					)}
+				{/if}
 
-					<!-- Cancel event button (open/closed only — reversible, notifies attendees) -->
-					{#if currentStatus === 'open' || currentStatus === 'closed'}
-						<Tooltip.Root>
-							<Tooltip.Trigger>
-								{#snippet child({ props })}
-									<button
-										{...props}
-										type="button"
-										onclick={cancelEvent}
-										disabled={updateStatusMutation.isPending}
-										class="inline-flex items-center gap-2 rounded-md bg-destructive px-3 py-2 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:cursor-not-allowed disabled:opacity-50"
-									>
-										<Ban class="h-4 w-4" aria-hidden="true" />
-										{m['cancelEvent.confirmButton']()}
-									</button>
-								{/snippet}
-							</Tooltip.Trigger>
-							<Tooltip.Content>{m['eventEditPage.tooltips.cancel']()}</Tooltip.Content>
-						</Tooltip.Root>
-					{/if}
+				<!-- Cancel event button (open/closed only — reversible, notifies attendees) -->
+				{#if currentStatus === 'open' || currentStatus === 'closed'}
+					{@render lifecycleButton(
+						cancelEvent,
+						m['cancelEvent.confirmButton'](),
+						m['eventEditPage.tooltips.cancel'](),
+						Ban,
+						'destructive',
+						updateStatusMutation.isPending
+					)}
+				{/if}
 
-					<!-- More Actions Dropdown (Duplicate + Delete) — no Tooltip
-					     wrapper here because nesting Tooltip.Trigger child
-					     snippets with DropdownMenu.Trigger child snippets stacks
-					     two competing keyboard/focus handlers on the same
-					     button. The `aria-label` carries the accessible name
-					     and `title` provides a native browser tooltip on hover. -->
-					<DropdownMenu.Root>
-						<DropdownMenu.Trigger>
-							{#snippet child({ props })}
-								<button
-									{...props}
-									type="button"
-									class="inline-flex items-center justify-center rounded-md border border-input bg-background p-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-									aria-label={m['orgAdmin.events.actions.moreActions']()}
-									title={m['eventEditPage.tooltips.more']()}
-								>
-									<MoreVertical class="h-4 w-4" aria-hidden="true" />
-								</button>
-							{/snippet}
-						</DropdownMenu.Trigger>
-						<DropdownMenu.Content align="end" class="w-48">
-							<DropdownMenu.Item onclick={openDuplicateModal}>
-								<Copy class="mr-2 h-4 w-4" />
-								{m['orgAdmin.events.actions.duplicate']()}
-							</DropdownMenu.Item>
-							<DropdownMenu.Item onclick={deleteEvent} class="text-destructive">
-								<Trash2 class="mr-2 h-4 w-4" />
-								{m['orgAdmin.events.actions.delete']()}
-							</DropdownMenu.Item>
-						</DropdownMenu.Content>
-					</DropdownMenu.Root>
-				</div>
+				<!-- More Actions Dropdown (Duplicate + Delete) — no Tooltip
+				     wrapper here because nesting Tooltip.Trigger child
+				     snippets with DropdownMenu.Trigger child snippets stacks
+				     two competing keyboard/focus handlers on the same
+				     button. The `aria-label` carries the accessible name
+				     and `title` provides a native browser tooltip on hover. -->
+				<DropdownMenu.Root>
+					<DropdownMenu.Trigger>
+						{#snippet child({ props })}
+							<Button
+								{...props}
+								variant="outline"
+								size="icon"
+								aria-label={m['orgAdmin.events.actions.moreActions']()}
+								title={m['eventEditPage.tooltips.more']()}
+							>
+								<MoreVertical aria-hidden="true" />
+							</Button>
+						{/snippet}
+					</DropdownMenu.Trigger>
+					<DropdownMenu.Content align="end" class="w-48">
+						<DropdownMenu.Item onclick={openDuplicateModal}>
+							<Copy class="mr-2 h-4 w-4" />
+							{m['orgAdmin.events.actions.duplicate']()}
+						</DropdownMenu.Item>
+						<DropdownMenu.Item onclick={deleteEvent} class="text-destructive">
+							<Trash2 class="mr-2 h-4 w-4" />
+							{m['orgAdmin.events.actions.delete']()}
+						</DropdownMenu.Item>
+					</DropdownMenu.Content>
+				</DropdownMenu.Root>
 			</Tooltip.Provider>
-		</div>
-	</div>
+		{/snippet}
+	</PageHeader>
 
 	<!-- Event Editor Component. Keyed by event id: EventEditor snapshots
 	     existingEvent (incl. the id it saves to) into $state once, so a
 	     client-side navigation between two events' edit pages (e.g. the
 	     duplicate flow's goto) must remount it or it keeps editing the
 	     previous event. -->
-	<div class="rounded-lg border bg-card text-card-foreground shadow-sm">
-		{#key event.id}
-			<EventEditor
-				{organization}
+	{#key event.id}
+		<EventEditor
+			{organization}
 				feeConfig={data.feeConfig}
-				existingEvent={event}
-				userCity={data.userCity}
-				orgCity={data.orgCity}
-				eventSeries={data.eventSeries}
-				{initialTab}
-				isOwner={data.isOwner}
-			/>
-		{/key}
-	</div>
+			existingEvent={event}
+			userCity={data.userCity}
+			orgCity={data.orgCity}
+			eventSeries={data.eventSeries}
+			{initialTab}
+			isOwner={data.isOwner}
+		/>
+	{/key}
 </div>
 
 <!-- Duplicate Event Modal -->

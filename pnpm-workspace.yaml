@@ -63,7 +63,7 @@ overrides:
   # jsdom (server-side DOMPurify) loads undici 8, whose import swaps Node's global
   # dispatcher; before 8.11.2 its legacy wrapper stripped every response header
   # from Node 22's built-in fetch over HTTPS/HTTP2 (SSR 500s, demo login). See undici-compat.test.ts.
-  'undici@>=8.0.0 <8.11.2': '>=8.11.2 <9.0.0'
+  'undici@>=8.0.0 <8.12.2': '>=8.12.2 <9.0.0'
   'kysely@<=0.28.13': '>=0.28.14'
   'effect@<3.20.0': '>=3.20.0'
   'handlebars@>=4.0.0 <4.7.9': '>=4.7.9'
@@ -72,7 +72,7 @@ overrides:
   'brace-expansion@>=5.0.0 <5.0.6': '>=5.0.6'
   picomatch: '>=4.0.4'
   'yaml@>=1.0.0 <1.10.3': '>=1.10.3'
-  'dompurify@<3.4.0': '>=3.4.0'
+  'dompurify@<3.4.17': '>=3.4.17'
   'source-map-js@<1.2.2': '>=1.2.2'
   'prosemirror-view@<1.42.3': '>=1.42.3'
   'lodash@<=4.17.23': '>=4.18.0'
@@ -94,4 +94,4 @@ overrides:
   # augmentation no longer merges (toggleBold / setLink etc. vanish from the
   # types). Pinning pm collapses them to one instance. Keep in lockstep with the
   # @tiptap/* version in package.json.
-  '@tiptap/pm': '3.30.5'
+  '@tiptap/pm': '3.32.0'

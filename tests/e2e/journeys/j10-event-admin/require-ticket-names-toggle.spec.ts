@@ -4,8 +4,8 @@ import { createTicketedEvent } from '../../support/factories';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 
 // J10 (#753) — the organizer toggle for `require_ticket_names`. The flag
-// defaults to ON and the event editor exposes it in the Advanced section for
-// ticketed events only. The round-trip (off → save → reload → still off) is
+// defaults to ON and the event editor exposes it in the Attendance section of the
+// Details tab for ticketed events only. The round-trip (off → save → reload → still off) is
 // what proves the editor both SENDS the flag on save and re-hydrates it from
 // the API afterwards — a write-only or read-only half would still look right
 // on screen immediately after the click.
@@ -14,7 +14,7 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 // the checkout shape of seeded events other suites buy tickets on.
 
 async function saveAndWait(page: Page): Promise<void> {
-	// Two SaveBars render (top + bottom of the editor) — take the first.
+	// One save surface renders per viewport (xl rail or bottom bar); .first() is a harmless guard.
 	await page.getByRole('button', { name: 'Save', exact: true }).first().click();
 	await expect(page.getByText('Event updated successfully!')).toBeVisible({ timeout: 20_000 });
 }
@@ -30,9 +30,8 @@ test.describe('J10 require ticket names toggle @p2', () => {
 		const page = asOwner;
 		await gotoHydrated(page, `/org/${event.orgSlug}/admin/events/${event.id}/edit`);
 		await waitForClientAuth(page);
-		await expect(page.getByRole('heading', { name: 'Edit Event', level: 1 })).toBeVisible();
+		await expect(page.getByRole('heading', { name: event.name, level: 1 })).toBeVisible();
 
-		await page.getByRole('button', { name: 'Advanced' }).click();
 		const toggle = page.getByLabel('Require ticket holder names');
 		await expect(toggle).toBeChecked();
 
@@ -41,7 +40,6 @@ test.describe('J10 require ticket names toggle @p2', () => {
 
 		await gotoHydrated(page, `/org/${event.orgSlug}/admin/events/${event.id}/edit`);
 		await waitForClientAuth(page);
-		await page.getByRole('button', { name: 'Advanced' }).click();
 		await expect(page.getByLabel('Require ticket holder names')).not.toBeChecked();
 	});
 });

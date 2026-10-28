@@ -5,6 +5,7 @@
 	import { formatDateTimeReadback } from '$lib/utils/date';
 	import { Calendar, Eye, Users, Ticket } from '@lucide/svelte';
 	import EssentialsStepSlugEditor from './EssentialsStepSlugEditor.svelte';
+	import AccessExplanation from './editor/sections/AccessExplanation.svelte';
 
 	interface Props {
 		formData: Partial<EventCreateSchema> & { requires_ticket?: boolean; venue_id?: string | null };
@@ -50,50 +51,6 @@
 		e.preventDefault();
 		onSubmit();
 	}
-
-	/**
-	 * Get explanation for current visibility + event_type combination
-	 */
-	const combinationExplanation = $derived.by(() => {
-		const visibility = formData.visibility || 'public';
-		const eventType = (formData.event_type as string) || 'public';
-
-		// Define who can see
-		const whoCanSee =
-			visibility === 'public'
-				? m['essentialsStep.whoCanSee_everyone']()
-				: visibility === 'unlisted'
-					? m['essentialsStep.whoCanSee_directLink']()
-					: visibility === 'members-only'
-						? m['essentialsStep.whoCanSee_members']()
-						: visibility === 'staff-only'
-							? m['essentialsStep.whoCanSee_staff']()
-							: m['essentialsStep.whoCanSee_invited'](); // private
-
-		// Define who can attend
-		const whoCanAttend =
-			eventType === 'public'
-				? m['essentialsStep.whoCanAttend_anyone']()
-				: eventType === 'members-only'
-					? m['essentialsStep.whoCanAttend_members']()
-					: m['essentialsStep.whoCanAttend_invited'](); // private
-
-		// Special case: public visibility + members-only type → join org CTA
-		const showJoinOrgHint = visibility === 'public' && eventType === 'members-only';
-
-		// Build the full "who can view" sentence
-		const viewDescription =
-			visibility === 'unlisted'
-				? m['essentialsStep.viewDescription_unlisted']()
-				: m['essentialsStep.viewDescription_default']({ who: whoCanSee });
-
-		return {
-			whoCanSee,
-			viewDescription,
-			whoCanAttend,
-			showJoinOrgHint
-		};
-	});
 </script>
 
 {#snippet fields()}
@@ -438,51 +395,7 @@
 		</div>
 
 		<!-- Dynamic explanation based on selected combination -->
-		<div class="rounded-md border border-info/40 bg-info/10 p-4" role="status" aria-live="polite">
-			<div class="flex items-start gap-3">
-				<div class="flex-shrink-0">
-					<svg
-						class="h-5 w-5 text-info"
-						fill="none"
-						stroke="currentColor"
-						viewBox="0 0 24 24"
-						aria-hidden="true"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-						/>
-					</svg>
-				</div>
-				<div class="flex-1">
-					<h4 class="text-sm font-medium text-info">
-						{m['essentialsStep.withTheseSettings']()}
-					</h4>
-					<div class="mt-2 space-y-1 text-sm text-foreground">
-						<p>
-							<strong>{m['essentialsStep.whoCanView']()}</strong>
-							{combinationExplanation.viewDescription}
-						</p>
-						<p>
-							<strong>{m['essentialsStep.whoCanAttend']()}</strong>
-							{m['essentialsStep.whoCanAttendValue']({
-								who:
-									combinationExplanation.whoCanAttend.charAt(0).toUpperCase() +
-									combinationExplanation.whoCanAttend.slice(1)
-							})}
-						</p>
-						{#if combinationExplanation.showJoinOrgHint}
-							<p class="mt-2 rounded-md bg-info/15 px-2 py-1.5 text-xs">
-								💡 <strong>{m['essentialsStep.tip']()}</strong>
-								{m['essentialsStep.joinOrgHint']()}
-							</p>
-						{/if}
-					</div>
-				</div>
-			</div>
-		</div>
+		<AccessExplanation visibility={formData.visibility} eventType={formData.event_type} />
 	</div>
 
 	<!-- Requires Ticket -->

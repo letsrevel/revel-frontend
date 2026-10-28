@@ -38,8 +38,23 @@
 	const pageSize = $derived(data.pageSize);
 	const error = $derived(data.error);
 
+	// On a tenant host the list is the tenant's own events: the loader forces the
+	// organization filter, so the filter is dropped from the UI state (#1056).
+	const isTenant = $derived(!!data.tenant);
+	const tenantId = $derived(data.tenant?.id);
+
 	// Parse current filters from URL
-	const currentFilters = $derived(parseFilters($page.url.searchParams));
+	const currentFilters = $derived.by(() => {
+		const parsed = parseFilters($page.url.searchParams);
+		return isTenant
+			? {
+					...parsed,
+					organizationId: undefined,
+					organizationName: undefined,
+					organizationSlug: undefined
+				}
+			: parsed;
+	});
 
 	// View mode (list or calendar)
 	const viewMode = $derived<'list' | 'calendar'>(
@@ -68,7 +83,7 @@
 					year: calendarParams.year,
 					// Apply filters
 					city_id: currentFilters.cityId,
-					organization: currentFilters.organizationId,
+					organization: tenantId ?? currentFilters.organizationId,
 					event_type: currentFilters.eventType,
 					visibility: currentFilters.visibility,
 					tags: currentFilters.tags,
@@ -255,8 +270,8 @@
 		Both were tried: a `bg-secondary/55` wash under a `bg-secondary` band lands
 		within 5 points of lightness of it in light mode, so the band stops reading
 		as a colour BLOCK and the page becomes one flat field. The event page can
-		afford the wash because its band is the mode-inert poster-purple ribbon,
-		which is dark enough that the step is unmissable. Here the separation has
+		afford the wash because its band is the mode-inert `--poster-band` ribbon
+		(Hearty Purple, or an org primary kept >= 4.5:1 vs white), dark enough that the step is unmissable. Here the separation has
 		to come from the band itself, and the float comes from the cards:
 		`shadow-poster` over paper, overlapping the cut.
 	-->
@@ -271,6 +286,7 @@
 							filters={currentFilters}
 							onUpdateFilters={handleUpdateFilters}
 							onClearFilters={handleClearFilters}
+							hideOrganization={isTenant}
 						/>
 					</div>
 				</div>
@@ -474,6 +490,7 @@
 		onUpdateFilters={handleUpdateFilters}
 		onClearFilters={handleClearFilters}
 		onClose={handleCloseMobileFilters}
+		hideOrganization={isTenant}
 	/>
 
 	<!-- Event Modal (for calendar clicks) -->

@@ -79,7 +79,7 @@ test.describe('J6 batch purchase @p3', () => {
 
 			// Buy opens the sheet (names are required on this event) — a second
 			// guest-name input renders for the second ticket.
-			await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+			await summaryBar.getByRole('button', { name: /^(Buy|Claim)$/ }).click();
 			await expect(sheet).toBeVisible();
 			await expect(sheet.getByText('Ticket holder names', { exact: true })).toBeVisible();
 			await sheet.getByLabel('Name for ticket 1').fill('E2E Guest One');
@@ -120,7 +120,7 @@ test.describe('J6 batch purchase @p3', () => {
 
 			// One more purchase (names required again, even at quantity 1)
 			// exhausts the 3/3 cap.
-			await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+			await summaryBar.getByRole('button', { name: /^(Buy|Claim)$/ }).click();
 			await expect(sheet).toBeVisible();
 			await sheet.getByLabel('Name for ticket 1').fill('E2E Guest Three');
 			await expect(async () => {

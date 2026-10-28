@@ -2,72 +2,137 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { cn } from '$lib/utils/cn';
 	import { Save, Loader2 } from '@lucide/svelte';
+	import { Button } from '$lib/components/ui/button';
 
 	interface Props {
 		isSaving: boolean;
-		onSave: () => void;
-		onSaveAndExit: () => void;
-		position: 'top' | 'bottom';
+		onSave?: () => void;
+		onSaveAndExit?: () => void;
+		/** `bar`: sticky bottom bar (< xl). `rail`: stacked block at the foot of the xl rail. */
+		variant: 'bar' | 'rail';
+		/**
+		 * `edit`: Save / Save & Exit with an unsaved-changes status.
+		 * `create`: Cancel / Create Event, the latter submitting the form named by `formId`.
+		 */
+		mode?: 'edit' | 'create';
+		/** The create form's id, so the submit button can live outside the `<form>`. */
+		formId?: string;
+		/** True when the editor holds changes that have not been saved. */
+		isDirty?: boolean;
 		disabled?: boolean;
+		class?: string;
 	}
 
-	const { isSaving, onSave, onSaveAndExit, position, disabled = false }: Props = $props();
+	const {
+		isSaving,
+		onSave,
+		onSaveAndExit,
+		variant,
+		mode = 'edit',
+		formId,
+		isDirty = false,
+		disabled = false,
+		class: className
+	}: Props = $props();
+
+	const isBar = $derived(variant === 'bar');
 </script>
 
 <!--
-	The top bar pins below the global site header: the org-admin layout
-	publishes `--admin-sticky-top` as that navbar's height (both EventEditor
-	call sites are admin routes, so it is always in scope). The org-admin
-	header block itself no longer sticks (unstuck 2026-08-13 — it used to eat
-	a third of a laptop screen), so this bar's own offset only ever needs to
-	clear the site header above it. `tall:` because on a landscape phone the
-	site header plus this bar left no room to scroll. The inset is set only
-	for `top` — giving a `bottom-0` sticky a `top` too would re-pin it to the
-	top edge.
+	The editor renders ONE save surface per viewport: the rail variant on xl+,
+	this sticky bottom bar below it. Callers hide the other with `hidden xl:block`
+	/ `xl:hidden` (display:none leaves the a11y tree), so there is never a second
+	"Save" button for `getByRole` to trip over.
 
-	The bottom bar deliberately stays sticky at EVERY viewport height: the
-	landscape bug was the stacked, offset-dependent top chrome, while this is a
-	single ~56px row with no offset arithmetic, and it is the only save
-	affordance on a long form — unsticking it would make a landscape-phone user
-	scroll to the form's end to save.
+	The bar is ONE row (status left, buttons right) so it never eats more than
+	~56px of a phone screen, and stays sticky at EVERY viewport height: it is the
+	only save affordance on a long form.
 -->
-<div
-	class={cn(
-		'z-20 border-border bg-background/80 px-4 py-3 backdrop-blur-sm',
-		position === 'top' && 'border-b tall:sticky',
-		position === 'bottom' && 'sticky bottom-0 border-t'
-	)}
-	style={position === 'top' ? 'top: var(--admin-sticky-top)' : undefined}
->
-	<div class="mx-auto flex max-w-4xl flex-col gap-2 sm:flex-row sm:justify-end">
-		<button
-			type="button"
-			onclick={onSaveAndExit}
-			disabled={isSaving || disabled}
-			class={cn(
-				'inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-				(isSaving || disabled) && 'cursor-not-allowed opacity-50'
-			)}
-		>
-			<Save class="h-4 w-4" aria-hidden="true" />
-			{isSaving ? m['eventEditor.saving']() : m['eventEditor.saveAndExit']()}
-		</button>
-		<button
-			type="button"
-			onclick={onSave}
-			disabled={isSaving || disabled}
-			class={cn(
-				'inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-				(isSaving || disabled) && 'cursor-not-allowed opacity-50'
-			)}
-		>
-			{#if isSaving}
-				<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-				{m['eventEditor.saving']()}
-			{:else}
-				<Save class="h-4 w-4" aria-hidden="true" />
-				{m['eventEditor.save']()}
+{#snippet status()}
+	<p
+		role="status"
+		class={cn(
+			'flex min-w-0 items-center gap-2 text-sm',
+			isDirty ? 'font-medium text-foreground' : 'text-muted-foreground'
+		)}
+	>
+		{#if isDirty}
+			<span class="h-2 w-2 shrink-0 rounded-full bg-highlight" aria-hidden="true"></span>
+			<span class={cn(isBar && 'truncate')}>{m['eventEditor.unsavedChanges']()}</span>
+		{:else}
+			<span class={cn(isBar && 'truncate')}>{m['eventEditor.allSaved']()}</span>
+		{/if}
+	</p>
+{/snippet}
+
+{#snippet editButtons()}
+	<Button
+		variant="outline"
+		size={isBar ? 'sm' : 'default'}
+		onclick={onSaveAndExit}
+		disabled={isSaving || disabled}
+		class="font-semibold"
+	>
+		{#if !isBar}<Save aria-hidden="true" />{/if}
+		{isSaving ? m['eventEditor.saving']() : m['eventEditor.saveAndExit']()}
+	</Button>
+	<Button
+		size={isBar ? 'sm' : 'default'}
+		onclick={onSave}
+		disabled={isSaving || disabled}
+		class="font-semibold"
+	>
+		{#if isSaving}
+			<Loader2 class="animate-spin" aria-hidden="true" />
+			{m['eventEditor.saving']()}
+		{:else}
+			{#if !isBar}<Save aria-hidden="true" />{/if}
+			{m['eventEditor.save']()}
+		{/if}
+	</Button>
+{/snippet}
+
+{#snippet createButtons()}
+	<!-- eslint-disable svelte/no-navigation-without-resolve -- relative parent navigation (..); resolves against the mounting route, not a static route id -->
+	<Button variant="outline" size={isBar ? 'sm' : 'default'} href=".." class="font-semibold">
+		{m['essentialsStep.cancel']()}
+	</Button>
+	<!-- eslint-enable svelte/no-navigation-without-resolve -->
+	<Button
+		type="submit"
+		form={formId}
+		size={isBar ? 'sm' : 'default'}
+		disabled={isSaving || disabled}
+		class="font-semibold"
+	>
+		{isSaving ? m['essentialsStep.creatingEvent']() : m['essentialsStep.createEvent']()}
+	</Button>
+{/snippet}
+
+{#if isBar}
+	<div
+		class={cn(
+			'sticky bottom-0 z-20 border-t border-border bg-background/80 px-4 pt-3 backdrop-blur-sm',
+			'pb-[max(0.75rem,env(safe-area-inset-bottom))]',
+			className
+		)}
+	>
+		<div class="flex items-center justify-between gap-3">
+			{#if mode === 'edit'}
+				{@render status()}
 			{/if}
-		</button>
+			<div class={cn('flex shrink-0 gap-2', mode === 'create' && 'ml-auto')}>
+				{#if mode === 'edit'}{@render editButtons()}{:else}{@render createButtons()}{/if}
+			</div>
+		</div>
 	</div>
-</div>
+{:else}
+	<div class="space-y-3">
+		{#if mode === 'edit'}
+			{@render status()}
+		{/if}
+		<div class={cn('flex gap-2', mode === 'create' ? 'flex-col-reverse' : 'flex-col')}>
+			{#if mode === 'edit'}{@render editButtons()}{:else}{@render createButtons()}{/if}
+		</div>
+	</div>
+{/if}

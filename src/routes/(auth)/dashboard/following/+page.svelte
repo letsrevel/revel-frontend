@@ -1,5 +1,8 @@
 <script lang="ts">
+	import { orgHref } from '$lib/utils/org-links';
+	import { tenantOrgFilter } from '$lib/utils/tenant-filter';
 	import * as m from '$lib/paraglide/messages.js';
+	import { brandName } from '$lib/seo/tenant';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import {
@@ -31,10 +34,13 @@
 	// Pagination
 	const currentPage = $derived(Number(page.url.searchParams.get('page') || '1'));
 	const pageSize = 12;
+	// On a custom domain only the tenant org (and its series) are listed (#1056).
+	const orgFilter = $derived(tenantOrgFilter(page.data));
+	const tenant = $derived(page.data.tenant);
 
 	// Fetch followed organizations
 	const orgsQuery = createQuery(() => ({
-		queryKey: ['followed-organizations', currentPage] as const,
+		queryKey: ['followed-organizations', currentPage, orgFilter] as const,
 		queryFn: async () => {
 			if (!accessToken) return { results: [], count: 0 };
 
@@ -42,7 +48,8 @@
 				headers: { Authorization: `Bearer ${accessToken}` },
 				query: {
 					page: currentPage,
-					page_size: pageSize
+					page_size: pageSize,
+					...orgFilter
 				}
 			});
 
@@ -53,7 +60,7 @@
 
 	// Fetch followed event series
 	const seriesQuery = createQuery(() => ({
-		queryKey: ['followed-event-series', currentPage] as const,
+		queryKey: ['followed-event-series', currentPage, orgFilter] as const,
 		queryFn: async () => {
 			if (!accessToken) return { results: [], count: 0 };
 
@@ -61,7 +68,8 @@
 				headers: { Authorization: `Bearer ${accessToken}` },
 				query: {
 					page: currentPage,
-					page_size: pageSize
+					page_size: pageSize,
+					...orgFilter
 				}
 			});
 
@@ -196,7 +204,7 @@
 </script>
 
 <svelte:head>
-	<title>{m['dashboard.following.title']()} - Revel</title>
+	<title>{m['dashboard.following.title']()} - {brandName(page.data.tenant)}</title>
 </svelte:head>
 
 <!-- Celebration band + floating tab card (uplift) — twin of the invitations
@@ -259,13 +267,21 @@
 				</div>
 			{:else if organizations.length === 0}
 				{#snippet discoverOrganizationsAction()}
-					<Button href="/organizations" variant="default">
-						{m['dashboard.following.discoverOrganizations']()}
-					</Button>
+					{#if tenant}
+						<Button href={resolve('/', {})} variant="default">
+							{m['dashboard.following.visitOrg']({ org: tenant.name })}
+						</Button>
+					{:else}
+						<Button href="/organizations" variant="default">
+							{m['dashboard.following.discoverOrganizations']()}
+						</Button>
+					{/if}
 				{/snippet}
 				<EmptyState
 					icon={Building2}
-					title={m['dashboard.following.noOrganizations']()}
+					title={tenant
+						? m['dashboard.following.notFollowingOrg']({ org: tenant.name })
+						: m['dashboard.following.noOrganizations']()}
 					action={discoverOrganizationsAction}
 					level={3}
 				/>
@@ -289,10 +305,16 @@
 									</div>
 								{/if}
 								<div class="min-w-0 flex-1">
+									<!-- eslint-disable svelte/no-navigation-without-resolve -- orgHref() wraps resolve(); custom-domain links are absolute (#1056) -->
 									<a
-										href={resolve('/(public)/org/[slug]', { slug: org.slug })}
+										href={orgHref(
+											org,
+											resolve('/(public)/org/[slug]', { slug: org.slug }),
+											page.data
+										)}
 										class="block truncate font-bold hover:text-primary hover:underline"
 									>
+										<!-- eslint-enable svelte/no-navigation-without-resolve -->
 										{org.name}
 									</a>
 								</div>
@@ -422,19 +444,31 @@
 									</div>
 								{/if}
 								<div class="min-w-0 flex-1">
+									<!-- eslint-disable svelte/no-navigation-without-resolve -- orgHref() wraps resolve(); custom-domain links are absolute (#1056) -->
 									<a
-										href={resolve('/(public)/events/[org_slug]/series/[series_slug]', {
-											org_slug: series.organization.slug,
-											series_slug: series.slug
-										})}
+										href={orgHref(
+											series.organization,
+											resolve('/(public)/events/[org_slug]/series/[series_slug]', {
+												org_slug: series.organization.slug,
+												series_slug: series.slug
+											}),
+											page.data
+										)}
 										class="block truncate font-bold hover:text-primary hover:underline"
 									>
+										<!-- eslint-enable svelte/no-navigation-without-resolve -->
 										{series.name}
 									</a>
+									<!-- eslint-disable svelte/no-navigation-without-resolve -- orgHref() wraps resolve(); custom-domain links are absolute (#1056) -->
 									<a
-										href={resolve('/(public)/org/[slug]', { slug: series.organization.slug })}
+										href={orgHref(
+											series.organization,
+											resolve('/(public)/org/[slug]', { slug: series.organization.slug }),
+											page.data
+										)}
 										class="truncate text-sm text-muted-foreground hover:underline"
 									>
+										<!-- eslint-enable svelte/no-navigation-without-resolve -->
 										{series.organization.name}
 									</a>
 								</div>

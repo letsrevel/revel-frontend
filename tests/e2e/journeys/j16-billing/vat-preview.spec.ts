@@ -99,7 +99,7 @@ async function openCheckoutSheet(page: Page) {
 	const stepper = page.getByRole('group', { name: 'Quantity for Invoiced Entry' });
 	await stepper.getByRole('button', { name: 'Add one Invoiced Entry' }).click();
 	const summaryBar = page.getByTestId('cart-summary-bar');
-	await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+	await summaryBar.getByRole('button', { name: /^(Buy|Claim)$/ }).click();
 	const sheet = page.getByRole('dialog', { name: 'Checkout' });
 	await expect(sheet).toBeVisible({ timeout: 8_000 });
 	return sheet;

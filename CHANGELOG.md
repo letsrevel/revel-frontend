@@ -7,6 +7,141 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.27.0] - 2026-10-27
+
+### Added
+- **Organization launchpad**: right after creating an organization, owners land on `/org/[slug]/admin/welcome` instead of the settings page.
+  - "Create your first event" and "Get paid for tickets" (Stripe) are shown side by side, with the event as the first step.
+  - A notice explains that a new organization page is visible only to you and your staff, with one-click "Make page public" and Undo.
+  - After Stripe onboarding, owners come back to the launchpad with a confirmation. An expired Stripe link offers to pick up where they left off.
+- **Setup card on the admin dashboard**: owners see their progress through five steps (organization created, page visibility, first event, first event published, ready for online payments). The card can be hidden, and it disappears once the first event is published.
+- After connecting Stripe, organizations that are missing their billing name, address or VAT country are prompted to add tax details for online payments. Free events and pay-at-the-door tickets don't need them, and nothing is blocked.
+- The settings page shows a "Continue setup" link after returning from Stripe when setup isn't finished.
+
+### Changed
+- Creating an organization now asks only for a name and contact email; city, address and description are optional and tucked away. The form previews your public page address as you type and replaces the confirmation dialog with an inline note that the name can't be changed later.
+
+## [2.26.4] - 2026-10-26
+
+### Changed
+- Membership badges on the event tickets and attendees lists show just the tier name (for example "General membership" instead of "General membership Member"); members without a tier still show "Member".
+- Links in the site-wide announcement banner are now clickable and open in a new tab.
+- The announcement banner's "Scheduled" and "Until" times follow the app language instead of always using English month names.
+
+### Fixed
+- On the event tickets list, a ticket whose holder name differs from the buyer's now shows the buyer's membership badge next to "Purchased by…", so it is clear why "Make member" isn't offered for a buyer who is already a member.
+- Profile pictures no longer get squashed into ovals next to long text, such as an email address on the mobile tickets list.
+- Long links in the announcement banner wrap on small screens instead of running off the edge.
+
+## [2.26.3] - 2026-10-26
+
+### Changed
+- New free ticket tiers start with "Allow attendees to cancel their tickets" switched on. The default follows the payment method until the organizer touches the toggle, so paid tiers still start with it off.
+- Cancelling a free ticket no longer talks about refunds: the dialog explains that the spot is released for someone else and shows only the cancellation deadline, if one is set.
+
+### Fixed
+- Organizers can now let attendees cancel free tickets. The tier form shows the cancellation toggle and deadline for free tiers (only the refund policy stays hidden), so free tickets no longer stay stuck counting toward attendance.
+
+## [2.26.2] - 2026-10-26
+
+### Fixed
+- The eligibility card on event pages is now fully translated: the step messages (for example "Complete the required questionnaire to attend"), the action buttons (such as "Complete Profile") and the questionnaire counts no longer show up in English when the app is set to another language
+- An unlisted event's visibility now shows a translated label instead of the raw value "unlisted"
+
+## [2.26.1] - 2026-10-25
+
+### Fixed
+- When an event asks for a name on every ticket and you're getting just one, the name field in checkout is now filled in with your name (your profile name, or the name you typed as a guest); you can still change it
+- Invitation links no longer trap you on "Claim Invitation": after claiming, if the event still needs something from you (for example a profile picture), you now see that step, such as "Complete Profile", instead of being asked to claim again and again
+
+## [2.26.0] - 2026-10-25
+
+### Added
+- **Brand film on the landing page**: the "One line" film (1:35, English and German) now has its own panel right after the hero, with a "Watch the film (1:35)" link in the hero that jumps to it
+  - Nothing loads until the visitor presses play, and the video streams from Revel's own storage with no third-party player, scripts or cookies
+  - German visitors get the German cut; other languages get the English one with a translated note saying so; English and German captions can be turned on in the player
+- Event descriptions can be edited full-screen: a toolbar button in the description editor opens a near-full-screen dialog, and the text stays in sync with the form
+- The "Part of a series" card on an event page shows the series logo, renders the series description with its formatting, and has a "View series" link
+
+### Changed
+- **Event create and edit pages redesigned** in the style of the admin dashboard
+  - The page title is the event's name with its status badge, and the Details, Ticketing and Listings tabs sit directly under it instead of halfway down the page
+  - Details is split into seven always-open sections (Basics, Date & time, Location, Access, Attendance, On the event page, Extras); visibility and event type are picked from compact tiles, and the logo and cover art sit side by side
+  - On wide screens a side rail shows a live summary of the event (date, name, time and place, who can see and attend it), an "On this page" list that tracks your scroll and flags sections with errors, and the only Save buttons, with an unsaved-changes indicator; on smaller screens the summary sits on top, sections become a chip row, and saving is a single sticky bar
+  - Creating an event asks RSVP or Tickets up front and shows only the basics, date and access, then opens the new event's edit page at the top; ticketed events end Details with a link to set up tiers and prices
+  - A cancelled event's status badge is now translated
+- Series and event cover art is shown uncropped at 16:9 over a blurred copy of itself, instead of being cut into a thin band on wide screens; on an event page with a cover, the title, date and location move into the strip below the art
+- When the cart is free, the cart bar and the tickets dialog say "Claim" instead of "Buy", matching the checkout
+
+### Fixed
+- Logo and cover previews show again when editing a series' settings
+- Several controls (language switcher, footer links, calendar buttons, user menu, notifications bell, privacy setting, the film's play button) now have screen-reader names that include their visible text, so voice-control users can activate them by saying what they see
+
+## [2.25.0] - 2026-10-25
+
+### Added
+- Ticket tiers warn organizers when their quantity exceeds the event's capacity (the smaller of the attendee limit and the venue capacity): the tier form shows a note under the quantity field, and the admin tier card shows an "Over event capacity" badge that updates live as the capacity or venue changes; saving is never blocked
+- Admin tier cards show availability against the event cap when it applies, for example "30 of 40 remaining (event cap)"; appears once the backend is on a release newer than 2.24.0
+- Event series settings use the same Markdown editor as events, and series tags autocomplete from existing tags
+
+### Changed
+- **Organization admin dashboard**: redesigned around what's coming up next
+  - A "Next up" panel highlights the next event (or the one happening right now, including multi-day events) with its date, attendance against capacity, and quick links to check-in, the guest list, editing, and the public page
+  - A "Needs attention" list counts pending membership requests, upcoming drafts, and missing billing details for owners, each linking to where it's fixed
+  - A compact "Coming up" agenda lists the next events with date, time, venue, and attendance or status
+- **Admin navigation sidebar**: the admin tab strip is replaced by a sidebar grouped into Events, People, Content, and Organization; it collapses to an icon rail with tooltips and remembers the choice; on phones the same groups open from a menu button
+- Organization owners always see **Custom domain** in the admin; when the feature isn't enabled for their organization, the page explains it's available on request and offers a button to email the Revel team, instead of a "not found" page; the email button appears once the backend (newer than 2.24.0) publishes a support address
+
+### Fixed
+- Event series descriptions written in Markdown now render with their formatting on the admin series page and the series embed, and show as clean plain text (no stray `#` or `**`) on series cards, the admin series list, the event page's series link, questionnaire assignment, and search-engine metadata
+- The "Past Event" badge on faded past event cards is readable again: only the cover image is dimmed now, not the whole card
+
+## [2.24.0] - 2026-10-24
+
+### Added
+- **Custom domains (white-label)**: an organization can serve its public site on its own domain, for example `events.example.org`
+  - On the custom domain the organization page is the home page, the header and footer carry its name and logo, its brand colors apply everywhere, and a small "Powered by Revel" footer stays; platform discovery pages and other organizations are not reachable there
+  - Attendee flows work end to end on the domain: sign in and sign up, RSVPs, tickets and paid checkout (the Stripe return lands back on the domain), guest seat holds, memberships, and a dashboard and account area scoped to that organization
+  - Links to an organization with a custom domain point at it, and old Revel URLs of its pages redirect there; organization admin and platform tools open on Revel, with a hint that signing in there is needed once
+  - Page titles, social previews, the web app manifest, favicon, theme color, sitemaps, `robots.txt` and the RSS feed use the organization's identity, and attendee-facing copy says the organization's name instead of "Revel"
+  - **Custom domain** settings in the organization admin for owners (when enabled for the organization): connect a hostname, see the DNS records to add with copy buttons and clear "DNS only" guidance for Cloudflare, open the detected DNS provider's settings or help page, follow the live status, check again, or remove the domain
+  - Account emails (verification, password reset, email change, account deletion, unsubscribe) stay on Revel and offer a "Continue to {organization}" button back to the domain
+  - Off until configured: self-hosters enable it with `PLATFORM_HOSTS` and the multi-host settings (`HOST_HEADER`, `PROTOCOL_HEADER`, `PLATFORM_ORIGIN`, `PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE`, no `ORIGIN`), documented in `docs/tenant-mode.md`; requires backend 2.24.0 or later
+
+### Fixed
+- Server-side requests to the backend over `INTERNAL_API_URL` now honour their timeouts, so a slow backend no longer stalls page loads for minutes.
+
+### Security
+- Sign-ins on a custom domain last only until the browser closes ("Remember me" is not offered there), and the backend ends those sessions when the domain is removed, fails, moves or is switched off.
+- Links back from account emails to a custom domain never carry the email's token, not even in the `Referer` header.
+
+
+## [2.23.0] - 2026-10-24
+
+### Added
+- **Organization brand colors**: organizations can theme their pages with their own primary and accent colors
+  - Organization, event, series, membership, questionnaire and resources pages, plus the `/embed/*` documents, use the organization's colors in light and dark mode, including dialogs, popovers and toasts; the poster ribbon follows the brand primary
+  - A **Brand colors** section in the organization admin settings with color pickers, a live light/dark preview that shows when a color was adjusted for readability, and a reset to Revel defaults
+  - Saving brand colors requires backend 2.23.0 or later
+
+### Security
+- DOMPurify, which sanitizes rendered Markdown, is upgraded to 3.4.17 to patch newly published sanitizer bypasses; `zod` and the server-side `undici` are upgraded to patch denial-of-service vulnerabilities.
+
+## [2.22.3] - 2026-10-21
+
+### Security
+- The image now actually runs Node 22.23.4: the base image is pinned to `node:22.23.4-slim`, because the floating `node:22-slim` tag still resolved to 22.23.3 and v2.22.2 shipped without the updated root store that distrusts the compromised eMudhra intermediate CAs.
+
+## [2.22.2] - 2026-10-21
+
+### Security
+- The image is rebuilt on Node 22.23.4, whose updated root store distrusts the eMudhra intermediate CAs compromised in October 2026, for the frontend server's outbound HTTPS calls.
+
+## [2.22.1] - 2026-10-16
+
+### Fixed
+- The "let's revel" wordmark in social preview (OG) images and the email logo now uses a typographic apostrophe instead of an opening quote
+
 ## [2.22.0] - 2026-10-13
 
 ### Changed

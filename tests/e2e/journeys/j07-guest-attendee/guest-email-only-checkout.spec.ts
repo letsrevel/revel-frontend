@@ -56,7 +56,7 @@ test.describe('J7 guest email-only checkout @p2', () => {
 		await expect(async () => {
 			if (page.url().includes('checkout.stripe.com')) return;
 			if (!(await sheet.isVisible())) {
-				await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+				await summaryBar.getByRole('button', { name: /^(Buy|Claim)$/ }).click();
 				await expect(sheet).toBeVisible({ timeout: 8_000 });
 			}
 			await expect(sheet.getByLabel('First name')).toBeHidden();

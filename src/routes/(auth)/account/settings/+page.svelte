@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { page } from '$app/stores';
+	import { brandName } from '$lib/seo/tenant';
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
 	import {
@@ -78,8 +79,11 @@
 </script>
 
 <svelte:head>
-	<title>{m['accountSettingsPage.pageTitle']()} - Revel</title>
-	<meta name="description" content={m['accountSettingsPage.pageDescription']()} />
+	<title>{m['accountSettingsPage.pageTitle']()} - {brandName($page.data.tenant)}</title>
+	<meta
+		name="description"
+		content={m['accountSettingsPage.pageDescription']({ brand: brandName($page.data.tenant) })}
+	/>
 </svelte:head>
 
 <div class="container mx-auto max-w-2xl px-4 py-8">

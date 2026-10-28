@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Audit the brand theme tokens: WCAG contrast + colorblind confusability.
 
-Parses the live theme (:root + .dark in src/app.css) and, if present, any
+Parses the live theme (`:root, .theme-light` + .dark in src/app.css) and, if present, any
 [data-brand=...] evaluation blocks. Checks the standard shadcn token pairs
 against WCAG AA and simulates protanopia/deuteranopia/tritanopia to flag
 hue-only distinctions between semantic colors (primary / accent /
@@ -99,11 +99,18 @@ def parse_tokens(body):
 
 
 # The live theme: :root (light) and .dark blocks.
-for sel, mode in ((r":root", "light"), (r"\.dark", "dark")):
+# `:root, .theme-light` is one rule (forced-light preview panels, #1054).
+for sel, mode in ((r":root(?:\s*,\s*\.theme-light)?", "light"), (r"\.dark", "dark")):
     for m in re.finditer(sel + r"\s*\{([^}]+)\}", CSS):
         toks = parse_tokens(m.group(1))
         if toks:
             themes.setdefault(("default", mode), {}).update(toks)
+
+# Fail loudly if a selector edit stops a theme block from parsing: a silently
+# empty theme would audit nothing and still report 0 failures (#783 spirit).
+for mode in ("light", "dark"):
+    if len(themes.get(("default", mode), {})) < 10:
+        sys.exit(f"audit: the default {mode} theme block in app.css did not parse; check its selector")
 
 # Optional evaluation themes ([data-brand=...] blocks), if the file has any.
 for m in re.finditer(r"\[data-brand='(\w+)'\](\.dark)?\s*(?:body\s*)?\{([^}]+)\}", CSS):
@@ -173,7 +180,13 @@ TEXT_PAIRS = [  # (fg, bg, min_ratio, note)
     ("poster-white", "poster-crimson-deep", 4.5, "poster venues panel body"),
     ("poster-white", "poster-ink", 4.5, "poster open source panel body"),
     ("poster-white", "poster-purple", 4.5, "poster close panel body"),
+    ("poster-white", "poster-aubergine", 4.5, "poster film panel title / note"),
+    ("poster-lavender", "poster-aubergine", 4.5, "poster film panel kicker"),
+    ("poster-white", "poster-aubergine", 3.0, "film frame focus ring on the panel"),
     ("poster-purple", "poster-white", 4.5, "sticker text on white sticker"),
+    # Default value only: a branded org overrides --poster-band at runtime with its
+    # light primary, which the backend (revel-backend #1149) keeps >= 4.5:1 vs white.
+    ("poster-band", "poster-white", 4.5, "ribbon kicker on the white sticker chip (default band)"),
     ("poster-crimson-deep", "poster-white", 4.5, "sticker text on white sticker"),
     ("poster-ink", "poster-lavender", 4.5, "identity tile: ink icon on lavender"),
     ("poster-ink", "poster-lavender", 4.5, "poster clubs panel body"),
@@ -211,6 +224,8 @@ BOTH = ("light", "dark")
 # checked), and only token-valued colors — one-off `bg-[hsl(...)]` literals that
 # do not resolve to a token cannot be audited from app.css alone.
 COMPOSITED_PAIRS = [
+    # Admin sidebar / mobile drawer active item (`bg-primary/10 text-primary`, 14px text).
+    ("primary", 1, "primary", 0.10, "background", 4.5, BOTH, "admin sidebar/drawer active item"),
     # ToneTile (common/ToneTile.svelte) — soft icon tiles. Icons: 3:1 floor.
     ("primary", 1, "primary", 0.10, "background", 3.0, BOTH, "ToneTile brand on page"),
     ("primary", 1, "primary", 0.10, "card", 3.0, BOTH, "ToneTile brand on card"),
@@ -259,6 +274,12 @@ COMPOSITED_PAIRS = [
     # selection, so the 3:1 non-text floor is the one that matters.
     ("primary", 1, "primary", 0.10, "card", 3.0, BOTH, "QuestionnaireFillForm/PollVoteForm selected border"),
     ("foreground", 1, "primary", 0.10, "card", 4.5, BOTH, "QuestionnaireFillForm/PollVoteForm selected label"),
+    # RadioTileGroup checked tile (`bg-primary/5` over the section card): title is
+    # --foreground, description --muted-foreground (event editor, #1106).
+    ("foreground", 1, "primary", 0.05, "card", 4.5, BOTH, "RadioTileGroup checked tile title"),
+    ("muted-foreground", 1, "primary", 0.05, "card", 4.5, BOTH, "RadioTileGroup checked tile description"),
+    # EditorSectionNav current chip (`bg-primary/10` over the page, --foreground text).
+    ("foreground", 1, "primary", 0.10, "background", 4.5, BOTH, "EditorSectionNav current chip label"),
     ("foreground", 1, "success", 0.10, "background", 4.5, BOTH, "RSVPButtons / EventRSVP unselected tint"),
     ("foreground", 1, "destructive", 0.10, "background", 4.5, BOTH, "RSVPButtons / EventRSVP unselected tint"),
     # Impersonation banner (bg on an opaque --background shell, not on scrolled

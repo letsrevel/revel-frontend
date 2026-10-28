@@ -1,5 +1,6 @@
 import type { OrganizationRetrieveSchema } from '$lib/api/generated/types.gen';
 import { getBackendUrl } from '$lib/config/api';
+import { stripMarkup } from '../text';
 
 export interface OrganizationJsonLd {
 	'@context': 'https://schema.org';
@@ -17,15 +18,6 @@ export interface OrganizationJsonLd {
 	};
 }
 
-function stripHtml(html: string | null | undefined): string {
-	if (!html) return '';
-	return html
-		.replace(/<[^>]*>/g, '')
-		.replace(/&nbsp;/g, ' ')
-		.replace(/\s+/g, ' ')
-		.trim();
-}
-
 export function generateOrganizationJsonLd(
 	org: OrganizationRetrieveSchema,
 	orgUrl: string
@@ -35,7 +27,7 @@ export function generateOrganizationJsonLd(
 		'@context': 'https://schema.org',
 		'@type': 'Organization',
 		name: org.name,
-		description: stripHtml(org.description) || undefined,
+		description: stripMarkup(org.description) || undefined,
 		url: orgUrl,
 		logo: org.logo ? getBackendUrl(org.logo) : undefined,
 		image: imageRel ? getBackendUrl(imageRel) : undefined

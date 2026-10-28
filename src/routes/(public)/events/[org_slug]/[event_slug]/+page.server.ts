@@ -1,4 +1,5 @@
-import { error, isHttpError } from '@sveltejs/kit';
+import { error, isHttpError, isRedirect } from '@sveltejs/kit';
+import { canonicalTenantRedirect, serverLinkContext } from '$lib/server/tenant-canonical';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
 import { log } from '$lib/server/logger';
@@ -73,6 +74,8 @@ export const load: PageServerLoad = async ({
 
 		const event = eventResponse.data;
 
+		canonicalTenantRedirect(locals, event.organization, url);
+
 		// Compute SEO and soft-404 for past/cancelled events
 		const lang = resolveLang(request);
 		const eventStart = event.start ? new Date(event.start) : null;
@@ -82,7 +85,15 @@ export const load: PageServerLoad = async ({
 		if (!indexable) {
 			setHeaders({ 'X-Robots-Tag': 'noindex,follow' });
 		}
-		const seo = buildSeo({ kind: 'event', url, lang, event, indexable });
+		const seo = buildSeo({
+			kind: 'event',
+			url,
+			lang,
+			event,
+			indexable,
+			tenant: locals.tenant,
+			linkContext: serverLinkContext(locals)
+		});
 
 		// If user is authenticated, fetch their status
 		let userStatus: UserEventStatus | null = null;
@@ -254,6 +265,7 @@ export const load: PageServerLoad = async ({
 		const returnData = {
 			seo,
 			event,
+			brandTheme: event.organization.brand_theme ?? null,
 			userStatus,
 			potluckItems,
 			userPermissions,
@@ -283,7 +295,7 @@ export const load: PageServerLoad = async ({
 		return returnData;
 	} catch (err) {
 		// Re-throw SvelteKit errors (e.g. our own throw error() calls above)
-		if (isHttpError(err)) throw err;
+		if (isHttpError(err) || isRedirect(err)) throw err;
 
 		// Handle different error types
 		if (typeof err === 'object' && err !== null && 'status' in err) {

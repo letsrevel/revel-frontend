@@ -13,7 +13,7 @@
 This repository is the SvelteKit web app: public event and organization pages, checkout, the organizer admin and the dashboards for attendees and members. It talks to the [backend API](https://github.com/letsrevel/revel-backend) through a TypeScript client generated from the backend's OpenAPI spec. For what Revel does, who it is for, the demo, fees and self-hosting, read the [main README](https://github.com/letsrevel/revel-backend#readme).
 
 <p align="center">
-  <img src="docs/images/mobile.png" alt="Revel on a phone: home, event detail and discovery" width="800"/>
+  <img src="docs/images/2026-10/mobile.png" alt="Revel on a phone: home, event detail and discovery" width="800"/>
 </p>
 
 ## Local development
@@ -56,7 +56,7 @@ More detail, including backend setup and troubleshooting: [`docs/runbooks/setup.
 - Public pages render on the server; dashboards are hybrid; a few client-only pages (the membership scanner, the seat designer) disable SSR.
 - The access token is kept in memory on the client, never in `localStorage`; the refresh token is an httpOnly cookie.
 
-Rendering, the auth flow, the SEO landing pages and accessibility targets are described in [`docs/overview.md`](docs/overview.md).
+Rendering, the auth flow, the SEO landing pages and accessibility targets are described in [`docs/overview.md`](docs/overview.md). Serving organizations on their own domains is covered in [`docs/tenant-mode.md`](docs/tenant-mode.md), and embeds in [`docs/embeds.md`](docs/embeds.md).
 
 ## Testing
 

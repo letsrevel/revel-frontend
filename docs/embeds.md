@@ -51,6 +51,45 @@ response whose `html` is an iframe for the matching surface. It accepts `/events
 a non-`json` `format` is a 501. Event, organization and series pages advertise it with
 `<link rel="alternate" type="application/json+oembed">`.
 
+## Custom domains and brand colors
+
+### Organizations with a custom domain
+
+An organization served on its own domain (see [`tenant-mode.md`](tenant-mode.md)) is embedded the
+same way. The snippet comes from the admin embed builder, which lives on the platform, so the
+iframe and loader `src` point at the **platform origin** (`/embed/{org_slug}...` and
+`/embed-v1.js`). Nothing about the snippet changes.
+
+What changes is where the embed links out:
+
+- Links to events, the series and the organization page use `orgOrigin(org, page.data)`, so they open on
+  `https://{custom_domain}` (shaped by `PUBLIC_CUSTOM_DOMAIN_URL_TEMPLATE`) instead of the
+  platform. This covers the event cards in the list, the header and "more" links, and the single
+  event and series surfaces. Without a custom domain, or while tenant mode is off (`PLATFORM_HOSTS`
+  unset), they use the origin the embed is served from.
+  UTM attribution is appended exactly as before.
+- The "Powered by Revel" link goes to `/` on the origin the embed is served from, with the same
+  attribution.
+- **Embeds never canonical-redirect.** The 301 to the custom domain that org, event and series pages
+  get on the platform (when tenant mode is on) is not applied to `/embed/*`, because these are iframed on third-party sites.
+  `/embed/{org_slug}` on the platform keeps answering 200.
+- On a tenant host only that organization's `/embed/{slug}` is served; another organization's embed
+  is a 302 to `/`. `/oembed` on a tenant host returns 404 for another organization's URL.
+
+### Brand colors in embeds
+
+Embed loaders return `brandTheme` from the organization they load (list, event and series), and the
+root layout renders `OrgBrandStyle` before its embed branch, so the SSR embed document carries the
+organization's color overrides in a `<style data-org-brand>` tag. No client script is involved, which
+fits `csr = false`.
+
+- The overrides are keyed on the `.dark` class of `<html>`: `:root:not(.dark)` for light and
+  `:root.dark` for dark. An explicit `?theme=dark` stamps that class server-side, `?theme=light`
+  leaves it off, and `?theme=auto` leaves the choice to the anti-FOUC script, so the colors follow
+  the host page's `prefers-color-scheme` and switch when `embed-frame-v1.js` re-applies the scheme.
+- An organization without brand colors gets no override and renders in the default Revel theme.
+- The backend guarantees the contrast of each mode's colors; the embed does not adjust them.
+
 ## Operational notes
 
 - **Framing**: `frame-ancestors *` is applied to `/embed/*` responses only, in `handleCsp`

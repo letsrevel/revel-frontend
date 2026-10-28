@@ -666,6 +666,7 @@
 			organizationStripeConnected={organization.is_stripe_connected}
 			{feeConfig}
 			{formData}
+			venueCapacity={selectedVenue?.capacity ?? null}
 			onUpdate={updateFormData}
 			onBack={() => {
 				currentStep = 2;

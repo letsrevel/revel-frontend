@@ -89,7 +89,7 @@ test.describe('J6 nameless checkout @p1', () => {
 			const summaryBar = page.getByTestId('cart-summary-bar');
 			await expect(async () => {
 				if (await success.isVisible()) return;
-				await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+				await summaryBar.getByRole('button', { name: /^(Buy|Claim)$/ }).click();
 				await expect(success).toBeVisible({ timeout: 8_000 });
 			}).toPass({ timeout: 40_000 });
 			await page.keyboard.press('Escape');

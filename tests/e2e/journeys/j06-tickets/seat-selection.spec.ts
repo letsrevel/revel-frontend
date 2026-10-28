@@ -136,7 +136,7 @@ test.describe('J6 seat selection @p2', () => {
 		// directly (no sheet — names aren't required and this is the only group).
 		await expect(tierCardLocator(page, tier.name).getByText('1 seat · edit')).toBeVisible();
 		const summaryBar = page.getByTestId('cart-summary-bar');
-		await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+		await summaryBar.getByRole('button', { name: /^(Buy|Claim)$/ }).click();
 		await expect(page.getByText(/reserved/i)).toBeVisible({ timeout: 10_000 });
 
 		// The ticket carries the chosen seat ("Venue • Sector • Row B, Seat 3").
@@ -230,7 +230,7 @@ test.describe('J6 seat selection @p2', () => {
 		// Buy button rather than as a cart assertion.
 		const summaryBar = page.getByTestId('cart-summary-bar');
 		await expect(summaryBar).toBeVisible({ timeout: 15_000 });
-		await summaryBar.getByRole('button', { name: 'Buy', exact: true }).click();
+		await summaryBar.getByRole('button', { name: /^(Buy|Claim)$/ }).click();
 		await expect(page.getByText(/reserved/i)).toBeVisible({ timeout: 10_000 });
 
 		// The pending offline ticket shows the per-ticket amount due — the

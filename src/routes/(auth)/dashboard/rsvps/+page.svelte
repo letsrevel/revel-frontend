@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { brandName } from '$lib/seo/tenant';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { dashboardDashboardRsvps } from '$lib/api/generated/sdk.gen';
@@ -9,6 +10,7 @@
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import { CheckCircle2, Filter, ChevronLeft, ChevronRight, Loader2 } from '@lucide/svelte';
 	import { page } from '$app/state';
+	import { tenantOrgFilter } from '$lib/utils/tenant-filter';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { createDebouncedState } from '$lib/utils';
@@ -46,6 +48,9 @@
 	// Debounce search input
 	const debouncedSearch = createDebouncedState(() => searchQuery, 300);
 
+	// On a tenant host every "my" call is scoped to the tenant org (#1056).
+	const orgFilter = $derived(tenantOrgFilter(page.data));
+
 	// Fetch RSVPs with filters
 	const rsvpsQuery = createQuery(() => ({
 		queryKey: [
@@ -53,7 +58,8 @@
 			selectedStatuses,
 			debouncedSearch.value,
 			includePast,
-			currentPage
+			currentPage,
+			orgFilter
 		] as const,
 		queryFn: async () => {
 			if (!accessToken) return { results: [], count: 0 };
@@ -61,6 +67,7 @@
 			const response = await dashboardDashboardRsvps({
 				headers: { Authorization: `Bearer ${accessToken}` },
 				query: {
+					...orgFilter,
 					status: selectedStatuses.length ? selectedStatuses : undefined,
 					search: debouncedSearch.value || undefined,
 					include_past: includePast,
@@ -118,7 +125,7 @@
 </script>
 
 <svelte:head>
-	<title>{m['dashboard.rsvps.title']()} - Revel</title>
+	<title>{m['dashboard.rsvps.title']()} - {brandName(page.data.tenant)}</title>
 	<meta name="description" content={m['dashboard.rsvps.description']()} />
 </svelte:head>
 

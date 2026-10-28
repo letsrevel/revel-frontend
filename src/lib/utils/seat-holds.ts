@@ -18,11 +18,16 @@
 import { eventpublicseatingReleaseSeats } from '$lib/api/generated/sdk.gen';
 import { createClient, createConfig } from '$lib/api/generated/client';
 import { API_BASE_URL } from '$lib/config/api';
+import { applyGuestHoldHeader, clearGuestHoldToken } from '$lib/utils/guest-hold';
 
 /** Bare client: no auth interceptor, so no Bearer injection (see module doc). */
 const anonymousClient = createClient(
 	createConfig({ baseUrl: API_BASE_URL, credentials: 'include' })
 );
+
+// The bare client is anonymous by construction: send the guest-hold header
+// (#1072) so the release works on custom domains where the cookie can't.
+anonymousClient.interceptors.request.use((request) => applyGuestHoldHeader(request, true));
 
 const STORAGE_KEY = 'revel:anon-seat-holds';
 
@@ -78,7 +83,10 @@ export function hasAnonymousHolds(): boolean {
  */
 export async function releaseAnonymousHolds(): Promise<void> {
 	const eventIds = readRecord();
-	if (eventIds.length === 0) return;
+	if (eventIds.length === 0) {
+		clearGuestHoldToken();
+		return;
+	}
 	try {
 		await Promise.allSettled(
 			eventIds.map((eventId) =>
@@ -92,5 +100,7 @@ export async function releaseAnonymousHolds(): Promise<void> {
 		);
 	} finally {
 		writeRecord([]);
+		// The session is being abandoned (sign-in); its token is dead weight.
+		clearGuestHoldToken();
 	}
 }

@@ -7,36 +7,57 @@
 
 	interface Props {
 		settings?: EventVisibilitySettings | null;
-		isOpen: boolean;
-		onToggle: () => void;
+		/** Accordion state; ignored when `bare` (the section is always expanded). */
+		isOpen?: boolean;
+		onToggle?: () => void;
+		/** Render only the body, with no accordion chrome (the event editor shows every section expanded). */
+		bare?: boolean;
 		onChange: (next: ResolvedVisibilityToggles) => void;
 	}
 
-	const { settings = null, isOpen, onToggle, onChange }: Props = $props();
+	const {
+		settings = null,
+		isOpen = false,
+		onToggle = () => {
+			/* noop */
+		},
+		bare = false,
+		onChange
+	}: Props = $props();
 </script>
 
-<div class="overflow-hidden rounded-lg border border-border">
-	<button
-		type="button"
-		onclick={onToggle}
-		class="flex w-full items-center justify-between bg-muted/50 p-4 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-		aria-expanded={isOpen}
-		data-testid="visibility-section-toggle"
-	>
-		<div class="flex items-center gap-2 font-semibold">
-			<Eye class="h-5 w-5" aria-hidden="true" />
-			{m['eventVisibility.title']()}
-		</div>
-		{#if isOpen}
-			<ChevronDown class="h-5 w-5" aria-hidden="true" />
-		{:else}
-			<ChevronRight class="h-5 w-5" aria-hidden="true" />
-		{/if}
-	</button>
+{#snippet body()}
+	<EventVisibilityFields {settings} {onChange} />
+{/snippet}
 
-	{#if isOpen}
-		<div class="p-4">
-			<EventVisibilityFields {settings} {onChange} />
-		</div>
-	{/if}
-</div>
+{#if bare}
+	<div class="space-y-4">
+		{@render body()}
+	</div>
+{:else}
+	<div class="overflow-hidden rounded-lg border border-border">
+		<button
+			type="button"
+			onclick={onToggle}
+			class="flex w-full items-center justify-between bg-muted/50 p-4 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+			aria-expanded={isOpen}
+			data-testid="visibility-section-toggle"
+		>
+			<div class="flex items-center gap-2 font-semibold">
+				<Eye class="h-5 w-5" aria-hidden="true" />
+				{m['eventVisibility.title']()}
+			</div>
+			{#if isOpen}
+				<ChevronDown class="h-5 w-5" aria-hidden="true" />
+			{:else}
+				<ChevronRight class="h-5 w-5" aria-hidden="true" />
+			{/if}
+		</button>
+
+		{#if isOpen}
+			<div class="p-4">
+				{@render body()}
+			</div>
+		{/if}
+	</div>
+{/if}

@@ -27,7 +27,13 @@
  *     safety); never encode meaning by color alone in components.
  */
 @layer base {
-	:root {
+	/* `.theme-light` re-applies the light tokens to a subtree inside dark mode
+	   (the brand-color preview shows both modes at once, #1054). It re-scopes
+	   the custom properties only: a `dark:` utility inside it still resolves
+	   dark while an ancestor carries `.dark`, so keep `dark:` variants out of
+	   anything rendered in the preview panel (Button and Badge have none). */
+	:root,
+	.theme-light {
 		--background: 268 60% 96%; /* whisper lavender paper */
 		--foreground: 173 40% 8%; /* ink */
 		--card: 0 0% 100%;
@@ -113,7 +119,16 @@
 		--poster-amber: 38 94% 59%; /* Amber #F9B233 */
 		--poster-ink: 173 40% 8%; /* Ink #0D1E1C */
 		--poster-paper: 268 44% 95%; /* lavender paper panel */
+		/* The brand film's own backdrop (#26113D, sampled from the render), so the
+		   landing film panel and the video frame read as one surface. */
+		--poster-aubergine: 269 56% 15%;
 		--poster-white: 0 0% 100%;
+		/* The org-scoped page ribbon (org profile, event, series). Same value as
+		   --poster-purple by default and mode-inert like it; an organization's
+		   brand colors (brand-theme.ts, #1053) replace it with the org's LIGHT-mode
+		   primary in both modes, which the backend guarantees is >= 4.5:1 against
+		   white, so the white sticker chip and its kicker stay AA. */
+		--poster-band: 270 70% 55%;
 		/* Poster FLOAT — the landing mocks' depth, promoted to a token so every
 		   surface reads the same shadow and it can flip per mode. This is the
 		   one poster value that is NOT mode-inert: the landing's ink shadow is
@@ -204,6 +219,9 @@
 }
 .cut-lavender {
 	--cut-color: hsl(var(--poster-lavender));
+}
+.cut-aubergine {
+	--cut-color: hsl(var(--poster-aubergine));
 }
 
 @layer base {

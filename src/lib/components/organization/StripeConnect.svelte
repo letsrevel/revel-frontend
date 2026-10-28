@@ -14,12 +14,9 @@
 	} from '@lucide/svelte';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
-	import {
-		organizationadmincoreStripeConnect,
-		organizationadmincoreStripeAccountVerify
-	} from '$lib/api/generated/sdk.gen';
+	import { organizationadmincoreStripeAccountVerify } from '$lib/api/generated/sdk.gen';
 	import StripeConnectModal from './StripeConnectModal.svelte';
-	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
+	import { requestStripeOnboardingLink } from './stripe-connect';
 	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
 	import type { Tone } from '$lib/components/common/tones';
 
@@ -31,6 +28,8 @@
 		stripeAccountEmail: string | null;
 		accessToken: string;
 		billingInfoMissing?: boolean;
+		/** Launchpad URL; offered after the Stripe return while setup is incomplete. */
+		continueSetupHref?: string | null;
 	}
 
 	const {
@@ -40,7 +39,8 @@
 		stripeAccountId,
 		stripeAccountEmail,
 		accessToken,
-		billingInfoMissing = false
+		billingInfoMissing = false,
+		continueSetupHref = null
 	}: Props = $props();
 
 	// Derived: Is Stripe connected (has account ID)
@@ -62,7 +62,7 @@
 			justConnected = true;
 			// Remove the query parameter from URL
 			const cleanUrl = window.location.pathname;
-			window.history.replaceState({}, '', cleanUrl);
+			window.history.replaceState(window.history.state, '', cleanUrl);
 
 			// Auto-verify account after returning from Stripe
 			setTimeout(() => {
@@ -95,25 +95,11 @@
 	// Mutation to get Stripe onboarding link - only create on client
 	const connectMutation = browser
 		? createMutation(() => ({
-				mutationFn: async (email: string) => {
-					const response = await organizationadmincoreStripeConnect({
-						path: { slug: organizationSlug },
-						headers: { Authorization: `Bearer ${accessToken}` },
-						body: { email }
-					});
-
-					if (response.error) {
-						const errorMsg =
-							extractApiErrorDetail(response.error) ?? m['stripeConnect.failedToCreateLink']();
-						throw new Error(errorMsg);
-					}
-
-					if (!response.data) throw new Error(m['stripeConnect.failedToCreateLink']());
-					return response.data;
-				},
-				onSuccess: (data) => {
+				mutationFn: (email: string) =>
+					requestStripeOnboardingLink(organizationSlug, email, accessToken),
+				onSuccess: (onboardingUrl) => {
 					// Redirect to Stripe onboarding
-					window.location.href = data.onboarding_url;
+					window.location.href = onboardingUrl;
 				},
 				onError: (error) => {
 					modalError = error.message;
@@ -256,6 +242,16 @@
 			<div>
 				<p class="font-medium">{m['stripeConnect.welcomeBack']()}</p>
 				<p class="text-sm text-muted-foreground">{m['stripeConnect.verifyingAccount']()}</p>
+				{#if continueSetupHref}
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- href is resolve()d server-side in the settings load -->
+					<a
+						href={continueSetupHref}
+						class="mt-2 inline-flex min-h-11 items-center rounded-md text-sm font-medium text-primary underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					>
+						{m['orgSetup.stripe.continueSetup']()}
+					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
+				{/if}
 			</div>
 		</div>
 	{/if}

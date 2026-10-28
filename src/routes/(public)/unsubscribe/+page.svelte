@@ -12,6 +12,8 @@
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import ToneTile from '$lib/components/common/ToneTile.svelte';
+	import { page } from '$app/state';
+	import { brandName } from '$lib/seo/tenant';
 	import { Button } from '$lib/components/ui/button';
 
 	const { data }: { data: PageData } = $props();
@@ -135,9 +137,15 @@
 						: m['unsubscribePage.successDescription']()}
 			>
 				{#snippet action()}
-					<Button href={resolve('/(public)', {})} variant="outline">
-						{m['unsubscribePage.goHome']()}
-					</Button>
+					{#if data.returnTo}
+						<Button href="{data.returnTo.origin}/" rel="noreferrer">
+							{m['tenantReturn.continueTo']({ name: data.returnTo.name })}
+						</Button>
+					{:else}
+						<Button href={resolve('/(public)', {})} variant="outline">
+							{m['unsubscribePage.goHome']()}
+						</Button>
+					{/if}
 				{/snippet}
 			</EmptyState>
 		</div>
@@ -191,7 +199,7 @@
 		<!-- Unsubscribe form -->
 		<PageHeader
 			title={m['unsubscribePage.title']()}
-			subtitle={m['unsubscribePage.subtitle']()}
+			subtitle={m['unsubscribePage.subtitle']({ brand: brandName(page.data.tenant) })}
 			volume="celebration"
 			class="mb-6"
 		/>

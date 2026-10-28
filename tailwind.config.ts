@@ -102,7 +102,9 @@ export default {
 					amber: 'hsl(var(--poster-amber) / <alpha-value>)',
 					ink: 'hsl(var(--poster-ink) / <alpha-value>)',
 					paper: 'hsl(var(--poster-paper) / <alpha-value>)',
-					white: 'hsl(var(--poster-white) / <alpha-value>)'
+					aubergine: 'hsl(var(--poster-aubergine) / <alpha-value>)',
+					white: 'hsl(var(--poster-white) / <alpha-value>)',
+					band: 'hsl(var(--poster-band) / <alpha-value>)'
 				}
 			},
 			// `text-destructive` is destructive-as-TEXT, which owes WCAG 4.5:1 —

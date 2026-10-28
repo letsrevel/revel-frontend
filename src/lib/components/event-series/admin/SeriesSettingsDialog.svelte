@@ -5,11 +5,12 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
-	import { Textarea } from '$lib/components/ui/textarea';
-	import { Badge } from '$lib/components/ui/badge';
 	import ImageUploader from '$lib/components/forms/ImageUploader.svelte';
+	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
+	import DetailsStepTagsInput from '$lib/components/events/admin/DetailsStepTagsInput.svelte';
 	import { COVER_ASPECT_RATIO, LOGO_ASPECT_RATIO } from '$lib/utils/image-crop';
-	import { Loader2, Settings as SettingsIcon, Tag as TagIcon, Trash2 } from '@lucide/svelte';
+	import { getImageUrl } from '$lib/utils/url';
+	import { Loader2, Settings as SettingsIcon } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import {
 		eventseriesGetEventSeries,
@@ -45,7 +46,11 @@
 	// life but the analyser doesn't know that).
 	let name = $state('');
 	let description = $state('');
-	let newTag = $state('');
+	// Tag draft + autocomplete state, bound into the shared event tag input.
+	let tagInput = $state('');
+	let tagSuggestions = $state<string[]>([]);
+	let showSuggestions = $state(false);
+	let selectedSuggestionIndex = $state(-1);
 	let updateError = $state<string | null>(null);
 	let addTagError = $state<string | null>(null);
 
@@ -55,7 +60,10 @@
 		if (open) {
 			name = series.name;
 			description = series.description ?? '';
-			newTag = '';
+			tagInput = '';
+			tagSuggestions = [];
+			showSuggestions = false;
+			selectedSuggestionIndex = -1;
 			updateError = null;
 			addTagError = null;
 		}
@@ -80,8 +88,9 @@
 	}));
 
 	const publicSeries = $derived(publicSeriesQuery.data);
-	const logoUrl = $derived(publicSeries?.logo ?? null);
-	const coverArtUrl = $derived(publicSeries?.cover_art ?? null);
+	// Media fields are backend-relative paths; resolve them like every other preview.
+	const logoUrl = $derived(getImageUrl(publicSeries?.logo) ?? null);
+	const coverArtUrl = $derived(getImageUrl(publicSeries?.cover_art) ?? null);
 	const tags = $derived(publicSeries?.tags ?? []);
 
 	// --- Mutations ---
@@ -200,7 +209,6 @@
 			return response.data;
 		},
 		onSuccess: async () => {
-			newTag = '';
 			addTagError = null;
 			await invalidateSeries(queryClient, organizationSlug, series.id);
 		},
@@ -275,15 +283,16 @@
 		deleteCoverMutation.mutate();
 	}
 
-	function handleAddTag(): void {
-		const trimmed = newTag.trim();
-		if (!trimmed) return;
-		addTagError = null;
-		addTagMutation.mutate(trimmed);
-	}
-
-	function handleRemoveTag(tag: string): void {
-		removeTagMutation.mutate(tag);
+	// The shared tag input reports the full next list; series tags are
+	// persisted one add/remove call at a time, so diff against server state.
+	function handleTagsUpdate({ tags: next }: { tags: string[] }): void {
+		for (const tag of next.filter((t) => !tags.includes(t))) {
+			addTagError = null;
+			addTagMutation.mutate(tag);
+		}
+		for (const tag of tags.filter((t) => !next.includes(t))) {
+			removeTagMutation.mutate(tag);
+		}
 	}
 
 	function handleClose(): void {
@@ -332,19 +341,14 @@
 						/>
 					</div>
 
-					<div class="space-y-2">
-						<Label for="series-settings-description">
-							{m['eventSeriesEditPage.basicDetails.descriptionLabel']()}
-						</Label>
-						<Textarea
-							id="series-settings-description"
-							bind:value={description}
-							placeholder={m['eventSeriesEditPage.basicDetails.descriptionPlaceholder']()}
-							rows={4}
-							disabled={updateDetailsMutation.isPending}
-							data-testid="series-settings-description"
-						/>
-					</div>
+					<MarkdownEditor
+						bind:value={description}
+						id="series-settings-description"
+						label={m['eventSeriesEditPage.basicDetails.descriptionLabel']()}
+						placeholder={m['eventSeriesEditPage.basicDetails.descriptionPlaceholder']()}
+						rows={8}
+						disabled={updateDetailsMutation.isPending}
+					/>
 
 					{#if updateError}
 						<div
@@ -453,64 +457,17 @@
 
 			<!-- Tags -->
 			<section class="space-y-3 border-t border-border pt-6">
-				<div>
-					<h3 class="text-sm font-semibold">{m['eventSeriesEditPage.tags.title']()}</h3>
-					<p class="mt-1 text-xs text-muted-foreground">
-						{m['eventSeriesEditPage.tags.description']()}
-					</p>
-				</div>
-
-				{#if tags.length > 0}
-					<div class="flex flex-wrap gap-2" data-testid="series-settings-tags">
-						{#each tags as tag (tag)}
-							<Badge variant="secondary" class="gap-2">
-								<TagIcon class="h-3 w-3" aria-hidden="true" />
-								<span>{tag}</span>
-								<button
-									type="button"
-									onclick={() => handleRemoveTag(tag)}
-									disabled={removeTagMutation.isPending}
-									class="ml-1 rounded-sm hover:bg-destructive hover:text-destructive-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50"
-									aria-label={m['eventSeriesEditPage.tags.removeAriaLabel']({ tag })}
-								>
-									<Trash2 class="h-3 w-3" aria-hidden="true" />
-								</button>
-							</Badge>
-						{/each}
-					</div>
-				{:else}
-					<p class="text-sm text-muted-foreground">
-						{m['eventSeriesEditPage.tags.empty']()}
-					</p>
-				{/if}
-
-				<div class="flex gap-2">
-					<Input
-						type="text"
-						bind:value={newTag}
-						placeholder={m['eventSeriesEditPage.tags.placeholder']()}
-						disabled={addTagMutation.isPending}
-						data-testid="series-settings-tag-input"
-						onkeydown={(e: KeyboardEvent) => {
-							if (e.key === 'Enter') {
-								e.preventDefault();
-								handleAddTag();
-							}
-						}}
-					/>
-					<Button
-						type="button"
-						onclick={handleAddTag}
-						disabled={!newTag.trim() || addTagMutation.isPending}
-						data-testid="series-settings-add-tag"
-					>
-						{#if addTagMutation.isPending}
-							<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-						{:else}
-							{m['eventSeriesEditPage.tags.addButton']()}
-						{/if}
-					</Button>
-				</div>
+				<DetailsStepTagsInput
+					{tags}
+					bind:tagInput
+					bind:tagSuggestions
+					bind:showSuggestions
+					bind:selectedSuggestionIndex
+					onUpdate={handleTagsUpdate}
+				/>
+				<p class="text-xs text-muted-foreground">
+					{m['eventSeriesEditPage.tags.description']()}
+				</p>
 
 				{#if addTagError}
 					<div

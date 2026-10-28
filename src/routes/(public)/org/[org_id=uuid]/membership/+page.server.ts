@@ -1,6 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import { organizationGetOrganizationById } from '$lib/api';
 import { log } from '$lib/server/logger';
+import { tenantReturnUrl } from '$lib/server/tenant-canonical';
 import type { PageServerLoad } from './$types';
 
 /**
@@ -10,8 +11,16 @@ import type { PageServerLoad } from './$types';
  * string forwarded verbatim (membership_success/membership_cancelled). Any
  * failure — including the 410 the by-id endpoint shares with the token
  * route — sends the visitor to `/`, never an error page after a payment.
+ *
+ * First step, tenant mode on: an org with a custom domain 303s to the same
+ * path on that domain (the buyer's session cookies are host-only), where this
+ * load runs again and does the slug redirect.
  */
 export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
+	// Custom-domain org: continue on its domain, where the buyer's session lives.
+	const tenantHop = await tenantReturnUrl(locals, params.org_id, url, fetch);
+	if (tenantHop) redirect(303, tenantHop);
+
 	const headers: HeadersInit = {};
 	if (locals.user?.accessToken) {
 		headers['Authorization'] = `Bearer ${locals.user.accessToken}`;

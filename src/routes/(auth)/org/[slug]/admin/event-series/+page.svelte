@@ -11,6 +11,7 @@
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import ToneTile from '$lib/components/common/ToneTile.svelte';
+	import { stripMarkup } from '$lib/seo';
 
 	const { data }: { data: PageData } = $props();
 
@@ -117,6 +118,7 @@
 		<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 			{#each data.series as series (series.id)}
 				{@const isRecurring = series.is_recurring ?? false}
+				{@const descriptionText = stripMarkup(series.description)}
 				{@const typeLabel = isRecurring
 					? m['recurringEvents.newSeriesPicker.recurring.title']()
 					: m['recurringEvents.newSeriesPicker.empty.title']()}
@@ -161,9 +163,9 @@
 						</div>
 
 						<!-- Description -->
-						{#if series.description}
+						{#if descriptionText}
 							<p class="line-clamp-2 text-sm text-muted-foreground">
-								{series.description}
+								{descriptionText}
 							</p>
 						{/if}
 

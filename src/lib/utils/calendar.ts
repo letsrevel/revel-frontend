@@ -325,3 +325,32 @@ export function buildCalendarParams(
 	params.set('week', String(week));
 	return params;
 }
+
+/**
+ * Parts for a big "date slab" (weekday, day number, textual month) in the active
+ * UI locale, rendered in the event's own timezone when given.
+ */
+export function getDateSlabParts(
+	dateString: string,
+	timeZone?: string
+): { weekday: string; day: string; month: string } {
+	const date = new Date(dateString);
+	const locale = getDateLocale();
+	const part = (options: Intl.DateTimeFormatOptions): string =>
+		new Intl.DateTimeFormat(locale, { ...options, timeZone }).format(date);
+	return {
+		weekday: part({ weekday: 'short' }),
+		day: part({ day: 'numeric' }),
+		month: part({ month: 'long' })
+	};
+}
+
+/** Compact agenda date with a textual month, e.g. "Fri, Oct 31". */
+export function formatAgendaDate(dateString: string, timeZone?: string): string {
+	return new Intl.DateTimeFormat(getDateLocale(), {
+		weekday: 'short',
+		day: 'numeric',
+		month: 'short',
+		timeZone
+	}).format(new Date(dateString));
+}

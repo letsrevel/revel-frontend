@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { brandName } from '$lib/seo/tenant';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import {
@@ -16,6 +17,7 @@
 	import type { HeldSeriesPassSchema } from '$lib/api/generated/types.gen';
 	import { Ticket, Filter, ChevronLeft, ChevronRight, Loader2 } from '@lucide/svelte';
 	import { page } from '$app/state';
+	import { tenantOrgFilter } from '$lib/utils/tenant-filter';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { createDebouncedState } from '$lib/utils';
@@ -50,6 +52,9 @@
 	// Debounce search input
 	const debouncedSearch = createDebouncedState(() => searchQuery, 300);
 
+	// On a tenant host every "my" call is scoped to the tenant org (#1056).
+	const orgFilter = $derived(tenantOrgFilter(page.data));
+
 	// Fetch tickets with filters
 	const ticketsQuery = createQuery(() => ({
 		queryKey: [
@@ -58,7 +63,8 @@
 			paymentMethodFilter,
 			debouncedSearch.value,
 			includePast,
-			currentPage
+			currentPage,
+			orgFilter
 		] as const,
 		queryFn: async () => {
 			if (!accessToken) return { results: [], count: 0 };
@@ -66,6 +72,7 @@
 			const response = await dashboardDashboardTickets({
 				headers: { Authorization: `Bearer ${accessToken}` },
 				query: {
+					...orgFilter,
 					status: statusFilter,
 					tier__payment_method: paymentMethodFilter || undefined,
 					search: debouncedSearch.value || undefined,
@@ -84,11 +91,11 @@
 	// Best-effort: if this query is loading or fails, the plain ticket cards
 	// render instead (see groupTicketsWithPasses).
 	const myPassesQuery = createQuery(() => ({
-		queryKey: seriesPassQueryKeys.mineAll,
+		queryKey: seriesPassQueryKeys.mineAll(orgFilter),
 		queryFn: async () => {
 			const response = await seriespassListMySeriesPasses({
 				headers: { Authorization: `Bearer ${accessToken}` },
-				query: { page: 1, page_size: 100 }
+				query: { ...orgFilter, page: 1, page_size: 100 }
 			});
 			if (response.error || !response.data) {
 				throw new Error('Failed to load passes');
@@ -147,7 +154,7 @@
 </script>
 
 <svelte:head>
-	<title>{m['dashboard.tickets.title']()} - Revel</title>
+	<title>{m['dashboard.tickets.title']()} - {brandName(page.data.tenant)}</title>
 	<meta name="description" content={m['dashboard.tickets.description']()} />
 </svelte:head>
 
