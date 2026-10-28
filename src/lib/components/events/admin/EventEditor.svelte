@@ -33,6 +33,10 @@
 		scheduleRowsValid,
 		type ScheduleRow
 	} from './schedule-rows';
+	import { billingNeedsAttention } from '$lib/utils/org-setup-progress';
+	// Admin routes supply the admin org schema at runtime (billing fields included);
+	// the prop is typed as the public one. Missing fields read as no attention needed.
+	type BillingOrg = Parameters<typeof billingNeedsAttention>[0];
 	import TicketingStep from './TicketingStep.svelte';
 	import { platformFeeInfoFrom } from '$lib/utils/fees';
 	import SaveBar from './SaveBar.svelte';
@@ -618,6 +622,8 @@
 			{eventId}
 			organizationSlug={organization.slug}
 			organizationStripeConnected={organization.is_stripe_connected}
+			billingNeedsAttention={billingNeedsAttention(organization as unknown as BillingOrg)}
+			stripeEmail={organization.contact_email ?? ''}
 			platformFees={platformFeeInfoFrom(organization)}
 			{formData}
 			venueCapacity={selectedVenue?.capacity ?? null}

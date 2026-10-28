@@ -47,6 +47,10 @@
 		eventId: string;
 		organizationSlug: string;
 		organizationStripeConnected: boolean;
+		/** Connected, but billing details are missing (see billingNeedsAttention). */
+		billingNeedsAttention?: boolean;
+		/** Prefill for the Stripe onboarding email. */
+		stripeEmail?: string;
 		/** Org platform-fee terms for the tier net-payout preview (null hides it). */
 		platformFees?: PlatformFeeInfo | null;
 		formData: EventFormData;
@@ -63,6 +67,8 @@
 		eventId,
 		organizationSlug,
 		organizationStripeConnected,
+		billingNeedsAttention = false,
+		stripeEmail = '',
 		platformFees = null,
 		formData,
 		onUpdate,
@@ -456,6 +462,8 @@
 		{eventId}
 		{organizationSlug}
 		{organizationStripeConnected}
+		{billingNeedsAttention}
+		{stripeEmail}
 		{platformFees}
 		{membershipTiers}
 		eventVenueId={formData.venue_id || null}

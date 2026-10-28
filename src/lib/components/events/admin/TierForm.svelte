@@ -60,6 +60,10 @@
 		eventId: string;
 		organizationSlug: string;
 		organizationStripeConnected: boolean;
+		/** Connected, but billing details are missing (see billingNeedsAttention). */
+		billingNeedsAttention?: boolean;
+		/** Prefill for the Stripe onboarding email. */
+		stripeEmail?: string;
 		/** Org platform-fee terms for the net-payout preview (null hides it). */
 		platformFees?: PlatformFeeInfo | null;
 		membershipTiers?: MembershipTierSchema[];
@@ -77,6 +81,8 @@
 		eventId,
 		organizationSlug,
 		organizationStripeConnected,
+		billingNeedsAttention = false,
+		stripeEmail = '',
 		platformFees = null,
 		membershipTiers = [],
 		eventVenueId = null,
@@ -522,6 +528,10 @@
 				bind:paymentMethod
 				{isPending}
 				{organizationStripeConnected}
+				{billingNeedsAttention}
+				{organizationSlug}
+				{eventId}
+				{stripeEmail}
 				compliance={rules.compliance}
 				complianceStatus={rules.status}
 				onRetryCompliance={rules.onRetry}

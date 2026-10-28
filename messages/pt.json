@@ -10607,5 +10607,7 @@
 	"eventEditor.publishCard.shareTelegram": "Partilhar no Telegram",
 	"eventEditor.publishCard.shareEmail": "Partilhar por e-mail",
 	"eventEditor.publishCard.dismiss": "Fechar",
-	"eventEditor.publishCard.shareHeading": "Partilhar"
+	"tierForm.stripeGate.title": "Os pagamentos online precisam do Stripe",
+	"tierForm.stripeGate.body": "Liga uma conta Stripe para o dinheiro dos bilhetes chegar ao teu banco. Depois voltas a este evento.",
+	"tierForm.stripeGate.atTheDoor": "Receber à porta em vez disso"
 }

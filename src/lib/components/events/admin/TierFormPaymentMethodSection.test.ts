@@ -72,3 +72,56 @@ describe('TierFormPaymentMethodSection — country rules', () => {
 		expect(onRetryCompliance).toHaveBeenCalledOnce();
 	});
 });
+
+describe('TierFormPaymentMethodSection - Stripe gate', () => {
+	const connectProps = { organizationSlug: 'acme', eventId: 'e1' };
+
+	it('keeps Online selectable when the org is not connected', () => {
+		const select = renderSection({ organizationStripeConnected: false, ...connectProps });
+		expect(onlineOption(select).disabled).toBe(false);
+		expect(onlineOption(select).textContent).not.toMatch(/not connected/i);
+	});
+
+	it('not connected + online: shows the Stripe callout, not before', async () => {
+		const user = userEvent.setup();
+		const select = renderSection({ organizationStripeConnected: false, ...connectProps });
+		expect(screen.queryByTestId('tier-stripe-gate')).toBeNull();
+		await user.selectOptions(select, 'online');
+		expect(screen.getByTestId('tier-stripe-gate')).toHaveTextContent('Online payments need Stripe');
+		expect(screen.getByRole('button', { name: 'Connect Stripe' })).toBeTruthy();
+	});
+
+	it('"Take payment at the door instead" switches the method', async () => {
+		const user = userEvent.setup();
+		const select = renderSection({
+			organizationStripeConnected: false,
+			paymentMethod: 'online',
+			...connectProps
+		});
+		await user.click(screen.getByRole('button', { name: 'Take payment at the door instead' }));
+		expect(select.value).toBe('at_the_door');
+		expect(screen.queryByTestId('tier-stripe-gate')).toBeNull();
+	});
+
+	it('connected but billing incomplete: billing callout with a link', () => {
+		renderSection({
+			organizationStripeConnected: true,
+			billingNeedsAttention: true,
+			paymentMethod: 'online',
+			...connectProps
+		});
+		expect(screen.queryByTestId('tier-stripe-gate')).toBeNull();
+		const gate = screen.getByTestId('tier-billing-gate');
+		expect(gate).toHaveTextContent('Add tax details for online payments');
+		expect(screen.getByRole('link', { name: 'Add tax details' })).toHaveAttribute(
+			'href',
+			'/org/acme/admin/billing'
+		);
+	});
+
+	it('connected and ready: no callout', () => {
+		renderSection({ organizationStripeConnected: true, paymentMethod: 'online', ...connectProps });
+		expect(screen.queryByTestId('tier-stripe-gate')).toBeNull();
+		expect(screen.queryByTestId('tier-billing-gate')).toBeNull();
+	});
+});

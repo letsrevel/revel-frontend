@@ -31,6 +31,14 @@
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import { Button } from '$lib/components/ui/button';
+	import { onMount } from 'svelte';
+	import { invalidateAll } from '$app/navigation';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
+	import { organizationadmincoreStripeAccountVerify } from '$lib/api/generated/sdk.gen';
+	import StripeReturnNotice, {
+		type StripeNotice
+	} from '$lib/components/org-setup/StripeReturnNotice.svelte';
+	import EventStripeConnect from '$lib/components/events/admin/editor/EventStripeConnect.svelte';
 	import PublishShareCard from '$lib/components/events/admin/editor/PublishShareCard.svelte';
 	import { orgHref, rootRelative } from '$lib/utils/org-links';
 	import type { Tone } from '$lib/components/common/tones';
@@ -74,6 +82,46 @@
 						? m['eventEditPage.statusCancelled']()
 						: currentStatus
 	);
+
+	// Stripe returns the owner here (ticketing tab) with ?stripe_success=true, or
+	// ?stripe_refresh=true when the onboarding link expired. Same handling as the
+	// /welcome page; tab=ticketing and any other params are kept.
+	let stripeNotice = $state<StripeNotice | null>(null);
+	let showStripeModal = $state(false);
+
+	onMount(() => {
+		const params = new SvelteURLSearchParams(window.location.search);
+		const success = params.get('stripe_success') === 'true';
+		const refresh = params.get('stripe_refresh') === 'true';
+		if (!success && !refresh) return;
+		params.delete('stripe_success');
+		params.delete('stripe_refresh');
+		const query = params.toString();
+		window.history.replaceState(
+			window.history.state,
+			'',
+			window.location.pathname + (query ? `?${query}` : '')
+		);
+
+		if (refresh) {
+			stripeNotice = 'expired';
+			return;
+		}
+		void (async () => {
+			let chargesEnabled: boolean;
+			try {
+				const res = await organizationadmincoreStripeAccountVerify({
+					path: { slug: organization.slug },
+					headers: { Authorization: `Bearer ${accessToken ?? ''}` }
+				});
+				chargesEnabled = !res.error && !!res.data?.charges_enabled;
+			} catch {
+				chargesEnabled = false;
+			}
+			await invalidateAll();
+			stripeNotice = chargesEnabled ? 'connected' : 'needsDetails';
+		})();
+	});
 
 	// Update event status mutation
 	const updateStatusMutation = createMutation(() => ({
@@ -397,6 +445,20 @@
 			</Tooltip.Provider>
 		{/snippet}
 	</PageHeader>
+
+	{#if stripeNotice}
+		<StripeReturnNotice
+			notice={stripeNotice}
+			onContinue={() => (showStripeModal = true)}
+			onDismiss={() => (stripeNotice = null)}
+		/>
+	{/if}
+	<EventStripeConnect
+		bind:show={showStripeModal}
+		orgSlug={organization.slug}
+		eventId={event.id}
+		defaultEmail={organization.contact_email ?? ''}
+	/>
 
 	<PublishShareCard
 		status={currentStatus}

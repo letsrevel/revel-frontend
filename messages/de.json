@@ -10607,5 +10607,7 @@
 	"eventEditor.publishCard.shareTelegram": "Auf Telegram teilen",
 	"eventEditor.publishCard.shareEmail": "Per E-Mail teilen",
 	"eventEditor.publishCard.dismiss": "Schließen",
-	"eventEditor.publishCard.shareHeading": "Teilen"
+	"tierForm.stripeGate.title": "Online-Zahlungen brauchen Stripe",
+	"tierForm.stripeGate.body": "Verbinde ein Stripe-Konto, damit das Ticketgeld auf deinem Bankkonto landet. Danach kehrst du zu diesem Event zurück.",
+	"tierForm.stripeGate.atTheDoor": "Stattdessen an der Tür kassieren"
 }

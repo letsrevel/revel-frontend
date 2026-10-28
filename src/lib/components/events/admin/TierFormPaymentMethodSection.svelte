@@ -3,6 +3,8 @@
 	import type { EventComplianceSchema } from '$lib/api/generated/types.gen';
 	import { Label } from '$lib/components/ui/label';
 	import { Button } from '$lib/components/ui/button';
+	import { resolve } from '$app/paths';
+	import EventStripeConnect from './editor/EventStripeConnect.svelte';
 	import ComplianceCallout from '$lib/components/compliance/ComplianceCallout.svelte';
 	import ComplianceNotices from '$lib/components/compliance/ComplianceNotices.svelte';
 	import {
@@ -17,6 +19,12 @@
 		paymentMethod: PaymentMethod;
 		isPending: boolean;
 		organizationStripeConnected: boolean;
+		/** Connected, but the org still lacks the billing identity online sales need. */
+		billingNeedsAttention?: boolean;
+		/** Needed to start Stripe onboarding from here (return_to 'event'). */
+		organizationSlug?: string;
+		eventId?: string;
+		stripeEmail?: string;
 		/**
 		 * The event's `compliance` (#1001), never the org's: it accounts for where
 		 * the event is held, so it matches the 422 the API would answer.
@@ -34,6 +42,10 @@
 		paymentMethod = $bindable(),
 		isPending,
 		organizationStripeConnected,
+		billingNeedsAttention = false,
+		organizationSlug = '',
+		eventId = '',
+		stripeEmail = '',
 		compliance = null,
 		complianceStatus = 'ready',
 		onRetryCompliance
@@ -44,6 +56,13 @@
 	const onlineUnavailable = $derived(onlineBlocked || rulesUnknown);
 	const salesNotices = $derived(noticesFor(compliance?.notices, 'ticket_sales'));
 	const offlineNotices = $derived(noticesFor(compliance?.notices, 'offline_payment'));
+
+	let showStripeModal = $state(false);
+	const showStripeGate = $derived(paymentMethod === 'online' && !onlineUnavailable);
+	const canConnect = $derived(!!organizationSlug && !!eventId);
+	const billingHref = $derived(
+		organizationSlug ? resolve('/(auth)/org/[slug]/admin/billing', { slug: organizationSlug }) : '#'
+	);
 </script>
 
 <div class="space-y-2">
@@ -61,12 +80,10 @@
 			<option value="free">{m['tierForm.free']()}</option>
 			<option value="offline">{m['tierForm.offline']()}</option>
 			<option value="at_the_door">{m['tierForm.atTheDoor']()}</option>
-			<option value="online" disabled={!organizationStripeConnected || onlineUnavailable}>
+			<option value="online" disabled={onlineUnavailable}>
 				{m['tierForm.onlineStripe']()}
 				{#if onlineUnavailable}
 					{m['compliance.tier.onlineUnavailableSuffix']()}
-				{:else if !organizationStripeConnected}
-					{m['tierForm.notConnectedSuffix']()}
 				{/if}
 			</option>
 		</select>
@@ -100,6 +117,65 @@
 		<ComplianceCallout id="tier-online-blocked" tone="blocked" testId="tier-online-blocked">
 			<p>{onlinePaymentBlockedText(compliance?.venue_country ?? '')}</p>
 		</ComplianceCallout>
+	{/if}
+
+	{#if showStripeGate && !organizationStripeConnected}
+		<div
+			role="group"
+			aria-labelledby="tier-stripe-gate-title"
+			data-testid="tier-stripe-gate"
+			class="space-y-3 rounded-xl border border-highlight/40 bg-highlight/20 p-4 text-sm"
+		>
+			<p id="tier-stripe-gate-title" class="font-bold text-foreground">
+				{m['tierForm.stripeGate.title']()}
+			</p>
+			<p class="text-muted-foreground">{m['tierForm.stripeGate.body']()}</p>
+			<div class="flex flex-col gap-2 sm:flex-row">
+				{#if canConnect}
+					<Button
+						type="button"
+						class="min-h-[44px]"
+						disabled={isPending}
+						onclick={() => (showStripeModal = true)}
+					>
+						{m['orgSetup.stripe.cta']()}
+					</Button>
+				{/if}
+				<Button
+					type="button"
+					variant="outline"
+					class="min-h-[44px]"
+					disabled={isPending}
+					onclick={() => (paymentMethod = 'at_the_door')}
+				>
+					{m['tierForm.stripeGate.atTheDoor']()}
+				</Button>
+			</div>
+		</div>
+	{:else if showStripeGate && billingNeedsAttention}
+		<div
+			role="group"
+			aria-labelledby="tier-billing-gate-title"
+			data-testid="tier-billing-gate"
+			class="space-y-3 rounded-xl border border-highlight/40 bg-highlight/20 p-4 text-sm"
+		>
+			<p id="tier-billing-gate-title" class="font-bold text-foreground">
+				{m['orgSetup.stripe.billingTitle']()}
+			</p>
+			<p class="text-muted-foreground">{m['orgSetup.stripe.billingBody']()}</p>
+			<Button href={billingHref} class="min-h-[44px]">
+				{m['orgSetup.stripe.billingCta']()}
+			</Button>
+		</div>
+	{/if}
+
+	{#if canConnect}
+		<EventStripeConnect
+			bind:show={showStripeModal}
+			orgSlug={organizationSlug}
+			{eventId}
+			defaultEmail={stripeEmail}
+		/>
 	{/if}
 
 	<!-- Offline / at-the-door rules (e.g. AT Registrierkasse): shown whatever the
