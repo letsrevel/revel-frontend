@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.28.0] - 2026-10-28
+
+### Added
+- **Publish and share prompt in the event editor**: drafts show "Saved. Ready to go live?" with a Publish button and a preview link. Right after publishing, the editor offers the event link to copy plus WhatsApp, Telegram and email share links.
+- **Connect Stripe from the paid-tier form**: choosing "Online (Stripe)" no longer hits a dead end.
+  - Owners can connect Stripe from the form and come back to the event's Ticketing tab with the tier they were building restored. They can also switch to taking payment at the door.
+  - If Stripe is connected but tax details are missing, the form links to billing.
+  - Staff are asked to contact the organization owner.
+
+### Changed
+- The Stripe connect dialog is easier to use with a keyboard and screen reader. Focus moves into it, stays inside it and returns afterwards. Escape closes it, and the close button is larger.
+- Hiding the setup card on the admin dashboard is remembered without the card flashing on page load, and the hidden notice goes away once your first event is published.
+- The footer cookie notice now reads "We only use technical cookies. No tracking or analytics."
+
 ## [2.27.0] - 2026-10-27
 
 ### Added
