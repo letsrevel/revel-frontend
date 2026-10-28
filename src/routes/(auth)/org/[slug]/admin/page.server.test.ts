@@ -21,9 +21,10 @@ type Result = Awaited<ReturnType<typeof load>>;
 
 const ev = (id: string) => ({ id });
 
-function run(isOwner = true): Promise<Result> {
+function run(isOwner = true, cookie?: string): Promise<Result> {
 	const event = {
 		fetch: vi.fn(),
+		cookies: { get: (name: string) => (name === 'revel_setup_hidden_org-id' ? cookie : undefined) },
 		params: { slug: 'org' },
 		locals: { user: { accessToken: 'tok' } },
 		parent: async () => ({ isOwner, organization: { id: 'org-id', slug: 'org' } })
@@ -120,5 +121,26 @@ describe('admin dashboard loader', () => {
 		const res = await run(false);
 		expect(res.setupCounts).toBeNull();
 		expect(setupCountsMock).not.toHaveBeenCalled();
+	});
+
+	it('hidden cookie skips setup counts and flags setupHidden', async () => {
+		mockEvents({ live: { results: [] }, upcoming: { results: [] }, drafts: { count: 0 } });
+		const res = await run(true, '1');
+		expect(setupCountsMock).not.toHaveBeenCalled();
+		expect(res.setupCounts).toBeNull();
+		expect(res.setupHidden).toBe(true);
+	});
+
+	it('absent cookie loads counts and setupHidden is false', async () => {
+		mockEvents({ live: { results: [] }, upcoming: { results: [] }, drafts: { count: 0 } });
+		const res = await run(true);
+		expect(res.setupHidden).toBe(false);
+		expect(res.setupCounts).toEqual(COUNTS);
+	});
+
+	it('ignores the hidden cookie for staff', async () => {
+		mockEvents({ live: { results: [] }, upcoming: { results: [] }, drafts: { count: 0 } });
+		const res = await run(false, '1');
+		expect(res.setupHidden).toBe(false);
 	});
 });

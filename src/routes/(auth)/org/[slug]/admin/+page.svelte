@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
@@ -38,7 +39,7 @@
 
 	// Mirrors the card's collapsed state (bound below) so the page can restore
 	// the empty next-event panel when the user hides the card.
-	let setupCardHidden = $state(false);
+	let setupCardHidden = $state(untrack(() => data.setupHidden));
 	// The card's "create your first event" box already carries that CTA.
 	const setupCardCoversEmptyPanel = $derived(
 		setupProgress !== null &&
@@ -99,7 +100,7 @@
 	{/snippet}
 	<PageHeader title={m['orgAdmin.nav.dashboard']()} volume="studio" actions={headerActions} />
 
-	{#if setupProgress}
+	{#if setupProgress || data.setupHidden}
 		<SetupCard
 			orgId={organization.id}
 			orgSlug={organization.slug}

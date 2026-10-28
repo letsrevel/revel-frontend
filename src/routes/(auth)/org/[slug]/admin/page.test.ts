@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/svelte';
 import { userEvent } from '@testing-library/user-event';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
 import { readable } from 'svelte/store';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
@@ -45,7 +45,8 @@ function setup(setupCounts: unknown) {
 					dashboardEvents: [],
 					draftCount: 0,
 					pendingRequestCount: 0,
-					setupCounts
+					setupCounts,
+					setupHidden: false
 				}
 			}
 		}
@@ -56,8 +57,6 @@ const createButtons = () => screen.queryAllByRole('button', { name: /Create Even
 const nextUp = () => document.querySelector('section[aria-label="Next event"]');
 
 describe('org admin dashboard: setup card vs empty next-event panel', () => {
-	beforeEach(() => localStorage.clear());
-
 	it('omits the empty NextEventPanel while the setup card shows with no event', () => {
 		setup({ eventCount: 0, publishedCount: 0, latestDraft: null });
 		expect(screen.getByTestId('org-setup-card')).toBeTruthy();
