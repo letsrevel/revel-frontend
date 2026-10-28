@@ -10595,5 +10595,17 @@
 	"orgSetup.steps.published": "Primeiro evento publicado",
 	"orgSetup.steps.stripe": "Pagamentos online ativos",
 	"orgSetup.steps.done": "Concluído",
-	"orgSetup.steps.toDo": "Por fazer"
+	"orgSetup.steps.toDo": "Por fazer",
+	"eventEditor.publishCard.draftTitle": "Guardado. Pronto para publicar?",
+	"eventEditor.publishCard.draftBody": "Só tu e a tua equipa podem ver os rascunhos. Ao publicar, o evento aparece na tua página com uma ligação para partilhar. Poderás continuar a editá-lo depois.",
+	"eventEditor.publishCard.publish": "Publicar evento",
+	"eventEditor.publishCard.preview": "Pré-visualização",
+	"eventEditor.publishCard.liveTitle": "Já está online. Agora é divulgar.",
+	"eventEditor.publishCard.liveBody": "Partilha a ligação onde está a tua comunidade.",
+	"eventEditor.publishCard.linkLabel": "Ligação do evento",
+	"eventEditor.publishCard.shareWhatsapp": "Partilhar no WhatsApp",
+	"eventEditor.publishCard.shareTelegram": "Partilhar no Telegram",
+	"eventEditor.publishCard.shareEmail": "Partilhar por e-mail",
+	"eventEditor.publishCard.dismiss": "Fechar",
+	"eventEditor.publishCard.shareHeading": "Partilhar"
 }

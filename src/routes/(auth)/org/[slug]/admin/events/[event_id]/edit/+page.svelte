@@ -31,6 +31,8 @@
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import { Button } from '$lib/components/ui/button';
+	import PublishShareCard from '$lib/components/events/admin/editor/PublishShareCard.svelte';
+	import { orgHref, rootRelative } from '$lib/utils/org-links';
 	import type { Tone } from '$lib/components/common/tones';
 
 	const { data }: { data: PageData } = $props();
@@ -143,6 +145,21 @@
 			updateStatusMutation.mutate('open');
 		}
 	}
+
+	// Public event page: relative href for the preview link, absolute URL to share.
+	const publicHref = $derived(
+		orgHref(
+			organization,
+			resolve('/(public)/events/[org_slug]/[event_slug]', {
+				org_slug: organization.slug,
+				event_slug: event.slug
+			}),
+			$page.data
+		)
+	);
+	const publicUrl = $derived(
+		/^https?:\/\//i.test(publicHref) ? publicHref : `${$page.url.origin}${rootRelative(publicHref)}`
+	);
 
 	/**
 	 * Close event (open → closed)
@@ -380,6 +397,15 @@
 			</Tooltip.Provider>
 		{/snippet}
 	</PageHeader>
+
+	<PublishShareCard
+		status={currentStatus}
+		eventName={event.name}
+		eventUrl={publicUrl}
+		previewHref={publicHref}
+		onPublish={publishEvent}
+		publishing={updateStatusMutation.isPending}
+	/>
 
 	<!-- Event Editor Component. Keyed by event id: EventEditor snapshots
 	     existingEvent (incl. the id it saves to) into $state once, so a

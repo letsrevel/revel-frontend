@@ -10595,5 +10595,17 @@
 	"orgSetup.steps.published": "Premier événement publié",
 	"orgSetup.steps.stripe": "Paiements en ligne activés",
 	"orgSetup.steps.done": "Fait",
-	"orgSetup.steps.toDo": "À faire"
+	"orgSetup.steps.toDo": "À faire",
+	"eventEditor.publishCard.draftTitle": "Enregistré. Prêt à publier ?",
+	"eventEditor.publishCard.draftBody": "Seuls toi et ton équipe pouvez voir les brouillons. En publiant, l'événement apparaît sur ta page avec un lien à partager. Tu pourras toujours le modifier ensuite.",
+	"eventEditor.publishCard.publish": "Publier l'événement",
+	"eventEditor.publishCard.preview": "Aperçu",
+	"eventEditor.publishCard.liveTitle": "C'est en ligne. Maintenant, fais passer le mot.",
+	"eventEditor.publishCard.liveBody": "Partage le lien là où se trouvent tes gens.",
+	"eventEditor.publishCard.linkLabel": "Lien de l'événement",
+	"eventEditor.publishCard.shareWhatsapp": "Partager sur WhatsApp",
+	"eventEditor.publishCard.shareTelegram": "Partager sur Telegram",
+	"eventEditor.publishCard.shareEmail": "Partager par e-mail",
+	"eventEditor.publishCard.dismiss": "Fermer",
+	"eventEditor.publishCard.shareHeading": "Partager"
 }

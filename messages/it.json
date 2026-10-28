@@ -10595,5 +10595,17 @@
 	"orgSetup.steps.published": "Primo evento pubblicato",
 	"orgSetup.steps.stripe": "Pagamenti online attivi",
 	"orgSetup.steps.done": "Fatto",
-	"orgSetup.steps.toDo": "Da fare"
+	"orgSetup.steps.toDo": "Da fare",
+	"eventEditor.publishCard.draftTitle": "Salvato. Pronto a pubblicare?",
+	"eventEditor.publishCard.draftBody": "Solo tu e il tuo staff potete vedere le bozze. Pubblicando, l'evento compare sulla tua pagina con un link da condividere. Potrai comunque modificarlo dopo.",
+	"eventEditor.publishCard.publish": "Pubblica evento",
+	"eventEditor.publishCard.preview": "Anteprima",
+	"eventEditor.publishCard.liveTitle": "È online. Ora fallo sapere.",
+	"eventEditor.publishCard.liveBody": "Condividi il link dove si trova la tua community.",
+	"eventEditor.publishCard.linkLabel": "Link dell'evento",
+	"eventEditor.publishCard.shareWhatsapp": "Condividi su WhatsApp",
+	"eventEditor.publishCard.shareTelegram": "Condividi su Telegram",
+	"eventEditor.publishCard.shareEmail": "Condividi via email",
+	"eventEditor.publishCard.dismiss": "Chiudi",
+	"eventEditor.publishCard.shareHeading": "Condividi"
 }

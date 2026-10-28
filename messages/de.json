@@ -10595,5 +10595,17 @@
 	"orgSetup.steps.published": "Erstes Event veröffentlicht",
 	"orgSetup.steps.stripe": "Bereit für Online-Zahlungen",
 	"orgSetup.steps.done": "Erledigt",
-	"orgSetup.steps.toDo": "Offen"
+	"orgSetup.steps.toDo": "Offen",
+	"eventEditor.publishCard.draftTitle": "Gespeichert. Bereit, live zu gehen?",
+	"eventEditor.publishCard.draftBody": "Nur du und dein Team könnt Entwürfe sehen. Mit dem Veröffentlichen erscheint die Veranstaltung auf deiner Seite, samt Link zum Teilen. Du kannst sie danach weiterhin bearbeiten.",
+	"eventEditor.publishCard.publish": "Veranstaltung veröffentlichen",
+	"eventEditor.publishCard.preview": "Vorschau",
+	"eventEditor.publishCard.liveTitle": "Sie ist live. Jetzt sag es weiter.",
+	"eventEditor.publishCard.liveBody": "Teile den Link dort, wo deine Leute sind.",
+	"eventEditor.publishCard.linkLabel": "Veranstaltungslink",
+	"eventEditor.publishCard.shareWhatsapp": "Auf WhatsApp teilen",
+	"eventEditor.publishCard.shareTelegram": "Auf Telegram teilen",
+	"eventEditor.publishCard.shareEmail": "Per E-Mail teilen",
+	"eventEditor.publishCard.dismiss": "Schließen",
+	"eventEditor.publishCard.shareHeading": "Teilen"
 }

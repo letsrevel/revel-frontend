@@ -10595,5 +10595,17 @@
 	"orgSetup.steps.published": "First event published",
 	"orgSetup.steps.stripe": "Ready for online payments",
 	"orgSetup.steps.done": "Done",
-	"orgSetup.steps.toDo": "To do"
+	"orgSetup.steps.toDo": "To do",
+	"eventEditor.publishCard.draftTitle": "Saved. Ready to go live?",
+	"eventEditor.publishCard.draftBody": "Only you and your staff can see drafts. Publishing puts it on your page with a link to share. You can still edit it afterwards.",
+	"eventEditor.publishCard.publish": "Publish event",
+	"eventEditor.publishCard.preview": "Preview",
+	"eventEditor.publishCard.liveTitle": "It's live. Now tell people.",
+	"eventEditor.publishCard.liveBody": "Share the link wherever your people are.",
+	"eventEditor.publishCard.linkLabel": "Event link",
+	"eventEditor.publishCard.shareWhatsapp": "Share on WhatsApp",
+	"eventEditor.publishCard.shareTelegram": "Share on Telegram",
+	"eventEditor.publishCard.shareEmail": "Share by email",
+	"eventEditor.publishCard.dismiss": "Dismiss",
+	"eventEditor.publishCard.shareHeading": "Share"
 }

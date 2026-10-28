@@ -10595,5 +10595,17 @@
 	"orgSetup.steps.published": "Primer evento publicado",
 	"orgSetup.steps.stripe": "Pagos en línea activados",
 	"orgSetup.steps.done": "Hecho",
-	"orgSetup.steps.toDo": "Pendiente"
+	"orgSetup.steps.toDo": "Pendiente",
+	"eventEditor.publishCard.draftTitle": "Guardado. ¿Listo para publicar?",
+	"eventEditor.publishCard.draftBody": "Solo tú y tu equipo podéis ver los borradores. Al publicar, el evento aparece en tu página con un enlace para compartir. Podrás seguir editándolo después.",
+	"eventEditor.publishCard.publish": "Publicar evento",
+	"eventEditor.publishCard.preview": "Vista previa",
+	"eventEditor.publishCard.liveTitle": "Ya está en línea. Ahora, a difundirlo.",
+	"eventEditor.publishCard.liveBody": "Comparte el enlace donde esté tu comunidad.",
+	"eventEditor.publishCard.linkLabel": "Enlace del evento",
+	"eventEditor.publishCard.shareWhatsapp": "Compartir en WhatsApp",
+	"eventEditor.publishCard.shareTelegram": "Compartir en Telegram",
+	"eventEditor.publishCard.shareEmail": "Compartir por correo",
+	"eventEditor.publishCard.dismiss": "Cerrar",
+	"eventEditor.publishCard.shareHeading": "Compartir"
 }
