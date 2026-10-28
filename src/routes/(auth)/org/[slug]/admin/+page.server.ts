@@ -6,7 +6,7 @@ import type { EventInListSchema } from '$lib/api/generated/types.gen';
 import type { PageServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
 import { log } from '$lib/server/logger';
-import { loadSetupCounts } from '$lib/server/org-setup';
+import { loadHasPublishedEvent, loadSetupCounts } from '$lib/server/org-setup';
 import { setupHiddenCookieName } from '$lib/utils/org-setup-hidden-cookie';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -27,8 +27,9 @@ export const load: PageServerLoad = async ({ parent, locals, fetch, params, cook
 		Authorization: `Bearer ${accessToken}`
 	};
 
-	// Owner collapsed the setup card: skip its queries; SSR renders the collapsed line.
-	const setupHidden = isOwner && cookies.get(setupHiddenCookieName(organization.id)) === '1';
+	// Owner collapsed the setup card: run only a minimal published check (below) instead of
+	// the full counts; SSR renders the collapsed line unless an event is already published.
+	const hiddenCookie = isOwner && cookies.get(setupHiddenCookieName(organization.id)) === '1';
 
 	const now = Date.now();
 	const nowIso = new Date(now).toISOString();
@@ -36,8 +37,8 @@ export const load: PageServerLoad = async ({ parent, locals, fetch, params, cook
 	const fail = (err: unknown) => ({ data: undefined, error: err });
 	const base = { fetch, headers } as const;
 
-	const [liveResult, upcomingResult, draftsResult, requestsResult, setupCounts] = await Promise.all(
-		[
+	const [liveResult, upcomingResult, draftsResult, requestsResult, setupCounts, hasPublished] =
+		await Promise.all([
 			// In-progress candidates: already started within the lookback window. The client keeps
 			// those whose `end` is still in the future (the model does this filtering).
 			eventpublicdiscoveryListEvents({
@@ -67,11 +68,19 @@ export const load: PageServerLoad = async ({ parent, locals, fetch, params, cook
 				query: { status: 'pending', page_size: 1 }
 			}).catch(fail),
 			// Owners only: feeds the setup card. Never throws.
-			isOwner && !setupHidden
+			isOwner && !hiddenCookie
 				? loadSetupCounts({ orgId: organization.id, accessToken, fetch })
+				: Promise.resolve(null),
+			// Hidden: the collapsed line is only worth keeping while nothing is published.
+			hiddenCookie
+				? loadHasPublishedEvent({ orgId: organization.id, accessToken, fetch })
 				: Promise.resolve(null)
-		]
-	);
+		]);
+
+	// Published already: the card no longer applies, so drop the stale cookie too.
+	const published = hiddenCookie && hasPublished === true;
+	if (published) cookies.delete(setupHiddenCookieName(organization.id), { path: '/' });
+	const setupHidden = hiddenCookie && !published;
 
 	const byId = new Map<string, EventInListSchema>();
 	for (const [name, result] of [
