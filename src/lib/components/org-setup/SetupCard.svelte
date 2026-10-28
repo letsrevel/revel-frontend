@@ -1,21 +1,24 @@
 <script lang="ts">
-	import { onMount, tick } from 'svelte';
+	import { tick } from 'svelte';
+	import { invalidateAll } from '$app/navigation';
 	import { Check, Circle } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
 	import SetupActions from './SetupActions.svelte';
 	import VisibilityStrip from './VisibilityStrip.svelte';
 	import { shouldShowSetupCard, type SetupProgress } from '$lib/utils/org-setup-progress';
+	import { writeSetupHiddenCookie } from '$lib/utils/org-setup-hidden-cookie';
 	import type { Visibility } from '$lib/api/generated/types.gen';
 
 	interface Props {
 		orgId: string;
 		orgSlug: string;
-		progress: SetupProgress;
+		/** Null while the server skipped the setup queries (card hidden by cookie). */
+		progress: SetupProgress | null;
 		visibility: Visibility;
 		defaultStripeEmail: string;
 		accessToken: string;
-		/** Whether the user collapsed the card; bindable so the page can react. */
+		/** Whether the user collapsed the card (seeded from the UI cookie); bindable so the page can react. */
 		hidden?: boolean;
 	}
 
@@ -29,27 +32,26 @@
 		hidden = $bindable(false)
 	}: Props = $props();
 
-	const storageKey = $derived(`revel:org-setup-hidden:${orgId}`);
-
-	// SSR renders the card shown; the stored preference is applied after mount.
 	let showButton = $state<HTMLElement | null>(null);
 	let hideButton = $state<HTMLElement | null>(null);
 
-	onMount(() => {
-		try {
-			if (localStorage.getItem(storageKey) === '1') hidden = true;
-		} catch {
-			// Storage unavailable (private mode): keep the card shown.
-		}
-	});
+	// "Show it again" waits on the server reloading the counts.
+	let showing = $state(false);
 
 	async function setHidden(next: boolean): Promise<void> {
-		hidden = next;
-		try {
-			if (next) localStorage.setItem(storageKey, '1');
-			else localStorage.removeItem(storageKey);
-		} catch {
-			// Preference lasts for this session only.
+		if (showing) return;
+		writeSetupHiddenCookie(orgId, next);
+		if (next) {
+			hidden = true;
+		} else {
+			showing = true;
+			try {
+				// The server skipped the counts while hidden: reload them before expanding.
+				await invalidateAll();
+				hidden = false;
+			} finally {
+				showing = false;
+			}
 		}
 		// The clicked button unmounts; move focus to its counterpart.
 		await tick();
@@ -57,25 +59,29 @@
 	}
 
 	const headline = $derived(
-		progress.event === 'none'
+		progress?.event === 'none'
 			? m['orgSetup.card.headline.start']()
 			: m['orgSetup.card.headline.publish']()
 	);
 
-	const steps = $derived([
-		{ id: 'created', label: m['orgSetup.steps.created'](), done: true },
-		{ id: 'public', label: m['orgSetup.steps.public'](), done: !progress.pageHidden },
-		{ id: 'event', label: m['orgSetup.steps.event'](), done: progress.event !== 'none' },
-		{
-			id: 'published',
-			label: m['orgSetup.steps.published'](),
-			done: progress.event === 'published'
-		},
-		{ id: 'stripe', label: m['orgSetup.steps.stripe'](), done: progress.stripe === 'ready' }
-	]);
+	const steps = $derived(
+		progress === null
+			? []
+			: [
+					{ id: 'created', label: m['orgSetup.steps.created'](), done: true },
+					{ id: 'public', label: m['orgSetup.steps.public'](), done: !progress.pageHidden },
+					{ id: 'event', label: m['orgSetup.steps.event'](), done: progress.event !== 'none' },
+					{
+						id: 'published',
+						label: m['orgSetup.steps.published'](),
+						done: progress.event === 'published'
+					},
+					{ id: 'stripe', label: m['orgSetup.steps.stripe'](), done: progress.stripe === 'ready' }
+				]
+	);
 </script>
 
-{#if shouldShowSetupCard(progress)}
+{#if progress === null || shouldShowSetupCard(progress)}
 	{#if hidden}
 		<div
 			class="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-card px-4 py-2 text-sm text-muted-foreground"
@@ -86,12 +92,14 @@
 				variant="ghost"
 				size="sm"
 				class="min-h-[44px]"
+				disabled={showing}
+				aria-busy={showing}
 				onclick={() => setHidden(false)}
 			>
 				{m['orgSetup.card.show']()}
 			</Button>
 		</div>
-	{:else}
+	{:else if progress}
 		<section
 			class="space-y-4 rounded-lg border bg-card p-4 md:p-6"
 			aria-labelledby="org-setup-card-title"

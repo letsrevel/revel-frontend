@@ -42,7 +42,6 @@
 	import {
 		CURRENCY_SYMBOLS,
 		isBillingInfoRequiredError,
-		toDatetimeLocal,
 		toTimezoneAwareISO,
 		normalizeDecimalInput
 	} from './tier-form-helpers';
@@ -54,12 +53,19 @@
 	import type { EventRules } from '$lib/utils/compliance';
 	import { formatDateTimeReadback } from '$lib/utils/date';
 	import type { PlatformFeeInfo } from '$lib/utils/fees';
+	import { stashTierDraft, stripeGateFor, tierSeed, type TierDraft } from './tier-draft';
 
 	interface Props {
 		tier: TicketTierDetailSchema | null; // null = create new
 		eventId: string;
 		organizationSlug: string;
 		organizationStripeConnected: boolean;
+		/** Connected, but billing details are missing (see billingNeedsAttention). */
+		billingNeedsAttention?: boolean;
+		/** Prefill for the Stripe onboarding email. */
+		stripeEmail?: string;
+		isOwner?: boolean;
+		draft?: TierDraft | null;
 		/** Org platform-fee terms for the net-payout preview (null hides it). */
 		platformFees?: PlatformFeeInfo | null;
 		membershipTiers?: MembershipTierSchema[];
@@ -77,6 +83,10 @@
 		eventId,
 		organizationSlug,
 		organizationStripeConnected,
+		billingNeedsAttention = false,
+		stripeEmail = '',
+		isOwner = false,
+		draft = null,
 		platformFees = null,
 		membershipTiers = [],
 		eventVenueId = null,
@@ -88,27 +98,20 @@
 
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
-
-	// Form state
-	let name = $state(tier?.name ?? '');
-	let description = $state(tier?.description ?? '');
-	let paymentMethod = $state<'free' | 'offline' | 'at_the_door' | 'online'>(
-		(tier?.payment_method as 'free' | 'offline' | 'at_the_door' | 'online') ?? 'free'
-	);
-	let priceType = $state<'fixed' | 'pwyc'>((tier?.price_type as 'fixed' | 'pwyc') ?? 'fixed');
-	let price = $state(tier?.price ? String(tier.price) : '0');
-	let pwycMin = $state(tier?.pwyc_min ? String(tier.pwyc_min) : '1');
-	let pwycMax = $state(tier?.pwyc_max ? String(tier.pwyc_max) : '');
-	let currency = $state(tier?.currency ?? 'EUR');
-	let vatRateOverride = $state(tier?.vat_rate != null ? String(tier.vat_rate) : '');
-	let manualPaymentInstructions = $state(tier?.manual_payment_instructions ?? '');
-	let totalQuantity = $state<string>(
-		tier?.total_quantity !== null && tier?.total_quantity !== undefined
-			? String(tier.total_quantity)
-			: ''
-	);
-	let salesStartAt = $state(toDatetimeLocal(tier?.sales_start_at));
-	let salesEndAt = $state(toDatetimeLocal(tier?.sales_end_at));
+	const seed = tierSeed(tier, draft);
+	let name = $state(seed.name);
+	let description = $state(seed.description);
+	let paymentMethod = $state(seed.paymentMethod);
+	let priceType = $state(seed.priceType);
+	let price = $state(seed.price);
+	let pwycMin = $state(seed.pwycMin);
+	let pwycMax = $state(seed.pwycMax);
+	let currency = $state(seed.currency);
+	let vatRateOverride = $state(seed.vatRateOverride);
+	let manualPaymentInstructions = $state(seed.manualPaymentInstructions);
+	let totalQuantity = $state(seed.totalQuantity);
+	let salesStartAt = $state(seed.salesStartAt);
+	let salesEndAt = $state(seed.salesEndAt);
 	let salesPaused = $state(tier?.sales_paused ?? false);
 	// Per-tier check-in window (#945): picked times ↔ offsets from event start.
 	const checkInPicks = $state(initialCheckInPicks(eventContext.start, tier));
@@ -116,12 +119,8 @@
 	// value is empty or unparseable, so each hint is gated on the rendered text.
 	const salesStartReadback = $derived(formatDateTimeReadback(salesStartAt));
 	const salesEndReadback = $derived(formatDateTimeReadback(salesEndAt));
-	let visibility = $state<'public' | 'private' | 'members-only' | 'staff-only'>(
-		(tier?.visibility as 'public' | 'private' | 'members-only' | 'staff-only') ?? 'public'
-	);
-	let purchasableBy = $state<'public' | 'members' | 'invited' | 'invited_and_members'>(
-		(tier?.purchasable_by as 'public' | 'members' | 'invited' | 'invited_and_members') ?? 'public'
-	);
+	let visibility = $state(seed.visibility);
+	let purchasableBy = $state(seed.purchasableBy);
 	let restrictedToMembershipTiersIds = $state<string[]>(
 		tier?.restricted_to_membership_tiers?.map((t) => t.id).filter((id): id is string => !!id) ?? []
 	);
@@ -166,11 +165,7 @@
 
 	// Venue and seating state
 	let seatAssignmentMode = $state<SeatAssignmentMode>(tier?.seat_assignment_mode ?? 'none');
-	let maxTicketsPerUser = $state<string>(
-		tier?.max_tickets_per_user !== null && tier?.max_tickets_per_user !== undefined
-			? String(tier.max_tickets_per_user)
-			: ''
-	);
+	let maxTicketsPerUser = $state(seed.maxTicketsPerUser);
 	// Pre-fill venue: use tier's venue if editing, else fall back to event's venue
 	// Venue is read-only - it always comes from the event
 	const venueId = $state<string | null>(tier?.venue?.id ?? eventVenueId ?? null);
@@ -373,10 +368,45 @@
 
 	// Card + unknown rules: hold the save. Known-blocked legacy card tiers still save (J29.3).
 	const onlineSaveHeld = $derived(rules.status !== 'ready' && paymentMethod === 'online');
+	// The section's Stripe / tax-details gate also holds the save.
+	const stripeGate = $derived(
+		stripeGateFor(
+			paymentMethod,
+			rules.status !== 'ready' || rules.compliance?.online_payment === 'blocked',
+			organizationStripeConnected,
+			billingNeedsAttention
+		)
+	);
+	const saveHeld = $derived(onlineSaveHeld || stripeGate !== null);
+	const heldBy = $derived(
+		onlineSaveHeld ? 'tier-online-blocked' : stripeGate && 'tier-stripe-gate'
+	);
+
+	function stashDraft(): void {
+		stashTierDraft(eventId, {
+			tierId: tier?.id ?? null,
+			name,
+			description,
+			paymentMethod,
+			priceType,
+			price,
+			pwycMin,
+			pwycMax,
+			currency,
+			vatRateOverride,
+			manualPaymentInstructions,
+			totalQuantity,
+			salesStartAt,
+			salesEndAt,
+			maxTicketsPerUser,
+			visibility,
+			purchasableBy
+		});
+	}
 
 	function handleSubmit(e: Event) {
 		e.preventDefault();
-		if (onlineSaveHeld) return;
+		if (saveHeld) return;
 
 		// Determine the price value based on payment method and price type
 		// Normalize all decimal values to ensure dots (not commas) as decimal separator
@@ -522,6 +552,12 @@
 				bind:paymentMethod
 				{isPending}
 				{organizationStripeConnected}
+				{billingNeedsAttention}
+				{organizationSlug}
+				{eventId}
+				{stripeEmail}
+				{isOwner}
+				onBeforeStripeConnect={stashDraft}
 				compliance={rules.compliance}
 				complianceStatus={rules.status}
 				onRetryCompliance={rules.onRetry}
@@ -653,12 +689,12 @@
 					<Button
 						type="submit"
 						disabled={isPending ||
-							onlineSaveHeld ||
+							saveHeld ||
 							!name.trim() ||
 							!sectorValid ||
 							!checkInPicksValid(eventContext.start, checkInPicks) ||
 							(paymentMethod !== 'free' && allowUserCancellation && !refundPolicyValid)}
-						aria-describedby={onlineSaveHeld ? 'tier-online-blocked' : undefined}
+						aria-describedby={heldBy || undefined}
 					>
 						{isPending
 							? m['tierForm.saving']()

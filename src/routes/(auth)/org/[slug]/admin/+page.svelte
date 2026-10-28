@@ -37,8 +37,10 @@
 	);
 
 	// Mirrors the card's collapsed state (bound below) so the page can restore
-	// the empty next-event panel when the user hides the card.
-	let setupCardHidden = $state(false);
+	// the empty next-event panel when the user hides the card. A writable
+	// $derived: it follows the server value across client-side org switches and
+	// still takes the card's local hide/show in between.
+	let setupCardHidden = $derived(data.setupHidden);
 	// The card's "create your first event" box already carries that CTA.
 	const setupCardCoversEmptyPanel = $derived(
 		setupProgress !== null &&
@@ -99,7 +101,7 @@
 	{/snippet}
 	<PageHeader title={m['orgAdmin.nav.dashboard']()} volume="studio" actions={headerActions} />
 
-	{#if setupProgress}
+	{#if setupProgress || data.setupHidden}
 		<SetupCard
 			orgId={organization.id}
 			orgSlug={organization.slug}

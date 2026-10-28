@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { stripeSetupState } from '$lib/utils/org-setup-progress';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import type { PageData } from './$types';
@@ -35,5 +36,6 @@
 		eventSeries={data.eventSeries}
 		initialStart={data.initialStart}
 		initialEventSeriesId={data.initialEventSeriesId}
+		onlinePaymentSetup={stripeSetupState(organization)}
 	/>
 </div>

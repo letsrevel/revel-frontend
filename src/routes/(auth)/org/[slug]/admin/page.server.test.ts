@@ -4,13 +4,16 @@ import {
 	eventpublicdiscoveryListEvents,
 	organizationadminmembershiprequestsListMembershipRequests
 } from '$lib/api/generated/sdk.gen';
-import { loadSetupCounts } from '$lib/server/org-setup';
+import { loadHasPublishedEvent, loadSetupCounts } from '$lib/server/org-setup';
 
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	eventpublicdiscoveryListEvents: vi.fn(),
 	organizationadminmembershiprequestsListMembershipRequests: vi.fn()
 }));
-vi.mock('$lib/server/org-setup', () => ({ loadSetupCounts: vi.fn() }));
+vi.mock('$lib/server/org-setup', () => ({
+	loadSetupCounts: vi.fn(),
+	loadHasPublishedEvent: vi.fn()
+}));
 vi.mock('$lib/server/logger', () => ({ log: { error: vi.fn() } }));
 
 const listEvents = vi.mocked(eventpublicdiscoveryListEvents);
@@ -21,9 +24,15 @@ type Result = Awaited<ReturnType<typeof load>>;
 
 const ev = (id: string) => ({ id });
 
-function run(isOwner = true): Promise<Result> {
+const cookieDelete = vi.fn();
+
+function run(isOwner = true, cookie?: string): Promise<Result> {
 	const event = {
 		fetch: vi.fn(),
+		cookies: {
+			delete: cookieDelete,
+			get: (name: string) => (name === 'revel_setup_hidden_org-id' ? cookie : undefined)
+		},
 		params: { slug: 'org' },
 		locals: { user: { accessToken: 'tok' } },
 		parent: async () => ({ isOwner, organization: { id: 'org-id', slug: 'org' } })
@@ -51,9 +60,13 @@ function mockEvents(handlers: {
 }
 
 const setupCountsMock = vi.mocked(loadSetupCounts);
+const publishedMock = vi.mocked(loadHasPublishedEvent);
 const COUNTS = { eventCount: 0, publishedCount: 0, latestDraft: null };
 
 beforeEach(() => {
+	cookieDelete.mockReset();
+	publishedMock.mockReset();
+	publishedMock.mockResolvedValue(false);
 	setupCountsMock.mockReset();
 	setupCountsMock.mockResolvedValue(COUNTS);
 	listEvents.mockReset();
@@ -120,5 +133,45 @@ describe('admin dashboard loader', () => {
 		const res = await run(false);
 		expect(res.setupCounts).toBeNull();
 		expect(setupCountsMock).not.toHaveBeenCalled();
+	});
+
+	it('hidden cookie, nothing published: skips counts, keeps the collapsed line', async () => {
+		mockEvents({ live: { results: [] }, upcoming: { results: [] }, drafts: { count: 0 } });
+		const res = await run(true, '1');
+		expect(setupCountsMock).not.toHaveBeenCalled();
+		expect(publishedMock).toHaveBeenCalledTimes(1);
+		expect(res.setupCounts).toBeNull();
+		expect(res.setupHidden).toBe(true);
+		expect(cookieDelete).not.toHaveBeenCalled();
+	});
+
+	it('hidden cookie, published check unknown: keeps the collapsed line', async () => {
+		publishedMock.mockResolvedValue(null);
+		mockEvents({ live: { results: [] }, upcoming: { results: [] }, drafts: { count: 0 } });
+		const res = await run(true, '1');
+		expect(res.setupHidden).toBe(true);
+		expect(cookieDelete).not.toHaveBeenCalled();
+	});
+
+	it('hidden cookie, event published: drops the line and clears the cookie', async () => {
+		publishedMock.mockResolvedValue(true);
+		mockEvents({ live: { results: [] }, upcoming: { results: [] }, drafts: { count: 0 } });
+		const res = await run(true, '1');
+		expect(res.setupHidden).toBe(false);
+		expect(res.setupCounts).toBeNull();
+		expect(cookieDelete).toHaveBeenCalledWith('revel_setup_hidden_org-id', { path: '/' });
+	});
+
+	it('absent cookie loads counts and setupHidden is false', async () => {
+		mockEvents({ live: { results: [] }, upcoming: { results: [] }, drafts: { count: 0 } });
+		const res = await run(true);
+		expect(res.setupHidden).toBe(false);
+		expect(res.setupCounts).toEqual(COUNTS);
+	});
+
+	it('ignores the hidden cookie for staff', async () => {
+		mockEvents({ live: { results: [] }, upcoming: { results: [] }, drafts: { count: 0 } });
+		const res = await run(false, '1');
+		expect(res.setupHidden).toBe(false);
 	});
 });

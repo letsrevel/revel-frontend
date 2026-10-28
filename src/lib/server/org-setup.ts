@@ -56,3 +56,34 @@ export async function loadSetupCounts(opts: LoadSetupCountsOptions): Promise<Set
 		latestDraft: firstDraft ? { id: firstDraft.id, name: firstDraft.name } : null
 	};
 }
+
+/**
+ * Minimal check used while the setup card is hidden: has the org published
+ * (open or closed) any event? Returns `null` when it cannot be determined.
+ * Never throws.
+ */
+export async function loadHasPublishedEvent(opts: LoadSetupCountsOptions): Promise<boolean | null> {
+	const { orgId, accessToken, fetch: fetchFn } = opts;
+	const run = (status: 'open' | 'closed') =>
+		eventpublicdiscoveryListEvents({
+			fetch: fetchFn,
+			headers: { Authorization: `Bearer ${accessToken}` },
+			query: { organization: orgId, include_past: true, page_size: 1, status }
+		})
+			.then((result) => {
+				if (result.error || !result.data) {
+					log.error('org_setup_published_check_failed', { error: result.error, orgId, status });
+					return null;
+				}
+				return result.data.count;
+			})
+			.catch((error: unknown) => {
+				log.error('org_setup_published_check_failed', { error, orgId, status });
+				return null;
+			});
+
+	const [open, closed] = await Promise.all([run('open'), run('closed')]);
+	if ((open ?? 0) > 0 || (closed ?? 0) > 0) return true;
+	if (open === null || closed === null) return null;
+	return false;
+}

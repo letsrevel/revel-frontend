@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { stripeSetupState } from '$lib/utils/org-setup-progress';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
@@ -31,6 +32,16 @@
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import { Button } from '$lib/components/ui/button';
+	import { onMount } from 'svelte';
+	import { invalidateAll } from '$app/navigation';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
+	import { organizationadmincoreStripeAccountVerify } from '$lib/api/generated/sdk.gen';
+	import StripeReturnNotice, {
+		type StripeNotice
+	} from '$lib/components/org-setup/StripeReturnNotice.svelte';
+	import EventStripeConnect from '$lib/components/events/admin/editor/EventStripeConnect.svelte';
+	import PublishShareCard from '$lib/components/events/admin/editor/PublishShareCard.svelte';
+	import { eventPublicLinks } from '$lib/utils/event-links';
 	import type { Tone } from '$lib/components/common/tones';
 
 	const { data }: { data: PageData } = $props();
@@ -47,7 +58,7 @@
 	const queryClient = useQueryClient();
 
 	// Current status
-	const currentStatus = $derived(event.status as string);
+	const currentStatus = $derived(event.status);
 	const statusTone = $derived.by((): Tone => {
 		switch (currentStatus) {
 			case 'open':
@@ -73,6 +84,53 @@
 						: currentStatus
 	);
 
+	// Stripe returns the owner here (ticketing tab) with ?stripe_success=true, or
+	// ?stripe_refresh=true when the onboarding link expired. Same handling as the
+	// /welcome page; tab=ticketing and any other params are kept.
+	let stripeNotice = $state<StripeNotice | null>(null);
+	let showStripeModal = $state(false);
+	// The publish flow lands here with ?published=1: show the share card once.
+	let justPublished = $state(false);
+
+	onMount(() => {
+		const params = new SvelteURLSearchParams(window.location.search);
+		const success = params.get('stripe_success') === 'true';
+		const refresh = params.get('stripe_refresh') === 'true';
+		justPublished = params.get('published') === '1';
+		if (!success && !refresh && !justPublished) return;
+		params.delete('stripe_success');
+		params.delete('stripe_refresh');
+		params.delete('published');
+		const query = params.toString();
+		window.history.replaceState(
+			window.history.state,
+			'',
+			window.location.pathname + (query ? `?${query}` : '')
+		);
+
+		// Stripe onboarding and its verification are owner-only: staff just get the
+		// params stripped.
+		if (!data.isOwner || (!success && !refresh)) return;
+		if (refresh) {
+			stripeNotice = 'expired';
+			return;
+		}
+		void (async () => {
+			let chargesEnabled: boolean;
+			try {
+				const res = await organizationadmincoreStripeAccountVerify({
+					path: { slug: organization.slug },
+					headers: { Authorization: `Bearer ${accessToken ?? ''}` }
+				});
+				chargesEnabled = !res.error && !!res.data?.charges_enabled;
+			} catch {
+				chargesEnabled = false;
+			}
+			await invalidateAll();
+			stripeNotice = chargesEnabled ? 'connected' : 'needsDetails';
+		})();
+	});
+
 	// Update event status mutation
 	const updateStatusMutation = createMutation(() => ({
 		mutationFn: async (status: 'draft' | 'open' | 'closed' | 'cancelled') => {
@@ -97,8 +155,15 @@
 
 			return response.data;
 		},
-		onSuccess: () => {
+		onSuccess: (_event, status) => {
 			queryClient.invalidateQueries({ queryKey: ['events'] });
+			if (status === 'open' && currentStatus === 'draft') {
+				// Publishing: reload onto ?published=1 so the share card shows once.
+				const url = new URL(window.location.href);
+				url.searchParams.set('published', '1');
+				window.location.assign(url.toString());
+				return;
+			}
 			// Reload the page to get updated event data
 			window.location.reload();
 		},
@@ -143,6 +208,9 @@
 			updateStatusMutation.mutate('open');
 		}
 	}
+
+	// Platform-relative preview link; absolute (custom-domain aware) URL to share.
+	const links = $derived(eventPublicLinks(organization, event.slug, $page.data, $page.url.origin));
 
 	/**
 	 * Close event (open → closed)
@@ -381,6 +449,31 @@
 		{/snippet}
 	</PageHeader>
 
+	{#if stripeNotice}
+		<StripeReturnNotice
+			notice={stripeNotice}
+			onContinue={() => (showStripeModal = true)}
+			onDismiss={() => (stripeNotice = null)}
+		/>
+	{/if}
+	<EventStripeConnect
+		bind:show={showStripeModal}
+		orgSlug={organization.slug}
+		eventId={event.id}
+		defaultEmail={organization.contact_email ?? ''}
+	/>
+
+	{#if currentStatus === 'draft' || (currentStatus === 'open' && justPublished)}
+		<PublishShareCard
+			status={currentStatus}
+			eventName={event.name}
+			eventUrl={links.shareUrl}
+			previewHref={links.previewHref}
+			onPublish={publishEvent}
+			publishing={updateStatusMutation.isPending}
+		/>
+	{/if}
+
 	<!-- Event Editor Component. Keyed by event id: EventEditor snapshots
 	     existingEvent (incl. the id it saves to) into $state once, so a
 	     client-side navigation between two events' edit pages (e.g. the
@@ -395,6 +488,7 @@
 			eventSeries={data.eventSeries}
 			{initialTab}
 			isOwner={data.isOwner}
+			onlinePaymentSetup={stripeSetupState(organization)}
 		/>
 	{/key}
 </div>
