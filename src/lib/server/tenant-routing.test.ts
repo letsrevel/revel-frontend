@@ -101,6 +101,7 @@ describe('tenantRouteDecision', () => {
 		'/_app/immutable/x.js',
 		'/.well-known/security.txt',
 		'/robots.txt',
+		'/llms.txt',
 		'/sitemap.xml',
 		'/sitemap-events-1.xml',
 		'/feed.xml',

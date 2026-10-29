@@ -1,0 +1,60 @@
+# Revel (letsrevel.io)
+
+> Revel is an open-source (MIT) event management and ticketing platform for communities: clubs, collectives, queer and kink groups, studios and associations. Organizers sell tickets and memberships, vet attendees with questionnaires before they can buy, keep addresses and guest lists private, and run check-in at the door. Use the hosted version at letsrevel.io or self-host it. Built in Vienna, Austria.
+
+## Pricing
+
+- Free events, RSVPs, memberships without payment, questionnaires and all organizer tools cost nothing.
+- Paid tickets sold online: 1.5% + €0.25 per transaction to Revel, charged once per checkout rather than per ticket, plus Stripe's card fees. No monthly fee, no setup fee.
+- Door sales and bank transfers: no platform fee.
+- Payments run through Stripe Connect directly to the organizer's own Stripe account; the organizer is the merchant of record.
+- Self-hosting is free under the MIT license.
+
+## What organizers use it for
+
+- [Kink and BDSM event ticketing](https://letsrevel.io/kink-event-ticketing): vetting questionnaires before the ticket (references, experience, consent policy), the address shown only to confirmed guests, private guest lists, a blocklist that matches email, phone or Telegram, invite-only and members-only events.
+- [Queer event management](https://letsrevel.io/queer-event-management): screening questionnaires, private guest lists and addresses, pronouns in profiles, public, unlisted or members-only events.
+- [Club and membership management](https://letsrevel.io/club-membership-management): membership plans (paid, free, recurring or lifetime), members-only events, membership cards in Apple Wallet and Google Wallet.
+- [Eventbrite alternative](https://letsrevel.io/eventbrite-alternative): fees charged once per checkout, payouts straight to your own Stripe account, import of upcoming Eventbrite events as drafts, and a sync that lists Revel events on Eventbrite while you switch.
+- [Privacy-focused events](https://letsrevel.io/privacy-focused-events): no analytics, no tracking cookies and no ad pixels on the platform.
+- [Self-hosted event platform](https://letsrevel.io/self-hosted-event-platform): run your own instance with Docker Compose.
+- [Community-first event platform](https://letsrevel.io/community-first-event-platform): recurring series, followers, polls, potluck boards and announcements by email, in the app or on Telegram, for groups that meet regularly.
+
+## Features
+
+- Ticketing: tiers, pay-what-you-can, discount codes, waitlists, guest checkout, refund policies shown before payment, per-tier check-in windows, QR check-in, tickets in Apple Wallet and Google Wallet.
+- Reserved seating: seat maps, best-available, price categories, holds, box-office door sales and comps.
+- Series passes (season tickets) and recurring event series.
+- Attendee vetting: application questionnaires with manual approval or automatic multiple-choice scoring.
+- Privacy controls: address and guest-list visibility per event, attendees can hide themselves from lists, blocklists.
+- Potluck boards, polls, announcements, a Telegram bot and organization email sent as "<Organization> via Revel" with one-click unsubscribe.
+- White-label: every organization can apply its own brand colors to its pages, embeds, wallet passes and ticket PDFs. An organization can also serve its whole attendee journey from its own domain (for example events.example.org); custom domains are enabled per organization by Revel.
+- Embeddable event widgets for an organizer's own website, with campaign (UTM) attribution of sales that stores nothing on the visitor's device.
+- Invoices and credit notes for attendees, VAT at the place of supply, revenue and VAT reports.
+- EU compliance handled country by country: Revel checks each EU country's fiscal and invoicing rules (for example real-time fiscal systems and national e-invoicing duties) and blocks, warns or adjusts ticket content where a country requires it. Not legal or tax advice; organizers stay responsible for their own tax obligations.
+- Two-factor authentication, personal data export and account deletion from the user's own settings.
+- Sign in with Google, or any OpenID Connect provider on self-hosted instances. Revel is also an OAuth 2.1 / OpenID Connect provider, so third-party apps and AI assistants can act for a user with scoped, revocable access.
+- Interface in English, German, French, Italian, Spanish and Portuguese.
+
+## Hosting and privacy
+
+- The hosted version runs on Hetzner servers in the EU. Cloudflare (network) and Stripe (payments) are subprocessors outside the EU, as disclosed in the privacy policy.
+- No analytics, no tracking cookies, no third-party tracking scripts.
+- [Privacy policy](https://letsrevel.io/legal/privacy)
+
+## Documentation
+
+- [Documentation home](https://docs.letsrevel.io/)
+- [Self-hosting guide](https://docs.letsrevel.io/self-hosting/)
+- [White-label guide for organizers](https://docs.letsrevel.io/guides/white-label/organizers/)
+- [EU compliance overview](https://docs.letsrevel.io/compliance/eu/)
+- [What's new (monthly release notes)](https://docs.letsrevel.io/whats-new/)
+
+## Source code
+
+- [Backend (Django)](https://github.com/letsrevel/revel-backend)
+- [Frontend (SvelteKit)](https://github.com/letsrevel/revel-frontend)
+
+## Contact
+
+- contact@letsrevel.io

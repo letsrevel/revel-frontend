@@ -89,6 +89,7 @@ post-processes the response (see [Canonical redirects](#canonical-redirects-from
 | `/account/referral...`, `/account/developer-apps...`, `/account/connected-apps...` | 302 to the same path and query on the platform origin                   |
 | `api`, `auth`, `_app`, `.well-known`                                             | Allowed                                                                   |
 | `robots.txt`, `feed.xml`, `opensearch.xml`, `oembed`                             | Allowed (each handler is tenant-aware, see [SEO](#seo-on-tenant-hosts))   |
+| `llms.txt`                                                                       | Allowed through the router; the handler itself returns 404 on a tenant host (platform marketing copy) |
 | `sitemap.xml`, `sitemap-static.xml`, `sitemap-{events,series,orgs}-N.xml`, `favicon[-x].{png,ico,svg}`, `manifest.{json,webmanifest}` (anchored patterns, so a lookalike such as `/manifesto` is not matched) | Allowed |
 | `/org/{any}/admin...`                                                            | 302 to the same path and query on the platform origin                     |
 | `create-org`, `oauth`, `impersonate`                                             | 302 to the same path and query on the platform origin                     |
