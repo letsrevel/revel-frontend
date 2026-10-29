@@ -592,6 +592,18 @@ describe('CheckoutBillingSection', () => {
 			expect(component.getBillingInfo()?.billing_address).toBe('Via Roma 1, Milano');
 		});
 
+		it('sends an empty legacy address when the buyer clears a prefilled structured address', async () => {
+			await mockProfile(profile);
+			const { component } = await openAuthed();
+			const street = screen.getByLabelText(/Street and number/i) as HTMLInputElement;
+			await waitFor(() => expect(street.value).toBe('Via Roma 1'));
+			const user = userEvent.setup();
+			await user.clear(street);
+			await user.clear(screen.getByLabelText(/Postal code/i));
+			await user.clear(screen.getByLabelText(/^City/i));
+			expect(component.getBillingInfo()?.billing_address).toBe('');
+		});
+
 		it('sends all six structured fields (empty as "") when saving to the profile', async () => {
 			await mockProfile({ ...profile, vat_id: null, billing_address_line1: '', billing_city: '' });
 			const { component } = await openAuthed();

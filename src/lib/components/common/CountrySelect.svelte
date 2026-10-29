@@ -1,11 +1,12 @@
 <script lang="ts">
 	import type { HTMLSelectAttributes } from 'svelte/elements';
 	import * as m from '$lib/paraglide/messages.js';
+	import { getLocale } from '$lib/paraglide/runtime.js';
 	import { cn } from '$lib/utils';
-	import { getDateLocale } from '$lib/utils/date';
 	import {
 		ISO_COUNTRY_CODES,
 		countryDisplayName,
+		sortedCountryOptions,
 		normalizeCountryCode
 	} from '$lib/utils/postal-address';
 
@@ -32,14 +33,10 @@
 		...restProps
 	}: Props = $props();
 
-	const locale = $derived(getDateLocale());
+	const locale = $derived(getLocale());
 
 	const options = $derived.by(() => {
-		const list = ISO_COUNTRY_CODES.map((code) => ({
-			code,
-			name: countryDisplayName(code, locale)
-		}));
-		list.sort((a, b) => a.name.localeCompare(b.name, locale));
+		const list = sortedCountryOptions(ISO_COUNTRY_CODES, locale);
 		// A legacy value (e.g. "EL", or a code outside the list) must stay visible.
 		const current = normalizeCountryCode(value ?? '');
 		if (current && !list.some((o) => o.code === current)) {

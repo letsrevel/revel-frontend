@@ -88,6 +88,7 @@ describe('postal-address', () => {
 		expect(countryDisplayName('EL', 'en-US')).toBe('Greece');
 		expect(countryDisplayName('', 'en-US')).toBe('');
 		expect(countryDisplayName('!!', 'en-US')).toBe('!!');
+		expect(countryDisplayName('RO', 'pt')).toBe('Roménia');
 	});
 
 	it('composeLegacyAddress omits blank parts', () => {

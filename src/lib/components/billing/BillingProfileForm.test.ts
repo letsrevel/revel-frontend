@@ -1,4 +1,4 @@
-import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
+import { render, screen, waitFor } from '@testing-library/svelte';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import { QueryClient } from '@tanstack/svelte-query';
@@ -58,7 +58,11 @@ vi.mock('$lib/paraglide/messages.js', () => ({
 	'postalAddress.subdivision': () => 'Region',
 	'postalAddress.country': () => 'Address country',
 	'postalAddress.countryPlaceholder': () => 'Select a country',
-	'postalAddress.requiredSr': () => '(required)'
+	'postalAddress.requiredSr': () => '(required)',
+	'postalAddress.errors.line1': () => 'Street and number are required',
+	'postalAddress.errors.postalCode': () => 'Postal code is required',
+	'postalAddress.errors.city': () => 'City is required',
+	'postalAddress.errors.countryCode': () => 'Country is required'
 }));
 
 function renderWithQueryClient(props: Record<string, unknown>) {
@@ -81,10 +85,10 @@ describe('BillingProfileForm', () => {
 		expect(screen.getByRole('form', { name: 'Billing Information' })).toBeInTheDocument();
 	});
 
-	it('renders all form fields; only name and VAT country are required', async () => {
+	it('renders all form fields; name, VAT country and the address are required', async () => {
 		renderWithQueryClient({ authToken: 'test-token' });
 		expect(screen.getByLabelText(/Legal Name/i)).toBeRequired();
-		expect(screen.getByLabelText(/Street and number/i)).not.toBeRequired();
+		expect(screen.getByLabelText(/Street and number/i)).toBeRequired();
 		expect(screen.getByLabelText(/Billing Email/i)).not.toBeRequired();
 		expect(screen.getByLabelText(/Legal Name/i)).toBeInTheDocument();
 		expect(screen.getByRole('group', { name: 'Billing Address' })).toBeInTheDocument();
@@ -312,7 +316,7 @@ describe('BillingProfileForm', () => {
 		);
 	});
 
-	it('sends billing_address "" when a saved structured address is blanked', async () => {
+	it('blocks save, announces errors and focuses the first when the address is blanked', async () => {
 		const sdk = await import('$lib/api/generated/sdk.gen');
 		vi.mocked(sdk.userbillingGetBillingProfile).mockResolvedValueOnce({
 			data: structured,
@@ -327,20 +331,55 @@ describe('BillingProfileForm', () => {
 		for (const re of [/Street and number/i, /Postal code/i, /^City/i]) {
 			await user.clear(screen.getByLabelText(re));
 		}
-		await fireEvent.change(
-			document.getElementById('billing-profile-address-countryCode') as HTMLSelectElement,
-			{
-				target: { value: '' }
-			}
-		);
 		await user.click(screen.getByRole('button', { name: /Update billing information/i }));
-		await waitFor(() => expect(sdk.userbillingUpdateBillingProfile).toHaveBeenCalled());
-		const body = vi.mocked(sdk.userbillingUpdateBillingProfile).mock.calls[0][0].body as Record<
-			string,
-			string
-		>;
-		expect(body.billing_address).toBe('');
-		expect(body.billing_address_line1).toBe('');
+		expect(await screen.findByText('Street and number are required')).toHaveAttribute(
+			'role',
+			'alert'
+		);
+		expect(screen.getByText('Postal code is required')).toBeInTheDocument();
+		expect(screen.getByText('City is required')).toBeInTheDocument();
+		await waitFor(() => expect(screen.getByLabelText(/Street and number/i)).toHaveFocus());
+		expect(sdk.userbillingUpdateBillingProfile).not.toHaveBeenCalled();
+	});
+
+	it('does not count a partial structured address as complete', async () => {
+		const sdk = await import('$lib/api/generated/sdk.gen');
+		vi.mocked(sdk.userbillingGetBillingProfile).mockResolvedValueOnce({
+			data: { ...structured, billing_postal_code: '', billing_city: '' },
+			response: { status: 200 } as Response,
+			error: null
+		});
+		renderWithQueryClient({ authToken: 'test-token' });
+		await waitFor(() =>
+			expect(screen.getByText('Billing information is incomplete')).toBeInTheDocument()
+		);
+	});
+
+	it('re-seeds the VAT country from the refetched profile after setting a VAT ID, keeping other edits', async () => {
+		const sdk = await import('$lib/api/generated/sdk.gen');
+		vi.mocked(sdk.userbillingGetBillingProfile)
+			.mockResolvedValueOnce({
+				data: structured,
+				response: { status: 200 } as Response,
+				error: null
+			})
+			.mockResolvedValue({
+				data: { ...structured, vat_country_code: 'DE', vat_id: 'DE123456789' },
+				response: { status: 200 } as Response,
+				error: null
+			});
+		renderWithQueryClient({ authToken: 'test-token' });
+		await waitFor(() => expect(screen.getByLabelText(/^City/i)).toHaveValue('Vienna'));
+		const user = userEvent.setup();
+		const city = screen.getByLabelText(/^City/i);
+		await user.clear(city);
+		await user.type(city, 'Graz');
+
+		await user.type(screen.getByLabelText('VAT ID'), 'DE123456789');
+		await user.click(screen.getByRole('button', { name: 'Validate' }));
+
+		await waitFor(() => expect(document.getElementById('vatCountryCode')).toHaveValue('DE'));
+		expect(screen.getByLabelText(/^City/i)).toHaveValue('Graz');
 	});
 
 	it('does not wipe in-progress edits when the profile refetches', async () => {

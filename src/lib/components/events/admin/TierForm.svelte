@@ -36,6 +36,7 @@
 		omitUnchangedZeroRuleFields,
 		changedZeroRuleFields,
 		exemptionLikelyCause,
+		exemptionReasonForPayload,
 		payloadPrice,
 		vatExemptionRequired,
 		type OrgVatContext
@@ -116,6 +117,7 @@
 	let currency = $state(seed.currency);
 	let vatRateOverride = $state(seed.vatRateOverride);
 	let vatExemptionReason = $state(seed.vatExemptionReason ?? '');
+	let failedExemptionCause = $state(false);
 	let vatReasonError = $state('');
 	let manualPaymentInstructions = $state(seed.manualPaymentInstructions);
 	let totalQuantity = $state(seed.totalQuantity);
@@ -160,7 +162,6 @@
 		}
 	});
 
-	// Auto-reset restriction toggles when parent condition no longer applies
 	$effect(() => {
 		if (visibility !== 'private') {
 			restrictVisibilityToLinkedInvitations = false;
@@ -314,7 +315,6 @@
 		);
 	});
 
-	// Get current currency symbol for display
 	const currencySymbol = $derived(CURRENCY_SYMBOLS[currency] || currency);
 
 	// The generated client resolves with `{ error }` on HTTP errors instead of
@@ -389,6 +389,7 @@
 	// The exemption reason is mandatory for online-paid, 0%-VAT tiers when the org invoices
 	// and has no default reason (mirrors the backend 422).
 	// On edit it only applies when a rule field changed vs the saved tier (backend carve-out).
+	// The reason is taken as the payload carries it, so omission compares like with like.
 	const zeroRuleInputs = $derived({
 		paymentMethod,
 		priceType,
@@ -396,19 +397,20 @@
 		pwycMin,
 		pwycMax,
 		vatRateOverride,
-		vatExemptionReason
+		vatExemptionReason: exemptionReasonForPayload(
+			paymentMethod,
+			vatRateOverride,
+			vatExemptionReason
+		)
+	});
+	const vatPriceInputs = $derived({
+		...zeroRuleInputs,
+		price,
+		categoryPrices: seatAssignmentMode === 'none' ? [] : Object.values(categoryPrices)
 	});
 	const vatReasonRequired = $derived(
 		(!tier || changedZeroRuleFields(tier, zeroRuleInputs).length > 0) &&
-			vatExemptionRequired(
-				{
-					...zeroRuleInputs,
-					price,
-					categoryPrices: seatAssignmentMode === 'none' ? [] : Object.values(categoryPrices)
-				},
-				vatRateOverride,
-				orgVat
-			)
+			vatExemptionRequired(vatPriceInputs, vatRateOverride, orgVat)
 	);
 	// Clear a shown error as soon as it no longer applies (reason typed or no longer required).
 	$effect(() => {
@@ -453,10 +455,8 @@
 		}
 		vatReasonError = '';
 
-		// Price per method/type, decimals normalised to dots
 		const finalPrice = payloadPrice(paymentMethod, priceType, price, pwycMin);
 
-		// Build the data object, omitting null values for pwyc fields
 		const baseData: TicketTierCreateSchema = {
 			name: name.trim(),
 			description: description.trim() || null,
@@ -487,7 +487,7 @@
 					: vatRateOverride !== ''
 						? parseFloat(normalizeDecimalInput(vatRateOverride))
 						: null,
-			vat_exemption_reason: vatExemptionReason.trim(),
+			vat_exemption_reason: zeroRuleInputs.vatExemptionReason,
 			// Venue and seating configuration
 			seat_assignment_mode: seatAssignmentMode,
 			max_tickets_per_user: maxTicketsPerUser ? parseInt(maxTicketsPerUser) : null,
@@ -531,11 +531,11 @@
 			omitUnchangedZeroRuleFields(tier, baseData, zeroRuleInputs);
 		}
 
+		// Frozen now: the error panel must not re-evaluate it as the user keeps typing.
+		failedExemptionCause = exemptionLikelyCause(vatPriceInputs, orgVat);
 		if (!tier) {
-			// Create new tier
 			tierCreateMutation.mutate(baseData);
 		} else {
-			// Update existing tier
 			tierUpdateMutation.mutate(baseData as TicketTierUpdateSchema);
 		}
 	}
@@ -742,7 +742,7 @@
 					{saveStatus}
 					{paymentMethod}
 					{organizationSlug}
-					exemptionLikelyCause={exemptionLikelyCause(vatRateOverride, vatExemptionReason, orgVat)}
+					exemptionLikelyCause={failedExemptionCause}
 				/>
 			{/if}
 		</form>

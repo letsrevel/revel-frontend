@@ -3,6 +3,7 @@ import {
 	changedZeroRuleFields,
 	effectiveVatRate,
 	exemptionLikelyCause,
+	exemptionReasonForPayload,
 	omitUnchangedZeroRuleFields,
 	isPaidOnline,
 	orgVatContextFrom,
@@ -148,12 +149,43 @@ describe('legacy 0% tier edit carve-out', () => {
 });
 
 describe('exemptionLikelyCause', () => {
-	it('is true only for an effective 0% rate with no tier or org reason', () => {
-		expect(exemptionLikelyCause('', '', org())).toBe(true);
-		expect(exemptionLikelyCause('0', '  ', org({ vatRate: '22' }))).toBe(true);
-		expect(exemptionLikelyCause('', 'Art. 8', org())).toBe(false);
-		expect(exemptionLikelyCause('', '', org({ exemptionReason: 'Default' }))).toBe(false);
-		expect(exemptionLikelyCause('', '', org({ vatRate: '22' }))).toBe(false);
-		expect(exemptionLikelyCause('', '', null)).toBe(false);
+	const paid = {
+		paymentMethod: 'online',
+		priceType: 'fixed',
+		price: '10',
+		pwycMin: '',
+		pwycMax: '',
+		vatRateOverride: '',
+		vatExemptionReason: ''
+	};
+	const v = (o: Partial<typeof paid> = {}) => ({ ...paid, ...o });
+	it('is true only under the conditions of vatExemptionRequired and no tier reason', () => {
+		expect(exemptionLikelyCause(v(), org())).toBe(true);
+		expect(
+			exemptionLikelyCause(
+				v({ vatRateOverride: '0', vatExemptionReason: '  ' }),
+				org({ vatRate: '22' })
+			)
+		).toBe(true);
+		expect(exemptionLikelyCause(v({ vatExemptionReason: 'Art. 8' }), org())).toBe(false);
+		expect(exemptionLikelyCause(v(), org({ exemptionReason: 'Default' }))).toBe(false);
+		expect(exemptionLikelyCause(v(), org({ vatRate: '22' }))).toBe(false);
+		expect(exemptionLikelyCause(v(), null)).toBe(false);
+	});
+	it('is false when invoicing is off or the tier is not paid online', () => {
+		expect(exemptionLikelyCause(v(), org({ invoicingMode: 'none' }))).toBe(false);
+		expect(exemptionLikelyCause(v({ paymentMethod: 'offline' }), org())).toBe(false);
+		expect(exemptionLikelyCause(v({ price: '0' }), org())).toBe(false);
+	});
+});
+
+describe('exemptionReasonForPayload', () => {
+	it('drops the reason for free tiers and explicit non-zero overrides', () => {
+		expect(exemptionReasonForPayload('free', '0', 'Art. 8')).toBe('');
+		expect(exemptionReasonForPayload('online', '22', 'Art. 8')).toBe('');
+	});
+	it('keeps it for a zero override, or when only the org default hides the input', () => {
+		expect(exemptionReasonForPayload('online', '0', ' Art. 8 ')).toBe('Art. 8');
+		expect(exemptionReasonForPayload('online', '', 'Art. 8')).toBe('Art. 8');
 	});
 });

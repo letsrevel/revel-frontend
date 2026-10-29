@@ -1,4 +1,4 @@
-import { getDateLocale } from '$lib/utils/date';
+import { getLocale } from '$lib/paraglide/runtime.js';
 
 /** Structured postal address, as edited in forms (all strings, '' when blank). */
 export interface PostalAddress {
@@ -354,17 +354,54 @@ export function isPostalAddressComplete(a: PostalAddress): boolean {
 	return missingRequiredFields(a).length === 0;
 }
 
-/** Localized country name; falls back to the code if Intl can't resolve it. */
-export function countryDisplayName(code: string, locale: string = getDateLocale()): string {
+const displayNamesCache = new Map<string, Intl.DisplayNames>();
+const collatorCache = new Map<string, Intl.Collator>();
+
+function resolveLocale(locale: string): string {
+	return locale.toLowerCase() === 'pt' ? 'pt-PT' : locale;
+}
+
+/** Memoized collator for a locale (one per locale, not one per comparison). */
+export function getCountryCollator(locale: string = getLocale()): Intl.Collator {
+	const loc = resolveLocale(locale);
+	let c = collatorCache.get(loc);
+	if (!c) {
+		c = new Intl.Collator(loc);
+		collatorCache.set(loc, c);
+	}
+	return c;
+}
+
+/**
+ * Localized country name; falls back to the code if Intl can't resolve it.
+ * The single implementation behind `compliance.countryName`; the formatter is
+ * memoized per locale.
+ */
+export function countryDisplayName(code: string, locale: string = getLocale()): string {
 	const c = normalizeCountryCode(code);
 	if (!c) return '';
 	try {
-		// Bare "pt" resolves to Brazilian names; the pt catalog is European.
-		const loc = locale.toLowerCase().startsWith('pt') ? 'pt-PT' : locale;
-		return new Intl.DisplayNames([loc], { type: 'region' }).of(c) ?? c;
+		const loc = resolveLocale(locale);
+		let names = displayNamesCache.get(loc);
+		if (!names) {
+			names = new Intl.DisplayNames([loc], { type: 'region' });
+			displayNamesCache.set(loc, names);
+		}
+		return names.of(c) ?? c;
 	} catch {
 		return c;
 	}
+}
+
+/** Codes mapped to localized names, sorted by name in the locale. */
+export function sortedCountryOptions(
+	codes: Iterable<string>,
+	locale: string = getLocale()
+): Array<{ code: string; name: string }> {
+	const collator = getCountryCollator(locale);
+	return [...codes]
+		.map((code) => ({ code, name: countryDisplayName(code, locale) }))
+		.sort((a, b) => collator.compare(a.name, b.name));
 }
 
 /** Multi-line legacy `billing_address` text composed from the structured fields. */

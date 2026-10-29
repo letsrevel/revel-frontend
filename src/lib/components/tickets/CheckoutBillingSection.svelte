@@ -7,7 +7,11 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { formatMoney } from '$lib/utils/format';
-	import { LEGACY_ADDRESS_LOCALE } from '$lib/utils/einvoice';
+	import {
+		LEGACY_ADDRESS_LOCALE,
+		isAddressBlank,
+		legacyAddressForPayload
+	} from '$lib/utils/einvoice';
 	import PostalAddressFields from '$lib/components/billing/PostalAddressFields.svelte';
 	import {
 		composeLegacyAddress,
@@ -125,7 +129,16 @@
 		const { countryCode: _country, ...body } = address;
 		const hasBody = Object.values(body).some((v) => v.trim() !== '');
 		if (hasBody) return composed;
-		return billingProfileQuery.data?.billing_address || composed || undefined;
+		const profile = billingProfileQuery.data;
+		if (!profile) return composed || undefined;
+		const saved = readPostalAddress(profile as Record<string, unknown>, 'billing_');
+		// A buyer who cleared a prefilled structured address must not get the old text back.
+		if (!isAddressBlank(saved)) return '';
+		return (
+			legacyAddressForPayload(emptyPostalAddress(), profile.billing_address ?? '', saved) ||
+			composed ||
+			undefined
+		);
 	}
 
 	/** Non-empty structured billing fields only (the BE defaults omitted ones to ""). With

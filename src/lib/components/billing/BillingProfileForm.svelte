@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { untrack } from 'svelte';
+	import { tick, untrack } from 'svelte';
 	// 1. Imports
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
@@ -24,6 +24,8 @@
 	import {
 		emptyPostalAddress,
 		isPostalAddressComplete,
+		missingRequiredFields,
+		type RequiredAddressField,
 		readPostalAddress,
 		toBillingFields,
 		type PostalAddress
@@ -72,7 +74,8 @@
 		hasBillingProfile &&
 			!!billingProfile?.billing_name &&
 			!!billingProfile?.vat_country_code &&
-			(isPostalAddressComplete(profileAddress) || legacyText !== '')
+			(isPostalAddressComplete(profileAddress) ||
+				(isAddressBlank(profileAddress) && legacyText !== ''))
 	);
 
 	// 6. Form state
@@ -82,6 +85,7 @@
 	let billingEmail = $state('');
 	let vatIdInput = $state('');
 	let selfBillingAgreed = $state(false);
+	let addressErrors = $state<Partial<Record<RequiredAddressField, string>>>({});
 	let saveStatus = $state<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
 	// 7. Sync form from query data. A refetch (e.g. window focus) must not wipe in-progress
@@ -104,6 +108,12 @@
 			selfBillingAgreed = profile.self_billing_agreed ?? false;
 			syncedSnapshot = formSnapshot();
 		});
+	});
+
+	// Show an error only while its field is still missing, so it clears as the user fixes it.
+	const shownAddressErrors = $derived.by(() => {
+		const still = new Set<string>(missingRequiredFields(address));
+		return Object.fromEntries(Object.entries(addressErrors).filter(([k]) => still.has(k)));
 	});
 
 	// 8. Save mutation
@@ -156,6 +166,19 @@
 	}));
 
 	// 9. VAT ID mutations
+	// Setting/deleting a VAT ID makes the backend change `vat_country_code`. The dirty guard
+	// above would skip re-seeding while the user has other edits, so the next full-replace
+	// PUT would send the stale country: refetch, then re-seed just the server-derived fields.
+	async function refreshServerDerivedFields(): Promise<void> {
+		await queryClient.invalidateQueries({ queryKey: ['user-billing-profile'] });
+		const fresh = queryClient.getQueryData<UserBillingProfileSchema | null>([
+			'user-billing-profile'
+		]);
+		if (!fresh) return;
+		vatCountryCode = fresh.vat_country_code ?? '';
+		vatIdInput = fresh.vat_id ?? '';
+	}
+
 	const vatSetMutation = createMutation(() => ({
 		mutationFn: async () => {
 			const response = await userbillingSetVatId({
@@ -165,8 +188,8 @@
 			if (response.error) throw new Error('Failed to set VAT ID');
 			return response.data;
 		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['user-billing-profile'] });
+		onSuccess: async () => {
+			await refreshServerDerivedFields();
 		},
 		onError: () => {
 			toast.error(m['billing.form.error']());
@@ -181,9 +204,9 @@
 			if (response.error) throw new Error('Failed to remove VAT ID');
 			return response.data;
 		},
-		onSuccess: () => {
+		onSuccess: async () => {
 			vatIdInput = '';
-			queryClient.invalidateQueries({ queryKey: ['user-billing-profile'] });
+			await refreshServerDerivedFields();
 		},
 		onError: () => {
 			toast.error(m['billing.form.error']());
@@ -191,7 +214,24 @@
 	}));
 
 	// 10. Submit handler
+	function validateAddress(): boolean {
+		addressErrors = {};
+		// A legacy-only profile may keep its free text with a blank structured address.
+		if (isAddressBlank(address) && legacyText !== '' && isAddressBlank(profileAddress)) {
+			return true;
+		}
+		const missing = missingRequiredFields(address);
+		if (missing.length === 0) return true;
+		addressErrors = Object.fromEntries(missing.map((f) => [f, m[`postalAddress.errors.${f}`]()]));
+		// Errors are role="alert" (announced); also move focus to the first one.
+		void tick().then(() =>
+			document.getElementById(`billing-profile-address-${missing[0]}`)?.focus()
+		);
+		return false;
+	}
+
 	function handleSave(): void {
+		if (!validateAddress()) return;
 		saveStatus = 'saving';
 		saveMutation.mutate();
 	}
@@ -268,6 +308,8 @@
 			idPrefix="billing-profile-address"
 			bind:value={address}
 			legend={m['billing.form.billingAddress']()}
+			required
+			errors={shownAddressErrors}
 		/>
 	</div>
 

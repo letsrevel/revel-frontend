@@ -101,20 +101,33 @@ export function vatExemptionRequired(
 }
 
 /**
- * True when the zero-rate rule is the likely cause of a refusal: the submitted tier
- * has an effective 0% rate and no reason (neither its own nor an org default).
- * Used to suppress the unrelated country-rule hint without matching backend text.
+ * True when the zero-rate rule is the likely cause of a refusal: exactly the
+ * conditions of `vatExemptionRequired` (invoicing on, paid online, effective 0%)
+ * and the tier has no reason of its own. Used to suppress the unrelated
+ * country-rule hint without matching backend text.
  */
 export function exemptionLikelyCause(
-	vatRateOverride: string,
-	vatExemptionReason: string,
+	v: TierPriceInputs & { vatRateOverride: string; vatExemptionReason: string },
 	org: OrgVatContext | null
 ): boolean {
-	return (
-		effectiveVatRate(vatRateOverride, org) === 0 &&
-		vatExemptionReason.trim() === '' &&
-		(org?.exemptionReason.trim() ?? '') === ''
-	);
+	return vatExemptionRequired(v, v.vatRateOverride, org) && v.vatExemptionReason.trim() === '';
+}
+
+/**
+ * The reason as the payload carries it. A free tier, or one with an explicit
+ * NON-zero override, makes a reason meaningless, so '' is sent. A reason hidden
+ * only by a non-zero ORG default (no override) is kept: that is org data the
+ * user did not touch.
+ */
+export function exemptionReasonForPayload(
+	paymentMethod: string,
+	vatRateOverride: string,
+	vatExemptionReason: string
+): string {
+	if (paymentMethod === 'free') return '';
+	const override = parseRate(vatRateOverride);
+	if (vatRateOverride.trim() !== '' && override !== null && override !== 0) return '';
+	return vatExemptionReason.trim();
 }
 
 /** Form values behind the backend's ZERO_RATE_RULE_FIELDS (payload-shaped). */
