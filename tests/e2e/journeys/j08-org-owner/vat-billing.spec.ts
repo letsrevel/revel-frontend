@@ -26,10 +26,13 @@ test.describe('J8 VAT & billing @p2', () => {
 		await waitForClientAuth(page);
 		await expect(page.getByRole('heading', { name: 'Billing & VAT' })).toBeVisible();
 
-		await pickSelectOption(page, page.getByLabel('Country'), 'IT - Italy');
+		await pickSelectOption(page, page.getByLabel('VAT country'), 'IT - Italy');
 		await page.getByLabel('Default VAT Rate (%)').fill('22.00');
 		await page.getByLabel('Legal / Billing Name').fill(billingName);
-		await page.getByLabel('Billing Address').fill('Via Roma 1, 00100 Roma');
+		await page.getByLabel('Street and number').fill('Via Roma 1');
+		await page.getByLabel('Postal code').fill('00100');
+		await page.getByLabel('City', { exact: true }).fill('Roma');
+		await page.getByLabel('Country', { exact: true }).selectOption('IT');
 		await page.getByLabel('Billing Email').fill(org.owner.email);
 		await page.getByRole('button', { name: 'Save Billing Info' }).click();
 		await expect(page.getByText('Billing information updated')).toBeVisible({ timeout: 15_000 });
@@ -41,7 +44,11 @@ test.describe('J8 VAT & billing @p2', () => {
 			timeout: 15_000
 		});
 		await expect(page.getByLabel('Default VAT Rate (%)')).toHaveValue('22.00');
-		await expect(page.getByLabel('Country')).toContainText('Italy');
+		await expect(page.getByLabel('VAT country')).toContainText('Italy');
+		await expect(page.getByLabel('Street and number')).toHaveValue('Via Roma 1');
+		await expect(page.getByLabel('Postal code')).toHaveValue('00100');
+		await expect(page.getByLabel('City', { exact: true })).toHaveValue('Roma');
+		await expect(page.getByLabel('Country', { exact: true })).toHaveValue('IT');
 
 		await context.close();
 	});

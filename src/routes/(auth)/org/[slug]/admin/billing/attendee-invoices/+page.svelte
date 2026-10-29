@@ -5,7 +5,6 @@
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
 	import {
 		AlertCircle,
 		ArrowLeft,
@@ -38,16 +37,19 @@
 		organizationadminvatDeleteAttendeeInvoice,
 		organizationadminvatDownloadAttendeeInvoice
 	} from '$lib/api/generated/sdk.gen';
-	import type { AttendeeInvoiceDetailSchema } from '$lib/api/generated/types.gen';
+	import type {
+		AttendeeInvoiceDetailSchema,
+		UpdateAttendeeInvoiceSchema
+	} from '$lib/api/generated/types.gen';
 	import type { LayoutData } from '../../$types';
 	import { formatDate } from '$lib/utils/date';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
-	import InvoiceVatBreakdownTable from '$lib/components/financials/InvoiceVatBreakdownTable.svelte';
 	import type { Tone } from '$lib/components/common/tones';
 	import InvoiceConfirmDialog from '$lib/components/financials/InvoiceConfirmDialog.svelte';
-	import AttendeeInvoiceDraftActions from '$lib/components/financials/AttendeeInvoiceDraftActions.svelte';
+	import AttendeeInvoiceDetail from '$lib/components/financials/AttendeeInvoiceDetail.svelte';
+	import AttendeeInvoiceEditForm from '$lib/components/financials/AttendeeInvoiceEditForm.svelte';
 
 	interface Props {
 		data: LayoutData;
@@ -81,11 +83,6 @@
 	let issueRefusal = $state<string | null>(null);
 	let showDeleteDialog = $state(false);
 	let actionInvoiceId = $state<string | null>(null);
-	let editBuyerName = $state('');
-	let editBuyerEmail = $state('');
-	let editBuyerVatId = $state('');
-	let editBuyerCountry = $state('');
-	let editBuyerAddress = $state('');
 
 	const invoicesQuery = browser
 		? createQuery(() => ({
@@ -126,18 +123,12 @@
 		: null;
 	const updateMutation = browser
 		? createMutation(() => ({
-				mutationFn: async () => {
+				mutationFn: async (body: UpdateAttendeeInvoiceSchema) => {
 					if (!selectedInvoiceId) throw new Error('No invoice selected');
 					const response = await organizationadminvatUpdateAttendeeInvoice({
 						path: { slug, invoice_id: selectedInvoiceId },
 						headers,
-						body: {
-							buyer_name: editBuyerName || null,
-							buyer_email: editBuyerEmail || null,
-							buyer_vat_id: editBuyerVatId || null,
-							buyer_vat_country: editBuyerCountry || null,
-							buyer_address: editBuyerAddress || null
-						}
+						body
 					});
 					if (response.error) throw new Error(extractErrorMessage(response.error, errMsg()));
 					if (!response.data) throw new Error(errMsg());
@@ -259,12 +250,7 @@
 		isEditing = false;
 	}
 
-	function startEdit(inv: AttendeeInvoiceDetailSchema) {
-		editBuyerName = inv.buyer_name || '';
-		editBuyerEmail = inv.buyer_email || '';
-		editBuyerVatId = inv.buyer_vat_id || '';
-		editBuyerCountry = inv.buyer_vat_country || '';
-		editBuyerAddress = inv.buyer_address || '';
+	function startEdit() {
 		isEditing = true;
 	}
 	function openAction(invoiceId: string, type: 'issue' | 'delete') {
@@ -522,194 +508,21 @@
 				</div>
 
 				{#if isEditing}
-					<form
-						onsubmit={(e) => {
-							e.preventDefault();
-							updateMutation?.mutate();
-						}}
-						class="space-y-2"
-					>
-						<h3 class="font-medium">{m['orgAdmin.billing.attendeeInvoices.edit']()}</h3>
-						<div>
-							<Label for="edit-buyer-name">{m['orgAdmin.billing.attendeeInvoices.name']()}</Label
-							><Input id="edit-buyer-name" bind:value={editBuyerName} />
-						</div>
-						<div>
-							<Label for="edit-buyer-email">{m['orgAdmin.billing.attendeeInvoices.email']()}</Label
-							><Input id="edit-buyer-email" type="email" bind:value={editBuyerEmail} />
-						</div>
-						<div class="grid grid-cols-2 gap-3">
-							<div>
-								<Label for="edit-buyer-vat-id"
-									>{m['orgAdmin.billing.attendeeInvoices.vatId']()}</Label
-								><Input id="edit-buyer-vat-id" bind:value={editBuyerVatId} class="uppercase" />
-							</div>
-							<div>
-								<Label for="edit-buyer-country"
-									>{m['orgAdmin.billing.attendeeInvoices.country']()}</Label
-								><Input id="edit-buyer-country" bind:value={editBuyerCountry} class="uppercase" />
-							</div>
-						</div>
-						<div>
-							<Label for="edit-buyer-address"
-								>{m['orgAdmin.billing.attendeeInvoices.address']()}</Label
-							><Input id="edit-buyer-address" bind:value={editBuyerAddress} />
-						</div>
-						<div class="flex gap-2">
-							<Button type="submit" disabled={updateMutation?.isPending}>
-								{#if updateMutation?.isPending}<Loader2
-										class="mr-2 h-4 w-4 animate-spin"
-										aria-hidden="true"
-									/>{/if}
-								{m['orgAdmin.billing.attendeeInvoices.save']()}
-							</Button>
-							<Button type="button" variant="outline" onclick={() => (isEditing = false)}
-								>{m['common.cancel']()}</Button
-							>
-						</div>
-					</form>
+					<AttendeeInvoiceEditForm
+						invoice={inv}
+						pending={updateMutation?.isPending ?? false}
+						onSave={(body) => updateMutation?.mutate(body)}
+						onCancel={() => (isEditing = false)}
+					/>
 				{:else}
-					<div class="grid gap-4 sm:grid-cols-2">
-						<div class="space-y-1 text-sm">
-							<h3 class="font-medium">{m['orgAdmin.billing.attendeeInvoices.buyerInfo']()}</h3>
-							<p>{inv.buyer_name}</p>
-							<p class="text-muted-foreground">{inv.buyer_email}</p>
-							{#if inv.buyer_address}<p class="text-muted-foreground">{inv.buyer_address}</p>{/if}
-							{#if inv.buyer_vat_id}<p class="text-muted-foreground">
-									VAT: {inv.buyer_vat_id}
-								</p>{/if}
-							{#if inv.buyer_vat_country}<p class="text-muted-foreground">
-									{inv.buyer_vat_country}
-								</p>{/if}
-						</div>
-						<div class="space-y-1 text-sm">
-							<h3 class="font-medium">{m['orgAdmin.billing.attendeeInvoices.sellerInfo']()}</h3>
-							<p>{inv.seller_name}</p>
-							{#if inv.seller_email}<p class="text-muted-foreground">{inv.seller_email}</p>{/if}
-							{#if inv.seller_address}<p class="text-muted-foreground">{inv.seller_address}</p>{/if}
-							{#if inv.seller_vat_id}<p class="text-muted-foreground">
-									VAT: {inv.seller_vat_id}
-								</p>{/if}
-							{#if inv.seller_vat_country}<p class="text-muted-foreground">
-									{inv.seller_vat_country}
-								</p>{/if}
-						</div>
-					</div>
-
-					{#if inv.line_items?.length}
-						<div class="space-y-2 rounded-lg border bg-muted/30 p-4">
-							<h3 class="font-medium">{m['orgAdmin.billing.attendeeInvoices.lineItems']()}</h3>
-							<div class="overflow-x-auto">
-								<table class="w-full text-sm">
-									<thead>
-										<tr class="text-left text-muted-foreground">
-											<th class="pb-2 pr-4"
-												>{m['orgAdmin.billing.attendeeInvoices.lineDescription']()}</th
-											>
-											<th class="pb-2 pr-4 text-right"
-												>{m['orgAdmin.billing.attendeeInvoices.unitPrice']()}</th
-											>
-											<th class="pb-2 pr-4 text-right"
-												>{m['orgAdmin.billing.attendeeInvoices.net']()}</th
-											>
-											<th class="pb-2 text-right">{m['orgAdmin.billing.attendeeInvoices.vat']()}</th
-											>
-										</tr>
-									</thead>
-									<tbody class="divide-y divide-border/50">
-										{#each inv.line_items as item, i (i)}
-											<tr>
-												<td class="py-2 pr-4">{item.description}</td>
-												<td class="py-2 pr-4 text-right font-mono"
-													>{formatCurrency(item.unit_price_gross, inv.currency)}</td
-												>
-												<td class="py-2 pr-4 text-right font-mono"
-													>{formatCurrency(item.net_amount, inv.currency)}</td
-												>
-												<td class="py-2 text-right font-mono"
-													>{formatCurrency(item.vat_amount, inv.currency)}</td
-												>
-											</tr>
-										{/each}
-									</tbody>
-								</table>
-							</div>
-						</div>
-					{/if}
-
-					<div class="space-y-2 rounded-lg border bg-muted/30 p-4">
-						<h3 class="font-medium">{m['orgAdmin.billing.attendeeInvoices.breakdown']()}</h3>
-						<dl class="space-y-1 text-sm">
-							<div class="flex justify-between">
-								<dt class="text-muted-foreground">
-									{m['orgAdmin.billing.attendeeInvoices.totalNet']()}
-								</dt>
-								<dd class="font-mono">{formatCurrency(inv.total_net, inv.currency)}</dd>
-							</div>
-							<div class="flex justify-between">
-								<dt class="text-muted-foreground">
-									{#if inv.has_mixed_vat_rates}
-										{m['orgAdmin.billing.attendeeInvoices.totalVatMixed']()}
-									{:else}
-										{m['orgAdmin.billing.attendeeInvoices.totalVat']({ rate: inv.vat_rate })}
-									{/if}
-								</dt>
-								<dd class="font-mono">{formatCurrency(inv.total_vat, inv.currency)}</dd>
-							</div>
-							<div class="flex justify-between border-t pt-1.5 font-medium">
-								<dt>{m['orgAdmin.billing.attendeeInvoices.totalGross']()}</dt>
-								<dd class="font-mono">{formatCurrency(inv.total_gross, inv.currency)}</dd>
-							</div>
-						</dl>
-						{#if inv.has_mixed_vat_rates && inv.vat_breakdown.length > 0}
-							<div class="mt-3 border-t pt-3">
-								<InvoiceVatBreakdownTable buckets={inv.vat_breakdown} currency={inv.currency} />
-							</div>
-						{/if}
-					</div>
-
-					{#if inv.reverse_charge}
-						<p class="text-sm text-muted-foreground">
-							{m['orgAdmin.billing.attendeeInvoices.reverseCharge']()}: {m[
-								'orgAdmin.billing.attendeeInvoices.reverseChargeYes'
-							]()}
-						</p>
-					{/if}
-
-					{#if inv.discount_code_text || parseFloat(inv.discount_amount_total) > 0}
-						<div class="text-sm">
-							<h3 class="font-medium">{m['orgAdmin.billing.attendeeInvoices.discountCode']()}</h3>
-							{#if inv.discount_code_text}<p class="text-muted-foreground">
-									{inv.discount_code_text}
-								</p>{/if}
-							{#if parseFloat(inv.discount_amount_total) > 0}<p class="text-muted-foreground">
-									-{formatCurrency(inv.discount_amount_total, inv.currency)}
-								</p>{/if}
-						</div>
-					{/if}
-
-					<div class="flex flex-col gap-2">
-						{#if inv.status === 'draft'}
-							<AttendeeInvoiceDraftActions
-								blockedReason={inv.issue_blocked_reason}
-								onEdit={() => startEdit(inv)}
-								onIssue={() => openAction(inv.id, 'issue')}
-								onDelete={() => openAction(inv.id, 'delete')}
-							/>
-						{:else}
-							<Button
-								class="w-full"
-								onclick={() => downloadMutation?.mutate(inv.id)}
-								disabled={downloadMutation?.isPending}
-							>
-								{#if downloadMutation?.isPending}<Loader2
-										class="mr-2 h-4 w-4 animate-spin"
-										aria-hidden="true"
-									/>{:else}<Download class="mr-2 h-4 w-4" aria-hidden="true" />{/if}
-								{m['orgAdmin.billing.attendeeInvoices.downloadPdf']()}
-							</Button>
-						{/if}
-					</div>
+					<AttendeeInvoiceDetail
+						invoice={inv}
+						onEdit={() => startEdit()}
+						onIssue={() => openAction(inv.id, 'issue')}
+						onDelete={() => openAction(inv.id, 'delete')}
+						onDownload={() => downloadMutation?.mutate(inv.id)}
+						downloadPending={downloadMutation?.isPending ?? false}
+					/>
 				{/if}
 			</div>
 		{/if}

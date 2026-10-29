@@ -320,3 +320,60 @@ describe('TierForm Stripe gate', () => {
 		);
 	});
 });
+
+describe('TierForm legacy 0% tier carve-out (BE enforces the zero-rate rule on key presence)', () => {
+	const legacy = {
+		...pausedOnlineTier,
+		sales_paused: false,
+		vat_rate: '0.00',
+		vat_exemption_reason: ''
+	} as TicketTierDetailSchema;
+	const orgVat = { vatRate: null, invoicingMode: 'auto', exemptionReason: '' };
+
+	beforeEach(() => {
+		vi.mocked(eventadminticketsUpdateTicketTier).mockReset();
+		vi.mocked(eventadminticketsUpdateTicketTier).mockResolvedValue(
+			ok({ id: 'tier-1' }) as unknown as UpdateResult
+		);
+	});
+
+	it('lets a plain rename through and omits the unchanged rule fields', async () => {
+		const user = userEvent.setup();
+		renderForm(legacy, { orgVat });
+		const name = screen.getByLabelText(/Tier Name/i);
+		await user.clear(name);
+		await user.type(name, 'Renamed');
+		await user.click(screen.getByRole('button', { name: 'Save Changes' }));
+		await waitFor(() => expect(eventadminticketsUpdateTicketTier).toHaveBeenCalled());
+		const body = vi.mocked(eventadminticketsUpdateTicketTier).mock.calls[0][0].body as Record<
+			string,
+			unknown
+		>;
+		expect(body.name).toBe('Renamed');
+		for (const k of [
+			'payment_method',
+			'price_type',
+			'price',
+			'pwyc_min',
+			'pwyc_max',
+			'vat_rate',
+			'vat_exemption_reason'
+		]) {
+			expect(body).not.toHaveProperty(k);
+		}
+	});
+
+	it('enforces the reason once a rule field (price) is touched', async () => {
+		const user = userEvent.setup();
+		renderForm(legacy, { orgVat });
+		// A plain rename leaves the reason optional (see the test above)...
+		expect(document.getElementById('vat-exemption-reason')).not.toBeRequired();
+		// ...but touching the price brings the zero-rate rule back.
+		const price = document.getElementById('price') as HTMLInputElement;
+		await user.clear(price);
+		await user.type(price, '30');
+		await user.click(screen.getByRole('button', { name: 'Save Changes' }));
+		expect(eventadminticketsUpdateTicketTier).not.toHaveBeenCalled();
+		expect(document.getElementById('vat-exemption-reason')).toBeRequired();
+	});
+});

@@ -1,12 +1,28 @@
 <script lang="ts">
 	// 1. Imports
-	import { untrack } from 'svelte';
+	import { tick, untrack } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { formatMoney } from '$lib/utils/format';
+	import {
+		LEGACY_ADDRESS_LOCALE,
+		isAddressBlank,
+		legacyAddressForPayload
+	} from '$lib/utils/einvoice';
+	import PostalAddressFields from '$lib/components/billing/PostalAddressFields.svelte';
+	import {
+		composeLegacyAddress,
+		countryFromVatId,
+		emptyPostalAddress,
+		missingRequiredFields,
+		readPostalAddress,
+		toBillingFields,
+		type PostalAddress,
+		type RequiredAddressField
+	} from '$lib/utils/postal-address';
 	import { Check, AlertCircle, Loader2, Receipt } from '@lucide/svelte';
 	import {
 		userbillingGetBillingProfile,
@@ -69,7 +85,10 @@
 	// 3. Local state
 	let isOpen = $state(false);
 	let billingName = $state('');
-	let billingAddress = $state('');
+	let address = $state<PostalAddress>(emptyPostalAddress());
+	// Country last filled in from the VAT ID prefix (so a changed VAT ID can update it,
+	// while a country the buyer picked themselves is never overwritten).
+	let autoCountry = '';
 	let vatCountryCode = $state('');
 	let billingEmail = $state('');
 	let vatId = $state('');
@@ -82,6 +101,52 @@
 
 	// Form validation
 	let billingNameError = $state('');
+	let addressErrors = $state<Partial<Record<RequiredAddressField, string>>>({});
+
+	// Business buyers (non-empty VAT ID) must give a complete postal address.
+	const addressRequired = $derived(vatId.trim() !== '');
+
+	// Show an error only while its field is still missing, so it clears as the buyer fixes it.
+	const shownAddressErrors = $derived.by(() => {
+		if (!addressRequired) return {};
+		const still = new Set<string>(missingRequiredFields(address));
+		return Object.fromEntries(Object.entries(addressErrors).filter(([k]) => still.has(k)));
+	});
+
+	function suggestCountryFromVatId(): void {
+		const suggested = countryFromVatId(vatId);
+		if (!suggested) return;
+		if (!address.countryCode || address.countryCode === autoCountry) {
+			address.countryCode = suggested;
+			autoCountry = suggested;
+		}
+	}
+
+	/** Persisted legacy text (English country name). A country alone (e.g. suggested from the
+	 * VAT ID) is not an address: it must not displace a profile's legacy text. */
+	function legacyAddressText(): string | undefined {
+		const composed = composeLegacyAddress(address, LEGACY_ADDRESS_LOCALE);
+		const { countryCode: _country, ...body } = address;
+		const hasBody = Object.values(body).some((v) => v.trim() !== '');
+		if (hasBody) return composed;
+		// No body fields: `composed` is at most a country name, never sent on its own.
+		const profile = billingProfileQuery.data;
+		if (!profile) return undefined;
+		const saved = readPostalAddress(profile as Record<string, unknown>, 'billing_');
+		// A buyer who cleared a prefilled structured address must not get the old text back.
+		if (!isAddressBlank(saved)) return '';
+		return (
+			legacyAddressForPayload(emptyPostalAddress(), profile.billing_address ?? '', saved) ||
+			undefined
+		);
+	}
+
+	/** Non-empty structured billing fields only (the BE defaults omitted ones to ""). With
+	 * `all`, every field is sent (empty as "") so a saved profile never ends up half-updated. */
+	function addressPayload(all = false): Partial<ReturnType<typeof toBillingFields>> {
+		const fields = toBillingFields(address);
+		return all ? fields : Object.fromEntries(Object.entries(fields).filter(([, v]) => v !== ''));
+	}
 
 	// 4. Query: pre-fill from billing profile when the user asks for an invoice.
 	// Gated on `isOpen` as well: the profile is read ONLY by the prefill below, so
@@ -121,25 +186,35 @@
 	}));
 
 	// 5. Pre-fill form from profile and auto-fetch VAT preview
+	// Runs once per open: it must not re-run when the buyer clears a prefilled field.
+	let prefilled = false;
 	function prefillFromProfile() {
 		const profile = billingProfileQuery.data;
 		if (!profile) return;
+		prefilled = true;
 		if (!billingName && profile.billing_name) billingName = profile.billing_name;
-		if (!billingAddress && profile.billing_address) billingAddress = profile.billing_address;
+		const profileAddress = readPostalAddress(profile as Record<string, unknown>, 'billing_');
+		for (const key of Object.keys(profileAddress) as (keyof PostalAddress)[]) {
+			if (!address[key] && profileAddress[key]) address[key] = profileAddress[key];
+		}
 		if (!vatCountryCode && profile.vat_country_code) vatCountryCode = profile.vat_country_code;
 		if (!billingEmail && profile.billing_email) billingEmail = profile.billing_email;
 		if (!vatId && profile.vat_id) {
 			vatId = profile.vat_id;
+			suggestCountryFromVatId();
 			// Auto-fetch VAT preview when pre-filled
 			setTimeout(() => fetchVatPreview(), 0);
 		}
 	}
 
 	// Also pre-fill when profile query resolves after section is already open
+	// Depends only on the profile data and `isOpen`; the field reads inside are untracked.
 	$effect(() => {
 		const profile = billingProfileQuery.data;
-		if (profile && isOpen) {
-			prefillFromProfile();
+		if (!isOpen) {
+			prefilled = false;
+		} else if (profile && !prefilled) {
+			untrack(() => prefillFromProfile());
 		}
 	});
 
@@ -193,7 +268,8 @@
 						billing_name: billingName || 'Preview',
 						vat_id: vatId.trim() || undefined,
 						vat_country_code: vatCountryCode.trim().toUpperCase() || undefined,
-						billing_address: billingAddress.trim() || undefined,
+						billing_address: composeLegacyAddress(address, LEGACY_ADDRESS_LOCALE) || undefined,
+						...addressPayload(),
 						billing_email: billingEmail.trim() || undefined
 					},
 					items: items ?? [
@@ -233,7 +309,10 @@
 			billing_name: billingName.trim(),
 			vat_id: vatId.trim() || undefined,
 			vat_country_code: vatCountryCode.trim().toUpperCase() || undefined,
-			billing_address: billingAddress.trim() || undefined,
+			// A legacy-text-only profile keeps its text unless the buyer entered an address
+			// (the BE would otherwise overwrite it with "" on save_to_profile).
+			billing_address: legacyAddressText(),
+			...addressPayload(isAuthenticated && saveToProfile),
 			billing_email: billingEmail.trim() || undefined,
 			save_to_profile: isAuthenticated ? saveToProfile : undefined
 		};
@@ -247,6 +326,21 @@
 			return false;
 		}
 		billingNameError = '';
+
+		addressErrors = {};
+		if (addressRequired) {
+			const missing = missingRequiredFields(address);
+			if (missing.length > 0) {
+				addressErrors = Object.fromEntries(
+					missing.map((f) => [f, m[`postalAddress.errors.${f}`]()])
+				);
+				// Errors are role="alert" (announced); also move focus to the first one.
+				void tick().then(() =>
+					document.getElementById(`checkout-billing-address-${missing[0]}`)?.focus()
+				);
+				return false;
+			}
+		}
 		return true;
 	}
 
@@ -304,19 +398,15 @@
 				{/if}
 			</div>
 
-			<!-- Billing Address (optional) -->
-			<div class="space-y-1.5">
-				<Label for="billing-address" class="text-sm font-medium">
-					{m['checkout.billing.billingAddress']()}
-				</Label>
-				<Input
-					id="billing-address"
-					type="text"
-					bind:value={billingAddress}
-					placeholder={m['checkout.billing.billingAddressPlaceholder']()}
-					{disabled}
-				/>
-			</div>
+			<!-- Postal address (required when a VAT ID is entered) -->
+			<PostalAddressFields
+				idPrefix="checkout-billing-address"
+				bind:value={address}
+				required={addressRequired}
+				errors={shownAddressErrors}
+				{disabled}
+				legend={m['checkout.billing.billingAddress']()}
+			/>
 
 			<!-- Country Code + VAT ID row -->
 			<div class="grid grid-cols-2 gap-3">
@@ -349,8 +439,12 @@
 						{disabled}
 						oninput={() => {
 							vatId = vatId.toUpperCase();
+							suggestCountryFromVatId();
 						}}
-						onblur={fetchVatPreview}
+						onblur={() => {
+							suggestCountryFromVatId();
+							void fetchVatPreview();
+						}}
 					/>
 				</div>
 			</div>
