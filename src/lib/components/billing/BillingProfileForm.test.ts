@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/svelte';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import userEvent from '@testing-library/user-event';
 import { QueryClient } from '@tanstack/svelte-query';
 import BillingProfileForm from './BillingProfileForm.svelte';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
@@ -47,7 +48,17 @@ vi.mock('$lib/paraglide/messages.js', () => ({
 		'I agree that Revel may issue invoices on my behalf in accordance with the',
 	'billing.form.termsAndConditions': () => 'terms and conditions',
 	'billing.form.incomplete': () => 'Billing information is incomplete',
-	'billing.form.incompleteDescription': () => 'Please complete all required fields.'
+	'billing.form.incompleteDescription': () => 'Please complete all required fields.',
+	'einvoice.legacyNote': (p: { text: string }) => `Address on file: ${p.text} Please re-enter it.`,
+	'postalAddress.legend': () => 'Address',
+	'postalAddress.line1': () => 'Street and number',
+	'postalAddress.line2': () => 'Address line 2',
+	'postalAddress.postalCode': () => 'Postal code',
+	'postalAddress.city': () => 'City',
+	'postalAddress.subdivision': () => 'Region',
+	'postalAddress.country': () => 'Address country',
+	'postalAddress.countryPlaceholder': () => 'Select a country',
+	'postalAddress.requiredSr': () => '(required)'
 }));
 
 function renderWithQueryClient(props: Record<string, unknown>) {
@@ -73,8 +84,11 @@ describe('BillingProfileForm', () => {
 	it('renders all required form fields', async () => {
 		renderWithQueryClient({ authToken: 'test-token' });
 		expect(screen.getByLabelText(/Legal Name/i)).toBeInTheDocument();
-		expect(screen.getByLabelText(/Billing Address/i)).toBeInTheDocument();
-		expect(screen.getByLabelText(/Country/i)).toBeInTheDocument();
+		expect(screen.getByRole('group', { name: 'Billing Address' })).toBeInTheDocument();
+		expect(screen.getByLabelText(/Street and number/i)).toBeInTheDocument();
+		expect(screen.getByLabelText(/Postal code/i)).toBeInTheDocument();
+		expect(screen.getByLabelText(/^City/i)).toBeInTheDocument();
+		expect(screen.getByLabelText(/^Country/)).toBeInTheDocument();
 		expect(screen.getByLabelText(/Billing Email/i)).toBeInTheDocument();
 	});
 
@@ -193,5 +207,105 @@ describe('BillingProfileForm', () => {
 		await waitFor(() => {
 			expect(screen.getByText('Pending validation')).toBeInTheDocument();
 		});
+	});
+
+	const structured = {
+		id: '1',
+		billing_name: 'Test Company',
+		billing_address: 'Old St 1',
+		billing_address_line1: 'Main St 1',
+		billing_address_line2: '',
+		billing_postal_code: '1010',
+		billing_city: 'Vienna',
+		billing_subdivision: '',
+		billing_country_code: 'AT',
+		vat_country_code: 'AT',
+		billing_email: null,
+		vat_id: null,
+		vat_id_validated: false,
+		self_billing_agreed: false
+	};
+
+	it('prefills the structured address and sends all six fields on save', async () => {
+		const sdk = await import('$lib/api/generated/sdk.gen');
+		vi.mocked(sdk.userbillingGetBillingProfile).mockResolvedValueOnce({
+			data: structured,
+			response: { status: 200 } as Response,
+			error: null
+		});
+		renderWithQueryClient({ authToken: 'test-token' });
+		await waitFor(() =>
+			expect(screen.getByLabelText(/Street and number/i)).toHaveValue('Main St 1')
+		);
+		expect(screen.queryByTestId('legacy-address-note')).not.toBeInTheDocument();
+
+		const user = userEvent.setup();
+		const city = screen.getByLabelText(/^City/i);
+		await user.clear(city);
+		await user.type(city, 'Graz');
+		await user.click(screen.getByRole('button', { name: /Update billing information/i }));
+
+		await waitFor(() => expect(sdk.userbillingUpdateBillingProfile).toHaveBeenCalled());
+		const body = vi.mocked(sdk.userbillingUpdateBillingProfile).mock.calls[0][0]!.body as Record<
+			string,
+			string
+		>;
+		expect(body.billing_address_line1).toBe('Main St 1');
+		expect(body.billing_city).toBe('Graz');
+		expect(body.billing_postal_code).toBe('1010');
+		expect(body.billing_country_code).toBe('AT');
+		expect(body.billing_address_line2).toBe('');
+		expect(body.billing_subdivision).toBe('');
+		expect(body.billing_address).toContain('Main St 1');
+		expect(body.billing_address).toContain('1010 Graz');
+	});
+
+	it('keeps legacy text and shows a note when only legacy address exists', async () => {
+		const sdk = await import('$lib/api/generated/sdk.gen');
+		vi.mocked(sdk.userbillingGetBillingProfile).mockResolvedValueOnce({
+			data: {
+				...structured,
+				billing_address_line1: '',
+				billing_postal_code: '',
+				billing_city: '',
+				billing_country_code: ''
+			},
+			response: { status: 200 } as Response,
+			error: null
+		});
+		renderWithQueryClient({ authToken: 'test-token' });
+		await waitFor(() => expect(screen.getByTestId('legacy-address-note')).toBeInTheDocument());
+		// legacy text counts as complete: no incomplete warning
+		expect(screen.queryByText('Billing information is incomplete')).not.toBeInTheDocument();
+
+		const user = userEvent.setup();
+		await user.click(screen.getByRole('button', { name: /Update billing information/i }));
+		await waitFor(() => expect(sdk.userbillingUpdateBillingProfile).toHaveBeenCalled());
+		const body = vi.mocked(sdk.userbillingUpdateBillingProfile).mock.calls[0][0]!.body as Record<
+			string,
+			string
+		>;
+		expect(body.billing_address).toBe('Old St 1');
+		expect(body.billing_address_line1).toBe('');
+	});
+
+	it('warns when profile has name and country but no address at all', async () => {
+		const sdk = await import('$lib/api/generated/sdk.gen');
+		vi.mocked(sdk.userbillingGetBillingProfile).mockResolvedValueOnce({
+			data: {
+				...structured,
+				billing_address: '',
+				billing_address_line1: '',
+				billing_postal_code: '',
+				billing_city: '',
+				billing_country_code: ''
+			},
+			response: { status: 200 } as Response,
+			error: null
+		});
+		renderWithQueryClient({ authToken: 'test-token' });
+		await waitFor(() =>
+			expect(screen.getByText('Billing information is incomplete')).toBeInTheDocument()
+		);
 	});
 });

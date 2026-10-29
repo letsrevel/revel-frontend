@@ -17,6 +17,16 @@
 		userbillingDeleteVatId
 	} from '$lib/api/generated/sdk.gen';
 	import type { UserBillingProfileSchema } from '$lib/api/generated/types.gen';
+	import PostalAddressFields from '$lib/components/billing/PostalAddressFields.svelte';
+	import { extractErrorMessage } from '$lib/utils/errors';
+	import { isAddressBlank, legacyAddressForPayload } from '$lib/utils/einvoice';
+	import {
+		emptyPostalAddress,
+		isPostalAddressComplete,
+		readPostalAddress,
+		toBillingFields,
+		type PostalAddress
+	} from '$lib/utils/postal-address';
 
 	// 2. Props interface
 	interface Props {
@@ -51,16 +61,22 @@
 	// 5. Derived profile state
 	const billingProfile = $derived(billingQuery.data ?? null);
 	const hasBillingProfile = $derived(billingProfile !== null && billingProfile !== undefined);
+	const profileAddress = $derived(
+		readPostalAddress(billingProfile as Record<string, unknown> | null, 'billing_')
+	);
+	const legacyText = $derived((billingProfile?.billing_address ?? '').trim());
+	// Legacy free text exists but no structured address yet: ask to re-enter it.
+	const showLegacyNote = $derived(legacyText !== '' && isAddressBlank(profileAddress));
 	const isBillingComplete = $derived(
 		hasBillingProfile &&
 			!!billingProfile?.billing_name &&
 			!!billingProfile?.vat_country_code &&
-			!!billingProfile?.billing_address
+			(isPostalAddressComplete(profileAddress) || legacyText !== '')
 	);
 
 	// 6. Form state
 	let billingName = $state('');
-	let billingAddress = $state('');
+	let address = $state<PostalAddress>(emptyPostalAddress());
 	let vatCountryCode = $state('');
 	let billingEmail = $state('');
 	let vatIdInput = $state('');
@@ -71,7 +87,7 @@
 	$effect(() => {
 		if (billingProfile) {
 			billingName = billingProfile.billing_name ?? '';
-			billingAddress = billingProfile.billing_address ?? '';
+			address = readPostalAddress(billingProfile as Record<string, unknown>, 'billing_');
 			vatCountryCode = billingProfile.vat_country_code ?? '';
 			billingEmail = billingProfile.billing_email ?? '';
 			vatIdInput = billingProfile.vat_id ?? '';
@@ -85,7 +101,9 @@
 			const headers = { Authorization: `Bearer ${authToken}` };
 			const baseBody = {
 				billing_name: billingName,
-				billing_address: billingAddress,
+				// PUT is a full replace: always send all six structured fields.
+				billing_address: legacyAddressForPayload(address, billingProfile?.billing_address ?? ''),
+				...toBillingFields(address),
 				vat_country_code: vatCountryCode,
 				...(billingEmail.trim() ? { billing_email: billingEmail.trim() } : {})
 			};
@@ -95,11 +113,15 @@
 
 			if (hasBillingProfile) {
 				const response = await userbillingUpdateBillingProfile({ headers, body });
-				if (response.error) throw new Error('Failed to update billing profile');
+				if (response.error) {
+					throw new Error(extractErrorMessage(response.error, m['billing.form.error']()));
+				}
 				return response.data;
 			} else {
 				const response = await userbillingCreateBillingProfile({ headers, body });
-				if (response.error) throw new Error('Failed to create billing profile');
+				if (response.error) {
+					throw new Error(extractErrorMessage(response.error, m['billing.form.error']()));
+				}
 				return response.data;
 			}
 		},
@@ -109,9 +131,9 @@
 			toast.success(m['billing.form.saved']());
 			setTimeout(() => (saveStatus = 'idle'), 2000);
 		},
-		onError: () => {
+		onError: (err: Error) => {
 			saveStatus = 'error';
-			toast.error(m['billing.form.error']());
+			toast.error(err.message || m['billing.form.error']());
 			setTimeout(() => (saveStatus = 'idle'), 3000);
 		}
 	}));
@@ -217,18 +239,18 @@
 
 	<!-- Billing Address -->
 	<div class="space-y-2">
-		<Label for="billingAddress">
-			{m['billing.form.billingAddress']()}
-			<span aria-hidden="true" class="ml-0.5 text-destructive">*</span>
-			<span class="sr-only">(required)</span>
-		</Label>
-		<Input
-			id="billingAddress"
-			bind:value={billingAddress}
-			placeholder={m['billing.form.billingAddressPlaceholder']()}
-			required
-			aria-required="true"
-			autocomplete="street-address"
+		{#if showLegacyNote}
+			<p
+				class="rounded-md border border-highlight/40 bg-highlight/20 p-3 text-sm text-foreground"
+				data-testid="legacy-address-note"
+			>
+				<span class="whitespace-pre-line">{m['einvoice.legacyNote']({ text: legacyText })}</span>
+			</p>
+		{/if}
+		<PostalAddressFields
+			idPrefix="billing-profile-address"
+			bind:value={address}
+			legend={m['billing.form.billingAddress']()}
 		/>
 	</div>
 
