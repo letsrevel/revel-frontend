@@ -12,13 +12,12 @@ import { serverLinkContext } from '$lib/server/tenant-canonical';
  * private-area disallows, or the bot is silently exempted from all of them
  * (this bug previously let Googlebot/Bingbot crawl /dashboard, /account, …).
  *
- * AI-crawler policy (search yes, training no): in production Cloudflare
- * prepends a managed section that blocks AI-training crawlers (GPTBot,
- * ClaudeBot, CCBot, Google-Extended, Bytespider, …) and declares
- * `Content-Signal: search=yes, ai-train=no`. AI *search* crawlers
- * (OAI-SearchBot, PerplexityBot) are covered by the `*` group and stay
- * allowed. Do not add Allow groups for training bots here — they would
- * contradict the managed block.
+ * AI-crawler policy (all allowed): AI search and training crawlers (GPTBot,
+ * ClaudeBot, OAI-SearchBot, PerplexityBot, Google-Extended, …) fall under the
+ * `*` group like any other crawler, so assistants can learn about and cite
+ * Revel (see also /llms.txt). Cloudflare's "Block AI bots" and managed
+ * robots.txt are switched off for the zone (2026-10-29); if they are turned
+ * back on, Cloudflare prepends its own Disallow groups to this file.
  */
 
 // Private/authenticated areas and duplicate-content params, shared by every
