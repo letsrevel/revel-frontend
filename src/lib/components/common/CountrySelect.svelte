@@ -35,18 +35,18 @@
 
 	const locale = $derived(getLocale());
 
-	const options = $derived.by(() => {
-		const list = sortedCountryOptions(ISO_COUNTRY_CODES, locale);
-		// A legacy value (e.g. "EL", or a code outside the list) must stay visible.
-		const current = normalizeCountryCode(value ?? '');
-		if (current && !list.some((o) => o.code === current)) {
-			list.unshift({ code: current, name: countryDisplayName(current, locale) });
-		}
-		return list;
-	});
+	// Sorted once per locale; a value change only touches the legacy extra below.
+	const sorted = $derived(sortedCountryOptions(ISO_COUNTRY_CODES, locale));
 
 	// Show a legacy "EL" as the normalised "GR" option.
 	const selected = $derived(normalizeCountryCode(value ?? ''));
+
+	// A legacy value (e.g. a code outside the list) must stay visible.
+	const options = $derived(
+		selected && !sorted.some((o) => o.code === selected)
+			? [{ code: selected, name: countryDisplayName(selected, locale) }, ...sorted]
+			: sorted
+	);
 </script>
 
 <select
