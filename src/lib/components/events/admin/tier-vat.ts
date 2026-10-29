@@ -1,4 +1,5 @@
 import type { InvoicingMode } from '$lib/api/generated/types.gen';
+import type { TicketTierDetailSchema } from '$lib/api/generated/types.gen';
 import { normalizeDecimalInput } from './tier-form-helpers';
 
 /** The organization's VAT defaults a ticket tier inherits from (admin schema fields). */
@@ -59,7 +60,14 @@ export interface TierPriceInputs {
 	categoryPrices?: readonly string[];
 }
 
-/** Paid online: online method and a positive fixed price / PWYC bound / category price. */
+/**
+ * Paid online: online method and a positive fixed price / PWYC bound / category price.
+ *
+ * The category-price clause is INTENTIONALLY stricter than the backend: a seated
+ * tier with a positive per-category price is invoiced at purchase, so the form
+ * asks for the exemption reason up front rather than failing at checkout time.
+ * Do not "align" it with the BE.
+ */
 export function isPaidOnline(t: TierPriceInputs): boolean {
 	if (t.paymentMethod !== 'online') return false;
 	if ((t.categoryPrices ?? []).some(positive)) return true;
@@ -90,4 +98,98 @@ export function vatExemptionRequired(
 	if (!isPaidOnline(tier)) return false;
 	if (effectiveVatRate(vatRateOverride, org) !== 0) return false;
 	return org.exemptionReason.trim() === '';
+}
+
+/**
+ * True when the zero-rate rule is the likely cause of a refusal: the submitted tier
+ * has an effective 0% rate and no reason (neither its own nor an org default).
+ * Used to suppress the unrelated country-rule hint without matching backend text.
+ */
+export function exemptionLikelyCause(
+	vatRateOverride: string,
+	vatExemptionReason: string,
+	org: OrgVatContext | null
+): boolean {
+	return (
+		effectiveVatRate(vatRateOverride, org) === 0 &&
+		vatExemptionReason.trim() === '' &&
+		(org?.exemptionReason.trim() ?? '') === ''
+	);
+}
+
+/** Form values behind the backend's ZERO_RATE_RULE_FIELDS (payload-shaped). */
+export interface ZeroRuleInputs {
+	paymentMethod: string;
+	priceType: string;
+	/** Price as it would be sent (already '0' for free, pwycMin for PWYC). */
+	price: string;
+	pwycMin: string;
+	pwycMax: string;
+	vatRateOverride: string;
+	vatExemptionReason: string;
+}
+
+const num = (v: unknown): number | null => {
+	if (v == null || String(v).trim() === '') return null;
+	const n = parseFloat(normalizeDecimalInput(String(v)));
+	return Number.isFinite(n) ? n : null;
+};
+
+/**
+ * Rule fields (backend payload keys) whose value differs from the saved tier. The
+ * backend enforces the zero-rate rule on update whenever ANY of these keys is
+ * present in the payload (key presence, not value), so the form sends only the
+ * changed ones and a plain rename of a legacy tier still saves.
+ * PWYC bounds are only compared for PWYC tiers (they are not sent otherwise).
+ */
+export function changedZeroRuleFields(tier: TicketTierDetailSchema, v: ZeroRuleInputs): string[] {
+	const changed: string[] = [];
+	if (v.paymentMethod !== tier.payment_method) changed.push('payment_method');
+	if (v.priceType !== tier.price_type) changed.push('price_type');
+	if (num(v.price) !== num(tier.price)) changed.push('price');
+	if (v.priceType === 'pwyc') {
+		if (v.pwycMin && num(v.pwycMin) !== num(tier.pwyc_min)) changed.push('pwyc_min');
+		if (v.pwycMax && num(v.pwycMax) !== num(tier.pwyc_max)) changed.push('pwyc_max');
+	}
+	const rate = v.paymentMethod === 'free' ? null : num(v.vatRateOverride);
+	if (rate !== num(tier.vat_rate)) changed.push('vat_rate');
+	if (v.vatExemptionReason.trim() !== (tier.vat_exemption_reason ?? '').trim()) {
+		changed.push('vat_exemption_reason');
+	}
+	return changed;
+}
+
+/** Price as the payload carries it (mirrors TierForm's submit). */
+export function payloadPrice(
+	paymentMethod: string,
+	priceType: string,
+	price: string,
+	pwycMin: string
+): string {
+	if (paymentMethod === 'free') return '0';
+	if (priceType === 'pwyc') return normalizeDecimalInput(pwycMin || '1');
+	return normalizeDecimalInput(price);
+}
+
+const ZERO_RULE_KEYS = [
+	'payment_method',
+	'price_type',
+	'price',
+	'pwyc_min',
+	'pwyc_max',
+	'vat_rate',
+	'vat_exemption_reason'
+] as const;
+
+/** Deletes, in place, the rule keys of an update payload that did not change vs the saved tier. */
+export function omitUnchangedZeroRuleFields(
+	tier: TicketTierDetailSchema,
+	payload: object,
+	v: ZeroRuleInputs
+): void {
+	const changed = changedZeroRuleFields(tier, v);
+	for (const k of ZERO_RULE_KEYS) {
+		// eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- a fixed key list
+		if (!changed.includes(k)) delete (payload as Record<string, unknown>)[k];
+	}
 }

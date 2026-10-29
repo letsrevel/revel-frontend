@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import {
+	changedZeroRuleFields,
 	effectiveVatRate,
+	exemptionLikelyCause,
+	omitUnchangedZeroRuleFields,
 	isPaidOnline,
 	orgVatContextFrom,
 	vatExemptionRequired,
@@ -94,5 +97,63 @@ describe('vatExemptionRequired', () => {
 	});
 	it('is never required without org context', () => {
 		expect(vatExemptionRequired(online, '0', null)).toBe(false);
+	});
+});
+
+describe('legacy 0% tier edit carve-out', () => {
+	const tier = {
+		payment_method: 'online',
+		price_type: 'fixed',
+		price: '10.00',
+		pwyc_min: null,
+		pwyc_max: null,
+		vat_rate: '0.00',
+		vat_exemption_reason: ''
+	} as unknown as Parameters<typeof changedZeroRuleFields>[0];
+	const same = {
+		paymentMethod: 'online',
+		priceType: 'fixed',
+		price: '10',
+		pwycMin: '1',
+		pwycMax: '',
+		vatRateOverride: '0',
+		vatExemptionReason: ''
+	};
+
+	it('reports nothing changed for a plain rename (values compared numerically)', () => {
+		expect(changedZeroRuleFields(tier, same)).toEqual([]);
+	});
+	it('reports the rule fields that changed', () => {
+		expect(changedZeroRuleFields(tier, { ...same, price: '12' })).toEqual(['price']);
+		expect(changedZeroRuleFields(tier, { ...same, vatExemptionReason: ' x ' })).toEqual([
+			'vat_exemption_reason'
+		]);
+		expect(changedZeroRuleFields(tier, { ...same, vatRateOverride: '' })).toEqual(['vat_rate']);
+	});
+	it('strips unchanged rule keys from the payload, keeping other fields', () => {
+		const payload: Record<string, unknown> = {
+			name: 'Renamed',
+			payment_method: 'online',
+			price_type: 'fixed',
+			price: '10',
+			vat_rate: 0,
+			vat_exemption_reason: ''
+		};
+		omitUnchangedZeroRuleFields(tier, payload, { ...same, price: '12' });
+		expect(payload).toEqual({ name: 'Renamed', price: '10' });
+		const rename: Record<string, unknown> = { name: 'R', price: '10', vat_rate: 0 };
+		omitUnchangedZeroRuleFields(tier, rename, same);
+		expect(rename).toEqual({ name: 'R' });
+	});
+});
+
+describe('exemptionLikelyCause', () => {
+	it('is true only for an effective 0% rate with no tier or org reason', () => {
+		expect(exemptionLikelyCause('', '', org())).toBe(true);
+		expect(exemptionLikelyCause('0', '  ', org({ vatRate: '22' }))).toBe(true);
+		expect(exemptionLikelyCause('', 'Art. 8', org())).toBe(false);
+		expect(exemptionLikelyCause('', '', org({ exemptionReason: 'Default' }))).toBe(false);
+		expect(exemptionLikelyCause('', '', org({ vatRate: '22' }))).toBe(false);
+		expect(exemptionLikelyCause('', '', null)).toBe(false);
 	});
 });

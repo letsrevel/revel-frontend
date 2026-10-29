@@ -32,7 +32,14 @@
 	import TierFormPaymentMethodSection from './TierFormPaymentMethodSection.svelte';
 	import TierFormErrorPanel from './TierFormErrorPanel.svelte';
 	import TierFormVatSection from './TierFormVatSection.svelte';
-	import { vatExemptionRequired, type OrgVatContext } from './tier-vat';
+	import {
+		omitUnchangedZeroRuleFields,
+		changedZeroRuleFields,
+		exemptionLikelyCause,
+		payloadPrice,
+		vatExemptionRequired,
+		type OrgVatContext
+	} from './tier-vat';
 	import {
 		checkInOffsetsPayload,
 		checkInPicksValid,
@@ -381,19 +388,27 @@
 	);
 	// The exemption reason is mandatory for online-paid, 0%-VAT tiers when the org invoices
 	// and has no default reason (mirrors the backend 422).
+	// On edit it only applies when a rule field changed vs the saved tier (backend carve-out).
+	const zeroRuleInputs = $derived({
+		paymentMethod,
+		priceType,
+		price: payloadPrice(paymentMethod, priceType, price, pwycMin),
+		pwycMin,
+		pwycMax,
+		vatRateOverride,
+		vatExemptionReason
+	});
 	const vatReasonRequired = $derived(
-		vatExemptionRequired(
-			{
-				paymentMethod,
-				priceType,
-				price,
-				pwycMin,
-				pwycMax,
-				categoryPrices: seatAssignmentMode === 'none' ? [] : Object.values(categoryPrices)
-			},
-			vatRateOverride,
-			orgVat
-		)
+		(!tier || changedZeroRuleFields(tier, zeroRuleInputs).length > 0) &&
+			vatExemptionRequired(
+				{
+					...zeroRuleInputs,
+					price,
+					categoryPrices: seatAssignmentMode === 'none' ? [] : Object.values(categoryPrices)
+				},
+				vatRateOverride,
+				orgVat
+			)
 	);
 	// Clear a shown error as soon as it no longer applies (reason typed or no longer required).
 	$effect(() => {
@@ -438,18 +453,8 @@
 		}
 		vatReasonError = '';
 
-		// Determine the price value based on payment method and price type
-		// Normalize all decimal values to ensure dots (not commas) as decimal separator
-		let finalPrice: string;
-		if (paymentMethod === 'free') {
-			finalPrice = '0';
-		} else if (priceType === 'pwyc') {
-			// For PWYC (especially with Stripe), use minimum price as the price field
-			finalPrice = normalizeDecimalInput(pwycMin || '1');
-		} else {
-			// Fixed price
-			finalPrice = normalizeDecimalInput(price);
-		}
+		// Price per method/type, decimals normalised to dots
+		const finalPrice = payloadPrice(paymentMethod, priceType, price, pwycMin);
 
 		// Build the data object, omitting null values for pwyc fields
 		const baseData: TicketTierCreateSchema = {
@@ -518,6 +523,12 @@
 			if (pwycMax) {
 				baseData.pwyc_max = normalizeDecimalInput(pwycMax);
 			}
+		}
+
+		if (tier) {
+			// The backend enforces the zero-rate rule whenever any rule key is PRESENT, so
+			// send only the ones that changed: renaming a legacy 0% tier must still save.
+			omitUnchangedZeroRuleFields(tier, baseData, zeroRuleInputs);
 		}
 
 		if (!tier) {
@@ -726,7 +737,13 @@
 			</div>
 
 			{#if error}
-				<TierFormErrorPanel {error} {saveStatus} {paymentMethod} {organizationSlug} />
+				<TierFormErrorPanel
+					{error}
+					{saveStatus}
+					{paymentMethod}
+					{organizationSlug}
+					exemptionLikelyCause={exemptionLikelyCause(vatRateOverride, vatExemptionReason, orgVat)}
+				/>
 			{/if}
 		</form>
 	</DialogContent>

@@ -11,9 +11,17 @@
 		saveStatus?: number;
 		paymentMethod: string;
 		organizationSlug: string;
+		/** Submitted tier is 0% with no exemption reason: that, not the country rule, is the likely cause. */
+		exemptionLikelyCause?: boolean;
 	}
 
-	const { error, saveStatus, paymentMethod, organizationSlug }: Props = $props();
+	const {
+		error,
+		saveStatus,
+		paymentMethod,
+		organizationSlug,
+		exemptionLikelyCause = false
+	}: Props = $props();
 
 	const fieldErrors = $derived(extractFieldErrors(error));
 	const errorMsg = $derived(extractErrorMessage(error));
@@ -41,7 +49,7 @@
 		</ul>
 	{:else}
 		<p class="mt-1 text-sm text-destructive/90">{errorMsg}</p>
-		{#if saveStatus === 422 && paymentMethod === 'online' && !isBillingError}
+		{#if saveStatus === 422 && paymentMethod === 'online' && !isBillingError && !exemptionLikelyCause}
 			<p class="mt-1 text-sm text-destructive/90">{m['compliance.tier.locationHint']()}</p>
 		{/if}
 	{/if}
