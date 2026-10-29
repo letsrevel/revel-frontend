@@ -44,6 +44,10 @@ test.describe('J22 buyer invoices @p2', () => {
 			billingInfo: {
 				billing_name: `${buyer.firstName} ${buyer.lastName}`,
 				billing_address: 'Musterstraße 1, 1010 Wien',
+				billing_address_line1: 'Musterstraße 1',
+				billing_postal_code: '1010',
+				billing_city: 'Wien',
+				billing_country_code: 'AT',
 				vat_country_code: 'AT',
 				billing_email: buyer.email
 			}

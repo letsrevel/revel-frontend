@@ -15,6 +15,7 @@
 	import { Info, Ticket } from '@lucide/svelte';
 	import TierCard from './TierCard.svelte';
 	import TierForm from './TierForm.svelte';
+	import type { OrgVatContext } from './tier-vat';
 	import { takeTierDraft, type TierDraft } from './tier-draft';
 	import { onMount } from 'svelte';
 	import { effectiveEventCapacity } from './event-capacity';
@@ -57,6 +58,8 @@
 		isOwner?: boolean;
 		/** Org platform-fee terms for the tier net-payout preview (null hides it). */
 		platformFees?: PlatformFeeInfo | null;
+		/** Org VAT defaults, for the tier's VAT exemption reason (null = unknown). */
+		orgVat?: OrgVatContext | null;
 		formData: EventFormData;
 		onUpdate: (updates: Partial<EventFormData>) => void;
 		onBack: () => void;
@@ -75,6 +78,7 @@
 		stripeEmail = '',
 		isOwner = false,
 		platformFees = null,
+		orgVat = null,
 		formData,
 		onUpdate,
 		onBack,
@@ -500,6 +504,7 @@
 		{isOwner}
 		draft={restoredDraft}
 		{platformFees}
+		{orgVat}
 		{membershipTiers}
 		eventVenueId={formData.venue_id || null}
 		{eventCapacity}
