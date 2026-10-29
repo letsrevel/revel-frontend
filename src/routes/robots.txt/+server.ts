@@ -12,12 +12,13 @@ import { serverLinkContext } from '$lib/server/tenant-canonical';
  * private-area disallows, or the bot is silently exempted from all of them
  * (this bug previously let Googlebot/Bingbot crawl /dashboard, /account, …).
  *
- * AI-crawler policy (all allowed): AI search and training crawlers (GPTBot,
- * ClaudeBot, OAI-SearchBot, PerplexityBot, Google-Extended, …) fall under the
- * `*` group like any other crawler, so assistants can learn about and cite
- * Revel (see also /llms.txt). Cloudflare's "Block AI bots" and managed
- * robots.txt are switched off for the zone (2026-10-29); if they are turned
- * back on, Cloudflare prepends its own Disallow groups to this file.
+ * AI-crawler policy: AI *search* agents (OAI-SearchBot, ChatGPT-User,
+ * Claude-SearchBot, PerplexityBot) fall under the `*` group like any search
+ * engine. AI *training* crawlers may read Revel's own pages (landing pages,
+ * /llms.txt) but not organizer content: events, series, organizations and
+ * embeds, and nothing at all on a tenant host. Cloudflare's "Block AI bots"
+ * and managed robots.txt are switched off for the zone (2026-10-29); if they
+ * are turned back on, Cloudflare prepends its own Disallow groups here.
  */
 
 // Private/authenticated areas and duplicate-content params, shared by every
@@ -52,6 +53,30 @@ const TENANT_DISALLOW_RULES = DISALLOW_RULES.split('\n')
 // SEO-tool crawlers that hammer small sites; keep them restricted and slow.
 const SLOW_BOTS = ['AhrefsBot', 'SemrushBot', 'MJ12bot'];
 
+// AI training crawlers and opt-out tokens (Google-Extended and
+// Applebot-Extended only control training; search crawling is unaffected).
+const AI_TRAINING_BOTS = [
+	'GPTBot',
+	'ClaudeBot',
+	'anthropic-ai',
+	'CCBot',
+	'Google-Extended',
+	'Applebot-Extended',
+	'meta-externalagent',
+	'Amazonbot',
+	'Bytespider',
+	'cohere-ai',
+	'cohere-training-data-crawler',
+	'Diffbot'
+];
+const AI_TRAINING_AGENTS = AI_TRAINING_BOTS.map((bot) => `User-agent: ${bot}`).join('\n');
+
+// Organizer content (events, series, org pages, embeds) stays out of training sets.
+const ORGANIZER_CONTENT_RULES = `Disallow: /events
+Disallow: /org/
+Disallow: /organizations
+Disallow: /embed/`;
+
 export const GET: RequestHandler = async ({ url, locals }) => {
 	const tenant = locals.tenant ?? null;
 	if (tenant) {
@@ -66,6 +91,9 @@ Allow: /
 ${TENANT_DISALLOW_RULES}
 
 ${slowGroups}
+
+${AI_TRAINING_AGENTS}
+Disallow: /
 
 Sitemap: ${tenantBase}/sitemap.xml
 `;
@@ -94,6 +122,11 @@ Allow: /
 ${DISALLOW_RULES}
 
 ${slowBotGroups}
+
+# AI training crawlers: Revel's own pages yes, organizer content no.
+${AI_TRAINING_AGENTS}
+${ORGANIZER_CONTENT_RULES}
+${DISALLOW_RULES}
 
 # Sitemap location
 Sitemap: ${baseUrl}/sitemap.xml

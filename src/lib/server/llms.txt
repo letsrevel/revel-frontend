@@ -55,8 +55,6 @@
 - [Backend (Django)](https://github.com/letsrevel/revel-backend)
 - [Frontend (SvelteKit)](https://github.com/letsrevel/revel-frontend)
 
-## Optional
+## Contact
 
-- [Browse public events](https://letsrevel.io/events)
-- [Browse organizations](https://letsrevel.io/organizations)
-- Contact: contact@letsrevel.io
+- contact@letsrevel.io
