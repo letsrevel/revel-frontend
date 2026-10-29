@@ -4537,7 +4537,7 @@
 		"billingInfo": {
 			"title": "Rechnungsinformationen",
 			"description": "Lege deine Rechnungsdetails für Rechnungen und Steuerkonformität fest",
-			"country": "Land",
+			"country": "USt-Land",
 			"countryPlaceholder": "EU-Land auswählen",
 			"countryHelp": "Muss ein EU-Mitgliedsstaat sein",
 			"countryDisabledHint": "USt-ID entfernen, um das Land zu ändern",
@@ -7088,7 +7088,7 @@
 			"billingNamePlaceholder": "Vollständiger Name oder Firmenname",
 			"billingAddress": "Rechnungsadresse",
 			"billingAddressPlaceholder": "Straße, Stadt, Postleitzahl",
-			"vatCountryCode": "Land",
+			"vatCountryCode": "USt-Land",
 			"vatCountryCodePlaceholder": "z.B. AT, DE, IT",
 			"billingEmail": "Rechnungs-E-Mail (optional)",
 			"billingEmailPlaceholder": "Fällt auf Ihre Konto-E-Mail zurück",

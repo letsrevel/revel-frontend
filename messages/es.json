@@ -4537,7 +4537,7 @@
 		"billingInfo": {
 			"title": "Información de facturación",
 			"description": "Configura tus datos de facturación para las facturas y el cumplimiento fiscal",
-			"country": "País",
+			"country": "País del IVA",
 			"countryPlaceholder": "Selecciona un país de la UE",
 			"countryHelp": "Debe ser un estado miembro de la UE",
 			"countryDisabledHint": "Elimina el NIF-IVA para cambiar de país",
@@ -7088,7 +7088,7 @@
 			"billingNamePlaceholder": "Nombre legal completo o nombre de la empresa",
 			"billingAddress": "Dirección de facturación",
 			"billingAddressPlaceholder": "Calle, ciudad, código postal",
-			"vatCountryCode": "País",
+			"vatCountryCode": "País del IVA",
 			"vatCountryCodePlaceholder": "p. ej. AT, DE, IT",
 			"billingEmail": "Correo electrónico de facturación (opcional)",
 			"billingEmailPlaceholder": "Por defecto, se usa el correo de tu cuenta",

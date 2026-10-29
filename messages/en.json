@@ -4537,7 +4537,7 @@
 		"billingInfo": {
 			"title": "Billing Information",
 			"description": "Set your billing details for invoices and tax compliance",
-			"country": "Country",
+			"country": "VAT country",
 			"countryPlaceholder": "Select an EU country",
 			"countryHelp": "Must be an EU member state",
 			"countryDisabledHint": "Remove VAT ID to change country",
@@ -7088,7 +7088,7 @@
 			"billingNamePlaceholder": "Full legal name or company name",
 			"billingAddress": "Billing Address",
 			"billingAddressPlaceholder": "Street, city, postal code",
-			"vatCountryCode": "Country",
+			"vatCountryCode": "VAT country",
 			"vatCountryCodePlaceholder": "e.g. AT, DE, IT",
 			"billingEmail": "Billing Email (optional)",
 			"billingEmailPlaceholder": "Falls back to your account email",

@@ -24,7 +24,7 @@ vi.mock('$lib/paraglide/messages.js', () => ({
 	'billing.form.billingNamePlaceholder': () => 'Full legal name or company name',
 	'billing.form.billingAddress': () => 'Billing Address',
 	'billing.form.billingAddressPlaceholder': () => 'Street, city, postal code',
-	'billing.form.vatCountryCode': () => 'Country',
+	'billing.form.vatCountryCode': () => 'VAT country',
 	'billing.form.vatCountryCodePlaceholder': () => 'e.g. AT, DE, IT',
 	'billing.form.billingEmail': () => 'Billing Email (optional)',
 	'billing.form.billingEmailPlaceholder': () => 'Falls back to your account email',
@@ -95,7 +95,7 @@ describe('BillingProfileForm', () => {
 		expect(screen.getByLabelText(/Street and number/i)).toBeInTheDocument();
 		expect(screen.getByLabelText(/Postal code/i)).toBeInTheDocument();
 		expect(screen.getByLabelText(/^City/i)).toBeInTheDocument();
-		expect(screen.getByLabelText(/^Country/)).toBeInTheDocument();
+		expect(screen.getByLabelText(/^VAT country/)).toBeInTheDocument();
 		expect(screen.getByLabelText(/Billing Email/i)).toBeInTheDocument();
 	});
 

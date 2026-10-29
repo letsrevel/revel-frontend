@@ -4537,7 +4537,7 @@
 		"billingInfo": {
 			"title": "Informazioni di Fatturazione",
 			"description": "Imposta i dettagli di fatturazione per le fatture e la conformità fiscale",
-			"country": "Paese",
+			"country": "Paese IVA",
 			"countryPlaceholder": "Seleziona un paese UE",
 			"countryHelp": "Deve essere uno stato membro dell'UE",
 			"countryDisabledHint": "Rimuovi la partita IVA per cambiare il paese",
@@ -7088,7 +7088,7 @@
 			"billingNamePlaceholder": "Nome completo o ragione sociale",
 			"billingAddress": "Indirizzo di Fatturazione",
 			"billingAddressPlaceholder": "Via, città, CAP",
-			"vatCountryCode": "Paese",
+			"vatCountryCode": "Paese IVA",
 			"vatCountryCodePlaceholder": "es. AT, DE, IT",
 			"billingEmail": "Email di Fatturazione (opzionale)",
 			"billingEmailPlaceholder": "Usa l'email del tuo account come fallback",

@@ -4537,7 +4537,7 @@
 		"billingInfo": {
 			"title": "Informações de faturação",
 			"description": "Define os teus dados de faturação para as faturas e a conformidade fiscal",
-			"country": "País",
+			"country": "País do IVA",
 			"countryPlaceholder": "Seleciona um país da UE",
 			"countryHelp": "Tem de ser um Estado-Membro da UE",
 			"countryDisabledHint": "Remove o número de IVA para mudar de país",
@@ -7088,7 +7088,7 @@
 			"billingNamePlaceholder": "Nome legal completo ou nome da empresa",
 			"billingAddress": "Morada de faturação",
 			"billingAddressPlaceholder": "Rua, cidade, código postal",
-			"vatCountryCode": "País",
+			"vatCountryCode": "País do IVA",
 			"vatCountryCodePlaceholder": "ex.: AT, DE, IT",
 			"billingEmail": "E-mail de faturação (opcional)",
 			"billingEmailPlaceholder": "Se não for indicado, usa o e-mail da tua conta",

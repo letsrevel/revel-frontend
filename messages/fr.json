@@ -4507,7 +4507,7 @@
 		"billingInfo": {
 			"title": "Informations de facturation",
 			"description": "Définis tes coordonnées de facturation pour les factures et la conformité fiscale",
-			"country": "Pays",
+			"country": "Pays de TVA",
 			"countryPlaceholder": "Sélectionne un pays de l'UE",
 			"countryHelp": "Doit être un État membre de l'UE",
 			"countryDisabledHint": "Supprime le numéro de TVA pour changer de pays",
@@ -7058,7 +7058,7 @@
 			"billingNamePlaceholder": "Nom légal complet ou raison sociale",
 			"billingAddress": "Adresse de facturation",
 			"billingAddressPlaceholder": "Rue, ville, code postal",
-			"vatCountryCode": "Pays",
+			"vatCountryCode": "Pays de TVA",
 			"vatCountryCodePlaceholder": "ex. AT, DE, IT",
 			"billingEmail": "E-mail de facturation (facultatif)",
 			"billingEmailPlaceholder": "Utilise l'e-mail de ton compte par défaut",
