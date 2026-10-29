@@ -10612,5 +10612,18 @@
 	"eventEditor.publishCard.shareSrPrefix": "Condividi con",
 	"tierForm.stripeGate.waiting": "La tipologia di biglietto che stai creando ti aspetta qui al ritorno.",
 	"tierForm.stripeGate.askOwner": "Chiedi a chi possiede l'organizzazione di collegare Stripe.",
-	"tierForm.stripeGate.askOwnerBilling": "Chiedi a chi possiede l'organizzazione di aggiungere i dati fiscali per i pagamenti online."
+	"tierForm.stripeGate.askOwnerBilling": "Chiedi a chi possiede l'organizzazione di aggiungere i dati fiscali per i pagamenti online.",
+	"postalAddress.legend": "Indirizzo",
+	"postalAddress.line1": "Via e numero civico",
+	"postalAddress.line2": "Seconda riga dell'indirizzo (facoltativa)",
+	"postalAddress.postalCode": "CAP",
+	"postalAddress.city": "Città",
+	"postalAddress.subdivision": "Stato / provincia / regione (facoltativo)",
+	"postalAddress.country": "Paese",
+	"postalAddress.countryPlaceholder": "Seleziona un paese",
+	"postalAddress.requiredSr": "(obbligatorio)",
+	"postalAddress.errors.line1": "Via e numero civico sono obbligatori",
+	"postalAddress.errors.postalCode": "Il CAP è obbligatorio",
+	"postalAddress.errors.city": "La città è obbligatoria",
+	"postalAddress.errors.countryCode": "Il paese è obbligatorio"
 }

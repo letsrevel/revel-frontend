@@ -10612,5 +10612,18 @@
 	"eventEditor.publishCard.shareSrPrefix": "Compartir por",
 	"tierForm.stripeGate.waiting": "El tipo de entrada que estás creando te esperará aquí cuando vuelvas.",
 	"tierForm.stripeGate.askOwner": "Pide a quien es titular de la organización que conecte Stripe.",
-	"tierForm.stripeGate.askOwnerBilling": "Pide a quien es titular de la organización que añada los datos fiscales para los pagos en línea."
+	"tierForm.stripeGate.askOwnerBilling": "Pide a quien es titular de la organización que añada los datos fiscales para los pagos en línea.",
+	"postalAddress.legend": "Dirección",
+	"postalAddress.line1": "Calle y número",
+	"postalAddress.line2": "Línea de dirección 2 (opcional)",
+	"postalAddress.postalCode": "Código postal",
+	"postalAddress.city": "Ciudad",
+	"postalAddress.subdivision": "Estado / provincia / región (opcional)",
+	"postalAddress.country": "País",
+	"postalAddress.countryPlaceholder": "Selecciona un país",
+	"postalAddress.requiredSr": "(obligatorio)",
+	"postalAddress.errors.line1": "La calle y el número son obligatorios",
+	"postalAddress.errors.postalCode": "El código postal es obligatorio",
+	"postalAddress.errors.city": "La ciudad es obligatoria",
+	"postalAddress.errors.countryCode": "El país es obligatorio"
 }

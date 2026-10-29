@@ -10612,5 +10612,18 @@
 	"eventEditor.publishCard.shareSrPrefix": "Partilhar por",
 	"tierForm.stripeGate.waiting": "O tipo de bilhete que estás a criar fica à tua espera aqui quando voltares.",
 	"tierForm.stripeGate.askOwner": "Pede a quem é titular da organização que ligue o Stripe.",
-	"tierForm.stripeGate.askOwnerBilling": "Pede a quem é titular da organização que adicione os dados fiscais para os pagamentos online."
+	"tierForm.stripeGate.askOwnerBilling": "Pede a quem é titular da organização que adicione os dados fiscais para os pagamentos online.",
+	"postalAddress.legend": "Morada",
+	"postalAddress.line1": "Rua e número",
+	"postalAddress.line2": "Segunda linha da morada (opcional)",
+	"postalAddress.postalCode": "Código postal",
+	"postalAddress.city": "Cidade",
+	"postalAddress.subdivision": "Estado / província / região (opcional)",
+	"postalAddress.country": "País",
+	"postalAddress.countryPlaceholder": "Seleciona um país",
+	"postalAddress.requiredSr": "(obrigatório)",
+	"postalAddress.errors.line1": "A rua e o número são obrigatórios",
+	"postalAddress.errors.postalCode": "O código postal é obrigatório",
+	"postalAddress.errors.city": "A cidade é obrigatória",
+	"postalAddress.errors.countryCode": "O país é obrigatório"
 }

@@ -10612,5 +10612,18 @@
 	"eventEditor.publishCard.shareSrPrefix": "Teilen über",
 	"tierForm.stripeGate.waiting": "Deine Ticketkategorie wartet hier auf dich, wenn du zurückkommst.",
 	"tierForm.stripeGate.askOwner": "Bitte die Person, der die Organisation gehört, Stripe zu verbinden.",
-	"tierForm.stripeGate.askOwnerBilling": "Bitte die Person, der die Organisation gehört, die Steuerangaben für Online-Zahlungen zu ergänzen."
+	"tierForm.stripeGate.askOwnerBilling": "Bitte die Person, der die Organisation gehört, die Steuerangaben für Online-Zahlungen zu ergänzen.",
+	"postalAddress.legend": "Adresse",
+	"postalAddress.line1": "Straße und Hausnummer",
+	"postalAddress.line2": "Adresszusatz (optional)",
+	"postalAddress.postalCode": "Postleitzahl",
+	"postalAddress.city": "Stadt",
+	"postalAddress.subdivision": "Bundesland / Provinz / Region (optional)",
+	"postalAddress.country": "Land",
+	"postalAddress.countryPlaceholder": "Land auswählen",
+	"postalAddress.requiredSr": "(Pflichtfeld)",
+	"postalAddress.errors.line1": "Straße und Hausnummer sind erforderlich",
+	"postalAddress.errors.postalCode": "Postleitzahl ist erforderlich",
+	"postalAddress.errors.city": "Stadt ist erforderlich",
+	"postalAddress.errors.countryCode": "Land ist erforderlich"
 }

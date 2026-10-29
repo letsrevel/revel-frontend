@@ -10612,5 +10612,18 @@
 	"eventEditor.publishCard.shareSrPrefix": "Share via",
 	"tierForm.stripeGate.waiting": "Your tier will be waiting here when you come back.",
 	"tierForm.stripeGate.askOwner": "Ask the organization owner to connect Stripe.",
-	"tierForm.stripeGate.askOwnerBilling": "Ask the organization owner to add tax details for online payments."
+	"tierForm.stripeGate.askOwnerBilling": "Ask the organization owner to add tax details for online payments.",
+	"postalAddress.legend": "Address",
+	"postalAddress.line1": "Street and number",
+	"postalAddress.line2": "Address line 2 (optional)",
+	"postalAddress.postalCode": "Postal code",
+	"postalAddress.city": "City",
+	"postalAddress.subdivision": "State / province / region (optional)",
+	"postalAddress.country": "Country",
+	"postalAddress.countryPlaceholder": "Select a country",
+	"postalAddress.requiredSr": "(required)",
+	"postalAddress.errors.line1": "Street and number are required",
+	"postalAddress.errors.postalCode": "Postal code is required",
+	"postalAddress.errors.city": "City is required",
+	"postalAddress.errors.countryCode": "Country is required"
 }
