@@ -45,7 +45,11 @@ test.describe('J22 invoicing mode @p2', () => {
 		// Arrange the prerequisites: billing name/address + a VIES-validated ID.
 		await api.patch(`/api/organization-admin/${org.slug}/billing-info`, {
 			billing_name: `${org.name} GmbH`,
-			billing_address: 'Am Brunnen 1, 5330 Fuschl am See'
+			billing_address: 'Am Brunnen 1, 5330 Fuschl am See',
+			billing_address_line1: 'Am Brunnen 1',
+			billing_postal_code: '5330',
+			billing_city: 'Fuschl am See',
+			billing_country_code: 'AT'
 		});
 		try {
 			await api.put(`/api/organization-admin/${org.slug}/vat-id`, { vat_id: REAL_VAT_ID });
