@@ -4,8 +4,6 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
-	import { Textarea } from '$lib/components/ui/textarea';
-	import * as Select from '$lib/components/ui/select';
 	import {
 		AlertCircle,
 		Check,
@@ -20,19 +18,16 @@
 	} from '@lucide/svelte';
 	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import { browser } from '$app/environment';
-	import { invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { toast } from 'svelte-sonner';
 	import { extractErrorMessage } from '$lib/utils/errors';
 	import {
 		organizationadminvatGetBillingInfo,
-		organizationadminvatUpdateBillingInfo,
 		organizationadminvatSetVatId,
 		organizationadminvatDeleteVatId,
 		organizationadminvatSetInvoicingMode
 	} from '$lib/api/generated/sdk.gen';
-	import type { OrganizationBillingInfoUpdateSchema } from '$lib/api/generated/types.gen';
 	import type { LayoutData } from '../$types';
 	import { formatDate } from '$lib/utils/date';
 	import {
@@ -50,6 +45,8 @@
 	import CountryRulesCard from '$lib/components/compliance/CountryRulesCard.svelte';
 	import ComplianceNotices from '$lib/components/compliance/ComplianceNotices.svelte';
 	import ComplianceCallout from '$lib/components/compliance/ComplianceCallout.svelte';
+	import OrgBillingInfoForm from '$lib/components/organization/OrgBillingInfoForm.svelte';
+	import EinvoiceReadiness from '$lib/components/organization/EinvoiceReadiness.svelte';
 	import { invoicingNotice, noticesFor } from '$lib/utils/compliance';
 
 	interface Props {
@@ -61,37 +58,6 @@
 	const slug = $derived(data.organization.slug);
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
-
-	// EU member states for the country dropdown
-	const EU_COUNTRIES: Array<{ code: string; name: string }> = [
-		{ code: 'AT', name: 'Austria' },
-		{ code: 'BE', name: 'Belgium' },
-		{ code: 'BG', name: 'Bulgaria' },
-		{ code: 'CY', name: 'Cyprus' },
-		{ code: 'CZ', name: 'Czech Republic' },
-		{ code: 'DE', name: 'Germany' },
-		{ code: 'DK', name: 'Denmark' },
-		{ code: 'EE', name: 'Estonia' },
-		{ code: 'ES', name: 'Spain' },
-		{ code: 'FI', name: 'Finland' },
-		{ code: 'FR', name: 'France' },
-		{ code: 'GR', name: 'Greece' },
-		{ code: 'HR', name: 'Croatia' },
-		{ code: 'HU', name: 'Hungary' },
-		{ code: 'IE', name: 'Ireland' },
-		{ code: 'IT', name: 'Italy' },
-		{ code: 'LT', name: 'Lithuania' },
-		{ code: 'LU', name: 'Luxembourg' },
-		{ code: 'LV', name: 'Latvia' },
-		{ code: 'MT', name: 'Malta' },
-		{ code: 'NL', name: 'Netherlands' },
-		{ code: 'PL', name: 'Poland' },
-		{ code: 'PT', name: 'Portugal' },
-		{ code: 'RO', name: 'Romania' },
-		{ code: 'SE', name: 'Sweden' },
-		{ code: 'SI', name: 'Slovenia' },
-		{ code: 'SK', name: 'Slovakia' }
-	];
 
 	// ─── Billing Info Query ─────────────────────────────────────────
 	const billingQuery = browser
@@ -109,77 +75,8 @@
 			}))
 		: null;
 
-	// ─── Billing Info Form State ────────────────────────────────────
-	let countryCode = $state('');
-	let vatRate = $state('');
-	let billingName = $state('');
-	let billingAddress = $state('');
-	let billingEmail = $state('');
-	let billingFormDirty = $state(false);
-
-	// Sync form with query data
-	$effect(() => {
-		if (billingQuery?.data && !billingFormDirty) {
-			countryCode = billingQuery.data.vat_country_code || '';
-			vatRate = billingQuery.data.vat_rate || '';
-			billingName = billingQuery.data.billing_name || '';
-			billingAddress = billingQuery.data.billing_address || '';
-			billingEmail = billingQuery.data.billing_email || '';
-		}
-	});
-
-	function markBillingDirty() {
-		billingFormDirty = true;
-	}
-
 	// Whether a VAT ID is currently set (locks the country dropdown)
 	const hasVatId = $derived(!!billingQuery?.data?.vat_id);
-
-	// ─── Update Billing Info Mutation ───────────────────────────────
-	const updateBillingMutation = browser
-		? createMutation(() => ({
-				mutationFn: async () => {
-					// Backend fields are non-nullable strings with '' meaning "clear";
-					// vat_rate is the only nullable field.
-					const body: OrganizationBillingInfoUpdateSchema = {
-						vat_country_code: countryCode || '',
-						vat_rate: vatRate ? parseFloat(vatRate) : null,
-						billing_name: billingName || '',
-						billing_address: billingAddress || '',
-						billing_email: billingEmail || ''
-					};
-
-					const response = await organizationadminvatUpdateBillingInfo({
-						path: { slug },
-						headers: { Authorization: `Bearer ${accessToken}` },
-						body
-					});
-					if (response.error) {
-						const msg = extractErrorMessage(
-							response.error,
-							m['orgAdmin.billing.billingInfo.error']()
-						);
-						throw new Error(msg);
-					}
-					if (!response.data) throw new Error(m['orgAdmin.billing.billingInfo.error']());
-					return response.data;
-				},
-				onSuccess: () => {
-					billingFormDirty = false;
-					queryClient.invalidateQueries({ queryKey: ['billing-info', slug] });
-					invalidateAll();
-					toast.success(m['orgAdmin.billing.billingInfo.saved']());
-				},
-				onError: (error: Error) => {
-					toast.error(error.message);
-				}
-			}))
-		: null;
-
-	function handleSaveBillingInfo(e: Event) {
-		e.preventDefault();
-		updateBillingMutation?.mutate();
-	}
 
 	// ─── VAT ID State ───────────────────────────────────────────────
 	let vatIdInput = $state('');
@@ -422,6 +319,12 @@
 				</ComplianceCallout>
 			{/if}
 			<ComplianceNotices notices={invoicingNotices} />
+			{#if billingQuery?.data && !billingQuery.data.einvoice_ready && billingQuery.data.invoicing_mode === 'none'}
+				<EinvoiceReadiness
+					variant="info"
+					missingFields={billingQuery.data.einvoice_missing_fields}
+				/>
+			{/if}
 
 			<RadioGroup.Root
 				value={invoicingMode}
@@ -520,118 +423,9 @@
 				{m['orgAdmin.billing.billingInfo.description']()}
 			</p>
 
-			<form onsubmit={handleSaveBillingInfo} class="space-y-4">
-				<!-- Country -->
-				<div class="space-y-2">
-					<Label for="billing-country">{m['orgAdmin.billing.billingInfo.country']()}</Label>
-					{#if hasVatId}
-						<div>
-							<Input
-								id="billing-country"
-								value={EU_COUNTRIES.find((c) => c.code === countryCode)?.name || countryCode}
-								disabled
-							/>
-							<p class="mt-1 text-xs text-muted-foreground">
-								{m['orgAdmin.billing.billingInfo.countryDisabledHint']()}
-							</p>
-						</div>
-					{:else}
-						<Select.Root
-							type="single"
-							value={countryCode}
-							onValueChange={(v) => {
-								countryCode = v;
-								markBillingDirty();
-							}}
-						>
-							<Select.Trigger id="billing-country" class="w-full">
-								{EU_COUNTRIES.find((c) => c.code === countryCode)?.name ||
-									m['orgAdmin.billing.billingInfo.countryPlaceholder']()}
-							</Select.Trigger>
-							<Select.Content>
-								{#each EU_COUNTRIES as country (country.code)}
-									<Select.Item value={country.code}>{country.code} - {country.name}</Select.Item>
-								{/each}
-							</Select.Content>
-						</Select.Root>
-						<p class="text-xs text-muted-foreground">
-							{m['orgAdmin.billing.billingInfo.countryHelp']()}
-						</p>
-					{/if}
-				</div>
-
-				<!-- VAT Rate -->
-				<div class="space-y-2">
-					<Label for="billing-vat-rate">{m['orgAdmin.billing.billingInfo.vatRate']()}</Label>
-					<Input
-						id="billing-vat-rate"
-						type="number"
-						step="0.01"
-						min="0"
-						max="100"
-						placeholder={m['orgAdmin.billing.billingInfo.vatRatePlaceholder']()}
-						bind:value={vatRate}
-						oninput={markBillingDirty}
-					/>
-					<p class="text-xs text-muted-foreground">
-						{m['orgAdmin.billing.billingInfo.vatRateHelp']()}
-					</p>
-				</div>
-
-				<!-- Billing Name -->
-				<div class="space-y-2">
-					<Label for="billing-name">{m['orgAdmin.billing.billingInfo.billingName']()}</Label>
-					<Input
-						id="billing-name"
-						type="text"
-						placeholder={m['orgAdmin.billing.billingInfo.billingNamePlaceholder']()}
-						bind:value={billingName}
-						oninput={markBillingDirty}
-					/>
-					<p class="text-xs text-muted-foreground">
-						{m['orgAdmin.billing.billingInfo.billingNameHelp']()}
-					</p>
-				</div>
-
-				<!-- Billing Address -->
-				<div class="space-y-2">
-					<Label for="billing-address">{m['orgAdmin.billing.billingInfo.billingAddress']()}</Label>
-					<Textarea
-						id="billing-address"
-						placeholder={m['orgAdmin.billing.billingInfo.billingAddressPlaceholder']()}
-						bind:value={billingAddress}
-						oninput={markBillingDirty}
-						rows={3}
-					/>
-				</div>
-
-				<!-- Billing Email -->
-				<div class="space-y-2">
-					<Label for="billing-email">{m['orgAdmin.billing.billingInfo.billingEmail']()}</Label>
-					<Input
-						id="billing-email"
-						type="email"
-						placeholder={m['orgAdmin.billing.billingInfo.billingEmailPlaceholder']()}
-						bind:value={billingEmail}
-						oninput={markBillingDirty}
-					/>
-					<p class="text-xs text-muted-foreground">
-						{m['orgAdmin.billing.billingInfo.billingEmailHelp']()}
-					</p>
-				</div>
-
-				<!-- Save Button -->
-				<div class="flex justify-end">
-					<Button type="submit" disabled={updateBillingMutation?.isPending || !billingFormDirty}>
-						{#if updateBillingMutation?.isPending}
-							<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
-							{m['orgAdmin.billing.billingInfo.saving']()}
-						{:else}
-							{m['orgAdmin.billing.billingInfo.saveButton']()}
-						{/if}
-					</Button>
-				</div>
-			</form>
+			{#if billingQuery?.data}
+				<OrgBillingInfoForm {slug} {accessToken} info={billingQuery.data} {hasVatId} />
+			{/if}
 		</section>
 
 		<!-- ────────────────────────────────────────────────────────────
