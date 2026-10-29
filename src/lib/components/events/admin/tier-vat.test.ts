@@ -9,6 +9,7 @@ import {
 	orgVatContextFrom,
 	vatExemptionRequired,
 	vatExemptionVisible,
+	zeroRuleRechecked,
 	type OrgVatContext
 } from './tier-vat';
 
@@ -120,6 +121,17 @@ describe('legacy 0% tier edit carve-out', () => {
 		vatRateOverride: '0',
 		vatExemptionReason: ''
 	};
+
+	it('re-checks on create, on a resume of a paused tier, and when category prices are sent', () => {
+		expect(zeroRuleRechecked(null, same, false, false)).toBe(true);
+		expect(zeroRuleRechecked(tier, same, false, false)).toBe(false);
+		const paused = { ...tier, sales_paused: true } as typeof tier;
+		expect(zeroRuleRechecked(paused, same, false, false)).toBe(true);
+		expect(zeroRuleRechecked(paused, same, true, false)).toBe(false);
+		expect(zeroRuleRechecked(tier, same, true, false)).toBe(false);
+		expect(zeroRuleRechecked(tier, same, false, true)).toBe(true);
+		expect(zeroRuleRechecked(tier, { ...same, price: '12' }, false, false)).toBe(true);
+	});
 
 	it('reports nothing changed for a plain rename (values compared numerically)', () => {
 		expect(changedZeroRuleFields(tier, same)).toEqual([]);

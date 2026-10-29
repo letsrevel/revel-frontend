@@ -172,6 +172,23 @@ export function changedZeroRuleFields(tier: TicketTierDetailSchema, v: ZeroRuleI
 	return changed;
 }
 
+/**
+ * Whether saving re-runs the backend's zero-rate rule: always on create; on update
+ * when a rule key is sent, `category_prices` is sent (it is a rule key too, and
+ * only sent when dirty), or a paused tier is resumed (BE #1241).
+ */
+export function zeroRuleRechecked(
+	tier: TicketTierDetailSchema | null,
+	v: ZeroRuleInputs,
+	salesPaused: boolean,
+	categoryPricesSent: boolean
+): boolean {
+	if (!tier) return true;
+	if (categoryPricesSent) return true;
+	if (tier.sales_paused && !salesPaused) return true;
+	return changedZeroRuleFields(tier, v).length > 0;
+}
+
 /** Price as the payload carries it (mirrors TierForm's submit). */
 export function payloadPrice(
 	paymentMethod: string,

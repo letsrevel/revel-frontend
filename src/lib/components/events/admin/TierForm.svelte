@@ -34,7 +34,7 @@
 	import TierFormVatSection from './TierFormVatSection.svelte';
 	import {
 		omitUnchangedZeroRuleFields,
-		changedZeroRuleFields,
+		zeroRuleRechecked,
 		exemptionLikelyCause,
 		exemptionReasonForPayload,
 		payloadPrice,
@@ -408,8 +408,11 @@
 		price,
 		categoryPrices: seatAssignmentMode === 'none' ? [] : Object.values(categoryPrices)
 	});
+	const categoryPricesPayload = $derived(
+		buildCategoryPricesPayload(seatAssignmentMode, initialCategoryPrices, categoryPrices)
+	);
 	const vatReasonRequired = $derived(
-		(!tier || changedZeroRuleFields(tier, zeroRuleInputs).length > 0) &&
+		zeroRuleRechecked(tier, zeroRuleInputs, salesPaused, categoryPricesPayload !== undefined) &&
 			vatExemptionRequired(vatPriceInputs, vatRateOverride, orgVat)
 	);
 	// Clear a shown error as soon as it no longer applies (reason typed or no longer required).
@@ -506,11 +509,6 @@
 
 		// Sent ONLY when dirty (omit = leave the stored map untouched, {} =
 		// clear, non-empty = replace) — see buildCategoryPricesPayload.
-		const categoryPricesPayload = buildCategoryPricesPayload(
-			seatAssignmentMode,
-			initialCategoryPrices,
-			categoryPrices
-		);
 		if (categoryPricesPayload !== undefined) {
 			baseData.category_prices = categoryPricesPayload;
 		}
