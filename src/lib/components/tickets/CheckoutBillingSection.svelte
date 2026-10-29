@@ -1,12 +1,23 @@
 <script lang="ts">
 	// 1. Imports
-	import { untrack } from 'svelte';
+	import { tick, untrack } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { formatMoney } from '$lib/utils/format';
+	import PostalAddressFields from '$lib/components/billing/PostalAddressFields.svelte';
+	import {
+		composeLegacyAddress,
+		countryFromVatId,
+		emptyPostalAddress,
+		missingRequiredFields,
+		readPostalAddress,
+		toBillingFields,
+		type PostalAddress,
+		type RequiredAddressField
+	} from '$lib/utils/postal-address';
 	import { Check, AlertCircle, Loader2, Receipt } from '@lucide/svelte';
 	import {
 		userbillingGetBillingProfile,
@@ -69,7 +80,10 @@
 	// 3. Local state
 	let isOpen = $state(false);
 	let billingName = $state('');
-	let billingAddress = $state('');
+	let address = $state<PostalAddress>(emptyPostalAddress());
+	// Country last filled in from the VAT ID prefix (so a changed VAT ID can update it,
+	// while a country the buyer picked themselves is never overwritten).
+	let autoCountry = '';
 	let vatCountryCode = $state('');
 	let billingEmail = $state('');
 	let vatId = $state('');
@@ -82,6 +96,31 @@
 
 	// Form validation
 	let billingNameError = $state('');
+	let addressErrors = $state<Partial<Record<RequiredAddressField, string>>>({});
+
+	// Business buyers (non-empty VAT ID) must give a complete postal address.
+	const addressRequired = $derived(vatId.trim() !== '');
+
+	// Show an error only while its field is still missing, so it clears as the buyer fixes it.
+	const shownAddressErrors = $derived.by(() => {
+		if (!addressRequired) return {};
+		const still = new Set<string>(missingRequiredFields(address));
+		return Object.fromEntries(Object.entries(addressErrors).filter(([k]) => still.has(k)));
+	});
+
+	function suggestCountryFromVatId(): void {
+		const suggested = countryFromVatId(vatId);
+		if (!suggested) return;
+		if (!address.countryCode || address.countryCode === autoCountry) {
+			address.countryCode = suggested;
+			autoCountry = suggested;
+		}
+	}
+
+	/** Non-empty structured billing fields only (the BE defaults omitted ones to ""). */
+	function addressPayload(): Partial<ReturnType<typeof toBillingFields>> {
+		return Object.fromEntries(Object.entries(toBillingFields(address)).filter(([, v]) => v !== ''));
+	}
 
 	// 4. Query: pre-fill from billing profile when the user asks for an invoice.
 	// Gated on `isOpen` as well: the profile is read ONLY by the prefill below, so
@@ -125,11 +164,15 @@
 		const profile = billingProfileQuery.data;
 		if (!profile) return;
 		if (!billingName && profile.billing_name) billingName = profile.billing_name;
-		if (!billingAddress && profile.billing_address) billingAddress = profile.billing_address;
+		const profileAddress = readPostalAddress(profile as Record<string, unknown>, 'billing_');
+		for (const key of Object.keys(profileAddress) as (keyof PostalAddress)[]) {
+			if (!address[key] && profileAddress[key]) address[key] = profileAddress[key];
+		}
 		if (!vatCountryCode && profile.vat_country_code) vatCountryCode = profile.vat_country_code;
 		if (!billingEmail && profile.billing_email) billingEmail = profile.billing_email;
 		if (!vatId && profile.vat_id) {
 			vatId = profile.vat_id;
+			suggestCountryFromVatId();
 			// Auto-fetch VAT preview when pre-filled
 			setTimeout(() => fetchVatPreview(), 0);
 		}
@@ -193,7 +236,8 @@
 						billing_name: billingName || 'Preview',
 						vat_id: vatId.trim() || undefined,
 						vat_country_code: vatCountryCode.trim().toUpperCase() || undefined,
-						billing_address: billingAddress.trim() || undefined,
+						billing_address: composeLegacyAddress(address) || undefined,
+						...addressPayload(),
 						billing_email: billingEmail.trim() || undefined
 					},
 					items: items ?? [
@@ -233,7 +277,8 @@
 			billing_name: billingName.trim(),
 			vat_id: vatId.trim() || undefined,
 			vat_country_code: vatCountryCode.trim().toUpperCase() || undefined,
-			billing_address: billingAddress.trim() || undefined,
+			billing_address: composeLegacyAddress(address) || undefined,
+			...addressPayload(),
 			billing_email: billingEmail.trim() || undefined,
 			save_to_profile: isAuthenticated ? saveToProfile : undefined
 		};
@@ -247,6 +292,21 @@
 			return false;
 		}
 		billingNameError = '';
+
+		addressErrors = {};
+		if (addressRequired) {
+			const missing = missingRequiredFields(address);
+			if (missing.length > 0) {
+				addressErrors = Object.fromEntries(
+					missing.map((f) => [f, m[`postalAddress.errors.${f}`]()])
+				);
+				// Errors are role="alert" (announced); also move focus to the first one.
+				void tick().then(() =>
+					document.getElementById(`checkout-billing-address-${missing[0]}`)?.focus()
+				);
+				return false;
+			}
+		}
 		return true;
 	}
 
@@ -304,19 +364,15 @@
 				{/if}
 			</div>
 
-			<!-- Billing Address (optional) -->
-			<div class="space-y-1.5">
-				<Label for="billing-address" class="text-sm font-medium">
-					{m['checkout.billing.billingAddress']()}
-				</Label>
-				<Input
-					id="billing-address"
-					type="text"
-					bind:value={billingAddress}
-					placeholder={m['checkout.billing.billingAddressPlaceholder']()}
-					{disabled}
-				/>
-			</div>
+			<!-- Postal address (required when a VAT ID is entered) -->
+			<PostalAddressFields
+				idPrefix="checkout-billing-address"
+				bind:value={address}
+				required={addressRequired}
+				errors={shownAddressErrors}
+				{disabled}
+				legend={m['checkout.billing.billingAddress']()}
+			/>
 
 			<!-- Country Code + VAT ID row -->
 			<div class="grid grid-cols-2 gap-3">
@@ -349,8 +405,12 @@
 						{disabled}
 						oninput={() => {
 							vatId = vatId.toUpperCase();
+							suggestCountryFromVatId();
 						}}
-						onblur={fetchVatPreview}
+						onblur={() => {
+							suggestCountryFromVatId();
+							void fetchVatPreview();
+						}}
 					/>
 				</div>
 			</div>

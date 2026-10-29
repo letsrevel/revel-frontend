@@ -21,6 +21,14 @@
 		initialPwycAmountOverride?: string | null;
 	} = $props();
 
+	let section: CheckoutBillingSection | undefined = $state();
+	export function validate(): boolean {
+		return section?.validate() ?? true;
+	}
+	export function getBillingInfo() {
+		return section?.getBillingInfo() ?? null;
+	}
+
 	const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 
 	let discountCode = $state<string | undefined>(undefined);
@@ -36,6 +44,7 @@
 
 <QueryClientProvider {client}>
 	<CheckoutBillingSection
+		bind:this={section}
 		eventId="event-123"
 		tierId="tier-456"
 		tierName="General Admission"

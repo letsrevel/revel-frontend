@@ -69,7 +69,20 @@ vi.mock('$lib/paraglide/messages.js', () => ({
 	'checkout.billing.totalNet': () => 'Total Net',
 	'checkout.billing.totalVat': () => 'Total VAT',
 	'checkout.billing.totalGross': () => 'Total',
-	'checkout.billing.billingNameRequired': () => 'Legal name is required for invoice'
+	'checkout.billing.billingNameRequired': () => 'Legal name is required for invoice',
+	'postalAddress.legend': () => 'Address',
+	'postalAddress.line1': () => 'Street and number',
+	'postalAddress.line2': () => 'Address line 2',
+	'postalAddress.postalCode': () => 'Postal code',
+	'postalAddress.city': () => 'City',
+	'postalAddress.subdivision': () => 'Region',
+	'postalAddress.country': () => 'Address country',
+	'postalAddress.countryPlaceholder': () => 'Select a country',
+	'postalAddress.requiredSr': () => '(required)',
+	'postalAddress.errors.line1': () => 'Street required',
+	'postalAddress.errors.postalCode': () => 'Postal code required',
+	'postalAddress.errors.city': () => 'City required',
+	'postalAddress.errors.countryCode': () => 'Country required'
 }));
 
 const defaultProps = {
@@ -142,7 +155,8 @@ describe('CheckoutBillingSection', () => {
 			await fireEvent.click(button);
 
 			expect(screen.getByLabelText(/Legal Name/i)).toBeInTheDocument();
-			expect(screen.getByLabelText(/Billing Address/i)).toBeInTheDocument();
+			expect(screen.getByRole('group', { name: 'Billing Address' })).toBeInTheDocument();
+			expect(screen.getByLabelText(/Street and number/i)).toBeInTheDocument();
 			expect(screen.getByLabelText(/Country Code/i)).toBeInTheDocument();
 			expect(screen.getByLabelText(/Billing Email/i)).toBeInTheDocument();
 			expect(screen.getByLabelText(/VAT ID/i)).toBeInTheDocument();
@@ -419,6 +433,10 @@ describe('CheckoutBillingSection', () => {
 					id: '1',
 					billing_name: 'Acme s.r.l.',
 					billing_address: 'Via Roma 1, Milano',
+					billing_address_line1: 'Via Roma 1',
+					billing_postal_code: '20100',
+					billing_city: 'Milano',
+					billing_country_code: 'IT',
 					vat_country_code: 'IT',
 					billing_email: 'billing@acme.it',
 					vat_id: 'IT01234567890',
@@ -436,6 +454,77 @@ describe('CheckoutBillingSection', () => {
 				const nameInput = screen.getByLabelText(/Legal Name/i) as HTMLInputElement;
 				expect(nameInput.value).toBe('Acme s.r.l.');
 			});
+			expect(screen.getByLabelText(/Street and number/i)).toHaveValue('Via Roma 1');
+			expect(screen.getByLabelText(/^City/i)).toHaveValue('Milano');
+		});
+	});
+
+	describe('structured address', () => {
+		async function open(props: Record<string, unknown> = {}) {
+			const view = render(CheckoutBillingSectionTestHost, { props });
+			await fireEvent.click(screen.getByRole('checkbox', { name: /Request Invoice/i }));
+			return view;
+		}
+
+		it('does not require the address without a VAT ID', async () => {
+			const { component } = await open();
+			await fireEvent.input(screen.getByLabelText(/Legal Name/i), { target: { value: 'Jo' } });
+			expect(component.validate()).toBe(true);
+			expect(component.getBillingInfo()?.billing_address_line1).toBeUndefined();
+		});
+
+		it('blocks submission and announces errors for a business buyer', async () => {
+			const { component } = await open();
+			await fireEvent.input(screen.getByLabelText(/Legal Name/i), { target: { value: 'Jo' } });
+			await fireEvent.input(screen.getByLabelText(/^VAT ID/i), {
+				target: { value: 'DE123456789' }
+			});
+			expect(component.validate()).toBe(false);
+			await waitFor(() => {
+				expect(screen.getByText('Street required')).toHaveAttribute('role', 'alert');
+			});
+			expect(screen.getByText('Postal code required')).toBeInTheDocument();
+			expect(screen.getByText('City required')).toBeInTheDocument();
+			// country was prefilled from the VAT ID prefix
+			expect(screen.queryByText('Country required')).not.toBeInTheDocument();
+			await waitFor(() => expect(screen.getByLabelText(/Street and number/i)).toHaveFocus());
+		});
+
+		it('prefills country from the VAT ID (EL -> GR) without overwriting a picked one', async () => {
+			const { component } = await open();
+			const vat = screen.getByLabelText(/^VAT ID/i);
+			await fireEvent.input(vat, { target: { value: 'EL123456789' } });
+			const country = screen.getByLabelText(/Address country/i) as HTMLSelectElement;
+			expect(country.value).toBe('GR');
+
+			await fireEvent.change(country, { target: { value: 'CY' } });
+			await fireEvent.input(vat, { target: { value: 'DE123456789' } });
+			expect(country.value).toBe('CY');
+			expect(component).toBeTruthy();
+		});
+
+		it('includes the structured fields in the billing payload', async () => {
+			const { component } = await open();
+			await fireEvent.input(screen.getByLabelText(/Legal Name/i), { target: { value: 'Jo' } });
+			await fireEvent.input(screen.getByLabelText(/^VAT ID/i), {
+				target: { value: 'DE123456789' }
+			});
+			await fireEvent.input(screen.getByLabelText(/Street and number/i), {
+				target: { value: 'Main 1' }
+			});
+			await fireEvent.input(screen.getByLabelText(/Postal code/i), { target: { value: '10115' } });
+			await fireEvent.input(screen.getByLabelText(/^City/i), { target: { value: 'Berlin' } });
+			expect(component.validate()).toBe(true);
+			const info = component.getBillingInfo();
+			expect(info).toMatchObject({
+				billing_address_line1: 'Main 1',
+				billing_postal_code: '10115',
+				billing_city: 'Berlin',
+				billing_country_code: 'DE',
+				vat_id: 'DE123456789'
+			});
+			expect(info?.billing_address).toContain('Berlin');
+			expect(info?.billing_address_line2).toBeUndefined();
 		});
 	});
 
