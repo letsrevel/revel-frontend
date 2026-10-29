@@ -129,14 +129,14 @@
 		const { countryCode: _country, ...body } = address;
 		const hasBody = Object.values(body).some((v) => v.trim() !== '');
 		if (hasBody) return composed;
+		// No body fields: `composed` is at most a country name, never sent on its own.
 		const profile = billingProfileQuery.data;
-		if (!profile) return composed || undefined;
+		if (!profile) return undefined;
 		const saved = readPostalAddress(profile as Record<string, unknown>, 'billing_');
 		// A buyer who cleared a prefilled structured address must not get the old text back.
 		if (!isAddressBlank(saved)) return '';
 		return (
 			legacyAddressForPayload(emptyPostalAddress(), profile.billing_address ?? '', saved) ||
-			composed ||
 			undefined
 		);
 	}

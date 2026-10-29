@@ -507,6 +507,17 @@ describe('CheckoutBillingSection', () => {
 			expect(component.getBillingInfo()?.billing_country_code).toBe('CY');
 		});
 
+		it('never sends a leftover suggested country as the legacy address text', async () => {
+			const { component } = await open();
+			await fireEvent.input(screen.getByLabelText(/Legal Name/i), { target: { value: 'Jo' } });
+			const vat = screen.getByLabelText(/^VAT ID/i);
+			await fireEvent.input(vat, { target: { value: 'EL123456789' } });
+			await fireEvent.input(vat, { target: { value: '' } });
+			const info = component.getBillingInfo();
+			expect(info?.billing_country_code).toBe('GR');
+			expect(info?.billing_address).toBeUndefined();
+		});
+
 		it('includes the structured fields in the billing payload', async () => {
 			const { component } = await open();
 			await fireEvent.input(screen.getByLabelText(/Legal Name/i), { target: { value: 'Jo' } });

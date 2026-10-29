@@ -94,6 +94,7 @@
 	const formSnapshot = (): string =>
 		JSON.stringify([billingName, address, vatCountryCode, billingEmail, selfBillingAgreed]);
 	let syncedSnapshot: string | null = null;
+	let submittedSnapshot: string | null = null;
 
 	$effect(() => {
 		const profile = billingProfile;
@@ -119,6 +120,7 @@
 	// 8. Save mutation
 	const saveMutation = createMutation(() => ({
 		mutationFn: async () => {
+			submittedSnapshot = formSnapshot();
 			const headers = { Authorization: `Bearer ${authToken}` };
 			const baseBody = {
 				billing_name: billingName,
@@ -151,8 +153,9 @@
 			}
 		},
 		onSuccess: () => {
-			// The form now equals what was saved: let the refetch re-seed it again.
-			syncedSnapshot = formSnapshot();
+			// What was SUBMITTED is now saved. Edits made while the request was in
+			// flight differ from it, so the refetch below won't overwrite them.
+			syncedSnapshot = submittedSnapshot;
 			saveStatus = 'saved';
 			queryClient.invalidateQueries({ queryKey: ['user-billing-profile'] });
 			toast.success(m['billing.form.saved']());
