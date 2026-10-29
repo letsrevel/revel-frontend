@@ -10647,5 +10647,11 @@
 	"einvoice.exemptionCategory": "Isenção ({category})",
 	"einvoice.supplyDate": "Data da operação",
 	"einvoice.supplyPeriod": "Período da operação",
-	"einvoice.payment": "Pagamento"
+	"einvoice.payment": "Pagamento",
+	"tierForm.vatExemptionReason": "Motivo de isenção de IVA",
+	"tierForm.vatExemptionReasonHint": "Indica a disposição legal, p. ex. «§4 Nr. 20 UStG» ou «art. 132.º, n.º 1, alínea n), da Diretiva IVA». Aparece nas faturas.",
+	"tierForm.vatExemptionReasonOrgDefault": "Deixa vazio para usar o valor predefinido da tua organização: «{reason}»",
+	"tierForm.vatExemptionReasonRequired": "Indica um motivo de isenção de IVA: este bilhete é pago online com IVA a 0 % e a tua organização não tem um motivo predefinido.",
+	"tierForm.requiredSr": "(obrigatório)",
+	"tierForm.field.vat_exemption_reason": "Motivo de isenção de IVA"
 }

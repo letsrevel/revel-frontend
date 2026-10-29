@@ -10647,5 +10647,11 @@
 	"einvoice.exemptionCategory": "Exonération ({category})",
 	"einvoice.supplyDate": "Date de livraison",
 	"einvoice.supplyPeriod": "Période de livraison",
-	"einvoice.payment": "Paiement"
+	"einvoice.payment": "Paiement",
+	"tierForm.vatExemptionReason": "Motif d'exonération de TVA",
+	"tierForm.vatExemptionReasonHint": "Indique la disposition légale, par ex. « §4 Nr. 20 UStG » ou « art. 132, par. 1, point n), de la directive TVA ». Il figure sur les factures.",
+	"tierForm.vatExemptionReasonOrgDefault": "Laisse vide pour utiliser la valeur par défaut de ton organisation : « {reason} »",
+	"tierForm.vatExemptionReasonRequired": "Indique un motif d'exonération de TVA : ce billet est payé en ligne avec une TVA à 0 % et ton organisation n'a pas de motif par défaut.",
+	"tierForm.requiredSr": "(obligatoire)",
+	"tierForm.field.vat_exemption_reason": "Motif d'exonération de TVA"
 }

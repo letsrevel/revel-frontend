@@ -10647,5 +10647,11 @@
 	"einvoice.exemptionCategory": "Befreiung ({category})",
 	"einvoice.supplyDate": "Leistungsdatum",
 	"einvoice.supplyPeriod": "Leistungszeitraum",
-	"einvoice.payment": "Zahlung"
+	"einvoice.payment": "Zahlung",
+	"tierForm.vatExemptionReason": "Grund der Umsatzsteuerbefreiung",
+	"tierForm.vatExemptionReasonHint": "Nenne die Rechtsgrundlage, z. B. „§4 Nr. 20 UStG“ oder „Art. 132 Abs. 1 Buchst. n MwSt-Richtlinie“. Sie erscheint auf Rechnungen.",
+	"tierForm.vatExemptionReasonOrgDefault": "Leer lassen, um den Standard deiner Organisation zu verwenden: «{reason}»",
+	"tierForm.vatExemptionReasonRequired": "Gib einen Grund für die Umsatzsteuerbefreiung an: Dieses Ticket wird online mit 0 % USt bezahlt und deine Organisation hat keinen Standardgrund.",
+	"tierForm.requiredSr": "(erforderlich)",
+	"tierForm.field.vat_exemption_reason": "Grund der Umsatzsteuerbefreiung"
 }

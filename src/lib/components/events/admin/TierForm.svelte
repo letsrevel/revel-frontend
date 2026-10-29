@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
+	import { tick } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import {
@@ -30,6 +30,9 @@
 	import TierFormCheckInSection from './TierFormCheckInSection.svelte';
 	import TierFormCancellationSection from './TierFormCancellationSection.svelte';
 	import TierFormPaymentMethodSection from './TierFormPaymentMethodSection.svelte';
+	import TierFormErrorPanel from './TierFormErrorPanel.svelte';
+	import TierFormVatSection from './TierFormVatSection.svelte';
+	import { vatExemptionRequired, type OrgVatContext } from './tier-vat';
 	import {
 		checkInOffsetsPayload,
 		checkInPicksValid,
@@ -37,14 +40,8 @@
 		type TierCheckInEventContext
 	} from './check-in-offset';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { extractErrorMessage, extractFieldErrors, markSilent } from '$lib/utils/errors';
-	import { tierFieldLabel } from './tier-field-labels';
-	import {
-		CURRENCY_SYMBOLS,
-		isBillingInfoRequiredError,
-		toTimezoneAwareISO,
-		normalizeDecimalInput
-	} from './tier-form-helpers';
+	import { markSilent } from '$lib/utils/errors';
+	import { CURRENCY_SYMBOLS, toTimezoneAwareISO, normalizeDecimalInput } from './tier-form-helpers';
 	import {
 		buildCategoryPricesPayload,
 		buildTierSeatingFields,
@@ -75,6 +72,8 @@
 		eventContext?: TierCheckInEventContext;
 		/** The event's country rules (#1001) and whether they've loaded (fails closed). */
 		rules?: EventRules;
+		/** Org VAT defaults (rate, invoicing mode, exemption reason); null/absent = unknown. */
+		orgVat?: OrgVatContext | null;
 		onClose: () => void;
 	}
 
@@ -93,6 +92,7 @@
 		eventCapacity = null,
 		eventContext = { start: '' },
 		rules = { compliance: null, status: 'ready' },
+		orgVat = null,
 		onClose
 	}: Props = $props();
 
@@ -108,6 +108,8 @@
 	let pwycMax = $state(seed.pwycMax);
 	let currency = $state(seed.currency);
 	let vatRateOverride = $state(seed.vatRateOverride);
+	let vatExemptionReason = $state(seed.vatExemptionReason ?? '');
+	let vatReasonError = $state('');
 	let manualPaymentInstructions = $state(seed.manualPaymentInstructions);
 	let totalQuantity = $state(seed.totalQuantity);
 	let salesStartAt = $state(seed.salesStartAt);
@@ -377,6 +379,26 @@
 			billingNeedsAttention
 		)
 	);
+	// The exemption reason is mandatory for online-paid, 0%-VAT tiers when the org invoices
+	// and has no default reason (mirrors the backend 422).
+	const vatReasonRequired = $derived(
+		vatExemptionRequired(
+			{
+				paymentMethod,
+				priceType,
+				price,
+				pwycMin,
+				pwycMax,
+				categoryPrices: seatAssignmentMode === 'none' ? [] : Object.values(categoryPrices)
+			},
+			vatRateOverride,
+			orgVat
+		)
+	);
+	// Clear a shown error as soon as it no longer applies (reason typed or no longer required).
+	$effect(() => {
+		if (vatReasonError && (!vatReasonRequired || vatExemptionReason.trim())) vatReasonError = '';
+	});
 	const saveHeld = $derived(onlineSaveHeld || stripeGate !== null);
 	const heldBy = $derived(
 		onlineSaveHeld ? 'tier-online-blocked' : stripeGate && 'tier-stripe-gate'
@@ -394,6 +416,7 @@
 			pwycMax,
 			currency,
 			vatRateOverride,
+			vatExemptionReason,
 			manualPaymentInstructions,
 			totalQuantity,
 			salesStartAt,
@@ -407,6 +430,13 @@
 	function handleSubmit(e: Event) {
 		e.preventDefault();
 		if (saveHeld) return;
+
+		if (vatReasonRequired && !vatExemptionReason.trim()) {
+			vatReasonError = m['tierForm.vatExemptionReasonRequired']();
+			void tick().then(() => document.getElementById('vat-exemption-reason')?.focus());
+			return;
+		}
+		vatReasonError = '';
 
 		// Determine the price value based on payment method and price type
 		// Normalize all decimal values to ensure dots (not commas) as decimal separator
@@ -452,6 +482,7 @@
 					: vatRateOverride !== ''
 						? parseFloat(normalizeDecimalInput(vatRateOverride))
 						: null,
+			vat_exemption_reason: vatExemptionReason.trim(),
 			// Venue and seating configuration
 			seat_assignment_mode: seatAssignmentMode,
 			max_tickets_per_user: maxTicketsPerUser ? parseInt(maxTicketsPerUser) : null,
@@ -578,26 +609,15 @@
 				/>
 			{/if}
 
-			<!-- VAT Rate Override (for paid tiers) -->
-			{#if paymentMethod !== 'free'}
-				<div>
-					<Label for="vat-rate-override">{m['tierForm.vatRateOverride']()}</Label>
-					<Input
-						id="vat-rate-override"
-						type="text"
-						inputmode="decimal"
-						value={vatRateOverride}
-						oninput={(e) => {
-							vatRateOverride = normalizeDecimalInput((e.currentTarget as HTMLInputElement).value);
-						}}
-						placeholder={m['tierForm.vatRateOverridePlaceholder']()}
-						disabled={isPending}
-					/>
-					<p class="mt-1 text-xs text-muted-foreground">
-						{m['tierForm.vatRateOverrideHelp']()}
-					</p>
-				</div>
-			{/if}
+			<TierFormVatSection
+				{paymentMethod}
+				bind:vatRateOverride
+				bind:vatExemptionReason
+				{orgVat}
+				required={vatReasonRequired}
+				error={vatReasonError}
+				{isPending}
+			/>
 
 			<!-- Manual Payment Instructions (for offline/at_the_door payments) -->
 			{#if paymentMethod === 'offline' || paymentMethod === 'at_the_door'}
@@ -706,44 +726,7 @@
 			</div>
 
 			{#if error}
-				{@const fieldErrors = extractFieldErrors(error)}
-				{@const errorMsg = extractErrorMessage(error)}
-				{@const isBillingError = isBillingInfoRequiredError(errorMsg)}
-				<!-- This panel renders inside DialogContent (bg-background), but the
-				     dimmed copy stops at /90 so it stays AA on a card surface too:
-				     5.61:1 / 5.18:1 dark, vs 4.71:1 / 4.40:1 at /80. Audited on both
-				     in scripts/audit-brand-themes.py. -->
-				<div class="rounded-lg bg-destructive/10 p-3" role="alert">
-					<p class="font-medium text-destructive">{m['tierForm.error']()}</p>
-
-					{#if fieldErrors.length > 0}
-						<p class="mt-1 text-sm text-destructive/90">
-							{m['tierForm.fieldErrorsTitle']()}
-						</p>
-						<ul class="mt-1 space-y-1">
-							{#each fieldErrors as { field, messages } (field)}
-								<li class="text-sm text-destructive/90">
-									<span class="font-medium">{tierFieldLabel(field)}:</span>
-									{messages.join(', ')}
-								</li>
-							{/each}
-						</ul>
-					{:else}
-						<p class="mt-1 text-sm text-destructive/90">{errorMsg}</p>
-						{#if saveStatus === 422 && paymentMethod === 'online' && !isBillingError}
-							<p class="mt-1 text-sm text-destructive/90">{m['compliance.tier.locationHint']()}</p>
-						{/if}
-					{/if}
-
-					{#if isBillingError}
-						<a
-							href={resolve('/(auth)/org/[slug]/admin/billing', { slug: organizationSlug })}
-							class="mt-2 inline-flex items-center gap-1 text-sm font-medium text-destructive underline hover:text-destructive/90"
-						>
-							{m['tierForm.completeBillingInfo']()}
-						</a>
-					{/if}
-				</div>
+				<TierFormErrorPanel {error} {saveStatus} {paymentMethod} {organizationSlug} />
 			{/if}
 		</form>
 	</DialogContent>

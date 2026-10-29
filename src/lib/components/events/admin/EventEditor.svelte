@@ -36,6 +36,7 @@
 	import type { StripeSetupState } from '$lib/utils/org-setup-progress';
 	import TicketingStep from './TicketingStep.svelte';
 	import { platformFeeInfoFrom } from '$lib/utils/fees';
+	import { orgVatContextFrom } from './tier-vat';
 	import SaveBar from './SaveBar.svelte';
 	import EventGlance from './editor/EventGlance.svelte';
 	import EditorShell from './editor/EditorShell.svelte';
@@ -88,7 +89,6 @@
 
 	const queryClient = useQueryClient();
 
-	// State management
 	let eventId = $state<string | null>(existingEvent?.id || null);
 	let isSaving = $state(false);
 	let errorMessage = $state<string | null>(null);
@@ -238,7 +238,6 @@
 		formData = applyVenue(formData, venue);
 	}
 
-	// Image uploads
 	let logoFile = $state<File | null>(null);
 	let coverArtFile = $state<File | null>(null);
 	let deleteLogo = $state(false);
@@ -622,6 +621,7 @@
 			stripeEmail={organization.contact_email ?? ''}
 			{isOwner}
 			platformFees={platformFeeInfoFrom(organization)}
+			orgVat={orgVatContextFrom(organization)}
 			{formData}
 			venueCapacity={selectedVenue?.capacity ?? null}
 			onUpdate={updateFormData}

@@ -19,6 +19,8 @@ export interface TierDraft {
 	pwycMax: string;
 	currency: string;
 	vatRateOverride: string;
+	/** Optional so drafts stashed before this field existed still restore. */
+	vatExemptionReason?: string;
 	manualPaymentInstructions: string;
 	totalQuantity: string;
 	salesStartAt: string;
@@ -87,6 +89,7 @@ export function tierSeed(tier: TicketTierDetailSchema | null, draft: TierDraft |
 		currency: draft?.currency ?? tier?.currency ?? 'EUR',
 		vatRateOverride:
 			draft?.vatRateOverride ?? (tier?.vat_rate != null ? String(tier.vat_rate) : ''),
+		vatExemptionReason: draft?.vatExemptionReason ?? tier?.vat_exemption_reason ?? '',
 		manualPaymentInstructions:
 			draft?.manualPaymentInstructions ?? tier?.manual_payment_instructions ?? '',
 		totalQuantity: draft?.totalQuantity ?? String(tier?.total_quantity ?? ''),

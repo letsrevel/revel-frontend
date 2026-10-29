@@ -10647,5 +10647,11 @@
 	"einvoice.exemptionCategory": "Exemption ({category})",
 	"einvoice.supplyDate": "Supply date",
 	"einvoice.supplyPeriod": "Supply period",
-	"einvoice.payment": "Payment"
+	"einvoice.payment": "Payment",
+	"tierForm.vatExemptionReason": "VAT exemption reason",
+	"tierForm.vatExemptionReasonHint": "Cite the legal provision, e.g. \"§4 Nr. 20 UStG\" or \"Art. 132(1)(n) VAT Directive\". It appears on invoices.",
+	"tierForm.vatExemptionReasonOrgDefault": "Leave empty to use your organization default: «{reason}»",
+	"tierForm.vatExemptionReasonRequired": "Enter a VAT exemption reason: this tier is paid online at 0% VAT and your organization has no default reason.",
+	"tierForm.requiredSr": "(required)",
+	"tierForm.field.vat_exemption_reason": "VAT exemption reason"
 }

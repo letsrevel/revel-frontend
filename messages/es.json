@@ -10647,5 +10647,11 @@
 	"einvoice.exemptionCategory": "Exención ({category})",
 	"einvoice.supplyDate": "Fecha de la operación",
 	"einvoice.supplyPeriod": "Período de la operación",
-	"einvoice.payment": "Pago"
+	"einvoice.payment": "Pago",
+	"tierForm.vatExemptionReason": "Motivo de exención de IVA",
+	"tierForm.vatExemptionReasonHint": "Indica la disposición legal, p. ej. «§4 Nr. 20 UStG» o «art. 132, apartado 1, letra n) de la Directiva del IVA». Aparece en las facturas.",
+	"tierForm.vatExemptionReasonOrgDefault": "Déjalo vacío para usar el valor predeterminado de tu organización: «{reason}»",
+	"tierForm.vatExemptionReasonRequired": "Indica un motivo de exención de IVA: esta entrada se paga online con IVA del 0 % y tu organización no tiene un motivo predeterminado.",
+	"tierForm.requiredSr": "(obligatorio)",
+	"tierForm.field.vat_exemption_reason": "Motivo de exención de IVA"
 }

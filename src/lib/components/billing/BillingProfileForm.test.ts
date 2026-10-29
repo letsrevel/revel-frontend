@@ -246,7 +246,7 @@ describe('BillingProfileForm', () => {
 		await user.click(screen.getByRole('button', { name: /Update billing information/i }));
 
 		await waitFor(() => expect(sdk.userbillingUpdateBillingProfile).toHaveBeenCalled());
-		const body = vi.mocked(sdk.userbillingUpdateBillingProfile).mock.calls[0][0]!.body as Record<
+		const body = vi.mocked(sdk.userbillingUpdateBillingProfile).mock.calls[0][0].body as Record<
 			string,
 			string
 		>;
@@ -281,7 +281,7 @@ describe('BillingProfileForm', () => {
 		const user = userEvent.setup();
 		await user.click(screen.getByRole('button', { name: /Update billing information/i }));
 		await waitFor(() => expect(sdk.userbillingUpdateBillingProfile).toHaveBeenCalled());
-		const body = vi.mocked(sdk.userbillingUpdateBillingProfile).mock.calls[0][0]!.body as Record<
+		const body = vi.mocked(sdk.userbillingUpdateBillingProfile).mock.calls[0][0].body as Record<
 			string,
 			string
 		>;

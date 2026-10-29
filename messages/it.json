@@ -10647,5 +10647,11 @@
 	"einvoice.exemptionCategory": "Esenzione ({category})",
 	"einvoice.supplyDate": "Data di fornitura",
 	"einvoice.supplyPeriod": "Periodo di fornitura",
-	"einvoice.payment": "Pagamento"
+	"einvoice.payment": "Pagamento",
+	"tierForm.vatExemptionReason": "Motivo di esenzione IVA",
+	"tierForm.vatExemptionReasonHint": "Indica la norma di riferimento, ad es. «§4 Nr. 20 UStG» o «art. 132, par. 1, lett. n), Direttiva IVA». Compare sulle fatture.",
+	"tierForm.vatExemptionReasonOrgDefault": "Lascia vuoto per usare il valore predefinito della tua organizzazione: «{reason}»",
+	"tierForm.vatExemptionReasonRequired": "Inserisci un motivo di esenzione IVA: questo biglietto è pagato online con IVA allo 0% e la tua organizzazione non ha un motivo predefinito.",
+	"tierForm.requiredSr": "(obbligatorio)",
+	"tierForm.field.vat_exemption_reason": "Motivo di esenzione IVA"
 }
