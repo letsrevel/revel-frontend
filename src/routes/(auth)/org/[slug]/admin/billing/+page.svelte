@@ -19,6 +19,7 @@
 	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import { browser } from '$app/environment';
 	import { resolve } from '$app/paths';
+	import { invalidateAll } from '$app/navigation';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { toast } from 'svelte-sonner';
 	import { extractErrorMessage } from '$lib/utils/errors';
@@ -111,6 +112,8 @@
 					return { pending: false, data: response.data } as const;
 				},
 				onSuccess: (result) => {
+					// Layout org data (tier form's VAT context) must refresh too.
+					void invalidateAll();
 					if (result.pending) {
 						toast.info(m['orgAdmin.billing.vatId.savedPending']());
 					} else {
@@ -140,6 +143,7 @@
 					vatIdInput = '';
 					showRemoveDialog = false;
 					queryClient.invalidateQueries({ queryKey: ['billing-info', slug] });
+					void invalidateAll();
 					toast.success(m['orgAdmin.billing.vatId.removed']());
 				},
 				onError: (error: Error) => {
@@ -183,6 +187,8 @@
 				},
 				onSuccess: () => {
 					queryClient.invalidateQueries({ queryKey: ['billing-info', slug] });
+					// The tier form reads the org's invoicing mode from the layout data.
+					void invalidateAll();
 					toast.success(m['orgAdmin.billing.invoicingMode.saved']());
 				},
 				// No toast: the inline role="alert" under the radios is the feedback,

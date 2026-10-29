@@ -44,6 +44,16 @@ describe('legacy address handling', () => {
 	it('composes the legacy text from a structured address', () => {
 		expect(legacyAddressForPayload(addr, 'Old')).toBe('Main St 1\n10115 Berlin\nGermany');
 	});
+	it('always names the country in English, whatever the UI locale', async () => {
+		// The persisted text must not flip language with the editor's locale.
+		const { composeLegacyAddress } = await import('./postal-address');
+		expect(composeLegacyAddress(addr, 'de')).toContain('Deutschland');
+		expect(legacyAddressForPayload(addr, '')).toContain('Germany');
+		expect(legacyAddressForPayload(addr, '')).not.toContain('Deutschland');
+	});
+	it('clears the legacy text when a saved structured address is blanked entirely', () => {
+		expect(legacyAddressForPayload(emptyPostalAddress(), 'Old', addr)).toBe('');
+	});
 });
 
 describe('buildBillingInfoPayload', () => {
@@ -68,5 +78,52 @@ describe('buildBillingInfoPayload', () => {
 		const body = buildBillingInfoPayload({ ...base, address: emptyPostalAddress() });
 		expect(body.billing_address).toBe('Old');
 		expect(body.billing_address_line1).toBe('');
+	});
+	it('sends billing_address "" when a saved structured address is blanked', () => {
+		const body = buildBillingInfoPayload({
+			...base,
+			address: emptyPostalAddress(),
+			savedAddress: addr
+		});
+		expect(body.billing_address).toBe('');
+		expect(body.billing_address_line1).toBe('');
+	});
+
+	describe('vat_rate / vat_exemption_reason (zero-rate guard trigger)', () => {
+		const saved = {
+			...base,
+			vatRate: '0.00',
+			vatExemptionReason: '',
+			savedVatRate: '0.00',
+			savedExemptionReason: ''
+		};
+		it('omits both keys when unchanged, so an address-only save passes the BE guard', () => {
+			const body = buildBillingInfoPayload(saved);
+			expect(body).not.toHaveProperty('vat_rate');
+			expect(body).not.toHaveProperty('vat_exemption_reason');
+			expect(body.billing_name).toBe('ACME');
+			expect(body.billing_city).toBe('Berlin');
+			expect(body.vat_country_code).toBe('DE');
+		});
+		it('compares normalised values (numeric rate, trimmed reason)', () => {
+			const body = buildBillingInfoPayload({
+				...saved,
+				vatRate: '0',
+				vatExemptionReason: '  ',
+				savedExemptionReason: ' '
+			});
+			expect(body).not.toHaveProperty('vat_rate');
+			expect(body).not.toHaveProperty('vat_exemption_reason');
+		});
+		it('includes each key only when it changed', () => {
+			const rate = buildBillingInfoPayload({ ...saved, vatRate: '19' });
+			expect(rate.vat_rate).toBe(19);
+			expect(rate).not.toHaveProperty('vat_exemption_reason');
+			const reason = buildBillingInfoPayload({ ...saved, vatExemptionReason: ' Art. 8 ' });
+			expect(reason.vat_exemption_reason).toBe('Art. 8');
+			expect(reason).not.toHaveProperty('vat_rate');
+			const cleared = buildBillingInfoPayload({ ...saved, vatRate: '' });
+			expect(cleared.vat_rate).toBeNull();
+		});
 	});
 });

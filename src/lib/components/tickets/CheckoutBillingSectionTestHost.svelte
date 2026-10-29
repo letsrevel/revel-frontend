@@ -15,8 +15,12 @@
 
 	const {
 		initialItems,
-		initialPwycAmountOverride = null
+		initialPwycAmountOverride = null,
+		isAuthenticated = false,
+		authToken = null
 	}: {
+		isAuthenticated?: boolean;
+		authToken?: string | null;
 		initialItems?: VatPreviewItemSchema[];
 		initialPwycAmountOverride?: string | null;
 	} = $props();
@@ -52,7 +56,8 @@
 		currency="EUR"
 		price="25.00"
 		isPwyc={false}
-		isAuthenticated={false}
+		{isAuthenticated}
+		{authToken}
 		{discountCode}
 		items={initialItems}
 		{pwycAmountOverride}

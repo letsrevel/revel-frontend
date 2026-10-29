@@ -7,6 +7,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { formatMoney } from '$lib/utils/format';
+	import { LEGACY_ADDRESS_LOCALE } from '$lib/utils/einvoice';
 	import PostalAddressFields from '$lib/components/billing/PostalAddressFields.svelte';
 	import {
 		composeLegacyAddress,
@@ -117,9 +118,21 @@
 		}
 	}
 
-	/** Non-empty structured billing fields only (the BE defaults omitted ones to ""). */
-	function addressPayload(): Partial<ReturnType<typeof toBillingFields>> {
-		return Object.fromEntries(Object.entries(toBillingFields(address)).filter(([, v]) => v !== ''));
+	/** Persisted legacy text (English country name). A country alone (e.g. suggested from the
+	 * VAT ID) is not an address: it must not displace a profile's legacy text. */
+	function legacyAddressText(): string | undefined {
+		const composed = composeLegacyAddress(address, LEGACY_ADDRESS_LOCALE);
+		const { countryCode: _country, ...body } = address;
+		const hasBody = Object.values(body).some((v) => v.trim() !== '');
+		if (hasBody) return composed;
+		return billingProfileQuery.data?.billing_address || composed || undefined;
+	}
+
+	/** Non-empty structured billing fields only (the BE defaults omitted ones to ""). With
+	 * `all`, every field is sent (empty as "") so a saved profile never ends up half-updated. */
+	function addressPayload(all = false): Partial<ReturnType<typeof toBillingFields>> {
+		const fields = toBillingFields(address);
+		return all ? fields : Object.fromEntries(Object.entries(fields).filter(([, v]) => v !== ''));
 	}
 
 	// 4. Query: pre-fill from billing profile when the user asks for an invoice.
@@ -160,9 +173,12 @@
 	}));
 
 	// 5. Pre-fill form from profile and auto-fetch VAT preview
+	// Runs once per open: it must not re-run when the buyer clears a prefilled field.
+	let prefilled = false;
 	function prefillFromProfile() {
 		const profile = billingProfileQuery.data;
 		if (!profile) return;
+		prefilled = true;
 		if (!billingName && profile.billing_name) billingName = profile.billing_name;
 		const profileAddress = readPostalAddress(profile as Record<string, unknown>, 'billing_');
 		for (const key of Object.keys(profileAddress) as (keyof PostalAddress)[]) {
@@ -179,10 +195,13 @@
 	}
 
 	// Also pre-fill when profile query resolves after section is already open
+	// Depends only on the profile data and `isOpen`; the field reads inside are untracked.
 	$effect(() => {
 		const profile = billingProfileQuery.data;
-		if (profile && isOpen) {
-			prefillFromProfile();
+		if (!isOpen) {
+			prefilled = false;
+		} else if (profile && !prefilled) {
+			untrack(() => prefillFromProfile());
 		}
 	});
 
@@ -236,7 +255,7 @@
 						billing_name: billingName || 'Preview',
 						vat_id: vatId.trim() || undefined,
 						vat_country_code: vatCountryCode.trim().toUpperCase() || undefined,
-						billing_address: composeLegacyAddress(address) || undefined,
+						billing_address: composeLegacyAddress(address, LEGACY_ADDRESS_LOCALE) || undefined,
 						...addressPayload(),
 						billing_email: billingEmail.trim() || undefined
 					},
@@ -277,8 +296,10 @@
 			billing_name: billingName.trim(),
 			vat_id: vatId.trim() || undefined,
 			vat_country_code: vatCountryCode.trim().toUpperCase() || undefined,
-			billing_address: composeLegacyAddress(address) || undefined,
-			...addressPayload(),
+			// A legacy-text-only profile keeps its text unless the buyer entered an address
+			// (the BE would otherwise overwrite it with "" on save_to_profile).
+			billing_address: legacyAddressText(),
+			...addressPayload(isAuthenticated && saveToProfile),
 			billing_email: billingEmail.trim() || undefined,
 			save_to_profile: isAuthenticated ? saveToProfile : undefined
 		};

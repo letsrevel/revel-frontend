@@ -118,7 +118,10 @@
 				billingEmail,
 				vatExemptionReason,
 				address,
-				existingLegacyAddress: info.billing_address || ''
+				existingLegacyAddress: info.billing_address || '',
+				savedAddress: readPostalAddress(info as unknown as Record<string, unknown>, 'billing_'),
+				savedVatRate: info.vat_rate,
+				savedExemptionReason: info.vat_exemption_reason
 			});
 			const response = await organizationadminvatUpdateBillingInfo({
 				path: { slug },
@@ -261,7 +264,7 @@
 			<PostalAddressFields
 				idPrefix="billing-address"
 				bind:value={address}
-				required
+				required={info.invoicing_mode !== 'none'}
 				legend={m['einvoice.addressLegend']()}
 			/>
 		</div>

@@ -52,6 +52,7 @@
 		<Input
 			id="{idPrefix}-line1"
 			bind:value={value.line1}
+			maxlength={255}
 			autocomplete="address-line1"
 			{required}
 			aria-required={required ? 'true' : undefined}
@@ -63,7 +64,12 @@
 
 	<div class="space-y-2">
 		<Label for="{idPrefix}-line2">{m['postalAddress.line2']()}</Label>
-		<Input id="{idPrefix}-line2" bind:value={value.line2} autocomplete="address-line2" />
+		<Input
+			id="{idPrefix}-line2"
+			bind:value={value.line2}
+			maxlength={255}
+			autocomplete="address-line2"
+		/>
 	</div>
 
 	<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -75,6 +81,7 @@
 			<Input
 				id="{idPrefix}-postalCode"
 				bind:value={value.postalCode}
+				maxlength={20}
 				autocomplete="postal-code"
 				{required}
 				aria-required={required ? 'true' : undefined}
@@ -91,6 +98,7 @@
 			<Input
 				id="{idPrefix}-city"
 				bind:value={value.city}
+				maxlength={100}
 				autocomplete="address-level2"
 				{required}
 				aria-required={required ? 'true' : undefined}
@@ -107,6 +115,7 @@
 			<Input
 				id="{idPrefix}-subdivision"
 				bind:value={value.subdivision}
+				maxlength={100}
 				autocomplete="address-level1"
 			/>
 		</div>

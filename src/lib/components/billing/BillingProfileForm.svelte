@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { untrack } from 'svelte';
 	// 1. Imports
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
@@ -83,16 +84,26 @@
 	let selfBillingAgreed = $state(false);
 	let saveStatus = $state<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
-	// 7. Sync form from query data
+	// 7. Sync form from query data. A refetch (e.g. window focus) must not wipe in-progress
+	// edits: seed on first load, afterwards only while the form still matches the last
+	// seeded/saved snapshot (i.e. is not dirty).
+	const formSnapshot = (): string =>
+		JSON.stringify([billingName, address, vatCountryCode, billingEmail, selfBillingAgreed]);
+	let syncedSnapshot: string | null = null;
+
 	$effect(() => {
-		if (billingProfile) {
-			billingName = billingProfile.billing_name ?? '';
-			address = readPostalAddress(billingProfile as Record<string, unknown>, 'billing_');
-			vatCountryCode = billingProfile.vat_country_code ?? '';
-			billingEmail = billingProfile.billing_email ?? '';
-			vatIdInput = billingProfile.vat_id ?? '';
-			selfBillingAgreed = billingProfile.self_billing_agreed ?? false;
-		}
+		const profile = billingProfile;
+		if (!profile) return;
+		untrack(() => {
+			if (syncedSnapshot !== null && formSnapshot() !== syncedSnapshot) return;
+			billingName = profile.billing_name ?? '';
+			address = readPostalAddress(profile as Record<string, unknown>, 'billing_');
+			vatCountryCode = profile.vat_country_code ?? '';
+			billingEmail = profile.billing_email ?? '';
+			if (syncedSnapshot === null) vatIdInput = profile.vat_id ?? '';
+			selfBillingAgreed = profile.self_billing_agreed ?? false;
+			syncedSnapshot = formSnapshot();
+		});
 	});
 
 	// 8. Save mutation
@@ -102,7 +113,11 @@
 			const baseBody = {
 				billing_name: billingName,
 				// PUT is a full replace: always send all six structured fields.
-				billing_address: legacyAddressForPayload(address, billingProfile?.billing_address ?? ''),
+				billing_address: legacyAddressForPayload(
+					address,
+					billingProfile?.billing_address ?? '',
+					profileAddress
+				),
 				...toBillingFields(address),
 				vat_country_code: vatCountryCode,
 				...(billingEmail.trim() ? { billing_email: billingEmail.trim() } : {})
@@ -126,6 +141,8 @@
 			}
 		},
 		onSuccess: () => {
+			// The form now equals what was saved: let the refetch re-seed it again.
+			syncedSnapshot = formSnapshot();
 			saveStatus = 'saved';
 			queryClient.invalidateQueries({ queryKey: ['user-billing-profile'] });
 			toast.success(m['billing.form.saved']());

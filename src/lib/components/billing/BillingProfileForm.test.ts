@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/svelte';
+import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import { QueryClient } from '@tanstack/svelte-query';
@@ -81,8 +81,11 @@ describe('BillingProfileForm', () => {
 		expect(screen.getByRole('form', { name: 'Billing Information' })).toBeInTheDocument();
 	});
 
-	it('renders all required form fields', async () => {
+	it('renders all form fields; only name and VAT country are required', async () => {
 		renderWithQueryClient({ authToken: 'test-token' });
+		expect(screen.getByLabelText(/Legal Name/i)).toBeRequired();
+		expect(screen.getByLabelText(/Street and number/i)).not.toBeRequired();
+		expect(screen.getByLabelText(/Billing Email/i)).not.toBeRequired();
 		expect(screen.getByLabelText(/Legal Name/i)).toBeInTheDocument();
 		expect(screen.getByRole('group', { name: 'Billing Address' })).toBeInTheDocument();
 		expect(screen.getByLabelText(/Street and number/i)).toBeInTheDocument();
@@ -307,5 +310,62 @@ describe('BillingProfileForm', () => {
 		await waitFor(() =>
 			expect(screen.getByText('Billing information is incomplete')).toBeInTheDocument()
 		);
+	});
+
+	it('sends billing_address "" when a saved structured address is blanked', async () => {
+		const sdk = await import('$lib/api/generated/sdk.gen');
+		vi.mocked(sdk.userbillingGetBillingProfile).mockResolvedValueOnce({
+			data: structured,
+			response: { status: 200 } as Response,
+			error: null
+		});
+		renderWithQueryClient({ authToken: 'test-token' });
+		await waitFor(() =>
+			expect(screen.getByLabelText(/Street and number/i)).toHaveValue('Main St 1')
+		);
+		const user = userEvent.setup();
+		for (const re of [/Street and number/i, /Postal code/i, /^City/i]) {
+			await user.clear(screen.getByLabelText(re));
+		}
+		await fireEvent.change(
+			document.getElementById('billing-profile-address-countryCode') as HTMLSelectElement,
+			{
+				target: { value: '' }
+			}
+		);
+		await user.click(screen.getByRole('button', { name: /Update billing information/i }));
+		await waitFor(() => expect(sdk.userbillingUpdateBillingProfile).toHaveBeenCalled());
+		const body = vi.mocked(sdk.userbillingUpdateBillingProfile).mock.calls[0][0].body as Record<
+			string,
+			string
+		>;
+		expect(body.billing_address).toBe('');
+		expect(body.billing_address_line1).toBe('');
+	});
+
+	it('does not wipe in-progress edits when the profile refetches', async () => {
+		const sdk = await import('$lib/api/generated/sdk.gen');
+		vi.mocked(sdk.userbillingGetBillingProfile).mockResolvedValue({
+			data: structured,
+			response: { status: 200 } as Response,
+			error: null
+		});
+		const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+		render(QueryClientTestWrapper, {
+			props: {
+				client: queryClient,
+				component: BillingProfileForm,
+				componentProps: { authToken: 'test-token' }
+			}
+		});
+		await waitFor(() => expect(screen.getByLabelText(/^City/i)).toHaveValue('Vienna'));
+		const user = userEvent.setup();
+		const city = screen.getByLabelText(/^City/i);
+		await user.clear(city);
+		await user.type(city, 'Graz');
+
+		await queryClient.refetchQueries({ queryKey: ['user-billing-profile'] });
+		await new Promise((r) => setTimeout(r, 30));
+		expect(screen.getByLabelText(/^City/i)).toHaveValue('Graz');
 	});
 });

@@ -1,4 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/svelte';
+import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
 import CheckoutBillingSection from './CheckoutBillingSection.svelte';
@@ -492,15 +493,18 @@ describe('CheckoutBillingSection', () => {
 
 		it('prefills country from the VAT ID (EL -> GR) without overwriting a picked one', async () => {
 			const { component } = await open();
+			await fireEvent.input(screen.getByLabelText(/Legal Name/i), { target: { value: 'Jo' } });
 			const vat = screen.getByLabelText(/^VAT ID/i);
 			await fireEvent.input(vat, { target: { value: 'EL123456789' } });
 			const country = screen.getByLabelText(/Address country/i) as HTMLSelectElement;
 			expect(country.value).toBe('GR');
+			expect(country.selectedOptions[0].value).toBe('GR');
+			expect(component.getBillingInfo()?.billing_country_code).toBe('GR');
 
 			await fireEvent.change(country, { target: { value: 'CY' } });
 			await fireEvent.input(vat, { target: { value: 'DE123456789' } });
 			expect(country.value).toBe('CY');
-			expect(component).toBeTruthy();
+			expect(component.getBillingInfo()?.billing_country_code).toBe('CY');
 		});
 
 		it('includes the structured fields in the billing payload', async () => {
@@ -525,6 +529,93 @@ describe('CheckoutBillingSection', () => {
 			});
 			expect(info?.billing_address).toContain('Berlin');
 			expect(info?.billing_address_line2).toBeUndefined();
+		});
+	});
+
+	describe('profile prefill and payload', () => {
+		const profile = {
+			id: '1',
+			billing_name: 'Acme s.r.l.',
+			billing_address: 'Via Roma 1, Milano',
+			billing_address_line1: 'Via Roma 1',
+			billing_postal_code: '20100',
+			billing_city: 'Milano',
+			billing_country_code: 'IT',
+			vat_country_code: 'IT',
+			billing_email: 'billing@acme.it',
+			vat_id: 'IT01234567890',
+			vat_id_validated: true,
+			self_billing_agreed: false
+		};
+		async function mockProfile(data: Record<string, unknown>) {
+			const sdk = await import('$lib/api/generated/sdk.gen');
+			vi.mocked(sdk.userbillingGetBillingProfile).mockResolvedValue({
+				data,
+				response: { status: 200 } as Response,
+				error: null
+			} as never);
+		}
+		async function openAuthed() {
+			const view = renderHost({ isAuthenticated: true, authToken: 'tok' });
+			await fireEvent.click(screen.getByRole('checkbox', { name: /Request Invoice/i }));
+			return view;
+		}
+
+		it('does not refill a prefilled VAT ID the buyer cleared, and then stops requiring the address', async () => {
+			await mockProfile(profile);
+			const { component } = await openAuthed();
+			const vat = screen.getByLabelText(/^VAT ID/i) as HTMLInputElement;
+			await waitFor(() => expect(vat.value).toBe('IT01234567890'));
+
+			const user = userEvent.setup();
+			await user.clear(vat);
+			await user.clear(screen.getByLabelText(/Street and number/i));
+			await new Promise((r) => setTimeout(r, 30));
+			expect(vat.value).toBe('');
+			expect(screen.getByLabelText(/Street and number/i)).toHaveValue('');
+			// No VAT ID: the address is optional again.
+			expect(component.validate()).toBe(true);
+		});
+
+		it('keeps a legacy-only profile address instead of wiping it on save', async () => {
+			await mockProfile({
+				...profile,
+				billing_address_line1: '',
+				billing_postal_code: '',
+				billing_city: '',
+				billing_country_code: ''
+			});
+			const { component } = await openAuthed();
+			await waitFor(() =>
+				expect((screen.getByLabelText(/Legal Name/i) as HTMLInputElement).value).toBe('Acme s.r.l.')
+			);
+			expect(component.getBillingInfo()?.billing_address).toBe('Via Roma 1, Milano');
+		});
+
+		it('sends all six structured fields (empty as "") when saving to the profile', async () => {
+			await mockProfile({ ...profile, vat_id: null, billing_address_line1: '', billing_city: '' });
+			const { component } = await openAuthed();
+			await waitFor(() =>
+				expect((screen.getByLabelText(/Legal Name/i) as HTMLInputElement).value).toBe('Acme s.r.l.')
+			);
+			await fireEvent.click(screen.getByRole('checkbox', { name: /Save billing info/i }));
+			await fireEvent.input(screen.getByLabelText(/Street and number/i), {
+				target: { value: 'Main 1' }
+			});
+			const info = component.getBillingInfo() as Record<string, unknown>;
+			for (const k of [
+				'billing_address_line1',
+				'billing_address_line2',
+				'billing_postal_code',
+				'billing_city',
+				'billing_subdivision',
+				'billing_country_code'
+			]) {
+				expect(info).toHaveProperty(k);
+			}
+			expect(info.billing_address_line2).toBe('');
+			expect(info.billing_subdivision).toBe('');
+			expect(info.billing_city).toBe('');
 		});
 	});
 

@@ -81,4 +81,45 @@ describe('OrgBillingInfoForm', () => {
 		expect(body.vat_exemption_reason).toBe('Art. 132');
 		expect(body.billing_address_line1).toBe('');
 	});
+
+	it('omits vat_rate and vat_exemption_reason when only the address changed', async () => {
+		renderIt({ vat_rate: '0.00' });
+		await userEvent.type(screen.getByLabelText(/Street and number/i), 'Main 1');
+		await userEvent.click(screen.getByRole('button', { name: /save/i }));
+		await waitFor(() => expect(update).toHaveBeenCalled());
+		const body = update.mock.calls[0][0].body;
+		expect(body.billing_address_line1).toBe('Main 1');
+		expect(body).not.toHaveProperty('vat_rate');
+		expect(body).not.toHaveProperty('vat_exemption_reason');
+	});
+
+	it('clears the legacy text when a saved structured address is blanked', async () => {
+		renderIt({
+			billing_address: 'Main St 1\nBerlin',
+			billing_address_line1: 'Main St 1',
+			billing_city: 'Berlin',
+			billing_postal_code: '10115',
+			billing_country_code: 'DE'
+		});
+		for (const re of [/Street and number/i, /Postal code/i, /^City/i]) {
+			await userEvent.clear(screen.getByLabelText(re));
+		}
+		await userEvent.selectOptions(
+			document.getElementById('billing-address-countryCode') as HTMLSelectElement,
+			''
+		);
+		await userEvent.click(screen.getByRole('button', { name: /save/i }));
+		await waitFor(() => expect(update).toHaveBeenCalled());
+		expect(update.mock.calls[0][0].body.billing_address).toBe('');
+	});
+
+	it('does not mark the address required while invoicing is off', () => {
+		renderIt({ invoicing_mode: 'none' });
+		expect(screen.getByLabelText(/Street and number/i)).not.toBeRequired();
+	});
+
+	it('marks the address required once invoicing is on', () => {
+		renderIt({ invoicing_mode: 'auto' });
+		expect(screen.getByLabelText(/Street and number/i)).toBeRequired();
+	});
 });
