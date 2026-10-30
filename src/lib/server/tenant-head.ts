@@ -23,17 +23,30 @@ function escapeAttr(value: string): string {
 		.replace(/>/g, '&gt;');
 }
 
-const ICON_LINKS_RE = /[ \t]*<link rel="icon"[^>]*>\s*/g;
+// Line-anchored (`m`): an unanchored leading `[ \t]*` backtracks quadratically on a
+// long whitespace run, and the first chunk can carry reflected user input.
+const ICON_LINKS_RE = /^[ \t]*<link rel="icon"[^>]*>[ \t]*\r?\n?/gm;
 const APPLE_ICON_RE = /<link rel="apple-touch-icon"[^>]*>/;
 const THEME_COLOR_RE = /<meta name="theme-color"[^>]*>/;
 const MANIFEST_RE = /<link rel="manifest"[^>]*>/;
 const FEED_RE = /<link rel="alternate" type="application\/rss\+xml"[^>]*>/;
-const OPENSEARCH_RE = /[ \t]*<link\s+rel="search"[^>]*>\s*/;
+const OPENSEARCH_RE = /^[ \t]*<link\s+rel="search"[^>]*>\s*/m;
 
-/** Rewrites the Revel-branded head tags of the shell for `tenant`. */
+/**
+ * Rewrites the Revel-branded head tags of the shell for `tenant`. Only the
+ * `<head>…</head>` part is touched; the body (which may reflect user input)
+ * is passed through byte-for-byte. Without a `</head>` the html is unchanged.
+ */
 export function rewriteHeadForTenant(html: string, tenant: SeoTenant): string {
+	const headEnd = html.indexOf('</head>');
+	if (headEnd === -1) return html;
+	const rest = html.slice(headEnd);
+	return rewriteHead(html.slice(0, headEnd), tenant) + rest;
+}
+
+function rewriteHead(head: string, tenant: SeoTenant): string {
 	const icon = tenantIconUrl(tenant);
-	let out = html;
+	let out = head;
 
 	if (icon) {
 		const href = escapeAttr(icon);
@@ -41,7 +54,7 @@ export function rewriteHeadForTenant(html: string, tenant: SeoTenant): string {
 		out = out.replace(ICON_LINKS_RE, () => {
 			if (placed) return '';
 			placed = true;
-			return `<link rel="icon" href="${href}" />\n\t\t`;
+			return `\t\t<link rel="icon" href="${href}" />\n`;
 		});
 		out = out.replace(APPLE_ICON_RE, () => `<link rel="apple-touch-icon" href="${href}" />`);
 	}

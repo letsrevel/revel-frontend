@@ -71,4 +71,14 @@ describe('rewriteHeadForTenant (against the real app.html)', () => {
 		// No copy of the surrounding document was spliced in.
 		expect(out.match(/<head>/g)).toHaveLength(1);
 	});
+
+	it('is linear on attacker-controlled whitespace in the body and leaves the body untouched', () => {
+		const head = shell.slice(0, shell.indexOf('</head>') + '</head>'.length);
+		const body = `<body>${' '.repeat(200_000)}<p>x</p></body>`;
+		const start = performance.now();
+		const out = rewriteHeadForTenant(head + body, tenant);
+		expect(performance.now() - start).toBeLessThan(200);
+		expect(out.endsWith(body)).toBe(true);
+		expect(out).toContain('acme-thumb.png');
+	});
 });
