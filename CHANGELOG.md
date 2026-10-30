@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.29.0] - 2026-10-30
+
+### Added
+- **Structured billing addresses** for EN 16931 e-invoices, replacing the single free-text address field. The new fields are street, address line 2, postal code, city, region and a country picker in your language.
+  - Organization billing settings use the structured address. A notice lists what's still missing before attendee invoicing can be turned on.
+  - At checkout, business buyers (anyone who enters a VAT ID) fill in street, postal code, city and country, and the country is prefilled from the VAT ID. Consumers still don't need an address.
+  - Your account's billing profile and the organizer's draft attendee invoice editor use the same fields.
+  - Older text-only addresses keep working, with a prompt to re-enter them in the new format.
+- **VAT exemption reason** for 0% VAT.
+  - Ticket tiers whose effective rate is 0% get a reason field, citing the legal provision. It's required when attendee invoicing is on, the tier is sold online, and the organization has no default reason.
+  - Organization billing settings take a default reason, which those tiers inherit.
+- Attendee invoice details show the VAT exemption notes, the supply date or period, and the payment method with the card's last four digits.
+- `/llms.txt`, a plain-text summary of Revel for AI assistants. It's not served on white-label domains.
+
+### Changed
+- `robots.txt` now lets AI search assistants in like search engines. AI training crawlers are kept off event, series and organization pages.
+- The VAT country selector in billing settings is now labelled "VAT country", so it can't be confused with the billing address country.
+
 ## [2.28.0] - 2026-10-28
 
 ### Added
