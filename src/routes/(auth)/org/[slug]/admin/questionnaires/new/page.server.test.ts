@@ -15,6 +15,6 @@ describe('questionnaires/new load', () => {
 			loadArgs({ email: 'a@b.c', accessToken: 'secret-token', refreshToken: 'r' })
 		);
 		expect(JSON.stringify(result)).not.toContain('secret-token');
-		expect(result).not.toHaveProperty('user.accessToken');
+		expect(result).toEqual({});
 	});
 });

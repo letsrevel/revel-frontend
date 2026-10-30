@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { openInNewTab } from '$lib/utils/open-external';
 	import { page } from '$app/stores';
 	import { FileText, Search, Filter } from '@lucide/svelte';
 	import type { AdditionalResourceSchema } from '$lib/api/generated/types.gen';
@@ -39,9 +40,9 @@
 	function openResource(resource: AdditionalResourceSchema) {
 		if (resource.resource_type === 'file' && resource.file_url) {
 			// file_url may be a relative path from the backend, so we need to prepend the API base URL
-			window.open(getBackendUrl(resource.file_url), '_blank', 'noopener,noreferrer');
+			openInNewTab(getBackendUrl(resource.file_url));
 		} else if (resource.resource_type === 'link' && resource.link) {
-			window.open(resource.link, '_blank', 'noopener,noreferrer');
+			openInNewTab(resource.link);
 		}
 	}
 </script>

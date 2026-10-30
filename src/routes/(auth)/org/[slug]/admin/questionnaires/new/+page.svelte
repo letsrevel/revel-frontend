@@ -17,7 +17,6 @@
 	import QuestionnaireCreateAdvancedSettings from '$lib/components/questionnaires/QuestionnaireCreateAdvancedSettings.svelte';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import { questionnaireCreateOrgQuestionnaire } from '$lib/api/generated/sdk.gen';
-	import { authStore } from '$lib/stores/auth.svelte';
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import { invalidateOrgQuestionnaires } from '$lib/queries/org-questionnaires';
 	import type {
@@ -123,11 +122,6 @@
 		isSaving = true;
 
 		try {
-			const accessToken = authStore.accessToken;
-			if (!accessToken) {
-				throw new Error('Not authenticated');
-			}
-
 			// Build sections array for API
 			const apiSections = buildCreateApiSections(builder.sections);
 
@@ -164,8 +158,7 @@
 					multiplechoicequestion_questions: topLevelMC as MultipleChoiceQuestionCreateSchema[],
 					freetextquestion_questions: topLevelFT as FreeTextQuestionCreateSchema[],
 					fileuploadquestion_questions: topLevelFU as FileUploadQuestionCreateSchema[]
-				},
-				headers: { Authorization: `Bearer ${accessToken}` }
+				}
 			});
 
 			if (response.error) {

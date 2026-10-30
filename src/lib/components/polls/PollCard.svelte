@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { openInNewTab } from '$lib/utils/open-external';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { invalidateAll } from '$app/navigation';
@@ -138,7 +139,7 @@
 					<MoreHorizontal class="h-5 w-5" />
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="end">
-					<DropdownMenuItem onclick={() => window.open(voterUrl, '_blank', 'noopener')}>
+					<DropdownMenuItem onclick={() => openInNewTab(voterUrl)}>
 						<ExternalLink class="mr-2 h-4 w-4" />
 						{m['pollCard.viewAsVoter']()}
 					</DropdownMenuItem>
