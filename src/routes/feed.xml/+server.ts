@@ -5,6 +5,7 @@ import { orgOrigin } from '$lib/utils/org-links';
 import { serverLinkContext } from '$lib/server/tenant-canonical';
 import { siteName, tenantIconUrl } from '$lib/seo/tenant';
 import { log } from '$lib/server/logger';
+import { escapeCdata } from '$lib/utils/xml';
 
 /**
  * Escape XML special characters
@@ -147,11 +148,15 @@ ${events
 			: '';
 		/* eslint-enable no-restricted-syntax */
 
+		const cdataContent = escapeCdata(
+			`${truncatedDescription}${location ? `\n\nLocation: ${location}` : ''}${eventDateFormatted ? `\nDate: ${eventDateFormatted}` : ''}`
+		);
+
 		return `    <item>
       <title>${escapeXml(event.name)}</title>
       <link>${escapeXml(eventUrl)}</link>
       <guid isPermaLink="true">${escapeXml(eventUrl)}</guid>
-      <description><![CDATA[${truncatedDescription}${location ? `\n\nLocation: ${location}` : ''}${eventDateFormatted ? `\nDate: ${eventDateFormatted}` : ''}]]></description>
+      <description><![CDATA[${cdataContent}]]></description>
       <pubDate>${formatRfc822Date(event.created_at || event.start)}</pubDate>
       <dc:creator>${escapeXml(event.organization.name)}</dc:creator>
       <category>${escapeXml(event.organization.name)}</category>${
