@@ -1,6 +1,7 @@
 import type { Handle, HandleFetch } from '@sveltejs/kit';
 import { redirect } from '@sveltejs/kit';
 import { z } from 'zod';
+import { dev } from '$app/environment';
 import { sequence } from '@sveltejs/kit/hooks';
 import { env } from '$env/dynamic/private';
 import { i18nHandle } from '$lib/i18n';
@@ -14,6 +15,7 @@ import { requiresAuth, loginRedirectPath } from '$lib/server/auth-guard';
 import { handleDocumentCacheControl } from '$lib/server/document-cache';
 import {
 	getAccessTokenCookieOptions,
+	getAuthCookieOptions,
 	getRefreshTokenCookieOptions,
 	getRememberMeCookieOptions
 } from '$lib/utils/cookies';
@@ -150,26 +152,14 @@ const handleTokenCapture: Handle = async ({ event, resolve }) => {
 	const orgToken = event.url.searchParams.get('ot');
 	if (orgToken) {
 		log.debug('org_token_captured');
-		event.cookies.set('pending_org_token', orgToken, {
-			path: '/',
-			httpOnly: true,
-			secure: false, // Set to true in production
-			sameSite: 'lax',
-			maxAge: 60 * 60 * 24 * 7 // 7 days
-		});
+		event.cookies.set('pending_org_token', orgToken, getAuthCookieOptions(60 * 60 * 24 * 7));
 	}
 
 	// Check for event token (?et=)
 	const eventToken = event.url.searchParams.get('et');
 	if (eventToken) {
 		log.debug('event_token_captured');
-		event.cookies.set('pending_event_token', eventToken, {
-			path: '/',
-			httpOnly: true,
-			secure: false, // Set to true in production
-			sameSite: 'lax',
-			maxAge: 60 * 60 * 24 * 7 // 7 days
-		});
+		event.cookies.set('pending_event_token', eventToken, getAuthCookieOptions(60 * 60 * 24 * 7));
 	}
 
 	// Check for referral code (?ref=) — new code always prevails
@@ -178,7 +168,7 @@ const handleTokenCapture: Handle = async ({ event, resolve }) => {
 		event.cookies.set('referral_code', referralCode, {
 			path: '/',
 			httpOnly: false, // Readable by client-side JS on the registration page
-			secure: false,
+			secure: !dev,
 			sameSite: 'lax',
 			maxAge: 60 * 60 * 24 * 30 // 30 days
 		});
