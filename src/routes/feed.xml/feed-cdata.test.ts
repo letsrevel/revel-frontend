@@ -10,7 +10,7 @@ vi.mock('$lib/api', () => ({
 }));
 
 import { GET } from './+server';
-import { escapeCdata } from '$lib/utils/xml';
+import { escapeCdata, stripXmlControlChars } from '$lib/utils/xml';
 
 const evil = ']]><item>x</item>';
 
@@ -55,5 +55,39 @@ describe('feed.xml CDATA', () => {
 		// Outside CDATA no raw injected element survives (the title is entity-escaped).
 		expect(stripCdata(body)).not.toContain('<item>x</item>');
 		expect(stripCdata(body).match(/<item>/g)).toHaveLength(1);
+	});
+
+	it('HTML-escapes the description text and strips illegal control chars', async () => {
+		listEvents.mockResolvedValue({
+			data: {
+				count: 1,
+				results: [
+					{
+						slug: 'p',
+						name: '<img src=x onerror=alert(1)>\u0001\u000b',
+						start: '2099-01-01T18:00:00Z',
+						created_at: '2026-01-01T00:00:00Z',
+						cover_art: null,
+						logo: null,
+						description: '',
+						city: null,
+						organization: { slug: 'acme', name: 'Ac\u0000me' }
+					}
+				]
+			}
+		});
+		const body = await (await call()).text();
+		expect(body).toContain('&lt;img src=x onerror=alert(1)&gt;');
+		// eslint-disable-next-line no-control-regex
+		expect(body).not.toMatch(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/);
+	});
+});
+
+describe('stripXmlControlChars', () => {
+	it('removes XML 1.0-illegal characters but keeps tab, LF and CR', () => {
+		expect(stripXmlControlChars('a\u0000b\u0008c\u000bd\u000ce\u001ff\ufffeg\uffffh')).toBe(
+			'abcdefgh'
+		);
+		expect(stripXmlControlChars('a\tb\nc\rd')).toBe('a\tb\nc\rd');
 	});
 });

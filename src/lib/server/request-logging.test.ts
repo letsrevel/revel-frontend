@@ -206,19 +206,25 @@ describe('handleSsrError', () => {
 });
 
 describe('redactPath', () => {
-	it('redacts invitation tokens and leaves other paths alone', () => {
-		expect(redactPath('/join/org/abc123')).toBe('/join/org/REDACTED');
-		expect(redactPath('/join/event/abc123/')).toBe('/join/event/REDACTED/');
-		expect(redactPath('/join/org')).toBe('/join/org');
-		expect(redactPath('/events/join/org/x')).toBe('/events/join/org/x');
-		expect(redactPath('/login')).toBe('/login');
+	it('redacts token route params and leaves other paths alone', () => {
+		expect(redactPath('/join/org/abc123', { token_id: 'abc123' })).toBe('/join/org/REDACTED');
+		expect(redactPath('/join/event/abc123/', { token_id: 'abc123' })).toBe('/join/event/REDACTED/');
+		expect(redactPath('/events/acme/party', { org_slug: 'acme', event_slug: 'party' })).toBe(
+			'/events/acme/party'
+		);
+		expect(redactPath('/login', {})).toBe('/login');
+	});
+
+	it('handles URL-encoded param values', () => {
+		expect(redactPath('/join/org/a%2Fb%20c', { token_id: 'a/b c' })).toBe('/join/org/REDACTED');
 	});
 
 	it('is applied to request_finished and ssr error logs', async () => {
 		vi.clearAllMocks();
 		const url = new URL('https://letsrevel.io/join/event/secret-token');
+		const params = { token_id: 'secret-token' };
 		await handleRequestLogging({
-			event: fakeEvent({ url }),
+			event: fakeEvent({ url, params }),
 			resolve: vi.fn().mockResolvedValue(new Response('ok'))
 		} as Parameters<Handle>[0]);
 		expect(vi.mocked(log.info).mock.calls[0][1]).toMatchObject({
@@ -226,7 +232,7 @@ describe('redactPath', () => {
 		});
 		(handleSsrError as HandleServerError)({
 			error: new Error('x'),
-			event: fakeEvent({ url }),
+			event: fakeEvent({ url, params }),
 			status: 500,
 			message: 'm'
 		});

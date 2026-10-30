@@ -1,4 +1,5 @@
 import type { Cookies } from '@sveltejs/kit';
+import { getClientCookieOptions } from '$lib/utils/cookies';
 import {
 	organizationClaimInvitation,
 	eventpublicdiscoveryClaimInvitation
@@ -25,13 +26,8 @@ export interface ClaimResults {
 /**
  * Cookie options for the claim flash cookie
  */
-const CLAIM_FLASH_COOKIE_OPTIONS = {
-	path: '/',
-	httpOnly: false, // Needs to be readable by client JS
-	secure: process.env.NODE_ENV === 'production',
-	sameSite: 'lax' as const,
-	maxAge: 60 // 1 minute - just needs to survive the redirect
-};
+// 1 minute - just needs to survive the redirect; client JS reads it
+const CLAIM_FLASH_COOKIE_OPTIONS = getClientCookieOptions(60);
 
 /**
  * Attempt to claim pending invitation tokens after authentication.

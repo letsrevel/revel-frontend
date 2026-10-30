@@ -9,11 +9,20 @@ import type { Handle, HandleServerError } from '@sveltejs/kit';
 import { log } from './logger';
 import { recordRequest, recordSsrError } from './metrics';
 
-const INVITE_TOKEN_PATH_RE = /^(\/join\/(?:org|event)\/)[^/]+/;
-
-/** Masks the invitation token in `/join/{org,event}/<token>` so it never reaches the logs. */
-export function redactPath(pathname: string): string {
-	return pathname.replace(INVITE_TOKEN_PATH_RE, '$1REDACTED');
+/**
+ * Masks the value of every token-like route param (`[token_id]`, ...) in the
+ * logged path, so invitation tokens in `/join/{org,event}/<token>` never reach
+ * the logs. Route-driven: no hard-coded paths to drift out of sync.
+ */
+export function redactPath(pathname: string, params: Record<string, string> = {}): string {
+	let out = pathname;
+	for (const [key, value] of Object.entries(params)) {
+		if (!/token/i.test(key) || !value) continue;
+		for (const variant of new Set([value, encodeURIComponent(value), encodeURI(value)])) {
+			out = out.split(variant).join('REDACTED');
+		}
+	}
+	return out;
 }
 
 /**
@@ -63,7 +72,7 @@ export const handleRequestLogging: Handle = async ({ event, resolve }) => {
 		const logFinished = response.status >= 500 ? log.error : log.info;
 		logFinished('request_finished', {
 			method: event.request.method,
-			path: redactPath(event.url.pathname),
+			path: redactPath(event.url.pathname, event.params),
 			route_id: routeId,
 			status_code: response.status,
 			duration_ms: durationMs,
@@ -102,7 +111,7 @@ export const handleSsrError: HandleServerError = ({ error, event, status, messag
 	const context = {
 		error,
 		route_id: routeId,
-		path: redactPath(event.url.pathname),
+		path: redactPath(event.url.pathname, event.params),
 		method: event.request.method,
 		status_code: status,
 		request_id: event.locals.requestId,

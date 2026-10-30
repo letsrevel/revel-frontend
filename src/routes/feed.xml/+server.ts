@@ -5,19 +5,23 @@ import { orgOrigin } from '$lib/utils/org-links';
 import { serverLinkContext } from '$lib/server/tenant-canonical';
 import { siteName, tenantIconUrl } from '$lib/seo/tenant';
 import { log } from '$lib/server/logger';
-import { escapeCdata } from '$lib/utils/xml';
+import { escapeCdata, stripXmlControlChars } from '$lib/utils/xml';
 
 /**
  * Escape XML special characters
  */
 function escapeXml(str: string | null | undefined): string {
 	if (!str) return '';
-	return str
+	return stripXmlControlChars(str)
 		.replace(/&/g, '&amp;')
 		.replace(/</g, '&lt;')
 		.replace(/>/g, '&gt;')
 		.replace(/"/g, '&quot;')
 		.replace(/'/g, '&apos;');
+}
+
+function htmlEscape(str: string): string {
+	return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 /**
@@ -148,8 +152,13 @@ ${events
 			: '';
 		/* eslint-enable no-restricted-syntax */
 
+		// Readers render the description as HTML: escape & < > first, then guard the CDATA.
 		const cdataContent = escapeCdata(
-			`${truncatedDescription}${location ? `\n\nLocation: ${location}` : ''}${eventDateFormatted ? `\nDate: ${eventDateFormatted}` : ''}`
+			htmlEscape(
+				stripXmlControlChars(
+					`${truncatedDescription}${location ? `\n\nLocation: ${location}` : ''}${eventDateFormatted ? `\nDate: ${eventDateFormatted}` : ''}`
+				)
+			)
 		);
 
 		return `    <item>

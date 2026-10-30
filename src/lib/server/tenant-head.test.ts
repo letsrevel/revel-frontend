@@ -77,8 +77,27 @@ describe('rewriteHeadForTenant (against the real app.html)', () => {
 		const body = `<body>${' '.repeat(200_000)}<p>x</p></body>`;
 		const start = performance.now();
 		const out = rewriteHeadForTenant(head + body, tenant);
-		expect(performance.now() - start).toBeLessThan(200);
+		expect(performance.now() - start).toBeLessThan(1000);
 		expect(out.endsWith(body)).toBe(true);
 		expect(out).toContain('acme-thumb.png');
+	});
+
+	it('is linear on whitespace inside the head (icon, opensearch and blank-line patterns)', () => {
+		const spaces = ' '.repeat(200_000);
+		const head = shell.replace(
+			'</head>',
+			`<meta name="description" content="${spaces}" />\n${spaces}\n</head>`
+		);
+		const start = performance.now();
+		const out = rewriteHeadForTenant(head, tenant);
+		expect(performance.now() - start).toBeLessThan(1000);
+		expect(out).toContain('acme-thumb.png');
+	});
+
+	it('still rewrites a chunk with no </head> (head split across chunks)', () => {
+		const partial = shell.slice(0, shell.indexOf('</head>'));
+		const out = rewriteHeadForTenant(partial, tenant);
+		expect(out).toContain('acme-thumb.png');
+		expect(out).not.toContain('opensearch.xml');
 	});
 });

@@ -39,6 +39,17 @@ export function getAuthCookieOptions(maxAge?: number) {
 }
 
 /**
+ * Cookie options for client-readable (non-httpOnly) cookies.
+ * Same as {@link getAuthCookieOptions} except JS may read it.
+ */
+export function getClientCookieOptions(maxAge?: number) {
+	return {
+		...getAuthCookieOptions(maxAge),
+		httpOnly: false
+	};
+}
+
+/**
  * Access token cookie options (1 hour lifetime, or session cookie)
  * @param rememberMe - If true, cookie persists for 1 hour. If false, cookie is session-only.
  */

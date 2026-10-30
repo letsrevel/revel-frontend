@@ -35,11 +35,12 @@ const OPENSEARCH_RE = /^[ \t]*<link\s+rel="search"[^>]*>\s*/m;
 /**
  * Rewrites the Revel-branded head tags of the shell for `tenant`. Only the
  * `<head>…</head>` part is touched; the body (which may reflect user input)
- * is passed through byte-for-byte. Without a `</head>` the html is unchanged.
+ * is passed through byte-for-byte. A chunk without `</head>` (head split across
+ * chunks) holds no body, so the whole chunk is rewritten.
  */
 export function rewriteHeadForTenant(html: string, tenant: SeoTenant): string {
 	const headEnd = html.indexOf('</head>');
-	if (headEnd === -1) return html;
+	if (headEnd === -1) return rewriteHead(html, tenant);
 	const rest = html.slice(headEnd);
 	return rewriteHead(html.slice(0, headEnd), tenant) + rest;
 }

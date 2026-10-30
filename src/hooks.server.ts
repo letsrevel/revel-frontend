@@ -1,7 +1,6 @@
 import type { Handle, HandleFetch } from '@sveltejs/kit';
 import { redirect } from '@sveltejs/kit';
 import { z } from 'zod';
-import { dev } from '$app/environment';
 import { sequence } from '@sveltejs/kit/hooks';
 import { env } from '$env/dynamic/private';
 import { i18nHandle } from '$lib/i18n';
@@ -16,6 +15,7 @@ import { handleDocumentCacheControl } from '$lib/server/document-cache';
 import {
 	getAccessTokenCookieOptions,
 	getAuthCookieOptions,
+	getClientCookieOptions,
 	getRefreshTokenCookieOptions,
 	getRememberMeCookieOptions
 } from '$lib/utils/cookies';
@@ -25,7 +25,7 @@ import { handleTenant } from '$lib/server/tenant';
 import { handleTenantRouting } from '$lib/server/tenant-routing';
 import { handleTenantHead } from '$lib/server/tenant-head';
 import { startMetricsServer } from '$lib/server/metrics';
-import { handleRequestLogging, handleSsrError } from '$lib/server/request-logging';
+import { handleRequestLogging, handleSsrError, redactPath } from '$lib/server/request-logging';
 
 // Start the internal Prometheus metrics listener (production-only, guarded so
 // dev/HMR/tests never bind the port). Importing metrics also registers the
@@ -165,13 +165,7 @@ const handleTokenCapture: Handle = async ({ event, resolve }) => {
 	// Check for referral code (?ref=) — new code always prevails
 	const referralCode = event.url.searchParams.get('ref');
 	if (referralCode) {
-		event.cookies.set('referral_code', referralCode, {
-			path: '/',
-			httpOnly: false, // Readable by client-side JS on the registration page
-			secure: !dev,
-			sameSite: 'lax',
-			maxAge: 60 * 60 * 24 * 30 // 30 days
-		});
+		event.cookies.set('referral_code', referralCode, getClientCookieOptions(60 * 60 * 24 * 30));
 	}
 
 	return resolve(event);
@@ -323,7 +317,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 	const refreshToken = event.cookies.get('refresh_token');
 
 	log.debug('auth_request', {
-		path: event.url.pathname,
+		path: redactPath(event.url.pathname, event.params),
 		has_access_token: !!accessToken,
 		has_refresh_token: !!refreshToken
 	});
