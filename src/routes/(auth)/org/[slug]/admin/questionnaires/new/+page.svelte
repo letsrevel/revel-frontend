@@ -17,6 +17,7 @@
 	import QuestionnaireCreateAdvancedSettings from '$lib/components/questionnaires/QuestionnaireCreateAdvancedSettings.svelte';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import { questionnaireCreateOrgQuestionnaire } from '$lib/api/generated/sdk.gen';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import { invalidateOrgQuestionnaires } from '$lib/queries/org-questionnaires';
 	import type {
@@ -122,8 +123,8 @@
 		isSaving = true;
 
 		try {
-			const user = data.user;
-			if (!user) {
+			const accessToken = authStore.accessToken;
+			if (!accessToken) {
 				throw new Error('Not authenticated');
 			}
 
@@ -164,7 +165,7 @@
 					freetextquestion_questions: topLevelFT as FreeTextQuestionCreateSchema[],
 					fileuploadquestion_questions: topLevelFU as FileUploadQuestionCreateSchema[]
 				},
-				headers: { Authorization: `Bearer ${user.accessToken}` }
+				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
 			if (response.error) {

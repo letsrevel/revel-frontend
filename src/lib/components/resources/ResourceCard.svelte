@@ -151,10 +151,10 @@
 		if (resource.resource_type === 'file' && resource.file_url) {
 			// Open file in new tab (browser will download if it can't display)
 			// file_url may be a relative path from the backend, so we need to prepend the API base URL
-			window.open(getBackendUrl(resource.file_url), '_blank');
+			window.open(getBackendUrl(resource.file_url), '_blank', 'noopener,noreferrer');
 		} else if (resource.resource_type === 'link' && resource.link) {
 			// Open link in new tab
-			window.open(resource.link, '_blank');
+			window.open(resource.link, '_blank', 'noopener,noreferrer');
 		}
 		// For text type, we don't open anything - the content is shown in the preview
 	}
