@@ -9,6 +9,13 @@ import type { Handle, HandleServerError } from '@sveltejs/kit';
 import { log } from './logger';
 import { recordRequest, recordSsrError } from './metrics';
 
+const INVITE_TOKEN_PATH_RE = /^(\/join\/(?:org|event)\/)[^/]+/;
+
+/** Masks the invitation token in `/join/{org,event}/<token>` so it never reaches the logs. */
+export function redactPath(pathname: string): string {
+	return pathname.replace(INVITE_TOKEN_PATH_RE, '$1REDACTED');
+}
+
 /**
  * Request logging + metrics hook.
  *
@@ -56,7 +63,7 @@ export const handleRequestLogging: Handle = async ({ event, resolve }) => {
 		const logFinished = response.status >= 500 ? log.error : log.info;
 		logFinished('request_finished', {
 			method: event.request.method,
-			path: event.url.pathname,
+			path: redactPath(event.url.pathname),
 			route_id: routeId,
 			status_code: response.status,
 			duration_ms: durationMs,
@@ -95,7 +102,7 @@ export const handleSsrError: HandleServerError = ({ error, event, status, messag
 	const context = {
 		error,
 		route_id: routeId,
-		path: event.url.pathname,
+		path: redactPath(event.url.pathname),
 		method: event.request.method,
 		status_code: status,
 		request_id: event.locals.requestId,

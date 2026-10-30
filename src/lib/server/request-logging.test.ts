@@ -10,7 +10,7 @@ vi.mock('./metrics', () => ({
 	recordSsrError: vi.fn()
 }));
 
-import { handleRequestLogging, handleSsrError } from './request-logging';
+import { handleRequestLogging, handleSsrError, redactPath } from './request-logging';
 import { log } from './logger';
 import { recordRequest, recordSsrError } from './metrics';
 
@@ -202,5 +202,34 @@ describe('handleSsrError', () => {
 		});
 		const [, fields] = vi.mocked(log.error).mock.calls[0];
 		expect(fields?.ip_address).toBeUndefined();
+	});
+});
+
+describe('redactPath', () => {
+	it('redacts invitation tokens and leaves other paths alone', () => {
+		expect(redactPath('/join/org/abc123')).toBe('/join/org/REDACTED');
+		expect(redactPath('/join/event/abc123/')).toBe('/join/event/REDACTED/');
+		expect(redactPath('/join/org')).toBe('/join/org');
+		expect(redactPath('/events/join/org/x')).toBe('/events/join/org/x');
+		expect(redactPath('/login')).toBe('/login');
+	});
+
+	it('is applied to request_finished and ssr error logs', async () => {
+		vi.clearAllMocks();
+		const url = new URL('https://letsrevel.io/join/event/secret-token');
+		await handleRequestLogging({
+			event: fakeEvent({ url }),
+			resolve: vi.fn().mockResolvedValue(new Response('ok'))
+		} as Parameters<Handle>[0]);
+		expect(vi.mocked(log.info).mock.calls[0][1]).toMatchObject({
+			path: '/join/event/REDACTED'
+		});
+		(handleSsrError as HandleServerError)({
+			error: new Error('x'),
+			event: fakeEvent({ url }),
+			status: 500,
+			message: 'm'
+		});
+		expect(vi.mocked(log.error).mock.calls[0][1]).toMatchObject({ path: '/join/event/REDACTED' });
 	});
 });
