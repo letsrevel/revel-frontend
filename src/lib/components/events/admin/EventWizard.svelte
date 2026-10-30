@@ -34,6 +34,7 @@
 	import DetailsStep from './DetailsStep.svelte';
 	import EventResources from './EventResources.svelte';
 	import TicketingStep from './TicketingStep.svelte';
+	import { orgVatContextFrom } from './tier-vat';
 	import { Save } from '@lucide/svelte';
 
 	interface Props {
@@ -664,6 +665,7 @@
 			eventId={eventIdValue}
 			organizationSlug={organization.slug}
 			organizationStripeConnected={organization.is_stripe_connected}
+			orgVat={orgVatContextFrom(organization)}
 			{feeConfig}
 			{formData}
 			venueCapacity={selectedVenue?.capacity ?? null}

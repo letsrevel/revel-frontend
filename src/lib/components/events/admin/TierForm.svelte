@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
+	import { tick } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import {
@@ -30,6 +30,17 @@
 	import TierFormCheckInSection from './TierFormCheckInSection.svelte';
 	import TierFormCancellationSection from './TierFormCancellationSection.svelte';
 	import TierFormPaymentMethodSection from './TierFormPaymentMethodSection.svelte';
+	import TierFormErrorPanel from './TierFormErrorPanel.svelte';
+	import TierFormVatSection from './TierFormVatSection.svelte';
+	import {
+		omitUnchangedZeroRuleFields,
+		zeroRuleRechecked,
+		exemptionLikelyCause,
+		exemptionReasonForPayload,
+		payloadPrice,
+		vatExemptionRequired,
+		type OrgVatContext
+	} from './tier-vat';
 	import {
 		checkInOffsetsPayload,
 		checkInPicksValid,
@@ -37,15 +48,8 @@
 		type TierCheckInEventContext
 	} from './check-in-offset';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { extractErrorMessage, extractFieldErrors, markSilent } from '$lib/utils/errors';
-	import { tierFieldLabel } from './tier-field-labels';
-	import {
-		CURRENCY_SYMBOLS,
-		isBillingInfoRequiredError,
-		toDatetimeLocal,
-		toTimezoneAwareISO,
-		normalizeDecimalInput
-	} from './tier-form-helpers';
+	import { markSilent } from '$lib/utils/errors';
+	import { CURRENCY_SYMBOLS, toTimezoneAwareISO, normalizeDecimalInput } from './tier-form-helpers';
 	import {
 		buildCategoryPricesPayload,
 		buildTierSeatingFields,
@@ -54,12 +58,19 @@
 	import type { EventRules } from '$lib/utils/compliance';
 	import { formatDateTimeReadback } from '$lib/utils/date';
 	import type { PlatformFeeConfig, PlatformFeeInfo } from '$lib/utils/fees';
+	import { stashTierDraft, stripeGateFor, tierSeed, type TierDraft } from './tier-draft';
 
 	interface Props {
 		tier: TicketTierDetailSchema | null; // null = create new
 		eventId: string;
 		organizationSlug: string;
 		organizationStripeConnected: boolean;
+		/** Connected, but billing details are missing (see billingNeedsAttention). */
+		billingNeedsAttention?: boolean;
+		/** Prefill for the Stripe onboarding email. */
+		stripeEmail?: string;
+		isOwner?: boolean;
+		draft?: TierDraft | null;
 		/** Org platform-fee terms for the net-payout preview (null hides it). */
 		platformFees?: PlatformFeeInfo | null;
 		feeConfig: PlatformFeeConfig;
@@ -70,6 +81,8 @@
 		eventContext?: TierCheckInEventContext;
 		/** The event's country rules (#1001) and whether they've loaded (fails closed). */
 		rules?: EventRules;
+		/** Org VAT defaults (rate, invoicing mode, exemption reason); null/absent = unknown. */
+		orgVat?: OrgVatContext | null;
 		onClose: () => void;
 	}
 
@@ -78,6 +91,10 @@
 		eventId,
 		organizationSlug,
 		organizationStripeConnected,
+		billingNeedsAttention = false,
+		stripeEmail = '',
+		isOwner = false,
+		draft = null,
 		platformFees = null,
 		feeConfig,
 		membershipTiers = [],
@@ -85,32 +102,29 @@
 		eventCapacity = null,
 		eventContext = { start: '' },
 		rules = { compliance: null, status: 'ready' },
+		orgVat = null,
 		onClose
 	}: Props = $props();
 
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
-
-	// Form state
-	let name = $state(tier?.name ?? '');
-	let description = $state(tier?.description ?? '');
-	let paymentMethod = $state<'free' | 'offline' | 'at_the_door' | 'online'>(
-		(tier?.payment_method as 'free' | 'offline' | 'at_the_door' | 'online') ?? 'free'
-	);
-	let priceType = $state<'fixed' | 'pwyc'>((tier?.price_type as 'fixed' | 'pwyc') ?? 'fixed');
-	let price = $state(tier?.price ? String(tier.price) : '0');
-	let pwycMin = $state(tier?.pwyc_min ? String(tier.pwyc_min) : '1');
-	let pwycMax = $state(tier?.pwyc_max ? String(tier.pwyc_max) : '');
-	let currency = $state(tier?.currency ?? 'EUR');
-	let vatRateOverride = $state(tier?.vat_rate != null ? String(tier.vat_rate) : '');
-	let manualPaymentInstructions = $state(tier?.manual_payment_instructions ?? '');
-	let totalQuantity = $state<string>(
-		tier?.total_quantity !== null && tier?.total_quantity !== undefined
-			? String(tier.total_quantity)
-			: ''
-	);
-	let salesStartAt = $state(toDatetimeLocal(tier?.sales_start_at));
-	let salesEndAt = $state(toDatetimeLocal(tier?.sales_end_at));
+	const seed = tierSeed(tier, draft);
+	let name = $state(seed.name);
+	let description = $state(seed.description);
+	let paymentMethod = $state(seed.paymentMethod);
+	let priceType = $state(seed.priceType);
+	let price = $state(seed.price);
+	let pwycMin = $state(seed.pwycMin);
+	let pwycMax = $state(seed.pwycMax);
+	let currency = $state(seed.currency);
+	let vatRateOverride = $state(seed.vatRateOverride);
+	let vatExemptionReason = $state(seed.vatExemptionReason ?? '');
+	let failedExemptionCause = $state(false);
+	let vatReasonError = $state('');
+	let manualPaymentInstructions = $state(seed.manualPaymentInstructions);
+	let totalQuantity = $state(seed.totalQuantity);
+	let salesStartAt = $state(seed.salesStartAt);
+	let salesEndAt = $state(seed.salesEndAt);
 	let salesPaused = $state(tier?.sales_paused ?? false);
 	// Per-tier check-in window (#945): picked times ↔ offsets from event start.
 	const checkInPicks = $state(initialCheckInPicks(eventContext.start, tier));
@@ -118,12 +132,8 @@
 	// value is empty or unparseable, so each hint is gated on the rendered text.
 	const salesStartReadback = $derived(formatDateTimeReadback(salesStartAt));
 	const salesEndReadback = $derived(formatDateTimeReadback(salesEndAt));
-	let visibility = $state<'public' | 'private' | 'members-only' | 'staff-only'>(
-		(tier?.visibility as 'public' | 'private' | 'members-only' | 'staff-only') ?? 'public'
-	);
-	let purchasableBy = $state<'public' | 'members' | 'invited' | 'invited_and_members'>(
-		(tier?.purchasable_by as 'public' | 'members' | 'invited' | 'invited_and_members') ?? 'public'
-	);
+	let visibility = $state(seed.visibility);
+	let purchasableBy = $state(seed.purchasableBy);
 	let restrictedToMembershipTiersIds = $state<string[]>(
 		tier?.restricted_to_membership_tiers?.map((t) => t.id).filter((id): id is string => !!id) ?? []
 	);
@@ -154,7 +164,6 @@
 		}
 	});
 
-	// Auto-reset restriction toggles when parent condition no longer applies
 	$effect(() => {
 		if (visibility !== 'private') {
 			restrictVisibilityToLinkedInvitations = false;
@@ -168,11 +177,7 @@
 
 	// Venue and seating state
 	let seatAssignmentMode = $state<SeatAssignmentMode>(tier?.seat_assignment_mode ?? 'none');
-	let maxTicketsPerUser = $state<string>(
-		tier?.max_tickets_per_user !== null && tier?.max_tickets_per_user !== undefined
-			? String(tier.max_tickets_per_user)
-			: ''
-	);
+	let maxTicketsPerUser = $state(seed.maxTicketsPerUser);
 	// Pre-fill venue: use tier's venue if editing, else fall back to event's venue
 	// Venue is read-only - it always comes from the event
 	const venueId = $state<string | null>(tier?.venue?.id ?? eventVenueId ?? null);
@@ -312,7 +317,6 @@
 		);
 	});
 
-	// Get current currency symbol for display
 	const currencySymbol = $derived(CURRENCY_SYMBOLS[currency] || currency);
 
 	// The generated client resolves with `{ error }` on HTTP errors instead of
@@ -375,25 +379,89 @@
 
 	// Card + unknown rules: hold the save. Known-blocked legacy card tiers still save (J29.3).
 	const onlineSaveHeld = $derived(rules.status !== 'ready' && paymentMethod === 'online');
+	// The section's Stripe / tax-details gate also holds the save.
+	const stripeGate = $derived(
+		stripeGateFor(
+			paymentMethod,
+			rules.status !== 'ready' || rules.compliance?.online_payment === 'blocked',
+			organizationStripeConnected,
+			billingNeedsAttention
+		)
+	);
+	// The exemption reason is mandatory for online-paid, 0%-VAT tiers when the org invoices
+	// and has no default reason (mirrors the backend 422).
+	// On edit it only applies when a rule field changed vs the saved tier (backend carve-out).
+	// The reason is taken as the payload carries it, so omission compares like with like.
+	const zeroRuleInputs = $derived({
+		paymentMethod,
+		priceType,
+		price: payloadPrice(paymentMethod, priceType, price, pwycMin),
+		pwycMin,
+		pwycMax,
+		vatRateOverride,
+		vatExemptionReason: exemptionReasonForPayload(
+			paymentMethod,
+			vatRateOverride,
+			vatExemptionReason
+		)
+	});
+	const vatPriceInputs = $derived({
+		...zeroRuleInputs,
+		price,
+		categoryPrices: seatAssignmentMode === 'none' ? [] : Object.values(categoryPrices)
+	});
+	const categoryPricesPayload = $derived(
+		buildCategoryPricesPayload(seatAssignmentMode, initialCategoryPrices, categoryPrices)
+	);
+	const vatReasonRequired = $derived(
+		zeroRuleRechecked(tier, zeroRuleInputs, salesPaused, categoryPricesPayload !== undefined) &&
+			vatExemptionRequired(vatPriceInputs, vatRateOverride, orgVat)
+	);
+	// Clear a shown error as soon as it no longer applies (reason typed or no longer required).
+	$effect(() => {
+		if (vatReasonError && (!vatReasonRequired || vatExemptionReason.trim())) vatReasonError = '';
+	});
+	const saveHeld = $derived(onlineSaveHeld || stripeGate !== null);
+	const heldBy = $derived(
+		onlineSaveHeld ? 'tier-online-blocked' : stripeGate && 'tier-stripe-gate'
+	);
+
+	function stashDraft(): void {
+		stashTierDraft(eventId, {
+			tierId: tier?.id ?? null,
+			name,
+			description,
+			paymentMethod,
+			priceType,
+			price,
+			pwycMin,
+			pwycMax,
+			currency,
+			vatRateOverride,
+			vatExemptionReason,
+			manualPaymentInstructions,
+			totalQuantity,
+			salesStartAt,
+			salesEndAt,
+			maxTicketsPerUser,
+			visibility,
+			purchasableBy
+		});
+	}
 
 	function handleSubmit(e: Event) {
 		e.preventDefault();
-		if (onlineSaveHeld) return;
+		if (saveHeld) return;
 
-		// Determine the price value based on payment method and price type
-		// Normalize all decimal values to ensure dots (not commas) as decimal separator
-		let finalPrice: string;
-		if (paymentMethod === 'free') {
-			finalPrice = '0';
-		} else if (priceType === 'pwyc') {
-			// For PWYC (especially with Stripe), use minimum price as the price field
-			finalPrice = normalizeDecimalInput(pwycMin || '1');
-		} else {
-			// Fixed price
-			finalPrice = normalizeDecimalInput(price);
+		if (vatReasonRequired && !vatExemptionReason.trim()) {
+			vatReasonError = m['tierForm.vatExemptionReasonRequired']();
+			void tick().then(() => document.getElementById('vat-exemption-reason')?.focus());
+			return;
 		}
+		vatReasonError = '';
 
-		// Build the data object, omitting null values for pwyc fields
+		const finalPrice = payloadPrice(paymentMethod, priceType, price, pwycMin);
+
 		const baseData: TicketTierCreateSchema = {
 			name: name.trim(),
 			description: description.trim() || null,
@@ -424,6 +492,7 @@
 					: vatRateOverride !== ''
 						? parseFloat(normalizeDecimalInput(vatRateOverride))
 						: null,
+			vat_exemption_reason: zeroRuleInputs.vatExemptionReason,
 			// Venue and seating configuration
 			seat_assignment_mode: seatAssignmentMode,
 			max_tickets_per_user: maxTicketsPerUser ? parseInt(maxTicketsPerUser) : null,
@@ -442,11 +511,6 @@
 
 		// Sent ONLY when dirty (omit = leave the stored map untouched, {} =
 		// clear, non-empty = replace) — see buildCategoryPricesPayload.
-		const categoryPricesPayload = buildCategoryPricesPayload(
-			seatAssignmentMode,
-			initialCategoryPrices,
-			categoryPrices
-		);
 		if (categoryPricesPayload !== undefined) {
 			baseData.category_prices = categoryPricesPayload;
 		}
@@ -461,11 +525,17 @@
 			}
 		}
 
+		if (tier) {
+			// The backend enforces the zero-rate rule whenever any rule key is PRESENT, so
+			// send only the ones that changed: renaming a legacy 0% tier must still save.
+			omitUnchangedZeroRuleFields(tier, baseData, zeroRuleInputs);
+		}
+
+		// Frozen now: the error panel must not re-evaluate it as the user keeps typing.
+		failedExemptionCause = exemptionLikelyCause(vatPriceInputs, orgVat);
 		if (!tier) {
-			// Create new tier
 			tierCreateMutation.mutate(baseData);
 		} else {
-			// Update existing tier
 			tierUpdateMutation.mutate(baseData as TicketTierUpdateSchema);
 		}
 	}
@@ -524,6 +594,12 @@
 				bind:paymentMethod
 				{isPending}
 				{organizationStripeConnected}
+				{billingNeedsAttention}
+				{organizationSlug}
+				{eventId}
+				{stripeEmail}
+				{isOwner}
+				onBeforeStripeConnect={stashDraft}
 				compliance={rules.compliance}
 				complianceStatus={rules.status}
 				onRetryCompliance={rules.onRetry}
@@ -545,26 +621,15 @@
 				/>
 			{/if}
 
-			<!-- VAT Rate Override (for paid tiers) -->
-			{#if paymentMethod !== 'free'}
-				<div>
-					<Label for="vat-rate-override">{m['tierForm.vatRateOverride']()}</Label>
-					<Input
-						id="vat-rate-override"
-						type="text"
-						inputmode="decimal"
-						value={vatRateOverride}
-						oninput={(e) => {
-							vatRateOverride = normalizeDecimalInput((e.currentTarget as HTMLInputElement).value);
-						}}
-						placeholder={m['tierForm.vatRateOverridePlaceholder']()}
-						disabled={isPending}
-					/>
-					<p class="mt-1 text-xs text-muted-foreground">
-						{m['tierForm.vatRateOverrideHelp']()}
-					</p>
-				</div>
-			{/if}
+			<TierFormVatSection
+				{paymentMethod}
+				bind:vatRateOverride
+				bind:vatExemptionReason
+				{orgVat}
+				required={vatReasonRequired}
+				error={vatReasonError}
+				{isPending}
+			/>
 
 			<!-- Manual Payment Instructions (for offline/at_the_door payments) -->
 			{#if paymentMethod === 'offline' || paymentMethod === 'at_the_door'}
@@ -656,12 +721,12 @@
 					<Button
 						type="submit"
 						disabled={isPending ||
-							onlineSaveHeld ||
+							saveHeld ||
 							!name.trim() ||
 							!sectorValid ||
 							!checkInPicksValid(eventContext.start, checkInPicks) ||
 							(paymentMethod !== 'free' && allowUserCancellation && !refundPolicyValid)}
-						aria-describedby={onlineSaveHeld ? 'tier-online-blocked' : undefined}
+						aria-describedby={heldBy || undefined}
 					>
 						{isPending
 							? m['tierForm.saving']()
@@ -673,44 +738,13 @@
 			</div>
 
 			{#if error}
-				{@const fieldErrors = extractFieldErrors(error)}
-				{@const errorMsg = extractErrorMessage(error)}
-				{@const isBillingError = isBillingInfoRequiredError(errorMsg)}
-				<!-- This panel renders inside DialogContent (bg-background), but the
-				     dimmed copy stops at /90 so it stays AA on a card surface too:
-				     5.61:1 / 5.18:1 dark, vs 4.71:1 / 4.40:1 at /80. Audited on both
-				     in scripts/audit-brand-themes.py. -->
-				<div class="rounded-lg bg-destructive/10 p-3" role="alert">
-					<p class="font-medium text-destructive">{m['tierForm.error']()}</p>
-
-					{#if fieldErrors.length > 0}
-						<p class="mt-1 text-sm text-destructive/90">
-							{m['tierForm.fieldErrorsTitle']()}
-						</p>
-						<ul class="mt-1 space-y-1">
-							{#each fieldErrors as { field, messages } (field)}
-								<li class="text-sm text-destructive/90">
-									<span class="font-medium">{tierFieldLabel(field)}:</span>
-									{messages.join(', ')}
-								</li>
-							{/each}
-						</ul>
-					{:else}
-						<p class="mt-1 text-sm text-destructive/90">{errorMsg}</p>
-						{#if saveStatus === 422 && paymentMethod === 'online' && !isBillingError}
-							<p class="mt-1 text-sm text-destructive/90">{m['compliance.tier.locationHint']()}</p>
-						{/if}
-					{/if}
-
-					{#if isBillingError}
-						<a
-							href={resolve('/(auth)/org/[slug]/admin/billing', { slug: organizationSlug })}
-							class="mt-2 inline-flex items-center gap-1 text-sm font-medium text-destructive underline hover:text-destructive/90"
-						>
-							{m['tierForm.completeBillingInfo']()}
-						</a>
-					{/if}
-				</div>
+				<TierFormErrorPanel
+					{error}
+					{saveStatus}
+					{paymentMethod}
+					{organizationSlug}
+					exemptionLikelyCause={failedExemptionCause}
+				/>
 			{/if}
 		</form>
 	</DialogContent>

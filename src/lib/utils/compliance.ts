@@ -8,6 +8,7 @@
  */
 import * as m from '$lib/paraglide/messages.js';
 import { getLocale } from '$lib/paraglide/runtime.js';
+import { countryDisplayName } from '$lib/utils/postal-address';
 import type {
 	ComplianceNoticeSchema,
 	EventComplianceSchema,
@@ -63,17 +64,8 @@ const DOCS_BASE = 'https://docs.letsrevel.io/compliance';
  * language. The backend uses `GR` for Greece (VAT prefix `EL` is normalized
  * server-side). Falls back to the code itself if the runtime can't resolve it.
  */
-export function countryName(code: string): string {
-	if (!code) return '';
-	try {
-		// The `pt` catalog is European Portuguese; bare `pt` resolves to Brazilian
-		// names in Intl ("Romênia", "Polônia"), so ask for pt-PT explicitly.
-		const locale = getLocale() === 'pt' ? 'pt-PT' : getLocale();
-		const names = new Intl.DisplayNames([locale], { type: 'region' });
-		return names.of(code.toUpperCase()) ?? code;
-	} catch {
-		return code;
-	}
+export function countryName(code: string, locale: string = getLocale()): string {
+	return countryDisplayName(code, locale);
 }
 
 export function isEuCountry(code: string): boolean {

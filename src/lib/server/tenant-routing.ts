@@ -80,6 +80,7 @@ export const SEGMENT_RULES: Readonly<Record<string, SegmentRule>> = {
 	'.well-known': 'open',
 	// SEO / asset endpoints (tenant-aware since #1057)
 	'robots.txt': 'open',
+	'llms.txt': 'open', // the handler 404s on a tenant host: platform marketing copy only
 	'feed.xml': 'open',
 	'opensearch.xml': 'open',
 	oembed: 'open',

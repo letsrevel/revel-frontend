@@ -15,11 +15,23 @@
 
 	const {
 		initialItems,
-		initialPwycAmountOverride = null
+		initialPwycAmountOverride = null,
+		isAuthenticated = false,
+		authToken = null
 	}: {
+		isAuthenticated?: boolean;
+		authToken?: string | null;
 		initialItems?: VatPreviewItemSchema[];
 		initialPwycAmountOverride?: string | null;
 	} = $props();
+
+	let section: CheckoutBillingSection | undefined = $state();
+	export function validate(): boolean {
+		return section?.validate() ?? true;
+	}
+	export function getBillingInfo() {
+		return section?.getBillingInfo() ?? null;
+	}
 
 	const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 
@@ -36,6 +48,7 @@
 
 <QueryClientProvider {client}>
 	<CheckoutBillingSection
+		bind:this={section}
 		eventId="event-123"
 		tierId="tier-456"
 		tierName="General Admission"
@@ -43,7 +56,8 @@
 		currency="EUR"
 		price="25.00"
 		isPwyc={false}
-		isAuthenticated={false}
+		{isAuthenticated}
+		{authToken}
 		{discountCode}
 		items={initialItems}
 		{pwycAmountOverride}

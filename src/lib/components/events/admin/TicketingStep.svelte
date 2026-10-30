@@ -15,6 +15,9 @@
 	import { Info, Ticket } from '@lucide/svelte';
 	import TierCard from './TierCard.svelte';
 	import TierForm from './TierForm.svelte';
+	import type { OrgVatContext } from './tier-vat';
+	import { takeTierDraft, type TierDraft } from './tier-draft';
+	import { onMount } from 'svelte';
 	import { effectiveEventCapacity } from './event-capacity';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { reorderByIds, swapAndCollectIds } from '$lib/utils/reorder';
@@ -47,8 +50,16 @@
 		eventId: string;
 		organizationSlug: string;
 		organizationStripeConnected: boolean;
+		/** Connected, but billing details are missing (see billingNeedsAttention). */
+		billingNeedsAttention?: boolean;
+		/** Prefill for the Stripe onboarding email. */
+		stripeEmail?: string;
+		/** Only the org owner can connect Stripe (stripe_connect is owner-only). */
+		isOwner?: boolean;
 		/** Org platform-fee terms for the tier net-payout preview (null hides it). */
 		platformFees?: PlatformFeeInfo | null;
+		/** Org VAT defaults, for the tier's VAT exemption reason (null = unknown). */
+		orgVat?: OrgVatContext | null;
 		feeConfig: PlatformFeeConfig;
 		formData: EventFormData;
 		onUpdate: (updates: Partial<EventFormData>) => void;
@@ -64,7 +75,11 @@
 		eventId,
 		organizationSlug,
 		organizationStripeConnected,
+		billingNeedsAttention = false,
+		stripeEmail = '',
+		isOwner = false,
 		platformFees = null,
+		orgVat = null,
 		feeConfig,
 		formData,
 		onUpdate,
@@ -169,6 +184,33 @@
 	let showTierForm = $state(false);
 
 	const tiers = $derived(tiersQuery.data?.data?.results ?? []);
+
+	// Back from Stripe onboarding (?stripe_success / ?stripe_refresh): reopen the
+	// tier form the organizer was filling in, prefilled from the stash.
+	let pendingDraft = $state<TierDraft | null>(null);
+	let restoredDraft = $state<TierDraft | null>(null);
+	onMount(() => {
+		const params = new URLSearchParams(window.location.search);
+		if (params.has('stripe_success') || params.has('stripe_refresh')) {
+			pendingDraft = takeTierDraft(eventId);
+		}
+	});
+	$effect(() => {
+		if (!pendingDraft) return;
+		if (pendingDraft.tierId) {
+			const existing = tiers.find((t) => t.id === pendingDraft?.tierId);
+			if (!existing) {
+				if (tiersQuery.isSuccess) pendingDraft = null;
+				return;
+			}
+			editingTier = existing;
+		} else {
+			editingTier = null;
+		}
+		restoredDraft = pendingDraft;
+		showTierForm = true;
+		pendingDraft = null;
+	});
 
 	// Normalize the (dynamically-shaped) query error into the fields the template renders.
 	const tiersErrorInfo = $derived.by(
@@ -298,6 +340,7 @@
 	function handleCloseTierForm() {
 		showTierForm = false;
 		editingTier = null;
+		restoredDraft = null;
 	}
 </script>
 
@@ -458,7 +501,12 @@
 		{eventId}
 		{organizationSlug}
 		{organizationStripeConnected}
+		{billingNeedsAttention}
+		{stripeEmail}
+		{isOwner}
+		draft={restoredDraft}
 		{platformFees}
+		{orgVat}
 		{feeConfig}
 		{membershipTiers}
 		eventVenueId={formData.venue_id || null}

@@ -28,10 +28,13 @@ test.describe('J03 billing profile @p2', () => {
 		await expect(page.getByRole('heading', { name: 'Billing Information' })).toBeVisible();
 
 		await page.getByLabel(/Legal Name/).fill('E2E Billing GmbH');
-		await page.getByLabel(/Billing Address/).fill('Teststraße 1, 1010 Wien');
-		await page.getByLabel(/^Country/).fill('at');
-		// The country input auto-uppercases.
-		await expect(page.getByLabel(/^Country/)).toHaveValue('AT');
+		await page.getByLabel(/Street and number/).fill('Teststraße 1');
+		await page.getByLabel(/Postal code/).fill('1010');
+		await page.getByLabel(/^City/).fill('Wien');
+		await page.getByLabel(/^Country/).selectOption('AT');
+		await page.getByLabel(/^VAT country/).fill('at');
+		// The VAT country input auto-uppercases.
+		await expect(page.getByLabel(/^VAT country/)).toHaveValue('AT');
 		await page.getByLabel(/Billing Email/).fill(user.email);
 
 		await page.getByRole('button', { name: 'Save billing information' }).click();
@@ -42,8 +45,11 @@ test.describe('J03 billing profile @p2', () => {
 		await gotoHydrated(page, '/account/settings');
 		await waitForClientAuth(page);
 		await expect(page.getByLabel(/Legal Name/)).toHaveValue('E2E Billing GmbH');
-		await expect(page.getByLabel(/Billing Address/)).toHaveValue('Teststraße 1, 1010 Wien');
+		await expect(page.getByLabel(/Street and number/)).toHaveValue('Teststraße 1');
+		await expect(page.getByLabel(/Postal code/)).toHaveValue('1010');
+		await expect(page.getByLabel(/^City/)).toHaveValue('Wien');
 		await expect(page.getByLabel(/^Country/)).toHaveValue('AT');
+		await expect(page.getByLabel(/^VAT country/)).toHaveValue('AT');
 		await expect(page.getByRole('button', { name: 'Update billing information' })).toBeVisible();
 		await expect(page.getByRole('heading', { name: 'VAT ID' })).toBeVisible();
 

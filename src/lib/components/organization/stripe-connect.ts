@@ -11,12 +11,32 @@ export async function requestStripeOnboardingLink(
 	slug: string,
 	email: string,
 	accessToken: string,
-	returnTo: StripeReturnTo = 'settings'
+	returnTo?: Exclude<StripeReturnTo, 'event'>
+): Promise<string>;
+/** `return_to: 'event'` sends the user back to that event's ticketing tab. */
+export async function requestStripeOnboardingLink(
+	slug: string,
+	email: string,
+	accessToken: string,
+	returnTo: 'event',
+	eventId: string
+): Promise<string>;
+export async function requestStripeOnboardingLink(
+	slug: string,
+	email: string,
+	accessToken: string,
+	returnTo: StripeReturnTo = 'settings',
+	eventId?: string
 ): Promise<string> {
+	// The backend 422s on event_id without return_to 'event' (and vice versa).
+	const body =
+		returnTo === 'event' && eventId
+			? { email, return_to: returnTo, event_id: eventId }
+			: { email, return_to: returnTo };
 	const response = await organizationadmincoreStripeConnect({
 		path: { slug },
 		headers: { Authorization: `Bearer ${accessToken}` },
-		body: { email, return_to: returnTo }
+		body
 	});
 
 	if (response.error) {

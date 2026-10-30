@@ -13,6 +13,7 @@ const LABELS: Record<string, () => string> = {
 	price: () => m['tierForm.field.price'](),
 	currency: () => m['tierForm.field.currency'](),
 	vat_rate: () => m['tierForm.field.vat_rate'](),
+	vat_exemption_reason: () => m['tierForm.field.vat_exemption_reason'](),
 	manual_payment_instructions: () => m['tierForm.field.manual_payment_instructions'](),
 	total_quantity: () => m['tierForm.field.total_quantity'](),
 	sales_start_at: () => m['tierForm.field.sales_start_at'](),

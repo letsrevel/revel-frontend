@@ -10,7 +10,7 @@ vi.mock('$lib/server/logger', () => ({
 	log: { error: logError, info: vi.fn(), warning: vi.fn(), debug: vi.fn() }
 }));
 
-import { loadSetupCounts } from './org-setup';
+import { loadHasPublishedEvent, loadSetupCounts } from './org-setup';
 
 const ORG_ID = 'org-123';
 const fetchStub = vi.fn() as unknown as typeof fetch;
@@ -165,5 +165,39 @@ describe('loadSetupCounts', () => {
 		]);
 		const firstOpts = listEvents.mock.calls[0][0] as { headers: Record<string, string> };
 		expect(firstOpts.headers).toEqual({ Authorization: 'Bearer tok-abc' });
+	});
+});
+
+describe('loadHasPublishedEvent', () => {
+	const opts = { orgId: ORG_ID, accessToken: 'tok', fetch: fetchStub };
+
+	beforeEach(() => {
+		listEvents.mockReset();
+		logError.mockReset();
+	});
+
+	it('is true when an open or closed event exists (cheap queries only)', async () => {
+		route({ closed: () => ok(2) });
+		expect(await loadHasPublishedEvent(opts)).toBe(true);
+		const qs = queriesSent();
+		expect(qs.map((q) => q.status).sort()).toEqual(['closed', 'open']);
+		expect(qs.every((q) => q.page_size === 1 && q.include_past === true)).toBe(true);
+	});
+
+	it('is false when neither exists', async () => {
+		route({});
+		expect(await loadHasPublishedEvent(opts)).toBe(false);
+	});
+
+	it('is null when a query fails and nothing was found; true still wins', async () => {
+		route({ open: () => fail() });
+		expect(await loadHasPublishedEvent(opts)).toBeNull();
+		route({ open: () => fail(), closed: () => ok(1) });
+		expect(await loadHasPublishedEvent(opts)).toBe(true);
+	});
+
+	it('never throws', async () => {
+		listEvents.mockRejectedValue(new Error('net'));
+		expect(await loadHasPublishedEvent(opts)).toBeNull();
 	});
 });

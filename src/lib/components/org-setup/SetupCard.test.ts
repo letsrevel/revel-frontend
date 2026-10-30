@@ -1,3 +1,4 @@
+import { invalidateAll } from '$app/navigation';
 import { render, screen } from '@testing-library/svelte';
 import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
@@ -14,7 +15,7 @@ vi.mock('$app/navigation', () => ({
 	goto: vi.fn()
 }));
 
-const KEY = 'revel:org-setup-hidden:org-1';
+const COOKIE = 'revel_setup_hidden_org-1';
 
 const fresh: SetupProgress = {
 	pageHidden: true,
@@ -26,7 +27,7 @@ const fresh: SetupProgress = {
 	allDone: false
 };
 
-function setup(progress: SetupProgress = fresh) {
+function setup(progress: SetupProgress | null = fresh, extra: Record<string, unknown> = {}) {
 	return render(QueryClientTestWrapper, {
 		props: {
 			client: new QueryClient({ defaultOptions: { queries: { retry: false } } }),
@@ -35,9 +36,10 @@ function setup(progress: SetupProgress = fresh) {
 				orgId: 'org-1',
 				orgSlug: 'acme',
 				progress,
-				visibility: progress.pageHidden ? 'private' : 'public',
+				visibility: progress?.pageHidden ? 'private' : 'public',
 				defaultStripeEmail: 'a@b.c',
-				accessToken: 'tok'
+				accessToken: 'tok',
+				...extra
 			}
 		}
 	});
@@ -46,7 +48,7 @@ function setup(progress: SetupProgress = fresh) {
 describe('SetupCard', () => {
 	beforeEach(() => {
 		vi.restoreAllMocks();
-		localStorage.clear();
+		document.cookie = `${COOKIE}=; path=/; max-age=0`;
 	});
 	afterEach(() => vi.restoreAllMocks());
 
@@ -84,36 +86,49 @@ describe('SetupCard', () => {
 		);
 	});
 
-	it('hide collapses and persists', async () => {
-		const spy = vi.spyOn(Storage.prototype, 'setItem');
+	it('hide collapses and sets the UI cookie', async () => {
 		const user = userEvent.setup();
 		setup();
 		await user.click(screen.getByRole('button', { name: 'Hide setup' }));
 		expect(screen.getByText('Setup hidden.')).toBeTruthy();
-		expect(spy).toHaveBeenCalledWith(KEY, '1');
+		expect(document.cookie).toContain(`${COOKIE}=1`);
 		expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Show it again' }));
+	});
+
+	it('show it again clears the cookie, reloads data and refocuses Hide', async () => {
+		const user = userEvent.setup();
+		setup();
+		await user.click(screen.getByRole('button', { name: 'Hide setup' }));
 		await user.click(screen.getByRole('button', { name: 'Show it again' }));
+		expect(document.cookie).not.toContain(COOKIE);
+		expect(invalidateAll).toHaveBeenCalled();
 		expect(screen.getByText('Get set up · 1 of 5 done')).toBeTruthy();
 		expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Hide setup' }));
 	});
 
-	it('remount with stored flag is collapsed', async () => {
-		localStorage.setItem(KEY, '1');
-		setup();
-		expect(await screen.findByText('Setup hidden.')).toBeTruthy();
+	it('show it again is busy and single-shot while the data reloads', async () => {
+		const user = userEvent.setup();
+		let finish: () => void = () => undefined;
+		vi.mocked(invalidateAll).mockClear();
+		vi.mocked(invalidateAll).mockImplementationOnce(
+			() => new Promise<void>((resolve) => (finish = resolve))
+		);
+		setup(null, { hidden: true });
+		const show = screen.getByRole('button', { name: 'Show it again' });
+		await user.click(show);
+		expect(show).toBeDisabled();
+		expect(show).toHaveAttribute('aria-busy', 'true');
+		await user.click(show);
+		expect(invalidateAll).toHaveBeenCalledTimes(1);
+		finish();
+		// Props stay null here (no server reload); the collapsed line just goes away.
+		await vi.waitFor(() => expect(screen.queryByText('Setup hidden.')).toBeNull());
 	});
 
-	it('survives storage throwing', async () => {
-		vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
-			throw new Error('denied');
-		});
-		vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
-			throw new Error('denied');
-		});
-		const user = userEvent.setup();
-		setup();
-		expect(screen.getByText('Get set up · 1 of 5 done')).toBeTruthy();
-		await user.click(screen.getByRole('button', { name: 'Hide setup' }));
+	it('server-hidden render (no progress, hidden=true) is the collapsed line', () => {
+		setup(null, { hidden: true });
 		expect(screen.getByText('Setup hidden.')).toBeTruthy();
+		expect(screen.getByRole('button', { name: 'Show it again' })).toBeTruthy();
+		expect(screen.queryByTestId('org-setup-card')).toBeNull();
 	});
 });

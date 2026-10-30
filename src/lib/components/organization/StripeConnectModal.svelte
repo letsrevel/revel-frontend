@@ -1,6 +1,13 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
+	import {
+		Dialog,
+		DialogContent,
+		DialogClose,
+		DialogDescription,
+		DialogTitle
+	} from '$lib/components/ui/dialog';
 	import { X, Mail, AlertCircle, Loader2 } from '@lucide/svelte';
 
 	interface Props {
@@ -22,6 +29,7 @@
 	}: Props = $props();
 
 	let email = $state(initialEmail);
+	let emailInput = $state<HTMLInputElement | null>(null);
 
 	// Sync email with initialEmail when modal opens
 	$effect(() => {
@@ -36,15 +44,10 @@
 		}
 	}
 
-	function handleCancel() {
-		if (!isLoading) {
+	function handleOpenChange(next: boolean) {
+		// Closing mid-request would hide the outcome.
+		if (!next && !isLoading) {
 			onCancel();
-		}
-	}
-
-	function handleBackdropClick(e: MouseEvent) {
-		if (e.target === e.currentTarget && !isLoading) {
-			handleCancel();
 		}
 	}
 
@@ -52,50 +55,45 @@
 		if (e.key === 'Enter' && !isLoading && email.trim()) {
 			e.preventDefault();
 			handleConfirm();
-		} else if (e.key === 'Escape' && !isLoading) {
-			e.preventDefault();
-			handleCancel();
 		}
 	}
 </script>
 
-{#if show}
-	<div
-		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-		onclick={handleBackdropClick}
-		onkeydown={handleKeydown}
-		role="dialog"
-		aria-modal="true"
-		aria-labelledby="stripe-connect-modal-title"
-		aria-describedby="stripe-connect-modal-description"
-		tabindex="-1"
+<Dialog open={show} onOpenChange={handleOpenChange}>
+	<DialogContent
+		class="max-w-md"
+		showCloseButton={false}
+		escapeKeydownBehavior={isLoading ? 'ignore' : 'close'}
+		interactOutsideBehavior={isLoading ? 'ignore' : 'close'}
+		onOpenAutoFocus={(e) => {
+			e.preventDefault();
+			emailInput?.focus();
+		}}
 	>
-		<div class="w-full max-w-md rounded-lg bg-background p-6 shadow-xl">
+		<div>
 			<!-- Header -->
 			<div class="mb-4 flex items-start justify-between">
 				<div class="flex items-center gap-2">
 					<div class="rounded-full bg-primary/10 p-2">
 						<Mail class="h-5 w-5 text-primary" aria-hidden="true" />
 					</div>
-					<h3 id="stripe-connect-modal-title" class="text-lg font-bold">
+					<DialogTitle class="text-lg font-bold">
 						{m['stripeConnectModal.title']()}
-					</h3>
+					</DialogTitle>
 				</div>
-				<button
-					type="button"
-					onclick={handleCancel}
+				<DialogClose
 					disabled={isLoading}
-					class="rounded-md p-1 transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
+					class="-m-2 inline-flex h-11 w-11 items-center justify-center rounded-md transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
 					aria-label={m['stripeConnectModal.closeButton']()}
 				>
 					<X class="h-5 w-5" aria-hidden="true" />
-				</button>
+				</DialogClose>
 			</div>
 
 			<!-- Description -->
-			<p id="stripe-connect-modal-description" class="mb-4 text-sm text-muted-foreground">
+			<DialogDescription class="mb-4 text-sm text-muted-foreground">
 				{m['stripeConnectModal.description']()}
-			</p>
+			</DialogDescription>
 
 			<!-- Email Input -->
 			<div class="mb-4">
@@ -105,6 +103,8 @@
 				</label>
 				<input
 					id="stripe-email"
+					bind:this={emailInput}
+					onkeydown={handleKeydown}
 					type="email"
 					bind:value={email}
 					disabled={isLoading}
@@ -134,7 +134,12 @@
 
 			<!-- Actions -->
 			<div class="flex justify-end gap-3">
-				<Button variant="outline" onclick={handleCancel} disabled={isLoading} class="min-w-[80px]">
+				<Button
+					variant="outline"
+					onclick={() => handleOpenChange(false)}
+					disabled={isLoading}
+					class="min-w-[80px]"
+				>
 					{m['stripeConnectModal.cancelButton']()}
 				</Button>
 				<Button onclick={handleConfirm} disabled={isLoading || !email.trim()} class="min-w-[120px]">
@@ -154,5 +159,5 @@
 				</p>
 			</div>
 		</div>
-	</div>
-{/if}
+	</DialogContent>
+</Dialog>

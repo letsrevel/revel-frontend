@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/svelte';
 import { userEvent } from '@testing-library/user-event';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
 import { readable } from 'svelte/store';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
@@ -32,7 +32,7 @@ vi.mock('$lib/utils/org-setup-progress', async (orig) => {
 	return { ...actual, billingNeedsAttention: () => false };
 });
 
-function setup(setupCounts: unknown) {
+function setup(setupCounts: unknown, setupHidden = false) {
 	return render(QueryClientTestWrapper, {
 		props: {
 			client: new QueryClient({ defaultOptions: { queries: { retry: false } } }),
@@ -45,7 +45,8 @@ function setup(setupCounts: unknown) {
 					dashboardEvents: [],
 					draftCount: 0,
 					pendingRequestCount: 0,
-					setupCounts
+					setupCounts,
+					setupHidden
 				}
 			}
 		}
@@ -56,8 +57,6 @@ const createButtons = () => screen.queryAllByRole('button', { name: /Create Even
 const nextUp = () => document.querySelector('section[aria-label="Next event"]');
 
 describe('org admin dashboard: setup card vs empty next-event panel', () => {
-	beforeEach(() => localStorage.clear());
-
 	it('omits the empty NextEventPanel while the setup card shows with no event', () => {
 		setup({ eventCount: 0, publishedCount: 0, latestDraft: null });
 		expect(screen.getByTestId('org-setup-card')).toBeTruthy();
@@ -79,5 +78,51 @@ describe('org admin dashboard: setup card vs empty next-event panel', () => {
 		setup({ eventCount: 1, publishedCount: 0, latestDraft: { id: 'e1', name: 'Draft' } });
 		expect(screen.getByTestId('org-setup-card')).toBeTruthy();
 		expect(nextUp()).not.toBeNull();
+	});
+});
+
+describe('org admin dashboard: server-hidden setup card', () => {
+	const baseData = {
+		canCreateEvent: true,
+		isOwner: true,
+		isStaff: true,
+		dashboardEvents: [],
+		draftCount: 0,
+		pendingRequestCount: 0
+	};
+
+	it('renders the collapsed line straight from data.setupHidden (no counts)', () => {
+		setup(null, true);
+		expect(screen.queryByTestId('org-setup-card')).toBeNull();
+		expect(screen.getByText('Setup hidden.')).toBeTruthy();
+		expect(screen.getByRole('button', { name: 'Show it again' })).toBeTruthy();
+		// Hidden card: the empty next-event panel is back.
+		expect(nextUp()).not.toBeNull();
+	});
+
+	it('follows data.setupHidden across a client-side org switch', async () => {
+		const user = userEvent.setup();
+		const { rerender } = setup({ eventCount: 0, publishedCount: 0, latestDraft: null });
+		await user.click(screen.getByRole('button', { name: /hide/i }));
+		expect(screen.queryByTestId('org-setup-card')).toBeNull();
+
+		// Switch to an org whose card is visible: the local "hidden" must not leak over.
+		await rerender({
+			componentProps: {
+				data: {
+					...baseData,
+					setupCounts: { eventCount: 0, publishedCount: 0, latestDraft: null },
+					setupHidden: false
+				}
+			}
+		});
+		expect(screen.getByTestId('org-setup-card')).toBeTruthy();
+
+		// ... and to one hidden by its cookie.
+		await rerender({
+			componentProps: { data: { ...baseData, setupCounts: null, setupHidden: true } }
+		});
+		expect(screen.queryByTestId('org-setup-card')).toBeNull();
+		expect(screen.getByText('Setup hidden.')).toBeTruthy();
 	});
 });

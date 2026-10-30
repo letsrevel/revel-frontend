@@ -17,6 +17,11 @@ vi.mock('$lib/api/generated/sdk.gen', async (importOriginal) => ({
 	eventadminticketsDeleteTicketTier: vi.fn()
 }));
 
+vi.mock('$lib/components/organization/stripe-connect', () => ({
+	requestStripeOnboardingLink: vi.fn()
+}));
+import { requestStripeOnboardingLink } from '$lib/components/organization/stripe-connect';
+
 type UpdateResult = Awaited<ReturnType<typeof eventadminticketsUpdateTicketTier>>;
 type CreateResult = Awaited<ReturnType<typeof eventadminticketsCreateTicketTier>>;
 
@@ -70,7 +75,7 @@ function renderForm(
 				tier,
 				eventId: 'evt-1',
 				organizationSlug: 'acme',
-				organizationStripeConnected: false,
+				organizationStripeConnected: true,
 				onClose,
 				...extraProps
 			}
@@ -246,5 +251,129 @@ describe('TierForm cancellation defaults', () => {
 			cancellation_deadline_hours: 24,
 			refund_policy: null
 		});
+	});
+});
+
+describe('TierForm Stripe gate', () => {
+	const gated = {
+		organizationStripeConnected: false,
+		stripeEmail: 'o@acme.test',
+		isOwner: true,
+		rules: { compliance: null, status: 'ready' }
+	};
+	const draft = {
+		tierId: null,
+		name: 'Early Bird',
+		description: '',
+		paymentMethod: 'online',
+		priceType: 'fixed',
+		price: '12.50',
+		pwycMin: '1',
+		pwycMax: '',
+		currency: 'EUR',
+		vatRateOverride: '',
+		manualPaymentInstructions: '',
+		totalQuantity: '40',
+		salesStartAt: '',
+		salesEndAt: '',
+		maxTicketsPerUser: '',
+		visibility: 'public',
+		purchasableBy: 'public'
+	};
+
+	beforeEach(() => sessionStorage.clear());
+
+	it('prefills from a restored draft', () => {
+		renderForm(null, { ...gated, draft });
+		expect(screen.getByLabelText(/Tier Name/i)).toHaveValue('Early Bird');
+		expect(screen.getByLabelText(/Payment Method/)).toHaveValue('online');
+	});
+
+	it('holds the save while the Stripe gate shows, pointing the button at it', () => {
+		renderForm(null, { ...gated, draft });
+		const save = screen.getByRole('button', { name: 'Create Tier' });
+		expect(save).toBeDisabled();
+		expect(save).toHaveAttribute('aria-describedby', 'tier-stripe-gate');
+		expect(eventadminticketsCreateTicketTier).not.toHaveBeenCalled();
+	});
+
+	it('releases the save once the org is connected and billing is fine', () => {
+		renderForm(null, { ...gated, organizationStripeConnected: true, draft });
+		expect(screen.getByRole('button', { name: 'Create Tier' })).not.toBeDisabled();
+	});
+
+	it('stashes the tier being built before heading to Stripe', async () => {
+		const user = userEvent.setup();
+		vi.mocked(requestStripeOnboardingLink).mockResolvedValue(window.location.href);
+		renderForm(null, { ...gated, draft });
+		await user.click(screen.getByRole('button', { name: 'Connect Stripe' }));
+		await user.click(await screen.findByRole('button', { name: 'Connect to Stripe' }));
+		await waitFor(() => expect(sessionStorage.getItem('revel:tier-draft:evt-1')).not.toBeNull());
+		const stashed = JSON.parse(sessionStorage.getItem('revel:tier-draft:evt-1') ?? '{}');
+		expect(stashed).toMatchObject({ name: 'Early Bird', paymentMethod: 'online', price: '12.50' });
+		expect(requestStripeOnboardingLink).toHaveBeenCalledWith(
+			'acme',
+			'o@acme.test',
+			expect.any(String),
+			'event',
+			'evt-1'
+		);
+	});
+});
+
+describe('TierForm legacy 0% tier carve-out (BE enforces the zero-rate rule on key presence)', () => {
+	const legacy = {
+		...pausedOnlineTier,
+		sales_paused: false,
+		vat_rate: '0.00',
+		vat_exemption_reason: ''
+	} as TicketTierDetailSchema;
+	const orgVat = { vatRate: null, invoicingMode: 'auto', exemptionReason: '' };
+
+	beforeEach(() => {
+		vi.mocked(eventadminticketsUpdateTicketTier).mockReset();
+		vi.mocked(eventadminticketsUpdateTicketTier).mockResolvedValue(
+			ok({ id: 'tier-1' }) as unknown as UpdateResult
+		);
+	});
+
+	it('lets a plain rename through and omits the unchanged rule fields', async () => {
+		const user = userEvent.setup();
+		renderForm(legacy, { orgVat });
+		const name = screen.getByLabelText(/Tier Name/i);
+		await user.clear(name);
+		await user.type(name, 'Renamed');
+		await user.click(screen.getByRole('button', { name: 'Save Changes' }));
+		await waitFor(() => expect(eventadminticketsUpdateTicketTier).toHaveBeenCalled());
+		const body = vi.mocked(eventadminticketsUpdateTicketTier).mock.calls[0][0].body as Record<
+			string,
+			unknown
+		>;
+		expect(body.name).toBe('Renamed');
+		for (const k of [
+			'payment_method',
+			'price_type',
+			'price',
+			'pwyc_min',
+			'pwyc_max',
+			'vat_rate',
+			'vat_exemption_reason'
+		]) {
+			expect(body).not.toHaveProperty(k);
+		}
+	});
+
+	it('enforces the reason once a rule field (price) is touched', async () => {
+		const user = userEvent.setup();
+		renderForm(legacy, { orgVat });
+		// A plain rename leaves the reason optional (see the test above)...
+		expect(document.getElementById('vat-exemption-reason')).not.toBeRequired();
+		// ...but touching the price brings the zero-rate rule back.
+		const price = document.getElementById('price') as HTMLInputElement;
+		await user.clear(price);
+		await user.type(price, '30');
+		await user.click(screen.getByRole('button', { name: 'Save Changes' }));
+		expect(eventadminticketsUpdateTicketTier).not.toHaveBeenCalled();
+		expect(document.getElementById('vat-exemption-reason')).toBeRequired();
 	});
 });

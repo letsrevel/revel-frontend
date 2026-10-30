@@ -33,8 +33,10 @@
 		scheduleRowsValid,
 		type ScheduleRow
 	} from './schedule-rows';
+	import type { StripeSetupState } from '$lib/utils/org-setup-progress';
 	import TicketingStep from './TicketingStep.svelte';
 	import { platformFeeInfoFrom, type PlatformFeeConfig } from '$lib/utils/fees';
+	import { orgVatContextFrom } from './tier-vat';
 	import SaveBar from './SaveBar.svelte';
 	import EventGlance from './editor/EventGlance.svelte';
 	import EditorShell from './editor/EditorShell.svelte';
@@ -58,6 +60,7 @@
 		userCity?: CitySchema | null;
 		orgCity?: CitySchema | null;
 		eventSeries?: EventSeriesRetrieveSchema[];
+		onlinePaymentSetup?: StripeSetupState;
 		initialTab?: 'details' | 'ticketing' | 'listings';
 		/** Owner-only actions on the Listings tab (connecting a platform) link to Integrations. */
 		isOwner?: boolean;
@@ -78,6 +81,7 @@
 		existingEvent,
 		userCity,
 		orgCity,
+		onlinePaymentSetup = 'ready',
 		eventSeries = [],
 		initialTab,
 		isOwner = false,
@@ -87,7 +91,6 @@
 
 	const queryClient = useQueryClient();
 
-	// State management
 	let eventId = $state<string | null>(existingEvent?.id || null);
 	let isSaving = $state(false);
 	let errorMessage = $state<string | null>(null);
@@ -145,8 +148,7 @@
 
 	// Schedule/timeline state. Rows are seeded once from the saved schedule,
 	// anchored to the (initial) event start, and edited as absolute clock times.
-	// `scheduleSessions` re-derives the offset-encoded payload against the
-	// CURRENT start, so moving the event start re-times sessions sensibly.
+	// `scheduleSessions` re-derives the offset payload against the CURRENT start;
 	// handleSave persists it through the dedicated schedule endpoint.
 	let scheduleRows = $state<ScheduleRow[]>(
 		sessionsToRows(existingEvent?.schedule ?? [], formData.start || '')
@@ -238,7 +240,6 @@
 		formData = applyVenue(formData, venue);
 	}
 
-	// Image uploads
 	let logoFile = $state<File | null>(null);
 	let coverArtFile = $state<File | null>(null);
 	let deleteLogo = $state(false);
@@ -353,10 +354,8 @@
 		if (!formData.start) {
 			errors.start = m['eventWizard.error_startRequired']();
 		} else if (!isEditMode) {
-			// Future-start is only enforced at creation. When editing an existing
-			// event, the start may legitimately be in the past (e.g. organisers
-			// updating venue/details after the event has begun); the backend
-			// allows this.
+			// Future-start is only enforced at creation: editing may legitimately
+			// happen after the event began (the backend allows it).
 			const startDate = new Date(formData.start);
 			if (startDate <= new Date()) {
 				errors.start = m['eventWizard.error_startFuture']();
@@ -620,7 +619,11 @@
 			{eventId}
 			organizationSlug={organization.slug}
 			organizationStripeConnected={organization.is_stripe_connected}
+			billingNeedsAttention={onlinePaymentSetup === 'needs-billing'}
+			stripeEmail={organization.contact_email ?? ''}
+			{isOwner}
 			platformFees={platformFeeInfoFrom(organization)}
+			orgVat={orgVatContextFrom(organization)}
 			{formData}
 			venueCapacity={selectedVenue?.capacity ?? null}
 			onUpdate={updateFormData}
