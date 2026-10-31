@@ -125,7 +125,9 @@
 		// untrack: the draft is read only for the guard; the effect must not re-run on typing.
 		if (billingQuery?.data) {
 			const serverVatId = billingQuery.data.vat_id || '';
-			untrack(() => syncVatId(serverVatId));
+			// Read the per-org closure tracked (it changes with the slug), call it untracked.
+			const sync = syncVatId;
+			untrack(() => sync(serverVatId));
 		}
 	});
 
@@ -216,6 +218,10 @@
 
 	// ─── Invoicing Mode ────────────────────────────────────────────
 
+	function isInvoicingMode(value: string): value is InvoicingMode {
+		return value === 'none' || value === 'hybrid' || value === 'auto';
+	}
+
 	const syncInvoicingMode = $derived.by(() => {
 		void slug;
 		return createSyncOnChange<InvoicingMode>((v) => (invoicingMode = v), {
@@ -224,7 +230,8 @@
 	});
 	$effect(() => {
 		const serverMode = billingQuery?.data?.invoicing_mode;
-		if (serverMode) untrack(() => syncInvoicingMode(serverMode));
+		const sync = syncInvoicingMode;
+		if (serverMode) untrack(() => sync(serverMode));
 	});
 
 	const setInvoicingModeMutation = browser
@@ -254,7 +261,11 @@
 				// No toast: the inline role="alert" under the radios is the feedback,
 				// and a toast on top would announce the same refusal twice. The local
 				// handler also stands in for the global "Action failed" toast.
-				onError: () => undefined
+				// The radios fall back to the saved mode, so they never show a refused pick as current.
+				onError: (_error: Error, { requestSlug }) => {
+					const saved = billingQuery?.data?.invoicing_mode;
+					if (requestSlug === slug && saved) invoicingMode = saved;
+				}
 			}))
 		: null;
 
@@ -412,7 +423,7 @@
 			<RadioGroup.Root
 				value={invoicingMode}
 				onValueChange={(value) => {
-					if (value) invoicingMode = value as InvoicingMode;
+					if (value && isInvoicingMode(value)) invoicingMode = value;
 					// A new pick makes the last refusal stale.
 					setInvoicingModeMutation?.reset();
 				}}

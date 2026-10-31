@@ -16,7 +16,7 @@
 		/** Called (after the billing-info refetch) with a polite announcement. */
 		onRemoved?: (announcement: string) => void;
 		/** Called when a removal starts, with a polite progress announcement. */
-		onStatus?: (text: string) => void;
+		onStatus: (text: string) => void;
 	}
 
 	const { slug, accessToken, tiers, onRemoved, onStatus }: Props = $props();
@@ -31,7 +31,7 @@
 		mutationFn: async (tier: TierChargingVatSchema) => {
 			pending[tier.tier_id] = true;
 			errors[tier.tier_id] = '';
-			onStatus?.(m['smallBiz.tiersChargingVatRemoving']());
+			onStatus(m['smallBiz.tiersChargingVatRemoving']());
 			try {
 				const response = await eventadminticketsUpdateTicketTier({
 					path: { event_id: tier.event_id, tier_id: tier.tier_id },
@@ -51,7 +51,8 @@
 		},
 		// No toast: the inline role="alert" under the item is the feedback; a local handler
 		// also replaces the global toast.
-		onError: () => undefined,
+		// Clear the "Removing..." status so it doesn't linger next to the inline error.
+		onError: () => onStatus(''),
 		// Returning the refetch promise keeps the mutation (and the button) pending until the
 		// list reflects the change.
 		onSuccess: async (_data, tier) => {
