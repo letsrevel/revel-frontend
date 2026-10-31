@@ -10668,6 +10668,7 @@
 	"smallBiz.vatRateConfirm": "Definir a minha taxa de IVA predefinida para 0 %",
 	"smallBiz.tiersChargingVatTitle": "Estes níveis de bilhete ainda cobram IVA. Define-os para 0 % (ou remove a taxa própria) antes de declarares o regime.",
 	"smallBiz.tiersChargingVatItem": "{event}, {tier}: {rate} % de IVA",
+	"smallBiz.tiersChargingVatLinkSr": "(abre as definições de bilhetes do evento)",
 	"smallBiz.noteLabel": "Nota impressa nas tuas faturas",
 	"smallBiz.blockersTitle": "Corrige isto antes de guardar:",
 	"smallBiz.blocker.wrong_country": "O regime não corresponde ao teu país de estabelecimento.",

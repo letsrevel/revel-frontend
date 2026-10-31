@@ -10668,6 +10668,7 @@
 	"smallBiz.vatRateConfirm": "Imposta la mia aliquota IVA predefinita a 0 %",
 	"smallBiz.tiersChargingVatTitle": "Questi livelli di biglietto addebitano ancora l'IVA. Impostali a 0 % (o rimuovi la loro aliquota) prima di dichiarare il regime.",
 	"smallBiz.tiersChargingVatItem": "{event}, {tier}: {rate} % IVA",
+	"smallBiz.tiersChargingVatLinkSr": "(apre le impostazioni dei biglietti dell'evento)",
 	"smallBiz.noteLabel": "Nota stampata sulle tue fatture",
 	"smallBiz.blockersTitle": "Risolvi questi punti prima di salvare:",
 	"smallBiz.blocker.wrong_country": "Il regime non corrisponde al tuo paese di stabilimento.",

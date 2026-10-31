@@ -10668,6 +10668,7 @@
 	"smallBiz.vatRateConfirm": "Establecer mi tipo de IVA predeterminado en 0 %",
 	"smallBiz.tiersChargingVatTitle": "Estas tarifas de entrada todavía cobran IVA. Ponlas al 0 % (o borra su tipo propio) antes de declarar el régimen.",
 	"smallBiz.tiersChargingVatItem": "{event}, {tier}: {rate} % de IVA",
+	"smallBiz.tiersChargingVatLinkSr": "(abre los ajustes de entradas del evento)",
 	"smallBiz.noteLabel": "Nota impresa en tus facturas",
 	"smallBiz.blockersTitle": "Corrige esto antes de guardar:",
 	"smallBiz.blocker.wrong_country": "El régimen no coincide con tu país de establecimiento.",

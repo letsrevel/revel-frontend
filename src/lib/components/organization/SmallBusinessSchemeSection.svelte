@@ -11,6 +11,7 @@
 	import { toast } from 'svelte-sonner';
 	import { extractErrorMessage } from '$lib/utils/errors';
 	import { countryName } from '$lib/utils/compliance';
+	import { formatRate } from '$lib/utils/format';
 	import { normalizeDecimalInput } from '$lib/components/events/admin/tier-form-helpers';
 	import { organizationadminvatUpdateBillingInfo } from '$lib/api/generated/sdk.gen';
 	import type {
@@ -174,7 +175,10 @@
 		},
 		// No toast: the persistent role="alert" block below is the feedback, and a toast on top
 		// would announce the same refusal twice. The local handler also replaces the global toast.
-		onError: () => undefined
+		onError: () => {
+			// A 422 may come from stale tier data: refetch so the tiers box can appear.
+			queryClient.invalidateQueries({ queryKey: ['billing-info', slug] });
+		}
 	}));
 
 	function edited() {
@@ -320,7 +324,10 @@
 							{/if}
 						</p>
 						<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- in-page anchor -->
-						<a href="#vat-id-section" class="text-primary underline underline-offset-2">
+						<a
+							href="#vat-id-section"
+							class="font-medium text-foreground underline underline-offset-2"
+						>
 							{m['smallBiz.vatIdLink']()}
 						</a>
 					</div>
@@ -332,7 +339,7 @@
 						data-testid="small-business-vat-rate"
 					>
 						<p class="font-medium">
-							{m['smallBiz.vatRateCallout']({ rate: String(parseFloat(String(info.vat_rate))) })}
+							{m['smallBiz.vatRateCallout']({ rate: formatRate(info.vat_rate) })}
 						</p>
 						<div class="flex items-start gap-2">
 							<Checkbox
@@ -357,8 +364,10 @@
 						class="space-y-2 rounded-md border border-highlight/40 bg-highlight/20 p-3 text-sm"
 						data-testid="small-business-tiers-charging-vat"
 					>
-						<p class="font-medium">{m['smallBiz.tiersChargingVatTitle']()}</p>
-						<ul class="list-disc space-y-1 pl-5">
+						<p id="small-business-tiers-title" class="font-medium">
+							{m['smallBiz.tiersChargingVatTitle']()}
+						</p>
+						<ul aria-labelledby="small-business-tiers-title" class="list-disc space-y-1 pl-5">
 							{#each tiersChargingVat as tier (tier.tier_id)}
 								<li>
 									<a
@@ -366,13 +375,13 @@
 											slug,
 											event_id: tier.event_id
 										})}?tab=ticketing"
-										class="text-primary underline underline-offset-2"
+										class="font-medium text-foreground underline underline-offset-2"
 									>
 										{m['smallBiz.tiersChargingVatItem']({
 											event: tier.event_name,
 											tier: tier.tier_name,
-											rate: String(parseFloat(tier.vat_rate))
-										})}
+											rate: formatRate(tier.vat_rate)
+										})}<span class="sr-only"> {m['smallBiz.tiersChargingVatLinkSr']()}</span>
 									</a>
 								</li>
 							{/each}

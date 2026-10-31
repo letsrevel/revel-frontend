@@ -10668,6 +10668,7 @@
 	"smallBiz.vatRateConfirm": "Set my default VAT rate to 0 %",
 	"smallBiz.tiersChargingVatTitle": "These ticket tiers still charge VAT. Set them to 0 % (or clear their own rate) before declaring the scheme.",
 	"smallBiz.tiersChargingVatItem": "{event}, {tier}: {rate} % VAT",
+	"smallBiz.tiersChargingVatLinkSr": "(opens the event's ticket settings)",
 	"smallBiz.noteLabel": "Note printed on your invoices",
 	"smallBiz.blockersTitle": "Fix these before saving:",
 	"smallBiz.blocker.wrong_country": "The scheme does not match your country of establishment.",

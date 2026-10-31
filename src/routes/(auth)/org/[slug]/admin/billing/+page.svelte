@@ -73,7 +73,12 @@
 					if (response.error || !response.data) throw new Error('Failed to load billing info');
 					return response.data;
 				},
-				enabled: !!accessToken
+				enabled: !!accessToken,
+				// tiers_charging_vat changes elsewhere (event editor, other tabs); never serve it stale.
+				// Forms only re-sync from server data while not dirty, so refetching won't clobber edits.
+				staleTime: 0,
+				refetchOnMount: 'always',
+				refetchOnWindowFocus: true
 			}))
 		: null;
 

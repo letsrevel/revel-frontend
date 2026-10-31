@@ -29,13 +29,15 @@ function info(extra: Record<string, unknown> = {}) {
 }
 
 function renderIt(extra: Record<string, unknown> = {}) {
+	const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 	render(QueryClientTestWrapper, {
 		props: {
-			client: new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+			client,
 			component: SmallBusinessSchemeSection,
 			componentProps: { slug: 'acme', accessToken: 'tok', info: info(extra) }
 		}
 	});
+	return client;
 }
 
 const save = () => screen.getByRole('button', { name: /save small-business/i });
@@ -239,5 +241,14 @@ describe('SmallBusinessSchemeSection', () => {
 		expect(alert).toHaveTextContent('Some ticket tiers still charge VAT.');
 		await userEvent.type(screen.getByLabelText(/Steuernummer/), '1');
 		expect(screen.queryByTestId('small-business-error')).not.toBeInTheDocument();
+	});
+
+	it('refetches billing info when the save fails (stale data)', async () => {
+		update.mockResolvedValue({ error: { detail: 'Some ticket tiers still charge VAT.' } });
+		const client = renderIt();
+		const spy = vi.spyOn(client, 'invalidateQueries');
+		await userEvent.click(screen.getByRole('checkbox', { name: /§ 19 UStG/ }));
+		await userEvent.click(save());
+		await waitFor(() => expect(spy).toHaveBeenCalledWith({ queryKey: ['billing-info', 'acme'] }));
 	});
 });
