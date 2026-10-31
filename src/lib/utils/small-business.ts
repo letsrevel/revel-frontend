@@ -90,7 +90,8 @@ export type SchemeBlocker =
 	| 'vat_id_not_validated'
 	| 'tax_number_required'
 	| 'tax_number_invalid'
-	| 'vat_rate_not_zero';
+	| 'vat_rate_not_zero'
+	| 'tiers_charging_vat';
 
 export interface SchemeBlockerInputs {
 	/** The scheme the form would save. */
@@ -102,6 +103,10 @@ export interface SchemeBlockerInputs {
 	vatRate: string | number | null | undefined;
 	/** The user confirmed that the default rate is set to 0 % together with the scheme. */
 	vatRateZeroConfirmed: boolean;
+	/** The scheme is being declared now (none -> scheme), not already in force. */
+	declaring?: boolean;
+	/** Live ticket tiers still charging VAT; only blocks while `declaring`. */
+	tiersChargingVatCount?: number;
 }
 
 /** True when the loaded default VAT rate is positive. */
@@ -126,5 +131,6 @@ export function schemeBlockers(i: SchemeBlockerInputs): SchemeBlocker[] {
 		out.push('tax_number_invalid');
 	}
 	if (vatRateIsPositive(i.vatRate) && !i.vatRateZeroConfirmed) out.push('vat_rate_not_zero');
+	if (i.declaring && (i.tiersChargingVatCount ?? 0) > 0) out.push('tiers_charging_vat');
 	return out;
 }

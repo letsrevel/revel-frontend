@@ -79,6 +79,9 @@
 	);
 	const formCountry = $derived(schemeCountry(formScheme));
 	const needsZeroRate = $derived(enabled && vatRateIsPositive(info.vat_rate));
+	const declaring = $derived(enabled && current === 'none');
+	const tiersChargingVat = $derived(info.tiers_charging_vat ?? []);
+	const showTiers = $derived(declaring && tiersChargingVat.length > 0);
 	const blockers = $derived(
 		schemeBlockers({
 			scheme: formScheme,
@@ -86,14 +89,15 @@
 			vatIdValidated: info.vat_id_validated === true,
 			taxNumber,
 			vatRate: info.vat_rate,
-			vatRateZeroConfirmed: confirmZero
+			vatRateZeroConfirmed: confirmZero,
+			declaring,
+			tiersChargingVatCount: tiersChargingVat.length
 		})
 	);
 	const isDirty = $derived(
 		formScheme !== current ||
 			(enabled && taxNumber.trim() !== (info.tax_registration_number ?? '').trim())
 	);
-	const declaring = $derived(enabled && current === 'none');
 	const taxNumberRequired = $derived(formScheme === 'at_6_1_27' && info.vat_id_validated !== true);
 	/** Removing an existing scheme: the 0 % it fixed can be replaced by a new default rate. */
 	const removing = $derived(current !== 'none' && !enabled);
@@ -137,7 +141,8 @@
 		vat_id_not_validated: () => m['smallBiz.blocker.vat_id_not_validated'](),
 		tax_number_required: () => m['smallBiz.blocker.tax_number_required'](),
 		tax_number_invalid: () => m['smallBiz.blocker.tax_number_invalid'](),
-		vat_rate_not_zero: () => m['smallBiz.blocker.vat_rate_not_zero']()
+		vat_rate_not_zero: () => m['smallBiz.blocker.vat_rate_not_zero'](),
+		tiers_charging_vat: () => m['smallBiz.blocker.tiers_charging_vat']()
 	};
 
 	const saveMutation = createMutation(() => ({
@@ -347,16 +352,32 @@
 					</div>
 				{/if}
 
-				{#if declaring}
-					<p class="text-sm text-muted-foreground" data-testid="small-business-tiers-hint">
-						{m['smallBiz.tiersHint']()}
-						<a
-							href={resolve('/(auth)/org/[slug]/admin/events', { slug })}
-							class="text-primary underline underline-offset-2"
-						>
-							{m['smallBiz.tiersLink']()}
-						</a>
-					</p>
+				{#if showTiers}
+					<div
+						class="space-y-2 rounded-md border border-highlight/40 bg-highlight/20 p-3 text-sm"
+						data-testid="small-business-tiers-charging-vat"
+					>
+						<p class="font-medium">{m['smallBiz.tiersChargingVatTitle']()}</p>
+						<ul class="list-disc space-y-1 pl-5">
+							{#each tiersChargingVat as tier (tier.tier_id)}
+								<li>
+									<a
+										href="{resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', {
+											slug,
+											event_id: tier.event_id
+										})}?tab=ticketing"
+										class="text-primary underline underline-offset-2"
+									>
+										{m['smallBiz.tiersChargingVatItem']({
+											event: tier.event_name,
+											tier: tier.tier_name,
+											rate: String(parseFloat(tier.vat_rate))
+										})}
+									</a>
+								</li>
+							{/each}
+						</ul>
+					</div>
 				{/if}
 
 				<div class="space-y-1">
