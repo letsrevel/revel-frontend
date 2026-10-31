@@ -9,6 +9,51 @@ import type { Handle, HandleServerError } from '@sveltejs/kit';
 import { log } from './logger';
 import { recordRequest, recordSsrError } from './metrics';
 
+const INVITE_TOKEN_RE = /(\/join\/(?:org|event)\/)[^/\s?#]+/g;
+
+/**
+ * Masks invitation tokens in logged text. Two layers: the value of every
+ * token-like route param (`[token_id]`, ...) in raw and encoded form, and
+ * ALWAYS a regex over `/join/{org,event}/<token>` anywhere in the string,
+ * because `event.params` is empty for unmatched/invalid paths (404/400) and
+ * non-canonical encodings (`%61bc`) never match the raw value.
+ */
+export function redactTokens(text: string, params: Record<string, string> = {}): string {
+	let out = text;
+	for (const [key, value] of Object.entries(params)) {
+		if (!/token/i.test(key) || !value) continue;
+		for (const variant of new Set([value, encodeURIComponent(value), encodeURI(value)])) {
+			out = out.split(variant).join('REDACTED');
+		}
+	}
+	return out.replace(INVITE_TOKEN_RE, '$1REDACTED');
+}
+
+/** Copy of `error` with message/stack scrubbed (SvelteKit's 404 message embeds the path). */
+function redactError(error: unknown, params: Record<string, string>): unknown {
+	if (typeof error === 'string') return redactTokens(error, params);
+	if (!(error instanceof Error)) {
+		// The logger JSON-serializes non-Errors, so scrub that serialized form.
+		// Error-shaped objects ({ name, message }) can carry the path too.
+		let json: string | undefined;
+		try {
+			json = JSON.stringify(error);
+		} catch {
+			return error;
+		}
+		if (json === undefined) return error;
+		const redacted = redactTokens(json, params);
+		return redacted === json ? error : redacted;
+	}
+	const message = redactTokens(error.message, params);
+	const stack = error.stack ? redactTokens(error.stack, params) : undefined;
+	if (message === error.message && stack === error.stack) return error;
+	const copy = new Error(message);
+	copy.name = error.name;
+	copy.stack = stack;
+	return copy;
+}
+
 /**
  * Request logging + metrics hook.
  *
@@ -56,7 +101,7 @@ export const handleRequestLogging: Handle = async ({ event, resolve }) => {
 		const logFinished = response.status >= 500 ? log.error : log.info;
 		logFinished('request_finished', {
 			method: event.request.method,
-			path: event.url.pathname,
+			path: redactTokens(event.url.pathname, event.params),
 			route_id: routeId,
 			status_code: response.status,
 			duration_ms: durationMs,
@@ -93,9 +138,9 @@ export const handleSsrError: HandleServerError = ({ error, event, status, messag
 		// getClientAddress() throws during prerendering — omit it.
 	}
 	const context = {
-		error,
+		error: redactError(error, event.params),
 		route_id: routeId,
-		path: event.url.pathname,
+		path: redactTokens(event.url.pathname, event.params),
 		method: event.request.method,
 		status_code: status,
 		request_id: event.locals.requestId,

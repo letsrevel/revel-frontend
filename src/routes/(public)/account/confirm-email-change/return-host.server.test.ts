@@ -10,7 +10,8 @@ vi.mock('$lib/api/generated/sdk.gen', () => ({
 }));
 vi.mock('$lib/utils/cookies', () => ({
 	getAccessTokenCookieOptions: () => ({ path: '/' }),
-	getRefreshTokenCookieOptions: () => ({ path: '/' })
+	getRefreshTokenCookieOptions: () => ({ path: '/' }),
+	getClientCookieOptions: () => ({ path: '/' })
 }));
 vi.mock('$lib/server/logger', () => ({ log: { error: vi.fn() } }));
 
