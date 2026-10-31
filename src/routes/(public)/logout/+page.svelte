@@ -6,6 +6,7 @@
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import AuthBandLayout from '$lib/components/auth/AuthBandLayout.svelte';
 	import { brandName } from '$lib/seo/tenant';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import type { PageData } from './$types';
 
 	interface Props {
@@ -22,6 +23,20 @@
 	 * the in-memory auth store. `data.returnUrl` is already validated server-side.
 	 */
 	const cancelHref = $derived(data.returnUrl || resolve('/', {}));
+
+	/**
+	 * This page is a fresh document load, so the root layout's auth bootstrap
+	 * (a token refresh) may still be in flight. Submitting now would let that
+	 * refresh's Set-Cookie land AFTER the logout cleared the cookies, leaving
+	 * the user signed in. Wait for it to settle, then do the native POST.
+	 * Without JS the form simply posts as-is.
+	 */
+	async function handleSubmit(event: SubmitEvent) {
+		event.preventDefault();
+		const form = event.currentTarget as HTMLFormElement;
+		await authStore.waitForAuthReady();
+		form.submit();
+	}
 </script>
 
 <svelte:head>
@@ -35,7 +50,7 @@
 >
 	<Card>
 		<CardContent class="flex flex-col gap-3 p-6 sm:flex-row-reverse sm:p-8">
-			<form method="POST" class="sm:flex-1">
+			<form method="POST" class="sm:flex-1" onsubmit={handleSubmit}>
 				<input type="hidden" name="returnUrl" value={data.returnUrl} />
 				<Button type="submit" class="w-full">{m['auth.logout']()}</Button>
 			</form>
