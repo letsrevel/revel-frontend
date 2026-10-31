@@ -3,7 +3,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { normalizeDecimalInput } from './tier-form-helpers';
-	import { vatExemptionVisible, type OrgVatContext } from './tier-vat';
+	import { schemeAdjustedOverride, vatExemptionVisible, type OrgVatContext } from './tier-vat';
 
 	interface Props {
 		paymentMethod: string;
@@ -27,6 +27,14 @@
 		error = '',
 		isPending
 	}: Props = $props();
+
+	const schemeFixed = $derived(orgVat?.smallBusiness === true);
+
+	// Under a small-business scheme a positive override would be refused: inherit the org's 0%.
+	$effect(() => {
+		const next = schemeAdjustedOverride(vatRateOverride, orgVat);
+		if (next !== vatRateOverride) vatRateOverride = next;
+	});
 
 	const showReason = $derived(vatExemptionVisible(paymentMethod, vatRateOverride, orgVat));
 	const orgDefault = $derived((orgVat?.exemptionReason ?? '').trim());
@@ -54,11 +62,18 @@
 				vatRateOverride = normalizeDecimalInput((e.currentTarget as HTMLInputElement).value);
 			}}
 			placeholder={m['tierForm.vatRateOverridePlaceholder']()}
-			disabled={isPending}
+			disabled={isPending || schemeFixed}
+			aria-describedby={schemeFixed ? 'vat-rate-override-scheme' : undefined}
 		/>
-		<p class="mt-1 text-xs text-muted-foreground">
-			{m['tierForm.vatRateOverrideHelp']()}
-		</p>
+		{#if schemeFixed}
+			<p id="vat-rate-override-scheme" class="mt-1 text-xs text-muted-foreground">
+				{m['smallBiz.vatRateFixedTier']()}
+			</p>
+		{:else}
+			<p class="mt-1 text-xs text-muted-foreground">
+				{m['tierForm.vatRateOverrideHelp']()}
+			</p>
+		{/if}
 	</div>
 
 	{#if showReason}

@@ -1,0 +1,147 @@
+import { render, screen, waitFor } from '@testing-library/svelte';
+import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { QueryClient } from '@tanstack/svelte-query';
+import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
+
+const update = vi.hoisted(() => vi.fn());
+vi.mock('$lib/api/client', () => ({ client: {} }));
+vi.mock('$app/navigation', () => ({ invalidateAll: vi.fn() }));
+vi.mock('$lib/api/generated/sdk.gen', () => ({
+	organizationadminvatUpdateBillingInfo: update
+}));
+
+import SmallBusinessSchemeSection from './SmallBusinessSchemeSection.svelte';
+
+function info(extra: Record<string, unknown> = {}) {
+	return {
+		vat_country_code: 'DE',
+		vat_id: 'DE123456789',
+		vat_id_validated: true,
+		vat_rate: '0.00',
+		billing_country_code: '',
+		small_business_scheme: 'none',
+		tax_registration_number: '',
+		compliance: { country: 'DE' },
+		...extra
+	};
+}
+
+function renderIt(extra: Record<string, unknown> = {}) {
+	render(QueryClientTestWrapper, {
+		props: {
+			client: new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+			component: SmallBusinessSchemeSection,
+			componentProps: { slug: 'acme', accessToken: 'tok', info: info(extra) }
+		}
+	});
+}
+
+const save = () => screen.getByRole('button', { name: /save small-business/i });
+
+beforeEach(() => update.mockReset().mockResolvedValue({ data: {} }));
+
+describe('SmallBusinessSchemeSection', () => {
+	it('explains the scheme is unavailable outside DE/AT', () => {
+		renderIt({ vat_country_code: 'IT', vat_id: '', compliance: { country: 'IT' } });
+		expect(screen.getByTestId('small-business-unavailable')).toBeInTheDocument();
+		expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+	});
+
+	it('asks to set a country when undeclared', () => {
+		renderIt({ vat_country_code: '', vat_id: '', compliance: { country: '' } });
+		expect(screen.getByTestId('small-business-unavailable')).toHaveTextContent(
+			/Set the VAT country/
+		);
+	});
+
+	it('shows the DE note read-only with a VAT ID link once enabled', async () => {
+		renderIt();
+		await userEvent.click(screen.getByRole('checkbox', { name: /§ 19 UStG/ }));
+		expect(screen.getByTestId('small-business-note')).toHaveTextContent(
+			'Steuerbefreit gemäß § 19 UStG (Kleinunternehmerregelung)'
+		);
+		expect(screen.getByTestId('small-business-note')).toHaveAttribute('lang', 'de');
+		expect(screen.getByRole('link', { name: /VAT ID section/ })).toHaveAttribute(
+			'href',
+			'#vat-id-section'
+		);
+		expect(screen.getByLabelText(/Steuernummer/)).toBeInTheDocument();
+		expect(save()).toBeEnabled();
+	});
+
+	it('blocks DE saving without a validated VAT ID', async () => {
+		renderIt({ vat_id_validated: false });
+		await userEvent.click(screen.getByRole('checkbox', { name: /§ 19 UStG/ }));
+		expect(save()).toBeDisabled();
+		expect(screen.getByTestId('small-business-blockers')).toHaveTextContent(/VIES-validated/);
+	});
+
+	it('requires and validates the AT tax number, flagging errors on blur', async () => {
+		renderIt({ vat_country_code: 'AT', vat_id: '', compliance: { country: 'AT' } });
+		await userEvent.click(screen.getByRole('checkbox', { name: /§ 6 Abs\. 1 Z 27/ }));
+		expect(save()).toBeDisabled();
+		const input = screen.getByLabelText(/Steuernummer/);
+		await userEvent.type(input, '123');
+		await userEvent.tab();
+		expect(input).toHaveAttribute('aria-invalid', 'true');
+		expect(input.getAttribute('aria-describedby')).toContain('small-business-tax-number-error');
+		await userEvent.clear(input);
+		await userEvent.type(input, '12-345/6789');
+		expect(save()).toBeEnabled();
+	});
+
+	it('requires confirming the 0 % default rate and sends vat_rate 0', async () => {
+		renderIt({ vat_rate: '19.00' });
+		await userEvent.click(screen.getByRole('checkbox', { name: /§ 19 UStG/ }));
+		expect(screen.getByTestId('small-business-vat-rate')).toHaveTextContent('19 %');
+		expect(save()).toBeDisabled();
+		await userEvent.click(screen.getByRole('checkbox', { name: /Set my default VAT rate to 0/ }));
+		await userEvent.click(save());
+		await waitFor(() => expect(update).toHaveBeenCalled());
+		expect(update.mock.calls[0][0].body).toEqual({
+			small_business_scheme: 'de_19',
+			tax_registration_number: '',
+			vat_rate: 0
+		});
+	});
+
+	it('shows the tiers hint only when declaring', async () => {
+		renderIt();
+		await userEvent.click(screen.getByRole('checkbox', { name: /§ 19 UStG/ }));
+		expect(screen.getByTestId('small-business-tiers-hint')).toBeInTheDocument();
+	});
+
+	it('turning off sends only scheme none', async () => {
+		renderIt({ small_business_scheme: 'de_19', tax_registration_number: '12/345/67890' });
+		await userEvent.click(screen.getByRole('checkbox', { name: /§ 19 UStG/ }));
+		await userEvent.click(save());
+		await waitFor(() => expect(update).toHaveBeenCalled());
+		expect(update.mock.calls[0][0].body).toEqual({ small_business_scheme: 'none' });
+	});
+
+	it('lets a mismatched legacy scheme be removed', async () => {
+		renderIt({
+			small_business_scheme: 'de_19',
+			vat_country_code: 'IT',
+			vat_id: '',
+			compliance: { country: 'IT' }
+		});
+		expect(screen.getByTestId('small-business-mismatch')).toBeInTheDocument();
+		expect(save()).toBeDisabled();
+		await userEvent.click(screen.getByRole('checkbox'));
+		expect(save()).toBeEnabled();
+	});
+
+	it('keeps a backend refusal inline in an alert', async () => {
+		update.mockResolvedValue({ error: { detail: 'Some ticket tiers still charge VAT.' } });
+		renderIt();
+		await userEvent.click(screen.getByRole('checkbox', { name: /§ 19 UStG/ }));
+		await userEvent.click(save());
+		const alert = await screen.findByTestId('small-business-error');
+		expect(alert).toHaveAttribute('role', 'alert');
+		expect(alert).toHaveTextContent('Some ticket tiers still charge VAT.');
+		await userEvent.type(screen.getByLabelText(/Steuernummer/), '1');
+		expect(screen.queryByTestId('small-business-error')).not.toBeInTheDocument();
+	});
+});

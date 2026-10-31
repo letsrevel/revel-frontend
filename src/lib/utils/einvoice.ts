@@ -14,16 +14,37 @@ const MISSING_FIELD_LABELS: Record<string, () => string> = {
 	billing_country_code: () => m['einvoice.missing.country'](),
 	billing_name: () => m['einvoice.missing.name'](),
 	vat_id: () => m['einvoice.missing.vatId'](),
-	vat_exemption_reason: () => m['einvoice.missing.exemptionReason']()
+	vat_exemption_reason: () => m['einvoice.missing.exemptionReason'](),
+	small_business_scheme: () => m['einvoice.missing.smallBusinessScheme'](),
+	tax_registration_number: () => m['einvoice.missing.taxRegistrationNumber']()
 };
 
+/** Where the organizer is established and which scheme (if any) they declared. */
+export interface MissingFieldContext {
+	country?: string | null;
+	scheme?: string | null;
+}
+
+/** The VAT ID label depends on the country: DE needs one even under a scheme, AT may use a scheme. */
+function vatIdLabel(ctx?: MissingFieldContext): string {
+	const country = (ctx?.country ?? '').toUpperCase();
+	if (country === 'DE') return m['einvoice.missing.vatIdDe']();
+	if (country === 'AT' && (ctx?.scheme ?? 'none') === 'none')
+		return m['einvoice.missing.vatIdAt']();
+	return m['einvoice.missing.vatId']();
+}
+
 /** Label for one missing field; unknown values fall back to the raw string. */
-export function missingFieldLabel(field: string): string {
+export function missingFieldLabel(field: string, ctx?: MissingFieldContext): string {
+	if (field === 'vat_id') return vatIdLabel(ctx);
 	return MISSING_FIELD_LABELS[field]?.() ?? field;
 }
 
-export function missingFieldLabels(fields: readonly string[] | null | undefined): string[] {
-	return (fields ?? []).map(missingFieldLabel);
+export function missingFieldLabels(
+	fields: readonly string[] | null | undefined,
+	ctx?: MissingFieldContext
+): string[] {
+	return (fields ?? []).map((f) => missingFieldLabel(f, ctx));
 }
 
 export function isAddressBlank(a: PostalAddress): boolean {

@@ -28,6 +28,9 @@
 	}: Props = $props();
 
 	const buyerAddress = $derived(buyerAddressText(inv));
+	const roundingNonZero = $derived(
+		Number.isFinite(parseFloat(inv.rounding_amount)) && parseFloat(inv.rounding_amount) !== 0
+	);
 	const exemptions = $derived(exemptionEntries(inv.vat_exemptions));
 </script>
 
@@ -57,6 +60,9 @@
 			{#if inv.seller_address}<p class="text-muted-foreground">{inv.seller_address}</p>{/if}
 			{#if inv.seller_vat_id}<p class="text-muted-foreground">
 					VAT: {inv.seller_vat_id}
+				</p>{/if}
+			{#if inv.seller_tax_registration_number}<p class="text-muted-foreground">
+					{m['smallBiz.invoiceSellerTaxNo']({ number: inv.seller_tax_registration_number })}
 				</p>{/if}
 			{#if inv.seller_vat_country}<p class="text-muted-foreground">
 					{inv.seller_vat_country}
@@ -119,6 +125,12 @@
 				</dt>
 				<dd class="font-mono">{formatMoney(inv.total_vat, inv.currency)}</dd>
 			</div>
+			{#if roundingNonZero}
+				<div class="flex justify-between">
+					<dt class="text-muted-foreground">{m['smallBiz.invoiceRounding']()}</dt>
+					<dd class="font-mono">{formatMoney(inv.rounding_amount, inv.currency)}</dd>
+				</div>
+			{/if}
 			<div class="flex justify-between border-t pt-1.5 font-medium">
 				<dt>{m['orgAdmin.billing.attendeeInvoices.totalGross']()}</dt>
 				<dd class="font-mono">{formatMoney(inv.total_gross, inv.currency)}</dd>

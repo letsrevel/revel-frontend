@@ -122,4 +122,17 @@ describe('OrgBillingInfoForm', () => {
 		renderIt({ invoicing_mode: 'auto' });
 		expect(screen.getByLabelText(/Street and number/i)).toBeRequired();
 	});
+
+	it('locks the VAT rate under a small-business scheme', () => {
+		renderIt({ small_business_scheme: 'de_19', vat_rate: '0.00' });
+		const input = screen.getByLabelText(/VAT rate/i);
+		expect(input).toBeDisabled();
+		expect(input).toHaveAttribute('aria-describedby', 'billing-vat-rate-help');
+		expect(document.getElementById('billing-vat-rate-help')).toHaveTextContent(/0 %/);
+	});
+
+	it('leaves the VAT rate editable without a scheme', () => {
+		renderIt({ small_business_scheme: 'none' });
+		expect(screen.getByLabelText(/VAT rate/i)).not.toBeDisabled();
+	});
 });

@@ -11,13 +11,15 @@ vi.mock('$lib/paraglide/messages.js', () => ({
 	'tierForm.vatExemptionReasonHint': () => 'Cite a legal provision',
 	'tierForm.vatExemptionReasonOrgDefault': (p: { reason: string }) =>
 		`Leave empty to use: ${p.reason}`,
-	'tierForm.requiredSr': () => '(required)'
+	'tierForm.requiredSr': () => '(required)',
+	'smallBiz.vatRateFixedTier': () => 'Fixed at 0 under a scheme'
 }));
 
 const org = (o = {}) => ({
 	vatRate: '0',
 	invoicingMode: 'auto' as const,
 	exemptionReason: '',
+	smallBusiness: false,
 	...o
 });
 const base = {
@@ -68,5 +70,26 @@ describe('TierFormVatSection', () => {
 		unmount();
 		render(TierFormVatSection, { ...base, vatRateOverride: '0', orgVat: null });
 		expect(screen.getByLabelText(/VAT exemption reason/)).toBeInTheDocument();
+	});
+
+	it('locks the rate override under a small-business scheme and clears a positive one', async () => {
+		render(TierFormVatSection, {
+			...base,
+			vatRateOverride: '19',
+			orgVat: org({ smallBusiness: true })
+		});
+		const input = screen.getByLabelText(/VAT rate override/);
+		expect(input).toBeDisabled();
+		expect(input).toHaveValue('');
+		expect(input).toHaveAttribute('aria-describedby', 'vat-rate-override-scheme');
+		expect(screen.getByText('Fixed at 0 under a scheme')).toHaveAttribute(
+			'id',
+			'vat-rate-override-scheme'
+		);
+	});
+
+	it('leaves the override editable without a scheme', () => {
+		render(TierFormVatSection, { ...base, vatRateOverride: '19', orgVat: org() });
+		expect(screen.getByLabelText(/VAT rate override/)).not.toBeDisabled();
 	});
 });

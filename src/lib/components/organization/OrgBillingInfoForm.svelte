@@ -80,6 +80,8 @@
 	);
 
 	const invoicingOn = $derived(info.invoicing_mode === 'auto' || info.invoicing_mode === 'hybrid');
+	// Under a small-business scheme the default rate is fixed at 0 %.
+	const schemeOn = $derived(!!info.small_business_scheme && info.small_business_scheme !== 'none');
 	const showEinvoiceNag = $derived(!info.einvoice_ready && invoicingOn);
 
 	const updateBillingMutation = createMutation(() => ({
@@ -130,7 +132,11 @@
 
 <div class="space-y-4">
 	{#if showEinvoiceNag}
-		<EinvoiceReadiness variant="warning" missingFields={info.einvoice_missing_fields} />
+		<EinvoiceReadiness
+			variant="warning"
+			missingFields={info.einvoice_missing_fields}
+			context={{ country: info.compliance?.country, scheme: info.small_business_scheme }}
+		/>
 	{/if}
 
 	<!-- novalidate: the address is visually required (invoicing needs it) but must not
@@ -187,9 +193,13 @@
 				placeholder={m['orgAdmin.billing.billingInfo.vatRatePlaceholder']()}
 				bind:value={vatRate}
 				oninput={markBillingDirty}
+				disabled={schemeOn}
+				aria-describedby="billing-vat-rate-help"
 			/>
-			<p class="text-xs text-muted-foreground">
-				{m['orgAdmin.billing.billingInfo.vatRateHelp']()}
+			<p id="billing-vat-rate-help" class="text-xs text-muted-foreground">
+				{schemeOn
+					? m['smallBiz.vatRateFixedBilling']()
+					: m['orgAdmin.billing.billingInfo.vatRateHelp']()}
 			</p>
 		</div>
 

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { AlertTriangle, Info } from '@lucide/svelte';
-	import { missingFieldLabels } from '$lib/utils/einvoice';
+	import { missingFieldLabels, type MissingFieldContext } from '$lib/utils/einvoice';
 
 	interface Props {
 		/** Raw `einvoice_missing_fields` values from the billing-info GET. */
@@ -12,11 +12,13 @@
 		 */
 		variant: 'warning' | 'info';
 		id?: string;
+		/** Country of establishment and declared scheme: they change what a VAT ID is worth. */
+		context?: MissingFieldContext;
 	}
 
-	const { missingFields, variant, id }: Props = $props();
+	const { missingFields, variant, id, context }: Props = $props();
 
-	const labels = $derived(missingFieldLabels(missingFields));
+	const labels = $derived(missingFieldLabels(missingFields, context));
 </script>
 
 {#if labels.length > 0}

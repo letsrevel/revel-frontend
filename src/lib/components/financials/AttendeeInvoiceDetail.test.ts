@@ -95,4 +95,30 @@ describe('AttendeeInvoiceDetail', () => {
 		expect(supply).toHaveTextContent(/Mar 31, 2026/);
 		expect(screen.getByTestId('payment-line')).toHaveTextContent(/Credit card.*4242/);
 	});
+
+	it('shows the seller tax number when present', () => {
+		render(AttendeeInvoiceDetail, {
+			props: { invoice: invoice({ seller_tax_registration_number: '12/345/67890' }), ...cb() }
+		});
+		expect(screen.getByText(/Tax no\.: 12\/345\/67890/)).toBeInTheDocument();
+	});
+
+	it('hides the seller tax number when empty', () => {
+		render(AttendeeInvoiceDetail, {
+			props: { invoice: invoice({ seller_tax_registration_number: '' }), ...cb() }
+		});
+		expect(screen.queryByText(/Tax no\./)).not.toBeInTheDocument();
+	});
+
+	it('shows a rounding row only when non-zero', () => {
+		const { unmount } = render(AttendeeInvoiceDetail, {
+			props: { invoice: invoice({ rounding_amount: '0.01' }), ...cb() }
+		});
+		expect(screen.getByText('Rounding')).toBeInTheDocument();
+		unmount();
+		render(AttendeeInvoiceDetail, {
+			props: { invoice: invoice({ rounding_amount: '0.00' }), ...cb() }
+		});
+		expect(screen.queryByText('Rounding')).not.toBeInTheDocument();
+	});
 });

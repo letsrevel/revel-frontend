@@ -48,6 +48,7 @@
 	import ComplianceCallout from '$lib/components/compliance/ComplianceCallout.svelte';
 	import OrgBillingInfoForm from '$lib/components/organization/OrgBillingInfoForm.svelte';
 	import EinvoiceReadiness from '$lib/components/organization/EinvoiceReadiness.svelte';
+	import SmallBusinessSchemeSection from '$lib/components/organization/SmallBusinessSchemeSection.svelte';
 	import { invoicingNotice, noticesFor } from '$lib/utils/compliance';
 
 	interface Props {
@@ -136,7 +137,10 @@
 						headers: { Authorization: `Bearer ${accessToken}` }
 					});
 					if (response.error) {
-						throw new Error(m['orgAdmin.billing.vatId.error']());
+						// A 422 ("Turn invoicing off first") names the reason.
+						throw new Error(
+							extractErrorMessage(response.error, m['orgAdmin.billing.vatId.error']())
+						);
 					}
 				},
 				onSuccess: () => {
@@ -329,6 +333,10 @@
 				<EinvoiceReadiness
 					variant="info"
 					missingFields={billingQuery.data.einvoice_missing_fields}
+					context={{
+						country: billingQuery.data.compliance.country,
+						scheme: billingQuery.data.small_business_scheme
+					}}
 				/>
 			{/if}
 
@@ -437,7 +445,10 @@
 		<!-- ────────────────────────────────────────────────────────────
 		     Section 2: VAT ID Management
 		     ──────────────────────────────────────────────────────────── -->
-		<section class="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
+		<section
+			id="vat-id-section"
+			class="scroll-mt-24 space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm"
+		>
 			<div class="flex items-center gap-2">
 				<Shield class="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
 				<SectionHeader title={m['orgAdmin.billing.vatId.title']()} class="flex-1" />
@@ -503,6 +514,19 @@
 				</div>
 			</form>
 		</section>
+
+		<!-- ────────────────────────────────────────────────────────────
+		     Section 3: Small-business (Kleinunternehmer) scheme
+		     ──────────────────────────────────────────────────────────── -->
+		{#if billingQuery?.data}
+			<section class="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
+				<div class="flex items-center gap-2">
+					<Receipt class="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+					<SectionHeader title={m['smallBiz.title']()} class="flex-1" />
+				</div>
+				<SmallBusinessSchemeSection {slug} {accessToken} info={billingQuery.data} />
+			</section>
+		{/if}
 
 		{#if cardCompliance}
 			<CountryRulesCard compliance={cardCompliance} />
