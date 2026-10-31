@@ -261,6 +261,37 @@ describe('SmallBusinessSchemeSection', () => {
 			);
 		});
 
+		it('keeps a success announcement when a later removal fails', async () => {
+			// Door succeeds first; Early is gated and fails afterwards.
+			let release: () => void = () => undefined;
+			const gate = new Promise<void>((r) => (release = r));
+			updateTier.mockImplementation(async ({ path }: { path: { tier_id: string } }) => {
+				if (path.tier_id === 't4') {
+					await gate;
+					return { error: { detail: 'Server says no' } };
+				}
+				return { data: {} };
+			});
+			renderIt({
+				tiers_charging_vat: [rsvpTier, { ...rsvpTier, tier_id: 't4', tier_name: 'Early' }]
+			});
+			const box = await declare();
+			const buttons = within(box).getAllByRole('button', { name: /Remove this tier's VAT/ });
+			await userEvent.click(buttons[1]);
+			await userEvent.click(buttons[0]);
+			const status = screen.getByTestId('small-business-removed-status');
+			await waitFor(() => expect(status).toHaveTextContent(/VAT rate removed for .*Door/));
+			release();
+			await within(box).findByRole('alert');
+			// The failed removal has settled (its onSettled ran) once its button is enabled again.
+			await waitFor(() =>
+				expect(
+					within(box).getByRole('button', { name: /Remove this tier's VAT.*Early/ })
+				).toBeEnabled()
+			);
+			expect(status).toHaveTextContent(/VAT rate removed for .*Door/);
+		});
+
 		it('clears the "Removing" status when the removal fails', async () => {
 			updateTier.mockResolvedValue({ error: { detail: 'Server says no' } });
 			renderIt({ tiers_charging_vat: [rsvpTier] });

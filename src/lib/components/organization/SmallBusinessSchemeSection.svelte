@@ -191,24 +191,33 @@
 	});
 
 	let removedAnnouncement = $state('');
+	// Each announcement gets a token: a late `tick()` never overwrites a newer message, and a
+	// progress clear only removes the progress message it belongs to (no string matching).
+	let announceSeq = 0;
+	let progressSeq = -1;
 
 	/** Routes a message to the always-mounted live region (clear, tick, set re-announces repeats). */
-	async function announce(text: string) {
+	async function announce(text: string): Promise<number> {
+		const id = ++announceSeq;
 		removedAnnouncement = '';
 		await tick();
-		removedAnnouncement = text;
+		if (id === announceSeq) removedAnnouncement = text;
+		return id;
 	}
 
 	/**
-	 * Progress status from the tier list. An empty text only clears the "Removing..." message,
-	 * never a success announcement that landed in between.
+	 * Progress status from the tier list. An empty text clears the live region only while it
+	 * still belongs to the latest "Removing..." message, never a success announcement after it.
 	 */
 	function handleTierStatus(text: string) {
 		if (text === '') {
-			if (removedAnnouncement === m['smallBiz.tiersChargingVatRemoving']())
+			if (progressSeq === announceSeq) {
+				announceSeq++; // cancels a progress message still waiting for its tick
 				removedAnnouncement = '';
+			}
 			return;
 		}
+		progressSeq = announceSeq + 1;
 		void announce(text);
 	}
 
