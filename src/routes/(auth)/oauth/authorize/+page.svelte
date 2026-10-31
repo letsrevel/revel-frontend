@@ -15,6 +15,7 @@
 	import { isConsentExpired, oauthErrorHeadline } from '$lib/utils/oauth-errors';
 	import { navigateTo } from '$lib/utils/navigate-to';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { postLogout } from '$lib/utils/logout';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import ConsentAppCard from '$lib/components/oauth/ConsentAppCard.svelte';
 	import ConsentError from '$lib/components/oauth/ConsentError.svelte';
@@ -38,9 +39,16 @@
 
 	const user = $derived(authStore.user);
 	const currentPath = $derived(`/oauth/authorize${search}`);
-	const switchAccountHref = $derived(
-		`${resolve('/(public)/logout', {})}?returnUrl=${encodeURIComponent(currentPath)}`
-	);
+	let switching = $state(false);
+
+	// Native POST stays as the no-JS fallback; with JS, wait for in-flight token
+	// refreshes to settle first so a late Set-Cookie cannot undo the logout.
+	function handleSwitchAccount(event: SubmitEvent) {
+		event.preventDefault();
+		if (switching) return;
+		switching = true;
+		void postLogout(currentPath);
+	}
 	const titleId = 'oauth-consent-title';
 
 	function hostOf(url: string): string {
@@ -205,18 +213,25 @@
 		/>
 
 		{#if user}
-			<p class="text-sm text-muted-foreground">
+			<div class="text-sm text-muted-foreground">
 				{m['oauth.consent.signedInAs']({ name: user.display_name, email: user.email })}
-				<!-- eslint-disable svelte/no-navigation-without-resolve -- the path comes from resolve() in switchAccountHref; the appended returnUrl query cannot be expressed through resolve() -->
-				<a
-					href={switchAccountHref}
-					data-sveltekit-reload
-					class="ml-1 text-primary underline underline-offset-4"
+				<form
+					method="POST"
+					action={resolve('/(public)/logout', {})}
+					class="inline"
+					onsubmit={handleSwitchAccount}
 				>
-					{m['oauth.consent.switchAccount']()}
-				</a>
-				<!-- eslint-enable svelte/no-navigation-without-resolve -->
-			</p>
+					<input type="hidden" name="returnUrl" value={currentPath} />
+					<button
+						type="submit"
+						class="ml-1 text-primary underline underline-offset-4 disabled:opacity-60"
+						disabled={switching}
+						aria-busy={switching}
+					>
+						{m['oauth.consent.switchAccount']()}
+					</button>
+				</form>
+			</div>
 		{/if}
 
 		{#if expiredNotice}

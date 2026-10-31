@@ -3055,7 +3055,9 @@
 		"useADemoAccount": "Usa un account demo"
 	},
 	"logoutPage": {
-		"loggingOut": "Disconnessione in corso..."
+		"kicker": "Esci",
+		"title": "Uscire da {brand}?",
+		"description": "Dovrai accedere di nuovo per ritrovare i tuoi biglietti e i tuoi eventi."
 	},
 	"makeMemberAction": {
 		"button": "Rendi membro",

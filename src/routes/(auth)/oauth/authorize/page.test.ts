@@ -16,6 +16,9 @@ vi.mock('$lib/stores/auth.svelte', () => ({
 	authStore: { accessToken: 'tok', user: { display_name: 'Sam Jones', email: 'sam@example.com' } }
 }));
 
+const postLogoutMock = vi.hoisted(() => vi.fn(() => Promise.resolve()));
+vi.mock('$lib/utils/logout', () => ({ postLogout: postLogoutMock }));
+
 import Page from './+page.svelte';
 
 const SEARCH = '?client_id=abc&resource=a&resource=b';
@@ -70,15 +73,28 @@ describe('/oauth/authorize page', () => {
 		const buttons = screen.getAllByRole('button').map((b) => b.textContent?.trim());
 		expect(buttons.indexOf('Allow')).toBeLessThan(buttons.indexOf('Deny'));
 		expect(screen.getByText('Signed in as Sam Jones (sam@example.com).')).toBeInTheDocument();
-		const switchLink = screen.getByRole('link', { name: 'Not you? Switch account' });
-		expect(switchLink).toHaveAttribute(
-			'href',
-			`/logout?returnUrl=${encodeURIComponent('/oauth/authorize' + SEARCH)}`
+		const switchButton = screen.getByRole('button', { name: 'Not you? Switch account' });
+		const switchForm = switchButton.closest('form');
+		expect(switchForm).not.toBeNull();
+		expect(switchForm).toHaveAttribute('method', 'POST');
+		expect(switchForm).toHaveAttribute('action', '/logout');
+		expect(switchForm?.querySelector('input[name="returnUrl"]')).toHaveValue(
+			'/oauth/authorize' + SEARCH
 		);
-		expect(switchLink).toHaveAttribute('data-sveltekit-reload');
 		await waitFor(() =>
 			expect(document.activeElement).toBe(screen.getByRole('heading', { level: 1 }))
 		);
+	});
+
+	it('switch account posts via postLogout once, with the consent path', async () => {
+		describeMock.mockResolvedValue({ kind: 'describe', data: description() });
+		render(Page);
+		const btn = await screen.findByRole('button', { name: 'Not you? Switch account' });
+		await userEvent.click(btn);
+		expect(postLogoutMock).toHaveBeenCalledTimes(1);
+		expect(postLogoutMock).toHaveBeenCalledWith('/oauth/authorize' + SEARCH);
+		expect(btn).toBeDisabled();
+		expect(btn).toHaveAttribute('aria-busy', 'true');
 	});
 
 	it('has one polite live region from first render that announces the redirect', async () => {

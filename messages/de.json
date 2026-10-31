@@ -3055,7 +3055,9 @@
 		"useADemoAccount": "Demokonto verwenden"
 	},
 	"logoutPage": {
-		"loggingOut": "Abmeldung läuft..."
+		"kicker": "Abmelden",
+		"title": "Bei {brand} abmelden?",
+		"description": "Du musst dich erneut anmelden, um wieder auf deine Tickets und Events zuzugreifen."
 	},
 	"makeMemberAction": {
 		"button": "Zum Mitglied machen",

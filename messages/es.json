@@ -3055,7 +3055,9 @@
 		"useADemoAccount": "Usar una cuenta de demostración"
 	},
 	"logoutPage": {
-		"loggingOut": "Cerrando sesión..."
+		"kicker": "Cerrar sesión",
+		"title": "¿Cerrar sesión en {brand}?",
+		"description": "Tendrás que iniciar sesión de nuevo para volver a tus entradas y eventos."
 	},
 	"makeMemberAction": {
 		"button": "Convertir en miembro",

@@ -2920,7 +2920,9 @@
 		"useADemoAccount": "Utiliser un compte de démonstration"
 	},
 	"logoutPage": {
-		"loggingOut": "Déconnexion en cours..."
+		"kicker": "Déconnexion",
+		"title": "Te déconnecter de {brand} ?",
+		"description": "Tu devras te reconnecter pour retrouver tes billets et tes événements."
 	},
 	"makeMemberAction": {
 		"button": "Rendre membre",

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { orgHref } from '$lib/utils/org-links';
-	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -23,6 +22,7 @@
 		CodeXml
 	} from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
+	import { postLogout } from '$lib/utils/logout';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 
 	interface Props {
@@ -34,6 +34,7 @@
 
 	const queryClient = useQueryClient();
 	let dropdownOpen = $state(false);
+	let loggingOut = false;
 	const user = $derived(authStore.user);
 	const accessToken = $derived(authStore.accessToken);
 	const permissions = $derived(authStore.permissions);
@@ -155,13 +156,18 @@
 			: [])
 	]);
 
-	function handleLogout() {
+	async function handleLogout() {
 		if (onItemClick) onItemClick();
-		// Clear client-side state immediately so navbar updates in the same tick
-		authStore.logout();
-		queryClient.clear();
-		// Then navigate to server endpoint to clear cookies
-		goto(resolve('/(public)/logout', {}));
+		if (loggingOut) return;
+		loggingOut = true;
+		// Wait for in-flight refreshes to settle (a late Set-Cookie would undo the
+		// logout), then clear client state and POST natively. Only a POST can log
+		// out (a GET is CSRF-able); the form lives on document.body so it outlives
+		// this menu unmounting when authStore.logout() runs.
+		await postLogout('', () => {
+			authStore.logout();
+			queryClient.clear();
+		});
 	}
 
 	function handleItemClick() {

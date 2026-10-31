@@ -3055,7 +3055,9 @@
 		"useADemoAccount": "Usar uma conta de demonstração"
 	},
 	"logoutPage": {
-		"loggingOut": "A terminar sessão..."
+		"kicker": "Terminar sessão",
+		"title": "Terminar sessão em {brand}?",
+		"description": "Vais precisar de iniciar sessão novamente para voltares aos teus bilhetes e eventos."
 	},
 	"makeMemberAction": {
 		"button": "Tornar membro",
