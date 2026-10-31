@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/svelte';
+import { render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
@@ -21,6 +21,7 @@ function info(extra: Record<string, unknown> = {}) {
 		vat_rate: '0.00',
 		billing_country_code: '',
 		small_business_scheme: 'none',
+		tiers_charging_vat: [],
 		tax_registration_number: '',
 		compliance: { country: 'DE' },
 		...extra
@@ -28,13 +29,15 @@ function info(extra: Record<string, unknown> = {}) {
 }
 
 function renderIt(extra: Record<string, unknown> = {}) {
+	const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 	render(QueryClientTestWrapper, {
 		props: {
-			client: new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+			client,
 			component: SmallBusinessSchemeSection,
 			componentProps: { slug: 'acme', accessToken: 'tok', info: info(extra) }
 		}
 	});
+	return client;
 }
 
 const save = () => screen.getByRole('button', { name: /save small-business/i });
@@ -111,10 +114,52 @@ describe('SmallBusinessSchemeSection', () => {
 		});
 	});
 
-	it('shows the tiers hint only when declaring', async () => {
-		renderIt();
-		await userEvent.click(screen.getByRole('checkbox', { name: /§ 19 UStG/ }));
-		expect(screen.getByTestId('small-business-tiers-hint')).toBeInTheDocument();
+	describe('tiers still charging VAT', () => {
+		const tiers = [
+			{
+				event_id: 'e1',
+				event_name: 'Summer Fest',
+				tier_id: 't1',
+				tier_name: 'General',
+				vat_rate: '19.00'
+			},
+			{
+				event_id: 'e2',
+				event_name: 'Autumn Gig',
+				tier_id: 't2',
+				tier_name: 'VIP',
+				vat_rate: '7.00'
+			}
+		];
+
+		it('lists the tiers with links and blocks saving while declaring', async () => {
+			renderIt({ tiers_charging_vat: tiers });
+			expect(screen.queryByTestId('small-business-tiers-charging-vat')).not.toBeInTheDocument();
+			await userEvent.click(screen.getByRole('checkbox', { name: /§ 19 UStG/ }));
+			const box = screen.getByTestId('small-business-tiers-charging-vat');
+			expect(box).toHaveTextContent(/still charge VAT/);
+			const links = within(box).getAllByRole('link');
+			expect(links).toHaveLength(2);
+			expect(links[0]).toHaveAttribute('href', '/org/acme/admin/events/e1/edit?tab=ticketing');
+			expect(links[1]).toHaveAttribute('href', '/org/acme/admin/events/e2/edit?tab=ticketing');
+			expect(links[0]).toHaveTextContent('Summer Fest, General: 19 % VAT');
+			expect(save()).toBeDisabled();
+			expect(screen.getByTestId('small-business-blockers')).toHaveTextContent(
+				/Set the ticket tiers listed above to 0 %/
+			);
+		});
+
+		it('shows nothing for an empty list', async () => {
+			renderIt({ tiers_charging_vat: [] });
+			await userEvent.click(screen.getByRole('checkbox', { name: /§ 19 UStG/ }));
+			expect(screen.queryByTestId('small-business-tiers-charging-vat')).not.toBeInTheDocument();
+			expect(save()).toBeEnabled();
+		});
+
+		it('never shows for an already declared scheme', () => {
+			renderIt({ small_business_scheme: 'de_19', tiers_charging_vat: tiers });
+			expect(screen.queryByTestId('small-business-tiers-charging-vat')).not.toBeInTheDocument();
+		});
 	});
 
 	it('turning off sends only scheme none', async () => {
@@ -196,5 +241,14 @@ describe('SmallBusinessSchemeSection', () => {
 		expect(alert).toHaveTextContent('Some ticket tiers still charge VAT.');
 		await userEvent.type(screen.getByLabelText(/Steuernummer/), '1');
 		expect(screen.queryByTestId('small-business-error')).not.toBeInTheDocument();
+	});
+
+	it('refetches billing info when the save fails (stale data)', async () => {
+		update.mockResolvedValue({ error: { detail: 'Some ticket tiers still charge VAT.' } });
+		const client = renderIt();
+		const spy = vi.spyOn(client, 'invalidateQueries');
+		await userEvent.click(screen.getByRole('checkbox', { name: /§ 19 UStG/ }));
+		await userEvent.click(save());
+		await waitFor(() => expect(spy).toHaveBeenCalledWith({ queryKey: ['billing-info', 'acme'] }));
 	});
 });
