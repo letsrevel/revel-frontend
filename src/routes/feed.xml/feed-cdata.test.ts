@@ -50,8 +50,8 @@ describe('feed.xml CDATA', () => {
 		const body = await (await call()).text();
 		const item = body.slice(body.indexOf('<item>'));
 		const m = item.match(/<description>([\s\S]*?)<\/description>/);
-		expect(m).not.toBeNull();
-		return m![1];
+		if (!m) throw new Error('no <description> found');
+		return m[1];
 	};
 
 	it('keeps a ]]> in the description inside the CDATA', async () => {
