@@ -51,14 +51,7 @@
 		},
 		// No toast: the inline role="alert" under the item is the feedback; a local handler
 		// also replaces the global toast.
-		// Clear the "Removing..." status so it doesn't linger next to the inline error, unless
-		// another tier's removal is still running (its status must stay).
-		onError: (_error, tier) => {
-			const othersPending = Object.entries(pending).some(
-				([id, isPending]) => isPending && id !== tier.tier_id
-			);
-			if (!othersPending) onStatus('');
-		},
+		onError: () => undefined,
 		// Returning the refetch promise keeps the mutation (and the button) pending until the
 		// list reflects the change.
 		onSuccess: async (_data, tier) => {
@@ -68,8 +61,12 @@
 				m['smallBiz.tiersChargingVatRemoved']({ event: tier.event_name, tier: tier.tier_name })
 			);
 		},
-		onSettled: (_data, _error, tier) => {
+		// onSettled runs after onError, so the flag is cleared before the check. A failed removal
+		// clears the "Removing..." status once no other removal is still running, so it never
+		// lingers next to the inline error (also when two removals fail close together).
+		onSettled: (_data, error, tier) => {
 			pending[tier.tier_id] = false;
+			if (error && !Object.values(pending).some(Boolean)) onStatus('');
 		}
 	}));
 

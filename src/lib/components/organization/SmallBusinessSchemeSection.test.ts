@@ -239,6 +239,20 @@ describe('SmallBusinessSchemeSection', () => {
 			expect(spy).not.toHaveBeenCalled();
 		});
 
+		it('clears the "Removing" status when two removals fail close together', async () => {
+			updateTier.mockResolvedValue({ error: { detail: 'Server says no' } });
+			renderIt({
+				tiers_charging_vat: [rsvpTier, { ...rsvpTier, tier_id: 't4', tier_name: 'Early' }]
+			});
+			const box = await declare();
+			const buttons = within(box).getAllByRole('button', { name: /Remove this tier's VAT/ });
+			await Promise.all(buttons.map((b) => userEvent.click(b)));
+			await waitFor(() => expect(within(box).getAllByRole('alert')).toHaveLength(2));
+			await waitFor(() =>
+				expect(screen.getByTestId('small-business-removed-status')).toHaveTextContent(/^$/)
+			);
+		});
+
 		it('clears the "Removing" status when the removal fails', async () => {
 			updateTier.mockResolvedValue({ error: { detail: 'Server says no' } });
 			renderIt({ tiers_charging_vat: [rsvpTier] });
