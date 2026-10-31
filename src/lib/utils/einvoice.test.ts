@@ -27,6 +27,24 @@ describe('missing-field labels', () => {
 		expect(missingFieldLabel('vat_id')).toMatch(/VIES/);
 		expect(missingFieldLabel('vat_exemption_reason')).toMatch(/exemption reason/);
 	});
+	it('labels the small-business fields', () => {
+		expect(missingFieldLabel('small_business_scheme')).toMatch(/small-business scheme/);
+		expect(missingFieldLabel('tax_registration_number')).toMatch(/Steuernummer/);
+	});
+	it('makes the VAT ID label country- and scheme-aware', () => {
+		expect(missingFieldLabel('vat_id', { country: 'AT', scheme: 'none' })).toMatch(
+			/Kleinunternehmer, a small-business scheme declaration with your Steuernummer/
+		);
+		expect(missingFieldLabel('vat_id', { country: 'AT', scheme: 'at_6_1_27' })).toMatch(/VIES/);
+		expect(missingFieldLabel('vat_id', { country: 'DE', scheme: 'none' })).toMatch(
+			/also required under § 19 UStG|Also required under § 19 UStG/i
+		);
+		expect(missingFieldLabel('vat_id', { country: 'DE', scheme: 'de_19' })).toMatch(/USt-IdNr/);
+		expect(missingFieldLabel('vat_id', { country: 'IT', scheme: 'none' })).toBe(
+			missingFieldLabel('vat_id')
+		);
+		expect(missingFieldLabels(['vat_id'], { country: 'DE' })[0]).toMatch(/USt-IdNr/);
+	});
 	it('falls back to the raw string for unknown values', () => {
 		expect(missingFieldLabels(['billing_city', 'something_new'])).toEqual([
 			'City',

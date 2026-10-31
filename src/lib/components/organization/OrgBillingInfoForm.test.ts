@@ -93,6 +93,54 @@ describe('OrgBillingInfoForm', () => {
 		expect(body).not.toHaveProperty('vat_exemption_reason');
 	});
 
+	it('does not resend a stale vat_rate after a scheme is declared on a dirty form', async () => {
+		const props = (extra: Record<string, unknown>) => ({
+			client: new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+			component: OrgBillingInfoForm,
+			componentProps: { slug: 'acme', accessToken: 'tok', hasVatId: false, info: info(extra) }
+		});
+		const first = props({ vat_rate: '19' });
+		const { rerender } = render(QueryClientTestWrapper, { props: first });
+		await userEvent.type(screen.getByLabelText(/Street and number/i), 'Main 1');
+		await rerender({
+			...first,
+			componentProps: {
+				...first.componentProps,
+				info: info({ vat_rate: '0.00', small_business_scheme: 'de_19' })
+			}
+		});
+		expect(screen.getByLabelText(/VAT rate/i)).toHaveValue(0);
+		await userEvent.click(screen.getByRole('button', { name: /save/i }));
+		await waitFor(() => expect(update).toHaveBeenCalled());
+		const body = update.mock.calls[0][0].body;
+		expect(body.billing_address_line1).toBe('Main 1');
+		expect(body).not.toHaveProperty('vat_rate');
+	});
+
+	it('keeps a rate set by removing the scheme on a dirty form', async () => {
+		const props = (extra: Record<string, unknown>) => ({
+			client: new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+			component: OrgBillingInfoForm,
+			componentProps: { slug: 'acme', accessToken: 'tok', hasVatId: false, info: info(extra) }
+		});
+		const first = props({ vat_rate: '0.00', small_business_scheme: 'de_19' });
+		const { rerender } = render(QueryClientTestWrapper, { props: first });
+		await userEvent.type(screen.getByLabelText(/Street and number/i), 'Main 1');
+		await rerender({
+			...first,
+			componentProps: {
+				...first.componentProps,
+				info: info({ vat_rate: '19.50', small_business_scheme: 'none' })
+			}
+		});
+		expect(screen.getByLabelText(/VAT rate/i)).toHaveValue(19.5);
+		await userEvent.click(screen.getByRole('button', { name: /save/i }));
+		await waitFor(() => expect(update).toHaveBeenCalled());
+		const body = update.mock.calls[0][0].body;
+		expect(body.billing_address_line1).toBe('Main 1');
+		expect(body).not.toHaveProperty('vat_rate');
+	});
+
 	it('clears the legacy text when a saved structured address is blanked', async () => {
 		renderIt({
 			billing_address: 'Main St 1\nBerlin',
@@ -121,5 +169,18 @@ describe('OrgBillingInfoForm', () => {
 	it('marks the address required once invoicing is on', () => {
 		renderIt({ invoicing_mode: 'auto' });
 		expect(screen.getByLabelText(/Street and number/i)).toBeRequired();
+	});
+
+	it('locks the VAT rate under a small-business scheme', () => {
+		renderIt({ small_business_scheme: 'de_19', vat_rate: '0.00' });
+		const input = screen.getByLabelText(/VAT rate/i);
+		expect(input).toBeDisabled();
+		expect(input).toHaveAttribute('aria-describedby', 'billing-vat-rate-help');
+		expect(document.getElementById('billing-vat-rate-help')).toHaveTextContent(/0 %/);
+	});
+
+	it('leaves the VAT rate editable without a scheme', () => {
+		renderIt({ small_business_scheme: 'none' });
+		expect(screen.getByLabelText(/VAT rate/i)).not.toBeDisabled();
 	});
 });

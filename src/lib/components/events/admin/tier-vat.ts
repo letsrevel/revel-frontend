@@ -9,6 +9,8 @@ export interface OrgVatContext {
 	invoicingMode: InvoicingMode;
 	/** Org default VAT exemption reason ('' when none). */
 	exemptionReason: string;
+	/** The org trades under a small-business scheme: no VAT is charged, tiers are fixed at 0%. */
+	smallBusiness: boolean;
 }
 
 const INVOICING_MODES: readonly string[] = ['none', 'hybrid', 'auto'];
@@ -29,7 +31,8 @@ export function orgVatContextFrom(org: unknown): OrgVatContext | null {
 	return {
 		vatRate: typeof rate === 'string' || typeof rate === 'number' ? String(rate) : null,
 		invoicingMode: r.invoicing_mode as InvoicingMode,
-		exemptionReason: typeof r.vat_exemption_reason === 'string' ? r.vat_exemption_reason : ''
+		exemptionReason: typeof r.vat_exemption_reason === 'string' ? r.vat_exemption_reason : '',
+		smallBusiness: typeof r.small_business_scheme === 'string' && r.small_business_scheme !== 'none'
 	};
 }
 
@@ -37,6 +40,14 @@ function parseRate(value: string | null | undefined): number | null {
 	if (value == null || value.trim() === '') return null;
 	const n = parseFloat(normalizeDecimalInput(value));
 	return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * Under a small-business scheme a tier cannot charge VAT: a positive override is
+ * cleared so the tier inherits the org's 0%. Anything else is left as typed.
+ */
+export function schemeAdjustedOverride(override: string, org: OrgVatContext | null): string {
+	return org?.smallBusiness && positive(override) ? '' : override;
 }
 
 /** Tier override when non-empty, otherwise the org default; null when neither is known. */

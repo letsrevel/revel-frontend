@@ -1,6 +1,7 @@
 {
 	"_comment": "English values that are legitimately identical in a given locale (brand names, format strings, loanwords). Every other identical-to-English value is treated as untranslated and fails `make i18n-untranslated`. Add an entry ONLY when the target language really uses the English word.",
 	"de": [
+		"Steuernummer",
 		"© {year} {name}",
 		"${price}",
 		"(1-100)",
@@ -97,6 +98,7 @@
 		"WhatsApp"
 	],
 	"fr": [
+		"Steuernummer",
 		"© {year} {name}",
 		"${price}",
 		"(1-100)",
@@ -213,6 +215,7 @@
 		"WhatsApp"
 	],
 	"it": [
+		"Steuernummer",
 		"© {year} {name}",
 		"${price}",
 		"(1-100)",
@@ -292,6 +295,7 @@
 		"WhatsApp"
 	],
 	"es": [
+		"Steuernummer",
 		"© {year} {name}",
 		"${price}",
 		"(1-100)",
@@ -356,6 +360,7 @@
 		"WhatsApp"
 	],
 	"pt": [
+		"Steuernummer",
 		"© {year} {name}",
 		"${price}",
 		"(1-100)",

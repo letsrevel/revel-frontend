@@ -5,6 +5,7 @@ import {
 	exemptionLikelyCause,
 	exemptionReasonForPayload,
 	omitUnchangedZeroRuleFields,
+	schemeAdjustedOverride,
 	isPaidOnline,
 	orgVatContextFrom,
 	vatExemptionRequired,
@@ -17,6 +18,7 @@ const org = (o: Partial<OrgVatContext> = {}): OrgVatContext => ({
 	vatRate: '0',
 	invoicingMode: 'auto',
 	exemptionReason: '',
+	smallBusiness: false,
 	...o
 });
 const online = {
@@ -31,7 +33,23 @@ describe('orgVatContextFrom', () => {
 	it('reads the admin fields', () => {
 		expect(
 			orgVatContextFrom({ vat_rate: '19.00', invoicing_mode: 'hybrid', vat_exemption_reason: 'x' })
-		).toEqual({ vatRate: '19.00', invoicingMode: 'hybrid', exemptionReason: 'x' });
+		).toEqual({
+			vatRate: '19.00',
+			invoicingMode: 'hybrid',
+			exemptionReason: 'x',
+			smallBusiness: false
+		});
+	});
+	it('reads the small-business scheme defensively', () => {
+		const base = { invoicing_mode: 'none' };
+		expect(orgVatContextFrom({ ...base, small_business_scheme: 'de_19' })?.smallBusiness).toBe(
+			true
+		);
+		expect(orgVatContextFrom({ ...base, small_business_scheme: 'none' })?.smallBusiness).toBe(
+			false
+		);
+		expect(orgVatContextFrom({ ...base })?.smallBusiness).toBe(false);
+		expect(orgVatContextFrom({ ...base, small_business_scheme: 3 })?.smallBusiness).toBe(false);
 	});
 	it('is null without an invoicing mode', () => {
 		expect(orgVatContextFrom({ name: 'x' })).toBeNull();
@@ -199,5 +217,21 @@ describe('exemptionReasonForPayload', () => {
 	it('keeps it for a zero override, or when only the org default hides the input', () => {
 		expect(exemptionReasonForPayload('online', '0', ' Art. 8 ')).toBe('Art. 8');
 		expect(exemptionReasonForPayload('online', '', 'Art. 8')).toBe('Art. 8');
+	});
+});
+
+describe('schemeAdjustedOverride', () => {
+	const scheme = org({ smallBusiness: true });
+	it('clears a positive override under a scheme', () => {
+		expect(schemeAdjustedOverride('19', scheme)).toBe('');
+		expect(schemeAdjustedOverride('7,5', scheme)).toBe('');
+	});
+	it('keeps empty and zero overrides under a scheme', () => {
+		expect(schemeAdjustedOverride('', scheme)).toBe('');
+		expect(schemeAdjustedOverride('0', scheme)).toBe('0');
+	});
+	it('never touches the override without a scheme or org', () => {
+		expect(schemeAdjustedOverride('19', org())).toBe('19');
+		expect(schemeAdjustedOverride('19', null)).toBe('19');
 	});
 });
