@@ -359,17 +359,19 @@
 			<p class="text-sm">{extractErrorMessage(billingQuery.error)}</p>
 		</div>
 	{:else}
-		<!-- Always mounted so the notice is announced when it appears. -->
-		<div role="status">
-			{#if billingQuery?.error && billingQuery?.data}
-				<p
-					class="rounded-md border border-border bg-muted p-3 text-sm text-foreground"
-					data-testid="billing-refresh-failed"
-				>
-					{m['orgAdmin.billing.refreshFailed']()}
-				</p>
-			{/if}
+		<!-- Always-mounted sr-only live region (absolutely positioned, so it takes no space in
+		     the stack) announces the notice; the visible copy below is plain content. -->
+		<div role="status" class="sr-only">
+			{#if billingQuery?.error && billingQuery?.data}{m['orgAdmin.billing.refreshFailed']()}{/if}
 		</div>
+		{#if billingQuery?.error && billingQuery?.data}
+			<p
+				class="rounded-md border border-border bg-muted p-3 text-sm text-foreground"
+				data-testid="billing-refresh-failed"
+			>
+				{m['orgAdmin.billing.refreshFailed']()}
+			</p>
+		{/if}
 		<!-- ────────────────────────────────────────────────────────────
 		     Section 0: Attendee Invoicing Mode
 		     ──────────────────────────────────────────────────────────── -->
