@@ -197,12 +197,11 @@
 	let progressSeq = -1;
 
 	/** Routes a message to the always-mounted live region (clear, tick, set re-announces repeats). */
-	async function announce(text: string): Promise<number> {
+	async function announce(text: string): Promise<void> {
 		const id = ++announceSeq;
 		removedAnnouncement = '';
 		await tick();
 		if (id === announceSeq) removedAnnouncement = text;
-		return id;
 	}
 
 	/**
