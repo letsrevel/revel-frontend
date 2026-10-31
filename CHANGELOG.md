@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.30.0] - 2026-10-31
+
+### Added
+- **Small-business (Kleinunternehmer) VAT scheme** in organization billing settings, for organizers who don't charge VAT (#1142).
+  - The scheme is offered only when it matches the organization's country: Germany (§ 19 UStG) or Austria (§ 6 Abs. 1 Z 27 UStG). Other countries see why none applies.
+  - A Steuernummer field with an example and format check (10, 11 or 13 digits in Germany, 9 in Austria).
+  - German organizers are told they still need a VIES-validated USt-IdNr. (VAT ID) for Revel's platform-fee invoices, with a link to the VAT ID section.
+  - Declaring the scheme sets the default VAT rate to 0% once you confirm. Removing it lets you set a new default rate in the same save.
+  - The statutory exemption note printed on invoices is shown read-only.
+  - Everything the scheme still needs is listed before you save, and a refusal from the server stays on the page.
+- Attendee invoice details show the seller's tax number and any rounding amount.
+
+### Changed
+- The notice listing what's missing before attendee invoicing can be turned on now accounts for the scheme: a VAT ID or the scheme declaration, and in Germany both.
+- Under a small-business scheme, the ticket tier VAT rate and the organization's default VAT rate are locked at 0%.
+- Removing a VAT ID now shows the server's reason when it's refused, for example while attendee invoicing is still on.
+
 ## [2.29.1] - 2026-10-31
 
 ### Changed
