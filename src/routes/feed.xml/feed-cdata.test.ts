@@ -10,7 +10,7 @@ vi.mock('$lib/api', () => ({
 }));
 
 import { GET } from './+server';
-import { escapeCdata, stripXmlControlChars } from '$lib/utils/xml';
+import { escapeCdata, stripXmlControlChars, decodeBasicEntities } from '$lib/utils/xml';
 
 const evil = ']]><item>x</item>';
 
@@ -32,54 +32,69 @@ describe('escapeCdata', () => {
 });
 
 describe('feed.xml CDATA', () => {
-	it('keeps a ]]> in the event name inside the description CDATA', async () => {
+	const event = (over: Record<string, unknown>) => ({
+		slug: 'p',
+		name: 'Safe name',
+		start: '2099-01-01T18:00:00Z',
+		created_at: '2026-01-01T00:00:00Z',
+		cover_art: null,
+		logo: null,
+		description: '',
+		city: null,
+		organization: { slug: 'acme', name: 'Acme' },
+		...over
+	});
+	/** Content of the first <description> inside an <item> (CDATA wrapper removed). */
+	const itemDescription = async (over: Record<string, unknown>) => {
+		listEvents.mockResolvedValue({ data: { count: 1, results: [event(over)] } });
+		const body = await (await call()).text();
+		const item = body.slice(body.indexOf('<item>'));
+		const m = item.match(/<description>([\s\S]*?)<\/description>/);
+		expect(m).not.toBeNull();
+		return m![1];
+	};
+
+	it('keeps a ]]> in the description inside the CDATA', async () => {
+		const desc = await itemDescription({ description: 'a ]]> b' });
+		expect(desc).toBe('<![CDATA[a ]]&gt; b\nDate: Thursday, January 1, 2099]]>');
 		listEvents.mockResolvedValue({
-			data: {
-				count: 1,
-				results: [
-					{
-						slug: 'p',
-						name: evil,
-						start: '2099-01-01T18:00:00Z',
-						created_at: '2026-01-01T00:00:00Z',
-						cover_art: null,
-						logo: null,
-						description: '',
-						city: { name: evil, country: 'IT' },
-						organization: { slug: 'acme', name: 'Acme' }
-					}
-				]
-			}
+			data: { count: 1, results: [event({ name: evil, description: '' })] }
 		});
 		const body = await (await call()).text();
-		// Outside CDATA no raw injected element survives (the title is entity-escaped).
-		expect(stripCdata(body)).not.toContain('<item>x</item>');
 		expect(stripCdata(body).match(/<item>/g)).toHaveLength(1);
 	});
 
-	it('HTML-escapes the description text and strips illegal control chars', async () => {
-		listEvents.mockResolvedValue({
-			data: {
-				count: 1,
-				results: [
-					{
-						slug: 'p',
-						name: '<img src=x onerror=alert(1)>\u0001\u000b',
-						start: '2099-01-01T18:00:00Z',
-						created_at: '2026-01-01T00:00:00Z',
-						cover_art: null,
-						logo: null,
-						description: '',
-						city: null,
-						organization: { slug: 'acme', name: 'Ac\u0000me' }
-					}
-				]
-			}
+	it('HTML-escapes the name fallback and strips illegal control chars', async () => {
+		const desc = await itemDescription({
+			name: '<img src=x onerror=alert(1)>\u0001\u000b',
+			organization: { slug: 'acme', name: 'Ac\u0000me' }
 		});
-		const body = await (await call()).text();
-		expect(body).toContain('&lt;img src=x onerror=alert(1)&gt;');
-		// eslint-disable-next-line no-control-regex
-		expect(body).not.toMatch(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/);
+		expect(desc).toBe(
+			'<![CDATA[Join &lt;img src=x onerror=alert(1)&gt; organized by Acme\nDate: Thursday, January 1, 2099]]>'
+		);
+	});
+
+	it('escapes an unclosed tag in the description payload', async () => {
+		const desc = await itemDescription({ description: 'hi <img src=x onerror=alert(1)//' });
+		expect(desc).toBe(
+			'<![CDATA[hi &lt;img src=x onerror=alert(1)//\nDate: Thursday, January 1, 2099]]>'
+		);
+	});
+
+	it('does not double-escape entities already in the description', async () => {
+		const desc = await itemDescription({ description: 'Fish &amp; Chips &lt;3 &amp;lt;' });
+		expect(desc).toBe(
+			'<![CDATA[Fish &amp; Chips &lt;3 &amp;lt;\nDate: Thursday, January 1, 2099]]>'
+		);
+	});
+});
+
+describe('decodeBasicEntities', () => {
+	it('decodes named and numeric entities, &amp; last', () => {
+		expect(
+			decodeBasicEntities('&lt;b&gt; &quot;x&quot; &#39;y&#39; &apos;z&apos; &#65;&#x42;')
+		).toBe("<b> \"x\" 'y' 'z' AB");
+		expect(decodeBasicEntities('&amp;lt;')).toBe('&lt;');
 	});
 });
 

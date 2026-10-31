@@ -25,7 +25,7 @@ import { handleTenant } from '$lib/server/tenant';
 import { handleTenantRouting } from '$lib/server/tenant-routing';
 import { handleTenantHead } from '$lib/server/tenant-head';
 import { startMetricsServer } from '$lib/server/metrics';
-import { handleRequestLogging, handleSsrError, redactPath } from '$lib/server/request-logging';
+import { handleRequestLogging, handleSsrError, redactTokens } from '$lib/server/request-logging';
 
 // Start the internal Prometheus metrics listener (production-only, guarded so
 // dev/HMR/tests never bind the port). Importing metrics also registers the
@@ -317,7 +317,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 	const refreshToken = event.cookies.get('refresh_token');
 
 	log.debug('auth_request', {
-		path: redactPath(event.url.pathname, event.params),
+		path: redactTokens(event.url.pathname, event.params),
 		has_access_token: !!accessToken,
 		has_refresh_token: !!refreshToken
 	});

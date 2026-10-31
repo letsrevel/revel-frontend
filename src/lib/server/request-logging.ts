@@ -9,20 +9,37 @@ import type { Handle, HandleServerError } from '@sveltejs/kit';
 import { log } from './logger';
 import { recordRequest, recordSsrError } from './metrics';
 
+const INVITE_TOKEN_RE = /(\/join\/(?:org|event)\/)[^/\s?#]+/g;
+
 /**
- * Masks the value of every token-like route param (`[token_id]`, ...) in the
- * logged path, so invitation tokens in `/join/{org,event}/<token>` never reach
- * the logs. Route-driven: no hard-coded paths to drift out of sync.
+ * Masks invitation tokens in logged text. Two layers: the value of every
+ * token-like route param (`[token_id]`, ...) in raw and encoded form, and
+ * ALWAYS a regex over `/join/{org,event}/<token>` anywhere in the string,
+ * because `event.params` is empty for unmatched/invalid paths (404/400) and
+ * non-canonical encodings (`%61bc`) never match the raw value.
  */
-export function redactPath(pathname: string, params: Record<string, string> = {}): string {
-	let out = pathname;
+export function redactTokens(text: string, params: Record<string, string> = {}): string {
+	let out = text;
 	for (const [key, value] of Object.entries(params)) {
 		if (!/token/i.test(key) || !value) continue;
 		for (const variant of new Set([value, encodeURIComponent(value), encodeURI(value)])) {
 			out = out.split(variant).join('REDACTED');
 		}
 	}
-	return out;
+	return out.replace(INVITE_TOKEN_RE, '$1REDACTED');
+}
+
+/** Copy of `error` with message/stack scrubbed (SvelteKit's 404 message embeds the path). */
+function redactError(error: unknown, params: Record<string, string>): unknown {
+	if (typeof error === 'string') return redactTokens(error, params);
+	if (!(error instanceof Error)) return error;
+	const message = redactTokens(error.message, params);
+	const stack = error.stack ? redactTokens(error.stack, params) : undefined;
+	if (message === error.message && stack === error.stack) return error;
+	const copy = new Error(message);
+	copy.name = error.name;
+	copy.stack = stack;
+	return copy;
 }
 
 /**
@@ -72,7 +89,7 @@ export const handleRequestLogging: Handle = async ({ event, resolve }) => {
 		const logFinished = response.status >= 500 ? log.error : log.info;
 		logFinished('request_finished', {
 			method: event.request.method,
-			path: redactPath(event.url.pathname, event.params),
+			path: redactTokens(event.url.pathname, event.params),
 			route_id: routeId,
 			status_code: response.status,
 			duration_ms: durationMs,
@@ -109,9 +126,9 @@ export const handleSsrError: HandleServerError = ({ error, event, status, messag
 		// getClientAddress() throws during prerendering — omit it.
 	}
 	const context = {
-		error,
+		error: redactError(error, event.params),
 		route_id: routeId,
-		path: redactPath(event.url.pathname, event.params),
+		path: redactTokens(event.url.pathname, event.params),
 		method: event.request.method,
 		status_code: status,
 		request_id: event.locals.requestId,

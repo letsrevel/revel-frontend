@@ -10,7 +10,7 @@ vi.mock('./metrics', () => ({
 	recordSsrError: vi.fn()
 }));
 
-import { handleRequestLogging, handleSsrError, redactPath } from './request-logging';
+import { handleRequestLogging, handleSsrError, redactTokens } from './request-logging';
 import { log } from './logger';
 import { recordRequest, recordSsrError } from './metrics';
 
@@ -205,18 +205,48 @@ describe('handleSsrError', () => {
 	});
 });
 
-describe('redactPath', () => {
+describe('redactTokens', () => {
 	it('redacts token route params and leaves other paths alone', () => {
-		expect(redactPath('/join/org/abc123', { token_id: 'abc123' })).toBe('/join/org/REDACTED');
-		expect(redactPath('/join/event/abc123/', { token_id: 'abc123' })).toBe('/join/event/REDACTED/');
-		expect(redactPath('/events/acme/party', { org_slug: 'acme', event_slug: 'party' })).toBe(
+		expect(redactTokens('/join/org/abc123', { token_id: 'abc123' })).toBe('/join/org/REDACTED');
+		expect(redactTokens('/join/event/abc123/', { token_id: 'abc123' })).toBe(
+			'/join/event/REDACTED/'
+		);
+		expect(redactTokens('/events/acme/party', { org_slug: 'acme', event_slug: 'party' })).toBe(
 			'/events/acme/party'
 		);
-		expect(redactPath('/login', {})).toBe('/login');
+		expect(redactTokens('/login', {})).toBe('/login');
+	});
+
+	it('redacts invitation paths even when params are empty (404/400 routes)', () => {
+		expect(redactTokens('/join/event/tok/extra', {})).toBe('/join/event/REDACTED/extra');
+		expect(redactTokens('Not found: /join/org/tok', {})).toBe('Not found: /join/org/REDACTED');
+	});
+
+	it('redacts non-canonical encodings via the regex fallback', () => {
+		expect(redactTokens('/join/event/%61bc123', { token_id: 'abc123' })).toBe(
+			'/join/event/REDACTED'
+		);
+	});
+
+	it('scrubs the token from the error logged by handleSsrError', () => {
+		vi.clearAllMocks();
+		const error = new Error('Not found: /join/event/secret/extra');
+		(handleSsrError as HandleServerError)({
+			error,
+			event: fakeEvent({ url: new URL('https://letsrevel.io/join/event/secret/extra') }),
+			status: 404,
+			message: 'Not Found'
+		});
+		const ctx = vi.mocked(log.warning).mock.calls[0][1] as { error: Error };
+		expect(JSON.stringify(ctx)).not.toContain('secret');
+		expect(ctx.error).toBeInstanceOf(Error);
+		expect(ctx.error.message).toContain('REDACTED');
+		expect(ctx.error.stack).not.toContain('secret');
+		expect(error.message).toContain('secret'); // original untouched
 	});
 
 	it('handles URL-encoded param values', () => {
-		expect(redactPath('/join/org/a%2Fb%20c', { token_id: 'a/b c' })).toBe('/join/org/REDACTED');
+		expect(redactTokens('/join/org/a%2Fb%20c', { token_id: 'a/b c' })).toBe('/join/org/REDACTED');
 	});
 
 	it('is applied to request_finished and ssr error logs', async () => {

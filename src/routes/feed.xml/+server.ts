@@ -5,7 +5,7 @@ import { orgOrigin } from '$lib/utils/org-links';
 import { serverLinkContext } from '$lib/server/tenant-canonical';
 import { siteName, tenantIconUrl } from '$lib/seo/tenant';
 import { log } from '$lib/server/logger';
-import { escapeCdata, stripXmlControlChars } from '$lib/utils/xml';
+import { decodeBasicEntities, escapeCdata, stripXmlControlChars } from '$lib/utils/xml';
 
 /**
  * Escape XML special characters
@@ -134,7 +134,8 @@ ${events
 		// An org with an active custom domain is canonical there; the platform URL 301s to it.
 		const eventUrl = `${orgOrigin(event.organization, linkCtx) ?? baseUrl}/events/${event.organization.slug}/${event.slug}`;
 		const description =
-			stripHtml(event.description) || `Join ${event.name} organized by ${event.organization.name}`;
+			decodeBasicEntities(stripHtml(event.description)) ||
+			`Join ${event.name} organized by ${event.organization.name}`;
 		const truncatedDescription =
 			description.length > 500 ? description.slice(0, 497) + '...' : description;
 		const imageUrl = event.cover_art || event.logo;
