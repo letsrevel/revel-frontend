@@ -4306,6 +4306,7 @@
 			}
 		},
 		"billing": {
+			"refreshFailed": "Couldn't refresh billing information. Showing the last loaded data.",
 			"invoicingMode": {
 				"title": "Attendee Invoicing",
 				"description": "Configure how invoices are generated for ticket purchases.",
@@ -10671,6 +10672,7 @@
 	"smallBiz.tiersChargingVatLinkSr": "(opens the event's ticket settings)",
 	"smallBiz.tiersChargingVatRsvpNote": "This event is RSVP-only, so its tiers can't be edited in the event editor. Removing the rate makes this tier use your default rate.",
 	"smallBiz.tiersChargingVatRemove": "Remove this tier's VAT rate",
+	"smallBiz.tiersChargingVatRemoving": "Removing…",
 	"smallBiz.tiersChargingVatRemoveAria": "Remove this tier's VAT rate: {event} · {tier}",
 	"smallBiz.tiersChargingVatRemoveError": "Could not remove the VAT rate. Please try again.",
 	"smallBiz.tiersChargingVatRemoveHelp": "If a VAT exemption reason is required, set a default reason in the billing information above, then try again.",

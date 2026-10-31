@@ -4306,6 +4306,7 @@
 			}
 		},
 		"billing": {
+			"refreshFailed": "Não foi possível atualizar as informações de faturação. A mostrar os últimos dados carregados.",
 			"invoicingMode": {
 				"title": "Faturação de participantes",
 				"description": "Configura como as faturas são geradas para compras de bilhetes.",
@@ -10671,6 +10672,7 @@
 	"smallBiz.tiersChargingVatLinkSr": "(abre as definições de bilhetes do evento)",
 	"smallBiz.tiersChargingVatRsvpNote": "Este evento é apenas RSVP, por isso os seus níveis não podem ser editados no editor de eventos. Ao remover a taxa, este nível usa a tua taxa predefinida.",
 	"smallBiz.tiersChargingVatRemove": "Remover a taxa de IVA deste nível",
+	"smallBiz.tiersChargingVatRemoving": "A remover…",
 	"smallBiz.tiersChargingVatRemoveAria": "Remover a taxa de IVA deste nível: {event} · {tier}",
 	"smallBiz.tiersChargingVatRemoveError": "Não foi possível remover a taxa de IVA. Tenta novamente.",
 	"smallBiz.tiersChargingVatRemoveHelp": "Se for necessário um motivo de isenção de IVA, define um motivo predefinido nas informações de faturação acima e tenta novamente.",

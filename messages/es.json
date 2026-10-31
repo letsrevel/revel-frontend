@@ -4306,6 +4306,7 @@
 			}
 		},
 		"billing": {
+			"refreshFailed": "No se pudo actualizar la información de facturación. Se muestran los últimos datos cargados.",
 			"invoicingMode": {
 				"title": "Facturación a asistentes",
 				"description": "Configura cómo se generan las facturas de las compras de entradas.",
@@ -10671,6 +10672,7 @@
 	"smallBiz.tiersChargingVatLinkSr": "(abre los ajustes de entradas del evento)",
 	"smallBiz.tiersChargingVatRsvpNote": "Este evento es solo RSVP, así que sus tarifas no se pueden editar en el editor de eventos. Si quitas el tipo, esta tarifa usará tu tipo por defecto.",
 	"smallBiz.tiersChargingVatRemove": "Quitar el tipo de IVA de esta tarifa",
+	"smallBiz.tiersChargingVatRemoving": "Quitando…",
 	"smallBiz.tiersChargingVatRemoveAria": "Quitar el tipo de IVA de esta tarifa: {event} · {tier}",
 	"smallBiz.tiersChargingVatRemoveError": "No se pudo quitar el tipo de IVA. Inténtalo de nuevo.",
 	"smallBiz.tiersChargingVatRemoveHelp": "Si se requiere un motivo de exención de IVA, define un motivo predeterminado en la información de facturación de arriba y vuelve a intentarlo.",

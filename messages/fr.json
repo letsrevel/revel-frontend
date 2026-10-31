@@ -4276,6 +4276,7 @@
 			}
 		},
 		"billing": {
+			"refreshFailed": "Impossible d'actualiser les informations de facturation. Affichage des dernières données chargées.",
 			"invoicingMode": {
 				"title": "Facturation des participant·es",
 				"description": "Configure la façon dont les factures sont générées pour les achats de billets.",
@@ -10671,6 +10672,7 @@
 	"smallBiz.tiersChargingVatLinkSr": "(ouvre les réglages de billetterie de l'événement)",
 	"smallBiz.tiersChargingVatRsvpNote": "Cet événement est en RSVP uniquement, ses tarifs ne sont donc pas modifiables dans l'éditeur d'événement. Si tu supprimes le taux, ce tarif utilisera ton taux par défaut.",
 	"smallBiz.tiersChargingVatRemove": "Supprimer le taux de TVA de ce tarif",
+	"smallBiz.tiersChargingVatRemoving": "Suppression…",
 	"smallBiz.tiersChargingVatRemoveAria": "Supprimer le taux de TVA de ce tarif : {event} · {tier}",
 	"smallBiz.tiersChargingVatRemoveError": "Impossible de supprimer le taux de TVA. Réessaie.",
 	"smallBiz.tiersChargingVatRemoveHelp": "Si un motif d'exonération de TVA est requis, définis un motif par défaut dans les informations de facturation ci-dessus, puis réessaie.",

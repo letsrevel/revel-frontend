@@ -4306,6 +4306,7 @@
 			}
 		},
 		"billing": {
+			"refreshFailed": "Impossibile aggiornare le informazioni di fatturazione. Vengono mostrati gli ultimi dati caricati.",
 			"invoicingMode": {
 				"title": "Fatturazione Partecipanti",
 				"description": "Configura come vengono generate le fatture per gli acquisti di biglietti.",
@@ -10671,6 +10672,7 @@
 	"smallBiz.tiersChargingVatLinkSr": "(apre le impostazioni dei biglietti dell'evento)",
 	"smallBiz.tiersChargingVatRsvpNote": "Questo evento è solo RSVP, quindi i suoi livelli non si possono modificare nell'editor dell'evento. Rimuovendo l'aliquota, questo livello usa la tua aliquota predefinita.",
 	"smallBiz.tiersChargingVatRemove": "Rimuovi l'aliquota IVA di questo livello",
+	"smallBiz.tiersChargingVatRemoving": "Rimozione in corso…",
 	"smallBiz.tiersChargingVatRemoveAria": "Rimuovi l'aliquota IVA di questo livello: {event} · {tier}",
 	"smallBiz.tiersChargingVatRemoveError": "Impossibile rimuovere l'aliquota IVA. Riprova.",
 	"smallBiz.tiersChargingVatRemoveHelp": "Se è richiesto un motivo di esenzione IVA, imposta un motivo predefinito nelle informazioni di fatturazione qui sopra, poi riprova.",

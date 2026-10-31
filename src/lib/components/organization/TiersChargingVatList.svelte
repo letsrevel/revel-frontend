@@ -103,6 +103,7 @@
 				>
 					{#if pending[tier.tier_id]}
 						<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+						<span class="sr-only">{m['smallBiz.tiersChargingVatRemoving']()}</span>
 					{/if}
 					{m['smallBiz.tiersChargingVatRemove']()}
 				</Button>

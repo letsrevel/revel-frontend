@@ -194,11 +194,18 @@
 
 	/** After a tier's rate is removed: announce it and keep keyboard focus somewhere real. */
 	async function handleTierRemoved(text: string) {
-		removedAnnouncement = text;
+		// Clear first so an identical repeated message is still re-announced.
+		removedAnnouncement = '';
 		await tick();
+		removedAnnouncement = text;
+		// Focus fallback: tiers title, then the save button (only if enabled: focus() on a
+		// disabled button is a no-op), then the scheme checkbox, which is always rendered here.
+		const title = document.getElementById('small-business-tiers-title');
+		const save = document.getElementById('small-business-save') as HTMLButtonElement | null;
 		const target =
-			document.getElementById('small-business-tiers-title') ??
-			document.getElementById('small-business-save');
+			title ??
+			(save && !save.disabled ? save : null) ??
+			document.getElementById('small-business-enabled');
 		target?.focus();
 	}
 
@@ -216,9 +223,6 @@
 </script>
 
 <div class="space-y-4" data-testid="small-business-section">
-	<p class="sr-only" role="status" data-testid="small-business-removed-status">
-		{removedAnnouncement}
-	</p>
 	<p class="text-sm text-muted-foreground">{m['smallBiz.intro']()}</p>
 
 	{#if country}
@@ -391,7 +395,7 @@
 						<p
 							id="small-business-tiers-title"
 							tabindex="-1"
-							class="rounded-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+							class="rounded-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background forced-colors:focus-visible:outline forced-colors:focus-visible:outline-2"
 						>
 							{m['smallBiz.tiersChargingVatTitle']()}
 						</p>
@@ -457,4 +461,7 @@
 			</div>
 		</form>
 	{/if}
+	<p class="sr-only" role="status" data-testid="small-business-removed-status">
+		{removedAnnouncement}
+	</p>
 </div>

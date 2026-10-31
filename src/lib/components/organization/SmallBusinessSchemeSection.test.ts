@@ -290,6 +290,44 @@ describe('SmallBusinessSchemeSection', () => {
 			);
 		});
 
+		it('falls back to the scheme checkbox when the last tier is removed and save is disabled', async () => {
+			let release: () => void = () => undefined;
+			const client = new QueryClient({
+				defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
+			});
+			vi.spyOn(client, 'invalidateQueries').mockImplementation(
+				() => new Promise<void>((r) => (release = r))
+			);
+			const mk = (extra: Record<string, unknown>) => ({
+				client,
+				component: SmallBusinessSchemeSection,
+				componentProps: {
+					slug: 'acme',
+					accessToken: 'tok',
+					info: info({ vat_rate: '19.00', ...extra })
+				}
+			});
+			const view = render(QueryClientTestWrapper, {
+				props: mk({ tiers_charging_vat: [rsvpTier] })
+			});
+			const box = await declare();
+			// Positive default rate with the zero-rate confirmation unticked keeps save disabled.
+			expect(save()).toBeDisabled();
+			await userEvent.click(
+				within(box).getByRole('button', { name: /Remove this tier's VAT rate/ })
+			);
+			await waitFor(() => expect(updateTier).toHaveBeenCalled());
+			await view.rerender(mk({ tiers_charging_vat: [] }));
+			expect(document.getElementById('small-business-tiers-title')).toBeNull();
+			release();
+			await waitFor(() =>
+				expect(screen.getByTestId('small-business-removed-status')).toHaveTextContent(
+					'VAT rate removed for Open Night · Door.'
+				)
+			);
+			await waitFor(() => expect(document.getElementById('small-business-enabled')).toHaveFocus());
+		});
+
 		it('clears a stale error when the refetched list becomes empty', async () => {
 			updateTier.mockResolvedValue({ error: { detail: 'Server says no' } });
 			update.mockResolvedValue({ error: { detail: 'Some ticket tiers still charge VAT.' } });

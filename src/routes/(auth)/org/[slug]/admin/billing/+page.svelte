@@ -95,6 +95,8 @@
 
 	// SvelteKit reuses this page across orgs: drop unsaved drafts and rebuild the sync closures
 	// whenever the slug changes, so org A's draft never survives into org B.
+	// IMPORTANT: this effect MUST stay declared BEFORE the sync effects below. Effects run in
+	// creation order, so the reset has to happen before the syncs write org B's cached values.
 	$effect(() => {
 		void slug;
 		untrack(() => {
@@ -115,15 +117,16 @@
 	// ─── Set VAT ID Mutation ────────────────────────────────────────
 	const setVatIdMutation = browser
 		? createMutation(() => ({
-				mutationFn: async () => {
+				// The slug is captured at mutate time so a response landing after an org switch
+				// refreshes (and writes drafts for) the org it was sent for.
+				mutationFn: async ({ requestSlug, vatId }: { requestSlug: string; vatId: string }) => {
 					const response = await organizationadminvatSetVatId({
-						path: { slug },
+						path: { slug: requestSlug },
 						headers: { Authorization: `Bearer ${accessToken}` },
-						body: { vat_id: vatIdInput.trim().toUpperCase() }
+						body: { vat_id: vatId }
 					});
 					// Handle 503 (VIES unavailable) — saved but pending
 					if (response.response?.status === 503) {
-						queryClient.invalidateQueries({ queryKey: ['billing-info', slug] });
 						return { pending: true } as const;
 					}
 					if (response.error) {
@@ -133,21 +136,28 @@
 					if (!response.data) throw new Error(m['orgAdmin.billing.vatId.error']());
 					return { pending: false, data: response.data } as const;
 				},
-				onSuccess: (result) => {
+				onSuccess: (result, { requestSlug, vatId }) => {
+					queryClient.invalidateQueries({ queryKey: ['billing-info', requestSlug] });
 					// Layout org data (tier form's VAT context) must refresh too.
 					void invalidateAll();
 					if (result.pending) {
 						toast.info(m['orgAdmin.billing.vatId.savedPending']());
 					} else {
 						// Show the normalized value even when it equals the previous server value.
-						vatIdInput = result.data.vat_id ?? vatIdInput;
-						queryClient.invalidateQueries({ queryKey: ['billing-info', slug] });
+						// Keep edits made while validation was pending: only overwrite an unchanged draft.
+						if (
+							requestSlug === slug &&
+							vatIdInput.trim().toUpperCase() === vatId &&
+							result.data.vat_id
+						) {
+							vatIdInput = result.data.vat_id;
+						}
 						toast.success(m['orgAdmin.billing.vatId.saved']());
 					}
 				},
-				onError: (error: Error) => {
+				onError: (error: Error, { requestSlug }) => {
 					// The backend may have saved the ID unvalidated before refusing.
-					queryClient.invalidateQueries({ queryKey: ['billing-info', slug] });
+					queryClient.invalidateQueries({ queryKey: ['billing-info', requestSlug] });
 					toast.error(error.message);
 				}
 			}))
@@ -156,9 +166,9 @@
 	// ─── Delete VAT ID Mutation ─────────────────────────────────────
 	const deleteVatIdMutation = browser
 		? createMutation(() => ({
-				mutationFn: async () => {
+				mutationFn: async (requestSlug: string) => {
 					const response = await organizationadminvatDeleteVatId({
-						path: { slug },
+						path: { slug: requestSlug },
 						headers: { Authorization: `Bearer ${accessToken}` }
 					});
 					if (response.error) {
@@ -168,10 +178,12 @@
 						);
 					}
 				},
-				onSuccess: () => {
-					vatIdInput = '';
-					showRemoveDialog = false;
-					queryClient.invalidateQueries({ queryKey: ['billing-info', slug] });
+				onSuccess: (_data, requestSlug) => {
+					if (requestSlug === slug) {
+						vatIdInput = '';
+						showRemoveDialog = false;
+					}
+					queryClient.invalidateQueries({ queryKey: ['billing-info', requestSlug] });
 					void invalidateAll();
 					toast.success(m['orgAdmin.billing.vatId.removed']());
 				},
@@ -184,7 +196,7 @@
 	function handleValidateVatId(e: Event) {
 		e.preventDefault();
 		if (!vatIdInput.trim()) return;
-		setVatIdMutation?.mutate();
+		setVatIdMutation?.mutate({ requestSlug: slug, vatId: vatIdInput.trim().toUpperCase() });
 	}
 
 	// ─── Invoicing Mode ────────────────────────────────────────────
@@ -199,11 +211,11 @@
 
 	const setInvoicingModeMutation = browser
 		? createMutation(() => ({
-				mutationFn: async () => {
+				mutationFn: async ({ requestSlug, mode }: { requestSlug: string; mode: string }) => {
 					const response = await organizationadminvatSetInvoicingMode({
-						path: { slug },
+						path: { slug: requestSlug },
 						headers: { Authorization: `Bearer ${accessToken}` },
-						body: { mode: invoicingMode as 'none' | 'hybrid' | 'auto' }
+						body: { mode: mode as 'none' | 'hybrid' | 'auto' }
 					});
 					if (response.error) {
 						const msg = extractErrorMessage(
@@ -215,8 +227,8 @@
 					if (!response.data) throw new Error(m['orgAdmin.billing.invoicingMode.error']());
 					return response.data;
 				},
-				onSuccess: () => {
-					queryClient.invalidateQueries({ queryKey: ['billing-info', slug] });
+				onSuccess: (_data, { requestSlug }) => {
+					queryClient.invalidateQueries({ queryKey: ['billing-info', requestSlug] });
 					// The tier form reads the org's invoicing mode from the layout data.
 					void invalidateAll();
 					toast.success(m['orgAdmin.billing.invoicingMode.saved']());
@@ -329,6 +341,15 @@
 			<p class="text-sm">{extractErrorMessage(billingQuery.error)}</p>
 		</div>
 	{:else}
+		{#if billingQuery?.error && billingQuery?.data}
+			<p
+				class="rounded-md border border-border bg-muted p-3 text-sm text-foreground"
+				role="status"
+				data-testid="billing-refresh-failed"
+			>
+				{m['orgAdmin.billing.refreshFailed']()}
+			</p>
+		{/if}
 		<!-- ────────────────────────────────────────────────────────────
 		     Section 0: Attendee Invoicing Mode
 		     ──────────────────────────────────────────────────────────── -->
@@ -438,7 +459,8 @@
 
 			<div class="flex justify-end">
 				<Button
-					onclick={() => setInvoicingModeMutation?.mutate()}
+					onclick={() =>
+						setInvoicingModeMutation?.mutate({ requestSlug: slug, mode: invoicingMode })}
 					disabled={setInvoicingModeMutation?.isPending}
 				>
 					{#if setInvoicingModeMutation?.isPending}
@@ -464,7 +486,9 @@
 			</p>
 
 			{#if billingQuery?.data}
-				<OrgBillingInfoForm {slug} {accessToken} info={billingQuery.data} {hasVatId} />
+				{#key slug}
+					<OrgBillingInfoForm {slug} {accessToken} info={billingQuery.data} {hasVatId} />
+				{/key}
 			{/if}
 		</section>
 
@@ -550,7 +574,9 @@
 					<Receipt class="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
 					<SectionHeader title={m['smallBiz.title']()} class="flex-1" />
 				</div>
-				<SmallBusinessSchemeSection {slug} {accessToken} info={billingQuery.data} />
+				{#key slug}
+					<SmallBusinessSchemeSection {slug} {accessToken} info={billingQuery.data} />
+				{/key}
 			</section>
 		{/if}
 
@@ -575,7 +601,7 @@
 			>
 			<Button
 				variant="destructive"
-				onclick={() => deleteVatIdMutation?.mutate()}
+				onclick={() => deleteVatIdMutation?.mutate(slug)}
 				disabled={deleteVatIdMutation?.isPending}
 			>
 				{#if deleteVatIdMutation?.isPending}

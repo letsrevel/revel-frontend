@@ -4306,6 +4306,7 @@
 			}
 		},
 		"billing": {
+			"refreshFailed": "Abrechnungsdaten konnten nicht aktualisiert werden. Es werden die zuletzt geladenen Daten angezeigt.",
 			"invoicingMode": {
 				"title": "Teilnehmer*innen-Rechnungsstellung",
 				"description": "Konfigurieren Sie, wie Rechnungen für Ticketkäufe erstellt werden.",
@@ -10671,6 +10672,7 @@
 	"smallBiz.tiersChargingVatLinkSr": "(öffnet die Ticket-Einstellungen der Veranstaltung)",
 	"smallBiz.tiersChargingVatRsvpNote": "Diese Veranstaltung ist nur RSVP, daher lassen sich ihre Ticketstufen nicht im Event-Editor bearbeiten. Wenn du den Satz entfernst, verwendet diese Ticketstufe deinen Standardsatz.",
 	"smallBiz.tiersChargingVatRemove": "Steuersatz dieser Ticketstufe entfernen",
+	"smallBiz.tiersChargingVatRemoving": "Wird entfernt…",
 	"smallBiz.tiersChargingVatRemoveAria": "Steuersatz dieser Ticketstufe entfernen: {event} · {tier}",
 	"smallBiz.tiersChargingVatRemoveError": "Der Steuersatz konnte nicht entfernt werden. Bitte versuche es erneut.",
 	"smallBiz.tiersChargingVatRemoveHelp": "Falls ein Grund für die Steuerbefreiung erforderlich ist, lege oben in den Rechnungsangaben einen Standardgrund fest und versuche es dann erneut.",
