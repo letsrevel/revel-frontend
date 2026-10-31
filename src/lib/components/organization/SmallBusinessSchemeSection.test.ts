@@ -240,13 +240,21 @@ describe('SmallBusinessSchemeSection', () => {
 		});
 
 		it('clears the "Removing" status when two removals fail close together', async () => {
-			updateTier.mockResolvedValue({ error: { detail: 'Server says no' } });
+			// Gate both requests so the two removals really overlap: both fail before either settles.
+			let release: () => void = () => {};
+			const gate = new Promise<void>((r) => (release = r));
+			updateTier.mockImplementation(async () => {
+				await gate;
+				return { error: { detail: 'Server says no' } };
+			});
 			renderIt({
 				tiers_charging_vat: [rsvpTier, { ...rsvpTier, tier_id: 't4', tier_name: 'Early' }]
 			});
 			const box = await declare();
 			const buttons = within(box).getAllByRole('button', { name: /Remove this tier's VAT/ });
-			await Promise.all(buttons.map((b) => userEvent.click(b)));
+			for (const b of buttons) await userEvent.click(b);
+			await waitFor(() => expect(updateTier).toHaveBeenCalledTimes(2));
+			release();
 			await waitFor(() => expect(within(box).getAllByRole('alert')).toHaveLength(2));
 			await waitFor(() =>
 				expect(screen.getByTestId('small-business-removed-status')).toHaveTextContent(/^$/)

@@ -199,6 +199,19 @@
 		removedAnnouncement = text;
 	}
 
+	/**
+	 * Progress status from the tier list. An empty text only clears the "Removing..." message,
+	 * never a success announcement that landed in between.
+	 */
+	function handleTierStatus(text: string) {
+		if (text === '') {
+			if (removedAnnouncement === m['smallBiz.tiersChargingVatRemoving']())
+				removedAnnouncement = '';
+			return;
+		}
+		void announce(text);
+	}
+
 	/** After a tier's rate is removed: announce it and keep keyboard focus somewhere real. */
 	async function handleTierRemoved(text: string) {
 		await announce(text);
@@ -408,7 +421,7 @@
 							{accessToken}
 							tiers={tiersChargingVat}
 							onRemoved={handleTierRemoved}
-							onStatus={announce}
+							onStatus={handleTierStatus}
 						/>
 					</div>
 				{/if}
