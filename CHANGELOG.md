@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.29.1] - 2026-10-31
+
+### Changed
+- **Logging out takes a deliberate click.** Opening `/logout` directly, for example from an old bookmark or a link on another site, now shows a "Log out of {brand}?" page with Log out and Cancel buttons instead of signing you out on the spot. The user menu and the OAuth consent page's "Switch account" button work as before.
+
+### Fixed
+- Clicking Log out while the app was still refreshing your session in the background could leave you signed in. Logout now waits for that refresh to finish.
+
+### Security
+- Other sites can no longer sign you out by linking to `/logout`: only a form submitted from Revel itself logs you out.
+- External resource links and files, Stripe dashboard links, invoice downloads and poll voter links open in a new tab that can't redirect the Revel tab you came from.
+- The access token is no longer embedded in the page HTML on the questionnaire builder and create-organization pages.
+- White-label pages can no longer be slowed to a crawl by submitting a form with a huge run of whitespace.
+- The RSS feed escapes organizer text, so event names and descriptions can't inject markup or break the feed.
+- Invitation and referral cookies are now only sent over HTTPS.
+- Invitation tokens no longer appear in server logs.
+- The build pins the exact versions of the translation tooling plugins it downloads, instead of always fetching the latest release.
+
 ## [2.29.0] - 2026-10-30
 
 ### Added
