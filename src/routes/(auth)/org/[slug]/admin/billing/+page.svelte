@@ -22,6 +22,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { toast } from 'svelte-sonner';
+	import { createSyncOnChange } from '$lib/utils/sync-on-change';
 	import { extractErrorMessage } from '$lib/utils/errors';
 	import {
 		organizationadminvatGetBillingInfo,
@@ -75,7 +76,8 @@
 				},
 				enabled: !!accessToken,
 				// tiers_charging_vat changes elsewhere (event editor, other tabs); never serve it stale.
-				// Forms only re-sync from server data while not dirty, so refetching won't clobber edits.
+				// Each form field re-syncs only when its own server value changes (see
+				// createSyncOnChange), so a refetch that touches other fields won't clobber edits.
 				staleTime: 0,
 				refetchOnMount: 'always',
 				refetchOnWindowFocus: true
@@ -89,11 +91,10 @@
 	let vatIdInput = $state('');
 	let showRemoveDialog = $state(false);
 
-	// Sync VAT ID input with query data
+	// Sync VAT ID input only when the server's vat_id itself changes
+	const syncVatId = createSyncOnChange<string>((v) => (vatIdInput = v));
 	$effect(() => {
-		if (billingQuery?.data) {
-			vatIdInput = billingQuery.data.vat_id || '';
-		}
+		if (billingQuery?.data) syncVatId(billingQuery.data.vat_id || '');
 	});
 
 	// ─── Set VAT ID Mutation ────────────────────────────────────────
@@ -170,10 +171,9 @@
 	// ─── Invoicing Mode ────────────────────────────────────────────
 	let invoicingMode = $state('none');
 
+	const syncInvoicingMode = createSyncOnChange<string>((v) => (invoicingMode = v));
 	$effect(() => {
-		if (billingQuery?.data?.invoicing_mode) {
-			invoicingMode = billingQuery.data.invoicing_mode;
-		}
+		if (billingQuery?.data?.invoicing_mode) syncInvoicingMode(billingQuery.data.invoicing_mode);
 	});
 
 	const setInvoicingModeMutation = browser
@@ -299,7 +299,7 @@
 				aria-label={m['common.loading']()}
 			/>
 		</div>
-	{:else if billingQuery?.error}
+	{:else if billingQuery?.error && !billingQuery?.data}
 		<div
 			class="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive"
 			role="alert"

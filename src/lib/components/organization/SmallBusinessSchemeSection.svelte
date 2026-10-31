@@ -4,9 +4,9 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Input } from '$lib/components/ui/input';
+	import TiersChargingVatList from './TiersChargingVatList.svelte';
 	import { Label } from '$lib/components/ui/label';
 	import { AlertCircle, Check, Info, Loader2 } from '@lucide/svelte';
-	import { resolve } from '$app/paths';
 	import { invalidateAll } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
 	import { extractErrorMessage } from '$lib/utils/errors';
@@ -83,6 +83,13 @@
 	const declaring = $derived(enabled && current === 'none');
 	const tiersChargingVat = $derived(info.tiers_charging_vat ?? []);
 	const showTiers = $derived(declaring && tiersChargingVat.length > 0);
+	// A refusal caused by stale tier data is moot once the refetch empties the list.
+	let prevTierCount = 0;
+	$effect(() => {
+		const count = tiersChargingVat.length;
+		if (prevTierCount > 0 && count === 0) saveMutation.reset();
+		prevTierCount = count;
+	});
 	const blockers = $derived(
 		schemeBlockers({
 			scheme: formScheme,
@@ -367,46 +374,7 @@
 						<p id="small-business-tiers-title" class="font-medium">
 							{m['smallBiz.tiersChargingVatTitle']()}
 						</p>
-						<ul aria-labelledby="small-business-tiers-title" class="list-disc space-y-1 pl-5">
-							{#each tiersChargingVat as tier (tier.tier_id)}
-								<!-- RSVP-only events have no ticketing tab: ticketing must be turned on first.
-								     A missing flag (older backend) keeps the ticketing link. -->
-								{@const rsvpOnly = tier.event_requires_ticket === false}
-								<li>
-									<a
-										href="{resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', {
-											slug,
-											event_id: tier.event_id
-										})}{rsvpOnly ? '?tab=details' : '?tab=ticketing'}"
-										class="font-medium text-foreground underline underline-offset-2"
-										aria-describedby={rsvpOnly
-											? `small-business-tier-${tier.tier_id}-rsvp`
-											: undefined}
-									>
-										{m['smallBiz.tiersChargingVatItem']({
-											event: tier.event_name,
-											tier: tier.tier_name,
-											rate: formatRate(tier.vat_rate)
-										})}<span class="sr-only">
-											{rsvpOnly
-												? m['smallBiz.tiersChargingVatLinkSrRsvp']()
-												: m['smallBiz.tiersChargingVatLinkSr']()}</span
-										>
-									</a>
-									{#if rsvpOnly}
-										<p
-											id="small-business-tier-{tier.tier_id}-rsvp"
-											class="mt-0.5 text-xs text-muted-foreground"
-											data-testid="small-business-tier-rsvp-hint"
-										>
-											{m['smallBiz.tiersChargingVatRsvpHint']({
-												label: m['essentialsStep.requiresTicket']()
-											})}
-										</p>
-									{/if}
-								</li>
-							{/each}
-						</ul>
+						<TiersChargingVatList {slug} {accessToken} tiers={tiersChargingVat} />
 					</div>
 				{/if}
 

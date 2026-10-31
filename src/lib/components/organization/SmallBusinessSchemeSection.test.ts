@@ -5,10 +5,12 @@ import { QueryClient } from '@tanstack/svelte-query';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 
 const update = vi.hoisted(() => vi.fn());
+const updateTier = vi.hoisted(() => vi.fn());
 vi.mock('$lib/api/client', () => ({ client: {} }));
 vi.mock('$app/navigation', () => ({ invalidateAll: vi.fn() }));
 vi.mock('$lib/api/generated/sdk.gen', () => ({
-	organizationadminvatUpdateBillingInfo: update
+	organizationadminvatUpdateBillingInfo: update,
+	eventadminticketsUpdateTicketTier: updateTier
 }));
 
 import SmallBusinessSchemeSection from './SmallBusinessSchemeSection.svelte';
@@ -42,7 +44,10 @@ function renderIt(extra: Record<string, unknown> = {}) {
 
 const save = () => screen.getByRole('button', { name: /save small-business/i });
 
-beforeEach(() => update.mockReset().mockResolvedValue({ data: {} }));
+beforeEach(() => {
+	update.mockReset().mockResolvedValue({ data: {} });
+	updateTier.mockReset().mockResolvedValue({ data: {} });
+});
 
 describe('SmallBusinessSchemeSection', () => {
 	it('explains the scheme is unavailable outside DE/AT', () => {
@@ -144,35 +149,116 @@ describe('SmallBusinessSchemeSection', () => {
 			expect(links).toHaveLength(2);
 			expect(links[0]).toHaveAttribute('href', '/org/acme/admin/events/e1/edit?tab=ticketing');
 			expect(links[1]).toHaveAttribute('href', '/org/acme/admin/events/e2/edit?tab=ticketing');
-			expect(links[0]).toHaveTextContent('Summer Fest, General: 19 % VAT');
+			expect(links[0]).toHaveTextContent('Summer Fest · General: 19 % VAT');
 			expect(save()).toBeDisabled();
 			expect(screen.getByTestId('small-business-blockers')).toHaveTextContent(
 				/Set the ticket tiers listed above to 0 %/
 			);
 		});
 
-		it('guides RSVP-only events to turn on ticketing first', async () => {
-			renderIt({
-				tiers_charging_vat: [
-					{
-						event_id: 'e3',
-						event_name: 'Open Night',
-						tier_id: 't3',
-						tier_name: 'Door',
-						vat_rate: '19.00',
-						event_requires_ticket: false
-					}
-				]
-			});
+		const rsvpTier = {
+			event_id: 'e3',
+			event_name: 'Open Night',
+			tier_id: 't3',
+			tier_name: 'Door',
+			vat_rate: '19.00',
+			event_requires_ticket: false
+		};
+
+		async function declare() {
 			await userEvent.click(screen.getByRole('checkbox', { name: /§ 19 UStG/ }));
-			const box = screen.getByTestId('small-business-tiers-charging-vat');
-			const link = within(box).getByRole('link');
-			expect(link).toHaveAttribute('href', '/org/acme/admin/events/e3/edit?tab=details');
-			const hint = within(box).getByTestId('small-business-tier-rsvp-hint');
-			expect(hint).toHaveTextContent(/RSVP-only/);
-			expect(hint).toHaveTextContent(/Requires Ticket/);
-			expect(link).toHaveAttribute('aria-describedby', hint.id);
+			return screen.getByTestId('small-business-tiers-charging-vat');
+		}
+
+		it('RSVP-only items have no editor link, only a remove button', async () => {
+			renderIt({ tiers_charging_vat: [rsvpTier] });
+			const box = await declare();
+			expect(within(box).queryByRole('link')).not.toBeInTheDocument();
+			expect(box).toHaveTextContent('Open Night · Door: 19 % VAT');
+			expect(box).toHaveTextContent(/RSVP-only/);
+			expect(
+				within(box).getByRole('button', { name: /Remove this tier's VAT rate.*Open Night.*Door/ })
+			).toBeInTheDocument();
 			expect(save()).toBeDisabled();
+		});
+
+		it('removes the rate, invalidates billing info, and the box disappears on refetch', async () => {
+			const client = renderIt({ tiers_charging_vat: [rsvpTier] });
+			const spy = vi.spyOn(client, 'invalidateQueries');
+			const box = await declare();
+			await userEvent.click(within(box).getByRole('button', { name: /Remove this tier's VAT/ }));
+			await waitFor(() => expect(updateTier).toHaveBeenCalled());
+			expect(updateTier.mock.calls[0][0]).toMatchObject({
+				path: { event_id: 'e3', tier_id: 't3' },
+				headers: { Authorization: 'Bearer tok' },
+				body: { vat_rate: null }
+			});
+			await waitFor(() => expect(spy).toHaveBeenCalledWith({ queryKey: ['billing-info', 'acme'] }));
+		});
+
+		it('round trip: refetched info without tiers removes the box and enables save', async () => {
+			const client = new QueryClient({
+				defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
+			});
+			const mk = (extra: Record<string, unknown>) => ({
+				client,
+				component: SmallBusinessSchemeSection,
+				componentProps: { slug: 'acme', accessToken: 'tok', info: info(extra) }
+			});
+			const view = render(QueryClientTestWrapper, {
+				props: mk({ tiers_charging_vat: [rsvpTier] })
+			});
+			const box = await declare();
+			await userEvent.click(within(box).getByRole('button', { name: /Remove this tier's VAT/ }));
+			await waitFor(() => expect(updateTier).toHaveBeenCalled());
+			await view.rerender(mk({ tiers_charging_vat: [] }));
+			await waitFor(() =>
+				expect(screen.queryByTestId('small-business-tiers-charging-vat')).not.toBeInTheDocument()
+			);
+			expect(screen.queryByTestId('small-business-blockers')).not.toBeInTheDocument();
+			expect(save()).toBeEnabled();
+		});
+
+		it('shows the server error inline for that tier and does not invalidate', async () => {
+			updateTier.mockResolvedValue({
+				error: { detail: 'Server says no' },
+				response: { status: 422 }
+			});
+			const client = renderIt({
+				tiers_charging_vat: [rsvpTier, { ...rsvpTier, tier_id: 't4', tier_name: 'Early' }]
+			});
+			const spy = vi.spyOn(client, 'invalidateQueries');
+			const box = await declare();
+			await userEvent.click(
+				within(box).getByRole('button', { name: /Remove this tier's VAT.*Door/ })
+			);
+			const alert = await within(box).findByRole('alert');
+			expect(alert).toHaveTextContent('Server says no');
+			expect(within(box).getAllByRole('alert')).toHaveLength(1);
+			expect(alert.closest('li')).toHaveTextContent('Door');
+			expect(spy).not.toHaveBeenCalled();
+		});
+
+		it('clears a stale error when the refetched list becomes empty', async () => {
+			updateTier.mockResolvedValue({ error: { detail: 'Server says no' } });
+			update.mockResolvedValue({ error: { detail: 'Some ticket tiers still charge VAT.' } });
+			const client = new QueryClient({
+				defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
+			});
+			const mk = (extra: Record<string, unknown>) => ({
+				client,
+				component: SmallBusinessSchemeSection,
+				componentProps: { slug: 'acme', accessToken: 'tok', info: info(extra) }
+			});
+			const view = render(QueryClientTestWrapper, { props: mk({ tiers_charging_vat: [] }) });
+			await userEvent.click(screen.getByRole('checkbox', { name: /§ 19 UStG/ }));
+			await userEvent.click(save());
+			await screen.findByTestId('small-business-error');
+			await view.rerender(mk({ tiers_charging_vat: [rsvpTier] }));
+			await view.rerender(mk({ tiers_charging_vat: [] }));
+			await waitFor(() =>
+				expect(screen.queryByTestId('small-business-error')).not.toBeInTheDocument()
+			);
 		});
 
 		it('shows nothing for an empty list', async () => {
