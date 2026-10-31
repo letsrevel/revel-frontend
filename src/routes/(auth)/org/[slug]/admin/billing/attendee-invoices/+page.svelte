@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { openInNewTab } from '$lib/utils/open-external';
 	import { resolve } from '$app/paths';
 	import { formatMoney } from '$lib/utils/format';
 	import * as m from '$lib/paraglide/messages.js';
@@ -215,7 +216,7 @@
 					return response.data;
 				},
 				onSuccess: (data) => {
-					window.open(getBackendUrl(data.download_url), '_blank');
+					openInNewTab(getBackendUrl(data.download_url));
 				},
 				onError: (error: Error) => toast.error(error.message)
 			}))

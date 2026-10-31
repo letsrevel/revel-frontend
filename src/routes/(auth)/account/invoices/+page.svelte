@@ -107,6 +107,7 @@
 	 */
 	async function openSignedPdf(id: string, fetchUrl: () => Promise<DownloadResult>) {
 		downloadingId = id;
+		// eslint-disable-next-line no-restricted-properties -- pre-opened tab needs the return value
 		const tab = window.open('', '_blank');
 		if (tab) tab.opener = null;
 		try {

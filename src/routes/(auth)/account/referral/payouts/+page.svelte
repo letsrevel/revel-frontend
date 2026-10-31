@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { openInNewTab } from '$lib/utils/open-external';
 	import * as m from '$lib/paraglide/messages.js';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
@@ -90,7 +91,7 @@
 			});
 			if (response.error) throw new Error('Failed to get download URL');
 			if (response.data?.download_url) {
-				window.open(getBackendUrl(response.data.download_url), '_blank');
+				openInNewTab(getBackendUrl(response.data.download_url));
 			}
 		} finally {
 			isDownloading = false;

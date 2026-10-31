@@ -85,6 +85,7 @@
 			// Do NOT pass the 'noopener' feature: it makes window.open return
 			// null even on success, which would make this fallback always fire
 			// (double navigation). Null the opener on the handle instead.
+			// eslint-disable-next-line no-restricted-properties -- needs the return value (see above)
 			const opened = window.open(saveUrl, '_blank');
 			if (opened) {
 				opened.opener = null;

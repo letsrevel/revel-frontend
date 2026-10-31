@@ -124,3 +124,16 @@ describe('create-org attribution (#1002)', () => {
 		});
 	});
 });
+
+describe('create-org load data', () => {
+	it('returns only the email, never the access token', async () => {
+		const result = await load({
+			locals: { user: { email: 'a@b.c', accessToken: 'secret-token' } },
+			parent: async () => ({ features: { organization_creation: true } }),
+			url: new URL('http://localhost:5173/create-org')
+		} as unknown as Parameters<typeof load>[0]);
+
+		expect(result).toEqual({ user: { email: 'a@b.c' } });
+		expect(JSON.stringify(result)).not.toContain('secret-token');
+	});
+});
