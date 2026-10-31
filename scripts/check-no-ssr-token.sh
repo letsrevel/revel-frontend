@@ -8,10 +8,16 @@
 # `locals.user.accessToken` / `cookies.get('access_token')` directly and must
 # not return it.
 #
-# This check fails if either pattern reappears:
+# This check fails if any pattern reappears:
 #   1. Client components reading `data.accessToken` / `data.auth?.accessToken`.
 #   2. A load function (+page.server.ts / +layout.server.ts) returning the
 #      token in its data object.
+#   3. Client components reading `data.user.accessToken` (also `?.` / `!.`).
+#      `locals.user` carries the token, so a page that reads it from `data`
+#      is relying on a load function that leaks it.
+#   4. A load function returning the WHOLE `locals.user` (`user: locals.user`)
+#      — it carries `accessToken`, so it serializes the token without ever
+#      naming it, which pattern 2 cannot see. Return picked fields instead.
 #
 # See: revel-frontend#387, commit 859ec68.
 
@@ -43,6 +49,24 @@ server_hits=$(grep -rnE "^[[:space:]]*accessToken([,:][[:space:]]|$)" src \
 if [ -n "$server_hits" ]; then
 	echo "❌ Load functions must not return the access token (it ends up in SSR HTML):"
 	echo "$server_hits"
+	FAILED=1
+fi
+
+# 3. Client-side reads of `data.user.accessToken`.
+user_hits=$(grep -rnE "data\.user[?!]?\.accessToken" src \
+	--include="*.svelte" --include="*.ts" --exclude-dir=generated || true)
+if [ -n "$user_hits" ]; then
+	echo "❌ Client components must read the token from authStore, not data.user:"
+	echo "$user_hits"
+	FAILED=1
+fi
+
+# 4. Load functions returning the whole `locals.user` (token included).
+whole_user_hits=$(grep -rnE ":[[:space:]]*locals\.user[[:space:]]*,?$" src \
+	--include="+page.server.ts" --include="+layout.server.ts" || true)
+if [ -n "$whole_user_hits" ]; then
+	echo "❌ Load functions must not return all of locals.user (it carries the access token):"
+	echo "$whole_user_hits"
 	FAILED=1
 fi
 
