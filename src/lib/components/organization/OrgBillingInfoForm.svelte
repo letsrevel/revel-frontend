@@ -48,6 +48,8 @@
 	let vatExemptionReason = $state('');
 	let address = $state<PostalAddress>(emptyPostalAddress());
 	let billingFormDirty = $state(false);
+	// The rate is tracked apart from the rest of the form: the scheme section saves it too.
+	let vatRateEdited = $state(false);
 	// Snapshot of the address as last synced from the server, to detect edits.
 	let syncedAddress = JSON.stringify(emptyPostalAddress());
 
@@ -65,9 +67,10 @@
 		}
 	});
 
-	// While a scheme fixes the rate, always show the server value, even in a dirty form.
+	// Follow the server rate, even in a dirty form, while a scheme fixes it or the user has not
+	// typed one: the scheme section can change it (declaring sets 0, removing may set a new one).
 	$effect(() => {
-		if (schemeOn) vatRate = info.vat_rate == null ? '' : String(info.vat_rate);
+		if (schemeOn || !vatRateEdited) vatRate = info.vat_rate == null ? '' : String(info.vat_rate);
 	});
 
 	$effect(() => {
@@ -121,6 +124,7 @@
 		},
 		onSuccess: () => {
 			billingFormDirty = false;
+			vatRateEdited = false;
 			queryClient.invalidateQueries({ queryKey: ['billing-info', slug] });
 			invalidateAll();
 			toast.success(m['orgAdmin.billing.billingInfo.saved']());
@@ -198,7 +202,10 @@
 				max="100"
 				placeholder={m['orgAdmin.billing.billingInfo.vatRatePlaceholder']()}
 				bind:value={vatRate}
-				oninput={markBillingDirty}
+				oninput={() => {
+					vatRateEdited = true;
+					markBillingDirty();
+				}}
 				disabled={schemeOn}
 				aria-describedby="billing-vat-rate-help"
 			/>

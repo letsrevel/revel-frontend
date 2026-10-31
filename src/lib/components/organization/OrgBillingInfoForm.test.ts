@@ -117,6 +117,30 @@ describe('OrgBillingInfoForm', () => {
 		expect(body).not.toHaveProperty('vat_rate');
 	});
 
+	it('keeps a rate set by removing the scheme on a dirty form', async () => {
+		const props = (extra: Record<string, unknown>) => ({
+			client: new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+			component: OrgBillingInfoForm,
+			componentProps: { slug: 'acme', accessToken: 'tok', hasVatId: false, info: info(extra) }
+		});
+		const first = props({ vat_rate: '0.00', small_business_scheme: 'de_19' });
+		const { rerender } = render(QueryClientTestWrapper, { props: first });
+		await userEvent.type(screen.getByLabelText(/Street and number/i), 'Main 1');
+		await rerender({
+			...first,
+			componentProps: {
+				...first.componentProps,
+				info: info({ vat_rate: '19.50', small_business_scheme: 'none' })
+			}
+		});
+		expect(screen.getByLabelText(/VAT rate/i)).toHaveValue(19.5);
+		await userEvent.click(screen.getByRole('button', { name: /save/i }));
+		await waitFor(() => expect(update).toHaveBeenCalled());
+		const body = update.mock.calls[0][0].body;
+		expect(body.billing_address_line1).toBe('Main 1');
+		expect(body).not.toHaveProperty('vat_rate');
+	});
+
 	it('clears the legacy text when a saved structured address is blanked', async () => {
 		renderIt({
 			billing_address: 'Main St 1\nBerlin',
