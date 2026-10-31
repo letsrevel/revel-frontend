@@ -51,8 +51,14 @@
 		},
 		// No toast: the inline role="alert" under the item is the feedback; a local handler
 		// also replaces the global toast.
-		// Clear the "Removing..." status so it doesn't linger next to the inline error.
-		onError: () => onStatus(''),
+		// Clear the "Removing..." status so it doesn't linger next to the inline error, unless
+		// another tier's removal is still running (its status must stay).
+		onError: (_error, tier) => {
+			const othersPending = Object.entries(pending).some(
+				([id, isPending]) => isPending && id !== tier.tier_id
+			);
+			if (!othersPending) onStatus('');
+		},
 		// Returning the refetch promise keeps the mutation (and the button) pending until the
 		// list reflects the change.
 		onSuccess: async (_data, tier) => {

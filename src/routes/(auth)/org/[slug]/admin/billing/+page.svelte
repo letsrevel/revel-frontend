@@ -218,8 +218,13 @@
 
 	// ─── Invoicing Mode ────────────────────────────────────────────
 
+	// `satisfies` makes a new backend mode a type error here instead of a silently dropped pick.
+	const INVOICING_MODES = { none: true, hybrid: true, auto: true } satisfies Record<
+		InvoicingMode,
+		true
+	>;
 	function isInvoicingMode(value: string): value is InvoicingMode {
-		return value === 'none' || value === 'hybrid' || value === 'auto';
+		return Object.hasOwn(INVOICING_MODES, value);
 	}
 
 	const syncInvoicingMode = $derived.by(() => {
@@ -261,10 +266,13 @@
 				// No toast: the inline role="alert" under the radios is the feedback,
 				// and a toast on top would announce the same refusal twice. The local
 				// handler also stands in for the global "Action failed" toast.
-				// The radios fall back to the saved mode, so they never show a refused pick as current.
-				onError: (_error: Error, { requestSlug }) => {
+				// The radios fall back to the saved mode, so they never show a refused pick as current,
+				// but only while the refused pick is still selected: a newer pick made while the
+				// request was in flight is kept.
+				onError: (_error: Error, { requestSlug, mode }) => {
+					queryClient.invalidateQueries({ queryKey: ['billing-info', requestSlug] });
 					const saved = billingQuery?.data?.invoicing_mode;
-					if (requestSlug === slug && saved) invoicingMode = saved;
+					if (requestSlug === slug && invoicingMode === mode && saved) invoicingMode = saved;
 				}
 			}))
 		: null;
