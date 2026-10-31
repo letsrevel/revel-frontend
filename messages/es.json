@@ -10669,6 +10669,8 @@
 	"smallBiz.tiersChargingVatTitle": "Estas tarifas de entrada todavía cobran IVA. Ponlas al 0 % (o borra su tipo propio) antes de declarar el régimen.",
 	"smallBiz.tiersChargingVatItem": "{event}, {tier}: {rate} % de IVA",
 	"smallBiz.tiersChargingVatLinkSr": "(abre los ajustes de entradas del evento)",
+	"smallBiz.tiersChargingVatLinkSrRsvp": "(abre los detalles del evento)",
+	"smallBiz.tiersChargingVatRsvpHint": "Este evento es solo RSVP, así que sus tarifas aún no se pueden editar. Activa «{label}» en sus detalles y guarda; luego pon esta tarifa al 0 %.",
 	"smallBiz.noteLabel": "Nota impresa en tus facturas",
 	"smallBiz.blockersTitle": "Corrige esto antes de guardar:",
 	"smallBiz.blocker.wrong_country": "El régimen no coincide con tu país de establecimiento.",

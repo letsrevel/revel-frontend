@@ -10669,6 +10669,8 @@
 	"smallBiz.tiersChargingVatTitle": "These ticket tiers still charge VAT. Set them to 0 % (or clear their own rate) before declaring the scheme.",
 	"smallBiz.tiersChargingVatItem": "{event}, {tier}: {rate} % VAT",
 	"smallBiz.tiersChargingVatLinkSr": "(opens the event's ticket settings)",
+	"smallBiz.tiersChargingVatLinkSrRsvp": "(opens the event's details)",
+	"smallBiz.tiersChargingVatRsvpHint": "This event is RSVP-only, so its tiers aren't editable yet. Turn on “{label}” in its details and save, then set this tier to 0 %.",
 	"smallBiz.noteLabel": "Note printed on your invoices",
 	"smallBiz.blockersTitle": "Fix these before saving:",
 	"smallBiz.blocker.wrong_country": "The scheme does not match your country of establishment.",

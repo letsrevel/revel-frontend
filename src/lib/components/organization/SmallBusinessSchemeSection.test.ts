@@ -121,13 +121,15 @@ describe('SmallBusinessSchemeSection', () => {
 				event_name: 'Summer Fest',
 				tier_id: 't1',
 				tier_name: 'General',
-				vat_rate: '19.00'
+				vat_rate: '19.00',
+				event_requires_ticket: true
 			},
 			{
 				event_id: 'e2',
 				event_name: 'Autumn Gig',
 				tier_id: 't2',
 				tier_name: 'VIP',
+				// No flag (older backend): keeps the ticketing link.
 				vat_rate: '7.00'
 			}
 		];
@@ -147,6 +149,30 @@ describe('SmallBusinessSchemeSection', () => {
 			expect(screen.getByTestId('small-business-blockers')).toHaveTextContent(
 				/Set the ticket tiers listed above to 0 %/
 			);
+		});
+
+		it('guides RSVP-only events to turn on ticketing first', async () => {
+			renderIt({
+				tiers_charging_vat: [
+					{
+						event_id: 'e3',
+						event_name: 'Open Night',
+						tier_id: 't3',
+						tier_name: 'Door',
+						vat_rate: '19.00',
+						event_requires_ticket: false
+					}
+				]
+			});
+			await userEvent.click(screen.getByRole('checkbox', { name: /§ 19 UStG/ }));
+			const box = screen.getByTestId('small-business-tiers-charging-vat');
+			const link = within(box).getByRole('link');
+			expect(link).toHaveAttribute('href', '/org/acme/admin/events/e3/edit?tab=details');
+			const hint = within(box).getByTestId('small-business-tier-rsvp-hint');
+			expect(hint).toHaveTextContent(/RSVP-only/);
+			expect(hint).toHaveTextContent(/Requires Ticket/);
+			expect(link).toHaveAttribute('aria-describedby', hint.id);
+			expect(save()).toBeDisabled();
 		});
 
 		it('shows nothing for an empty list', async () => {

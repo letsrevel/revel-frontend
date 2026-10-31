@@ -10669,6 +10669,8 @@
 	"smallBiz.tiersChargingVatTitle": "Ces tarifs de billet facturent encore la TVA. Mets-les à 0 % (ou supprime leur taux propre) avant de déclarer le régime.",
 	"smallBiz.tiersChargingVatItem": "{event}, {tier} : {rate} % de TVA",
 	"smallBiz.tiersChargingVatLinkSr": "(ouvre les réglages de billetterie de l'événement)",
+	"smallBiz.tiersChargingVatLinkSrRsvp": "(ouvre les détails de l'événement)",
+	"smallBiz.tiersChargingVatRsvpHint": "Cet événement est en RSVP uniquement, ses tarifs ne sont donc pas encore modifiables. Active « {label} » dans ses détails et enregistre, puis mets ce tarif à 0 %.",
 	"smallBiz.noteLabel": "Mention imprimée sur tes factures",
 	"smallBiz.blockersTitle": "Corrige ces points avant d'enregistrer :",
 	"smallBiz.blocker.wrong_country": "Le régime ne correspond pas à ton pays d'établissement.",

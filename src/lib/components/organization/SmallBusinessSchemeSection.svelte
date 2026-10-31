@@ -369,20 +369,41 @@
 						</p>
 						<ul aria-labelledby="small-business-tiers-title" class="list-disc space-y-1 pl-5">
 							{#each tiersChargingVat as tier (tier.tier_id)}
+								<!-- RSVP-only events have no ticketing tab: ticketing must be turned on first.
+								     A missing flag (older backend) keeps the ticketing link. -->
+								{@const rsvpOnly = tier.event_requires_ticket === false}
 								<li>
 									<a
 										href="{resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', {
 											slug,
 											event_id: tier.event_id
-										})}?tab=ticketing"
+										})}{rsvpOnly ? '?tab=details' : '?tab=ticketing'}"
 										class="font-medium text-foreground underline underline-offset-2"
+										aria-describedby={rsvpOnly
+											? `small-business-tier-${tier.tier_id}-rsvp`
+											: undefined}
 									>
 										{m['smallBiz.tiersChargingVatItem']({
 											event: tier.event_name,
 											tier: tier.tier_name,
 											rate: formatRate(tier.vat_rate)
-										})}<span class="sr-only"> {m['smallBiz.tiersChargingVatLinkSr']()}</span>
+										})}<span class="sr-only">
+											{rsvpOnly
+												? m['smallBiz.tiersChargingVatLinkSrRsvp']()
+												: m['smallBiz.tiersChargingVatLinkSr']()}</span
+										>
 									</a>
+									{#if rsvpOnly}
+										<p
+											id="small-business-tier-{tier.tier_id}-rsvp"
+											class="mt-0.5 text-xs text-muted-foreground"
+											data-testid="small-business-tier-rsvp-hint"
+										>
+											{m['smallBiz.tiersChargingVatRsvpHint']({
+												label: m['essentialsStep.requiresTicket']()
+											})}
+										</p>
+									{/if}
 								</li>
 							{/each}
 						</ul>

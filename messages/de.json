@@ -10669,6 +10669,8 @@
 	"smallBiz.tiersChargingVatTitle": "Diese Ticketstufen berechnen noch Umsatzsteuer. Setze sie auf 0 % (oder entferne ihren eigenen Satz), bevor du die Regelung hinterlegst.",
 	"smallBiz.tiersChargingVatItem": "{event}, {tier}: {rate} % MwSt",
 	"smallBiz.tiersChargingVatLinkSr": "(öffnet die Ticket-Einstellungen der Veranstaltung)",
+	"smallBiz.tiersChargingVatLinkSrRsvp": "(öffnet die Details der Veranstaltung)",
+	"smallBiz.tiersChargingVatRsvpHint": "Diese Veranstaltung ist nur RSVP, ihre Ticketstufen sind daher noch nicht bearbeitbar. Aktiviere „{label}“ in den Details und speichere, dann setze diese Ticketstufe auf 0 %.",
 	"smallBiz.noteLabel": "Hinweis auf deinen Rechnungen",
 	"smallBiz.blockersTitle": "Behebe Folgendes vor dem Speichern:",
 	"smallBiz.blocker.wrong_country": "Die Regelung passt nicht zu deinem Niederlassungsland.",

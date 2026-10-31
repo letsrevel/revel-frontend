@@ -10669,6 +10669,8 @@
 	"smallBiz.tiersChargingVatTitle": "Estes níveis de bilhete ainda cobram IVA. Define-os para 0 % (ou remove a taxa própria) antes de declarares o regime.",
 	"smallBiz.tiersChargingVatItem": "{event}, {tier}: {rate} % de IVA",
 	"smallBiz.tiersChargingVatLinkSr": "(abre as definições de bilhetes do evento)",
+	"smallBiz.tiersChargingVatLinkSrRsvp": "(abre os detalhes do evento)",
+	"smallBiz.tiersChargingVatRsvpHint": "Este evento é apenas RSVP, por isso os seus níveis ainda não podem ser editados. Ativa “{label}” nos detalhes e guarda; depois define este nível para 0 %.",
 	"smallBiz.noteLabel": "Nota impressa nas tuas faturas",
 	"smallBiz.blockersTitle": "Corrige isto antes de guardar:",
 	"smallBiz.blocker.wrong_country": "O regime não corresponde ao teu país de estabelecimento.",
