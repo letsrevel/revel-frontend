@@ -11,6 +11,7 @@
 	import { toast } from 'svelte-sonner';
 	import { extractErrorMessage } from '$lib/utils/errors';
 	import { countryName } from '$lib/utils/compliance';
+	import { normalizeDecimalInput } from '$lib/components/events/admin/tier-form-helpers';
 	import { organizationadminvatUpdateBillingInfo } from '$lib/api/generated/sdk.gen';
 	import type {
 		OrganizationBillingInfoSchema,
@@ -57,6 +58,7 @@
 	let enabled = $state(false);
 	let taxNumber = $state('');
 	let confirmZero = $state(false);
+	let newRate = $state('');
 	let touched = $state(false);
 	let dirty = $state(false);
 
@@ -66,12 +68,15 @@
 			enabled = current !== 'none';
 			taxNumber = info.tax_registration_number ?? '';
 			confirmZero = false;
+			newRate = '';
 			touched = false;
 		}
 	});
 
 	/** The scheme the form would save. */
-	const formScheme = $derived<SmallBusinessScheme>(enabled ? (available ?? current) : 'none');
+	const formScheme = $derived<SmallBusinessScheme>(
+		enabled ? (mismatched ? current : (available ?? current)) : 'none'
+	);
 	const formCountry = $derived(schemeCountry(formScheme));
 	const needsZeroRate = $derived(enabled && vatRateIsPositive(info.vat_rate));
 	const blockers = $derived(
@@ -89,7 +94,20 @@
 			(enabled && taxNumber.trim() !== (info.tax_registration_number ?? '').trim())
 	);
 	const declaring = $derived(enabled && current === 'none');
-	const taxNumberRequired = $derived(formScheme === 'at_6_1_27');
+	const taxNumberRequired = $derived(formScheme === 'at_6_1_27' && info.vat_id_validated !== true);
+	/** Removing an existing scheme: the 0 % it fixed can be replaced by a new default rate. */
+	const removing = $derived(current !== 'none' && !enabled);
+	const newRateTrimmed = $derived(newRate.trim());
+	const newRateNumber = $derived(newRateTrimmed === '' ? null : Number(newRateTrimmed));
+	const newRateInvalid = $derived(
+		removing &&
+			newRateTrimmed !== '' &&
+			(newRateNumber === null ||
+				!Number.isFinite(newRateNumber) ||
+				newRateNumber < 0 ||
+				newRateNumber > 100)
+	);
+	const newRateError = $derived(newRateInvalid ? m['smallBiz.newRateInvalid']() : '');
 	const taxNumberExample = $derived(TAX_NUMBER_EXAMPLES[formCountry] ?? '');
 	const taxNumberError = $derived.by(() => {
 		if (!touched || !enabled) return '';
@@ -108,7 +126,7 @@
 			.join(' ')
 	);
 	const toggleLabel = $derived.by(() => {
-		const scheme = available ?? current;
+		const scheme = mismatched ? current : (available ?? current);
 		if (scheme === 'at_6_1_27') return m['smallBiz.toggleAt']();
 		if (scheme === 'de_19') return m['smallBiz.toggleDe']();
 		return m['smallBiz.toggleRemove']();
@@ -128,6 +146,8 @@
 			if (enabled) {
 				body.tax_registration_number = taxNumber.trim();
 				if (needsZeroRate) body.vat_rate = 0;
+			} else if (removing && newRateNumber !== null) {
+				body.vat_rate = newRateNumber;
 			}
 			const response = await organizationadminvatUpdateBillingInfo({
 				path: { slug },
@@ -160,7 +180,7 @@
 	function handleSubmit(e: Event) {
 		e.preventDefault();
 		touched = true;
-		if (blockers.length > 0 || !isDirty || saveMutation.isPending) return;
+		if (blockers.length > 0 || newRateInvalid || !isDirty || saveMutation.isPending) return;
 		saveMutation.mutate();
 	}
 </script>
@@ -213,6 +233,39 @@
 					{/if}
 				</div>
 			</div>
+
+			{#if removing}
+				<div class="space-y-2">
+					<Label for="small-business-new-rate">
+						{m['smallBiz.newRateLabel']()}
+						<span class="font-normal text-muted-foreground">{m['smallBiz.optional']()}</span>
+					</Label>
+					<Input
+						id="small-business-new-rate"
+						type="text"
+						inputmode="decimal"
+						autocomplete="off"
+						value={newRate}
+						oninput={(e) => {
+							newRate = normalizeDecimalInput(e.currentTarget.value);
+							edited();
+						}}
+						aria-invalid={newRateError ? 'true' : undefined}
+						aria-describedby={newRateError
+							? 'small-business-new-rate-hint small-business-new-rate-error'
+							: 'small-business-new-rate-hint'}
+						disabled={saveMutation.isPending}
+					/>
+					<p id="small-business-new-rate-hint" class="text-xs text-muted-foreground">
+						{m['smallBiz.newRateHint']()}
+					</p>
+					{#if newRateError}
+						<p id="small-business-new-rate-error" class="text-sm text-destructive">
+							{newRateError}
+						</p>
+					{/if}
+				</div>
+			{/if}
 
 			{#if enabled && available}
 				<div class="space-y-2">
@@ -344,7 +397,10 @@
 			{/if}
 
 			<div class="flex justify-end">
-				<Button type="submit" disabled={saveMutation.isPending || !isDirty || blockers.length > 0}>
+				<Button
+					type="submit"
+					disabled={saveMutation.isPending || !isDirty || blockers.length > 0 || newRateInvalid}
+				>
 					{#if saveMutation.isPending}
 						<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
 						{m['smallBiz.saving']()}

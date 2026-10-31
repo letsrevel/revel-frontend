@@ -78,7 +78,12 @@ describe('SmallBusinessSchemeSection', () => {
 	});
 
 	it('requires and validates the AT tax number, flagging errors on blur', async () => {
-		renderIt({ vat_country_code: 'AT', vat_id: '', compliance: { country: 'AT' } });
+		renderIt({
+			vat_country_code: 'AT',
+			vat_id: '',
+			vat_id_validated: false,
+			compliance: { country: 'AT' }
+		});
 		await userEvent.click(screen.getByRole('checkbox', { name: /§ 6 Abs\. 1 Z 27/ }));
 		expect(save()).toBeDisabled();
 		const input = screen.getByLabelText(/Steuernummer/);
@@ -131,6 +136,54 @@ describe('SmallBusinessSchemeSection', () => {
 		expect(save()).toBeDisabled();
 		await userEvent.click(screen.getByRole('checkbox'));
 		expect(save()).toBeEnabled();
+	});
+
+	it('does not require the AT tax number when the VAT ID is validated', async () => {
+		renderIt({
+			vat_country_code: 'AT',
+			vat_id: 'ATU12345678',
+			vat_id_validated: true,
+			compliance: { country: 'AT' }
+		});
+		await userEvent.click(screen.getByRole('checkbox', { name: /§ 6 Abs\. 1 Z 27/ }));
+		expect(screen.getByText('(optional)')).toBeInTheDocument();
+		expect(save()).toBeEnabled();
+		await userEvent.type(screen.getByLabelText(/Steuernummer/), '123');
+		expect(save()).toBeDisabled();
+	});
+
+	it('offers a new default VAT rate when removing and sends it with scheme none', async () => {
+		renderIt({ small_business_scheme: 'de_19' });
+		expect(screen.queryByLabelText(/New default VAT rate/)).not.toBeInTheDocument();
+		await userEvent.click(screen.getByRole('checkbox', { name: /§ 19 UStG/ }));
+		const rate = screen.getByLabelText(/New default VAT rate/);
+		await userEvent.type(rate, '150');
+		expect(save()).toBeDisabled();
+		await userEvent.clear(rate);
+		await userEvent.type(rate, '19,5');
+		expect(rate).toHaveValue('19.5');
+		await userEvent.click(save());
+		await waitFor(() => expect(update).toHaveBeenCalled());
+		expect(update.mock.calls[0][0].body).toEqual({
+			small_business_scheme: 'none',
+			vat_rate: 19.5
+		});
+	});
+
+	it('starts clean for a mismatched legacy scheme and only allows removing it', async () => {
+		renderIt({
+			small_business_scheme: 'de_19',
+			vat_country_code: 'AT',
+			vat_id: '',
+			compliance: { country: 'AT' }
+		});
+		const box = screen.getByRole('checkbox', { name: /§ 19 UStG/ });
+		expect(box).toBeChecked();
+		expect(save()).toBeDisabled();
+		await userEvent.click(box);
+		await userEvent.click(save());
+		await waitFor(() => expect(update).toHaveBeenCalled());
+		expect(update.mock.calls[0][0].body).toEqual({ small_business_scheme: 'none' });
 	});
 
 	it('keeps a backend refusal inline in an alert', async () => {

@@ -120,7 +120,8 @@ export function schemeBlockers(i: SchemeBlockerInputs): SchemeBlocker[] {
 	if (schemeRequiresVatId(i.scheme) && !i.vatIdValidated) out.push('vat_id_not_validated');
 	const taxNumber = i.taxNumber.trim();
 	if (taxNumber === '') {
-		if (i.scheme === 'at_6_1_27') out.push('tax_number_required');
+		// A VIES-validated VAT ID identifies the seller (backend scheme_identity_complete).
+		if (i.scheme === 'at_6_1_27' && !i.vatIdValidated) out.push('tax_number_required');
 	} else if (!isTaxNumberValid(country, taxNumber)) {
 		out.push('tax_number_invalid');
 	}

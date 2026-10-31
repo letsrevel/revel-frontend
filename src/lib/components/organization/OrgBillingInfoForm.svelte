@@ -65,6 +65,11 @@
 		}
 	});
 
+	// While a scheme fixes the rate, always show the server value, even in a dirty form.
+	$effect(() => {
+		if (schemeOn) vatRate = info.vat_rate == null ? '' : String(info.vat_rate);
+	});
+
 	$effect(() => {
 		if (JSON.stringify(address) !== syncedAddress) billingFormDirty = true;
 	});
@@ -90,7 +95,8 @@
 			// vat_rate is the only nullable field.
 			const body: OrganizationBillingInfoUpdateSchema = buildBillingInfoPayload({
 				countryCode,
-				vatRate,
+				// Under a scheme the server owns the rate: send it back unchanged (key omitted).
+				vatRate: schemeOn ? (info.vat_rate ?? '') : vatRate,
 				billingName,
 				billingEmail,
 				vatExemptionReason,

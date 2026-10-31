@@ -121,6 +121,11 @@ describe('schemeBlockers', () => {
 		expect(schemeBlockers({ ...at, taxNumber: '123' })).toEqual(['tax_number_invalid']);
 		expect(schemeBlockers({ ...ok, taxNumber: '123' })).toEqual(['tax_number_invalid']);
 	});
+	it('does not require a tax number for AT when the VAT ID is validated', () => {
+		const at = { ...ok, scheme: 'at_6_1_27' as const, country: 'AT', vatIdValidated: true };
+		expect(schemeBlockers(at)).toEqual([]);
+		expect(schemeBlockers({ ...at, taxNumber: '123' })).toEqual(['tax_number_invalid']);
+	});
 	it('needs a confirmed zero rate when the default is positive', () => {
 		expect(schemeBlockers({ ...ok, vatRate: '19.00' })).toEqual(['vat_rate_not_zero']);
 		expect(schemeBlockers({ ...ok, vatRate: '19.00', vatRateZeroConfirmed: true })).toEqual([]);
