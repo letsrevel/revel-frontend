@@ -38,9 +38,6 @@
 
 	const user = $derived(authStore.user);
 	const currentPath = $derived(`/oauth/authorize${search}`);
-	const switchAccountHref = $derived(
-		`${resolve('/(public)/logout', {})}?returnUrl=${encodeURIComponent(currentPath)}`
-	);
 	const titleId = 'oauth-consent-title';
 
 	function hostOf(url: string): string {
@@ -205,18 +202,15 @@
 		/>
 
 		{#if user}
-			<p class="text-sm text-muted-foreground">
+			<div class="text-sm text-muted-foreground">
 				{m['oauth.consent.signedInAs']({ name: user.display_name, email: user.email })}
-				<!-- eslint-disable svelte/no-navigation-without-resolve -- the path comes from resolve() in switchAccountHref; the appended returnUrl query cannot be expressed through resolve() -->
-				<a
-					href={switchAccountHref}
-					data-sveltekit-reload
-					class="ml-1 text-primary underline underline-offset-4"
-				>
-					{m['oauth.consent.switchAccount']()}
-				</a>
-				<!-- eslint-enable svelte/no-navigation-without-resolve -->
-			</p>
+				<form method="POST" action={resolve('/(public)/logout', {})} class="inline">
+					<input type="hidden" name="returnUrl" value={currentPath} />
+					<button type="submit" class="ml-1 text-primary underline underline-offset-4">
+						{m['oauth.consent.switchAccount']()}
+					</button>
+				</form>
+			</div>
 		{/if}
 
 		{#if expiredNotice}

@@ -70,12 +70,14 @@ describe('/oauth/authorize page', () => {
 		const buttons = screen.getAllByRole('button').map((b) => b.textContent?.trim());
 		expect(buttons.indexOf('Allow')).toBeLessThan(buttons.indexOf('Deny'));
 		expect(screen.getByText('Signed in as Sam Jones (sam@example.com).')).toBeInTheDocument();
-		const switchLink = screen.getByRole('link', { name: 'Not you? Switch account' });
-		expect(switchLink).toHaveAttribute(
-			'href',
-			`/logout?returnUrl=${encodeURIComponent('/oauth/authorize' + SEARCH)}`
+		const switchButton = screen.getByRole('button', { name: 'Not you? Switch account' });
+		const switchForm = switchButton.closest('form');
+		expect(switchForm).not.toBeNull();
+		expect(switchForm).toHaveAttribute('method', 'POST');
+		expect(switchForm).toHaveAttribute('action', '/logout');
+		expect(switchForm?.querySelector('input[name="returnUrl"]')).toHaveValue(
+			'/oauth/authorize' + SEARCH
 		);
-		expect(switchLink).toHaveAttribute('data-sveltekit-reload');
 		await waitFor(() =>
 			expect(document.activeElement).toBe(screen.getByRole('heading', { level: 1 }))
 		);

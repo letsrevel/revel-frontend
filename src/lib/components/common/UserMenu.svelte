@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { orgHref } from '$lib/utils/org-links';
-	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -34,6 +33,7 @@
 
 	const queryClient = useQueryClient();
 	let dropdownOpen = $state(false);
+	let logoutForm = $state<HTMLFormElement | null>(null);
 	const user = $derived(authStore.user);
 	const accessToken = $derived(authStore.accessToken);
 	const permissions = $derived(authStore.permissions);
@@ -160,8 +160,12 @@
 		// Clear client-side state immediately so navbar updates in the same tick
 		authStore.logout();
 		queryClient.clear();
-		// Then navigate to server endpoint to clear cookies
-		goto(resolve('/(public)/logout', {}));
+		// Then POST natively to clear the cookies server-side. Only a POST can log
+		// out (a GET is CSRF-able), and a native submit (no use:enhance) ends in a
+		// full document load, which drops any leftover in-memory state. Submitted
+		// synchronously: the DOM only updates on a later microtask, so the form is
+		// still mounted even though authStore.logout() unmounts this menu.
+		logoutForm?.requestSubmit();
 	}
 
 	function handleItemClick() {
@@ -185,6 +189,15 @@
 		return undefined;
 	});
 </script>
+
+<!-- Native POST target for the logout menu items (see handleLogout). -->
+<form
+	bind:this={logoutForm}
+	method="POST"
+	action={resolve('/(public)/logout', {})}
+	class="hidden"
+	aria-hidden="true"
+></form>
 
 {#if mobile}
 	<!-- Mobile User Menu -->

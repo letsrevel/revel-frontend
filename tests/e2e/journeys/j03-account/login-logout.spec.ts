@@ -87,7 +87,7 @@ async function logout(page: Page, isMobile: boolean): Promise<void> {
 		// The desktop dropdown entry is role="menuitem", not a plain button.
 		await page.getByRole('menuitem', { name: 'Log Out' }).click();
 	}
-	// The /logout load clears cookies and redirects home with a full reload.
+	// The POST /logout action clears cookies and 303s home (full document load).
 	await page.waitForURL(/logged_out=true/);
 }
 
@@ -143,19 +143,48 @@ test.describe('J3 login & logout @p0', () => {
 		await expectLoggedOutChrome(page, isMobile);
 	});
 
-	// `/logout?returnUrl=` is the "switch account" exit of the OAuth consent
-	// page: sign out, sign in as someone else, land back where you were. The
-	// plain no-returnUrl logout is already covered by the test above.
+	// GET /logout must never change auth state (a cross-site link could
+	// otherwise sign people out). Signed in, it renders a confirmation page and
+	// the session survives until the user presses Log Out.
+	test('a plain GET /logout shows a confirmation and keeps the session', async ({
+		page,
+		isMobile
+	}) => {
+		await uiLogin(page, 'member');
+
+		await page.goto('/logout');
+		await expect(page).toHaveURL(/\/logout$/);
+		await expect(page.getByRole('heading', { level: 1, name: /Log out of/ })).toBeVisible();
+		const cookieNames = (await page.context().cookies()).map((c) => c.name);
+		expect(cookieNames).toContain('refresh_token');
+
+		// Still signed in: another load of the home page keeps the account chrome.
+		await page.goto('/');
+		await expectAuthenticatedChrome(page, isMobile);
+
+		await page.goto('/logout');
+		await page.getByRole('button', { name: 'Log Out' }).click();
+		await page.waitForURL(/logged_out=true/);
+		await expectNoAuthCookies(page);
+		await expectLoggedOutChrome(page, isMobile);
+	});
+
+	// `returnUrl` is the "switch account" exit of the OAuth consent page (a POST
+	// form there): sign out, sign in as someone else, land back where you were.
+	// The consent page's own button is covered by its unit test; here the same
+	// POST is driven from the confirmation page.
 	test('logout with returnUrl → login carrying it → back on the target', async ({
 		page,
 		isMobile
 	}) => {
 		await uiLogin(page, 'member');
 
-		const response = await page.goto(`/logout?returnUrl=${encodeURIComponent(SWITCH_TARGET)}`);
-		const redirected = response?.request().redirectedFrom() ?? null;
-		expect(redirected, 'no redirect happened from /logout').not.toBeNull();
-		expect((await redirected?.response())?.status()).toBe(303);
+		await page.goto(`/logout?returnUrl=${encodeURIComponent(SWITCH_TARGET)}`);
+		// Nothing changed yet: the confirmation page is up and the cookies remain.
+		await expect(page.getByRole('heading', { level: 1, name: /Log out of/ })).toBeVisible();
+		expect((await page.context().cookies()).map((c) => c.name)).toContain('refresh_token');
+
+		await page.getByRole('button', { name: 'Log Out' }).click();
 		await expect(page).toHaveURL(/\/login\?returnUrl=%2Fevents%3Ftab%3Dupcoming$/);
 
 		// Really logged out: the auth cookies are gone and the page renders the
@@ -176,11 +205,26 @@ test.describe('J3 login & logout @p0', () => {
 		await expectAuthenticatedChrome(page, isMobile);
 	});
 
+	// A signed-out visitor following /logout?returnUrl=… is simply forwarded.
+	test('a signed-out GET /logout?returnUrl= forwards to login', async ({ page }) => {
+		await page.goto(`/logout?returnUrl=${encodeURIComponent(SWITCH_TARGET)}`);
+		await expect(page).toHaveURL(/\/login\?returnUrl=%2Fevents%3Ftab%3Dupcoming$/);
+	});
+
 	for (const unsafe of ['https://evil.example/x', '//evil.example']) {
-		test(`logout with an unsafe returnUrl (${unsafe}) falls back to home`, async ({ page }) => {
+		test(`logout with an unsafe returnUrl (${unsafe}) never points off-site`, async ({ page }) => {
 			await uiLogin(page, 'member');
 
+			// GET: the confirmation page, still signed in, no off-site target.
 			await page.goto(`/logout?returnUrl=${encodeURIComponent(unsafe)}`);
+			await expect(page.getByRole('heading', { level: 1, name: /Log out of/ })).toBeVisible();
+			expect(new URL(page.url()).pathname).toBe('/logout');
+			await expect(page.locator('input[name="returnUrl"]')).toHaveValue('');
+			const cancel = page.getByRole('link', { name: 'Cancel' });
+			expect(await cancel.getAttribute('href')).not.toContain('evil');
+
+			// POST: falls back to home with the logged-out flag.
+			await page.getByRole('button', { name: 'Log Out' }).click();
 			await expect(page).toHaveURL(/\/\?logged_out=true$/);
 			expect(page.url()).not.toContain('evil');
 			expect(new URL(page.url()).pathname).toBe('/');

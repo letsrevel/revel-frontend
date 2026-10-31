@@ -3055,7 +3055,9 @@
 		"useADemoAccount": "Use a demo account"
 	},
 	"logoutPage": {
-		"loggingOut": "Logging out..."
+		"kicker": "Sign out",
+		"title": "Log out of {brand}?",
+		"description": "You will need to sign in again to get back to your tickets and events."
 	},
 	"makeMemberAction": {
 		"button": "Make Member",
