@@ -35,7 +35,7 @@
 	} from './schedule-rows';
 	import type { StripeSetupState } from '$lib/utils/org-setup-progress';
 	import TicketingStep from './TicketingStep.svelte';
-	import { platformFeeInfoFrom } from '$lib/utils/fees';
+	import { platformFeeInfoFrom, type PlatformFeeConfig } from '$lib/utils/fees';
 	import { orgVatContextFrom } from './tier-vat';
 	import SaveBar from './SaveBar.svelte';
 	import EventGlance from './editor/EventGlance.svelte';
@@ -55,6 +55,7 @@
 
 	interface Props {
 		organization: OrganizationRetrieveSchema;
+		feeConfig: PlatformFeeConfig;
 		existingEvent?: EventDetailSchema;
 		userCity?: CitySchema | null;
 		orgCity?: CitySchema | null;
@@ -76,6 +77,7 @@
 
 	const {
 		organization,
+		feeConfig,
 		existingEvent,
 		userCity,
 		orgCity,

@@ -57,7 +57,7 @@
 	} from './tier-seating-payload';
 	import type { EventRules } from '$lib/utils/compliance';
 	import { formatDateTimeReadback } from '$lib/utils/date';
-	import type { PlatformFeeInfo } from '$lib/utils/fees';
+	import type { PlatformFeeConfig, PlatformFeeInfo } from '$lib/utils/fees';
 	import { stashTierDraft, stripeGateFor, tierSeed, type TierDraft } from './tier-draft';
 
 	interface Props {
@@ -73,6 +73,7 @@
 		draft?: TierDraft | null;
 		/** Org platform-fee terms for the net-payout preview (null hides it). */
 		platformFees?: PlatformFeeInfo | null;
+		feeConfig: PlatformFeeConfig;
 		membershipTiers?: MembershipTierSchema[];
 		eventVenueId?: string | null; // Pre-fill venue from event
 		eventCapacity?: number | null; // Effective event cap (null = uncapped)
@@ -95,6 +96,7 @@
 		isOwner = false,
 		draft = null,
 		platformFees = null,
+		feeConfig,
 		membershipTiers = [],
 		eventVenueId = null,
 		eventCapacity = null,
@@ -614,6 +616,7 @@
 					{currencySymbol}
 					{isPending}
 					{platformFees}
+					{feeConfig}
 					showNetPayout={paymentMethod === 'online'}
 				/>
 			{/if}

@@ -109,6 +109,16 @@ export type VersionResponse = {
      * Turnstile Site Key
      */
     turnstile_site_key?: string | null;
+    /**
+     *  Fees
+     */
+    fees?: {
+        stripe_fee_percent: string;
+        stripe_fee_fixed: string;
+        default_platform_fee_percent: string;
+        default_platform_fee_fixed: string;
+        vat_rate: string;
+    };
 };
 
 /**

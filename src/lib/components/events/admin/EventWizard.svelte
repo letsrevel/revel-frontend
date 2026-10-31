@@ -25,6 +25,7 @@
 		OrganizationQuestionnaireInListSchema,
 		EventSeriesRetrieveSchema
 	} from '$lib/api/generated/types.gen';
+	import type { PlatformFeeConfig } from '$lib/utils/fees';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -38,13 +39,14 @@
 
 	interface Props {
 		organization: OrganizationRetrieveSchema;
+		feeConfig: PlatformFeeConfig;
 		existingEvent?: EventDetailSchema;
 		userCity?: CitySchema | null;
 		orgCity?: CitySchema | null;
 		eventSeries?: EventSeriesRetrieveSchema[];
 	}
 
-	const { organization, existingEvent, userCity, orgCity, eventSeries = [] }: Props = $props();
+	const { organization, feeConfig, existingEvent, userCity, orgCity, eventSeries = [] }: Props = $props();
 
 	const queryClient = useQueryClient();
 
@@ -664,6 +666,7 @@
 			organizationSlug={organization.slug}
 			organizationStripeConnected={organization.is_stripe_connected}
 			orgVat={orgVatContextFrom(organization)}
+			{feeConfig}
 			{formData}
 			venueCapacity={selectedVenue?.capacity ?? null}
 			onUpdate={updateFormData}

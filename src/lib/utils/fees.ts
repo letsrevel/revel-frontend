@@ -17,13 +17,27 @@ export const DEFAULT_PLATFORM_FEE_PERCENT = 1.5;
 export const DEFAULT_PLATFORM_FEE_FIXED = 0.25;
 
 /**
- * The platform's domestic VAT standard rate (Austria, 20%), for the landing
- * calculator ONLY — it has no org context. Org-specific surfaces must use
- * `platformFeeInfoFrom` instead: the applicable rate is 0 under reverse
- * charge and the platform rate itself is a backend site setting (the demo
- * instance runs a different country/rate).
+ * Fallback VAT rate (Austria, 20%), used ONLY when the backend's
+ * `SiteSettings.platform_vat_rate` is unavailable. The authoritative rate comes
+ * from `GET /version` via `getPlatformFeeConfig` — see `PlatformFeeConfig`.
+ * Org-specific surfaces must read `platformFeeInfoFrom` instead: the applicable
+ * rate is 0 under reverse charge (cross-border EU B2B with a validated VAT ID).
  */
-export const PLATFORM_VAT_RATE_PERCENT = 20;
+export const DEFAULT_PLATFORM_VAT_RATE_PERCENT = 20;
+
+/** Fee rates for the public landing-page calculator, from `GET /version`. */
+export interface PlatformFeeConfig {
+	/** Stripe card-processing estimate (percent value, 1.5 means 1.5%). */
+	stripeFeePercent: number;
+	/** Stripe card-processing estimate, fixed per transaction. */
+	stripeFeeFixed: number;
+	/** Revel's standard platform fee (percent value). */
+	platformFeePercent: number;
+	/** Revel's standard platform fee, fixed per transaction. */
+	platformFeeFixed: number;
+	/** Platform's domestic VAT rate, charged on the platform fee (percent value). */
+	vatRate: number;
+}
 
 /** An organization's platform-fee terms, as displayed in payout previews. */
 export interface PlatformFeeInfo {
@@ -60,11 +74,21 @@ export function estimateNetPayout(params: {
 	platformFeePercent: number;
 	platformFeeFixed: number;
 	platformFeeVatRate?: number;
+	/** Stripe card-processing estimate; defaults to the published EEA rate. */
+	stripeFeePercent?: number;
+	stripeFeeFixed?: number;
 }): NetPayoutEstimate | null {
-	const { price, platformFeePercent, platformFeeFixed, platformFeeVatRate = 0 } = params;
+	const {
+		price,
+		platformFeePercent,
+		platformFeeFixed,
+		platformFeeVatRate = 0,
+		stripeFeePercent = STRIPE_FEE_PERCENT,
+		stripeFeeFixed = STRIPE_FEE_FIXED
+	} = params;
 	if (!Number.isFinite(price) || price <= 0) return null;
 
-	const stripeFee = price * (STRIPE_FEE_PERCENT / 100) + STRIPE_FEE_FIXED;
+	const stripeFee = price * (stripeFeePercent / 100) + stripeFeeFixed;
 	const platformFee = price * (platformFeePercent / 100) + platformFeeFixed;
 	const platformFeeVat = platformFee * (platformFeeVatRate / 100);
 	const net = Math.max(price - stripeFee - platformFee - platformFeeVat, 0);

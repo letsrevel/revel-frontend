@@ -21,7 +21,7 @@
 	import { effectiveEventCapacity } from './event-capacity';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { reorderByIds, swapAndCollectIds } from '$lib/utils/reorder';
-	import type { PlatformFeeInfo } from '$lib/utils/fees';
+	import type { PlatformFeeConfig, PlatformFeeInfo } from '$lib/utils/fees';
 	import { toast } from 'svelte-sonner';
 	import { extractErrorMessage } from '$lib/utils/errors';
 	import { noticesFor, unplacedNotices, type ComplianceStatus } from '$lib/utils/compliance';
@@ -60,6 +60,7 @@
 		platformFees?: PlatformFeeInfo | null;
 		/** Org VAT defaults, for the tier's VAT exemption reason (null = unknown). */
 		orgVat?: OrgVatContext | null;
+		feeConfig: PlatformFeeConfig;
 		formData: EventFormData;
 		onUpdate: (updates: Partial<EventFormData>) => void;
 		onBack: () => void;
@@ -79,6 +80,7 @@
 		isOwner = false,
 		platformFees = null,
 		orgVat = null,
+		feeConfig,
 		formData,
 		onUpdate,
 		onBack,
@@ -505,6 +507,7 @@
 		draft={restoredDraft}
 		{platformFees}
 		{orgVat}
+		{feeConfig}
 		{membershipTiers}
 		eventVenueId={formData.venue_id || null}
 		{eventCapacity}

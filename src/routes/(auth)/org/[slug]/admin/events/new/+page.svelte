@@ -31,6 +31,7 @@
 	<!-- Event Editor Component -->
 	<EventEditor
 		{organization}
+			feeConfig={data.feeConfig}
 		userCity={data.userCity}
 		orgCity={data.orgCity}
 		eventSeries={data.eventSeries}
