@@ -10673,6 +10673,8 @@
 	"smallBiz.tiersChargingVatRemove": "Remove this tier's VAT rate",
 	"smallBiz.tiersChargingVatRemoveAria": "Remove this tier's VAT rate: {event} · {tier}",
 	"smallBiz.tiersChargingVatRemoveError": "Could not remove the VAT rate. Please try again.",
+	"smallBiz.tiersChargingVatRemoveHelp": "If a VAT exemption reason is required, set a default reason in the billing information above, then try again.",
+	"smallBiz.tiersChargingVatRemoved": "VAT rate removed for {event} · {tier}.",
 	"smallBiz.noteLabel": "Note printed on your invoices",
 	"smallBiz.blockersTitle": "Fix these before saving:",
 	"smallBiz.blocker.wrong_country": "The scheme does not match your country of establishment.",

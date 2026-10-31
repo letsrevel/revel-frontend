@@ -10673,6 +10673,8 @@
 	"smallBiz.tiersChargingVatRemove": "Supprimer le taux de TVA de ce tarif",
 	"smallBiz.tiersChargingVatRemoveAria": "Supprimer le taux de TVA de ce tarif : {event} · {tier}",
 	"smallBiz.tiersChargingVatRemoveError": "Impossible de supprimer le taux de TVA. Réessaie.",
+	"smallBiz.tiersChargingVatRemoveHelp": "Si un motif d'exonération de TVA est requis, définis un motif par défaut dans les informations de facturation ci-dessus, puis réessaie.",
+	"smallBiz.tiersChargingVatRemoved": "Taux de TVA supprimé pour {event} · {tier}.",
 	"smallBiz.noteLabel": "Mention imprimée sur tes factures",
 	"smallBiz.blockersTitle": "Corrige ces points avant d'enregistrer :",
 	"smallBiz.blocker.wrong_country": "Le régime ne correspond pas à ton pays d'établissement.",

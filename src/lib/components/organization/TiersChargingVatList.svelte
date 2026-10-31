@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { Button } from '$lib/components/ui/button';
-	import { Loader2 } from '@lucide/svelte';
+	import { AlertCircle, Loader2 } from '@lucide/svelte';
 	import { resolve } from '$app/paths';
 	import { extractErrorMessage } from '$lib/utils/errors';
 	import { formatRate } from '$lib/utils/format';
@@ -13,9 +13,11 @@
 		slug: string;
 		accessToken: string | null | undefined;
 		tiers: TierChargingVatSchema[];
+		/** Called (after the billing-info refetch) with a polite announcement. */
+		onRemoved?: (announcement: string) => void;
 	}
 
-	const { slug, accessToken, tiers }: Props = $props();
+	const { slug, accessToken, tiers, onRemoved }: Props = $props();
 
 	const queryClient = useQueryClient();
 
@@ -42,20 +44,37 @@
 				errors[tier.tier_id] =
 					err instanceof Error ? err.message : m['smallBiz.tiersChargingVatRemoveError']();
 				throw err;
-			} finally {
-				pending[tier.tier_id] = false;
 			}
 		},
 		// No toast: the inline role="alert" under the item is the feedback; a local handler
 		// also replaces the global toast.
 		onError: () => undefined,
-		onSuccess: () => {
+		// Returning the refetch promise keeps the mutation (and the button) pending until the
+		// list reflects the change.
+		onSuccess: async (_data, tier) => {
 			// The tier now inherits the default rate and drops out of the list.
-			queryClient.invalidateQueries({ queryKey: ['billing-info', slug] });
+			await queryClient.invalidateQueries({ queryKey: ['billing-info', slug] });
+			onRemoved?.(
+				m['smallBiz.tiersChargingVatRemoved']({ event: tier.event_name, tier: tier.tier_name })
+			);
+		},
+		onSettled: (_data, _error, tier) => {
+			pending[tier.tier_id] = false;
 		}
 	}));
+
+	const hasRsvpOnly = $derived(tiers.some((t) => t.event_requires_ticket === false));
 </script>
 
+{#if hasRsvpOnly}
+	<p
+		id="small-business-tiers-rsvp-note"
+		class="mb-2 text-xs text-foreground"
+		data-testid="small-business-tier-rsvp-hint"
+	>
+		{m['smallBiz.tiersChargingVatRsvpNote']()}
+	</p>
+{/if}
 <ul aria-labelledby="small-business-tiers-title" class="list-disc space-y-3 pl-5">
 	{#each tiers as tier (tier.tier_id)}
 		{@const label = m['smallBiz.tiersChargingVatItem']({
@@ -68,13 +87,6 @@
 				<!-- RSVP-only: requires_ticket is immutable and there is no tier editor, so the
 				     rate can only be removed from here. -->
 				<span class="font-medium">{label}</span>
-				<p
-					id="small-business-tier-{tier.tier_id}-rsvp"
-					class="mt-0.5 text-xs text-foreground"
-					data-testid="small-business-tier-rsvp-hint"
-				>
-					{m['smallBiz.tiersChargingVatRsvpNote']()}
-				</p>
 				<Button
 					type="button"
 					variant="outline"
@@ -85,7 +97,8 @@
 						event: tier.event_name,
 						tier: tier.tier_name
 					})}
-					aria-describedby="small-business-tier-{tier.tier_id}-rsvp"
+					aria-describedby="small-business-tiers-rsvp-note"
+					aria-busy={pending[tier.tier_id] === true}
 					onclick={() => removeMutation.mutate(tier)}
 				>
 					{#if pending[tier.tier_id]}
@@ -94,7 +107,13 @@
 					{m['smallBiz.tiersChargingVatRemove']()}
 				</Button>
 				{#if errors[tier.tier_id]}
-					<p class="mt-1 text-sm text-destructive" role="alert">{errors[tier.tier_id]}</p>
+					<div class="mt-1 flex items-start gap-2 text-sm text-foreground" role="alert">
+						<AlertCircle class="mt-0.5 h-4 w-4 shrink-0 text-foreground" aria-hidden="true" />
+						<div class="space-y-1">
+							<p>{errors[tier.tier_id]}</p>
+							<p class="text-xs">{m['smallBiz.tiersChargingVatRemoveHelp']()}</p>
+						</div>
+					</div>
 				{/if}
 			{:else}
 				<a

@@ -4,10 +4,11 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Input } from '$lib/components/ui/input';
-	import TiersChargingVatList from './TiersChargingVatList.svelte';
 	import { Label } from '$lib/components/ui/label';
+	import TiersChargingVatList from './TiersChargingVatList.svelte';
 	import { AlertCircle, Check, Info, Loader2 } from '@lucide/svelte';
 	import { invalidateAll } from '$app/navigation';
+	import { tick } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import { extractErrorMessage } from '$lib/utils/errors';
 	import { countryName } from '$lib/utils/compliance';
@@ -83,13 +84,6 @@
 	const declaring = $derived(enabled && current === 'none');
 	const tiersChargingVat = $derived(info.tiers_charging_vat ?? []);
 	const showTiers = $derived(declaring && tiersChargingVat.length > 0);
-	// A refusal caused by stale tier data is moot once the refetch empties the list.
-	let prevTierCount = 0;
-	$effect(() => {
-		const count = tiersChargingVat.length;
-		if (prevTierCount > 0 && count === 0) saveMutation.reset();
-		prevTierCount = count;
-	});
 	const blockers = $derived(
 		schemeBlockers({
 			scheme: formScheme,
@@ -188,6 +182,26 @@
 		}
 	}));
 
+	// A refusal caused by stale tier data is moot once the refetch shrinks the list.
+	let prevTierCount = 0;
+	$effect(() => {
+		const count = tiersChargingVat.length;
+		if (count < prevTierCount) saveMutation.reset();
+		prevTierCount = count;
+	});
+
+	let removedAnnouncement = $state('');
+
+	/** After a tier's rate is removed: announce it and keep keyboard focus somewhere real. */
+	async function handleTierRemoved(text: string) {
+		removedAnnouncement = text;
+		await tick();
+		const target =
+			document.getElementById('small-business-tiers-title') ??
+			document.getElementById('small-business-save');
+		target?.focus();
+	}
+
 	function edited() {
 		dirty = true;
 		saveMutation.reset();
@@ -202,6 +216,9 @@
 </script>
 
 <div class="space-y-4" data-testid="small-business-section">
+	<p class="sr-only" role="status" data-testid="small-business-removed-status">
+		{removedAnnouncement}
+	</p>
 	<p class="text-sm text-muted-foreground">{m['smallBiz.intro']()}</p>
 
 	{#if country}
@@ -371,10 +388,19 @@
 						class="space-y-2 rounded-md border border-highlight/40 bg-highlight/20 p-3 text-sm"
 						data-testid="small-business-tiers-charging-vat"
 					>
-						<p id="small-business-tiers-title" class="font-medium">
+						<p
+							id="small-business-tiers-title"
+							tabindex="-1"
+							class="rounded-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+						>
 							{m['smallBiz.tiersChargingVatTitle']()}
 						</p>
-						<TiersChargingVatList {slug} {accessToken} tiers={tiersChargingVat} />
+						<TiersChargingVatList
+							{slug}
+							{accessToken}
+							tiers={tiersChargingVat}
+							onRemoved={handleTierRemoved}
+						/>
 					</div>
 				{/if}
 
@@ -417,6 +443,7 @@
 
 			<div class="flex justify-end">
 				<Button
+					id="small-business-save"
 					type="submit"
 					disabled={saveMutation.isPending || !isDirty || blockers.length > 0 || newRateInvalid}
 				>

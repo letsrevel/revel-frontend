@@ -10673,6 +10673,8 @@
 	"smallBiz.tiersChargingVatRemove": "Steuersatz dieser Ticketstufe entfernen",
 	"smallBiz.tiersChargingVatRemoveAria": "Steuersatz dieser Ticketstufe entfernen: {event} · {tier}",
 	"smallBiz.tiersChargingVatRemoveError": "Der Steuersatz konnte nicht entfernt werden. Bitte versuche es erneut.",
+	"smallBiz.tiersChargingVatRemoveHelp": "Falls ein Grund für die Steuerbefreiung erforderlich ist, lege oben in den Rechnungsangaben einen Standardgrund fest und versuche es dann erneut.",
+	"smallBiz.tiersChargingVatRemoved": "Steuersatz entfernt für {event} · {tier}.",
 	"smallBiz.noteLabel": "Hinweis auf deinen Rechnungen",
 	"smallBiz.blockersTitle": "Behebe Folgendes vor dem Speichern:",
 	"smallBiz.blocker.wrong_country": "Die Regelung passt nicht zu deinem Niederlassungsland.",

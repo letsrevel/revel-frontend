@@ -10673,6 +10673,8 @@
 	"smallBiz.tiersChargingVatRemove": "Rimuovi l'aliquota IVA di questo livello",
 	"smallBiz.tiersChargingVatRemoveAria": "Rimuovi l'aliquota IVA di questo livello: {event} · {tier}",
 	"smallBiz.tiersChargingVatRemoveError": "Impossibile rimuovere l'aliquota IVA. Riprova.",
+	"smallBiz.tiersChargingVatRemoveHelp": "Se è richiesto un motivo di esenzione IVA, imposta un motivo predefinito nelle informazioni di fatturazione qui sopra, poi riprova.",
+	"smallBiz.tiersChargingVatRemoved": "Aliquota IVA rimossa per {event} · {tier}.",
 	"smallBiz.noteLabel": "Nota stampata sulle tue fatture",
 	"smallBiz.blockersTitle": "Risolvi questi punti prima di salvare:",
 	"smallBiz.blocker.wrong_country": "Il regime non corrisponde al tuo paese di stabilimento.",

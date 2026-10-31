@@ -10673,6 +10673,8 @@
 	"smallBiz.tiersChargingVatRemove": "Remover a taxa de IVA deste nível",
 	"smallBiz.tiersChargingVatRemoveAria": "Remover a taxa de IVA deste nível: {event} · {tier}",
 	"smallBiz.tiersChargingVatRemoveError": "Não foi possível remover a taxa de IVA. Tenta novamente.",
+	"smallBiz.tiersChargingVatRemoveHelp": "Se for necessário um motivo de isenção de IVA, define um motivo predefinido nas informações de faturação acima e tenta novamente.",
+	"smallBiz.tiersChargingVatRemoved": "Taxa de IVA removida para {event} · {tier}.",
 	"smallBiz.noteLabel": "Nota impressa nas tuas faturas",
 	"smallBiz.blockersTitle": "Corrige isto antes de guardar:",
 	"smallBiz.blocker.wrong_country": "O regime não corresponde ao teu país de estabelecimento.",

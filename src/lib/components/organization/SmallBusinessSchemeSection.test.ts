@@ -239,6 +239,57 @@ describe('SmallBusinessSchemeSection', () => {
 			expect(spy).not.toHaveBeenCalled();
 		});
 
+		it('error uses foreground text with the static help line and no destructive text', async () => {
+			updateTier.mockResolvedValue({ error: { detail: 'Server says no' } });
+			renderIt({ tiers_charging_vat: [rsvpTier] });
+			const box = await declare();
+			await userEvent.click(within(box).getByRole('button', { name: /Remove this tier's VAT/ }));
+			const alert = await within(box).findByRole('alert');
+			expect(alert).toHaveTextContent('Server says no');
+			expect(alert).toHaveTextContent(/set a default reason in the billing information above/);
+			expect(alert.className).toContain('text-foreground');
+			expect(alert.className).not.toContain('text-destructive');
+			expect(alert.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+		});
+
+		it('renders one shared RSVP note that every remove button points to', async () => {
+			renderIt({
+				tiers_charging_vat: [rsvpTier, { ...rsvpTier, tier_id: 't4', tier_name: 'Early' }]
+			});
+			const box = await declare();
+			expect(within(box).getAllByText(/RSVP-only/)).toHaveLength(1);
+			const buttons = within(box).getAllByRole('button', { name: /Remove this tier's VAT/ });
+			expect(buttons).toHaveLength(2);
+			for (const b of buttons) {
+				expect(b).toHaveAttribute('aria-describedby', 'small-business-tiers-rsvp-note');
+			}
+			expect(box.querySelector('#small-business-tiers-rsvp-note')).not.toBeNull();
+		});
+
+		it('keeps the button busy until the refetch finishes, then announces and moves focus', async () => {
+			let release: () => void = () => undefined;
+			const client = renderIt({ tiers_charging_vat: [rsvpTier] });
+			vi.spyOn(client, 'invalidateQueries').mockImplementation(
+				() => new Promise<void>((r) => (release = r))
+			);
+			const box = await declare();
+			const btn = within(box).getByRole('button', { name: /Remove this tier's VAT/ });
+			await userEvent.click(btn);
+			await waitFor(() => expect(updateTier).toHaveBeenCalled());
+			await waitFor(() => expect(btn).toHaveAttribute('aria-busy', 'true'));
+			expect(btn).toBeDisabled();
+			release();
+			await waitFor(() =>
+				expect(screen.getByTestId('small-business-removed-status')).toHaveTextContent(
+					'VAT rate removed for Open Night · Door.'
+				)
+			);
+			expect(screen.getByTestId('small-business-removed-status')).toHaveAttribute('role', 'status');
+			await waitFor(() =>
+				expect(document.getElementById('small-business-tiers-title')).toHaveFocus()
+			);
+		});
+
 		it('clears a stale error when the refetched list becomes empty', async () => {
 			updateTier.mockResolvedValue({ error: { detail: 'Server says no' } });
 			update.mockResolvedValue({ error: { detail: 'Some ticket tiers still charge VAT.' } });

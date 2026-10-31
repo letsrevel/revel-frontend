@@ -10673,6 +10673,8 @@
 	"smallBiz.tiersChargingVatRemove": "Quitar el tipo de IVA de esta tarifa",
 	"smallBiz.tiersChargingVatRemoveAria": "Quitar el tipo de IVA de esta tarifa: {event} · {tier}",
 	"smallBiz.tiersChargingVatRemoveError": "No se pudo quitar el tipo de IVA. Inténtalo de nuevo.",
+	"smallBiz.tiersChargingVatRemoveHelp": "Si se requiere un motivo de exención de IVA, define un motivo predeterminado en la información de facturación de arriba y vuelve a intentarlo.",
+	"smallBiz.tiersChargingVatRemoved": "Tipo de IVA quitado para {event} · {tier}.",
 	"smallBiz.noteLabel": "Nota impresa en tus facturas",
 	"smallBiz.blockersTitle": "Corrige esto antes de guardar:",
 	"smallBiz.blocker.wrong_country": "El régimen no coincide con tu país de establecimiento.",

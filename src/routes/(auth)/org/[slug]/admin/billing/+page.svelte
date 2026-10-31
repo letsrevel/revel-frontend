@@ -17,6 +17,7 @@
 		Users
 	} from '@lucide/svelte';
 	import * as RadioGroup from '$lib/components/ui/radio-group';
+	import { untrack } from 'svelte';
 	import { browser } from '$app/environment';
 	import { resolve } from '$app/paths';
 	import { invalidateAll } from '$app/navigation';
@@ -78,8 +79,8 @@
 				// tiers_charging_vat changes elsewhere (event editor, other tabs); never serve it stale.
 				// Each form field re-syncs only when its own server value changes (see
 				// createSyncOnChange), so a refetch that touches other fields won't clobber edits.
+				// staleTime 0 already refetches on every mount.
 				staleTime: 0,
-				refetchOnMount: 'always',
 				refetchOnWindowFocus: true
 			}))
 		: null;
@@ -89,10 +90,24 @@
 
 	// ─── VAT ID State ───────────────────────────────────────────────
 	let vatIdInput = $state('');
+	let invoicingMode = $state('none');
 	let showRemoveDialog = $state(false);
 
+	// SvelteKit reuses this page across orgs: drop unsaved drafts and rebuild the sync closures
+	// whenever the slug changes, so org A's draft never survives into org B.
+	$effect(() => {
+		void slug;
+		untrack(() => {
+			vatIdInput = '';
+			invoicingMode = 'none';
+		});
+	});
+
 	// Sync VAT ID input only when the server's vat_id itself changes
-	const syncVatId = createSyncOnChange<string>((v) => (vatIdInput = v));
+	const syncVatId = $derived.by(() => {
+		void slug;
+		return createSyncOnChange<string>((v) => (vatIdInput = v));
+	});
 	$effect(() => {
 		if (billingQuery?.data) syncVatId(billingQuery.data.vat_id || '');
 	});
@@ -124,11 +139,15 @@
 					if (result.pending) {
 						toast.info(m['orgAdmin.billing.vatId.savedPending']());
 					} else {
+						// Show the normalized value even when it equals the previous server value.
+						vatIdInput = result.data.vat_id ?? vatIdInput;
 						queryClient.invalidateQueries({ queryKey: ['billing-info', slug] });
 						toast.success(m['orgAdmin.billing.vatId.saved']());
 					}
 				},
 				onError: (error: Error) => {
+					// The backend may have saved the ID unvalidated before refusing.
+					queryClient.invalidateQueries({ queryKey: ['billing-info', slug] });
 					toast.error(error.message);
 				}
 			}))
@@ -169,9 +188,11 @@
 	}
 
 	// ─── Invoicing Mode ────────────────────────────────────────────
-	let invoicingMode = $state('none');
 
-	const syncInvoicingMode = createSyncOnChange<string>((v) => (invoicingMode = v));
+	const syncInvoicingMode = $derived.by(() => {
+		void slug;
+		return createSyncOnChange<string>((v) => (invoicingMode = v));
+	});
 	$effect(() => {
 		if (billingQuery?.data?.invoicing_mode) syncInvoicingMode(billingQuery.data.invoicing_mode);
 	});
