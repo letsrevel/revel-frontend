@@ -31,6 +31,7 @@
 		organizationadminvatDeleteVatId,
 		organizationadminvatSetInvoicingMode
 	} from '$lib/api/generated/sdk.gen';
+	import type { InvoicingMode } from '$lib/api/generated/types.gen';
 	import type { LayoutData } from '../$types';
 	import { formatDate } from '$lib/utils/date';
 	import {
@@ -90,28 +91,42 @@
 
 	// ─── VAT ID State ───────────────────────────────────────────────
 	let vatIdInput = $state('');
-	let invoicingMode = $state('none');
+	let invoicingMode = $state<InvoicingMode>('none');
 	let showRemoveDialog = $state(false);
 
 	// SvelteKit reuses this page across orgs: drop unsaved drafts and rebuild the sync closures
 	// whenever the slug changes, so org A's draft never survives into org B.
+	// It also closes the remove dialog and clears the mutations' pending/error state.
 	// IMPORTANT: this effect MUST stay declared BEFORE the sync effects below. Effects run in
 	// creation order, so the reset has to happen before the syncs write org B's cached values.
+	// The mutations are declared further down; that is fine because effects run after the
+	// component script has fully initialised.
 	$effect(() => {
 		void slug;
 		untrack(() => {
 			vatIdInput = '';
 			invoicingMode = 'none';
+			showRemoveDialog = false;
+			setVatIdMutation?.reset();
+			deleteVatIdMutation?.reset();
+			setInvoicingModeMutation?.reset();
 		});
 	});
 
 	// Sync VAT ID input only when the server's vat_id itself changes
 	const syncVatId = $derived.by(() => {
 		void slug;
-		return createSyncOnChange<string>((v) => (vatIdInput = v));
+		return createSyncOnChange<string>((v) => (vatIdInput = v), {
+			current: () => vatIdInput,
+			equals: (a, b) => a.trim().toUpperCase() === b.trim().toUpperCase()
+		});
 	});
 	$effect(() => {
-		if (billingQuery?.data) syncVatId(billingQuery.data.vat_id || '');
+		// untrack: the draft is read only for the guard; the effect must not re-run on typing.
+		if (billingQuery?.data) {
+			const serverVatId = billingQuery.data.vat_id || '';
+			untrack(() => syncVatId(serverVatId));
+		}
 	});
 
 	// ─── Set VAT ID Mutation ────────────────────────────────────────
@@ -203,19 +218,22 @@
 
 	const syncInvoicingMode = $derived.by(() => {
 		void slug;
-		return createSyncOnChange<string>((v) => (invoicingMode = v));
+		return createSyncOnChange<InvoicingMode>((v) => (invoicingMode = v), {
+			current: () => invoicingMode
+		});
 	});
 	$effect(() => {
-		if (billingQuery?.data?.invoicing_mode) syncInvoicingMode(billingQuery.data.invoicing_mode);
+		const serverMode = billingQuery?.data?.invoicing_mode;
+		if (serverMode) untrack(() => syncInvoicingMode(serverMode));
 	});
 
 	const setInvoicingModeMutation = browser
 		? createMutation(() => ({
-				mutationFn: async ({ requestSlug, mode }: { requestSlug: string; mode: string }) => {
+				mutationFn: async ({ requestSlug, mode }: { requestSlug: string; mode: InvoicingMode }) => {
 					const response = await organizationadminvatSetInvoicingMode({
 						path: { slug: requestSlug },
 						headers: { Authorization: `Bearer ${accessToken}` },
-						body: { mode: mode as 'none' | 'hybrid' | 'auto' }
+						body: { mode }
 					});
 					if (response.error) {
 						const msg = extractErrorMessage(
@@ -341,15 +359,17 @@
 			<p class="text-sm">{extractErrorMessage(billingQuery.error)}</p>
 		</div>
 	{:else}
-		{#if billingQuery?.error && billingQuery?.data}
-			<p
-				class="rounded-md border border-border bg-muted p-3 text-sm text-foreground"
-				role="status"
-				data-testid="billing-refresh-failed"
-			>
-				{m['orgAdmin.billing.refreshFailed']()}
-			</p>
-		{/if}
+		<!-- Always mounted so the notice is announced when it appears. -->
+		<div role="status">
+			{#if billingQuery?.error && billingQuery?.data}
+				<p
+					class="rounded-md border border-border bg-muted p-3 text-sm text-foreground"
+					data-testid="billing-refresh-failed"
+				>
+					{m['orgAdmin.billing.refreshFailed']()}
+				</p>
+			{/if}
+		</div>
 		<!-- ────────────────────────────────────────────────────────────
 		     Section 0: Attendee Invoicing Mode
 		     ──────────────────────────────────────────────────────────── -->
@@ -390,7 +410,7 @@
 			<RadioGroup.Root
 				value={invoicingMode}
 				onValueChange={(value) => {
-					if (value) invoicingMode = value;
+					if (value) invoicingMode = value as InvoicingMode;
 					// A new pick makes the last refusal stale.
 					setInvoicingModeMutation?.reset();
 				}}

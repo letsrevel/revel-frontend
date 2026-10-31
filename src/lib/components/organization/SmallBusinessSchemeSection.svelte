@@ -192,12 +192,16 @@
 
 	let removedAnnouncement = $state('');
 
-	/** After a tier's rate is removed: announce it and keep keyboard focus somewhere real. */
-	async function handleTierRemoved(text: string) {
-		// Clear first so an identical repeated message is still re-announced.
+	/** Routes a message to the always-mounted live region (clear, tick, set re-announces repeats). */
+	async function announce(text: string) {
 		removedAnnouncement = '';
 		await tick();
 		removedAnnouncement = text;
+	}
+
+	/** After a tier's rate is removed: announce it and keep keyboard focus somewhere real. */
+	async function handleTierRemoved(text: string) {
+		await announce(text);
 		// Focus fallback: tiers title, then the save button (only if enabled: focus() on a
 		// disabled button is a no-op), then the scheme checkbox, which is always rendered here.
 		const title = document.getElementById('small-business-tiers-title');
@@ -404,6 +408,7 @@
 							{accessToken}
 							tiers={tiersChargingVat}
 							onRemoved={handleTierRemoved}
+							onStatus={announce}
 						/>
 					</div>
 				{/if}

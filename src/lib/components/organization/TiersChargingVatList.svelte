@@ -15,9 +15,11 @@
 		tiers: TierChargingVatSchema[];
 		/** Called (after the billing-info refetch) with a polite announcement. */
 		onRemoved?: (announcement: string) => void;
+		/** Called when a removal starts, with a polite progress announcement. */
+		onStatus?: (text: string) => void;
 	}
 
-	const { slug, accessToken, tiers, onRemoved }: Props = $props();
+	const { slug, accessToken, tiers, onRemoved, onStatus }: Props = $props();
 
 	const queryClient = useQueryClient();
 
@@ -29,6 +31,7 @@
 		mutationFn: async (tier: TierChargingVatSchema) => {
 			pending[tier.tier_id] = true;
 			errors[tier.tier_id] = '';
+			onStatus?.(m['smallBiz.tiersChargingVatRemoving']());
 			try {
 				const response = await eventadminticketsUpdateTicketTier({
 					path: { event_id: tier.event_id, tier_id: tier.tier_id },
@@ -103,7 +106,6 @@
 				>
 					{#if pending[tier.tier_id]}
 						<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
-						<span class="sr-only">{m['smallBiz.tiersChargingVatRemoving']()}</span>
 					{/if}
 					{m['smallBiz.tiersChargingVatRemove']()}
 				</Button>
