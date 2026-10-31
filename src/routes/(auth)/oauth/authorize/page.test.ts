@@ -16,6 +16,9 @@ vi.mock('$lib/stores/auth.svelte', () => ({
 	authStore: { accessToken: 'tok', user: { display_name: 'Sam Jones', email: 'sam@example.com' } }
 }));
 
+const postLogoutMock = vi.hoisted(() => vi.fn(() => Promise.resolve()));
+vi.mock('$lib/utils/logout', () => ({ postLogout: postLogoutMock }));
+
 import Page from './+page.svelte';
 
 const SEARCH = '?client_id=abc&resource=a&resource=b';
@@ -81,6 +84,17 @@ describe('/oauth/authorize page', () => {
 		await waitFor(() =>
 			expect(document.activeElement).toBe(screen.getByRole('heading', { level: 1 }))
 		);
+	});
+
+	it('switch account posts via postLogout once, with the consent path', async () => {
+		describeMock.mockResolvedValue({ kind: 'describe', data: description() });
+		render(Page);
+		const btn = await screen.findByRole('button', { name: 'Not you? Switch account' });
+		await userEvent.click(btn);
+		expect(postLogoutMock).toHaveBeenCalledTimes(1);
+		expect(postLogoutMock).toHaveBeenCalledWith('/oauth/authorize' + SEARCH);
+		expect(btn).toBeDisabled();
+		expect(btn).toHaveAttribute('aria-busy', 'true');
 	});
 
 	it('has one polite live region from first render that announces the redirect', async () => {

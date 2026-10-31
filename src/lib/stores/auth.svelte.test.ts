@@ -312,4 +312,37 @@ describe('AuthStore', () => {
 			expect(await isReady()).toBe(true);
 		});
 	});
+
+	describe('waitForAuthSettled', () => {
+		it('resolves immediately when idle', async () => {
+			await expect(authStore.waitForAuthSettled()).resolves.toBeUndefined();
+		});
+
+		it('waits for a pending refresh and never rejects', async () => {
+			let rejectRefresh: (e: Error) => void = () => undefined;
+			const internals = authStore as unknown as { _refreshPromise: Promise<void> | null };
+			internals._refreshPromise = new Promise<void>((_, rej) => (rejectRefresh = rej));
+			let done = false;
+			const p = authStore.waitForAuthSettled().then(() => {
+				done = true;
+			});
+			await new Promise((r) => setTimeout(r, 10));
+			expect(done).toBe(false);
+			rejectRefresh(new Error('boom'));
+			await expect(p).resolves.toBeUndefined();
+			expect(done).toBe(true);
+			internals._refreshPromise = null;
+		});
+
+		it('is bounded when a refresh never settles', async () => {
+			vi.useFakeTimers();
+			const internals = authStore as unknown as { _refreshPromise: Promise<void> | null };
+			internals._refreshPromise = new Promise<void>(() => undefined);
+			const p = authStore.waitForAuthSettled();
+			await vi.advanceTimersByTimeAsync(15_000);
+			await expect(p).resolves.toBeUndefined();
+			internals._refreshPromise = null;
+			vi.useRealTimers();
+		});
+	});
 });

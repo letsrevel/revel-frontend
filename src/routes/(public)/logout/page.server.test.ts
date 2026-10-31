@@ -156,4 +156,16 @@ describe('POST /logout', () => {
 		expect(location).toBe('/?logged_out=true');
 		expect(cookies.delete).toHaveBeenCalledTimes(3);
 	});
+
+	it('still clears cookies and goes home when the body cannot be parsed', async () => {
+		const { args, cookies } = postArgs();
+		(args as unknown as { request: { formData: () => Promise<FormData> } }).request = {
+			formData: () => Promise.reject(new TypeError('bad body'))
+		};
+		await expect(actions.default(args)).rejects.toMatchObject({
+			status: 303,
+			location: '/?logged_out=true'
+		});
+		expect(cookies.delete).toHaveBeenCalledTimes(3);
+	});
 });

@@ -16,8 +16,8 @@ import { safeReturnUrl } from '$lib/utils/safe-redirect';
  * native (non-`use:enhance`) submission: the 303 then produces a full document
  * load, the only thing that drops the in-memory auth store.
  *
- * Client-side state (authStore, query cache) is cleared in UserMenu.svelte
- * before it submits the POST; the action only handles cookie cleanup.
+ * Client-side state (authStore, query cache) is cleared by the client before
+ * it submits the POST (see `postLogout` in $lib/utils/logout.ts); the action only handles cookie cleanup.
  *
  * With a `returnUrl` ("switch account" on the OAuth consent page) the user is
  * sent to /login carrying that target, so they re-authenticate and land back
@@ -37,6 +37,16 @@ export const load: PageServerLoad = async ({ cookies, url, locals }) => {
 
 export const actions: Actions = {
 	default: async ({ cookies, request }) => {
+		// Parse the body first: a malformed/aborted body must never prevent the
+		// cookies from being cleared.
+		let returnUrl: string;
+		try {
+			const raw = (await request.formData()).get('returnUrl');
+			returnUrl = safeReturnUrl(typeof raw === 'string' ? raw : null, '');
+		} catch {
+			returnUrl = '';
+		}
+
 		log.debug('logout_clearing_cookies');
 
 		cookies.delete('access_token', { path: '/' });
@@ -44,9 +54,6 @@ export const actions: Actions = {
 		// "remember me" preference cookie
 		cookies.delete('remember_me', { path: '/' });
 
-		const form = await request.formData();
-		const raw = form.get('returnUrl');
-		const returnUrl = safeReturnUrl(typeof raw === 'string' ? raw : null, '');
 		if (returnUrl) {
 			throw redirect(303, `/login?returnUrl=${encodeURIComponent(returnUrl)}`);
 		}

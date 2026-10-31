@@ -123,6 +123,22 @@ class AuthStore {
 	}
 
 	/**
+	 * Resolve once the bootstrap gate and any in-flight refresh settled, so a
+	 * late Set-Cookie cannot undo a logout. Never rejects; total wait capped at 15 s.
+	 */
+	async waitForAuthSettled(): Promise<void> {
+		let timeoutId: ReturnType<typeof setTimeout> | undefined = undefined;
+		const settle = this.waitForAuthReady().then(() => this._refreshPromise?.catch(() => undefined));
+		await Promise.race([
+			settle,
+			new Promise<void>((r) => {
+				timeoutId = setTimeout(r, 15_000);
+			})
+		]);
+		clearTimeout(timeoutId);
+	}
+
+	/**
 	 * Initialize auth state (called on app startup)
 	 * If access token exists in memory, fetch user data
 	 * Note: This is idempotent - safe to call multiple times
