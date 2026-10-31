@@ -241,7 +241,7 @@ describe('SmallBusinessSchemeSection', () => {
 
 		it('clears the "Removing" status when two removals fail close together', async () => {
 			// Gate both requests so the two removals really overlap: both fail before either settles.
-			let release: () => void = () => {};
+			let release: () => void = () => undefined;
 			const gate = new Promise<void>((r) => (release = r));
 			updateTier.mockImplementation(async () => {
 				await gate;
