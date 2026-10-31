@@ -10,7 +10,7 @@ vi.mock('./metrics', () => ({
 	recordSsrError: vi.fn()
 }));
 
-import { handleRequestLogging, handleSsrError } from './request-logging';
+import { handleRequestLogging, handleSsrError, redactTokens } from './request-logging';
 import { log } from './logger';
 import { recordRequest, recordSsrError } from './metrics';
 
@@ -187,6 +187,22 @@ describe('handleSsrError', () => {
 		expect(result).toEqual({ message: 'Not Found' });
 	});
 
+	it('redacts tokens in Error-shaped plain objects', () => {
+		const event = fakeEvent({
+			url: new URL('https://letsrevel.io/join/event/SECRET'),
+			route: { id: null } as RequestEvent['route'],
+			locals: { requestId: 'req-4' } as RequestEvent['locals']
+		});
+		(handleSsrError as HandleServerError)({
+			error: { name: 'ApiError', message: 'Not found: /join/event/SECRET' },
+			event,
+			status: 404,
+			message: 'Not Found'
+		});
+		const [, fields] = vi.mocked(log.warning).mock.calls[0];
+		expect(JSON.stringify(fields)).not.toContain('SECRET');
+	});
+
 	it('omits ip_address when getClientAddress throws (prerender)', () => {
 		const event = fakeEvent({
 			locals: { requestId: 'req-3' } as RequestEvent['locals'],
@@ -202,5 +218,70 @@ describe('handleSsrError', () => {
 		});
 		const [, fields] = vi.mocked(log.error).mock.calls[0];
 		expect(fields?.ip_address).toBeUndefined();
+	});
+});
+
+describe('redactTokens', () => {
+	it('redacts token route params and leaves other paths alone', () => {
+		expect(redactTokens('/join/org/abc123', { token_id: 'abc123' })).toBe('/join/org/REDACTED');
+		expect(redactTokens('/join/event/abc123/', { token_id: 'abc123' })).toBe(
+			'/join/event/REDACTED/'
+		);
+		expect(redactTokens('/events/acme/party', { org_slug: 'acme', event_slug: 'party' })).toBe(
+			'/events/acme/party'
+		);
+		expect(redactTokens('/login', {})).toBe('/login');
+	});
+
+	it('redacts invitation paths even when params are empty (404/400 routes)', () => {
+		expect(redactTokens('/join/event/tok/extra', {})).toBe('/join/event/REDACTED/extra');
+		expect(redactTokens('Not found: /join/org/tok', {})).toBe('Not found: /join/org/REDACTED');
+	});
+
+	it('redacts non-canonical encodings via the regex fallback', () => {
+		expect(redactTokens('/join/event/%61bc123', { token_id: 'abc123' })).toBe(
+			'/join/event/REDACTED'
+		);
+	});
+
+	it('scrubs the token from the error logged by handleSsrError', () => {
+		vi.clearAllMocks();
+		const error = new Error('Not found: /join/event/secret/extra');
+		(handleSsrError as HandleServerError)({
+			error,
+			event: fakeEvent({ url: new URL('https://letsrevel.io/join/event/secret/extra') }),
+			status: 404,
+			message: 'Not Found'
+		});
+		const ctx = vi.mocked(log.warning).mock.calls[0][1] as { error: Error };
+		expect(JSON.stringify(ctx)).not.toContain('secret');
+		expect(ctx.error).toBeInstanceOf(Error);
+		expect(ctx.error.message).toContain('REDACTED');
+		expect(ctx.error.stack).not.toContain('secret');
+		expect(error.message).toContain('secret'); // original untouched
+	});
+
+	it('handles URL-encoded param values', () => {
+		expect(redactTokens('/join/org/a%2Fb%20c', { token_id: 'a/b c' })).toBe('/join/org/REDACTED');
+	});
+
+	it('is applied to request_finished and ssr error logs', async () => {
+		vi.clearAllMocks();
+		const url = new URL('https://letsrevel.io/join/event/secret-token');
+		const params = { token_id: 'secret-token' };
+		await handleRequestLogging({
+			event: fakeEvent({ url, params }),
+			resolve: vi.fn().mockResolvedValue(new Response('ok'))
+		} as Parameters<Handle>[0]);
+		expect(vi.mocked(log.info).mock.calls[0][1]).toMatchObject({
+			path: '/join/event/REDACTED'
+		});
+		(handleSsrError as HandleServerError)({
+			error: new Error('x'),
+			event: fakeEvent({ url, params }),
+			status: 500,
+			message: 'm'
+		});
+		expect(vi.mocked(log.error).mock.calls[0][1]).toMatchObject({ path: '/join/event/REDACTED' });
 	});
 });

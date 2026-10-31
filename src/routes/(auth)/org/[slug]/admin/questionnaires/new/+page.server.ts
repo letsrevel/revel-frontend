@@ -2,12 +2,11 @@ import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
-	const user = locals.user;
-	if (!user) {
+	if (!locals.user) {
 		throw error(401, 'Unauthorized');
 	}
 
-	return {
-		user
-	};
+	// Deliberately returns nothing from `locals.user`: it carries the access
+	// token, which must never be serialized into the SSR HTML / __data.json.
+	return {};
 };

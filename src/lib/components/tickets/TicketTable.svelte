@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { openInNewTab } from '$lib/utils/open-external';
 	import * as m from '$lib/paraglide/messages.js';
 	import { getUserDisplayName } from '$lib/utils/user-display';
 	import { getTicketStatusTone, getTicketStatusLabel } from '$lib/utils/status-colors';
@@ -349,7 +350,10 @@
 									{/if}
 									{#if ticket.tier?.payment_method === 'online' && ticket.payment?.stripe_dashboard_url}
 										<DropdownMenu.Item
-											onclick={() => window.open(ticket.payment?.stripe_dashboard_url, '_blank')}
+											onclick={() => {
+												const url = ticket.payment?.stripe_dashboard_url;
+												if (url) openInNewTab(url);
+											}}
 										>
 											<ExternalLink class="mr-2 h-4 w-4" aria-hidden="true" />
 											{m['ticketTable.manageOnStripe']()}

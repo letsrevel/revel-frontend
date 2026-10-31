@@ -20,8 +20,10 @@ export const load: PageServerLoad = async ({ locals, parent, url }) => {
 		throw redirect(303, '/dashboard');
 	}
 
+	// Email only: `locals.user` carries the access token, which must never be
+	// serialized into the SSR HTML / __data.json.
 	return {
-		user: locals.user
+		user: { email: locals.user.email }
 	};
 };
 

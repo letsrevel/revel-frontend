@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { openInNewTab } from '$lib/utils/open-external';
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
 	import { ExternalLink, Play, StopCircle, RotateCcw } from '@lucide/svelte';
@@ -123,11 +124,7 @@
 					{m['pollStatusBar.reopenButton']()}
 				</Button>
 			{/if}
-			<Button
-				variant="ghost"
-				onclick={() => window.open(voterUrl, '_blank', 'noopener')}
-				class="gap-2"
-			>
+			<Button variant="ghost" onclick={() => openInNewTab(voterUrl)} class="gap-2">
 				<ExternalLink class="h-4 w-4" />
 				{m['pollStatusBar.viewAsVoter']()}
 			</Button>

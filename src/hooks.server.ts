@@ -14,6 +14,8 @@ import { requiresAuth, loginRedirectPath } from '$lib/server/auth-guard';
 import { handleDocumentCacheControl } from '$lib/server/document-cache';
 import {
 	getAccessTokenCookieOptions,
+	getAuthCookieOptions,
+	getClientCookieOptions,
 	getRefreshTokenCookieOptions,
 	getRememberMeCookieOptions
 } from '$lib/utils/cookies';
@@ -23,7 +25,7 @@ import { handleTenant } from '$lib/server/tenant';
 import { handleTenantRouting } from '$lib/server/tenant-routing';
 import { handleTenantHead } from '$lib/server/tenant-head';
 import { startMetricsServer } from '$lib/server/metrics';
-import { handleRequestLogging, handleSsrError } from '$lib/server/request-logging';
+import { handleRequestLogging, handleSsrError, redactTokens } from '$lib/server/request-logging';
 
 // Start the internal Prometheus metrics listener (production-only, guarded so
 // dev/HMR/tests never bind the port). Importing metrics also registers the
@@ -150,38 +152,20 @@ const handleTokenCapture: Handle = async ({ event, resolve }) => {
 	const orgToken = event.url.searchParams.get('ot');
 	if (orgToken) {
 		log.debug('org_token_captured');
-		event.cookies.set('pending_org_token', orgToken, {
-			path: '/',
-			httpOnly: true,
-			secure: false, // Set to true in production
-			sameSite: 'lax',
-			maxAge: 60 * 60 * 24 * 7 // 7 days
-		});
+		event.cookies.set('pending_org_token', orgToken, getAuthCookieOptions(60 * 60 * 24 * 7));
 	}
 
 	// Check for event token (?et=)
 	const eventToken = event.url.searchParams.get('et');
 	if (eventToken) {
 		log.debug('event_token_captured');
-		event.cookies.set('pending_event_token', eventToken, {
-			path: '/',
-			httpOnly: true,
-			secure: false, // Set to true in production
-			sameSite: 'lax',
-			maxAge: 60 * 60 * 24 * 7 // 7 days
-		});
+		event.cookies.set('pending_event_token', eventToken, getAuthCookieOptions(60 * 60 * 24 * 7));
 	}
 
 	// Check for referral code (?ref=) — new code always prevails
 	const referralCode = event.url.searchParams.get('ref');
 	if (referralCode) {
-		event.cookies.set('referral_code', referralCode, {
-			path: '/',
-			httpOnly: false, // Readable by client-side JS on the registration page
-			secure: false,
-			sameSite: 'lax',
-			maxAge: 60 * 60 * 24 * 30 // 30 days
-		});
+		event.cookies.set('referral_code', referralCode, getClientCookieOptions(60 * 60 * 24 * 30));
 	}
 
 	return resolve(event);
@@ -333,7 +317,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 	const refreshToken = event.cookies.get('refresh_token');
 
 	log.debug('auth_request', {
-		path: event.url.pathname,
+		path: redactTokens(event.url.pathname, event.params),
 		has_access_token: !!accessToken,
 		has_refresh_token: !!refreshToken
 	});

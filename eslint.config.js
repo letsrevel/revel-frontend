@@ -47,6 +47,15 @@ export default [
 			'@typescript-eslint/consistent-type-definitions': 'off',
 			'prefer-const': 'error',
 			'svelte/valid-compile': 'off', // Disable custom element warnings
+			'no-restricted-properties': [
+				'error',
+				{
+					object: 'window',
+					property: 'open',
+					message:
+						'Use openInNewTab() from $lib/utils/open-external.ts: bare window.open keeps window.opener (reverse tabnabbing). If you need the returned window, disable this rule with a reason.'
+				}
+			],
 			'no-restricted-syntax': [
 				'error',
 				{

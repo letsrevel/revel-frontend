@@ -122,11 +122,6 @@
 		isSaving = true;
 
 		try {
-			const user = data.user;
-			if (!user) {
-				throw new Error('Not authenticated');
-			}
-
 			// Build sections array for API
 			const apiSections = buildCreateApiSections(builder.sections);
 
@@ -163,8 +158,7 @@
 					multiplechoicequestion_questions: topLevelMC as MultipleChoiceQuestionCreateSchema[],
 					freetextquestion_questions: topLevelFT as FreeTextQuestionCreateSchema[],
 					fileuploadquestion_questions: topLevelFU as FileUploadQuestionCreateSchema[]
-				},
-				headers: { Authorization: `Bearer ${user.accessToken}` }
+				}
 			});
 
 			if (response.error) {
