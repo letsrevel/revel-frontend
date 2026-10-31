@@ -32,7 +32,19 @@ export function redactTokens(text: string, params: Record<string, string> = {}):
 /** Copy of `error` with message/stack scrubbed (SvelteKit's 404 message embeds the path). */
 function redactError(error: unknown, params: Record<string, string>): unknown {
 	if (typeof error === 'string') return redactTokens(error, params);
-	if (!(error instanceof Error)) return error;
+	if (!(error instanceof Error)) {
+		// The logger JSON-serializes non-Errors, so scrub that serialized form.
+		// Error-shaped objects ({ name, message }) can carry the path too.
+		let json: string | undefined;
+		try {
+			json = JSON.stringify(error);
+		} catch {
+			return error;
+		}
+		if (json === undefined) return error;
+		const redacted = redactTokens(json, params);
+		return redacted === json ? error : redacted;
+	}
 	const message = redactTokens(error.message, params);
 	const stack = error.stack ? redactTokens(error.stack, params) : undefined;
 	if (message === error.message && stack === error.stack) return error;

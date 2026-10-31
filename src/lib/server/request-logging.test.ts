@@ -187,6 +187,22 @@ describe('handleSsrError', () => {
 		expect(result).toEqual({ message: 'Not Found' });
 	});
 
+	it('redacts tokens in Error-shaped plain objects', () => {
+		const event = fakeEvent({
+			url: new URL('https://letsrevel.io/join/event/SECRET'),
+			route: { id: null } as RequestEvent['route'],
+			locals: { requestId: 'req-4' } as RequestEvent['locals']
+		});
+		(handleSsrError as HandleServerError)({
+			error: { name: 'ApiError', message: 'Not found: /join/event/SECRET' },
+			event,
+			status: 404,
+			message: 'Not Found'
+		});
+		const [, fields] = vi.mocked(log.warning).mock.calls[0];
+		expect(JSON.stringify(fields)).not.toContain('SECRET');
+	});
+
 	it('omits ip_address when getClientAddress throws (prerender)', () => {
 		const event = fakeEvent({
 			locals: { requestId: 'req-3' } as RequestEvent['locals'],

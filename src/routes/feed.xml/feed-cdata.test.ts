@@ -44,6 +44,16 @@ describe('feed.xml CDATA', () => {
 		organization: { slug: 'acme', name: 'Acme' },
 		...over
 	});
+	// The route formats the date in the process timezone; derive the expected
+	// text the same way so the assertions hold under any TZ.
+	/* eslint-disable no-restricted-syntax -- mirrors the route's fixed en-US RSS date */
+	const DATE = new Date('2099-01-01T18:00:00Z').toLocaleDateString('en-US', {
+		weekday: 'long',
+		year: 'numeric',
+		month: 'long',
+		day: 'numeric'
+	});
+	/* eslint-enable no-restricted-syntax */
 	/** Content of the first <description> inside an <item> (CDATA wrapper removed). */
 	const itemDescription = async (over: Record<string, unknown>) => {
 		listEvents.mockResolvedValue({ data: { count: 1, results: [event(over)] } });
@@ -56,7 +66,7 @@ describe('feed.xml CDATA', () => {
 
 	it('keeps a ]]> in the description inside the CDATA', async () => {
 		const desc = await itemDescription({ description: 'a ]]> b' });
-		expect(desc).toBe('<![CDATA[a ]]&gt; b\nDate: Thursday, January 1, 2099]]>');
+		expect(desc).toBe(`<![CDATA[a ]]&gt; b\nDate: ${DATE}]]>`);
 		listEvents.mockResolvedValue({
 			data: { count: 1, results: [event({ name: evil, description: '' })] }
 		});
@@ -70,22 +80,18 @@ describe('feed.xml CDATA', () => {
 			organization: { slug: 'acme', name: 'Ac\u0000me' }
 		});
 		expect(desc).toBe(
-			'<![CDATA[Join &lt;img src=x onerror=alert(1)&gt; organized by Acme\nDate: Thursday, January 1, 2099]]>'
+			`<![CDATA[Join &lt;img src=x onerror=alert(1)&gt; organized by Acme\nDate: ${DATE}]]>`
 		);
 	});
 
 	it('escapes an unclosed tag in the description payload', async () => {
 		const desc = await itemDescription({ description: 'hi <img src=x onerror=alert(1)//' });
-		expect(desc).toBe(
-			'<![CDATA[hi &lt;img src=x onerror=alert(1)//\nDate: Thursday, January 1, 2099]]>'
-		);
+		expect(desc).toBe(`<![CDATA[hi &lt;img src=x onerror=alert(1)//\nDate: ${DATE}]]>`);
 	});
 
 	it('does not double-escape entities already in the description', async () => {
 		const desc = await itemDescription({ description: 'Fish &amp; Chips &lt;3 &amp;lt;' });
-		expect(desc).toBe(
-			'<![CDATA[Fish &amp; Chips &lt;3 &amp;lt;\nDate: Thursday, January 1, 2099]]>'
-		);
+		expect(desc).toBe(`<![CDATA[Fish &amp; Chips &lt;3 &amp;lt;\nDate: ${DATE}]]>`);
 	});
 });
 
