@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 const { getLocale } = vi.hoisted(() => ({ getLocale: vi.fn(() => 'en') }));
 vi.mock('$lib/paraglide/runtime.js', () => ({ getLocale }));
 
-import { formatMoney, formatMoneyRange } from './format';
+import { formatMoney, formatMoneyRange, formatRate } from './format';
 
 // Intl inserts a NARROW NO-BREAK / NO-BREAK space before a trailing symbol in
 // some locales; normalise so assertions stay readable.
@@ -21,5 +21,23 @@ describe('formatMoney / formatMoneyRange locale switching (#949)', () => {
 		getLocale.mockReturnValue('de');
 		expect(norm(formatMoney(18, 'EUR'))).toBe('18,00 €');
 		expect(norm(formatMoneyRange('20.00', '45.00', 'EUR'))).toBe('20,00 € \u2013 45,00 €');
+	});
+});
+
+describe('formatRate', () => {
+	it('en trims zeros', () => {
+		getLocale.mockReturnValue('en');
+		expect(formatRate('7.50')).toBe('7.5');
+		expect(formatRate('19.00')).toBe('19');
+		expect(formatRate(0)).toBe('0');
+	});
+	it('de uses a decimal comma', () => {
+		getLocale.mockReturnValue('de');
+		expect(formatRate('7.50')).toBe('7,5');
+	});
+	it('returns raw input when not numeric', () => {
+		expect(formatRate('')).toBe('');
+		expect(formatRate('abc')).toBe('abc');
+		expect(formatRate(null)).toBe('');
 	});
 });

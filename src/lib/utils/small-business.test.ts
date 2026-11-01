@@ -126,6 +126,18 @@ describe('schemeBlockers', () => {
 		expect(schemeBlockers(at)).toEqual([]);
 		expect(schemeBlockers({ ...at, taxNumber: '123' })).toEqual(['tax_number_invalid']);
 	});
+	it('blocks declaring while tiers still charge VAT', () => {
+		expect(schemeBlockers({ ...ok, declaring: true, tiersChargingVatCount: 2 })).toEqual([
+			'tiers_charging_vat'
+		]);
+	});
+	it('ignores tiers when the scheme is already declared or the list is empty', () => {
+		expect(schemeBlockers({ ...ok, declaring: false, tiersChargingVatCount: 2 })).toEqual([]);
+		expect(schemeBlockers({ ...ok, declaring: true, tiersChargingVatCount: 0 })).toEqual([]);
+		expect(
+			schemeBlockers({ ...ok, scheme: 'none', declaring: true, tiersChargingVatCount: 2 })
+		).toEqual([]);
+	});
 	it('needs a confirmed zero rate when the default is positive', () => {
 		expect(schemeBlockers({ ...ok, vatRate: '19.00' })).toEqual(['vat_rate_not_zero']);
 		expect(schemeBlockers({ ...ok, vatRate: '19.00', vatRateZeroConfirmed: true })).toEqual([]);

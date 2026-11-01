@@ -83,3 +83,15 @@ export function formatPercent(ratio: number | null | undefined, maximumFractionD
 		maximumFractionDigits
 	}).format(safe);
 }
+
+/**
+ * Format a decimal rate (e.g. a VAT percentage like "7.50") in the UI locale,
+ * trimming trailing zeros. Returns the raw string when it is not a finite number.
+ */
+export function formatRate(value: string | number | null | undefined): string {
+	const raw = value === null || value === undefined ? '' : String(value);
+	if (raw.trim() === '') return raw;
+	const n = Number(raw);
+	if (!Number.isFinite(n)) return raw;
+	return new Intl.NumberFormat(getDateLocale(), { maximumFractionDigits: 2 }).format(n);
+}

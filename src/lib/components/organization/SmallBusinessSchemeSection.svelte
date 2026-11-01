@@ -5,12 +5,14 @@
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
+	import TiersChargingVatList from './TiersChargingVatList.svelte';
 	import { AlertCircle, Check, Info, Loader2 } from '@lucide/svelte';
-	import { resolve } from '$app/paths';
 	import { invalidateAll } from '$app/navigation';
+	import { tick } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import { extractErrorMessage } from '$lib/utils/errors';
 	import { countryName } from '$lib/utils/compliance';
+	import { formatRate } from '$lib/utils/format';
 	import { normalizeDecimalInput } from '$lib/components/events/admin/tier-form-helpers';
 	import { organizationadminvatUpdateBillingInfo } from '$lib/api/generated/sdk.gen';
 	import type {
@@ -79,6 +81,9 @@
 	);
 	const formCountry = $derived(schemeCountry(formScheme));
 	const needsZeroRate = $derived(enabled && vatRateIsPositive(info.vat_rate));
+	const declaring = $derived(enabled && current === 'none');
+	const tiersChargingVat = $derived(info.tiers_charging_vat ?? []);
+	const showTiers = $derived(declaring && tiersChargingVat.length > 0);
 	const blockers = $derived(
 		schemeBlockers({
 			scheme: formScheme,
@@ -86,14 +91,15 @@
 			vatIdValidated: info.vat_id_validated === true,
 			taxNumber,
 			vatRate: info.vat_rate,
-			vatRateZeroConfirmed: confirmZero
+			vatRateZeroConfirmed: confirmZero,
+			declaring,
+			tiersChargingVatCount: tiersChargingVat.length
 		})
 	);
 	const isDirty = $derived(
 		formScheme !== current ||
 			(enabled && taxNumber.trim() !== (info.tax_registration_number ?? '').trim())
 	);
-	const declaring = $derived(enabled && current === 'none');
 	const taxNumberRequired = $derived(formScheme === 'at_6_1_27' && info.vat_id_validated !== true);
 	/** Removing an existing scheme: the 0 % it fixed can be replaced by a new default rate. */
 	const removing = $derived(current !== 'none' && !enabled);
@@ -137,7 +143,8 @@
 		vat_id_not_validated: () => m['smallBiz.blocker.vat_id_not_validated'](),
 		tax_number_required: () => m['smallBiz.blocker.tax_number_required'](),
 		tax_number_invalid: () => m['smallBiz.blocker.tax_number_invalid'](),
-		vat_rate_not_zero: () => m['smallBiz.blocker.vat_rate_not_zero']()
+		vat_rate_not_zero: () => m['smallBiz.blocker.vat_rate_not_zero'](),
+		tiers_charging_vat: () => m['smallBiz.blocker.tiers_charging_vat']()
 	};
 
 	const saveMutation = createMutation(() => ({
@@ -169,8 +176,63 @@
 		},
 		// No toast: the persistent role="alert" block below is the feedback, and a toast on top
 		// would announce the same refusal twice. The local handler also replaces the global toast.
-		onError: () => undefined
+		onError: () => {
+			// A 422 may come from stale tier data: refetch so the tiers box can appear.
+			queryClient.invalidateQueries({ queryKey: ['billing-info', slug] });
+		}
 	}));
+
+	// A refusal caused by stale tier data is moot once the refetch shrinks the list.
+	let prevTierCount = 0;
+	$effect(() => {
+		const count = tiersChargingVat.length;
+		if (count < prevTierCount) saveMutation.reset();
+		prevTierCount = count;
+	});
+
+	let removedAnnouncement = $state('');
+	// Each announcement gets a token: a late `tick()` never overwrites a newer message, and a
+	// progress clear only removes the progress message it belongs to (no string matching).
+	let announceSeq = 0;
+	let progressSeq = -1;
+
+	/** Routes a message to the always-mounted live region (clear, tick, set re-announces repeats). */
+	async function announce(text: string): Promise<void> {
+		const id = ++announceSeq;
+		removedAnnouncement = '';
+		await tick();
+		if (id === announceSeq) removedAnnouncement = text;
+	}
+
+	/**
+	 * Progress status from the tier list. An empty text clears the live region only while it
+	 * still belongs to the latest "Removing..." message, never a success announcement after it.
+	 */
+	function handleTierStatus(text: string) {
+		if (text === '') {
+			if (progressSeq === announceSeq) {
+				announceSeq++; // cancels a progress message still waiting for its tick
+				removedAnnouncement = '';
+			}
+			return;
+		}
+		progressSeq = announceSeq + 1;
+		void announce(text);
+	}
+
+	/** After a tier's rate is removed: announce it and keep keyboard focus somewhere real. */
+	async function handleTierRemoved(text: string) {
+		await announce(text);
+		// Focus fallback: tiers title, then the save button (only if enabled: focus() on a
+		// disabled button is a no-op), then the scheme checkbox, which is always rendered here.
+		const title = document.getElementById('small-business-tiers-title');
+		const save = document.getElementById('small-business-save') as HTMLButtonElement | null;
+		const target =
+			title ??
+			(save && !save.disabled ? save : null) ??
+			document.getElementById('small-business-enabled');
+		target?.focus();
+	}
 
 	function edited() {
 		dirty = true;
@@ -315,7 +377,10 @@
 							{/if}
 						</p>
 						<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- in-page anchor -->
-						<a href="#vat-id-section" class="text-primary underline underline-offset-2">
+						<a
+							href="#vat-id-section"
+							class="font-medium text-foreground underline underline-offset-2"
+						>
 							{m['smallBiz.vatIdLink']()}
 						</a>
 					</div>
@@ -327,7 +392,7 @@
 						data-testid="small-business-vat-rate"
 					>
 						<p class="font-medium">
-							{m['smallBiz.vatRateCallout']({ rate: String(parseFloat(String(info.vat_rate))) })}
+							{m['smallBiz.vatRateCallout']({ rate: formatRate(info.vat_rate) })}
 						</p>
 						<div class="flex items-start gap-2">
 							<Checkbox
@@ -347,16 +412,26 @@
 					</div>
 				{/if}
 
-				{#if declaring}
-					<p class="text-sm text-muted-foreground" data-testid="small-business-tiers-hint">
-						{m['smallBiz.tiersHint']()}
-						<a
-							href={resolve('/(auth)/org/[slug]/admin/events', { slug })}
-							class="text-primary underline underline-offset-2"
+				{#if showTiers}
+					<div
+						class="space-y-2 rounded-md border border-highlight/40 bg-highlight/20 p-3 text-sm"
+						data-testid="small-business-tiers-charging-vat"
+					>
+						<p
+							id="small-business-tiers-title"
+							tabindex="-1"
+							class="rounded-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background forced-colors:focus-visible:outline forced-colors:focus-visible:outline-2"
 						>
-							{m['smallBiz.tiersLink']()}
-						</a>
-					</p>
+							{m['smallBiz.tiersChargingVatTitle']()}
+						</p>
+						<TiersChargingVatList
+							{slug}
+							{accessToken}
+							tiers={tiersChargingVat}
+							onRemoved={handleTierRemoved}
+							onStatus={handleTierStatus}
+						/>
+					</div>
 				{/if}
 
 				<div class="space-y-1">
@@ -398,6 +473,7 @@
 
 			<div class="flex justify-end">
 				<Button
+					id="small-business-save"
 					type="submit"
 					disabled={saveMutation.isPending || !isDirty || blockers.length > 0 || newRateInvalid}
 				>
@@ -411,4 +487,7 @@
 			</div>
 		</form>
 	{/if}
+	<p class="sr-only" role="status" data-testid="small-business-removed-status">
+		{removedAnnouncement}
+	</p>
 </div>
