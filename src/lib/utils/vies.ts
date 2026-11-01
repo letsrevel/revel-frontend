@@ -31,7 +31,7 @@ export function viesUnavailableDetail(error: unknown): string {
  */
 export function viesOutcome(
 	code: ViesUnavailableCode | null,
-	fallback: Exclude<ViesOutcome, 'not_saved'> = 'pending'
+	fallback: Exclude<ViesOutcome, 'not_saved'>
 ): ViesOutcome {
 	switch (code) {
 		case 'vies_unavailable_saved_pending':

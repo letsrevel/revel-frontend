@@ -4575,7 +4575,7 @@
 			"validatedAt": "Validated on {date}",
 			"saved": "VAT ID validated and saved",
 			"savedPending": "VAT ID saved. Validation is temporarily unavailable and will happen automatically.",
-			"savedUnvalidated": "VAT ID saved, but VIES is unavailable so it isn't validated yet. Try validating again later.",
+			"savedUnvalidated": "VAT ID saved, but VIES is unavailable so it isn't validated yet. Try again later.",
 			"removed": "VAT ID removed",
 			"invalid": "The VAT ID is not valid according to VIES",
 			"error": "Failed to update VAT ID"

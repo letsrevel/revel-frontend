@@ -451,9 +451,9 @@ describe('BillingProfileForm', () => {
 		it.each([
 			['saved_unvalidated', { detail: 'd', code: 'vies_unavailable_saved_unvalidated' }],
 			['unknown code', { detail: 'd', code: 'something_new' }],
-			['no body', undefined]
+			['no body', {}]
 		])('%s: unvalidated info toast and refetch', async (_n, body) => {
-			const { sdk } = await submitVat(body ?? '');
+			const { sdk } = await submitVat(body);
 			await waitFor(() =>
 				expect(toastMock.info).toHaveBeenCalledWith('VAT ID saved, not validated yet.')
 			);
@@ -486,6 +486,67 @@ describe('BillingProfileForm', () => {
 		it('non-503 error shows the server message', async () => {
 			await submitVat({ detail: 'Invalid VAT ID' }, 400);
 			await waitFor(() => expect(toastMock.error).toHaveBeenCalledWith('Invalid VAT ID'));
+		});
+
+		it('400 refetches the profile (backend cleared the VAT ID), reseeds country, keeps typed input', async () => {
+			const sdk = await import('$lib/api/generated/sdk.gen');
+			vi.mocked(sdk.userbillingGetBillingProfile)
+				.mockResolvedValueOnce({
+					data: { ...structured, vat_country_code: 'AT' },
+					response: { status: 200 } as Response,
+					error: null
+				})
+				.mockResolvedValue({
+					data: { ...structured, vat_country_code: '', vat_id: '' },
+					response: { status: 200 } as Response,
+					error: null
+				});
+			vi.mocked(sdk.userbillingSetVatId).mockResolvedValueOnce({
+				data: undefined,
+				error: { detail: 'Invalid VAT ID' },
+				response: { status: 400 } as Response
+			} as never);
+			renderWithQueryClient({ authToken: 'test-token' });
+			await waitFor(() => expect(document.getElementById('vatCountryCode')).toHaveValue('AT'));
+			const user = userEvent.setup();
+			await user.type(screen.getByLabelText('VAT ID'), 'DE123456789');
+			await user.click(screen.getByRole('button', { name: 'Validate' }));
+			await waitFor(() => expect(toastMock.error).toHaveBeenCalledWith('Invalid VAT ID'));
+			await waitFor(() => expect(document.getElementById('vatCountryCode')).toHaveValue(''));
+			expect(vi.mocked(sdk.userbillingGetBillingProfile).mock.calls.length).toBeGreaterThan(1);
+			expect(screen.getByLabelText('VAT ID')).toHaveValue('DE123456789');
+		});
+
+		it('keeps an edit made while the set-VAT request was in flight', async () => {
+			const sdk = await import('$lib/api/generated/sdk.gen');
+			vi.mocked(sdk.userbillingGetBillingProfile).mockResolvedValue({
+				data: structured,
+				response: { status: 200 } as Response,
+				error: null
+			});
+			let release: (v: never) => void = (): void => undefined;
+			vi.mocked(sdk.userbillingSetVatId).mockReturnValueOnce(
+				new Promise((r) => {
+					release = r as never;
+				}) as never
+			);
+			renderWithQueryClient({ authToken: 'test-token' });
+			await waitFor(() => expect(screen.getByLabelText(/^City/i)).toHaveValue('Vienna'));
+			const user = userEvent.setup();
+			const input = screen.getByLabelText('VAT ID');
+			await user.type(input, 'DE123456789');
+			await user.click(screen.getByRole('button', { name: 'Validate' }));
+			await user.type(input, '0');
+			release({
+				data: { vat_id: 'DE123456789' },
+				error: undefined,
+				response: { status: 200 } as Response
+			} as never);
+			await waitFor(() =>
+				expect(vi.mocked(sdk.userbillingGetBillingProfile).mock.calls.length).toBeGreaterThan(1)
+			);
+			await new Promise((r) => setTimeout(r, 30));
+			expect(screen.getByLabelText('VAT ID')).toHaveValue('DE1234567890');
 		});
 	});
 });

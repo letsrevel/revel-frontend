@@ -152,25 +152,25 @@
 								viesUnavailableDetail(response.error) || m['orgAdmin.billing.vatId.error']()
 							);
 						}
-						return { pending: true, outcome } as const;
+						return outcome === 'pending'
+							? ({ outcome: 'pending' } as const)
+							: ({ outcome: 'unvalidated' } as const);
 					}
 					if (response.error) {
 						const msg = extractErrorMessage(response.error, m['orgAdmin.billing.vatId.error']());
 						throw new Error(msg);
 					}
 					if (!response.data) throw new Error(m['orgAdmin.billing.vatId.error']());
-					return { pending: false, outcome: 'validated', data: response.data } as const;
+					return { outcome: 'validated', data: response.data } as const;
 				},
 				onSuccess: (result, { requestSlug, vatId }) => {
 					queryClient.invalidateQueries({ queryKey: ['billing-info', requestSlug] });
 					// Layout org data (tier form's VAT context) must refresh too.
 					void invalidateAll();
-					if (result.pending) {
-						toast.info(
-							result.outcome === 'unvalidated'
-								? m['orgAdmin.billing.vatId.savedUnvalidated']()
-								: m['orgAdmin.billing.vatId.savedPending']()
-						);
+					if (result.outcome === 'pending') {
+						toast.info(m['orgAdmin.billing.vatId.savedPending']());
+					} else if (result.outcome === 'unvalidated') {
+						toast.info(m['orgAdmin.billing.vatId.savedUnvalidated']());
 					} else {
 						// Show the normalized value even when it equals the previous server value.
 						// Keep edits made while validation was pending: only overwrite an unchanged draft.

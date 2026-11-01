@@ -31,9 +31,9 @@ describe('viesUnavailableDetail', () => {
 
 describe('viesOutcome', () => {
 	it('maps codes to outcomes', () => {
-		expect(viesOutcome('vies_unavailable_saved_pending')).toBe('pending');
-		expect(viesOutcome('vies_unavailable_saved_unvalidated')).toBe('unvalidated');
-		expect(viesOutcome('vies_unavailable_not_saved')).toBe('not_saved');
+		expect(viesOutcome('vies_unavailable_saved_pending', 'pending')).toBe('pending');
+		expect(viesOutcome('vies_unavailable_saved_unvalidated', 'pending')).toBe('unvalidated');
+		expect(viesOutcome('vies_unavailable_not_saved', 'pending')).toBe('not_saved');
 	});
 	it('falls back to the given default for unknown (null) codes', () => {
 		expect(viesOutcome(null, 'pending')).toBe('pending');
