@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.31.0] - 2026-11-01
+
+### Added
+- **Ticket tiers that still charge VAT** are listed in the small-business section while you declare a scheme, with the event, tier and rate, and saving waits until they're at 0% (#1145).
+  - Tiers of ticketed events link straight to that event's ticket settings.
+  - Tiers of RSVP-only events, which have no ticket editor, get a "Remove this tier's VAT rate" button. The tier then uses your default rate and drops off the list. If the server refuses, the reason shows next to the tier.
+  - Rates are shown in your language's number format, for example 7,5 % in German.
+
+### Fixed
+- The billing settings page no longer loses unsaved input when it refreshes in the background: a VAT ID you're typing, or an invoicing mode you picked but haven't saved, stays as it is. A failed refresh keeps the page usable and shows a notice instead of an error screen.
+- Switching between organizations on the billing page no longer carries over an unsaved VAT ID, invoicing mode or open dialog from the previous organization.
+- A refused invoicing-mode change puts the selection back on the saved mode, next to the reason.
+
 ## [2.30.0] - 2026-10-31
 
 ### Added
