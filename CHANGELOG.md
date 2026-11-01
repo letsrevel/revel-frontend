@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.32.0] - 2026-11-01
+
+### Added
+- On the account billing page, a saved VAT ID that isn't validated yet has a "Validate again" button, so you can retry without removing and re-entering it (#1149).
+
+### Fixed
+- Saving a VAT ID while VIES is unavailable now says what actually happened (#1149, closes #1146):
+  - saved, with validation retried automatically (organizations);
+  - saved but not validated yet, try again later;
+  - not saved, with the reason from the server. This happens for organizations under a small-business scheme, and your typed VAT ID stays in the field.
+- After a VAT ID is refused as invalid on the account billing page, the status and VAT country update right away, so the next save doesn't resend the old country.
+- A VAT ID you edit while a check is still running isn't replaced when the check finishes.
+
 ## [2.31.0] - 2026-11-01
 
 ### Added
