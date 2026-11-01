@@ -4575,6 +4575,7 @@
 			"validatedAt": "Validado em {date}",
 			"saved": "Número de IVA validado e guardado",
 			"savedPending": "Número de IVA guardado. A validação está temporariamente indisponível e será feita automaticamente.",
+			"savedUnvalidated": "Número de IVA guardado, mas o VIES está indisponível, por isso ainda não está validado. Tenta novamente mais tarde.",
 			"removed": "Número de IVA removido",
 			"invalid": "O número de IVA não é válido segundo o VIES",
 			"error": "Não foi possível atualizar o número de IVA"
@@ -7102,6 +7103,8 @@
 			"vatIdNotSet": "Não definido",
 			"vatIdDescription": "Opcional. Indicar um número de IVA da UE válido pode ativar a autoliquidação nas faturas.",
 			"setVatId": "Validar",
+			"vatSavedPending": "Número de IVA guardado. A validação fica pendente enquanto o VIES estiver indisponível.",
+			"vatSavedUnvalidated": "Número de IVA guardado, mas o VIES está indisponível, por isso ainda não está validado. Tenta novamente mais tarde.",
 			"removeVatId": "Remover",
 			"save": "Guardar dados de faturação",
 			"update": "Atualizar dados de faturação",

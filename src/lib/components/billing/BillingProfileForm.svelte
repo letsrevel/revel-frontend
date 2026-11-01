@@ -19,6 +19,7 @@
 	} from '$lib/api/generated/sdk.gen';
 	import type { UserBillingProfileSchema } from '$lib/api/generated/types.gen';
 	import PostalAddressFields from '$lib/components/billing/PostalAddressFields.svelte';
+	import { viesOutcome, viesUnavailableCode, viesUnavailableDetail } from '$lib/utils/vies';
 	import { extractErrorMessage } from '$lib/utils/errors';
 	import { isAddressBlank, legacyAddressForPayload } from '$lib/utils/einvoice';
 	import {
@@ -188,14 +189,29 @@
 				headers: { Authorization: `Bearer ${authToken}` },
 				body: { vat_id: vatIdInput.trim().toUpperCase() }
 			});
-			if (response.error) throw new Error('Failed to set VAT ID');
-			return response.data;
+			if (response.response?.status === 503) {
+				// VIES unavailable: branch on the machine-readable code only. Unknown/missing
+				// code (older backend) is treated as saved-but-unvalidated.
+				const outcome = viesOutcome(viesUnavailableCode(response.error), 'unvalidated');
+				if (outcome === 'not_saved') {
+					throw new Error(viesUnavailableDetail(response.error) || m['billing.form.error']());
+				}
+				return { outcome } as const;
+			}
+			if (response.error) {
+				throw new Error(extractErrorMessage(response.error, m['billing.form.error']()));
+			}
+			return { outcome: 'validated' } as const;
 		},
-		onSuccess: async () => {
+		onSuccess: async (result) => {
+			if (result.outcome === 'pending') toast.info(m['billing.form.vatSavedPending']());
+			else if (result.outcome === 'unvalidated')
+				toast.info(m['billing.form.vatSavedUnvalidated']());
 			await refreshServerDerivedFields();
 		},
-		onError: () => {
-			toast.error(m['billing.form.error']());
+		// not_saved and real errors land here: no refresh, so the typed value stays.
+		onError: (err: Error) => {
+			toast.error(err.message || m['billing.form.error']());
 		}
 	}));
 

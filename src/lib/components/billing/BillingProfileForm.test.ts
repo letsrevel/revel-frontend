@@ -16,6 +16,9 @@ vi.mock('$lib/api/generated/sdk.gen', () => ({
 	userbillingDeleteVatId: vi.fn().mockResolvedValue({ data: {} })
 }));
 
+const toastMock = vi.hoisted(() => ({ info: vi.fn(), error: vi.fn(), success: vi.fn() }));
+vi.mock('svelte-sonner', () => ({ toast: toastMock }));
+
 // Mock paraglide messages
 vi.mock('$lib/paraglide/messages.js', () => ({
 	'billing.form.title': () => 'Billing Information',
@@ -37,6 +40,8 @@ vi.mock('$lib/paraglide/messages.js', () => ({
 	'billing.form.vatIdNotSet': () => 'Not set',
 	'billing.form.setVatId': () => 'Validate',
 	'billing.form.removeVatId': () => 'Remove',
+	'billing.form.vatSavedPending': () => 'VAT ID saved. Validation is pending.',
+	'billing.form.vatSavedUnvalidated': () => 'VAT ID saved, not validated yet.',
 	'billing.form.save': () => 'Save billing information',
 	'billing.form.update': () => 'Update billing information',
 	'billing.form.saving': () => 'Saving...',
@@ -406,5 +411,81 @@ describe('BillingProfileForm', () => {
 		await queryClient.refetchQueries({ queryKey: ['user-billing-profile'] });
 		await new Promise((r) => setTimeout(r, 30));
 		expect(screen.getByLabelText(/^City/i)).toHaveValue('Graz');
+	});
+
+	describe('VAT ID set with VIES unavailable (503)', () => {
+		async function submitVat(
+			errorBody: unknown,
+			status = 503
+		): Promise<{ sdk: typeof import('$lib/api/generated/sdk.gen') }> {
+			const sdk = await import('$lib/api/generated/sdk.gen');
+			vi.mocked(sdk.userbillingGetBillingProfile).mockResolvedValue({
+				data: structured,
+				response: { status: 200 } as Response,
+				error: null
+			});
+			vi.mocked(sdk.userbillingSetVatId).mockResolvedValueOnce({
+				data: undefined,
+				error: errorBody,
+				response: { status } as Response
+			} as never);
+			renderWithQueryClient({ authToken: 'test-token' });
+			await waitFor(() => expect(screen.getByLabelText(/^City/i)).toHaveValue('Vienna'));
+			const user = userEvent.setup();
+			await user.type(screen.getByLabelText('VAT ID'), 'DE123456789');
+			await user.click(screen.getByRole('button', { name: 'Validate' }));
+			return { sdk };
+		}
+
+		it('saved_pending: info toast and refetch', async () => {
+			const { sdk } = await submitVat({ detail: 'd', code: 'vies_unavailable_saved_pending' });
+			await waitFor(() =>
+				expect(toastMock.info).toHaveBeenCalledWith('VAT ID saved. Validation is pending.')
+			);
+			expect(toastMock.error).not.toHaveBeenCalled();
+			await waitFor(() =>
+				expect(vi.mocked(sdk.userbillingGetBillingProfile).mock.calls.length).toBeGreaterThan(1)
+			);
+		});
+
+		it.each([
+			['saved_unvalidated', { detail: 'd', code: 'vies_unavailable_saved_unvalidated' }],
+			['unknown code', { detail: 'd', code: 'something_new' }],
+			['no body', undefined]
+		])('%s: unvalidated info toast and refetch', async (_n, body) => {
+			const { sdk } = await submitVat(body ?? '');
+			await waitFor(() =>
+				expect(toastMock.info).toHaveBeenCalledWith('VAT ID saved, not validated yet.')
+			);
+			expect(toastMock.error).not.toHaveBeenCalled();
+			await waitFor(() =>
+				expect(vi.mocked(sdk.userbillingGetBillingProfile).mock.calls.length).toBeGreaterThan(1)
+			);
+		});
+
+		it('not_saved: error toast with server detail, no refetch, typed value kept', async () => {
+			const { sdk } = await submitVat({
+				detail: 'VIES is down, nothing saved',
+				code: 'vies_unavailable_not_saved'
+			});
+			await waitFor(() =>
+				expect(toastMock.error).toHaveBeenCalledWith('VIES is down, nothing saved')
+			);
+			expect(toastMock.info).not.toHaveBeenCalled();
+			expect(vi.mocked(sdk.userbillingGetBillingProfile)).toHaveBeenCalledTimes(1);
+			expect(screen.getByLabelText('VAT ID')).toHaveValue('DE123456789');
+		});
+
+		it('not_saved without detail falls back to the generic message', async () => {
+			await submitVat({ code: 'vies_unavailable_not_saved' });
+			await waitFor(() =>
+				expect(toastMock.error).toHaveBeenCalledWith('Failed to save billing information')
+			);
+		});
+
+		it('non-503 error shows the server message', async () => {
+			await submitVat({ detail: 'Invalid VAT ID' }, 400);
+			await waitFor(() => expect(toastMock.error).toHaveBeenCalledWith('Invalid VAT ID'));
+		});
 	});
 });

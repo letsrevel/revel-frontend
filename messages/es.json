@@ -4575,6 +4575,7 @@
 			"validatedAt": "Validado el {date}",
 			"saved": "NIF-IVA validado y guardado",
 			"savedPending": "NIF-IVA guardado. La validación no está disponible temporalmente y se realizará automáticamente.",
+			"savedUnvalidated": "NIF-IVA guardado, pero VIES no está disponible, así que todavía no está validado. Inténtalo de nuevo más tarde.",
 			"removed": "NIF-IVA eliminado",
 			"invalid": "El NIF-IVA no es válido según VIES",
 			"error": "No se pudo actualizar el NIF-IVA"
@@ -7102,6 +7103,8 @@
 			"vatIdNotSet": "Sin establecer",
 			"vatIdDescription": "Opcional. Indicar un NIF-IVA válido de la UE puede activar la inversión del sujeto pasivo en las facturas.",
 			"setVatId": "Validar",
+			"vatSavedPending": "NIF-IVA guardado. La validación queda pendiente mientras VIES no esté disponible.",
+			"vatSavedUnvalidated": "NIF-IVA guardado, pero VIES no está disponible, así que todavía no está validado. Inténtalo de nuevo más tarde.",
 			"removeVatId": "Eliminar",
 			"save": "Guardar información de facturación",
 			"update": "Actualizar información de facturación",
