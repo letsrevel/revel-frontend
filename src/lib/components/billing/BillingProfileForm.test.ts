@@ -40,6 +40,7 @@ vi.mock('$lib/paraglide/messages.js', () => ({
 	'billing.form.vatIdNotSet': () => 'Not set',
 	'billing.form.setVatId': () => 'Validate',
 	'billing.form.removeVatId': () => 'Remove',
+	'billing.form.revalidateVatId': () => 'Validate again',
 	'billing.form.vatSavedPending': () => 'VAT ID saved. Validation is pending.',
 	'billing.form.vatSavedUnvalidated': () => 'VAT ID saved, not validated yet.',
 	'billing.form.save': () => 'Save billing information',
@@ -218,6 +219,48 @@ describe('BillingProfileForm', () => {
 
 		await waitFor(() => {
 			expect(screen.getByText('Pending validation')).toBeInTheDocument();
+		});
+	});
+
+	describe('re-validating a saved VAT ID', () => {
+		const withVat = (validated: boolean) => ({
+			id: '1',
+			billing_name: 'Test Company',
+			billing_address: 'Test St 1',
+			vat_country_code: 'AT',
+			billing_email: null,
+			vat_id: 'ATU12345678',
+			vat_id_validated: validated,
+			self_billing_agreed: false
+		});
+
+		it('shows "Validate again" for a saved but unvalidated VAT ID and retries the stored ID', async () => {
+			const sdk = await import('$lib/api/generated/sdk.gen');
+			vi.mocked(sdk.userbillingGetBillingProfile).mockResolvedValueOnce({
+				data: withVat(false),
+				response: { status: 200 } as Response,
+				error: null
+			});
+			renderWithQueryClient({ authToken: 'test-token' });
+			const button = await screen.findByRole('button', { name: 'Validate again' });
+			await userEvent.setup().click(button);
+			await waitFor(() =>
+				expect(sdk.userbillingSetVatId).toHaveBeenCalledWith(
+					expect.objectContaining({ body: { vat_id: 'ATU12345678' } })
+				)
+			);
+		});
+
+		it('hides "Validate again" once the VAT ID is validated', async () => {
+			const sdk = await import('$lib/api/generated/sdk.gen');
+			vi.mocked(sdk.userbillingGetBillingProfile).mockResolvedValueOnce({
+				data: withVat(true),
+				response: { status: 200 } as Response,
+				error: null
+			});
+			renderWithQueryClient({ authToken: 'test-token' });
+			await screen.findByText('Validated');
+			expect(screen.queryByRole('button', { name: 'Validate again' })).not.toBeInTheDocument();
 		});
 	});
 

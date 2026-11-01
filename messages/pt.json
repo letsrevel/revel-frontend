@@ -7103,6 +7103,7 @@
 			"vatIdNotSet": "Não definido",
 			"vatIdDescription": "Opcional. Indicar um número de IVA da UE válido pode ativar a autoliquidação nas faturas.",
 			"setVatId": "Validar",
+			"revalidateVatId": "Validar novamente",
 			"vatSavedPending": "Número de IVA guardado. A validação fica pendente enquanto o VIES estiver indisponível.",
 			"vatSavedUnvalidated": "Número de IVA guardado, mas o VIES está indisponível, por isso ainda não está validado. Tenta novamente mais tarde.",
 			"removeVatId": "Remover",

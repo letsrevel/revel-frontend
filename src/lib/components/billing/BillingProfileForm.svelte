@@ -488,6 +488,20 @@
 					/>
 				{/if}
 
+				{#if vatIdStatus !== 'validated'}
+					<Button
+						variant="outline"
+						size="sm"
+						onclick={() => vatSetMutation.mutate(billingProfile?.vat_id ?? '')}
+						disabled={vatSetMutation.isPending}
+					>
+						{#if vatSetMutation.isPending}
+							<Loader2 class="mr-1 h-3 w-3 animate-spin" aria-hidden="true" />
+						{/if}
+						{m['billing.form.revalidateVatId']()}
+					</Button>
+				{/if}
+
 				<Button
 					variant="ghost"
 					size="sm"

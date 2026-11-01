@@ -7103,6 +7103,7 @@
 			"vatIdNotSet": "Non impostata",
 			"vatIdDescription": "Opzionale. Una partita IVA UE valida può abilitare il reverse charge sulle fatture.",
 			"setVatId": "Valida",
+			"revalidateVatId": "Valida di nuovo",
 			"vatSavedPending": "Partita IVA salvata. La validazione è in sospeso finché VIES non è disponibile.",
 			"vatSavedUnvalidated": "Partita IVA salvata, ma VIES non è disponibile, quindi non è ancora validata. Riprova più tardi.",
 			"removeVatId": "Rimuovi",

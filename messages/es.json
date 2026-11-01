@@ -7103,6 +7103,7 @@
 			"vatIdNotSet": "Sin establecer",
 			"vatIdDescription": "Opcional. Indicar un NIF-IVA válido de la UE puede activar la inversión del sujeto pasivo en las facturas.",
 			"setVatId": "Validar",
+			"revalidateVatId": "Validar de nuevo",
 			"vatSavedPending": "NIF-IVA guardado. La validación queda pendiente mientras VIES no esté disponible.",
 			"vatSavedUnvalidated": "NIF-IVA guardado, pero VIES no está disponible, así que todavía no está validado. Inténtalo de nuevo más tarde.",
 			"removeVatId": "Eliminar",

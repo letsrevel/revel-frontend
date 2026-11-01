@@ -7073,6 +7073,7 @@
 			"vatIdNotSet": "Non défini",
 			"vatIdDescription": "Facultatif. Fournir un numéro de TVA UE valide peut activer l'autoliquidation sur les factures.",
 			"setVatId": "Valider",
+			"revalidateVatId": "Valider à nouveau",
 			"vatSavedPending": "Numéro de TVA enregistré. La validation est en attente tant que VIES est indisponible.",
 			"vatSavedUnvalidated": "Numéro de TVA enregistré, mais VIES est indisponible : il n'est pas encore validé. Réessaie plus tard.",
 			"removeVatId": "Supprimer",

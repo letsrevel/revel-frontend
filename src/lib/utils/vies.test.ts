@@ -10,12 +10,20 @@ describe('viesUnavailableCode', () => {
 		expect(viesUnavailableCode({ detail: 'x', code })).toBe(code);
 	});
 
-	it.each([null, undefined, 'str', 42, {}, { code: 'nope' }, { code: 5 }])(
-		'returns null for %j',
-		(v) => {
-			expect(viesUnavailableCode(v)).toBeNull();
-		}
-	);
+	it.each([
+		null,
+		undefined,
+		'str',
+		42,
+		[],
+		['vies_unavailable_not_saved'],
+		{},
+		{ code: 'nope' },
+		{ code: 5 },
+		{ code: 'toString' }
+	])('returns null for %j', (v) => {
+		expect(viesUnavailableCode(v)).toBeNull();
+	});
 });
 
 describe('viesUnavailableDetail', () => {
@@ -26,6 +34,8 @@ describe('viesUnavailableDetail', () => {
 		expect(viesUnavailableDetail(null)).toBe('');
 		expect(viesUnavailableDetail({ detail: 3 })).toBe('');
 		expect(viesUnavailableDetail({})).toBe('');
+		expect(viesUnavailableDetail(['Down'])).toBe('');
+		expect(viesUnavailableDetail('Down')).toBe('');
 	});
 });
 
