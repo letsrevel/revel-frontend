@@ -4545,6 +4545,7 @@
 			"validatedAt": "Validé le {date}",
 			"saved": "Numéro de TVA validé et enregistré",
 			"savedPending": "Numéro de TVA enregistré. La validation est temporairement indisponible et sera effectuée automatiquement.",
+			"savedUnvalidated": "Numéro de TVA enregistré, mais VIES est indisponible : il n'est pas encore validé. Réessaie plus tard.",
 			"removed": "Numéro de TVA supprimé",
 			"invalid": "Le numéro de TVA n'est pas valide selon VIES",
 			"error": "Échec de la mise à jour du numéro de TVA"
@@ -7072,6 +7073,9 @@
 			"vatIdNotSet": "Non défini",
 			"vatIdDescription": "Facultatif. Fournir un numéro de TVA UE valide peut activer l'autoliquidation sur les factures.",
 			"setVatId": "Valider",
+			"revalidateVatId": "Valider à nouveau",
+			"vatSavedPending": "Numéro de TVA enregistré. La validation est en attente tant que VIES est indisponible.",
+			"vatSavedUnvalidated": "Numéro de TVA enregistré, mais VIES est indisponible : il n'est pas encore validé. Réessaie plus tard.",
 			"removeVatId": "Supprimer",
 			"save": "Enregistrer les informations de facturation",
 			"update": "Mettre à jour les informations de facturation",

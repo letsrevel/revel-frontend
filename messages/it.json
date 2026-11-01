@@ -4575,6 +4575,7 @@
 			"validatedAt": "Validata il {date}",
 			"saved": "Partita IVA validata e salvata",
 			"savedPending": "Partita IVA salvata. La validazione è temporaneamente non disponibile e avverrà automaticamente.",
+			"savedUnvalidated": "Partita IVA salvata, ma VIES non è disponibile, quindi non è ancora validata. Riprova più tardi.",
 			"removed": "Partita IVA rimossa",
 			"invalid": "La partita IVA non è valida secondo il VIES",
 			"error": "Impossibile aggiornare la partita IVA"
@@ -7102,6 +7103,9 @@
 			"vatIdNotSet": "Non impostata",
 			"vatIdDescription": "Opzionale. Una partita IVA UE valida può abilitare il reverse charge sulle fatture.",
 			"setVatId": "Valida",
+			"revalidateVatId": "Valida di nuovo",
+			"vatSavedPending": "Partita IVA salvata. La validazione è in sospeso finché VIES non è disponibile.",
+			"vatSavedUnvalidated": "Partita IVA salvata, ma VIES non è disponibile, quindi non è ancora validata. Riprova più tardi.",
 			"removeVatId": "Rimuovi",
 			"save": "Salva dati di fatturazione",
 			"update": "Aggiorna dati di fatturazione",

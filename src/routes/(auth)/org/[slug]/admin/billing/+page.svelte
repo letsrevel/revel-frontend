@@ -24,6 +24,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { toast } from 'svelte-sonner';
 	import { createSyncOnChange } from '$lib/utils/sync-on-change';
+	import { viesOutcome, viesUnavailableCode, viesUnavailableDetail } from '$lib/utils/vies';
 	import { extractErrorMessage } from '$lib/utils/errors';
 	import {
 		organizationadminvatGetBillingInfo,
@@ -142,23 +143,34 @@
 						headers: { Authorization: `Bearer ${accessToken}` },
 						body: { vat_id: vatId }
 					});
-					// Handle 503 (VIES unavailable) — saved but pending
+					// 503 = VIES unavailable. Branch on the machine-readable code only; an unknown
+					// or missing code (older backend) keeps the legacy "saved, pending" behaviour.
 					if (response.response?.status === 503) {
-						return { pending: true } as const;
+						const outcome = viesOutcome(viesUnavailableCode(response.error), 'pending');
+						if (outcome === 'not_saved') {
+							throw new Error(
+								viesUnavailableDetail(response.error) || m['orgAdmin.billing.vatId.error']()
+							);
+						}
+						return outcome === 'pending'
+							? ({ outcome: 'pending' } as const)
+							: ({ outcome: 'unvalidated' } as const);
 					}
 					if (response.error) {
 						const msg = extractErrorMessage(response.error, m['orgAdmin.billing.vatId.error']());
 						throw new Error(msg);
 					}
 					if (!response.data) throw new Error(m['orgAdmin.billing.vatId.error']());
-					return { pending: false, data: response.data } as const;
+					return { outcome: 'validated', data: response.data } as const;
 				},
 				onSuccess: (result, { requestSlug, vatId }) => {
 					queryClient.invalidateQueries({ queryKey: ['billing-info', requestSlug] });
 					// Layout org data (tier form's VAT context) must refresh too.
 					void invalidateAll();
-					if (result.pending) {
+					if (result.outcome === 'pending') {
 						toast.info(m['orgAdmin.billing.vatId.savedPending']());
+					} else if (result.outcome === 'unvalidated') {
+						toast.info(m['orgAdmin.billing.vatId.savedUnvalidated']());
 					} else {
 						// Show the normalized value even when it equals the previous server value.
 						// Keep edits made while validation was pending: only overwrite an unchanged draft.

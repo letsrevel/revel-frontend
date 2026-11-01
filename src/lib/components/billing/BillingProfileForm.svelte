@@ -20,6 +20,7 @@
 	import type { UserBillingProfileSchema } from '$lib/api/generated/types.gen';
 	import PostalAddressFields from '$lib/components/billing/PostalAddressFields.svelte';
 	import { extractErrorMessage } from '$lib/utils/errors';
+	import { viesOutcome, viesUnavailableCode, viesUnavailableDetail } from '$lib/utils/vies';
 	import { isAddressBlank, legacyAddressForPayload } from '$lib/utils/einvoice';
 	import {
 		emptyPostalAddress,
@@ -172,30 +173,66 @@
 	// Setting/deleting a VAT ID makes the backend change `vat_country_code`. The dirty guard
 	// above would skip re-seeding while the user has other edits, so the next full-replace
 	// PUT would send the stale country: refetch, then re-seed just the server-derived fields.
-	async function refreshServerDerivedFields(): Promise<void> {
+	async function refreshServerDerivedFields(submittedVatId?: string): Promise<void> {
 		await queryClient.invalidateQueries({ queryKey: ['user-billing-profile'] });
 		const fresh = queryClient.getQueryData<UserBillingProfileSchema | null>([
 			'user-billing-profile'
 		]);
 		if (!fresh) return;
 		vatCountryCode = fresh.vat_country_code ?? '';
-		vatIdInput = fresh.vat_id ?? '';
+		// Only overwrite the field if the user has not edited it since submitting.
+		if (submittedVatId === undefined || vatIdInput.trim().toUpperCase() === submittedVatId) {
+			vatIdInput = fresh.vat_id ?? '';
+		}
+	}
+
+	/** Thrown when VIES is down and nothing was written server-side (no refresh needed). */
+	class ViesNotSavedError extends Error {}
+
+	/** Refetch and re-seed only the country: the backend may have cleared the stored VAT ID. */
+	async function reseedVatCountryCode(): Promise<void> {
+		await queryClient.invalidateQueries({ queryKey: ['user-billing-profile'] });
+		const fresh = queryClient.getQueryData<UserBillingProfileSchema | null>([
+			'user-billing-profile'
+		]);
+		if (fresh) vatCountryCode = fresh.vat_country_code ?? '';
 	}
 
 	const vatSetMutation = createMutation(() => ({
-		mutationFn: async () => {
+		mutationFn: async (vatId: string) => {
 			const response = await userbillingSetVatId({
 				headers: { Authorization: `Bearer ${authToken}` },
-				body: { vat_id: vatIdInput.trim().toUpperCase() }
+				body: { vat_id: vatId }
 			});
-			if (response.error) throw new Error('Failed to set VAT ID');
-			return response.data;
+			if (response.response?.status === 503) {
+				// VIES unavailable: branch on the machine-readable code only. Unknown/missing
+				// code (older backend) is treated as saved-but-unvalidated.
+				const outcome = viesOutcome(viesUnavailableCode(response.error), 'unvalidated');
+				if (outcome === 'not_saved') {
+					throw new ViesNotSavedError(
+						viesUnavailableDetail(response.error) || m['billing.form.error']()
+					);
+				}
+				return { outcome } as const;
+			}
+			if (response.error) {
+				throw new Error(extractErrorMessage(response.error, m['billing.form.error']()));
+			}
+			return { outcome: 'validated' } as const;
 		},
-		onSuccess: async () => {
-			await refreshServerDerivedFields();
+		onSuccess: async (result, vatId) => {
+			if (result.outcome === 'pending') {
+				toast.info(m['billing.form.vatSavedPending']());
+			} else if (result.outcome === 'unvalidated') {
+				toast.info(m['billing.form.vatSavedUnvalidated']());
+			}
+			await refreshServerDerivedFields(vatId);
 		},
-		onError: () => {
-			toast.error(m['billing.form.error']());
+		onError: async (err: Error) => {
+			toast.error(err.message || m['billing.form.error']());
+			// not_saved wrote nothing. Any other error may have cleared the stored VAT ID
+			// server-side, so refresh the country (the typed input is kept).
+			if (!(err instanceof ViesNotSavedError)) await reseedVatCountryCode();
 		}
 	}));
 
@@ -451,11 +488,25 @@
 					/>
 				{/if}
 
+				{#if vatIdStatus !== 'validated'}
+					<Button
+						variant="outline"
+						size="sm"
+						onclick={() => vatSetMutation.mutate(billingProfile?.vat_id ?? '')}
+						disabled={vatSetMutation.isPending || vatDeleteMutation.isPending}
+					>
+						{#if vatSetMutation.isPending}
+							<Loader2 class="mr-1 h-3 w-3 animate-spin" aria-hidden="true" />
+						{/if}
+						{m['billing.form.revalidateVatId']()}
+					</Button>
+				{/if}
+
 				<Button
 					variant="ghost"
 					size="sm"
 					onclick={() => vatDeleteMutation.mutate()}
-					disabled={vatDeleteMutation.isPending}
+					disabled={vatDeleteMutation.isPending || vatSetMutation.isPending}
 					class="text-destructive hover:text-destructive"
 					aria-label={m['billing.form.removeVatId']()}
 				>
@@ -485,7 +536,7 @@
 				/>
 				<Button
 					variant="outline"
-					onclick={() => vatSetMutation.mutate()}
+					onclick={() => vatSetMutation.mutate(vatIdInput.trim().toUpperCase())}
 					disabled={vatSetMutation.isPending || !vatIdInput.trim()}
 					aria-label={m['billing.form.setVatId']()}
 				>

@@ -4575,6 +4575,7 @@
 			"validatedAt": "Validiert am {date}",
 			"saved": "USt-ID validiert und gespeichert",
 			"savedPending": "USt-ID gespeichert. Die Validierung ist vorübergehend nicht verfügbar und wird automatisch durchgeführt.",
+			"savedUnvalidated": "USt-ID gespeichert, aber VIES ist nicht erreichbar, daher ist sie noch nicht validiert. Versuche es später noch einmal.",
 			"removed": "USt-ID entfernt",
 			"invalid": "Die USt-ID ist laut VIES nicht gültig",
 			"error": "USt-ID konnte nicht aktualisiert werden"
@@ -7102,6 +7103,9 @@
 			"vatIdNotSet": "Nicht gesetzt",
 			"vatIdDescription": "Optional. Eine gültige EU-USt-IdNr. kann Reverse-Charge auf Rechnungen ermöglichen.",
 			"setVatId": "Validieren",
+			"revalidateVatId": "Erneut validieren",
+			"vatSavedPending": "USt-ID gespeichert. Die Validierung steht aus, solange VIES nicht erreichbar ist.",
+			"vatSavedUnvalidated": "USt-ID gespeichert, aber VIES ist nicht erreichbar, daher ist sie noch nicht validiert. Versuche es später noch einmal.",
 			"removeVatId": "Entfernen",
 			"save": "Rechnungsinformationen speichern",
 			"update": "Rechnungsinformationen aktualisieren",
