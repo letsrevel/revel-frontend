@@ -494,7 +494,8 @@ describe('BillingProfileForm', () => {
 		it.each([
 			['saved_unvalidated', { detail: 'd', code: 'vies_unavailable_saved_unvalidated' }],
 			['unknown code', { detail: 'd', code: 'something_new' }],
-			['no body', {}]
+			['no body', {}],
+			['undefined body', undefined]
 		])('%s: unvalidated info toast and refetch', async (_n, body) => {
 			const { sdk } = await submitVat(body);
 			await waitFor(() =>

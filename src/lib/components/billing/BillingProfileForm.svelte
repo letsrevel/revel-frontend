@@ -493,7 +493,7 @@
 						variant="outline"
 						size="sm"
 						onclick={() => vatSetMutation.mutate(billingProfile?.vat_id ?? '')}
-						disabled={vatSetMutation.isPending}
+						disabled={vatSetMutation.isPending || vatDeleteMutation.isPending}
 					>
 						{#if vatSetMutation.isPending}
 							<Loader2 class="mr-1 h-3 w-3 animate-spin" aria-hidden="true" />
@@ -506,7 +506,7 @@
 					variant="ghost"
 					size="sm"
 					onclick={() => vatDeleteMutation.mutate()}
-					disabled={vatDeleteMutation.isPending}
+					disabled={vatDeleteMutation.isPending || vatSetMutation.isPending}
 					class="text-destructive hover:text-destructive"
 					aria-label={m['billing.form.removeVatId']()}
 				>
