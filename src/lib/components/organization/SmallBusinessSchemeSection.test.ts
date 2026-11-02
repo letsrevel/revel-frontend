@@ -172,6 +172,27 @@ describe('SmallBusinessSchemeSection', () => {
 			);
 		});
 
+		it('removes the box and re-enables save once a refetch empties the list', async () => {
+			const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+			const mk = (extra: Record<string, unknown>) => ({
+				client,
+				component: SmallBusinessSchemeSection,
+				componentProps: { slug: 'acme', accessToken: 'tok', info: info(extra) }
+			});
+			const view = render(QueryClientTestWrapper, {
+				props: mk({ tiers_charging_vat: [tiers[0]] })
+			});
+			await userEvent.click(screen.getByRole('checkbox', { name: /§ 19 UStG/ }));
+			expect(screen.getByTestId('small-business-tiers-charging-vat')).toBeInTheDocument();
+			expect(save()).toBeDisabled();
+			await view.rerender(mk({ tiers_charging_vat: [] }));
+			await waitFor(() =>
+				expect(screen.queryByTestId('small-business-tiers-charging-vat')).not.toBeInTheDocument()
+			);
+			expect(screen.queryByTestId('small-business-blockers')).not.toBeInTheDocument();
+			expect(save()).toBeEnabled();
+		});
+
 		it('shows nothing for an empty list', async () => {
 			renderIt({ tiers_charging_vat: [] });
 			await userEvent.click(screen.getByRole('checkbox', { name: /§ 19 UStG/ }));
