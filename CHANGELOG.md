@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.33.0] - 2026-11-02
+
+### Changed
+- RSVP-only events no longer sell tickets, so the list of ticket tiers that still charge VAT (small-business section of billing settings) only shows tiers of ticketed events. Each one links to that event's ticket settings. The inline "Remove this tier's VAT rate" action for RSVP-only events is gone (#1151).
+
+### Removed
+- The "requires ticket" toggle in the event template editor. Whether an event uses tickets or RSVPs is set when it is created and can't be changed later (#1151).
+
 ## [2.32.0] - 2026-11-01
 
 ### Added
