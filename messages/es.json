@@ -7433,7 +7433,6 @@
 				"maxTicketsPerUserHelper": "Déjalo vacío para permitir entradas ilimitadas por persona."
 			},
 			"toggles": {
-				"requiresTicket": "Requiere una entrada para asistir",
 				"waitlistOpen": "Activar lista de espera cuando esté completo",
 				"requireTicketNames": "Requerir el nombre de la persona titular de la entrada",
 				"requiresFullProfile": "Requerir perfil completo para asistir",
@@ -10674,13 +10673,6 @@
 	"smallBiz.tiersChargingVatTitle": "Estas tarifas de entrada todavía cobran IVA. Ponlas al 0 % (o borra su tipo propio) antes de declarar el régimen.",
 	"smallBiz.tiersChargingVatItem": "{event} · {tier}: {rate} % de IVA",
 	"smallBiz.tiersChargingVatLinkSr": "(abre los ajustes de entradas del evento)",
-	"smallBiz.tiersChargingVatRsvpNote": "Este evento es solo RSVP, así que sus tarifas no se pueden editar en el editor de eventos. Si quitas el tipo, esta tarifa usará tu tipo por defecto.",
-	"smallBiz.tiersChargingVatRemove": "Quitar el tipo de IVA de esta tarifa",
-	"smallBiz.tiersChargingVatRemoving": "Quitando…",
-	"smallBiz.tiersChargingVatRemoveAria": "Quitar el tipo de IVA de esta tarifa: {event} · {tier}",
-	"smallBiz.tiersChargingVatRemoveError": "No se pudo quitar el tipo de IVA. Inténtalo de nuevo.",
-	"smallBiz.tiersChargingVatRemoveHelp": "Si se requiere un motivo de exención de IVA, define un motivo predeterminado en la información de facturación de arriba y vuelve a intentarlo.",
-	"smallBiz.tiersChargingVatRemoved": "Tipo de IVA quitado para {event} · {tier}.",
 	"smallBiz.noteLabel": "Nota impresa en tus facturas",
 	"smallBiz.blockersTitle": "Corrige esto antes de guardar:",
 	"smallBiz.blocker.wrong_country": "El régimen no coincide con tu país de establecimiento.",

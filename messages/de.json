@@ -7433,7 +7433,6 @@
 				"maxTicketsPerUserHelper": "Leer lassen, um unbegrenzte Tickets pro Nutzer*in zuzulassen."
 			},
 			"toggles": {
-				"requiresTicket": "Erfordert ein Ticket zur Teilnahme",
 				"waitlistOpen": "Warteliste aktivieren, wenn ausgebucht",
 				"requireTicketNames": "Namen der Ticketinhaber*innen verlangen",
 				"requiresFullProfile": "Vollständiges Teilnehmer*innen-Profil erforderlich",
@@ -10674,13 +10673,6 @@
 	"smallBiz.tiersChargingVatTitle": "Diese Ticketstufen berechnen noch MwSt. Setze sie auf 0 % (oder entferne ihren eigenen Satz), bevor du die Regelung hinterlegst.",
 	"smallBiz.tiersChargingVatItem": "{event} · {tier}: {rate} % MwSt",
 	"smallBiz.tiersChargingVatLinkSr": "(öffnet die Ticket-Einstellungen der Veranstaltung)",
-	"smallBiz.tiersChargingVatRsvpNote": "Diese Veranstaltung ist nur RSVP, daher lassen sich ihre Ticketstufen nicht im Event-Editor bearbeiten. Wenn du den Satz entfernst, verwendet diese Ticketstufe deinen Standardsatz.",
-	"smallBiz.tiersChargingVatRemove": "Steuersatz dieser Ticketstufe entfernen",
-	"smallBiz.tiersChargingVatRemoving": "Wird entfernt…",
-	"smallBiz.tiersChargingVatRemoveAria": "Steuersatz dieser Ticketstufe entfernen: {event} · {tier}",
-	"smallBiz.tiersChargingVatRemoveError": "Der Steuersatz konnte nicht entfernt werden. Bitte versuche es erneut.",
-	"smallBiz.tiersChargingVatRemoveHelp": "Falls ein Grund für die Steuerbefreiung erforderlich ist, lege oben in den Rechnungsangaben einen Standardgrund fest und versuche es dann erneut.",
-	"smallBiz.tiersChargingVatRemoved": "Steuersatz entfernt für {event} · {tier}.",
 	"smallBiz.noteLabel": "Hinweis auf deinen Rechnungen",
 	"smallBiz.blockersTitle": "Behebe Folgendes vor dem Speichern:",
 	"smallBiz.blocker.wrong_country": "Die Regelung passt nicht zu deinem Niederlassungsland.",
