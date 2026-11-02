@@ -29,7 +29,6 @@ import type { PropagateScope } from '$lib/api/generated/types.gen';
  * position in the Attendance section.
  */
 export type TemplateFlagKey =
-	| 'requires_ticket'
 	| 'waitlist_open'
 	| 'require_ticket_names'
 	| 'requires_full_profile'
@@ -56,11 +55,6 @@ export interface PropagateOption {
 
 export function buildCapacityToggles(): TemplateToggleConfig[] {
 	return [
-		{
-			key: 'requires_ticket',
-			label: m['recurringEvents.templateDialog.toggles.requiresTicket'](),
-			testid: 'template-edit-requires-ticket'
-		},
 		{
 			key: 'waitlist_open',
 			label: m['recurringEvents.templateDialog.toggles.waitlistOpen'](),

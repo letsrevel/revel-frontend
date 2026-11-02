@@ -7433,7 +7433,6 @@
 				"maxTicketsPerUserHelper": "Deixa vazio para permitir bilhetes ilimitados por pessoa."
 			},
 			"toggles": {
-				"requiresTicket": "Requer um bilhete para participar",
 				"waitlistOpen": "Ativar lista de espera quando esgotado",
 				"requireTicketNames": "Exigir o nome da pessoa titular do bilhete",
 				"requiresFullProfile": "Exigir perfil completo de participantes",
@@ -10674,13 +10673,6 @@
 	"smallBiz.tiersChargingVatTitle": "Estes níveis de bilhete ainda cobram IVA. Define-os para 0 % (ou remove a taxa própria) antes de declarares o regime.",
 	"smallBiz.tiersChargingVatItem": "{event} · {tier}: {rate} % de IVA",
 	"smallBiz.tiersChargingVatLinkSr": "(abre as definições de bilhetes do evento)",
-	"smallBiz.tiersChargingVatRsvpNote": "Este evento é apenas RSVP, por isso os seus níveis não podem ser editados no editor de eventos. Ao remover a taxa, este nível usa a tua taxa predefinida.",
-	"smallBiz.tiersChargingVatRemove": "Remover a taxa de IVA deste nível",
-	"smallBiz.tiersChargingVatRemoving": "A remover…",
-	"smallBiz.tiersChargingVatRemoveAria": "Remover a taxa de IVA deste nível: {event} · {tier}",
-	"smallBiz.tiersChargingVatRemoveError": "Não foi possível remover a taxa de IVA. Tenta novamente.",
-	"smallBiz.tiersChargingVatRemoveHelp": "Se for necessário um motivo de isenção de IVA, define um motivo predefinido nas informações de faturação acima e tenta novamente.",
-	"smallBiz.tiersChargingVatRemoved": "Taxa de IVA removida para {event} · {tier}.",
 	"smallBiz.noteLabel": "Nota impressa nas tuas faturas",
 	"smallBiz.blockersTitle": "Corrige isto antes de guardar:",
 	"smallBiz.blocker.wrong_country": "O regime não corresponde ao teu país de estabelecimento.",

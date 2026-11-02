@@ -8,7 +8,6 @@
 	import TiersChargingVatList from './TiersChargingVatList.svelte';
 	import { AlertCircle, Check, Info, Loader2 } from '@lucide/svelte';
 	import { invalidateAll } from '$app/navigation';
-	import { tick } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import { extractErrorMessage } from '$lib/utils/errors';
 	import { countryName } from '$lib/utils/compliance';
@@ -189,50 +188,6 @@
 		if (count < prevTierCount) saveMutation.reset();
 		prevTierCount = count;
 	});
-
-	let removedAnnouncement = $state('');
-	// Each announcement gets a token: a late `tick()` never overwrites a newer message, and a
-	// progress clear only removes the progress message it belongs to (no string matching).
-	let announceSeq = 0;
-	let progressSeq = -1;
-
-	/** Routes a message to the always-mounted live region (clear, tick, set re-announces repeats). */
-	async function announce(text: string): Promise<void> {
-		const id = ++announceSeq;
-		removedAnnouncement = '';
-		await tick();
-		if (id === announceSeq) removedAnnouncement = text;
-	}
-
-	/**
-	 * Progress status from the tier list. An empty text clears the live region only while it
-	 * still belongs to the latest "Removing..." message, never a success announcement after it.
-	 */
-	function handleTierStatus(text: string) {
-		if (text === '') {
-			if (progressSeq === announceSeq) {
-				announceSeq++; // cancels a progress message still waiting for its tick
-				removedAnnouncement = '';
-			}
-			return;
-		}
-		progressSeq = announceSeq + 1;
-		void announce(text);
-	}
-
-	/** After a tier's rate is removed: announce it and keep keyboard focus somewhere real. */
-	async function handleTierRemoved(text: string) {
-		await announce(text);
-		// Focus fallback: tiers title, then the save button (only if enabled: focus() on a
-		// disabled button is a no-op), then the scheme checkbox, which is always rendered here.
-		const title = document.getElementById('small-business-tiers-title');
-		const save = document.getElementById('small-business-save') as HTMLButtonElement | null;
-		const target =
-			title ??
-			(save && !save.disabled ? save : null) ??
-			document.getElementById('small-business-enabled');
-		target?.focus();
-	}
 
 	function edited() {
 		dirty = true;
@@ -417,20 +372,10 @@
 						class="space-y-2 rounded-md border border-highlight/40 bg-highlight/20 p-3 text-sm"
 						data-testid="small-business-tiers-charging-vat"
 					>
-						<p
-							id="small-business-tiers-title"
-							tabindex="-1"
-							class="rounded-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background forced-colors:focus-visible:outline forced-colors:focus-visible:outline-2"
-						>
+						<p id="small-business-tiers-title" class="font-medium">
 							{m['smallBiz.tiersChargingVatTitle']()}
 						</p>
-						<TiersChargingVatList
-							{slug}
-							{accessToken}
-							tiers={tiersChargingVat}
-							onRemoved={handleTierRemoved}
-							onStatus={handleTierStatus}
-						/>
+						<TiersChargingVatList {slug} tiers={tiersChargingVat} />
 					</div>
 				{/if}
 
@@ -473,7 +418,6 @@
 
 			<div class="flex justify-end">
 				<Button
-					id="small-business-save"
 					type="submit"
 					disabled={saveMutation.isPending || !isDirty || blockers.length > 0 || newRateInvalid}
 				>
@@ -487,7 +431,4 @@
 			</div>
 		</form>
 	{/if}
-	<p class="sr-only" role="status" data-testid="small-business-removed-status">
-		{removedAnnouncement}
-	</p>
 </div>

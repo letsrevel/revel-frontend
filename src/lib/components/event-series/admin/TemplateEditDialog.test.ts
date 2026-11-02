@@ -55,7 +55,6 @@ function makeTemplateEvent(overrides: Partial<EventDetailSchema> = {}): EventDet
 		start: '2026-08-01T18:00:00Z',
 		end: '2026-08-01T20:00:00Z',
 		timezone: 'UTC',
-		requires_ticket: false,
 		requires_full_profile: false,
 		potluck_open: false,
 		accept_invitation_requests: false,

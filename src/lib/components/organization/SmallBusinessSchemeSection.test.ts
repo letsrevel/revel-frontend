@@ -5,12 +5,10 @@ import { QueryClient } from '@tanstack/svelte-query';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 
 const update = vi.hoisted(() => vi.fn());
-const updateTier = vi.hoisted(() => vi.fn());
 vi.mock('$lib/api/client', () => ({ client: {} }));
 vi.mock('$app/navigation', () => ({ invalidateAll: vi.fn() }));
 vi.mock('$lib/api/generated/sdk.gen', () => ({
-	organizationadminvatUpdateBillingInfo: update,
-	eventadminticketsUpdateTicketTier: updateTier
+	organizationadminvatUpdateBillingInfo: update
 }));
 
 import SmallBusinessSchemeSection from './SmallBusinessSchemeSection.svelte';
@@ -46,7 +44,6 @@ const save = () => screen.getByRole('button', { name: /save small-business/i });
 
 beforeEach(() => {
 	update.mockReset().mockResolvedValue({ data: {} });
-	updateTier.mockReset().mockResolvedValue({ data: {} });
 });
 
 describe('SmallBusinessSchemeSection', () => {
@@ -126,15 +123,13 @@ describe('SmallBusinessSchemeSection', () => {
 				event_name: 'Summer Fest',
 				tier_id: 't1',
 				tier_name: 'General',
-				vat_rate: '19.00',
-				event_requires_ticket: true
+				vat_rate: '19.00'
 			},
 			{
 				event_id: 'e2',
 				event_name: 'Autumn Gig',
 				tier_id: 't2',
 				tier_name: 'VIP',
-				// No flag (older backend): keeps the ticketing link.
 				vat_rate: '7.00'
 			}
 		];
@@ -156,244 +151,7 @@ describe('SmallBusinessSchemeSection', () => {
 			);
 		});
 
-		const rsvpTier = {
-			event_id: 'e3',
-			event_name: 'Open Night',
-			tier_id: 't3',
-			tier_name: 'Door',
-			vat_rate: '19.00',
-			event_requires_ticket: false
-		};
-
-		async function declare() {
-			await userEvent.click(screen.getByRole('checkbox', { name: /§ 19 UStG/ }));
-			return screen.getByTestId('small-business-tiers-charging-vat');
-		}
-
-		it('RSVP-only items have no editor link, only a remove button', async () => {
-			renderIt({ tiers_charging_vat: [rsvpTier] });
-			const box = await declare();
-			expect(within(box).queryByRole('link')).not.toBeInTheDocument();
-			expect(box).toHaveTextContent('Open Night · Door: 19 % VAT');
-			expect(box).toHaveTextContent(/RSVP-only/);
-			expect(
-				within(box).getByRole('button', { name: /Remove this tier's VAT rate.*Open Night.*Door/ })
-			).toBeInTheDocument();
-			expect(save()).toBeDisabled();
-		});
-
-		it('removes the rate, invalidates billing info, and the box disappears on refetch', async () => {
-			const client = renderIt({ tiers_charging_vat: [rsvpTier] });
-			const spy = vi.spyOn(client, 'invalidateQueries');
-			const box = await declare();
-			await userEvent.click(within(box).getByRole('button', { name: /Remove this tier's VAT/ }));
-			await waitFor(() => expect(updateTier).toHaveBeenCalled());
-			expect(updateTier.mock.calls[0][0]).toMatchObject({
-				path: { event_id: 'e3', tier_id: 't3' },
-				headers: { Authorization: 'Bearer tok' },
-				body: { vat_rate: null }
-			});
-			await waitFor(() => expect(spy).toHaveBeenCalledWith({ queryKey: ['billing-info', 'acme'] }));
-		});
-
-		it('round trip: refetched info without tiers removes the box and enables save', async () => {
-			const client = new QueryClient({
-				defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
-			});
-			const mk = (extra: Record<string, unknown>) => ({
-				client,
-				component: SmallBusinessSchemeSection,
-				componentProps: { slug: 'acme', accessToken: 'tok', info: info(extra) }
-			});
-			const view = render(QueryClientTestWrapper, {
-				props: mk({ tiers_charging_vat: [rsvpTier] })
-			});
-			const box = await declare();
-			await userEvent.click(within(box).getByRole('button', { name: /Remove this tier's VAT/ }));
-			await waitFor(() => expect(updateTier).toHaveBeenCalled());
-			await view.rerender(mk({ tiers_charging_vat: [] }));
-			await waitFor(() =>
-				expect(screen.queryByTestId('small-business-tiers-charging-vat')).not.toBeInTheDocument()
-			);
-			expect(screen.queryByTestId('small-business-blockers')).not.toBeInTheDocument();
-			expect(save()).toBeEnabled();
-		});
-
-		it('shows the server error inline for that tier and does not invalidate', async () => {
-			updateTier.mockResolvedValue({
-				error: { detail: 'Server says no' },
-				response: { status: 422 }
-			});
-			const client = renderIt({
-				tiers_charging_vat: [rsvpTier, { ...rsvpTier, tier_id: 't4', tier_name: 'Early' }]
-			});
-			const spy = vi.spyOn(client, 'invalidateQueries');
-			const box = await declare();
-			await userEvent.click(
-				within(box).getByRole('button', { name: /Remove this tier's VAT.*Door/ })
-			);
-			const alert = await within(box).findByRole('alert');
-			expect(alert).toHaveTextContent('Server says no');
-			expect(within(box).getAllByRole('alert')).toHaveLength(1);
-			expect(alert.closest('li')).toHaveTextContent('Door');
-			expect(spy).not.toHaveBeenCalled();
-		});
-
-		it('clears the "Removing" status when two removals fail close together', async () => {
-			// Gate both requests so the two removals really overlap: both fail before either settles.
-			let release: () => void = () => undefined;
-			const gate = new Promise<void>((r) => (release = r));
-			updateTier.mockImplementation(async () => {
-				await gate;
-				return { error: { detail: 'Server says no' } };
-			});
-			renderIt({
-				tiers_charging_vat: [rsvpTier, { ...rsvpTier, tier_id: 't4', tier_name: 'Early' }]
-			});
-			const box = await declare();
-			const buttons = within(box).getAllByRole('button', { name: /Remove this tier's VAT/ });
-			for (const b of buttons) await userEvent.click(b);
-			await waitFor(() => expect(updateTier).toHaveBeenCalledTimes(2));
-			release();
-			await waitFor(() => expect(within(box).getAllByRole('alert')).toHaveLength(2));
-			await waitFor(() =>
-				expect(screen.getByTestId('small-business-removed-status')).toHaveTextContent(/^$/)
-			);
-		});
-
-		it('keeps a success announcement when a later removal fails', async () => {
-			// Door succeeds first; Early is gated and fails afterwards.
-			let release: () => void = () => undefined;
-			const gate = new Promise<void>((r) => (release = r));
-			updateTier.mockImplementation(async ({ path }: { path: { tier_id: string } }) => {
-				if (path.tier_id === 't4') {
-					await gate;
-					return { error: { detail: 'Server says no' } };
-				}
-				return { data: {} };
-			});
-			renderIt({
-				tiers_charging_vat: [rsvpTier, { ...rsvpTier, tier_id: 't4', tier_name: 'Early' }]
-			});
-			const box = await declare();
-			const buttons = within(box).getAllByRole('button', { name: /Remove this tier's VAT/ });
-			await userEvent.click(buttons[1]);
-			await userEvent.click(buttons[0]);
-			const status = screen.getByTestId('small-business-removed-status');
-			await waitFor(() => expect(status).toHaveTextContent(/VAT rate removed for .*Door/));
-			release();
-			await within(box).findByRole('alert');
-			// The failed removal has settled (its onSettled ran) once its button is enabled again.
-			await waitFor(() =>
-				expect(
-					within(box).getByRole('button', { name: /Remove this tier's VAT.*Early/ })
-				).toBeEnabled()
-			);
-			expect(status).toHaveTextContent(/VAT rate removed for .*Door/);
-		});
-
-		it('clears the "Removing" status when the removal fails', async () => {
-			updateTier.mockResolvedValue({ error: { detail: 'Server says no' } });
-			renderIt({ tiers_charging_vat: [rsvpTier] });
-			const box = await declare();
-			await userEvent.click(within(box).getByRole('button', { name: /Remove this tier's VAT/ }));
-			await within(box).findByRole('alert');
-			await waitFor(() =>
-				expect(screen.getByTestId('small-business-removed-status')).toHaveTextContent(/^$/)
-			);
-		});
-
-		it('error uses foreground text with the static help line and no destructive text', async () => {
-			updateTier.mockResolvedValue({ error: { detail: 'Server says no' } });
-			renderIt({ tiers_charging_vat: [rsvpTier] });
-			const box = await declare();
-			await userEvent.click(within(box).getByRole('button', { name: /Remove this tier's VAT/ }));
-			const alert = await within(box).findByRole('alert');
-			expect(alert).toHaveTextContent('Server says no');
-			expect(alert).toHaveTextContent(/set a default reason in the billing information above/);
-			expect(alert.className).toContain('text-foreground');
-			expect(alert.className).not.toContain('text-destructive');
-			expect(alert.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
-		});
-
-		it('renders one shared RSVP note that every remove button points to', async () => {
-			renderIt({
-				tiers_charging_vat: [rsvpTier, { ...rsvpTier, tier_id: 't4', tier_name: 'Early' }]
-			});
-			const box = await declare();
-			expect(within(box).getAllByText(/RSVP-only/)).toHaveLength(1);
-			const buttons = within(box).getAllByRole('button', { name: /Remove this tier's VAT/ });
-			expect(buttons).toHaveLength(2);
-			for (const b of buttons) {
-				expect(b).toHaveAttribute('aria-describedby', 'small-business-tiers-rsvp-note');
-			}
-			expect(box.querySelector('#small-business-tiers-rsvp-note')).not.toBeNull();
-		});
-
-		it('keeps the button busy until the refetch finishes, then announces and moves focus', async () => {
-			let release: () => void = () => undefined;
-			const client = renderIt({ tiers_charging_vat: [rsvpTier] });
-			vi.spyOn(client, 'invalidateQueries').mockImplementation(
-				() => new Promise<void>((r) => (release = r))
-			);
-			const box = await declare();
-			const btn = within(box).getByRole('button', { name: /Remove this tier's VAT/ });
-			await userEvent.click(btn);
-			await waitFor(() => expect(updateTier).toHaveBeenCalled());
-			await waitFor(() => expect(btn).toHaveAttribute('aria-busy', 'true'));
-			expect(btn).toBeDisabled();
-			release();
-			await waitFor(() =>
-				expect(screen.getByTestId('small-business-removed-status')).toHaveTextContent(
-					'VAT rate removed for Open Night · Door.'
-				)
-			);
-			expect(screen.getByTestId('small-business-removed-status')).toHaveAttribute('role', 'status');
-			await waitFor(() =>
-				expect(document.getElementById('small-business-tiers-title')).toHaveFocus()
-			);
-		});
-
-		it('falls back to the scheme checkbox when the last tier is removed and save is disabled', async () => {
-			let release: () => void = () => undefined;
-			const client = new QueryClient({
-				defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
-			});
-			vi.spyOn(client, 'invalidateQueries').mockImplementation(
-				() => new Promise<void>((r) => (release = r))
-			);
-			const mk = (extra: Record<string, unknown>) => ({
-				client,
-				component: SmallBusinessSchemeSection,
-				componentProps: {
-					slug: 'acme',
-					accessToken: 'tok',
-					info: info({ vat_rate: '19.00', ...extra })
-				}
-			});
-			const view = render(QueryClientTestWrapper, {
-				props: mk({ tiers_charging_vat: [rsvpTier] })
-			});
-			const box = await declare();
-			// Positive default rate with the zero-rate confirmation unticked keeps save disabled.
-			expect(save()).toBeDisabled();
-			await userEvent.click(
-				within(box).getByRole('button', { name: /Remove this tier's VAT rate/ })
-			);
-			await waitFor(() => expect(updateTier).toHaveBeenCalled());
-			await view.rerender(mk({ tiers_charging_vat: [] }));
-			expect(document.getElementById('small-business-tiers-title')).toBeNull();
-			release();
-			await waitFor(() =>
-				expect(screen.getByTestId('small-business-removed-status')).toHaveTextContent(
-					'VAT rate removed for Open Night · Door.'
-				)
-			);
-			await waitFor(() => expect(document.getElementById('small-business-enabled')).toHaveFocus());
-		});
-
 		it('clears a stale error when the refetched list becomes empty', async () => {
-			updateTier.mockResolvedValue({ error: { detail: 'Server says no' } });
 			update.mockResolvedValue({ error: { detail: 'Some ticket tiers still charge VAT.' } });
 			const client = new QueryClient({
 				defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
@@ -407,7 +165,7 @@ describe('SmallBusinessSchemeSection', () => {
 			await userEvent.click(screen.getByRole('checkbox', { name: /§ 19 UStG/ }));
 			await userEvent.click(save());
 			await screen.findByTestId('small-business-error');
-			await view.rerender(mk({ tiers_charging_vat: [rsvpTier] }));
+			await view.rerender(mk({ tiers_charging_vat: [tiers[0]] }));
 			await view.rerender(mk({ tiers_charging_vat: [] }));
 			await waitFor(() =>
 				expect(screen.queryByTestId('small-business-error')).not.toBeInTheDocument()

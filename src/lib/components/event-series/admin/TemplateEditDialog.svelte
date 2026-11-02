@@ -73,7 +73,6 @@
 	// rows off a small config array below rather than duplicating identical
 	// markup per field.
 	const flags = $state<Record<TemplateFlagKey, boolean>>({
-		requires_ticket: false,
 		waitlist_open: false,
 		require_ticket_names: true,
 		requires_full_profile: false,
@@ -135,7 +134,6 @@
 		maxAttendees = typeof t.max_attendees === 'number' ? String(t.max_attendees) : '';
 		maxTicketsPerUser =
 			typeof t.max_tickets_per_user === 'number' ? String(t.max_tickets_per_user) : '';
-		flags.requires_ticket = !!t.requires_ticket;
 		flags.waitlist_open = !!t.waitlist_open;
 		flags.require_ticket_names = !!t.require_ticket_names;
 		flags.requires_full_profile = !!t.requires_full_profile;
@@ -184,8 +182,6 @@
 			typeof original.max_tickets_per_user === 'number' ? original.max_tickets_per_user : null;
 		if (maxTicketsNum !== origMaxT) d.max_tickets_per_user = maxTicketsNum;
 
-		if (flags.requires_ticket !== !!original.requires_ticket)
-			d.requires_ticket = flags.requires_ticket;
 		if (flags.waitlist_open !== !!original.waitlist_open) d.waitlist_open = flags.waitlist_open;
 		if (flags.require_ticket_names !== !!original.require_ticket_names)
 			d.require_ticket_names = flags.require_ticket_names;
