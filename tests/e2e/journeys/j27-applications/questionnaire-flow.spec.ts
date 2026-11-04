@@ -186,14 +186,15 @@ test.describe('j27 membership questionnaire @p2', () => {
 		).toBeVisible({ timeout: 15_000 });
 		await page.waitForURL(`**/org/${org.slug}`, { timeout: 15_000 });
 
-		// `wait_for_questionnaire_evaluation` → the disabled waiting CTA plus the
-		// account-hub link. No re-fill link: one submission is all the member gets
-		// until staff grade it.
+		// `wait_for_questionnaire_evaluation` → the disabled waiting CTA, named for
+		// the questionnaire (#1154), and NO account-hub link: there is no application
+		// to track yet (see below). No re-fill link either: one submission is all the
+		// member gets until staff grade it.
 		await waitForClientAuth(page);
-		await expect(page.getByRole('button', { name: 'Application pending' })).toBeDisabled({
+		await expect(page.getByRole('button', { name: 'Questionnaire under review' })).toBeDisabled({
 			timeout: 15_000
 		});
-		await expect(page.getByRole('link', { name: 'Track your application' })).toBeVisible();
+		await expect(page.getByRole('link', { name: 'Track your application' })).toBeHidden();
 		await expect(
 			page.getByRole('link', { name: 'Fill in the membership questionnaire' })
 		).toBeHidden();

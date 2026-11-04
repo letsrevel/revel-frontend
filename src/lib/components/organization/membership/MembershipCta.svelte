@@ -393,12 +393,16 @@
 					? m['membershipEligibility.questionnaireUnderReview']()
 					: m['membershipEligibility.waiting']()}
 			</Button>
-			<a
-				href={membershipsHref}
-				class="text-sm font-medium text-primary underline-offset-4 hover:underline"
-			>
-				{m['membershipEligibility.trackApplication']()}
-			</a>
+			<!-- A questionnaire under review is not an application yet, so the hub's
+			     Applications list would be empty: no tracking link for that state. -->
+			{#if eligibility?.next_step !== 'wait_for_questionnaire_evaluation'}
+				<a
+					href={membershipsHref}
+					class="text-sm font-medium text-primary underline-offset-4 hover:underline"
+				>
+					{m['membershipEligibility.trackApplication']()}
+				</a>
+			{/if}
 		{:else if ctaKind === 'retry_later'}
 			<Button variant="secondary" disabled>
 				{m['membershipEligibility.questionnaireCta']()}

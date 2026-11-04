@@ -226,6 +226,10 @@ describe('MembershipCta', () => {
 		expect(
 			screen.queryByRole('button', { name: m['membershipEligibility.waiting']() })
 		).not.toBeInTheDocument();
+		// No application exists yet, so the hub would list nothing: no tracking link.
+		expect(
+			screen.queryByRole('link', { name: m['membershipEligibility.trackApplication']() })
+		).not.toBeInTheDocument();
 	});
 
 	it('shows a disabled pending state and a way to track the application while waiting', async () => {
