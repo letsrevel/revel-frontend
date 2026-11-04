@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.34.0] - 2026-11-04
+
+### Added
+- **Back to the event after joining**: on a members-only event, "Join Organization" now opens the organization's membership page and remembers the event (#1155, closes #1154).
+  - After you submit a membership questionnaire that goes to review, you land back on the event.
+  - After you apply to join, the confirmation offers a "Back to the event" button.
+  - The way back survives logging in partway through.
+- A members-only event now shows when your membership is pending, instead of offering "Join Organization" again. It says either "Questionnaire under review" (with a link to the organization's membership page) or "Application pending" (with a link to track your application).
+
+### Changed
+- On an organization's membership page, a membership questionnaire waiting for review now reads "Questionnaire under review" instead of "Application pending". The "Track your application" link no longer appears in that state, since no application exists yet.
+- The membership settings for organizations and tiers now say how questionnaires and manual approval combine. An evaluated questionnaire's answers must be approved (by AI or your team, depending on its evaluation mode). Manual approval is a separate staff sign-off on top of that: with both on, applicants pass the questionnaire and are then approved.
+
 ## [2.33.0] - 2026-11-02
 
 ### Changed
