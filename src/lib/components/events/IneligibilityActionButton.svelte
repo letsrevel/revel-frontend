@@ -425,13 +425,19 @@
 		{:else if nextStep === 'wait_for_membership_questionnaire_evaluation'}
 			<!-- A questionnaire can be under review before any application exists, so
 			     the applications list could be empty; the org's membership page shows
-			     the per-tier verdict ("Questionnaire under review") instead. -->
+			     the per-tier verdict ("Questionnaire under review") instead. The event
+			     rides along so that page can offer the way back. -->
+			<!-- eslint-disable svelte/no-navigation-without-resolve -- built from resolve() + withReturnUrl (sanitized) -->
 			<a
-				href={resolve('/(public)/org/[slug]/membership', { slug: organizationSlug })}
+				href={withReturnUrl(
+					resolve('/(public)/org/[slug]/membership', { slug: organizationSlug }),
+					eventUrl
+				)}
 				class="block text-center text-sm font-medium text-primary underline-offset-4 hover:underline"
 			>
 				{m['membershipPlans.viewMembership']()}
 			</a>
+			<!-- eslint-enable svelte/no-navigation-without-resolve -->
 		{/if}
 	{:else if nextStep === 'wait_for_open_spot'}
 		<!-- Special layout for waitlist status with Leave button below -->

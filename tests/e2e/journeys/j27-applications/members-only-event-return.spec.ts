@@ -84,7 +84,10 @@ test.describe('j27 members-only event round trip @p2', () => {
 		// membership page (which shows the per-tier verdict), not the empty hub.
 		await expect(
 			page.getByRole('link', { name: 'View membership options' }).first()
-		).toHaveAttribute('href', `/org/${org.slug}/membership`);
+		).toHaveAttribute(
+			'href',
+			`/org/${org.slug}/membership?returnUrl=${encodeURIComponent(event.path)}`
+		);
 
 		await page.context().close();
 	});

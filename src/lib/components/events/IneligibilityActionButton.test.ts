@@ -174,7 +174,7 @@ describe('IneligibilityActionButton pending membership (BE #1300)', () => {
 		[
 			'wait_for_membership_questionnaire_evaluation',
 			() => m['membershipPlans.viewMembership'](),
-			'/org/acme/membership'
+			`/org/acme/membership?returnUrl=${encodeURIComponent('/events/acme/gala')}`
 		]
 	])(
 		'renders %s as a disabled waiting state linking to where it is tracked',
