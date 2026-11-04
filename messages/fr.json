@@ -1306,7 +1306,9 @@
 			"wait_for_open_spot": "Tu es sur la liste d'attente pour cet événement",
 			"wait_for_event_to_open": "Reviens quand les inscriptions ouvriront",
 			"complete_profile": "Complète ton profil pour participer à cet événement",
-			"fallback": "Vérifie ton statut d'éligibilité"
+			"fallback": "Vérifie ton statut d'éligibilité",
+			"wait_for_membership_approval": "Ta demande d'adhésion attend d'être approuvée",
+			"wait_for_membership_questionnaire_evaluation": "Ton questionnaire d'adhésion est en cours d'examen"
 		},
 		"reason": {
 			"sales_paused": "La vente des billets est en pause pour le moment. Revenez bientôt.",
@@ -1344,7 +1346,9 @@
 			"request_whitelist": "Demander la vérification",
 			"wait_for_whitelist_approval": "Vérification en attente",
 			"complete_profile": "Compléter le profil",
-			"fallback": "Voir les détails"
+			"fallback": "Voir les détails",
+			"wait_for_membership_approval": "Demande en attente",
+			"wait_for_membership_questionnaire_evaluation": "Questionnaire en cours d'examen"
 		},
 		"explanation": {
 			"eligible": "Tu peux participer à cet événement",
@@ -2532,7 +2536,11 @@
 		"deadlineDaysLeft": "{days} jours restants pour candidater",
 		"completeProfile": "Complète ton profil",
 		"completeProfileExplanation": "Cet événement nécessite un profil complet pour participer.",
-		"missingProfileFields": "Ajoute les éléments suivants à ton profil :"
+		"missingProfileFields": "Ajoute les éléments suivants à ton profil :",
+		"membershipApplicationPending": "Demande d'adhésion en attente",
+		"membershipApplicationPendingExplanation": "{organizationName} doit encore approuver ta demande d'adhésion. Une fois membre, tu pourras participer à cet événement.",
+		"membershipQuestionnaireUnderReview": "Questionnaire d'adhésion en cours d'examen",
+		"membershipQuestionnaireUnderReviewExplanation": "{organizationName} examine ton questionnaire d'adhésion. Une fois membre, tu pourras participer à cet événement."
 	},
 	"invitation": {
 		"badge": "Invitation spéciale",
@@ -3790,11 +3798,11 @@
 				"acceptRequestsHelp": "Lorsque activé, les personnes peuvent soumettre des demandes pour devenir membres de ton organisation. Les membres peuvent avoir accès aux événements et contenus réservés aux membres.",
 				"defaultQuestionnaireLabel": "Questionnaire d'adhésion par défaut",
 				"defaultQuestionnaireNone": "Aucun questionnaire",
-				"defaultQuestionnaireHelp": "Les personnes qui candidatent doivent remplir ce questionnaire avant d'adhérer. Chaque niveau peut le remplacer.",
+				"defaultQuestionnaireHelp": "Les candidatures doivent passer par ce questionnaire avant l'adhésion. S'il est évalué, les réponses doivent aussi être approuvées (par l'IA ou ton équipe, selon son mode d'évaluation). Chaque niveau peut le remplacer.",
 				"noMembershipQuestionnaires": "Aucun questionnaire d'adhésion pour l'instant.",
 				"manageQuestionnairesLink": "Gérer les questionnaires",
 				"requireApprovalLabel": "Exiger une validation manuelle pour les nouveaux membres",
-				"requireApprovalHelp": "Chaque demande d'adhésion attend la validation de l'équipe avant que la personne rejoigne l'organisation. Chaque niveau peut remplacer ce réglage.",
+				"requireApprovalHelp": "Votre équipe approuve chaque candidature avant que la personne adhère. Cela s'ajoute à un éventuel questionnaire d'adhésion : si les deux sont activés, les candidats doivent réussir le questionnaire puis être approuvés. Chaque niveau peut le remplacer.",
 				"contactEmailLabel": "E-mail de contact",
 				"contactEmailOptional": "(Optionnel)",
 				"contactEmailPlaceholder": "contact@tonorganisation.com",
@@ -6623,13 +6631,13 @@
 		"descriptionHint": "La mise en forme Markdown est prise en charge",
 		"questionnaireLabel": "Questionnaire d'adhésion",
 		"questionnaireInherit": "Hériter du réglage par défaut de l'organisation",
-		"questionnaireHint": "Les personnes qui candidatent à ce niveau doivent remplir ce questionnaire. « Hériter » utilise le questionnaire par défaut de l'organisation.",
+		"questionnaireHint": "Les candidatures pour ce niveau doivent passer par ce questionnaire avant l'adhésion. S'il est évalué, les réponses doivent aussi être approuvées (par l'IA ou ton équipe, selon son mode d'évaluation). « Hériter » utilise la valeur par défaut de l'organisation.",
 		"approvalLabel": "Validation manuelle",
 		"approvalInheritRequired": "Hériter du réglage de l'organisation (validation requise)",
 		"approvalInheritNotRequired": "Hériter du réglage de l'organisation (aucune validation requise)",
 		"approvalRequire": "Exiger une validation",
 		"approvalNoRequire": "Ne pas exiger de validation",
-		"approvalHint": "Détermine si les demandes pour ce niveau attendent la validation de l'équipe.",
+		"approvalHint": "Votre équipe approuve chaque candidature à ce niveau avant que la personne adhère. Cette étape vient après un éventuel questionnaire : si les deux sont activés, il faut réussir le questionnaire puis être approuvé.",
 		"cancel": "Annuler",
 		"create": "Créer le niveau",
 		"update": "Mettre à jour le niveau",
@@ -7659,6 +7667,7 @@
 		"reapply": "Refaire une demande d'adhésion",
 		"questionnaireCta": "Remplir le questionnaire d'adhésion",
 		"waiting": "Demande en attente",
+		"questionnaireUnderReview": "Questionnaire en cours d'examen",
 		"trackApplication": "Suivre ta demande",
 		"memberBadge": "Membre",
 		"ownerBadge": "Propriétaire",
@@ -7726,6 +7735,7 @@
 		"tiersHeading": "Niveaux d'adhésion",
 		"empty": "{organizationName} n'a pas encore publié de niveaux d'adhésion.",
 		"backToOrg": "Retour à {organizationName}",
+		"backToEvent": "Retour à l'événement",
 		"freeBadge": "Gratuit",
 		"requiresApproval": "L'organisation examine et approuve chaque demande.",
 		"approvalCleared": "L'organisation a approuvé ta demande.",
@@ -7739,6 +7749,7 @@
 		"title": "Questionnaire d'adhésion",
 		"subtitle": "{orgName} demande aux nouveaux membres de le remplir.",
 		"backToOrg": "Retour à {orgName}",
+		"continueJoining": "Continuer l'adhésion",
 		"acceptedTitle": "Questionnaire approuvé",
 		"acceptedBody": "Tu peux maintenant poursuivre ton adhésion à {orgName}.",
 		"pendingToast": "Questionnaire envoyé — nous te préviendrons dès qu'il aura été évalué.",

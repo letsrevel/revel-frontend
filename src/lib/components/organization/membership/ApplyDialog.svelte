@@ -24,6 +24,7 @@
 	import { CheckCircle2, Loader2 } from '@lucide/svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { membershipReturnUrl, isEventReturnUrl } from '$lib/utils/membership-return.svelte';
 
 	interface Props {
 		open: boolean;
@@ -92,6 +93,11 @@
 	const uid = $props.id();
 	const messageId = `${uid}-message`;
 	const counterId = `${uid}-counter`;
+	// Offered (never auto-followed: this is a dialog) when the applicant came from an event.
+	const eventReturnUrl = $derived.by(() => {
+		const url = membershipReturnUrl();
+		return isEventReturnUrl(url) ? url : null;
+	});
 	const membershipsHref = resolve('/(auth)/account/memberships', {});
 
 	// The 400 body is a union: a full eligibility verdict when a gate refused the
@@ -268,6 +274,10 @@
 			</div>
 
 			<DialogFooter>
+				{#if eventReturnUrl}
+					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- sanitized same-origin path -->
+					<Button href={eventReturnUrl}>{m['membershipTiers.backToEvent']()}</Button>
+				{/if}
 				<!-- The outcome is final, so this dismisses rather than cancels. -->
 				<Button variant="outline" onclick={() => handleOpenChange(false)}>
 					{m['dialogContent.close']()}

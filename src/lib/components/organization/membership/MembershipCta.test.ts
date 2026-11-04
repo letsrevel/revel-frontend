@@ -16,6 +16,15 @@ vi.mock('$lib/api/generated/sdk.gen', () => ({
 	memembershipapplicationsApply: vi.fn()
 }));
 
+const pageUrl = vi.hoisted(() => ({ search: '' }));
+vi.mock('$app/state', () => ({
+	page: {
+		get url() {
+			return new URL(`http://localhost/org/acme/membership${pageUrl.search}`);
+		}
+	}
+}));
+
 vi.mock('$lib/stores/auth.svelte', () => ({
 	authStore: { accessToken: 'test-token' }
 }));
@@ -66,6 +75,7 @@ describe('MembershipCta', () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		pageUrl.search = '';
 		queryClient = new QueryClient({
 			defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
 		});
@@ -167,6 +177,59 @@ describe('MembershipCta', () => {
 
 		const link = await screen.findByRole('link', { name: /membership questionnaire/i });
 		expect(link).toHaveAttribute('href', '/org/acme/questionnaire/q1');
+	});
+
+	it('appends a safe returnUrl to the questionnaire link', async () => {
+		pageUrl.search = `?returnUrl=${encodeURIComponent('/events/acme/gala')}`;
+		mockEligibility(
+			makeEligibility({
+				allowed: false,
+				next_step: 'submit_questionnaire',
+				questionnaire_id: 'q1',
+				reason_code: 'membership_questionnaire_missing'
+			})
+		);
+		renderCta();
+		const link = await screen.findByRole('link', { name: /membership questionnaire/i });
+		expect(link).toHaveAttribute(
+			'href',
+			`/org/acme/questionnaire/q1?returnUrl=${encodeURIComponent('/events/acme/gala')}`
+		);
+	});
+
+	it('drops an unsafe returnUrl from the questionnaire link', async () => {
+		pageUrl.search = `?returnUrl=${encodeURIComponent('//evil.com')}`;
+		mockEligibility(
+			makeEligibility({
+				allowed: false,
+				next_step: 'submit_questionnaire',
+				questionnaire_id: 'q1',
+				reason_code: 'membership_questionnaire_missing'
+			})
+		);
+		renderCta();
+		const link = await screen.findByRole('link', { name: /membership questionnaire/i });
+		expect(link).toHaveAttribute('href', '/org/acme/questionnaire/q1');
+	});
+
+	it('labels a questionnaire awaiting evaluation differently from a pending application', async () => {
+		mockEligibility(
+			makeEligibility({ allowed: false, next_step: 'wait_for_questionnaire_evaluation' })
+		);
+		renderCta();
+
+		expect(
+			await screen.findByRole('button', {
+				name: m['membershipEligibility.questionnaireUnderReview']()
+			})
+		).toBeDisabled();
+		expect(
+			screen.queryByRole('button', { name: m['membershipEligibility.waiting']() })
+		).not.toBeInTheDocument();
+		// No application exists yet, so the hub would list nothing: no tracking link.
+		expect(
+			screen.queryByRole('link', { name: m['membershipEligibility.trackApplication']() })
+		).not.toBeInTheDocument();
 	});
 
 	it('shows a disabled pending state and a way to track the application while waiting', async () => {

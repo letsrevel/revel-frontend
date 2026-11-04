@@ -505,7 +505,10 @@ test.describe('j27 gated + paid tier @p2', () => {
 				name: `Open the membership questionnaire for ${tierName}`
 			})
 		).toHaveCount(0);
-		await expect(pendingCard.getByRole('button', { name: 'Application pending' })).toBeDisabled();
+		// A questionnaire under review names itself (#1154), not "Application pending".
+		await expect(
+			pendingCard.getByRole('button', { name: 'Questionnaire under review' })
+		).toBeDisabled();
 		// The offline plan's own copy is correct in every state and stays put.
 		await expect(planCard(page, plan.name).getByText(OFFLINE_MANAGED)).toBeVisible();
 

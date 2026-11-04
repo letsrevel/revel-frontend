@@ -3,12 +3,14 @@
 	import { ArrowLeft } from '@lucide/svelte';
 	import MembershipSection from '$lib/components/organization/membership/MembershipSection.svelte';
 	import { SeoHead } from '$lib/seo';
+	import { membershipReturnUrl, isEventReturnUrl } from '$lib/utils/membership-return.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { PageData } from './$types';
 
 	const { data }: { data: PageData } = $props();
 
 	const organization = $derived(data.organization);
+	const returnUrl = $derived(membershipReturnUrl());
 </script>
 
 <SeoHead config={data.seo} />
@@ -32,6 +34,18 @@
 			<ArrowLeft class="h-4 w-4" aria-hidden="true" />
 			{m['membershipTiers.backToOrg']({ organizationName: organization.name })}
 		</a>
+
+		{#if isEventReturnUrl(returnUrl)}
+			<!-- eslint-disable svelte/no-navigation-without-resolve -- sanitized same-origin path (safeReturnUrl) -->
+			<a
+				href={returnUrl}
+				class="inline-flex items-center gap-2 text-sm font-bold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+			>
+				<ArrowLeft class="h-4 w-4" aria-hidden="true" />
+				{m['membershipTiers.backToEvent']()}
+			</a>
+			<!-- eslint-enable svelte/no-navigation-without-resolve -->
+		{/if}
 
 		<MembershipSection
 			{organization}

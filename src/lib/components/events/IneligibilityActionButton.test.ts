@@ -145,4 +145,46 @@ describe('IneligibilityActionButton complete_profile navigation', () => {
 
 		expect(assigned).toBe(`/account/profile?redirect=${encodeURIComponent('/events/acme/gala')}`);
 	});
+
+	it('sends become_member to the membership page with the event as returnUrl', async () => {
+		const user = userEvent.setup();
+		setup('become_member', null);
+
+		await user.click(screen.getByRole('button', { name: getActionButtonText('become_member') }));
+
+		expect(assigned).toBe(
+			`/org/acme/membership?returnUrl=${encodeURIComponent('/events/acme/gala')}`
+		);
+	});
+});
+
+describe('IneligibilityActionButton pending membership (BE #1300)', () => {
+	beforeEach(() => {
+		authState.accessToken = 'tok';
+	});
+
+	it.each<[NextStep, () => string, string]>([
+		[
+			'wait_for_membership_approval',
+			() => m['membershipEligibility.trackApplication'](),
+			'/account/memberships'
+		],
+		// No application may exist yet, so the applications list could be empty:
+		// the org's membership page shows the per-tier verdict instead.
+		[
+			'wait_for_membership_questionnaire_evaluation',
+			() => m['membershipPlans.viewMembership'](),
+			`/org/acme/membership?returnUrl=${encodeURIComponent('/events/acme/gala')}`
+		]
+	])(
+		'renders %s as a disabled waiting state linking to where it is tracked',
+		(nextStep, linkName, href) => {
+			setup(nextStep, null);
+			expect(screen.getByRole('button', { name: getActionButtonText(nextStep) })).toBeDisabled();
+			expect(screen.getByRole('link', { name: linkName() })).toHaveAttribute('href', href);
+			expect(
+				screen.queryByRole('button', { name: getActionButtonText('become_member') })
+			).not.toBeInTheDocument();
+		}
+	);
 });

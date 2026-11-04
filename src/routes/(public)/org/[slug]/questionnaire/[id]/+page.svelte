@@ -5,6 +5,8 @@
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { memembershipquestionnaireSubmitMembershipQuestionnaire } from '$lib/api';
 	import type { QuestionnaireSubmissionSchema } from '$lib/api/generated/types.gen';
+	import { withReturnUrl } from '$lib/utils/safe-redirect';
+	import { membershipReturnUrl } from '$lib/utils/membership-return.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { ArrowLeft, Check } from '@lucide/svelte';
@@ -60,6 +62,14 @@
 		}
 		return !result.requires_evaluation;
 	}
+
+	const returnUrl = $derived(membershipReturnUrl());
+	const membershipHref = $derived(
+		withReturnUrl(
+			resolve('/(public)/org/[slug]/membership', { slug: data.organization.slug }),
+			returnUrl
+		)
+	);
 
 	const queryClient = useQueryClient();
 	const accessToken = $derived(authStore.accessToken);
@@ -118,7 +128,14 @@
 			}
 
 			toast.info(m['membershipQuestionnairePage.pendingToast']());
-			goto(resolve('/(public)/org/[slug]', { slug: data.organization.slug }));
+			if (returnUrl) {
+				// Back to where the applicant started (the event page); invalidate so
+				// its eligibility reloads and shows the pending state.
+				// eslint-disable-next-line svelte/no-navigation-without-resolve -- sanitized same-origin path
+				goto(returnUrl, { invalidateAll: true });
+			} else {
+				goto(resolve('/(public)/org/[slug]', { slug: data.organization.slug }));
+			}
 		},
 		onError: (error: Error) => {
 			toast.error(error.message || m['membershipQuestionnairePage.submitError']());
@@ -132,7 +149,14 @@
 	);
 
 	function goBackToOrg(): void {
-		goto(resolve('/(public)/org/[slug]', { slug: data.organization.slug }));
+		// Cancel is a generic action: with a returnUrl the applicant came via the
+		// membership page, so go back there (keeping the returnUrl).
+		if (returnUrl) {
+			// eslint-disable-next-line svelte/no-navigation-without-resolve -- built from resolve()
+			goto(membershipHref);
+		} else {
+			goto(resolve('/(public)/org/[slug]', { slug: data.organization.slug }));
+		}
 	}
 </script>
 
@@ -189,9 +213,16 @@
 					body={m['membershipQuestionnairePage.acceptedBody']({ orgName: data.organization.name })}
 				>
 					{#snippet action()}
-						<Button href={resolve('/(public)/org/[slug]', { slug: data.organization.slug })}>
-							{m['membershipQuestionnairePage.backToOrg']({ orgName: data.organization.name })}
-						</Button>
+						{#if returnUrl}
+							<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- built from resolve() -->
+							<Button href={membershipHref}>
+								{m['membershipQuestionnairePage.continueJoining']()}
+							</Button>
+						{:else}
+							<Button href={resolve('/(public)/org/[slug]', { slug: data.organization.slug })}>
+								{m['membershipQuestionnairePage.backToOrg']({ orgName: data.organization.name })}
+							</Button>
+						{/if}
 					{/snippet}
 				</EmptyState>
 			</div>

@@ -41,7 +41,10 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 	if (!locals.user) {
 		throw redirect(
 			302,
-			`/login?returnUrl=${encodeURIComponent(`/org/${slug}/questionnaire/${questionnaireId}`)}`
+			// `url.search` keeps a nested `?returnUrl=` (the event the applicant came
+			// from) alive across the login round trip; encoding the whole path+query
+			// once makes it one opaque value for the login page.
+			`/login?returnUrl=${encodeURIComponent(`/org/${slug}/questionnaire/${questionnaireId}${url.search}`)}`
 		);
 	}
 

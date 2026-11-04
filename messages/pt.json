@@ -1441,7 +1441,9 @@
 			"wait_for_open_spot": "Estás na lista de espera deste evento",
 			"wait_for_event_to_open": "Volta quando as inscrições abrirem",
 			"complete_profile": "Completa o teu perfil para participar neste evento",
-			"fallback": "Verifica o teu estado de elegibilidade"
+			"fallback": "Verifica o teu estado de elegibilidade",
+			"wait_for_membership_approval": "O teu pedido de adesão aguarda aprovação",
+			"wait_for_membership_questionnaire_evaluation": "O teu questionário de adesão está em análise"
 		},
 		"reason": {
 			"sales_paused": "A venda de bilhetes está em pausa neste momento. Volta em breve.",
@@ -1479,7 +1481,9 @@
 			"request_whitelist": "Pedir verificação",
 			"wait_for_whitelist_approval": "Verificação pendente",
 			"complete_profile": "Completar perfil",
-			"fallback": "Ver detalhes"
+			"fallback": "Ver detalhes",
+			"wait_for_membership_approval": "Pedido pendente",
+			"wait_for_membership_questionnaire_evaluation": "Questionário em análise"
 		},
 		"explanation": {
 			"eligible": "Podes participar neste evento",
@@ -2667,7 +2671,11 @@
 		"deadlineDaysLeft": "Faltam {days} dias para te candidatares",
 		"completeProfile": "Completa o teu perfil",
 		"completeProfileExplanation": "Este evento exige que tenhas o perfil completo para participares.",
-		"missingProfileFields": "Adiciona o seguinte ao teu perfil:"
+		"missingProfileFields": "Adiciona o seguinte ao teu perfil:",
+		"membershipApplicationPending": "Pedido de adesão pendente",
+		"membershipApplicationPendingExplanation": "{organizationName} ainda tem de aprovar o teu pedido de adesão. Quando fores membro, podes participar neste evento.",
+		"membershipQuestionnaireUnderReview": "Questionário de adesão em análise",
+		"membershipQuestionnaireUnderReviewExplanation": "{organizationName} está a analisar o teu questionário de adesão. Quando fores membro, podes participar neste evento."
 	},
 	"invitation": {
 		"badge": "Convite especial",
@@ -3820,11 +3828,11 @@
 				"acceptRequestsHelp": "Quando ativado, qualquer pessoa pode enviar um pedido para se tornar membro da tua organização. Os membros podem ter acesso a eventos e conteúdos exclusivos para membros.",
 				"defaultQuestionnaireLabel": "Questionário de adesão predefinido",
 				"defaultQuestionnaireNone": "Nenhum questionário",
-				"defaultQuestionnaireHelp": "Quem se candidata tem de preencher este questionário antes de aderir. Cada nível pode substituí-lo.",
+				"defaultQuestionnaireHelp": "Quem se candidata tem de preencher este questionário antes de aderir. Se for avaliado, as respostas também têm de ser aprovadas (pela IA ou pela tua equipa, conforme o modo de avaliação). Cada nível pode substituí-lo.",
 				"noMembershipQuestionnaires": "Ainda não há questionários de adesão.",
 				"manageQuestionnairesLink": "Gerir questionários",
 				"requireApprovalLabel": "Exigir aprovação manual para novos membros",
-				"requireApprovalHelp": "Todos os pedidos de adesão aguardam aprovação do staff antes de a pessoa aderir. Cada nível pode substituir esta definição.",
+				"requireApprovalHelp": "A vossa equipa aprova cada candidatura antes de a pessoa aderir. Isto soma-se a qualquer questionário de adesão: com ambos ativos, quem se candidata tem de passar no questionário e só depois é aprovado. Cada nível pode substituí-lo.",
 				"contactEmailLabel": "E-mail de contacto",
 				"contactEmailOptional": "(Opcional)",
 				"contactEmailPlaceholder": "contacto@tuaorganizacao.com",
@@ -6653,13 +6661,13 @@
 		"descriptionHint": "É possível usar formatação Markdown",
 		"questionnaireLabel": "Questionário de adesão",
 		"questionnaireInherit": "Herdar predefinição da organização",
-		"questionnaireHint": "Quem se candidata a este nível tem de preencher este questionário. «Herdar» usa a predefinição da organização.",
+		"questionnaireHint": "Quem se candidata a este nível tem de preencher este questionário antes de aderir. Se for avaliado, as respostas também têm de ser aprovadas (pela IA ou pela tua equipa, conforme o modo de avaliação). «Herdar» usa a predefinição da organização.",
 		"approvalLabel": "Aprovação manual",
 		"approvalInheritRequired": "Herdar predefinição da organização (aprovação necessária)",
 		"approvalInheritNotRequired": "Herdar predefinição da organização (sem aprovação necessária)",
 		"approvalRequire": "Exigir aprovação",
 		"approvalNoRequire": "Não exigir aprovação",
-		"approvalHint": "Determina se as candidaturas para este nível aguardam aprovação de staff.",
+		"approvalHint": "A vossa equipa aprova cada candidatura a este nível antes de a pessoa aderir. Isto vem depois de qualquer questionário: com ambos ativos, quem se candidata tem de passar no questionário e só depois é aprovado.",
 		"cancel": "Cancelar",
 		"create": "Criar nível",
 		"update": "Atualizar nível",
@@ -7689,6 +7697,7 @@
 		"reapply": "Candidatar-te novamente",
 		"questionnaireCta": "Preencher o questionário de adesão",
 		"waiting": "Candidatura pendente",
+		"questionnaireUnderReview": "Questionário em revisão",
 		"trackApplication": "Acompanhar a tua candidatura",
 		"memberBadge": "Membro",
 		"ownerBadge": "Titular",
@@ -7756,6 +7765,7 @@
 		"tiersHeading": "Níveis de adesão",
 		"empty": "{organizationName} ainda não publicou níveis de adesão.",
 		"backToOrg": "Voltar a {organizationName}",
+		"backToEvent": "Voltar ao evento",
 		"freeBadge": "Gratuito",
 		"requiresApproval": "A organização analisa e aprova cada candidatura.",
 		"approvalCleared": "A organização aprovou a tua candidatura.",
@@ -7769,6 +7779,7 @@
 		"title": "Questionário de adesão",
 		"subtitle": "{orgName} pede a quem se inscreve que o preencha.",
 		"backToOrg": "Voltar a {orgName}",
+		"continueJoining": "Continuar a adesão",
 		"acceptedTitle": "Questionário aprovado",
 		"acceptedBody": "Já podes continuar a aderir a {orgName}.",
 		"pendingToast": "Questionário enviado — avisamos-te assim que for avaliado.",

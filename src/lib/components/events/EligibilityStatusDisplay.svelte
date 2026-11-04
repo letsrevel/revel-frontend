@@ -121,6 +121,8 @@
 			request_invitation: Mail,
 			wait_for_invitation_approval: Clock,
 			become_member: UserPlus,
+			wait_for_membership_approval: Clock,
+			wait_for_membership_questionnaire_evaluation: Clock,
 			join_waitlist: ListPlus,
 			wait_for_open_spot: Clock,
 			wait_for_event_to_open: Bell,

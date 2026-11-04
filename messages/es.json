@@ -1441,7 +1441,9 @@
 			"wait_for_open_spot": "Estás en la lista de espera de este evento",
 			"wait_for_event_to_open": "Vuelve cuando se abra el registro",
 			"complete_profile": "Completa tu perfil para asistir a este evento",
-			"fallback": "Revisa tu estado de elegibilidad"
+			"fallback": "Revisa tu estado de elegibilidad",
+			"wait_for_membership_approval": "Tu solicitud de membresía está pendiente de aprobación",
+			"wait_for_membership_questionnaire_evaluation": "Tu cuestionario de membresía está en revisión"
 		},
 		"reason": {
 			"sales_paused": "La venta de entradas está en pausa ahora mismo. Vuelve pronto.",
@@ -1479,7 +1481,9 @@
 			"request_whitelist": "Solicitar verificación",
 			"wait_for_whitelist_approval": "Verificación pendiente",
 			"complete_profile": "Completar perfil",
-			"fallback": "Ver detalles"
+			"fallback": "Ver detalles",
+			"wait_for_membership_approval": "Solicitud pendiente",
+			"wait_for_membership_questionnaire_evaluation": "Cuestionario en revisión"
 		},
 		"explanation": {
 			"eligible": "Puedes asistir a este evento",
@@ -2667,7 +2671,11 @@
 		"deadlineDaysLeft": "Quedan {days} días para solicitar",
 		"completeProfile": "Completa tu perfil",
 		"completeProfileExplanation": "Para asistir a este evento necesitas tener el perfil completo.",
-		"missingProfileFields": "Añade lo siguiente a tu perfil:"
+		"missingProfileFields": "Añade lo siguiente a tu perfil:",
+		"membershipApplicationPending": "Solicitud de membresía pendiente",
+		"membershipApplicationPendingExplanation": "{organizationName} todavía tiene que aprobar tu solicitud de membresía. Cuando seas miembro, podrás unirte a este evento.",
+		"membershipQuestionnaireUnderReview": "Cuestionario de membresía en revisión",
+		"membershipQuestionnaireUnderReviewExplanation": "{organizationName} está revisando tu cuestionario de membresía. Cuando seas miembro, podrás unirte a este evento."
 	},
 	"invitation": {
 		"badge": "Invitación especial",
@@ -3820,11 +3828,11 @@
 				"acceptRequestsHelp": "Cuando está activado, las personas pueden enviar solicitudes para convertirse en miembros de tu organización. Los miembros pueden tener acceso a eventos y contenido exclusivos para miembros.",
 				"defaultQuestionnaireLabel": "Cuestionario de membresía predeterminado",
 				"defaultQuestionnaireNone": "Sin cuestionario",
-				"defaultQuestionnaireHelp": "Quienes solicitan la membresía deben completar este cuestionario antes de unirse. Cada nivel puede sobrescribirlo.",
+				"defaultQuestionnaireHelp": "Quienes soliciten unirse deben completar este cuestionario antes de entrar. Si se evalúa, sus respuestas también deben aprobarse (por la IA o por tu equipo, según su modo de evaluación). Cada nivel puede sustituirlo.",
 				"noMembershipQuestionnaires": "Todavía no hay cuestionarios de membresía.",
 				"manageQuestionnairesLink": "Gestionar cuestionarios",
 				"requireApprovalLabel": "Requerir aprobación manual para nuevos miembros",
-				"requireApprovalHelp": "Toda solicitud de membresía espera la aprobación del staff antes de que la persona se una. Cada nivel puede anular este ajuste.",
+				"requireApprovalHelp": "Vuestro equipo aprueba cada solicitud antes de que la persona se una. Esto se suma a cualquier cuestionario de membresía: con ambos activados, quienes solicitan deben superar el cuestionario y después ser aprobados. Cada nivel puede sobrescribirlo.",
 				"contactEmailLabel": "Correo de contacto",
 				"contactEmailOptional": "(Opcional)",
 				"contactEmailPlaceholder": "contacto@tuorganizacion.com",
@@ -6653,13 +6661,13 @@
 		"descriptionHint": "Se admite formato Markdown",
 		"questionnaireLabel": "Cuestionario de membresía",
 		"questionnaireInherit": "Heredar el valor predeterminado de la organización",
-		"questionnaireHint": "Quienes soliciten este nivel deben completar este cuestionario. Heredar usa el valor predeterminado de la organización.",
+		"questionnaireHint": "Quienes soliciten este nivel deben completar este cuestionario antes de entrar. Si se evalúa, sus respuestas también deben aprobarse (por la IA o por tu equipo, según su modo de evaluación). «Heredar» usa el valor predeterminado de la organización.",
 		"approvalLabel": "Aprobación manual",
 		"approvalInheritRequired": "Heredar de la organización (aprobación requerida)",
 		"approvalInheritNotRequired": "Heredar de la organización (sin aprobación requerida)",
 		"approvalRequire": "Requerir aprobación",
 		"approvalNoRequire": "No requerir aprobación",
-		"approvalHint": "Determina si las solicitudes de este nivel esperan la aprobación del staff.",
+		"approvalHint": "Vuestro equipo aprueba cada solicitud de este nivel antes de que la persona se una. Esto va después de cualquier cuestionario: con ambos activados, quienes solicitan deben superar el cuestionario y después ser aprobados.",
 		"cancel": "Cancelar",
 		"create": "Crear nivel",
 		"update": "Actualizar nivel",
@@ -7689,6 +7697,7 @@
 		"reapply": "Volver a solicitar la membresía",
 		"questionnaireCta": "Rellena el cuestionario de membresía",
 		"waiting": "Solicitud pendiente",
+		"questionnaireUnderReview": "Cuestionario en revisión",
 		"trackApplication": "Sigue tu solicitud",
 		"memberBadge": "Miembro",
 		"ownerBadge": "Titular",
@@ -7756,6 +7765,7 @@
 		"tiersHeading": "Niveles de membresía",
 		"empty": "{organizationName} todavía no ha publicado niveles de membresía.",
 		"backToOrg": "Volver a {organizationName}",
+		"backToEvent": "Volver al evento",
 		"freeBadge": "Gratuito",
 		"requiresApproval": "La organización revisa y aprueba cada solicitud.",
 		"approvalCleared": "La organización ha aprobado tu solicitud.",
@@ -7769,6 +7779,7 @@
 		"title": "Cuestionario de membresía",
 		"subtitle": "{orgName} te pide que lo rellenes antes de unirte.",
 		"backToOrg": "Volver a {orgName}",
+		"continueJoining": "Continuar con la solicitud",
 		"acceptedTitle": "Cuestionario aprobado",
 		"acceptedBody": "Ya puedes continuar uniéndote a {orgName}.",
 		"pendingToast": "Cuestionario enviado — te avisaremos en cuanto se haya evaluado.",

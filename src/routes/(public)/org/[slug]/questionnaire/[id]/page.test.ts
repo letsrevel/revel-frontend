@@ -21,6 +21,15 @@ vi.mock('svelte-sonner', () => ({
 const gotoMock = vi.hoisted(() => vi.fn());
 vi.mock('$app/navigation', () => ({ goto: gotoMock }));
 
+const pageUrl = vi.hoisted(() => ({ search: '' }));
+vi.mock('$app/state', () => ({
+	page: {
+		get url() {
+			return new URL(`http://localhost/org/acme/questionnaire/q-1${pageUrl.search}`);
+		}
+	}
+}));
+
 vi.mock('$lib/stores/auth.svelte', () => ({ authStore: { accessToken: 'tok' } }));
 
 /** No questions: every "required" answer is vacuously given, so Submit is live. */
@@ -41,7 +50,8 @@ const DATA = {
 describe('Membership questionnaire fill page', () => {
 	let queryClient: QueryClient;
 
-	function renderPage() {
+	function renderPage(returnUrl = '') {
+		pageUrl.search = returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : '';
 		return render(QueryClientTestWrapper, {
 			props: {
 				client: queryClient,
@@ -185,6 +195,56 @@ describe('Membership questionnaire fill page', () => {
 
 			await waitFor(() => expect(toastInfo).toHaveBeenCalledTimes(1));
 			expect(toastSuccess).not.toHaveBeenCalled();
+		});
+	});
+
+	describe('returnUrl (#1154)', () => {
+		it('goes back to the returnUrl after a pending-review submit', async () => {
+			submitMock.mockResolvedValue(submissionResponse(true));
+			renderPage('/events/acme/gala');
+			await submit();
+
+			await waitFor(() => expect(gotoMock).toHaveBeenCalledTimes(1));
+			expect(gotoMock).toHaveBeenCalledWith('/events/acme/gala', { invalidateAll: true });
+		});
+
+		it('goes to the org page after a pending submit when there is no returnUrl', async () => {
+			submitMock.mockResolvedValue(submissionResponse(true));
+			renderPage();
+			await submit();
+
+			await waitFor(() => expect(gotoMock).toHaveBeenCalledTimes(1));
+			expect(gotoMock).toHaveBeenCalledWith('/org/acme');
+		});
+
+		it('ignores an unsafe returnUrl', async () => {
+			submitMock.mockResolvedValue(submissionResponse(true));
+			renderPage('//evil.com');
+			await submit();
+
+			await waitFor(() => expect(gotoMock).toHaveBeenCalledTimes(1));
+			expect(gotoMock).toHaveBeenCalledWith('/org/acme');
+		});
+
+		it('keeps the header link pointing at the org profile', () => {
+			renderPage('/events/acme/gala');
+			expect(screen.getByRole('link', { name: /back to acme/i })).toHaveAttribute(
+				'href',
+				'/org/acme'
+			);
+		});
+
+		it('points the auto-accepted panel at the membership page, keeping the returnUrl', async () => {
+			submitMock.mockResolvedValue(submissionResponse(false));
+			renderPage('/events/acme/gala');
+			await submit();
+
+			const link = await screen.findByRole('link', { name: 'Continue joining' });
+			expect(link).toHaveAttribute(
+				'href',
+				`/org/acme/membership?returnUrl=${encodeURIComponent('/events/acme/gala')}`
+			);
+			expect(gotoMock).not.toHaveBeenCalled();
 		});
 	});
 });

@@ -1441,7 +1441,9 @@
 			"wait_for_open_spot": "Du stehst auf der Warteliste für dieses Event",
 			"wait_for_event_to_open": "Schau wieder vorbei, wenn die Anmeldung öffnet",
 			"complete_profile": "Vervollständige dein Profil, um an diesem Event teilzunehmen",
-			"fallback": "Prüfe deinen Teilnahmestatus"
+			"fallback": "Prüfe deinen Teilnahmestatus",
+			"wait_for_membership_approval": "Dein Mitgliedsantrag wartet auf Freigabe",
+			"wait_for_membership_questionnaire_evaluation": "Dein Mitgliedschaftsfragebogen wird geprüft"
 		},
 		"reason": {
 			"sales_paused": "Der Ticketverkauf ist gerade pausiert. Schau bald wieder vorbei.",
@@ -1479,7 +1481,9 @@
 			"request_whitelist": "Verifizierung anfragen",
 			"wait_for_whitelist_approval": "Verifizierung ausstehend",
 			"complete_profile": "Profil vervollständigen",
-			"fallback": "Details ansehen"
+			"fallback": "Details ansehen",
+			"wait_for_membership_approval": "Antrag ausstehend",
+			"wait_for_membership_questionnaire_evaluation": "Fragebogen wird geprüft"
 		},
 		"explanation": {
 			"eligible": "Du kannst an diesem Event teilnehmen",
@@ -2667,7 +2671,11 @@
 		"deadlineDaysLeft": "Noch {days} Tage zur Bewerbung",
 		"completeProfile": "Profil vervollständigen",
 		"completeProfileExplanation": "Diese Veranstaltung erfordert ein vollständiges Profil zur Teilnahme.",
-		"missingProfileFields": "Bitte ergänze folgende Angaben in deinem Profil:"
+		"missingProfileFields": "Bitte ergänze folgende Angaben in deinem Profil:",
+		"membershipApplicationPending": "Mitgliedsantrag ausstehend",
+		"membershipApplicationPendingExplanation": "{organizationName} muss deinen Mitgliedsantrag noch freigeben. Sobald du Mitglied bist, kannst du an dieser Veranstaltung teilnehmen.",
+		"membershipQuestionnaireUnderReview": "Mitgliedschaftsfragebogen wird geprüft",
+		"membershipQuestionnaireUnderReviewExplanation": "{organizationName} prüft gerade deinen Mitgliedschaftsfragebogen. Sobald du Mitglied bist, kannst du an dieser Veranstaltung teilnehmen."
 	},
 	"invitation": {
 		"badge": "Spezielle Einladung",
@@ -3820,11 +3828,11 @@
 				"acceptRequestsHelp": "Wenn aktiviert, können Benutzer*innen Anfragen stellen, um Mitglieder Ihrer Organisation zu werden. Mitglieder haben möglicherweise Zugang zu nur für Mitglieder zugänglichen Veranstaltungen und Inhalten.",
 				"defaultQuestionnaireLabel": "Standard-Mitgliedschaftsfragebogen",
 				"defaultQuestionnaireNone": "Kein Fragebogen",
-				"defaultQuestionnaireHelp": "Bewerber*innen müssen diesen Fragebogen vor dem Beitritt ausfüllen. Einzelne Stufen können ihn überschreiben.",
+				"defaultQuestionnaireHelp": "Bewerber*innen müssen diesen Fragebogen vor dem Beitritt ausfüllen. Wird er bewertet, müssen ihre Antworten außerdem freigegeben werden (durch KI oder euer Team, je nach Bewertungsmodus). Einzelne Stufen können das überschreiben.",
 				"noMembershipQuestionnaires": "Noch keine Mitgliedschaftsfragebögen.",
 				"manageQuestionnairesLink": "Fragebögen verwalten",
 				"requireApprovalLabel": "Manuelle Freigabe für neue Mitglieder verlangen",
-				"requireApprovalHelp": "Jeder Mitgliedsantrag wartet auf die Freigabe durch das Team, bevor die Person beitritt. Einzelne Stufen können das überschreiben.",
+				"requireApprovalHelp": "Euer Team genehmigt jede Bewerbung, bevor die Person beitritt. Das gilt zusätzlich zu einem Mitgliedschafts-Fragebogen: Sind beide aktiv, müssen Bewerber*innen erst den Fragebogen bestehen und werden dann genehmigt. Einzelne Stufen können das überschreiben.",
 				"contactEmailLabel": "Kontakt-E-Mail",
 				"contactEmailOptional": "(Optional)",
 				"contactEmailPlaceholder": "kontakt@ihreorganisation.de",
@@ -6653,13 +6661,13 @@
 		"descriptionHint": "Markdown-Formatierung wird unterstützt",
 		"questionnaireLabel": "Mitgliedschaftsfragebogen",
 		"questionnaireInherit": "Standard der Organisation übernehmen",
-		"questionnaireHint": "Bewerber*innen für diese Stufe müssen diesen Fragebogen ausfüllen. „Übernehmen“ nutzt den Standard der Organisation.",
+		"questionnaireHint": "Bewerber*innen für diese Stufe müssen diesen Fragebogen vor dem Beitritt ausfüllen. Wird er bewertet, müssen ihre Antworten außerdem freigegeben werden (durch KI oder euer Team, je nach Bewertungsmodus). Mit „Standard der Organisation übernehmen“ gilt der Standardfragebogen der Organisation.",
 		"approvalLabel": "Manuelle Freigabe",
 		"approvalInheritRequired": "Standard der Organisation übernehmen (Freigabe erforderlich)",
 		"approvalInheritNotRequired": "Standard der Organisation übernehmen (keine Freigabe erforderlich)",
 		"approvalRequire": "Freigabe verlangen",
 		"approvalNoRequire": "Keine Freigabe verlangen",
-		"approvalHint": "Legt fest, ob Anträge für diese Stufe auf die Freigabe durch das Team warten.",
+		"approvalHint": "Euer Team genehmigt jede Bewerbung für diese Stufe, bevor die Person beitritt. Das kommt nach einem eventuellen Fragebogen: Sind beide aktiv, müssen Bewerber*innen erst den Fragebogen bestehen und werden dann genehmigt.",
 		"cancel": "Abbrechen",
 		"create": "Stufe erstellen",
 		"update": "Stufe aktualisieren",
@@ -7689,6 +7697,7 @@
 		"reapply": "Mitgliedschaft erneut beantragen",
 		"questionnaireCta": "Fragebogen zur Mitgliedschaft ausfüllen",
 		"waiting": "Antrag in Bearbeitung",
+		"questionnaireUnderReview": "Fragebogen wird geprüft",
 		"trackApplication": "Deinen Antrag verfolgen",
 		"memberBadge": "Mitglied",
 		"ownerBadge": "Inhaber*in",
@@ -7756,6 +7765,7 @@
 		"tiersHeading": "Mitgliedschaftsstufen",
 		"empty": "{organizationName} hat noch keine Mitgliedschaftsstufen veröffentlicht.",
 		"backToOrg": "Zurück zu {organizationName}",
+		"backToEvent": "Zurück zum Event",
 		"freeBadge": "Kostenlos",
 		"requiresApproval": "Die Organisation prüft und genehmigt jede Anfrage.",
 		"approvalCleared": "Die Organisation hat deine Anfrage genehmigt.",
@@ -7769,6 +7779,7 @@
 		"title": "Mitgliedschafts-Fragebogen",
 		"subtitle": "{orgName} bittet neue Mitglieder, diesen Fragebogen auszufüllen.",
 		"backToOrg": "Zurück zu {orgName}",
+		"continueJoining": "Weiter mit dem Beitritt",
 		"acceptedTitle": "Fragebogen bestätigt",
 		"acceptedBody": "Du kannst jetzt mit dem Beitritt zu {orgName} fortfahren.",
 		"pendingToast": "Fragebogen abgeschickt — wir melden uns, sobald er ausgewertet wurde.",

@@ -126,6 +126,8 @@
 		const iconMap: Record<string, typeof AlertCircle> = {
 			request_invitation: Mail,
 			become_member: UserPlus,
+			wait_for_membership_approval: Clock,
+			wait_for_membership_questionnaire_evaluation: Clock,
 			complete_questionnaire: ClipboardList,
 			wait_for_questionnaire_evaluation: Clock,
 			wait_to_retake_questionnaire: XCircle,
@@ -156,6 +158,8 @@
 		// Info (waiting states)
 		if (
 			nextStep === 'wait_for_questionnaire_evaluation' ||
+			nextStep === 'wait_for_membership_approval' ||
+			nextStep === 'wait_for_membership_questionnaire_evaluation' ||
 			nextStep === 'wait_for_event_to_open' ||
 			nextStep === 'wait_for_open_spot'
 		) {
@@ -198,6 +202,14 @@
 		// purchase path, which never reaches this component.
 		const byCode = getReasonCodeMessage(eligibility.reason_code);
 		if (byCode) return byCode;
+
+		// Pending membership on a members-only event (BE #1300): the user already
+		// applied / submitted the membership questionnaire, so "Members only" with a
+		// Join CTA would send them round the loop again.
+		if (eligibility.reason_code === 'membership_application_pending')
+			return m['ineligibilityMessage.membershipApplicationPending']();
+		if (eligibility.reason_code === 'membership_questionnaire_pending_review')
+			return m['ineligibilityMessage.membershipQuestionnaireUnderReview']();
 
 		if (eligibility.reason) {
 			// Extract the first sentence or key phrase
@@ -285,6 +297,18 @@
 
 		if (nextStep === 'become_member') {
 			return m['ineligibilityMessage.membersOnlyExplanation']({ organizationName });
+		}
+
+		if (nextStep === 'wait_for_membership_approval') {
+			return m['ineligibilityMessage.membershipApplicationPendingExplanation']({
+				organizationName
+			});
+		}
+
+		if (nextStep === 'wait_for_membership_questionnaire_evaluation') {
+			return m['ineligibilityMessage.membershipQuestionnaireUnderReviewExplanation']({
+				organizationName
+			});
 		}
 
 		if (nextStep === 'request_invitation') {

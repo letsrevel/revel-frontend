@@ -26,6 +26,8 @@
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import type { Tone } from '$lib/components/common/tones';
 	import { resolve } from '$app/paths';
+	import { withReturnUrl } from '$lib/utils/safe-redirect';
+	import { membershipReturnUrl } from '$lib/utils/membership-return.svelte';
 
 	interface Props {
 		organizationSlug: string;
@@ -200,8 +202,10 @@
 	// Tier mode only, and it comes back to the grid rather than the org landing
 	// page: the login round trip exists so the visitor can press Join on a tier,
 	// so it must return them to where that button is.
+	// The membership page's own `?returnUrl=` (e.g. the members-only event the
+	// visitor came from) rides inside the login return target, so it survives login.
 	const loginHref = $derived(
-		`${resolve('/(public)/login', {})}?returnUrl=${encodeURIComponent(membershipHref)}`
+		`${resolve('/(public)/login', {})}?returnUrl=${encodeURIComponent(withReturnUrl(membershipHref, membershipReturnUrl()))}`
 	);
 
 	/** The label a join button carries: the tier when there is one, else the org. */
@@ -216,7 +220,10 @@
 	const questionnaireHref = $derived.by(() => {
 		const id = eligibility?.questionnaire_id;
 		if (!id) return null;
-		return resolve('/(public)/org/[slug]/questionnaire/[id]', { slug: organizationSlug, id });
+		return withReturnUrl(
+			resolve('/(public)/org/[slug]/questionnaire/[id]', { slug: organizationSlug, id }),
+			membershipReturnUrl()
+		);
 	});
 
 	let applyOpen = $state(false);
@@ -382,14 +389,20 @@
 		{:else if ctaKind === 'waiting'}
 			<Button variant="secondary" disabled>
 				<Clock class="h-4 w-4" aria-hidden="true" />
-				{m['membershipEligibility.waiting']()}
+				{eligibility?.next_step === 'wait_for_questionnaire_evaluation'
+					? m['membershipEligibility.questionnaireUnderReview']()
+					: m['membershipEligibility.waiting']()}
 			</Button>
-			<a
-				href={membershipsHref}
-				class="text-sm font-medium text-primary underline-offset-4 hover:underline"
-			>
-				{m['membershipEligibility.trackApplication']()}
-			</a>
+			<!-- A questionnaire under review is not an application yet, so the hub's
+			     Applications list would be empty: no tracking link for that state. -->
+			{#if eligibility?.next_step !== 'wait_for_questionnaire_evaluation'}
+				<a
+					href={membershipsHref}
+					class="text-sm font-medium text-primary underline-offset-4 hover:underline"
+				>
+					{m['membershipEligibility.trackApplication']()}
+				</a>
+			{/if}
 		{:else if ctaKind === 'retry_later'}
 			<Button variant="secondary" disabled>
 				{m['membershipEligibility.questionnaireCta']()}
