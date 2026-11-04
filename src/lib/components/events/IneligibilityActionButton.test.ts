@@ -157,3 +157,24 @@ describe('IneligibilityActionButton complete_profile navigation', () => {
 		);
 	});
 });
+
+describe('IneligibilityActionButton pending membership (BE #1300)', () => {
+	beforeEach(() => {
+		authState.accessToken = 'tok';
+	});
+
+	it.each<NextStep>([
+		'wait_for_membership_approval',
+		'wait_for_membership_questionnaire_evaluation'
+	])('renders %s as a disabled waiting state with a link to track the application', (nextStep) => {
+		setup(nextStep, null);
+		const button = screen.getByRole('button', { name: getActionButtonText(nextStep) });
+		expect(button).toBeDisabled();
+		expect(
+			screen.getByRole('link', { name: m['membershipEligibility.trackApplication']() })
+		).toHaveAttribute('href', '/account/memberships');
+		expect(
+			screen.queryByRole('button', { name: getActionButtonText('become_member') })
+		).not.toBeInTheDocument();
+	});
+});

@@ -106,6 +106,8 @@
 			request_invitation: Mail,
 			wait_for_invitation_approval: Clock,
 			become_member: UserPlus,
+			wait_for_membership_approval: Clock,
+			wait_for_membership_questionnaire_evaluation: Clock,
 			join_waitlist: ListPlus,
 			wait_for_open_spot: Clock,
 			wait_for_event_to_open: Bell,
@@ -409,6 +411,19 @@
 			<Clock class="h-5 w-5" aria-hidden="true" />
 			<span>{buttonText}</span>
 		</Button>
+	{:else if nextStep === 'wait_for_membership_approval' || nextStep === 'wait_for_membership_questionnaire_evaluation'}
+		<!-- Pending membership (BE #1300): same waiting shape as the org page's
+		     MembershipCta, including the link to where the application is tracked. -->
+		<Button variant="secondary" disabled={true} class="w-full">
+			<Clock class="h-5 w-5" aria-hidden="true" />
+			<span>{buttonText}</span>
+		</Button>
+		<a
+			href={resolve('/(auth)/account/memberships', {})}
+			class="block text-center text-sm font-medium text-primary underline-offset-4 hover:underline"
+		>
+			{m['membershipEligibility.trackApplication']()}
+		</a>
 	{:else if nextStep === 'wait_for_open_spot'}
 		<!-- Special layout for waitlist status with Leave button below -->
 		<div class="space-y-2">

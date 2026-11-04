@@ -1306,7 +1306,9 @@
 			"wait_for_open_spot": "Tu es sur la liste d'attente pour cet événement",
 			"wait_for_event_to_open": "Reviens quand les inscriptions ouvriront",
 			"complete_profile": "Complète ton profil pour participer à cet événement",
-			"fallback": "Vérifie ton statut d'éligibilité"
+			"fallback": "Vérifie ton statut d'éligibilité",
+			"wait_for_membership_approval": "Ta demande d'adhésion attend d'être approuvée",
+			"wait_for_membership_questionnaire_evaluation": "Ton questionnaire d'adhésion est en cours d'examen"
 		},
 		"reason": {
 			"sales_paused": "La vente des billets est en pause pour le moment. Revenez bientôt.",
@@ -1344,7 +1346,9 @@
 			"request_whitelist": "Demander la vérification",
 			"wait_for_whitelist_approval": "Vérification en attente",
 			"complete_profile": "Compléter le profil",
-			"fallback": "Voir les détails"
+			"fallback": "Voir les détails",
+			"wait_for_membership_approval": "Demande en attente",
+			"wait_for_membership_questionnaire_evaluation": "Questionnaire en cours d'examen"
 		},
 		"explanation": {
 			"eligible": "Tu peux participer à cet événement",
@@ -2532,7 +2536,11 @@
 		"deadlineDaysLeft": "{days} jours restants pour candidater",
 		"completeProfile": "Complète ton profil",
 		"completeProfileExplanation": "Cet événement nécessite un profil complet pour participer.",
-		"missingProfileFields": "Ajoute les éléments suivants à ton profil :"
+		"missingProfileFields": "Ajoute les éléments suivants à ton profil :",
+		"membershipApplicationPending": "Demande d'adhésion en attente",
+		"membershipApplicationPendingExplanation": "{organizationName} doit encore approuver ta demande d'adhésion. Une fois membre, tu pourras participer à cet événement.",
+		"membershipQuestionnaireUnderReview": "Questionnaire d'adhésion en cours d'examen",
+		"membershipQuestionnaireUnderReviewExplanation": "{organizationName} examine ton questionnaire d'adhésion. Une fois membre, tu pourras participer à cet événement."
 	},
 	"invitation": {
 		"badge": "Invitation spéciale",

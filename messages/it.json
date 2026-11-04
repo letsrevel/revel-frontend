@@ -1441,7 +1441,9 @@
 			"wait_for_open_spot": "Sei in lista d'attesa per questo evento",
 			"wait_for_event_to_open": "Torna a trovarci quando si aprono le iscrizioni",
 			"complete_profile": "Completa il tuo profilo per partecipare a questo evento",
-			"fallback": "Controlla il tuo stato di idoneità"
+			"fallback": "Controlla il tuo stato di idoneità",
+			"wait_for_membership_approval": "La tua richiesta di iscrizione è in attesa di approvazione",
+			"wait_for_membership_questionnaire_evaluation": "Il tuo questionario di iscrizione è in revisione"
 		},
 		"reason": {
 			"sales_paused": "La vendita dei biglietti è in pausa in questo momento. Torna presto.",
@@ -1479,7 +1481,9 @@
 			"request_whitelist": "Richiedi verifica",
 			"wait_for_whitelist_approval": "Verifica in corso",
 			"complete_profile": "Completa il profilo",
-			"fallback": "Vedi dettagli"
+			"fallback": "Vedi dettagli",
+			"wait_for_membership_approval": "Richiesta in attesa",
+			"wait_for_membership_questionnaire_evaluation": "Questionario in revisione"
 		},
 		"explanation": {
 			"eligible": "Puoi partecipare a questo evento",
@@ -2667,7 +2671,11 @@
 		"deadlineDaysLeft": "{days} giorni rimanenti per candidarsi",
 		"completeProfile": "Completa il tuo profilo",
 		"completeProfileExplanation": "Questo evento richiede un profilo completo per partecipare.",
-		"missingProfileFields": "Aggiungi le seguenti informazioni al tuo profilo:"
+		"missingProfileFields": "Aggiungi le seguenti informazioni al tuo profilo:",
+		"membershipApplicationPending": "Richiesta di iscrizione in attesa",
+		"membershipApplicationPendingExplanation": "{organizationName} deve ancora approvare la tua richiesta di iscrizione. Una volta iscritto, potrai partecipare a questo evento.",
+		"membershipQuestionnaireUnderReview": "Questionario di iscrizione in revisione",
+		"membershipQuestionnaireUnderReviewExplanation": "{organizationName} sta esaminando il tuo questionario di iscrizione. Una volta iscritto, potrai partecipare a questo evento."
 	},
 	"invitation": {
 		"badge": "Invito Speciale",

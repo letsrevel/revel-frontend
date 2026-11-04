@@ -1441,7 +1441,9 @@
 			"wait_for_open_spot": "Estás na lista de espera deste evento",
 			"wait_for_event_to_open": "Volta quando as inscrições abrirem",
 			"complete_profile": "Completa o teu perfil para participar neste evento",
-			"fallback": "Verifica o teu estado de elegibilidade"
+			"fallback": "Verifica o teu estado de elegibilidade",
+			"wait_for_membership_approval": "O teu pedido de adesão aguarda aprovação",
+			"wait_for_membership_questionnaire_evaluation": "O teu questionário de adesão está em análise"
 		},
 		"reason": {
 			"sales_paused": "A venda de bilhetes está em pausa neste momento. Volta em breve.",
@@ -1479,7 +1481,9 @@
 			"request_whitelist": "Pedir verificação",
 			"wait_for_whitelist_approval": "Verificação pendente",
 			"complete_profile": "Completar perfil",
-			"fallback": "Ver detalhes"
+			"fallback": "Ver detalhes",
+			"wait_for_membership_approval": "Pedido pendente",
+			"wait_for_membership_questionnaire_evaluation": "Questionário em análise"
 		},
 		"explanation": {
 			"eligible": "Podes participar neste evento",
@@ -2667,7 +2671,11 @@
 		"deadlineDaysLeft": "Faltam {days} dias para te candidatares",
 		"completeProfile": "Completa o teu perfil",
 		"completeProfileExplanation": "Este evento exige que tenhas o perfil completo para participares.",
-		"missingProfileFields": "Adiciona o seguinte ao teu perfil:"
+		"missingProfileFields": "Adiciona o seguinte ao teu perfil:",
+		"membershipApplicationPending": "Pedido de adesão pendente",
+		"membershipApplicationPendingExplanation": "{organizationName} ainda tem de aprovar o teu pedido de adesão. Quando fores membro, podes participar neste evento.",
+		"membershipQuestionnaireUnderReview": "Questionário de adesão em análise",
+		"membershipQuestionnaireUnderReviewExplanation": "{organizationName} está a analisar o teu questionário de adesão. Quando fores membro, podes participar neste evento."
 	},
 	"invitation": {
 		"badge": "Convite especial",

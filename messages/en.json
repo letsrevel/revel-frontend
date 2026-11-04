@@ -1441,7 +1441,9 @@
 			"wait_for_open_spot": "You're on the waitlist for this event",
 			"wait_for_event_to_open": "Check back when registration opens",
 			"complete_profile": "Complete your profile to attend this event",
-			"fallback": "Check your eligibility status"
+			"fallback": "Check your eligibility status",
+			"wait_for_membership_approval": "Your membership application is awaiting approval",
+			"wait_for_membership_questionnaire_evaluation": "Your membership questionnaire is under review"
 		},
 		"reason": {
 			"sales_paused": "Ticket sales are paused right now. Check back soon.",
@@ -1479,7 +1481,9 @@
 			"request_whitelist": "Request Verification",
 			"wait_for_whitelist_approval": "Verification Pending",
 			"complete_profile": "Complete Profile",
-			"fallback": "View Details"
+			"fallback": "View Details",
+			"wait_for_membership_approval": "Application pending",
+			"wait_for_membership_questionnaire_evaluation": "Questionnaire under review"
 		},
 		"explanation": {
 			"eligible": "You're eligible to attend this event",
@@ -2667,7 +2671,11 @@
 		"deadlineDaysLeft": "{days} days left to apply",
 		"completeProfile": "Complete your profile",
 		"completeProfileExplanation": "This event requires you to have a complete profile to attend.",
-		"missingProfileFields": "Please add the following to your profile:"
+		"missingProfileFields": "Please add the following to your profile:",
+		"membershipApplicationPending": "Membership application pending",
+		"membershipApplicationPendingExplanation": "{organizationName} still has to approve your membership application. Once you're a member, you can join this event.",
+		"membershipQuestionnaireUnderReview": "Membership questionnaire under review",
+		"membershipQuestionnaireUnderReviewExplanation": "{organizationName} is reviewing your membership questionnaire. Once you're a member, you can join this event."
 	},
 	"invitation": {
 		"badge": "Special Invitation",

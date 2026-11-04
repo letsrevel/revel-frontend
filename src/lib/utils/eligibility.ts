@@ -207,6 +207,9 @@ export function getNextStepMessage(nextStep: NextStep): string {
 		request_invitation: () => m['eligibility.nextStep.request_invitation'](),
 		wait_for_invitation_approval: () => m['eligibility.nextStep.wait_for_invitation_approval'](),
 		become_member: () => m['eligibility.nextStep.become_member'](),
+		wait_for_membership_approval: () => m['eligibility.nextStep.wait_for_membership_approval'](),
+		wait_for_membership_questionnaire_evaluation: () =>
+			m['eligibility.nextStep.wait_for_membership_questionnaire_evaluation'](),
 		join_waitlist: () => m['eligibility.nextStep.join_waitlist'](),
 		wait_for_open_spot: () => m['eligibility.nextStep.wait_for_open_spot'](),
 		wait_for_event_to_open: () => m['eligibility.nextStep.wait_for_event_to_open'](),
@@ -241,6 +244,10 @@ export function getActionButtonText(nextStep: NextStep): string {
 		wait_for_invitation_approval: () =>
 			m['eligibility.actionButton.wait_for_invitation_approval'](),
 		become_member: () => m['eligibility.actionButton.become_member'](),
+		wait_for_membership_approval: () =>
+			m['eligibility.actionButton.wait_for_membership_approval'](),
+		wait_for_membership_questionnaire_evaluation: () =>
+			m['eligibility.actionButton.wait_for_membership_questionnaire_evaluation'](),
 		join_waitlist: () => m['eligibility.actionButton.join_waitlist'](),
 		wait_for_open_spot: () => m['eligibility.actionButton.wait_for_open_spot'](),
 		wait_for_event_to_open: () => m['eligibility.actionButton.wait_for_event_to_open'](),
@@ -263,7 +270,9 @@ export function isActionDisabled(nextStep: NextStep): boolean {
 		'wait_for_invitation_approval',
 		'wait_for_event_to_open',
 		'wait_for_open_spot',
-		'wait_for_whitelist_approval'
+		'wait_for_whitelist_approval',
+		'wait_for_membership_approval',
+		'wait_for_membership_questionnaire_evaluation'
 	];
 
 	return disabledStates.includes(nextStep);
@@ -282,6 +291,8 @@ export function getNextStepIcon(nextStep: NextStep): string {
 		request_invitation: 'Mail',
 		wait_for_invitation_approval: 'Clock',
 		become_member: 'UserPlus',
+		wait_for_membership_approval: 'Clock',
+		wait_for_membership_questionnaire_evaluation: 'Clock',
 		join_waitlist: 'ListPlus',
 		wait_for_open_spot: 'Clock',
 		wait_for_event_to_open: 'Bell',
