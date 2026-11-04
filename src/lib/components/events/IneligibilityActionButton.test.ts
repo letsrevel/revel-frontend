@@ -145,4 +145,15 @@ describe('IneligibilityActionButton complete_profile navigation', () => {
 
 		expect(assigned).toBe(`/account/profile?redirect=${encodeURIComponent('/events/acme/gala')}`);
 	});
+
+	it('sends become_member to the membership page with the event as returnUrl', async () => {
+		const user = userEvent.setup();
+		setup('become_member', null);
+
+		await user.click(screen.getByRole('button', { name: getActionButtonText('become_member') }));
+
+		expect(assigned).toBe(
+			`/org/acme/membership?returnUrl=${encodeURIComponent('/events/acme/gala')}`
+		);
+	});
 });

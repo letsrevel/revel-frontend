@@ -19,6 +19,7 @@
 	import PricingCard from '$lib/components/common/PricingCard.svelte';
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import { ClipboardList, Gift, ShieldCheck } from '@lucide/svelte';
+	import { withReturnUrl } from '$lib/utils/safe-redirect';
 	import ApplyDialog from './ApplyDialog.svelte';
 	import MembershipCta from './MembershipCta.svelte';
 	import PlanCard from './PlanCard.svelte';
@@ -51,6 +52,8 @@
 		 * round trips answering a question they never asked.
 		 */
 		showJoinCta?: boolean;
+		/** Safe path threaded onto the questionnaire links so the applicant can resume. */
+		returnUrl?: string | null;
 	}
 
 	const {
@@ -63,7 +66,8 @@
 		subscription = null,
 		subscriptionLoading = false,
 		onSubscribe,
-		showJoinCta = true
+		showJoinCta = true,
+		returnUrl = null
 	}: Props = $props();
 
 	// Unique per instance: several of these cards sit side by side, and each needs
@@ -286,16 +290,21 @@
 							{#if tier.questionnaire_id}
 								<!-- Named with the tier: a screen-reader user tabbing the page
 							     would otherwise hear the same link text on every card. -->
+								<!-- eslint-disable svelte/no-navigation-without-resolve -- built from resolve() -->
 								<a
-									href={resolve('/(public)/org/[slug]/questionnaire/[id]', {
-										slug: organizationSlug,
-										id: tier.questionnaire_id
-									})}
+									href={withReturnUrl(
+										resolve('/(public)/org/[slug]/questionnaire/[id]', {
+											slug: organizationSlug,
+											id: tier.questionnaire_id
+										}),
+										returnUrl
+									)}
 									aria-label={m['membershipTiers.questionnaireLinkAria']({ tier: tier.name })}
 									class="font-bold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 								>
 									{m['membershipTiers.questionnaireLink']()}
 								</a>
+								<!-- eslint-enable svelte/no-navigation-without-resolve -->
 							{/if}
 						{/if}
 					</span>
@@ -338,6 +347,7 @@
 			tierName={tier.name}
 			planId={ctaPlanId}
 			plansInline={plans.length > 0}
+			{returnUrl}
 		/>
 	{/if}
 {/snippet}

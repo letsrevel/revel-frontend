@@ -9,6 +9,7 @@
 	const { data }: { data: PageData } = $props();
 
 	const organization = $derived(data.organization);
+	const returnUrl = $derived(data.returnUrl);
 </script>
 
 <SeoHead config={data.seo} />
@@ -33,6 +34,18 @@
 			{m['membershipTiers.backToOrg']({ organizationName: organization.name })}
 		</a>
 
+		{#if returnUrl}
+			<!-- eslint-disable svelte/no-navigation-without-resolve -- sanitized same-origin path (safeReturnUrl) -->
+			<a
+				href={returnUrl}
+				class="inline-flex items-center gap-2 text-sm font-bold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+			>
+				<ArrowLeft class="h-4 w-4" aria-hidden="true" />
+				{m['membershipTiers.backToEvent']()}
+			</a>
+			<!-- eslint-enable svelte/no-navigation-without-resolve -->
+		{/if}
+
 		<MembershipSection
 			{organization}
 			tiers={data.tiers}
@@ -42,6 +55,7 @@
 			membershipStatus={data.membershipStatus}
 			isOwner={data.isOwner}
 			isStaff={data.isStaff}
+			{returnUrl}
 		/>
 	</div>
 </div>

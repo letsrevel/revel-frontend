@@ -9,6 +9,7 @@ import {
 } from '$lib/api';
 import { log } from '$lib/server/logger';
 import { throwIfTransientUpstream } from '$lib/server/upstream';
+import { safeReturnUrl } from '$lib/utils/safe-redirect';
 import type { PageServerLoad } from './$types';
 import type {
 	MembershipStatus,
@@ -138,7 +139,10 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 			membershipStatus,
 			isOwner,
 			isStaff,
-			isAuthenticated: !!locals.user
+			isAuthenticated: !!locals.user,
+			// The page the applicant came from (e.g. a members-only event); '' when
+			// absent or not a same-origin relative path.
+			returnUrl: safeReturnUrl(url.searchParams.get('returnUrl'), '')
 		};
 	} catch (err) {
 		if (isHttpError(err) || isRedirect(err)) throw err;

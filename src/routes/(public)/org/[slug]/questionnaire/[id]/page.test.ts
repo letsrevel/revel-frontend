@@ -41,13 +41,13 @@ const DATA = {
 describe('Membership questionnaire fill page', () => {
 	let queryClient: QueryClient;
 
-	function renderPage() {
+	function renderPage(returnUrl = '') {
 		return render(QueryClientTestWrapper, {
 			props: {
 				client: queryClient,
 				component: Page,
 				// The page only reads `data`; `$types` PageData is structural here.
-				componentProps: { data: DATA } as unknown as Record<string, unknown>
+				componentProps: { data: { ...DATA, returnUrl } } as unknown as Record<string, unknown>
 			}
 		});
 	}
@@ -185,6 +185,48 @@ describe('Membership questionnaire fill page', () => {
 
 			await waitFor(() => expect(toastInfo).toHaveBeenCalledTimes(1));
 			expect(toastSuccess).not.toHaveBeenCalled();
+		});
+	});
+
+	describe('returnUrl (#1154)', () => {
+		it('goes back to the returnUrl after a pending-review submit', async () => {
+			submitMock.mockResolvedValue(submissionResponse(true));
+			renderPage('/events/acme/gala');
+			await submit();
+
+			await waitFor(() => expect(gotoMock).toHaveBeenCalledTimes(1));
+			expect(gotoMock).toHaveBeenCalledWith('/events/acme/gala', { invalidateAll: true });
+		});
+
+		it('goes to the org page after a pending submit when there is no returnUrl', async () => {
+			submitMock.mockResolvedValue(submissionResponse(true));
+			renderPage();
+			await submit();
+
+			await waitFor(() => expect(gotoMock).toHaveBeenCalledTimes(1));
+			expect(gotoMock).toHaveBeenCalledWith('/org/acme');
+		});
+
+		it('ignores an unsafe returnUrl', async () => {
+			submitMock.mockResolvedValue(submissionResponse(true));
+			renderPage('//evil.com');
+			await submit();
+
+			await waitFor(() => expect(gotoMock).toHaveBeenCalledTimes(1));
+			expect(gotoMock).toHaveBeenCalledWith('/org/acme');
+		});
+
+		it('points the auto-accepted panel at the membership page, keeping the returnUrl', async () => {
+			submitMock.mockResolvedValue(submissionResponse(false));
+			renderPage('/events/acme/gala');
+			await submit();
+
+			const link = await screen.findByRole('link', { name: 'Continue joining' });
+			expect(link).toHaveAttribute(
+				'href',
+				`/org/acme/membership?returnUrl=${encodeURIComponent('/events/acme/gala')}`
+			);
+			expect(gotoMock).not.toHaveBeenCalled();
 		});
 	});
 });

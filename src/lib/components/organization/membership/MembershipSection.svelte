@@ -40,6 +40,8 @@
 		membershipStatus?: MembershipStatus | null;
 		isOwner?: boolean;
 		isStaff?: boolean;
+		/** Safe same-origin path to resume after the application (e.g. the event page). */
+		returnUrl?: string | null;
 	}
 
 	const {
@@ -50,7 +52,8 @@
 		membershipTier = null,
 		membershipStatus = null,
 		isOwner = false,
-		isStaff = false
+		isStaff = false,
+		returnUrl = null
 	}: Props = $props();
 
 	const accessToken = $derived(authStore.accessToken);
@@ -227,6 +230,7 @@
 						{subscriptionLoading}
 						onSubscribe={handleSubscribe}
 						showJoinCta={showJoinCtas}
+						{returnUrl}
 					/>
 				{/each}
 			</div>

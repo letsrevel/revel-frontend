@@ -26,6 +26,7 @@
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import type { Tone } from '$lib/components/common/tones';
 	import { resolve } from '$app/paths';
+	import { withReturnUrl } from '$lib/utils/safe-redirect';
 
 	interface Props {
 		organizationSlug: string;
@@ -37,6 +38,8 @@
 		membershipStatus?: MembershipStatus | null;
 		isOwner?: boolean;
 		isStaff?: boolean;
+		/** Safe path appended to the questionnaire link so the applicant can resume. */
+		returnUrl?: string | null;
 		class?: string;
 		/**
 		 * The tier this CTA asks about.
@@ -87,6 +90,7 @@
 		membershipStatus = null,
 		isOwner = false,
 		isStaff = false,
+		returnUrl = null,
 		class: className,
 		tierId = null,
 		tierName = null,
@@ -216,7 +220,10 @@
 	const questionnaireHref = $derived.by(() => {
 		const id = eligibility?.questionnaire_id;
 		if (!id) return null;
-		return resolve('/(public)/org/[slug]/questionnaire/[id]', { slug: organizationSlug, id });
+		return withReturnUrl(
+			resolve('/(public)/org/[slug]/questionnaire/[id]', { slug: organizationSlug, id }),
+			returnUrl
+		);
 	});
 
 	let applyOpen = $state(false);
@@ -382,7 +389,9 @@
 		{:else if ctaKind === 'waiting'}
 			<Button variant="secondary" disabled>
 				<Clock class="h-4 w-4" aria-hidden="true" />
-				{m['membershipEligibility.waiting']()}
+				{eligibility?.next_step === 'wait_for_questionnaire_evaluation'
+					? m['membershipEligibility.questionnaireUnderReview']()
+					: m['membershipEligibility.waiting']()}
 			</Button>
 			<a
 				href={membershipsHref}

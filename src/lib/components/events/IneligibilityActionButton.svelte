@@ -8,6 +8,8 @@
 	} from '$lib/utils/eligibility';
 	import { backendMessage, extractApiErrorDetail } from '$lib/utils/api-error-detail';
 	import { cn } from '$lib/utils/cn';
+	import { resolve } from '$app/paths';
+	import { withReturnUrl } from '$lib/utils/safe-redirect';
 	import { Button } from '$lib/components/ui/button';
 	import RequestInvitationButton from './RequestInvitationButton.svelte';
 	import RequestWhitelistButton from './RequestWhitelistButton.svelte';
@@ -166,7 +168,13 @@
 
 		// Navigation actions
 		if (nextStep === 'become_member') {
-			window.location.href = `/org/${organizationSlug}`;
+			// Land on the membership page (where the tiers and the questionnaire live),
+			// carrying the event so a pending submission can come back to it.
+			const membershipHref = resolve('/(public)/org/[slug]/membership', {
+				slug: organizationSlug
+			});
+			const eventUrl = eventSlug ? `/events/${organizationSlug}/${eventSlug}` : null;
+			window.location.href = withReturnUrl(membershipHref, eventUrl);
 			return;
 		}
 
