@@ -21,6 +21,15 @@ vi.mock('svelte-sonner', () => ({
 const gotoMock = vi.hoisted(() => vi.fn());
 vi.mock('$app/navigation', () => ({ goto: gotoMock }));
 
+const pageUrl = vi.hoisted(() => ({ search: '' }));
+vi.mock('$app/state', () => ({
+	page: {
+		get url() {
+			return new URL(`http://localhost/org/acme/questionnaire/q-1${pageUrl.search}`);
+		}
+	}
+}));
+
 vi.mock('$lib/stores/auth.svelte', () => ({ authStore: { accessToken: 'tok' } }));
 
 /** No questions: every "required" answer is vacuously given, so Submit is live. */
@@ -42,12 +51,13 @@ describe('Membership questionnaire fill page', () => {
 	let queryClient: QueryClient;
 
 	function renderPage(returnUrl = '') {
+		pageUrl.search = returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : '';
 		return render(QueryClientTestWrapper, {
 			props: {
 				client: queryClient,
 				component: Page,
 				// The page only reads `data`; `$types` PageData is structural here.
-				componentProps: { data: { ...DATA, returnUrl } } as unknown as Record<string, unknown>
+				componentProps: { data: DATA } as unknown as Record<string, unknown>
 			}
 		});
 	}
@@ -214,6 +224,14 @@ describe('Membership questionnaire fill page', () => {
 
 			await waitFor(() => expect(gotoMock).toHaveBeenCalledTimes(1));
 			expect(gotoMock).toHaveBeenCalledWith('/org/acme');
+		});
+
+		it('keeps the header link pointing at the org profile', () => {
+			renderPage('/events/acme/gala');
+			expect(screen.getByRole('link', { name: /back to acme/i })).toHaveAttribute(
+				'href',
+				'/org/acme'
+			);
 		});
 
 		it('points the auto-accepted panel at the membership page, keeping the returnUrl', async () => {

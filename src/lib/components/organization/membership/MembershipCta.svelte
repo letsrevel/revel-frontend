@@ -27,6 +27,7 @@
 	import type { Tone } from '$lib/components/common/tones';
 	import { resolve } from '$app/paths';
 	import { withReturnUrl } from '$lib/utils/safe-redirect';
+	import { membershipReturnUrl } from '$lib/utils/membership-return.svelte';
 
 	interface Props {
 		organizationSlug: string;
@@ -38,8 +39,6 @@
 		membershipStatus?: MembershipStatus | null;
 		isOwner?: boolean;
 		isStaff?: boolean;
-		/** Safe path appended to the questionnaire link so the applicant can resume. */
-		returnUrl?: string | null;
 		class?: string;
 		/**
 		 * The tier this CTA asks about.
@@ -90,7 +89,6 @@
 		membershipStatus = null,
 		isOwner = false,
 		isStaff = false,
-		returnUrl = null,
 		class: className,
 		tierId = null,
 		tierName = null,
@@ -222,7 +220,7 @@
 		if (!id) return null;
 		return withReturnUrl(
 			resolve('/(public)/org/[slug]/questionnaire/[id]', { slug: organizationSlug, id }),
-			returnUrl
+			membershipReturnUrl()
 		);
 	});
 

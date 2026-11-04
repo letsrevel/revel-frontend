@@ -6661,7 +6661,7 @@
 		"descriptionHint": "Markdown-Formatierung wird unterstützt",
 		"questionnaireLabel": "Mitgliedschaftsfragebogen",
 		"questionnaireInherit": "Standard der Organisation übernehmen",
-		"questionnaireHint": "Bewerber*innen für diese Stufe müssen diesen Fragebogen ausfüllen, und ihre Antworten müssen freigegeben werden (durch KI oder euer Team, je nach Bewertungsmodus), bevor sie beitreten können. „Erben“ übernimmt den Standard der Organisation.",
+		"questionnaireHint": "Bewerber*innen für diese Stufe müssen diesen Fragebogen ausfüllen, und ihre Antworten müssen freigegeben werden (durch KI oder euer Team, je nach Bewertungsmodus), bevor sie beitreten können. Mit „Standard der Organisation übernehmen“ gilt der Standardfragebogen der Organisation.",
 		"approvalLabel": "Manuelle Freigabe",
 		"approvalInheritRequired": "Standard der Organisation übernehmen (Freigabe erforderlich)",
 		"approvalInheritNotRequired": "Standard der Organisation übernehmen (keine Freigabe erforderlich)",

@@ -149,6 +149,17 @@
 		return 'outline';
 	}
 
+	/** Path of the event this button sits on; null when it cannot be built. */
+	const eventUrl = $derived(
+		organizationSlug && eventSlug ? `/events/${organizationSlug}/${eventSlug}` : null
+	);
+
+	/** Waiting on a membership decision: also links to where the application is tracked. */
+	const isMembershipWait = $derived(
+		nextStep === 'wait_for_membership_approval' ||
+			nextStep === 'wait_for_membership_questionnaire_evaluation'
+	);
+
 	/**
 	 * Handle button click action
 	 */
@@ -175,7 +186,6 @@
 			const membershipHref = resolve('/(public)/org/[slug]/membership', {
 				slug: organizationSlug
 			});
-			const eventUrl = eventSlug ? `/events/${organizationSlug}/${eventSlug}` : null;
 			window.location.href = withReturnUrl(membershipHref, eventUrl);
 			return;
 		}
@@ -192,8 +202,6 @@
 
 		if (nextStep === 'complete_profile') {
 			// Navigate to profile settings page with redirect back to event
-			const eventUrl =
-				organizationSlug && eventSlug ? `/events/${organizationSlug}/${eventSlug}` : '';
 			const redirectParam = eventUrl ? `?redirect=${encodeURIComponent(eventUrl)}` : '';
 			window.location.href = `/account/profile${redirectParam}`;
 			return;
@@ -388,12 +396,6 @@
 			onSuccess={onInvitationRequestSuccess}
 			class="w-full"
 		/>
-	{:else if nextStep === 'wait_for_invitation_approval'}
-		<!-- Pending invitation approval status -->
-		<Button variant="secondary" disabled={true} class="w-full">
-			<Clock class="h-5 w-5" aria-hidden="true" />
-			<span>{buttonText}</span>
-		</Button>
 	{:else if nextStep === 'request_whitelist'}
 		<!-- Use RequestWhitelistButton for whitelist/verification requests -->
 		<RequestWhitelistButton
@@ -405,25 +407,21 @@
 			onSuccess={onWhitelistRequestSuccess}
 			class="w-full"
 		/>
-	{:else if nextStep === 'wait_for_whitelist_approval'}
-		<!-- Pending whitelist/verification approval status -->
+	{:else if nextStep === 'wait_for_invitation_approval' || nextStep === 'wait_for_whitelist_approval' || isMembershipWait}
+		<!-- Pending invitation / whitelist / membership decision: one disabled waiting
+		     button; a pending membership also links to where it is tracked (BE #1300). -->
 		<Button variant="secondary" disabled={true} class="w-full">
 			<Clock class="h-5 w-5" aria-hidden="true" />
 			<span>{buttonText}</span>
 		</Button>
-	{:else if nextStep === 'wait_for_membership_approval' || nextStep === 'wait_for_membership_questionnaire_evaluation'}
-		<!-- Pending membership (BE #1300): same waiting shape as the org page's
-		     MembershipCta, including the link to where the application is tracked. -->
-		<Button variant="secondary" disabled={true} class="w-full">
-			<Clock class="h-5 w-5" aria-hidden="true" />
-			<span>{buttonText}</span>
-		</Button>
-		<a
-			href={resolve('/(auth)/account/memberships', {})}
-			class="block text-center text-sm font-medium text-primary underline-offset-4 hover:underline"
-		>
-			{m['membershipEligibility.trackApplication']()}
-		</a>
+		{#if isMembershipWait}
+			<a
+				href={resolve('/(auth)/account/memberships', {})}
+				class="block text-center text-sm font-medium text-primary underline-offset-4 hover:underline"
+			>
+				{m['membershipEligibility.trackApplication']()}
+			</a>
+		{/if}
 	{:else if nextStep === 'wait_for_open_spot'}
 		<!-- Special layout for waitlist status with Leave button below -->
 		<div class="space-y-2">

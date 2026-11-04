@@ -20,6 +20,7 @@
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import { ClipboardList, Gift, ShieldCheck } from '@lucide/svelte';
 	import { withReturnUrl } from '$lib/utils/safe-redirect';
+	import { membershipReturnUrl } from '$lib/utils/membership-return.svelte';
 	import ApplyDialog from './ApplyDialog.svelte';
 	import MembershipCta from './MembershipCta.svelte';
 	import PlanCard from './PlanCard.svelte';
@@ -52,8 +53,6 @@
 		 * round trips answering a question they never asked.
 		 */
 		showJoinCta?: boolean;
-		/** Safe path threaded onto the questionnaire links so the applicant can resume. */
-		returnUrl?: string | null;
 	}
 
 	const {
@@ -66,8 +65,7 @@
 		subscription = null,
 		subscriptionLoading = false,
 		onSubscribe,
-		showJoinCta = true,
-		returnUrl = null
+		showJoinCta = true
 	}: Props = $props();
 
 	// Unique per instance: several of these cards sit side by side, and each needs
@@ -297,7 +295,7 @@
 											slug: organizationSlug,
 											id: tier.questionnaire_id
 										}),
-										returnUrl
+										membershipReturnUrl()
 									)}
 									aria-label={m['membershipTiers.questionnaireLinkAria']({ tier: tier.name })}
 									class="font-bold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -347,7 +345,6 @@
 			tierName={tier.name}
 			planId={ctaPlanId}
 			plansInline={plans.length > 0}
-			{returnUrl}
 		/>
 	{/if}
 {/snippet}

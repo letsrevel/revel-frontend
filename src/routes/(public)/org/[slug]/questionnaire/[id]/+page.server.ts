@@ -7,7 +7,6 @@ import {
 } from '$lib/api';
 import { log } from '$lib/server/logger';
 import { throwIfTransientUpstream } from '$lib/server/upstream';
-import { safeReturnUrl } from '$lib/utils/safe-redirect';
 
 export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 	const { slug, id: questionnaireId } = params;
@@ -84,9 +83,6 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 			logo_thumbnail_url: organization.logo_thumbnail_url ?? null
 		},
 		brandTheme: organization.brand_theme ?? null,
-		// Where to resume after a pending submission (e.g. the event the applicant
-		// came from). Same-origin relative paths only; '' when absent or unsafe.
-		returnUrl: safeReturnUrl(url.searchParams.get('returnUrl'), ''),
 		questionnaire
 	};
 };

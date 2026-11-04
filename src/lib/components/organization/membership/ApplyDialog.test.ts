@@ -22,6 +22,15 @@ vi.mock('$lib/stores/auth.svelte', () => ({
 	authStore: { accessToken: 'test-token' }
 }));
 
+const pageUrl = vi.hoisted(() => ({ search: '' }));
+vi.mock('$app/state', () => ({
+	page: {
+		get url() {
+			return new URL(`http://localhost/org/acme/membership${pageUrl.search}`);
+		}
+	}
+}));
+
 vi.mock('$app/navigation', () => ({
 	invalidateAll: vi.fn()
 }));
@@ -87,6 +96,7 @@ describe('ApplyDialog', () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		pageUrl.search = '';
 		queryClient = new QueryClient({
 			defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
 		});
@@ -283,6 +293,35 @@ describe('ApplyDialog', () => {
 		});
 		expect(invalidateSpy).toHaveBeenCalledWith({
 			queryKey: ['org', 'acme', 'join-eligibility']
+		});
+	});
+
+	describe('returning to the event', () => {
+		it.each([
+			['pending', makeResult({ status: 'pending' }, { next_step: 'wait_for_approval' })],
+			['completed', makeResult({ status: 'completed' }, { allowed: true })]
+		])('offers a way back to the event after a %s application', async (_label, outcome) => {
+			const user = userEvent.setup();
+			pageUrl.search = `?returnUrl=${encodeURIComponent('/events/acme/gala')}`;
+			mockApplySuccess(outcome);
+			renderDialog();
+
+			await user.click(screen.getByRole('button', { name: /send application/i }));
+
+			const link = await screen.findByRole('link', { name: m['membershipTiers.backToEvent']() });
+			expect(link).toHaveAttribute('href', '/events/acme/gala');
+		});
+
+		it('does not offer it for a non-event returnUrl or none', async () => {
+			const user = userEvent.setup();
+			pageUrl.search = `?returnUrl=${encodeURIComponent('/org/acme')}`;
+			mockApplySuccess(makeResult({ status: 'completed' }, { allowed: true }));
+			renderDialog();
+
+			await user.click(screen.getByRole('button', { name: /send application/i }));
+
+			await screen.findByText("You're in!");
+			expect(screen.queryByRole('link', { name: m['membershipTiers.backToEvent']() })).toBeNull();
 		});
 	});
 

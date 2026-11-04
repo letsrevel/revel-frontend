@@ -5,7 +5,8 @@
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { memembershipquestionnaireSubmitMembershipQuestionnaire } from '$lib/api';
 	import type { QuestionnaireSubmissionSchema } from '$lib/api/generated/types.gen';
-	import { safeReturnUrl, withReturnUrl } from '$lib/utils/safe-redirect';
+	import { withReturnUrl } from '$lib/utils/safe-redirect';
+	import { membershipReturnUrl } from '$lib/utils/membership-return.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { ArrowLeft, Check } from '@lucide/svelte';
@@ -62,9 +63,7 @@
 		return !result.requires_evaluation;
 	}
 
-	// Sanitized again client-side: `data` is trusted, but a test or a future caller
-	// should not be able to turn this into an open redirect.
-	const returnUrl = $derived(safeReturnUrl(data.returnUrl, ''));
+	const returnUrl = $derived(membershipReturnUrl());
 	const membershipHref = $derived(
 		withReturnUrl(
 			resolve('/(public)/org/[slug]/membership', { slug: data.organization.slug }),
@@ -150,8 +149,8 @@
 	);
 
 	function goBackToOrg(): void {
-		// With a returnUrl the applicant came via the membership page: go back there
-		// (keeping the returnUrl) rather than dropping them on the org profile.
+		// Cancel is a generic action: with a returnUrl the applicant came via the
+		// membership page, so go back there (keeping the returnUrl).
 		if (returnUrl) {
 			// eslint-disable-next-line svelte/no-navigation-without-resolve -- built from resolve()
 			goto(membershipHref);
@@ -179,17 +178,13 @@
 				logo={data.organization.logo}
 				logoThumbnail={data.organization.logo_thumbnail_url}
 			/>
-			<!-- eslint-disable svelte/no-navigation-without-resolve -- membershipHref is built from resolve() -->
 			<a
-				href={returnUrl
-					? membershipHref
-					: resolve('/(public)/org/[slug]', { slug: data.organization.slug })}
+				href={resolve('/(public)/org/[slug]', { slug: data.organization.slug })}
 				class="mb-5 inline-flex items-center gap-2 text-sm font-bold underline-offset-4 hover:underline"
 			>
 				<ArrowLeft class="h-4 w-4" aria-hidden="true" />
 				{m['membershipQuestionnairePage.backToOrg']({ orgName: data.organization.name })}
 			</a>
-			<!-- eslint-enable svelte/no-navigation-without-resolve -->
 			<PageHeader
 				volume="poster"
 				onBand
@@ -219,6 +214,7 @@
 				>
 					{#snippet action()}
 						{#if returnUrl}
+							<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- built from resolve() -->
 							<Button href={membershipHref}>
 								{m['membershipQuestionnairePage.continueJoining']()}
 							</Button>
