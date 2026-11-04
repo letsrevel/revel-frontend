@@ -414,12 +414,23 @@
 			<Clock class="h-5 w-5" aria-hidden="true" />
 			<span>{buttonText}</span>
 		</Button>
-		{#if isMembershipWait}
+		{#if nextStep === 'wait_for_membership_approval'}
+			<!-- An application exists: /account/memberships lists it. -->
 			<a
 				href={resolve('/(auth)/account/memberships', {})}
 				class="block text-center text-sm font-medium text-primary underline-offset-4 hover:underline"
 			>
 				{m['membershipEligibility.trackApplication']()}
+			</a>
+		{:else if nextStep === 'wait_for_membership_questionnaire_evaluation'}
+			<!-- A questionnaire can be under review before any application exists, so
+			     the applications list could be empty; the org's membership page shows
+			     the per-tier verdict ("Questionnaire under review") instead. -->
+			<a
+				href={resolve('/(public)/org/[slug]/membership', { slug: organizationSlug })}
+				class="block text-center text-sm font-medium text-primary underline-offset-4 hover:underline"
+			>
+				{m['membershipPlans.viewMembership']()}
 			</a>
 		{/if}
 	{:else if nextStep === 'wait_for_open_spot'}

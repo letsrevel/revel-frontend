@@ -202,8 +202,10 @@
 	// Tier mode only, and it comes back to the grid rather than the org landing
 	// page: the login round trip exists so the visitor can press Join on a tier,
 	// so it must return them to where that button is.
+	// The membership page's own `?returnUrl=` (e.g. the members-only event the
+	// visitor came from) rides inside the login return target, so it survives login.
 	const loginHref = $derived(
-		`${resolve('/(public)/login', {})}?returnUrl=${encodeURIComponent(membershipHref)}`
+		`${resolve('/(public)/login', {})}?returnUrl=${encodeURIComponent(withReturnUrl(membershipHref, membershipReturnUrl()))}`
 	);
 
 	/** The label a join button carries: the tier when there is one, else the org. */

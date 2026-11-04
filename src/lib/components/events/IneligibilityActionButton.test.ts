@@ -163,18 +163,28 @@ describe('IneligibilityActionButton pending membership (BE #1300)', () => {
 		authState.accessToken = 'tok';
 	});
 
-	it.each<NextStep>([
-		'wait_for_membership_approval',
-		'wait_for_membership_questionnaire_evaluation'
-	])('renders %s as a disabled waiting state with a link to track the application', (nextStep) => {
-		setup(nextStep, null);
-		const button = screen.getByRole('button', { name: getActionButtonText(nextStep) });
-		expect(button).toBeDisabled();
-		expect(
-			screen.getByRole('link', { name: m['membershipEligibility.trackApplication']() })
-		).toHaveAttribute('href', '/account/memberships');
-		expect(
-			screen.queryByRole('button', { name: getActionButtonText('become_member') })
-		).not.toBeInTheDocument();
-	});
+	it.each<[NextStep, () => string, string]>([
+		[
+			'wait_for_membership_approval',
+			() => m['membershipEligibility.trackApplication'](),
+			'/account/memberships'
+		],
+		// No application may exist yet, so the applications list could be empty:
+		// the org's membership page shows the per-tier verdict instead.
+		[
+			'wait_for_membership_questionnaire_evaluation',
+			() => m['membershipPlans.viewMembership'](),
+			'/org/acme/membership'
+		]
+	])(
+		'renders %s as a disabled waiting state linking to where it is tracked',
+		(nextStep, linkName, href) => {
+			setup(nextStep, null);
+			expect(screen.getByRole('button', { name: getActionButtonText(nextStep) })).toBeDisabled();
+			expect(screen.getByRole('link', { name: linkName() })).toHaveAttribute('href', href);
+			expect(
+				screen.queryByRole('button', { name: getActionButtonText('become_member') })
+			).not.toBeInTheDocument();
+		}
+	);
 });
