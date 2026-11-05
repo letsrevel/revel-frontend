@@ -195,9 +195,9 @@ jobs:
           read_digest() {
             local f="$DIGEST_DIR/$1" d
             [ -e "$f" ] || return 0
-            d=$(cat "$f") || { echo "::error::cannot read $f"; return 1; }
+            d=$(cat "$f") || { echo "::error::cannot read $f" >&2; return 1; }
             if [ -z "$d" ]; then
-              echo "::error::digest file $f is empty"
+              echo "::error::digest file $f is empty" >&2
               return 1
             fi
             echo "$d"
