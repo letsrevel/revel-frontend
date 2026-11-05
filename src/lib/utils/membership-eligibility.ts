@@ -187,6 +187,26 @@ export function getMembershipGateAction(
 	}
 }
 
+/**
+ * Would the tier CTA render nothing but the verdict sentence (#1159)?
+ *
+ * Mirrors the fall-through `else` of `MembershipCta`: the `info` kind, and a
+ * questionnaire step with no questionnaire to link to. `deferToPlans` is the
+ * CTA's own switch (a plan-bearing verdict with the plan cards on screen turns
+ * join/apply/reapply into a "choose a plan" note rather than the sentence).
+ * `TierCard` uses this to leave the CTA out when the sentence already lives
+ * elsewhere, instead of mounting an empty wrapper.
+ */
+export function isNoteOnlyMembershipCta(
+	e: MembershipEligibilitySchema,
+	deferToPlans: boolean
+): boolean {
+	const kind = getMembershipCtaKind(e);
+	if (deferToPlans && (kind === 'join' || kind === 'apply' || kind === 'reapply')) return false;
+	if (kind === 'questionnaire') return !e.questionnaire_id;
+	return kind === 'info';
+}
+
 /** One of the two requirements a tier states about itself on its card. */
 export type MembershipRequirementTopic = 'questionnaire' | 'approval';
 

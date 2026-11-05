@@ -335,16 +335,12 @@ describe('PlanCard', () => {
 	describe("when the tier's gates are unsatisfied for this viewer", () => {
 		it('withdraws Subscribe and explains why, with the price still on the card', () => {
 			const { onSubscribe } = renderCard({
-				gateAction: 'blocked',
-				gateReason: 'This organization asks new members to fill in a questionnaire first.'
+				gateAction: 'blocked'
 			});
 
 			expect(screen.queryByRole('button', { name: /subscribe/i })).toBeNull();
 			expect(
 				screen.getByText(m['membershipPlans.gatedSubscribeHelper'](), { exact: false })
-			).toBeInTheDocument();
-			expect(
-				screen.getByText('This organization asks new members to fill in a questionnaire first.')
 			).toBeInTheDocument();
 			// What they are working toward stays visible.
 			expect(screen.getByText('€10.00 / month')).toBeInTheDocument();
@@ -356,13 +352,12 @@ describe('PlanCard', () => {
 		it('associates the withheld CTA with the tier requirements programmatically', () => {
 			renderCard({
 				gateAction: 'blocked',
-				gateReason: 'Membership requests are approved by the organization.',
 				gateRequirementsId: 'tier-1-requirements'
 			});
 
 			const note = screen.getByRole('note');
 			expect(note).toHaveAttribute('aria-describedby', 'tier-1-requirements');
-			expect(note).toHaveTextContent('Membership requests are approved by the organization.');
+			expect(note).toHaveTextContent(m['membershipPlans.gatedSubscribeHelper']());
 		});
 
 		// Manual approval has the same shape as the questionnaire: apply, be
@@ -370,8 +365,7 @@ describe('PlanCard', () => {
 		it('withdraws the free-join CTA too, in join wording', () => {
 			renderCard({
 				plan: makePlan({ payment_method: 'free', price: '0.00', period_unit: 'lifetime' }),
-				gateAction: 'blocked',
-				gateReason: 'Membership requests are approved by the organization.'
+				gateAction: 'blocked'
 			});
 
 			expect(screen.queryByRole('button', { name: /join for free/i })).toBeNull();
@@ -430,8 +424,7 @@ describe('PlanCard', () => {
 		it('offers an apply CTA in place of Subscribe, named for the plan', async () => {
 			const user = userEvent.setup();
 			const { onApply, onSubscribe } = renderCard({
-				gateAction: 'apply',
-				gateReason: m['membershipEligibility.reason.requires_approval']()
+				gateAction: 'apply'
 			});
 
 			// The accessible name carries the plan: several of these sit on one tier
@@ -480,12 +473,11 @@ describe('PlanCard', () => {
 		// collapse into the apply branch and invite a duplicate row.
 		it('keeps a wait state as a note, with no control to press', () => {
 			renderCard({
-				gateAction: 'blocked',
-				gateReason: m['membershipEligibility.wait.approval']()
+				gateAction: 'blocked'
 			});
 
 			expect(screen.getByRole('note')).toHaveTextContent(
-				m['membershipEligibility.wait.approval']()
+				m['membershipPlans.gatedSubscribeHelper']()
 			);
 			expect(screen.queryByRole('button')).toBeNull();
 		});

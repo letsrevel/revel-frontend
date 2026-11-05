@@ -6,6 +6,7 @@
 	import { joinEligibilityQueryOptions } from '$lib/queries/join-eligibility';
 	import {
 		getMembershipCtaKind,
+		isNoteOnlyMembershipCta,
 		getMembershipStatusMessage
 	} from '$lib/utils/membership-eligibility';
 	import RetryCountdown from '$lib/components/events/RetryCountdown.svelte';
@@ -166,6 +167,9 @@
 
 	const eligibility = $derived(eligibilityQuery.data ?? null);
 	const ctaKind = $derived(eligibility ? getMembershipCtaKind(eligibility) : null);
+	const noteOnly = $derived(
+		eligibility ? isNoteOnlyMembershipCta(eligibility, deferToPlans) : false
+	);
 
 	// `isPending`, not `isLoading` — same distinction as
 	// `routes/(auth)/account/memberships/+page.svelte`: a query that is still
@@ -412,9 +416,11 @@
 			{/if}
 		{:else if ctaKind === 'member'}
 			{@render memberBadge()}
-		{:else}
+		{:else if noteOnly}
 			<!-- `info`, plus the questionnaire verdict with no questionnaire to
-			     point at: nothing to do here, so say why. -->
+			     point at: nothing to do here, so say why. Picked by the SAME helper
+			     `TierCard` uses to leave this CTA out (#1159), so the two cannot
+			     drift. -->
 			<p role="note" class="text-sm text-muted-foreground">
 				{getMembershipStatusMessage(eligibility)}
 			</p>

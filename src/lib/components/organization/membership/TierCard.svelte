@@ -13,7 +13,8 @@
 	import {
 		getMembershipGateAction,
 		getMembershipRequirementState,
-		getMembershipStatusMessage
+		getMembershipStatusMessage,
+		isNoteOnlyMembershipCta
 	} from '$lib/utils/membership-eligibility';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import PricingCard from '$lib/components/common/PricingCard.svelte';
@@ -206,6 +207,37 @@
 	const verdictMessage = $derived(gateVerdict ? getMembershipStatusMessage(gateVerdict) : null);
 
 	/**
+	 * Does each requirement line actually render the verdict? One derivation,
+	 * read by the list below AND by the dedupe, so they cannot disagree.
+	 */
+	const approvalLineSpeaksVerdict = $derived(
+		!!tier.requires_approval && approvalState === 'status' && !!verdictMessage
+	);
+	const questionnaireLineSpeaksVerdict = $derived(
+		!!tier.questionnaire_id && questionnaireState === 'status' && !!verdictMessage
+	);
+
+	/**
+	 * #1159. The card states the verdict sentence in exactly ONE place:
+	 *  1. the requirement line, when it speaks the verdict;
+	 *  2. otherwise, for a gate refusal that withdraws the plans' CTA, one
+	 *     tier-level note (`verdictNoteId`), rendered once above the plans.
+	 * Plan cards keep only their generic gated helper and point at that element
+	 * through `aria-describedby`, so the disabled-CTA explanation stays
+	 * programmatic without repeating the sentence under every plan. The tier CTA
+	 * is left out when its only content would be the same sentence.
+	 */
+	const verdictNoteId = `${uid}-tier-verdict`;
+	const sentenceInRequirements = $derived(
+		approvalLineSpeaksVerdict || questionnaireLineSpeaksVerdict
+	);
+	const showVerdictNote = $derived(
+		gateAction === 'blocked' && !sentenceInRequirements && !!gateReason
+	);
+	const planDescribedById = $derived(sentenceInRequirements ? requirementsId : verdictNoteId);
+	const hasPlans = $derived(plans.length > 0);
+
+	/**
 	 * The plan the tier CTA asks about, and the reason it is not simply
 	 * `askPlanId`.
 	 *
@@ -221,6 +253,14 @@
 	 * change every paid tier's CTA for no gain (#735 keeps that blast radius out).
 	 */
 	const ctaPlanId = $derived(isGated ? askPlanId : null);
+
+	/** #1159. True when the CTA would only repeat the sentence stated elsewhere. */
+	const ctaSentenceElsewhere = $derived(
+		!!gateVerdict &&
+			(sentenceInRequirements || showVerdictNote) &&
+			isNoteOnlyMembershipCta(gateVerdict, !!ctaPlanId && hasPlans)
+	);
+	const showCta = $derived(showJoinCta && !!tierId && !ctaSentenceElsewhere);
 
 	/**
 	 * The plan a pressed Apply button belongs to. One dialog per TIER rather than
@@ -263,7 +303,7 @@
 				<li class="flex items-start gap-2">
 					<ShieldCheck class="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
 					<span>
-						{#if approvalState === 'status' && verdictMessage}
+						{#if approvalLineSpeaksVerdict}
 							{verdictMessage}
 						{:else if approvalState === 'satisfied'}
 							{m['membershipTiers.approvalCleared']()}
@@ -277,7 +317,7 @@
 				<li class="flex items-start gap-2">
 					<ClipboardList class="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
 					<span>
-						{#if questionnaireState === 'status' && verdictMessage}
+						{#if questionnaireLineSpeaksVerdict}
 							<!-- Under review, on cooldown, or refused: there is nothing to
 						     open, so the link goes with the copy that offered it. -->
 							{verdictMessage}
@@ -311,6 +351,12 @@
 		</ul>
 	{/if}
 
+	{#if showVerdictNote}
+		<p id={verdictNoteId} role="note" class="mt-3 text-sm text-muted-foreground">
+			{gateReason}
+		</p>
+	{/if}
+
 	{#if plans.length > 0}
 		<div class="mt-4 space-y-3">
 			{#each plans as plan (plan.id ?? `${tier.id}-${plan.name}`)}
@@ -325,10 +371,9 @@
 					{contactEmail}
 					{onSubscribe}
 					{gateAction}
-					{gateReason}
 					{gatePending}
 					onApply={handleApply}
-					gateRequirementsId={requirementsId}
+					gateRequirementsId={planDescribedById}
 				/>
 			{/each}
 		</div>
@@ -336,19 +381,19 @@
 {/snippet}
 
 {#snippet actions()}
-	{#if showJoinCta && tierId}
-		<MembershipCta
-			{organizationSlug}
-			{organizationName}
-			{isAuthenticated}
-			{tierId}
-			tierName={tier.name}
-			planId={ctaPlanId}
-			plansInline={plans.length > 0}
-		/>
-	{/if}
+	<MembershipCta
+		{organizationSlug}
+		{organizationName}
+		{isAuthenticated}
+		{tierId}
+		tierName={tier.name}
+		planId={ctaPlanId}
+		plansInline={hasPlans}
+	/>
 {/snippet}
 
+<!-- `actions` is left out entirely (not rendered empty) when there is no CTA to
+     show, so PricingCard does not keep its padded, empty actions wrapper (#1159). -->
 <!-- `<article>` + `aria-labelledby`, not a labelled `region`: the cards are peers
      in a list and each must announce which tier it is, but N landmarks on one
      page would drown the page's real ones.
@@ -358,7 +403,15 @@
      this tier has no single price of its own, so the price slot stays empty and
      the plan cards carry the numbers. -->
 <article class="h-full" aria-labelledby={headingId}>
-	<PricingCard name={tier.name} {headingId} layout="stack" {badges} {meta} {actions} class="h-full">
+	<PricingCard
+		name={tier.name}
+		{headingId}
+		layout="stack"
+		{badges}
+		{meta}
+		actions={showCta ? actions : undefined}
+		class="h-full"
+	>
 		{#if tier.description}
 			<MarkdownContent content={tier.description} class="text-sm text-muted-foreground" />
 		{/if}
