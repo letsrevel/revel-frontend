@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/svelte';
+import { render, screen, waitFor, within } from '@testing-library/svelte';
 import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
@@ -202,11 +202,14 @@ describe('TierCard', () => {
 			await waitFor(() => {
 				expect(screen.queryByRole('button', { name: /subscribe/i })).toBeNull();
 			});
-			// The plan card says, in its own words, why its CTA is gone…
+			// The plan card says its CTA is gone and points at the one tier-level
+			// note that holds the reason (#1159)…
 			const note = screen.getByText(m['membershipPlans.gatedSubscribeHelper'](), { exact: false });
-			expect(note).toHaveTextContent(
-				m['membershipEligibility.reason.membership_questionnaire_missing']()
-			);
+			const reason = m['membershipEligibility.reason.membership_questionnaire_missing']();
+			expect(screen.getAllByText(reason, { exact: false })).toHaveLength(1);
+			expect(
+				document.getElementById(note.getAttribute('aria-describedby') as string)
+			).toHaveTextContent(reason);
 			// The price the member is working toward is still on the card…
 			expect(screen.getByText('€10.00 / month')).toBeInTheDocument();
 			// …and the way forward is the gate's own link.
@@ -572,36 +575,69 @@ describe('TierCard', () => {
 			expect(screen.getByText(m['membershipTiers.requiresApproval']())).toBeInTheDocument();
 		});
 
-		// #1159. The requirement line already speaks the verdict, so the plan card's
-		// gated note must not repeat the sentence.
-		it('says a questionnaire refusal once, not under every plan too', async () => {
-			mockEligibility({ allowed: false, reason_code: 'membership_questionnaire_failed' });
-			renderCard({
-				tier: makeTier({
-					is_free: false,
-					questionnaire_id: 'q-42',
-					plans: [makePlan({ id: 'p-1' })]
-				})
+		// #1159. The card states a verdict sentence in exactly ONE place. Plan cards
+		// keep a generic helper and point at wherever the sentence lives.
+		const twoOnlinePlans = (extra: Partial<PublicMembershipTierSchema> = {}) =>
+			makeTier({
+				is_free: false,
+				plans: [
+					makePlan({ id: 'p-1', name: 'Monthly' }),
+					makePlan({ id: 'p-2', name: 'Yearly', price: '100.00', period_unit: 'year' })
+				],
+				...extra
 			});
+
+		// Every plan note, i.e. every `note` that carries the gated helper.
+		const planNotes = () =>
+			screen
+				.queryAllByRole('note')
+				.filter((n) => n.textContent?.includes(m['membershipPlans.gatedSubscribeHelper']()));
+
+		it('says a questionnaire refusal once, in the requirement list', async () => {
+			mockEligibility({ allowed: false, reason_code: 'membership_questionnaire_failed' });
+			renderCard({ tier: twoOnlinePlans({ questionnaire_id: 'q-42' }) });
 
 			const sentence = m['membershipEligibility.reason.membership_questionnaire_failed']();
-			await screen.findAllByText(sentence, { exact: false });
-			await waitFor(() => {
-				expect(screen.getAllByText(sentence, { exact: false })).toHaveLength(1);
-			});
-			// The plan note is still there, tied to the requirement list that holds it.
-			const note = screen.getByRole('note');
-			expect(note).toHaveAttribute('aria-describedby', screen.getByRole('list').id);
+			await waitFor(() => expect(planNotes()).toHaveLength(2));
+			expect(screen.getAllByText(sentence, { exact: false })).toHaveLength(1);
+			expect(within(screen.getByRole('list')).getByText(sentence)).toBeInTheDocument();
+			for (const note of planNotes()) {
+				expect(note).not.toHaveTextContent(sentence);
+				expect(note).toHaveAttribute('aria-describedby', screen.getByRole('list').id);
+			}
 		});
 
-		// The other direction: a refusal the requirement lines do not speak about
-		// stays under the plan, its only home.
-		it('keeps an unrelated refusal under the plan', async () => {
-			mockEligibility({ allowed: false, reason_code: 'blacklisted' });
-			renderCard({ tier: questionnaireTier() });
+		it('says a pending approval once, in the requirement list', async () => {
+			mockEligibility({
+				allowed: false,
+				reason_code: 'requires_approval',
+				next_step: 'wait_for_approval',
+				application_id: 'app-1'
+			});
+			renderCard({ tier: twoOnlinePlans({ requires_approval: true }) });
 
-			const note = await screen.findByRole('note');
-			expect(note).toHaveTextContent(m['membershipEligibility.reason.blacklisted']());
+			const sentence = m['membershipEligibility.wait.approval']();
+			await waitFor(() => expect(planNotes()).toHaveLength(2));
+			expect(screen.getAllByText(sentence, { exact: false })).toHaveLength(1);
+			expect(within(screen.getByRole('list')).getByText(sentence)).toBeInTheDocument();
+		});
+
+		// A refusal the requirement lines do not speak about: still exactly once,
+		// with every plan note pointing at the element that holds it.
+		it('says an unrelated refusal once, and every plan note points at it', async () => {
+			mockEligibility({ allowed: false, reason_code: 'blacklisted' });
+			renderCard({ tier: twoOnlinePlans({ questionnaire_id: 'q-42' }) });
+
+			const sentence = m['membershipEligibility.reason.blacklisted']();
+			await waitFor(() => expect(planNotes()).toHaveLength(2));
+			const holders = screen.getAllByText(sentence, { exact: false });
+			expect(holders).toHaveLength(1);
+			const holder = holders[0].closest('[id]') as HTMLElement;
+			expect(holder).not.toBeNull();
+			for (const note of planNotes()) {
+				expect(note).not.toHaveTextContent(sentence);
+				expect(note).toHaveAttribute('aria-describedby', holder.id);
+			}
 		});
 
 		// The state has to reach a screen-reader user who is not looking at the
