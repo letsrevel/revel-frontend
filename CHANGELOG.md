@@ -7,8 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.34.1] - 2026-11-05
+
 ### Fixed
-- Each status sentence on a membership tier card, for example "Your questionnaire wasn't approved.", now appears once instead of being repeated under every plan and next to the join button (#1159).
+- Each status sentence on a membership tier card, for example "Your questionnaire wasn't approved.", now appears once instead of being repeated under every plan and next to the join button.
 
 ## [2.34.0] - 2026-11-04
 
