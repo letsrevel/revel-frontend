@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.35.0] - 2026-11-05
+
+### Added
+- The frontend Docker image (`ghcr.io/letsrevel/revel-frontend`) is now published for both `linux/amd64` and `linux/arm64`, so self-hosted Revel runs on ARM servers such as Raspberry Pi, Ampere or AWS Graviton. `docker compose pull` picks the right one automatically.
+
 ## [2.34.1] - 2026-11-05
 
 ### Fixed
