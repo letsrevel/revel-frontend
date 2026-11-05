@@ -61,8 +61,6 @@
 		 * at worst, never an unreachable plan.
 		 */
 		gateAction?: MembershipGateAction | null;
-		/** Localized explanation of that gate, rendered where the CTA was. */
-		gateReason?: string | null;
 		/**
 		 * Open the application dialog for THIS plan. Called only from the `apply` /
 		 * `reapply` branches, so the plan has an id by construction — the
@@ -90,7 +88,6 @@
 		subscription = null,
 		subscriptionLoading = false,
 		gateAction = null,
-		gateReason = null,
 		onApply,
 		gatePending = false,
 		gateRequirementsId = null
@@ -340,11 +337,11 @@
 					: m['membershipPlans.applySubscribeHelper']()}
 			</p>
 		{:else if action === 'gated'}
-			<!-- What replaces the CTA carries the reason itself, rather than
-				     leaving a bare gap next to a requirement stated elsewhere on the
-				     card: the note IS the explanation, and `aria-describedby` ties it
-				     to the tier's full requirement list so the association is
-				     programmatic and not merely visual (WCAG 1.3.1). -->
+			<!-- What replaces the CTA says so, rather than leaving a bare gap. The
+				     reason itself is stated once per tier (#1159), by the requirement
+				     line or the tier's verdict note; `aria-describedby` ties this note
+				     to whichever holds it, so the association is programmatic and not
+				     merely visual (WCAG 1.3.1). -->
 			<p
 				role="note"
 				class="text-sm text-muted-foreground"
@@ -353,9 +350,6 @@
 				{isFree
 					? m['membershipPlans.gatedJoinHelper']()
 					: m['membershipPlans.gatedSubscribeHelper']()}
-				{#if gateReason}
-					<span class="block">{gateReason}</span>
-				{/if}
 			</p>
 		{:else if action === 'subscribe'}
 			<Button class="w-full sm:w-auto" onclick={handleSubscribe} disabled={ctaHeld}>

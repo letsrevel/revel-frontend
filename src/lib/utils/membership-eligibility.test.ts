@@ -5,7 +5,8 @@ import {
 	getMembershipGateAction,
 	getMembershipRequirementState,
 	getMembershipStatusMessage,
-	isBlockedByMembershipGate
+	isBlockedByMembershipGate,
+	isNoteOnlyMembershipCta
 } from './membership-eligibility';
 import type { MembershipEligibilitySchema } from '$lib/api/generated/types.gen';
 import * as m from '$lib/paraglide/messages.js';
@@ -654,5 +655,37 @@ describe('getMembershipRequirementState', () => {
 				next_step: 'submit_application'
 			})
 		).toBe('policy');
+	});
+});
+
+// #1159. The single source of truth for "this CTA renders only the verdict
+// sentence": MembershipCta's note branch and TierCard's decision to omit the CTA
+// both read it.
+describe('isNoteOnlyMembershipCta', () => {
+	const cases: Array<[string, Partial<MembershipEligibilitySchema>, boolean, boolean]> = [
+		['info (no next_step, refused)', {}, false, true],
+		['info (no next_step, refused), plans deferred', {}, true, true],
+		['requires_invitation', { next_step: 'requires_invitation' }, false, true],
+		['questionnaire without an id', { next_step: 'submit_questionnaire' }, false, true],
+		[
+			'questionnaire with an id',
+			{ next_step: 'submit_questionnaire', questionnaire_id: 'q-1' },
+			false,
+			false
+		],
+		['waiting', { next_step: 'wait_for_approval' }, false, false],
+		['retry_later', { next_step: 'wait_to_retake_questionnaire' }, false, false],
+		['payment', { next_step: 'proceed_to_payment' }, false, false],
+		['member', { allowed: true, next_step: 'already_member' }, false, false],
+		['join', { allowed: true }, false, false],
+		['join, plans deferred', { allowed: true }, true, false],
+		['apply', { next_step: 'submit_application' }, false, false],
+		['apply, plans deferred', { next_step: 'submit_application' }, true, false],
+		['reapply', { next_step: 'reapply' }, false, false],
+		['reapply, plans deferred', { next_step: 'reapply' }, true, false]
+	];
+
+	it.each(cases)('%s', (_name, overrides, deferToPlans, expected) => {
+		expect(isNoteOnlyMembershipCta({ ...base, ...overrides }, deferToPlans)).toBe(expected);
 	});
 });
