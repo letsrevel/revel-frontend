@@ -16,7 +16,10 @@
 # Dry run: `workflow_dispatch` exercises the pipeline from any branch without
 # a release. It skips tag validation, uses version `dryrun-<sha7>`, builds
 # both arches (untagged by-digest pushes), and runs `imagetools create
-# --dry-run`, so nothing is tagged. Inspect and Discord are skipped.
+# --dry-run`, so nothing is tagged. Inspect and Discord are skipped. Dry runs
+# do leave untagged per-arch versions in GHCR (the manifest-list step needs
+# real pushed digests to be proven); prune them from the package settings if
+# needed.
 
 name: Publish
 
@@ -25,9 +28,13 @@ on:
     types: [published]
   workflow_dispatch:
 
-# Serialise publishes so two near-simultaneous releases can't race on `latest`.
+# One group per release tag (per run id for dry runs), never cancelling. This
+# guarantees a release run is never cancelled by another release or by a dry
+# run, and that dry runs never block releases. It does NOT serialise releases:
+# `merge` therefore only moves `latest` when its version is the highest released
+# semver.
 concurrency:
-  group: publish
+  group: publish-${{ github.event.release.tag_name || format('dryrun-{0}', github.run_id) }}
   cancel-in-progress: false
 
 jobs:
@@ -122,6 +129,8 @@ jobs:
           context: .
           file: ./Dockerfile
           platforms: ${{ matrix.platform }}
+          cache-from: type=gha,scope=${{ steps.platform.outputs.pair }}
+          cache-to: type=gha,mode=max,scope=${{ steps.platform.outputs.pair }}
           # Supply-chain attestations published alongside the image to GHCR.
           sbom: true
           provenance: mode=max
@@ -135,6 +144,10 @@ jobs:
           DIGEST_DIR: ${{ runner.temp }}/digests
           PAIR: ${{ steps.platform.outputs.pair }}
         run: |
+          if [ -z "$DIGEST" ]; then
+            echo "::error::build produced no digest"
+            exit 1
+          fi
           # One file per platform, named after it, holding the bare digest, so
           # `merge` can download every artifact at once and still tell them apart.
           mkdir -p "$DIGEST_DIR"
@@ -146,6 +159,8 @@ jobs:
           name: digests-${{ steps.platform.outputs.pair }}
           path: ${{ runner.temp }}/digests/*
           if-no-files-found: error
+          # Re-run attempts re-upload the same artifact name.
+          overwrite: true
           # Long enough for "Re-run failed jobs" days later to still find the
           # digest of the leg that succeeded.
           retention-days: 7
@@ -153,7 +168,7 @@ jobs:
   merge:
     needs: [validate, build]
     name: Publish manifest list
-    if: ${{ !cancelled() && needs.validate.result == 'success' }}
+    if: ${{ !cancelled() && needs.validate.result == 'success' && needs.build.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -175,8 +190,20 @@ jobs:
         env:
           DIGEST_DIR: ${{ runner.temp }}/digests
         run: |
-          AMD64=$(cat "$DIGEST_DIR/linux-amd64" 2>/dev/null || true)
-          ARM64=$(cat "$DIGEST_DIR/linux-arm64" 2>/dev/null || true)
+          # Absent file = that leg produced no artifact. Present but empty or
+          # unreadable = corrupt: error out rather than treat it as absent.
+          read_digest() {
+            local f="$DIGEST_DIR/$1" d
+            [ -e "$f" ] || return 0
+            d=$(cat "$f") || { echo "::error::cannot read $f"; return 1; }
+            if [ -z "$d" ]; then
+              echo "::error::digest file $f is empty"
+              return 1
+            fi
+            echo "$d"
+          }
+          AMD64=$(read_digest linux-amd64)
+          ARM64=$(read_digest linux-arm64)
 
           if [ -z "$AMD64" ]; then
             echo "::error::amd64 digest is missing; refusing to publish. The amd64 build must succeed."
@@ -208,12 +235,25 @@ jobs:
           VERSION: ${{ needs.validate.outputs.version }}
           AMD64: ${{ steps.digests.outputs.amd64 }}
           ARM64: ${{ steps.digests.outputs.arm64 }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           IMAGE=ghcr.io/letsrevel/revel-frontend
-          args=(-t "$IMAGE:latest" -t "$IMAGE:$VERSION"
+          args=(-t "$IMAGE:$VERSION"
                 --annotation "index:org.opencontainers.image.source=https://github.com/letsrevel/revel-frontend")
           if [ "$EVENT_NAME" != "release" ]; then
-            args+=(--dry-run)
+            # Dry run: show what would happen, including `latest`.
+            args+=(-t "$IMAGE:latest" --dry-run)
+          else
+            # Releases can run concurrently or be re-run for an older tag, so
+            # only move `latest` when this is the highest released semver.
+            HIGHEST=$(gh release list -R "$GITHUB_REPOSITORY" --exclude-drafts --exclude-pre-releases \
+              --json tagName -q '.[].tagName' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
+            if [ "$HIGHEST" = "$VERSION" ]; then
+              args+=(-t "$IMAGE:latest")
+            else
+              echo "::notice::$VERSION is not the highest release ($HIGHEST); not moving latest."
+              echo "- \`latest\` not moved ($VERSION is older than $HIGHEST)" >> "$GITHUB_STEP_SUMMARY"
+            fi
           fi
           sources=("$IMAGE@sha256:$AMD64")
           if [ -n "$ARM64" ]; then
