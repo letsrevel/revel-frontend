@@ -311,10 +311,11 @@ describe('TierCard', () => {
 			});
 			renderCard({ tier: approvalTier() });
 
+			// The wait sentence lives in the requirement list (#1159), once.
 			await waitFor(() => {
-				expect(
-					screen.getByText(m['membershipPlans.gatedSubscribeHelper'](), { exact: false })
-				).toHaveTextContent(m['membershipEligibility.wait.approval']());
+				expect(screen.getByRole('list')).toHaveTextContent(
+					m['membershipEligibility.wait.approval']()
+				);
 			});
 			expect(
 				screen.queryByRole('button', {
@@ -569,6 +570,38 @@ describe('TierCard', () => {
 			});
 			expect(screen.getByText(m['membershipTiers.questionnaireRequired']())).toBeInTheDocument();
 			expect(screen.getByText(m['membershipTiers.requiresApproval']())).toBeInTheDocument();
+		});
+
+		// #1159. The requirement line already speaks the verdict, so the plan card's
+		// gated note must not repeat the sentence.
+		it('says a questionnaire refusal once, not under every plan too', async () => {
+			mockEligibility({ allowed: false, reason_code: 'membership_questionnaire_failed' });
+			renderCard({
+				tier: makeTier({
+					is_free: false,
+					questionnaire_id: 'q-42',
+					plans: [makePlan({ id: 'p-1' })]
+				})
+			});
+
+			const sentence = m['membershipEligibility.reason.membership_questionnaire_failed']();
+			await screen.findAllByText(sentence, { exact: false });
+			await waitFor(() => {
+				expect(screen.getAllByText(sentence, { exact: false })).toHaveLength(1);
+			});
+			// The plan note is still there, tied to the requirement list that holds it.
+			const note = screen.getByRole('note');
+			expect(note).toHaveAttribute('aria-describedby', screen.getByRole('list').id);
+		});
+
+		// The other direction: a refusal the requirement lines do not speak about
+		// stays under the plan, its only home.
+		it('keeps an unrelated refusal under the plan', async () => {
+			mockEligibility({ allowed: false, reason_code: 'blacklisted' });
+			renderCard({ tier: questionnaireTier() });
+
+			const note = await screen.findByRole('note');
+			expect(note).toHaveTextContent(m['membershipEligibility.reason.blacklisted']());
 		});
 
 		// The state has to reach a screen-reader user who is not looking at the

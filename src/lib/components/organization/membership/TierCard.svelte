@@ -206,6 +206,22 @@
 	const verdictMessage = $derived(gateVerdict ? getMembershipStatusMessage(gateVerdict) : null);
 
 	/**
+	 * #1159. When a requirement line below already speaks the verdict (a
+	 * questionnaire/approval status, and the tier actually renders that line),
+	 * the plan cards must not repeat the same sentence. They keep only their
+	 * generic gated helper, which stays tied to the requirement list through
+	 * `aria-describedby` (`gateRequirementsId`), so the disabled-CTA
+	 * explanation is still programmatic and nothing is lost for AT users.
+	 * Any verdict the lines do not speak about still reaches the plan cards.
+	 * The tier CTA's note-only branch is silenced for the same reason.
+	 */
+	const verdictShownInRequirements = $derived(
+		(!!tier.questionnaire_id && questionnaireState === 'status') ||
+			(tier.requires_approval && approvalState === 'status')
+	);
+	const planGateReason = $derived(verdictShownInRequirements ? null : gateReason);
+
+	/**
 	 * The plan the tier CTA asks about, and the reason it is not simply
 	 * `askPlanId`.
 	 *
@@ -325,7 +341,7 @@
 					{contactEmail}
 					{onSubscribe}
 					{gateAction}
-					{gateReason}
+					gateReason={planGateReason}
 					{gatePending}
 					onApply={handleApply}
 					gateRequirementsId={requirementsId}
@@ -345,6 +361,7 @@
 			tierName={tier.name}
 			planId={ctaPlanId}
 			plansInline={plans.length > 0}
+			verdictShownElsewhere={verdictShownInRequirements}
 		/>
 	{/if}
 {/snippet}

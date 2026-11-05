@@ -78,6 +78,12 @@
 		 * `proceed_to_payment` verdict points at them instead of linking away.
 		 */
 		plansInline?: boolean;
+		/**
+		 * #1159. Tier mode only: the card's requirement list already states this
+		 * verdict, so the note-only `info` branch stays quiet instead of saying the
+		 * same sentence a second time. Buttons and countdowns are unaffected.
+		 */
+		verdictShownElsewhere?: boolean;
 	}
 
 	const {
@@ -93,7 +99,8 @@
 		tierId = null,
 		tierName = null,
 		planId = null,
-		plansInline = false
+		plansInline = false,
+		verdictShownElsewhere = false
 	}: Props = $props();
 
 	const isTierMode = $derived(!!tierId);
@@ -415,9 +422,11 @@
 		{:else}
 			<!-- `info`, plus the questionnaire verdict with no questionnaire to
 			     point at: nothing to do here, so say why. -->
-			<p role="note" class="text-sm text-muted-foreground">
-				{getMembershipStatusMessage(eligibility)}
-			</p>
+			{#if !verdictShownElsewhere}
+				<p role="note" class="text-sm text-muted-foreground">
+					{getMembershipStatusMessage(eligibility)}
+				</p>
+			{/if}
 		{/if}
 	</div>
 {:else if isVerdictPending}
