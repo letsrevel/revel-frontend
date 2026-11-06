@@ -144,6 +144,8 @@ describe('navLoginHref', () => {
 		expect(at('/?ref=CODE')).toBe('/login?returnUrl=%2F%3Fref%3DCODE');
 	});
 	it('never copies a one-shot ?token= into the returnUrl', () => {
+		expect(at('/verify?token=abc')).toBe('/login');
+		expect(at('/password-reset?token=abc')).toBe('/login');
 		expect(at('/unsubscribe?token=abc')).toBe('/login');
 		expect(at('/account/confirm-deletion?token=abc')).toBe('/login');
 		expect(at('/account/confirm-email-change?token=abc')).toBe('/login');
