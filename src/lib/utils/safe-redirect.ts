@@ -79,3 +79,19 @@ export function loginHrefFor(
 ): string {
 	return loginHref(url.pathname + url.search, opts);
 }
+
+// Auth-flow pages: returning to them after signing in is a loop or a dead end.
+const AUTH_FLOW_PATH =
+	/^\/(login|register|logout|password-reset|verify|account\/confirm-email-change)(\/|$)/;
+
+/**
+ * The header/nav "Log in" link. Returns to the current page, except:
+ * - on `/` it stays bare, so login keeps its default landing (the dashboard);
+ * - on an auth-flow page it forwards that page's own `?returnUrl=` instead,
+ *   so register → "Log in" keeps the original destination.
+ */
+export function navLoginHref(url: Pick<URL, 'pathname' | 'search' | 'searchParams'>): string {
+	if (url.pathname === '/') return loginHref();
+	if (AUTH_FLOW_PATH.test(url.pathname)) return loginHref(url.searchParams.get('returnUrl'));
+	return loginHrefFor(url);
+}

@@ -4,7 +4,8 @@ import {
 	registrationReturnUrl,
 	withReturnUrl,
 	loginHref,
-	loginHrefFor
+	loginHrefFor,
+	navLoginHref
 } from './safe-redirect';
 
 describe('safeReturnUrl', () => {
@@ -121,5 +122,25 @@ describe('loginHref', () => {
 	});
 	it('is bare /login with nothing to carry', () => {
 		expect(loginHref()).toBe('/login');
+	});
+});
+
+describe('navLoginHref', () => {
+	const at = (u: string) => navLoginHref(new URL(u, 'https://x.test'));
+	it('returns to the current page', () => {
+		expect(at('/events/org/party?tier=a')).toBe(
+			'/login?returnUrl=%2Fevents%2Forg%2Fparty%3Ftier%3Da'
+		);
+	});
+	it('stays bare on the home page', () => {
+		expect(at('/')).toBe('/login');
+	});
+	it('forwards the returnUrl of an auth-flow page instead of looping', () => {
+		expect(at('/register?returnUrl=%2Fevents%2Fx')).toBe('/login?returnUrl=%2Fevents%2Fx');
+		expect(at('/login')).toBe('/login');
+		expect(at('/password-reset/abc')).toBe('/login');
+	});
+	it('does not treat look-alike paths as auth flow', () => {
+		expect(at('/registered-things')).toBe('/login?returnUrl=%2Fregistered-things');
 	});
 });
