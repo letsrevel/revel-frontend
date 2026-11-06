@@ -6474,7 +6474,7 @@
 	},
 	"ticketTierList": {
 		"ticketOptions": "Opciones de entrada",
-		"signIn": "Iniciar sesión"
+		"signInToClaim": "Inicia sesión para obtener tu entrada"
 	},
 	"ticketingStep": {
 		"ticketingOptions": "Opciones de entrada",

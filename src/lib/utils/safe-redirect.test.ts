@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { safeReturnUrl, registrationReturnUrl, withReturnUrl } from './safe-redirect';
+import { safeReturnUrl, registrationReturnUrl, withReturnUrl, loginHrefFor } from './safe-redirect';
 
 describe('safeReturnUrl', () => {
 	it('accepts genuine relative paths', () => {
@@ -93,5 +93,13 @@ describe('withReturnUrl', () => {
 		expect(withReturnUrl('/register', '')).toBe('/register');
 		expect(withReturnUrl('/register', 'https://evil.com')).toBe('/register');
 		expect(withReturnUrl('/register', '//evil.com')).toBe('/register');
+	});
+});
+
+describe('loginHrefFor', () => {
+	it('returns to the current path and query', () => {
+		expect(loginHrefFor(new URL('https://x.test/events/org/party?tier=a&et=1'))).toBe(
+			'/login?returnUrl=%2Fevents%2Forg%2Fparty%3Ftier%3Da%26et%3D1'
+		);
 	});
 });

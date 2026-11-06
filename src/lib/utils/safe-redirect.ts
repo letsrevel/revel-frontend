@@ -1,3 +1,5 @@
+import { resolve } from '$app/paths';
+
 // Whitespace and C0/C1 control characters, forbidden anywhere in a return URL.
 // The URL parser (and browsers following a `Location` header) strip tab/newline
 // before scheme detection, so `/\t//evil` would resolve to `https://evil/`.
@@ -54,4 +56,14 @@ export function registrationReturnUrl(raw: string | null | undefined): string | 
 export function withReturnUrl(href: string, returnUrl: string | null | undefined): string {
 	const safe = safeReturnUrl(returnUrl, '');
 	return safe ? `${href}?returnUrl=${encodeURIComponent(safe)}` : href;
+}
+
+/**
+ * The sign-in link for a page: `/login?returnUrl=<path + query>`, so the user
+ * lands back where they were. Use this for every sign-in CTA instead of
+ * hand-building the query (the login action only reads `returnUrl`; a
+ * `?next=` or `?redirect=` is silently ignored).
+ */
+export function loginHrefFor(url: Pick<URL, 'pathname' | 'search'>): string {
+	return withReturnUrl(resolve('/(public)/login', {}), url.pathname + url.search);
 }

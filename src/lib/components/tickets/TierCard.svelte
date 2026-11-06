@@ -1,8 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/state';
-	import { resolve } from '$app/paths';
-	import { withReturnUrl } from '$lib/utils/safe-redirect';
+	import { loginHrefFor } from '$lib/utils/safe-redirect';
 	import { brandName } from '$lib/seo/tenant';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import type {
@@ -92,10 +91,7 @@
 		reservationOnly = false
 	}: Props = $props();
 
-	// Sign-in returns here (path + query), matching the event sidebar CTA.
-	const loginHref = $derived(
-		withReturnUrl(resolve('/(public)/login', {}), page.url.pathname + page.url.search)
-	);
+	const loginHref = $derived(loginHrefFor(page.url));
 
 	const uid = $props.id();
 	const onlineUnavailable = $derived(onlineBlocked && tier.payment_method === 'online');

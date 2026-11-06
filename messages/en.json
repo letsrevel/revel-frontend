@@ -6474,7 +6474,7 @@
 	},
 	"ticketTierList": {
 		"ticketOptions": "Ticket Options",
-		"signIn": "Sign in"
+		"signInToClaim": "Sign in to claim your ticket"
 	},
 	"ticketingStep": {
 		"ticketingOptions": "Ticketing Options",
