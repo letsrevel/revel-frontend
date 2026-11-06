@@ -1,3 +1,5 @@
+import { resolve } from '$app/paths';
+
 // Whitespace and C0/C1 control characters, forbidden anywhere in a return URL.
 // The URL parser (and browsers following a `Location` header) strip tab/newline
 // before scheme detection, so `/\t//evil` would resolve to `https://evil/`.
@@ -54,4 +56,46 @@ export function registrationReturnUrl(raw: string | null | undefined): string | 
 export function withReturnUrl(href: string, returnUrl: string | null | undefined): string {
 	const safe = safeReturnUrl(returnUrl, '');
 	return safe ? `${href}?returnUrl=${encodeURIComponent(safe)}` : href;
+}
+
+/**
+ * The sign-in link: `/login?returnUrl=<returnUrl>[&email=<email>]`. This is the
+ * ONE way to build a login href; never hand-build the query (the login action
+ * only reads `returnUrl` and `email`; `?next=` / `?redirect=` are silently
+ * ignored and strand the user on the dashboard). An unsafe or empty
+ * `returnUrl` is dropped (see `withReturnUrl`). `email` prefills the form.
+ */
+export function loginHref(returnUrl?: string | null, opts: { email?: string | null } = {}): string {
+	const href = withReturnUrl(resolve('/(public)/login', {}), returnUrl);
+	const email = opts.email?.trim();
+	if (!email) return href;
+	return `${href}${href.includes('?') ? '&' : '?'}email=${encodeURIComponent(email)}`;
+}
+
+/** `loginHref` back to the given page (path + query): pass `page.url`. */
+export function loginHrefFor(
+	url: Pick<URL, 'pathname' | 'search'>,
+	opts: { email?: string | null } = {}
+): string {
+	return loginHref(url.pathname + url.search, opts);
+}
+
+// Auth-flow and one-shot token pages: returning to them after signing in is a
+// loop or a dead end, and copying their `?token=` into a returnUrl would leak
+// a single-use secret into a login URL.
+const AUTH_FLOW_PATH =
+	/^\/(login|register|logout|password-reset|verify|unsubscribe|account\/confirm-email-change|account\/confirm-deletion|org\/[^/]+\/verify-contact-email|events\/confirm-action)(\/|$)/;
+
+/**
+ * The header/nav "Log in" link. Returns to the current page, except:
+ * - on the bare home page (`/`, no query) it stays bare, so login keeps its
+ *   default landing (the dashboard); `/?ref=CODE` still returns to itself;
+ * - on an auth-flow or one-shot token page it forwards that page's own
+ *   `?returnUrl=` (if any) instead, so register -> "Log in" keeps the original
+ *   destination and `?token=` never reaches the login URL.
+ */
+export function navLoginHref(url: Pick<URL, 'pathname' | 'search' | 'searchParams'>): string {
+	if (url.pathname === '/' && !url.search) return loginHref();
+	if (AUTH_FLOW_PATH.test(url.pathname)) return loginHref(url.searchParams.get('returnUrl'));
+	return loginHrefFor(url);
 }

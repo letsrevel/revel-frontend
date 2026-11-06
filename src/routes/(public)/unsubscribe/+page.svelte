@@ -5,6 +5,7 @@
 	import type { NotificationPreferenceSchema } from '$lib/api/generated/types.gen';
 	import { oneclickunsubscribeOneClick } from '$lib/api';
 	import { resolve } from '$app/paths';
+	import { loginHref } from '$lib/utils/safe-redirect';
 	import { tick } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import { Bell, MailX, ShieldCheck, Loader2 } from '@lucide/svelte';
@@ -59,7 +60,6 @@
 			validToken.notificationType === 'org_announcement' &&
 			!!validToken.organizationId
 	);
-	const settingsReturnUrl = encodeURIComponent(resolve('/(auth)/account/settings', {}));
 
 	// The clicked control disappears with the swap, so move focus to the
 	// confirmation. No auto-redirect: a timed navigation cut screen-reader users
@@ -163,10 +163,7 @@
 				{m['unsubscribePage.invalidTokenDescription']()}
 			</p>
 			<div class="mt-4 flex flex-col items-center justify-center gap-3 sm:flex-row">
-				<Button
-					href={`${resolve('/(public)/login', {})}?returnUrl=${settingsReturnUrl}`}
-					class="w-full sm:w-auto"
-				>
+				<Button href={loginHref(resolve('/(auth)/account/settings', {}))} class="w-full sm:w-auto">
 					{m['unsubscribePage.loginToManage']()}
 				</Button>
 				<Button href={resolve('/(public)', {})} variant="outline" class="w-full sm:w-auto">

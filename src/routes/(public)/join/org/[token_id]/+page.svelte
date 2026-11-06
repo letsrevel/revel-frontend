@@ -5,6 +5,7 @@
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { loginHref } from '$lib/utils/safe-redirect';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { Users, Shield, CheckCircle, Clock, Loader2 } from '@lucide/svelte';
@@ -63,9 +64,9 @@
 	function handleClaim() {
 		if (!isAuthenticated) {
 			// Redirect to login with return URL
-			const returnUrl = encodeURIComponent(`/join/org/${tokenId}`);
-			// eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() validates the route id; the appended query string cannot be expressed through resolve()
-			goto(`${resolve('/(public)/login', {})}?returnUrl=${returnUrl}`);
+			const returnUrl = `/join/org/${tokenId}`;
+			// eslint-disable-next-line svelte/no-navigation-without-resolve -- loginHref() wraps resolve(); it only appends the query
+			goto(loginHref(returnUrl));
 			return;
 		}
 

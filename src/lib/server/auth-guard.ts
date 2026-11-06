@@ -1,3 +1,5 @@
+import { loginHrefFor } from '$lib/utils/safe-redirect';
+
 /**
  * Decision helpers for the `(auth)` route-group guard in `hooks.server.ts`.
  *
@@ -45,5 +47,5 @@ export function requiresAuth(routeId: string | null | undefined): boolean {
  * re-parsed as sibling parameters on the login URL.
  */
 export function loginRedirectPath(url: { pathname: string; search: string }): string {
-	return `/login?returnUrl=${encodeURIComponent(`${url.pathname}${url.search}`)}`;
+	return loginHrefFor(url);
 }

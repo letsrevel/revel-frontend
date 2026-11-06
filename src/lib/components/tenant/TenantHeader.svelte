@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
+	import { navLoginHref } from '$lib/utils/safe-redirect';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Menu } from '@lucide/svelte';
 	import MobileNav from '$lib/components/common/MobileNav.svelte';
@@ -128,12 +129,14 @@
 				</div>
 			{:else}
 				<div class="hidden items-center gap-2 md:flex">
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- navLoginHref() wraps resolve(); it only appends the query -->
 					<a
-						href={resolve('/(public)/login', {})}
+						href={navLoginHref($page.url)}
 						class="rounded-md px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 					>
 						{m['auth.login']()}
 					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
 					<a
 						href={resolve('/(public)/register', {})}
 						class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"

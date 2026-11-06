@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { loginHref } from '$lib/utils/safe-redirect';
 	import type { SeriesPassSchema, SeriesPassQuoteSchema } from '$lib/api/generated/types.gen';
 	import { seriespassGetSeriesPassQuote } from '$lib/api';
 	import { seriesPassQueryKeys } from '$lib/queries/series-passes';
@@ -65,7 +66,7 @@
 			// The login action reads `returnUrl` (see login/+page.server.ts); include
 			// the query string so pagination state survives the round trip.
 			const target = window.location.pathname + window.location.search;
-			window.location.href = `/login?returnUrl=${encodeURIComponent(target)}`;
+			window.location.href = loginHref(target);
 			return;
 		}
 		showPurchaseDialog = true;

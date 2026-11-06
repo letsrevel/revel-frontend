@@ -17,6 +17,7 @@
 		isLifetimePlan
 	} from '$lib/utils/subscriptions';
 	import { resolve } from '$app/paths';
+	import { loginHref as buildLoginHref } from '$lib/utils/safe-redirect';
 
 	interface Props {
 		plan: PublicPlanSchema;
@@ -213,9 +214,7 @@
 	// returnUrl going wrong. TierCard's own CTA already resolves to this route, so
 	// the two agree.
 	const loginHref = $derived(
-		`${resolve('/(public)/login', {})}?returnUrl=${encodeURIComponent(
-			resolve('/(public)/org/[slug]/membership', { slug: organizationSlug })
-		)}`
+		buildLoginHref(resolve('/(public)/org/[slug]/membership', { slug: organizationSlug }))
 	);
 
 	const membershipsHref = resolve('/(auth)/account/memberships', {});

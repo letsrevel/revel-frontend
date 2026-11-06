@@ -3,6 +3,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import { page } from '$app/stores';
+	import { loginHrefFor } from '$lib/utils/safe-redirect';
 	import { invalidateAll } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
 	import PollPrivacySummary from '$lib/components/polls/PollPrivacySummary.svelte';
@@ -133,7 +134,7 @@
 					<CardContent class="space-y-3 py-4 text-sm">
 						<p>{m['pollVoterPage.forbiddenBody']()}</p>
 						{#if !data.isAuthenticated}
-							<Button href={`/login?next=${encodeURIComponent($page.url.pathname)}`}>
+							<Button href={loginHrefFor($page.url)}>
 								{m['pollVoterPage.signIn']()}
 							</Button>
 						{/if}
@@ -166,9 +167,7 @@
 					<Card class="border-info/60 bg-info/10">
 						<CardContent class="space-y-2 py-4 text-sm">
 							<p>{m['pollVoterPage.signInToVote']()}</p>
-							<Button href={`/login?next=${encodeURIComponent($page.url.pathname)}`}
-								>{m['pollVoterPage.signIn']()}</Button
-							>
+							<Button href={loginHrefFor($page.url)}>{m['pollVoterPage.signIn']()}</Button>
 						</CardContent>
 					</Card>
 				{:else if poll.status === 'closed' && poll.user_has_voted}

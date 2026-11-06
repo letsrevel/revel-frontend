@@ -5,6 +5,7 @@ import {
 	organizationGetOrganization,
 	memembershipquestionnaireGetMembershipQuestionnaire
 } from '$lib/api';
+import { loginHref } from '$lib/utils/safe-redirect';
 import { log } from '$lib/server/logger';
 import { throwIfTransientUpstream } from '$lib/server/upstream';
 
@@ -44,7 +45,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 			// `url.search` keeps a nested `?returnUrl=` (the event the applicant came
 			// from) alive across the login round trip; encoding the whole path+query
 			// once makes it one opaque value for the login page.
-			`/login?returnUrl=${encodeURIComponent(`/org/${slug}/questionnaire/${questionnaireId}${url.search}`)}`
+			loginHref(`/org/${slug}/questionnaire/${questionnaireId}${url.search}`)
 		);
 	}
 

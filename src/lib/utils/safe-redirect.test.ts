@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { safeReturnUrl, registrationReturnUrl, withReturnUrl } from './safe-redirect';
+import {
+	safeReturnUrl,
+	registrationReturnUrl,
+	withReturnUrl,
+	loginHref,
+	loginHrefFor,
+	navLoginHref
+} from './safe-redirect';
 
 describe('safeReturnUrl', () => {
 	it('accepts genuine relative paths', () => {
@@ -93,5 +100,60 @@ describe('withReturnUrl', () => {
 		expect(withReturnUrl('/register', '')).toBe('/register');
 		expect(withReturnUrl('/register', 'https://evil.com')).toBe('/register');
 		expect(withReturnUrl('/register', '//evil.com')).toBe('/register');
+	});
+});
+
+describe('loginHrefFor', () => {
+	it('returns to the current path and query', () => {
+		expect(loginHrefFor(new URL('https://x.test/events/org/party?tier=a&et=1'))).toBe(
+			'/login?returnUrl=%2Fevents%2Forg%2Fparty%3Ftier%3Da%26et%3D1'
+		);
+	});
+});
+
+describe('loginHref', () => {
+	it('appends returnUrl and email', () => {
+		expect(loginHref('/e/x', { email: ' a+b@c.d ' })).toBe(
+			'/login?returnUrl=%2Fe%2Fx&email=a%2Bb%40c.d'
+		);
+	});
+	it('drops an unsafe returnUrl but keeps the email', () => {
+		expect(loginHref('//evil.com', { email: 'a@b.c' })).toBe('/login?email=a%40b.c');
+	});
+	it('is bare /login with nothing to carry', () => {
+		expect(loginHref()).toBe('/login');
+	});
+});
+
+describe('navLoginHref', () => {
+	const at = (u: string) => navLoginHref(new URL(u, 'https://x.test'));
+	it('returns to the current page', () => {
+		expect(at('/events/org/party?tier=a')).toBe(
+			'/login?returnUrl=%2Fevents%2Forg%2Fparty%3Ftier%3Da'
+		);
+	});
+	it('stays bare on the home page', () => {
+		expect(at('/')).toBe('/login');
+	});
+	it('forwards the returnUrl of an auth-flow page instead of looping', () => {
+		expect(at('/register?returnUrl=%2Fevents%2Fx')).toBe('/login?returnUrl=%2Fevents%2Fx');
+		expect(at('/login')).toBe('/login');
+		expect(at('/password-reset/abc')).toBe('/login');
+	});
+	it('keeps the query on the home page (e.g. a referral code)', () => {
+		expect(at('/?ref=CODE')).toBe('/login?returnUrl=%2F%3Fref%3DCODE');
+	});
+	it('never copies a one-shot ?token= into the returnUrl', () => {
+		expect(at('/verify?token=abc')).toBe('/login');
+		expect(at('/password-reset?token=abc')).toBe('/login');
+		expect(at('/unsubscribe?token=abc')).toBe('/login');
+		expect(at('/account/confirm-deletion?token=abc')).toBe('/login');
+		expect(at('/account/confirm-email-change?token=abc')).toBe('/login');
+		expect(at('/org/acme/verify-contact-email?token=abc')).toBe('/login');
+		expect(at('/events/confirm-action?token=abc')).toBe('/login');
+		expect(at('/login/reset-password?token=abc')).toBe('/login');
+	});
+	it('does not treat look-alike paths as auth flow', () => {
+		expect(at('/registered-things')).toBe('/login?returnUrl=%2Fregistered-things');
 	});
 });

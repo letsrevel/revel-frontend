@@ -6474,7 +6474,7 @@
 	},
 	"ticketTierList": {
 		"ticketOptions": "Opzioni Biglietto",
-		"signIn": "Accedi"
+		"signInToClaim": "Accedi per ottenere il tuo biglietto"
 	},
 	"ticketingStep": {
 		"ticketingOptions": "Opzioni di biglietteria",

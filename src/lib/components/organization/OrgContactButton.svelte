@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { loginHrefFor } from '$lib/utils/safe-redirect';
 	import { Mail, Send, Check } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { createMutation } from '@tanstack/svelte-query';
@@ -87,7 +88,7 @@
 
 	function handleOpenChange(open: boolean) {
 		if (open && !isAuthenticated) {
-			window.location.href = `/login?returnUrl=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+			window.location.href = loginHrefFor(window.location);
 			return;
 		}
 		showDialog = open;

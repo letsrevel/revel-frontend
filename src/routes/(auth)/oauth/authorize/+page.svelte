@@ -14,6 +14,7 @@
 	} from '$lib/api/queries/oauth-authorize';
 	import { isConsentExpired, oauthErrorHeadline } from '$lib/utils/oauth-errors';
 	import { navigateTo } from '$lib/utils/navigate-to';
+	import { loginHref } from '$lib/utils/safe-redirect';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { postLogout } from '$lib/utils/logout';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
@@ -83,7 +84,7 @@
 	}
 
 	function toLogin() {
-		navigateTo(`/login?returnUrl=${encodeURIComponent(currentPath)}`);
+		navigateTo(loginHref(currentPath));
 	}
 
 	/** Shared handling of every non-describe outcome; `retry` is offered only for retryable failures. */

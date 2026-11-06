@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { page as appPage } from '$app/state';
+	import { loginHrefFor } from '$lib/utils/safe-redirect';
 	import { withSiteName } from '$lib/seo/tenant';
 	import type { PageData } from './$types';
 	import { CheckCircle, XCircle, Loader2 } from '@lucide/svelte';
@@ -53,12 +54,14 @@
 			>
 				{m['orgVerifyContactEmail.goToDashboard']()}
 			</a>
+			<!-- eslint-disable svelte/no-navigation-without-resolve -- loginHrefFor() wraps resolve(); it only appends the query -->
 			<a
-				href={resolve('/(public)/login', {})}
+				href={loginHrefFor(appPage.url)}
 				class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-6 py-2 text-sm font-bold transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 			>
 				{m['orgVerifyContactEmail.backToLogin']()}
 			</a>
+			<!-- eslint-enable svelte/no-navigation-without-resolve -->
 		</div>
 	</div>
 {/snippet}

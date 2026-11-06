@@ -3,6 +3,7 @@
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
 	import { AlertCircle } from '@lucide/svelte';
 	import { resolve } from '$app/paths';
+	import { loginHrefFor, withReturnUrl } from '$lib/utils/safe-redirect';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import { isMembershipTierRefusal } from '$lib/utils/eligibility';
 	import { extractPurchaseErrorMessage } from './purchase-error';
@@ -89,9 +90,14 @@
 			error instanceof GuestAccountRequiredError || error instanceof GuestCartTooLargeError
 				? error.email
 				: undefined;
-		const emailSuffix = email ? `&email=${encodeURIComponent(email)}` : '';
-		return `${resolve('/(public)/login', {})}?returnUrl=${encodeURIComponent(window.location.pathname)}${emailSuffix}`;
+		return loginHrefFor(window.location, { email });
 	});
+	const registerHref = $derived(
+		withReturnUrl(
+			resolve('/(public)/register', {}),
+			window.location.pathname + window.location.search
+		)
+	);
 </script>
 
 {#if message}
@@ -115,17 +121,14 @@
 			{/if}
 			{#if requiresAccount}
 				<p class="mt-2">
-					<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- loginHrefFor()/withReturnUrl() wrap resolve(); they only append the query -->
 					<a href={loginHref} class="font-medium underline hover:no-underline">
 						{m['guestTicketDialog.logIn']()}
 					</a>
 					<!-- eslint-enable svelte/no-navigation-without-resolve -->
 					{m['guestTicketDialog.or']()}
-					<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
-					<a
-						href={`${resolve('/(public)/register', {})}?returnUrl=${encodeURIComponent(window.location.pathname)}`}
-						class="font-medium underline hover:no-underline"
-					>
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- loginHrefFor()/withReturnUrl() wrap resolve(); they only append the query -->
+					<a href={registerHref} class="font-medium underline hover:no-underline">
 						{m['guestTicketDialog.createAnAccount']()}
 					</a>
 					<!-- eslint-enable svelte/no-navigation-without-resolve -->
@@ -134,7 +137,7 @@
 			{/if}
 			{#if cartTooLarge}
 				<div class="mt-3 flex flex-wrap items-center gap-3">
-					<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query cannot be expressed through resolve() -->
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- loginHrefFor() wraps resolve(); it only appends the query -->
 					<a href={loginHref} class="font-medium underline hover:no-underline">
 						{m['guestTicketDialog.logIn']()}
 					</a>

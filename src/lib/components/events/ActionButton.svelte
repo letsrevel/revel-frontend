@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { loginHrefFor } from '$lib/utils/safe-redirect';
 	import type { UserEventStatus } from '$lib/utils/eligibility';
 	import {
 		isRSVP,
@@ -117,7 +118,7 @@
 	function handleClick(): void {
 		if (!isAuthenticated && !canAttendWithoutLogin) {
 			// Redirect to login with return URL
-			window.location.href = `/login?returnUrl=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+			window.location.href = loginHrefFor(window.location);
 			return;
 		}
 

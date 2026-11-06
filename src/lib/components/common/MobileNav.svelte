@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
+	import { navLoginHref } from '$lib/utils/safe-redirect';
 	import { X } from '@lucide/svelte';
 	import UserMenu from './UserMenu.svelte';
 	import * as m from '$lib/paraglide/messages.js';
@@ -116,13 +117,15 @@
 			<!-- Auth Actions -->
 			{#if !isAuthenticated}
 				<div class="mt-6 space-y-2 border-t pt-6">
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- navLoginHref() wraps resolve(); it only appends the query -->
 					<a
-						href={resolve('/(public)/login', {})}
+						href={navLoginHref($page.url)}
 						class="block rounded-md px-4 py-3 text-center text-base font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
 						onclick={handleLinkClick}
 					>
 						{m['auth.login']()}
 					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
 					<a
 						href={resolve('/(public)/register', {})}
 						class="block rounded-md bg-primary px-4 py-3 text-center text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"

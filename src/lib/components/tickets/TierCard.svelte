@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/state';
+	import { loginHrefFor } from '$lib/utils/safe-redirect';
 	import { brandName } from '$lib/seo/tenant';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import type {
@@ -89,6 +90,8 @@
 		onlineBlocked = false,
 		reservationOnly = false
 	}: Props = $props();
+
+	const loginHref = $derived(loginHrefFor(page.url));
 
 	const uid = $props.id();
 	const onlineUnavailable = $derived(onlineBlocked && tier.payment_method === 'online');
@@ -394,7 +397,7 @@
 			{m['compliance.checkout.fallback']()}
 		</p>
 	{:else if !isAuthenticated && !canAttendWithoutLogin}
-		<Button href="/login" variant="outline" class="w-full sm:w-auto"
+		<Button href={loginHref} variant="outline" class="w-full sm:w-auto"
 			>{m['tierCardAdmin.signInToGetTicket']()}</Button
 		>
 	{:else if !effectiveEligible}
