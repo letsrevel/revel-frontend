@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { safeReturnUrl, registrationReturnUrl, withReturnUrl, loginHrefFor } from './safe-redirect';
+import {
+	safeReturnUrl,
+	registrationReturnUrl,
+	withReturnUrl,
+	loginHref,
+	loginHrefFor
+} from './safe-redirect';
 
 describe('safeReturnUrl', () => {
 	it('accepts genuine relative paths', () => {
@@ -101,5 +107,19 @@ describe('loginHrefFor', () => {
 		expect(loginHrefFor(new URL('https://x.test/events/org/party?tier=a&et=1'))).toBe(
 			'/login?returnUrl=%2Fevents%2Forg%2Fparty%3Ftier%3Da%26et%3D1'
 		);
+	});
+});
+
+describe('loginHref', () => {
+	it('appends returnUrl and email', () => {
+		expect(loginHref('/e/x', { email: ' a+b@c.d ' })).toBe(
+			'/login?returnUrl=%2Fe%2Fx&email=a%2Bb%40c.d'
+		);
+	});
+	it('drops an unsafe returnUrl but keeps the email', () => {
+		expect(loginHref('//evil.com', { email: 'a@b.c' })).toBe('/login?email=a%40b.c');
+	});
+	it('is bare /login with nothing to carry', () => {
+		expect(loginHref()).toBe('/login');
 	});
 });

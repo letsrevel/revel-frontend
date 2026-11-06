@@ -1,12 +1,12 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { loginHref } from '$lib/utils/safe-redirect';
 	import { Button } from '$lib/components/ui/button';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { organizationClaimInvitation } from '$lib/api/generated/sdk.gen';
 	import { Loader2, Check, LogIn } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { goto } from '$app/navigation';
-	import { resolve } from '$app/paths';
 	import type { OrganizationTokenSchema } from '$lib/api/generated/types.gen';
 	import { backendMessage } from '$lib/utils/api-error-detail';
 
@@ -29,7 +29,7 @@
 		if (!isAuthenticated) {
 			const currentUrl = window.location.pathname + window.location.search;
 			// eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() validates the route id; the appended query string cannot be expressed through resolve()
-			goto(`${resolve('/(public)/login', {})}?returnUrl=${encodeURIComponent(currentUrl)}`);
+			goto(loginHref(currentUrl));
 			return;
 		}
 

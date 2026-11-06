@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { loginHrefFor } from '$lib/utils/safe-redirect';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		organizationFollowOrganization,
@@ -167,7 +168,7 @@
 
 	function handleFollowClick() {
 		if (!isAuthenticated) {
-			window.location.href = `/login?returnUrl=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+			window.location.href = loginHrefFor(window.location);
 			return;
 		}
 		followMutation.mutate();

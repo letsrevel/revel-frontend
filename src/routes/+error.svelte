@@ -2,6 +2,7 @@
 	import { page as appPage } from '$app/state';
 	import { withSiteName } from '$lib/seo/tenant';
 	import { resolve } from '$app/paths';
+	import { loginHrefFor } from '$lib/utils/safe-redirect';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import {
@@ -229,7 +230,7 @@
 				{#if config.showLoginButton}
 					<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
 					<a
-						href={`${resolve('/(public)/login', {})}?returnUrl=${encodeURIComponent($page.url.pathname + $page.url.search)}`}
+						href={loginHrefFor($page.url)}
 						class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-6 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						<Lock class="h-4 w-4" aria-hidden="true" />

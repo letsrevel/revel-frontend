@@ -59,11 +59,23 @@ export function withReturnUrl(href: string, returnUrl: string | null | undefined
 }
 
 /**
- * The sign-in link for a page: `/login?returnUrl=<path + query>`, so the user
- * lands back where they were. Use this for every sign-in CTA instead of
- * hand-building the query (the login action only reads `returnUrl`; a
- * `?next=` or `?redirect=` is silently ignored).
+ * The sign-in link: `/login?returnUrl=<returnUrl>[&email=<email>]`. This is the
+ * ONE way to build a login href; never hand-build the query (the login action
+ * only reads `returnUrl` and `email`; `?next=` / `?redirect=` are silently
+ * ignored and strand the user on the dashboard). An unsafe or empty
+ * `returnUrl` is dropped (see `withReturnUrl`). `email` prefills the form.
  */
-export function loginHrefFor(url: Pick<URL, 'pathname' | 'search'>): string {
-	return withReturnUrl(resolve('/(public)/login', {}), url.pathname + url.search);
+export function loginHref(returnUrl?: string | null, opts: { email?: string | null } = {}): string {
+	const href = withReturnUrl(resolve('/(public)/login', {}), returnUrl);
+	const email = opts.email?.trim();
+	if (!email) return href;
+	return `${href}${href.includes('?') ? '&' : '?'}email=${encodeURIComponent(email)}`;
+}
+
+/** `loginHref` back to the given page (path + query): pass `page.url`. */
+export function loginHrefFor(
+	url: Pick<URL, 'pathname' | 'search'>,
+	opts: { email?: string | null } = {}
+): string {
+	return loginHref(url.pathname + url.search, opts);
 }

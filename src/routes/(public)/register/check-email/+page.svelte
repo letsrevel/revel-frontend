@@ -1,19 +1,16 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { brandName } from '$lib/seo/tenant';
 	import { Mail, Loader2, AlertTriangle } from '@lucide/svelte';
 	import { accountResendVerificationEmail } from '$lib/api/generated/sdk.gen';
 	import AuthBandLayout from '$lib/components/auth/AuthBandLayout.svelte';
-	import { registrationReturnUrl, withReturnUrl } from '$lib/utils/safe-redirect';
+	import { registrationReturnUrl, loginHref } from '$lib/utils/safe-redirect';
 
 	const email = $derived($page.url.searchParams.get('email') || '');
 	// The register action appends `&returnUrl=` here so the user who verifies
 	// on another device can still come back through "Back to login".
-	const loginHref = $derived(
-		withReturnUrl(resolve('/(public)/login', {}), $page.url.searchParams.get('returnUrl'))
-	);
+	const signInHref = $derived(loginHref($page.url.searchParams.get('returnUrl')));
 	// Re-sent verification links carry the same target the register action sent
 	// (#978). Dropped silently when unsafe/too long, exactly as on register:
 	// the backend 422s a bad `return_url`, which would fail the resend itself.
@@ -151,8 +148,8 @@
 
 	<!-- Back to Login -->
 	<div class="text-center text-sm">
-		<!-- eslint-disable svelte/no-navigation-without-resolve -- href is resolve() output; withReturnUrl only appends the ?returnUrl= query -->
-		<a href={loginHref} class="text-primary underline-offset-4 hover:underline">
+		<!-- eslint-disable svelte/no-navigation-without-resolve -- href is resolve() output; loginHref() only appends the ?returnUrl= query -->
+		<a href={signInHref} class="text-primary underline-offset-4 hover:underline">
 			{m['checkEmailPage.backToLogin']()}
 		</a>
 		<!-- eslint-enable svelte/no-navigation-without-resolve -->

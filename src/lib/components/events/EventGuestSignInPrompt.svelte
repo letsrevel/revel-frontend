@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
+	import { loginHrefFor } from '$lib/utils/safe-redirect';
 	import { page } from '$app/stores';
 	import type { EventDetailSchema } from '$lib/api/generated/types.gen';
 	import {
@@ -23,9 +23,7 @@
 	let isExpanded = $state(false);
 
 	// Login link that returns the guest to this event page after signing in
-	const loginHref = $derived(
-		`${resolve('/(public)/login', {})}?returnUrl=${encodeURIComponent($page.url.pathname + $page.url.search)}`
-	);
+	const loginHref = $derived(loginHrefFor($page.url));
 
 	interface PerkItem {
 		icon: typeof Megaphone;

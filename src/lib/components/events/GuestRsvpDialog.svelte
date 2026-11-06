@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { loginHref as buildLoginHref } from '$lib/utils/safe-redirect';
 	import * as m from '$lib/paraglide/messages.js';
 	import {
 		Dialog,
@@ -245,9 +246,7 @@
 	// the sign-in form (the account that refused the RSVP belongs to it).
 	const returnUrlSuffix = $derived(`?returnUrl=${encodeURIComponent(window.location.pathname)}`);
 	const loginHref = $derived.by(() => {
-		const email = formData.email.trim();
-		const emailSuffix = email ? `&email=${encodeURIComponent(email)}` : '';
-		return `${resolve('/(public)/login', {})}${returnUrlSuffix}${emailSuffix}`;
+		return buildLoginHref(window.location.pathname, { email: formData.email });
 	});
 </script>
 
@@ -459,10 +458,10 @@
 				<!-- Subtle login link -->
 				<div class="border-t pt-3 text-center text-xs text-muted-foreground">
 					<p>
-						{orLoginParts.before}{#if orLoginParts.link}<a
-								href={resolve('/(public)/login', {})}
+						{orLoginParts.before}{#if orLoginParts.link}<!-- eslint-disable svelte/no-navigation-without-resolve -- loginHref() wraps resolve(); it only appends the query --><a
+								href={loginHref}
 								class="text-primary hover:underline">{orLoginParts.link}</a
-							>{/if}{orLoginParts.after}
+							><!-- eslint-enable svelte/no-navigation-without-resolve -->{/if}{orLoginParts.after}
 					</p>
 				</div>
 			</form>

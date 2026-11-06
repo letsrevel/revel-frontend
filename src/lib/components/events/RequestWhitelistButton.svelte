@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { loginHrefFor } from '$lib/utils/safe-redirect';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { organizationCreateWhitelistRequest } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -88,7 +89,7 @@
 	function handleDialogChange(open: boolean) {
 		// If trying to open and not authenticated, redirect to login
 		if (open && !isAuthenticated) {
-			window.location.href = `/login?returnUrl=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+			window.location.href = loginHrefFor(window.location);
 			return;
 		}
 

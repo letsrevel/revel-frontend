@@ -6,8 +6,8 @@
 	 * `setPwycAmount` only. Only the discount input/results and the
 	 * accordion-open flags are sheet-local (see `EventCart.needsSheet`). */
 	import { untrack } from 'svelte';
-	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
+	import { loginHref } from '$lib/utils/safe-redirect';
 	import {
 		Dialog,
 		DialogContent,
@@ -500,7 +500,7 @@
 				<div class="border-t pt-3 text-center text-xs text-muted-foreground">
 					<p>
 						{orLoginParts.before}{#if orLoginParts.link}<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query cannot be expressed through resolve() --><a
-								href={`${resolve('/(public)/login', {})}?returnUrl=${encodeURIComponent(window.location.pathname)}`}
+								href={loginHref(window.location.pathname)}
 								class="text-primary hover:underline">{orLoginParts.link}</a
 							><!-- eslint-enable svelte/no-navigation-without-resolve -->{/if}{orLoginParts.after}
 					</p>

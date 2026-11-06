@@ -27,7 +27,7 @@
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import type { Tone } from '$lib/components/common/tones';
 	import { resolve } from '$app/paths';
-	import { withReturnUrl } from '$lib/utils/safe-redirect';
+	import { loginHref as buildLoginHref, withReturnUrl } from '$lib/utils/safe-redirect';
 	import { membershipReturnUrl } from '$lib/utils/membership-return.svelte';
 
 	interface Props {
@@ -208,9 +208,7 @@
 	// so it must return them to where that button is.
 	// The membership page's own `?returnUrl=` (e.g. the members-only event the
 	// visitor came from) rides inside the login return target, so it survives login.
-	const loginHref = $derived(
-		`${resolve('/(public)/login', {})}?returnUrl=${encodeURIComponent(withReturnUrl(membershipHref, membershipReturnUrl()))}`
-	);
+	const loginHref = $derived(buildLoginHref(withReturnUrl(membershipHref, membershipReturnUrl())));
 
 	/** The label a join button carries: the tier when there is one, else the org. */
 	const joinLabel = $derived(

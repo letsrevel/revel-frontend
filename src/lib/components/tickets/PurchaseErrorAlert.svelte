@@ -3,6 +3,7 @@
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
 	import { AlertCircle } from '@lucide/svelte';
 	import { resolve } from '$app/paths';
+	import { loginHref as buildLoginHref } from '$lib/utils/safe-redirect';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import { isMembershipTierRefusal } from '$lib/utils/eligibility';
 	import { extractPurchaseErrorMessage } from './purchase-error';
@@ -89,8 +90,7 @@
 			error instanceof GuestAccountRequiredError || error instanceof GuestCartTooLargeError
 				? error.email
 				: undefined;
-		const emailSuffix = email ? `&email=${encodeURIComponent(email)}` : '';
-		return `${resolve('/(public)/login', {})}?returnUrl=${encodeURIComponent(window.location.pathname)}${emailSuffix}`;
+		return buildLoginHref(window.location.pathname, { email });
 	});
 </script>
 
