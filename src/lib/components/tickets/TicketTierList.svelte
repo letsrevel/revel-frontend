@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
+	import { withReturnUrl } from '$lib/utils/safe-redirect';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import type { UserEventStatus } from '$lib/utils/eligibility';
@@ -84,6 +86,11 @@
 		headingId = 'ticket-tiers',
 		compliance = null
 	}: Props = $props();
+
+	// Sign-in returns here (path + query), matching the event sidebar CTA.
+	const loginHref = $derived(
+		withReturnUrl(resolve('/(public)/login', {}), page.url.pathname + page.url.search)
+	);
 
 	/**
 	 * Get remaining tickets info for a specific tier
@@ -219,7 +226,8 @@
 
 		{#if !isAuthenticated && !canAttendWithoutLogin}
 			<p class="mt-4 text-sm text-muted-foreground">
-				<a href={resolve('/(public)/login', {})} class="font-bold text-primary hover:underline"
+				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() output; withReturnUrl only appends the ?returnUrl= query -->
+				<a href={loginHref} class="font-bold text-primary hover:underline"
 					>{m['ticketTierList.signIn']()}</a
 				>
 				to claim your ticket

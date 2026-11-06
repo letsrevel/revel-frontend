@@ -10,6 +10,9 @@
 	 * by no purchasable tier render ghosted and inert.
 	 */
 	import * as m from '$lib/paraglide/messages.js';
+	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
+	import { withReturnUrl } from '$lib/utils/safe-redirect';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { eventpublicseatingGetChart } from '$lib/api';
 	import type { TierRemainingTicketsSchema, VenueChartSchema } from '$lib/api/generated/types.gen';
@@ -67,6 +70,11 @@
 		protectedSeatIds = new Set(),
 		onSelectTier
 	}: Props = $props();
+
+	// Sign-in returns here (path + query), matching the event sidebar CTA.
+	const loginHref = $derived(
+		withReturnUrl(resolve('/(public)/login', {}), page.url.pathname + page.url.search)
+	);
 
 	const CHART_STALE_TIME_MS = 5 * 60 * 1000;
 
@@ -213,7 +221,9 @@
 				{/each}
 			</ul>
 			{#if needsLogin}
-				<Button href="/login" class="mt-2 w-full">{m['tierCardAdmin.signInToGetTicket']()}</Button>
+				<Button href={loginHref} class="mt-2 w-full"
+					>{m['tierCardAdmin.signInToGetTicket']()}</Button
+				>
 			{/if}
 		</DialogContent>
 	</Dialog>
