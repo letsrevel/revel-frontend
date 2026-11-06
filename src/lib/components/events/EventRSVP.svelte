@@ -532,7 +532,7 @@
 		{#if shouldShowLoginPrompt}
 			<div class="space-y-3">
 				<h3 class="text-sm font-semibold">{m['eventRSVP.willYouAttend']()}</h3>
-				<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
+				<!-- eslint-disable svelte/no-navigation-without-resolve -- loginHref() wraps resolve(); it only appends the query -->
 				<a
 					href={loginHref(currentPath)}
 					class="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-3 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"

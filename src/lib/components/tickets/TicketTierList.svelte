@@ -222,7 +222,7 @@
 
 		{#if !isAuthenticated && !canAttendWithoutLogin}
 			<p class="mt-4 text-sm text-muted-foreground">
-				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() output; withReturnUrl only appends the ?returnUrl= query -->
+				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- loginHrefFor() wraps resolve(); it only appends the query -->
 				<a href={loginHref} class="font-bold text-primary hover:underline"
 					>{m['ticketTierList.signInToClaim']()}</a
 				>

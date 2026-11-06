@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { loginHref as buildLoginHref } from '$lib/utils/safe-redirect';
+	import { loginHrefFor, withReturnUrl } from '$lib/utils/safe-redirect';
 	import * as m from '$lib/paraglide/messages.js';
 	import {
 		Dialog,
@@ -244,10 +244,15 @@
 	// the old `redirect` param was silently ignored and stranded the guest on
 	// the dashboard after signing in (issue #912). The entered email prefills
 	// the sign-in form (the account that refused the RSVP belongs to it).
-	const returnUrlSuffix = $derived(`?returnUrl=${encodeURIComponent(window.location.pathname)}`);
-	const loginHref = $derived.by(() => {
-		return buildLoginHref(window.location.pathname, { email: formData.email });
-	});
+	const loginHref = $derived(loginHrefFor(window.location, { email: formData.email }));
+	// The subtle footer link must not prefill from a half-typed email field.
+	const plainLoginHref = $derived(loginHrefFor(window.location));
+	const registerHref = $derived(
+		withReturnUrl(
+			resolve('/(public)/register', {}),
+			window.location.pathname + window.location.search
+		)
+	);
 </script>
 
 <Dialog bind:open>
@@ -414,17 +419,14 @@
 								{errorMessage}
 								{#if requiresAccount}
 									<p class="mt-2">
-										<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
+										<!-- eslint-disable svelte/no-navigation-without-resolve -- loginHrefFor()/withReturnUrl() wrap resolve(); they only append the query -->
 										<a href={loginHref} class="font-medium underline hover:no-underline">
 											{m['guestRsvpDialog.logIn']()}
 										</a>
 										<!-- eslint-enable svelte/no-navigation-without-resolve -->
 										{m['guestRsvpDialog.or']()}
-										<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
-										<a
-											href={`${resolve('/(public)/register', {})}${returnUrlSuffix}`}
-											class="font-medium underline hover:no-underline"
-										>
+										<!-- eslint-disable svelte/no-navigation-without-resolve -- loginHrefFor()/withReturnUrl() wrap resolve(); they only append the query -->
+										<a href={registerHref} class="font-medium underline hover:no-underline">
 											{m['guestRsvpDialog.createAnAccount']()}
 										</a>
 										<!-- eslint-enable svelte/no-navigation-without-resolve -->
@@ -459,7 +461,7 @@
 				<div class="border-t pt-3 text-center text-xs text-muted-foreground">
 					<p>
 						{orLoginParts.before}{#if orLoginParts.link}<!-- eslint-disable svelte/no-navigation-without-resolve -- loginHref() wraps resolve(); it only appends the query --><a
-								href={loginHref}
+								href={plainLoginHref}
 								class="text-primary hover:underline">{orLoginParts.link}</a
 							><!-- eslint-enable svelte/no-navigation-without-resolve -->{/if}{orLoginParts.after}
 					</p>

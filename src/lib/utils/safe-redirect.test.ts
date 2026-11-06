@@ -140,6 +140,17 @@ describe('navLoginHref', () => {
 		expect(at('/login')).toBe('/login');
 		expect(at('/password-reset/abc')).toBe('/login');
 	});
+	it('keeps the query on the home page (e.g. a referral code)', () => {
+		expect(at('/?ref=CODE')).toBe('/login?returnUrl=%2F%3Fref%3DCODE');
+	});
+	it('never copies a one-shot ?token= into the returnUrl', () => {
+		expect(at('/unsubscribe?token=abc')).toBe('/login');
+		expect(at('/account/confirm-deletion?token=abc')).toBe('/login');
+		expect(at('/account/confirm-email-change?token=abc')).toBe('/login');
+		expect(at('/org/acme/verify-contact-email?token=abc')).toBe('/login');
+		expect(at('/events/confirm-action?token=abc')).toBe('/login');
+		expect(at('/login/reset-password?token=abc')).toBe('/login');
+	});
 	it('does not treat look-alike paths as auth flow', () => {
 		expect(at('/registered-things')).toBe('/login?returnUrl=%2Fregistered-things');
 	});

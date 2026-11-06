@@ -228,7 +228,7 @@
 				{/if}
 
 				{#if config.showLoginButton}
-					<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- loginHrefFor() wraps resolve(); it only appends the query -->
 					<a
 						href={loginHrefFor($page.url)}
 						class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-6 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"

@@ -80,18 +80,22 @@ export function loginHrefFor(
 	return loginHref(url.pathname + url.search, opts);
 }
 
-// Auth-flow pages: returning to them after signing in is a loop or a dead end.
+// Auth-flow and one-shot token pages: returning to them after signing in is a
+// loop or a dead end, and copying their `?token=` into a returnUrl would leak
+// a single-use secret into a login URL.
 const AUTH_FLOW_PATH =
-	/^\/(login|register|logout|password-reset|verify|account\/confirm-email-change)(\/|$)/;
+	/^\/(login|register|logout|password-reset|verify|unsubscribe|account\/confirm-email-change|account\/confirm-deletion|org\/[^/]+\/verify-contact-email|events\/confirm-action)(\/|$)/;
 
 /**
  * The header/nav "Log in" link. Returns to the current page, except:
- * - on `/` it stays bare, so login keeps its default landing (the dashboard);
- * - on an auth-flow page it forwards that page's own `?returnUrl=` instead,
- *   so register → "Log in" keeps the original destination.
+ * - on the bare home page (`/`, no query) it stays bare, so login keeps its
+ *   default landing (the dashboard); `/?ref=CODE` still returns to itself;
+ * - on an auth-flow or one-shot token page it forwards that page's own
+ *   `?returnUrl=` (if any) instead, so register -> "Log in" keeps the original
+ *   destination and `?token=` never reaches the login URL.
  */
 export function navLoginHref(url: Pick<URL, 'pathname' | 'search' | 'searchParams'>): string {
-	if (url.pathname === '/') return loginHref();
+	if (url.pathname === '/' && !url.search) return loginHref();
 	if (AUTH_FLOW_PATH.test(url.pathname)) return loginHref(url.searchParams.get('returnUrl'));
 	return loginHrefFor(url);
 }

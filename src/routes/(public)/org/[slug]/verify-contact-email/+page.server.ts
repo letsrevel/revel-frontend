@@ -1,6 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import { organizationadmincoreVerifyContactEmail } from '$lib/api/generated/sdk.gen';
 import type { PageServerLoad } from './$types';
+import { loginHref } from '$lib/utils/safe-redirect';
 import { extractErrorMessage } from '$lib/utils/errors';
 
 export const load: PageServerLoad = async ({ params, url, locals, cookies }) => {
@@ -22,14 +23,14 @@ export const load: PageServerLoad = async ({ params, url, locals, cookies }) => 
 	if (!locals.user) {
 		// Redirect to login with return URL
 		const redirectUrl = `/org/${slug}/verify-contact-email?token=${token}`;
-		throw redirect(303, `/login?returnUrl=${encodeURIComponent(redirectUrl)}`);
+		throw redirect(303, loginHref(redirectUrl));
 	}
 
 	const accessToken = cookies.get('access_token');
 	if (!accessToken) {
 		// Redirect to login if no access token
 		const redirectUrl = `/org/${slug}/verify-contact-email?token=${token}`;
-		throw redirect(303, `/login?returnUrl=${encodeURIComponent(redirectUrl)}`);
+		throw redirect(303, loginHref(redirectUrl));
 	}
 
 	try {

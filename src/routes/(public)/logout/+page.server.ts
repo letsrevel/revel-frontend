@@ -1,7 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { log } from '$lib/server/logger';
-import { safeReturnUrl } from '$lib/utils/safe-redirect';
+import { loginHref, safeReturnUrl } from '$lib/utils/safe-redirect';
 
 /**
  * Logout.
@@ -29,7 +29,7 @@ export const load: PageServerLoad = async ({ cookies, url, locals }) => {
 	const signedIn = !!locals.user || !!cookies.get('refresh_token');
 
 	if (!signedIn) {
-		throw redirect(303, returnUrl ? `/login?returnUrl=${encodeURIComponent(returnUrl)}` : '/');
+		throw redirect(303, returnUrl ? loginHref(returnUrl) : '/');
 	}
 
 	return { returnUrl };
@@ -55,7 +55,7 @@ export const actions: Actions = {
 		cookies.delete('remember_me', { path: '/' });
 
 		if (returnUrl) {
-			throw redirect(303, `/login?returnUrl=${encodeURIComponent(returnUrl)}`);
+			throw redirect(303, loginHref(returnUrl));
 		}
 
 		throw redirect(303, '/?logged_out=true');

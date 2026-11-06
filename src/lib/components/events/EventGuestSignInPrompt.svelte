@@ -77,7 +77,7 @@
 				<p class="mt-1 text-sm text-muted-foreground">{m['eventGuestPrompt.subtitle']()}</p>
 			</div>
 		</div>
-		<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended returnUrl query cannot be expressed through resolve() -->
+		<!-- eslint-disable svelte/no-navigation-without-resolve -- loginHrefFor() wraps resolve(); it only appends the query -->
 		<a
 			href={loginHref}
 			class="inline-flex shrink-0 items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"

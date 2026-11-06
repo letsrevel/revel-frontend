@@ -1,4 +1,5 @@
 import { redirect } from '@sveltejs/kit';
+import { loginHref } from '$lib/utils/safe-redirect';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ cookies, url }) => {
@@ -7,8 +8,7 @@ export const load: PageServerLoad = async ({ cookies, url }) => {
 	// Redirect to login if not authenticated. The client reads the token from
 	// authStore (not from page data — that would serialize the JWT into HTML).
 	if (!accessToken) {
-		const returnUrl = encodeURIComponent(url.pathname);
-		throw redirect(302, `/login?returnUrl=${returnUrl}`);
+		throw redirect(302, loginHref(url.pathname));
 	}
 
 	return {};

@@ -66,7 +66,7 @@
 	function handleClaim() {
 		if (!isAuthenticated) {
 			const returnUrl = `/join/event/${tokenId}`;
-			// eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() validates the route id; the appended query string cannot be expressed through resolve()
+			// eslint-disable-next-line svelte/no-navigation-without-resolve -- loginHref() wraps resolve(); it only appends the query
 			goto(loginHref(returnUrl));
 			return;
 		}
