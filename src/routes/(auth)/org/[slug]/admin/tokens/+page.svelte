@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { standardTiers } from '$lib/utils/membership-tier-kind';
+	import { standardTiersQueryOptions } from '$lib/queries/membership-tiers';
 	import { page } from '$app/stores';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		organizationadmintokensListOrganizationTokens,
 		organizationadmintokensCreateOrganizationToken,
 		organizationadmintokensUpdateOrganizationToken,
-		organizationadmintokensDeleteOrganizationToken,
-		organizationadminmembersListMembershipTiers
+		organizationadmintokensDeleteOrganizationToken
 	} from '$lib/api/generated/sdk.gen';
 	import type {
 		OrganizationTokenSchema,
@@ -68,20 +68,7 @@
 
 	// Fetch membership tiers
 	const tiersQuery = createQuery(() => ({
-		queryKey: ['organization', organization.slug, 'membership-tiers', 'standard'],
-		queryFn: async () => {
-			const response = await organizationadminmembersListMembershipTiers({
-				path: { slug: organization.slug },
-				query: { kind: 'standard' },
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
-
-			if (response.error) {
-				throw new Error('Failed to fetch membership tiers');
-			}
-
-			return response.data || [];
-		},
+		...standardTiersQueryOptions(organization.slug, accessToken),
 		enabled: !!accessToken
 	}));
 

@@ -9861,7 +9861,8 @@
 	},
 	"dayMemberBadge": {
 		"label": "Tagesmitglied",
-		"until": "Tagesmitglied bis {date}"
+		"until": "bis {date}",
+		"ended": "Tagesmitgliedschaft beendet"
 	},
 	"seriesPassBadge": {
 		"label": "Saisonpass",

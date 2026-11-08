@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { standardTiers } from '$lib/utils/membership-tier-kind';
+	import { standardTiersQueryOptions } from '$lib/queries/membership-tiers';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		eventadminticketsListTicketTiers,
 		eventadminticketsReorderTicketTiers,
 		eventadminticketsUpdateTicketTier,
-		eventpublicdetailsGetEvent,
-		organizationadminmembersListMembershipTiers
+		eventpublicdetailsGetEvent
 	} from '$lib/api/generated/sdk.gen';
 	import type { TicketTierDetailSchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
@@ -104,19 +104,7 @@
 
 	// Fetch membership tiers for the organization
 	const membershipTiersQuery = createQuery(() => ({
-		queryKey: ['organization', organizationSlug, 'membership-tiers', 'standard'],
-		queryFn: async () => {
-			if (!accessToken) return null;
-			const response = await organizationadminmembersListMembershipTiers({
-				path: { slug: organizationSlug },
-				query: { kind: 'standard' },
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
-			// The generated client resolves on HTTP errors; throw so the query lands in
-			// `isError` and the exclusion picker shows its load-error state.
-			if (response.error) throw response.error;
-			return response.data;
-		},
+		...standardTiersQueryOptions(organizationSlug, accessToken),
 		enabled: !!accessToken
 	}));
 

@@ -3,10 +3,11 @@ import { render, screen } from '@testing-library/svelte';
 import DayMemberBadge from './DayMemberBadge.svelte';
 import TicketTable from './TicketTable.svelte';
 import TicketCardList from './TicketCardList.svelte';
-import { formatDateTime } from '$lib/utils/date';
+import { formatDate } from '$lib/utils/date';
+import { dayMemberBadgeState } from './day-member-badge';
 import type { AdminTicketSchema, TicketMembershipRecordSchema } from '$lib/api/generated/types.gen';
 
-const VALID_UNTIL = '2026-12-01T23:00:00Z';
+const VALID_UNTIL = '2099-12-01T23:00:00Z';
 
 function record(
 	overrides: Partial<TicketMembershipRecordSchema> = {}
@@ -49,39 +50,77 @@ const listProps = {
 	onUnconfirmPayment: noop
 };
 
+const NOW = new Date('2026-11-01T12:00:00Z');
+
+describe('dayMemberBadgeState', () => {
+	it('is live for a future or null valid_until with no ended_reason', () => {
+		expect(dayMemberBadgeState(record(), NOW)).toBe('live');
+		expect(dayMemberBadgeState(record({ valid_until: null }), NOW)).toBe('live');
+	});
+
+	it.each(['cancelled', 'expelled', 'removed', 'tier_changed'] as const)(
+		'is ended for ended_reason %s',
+		(reason) => {
+			expect(dayMemberBadgeState(record({ ended_reason: reason }), NOW)).toBe('ended');
+		}
+	);
+
+	it('is ended for a past valid_until', () => {
+		expect(dayMemberBadgeState(record({ valid_until: '2026-10-01T00:00:00Z' }), NOW)).toBe('ended');
+	});
+
+	it('is hidden for revoked (even when past), standard, null and undefined', () => {
+		expect(
+			dayMemberBadgeState(
+				record({ ended_reason: 'revoked', valid_until: '2026-10-01T00:00:00Z' }),
+				NOW
+			)
+		).toBe('hidden');
+		expect(dayMemberBadgeState(record({ kind: 'standard' }), NOW)).toBe('hidden');
+		expect(dayMemberBadgeState(null, NOW)).toBe('hidden');
+		expect(dayMemberBadgeState(undefined, NOW)).toBe('hidden');
+	});
+});
+
 describe('DayMemberBadge', () => {
-	it('shows for a temporary record, with the date in the screen-reader label', () => {
-		render(DayMemberBadge, { props: { record: record() } });
-		const badge = screen.getByTestId('day-member-badge');
-		expect(badge).toHaveTextContent('Day member');
-		expect(badge).toHaveTextContent(`Day member until ${formatDateTime(VALID_UNTIL)}`);
-	});
-
-	it('shows without a date when valid_until is null', () => {
-		render(DayMemberBadge, { props: { record: record({ valid_until: null }) } });
+	it('shows the live badge with a visible end date', () => {
+		render(DayMemberBadge, { props: { record: record(), now: NOW } });
 		expect(screen.getByTestId('day-member-badge')).toHaveTextContent('Day member');
-		expect(screen.getByTestId('day-member-badge').textContent).not.toContain('until');
+		expect(screen.getByTestId('day-member-until')).toHaveTextContent(
+			`until ${formatDate(VALID_UNTIL)}`
+		);
 	});
 
-	it('shows for an ended (non-revoked) record', () => {
-		render(DayMemberBadge, { props: { record: record({ ended_reason: 'expired' as never }) } });
+	it('shows no date line when valid_until is null', () => {
+		render(DayMemberBadge, { props: { record: record({ valid_until: null }), now: NOW } });
 		expect(screen.getByTestId('day-member-badge')).toBeInTheDocument();
+		expect(screen.queryByTestId('day-member-until')).not.toBeInTheDocument();
 	});
 
-	it('is hidden for a revoked record', () => {
-		render(DayMemberBadge, { props: { record: record({ ended_reason: 'revoked' }) } });
+	it('shows the ended badge for an ended record', () => {
+		render(DayMemberBadge, { props: { record: record({ ended_reason: 'cancelled' }), now: NOW } });
+		expect(screen.getByTestId('day-member-badge-ended')).toHaveTextContent('Day membership ended');
 		expect(screen.queryByTestId('day-member-badge')).not.toBeInTheDocument();
 	});
 
-	it('is hidden for a standard record', () => {
-		render(DayMemberBadge, { props: { record: record({ kind: 'standard' }) } });
-		expect(screen.queryByTestId('day-member-badge')).not.toBeInTheDocument();
+	it('shows the ended badge for a past valid_until', () => {
+		render(DayMemberBadge, {
+			props: { record: record({ valid_until: '2026-10-01T00:00:00Z' }), now: NOW }
+		});
+		expect(screen.getByTestId('day-member-badge-ended')).toBeInTheDocument();
 	});
 
-	it('is hidden for null and undefined', () => {
-		render(DayMemberBadge, { props: { record: null } });
-		render(DayMemberBadge, { props: { record: undefined } });
-		expect(screen.queryByTestId('day-member-badge')).not.toBeInTheDocument();
+	it('renders nothing for revoked, standard, null and undefined', () => {
+		for (const r of [
+			record({ ended_reason: 'revoked' }),
+			record({ kind: 'standard' }),
+			null,
+			undefined
+		]) {
+			const { container, unmount } = render(DayMemberBadge, { props: { record: r, now: NOW } });
+			expect(container.querySelector('[data-testid^="day-member-badge"]')).toBeNull();
+			unmount();
+		}
 	});
 });
 

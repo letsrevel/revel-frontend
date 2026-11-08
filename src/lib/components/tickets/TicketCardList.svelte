@@ -39,6 +39,7 @@
 	import RefundStatusBadge from './RefundStatusBadge.svelte';
 	import TicketDiscountBadge from './TicketDiscountBadge.svelte';
 	import DayMemberBadge from './DayMemberBadge.svelte';
+	import { dayMemberBadgeState } from './day-member-badge';
 	import SeriesPassBadge from './SeriesPassBadge.svelte';
 	import { formatTicketAttributionLine } from '$lib/utils/attribution';
 	import type { AdminTicketSchema } from '$lib/api';
@@ -192,7 +193,7 @@
 						<SeriesPassBadge seriesPass={ticket.series_pass} />
 					</div>
 				{/if}
-				{#if ticket.membership_record}
+				{#if dayMemberBadgeState(ticket.membership_record) !== 'hidden'}
 					<div class="flex justify-end">
 						<DayMemberBadge record={ticket.membership_record} />
 					</div>

@@ -1,9 +1,6 @@
-import { standardTiers } from '$lib/utils/membership-tier-kind';
+import { listStandardTiers } from '$lib/queries/membership-tiers';
 import { error } from '@sveltejs/kit';
-import {
-	eventpublicdiscoveryListEvents,
-	organizationadminmembersListMembershipTiers
-} from '$lib/api/generated/sdk.gen';
+import { eventpublicdiscoveryListEvents } from '$lib/api/generated/sdk.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
 import type { PageServerLoad } from './$types';
 
@@ -21,11 +18,8 @@ export const load: PageServerLoad = async ({ locals, parent, fetch }) => {
 			// audience picker; beyond that the selected event would show blank.
 			query: { organization: organization.id, page_size: 200 }
 		}),
-		organizationadminmembersListMembershipTiers({
-			fetch,
-			path: { slug: organization.slug },
-			query: { kind: 'standard' },
-			headers: { Authorization: `Bearer ${user.accessToken}` }
+		listStandardTiers(organization.slug, user.accessToken, fetch).catch((err: unknown) => {
+			throw error(502, extractErrorMessage(err, 'Failed to load membership tiers'));
 		})
 	]);
 
@@ -36,16 +30,9 @@ export const load: PageServerLoad = async ({ locals, parent, fetch }) => {
 			extractErrorMessage(eventsRes.error, 'Failed to load events')
 		);
 	}
-	if (tiersRes.error) {
-		const status = tiersRes.response?.status ?? 500;
-		throw error(
-			status >= 500 ? 500 : 502,
-			extractErrorMessage(tiersRes.error, 'Failed to load membership tiers')
-		);
-	}
 
 	return {
 		events: eventsRes.data?.results ?? [],
-		tiers: standardTiers(tiersRes.data)
+		tiers: tiersRes
 	};
 };

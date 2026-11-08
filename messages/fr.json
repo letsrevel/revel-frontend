@@ -9861,7 +9861,8 @@
 	},
 	"dayMemberBadge": {
 		"label": "Membre d'un jour",
-		"until": "Membre d'un jour jusqu'au {date}"
+		"until": "jusqu'au {date}",
+		"ended": "Adhésion d'un jour terminée"
 	},
 	"seriesPassBadge": {
 		"label": "Pass de saison",
