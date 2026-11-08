@@ -6,6 +6,8 @@ import { standardTiers } from '$lib/utils/membership-tier-kind';
  * Query keys for an organization's membership tiers. ONE shape for every
  * consumer: `standard` is `all` plus a suffix, so invalidating `all` (tier
  * create / edit / delete / reorder) also refreshes every standard-only picker.
+ * Invariant: only the exact `all` entry holds the unfiltered (all-kinds) list;
+ * `setQueryData`/`getQueryData(all)` (TiersTab reorder) must never target `standard`.
  */
 export const membershipTiersKeys = {
 	all: (slug: string) => ['organization', slug, 'membership-tiers'] as const,
@@ -22,6 +24,8 @@ export async function listStandardTiers(
 	accessToken: string | null | undefined,
 	fetchFn?: typeof fetch
 ): Promise<MembershipTierSchema[]> {
+	// Fail clearly instead of sending `Bearer undefined` and surfacing a confusing 401.
+	if (!accessToken) throw new Error('listStandardTiers: missing access token');
 	const res = await organizationadminmembersListMembershipTiers({
 		...(fetchFn ? { fetch: fetchFn } : {}),
 		path: { slug },
