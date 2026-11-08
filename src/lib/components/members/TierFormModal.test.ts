@@ -20,6 +20,7 @@ const vibeCheck = {
 
 const goldTier: MembershipTierAdminSchema = {
 	id: 't1',
+	kind: 'standard',
 	name: 'Gold',
 	description: '',
 	display_order: 0,
@@ -54,6 +55,7 @@ describe('TierFormModal eligibility overrides', () => {
 		await user.click(screen.getByRole('button', { name: /create tier/i }));
 
 		expect(onSave).toHaveBeenCalledWith({
+			kind: 'standard',
 			name: 'Gold',
 			description: '',
 			membership_questionnaire_id: null,
@@ -167,10 +169,63 @@ describe('TierFormModal eligibility overrides', () => {
 		await user.click(screen.getByRole('button', { name: /create tier/i }));
 
 		expect(onSave).toHaveBeenCalledWith({
+			kind: 'standard',
 			name: 'Bronze',
 			description: '',
 			membership_questionnaire_id: null,
 			requires_membership_approval: null
 		});
+	});
+});
+
+describe('TierFormModal kind selector', () => {
+	it('is shown on create with Standard preselected', async () => {
+		await renderModal();
+		const group = screen.getByTestId('tier-kind');
+		expect(within(group).getByRole('radio', { name: /standard/i })).toBeChecked();
+		expect(within(group).getByRole('radio', { name: /day membership/i })).not.toBeChecked();
+		// The explanation says day memberships grant no member benefits.
+		expect(group).toHaveTextContent(/no member benefits/i);
+	});
+
+	it('is not shown on edit (the kind is immutable)', async () => {
+		await renderModal({ tier: goldTier });
+		expect(screen.queryByTestId('tier-kind')).not.toBeInTheDocument();
+	});
+
+	it('hides the questionnaire and approval fields once temporary is picked', async () => {
+		const user = userEvent.setup();
+		await renderModal({ membershipQuestionnaires: [vibeCheck] });
+		expect(screen.getByLabelText(/membership questionnaire/i)).toBeInTheDocument();
+
+		await user.click(screen.getByRole('radio', { name: /day membership/i }));
+
+		expect(screen.queryByLabelText(/membership questionnaire/i)).not.toBeInTheDocument();
+		expect(screen.queryByLabelText(/manual approval/i)).not.toBeInTheDocument();
+		expect(screen.getByTestId('temporary-tier-no-gating')).toBeInTheDocument();
+	});
+
+	it('creates a temporary tier without questionnaire or approval keys', async () => {
+		const user = userEvent.setup();
+		const onSave = vi.fn();
+		await renderModal({ onSave, membershipQuestionnaires: [vibeCheck] });
+
+		await user.type(screen.getByLabelText(/tier name/i), 'Door pass');
+		await user.click(screen.getByRole('radio', { name: /day membership/i }));
+		await user.click(screen.getByRole('button', { name: /create tier/i }));
+
+		expect(onSave).toHaveBeenCalledWith({
+			kind: 'temporary',
+			name: 'Door pass',
+			description: ''
+		});
+	});
+
+	it('does not send kind when editing', async () => {
+		const user = userEvent.setup();
+		const onSave = vi.fn();
+		await renderModal({ tier: goldTier, onSave });
+		await user.click(screen.getByRole('button', { name: /update/i }));
+		expect(onSave).toHaveBeenCalledWith(expect.not.objectContaining({ kind: expect.anything() }));
 	});
 });

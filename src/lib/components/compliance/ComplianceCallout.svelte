@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { AlertTriangle, Info, Ban } from '@lucide/svelte';
+	import { AlertTriangle, Info, Ban, CheckCircle } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 
 	/**
@@ -8,6 +8,7 @@
 	 *
 	 * - `info`: non-blocking notices and "works differently here" hints.
 	 * - `warning`: an upcoming restriction (Spain's 2027 invoicing block).
+	 * - `success`: a positive state (e.g. a ticket that is good to check in).
 	 * - `blocked`: something is unavailable; pair it with the disabled control
 	 *   through `id` + `aria-describedby`.
 	 *
@@ -17,9 +18,11 @@
 	 * inline `role="alert"` at the call site instead.
 	 */
 	interface Props {
-		tone?: 'info' | 'warning' | 'blocked';
+		tone?: 'info' | 'success' | 'warning' | 'blocked';
 		id?: string;
-		role?: 'status' | 'note' | null;
+		role?: 'status' | 'note' | 'alert' | null;
+		/** Accessible name, for a `note` whose visible title is inside the children. */
+		label?: string;
 		class?: string;
 		testId?: string;
 		children: Snippet;
@@ -29,6 +32,7 @@
 		tone = 'info',
 		id,
 		role = 'status',
+		label,
 		class: className,
 		testId,
 		children
@@ -36,16 +40,26 @@
 
 	const TONE_CLASSES = {
 		info: 'border-info/40 bg-info/10',
+		success: 'border-success/40 bg-success/10',
 		warning: 'border-highlight/40 bg-highlight/20',
 		blocked: 'border-destructive/40 bg-destructive/10'
 	} as const;
 
-	const Icon = $derived(tone === 'warning' ? AlertTriangle : tone === 'blocked' ? Ban : Info);
+	const Icon = $derived(
+		tone === 'warning'
+			? AlertTriangle
+			: tone === 'blocked'
+				? Ban
+				: tone === 'success'
+					? CheckCircle
+					: Info
+	);
 </script>
 
 <div
 	{id}
 	role={role ?? undefined}
+	aria-label={label}
 	data-testid={testId}
 	data-tone={tone}
 	class={cn(

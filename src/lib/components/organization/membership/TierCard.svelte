@@ -21,7 +21,7 @@
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import { ClipboardList, Gift, ShieldCheck } from '@lucide/svelte';
 	import { withReturnUrl } from '$lib/utils/safe-redirect';
-	import { membershipReturnUrl } from '$lib/utils/membership-return.svelte';
+	import { safeInternalReturnUrl } from '$lib/utils/internal-return-url';
 	import ApplyDialog from './ApplyDialog.svelte';
 	import MembershipCta from './MembershipCta.svelte';
 	import PlanCard from './PlanCard.svelte';
@@ -335,7 +335,7 @@
 											slug: organizationSlug,
 											id: tier.questionnaire_id
 										}),
-										membershipReturnUrl()
+										safeInternalReturnUrl()
 									)}
 									aria-label={m['membershipTiers.questionnaireLinkAria']({ tier: tier.name })}
 									class="font-bold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"

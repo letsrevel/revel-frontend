@@ -5,6 +5,7 @@
 	import { tierFieldLabel } from './tier-field-labels';
 	import { isBillingInfoRequiredError } from './tier-form-helpers';
 	import { isExcludedTiersField } from './tier-membership-links';
+	import { isGrantsField } from './tier-grants';
 
 	interface Props {
 		error: unknown;
@@ -25,9 +26,11 @@
 	}: Props = $props();
 
 	const allFieldErrors = $derived(extractFieldErrors(error));
-	// The excluded-tiers message renders beside its picker (also role=alert): skip it
-	// here so it is not announced twice.
-	const fieldErrors = $derived(allFieldErrors.filter(({ field }) => !isExcludedTiersField(field)));
+	// The excluded-tiers and grant messages render beside their pickers (also
+	// role=alert): skip them here so they are not announced twice.
+	const fieldErrors = $derived(
+		allFieldErrors.filter(({ field }) => !isExcludedTiersField(field) && !isGrantsField(field))
+	);
 	const onlyInline = $derived(allFieldErrors.length > 0 && fieldErrors.length === 0);
 	const errorMsg = $derived(extractErrorMessage(error));
 	const isBillingError = $derived(isBillingInfoRequiredError(errorMsg));

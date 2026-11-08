@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/svelte';
+import { render, screen, waitFor, within } from '@testing-library/svelte';
 import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
@@ -27,6 +27,7 @@ vi.mock('$lib/api/generated/sdk.gen', () => ({
 	organizationadminsubscriptionsMigratePlanSubscribers: vi.fn()
 }));
 import {
+	organizationadminmembersCreateMembershipTier,
 	organizationadminmembersDeleteMembershipTier,
 	organizationadminsubscriptionsListPlans
 } from '$lib/api/generated/sdk.gen';
@@ -42,7 +43,7 @@ const tiers = [
 	{ id: 'tier-1', name: 'Gold', description: null }
 ] as unknown as MembershipTierAdminSchema[];
 
-function renderTab(canManageSubscriptions = false) {
+function renderTab(canManageSubscriptions = false, tierList = tiers) {
 	const client = new QueryClient({
 		defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
 	});
@@ -52,7 +53,7 @@ function renderTab(canManageSubscriptions = false) {
 			component: TiersTab,
 			componentProps: {
 				organization,
-				tiers,
+				tiers: tierList,
 				members: [] as OrganizationMemberSchema[],
 				isLoading: false,
 				isError: false,
@@ -222,5 +223,38 @@ describe('TiersTab delete', () => {
 			expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 		});
 		expect(toast.error).not.toHaveBeenCalled();
+	});
+});
+
+describe('TiersTab day-membership kind', () => {
+	it('badges a temporary tier and leaves a standard one plain', () => {
+		renderTab(false, [
+			{ id: 'std', name: 'Gold', description: null, kind: 'standard' },
+			{ id: 'tmp', name: 'Door pass', description: null, kind: 'temporary' }
+		] as unknown as MembershipTierAdminSchema[]);
+
+		const badges = screen.getAllByTestId('status-badge');
+		expect(badges).toHaveLength(1);
+		expect(badges[0]).toHaveTextContent('Day membership');
+	});
+
+	it('sends the chosen kind when creating a tier', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembersCreateMembershipTier).mockResolvedValue({
+			data: { id: 'new' },
+			error: undefined
+		} as never);
+		renderTab();
+
+		await user.click(screen.getByRole('button', { name: /create tier/i }));
+		await user.type(await screen.findByLabelText(/tier name/i), 'Door pass');
+		await user.click(screen.getByRole('radio', { name: /day membership/i }));
+		await user.click(
+			within(screen.getByRole('dialog')).getByRole('button', { name: /create tier/i })
+		);
+
+		await waitFor(() => expect(organizationadminmembersCreateMembershipTier).toHaveBeenCalled());
+		const body = vi.mocked(organizationadminmembersCreateMembershipTier).mock.calls[0][0].body;
+		expect(body).toEqual({ kind: 'temporary', name: 'Door pass', description: '' });
 	});
 });

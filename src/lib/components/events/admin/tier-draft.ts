@@ -26,6 +26,8 @@ export interface TierDraft {
 	salesStartAt: string;
 	salesEndAt: string;
 	maxTicketsPerUser: string;
+	/** Day-membership grant ('' = none). Optional so older stashes still restore. */
+	grantsMembershipTierId?: string;
 	visibility: 'public' | 'private' | 'members-only' | 'staff-only';
 	purchasableBy: PurchasableBy;
 }
@@ -112,6 +114,7 @@ export function tierSeed(tier: TicketTierDetailSchema | null, draft: TierDraft |
 		salesStartAt: draft?.salesStartAt ?? toDatetimeLocal(tier?.sales_start_at),
 		salesEndAt: draft?.salesEndAt ?? toDatetimeLocal(tier?.sales_end_at),
 		maxTicketsPerUser: draft?.maxTicketsPerUser ?? String(tier?.max_tickets_per_user ?? ''),
+		grantsMembershipTierId: draft?.grantsMembershipTierId ?? tier?.grants_membership_tier_id ?? '',
 		visibility: draft?.visibility ?? (tier?.visibility as TierDraft['visibility']) ?? 'public',
 		purchasableBy:
 			draft?.purchasableBy ?? (tier?.purchasable_by as TierDraft['purchasableBy']) ?? 'public'

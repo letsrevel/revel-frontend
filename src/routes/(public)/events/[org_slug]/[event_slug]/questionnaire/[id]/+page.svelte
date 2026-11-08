@@ -2,7 +2,7 @@
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { createMutation } from '@tanstack/svelte-query';
+	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { eventpublicattendanceSubmitQuestionnaire } from '$lib/api';
 	import { Button } from '$lib/components/ui/button';
 	import { ArrowLeft, Check } from '@lucide/svelte';
@@ -14,6 +14,13 @@
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import QuestionnaireFillForm from '$lib/components/questionnaires/QuestionnaireFillForm.svelte';
 	import type { QuestionnaireSubmissionSchema } from '$lib/api/generated';
+	import {
+		passQuestionnaireReturnUrl,
+		isPassPageReturnTarget,
+		withSearchParam,
+		QUESTIONNAIRE_RETURN_PARAM
+	} from '$lib/utils/internal-return-url';
+	import { seriesPassQueryKeys } from '$lib/queries/series-passes';
 
 	interface Props {
 		data: PageData;
@@ -26,6 +33,21 @@
 	let autoAccepted = $state(false);
 	const isTicketed = $derived(!!data.event.requires_ticket);
 	const eventUrl = $derived(`/events/${data.event.organization.slug}/${data.event.slug}`);
+	const queryClient = useQueryClient();
+	// Where the buyer started when a flow outside the event page sent them here
+	// (a series pass asking for admission questionnaires, #1175). Same-origin and
+	// allow-listed to event/series/pass pages; anything else (and the ordinary
+	// event-page route) is null and falls back to the event page.
+	const returnUrl = $derived(passQuestionnaireReturnUrl());
+	// The pass page reads this one-shot signal to say what happened and move focus.
+	const doneReturnUrl = $derived(
+		returnUrl ? withSearchParam(returnUrl, QUESTIONNAIRE_RETURN_PARAM, 'done') : null
+	);
+	const backLabel = $derived(
+		isPassPageReturnTarget(returnUrl)
+			? m['questionnaireSubmissionPage.backToPass']()
+			: m['questionnaireSubmissionPage.backToEvent']()
+	);
 
 	// Submission mutation
 	const submitMutation = createMutation(() => ({
@@ -45,6 +67,8 @@
 			return result;
 		},
 		onSuccess: (result) => {
+			// A pass's quote lists the questionnaires still missing: it changed.
+			void queryClient.invalidateQueries({ queryKey: seriesPassQueryKeys.allQuotes });
 			// The submit endpoint always returns a submission response; evaluation (when needed)
 			// runs asynchronously. `requires_evaluation === false` means the user is admitted
 			// immediately with no review.
@@ -62,6 +86,13 @@
 			toast.info(m['questionnaireSubmissionPage.toast_pending_title'](), {
 				description: m['questionnaireSubmissionPage.toast_pending_description']()
 			});
+			if (returnUrl) {
+				// eslint-disable-next-line svelte/no-navigation-without-resolve -- sanitized same-origin path
+				goto(withSearchParam(returnUrl, QUESTIONNAIRE_RETURN_PARAM, 'pending'), {
+					invalidateAll: true
+				});
+				return;
+			}
 			goto(
 				resolve('/(public)/events/[org_slug]/[event_slug]', {
 					org_slug: data.event.organization.slug,
@@ -83,6 +114,11 @@
 	);
 
 	function goBackToEvent() {
+		if (returnUrl) {
+			// eslint-disable-next-line svelte/no-navigation-without-resolve -- sanitized same-origin path
+			goto(returnUrl);
+			return;
+		}
 		goto(
 			resolve('/(public)/events/[org_slug]/[event_slug]', {
 				org_slug: data.event.organization.slug,
@@ -121,16 +157,19 @@
 				logo={data.event.organization.logo}
 				logoThumbnail={data.event.organization.logo_thumbnail_url}
 			/>
+			<!-- eslint-disable svelte/no-navigation-without-resolve -- returnUrl is a sanitized same-origin path -->
 			<a
-				href={resolve('/(public)/events/[org_slug]/[event_slug]', {
-					org_slug: data.event.organization.slug,
-					event_slug: data.event.slug
-				})}
+				href={returnUrl ??
+					resolve('/(public)/events/[org_slug]/[event_slug]', {
+						org_slug: data.event.organization.slug,
+						event_slug: data.event.slug
+					})}
 				class="mb-5 inline-flex items-center gap-2 text-sm font-bold underline-offset-4 hover:underline"
 			>
 				<ArrowLeft class="h-4 w-4" />
-				{m['questionnaireSubmissionPage.backToEvent']()}
+				{backLabel}
 			</a>
+			<!-- eslint-enable svelte/no-navigation-without-resolve -->
 			<PageHeader
 				volume="poster"
 				onBand
@@ -156,15 +195,22 @@
 					tone="success"
 					icon={Check}
 					title={m['questionnaireSubmissionPage.accepted_title']()}
-					body={isTicketed
-						? m['questionnaireSubmissionPage.accepted_description_ticket']()
-						: m['questionnaireSubmissionPage.accepted_description_rsvp']()}
+					body={returnUrl
+						? m['questionnaireSubmissionPage.accepted_description_return']()
+						: isTicketed
+							? m['questionnaireSubmissionPage.accepted_description_ticket']()
+							: m['questionnaireSubmissionPage.accepted_description_rsvp']()}
 				>
 					{#snippet action()}
-						<Button href={eventUrl}>
-							{isTicketed
-								? m['questionnaireSubmissionPage.accepted_cta_ticket']()
-								: m['questionnaireSubmissionPage.accepted_cta_rsvp']()}
+						<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- returnUrl is sanitized -->
+						<Button href={doneReturnUrl ?? eventUrl}>
+							{#if returnUrl}
+								{m['questionnaireSubmissionPage.accepted_cta_return']()}
+							{:else if isTicketed}
+								{m['questionnaireSubmissionPage.accepted_cta_ticket']()}
+							{:else}
+								{m['questionnaireSubmissionPage.accepted_cta_rsvp']()}
+							{/if}
 						</Button>
 					{/snippet}
 				</EmptyState>
