@@ -128,7 +128,7 @@ describe('server-mirrored length (html.unescape of the stripped body)', () => {
 	});
 
 	it('leaves unknown or malformed entities alone', () => {
-		expect(unescapeHtml('&notanentity; & x')).toBe('&notanentity; & x');
+		expect(unescapeHtml('&zzzz; & x')).toBe('&zzzz; & x');
 	});
 
 	it('flips to over only past the cap in unescaped characters', () => {
