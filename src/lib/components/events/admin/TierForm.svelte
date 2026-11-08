@@ -20,7 +20,6 @@
 		RefundPolicy
 	} from '$lib/api/generated/types.gen';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
-	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
@@ -31,6 +30,8 @@
 	import TierFormCancellationSection from './TierFormCancellationSection.svelte';
 	import TierFormPaymentMethodSection from './TierFormPaymentMethodSection.svelte';
 	import TierFormErrorPanel from './TierFormErrorPanel.svelte';
+	import TierFormActions from './TierFormActions.svelte';
+	import TierFormGrantsSection from './TierFormGrantsSection.svelte';
 	import TierFormVatSection from './TierFormVatSection.svelte';
 	import {
 		omitUnchangedZeroRuleFields,
@@ -51,6 +52,7 @@
 	import { markSilent } from '$lib/utils/errors';
 	import { CURRENCY_SYMBOLS, toTimezoneAwareISO, normalizeDecimalInput } from './tier-form-helpers';
 	import { linkedTierIds, membershipLinksPayload } from './tier-membership-links';
+	import { grantsError, grantsPayload, hasGrant } from './tier-grants';
 	import {
 		buildCategoryPricesPayload,
 		buildTierSeatingFields,
@@ -76,6 +78,9 @@
 		platformFees?: PlatformFeeInfo | null;
 		membershipTiers?: MembershipTierSchema[];
 		membershipTiersStatus?: 'ready' | 'loading' | 'error'; // org tiers query state
+		/** TEMPORARY tiers of the org: the "Grants membership" picker's options. */
+		temporaryTiers?: MembershipTierSchema[];
+		temporaryTiersStatus?: 'ready' | 'loading' | 'error';
 		eventVenueId?: string | null; // Pre-fill venue from event
 		eventCapacity?: number | null; // Effective event cap (null = uncapped)
 		/** The event form's start/end/check-in window the tier offsets are relative to. */
@@ -99,6 +104,8 @@
 		platformFees = null,
 		membershipTiers = [],
 		membershipTiersStatus = 'ready',
+		temporaryTiers = [],
+		temporaryTiersStatus = 'ready',
 		eventVenueId = null,
 		eventCapacity = null,
 		eventContext = { start: '' },
@@ -174,16 +181,15 @@
 		}
 	});
 
-	// Venue and seating state
 	let seatAssignmentMode = $state<SeatAssignmentMode>(tier?.seat_assignment_mode ?? 'none');
 	let maxTicketsPerUser = $state(seed.maxTicketsPerUser);
+	// Day-membership grant ('' = none): forces max tickets to 1, bars member-only audiences.
+	let grantsMembershipTierId = $state(seed.grantsMembershipTierId ?? '');
 	// Venue is read-only: the tier's own when editing, else the event's.
 	const venueId = $state<string | null>(tier?.venue?.id ?? eventVenueId ?? null);
 
-	// Check if event has a venue configured
 	const hasEventVenue = $derived(!!eventVenueId);
 
-	// Seat assignment modes other than 'none' require an event venue
 	const canUseSeatAssignment = $derived(hasEventVenue);
 	let sectorId = $state<string | null>(tier?.sector?.id ?? null);
 
@@ -251,7 +257,6 @@
 		new Set((chartQuery.data?.sectors ?? []).filter((s) => s.kind === 'standing').map((s) => s.id))
 	);
 
-	// Get sectors from the selected venue (minus standing ones once the chart is loaded)
 	const selectedVenueSectors = $derived.by(() => {
 		if (!venueId || !venuesQuery.data) return [];
 		const venue = venuesQuery.data.find((v) => v.id === venueId);
@@ -268,7 +273,6 @@
 		return (venue?.sectors || []).filter((s) => !!s.id && standingSectorIds.has(s.id));
 	});
 
-	// The venue matching the pre-filled venueId (read-only display in the seating section)
 	const selectedVenue = $derived(venuesQuery.data?.find((v) => v.id === venueId));
 
 	// Keep the sector consistent with venue, mode and sector kind: standing
@@ -435,6 +439,7 @@
 			salesStartAt,
 			salesEndAt,
 			maxTicketsPerUser,
+			grantsMembershipTierId,
 			visibility,
 			purchasableBy
 		});
@@ -491,6 +496,7 @@
 			// Venue and seating configuration
 			seat_assignment_mode: seatAssignmentMode,
 			max_tickets_per_user: maxTicketsPerUser ? parseInt(maxTicketsPerUser) : null,
+			...grantsPayload(grantsMembershipTierId, !!tier),
 			// Per-mode venue/sector nulling mirrors server validation
 			// (see tier-seating-payload.ts).
 			...buildTierSeatingFields(seatAssignmentMode, venueId, sectorId),
@@ -671,6 +677,17 @@
 				knownExcludedTiers={tier?.excluded_membership_tiers ?? []}
 				bind:salesPaused
 				{eventCapacity}
+				grantsMembership={hasGrant(grantsMembershipTierId)}
+				{isPending}
+			/>
+
+			<TierFormGrantsSection
+				bind:grantId={grantsMembershipTierId}
+				bind:maxTicketsPerUser
+				{purchasableBy}
+				membershipTiers={temporaryTiers}
+				status={temporaryTiersStatus}
+				error={grantsError(error)}
 				{isPending}
 			/>
 
@@ -684,6 +701,7 @@
 			<TierFormSeatingSection
 				bind:seatAssignmentMode
 				bind:maxTicketsPerUser
+				maxTicketsLocked={hasGrant(grantsMembershipTierId)}
 				bind:sectorId
 				bind:categoryPrices
 				pricingCategories={sectorPricingCategories}
@@ -703,37 +721,20 @@
 				{isPending}
 			/>
 
-			<!-- Form Actions -->
-			<div class="flex justify-between gap-2 border-t border-border pt-4">
-				<div>
-					{#if tier}
-						<Button type="button" variant="destructive" onclick={handleDelete} disabled={isPending}>
-							{tierDeleteMutation.isPending ? m['tierForm.deleting']() : m['tierForm.deleteTier']()}
-						</Button>
-					{/if}
-				</div>
-				<div class="flex gap-2">
-					<Button type="button" variant="outline" onclick={onClose} disabled={isPending}>
-						{m['tierForm.cancel']()}
-					</Button>
-					<Button
-						type="submit"
-						disabled={isPending ||
-							saveHeld ||
-							!name.trim() ||
-							!sectorValid ||
-							!checkInPicksValid(eventContext.start, checkInPicks) ||
-							(paymentMethod !== 'free' && allowUserCancellation && !refundPolicyValid)}
-						aria-describedby={heldBy || undefined}
-					>
-						{isPending
-							? m['tierForm.saving']()
-							: tier
-								? m['tierForm.saveChanges']()
-								: m['tierForm.createTier']()}
-					</Button>
-				</div>
-			</div>
+			<TierFormActions
+				isEditing={!!tier}
+				{isPending}
+				isDeleting={tierDeleteMutation.isPending}
+				submitDisabled={saveHeld ||
+					!name.trim() ||
+					!sectorValid ||
+					!checkInPicksValid(eventContext.start, checkInPicks) ||
+					(paymentMethod !== 'free' && allowUserCancellation && !refundPolicyValid)}
+				describedBy={heldBy || undefined}
+				grantInputs={{ grantId: grantsMembershipTierId, purchasableBy, maxTicketsPerUser }}
+				onDelete={handleDelete}
+				{onClose}
+			/>
 
 			{#if error}
 				<TierFormErrorPanel
