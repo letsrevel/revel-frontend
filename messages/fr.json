@@ -10771,7 +10771,7 @@
 	"seriesPass.nonMembersNote": "Réservé aux non-membres. Les membres actifs ne peuvent pas acheter ce pass.",
 	"seriesPass.cannotBuy": "Tu ne peux pas acheter ce pass.",
 	"userNote.title": "Note interne sur {name}",
-	"userNote.hint": "Les membres de l'équipe qui gèrent les membres peuvent modifier cette note. L'équipe d'accueil la voit en scannant le billet ou la carte de membre de cette personne. Elle n'est jamais montrée à la personne, mais il s'agit de données personnelles : elle peut en demander une copie au titre du RGPD, alors restez factuel et pertinent.",
+	"userNote.hint": "Les membres de l'équipe qui gèrent les membres peuvent modifier cette note. L'équipe d'accueil la voit en scannant le billet ou la carte de membre de cette personne. Elle n'est jamais montrée à la personne, mais il s'agit de données personnelles : elle peut en demander une copie au titre du RGPD, alors reste factuel et pertinent.",
 	"userNote.loading": "Chargement de la note...",
 	"userNote.loadError": "Impossible de charger la note. Ferme cette fenêtre et réessaie.",
 	"userNote.label": "Note",
