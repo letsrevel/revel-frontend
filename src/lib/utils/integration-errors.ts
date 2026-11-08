@@ -32,6 +32,7 @@ const MESSAGES: Record<IntegrationErrorCode, (args: Args) => string> = {
 	event_no_tickets: (a) => m['integrations.error.event_no_tickets'](a),
 	tier_variable_price: () => m['integrations.error.tier_variable_price'](),
 	tier_members_only: () => m['integrations.error.tier_members_only'](),
+	tier_purchase_restricted: (a) => m['integrations.error.tier_purchase_restricted'](a),
 	tier_seated: () => m['integrations.error.tier_seated'](),
 	tier_offline_payment: () => m['integrations.error.tier_offline_payment'](),
 	tier_no_capacity: () => m['integrations.error.tier_no_capacity'](),

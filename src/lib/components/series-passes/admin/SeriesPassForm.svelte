@@ -320,6 +320,7 @@
 					>
 						<option value="public">{m['seriesPassAdmin.purchasablePublic']()}</option>
 						<option value="members">{m['seriesPassAdmin.purchasableMembers']()}</option>
+						<option value="non_members">{m['seriesPassAdmin.purchasableNonMembers']()}</option>
 					</select>
 				</div>
 				<div>

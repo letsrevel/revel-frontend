@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { standardTiers } from '$lib/utils/membership-tier-kind';
 	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import type {
@@ -51,7 +52,7 @@
 		enabled: !!canManageEvent && !!accessToken && !!event.organization?.slug
 	}));
 
-	const tiersList = $derived(tiersQuery.data ?? []);
+	const tiersList = $derived(standardTiers(tiersQuery.data));
 </script>
 
 <!-- Manage Event Section (for staff/owners) -->

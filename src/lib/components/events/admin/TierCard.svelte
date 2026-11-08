@@ -124,7 +124,8 @@
 			public: 'Anyone',
 			members: 'Members Only',
 			invited: 'Invited Only',
-			invited_and_members: 'Invited + Members'
+			invited_and_members: 'Invited + Members',
+			non_members: m['tierForm.nonMembersOnly']()
 		};
 		const pb = tier.purchasable_by ?? 'public';
 		return options[pb] || pb.replace(/_/g, ' ');

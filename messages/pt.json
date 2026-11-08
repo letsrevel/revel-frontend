@@ -380,6 +380,8 @@
 		"typeStaffSeriesPassPurchasedDescription": "Alguém comprou um passe para uma das tuas séries de eventos.",
 		"typeStaffSeriesPassCancelled": "Passe de série cancelado",
 		"typeStaffSeriesPassCancelledDescription": "Um passe para uma das tuas séries de eventos foi cancelado.",
+		"typeStaffMemberRecordAutoLinked": "Alerta da equipa: registo de membro associado automaticamente",
+		"typeStaffMemberRecordAutoLinkedDescription": "Uma entrada do registo de membros foi associada automaticamente a uma conta depois de o e-mail ser verificado.",
 		"mandatoryNoticeTitle": "Alguns e-mails chegam sempre",
 		"mandatoryNotice": "Os teus próprios bilhetes, recibos, avisos de pagamento e reembolso, avisos de subscrição e avisos legais e da plataforma importantes continuam a chegar, seja qual for a tua escolha aqui.",
 		"silenceAllMandatoryHint": "Os teus próprios bilhetes, recibos e avisos da conta continuam a chegar.",
@@ -1429,6 +1431,7 @@
 			"request_whitelist": "É necessária verificação para aceder a esta organização",
 			"wait_for_whitelist_approval": "O teu pedido de verificação está em análise",
 			"upgrade_membership": "Consulta as opções de adesão da organização para ver que níveis podes obter.",
+			"choose_another_tier": "Este nível não está disponível para membros. Escolhe outro nível de bilhete.",
 			"rsvp": "Podes confirmar a tua presença neste evento",
 			"purchase_ticket": "Garante o teu bilhete para participar neste evento",
 			"complete_questionnaire": "Preenche o questionário obrigatório para participar",
@@ -1447,7 +1450,8 @@
 		},
 		"reason": {
 			"sales_paused": "A venda de bilhetes está em pausa neste momento. Volta em breve.",
-			"membership_tier_required": "Este bilhete está reservado a níveis de adesão específicos."
+			"membership_tier_required": "Este bilhete está reservado a níveis de adesão específicos.",
+			"members_excluded": "Este nível de bilhete não está disponível para membros."
 		},
 		"rsvpNextStep": "Confirma presença no evento",
 		"purchaseTicketNextStep": "Compra um bilhete",
@@ -1481,6 +1485,7 @@
 			"request_whitelist": "Pedir verificação",
 			"wait_for_whitelist_approval": "Verificação pendente",
 			"complete_profile": "Completar perfil",
+			"choose_another_tier": "Escolher outro nível",
 			"fallback": "Ver detalhes",
 			"wait_for_membership_approval": "Pedido pendente",
 			"wait_for_membership_questionnaire_evaluation": "Questionário em análise"
@@ -6650,6 +6655,7 @@
 		"anyone": "Qualquer pessoa",
 		"invitedOnly": "Apenas pessoas convidadas",
 		"invitedAndMembers": "Pessoas convidadas + membros",
+		"nonMembersOnly": "Apenas para não membros",
 		"error": "Erro",
 		"createTitle": "Criar nível de adesão",
 		"editTitle": "Editar nível de adesão",
@@ -9783,6 +9789,7 @@
 		"purchasableByLabel": "Quem pode comprar",
 		"purchasablePublic": "Toda a gente",
 		"purchasableMembers": "Apenas membros",
+		"purchasableNonMembers": "Apenas para não membros",
 		"visibilityLabel": "Visibilidade",
 		"visibilityPublic": "Público",
 		"visibilityUnlisted": "Não listado",
@@ -10046,6 +10053,7 @@
 	"integrations.error.event_no_tickets": "Ativa os bilhetes antes de publicar no {platform}.",
 	"integrations.error.tier_variable_price": "Os bilhetes de preço livre não são enviados.",
 	"integrations.error.tier_members_only": "Os bilhetes só para membros não são enviados.",
+	"integrations.error.tier_purchase_restricted": "Não listado em {platform}: só os níveis públicos podem ser vendidos externamente.",
 	"integrations.error.tier_seated": "Os bilhetes com lugar marcado não são enviados.",
 	"integrations.error.tier_offline_payment": "Os bilhetes pagos à porta ou por transferência não são enviados.",
 	"integrations.error.tier_no_capacity": "Define uma quantidade para este bilhete ou uma lotação para o evento para o enviar.",

@@ -13,7 +13,7 @@
 		salesStartReadback: string;
 		salesEndReadback: string;
 		visibility: 'public' | 'private' | 'members-only' | 'staff-only';
-		purchasableBy: 'public' | 'members' | 'invited' | 'invited_and_members';
+		purchasableBy: 'public' | 'members' | 'invited' | 'invited_and_members' | 'non_members';
 		restrictVisibilityToLinkedInvitations: boolean;
 		restrictPurchaseToLinkedInvitations: boolean;
 		restrictedToMembershipTiersIds: string[];
@@ -164,6 +164,7 @@
 		<option value="members">{m['tierForm.membersOnly']()}</option>
 		<option value="invited">{m['tierForm.invitedOnly']()}</option>
 		<option value="invited_and_members">{m['tierForm.invitedAndMembers']()}</option>
+		<option value="non_members">{m['tierForm.nonMembersOnly']()}</option>
 	</select>
 
 	{#if purchasableBy === 'invited' || purchasableBy === 'invited_and_members'}

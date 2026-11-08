@@ -389,7 +389,7 @@
 						</Button>
 					</div>
 				</div>
-				{#if canManageSubscriptions}
+				{#if canManageSubscriptions && tier.kind === 'standard'}
 					<div class="mt-3 border-t pt-3">
 						<PlansList {organization} {tier} />
 					</div>

@@ -1,3 +1,4 @@
+import { standardTiers } from '$lib/utils/membership-tier-kind';
 import * as m from '$lib/paraglide/messages.js';
 import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 import { invalidateAll } from '$app/navigation';
@@ -141,7 +142,7 @@ export function createTicketMemberAdmin(opts: Options) {
 					throw new Error(m['makeMemberAction.tiersLoadError']());
 				}
 				if (response.data) {
-					membershipTiers = response.data;
+					membershipTiers = standardTiers(response.data);
 				}
 			} catch (err) {
 				console.error('Failed to load membership tiers:', err);

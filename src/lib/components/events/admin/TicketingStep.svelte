@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { standardTiers } from '$lib/utils/membership-tier-kind';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
@@ -231,7 +232,7 @@
 			return { message, detail };
 		}
 	);
-	const membershipTiers = $derived(membershipTiersQuery.data ?? []);
+	const membershipTiers = $derived(standardTiers(membershipTiersQuery.data));
 
 	// --- Tier reordering via up/down buttons ---
 	const reorderMutation = createMutation<unknown, unknown, string[]>(() => ({

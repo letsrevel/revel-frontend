@@ -27,7 +27,7 @@ export interface TierDraft {
 	salesEndAt: string;
 	maxTicketsPerUser: string;
 	visibility: 'public' | 'private' | 'members-only' | 'staff-only';
-	purchasableBy: 'public' | 'members' | 'invited' | 'invited_and_members';
+	purchasableBy: 'public' | 'members' | 'invited' | 'invited_and_members' | 'non_members';
 }
 
 const key = (eventId: string): string => `revel:tier-draft:${eventId}`;

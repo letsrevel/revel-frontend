@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { standardTiers } from '$lib/utils/membership-tier-kind';
 	import * as m from '$lib/paraglide/messages.js';
 	import type {
 		AnnouncementListSchema,
@@ -166,7 +167,7 @@
 
 	// Derived data
 	const announcements = $derived(announcementsQuery.data?.results ?? []);
-	const tiers = $derived(tiersQuery.data ?? []);
+	const tiers = $derived(standardTiers(tiersQuery.data));
 	const isLoading = $derived(announcementsQuery.isLoading);
 
 	// Handlers

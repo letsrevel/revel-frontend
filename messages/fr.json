@@ -1294,6 +1294,7 @@
 			"request_whitelist": "Une vérification est requise pour accéder à cette organisation",
 			"wait_for_whitelist_approval": "Ta demande de vérification est en cours d'examen",
 			"upgrade_membership": "Consulte les options d'adhésion de l'organisation pour voir quels niveaux tu peux obtenir.",
+			"choose_another_tier": "Ce tarif n'est pas disponible pour les membres. Choisis un autre tarif.",
 			"rsvp": "Tu peux confirmer ta participation à cet événement",
 			"purchase_ticket": "Prends ton billet pour participer à cet événement",
 			"complete_questionnaire": "Remplis le questionnaire requis pour participer",
@@ -1312,7 +1313,8 @@
 		},
 		"reason": {
 			"sales_paused": "La vente des billets est en pause pour le moment. Revenez bientôt.",
-			"membership_tier_required": "Ce billet est réservé à certains niveaux d'adhésion."
+			"membership_tier_required": "Ce billet est réservé à certains niveaux d'adhésion.",
+			"members_excluded": "Ce tarif n'est pas disponible pour les membres."
 		},
 		"rsvpNextStep": "Confirme ta participation à l'événement",
 		"purchaseTicketNextStep": "Achète un billet",
@@ -1346,6 +1348,7 @@
 			"request_whitelist": "Demander la vérification",
 			"wait_for_whitelist_approval": "Vérification en attente",
 			"complete_profile": "Compléter le profil",
+			"choose_another_tier": "Choisir un autre tarif",
 			"fallback": "Voir les détails",
 			"wait_for_membership_approval": "Demande en attente",
 			"wait_for_membership_questionnaire_evaluation": "Questionnaire en cours d'examen"
@@ -3390,6 +3393,8 @@
 		"typeStaffSeriesPassPurchasedDescription": "Quelqu'un a acheté un pass pour l'une de tes séries d'événements.",
 		"typeStaffSeriesPassCancelled": "Pass de série annulé",
 		"typeStaffSeriesPassCancelledDescription": "Un pass pour l'une de tes séries d'événements a été annulé.",
+		"typeStaffMemberRecordAutoLinked": "Alerte équipe : fiche de membre liée automatiquement",
+		"typeStaffMemberRecordAutoLinkedDescription": "Une entrée du registre des membres a été liée automatiquement à un compte après la vérification de son adresse e-mail.",
 		"mandatoryNoticeTitle": "Certains e-mails arrivent toujours",
 		"mandatoryNotice": "Tes propres billets, reçus, avis de paiement et de remboursement, avis d'abonnement ainsi que les avis juridiques et de plateforme importants te parviennent quand même, quel que soit ton choix ici.",
 		"silenceAllMandatoryHint": "Tes propres billets, reçus et avis de compte arrivent quand même.",
@@ -6620,6 +6625,7 @@
 		"anyone": "Tout le monde",
 		"invitedOnly": "Invités uniquement",
 		"invitedAndMembers": "Invités + membres",
+		"nonMembersOnly": "Non-membres uniquement",
 		"error": "Erreur",
 		"createTitle": "Créer un niveau d'adhésion",
 		"editTitle": "Modifier le niveau d'adhésion",
@@ -9783,6 +9789,7 @@
 		"purchasableByLabel": "Qui peut acheter",
 		"purchasablePublic": "Tout le monde",
 		"purchasableMembers": "Membres uniquement",
+		"purchasableNonMembers": "Non-membres uniquement",
 		"visibilityLabel": "Visibilité",
 		"visibilityPublic": "Public",
 		"visibilityUnlisted": "Non répertorié",
@@ -10046,6 +10053,7 @@
 	"integrations.error.event_no_tickets": "Activez les billets avant de publier sur {platform}.",
 	"integrations.error.tier_variable_price": "Les billets à prix libre ne sont pas envoyés.",
 	"integrations.error.tier_members_only": "Les billets réservés aux membres ne sont pas envoyés.",
+	"integrations.error.tier_purchase_restricted": "Non listé sur {platform} : seuls les tarifs publics peuvent être vendus en externe.",
 	"integrations.error.tier_seated": "Les billets avec places attribuées ne sont pas envoyés.",
 	"integrations.error.tier_offline_payment": "Les billets payés sur place ou par virement ne sont pas envoyés.",
 	"integrations.error.tier_no_capacity": "Définissez une quantité pour ce billet ou une capacité pour l'événement afin de l'envoyer.",
