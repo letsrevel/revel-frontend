@@ -10806,6 +10806,8 @@
 	"memberInvite.throttledBody": "Trop de tentatives. Réessaie dans un instant.",
 	"memberInvite.errorTitle": "Un problème est survenu",
 	"memberInvite.errorBody": "Nous n'avons pas pu joindre le serveur. Réessaie.",
+	"memberInvite.sessionExpiredTitle": "Session expirée",
+	"memberInvite.sessionExpiredBody": "Ta session a expiré. Reconnecte-toi pour lier cette adhésion.",
 	"memberInvite.goHome": "Retour à l'accueil",
 	"memberInvite.retry": "Réessayer"
 }

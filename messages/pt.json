@@ -10806,6 +10806,8 @@
 	"memberInvite.throttledBody": "Demasiadas tentativas. Tenta novamente daqui a pouco.",
 	"memberInvite.errorTitle": "Algo correu mal",
 	"memberInvite.errorBody": "Não conseguimos contactar o servidor. Tenta novamente.",
+	"memberInvite.sessionExpiredTitle": "Sessão expirada",
+	"memberInvite.sessionExpiredBody": "A tua sessão expirou. Inicia sessão novamente para associar esta adesão.",
 	"memberInvite.goHome": "Voltar ao início",
 	"memberInvite.retry": "Tentar novamente"
 }

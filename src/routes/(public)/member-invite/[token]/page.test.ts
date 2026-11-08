@@ -86,12 +86,19 @@ describe('member-invite page (#1171)', () => {
 		expect(screen.getByRole('button', { name: 'Link to my account' })).toBeInTheDocument();
 	});
 
-	it('success: announced via status, heading focused, links to the org and memberships', async () => {
+	it('success: heading focused (no double live region), links to the org and memberships', async () => {
 		renderPage({
 			signedIn: true,
-			claim: { outcome: 'success', organizationSlug: 'verein-x', recordId: 'r1' }
+			claim: {
+				outcome: 'success',
+				organizationSlug: 'verein-x',
+				organizationName: 'Verein X',
+				recordId: 'r1'
+			}
 		});
-		expect(screen.getByRole('status')).toHaveTextContent('Membership linked');
+		expect(screen.getByTestId('member-invite-result')).toHaveTextContent('Membership linked');
+		expect(screen.queryByRole('status')).not.toBeInTheDocument();
+		expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 		await vi.waitFor(() =>
 			expect(screen.getByRole('heading', { name: 'Membership linked' })).toHaveFocus()
 		);
@@ -105,17 +112,19 @@ describe('member-invite page (#1171)', () => {
 
 	it('409 shows the backend detail verbatim, or a generic fallback', () => {
 		renderPage({ signedIn: true, claim: { outcome: 'conflict', detail: 'Server sentence.' } });
-		expect(screen.getByRole('alert')).toHaveTextContent('Server sentence.');
+		expect(screen.getByTestId('member-invite-result')).toHaveTextContent('Server sentence.');
 	});
 
 	it('409 without a detail falls back to generic copy', () => {
 		renderPage({ signedIn: true, claim: { outcome: 'conflict', detail: null } });
-		expect(screen.getByRole('alert')).toHaveTextContent("couldn't be linked");
+		expect(screen.getByTestId('member-invite-result')).toHaveTextContent("couldn't be linked");
 	});
 
-	it('403 and 404 outcomes are announced as alerts and focus the heading', async () => {
+	it('403 outcome focuses the heading', async () => {
 		renderPage({ signedIn: true, claim: { outcome: 'forbidden' } });
-		expect(screen.getByRole('alert')).toHaveTextContent("You can't join this organization");
+		expect(screen.getByTestId('member-invite-result')).toHaveTextContent(
+			"You can't join this organization"
+		);
 		await vi.waitFor(() =>
 			expect(screen.getByRole('heading', { name: /can't join/i })).toHaveFocus()
 		);
@@ -123,7 +132,7 @@ describe('member-invite page (#1171)', () => {
 
 	it('claim 404 shows invitation not found', () => {
 		renderPage({ signedIn: true, claim: { outcome: 'not_found' } });
-		expect(screen.getByRole('alert')).toHaveTextContent('Invitation not found');
+		expect(screen.getByTestId('member-invite-result')).toHaveTextContent('Invitation not found');
 	});
 
 	it.each<[ClaimResult, string]>([
@@ -131,8 +140,52 @@ describe('member-invite page (#1171)', () => {
 		[{ outcome: 'error' }, 'Something went wrong']
 	])('retryable outcome %j keeps the confirm button', (claim, text) => {
 		renderPage({ signedIn: true, claim });
-		expect(screen.getByRole('alert')).toHaveTextContent(text);
+		expect(screen.getByTestId('member-invite-result')).toHaveTextContent(text);
 		expect(screen.getByRole('button', { name: 'Link to my account' })).toBeEnabled();
+	});
+
+	it('success still renders when the preview is not_found (token consumed, no-JS reload)', () => {
+		renderPage({
+			preview: { status: 'not_found' },
+			signedIn: true,
+			claim: {
+				outcome: 'success',
+				organizationSlug: 'verein-x',
+				organizationName: 'Verein X',
+				recordId: 'r1'
+			}
+		});
+		expect(screen.getByRole('heading', { name: 'Membership linked' })).toBeInTheDocument();
+		expect(screen.getByRole('link', { name: 'Go to Verein X' })).toHaveAttribute(
+			'href',
+			'/org/verein-x'
+		);
+		expect(screen.queryByText('Invitation not found')).not.toBeInTheDocument();
+	});
+
+	it('success falls back to the slug when the org name is unknown', () => {
+		renderPage({
+			preview: { status: 'not_found' },
+			claim: {
+				outcome: 'success',
+				organizationSlug: 'verein-x',
+				organizationName: null,
+				recordId: 'r1'
+			}
+		});
+		expect(screen.getByRole('link', { name: 'Go to verein-x' })).toBeInTheDocument();
+	});
+
+	it('unauthenticated: session-expired copy, login link with returnUrl, no confirm button', () => {
+		renderPage({ signedIn: true, claim: { outcome: 'unauthenticated' } });
+		expect(screen.getByTestId('member-invite-result')).toHaveTextContent(
+			'Your session has expired. Log in again to link this membership.'
+		);
+		expect(screen.getByRole('link', { name: 'Log in' })).toHaveAttribute(
+			'href',
+			expect.stringContaining('/login?returnUrl=')
+		);
+		expect(screen.queryByRole('button', { name: 'Link to my account' })).not.toBeInTheDocument();
 	});
 
 	it('preview 404 renders the not-found state with a link home', () => {

@@ -10806,6 +10806,8 @@
 	"memberInvite.throttledBody": "Zu viele Versuche. Bitte versuche es in einer Weile erneut.",
 	"memberInvite.errorTitle": "Etwas ist schiefgelaufen",
 	"memberInvite.errorBody": "Der Server war nicht erreichbar. Bitte versuche es erneut.",
+	"memberInvite.sessionExpiredTitle": "Sitzung abgelaufen",
+	"memberInvite.sessionExpiredBody": "Deine Sitzung ist abgelaufen. Melde dich erneut an, um diese Mitgliedschaft zu verknüpfen.",
 	"memberInvite.goHome": "Zurück zur Startseite",
 	"memberInvite.retry": "Erneut versuchen"
 }

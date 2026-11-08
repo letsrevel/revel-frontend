@@ -10806,6 +10806,8 @@
 	"memberInvite.throttledBody": "Too many attempts. Please try again in a bit.",
 	"memberInvite.errorTitle": "Something went wrong",
 	"memberInvite.errorBody": "We couldn't reach the server. Please try again.",
+	"memberInvite.sessionExpiredTitle": "Session expired",
+	"memberInvite.sessionExpiredBody": "Your session has expired. Log in again to link this membership.",
 	"memberInvite.goHome": "Back to home",
 	"memberInvite.retry": "Retry"
 }

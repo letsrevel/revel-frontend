@@ -10806,6 +10806,8 @@
 	"memberInvite.throttledBody": "Demasiados intentos. Inténtalo de nuevo en un rato.",
 	"memberInvite.errorTitle": "Algo salió mal",
 	"memberInvite.errorBody": "No pudimos conectar con el servidor. Inténtalo de nuevo.",
+	"memberInvite.sessionExpiredTitle": "Sesión caducada",
+	"memberInvite.sessionExpiredBody": "Tu sesión ha caducado. Inicia sesión de nuevo para vincular esta membresía.",
 	"memberInvite.goHome": "Volver al inicio",
 	"memberInvite.retry": "Reintentar"
 }

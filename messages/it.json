@@ -10806,6 +10806,8 @@
 	"memberInvite.throttledBody": "Troppi tentativi. Riprova tra poco.",
 	"memberInvite.errorTitle": "Qualcosa è andato storto",
 	"memberInvite.errorBody": "Non siamo riusciti a raggiungere il server. Riprova.",
+	"memberInvite.sessionExpiredTitle": "Sessione scaduta",
+	"memberInvite.sessionExpiredBody": "La tua sessione è scaduta. Accedi di nuovo per collegare questa iscrizione.",
 	"memberInvite.goHome": "Torna alla home",
 	"memberInvite.retry": "Riprova"
 }

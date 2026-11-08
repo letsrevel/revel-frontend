@@ -7,7 +7,6 @@ vi.mock('$lib/api/generated/sdk.gen', () => ({
 vi.mock('$lib/server/logger', () => ({
 	log: { warning: vi.fn(), error: vi.fn(), debug: vi.fn(), info: vi.fn() }
 }));
-vi.mock('$lib/seo/server', () => ({ resolveLang: vi.fn(() => 'de') }));
 
 import {
 	memberregisterinvitesPreviewInvite as previewSdk,
@@ -46,8 +45,7 @@ describe('member-invite load (#1171)', () => {
 		});
 		const result = (await load(event(true))) as Awaited<ReturnType<typeof load>>;
 		const call = preview.mock.calls[0][0];
-		expect(call?.headers).not.toHaveProperty('Authorization');
-		expect(call?.headers).toEqual({ 'Accept-Language': 'de' });
+		expect(call?.headers).toBeUndefined();
 		expect(result).toMatchObject({
 			token: 'tok',
 			signedIn: true,
@@ -87,15 +85,29 @@ describe('member-invite claim action (#1171)', () => {
 		expect(claim).not.toHaveBeenCalled();
 	});
 
-	it('claims with the bearer token and returns the org slug', async () => {
+	it('claims with the bearer token and returns slug and the pre-claim org name', async () => {
+		respond(preview, 200, {
+			organization_name: 'Verein X',
+			organization_slug: 'verein-x',
+			full_name: 'Ada L'
+		});
 		respond(claim, 200, { organization_slug: 'verein-x', record_id: 'r1' });
 		const res = await actions.default(event(true));
 		expect(claim.mock.calls[0][0]?.headers).toMatchObject({ Authorization: 'Bearer jwt' });
+		expect(preview.mock.calls[0][0]?.headers).toBeUndefined();
 		expect(res.claim).toEqual({
 			outcome: 'success',
 			organizationSlug: 'verein-x',
+			organizationName: 'Verein X',
 			recordId: 'r1'
 		});
+	});
+
+	it('still succeeds with a null org name when the pre-claim preview fails', async () => {
+		preview.mockRejectedValue(new Error('down'));
+		respond(claim, 200, { organization_slug: 'verein-x', record_id: 'r1' });
+		const res = await actions.default(event(true));
+		expect(res.claim).toMatchObject({ outcome: 'success', organizationName: null });
 	});
 
 	it('passes the 409 detail through verbatim (no text branching)', async () => {

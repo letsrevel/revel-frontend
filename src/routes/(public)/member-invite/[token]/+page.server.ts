@@ -4,7 +4,6 @@ import {
 	memberregisterinvitesPreviewInvite
 } from '$lib/api/generated/sdk.gen';
 import { log } from '$lib/server/logger';
-import { resolveLang } from '$lib/seo/server';
 import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 
 /**
@@ -26,21 +25,23 @@ export type InvitePreview =
 	| { status: 'error' };
 
 export type ClaimResult =
-	| { outcome: 'success'; organizationSlug: string; recordId: string }
+	| {
+			outcome: 'success';
+			organizationSlug: string;
+			/** From a preview fetched before claiming (the token is consumed afterwards). */
+			organizationName: string | null;
+			recordId: string;
+	  }
 	/**
 	 * 409. The backend has two 409s (duplicate membership, membership not
 	 * started) and, unlike the 403/404, sends no machine code to tell them
-	 * apart, so `detail` (translated server-side per the Accept-Language we
-	 * forward) is shown verbatim. NEVER branch on its text.
+	 * apart, so `detail` (translated server-side per the Accept-Language the
+	 * shared API client interceptor sets) is shown verbatim. NEVER branch on its text.
 	 */
 	| { outcome: 'conflict'; detail: string | null }
 	| { outcome: 'forbidden' | 'not_found' | 'throttled' | 'error' | 'unauthenticated' };
 
-function acceptLanguage(request: Request): Record<string, string> {
-	return { 'Accept-Language': resolveLang(request) };
-}
-
-export const load: PageServerLoad = async ({ params, fetch, locals, request }) => {
+export const load: PageServerLoad = async ({ params, fetch, locals }) => {
 	const signedIn = !!locals.user?.accessToken;
 	let preview: InvitePreview;
 
@@ -49,7 +50,6 @@ export const load: PageServerLoad = async ({ params, fetch, locals, request }) =
 		// the anonymous throttle must count the visitor, not their account.
 		const res = await memberregisterinvitesPreviewInvite({
 			path: { token: params.token },
-			headers: acceptLanguage(request),
 			fetch
 		});
 		const status = res.response?.status;
@@ -77,14 +77,28 @@ export const load: PageServerLoad = async ({ params, fetch, locals, request }) =
 };
 
 export const actions = {
-	default: async ({ params, fetch, locals, request }): Promise<{ claim: ClaimResult }> => {
+	default: async ({ params, fetch, locals }): Promise<{ claim: ClaimResult }> => {
 		const accessToken = locals.user?.accessToken;
 		if (!accessToken) return { claim: { outcome: 'unauthenticated' } };
+
+		// A successful claim consumes the token, so the preview 404s afterwards
+		// (load re-runs after a no-JS POST). Capture the organization name now,
+		// best effort, so the success view never depends on a later preview.
+		let organizationName: string | null = null;
+		try {
+			const pre = await memberregisterinvitesPreviewInvite({
+				path: { token: params.token },
+				fetch
+			});
+			if (pre.response?.status === 200 && pre.data) organizationName = pre.data.organization_name;
+		} catch {
+			// Non-fatal: the success view falls back to the organization slug.
+		}
 
 		try {
 			const res = await memberregisterinvitesClaimInvite({
 				path: { token: params.token },
-				headers: { ...acceptLanguage(request), Authorization: `Bearer ${accessToken}` },
+				headers: { Authorization: `Bearer ${accessToken}` },
 				fetch
 			});
 			const status = res.response?.status;
@@ -93,6 +107,7 @@ export const actions = {
 					claim: {
 						outcome: 'success',
 						organizationSlug: res.data.organization_slug,
+						organizationName,
 						recordId: String(res.data.record_id)
 					}
 				};
