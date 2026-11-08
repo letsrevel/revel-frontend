@@ -20,6 +20,9 @@ export const seriesPassQueryKeys = {
 	// mutations can invalidate one series' quotes without touching the rest).
 	quote: (seriesId: SeriesId, passId: PassId) =>
 		['series-passes', 'quote', seriesId, passId] as const,
+	// Every quote of every series: for a change that can affect any of them
+	// (an answered questionnaire).
+	allQuotes: ['series-passes', 'quote'] as const,
 	quotesPrefix: (seriesId: SeriesId) => ['series-passes', 'quote', seriesId] as const,
 
 	// Buyer: my held passes (paginated).
