@@ -10900,5 +10900,30 @@
 	"memberRegister.exportAll": "Todas las entradas del registro",
 	"memberRegister.exportMembersOn": "Miembros el: {day} ({timezone})",
 	"memberRegister.exportMembersOnOrgTz": "Miembros el: {day} (zona horaria de la organización)",
-	"memberRegister.exportButton": "Exportar xlsx"
+	"memberRegister.exportButton": "Exportar xlsx",
+	"memberRegister.actionInvite": "Invitar",
+	"memberRegister.actionResendInvite": "Reenviar invitación",
+	"memberRegister.inviteTitle": "Invitar a {name}",
+	"memberRegister.inviteDescription": "Envía a {name} un correo a {email} con un enlace para vincular esta entrada a su cuenta de Revel.",
+	"memberRegister.inviteConfirm": "Enviar invitación",
+	"memberRegister.resendInviteTitle": "¿Reenviar la invitación a {name}?",
+	"memberRegister.resendInviteDescription": "Se enviará un nuevo enlace a {email}. El enlace anterior dejará de funcionar.",
+	"memberRegister.resendInviteConfirm": "Reenviar invitación",
+	"memberRegister.inviteSentToast": "Invitación enviada a {email}",
+	"memberRegister.inviteAllOpen": "Invitar a todos",
+	"memberRegister.inviteAllTitle": "¿Invitar a todo el registro?",
+	"memberRegister.inviteAllDescription": "Envía una invitación a cada entrada abierta con correo electrónico que aún no ha sido invitada y que ya ha comenzado. Se omiten las entradas vinculadas, los miembros de un día, las finalizadas y las que empiezan en el futuro.",
+	"memberRegister.inviteAllConfirm": "Enviar invitaciones",
+	"memberRegister.inviteAllSent": [
+		{
+			"declarations": ["input invited", "local invitedPlural = invited: plural"],
+			"selectors": ["invitedPlural"],
+			"match": {
+				"invitedPlural=one": "{invited} invitación enviada",
+				"invitedPlural=*": "{invited} invitaciones enviadas"
+			}
+		}
+	],
+	"memberRegister.inviteAllNone": "Ninguna entrada estaba pendiente de invitación",
+	"memberRegister.errorInviteAllThrottled": "Has alcanzado el límite de hoy para invitaciones masivas. Inténtalo de nuevo mañana."
 }

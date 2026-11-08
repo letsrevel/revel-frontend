@@ -12,9 +12,10 @@
 		onEdit: (record: MembershipRecordSchema) => void;
 		onEnd: (record: MembershipRecordSchema) => void;
 		onDelete: (record: MembershipRecordSchema) => void;
+		onInvite: (record: MembershipRecordSchema) => void;
 	}
 
-	const { records, isOwner, onEdit, onEnd, onDelete }: Props = $props();
+	const { records, isOwner, onEdit, onEnd, onDelete, onInvite }: Props = $props();
 
 	const TH =
 		'px-4 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground';
@@ -53,7 +54,7 @@
 					<td class="whitespace-nowrap px-4 py-3 text-sm">{sourceLabel(record.source)}</td>
 					<td class="px-4 py-3"><RegisterBadges {record} /></td>
 					<td class="px-4 py-3 text-right">
-						<RegisterRowActions {record} {isOwner} {onEdit} {onEnd} {onDelete} />
+						<RegisterRowActions {record} {isOwner} {onEdit} {onEnd} {onDelete} {onInvite} />
 					</td>
 				</tr>
 			{/each}

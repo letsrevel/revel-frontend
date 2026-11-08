@@ -10900,5 +10900,30 @@
 	"memberRegister.exportAll": "Alle Registereinträge",
 	"memberRegister.exportMembersOn": "Mitglieder am: {day} ({timezone})",
 	"memberRegister.exportMembersOnOrgTz": "Mitglieder am: {day} (Zeitzone der Organisation)",
-	"memberRegister.exportButton": "Als xlsx exportieren"
+	"memberRegister.exportButton": "Als xlsx exportieren",
+	"memberRegister.actionInvite": "Einladen",
+	"memberRegister.actionResendInvite": "Einladung erneut senden",
+	"memberRegister.inviteTitle": "{name} einladen",
+	"memberRegister.inviteDescription": "Sende {name} eine E-Mail an {email} mit einem Link, um diesen Eintrag mit dem Revel-Konto zu verknüpfen.",
+	"memberRegister.inviteConfirm": "Einladung senden",
+	"memberRegister.resendInviteTitle": "Einladung erneut an {name} senden?",
+	"memberRegister.resendInviteDescription": "Ein neuer Link wird an {email} gesendet. Der bisherige Link funktioniert nicht mehr.",
+	"memberRegister.resendInviteConfirm": "Einladung erneut senden",
+	"memberRegister.inviteSentToast": "Einladung an {email} gesendet",
+	"memberRegister.inviteAllOpen": "Alle einladen",
+	"memberRegister.inviteAllTitle": "Alle im Register einladen?",
+	"memberRegister.inviteAllDescription": "Sende eine Einladung an jeden offenen Eintrag mit E-Mail-Adresse, der noch nicht eingeladen wurde und bereits begonnen hat. Verknüpfte, Tagesmitglieds-, beendete und in der Zukunft beginnende Einträge werden übersprungen.",
+	"memberRegister.inviteAllConfirm": "Einladungen senden",
+	"memberRegister.inviteAllSent": [
+		{
+			"declarations": ["input invited", "local invitedPlural = invited: plural"],
+			"selectors": ["invitedPlural"],
+			"match": {
+				"invitedPlural=one": "{invited} Einladung gesendet",
+				"invitedPlural=*": "{invited} Einladungen gesendet"
+			}
+		}
+	],
+	"memberRegister.inviteAllNone": "Kein Eintrag wartete auf eine Einladung",
+	"memberRegister.errorInviteAllThrottled": "Du hast das heutige Limit für Sammeleinladungen erreicht. Versuche es morgen erneut."
 }

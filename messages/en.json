@@ -10900,5 +10900,30 @@
 	"memberRegister.exportAll": "All register entries",
 	"memberRegister.exportMembersOn": "Members on: {day} ({timezone})",
 	"memberRegister.exportMembersOnOrgTz": "Members on: {day} (organization's timezone)",
-	"memberRegister.exportButton": "Export xlsx"
+	"memberRegister.exportButton": "Export xlsx",
+	"memberRegister.actionInvite": "Invite",
+	"memberRegister.actionResendInvite": "Resend invite",
+	"memberRegister.inviteTitle": "Invite {name}",
+	"memberRegister.inviteDescription": "Send {name} an email at {email} with a link to connect this entry to their Revel account.",
+	"memberRegister.inviteConfirm": "Send invitation",
+	"memberRegister.resendInviteTitle": "Resend invitation to {name}?",
+	"memberRegister.resendInviteDescription": "A new link will be sent to {email}. The previous link stops working.",
+	"memberRegister.resendInviteConfirm": "Resend invitation",
+	"memberRegister.inviteSentToast": "Invitation sent to {email}",
+	"memberRegister.inviteAllOpen": "Invite all",
+	"memberRegister.inviteAllTitle": "Invite everyone on the register?",
+	"memberRegister.inviteAllDescription": "Send an invitation to every open entry with an email address that has not been invited yet and has already started. Linked, day-member, ended and future-dated entries are skipped.",
+	"memberRegister.inviteAllConfirm": "Send invitations",
+	"memberRegister.inviteAllSent": [
+		{
+			"declarations": ["input invited", "local invitedPlural = invited: plural"],
+			"selectors": ["invitedPlural"],
+			"match": {
+				"invitedPlural=one": "{invited} invitation sent",
+				"invitedPlural=*": "{invited} invitations sent"
+			}
+		}
+	],
+	"memberRegister.inviteAllNone": "No entries were waiting for an invitation",
+	"memberRegister.errorInviteAllThrottled": "You've reached today's limit for bulk invitations. Try again tomorrow."
 }

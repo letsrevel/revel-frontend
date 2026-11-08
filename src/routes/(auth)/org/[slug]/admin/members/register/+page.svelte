@@ -3,7 +3,15 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { createQuery, keepPreviousData } from '@tanstack/svelte-query';
-	import { BookUser, Download, Plus, ChevronLeft, ChevronRight, Loader2 } from '@lucide/svelte';
+	import {
+		BookUser,
+		Download,
+		Mail,
+		Plus,
+		ChevronLeft,
+		ChevronRight,
+		Loader2
+	} from '@lucide/svelte';
 	import type { PageData } from './$types';
 	import type { MembershipRecordSchema } from '$lib/api/generated/types.gen';
 	import { toast } from 'svelte-sonner';
@@ -19,6 +27,8 @@
 	import RecordFormDialog from '$lib/components/member-register/RecordFormDialog.svelte';
 	import EndRecordDialog from '$lib/components/member-register/EndRecordDialog.svelte';
 	import DeleteRecordDialog from '$lib/components/member-register/DeleteRecordDialog.svelte';
+	import InviteRecordDialog from '$lib/components/member-register/InviteRecordDialog.svelte';
+	import InviteAllDialog from '$lib/components/member-register/InviteAllDialog.svelte';
 	import RegisterExportDialog from '$lib/components/member-register/RegisterExportDialog.svelte';
 	import RegisterErrorAlert from '$lib/components/member-register/RegisterErrorAlert.svelte';
 	import { listRegister, memberRegisterKeys } from '$lib/member-register/api';
@@ -107,6 +117,8 @@
 	let editing = $state<MembershipRecordSchema | null>(null);
 	let ending = $state<MembershipRecordSchema | null>(null);
 	let deleting = $state<MembershipRecordSchema | null>(null);
+	let inviting = $state<MembershipRecordSchema | null>(null);
+	let inviteAllOpen = $state(false);
 	let exportOpen = $state(false);
 
 	// Every dialog works on the LIVE row (falling back to the opened snapshot), so a
@@ -114,9 +126,11 @@
 	const liveEditing = $derived(records.find((r) => r.id === editing?.id) ?? editing);
 	const liveEnding = $derived(records.find((r) => r.id === ending?.id) ?? ending);
 	const liveDeleting = $derived(records.find((r) => r.id === deleting?.id) ?? deleting);
+	const liveInviting = $derived(records.find((r) => r.id === inviting?.id) ?? inviting);
 	const editingPresent = $derived(!editing || records.some((r) => r.id === editing?.id));
 	const endingPresent = $derived(!ending || records.some((r) => r.id === ending?.id));
 	const deletingPresent = $derived(!deleting || records.some((r) => r.id === deleting?.id));
+	const invitingPresent = $derived(!inviting || records.some((r) => r.id === inviting?.id));
 
 	function openCreate() {
 		editing = null;
@@ -138,6 +152,10 @@
 		<Button variant="outline" onclick={() => (exportOpen = true)}>
 			<Download aria-hidden="true" />
 			{m['memberRegister.exportOpen']()}
+		</Button>
+		<Button variant="outline" onclick={() => (inviteAllOpen = true)}>
+			<Mail aria-hidden="true" />
+			{m['memberRegister.inviteAllOpen']()}
 		</Button>
 		<Button onclick={openCreate}>
 			<Plus aria-hidden="true" />
@@ -203,6 +221,7 @@
 				onEdit={openEdit}
 				onEnd={(r) => (ending = r)}
 				onDelete={(r) => (deleting = r)}
+				onInvite={(r) => (inviting = r)}
 			/>
 			<RegisterCards
 				{records}
@@ -210,6 +229,7 @@
 				onEdit={openEdit}
 				onEnd={(r) => (ending = r)}
 				onDelete={(r) => (deleting = r)}
+				onInvite={(r) => (inviting = r)}
 			/>
 
 			<nav
@@ -279,4 +299,18 @@
 	{timezone}
 	initialDay={filters.activeOn}
 	onClose={() => (exportOpen = false)}
+/>
+<InviteRecordDialog
+	open={inviting !== null}
+	record={liveInviting}
+	recordPresent={invitingPresent}
+	{slug}
+	{accessToken}
+	onClose={() => (inviting = null)}
+/>
+<InviteAllDialog
+	open={inviteAllOpen}
+	{slug}
+	{accessToken}
+	onClose={() => (inviteAllOpen = false)}
 />

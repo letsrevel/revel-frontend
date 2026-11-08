@@ -2,8 +2,9 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { MembershipRecordSchema } from '$lib/api/generated/types.gen';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import { MoreVertical, Pencil, CalendarX, Trash2 } from '@lucide/svelte';
+	import { MoreVertical, Pencil, CalendarX, Trash2, Mail } from '@lucide/svelte';
 	import { getEditability } from '$lib/member-register/editability';
+	import { canInvite } from '$lib/member-register/invite';
 
 	interface Props {
 		record: MembershipRecordSchema;
@@ -12,15 +13,19 @@
 		onEdit: (record: MembershipRecordSchema) => void;
 		onEnd: (record: MembershipRecordSchema) => void;
 		onDelete: (record: MembershipRecordSchema) => void;
+		onInvite: (record: MembershipRecordSchema) => void;
 	}
 
-	const { record, isOwner, onEdit, onEnd, onDelete }: Props = $props();
+	const { record, isOwner, onEdit, onEnd, onDelete, onInvite }: Props = $props();
 
 	const canEnd = $derived(getEditability(record).canEnd);
+	// Evaluated at render: a row that crosses valid_from while the page is open is
+	// picked up on the next refetch, and the backend re-checks anyway.
+	const inviteable = $derived(canInvite(record));
 </script>
 
 <!--
-	Row actions menu. Later register features (invite, merge, unlink) slot in as
+	Row actions menu. Later register features (merge, unlink) slot in as
 	further items here without touching the table or the cards.
 -->
 <DropdownMenu.Root>
@@ -42,6 +47,14 @@
 			<Pencil aria-hidden="true" />
 			{m['memberRegister.actionEdit']()}
 		</DropdownMenu.Item>
+		{#if inviteable}
+			<DropdownMenu.Item onclick={() => onInvite(record)}>
+				<Mail aria-hidden="true" />
+				{record.invite_status === 'invited'
+					? m['memberRegister.actionResendInvite']()
+					: m['memberRegister.actionInvite']()}
+			</DropdownMenu.Item>
+		{/if}
 		{#if canEnd}
 			<DropdownMenu.Item onclick={() => onEnd(record)}>
 				<CalendarX aria-hidden="true" />

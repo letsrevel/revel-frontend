@@ -4,7 +4,9 @@ import {
 	organizationadminmemberregisterEndMemberRegisterRecord,
 	organizationadminmemberregisterExportMemberRegister,
 	organizationadminmemberregisterListMemberRegister,
-	organizationadminmemberregisterUpdateMemberRegisterRecord
+	organizationadminmemberregisterUpdateMemberRegisterRecord,
+	organizationadminmemberregisterlinkingInviteAllMemberRegister,
+	organizationadminmemberregisterlinkingInviteMemberRegisterRecord
 } from '$lib/api';
 import type {
 	MembershipRecordCreateSchema,
@@ -150,4 +152,33 @@ export async function startRegisterExport(
 	const id = res.data?.id;
 	if (!id) throw new RegisterApiError(res.response?.status ?? 0, null);
 	return id;
+}
+
+/** First send or resend of the claim link for one entry (a resend rotates the link). */
+export async function inviteRecord(
+	slug: string,
+	accessToken: string | null | undefined,
+	recordId: string
+): Promise<MembershipRecordSchema> {
+	const res = await organizationadminmemberregisterlinkingInviteMemberRegisterRecord({
+		path: { slug, record_id: recordId },
+		headers: authHeaders(accessToken)
+	});
+	ensureOk(res);
+	if (!res.data) throw new RegisterApiError(res.response?.status ?? 0, null);
+	return res.data;
+}
+
+/** Invite every open, unlinked, never-invited entry; resolves to how many were invited. */
+export async function inviteAll(
+	slug: string,
+	accessToken: string | null | undefined
+): Promise<number> {
+	const res = await organizationadminmemberregisterlinkingInviteAllMemberRegister({
+		path: { slug },
+		headers: authHeaders(accessToken)
+	});
+	ensureOk(res);
+	if (!res.data) throw new RegisterApiError(res.response?.status ?? 0, null);
+	return res.data.invited;
 }

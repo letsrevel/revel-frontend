@@ -2,7 +2,7 @@ import * as m from '$lib/paraglide/messages.js';
 import { backendMessage } from '$lib/utils/api-error-detail';
 import { RegisterApiError } from './api';
 
-export type RegisterAction = 'save' | 'end' | 'delete' | 'export';
+export type RegisterAction = 'save' | 'end' | 'delete' | 'export' | 'invite' | 'invite-all';
 
 export interface DescribedError {
 	/** 409: the entry changed since the page loaded; callers refetch. */
@@ -11,6 +11,12 @@ export interface DescribedError {
 	message: string;
 	/** The server's own (translated) detail, when it adds something. */
 	detail: string | null;
+}
+
+function throttledMessage(action: RegisterAction): string {
+	if (action === 'export') return m['memberRegister.errorExportThrottled']();
+	if (action === 'invite-all') return m['memberRegister.errorInviteAllThrottled']();
+	return m['memberRegister.errorThrottled']();
 }
 
 /**
@@ -25,10 +31,7 @@ export function describeRegisterError(error: unknown, action: RegisterAction): D
 	if (status === 429) {
 		return {
 			stale: false,
-			message:
-				action === 'export'
-					? m['memberRegister.errorExportThrottled']()
-					: m['memberRegister.errorThrottled'](),
+			message: throttledMessage(action),
 			detail: null
 		};
 	}

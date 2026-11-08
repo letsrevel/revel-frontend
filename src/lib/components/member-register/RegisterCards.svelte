@@ -12,9 +12,10 @@
 		onEdit: (record: MembershipRecordSchema) => void;
 		onEnd: (record: MembershipRecordSchema) => void;
 		onDelete: (record: MembershipRecordSchema) => void;
+		onInvite: (record: MembershipRecordSchema) => void;
 	}
 
-	const { records, isOwner, onEdit, onEnd, onDelete }: Props = $props();
+	const { records, isOwner, onEdit, onEnd, onDelete, onInvite }: Props = $props();
 </script>
 
 <!-- Mobile cards (below md); the table takes over from md up. -->
@@ -28,7 +29,7 @@
 						<p class="break-all text-sm text-muted-foreground">{record.email}</p>
 					{/if}
 				</div>
-				<RegisterRowActions {record} {isOwner} {onEdit} {onEnd} {onDelete} />
+				<RegisterRowActions {record} {isOwner} {onEdit} {onEnd} {onDelete} {onInvite} />
 			</div>
 			<dl class="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
 				<div>
