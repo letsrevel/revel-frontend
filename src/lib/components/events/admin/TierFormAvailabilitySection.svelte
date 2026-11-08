@@ -4,6 +4,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { TriangleAlert } from '@lucide/svelte';
 	import { exceedsEventCapacity } from './event-capacity';
+	import TierFormExcludedTiersSection from './TierFormExcludedTiersSection.svelte';
 	import { allowsMembershipRestrictions } from './tier-membership-links';
 	import type { MembershipTierSchema, PurchasableBy } from '$lib/api/generated/types.gen';
 
@@ -18,6 +19,10 @@
 		restrictVisibilityToLinkedInvitations: boolean;
 		restrictPurchaseToLinkedInvitations: boolean;
 		restrictedToMembershipTiersIds: string[];
+		/** `non_members` only: exclude just members of these tiers (empty = all active members). */
+		excludedMembershipTiersIds: string[];
+		/** Server message about the exclusion list, shown next to its picker. */
+		excludedError?: string;
 		membershipTiers: MembershipTierSchema[];
 		/** Organizer kill switch: hides the tier from checkout until resumed, sales window untouched. */
 		salesPaused: boolean;
@@ -37,6 +42,8 @@
 		restrictVisibilityToLinkedInvitations = $bindable(),
 		restrictPurchaseToLinkedInvitations = $bindable(),
 		restrictedToMembershipTiersIds = $bindable(),
+		excludedMembershipTiersIds = $bindable(),
+		excludedError = '',
 		membershipTiers,
 		salesPaused = $bindable(),
 		eventCapacity = null,
@@ -59,6 +66,14 @@
 	$effect(() => {
 		if (!allowsMembershipRestrictions(purchasableBy) && restrictedToMembershipTiersIds.length > 0) {
 			restrictedToMembershipTiersIds = [];
+		}
+	});
+
+	// Exclusions only exist under non_members; drop a stale selection otherwise
+	// (TierForm then sends [] on update so the backend clears the stored list).
+	$effect(() => {
+		if (purchasableBy !== 'non_members' && excludedMembershipTiersIds.length > 0) {
+			excludedMembershipTiersIds = [];
 		}
 	});
 </script>
@@ -213,6 +228,16 @@
 		</label>
 	{/if}
 </div>
+
+<!-- Excluded membership tiers (non_members only) -->
+{#if purchasableBy === 'non_members'}
+	<TierFormExcludedTiersSection
+		{membershipTiers}
+		bind:selectedIds={excludedMembershipTiersIds}
+		error={excludedError}
+		{isPending}
+	/>
+{/if}
 
 <!-- Restricted to Membership Tiers -->
 {#if (purchasableBy === 'members' || purchasableBy === 'invited_and_members') && membershipTiers.length > 0}

@@ -10727,5 +10727,17 @@
 	"tierForm.vatExemptionReasonOrgDefault": "Leave empty to use your organization default: «{reason}»",
 	"tierForm.vatExemptionReasonRequired": "Enter a VAT exemption reason: this tier is paid online at 0% VAT and your organization has no default reason.",
 	"tierForm.requiredSr": "(required)",
-	"tierForm.field.vat_exemption_reason": "VAT exemption reason"
+	"tierForm.field.vat_exemption_reason": "VAT exemption reason",
+	"tierForm.excludedMembershipTiers": "Exclude only members of…",
+	"tierForm.excludedMembershipTiersHelp": "Everyone except members (of the selected tiers). Leave empty to exclude all active members. Only active memberships are excluded: paused or cancelled members, owners and staff can still buy.",
+	"tierForm.excludedMembershipTiersNone": "This organization has no standard membership tiers yet, so every active member is excluded.",
+	"tierForm.field.excluded_membership_tiers_ids": "Excluded membership tiers",
+	"tierCardAdmin.notAvailableToMembers": "Not available to members",
+	"tierCardAdmin.chooseAnotherTierHint": "This tier isn't available to members. Choose another tier.",
+	"seriesPassAdmin.nonMembersHelp": "Blocks every active member. Paused or cancelled members, owners and staff can still buy. Passes have no tier-level exclusion.",
+	"seriesPassAdmin.tierStricterOption": "{tier} ({price}) – unavailable: stricter purchase rule",
+	"seriesPassAdmin.incompatibleTierHint": "Tiers marked unavailable are stricter than this pass (for example a members-only tier under a pass for everyone), so the pass cannot cover them.",
+	"seriesPassAdmin.noCompatibleTiers": "No tier of this event can back this pass: each has a stricter purchase rule than the pass. Loosen the tier's rule or change who can buy the pass.",
+	"seriesPass.nonMembersNote": "For non-members only. Active members can't buy this pass.",
+	"seriesPass.notAvailableToMembers": "This pass isn't available to members."
 }

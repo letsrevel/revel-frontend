@@ -328,6 +328,13 @@
 	}
 
 	const membershipRestriction = $derived(checkMembershipTierRestriction());
+
+	// A `non_members` tier stays listed for members but reports `can_purchase:
+	// false` (BE #1316); the list exposes no per-tier reason, so the purchasable_by
+	// rule is what explains it. Sale-window / paused / sold-out branches come first.
+	const excludesMember = $derived(
+		tier.can_purchase === false && tier.purchasable_by === 'non_members'
+	);
 </script>
 
 {#snippet badges()}
@@ -400,6 +407,17 @@
 		<Button href={loginHref} variant="outline" class="w-full sm:w-auto"
 			>{m['tierCardAdmin.signInToGetTicket']()}</Button
 		>
+	{:else if excludesMember}
+		<Button disabled class="w-full sm:w-auto" aria-describedby="{uid}-members-excluded">
+			{m['tierCardAdmin.notAvailableToMembers']()}
+		</Button>
+		<p
+			id="{uid}-members-excluded"
+			class="max-w-[250px] text-xs text-muted-foreground sm:text-right"
+			data-testid="tier-members-excluded"
+		>
+			{m['tierCardAdmin.chooseAnotherTierHint']()}
+		</p>
 	{:else if !effectiveEligible}
 		<!-- User is authenticated but not eligible for this tier - show reason -->
 		<Button disabled class="w-full sm:w-auto">

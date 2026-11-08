@@ -7,6 +7,7 @@
 	import { formatPrice } from '$lib/utils/format';
 	import { formatEventDate } from '$lib/utils/date';
 	import { Loader2 } from '@lucide/svelte';
+	import { tierStricterThanPass } from './pass-purchase-rules';
 
 	interface Props {
 		/** Candidate events (upcoming, non-template occurrences of the series). */
@@ -14,7 +15,14 @@
 		accessToken: string | null;
 		/** Pass currency — tiers in another currency can't back the pass. */
 		currency: string;
-		/** eventId -> selected tierId; absent/undefined = event not covered. */
+		/**
+		 * The pass's `purchasable_by`. A tier whose purchase rule is stricter than the
+		 * pass's can't back it (the backend answers 400), so those tiers are offered
+		 * disabled, never defaulted, and the reason is spelled out.
+		 */
+		passPurchasableBy: string;
+		/** Server message about the tier link (the 400 for a stricter tier), shown beside the control. */
+		error?: string;
 		/**
 		 * eventId -> selection. A tier id means "covered with this tier"; `null`
 		 * means the organizer explicitly excluded the event; `undefined` (absent)
@@ -25,8 +33,18 @@
 		disabled?: boolean;
 	}
 
-	const { events, accessToken, currency, selections, onSelectionsChange, disabled }: Props =
-		$props();
+	const {
+		events,
+		accessToken,
+		currency,
+		passPurchasableBy,
+		error = '',
+		selections,
+		onSelectionsChange,
+		disabled
+	}: Props = $props();
+
+	const uid = $props.id();
 
 	// Sorted so the cache key is stable across event-list reorderings.
 	const eventIds = $derived(events.map((e) => e.id).toSorted());
@@ -70,22 +88,46 @@
 		return eligibleByEvent[eventId] ?? [];
 	}
 
-	// Default selection: once per (tier data, currency), pre-select the first
-	// eligible tier for every event with no explicit choice yet. `defaultedKey`
-	// makes this a one-shot per input set — without it the effect re-runs on its
-	// own onSelectionsChange echo and instantly reverts explicit unchecks.
+	function isStricter(tier: TicketTierDetailSchema): boolean {
+		return tierStricterThanPass(tier, passPurchasableBy);
+	}
+
+	/** Tiers the pass can actually cover: eligible AND not stricter than the pass. */
+	function selectableTiers(eventId: string): TicketTierDetailSchema[] {
+		return eligibleTiers(eventId).filter((tier) => !isStricter(tier));
+	}
+
+	function selectableTier(eventId: string, tierId: string): boolean {
+		return selectableTiers(eventId).some((tier) => tier.id === tierId);
+	}
+
+	// Default selection: once per (tier data, currency, pass rule), pre-select the
+	// first COMPATIBLE tier for every event with no explicit choice yet — never one
+	// that is stricter than the pass. A pick that became incompatible (the pass rule
+	// changed) is dropped back to "no choice" so it re-defaults to a compatible tier,
+	// or to an explicit exclusion when there is none. `defaultedKey` makes this a
+	// one-shot per input set — without it the effect re-runs on its own
+	// onSelectionsChange echo and instantly reverts explicit unchecks.
 	let defaultedKey = $state('');
 	$effect(() => {
 		if (!tiersQuery.data) return;
-		const key = `${currency}|${eventIds.join(',')}`;
+		const key = `${currency}|${passPurchasableBy}|${eventIds.join(',')}`;
 		if (defaultedKey === key) return;
 		defaultedKey = key;
 		const next = { ...selections };
 		let changed = false;
 		for (const event of events) {
-			// string = user/default pick, null = explicit exclusion — both final.
-			if (next[event.id] !== undefined) continue;
-			const tiers = eligibleTiers(event.id);
+			const current = next[event.id];
+			// string = user/default pick, null = explicit exclusion — both final,
+			// unless the pick is no longer compatible with the pass.
+			if (typeof current === 'string' && !selectableTier(event.id, current)) {
+				const fallback = selectableTiers(event.id)[0]?.id ?? null;
+				next[event.id] = fallback;
+				changed = true;
+				continue;
+			}
+			if (current !== undefined) continue;
+			const tiers = selectableTiers(event.id);
 			if (tiers.length > 0 && tiers[0].id) {
 				next[event.id] = tiers[0].id;
 				changed = true;
@@ -97,8 +139,7 @@
 	function toggleEvent(eventId: string, include: boolean) {
 		const next = { ...selections };
 		if (include) {
-			const tiers = eligibleTiers(eventId);
-			next[eventId] = tiers[0]?.id ?? null;
+			next[eventId] = selectableTiers(eventId)[0]?.id ?? null;
 		} else {
 			// `null`, not delete/undefined: an explicit exclusion must survive the
 			// defaulting pass above.
@@ -116,12 +157,22 @@
 	);
 </script>
 
-<fieldset class="space-y-3" {disabled}>
+<fieldset
+	class="space-y-3"
+	{disabled}
+	aria-describedby={error ? `${uid}-error` : undefined}
+	data-testid="pass-tier-mapping"
+>
 	<legend class="text-sm font-medium">
 		{m['seriesPassAdmin.coverageLegend']()}
 		<span class="ml-1 text-muted-foreground">({coveredCount})</span>
 	</legend>
 	<p class="text-xs text-muted-foreground">{m['seriesPassAdmin.coverageHint']()}</p>
+	{#if error}
+		<p id="{uid}-error" class="text-sm text-destructive" role="alert" data-testid="pass-tier-error">
+			{error}
+		</p>
+	{/if}
 
 	{#if tiersQuery.isLoading}
 		<div class="flex items-center gap-2 py-4 text-sm text-muted-foreground" role="status">
@@ -136,6 +187,7 @@
 		<ul class="space-y-2">
 			{#each events as event (event.id)}
 				{@const tiers = eligibleTiers(event.id)}
+				{@const selectable = selectableTiers(event.id)}
 				{@const included = !!selections[event.id]}
 				<li class="rounded-md border p-3">
 					<div class="flex flex-wrap items-center gap-3">
@@ -143,7 +195,7 @@
 							<input
 								type="checkbox"
 								checked={included}
-								disabled={tiers.length === 0 || disabled}
+								disabled={selectable.length === 0 || disabled}
 								onchange={(e) => toggleEvent(event.id, e.currentTarget.checked)}
 								class="h-4 w-4 rounded border-input"
 							/>
@@ -161,6 +213,10 @@
 							<span class="text-xs text-muted-foreground">
 								{m['seriesPassAdmin.noEligibleTiers']()}
 							</span>
+						{:else if selectable.length === 0}
+							<p class="w-full text-xs text-muted-foreground" data-testid="pass-no-compatible-tier">
+								{m['seriesPassAdmin.noCompatibleTiers']()}
+							</p>
 						{:else if included}
 							<div class="w-full sm:w-56">
 								<Label class="sr-only" for="tier-select-{event.id}">
@@ -174,12 +230,19 @@
 									class="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
 								>
 									{#each tiers as tier (tier.id)}
-										<option value={tier.id}>
-											{tier.name}
-											({formatPrice(tier.price, tier.currency, m['seriesPass.free']())})
+										{@const price = formatPrice(tier.price, tier.currency, m['seriesPass.free']())}
+										<option value={tier.id} disabled={isStricter(tier)}>
+											{isStricter(tier)
+												? m['seriesPassAdmin.tierStricterOption']({ tier: tier.name ?? '', price })
+												: `${tier.name} (${price})`}
 										</option>
 									{/each}
 								</select>
+								{#if selectable.length < tiers.length}
+									<p class="mt-1 text-xs text-muted-foreground">
+										{m['seriesPassAdmin.incompatibleTierHint']()}
+									</p>
+								{/if}
 							</div>
 						{/if}
 					</div>

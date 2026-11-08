@@ -77,6 +77,8 @@
 		/** Authenticated buyer's real name — pre-fills the holder name of a
 		 * single-ticket cart. Guests' comes from `identity` instead. */
 		buyerName?: string;
+		/** Brings the tier list back into view (the `members_excluded` CTA); the sheet closes first. */
+		onChooseAnotherTier?: () => void;
 	}
 
 	let {
@@ -94,7 +96,8 @@
 		chart = null,
 		registry,
 		identity,
-		buyerName = ''
+		buyerName = '',
+		onChooseAnotherTier
 	}: Props = $props();
 
 	// Single-ticket cart: pre-fill its holder name with the buyer's (profile
@@ -428,6 +431,11 @@
 				tiers={cart.groups.map((group) => group.tier)}
 				{organizationSlug}
 				onSplitPurchase={() => (open = false)}
+				onChooseAnotherTier={onChooseAnotherTier &&
+					(() => {
+						open = false;
+						onChooseAnotherTier?.();
+					})}
 			/>
 		</div>
 

@@ -69,6 +69,43 @@
 	let fieldErrors = $state<Record<string, string>>({});
 	let formError = $state('');
 
+	// Fields with their own inline slot below. Anything else (a non-field error) must
+	// still reach the form-level alert, but a keyed error rendered inline is not
+	// repeated there. A stricter-tier link (create) is keyed `tier`/`event`/`tier_links`
+	// and shows beside the coverage control; a pass rule that would strand an existing
+	// link (edit) is keyed `purchasable_by` and shows under that select.
+	const INLINE_FIELDS = new Set([
+		'name',
+		'price',
+		'pro_rata_discount',
+		'currency',
+		'payment_method',
+		'purchasable_by',
+		'total_quantity',
+		'tier',
+		'event',
+		'tier_links'
+	]);
+	const tierLinkError = $derived(
+		[fieldErrors.tier, fieldErrors.event, fieldErrors.tier_links].filter(Boolean).join(' ')
+	);
+
+	function toFieldErrors(error: unknown): Record<string, string> {
+		return Object.fromEntries(
+			extractFieldErrors(error).map(({ field, messages }) => [
+				// `tier_links.0.tier` etc. all land on the coverage control.
+				field.startsWith('tier_links') ? 'tier_links' : field,
+				messages.join(' ')
+			])
+		);
+	}
+
+	function formErrorFor(error: unknown, fallback: string): string {
+		const keys = Object.keys(fieldErrors);
+		if (keys.length > 0 && keys.every((key) => INLINE_FIELDS.has(key))) return '';
+		return error instanceof Error ? error.message : fallback;
+	}
+
 	const createMutationObj = createMutation(() => ({
 		mutationFn: async (body: SeriesPassCreateSchema) => {
 			const response = await seriespassadminCreateSeriesPass({
@@ -77,12 +114,7 @@
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (response.error) {
-				fieldErrors = Object.fromEntries(
-					extractFieldErrors(response.error).map(({ field, messages }) => [
-						field,
-						messages.join(' ')
-					])
-				);
+				fieldErrors = toFieldErrors(response.error);
 				throw new Error(extractErrorMessage(response.error, m['seriesPassAdmin.createFailed']()));
 			}
 			return response.data;
@@ -93,7 +125,7 @@
 			onClose();
 		},
 		onError: (error) => {
-			formError = error instanceof Error ? error.message : m['seriesPassAdmin.createFailed']();
+			formError = formErrorFor(error, m['seriesPassAdmin.createFailed']());
 		}
 	}));
 
@@ -105,12 +137,7 @@
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (response.error) {
-				fieldErrors = Object.fromEntries(
-					extractFieldErrors(response.error).map(({ field, messages }) => [
-						field,
-						messages.join(' ')
-					])
-				);
+				fieldErrors = toFieldErrors(response.error);
 				throw new Error(extractErrorMessage(response.error, m['seriesPassAdmin.updateFailed']()));
 			}
 			return response.data;
@@ -121,7 +148,7 @@
 			onClose();
 		},
 		onError: (error) => {
-			formError = error instanceof Error ? error.message : m['seriesPassAdmin.updateFailed']();
+			formError = formErrorFor(error, m['seriesPassAdmin.updateFailed']());
 		}
 	}));
 
@@ -321,7 +348,8 @@
 							fieldErrors.purchasable_by ? 'pass-purchasable-by-error' : '',
 							purchasableBy === 'non_members' || visibility === 'members-only'
 								? 'pass-purchasable-by-conflict-hint'
-								: ''
+								: '',
+							purchasableBy === 'non_members' ? 'pass-non-members-help' : ''
 						]
 							.filter(Boolean)
 							.join(' ') || undefined}
@@ -342,8 +370,22 @@
 							{m['tierForm.nonMembersNeedsVisible']()}
 						</p>
 					{/if}
+					{#if purchasableBy === 'non_members'}
+						<p
+							id="pass-non-members-help"
+							class="mt-1 text-xs text-muted-foreground"
+							data-testid="pass-non-members-help"
+						>
+							{m['seriesPassAdmin.nonMembersHelp']()}
+						</p>
+					{/if}
 					{#if fieldErrors.purchasable_by}
-						<p id="pass-purchasable-by-error" class="mt-1 text-sm text-destructive">
+						<p
+							id="pass-purchasable-by-error"
+							class="mt-1 text-sm text-destructive"
+							role="alert"
+							data-testid="pass-purchasable-by-error"
+						>
 							{fieldErrors.purchasable_by}
 						</p>
 					{/if}
@@ -418,6 +460,8 @@
 					events={upcomingEvents}
 					{accessToken}
 					{currency}
+					passPurchasableBy={purchasableBy}
+					error={tierLinkError}
 					selections={tierSelections}
 					onSelectionsChange={(next) => (tierSelections = next)}
 					disabled={isPending}

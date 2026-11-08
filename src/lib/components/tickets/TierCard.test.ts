@@ -225,3 +225,25 @@ describe('TierCard — country rules precede sign-in', () => {
 		expect(screen.queryByRole('link', { name: /sign in/i })).toBeNull();
 	});
 });
+
+describe('TierCard — non_members tier seen by a member (BE #1316)', () => {
+	it('explains that the tier is not available to members and points at the others', () => {
+		renderCard(makeTier({ purchasable_by: 'non_members', can_purchase: false }));
+
+		const button = screen.getByRole('button', { name: 'Not available to members' });
+		expect(button).toBeDisabled();
+		const hint = screen.getByTestId('tier-members-excluded');
+		expect(hint).toHaveTextContent('Choose another tier');
+		expect(button).toHaveAttribute('aria-describedby', hint.id);
+	});
+
+	it('keeps the generic copy for other non-purchasable tiers', () => {
+		renderCard(makeTier({ purchasable_by: 'members', can_purchase: false }));
+		expect(screen.queryByTestId('tier-members-excluded')).toBeNull();
+	});
+
+	it('does not claim members are excluded while the tier is still purchasable', () => {
+		renderCard(makeTier({ purchasable_by: 'non_members', can_purchase: true }));
+		expect(screen.queryByTestId('tier-members-excluded')).toBeNull();
+	});
+});

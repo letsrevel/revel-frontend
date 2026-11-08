@@ -117,7 +117,13 @@ export function mapGuestCheckoutError(
 			typeof error === 'object' && error !== null && 'next_step' in error
 				? (error as { next_step?: unknown }).next_step
 				: undefined;
-		if (typeof nextStep === 'string' && !GUEST_COMPATIBLE_STEPS.has(nextStep)) {
+		// `choose_another_tier` (members_excluded) needs no account either: the guest
+		// just picks a different tier, so it degrades to the plain refusal message.
+		if (
+			typeof nextStep === 'string' &&
+			nextStep !== 'choose_another_tier' &&
+			!GUEST_COMPATIBLE_STEPS.has(nextStep)
+		) {
 			return new GuestAccountRequiredError(
 				getEligibilityRefusalMessage(error) ?? m['cart.checkoutFailed'](),
 				{ cause: error, email }

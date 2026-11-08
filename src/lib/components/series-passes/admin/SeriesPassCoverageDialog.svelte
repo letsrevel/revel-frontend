@@ -18,7 +18,7 @@
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import PassTierMappingSection from './PassTierMappingSection.svelte';
 	import { formatEventDate } from '$lib/utils/date';
-	import { extractErrorMessage } from '$lib/utils/errors';
+	import { extractErrorMessage, extractFieldErrors } from '$lib/utils/errors';
 	import { CalendarCheck, Trash2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 
@@ -51,15 +51,26 @@
 	// Extension tier picks: eventId -> tierId | null (explicitly excluded).
 	let tierSelections = $state<Record<string, string | null | undefined>>({});
 
+	// Server refusal of the last extend (e.g. a tier stricter than the pass), shown
+	// inline beside the tier controls rather than as a toast that is gone before
+	// it can be read; cleared on the next attempt.
+	let extendError = $state('');
+
 	const extendMutation = createMutation(() => ({
 		mutationFn: async (links: { event_id: string; tier_id: string }[]) => {
+			extendError = '';
 			const response = await seriespassadminAddSeriesPassTierLinks({
 				path: { series_id: seriesId, pass_id: passId },
 				body: links,
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (response.error) {
-				throw new Error(extractErrorMessage(response.error, m['seriesPassAdmin.extendFailed']()));
+				const keyed = extractFieldErrors(response.error).flatMap(({ messages }) => messages);
+				throw new Error(
+					keyed.length > 0
+						? keyed.join(' ')
+						: extractErrorMessage(response.error, m['seriesPassAdmin.extendFailed']())
+				);
 			}
 			return { response: response.data, links };
 		},
@@ -82,7 +93,7 @@
 			toast.success(m['seriesPassAdmin.extendSuccess']({ count: links.length }));
 		},
 		onError: (error) => {
-			toast.error(error instanceof Error ? error.message : m['seriesPassAdmin.extendFailed']());
+			extendError = error instanceof Error ? error.message : m['seriesPassAdmin.extendFailed']();
 		}
 	}));
 
@@ -183,6 +194,8 @@
 					events={uncoveredEvents}
 					{accessToken}
 					currency={pass.currency ?? 'EUR'}
+					passPurchasableBy={pass.purchasable_by}
+					error={extendError}
 					selections={tierSelections}
 					onSelectionsChange={(next) => (tierSelections = next)}
 					disabled={extendMutation.isPending}

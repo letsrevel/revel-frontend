@@ -668,6 +668,7 @@
 		registry={seatHoldRegistry}
 		identity={purchaseFlow.isAuthenticated ? undefined : purchaseFlow.guestIdentity}
 		buyerName={ticketHolderDefaultName}
+		onChooseAnotherTier={handleGetTicketsClick}
 	/>
 {/if}
 
