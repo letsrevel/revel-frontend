@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
+	import { tick, untrack } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { toast } from 'svelte-sonner';
@@ -25,6 +25,7 @@
 		buildCreateBody,
 		buildUpdateBody,
 		formValuesFromRecord,
+		reconcileAfterStale,
 		validateRecordForm,
 		type FormErrorCode,
 		type FormErrors,
@@ -41,10 +42,12 @@
 		accessToken: string | null;
 		/** STANDARD tiers only: the backend refuses any other tier on create/edit. */
 		tiers: MembershipTierSchema[];
+		/** False once a refetch shows the edited entry is gone from the list. */
+		recordPresent?: boolean;
 		onClose: () => void;
 	}
 
-	const { open, record, slug, accessToken, tiers, onClose }: Props = $props();
+	const { open, record, slug, accessToken, tiers, recordPresent = true, onClose }: Props = $props();
 
 	const queryClient = useQueryClient();
 	const mode = $derived(record ? 'edit' : 'create');
@@ -96,13 +99,52 @@
 		},
 		onError: async (error: unknown) => {
 			submitError = describeRegisterError(error, 'save');
-			if (submitError.stale) {
-				// The entry changed under us (e.g. it was linked): reload so the
-				// locked fields reflect reality before the user retries.
-				await queryClient.invalidateQueries({ queryKey: memberRegisterKeys.all(slug) });
-			}
+			if (submitError.stale) await resyncAfterStale();
 		}
 	}));
+
+	// The entry changed under us (e.g. it was linked): reload, then rebuild the form
+	// from the fresh record so locked fields reflect reality. Edits survive only on
+	// fields that are still editable; anything dropped is reported, never silent.
+	async function resyncAfterStale() {
+		await queryClient.invalidateQueries({ queryKey: memberRegisterKeys.all(slug) });
+		await tick();
+		if (!recordPresent) {
+			toast.info(m['memberRegister.recordGone']());
+			onClose();
+			return;
+		}
+		if (!record) return;
+		const fresh = formValuesFromRecord(record);
+		const { values: next, dropped } = reconcileAfterStale(
+			original,
+			values,
+			fresh,
+			getEditability(record)
+		);
+		original = { ...fresh };
+		values = { ...next };
+		fieldErrors = {};
+		const droppedText = dropped.length
+			? m['memberRegister.droppedLocked']({
+					fields: dropped
+						.map((f) =>
+							f === 'tier'
+								? m['memberRegister.fieldTier']()
+								: m['memberRegister.fieldValidUntilShort']()
+						)
+						.join(', ')
+				})
+			: null;
+		const prev = submitError;
+		submitError = {
+			stale: false,
+			message: prev?.message ?? m['memberRegister.errorStale'](),
+			detail: [prev?.detail, m['memberRegister.changedReview'](), droppedText]
+				.filter(Boolean)
+				.join(' ')
+		};
+	}
 
 	function errorText(code: FormErrorCode | undefined): string {
 		switch (code) {
@@ -120,6 +162,8 @@
 				return m['memberRegister.errValidFromFuture']();
 			case 'rangeInvalid':
 				return m['memberRegister.errRangeInvalid']();
+			case 'noReopen':
+				return m['memberRegister.errNoReopen']();
 			default:
 				return '';
 		}
@@ -128,7 +172,10 @@
 	function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
 		submitError = null;
-		fieldErrors = validateRecordForm(values, { mode, ...(editability ? { editability } : {}) });
+		fieldErrors = validateRecordForm(values, {
+			mode,
+			...(editability ? { editability, original } : {})
+		});
 		if (Object.keys(fieldErrors).length > 0) return;
 		mutation.mutate();
 	}
@@ -255,6 +302,7 @@
 						type="datetime-local"
 						bind:value={values.validUntil}
 						disabled={validUntilLocked}
+						required={editability?.reopenBlocked ?? false}
 						aria-invalid={fieldErrors.validUntil ? 'true' : undefined}
 						aria-describedby="rf-until-read rf-until-help{fieldErrors.validUntil
 							? ' rf-until-err'

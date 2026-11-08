@@ -6,9 +6,9 @@
 	import { BookUser, Download, Plus, ChevronLeft, ChevronRight, Loader2 } from '@lucide/svelte';
 	import type { PageData } from './$types';
 	import type { MembershipRecordSchema } from '$lib/api/generated/types.gen';
-	import { organizationadminmembersListMembershipTiers } from '$lib/api';
+	import { toast } from 'svelte-sonner';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { membershipTiersKeys } from '$lib/queries/membership-tiers';
+	import { allTiersQueryOptions } from '$lib/queries/membership-tiers';
 	import { standardTiers } from '$lib/utils/membership-tier-kind';
 	import { Button } from '$lib/components/ui/button';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
@@ -26,6 +26,7 @@
 	import {
 		DEFAULT_FILTERS,
 		REGISTER_PAGE_SIZE,
+		pageToRedirect,
 		filtersToSearch,
 		hasActiveFilters,
 		parseFilters,
@@ -57,15 +58,7 @@
 	// All-kinds tier list: the filter offers standard AND temporary tiers; the
 	// create/edit form offers the standard ones only (derived below).
 	const tiersQuery = createQuery(() => ({
-		queryKey: membershipTiersKeys.all(slug),
-		queryFn: async () => {
-			const res = await organizationadminmembersListMembershipTiers({
-				path: { slug },
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
-			if (res.error) throw res.error;
-			return res.data;
-		},
+		...allTiersQueryOptions(slug, accessToken),
 		enabled: !!accessToken
 	}));
 	const allTiers = $derived(tiersQuery.data ?? []);
@@ -87,6 +80,27 @@
 		listQuery.error ? describeRegisterError(listQuery.error, 'save') : null
 	);
 
+	// A page past the last one (stale `?page=`, or the last row of the last page was
+	// deleted) holds no rows although the register is not empty: go to the last page.
+	const redirectPage = $derived(
+		listQuery.isSuccess && !listQuery.isPlaceholderData
+			? pageToRedirect(records.length, total, filters.page)
+			: null
+	);
+	$effect(() => {
+		if (redirectPage !== null) applyFilters({ ...filters, page: redirectPage }, { replace: true });
+	});
+
+	// A well-formed tier id that no longer exists matches nothing (the backend
+	// returns an empty list, not an error): drop the filter and say so.
+	$effect(() => {
+		const tierId = filters.tierId;
+		if (tierId && tiersQuery.isSuccess && !allTiers.some((t) => t.id === tierId)) {
+			toast.info(m['memberRegister.tierFilterStale']());
+			applyFilters({ ...filters, tierId: null, page: 1 }, { replace: true });
+		}
+	});
+
 	// Dialog state. Edit tracks the live row so a refetch (e.g. after a stale 409)
 	// updates which fields are locked.
 	let formOpen = $state(false);
@@ -95,7 +109,14 @@
 	let deleting = $state<MembershipRecordSchema | null>(null);
 	let exportOpen = $state(false);
 
+	// Every dialog works on the LIVE row (falling back to the opened snapshot), so a
+	// refetch after a 409/404 updates the lock rules and the future-date checks.
 	const liveEditing = $derived(records.find((r) => r.id === editing?.id) ?? editing);
+	const liveEnding = $derived(records.find((r) => r.id === ending?.id) ?? ending);
+	const liveDeleting = $derived(records.find((r) => r.id === deleting?.id) ?? deleting);
+	const editingPresent = $derived(!editing || records.some((r) => r.id === editing?.id));
+	const endingPresent = $derived(!ending || records.some((r) => r.id === ending?.id));
+	const deletingPresent = $derived(!deleting || records.some((r) => r.id === deleting?.id));
 
 	function openCreate() {
 		editing = null;
@@ -147,6 +168,11 @@
 					{m['memberRegister.retry']()}
 				</Button>
 			</div>
+		{:else if records.length === 0 && redirectPage !== null}
+			<p class="flex items-center gap-2 py-8 text-sm text-muted-foreground" role="status">
+				<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
+				{m['memberRegister.loading']()}
+			</p>
 		{:else if records.length === 0}
 			<EmptyState
 				icon={BookUser}
@@ -224,6 +250,7 @@
 <RecordFormDialog
 	open={formOpen}
 	record={liveEditing}
+	recordPresent={editingPresent}
 	{slug}
 	{accessToken}
 	tiers={formTiers}
@@ -231,14 +258,16 @@
 />
 <EndRecordDialog
 	open={ending !== null}
-	record={ending}
+	record={liveEnding}
+	recordPresent={endingPresent}
 	{slug}
 	{accessToken}
 	onClose={() => (ending = null)}
 />
 <DeleteRecordDialog
 	open={deleting !== null}
-	record={deleting}
+	record={liveDeleting}
+	recordPresent={deletingPresent}
 	{slug}
 	{accessToken}
 	onClose={() => (deleting = null)}

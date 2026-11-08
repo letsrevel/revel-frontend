@@ -1,8 +1,11 @@
 import type {
 	MembershipRecordCreateSchema,
 	MembershipRecordEndedReason,
-	MembershipRecordSchema
+	MembershipRecordEndSchema,
+	MembershipRecordSchema,
+	MembershipRecordUpdateSchema
 } from '$lib/api/generated/types.gen';
+import { toDateTimeLocal, toISOString } from '$lib/utils/datetime';
 import type { RecordEditability } from './editability';
 
 /** Max length of `full_name` on the backend. */
@@ -25,25 +28,17 @@ export const EMPTY_FORM: RecordFormValues = {
 	validUntil: ''
 };
 
-const pad = (n: number): string => String(n).padStart(2, '0');
-
-/** ISO instant -> `YYYY-MM-DDTHH:mm` in the browser's local time ('' for empty/invalid). */
-export function isoToLocalInput(iso: string | null | undefined): string {
-	if (!iso) return '';
-	const d = new Date(iso);
-	if (Number.isNaN(d.getTime())) return '';
-	return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
+const LOCAL_INPUT_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
 
 /**
- * `datetime-local` value -> ISO 8601 instant. The input holds the staff member's
- * local wall time, so this is the honest instant for that wall time (`Date`
- * parses a zone-less datetime string as local). Returns null for empty/invalid.
+ * `datetime-local` value (the browser's local wall time) -> ISO 8601 string with
+ * that zone's offset, via the shared `toISOString`: an absolute instant, which
+ * `new Date()` parses back exactly. Null for empty or malformed input (the
+ * shared helper does not validate; a garbage string would reach the API).
  */
-export function localInputToIso(local: string | null | undefined): string | null {
-	if (!local) return null;
-	const d = new Date(local);
-	return Number.isNaN(d.getTime()) ? null : d.toISOString();
+function toInstant(local: string | null | undefined): string | null {
+	if (!local || !LOCAL_INPUT_RE.test(local) || Number.isNaN(new Date(local).getTime())) return null;
+	return toISOString(local);
 }
 
 export function formValuesFromRecord(record: MembershipRecordSchema): RecordFormValues {
@@ -51,8 +46,8 @@ export function formValuesFromRecord(record: MembershipRecordSchema): RecordForm
 		fullName: record.full_name,
 		email: record.email ?? '',
 		tierId: record.tier_id ?? '',
-		validFrom: isoToLocalInput(record.valid_from),
-		validUntil: isoToLocalInput(record.valid_until)
+		validFrom: toDateTimeLocal(record.valid_from),
+		validUntil: toDateTimeLocal(record.valid_until)
 	};
 }
 
@@ -63,7 +58,8 @@ export type FormErrorCode =
 	| 'tierRequired'
 	| 'validFromRequired'
 	| 'validFromFuture'
-	| 'rangeInvalid';
+	| 'rangeInvalid'
+	| 'noReopen';
 
 export type FormErrors = Partial<
 	Record<'fullName' | 'email' | 'tierId' | 'validFrom' | 'validUntil', FormErrorCode>
@@ -74,7 +70,13 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function validateRecordForm(
 	values: RecordFormValues,
-	opts: { mode: 'create' | 'edit'; editability?: RecordEditability; now?: Date }
+	opts: {
+		mode: 'create' | 'edit';
+		editability?: RecordEditability;
+		/** Edit mode: the seeded values, so untouched fields are not re-validated (they are not sent). */
+		original?: RecordFormValues;
+		now?: Date;
+	}
 ): FormErrors {
 	const errors: FormErrors = {};
 	const name = values.fullName.trim();
@@ -86,14 +88,21 @@ export function validateRecordForm(
 
 	if (opts.mode === 'create' && !values.tierId) errors.tierId = 'tierRequired';
 
-	const from = localInputToIso(values.validFrom);
+	const from = toInstant(values.validFrom);
 	if (!from) errors.validFrom = 'validFromRequired';
-	else if (opts.editability?.validFromNotFuture && new Date(from) > (opts.now ?? new Date())) {
+	else if (
+		opts.editability?.validFromNotFuture &&
+		// Only a changed valid_from is sent, so only a changed one is checked.
+		(!opts.original || values.validFrom !== opts.original.validFrom) &&
+		new Date(from) > (opts.now ?? new Date())
+	) {
 		errors.validFrom = 'validFromFuture';
 	}
 
-	const until = localInputToIso(values.validUntil);
+	const until = toInstant(values.validUntil);
 	if (from && until && new Date(until) < new Date(from)) errors.validUntil = 'rangeInvalid';
+	// A closed linked entry can be re-dated but never reopened; clearing would be dropped silently.
+	if (opts.editability?.reopenBlocked && !values.validUntil) errors.validUntil = 'noReopen';
 	return errors;
 }
 
@@ -102,11 +111,11 @@ export function buildCreateBody(values: RecordFormValues): MembershipRecordCreat
 	const body: MembershipRecordCreateSchema = {
 		full_name: values.fullName.trim(),
 		tier_id: values.tierId,
-		valid_from: localInputToIso(values.validFrom) ?? ''
+		valid_from: toInstant(values.validFrom) ?? ''
 	};
 	const email = values.email.trim();
 	if (email) body.email = email;
-	const until = localInputToIso(values.validUntil);
+	const until = toInstant(values.validUntil);
 	if (until) body.valid_until = until;
 	return body;
 }
@@ -118,13 +127,13 @@ export function buildCreateBody(values: RecordFormValues): MembershipRecordCreat
  * sent, and fields locked by the linked/unlinked rules are never sent (a
  * `tier_id` or `valid_until` on a linked open entry is a 409).
  */
-export interface RecordUpdateBody {
-	full_name?: string;
-	email?: string | null;
-	tier_id?: string;
-	valid_from?: string;
-	valid_until?: string | null;
-}
+export type RecordUpdateBody = Omit<
+	MembershipRecordUpdateSchema,
+	'full_name' | 'tier_id' | 'valid_from'
+> &
+	Partial<{
+		[K in 'full_name' | 'tier_id' | 'valid_from']: NonNullable<MembershipRecordUpdateSchema[K]>;
+	}>;
 
 export function buildUpdateBody(
 	original: RecordFormValues,
@@ -145,13 +154,13 @@ export function buildUpdateBody(
 	// Compare the input strings, not instants: seconds are not representable in the input,
 	// so an untouched field must not be re-sent (and silently truncated).
 	if (current.validFrom && current.validFrom !== original.validFrom) {
-		const iso = localInputToIso(current.validFrom);
+		const iso = toInstant(current.validFrom);
 		if (iso) body.valid_from = iso;
 	}
 
 	if (!editability.validUntilLocked && current.validUntil !== original.validUntil) {
 		if (current.validUntil) {
-			const iso = localInputToIso(current.validUntil);
+			const iso = toInstant(current.validUntil);
 			if (iso) body.valid_until = iso;
 		} else if (!editability.reopenBlocked) {
 			body.valid_until = null;
@@ -166,14 +175,11 @@ export interface EndFormValues {
 	validUntil: string;
 }
 
-export interface EndBody {
-	reason: EndFormValues['reason'];
-	valid_until?: string;
-}
+export type EndBody = Pick<MembershipRecordEndSchema, 'reason'> & { valid_until?: string };
 
 export function buildEndBody(values: EndFormValues): EndBody {
 	const body: EndBody = { reason: values.reason };
-	const until = localInputToIso(values.validUntil);
+	const until = toInstant(values.validUntil);
 	if (until) body.valid_until = until;
 	return body;
 }
@@ -185,9 +191,40 @@ export function validateEndForm(
 	record: Pick<MembershipRecordSchema, 'valid_from'>,
 	opts: { linked: boolean; now?: Date }
 ): EndErrorCode | null {
-	const until = localInputToIso(values.validUntil);
+	const until = toInstant(values.validUntil);
 	if (!until) return null;
 	if (new Date(until) < new Date(record.valid_from)) return 'beforeStart';
 	if (opts.linked && new Date(until) > (opts.now ?? new Date())) return 'future';
 	return null;
+}
+
+export type LockableField = 'tier' | 'validUntil';
+
+/**
+ * After a stale 409 and refetch: rebuild the form from the FRESH record, keeping
+ * the user's edits only on fields that are still editable. A value typed into a
+ * field that is now locked (or a cleared end date that can no longer be cleared)
+ * is dropped, and reported so the caller can say so.
+ */
+export function reconcileAfterStale(
+	original: RecordFormValues,
+	current: RecordFormValues,
+	fresh: RecordFormValues,
+	editability: RecordEditability
+): { values: RecordFormValues; dropped: LockableField[] } {
+	const values: RecordFormValues = { ...fresh };
+	const dropped: LockableField[] = [];
+	if (current.fullName !== original.fullName) values.fullName = current.fullName;
+	if (current.email !== original.email) values.email = current.email;
+	if (current.validFrom !== original.validFrom) values.validFrom = current.validFrom;
+	if (current.tierId !== original.tierId) {
+		if (editability.tierLocked) dropped.push('tier');
+		else values.tierId = current.tierId;
+	}
+	if (current.validUntil !== original.validUntil) {
+		const clearingBlocked = editability.reopenBlocked && !current.validUntil;
+		if (editability.validUntilLocked || clearingBlocked) dropped.push('validUntil');
+		else values.validUntil = current.validUntil;
+	}
+	return { values, dropped };
 }

@@ -38,6 +38,8 @@
 		if (external !== lastApplied) {
 			lastApplied = external;
 			searchInput = external;
+			// A pending debounce would re-apply the stale text over the navigated state.
+			clearTimeout(timer);
 		}
 	});
 
@@ -162,7 +164,8 @@
 			label={m['memberRegister.dayLabel']()}
 			value={filters.activeOn ?? ''}
 			{timezone}
-			onChange={(day) => update({ activeOn: day || null })}
+			onChange={(day) =>
+				onChange({ ...filters, activeOn: day || null, page: 1 }, { replace: true })}
 		/>
 	</div>
 

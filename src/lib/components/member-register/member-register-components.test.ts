@@ -22,6 +22,9 @@ import RegisterRowActions from './RegisterRowActions.svelte';
 import RecordFormDialog from './RecordFormDialog.svelte';
 import EndRecordDialog from './EndRecordDialog.svelte';
 import DeleteRecordDialog from './DeleteRecordDialog.svelte';
+import CalendarDayPicker from './CalendarDayPicker.svelte';
+import RegisterFilters from './RegisterFilters.svelte';
+import { DEFAULT_FILTERS } from '$lib/member-register/filters';
 
 function record(extra: Partial<MembershipRecordSchema> = {}): MembershipRecordSchema {
 	return {
@@ -275,5 +278,126 @@ describe('delete dialog', () => {
 		expect(await screen.findByTestId('register-error')).toHaveTextContent(
 			/remove the member first/i
 		);
+	});
+});
+
+describe('review fixes (components)', () => {
+	const formProps = (rec: MembershipRecordSchema | null, extra: Record<string, unknown> = {}) => ({
+		open: true,
+		record: rec,
+		slug: 'acme',
+		accessToken: 'tok',
+		tiers,
+		onClose: noop,
+		...extra
+	});
+
+	it('refuses to clear the end date of a closed linked entry, inline', async () => {
+		renderIn(
+			RecordFormDialog,
+			formProps(record({ has_account: true, valid_until: '2026-02-01T10:00:00Z' }))
+		);
+		await userEvent.clear(screen.getByLabelText(/valid until/i));
+		await userEvent.click(screen.getByRole('button', { name: /save changes/i }));
+		const err = await screen.findByText(/can't be reopened/i);
+		expect(screen.getByLabelText(/valid until/i)).toHaveAttribute('aria-invalid', 'true');
+		expect(screen.getByLabelText(/valid until/i).getAttribute('aria-describedby')).toContain(
+			err.id
+		);
+		expect(sdk.organizationadminmemberregisterUpdateMemberRegisterRecord).not.toHaveBeenCalled();
+	});
+
+	it('closes the form with a message when a stale 404 finds the entry gone', async () => {
+		sdk.organizationadminmemberregisterUpdateMemberRegisterRecord.mockResolvedValue({
+			error: { detail: 'Not found' },
+			response: { status: 404 }
+		});
+		const onClose = vi.fn();
+		renderIn(RecordFormDialog, formProps(record(), { recordPresent: false, onClose }));
+		const name = screen.getByLabelText(/full name/i);
+		await userEvent.clear(name);
+		await userEvent.type(name, 'Ada King');
+		await userEvent.click(screen.getByRole('button', { name: /save changes/i }));
+		await waitFor(() => expect(onClose).toHaveBeenCalled());
+	});
+
+	it('closes the end dialog when the entry is gone after a 404', async () => {
+		sdk.organizationadminmemberregisterEndMemberRegisterRecord.mockResolvedValue({
+			error: { detail: 'Not found' },
+			response: { status: 404 }
+		});
+		const onClose = vi.fn();
+		renderIn(EndRecordDialog, {
+			open: true,
+			record: record(),
+			recordPresent: false,
+			slug: 'acme',
+			accessToken: 'tok',
+			onClose
+		});
+		await userEvent.click(screen.getByRole('button', { name: /^end membership$/i }));
+		await waitFor(() => expect(onClose).toHaveBeenCalled());
+	});
+
+	it('closes the delete dialog when the entry is gone after a 404', async () => {
+		sdk.organizationadminmemberregisterDeleteMemberRegisterRecord.mockResolvedValue({
+			error: { detail: 'Not found' },
+			response: { status: 404 }
+		});
+		const onClose = vi.fn();
+		renderIn(DeleteRecordDialog, {
+			open: true,
+			record: record(),
+			recordPresent: false,
+			slug: 'acme',
+			accessToken: 'tok',
+			onClose
+		});
+		await userEvent.click(screen.getByRole('button', { name: /delete entry/i }));
+		await waitFor(() => expect(onClose).toHaveBeenCalled());
+	});
+
+	it('day picker ignores half-typed values and applies complete ones and explicit clears', () => {
+		const onChange = vi.fn();
+		renderIn(CalendarDayPicker, {
+			id: 'd',
+			label: 'Day',
+			value: '2026-03-12',
+			timezone: null,
+			onChange
+		});
+		const input = screen.getByLabelText('Day') as HTMLInputElement;
+		input.value = '0002-03-12';
+		input.dispatchEvent(new Event('input', { bubbles: true }));
+		input.dispatchEvent(new Event('change', { bubbles: true }));
+		expect(onChange).not.toHaveBeenCalled();
+		input.value = '2026-04-01';
+		input.dispatchEvent(new Event('input', { bubbles: true }));
+		expect(onChange).not.toHaveBeenCalled();
+		input.dispatchEvent(new Event('change', { bubbles: true }));
+		expect(onChange).toHaveBeenCalledWith('2026-04-01');
+		onChange.mockClear();
+		input.value = '';
+		input.dispatchEvent(new Event('change', { bubbles: true }));
+		expect(onChange).toHaveBeenCalledWith('');
+	});
+
+	it('cancels a pending search debounce when filters change from outside', async () => {
+		vi.useFakeTimers({ shouldAdvanceTime: true });
+		try {
+			const onChange = vi.fn();
+			const base = { tiers: [], timezone: null, onChange };
+			const { rerender } = render(RegisterFilters, {
+				props: { ...base, filters: { ...DEFAULT_FILTERS } }
+			});
+			const search = screen.getByLabelText(/search/i);
+			await userEvent.type(search, 'ada');
+			await rerender({ ...base, filters: { ...DEFAULT_FILTERS, search: 'grace' } });
+			await vi.advanceTimersByTimeAsync(1000);
+			expect(onChange).not.toHaveBeenCalled();
+			expect(search).toHaveValue('grace');
+		} finally {
+			vi.useRealTimers();
+		}
 	});
 });

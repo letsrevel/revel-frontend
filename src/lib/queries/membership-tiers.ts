@@ -43,3 +43,30 @@ export function standardTiersQueryOptions(slug: string, accessToken: string | nu
 		queryFn: () => listStandardTiers(slug, accessToken)
 	};
 }
+
+/**
+ * Fetch ALL of the org's membership tiers (standard and temporary). Only the
+ * exact `all` key may hold this unfiltered list. Throws the API error body.
+ */
+export async function listAllTiers(
+	slug: string,
+	accessToken: string | null | undefined,
+	fetchFn?: typeof fetch
+): Promise<MembershipTierSchema[]> {
+	if (!accessToken) throw new Error('listAllTiers: missing access token');
+	const res = await organizationadminmembersListMembershipTiers({
+		...(fetchFn ? { fetch: fetchFn } : {}),
+		path: { slug },
+		headers: { Authorization: `Bearer ${accessToken}` }
+	});
+	if (res.error) throw res.error;
+	return res.data ?? [];
+}
+
+/** TanStack options for the all-kinds tiers list; spread into `createQuery`. */
+export function allTiersQueryOptions(slug: string, accessToken: string | null | undefined) {
+	return {
+		queryKey: membershipTiersKeys.all(slug),
+		queryFn: () => listAllTiers(slug, accessToken)
+	};
+}

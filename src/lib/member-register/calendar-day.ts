@@ -38,3 +38,17 @@ export function formatCalendarDay(day: string | null | undefined): string {
 	if (!isCalendarDay(day)) return '';
 	return formatDate(`${day}T00:00:00Z`, 'UTC');
 }
+
+export const PICKABLE_YEAR_MIN = 1900;
+export const PICKABLE_YEAR_MAX = 2100;
+
+/**
+ * True for a complete real calendar day whose year is plausible for a register
+ * filter. Guards against the half-typed years (`0002-03-12`) a native date input
+ * emits while the user is still typing.
+ */
+export function isPickableDay(value: string | null | undefined): value is string {
+	if (!isCalendarDay(value)) return false;
+	const year = Number(value.slice(0, 4));
+	return year >= PICKABLE_YEAR_MIN && year <= PICKABLE_YEAR_MAX;
+}

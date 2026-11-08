@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
+	import { tick, untrack } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { toast } from 'svelte-sonner';
@@ -21,12 +21,14 @@
 	interface Props {
 		open: boolean;
 		record: MembershipRecordSchema | null;
+		/** False once a refetch shows the entry is gone from the list. */
+		recordPresent?: boolean;
 		slug: string;
 		accessToken: string | null;
 		onClose: () => void;
 	}
 
-	const { open, record, slug, accessToken, onClose }: Props = $props();
+	const { open, record, recordPresent = true, slug, accessToken, onClose }: Props = $props();
 
 	const queryClient = useQueryClient();
 	let submitError = $state<DescribedError | null>(null);
@@ -50,6 +52,11 @@
 			submitError = describeRegisterError(error, 'delete');
 			if (submitError.stale) {
 				await queryClient.invalidateQueries({ queryKey: memberRegisterKeys.all(slug) });
+				await tick();
+				if (!recordPresent) {
+					toast.info(m['memberRegister.recordGone']());
+					onClose();
+				}
 			}
 		}
 	}));

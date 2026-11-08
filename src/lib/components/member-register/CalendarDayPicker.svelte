@@ -3,7 +3,11 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Button } from '$lib/components/ui/button';
-	import { formatCalendarDay, isCalendarDay } from '$lib/member-register/calendar-day';
+	import {
+		formatCalendarDay,
+		isCalendarDay,
+		isPickableDay
+	} from '$lib/member-register/calendar-day';
 
 	interface Props {
 		id: string;
@@ -26,19 +30,25 @@
 				: m['memberRegister.dayReadbackOrgTz']({ day })
 			: ''
 	);
+	// Commit on `change`, not `input`: a native date input emits `input` for every
+	// half-typed segment. Only a complete, plausible day applies; an explicit clear
+	// (empty value WITHOUT a half-typed segment) clears the filter.
+	function handleChange(e: Event & { currentTarget: HTMLInputElement }) {
+		const el = e.currentTarget;
+		if (el.value === '') {
+			if (!el.validity.badInput) onChange('');
+			return;
+		}
+		if (isPickableDay(el.value)) onChange(el.value);
+	}
+
 	const hintId = $derived(`${id}-hint`);
 </script>
 
 <div class={className}>
 	<Label for={id}>{label}</Label>
 	<div class="mt-2 flex items-center gap-2">
-		<Input
-			{id}
-			type="date"
-			{value}
-			aria-describedby={hintId}
-			oninput={(e) => onChange(e.currentTarget.value)}
-		/>
+		<Input {id} type="date" {value} aria-describedby={hintId} onchange={handleChange} />
 		{#if value}
 			<Button type="button" variant="outline" size="sm" onclick={() => onChange('')}>
 				{m['memberRegister.dayClear']()}

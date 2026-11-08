@@ -1,12 +1,13 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { MembershipRecordSchema } from '$lib/api/generated/types.gen';
-import { formatCalendarDay, isCalendarDay } from './calendar-day';
+import { formatCalendarDay, isCalendarDay, isPickableDay } from './calendar-day';
 import { getEditability } from './editability';
 import {
 	DEFAULT_FILTERS,
 	filtersToQuery,
 	filtersToSearch,
 	hasActiveFilters,
+	pageToRedirect,
 	parseFilters
 } from './filters';
 import { getRecordBadges } from './badges';
@@ -15,12 +16,12 @@ import {
 	buildEndBody,
 	buildUpdateBody,
 	formValuesFromRecord,
-	isoToLocalInput,
-	localInputToIso,
+	reconcileAfterStale,
 	validateEndForm,
 	validateRecordForm
 } from './form-values';
 import { resolveOrgTimezone } from './org-timezone';
+import { toDateTimeLocal } from '$lib/utils/datetime';
 
 function record(extra: Partial<MembershipRecordSchema> = {}): MembershipRecordSchema {
 	return {
@@ -45,7 +46,7 @@ describe('filters <-> URL', () => {
 	it('round-trips every filter', () => {
 		const filters = {
 			kind: 'temporary' as const,
-			tierId: 'tier-9',
+			tierId: '3f2b8c1e-5a4d-4e6f-9b7a-1c2d3e4f5a6b',
 			open: 'closed' as const,
 			account: 'without' as const,
 			activeOn: '2026-03-12',
@@ -197,6 +198,8 @@ describe('editability rules', () => {
 	});
 });
 
+const EMPTY = { fullName: '', email: '', tierId: '', validFrom: '', validUntil: '' };
+
 describe('form values', () => {
 	it('never sends null for full_name, tier_id or valid_from, and only changed fields', () => {
 		const rec = record();
@@ -237,9 +240,12 @@ describe('form values', () => {
 	});
 
 	it('converts datetime-local honestly and round-trips', () => {
-		const local = isoToLocalInput('2026-03-12T10:30:00Z');
-		expect(localInputToIso(local)).toBe(new Date(local).toISOString());
-		expect(localInputToIso('')).toBeNull();
+		const local = toDateTimeLocal('2026-03-12T10:30:00Z');
+		// the instant sent equals the instant the local wall time denotes
+		const body = buildCreateBody({ ...EMPTY, fullName: 'A', tierId: 't', validFrom: local });
+		expect(new Date(body.valid_from).getTime()).toBe(new Date(local).getTime());
+		expect(buildCreateBody({ ...EMPTY, validFrom: '' }).valid_from).toBe('');
+		expect(buildCreateBody({ ...EMPTY, validFrom: 'garbage' }).valid_from).toBe('');
 	});
 
 	it('validates create input and builds the body', () => {
@@ -270,7 +276,7 @@ describe('form values', () => {
 	it('rejects a future start for linked open entries and an end before the start', () => {
 		const e = getEditability(record({ has_account: true }));
 		const future = new Date(Date.now() + 86_400_000);
-		const local = isoToLocalInput(future.toISOString());
+		const local = toDateTimeLocal(future.toISOString());
 		const errors = validateRecordForm(
 			{ fullName: 'A', email: '', tierId: 't', validFrom: local, validUntil: '' },
 			{ mode: 'edit', editability: e }
@@ -293,7 +299,7 @@ describe('form values', () => {
 	it('end form: reason, optional date, linked future is refused', () => {
 		expect(buildEndBody({ reason: 'removed', validUntil: '' })).toEqual({ reason: 'removed' });
 		const rec = record({ has_account: true });
-		const future = isoToLocalInput(new Date(Date.now() + 86_400_000).toISOString());
+		const future = toDateTimeLocal(new Date(Date.now() + 86_400_000).toISOString());
 		expect(
 			validateEndForm({ reason: 'cancelled', validUntil: future }, rec, { linked: true })
 		).toBe('future');
@@ -305,5 +311,83 @@ describe('form values', () => {
 				linked: false
 			})
 		).toBe('beforeStart');
+	});
+});
+
+describe('review fixes', () => {
+	it('refuses clearing the end date of a closed linked entry', () => {
+		const rec = record({ has_account: true, valid_until: '2026-02-01T10:00:00Z' });
+		const original = formValuesFromRecord(rec);
+		const errors = validateRecordForm(
+			{ ...original, validUntil: '' },
+			{ mode: 'edit', editability: getEditability(rec), original }
+		);
+		expect(errors.validUntil).toBe('noReopen');
+		expect(
+			validateRecordForm(original, { mode: 'edit', editability: getEditability(rec), original })
+		).toEqual({});
+	});
+
+	it('does not re-validate an untouched valid_from on a linked open entry', () => {
+		const rec = record({ has_account: true, valid_from: '2999-01-01T10:00:00Z' });
+		const original = formValuesFromRecord(rec);
+		const opts = { mode: 'edit' as const, editability: getEditability(rec), original };
+		expect(validateRecordForm(original, opts).validFrom).toBeUndefined();
+		const touched = { ...original, validFrom: toDateTimeLocal('2998-01-01T10:00:00Z') };
+		expect(validateRecordForm(touched, opts).validFrom).toBe('validFromFuture');
+	});
+
+	it('reconciles after a stale 409: keeps open fields, reports dropped locked ones', () => {
+		const before = record();
+		const original = formValuesFromRecord(before);
+		const typed = {
+			...original,
+			fullName: 'Ada K.',
+			tierId: 'tier-2',
+			validUntil: '2030-01-01T10:00'
+		};
+		const after = record({ has_account: true });
+		const result = reconcileAfterStale(
+			original,
+			typed,
+			formValuesFromRecord(after),
+			getEditability(after)
+		);
+		expect(result.values.fullName).toBe('Ada K.');
+		expect(result.values.tierId).toBe('tier-1');
+		expect(result.values.validUntil).toBe('');
+		expect(result.dropped).toEqual(['tier', 'validUntil']);
+		const calm = reconcileAfterStale(original, original, original, getEditability(before));
+		expect(calm.dropped).toEqual([]);
+	});
+
+	it('keeps the user typing when nothing got locked', () => {
+		const rec = record();
+		const original = formValuesFromRecord(rec);
+		const typed = { ...original, tierId: 'tier-2' };
+		const r = reconcileAfterStale(original, typed, original, getEditability(rec));
+		expect(r.values.tierId).toBe('tier-2');
+		expect(r.dropped).toEqual([]);
+	});
+
+	it('only accepts well-formed tier ids from the URL', () => {
+		const id = '3f2b8c1e-5a4d-4e6f-9b7a-1c2d3e4f5a6b';
+		expect(parseFilters(new URLSearchParams(`tier=${id}`)).tierId).toBe(id);
+		expect(parseFilters(new URLSearchParams('tier=not-a-uuid')).tierId).toBeNull();
+	});
+
+	it('only treats complete, plausible days as pickable', () => {
+		expect(isPickableDay('2026-03-12')).toBe(true);
+		expect(isPickableDay('0002-03-12')).toBe(false);
+		expect(isPickableDay('2200-01-01')).toBe(false);
+		expect(isPickableDay('2026-03')).toBe(false);
+	});
+
+	it('redirects past-the-end pages to the last valid page', () => {
+		expect(pageToRedirect(0, 25, 4)).toBe(2);
+		expect(pageToRedirect(0, 20, 2)).toBe(1);
+		expect(pageToRedirect(0, 0, 3)).toBeNull();
+		expect(pageToRedirect(5, 25, 2)).toBeNull();
+		expect(pageToRedirect(0, 25, 1)).toBeNull();
 	});
 });
