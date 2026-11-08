@@ -10925,5 +10925,10 @@
 		}
 	],
 	"memberRegister.inviteAllNone": "Nenhuma entrada aguardava convite",
-	"memberRegister.errorInviteAllThrottled": "Atingiste o limite de hoje para convites em massa. Tenta novamente amanhã."
+	"memberRegister.errorInviteAllThrottled": "Atingiste o limite de convites em massa (5 por 24 horas). Tenta novamente mais tarde.",
+	"memberRegister.errorInviteAllThrottledIn": "Atingiste o limite de convites em massa. Tenta novamente dentro de {time}.",
+	"memberRegister.inviteAllLimitNote": "Podes enviar convites em massa até 5 vezes em 24 horas.",
+	"memberRegister.inviteAllRetryNote": "Cada tentativa conta para esse limite, mesmo que tenha falhado. Verifica o registo antes de tentar novamente.",
+	"memberRegister.inviteAllRetryConfirm": "Tentar novamente",
+	"memberRegister.inviteAllEmptyHint": "Adiciona entradas ao registo antes de convidar todos."
 }

@@ -14,14 +14,16 @@
 		onEnd: (record: MembershipRecordSchema) => void;
 		onDelete: (record: MembershipRecordSchema) => void;
 		onInvite: (record: MembershipRecordSchema) => void;
+		/** Reactive clock so a row becomes invitable once valid_from passes. */
+		now?: Date;
 	}
 
-	const { record, isOwner, onEdit, onEnd, onDelete, onInvite }: Props = $props();
+	const { record, isOwner, onEdit, onEnd, onDelete, onInvite, now }: Props = $props();
 
 	const canEnd = $derived(getEditability(record).canEnd);
-	// Evaluated at render: a row that crosses valid_from while the page is open is
-	// picked up on the next refetch, and the backend re-checks anyway.
-	const inviteable = $derived(canInvite(record));
+	// `now` ticks on the register page, so a row that crosses valid_from while the
+	// page is open becomes invitable; the backend re-checks anyway.
+	const inviteable = $derived(canInvite(record, now ?? new Date()));
 </script>
 
 <!--

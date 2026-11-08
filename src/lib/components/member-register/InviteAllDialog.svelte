@@ -37,11 +37,12 @@
 	// eligible entries, so the confirm names no number; the real one comes back here.
 	const mutation = createMutation(() => ({
 		mutationFn: () => inviteAll(slug, accessToken),
-		onSuccess: async (invited: number) => {
-			await queryClient.invalidateQueries({ queryKey: memberRegisterKeys.all(slug) });
+		onSuccess: (invited: number) => {
 			if (invited > 0) toast.success(m['memberRegister.inviteAllSent']({ invited }));
 			else toast.info(m['memberRegister.inviteAllNone']());
 			onClose();
+			// Refresh in the background: nothing here waits on the list.
+			void queryClient.invalidateQueries({ queryKey: memberRegisterKeys.all(slug) });
 		},
 		onError: (error: unknown) => {
 			submitError = describeRegisterError(error, 'invite-all');
@@ -60,8 +61,17 @@
 			<DialogDescription>{m['memberRegister.inviteAllDescription']()}</DialogDescription>
 		</DialogHeader>
 
+		<p class="text-sm text-muted-foreground" data-testid="invite-all-limit">
+			{m['memberRegister.inviteAllLimitNote']()}
+		</p>
+
 		{#if submitError}
 			<RegisterErrorAlert error={submitError} />
+			{#if !submitError.throttled}
+				<p class="text-sm text-muted-foreground" data-testid="invite-all-retry-note">
+					{m['memberRegister.inviteAllRetryNote']()}
+				</p>
+			{/if}
 		{/if}
 
 		<DialogFooter class="gap-2 sm:gap-0">
@@ -79,7 +89,9 @@
 				{#if mutation.isPending}
 					<Loader2 class="animate-spin" aria-hidden="true" />
 				{/if}
-				{m['memberRegister.inviteAllConfirm']()}
+				{submitError && !submitError.throttled
+					? m['memberRegister.inviteAllRetryConfirm']()
+					: m['memberRegister.inviteAllConfirm']()}
 			</Button>
 		</DialogFooter>
 	</DialogContent>

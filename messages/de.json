@@ -10925,5 +10925,10 @@
 		}
 	],
 	"memberRegister.inviteAllNone": "Kein Eintrag wartete auf eine Einladung",
-	"memberRegister.errorInviteAllThrottled": "Du hast das heutige Limit für Sammeleinladungen erreicht. Versuche es morgen erneut."
+	"memberRegister.errorInviteAllThrottled": "Du hast das Limit für Sammeleinladungen erreicht (5 pro 24 Stunden). Versuche es später erneut.",
+	"memberRegister.errorInviteAllThrottledIn": "Du hast das Limit für Sammeleinladungen erreicht. Versuche es in {time} erneut.",
+	"memberRegister.inviteAllLimitNote": "Du kannst Sammeleinladungen bis zu 5-mal in 24 Stunden senden.",
+	"memberRegister.inviteAllRetryNote": "Jeder Versuch zählt für dieses Limit, auch wenn er fehlgeschlagen ist. Prüfe das Register, bevor du es erneut versuchst.",
+	"memberRegister.inviteAllRetryConfirm": "Erneut versuchen",
+	"memberRegister.inviteAllEmptyHint": "Füge Einträge zum Register hinzu, bevor du alle einlädst."
 }

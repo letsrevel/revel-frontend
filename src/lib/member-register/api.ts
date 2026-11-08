@@ -28,23 +28,36 @@ import type { EndBody, RecordUpdateBody } from './form-values';
 export class RegisterApiError extends Error {
 	readonly status: number;
 	readonly body: unknown;
+	/** Seconds from the `Retry-After` header of a throttled (429) answer, when sent. */
+	readonly retryAfterSeconds: number | null;
 	readonly silent = true;
 
-	constructor(status: number, body: unknown) {
+	constructor(status: number, body: unknown, retryAfterSeconds: number | null = null) {
 		super(backendMessage(body) ?? `Member register request failed (${status})`);
 		this.name = 'RegisterApiError';
 		this.status = status;
 		this.body = body;
+		this.retryAfterSeconds = retryAfterSeconds;
 	}
 }
 
 interface Settled {
 	error?: unknown;
-	response?: { status?: number };
+	response?: { status?: number; headers?: { get?: (name: string) => string | null } };
+}
+
+/** `Retry-After` in delta-seconds (what DRF sends); HTTP-date form is ignored. */
+function retryAfterOf(res: Settled): number | null {
+	const raw = res.response?.headers?.get?.('Retry-After');
+	if (!raw || !/^\d+$/.test(raw.trim())) return null;
+	const seconds = Number.parseInt(raw, 10);
+	return seconds > 0 ? seconds : null;
 }
 
 function ensureOk(res: Settled): void {
-	if (res.error) throw new RegisterApiError(res.response?.status ?? 0, res.error);
+	if (res.error) {
+		throw new RegisterApiError(res.response?.status ?? 0, res.error, retryAfterOf(res));
+	}
 }
 
 function authHeaders(accessToken: string | null | undefined): { Authorization: string } {

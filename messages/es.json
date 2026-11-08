@@ -10925,5 +10925,10 @@
 		}
 	],
 	"memberRegister.inviteAllNone": "Ninguna entrada estaba pendiente de invitación",
-	"memberRegister.errorInviteAllThrottled": "Has alcanzado el límite de hoy para invitaciones masivas. Inténtalo de nuevo mañana."
+	"memberRegister.errorInviteAllThrottled": "Has alcanzado el límite de invitaciones masivas (5 cada 24 horas). Inténtalo de nuevo más tarde.",
+	"memberRegister.errorInviteAllThrottledIn": "Has alcanzado el límite de invitaciones masivas. Inténtalo de nuevo en {time}.",
+	"memberRegister.inviteAllLimitNote": "Puedes enviar invitaciones masivas hasta 5 veces cada 24 horas.",
+	"memberRegister.inviteAllRetryNote": "Cada intento cuenta para ese límite, aunque haya fallado. Revisa el registro antes de volver a intentarlo.",
+	"memberRegister.inviteAllRetryConfirm": "Reintentar",
+	"memberRegister.inviteAllEmptyHint": "Añade entradas al registro antes de invitar a todos."
 }

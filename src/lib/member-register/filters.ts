@@ -114,3 +114,8 @@ export function pageToRedirect(resultCount: number, total: number, page: number)
 	if (resultCount > 0 || total <= 0 || page <= 1) return null;
 	return Math.max(1, Math.ceil(total / REGISTER_PAGE_SIZE));
 }
+
+/** The register itself is empty: zero rows under the default (unfiltered) view. */
+export function isRegisterEmpty(total: number, filters: RegisterFilters): boolean {
+	return total === 0 && !hasActiveFilters(filters);
+}

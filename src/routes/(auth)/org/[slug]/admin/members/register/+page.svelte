@@ -22,6 +22,7 @@
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import RegisterFilters from '$lib/components/member-register/RegisterFilters.svelte';
+	import { useNow } from '$lib/member-register/now.svelte';
 	import RegisterTable from '$lib/components/member-register/RegisterTable.svelte';
 	import RegisterCards from '$lib/components/member-register/RegisterCards.svelte';
 	import RecordFormDialog from '$lib/components/member-register/RecordFormDialog.svelte';
@@ -39,6 +40,7 @@
 		pageToRedirect,
 		filtersToSearch,
 		hasActiveFilters,
+		isRegisterEmpty,
 		parseFilters,
 		type RegisterFilters as Filters
 	} from '$lib/member-register/filters';
@@ -86,6 +88,12 @@
 	const pageCount = $derived(Math.max(1, Math.ceil(total / REGISTER_PAGE_SIZE)));
 	const rangeFrom = $derived(total === 0 ? 0 : (filters.page - 1) * REGISTER_PAGE_SIZE + 1);
 	const rangeTo = $derived(Math.min(filters.page * REGISTER_PAGE_SIZE, total));
+	// "Invite all" has nothing to do on an empty register. Only the unfiltered view's
+	// count proves emptiness; with a filter on, a zero count says nothing.
+	const registerEmpty = $derived(
+		listQuery.isSuccess && !listQuery.isPlaceholderData && isRegisterEmpty(total, filters)
+	);
+	const clock = useNow();
 	const listError = $derived(
 		listQuery.error ? describeRegisterError(listQuery.error, 'save') : null
 	);
@@ -153,10 +161,22 @@
 			<Download aria-hidden="true" />
 			{m['memberRegister.exportOpen']()}
 		</Button>
-		<Button variant="outline" onclick={() => (inviteAllOpen = true)}>
+		<Button
+			variant="outline"
+			aria-disabled={registerEmpty}
+			aria-describedby={registerEmpty ? 'invite-all-hint' : undefined}
+			class={registerEmpty ? 'cursor-not-allowed opacity-50' : undefined}
+			data-testid="invite-all-open"
+			onclick={() => {
+				if (!registerEmpty) inviteAllOpen = true;
+			}}
+		>
 			<Mail aria-hidden="true" />
 			{m['memberRegister.inviteAllOpen']()}
 		</Button>
+		{#if registerEmpty}
+			<span id="invite-all-hint" class="sr-only">{m['memberRegister.inviteAllEmptyHint']()}</span>
+		{/if}
 		<Button onclick={openCreate}>
 			<Plus aria-hidden="true" />
 			{m['memberRegister.addEntry']()}
@@ -222,6 +242,7 @@
 				onEnd={(r) => (ending = r)}
 				onDelete={(r) => (deleting = r)}
 				onInvite={(r) => (inviting = r)}
+				now={clock.current}
 			/>
 			<RegisterCards
 				{records}
@@ -230,6 +251,7 @@
 				onEnd={(r) => (ending = r)}
 				onDelete={(r) => (deleting = r)}
 				onInvite={(r) => (inviting = r)}
+				now={clock.current}
 			/>
 
 			<nav

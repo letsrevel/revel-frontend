@@ -51,3 +51,11 @@ describe('canInvite', () => {
 		expect(canInvite(rec({ valid_from: '2026-06-02T00:00:00Z' }), NOW)).toBe(false);
 	});
 });
+
+describe('canInvite clock', () => {
+	it('becomes invitable once the injected now passes valid_from', () => {
+		const future = rec({ valid_from: '2026-06-01T12:01:00Z' });
+		expect(canInvite(future, NOW)).toBe(false);
+		expect(canInvite(future, new Date('2026-06-01T12:01:00Z'))).toBe(true);
+	});
+});

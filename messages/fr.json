@@ -10925,5 +10925,10 @@
 		}
 	],
 	"memberRegister.inviteAllNone": "Aucune entrée n'attendait d'invitation",
-	"memberRegister.errorInviteAllThrottled": "Tu as atteint la limite du jour pour les invitations groupées. Réessaie demain."
+	"memberRegister.errorInviteAllThrottled": "Tu as atteint la limite des invitations groupées (5 par 24 heures). Réessaie plus tard.",
+	"memberRegister.errorInviteAllThrottledIn": "Tu as atteint la limite des invitations groupées. Réessaie dans {time}.",
+	"memberRegister.inviteAllLimitNote": "Tu peux envoyer des invitations groupées jusqu'à 5 fois par 24 heures.",
+	"memberRegister.inviteAllRetryNote": "Chaque tentative compte dans cette limite, même si elle a échoué. Vérifie le registre avant de réessayer.",
+	"memberRegister.inviteAllRetryConfirm": "Réessayer",
+	"memberRegister.inviteAllEmptyHint": "Ajoute des entrées au registre avant d'inviter tout le monde."
 }

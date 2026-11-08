@@ -10925,5 +10925,10 @@
 		}
 	],
 	"memberRegister.inviteAllNone": "No entries were waiting for an invitation",
-	"memberRegister.errorInviteAllThrottled": "You've reached today's limit for bulk invitations. Try again tomorrow."
+	"memberRegister.errorInviteAllThrottled": "You've reached the limit for bulk invitations (5 per 24 hours). Try again later.",
+	"memberRegister.errorInviteAllThrottledIn": "You've reached the limit for bulk invitations. Try again in {time}.",
+	"memberRegister.inviteAllLimitNote": "You can send bulk invitations up to 5 times in 24 hours.",
+	"memberRegister.inviteAllRetryNote": "Each attempt counts towards that limit, even if it failed. Check the register before trying again.",
+	"memberRegister.inviteAllRetryConfirm": "Try again",
+	"memberRegister.inviteAllEmptyHint": "Add entries to the register before inviting everyone."
 }

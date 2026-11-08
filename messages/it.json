@@ -10925,5 +10925,10 @@
 		}
 	],
 	"memberRegister.inviteAllNone": "Nessuna voce era in attesa di un invito",
-	"memberRegister.errorInviteAllThrottled": "Hai raggiunto il limite di oggi per gli inviti multipli. Riprova domani."
+	"memberRegister.errorInviteAllThrottled": "Hai raggiunto il limite per gli inviti multipli (5 ogni 24 ore). Riprova più tardi.",
+	"memberRegister.errorInviteAllThrottledIn": "Hai raggiunto il limite per gli inviti multipli. Riprova tra {time}.",
+	"memberRegister.inviteAllLimitNote": "Puoi inviare inviti multipli fino a 5 volte ogni 24 ore.",
+	"memberRegister.inviteAllRetryNote": "Ogni tentativo conta per questo limite, anche se è fallito. Controlla il registro prima di riprovare.",
+	"memberRegister.inviteAllRetryConfirm": "Riprova",
+	"memberRegister.inviteAllEmptyHint": "Aggiungi voci al registro prima di invitare tutti."
 }
