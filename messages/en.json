@@ -10731,6 +10731,10 @@
 	"tierForm.excludedMembershipTiers": "Exclude only members of…",
 	"tierForm.excludedMembershipTiersHelp": "Everyone except members (of the selected tiers). Leave empty to exclude all active members. Only active memberships are excluded: paused or cancelled members, owners and staff can still buy.",
 	"tierForm.excludedMembershipTiersNone": "This organization has no standard membership tiers yet, so every active member is excluded.",
+	"tierForm.excludedMembershipTierUnavailable": "Unavailable membership tier",
+	"tierForm.excludedMembershipTiersLoading": "Loading membership tiers...",
+	"tierForm.excludedMembershipTiersLoadError": "Could not load the membership tiers. Reload to see which are excluded.",
+	"checkoutSheet.nonMembersTiersRemoved": "We removed {names} from your cart: active members can't buy it.",
 	"tierForm.field.excluded_membership_tiers_ids": "Excluded membership tiers",
 	"tierCardAdmin.notAvailableToMembers": "Not available to members",
 	"tierCardAdmin.chooseAnotherTierHint": "This tier isn't available to members. Choose another tier.",
@@ -10739,5 +10743,5 @@
 	"seriesPassAdmin.incompatibleTierHint": "Tiers marked unavailable are stricter than this pass (for example a members-only tier under a pass for everyone), so the pass cannot cover them.",
 	"seriesPassAdmin.noCompatibleTiers": "No tier of this event can back this pass: each has a stricter purchase rule than the pass. Loosen the tier's rule or change who can buy the pass.",
 	"seriesPass.nonMembersNote": "For non-members only. Active members can't buy this pass.",
-	"seriesPass.notAvailableToMembers": "This pass isn't available to members."
+	"seriesPass.cannotBuy": "You can't buy this pass."
 }

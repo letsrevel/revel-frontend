@@ -10731,6 +10731,10 @@
 	"tierForm.excludedMembershipTiers": "Exclure uniquement les membres de…",
 	"tierForm.excludedMembershipTiersHelp": "Tout le monde sauf les membres (des niveaux sélectionnés). Laisse vide pour exclure tous les membres actifs. Seules les adhésions actives excluent : les membres en pause ou dont l'adhésion est annulée, les propriétaires et l'équipe peuvent toujours acheter.",
 	"tierForm.excludedMembershipTiersNone": "Cette organisation n'a pas encore de niveaux d'adhésion standard : tous les membres actifs sont donc exclus.",
+	"tierForm.excludedMembershipTierUnavailable": "Niveau d'adhésion indisponible",
+	"tierForm.excludedMembershipTiersLoading": "Chargement des niveaux d'adhésion...",
+	"tierForm.excludedMembershipTiersLoadError": "Impossible de charger les niveaux d'adhésion. Recharge la page pour voir lesquels sont exclus.",
+	"checkoutSheet.nonMembersTiersRemoved": "Nous avons retiré {names} de ton panier : les membres actifs ne peuvent pas l'acheter.",
 	"tierForm.field.excluded_membership_tiers_ids": "Niveaux d'adhésion exclus",
 	"tierCardAdmin.notAvailableToMembers": "Indisponible pour les membres",
 	"tierCardAdmin.chooseAnotherTierHint": "Ce tarif n'est pas disponible pour les membres. Choisis un autre tarif.",
@@ -10739,5 +10743,5 @@
 	"seriesPassAdmin.incompatibleTierHint": "Les catégories marquées comme indisponibles sont plus strictes que ce pass (par exemple une catégorie réservée aux membres sous un pass ouvert à tous) : le pass ne peut donc pas les couvrir.",
 	"seriesPassAdmin.noCompatibleTiers": "Aucune catégorie de billet de cet événement ne peut servir de base à ce pass : chacune a une règle d'achat plus stricte que le pass. Assouplis la règle de la catégorie ou change qui peut acheter le pass.",
 	"seriesPass.nonMembersNote": "Réservé aux non-membres. Les membres actifs ne peuvent pas acheter ce pass.",
-	"seriesPass.notAvailableToMembers": "Ce pass n'est pas disponible pour les membres."
+	"seriesPass.cannotBuy": "Tu ne peux pas acheter ce pass."
 }

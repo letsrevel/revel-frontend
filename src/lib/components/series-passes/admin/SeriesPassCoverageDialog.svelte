@@ -56,6 +56,28 @@
 	// it can be read; cleared on the next attempt.
 	let extendError = $state('');
 
+	/**
+	 * One message per field error. With several, each is prefixed with where it
+	 * applies: the event of the `payload.N.*` link it points at when that resolves,
+	 * otherwise the raw field name.
+	 */
+	function describeFieldErrors(
+		fields: { field: string; messages: string[] }[],
+		links: { event_id: string; tier_id: string }[]
+	): string {
+		if (fields.length === 1) return fields[0].messages.join(' ');
+		const eventNames = new Map(upcomingEvents.map((e) => [e.id, e.name]));
+		return fields
+			.map(({ field, messages }) => {
+				const bare = field.replace(/^payload\./, '');
+				const index = /^(\d+)(\.|$)/.exec(bare)?.[1];
+				const eventId = index === undefined ? undefined : links[Number(index)]?.event_id;
+				const context = (eventId && eventNames.get(eventId)) || bare;
+				return `${context}: ${messages.join(' ')}`;
+			})
+			.join(' ');
+	}
+
 	const extendMutation = createMutation(() => ({
 		mutationFn: async (links: { event_id: string; tier_id: string }[]) => {
 			extendError = '';
@@ -65,10 +87,10 @@
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (response.error) {
-				const keyed = extractFieldErrors(response.error).flatMap(({ messages }) => messages);
+				const fields = extractFieldErrors(response.error);
 				throw new Error(
-					keyed.length > 0
-						? keyed.join(' ')
+					fields.length > 0
+						? describeFieldErrors(fields, links)
 						: extractErrorMessage(response.error, m['seriesPassAdmin.extendFailed']())
 				);
 			}
@@ -89,6 +111,7 @@
 				}))
 			];
 			tierSelections = {};
+			extendError = '';
 			await invalidateAdminPasses(queryClient, seriesId);
 			toast.success(m['seriesPassAdmin.extendSuccess']({ count: links.length }));
 		},
@@ -197,7 +220,10 @@
 					passPurchasableBy={pass.purchasable_by}
 					error={extendError}
 					selections={tierSelections}
-					onSelectionsChange={(next) => (tierSelections = next)}
+					onSelectionsChange={(next) => {
+						tierSelections = next;
+						extendError = '';
+					}}
 					disabled={extendMutation.isPending}
 				/>
 				<div class="flex justify-end">

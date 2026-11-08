@@ -507,6 +507,11 @@
 		{platformFees}
 		{orgVat}
 		{membershipTiers}
+		membershipTiersStatus={membershipTiersQuery.isError
+			? 'error'
+			: membershipTiersQuery.isPending
+				? 'loading'
+				: 'ready'}
 		eventVenueId={formData.venue_id || null}
 		{eventCapacity}
 		rules={{ compliance, status: complianceStatus, onRetry: () => complianceQuery.refetch() }}

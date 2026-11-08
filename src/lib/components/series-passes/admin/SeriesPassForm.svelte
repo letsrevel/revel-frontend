@@ -30,9 +30,10 @@
 		toDatetimeLocal,
 		toTimezoneAwareISO
 	} from '$lib/components/events/admin/tier-form-helpers';
-	import { extractErrorMessage, extractFieldErrors } from '$lib/utils/errors';
+	import { extractErrorMessage } from '$lib/utils/errors';
 	import { formatDateTimeReadback } from '$lib/utils/date';
 	import PassTierMappingSection from './PassTierMappingSection.svelte';
+	import { toPassFieldErrors } from './pass-field-errors';
 	import { toast } from 'svelte-sonner';
 
 	interface Props {
@@ -81,28 +82,23 @@
 		'currency',
 		'payment_method',
 		'purchasable_by',
-		'total_quantity',
-		'tier',
-		'event',
-		'tier_links'
+		'total_quantity'
 	]);
-	const tierLinkError = $derived(
-		[fieldErrors.tier, fieldErrors.event, fieldErrors.tier_links].filter(Boolean).join(' ')
-	);
-
-	function toFieldErrors(error: unknown): Record<string, string> {
-		return Object.fromEntries(
-			extractFieldErrors(error).map(({ field, messages }) => [
-				// `tier_links.0.tier` etc. all land on the coverage control.
-				field.startsWith('tier_links') ? 'tier_links' : field,
-				messages.join(' ')
-			])
-		);
+	// Coverage fields only have an inline slot when the mapping section is rendered
+	// (create mode); in edit mode they must reach the form-level alert.
+	const COVERAGE_FIELDS = new Set(['tier', 'event', 'tier_links']);
+	function isInlineField(key: string): boolean {
+		return INLINE_FIELDS.has(key) || (!isEdit && COVERAGE_FIELDS.has(key));
 	}
+	const tierLinkError = $derived(
+		isEdit
+			? ''
+			: [fieldErrors.tier, fieldErrors.event, fieldErrors.tier_links].filter(Boolean).join(' ')
+	);
 
 	function formErrorFor(error: unknown, fallback: string): string {
 		const keys = Object.keys(fieldErrors);
-		if (keys.length > 0 && keys.every((key) => INLINE_FIELDS.has(key))) return '';
+		if (keys.length > 0 && keys.every(isInlineField)) return '';
 		return error instanceof Error ? error.message : fallback;
 	}
 
@@ -114,7 +110,7 @@
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (response.error) {
-				fieldErrors = toFieldErrors(response.error);
+				fieldErrors = toPassFieldErrors(response.error);
 				throw new Error(extractErrorMessage(response.error, m['seriesPassAdmin.createFailed']()));
 			}
 			return response.data;
@@ -137,7 +133,7 @@
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (response.error) {
-				fieldErrors = toFieldErrors(response.error);
+				fieldErrors = toPassFieldErrors(response.error);
 				throw new Error(extractErrorMessage(response.error, m['seriesPassAdmin.updateFailed']()));
 			}
 			return response.data;

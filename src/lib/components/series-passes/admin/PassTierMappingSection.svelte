@@ -105,7 +105,7 @@
 	// first COMPATIBLE tier for every event with no explicit choice yet — never one
 	// that is stricter than the pass. A pick that became incompatible (the pass rule
 	// changed) is dropped back to "no choice" so it re-defaults to a compatible tier,
-	// or to an explicit exclusion when there is none. `defaultedKey` makes this a
+	// or stays unset (not excluded) when there is none. `defaultedKey` makes this a
 	// one-shot per input set — without it the effect re-runs on its own
 	// onSelectionsChange echo and instantly reverts explicit unchecks.
 	let defaultedKey = $state('');
@@ -121,8 +121,10 @@
 			// string = user/default pick, null = explicit exclusion — both final,
 			// unless the pick is no longer compatible with the pass.
 			if (typeof current === 'string' && !selectableTier(event.id, current)) {
-				const fallback = selectableTiers(event.id)[0]?.id ?? null;
-				next[event.id] = fallback;
+				// No compatible tier: drop the pick (undefined), NOT null — null means
+				// "organizer excluded this event" and would never re-default when the
+				// pass rule is switched back.
+				next[event.id] = selectableTiers(event.id)[0]?.id;
 				changed = true;
 				continue;
 			}

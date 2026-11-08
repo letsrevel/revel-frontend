@@ -81,4 +81,51 @@ describe('SeriesPassCoverageDialog — stricter-tier 400 (#1172)', () => {
 		expect(alert).toHaveTextContent(message);
 		expect(alert).toHaveAttribute('role', 'alert');
 	});
+
+	function renderDialog() {
+		render(QueryClientTestWrapper, {
+			props: {
+				client: new QueryClient({
+					defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
+				}),
+				component: SeriesPassCoverageDialog,
+				componentProps: {
+					seriesId: 'series-1',
+					pass,
+					accessToken: 'tok',
+					upcomingEvents: [event],
+					onClose: vi.fn()
+				}
+			}
+		});
+	}
+
+	it('prefixes each of several field errors with the event it applies to', async () => {
+		vi.mocked(seriespassadminAddSeriesPassTierLinks).mockResolvedValue({
+			data: undefined,
+			error: { errors: { 'payload.0.tier': ['Too strict.'], 'payload.0.event': ['Past event.'] } },
+			response: { ok: false, status: 400 } as Response
+		} as never);
+		renderDialog();
+
+		await userEvent.click(await screen.findByRole('button', { name: /extend coverage \(1\)/i }));
+
+		const alert = await screen.findByTestId('pass-tier-error');
+		expect(alert).toHaveTextContent('Week 2: Too strict. Week 2: Past event.');
+	});
+
+	it('clears the refusal as soon as the picks change', async () => {
+		vi.mocked(seriespassadminAddSeriesPassTierLinks).mockResolvedValue({
+			data: undefined,
+			error: { errors: { tier: ['Too strict.'] } },
+			response: { ok: false, status: 400 } as Response
+		} as never);
+		renderDialog();
+
+		await userEvent.click(await screen.findByRole('button', { name: /extend coverage \(1\)/i }));
+		await screen.findByTestId('pass-tier-error');
+
+		await userEvent.click(screen.getByRole('checkbox'));
+		expect(screen.queryByTestId('pass-tier-error')).not.toBeInTheDocument();
+	});
 });

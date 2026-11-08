@@ -28,7 +28,9 @@ export const GUEST_COMPATIBLE_STEPS: ReadonlySet<string> = new Set([
 	'purchase_ticket',
 	'rsvp',
 	'wait_for_event_to_open',
-	'wait_for_open_spot'
+	'wait_for_open_spot',
+	// members_excluded (BE #1316): the guest just picks another tier, no account needed.
+	'choose_another_tier'
 ]);
 
 /**
@@ -117,13 +119,7 @@ export function mapGuestCheckoutError(
 			typeof error === 'object' && error !== null && 'next_step' in error
 				? (error as { next_step?: unknown }).next_step
 				: undefined;
-		// `choose_another_tier` (members_excluded) needs no account either: the guest
-		// just picks a different tier, so it degrades to the plain refusal message.
-		if (
-			typeof nextStep === 'string' &&
-			nextStep !== 'choose_another_tier' &&
-			!GUEST_COMPATIBLE_STEPS.has(nextStep)
-		) {
+		if (typeof nextStep === 'string' && !GUEST_COMPATIBLE_STEPS.has(nextStep)) {
 			return new GuestAccountRequiredError(
 				getEligibilityRefusalMessage(error) ?? m['cart.checkoutFailed'](),
 				{ cause: error, email }

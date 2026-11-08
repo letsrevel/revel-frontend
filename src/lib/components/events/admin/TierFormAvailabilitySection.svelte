@@ -5,7 +5,8 @@
 	import { TriangleAlert } from '@lucide/svelte';
 	import { exceedsEventCapacity } from './event-capacity';
 	import TierFormExcludedTiersSection from './TierFormExcludedTiersSection.svelte';
-	import { allowsMembershipRestrictions } from './tier-membership-links';
+	import { extractFieldErrors } from '$lib/utils/errors';
+	import { allowsMembershipRestrictions, excludedTiersError } from './tier-membership-links';
 	import type { MembershipTierSchema, PurchasableBy } from '$lib/api/generated/types.gen';
 
 	interface Props {
@@ -21,9 +22,12 @@
 		restrictedToMembershipTiersIds: string[];
 		/** `non_members` only: exclude just members of these tiers (empty = all active members). */
 		excludedMembershipTiersIds: string[];
-		/** Server message about the exclusion list, shown next to its picker. */
-		excludedError?: string;
+		/** The last save error; its exclusion-list message is shown next to the picker. */
+		saveError?: unknown;
 		membershipTiers: MembershipTierSchema[];
+		membershipTiersStatus?: 'ready' | 'loading' | 'error';
+		/** Exclusions already stored on the tier being edited (names for ids no longer listed). */
+		knownExcludedTiers?: MembershipTierSchema[];
 		/** Organizer kill switch: hides the tier from checkout until resumed, sales window untouched. */
 		salesPaused: boolean;
 		/** Effective event capacity (null = uncapped). */
@@ -43,8 +47,10 @@
 		restrictPurchaseToLinkedInvitations = $bindable(),
 		restrictedToMembershipTiersIds = $bindable(),
 		excludedMembershipTiersIds = $bindable(),
-		excludedError = '',
+		saveError = null,
 		membershipTiers,
+		membershipTiersStatus = 'ready',
+		knownExcludedTiers = [],
 		salesPaused = $bindable(),
 		eventCapacity = null,
 		isPending
@@ -233,8 +239,10 @@
 {#if purchasableBy === 'non_members'}
 	<TierFormExcludedTiersSection
 		{membershipTiers}
+		status={membershipTiersStatus}
+		{knownExcludedTiers}
 		bind:selectedIds={excludedMembershipTiersIds}
-		error={excludedError}
+		error={excludedTiersError(extractFieldErrors(saveError))}
 		{isPending}
 	/>
 {/if}

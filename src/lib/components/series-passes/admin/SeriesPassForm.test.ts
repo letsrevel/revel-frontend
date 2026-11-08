@@ -121,4 +121,17 @@ describe('SeriesPassForm — non-members rule and stricter-link 400 (#1172)', ()
 
 		expect(await screen.findByText('Something else went wrong.')).toBeInTheDocument();
 	});
+
+	it('edit mode: coverage-field errors have no inline slot, so they reach the form alert', async () => {
+		vi.mocked(seriespassadminUpdateSeriesPass).mockResolvedValue({
+			data: undefined,
+			error: { errors: { tier: ['Tier is not valid for this pass.'] } },
+			response: { ok: false, status: 400 } as Response
+		} as never);
+		renderForm();
+
+		await userEvent.click(screen.getByRole('button', { name: /save/i }));
+
+		expect(await screen.findByText(/Tier is not valid for this pass\./)).toBeInTheDocument();
+	});
 });

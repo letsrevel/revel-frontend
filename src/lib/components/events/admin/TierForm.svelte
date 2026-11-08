@@ -48,13 +48,9 @@
 		type TierCheckInEventContext
 	} from './check-in-offset';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { extractFieldErrors, markSilent } from '$lib/utils/errors';
+	import { markSilent } from '$lib/utils/errors';
 	import { CURRENCY_SYMBOLS, toTimezoneAwareISO, normalizeDecimalInput } from './tier-form-helpers';
-	import {
-		excludedTiersError,
-		linkedTierIds,
-		membershipLinksPayload
-	} from './tier-membership-links';
+	import { linkedTierIds, membershipLinksPayload } from './tier-membership-links';
 	import {
 		buildCategoryPricesPayload,
 		buildTierSeatingFields,
@@ -79,6 +75,7 @@
 		/** Org platform-fee terms for the net-payout preview (null hides it). */
 		platformFees?: PlatformFeeInfo | null;
 		membershipTiers?: MembershipTierSchema[];
+		membershipTiersStatus?: 'ready' | 'loading' | 'error'; // org tiers query state
 		eventVenueId?: string | null; // Pre-fill venue from event
 		eventCapacity?: number | null; // Effective event cap (null = uncapped)
 		/** The event form's start/end/check-in window the tier offsets are relative to. */
@@ -101,6 +98,7 @@
 		draft = null,
 		platformFees = null,
 		membershipTiers = [],
+		membershipTiersStatus = 'ready',
 		eventVenueId = null,
 		eventCapacity = null,
 		eventContext = { start: '' },
@@ -549,7 +547,6 @@
 	const error = $derived(
 		tierCreateMutation.error || tierUpdateMutation.error || tierDeleteMutation.error
 	);
-	const excludedError = $derived(excludedTiersError(extractFieldErrors(error)));
 </script>
 
 <Dialog open onOpenChange={onClose}>
@@ -668,8 +665,10 @@
 				bind:restrictPurchaseToLinkedInvitations
 				bind:restrictedToMembershipTiersIds
 				bind:excludedMembershipTiersIds
-				{excludedError}
+				saveError={error}
 				{membershipTiers}
+				{membershipTiersStatus}
+				knownExcludedTiers={tier?.excluded_membership_tiers ?? []}
 				bind:salesPaused
 				{eventCapacity}
 				{isPending}

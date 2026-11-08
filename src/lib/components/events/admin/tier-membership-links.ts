@@ -88,11 +88,15 @@ const EXCLUDED_TIERS_FIELDS = new Set([
  * field-keyed `{ errors: { field: [..] } }` body; plain `detail` strings stay in
  * the form-level error panel.
  */
+export function isExcludedTiersField(field: string): boolean {
+	return EXCLUDED_TIERS_FIELDS.has(field.split('.')[0]);
+}
+
 export function excludedTiersError(
 	fieldErrors: readonly { field: string; messages: string[] }[]
 ): string {
 	return fieldErrors
-		.filter(({ field }) => EXCLUDED_TIERS_FIELDS.has(field.split('.')[0]))
+		.filter(({ field }) => isExcludedTiersField(field))
 		.flatMap(({ messages }) => messages)
 		.join(' ');
 }

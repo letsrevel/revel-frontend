@@ -8,6 +8,8 @@
 import { render, screen } from '@testing-library/svelte';
 import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
+const toastInfo = vi.hoisted(() => vi.fn());
+vi.mock('svelte-sonner', () => ({ toast: { info: toastInfo, success: vi.fn(), error: vi.fn() } }));
 import CheckoutSheet from './CheckoutSheet.svelte';
 import { EventCart } from './cart.svelte';
 import { CartSeatHoldRegistry } from './cart-seat-registry.svelte';
@@ -157,5 +159,53 @@ describe('CheckoutSheet single-ticket holder name pre-fill', () => {
 
 			expect(holderInput()).toHaveValue('');
 		});
+	});
+});
+
+describe('CheckoutSheet "choose another tier" after a members_excluded refusal', () => {
+	it('removes the refused non_members lines from the cart and announces it', async () => {
+		const user = userEvent.setup();
+		const nonMembers = {
+			...freeTier,
+			id: 'tier-nm',
+			name: 'Non-members',
+			purchasable_by: 'non_members'
+		} as TierSchemaWithId;
+		const cart = new EventCart({ remainingFor: () => undefined, eventRemaining: () => null });
+		cart.setQuantity(freeTier, 1);
+		cart.setQuantity(nonMembers, 2);
+		const onChooseAnotherTier = vi.fn();
+		render(CheckoutSheet, {
+			props: {
+				open: true,
+				cart,
+				eventId: EVENT_ID,
+				requireTicketNames: false,
+				isAuthenticated: true,
+				authToken: 'tok',
+				organizationSlug: 'acme',
+				isProcessing: false,
+				purchaseError: new Error('refused', {
+					cause: {
+						allowed: false,
+						event_id: EVENT_ID,
+						reason: 'refused',
+						reason_code: 'members_excluded',
+						next_step: 'choose_another_tier'
+					}
+				}),
+				onConfirm: vi.fn().mockResolvedValue(undefined),
+				registry: new CartSeatHoldRegistry(),
+				onChooseAnotherTier
+			}
+		});
+
+		await user.click(screen.getByTestId('choose-another-tier'));
+
+		expect(cart.groups.map((g) => g.tier.id)).toEqual(['tier-free']);
+		expect(toastInfo).toHaveBeenCalledWith(
+			m['checkoutSheet.nonMembersTiersRemoved']({ names: 'Non-members' })
+		);
+		expect(onChooseAnotherTier).toHaveBeenCalledOnce();
 	});
 });

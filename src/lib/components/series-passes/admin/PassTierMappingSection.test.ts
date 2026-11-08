@@ -148,4 +148,49 @@ describe('PassTierMappingSection — stricter-tier compatibility (BE #1332/#1344
 		await userEvent.click(checkbox);
 		expect(onSelectionsChange).toHaveBeenLastCalledWith({ 'evt-1': 'open' });
 	});
+
+	it('members -> public -> members restores coverage of a members-only event', async () => {
+		mockTiers([tier('members-only', 'members')]);
+		const onSelectionsChange = vi.fn();
+		let selections: Record<string, string | null | undefined> = { 'evt-1': 'members-only' };
+		const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+		const view = render(QueryClientTestWrapper, {
+			props: {
+				client,
+				component: PassTierMappingSection,
+				componentProps: {
+					events: [event],
+					accessToken: 'tok',
+					currency: 'EUR',
+					passPurchasableBy: 'members',
+					selections,
+					onSelectionsChange
+				}
+			}
+		});
+		await screen.findByLabelText(/Tier for Week 1/);
+
+		const props = (passPurchasableBy: string) => ({
+			events: [event],
+			accessToken: 'tok',
+			currency: 'EUR',
+			passPurchasableBy,
+			selections,
+			onSelectionsChange: (next: Record<string, string | null | undefined>) => {
+				selections = next;
+				onSelectionsChange(next);
+			}
+		});
+
+		// members -> public: the only tier is now stricter than the pass.
+		await view.rerender({ componentProps: props('public') });
+		await waitFor(() => expect(onSelectionsChange).toHaveBeenCalled());
+		// Dropped to "no choice" (undefined), NOT the explicit-exclusion null.
+		expect(selections['evt-1']).toBeUndefined();
+		expect(selections['evt-1']).not.toBeNull();
+
+		// public -> members: the pick re-defaults.
+		await view.rerender({ componentProps: props('members') });
+		await waitFor(() => expect(selections['evt-1']).toBe('members-only'));
+	});
 });
