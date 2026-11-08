@@ -28,12 +28,54 @@ export interface NoteCounter {
 	state: NoteCounterState;
 }
 
+const BASIC_ENTITIES: Record<string, string> = {
+	amp: '&',
+	lt: '<',
+	gt: '>',
+	quot: '"',
+	apos: "'",
+	nbsp: '\u00a0'
+};
+
+/** Minimal entity decoder, used only where there is no DOM (SSR). */
+function decodeBasicEntities(text: string): string {
+	return text.replace(
+		/&(?:#(\d+)|#[xX]([0-9a-fA-F]+)|([a-zA-Z]+));/g,
+		(match: string, dec?: string, hex?: string, name?: string) => {
+			const code = dec ? Number(dec) : hex ? parseInt(hex, 16) : null;
+			if (code !== null) {
+				return code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : match;
+			}
+			return (name && BASIC_ENTITIES[name]) || match;
+		}
+	);
+}
+
+/**
+ * Equivalent of the server's `html.unescape`. A textarea parses its content as
+ * RCDATA (entities decoded, nothing executed), so it knows every HTML5 entity.
+ */
+export function unescapeHtml(text: string): string {
+	if (typeof document === 'undefined') return decodeBasicEntities(text);
+	const el = document.createElement('textarea');
+	el.innerHTML = text;
+	return el.value;
+}
+
+/**
+ * The text the server measures against the cap: `len(html.unescape(body.strip()))`
+ * (user_note_service.upsert_note). Counted in code points, like Python's `len`.
+ */
+export function noteLength(body: string): number {
+	return Array.from(unescapeHtml(body.trim())).length;
+}
+
 /**
  * Counter figures for the editor. `state` drives the aria-live announcement:
  * silent while `ok`, so a screen reader is not read a number on every keystroke.
  */
 export function noteCounter(body: string, max: number = NOTE_MAX_LENGTH): NoteCounter {
-	const count = body.length;
+	const count = noteLength(body);
 	const remaining = Math.max(0, max - count);
 	const over = Math.max(0, count - max);
 	const state: NoteCounterState =

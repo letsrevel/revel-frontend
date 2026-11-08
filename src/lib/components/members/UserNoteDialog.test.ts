@@ -24,13 +24,15 @@ vi.mock('svelte-sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } })
 
 import UserNoteDialog from './UserNoteDialog.svelte';
 
-function renderIt(onClose = vi.fn()) {
+function renderIt(
+	onClose = vi.fn(),
+	client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+) {
 	render(QueryClientTestWrapper, {
 		props: {
-			client: new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+			client,
 			component: UserNoteDialog,
 			componentProps: {
-				open: true,
 				slug: 'acme',
 				userId: 'u2',
 				displayName: 'Ada Lovelace',
@@ -122,5 +124,78 @@ describe('UserNoteDialog', () => {
 		setNoteText(await screen.findByRole('textbox'), 'x');
 		await userEvent.click(screen.getByRole('button', { name: 'Save note' }));
 		expect(await screen.findByRole('alert')).toHaveTextContent('Note is too long');
+	});
+
+	it('shows the localized fallback, never raw Error.message, when a save throws', async () => {
+		get.mockResolvedValue({ error: { detail: 'nf' }, response: { status: 404 } });
+		put.mockRejectedValue(new TypeError('Failed to fetch'));
+		renderIt();
+		setNoteText(await screen.findByRole('textbox'), 'x');
+		await userEvent.click(screen.getByRole('button', { name: 'Save note' }));
+		const alert = await screen.findByRole('alert');
+		expect(alert).toHaveTextContent('Could not save the note.');
+		expect(alert).not.toHaveTextContent('Failed to fetch');
+	});
+
+	it('uses the save fallback for an empty response', async () => {
+		get.mockResolvedValue({ error: { detail: 'nf' }, response: { status: 404 } });
+		put.mockResolvedValue({ response: { status: 200 } });
+		renderIt();
+		setNoteText(await screen.findByRole('textbox'), 'x');
+		await userEvent.click(screen.getByRole('button', { name: 'Save note' }));
+		expect(await screen.findByRole('alert')).toHaveTextContent('Could not save the note.');
+	});
+
+	it('uses a delete-specific fallback when deleting fails', async () => {
+		get.mockResolvedValue({ data: existing, response: { status: 200 } });
+		del.mockRejectedValue(new Error('boom'));
+		renderIt();
+		await userEvent.click(await screen.findByRole('button', { name: 'Delete note' }));
+		const dialogs = screen.getAllByRole('dialog');
+		await userEvent.click(
+			within(dialogs[dialogs.length - 1]).getByRole('button', { name: 'Delete note' })
+		);
+		const alert = await screen.findByRole('alert');
+		expect(alert).toHaveTextContent('Could not delete the note.');
+		expect(alert).not.toHaveTextContent('boom');
+	});
+
+	it('uses distinct confirmation copy for the explicit delete button', async () => {
+		get.mockResolvedValue({ data: existing, response: { status: 200 } });
+		renderIt();
+		await userEvent.click(await screen.findByRole('button', { name: 'Delete note' }));
+		expect(await screen.findByText("Delete this note? This can't be undone.")).toBeInTheDocument();
+		expect(screen.queryByText(/Saving an empty note deletes it/)).not.toBeInTheDocument();
+	});
+
+	it('writes the PUT response into the cache without refetching, and only refreshes the members list', async () => {
+		get.mockResolvedValue({ error: { detail: 'nf' }, response: { status: 404 } });
+		const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+		const invalidate = vi.spyOn(client, 'invalidateQueries');
+		const onClose = renderIt(vi.fn(), client);
+		setNoteText(await screen.findByRole('textbox'), 'Hello');
+		await userEvent.click(screen.getByRole('button', { name: 'Save note' }));
+		await waitFor(() => expect(onClose).toHaveBeenCalled());
+		expect(client.getQueryData(['organization', 'acme', 'user-note', 'u2'])).toEqual(existing);
+		expect(invalidate).toHaveBeenCalledTimes(1);
+		expect(invalidate).toHaveBeenCalledWith({ queryKey: ['organization', 'acme', 'members'] });
+		expect(get).toHaveBeenCalledTimes(1);
+	});
+
+	it('removes the note from the cache after a delete', async () => {
+		get.mockResolvedValue({ data: existing, response: { status: 200 } });
+		const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+		const remove = vi.spyOn(client, 'removeQueries');
+		const invalidate = vi.spyOn(client, 'invalidateQueries');
+		const onClose = renderIt(vi.fn(), client);
+		await userEvent.click(await screen.findByRole('button', { name: 'Delete note' }));
+		const dialogs = screen.getAllByRole('dialog');
+		await userEvent.click(
+			within(dialogs[dialogs.length - 1]).getByRole('button', { name: 'Delete note' })
+		);
+		await waitFor(() => expect(onClose).toHaveBeenCalled());
+		expect(remove).toHaveBeenCalledWith({ queryKey: ['organization', 'acme', 'user-note', 'u2'] });
+		expect(invalidate).toHaveBeenCalledTimes(1);
+		expect(invalidate).toHaveBeenCalledWith({ queryKey: ['organization', 'acme', 'members'] });
 	});
 });

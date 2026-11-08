@@ -419,7 +419,6 @@
 <!-- Private note editor (callers reach this only with manage_members) -->
 {#if memberForNote?.user.id}
 	<UserNoteDialog
-		open={true}
 		slug={organization.slug}
 		userId={memberForNote.user.id}
 		displayName={getUserDisplayName(memberForNote.user)}

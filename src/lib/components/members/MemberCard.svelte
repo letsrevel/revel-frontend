@@ -114,7 +114,7 @@
 
 		<!-- Actions -->
 		<div class="flex shrink-0 gap-2">
-			{#if canManage && onNote && member.user.id}
+			{#if onNote && member.user.id}
 				<Button
 					variant="outline"
 					size="sm"

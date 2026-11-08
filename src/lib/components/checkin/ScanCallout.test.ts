@@ -6,7 +6,7 @@ import { scanNoteFrom } from './scan-note';
 describe('ScanCallout', () => {
 	it('renders the title and markdown body', () => {
 		render(ScanCallout, { props: { title: 'Staff note', body: 'Needs **step-free** access' } });
-		const callout = screen.getByRole('complementary', { name: 'Staff note' });
+		const callout = screen.getByRole('note', { name: 'Staff note' });
 		expect(callout).toHaveTextContent('Staff note');
 		expect(callout).toHaveTextContent('Needs step-free access');
 		expect(callout.querySelector('strong')).toHaveTextContent('step-free');
@@ -33,6 +33,11 @@ describe('ScanCallout', () => {
 describe('scanNoteFrom', () => {
 	it('returns null without a note', () => {
 		expect(scanNoteFrom({ user: { first_name: 'A' }, private_note: null } as never)).toBeNull();
+	});
+
+	it('uses the localized fallback when the person has no name', () => {
+		const result = scanNoteFrom({ user: {}, private_note: ' VIP ' } as never);
+		expect(result).toEqual({ name: 'Unknown member', body: 'VIP' });
 	});
 
 	it('names the person and carries the body', () => {

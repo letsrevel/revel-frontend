@@ -15,6 +15,8 @@ import {
 	deleteUserNote,
 	fetchUserNote,
 	noteCounter,
+	noteLength,
+	unescapeHtml,
 	saveUserNote,
 	userNoteKey
 } from './user-note';
@@ -106,5 +108,32 @@ describe('userNoteKey', () => {
 	it('is scoped per (slug, user)', () => {
 		expect(userNoteKey('acme', 'u1')).not.toEqual(userNoteKey('acme', 'u2'));
 		expect(userNoteKey('acme', 'u1')).not.toEqual(userNoteKey('other', 'u1'));
+	});
+});
+
+describe('server-mirrored length (html.unescape of the stripped body)', () => {
+	it('counts an escaped entity as one character', () => {
+		expect(noteLength('&amp;')).toBe(1);
+		expect(noteLength('a &lt; b &#38; c &#x26; d &copy;')).toBe('a < b & c & d \u00a9'.length);
+		expect(noteCounter('&amp;&amp;').count).toBe(2);
+	});
+
+	it('does not count surrounding whitespace', () => {
+		expect(noteLength('  \n hi \t ')).toBe(2);
+		expect(noteCounter('   ').count).toBe(0);
+	});
+
+	it('counts code points, like Python len', () => {
+		expect(noteLength('\u{1F600}')).toBe(1);
+	});
+
+	it('leaves unknown or malformed entities alone', () => {
+		expect(unescapeHtml('&notanentity; & x')).toBe('&notanentity; & x');
+	});
+
+	it('flips to over only past the cap in unescaped characters', () => {
+		const body = '&amp;'.repeat(NOTE_MAX_LENGTH);
+		expect(noteCounter(body).state).not.toBe('over');
+		expect(noteCounter(body + '&amp;').state).toBe('over');
 	});
 });

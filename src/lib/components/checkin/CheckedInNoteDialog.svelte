@@ -24,16 +24,25 @@
 	}
 
 	const { note, onClose }: Props = $props();
+
+	// The parent clears `note` the moment it is dismissed, while the dialog is
+	// still animating out. Keep the last non-null note so the content does not
+	// collapse during the exit transition.
+	let lastNote = $state<ScanNote | null>(null);
+	$effect(() => {
+		if (note) lastNote = note;
+	});
+	const shown = $derived(note ?? lastNote);
 </script>
 
 <Dialog open={!!note} onOpenChange={(value) => !value && onClose()}>
 	<DialogContent class="sm:max-w-md">
-		{#if note}
+		{#if shown}
 			<DialogHeader>
-				<DialogTitle>{m['scanNote.checkedInTitle']({ name: note.name })}</DialogTitle>
+				<DialogTitle>{m['scanNote.checkedInTitle']({ name: shown.name })}</DialogTitle>
 				<DialogDescription>{m['scanNote.checkedInDescription']()}</DialogDescription>
 			</DialogHeader>
-			<ScanCallout title={m['scanNote.label']()} body={note.body} />
+			<ScanCallout title={m['scanNote.label']()} body={shown.body} />
 			<DialogFooter>
 				<Button onclick={onClose}>{m['scanNote.dismiss']()}</Button>
 			</DialogFooter>

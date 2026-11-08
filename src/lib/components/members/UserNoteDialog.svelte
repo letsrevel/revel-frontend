@@ -13,6 +13,7 @@
 	} from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
+	import type { UserNoteSchema } from '$lib/api/generated/types.gen';
 	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 	import { formatDateTime } from '$lib/utils/date';
 	import {
@@ -30,10 +31,10 @@
 	 *
 	 * Callers must only mount this for viewers holding `manage_members`: the
 	 * endpoints refuse everyone else, and the control should not exist for them.
+	 * It is mounted conditionally (one mount = one editing session) and always open.
 	 * Saving an empty note deletes it (after an in-app confirmation).
 	 */
 	interface Props {
-		open: boolean;
 		slug: string;
 		/** The person the note is about. */
 		userId: string;
@@ -42,19 +43,22 @@
 		onClose: () => void;
 	}
 
-	const { open, slug, userId, displayName, accessToken, onClose }: Props = $props();
+	const { slug, userId, displayName, accessToken, onClose }: Props = $props();
 
 	const queryClient = useQueryClient();
 
 	let draft = $state('');
-	let seededKey = $state<string | null>(null);
+	// Plain (non-reactive) flag: the draft is seeded exactly once per mount.
+	let seeded = false;
 	let errorMessage = $state<string | null>(null);
 	let confirmDeleteOpen = $state(false);
+	/** Why the confirmation is open decides its copy: an empty save or the explicit button. */
+	let confirmReason = $state<'empty-save' | 'explicit'>('explicit');
 
 	const noteQuery = createQuery(() => ({
 		queryKey: userNoteKey(slug, userId),
 		queryFn: () => fetchUserNote(slug, userId, accessToken),
-		enabled: open && !!accessToken && !!userId,
+		enabled: !!accessToken && !!userId,
 		// A staff note is edited by other staff too; never reuse a stale copy
 		// as the editor's starting point.
 		staleTime: 0,
@@ -63,16 +67,11 @@
 
 	const existing = $derived(noteQuery.data ?? null);
 
-	// Seed the editable copy once per (open, person) when the note has loaded.
+	// Seed the editable copy once, when the note has loaded.
 	$effect(() => {
-		if (!open) {
-			seededKey = null;
-			return;
-		}
-		const key = `${slug}:${userId}`;
-		if (noteQuery.isSuccess && seededKey !== key) {
+		if (noteQuery.isSuccess && !seeded) {
+			seeded = true;
 			draft = noteQuery.data?.body ?? '';
-			seededKey = key;
 			errorMessage = null;
 		}
 	});
@@ -80,29 +79,23 @@
 	const counter = $derived(noteCounter(draft));
 	const isEmpty = $derived(draft.trim().length === 0);
 
-	function refreshAfterWrite(): void {
-		queryClient.invalidateQueries({ queryKey: userNoteKey(slug, userId) });
-		// The members list carries `private_note`; refresh its indicator.
-		queryClient.invalidateQueries({ queryKey: membersListKey(slug) });
-	}
-
-	function failure(err: unknown): string {
-		return (
-			(err instanceof Error ? err.message : null) ??
-			extractApiErrorDetail(err) ??
-			m['userNote.saveError']()
-		);
+	/** The backend's `detail` when it sent one; otherwise the localized fallback. Never raw `Error.message`. */
+	function failure(err: unknown, fallback: string): string {
+		return extractApiErrorDetail(err) ?? fallback;
 	}
 
 	const saveMutation = createMutation(() => ({
 		mutationFn: (body: string) => saveUserNote(slug, userId, body, accessToken),
-		onSuccess: () => {
+		onSuccess: (saved: UserNoteSchema) => {
 			toast.success(m['userNote.saved']());
-			refreshAfterWrite();
+			// The PUT response is the new note: no refetch before the dialog unmounts.
+			queryClient.setQueryData(userNoteKey(slug, userId), saved);
+			// The members list carries `private_note`; refresh its indicator.
+			queryClient.invalidateQueries({ queryKey: membersListKey(slug) });
 			onClose();
 		},
 		onError: (err: unknown) => {
-			errorMessage = failure(err);
+			errorMessage = failure(err, m['userNote.saveError']());
 		}
 	}));
 
@@ -111,12 +104,13 @@
 		onSuccess: () => {
 			toast.success(m['userNote.deleted']());
 			confirmDeleteOpen = false;
-			refreshAfterWrite();
+			queryClient.removeQueries({ queryKey: userNoteKey(slug, userId) });
+			queryClient.invalidateQueries({ queryKey: membersListKey(slug) });
 			onClose();
 		},
 		onError: (err: unknown) => {
 			confirmDeleteOpen = false;
-			errorMessage = failure(err);
+			errorMessage = failure(err, m['userNote.deleteError']());
 		}
 	}));
 
@@ -125,11 +119,18 @@
 		noteQuery.isSuccess && !busy && counter.state !== 'over' && (existing !== null || !isEmpty)
 	);
 
+	function askToDelete(): void {
+		errorMessage = null;
+		confirmReason = 'explicit';
+		confirmDeleteOpen = true;
+	}
+
 	function submit(): void {
 		if (!canSave) return;
 		errorMessage = null;
 		if (isEmpty) {
 			// An empty note is a deletion; never do that without asking.
+			confirmReason = 'empty-save';
 			confirmDeleteOpen = true;
 			return;
 		}
@@ -154,7 +155,7 @@
 	);
 </script>
 
-<Dialog {open} onOpenChange={(value) => (!value ? onClose() : undefined)}>
+<Dialog open={true} onOpenChange={(value) => (!value ? onClose() : undefined)}>
 	<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-xl">
 		<DialogHeader>
 			<DialogTitle>{m['userNote.title']({ name: displayName })}</DialogTitle>
@@ -169,13 +170,7 @@
 		{:else if noteQuery.isError}
 			<p class="py-4 text-sm text-destructive" role="alert">{m['userNote.loadError']()}</p>
 		{:else}
-			<form
-				class="space-y-3"
-				onsubmit={(e) => {
-					e.preventDefault();
-					submit();
-				}}
-			>
+			<div class="space-y-3">
 				<MarkdownEditor
 					id="user-note-body"
 					label={m['userNote.label']()}
@@ -202,7 +197,7 @@
 				{#if errorMessage}
 					<p class="text-sm text-destructive" role="alert">{errorMessage}</p>
 				{/if}
-			</form>
+			</div>
 		{/if}
 
 		<DialogFooter class="gap-2 sm:justify-between">
@@ -211,7 +206,7 @@
 					type="button"
 					variant="outline"
 					class="text-destructive"
-					onclick={() => (confirmDeleteOpen = true)}
+					onclick={askToDelete}
 					disabled={busy}
 				>
 					{m['userNote.deleteButton']()}
@@ -238,7 +233,11 @@
 	<DialogContent class="max-w-md">
 		<DialogHeader>
 			<DialogTitle>{m['userNote.deleteTitle']()}</DialogTitle>
-			<DialogDescription>{m['userNote.deleteMessage']()}</DialogDescription>
+			<DialogDescription>
+				{confirmReason === 'empty-save'
+					? m['userNote.deleteMessage']()
+					: m['userNote.deleteExplicitMessage']()}
+			</DialogDescription>
 		</DialogHeader>
 		<DialogFooter class="gap-2">
 			<Button

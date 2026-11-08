@@ -602,7 +602,6 @@
 <!-- Private staff note editor (manage_members only) -->
 {#if canManageMembers && ticketForNote?.user?.id}
 	<UserNoteDialog
-		open={true}
 		slug={data.event.organization.slug}
 		userId={ticketForNote.user.id}
 		displayName={getUserDisplayName(ticketForNote.user)}
