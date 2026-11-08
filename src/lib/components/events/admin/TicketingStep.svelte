@@ -19,6 +19,8 @@
 	import { Info, Ticket } from '@lucide/svelte';
 	import TierCard from './TierCard.svelte';
 	import TierForm from './TierForm.svelte';
+	import VereinPresetCard from './VereinPresetCard.svelte';
+	import type { TicketCurrency } from './verein-preset';
 	import type { OrgVatContext } from './tier-vat';
 	import { takeTierDraft, type TierDraft } from './tier-draft';
 	import { onMount } from 'svelte';
@@ -53,6 +55,8 @@
 	interface Props {
 		eventId: string;
 		organizationSlug: string;
+		/** Needed by the Verein preset (creates the admission questionnaire); the preset is hidden without it. */
+		organizationId?: string;
 		organizationStripeConnected: boolean;
 		/** Connected, but billing details are missing (see billingNeedsAttention). */
 		billingNeedsAttention?: boolean;
@@ -77,6 +81,7 @@
 	const {
 		eventId,
 		organizationSlug,
+		organizationId = '',
 		organizationStripeConnected,
 		billingNeedsAttention = false,
 		stripeEmail = '',
@@ -180,6 +185,10 @@
 	let showTierForm = $state(false);
 
 	const tiers = $derived(tiersQuery.data?.data?.results ?? []);
+	// The preset prices in the currency the event already sells in, EUR for a fresh event.
+	const presetCurrency = $derived<TicketCurrency>(
+		(tiers[0]?.currency as TicketCurrency | undefined) ?? 'EUR'
+	);
 
 	// Back from Stripe onboarding (?stripe_success / ?stripe_refresh): reopen the
 	// tier form the organizer was filling in, prefilled from the stash.
@@ -463,6 +472,18 @@
 				</p>
 			</div>
 		{/if}
+	{/if}
+
+	{#if organizationId && !tiersQuery.isLoading}
+		<VereinPresetCard
+			{eventId}
+			{organizationId}
+			{organizationSlug}
+			dayTiers={grantableTiers}
+			currency={presetCurrency}
+			canChargeOnline={organizationStripeConnected && !onlineBlocked}
+			{orgVat}
+		/>
 	{/if}
 
 	<!-- Add Another Tier Button -->

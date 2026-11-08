@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { membershipTiersKeys } from '$lib/queries/membership-tiers';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
@@ -308,6 +309,17 @@
 		{m['orgAdmin.members.tiers.create']()}
 	</Button>
 </div>
+
+<p class="text-sm">
+	<a
+		class="inline-flex min-h-[44px] items-center rounded-sm underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+		href={resolve('/(auth)/org/[slug]/admin/guides/verein-day-membership', {
+			slug: organization.slug
+		})}
+	>
+		{m['verein.guide.tiersLink']()}
+	</a>
+</p>
 
 <!-- Tiers List -->
 {#if isLoading}

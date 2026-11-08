@@ -603,7 +603,6 @@
 		disabled={isSaving}
 	/>
 {/snippet}
-
 {#snippet detailsMain()}
 	{@render sectionsView('edit')}
 	{#if showTabs}
@@ -615,6 +614,7 @@
 	{#if eventId}
 		<TicketingStep
 			{eventId}
+			organizationId={organization.id}
 			organizationSlug={organization.slug}
 			organizationStripeConnected={organization.is_stripe_connected}
 			billingNeedsAttention={onlinePaymentSetup === 'needs-billing'}
