@@ -4,7 +4,9 @@
 	import { Label } from '$lib/components/ui/label';
 	import { TriangleAlert } from '@lucide/svelte';
 	import { exceedsEventCapacity } from './event-capacity';
-	import { allowsMembershipRestrictions } from './tier-membership-links';
+	import TierFormExcludedTiersSection from './TierFormExcludedTiersSection.svelte';
+	import { extractFieldErrors } from '$lib/utils/errors';
+	import { allowsMembershipRestrictions, excludedTiersError } from './tier-membership-links';
 	import type { MembershipTierSchema, PurchasableBy } from '$lib/api/generated/types.gen';
 
 	interface Props {
@@ -18,7 +20,14 @@
 		restrictVisibilityToLinkedInvitations: boolean;
 		restrictPurchaseToLinkedInvitations: boolean;
 		restrictedToMembershipTiersIds: string[];
+		/** `non_members` only: exclude just members of these tiers (empty = all active members). */
+		excludedMembershipTiersIds: string[];
+		/** The last save error; its exclusion-list message is shown next to the picker. */
+		saveError?: unknown;
 		membershipTiers: MembershipTierSchema[];
+		membershipTiersStatus?: 'ready' | 'loading' | 'error';
+		/** Exclusions already stored on the tier being edited (names for ids no longer listed). */
+		knownExcludedTiers?: MembershipTierSchema[];
 		/** Organizer kill switch: hides the tier from checkout until resumed, sales window untouched. */
 		salesPaused: boolean;
 		/** Effective event capacity (null = uncapped). */
@@ -37,7 +46,11 @@
 		restrictVisibilityToLinkedInvitations = $bindable(),
 		restrictPurchaseToLinkedInvitations = $bindable(),
 		restrictedToMembershipTiersIds = $bindable(),
+		excludedMembershipTiersIds = $bindable(),
+		saveError = null,
 		membershipTiers,
+		membershipTiersStatus = 'ready',
+		knownExcludedTiers = [],
 		salesPaused = $bindable(),
 		eventCapacity = null,
 		isPending
@@ -59,6 +72,14 @@
 	$effect(() => {
 		if (!allowsMembershipRestrictions(purchasableBy) && restrictedToMembershipTiersIds.length > 0) {
 			restrictedToMembershipTiersIds = [];
+		}
+	});
+
+	// Exclusions only exist under non_members; drop a stale selection otherwise
+	// (TierForm then sends [] on update so the backend clears the stored list).
+	$effect(() => {
+		if (purchasableBy !== 'non_members' && excludedMembershipTiersIds.length > 0) {
+			excludedMembershipTiersIds = [];
 		}
 	});
 </script>
@@ -213,6 +234,18 @@
 		</label>
 	{/if}
 </div>
+
+<!-- Excluded membership tiers (non_members only) -->
+{#if purchasableBy === 'non_members'}
+	<TierFormExcludedTiersSection
+		{membershipTiers}
+		status={membershipTiersStatus}
+		{knownExcludedTiers}
+		bind:selectedIds={excludedMembershipTiersIds}
+		error={excludedTiersError(extractFieldErrors(saveError))}
+		{isPending}
+	/>
+{/if}
 
 <!-- Restricted to Membership Tiers -->
 {#if (purchasableBy === 'members' || purchasableBy === 'invited_and_members') && membershipTiers.length > 0}

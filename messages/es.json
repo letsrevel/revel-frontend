@@ -10727,5 +10727,21 @@
 	"tierForm.vatExemptionReasonOrgDefault": "Déjalo vacío para usar el valor predeterminado de tu organización: «{reason}»",
 	"tierForm.vatExemptionReasonRequired": "Indica un motivo de exención de IVA: esta entrada se paga online con IVA del 0 % y tu organización no tiene un motivo predeterminado.",
 	"tierForm.requiredSr": "(obligatorio)",
-	"tierForm.field.vat_exemption_reason": "Motivo de exención de IVA"
+	"tierForm.field.vat_exemption_reason": "Motivo de exención de IVA",
+	"tierForm.excludedMembershipTiers": "Excluir solo a miembros de…",
+	"tierForm.excludedMembershipTiersHelp": "Todo el mundo salvo los miembros (de los niveles elegidos). Déjalo vacío para excluir a todos los miembros activos. Solo excluyen las membresías activas: los miembros en pausa o con la membresía cancelada, las personas propietarias y el equipo pueden seguir comprando.",
+	"tierForm.excludedMembershipTiersNone": "Esta organización aún no tiene niveles de membresía estándar, así que se excluye a todos los miembros activos.",
+	"tierForm.excludedMembershipTierUnavailable": "Nivel de membresía no disponible",
+	"tierForm.excludedMembershipTiersLoading": "Cargando niveles de membresía...",
+	"tierForm.excludedMembershipTiersLoadError": "No se pudieron cargar los niveles de membresía. Recarga para ver cuáles están excluidos.",
+	"checkoutSheet.nonMembersTiersRemoved": "Hemos quitado {names} de tu carrito: los miembros activos no pueden comprarlo.",
+	"tierForm.field.excluded_membership_tiers_ids": "Niveles de membresía excluidos",
+	"tierCardAdmin.notAvailableToMembers": "No disponible para miembros",
+	"tierCardAdmin.chooseAnotherTierHint": "Este nivel de entrada no está disponible para miembros. Elige otro nivel.",
+	"seriesPassAdmin.nonMembersHelp": "Bloquea a todos los miembros activos. Los miembros en pausa o con la membresía cancelada, las personas propietarias y el equipo pueden seguir comprando. Los pases no permiten excluir por nivel.",
+	"seriesPassAdmin.tierStricterOption": "{tier} ({price}) – no disponible: regla de compra más estricta",
+	"seriesPassAdmin.incompatibleTierHint": "Los tipos marcados como no disponibles son más estrictos que este pase (por ejemplo, un tipo solo para miembros en un pase para todo el mundo), así que el pase no puede cubrirlos.",
+	"seriesPassAdmin.noCompatibleTiers": "Ningún tipo de entrada de este evento puede respaldar este pase: todos tienen una regla de compra más estricta que el pase. Flexibiliza la regla del tipo o cambia quién puede comprar el pase.",
+	"seriesPass.nonMembersNote": "Solo para no miembros. Los miembros activos no pueden comprar este pase.",
+	"seriesPass.cannotBuy": "No puedes comprar este pase."
 }

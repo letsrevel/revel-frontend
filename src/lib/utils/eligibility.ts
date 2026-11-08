@@ -395,10 +395,20 @@ export function getEligibilityRefusalMessage(value: unknown): string | null {
  * decide whether to offer the membership-plans link alongside it.
  */
 export function isMembershipTierRefusal(error: unknown): boolean {
+	return refusalMatches(error, (body) => body.reason_code === 'membership_tier_required');
+}
+
+/** True when the value, or its `Error.cause`, is an eligibility refusal satisfying `test`. */
+function refusalMatches(error: unknown, test: (body: EventUserEligibility) => boolean): boolean {
 	const cause = error && typeof error === 'object' ? (error as { cause?: unknown }).cause : null;
-	return [error, cause].some(
-		(candidate) =>
-			isEligibilityRefusal(candidate) && candidate.reason_code === 'membership_tier_required'
+	return [error, cause].some((candidate) => isEligibilityRefusal(candidate) && test(candidate));
+}
+
+/** Is this the `members_excluded` / `choose_another_tier` refusal (BE #1316)? */
+export function isMembersExcludedRefusal(error: unknown): boolean {
+	return refusalMatches(
+		error,
+		(body) => body.reason_code === 'members_excluded' || body.next_step === 'choose_another_tier'
 	);
 }
 

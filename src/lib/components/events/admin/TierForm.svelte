@@ -50,7 +50,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { markSilent } from '$lib/utils/errors';
 	import { CURRENCY_SYMBOLS, toTimezoneAwareISO, normalizeDecimalInput } from './tier-form-helpers';
-	import { membershipLinksPayload } from './tier-membership-links';
+	import { linkedTierIds, membershipLinksPayload } from './tier-membership-links';
 	import {
 		buildCategoryPricesPayload,
 		buildTierSeatingFields,
@@ -75,6 +75,7 @@
 		/** Org platform-fee terms for the net-payout preview (null hides it). */
 		platformFees?: PlatformFeeInfo | null;
 		membershipTiers?: MembershipTierSchema[];
+		membershipTiersStatus?: 'ready' | 'loading' | 'error'; // org tiers query state
 		eventVenueId?: string | null; // Pre-fill venue from event
 		eventCapacity?: number | null; // Effective event cap (null = uncapped)
 		/** The event form's start/end/check-in window the tier offsets are relative to. */
@@ -97,6 +98,7 @@
 		draft = null,
 		platformFees = null,
 		membershipTiers = [],
+		membershipTiersStatus = 'ready',
 		eventVenueId = null,
 		eventCapacity = null,
 		eventContext = { start: '' },
@@ -133,9 +135,8 @@
 	const salesEndReadback = $derived(formatDateTimeReadback(salesEndAt));
 	let visibility = $state(seed.visibility);
 	let purchasableBy = $state(seed.purchasableBy);
-	let restrictedToMembershipTiersIds = $state<string[]>(
-		tier?.restricted_to_membership_tiers?.map((t) => t.id).filter((id): id is string => !!id) ?? []
-	);
+	let restrictedToMembershipTiersIds = $state(linkedTierIds(tier?.restricted_to_membership_tiers));
+	let excludedMembershipTiersIds = $state(linkedTierIds(tier?.excluded_membership_tiers));
 	let restrictVisibilityToLinkedInvitations = $state(
 		tier?.restrict_visibility_to_linked_invitations ?? false
 	);
@@ -153,9 +154,8 @@
 	let refundPolicy = $state<RefundPolicy | null>(tier?.refund_policy ?? null);
 	let refundPolicyValid = $state(true);
 
-	// New tiers: until the organizer touches the checkbox, the default follows the
-	// payment method (free -> on, paid -> off) so a paid tier never silently
-	// inherits "on" with no refund policy. Editing keeps the stored value.
+	// New tiers: until touched, the default follows the payment method (free -> on,
+	// paid -> off) so a paid tier never inherits "on" with no refund policy.
 	let cancellationTouched = $state(false);
 	$effect(() => {
 		if (!tier && !cancellationTouched) {
@@ -177,8 +177,7 @@
 	// Venue and seating state
 	let seatAssignmentMode = $state<SeatAssignmentMode>(tier?.seat_assignment_mode ?? 'none');
 	let maxTicketsPerUser = $state(seed.maxTicketsPerUser);
-	// Pre-fill venue: use tier's venue if editing, else fall back to event's venue
-	// Venue is read-only - it always comes from the event
+	// Venue is read-only: the tier's own when editing, else the event's.
 	const venueId = $state<string | null>(tier?.venue?.id ?? eventVenueId ?? null);
 
 	// Check if event has a venue configured
@@ -318,15 +317,17 @@
 
 	const currencySymbol = $derived(CURRENCY_SYMBOLS[currency] || currency);
 
-	// The generated client resolves with `{ error }` on HTTP errors instead of
-	// rejecting (ThrowOnError = false), so each mutationFn must throw the error
-	// body itself — otherwise a 400/422 lands in onSuccess and closes the dialog
-	// without ever showing the error panel below. `markSilent` keeps the global
-	// "Action failed" toast from duplicating that panel (the RefundTicketDialog
-	// convention); the body is thrown unwrapped so extractFieldErrors still
-	// sees the pydantic detail array.
+	// The generated client resolves with `{ error }` on HTTP errors, so each mutationFn
+	// must throw the error body itself (else a 400/422 lands in onSuccess and closes the
+	// dialog). `markSilent` keeps the global toast from duplicating the error panel; the
+	// body is thrown unwrapped so extractFieldErrors still sees the pydantic detail array.
 	// Last save's HTTP status: a plain-detail 422 is a country-rule refusal (#1001).
 	let saveStatus = $state<number | undefined>(undefined);
+
+	function afterSave(): void {
+		queryClient.invalidateQueries({ queryKey: ['event-admin', eventId, 'ticket-tiers'] });
+		onClose();
+	}
 
 	const tierCreateMutation = createMutation(() => ({
 		mutationFn: async (data: TicketTierCreateSchema) => {
@@ -338,10 +339,7 @@
 			if (res.error) throw markSilent(res.error);
 			return res.data;
 		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['event-admin', eventId, 'ticket-tiers'] });
-			onClose();
-		}
+		onSuccess: afterSave
 	}));
 
 	const tierUpdateMutation = createMutation(() => ({
@@ -355,10 +353,7 @@
 			if (res.error) throw markSilent(res.error);
 			return res.data;
 		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['event-admin', eventId, 'ticket-tiers'] });
-			onClose();
-		}
+		onSuccess: afterSave
 	}));
 
 	const tierDeleteMutation = createMutation(() => ({
@@ -370,10 +365,7 @@
 			if (res.error) throw markSilent(res.error);
 			return res.data;
 		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['event-admin', eventId, 'ticket-tiers'] });
-			onClose();
-		}
+		onSuccess: afterSave
 	}));
 
 	// Card + unknown rules: hold the save. Known-blocked legacy card tiers still save (J29.3).
@@ -476,7 +468,12 @@
 			...checkInOffsetsPayload(eventContext.start, checkInPicks, tier),
 			visibility,
 			purchasable_by: purchasableBy,
-			...membershipLinksPayload(purchasableBy, restrictedToMembershipTiersIds, !!tier),
+			...membershipLinksPayload(
+				purchasableBy,
+				restrictedToMembershipTiersIds,
+				!!tier,
+				excludedMembershipTiersIds
+			),
 			restrict_visibility_to_linked_invitations:
 				visibility === 'private' ? restrictVisibilityToLinkedInvitations : false,
 			restrict_purchase_to_linked_invitations:
@@ -667,7 +664,11 @@
 				bind:restrictVisibilityToLinkedInvitations
 				bind:restrictPurchaseToLinkedInvitations
 				bind:restrictedToMembershipTiersIds
+				bind:excludedMembershipTiersIds
+				saveError={error}
 				{membershipTiers}
+				{membershipTiersStatus}
+				knownExcludedTiers={tier?.excluded_membership_tiers ?? []}
 				bind:salesPaused
 				{eventCapacity}
 				{isPending}

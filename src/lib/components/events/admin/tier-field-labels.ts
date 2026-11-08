@@ -23,6 +23,8 @@ const LABELS: Record<string, () => string> = {
 	purchasable_by: () => m['tierForm.field.purchasable_by'](),
 	restricted_to_membership_tiers_ids: () =>
 		m['tierForm.field.restricted_to_membership_tiers_ids'](),
+	excluded_membership_tiers: () => m['tierForm.field.excluded_membership_tiers_ids'](),
+	excluded_membership_tiers_ids: () => m['tierForm.field.excluded_membership_tiers_ids'](),
 	seat_assignment_mode: () => m['tierForm.field.seat_assignment_mode'](),
 	max_tickets_per_user: () => m['tierForm.field.max_tickets_per_user'](),
 	venue_id: () => m['tierForm.field.venue_id'](),

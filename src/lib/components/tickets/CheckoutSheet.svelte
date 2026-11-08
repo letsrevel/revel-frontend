@@ -7,6 +7,7 @@
 	 * accordion-open flags are sheet-local (see `EventCart.needsSheet`). */
 	import { untrack } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
+	import { toast } from 'svelte-sonner';
 	import { loginHrefFor } from '$lib/utils/safe-redirect';
 	import {
 		Dialog,
@@ -77,6 +78,8 @@
 		/** Authenticated buyer's real name — pre-fills the holder name of a
 		 * single-ticket cart. Guests' comes from `identity` instead. */
 		buyerName?: string;
+		/** Brings the tier list back into view (the `members_excluded` CTA); the sheet closes first. */
+		onChooseAnotherTier?: () => void;
 	}
 
 	let {
@@ -94,8 +97,21 @@
 		chart = null,
 		registry,
 		identity,
-		buyerName = ''
+		buyerName = '',
+		onChooseAnotherTier
 	}: Props = $props();
+
+	// `members_excluded` refusal: the 400 carries no tier id, so every `non_members`
+	// line is dropped (retrying with them would just fail again) and the buyer is told.
+	function chooseAnotherTier(): void {
+		const removed = cart.removeWhere((group) => group.tier.purchasable_by === 'non_members');
+		if (removed.length > 0) {
+			const names = removed.map((group) => group.tier.name).join(', ');
+			toast.info(m['checkoutSheet.nonMembersTiersRemoved']({ names }));
+		}
+		open = false;
+		onChooseAnotherTier?.();
+	}
 
 	// Single-ticket cart: pre-fill its holder name with the buyer's (profile
 	// name, or a guest's identity names as they type them above). The current
@@ -428,6 +444,7 @@
 				tiers={cart.groups.map((group) => group.tier)}
 				{organizationSlug}
 				onSplitPurchase={() => (open = false)}
+				onChooseAnotherTier={onChooseAnotherTier && chooseAnotherTier}
 			/>
 		</div>
 

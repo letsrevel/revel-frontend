@@ -23,6 +23,7 @@
 	import { handleGuestAttendanceError } from '$lib/utils/guestAttendance';
 	import { isGuestActionError } from '$lib/utils/api-error-detail';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { GUEST_COMPATIBLE_STEPS } from './guest-cart-checkout-controller.svelte';
 
 	interface Props {
 		open: boolean;
@@ -62,14 +63,6 @@
 	let showSuccess = $state(false);
 	let errorMessage = $state<string | null>(null);
 	let requiresAccount = $state(false);
-
-	// Next steps that guests can perform without an account
-	const GUEST_COMPATIBLE_STEPS = new Set([
-		'purchase_ticket',
-		'rsvp',
-		'wait_for_event_to_open',
-		'wait_for_open_spot'
-	]);
 
 	// Validation errors (field-specific)
 	let fieldErrors = $state<Partial<Record<keyof GuestRsvpData, string>>>({});

@@ -11,7 +11,7 @@ interface ApiErrorResponse {
 	detail?: string | Array<{ msg: string; type?: string }>;
 	message?: string;
 	error?: string;
-	errors?: Record<string, string[]>;
+	errors?: Record<string, string | string[]>;
 }
 
 /**
@@ -119,7 +119,10 @@ export function extractFieldErrors(error: unknown): { field: string; messages: s
 
 	if (source.errors && typeof source.errors === 'object') {
 		for (const [field, messages] of Object.entries(source.errors)) {
-			if (Array.isArray(messages) && messages.length > 0) {
+			if (typeof messages === 'string' && messages) {
+				// ValidationErrorResponse allows a bare string per field.
+				out.push({ field, messages: [messages] });
+			} else if (Array.isArray(messages) && messages.length > 0) {
 				out.push({
 					field,
 					messages: messages.filter((m): m is string => typeof m === 'string')
@@ -228,6 +231,7 @@ function extractFromApiResponse(response: ApiErrorResponse): string | null {
 				if (Array.isArray(messages) && messages.length > 0) {
 					return `${field}: ${messages.join(', ')}`;
 				}
+				if (typeof messages === 'string' && messages) return `${field}: ${messages}`;
 				return null;
 			})
 			.filter(Boolean);

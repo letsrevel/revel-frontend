@@ -11,6 +11,7 @@
 	import SeriesPassCoverageDialog from './SeriesPassCoverageDialog.svelte';
 	import { formatPrice } from '$lib/utils/format';
 	import { getPaymentMethodLabel } from '$lib/utils/ticket-helpers';
+	import { purchasableByLabel } from './pass-purchase-rules';
 	import { formatDateTime } from '$lib/utils/date';
 	import { extractErrorMessage } from '$lib/utils/errors';
 	import { Plus, Users, Pencil, Trash2, Loader2, Ticket, CalendarRange } from '@lucide/svelte';
@@ -123,6 +124,12 @@
 								<div>
 									<span class="font-medium">{m['seriesPassAdmin.paymentMethodLabel']()}:</span>
 									{getPaymentMethodLabel(pass.payment_method)}
+								</div>
+								<div>
+									<span class="font-medium">{m['seriesPassAdmin.purchasableByLabel']()}:</span>
+									<span data-testid="pass-purchasable-by"
+										>{purchasableByLabel(pass.purchasable_by)}</span
+									>
 								</div>
 								<div>
 									<span class="font-medium">{m['seriesPassAdmin.coverageColumn']()}:</span>

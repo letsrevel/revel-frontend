@@ -216,4 +216,42 @@ describe('PurchaseErrorAlert', () => {
 			).toBeNull();
 		});
 	});
+
+	describe('members_excluded refusal (BE #1316)', () => {
+		const membersExcluded: EventUserEligibility = {
+			allowed: false,
+			event_id: EVENT_ID,
+			reason: 'This ticket tier is not available to members.',
+			reason_code: 'members_excluded',
+			next_step: 'choose_another_tier'
+		};
+		const excludedError = new Error(m['eligibility.reason.members_excluded'](), {
+			cause: membersExcluded
+		});
+
+		it('says the tier is unavailable to members and sends the buyer back to the tiers', async () => {
+			const onChooseAnotherTier = vi.fn();
+			renderAlert({ error: excludedError, onChooseAnotherTier });
+
+			expect(screen.getByText(m['eligibility.reason.members_excluded']())).toBeInTheDocument();
+			await userEvent.click(
+				screen.getByRole('button', { name: m['eligibility.actionButton.choose_another_tier']() })
+			);
+			expect(onChooseAnotherTier).toHaveBeenCalledOnce();
+			// It is not a membership-plan problem: no plans link.
+			expect(
+				screen.queryByRole('link', { name: m['membershipPlans.viewMembership']() })
+			).toBeNull();
+		});
+
+		it('omits the button when the host gave no handler', () => {
+			renderAlert({ error: excludedError });
+			expect(screen.queryByTestId('choose-another-tier')).toBeNull();
+		});
+
+		it('shows no such button for other failures', () => {
+			renderAlert({ error: refusalError, onChooseAnotherTier: vi.fn() });
+			expect(screen.queryByTestId('choose-another-tier')).toBeNull();
+		});
+	});
 });

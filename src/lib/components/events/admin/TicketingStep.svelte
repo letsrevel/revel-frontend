@@ -111,6 +111,9 @@
 				path: { slug: organizationSlug },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
+			// The generated client resolves on HTTP errors; throw so the query lands in
+			// `isError` and the exclusion picker shows its load-error state.
+			if (response.error) throw response.error;
 			return response.data;
 		},
 		enabled: !!accessToken
@@ -507,6 +510,11 @@
 		{platformFees}
 		{orgVat}
 		{membershipTiers}
+		membershipTiersStatus={membershipTiersQuery.isError
+			? 'error'
+			: membershipTiersQuery.isPending
+				? 'loading'
+				: 'ready'}
 		eventVenueId={formData.venue_id || null}
 		{eventCapacity}
 		rules={{ compliance, status: complianceStatus, onRetry: () => complianceQuery.refetch() }}

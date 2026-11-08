@@ -10727,5 +10727,21 @@
 	"tierForm.vatExemptionReasonOrgDefault": "Leer lassen, um den Standard deiner Organisation zu verwenden: «{reason}»",
 	"tierForm.vatExemptionReasonRequired": "Gib einen Grund für die Umsatzsteuerbefreiung an: Dieses Ticket wird online mit 0 % USt bezahlt und deine Organisation hat keinen Standardgrund.",
 	"tierForm.requiredSr": "(erforderlich)",
-	"tierForm.field.vat_exemption_reason": "Grund der Umsatzsteuerbefreiung"
+	"tierForm.field.vat_exemption_reason": "Grund der Umsatzsteuerbefreiung",
+	"tierForm.excludedMembershipTiers": "Nur Mitglieder von … ausschließen",
+	"tierForm.excludedMembershipTiersHelp": "Alle außer Mitgliedern (der ausgewählten Stufen). Leer lassen, um alle aktiven Mitglieder auszuschließen. Nur aktive Mitgliedschaften werden ausgeschlossen: Mitglieder mit pausierter oder beendeter Mitgliedschaft, Inhaber*innen und Team können weiterhin kaufen.",
+	"tierForm.excludedMembershipTiersNone": "Diese Organisation hat noch keine Standard-Mitgliedschaftsstufen, daher werden alle aktiven Mitglieder ausgeschlossen.",
+	"tierForm.excludedMembershipTierUnavailable": "Nicht verfügbare Mitgliedschaftsstufe",
+	"tierForm.excludedMembershipTiersLoading": "Mitgliedschaftsstufen werden geladen ...",
+	"tierForm.excludedMembershipTiersLoadError": "Die Mitgliedschaftsstufen konnten nicht geladen werden. Lade die Seite neu, um zu sehen, welche ausgeschlossen sind.",
+	"checkoutSheet.nonMembersTiersRemoved": "Wir haben {names} aus deinem Warenkorb entfernt: Aktive Mitglieder können es nicht kaufen.",
+	"tierForm.field.excluded_membership_tiers_ids": "Ausgeschlossene Mitgliedschaftsstufen",
+	"tierCardAdmin.notAvailableToMembers": "Für Mitglieder nicht verfügbar",
+	"tierCardAdmin.chooseAnotherTierHint": "Diese Ticketstufe ist für Mitglieder nicht verfügbar. Wähle eine andere Stufe.",
+	"seriesPassAdmin.nonMembersHelp": "Sperrt alle aktiven Mitglieder. Mitglieder mit pausierter oder beendeter Mitgliedschaft, Inhaber*innen und Team können weiterhin kaufen. Bei Pässen gibt es keinen Ausschluss nach Mitgliedschaftsstufe.",
+	"seriesPassAdmin.tierStricterOption": "{tier} ({price}) – nicht verfügbar: strengere Kaufregel",
+	"seriesPassAdmin.incompatibleTierHint": "Als nicht verfügbar markierte Kategorien sind strenger als dieser Pass (zum Beispiel eine Kategorie nur für Mitglieder bei einem Pass für alle), daher kann der Pass sie nicht abdecken.",
+	"seriesPassAdmin.noCompatibleTiers": "Keine Ticketkategorie dieses Events kann diesen Pass abdecken: Alle haben eine strengere Kaufregel als der Pass. Lockere die Regel der Kategorie oder ändere, wer den Pass kaufen darf.",
+	"seriesPass.nonMembersNote": "Nur für Nichtmitglieder. Aktive Mitglieder können diesen Pass nicht kaufen.",
+	"seriesPass.cannotBuy": "Du kannst diesen Pass nicht kaufen."
 }

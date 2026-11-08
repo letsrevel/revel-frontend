@@ -94,6 +94,12 @@
 		</p>
 	{/if}
 
+	{#if pass.purchasable_by === 'non_members'}
+		<p class="mt-2 text-xs text-muted-foreground" data-testid="pass-non-members-note">
+			{m['seriesPass.nonMembersNote']()}
+		</p>
+	{/if}
+
 	<!-- Payment method hint -->
 	{#if pass.payment_method === 'offline' || pass.payment_method === 'at_the_door'}
 		<p class="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">

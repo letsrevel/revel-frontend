@@ -76,7 +76,15 @@
 				throw new Error(refusal);
 			}
 			if (response.error || !response.data) {
-				throw new Error(extractErrorMessage(response.error, m['seriesPass.checkoutFailed']()));
+				// 403 = the pass is visible but not purchasable by this buyer (blacklisted,
+				// members-only, or an active member on a non-members pass): a plain-detail
+				// refusal, so surface the backend's own reason. The fallback stays neutral:
+				// a 403 alone can't tell which of those it was.
+				const fallback =
+					response.response?.status === 403
+						? m['seriesPass.cannotBuy']()
+						: m['seriesPass.checkoutFailed']();
+				throw new Error(extractErrorMessage(response.error, fallback));
 			}
 			const data = response.data;
 			if (data.requires_payment && data.reservation_id) {

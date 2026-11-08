@@ -166,4 +166,12 @@ describe('SeriesPassCard', () => {
 			expect(screen.queryByRole('button', { name: 'Not available online' })).toBeNull();
 		});
 	});
+
+	it('tells a non-members pass is closed to active members', async () => {
+		mockQuote();
+		renderCard(makePass({ purchasable_by: 'non_members' }));
+		expect(await screen.findByTestId('pass-non-members-note')).toHaveTextContent(
+			"Active members can't buy this pass"
+		);
+	});
 });

@@ -10727,5 +10727,21 @@
 	"tierForm.vatExemptionReasonOrgDefault": "Lascia vuoto per usare il valore predefinito della tua organizzazione: «{reason}»",
 	"tierForm.vatExemptionReasonRequired": "Inserisci un motivo di esenzione IVA: questo biglietto è pagato online con IVA allo 0% e la tua organizzazione non ha un motivo predefinito.",
 	"tierForm.requiredSr": "(obbligatorio)",
-	"tierForm.field.vat_exemption_reason": "Motivo di esenzione IVA"
+	"tierForm.field.vat_exemption_reason": "Motivo di esenzione IVA",
+	"tierForm.excludedMembershipTiers": "Escludi solo i membri di…",
+	"tierForm.excludedMembershipTiersHelp": "Tutti tranne i membri (dei livelli selezionati). Lascia vuoto per escludere tutti i membri attivi. Escludono solo le iscrizioni attive: chi ha l'iscrizione in pausa o annullata, i proprietari e lo staff possono comunque acquistare.",
+	"tierForm.excludedMembershipTiersNone": "Questa organizzazione non ha ancora livelli di iscrizione standard, quindi vengono esclusi tutti i membri attivi.",
+	"tierForm.excludedMembershipTierUnavailable": "Livello di iscrizione non disponibile",
+	"tierForm.excludedMembershipTiersLoading": "Caricamento dei livelli di iscrizione...",
+	"tierForm.excludedMembershipTiersLoadError": "Impossibile caricare i livelli di iscrizione. Ricarica per vedere quali sono esclusi.",
+	"checkoutSheet.nonMembersTiersRemoved": "Abbiamo rimosso {names} dal tuo carrello: i membri attivi non possono acquistarlo.",
+	"tierForm.field.excluded_membership_tiers_ids": "Livelli di iscrizione esclusi",
+	"tierCardAdmin.notAvailableToMembers": "Non disponibile per i membri",
+	"tierCardAdmin.chooseAnotherTierHint": "Questa categoria non è disponibile per i membri. Scegli un’altra categoria.",
+	"seriesPassAdmin.nonMembersHelp": "Blocca tutti i membri attivi. Chi ha l'iscrizione in pausa o annullata, i proprietari e lo staff possono comunque acquistare. I pass non prevedono l'esclusione per livello.",
+	"seriesPassAdmin.tierStricterOption": "{tier} ({price}) – non disponibile: regola di acquisto più restrittiva",
+	"seriesPassAdmin.incompatibleTierHint": "Le categorie segnate come non disponibili sono più restrittive di questo pass (ad esempio una categoria solo per i membri sotto un pass aperto a tutti), quindi il pass non può coprirle.",
+	"seriesPassAdmin.noCompatibleTiers": "Nessuna categoria di biglietto di questo evento può sostenere questo pass: tutte hanno una regola di acquisto più restrittiva del pass. Allenta la regola della categoria o cambia chi può acquistare il pass.",
+	"seriesPass.nonMembersNote": "Solo per non soci. I membri attivi non possono acquistare questo pass.",
+	"seriesPass.cannotBuy": "Non puoi acquistare questo pass."
 }
