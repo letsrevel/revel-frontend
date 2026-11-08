@@ -4,7 +4,7 @@
  * ticketing tab reopens it prefilled when Stripe sends the owner back.
  */
 
-import type { TicketTierDetailSchema } from '$lib/api/generated/types.gen';
+import type { PurchasableBy, TicketTierDetailSchema } from '$lib/api/generated/types.gen';
 import { toDatetimeLocal } from './tier-form-helpers';
 
 export interface TierDraft {
@@ -27,7 +27,19 @@ export interface TierDraft {
 	salesEndAt: string;
 	maxTicketsPerUser: string;
 	visibility: 'public' | 'private' | 'members-only' | 'staff-only';
-	purchasableBy: 'public' | 'members' | 'invited' | 'invited_and_members' | 'non_members';
+	purchasableBy: PurchasableBy;
+}
+
+const PURCHASABLE_BY_VALUES: readonly PurchasableBy[] = [
+	'public',
+	'members',
+	'invited',
+	'invited_and_members',
+	'non_members'
+];
+
+function isPurchasableBy(value: unknown): value is PurchasableBy {
+	return PURCHASABLE_BY_VALUES.includes(value as PurchasableBy);
 }
 
 const key = (eventId: string): string => `revel:tier-draft:${eventId}`;
@@ -50,6 +62,10 @@ export function takeTierDraft(eventId: string): TierDraft | null {
 		if (typeof parsed !== 'object' || parsed === null) return null;
 		const d = parsed as Partial<TierDraft>;
 		if (typeof d.name !== 'string' || typeof d.paymentMethod !== 'string') return null;
+		// A stale or tampered stash must not smuggle an unknown enum value into the form.
+		if (d.purchasableBy !== undefined && !isPurchasableBy(d.purchasableBy)) {
+			return { ...(d as TierDraft), purchasableBy: 'public' };
+		}
 		return d as TierDraft;
 	} catch {
 		return null;

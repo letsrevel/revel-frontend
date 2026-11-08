@@ -88,3 +88,32 @@ describe('TierCard quantity line under an event cap', () => {
 		expect(screen.queryByText(/event cap\)/)).not.toBeInTheDocument();
 	});
 });
+
+describe('TierCard purchasable-by label', () => {
+	function renderWith(extra: Partial<TicketTierDetailSchema>): void {
+		render(TierCard, {
+			props: {
+				tier: { ...makeTier(10), ...extra } as TicketTierDetailSchema,
+				onEdit: vi.fn(),
+				eventCapacity: null
+			}
+		});
+	}
+
+	it('says "Non-members only" for a plain non_members tier', () => {
+		renderWith({ purchasable_by: 'non_members' });
+		expect(screen.getByText('Non-members only')).toBeInTheDocument();
+	});
+
+	it('names the excluded membership tiers instead', () => {
+		renderWith({
+			purchasable_by: 'non_members',
+			excluded_membership_tiers: [
+				{ id: 'g', name: 'Gold' },
+				{ id: 's', name: 'Silver' }
+			] as TicketTierDetailSchema['excluded_membership_tiers']
+		});
+		expect(screen.getByText('Not for members of: Gold, Silver')).toBeInTheDocument();
+		expect(screen.queryByText('Non-members only')).not.toBeInTheDocument();
+	});
+});

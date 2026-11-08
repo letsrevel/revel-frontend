@@ -136,6 +136,7 @@
 		if (
 			step === 'rsvp' ||
 			step === 'purchase_ticket' ||
+			step === 'choose_another_tier' ||
 			step === 'complete_questionnaire' ||
 			step === 'request_invitation' ||
 			step === 'become_member' ||

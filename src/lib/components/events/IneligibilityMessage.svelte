@@ -31,6 +31,8 @@
 		/** Refresh eligibility after a successful invitation/whitelist request. */
 		onInvitationRequestSuccess?: () => void;
 		onWhitelistRequestSuccess?: () => void;
+		/** Opens the ticket-tier modal; required for the purchase_ticket / choose_another_tier steps. */
+		onGetTicketsClick?: () => void;
 		class?: string;
 	}
 
@@ -44,6 +46,7 @@
 		applyBefore,
 		onInvitationRequestSuccess,
 		onWhitelistRequestSuccess,
+		onGetTicketsClick,
 		class: className
 	}: Props = $props();
 
@@ -59,6 +62,15 @@
 	const isWaitingForBatch = $derived(
 		eligibility.reason_code === 'on_waitlist_waiting_for_batch' ||
 			eligibility.reason === WAITING_FOR_BATCH_REASON
+	);
+
+	// The ticket-modal steps are inert without a handler: render no action rather than a dead button.
+	const needsTicketsHandler = $derived(
+		eligibility.next_step === 'purchase_ticket' || eligibility.next_step === 'choose_another_tier'
+	);
+	const hasActionButton = $derived(
+		(!!eligibility.next_step && (!needsTicketsHandler || !!onGetTicketsClick)) ||
+			!!eventTokenDetails?.grants_invitation
 	);
 
 	/**
@@ -488,10 +500,10 @@
 			{/if}
 
 			<!-- Action Button -->
-			{#if eligibility.next_step || (eventTokenDetails && eventTokenDetails.grants_invitation)}
+			{#if hasActionButton}
 				<div class="pt-1">
 					<IneligibilityActionButton
-						nextStep={eligibility.next_step}
+						nextStep={needsTicketsHandler && !onGetTicketsClick ? undefined : eligibility.next_step}
 						{eventId}
 						{eventSlug}
 						{organizationSlug}
@@ -499,6 +511,7 @@
 						questionnaireIds={eligibility.questionnaires_missing}
 						{onInvitationRequestSuccess}
 						{onWhitelistRequestSuccess}
+						{onGetTicketsClick}
 					/>
 				</div>
 			{/if}

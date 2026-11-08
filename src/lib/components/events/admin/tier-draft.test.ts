@@ -49,6 +49,31 @@ describe('tier draft stash', () => {
 	});
 });
 
+describe('takeTierDraft purchasableBy validation', () => {
+	beforeEach(() => sessionStorage.clear());
+
+	it('keeps every valid value', () => {
+		for (const v of [
+			'public',
+			'members',
+			'invited',
+			'invited_and_members',
+			'non_members'
+		] as const) {
+			stashTierDraft('e1', { ...draft, purchasableBy: v });
+			expect(takeTierDraft('e1')?.purchasableBy).toBe(v);
+		}
+	});
+
+	it('falls back to public for an unknown value', () => {
+		sessionStorage.setItem(
+			'revel:tier-draft:e1',
+			JSON.stringify({ ...draft, purchasableBy: 'everyone' })
+		);
+		expect(takeTierDraft('e1')?.purchasableBy).toBe('public');
+	});
+});
+
 describe('stripeGateFor', () => {
 	it('classifies each state', () => {
 		expect(stripeGateFor('online', false, false, false)).toBe('connect');

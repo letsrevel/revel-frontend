@@ -121,13 +121,18 @@
 
 	const purchasableByDisplay = $derived.by(() => {
 		const options: Record<string, string> = {
-			public: 'Anyone',
-			members: 'Members Only',
-			invited: 'Invited Only',
-			invited_and_members: 'Invited + Members',
+			public: m['tierForm.anyone'](),
+			members: m['tierForm.membersOnly'](),
+			invited: m['tierForm.invitedOnly'](),
+			invited_and_members: m['tierForm.invitedAndMembers'](),
 			non_members: m['tierForm.nonMembersOnly']()
 		};
 		const pb = tier.purchasable_by ?? 'public';
+		// Exclusions make a non_members tier narrower than "all non-members": name them.
+		const excluded = (tier.excluded_membership_tiers ?? []).map((t) => t.name).filter(Boolean);
+		if (pb === 'non_members' && excluded.length > 0) {
+			return m['tierForm.nonMembersExcluding']({ tiers: excluded.join(', ') });
+		}
 		return options[pb] || pb.replace(/_/g, ' ');
 	});
 
