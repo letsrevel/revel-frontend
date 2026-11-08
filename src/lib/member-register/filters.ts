@@ -1,7 +1,5 @@
-import type {
-	MembershipRecordKind,
-	OrganizationadminmemberregisterListMemberRegisterFbd88DcfData
-} from '$lib/api/generated/types.gen';
+import type { MembershipRecordKind } from '$lib/api/generated/types.gen';
+import type { organizationadminmemberregisterListMemberRegister } from '$lib/api';
 import { isCalendarDay } from './calendar-day';
 
 export const REGISTER_PAGE_SIZE = 20;
@@ -72,15 +70,14 @@ export function filtersToSearch(filters: RegisterFilters): string {
  * operation. `page`/`page_size` are always present; `active_on` is the raw day,
  * never a datetime.
  */
-export type RegisterListQuery = NonNullable<
-	OrganizationadminmemberregisterListMemberRegisterFbd88DcfData['query']
-> &
-	Required<
-		Pick<
-			NonNullable<OrganizationadminmemberregisterListMemberRegisterFbd88DcfData['query']>,
-			'page' | 'page_size'
-		>
-	>;
+// Derived from the SDK function (stable name) rather than the hash-suffixed `...Data`
+// type, whose suffix churns on every regen.
+type ListRegisterQuery = NonNullable<
+	Parameters<typeof organizationadminmemberregisterListMemberRegister>[0]['query']
+>;
+
+export type RegisterListQuery = ListRegisterQuery &
+	Required<Pick<ListRegisterQuery, 'page' | 'page_size'>>;
 
 export function filtersToQuery(filters: RegisterFilters): RegisterListQuery {
 	const query: RegisterListQuery = { page: filters.page, page_size: REGISTER_PAGE_SIZE };
