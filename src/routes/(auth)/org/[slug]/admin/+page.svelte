@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { standardTiers } from '$lib/utils/membership-tier-kind';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
@@ -70,7 +71,7 @@
 		enabled: !!accessToken && !!organization?.slug
 	}));
 
-	const tiersList = $derived(tiersQuery.data ?? []);
+	const tiersList = $derived(standardTiers(tiersQuery.data));
 
 	function createEvent() {
 		goto(resolve('/(auth)/org/[slug]/admin/events/new', { slug: organization.slug }));

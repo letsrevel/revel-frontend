@@ -316,11 +316,37 @@
 						id="pass-purchasable-by"
 						bind:value={purchasableBy}
 						disabled={isPending}
+						aria-invalid={fieldErrors.purchasable_by ? 'true' : undefined}
+						aria-describedby={[
+							fieldErrors.purchasable_by ? 'pass-purchasable-by-error' : '',
+							purchasableBy === 'non_members' || visibility === 'members-only'
+								? 'pass-purchasable-by-conflict-hint'
+								: ''
+						]
+							.filter(Boolean)
+							.join(' ') || undefined}
 						class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
 					>
 						<option value="public">{m['seriesPassAdmin.purchasablePublic']()}</option>
 						<option value="members">{m['seriesPassAdmin.purchasableMembers']()}</option>
+						<option value="non_members" disabled={visibility === 'members-only'}
+							>{m['seriesPassAdmin.purchasableNonMembers']()}</option
+						>
 					</select>
+					{#if purchasableBy === 'non_members' || visibility === 'members-only'}
+						<p
+							id="pass-purchasable-by-conflict-hint"
+							class="mt-1 text-xs text-muted-foreground"
+							data-testid="pass-purchasable-by-conflict-hint"
+						>
+							{m['tierForm.nonMembersNeedsVisible']()}
+						</p>
+					{/if}
+					{#if fieldErrors.purchasable_by}
+						<p id="pass-purchasable-by-error" class="mt-1 text-sm text-destructive">
+							{fieldErrors.purchasable_by}
+						</p>
+					{/if}
 				</div>
 				<div>
 					<Label for="pass-visibility">{m['seriesPassAdmin.visibilityLabel']()}</Label>
@@ -332,7 +358,9 @@
 					>
 						<option value="public">{m['seriesPassAdmin.visibilityPublic']()}</option>
 						<option value="unlisted">{m['seriesPassAdmin.visibilityUnlisted']()}</option>
-						<option value="members-only">{m['seriesPassAdmin.visibilityMembersOnly']()}</option>
+						<option value="members-only" disabled={purchasableBy === 'non_members'}
+							>{m['seriesPassAdmin.visibilityMembersOnly']()}</option
+						>
 						<option value="private">{m['seriesPassAdmin.visibilityPrivate']()}</option>
 					</select>
 				</div>

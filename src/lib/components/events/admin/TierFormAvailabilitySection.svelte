@@ -4,7 +4,8 @@
 	import { Label } from '$lib/components/ui/label';
 	import { TriangleAlert } from '@lucide/svelte';
 	import { exceedsEventCapacity } from './event-capacity';
-	import type { MembershipTierSchema } from '$lib/api/generated/types.gen';
+	import { allowsMembershipRestrictions } from './tier-membership-links';
+	import type { MembershipTierSchema, PurchasableBy } from '$lib/api/generated/types.gen';
 
 	interface Props {
 		totalQuantity: string;
@@ -13,7 +14,7 @@
 		salesStartReadback: string;
 		salesEndReadback: string;
 		visibility: 'public' | 'private' | 'members-only' | 'staff-only';
-		purchasableBy: 'public' | 'members' | 'invited' | 'invited_and_members';
+		purchasableBy: PurchasableBy;
 		restrictVisibilityToLinkedInvitations: boolean;
 		restrictPurchaseToLinkedInvitations: boolean;
 		restrictedToMembershipTiersIds: string[];
@@ -46,6 +47,20 @@
 	// the value that will be stored. Empty = unlimited (NaN), which never warns.
 	const parsedQuantity = $derived(parseInt(String(totalQuantity ?? '')));
 	const overCapacity = $derived(exceedsEventCapacity(parsedQuantity, eventCapacity));
+
+	// Backend rule: a non-members tier cannot be members-only visible. Disable whichever
+	// option would create the conflict and say why (hint below the purchasable-by select).
+	const nonMembersVisibilityConflict = $derived(
+		purchasableBy === 'non_members' || visibility === 'members-only'
+	);
+
+	// Restrictions only exist under members / invited_and_members; drop a stale selection
+	// when the audience changes (TierForm then sends [] so the backend clears the links).
+	$effect(() => {
+		if (!allowsMembershipRestrictions(purchasableBy) && restrictedToMembershipTiersIds.length > 0) {
+			restrictedToMembershipTiersIds = [];
+		}
+	});
 </script>
 
 <!-- Total Quantity -->
@@ -129,7 +144,9 @@
 	>
 		<option value="public">{m['tierForm.public']()}</option>
 		<option value="private">{m['tierForm.private']()}</option>
-		<option value="members-only">{m['tierForm.membersOnly']()}</option>
+		<option value="members-only" disabled={purchasableBy === 'non_members'}
+			>{m['tierForm.membersOnly']()}</option
+		>
 		<option value="staff-only">{m['tierForm.staffOnly']()}</option>
 	</select>
 
@@ -158,13 +175,26 @@
 		id="purchasable-by"
 		bind:value={purchasableBy}
 		disabled={isPending}
+		aria-describedby={nonMembersVisibilityConflict ? 'purchasable-by-conflict-hint' : undefined}
 		class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 	>
 		<option value="public">{m['tierForm.anyone']()}</option>
 		<option value="members">{m['tierForm.membersOnly']()}</option>
 		<option value="invited">{m['tierForm.invitedOnly']()}</option>
 		<option value="invited_and_members">{m['tierForm.invitedAndMembers']()}</option>
+		<option value="non_members" disabled={visibility === 'members-only'}
+			>{m['tierForm.nonMembersOnly']()}</option
+		>
 	</select>
+	{#if nonMembersVisibilityConflict}
+		<p
+			id="purchasable-by-conflict-hint"
+			class="mt-1 text-xs text-muted-foreground"
+			data-testid="purchasable-by-conflict-hint"
+		>
+			{m['tierForm.nonMembersNeedsVisible']()}
+		</p>
+	{/if}
 
 	{#if purchasableBy === 'invited' || purchasableBy === 'invited_and_members'}
 		<label class="mt-2 flex cursor-pointer items-start gap-2">

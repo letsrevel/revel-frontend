@@ -176,7 +176,10 @@ const REASON_CODE_MESSAGES: Partial<Record<ReasonCode, () => string>> = {
 	membership_tier_required: () => m['eligibility.reason.membership_tier_required'](),
 	// Every tier is paused by the organizer (integrations #894): the backend's
 	// line names the mechanism; buyers only need to know it is temporary.
-	sales_paused: () => m['eligibility.reason.sales_paused']()
+	sales_paused: () => m['eligibility.reason.sales_paused'](),
+	// Active members cannot buy a `non_members` tier (BE #1317); pairs with the
+	// `choose_another_tier` next step.
+	members_excluded: () => m['eligibility.reason.members_excluded']()
 };
 
 /**
@@ -214,6 +217,7 @@ export function getNextStepMessage(nextStep: NextStep): string {
 		wait_for_open_spot: () => m['eligibility.nextStep.wait_for_open_spot'](),
 		wait_for_event_to_open: () => m['eligibility.nextStep.wait_for_event_to_open'](),
 		upgrade_membership: () => m['eligibility.nextStep.upgrade_membership'](),
+		choose_another_tier: () => m['eligibility.nextStep.choose_another_tier'](),
 		request_whitelist: () => m['eligibility.nextStep.request_whitelist'](),
 		wait_for_whitelist_approval: () => m['eligibility.nextStep.wait_for_whitelist_approval'](),
 		complete_profile: () => m['eligibility.nextStep.complete_profile']()
@@ -252,6 +256,7 @@ export function getActionButtonText(nextStep: NextStep): string {
 		wait_for_open_spot: () => m['eligibility.actionButton.wait_for_open_spot'](),
 		wait_for_event_to_open: () => m['eligibility.actionButton.wait_for_event_to_open'](),
 		upgrade_membership: () => m['membershipPlans.viewMembership'](),
+		choose_another_tier: () => m['eligibility.actionButton.choose_another_tier'](),
 		request_whitelist: () => m['eligibility.actionButton.request_whitelist'](),
 		wait_for_whitelist_approval: () => m['eligibility.actionButton.wait_for_whitelist_approval'](),
 		complete_profile: () => m['eligibility.actionButton.complete_profile']()
@@ -297,6 +302,7 @@ export function getNextStepIcon(nextStep: NextStep): string {
 		wait_for_open_spot: 'Clock',
 		wait_for_event_to_open: 'Bell',
 		upgrade_membership: 'ArrowUpCircle',
+		choose_another_tier: 'Ticket',
 		request_whitelist: 'ShieldCheck',
 		wait_for_whitelist_approval: 'Clock',
 		complete_profile: 'UserCircle'

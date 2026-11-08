@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { standardTiers } from '$lib/utils/membership-tier-kind';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { resolve } from '$app/paths';
@@ -153,6 +154,9 @@
 	const members = $derived(membersQuery.data?.results || []);
 	const staff = $derived(staffQuery.data?.results || []);
 	const tiers = $derived(tiersQuery.data || []);
+	// Pickers (assign/approve/tokens/filter) only take standard tiers; the Tiers
+	// tab manages every tier, temporary ones included.
+	const pickerTiers = $derived(standardTiers(tiers));
 	const membershipQuestionnaires = $derived(
 		(questionnairesQuery.data?.results ?? []).filter((q) => q.questionnaire_type === 'membership')
 	);
@@ -307,7 +311,7 @@
 					{organization}
 					isOwner={!!data.isOwner}
 					permissions={data.permissions}
-					{tiers}
+					tiers={pickerTiers}
 					{staffUserIds}
 				/>
 			</TabsContent>
@@ -319,7 +323,7 @@
 
 			<!-- Requests Tab -->
 			<TabsContent value="requests" class="space-y-4">
-				<MembershipRequestsTab {organization} {tiers} />
+				<MembershipRequestsTab {organization} tiers={pickerTiers} />
 			</TabsContent>
 
 			<!-- Tiers Tab -->
@@ -355,7 +359,7 @@
 				<OrganizationTokensTab
 					{organization}
 					isOwner={!!data.isOwner}
-					{tiers}
+					tiers={pickerTiers}
 					isCreateModalOpen={isCreateTokenModalOpen}
 					onCreateModalOpenChange={(open) => (isCreateTokenModalOpen = open)}
 				/>

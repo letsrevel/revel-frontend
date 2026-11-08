@@ -112,6 +112,7 @@
 			wait_for_open_spot: Clock,
 			wait_for_event_to_open: Bell,
 			upgrade_membership: ArrowUpCircle,
+			choose_another_tier: Ticket,
 			request_whitelist: ShieldCheck,
 			wait_for_whitelist_approval: Clock,
 			complete_profile: UserCircle
@@ -135,6 +136,7 @@
 		if (
 			step === 'rsvp' ||
 			step === 'purchase_ticket' ||
+			step === 'choose_another_tier' ||
 			step === 'complete_questionnaire' ||
 			step === 'request_invitation' ||
 			step === 'become_member' ||
@@ -221,7 +223,9 @@
 		}
 
 		// User is eligible to buy a ticket: open the ticket-tier purchase modal.
-		if (nextStep === 'purchase_ticket') {
+		// A non_members tier refused this member: the other tiers live in the same
+		// ticket-tier modal as purchase_ticket, so reuse it.
+		if (nextStep === 'purchase_ticket' || nextStep === 'choose_another_tier') {
 			onGetTicketsClick?.();
 			return;
 		}

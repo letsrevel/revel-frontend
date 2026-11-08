@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { standardTiers } from '$lib/utils/membership-tier-kind';
 	import type { PageData } from './$types';
 	import { page } from '$app/stores';
 	import { goto, invalidateAll } from '$app/navigation';
@@ -278,7 +279,7 @@
 					headers: { Authorization: `Bearer ${accessToken}` }
 				});
 				if (response.data) {
-					membershipTiers = response.data;
+					membershipTiers = standardTiers(response.data);
 				}
 			} catch (err) {
 				console.error('Failed to load membership tiers:', err);

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { standardTiers } from '$lib/utils/membership-tier-kind';
 	import { page } from '$app/stores';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
@@ -186,7 +187,7 @@
 	}
 
 	const tokens = $derived(tokensQuery.data?.results || []);
-	const membershipTiers = $derived(tiersQuery.data || []);
+	const membershipTiers = $derived(standardTiers(tiersQuery.data));
 	const isLoading = $derived(tokensQuery.isLoading);
 	const shareUrl = $derived(
 		tokenToShare ? getOrganizationTokenUrl(tokenToShare.id || '', organization.slug) : ''

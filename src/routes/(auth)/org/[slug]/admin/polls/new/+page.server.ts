@@ -1,3 +1,4 @@
+import { standardTiers } from '$lib/utils/membership-tier-kind';
 import { error } from '@sveltejs/kit';
 import {
 	eventpublicdiscoveryListEvents,
@@ -44,6 +45,6 @@ export const load: PageServerLoad = async ({ locals, parent, fetch }) => {
 
 	return {
 		events: eventsRes.data?.results ?? [],
-		tiers: tiersRes.data ?? []
+		tiers: standardTiers(tiersRes.data)
 	};
 };

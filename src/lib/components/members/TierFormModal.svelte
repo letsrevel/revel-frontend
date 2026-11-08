@@ -108,8 +108,9 @@
 		onSave({
 			name: tierName.trim(),
 			description: tierDescription.trim(),
-			membership_questionnaire_id: questionnaireId || null,
-			requires_membership_approval: approvalMode === 'inherit' ? null : approvalMode === 'require'
+			membership_questionnaire_id: isTemporary ? null : questionnaireId || null,
+			requires_membership_approval:
+				isTemporary || approvalMode === 'inherit' ? null : approvalMode === 'require'
 		});
 	}
 
@@ -122,6 +123,8 @@
 
 	// Is editing mode
 	const isEditing = $derived(!!tier);
+	// Day-membership tiers can't carry a questionnaire or an approval override (backend rejects it).
+	const isTemporary = $derived(tier?.kind === 'temporary');
 </script>
 
 <Dialog
@@ -189,42 +192,48 @@
 				</p>
 			</div>
 
-			<!-- Membership questionnaire override ('' = inherit the org default) -->
-			<div class="space-y-2">
-				<Label for="tier-questionnaire">{m['tierForm.questionnaireLabel']()}</Label>
-				<select
-					id="tier-questionnaire"
-					bind:value={questionnaireId}
-					disabled={isSaving}
-					class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-				>
-					<option value="">{m['tierForm.questionnaireInherit']()}</option>
-					{#each membershipQuestionnaires as oq (oq.id)}
-						<option value={oq.id}>{oq.questionnaire.name}</option>
-					{/each}
-				</select>
-				<p class="text-xs text-muted-foreground">{m['tierForm.questionnaireHint']()}</p>
-			</div>
+			{#if isTemporary}
+				<p class="text-xs text-muted-foreground" data-testid="temporary-tier-no-gating">
+					{m['tierForm.temporaryNoGating']()}
+				</p>
+			{:else}
+				<!-- Membership questionnaire override ('' = inherit the org default) -->
+				<div class="space-y-2">
+					<Label for="tier-questionnaire">{m['tierForm.questionnaireLabel']()}</Label>
+					<select
+						id="tier-questionnaire"
+						bind:value={questionnaireId}
+						disabled={isSaving}
+						class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					>
+						<option value="">{m['tierForm.questionnaireInherit']()}</option>
+						{#each membershipQuestionnaires as oq (oq.id)}
+							<option value={oq.id}>{oq.questionnaire.name}</option>
+						{/each}
+					</select>
+					<p class="text-xs text-muted-foreground">{m['tierForm.questionnaireHint']()}</p>
+				</div>
 
-			<!-- Manual-approval override (tri-state: inherit / require / don't require) -->
-			<div class="space-y-2">
-				<Label for="tier-approval">{m['tierForm.approvalLabel']()}</Label>
-				<select
-					id="tier-approval"
-					bind:value={approvalMode}
-					disabled={isSaving}
-					class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-				>
-					<option value="inherit">
-						{orgDefaultRequiresApproval
-							? m['tierForm.approvalInheritRequired']()
-							: m['tierForm.approvalInheritNotRequired']()}
-					</option>
-					<option value="require">{m['tierForm.approvalRequire']()}</option>
-					<option value="norequire">{m['tierForm.approvalNoRequire']()}</option>
-				</select>
-				<p class="text-xs text-muted-foreground">{m['tierForm.approvalHint']()}</p>
-			</div>
+				<!-- Manual-approval override (tri-state: inherit / require / don't require) -->
+				<div class="space-y-2">
+					<Label for="tier-approval">{m['tierForm.approvalLabel']()}</Label>
+					<select
+						id="tier-approval"
+						bind:value={approvalMode}
+						disabled={isSaving}
+						class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					>
+						<option value="inherit">
+							{orgDefaultRequiresApproval
+								? m['tierForm.approvalInheritRequired']()
+								: m['tierForm.approvalInheritNotRequired']()}
+						</option>
+						<option value="require">{m['tierForm.approvalRequire']()}</option>
+						<option value="norequire">{m['tierForm.approvalNoRequire']()}</option>
+					</select>
+					<p class="text-xs text-muted-foreground">{m['tierForm.approvalHint']()}</p>
+				</div>
+			{/if}
 
 			<!-- Actions -->
 			<div class="flex justify-end gap-2 pt-4">

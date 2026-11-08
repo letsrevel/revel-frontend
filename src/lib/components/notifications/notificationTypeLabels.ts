@@ -33,6 +33,11 @@ const NOTIFICATION_TYPE_COPY: Partial<Record<NotificationType, NotificationTypeC
 		label: () => m['notificationPreferences.typeStaffSeriesPassCancelled'](),
 		description: () => m['notificationPreferences.typeStaffSeriesPassCancelledDescription']()
 	},
+	// Auto-link of a member-register entry to a verified account (epic BE #1317).
+	staff_member_record_auto_linked: {
+		label: () => m['notificationPreferences.typeStaffMemberRecordAutoLinked'](),
+		description: () => m['notificationPreferences.typeStaffMemberRecordAutoLinkedDescription']()
+	},
 	org_setup_nudge: {
 		label: () => m['notificationPreferences.typeOrgSetupNudge'](),
 		description: () => m['notificationPreferences.typeOrgSetupNudgeDescription']()

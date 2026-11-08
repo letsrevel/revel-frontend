@@ -1,3 +1,4 @@
+import { standardTiers } from '$lib/utils/membership-tier-kind';
 import { error } from '@sveltejs/kit';
 import {
 	pollGetPoll,
@@ -65,7 +66,7 @@ export const load: PageServerLoad = async ({ params, locals, parent, fetch }) =>
 	return {
 		poll: pollRes.data,
 		events: eventsRes.data?.results ?? [],
-		tiers: tiersRes.data ?? [],
+		tiers: standardTiers(tiersRes.data),
 		isOwner
 	};
 };

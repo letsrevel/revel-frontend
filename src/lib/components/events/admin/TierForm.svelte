@@ -50,6 +50,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { markSilent } from '$lib/utils/errors';
 	import { CURRENCY_SYMBOLS, toTimezoneAwareISO, normalizeDecimalInput } from './tier-form-helpers';
+	import { membershipLinksPayload } from './tier-membership-links';
 	import {
 		buildCategoryPricesPayload,
 		buildTierSeatingFields,
@@ -475,8 +476,7 @@
 			...checkInOffsetsPayload(eventContext.start, checkInPicks, tier),
 			visibility,
 			purchasable_by: purchasableBy,
-			restricted_to_membership_tiers_ids:
-				restrictedToMembershipTiersIds.length > 0 ? restrictedToMembershipTiersIds : null,
+			...membershipLinksPayload(purchasableBy, restrictedToMembershipTiersIds, !!tier),
 			restrict_visibility_to_linked_invitations:
 				visibility === 'private' ? restrictVisibilityToLinkedInvitations : false,
 			restrict_purchase_to_linked_invitations:
