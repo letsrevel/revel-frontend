@@ -181,7 +181,6 @@
 		}
 	});
 
-	// Venue and seating state
 	let seatAssignmentMode = $state<SeatAssignmentMode>(tier?.seat_assignment_mode ?? 'none');
 	let maxTicketsPerUser = $state(seed.maxTicketsPerUser);
 	// Day-membership grant ('' = none): forces max tickets to 1, bars member-only audiences.
@@ -732,6 +731,7 @@
 					!checkInPicksValid(eventContext.start, checkInPicks) ||
 					(paymentMethod !== 'free' && allowUserCancellation && !refundPolicyValid)}
 				describedBy={heldBy || undefined}
+				grantInputs={{ grantId: grantsMembershipTierId, purchasableBy, maxTicketsPerUser }}
 				onDelete={handleDelete}
 				{onClose}
 			/>

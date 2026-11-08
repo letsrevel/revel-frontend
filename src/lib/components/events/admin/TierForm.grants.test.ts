@@ -41,7 +41,7 @@ function freeTier(overrides: Partial<TicketTierDetailSchema> = {}): TicketTierDe
 	} as TicketTierDetailSchema;
 }
 
-function renderForm(tier: TicketTierDetailSchema | null) {
+function renderForm(tier: TicketTierDetailSchema | null, extra: Record<string, unknown> = {}) {
 	render(QueryClientTestWrapper, {
 		props: {
 			client: new QueryClient({
@@ -54,7 +54,8 @@ function renderForm(tier: TicketTierDetailSchema | null) {
 				organizationSlug: 'acme',
 				organizationStripeConnected: true,
 				temporaryTiers: [dayPass],
-				onClose: vi.fn()
+				onClose: vi.fn(),
+				...extra
 			}
 		}
 	});
@@ -189,5 +190,48 @@ describe('TierForm "Grants membership" (#1167)', () => {
 		expect(screen.getByTestId('tier-grants-retroactive')).toHaveTextContent(
 			"doesn't grant memberships retroactively"
 		);
+	});
+
+	it.each(['loading', 'error'] as const)(
+		'keeps the stored grant selectable while the tiers query is %s',
+		(status) => {
+			renderForm(freeTier({ grants_membership_tier_id: 'mt-day', max_tickets_per_user: 1 }), {
+				temporaryTiers: [],
+				temporaryTiersStatus: status
+			});
+			expect(picker().value).toBe('mt-day');
+			expect(
+				screen.getByRole('option', { name: 'Unavailable day-membership tier' })
+			).toBeInTheDocument();
+		}
+	);
+
+	it('shows the load error even when a grant is already set', () => {
+		renderForm(freeTier({ grants_membership_tier_id: 'mt-day', max_tickets_per_user: 1 }), {
+			temporaryTiers: [],
+			temporaryTiersStatus: 'error'
+		});
+		expect(screen.getByText('Could not load the day-membership tiers.')).toBeInTheDocument();
+	});
+
+	it('holds the save with a linked reason while a grant sits on a members-only audience', () => {
+		renderForm(
+			freeTier({
+				grants_membership_tier_id: 'mt-day',
+				max_tickets_per_user: 1,
+				purchasable_by: 'members'
+			})
+		);
+		const save = screen.getByRole('button', { name: 'Save Changes' });
+		expect(save).toBeDisabled();
+		const reason = screen.getByTestId('tier-grants-conflict');
+		expect(reason).toHaveTextContent(/cannot be limited to members/);
+		expect(save.getAttribute('aria-describedby')).toContain(reason.id);
+	});
+
+	it('does not hold the save for a consistent grant', () => {
+		renderForm(freeTier({ grants_membership_tier_id: 'mt-day', max_tickets_per_user: 1 }));
+		expect(screen.getByRole('button', { name: 'Save Changes' })).toBeEnabled();
+		expect(screen.queryByTestId('tier-grants-conflict')).not.toBeInTheDocument();
 	});
 });

@@ -16,7 +16,11 @@ describe('CheckedInNoteDialog', () => {
 			props: {
 				note: {
 					...note,
-					membership: { title: 'Membership', body: 'Day member, valid until Nov 8, 2026.' }
+					membership: {
+						title: 'Membership',
+						body: 'Day member, valid until Nov 8, 2026.',
+						plain: true
+					}
 				},
 				onClose: vi.fn()
 			}
@@ -26,21 +30,14 @@ describe('CheckedInNoteDialog', () => {
 		expect(callouts[1]).toHaveTextContent('Day member, valid until Nov 8, 2026.');
 	});
 
-	it('shows only the membership when there is no note', () => {
+	it('limits "only staff" to the note when a membership is shown too', () => {
 		render(CheckedInNoteDialog, {
 			props: {
-				note: {
-					name: 'Ada Lovelace',
-					body: null,
-					membership: { title: 'Membership', body: 'Member: Gold' }
-				},
+				note: { ...note, membership: { title: 'Membership', body: 'Member: Gold', plain: true } },
 				onClose: vi.fn()
 			}
 		});
-		const callouts = screen.getAllByTestId('scan-callout');
-		expect(callouts).toHaveLength(1);
-		expect(callouts[0]).toHaveTextContent('Member: Gold');
-		expect(screen.getByText(/Membership details for this person/)).toBeInTheDocument();
+		expect(screen.getByText(/Only staff can see the note\./)).toBeInTheDocument();
 	});
 
 	it('renders nothing without a note', () => {

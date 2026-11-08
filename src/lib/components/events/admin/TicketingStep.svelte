@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { standardTiers } from '$lib/utils/membership-tier-kind';
 	import {
-		standardTiersQueryOptions,
-		temporaryTiersQueryOptions
-	} from '$lib/queries/membership-tiers';
+		standardTiers,
+		temporaryTiers as pickTemporaryTiers
+	} from '$lib/utils/membership-tier-kind';
+	import { allTiersQueryOptions } from '$lib/queries/membership-tiers';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
@@ -105,15 +105,11 @@
 			})
 	}));
 
-	// Fetch membership tiers for the organization
+	// ONE all-kinds fetch (the exact `all` key, so TiersTab invalidation refreshes it),
+	// split client-side: standard tiers feed the audience/restriction pickers,
+	// temporary (day-membership) tiers feed the "Grants membership" picker.
 	const membershipTiersQuery = createQuery(() => ({
-		...standardTiersQueryOptions(organizationSlug, accessToken),
-		enabled: !!accessToken
-	}));
-
-	// TEMPORARY tiers only: the ticket tier's "Grants membership" picker.
-	const temporaryTiersQuery = createQuery(() => ({
-		...temporaryTiersQueryOptions(organizationSlug, accessToken),
+		...allTiersQueryOptions(organizationSlug, accessToken),
 		enabled: !!accessToken
 	}));
 
@@ -234,6 +230,7 @@
 		}
 	);
 	const membershipTiers = $derived(standardTiers(membershipTiersQuery.data));
+	const grantableTiers = $derived(pickTemporaryTiers(membershipTiersQuery.data));
 
 	// --- Tier reordering via up/down buttons ---
 	const reorderMutation = createMutation<unknown, unknown, string[]>(() => ({
@@ -513,10 +510,10 @@
 			: membershipTiersQuery.isPending
 				? 'loading'
 				: 'ready'}
-		temporaryTiers={temporaryTiersQuery.data ?? []}
-		temporaryTiersStatus={temporaryTiersQuery.isError
+		temporaryTiers={grantableTiers}
+		temporaryTiersStatus={membershipTiersQuery.isError
 			? 'error'
-			: temporaryTiersQuery.isPending
+			: membershipTiersQuery.isPending
 				? 'loading'
 				: 'ready'}
 		eventVenueId={formData.venue_id || null}

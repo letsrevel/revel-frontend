@@ -10756,6 +10756,7 @@
 	"tierForm.grants.unavailable": "Nível de associação de um dia indisponível",
 	"tierForm.grants.blockedByAudience": "Indisponível enquanto o nível estiver restrito a membros. Escolha primeiro outro público.",
 	"tierForm.grants.audienceLocked": "Um nível de bilhete que concede uma associação não pode ser restrito a membros.",
+	"tierForm.grants.conflict": "Um nível de bilhete que concede uma associação deve permitir exatamente 1 bilhete por pessoa e não pode ser restrito a membros. Corrija esses campos para guardar.",
 	"tierForm.grants.maxLocked": "Fixado em 1 enquanto este nível conceder uma associação.",
 	"tierForm.grants.retroactive": "Ativar isto num nível que já vendeu bilhetes não concede associações retroativamente.",
 	"tierForm.field.grants_membership_tier": "Concede associação",
@@ -10802,7 +10803,6 @@
 	"scanMembership.dayNoEnd": "Membro por um dia.",
 	"scanMembership.dayNoBenefits": "Apenas para este evento; sem vantagens de membro.",
 	"scanMembership.standard": "Membro: {tier}",
-	"scanNote.checkedInDescriptionMembership": "Dados de associação desta pessoa. Só a equipa os pode ver.",
-	"scanNote.checkedInDescriptionBoth": "Esta pessoa tem uma nota interna e uma associação. Só a equipa as pode ver.",
+	"scanNote.checkedInDescriptionBoth": "Esta pessoa tem uma nota interna e uma associação. Só a equipa pode ver a nota.",
 	"scanNote.dismiss": "Entendido"
 }

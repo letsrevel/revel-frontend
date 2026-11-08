@@ -4,13 +4,13 @@ import { getUserDisplayName } from '$lib/utils/user-display';
 import { membershipCalloutFrom, type ScanMembershipCallout } from './scan-membership';
 
 /**
- * What a successful check-in tells door staff beyond the toast: the private
- * staff note and/or the membership standing. Either may be absent, never both.
+ * What a successful check-in tells door staff in a blocking dialog: a private
+ * staff note they have not read yet, with the membership standing alongside it.
  */
 export interface ScanNote {
 	name: string;
-	/** The private staff note, or null when there is none (or the preview already showed it). */
-	body: string | null;
+	/** The private staff note. */
+	body: string;
 	membership: ScanMembershipCallout | null;
 }
 
@@ -23,19 +23,26 @@ interface ScanNoteOptions {
 	previewedNote?: string | null;
 }
 
-/** Extract the note and membership from a check-in result; null when there is neither. */
+/**
+ * The blocking-dialog content of a check-in result: null unless there is a staff
+ * note to show (and the pre-confirm preview did not already show it). A
+ * membership alone is NOT dialog-worthy; see {@link checkInMembershipLine}.
+ */
 export function scanNoteFrom(
 	result: CheckInResponseSchema,
 	options: ScanNoteOptions = {}
 ): ScanNote | null {
 	const note = result.private_note?.trim() || null;
 	const alreadyShown = !!note && note === options.previewedNote?.trim();
-	const body = alreadyShown ? null : note;
-	const membership = membershipCalloutFrom(result.membership);
-	if (!body && !membership) return null;
+	if (!note || alreadyShown) return null;
 	return {
 		name: getUserDisplayName(result.user, m['memberVerify.unknownMember']()),
-		body,
-		membership
+		body: note,
+		membership: membershipCalloutFrom(result.membership)
 	};
+}
+
+/** The membership line for the non-blocking check-in toast ("Day member, valid until ..."), or null. */
+export function checkInMembershipLine(result: CheckInResponseSchema): string | null {
+	return membershipCalloutFrom(result.membership)?.body ?? null;
 }

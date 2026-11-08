@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/svelte';
 import { describe, it, expect } from 'vitest';
 import ScanCallout from './ScanCallout.svelte';
-import { scanNoteFrom } from './scan-note';
+import { checkInMembershipLine, scanNoteFrom } from './scan-note';
 
 describe('ScanCallout', () => {
 	it('renders the title and markdown body', () => {
@@ -20,6 +20,16 @@ describe('ScanCallout', () => {
 	it('renders nothing for a blank body', () => {
 		render(ScanCallout, { props: { title: 'Staff note', body: '   ' } });
 		expect(screen.queryByTestId('scan-callout')).not.toBeInTheDocument();
+	});
+
+	it('renders a plain body literally, in a paragraph, without markdown', () => {
+		render(ScanCallout, {
+			props: { title: 'Membership', body: 'Member: **VIP** _club_', plain: true }
+		});
+		const callout = screen.getByTestId('scan-callout');
+		expect(callout).toHaveTextContent('Member: **VIP** _club_');
+		expect(callout.querySelector('strong')).toBeNull();
+		expect(callout.querySelector('em')).toBeNull();
 	});
 
 	it('sanitizes script content', () => {
@@ -48,17 +58,26 @@ describe('scanNoteFrom', () => {
 		expect(result).toEqual({ name: 'Ada L', body: 'VIP', membership: null });
 	});
 
-	it('returns the membership block even without a note', () => {
+	it('returns null for a membership without a note (no blocking dialog)', () => {
 		const result = scanNoteFrom({
 			user: { first_name: 'Ada', last_name: 'L' },
 			private_note: null,
 			membership: { kind: 'standard', tier_name: 'Gold', valid_until: null }
 		} as never);
-		expect(result?.body).toBeNull();
+		expect(result).toBeNull();
+	});
+
+	it('carries the membership alongside a note', () => {
+		const result = scanNoteFrom({
+			user: { first_name: 'Ada', last_name: 'L' },
+			private_note: 'VIP',
+			membership: { kind: 'standard', tier_name: 'Gold', valid_until: null }
+		} as never);
+		expect(result?.body).toBe('VIP');
 		expect(result?.membership?.body).toBe('Member: Gold');
 	});
 
-	it('drops a note the pre-confirm dialog already showed, keeping the membership', () => {
+	it('returns null when the note was already previewed, even with a membership', () => {
 		const result = scanNoteFrom(
 			{
 				user: { first_name: 'Ada' },
@@ -67,8 +86,7 @@ describe('scanNoteFrom', () => {
 			} as never,
 			{ previewedNote: 'Needs step-free' }
 		);
-		expect(result?.body).toBeNull();
-		expect(result?.membership).not.toBeNull();
+		expect(result).toBeNull();
 	});
 
 	it('returns null when the only content was already previewed', () => {
@@ -84,5 +102,14 @@ describe('scanNoteFrom', () => {
 			previewedNote: 'VIP'
 		});
 		expect(result?.body).toBe('Updated');
+	});
+});
+
+describe('checkInMembershipLine', () => {
+	it('is the plain membership text, or null without a membership', () => {
+		expect(
+			checkInMembershipLine({ membership: { kind: 'standard', tier_name: 'Gold' } } as never)
+		).toBe('Member: Gold');
+		expect(checkInMembershipLine({ membership: null } as never)).toBeNull();
 	});
 });

@@ -5,13 +5,10 @@ import { formatDateTime } from '$lib/utils/date';
 /** A membership standing ready to hand to {@link ScanCallout}. */
 export interface ScanMembershipCallout {
 	title: string;
-	/** Markdown (tier names are escaped, so they render literally). */
+	/** Plain text (organizer-typed tier names must render literally): pass with `plain` to {@link ScanCallout}. */
 	body: string;
-}
-
-/** Tier names are organizer-typed: keep `*`, `_`, `[` ... literal inside the callout's markdown. */
-function escapeMarkdown(text: string): string {
-	return text.replace(/([\\`*_{}[\]()#+\-.!|<>~&])/g, '\\$1');
+	/** Always true: the body is not markdown. */
+	plain: true;
 }
 
 /**
@@ -35,10 +32,11 @@ export function membershipCalloutFrom(
 		const head = membership.valid_until
 			? m['scanMembership.day']({ date: formatDateTime(membership.valid_until) })
 			: m['scanMembership.dayNoEnd']();
-		return { title, body: `${head} ${m['scanMembership.dayNoBenefits']()}` };
+		return { title, body: `${head} ${m['scanMembership.dayNoBenefits']()}`, plain: true };
 	}
 	return {
 		title,
-		body: m['scanMembership.standard']({ tier: escapeMarkdown(membership.tier_name) })
+		body: m['scanMembership.standard']({ tier: membership.tier_name }),
+		plain: true
 	};
 }

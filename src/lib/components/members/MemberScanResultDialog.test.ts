@@ -171,6 +171,17 @@ describe('MemberScanResultDialog membership block', () => {
 		expect(screen.getByRole('dialog')).toContainElement(callout);
 	});
 
+	it('does not repeat the tier of a standard member (the verification card shows it)', () => {
+		render(MemberScanResultDialog, {
+			props: {
+				report: report({ membership: { kind: 'standard', tier_name: 'Gold' } }),
+				onCheckInTicket: vi.fn(),
+				onClose: vi.fn()
+			}
+		});
+		expect(screen.queryByTestId('scan-callout')).not.toBeInTheDocument();
+	});
+
 	it('shows nothing when membership is null', () => {
 		render(MemberScanResultDialog, {
 			props: { report: report({ membership: null }), onCheckInTicket: vi.fn(), onClose: vi.fn() }

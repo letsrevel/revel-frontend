@@ -13,12 +13,11 @@
 	import type { ScanNote } from './scan-note';
 
 	/**
-	 * Shown after a successful scan check-in when there is something staff must
-	 * read: the person's private staff note and/or their membership standing (day
-	 * member, or the standard tier). The check-in response carries both; the
-	 * pre-confirm preview carries at most the note (and the parent drops it here
-	 * when the preview already showed it). A dialog is announced by assistive tech
-	 * on open, which is how it joins the scan result.
+	 * Shown after a successful scan check-in only when there is a staff note staff
+	 * have not already read (the parent drops it when the pre-confirm preview
+	 * showed it). The membership standing rides along when there is one; on its own
+	 * it never opens this dialog (it goes into the check-in toast instead). A dialog
+	 * is announced by assistive tech on open, which is how it joins the scan result.
 	 */
 	interface Props {
 		note: ScanNote | null;
@@ -36,11 +35,9 @@
 	});
 	const shown = $derived(note ?? lastNote);
 	const description = $derived(
-		shown?.body && shown.membership
+		shown?.membership
 			? m['scanNote.checkedInDescriptionBoth']()
-			: shown?.membership
-				? m['scanNote.checkedInDescriptionMembership']()
-				: m['scanNote.checkedInDescription']()
+			: m['scanNote.checkedInDescription']()
 	);
 </script>
 
@@ -53,7 +50,12 @@
 			</DialogHeader>
 			<ScanCallout title={m['scanNote.label']()} body={shown.body} />
 			{#if shown.membership}
-				<ScanCallout title={shown.membership.title} body={shown.membership.body} tone="info" />
+				<ScanCallout
+					title={shown.membership.title}
+					body={shown.membership.body}
+					plain={shown.membership.plain}
+					tone="info"
+				/>
 			{/if}
 			<DialogFooter>
 				<Button onclick={onClose}>{m['scanNote.dismiss']()}</Button>

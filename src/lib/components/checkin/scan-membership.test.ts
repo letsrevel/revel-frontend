@@ -40,8 +40,9 @@ describe('membershipCalloutFrom', () => {
 		).toBe('Member: Gold');
 	});
 
-	it('keeps markdown in a tier name literal', () => {
-		const body = membershipCalloutFrom({ kind: 'standard', tier_name: '**VIP** _club_' })?.body;
-		expect(body).toBe('Member: \\*\\*VIP\\*\\* \\_club\\_');
+	it('passes a tier name through untouched and marks the body plain text', () => {
+		const callout = membershipCalloutFrom({ kind: 'standard', tier_name: '**VIP** _club_' });
+		expect(callout?.body).toBe('Member: **VIP** _club_');
+		expect(callout?.plain).toBe(true);
 	});
 });

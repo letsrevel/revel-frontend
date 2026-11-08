@@ -10756,6 +10756,7 @@
 	"tierForm.grants.unavailable": "Nivel de membresía de un día no disponible",
 	"tierForm.grants.blockedByAudience": "No disponible mientras el nivel esté restringido a miembros. Elige antes otro público.",
 	"tierForm.grants.audienceLocked": "Un nivel de entrada que otorga una membresía no puede restringirse a miembros.",
+	"tierForm.grants.conflict": "Un nivel de entrada que otorga una membresía debe permitir exactamente 1 entrada por persona y no puede restringirse a miembros. Corrige esos campos para guardar.",
 	"tierForm.grants.maxLocked": "Fijado en 1 mientras este nivel otorgue una membresía.",
 	"tierForm.grants.retroactive": "Activar esto en un nivel que ya vendió entradas no otorga membresías de forma retroactiva.",
 	"tierForm.field.grants_membership_tier": "Otorga membresía",
@@ -10802,7 +10803,6 @@
 	"scanMembership.dayNoEnd": "Miembro por un día.",
 	"scanMembership.dayNoBenefits": "Solo para este evento; sin ventajas de miembro.",
 	"scanMembership.standard": "Miembro: {tier}",
-	"scanNote.checkedInDescriptionMembership": "Datos de membresía de esta persona. Solo el equipo puede verlos.",
-	"scanNote.checkedInDescriptionBoth": "Esta persona tiene una nota interna y una membresía. Solo el equipo puede verlas.",
+	"scanNote.checkedInDescriptionBoth": "Esta persona tiene una nota interna y una membresía. Solo el personal puede ver la nota.",
 	"scanNote.dismiss": "Entendido"
 }

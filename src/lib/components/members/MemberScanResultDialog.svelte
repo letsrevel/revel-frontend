@@ -35,8 +35,11 @@
 	const { report, pendingTicketId = null, onCheckInTicket, onClose }: Props = $props();
 
 	const tickets = $derived(report?.tickets ?? []);
-	// Day member / standard standing from the scan response; inside the dialog, so announced with it.
-	const membership = $derived(membershipCalloutFrom(report?.membership));
+	// MemberVerificationCard already shows the tier of a standard member; only a day
+	// member (a register entry the card cannot express) needs the extra callout.
+	const membership = $derived(
+		report?.membership?.kind === 'temporary' ? membershipCalloutFrom(report.membership) : null
+	);
 
 	/**
 	 * Only a live ticket can be checked in. A cancelled one never appears here
@@ -60,7 +63,12 @@
 				<MemberVerificationCard member={report.member} />
 
 				{#if membership}
-					<ScanCallout title={membership.title} body={membership.body} tone="info" />
+					<ScanCallout
+						title={membership.title}
+						body={membership.body}
+						plain={membership.plain}
+						tone="info"
+					/>
 				{/if}
 
 				<!--

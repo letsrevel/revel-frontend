@@ -10756,6 +10756,7 @@
 	"tierForm.grants.unavailable": "Niveau d'adhésion d'un jour indisponible",
 	"tierForm.grants.blockedByAudience": "Indisponible tant que le tarif est réservé aux membres. Choisissez d'abord un autre public.",
 	"tierForm.grants.audienceLocked": "Un tarif qui accorde une adhésion ne peut pas être réservé aux membres.",
+	"tierForm.grants.conflict": "Un tarif qui accorde une adhésion doit autoriser exactement 1 billet par personne et ne peut pas être réservé aux membres. Corrigez ces champs pour enregistrer.",
 	"tierForm.grants.maxLocked": "Fixé à 1 tant que ce tarif accorde une adhésion.",
 	"tierForm.grants.retroactive": "L'activer sur un tarif dont des billets ont déjà été vendus n'accorde pas d'adhésion rétroactivement.",
 	"tierForm.field.grants_membership_tier": "Accorde une adhésion",
@@ -10802,7 +10803,6 @@
 	"scanMembership.dayNoEnd": "Membre d'un jour.",
 	"scanMembership.dayNoBenefits": "Pour cet événement uniquement ; aucun avantage de membre.",
 	"scanMembership.standard": "Membre : {tier}",
-	"scanNote.checkedInDescriptionMembership": "Informations d'adhésion de cette personne. Seule l'équipe peut les voir.",
-	"scanNote.checkedInDescriptionBoth": "Cette personne a une note interne et une adhésion. Seule l'équipe peut les voir.",
+	"scanNote.checkedInDescriptionBoth": "Cette personne a une note interne et une adhésion. Seule l'équipe peut voir la note.",
 	"scanNote.dismiss": "Compris"
 }

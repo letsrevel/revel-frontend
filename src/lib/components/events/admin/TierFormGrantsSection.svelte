@@ -38,7 +38,9 @@
 	// and this picker is disabled while one of those is selected, so no state can hold both.
 	const blockedByAudience = $derived(audienceBlocksGrant(purchasableBy));
 	const unavailableStored = $derived(
-		hasGrant(grantId) && status === 'ready' && !membershipTiers.some((tier) => tier.id === grantId)
+		// Whatever the query status: while loading or after a failed load the stored
+		// grant must still be a selectable option, or the select would show "none".
+		hasGrant(grantId) && !membershipTiers.some((tier) => tier.id === grantId)
 	);
 	const describedBy = $derived(
 		[helpId, blockedByAudience ? blockedId : '', error ? errorId : ''].filter(Boolean).join(' ')
@@ -87,7 +89,7 @@
 		<p class="mt-1 text-xs text-muted-foreground" role="status">
 			{m['tierForm.grants.loading']()}
 		</p>
-	{:else if status === 'error' && membershipTiers.length === 0}
+	{:else if status === 'error'}
 		<p class="mt-1 text-xs text-destructive" role="alert">{m['tierForm.grants.loadError']()}</p>
 	{:else if status === 'ready' && membershipTiers.length === 0 && !hasGrant(grantId)}
 		<p class="mt-1 text-xs text-muted-foreground">{m['tierForm.grants.noTiers']()}</p>

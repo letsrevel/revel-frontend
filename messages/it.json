@@ -10756,6 +10756,7 @@
 	"tierForm.grants.unavailable": "Livello di iscrizione giornaliera non disponibile",
 	"tierForm.grants.blockedByAudience": "Non disponibile finché il livello è riservato ai membri. Scegli prima un altro pubblico.",
 	"tierForm.grants.audienceLocked": "Un livello di biglietto che concede un'iscrizione non può essere riservato ai membri.",
+	"tierForm.grants.conflict": "Un livello di biglietto che concede un'iscrizione deve consentire esattamente 1 biglietto a persona e non può essere riservato ai membri. Correggi questi campi per salvare.",
 	"tierForm.grants.maxLocked": "Fissato a 1 finché questo livello concede un'iscrizione.",
 	"tierForm.grants.retroactive": "Attivarlo su un livello che ha già venduto biglietti non concede iscrizioni in modo retroattivo.",
 	"tierForm.field.grants_membership_tier": "Concede un'iscrizione",
@@ -10802,7 +10803,6 @@
 	"scanMembership.dayNoEnd": "Socio giornaliero.",
 	"scanMembership.dayNoBenefits": "Solo per questo evento; nessun vantaggio da socio.",
 	"scanMembership.standard": "Socio: {tier}",
-	"scanNote.checkedInDescriptionMembership": "Dati di iscrizione di questa persona. Solo lo staff può vederli.",
-	"scanNote.checkedInDescriptionBoth": "Questa persona ha una nota interna e un'iscrizione. Solo lo staff può vederle.",
+	"scanNote.checkedInDescriptionBoth": "Questa persona ha una nota interna e un'iscrizione. Solo lo staff può vedere la nota.",
 	"scanNote.dismiss": "Ricevuto"
 }

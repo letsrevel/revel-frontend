@@ -10756,6 +10756,7 @@
 	"tierForm.grants.unavailable": "Unavailable day-membership tier",
 	"tierForm.grants.blockedByAudience": "Not available while the tier is restricted to members. Choose a different audience first.",
 	"tierForm.grants.audienceLocked": "A tier that grants a membership cannot be restricted to members.",
+	"tierForm.grants.conflict": "A tier that grants a membership must allow exactly 1 ticket per person and cannot be limited to members. Fix those fields to save.",
 	"tierForm.grants.maxLocked": "Fixed to 1 while this tier grants a membership.",
 	"tierForm.grants.retroactive": "Enabling this on a tier that already sold tickets doesn't grant memberships retroactively.",
 	"tierForm.field.grants_membership_tier": "Grants membership",
@@ -10802,7 +10803,6 @@
 	"scanMembership.dayNoEnd": "Day member.",
 	"scanMembership.dayNoBenefits": "For this event only; no member benefits.",
 	"scanMembership.standard": "Member: {tier}",
-	"scanNote.checkedInDescriptionMembership": "Membership details for this person. Only staff can see them.",
-	"scanNote.checkedInDescriptionBoth": "This person has a staff note and a membership. Only staff can see them.",
+	"scanNote.checkedInDescriptionBoth": "This person has a staff note and a membership. Only staff can see the note.",
 	"scanNote.dismiss": "Got it"
 }
