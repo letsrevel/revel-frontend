@@ -9,7 +9,7 @@ import type { Handle, HandleServerError } from '@sveltejs/kit';
 import { log } from './logger';
 import { recordRequest, recordSsrError } from './metrics';
 
-const INVITE_TOKEN_RE = /(\/join\/(?:org|event)\/)[^/\s?#]+/g;
+const INVITE_TOKEN_RE = /(\/(?:join\/(?:org|event)|member-invite)\/)[^/\s?#]+/g;
 
 /**
  * Masks invitation tokens in logged text. Two layers: the value of every
