@@ -5,6 +5,13 @@ import { safeReturnUrl } from '$lib/utils/safe-redirect';
 export const QUESTIONNAIRE_RETURN_PARAM = 'questionnaire';
 
 /**
+ * Query param naming the pass whose questionnaire flow sent the buyer away
+ * (`qpass=<pass_id>`). It rides inside the return URL, so only that pass's card
+ * reacts to the `questionnaire=` signal when the buyer comes back.
+ */
+export const QUESTIONNAIRE_PASS_PARAM = 'qpass';
+
+/**
  * The sanitized `?returnUrl=` of the current page (where the visitor came from,
  * e.g. a members-only event or a series pass), or `null` when absent or unsafe.
  *
@@ -54,11 +61,12 @@ export function withSearchParam(path: string, key: string, value: string): strin
 
 /**
  * The page the visitor is on (path + query), as a `returnUrl` for a flow that
- * sends them away and back. The one-shot `questionnaire=` signal is dropped so
- * it never rides along into the next round trip.
+ * sends them away and back. The one-shot `questionnaire=` signal and its
+ * `qpass=` target are dropped so they never ride along into the next round trip.
  */
 export function currentPageReturnPath(): string {
 	const url = new URL(page.url);
 	url.searchParams.delete(QUESTIONNAIRE_RETURN_PARAM);
+	url.searchParams.delete(QUESTIONNAIRE_PASS_PARAM);
 	return url.pathname + url.search;
 }

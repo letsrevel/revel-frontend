@@ -16,7 +16,7 @@
 		questionnaireStepsFromQuote,
 		type CheckoutRefusal
 	} from '$lib/utils/series-pass-questionnaires';
-	import { currentPageReturnPath } from '$lib/utils/internal-return-url';
+	import { passQuestionnaireReturnPath } from '$lib/utils/pass-questionnaire-return';
 	import { passEventLookupOptions } from '$lib/queries/pass-questionnaire-lookups';
 	import SeriesPassQuestionnaireSteps from './SeriesPassQuestionnaireSteps.svelte';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
@@ -65,19 +65,25 @@
 		return null;
 	});
 	const stepsId = $props.id();
-	const returnPath = $derived(currentPageReturnPath());
+	// The questionnaire links come back to THIS pass (`qpass=`), so only this card
+	// shows the review notice when the buyer returns.
+	const returnPath = $derived(passQuestionnaireReturnPath(pass.id ?? ''));
 
-	// A complete_questionnaire 400 only TRIGGERS this flow: its single `event_id`
-	// can't route a mixed set (the backend aggregates every covered event), so the
-	// steps come from the refreshed `quote` prop, never from the 400 body.
-	// FORWARD-COMPAT: when EventUserEligibility gains `questionnaire_events`, build
-	// the steps from it here and drop the quote refresh.
+	// A complete_questionnaire 400 carries `questionnaire_events` (one step per
+	// missing questionnaire, routed like the quote): those steps show at once. The
+	// quote is refreshed either way. Only when the 400 names none (an older backend)
+	// do the steps come from the refreshed `quote` prop.
 	let refreshingQuote = $state(false);
-	const steps = $derived(questionnaireStepsFromQuote(quote));
+	const refusedSteps = $derived(
+		eligibilityRefusal?.kind === 'complete_questionnaire' ? eligibilityRefusal.steps : []
+	);
+	const steps = $derived(
+		refusedSteps.length > 0 ? refusedSteps : questionnaireStepsFromQuote(quote)
+	);
 	const fallbackEventId = $derived(
 		eligibilityRefusal?.kind === 'complete_questionnaire' ? eligibilityRefusal.eventId : null
 	);
-	// Only fetched when the refreshed quote lists nothing but the 400 said otherwise.
+	// Only fetched when no steps are known but the 400 named a closed event.
 	const fallbackEvent = createQuery(() => ({
 		...passEventLookupOptions(fallbackEventId ?? ''),
 		enabled: !!fallbackEventId && !refreshingQuote && steps.length === 0
@@ -123,8 +129,8 @@
 			if (eligibility) {
 				eligibilityRefusal = eligibility;
 				if (eligibility.kind === 'complete_questionnaire') {
-					// The quote that enabled Buy was stale or silent: refresh it. The
-					// steps (here and on the card) are derived from it.
+					// The quote that enabled Buy was stale or silent: refresh it so the
+					// card's Buy gate catches up. Its steps only show when the 400 named none.
 					refreshingQuote = true;
 					try {
 						await queryClient.invalidateQueries({
@@ -246,7 +252,7 @@
 			{/if}
 
 			{#if eligibilityRefusal?.kind === 'complete_questionnaire'}
-				{#if refreshingQuote}
+				{#if refreshingQuote && refusedSteps.length === 0}
 					<p id={stepsId} class="text-sm text-muted-foreground" role="status">
 						{m['seriesPass.questionnaires.refreshing']()}
 					</p>

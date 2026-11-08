@@ -14,6 +14,7 @@ import {
 	eventpublicattendanceGetQuestionnaire
 } from '$lib/api/generated/sdk.gen';
 import type { SeriesPassSchema, SeriesPassQuoteSchema } from '$lib/api/generated/types.gen';
+import { seriesPassQueryKeys } from '$lib/queries/series-passes';
 
 const pageUrl = vi.hoisted(() => ({ href: 'http://localhost/events/acme/series/season' }));
 vi.mock('$app/state', () => ({
@@ -181,18 +182,19 @@ describe('SeriesPassCard — returning from a questionnaire', () => {
 	}
 
 	it('returns to the page as the SvelteKit page url, without the one-shot signal', async () => {
-		pageUrl.href += '&questionnaire=done';
+		pageUrl.href += '&questionnaire=done&qpass=pass-1';
 		mockQuote(missing);
 		renderCard();
 		const link = await screen.findByTestId('pass-questionnaire-link');
 		const returnUrl = new URL(link.getAttribute('href') ?? '', 'http://localhost').searchParams.get(
 			'returnUrl'
 		);
-		expect(returnUrl).toBe('/events/acme/series/season?page=2');
+		// Tagged with the pass the flow came from, so only its card reacts on return.
+		expect(returnUrl).toBe('/events/acme/series/season?page=2&qpass=pass-1');
 	});
 
 	it('shows the review notice, keeps Buy enabled and describes it, then strips the param', async () => {
-		pageUrl.href += '&questionnaire=pending';
+		pageUrl.href += '&questionnaire=pending&qpass=pass-1';
 		mockQuote();
 		renderCard();
 		const notice = await screen.findByTestId('pass-questionnaire-review-pending');
@@ -206,10 +208,52 @@ describe('SeriesPassCard — returning from a questionnaire', () => {
 		const stripped = vi.mocked(replaceState).mock.calls[0][0] as URL;
 		expect(stripped.searchParams.has('questionnaire')).toBe(false);
 		expect(stripped.searchParams.get('page')).toBe('2');
+		expect(stripped.searchParams.has('qpass')).toBe(false);
+	});
+
+	it('shows the review notice and moves focus only on the card the signal names', async () => {
+		const otherPass = { ...pass, id: 'pass-2', name: 'Winter pass' } as SeriesPassSchema;
+		pageUrl.href += '&questionnaire=pending&qpass=pass-2';
+		mockQuote();
+		const first = render(QueryClientTestWrapper, {
+			props: {
+				client: newClient(),
+				component: SeriesPassCard,
+				componentProps: { pass, seriesId: 'series-1', isAuthenticated: true }
+			}
+		});
+		const second = render(QueryClientTestWrapper, {
+			props: {
+				client: newClient(),
+				component: SeriesPassCard,
+				componentProps: { pass: otherPass, seriesId: 'series-1', isAuthenticated: true }
+			}
+		});
+
+		const notices = await within(second.container).findAllByTestId(
+			'pass-questionnaire-review-pending'
+		);
+		expect(notices).toHaveLength(1);
+		expect(within(first.container).queryByTestId('pass-questionnaire-review-pending')).toBeNull();
+		const buy = within(second.container).getByRole('button', { name: 'Get season pass' });
+		await waitFor(() => expect(buy).toHaveFocus());
+		expect(
+			within(first.container).getByRole('button', { name: 'Get season pass' })
+		).not.toHaveFocus();
+	});
+
+	it('ignores a signal aimed at another pass and still strips it', async () => {
+		pageUrl.href += '&questionnaire=pending&qpass=some-other-pass';
+		mockQuote();
+		renderCard();
+		const buy = await screen.findByRole('button', { name: 'Get season pass' });
+		await waitFor(() => expect(replaceState).toHaveBeenCalled());
+		expect(screen.queryByTestId('pass-questionnaire-review-pending')).not.toBeInTheDocument();
+		expect(buy).not.toHaveFocus();
 	});
 
 	it('moves focus to the steps heading once the quote has loaded', async () => {
-		pageUrl.href += '&questionnaire=done';
+		pageUrl.href += '&questionnaire=done&qpass=pass-1';
 		mockQuote(missing);
 		renderCard();
 		await screen.findByText('House rules');
@@ -219,7 +263,7 @@ describe('SeriesPassCard — returning from a questionnaire', () => {
 	});
 
 	it('moves focus to Buy when nothing is left to answer', async () => {
-		pageUrl.href += '&questionnaire=done';
+		pageUrl.href += '&questionnaire=done&qpass=pass-1';
 		mockQuote();
 		renderCard();
 		const buy = await screen.findByRole('button', { name: 'Get season pass' });
@@ -345,12 +389,50 @@ describe('SeriesPassPurchaseDialog — checkout 400 fallback', () => {
 		expect(links[1].getAttribute('href')).toContain('/events/acme/finale/questionnaire/q-event');
 	});
 
+	it('shows the steps the 400 routes across two events, at once, and refreshes the quote', async () => {
+		refuse(400, {
+			allowed: false,
+			event_id: 'event-b',
+			next_step: 'complete_questionnaire',
+			questionnaires_missing: ['q-series', 'q-event'],
+			questionnaire_events: [
+				{ questionnaire_id: 'q-series', event_id: 'event-a' },
+				{ questionnaire_id: 'q-event', event_id: 'event-b' }
+			]
+		});
+		const client = newClient();
+		const invalidate = vi.spyOn(client, 'invalidateQueries');
+		render(QueryClientTestWrapper, {
+			props: {
+				client,
+				component: SeriesPassPurchaseDialog,
+				componentProps: { pass, quote, seriesId: 'series-1', onClose: vi.fn() }
+			}
+		});
+		await userEvent.click(screen.getByRole('button', { name: 'Continue to payment' }));
+
+		await waitFor(() => expect(screen.getAllByTestId('pass-questionnaire-link')).toHaveLength(2));
+		const links = screen.getAllByTestId('pass-questionnaire-link');
+		expect(links[0].getAttribute('href')).toContain(
+			'/events/acme/opening-night/questionnaire/q-series'
+		);
+		expect(links[1].getAttribute('href')).toContain('/events/acme/finale/questionnaire/q-event');
+		expect(screen.queryByTestId('series-pass-questionnaires-still-needed')).not.toBeInTheDocument();
+		expect(
+			screen.queryByText('Checking which questionnaires you still need to answer…')
+		).toBeNull();
+		expect(invalidate).toHaveBeenCalledWith(
+			expect.objectContaining({ queryKey: seriesPassQueryKeys.quote('series-1', 'pass-1') })
+		);
+	});
+
 	it('falls back to a neutral message and the 400 event when the quote lists nothing', async () => {
 		refuse(400, {
 			allowed: false,
 			event_id: 'event-b',
 			next_step: 'complete_questionnaire',
-			questionnaires_missing: ['q-event']
+			questionnaires_missing: ['q-event'],
+			questionnaire_events: null
 		});
 		await openAndBuy();
 

@@ -5,6 +5,7 @@
 	import { currentPageReturnPath } from '$lib/utils/internal-return-url';
 	import {
 		capturePassReturnSignal,
+		passQuestionnaireReturnPath,
 		type PassReturnSignal
 	} from '$lib/utils/pass-questionnaire-return';
 	import type { SeriesPassSchema, SeriesPassQuoteSchema } from '$lib/api/generated/types.gen';
@@ -71,19 +72,23 @@
 	const questionnaireSteps = $derived(quote ? questionnaireStepsFromQuote(quote) : []);
 	const hasMissingQuestionnaires = $derived(questionnaireSteps.length > 0);
 	const stepsId = $derived(`${uid}-questionnaires`);
+	// Login keeps the plain page path; the questionnaire links are tagged with
+	// this pass's id so the return signal reaches this card and no other.
 	const returnPath = $derived(currentPageReturnPath());
+	const questionnaireReturnPath = $derived(passQuestionnaireReturnPath(pass.id ?? ''));
 	const pendingId = $derived(`${uid}-review-pending`);
 
-	// Set when the buyer lands back from a questionnaire page (`?questionnaire=`):
-	// `pending` shows the review notice, either one moves focus once (below).
+	// Set when the buyer lands back from a questionnaire page (`?questionnaire=`)
+	// aimed at THIS pass (`qpass=`): `pending` shows the review notice, either one
+	// moves focus once (below).
 	let returnSignal = $state<PassReturnSignal | null>(null);
 	onMount(() => {
-		returnSignal = capturePassReturnSignal();
+		returnSignal = capturePassReturnSignal(pass.id ?? '');
 	});
 
 	// Once the refreshed quote is in, put focus where the buyer continues: the
 	// steps heading while some remain, the Buy button otherwise. Only on a
-	// returned-from-questionnaire load, and only for one card on the page.
+	// returned-from-questionnaire load aimed at this pass.
 	let focusHandled = false;
 	$effect(() => {
 		// Read every dependency up front (the query adapter only tracks what is read).
@@ -91,9 +96,6 @@
 		const missing = hasMissingQuestionnaires;
 		if (!returnSignal || focusHandled || !ready) return;
 		focusHandled = true;
-		// Several cards can share the page: only the first Buy button in the
-		// document takes focus.
-		if (document.querySelector('[data-pass-buy]')?.id !== `${uid}-buy`) return;
 		const targetId = missing ? `${stepsId}-heading` : `${uid}-buy`;
 		void tick().then(() => document.getElementById(targetId)?.focus());
 	});
@@ -190,7 +192,7 @@
 			<div class="mb-3">
 				<SeriesPassQuestionnaireSteps
 					steps={questionnaireSteps}
-					returnUrl={returnPath}
+					returnUrl={questionnaireReturnPath}
 					id={stepsId}
 				/>
 			</div>

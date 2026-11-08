@@ -79,6 +79,10 @@ describe('currentPageReturnPath', () => {
 		pageUrl.href = 'http://localhost/events/acme/series/s?page=2&questionnaire=pending';
 		expect(currentPageReturnPath()).toBe('/events/acme/series/s?page=2');
 	});
+	it('also drops the pass id that targets the signal', () => {
+		pageUrl.href = 'http://localhost/events/acme/series/s?page=2&questionnaire=done&qpass=p1';
+		expect(currentPageReturnPath()).toBe('/events/acme/series/s?page=2');
+	});
 });
 
 describe('quote invalidation after a questionnaire submission', () => {
