@@ -109,5 +109,5 @@
 		<p class="mt-2 text-sm leading-relaxed">{m['verein.guide.shortcut.body']()}</p>
 	</section>
 
-	<p class="text-sm text-muted-foreground">{m['verein.guide.disclaimer']()}</p>
+	<p class="text-sm text-muted-foreground">{m['verein.guide.footer']()}</p>
 </div>

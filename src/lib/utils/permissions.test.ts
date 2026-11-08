@@ -6,7 +6,8 @@ import {
 	canPerformActionOnEvent,
 	getAllowedActions,
 	hasAnyAdminPermission,
-	getPermissionDeniedMessage
+	getPermissionDeniedMessage,
+	canRunVereinPreset
 } from './permissions';
 import type { OrganizationPermissionsSchema } from '$lib/types/auth';
 
@@ -264,6 +265,29 @@ describe('Permission Utilities', () => {
 			} as unknown as OrganizationPermissionsSchema;
 			expect(canPerformAction(withFlag, 'org-1', 'manage_subscriptions')).toBe(true);
 			expect(canPerformAction(withoutFlag, 'org-1', 'manage_subscriptions')).toBe(false);
+		});
+	});
+
+	describe('canRunVereinPreset', () => {
+		const staff = (flags: Record<string, boolean>) =>
+			({
+				organization_permissions: { 'org-1': { default: flags } }
+			}) as unknown as OrganizationPermissionsSchema;
+
+		it('needs both manage_members and create_questionnaire', () => {
+			expect(
+				canRunVereinPreset(staff({ manage_members: true, create_questionnaire: true }), 'org-1')
+			).toBe(true);
+			expect(canRunVereinPreset(staff({ manage_members: true }), 'org-1')).toBe(false);
+			expect(canRunVereinPreset(staff({ create_questionnaire: true }), 'org-1')).toBe(false);
+		});
+
+		it('is allowed for the owner and denied without permissions', () => {
+			const owner = {
+				organization_permissions: { 'org-1': 'owner' }
+			} as OrganizationPermissionsSchema;
+			expect(canRunVereinPreset(owner, 'org-1')).toBe(true);
+			expect(canRunVereinPreset(null, 'org-1')).toBe(false);
 		});
 	});
 });

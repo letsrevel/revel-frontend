@@ -1,8 +1,11 @@
 import {
 	eventadminticketsCreateTicketTier,
+	eventadminticketsListTicketTiers,
 	organizationadminmembersCreateMembershipTier,
+	organizationadminmembersListMembershipTiers,
 	questionnaireAssignEvent,
-	questionnaireCreateOrgQuestionnaire
+	questionnaireCreateOrgQuestionnaire,
+	questionnaireListOrgQuestionnaires
 } from '$lib/api/generated/sdk.gen';
 import type {
 	MembershipTierCreateSchema,
@@ -52,7 +55,7 @@ export interface VereinPresetInput {
 	membersTier: { name: string; price: string };
 	questionnaire: { name: string; question: string; option: string };
 	/** Online card payment when the org can take it, otherwise the tiers are created free. */
-	paymentMethod: 'online' | 'offline' | 'free';
+	paymentMethod: 'online' | 'free';
 }
 
 export type DayTierTemplate = MembershipTierCreateSchema;
@@ -226,6 +229,13 @@ export function validateVereinInput(input: VereinPresetInput): VereinInputIssue[
 	return issues;
 }
 
+/** Does any ticket tier of the plan have a price above zero (whatever the payment method)? */
+export function planIsPaid(plan: VereinPlan): boolean {
+	return plan.steps.some(
+		(s) => (s.id === 'publicTier' || s.id === 'membersTier') && Number(s.body.price ?? 0) > 0
+	);
+}
+
 /** Does any step of the plan ask for a paid online ticket? */
 export function planChargesOnline(plan: VereinPlan): boolean {
 	return plan.steps.some(
@@ -249,6 +259,11 @@ export interface StepResult {
 	entityId?: string;
 	/** Server message when the step failed. */
 	error?: string;
+	/**
+	 * The failure could not prove the entity was NOT created (network error, 5xx).
+	 * Before retrying, the runner looks the entity up by name instead of re-creating it.
+	 */
+	ambiguous?: boolean;
 }
 
 export interface VereinRunResult {
@@ -261,6 +276,8 @@ interface RunOptions {
 	/** Steps finished by an earlier run; they are not repeated (retry-remaining). */
 	completed?: Partial<Record<VereinStepId, string>>;
 	onProgress?: (steps: StepResult[]) => void;
+	/** Steps whose earlier attempt failed ambiguously: look them up by name before re-creating. */
+	reconcile?: Partial<Record<VereinStepId, boolean>>;
 	/** Seeds ids for a reused day tier. */
 	known?: Partial<Record<'dayTierId' | 'questionnaireId', string>>;
 }
@@ -274,7 +291,7 @@ type Created = { id?: string | null } | undefined;
  */
 export async function runVereinPlan(
 	plan: VereinPlan,
-	{ accessToken, completed = {}, onProgress, known = {} }: RunOptions
+	{ accessToken, completed = {}, onProgress, reconcile = {}, known = {} }: RunOptions
 ): Promise<VereinRunResult> {
 	const headers = { Authorization: `Bearer ${accessToken}` };
 	const ids: Record<'dayTierId' | 'questionnaireId', string | undefined> = {
@@ -293,20 +310,117 @@ export async function runVereinPlan(
 		if (results[i].status === 'done') continue;
 		results[i] = { id: step.id, status: 'running' };
 		report();
+		let reconciling = false;
 		try {
-			const created = await runStep(step, ids, headers);
-			const createdId = created?.id ?? undefined;
+			let createdId: string | undefined;
+			let found: string | undefined;
+			if (reconcile[step.id]) {
+				reconciling = true;
+				found = await findExisting(step, ids, headers);
+				reconciling = false;
+			}
+			if (found !== undefined) {
+				createdId = found;
+			} else {
+				const created = await runStep(step, ids, headers);
+				createdId = created?.id ?? undefined;
+			}
 			if (step.id === 'dayTier') ids.dayTierId = createdId;
 			if (step.id === 'questionnaire') ids.questionnaireId = createdId;
 			results[i] = { id: step.id, status: 'done', entityId: createdId };
 			report();
 		} catch (err) {
-			results[i] = { id: step.id, status: 'failed', error: extractErrorMessage(err) };
+			results[i] = {
+				id: step.id,
+				status: 'failed',
+				error: extractErrorMessage(err),
+				ambiguous: reconciling || isAmbiguousFailure(err)
+			};
 			report();
 			return { steps: results, ok: false };
 		}
 	}
 	return { steps: results, ok: true };
+}
+
+/** An HTTP error response; carries the status so the runner can tell 4xx from 5xx. */
+class StepHttpError extends Error {
+	constructor(
+		readonly body: unknown,
+		readonly status: number | undefined
+	) {
+		super(extractErrorMessage(body));
+	}
+}
+
+/**
+ * A 4xx is a definite "not created". A network failure (the call rejected with
+ * no response) or a 5xx may have committed server-side, so it needs reconciling.
+ */
+function isAmbiguousFailure(err: unknown): boolean {
+	if (err instanceof StepHttpError) return err.status !== undefined && err.status >= 500;
+	return true;
+}
+
+function httpError(res: { error?: unknown; response?: Response }): StepHttpError {
+	return new StepHttpError(res.error, res.response?.status);
+}
+
+type Headers_ = { Authorization: string };
+
+/**
+ * Re-list the entities a possibly-committed step would have made and match by
+ * the exact name the preset used. Returns the existing entity id (the step is
+ * then done), or undefined when it genuinely was not created.
+ */
+async function findExisting(
+	step: VereinPlanStep,
+	ids: Record<'dayTierId' | 'questionnaireId', string | undefined>,
+	headers: Headers_
+): Promise<string | undefined> {
+	switch (step.id) {
+		case 'dayTier': {
+			const res = await organizationadminmembersListMembershipTiers({
+				path: step.path,
+				query: { kind: 'temporary' },
+				headers
+			});
+			if (res.error) throw httpError(res);
+			return (res.data ?? []).find((t) => t.name === step.body.name && t.id)?.id ?? undefined;
+		}
+		case 'questionnaire': {
+			const res = await questionnaireListOrgQuestionnaires({
+				query: {
+					organization_id: step.path.organization_id,
+					search: step.body.name,
+					page_size: 100
+				},
+				headers
+			});
+			if (res.error) throw httpError(res);
+			return res.data?.results?.find((q) => q.questionnaire.name === step.body.name)?.id;
+		}
+		case 'assign': {
+			const qid = ids.questionnaireId;
+			if (!qid) return undefined;
+			const res = await questionnaireListOrgQuestionnaires({
+				query: { event_id: step.path.event_id, page_size: 100 },
+				headers
+			});
+			if (res.error) throw httpError(res);
+			// Assigned already when the event's own questionnaire list contains it.
+			const attached = res.data?.results?.some(
+				(q) => q.id === qid && (q.events ?? []).some((e) => e.id === step.path.event_id)
+			);
+			return attached ? qid : undefined;
+		}
+		case 'publicTier':
+		case 'membersTier': {
+			const res = await eventadminticketsListTicketTiers({ path: step.path, headers });
+			if (res.error) throw httpError(res);
+			return res.data?.results?.find((t) => t.name === step.body.name && t.id)?.id ?? undefined;
+		}
+	}
 }
 
 function need(value: string | undefined, name: string): string {
@@ -326,7 +440,7 @@ async function runStep(
 				body: step.body,
 				headers
 			});
-			if (res.error) throw res.error;
+			if (res.error) throw httpError(res);
 			return res.data;
 		}
 		case 'createQuestionnaire': {
@@ -335,7 +449,7 @@ async function runStep(
 				body: step.body,
 				headers
 			});
-			if (res.error) throw res.error;
+			if (res.error) throw httpError(res);
 			return res.data;
 		}
 		case 'assignQuestionnaire': {
@@ -346,7 +460,7 @@ async function runStep(
 				},
 				headers
 			});
-			if (res.error) throw res.error;
+			if (res.error) throw httpError(res);
 			return undefined;
 		}
 		case 'createTicketTier': {
@@ -361,7 +475,7 @@ async function runStep(
 								typeof grant === 'string' ? grant : need(ids.dayTierId, 'day-membership tier')
 						};
 			const res = await eventadminticketsCreateTicketTier({ path: step.path, body, headers });
-			if (res.error) throw res.error;
+			if (res.error) throw httpError(res);
 			return res.data;
 		}
 	}

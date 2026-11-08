@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { stripeSetupState } from '$lib/utils/org-setup-progress';
+	import { canRunVereinPreset } from '$lib/utils/permissions';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import type { PageData } from './$types';
@@ -37,5 +38,6 @@
 		initialStart={data.initialStart}
 		initialEventSeriesId={data.initialEventSeriesId}
 		onlinePaymentSetup={stripeSetupState(organization)}
+		canUseVereinPreset={canRunVereinPreset(data.permissions, organization.id)}
 	/>
 </div>

@@ -1,14 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
 	eventadminticketsCreateTicketTier,
+	eventadminticketsListTicketTiers,
 	organizationadminmembersCreateMembershipTier,
+	organizationadminmembersListMembershipTiers,
 	questionnaireAssignEvent,
-	questionnaireCreateOrgQuestionnaire
+	questionnaireCreateOrgQuestionnaire,
+	questionnaireListOrgQuestionnaires
 } from '$lib/api/generated/sdk.gen';
 import {
 	buildVereinPlan,
 	normalizePrice,
 	planChargesOnline,
+	planIsPaid,
 	runVereinPlan,
 	validateVereinInput,
 	type VereinPresetInput
@@ -16,9 +20,12 @@ import {
 
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	eventadminticketsCreateTicketTier: vi.fn(),
+	eventadminticketsListTicketTiers: vi.fn(),
 	organizationadminmembersCreateMembershipTier: vi.fn(),
+	organizationadminmembersListMembershipTiers: vi.fn(),
 	questionnaireAssignEvent: vi.fn(),
-	questionnaireCreateOrgQuestionnaire: vi.fn()
+	questionnaireCreateOrgQuestionnaire: vi.fn(),
+	questionnaireListOrgQuestionnaires: vi.fn()
 }));
 
 const baseInput: VereinPresetInput = {
@@ -253,5 +260,149 @@ describe('runVereinPlan', () => {
 		const result = await runVereinPlan(buildVereinPlan(baseInput), { accessToken: 'tok' });
 		expect(result.steps[0].status).toBe('failed');
 		expect(result.steps[0].error).toBeTruthy();
+	});
+
+	it('flags a network failure as ambiguous and a 4xx as definite', async () => {
+		vi.mocked(organizationadminmembersCreateMembershipTier).mockRejectedValue(new Error('offline'));
+		const net = await runVereinPlan(buildVereinPlan(baseInput), { accessToken: 'tok' });
+		expect(net.steps[0].ambiguous).toBe(true);
+
+		vi.mocked(organizationadminmembersCreateMembershipTier).mockResolvedValue({
+			data: undefined,
+			error: { detail: 'Bad' },
+			response: { status: 422 }
+		} as never);
+		const client = await runVereinPlan(buildVereinPlan(baseInput), { accessToken: 'tok' });
+		expect(client.steps[0].ambiguous).toBe(false);
+
+		vi.mocked(organizationadminmembersCreateMembershipTier).mockResolvedValue({
+			data: undefined,
+			error: { detail: 'Oops' },
+			response: { status: 502 }
+		} as never);
+		const server = await runVereinPlan(buildVereinPlan(baseInput), { accessToken: 'tok' });
+		expect(server.steps[0].ambiguous).toBe(true);
+	});
+});
+
+const ok = <T>(data: T) => ({ data, error: undefined });
+
+describe('runVereinPlan reconciliation', () => {
+	beforeEach(() => vi.clearAllMocks());
+
+	it('adopts an entity found by name instead of re-creating it', async () => {
+		vi.mocked(organizationadminmembersListMembershipTiers).mockResolvedValue(
+			ok([{ id: 'day-found', name: 'Day membership' }]) as never
+		);
+		vi.mocked(questionnaireCreateOrgQuestionnaire).mockResolvedValue(ok({ id: 'q-1' }) as never);
+		vi.mocked(questionnaireAssignEvent).mockResolvedValue(ok({}) as never);
+		vi.mocked(eventadminticketsCreateTicketTier).mockResolvedValue(ok({ id: 't' }) as never);
+
+		const result = await runVereinPlan(buildVereinPlan(baseInput), {
+			accessToken: 'tok',
+			reconcile: { dayTier: true }
+		});
+
+		expect(result.ok).toBe(true);
+		expect(organizationadminmembersCreateMembershipTier).not.toHaveBeenCalled();
+		expect(result.steps[0]).toMatchObject({ status: 'done', entityId: 'day-found' });
+		expect(vi.mocked(eventadminticketsCreateTicketTier).mock.calls[0][0].body).toMatchObject({
+			grants_membership_tier_id: 'day-found'
+		});
+	});
+
+	it('creates the entity when the lookup finds nothing', async () => {
+		vi.mocked(organizationadminmembersListMembershipTiers).mockResolvedValue(
+			ok([{ id: 'other', name: 'Something else' }]) as never
+		);
+		vi.mocked(organizationadminmembersCreateMembershipTier).mockResolvedValue(
+			ok({ id: 'day-new' }) as never
+		);
+		vi.mocked(questionnaireCreateOrgQuestionnaire).mockResolvedValue(ok({ id: 'q-1' }) as never);
+		vi.mocked(questionnaireAssignEvent).mockResolvedValue(ok({}) as never);
+		vi.mocked(eventadminticketsCreateTicketTier).mockResolvedValue(ok({ id: 't' }) as never);
+
+		const result = await runVereinPlan(buildVereinPlan(baseInput), {
+			accessToken: 'tok',
+			reconcile: { dayTier: true }
+		});
+
+		expect(result.ok).toBe(true);
+		expect(organizationadminmembersCreateMembershipTier).toHaveBeenCalledTimes(1);
+		expect(result.steps[0].entityId).toBe('day-new');
+	});
+
+	it('does not look anything up for a step that is not flagged', async () => {
+		vi.mocked(organizationadminmembersCreateMembershipTier).mockResolvedValue(
+			ok({ id: 'day-1' }) as never
+		);
+		vi.mocked(questionnaireCreateOrgQuestionnaire).mockResolvedValue({
+			data: undefined,
+			error: { detail: 'x' }
+		} as never);
+		await runVereinPlan(buildVereinPlan(baseInput), { accessToken: 'tok' });
+		expect(organizationadminmembersListMembershipTiers).not.toHaveBeenCalled();
+		expect(questionnaireListOrgQuestionnaires).not.toHaveBeenCalled();
+	});
+
+	it('matches questionnaires by name, then checks the event assignment', async () => {
+		vi.mocked(questionnaireListOrgQuestionnaires)
+			.mockResolvedValueOnce(
+				ok({ results: [{ id: 'q-found', questionnaire: { name: 'Statutes' } }] }) as never
+			)
+			.mockResolvedValueOnce(
+				ok({ results: [{ id: 'q-found', events: [{ id: 'evt-1' }] }] }) as never
+			);
+		vi.mocked(eventadminticketsCreateTicketTier).mockResolvedValue(ok({ id: 't' }) as never);
+
+		const result = await runVereinPlan(buildVereinPlan(baseInput), {
+			accessToken: 'tok',
+			completed: { dayTier: 'day-1' },
+			reconcile: { questionnaire: true, assign: true }
+		});
+
+		expect(result.ok).toBe(true);
+		expect(questionnaireCreateOrgQuestionnaire).not.toHaveBeenCalled();
+		expect(questionnaireAssignEvent).not.toHaveBeenCalled();
+		expect(result.steps[1]).toMatchObject({ status: 'done', entityId: 'q-found' });
+	});
+
+	it('adopts a ticket tier already on the event', async () => {
+		vi.mocked(eventadminticketsListTicketTiers).mockResolvedValue(
+			ok({ results: [{ id: 'tier-pub', name: 'Public' }] }) as never
+		);
+		vi.mocked(eventadminticketsCreateTicketTier).mockResolvedValue(ok({ id: 'tier-mem' }) as never);
+		const result = await runVereinPlan(buildVereinPlan(baseInput), {
+			accessToken: 'tok',
+			completed: { dayTier: 'd', questionnaire: 'q', assign: 'q' },
+			reconcile: { publicTier: true }
+		});
+		expect(result.steps[3]).toMatchObject({ status: 'done', entityId: 'tier-pub' });
+		expect(eventadminticketsCreateTicketTier).toHaveBeenCalledTimes(1);
+	});
+
+	it('fails the step as ambiguous when the lookup itself fails', async () => {
+		vi.mocked(organizationadminmembersListMembershipTiers).mockRejectedValue(new Error('offline'));
+		const result = await runVereinPlan(buildVereinPlan(baseInput), {
+			accessToken: 'tok',
+			reconcile: { dayTier: true }
+		});
+		expect(result.steps[0]).toMatchObject({ status: 'failed', ambiguous: true });
+		expect(organizationadminmembersCreateMembershipTier).not.toHaveBeenCalled();
+	});
+});
+
+describe('planIsPaid', () => {
+	it('is true with a price above zero, whatever the payment method', () => {
+		expect(planIsPaid(buildVereinPlan(baseInput))).toBe(true);
+		expect(planIsPaid(buildVereinPlan({ ...baseInput, paymentMethod: 'free' }))).toBe(true);
+	});
+	it('is false when both tickets are free', () => {
+		const free = {
+			...baseInput,
+			publicTier: { ...baseInput.publicTier, price: '0' },
+			membersTier: { ...baseInput.membersTier, price: '0' }
+		};
+		expect(planIsPaid(buildVereinPlan(free))).toBe(false);
 	});
 });

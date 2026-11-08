@@ -16,6 +16,9 @@
 		dayTiers: MembershipTierSchema[];
 		currency: TicketCurrency;
 		canChargeOnline: boolean;
+		onlineReason?: string | null;
+		dayTiersStatus?: 'pending' | 'error' | 'success';
+		onRetryDayTiers?: () => void;
 		orgVat?: OrgVatContext | null;
 	}
 

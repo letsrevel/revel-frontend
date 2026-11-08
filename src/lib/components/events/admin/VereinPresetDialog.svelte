@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { resolve } from '$app/paths';
 	import { invalidateAll } from '$app/navigation';
+	import { untrack } from 'svelte';
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import { Check, CircleAlert, Circle, Loader2 } from '@lucide/svelte';
 	import {
@@ -27,15 +28,18 @@
 		buildVereinPlan,
 		normalizePrice,
 		planChargesOnline,
+		planIsPaid,
 		runVereinPlan,
 		validateVereinInput,
 		type PublicAudience,
 		type StepResult,
 		type TicketCurrency,
 		type VereinPlanStep,
+		type VereinInputIssue,
 		type VereinPresetInput,
 		type VereinStepId
 	} from './verein-preset';
+	import { forgetVereinRun, recallVereinRun, rememberVereinRun } from './verein-preset-state';
 
 	interface Props {
 		open: boolean;
@@ -48,6 +52,11 @@
 		currency: TicketCurrency;
 		/** Card payment is possible (Stripe connected and not blocked for the event country). */
 		canChargeOnline: boolean;
+		/** Why card payment is unavailable (already translated); shown with the paid-tickets block. */
+		onlineReason?: string | null;
+		/** Load state of the day-membership tiers; the confirm waits for `success`. */
+		dayTiersStatus?: 'pending' | 'error' | 'success';
+		onRetryDayTiers?: () => void;
 		orgVat?: OrgVatContext | null;
 	}
 
@@ -59,6 +68,9 @@
 		dayTiers,
 		currency,
 		canChargeOnline,
+		onlineReason = null,
+		dayTiersStatus = 'success',
+		onRetryDayTiers,
 		orgVat = null
 	}: Props = $props();
 
@@ -87,13 +99,32 @@
 	let finishedOk = $state(false);
 	let planSnapshot = $state<VereinPlanStep[]>([]);
 
-	// Seed the (translated, editable) defaults each time the dialog opens.
-	$effect(() => {
-		if (!open) return;
-		phase = 'form';
-		results = [];
+	let confirmingReset = $state(false);
+	// The run on screen came from an earlier open of the dialog, not this one.
+	let restored = $state(false);
+	// Plain flags (never read by a template): the open transition and whether the
+	// reuse-vs-create default has been settled against a loaded tier list.
+	let wasOpen = false;
+	let dayChoiceSeeded = false;
+
+	// Seed the (translated, editable) defaults, or restore this event's earlier run.
+	function seed(): void {
 		running = false;
-		finishedOk = false;
+		confirmingReset = false;
+		const prior = recallVereinRun(eventId);
+		if (prior) {
+			planSnapshot = prior.plan;
+			results = prior.results;
+			finishedOk = prior.results.length > 0 && prior.results.every((r) => r.status === 'done');
+			phase = 'run';
+			restored = true;
+		} else {
+			restored = false;
+			phase = 'form';
+			results = [];
+			finishedOk = false;
+		}
+		dayChoiceSeeded = dayTiersStatus === 'success';
 		dayChoice = reusable.length === 1 ? reusable[0].id : NEW_TIER;
 		dayName = m['verein.preset.default.dayTier']();
 		publicName = m['verein.preset.default.publicTier']();
@@ -104,7 +135,27 @@
 		questionnaireName = m['verein.preset.default.questionnaire']();
 		question = m['verein.preset.default.question']();
 		option = m['verein.preset.default.option']();
+	}
+
+	// Seed ONLY on the closed -> open transition. A prop update (the tier lists
+	// refetch after a run) must never reset the phase, results or typed fields.
+	$effect(() => {
+		const isOpen = open;
+		if (isOpen && !wasOpen) untrack(seed);
+		wasOpen = isOpen;
 	});
+
+	// The tier list may arrive after the dialog opened: settle the default once.
+	$effect(() => {
+		if (!open || phase !== 'form' || dayChoiceSeeded || dayTiersStatus !== 'success') return;
+		dayChoiceSeeded = true;
+		if (reusable.length === 1) dayChoice = reusable[0].id;
+	});
+
+	function startOver(): void {
+		forgetVereinRun(eventId);
+		seed();
+	}
 
 	const reusedTier = $derived(reusable.find((t) => t.id === dayChoice) ?? null);
 
@@ -132,20 +183,38 @@
 	// Prices above zero need a payment method the org can actually run. With card
 	// payment unavailable the plan would create free tiers, silently dropping the
 	// price, so refuse instead and say why.
-	const wantsPaid = $derived(
-		Number(normalizePrice(publicPrice) || 0) > 0 || Number(normalizePrice(membersPrice) || 0) > 0
-	);
-	const onlineBlocked = $derived(wantsPaid && !canChargeOnline);
+	const onlineBlocked = $derived(planIsPaid(plan) && !canChargeOnline);
 	const vatBlocked = $derived(
-		canChargeOnline &&
-			planChargesOnline(plan) &&
+		planChargesOnline(plan) &&
 			vatExemptionRequired(
 				{ paymentMethod: 'online', priceType: 'fixed', price: '1', pwycMin: '', pwycMax: '' },
 				'',
 				orgVat
 			)
 	);
-	const canConfirm = $derived(issues.length === 0 && !onlineBlocked && !vatBlocked);
+	const tiersPending = $derived(dayTiersStatus === 'pending');
+	const tiersError = $derived(dayTiersStatus === 'error');
+	const canConfirm = $derived(
+		issues.length === 0 && !onlineBlocked && !vatBlocked && !tiersPending && !tiersError
+	);
+
+	const badFields = $derived(new Set<VereinInputIssue>(issues));
+	const issueText: Record<VereinInputIssue, () => string> = {
+		dayTierName: () => m['verein.preset.issue.dayTierName'](),
+		publicName: () => m['verein.preset.issue.publicName'](),
+		publicPrice: () => m['verein.preset.issue.publicPrice'](),
+		membersName: () => m['verein.preset.issue.membersName'](),
+		membersPrice: () => m['verein.preset.issue.membersPrice'](),
+		questionnaireName: () => m['verein.preset.issue.questionnaireName'](),
+		question: () => m['verein.preset.issue.question'](),
+		option: () => m['verein.preset.issue.option']()
+	};
+	function invalid(key: VereinInputIssue): 'true' | undefined {
+		return badFields.has(key) ? 'true' : undefined;
+	}
+	function describedBy(key: VereinInputIssue): string | undefined {
+		return badFields.has(key) ? `${uid}-err-${key}` : undefined;
+	}
 
 	const stepLabel: Record<VereinStepId, () => string> = {
 		dayTier: () => m['verein.preset.step.dayTier'](),
@@ -211,6 +280,12 @@
 		if (!token || running) return;
 		running = true;
 		finishedOk = false;
+		confirmingReset = false;
+		restored = false;
+		// Steps whose earlier attempt may have committed are looked up, not re-created.
+		const reconcile = Object.fromEntries(
+			results.filter((r) => r.status === 'failed' && r.ambiguous).map((r) => [r.id, true])
+		) as Partial<Record<VereinStepId, boolean>>;
 		if (phase === 'form') {
 			planSnapshot = plan.steps;
 			phase = 'run';
@@ -221,7 +296,11 @@
 				{
 					accessToken: token,
 					completed: doneIds,
-					onProgress: (steps) => (results = steps)
+					reconcile,
+					onProgress: (steps) => {
+						results = steps;
+						rememberVereinRun(eventId, { results: steps, plan: planSnapshot });
+					}
 				}
 			);
 			finishedOk = outcome.ok;
@@ -235,6 +314,12 @@
 		return m[`verein.preset.status.${status}` as const]();
 	}
 </script>
+
+{#snippet fieldError(key: VereinInputIssue)}
+	{#if badFields.has(key)}
+		<p id="{uid}-err-{key}" class="text-sm text-destructive">{issueText[key]()}</p>
+	{/if}
+{/snippet}
 
 <Dialog bind:open>
 	<DialogContent
@@ -255,6 +340,24 @@
 			<div class="space-y-5">
 				<fieldset class="space-y-2">
 					<legend class="text-sm font-semibold">{m['verein.preset.field.dayTier']()}</legend>
+					{#if tiersPending}
+						<p
+							class="text-sm text-muted-foreground"
+							role="status"
+							data-testid="verein-tiers-loading"
+						>
+							{m['verein.preset.checkingTiers']()}
+						</p>
+					{:else if tiersError}
+						<Alert variant="destructive" data-testid="verein-tiers-error">
+							<AlertDescription class="space-y-2">
+								<p>{m['verein.preset.tiersError']()}</p>
+								<Button type="button" variant="outline" size="sm" onclick={onRetryDayTiers}>
+									{m['verein.preset.tiersRetry']()}
+								</Button>
+							</AlertDescription>
+						</Alert>
+					{/if}
 					<RadioGroup bind:value={dayChoice} aria-label={m['verein.preset.field.dayTier']()}>
 						<div class="flex items-center gap-2">
 							<RadioGroupItem value={NEW_TIER} id="{uid}-day-new" />
@@ -274,7 +377,14 @@
 					{#if !reusedTier}
 						<div class="space-y-1">
 							<Label for="{uid}-day-name">{m['verein.preset.field.name']()}</Label>
-							<Input id="{uid}-day-name" bind:value={dayName} maxlength={150} />
+							<Input
+								id="{uid}-day-name"
+								bind:value={dayName}
+								maxlength={150}
+								aria-invalid={invalid('dayTierName')}
+								aria-describedby={describedBy('dayTierName')}
+							/>
+							{@render fieldError('dayTierName')}
 						</div>
 					{/if}
 				</fieldset>
@@ -284,13 +394,27 @@
 					<div class="grid gap-3 sm:grid-cols-2">
 						<div class="space-y-1">
 							<Label for="{uid}-pub-name">{m['verein.preset.field.name']()}</Label>
-							<Input id="{uid}-pub-name" bind:value={publicName} maxlength={150} />
+							<Input
+								id="{uid}-pub-name"
+								bind:value={publicName}
+								maxlength={150}
+								aria-invalid={invalid('publicName')}
+								aria-describedby={describedBy('publicName')}
+							/>
+							{@render fieldError('publicName')}
 						</div>
 						<div class="space-y-1">
 							<Label for="{uid}-pub-price">
 								{m['verein.preset.field.price']({ currency })}
 							</Label>
-							<Input id="{uid}-pub-price" bind:value={publicPrice} inputmode="decimal" />
+							<Input
+								id="{uid}-pub-price"
+								bind:value={publicPrice}
+								inputmode="decimal"
+								aria-invalid={invalid('publicPrice')}
+								aria-describedby={describedBy('publicPrice')}
+							/>
+							{@render fieldError('publicPrice')}
 						</div>
 					</div>
 					<div class="space-y-2">
@@ -317,13 +441,27 @@
 					<div class="grid gap-3 sm:grid-cols-2">
 						<div class="space-y-1">
 							<Label for="{uid}-mem-name">{m['verein.preset.field.name']()}</Label>
-							<Input id="{uid}-mem-name" bind:value={membersName} maxlength={150} />
+							<Input
+								id="{uid}-mem-name"
+								bind:value={membersName}
+								maxlength={150}
+								aria-invalid={invalid('membersName')}
+								aria-describedby={describedBy('membersName')}
+							/>
+							{@render fieldError('membersName')}
 						</div>
 						<div class="space-y-1">
 							<Label for="{uid}-mem-price">
 								{m['verein.preset.field.price']({ currency })}
 							</Label>
-							<Input id="{uid}-mem-price" bind:value={membersPrice} inputmode="decimal" />
+							<Input
+								id="{uid}-mem-price"
+								bind:value={membersPrice}
+								inputmode="decimal"
+								aria-invalid={invalid('membersPrice')}
+								aria-describedby={describedBy('membersPrice')}
+							/>
+							{@render fieldError('membersPrice')}
 						</div>
 					</div>
 				</fieldset>
@@ -332,15 +470,34 @@
 					<legend class="text-sm font-semibold">{m['verein.preset.field.questionnaire']()}</legend>
 					<div class="space-y-1">
 						<Label for="{uid}-q-name">{m['verein.preset.field.name']()}</Label>
-						<Input id="{uid}-q-name" bind:value={questionnaireName} maxlength={150} />
+						<Input
+							id="{uid}-q-name"
+							bind:value={questionnaireName}
+							maxlength={150}
+							aria-invalid={invalid('questionnaireName')}
+							aria-describedby={describedBy('questionnaireName')}
+						/>
+						{@render fieldError('questionnaireName')}
 					</div>
 					<div class="space-y-1">
 						<Label for="{uid}-q-text">{m['verein.preset.field.question']()}</Label>
-						<Input id="{uid}-q-text" bind:value={question} />
+						<Input
+							id="{uid}-q-text"
+							bind:value={question}
+							aria-invalid={invalid('question')}
+							aria-describedby={describedBy('question')}
+						/>
+						{@render fieldError('question')}
 					</div>
 					<div class="space-y-1">
 						<Label for="{uid}-q-opt">{m['verein.preset.field.option']()}</Label>
-						<Input id="{uid}-q-opt" bind:value={option} />
+						<Input
+							id="{uid}-q-opt"
+							bind:value={option}
+							aria-invalid={invalid('option')}
+							aria-describedby={describedBy('option')}
+						/>
+						{@render fieldError('option')}
 					</div>
 				</fieldset>
 
@@ -365,12 +522,26 @@
 
 				{#if issues.length > 0}
 					<Alert variant="destructive" data-testid="verein-preset-issues">
-						<AlertDescription>{m['verein.preset.blocked.fields']()}</AlertDescription>
+						<AlertDescription class="space-y-1">
+							<p>{m['verein.preset.blocked.fields']()}</p>
+							<ul class="list-disc pl-5">
+								{#each issues as key (key)}
+									<li>{issueText[key]()}</li>
+								{/each}
+							</ul>
+						</AlertDescription>
 					</Alert>
 				{/if}
 				{#if onlineBlocked}
 					<Alert variant="destructive" data-testid="verein-preset-online-blocked">
-						<AlertDescription>{m['verein.preset.blocked.online']()}</AlertDescription>
+						<AlertDescription class="space-y-1">
+							<p>{m['verein.preset.blocked.online']()}</p>
+							{#if onlineReason}
+								<p data-testid="verein-preset-online-reason">
+									{m['verein.preset.blocked.onlineReason']({ reason: onlineReason })}
+								</p>
+							{/if}
+						</AlertDescription>
 					</Alert>
 				{/if}
 				{#if vatBlocked}
@@ -390,6 +561,11 @@
 			</DialogFooter>
 		{:else}
 			<div class="space-y-4">
+				{#if restored}
+					<p class="text-sm text-muted-foreground" data-testid="verein-preset-restored">
+						{m['verein.preset.restored']()}
+					</p>
+				{/if}
 				<ol class="space-y-2" aria-label={m['verein.preset.progressLabel']()}>
 					{#each results as r (r.id)}
 						<li class="flex items-start gap-2 text-sm" data-testid="verein-step-{r.id}">
@@ -470,10 +646,47 @@
 				{/if}
 			</div>
 
+			{#if confirmingReset && !running}
+				<Alert variant="destructive" data-testid="verein-preset-reset-confirm">
+					<AlertDescription class="space-y-2">
+						<p>{m['verein.preset.startOverConfirm']()}</p>
+						<div class="flex flex-wrap gap-2">
+							<Button
+								type="button"
+								variant="destructive"
+								size="sm"
+								onclick={startOver}
+								data-testid="verein-preset-reset-yes"
+							>
+								{m['verein.preset.startOverYes']()}
+							</Button>
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								onclick={() => (confirmingReset = false)}
+							>
+								{m['verein.preset.startOverNo']()}
+							</Button>
+						</div>
+					</AlertDescription>
+				</Alert>
+			{/if}
+
 			<DialogFooter class="gap-2 sm:gap-0">
 				{#if failed && !running}
 					<Button onclick={execute} data-testid="verein-preset-retry">
 						{m['verein.preset.retry']()}
+					</Button>
+				{/if}
+				{#if hasCreated && !running && !confirmingReset}
+					<Button
+						type="button"
+						variant="ghost"
+						onclick={() => (confirmingReset = true)}
+						data-testid="verein-preset-reset"
+					>
+						{m['verein.preset.startOver']()}
 					</Button>
 				{/if}
 				<Button

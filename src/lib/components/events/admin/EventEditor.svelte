@@ -63,14 +63,11 @@
 		initialTab?: 'details' | 'ticketing' | 'listings';
 		/** Owner-only actions on the Listings tab (connecting a platform) link to Integrations. */
 		isOwner?: boolean;
-		/** Optional `start` datetime to seed the form with (create mode only).
-		 *  Used by the ExdatesChipList "Create one-off event for this date"
-		 *  action on the recurring-series dashboard, which navigates here with
-		 *  `?start=<ISO>` pinned to the cancelled occurrence's instant. */
+		canUseVereinPreset?: boolean;
+		/** Optional `start` datetime to seed the form with (create mode only), from the
+		 *  ExdatesChipList "Create one-off event" action (`?start=<ISO>`). */
 		initialStart?: string | null;
-		/** Optional event-series id to pre-select (create mode only). Comes
-		 *  from the same ExdatesChipList chip action so the new one-off event
-		 *  is pre-attached to the originating series. */
+		/** Optional event-series id to pre-select (create mode only), same chip action. */
 		initialEventSeriesId?: string | null;
 	}
 
@@ -83,6 +80,7 @@
 		eventSeries = [],
 		initialTab,
 		isOwner = false,
+		canUseVereinPreset = false,
 		initialStart,
 		initialEventSeriesId
 	}: Props = $props();
@@ -615,6 +613,7 @@
 		<TicketingStep
 			{eventId}
 			organizationId={organization.id}
+			{canUseVereinPreset}
 			organizationSlug={organization.slug}
 			organizationStripeConnected={organization.is_stripe_connected}
 			billingNeedsAttention={onlinePaymentSetup === 'needs-billing'}
