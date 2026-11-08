@@ -15,12 +15,16 @@
 	import { formatRelativeTime } from '$lib/utils/date';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 	import MembershipRequestStatusBadge from './MembershipRequestStatusBadge.svelte';
+	import RegisterMatchHint from '$lib/components/member-register/RegisterMatchHint.svelte';
+	import { authStore } from '$lib/stores/auth.svelte';
 
 	interface Props {
 		request: OrganizationMembershipRequestRetrieve;
 		/** Owning organization — needed to build the questionnaire-submission link. */
 		orgSlug: string;
 		onApprove?: (request: OrganizationMembershipRequestRetrieve) => void;
+		/** Approve and link the applicant to this unlinked register entry. */
+		onApproveAndLink?: (request: OrganizationMembershipRequestRetrieve, recordId: string) => void;
 		onReject?: (request: OrganizationMembershipRequestRetrieve) => void;
 		isProcessing?: boolean;
 		showActions?: boolean;
@@ -30,6 +34,7 @@
 		request,
 		orgSlug,
 		onApprove,
+		onApproveAndLink,
 		onReject,
 		isProcessing = false,
 		showActions = true
@@ -70,6 +75,13 @@
 				? `${request.user.first_name} ${request.user.last_name}`
 				: request.user.first_name || request.user.email || m['membershipRequestCard.unknownUser']())
 	);
+
+	function handleApproveAndLink(recordId: string) {
+		if (onApproveAndLink) {
+			onApproveAndLink(request, recordId);
+			dialogOpen = false;
+		}
+	}
 
 	function handleApprove() {
 		if (onApprove) {
@@ -391,6 +403,18 @@
 						{/if}
 					</p>
 				</div>
+			{/if}
+
+			<!-- Possible register entries for this applicant (plain Approve stays below) -->
+			{#if request.id && onApproveAndLink}
+				<RegisterMatchHint
+					slug={orgSlug}
+					requestId={request.id}
+					accessToken={authStore.accessToken}
+					enabled={dialogOpen && showActions}
+					disabled={isProcessing}
+					onApproveAndLink={handleApproveAndLink}
+				/>
 			{/if}
 
 			<!-- Request Date -->

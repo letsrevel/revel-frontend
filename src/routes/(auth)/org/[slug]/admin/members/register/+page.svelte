@@ -10,15 +10,20 @@
 		Plus,
 		ChevronLeft,
 		ChevronRight,
-		Loader2
+		Loader2,
+		GitMerge
 	} from '@lucide/svelte';
 	import type { PageData } from './$types';
-	import type { MembershipRecordSchema } from '$lib/api/generated/types.gen';
+	import type {
+		MembershipRecordSchema,
+		PossibleDuplicateSchema
+	} from '$lib/api/generated/types.gen';
 	import { toast } from 'svelte-sonner';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { allTiersQueryOptions } from '$lib/queries/membership-tiers';
 	import { standardTiers } from '$lib/utils/membership-tier-kind';
 	import { Button } from '$lib/components/ui/button';
+	import { Tabs, TabsContent, TabsList, TabsTrigger } from '$lib/components/ui/tabs';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import RegisterFilters from '$lib/components/member-register/RegisterFilters.svelte';
@@ -30,9 +35,16 @@
 	import DeleteRecordDialog from '$lib/components/member-register/DeleteRecordDialog.svelte';
 	import InviteRecordDialog from '$lib/components/member-register/InviteRecordDialog.svelte';
 	import InviteAllDialog from '$lib/components/member-register/InviteAllDialog.svelte';
+	import UnlinkRecordDialog from '$lib/components/member-register/UnlinkRecordDialog.svelte';
+	import MergeRecordsDialog from '$lib/components/member-register/MergeRecordsDialog.svelte';
+	import DuplicatesList from '$lib/components/member-register/DuplicatesList.svelte';
 	import RegisterExportDialog from '$lib/components/member-register/RegisterExportDialog.svelte';
 	import RegisterErrorAlert from '$lib/components/member-register/RegisterErrorAlert.svelte';
-	import { listRegister, memberRegisterKeys } from '$lib/member-register/api';
+	import {
+		listPossibleDuplicates,
+		listRegister,
+		memberRegisterKeys
+	} from '$lib/member-register/api';
 	import { describeRegisterError } from '$lib/member-register/errors';
 	import {
 		DEFAULT_FILTERS,
@@ -83,6 +95,18 @@
 		placeholderData: keepPreviousData
 	}));
 
+	// Not paginated; also feeds the count badge on the tab, so it always runs.
+	const duplicatesQuery = createQuery(() => ({
+		queryKey: memberRegisterKeys.duplicates(slug),
+		queryFn: () => listPossibleDuplicates(slug, accessToken),
+		enabled: !!accessToken
+	}));
+	const duplicates = $derived(duplicatesQuery.data ?? []);
+	const duplicatesError = $derived(
+		duplicatesQuery.error ? describeRegisterError(duplicatesQuery.error, 'save') : null
+	);
+	let view = $state('register');
+
 	const records = $derived(listQuery.data?.results ?? []);
 	const total = $derived(listQuery.data?.count ?? 0);
 	const pageCount = $derived(Math.max(1, Math.ceil(total / REGISTER_PAGE_SIZE)));
@@ -126,6 +150,8 @@
 	let ending = $state<MembershipRecordSchema | null>(null);
 	let deleting = $state<MembershipRecordSchema | null>(null);
 	let inviting = $state<MembershipRecordSchema | null>(null);
+	let unlinking = $state<MembershipRecordSchema | null>(null);
+	let merging = $state<PossibleDuplicateSchema | null>(null);
 	let inviteAllOpen = $state(false);
 	let exportOpen = $state(false);
 
@@ -135,6 +161,19 @@
 	const liveEnding = $derived(records.find((r) => r.id === ending?.id) ?? ending);
 	const liveDeleting = $derived(records.find((r) => r.id === deleting?.id) ?? deleting);
 	const liveInviting = $derived(records.find((r) => r.id === inviting?.id) ?? inviting);
+	const liveUnlinking = $derived(records.find((r) => r.id === unlinking?.id) ?? unlinking);
+	const unlinkingPresent = $derived(!unlinking || records.some((r) => r.id === unlinking?.id));
+	const liveMerging = $derived(
+		duplicates.find(
+			(d) => d.unlinked.id === merging?.unlinked.id && d.linked.id === merging?.linked.id
+		) ?? merging
+	);
+	const mergingPresent = $derived(
+		!merging ||
+			duplicates.some(
+				(d) => d.unlinked.id === merging?.unlinked.id && d.linked.id === merging?.linked.id
+			)
+	);
 	const editingPresent = $derived(!editing || records.some((r) => r.id === editing?.id));
 	const endingPresent = $derived(!ending || records.some((r) => r.id === ending?.id));
 	const deletingPresent = $derived(!deleting || records.some((r) => r.id === deleting?.id));
@@ -189,104 +228,152 @@
 		actions={headerActions}
 	/>
 
-	<RegisterFilters {filters} tiers={allTiers} {timezone} onChange={applyFilters} />
-
-	<section aria-labelledby="register-results-heading" aria-busy={listQuery.isFetching}>
-		<h2 id="register-results-heading" class="sr-only">{m['memberRegister.resultsHeading']()}</h2>
-
-		{#if listQuery.isPending}
-			<p class="flex items-center gap-2 py-8 text-sm text-muted-foreground" role="status">
-				<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-				{m['memberRegister.loading']()}
-			</p>
-		{:else if listError}
-			<div class="space-y-3">
-				<RegisterErrorAlert error={listError} />
-				<Button variant="outline" onclick={() => listQuery.refetch()}>
-					{m['memberRegister.retry']()}
-				</Button>
-			</div>
-		{:else if records.length === 0 && redirectPage !== null}
-			<p class="flex items-center gap-2 py-8 text-sm text-muted-foreground" role="status">
-				<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-				{m['memberRegister.loading']()}
-			</p>
-		{:else if records.length === 0}
-			<EmptyState
-				icon={BookUser}
-				title={hasActiveFilters(filters)
-					? m['memberRegister.emptyFilteredTitle']()
-					: m['memberRegister.emptyTitle']()}
-				body={hasActiveFilters(filters)
-					? m['memberRegister.emptyFilteredBody']()
-					: m['memberRegister.emptyBody']()}
-			>
-				{#snippet action()}
-					{#if hasActiveFilters(filters)}
-						<Button variant="outline" onclick={() => applyFilters({ ...DEFAULT_FILTERS })}>
-							{m['memberRegister.clearFilters']()}
-						</Button>
-					{:else}
-						<Button onclick={openCreate}>
-							<Plus aria-hidden="true" />
-							{m['memberRegister.addEntry']()}
-						</Button>
-					{/if}
-				{/snippet}
-			</EmptyState>
-		{:else}
-			<RegisterTable
-				{records}
-				isOwner={data.isOwner}
-				onEdit={openEdit}
-				onEnd={(r) => (ending = r)}
-				onDelete={(r) => (deleting = r)}
-				onInvite={(r) => (inviting = r)}
-				now={clock.current}
-			/>
-			<RegisterCards
-				{records}
-				isOwner={data.isOwner}
-				onEdit={openEdit}
-				onEnd={(r) => (ending = r)}
-				onDelete={(r) => (deleting = r)}
-				onInvite={(r) => (inviting = r)}
-				now={clock.current}
-			/>
-
-			<nav
-				class="mt-4 flex flex-wrap items-center justify-between gap-3"
-				aria-label={m['memberRegister.paginationLabel']()}
-			>
-				<p class="text-sm text-muted-foreground" aria-live="polite">
-					{m['memberRegister.range']({ from: rangeFrom, to: rangeTo, total })}
-				</p>
-				<div class="flex items-center gap-2">
-					<Button
-						variant="outline"
-						size="sm"
-						disabled={filters.page <= 1}
-						onclick={() => applyFilters({ ...filters, page: filters.page - 1 })}
+	<Tabs bind:value={view}>
+		<TabsList aria-label={m['memberRegister.viewsLabel']()}>
+			<TabsTrigger value="register">{m['memberRegister.tabRegister']()}</TabsTrigger>
+			<TabsTrigger value="duplicates" data-testid="tab-duplicates">
+				{m['memberRegister.tabDuplicates']()}
+				{#if duplicates.length > 0}
+					<span
+						class="ml-1.5 rounded-full bg-primary px-1.5 py-0.5 text-xs font-bold text-primary-foreground"
+						data-testid="duplicates-count"
 					>
-						<ChevronLeft aria-hidden="true" />
-						{m['memberRegister.previous']()}
-					</Button>
-					<span class="text-sm">
-						{m['memberRegister.pageOf']({ page: filters.page, pages: pageCount })}
+						{duplicates.length}
 					</span>
-					<Button
-						variant="outline"
-						size="sm"
-						disabled={filters.page >= pageCount}
-						onclick={() => applyFilters({ ...filters, page: filters.page + 1 })}
+				{/if}
+			</TabsTrigger>
+		</TabsList>
+
+		<TabsContent value="register" class="space-y-6">
+			<RegisterFilters {filters} tiers={allTiers} {timezone} onChange={applyFilters} />
+
+			<section aria-labelledby="register-results-heading" aria-busy={listQuery.isFetching}>
+				<h2 id="register-results-heading" class="sr-only">
+					{m['memberRegister.resultsHeading']()}
+				</h2>
+
+				{#if listQuery.isPending}
+					<p class="flex items-center gap-2 py-8 text-sm text-muted-foreground" role="status">
+						<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
+						{m['memberRegister.loading']()}
+					</p>
+				{:else if listError}
+					<div class="space-y-3">
+						<RegisterErrorAlert error={listError} />
+						<Button variant="outline" onclick={() => listQuery.refetch()}>
+							{m['memberRegister.retry']()}
+						</Button>
+					</div>
+				{:else if records.length === 0 && redirectPage !== null}
+					<p class="flex items-center gap-2 py-8 text-sm text-muted-foreground" role="status">
+						<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
+						{m['memberRegister.loading']()}
+					</p>
+				{:else if records.length === 0}
+					<EmptyState
+						icon={BookUser}
+						title={hasActiveFilters(filters)
+							? m['memberRegister.emptyFilteredTitle']()
+							: m['memberRegister.emptyTitle']()}
+						body={hasActiveFilters(filters)
+							? m['memberRegister.emptyFilteredBody']()
+							: m['memberRegister.emptyBody']()}
 					>
-						{m['memberRegister.next']()}
-						<ChevronRight aria-hidden="true" />
+						{#snippet action()}
+							{#if hasActiveFilters(filters)}
+								<Button variant="outline" onclick={() => applyFilters({ ...DEFAULT_FILTERS })}>
+									{m['memberRegister.clearFilters']()}
+								</Button>
+							{:else}
+								<Button onclick={openCreate}>
+									<Plus aria-hidden="true" />
+									{m['memberRegister.addEntry']()}
+								</Button>
+							{/if}
+						{/snippet}
+					</EmptyState>
+				{:else}
+					<RegisterTable
+						{records}
+						isOwner={data.isOwner}
+						onEdit={openEdit}
+						onEnd={(r) => (ending = r)}
+						onDelete={(r) => (deleting = r)}
+						onInvite={(r) => (inviting = r)}
+						onUnlink={(r) => (unlinking = r)}
+						now={clock.current}
+					/>
+					<RegisterCards
+						{records}
+						isOwner={data.isOwner}
+						onEdit={openEdit}
+						onEnd={(r) => (ending = r)}
+						onDelete={(r) => (deleting = r)}
+						onInvite={(r) => (inviting = r)}
+						onUnlink={(r) => (unlinking = r)}
+						now={clock.current}
+					/>
+
+					<nav
+						class="mt-4 flex flex-wrap items-center justify-between gap-3"
+						aria-label={m['memberRegister.paginationLabel']()}
+					>
+						<p class="text-sm text-muted-foreground" aria-live="polite">
+							{m['memberRegister.range']({ from: rangeFrom, to: rangeTo, total })}
+						</p>
+						<div class="flex items-center gap-2">
+							<Button
+								variant="outline"
+								size="sm"
+								disabled={filters.page <= 1}
+								onclick={() => applyFilters({ ...filters, page: filters.page - 1 })}
+							>
+								<ChevronLeft aria-hidden="true" />
+								{m['memberRegister.previous']()}
+							</Button>
+							<span class="text-sm">
+								{m['memberRegister.pageOf']({ page: filters.page, pages: pageCount })}
+							</span>
+							<Button
+								variant="outline"
+								size="sm"
+								disabled={filters.page >= pageCount}
+								onclick={() => applyFilters({ ...filters, page: filters.page + 1 })}
+							>
+								{m['memberRegister.next']()}
+								<ChevronRight aria-hidden="true" />
+							</Button>
+						</div>
+					</nav>
+				{/if}
+			</section>
+		</TabsContent>
+
+		<TabsContent value="duplicates" class="space-y-4">
+			<p class="text-sm text-muted-foreground">{m['memberRegister.duplicatesIntro']()}</p>
+			{#if duplicatesQuery.isPending}
+				<p class="flex items-center gap-2 py-8 text-sm text-muted-foreground" role="status">
+					<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
+					{m['memberRegister.loading']()}
+				</p>
+			{:else if duplicatesError}
+				<div class="space-y-3">
+					<RegisterErrorAlert error={duplicatesError} />
+					<Button variant="outline" onclick={() => duplicatesQuery.refetch()}>
+						{m['memberRegister.retry']()}
 					</Button>
 				</div>
-			</nav>
-		{/if}
-	</section>
+			{:else if duplicates.length === 0}
+				<EmptyState
+					icon={GitMerge}
+					title={m['memberRegister.duplicatesEmptyTitle']()}
+					body={m['memberRegister.duplicatesEmptyBody']()}
+				/>
+			{:else}
+				<DuplicatesList pairs={duplicates} onMerge={(pair) => (merging = pair)} />
+			{/if}
+		</TabsContent>
+	</Tabs>
 </div>
 
 <RecordFormDialog
@@ -335,4 +422,20 @@
 	{slug}
 	{accessToken}
 	onClose={() => (inviteAllOpen = false)}
+/>
+<UnlinkRecordDialog
+	open={unlinking !== null}
+	record={liveUnlinking}
+	recordPresent={unlinkingPresent}
+	{slug}
+	{accessToken}
+	onClose={() => (unlinking = null)}
+/>
+<MergeRecordsDialog
+	open={merging !== null}
+	pair={liveMerging}
+	pairPresent={mergingPresent}
+	{slug}
+	{accessToken}
+	onClose={() => (merging = null)}
 />

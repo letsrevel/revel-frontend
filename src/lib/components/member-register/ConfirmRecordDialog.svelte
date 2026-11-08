@@ -1,5 +1,5 @@
 <script lang="ts" generics="T">
-	import { tick, untrack } from 'svelte';
+	import { tick, untrack, type Snippet } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { toast } from 'svelte-sonner';
@@ -49,6 +49,8 @@
 		description: string;
 		confirmLabel: string;
 		confirmVariant?: 'default' | 'destructive';
+		/** Extra content between the description and the footer (e.g. a warning). */
+		body?: Snippet;
 		successMessage: (result: T) => string;
 	}
 
@@ -65,6 +67,7 @@
 		description,
 		confirmLabel,
 		confirmVariant = 'default',
+		body,
 		successMessage
 	}: Props = $props();
 
@@ -114,6 +117,8 @@
 				<DialogTitle>{title}</DialogTitle>
 				<DialogDescription>{description}</DialogDescription>
 			</DialogHeader>
+
+			{@render body?.()}
 
 			{#if submitError}
 				<RegisterErrorAlert error={submitError} />

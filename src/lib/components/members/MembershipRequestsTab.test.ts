@@ -13,12 +13,14 @@ import type {
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	organizationadminmembershiprequestsListMembershipRequests: vi.fn(),
 	organizationadminmembershiprequestsApproveMembershipRequest: vi.fn(),
-	organizationadminmembershiprequestsRejectMembershipRequest: vi.fn()
+	organizationadminmembershiprequestsRejectMembershipRequest: vi.fn(),
+	organizationadminmemberregisterlinkingListMembershipRequestRegisterMatches: vi.fn()
 }));
 import {
 	organizationadminmembershiprequestsListMembershipRequests,
 	organizationadminmembershiprequestsApproveMembershipRequest,
-	organizationadminmembershiprequestsRejectMembershipRequest
+	organizationadminmembershiprequestsRejectMembershipRequest,
+	organizationadminmemberregisterlinkingListMembershipRequestRegisterMatches
 } from '$lib/api/generated/sdk.gen';
 
 vi.mock('svelte-sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
@@ -602,5 +604,89 @@ describe('MembershipRequestsTab approve tier resolution', () => {
 
 		await screen.findByRole('dialog');
 		expect(organizationadminmembershiprequestsApproveMembershipRequest).not.toHaveBeenCalled();
+	});
+});
+
+describe('MembershipRequestsTab approve and link', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		vi.mocked(organizationadminmembershiprequestsListMembershipRequests).mockResolvedValue(
+			listResponse([pendingRequest]) as never
+		);
+		vi.mocked(
+			organizationadminmemberregisterlinkingListMembershipRequestRegisterMatches
+		).mockResolvedValue({
+			data: [
+				{
+					record: {
+						id: 'rec-9',
+						full_name: 'Ada L.',
+						email: 'ada@example.org',
+						tier_name: 'Gold',
+						valid_from: '2026-03-10T09:30:00Z'
+					},
+					reasons: ['email', 'claim']
+				}
+			],
+			error: undefined
+		} as never);
+	});
+
+	it('shows the hint with reason chips and sends link_record_id', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest).mockResolvedValue({
+			data: undefined,
+			error: undefined
+		} as never);
+		renderTab([tiers[0]]);
+
+		await user.click(await screen.findByRole('button', { name: /view request details from/i }));
+		expect(await screen.findByText('This may be register entry Ada L.')).toBeTruthy();
+		expect(screen.getByTestId('register-reason-email')).toBeTruthy();
+		expect(screen.getByTestId('register-reason-claim')).toBeTruthy();
+
+		await user.click(screen.getByTestId('approve-and-link'));
+		await waitFor(() => {
+			expect(organizationadminmembershiprequestsApproveMembershipRequest).toHaveBeenCalledWith(
+				expect.objectContaining({
+					path: { slug: 'test-org', request_id: 'req-1' },
+					body: { tier_id: 'tier-1', link_record_id: 'rec-9' }
+				})
+			);
+		});
+	});
+
+	it('shows the backend detail on a refused link and never offers force', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest).mockResolvedValue({
+			data: undefined,
+			error: { detail: 'A paid application cannot be linked to a register entry yet.' },
+			response: { status: 400 }
+		} as never);
+		renderTab([tiers[0]]);
+
+		await user.click(await screen.findByRole('button', { name: /view request details from/i }));
+		await user.click(await screen.findByTestId('approve-and-link'));
+		await waitFor(() => {
+			expect(toast.error).toHaveBeenCalledWith(
+				'A paid application cannot be linked to a register entry yet.'
+			);
+		});
+		expect(screen.queryByText(/approve anyway/i)).toBeNull();
+	});
+
+	it('plain approve stays unchanged (no link_record_id)', async () => {
+		const user = userEvent.setup();
+		vi.mocked(organizationadminmembershiprequestsApproveMembershipRequest).mockResolvedValue({
+			data: undefined,
+			error: undefined
+		} as never);
+		renderTab([tiers[0]]);
+		await user.click(await screen.findByRole('button', { name: /approve request from/i }));
+		await waitFor(() => {
+			expect(organizationadminmembershiprequestsApproveMembershipRequest).toHaveBeenCalledWith(
+				expect.objectContaining({ body: { tier_id: 'tier-1' } })
+			);
+		});
 	});
 });

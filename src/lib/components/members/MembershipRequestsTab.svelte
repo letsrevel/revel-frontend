@@ -59,6 +59,9 @@
 		// Set only by the "approve anyway" retry; the backend treats the body with
 		// exclude_unset semantics, so the flag is omitted rather than sent false.
 		force?: boolean;
+		// Unlinked register entry to adopt ("Approve and link"). Its refusals (paid
+		// path, future-dated, app token) are not force-able, so they only toast.
+		linkRecordId?: string;
 	}
 
 	const { organization, tiers }: Props = $props();
@@ -127,14 +130,18 @@
 
 	// Approve request mutation
 	const approveRequestMutation = createMutation(() => ({
-		mutationFn: async ({ request, tierId, force }: ApproveVariables) => {
+		mutationFn: async ({ request, tierId, force, linkRecordId }: ApproveVariables) => {
 			if (!request.id) {
 				throw new ApproveRequestError(m['membershipRequestsTab.approveFailedGeneric'](), undefined);
 			}
 
 			const response = await organizationadminmembershiprequestsApproveMembershipRequest({
 				path: { slug: organization.slug, request_id: request.id },
-				body: { ...(tierId ? { tier_id: tierId } : {}), ...(force ? { force: true } : {}) },
+				body: {
+					...(tierId ? { tier_id: tierId } : {}),
+					...(force ? { force: true } : {}),
+					...(linkRecordId ? { link_record_id: linkRecordId } : {})
+				},
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
@@ -158,13 +165,22 @@
 			queryClient.invalidateQueries({
 				queryKey: ['organization', organization.slug, 'members']
 			});
+			// Linking changes the register, and every cached match list is now stale.
+			queryClient.invalidateQueries({
+				queryKey: ['organization', organization.slug, 'member-register']
+			});
 		},
 		onError: (error: Error, variables: ApproveVariables) => {
 			// A 400 on a first attempt is the guard against overwriting a paid tier —
 			// offer the override instead of dead-ending in a toast. A 400 on the
 			// forced retry is a guard `force` cannot bypass (e.g. the application is
 			// no longer pending), so it falls through to the toast.
-			if (!variables.force && error instanceof ApproveRequestError && error.status === 400) {
+			if (
+				!variables.force &&
+				!variables.linkRecordId &&
+				error instanceof ApproveRequestError &&
+				error.status === 400
+			) {
 				// Close the tier picker first: the confirm dialog carries the tier
 				// itself, and stacking the two dialogs would trap focus in the wrong one.
 				approveMembershipModalOpen = false;
@@ -184,6 +200,13 @@
 			if (variables.force) {
 				queryClient.invalidateQueries({
 					queryKey: ['organization', organization.slug, 'membership-requests']
+				});
+			}
+
+			// The register changed under the admin (entry linked/ended meanwhile): refresh the hints.
+			if (variables.linkRecordId) {
+				queryClient.invalidateQueries({
+					queryKey: ['organization', organization.slug, 'member-register']
 				});
 			}
 
@@ -253,6 +276,16 @@
 			requestToApprove = request;
 			approveMembershipModalOpen = true;
 		}
+	}
+
+	function handleApproveAndLink(
+		request: OrganizationMembershipRequestRetrieve,
+		linkRecordId: string
+	) {
+		// A new-flow application carries its own tier; otherwise the backend needs
+		// one (the single tier, or none, which it answers with a 400 detail).
+		const tierId = request.tier ? null : tiers.length === 1 ? (tiers[0].id ?? null) : null;
+		approveRequestMutation.mutate({ request, tierId, linkRecordId });
 	}
 
 	function handleCloseApproveMembershipModal() {
@@ -346,6 +379,7 @@
 				{request}
 				orgSlug={organization.slug}
 				onApprove={handleApproveRequest}
+				onApproveAndLink={handleApproveAndLink}
 				onReject={(r) => rejectRequestMutation.mutate(r)}
 				isProcessing={approveRequestMutation.isPending || rejectRequestMutation.isPending}
 				showActions={request.status === 'pending'}
