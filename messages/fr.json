@@ -10759,6 +10759,10 @@
 	"seriesPass.questionnaires.complete": "Remplir",
 	"seriesPass.questionnaires.completeNamed": "Remplir le questionnaire {name}",
 	"seriesPass.reviewPending": "Tes réponses sont en cours d'examen. Tu pourras acheter ce pass une fois qu'elles seront approuvées.",
-	"questionnaireSubmissionPage.backToPass": "Retour",
-	"questionnaireSubmissionPage.accepted_cta_return": "Reprendre où tu en étais"
+	"questionnaireSubmissionPage.backToPass": "Retour au pass",
+	"questionnaireSubmissionPage.accepted_cta_return": "Reprendre où tu en étais",
+	"seriesPass.questionnaires.refreshing": "Vérification des questionnaires qu'il te reste à remplir…",
+	"seriesPass.questionnaires.stillNeeded": "Certains questionnaires attendent encore tes réponses. Ouvre la page de l'événement pour les compléter.",
+	"seriesPass.questionnaires.reviewPendingNotice": "Tes réponses sont en cours d'examen. Tu pourras acheter le pass une fois qu'elles seront approuvées.",
+	"questionnaireSubmissionPage.accepted_description_return": "Tout est en ordre pour ce questionnaire. Reprends où tu en étais pour finaliser ton achat."
 }

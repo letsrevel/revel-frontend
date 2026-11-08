@@ -10759,6 +10759,10 @@
 	"seriesPass.questionnaires.complete": "Ausfüllen",
 	"seriesPass.questionnaires.completeNamed": "Fragebogen {name} ausfüllen",
 	"seriesPass.reviewPending": "Deine Antworten werden gerade geprüft. Sobald sie freigegeben sind, kannst du diesen Pass kaufen.",
-	"questionnaireSubmissionPage.backToPass": "Zurück",
-	"questionnaireSubmissionPage.accepted_cta_return": "Dort weitermachen, wo du aufgehört hast"
+	"questionnaireSubmissionPage.backToPass": "Zurück zum Pass",
+	"questionnaireSubmissionPage.accepted_cta_return": "Dort weitermachen, wo du aufgehört hast",
+	"seriesPass.questionnaires.refreshing": "Wir prüfen, welche Fragebögen du noch beantworten musst…",
+	"seriesPass.questionnaires.stillNeeded": "Einige Fragebögen brauchen noch deine Antworten. Öffne die Eventseite, um sie auszufüllen.",
+	"seriesPass.questionnaires.reviewPendingNotice": "Deine Antworten werden gerade geprüft. Du kannst den Pass kaufen, sobald sie freigegeben sind.",
+	"questionnaireSubmissionPage.accepted_description_return": "Für diesen Fragebogen ist alles erledigt. Mach dort weiter, wo du aufgehört hast, um deinen Kauf abzuschließen."
 }

@@ -13,10 +13,13 @@
 	import { getEligibilityRefusalMessage } from '$lib/utils/eligibility';
 	import {
 		classifyCheckoutRefusal,
+		questionnaireStepsFromQuote,
 		type CheckoutRefusal
 	} from '$lib/utils/series-pass-questionnaires';
+	import { currentPageReturnPath } from '$lib/utils/internal-return-url';
+	import { passEventLookupOptions } from '$lib/queries/pass-questionnaire-lookups';
 	import SeriesPassQuestionnaireSteps from './SeriesPassQuestionnaireSteps.svelte';
-	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
+	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		Dialog,
 		DialogContent,
@@ -62,9 +65,23 @@
 		return null;
 	});
 	const stepsId = $props.id();
-	const returnPath = $derived(
-		typeof window === 'undefined' ? '/' : window.location.pathname + window.location.search
+	const returnPath = $derived(currentPageReturnPath());
+
+	// A complete_questionnaire 400 only TRIGGERS this flow: its single `event_id`
+	// can't route a mixed set (the backend aggregates every covered event), so the
+	// steps come from the refreshed `quote` prop, never from the 400 body.
+	// FORWARD-COMPAT: when EventUserEligibility gains `questionnaire_events`, build
+	// the steps from it here and drop the quote refresh.
+	let refreshingQuote = $state(false);
+	const steps = $derived(questionnaireStepsFromQuote(quote));
+	const fallbackEventId = $derived(
+		eligibilityRefusal?.kind === 'complete_questionnaire' ? eligibilityRefusal.eventId : null
 	);
+	// Only fetched when the refreshed quote lists nothing but the 400 said otherwise.
+	const fallbackEvent = createQuery(() => ({
+		...passEventLookupOptions(fallbackEventId ?? ''),
+		enabled: !!fallbackEventId && !refreshingQuote && steps.length === 0
+	}));
 
 	const isFree = $derived(pass.payment_method === 'free' || parseFloat(quote.price) === 0);
 	const isOnline = $derived(pass.payment_method === 'online' && !isFree);
@@ -106,11 +123,16 @@
 			if (eligibility) {
 				eligibilityRefusal = eligibility;
 				if (eligibility.kind === 'complete_questionnaire') {
-					// The quote that enabled Buy was stale or silent: refresh it so the
-					// card lists what is missing too.
-					void queryClient.invalidateQueries({
-						queryKey: seriesPassQueryKeys.quote(seriesId, pass.id ?? '')
-					});
+					// The quote that enabled Buy was stale or silent: refresh it. The
+					// steps (here and on the card) are derived from it.
+					refreshingQuote = true;
+					try {
+						await queryClient.invalidateQueries({
+							queryKey: seriesPassQueryKeys.quote(seriesId, pass.id ?? '')
+						});
+					} finally {
+						refreshingQuote = false;
+					}
 				}
 				throw new Error(m['seriesPass.checkoutFailed']());
 			}
@@ -224,11 +246,37 @@
 			{/if}
 
 			{#if eligibilityRefusal?.kind === 'complete_questionnaire'}
-				<SeriesPassQuestionnaireSteps
-					steps={eligibilityRefusal.steps}
-					returnUrl={returnPath}
-					id={stepsId}
-				/>
+				{#if refreshingQuote}
+					<p id={stepsId} class="text-sm text-muted-foreground" role="status">
+						{m['seriesPass.questionnaires.refreshing']()}
+					</p>
+				{:else if steps.length > 0}
+					<SeriesPassQuestionnaireSteps {steps} returnUrl={returnPath} id={stepsId} />
+				{:else}
+					<div
+						id={stepsId}
+						class="flex items-start gap-2 rounded-md border border-border bg-muted/40 p-3 text-sm text-foreground"
+						role="alert"
+						data-testid="series-pass-questionnaires-still-needed"
+					>
+						<AlertCircle class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+						<p>
+							{m['seriesPass.questionnaires.stillNeeded']()}
+							{#if fallbackEvent.data}
+								<a
+									class="font-semibold underline underline-offset-4"
+									href={resolve('/(public)/events/[org_slug]/[event_slug]', {
+										org_slug: fallbackEvent.data.orgSlug,
+										event_slug: fallbackEvent.data.slug
+									})}
+									data-testid="series-pass-questionnaires-event-link"
+								>
+									{fallbackEvent.data.name}
+								</a>
+							{/if}
+						</p>
+					</div>
+				{/if}
 			{:else if eligibilityMessage}
 				<div
 					class="flex items-start gap-2 rounded-md border border-border bg-muted/40 p-3 text-sm text-foreground"

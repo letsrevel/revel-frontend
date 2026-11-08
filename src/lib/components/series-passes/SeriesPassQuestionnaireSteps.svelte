@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { tick } from 'svelte';
 	import { ClipboardList } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { stepKey, type PassQuestionnaireStep } from '$lib/utils/series-pass-questionnaires';
@@ -14,19 +13,6 @@
 	}
 
 	const { steps, returnUrl, id }: Props = $props();
-
-	let heading = $state<HTMLElement | null>(null);
-
-	// When an answered questionnaire drops out of the list, a screen-reader user
-	// would otherwise lose their place: move focus back to the step heading.
-	let previousCount = 0;
-	$effect(() => {
-		const count = steps.length;
-		if (count > 0 && count < previousCount) {
-			void tick().then(() => heading?.focus());
-		}
-		previousCount = count;
-	});
 </script>
 
 <section
@@ -37,7 +23,6 @@
 >
 	<h3
 		id="{id}-heading"
-		bind:this={heading}
 		tabindex="-1"
 		class="flex items-center gap-2 text-sm font-bold outline-none focus-visible:ring-2 focus-visible:ring-ring"
 	>

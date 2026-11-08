@@ -10759,6 +10759,10 @@
 	"seriesPass.questionnaires.complete": "Complete",
 	"seriesPass.questionnaires.completeNamed": "Complete the questionnaire {name}",
 	"seriesPass.reviewPending": "Your answers are being reviewed. You can buy this pass once they are approved.",
-	"questionnaireSubmissionPage.backToPass": "Back",
-	"questionnaireSubmissionPage.accepted_cta_return": "Continue where you left off"
+	"questionnaireSubmissionPage.backToPass": "Back to the pass",
+	"questionnaireSubmissionPage.accepted_cta_return": "Continue where you left off",
+	"seriesPass.questionnaires.refreshing": "Checking which questionnaires you still need to answer…",
+	"seriesPass.questionnaires.stillNeeded": "Some questionnaires still need your answers. Open the event page to complete them.",
+	"seriesPass.questionnaires.reviewPendingNotice": "Your answers are being reviewed. You can buy the pass once they're approved.",
+	"questionnaireSubmissionPage.accepted_description_return": "You're all set for this questionnaire. Continue where you left off to finish your purchase."
 }

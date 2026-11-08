@@ -10759,6 +10759,10 @@
 	"seriesPass.questionnaires.complete": "Preencher",
 	"seriesPass.questionnaires.completeNamed": "Preencher o questionário {name}",
 	"seriesPass.reviewPending": "As tuas respostas estão a ser analisadas. Poderás comprar este passe quando forem aprovadas.",
-	"questionnaireSubmissionPage.backToPass": "Voltar",
-	"questionnaireSubmissionPage.accepted_cta_return": "Continuar onde ficaste"
+	"questionnaireSubmissionPage.backToPass": "Voltar ao passe",
+	"questionnaireSubmissionPage.accepted_cta_return": "Continuar onde ficaste",
+	"seriesPass.questionnaires.refreshing": "A verificar que questionários ainda tens de responder…",
+	"seriesPass.questionnaires.stillNeeded": "Alguns questionários ainda precisam das tuas respostas. Abre a página do evento para os completares.",
+	"seriesPass.questionnaires.reviewPendingNotice": "As tuas respostas estão a ser revistas. Podes comprar o passe assim que forem aprovadas.",
+	"questionnaireSubmissionPage.accepted_description_return": "Está tudo certo com este questionário. Continua onde ficaste para concluir a compra."
 }

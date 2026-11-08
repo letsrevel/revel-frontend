@@ -3,7 +3,10 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import { AlertCircle } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
-	import { eventpublicdetailsGetEvent, eventpublicattendanceGetQuestionnaire } from '$lib/api';
+	import {
+		passEventLookupOptions,
+		passQuestionnaireNameOptions
+	} from '$lib/queries/pass-questionnaire-lookups';
 	import { Button } from '$lib/components/ui/button';
 	import { withReturnUrl } from '$lib/utils/safe-redirect';
 	import type { PassQuestionnaireStep } from '$lib/utils/series-pass-questionnaires';
@@ -16,37 +19,40 @@
 
 	const { step, returnUrl }: Props = $props();
 
-	// A questionnaire is answered through ITS event, so this row resolves that
-	// event (route slugs, display name) and the questionnaire (its name). One
-	// query per row keeps a slow or failing row from hiding the others.
-	const query = createQuery(() => ({
-		queryKey: ['series-pass-questionnaire-step', step.eventId, step.questionnaireId] as const,
-		queryFn: async () => {
-			const [eventRes, questionnaireRes] = await Promise.all([
-				eventpublicdetailsGetEvent({ path: { event_id: step.eventId } }),
-				eventpublicattendanceGetQuestionnaire({
-					path: { event_id: step.eventId, questionnaire_id: step.questionnaireId }
-				})
-			]);
-			if (eventRes.error || !eventRes.data) throw eventRes.error ?? new Error('event');
-			if (questionnaireRes.error || !questionnaireRes.data) {
-				throw questionnaireRes.error ?? new Error('questionnaire');
-			}
-			return {
-				eventName: eventRes.data.name,
-				eventSlug: eventRes.data.slug,
-				orgSlug: eventRes.data.organization.slug,
-				questionnaireName: questionnaireRes.data.name
-			};
-		}
-	}));
+	// A questionnaire is answered through ITS event, so the row resolves that
+	// event (route slugs, display name) and the questionnaire's name. Both
+	// lookups are keyed by their own id only, so rows sharing an event or a
+	// questionnaire share one request (see pass-questionnaire-lookups).
+	const eventQuery = createQuery(() => passEventLookupOptions(step.eventId));
+	const nameQuery = createQuery(() =>
+		passQuestionnaireNameOptions(step.questionnaireId, step.eventId)
+	);
+	// Read BOTH results unconditionally: the adapter only notifies for properties
+	// that were read, so short-circuiting on the first would miss the second
+	// lookup resolving first.
+	const loaded = $derived.by(() => {
+		const event = eventQuery.data;
+		const questionnaireName = nameQuery.data;
+		return event && questionnaireName ? { event, questionnaireName } : undefined;
+	});
+	const event = $derived(loaded?.event);
+	const questionnaireName = $derived(loaded?.questionnaireName);
+	const failed = $derived.by(() => {
+		const eventFailed = eventQuery.isError;
+		const nameFailed = nameQuery.isError;
+		return eventFailed || nameFailed;
+	});
+	function retry() {
+		if (eventQuery.isError) void eventQuery.refetch();
+		if (nameQuery.isError) void nameQuery.refetch();
+	}
 
 	const href = $derived(
-		query.data
+		event
 			? withReturnUrl(
 					resolve('/(public)/events/[org_slug]/[event_slug]/questionnaire/[id]', {
-						org_slug: query.data.orgSlug,
-						event_slug: query.data.eventSlug,
+						org_slug: event.orgSlug,
+						event_slug: event.slug,
 						id: step.questionnaireId
 					}),
 					returnUrl
@@ -57,12 +63,12 @@
 
 <li class="flex flex-col gap-2 rounded-md border bg-background p-3 sm:flex-row sm:items-center">
 	<div class="min-w-0 flex-1">
-		{#if query.data}
-			<p class="break-words text-sm font-semibold">{query.data.questionnaireName}</p>
+		{#if event && questionnaireName}
+			<p class="break-words text-sm font-semibold">{questionnaireName}</p>
 			<p class="break-words text-xs text-muted-foreground">
-				{m['seriesPass.questionnaires.forEvent']({ event: query.data.eventName })}
+				{m['seriesPass.questionnaires.forEvent']({ event: event.name })}
 			</p>
-		{:else if query.isError}
+		{:else if failed}
 			<p class="flex items-center gap-1.5 text-sm text-foreground" role="alert">
 				<AlertCircle class="h-4 w-4 shrink-0" aria-hidden="true" />
 				{m['seriesPass.questionnaires.loadFailed']()}
@@ -73,19 +79,19 @@
 			</p>
 		{/if}
 	</div>
-	{#if query.data && href}
+	{#if event && questionnaireName && href}
 		<Button
 			size="sm"
 			{href}
 			aria-label={m['seriesPass.questionnaires.completeNamed']({
-				name: query.data.questionnaireName
+				name: questionnaireName
 			})}
 			data-testid="pass-questionnaire-link"
 		>
 			{m['seriesPass.questionnaires.complete']()}
 		</Button>
-	{:else if query.isError}
-		<Button size="sm" variant="outline" onclick={() => query.refetch()}>
+	{:else if failed}
+		<Button size="sm" variant="outline" onclick={retry}>
 			{m['seriesPass.questionnaires.retry']()}
 		</Button>
 	{/if}

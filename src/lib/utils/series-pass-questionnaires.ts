@@ -55,31 +55,27 @@ export function questionnaireStepsFromQuote(
 	return dedupe(steps);
 }
 
-/** The steps a checkout 400 asks for: all of them belong to the refusal's `event_id`. */
-export function questionnaireStepsFromEligibility(
-	eligibility: Pick<EventUserEligibility, 'event_id' | 'questionnaires_missing'>
-): PassQuestionnaireStep[] {
-	return dedupe(
-		(eligibility.questionnaires_missing ?? []).map((questionnaireId) => ({
-			questionnaireId,
-			eventId: eligibility.event_id
-		}))
-	);
-}
-
 /** What the purchase dialog should do with a 400 from `POST /series-passes/{id}/checkout`. */
 export type CheckoutRefusal =
-	| { kind: 'complete_questionnaire'; steps: PassQuestionnaireStep[] }
+	| { kind: 'complete_questionnaire'; eventId: string }
 	| { kind: 'pending_review' }
 	| { kind: 'other'; eligibility: EventUserEligibility };
 
-/** Classify the 400 body, or `null` when it is not an eligibility payload. */
+/**
+ * Classify the 400 body, or `null` when it is not an eligibility payload.
+ *
+ * The 400 only TRIGGERS the questionnaire flow: its single `event_id` cannot
+ * route a mixed set (the backend aggregates every covered event's group), so
+ * the steps always come from a refreshed quote (`questionnaireStepsFromQuote`),
+ * never from this body. `eventId` is kept only as a fallback link target.
+ */
 export function classifyCheckoutRefusal(body: unknown): CheckoutRefusal | null {
 	if (!isEligibilityRefusal(body)) return null;
-	if (body.next_step === 'complete_questionnaire') {
-		const steps = questionnaireStepsFromEligibility(body);
-		// Without the questionnaire ids there is nothing to link to: show the message.
-		if (steps.length > 0) return { kind: 'complete_questionnaire', steps };
+	if (
+		body.next_step === 'complete_questionnaire' &&
+		(body.questionnaires_missing ?? []).length > 0
+	) {
+		return { kind: 'complete_questionnaire', eventId: body.event_id };
 	}
 	if (
 		body.next_step === 'wait_for_questionnaire_evaluation' ||

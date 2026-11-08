@@ -1,6 +1,12 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { onMount, tick } from 'svelte';
 	import { loginHref } from '$lib/utils/safe-redirect';
+	import { currentPageReturnPath } from '$lib/utils/internal-return-url';
+	import {
+		capturePassReturnSignal,
+		type PassReturnSignal
+	} from '$lib/utils/pass-questionnaire-return';
 	import type { SeriesPassSchema, SeriesPassQuoteSchema } from '$lib/api/generated/types.gen';
 	import { seriespassGetSeriesPassQuote } from '$lib/api';
 	import { seriesPassQueryKeys } from '$lib/queries/series-passes';
@@ -37,10 +43,9 @@
 			}
 			return response.data;
 		},
-		enabled: !!pass.id,
-		// Coming back from a questionnaire must show what is still missing, not
-		// the answer cached before the submission.
-		refetchOnMount: 'always' as const
+		// Coming back from a questionnaire refreshes this: the questionnaire page
+		// invalidates the quote queries when a submission lands.
+		enabled: !!pass.id
 	}));
 
 	const quote = $derived<SeriesPassQuoteSchema | undefined>(quoteQuery.data);
@@ -66,8 +71,37 @@
 	const questionnaireSteps = $derived(quote ? questionnaireStepsFromQuote(quote) : []);
 	const hasMissingQuestionnaires = $derived(questionnaireSteps.length > 0);
 	const stepsId = $derived(`${uid}-questionnaires`);
-	const returnPath = $derived(
-		typeof window === 'undefined' ? '/' : window.location.pathname + window.location.search
+	const returnPath = $derived(currentPageReturnPath());
+	const pendingId = $derived(`${uid}-review-pending`);
+
+	// Set when the buyer lands back from a questionnaire page (`?questionnaire=`):
+	// `pending` shows the review notice, either one moves focus once (below).
+	let returnSignal = $state<PassReturnSignal | null>(null);
+	onMount(() => {
+		returnSignal = capturePassReturnSignal();
+	});
+
+	// Once the refreshed quote is in, put focus where the buyer continues: the
+	// steps heading while some remain, the Buy button otherwise. Only on a
+	// returned-from-questionnaire load, and only for one card on the page.
+	let focusHandled = false;
+	$effect(() => {
+		// Read every dependency up front (the query adapter only tracks what is read).
+		const ready = quoteQuery.isSuccess && !quoteQuery.isFetching;
+		const missing = hasMissingQuestionnaires;
+		if (!returnSignal || focusHandled || !ready) return;
+		focusHandled = true;
+		// Several cards can share the page: only the first Buy button in the
+		// document takes focus.
+		if (document.querySelector('[data-pass-buy]')?.id !== `${uid}-buy`) return;
+		const targetId = missing ? `${stepsId}-heading` : `${uid}-buy`;
+		void tick().then(() => document.getElementById(targetId)?.focus());
+	});
+
+	const buyDescribedBy = $derived(
+		[hasMissingQuestionnaires ? stepsId : null, returnSignal === 'pending' ? pendingId : null]
+			.filter(Boolean)
+			.join(' ') || undefined
 	);
 
 	const isButtonDisabled = $derived.by(() => {
@@ -80,8 +114,7 @@
 		if (!isAuthenticated) {
 			// The login action reads `returnUrl` (see login/+page.server.ts); include
 			// the query string so pagination state survives the round trip.
-			const target = window.location.pathname + window.location.search;
-			window.location.href = loginHref(target);
+			window.location.href = loginHref(returnPath);
 			return;
 		}
 		showPurchaseDialog = true;
@@ -162,11 +195,23 @@
 				/>
 			</div>
 		{/if}
+		{#if returnSignal === 'pending'}
+			<p
+				id={pendingId}
+				class="mb-3 rounded-md border border-border bg-muted/40 p-3 text-left text-sm text-foreground"
+				role="status"
+				data-testid="pass-questionnaire-review-pending"
+			>
+				{m['seriesPass.questionnaires.reviewPendingNotice']()}
+			</p>
+		{/if}
 		<Button
+			id="{uid}-buy"
+			data-pass-buy
 			class="w-full"
 			onclick={handleBuyClick}
 			disabled={isButtonDisabled}
-			aria-describedby={hasMissingQuestionnaires ? stepsId : undefined}
+			aria-describedby={buyDescribedBy}
 		>
 			{m['seriesPass.buyButton']()}
 		</Button>

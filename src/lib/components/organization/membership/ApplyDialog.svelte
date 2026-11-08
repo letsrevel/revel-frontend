@@ -24,7 +24,7 @@
 	import { CheckCircle2, Loader2 } from '@lucide/svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { membershipReturnUrl, isEventReturnUrl } from '$lib/utils/membership-return.svelte';
+	import { safeInternalReturnUrl, isEventReturnUrl } from '$lib/utils/internal-return-url';
 
 	interface Props {
 		open: boolean;
@@ -95,7 +95,7 @@
 	const counterId = `${uid}-counter`;
 	// Offered (never auto-followed: this is a dialog) when the applicant came from an event.
 	const eventReturnUrl = $derived.by(() => {
-		const url = membershipReturnUrl();
+		const url = safeInternalReturnUrl();
 		return isEventReturnUrl(url) ? url : null;
 	});
 	const membershipsHref = resolve('/(auth)/account/memberships', {});

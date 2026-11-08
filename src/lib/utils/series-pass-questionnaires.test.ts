@@ -1,9 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-	classifyCheckoutRefusal,
-	questionnaireStepsFromEligibility,
-	questionnaireStepsFromQuote
-} from './series-pass-questionnaires';
+import { classifyCheckoutRefusal, questionnaireStepsFromQuote } from './series-pass-questionnaires';
 
 const base = { questionnaires_missing: [], questionnaire_event_id: null, questionnaire_events: [] };
 
@@ -67,20 +63,6 @@ describe('questionnaireStepsFromQuote', () => {
 	});
 });
 
-describe('questionnaireStepsFromEligibility', () => {
-	it('puts every missing questionnaire on the refusal event', () => {
-		expect(
-			questionnaireStepsFromEligibility({
-				event_id: 'e-1',
-				questionnaires_missing: ['a', 'b', 'a']
-			})
-		).toEqual([
-			{ questionnaireId: 'a', eventId: 'e-1' },
-			{ questionnaireId: 'b', eventId: 'e-1' }
-		]);
-	});
-});
-
 describe('classifyCheckoutRefusal', () => {
 	it('ignores bodies that are not eligibility payloads', () => {
 		expect(classifyCheckoutRefusal({ detail: 'nope' })).toBeNull();
@@ -97,7 +79,7 @@ describe('classifyCheckoutRefusal', () => {
 			})
 		).toEqual({
 			kind: 'complete_questionnaire',
-			steps: [{ questionnaireId: 'q-1', eventId: 'e-7' }]
+			eventId: 'e-7'
 		});
 	});
 

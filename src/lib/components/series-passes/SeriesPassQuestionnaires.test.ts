@@ -1,7 +1,9 @@
-import { render, screen, waitFor } from '@testing-library/svelte';
+import { render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
+import { toast } from 'svelte-sonner';
+import { replaceState } from '$app/navigation';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 import SeriesPassCard from './SeriesPassCard.svelte';
 import SeriesPassPurchaseDialog from './SeriesPassPurchaseDialog.svelte';
@@ -13,7 +15,17 @@ import {
 } from '$lib/api/generated/sdk.gen';
 import type { SeriesPassSchema, SeriesPassQuoteSchema } from '$lib/api/generated/types.gen';
 
-vi.mock('$app/navigation', () => ({ goto: vi.fn() }));
+const pageUrl = vi.hoisted(() => ({ href: 'http://localhost/events/acme/series/season' }));
+vi.mock('$app/state', () => ({
+	page: {
+		get url() {
+			return new URL(pageUrl.href);
+		},
+		state: {}
+	}
+}));
+vi.mock('$app/navigation', () => ({ goto: vi.fn(), replaceState: vi.fn() }));
+vi.mock('svelte-sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	seriespassGetSeriesPassQuote: vi.fn(),
 	seriespassCheckoutSeriesPass: vi.fn(),
@@ -94,6 +106,7 @@ function newClient() {
 describe('SeriesPassCard — questionnaire step', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		pageUrl.href = 'http://localhost/events/acme/series/season';
 		mockLookups();
 	});
 
@@ -145,9 +158,117 @@ describe('SeriesPassCard — questionnaire step', () => {
 	});
 });
 
+describe('SeriesPassCard — returning from a questionnaire', () => {
+	const missing = {
+		questionnaires_missing: ['q-series'],
+		questionnaire_event_id: 'event-a',
+		questionnaire_events: [{ questionnaire_id: 'q-series', event_id: 'event-a' }]
+	};
+	beforeEach(() => {
+		vi.clearAllMocks();
+		pageUrl.href = 'http://localhost/events/acme/series/season?page=2';
+		mockLookups();
+	});
+
+	function renderCard() {
+		return render(QueryClientTestWrapper, {
+			props: {
+				client: newClient(),
+				component: SeriesPassCard,
+				componentProps: { pass, seriesId: 'series-1', isAuthenticated: true }
+			}
+		});
+	}
+
+	it('returns to the page as the SvelteKit page url, without the one-shot signal', async () => {
+		pageUrl.href += '&questionnaire=done';
+		mockQuote(missing);
+		renderCard();
+		const link = await screen.findByTestId('pass-questionnaire-link');
+		const returnUrl = new URL(link.getAttribute('href') ?? '', 'http://localhost').searchParams.get(
+			'returnUrl'
+		);
+		expect(returnUrl).toBe('/events/acme/series/season?page=2');
+	});
+
+	it('shows the review notice, keeps Buy enabled and describes it, then strips the param', async () => {
+		pageUrl.href += '&questionnaire=pending';
+		mockQuote();
+		renderCard();
+		const notice = await screen.findByTestId('pass-questionnaire-review-pending');
+		expect(notice).toHaveTextContent(
+			"Your answers are being reviewed. You can buy the pass once they're approved."
+		);
+		const buy = screen.getByRole('button', { name: 'Get season pass' });
+		await waitFor(() => expect(buy).toBeEnabled());
+		expect(buy).toHaveAccessibleDescription(/being reviewed/);
+		await waitFor(() => expect(replaceState).toHaveBeenCalled());
+		const stripped = vi.mocked(replaceState).mock.calls[0][0] as URL;
+		expect(stripped.searchParams.has('questionnaire')).toBe(false);
+		expect(stripped.searchParams.get('page')).toBe('2');
+	});
+
+	it('moves focus to the steps heading once the quote has loaded', async () => {
+		pageUrl.href += '&questionnaire=done';
+		mockQuote(missing);
+		renderCard();
+		await screen.findByText('House rules');
+		await waitFor(() =>
+			expect(screen.getByText('Complete these questionnaires first').closest('h3')).toHaveFocus()
+		);
+	});
+
+	it('moves focus to Buy when nothing is left to answer', async () => {
+		pageUrl.href += '&questionnaire=done';
+		mockQuote();
+		renderCard();
+		const buy = await screen.findByRole('button', { name: 'Get season pass' });
+		await waitFor(() => expect(buy).toHaveFocus());
+	});
+
+	it('does not steal focus on a normal page load', async () => {
+		mockQuote(missing);
+		renderCard();
+		await screen.findByText('House rules');
+		expect(document.body).toHaveFocus();
+		expect(replaceState).not.toHaveBeenCalled();
+	});
+});
+
+describe('Pass questionnaire lookups', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		pageUrl.href = 'http://localhost/events/acme/series/season';
+		mockLookups();
+	});
+
+	it('fetches each event and each questionnaire once, however many rows share them', async () => {
+		mockQuote({
+			questionnaires_missing: ['q-series', 'q-event'],
+			questionnaire_event_id: 'event-a',
+			questionnaire_events: [
+				{ questionnaire_id: 'q-series', event_id: 'event-a' },
+				{ questionnaire_id: 'q-series', event_id: 'event-b' },
+				{ questionnaire_id: 'q-event', event_id: 'event-b' }
+			]
+		});
+		render(QueryClientTestWrapper, {
+			props: {
+				client: newClient(),
+				component: SeriesPassCard,
+				componentProps: { pass, seriesId: 'series-1', isAuthenticated: true }
+			}
+		});
+		await waitFor(() => expect(screen.getAllByTestId('pass-questionnaire-link')).toHaveLength(3));
+		expect(eventpublicdetailsGetEvent).toHaveBeenCalledTimes(2);
+		expect(eventpublicattendanceGetQuestionnaire).toHaveBeenCalledTimes(2);
+	});
+});
+
 describe('SeriesPassPurchaseDialog — checkout 400 fallback', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		pageUrl.href = 'http://localhost/events/acme/series/season';
 		mockLookups();
 	});
 
@@ -183,7 +304,48 @@ describe('SeriesPassPurchaseDialog — checkout 400 fallback', () => {
 		await userEvent.click(screen.getByRole('button', { name: 'Continue to payment' }));
 	}
 
-	it('routes complete_questionnaire to the refusal event', async () => {
+	it('renders the steps from the refreshed quote, not from the 400 body', async () => {
+		// The 400 names a single event (event-b); the refreshed quote routes a
+		// mixed set across both events.
+		mockQuote();
+		refuse(400, {
+			allowed: false,
+			event_id: 'event-b',
+			next_step: 'complete_questionnaire',
+			questionnaires_missing: ['q-event']
+		});
+		render(QueryClientTestWrapper, {
+			props: {
+				client: newClient(),
+				component: SeriesPassCard,
+				componentProps: { pass, seriesId: 'series-1', isAuthenticated: true }
+			}
+		});
+		await userEvent.click(await screen.findByRole('button', { name: 'Get season pass' }));
+		const dialog = await screen.findByRole('dialog');
+		// The checkout call is what reveals the missing questionnaires: from now on
+		// the quote reports them.
+		mockQuote({
+			questionnaires_missing: ['q-series', 'q-event'],
+			questionnaire_event_id: 'event-a',
+			questionnaire_events: [
+				{ questionnaire_id: 'q-series', event_id: 'event-a' },
+				{ questionnaire_id: 'q-event', event_id: 'event-b' }
+			]
+		});
+		await userEvent.click(within(dialog).getByRole('button', { name: 'Continue to payment' }));
+
+		await waitFor(() =>
+			expect(within(dialog).getAllByTestId('pass-questionnaire-link')).toHaveLength(2)
+		);
+		const links = within(dialog).getAllByTestId('pass-questionnaire-link');
+		expect(links[0].getAttribute('href')).toContain(
+			'/events/acme/opening-night/questionnaire/q-series'
+		);
+		expect(links[1].getAttribute('href')).toContain('/events/acme/finale/questionnaire/q-event');
+	});
+
+	it('falls back to a neutral message and the 400 event when the quote lists nothing', async () => {
 		refuse(400, {
 			allowed: false,
 			event_id: 'event-b',
@@ -192,10 +354,14 @@ describe('SeriesPassPurchaseDialog — checkout 400 fallback', () => {
 		});
 		await openAndBuy();
 
-		const link = await screen.findByTestId('pass-questionnaire-link');
-		expect(link.getAttribute('href')).toContain('/events/acme/finale/questionnaire/q-event');
-		expect(screen.getByText('Finale vetting')).toBeInTheDocument();
-		expect(eventpublicdetailsGetEvent).toHaveBeenCalledWith({ path: { event_id: 'event-b' } });
+		const note = await screen.findByTestId('series-pass-questionnaires-still-needed');
+		expect(note).toHaveTextContent(
+			'Some questionnaires still need your answers. Open the event page to complete them.'
+		);
+		const link = await screen.findByTestId('series-pass-questionnaires-event-link');
+		expect(link.getAttribute('href')).toBe('/events/acme/finale');
+		expect(screen.queryByTestId('pass-questionnaire-steps')).not.toBeInTheDocument();
+		expect(eventpublicattendanceGetQuestionnaire).not.toHaveBeenCalled();
 	});
 
 	it('says the answers are being reviewed instead of a raw error', async () => {
@@ -221,10 +387,16 @@ describe('SeriesPassPurchaseDialog — checkout 400 fallback', () => {
 		expect(alert.textContent?.trim().length).toBeGreaterThan(0);
 	});
 
-	it('handles a plain 403 with readable copy', async () => {
-		refuse(403, { detail: 'Forbidden' });
+	it('says "You can\'t buy this pass." for a 403 without a detail', async () => {
+		refuse(403, {});
 		await openAndBuy();
-		await waitFor(() => expect(seriespassCheckoutSeriesPass).toHaveBeenCalled());
+		await waitFor(() => expect(toast.error).toHaveBeenCalledWith("You can't buy this pass."));
 		expect(screen.queryByTestId('pass-questionnaire-steps')).not.toBeInTheDocument();
+	});
+
+	it('surfaces the backend detail for a 403', async () => {
+		refuse(403, { detail: 'You are blacklisted.' });
+		await openAndBuy();
+		await waitFor(() => expect(toast.error).toHaveBeenCalledWith('You are blacklisted.'));
 	});
 });
