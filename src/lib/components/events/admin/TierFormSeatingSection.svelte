@@ -16,6 +16,8 @@
 	interface Props {
 		seatAssignmentMode: SeatAssignmentMode;
 		maxTicketsPerUser: string;
+		/** Fixed at 1 while the tier grants a day membership (backend rule). */
+		maxTicketsLocked?: boolean;
 		sectorId: string | null;
 		/** Per-category prices — the single pricing mechanism for both seated modes. */
 		categoryPrices: Record<string, string>;
@@ -43,6 +45,7 @@
 	let {
 		seatAssignmentMode = $bindable(),
 		maxTicketsPerUser = $bindable(),
+		maxTicketsLocked = false,
 		sectorId = $bindable(),
 		categoryPrices = $bindable(),
 		pricingCategories,
@@ -133,10 +136,23 @@
 			bind:value={maxTicketsPerUser}
 			placeholder={m['tierForm.seatingConfig.inheritFromEvent']()}
 			disabled={isPending}
+			readonly={maxTicketsLocked}
+			aria-describedby={maxTicketsLocked
+				? 'max-tickets-per-user-help max-tickets-per-user-locked'
+				: 'max-tickets-per-user-help'}
 		/>
-		<p class="mt-1 text-xs text-muted-foreground">
+		<p id="max-tickets-per-user-help" class="mt-1 text-xs text-muted-foreground">
 			{m['tierForm.seatingConfig.maxTicketsHelp']()}
 		</p>
+		{#if maxTicketsLocked}
+			<p
+				id="max-tickets-per-user-locked"
+				class="mt-1 text-xs text-muted-foreground"
+				data-testid="max-tickets-locked-hint"
+			>
+				{m['tierForm.grants.maxLocked']()}
+			</p>
+		{/if}
 	</div>
 
 	<!-- Optional standing-sector capacity cap for general admission (none) tiers.
