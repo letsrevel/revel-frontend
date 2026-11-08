@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
+	import ScanCallout from '$lib/components/checkin/ScanCallout.svelte';
 	import { X, AlertCircle, CheckCircle, Clock, XCircle } from '@lucide/svelte';
 	import { fade, scale } from 'svelte/transition';
 	import { getUserDisplayName } from '$lib/utils/user-display';
@@ -61,6 +62,8 @@
 		payment?: TicketPayment | null;
 		/** How the ticket was sold (AdminTicketSchema only; scan payloads omit it). */
 		sale_source?: string | null;
+		/** Private staff note, when the payload carries one (CheckInResponseSchema). Read-only. */
+		private_note?: string | null;
 	}
 
 	interface Props {
@@ -339,6 +342,8 @@
 						{/if}
 					</div>
 				</div>
+
+				<ScanCallout title={m['scanNote.label']()} body={ticket.private_note} />
 
 				<!-- Attendee Information -->
 				<div class="rounded-lg border bg-muted/50">

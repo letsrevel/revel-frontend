@@ -10,6 +10,8 @@ import { needsPaymentConfirmation } from '$lib/utils/ticket-helpers';
 import { isSeriesPassCode } from '$lib/utils/series-pass-qr';
 import { isMemberCode, normalizeMemberCode } from '$lib/utils/member-qr';
 import { classifyCheckInResponse } from '$lib/utils/check-in-scan';
+import type { ScanNote } from '$lib/components/checkin/scan-note';
+import { scanNoteFrom } from '$lib/components/checkin/scan-note';
 import { toCheckInTicket, type CheckInDialogTicket } from './checkin-adapter';
 
 interface Options {
@@ -35,6 +37,8 @@ export function createTicketScanCheckIn(opts: Options) {
 	let showCheckInDialog = $state(false);
 	let ticketToCheckIn = $state<CheckInDialogTicket | null>(null);
 	let checkInDialogError = $state<string | null>(null);
+	/** Private staff note on the person just checked in (read-only, may be null). */
+	let scanNote = $state<ScanNote | null>(null);
 
 	/** The membership-card report: no ticket was burned, this is information. */
 	let memberReport = $state<MemberScanResponseSchema | null>(null);
@@ -64,7 +68,11 @@ export function createTicketScanCheckIn(opts: Options) {
 
 			return response.data;
 		},
-		onSuccess: () => {
+		onSuccess: (data) => {
+			// The ticket preview carries no note; the check-in response does. Show it
+			// right away so door staff see it with the result.
+			const outcome = classifyCheckInResponse(data);
+			scanNote = outcome.kind === 'checked_in' ? scanNoteFrom(outcome.result) : null;
 			showCheckInDialog = false;
 			ticketToCheckIn = null;
 			checkInDialogError = null;
@@ -241,6 +249,12 @@ export function createTicketScanCheckIn(opts: Options) {
 		},
 		get checkInPending() {
 			return checkInTicketMutation.isPending;
+		},
+		get scanNote() {
+			return scanNote;
+		},
+		dismissScanNote(): void {
+			scanNote = null;
 		},
 		get memberReport() {
 			return memberReport;
