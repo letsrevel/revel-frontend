@@ -38,6 +38,7 @@
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import RefundStatusBadge from './RefundStatusBadge.svelte';
 	import TicketDiscountBadge from './TicketDiscountBadge.svelte';
+	import DayMemberBadge from './DayMemberBadge.svelte';
 	import SeriesPassBadge from './SeriesPassBadge.svelte';
 	import { formatTicketAttributionLine } from '$lib/utils/attribution';
 	import type { AdminTicketSchema } from '$lib/api';
@@ -189,6 +190,11 @@
 				{#if ticket.series_pass}
 					<div class="flex justify-end">
 						<SeriesPassBadge seriesPass={ticket.series_pass} />
+					</div>
+				{/if}
+				{#if ticket.membership_record}
+					<div class="flex justify-end">
+						<DayMemberBadge record={ticket.membership_record} />
 					</div>
 				{/if}
 				<div class="flex items-center justify-between">

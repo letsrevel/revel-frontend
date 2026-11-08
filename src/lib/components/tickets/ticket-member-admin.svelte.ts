@@ -136,6 +136,7 @@ export function createTicketMemberAdmin(opts: Options) {
 			try {
 				const response = await organizationadminmembersListMembershipTiers({
 					path: { slug: opts.getSlug() },
+					query: { kind: 'standard' },
 					headers: { Authorization: `Bearer ${opts.getAccessToken()}` }
 				});
 				if (response.error) {

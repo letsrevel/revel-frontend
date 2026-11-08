@@ -83,10 +83,11 @@
 
 	// Fetch tiers for the modal
 	const tiersQuery = createQuery(() => ({
-		queryKey: ['membership-tiers', organizationSlug],
+		queryKey: ['membership-tiers', organizationSlug, 'standard'],
 		queryFn: async () => {
 			const response = await organizationadminmembersListMembershipTiers({
 				path: { slug: organizationSlug },
+				query: { kind: 'standard' },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (response.error) throw response.error;

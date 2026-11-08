@@ -9859,6 +9859,10 @@
 		"extendFailed": "No se pudo ampliar la cobertura del pase",
 		"extendSuccess": "Cobertura ampliada en {count} evento(s)"
 	},
+	"dayMemberBadge": {
+		"label": "Miembro por un día",
+		"until": "Miembro por un día hasta {date}"
+	},
 	"seriesPassBadge": {
 		"label": "Pase de temporada",
 		"tooltip": "Del pase de temporada “{name}”"
@@ -10056,6 +10060,7 @@
 	"integrations.error.event_no_tickets": "Activa las entradas antes de publicar en {platform}.",
 	"integrations.error.tier_variable_price": "Las entradas de precio libre no se envían.",
 	"integrations.error.tier_members_only": "Las entradas solo para miembros no se envían.",
+	"integrations.error.tier_grants_membership": "No se publica en {platform}: este tipo de entrada concede una membresía de un día, que solo puede emitirse a través de Revel.",
 	"integrations.error.tier_purchase_restricted": "No aparece en {platform}: “Quién puede comprar” debe estar en “Cualquiera” para vender este nivel en plataformas externas.",
 	"integrations.error.tier_seated": "Las entradas con asiento asignado no se envían.",
 	"integrations.error.tier_offline_payment": "Las entradas que se pagan en puerta o por transferencia no se envían.",

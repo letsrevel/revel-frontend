@@ -9859,6 +9859,10 @@
 		"extendFailed": "Impossible d'étendre la couverture du pass",
 		"extendSuccess": "Couverture étendue de {count} événement(s)"
 	},
+	"dayMemberBadge": {
+		"label": "Membre d'un jour",
+		"until": "Membre d'un jour jusqu'au {date}"
+	},
 	"seriesPassBadge": {
 		"label": "Pass de saison",
 		"tooltip": "Issu du pass de saison « {name} »"
@@ -10056,6 +10060,7 @@
 	"integrations.error.event_no_tickets": "Activez les billets avant de publier sur {platform}.",
 	"integrations.error.tier_variable_price": "Les billets à prix libre ne sont pas envoyés.",
 	"integrations.error.tier_members_only": "Les billets réservés aux membres ne sont pas envoyés.",
+	"integrations.error.tier_grants_membership": "Non publié sur {platform} : ce type de billet accorde une adhésion d'un jour, qui ne peut être délivrée que via Revel.",
 	"integrations.error.tier_purchase_restricted": "Non listé sur {platform} : « Qui peut acheter » doit être réglé sur « Tout le monde » pour vendre ce tarif en externe.",
 	"integrations.error.tier_seated": "Les billets avec places attribuées ne sont pas envoyés.",
 	"integrations.error.tier_offline_payment": "Les billets payés sur place ou par virement ne sont pas envoyés.",

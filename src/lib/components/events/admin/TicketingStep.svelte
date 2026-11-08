@@ -104,11 +104,12 @@
 
 	// Fetch membership tiers for the organization
 	const membershipTiersQuery = createQuery(() => ({
-		queryKey: ['organization', organizationSlug, 'membership-tiers'],
+		queryKey: ['organization', organizationSlug, 'membership-tiers', 'standard'],
 		queryFn: async () => {
 			if (!accessToken) return null;
 			const response = await organizationadminmembersListMembershipTiers({
 				path: { slug: organizationSlug },
+				query: { kind: 'standard' },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			// The generated client resolves on HTTP errors; throw so the query lands in

@@ -68,10 +68,11 @@
 
 	// Fetch membership tiers
 	const tiersQuery = createQuery(() => ({
-		queryKey: ['organization', organization.slug, 'membership-tiers'],
+		queryKey: ['organization', organization.slug, 'membership-tiers', 'standard'],
 		queryFn: async () => {
 			const response = await organizationadminmembersListMembershipTiers({
 				path: { slug: organization.slug },
+				query: { kind: 'standard' },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 

@@ -276,6 +276,7 @@
 			try {
 				const response = await organizationadminmembersListMembershipTiers({
 					path: { slug: organization.slug },
+					query: { kind: 'standard' },
 					headers: { Authorization: `Bearer ${accessToken}` }
 				});
 				if (response.data) {

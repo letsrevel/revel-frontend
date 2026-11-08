@@ -9859,6 +9859,10 @@
 		"extendFailed": "Não foi possível alargar a cobertura do passe",
 		"extendSuccess": "Cobertura alargada em {count} evento(s)"
 	},
+	"dayMemberBadge": {
+		"label": "Membro por um dia",
+		"until": "Membro por um dia até {date}"
+	},
 	"seriesPassBadge": {
 		"label": "Passe de época",
 		"tooltip": "Do passe de época “{name}”"
@@ -10056,6 +10060,7 @@
 	"integrations.error.event_no_tickets": "Ativa os bilhetes antes de publicar no {platform}.",
 	"integrations.error.tier_variable_price": "Os bilhetes de preço livre não são enviados.",
 	"integrations.error.tier_members_only": "Os bilhetes só para membros não são enviados.",
+	"integrations.error.tier_grants_membership": "Não listado em {platform}: este tipo de bilhete concede uma adesão de um dia, que só pode ser emitida através do Revel.",
 	"integrations.error.tier_purchase_restricted": "Não listado em {platform}: “Quem pode comprar” deve estar em “Qualquer pessoa” para vender este nível externamente.",
 	"integrations.error.tier_seated": "Os bilhetes com lugar marcado não são enviados.",
 	"integrations.error.tier_offline_payment": "Os bilhetes pagos à porta ou por transferência não são enviados.",

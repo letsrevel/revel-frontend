@@ -9859,6 +9859,10 @@
 		"extendFailed": "Abdeckung konnte nicht erweitert werden",
 		"extendSuccess": "Abdeckung um {count} Event(s) erweitert"
 	},
+	"dayMemberBadge": {
+		"label": "Tagesmitglied",
+		"until": "Tagesmitglied bis {date}"
+	},
 	"seriesPassBadge": {
 		"label": "Saisonpass",
 		"tooltip": "Aus Saisonpass „{name}“"
@@ -10056,6 +10060,7 @@
 	"integrations.error.event_no_tickets": "Aktiviere Tickets, bevor du auf {platform} einträgst.",
 	"integrations.error.tier_variable_price": "Tickets mit freiem Preis werden nicht übertragen.",
 	"integrations.error.tier_members_only": "Tickets nur für Mitglieder werden nicht übertragen.",
+	"integrations.error.tier_grants_membership": "Nicht auf {platform} eingetragen: Diese Ticketart gewährt eine Tagesmitgliedschaft, die nur über Revel vergeben werden kann.",
 	"integrations.error.tier_purchase_restricted": "Nicht auf {platform} gelistet: „Wer kann kaufen“ muss auf „Jeder“ stehen, um diese Stufe extern zu verkaufen.",
 	"integrations.error.tier_seated": "Tickets mit Sitzplatzzuweisung werden nicht übertragen.",
 	"integrations.error.tier_offline_payment": "Tickets, die vor Ort oder per Überweisung bezahlt werden, werden nicht übertragen.",

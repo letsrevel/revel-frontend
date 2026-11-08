@@ -32,6 +32,7 @@ export const load: PageServerLoad = async ({ params, locals, parent, fetch }) =>
 		organizationadminmembersListMembershipTiers({
 			fetch,
 			path: { slug: organization.slug },
+			query: { kind: 'standard' },
 			headers: { Authorization: `Bearer ${user.accessToken}` }
 		})
 	]);
