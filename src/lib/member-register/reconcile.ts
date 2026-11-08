@@ -4,6 +4,7 @@ import type {
 	PossibleDuplicateSchema,
 	RegisterMatchReason
 } from '$lib/api/generated/types.gen';
+import { isOpenStandard } from './open-standard';
 
 /**
  * What unlinking a register entry does, mirroring
@@ -13,8 +14,8 @@ import type {
  *   (and the survivor's start restored unless staff edited it since).
  * - `cancels_access`: an OPEN STANDARD linked entry. The account is detached
  *   AND the ACTIVE/PAUSED access row is cancelled with its subscriptions.
- * - `clears_user`: a closed or day-membership linked entry; only the account is
- *   detached.
+ * - `clears_user`: any other linked entry (closed, or a day membership, open or
+ *   not); only the account is detached.
  * - `null`: nothing to unlink (the backend answers 400).
  *
  * The backend checks `merged_into_id` first, so a merged entry is always a
@@ -30,9 +31,7 @@ type UnlinkInput = Pick<
 export function unlinkEffect(record: UnlinkInput): UnlinkEffect | null {
 	if (record.merged_into_id) return 'reverse_merge';
 	if (!record.has_account) return null;
-	// Backend `_is_open_standard`: no end date and STANDARD kind.
-	const openStandard = !record.valid_until && record.kind === 'standard';
-	return openStandard ? 'cancels_access' : 'clears_user';
+	return isOpenStandard(record) ? 'cancels_access' : 'clears_user';
 }
 
 export function canUnlink(record: UnlinkInput): boolean {
@@ -64,7 +63,7 @@ export interface MergePlan {
 /** The survivor is the linked entry; the account-less one is absorbed. */
 export function planMerge(pair: PossibleDuplicateSchema): MergePlan {
 	const { linked: survivor, unlinked: absorbed } = pair;
-	const openStandard = !absorbed.valid_until && absorbed.kind === 'standard';
+	const openStandard = isOpenStandard(absorbed);
 	const earliest =
 		Date.parse(absorbed.valid_from) < Date.parse(survivor.valid_from)
 			? absorbed.valid_from

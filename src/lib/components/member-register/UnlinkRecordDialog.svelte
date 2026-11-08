@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
+	import { toast } from 'svelte-sonner';
 	import { TriangleAlert } from '@lucide/svelte';
 	import type { MembershipRecordSchema } from '$lib/api/generated/types.gen';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
@@ -19,18 +21,42 @@
 
 	const { open, record, recordPresent = true, slug, accessToken, onClose }: Props = $props();
 
-	const effect = $derived(record ? unlinkEffect(record) : null);
+	const outcome = $derived(record ? unlinkEffect(record) : null);
+
+	// Set once OUR unlink succeeded: the refetch that follows then shows the entry
+	// as unlinked too, which must not be mistaken for "someone else already did it".
+	let unlinkedHere = false;
+	$effect(() => {
+		if (open) untrack(() => (unlinkedHere = false));
+	});
+
+	// A refetch (after a stale 400/409) can show the entry is no longer linked:
+	// the clears-user copy would then describe an action that does nothing.
+	$effect(() => {
+		if (open && record && outcome === null && !unlinkedHere) {
+			untrack(() => {
+				toast.info(m['memberRegister.unlinkNothingToDo']());
+				onClose();
+			});
+		}
+	});
+
+	async function run(id: string) {
+		const result = await unlinkRecord(slug, accessToken, id);
+		unlinkedHere = true;
+		return result;
+	}
 	const description = $derived(
-		effect === 'reverse_merge'
+		outcome === 'reverse_merge'
 			? m['memberRegister.unlinkReverseMerge']()
-			: effect === 'cancels_access'
+			: outcome === 'cancels_access'
 				? m['memberRegister.unlinkCancelsAccessDescription']()
 				: m['memberRegister.unlinkClearsUser']()
 	);
 </script>
 
 {#snippet warning()}
-	{#if effect === 'cancels_access'}
+	{#if outcome === 'cancels_access'}
 		<Alert variant="destructive" data-testid="unlink-access-warning">
 			<TriangleAlert class="h-4 w-4" aria-hidden="true" />
 			<AlertDescription>{m['memberRegister.unlinkCancelsAccessWarning']()}</AlertDescription>
@@ -47,11 +73,11 @@
 	{onClose}
 	action="unlink"
 	staleOn400
-	run={(id) => unlinkRecord(slug, accessToken, id)}
+	{run}
 	title={m['memberRegister.unlinkTitle']({ name: record?.full_name ?? '' })}
 	{description}
 	confirmLabel={m['memberRegister.unlinkConfirm']()}
-	confirmVariant={effect === 'cancels_access' ? 'destructive' : 'default'}
+	confirmVariant={outcome === 'cancels_access' ? 'destructive' : 'default'}
 	body={warning}
 	successMessage={() => m['memberRegister.unlinkedToast']()}
 />

@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { Link2 } from '@lucide/svelte';
+	import type { MembershipRecordSchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
 	import { listRegisterMatches, memberRegisterKeys } from '$lib/member-register/api';
 	import { formatDate } from '$lib/utils/date';
@@ -14,7 +15,8 @@
 		/** Only fetch while the request is opened (and still pending). */
 		enabled: boolean;
 		disabled?: boolean;
-		onApproveAndLink: (recordId: string) => void;
+		/** Receives the whole entry: its tier is the default for the approval. */
+		onApproveAndLink: (record: MembershipRecordSchema) => void;
 	}
 
 	const {
@@ -60,7 +62,7 @@
 						{disabled}
 						data-testid="approve-and-link"
 						aria-label={m['memberRegister.approveAndLinkAria']({ name: match.record.full_name })}
-						onclick={() => match.record.id && onApproveAndLink(match.record.id)}
+						onclick={() => match.record.id && onApproveAndLink(match.record)}
 					>
 						<Link2 aria-hidden="true" />
 						{m['memberRegister.approveAndLink']()}

@@ -36,8 +36,9 @@
 </script>
 
 <!--
-	400s (chained merge, "unlink them first", ...) show the backend detail inline; 404/409 mean
-	the pair changed since the page loaded, so the list is refetched.
+	Every refusal shows the backend detail inline. 404/409 and 400 (chained merge, "unlink them
+	first", ...) all mean the pair may have changed since the page loaded, so the duplicates and
+	register lists are refetched; if the pair is gone the dialog closes with the "gone" toast.
 -->
 <ConfirmRecordDialog
 	{open}
@@ -46,6 +47,7 @@
 	{slug}
 	{onClose}
 	action="merge"
+	staleOn400
 	run={(survivorId) => mergeRecords(slug, accessToken, survivorId, plan?.absorbed.id ?? '')}
 	title={m['memberRegister.mergeTitle']({
 		absorbed: plan?.absorbed.full_name ?? '',

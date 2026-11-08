@@ -1,6 +1,9 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import type { OrganizationMembershipRequestRetrieve } from '$lib/api/generated/types.gen';
+	import type {
+		MembershipRecordSchema,
+		OrganizationMembershipRequestRetrieve
+	} from '$lib/api/generated/types.gen';
 	import { resolve } from '$app/paths';
 	import { Button } from '$lib/components/ui/button';
 	import {
@@ -23,8 +26,14 @@
 		/** Owning organization — needed to build the questionnaire-submission link. */
 		orgSlug: string;
 		onApprove?: (request: OrganizationMembershipRequestRetrieve) => void;
-		/** Approve and link the applicant to this unlinked register entry. */
-		onApproveAndLink?: (request: OrganizationMembershipRequestRetrieve, recordId: string) => void;
+		/**
+		 * Approve and link the applicant to this unlinked register entry. Resolves
+		 * when the dialog may close; rejects with the refusal, shown inline.
+		 */
+		onApproveAndLink?: (
+			request: OrganizationMembershipRequestRetrieve,
+			record: MembershipRecordSchema
+		) => Promise<void>;
 		onReject?: (request: OrganizationMembershipRequestRetrieve) => void;
 		isProcessing?: boolean;
 		showActions?: boolean;
@@ -76,10 +85,22 @@
 				: request.user.first_name || request.user.email || m['membershipRequestCard.unknownUser']())
 	);
 
-	function handleApproveAndLink(recordId: string) {
-		if (onApproveAndLink) {
-			onApproveAndLink(request, recordId);
+	let linkPending = $state(false);
+	let linkError = $state<string | null>(null);
+
+	// Close only once the approval resolved; a refusal stays next to the hint and
+	// plain Approve remains available.
+	async function handleApproveAndLink(record: MembershipRecordSchema) {
+		if (!onApproveAndLink || linkPending) return;
+		linkPending = true;
+		linkError = null;
+		try {
+			await onApproveAndLink(request, record);
 			dialogOpen = false;
+		} catch (error) {
+			linkError = error instanceof Error ? error.message : m['membershipRequestCard.linkFailed']();
+		} finally {
+			linkPending = false;
 		}
 	}
 
@@ -98,6 +119,7 @@
 	}
 
 	function openDialog() {
+		linkError = null;
 		dialogOpen = true;
 	}
 
@@ -406,15 +428,24 @@
 			{/if}
 
 			<!-- Possible register entries for this applicant (plain Approve stays below) -->
-			{#if request.id && onApproveAndLink}
+			{#if request.id && showActions && onApproveAndLink}
 				<RegisterMatchHint
 					slug={orgSlug}
 					requestId={request.id}
 					accessToken={authStore.accessToken}
-					enabled={dialogOpen && showActions}
-					disabled={isProcessing}
+					enabled={dialogOpen}
+					disabled={isProcessing || linkPending}
 					onApproveAndLink={handleApproveAndLink}
 				/>
+				{#if linkError}
+					<p
+						role="alert"
+						class="rounded-md border border-destructive/50 bg-destructive/10 p-2 text-sm text-destructive"
+						data-testid="approve-and-link-error"
+					>
+						{linkError}
+					</p>
+				{/if}
 			{/if}
 
 			<!-- Request Date -->

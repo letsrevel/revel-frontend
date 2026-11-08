@@ -95,17 +95,27 @@
 		placeholderData: keepPreviousData
 	}));
 
-	// Not paginated; also feeds the count badge on the tab, so it always runs.
+	let view = $state('register');
+
+	// The possible-duplicates scan is expensive and not paginated, so it runs only
+	// while the Duplicates tab is open, plus ONE seeding fetch for the tab badge
+	// (the backend offers no count endpoint). After that the badge keeps the last
+	// fetched value; ordinary register writes do not touch this query (its key sits
+	// outside `memberRegisterKeys.all`) and merge / unlink / approve-and-link
+	// invalidate it explicitly.
+	let duplicatesSeeded = $state(false);
 	const duplicatesQuery = createQuery(() => ({
 		queryKey: memberRegisterKeys.duplicates(slug),
 		queryFn: () => listPossibleDuplicates(slug, accessToken),
-		enabled: !!accessToken
+		enabled: !!accessToken && (view === 'duplicates' || !duplicatesSeeded)
 	}));
+	$effect(() => {
+		if (duplicatesQuery.isSuccess) duplicatesSeeded = true;
+	});
 	const duplicates = $derived(duplicatesQuery.data ?? []);
 	const duplicatesError = $derived(
 		duplicatesQuery.error ? describeRegisterError(duplicatesQuery.error, 'save') : null
 	);
-	let view = $state('register');
 
 	const records = $derived(listQuery.data?.results ?? []);
 	const total = $derived(listQuery.data?.count ?? 0);
@@ -163,17 +173,15 @@
 	const liveInviting = $derived(records.find((r) => r.id === inviting?.id) ?? inviting);
 	const liveUnlinking = $derived(records.find((r) => r.id === unlinking?.id) ?? unlinking);
 	const unlinkingPresent = $derived(!unlinking || records.some((r) => r.id === unlinking?.id));
-	const liveMerging = $derived(
-		duplicates.find(
-			(d) => d.unlinked.id === merging?.unlinked.id && d.linked.id === merging?.linked.id
-		) ?? merging
+	const foundMerging = $derived(
+		merging
+			? duplicates.find(
+					(d) => d.unlinked.id === merging?.unlinked.id && d.linked.id === merging?.linked.id
+				)
+			: undefined
 	);
-	const mergingPresent = $derived(
-		!merging ||
-			duplicates.some(
-				(d) => d.unlinked.id === merging?.unlinked.id && d.linked.id === merging?.linked.id
-			)
-	);
+	const liveMerging = $derived(foundMerging ?? merging);
+	const mergingPresent = $derived(!merging || foundMerging !== undefined);
 	const editingPresent = $derived(!editing || records.some((r) => r.id === editing?.id));
 	const endingPresent = $derived(!ending || records.some((r) => r.id === ending?.id));
 	const deletingPresent = $derived(!deleting || records.some((r) => r.id === deleting?.id));

@@ -117,6 +117,29 @@ describe('MergeRecordsDialog', () => {
 		);
 	});
 
+	it('refetches and closes with the gone toast when a 400 shows the pair is gone', async () => {
+		sdk.organizationadminmemberregisterlinkingMergeMemberRegisterRecord.mockResolvedValue({
+			error: { detail: 'A merged register entry cannot be merged again.' },
+			response: { status: 400 }
+		});
+		const onClose = vi.fn();
+		const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+		const spy = vi.spyOn(client, 'invalidateQueries');
+		render(QueryClientTestWrapper, {
+			props: {
+				client,
+				component: MergeRecordsDialog as never,
+				componentProps: { ...props, pairPresent: false, onClose }
+			}
+		});
+		await userEvent.click(screen.getByRole('button', { name: 'Merge entries' }));
+		await waitFor(() => expect(onClose).toHaveBeenCalled());
+		expect(toast.info).toHaveBeenCalled();
+		const keys = spy.mock.calls.map((c) => (c[0] as { queryKey: unknown[] }).queryKey);
+		expect(keys).toContainEqual(['organization', 'org', 'member-register']);
+		expect(keys).toContainEqual(['organization', 'org', 'register-possible-duplicates']);
+	});
+
 	it('shows the backend detail on a 400', async () => {
 		sdk.organizationadminmemberregisterlinkingMergeMemberRegisterRecord.mockResolvedValue({
 			error: { detail: 'A merged register entry cannot be merged again.' },
@@ -145,6 +168,31 @@ describe('UnlinkRecordDialog', () => {
 			record: record({ has_account: true, valid_until: '2026-05-01T00:00:00Z' })
 		});
 		expect(screen.queryByTestId('unlink-access-warning')).toBeNull();
+	});
+
+	it('closes with a toast instead of the clears-user copy when the entry is no longer linked', async () => {
+		const onClose = vi.fn();
+		renderIn(UnlinkRecordDialog, { ...base, onClose, record: record({ has_account: false }) });
+		await waitFor(() => expect(onClose).toHaveBeenCalled());
+		expect(toast.info).toHaveBeenCalledWith('This entry is no longer linked. Nothing to unlink.');
+	});
+
+	it('does not show the nothing-to-unlink toast after its own successful unlink', async () => {
+		sdk.organizationadminmemberregisterlinkingUnlinkMemberRegisterRecord.mockResolvedValue({
+			data: record()
+		});
+		const onClose = vi.fn();
+		const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+		render(QueryClientTestWrapper, {
+			props: {
+				client,
+				component: UnlinkRecordDialog as never,
+				componentProps: { ...base, onClose, record: record({ id: 'X', has_account: true }) }
+			}
+		});
+		await userEvent.click(screen.getByRole('button', { name: 'Unlink entry' }));
+		await waitFor(() => expect(toast.success).toHaveBeenCalled());
+		expect(toast.info).not.toHaveBeenCalled();
 	});
 
 	it('calls unlink for the record', async () => {

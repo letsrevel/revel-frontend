@@ -1,3 +1,4 @@
+import type { QueryClient } from '@tanstack/svelte-query';
 import {
 	organizationadminmemberregisterCreateMemberRegisterRecord,
 	organizationadminmemberregisterDeleteMemberRegisterRecord,
@@ -77,10 +78,40 @@ export const memberRegisterKeys = {
 	all: (slug: string) => ['organization', slug, 'member-register'] as const,
 	list: (slug: string, filters: RegisterFilters) =>
 		['organization', slug, 'member-register', 'list', filters] as const,
-	duplicates: (slug: string) => ['organization', slug, 'member-register', 'duplicates'] as const,
+	/**
+	 * Deliberately OUTSIDE the `all` prefix: the possible-duplicates scan is the
+	 * expensive call, so an ordinary register write must not refetch it. Callers
+	 * that can change the pairs (merge, unlink, approve-and-link) invalidate it
+	 * explicitly via `invalidateRegister`.
+	 */
+	duplicates: (slug: string) => ['organization', slug, 'register-possible-duplicates'] as const,
 	matches: (slug: string, requestId: string) =>
 		['organization', slug, 'member-register', 'matches', requestId] as const
 };
+
+/**
+ * Invalidate the possible-duplicates scan after a write that can change the
+ * pairs (merge, unlink, approve-and-link). `refetchType: 'all'` also refreshes
+ * the scan while the Duplicates tab is closed, which keeps the tab badge true.
+ */
+export function invalidateDuplicates(queryClient: QueryClient, slug: string): Promise<void> {
+	return queryClient.invalidateQueries({
+		queryKey: memberRegisterKeys.duplicates(slug),
+		refetchType: 'all'
+	});
+}
+
+/** Invalidate the register queries, plus the duplicates scan for pair-changing actions. */
+export async function invalidateRegister(
+	queryClient: QueryClient,
+	slug: string,
+	includeDuplicates: boolean
+): Promise<void> {
+	await Promise.all([
+		queryClient.invalidateQueries({ queryKey: memberRegisterKeys.all(slug) }),
+		includeDuplicates ? invalidateDuplicates(queryClient, slug) : Promise.resolve()
+	]);
+}
 
 export async function listRegister(
 	slug: string,
