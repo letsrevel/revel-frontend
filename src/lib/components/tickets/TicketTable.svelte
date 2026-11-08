@@ -42,6 +42,7 @@
 	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 	import RefundStatusBadge from './RefundStatusBadge.svelte';
 	import TicketDiscountBadge from './TicketDiscountBadge.svelte';
+	import DayMemberBadge from './DayMemberBadge.svelte';
 	import SeriesPassBadge from './SeriesPassBadge.svelte';
 	import { sortDirection, type TicketOrderBy, type TicketSortField } from './ticket-sort';
 	import { formatTicketAttributionLine } from '$lib/utils/attribution';
@@ -230,6 +231,7 @@
 						{#if ticket.series_pass}
 							<SeriesPassBadge seriesPass={ticket.series_pass} class="mt-0.5" />
 						{/if}
+						<DayMemberBadge record={ticket.membership_record} class="mt-0.5" />
 					</td>
 					<td
 						class="px-4 py-3"

@@ -9859,6 +9859,11 @@
 		"extendFailed": "Failed to extend the pass coverage",
 		"extendSuccess": "Coverage extended by {count} event(s)"
 	},
+	"dayMemberBadge": {
+		"label": "Day member",
+		"until": "until {date}",
+		"ended": "Day membership ended"
+	},
 	"seriesPassBadge": {
 		"label": "Season pass",
 		"tooltip": "From season pass “{name}”"
@@ -10056,6 +10061,7 @@
 	"integrations.error.event_no_tickets": "Turn on tickets before listing on {platform}.",
 	"integrations.error.tier_variable_price": "Pay-what-you-can tickets are not sent.",
 	"integrations.error.tier_members_only": "Members-only tickets are not sent.",
+	"integrations.error.tier_grants_membership": "Not listed on {platform}: this tier grants a day membership, which can only be issued through Revel.",
 	"integrations.error.tier_purchase_restricted": "Not listed on {platform}: “Who Can Purchase” must be set to “Anyone” to sell this tier externally.",
 	"integrations.error.tier_seated": "Tickets with assigned seats are not sent.",
 	"integrations.error.tier_offline_payment": "Tickets paid at the door or by transfer are not sent.",

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { membershipTiersKeys } from '$lib/queries/membership-tiers';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import {
@@ -85,7 +86,7 @@
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({
-				queryKey: ['organization', organization.slug, 'membership-tiers']
+				queryKey: membershipTiersKeys.all(organization.slug)
 			});
 		},
 		onError: (error: Error) => {
@@ -115,7 +116,7 @@
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({
-				queryKey: ['organization', organization.slug, 'membership-tiers']
+				queryKey: membershipTiersKeys.all(organization.slug)
 			});
 			queryClient.invalidateQueries({
 				queryKey: ['organization', organization.slug, 'members']
@@ -166,7 +167,7 @@
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({
-				queryKey: ['organization', organization.slug, 'membership-tiers']
+				queryKey: membershipTiersKeys.all(organization.slug)
 			});
 			queryClient.invalidateQueries({
 				queryKey: ['organization', organization.slug, 'members']
@@ -178,15 +179,11 @@
 	}));
 
 	// --- Tier reordering via up/down buttons ---
-	const tiersQueryKey = $derived(['organization', organization.slug, 'membership-tiers']);
-	// Tiers are also cached under a reversed key by the org admin dashboard and the
-	// announcements audience picker — invalidate both so a reorder doesn't leave those
-	// surfaces showing a stale order.
-	const tiersAltQueryKey = $derived(['membership-tiers', organization.slug]);
+	const tiersQueryKey = $derived(membershipTiersKeys.all(organization.slug));
+	// `all` is a prefix of the standard-only key, so this also refreshes the pickers.
 
 	function invalidateTierQueries() {
 		queryClient.invalidateQueries({ queryKey: tiersQueryKey });
-		queryClient.invalidateQueries({ queryKey: tiersAltQueryKey });
 	}
 
 	const reorderMutation = createMutation<unknown, unknown, string[]>(() => ({
