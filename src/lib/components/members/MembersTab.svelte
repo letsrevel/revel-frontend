@@ -23,9 +23,11 @@
 	import MemberCard from '$lib/components/members/MemberCard.svelte';
 	import ManageMemberModal from '$lib/components/members/ManageMemberModal.svelte';
 	import PromoteToStaffDialog from '$lib/components/members/PromoteToStaffDialog.svelte';
+	import UserNoteDialog from '$lib/components/members/UserNoteDialog.svelte';
 	import { canPerformAction } from '$lib/utils/permissions';
 	import { backendMessage } from '$lib/utils/api-error-detail';
 	import { toast } from 'svelte-sonner';
+	import { getUserDisplayName } from '$lib/utils/user-display';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 
 	interface Props {
@@ -49,6 +51,9 @@
 	// Manage member modal state
 	let memberToManage = $state<OrganizationMemberSchema | null>(null);
 	let manageMemberModalOpen = $state(false);
+
+	// Private note editor state (manage_members only)
+	let memberForNote = $state<OrganizationMemberSchema | null>(null);
 
 	// Promote to staff dialog state
 	let memberToPromote = $state<OrganizationMemberSchema | null>(null);
@@ -400,9 +405,26 @@
 			{@const isStaff = member.user.id ? staffUserIds.has(member.user.id) : false}
 			{@const canManage =
 				isOwner || canPerformAction(permissions, organization.id, 'manage_members')}
-			<MemberCard {member} {isStaff} {canManage} onManage={handleManageMember} />
+			<MemberCard
+				{member}
+				{isStaff}
+				{canManage}
+				onManage={handleManageMember}
+				onNote={canManage ? (target) => (memberForNote = target) : undefined}
+			/>
 		{/each}
 	</div>
+{/if}
+
+<!-- Private note editor (callers reach this only with manage_members) -->
+{#if memberForNote?.user.id}
+	<UserNoteDialog
+		slug={organization.slug}
+		userId={memberForNote.user.id}
+		displayName={getUserDisplayName(memberForNote.user)}
+		{accessToken}
+		onClose={() => (memberForNote = null)}
+	/>
 {/if}
 
 <!-- Promote to Staff Dialog -->

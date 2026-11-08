@@ -2,7 +2,9 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
-	import { X, AlertCircle, CheckCircle, Clock, XCircle } from '@lucide/svelte';
+	import ScanCallout from '$lib/components/checkin/ScanCallout.svelte';
+	import ComplianceCallout from '$lib/components/compliance/ComplianceCallout.svelte';
+	import { X, TriangleAlert } from '@lucide/svelte';
 	import { fade, scale } from 'svelte/transition';
 	import { getUserDisplayName } from '$lib/utils/user-display';
 	import { formatMoney, formatPrice } from '$lib/utils/format';
@@ -61,6 +63,13 @@
 		payment?: TicketPayment | null;
 		/** How the ticket was sold (AdminTicketSchema only; scan payloads omit it). */
 		sale_source?: string | null;
+		/**
+		 * Private staff note, read-only. Scan payloads (CheckInResponseSchema) carry it
+		 * today; the backend is adding it to the single-ticket GET
+		 * (AdminTicketDetailSchema) too, which makes the callout live for tickets
+		 * opened from the attendee list. Keep this prop.
+		 */
+		private_note?: string | null;
 	}
 
 	interface Props {
@@ -197,45 +206,24 @@
 		}
 	}
 
+	type StatusTone = 'info' | 'success' | 'warning' | 'blocked';
+
 	/**
-	 * Get status display info
+	 * Status display info. The tone drives the callout's tint and icon; the label
+	 * text always says the status, so meaning never rides on colour alone.
 	 */
-	function getStatusInfo(status: string): {
-		label: string;
-		color: string;
-		bgColor: string;
-	} {
+	function getStatusInfo(status: string): { label: string; tone: StatusTone } {
 		switch (status) {
 			case 'pending':
-				return {
-					label: m['checkInDialog.statusPendingPayment'](),
-					color: 'text-yellow-700 dark:text-yellow-300',
-					bgColor: 'bg-yellow-100 dark:bg-yellow-900/50'
-				};
+				return { label: m['checkInDialog.statusPendingPayment'](), tone: 'warning' };
 			case 'active':
-				return {
-					label: m['checkInDialog.statusActive'](),
-					color: 'text-green-700 dark:text-green-300',
-					bgColor: 'bg-green-100 dark:bg-green-900/50'
-				};
+				return { label: m['checkInDialog.statusActive'](), tone: 'success' };
 			case 'checked_in':
-				return {
-					label: m['checkInDialog.statusAlreadyCheckedIn'](),
-					color: 'text-blue-700 dark:text-blue-300',
-					bgColor: 'bg-blue-100 dark:bg-blue-900/50'
-				};
+				return { label: m['checkInDialog.statusAlreadyCheckedIn'](), tone: 'info' };
 			case 'cancelled':
-				return {
-					label: m['checkInDialog.statusCancelled'](),
-					color: 'text-red-700 dark:text-red-300',
-					bgColor: 'bg-red-100 dark:bg-red-900/50'
-				};
+				return { label: m['checkInDialog.statusCancelled'](), tone: 'blocked' };
 			default:
-				return {
-					label: status,
-					color: 'text-gray-700 dark:text-gray-300',
-					bgColor: 'bg-gray-100 dark:bg-gray-900/50'
-				};
+				return { label: status, tone: 'info' };
 		}
 	}
 
@@ -310,35 +298,20 @@
 			<!-- Content -->
 			<div class="space-y-4 px-6 py-4">
 				<!-- Status Alert -->
-				<div class="flex items-center gap-3 rounded-lg border p-3 {statusInfo.bgColor}">
-					{#if ticket.status === 'pending'}
-						<Clock class="h-5 w-5 shrink-0 {statusInfo.color}" />
-					{:else if ticket.status === 'active'}
-						<CheckCircle class="h-5 w-5 shrink-0 {statusInfo.color}" />
-					{:else if ticket.status === 'checked_in'}
-						<CheckCircle class="h-5 w-5 shrink-0 {statusInfo.color}" />
+				<ComplianceCallout tone={statusInfo.tone} role={null} testId="checkin-status">
+					<p class="font-semibold">{statusInfo.label}</p>
+					{#if ticket.status === 'checked_in'}
+						<p>{m['checkInDialog.alreadyCheckedIn']()}</p>
 					{:else if ticket.status === 'cancelled'}
-						<XCircle class="h-5 w-5 shrink-0 {statusInfo.color}" />
+						<p>{m['checkInDialog.ticketCancelled']()}</p>
+					{:else if needsPaymentConfirmation}
+						<p>{m['checkInDialog.confirmPaymentReceived']()}</p>
 					{:else}
-						<AlertCircle class="h-5 w-5 shrink-0 {statusInfo.color}" />
+						<p>{m['checkInDialog.verifyIdentity']()}</p>
 					{/if}
-					<div class="flex-1">
-						<p class="font-semibold {statusInfo.color}">{statusInfo.label}</p>
-						{#if ticket.status === 'checked_in'}
-							<p class="text-sm {statusInfo.color}">{m['checkInDialog.alreadyCheckedIn']()}</p>
-						{:else if ticket.status === 'cancelled'}
-							<p class="text-sm {statusInfo.color}">{m['checkInDialog.ticketCancelled']()}</p>
-						{:else if needsPaymentConfirmation}
-							<p class="text-sm {statusInfo.color}">
-								{m['checkInDialog.confirmPaymentReceived']()}
-							</p>
-						{:else}
-							<p class="text-sm {statusInfo.color}">
-								{m['checkInDialog.verifyIdentity']()}
-							</p>
-						{/if}
-					</div>
-				</div>
+				</ComplianceCallout>
+
+				<ScanCallout title={m['scanNote.label']()} body={ticket.private_note} />
 
 				<!-- Attendee Information -->
 				<div class="rounded-lg border bg-muted/50">
@@ -394,25 +367,18 @@
 				</div>
 
 				{#if needsPaymentConfirmation}
-					<div
-						class="flex items-start gap-2 rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-100"
-					>
-						<AlertCircle class="h-5 w-5 shrink-0" aria-hidden="true" />
+					<ComplianceCallout tone="warning" role={null}>
 						<p>
 							<strong>{m['checkInDialog.paymentRequired']()}</strong>
 							{m['checkInDialog.ensurePaymentReceived']()}
 						</p>
-					</div>
+					</ComplianceCallout>
 				{/if}
 
 				{#if errorMessage}
-					<div
-						class="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-100"
-						role="alert"
-					>
-						<XCircle class="h-5 w-5 shrink-0" aria-hidden="true" />
+					<ComplianceCallout tone="blocked" role="alert">
 						<p>{errorMessage}</p>
-					</div>
+					</ComplianceCallout>
 				{/if}
 
 				{#if needsPwycInput}
@@ -440,7 +406,8 @@
 									: undefined}
 						/>
 						{#if pwycWarning}
-							<p id="checkin-pwyc-warning" class="text-sm text-orange-600 dark:text-orange-400">
+							<p id="checkin-pwyc-warning" class="flex items-start gap-1.5 text-sm text-foreground">
+								<TriangleAlert class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
 								{pwycWarning}
 							</p>
 						{/if}

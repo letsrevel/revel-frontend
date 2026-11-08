@@ -40,6 +40,9 @@
 	import AdminCancelTicketDialog from '$lib/components/tickets/AdminCancelTicketDialog.svelte';
 	import MakeMemberModal from '$lib/components/members/MakeMemberModal.svelte';
 	import MemberScanResultDialog from '$lib/components/members/MemberScanResultDialog.svelte';
+	import UserNoteDialog from '$lib/components/members/UserNoteDialog.svelte';
+	import CheckedInNoteDialog from '$lib/components/checkin/CheckedInNoteDialog.svelte';
+	import { canPerformAction } from '$lib/utils/permissions';
 	import ExportButton from '$lib/components/common/ExportButton.svelte';
 	import PageHeader from '$lib/components/common/PageHeader.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
@@ -65,6 +68,13 @@
 	let ticketToReseat = $state<AdminTicketSchema | null>(null);
 	let showRenameDialog = $state(false);
 	let ticketToRename = $state<AdminTicketSchema | null>(null);
+
+	// Private staff note about a ticket holder. The note is keyed on (org, user),
+	// so non-members get one too; the control exists only with `manage_members`.
+	const canManageMembers = $derived(
+		data.isOwner || canPerformAction(data.permissions, data.organization.id, 'manage_members')
+	);
+	let ticketForNote = $state<AdminTicketSchema | null>(null);
 
 	// Membership + blacklist admin actions (state, mutations, handlers).
 	const memberAdmin = createTicketMemberAdmin({
@@ -464,6 +474,7 @@
 				onBlacklist={memberAdmin.openBlacklistDialog}
 				onUnconfirmPayment={openUnconfirmPaymentDialog}
 				onReseat={handleReseat}
+				onEditNote={canManageMembers ? (t) => (ticketForNote = t) : undefined}
 				onRenameHolder={handleRenameHolder}
 				onRefundTicket={cancelRefund.openRefund}
 			/>
@@ -484,6 +495,7 @@
 				onBlacklist={memberAdmin.openBlacklistDialog}
 				onUnconfirmPayment={openUnconfirmPaymentDialog}
 				onReseat={handleReseat}
+				onEditNote={canManageMembers ? (t) => (ticketForNote = t) : undefined}
 				onRenameHolder={handleRenameHolder}
 				onRefundTicket={cancelRefund.openRefund}
 			/>
@@ -586,6 +598,20 @@
 	}}
 	onReseated={() => invalidateAll()}
 />
+
+<!-- Private staff note editor (manage_members only) -->
+{#if canManageMembers && ticketForNote?.user?.id}
+	<UserNoteDialog
+		slug={data.event.organization.slug}
+		userId={ticketForNote.user.id}
+		displayName={getUserDisplayName(ticketForNote.user)}
+		accessToken={authStore.accessToken}
+		onClose={() => (ticketForNote = null)}
+	/>
+{/if}
+
+<!-- Staff note returned by a successful scan check-in (read-only) -->
+<CheckedInNoteDialog note={scanCheckIn.scanNote} onClose={scanCheckIn.dismissScanNote} />
 
 <!-- Rename holder Dialog -->
 {#if ticketToRename?.id}

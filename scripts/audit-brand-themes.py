@@ -266,6 +266,7 @@ COMPOSITED_PAIRS = [
     # cards (billing, tier cards) and dialogs/pages (tier editor, ticket modal).
     ("foreground", 1, "info", 0.10, "card", 4.5, BOTH, "ComplianceCallout info on card"),
     ("foreground", 1, "info", 0.10, "background", 4.5, BOTH, "ComplianceCallout info on dialog/page"),
+    ("foreground", 1, "success", 0.10, "background", 4.5, BOTH, "ComplianceCallout success on dialog/page (CheckInDialog status)"),
     ("foreground", 1, "highlight", 0.20, "background", 4.5, BOTH, "ComplianceCallout warning on page"),
     ("foreground", 1, "destructive", 0.10, "background", 4.5, BOTH, "ComplianceCallout blocked on dialog/page"),
     ("highlight-foreground", 1, "highlight", 0.10, "card", 4.5, ("light",), "EventDetails highlight cell"),

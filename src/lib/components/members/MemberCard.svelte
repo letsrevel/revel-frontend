@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { OrganizationMemberSchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
-	import { Settings } from '@lucide/svelte';
+	import { Settings, StickyNote } from '@lucide/svelte';
 	import { formatDistanceToNow } from 'date-fns';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 	import MemberStatusBadge from './MemberStatusBadge.svelte';
@@ -12,9 +12,11 @@
 		isStaff?: boolean;
 		canManage: boolean;
 		onManage: (member: OrganizationMemberSchema) => void;
+		/** Open the private-note editor. Omit to hide the control (no `manage_members`). */
+		onNote?: (member: OrganizationMemberSchema) => void;
 	}
 
-	const { member, isStaff = false, canManage, onManage }: Props = $props();
+	const { member, isStaff = false, canManage, onManage, onNote }: Props = $props();
 
 	// Format member since date
 	const memberSince = $derived(
@@ -73,6 +75,17 @@
 				<!-- Status Badge -->
 				<MemberStatusBadge status={member.status} />
 
+				<!-- Private staff note indicator (null for staff without manage_members) -->
+				{#if member.private_note}
+					<span
+						class="inline-flex items-center gap-1 rounded-full bg-highlight/20 px-2 py-0.5 text-xs font-medium text-highlight-foreground dark:text-highlight"
+						data-testid="member-has-note"
+					>
+						<StickyNote class="h-3 w-3" aria-hidden="true" />
+						{m['userNote.hasNote']()}
+					</span>
+				{/if}
+
 				<!-- Tier Badge -->
 				{#if member.tier}
 					<span
@@ -100,7 +113,18 @@
 		</div>
 
 		<!-- Actions -->
-		<div class="flex shrink-0">
+		<div class="flex shrink-0 gap-2">
+			{#if onNote && member.user.id}
+				<Button
+					variant="outline"
+					size="sm"
+					onclick={() => onNote(member)}
+					aria-label={m['userNote.editFor']({ name: displayName })}
+				>
+					<StickyNote class="h-4 w-4" aria-hidden="true" />
+					<span class="sr-only md:not-sr-only md:ml-2">{m['userNote.editAction']()}</span>
+				</Button>
+			{/if}
 			{#if canManage}
 				<Button
 					variant="outline"
