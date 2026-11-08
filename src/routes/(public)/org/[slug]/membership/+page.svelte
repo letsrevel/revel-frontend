@@ -3,14 +3,14 @@
 	import { ArrowLeft } from '@lucide/svelte';
 	import MembershipSection from '$lib/components/organization/membership/MembershipSection.svelte';
 	import { SeoHead } from '$lib/seo';
-	import { membershipReturnUrl, isEventReturnUrl } from '$lib/utils/membership-return.svelte';
+	import { safeInternalReturnUrl, isEventReturnUrl } from '$lib/utils/internal-return-url';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { PageData } from './$types';
 
 	const { data }: { data: PageData } = $props();
 
 	const organization = $derived(data.organization);
-	const returnUrl = $derived(membershipReturnUrl());
+	const returnUrl = $derived(safeInternalReturnUrl());
 </script>
 
 <SeoHead config={data.seo} />

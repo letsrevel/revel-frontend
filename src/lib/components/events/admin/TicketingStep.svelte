@@ -1,6 +1,9 @@
 <script lang="ts">
-	import { standardTiers } from '$lib/utils/membership-tier-kind';
-	import { standardTiersQueryOptions } from '$lib/queries/membership-tiers';
+	import {
+		standardTiers,
+		temporaryTiers as pickTemporaryTiers
+	} from '$lib/utils/membership-tier-kind';
+	import { allTiersQueryOptions } from '$lib/queries/membership-tiers';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
@@ -102,9 +105,11 @@
 			})
 	}));
 
-	// Fetch membership tiers for the organization
+	// ONE all-kinds fetch (the exact `all` key, so TiersTab invalidation refreshes it),
+	// split client-side: standard tiers feed the audience/restriction pickers,
+	// temporary (day-membership) tiers feed the "Grants membership" picker.
 	const membershipTiersQuery = createQuery(() => ({
-		...standardTiersQueryOptions(organizationSlug, accessToken),
+		...allTiersQueryOptions(organizationSlug, accessToken),
 		enabled: !!accessToken
 	}));
 
@@ -225,6 +230,7 @@
 		}
 	);
 	const membershipTiers = $derived(standardTiers(membershipTiersQuery.data));
+	const grantableTiers = $derived(pickTemporaryTiers(membershipTiersQuery.data));
 
 	// --- Tier reordering via up/down buttons ---
 	const reorderMutation = createMutation<unknown, unknown, string[]>(() => ({
@@ -500,6 +506,12 @@
 		{orgVat}
 		{membershipTiers}
 		membershipTiersStatus={membershipTiersQuery.isError
+			? 'error'
+			: membershipTiersQuery.isPending
+				? 'loading'
+				: 'ready'}
+		temporaryTiers={grantableTiers}
+		temporaryTiersStatus={membershipTiersQuery.isError
 			? 'error'
 			: membershipTiersQuery.isPending
 				? 'loading'

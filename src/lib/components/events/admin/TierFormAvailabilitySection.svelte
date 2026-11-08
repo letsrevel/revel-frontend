@@ -32,6 +32,8 @@
 		salesPaused: boolean;
 		/** Effective event capacity (null = uncapped). */
 		eventCapacity?: number | null;
+		/** A day-membership grant is set: member-only audiences are illegal, so their options are disabled. */
+		grantsMembership?: boolean;
 		isPending: boolean;
 	}
 
@@ -53,6 +55,7 @@
 		knownExcludedTiers = [],
 		salesPaused = $bindable(),
 		eventCapacity = null,
+		grantsMembership = false,
 		isPending
 	}: Props = $props();
 
@@ -65,6 +68,14 @@
 	// option would create the conflict and say why (hint below the purchasable-by select).
 	const nonMembersVisibilityConflict = $derived(
 		purchasableBy === 'non_members' || visibility === 'members-only'
+	);
+	const describedByIds = $derived(
+		[
+			nonMembersVisibilityConflict ? 'purchasable-by-conflict-hint' : '',
+			grantsMembership ? 'purchasable-by-grants-hint' : ''
+		]
+			.filter(Boolean)
+			.join(' ')
 	);
 
 	// Restrictions only exist under members / invited_and_members; drop a stale selection
@@ -196,13 +207,15 @@
 		id="purchasable-by"
 		bind:value={purchasableBy}
 		disabled={isPending}
-		aria-describedby={nonMembersVisibilityConflict ? 'purchasable-by-conflict-hint' : undefined}
+		aria-describedby={describedByIds || undefined}
 		class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 	>
 		<option value="public">{m['tierForm.anyone']()}</option>
-		<option value="members">{m['tierForm.membersOnly']()}</option>
+		<option value="members" disabled={grantsMembership}>{m['tierForm.membersOnly']()}</option>
 		<option value="invited">{m['tierForm.invitedOnly']()}</option>
-		<option value="invited_and_members">{m['tierForm.invitedAndMembers']()}</option>
+		<option value="invited_and_members" disabled={grantsMembership}
+			>{m['tierForm.invitedAndMembers']()}</option
+		>
 		<option value="non_members" disabled={visibility === 'members-only'}
 			>{m['tierForm.nonMembersOnly']()}</option
 		>
@@ -214,6 +227,16 @@
 			data-testid="purchasable-by-conflict-hint"
 		>
 			{m['tierForm.nonMembersNeedsVisible']()}
+		</p>
+	{/if}
+
+	{#if grantsMembership}
+		<p
+			id="purchasable-by-grants-hint"
+			class="mt-1 text-xs text-muted-foreground"
+			data-testid="purchasable-by-grants-hint"
+		>
+			{m['tierForm.grants.audienceLocked']()}
 		</p>
 	{/if}
 
