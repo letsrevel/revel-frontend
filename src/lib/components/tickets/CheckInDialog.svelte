@@ -64,10 +64,9 @@
 		/** How the ticket was sold (AdminTicketSchema only; scan payloads omit it). */
 		sale_source?: string | null;
 		/**
-		 * Private staff note, read-only. Scan payloads (CheckInResponseSchema) carry it
-		 * today; the backend is adding it to the single-ticket GET
-		 * (AdminTicketDetailSchema) too, which makes the callout live for tickets
-		 * opened from the attendee list. Keep this prop.
+		 * Private staff note, read-only, shown BEFORE confirming. It comes from the
+		 * single-ticket GET (AdminTicketDetailSchema, gated server-side to staff who
+		 * may check people in); rows from the attendee list don't carry it.
 		 */
 		private_note?: string | null;
 	}

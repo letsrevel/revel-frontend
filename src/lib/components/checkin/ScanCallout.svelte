@@ -19,12 +19,14 @@
 		title: string;
 		/** Markdown (sanitized by the backend and again on render). Null/empty renders nothing. */
 		body: string | null | undefined;
+		/** Render the body as literal text in a paragraph (no markdown), e.g. organizer-typed names. */
+		plain?: boolean;
 		/** `warning` stands out (amber); `info` is the quieter variant. */
 		tone?: 'info' | 'warning';
 		class?: string;
 	}
 
-	const { title, body, tone = 'warning', class: className }: Props = $props();
+	const { title, body, plain = false, tone = 'warning', class: className }: Props = $props();
 
 	const hasBody = $derived(!!body && body.trim().length > 0);
 </script>
@@ -32,6 +34,10 @@
 {#if hasBody}
 	<ComplianceCallout {tone} role="note" label={title} testId="scan-callout" class={className}>
 		<p class="font-extrabold">{title}</p>
-		<MarkdownContent content={body} class="text-inherit prose-p:my-1" />
+		{#if plain}
+			<p class="my-1">{body}</p>
+		{:else}
+			<MarkdownContent content={body} class="text-inherit prose-p:my-1" />
+		{/if}
 	</ComplianceCallout>
 {/if}

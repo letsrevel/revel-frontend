@@ -28,7 +28,7 @@
 	import type { Tone } from '$lib/components/common/tones';
 	import { resolve } from '$app/paths';
 	import { loginHref as buildLoginHref, withReturnUrl } from '$lib/utils/safe-redirect';
-	import { membershipReturnUrl } from '$lib/utils/membership-return.svelte';
+	import { safeInternalReturnUrl } from '$lib/utils/internal-return-url';
 
 	interface Props {
 		organizationSlug: string;
@@ -208,7 +208,9 @@
 	// so it must return them to where that button is.
 	// The membership page's own `?returnUrl=` (e.g. the members-only event the
 	// visitor came from) rides inside the login return target, so it survives login.
-	const loginHref = $derived(buildLoginHref(withReturnUrl(membershipHref, membershipReturnUrl())));
+	const loginHref = $derived(
+		buildLoginHref(withReturnUrl(membershipHref, safeInternalReturnUrl()))
+	);
 
 	/** The label a join button carries: the tier when there is one, else the org. */
 	const joinLabel = $derived(
@@ -224,7 +226,7 @@
 		if (!id) return null;
 		return withReturnUrl(
 			resolve('/(public)/org/[slug]/questionnaire/[id]', { slug: organizationSlug, id }),
-			membershipReturnUrl()
+			safeInternalReturnUrl()
 		);
 	});
 

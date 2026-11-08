@@ -11,7 +11,7 @@ import { isSeriesPassCode } from '$lib/utils/series-pass-qr';
 import { isMemberCode, normalizeMemberCode } from '$lib/utils/member-qr';
 import { classifyCheckInResponse } from '$lib/utils/check-in-scan';
 import type { ScanNote } from '$lib/components/checkin/scan-note';
-import { scanNoteFrom } from '$lib/components/checkin/scan-note';
+import { checkInMembershipLine, scanNoteFrom } from '$lib/components/checkin/scan-note';
 import { toCheckInTicket, type CheckInDialogTicket } from './checkin-adapter';
 
 interface Options {
@@ -37,7 +37,7 @@ export function createTicketScanCheckIn(opts: Options) {
 	let showCheckInDialog = $state(false);
 	let ticketToCheckIn = $state<CheckInDialogTicket | null>(null);
 	let checkInDialogError = $state<string | null>(null);
-	/** Private staff note on the person just checked in (read-only, may be null). */
+	/** Staff note and/or membership standing of the person just checked in (read-only, may be null). */
 	let scanNote = $state<ScanNote | null>(null);
 
 	/** The membership-card report: no ticket was burned, this is information. */
@@ -69,10 +69,22 @@ export function createTicketScanCheckIn(opts: Options) {
 			return response.data;
 		},
 		onSuccess: (data) => {
-			// The ticket preview carries no note; the check-in response does. Show it
-			// right away so door staff see it with the result.
+			// A blocking dialog only for a staff note not yet read (the confirm dialog's
+			// preview already showed it otherwise), carrying the membership with it.
+			// A membership alone goes into the check-in toast instead.
 			const outcome = classifyCheckInResponse(data);
-			scanNote = outcome.kind === 'checked_in' ? scanNoteFrom(outcome.result) : null;
+			const viaDialog = !!ticketToCheckIn;
+			scanNote =
+				outcome.kind === 'checked_in'
+					? scanNoteFrom(outcome.result, { previewedNote: ticketToCheckIn?.private_note })
+					: null;
+			if (viaDialog && outcome.kind === 'checked_in' && !scanNote) {
+				// Scan-initiated check-ins toast through routeScanOutcome; the confirm
+				// dialog path has no toast of its own, so only add one when it has news.
+				const line = checkInMembershipLine(outcome.result);
+				if (line)
+					toast.success(m['eventTicketsAdmin.checkInSuccessGeneric'](), { description: line });
+			}
 			showCheckInDialog = false;
 			ticketToCheckIn = null;
 			checkInDialogError = null;
@@ -99,7 +111,12 @@ export function createTicketScanCheckIn(opts: Options) {
 			return;
 		}
 		if (outcome.kind === 'checked_in') {
-			toast.success(successMessage(getUserDisplayName(outcome.result.user)));
+			// The staff-note dialog (if any) carries the membership; otherwise it
+			// rides in the toast, a live region, so it is announced with the result.
+			const line = scanNoteFrom(outcome.result) ? null : checkInMembershipLine(outcome.result);
+			toast.success(successMessage(getUserDisplayName(outcome.result.user)), {
+				...(line ? { description: line } : {})
+			});
 			return;
 		}
 		// A 200 we cannot classify: say something true rather than nothing.

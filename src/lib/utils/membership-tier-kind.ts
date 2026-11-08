@@ -9,10 +9,20 @@ import type { MembershipTierKind } from '$lib/api/generated/types.gen';
  * plans) is refused or silently drops temporary ids — so those pickers must
  * only offer standard tiers. Route them all through this helper rather than
  * re-deriving the filter inline. Only the tier management list and the ticket
- * "grants membership" picker (temporary only) should see the unfiltered list.
+ * "grants membership" picker (`temporaryTiers`) should see the unfiltered list.
  */
 export function standardTiers<T extends { kind: MembershipTierKind }>(
 	tiers: readonly T[] | null | undefined
 ): T[] {
 	return (tiers ?? []).filter((tier) => tier.kind === 'standard');
+}
+
+/**
+ * The inverse of {@link standardTiers}: only TEMPORARY (day-membership) tiers,
+ * the sole kind a ticket tier may grant (`grants_membership_tier_id`).
+ */
+export function temporaryTiers<T extends { kind: MembershipTierKind }>(
+	tiers: readonly T[] | null | undefined
+): T[] {
+	return (tiers ?? []).filter((tier) => tier.kind === 'temporary');
 }
