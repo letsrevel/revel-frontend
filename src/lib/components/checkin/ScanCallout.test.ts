@@ -31,13 +31,13 @@ describe('ScanCallout', () => {
 });
 
 describe('scanNoteFrom', () => {
-	it('returns null without a note', () => {
+	it('returns null without a note or membership', () => {
 		expect(scanNoteFrom({ user: { first_name: 'A' }, private_note: null } as never)).toBeNull();
 	});
 
 	it('uses the localized fallback when the person has no name', () => {
 		const result = scanNoteFrom({ user: {}, private_note: ' VIP ' } as never);
-		expect(result).toEqual({ name: 'Unknown member', body: 'VIP' });
+		expect(result).toEqual({ name: 'Unknown member', body: 'VIP', membership: null });
 	});
 
 	it('names the person and carries the body', () => {
@@ -45,6 +45,44 @@ describe('scanNoteFrom', () => {
 			user: { first_name: 'Ada', last_name: 'L' },
 			private_note: 'VIP'
 		} as never);
-		expect(result).toEqual({ name: 'Ada L', body: 'VIP' });
+		expect(result).toEqual({ name: 'Ada L', body: 'VIP', membership: null });
+	});
+
+	it('returns the membership block even without a note', () => {
+		const result = scanNoteFrom({
+			user: { first_name: 'Ada', last_name: 'L' },
+			private_note: null,
+			membership: { kind: 'standard', tier_name: 'Gold', valid_until: null }
+		} as never);
+		expect(result?.body).toBeNull();
+		expect(result?.membership?.body).toBe('Member: Gold');
+	});
+
+	it('drops a note the pre-confirm dialog already showed, keeping the membership', () => {
+		const result = scanNoteFrom(
+			{
+				user: { first_name: 'Ada' },
+				private_note: ' Needs step-free ',
+				membership: { kind: 'standard', tier_name: 'Gold' }
+			} as never,
+			{ previewedNote: 'Needs step-free' }
+		);
+		expect(result?.body).toBeNull();
+		expect(result?.membership).not.toBeNull();
+	});
+
+	it('returns null when the only content was already previewed', () => {
+		expect(
+			scanNoteFrom({ user: { first_name: 'Ada' }, private_note: 'VIP' } as never, {
+				previewedNote: 'VIP'
+			})
+		).toBeNull();
+	});
+
+	it('shows a note that differs from the previewed one', () => {
+		const result = scanNoteFrom({ user: { first_name: 'Ada' }, private_note: 'Updated' } as never, {
+			previewedNote: 'VIP'
+		});
+		expect(result?.body).toBe('Updated');
 	});
 });

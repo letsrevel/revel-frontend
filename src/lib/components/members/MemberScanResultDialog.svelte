@@ -10,6 +10,8 @@
 	} from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import MemberVerificationCard from './MemberVerificationCard.svelte';
+	import ScanCallout from '$lib/components/checkin/ScanCallout.svelte';
+	import { membershipCalloutFrom } from '$lib/components/checkin/scan-membership';
 	import TicketStatusBadge from '$lib/components/tickets/TicketStatusBadge.svelte';
 	import { Loader2 } from '@lucide/svelte';
 
@@ -33,6 +35,8 @@
 	const { report, pendingTicketId = null, onCheckInTicket, onClose }: Props = $props();
 
 	const tickets = $derived(report?.tickets ?? []);
+	// Day member / standard standing from the scan response; inside the dialog, so announced with it.
+	const membership = $derived(membershipCalloutFrom(report?.membership));
 
 	/**
 	 * Only a live ticket can be checked in. A cancelled one never appears here
@@ -54,6 +58,10 @@
 		{#if report}
 			<div class="space-y-4">
 				<MemberVerificationCard member={report.member} />
+
+				{#if membership}
+					<ScanCallout title={membership.title} body={membership.body} tone="info" />
+				{/if}
 
 				<!--
 					The backend's own localized sentence, not a client-side reconstruction

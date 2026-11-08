@@ -37,7 +37,7 @@ export function createTicketScanCheckIn(opts: Options) {
 	let showCheckInDialog = $state(false);
 	let ticketToCheckIn = $state<CheckInDialogTicket | null>(null);
 	let checkInDialogError = $state<string | null>(null);
-	/** Private staff note on the person just checked in (read-only, may be null). */
+	/** Staff note and/or membership standing of the person just checked in (read-only, may be null). */
 	let scanNote = $state<ScanNote | null>(null);
 
 	/** The membership-card report: no ticket was burned, this is information. */
@@ -69,10 +69,14 @@ export function createTicketScanCheckIn(opts: Options) {
 			return response.data;
 		},
 		onSuccess: (data) => {
-			// The ticket preview carries no note; the check-in response does. Show it
-			// right away so door staff see it with the result.
+			// The check-in response carries the membership block (and the note, for
+			// scans that had no preview). Show it right away so door staff see it with
+			// the result; a note the confirm dialog already displayed isn't repeated.
 			const outcome = classifyCheckInResponse(data);
-			scanNote = outcome.kind === 'checked_in' ? scanNoteFrom(outcome.result) : null;
+			scanNote =
+				outcome.kind === 'checked_in'
+					? scanNoteFrom(outcome.result, { previewedNote: ticketToCheckIn?.private_note })
+					: null;
 			showCheckInDialog = false;
 			ticketToCheckIn = null;
 			checkInDialogError = null;

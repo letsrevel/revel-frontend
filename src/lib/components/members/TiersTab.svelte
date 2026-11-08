@@ -28,6 +28,7 @@
 	import PlansList from '$lib/components/members/PlansList.svelte';
 	import { toast } from 'svelte-sonner';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
+	import StatusBadge from '$lib/components/common/StatusBadge.svelte';
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
@@ -66,6 +67,7 @@
 			const response = await organizationadminmembersCreateMembershipTier({
 				path: { slug: organization.slug },
 				body: {
+					...(payload.kind ? { kind: payload.kind } : {}),
 					name: payload.name,
 					description: payload.description,
 					membership_questionnaire_id: payload.membership_questionnaire_id,
@@ -332,6 +334,14 @@
 						<h3 class="truncate font-bold text-foreground">
 							{tier.name}
 						</h3>
+						{#if tier.kind === 'temporary'}
+							<StatusBadge
+								tone="info"
+								size="sm"
+								label={m['tierKind.dayMembershipBadge']()}
+								class="mt-1 w-fit"
+							/>
+						{/if}
 						{#if tier.description}
 							<p class="mt-2 text-sm text-muted-foreground">
 								{tier.description}

@@ -150,3 +150,31 @@ describe('MemberScanResultDialog', () => {
 		expect(screen.getByText('Ticket')).toBeInTheDocument();
 	});
 });
+
+describe('MemberScanResultDialog membership block', () => {
+	it('shows the day-member callout inside the dialog', () => {
+		render(MemberScanResultDialog, {
+			props: {
+				report: report({
+					membership: {
+						kind: 'temporary',
+						tier_name: 'Door pass',
+						valid_until: '2026-11-08T22:59:00Z'
+					}
+				}),
+				onCheckInTicket: vi.fn(),
+				onClose: vi.fn()
+			}
+		});
+		const callout = screen.getByTestId('scan-callout');
+		expect(callout).toHaveTextContent('Day member, valid until');
+		expect(screen.getByRole('dialog')).toContainElement(callout);
+	});
+
+	it('shows nothing when membership is null', () => {
+		render(MemberScanResultDialog, {
+			props: { report: report({ membership: null }), onCheckInTicket: vi.fn(), onClose: vi.fn() }
+		});
+		expect(screen.queryByTestId('scan-callout')).not.toBeInTheDocument();
+	});
+});

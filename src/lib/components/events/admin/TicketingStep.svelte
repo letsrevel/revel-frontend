@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { standardTiers } from '$lib/utils/membership-tier-kind';
-	import { standardTiersQueryOptions } from '$lib/queries/membership-tiers';
+	import {
+		standardTiersQueryOptions,
+		temporaryTiersQueryOptions
+	} from '$lib/queries/membership-tiers';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
@@ -105,6 +108,12 @@
 	// Fetch membership tiers for the organization
 	const membershipTiersQuery = createQuery(() => ({
 		...standardTiersQueryOptions(organizationSlug, accessToken),
+		enabled: !!accessToken
+	}));
+
+	// TEMPORARY tiers only: the ticket tier's "Grants membership" picker.
+	const temporaryTiersQuery = createQuery(() => ({
+		...temporaryTiersQueryOptions(organizationSlug, accessToken),
 		enabled: !!accessToken
 	}));
 
@@ -502,6 +511,12 @@
 		membershipTiersStatus={membershipTiersQuery.isError
 			? 'error'
 			: membershipTiersQuery.isPending
+				? 'loading'
+				: 'ready'}
+		temporaryTiers={temporaryTiersQuery.data ?? []}
+		temporaryTiersStatus={temporaryTiersQuery.isError
+			? 'error'
+			: temporaryTiersQuery.isPending
 				? 'loading'
 				: 'ready'}
 		eventVenueId={formData.venue_id || null}
