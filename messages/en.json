@@ -10749,5 +10749,16 @@
 	"seriesPassAdmin.incompatibleTierHint": "Tiers marked unavailable are stricter than this pass (for example a members-only tier under a pass for everyone), so the pass cannot cover them.",
 	"seriesPassAdmin.noCompatibleTiers": "No tier of this event can back this pass: each has a stricter purchase rule than the pass. Loosen the tier's rule or change who can buy the pass.",
 	"seriesPass.nonMembersNote": "For non-members only. Active members can't buy this pass.",
-	"seriesPass.cannotBuy": "You can't buy this pass."
+	"seriesPass.cannotBuy": "You can't buy this pass.",
+	"seriesPass.questionnaires.heading": "Complete these questionnaires first",
+	"seriesPass.questionnaires.description": "This pass needs your answers before you can buy it. Each one opens in its own event, then brings you back here.",
+	"seriesPass.questionnaires.forEvent": "For {event}",
+	"seriesPass.questionnaires.loading": "Loading questionnaire…",
+	"seriesPass.questionnaires.loadFailed": "Couldn't load this questionnaire.",
+	"seriesPass.questionnaires.retry": "Try again",
+	"seriesPass.questionnaires.complete": "Complete",
+	"seriesPass.questionnaires.completeNamed": "Complete the questionnaire {name}",
+	"seriesPass.reviewPending": "Your answers are being reviewed. You can buy this pass once they are approved.",
+	"questionnaireSubmissionPage.backToPass": "Back",
+	"questionnaireSubmissionPage.accepted_cta_return": "Continue where you left off"
 }

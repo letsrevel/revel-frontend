@@ -9,7 +9,13 @@
 	} from '$lib/api/generated/types.gen';
 	import { seriespassCheckoutSeriesPass } from '$lib/api';
 	import { createCheckoutSession, CheckoutSessionError } from '$lib/utils/checkout-session';
-	import { invalidateAfterPurchase } from '$lib/queries/series-passes';
+	import { invalidateAfterPurchase, seriesPassQueryKeys } from '$lib/queries/series-passes';
+	import { getEligibilityRefusalMessage } from '$lib/utils/eligibility';
+	import {
+		classifyCheckoutRefusal,
+		type CheckoutRefusal
+	} from '$lib/utils/series-pass-questionnaires';
+	import SeriesPassQuestionnaireSteps from './SeriesPassQuestionnaireSteps.svelte';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		Dialog,
@@ -41,6 +47,25 @@
 	// backend's translated reason, or the generic copy if it sent none.
 	let refusal = $state<string | null>(null);
 
+	// A checkout the eligibility rules refuse (400): the quote only lists what
+	// the buyer can still answer, so a pending review, a closed retake or a
+	// stale quote reach us here. Shown inline, never as a raw error.
+	let eligibilityRefusal = $state<CheckoutRefusal | null>(null);
+	const eligibilityMessage = $derived.by(() => {
+		if (eligibilityRefusal?.kind === 'pending_review') return m['seriesPass.reviewPending']();
+		if (eligibilityRefusal?.kind === 'other') {
+			return (
+				getEligibilityRefusalMessage(eligibilityRefusal.eligibility) ??
+				m['seriesPass.checkoutFailed']()
+			);
+		}
+		return null;
+	});
+	const stepsId = $props.id();
+	const returnPath = $derived(
+		typeof window === 'undefined' ? '/' : window.location.pathname + window.location.search
+	);
+
 	const isFree = $derived(pass.payment_method === 'free' || parseFloat(quote.price) === 0);
 	const isOnline = $derived(pass.payment_method === 'online' && !isFree);
 
@@ -54,6 +79,7 @@
 			// Retrying is allowed (the organizer may have moved the event); the
 			// alert stays until the next answer replaces or clears it.
 			refusal = null;
+			eligibilityRefusal = null;
 			// Retry after a partial failure: only the session step needs to run
 			// again. A 404 means the reservation expired — reserve afresh below.
 			if (reservationId) {
@@ -74,6 +100,19 @@
 			if (response.response?.status === 422) {
 				refusal = extractErrorMessage(response.error, m['compliance.checkout.passFallback']());
 				throw new Error(refusal);
+			}
+			const eligibility =
+				response.response?.status === 400 ? classifyCheckoutRefusal(response.error) : null;
+			if (eligibility) {
+				eligibilityRefusal = eligibility;
+				if (eligibility.kind === 'complete_questionnaire') {
+					// The quote that enabled Buy was stale or silent: refresh it so the
+					// card lists what is missing too.
+					void queryClient.invalidateQueries({
+						queryKey: seriesPassQueryKeys.quote(seriesId, pass.id ?? '')
+					});
+				}
+				throw new Error(m['seriesPass.checkoutFailed']());
 			}
 			if (response.error || !response.data) {
 				// 403 = the pass is visible but not purchasable by this buyer (blacklisted,
@@ -129,7 +168,7 @@
 				toast.error(m['seriesPass.paymentStartFailed']());
 				return;
 			}
-			if (refusal) return;
+			if (refusal || eligibilityRefusal) return;
 			toast.error(error instanceof Error ? error.message : m['seriesPass.checkoutFailed']());
 		}
 	}));
@@ -183,6 +222,24 @@
 					<p>{refusal}</p>
 				</div>
 			{/if}
+
+			{#if eligibilityRefusal?.kind === 'complete_questionnaire'}
+				<SeriesPassQuestionnaireSteps
+					steps={eligibilityRefusal.steps}
+					returnUrl={returnPath}
+					id={stepsId}
+				/>
+			{:else if eligibilityMessage}
+				<div
+					class="flex items-start gap-2 rounded-md border border-border bg-muted/40 p-3 text-sm text-foreground"
+					id="series-pass-eligibility"
+					role="alert"
+					data-testid="series-pass-eligibility-refusal"
+				>
+					<AlertCircle class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+					<p>{eligibilityMessage}</p>
+				</div>
+			{/if}
 		</div>
 
 		<DialogFooter class="gap-2 sm:gap-0">
@@ -192,7 +249,13 @@
 			<Button
 				onclick={() => checkoutMutation.mutate()}
 				disabled={checkoutMutation.isPending}
-				aria-describedby={refusal ? 'series-pass-refusal' : undefined}
+				aria-describedby={refusal
+					? 'series-pass-refusal'
+					: eligibilityRefusal?.kind === 'complete_questionnaire'
+						? stepsId
+						: eligibilityMessage
+							? 'series-pass-eligibility'
+							: undefined}
 			>
 				{checkoutMutation.isPending ? m['seriesPass.processing']() : confirmLabel}
 			</Button>

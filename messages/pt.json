@@ -10749,5 +10749,16 @@
 	"seriesPassAdmin.incompatibleTierHint": "Os tipos marcados como indisponíveis são mais restritos do que este passe (por exemplo, um tipo só para membros num passe para todas as pessoas), por isso o passe não os pode cobrir.",
 	"seriesPassAdmin.noCompatibleTiers": "Nenhum tipo de bilhete deste evento pode servir de base a este passe: todos têm uma regra de compra mais restrita do que o passe. Flexibiliza a regra do tipo ou altera quem pode comprar o passe.",
 	"seriesPass.nonMembersNote": "Apenas para não membros. Os membros ativos não podem comprar este passe.",
-	"seriesPass.cannotBuy": "Não podes comprar este passe."
+	"seriesPass.cannotBuy": "Não podes comprar este passe.",
+	"seriesPass.questionnaires.heading": "Preenche primeiro estes questionários",
+	"seriesPass.questionnaires.description": "Este passe precisa das tuas respostas antes de o poderes comprar. Cada questionário abre no seu próprio evento e depois traz-te de volta aqui.",
+	"seriesPass.questionnaires.forEvent": "Para {event}",
+	"seriesPass.questionnaires.loading": "A carregar o questionário…",
+	"seriesPass.questionnaires.loadFailed": "Não foi possível carregar este questionário.",
+	"seriesPass.questionnaires.retry": "Tentar novamente",
+	"seriesPass.questionnaires.complete": "Preencher",
+	"seriesPass.questionnaires.completeNamed": "Preencher o questionário {name}",
+	"seriesPass.reviewPending": "As tuas respostas estão a ser analisadas. Poderás comprar este passe quando forem aprovadas.",
+	"questionnaireSubmissionPage.backToPass": "Voltar",
+	"questionnaireSubmissionPage.accepted_cta_return": "Continuar onde ficaste"
 }

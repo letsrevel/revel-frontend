@@ -10749,5 +10749,16 @@
 	"seriesPassAdmin.incompatibleTierHint": "Les catégories marquées comme indisponibles sont plus strictes que ce pass (par exemple une catégorie réservée aux membres sous un pass ouvert à tous) : le pass ne peut donc pas les couvrir.",
 	"seriesPassAdmin.noCompatibleTiers": "Aucune catégorie de billet de cet événement ne peut servir de base à ce pass : chacune a une règle d'achat plus stricte que le pass. Assouplis la règle de la catégorie ou change qui peut acheter le pass.",
 	"seriesPass.nonMembersNote": "Réservé aux non-membres. Les membres actifs ne peuvent pas acheter ce pass.",
-	"seriesPass.cannotBuy": "Tu ne peux pas acheter ce pass."
+	"seriesPass.cannotBuy": "Tu ne peux pas acheter ce pass.",
+	"seriesPass.questionnaires.heading": "Remplis d'abord ces questionnaires",
+	"seriesPass.questionnaires.description": "Ce pass demande tes réponses avant de pouvoir l'acheter. Chaque questionnaire s'ouvre dans son propre événement, puis te ramène ici.",
+	"seriesPass.questionnaires.forEvent": "Pour {event}",
+	"seriesPass.questionnaires.loading": "Chargement du questionnaire…",
+	"seriesPass.questionnaires.loadFailed": "Impossible de charger ce questionnaire.",
+	"seriesPass.questionnaires.retry": "Réessayer",
+	"seriesPass.questionnaires.complete": "Remplir",
+	"seriesPass.questionnaires.completeNamed": "Remplir le questionnaire {name}",
+	"seriesPass.reviewPending": "Tes réponses sont en cours d'examen. Tu pourras acheter ce pass une fois qu'elles seront approuvées.",
+	"questionnaireSubmissionPage.backToPass": "Retour",
+	"questionnaireSubmissionPage.accepted_cta_return": "Reprendre où tu en étais"
 }

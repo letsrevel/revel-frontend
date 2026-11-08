@@ -11,6 +11,8 @@
 	import { Ticket, CreditCard, HandCoins } from '@lucide/svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import SeriesPassPurchaseDialog from './SeriesPassPurchaseDialog.svelte';
+	import SeriesPassQuestionnaireSteps from './SeriesPassQuestionnaireSteps.svelte';
+	import { questionnaireStepsFromQuote } from '$lib/utils/series-pass-questionnaires';
 
 	interface Props {
 		pass: SeriesPassSchema;
@@ -35,7 +37,10 @@
 			}
 			return response.data;
 		},
-		enabled: !!pass.id
+		enabled: !!pass.id,
+		// Coming back from a questionnaire must show what is still missing, not
+		// the answer cached before the submission.
+		refetchOnMount: 'always' as const
 	}));
 
 	const quote = $derived<SeriesPassQuoteSchema | undefined>(quoteQuery.data);
@@ -55,10 +60,20 @@
 	// pass still reports `purchasable: true` by design, so it's read separately.
 	const onlineUnavailable = $derived(quote?.compliance?.online_payment === 'blocked');
 
+	// Admission questionnaires the buyer can still answer before the pass can be
+	// bought (#1175). Each is routed through its own event. Empty for anonymous
+	// buyers, so the checkout 400 fallback in the dialog stays the safety net.
+	const questionnaireSteps = $derived(quote ? questionnaireStepsFromQuote(quote) : []);
+	const hasMissingQuestionnaires = $derived(questionnaireSteps.length > 0);
+	const stepsId = $derived(`${uid}-questionnaires`);
+	const returnPath = $derived(
+		typeof window === 'undefined' ? '/' : window.location.pathname + window.location.search
+	);
+
 	const isButtonDisabled = $derived.by(() => {
 		const loading = quoteQuery.isLoading;
 		const error = quoteQuery.error;
-		return loading || !!error;
+		return loading || !!error || hasMissingQuestionnaires;
 	});
 
 	function handleBuyClick() {
@@ -138,7 +153,21 @@
 			{m['compliance.checkout.passFallback']()}
 		</p>
 	{:else}
-		<Button class="w-full" onclick={handleBuyClick} disabled={isButtonDisabled}>
+		{#if hasMissingQuestionnaires}
+			<div class="mb-3">
+				<SeriesPassQuestionnaireSteps
+					steps={questionnaireSteps}
+					returnUrl={returnPath}
+					id={stepsId}
+				/>
+			</div>
+		{/if}
+		<Button
+			class="w-full"
+			onclick={handleBuyClick}
+			disabled={isButtonDisabled}
+			aria-describedby={hasMissingQuestionnaires ? stepsId : undefined}
+		>
 			{m['seriesPass.buyButton']()}
 		</Button>
 	{/if}

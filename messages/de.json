@@ -10749,5 +10749,16 @@
 	"seriesPassAdmin.incompatibleTierHint": "Als nicht verfügbar markierte Kategorien sind strenger als dieser Pass (zum Beispiel eine Kategorie nur für Mitglieder bei einem Pass für alle), daher kann der Pass sie nicht abdecken.",
 	"seriesPassAdmin.noCompatibleTiers": "Keine Ticketkategorie dieses Events kann diesen Pass abdecken: Alle haben eine strengere Kaufregel als der Pass. Lockere die Regel der Kategorie oder ändere, wer den Pass kaufen darf.",
 	"seriesPass.nonMembersNote": "Nur für Nichtmitglieder. Aktive Mitglieder können diesen Pass nicht kaufen.",
-	"seriesPass.cannotBuy": "Du kannst diesen Pass nicht kaufen."
+	"seriesPass.cannotBuy": "Du kannst diesen Pass nicht kaufen.",
+	"seriesPass.questionnaires.heading": "Beantworte zuerst diese Fragebögen",
+	"seriesPass.questionnaires.description": "Für diesen Pass brauchen wir deine Antworten, bevor du ihn kaufen kannst. Jeder Fragebogen öffnet sich in seinem eigenen Event und führt dich danach hierher zurück.",
+	"seriesPass.questionnaires.forEvent": "Für {event}",
+	"seriesPass.questionnaires.loading": "Fragebogen wird geladen…",
+	"seriesPass.questionnaires.loadFailed": "Dieser Fragebogen konnte nicht geladen werden.",
+	"seriesPass.questionnaires.retry": "Erneut versuchen",
+	"seriesPass.questionnaires.complete": "Ausfüllen",
+	"seriesPass.questionnaires.completeNamed": "Fragebogen {name} ausfüllen",
+	"seriesPass.reviewPending": "Deine Antworten werden gerade geprüft. Sobald sie freigegeben sind, kannst du diesen Pass kaufen.",
+	"questionnaireSubmissionPage.backToPass": "Zurück",
+	"questionnaireSubmissionPage.accepted_cta_return": "Dort weitermachen, wo du aufgehört hast"
 }
