@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { standardTiers } from '$lib/utils/membership-tier-kind';
+	import { standardTiersQueryOptions } from '$lib/queries/membership-tiers';
 	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import type {
@@ -9,7 +10,6 @@
 	import { Settings, Users, Mail, Megaphone, ListPlus } from '@lucide/svelte';
 	import AnnouncementModal from '$lib/components/announcements/AnnouncementModal.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
-	import { organizationadminmembersListMembershipTiers } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 
 	interface Props {
@@ -39,16 +39,7 @@
 
 	// Fetch tiers for announcement modal
 	const tiersQuery = createQuery(() => ({
-		queryKey: ['membership-tiers', event.organization?.slug],
-		queryFn: async () => {
-			if (!event.organization) throw new Error('Organization not loaded');
-			const response = await organizationadminmembersListMembershipTiers({
-				path: { slug: event.organization.slug },
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
-			if (response.error) throw response.error;
-			return response.data;
-		},
+		...standardTiersQueryOptions(event.organization?.slug ?? '', accessToken),
 		enabled: !!canManageEvent && !!accessToken && !!event.organization?.slug
 	}));
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { standardTiers } from '$lib/utils/membership-tier-kind';
+	import { createStandardTiersLoader } from '$lib/components/tickets/ticket-member-admin.svelte';
 	import type { PageData } from './$types';
 	import { page } from '$app/stores';
 	import { goto, invalidateAll } from '$app/navigation';
@@ -10,7 +10,6 @@
 		eventadminrsvpsUpdateRsvp,
 		eventadminrsvpsDeleteRsvp,
 		eventadminrsvpsCreateRsvp,
-		organizationadminmembersListMembershipTiers,
 		organizationadminmembersAddMember,
 		organizationadminblacklistCreateBlacklistEntry,
 		eventadminticketsExportAttendees
@@ -30,7 +29,7 @@
 	import AttendeeCardList from '$lib/components/attendees/AttendeeCardList.svelte';
 	import EditRsvpDialog from '$lib/components/attendees/EditRsvpDialog.svelte';
 	import CreateRsvpDialog from '$lib/components/attendees/CreateRsvpDialog.svelte';
-	import type { RsvpDetailSchema, MembershipTierSchema } from '$lib/api/generated/types.gen';
+	import type { RsvpDetailSchema } from '$lib/api/generated/types.gen';
 	import * as m from '$lib/paraglide/messages.js';
 	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 
@@ -58,8 +57,12 @@
 	// Make member modal state
 	let showMakeMemberModal = $state(false);
 	let userToMakeMember = $state<{ id: string; displayName: string; email?: string } | null>(null);
-	let membershipTiers = $state<MembershipTierSchema[]>([]);
-	let tiersLoading = $state(false);
+	const tiersLoader = createStandardTiersLoader({
+		getSlug: () => organization.slug,
+		getAccessToken: () => accessToken
+	});
+	const membershipTiers = $derived(tiersLoader.tiers);
+	const tiersLoading = $derived(tiersLoader.loading);
 
 	// Blacklist confirmation state
 	let rsvpToBlacklist = $state<RsvpDetailSchema | null>(null);
@@ -270,23 +273,7 @@
 			email: user.email
 		};
 
-		// Load membership tiers if not already loaded
-		if (membershipTiers.length === 0) {
-			tiersLoading = true;
-			try {
-				const response = await organizationadminmembersListMembershipTiers({
-					path: { slug: organization.slug },
-					headers: { Authorization: `Bearer ${accessToken}` }
-				});
-				if (response.data) {
-					membershipTiers = standardTiers(response.data);
-				}
-			} catch (err) {
-				console.error('Failed to load membership tiers:', err);
-			} finally {
-				tiersLoading = false;
-			}
-		}
+		await tiersLoader.ensureLoaded();
 
 		showMakeMemberModal = true;
 	}

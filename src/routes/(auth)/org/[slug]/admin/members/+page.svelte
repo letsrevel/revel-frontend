@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { membershipTiersKeys } from '$lib/queries/membership-tiers';
 	import { standardTiers } from '$lib/utils/membership-tier-kind';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
@@ -121,7 +122,7 @@
 
 	// Fetch membership tiers (shared across tabs)
 	const tiersQuery = createQuery(() => ({
-		queryKey: ['organization', organization.slug, 'membership-tiers'],
+		queryKey: membershipTiersKeys.all(organization.slug),
 		queryFn: async () => {
 			const response = await organizationadminmembersListMembershipTiers({
 				path: { slug: organization.slug },

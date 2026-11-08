@@ -9859,6 +9859,11 @@
 		"extendFailed": "Impossibile estendere la copertura del pass",
 		"extendSuccess": "Copertura estesa di {count} evento/i"
 	},
+	"dayMemberBadge": {
+		"label": "Socio giornaliero",
+		"until": "fino al {date}",
+		"ended": "Iscrizione giornaliera terminata"
+	},
 	"seriesPassBadge": {
 		"label": "Abbonamento",
 		"tooltip": "Dall'abbonamento “{name}”"
@@ -10056,6 +10061,7 @@
 	"integrations.error.event_no_tickets": "Attiva i biglietti prima di pubblicare su {platform}.",
 	"integrations.error.tier_variable_price": "I biglietti a prezzo libero non vengono inviati.",
 	"integrations.error.tier_members_only": "I biglietti riservati ai membri non vengono inviati.",
+	"integrations.error.tier_grants_membership": "Non pubblicato su {platform}: questo tipo di biglietto concede un'iscrizione giornaliera, che può essere emessa solo tramite Revel.",
 	"integrations.error.tier_purchase_restricted": "Non presente su {platform}: “Chi Può Acquistare” deve essere impostato su “Chiunque” per vendere questa categoria all'esterno.",
 	"integrations.error.tier_seated": "I biglietti con posto assegnato non vengono inviati.",
 	"integrations.error.tier_offline_payment": "I biglietti pagati all'ingresso o con bonifico non vengono inviati.",
