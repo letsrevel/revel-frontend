@@ -11001,5 +11001,35 @@
 	"memberInvite.sessionExpiredTitle": "Session expirée",
 	"memberInvite.sessionExpiredBody": "Ta session a expiré. Reconnecte-toi pour lier cette adhésion.",
 	"memberInvite.goHome": "Retour à l'accueil",
-	"memberInvite.retry": "Réessayer"
+	"memberInvite.retry": "Réessayer",
+	"memberRegister.actionInvite": "Inviter",
+	"memberRegister.actionResendInvite": "Renvoyer l'invitation",
+	"memberRegister.inviteTitle": "Inviter {name}",
+	"memberRegister.inviteDescription": "Envoie à {name} un e-mail à {email} avec un lien pour relier cette entrée à son compte Revel.",
+	"memberRegister.inviteConfirm": "Envoyer l'invitation",
+	"memberRegister.resendInviteTitle": "Renvoyer l'invitation à {name} ?",
+	"memberRegister.resendInviteDescription": "Un nouveau lien sera envoyé à {email}. Le lien précédent cessera de fonctionner.",
+	"memberRegister.resendInviteConfirm": "Renvoyer l'invitation",
+	"memberRegister.inviteSentToast": "Invitation envoyée à {email}",
+	"memberRegister.inviteAllOpen": "Inviter tout le monde",
+	"memberRegister.inviteAllTitle": "Inviter tout le registre ?",
+	"memberRegister.inviteAllDescription": "Envoie une invitation à chaque entrée ouverte avec une adresse e-mail qui n'a pas encore été invitée et qui a déjà commencé. Les entrées liées, les membres d'un jour, les entrées terminées et celles qui commencent plus tard sont ignorées.",
+	"memberRegister.inviteAllConfirm": "Envoyer les invitations",
+	"memberRegister.inviteAllSent": [
+		{
+			"declarations": ["input invited", "local invitedPlural = invited: plural"],
+			"selectors": ["invitedPlural"],
+			"match": {
+				"invitedPlural=one": "{invited} invitation envoyée",
+				"invitedPlural=*": "{invited} invitations envoyées"
+			}
+		}
+	],
+	"memberRegister.inviteAllNone": "Aucune entrée n'attendait d'invitation",
+	"memberRegister.errorInviteAllThrottled": "Tu as atteint la limite des invitations groupées (5 par 24 heures). Réessaie plus tard.",
+	"memberRegister.errorInviteAllThrottledIn": "Tu as atteint la limite des invitations groupées. Réessaie dans {time}.",
+	"memberRegister.inviteAllLimitNote": "Tu peux envoyer des invitations groupées jusqu'à 5 fois par 24 heures.",
+	"memberRegister.inviteAllRetryNote": "Chaque tentative compte dans cette limite, même si elle a échoué. Vérifie le registre avant de réessayer.",
+	"memberRegister.inviteAllRetryConfirm": "Réessayer",
+	"memberRegister.inviteAllEmptyHint": "Ajoute des entrées au registre avant d'inviter tout le monde."
 }

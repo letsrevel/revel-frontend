@@ -4,7 +4,9 @@ import {
 	organizationadminmemberregisterEndMemberRegisterRecord,
 	organizationadminmemberregisterExportMemberRegister,
 	organizationadminmemberregisterListMemberRegister,
-	organizationadminmemberregisterUpdateMemberRegisterRecord
+	organizationadminmemberregisterUpdateMemberRegisterRecord,
+	organizationadminmemberregisterlinkingInviteAllMemberRegister,
+	organizationadminmemberregisterlinkingInviteMemberRegisterRecord
 } from '$lib/api';
 import type {
 	MembershipRecordCreateSchema,
@@ -26,23 +28,36 @@ import type { EndBody, RecordUpdateBody } from './form-values';
 export class RegisterApiError extends Error {
 	readonly status: number;
 	readonly body: unknown;
+	/** Seconds from the `Retry-After` header of a throttled (429) answer, when sent. */
+	readonly retryAfterSeconds: number | null;
 	readonly silent = true;
 
-	constructor(status: number, body: unknown) {
+	constructor(status: number, body: unknown, retryAfterSeconds: number | null = null) {
 		super(backendMessage(body) ?? `Member register request failed (${status})`);
 		this.name = 'RegisterApiError';
 		this.status = status;
 		this.body = body;
+		this.retryAfterSeconds = retryAfterSeconds;
 	}
 }
 
 interface Settled {
 	error?: unknown;
-	response?: { status?: number };
+	response?: { status?: number; headers?: { get?: (name: string) => string | null } };
+}
+
+/** `Retry-After` in delta-seconds (what DRF sends); HTTP-date form is ignored. */
+function retryAfterOf(res: Settled): number | null {
+	const raw = res.response?.headers?.get?.('Retry-After');
+	if (!raw || !/^\d+$/.test(raw.trim())) return null;
+	const seconds = Number.parseInt(raw, 10);
+	return seconds > 0 ? seconds : null;
 }
 
 function ensureOk(res: Settled): void {
-	if (res.error) throw new RegisterApiError(res.response?.status ?? 0, res.error);
+	if (res.error) {
+		throw new RegisterApiError(res.response?.status ?? 0, res.error, retryAfterOf(res));
+	}
 }
 
 function authHeaders(accessToken: string | null | undefined): { Authorization: string } {
@@ -150,4 +165,33 @@ export async function startRegisterExport(
 	const id = res.data?.id;
 	if (!id) throw new RegisterApiError(res.response?.status ?? 0, null);
 	return id;
+}
+
+/** First send or resend of the claim link for one entry (a resend rotates the link). */
+export async function inviteRecord(
+	slug: string,
+	accessToken: string | null | undefined,
+	recordId: string
+): Promise<MembershipRecordSchema> {
+	const res = await organizationadminmemberregisterlinkingInviteMemberRegisterRecord({
+		path: { slug, record_id: recordId },
+		headers: authHeaders(accessToken)
+	});
+	ensureOk(res);
+	if (!res.data) throw new RegisterApiError(res.response?.status ?? 0, null);
+	return res.data;
+}
+
+/** Invite every open, unlinked, never-invited entry; resolves to how many were invited. */
+export async function inviteAll(
+	slug: string,
+	accessToken: string | null | undefined
+): Promise<number> {
+	const res = await organizationadminmemberregisterlinkingInviteAllMemberRegister({
+		path: { slug },
+		headers: authHeaders(accessToken)
+	});
+	ensureOk(res);
+	if (!res.data) throw new RegisterApiError(res.response?.status ?? 0, null);
+	return res.data.invited;
 }

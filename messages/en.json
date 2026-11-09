@@ -11001,5 +11001,35 @@
 	"memberInvite.sessionExpiredTitle": "Session expired",
 	"memberInvite.sessionExpiredBody": "Your session has expired. Log in again to link this membership.",
 	"memberInvite.goHome": "Back to home",
-	"memberInvite.retry": "Retry"
+	"memberInvite.retry": "Retry",
+	"memberRegister.actionInvite": "Invite",
+	"memberRegister.actionResendInvite": "Resend invite",
+	"memberRegister.inviteTitle": "Invite {name}",
+	"memberRegister.inviteDescription": "Send {name} an email at {email} with a link to connect this entry to their Revel account.",
+	"memberRegister.inviteConfirm": "Send invitation",
+	"memberRegister.resendInviteTitle": "Resend invitation to {name}?",
+	"memberRegister.resendInviteDescription": "A new link will be sent to {email}. The previous link stops working.",
+	"memberRegister.resendInviteConfirm": "Resend invitation",
+	"memberRegister.inviteSentToast": "Invitation sent to {email}",
+	"memberRegister.inviteAllOpen": "Invite all",
+	"memberRegister.inviteAllTitle": "Invite everyone on the register?",
+	"memberRegister.inviteAllDescription": "Send an invitation to every open entry with an email address that has not been invited yet and has already started. Linked, day-member, ended and future-dated entries are skipped.",
+	"memberRegister.inviteAllConfirm": "Send invitations",
+	"memberRegister.inviteAllSent": [
+		{
+			"declarations": ["input invited", "local invitedPlural = invited: plural"],
+			"selectors": ["invitedPlural"],
+			"match": {
+				"invitedPlural=one": "{invited} invitation sent",
+				"invitedPlural=*": "{invited} invitations sent"
+			}
+		}
+	],
+	"memberRegister.inviteAllNone": "No entries were waiting for an invitation",
+	"memberRegister.errorInviteAllThrottled": "You've reached the limit for bulk invitations (5 per 24 hours). Try again later.",
+	"memberRegister.errorInviteAllThrottledIn": "You've reached the limit for bulk invitations. Try again in {time}.",
+	"memberRegister.inviteAllLimitNote": "You can send bulk invitations up to 5 times in 24 hours.",
+	"memberRegister.inviteAllRetryNote": "Each attempt counts towards that limit, even if it failed. Check the register before trying again.",
+	"memberRegister.inviteAllRetryConfirm": "Try again",
+	"memberRegister.inviteAllEmptyHint": "Add entries to the register before inviting everyone."
 }

@@ -11001,5 +11001,35 @@
 	"memberInvite.sessionExpiredTitle": "Sessione scaduta",
 	"memberInvite.sessionExpiredBody": "La tua sessione è scaduta. Accedi di nuovo per collegare questa iscrizione.",
 	"memberInvite.goHome": "Torna alla home",
-	"memberInvite.retry": "Riprova"
+	"memberInvite.retry": "Riprova",
+	"memberRegister.actionInvite": "Invita",
+	"memberRegister.actionResendInvite": "Reinvia l'invito",
+	"memberRegister.inviteTitle": "Invita {name}",
+	"memberRegister.inviteDescription": "Invia a {name} un'email a {email} con un link per collegare questa voce al suo account Revel.",
+	"memberRegister.inviteConfirm": "Invia invito",
+	"memberRegister.resendInviteTitle": "Reinviare l'invito a {name}?",
+	"memberRegister.resendInviteDescription": "Verrà inviato un nuovo link a {email}. Il link precedente smetterà di funzionare.",
+	"memberRegister.resendInviteConfirm": "Reinvia invito",
+	"memberRegister.inviteSentToast": "Invito inviato a {email}",
+	"memberRegister.inviteAllOpen": "Invita tutti",
+	"memberRegister.inviteAllTitle": "Invitare tutti i membri del registro?",
+	"memberRegister.inviteAllDescription": "Invia un invito a ogni voce aperta con un indirizzo email che non è ancora stata invitata e che è già iniziata. Le voci collegate, i soci giornalieri, quelle concluse e quelle che iniziano in futuro vengono saltate.",
+	"memberRegister.inviteAllConfirm": "Invia inviti",
+	"memberRegister.inviteAllSent": [
+		{
+			"declarations": ["input invited", "local invitedPlural = invited: plural"],
+			"selectors": ["invitedPlural"],
+			"match": {
+				"invitedPlural=one": "{invited} invito inviato",
+				"invitedPlural=*": "{invited} inviti inviati"
+			}
+		}
+	],
+	"memberRegister.inviteAllNone": "Nessuna voce era in attesa di un invito",
+	"memberRegister.errorInviteAllThrottled": "Hai raggiunto il limite per gli inviti multipli (5 ogni 24 ore). Riprova più tardi.",
+	"memberRegister.errorInviteAllThrottledIn": "Hai raggiunto il limite per gli inviti multipli. Riprova tra {time}.",
+	"memberRegister.inviteAllLimitNote": "Puoi inviare inviti multipli fino a 5 volte ogni 24 ore.",
+	"memberRegister.inviteAllRetryNote": "Ogni tentativo conta per questo limite, anche se è fallito. Controlla il registro prima di riprovare.",
+	"memberRegister.inviteAllRetryConfirm": "Riprova",
+	"memberRegister.inviteAllEmptyHint": "Aggiungi voci al registro prima di invitare tutti."
 }

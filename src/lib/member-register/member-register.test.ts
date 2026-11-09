@@ -7,6 +7,7 @@ import {
 	filtersToQuery,
 	filtersToSearch,
 	hasActiveFilters,
+	isRegisterEmpty,
 	pageToRedirect,
 	parseFilters
 } from './filters';
@@ -389,5 +390,14 @@ describe('review fixes', () => {
 		expect(pageToRedirect(0, 0, 3)).toBeNull();
 		expect(pageToRedirect(5, 25, 2)).toBeNull();
 		expect(pageToRedirect(0, 25, 1)).toBeNull();
+	});
+});
+
+describe('isRegisterEmpty', () => {
+	it('is empty only for a zero count under the default filters', () => {
+		expect(isRegisterEmpty(0, DEFAULT_FILTERS)).toBe(true);
+		expect(isRegisterEmpty(3, DEFAULT_FILTERS)).toBe(false);
+		expect(isRegisterEmpty(0, { ...DEFAULT_FILTERS, search: 'ada' })).toBe(false);
+		expect(isRegisterEmpty(0, { ...DEFAULT_FILTERS, open: 'closed' })).toBe(false);
 	});
 });

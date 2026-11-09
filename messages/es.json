@@ -11001,5 +11001,35 @@
 	"memberInvite.sessionExpiredTitle": "Sesión caducada",
 	"memberInvite.sessionExpiredBody": "Tu sesión ha caducado. Inicia sesión de nuevo para vincular esta membresía.",
 	"memberInvite.goHome": "Volver al inicio",
-	"memberInvite.retry": "Reintentar"
+	"memberInvite.retry": "Reintentar",
+	"memberRegister.actionInvite": "Invitar",
+	"memberRegister.actionResendInvite": "Reenviar invitación",
+	"memberRegister.inviteTitle": "Invitar a {name}",
+	"memberRegister.inviteDescription": "Envía a {name} un correo a {email} con un enlace para vincular esta entrada a su cuenta de Revel.",
+	"memberRegister.inviteConfirm": "Enviar invitación",
+	"memberRegister.resendInviteTitle": "¿Reenviar la invitación a {name}?",
+	"memberRegister.resendInviteDescription": "Se enviará un nuevo enlace a {email}. El enlace anterior dejará de funcionar.",
+	"memberRegister.resendInviteConfirm": "Reenviar invitación",
+	"memberRegister.inviteSentToast": "Invitación enviada a {email}",
+	"memberRegister.inviteAllOpen": "Invitar a todos",
+	"memberRegister.inviteAllTitle": "¿Invitar a todo el registro?",
+	"memberRegister.inviteAllDescription": "Envía una invitación a cada entrada abierta con correo electrónico que aún no ha sido invitada y que ya ha comenzado. Se omiten las entradas vinculadas, los miembros de un día, las finalizadas y las que empiezan en el futuro.",
+	"memberRegister.inviteAllConfirm": "Enviar invitaciones",
+	"memberRegister.inviteAllSent": [
+		{
+			"declarations": ["input invited", "local invitedPlural = invited: plural"],
+			"selectors": ["invitedPlural"],
+			"match": {
+				"invitedPlural=one": "{invited} invitación enviada",
+				"invitedPlural=*": "{invited} invitaciones enviadas"
+			}
+		}
+	],
+	"memberRegister.inviteAllNone": "Ninguna entrada estaba pendiente de invitación",
+	"memberRegister.errorInviteAllThrottled": "Has alcanzado el límite de invitaciones masivas (5 cada 24 horas). Inténtalo de nuevo más tarde.",
+	"memberRegister.errorInviteAllThrottledIn": "Has alcanzado el límite de invitaciones masivas. Inténtalo de nuevo en {time}.",
+	"memberRegister.inviteAllLimitNote": "Puedes enviar invitaciones masivas hasta 5 veces cada 24 horas.",
+	"memberRegister.inviteAllRetryNote": "Cada intento cuenta para ese límite, aunque haya fallado. Revisa el registro antes de volver a intentarlo.",
+	"memberRegister.inviteAllRetryConfirm": "Reintentar",
+	"memberRegister.inviteAllEmptyHint": "Añade entradas al registro antes de invitar a todos."
 }
