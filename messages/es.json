@@ -11141,7 +11141,7 @@
 	"verein.preset.online.reason.billing": "los datos de facturación de tu organización están incompletos.",
 	"verein.preset.restored": "Este es el resultado de la última ejecución para este evento. Parte de ello puede existir ya.",
 	"verein.preset.startOver": "Empezar de nuevo",
-	"verein.preset.startOverConfirm": "¿Empezar de nuevo? Lo ya creado se queda donde está y una nueva ejecución lo creará todo otra vez, así que tendrás duplicados que borrar tú mismo.",
+	"verein.preset.startOverConfirm": "¿Empezar de nuevo? Lo ya creado se queda donde está y una nueva ejecución lo creará todo otra vez, así que tendrás duplicados que borrar a mano.",
 	"verein.preset.startOverYes": "Sí, empezar de nuevo",
 	"verein.preset.startOverNo": "Mantener este resultado",
 	"verein.preset.issue.dayTierName": "Introduce un nombre para el nivel de membresía de un día.",
