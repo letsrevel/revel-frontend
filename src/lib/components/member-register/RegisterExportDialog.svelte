@@ -10,7 +10,7 @@
 	} from '$lib/components/ui/dialog';
 	import ExportButton from '$lib/components/common/ExportButton.svelte';
 	import CalendarDayPicker from './CalendarDayPicker.svelte';
-	import { formatCalendarDay, isCalendarDay } from '$lib/member-register/calendar-day';
+	import { isCalendarDay } from '$lib/member-register/calendar-day';
 	import { RegisterApiError, startRegisterExport } from '$lib/member-register/api';
 	import { describeRegisterError } from '$lib/member-register/errors';
 
@@ -32,15 +32,10 @@
 		if (open) untrack(() => (day = initialDay ?? ''));
 	});
 
-	// The file's own summary row is English-only server-side; this line only
-	// tells staff what they are about to download.
-	const summary = $derived.by(() => {
-		if (!isCalendarDay(day)) return m['memberRegister.exportAll']();
-		const formatted = formatCalendarDay(day);
-		return timezone
-			? m['memberRegister.exportMembersOn']({ day: formatted, timezone })
-			: m['memberRegister.exportMembersOnOrgTz']({ day: formatted });
-	});
+	// With a day chosen, the picker's own readback ("Members on <day> (<tz>)") is the
+	// one place that states the day and timezone; this line only covers the
+	// no-day case so the download scope is never silent.
+	const showAllNote = $derived(!isCalendarDay(day));
 
 	function handleOpenChange(next: boolean) {
 		if (!next) onClose();
@@ -62,7 +57,11 @@
 			onChange={(next) => (day = next)}
 		/>
 
-		<p class="text-sm font-medium" data-testid="export-summary">{summary}</p>
+		{#if showAllNote}
+			<p class="text-sm font-medium" data-testid="export-summary">
+				{m['memberRegister.exportAll']()}
+			</p>
+		{/if}
 
 		<div class="flex justify-end">
 			<ExportButton

@@ -25,6 +25,7 @@
 		buildCreateBody,
 		buildUpdateBody,
 		formValuesFromRecord,
+		normalizeLocalInput,
 		reconcileAfterStale,
 		validateRecordForm,
 		type FormErrorCode,
@@ -172,6 +173,9 @@
 	function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
 		submitError = null;
+		// Normalise once, where values enter the form state (seed and submit).
+		values.validFrom = normalizeLocalInput(values.validFrom);
+		values.validUntil = normalizeLocalInput(values.validUntil);
 		fieldErrors = validateRecordForm(values, {
 			mode,
 			...(editability ? { editability, original } : {})

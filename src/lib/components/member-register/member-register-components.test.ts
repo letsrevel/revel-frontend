@@ -24,6 +24,7 @@ import EndRecordDialog from './EndRecordDialog.svelte';
 import DeleteRecordDialog from './DeleteRecordDialog.svelte';
 import CalendarDayPicker from './CalendarDayPicker.svelte';
 import RegisterFilters from './RegisterFilters.svelte';
+import RegisterExportDialog from './RegisterExportDialog.svelte';
 import { DEFAULT_FILTERS } from '$lib/member-register/filters';
 
 function record(extra: Partial<MembershipRecordSchema> = {}): MembershipRecordSchema {
@@ -418,5 +419,23 @@ describe('review fixes (components)', () => {
 		} finally {
 			vi.useRealTimers();
 		}
+	});
+});
+
+describe('beta smoke fixes', () => {
+	it('shows the export day readback and timezone exactly once', () => {
+		renderIn(RegisterExportDialog, {
+			open: true,
+			slug: 'acme',
+			accessToken: 'tok',
+			timezone: 'Europe/Vienna',
+			initialDay: '2026-11-09',
+			onClose: noop
+		});
+		expect(screen.getByTestId('calendar-day-readback')).toHaveTextContent(
+			/Members on .*2026.*\(Europe\/Vienna\)/
+		);
+		expect(screen.queryByTestId('export-summary')).not.toBeInTheDocument();
+		expect(document.body.textContent?.match(/\(Europe\/Vienna\)/g)).toHaveLength(1);
 	});
 });

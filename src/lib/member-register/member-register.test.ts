@@ -21,7 +21,8 @@ import {
 	formValuesFromRecord,
 	reconcileAfterStale,
 	validateEndForm,
-	validateRecordForm
+	validateRecordForm,
+	normalizeLocalInput
 } from './form-values';
 import { resolveOrgTimezone } from './org-timezone';
 import { toDateTimeLocal } from '$lib/utils/datetime';
@@ -423,5 +424,27 @@ describe('isOpenStandard', () => {
 		expect(isOpenStandard({ kind: 'standard', valid_until: null })).toBe(true);
 		expect(isOpenStandard({ kind: 'standard', valid_until: '2026-01-01T00:00:00Z' })).toBe(false);
 		expect(isOpenStandard({ kind: 'temporary', valid_until: null })).toBe(false);
+	});
+});
+
+describe('date-only start input', () => {
+	it('normalises YYYY-MM-DD to that day at 00:00 local and leaves other values alone', () => {
+		expect(normalizeLocalInput('2026-03-04')).toBe('2026-03-04T00:00');
+		expect(normalizeLocalInput(' 2026-03-04 ')).toBe('2026-03-04T00:00');
+		expect(normalizeLocalInput('2026-03-04T09:30')).toBe('2026-03-04T09:30');
+		expect(normalizeLocalInput('')).toBe('');
+	});
+
+	it('validates and builds a create body from a normalised date-only valid_from', () => {
+		// The form normalises once at its entry points (seed, submit); the helpers expect that.
+		const values = {
+			...EMPTY,
+			fullName: 'A',
+			tierId: 't',
+			validFrom: normalizeLocalInput('2026-03-04')
+		};
+		expect(validateRecordForm(values, { mode: 'create' }).validFrom).toBeUndefined();
+		const body = buildCreateBody(values);
+		expect(new Date(body.valid_from).getTime()).toBe(new Date('2026-03-04T00:00').getTime());
 	});
 });

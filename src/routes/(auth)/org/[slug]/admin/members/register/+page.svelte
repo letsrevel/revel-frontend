@@ -50,13 +50,12 @@
 		DEFAULT_FILTERS,
 		REGISTER_PAGE_SIZE,
 		pageToRedirect,
-		filtersToSearch,
 		hasActiveFilters,
 		isRegisterEmpty,
-		parseFilters,
-		type RegisterFilters as Filters
+		parseFilters
 	} from '$lib/member-register/filters';
 	import { nextInviteRefetchDelay } from '$lib/member-register/invite-schedule';
+	import { createFilterNavigator } from '$lib/member-register/filter-navigator.svelte';
 	import { resolveOrgTimezone } from '$lib/member-register/org-timezone';
 
 	const { data }: { data: PageData } = $props();
@@ -70,15 +69,21 @@
 	// and back/forward restores them.
 	const filters = $derived(parseFilters($page.url.searchParams));
 
-	function applyFilters(next: Filters, opts?: { replace?: boolean }) {
-		const qs = filtersToSearch(next);
-		// eslint-disable-next-line svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?" string keeps the current pathname (resolve() cannot express search params)
-		goto(qs ? `?${qs}` : '?', {
-			replaceState: opts?.replace ?? false,
-			keepFocus: true,
-			noScroll: true
-		});
-	}
+	// Patches coalesce onto the latest intended filters (the URL lags a navigation
+	// behind); the controls render `navigator.intended`, the list queries the URL.
+	const navigator = createFilterNavigator({
+		current: () => filters,
+		navigate: async (qs, opts) => {
+			// eslint-disable-next-line svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?" string keeps the current pathname (resolve() cannot express search params)
+			await goto(qs ? `?${qs}` : '?', {
+				replaceState: opts.replace,
+				keepFocus: true,
+				noScroll: true
+			});
+		},
+		onError: () => toast.error(m['memberRegister.filtersApplyError']())
+	});
+	const intendedFilters = $derived(navigator.intended);
 
 	// All-kinds tier list: the filter offers standard AND temporary tiers; the
 	// create/edit form offers the standard ones only (derived below).
@@ -162,17 +167,23 @@
 			? pageToRedirect(records.length, total, filters.page)
 			: null
 	);
+	// Corrections wait while a filter change is pending: they are computed from the
+	// URL's result set, which that change is about to replace. `isPending` is read
+	// tracked, so the correction re-evaluates once the navigation settles; `patch`
+	// reads its own state untracked, so calling it here can't loop the effect.
 	$effect(() => {
-		if (redirectPage !== null) applyFilters({ ...filters, page: redirectPage }, { replace: true });
+		if (navigator.isPending) return;
+		if (redirectPage !== null) navigator.patch({ page: redirectPage });
 	});
 
 	// A well-formed tier id that no longer exists matches nothing (the backend
 	// returns an empty list, not an error): drop the filter and say so.
 	$effect(() => {
+		if (navigator.isPending) return;
 		const tierId = filters.tierId;
 		if (tierId && tiersQuery.isSuccess && !allTiers.some((t) => t.id === tierId)) {
 			toast.info(m['memberRegister.tierFilterStale']());
-			applyFilters({ ...filters, tierId: null, page: 1 }, { replace: true });
+			navigator.patch({ tierId: null, page: 1 });
 		}
 	});
 
@@ -276,7 +287,12 @@
 		</TabsList>
 
 		<TabsContent value="register" class="space-y-6">
-			<RegisterFilters {filters} tiers={allTiers} {timezone} onChange={applyFilters} />
+			<RegisterFilters
+				filters={intendedFilters}
+				tiers={allTiers}
+				{timezone}
+				onChange={navigator.patch}
+			/>
 
 			<section aria-labelledby="register-results-heading" aria-busy={listQuery.isFetching}>
 				<h2 id="register-results-heading" class="sr-only">
@@ -312,7 +328,7 @@
 					>
 						{#snippet action()}
 							{#if hasActiveFilters(filters)}
-								<Button variant="outline" onclick={() => applyFilters({ ...DEFAULT_FILTERS })}>
+								<Button variant="outline" onclick={() => navigator.patch({ ...DEFAULT_FILTERS })}>
 									{m['memberRegister.clearFilters']()}
 								</Button>
 							{:else}
@@ -355,7 +371,7 @@
 								variant="outline"
 								size="sm"
 								disabled={filters.page <= 1}
-								onclick={() => applyFilters({ ...filters, page: filters.page - 1 })}
+								onclick={() => navigator.patch({ page: intendedFilters.page - 1 }, { push: true })}
 							>
 								<ChevronLeft aria-hidden="true" />
 								{m['memberRegister.previous']()}
@@ -367,7 +383,7 @@
 								variant="outline"
 								size="sm"
 								disabled={filters.page >= pageCount}
-								onclick={() => applyFilters({ ...filters, page: filters.page + 1 })}
+								onclick={() => navigator.patch({ page: intendedFilters.page + 1 }, { push: true })}
 							>
 								{m['memberRegister.next']()}
 								<ChevronRight aria-hidden="true" />

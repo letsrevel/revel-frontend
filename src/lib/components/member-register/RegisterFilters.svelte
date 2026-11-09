@@ -21,7 +21,8 @@
 		/** All-kinds tier list (standard and temporary). */
 		tiers: MembershipTierSchema[];
 		timezone: string | null;
-		onChange: (next: RegisterFilters, opts?: { replace?: boolean }) => void;
+		/** Receives PATCHES, never full objects built from the (possibly lagging) props. */
+		onChange: (patch: Partial<RegisterFilters>) => void;
 	}
 
 	const { filters, tiers, timezone, onChange }: Props = $props();
@@ -29,16 +30,19 @@
 	const SEARCH_DEBOUNCE_MS = 300;
 
 	let searchInput = $state(untrack(() => filters.search));
-	let lastApplied = untrack(() => filters.search);
+	// The last search value this component emitted (or mirrored from outside).
+	let lastEmitted = untrack(() => filters.search);
 	let timer: ReturnType<typeof setTimeout> | undefined;
 
-	// Back/forward navigation changes the URL filters from outside: mirror them.
+	// Mirror the intended search into the box only when the change did NOT
+	// originate here (back/forward, clear-all elsewhere). Our own emissions are
+	// already in the box, and intermediate navigation settles never touch it.
 	$effect(() => {
 		const external = filters.search;
-		if (external !== lastApplied) {
-			lastApplied = external;
+		if (external !== lastEmitted) {
+			lastEmitted = external;
 			searchInput = external;
-			// A pending debounce would re-apply the stale text over the navigated state.
+			// The typed text is superseded by the external change.
 			clearTimeout(timer);
 		}
 	});
@@ -49,19 +53,19 @@
 		clearTimeout(timer);
 		timer = setTimeout(() => {
 			const next = searchInput.trim();
-			if (next === lastApplied) return;
-			lastApplied = next;
-			onChange({ ...filters, search: next, page: 1 }, { replace: true });
+			if (next === lastEmitted) return;
+			lastEmitted = next;
+			onChange({ search: next, page: 1 });
 		}, SEARCH_DEBOUNCE_MS);
 	}
 
 	function update(patch: Partial<RegisterFilters>) {
-		onChange({ ...filters, ...patch, page: 1 });
+		onChange({ ...patch, page: 1 });
 	}
 
 	function clearAll() {
 		clearTimeout(timer);
-		lastApplied = '';
+		lastEmitted = '';
 		searchInput = '';
 		onChange({ ...DEFAULT_FILTERS });
 	}
@@ -164,8 +168,7 @@
 			label={m['memberRegister.dayLabel']()}
 			value={filters.activeOn ?? ''}
 			{timezone}
-			onChange={(day) =>
-				onChange({ ...filters, activeOn: day || null, page: 1 }, { replace: true })}
+			onChange={(day) => onChange({ activeOn: day || null, page: 1 })}
 		/>
 	</div>
 

@@ -29,6 +29,17 @@ export const EMPTY_FORM: RecordFormValues = {
 };
 
 const LOCAL_INPUT_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
+const DATE_ONLY_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * A date-only string (`YYYY-MM-DD`) means that day at 00:00 local: return the
+ * conforming `YYYY-MM-DDT00:00`. Anything else is returned unchanged. Never feed
+ * a non-conforming string to a datetime-local input (the browser warns and blanks it).
+ */
+export function normalizeLocalInput(value: string | null | undefined): string {
+	const v = (value ?? '').trim();
+	return DATE_ONLY_RE.test(v) ? `${v}T00:00` : v;
+}
 
 /**
  * `datetime-local` value (the browser's local wall time) -> ISO 8601 string with
@@ -36,7 +47,8 @@ const LOCAL_INPUT_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
  * `new Date()` parses back exactly. Null for empty or malformed input (the
  * shared helper does not validate; a garbage string would reach the API).
  */
-function toInstant(local: string | null | undefined): string | null {
+function toInstant(raw: string | null | undefined): string | null {
+	const local = (raw ?? '').trim();
 	if (!local || !LOCAL_INPUT_RE.test(local) || Number.isNaN(new Date(local).getTime())) return null;
 	return toISOString(local);
 }
@@ -46,8 +58,8 @@ export function formValuesFromRecord(record: MembershipRecordSchema): RecordForm
 		fullName: record.full_name,
 		email: record.email ?? '',
 		tierId: record.tier_id ?? '',
-		validFrom: toDateTimeLocal(record.valid_from),
-		validUntil: toDateTimeLocal(record.valid_until)
+		validFrom: normalizeLocalInput(toDateTimeLocal(record.valid_from)),
+		validUntil: normalizeLocalInput(toDateTimeLocal(record.valid_until))
 	};
 }
 
