@@ -1,17 +1,27 @@
 import { describe, expect, it, vi } from 'vitest';
-import type {
-	MembershipRecordSchema,
-	OrganizationMemberSchema
-} from '$lib/api/generated/types.gen';
+import type { MembershipRecordSchema } from '$lib/api/generated/types.gen';
 
-const sdk = vi.hoisted(() => ({ organizationadminmemberregisterListMemberRegister: vi.fn() }));
+const sdk = vi.hoisted(() => ({
+	organizationadminmemberregisterListMemberRegister: vi.fn(),
+	organizationadminmemberregisterExportMemberRegister: vi.fn()
+}));
 vi.mock('$lib/api', () => sdk);
 vi.mock('$lib/api/client', () => ({ client: {} }));
+const gen = vi.hoisted(() => ({ getMember: vi.fn() }));
+vi.mock('$lib/api/generated/sdk.gen', () => ({ organizationadminmembersGetMember: gen.getMember }));
 
 import { calendarDayInZone } from './calendar-day';
 import { EMPTY_FORM, isInvitableAtCreation } from './form-values';
-import { findMemberByUserId } from './find-member';
-import { countRegister, listPeople, listPersonPeriods } from './api';
+import { fetchMemberAccess, memberAccessKey, memberAccessPrefix } from './member-access';
+import { pickCurrentEntry } from './person-target';
+import {
+	countRegister,
+	listMergedInto,
+	listPeople,
+	listPersonPeriods,
+	startRegisterExport
+} from './api';
+import { makeRecord } from '$lib/components/member-register/person-fixtures';
 
 describe('calendarDayInZone', () => {
 	it('reads the wall-clock day of the organization, not the viewer', () => {
@@ -48,42 +58,90 @@ describe('isInvitableAtCreation', () => {
 	});
 });
 
-function member(id: string, email: string): OrganizationMemberSchema {
-	return {
-		user: { id, email, display_name: email },
-		member_since: '2026-01-01T00:00:00Z',
-		status: 'active'
-	} as OrganizationMemberSchema;
-}
-
-describe('findMemberByUserId (member actions keyed on the user)', () => {
-	const target = { user_id: 'u1', email: 'old@example.org', full_name: 'Ada Lovelace' };
-
-	it('uses the exact user-id match', async () => {
-		const mine = member('u1', 'new@x.org');
-		const find = vi.fn().mockResolvedValue([member('u2', 'other@example.org'), mine]);
-		await expect(findMemberByUserId(target, find)).resolves.toBe(mine);
-		expect(find).toHaveBeenCalledWith('old@example.org');
+describe('fetchMemberAccess (the single-member GET)', () => {
+	it('returns the access row of any status', async () => {
+		const row = { status: 'cancelled', user: { id: 'u1' } };
+		gen.getMember.mockResolvedValue({ data: row, response: { status: 200 } });
+		await expect(fetchMemberAccess('acme', 'tok', 'u1')).resolves.toBe(row);
+		expect(gen.getMember).toHaveBeenCalledWith(
+			expect.objectContaining({ path: { slug: 'acme', user_id: 'u1' } })
+		);
 	});
 
-	it('tries the name when the register email finds nobody', async () => {
-		const mine = member('u1', 'new@x.org');
-		const find = vi.fn().mockResolvedValueOnce([]).mockResolvedValueOnce([mine]);
-		await expect(findMemberByUserId(target, find)).resolves.toBe(mine);
-		expect(find).toHaveBeenLastCalledWith('Ada Lovelace');
+	it('resolves null on a 404 (no access row)', async () => {
+		gen.getMember.mockResolvedValue({ error: { detail: 'nf' }, response: { status: 404 } });
+		await expect(fetchMemberAccess('acme', 'tok', 'u1')).resolves.toBeNull();
 	});
 
-	it('resolves null when nothing matches or the lookup fails', async () => {
-		await expect(findMemberByUserId(target, vi.fn().mockResolvedValue([]))).resolves.toBeNull();
-		await expect(
-			findMemberByUserId(target, vi.fn().mockRejectedValue(new Error('boom')))
-		).resolves.toBeNull();
-		await expect(findMemberByUserId({ ...target, user_id: null }, vi.fn())).resolves.toBeNull();
+	it('throws every other failure so TanStack retries', async () => {
+		gen.getMember.mockResolvedValue({ error: { detail: 'boom' }, response: { status: 500 } });
+		await expect(fetchMemberAccess('acme', 'tok', 'u1')).rejects.toThrow();
+		await expect(fetchMemberAccess('acme', null, 'u1')).rejects.toThrow();
 	});
 
-	it('never matches a different user that shares the email text', async () => {
-		const find = vi.fn().mockResolvedValue([member('u9', 'old@example.org')]);
-		await expect(findMemberByUserId(target, find)).resolves.toBeNull();
+	it('is keyed OUTSIDE the members-list prefix, so a note save never refetches it', () => {
+		const key = memberAccessKey('acme', 'u1');
+		expect(key.slice(0, 3)).toEqual(['organization', 'acme', 'member']);
+		const listPrefix = ['organization', 'acme', 'members'];
+		const registerPrefix = ['organization', 'acme', 'member-register'];
+		for (const prefix of [listPrefix, registerPrefix]) {
+			expect(key.slice(0, prefix.length)).not.toEqual(prefix);
+		}
+		expect(memberAccessPrefix('acme')).toEqual(['organization', 'acme', 'member']);
+	});
+});
+
+describe('pickCurrentEntry', () => {
+	const ended = makeRecord({ id: 'a', is_current: false, valid_from: '2026-01-01T00:00:00Z' });
+	const current = makeRecord({ id: 'b', is_current: true, valid_from: '2026-06-01T00:00:00Z' });
+
+	it('prefers the current entry, even when an older one started later', () => {
+		const late = makeRecord({ id: 'c', is_current: false, valid_from: '2026-09-01T00:00:00Z' });
+		expect(pickCurrentEntry([ended, late, current])?.id).toBe('b');
+	});
+
+	it('falls back to the latest start when nothing is current', () => {
+		const later = makeRecord({ id: 'c', is_current: false, valid_from: '2026-03-01T00:00:00Z' });
+		expect(pickCurrentEntry([ended, later])?.id).toBe('c');
+	});
+
+	it('ignores merged entries and prefers the kind the sheet was opened on', () => {
+		const merged = makeRecord({ id: 'm', is_current: true, merged_into_id: 'b' });
+		const day = makeRecord({ id: 'd', kind: 'temporary', is_current: true });
+		expect(pickCurrentEntry([merged])).toBeNull();
+		expect(pickCurrentEntry([day, current], 'standard')?.id).toBe('b');
+		expect(pickCurrentEntry([day, current], 'temporary')?.id).toBe('d');
+		expect(pickCurrentEntry([])).toBeNull();
+	});
+});
+
+describe('merged_into and export include_merged', () => {
+	it('asks for the entries merged into one survivor', async () => {
+		sdk.organizationadminmemberregisterListMemberRegister.mockResolvedValue({
+			data: { count: 0, next: null, previous: null, results: [] }
+		});
+		await listMergedInto('acme', 'tok', 'r2');
+		expect(
+			sdk.organizationadminmemberregisterListMemberRegister.mock.calls.at(-1)?.[0].query
+		).toMatchObject({ merged_into: 'r2' });
+	});
+
+	it('sends include_merged only when asked', async () => {
+		sdk.organizationadminmemberregisterExportMemberRegister.mockResolvedValue({
+			data: { id: 'x' }
+		});
+		await startRegisterExport('acme', 'tok', null);
+		expect(
+			sdk.organizationadminmemberregisterExportMemberRegister.mock.calls.at(-1)?.[0].body
+		).toEqual({});
+		await startRegisterExport('acme', 'tok', null, true);
+		expect(
+			sdk.organizationadminmemberregisterExportMemberRegister.mock.calls.at(-1)?.[0].body
+		).toEqual({ include_merged: true });
+		await startRegisterExport('acme', 'tok', '2026-11-01', false);
+		expect(
+			sdk.organizationadminmemberregisterExportMemberRegister.mock.calls.at(-1)?.[0].body
+		).toEqual({ active_on: '2026-11-01' });
 	});
 });
 
@@ -110,7 +168,7 @@ describe('listPeople / countRegister', () => {
 		const page = await listPeople('org', 'tok', { page: 1, page_size: 20, ended: true });
 		expect(page.results.map((r) => r.id)).toEqual(['past', 'now']);
 		expect(page.count).toBe(2);
-		const sent = sdk.organizationadminmemberregisterListMemberRegister.mock.calls[0][0].query;
+		const sent = sdk.organizationadminmemberregisterListMemberRegister.mock.calls.at(-1)?.[0].query;
 		expect(sent).toEqual({ page: 1, page_size: 20, ended: true });
 	});
 

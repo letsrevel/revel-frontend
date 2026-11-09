@@ -434,4 +434,44 @@ describe('beta smoke fixes', () => {
 		expect(screen.queryByTestId('export-summary')).not.toBeInTheDocument();
 		expect(document.body.textContent?.match(/\(Europe\/Vienna\)/g)).toHaveLength(1);
 	});
+
+	it('offers Include merged entries (off by default) and sends include_merged', async () => {
+		sdk.organizationadminmemberregisterExportMemberRegister.mockResolvedValue({
+			data: { id: 'job-1' }
+		});
+		renderIn(RegisterExportDialog, {
+			open: true,
+			slug: 'acme',
+			accessToken: 'tok',
+			timezone: 'UTC',
+			initialDay: null,
+			onClose: noop
+		});
+		const box = screen.getByRole('checkbox', { name: 'Include merged entries' });
+		expect(box).not.toBeChecked();
+		await userEvent.click(box);
+		expect(box).toBeChecked();
+		await userEvent.click(
+			screen.getAllByRole('button', { name: 'Export xlsx' }).at(-1) as HTMLElement
+		);
+		await waitFor(() =>
+			expect(sdk.organizationadminmemberregisterExportMemberRegister).toHaveBeenCalledWith(
+				expect.objectContaining({ body: { include_merged: true } })
+			)
+		);
+	});
+
+	it('disables the merged option with a hint while a day is set', () => {
+		renderIn(RegisterExportDialog, {
+			open: true,
+			slug: 'acme',
+			accessToken: 'tok',
+			timezone: 'UTC',
+			initialDay: '2026-11-09',
+			onClose: noop
+		});
+		const box = screen.getByRole('checkbox', { name: 'Include merged entries' });
+		expect(box).toBeDisabled();
+		expect(box).toHaveAccessibleDescription(/not part of a day snapshot/);
+	});
 });

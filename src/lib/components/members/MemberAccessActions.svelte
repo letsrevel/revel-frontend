@@ -15,6 +15,7 @@
 	} from '$lib/api/generated/types.gen';
 	import { backendMessage } from '$lib/utils/api-error-detail';
 	import { memberRegisterKeys } from '$lib/member-register/api';
+	import { memberAccessPrefix } from '$lib/member-register/member-access';
 	import ManageMemberModal from './ManageMemberModal.svelte';
 
 	/**
@@ -42,6 +43,9 @@
 	function refreshAll(): void {
 		void queryClient.invalidateQueries({ queryKey: ['organization', slug, 'members'] });
 		void queryClient.invalidateQueries({ queryKey: memberRegisterKeys.all(slug) });
+		// The person sheet's single-member lookup sits OUTSIDE the list prefix (a note
+		// save must not refetch it), so a member mutation refreshes it explicitly.
+		void queryClient.invalidateQueries({ queryKey: memberAccessPrefix(slug) });
 		// Losing membership, a ban or a tier move acts on the member's subscription
 		// (billing is stopped / moved server-side), so the Subscriptions tab and its
 		// metrics (nested under this prefix) are stale the moment this resolves.

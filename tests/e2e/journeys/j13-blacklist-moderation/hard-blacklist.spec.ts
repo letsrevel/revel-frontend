@@ -62,7 +62,8 @@ test.describe('J13 hard blacklist @p2', () => {
 		await ownerPage.getByRole('tab', { name: /^Staff/ }).click();
 		await expect(ownerPage.getByText('No staff members found')).toBeVisible({ timeout: 15_000 });
 		// A banned membership ends the register entry: it shows up as Ended (with its
-		// end reason in the sheet's periods) and offers no member actions.
+		// end reason in the sheet's periods). The banned access row still exists, so
+		// "Manage membership" is offered, with a pointer to the blacklist for the unban.
 		await gotoHydrated(ownerPage, registerPath(org.slug, 'ended'));
 		await waitForClientAuth(ownerPage);
 		await expect(
@@ -70,7 +71,8 @@ test.describe('J13 hard blacklist @p2', () => {
 		).toBeVisible({ timeout: 15_000 });
 		const sheet = await openPersonSheet(ownerPage, victimName);
 		await expect(sheet.getByTestId('person-periods')).toContainText('Ended: expelled');
-		await expect(sheet.getByTestId('person-manage-membership')).toHaveCount(0);
+		await expect(sheet.getByTestId('person-manage-membership')).toBeVisible({ timeout: 15_000 });
+		await expect(sheet.getByTestId('person-banned-hint')).toBeVisible();
 		await ownerPage.keyboard.press('Escape');
 
 		// The banned user's event access is gone outright — hard-blacklisting

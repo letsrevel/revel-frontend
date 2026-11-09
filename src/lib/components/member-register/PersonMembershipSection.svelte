@@ -2,15 +2,15 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { CalendarX, Loader2, Mail, Pencil, Trash2, UserCog } from '@lucide/svelte';
-	import { organizationadminmembersListMembers } from '$lib/api/generated/sdk.gen';
 	import type { MembershipRecordSchema, MembershipTierSchema } from '$lib/api/generated/types.gen';
 	import SectionHeader from '$lib/components/common/SectionHeader.svelte';
+	import { resolve } from '$app/paths';
 	import { Button } from '$lib/components/ui/button';
 	import MemberAccessActions from '$lib/components/members/MemberAccessActions.svelte';
 	import { formatDate } from '$lib/utils/date';
 	import { kindLabel } from '$lib/member-register/badges';
 	import { getEditability } from '$lib/member-register/editability';
-	import { findMemberByUserId } from '$lib/member-register/find-member';
+	import { fetchMemberAccess, memberAccessKey } from '$lib/member-register/member-access';
 	import { canManageMember } from '$lib/member-register/people-view';
 
 	interface Props {
@@ -39,27 +39,29 @@
 		onInvite
 	}: Props = $props();
 
-	// The member actions (change tier, pause / resume, remove, ban) exist only for
-	// a linked, current standard entry: nothing else has a live access row.
+	// A linked, current standard entry always has a live access row; the access
+	// row itself is what decides whether member actions exist (see below).
 	const manageable = $derived(canManageMember(record));
 	const merged = $derived(!!record.merged_into_id);
 
-	// The access row, found by the entry's USER id (the member list cannot filter by it).
+	// The person's access row in ANY status (a cancelled or banned member keeps
+	// one, and staff can reactivate it). A 404 is "no access row": no member
+	// actions. Any other failure throws, so TanStack retries. The key sits outside
+	// the members-list prefix (a note save must not refetch it).
 	const memberQuery = createQuery(() => ({
-		queryKey: ['organization', slug, 'members', 'by-user', record.user_id ?? ''],
-		queryFn: () =>
-			findMemberByUserId(record, async (term) => {
-				const response = await organizationadminmembersListMembers({
-					path: { slug },
-					query: { search: term, page_size: 100 },
-					headers: { Authorization: `Bearer ${accessToken}` }
-				});
-				if (response.error) throw new Error('Failed to fetch members');
-				return response.data?.results ?? [];
-			}),
-		enabled: !!accessToken && manageable
+		queryKey: memberAccessKey(slug, record.user_id ?? ''),
+		queryFn: () => fetchMemberAccess(slug, accessToken, record.user_id as string),
+		enabled: !!accessToken && !!record.user_id && !merged
 	}));
 	const member = $derived(memberQuery.data ?? null);
+	const showManage = $derived(!!member || (manageable && !memberQuery.isSuccess));
+	// No access row (404) means no member actions: even a current entry then falls
+	// back to the plain register actions.
+	// Register actions (edit / end / delete) stay out of the way of a live member:
+	// the member actions end the entry themselves.
+	const showRegisterActions = $derived(
+		!merged && (!manageable || (memberQuery.isSuccess && !member))
+	);
 
 	let manageOpen = $state(false);
 
@@ -99,10 +101,21 @@
 		</div>
 	</dl>
 
-	{#if manageable}
+	{#if showManage}
 		<div class="space-y-2" data-testid="person-member-actions">
 			<p class="text-sm text-muted-foreground">{m['memberPeople.sheet.manageHelp']()}</p>
-			{#if memberQuery.isError || (memberQuery.isSuccess && !member)}
+			{#if member?.status === 'banned'}
+				<p class="text-sm" data-testid="person-banned-hint">
+					{m['memberPeople.sheet.bannedHint']()}
+					<a
+						class="font-medium underline underline-offset-4"
+						href={resolve('/(auth)/org/[slug]/admin/blacklist', { slug })}
+					>
+						{m['memberPeople.sheet.bannedLink']()}
+					</a>
+				</p>
+			{/if}
+			{#if memberQuery.isError}
 				<p class="text-sm text-destructive" role="alert">
 					{m['memberPeople.sheet.memberLoadError']()}
 				</p>
@@ -129,9 +142,12 @@
 			open={manageOpen}
 			onClose={() => (manageOpen = false)}
 		/>
-	{:else if !merged}
+	{/if}
+	{#if showRegisterActions}
 		<div class="space-y-3" data-testid="person-register-actions">
-			<p class="text-sm text-muted-foreground">{unlinkedHint}</p>
+			{#if !member}
+				<p class="text-sm text-muted-foreground">{unlinkedHint}</p>
+			{/if}
 			<div class="flex flex-wrap gap-2">
 				<Button variant="outline" onclick={() => onEdit(record)}>
 					<Pencil aria-hidden="true" />

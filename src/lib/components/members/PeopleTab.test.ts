@@ -46,6 +46,9 @@ vi.mock('$app/stores', async () => {
 });
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	organizationadminmembersListMembers: vi.fn().mockResolvedValue({ data: { results: [] } }),
+	organizationadminmembersGetMember: vi
+		.fn()
+		.mockResolvedValue({ error: { detail: 'nf' }, response: { status: 404 } }),
 	organizationadminusernotesGetRecordNote: vi
 		.fn()
 		.mockResolvedValue({ error: { detail: 'nf' }, response: { status: 404 } })
@@ -162,6 +165,7 @@ describe('PeopleTab person sheet', () => {
 
 	it('opens from the row button, names itself after the person, and gives focus back on close', async () => {
 		api.listPeople.mockResolvedValue(rowPage);
+		api.listPersonPeriods.mockResolvedValue(rowPage);
 		renderTab(true);
 		const opener = await screen.findAllByRole('button', { name: 'Open Ada Rossi' });
 		opener[0].focus();

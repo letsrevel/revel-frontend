@@ -3,6 +3,7 @@
 	import type { MembershipRecordSchema } from '$lib/api/generated/types.gen';
 	import { formatDate } from '$lib/utils/date';
 	import { kindLabel, sourceLabel } from '$lib/member-register/badges';
+	import { rowHasOpenMenu, shouldOpenRow } from '$lib/member-register/row-click';
 	import PersonStatusCell from './PersonStatusCell.svelte';
 	import RegisterRowActions from './RegisterRowActions.svelte';
 
@@ -19,6 +20,10 @@
 	}
 
 	const { records, isOwner, onEdit, onEnd, onDelete, onInvite, onUnlink, onOpen }: Props = $props();
+
+	// Set at pointerdown: by the time the click lands, the press itself has closed
+	// the row's menu, so only the pointerdown still knows it was open.
+	let menuOpenAtPointerDown = false;
 
 	const TH =
 		'px-4 py-3 text-left text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground';
@@ -50,10 +55,10 @@
 				<tr
 					class="cursor-pointer align-top hover:bg-muted/50"
 					data-testid="register-row"
+					onpointerdown={(event) => (menuOpenAtPointerDown = rowHasOpenMenu(event.currentTarget))}
 					onclick={(event) => {
-						if (!(event.target as HTMLElement).closest('button, a, [role="menuitem"]')) {
-							onOpen(record);
-						}
+						if (shouldOpenRow(event.target, menuOpenAtPointerDown)) onOpen(record);
+						menuOpenAtPointerDown = false;
 					}}
 				>
 					<th scope="row" class="px-4 py-3 text-left text-sm font-medium">

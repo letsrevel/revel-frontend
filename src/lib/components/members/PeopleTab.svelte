@@ -65,6 +65,11 @@
 		type PeopleView
 	} from '$lib/member-register/people-view';
 	import { nextInviteRefetchDelay } from '$lib/member-register/invite-schedule';
+	import {
+		sheetStateFor,
+		sheetStateForRecord,
+		type SheetState
+	} from '$lib/member-register/person-target';
 	import { createFilterNavigator } from '$lib/member-register/filter-navigator.svelte';
 	import { resolveOrgTimezone } from '$lib/member-register/org-timezone';
 	import { calendarDayInZone, formatCalendarDay } from '$lib/member-register/calendar-day';
@@ -259,7 +264,9 @@
 	const liveDeleting = $derived(records.find((r) => r.id === deleting?.id) ?? deleting);
 	const liveInviting = $derived(records.find((r) => r.id === inviting?.id) ?? inviting);
 	const liveUnlinking = $derived(records.find((r) => r.id === unlinking?.id) ?? unlinking);
-	const unlinkingPresent = $derived(!unlinking || records.some((r) => r.id === unlinking?.id));
+	const unlinkingPresent = $derived(
+		!unlinking || !!unlinking.merged_into_id || records.some((r) => r.id === unlinking?.id)
+	);
 	const foundMerging = $derived(
 		merging
 			? duplicates.find(
@@ -274,24 +281,26 @@
 	const deletingPresent = $derived(!deleting || records.some((r) => r.id === deleting?.id));
 	const invitingPresent = $derived(!inviting || records.some((r) => r.id === inviting?.id));
 
-	// The person sheet. Holds the opened entry's snapshot; the live row from the
-	// list wins (so a refetch keeps its status and note marker true). The sheet
-	// closes when a settled refetch no longer has the row: it was ended into
-	// another chip, deleted or unlinked, and there is nothing left to show.
-	let sheetRecord = $state<MembershipRecordSchema | null>(null);
-	const liveSheetRecord = $derived(
-		sheetRecord ? (records.find((r) => r.id === sheetRecord?.id) ?? sheetRecord) : null
+	// The person sheet. A linked person is followed by their USER id (a tier change
+	// ends one entry and opens another); an account-less or merged entry is followed
+	// by its record id. The sheet resolves the live entry itself. A record-keyed
+	// sheet closes when a settled refetch no longer has its row: it was ended into
+	// another chip, deleted or unlinked, and there is nothing left to show. A
+	// merged entry (opened from a periods list) is never in the list, so it stays.
+	let sheet = $state<SheetState | null>(null);
+	const sheetRecordId = $derived(
+		sheet?.target.kind === 'record' && !sheet.seed.merged_into_id ? sheet.target.recordId : null
 	);
-	const sheetRowPresent = $derived(!sheetRecord || records.some((r) => r.id === sheetRecord?.id));
+	const sheetRowPresent = $derived(!sheetRecordId || records.some((r) => r.id === sheetRecordId));
 	$effect(() => {
 		if (
-			sheetRecord &&
+			sheet &&
 			!sheetRowPresent &&
 			listQuery.isSuccess &&
 			!listQuery.isFetching &&
 			!listQuery.isPlaceholderData
 		) {
-			sheetRecord = null;
+			sheet = null;
 		}
 	});
 
@@ -428,7 +437,7 @@
 				onDelete={(r) => (deleting = r)}
 				onInvite={(r) => (inviting = r)}
 				onUnlink={(r) => (unlinking = r)}
-				onOpen={(r) => (sheetRecord = r)}
+				onOpen={(r) => (sheet = sheetStateFor(r))}
 			/>
 			<RegisterCards
 				{records}
@@ -438,7 +447,7 @@
 				onDelete={(r) => (deleting = r)}
 				onInvite={(r) => (inviting = r)}
 				onUnlink={(r) => (unlinking = r)}
-				onOpen={(r) => (sheetRecord = r)}
+				onOpen={(r) => (sheet = sheetStateFor(r))}
 			/>
 
 			<nav
@@ -477,21 +486,28 @@
 </div>
 
 <PersonSheet
-	record={liveSheetRecord}
+	{sheet}
+	rows={records}
 	{slug}
 	{accessToken}
 	tiers={formTiers}
 	{staffUserIds}
 	{isOwner}
 	canOpenPayments={!!onOpenPayments}
-	onClose={() => (sheetRecord = null)}
+	onClose={() => (sheet = null)}
+	onOpenRecord={(r) => (sheet = sheetStateForRecord(r))}
 	onEdit={openEdit}
 	onEnd={(r) => (ending = r)}
 	onDelete={(r) => (deleting = r)}
 	onInvite={(r) => (inviting = r)}
-	onUnlink={(r) => (unlinking = r)}
+	onUnlink={(r) => {
+		unlinking = r;
+		// A merged entry is not in the list: once unlinked it is a different row, so
+		// the sheet closes rather than keep showing the stale merged snapshot.
+		if (r.merged_into_id) sheet = null;
+	}}
 	onOpenPayments={() => {
-		sheetRecord = null;
+		sheet = null;
 		onOpenPayments?.();
 	}}
 />

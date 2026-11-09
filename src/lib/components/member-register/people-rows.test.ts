@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen, within } from '@testing-library/svelte';
+import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import RegisterTable from './RegisterTable.svelte';
 import PersonStatusCell from './PersonStatusCell.svelte';
@@ -98,5 +98,36 @@ describe('RegisterTable rows', () => {
 		expect(onOpen).toHaveBeenCalledTimes(1);
 		await userEvent.click(within(rows[0]).getByTestId('register-row-actions'));
 		expect(onOpen).toHaveBeenCalledTimes(1);
+	});
+
+	it('does not open when the click ends a text selection', () => {
+		const onOpen = vi.fn();
+		render(RegisterTable, { props: props(onOpen) });
+		const rows = screen.getAllByTestId('register-row');
+		const cell = within(rows[0]).getByText('ada@example.org');
+		const range = document.createRange();
+		range.selectNodeContents(cell);
+		window.getSelection()?.removeAllRanges();
+		window.getSelection()?.addRange(range);
+		fireEvent.click(cell);
+		expect(onOpen).not.toHaveBeenCalled();
+		window.getSelection()?.removeAllRanges();
+		fireEvent.click(cell);
+		expect(onOpen).toHaveBeenCalledTimes(1);
+	});
+
+	it('does not open when the pointer went down while the row menu was open', async () => {
+		const onOpen = vi.fn();
+		render(RegisterTable, { props: props(onOpen) });
+		const rows = screen.getAllByTestId('register-row');
+		const trigger = within(rows[0]).getByTestId('register-row-actions');
+		await userEvent.click(trigger);
+		expect(trigger).toHaveAttribute('aria-expanded', 'true');
+		// The press lands on the row while the menu is open; the click that follows
+		// only dismisses the menu.
+		const cell = within(rows[0]).getByText('ada@example.org');
+		fireEvent.pointerDown(cell);
+		fireEvent.click(cell);
+		expect(onOpen).not.toHaveBeenCalled();
 	});
 });

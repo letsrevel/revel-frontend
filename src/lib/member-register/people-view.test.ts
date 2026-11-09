@@ -129,6 +129,17 @@ describe('status vocabulary', () => {
 		});
 	});
 
+	it('reads a revoked entry as Ended even when it never started (before the Upcoming fallback)', () => {
+		expect(
+			status({ ended_reason: 'revoked', valid_from: '2026-12-01T00:00:00Z', is_current: false })
+		).toEqual({ id: 'ended', tone: 'neutral' });
+		// Without is_current the not-started fallback must not win either.
+		expect(status({ ended_reason: 'revoked', valid_from: '2026-12-01T00:00:00Z' }).id).toBe(
+			'ended'
+		);
+		expect(status({ valid_from: '2026-12-01T00:00:00Z', is_current: false }).id).toBe('upcoming');
+	});
+
 	it('is not "ended" just because an end date is set: only one at or before now', () => {
 		// A running day membership (ticket-granted: it always has an end, the event end).
 		expect(status({ kind: 'temporary', valid_until: '2026-11-09T18:00:00Z' }).id).toBe(

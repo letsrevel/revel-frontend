@@ -164,7 +164,7 @@ export type PersonStatusInput = Pick<
 	MembershipRecordSchema,
 	'valid_from' | 'valid_until' | 'kind' | 'has_account' | 'invite_status'
 > &
-	Partial<Pick<MembershipRecordSchema, 'is_current' | 'member_status'>>;
+	Partial<Pick<MembershipRecordSchema, 'is_current' | 'member_status' | 'ended_reason'>>;
 
 /**
  * The single status vocabulary of a People row. The backend's `is_current`
@@ -180,7 +180,10 @@ export function getPersonStatus(record: PersonStatusInput, now: Date = new Date(
 	const at = now.getTime();
 	const notStarted = !!record.valid_from && Date.parse(record.valid_from) > at;
 	let id: PersonStatusId;
-	if (record.is_current === false) id = notStarted ? 'upcoming' : 'ended';
+	// A revoked entry is over, even when its start never came: that check goes
+	// BEFORE the "not started -> upcoming" fallback.
+	if (record.ended_reason === 'revoked') id = 'ended';
+	else if (record.is_current === false) id = notStarted ? 'upcoming' : 'ended';
 	else if (
 		record.is_current === undefined &&
 		record.valid_until &&

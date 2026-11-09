@@ -5,17 +5,20 @@ import { QueryClient } from '@tanstack/svelte-query';
 import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 import type { MembershipRecordSchema } from '$lib/api/generated/types.gen';
 import { makeRecord, makeUnlinked } from './person-fixtures';
+import { sheetStateFor, sheetStateForRecord } from '$lib/member-register/person-target';
 
 vi.mock('$env/dynamic/public', () => ({ env: { PUBLIC_API_URL: '' } }));
 vi.mock('$lib/api/client', () => ({ client: {} }));
 
-const periods = vi.hoisted(() => ({ list: vi.fn() }));
+const periods = vi.hoisted(() => ({ list: vi.fn(), merged: vi.fn() }));
 vi.mock('$lib/member-register/api', async (importOriginal) => ({
 	...(await importOriginal<typeof import('$lib/member-register/api')>()),
-	listPersonPeriods: periods.list
+	listPersonPeriods: periods.list,
+	listMergedInto: periods.merged
 }));
 
 const sdk = vi.hoisted(() => ({
+	getMember: vi.fn(),
 	listMembers: vi.fn(),
 	getRecordNote: vi.fn(),
 	putRecordNote: vi.fn(),
@@ -24,6 +27,7 @@ const sdk = vi.hoisted(() => ({
 }));
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	organizationadminmembersListMembers: sdk.listMembers,
+	organizationadminmembersGetMember: sdk.getMember,
 	organizationadminusernotesGetRecordNote: sdk.getRecordNote,
 	organizationadminusernotesUpsertRecordNote: sdk.putRecordNote,
 	organizationadminusernotesDeleteRecordNote: sdk.deleteRecordNote,
@@ -41,37 +45,59 @@ const member = {
 	user: { id: 'u1', email: 'ada@example.org', first_name: 'Ada', last_name: 'Rossi' }
 };
 
+const handlers = () => ({
+	onClose: vi.fn(),
+	onOpenRecord: vi.fn(),
+	onEdit: vi.fn(),
+	onEnd: vi.fn(),
+	onDelete: vi.fn(),
+	onInvite: vi.fn(),
+	onUnlink: vi.fn(),
+	onOpenPayments: vi.fn()
+});
+
+function propsFor(
+	record: MembershipRecordSchema | null,
+	h: ReturnType<typeof handlers>,
+	extra: Partial<{ isOwner: boolean; canOpenPayments: boolean }> = {},
+	rows: MembershipRecordSchema[] = record ? [record] : []
+) {
+	return {
+		sheet: record
+			? record.merged_into_id
+				? sheetStateForRecord(record)
+				: sheetStateFor(record)
+			: null,
+		rows,
+		slug: 'acme',
+		accessToken: 'tok',
+		tiers: [],
+		staffUserIds: new Set<string>(),
+		isOwner: true,
+		canOpenPayments: false,
+		...extra,
+		...h
+	};
+}
+
 function renderSheet(
 	record: MembershipRecordSchema | null,
 	extra: Partial<{ isOwner: boolean; canOpenPayments: boolean }> = {}
 ) {
-	const handlers = {
-		onClose: vi.fn(),
-		onEdit: vi.fn(),
-		onEnd: vi.fn(),
-		onDelete: vi.fn(),
-		onInvite: vi.fn(),
-		onUnlink: vi.fn(),
-		onOpenPayments: vi.fn()
-	};
-	render(QueryClientTestWrapper, {
-		props: {
-			client: new QueryClient({ defaultOptions: { queries: { retry: false } } }),
-			component: PersonSheet as never,
-			componentProps: {
-				record,
-				slug: 'acme',
-				accessToken: 'tok',
-				tiers: [],
-				staffUserIds: new Set<string>(),
-				isOwner: true,
-				canOpenPayments: false,
-				...extra,
-				...handlers
-			}
-		}
+	const h = handlers();
+	const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+	const view = render(QueryClientTestWrapper, {
+		props: { client, component: PersonSheet as never, componentProps: propsFor(record, h, extra) }
 	});
-	return handlers;
+	return Object.assign(h, {
+		client,
+		rerenderWith: (next: MembershipRecordSchema | null, rows?: MembershipRecordSchema[]) =>
+			view.rerender({
+				client,
+				component: PersonSheet as never,
+				componentProps: propsFor(next, h, extra, rows)
+			})
+	});
 }
 
 const note = {
@@ -84,9 +110,13 @@ const note = {
 beforeEach(() => {
 	document.body.style.pointerEvents = '';
 	periods.list.mockReset().mockResolvedValue({ count: 0, next: null, previous: null, results: [] });
-	sdk.listMembers
+	periods.merged
 		.mockReset()
-		.mockResolvedValue({ data: { results: [member], count: 1 }, error: undefined });
+		.mockResolvedValue({ count: 0, next: null, previous: null, results: [] });
+	sdk.listMembers.mockReset();
+	sdk.getMember
+		.mockReset()
+		.mockResolvedValue({ data: member, error: undefined, response: { status: 200 } });
 	sdk.getRecordNote
 		.mockReset()
 		.mockResolvedValue({ error: { detail: 'nf' }, response: { status: 404 } });
@@ -138,8 +168,11 @@ describe('PersonSheet membership actions', () => {
 		const manage = await screen.findByTestId('person-manage-membership');
 		await waitFor(() => expect(manage).toBeEnabled());
 		expect(screen.queryByTestId('person-register-actions')).not.toBeInTheDocument();
-		// The access row is found by the entry's USER id.
-		expect(sdk.listMembers).toHaveBeenCalled();
+		// The access row is the single-member GET, by the entry's USER id.
+		expect(sdk.getMember).toHaveBeenCalledWith(
+			expect.objectContaining({ path: { slug: 'acme', user_id: 'u1' } })
+		);
+		expect(sdk.listMembers).not.toHaveBeenCalled();
 	});
 
 	it('opens the shared manage modal (tier, status, remove, ban) keyed on the user', async () => {
@@ -169,7 +202,7 @@ describe('PersonSheet membership actions', () => {
 		expect(handlers.onEnd).toHaveBeenCalledTimes(1);
 		await userEvent.click(screen.getByRole('button', { name: 'Delete' }));
 		expect(handlers.onDelete).toHaveBeenCalledTimes(1);
-		expect(sdk.listMembers).not.toHaveBeenCalled();
+		expect(sdk.getMember).not.toHaveBeenCalled();
 	});
 
 	it('hides Delete from non-owners', async () => {
@@ -178,7 +211,8 @@ describe('PersonSheet membership actions', () => {
 		expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();
 	});
 
-	it('shows no member actions for an ended linked entry or a day membership', async () => {
+	it('shows no member actions for an ended linked entry without an access row (404)', async () => {
+		sdk.getMember.mockResolvedValue({ error: { detail: 'nf' }, response: { status: 404 } });
 		renderSheet(
 			makeRecord({ is_current: false, member_status: null, valid_until: '2026-02-01T00:00:00Z' })
 		);
@@ -186,7 +220,56 @@ describe('PersonSheet membership actions', () => {
 		expect(screen.queryByTestId('person-manage-membership')).not.toBeInTheDocument();
 	});
 
-	it('shows no member actions for a day membership', async () => {
+	it('offers Manage membership for a cancelled member, so staff can reactivate them', async () => {
+		sdk.getMember.mockResolvedValue({
+			data: { ...member, status: 'cancelled' },
+			response: { status: 200 }
+		});
+		renderSheet(
+			makeRecord({
+				is_current: false,
+				member_status: 'cancelled',
+				valid_until: '2026-02-01T00:00:00Z'
+			})
+		);
+		const manage = await screen.findByTestId('person-manage-membership');
+		await waitFor(() => expect(manage).toBeEnabled());
+		await userEvent.click(manage);
+		expect(await screen.findByLabelText('Membership Status')).toBeInTheDocument();
+		expect(screen.queryByTestId('person-banned-hint')).not.toBeInTheDocument();
+	});
+
+	it('offers Manage for a banned member and points to the blacklist for the unban', async () => {
+		sdk.getMember.mockResolvedValue({
+			data: { ...member, status: 'banned' },
+			response: { status: 200 }
+		});
+		renderSheet(
+			makeRecord({
+				is_current: false,
+				member_status: 'banned',
+				valid_until: '2026-02-01T00:00:00Z'
+			})
+		);
+		expect(await screen.findByTestId('person-manage-membership')).toBeInTheDocument();
+		const hint = await screen.findByTestId('person-banned-hint');
+		expect(within(hint).getByRole('link', { name: 'Open the blacklist' })).toHaveAttribute(
+			'href',
+			expect.stringContaining('/org/acme/admin/blacklist')
+		);
+	});
+
+	it('retries a failed access lookup instead of treating it as "no access"', async () => {
+		sdk.getMember.mockResolvedValue({ error: { detail: 'boom' }, response: { status: 500 } });
+		renderSheet(makeRecord());
+		expect(
+			await screen.findByText("Could not load this member's access details.")
+		).toBeInTheDocument();
+		expect(screen.queryByTestId('person-register-actions')).not.toBeInTheDocument();
+	});
+
+	it('shows no member actions for a day membership without an access row', async () => {
+		sdk.getMember.mockResolvedValue({ error: { detail: 'nf' }, response: { status: 404 } });
 		renderSheet(makeRecord({ kind: 'temporary' }));
 		await screen.findByTestId('person-register-actions');
 		expect(screen.queryByTestId('person-manage-membership')).not.toBeInTheDocument();
@@ -303,5 +386,161 @@ describe('PersonSheet account', () => {
 		const account = await screen.findByTestId('person-account');
 		expect(account).toHaveTextContent('No account linked yet.');
 		expect(within(account).queryByTestId('person-unlink')).not.toBeInTheDocument();
+	});
+});
+
+describe('PersonSheet follows the person, not one entry', () => {
+	const old = () =>
+		makeRecord({
+			id: 'r-old',
+			tier_name: 'Silver',
+			valid_until: '2026-06-01T00:00:00Z',
+			is_current: false,
+			ended_reason: 'tier_changed',
+			member_status: null
+		});
+	const fresh = () =>
+		makeRecord({ id: 'r-new', tier_name: 'Gold', valid_from: '2026-06-01T00:00:00Z' });
+
+	it('lands on the current entry after a tier change, with Manage membership available', async () => {
+		periods.list.mockResolvedValue({
+			count: 2,
+			next: null,
+			previous: null,
+			results: [old(), fresh()]
+		});
+		// The sheet was opened on the entry the tier change has since closed.
+		renderSheet(old());
+		const manage = await screen.findByTestId('person-manage-membership');
+		await waitFor(() => expect(manage).toBeEnabled());
+		const membership = screen.getByTestId('person-membership');
+		expect(membership).toHaveTextContent('Gold');
+		expect(screen.getByTestId('register-status-active')).toBeInTheDocument();
+		expect(screen.queryByTestId('person-register-actions')).not.toBeInTheDocument();
+		expect(periods.list).toHaveBeenCalledWith('acme', 'tok', 'u1');
+	});
+
+	it('keeps following the person when a refetch swaps which entry is current', async () => {
+		periods.list.mockResolvedValue({ count: 1, next: null, previous: null, results: [old()] });
+		const view = renderSheet(old());
+		await screen.findByTestId('person-membership');
+		periods.list.mockResolvedValue({
+			count: 2,
+			next: null,
+			previous: null,
+			results: [old(), fresh()]
+		});
+		await view.client.invalidateQueries();
+		await waitFor(() => expect(screen.getByTestId('person-membership')).toHaveTextContent('Gold'));
+		expect(view.onClose).not.toHaveBeenCalled();
+	});
+
+	it('does not refetch the access row when the members list or register are invalidated (a note save)', async () => {
+		periods.list.mockResolvedValue({
+			count: 1,
+			next: null,
+			previous: null,
+			results: [makeRecord()]
+		});
+		const view = renderSheet(makeRecord());
+		const manage = await screen.findByTestId('person-manage-membership');
+		await waitFor(() => expect(manage).toBeEnabled());
+		expect(sdk.getMember).toHaveBeenCalledTimes(1);
+		await view.client.invalidateQueries({ queryKey: ['organization', 'acme', 'members'] });
+		await view.client.invalidateQueries({ queryKey: ['organization', 'acme', 'member-register'] });
+		await waitFor(() => expect(periods.list).toHaveBeenCalledTimes(2));
+		expect(sdk.getMember).toHaveBeenCalledTimes(1);
+	});
+
+	it('closes itself when the person has no entry left', async () => {
+		const view = renderSheet(makeRecord());
+		await waitFor(() => expect(view.onClose).toHaveBeenCalled());
+	});
+
+	it('does not look for the member of an account-less entry by user id', async () => {
+		renderSheet(makeUnlinked());
+		await screen.findByTestId('person-register-actions');
+		expect(periods.list).not.toHaveBeenCalled();
+		expect(sdk.getMember).not.toHaveBeenCalled();
+	});
+});
+
+describe('PersonSheet merged periods', () => {
+	const mergedEntry = () =>
+		makeUnlinked({
+			id: 'rm',
+			full_name: 'B. Verdi',
+			tier_name: 'Bronze',
+			merged_into_id: 'r2',
+			is_current: false,
+			valid_from: '2024-01-01T00:00:00Z',
+			valid_until: '2024-03-01T00:00:00Z'
+		});
+
+	it('lists the entries merged into an account-less survivor (merged_into)', async () => {
+		periods.merged.mockResolvedValue({
+			count: 1,
+			next: null,
+			previous: null,
+			results: [mergedEntry()]
+		});
+		renderSheet(makeUnlinked());
+		const section = await screen.findByTestId('person-periods');
+		await waitFor(() => expect(within(section).getAllByTestId('person-period')).toHaveLength(2));
+		expect(periods.merged).toHaveBeenCalledWith('acme', 'tok', 'r2');
+		expect(periods.list).not.toHaveBeenCalled();
+	});
+
+	it('opens a merged period from the list', async () => {
+		periods.merged.mockResolvedValue({
+			count: 1,
+			next: null,
+			previous: null,
+			results: [mergedEntry()]
+		});
+		const view = renderSheet(makeUnlinked());
+		await userEvent.click(await screen.findByTestId('person-period-open'));
+		expect(view.onOpenRecord).toHaveBeenCalledWith(expect.objectContaining({ id: 'rm' }));
+	});
+
+	it('shows a merged entry read-only: where its note lives, an Unlink action, no register actions', async () => {
+		const view = renderSheet(mergedEntry());
+		expect(await screen.findByTestId('staff-note-merged')).toBeInTheDocument();
+		expect(screen.queryByTestId('person-register-actions')).not.toBeInTheDocument();
+		expect(screen.queryByTestId('person-manage-membership')).not.toBeInTheDocument();
+		expect(screen.queryByTestId('person-period-open')).not.toBeInTheDocument();
+		await userEvent.click(screen.getByTestId('person-unlink'));
+		expect(view.onUnlink).toHaveBeenCalledWith(expect.objectContaining({ id: 'rm' }));
+		expect(periods.merged).not.toHaveBeenCalled();
+	});
+});
+
+describe('PersonSheet close animation', () => {
+	it('keeps the last person rendered until the panel has slid out', async () => {
+		// jsdom runs no animations: hold the slide-out open until the test releases it.
+		let release!: () => void;
+		const gate = new Promise<void>((resolve) => (release = resolve));
+		const proto = Element.prototype as unknown as { getAnimations?: () => unknown[] };
+		const original = proto.getAnimations;
+		proto.getAnimations = () => [{ finished: gate, pending: true, playState: 'running' }];
+		try {
+			periods.list.mockResolvedValue({
+				count: 1,
+				next: null,
+				previous: null,
+				results: [makeRecord()]
+			});
+			const view = renderSheet(makeRecord());
+			const dialog = await screen.findByRole('dialog', { name: 'Ada Rossi' });
+			await view.rerenderWith(null);
+			// Closed, but the panel is still sliding out: it must not have gone blank.
+			await waitFor(() => expect(dialog).toHaveAttribute('data-state', 'closed'));
+			expect(within(dialog).getByRole('heading', { name: 'Ada Rossi' })).toBeInTheDocument();
+			expect(within(dialog).getByTestId('person-membership')).toBeInTheDocument();
+			release();
+			await waitFor(() => expect(dialog).not.toBeInTheDocument());
+		} finally {
+			proto.getAnimations = original;
+		}
 	});
 });

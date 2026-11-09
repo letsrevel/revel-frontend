@@ -91,6 +91,9 @@ export const memberRegisterKeys = {
 	total: (slug: string) => ['organization', slug, 'member-register', 'total'] as const,
 	periods: (slug: string, userId: string) =>
 		['organization', slug, 'member-register', 'periods', userId] as const,
+	/** Entries absorbed into one (account-less) survivor. */
+	mergedInto: (slug: string, recordId: string) =>
+		['organization', slug, 'member-register', 'merged-into', recordId] as const,
 	matches: (slug: string, requestId: string) =>
 		['organization', slug, 'member-register', 'matches', requestId] as const
 };
@@ -165,6 +168,19 @@ export function listPersonPeriods(
 	return fetchRegisterPage(slug, accessToken, {
 		user_id: userId,
 		include_merged: true,
+		page: 1,
+		page_size: PERIODS_PAGE_SIZE
+	});
+}
+
+/** The entries absorbed into one survivor (an account-less survivor has no `user_id` to ask by). */
+export function listMergedInto(
+	slug: string,
+	accessToken: string | null | undefined,
+	recordId: string
+): Promise<PaginatedResponseSchemaMembershipRecordSchema> {
+	return fetchRegisterPage(slug, accessToken, {
+		merged_into: recordId,
 		page: 1,
 		page_size: PERIODS_PAGE_SIZE
 	});
@@ -245,11 +261,15 @@ export async function deleteRecord(
 export async function startRegisterExport(
 	slug: string,
 	accessToken: string | null | undefined,
-	activeOn: string | null
+	activeOn: string | null,
+	includeMerged = false
 ): Promise<string> {
 	const res = await organizationadminmemberregisterExportMemberRegister({
 		path: { slug },
-		body: activeOn ? { active_on: activeOn } : {},
+		body: {
+			...(activeOn ? { active_on: activeOn } : {}),
+			...(includeMerged ? { include_merged: true } : {})
+		},
 		headers: authHeaders(accessToken)
 	});
 	ensureOk(res);

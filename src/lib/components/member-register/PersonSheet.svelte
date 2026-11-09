@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { createQuery } from '@tanstack/svelte-query';
 	import { Receipt } from '@lucide/svelte';
 	import type { MembershipRecordSchema, MembershipTierSchema } from '$lib/api/generated/types.gen';
 	import {
@@ -16,10 +17,14 @@
 	import PersonMembershipSection from './PersonMembershipSection.svelte';
 	import PersonPeriods from './PersonPeriods.svelte';
 	import PersonAccountSection from './PersonAccountSection.svelte';
+	import { listPersonPeriods, memberRegisterKeys } from '$lib/member-register/api';
+	import { pickCurrentEntry, type SheetState } from '$lib/member-register/person-target';
 
 	interface Props {
-		/** The entry the sheet is about; null while closed. */
-		record: MembershipRecordSchema | null;
+		/** Who the sheet is about (a person, or one specific entry); null while closed. */
+		sheet: SheetState | null;
+		/** The live list rows: they keep a record-keyed sheet true after a refetch. */
+		rows: MembershipRecordSchema[];
 		slug: string;
 		accessToken: string | null | undefined;
 		/** Standard tiers, for the change-tier picker of the member actions. */
@@ -29,6 +34,8 @@
 		/** The Payments tab exists for this viewer (`manage_subscriptions`). */
 		canOpenPayments: boolean;
 		onClose: () => void;
+		/** Open one merged entry read-only (from the periods list). */
+		onOpenRecord: (record: MembershipRecordSchema) => void;
 		onEdit: (record: MembershipRecordSchema) => void;
 		onEnd: (record: MembershipRecordSchema) => void;
 		onDelete: (record: MembershipRecordSchema) => void;
@@ -38,7 +45,8 @@
 	}
 
 	const {
-		record,
+		sheet,
+		rows,
 		slug,
 		accessToken,
 		tiers,
@@ -46,6 +54,7 @@
 		isOwner,
 		canOpenPayments,
 		onClose,
+		onOpenRecord,
 		onEdit,
 		onEnd,
 		onDelete,
@@ -54,6 +63,43 @@
 		onOpenPayments
 	}: Props = $props();
 
+	// A linked person is followed by their USER id: a tier change closes one entry
+	// and opens another, and the sheet must land on the person's CURRENT entry.
+	const target = $derived(sheet?.target ?? null);
+	const userId = $derived(target?.kind === 'user' ? target.userId : null);
+	const periodsQuery = createQuery(() => ({
+		queryKey: memberRegisterKeys.periods(slug, userId ?? ''),
+		queryFn: () => listPersonPeriods(slug, accessToken, userId as string),
+		enabled: !!accessToken && !!userId
+	}));
+
+	const resolved = $derived.by((): MembershipRecordSchema | null => {
+		if (!sheet || !target) return null;
+		if (target.kind === 'user') {
+			return pickCurrentEntry(periodsQuery.data?.results ?? [], sheet.seed.kind) ?? sheet.seed;
+		}
+		return rows.find((r) => r.id === target.recordId) ?? sheet.seed;
+	});
+
+	// A person with no entry left (deleted, unlinked away) has nothing to show.
+	$effect(() => {
+		if (
+			userId &&
+			periodsQuery.isSuccess &&
+			!periodsQuery.isFetching &&
+			pickCurrentEntry(periodsQuery.data?.results ?? []) === null
+		) {
+			onClose();
+		}
+	});
+
+	// Keep the last person rendered until the close animation has finished, so the
+	// panel does not go blank while it slides out.
+	let displayed = $state<MembershipRecordSchema | null>(null);
+	$effect(() => {
+		if (resolved) displayed = resolved;
+	});
+	const record = $derived(resolved ?? displayed);
 	const merged = $derived(!!record?.merged_into_id);
 </script>
 
@@ -62,7 +108,13 @@
 	overlay dismiss it, and focus returns to the row that opened it. The title
 	is the heading the dialog is named by.
 -->
-<Sheet open={record !== null} onOpenChange={(open) => (!open ? onClose() : undefined)}>
+<Sheet
+	open={sheet !== null}
+	onOpenChange={(open) => (!open ? onClose() : undefined)}
+	onOpenChangeComplete={(open) => {
+		if (!open) displayed = null;
+	}}
+>
 	<SheetContent class="gap-6" data-testid="person-sheet">
 		{#if record}
 			<SheetHeader class="space-y-2 pr-8 text-left">
@@ -89,7 +141,7 @@
 				{onInvite}
 			/>
 
-			<PersonPeriods {record} {slug} {accessToken} />
+			<PersonPeriods {record} {slug} {accessToken} {onOpenRecord} />
 
 			{#if merged}
 				<section class="space-y-2" aria-labelledby="staff-note-heading">
