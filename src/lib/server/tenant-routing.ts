@@ -72,6 +72,7 @@ export const SEGMENT_RULES: Readonly<Record<string, SegmentRule>> = {
 	dashboard: 'open',
 	legal: 'open',
 	unsubscribe: 'open',
+	'member-invite': 'open', // /member-invite/{token}: register invite links; the claim is account-bound, the org is named in the preview
 	join: 'open', // /join/event/{token}, /join/org/{token}: invitation links; slug re-checked after their redirect
 	// Plumbing: API proxies, OIDC callback, framework assets
 	api: 'open',
