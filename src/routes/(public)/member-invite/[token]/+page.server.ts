@@ -3,7 +3,7 @@ import {
 	memberregisterinvitesClaimInvite,
 	memberregisterinvitesPreviewInvite
 } from '$lib/api/generated/sdk.gen';
-import type { MemberRegisterInviteClaimErrorSchema } from '$lib/api/generated/types.gen';
+import { isClaimConflictCode, type ClaimConflictCode } from '$lib/member-register/claim-conflict';
 import { log } from '$lib/server/logger';
 import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 
@@ -19,14 +19,12 @@ import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
  * works without JavaScript and carries the visitor's real IP to the backend.
  */
 
-export type ClaimConflictCode = MemberRegisterInviteClaimErrorSchema['code'];
-
-const CLAIM_CONFLICT_CODES: readonly ClaimConflictCode[] = ['already_member', 'not_started'];
+export type { ClaimConflictCode };
 
 /** Narrow an unknown 409 body to a known code; anything else is `null`. */
 function conflictCode(error: unknown): ClaimConflictCode | null {
 	const code = (error as { code?: unknown } | null | undefined)?.code;
-	return CLAIM_CONFLICT_CODES.find((c) => c === code) ?? null;
+	return isClaimConflictCode(code) ? code : null;
 }
 
 export type InvitePreview =

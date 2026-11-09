@@ -359,6 +359,20 @@ describe('review fixes (components)', () => {
 		await waitFor(() => expect(onClose).toHaveBeenCalled());
 	});
 
+	it('day picker uses the generic organization-timezone label when the zone is unknown', () => {
+		const props = { id: 'd', label: 'Day', timezone: null, onChange: vi.fn() };
+		const { unmount } = render(CalendarDayPicker, { props: { ...props, value: '' } });
+		expect(screen.getByTestId('calendar-day-readback')).toHaveTextContent(
+			"read in the organization's timezone"
+		);
+		unmount();
+		render(CalendarDayPicker, { props: { ...props, value: '2026-03-12' } });
+		expect(screen.getByTestId('calendar-day-readback')).toHaveTextContent(
+			/Members on .* \(organization's timezone\)/
+		);
+		expect(screen.getByTestId('calendar-day-readback').textContent).not.toContain('Vienna');
+	});
+
 	it('day picker ignores half-typed values and applies complete ones and explicit clears', () => {
 		const onChange = vi.fn();
 		renderIn(CalendarDayPicker, {

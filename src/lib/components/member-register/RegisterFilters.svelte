@@ -20,7 +20,7 @@
 		filters: RegisterFilters;
 		/** All-kinds tier list (standard and temporary). */
 		tiers: MembershipTierSchema[];
-		timezone: string;
+		timezone: string | null;
 		onChange: (next: RegisterFilters, opts?: { replace?: boolean }) => void;
 	}
 

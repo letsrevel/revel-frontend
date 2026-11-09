@@ -18,6 +18,7 @@
 		Hourglass,
 		TriangleAlert
 	} from '@lucide/svelte';
+	import { CLAIM_CONFLICT_COPY } from '$lib/member-register/claim-conflict';
 	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
@@ -68,7 +69,7 @@
 		claim?.outcome === 'success' ? (claim.organizationName ?? claim.organizationSlug) : ''
 	);
 
-	type ResultCopy = { title: string; body: string; note?: string | null };
+	type ResultCopy = { title: string; body: string };
 
 	const resultCopy = $derived.by((): ResultCopy | null => {
 		if (!claim) return null;
@@ -87,18 +88,17 @@
 				// Branch on the machine `code`; `detail` is only the fallback for an
 				// unknown or missing code (never matched on).
 				const body =
-					claim.code === 'already_member'
-						? m['memberInvite.conflictAlreadyMember']()
-						: claim.code === 'not_started'
-							? m['memberInvite.conflictNotStarted']()
-							: claim.detail || m['memberInvite.conflictBody']();
+					(claim.code ? CLAIM_CONFLICT_COPY[claim.code]() : null) ||
+					claim.detail ||
+					m['memberInvite.conflictBody']();
 				return { title: m['memberInvite.conflictTitle'](), body };
 			}
 			case 'forbidden':
 				return {
 					title: m['memberInvite.forbiddenTitle'](),
-					body: m['memberInvite.forbiddenBody'](),
-					note: claim.detail
+					// The backend's only 403 detail is the same sentence as this body,
+					// so it is deliberately not shown a second time.
+					body: m['memberInvite.forbiddenBody']()
 				};
 			case 'not_found':
 				return {
@@ -132,11 +132,6 @@
 				{copy.title}
 			</h2>
 			<p class="text-sm text-muted-foreground sm:text-base">{copy.body}</p>
-			{#if copy.note}
-				<p class="text-sm text-muted-foreground" data-testid="member-invite-result-note">
-					{copy.note}
-				</p>
-			{/if}
 		</div>
 	</div>
 {/snippet}

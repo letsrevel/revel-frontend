@@ -128,15 +128,29 @@ describe('row action can_invite', () => {
 		);
 		expect(items).toContain('Invite');
 	});
-	it('shows a disabled Invite with the backend reason when blocked', async () => {
+	it('shows the blocked reason as plain text, not as a menu item, and says it once', async () => {
 		const reason = 'This register entry starts in the future.';
 		const items = await menuItems(record({ can_invite: false, invite_blocked_reason: reason }));
-		expect(items.some((t) => t.includes('Invite') && t.includes(reason))).toBe(true);
-		const item = screen
-			.queryAllByRole('menuitem', { hidden: true })
-			.find((el) => el.textContent?.includes(reason));
-		expect(item).toHaveAttribute('aria-disabled', 'true');
-		expect(item).toHaveAttribute('aria-describedby');
+		// No menu item (disabled or not) carries the reason or an Invite label.
+		expect(items.join('|')).not.toContain('Invite');
+		expect(items.join('|')).not.toContain(reason);
+		// Visible note inside the menu, hidden from AT ...
+		const note = screen.getByTestId('invite-blocked-note');
+		expect(note).toHaveTextContent(reason);
+		expect(note).toHaveAttribute('aria-hidden', 'true');
+		// ... and the single AT-exposed copy is the trigger's description.
+		const trigger = screen.getByTestId('register-row-actions');
+		const describedBy = trigger.getAttribute('aria-describedby');
+		expect(describedBy).toBeTruthy();
+		expect(document.getElementById(describedBy as string)).toHaveTextContent(reason);
+	});
+	it('does not say Invite for an already-invited entry that is blocked', async () => {
+		const reason = 'Its email address is missing.';
+		const items = await menuItems(
+			record({ invite_status: 'invited', can_invite: false, invite_blocked_reason: reason })
+		);
+		expect(items.join('|')).not.toContain('Invite');
+		expect(screen.getByTestId('invite-blocked-note')).toHaveTextContent(reason);
 	});
 	it('omits Invite when blocked without a reason', async () => {
 		const items = await menuItems(record({ can_invite: false, invite_blocked_reason: null }));

@@ -22,6 +22,8 @@
 	// single source of truth. It is computed at fetch time, so an entry whose
 	// valid_from passes while the page is open flips on the next refetch.
 	// A linked entry already carries a badge, so its blocked reason is not repeated.
+	// The reason is plain text, never a (disabled) menu item: roving focus skips
+	// disabled items, which would hide it from keyboard and screen reader users.
 	const blockedReason = $derived(
 		!record.can_invite && record.invite_status !== 'linked' ? record.invite_blocked_reason : null
 	);
@@ -37,6 +39,7 @@
 		{#snippet child({ props })}
 			<button
 				{...props}
+				aria-describedby={blockedReason ? reasonId : undefined}
 				type="button"
 				data-testid="register-row-actions"
 				class="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -58,17 +61,6 @@
 					? m['memberRegister.actionResendInvite']()
 					: m['memberRegister.actionInvite']()}
 			</DropdownMenu.Item>
-		{:else if blockedReason}
-			<!-- Visible reason, wired up as the description so AT reads why it is disabled. -->
-			<DropdownMenu.Item disabled aria-describedby={reasonId} class="items-start">
-				<Mail aria-hidden="true" class="mt-0.5" />
-				<span class="flex flex-col">
-					<span>{m['memberRegister.actionInvite']()}</span>
-					<span id={reasonId} class="text-xs font-normal text-muted-foreground"
-						>{blockedReason}</span
-					>
-				</span>
-			</DropdownMenu.Item>
 		{/if}
 		{#if canEnd}
 			<DropdownMenu.Item onclick={() => onEnd(record)}>
@@ -85,5 +77,24 @@
 				{m['memberRegister.actionDelete']()}
 			</DropdownMenu.Item>
 		{/if}
+		{#if blockedReason}
+			<!--
+				Sighted-only copy of the reason: a disabled menu item is skipped by roving
+				focus, and a text node inside a menu is not reachable by it either. Screen
+				reader and keyboard users get the same sentence once, as the trigger's
+				description (below), so this one is aria-hidden to avoid a double read.
+			-->
+			<DropdownMenu.Separator />
+			<DropdownMenu.Label
+				aria-hidden="true"
+				class="max-w-64 text-xs font-normal text-muted-foreground"
+				data-testid="invite-blocked-note"
+			>
+				{blockedReason}
+			</DropdownMenu.Label>
+		{/if}
 	</DropdownMenu.Content>
 </DropdownMenu.Root>
+{#if blockedReason}
+	<span id={reasonId} class="sr-only">{blockedReason}</span>
+{/if}

@@ -125,11 +125,12 @@ describe('org timezone', () => {
 		expect(resolveOrgTimezone({ timezone: 'Europe/Rome' })).toBe('Europe/Rome');
 		expect(resolveOrgTimezone({ timezone: 'America/New_York' })).toBe('America/New_York');
 	});
-	it('falls back to the platform default only when the field is absent', () => {
-		expect(resolveOrgTimezone({})).toBe('Europe/Vienna');
-		expect(resolveOrgTimezone({ timezone: '  ' })).toBe('Europe/Vienna');
-		expect(resolveOrgTimezone(null)).toBe('Europe/Vienna');
-		expect(resolveOrgTimezone(undefined)).toBe('Europe/Vienna');
+	it('returns null (generic label) when the timezone is missing or blank', () => {
+		expect(resolveOrgTimezone({})).toBeNull();
+		expect(resolveOrgTimezone({ timezone: '  ' })).toBeNull();
+		expect(resolveOrgTimezone({ timezone: null })).toBeNull();
+		expect(resolveOrgTimezone(null)).toBeNull();
+		expect(resolveOrgTimezone(undefined)).toBeNull();
 	});
 });
 

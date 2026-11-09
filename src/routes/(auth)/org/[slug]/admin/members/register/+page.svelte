@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { createQuery, keepPreviousData } from '@tanstack/svelte-query';
+	import { createQuery, keepPreviousData, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		BookUser,
 		Download,
@@ -43,6 +43,7 @@
 		parseFilters,
 		type RegisterFilters as Filters
 	} from '$lib/member-register/filters';
+	import { nextInviteRefetchDelay } from '$lib/member-register/invite-schedule';
 	import { resolveOrgTimezone } from '$lib/member-register/org-timezone';
 
 	const { data }: { data: PageData } = $props();
@@ -83,6 +84,20 @@
 	}));
 
 	const records = $derived(listQuery.data?.results ?? []);
+
+	// `can_invite` is computed by the backend when the list is fetched. A row whose
+	// start date passes while the page stays open would keep its stale "not yet"
+	// state, so schedule ONE refetch for the nearest upcoming start. Recomputed
+	// whenever the rows change; cleared on re-run and on unmount.
+	const queryClient = useQueryClient();
+	$effect(() => {
+		const delay = nextInviteRefetchDelay(records);
+		if (delay === null) return;
+		const handle = setTimeout(() => {
+			void queryClient.invalidateQueries({ queryKey: memberRegisterKeys.list(slug, filters) });
+		}, delay);
+		return () => clearTimeout(handle);
+	});
 	const total = $derived(listQuery.data?.count ?? 0);
 	const pageCount = $derived(Math.max(1, Math.ceil(total / REGISTER_PAGE_SIZE)));
 	const rangeFrom = $derived(total === 0 ? 0 : (filters.page - 1) * REGISTER_PAGE_SIZE + 1);

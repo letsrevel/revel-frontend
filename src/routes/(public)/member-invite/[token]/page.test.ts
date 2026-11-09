@@ -143,20 +143,17 @@ describe('member-invite page (#1171)', () => {
 		expect(screen.getByTestId('member-invite-result')).toHaveTextContent("couldn't be linked");
 	});
 
-	it('403 outcome focuses the heading and shows the detail as secondary text', async () => {
-		renderPage({ signedIn: true, claim: { outcome: 'forbidden', detail: 'Blocked.' } });
-		expect(screen.getByTestId('member-invite-result')).toHaveTextContent(
-			"You can't join this organization"
-		);
-		expect(screen.getByTestId('member-invite-result-note')).toHaveTextContent('Blocked.');
+	it('403 outcome focuses the heading and does not repeat the backend sentence', async () => {
+		renderPage({
+			signedIn: true,
+			claim: { outcome: 'forbidden', detail: "You can't join this organization." }
+		});
+		const result = screen.getByTestId('member-invite-result');
+		expect(result).toHaveTextContent("You can't join this organization");
+		expect(result.querySelectorAll('p')).toHaveLength(1);
 		await vi.waitFor(() =>
 			expect(screen.getByRole('heading', { name: /can't join/i })).toHaveFocus()
 		);
-	});
-
-	it('403 without a detail shows no secondary text', () => {
-		renderPage({ signedIn: true, claim: { outcome: 'forbidden', detail: null } });
-		expect(screen.queryByTestId('member-invite-result-note')).toBeNull();
 	});
 
 	it('claim 404 shows invitation not found', () => {
