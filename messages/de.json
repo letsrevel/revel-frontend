@@ -10901,36 +10901,6 @@
 	"memberRegister.exportMembersOn": "Mitglieder am: {day} ({timezone})",
 	"memberRegister.exportMembersOnOrgTz": "Mitglieder am: {day} (Zeitzone der Organisation)",
 	"memberRegister.exportButton": "Als xlsx exportieren",
-	"memberRegister.actionInvite": "Einladen",
-	"memberRegister.actionResendInvite": "Einladung erneut senden",
-	"memberRegister.inviteTitle": "{name} einladen",
-	"memberRegister.inviteDescription": "Sende {name} eine E-Mail an {email} mit einem Link, um diesen Eintrag mit dem Revel-Konto zu verknüpfen.",
-	"memberRegister.inviteConfirm": "Einladung senden",
-	"memberRegister.resendInviteTitle": "Einladung erneut an {name} senden?",
-	"memberRegister.resendInviteDescription": "Ein neuer Link wird an {email} gesendet. Der bisherige Link funktioniert nicht mehr.",
-	"memberRegister.resendInviteConfirm": "Einladung erneut senden",
-	"memberRegister.inviteSentToast": "Einladung an {email} gesendet",
-	"memberRegister.inviteAllOpen": "Alle einladen",
-	"memberRegister.inviteAllTitle": "Alle im Register einladen?",
-	"memberRegister.inviteAllDescription": "Sende eine Einladung an jeden offenen Eintrag mit E-Mail-Adresse, der noch nicht eingeladen wurde und bereits begonnen hat. Verknüpfte, Tagesmitglieds-, beendete und in der Zukunft beginnende Einträge werden übersprungen.",
-	"memberRegister.inviteAllConfirm": "Einladungen senden",
-	"memberRegister.inviteAllSent": [
-		{
-			"declarations": ["input invited", "local invitedPlural = invited: plural"],
-			"selectors": ["invitedPlural"],
-			"match": {
-				"invitedPlural=one": "{invited} Einladung gesendet",
-				"invitedPlural=*": "{invited} Einladungen gesendet"
-			}
-		}
-	],
-	"memberRegister.inviteAllNone": "Kein Eintrag wartete auf eine Einladung",
-	"memberRegister.errorInviteAllThrottled": "Du hast das Limit für Sammeleinladungen erreicht (5 pro 24 Stunden). Versuche es später erneut.",
-	"memberRegister.errorInviteAllThrottledIn": "Du hast das Limit für Sammeleinladungen erreicht. Versuche es in {time} erneut.",
-	"memberRegister.inviteAllLimitNote": "Du kannst Sammeleinladungen bis zu 5-mal in 24 Stunden senden.",
-	"memberRegister.inviteAllRetryNote": "Jeder Versuch zählt für dieses Limit, auch wenn er fehlgeschlagen ist. Prüfe das Register, bevor du es erneut versuchst.",
-	"memberRegister.inviteAllRetryConfirm": "Erneut versuchen",
-	"memberRegister.inviteAllEmptyHint": "Füge Einträge zum Register hinzu, bevor du alle einlädst.",
 	"seriesPass.questionnaires.heading": "Beantworte zuerst diese Fragebögen",
 	"seriesPass.questionnaires.description": "Für diesen Pass brauchen wir deine Antworten, bevor du ihn kaufen kannst. Jeder Fragebogen öffnet sich in seinem eigenen Event und führt dich danach hierher zurück.",
 	"seriesPass.questionnaires.forEvent": "Für {event}",
@@ -11031,5 +11001,35 @@
 	"memberInvite.sessionExpiredTitle": "Sitzung abgelaufen",
 	"memberInvite.sessionExpiredBody": "Deine Sitzung ist abgelaufen. Melde dich erneut an, um diese Mitgliedschaft zu verknüpfen.",
 	"memberInvite.goHome": "Zurück zur Startseite",
-	"memberInvite.retry": "Erneut versuchen"
+	"memberInvite.retry": "Erneut versuchen",
+	"memberRegister.actionInvite": "Einladen",
+	"memberRegister.actionResendInvite": "Einladung erneut senden",
+	"memberRegister.inviteTitle": "{name} einladen",
+	"memberRegister.inviteDescription": "Sende {name} eine E-Mail an {email} mit einem Link, um diesen Eintrag mit dem Revel-Konto zu verknüpfen.",
+	"memberRegister.inviteConfirm": "Einladung senden",
+	"memberRegister.resendInviteTitle": "Einladung erneut an {name} senden?",
+	"memberRegister.resendInviteDescription": "Ein neuer Link wird an {email} gesendet. Der bisherige Link funktioniert nicht mehr.",
+	"memberRegister.resendInviteConfirm": "Einladung erneut senden",
+	"memberRegister.inviteSentToast": "Einladung an {email} gesendet",
+	"memberRegister.inviteAllOpen": "Alle einladen",
+	"memberRegister.inviteAllTitle": "Alle im Register einladen?",
+	"memberRegister.inviteAllDescription": "Sende eine Einladung an jeden offenen Eintrag mit E-Mail-Adresse, der noch nicht eingeladen wurde und bereits begonnen hat. Verknüpfte, Tagesmitglieds-, beendete und in der Zukunft beginnende Einträge werden übersprungen.",
+	"memberRegister.inviteAllConfirm": "Einladungen senden",
+	"memberRegister.inviteAllSent": [
+		{
+			"declarations": ["input invited", "local invitedPlural = invited: plural"],
+			"selectors": ["invitedPlural"],
+			"match": {
+				"invitedPlural=one": "{invited} Einladung gesendet",
+				"invitedPlural=*": "{invited} Einladungen gesendet"
+			}
+		}
+	],
+	"memberRegister.inviteAllNone": "Kein Eintrag wartete auf eine Einladung",
+	"memberRegister.errorInviteAllThrottled": "Du hast das Limit für Sammeleinladungen erreicht (5 pro 24 Stunden). Versuche es später erneut.",
+	"memberRegister.errorInviteAllThrottledIn": "Du hast das Limit für Sammeleinladungen erreicht. Versuche es in {time} erneut.",
+	"memberRegister.inviteAllLimitNote": "Du kannst Sammeleinladungen bis zu 5-mal in 24 Stunden senden.",
+	"memberRegister.inviteAllRetryNote": "Jeder Versuch zählt für dieses Limit, auch wenn er fehlgeschlagen ist. Prüfe das Register, bevor du es erneut versuchst.",
+	"memberRegister.inviteAllRetryConfirm": "Erneut versuchen",
+	"memberRegister.inviteAllEmptyHint": "Füge Einträge zum Register hinzu, bevor du alle einlädst."
 }

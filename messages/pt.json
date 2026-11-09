@@ -10901,36 +10901,6 @@
 	"memberRegister.exportMembersOn": "Membros em: {day} ({timezone})",
 	"memberRegister.exportMembersOnOrgTz": "Membros em: {day} (fuso horário da organização)",
 	"memberRegister.exportButton": "Exportar xlsx",
-	"memberRegister.actionInvite": "Convidar",
-	"memberRegister.actionResendInvite": "Reenviar convite",
-	"memberRegister.inviteTitle": "Convidar {name}",
-	"memberRegister.inviteDescription": "Envia a {name} um e-mail para {email} com uma ligação para associar esta entrada à sua conta Revel.",
-	"memberRegister.inviteConfirm": "Enviar convite",
-	"memberRegister.resendInviteTitle": "Reenviar o convite a {name}?",
-	"memberRegister.resendInviteDescription": "Será enviada uma nova ligação para {email}. A ligação anterior deixa de funcionar.",
-	"memberRegister.resendInviteConfirm": "Reenviar convite",
-	"memberRegister.inviteSentToast": "Convite enviado para {email}",
-	"memberRegister.inviteAllOpen": "Convidar todos",
-	"memberRegister.inviteAllTitle": "Convidar todo o registo?",
-	"memberRegister.inviteAllDescription": "Envia um convite a cada entrada aberta com endereço de e-mail que ainda não foi convidada e que já começou. As entradas associadas, os membros de um dia, as terminadas e as que começam no futuro são ignoradas.",
-	"memberRegister.inviteAllConfirm": "Enviar convites",
-	"memberRegister.inviteAllSent": [
-		{
-			"declarations": ["input invited", "local invitedPlural = invited: plural"],
-			"selectors": ["invitedPlural"],
-			"match": {
-				"invitedPlural=one": "{invited} convite enviado",
-				"invitedPlural=*": "{invited} convites enviados"
-			}
-		}
-	],
-	"memberRegister.inviteAllNone": "Nenhuma entrada aguardava convite",
-	"memberRegister.errorInviteAllThrottled": "Atingiste o limite de convites em massa (5 por 24 horas). Tenta novamente mais tarde.",
-	"memberRegister.errorInviteAllThrottledIn": "Atingiste o limite de convites em massa. Tenta novamente dentro de {time}.",
-	"memberRegister.inviteAllLimitNote": "Podes enviar convites em massa até 5 vezes em 24 horas.",
-	"memberRegister.inviteAllRetryNote": "Cada tentativa conta para esse limite, mesmo que tenha falhado. Verifica o registo antes de tentar novamente.",
-	"memberRegister.inviteAllRetryConfirm": "Tentar novamente",
-	"memberRegister.inviteAllEmptyHint": "Adiciona entradas ao registo antes de convidar todos.",
 	"seriesPass.questionnaires.heading": "Preenche primeiro estes questionários",
 	"seriesPass.questionnaires.description": "Este passe precisa das tuas respostas antes de o poderes comprar. Cada questionário abre no seu próprio evento e depois traz-te de volta aqui.",
 	"seriesPass.questionnaires.forEvent": "Para {event}",
@@ -11031,5 +11001,35 @@
 	"memberInvite.sessionExpiredTitle": "Sessão expirada",
 	"memberInvite.sessionExpiredBody": "A tua sessão expirou. Inicia sessão novamente para associar esta adesão.",
 	"memberInvite.goHome": "Voltar ao início",
-	"memberInvite.retry": "Tentar novamente"
+	"memberInvite.retry": "Tentar novamente",
+	"memberRegister.actionInvite": "Convidar",
+	"memberRegister.actionResendInvite": "Reenviar convite",
+	"memberRegister.inviteTitle": "Convidar {name}",
+	"memberRegister.inviteDescription": "Envia a {name} um e-mail para {email} com uma ligação para associar esta entrada à sua conta Revel.",
+	"memberRegister.inviteConfirm": "Enviar convite",
+	"memberRegister.resendInviteTitle": "Reenviar o convite a {name}?",
+	"memberRegister.resendInviteDescription": "Será enviada uma nova ligação para {email}. A ligação anterior deixa de funcionar.",
+	"memberRegister.resendInviteConfirm": "Reenviar convite",
+	"memberRegister.inviteSentToast": "Convite enviado para {email}",
+	"memberRegister.inviteAllOpen": "Convidar todos",
+	"memberRegister.inviteAllTitle": "Convidar todo o registo?",
+	"memberRegister.inviteAllDescription": "Envia um convite a cada entrada aberta com endereço de e-mail que ainda não foi convidada e que já começou. As entradas associadas, os membros de um dia, as terminadas e as que começam no futuro são ignoradas.",
+	"memberRegister.inviteAllConfirm": "Enviar convites",
+	"memberRegister.inviteAllSent": [
+		{
+			"declarations": ["input invited", "local invitedPlural = invited: plural"],
+			"selectors": ["invitedPlural"],
+			"match": {
+				"invitedPlural=one": "{invited} convite enviado",
+				"invitedPlural=*": "{invited} convites enviados"
+			}
+		}
+	],
+	"memberRegister.inviteAllNone": "Nenhuma entrada aguardava convite",
+	"memberRegister.errorInviteAllThrottled": "Atingiste o limite de convites em massa (5 por 24 horas). Tenta novamente mais tarde.",
+	"memberRegister.errorInviteAllThrottledIn": "Atingiste o limite de convites em massa. Tenta novamente dentro de {time}.",
+	"memberRegister.inviteAllLimitNote": "Podes enviar convites em massa até 5 vezes em 24 horas.",
+	"memberRegister.inviteAllRetryNote": "Cada tentativa conta para esse limite, mesmo que tenha falhado. Verifica o registo antes de tentar novamente.",
+	"memberRegister.inviteAllRetryConfirm": "Tentar novamente",
+	"memberRegister.inviteAllEmptyHint": "Adiciona entradas ao registo antes de convidar todos."
 }
