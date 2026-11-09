@@ -172,6 +172,9 @@
 							{m['accountDeletion.loss_profile']()}
 						</li>
 					</ul>
+					<p class="pt-2 text-sm text-muted-foreground" data-testid="org-records-note">
+						{m['accountDeletion.orgRecordsNote']()}
+					</p>
 				</div>
 			</div>
 

@@ -52,18 +52,34 @@ export function tiersOfKindQueryOptions(
 	};
 }
 
+/** The org's STANDARD tiers (every picker that sends a tier id to the backend). */
+export function listStandardTiers(
+	slug: string,
+	accessToken: string | null | undefined,
+	fetchFn?: typeof fetch
+): Promise<MembershipTierSchema[]> {
+	return listTiersOfKind(slug, 'standard', accessToken, fetchFn);
+}
+
+/** TanStack options for the standard-tiers list; spread into `createQuery`. */
+export function standardTiersQueryOptions(slug: string, accessToken: string | null | undefined) {
+	return tiersOfKindQueryOptions(slug, 'standard', accessToken);
+}
+
 /**
- * Fetch the org's tiers of EVERY kind (no `kind` param), for the one consumer that
- * needs both (the ticketing step splits it with `standardTiers`/`temporaryTiers`).
- * Keyed by the exact `all` entry, so tier create/edit/delete invalidation (TiersTab)
- * refreshes it; the data shape matches the Members page query on the same key.
+ * Fetch ALL of the org's membership tiers (standard and temporary; no `kind` param),
+ * e.g. for the ticketing step, which splits it with `standardTiers`/`temporaryTiers`,
+ * and the register's tier filter. Only the exact `all` key may hold this unfiltered
+ * list, so TiersTab's invalidation refreshes it. Throws the API error body.
  */
 export async function listAllTiers(
 	slug: string,
-	accessToken: string | null | undefined
+	accessToken: string | null | undefined,
+	fetchFn?: typeof fetch
 ): Promise<MembershipTierSchema[]> {
 	if (!accessToken) throw new Error('listAllTiers: missing access token');
 	const res = await organizationadminmembersListMembershipTiers({
+		...(fetchFn ? { fetch: fetchFn } : {}),
 		path: { slug },
 		headers: { Authorization: `Bearer ${accessToken}` }
 	});
@@ -77,18 +93,4 @@ export function allTiersQueryOptions(slug: string, accessToken: string | null | 
 		queryKey: membershipTiersKeys.all(slug),
 		queryFn: () => listAllTiers(slug, accessToken)
 	};
-}
-
-/** The org's STANDARD tiers (every picker that sends a tier id to the backend). */
-export function listStandardTiers(
-	slug: string,
-	accessToken: string | null | undefined,
-	fetchFn?: typeof fetch
-): Promise<MembershipTierSchema[]> {
-	return listTiersOfKind(slug, 'standard', accessToken, fetchFn);
-}
-
-/** TanStack options for the standard-tiers list; spread into `createQuery`. */
-export function standardTiersQueryOptions(slug: string, accessToken: string | null | undefined) {
-	return tiersOfKindQueryOptions(slug, 'standard', accessToken);
 }

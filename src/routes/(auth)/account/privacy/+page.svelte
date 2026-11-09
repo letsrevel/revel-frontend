@@ -471,6 +471,9 @@
 						{m['accountPrivacyPage.modal_memberships']()}
 					</li>
 				</ul>
+				<p class="pt-2 text-sm text-muted-foreground">
+					{m['accountPrivacyPage.modal_orgRecordsNote']()}
+				</p>
 			</div>
 
 			<form
