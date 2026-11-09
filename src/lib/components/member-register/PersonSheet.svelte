@@ -81,6 +81,14 @@
 		return rows.find((r) => r.id === target.recordId) ?? sheet.seed;
 	});
 
+	// The staff note is the PERSON's: for a linked person the record route proxies to
+	// the user's note through ANY of their entries, so pin it to the entry the sheet
+	// was opened on. The resolved current entry can change (periods loading, a tier
+	// change), and keying the editor on it would remount and drop an unsaved draft.
+	const noteRecordId = $derived(
+		target?.kind === 'user' && sheet ? sheet.seed.id : (resolved?.id ?? null)
+	);
+
 	// A person with no entry left (deleted, unlinked away) has nothing to show.
 	$effect(() => {
 		if (
@@ -154,10 +162,14 @@
 						{m['memberPeople.sheet.mergedNote']()}
 					</p>
 				</section>
-			{:else if record.id}
-				<!-- Keyed on the entry: one mount = one editing session. -->
-				{#key record.id}
-					<StaffNoteEditor {slug} {accessToken} target={{ kind: 'record', recordId: record.id }} />
+			{:else if noteRecordId ?? record.id}
+				<!-- Keyed on the person (see noteRecordId): one mount = one editing session. -->
+				{#key noteRecordId ?? record.id}
+					<StaffNoteEditor
+						{slug}
+						{accessToken}
+						target={{ kind: 'record', recordId: noteRecordId ?? record.id }}
+					/>
 				{/key}
 			{/if}
 

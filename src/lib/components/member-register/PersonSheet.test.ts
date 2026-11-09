@@ -435,6 +435,28 @@ describe('PersonSheet follows the person, not one entry', () => {
 		expect(view.onClose).not.toHaveBeenCalled();
 	});
 
+	it('keeps the staff note pinned to the person when the current entry changes (no editor remount)', async () => {
+		sdk.getRecordNote.mockResolvedValue({ data: note, response: { status: 200 } });
+		periods.list.mockResolvedValue({ count: 1, next: null, previous: null, results: [old()] });
+		const view = renderSheet(old());
+		expect(await screen.findByText(/Last edited by Sam on /)).toBeInTheDocument();
+		periods.list.mockResolvedValue({
+			count: 2,
+			next: null,
+			previous: null,
+			results: [old(), fresh()]
+		});
+		await view.client.invalidateQueries();
+		await waitFor(() => expect(screen.getByTestId('person-membership')).toHaveTextContent('Gold'));
+		// The note route stays on the opened entry: the editor was not re-keyed to the
+		// new current entry, so an unsaved draft would survive.
+		const recordIds = sdk.getRecordNote.mock.calls.map(
+			([arg]) => (arg as { path: { record_id: string } }).path.record_id
+		);
+		expect(recordIds).not.toContain(fresh().id);
+		expect(new Set(recordIds)).toEqual(new Set([old().id]));
+	});
+
 	it('does not refetch the access row when the members list or register are invalidated (a note save)', async () => {
 		periods.list.mockResolvedValue({
 			count: 1,
